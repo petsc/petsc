@@ -6,7 +6,8 @@ static char help[] = "Tests not trapping an underflow\n\n";
 #include <math.h>
 
 /* From https://stackoverflow.com/questions/37193363/float-underflow-in-c-explanation */
-void demo(void) {
+void demo(void)
+{
   /*
   FLT_MIN, FLT_MIN and the display of the floating point numbers are not portable
 
@@ -23,7 +24,8 @@ void demo(void) {
   } while (f);
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
   demo();

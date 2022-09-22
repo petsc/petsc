@@ -2,7 +2,8 @@
 #include <string.h>
 #include <ctype.h>
 
-PetscErrorCode PumpHeadCurveResidual(SNES snes, Vec X, Vec F, void *ctx) {
+PetscErrorCode PumpHeadCurveResidual(SNES snes, Vec X, Vec F, void *ctx)
+{
   const PetscScalar *x;
   PetscScalar       *f;
   Pump              *pump = (Pump *)ctx;
@@ -26,7 +27,8 @@ PetscErrorCode PumpHeadCurveResidual(SNES snes, Vec X, Vec F, void *ctx) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode SetPumpHeadCurveParams(Pump *pump) {
+PetscErrorCode SetPumpHeadCurveParams(Pump *pump)
+{
   SNES                snes;
   Vec                 X, F;
   PetscScalar        *head, *flow, *x;
@@ -78,12 +80,14 @@ PetscErrorCode SetPumpHeadCurveParams(Pump *pump) {
   PetscFunctionReturn(0);
 }
 
-int LineStartsWith(const char *a, const char *b) {
+int LineStartsWith(const char *a, const char *b)
+{
   if (strncmp(a, b, strlen(b)) == 0) return 1;
   return 0;
 }
 
-int CheckDataSegmentEnd(const char *line) {
+int CheckDataSegmentEnd(const char *line)
+{
   if (LineStartsWith(line, "[JUNCTIONS]") || LineStartsWith(line, "[RESERVOIRS]") || LineStartsWith(line, "[TANKS]") || LineStartsWith(line, "[PIPES]") || LineStartsWith(line, "[PUMPS]") || LineStartsWith(line, "[CURVES]") || LineStartsWith(line, "[VALVES]") || LineStartsWith(line, "[PATTERNS]") || LineStartsWith(line, "[VALVES]") || LineStartsWith(line, "[QUALITY]") || LineStartsWith(line, "\n") || LineStartsWith(line, "\r\n")) {
     return 1;
   }
@@ -93,7 +97,8 @@ int CheckDataSegmentEnd(const char *line) {
 /* Gets the file pointer positiion for the start of the data segment and the
    number of data segments (lines) read
 */
-PetscErrorCode GetDataSegment(FILE *fp, char *line, fpos_t *data_segment_start_pos, PetscInt *ndatalines) {
+PetscErrorCode GetDataSegment(FILE *fp, char *line, fpos_t *data_segment_start_pos, PetscInt *ndatalines)
+{
   PetscInt data_segment_end;
   PetscInt nlines = 0;
 
@@ -114,7 +119,8 @@ PetscErrorCode GetDataSegment(FILE *fp, char *line, fpos_t *data_segment_start_p
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode WaterReadData(WATERDATA *water, char *filename) {
+PetscErrorCode WaterReadData(WATERDATA *water, char *filename)
+{
   FILE        *fp = NULL;
   VERTEX_Water vert;
   EDGE_Water   edge;

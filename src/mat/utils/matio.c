@@ -1,7 +1,8 @@
 #include <petscviewer.h>
 #include <petsc/private/matimpl.h>
 
-PetscErrorCode MatView_Binary_BlockSizes(Mat mat, PetscViewer viewer) {
+PetscErrorCode MatView_Binary_BlockSizes(Mat mat, PetscViewer viewer)
+{
   FILE       *info;
   PetscMPIInt rank;
   PetscInt    rbs, cbs;
@@ -17,7 +18,8 @@ PetscErrorCode MatView_Binary_BlockSizes(Mat mat, PetscViewer viewer) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatLoad_Binary_BlockSizes(Mat mat, PetscViewer viewer) {
+PetscErrorCode MatLoad_Binary_BlockSizes(Mat mat, PetscViewer viewer)
+{
   PetscInt  rbs, cbs, bs[2], n = 2;
   PetscBool set;
 

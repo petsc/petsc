@@ -3,7 +3,8 @@ static char help[] = "Tests PetscGlobalMinMax\n\n";
 
 #include <petscsys.h>
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscMPIInt size, rank;
   PetscInt    li[2], gi[2] = {-1, -1};
   PetscReal   lr[2], gr[2] = {-1., -1.};

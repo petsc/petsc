@@ -13,7 +13,8 @@ gp - global grid point number along the sliceaxis direction where the slice will
 
 const char *const sliceaxes[] = {"X", "Y", "Z", "sliceaxis", "DM_", NULL};
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   DM                 da3D;                            /* 3D DMDA object */
   DM                 da2D;                            /* 2D DMDA object */
   Vec                vec_full;                        /* Parent vector */

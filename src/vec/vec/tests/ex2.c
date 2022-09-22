@@ -4,7 +4,8 @@ static char help[] = "Tests vector scatter-gather operations.  Input arguments a
 
 #include <petscvec.h>
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscInt    n = 5, idx1[2] = {0, 3}, idx2[2] = {1, 4};
   PetscScalar one = 1.0, two = 2.0;
   Vec         x, y;

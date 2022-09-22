@@ -12,9 +12,9 @@
 /*****************************************************************************/
 
 #if !defined(__CG_STCG)
-#define __CG_STCG
+  #define __CG_STCG
 
-#include <petsc/private/kspimpl.h>
+  #include <petsc/private/kspimpl.h>
 
 typedef struct {
   PetscReal radius;

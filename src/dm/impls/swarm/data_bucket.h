@@ -1,13 +1,13 @@
 #if !defined(__DMSWARM_DATA_BUCKET_H__)
-#define __DMSWARM_DATA_BUCKET_H__
+  #define __DMSWARM_DATA_BUCKET_H__
 
-#include <petsc/private/dmswarmimpl.h> /*I   "petscdmswarm.h"   I*/
+  #include <petsc/private/dmswarmimpl.h> /*I   "petscdmswarm.h"   I*/
 
-#define DMSWARM_DATA_BUCKET_BUFFER_DEFAULT -1
-#define DMSWARM_DATAFIELD_POINT_ACCESS_GUARD
+  #define DMSWARM_DATA_BUCKET_BUFFER_DEFAULT -1
+  #define DMSWARM_DATAFIELD_POINT_ACCESS_GUARD
 
-/* Logging flag */
-#define DMSWARM_DATA_BUCKET_LOG
+  /* Logging flag */
+  #define DMSWARM_DATA_BUCKET_LOG
 
 typedef enum {
   DATABUCKET_VIEW_STDOUT = 0,
@@ -35,8 +35,8 @@ struct _p_DMSwarmDataBucket {
   DMSwarmDataField *field;     /* the data */
 };
 
-#define DMSWARM_DATAFIELD_point_access(data, index, atomic_size)                (void *)((char *)(data) + (index) * (atomic_size))
-#define DMSWARM_DATAFIELD_point_access_offset(data, index, atomic_size, offset) (void *)((char *)(data) + (index) * (atomic_size) + (offset))
+  #define DMSWARM_DATAFIELD_point_access(data, index, atomic_size)                (void *)((char *)(data) + (index) * (atomic_size))
+  #define DMSWARM_DATAFIELD_point_access_offset(data, index, atomic_size, offset) (void *)((char *)(data) + (index) * (atomic_size) + (offset))
 
 PETSC_INTERN PetscErrorCode DMSwarmDataFieldStringInList(const char[], const PetscInt, const DMSwarmDataField[], PetscBool *);
 PETSC_INTERN PetscErrorCode DMSwarmDataFieldStringFindInList(const char[], const PetscInt, const DMSwarmDataField[], PetscInt *);

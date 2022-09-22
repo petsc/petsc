@@ -5,7 +5,8 @@
 #include <../src/vec/vec/impls/mpi/pvecimpl.h>
 #include <petscblaslapack.h>
 
-PetscErrorCode VecMDot_MPI(Vec xin, PetscInt nv, const Vec y[], PetscScalar *z) {
+PetscErrorCode VecMDot_MPI(Vec xin, PetscInt nv, const Vec y[], PetscScalar *z)
+{
   PetscScalar awork[128], *work = awork;
 
   PetscFunctionBegin;
@@ -16,7 +17,8 @@ PetscErrorCode VecMDot_MPI(Vec xin, PetscInt nv, const Vec y[], PetscScalar *z) 
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode VecMTDot_MPI(Vec xin, PetscInt nv, const Vec y[], PetscScalar *z) {
+PetscErrorCode VecMTDot_MPI(Vec xin, PetscInt nv, const Vec y[], PetscScalar *z)
+{
   PetscScalar awork[128], *work = awork;
 
   PetscFunctionBegin;
@@ -28,7 +30,8 @@ PetscErrorCode VecMTDot_MPI(Vec xin, PetscInt nv, const Vec y[], PetscScalar *z)
 }
 
 #include <../src/vec/vec/impls/seq/ftn-kernels/fnorm.h>
-PetscErrorCode VecNorm_MPI(Vec xin, NormType type, PetscReal *z) {
+PetscErrorCode VecNorm_MPI(Vec xin, NormType type, PetscReal *z)
+{
   PetscReal          sum, work = 0.0;
   const PetscScalar *xx;
   PetscInt           n   = xin->map->n;
@@ -64,7 +67,8 @@ PetscErrorCode VecNorm_MPI(Vec xin, NormType type, PetscReal *z) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode VecMax_MPI(Vec xin, PetscInt *idx, PetscReal *z) {
+PetscErrorCode VecMax_MPI(Vec xin, PetscInt *idx, PetscReal *z)
+{
   PetscReal work;
 
   PetscFunctionBegin;
@@ -92,7 +96,8 @@ PetscErrorCode VecMax_MPI(Vec xin, PetscInt *idx, PetscReal *z) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode VecMin_MPI(Vec xin, PetscInt *idx, PetscReal *z) {
+PetscErrorCode VecMin_MPI(Vec xin, PetscInt *idx, PetscReal *z)
+{
   PetscReal work;
 
   PetscFunctionBegin;

@@ -1,49 +1,56 @@
 #include <petsc/private/tsimpl.h> /*I "petscts.h" I*/
 #include <petsc/private/dmimpl.h>
 
-static PetscErrorCode DMTSUnsetRHSFunctionContext_DMTS(DMTS tsdm) {
+static PetscErrorCode DMTSUnsetRHSFunctionContext_DMTS(DMTS tsdm)
+{
   PetscFunctionBegin;
   PetscCall(PetscObjectCompose((PetscObject)tsdm, "rhs function ctx", NULL));
   tsdm->rhsfunctionctxcontainer = NULL;
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMTSUnsetRHSJacobianContext_DMTS(DMTS tsdm) {
+static PetscErrorCode DMTSUnsetRHSJacobianContext_DMTS(DMTS tsdm)
+{
   PetscFunctionBegin;
   PetscCall(PetscObjectCompose((PetscObject)tsdm, "rhs jacobian ctx", NULL));
   tsdm->rhsjacobianctxcontainer = NULL;
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMTSUnsetIFunctionContext_DMTS(DMTS tsdm) {
+static PetscErrorCode DMTSUnsetIFunctionContext_DMTS(DMTS tsdm)
+{
   PetscFunctionBegin;
   PetscCall(PetscObjectCompose((PetscObject)tsdm, "ifunction ctx", NULL));
   tsdm->ifunctionctxcontainer = NULL;
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMTSUnsetIJacobianContext_DMTS(DMTS tsdm) {
+static PetscErrorCode DMTSUnsetIJacobianContext_DMTS(DMTS tsdm)
+{
   PetscFunctionBegin;
   PetscCall(PetscObjectCompose((PetscObject)tsdm, "ijacobian ctx", NULL));
   tsdm->ijacobianctxcontainer = NULL;
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMTSUnsetI2FunctionContext_DMTS(DMTS tsdm) {
+static PetscErrorCode DMTSUnsetI2FunctionContext_DMTS(DMTS tsdm)
+{
   PetscFunctionBegin;
   PetscCall(PetscObjectCompose((PetscObject)tsdm, "i2function ctx", NULL));
   tsdm->i2functionctxcontainer = NULL;
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMTSUnsetI2JacobianContext_DMTS(DMTS tsdm) {
+static PetscErrorCode DMTSUnsetI2JacobianContext_DMTS(DMTS tsdm)
+{
   PetscFunctionBegin;
   PetscCall(PetscObjectCompose((PetscObject)tsdm, "i2jacobian ctx", NULL));
   tsdm->i2jacobianctxcontainer = NULL;
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMTSDestroy(DMTS *kdm) {
+static PetscErrorCode DMTSDestroy(DMTS *kdm)
+{
   PetscFunctionBegin;
   if (!*kdm) PetscFunctionReturn(0);
   PetscValidHeaderSpecific((*kdm), DMTS_CLASSID, 1);
@@ -62,7 +69,8 @@ static PetscErrorCode DMTSDestroy(DMTS *kdm) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMTSLoad(DMTS kdm, PetscViewer viewer) {
+PetscErrorCode DMTSLoad(DMTS kdm, PetscViewer viewer)
+{
   PetscFunctionBegin;
   PetscCall(PetscViewerBinaryRead(viewer, &kdm->ops->ifunction, 1, NULL, PETSC_FUNCTION));
   PetscCall(PetscViewerBinaryRead(viewer, &kdm->ops->ifunctionview, 1, NULL, PETSC_FUNCTION));
@@ -85,7 +93,8 @@ PetscErrorCode DMTSLoad(DMTS kdm, PetscViewer viewer) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMTSView(DMTS kdm, PetscViewer viewer) {
+PetscErrorCode DMTSView(DMTS kdm, PetscViewer viewer)
+{
   PetscBool isascii, isbinary;
 
   PetscFunctionBegin;
@@ -148,7 +157,8 @@ PetscErrorCode DMTSView(DMTS kdm, PetscViewer viewer) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMTSCreate(MPI_Comm comm, DMTS *kdm) {
+static PetscErrorCode DMTSCreate(MPI_Comm comm, DMTS *kdm)
+{
   PetscFunctionBegin;
   PetscCall(TSInitializePackage());
   PetscCall(PetscHeaderCreate(*kdm, DMTS_CLASSID, "DMTS", "DMTS", "DMTS", comm, DMTSDestroy, DMTSView));
@@ -158,7 +168,8 @@ static PetscErrorCode DMTSCreate(MPI_Comm comm, DMTS *kdm) {
 /* Attaches the DMTS to the coarse level.
  * Under what conditions should we copy versus duplicate?
  */
-static PetscErrorCode DMCoarsenHook_DMTS(DM dm, DM dmc, void *ctx) {
+static PetscErrorCode DMCoarsenHook_DMTS(DM dm, DM dmc, void *ctx)
+{
   PetscFunctionBegin;
   PetscCall(DMCopyDMTS(dm, dmc));
   PetscFunctionReturn(0);
@@ -166,12 +177,14 @@ static PetscErrorCode DMCoarsenHook_DMTS(DM dm, DM dmc, void *ctx) {
 
 /* This could restrict auxiliary information to the coarse level.
  */
-static PetscErrorCode DMRestrictHook_DMTS(DM dm, Mat Restrict, Vec rscale, Mat Inject, DM dmc, void *ctx) {
+static PetscErrorCode DMRestrictHook_DMTS(DM dm, Mat Restrict, Vec rscale, Mat Inject, DM dmc, void *ctx)
+{
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMSubDomainHook_DMTS(DM dm, DM subdm, void *ctx) {
+static PetscErrorCode DMSubDomainHook_DMTS(DM dm, DM subdm, void *ctx)
+{
   PetscFunctionBegin;
   PetscCall(DMCopyDMTS(dm, subdm));
   PetscFunctionReturn(0);
@@ -179,7 +192,8 @@ static PetscErrorCode DMSubDomainHook_DMTS(DM dm, DM subdm, void *ctx) {
 
 /* This could restrict auxiliary information to the coarse level.
  */
-static PetscErrorCode DMSubDomainRestrictHook_DMTS(DM dm, VecScatter gscat, VecScatter lscat, DM subdm, void *ctx) {
+static PetscErrorCode DMSubDomainRestrictHook_DMTS(DM dm, VecScatter gscat, VecScatter lscat, DM subdm, void *ctx)
+{
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
@@ -197,7 +211,8 @@ static PetscErrorCode DMSubDomainRestrictHook_DMTS(DM dm, VecScatter gscat, VecS
 
 .seealso: `DMTSCreate()`, `DMTSDestroy()`
 @*/
-PetscErrorCode DMTSCopy(DMTS kdm, DMTS nkdm) {
+PetscErrorCode DMTSCopy(DMTS kdm, DMTS nkdm)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(kdm, DMTS_CLASSID, 1);
   PetscValidHeaderSpecific(nkdm, DMTS_CLASSID, 2);
@@ -256,7 +271,8 @@ PetscErrorCode DMTSCopy(DMTS kdm, DMTS nkdm) {
 
 .seealso: `DMGetDMTSWrite()`
 @*/
-PetscErrorCode DMGetDMTS(DM dm, DMTS *tsdm) {
+PetscErrorCode DMGetDMTS(DM dm, DMTS *tsdm)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   *tsdm = (DMTS)dm->dmts;
@@ -286,7 +302,8 @@ PetscErrorCode DMGetDMTS(DM dm, DMTS *tsdm) {
 
 .seealso: `DMGetDMTS()`
 @*/
-PetscErrorCode DMGetDMTSWrite(DM dm, DMTS *tsdm) {
+PetscErrorCode DMGetDMTSWrite(DM dm, DMTS *tsdm)
+{
   DMTS sdm;
 
   PetscFunctionBegin;
@@ -322,7 +339,8 @@ PetscErrorCode DMGetDMTSWrite(DM dm, DMTS *tsdm) {
 
 .seealso: `DMGetDMTS()`, `TSSetDM()`
 @*/
-PetscErrorCode DMCopyDMTS(DM dmsrc, DM dmdest) {
+PetscErrorCode DMCopyDMTS(DM dmsrc, DM dmdest)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dmsrc, DM_CLASSID, 1);
   PetscValidHeaderSpecific(dmdest, DM_CLASSID, 2);
@@ -362,7 +380,8 @@ $     PetscErrorCode func(TS ts,PetscReal t,Vec u,Vec u_t,Vec F,ctx);
 
 .seealso: `DMTSSetContext()`, `TSSetIFunction()`, `DMTSSetJacobian()`
 @*/
-PetscErrorCode DMTSSetIFunction(DM dm, TSIFunction func, void *ctx) {
+PetscErrorCode DMTSSetIFunction(DM dm, TSIFunction func, void *ctx)
+{
   DMTS tsdm;
 
   PetscFunctionBegin;
@@ -393,7 +412,8 @@ PetscErrorCode DMTSSetIFunction(DM dm, TSIFunction func, void *ctx) {
 
 .seealso: `DMTSSetIFunction()`, `TSSetIFunction()`
 @*/
-PetscErrorCode DMTSSetIFunctionContextDestroy(DM dm, PetscErrorCode (*f)(void *)) {
+PetscErrorCode DMTSSetIFunctionContextDestroy(DM dm, PetscErrorCode (*f)(void *))
+{
   DMTS tsdm;
 
   PetscFunctionBegin;
@@ -403,7 +423,8 @@ PetscErrorCode DMTSSetIFunctionContextDestroy(DM dm, PetscErrorCode (*f)(void *)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMTSUnsetIFunctionContext_Internal(DM dm) {
+PetscErrorCode DMTSUnsetIFunctionContext_Internal(DM dm)
+{
   DMTS tsdm;
 
   PetscFunctionBegin;
@@ -433,7 +454,8 @@ PetscErrorCode DMTSUnsetIFunctionContext_Internal(DM dm) {
 
 .seealso: `DMTSSetContext()`, `DMTSSetFunction()`, `TSSetFunction()`
 @*/
-PetscErrorCode DMTSGetIFunction(DM dm, TSIFunction *func, void **ctx) {
+PetscErrorCode DMTSGetIFunction(DM dm, TSIFunction *func, void **ctx)
+{
   DMTS tsdm;
 
   PetscFunctionBegin;
@@ -475,7 +497,8 @@ $     PetscErrorCode fun(TS ts,PetscReal t,Vec U,Vec U_t,Vec U_tt,Vec F,ctx);
 
 .seealso: `TSSetI2Function()`
 @*/
-PetscErrorCode DMTSSetI2Function(DM dm, TSI2Function fun, void *ctx) {
+PetscErrorCode DMTSSetI2Function(DM dm, TSI2Function fun, void *ctx)
+{
   DMTS tsdm;
 
   PetscFunctionBegin;
@@ -510,7 +533,8 @@ PetscErrorCode DMTSSetI2Function(DM dm, TSI2Function fun, void *ctx) {
 
 .seealso: `TSSetI2FunctionContextDestroy()`, `DMTSSetI2Function()`, `TSSetI2Function()`
 @*/
-PetscErrorCode DMTSSetI2FunctionContextDestroy(DM dm, PetscErrorCode (*f)(void *)) {
+PetscErrorCode DMTSSetI2FunctionContextDestroy(DM dm, PetscErrorCode (*f)(void *))
+{
   DMTS tsdm;
 
   PetscFunctionBegin;
@@ -520,7 +544,8 @@ PetscErrorCode DMTSSetI2FunctionContextDestroy(DM dm, PetscErrorCode (*f)(void *
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMTSUnsetI2FunctionContext_Internal(DM dm) {
+PetscErrorCode DMTSUnsetI2FunctionContext_Internal(DM dm)
+{
   DMTS tsdm;
 
   PetscFunctionBegin;
@@ -550,7 +575,8 @@ PetscErrorCode DMTSUnsetI2FunctionContext_Internal(DM dm) {
 
 .seealso: `DMTSSetI2Function()`, `TSGetI2Function()`
 @*/
-PetscErrorCode DMTSGetI2Function(DM dm, TSI2Function *fun, void **ctx) {
+PetscErrorCode DMTSGetI2Function(DM dm, TSI2Function *fun, void **ctx)
+{
   DMTS tsdm;
 
   PetscFunctionBegin;
@@ -595,7 +621,8 @@ $    PetscErrorCode jac(TS ts,PetscReal t,Vec U,Vec U_t,Vec U_tt,PetscReal v,Pet
 
 .seealso: `TSSetI2Jacobian()`
 @*/
-PetscErrorCode DMTSSetI2Jacobian(DM dm, TSI2Jacobian jac, void *ctx) {
+PetscErrorCode DMTSSetI2Jacobian(DM dm, TSI2Jacobian jac, void *ctx)
+{
   DMTS tsdm;
 
   PetscFunctionBegin;
@@ -626,7 +653,8 @@ PetscErrorCode DMTSSetI2Jacobian(DM dm, TSI2Jacobian jac, void *ctx) {
 
 .seealso: `TSSetI2JacobianContextDestroy()`, `DMTSSetI2Jacobian()`, `TSSetI2Jacobian()`
 @*/
-PetscErrorCode DMTSSetI2JacobianContextDestroy(DM dm, PetscErrorCode (*f)(void *)) {
+PetscErrorCode DMTSSetI2JacobianContextDestroy(DM dm, PetscErrorCode (*f)(void *))
+{
   DMTS tsdm;
 
   PetscFunctionBegin;
@@ -636,7 +664,8 @@ PetscErrorCode DMTSSetI2JacobianContextDestroy(DM dm, PetscErrorCode (*f)(void *
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMTSUnsetI2JacobianContext_Internal(DM dm) {
+PetscErrorCode DMTSUnsetI2JacobianContext_Internal(DM dm)
+{
   DMTS tsdm;
 
   PetscFunctionBegin;
@@ -666,7 +695,8 @@ PetscErrorCode DMTSUnsetI2JacobianContext_Internal(DM dm) {
 
 .seealso: `DMTSSetI2Jacobian()`, `TSGetI2Jacobian()`
 @*/
-PetscErrorCode DMTSGetI2Jacobian(DM dm, TSI2Jacobian *jac, void **ctx) {
+PetscErrorCode DMTSGetI2Jacobian(DM dm, TSI2Jacobian *jac, void **ctx)
+{
   DMTS tsdm;
 
   PetscFunctionBegin;
@@ -708,7 +738,8 @@ $     PetscErrorCode func(TS ts,PetscReal t,Vec u,Vec F,void *ctx);
 
 .seealso: `DMTSSetContext()`, `TSSetRHSFunction()`, `DMTSSetJacobian()`
 @*/
-PetscErrorCode DMTSSetRHSFunction(DM dm, TSRHSFunction func, void *ctx) {
+PetscErrorCode DMTSSetRHSFunction(DM dm, TSRHSFunction func, void *ctx)
+{
   DMTS tsdm;
 
   PetscFunctionBegin;
@@ -747,7 +778,8 @@ PetscErrorCode DMTSSetRHSFunction(DM dm, TSRHSFunction func, void *ctx) {
 
 .seealso: `TSSetRHSFunctionContextDestroy()`, `DMTSSetRHSFunction()`, `TSSetRHSFunction()`
 @*/
-PetscErrorCode DMTSSetRHSFunctionContextDestroy(DM dm, PetscErrorCode (*f)(void *)) {
+PetscErrorCode DMTSSetRHSFunctionContextDestroy(DM dm, PetscErrorCode (*f)(void *))
+{
   DMTS tsdm;
 
   PetscFunctionBegin;
@@ -757,7 +789,8 @@ PetscErrorCode DMTSSetRHSFunctionContextDestroy(DM dm, PetscErrorCode (*f)(void 
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMTSUnsetRHSFunctionContext_Internal(DM dm) {
+PetscErrorCode DMTSUnsetRHSFunctionContext_Internal(DM dm)
+{
   DMTS tsdm;
 
   PetscFunctionBegin;
@@ -799,7 +832,8 @@ $     PetscErrorCode tvar(TS ts,Vec p,Vec c,void *ctx);
 
 .seealso: `TSSetTransientVariable()`, `DMTSGetTransientVariable()`, `DMTSSetIFunction()`, `DMTSSetIJacobian()`
 @*/
-PetscErrorCode DMTSSetTransientVariable(DM dm, TSTransientVariable tvar, void *ctx) {
+PetscErrorCode DMTSSetTransientVariable(DM dm, TSTransientVariable tvar, void *ctx)
+{
   DMTS dmts;
 
   PetscFunctionBegin;
@@ -826,7 +860,8 @@ PetscErrorCode DMTSSetTransientVariable(DM dm, TSTransientVariable tvar, void *c
 
 .seealso: `DMTSSetTransientVariable()`, `DMTSGetIFunction()`, `DMTSGetIJacobian()`
 @*/
-PetscErrorCode DMTSGetTransientVariable(DM dm, TSTransientVariable *tvar, void *ctx) {
+PetscErrorCode DMTSGetTransientVariable(DM dm, TSTransientVariable *tvar, void *ctx)
+{
   DMTS dmts;
 
   PetscFunctionBegin;
@@ -853,7 +888,8 @@ PetscErrorCode DMTSGetTransientVariable(DM dm, TSTransientVariable *tvar, void *
 
 .seealso: `DMTSSetContext()`, `TSSetFunction()`, `DMTSSetJacobian()`, `DMTSSetSolutionFunction()`
 @*/
-PetscErrorCode DMTSGetSolutionFunction(DM dm, TSSolutionFunction *func, void **ctx) {
+PetscErrorCode DMTSGetSolutionFunction(DM dm, TSSolutionFunction *func, void **ctx)
+{
   DMTS tsdm;
 
   PetscFunctionBegin;
@@ -891,7 +927,8 @@ $     PetscErrorCode f(TS ts,PetscReal t,Vec u,void *ctx);
 
 .seealso: `DMTSSetContext()`, `TSSetFunction()`, `DMTSSetJacobian()`, `DMTSGetSolutionFunction()`
 @*/
-PetscErrorCode DMTSSetSolutionFunction(DM dm, TSSolutionFunction func, void *ctx) {
+PetscErrorCode DMTSSetSolutionFunction(DM dm, TSSolutionFunction func, void *ctx)
+{
   DMTS tsdm;
 
   PetscFunctionBegin;
@@ -929,7 +966,8 @@ $     PetscErrorCode func (TS ts,PetscReal t,Vec f,void *ctx);
 
 .seealso: `DMTSSetContext()`, `TSSetFunction()`, `DMTSSetJacobian()`, `TSSetForcingFunction()`, `DMTSGetForcingFunction()`
 @*/
-PetscErrorCode DMTSSetForcingFunction(DM dm, TSForcingFunction f, void *ctx) {
+PetscErrorCode DMTSSetForcingFunction(DM dm, TSForcingFunction f, void *ctx)
+{
   DMTS tsdm;
 
   PetscFunctionBegin;
@@ -961,7 +999,8 @@ PetscErrorCode DMTSSetForcingFunction(DM dm, TSForcingFunction f, void *ctx) {
 
 .seealso: `DMTSSetContext()`, `TSSetFunction()`, `DMTSSetJacobian()`, `TSSetForcingFunction()`, `DMTSGetForcingFunction()`
 @*/
-PetscErrorCode DMTSGetForcingFunction(DM dm, TSForcingFunction *f, void **ctx) {
+PetscErrorCode DMTSGetForcingFunction(DM dm, TSForcingFunction *f, void **ctx)
+{
   DMTS tsdm;
 
   PetscFunctionBegin;
@@ -992,7 +1031,8 @@ PetscErrorCode DMTSGetForcingFunction(DM dm, TSForcingFunction *f, void **ctx) {
 
 .seealso: `DMTSSetContext()`, `DMTSSetRHSFunction()`, `TSSetRHSFunction()`
 @*/
-PetscErrorCode DMTSGetRHSFunction(DM dm, TSRHSFunction *func, void **ctx) {
+PetscErrorCode DMTSGetRHSFunction(DM dm, TSRHSFunction *func, void **ctx)
+{
   DMTS tsdm;
 
   PetscFunctionBegin;
@@ -1036,7 +1076,8 @@ $    PetscErrorCode f(TS ts,PetscReal t,Vec U,Vec U_t,PetscReal a,Mat Amat,Mat P
 
 .seealso: `DMTSSetContext()`, `TSSetRHSFunction()`, `DMTSGetJacobian()`, `TSSetIJacobian()`, `TSSetIFunction()`
 @*/
-PetscErrorCode DMTSSetIJacobian(DM dm, TSIJacobian func, void *ctx) {
+PetscErrorCode DMTSSetIJacobian(DM dm, TSIJacobian func, void *ctx)
+{
   DMTS tsdm;
 
   PetscFunctionBegin;
@@ -1075,7 +1116,8 @@ PetscErrorCode DMTSSetIJacobian(DM dm, TSIJacobian func, void *ctx) {
 
 .seealso: `TSSetIJacobianContextDestroy()`, `TSSetI2JacobianContextDestroy()`, `DMTSSetIJacobian()`, `TSSetIJacobian()`
 @*/
-PetscErrorCode DMTSSetIJacobianContextDestroy(DM dm, PetscErrorCode (*f)(void *)) {
+PetscErrorCode DMTSSetIJacobianContextDestroy(DM dm, PetscErrorCode (*f)(void *))
+{
   DMTS tsdm;
 
   PetscFunctionBegin;
@@ -1085,7 +1127,8 @@ PetscErrorCode DMTSSetIJacobianContextDestroy(DM dm, PetscErrorCode (*f)(void *)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMTSUnsetIJacobianContext_Internal(DM dm) {
+PetscErrorCode DMTSUnsetIJacobianContext_Internal(DM dm)
+{
   DMTS tsdm;
 
   PetscFunctionBegin;
@@ -1116,7 +1159,8 @@ PetscErrorCode DMTSUnsetIJacobianContext_Internal(DM dm) {
 
 .seealso: `DMTSSetContext()`, `TSSetFunction()`, `DMTSSetJacobian()`
 @*/
-PetscErrorCode DMTSGetIJacobian(DM dm, TSIJacobian *func, void **ctx) {
+PetscErrorCode DMTSGetIJacobian(DM dm, TSIJacobian *func, void **ctx)
+{
   DMTS tsdm;
 
   PetscFunctionBegin;
@@ -1158,7 +1202,8 @@ $     PetscErrorCode func(TS ts,PetscReal t,Vec u,Mat A,Mat B,void *ctx);
 
 .seealso: `DMTSSetContext()`, `TSSetFunction()`, `DMTSGetJacobian()`, `TSSetRHSJacobian()`
 @*/
-PetscErrorCode DMTSSetRHSJacobian(DM dm, TSRHSJacobian func, void *ctx) {
+PetscErrorCode DMTSSetRHSJacobian(DM dm, TSRHSJacobian func, void *ctx)
+{
   DMTS tsdm;
 
   PetscFunctionBegin;
@@ -1194,7 +1239,8 @@ PetscErrorCode DMTSSetRHSJacobian(DM dm, TSRHSJacobian func, void *ctx) {
 
 .seealso: `TSSetRHSJacobianContextDestroy()`, `DMTSSetRHSJacobian()`, `TSSetRHSJacobian()`
 @*/
-PetscErrorCode DMTSSetRHSJacobianContextDestroy(DM dm, PetscErrorCode (*f)(void *)) {
+PetscErrorCode DMTSSetRHSJacobianContextDestroy(DM dm, PetscErrorCode (*f)(void *))
+{
   DMTS tsdm;
 
   PetscFunctionBegin;
@@ -1204,7 +1250,8 @@ PetscErrorCode DMTSSetRHSJacobianContextDestroy(DM dm, PetscErrorCode (*f)(void 
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMTSUnsetRHSJacobianContext_Internal(DM dm) {
+PetscErrorCode DMTSUnsetRHSJacobianContext_Internal(DM dm)
+{
   DMTS tsdm;
 
   PetscFunctionBegin;
@@ -1235,7 +1282,8 @@ PetscErrorCode DMTSUnsetRHSJacobianContext_Internal(DM dm) {
 
 .seealso: `DMTSSetContext()`, `TSSetRHSFunction()`, `DMTSSetRHSJacobian()`, `TSSetRHSJacobian()`
 @*/
-PetscErrorCode DMTSGetRHSJacobian(DM dm, TSRHSJacobian *func, void **ctx) {
+PetscErrorCode DMTSGetRHSJacobian(DM dm, TSRHSJacobian *func, void **ctx)
+{
   DMTS tsdm;
 
   PetscFunctionBegin;
@@ -1263,7 +1311,8 @@ PetscErrorCode DMTSGetRHSJacobian(DM dm, TSRHSJacobian *func, void **ctx) {
 
 .seealso: `DMTSSetContext()`, `TSSetFunction()`, `DMTSSetJacobian()`
 @*/
-PetscErrorCode DMTSSetIFunctionSerialize(DM dm, PetscErrorCode (*view)(void *, PetscViewer), PetscErrorCode (*load)(void **, PetscViewer)) {
+PetscErrorCode DMTSSetIFunctionSerialize(DM dm, PetscErrorCode (*view)(void *, PetscViewer), PetscErrorCode (*load)(void **, PetscViewer))
+{
   DMTS tsdm;
 
   PetscFunctionBegin;
@@ -1288,7 +1337,8 @@ PetscErrorCode DMTSSetIFunctionSerialize(DM dm, PetscErrorCode (*view)(void *, P
 
 .seealso: `DMTSSetContext()`, `TSSetFunction()`, `DMTSSetJacobian()`
 @*/
-PetscErrorCode DMTSSetIJacobianSerialize(DM dm, PetscErrorCode (*view)(void *, PetscViewer), PetscErrorCode (*load)(void **, PetscViewer)) {
+PetscErrorCode DMTSSetIJacobianSerialize(DM dm, PetscErrorCode (*view)(void *, PetscViewer), PetscErrorCode (*load)(void **, PetscViewer))
+{
   DMTS tsdm;
 
   PetscFunctionBegin;

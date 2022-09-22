@@ -8,7 +8,8 @@ static char help[] = "Illustrate the use of MatResetPreallocation.\n";
 
 #include "petscmat.h"
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   Mat      A;
   MPI_Comm comm;
   PetscInt n = 5, m = 5, *dnnz, *onnz, i, rstart, rend, M, N;

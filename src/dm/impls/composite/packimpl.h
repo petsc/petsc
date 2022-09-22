@@ -1,8 +1,8 @@
 #if !defined(_packimpl_h)
-#define _packimpl_h
+  #define _packimpl_h
 
-#include <petscdmcomposite.h>     /*I "petscdmcomposite.h" I*/
-#include <petsc/private/dmimpl.h> /*I      "petscdm.h"     I*/
+  #include <petscdmcomposite.h>     /*I "petscdmcomposite.h" I*/
+  #include <petsc/private/dmimpl.h> /*I      "petscdm.h"     I*/
 
 /*
    rstart is where an array/subvector starts in the global parallel vector, so arrays

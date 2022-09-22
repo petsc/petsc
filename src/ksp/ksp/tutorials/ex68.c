@@ -10,7 +10,8 @@
       Plots the L_2 norm of the error (evaluated via the GLL nodes and weights) as a function of n.
 
 */
-PetscErrorCode ComputeSolution(PetscInt n, PetscReal *nodes, PetscReal *weights, Vec x) {
+PetscErrorCode ComputeSolution(PetscInt n, PetscReal *nodes, PetscReal *weights, Vec x)
+{
   PetscInt     i, m;
   PetscScalar *xx;
   PetscReal    xd;
@@ -30,7 +31,8 @@ PetscErrorCode ComputeSolution(PetscInt n, PetscReal *nodes, PetscReal *weights,
       Evaluates \integral_{-1}^{1} f*v_i  where v_i is the ith basis polynomial via the GLL nodes and weights, since the v_i
       basis function is zero at all nodes except the ith one the integral is simply the weight_i * f(node_i)
 */
-PetscErrorCode ComputeRhs(PetscInt n, PetscReal *nodes, PetscReal *weights, Vec b) {
+PetscErrorCode ComputeRhs(PetscInt n, PetscReal *nodes, PetscReal *weights, Vec b)
+{
   PetscInt     i, m;
   PetscScalar *bb;
   PetscReal    xd;
@@ -46,7 +48,8 @@ PetscErrorCode ComputeRhs(PetscInt n, PetscReal *nodes, PetscReal *weights, Vec 
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   PetscReal    *nodes;
   PetscReal    *weights;
   PetscInt      N = 80, n;

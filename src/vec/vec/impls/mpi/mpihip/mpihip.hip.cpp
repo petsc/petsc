@@ -19,7 +19,8 @@
 .seealso: `VecCreate()`, `VecSetType()`, `VecSetFromOptions()`, `VecCreateMPIWithArray()`, `VECSEQHIP`, `VECMPIHIP`, `VECSTANDARD`, `VecType`, `VecCreateMPI()`, `VecSetPinnedMemoryMin()`
 M*/
 
-PetscErrorCode VecDestroy_MPIHIP(Vec v) {
+PetscErrorCode VecDestroy_MPIHIP(Vec v)
+{
   Vec_MPI *vecmpi = (Vec_MPI *)v->data;
   Vec_HIP *vechip;
 
@@ -43,7 +44,8 @@ PetscErrorCode VecDestroy_MPIHIP(Vec v) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode VecNorm_MPIHIP(Vec xin, NormType type, PetscReal *z) {
+PetscErrorCode VecNorm_MPIHIP(Vec xin, NormType type, PetscReal *z)
+{
   PetscReal sum, work = 0.0;
 
   PetscFunctionBegin;
@@ -73,7 +75,8 @@ PetscErrorCode VecNorm_MPIHIP(Vec xin, NormType type, PetscReal *z) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode VecDot_MPIHIP(Vec xin, Vec yin, PetscScalar *z) {
+PetscErrorCode VecDot_MPIHIP(Vec xin, Vec yin, PetscScalar *z)
+{
   PetscScalar sum, work;
 
   PetscFunctionBegin;
@@ -83,7 +86,8 @@ PetscErrorCode VecDot_MPIHIP(Vec xin, Vec yin, PetscScalar *z) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode VecTDot_MPIHIP(Vec xin, Vec yin, PetscScalar *z) {
+PetscErrorCode VecTDot_MPIHIP(Vec xin, Vec yin, PetscScalar *z)
+{
   PetscScalar sum, work;
 
   PetscFunctionBegin;
@@ -93,7 +97,8 @@ PetscErrorCode VecTDot_MPIHIP(Vec xin, Vec yin, PetscScalar *z) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode VecMDot_MPIHIP(Vec xin, PetscInt nv, const Vec y[], PetscScalar *z) {
+PetscErrorCode VecMDot_MPIHIP(Vec xin, PetscInt nv, const Vec y[], PetscScalar *z)
+{
   PetscScalar awork[128], *work = awork;
 
   PetscFunctionBegin;
@@ -115,7 +120,8 @@ PetscErrorCode VecMDot_MPIHIP(Vec xin, PetscInt nv, const Vec y[], PetscScalar *
 .seealso: `VecCreate()`, `VecSetType()`, `VecSetFromOptions()`, `VecCreateMPIWithArray()`, `VECMPI`, `VecType`, `VecCreateMPI()`, `VecSetPinnedMemoryMin()`
 M*/
 
-PetscErrorCode VecDuplicate_MPIHIP(Vec win, Vec *v) {
+PetscErrorCode VecDuplicate_MPIHIP(Vec win, Vec *v)
+{
   Vec_MPI     *vw, *w = (Vec_MPI *)win->data;
   PetscScalar *array;
 
@@ -152,7 +158,8 @@ PetscErrorCode VecDuplicate_MPIHIP(Vec win, Vec *v) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode VecDotNorm2_MPIHIP(Vec s, Vec t, PetscScalar *dp, PetscScalar *nm) {
+PetscErrorCode VecDotNorm2_MPIHIP(Vec s, Vec t, PetscScalar *dp, PetscScalar *nm)
+{
   PetscScalar work[2], sum[2];
 
   PetscFunctionBegin;
@@ -163,7 +170,8 @@ PetscErrorCode VecDotNorm2_MPIHIP(Vec s, Vec t, PetscScalar *dp, PetscScalar *nm
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode VecCreate_MPIHIP(Vec vv) {
+PetscErrorCode VecCreate_MPIHIP(Vec vv)
+{
   PetscFunctionBegin;
   PetscCall(PetscDeviceInitialize(PETSC_DEVICE_HIP));
   PetscCall(PetscLayoutSetUp(vv->map));
@@ -176,7 +184,8 @@ PetscErrorCode VecCreate_MPIHIP(Vec vv) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode VecCreate_HIP(Vec v) {
+PetscErrorCode VecCreate_HIP(Vec v)
+{
   PetscMPIInt size;
 
   PetscFunctionBegin;
@@ -213,7 +222,8 @@ PetscErrorCode VecCreate_HIP(Vec v) {
            `VecCreateMPIWithArray()`, `VecCreateGhostWithArray()`, `VecMPISetGhost()`
 
  @*/
-PetscErrorCode VecCreateMPIHIP(MPI_Comm comm, PetscInt n, PetscInt N, Vec *v) {
+PetscErrorCode VecCreateMPIHIP(MPI_Comm comm, PetscInt n, PetscInt N, Vec *v)
+{
   PetscFunctionBegin;
   PetscCall(VecCreate(comm, v));
   PetscCall(VecSetSizes(*v, n, N));
@@ -254,7 +264,8 @@ PetscErrorCode VecCreateMPIHIP(MPI_Comm comm, PetscInt n, PetscInt N, Vec *v) {
           `VecCreateMPI()`, `VecCreateGhostWithArray()`, `VecPlaceArray()`
 
 @*/
-PetscErrorCode VecCreateMPIHIPWithArray(MPI_Comm comm, PetscInt bs, PetscInt n, PetscInt N, const PetscScalar array[], Vec *vv) {
+PetscErrorCode VecCreateMPIHIPWithArray(MPI_Comm comm, PetscInt bs, PetscInt n, PetscInt N, const PetscScalar array[], Vec *vv)
+{
   PetscFunctionBegin;
   PetscCheck(n != PETSC_DECIDE, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Must set local size of vector");
   PetscCall(PetscDeviceInitialize(PETSC_DEVICE_HIP));
@@ -300,7 +311,8 @@ PetscErrorCode VecCreateMPIHIPWithArray(MPI_Comm comm, PetscInt bs, PetscInt n, 
           `VecCreateMPI()`, `VecCreateGhostWithArray()`, `VecHIPPlaceArray()`, `VecPlaceArray()`,
           `VecHIPAllocateCheckHost()`
 @*/
-PetscErrorCode VecCreateMPIHIPWithArrays(MPI_Comm comm, PetscInt bs, PetscInt n, PetscInt N, const PetscScalar cpuarray[], const PetscScalar gpuarray[], Vec *vv) {
+PetscErrorCode VecCreateMPIHIPWithArrays(MPI_Comm comm, PetscInt bs, PetscInt n, PetscInt N, const PetscScalar cpuarray[], const PetscScalar gpuarray[], Vec *vv)
+{
   PetscFunctionBegin;
   PetscCall(VecCreateMPIHIPWithArray(comm, bs, n, N, gpuarray, vv));
 
@@ -321,7 +333,8 @@ PetscErrorCode VecCreateMPIHIPWithArrays(MPI_Comm comm, PetscInt bs, PetscInt n,
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode VecMax_MPIHIP(Vec xin, PetscInt *idx, PetscReal *z) {
+PetscErrorCode VecMax_MPIHIP(Vec xin, PetscInt *idx, PetscReal *z)
+{
   PetscReal work;
 
   PetscFunctionBegin;
@@ -347,7 +360,8 @@ PetscErrorCode VecMax_MPIHIP(Vec xin, PetscInt *idx, PetscReal *z) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode VecMin_MPIHIP(Vec xin, PetscInt *idx, PetscReal *z) {
+PetscErrorCode VecMin_MPIHIP(Vec xin, PetscInt *idx, PetscReal *z)
+{
   PetscReal work;
 
   PetscFunctionBegin;
@@ -373,7 +387,8 @@ PetscErrorCode VecMin_MPIHIP(Vec xin, PetscInt *idx, PetscReal *z) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode VecBindToCPU_MPIHIP(Vec V, PetscBool bind) {
+PetscErrorCode VecBindToCPU_MPIHIP(Vec V, PetscBool bind)
+{
   PetscFunctionBegin;
   V->boundtocpu = bind;
   if (bind) {
@@ -464,7 +479,8 @@ PetscErrorCode VecBindToCPU_MPIHIP(Vec V, PetscBool bind) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode VecCreate_MPIHIP_Private(Vec vv, PetscBool alloc, PetscInt nghost, const PetscScalar array[]) {
+PetscErrorCode VecCreate_MPIHIP_Private(Vec vv, PetscBool alloc, PetscInt nghost, const PetscScalar array[])
+{
   Vec_HIP *vechip;
 
   PetscFunctionBegin;

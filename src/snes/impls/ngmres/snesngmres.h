@@ -1,4 +1,4 @@
-#if !defined(_SNESNGMRES_H)
+#ifndef _SNESNGMRES_H
 #define _SNESNGMRES_H
 
 #include <petsc/private/snesimpl.h>

@@ -31,7 +31,8 @@
 
 .seealso: `PetscCommGetNewTag()`
 @*/
-PetscErrorCode PetscObjectGetNewTag(PetscObject obj, PetscMPIInt *tag) {
+PetscErrorCode PetscObjectGetNewTag(PetscObject obj, PetscMPIInt *tag)
+{
   PetscFunctionBegin;
   PetscCall(PetscCommGetNewTag(obj->comm, tag));
   PetscFunctionReturn(0);
@@ -55,7 +56,8 @@ PetscErrorCode PetscObjectGetNewTag(PetscObject obj, PetscMPIInt *tag) {
 
 .seealso: `PetscObjectGetNewTag()`, `PetscCommDuplicate()`
 @*/
-PetscErrorCode PetscCommGetNewTag(MPI_Comm comm, PetscMPIInt *tag) {
+PetscErrorCode PetscCommGetNewTag(MPI_Comm comm, PetscMPIInt *tag)
+{
   PetscCommCounter *counter;
   PetscMPIInt      *maxval, flg;
 
@@ -104,7 +106,8 @@ Level: developer
 
 .seealso: `PetscObjectGetNewTag()`, `PetscCommGetNewTag()`, `PetscCommDestroy()`, `PetscCommRestoreComm()`
 @*/
-PetscErrorCode PetscCommGetComm(MPI_Comm comm_in, MPI_Comm *comm_out) {
+PetscErrorCode PetscCommGetComm(MPI_Comm comm_in, MPI_Comm *comm_out)
+{
   PetscCommCounter *counter;
   PetscMPIInt       flg;
 
@@ -140,7 +143,8 @@ Level: developer
 
 .seealso: `PetscObjectGetNewTag()`, `PetscCommGetNewTag()`, `PetscCommDestroy()`, `PetscCommRestoreComm()`
 @*/
-PetscErrorCode PetscCommRestoreComm(MPI_Comm comm_in, MPI_Comm *comm_out) {
+PetscErrorCode PetscCommRestoreComm(MPI_Comm comm_in, MPI_Comm *comm_out)
+{
   PetscCommCounter      *counter;
   PetscMPIInt            flg;
   struct PetscCommStash *pcomms, *ncomm;
@@ -188,7 +192,8 @@ Level: developer
 
 .seealso: `PetscObjectGetNewTag()`, `PetscCommGetNewTag()`, `PetscCommDestroy()`
 @*/
-PetscErrorCode PetscCommDuplicate(MPI_Comm comm_in, MPI_Comm *comm_out, PetscMPIInt *first_tag) {
+PetscErrorCode PetscCommDuplicate(MPI_Comm comm_in, MPI_Comm *comm_out, PetscMPIInt *first_tag)
+{
   PetscCommCounter *counter;
   PetscMPIInt      *maxval, flg;
 
@@ -263,7 +268,8 @@ PetscErrorCode PetscCommDuplicate(MPI_Comm comm_in, MPI_Comm *comm_out, PetscMPI
 
 .seealso: `PetscCommDuplicate()`
 @*/
-PetscErrorCode PetscCommDestroy(MPI_Comm *comm) {
+PetscErrorCode PetscCommDestroy(MPI_Comm *comm)
+{
   PetscCommCounter *counter;
   PetscMPIInt       flg;
   MPI_Comm          icomm = *comm, ocomm;
@@ -327,7 +333,8 @@ PetscErrorCode PetscCommDestroy(MPI_Comm *comm) {
     This is needed when PETSc is used with certain languages that do garbage collection to manage object life cycles.
 
 @*/
-PetscErrorCode PetscObjectsListGetGlobalNumbering(MPI_Comm comm, PetscInt len, PetscObject *objlist, PetscInt *count, PetscInt *numbering) {
+PetscErrorCode PetscObjectsListGetGlobalNumbering(MPI_Comm comm, PetscInt len, PetscObject *objlist, PetscInt *count, PetscInt *numbering)
+{
   PetscInt    i, roots, offset;
   PetscMPIInt size, rank;
 

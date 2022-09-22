@@ -8,7 +8,7 @@ static char help[] = "Runaway electron model with Landau collision operator\n\n"
 #include "petsc/private/petscimpl.h"
 
 #if defined(PETSC_HAVE_CUDA_NVTX)
-#include <nvToolsExt.h>
+  #include <nvToolsExt.h>
 #endif
 
 /* data for runaway electron model */
@@ -42,7 +42,8 @@ static const PetscReal kev_joul = 6.241506479963235e+15; /* 1/1000e */
 
 #define RE_CUT 3.
 /* < v, u_re * v * q > */
-static void f0_j_re(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar *f0) {
+static void f0_j_re(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar *f0)
+{
   PetscReal n_e = PetscRealPart(u[0]);
   if (dim == 2) {
     if (x[1] > RE_CUT || x[1] < -RE_CUT) {                    /* simply a cutoff for REs. v_|| > 3 v(T_e) */
@@ -60,7 +61,8 @@ static void f0_j_re(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uO
 }
 
 /* sum < v, u*v*q > */
-static void f0_jz_sum(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar q[], PetscScalar *f0) {
+static void f0_jz_sum(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar q[], PetscScalar *f0)
+{
   PetscInt ii;
   f0[0] = 0;
   if (dim == 2) {
@@ -71,24 +73,29 @@ static void f0_jz_sum(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt 
 }
 
 /* < v, n_e > */
-static void f0_n(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar *f0) {
+static void f0_n(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar *f0)
+{
   PetscInt ii = (PetscInt)PetscRealPart(constants[0]);
   if (dim == 2) f0[0] = 2. * PETSC_PI * x[0] * u[ii];
   else f0[0] = u[ii];
 }
 
 /* < v, n_e v_|| > */
-static void f0_vz(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar *f0) {
+static void f0_vz(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar *f0)
+{
   PetscInt ii = (PetscInt)PetscRealPart(constants[0]);
   if (dim == 2) f0[0] = u[ii] * 2. * PETSC_PI * x[0] * x[1]; /* n r v_|| */
   else f0[0] = u[ii] * x[2];                                 /* n v_|| */
 }
 
 /* < v, n_e (v-shift) > */
-static void f0_ve_shift(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar *f0) {
+static void f0_ve_shift(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar *f0)
+{
   PetscReal vz = numConstants > 0 ? PetscRealPart(constants[0]) : 0;
   if (dim == 2) *f0 = u[0] * 2. * PETSC_PI * x[0] * PetscSqrtReal(x[0] * x[0] + (x[1] - vz) * (x[1] - vz)); /* n r v */
-  else { *f0 = u[0] * PetscSqrtReal(x[0] * x[0] + x[1] * x[1] + (x[2] - vz) * (x[2] - vz)); /* n v */ }
+  else {
+    *f0 = u[0] * PetscSqrtReal(x[0] * x[0] + x[1] * x[1] + (x[2] - vz) * (x[2] - vz)); /* n v */
+  }
 }
 
 /* CalculateE - Calculate the electric field  */
@@ -97,7 +104,8 @@ static void f0_ve_shift(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscIn
 /*  lnLambda --   */
 /*  eps0     --  */
 /*  E        -- output E, input \hat E */
-static PetscReal CalculateE(PetscReal Tev, PetscReal n, PetscReal lnLambda, PetscReal eps0, PetscReal *E) {
+static PetscReal CalculateE(PetscReal Tev, PetscReal n, PetscReal lnLambda, PetscReal eps0, PetscReal *E)
+{
   PetscReal c, e, m;
 
   PetscFunctionBegin;
@@ -118,20 +126,23 @@ static PetscReal CalculateE(PetscReal Tev, PetscReal n, PetscReal lnLambda, Pets
   PetscFunctionReturn(0);
 }
 
-static PetscReal Spitzer(PetscReal m_e, PetscReal e, PetscReal Z, PetscReal epsilon0, PetscReal lnLam, PetscReal kTe_joules) {
+static PetscReal Spitzer(PetscReal m_e, PetscReal e, PetscReal Z, PetscReal epsilon0, PetscReal lnLam, PetscReal kTe_joules)
+{
   PetscReal Fz = (1 + 1.198 * Z + 0.222 * Z * Z) / (1 + 2.966 * Z + 0.753 * Z * Z), eta;
   eta          = Fz * 4. / 3. * PetscSqrtReal(2. * PETSC_PI) * Z * PetscSqrtReal(m_e) * PetscSqr(e) * lnLam * PetscPowReal(4 * PETSC_PI * epsilon0, -2.) * PetscPowReal(kTe_joules, -1.5);
   return eta;
 }
 
 /*  */
-static PetscErrorCode testNone(TS ts, Vec X, PetscInt stepi, PetscReal time, PetscBool islast, LandauCtx *ctx, REctx *rectx) {
+static PetscErrorCode testNone(TS ts, Vec X, PetscInt stepi, PetscReal time, PetscBool islast, LandauCtx *ctx, REctx *rectx)
+{
   PetscFunctionBeginUser;
   PetscFunctionReturn(0);
 }
 
 /*  */
-static PetscErrorCode testSpitzer(TS ts, Vec X, PetscInt stepi, PetscReal time, PetscBool islast, LandauCtx *ctx, REctx *rectx) {
+static PetscErrorCode testSpitzer(TS ts, Vec X, PetscInt stepi, PetscReal time, PetscBool islast, LandauCtx *ctx, REctx *rectx)
+{
   PetscInt          ii, nDMs;
   PetscDS           prob;
   static PetscReal  old_ratio = 1e10;
@@ -172,7 +183,7 @@ static PetscErrorCode testSpitzer(TS ts, Vec X, PetscInt stepi, PetscReal time, 
   PetscCall(DMPlexComputeIntegralFEM(plexe, XsubArray[LAND_PACK_IDX(ctx->batch_view_idx, 0)], tt, NULL));
   n_e = PetscRealPart(tt[0]) * ctx->n_0;
   /* Z */
-  Z   = -ctx->charges[1] / ctx->charges[0];
+  Z = -ctx->charges[1] / ctx->charges[0];
   /* remove drift */
   if (0) {
     user[0] = 0; // electrons
@@ -225,19 +236,21 @@ static PetscErrorCode testSpitzer(TS ts, Vec X, PetscInt stepi, PetscReal time, 
 }
 
 static const double ppp = 2;
-static void         f0_0_diff_lp(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar *f0) {
-          LandauCtx      *ctx   = (LandauCtx *)constants;
-          REctx          *rectx = (REctx *)ctx->data;
-          PetscInt        ii    = rectx->idx, i;
-          const PetscReal kT_m  = ctx->k * ctx->thermal_temps[ii] / ctx->masses[ii]; /* kT/m */
-          const PetscReal n     = ctx->n[ii];
-          PetscReal       diff, f_maxwell, v2 = 0, theta = 2 * kT_m / (ctx->v_0 * ctx->v_0); /* theta = 2kT/mc^2 */
-          for (i = 0; i < dim; ++i) v2 += x[i] * x[i];
+static void f0_0_diff_lp(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar *f0)
+{
+  LandauCtx      *ctx   = (LandauCtx *)constants;
+  REctx          *rectx = (REctx *)ctx->data;
+  PetscInt        ii    = rectx->idx, i;
+  const PetscReal kT_m  = ctx->k * ctx->thermal_temps[ii] / ctx->masses[ii]; /* kT/m */
+  const PetscReal n     = ctx->n[ii];
+  PetscReal       diff, f_maxwell, v2 = 0, theta = 2 * kT_m / (ctx->v_0 * ctx->v_0); /* theta = 2kT/mc^2 */
+  for (i = 0; i < dim; ++i) v2 += x[i] * x[i];
   f_maxwell = n * PetscPowReal(PETSC_PI * theta, -1.5) * (PetscExpReal(-v2 / theta));
-          diff      = 2. * PETSC_PI * x[0] * (PetscRealPart(u[ii]) - f_maxwell);
-          f0[0]     = PetscPowReal(diff, ppp);
+  diff      = 2. * PETSC_PI * x[0] * (PetscRealPart(u[ii]) - f_maxwell);
+  f0[0]     = PetscPowReal(diff, ppp);
 }
-static void f0_0_maxwellian_lp(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar *f0) {
+static void f0_0_maxwellian_lp(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar *f0)
+{
   LandauCtx      *ctx   = (LandauCtx *)constants;
   REctx          *rectx = (REctx *)ctx->data;
   PetscInt        ii    = rectx->idx, i;
@@ -250,7 +263,8 @@ static void f0_0_maxwellian_lp(PetscInt dim, PetscInt Nf, PetscInt NfAux, const 
 }
 
 /*  */
-static PetscErrorCode testStable(TS ts, Vec X, PetscInt stepi, PetscReal time, PetscBool islast, LandauCtx *ctx, REctx *rectx) {
+static PetscErrorCode testStable(TS ts, Vec X, PetscInt stepi, PetscReal time, PetscBool islast, LandauCtx *ctx, REctx *rectx)
+{
   PetscDS     prob;
   Vec         X2;
   PetscReal   ediff, idiff = 0, lpm0, lpm1 = 1;
@@ -295,7 +309,8 @@ static PetscErrorCode testStable(TS ts, Vec X, PetscInt stepi, PetscReal time, P
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode EInduction(Vec X, Vec X_t, PetscInt step, PetscReal time, LandauCtx *ctx, PetscReal *a_E) {
+static PetscErrorCode EInduction(Vec X, Vec X_t, PetscInt step, PetscReal time, LandauCtx *ctx, PetscReal *a_E)
+{
   REctx      *rectx = (REctx *)ctx->data;
   PetscInt    ii;
   DM          dm, plex;
@@ -315,18 +330,20 @@ static PetscErrorCode EInduction(Vec X, Vec X_t, PetscInt step, PetscReal time, 
   PetscCall(DMPlexComputeIntegralFEM(plex, X_t, tt, NULL));
   dJ_dt = -ctx->n_0 * PetscRealPart(tt[0]) / ctx->t_0;
   /* E induction */
-  *a_E  = -rectx->L * dJ_dt + rectx->Ez_initial;
+  *a_E = -rectx->L * dJ_dt + rectx->Ez_initial;
   PetscCall(DMDestroy(&plex));
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode EConstant(Vec X, Vec X_t, PetscInt step, PetscReal time, LandauCtx *ctx, PetscReal *a_E) {
+static PetscErrorCode EConstant(Vec X, Vec X_t, PetscInt step, PetscReal time, LandauCtx *ctx, PetscReal *a_E)
+{
   PetscFunctionBeginUser;
   *a_E = ctx->Ez;
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode ENone(Vec X, Vec X_t, PetscInt step, PetscReal time, LandauCtx *ctx, PetscReal *a_E) {
+static PetscErrorCode ENone(Vec X, Vec X_t, PetscInt step, PetscReal time, LandauCtx *ctx, PetscReal *a_E)
+{
   PetscFunctionBeginUser;
   *a_E = 0;
   PetscFunctionReturn(0);
@@ -345,7 +362,8 @@ static PetscErrorCode ENone(Vec X, Vec X_t, PetscInt step, PetscReal time, Landa
    Output Parameter:
 .  F - function vector
  */
-static PetscErrorCode FormSource(TS ts, PetscReal ftime, Vec X_dummmy, Vec F, void *dummy) {
+static PetscErrorCode FormSource(TS ts, PetscReal ftime, Vec X_dummmy, Vec F, void *dummy)
+{
   PetscReal  new_imp_rate;
   LandauCtx *ctx;
   DM         pack;
@@ -387,7 +405,8 @@ static PetscErrorCode FormSource(TS ts, PetscReal ftime, Vec X_dummmy, Vec F, vo
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode Monitor(TS ts, PetscInt stepi, PetscReal time, Vec X, void *actx) {
+PetscErrorCode Monitor(TS ts, PetscInt stepi, PetscReal time, Vec X, void *actx)
+{
   LandauCtx        *ctx   = (LandauCtx *)actx; /* user-defined application context */
   REctx            *rectx = (REctx *)ctx->data;
   DM                pack  = NULL;
@@ -457,7 +476,8 @@ PetscErrorCode Monitor(TS ts, PetscInt stepi, PetscReal time, Vec X, void *actx)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PreStep(TS ts) {
+PetscErrorCode PreStep(TS ts)
+{
   LandauCtx *ctx;
   REctx     *rectx;
   DM         dm;
@@ -479,7 +499,8 @@ PetscErrorCode PreStep(TS ts) {
 }
 
 /* model for source of non-ionized impurities, profile provided by model, in du/dt form in normalized units (tricky because n_0 is normalized with electrons) */
-static PetscErrorCode stepSrc(PetscReal time, PetscReal *rho, LandauCtx *ctx) {
+static PetscErrorCode stepSrc(PetscReal time, PetscReal *rho, LandauCtx *ctx)
+{
   REctx *rectx = (REctx *)ctx->data;
 
   PetscFunctionBeginUser;
@@ -487,12 +508,14 @@ static PetscErrorCode stepSrc(PetscReal time, PetscReal *rho, LandauCtx *ctx) {
   else *rho = 0.;
   PetscFunctionReturn(0);
 }
-static PetscErrorCode zeroSrc(PetscReal time, PetscReal *rho, LandauCtx *ctx) {
+static PetscErrorCode zeroSrc(PetscReal time, PetscReal *rho, LandauCtx *ctx)
+{
   PetscFunctionBeginUser;
   *rho = 0.;
   PetscFunctionReturn(0);
 }
-static PetscErrorCode pulseSrc(PetscReal time, PetscReal *rho, LandauCtx *ctx) {
+static PetscErrorCode pulseSrc(PetscReal time, PetscReal *rho, LandauCtx *ctx)
+{
   REctx *rectx = (REctx *)ctx->data;
 
   PetscFunctionBeginUser;
@@ -508,7 +531,8 @@ static PetscErrorCode pulseSrc(PetscReal time, PetscReal *rho, LandauCtx *ctx) {
 
 #undef __FUNCT__
 #define __FUNCT__ "ProcessREOptions"
-static PetscErrorCode ProcessREOptions(REctx *rectx, const LandauCtx *ctx, DM dm, const char prefix[]) {
+static PetscErrorCode ProcessREOptions(REctx *rectx, const LandauCtx *ctx, DM dm, const char prefix[])
+{
   PetscFunctionList plist = NULL, testlist = NULL, elist = NULL;
   char              pname[256], testname[256], ename[256];
   DM                dm_dummy;
@@ -593,7 +617,8 @@ static PetscErrorCode ProcessREOptions(REctx *rectx, const LandauCtx *ctx, DM dm
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   DM         pack;
   Vec        X;
   PetscInt   dim = 2, nDMs;

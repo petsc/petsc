@@ -38,7 +38,8 @@
 
 .seealso: `KSPAppendOptionsPrefix()`, `KSPGetOptionsPrefix()`
 @*/
-PetscErrorCode KSPSetOptionsPrefix(KSP ksp, const char prefix[]) {
+PetscErrorCode KSPSetOptionsPrefix(KSP ksp, const char prefix[])
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
   if (!ksp->pc) PetscCall(KSPGetPC(ksp, &ksp->pc));
@@ -65,7 +66,8 @@ PetscErrorCode KSPSetOptionsPrefix(KSP ksp, const char prefix[]) {
 
 .seealso: `KSPSetOptionsPrefix()`, `KSPGetOptionsPrefix()`
 @*/
-PetscErrorCode KSPAppendOptionsPrefix(KSP ksp, const char prefix[]) {
+PetscErrorCode KSPAppendOptionsPrefix(KSP ksp, const char prefix[])
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
   if (!ksp->pc) PetscCall(KSPGetPC(ksp, &ksp->pc));
@@ -91,7 +93,8 @@ PetscErrorCode KSPAppendOptionsPrefix(KSP ksp, const char prefix[]) {
 
 .seealso: `KSPSetOptionsPrefix()`, `KSPAppendOptionsPrefix()`, `KSPSetUseFischerGuess()`, `KSPSetGuess()`, `KSPGetGuess()`
 @*/
-PetscErrorCode KSPSetUseFischerGuess(KSP ksp, PetscInt model, PetscInt size) {
+PetscErrorCode KSPSetUseFischerGuess(KSP ksp, PetscInt model, PetscInt size)
+{
   KSPGuess guess;
 
   PetscFunctionBegin;
@@ -124,7 +127,8 @@ PetscErrorCode KSPSetUseFischerGuess(KSP ksp, PetscInt model, PetscInt size) {
 
 .seealso: `KSPSetOptionsPrefix()`, `KSPAppendOptionsPrefix()`, `KSPSetUseFischerGuess()`, `KSPGetGuess()`
 @*/
-PetscErrorCode KSPSetGuess(KSP ksp, KSPGuess guess) {
+PetscErrorCode KSPSetGuess(KSP ksp, KSPGuess guess)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
   PetscValidHeaderSpecific(guess, KSPGUESS_CLASSID, 2);
@@ -150,7 +154,8 @@ PetscErrorCode KSPSetGuess(KSP ksp, KSPGuess guess) {
 
 .seealso: `KSPSetOptionsPrefix()`, `KSPAppendOptionsPrefix()`, `KSPSetUseFischerGuess()`, `KSPSetGuess()`
 @*/
-PetscErrorCode KSPGetGuess(KSP ksp, KSPGuess *guess) {
+PetscErrorCode KSPGetGuess(KSP ksp, KSPGuess *guess)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
   PetscValidPointer(guess, 2);
@@ -186,14 +191,16 @@ PetscErrorCode KSPGetGuess(KSP ksp, KSPGuess *guess) {
 
 .seealso: `KSPSetOptionsPrefix()`, `KSPAppendOptionsPrefix()`
 @*/
-PetscErrorCode KSPGetOptionsPrefix(KSP ksp, const char *prefix[]) {
+PetscErrorCode KSPGetOptionsPrefix(KSP ksp, const char *prefix[])
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
   PetscCall(PetscObjectGetOptionsPrefix((PetscObject)ksp, prefix));
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscViewerAndFormatCreate_Internal(PetscViewer viewer, PetscViewerFormat format, void *ctx, PetscViewerAndFormat **vf) {
+static PetscErrorCode PetscViewerAndFormatCreate_Internal(PetscViewer viewer, PetscViewerFormat format, void *ctx, PetscViewerAndFormat **vf)
+{
   PetscFunctionBegin;
   PetscCall(PetscViewerAndFormatCreate(viewer, format, vf));
   (*vf)->data = ctx;
@@ -221,7 +228,8 @@ static PetscErrorCode PetscViewerAndFormatCreate_Internal(PetscViewer viewer, Pe
           `PetscOptionsBoolGroupBegin()`, `PetscOptionsBoolGroup()`, `PetscOptionsBoolGroupEnd()`,
           `PetscOptionsFList()`, `PetscOptionsEList()`
 @*/
-PetscErrorCode KSPMonitorSetFromOptions(KSP ksp, const char opt[], const char name[], void *ctx) {
+PetscErrorCode KSPMonitorSetFromOptions(KSP ksp, const char opt[], const char name[], void *ctx)
+{
   PetscErrorCode (*mfunc)(KSP, PetscInt, PetscReal, void *);
   PetscErrorCode (*cfunc)(PetscViewer, PetscViewerFormat, void *, PetscViewerAndFormat **);
   PetscErrorCode (*dfunc)(PetscViewerAndFormat **);
@@ -311,7 +319,8 @@ PetscErrorCode KSPMonitorSetFromOptions(KSP ksp, const char opt[], const char na
 .seealso: `KSPSetOptionsPrefix()`, `KSPResetFromOptions()`, `KSPSetUseFischerGuess()`
 
 @*/
-PetscErrorCode KSPSetFromOptions(KSP ksp) {
+PetscErrorCode KSPSetFromOptions(KSP ksp)
+{
   const char *convtests[] = {"default", "skip", "lsqr"}, *prefix;
   char        type[256], guesstype[256], monfilename[PETSC_MAX_PATH_LEN];
   PetscBool   flg, flag, reuse, set;
@@ -427,7 +436,9 @@ PetscErrorCode KSPSetFromOptions(KSP ksp) {
       PetscCall(KSPConvergedDefaultCreate(&ctx));
       PetscCall(KSPSetConvergenceTest(ksp, KSPConvergedDefault, ctx, KSPConvergedDefaultDestroy));
       break;
-    case 1: PetscCall(KSPSetConvergenceTest(ksp, KSPConvergedSkip, NULL, NULL)); break;
+    case 1:
+      PetscCall(KSPSetConvergenceTest(ksp, KSPConvergedSkip, NULL, NULL));
+      break;
     case 2:
       PetscCall(KSPConvergedDefaultCreate(&ctx));
       PetscCall(KSPSetConvergenceTest(ksp, KSPLSQRConvergedDefault, ctx, KSPConvergedDefaultDestroy));
@@ -632,7 +643,8 @@ skipoptions:
 
 .seealso: `KSPSetFromOptions()`, `KSPSetOptionsPrefix()`
 @*/
-PetscErrorCode KSPResetFromOptions(KSP ksp) {
+PetscErrorCode KSPResetFromOptions(KSP ksp)
+{
   PetscFunctionBegin;
   if (ksp->setfromoptionscalled) PetscCall(KSPSetFromOptions(ksp));
   PetscFunctionReturn(0);

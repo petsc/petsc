@@ -29,7 +29,8 @@
     put it in a universal location like a .chsrc file
 
 @*/
-PetscErrorCode PetscOptionsGetenv(MPI_Comm comm, const char name[], char env[], size_t len, PetscBool *flag) {
+PetscErrorCode PetscOptionsGetenv(MPI_Comm comm, const char name[], char env[], size_t len, PetscBool *flag)
+{
   PetscMPIInt rank;
   char       *str, work[256];
   PetscBool   flg = PETSC_FALSE, spetsc;
@@ -75,7 +76,8 @@ PetscErrorCode PetscOptionsGetenv(MPI_Comm comm, const char name[], char env[], 
 */
 static char PetscDisplay[256];
 
-static PetscErrorCode PetscWorldIsSingleHost(PetscBool *onehost) {
+static PetscErrorCode PetscWorldIsSingleHost(PetscBool *onehost)
+{
   char        hostname[256], roothostname[256];
   PetscMPIInt localmatch, allmatch;
   PetscBool   flag;
@@ -94,7 +96,8 @@ static PetscErrorCode PetscWorldIsSingleHost(PetscBool *onehost) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscSetDisplay(void) {
+PetscErrorCode PetscSetDisplay(void)
+{
   PetscMPIInt size, rank;
   PetscBool   flag, singlehost = PETSC_FALSE;
   char        display[sizeof(PetscDisplay)];
@@ -154,7 +157,8 @@ PetscErrorCode PetscSetDisplay(void) {
 
 .seealso: `PETSC_DRAW_X`, `PetscDrawOpenX()`
 @*/
-PetscErrorCode PetscGetDisplay(char display[], size_t n) {
+PetscErrorCode PetscGetDisplay(char display[], size_t n)
+{
   PetscFunctionBegin;
   PetscCall(PetscStrncpy(display, PetscDisplay, n));
   PetscFunctionReturn(0);

@@ -3,7 +3,8 @@ static char help[] = "Tests MatTranspose(), MatNorm(), MatAXPY() and MatAYPX().\
 
 #include <petscmat.h>
 
-static PetscErrorCode TransposeAXPY(Mat C, PetscScalar alpha, Mat mat, PetscErrorCode (*f)(Mat, Mat *)) {
+static PetscErrorCode TransposeAXPY(Mat C, PetscScalar alpha, Mat mat, PetscErrorCode (*f)(Mat, Mat *))
+{
   Mat     D, E, F, G;
   MatType mtype;
 
@@ -75,7 +76,8 @@ static PetscErrorCode TransposeAXPY(Mat C, PetscScalar alpha, Mat mat, PetscErro
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   Mat         mat, tmat = 0;
   PetscInt    m = 7, n, i, j, rstart, rend, rect = 0;
   PetscMPIInt size, rank;

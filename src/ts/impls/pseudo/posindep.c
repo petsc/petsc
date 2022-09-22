@@ -47,7 +47,8 @@ typedef struct {
 
 .seealso: `TSPseudoTimeStepDefault()`, `TSPseudoSetTimeStep()`
 @*/
-PetscErrorCode TSPseudoComputeTimeStep(TS ts, PetscReal *dt) {
+PetscErrorCode TSPseudoComputeTimeStep(TS ts, PetscReal *dt)
+{
   TS_Pseudo *pseudo = (TS_Pseudo *)ts->data;
 
   PetscFunctionBegin;
@@ -80,7 +81,8 @@ PetscErrorCode TSPseudoComputeTimeStep(TS ts, PetscReal *dt) {
 
 .seealso: `TSPseudoSetVerifyTimeStep()`, `TSPseudoVerifyTimeStep()`
 @*/
-PetscErrorCode TSPseudoVerifyTimeStepDefault(TS ts, Vec update, void *dtctx, PetscReal *newdt, PetscBool *flag) {
+PetscErrorCode TSPseudoVerifyTimeStepDefault(TS ts, Vec update, void *dtctx, PetscReal *newdt, PetscBool *flag)
+{
   PetscFunctionBegin;
   *flag = PETSC_TRUE;
   PetscFunctionReturn(0);
@@ -107,7 +109,8 @@ PetscErrorCode TSPseudoVerifyTimeStepDefault(TS ts, Vec update, void *dtctx, Pet
 
 .seealso: `TSPseudoSetVerifyTimeStep()`, `TSPseudoVerifyTimeStepDefault()`
 @*/
-PetscErrorCode TSPseudoVerifyTimeStep(TS ts, Vec update, PetscReal *dt, PetscBool *flag) {
+PetscErrorCode TSPseudoVerifyTimeStep(TS ts, Vec update, PetscReal *dt, PetscBool *flag)
+{
   TS_Pseudo *pseudo = (TS_Pseudo *)ts->data;
 
   PetscFunctionBegin;
@@ -118,7 +121,8 @@ PetscErrorCode TSPseudoVerifyTimeStep(TS ts, Vec update, PetscReal *dt, PetscBoo
 
 /* --------------------------------------------------------------------------------*/
 
-static PetscErrorCode TSStep_Pseudo(TS ts) {
+static PetscErrorCode TSStep_Pseudo(TS ts)
+{
   TS_Pseudo *pseudo = (TS_Pseudo *)ts->data;
   PetscInt   nits, lits, reject;
   PetscBool  stepok;
@@ -175,7 +179,8 @@ static PetscErrorCode TSStep_Pseudo(TS ts) {
 }
 
 /*------------------------------------------------------------*/
-static PetscErrorCode TSReset_Pseudo(TS ts) {
+static PetscErrorCode TSReset_Pseudo(TS ts)
+{
   TS_Pseudo *pseudo = (TS_Pseudo *)ts->data;
 
   PetscFunctionBegin;
@@ -185,7 +190,8 @@ static PetscErrorCode TSReset_Pseudo(TS ts) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSDestroy_Pseudo(TS ts) {
+static PetscErrorCode TSDestroy_Pseudo(TS ts)
+{
   PetscFunctionBegin;
   PetscCall(TSReset_Pseudo(ts));
   PetscCall(PetscFree(ts->data));
@@ -202,7 +208,8 @@ static PetscErrorCode TSDestroy_Pseudo(TS ts) {
 /*
     Compute Xdot = (X^{n+1}-X^n)/dt) = 0
 */
-static PetscErrorCode TSPseudoGetXdot(TS ts, Vec X, Vec *Xdot) {
+static PetscErrorCode TSPseudoGetXdot(TS ts, Vec X, Vec *Xdot)
+{
   TS_Pseudo        *pseudo = (TS_Pseudo *)ts->data;
   const PetscScalar mdt    = 1.0 / ts->time_step, *xnp1, *xn;
   PetscScalar      *xdot;
@@ -239,7 +246,8 @@ static PetscErrorCode TSPseudoGetXdot(TS ts, Vec X, Vec *Xdot) {
     algorithm, it only takes this one Newton step with the steady state
     residual, and then advances to the next time step.
 */
-static PetscErrorCode SNESTSFormFunction_Pseudo(SNES snes, Vec X, Vec Y, TS ts) {
+static PetscErrorCode SNESTSFormFunction_Pseudo(SNES snes, Vec X, Vec Y, TS ts)
+{
   Vec Xdot;
 
   PetscFunctionBegin;
@@ -257,7 +265,8 @@ static PetscErrorCode SNESTSFormFunction_Pseudo(SNES snes, Vec X, Vec Y, TS ts) 
 
        J = I/dt - J_{Frhs}   where J_{Frhs} is the given Jacobian of Frhs.
 */
-static PetscErrorCode SNESTSFormJacobian_Pseudo(SNES snes, Vec X, Mat AA, Mat BB, TS ts) {
+static PetscErrorCode SNESTSFormJacobian_Pseudo(SNES snes, Vec X, Mat AA, Mat BB, TS ts)
+{
   Vec Xdot;
 
   PetscFunctionBegin;
@@ -266,7 +275,8 @@ static PetscErrorCode SNESTSFormJacobian_Pseudo(SNES snes, Vec X, Mat AA, Mat BB
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSSetUp_Pseudo(TS ts) {
+static PetscErrorCode TSSetUp_Pseudo(TS ts)
+{
   TS_Pseudo *pseudo = (TS_Pseudo *)ts->data;
 
   PetscFunctionBegin;
@@ -277,7 +287,8 @@ static PetscErrorCode TSSetUp_Pseudo(TS ts) {
 }
 /*------------------------------------------------------------*/
 
-static PetscErrorCode TSPseudoMonitorDefault(TS ts, PetscInt step, PetscReal ptime, Vec v, void *dummy) {
+static PetscErrorCode TSPseudoMonitorDefault(TS ts, PetscInt step, PetscReal ptime, Vec v, void *dummy)
+{
   TS_Pseudo  *pseudo = (TS_Pseudo *)ts->data;
   PetscViewer viewer = (PetscViewer)dummy;
 
@@ -293,7 +304,8 @@ static PetscErrorCode TSPseudoMonitorDefault(TS ts, PetscInt step, PetscReal pti
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSSetFromOptions_Pseudo(TS ts, PetscOptionItems *PetscOptionsObject) {
+static PetscErrorCode TSSetFromOptions_Pseudo(TS ts, PetscOptionItems *PetscOptionsObject)
+{
   TS_Pseudo  *pseudo = (TS_Pseudo *)ts->data;
   PetscBool   flg    = PETSC_FALSE;
   PetscViewer viewer;
@@ -316,7 +328,8 @@ static PetscErrorCode TSSetFromOptions_Pseudo(TS ts, PetscOptionItems *PetscOpti
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSView_Pseudo(TS ts, PetscViewer viewer) {
+static PetscErrorCode TSView_Pseudo(TS ts, PetscViewer viewer)
+{
   PetscBool isascii;
 
   PetscFunctionBegin;
@@ -361,7 +374,8 @@ $  func (TS ts,Vec update,void *ctx,PetscReal *newdt,PetscBool  *flag);
 
 .seealso: `TSPseudoVerifyTimeStepDefault()`, `TSPseudoVerifyTimeStep()`
 @*/
-PetscErrorCode TSPseudoSetVerifyTimeStep(TS ts, PetscErrorCode (*dt)(TS, Vec, void *, PetscReal *, PetscBool *), void *ctx) {
+PetscErrorCode TSPseudoSetVerifyTimeStep(TS ts, PetscErrorCode (*dt)(TS, Vec, void *, PetscReal *, PetscBool *), void *ctx)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscTryMethod(ts, "TSPseudoSetVerifyTimeStep_C", (TS, PetscErrorCode(*)(TS, Vec, void *, PetscReal *, PetscBool *), void *), (ts, dt, ctx));
@@ -385,7 +399,8 @@ PetscErrorCode TSPseudoSetVerifyTimeStep(TS ts, PetscErrorCode (*dt)(TS, Vec, vo
 
 .seealso: `TSPseudoSetTimeStep()`, `TSPseudoTimeStepDefault()`
 @*/
-PetscErrorCode TSPseudoSetTimeStepIncrement(TS ts, PetscReal inc) {
+PetscErrorCode TSPseudoSetTimeStepIncrement(TS ts, PetscReal inc)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscValidLogicalCollectiveReal(ts, inc, 2);
@@ -410,7 +425,8 @@ PetscErrorCode TSPseudoSetTimeStepIncrement(TS ts, PetscReal inc) {
 
 .seealso: `TSPseudoSetTimeStep()`, `TSPseudoTimeStepDefault()`
 @*/
-PetscErrorCode TSPseudoSetMaxTimeStep(TS ts, PetscReal maxdt) {
+PetscErrorCode TSPseudoSetMaxTimeStep(TS ts, PetscReal maxdt)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscValidLogicalCollectiveReal(ts, maxdt, 2);
@@ -437,7 +453,8 @@ $         dt = current_dt*previous_fnorm/current_fnorm.
 
 .seealso: `TSPseudoSetTimeStep()`, `TSPseudoTimeStepDefault()`
 @*/
-PetscErrorCode TSPseudoIncrementDtFromInitialDt(TS ts) {
+PetscErrorCode TSPseudoIncrementDtFromInitialDt(TS ts)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscTryMethod(ts, "TSPseudoIncrementDtFromInitialDt_C", (TS), (ts));
@@ -471,7 +488,8 @@ $  func (TS ts,PetscReal *newdt,void *ctx);
 
 .seealso: `TSPseudoTimeStepDefault()`, `TSPseudoComputeTimeStep()`
 @*/
-PetscErrorCode TSPseudoSetTimeStep(TS ts, PetscErrorCode (*dt)(TS, PetscReal *, void *), void *ctx) {
+PetscErrorCode TSPseudoSetTimeStep(TS ts, PetscErrorCode (*dt)(TS, PetscReal *, void *), void *ctx)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscTryMethod(ts, "TSPseudoSetTimeStep_C", (TS, PetscErrorCode(*)(TS, PetscReal *, void *), void *), (ts, dt, ctx));
@@ -481,7 +499,8 @@ PetscErrorCode TSPseudoSetTimeStep(TS ts, PetscErrorCode (*dt)(TS, PetscReal *, 
 /* ----------------------------------------------------------------------------- */
 
 typedef PetscErrorCode (*FCN1)(TS, Vec, void *, PetscReal *, PetscBool *); /* force argument to next function to not be extern C*/
-static PetscErrorCode TSPseudoSetVerifyTimeStep_Pseudo(TS ts, FCN1 dt, void *ctx) {
+static PetscErrorCode TSPseudoSetVerifyTimeStep_Pseudo(TS ts, FCN1 dt, void *ctx)
+{
   TS_Pseudo *pseudo = (TS_Pseudo *)ts->data;
 
   PetscFunctionBegin;
@@ -490,7 +509,8 @@ static PetscErrorCode TSPseudoSetVerifyTimeStep_Pseudo(TS ts, FCN1 dt, void *ctx
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSPseudoSetTimeStepIncrement_Pseudo(TS ts, PetscReal inc) {
+static PetscErrorCode TSPseudoSetTimeStepIncrement_Pseudo(TS ts, PetscReal inc)
+{
   TS_Pseudo *pseudo = (TS_Pseudo *)ts->data;
 
   PetscFunctionBegin;
@@ -498,7 +518,8 @@ static PetscErrorCode TSPseudoSetTimeStepIncrement_Pseudo(TS ts, PetscReal inc) 
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSPseudoSetMaxTimeStep_Pseudo(TS ts, PetscReal maxdt) {
+static PetscErrorCode TSPseudoSetMaxTimeStep_Pseudo(TS ts, PetscReal maxdt)
+{
   TS_Pseudo *pseudo = (TS_Pseudo *)ts->data;
 
   PetscFunctionBegin;
@@ -506,7 +527,8 @@ static PetscErrorCode TSPseudoSetMaxTimeStep_Pseudo(TS ts, PetscReal maxdt) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSPseudoIncrementDtFromInitialDt_Pseudo(TS ts) {
+static PetscErrorCode TSPseudoIncrementDtFromInitialDt_Pseudo(TS ts)
+{
   TS_Pseudo *pseudo = (TS_Pseudo *)ts->data;
 
   PetscFunctionBegin;
@@ -515,7 +537,8 @@ static PetscErrorCode TSPseudoIncrementDtFromInitialDt_Pseudo(TS ts) {
 }
 
 typedef PetscErrorCode (*FCN2)(TS, PetscReal *, void *); /* force argument to next function to not be extern C*/
-static PetscErrorCode TSPseudoSetTimeStep_Pseudo(TS ts, FCN2 dt, void *ctx) {
+static PetscErrorCode TSPseudoSetTimeStep_Pseudo(TS ts, FCN2 dt, void *ctx)
+{
   TS_Pseudo *pseudo = (TS_Pseudo *)ts->data;
 
   PetscFunctionBegin;
@@ -570,7 +593,8 @@ $  Xdot = (Xpredicted - Xold)/dt = (Xold-Xold)/dt = 0
 .seealso: `TSCreate()`, `TS`, `TSSetType()`
 
 M*/
-PETSC_EXTERN PetscErrorCode TSCreate_Pseudo(TS ts) {
+PETSC_EXTERN PetscErrorCode TSCreate_Pseudo(TS ts)
+{
   TS_Pseudo *pseudo;
   SNES       snes;
   SNESType   stype;
@@ -633,7 +657,8 @@ PETSC_EXTERN PetscErrorCode TSCreate_Pseudo(TS ts) {
 
 .seealso: `TSPseudoSetTimeStep()`, `TSPseudoComputeTimeStep()`
 @*/
-PetscErrorCode TSPseudoTimeStepDefault(TS ts, PetscReal *newdt, void *dtctx) {
+PetscErrorCode TSPseudoTimeStepDefault(TS ts, PetscReal *newdt, void *dtctx)
+{
   TS_Pseudo *pseudo = (TS_Pseudo *)ts->data;
   PetscReal  inc    = pseudo->dt_increment;
 

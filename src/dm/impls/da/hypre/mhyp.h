@@ -1,5 +1,5 @@
 
-#if !defined(_MHYP_H)
+#ifndef _MHYP_H
 #define _MHYP_H
 
 #include <petscdmda.h> /*I "petscdmda.h" I*/

@@ -71,7 +71,8 @@ typedef struct {
 extern PetscErrorCode ComputeFunction(AppCtx *, Vec, Vec), FormInitialGuess(AppCtx *, Vec);
 extern PetscErrorCode ComputeJacobian(AppCtx *, Vec, Mat);
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   /* -------------- Data to define application problem ---------------- */
   MPI_Comm    comm;    /* communicator */
   KSP         ksp;     /* linear solver */
@@ -278,7 +279,8 @@ int main(int argc, char **argv) {
    Output Parameter:
    X - vector
  */
-PetscErrorCode FormInitialGuess(AppCtx *user, Vec X) {
+PetscErrorCode FormInitialGuess(AppCtx *user, Vec X)
+{
   PetscInt     i, j, row, mx, my, xs, ys, xm, ym, gxm, gym, gxs, gys;
   PetscReal    one = 1.0, lambda, temp1, temp, hx, hy;
   PetscScalar *x;
@@ -341,7 +343,8 @@ PetscErrorCode FormInitialGuess(AppCtx *user, Vec X) {
    Output Parameter:
 .  F - function vector
  */
-PetscErrorCode ComputeFunction(AppCtx *user, Vec X, Vec F) {
+PetscErrorCode ComputeFunction(AppCtx *user, Vec X, Vec F)
+{
   PetscInt    i, j, row, mx, my, xs, ys, xm, ym, gxs, gys, gxm, gym;
   PetscReal   two = 2.0, one = 1.0, lambda, hx, hy, hxdhy, hydhx, sc;
   PetscScalar u, uxx, uyy, *x, *f;
@@ -422,7 +425,8 @@ PetscErrorCode ComputeFunction(AppCtx *user, Vec X, Vec F) {
    We cannot work directly with the global numbers for the original
    uniprocessor grid!
 */
-PetscErrorCode ComputeJacobian(AppCtx *user, Vec X, Mat jac) {
+PetscErrorCode ComputeJacobian(AppCtx *user, Vec X, Mat jac)
+{
   Vec                    localX = user->localX; /* local vector */
   const PetscInt        *ltog;                  /* local-to-global mapping */
   PetscInt               i, j, row, mx, my, col[5];

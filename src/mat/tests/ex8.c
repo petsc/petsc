@@ -3,7 +3,8 @@ static char help[] = "Tests automatic allocation of matrix storage space.\n\n";
 
 #include <petscmat.h>
 
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   Mat         C;
   PetscInt    i, j, m = 3, n = 3, Ii, J;
   PetscScalar v;

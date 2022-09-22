@@ -20,7 +20,8 @@ static const char *DType_Table[64] = {"preconditioned", "unpreconditioned"};
     Level: advanced
 
 @*/
-PetscErrorCode KSPGLTRGetMinEig(KSP ksp, PetscReal *e_min) {
+PetscErrorCode KSPGLTRGetMinEig(KSP ksp, PetscReal *e_min)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
   PetscUseMethod(ksp, "KSPGLTRGetMinEig_C", (KSP, PetscReal *), (ksp, e_min));
@@ -39,14 +40,16 @@ PetscErrorCode KSPGLTRGetMinEig(KSP ksp, PetscReal *e_min) {
     Level: advanced
 
 @*/
-PetscErrorCode KSPGLTRGetLambda(KSP ksp, PetscReal *lambda) {
+PetscErrorCode KSPGLTRGetLambda(KSP ksp, PetscReal *lambda)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
   PetscUseMethod(ksp, "KSPGLTRGetLambda_C", (KSP, PetscReal *), (ksp, lambda));
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode KSPCGSolve_GLTR(KSP ksp) {
+static PetscErrorCode KSPCGSolve_GLTR(KSP ksp)
+{
 #if defined(PETSC_USE_COMPLEX)
   SETERRQ(PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "GLTR is not available for complex systems");
 #else
@@ -222,7 +225,9 @@ static PetscErrorCode KSPCGSolve_GLTR(KSP ksp) {
     norm_r = cg->norm_r[0]; /* norm_r = |r|_M    */
     break;
 
-  default: norm_r = 0.0; break;
+  default:
+    norm_r = 0.0;
+    break;
   }
 
   PetscCall(KSPLogResidualHistory(ksp, norm_r));
@@ -288,9 +293,13 @@ static PetscErrorCode KSPCGSolve_GLTR(KSP ksp) {
   dMp    = 0.0;
   norm_d = 0.0;
   switch (cg->dtype) {
-  case GLTR_PRECONDITIONED_DIRECTION: norm_p = rz; break;
+  case GLTR_PRECONDITIONED_DIRECTION:
+    norm_p = rz;
+    break;
 
-  default: PetscCall(VecDot(p, p, &norm_p)); break;
+  default:
+    PetscCall(VecDot(p, p, &norm_p));
+    break;
   }
 
   cg->diag[t_size] = kappa / rz;
@@ -461,9 +470,13 @@ static PetscErrorCode KSPCGSolve_GLTR(KSP ksp) {
     PetscCall(KSP_PCApply(ksp, r, z)); /* z = inv(M) r      */
 
     switch (cg->dtype) {
-    case GLTR_PRECONDITIONED_DIRECTION: norm_d = norm_dp1; break;
+    case GLTR_PRECONDITIONED_DIRECTION:
+      norm_d = norm_dp1;
+      break;
 
-    default: PetscCall(VecDot(d, d, &norm_d)); break;
+    default:
+      PetscCall(VecDot(d, d, &norm_d));
+      break;
     }
     cg->norm_d = PetscSqrtReal(norm_d);
 
@@ -509,7 +522,9 @@ static PetscErrorCode KSPCGSolve_GLTR(KSP ksp) {
       norm_r = cg->norm_r[l_size + 1]; /* norm_r = |r|_M    */
       break;
 
-    default: norm_r = 0.0; break;
+    default:
+      norm_r = 0.0;
+      break;
     }
 
     PetscCall(KSPLogResidualHistory(ksp, norm_r));
@@ -708,7 +723,9 @@ static PetscErrorCode KSPCGSolve_GLTR(KSP ksp) {
       norm_r = cg->norm_r[l_size + 1]; /* norm_r = |r|_M    */
       break;
 
-    default: norm_r = 0.0; break;
+    default:
+      norm_r = 0.0;
+      break;
     }
 
     PetscCall(KSPLogResidualHistory(ksp, norm_r));
@@ -1140,7 +1157,8 @@ static PetscErrorCode KSPCGSolve_GLTR(KSP ksp) {
 #endif
 }
 
-static PetscErrorCode KSPCGSetUp_GLTR(KSP ksp) {
+static PetscErrorCode KSPCGSetUp_GLTR(KSP ksp)
+{
   KSPCG_GLTR *cg = (KSPCG_GLTR *)ksp->data;
   PetscInt    max_its;
 
@@ -1169,7 +1187,8 @@ static PetscErrorCode KSPCGSetUp_GLTR(KSP ksp) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode KSPCGDestroy_GLTR(KSP ksp) {
+static PetscErrorCode KSPCGDestroy_GLTR(KSP ksp)
+{
   KSPCG_GLTR *cg = (KSPCG_GLTR *)ksp->data;
 
   PetscFunctionBegin;
@@ -1197,7 +1216,8 @@ static PetscErrorCode KSPCGDestroy_GLTR(KSP ksp) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode KSPCGSetRadius_GLTR(KSP ksp, PetscReal radius) {
+static PetscErrorCode KSPCGSetRadius_GLTR(KSP ksp, PetscReal radius)
+{
   KSPCG_GLTR *cg = (KSPCG_GLTR *)ksp->data;
 
   PetscFunctionBegin;
@@ -1205,7 +1225,8 @@ static PetscErrorCode KSPCGSetRadius_GLTR(KSP ksp, PetscReal radius) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode KSPCGGetNormD_GLTR(KSP ksp, PetscReal *norm_d) {
+static PetscErrorCode KSPCGGetNormD_GLTR(KSP ksp, PetscReal *norm_d)
+{
   KSPCG_GLTR *cg = (KSPCG_GLTR *)ksp->data;
 
   PetscFunctionBegin;
@@ -1213,7 +1234,8 @@ static PetscErrorCode KSPCGGetNormD_GLTR(KSP ksp, PetscReal *norm_d) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode KSPCGGetObjFcn_GLTR(KSP ksp, PetscReal *o_fcn) {
+static PetscErrorCode KSPCGGetObjFcn_GLTR(KSP ksp, PetscReal *o_fcn)
+{
   KSPCG_GLTR *cg = (KSPCG_GLTR *)ksp->data;
 
   PetscFunctionBegin;
@@ -1221,7 +1243,8 @@ static PetscErrorCode KSPCGGetObjFcn_GLTR(KSP ksp, PetscReal *o_fcn) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode KSPGLTRGetMinEig_GLTR(KSP ksp, PetscReal *e_min) {
+static PetscErrorCode KSPGLTRGetMinEig_GLTR(KSP ksp, PetscReal *e_min)
+{
   KSPCG_GLTR *cg = (KSPCG_GLTR *)ksp->data;
 
   PetscFunctionBegin;
@@ -1229,7 +1252,8 @@ static PetscErrorCode KSPGLTRGetMinEig_GLTR(KSP ksp, PetscReal *e_min) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode KSPGLTRGetLambda_GLTR(KSP ksp, PetscReal *lambda) {
+static PetscErrorCode KSPGLTRGetLambda_GLTR(KSP ksp, PetscReal *lambda)
+{
   KSPCG_GLTR *cg = (KSPCG_GLTR *)ksp->data;
 
   PetscFunctionBegin;
@@ -1237,7 +1261,8 @@ static PetscErrorCode KSPGLTRGetLambda_GLTR(KSP ksp, PetscReal *lambda) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode KSPCGSetFromOptions_GLTR(KSP ksp, PetscOptionItems *PetscOptionsObject) {
+static PetscErrorCode KSPCGSetFromOptions_GLTR(KSP ksp, PetscOptionItems *PetscOptionsObject)
+{
   KSPCG_GLTR *cg = (KSPCG_GLTR *)ksp->data;
 
   PetscFunctionBegin;
@@ -1302,7 +1327,8 @@ $  other KSP converged/diverged reasons
 .seealso: `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPCGSetRadius()`, `KSPCGGetNormD()`, `KSPCGGetObjFcn()`, `KSPGLTRGetMinEig()`, `KSPGLTRGetLambda()`
 M*/
 
-PETSC_EXTERN PetscErrorCode KSPCreate_GLTR(KSP ksp) {
+PETSC_EXTERN PetscErrorCode KSPCreate_GLTR(KSP ksp)
+{
   KSPCG_GLTR *cg;
 
   PetscFunctionBegin;

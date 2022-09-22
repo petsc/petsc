@@ -2,7 +2,8 @@ const char help[] = "Test memory allocation in DMPlex refinement.\n\n";
 
 #include <petsc.h>
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   DM dm;
 
   PetscFunctionBeginUser;

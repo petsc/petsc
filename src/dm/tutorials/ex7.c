@@ -12,7 +12,8 @@ typedef struct {
   PetscBool ta;
 } Parameter;
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscBag    bag;
   Parameter  *params;
   PetscViewer viewer;

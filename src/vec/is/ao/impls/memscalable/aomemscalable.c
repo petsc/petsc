@@ -16,7 +16,8 @@ typedef struct {
        All processors ship the data to process 0 to be printed; note that this is not scalable because
        process 0 allocates space for all the orderings entry across all the processes
 */
-PetscErrorCode AOView_MemoryScalable(AO ao, PetscViewer viewer) {
+PetscErrorCode AOView_MemoryScalable(AO ao, PetscViewer viewer)
+{
   PetscMPIInt        rank, size;
   AO_MemoryScalable *aomems = (AO_MemoryScalable *)ao->data;
   PetscBool          iascii;
@@ -66,7 +67,8 @@ PetscErrorCode AOView_MemoryScalable(AO ao, PetscViewer viewer) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode AODestroy_MemoryScalable(AO ao) {
+PetscErrorCode AODestroy_MemoryScalable(AO ao)
+{
   AO_MemoryScalable *aomems = (AO_MemoryScalable *)ao->data;
 
   PetscFunctionBegin;
@@ -86,7 +88,8 @@ PetscErrorCode AODestroy_MemoryScalable(AO ao) {
    Output Parameter:
 .   ia - the mapped interges
  */
-PetscErrorCode AOMap_MemoryScalable_private(AO ao, PetscInt n, PetscInt *ia, const PetscInt *maploc) {
+PetscErrorCode AOMap_MemoryScalable_private(AO ao, PetscInt n, PetscInt *ia, const PetscInt *maploc)
+{
   AO_MemoryScalable *aomems = (AO_MemoryScalable *)ao->data;
   MPI_Comm           comm;
   PetscMPIInt        rank, size, tag1, tag2;
@@ -209,8 +212,8 @@ PetscErrorCode AOMap_MemoryScalable_private(AO ao, PetscInt n, PetscInt *ia, con
     PetscCallMPI(MPI_Get_count(&recv_status, MPIU_INT, &nindices));
     source = recv_status.MPI_SOURCE;
     /* pack output ia[] */
-    rbuf   = sindices2 + start[source];
-    count  = 0;
+    rbuf  = sindices2 + start[source];
+    count = 0;
     for (i = 0; i < n; i++) {
       if (source == owner[i]) ia[i] = rbuf[count++];
     }
@@ -226,7 +229,8 @@ PetscErrorCode AOMap_MemoryScalable_private(AO ao, PetscInt n, PetscInt *ia, con
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode AOPetscToApplication_MemoryScalable(AO ao, PetscInt n, PetscInt *ia) {
+PetscErrorCode AOPetscToApplication_MemoryScalable(AO ao, PetscInt n, PetscInt *ia)
+{
   AO_MemoryScalable *aomems  = (AO_MemoryScalable *)ao->data;
   PetscInt          *app_loc = aomems->app_loc;
 
@@ -235,7 +239,8 @@ PetscErrorCode AOPetscToApplication_MemoryScalable(AO ao, PetscInt n, PetscInt *
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode AOApplicationToPetsc_MemoryScalable(AO ao, PetscInt n, PetscInt *ia) {
+PetscErrorCode AOApplicationToPetsc_MemoryScalable(AO ao, PetscInt n, PetscInt *ia)
+{
   AO_MemoryScalable *aomems    = (AO_MemoryScalable *)ao->data;
   PetscInt          *petsc_loc = aomems->petsc_loc;
 
@@ -251,7 +256,8 @@ static struct _AOOps AOOps_MemoryScalable = {
   PetscDesignatedInitializer(applicationtopetsc, AOApplicationToPetsc_MemoryScalable),
 };
 
-PetscErrorCode AOCreateMemoryScalable_private(MPI_Comm comm, PetscInt napp, const PetscInt from_array[], const PetscInt to_array[], AO ao, PetscInt *aomap_loc) {
+PetscErrorCode AOCreateMemoryScalable_private(MPI_Comm comm, PetscInt napp, const PetscInt from_array[], const PetscInt to_array[], AO ao, PetscInt *aomap_loc)
+{
   AO_MemoryScalable *aomems  = (AO_MemoryScalable *)ao->data;
   PetscLayout        map     = aomems->map;
   PetscInt           n_local = map->n, i, j;
@@ -364,7 +370,8 @@ PetscErrorCode AOCreateMemoryScalable_private(MPI_Comm comm, PetscInt napp, cons
   PetscFunctionReturn(0);
 }
 
-PETSC_EXTERN PetscErrorCode AOCreate_MemoryScalable(AO ao) {
+PETSC_EXTERN PetscErrorCode AOCreate_MemoryScalable(AO ao)
+{
   IS                 isapp = ao->isapp, ispetsc = ao->ispetsc;
   const PetscInt    *mypetsc, *myapp;
   PetscInt           napp, n_local, N, i, start, *petsc, *lens, *disp;
@@ -463,7 +470,8 @@ PETSC_EXTERN PetscErrorCode AOCreate_MemoryScalable(AO ao) {
 
 .seealso: `AOCreateMemoryScalableIS()`, `AODestroy()`, `AOPetscToApplication()`, `AOApplicationToPetsc()`
 @*/
-PetscErrorCode AOCreateMemoryScalable(MPI_Comm comm, PetscInt napp, const PetscInt myapp[], const PetscInt mypetsc[], AO *aoout) {
+PetscErrorCode AOCreateMemoryScalable(MPI_Comm comm, PetscInt napp, const PetscInt myapp[], const PetscInt mypetsc[], AO *aoout)
+{
   IS              isapp, ispetsc;
   const PetscInt *app = myapp, *petsc = mypetsc;
 
@@ -501,7 +509,8 @@ PetscErrorCode AOCreateMemoryScalable(MPI_Comm comm, PetscInt napp, const PetscI
            Comparing with AOCreateBasicIS(), this routine trades memory with message communication.
 .seealso: `AOCreateMemoryScalable()`, `AODestroy()`
 @*/
-PetscErrorCode AOCreateMemoryScalableIS(IS isapp, IS ispetsc, AO *aoout) {
+PetscErrorCode AOCreateMemoryScalableIS(IS isapp, IS ispetsc, AO *aoout)
+{
   MPI_Comm comm;
   AO       ao;
 

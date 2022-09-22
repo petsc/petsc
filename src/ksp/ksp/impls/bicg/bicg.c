@@ -1,7 +1,8 @@
 
 #include <petsc/private/kspimpl.h>
 
-static PetscErrorCode KSPSetUp_BiCG(KSP ksp) {
+static PetscErrorCode KSPSetUp_BiCG(KSP ksp)
+{
   PetscFunctionBegin;
   /* check user parameters and functions */
   PetscCheck(ksp->pc_side != PC_RIGHT, PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "no right preconditioning for KSPBiCG");
@@ -10,7 +11,8 @@ static PetscErrorCode KSPSetUp_BiCG(KSP ksp) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode KSPSolve_BiCG(KSP ksp) {
+static PetscErrorCode KSPSolve_BiCG(KSP ksp)
+{
   PetscInt    i;
   PetscBool   diagonalscale;
   PetscScalar dpi, a = 1.0, beta, betaold = 1.0, b, ma;
@@ -133,7 +135,8 @@ static PetscErrorCode KSPSolve_BiCG(KSP ksp) {
 .seealso: `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPBCGS`, `KSPCGNE`
 
 M*/
-PETSC_EXTERN PetscErrorCode KSPCreate_BiCG(KSP ksp) {
+PETSC_EXTERN PetscErrorCode KSPCreate_BiCG(KSP ksp)
+{
   PetscFunctionBegin;
   PetscCall(KSPSetSupportedNorm(ksp, KSP_NORM_PRECONDITIONED, PC_LEFT, 3));
   PetscCall(KSPSetSupportedNorm(ksp, KSP_NORM_UNPRECONDITIONED, PC_LEFT, 2));

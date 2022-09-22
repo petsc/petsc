@@ -16,7 +16,8 @@
 
 .seealso: `TAOALMM`, `TaoALMMSetType()`, `TaoALMMType`
 @*/
-PetscErrorCode TaoALMMGetType(Tao tao, TaoALMMType *type) {
+PetscErrorCode TaoALMMGetType(Tao tao, TaoALMMType *type)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao, TAO_CLASSID, 1);
   PetscValidPointer(type, 2);
@@ -24,7 +25,8 @@ PetscErrorCode TaoALMMGetType(Tao tao, TaoALMMType *type) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode TaoALMMGetType_Private(Tao tao, TaoALMMType *type) {
+PetscErrorCode TaoALMMGetType_Private(Tao tao, TaoALMMType *type)
+{
   TAO_ALMM *auglag = (TAO_ALMM *)tao->data;
 
   PetscFunctionBegin;
@@ -43,14 +45,16 @@ PetscErrorCode TaoALMMGetType_Private(Tao tao, TaoALMMType *type) {
 
 .seealso: `TAOALMM`, `TaoALMMGetType()`, `TaoALMMType`
 @*/
-PetscErrorCode TaoALMMSetType(Tao tao, TaoALMMType type) {
+PetscErrorCode TaoALMMSetType(Tao tao, TaoALMMType type)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao, TAO_CLASSID, 1);
   PetscTryMethod(tao, "TaoALMMSetType_C", (Tao, TaoALMMType), (tao, type));
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode TaoALMMSetType_Private(Tao tao, TaoALMMType type) {
+PetscErrorCode TaoALMMSetType_Private(Tao tao, TaoALMMType type)
+{
   TAO_ALMM *auglag = (TAO_ALMM *)tao->data;
 
   PetscFunctionBegin;
@@ -72,7 +76,8 @@ PetscErrorCode TaoALMMSetType_Private(Tao tao, TaoALMMType type) {
 
 .seealso: `TAOALMM`, `TaoALMMSetSubsolver()`
 @*/
-PetscErrorCode TaoALMMGetSubsolver(Tao tao, Tao *subsolver) {
+PetscErrorCode TaoALMMGetSubsolver(Tao tao, Tao *subsolver)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao, TAO_CLASSID, 1);
   PetscValidPointer(subsolver, 2);
@@ -80,7 +85,8 @@ PetscErrorCode TaoALMMGetSubsolver(Tao tao, Tao *subsolver) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode TaoALMMGetSubsolver_Private(Tao tao, Tao *subsolver) {
+PetscErrorCode TaoALMMGetSubsolver_Private(Tao tao, Tao *subsolver)
+{
   TAO_ALMM *auglag = (TAO_ALMM *)tao->data;
 
   PetscFunctionBegin;
@@ -99,7 +105,8 @@ PetscErrorCode TaoALMMGetSubsolver_Private(Tao tao, Tao *subsolver) {
 
 .seealso: `TAOALMM`, `TaoALMMGetSubsolver()`
 @*/
-PetscErrorCode TaoALMMSetSubsolver(Tao tao, Tao subsolver) {
+PetscErrorCode TaoALMMSetSubsolver(Tao tao, Tao subsolver)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao, TAO_CLASSID, 1);
   PetscValidHeaderSpecific(subsolver, TAO_CLASSID, 2);
@@ -107,7 +114,8 @@ PetscErrorCode TaoALMMSetSubsolver(Tao tao, Tao subsolver) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode TaoALMMSetSubsolver_Private(Tao tao, Tao subsolver) {
+PetscErrorCode TaoALMMSetSubsolver_Private(Tao tao, Tao subsolver)
+{
   TAO_ALMM *auglag = (TAO_ALMM *)tao->data;
   PetscBool compatible;
 
@@ -152,7 +160,8 @@ PetscErrorCode TaoALMMSetSubsolver_Private(Tao tao, Tao subsolver) {
 
 .seealso: `TAOALMM`, `TaoALMMSetMultipliers()`, `TaoALMMGetDualIS()`
 @*/
-PetscErrorCode TaoALMMGetMultipliers(Tao tao, Vec *Y) {
+PetscErrorCode TaoALMMGetMultipliers(Tao tao, Vec *Y)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao, TAO_CLASSID, 1);
   PetscValidPointer(Y, 2);
@@ -160,7 +169,8 @@ PetscErrorCode TaoALMMGetMultipliers(Tao tao, Vec *Y) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode TaoALMMGetMultipliers_Private(Tao tao, Vec *Y) {
+PetscErrorCode TaoALMMGetMultipliers_Private(Tao tao, Vec *Y)
+{
   TAO_ALMM *auglag = (TAO_ALMM *)tao->data;
 
   PetscFunctionBegin;
@@ -192,7 +202,8 @@ PetscErrorCode TaoALMMGetMultipliers_Private(Tao tao, Vec *Y) {
 
 .seealso: `TAOALMM`, `TaoALMMGetMultipliers()`
 @*/
-PetscErrorCode TaoALMMSetMultipliers(Tao tao, Vec Y) {
+PetscErrorCode TaoALMMSetMultipliers(Tao tao, Vec Y)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao, TAO_CLASSID, 1);
   PetscValidHeaderSpecific(Y, VEC_CLASSID, 2);
@@ -200,7 +211,8 @@ PetscErrorCode TaoALMMSetMultipliers(Tao tao, Vec Y) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode TaoALMMSetMultipliers_Private(Tao tao, Vec Y) {
+PetscErrorCode TaoALMMSetMultipliers_Private(Tao tao, Vec Y)
+{
   TAO_ALMM *auglag = (TAO_ALMM *)tao->data;
   VecType   Ytype;
   PetscInt  Nuser, Neq, Nineq, N;
@@ -275,14 +287,16 @@ PetscErrorCode TaoALMMSetMultipliers_Private(Tao tao, Vec Y) {
 
 .seealso: `TAOALMM`, `TaoALMMGetPrimalVector()`
 @*/
-PetscErrorCode TaoALMMGetPrimalIS(Tao tao, IS *opt_is, IS *slack_is) {
+PetscErrorCode TaoALMMGetPrimalIS(Tao tao, IS *opt_is, IS *slack_is)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao, TAO_CLASSID, 1);
   PetscUseMethod(tao, "TaoALMMGetPrimalIS_C", (Tao, IS *, IS *), (tao, opt_is, slack_is));
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode TaoALMMGetPrimalIS_Private(Tao tao, IS *opt_is, IS *slack_is) {
+PetscErrorCode TaoALMMGetPrimalIS_Private(Tao tao, IS *opt_is, IS *slack_is)
+{
   TAO_ALMM *auglag = (TAO_ALMM *)tao->data;
 
   PetscFunctionBegin;
@@ -310,14 +324,16 @@ PetscErrorCode TaoALMMGetPrimalIS_Private(Tao tao, IS *opt_is, IS *slack_is) {
 
 .seealso: `TAOALMM`, `TaoALMMGetMultipliers()`
 @*/
-PetscErrorCode TaoALMMGetDualIS(Tao tao, IS *eq_is, IS *ineq_is) {
+PetscErrorCode TaoALMMGetDualIS(Tao tao, IS *eq_is, IS *ineq_is)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao, TAO_CLASSID, 1);
   PetscUseMethod(tao, "TaoALMMGetDualIS_C", (Tao, IS *, IS *), (tao, eq_is, ineq_is));
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode TaoALMMGetDualIS_Private(Tao tao, IS *eq_is, IS *ineq_is) {
+PetscErrorCode TaoALMMGetDualIS_Private(Tao tao, IS *eq_is, IS *ineq_is)
+{
   TAO_ALMM *auglag = (TAO_ALMM *)tao->data;
 
   PetscFunctionBegin;

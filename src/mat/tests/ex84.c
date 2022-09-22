@@ -2,7 +2,8 @@
 
 #define NNORMS 6
 
-static PetscErrorCode MatLoadComputeNorms(Mat data_mat, PetscViewer inp_viewer, PetscReal norms[]) {
+static PetscErrorCode MatLoadComputeNorms(Mat data_mat, PetscViewer inp_viewer, PetscReal norms[])
+{
   Mat      corr_mat;
   PetscInt M, N;
 
@@ -34,7 +35,8 @@ static PetscErrorCode MatLoadComputeNorms(Mat data_mat, PetscViewer inp_viewer, 
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode GetReader(MPI_Comm comm, const char option[], PetscViewer *r, PetscViewerFormat *fmt) {
+static PetscErrorCode GetReader(MPI_Comm comm, const char option[], PetscViewer *r, PetscViewerFormat *fmt)
+{
   PetscBool flg;
 
   PetscFunctionBegin;
@@ -48,7 +50,8 @@ static PetscErrorCode GetReader(MPI_Comm comm, const char option[], PetscViewer 
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscInt          i;
   PetscReal         norms0[NNORMS], norms1[NNORMS];
   PetscViewer       inp_viewer;

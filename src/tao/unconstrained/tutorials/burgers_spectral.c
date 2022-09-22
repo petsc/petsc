@@ -93,7 +93,8 @@ extern PetscErrorCode MonitorError(Tao, void *);
 extern PetscErrorCode RHSFunction(TS, PetscReal, Vec, Vec, void *);
 extern PetscErrorCode RHSJacobian(TS, PetscReal, Vec, Mat, Mat, void *);
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   AppCtx       appctx; /* user-defined application context */
   Tao          tao;
   Vec          u; /* approximate solution vector */
@@ -293,7 +294,8 @@ int main(int argc, char **argv) {
    Output Parameter:
    u - vector with solution at initial time (global)
 */
-PetscErrorCode InitialConditions(Vec u, AppCtx *appctx) {
+PetscErrorCode InitialConditions(Vec u, AppCtx *appctx)
+{
   PetscScalar       *s;
   const PetscScalar *xg;
   PetscInt           i, xs, xn;
@@ -320,7 +322,8 @@ PetscErrorCode InitialConditions(Vec u, AppCtx *appctx) {
    Output Parameter:
    u - vector with solution at initial time (global)
 */
-PetscErrorCode TrueSolution(Vec u, AppCtx *appctx) {
+PetscErrorCode TrueSolution(Vec u, AppCtx *appctx)
+{
   PetscScalar       *s;
   const PetscScalar *xg;
   PetscInt           i, xs, xn;
@@ -344,7 +347,8 @@ PetscErrorCode TrueSolution(Vec u, AppCtx *appctx) {
    appctx - user-defined application context
 
 */
-PetscErrorCode ComputeObjective(PetscReal t, Vec obj, AppCtx *appctx) {
+PetscErrorCode ComputeObjective(PetscReal t, Vec obj, AppCtx *appctx)
+{
   PetscScalar       *s;
   const PetscScalar *xg;
   PetscInt           i, xs, xn;
@@ -361,7 +365,8 @@ PetscErrorCode ComputeObjective(PetscReal t, Vec obj, AppCtx *appctx) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec globalin, Vec globalout, void *ctx) {
+PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec globalin, Vec globalout, void *ctx)
+{
   AppCtx *appctx = (AppCtx *)ctx;
 
   PetscFunctionBegin;
@@ -380,7 +385,8 @@ PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec globalin, Vec globalout, void
       Computes Jacobian of      K u + diag(u) G u   which is given by
               K   + diag(u)G + diag(Gu)
 */
-PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec globalin, Mat A, Mat B, void *ctx) {
+PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec globalin, Mat A, Mat B, void *ctx)
+{
   AppCtx *appctx = (AppCtx *)ctx;
   Vec     Gglobalin;
 
@@ -420,7 +426,8 @@ PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec globalin, Mat A, Mat B, void 
    str - flag indicating matrix structure
 
 */
-PetscErrorCode RHSMatrixLaplaciangllDM(TS ts, PetscReal t, Vec X, Mat A, Mat BB, void *ctx) {
+PetscErrorCode RHSMatrixLaplaciangllDM(TS ts, PetscReal t, Vec X, Mat A, Mat BB, void *ctx)
+{
   PetscReal **temp;
   PetscReal   vv;
   AppCtx     *appctx = (AppCtx *)ctx; /* user-defined application context */
@@ -482,7 +489,8 @@ PetscErrorCode RHSMatrixLaplaciangllDM(TS ts, PetscReal t, Vec X, Mat A, Mat BB,
    str - flag indicating matrix structure
 
 */
-PetscErrorCode RHSMatrixAdvectiongllDM(TS ts, PetscReal t, Vec X, Mat A, Mat BB, void *ctx) {
+PetscErrorCode RHSMatrixAdvectiongllDM(TS ts, PetscReal t, Vec X, Mat A, Mat BB, void *ctx)
+{
   PetscReal **temp;
   AppCtx     *appctx = (AppCtx *)ctx; /* user-defined application context */
   PetscInt    xs, xn, l, j;
@@ -550,7 +558,8 @@ PetscErrorCode RHSMatrixAdvectiongllDM(TS ts, PetscReal t, Vec X, Mat A, Mat BB,
           below (instead of just the result of the "adjoint solve").
 
 */
-PetscErrorCode FormFunctionGradient(Tao tao, Vec IC, PetscReal *f, Vec G, void *ctx) {
+PetscErrorCode FormFunctionGradient(Tao tao, Vec IC, PetscReal *f, Vec G, void *ctx)
+{
   AppCtx            *appctx = (AppCtx *)ctx; /* user-defined application context */
   Vec                temp;
   PetscInt           its;
@@ -596,7 +605,8 @@ PetscErrorCode FormFunctionGradient(Tao tao, Vec IC, PetscReal *f, Vec G, void *
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MonitorError(Tao tao, void *ctx) {
+PetscErrorCode MonitorError(Tao tao, void *ctx)
+{
   AppCtx   *appctx = (AppCtx *)ctx;
   Vec       temp;
   PetscReal nrm;

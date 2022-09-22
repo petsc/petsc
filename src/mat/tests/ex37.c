@@ -3,7 +3,8 @@ static char help[] = "Tests MatCopy() and MatStore/RetrieveValues().\n\n";
 
 #include <petscmat.h>
 
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   Mat         C, A;
   PetscInt    i, n = 10, midx[3], bs = 1;
   PetscScalar v[3];

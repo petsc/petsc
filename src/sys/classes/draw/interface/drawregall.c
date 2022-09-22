@@ -25,7 +25,8 @@ PetscBool PetscDrawRegisterAllCalled = PETSC_FALSE;
 
 .seealso: `PetscDraw`, `PetscDrawType`, `PetscDrawRegisterDestroy()`
 @*/
-PetscErrorCode PetscDrawRegisterAll(void) {
+PetscErrorCode PetscDrawRegisterAll(void)
+{
   PetscFunctionBegin;
   if (PetscDrawRegisterAllCalled) PetscFunctionReturn(0);
   PetscDrawRegisterAllCalled = PETSC_TRUE;

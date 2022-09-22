@@ -1,20 +1,23 @@
 
 #include <../src/ksp/ksp/impls/bcgs/bcgsimpl.h> /*I  "petscksp.h"  I*/
 
-PetscErrorCode KSPSetFromOptions_BCGS(KSP ksp, PetscOptionItems *PetscOptionsObject) {
+PetscErrorCode KSPSetFromOptions_BCGS(KSP ksp, PetscOptionItems *PetscOptionsObject)
+{
   PetscFunctionBegin;
   PetscOptionsHeadBegin(PetscOptionsObject, "KSP BCGS Options");
   PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode KSPSetUp_BCGS(KSP ksp) {
+PetscErrorCode KSPSetUp_BCGS(KSP ksp)
+{
   PetscFunctionBegin;
   PetscCall(KSPSetWorkVecs(ksp, 6));
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode KSPSolve_BCGS(KSP ksp) {
+PetscErrorCode KSPSolve_BCGS(KSP ksp)
+{
   PetscInt    i;
   PetscScalar rho, rhoold, alpha, beta, omega, omegaold, d1;
   Vec         X, B, V, P, R, RP, T, S;
@@ -140,7 +143,8 @@ PetscErrorCode KSPSolve_BCGS(KSP ksp) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode KSPBuildSolution_BCGS(KSP ksp, Vec v, Vec *V) {
+PetscErrorCode KSPBuildSolution_BCGS(KSP ksp, Vec v, Vec *V)
+{
   KSP_BCGS *bcgs = (KSP_BCGS *)ksp->data;
 
   PetscFunctionBegin;
@@ -159,7 +163,8 @@ PetscErrorCode KSPBuildSolution_BCGS(KSP ksp, Vec v, Vec *V) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode KSPReset_BCGS(KSP ksp) {
+PetscErrorCode KSPReset_BCGS(KSP ksp)
+{
   KSP_BCGS *cg = (KSP_BCGS *)ksp->data;
 
   PetscFunctionBegin;
@@ -167,7 +172,8 @@ PetscErrorCode KSPReset_BCGS(KSP ksp) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode KSPDestroy_BCGS(KSP ksp) {
+PetscErrorCode KSPDestroy_BCGS(KSP ksp)
+{
   PetscFunctionBegin;
   PetscCall(KSPReset_BCGS(ksp));
   PetscCall(KSPDestroyDefault(ksp));
@@ -191,7 +197,8 @@ PetscErrorCode KSPDestroy_BCGS(KSP ksp) {
 
 .seealso: `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPBICG`, `KSPBCGSL`, `KSPFBICG`, `KSPQMRCGS`, `KSPSetPCSide()`
 M*/
-PETSC_EXTERN PetscErrorCode KSPCreate_BCGS(KSP ksp) {
+PETSC_EXTERN PetscErrorCode KSPCreate_BCGS(KSP ksp)
+{
   KSP_BCGS *bcgs;
 
   PetscFunctionBegin;

@@ -11,7 +11,8 @@ static char help[] = "Benchmarking HIP kernel launch time\n";
 
 __global__ void NullKernel() { }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscInt       i, n = 100000;
   PetscLogDouble tstart, tend, time;
 

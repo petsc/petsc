@@ -1,7 +1,8 @@
 
 #include <../src/ksp/ksp/impls/lcd/lcdimpl.h>
 
-PetscErrorCode KSPSetUp_LCD(KSP ksp) {
+PetscErrorCode KSPSetUp_LCD(KSP ksp)
+{
   KSP_LCD *lcd     = (KSP_LCD *)ksp->data;
   PetscInt restart = lcd->restart;
 
@@ -25,7 +26,8 @@ PetscErrorCode KSPSetUp_LCD(KSP ksp) {
 .     its - number of iterations used
 
 */
-PetscErrorCode KSPSolve_LCD(KSP ksp) {
+PetscErrorCode KSPSolve_LCD(KSP ksp)
+{
   PetscInt    it, j, max_k;
   PetscScalar alfa, beta, num, den, mone;
   PetscReal   rnorm = 0.0;
@@ -120,7 +122,8 @@ PetscErrorCode KSPSolve_LCD(KSP ksp) {
        KSPDestroy_LCD - Frees all memory space used by the Krylov method
 
 */
-PetscErrorCode KSPReset_LCD(KSP ksp) {
+PetscErrorCode KSPReset_LCD(KSP ksp)
+{
   KSP_LCD *lcd = (KSP_LCD *)ksp->data;
 
   PetscFunctionBegin;
@@ -129,7 +132,8 @@ PetscErrorCode KSPReset_LCD(KSP ksp) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode KSPDestroy_LCD(KSP ksp) {
+PetscErrorCode KSPDestroy_LCD(KSP ksp)
+{
   PetscFunctionBegin;
   PetscCall(KSPReset_LCD(ksp));
   PetscCall(PetscFree(ksp->data));
@@ -144,7 +148,8 @@ PetscErrorCode KSPDestroy_LCD(KSP ksp) {
       flags that information should be printed here.
 
 */
-PetscErrorCode KSPView_LCD(KSP ksp, PetscViewer viewer) {
+PetscErrorCode KSPView_LCD(KSP ksp, PetscViewer viewer)
+{
   KSP_LCD  *lcd = (KSP_LCD *)ksp->data;
   PetscBool iascii;
 
@@ -161,7 +166,8 @@ PetscErrorCode KSPView_LCD(KSP ksp, PetscViewer viewer) {
     KSPSetFromOptions_LCD - Checks the options database for options related to the
                             LCD method.
 */
-PetscErrorCode KSPSetFromOptions_LCD(KSP ksp, PetscOptionItems *PetscOptionsObject) {
+PetscErrorCode KSPSetFromOptions_LCD(KSP ksp, PetscOptionItems *PetscOptionsObject)
+{
   PetscBool flg;
   KSP_LCD  *lcd = (KSP_LCD *)ksp->data;
 
@@ -210,7 +216,8 @@ PetscErrorCode KSPSetFromOptions_LCD(KSP ksp, PetscOptionItems *PetscOptionsObje
 
 M*/
 
-PETSC_EXTERN PetscErrorCode KSPCreate_LCD(KSP ksp) {
+PETSC_EXTERN PetscErrorCode KSPCreate_LCD(KSP ksp)
+{
   KSP_LCD *lcd;
 
   PetscFunctionBegin;

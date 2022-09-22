@@ -1,4 +1,4 @@
-#if !defined(_DMADAPTORIMPL_H)
+#ifndef _DMADAPTORIMPL_H
 #define _DMADAPTORIMPL_H
 
 #include <petscdmadaptor.h>
@@ -17,9 +17,9 @@ struct _DMAdaptorOps {
 struct _p_DMAdaptor {
   PETSCHEADER(struct _DMAdaptorOps);
   /* Inputs */
-  DM                    idm;                   /* Initial grid */
-  SNES                  snes;                  /* Solver */
-  VecTagger             refineTag, coarsenTag; /* Criteria for adaptivity */
+  DM        idm;                   /* Initial grid */
+  SNES      snes;                  /* Solver */
+  VecTagger refineTag, coarsenTag; /* Criteria for adaptivity */
   /*   control */
   DMAdaptationCriterion adaptCriterion;
   PetscBool             femType;
@@ -27,14 +27,14 @@ struct _p_DMAdaptor {
   PetscInt              Nadapt;           /* Target number of vertices */
   PetscReal             refinementFactor; /* N_adapt = r^dim N_orig */
   /*   FVM support */
-  PetscBool             computeGradient;
-  DM                    cellDM, gradDM;
-  Vec                   cellGeom, faceGeom, cellGrad; /* Local vectors */
-  const PetscScalar    *cellGeomArray, *cellGradArray;
+  PetscBool          computeGradient;
+  DM                 cellDM, gradDM;
+  Vec                cellGeom, faceGeom, cellGrad; /* Local vectors */
+  const PetscScalar *cellGeomArray, *cellGradArray;
   /* Outputs */
-  PetscBool             monitor;
+  PetscBool monitor;
   /* Auxiliary objects */
-  PetscLimiter          limiter;
+  PetscLimiter limiter;
   PetscErrorCode (**exactSol)(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar[], void *);
   void **exactCtx;
 };

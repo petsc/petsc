@@ -6,7 +6,8 @@
 #include <petsc/private/vecimpl.h>
 #include <petsc/private/isimpl.h> /* needed because accesses data structure of ISLocalToGlobalMapping directly */
 
-PetscErrorCode MatSetUpMultiply_MPIAIJ(Mat mat) {
+PetscErrorCode MatSetUpMultiply_MPIAIJ(Mat mat)
+{
   Mat_MPIAIJ *aij = (Mat_MPIAIJ *)mat->data;
   Mat_SeqAIJ *B   = (Mat_SeqAIJ *)(aij->B->data);
   PetscInt    i, j, *aj = B->j, *garray;
@@ -126,7 +127,8 @@ PetscErrorCode MatSetUpMultiply_MPIAIJ(Mat mat) {
    insert new nonzeros (with global col ids) into the matrix.
    The off-diag B determines communication in the matrix vector multiply.
 */
-PetscErrorCode MatDisAssemble_MPIAIJ(Mat A) {
+PetscErrorCode MatDisAssemble_MPIAIJ(Mat A)
+{
   Mat_MPIAIJ        *aij  = (Mat_MPIAIJ *)A->data;
   Mat                B    = aij->B, Bnew;
   Mat_SeqAIJ        *Baij = (Mat_SeqAIJ *)B->data;
@@ -192,7 +194,8 @@ PetscErrorCode MatDisAssemble_MPIAIJ(Mat A) {
 static PetscInt *auglyrmapd = NULL, *auglyrmapo = NULL; /* mapping from the local ordering to the "diagonal" and "off-diagonal" parts of the local matrix */
 static Vec       auglydd = NULL, auglyoo = NULL;        /* work vectors used to scale the two parts of the local matrix */
 
-PetscErrorCode MatMPIAIJDiagonalScaleLocalSetUp(Mat inA, Vec scale) {
+PetscErrorCode MatMPIAIJDiagonalScaleLocalSetUp(Mat inA, Vec scale)
+{
   Mat_MPIAIJ *ina = (Mat_MPIAIJ *)inA->data; /*access private part of matrix */
   PetscInt    i, n, nt, cstart, cend, no, *garray = ina->garray, *lindices;
   PetscInt   *r_rmapd, *r_rmapo;
@@ -238,7 +241,8 @@ PetscErrorCode MatMPIAIJDiagonalScaleLocalSetUp(Mat inA, Vec scale) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatMPIAIJDiagonalScaleLocal(Mat A, Vec scale) {
+PetscErrorCode MatMPIAIJDiagonalScaleLocal(Mat A, Vec scale)
+{
   /* This routine should really be abandoned as it duplicates MatDiagonalScaleLocal */
 
   PetscFunctionBegin;
@@ -246,7 +250,8 @@ PetscErrorCode MatMPIAIJDiagonalScaleLocal(Mat A, Vec scale) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatDiagonalScaleLocal_MPIAIJ(Mat A, Vec scale) {
+PetscErrorCode MatDiagonalScaleLocal_MPIAIJ(Mat A, Vec scale)
+{
   Mat_MPIAIJ        *a = (Mat_MPIAIJ *)A->data; /*access private part of matrix */
   PetscInt           n, i;
   PetscScalar       *d, *o;

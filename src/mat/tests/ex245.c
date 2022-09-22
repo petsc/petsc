@@ -3,7 +3,8 @@ static char help[] = "Tests LU, Cholesky factorization and MatMatSolve() for a S
 
 #include <petscmat.h>
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   Mat             A, F, B, X, C, Aher, G;
   Vec             b, x, c, d, e;
   PetscInt        m = 5, n, p, i, j, nrows, ncols;

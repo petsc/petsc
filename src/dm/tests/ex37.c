@@ -5,7 +5,8 @@ static char help[] = "VecView() with a DMDA1d vector and draw viewer.\n\n";
 #include <petscdmda.h>
 #include <petscao.h>
 
-PetscErrorCode apply(void *ctx, PetscInt n, const PetscScalar *x, PetscScalar *y) {
+PetscErrorCode apply(void *ctx, PetscInt n, const PetscScalar *x, PetscScalar *y)
+{
   PetscInt i;
 
   for (i = 0; i < n; i++) {
@@ -16,7 +17,8 @@ PetscErrorCode apply(void *ctx, PetscInt n, const PetscScalar *x, PetscScalar *y
   return 0;
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   DM  da;
   Vec global;
   PF  pf;

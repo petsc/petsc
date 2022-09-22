@@ -4,7 +4,8 @@ typedef struct {
   PetscBool transpose_solve;
 } SNES_KSPONLY;
 
-static PetscErrorCode SNESSolve_KSPONLY(SNES snes) {
+static PetscErrorCode SNESSolve_KSPONLY(SNES snes)
+{
   SNES_KSPONLY *ksponly = (SNES_KSPONLY *)snes->data;
   PetscInt      lits;
   Vec           Y, X, F;
@@ -64,13 +65,15 @@ static PetscErrorCode SNESSolve_KSPONLY(SNES snes) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode SNESSetUp_KSPONLY(SNES snes) {
+static PetscErrorCode SNESSetUp_KSPONLY(SNES snes)
+{
   PetscFunctionBegin;
   PetscCall(SNESSetUpMatrices(snes));
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode SNESDestroy_KSPONLY(SNES snes) {
+static PetscErrorCode SNESDestroy_KSPONLY(SNES snes)
+{
   PetscFunctionBegin;
   PetscCall(PetscFree(snes->data));
   PetscFunctionReturn(0);
@@ -85,7 +88,8 @@ static PetscErrorCode SNESDestroy_KSPONLY(SNES snes) {
 
 .seealso: `SNES`, `SNESType`, `SNESCreate()`, `SNES`, `SNESSetType()`, `SNESNEWTONLS`, `SNESNEWTONTR`
 M*/
-PETSC_EXTERN PetscErrorCode SNESCreate_KSPONLY(SNES snes) {
+PETSC_EXTERN PetscErrorCode SNESCreate_KSPONLY(SNES snes)
+{
   SNES_KSPONLY *ksponly;
 
   PetscFunctionBegin;
@@ -115,7 +119,8 @@ PETSC_EXTERN PetscErrorCode SNESCreate_KSPONLY(SNES snes) {
 
 .seealso: `SNES`, `SNESType`, `SNESCreate()`, `SNES`, `SNESSetType()`, `SNESKSPTRANSPOSEONLY`, `SNESNEWTONLS`, `SNESNEWTONTR`
 M*/
-PETSC_EXTERN PetscErrorCode SNESCreate_KSPTRANSPOSEONLY(SNES snes) {
+PETSC_EXTERN PetscErrorCode SNESCreate_KSPTRANSPOSEONLY(SNES snes)
+{
   SNES_KSPONLY *kspo;
 
   PetscFunctionBegin;

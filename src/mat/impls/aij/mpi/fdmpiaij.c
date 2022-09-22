@@ -3,7 +3,8 @@
 #include <../src/mat/impls/baij/mpi/mpibaij.h>
 #include <petsc/private/isimpl.h>
 
-PetscErrorCode MatFDColoringApply_BAIJ(Mat J, MatFDColoring coloring, Vec x1, void *sctx) {
+PetscErrorCode MatFDColoringApply_BAIJ(Mat J, MatFDColoring coloring, Vec x1, void *sctx)
+{
   PetscErrorCode (*f)(void *, Vec, Vec, void *) = (PetscErrorCode(*)(void *, Vec, Vec, void *))coloring->f;
   PetscInt           k, cstart, cend, l, row, col, nz, spidx, i, j;
   PetscScalar        dx = 0.0, *w3_array, *dy_i, *dy = coloring->dy;
@@ -153,7 +154,8 @@ PetscErrorCode MatFDColoringApply_BAIJ(Mat J, MatFDColoring coloring, Vec x1, vo
 }
 
 /* this is declared PETSC_EXTERN because it is used by MatFDColoringUseDM() which is in the DM library */
-PetscErrorCode MatFDColoringApply_AIJ(Mat J, MatFDColoring coloring, Vec x1, void *sctx) {
+PetscErrorCode MatFDColoringApply_AIJ(Mat J, MatFDColoring coloring, Vec x1, void *sctx)
+{
   PetscErrorCode (*f)(void *, Vec, Vec, void *) = (PetscErrorCode(*)(void *, Vec, Vec, void *))coloring->f;
   PetscInt           k, cstart, cend, l, row, col, nz;
   PetscScalar        dx = 0.0, *y, *w3_array;
@@ -375,7 +377,8 @@ PetscErrorCode MatFDColoringApply_AIJ(Mat J, MatFDColoring coloring, Vec x1, voi
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatFDColoringSetUp_MPIXAIJ(Mat mat, ISColoring iscoloring, MatFDColoring c) {
+PetscErrorCode MatFDColoringSetUp_MPIXAIJ(Mat mat, ISColoring iscoloring, MatFDColoring c)
+{
   PetscMPIInt            size, *ncolsonproc, *disp, nn;
   PetscInt               i, n, nrows, nrows_i, j, k, m, ncols, col, *rowhit, cstart, cend, colb;
   const PetscInt        *is, *A_ci, *A_cj, *B_ci, *B_cj, *row = NULL, *ltog = NULL;
@@ -628,7 +631,8 @@ PetscErrorCode MatFDColoringSetUp_MPIXAIJ(Mat mat, ISColoring iscoloring, MatFDC
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatFDColoringCreate_MPIXAIJ(Mat mat, ISColoring iscoloring, MatFDColoring c) {
+PetscErrorCode MatFDColoringCreate_MPIXAIJ(Mat mat, ISColoring iscoloring, MatFDColoring c)
+{
   PetscInt  bs, nis = iscoloring->n, m = mat->rmap->n;
   PetscBool isBAIJ, isSELL;
 
@@ -715,7 +719,8 @@ PetscErrorCode MatFDColoringCreate_MPIXAIJ(Mat mat, ISColoring iscoloring, MatFD
 
 .seealso: `MatFDColoringCreate()`, `ISColoring`, `ISColoringCreate()`, `ISColoringSetType()`, `IS_COLORING_LOCAL`, `MatFDColoringSetBlockSize()`
 @*/
-PetscErrorCode MatFDColoringSetValues(Mat J, MatFDColoring coloring, const PetscScalar *y) {
+PetscErrorCode MatFDColoringSetValues(Mat J, MatFDColoring coloring, const PetscScalar *y)
+{
   MatEntry2      *Jentry2;
   PetscInt        row, i, nrows_k, l, ncolors, nz = 0, bcols, nbcols = 0;
   const PetscInt *nrows;

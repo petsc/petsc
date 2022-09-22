@@ -3,7 +3,8 @@ static char help[] = "Tests PetscSortIntWithPermutation().\n\n";
 
 #include <petscsys.h>
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscInt i;
   PetscInt x[]  = {39, 9, 39, 39, 29}, index[5];
   PetscInt x2[] = {39, 9, 19, 39, 29, 39, 29, 39}, index2[8];

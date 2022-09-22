@@ -2,7 +2,8 @@
 #include <petsc/private/kspimpl.h>
 #include <petsc/private/vecimpl.h>
 
-static PetscErrorCode KSPSetUp_IBCGS(KSP ksp) {
+static PetscErrorCode KSPSetUp_IBCGS(KSP ksp)
+{
   PetscBool diagonalscale;
 
   PetscFunctionBegin;
@@ -36,7 +37,8 @@ static PetscErrorCode KSPSetUp_IBCGS(KSP ksp) {
 #define qn_1 qn
 #define Zn_1 Zn
 #define zn_1 zn
-static PetscErrorCode KSPSolve_IBCGS(KSP ksp) {
+static PetscErrorCode KSPSolve_IBCGS(KSP ksp)
+{
   PetscInt  i, N;
   PetscReal rnorm = 0.0, rnormin = 0.0;
 #if defined(PETSC_HAVE_MPI_LONG_DOUBLE) && !defined(PETSC_USE_COMPLEX) && (defined(PETSC_USE_REAL_SINGLE) || defined(PETSC_USE_REAL_DOUBLE))
@@ -335,7 +337,8 @@ static PetscErrorCode KSPSolve_IBCGS(KSP ksp) {
 .seealso: `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPBICG`, `KSPBCGSL`, `KSPIBCGS`, `KSPSetLagNorm()`
 M*/
 
-PETSC_EXTERN PetscErrorCode KSPCreate_IBCGS(KSP ksp) {
+PETSC_EXTERN PetscErrorCode KSPCreate_IBCGS(KSP ksp)
+{
   PetscFunctionBegin;
 
   PetscCall(KSPSetSupportedNorm(ksp, KSP_NORM_PRECONDITIONED, PC_LEFT, 3));

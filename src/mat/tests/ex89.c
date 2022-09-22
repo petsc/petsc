@@ -2,7 +2,8 @@ static char help[] = "Tests MatPtAP() for MPIMAIJ and MPIAIJ \n ";
 
 #include <petscdmda.h>
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   DM              coarsedm, finedm;
   PetscMPIInt     size, rank;
   PetscInt        M, N, Z, i, nrows;

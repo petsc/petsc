@@ -2,7 +2,8 @@ static char help[] = "Tests all TSRK types \n\n";
 
 #include <petscts.h>
 
-static PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec X, Vec F, void *ctx) {
+static PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec X, Vec F, void *ctx)
+{
   PetscInt           i, n;
   const PetscScalar *xx;
   /* */ PetscScalar *ff;
@@ -20,7 +21,8 @@ static PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec X, Vec F, void *ctx) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode TestCheckStage(TSAdapt adapt, TS ts, PetscReal t, Vec X, PetscBool *accept) {
+PetscErrorCode TestCheckStage(TSAdapt adapt, TS ts, PetscReal t, Vec X, PetscBool *accept)
+{
   PetscInt step;
 
   PetscFunctionBeginUser;
@@ -29,7 +31,8 @@ PetscErrorCode TestCheckStage(TSAdapt adapt, TS ts, PetscReal t, Vec X, PetscBoo
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TestExplicitTS(TS ts, PetscInt order, const char subtype[]) {
+static PetscErrorCode TestExplicitTS(TS ts, PetscInt order, const char subtype[])
+{
   PetscInt           i;
   PetscReal          t;
   Vec                U, X, Y;
@@ -96,7 +99,8 @@ static PetscErrorCode TestExplicitTS(TS ts, PetscInt order, const char subtype[]
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TestTSRK(TS ts, TSRKType type) {
+static PetscErrorCode TestTSRK(TS ts, TSRKType type)
+{
   PetscInt    order;
   TSAdapt     adapt;
   PetscBool   rk1, rk3, rk4;
@@ -123,7 +127,8 @@ static PetscErrorCode TestTSRK(TS ts, TSRKType type) {
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[])
+{
   TS       ts;
   Vec      X;
   PetscInt N = 9;

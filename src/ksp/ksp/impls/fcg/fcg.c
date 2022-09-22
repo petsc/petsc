@@ -12,7 +12,8 @@ extern PetscErrorCode KSPComputeEigenvalues_CG(KSP, PetscInt, PetscReal *, Petsc
 #define KSPFCG_DEFAULT_VECB       5  /* number of search directions to allocate each time new direction vectors are needed */
 #define KSPFCG_DEFAULT_TRUNCSTRAT KSP_FCD_TRUNC_TYPE_NOTAY
 
-static PetscErrorCode KSPAllocateVectors_FCG(KSP ksp, PetscInt nvecsneeded, PetscInt chunksize) {
+static PetscErrorCode KSPAllocateVectors_FCG(KSP ksp, PetscInt nvecsneeded, PetscInt chunksize)
+{
   PetscInt i;
   KSP_FCG *fcg = (KSP_FCG *)ksp->data;
   PetscInt nnewvecs, nvecsprev;
@@ -35,7 +36,8 @@ static PetscErrorCode KSPAllocateVectors_FCG(KSP ksp, PetscInt nvecsneeded, Pets
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode KSPSetUp_FCG(KSP ksp) {
+static PetscErrorCode KSPSetUp_FCG(KSP ksp)
+{
   KSP_FCG       *fcg      = (KSP_FCG *)ksp->data;
   PetscInt       maxit    = ksp->max_it;
   const PetscInt nworkstd = 2;
@@ -69,7 +71,8 @@ static PetscErrorCode KSPSetUp_FCG(KSP ksp) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode KSPSolve_FCG(KSP ksp) {
+static PetscErrorCode KSPSolve_FCG(KSP ksp)
+{
   PetscInt    i, k, idx, mi;
   KSP_FCG    *fcg   = (KSP_FCG *)ksp->data;
   PetscScalar alpha = 0.0, beta = 0.0, dpi, s;
@@ -120,8 +123,11 @@ static PetscErrorCode KSPSolve_FCG(KSP ksp) {
     KSPCheckDot(ksp, s);
     dp = PetscSqrtReal(PetscAbsScalar(s)); /*   dp <- sqrt(r'*z) = sqrt(e'*A'*B*A*e)  */
     break;
-  case KSP_NORM_NONE: dp = 0.0; break;
-  default: SETERRQ(PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "%s", KSPNormTypes[ksp->normtype]);
+  case KSP_NORM_NONE:
+    dp = 0.0;
+    break;
+  default:
+    SETERRQ(PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "%s", KSPNormTypes[ksp->normtype]);
   }
 
   /* Initial Convergence Check */
@@ -152,9 +158,14 @@ static PetscErrorCode KSPSolve_FCG(KSP ksp) {
 
     /* number of old directions to orthogonalize against */
     switch (fcg->truncstrat) {
-    case KSP_FCD_TRUNC_TYPE_STANDARD: mi = fcg->mmax; break;
-    case KSP_FCD_TRUNC_TYPE_NOTAY: mi = ((i - 1) % fcg->mmax) + 1; break;
-    default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unrecognized Truncation Strategy");
+    case KSP_FCD_TRUNC_TYPE_STANDARD:
+      mi = fcg->mmax;
+      break;
+    case KSP_FCD_TRUNC_TYPE_NOTAY:
+      mi = ((i - 1) % fcg->mmax) + 1;
+      break;
+    default:
+      SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unrecognized Truncation Strategy");
     }
 
     /* Compute a new column of P (Currently does not support modified G-S or iterative refinement)*/
@@ -211,8 +222,11 @@ static PetscErrorCode KSPSolve_FCG(KSP ksp) {
       KSPCheckDot(ksp, s);
       dp = PetscSqrtReal(PetscAbsScalar(s)); /*   dp <- sqrt(r'*z) = sqrt(e'*A'*B*A*e)  */
       break;
-    case KSP_NORM_NONE: dp = 0.0; break;
-    default: SETERRQ(PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "%s", KSPNormTypes[ksp->normtype]);
+    case KSP_NORM_NONE:
+      dp = 0.0;
+      break;
+    default:
+      SETERRQ(PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "%s", KSPNormTypes[ksp->normtype]);
     }
 
     /* Check for convergence */
@@ -244,7 +258,8 @@ static PetscErrorCode KSPSolve_FCG(KSP ksp) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode KSPDestroy_FCG(KSP ksp) {
+static PetscErrorCode KSPDestroy_FCG(KSP ksp)
+{
   PetscInt i;
   KSP_FCG *fcg = (KSP_FCG *)ksp->data;
 
@@ -267,7 +282,8 @@ static PetscErrorCode KSPDestroy_FCG(KSP ksp) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode KSPView_FCG(KSP ksp, PetscViewer viewer) {
+static PetscErrorCode KSPView_FCG(KSP ksp, PetscViewer viewer)
+{
   KSP_FCG    *fcg = (KSP_FCG *)ksp->data;
   PetscBool   iascii, isstring;
   const char *truncstr;
@@ -307,7 +323,8 @@ static PetscErrorCode KSPView_FCG(KSP ksp, PetscViewer viewer) {
 
 .seealso: `KSPFCG`, `KSPFCGGetTruncationType()`, `KSPFCGGetNprealloc()`
 @*/
-PetscErrorCode KSPFCGSetMmax(KSP ksp, PetscInt mmax) {
+PetscErrorCode KSPFCGSetMmax(KSP ksp, PetscInt mmax)
+{
   KSP_FCG *fcg = (KSP_FCG *)ksp->data;
 
   PetscFunctionBegin;
@@ -335,7 +352,8 @@ PetscErrorCode KSPFCGSetMmax(KSP ksp, PetscInt mmax) {
 .seealso: `KSPFCG`, `KSPFCGGetTruncationType()`, `KSPFCGGetNprealloc()`, `KSPFCGSetMmax()`
 @*/
 
-PetscErrorCode KSPFCGGetMmax(KSP ksp, PetscInt *mmax) {
+PetscErrorCode KSPFCGGetMmax(KSP ksp, PetscInt *mmax)
+{
   KSP_FCG *fcg = (KSP_FCG *)ksp->data;
 
   PetscFunctionBegin;
@@ -360,7 +378,8 @@ PetscErrorCode KSPFCGGetMmax(KSP ksp, PetscInt *mmax) {
 
 .seealso: `KSPFCG`, `KSPFCGGetTruncationType()`, `KSPFCGGetNprealloc()`
 @*/
-PetscErrorCode KSPFCGSetNprealloc(KSP ksp, PetscInt nprealloc) {
+PetscErrorCode KSPFCGSetNprealloc(KSP ksp, PetscInt nprealloc)
+{
   KSP_FCG *fcg = (KSP_FCG *)ksp->data;
 
   PetscFunctionBegin;
@@ -386,7 +405,8 @@ PetscErrorCode KSPFCGSetNprealloc(KSP ksp, PetscInt nprealloc) {
 
 .seealso: `KSPFCG`, `KSPFCGGetTruncationType()`, `KSPFCGSetNprealloc()`
 @*/
-PetscErrorCode KSPFCGGetNprealloc(KSP ksp, PetscInt *nprealloc) {
+PetscErrorCode KSPFCGGetNprealloc(KSP ksp, PetscInt *nprealloc)
+{
   KSP_FCG *fcg = (KSP_FCG *)ksp->data;
 
   PetscFunctionBegin;
@@ -414,7 +434,8 @@ PetscErrorCode KSPFCGGetNprealloc(KSP ksp, PetscInt *nprealloc) {
 
   .seealso: `KSPFCDTruncationType`, `KSPFCGGetTruncationType`
 @*/
-PetscErrorCode KSPFCGSetTruncationType(KSP ksp, KSPFCDTruncationType truncstrat) {
+PetscErrorCode KSPFCGSetTruncationType(KSP ksp, KSPFCDTruncationType truncstrat)
+{
   KSP_FCG *fcg = (KSP_FCG *)ksp->data;
 
   PetscFunctionBegin;
@@ -439,7 +460,8 @@ PetscErrorCode KSPFCGSetTruncationType(KSP ksp, KSPFCDTruncationType truncstrat)
 
 .seealso: `KSPFCG`, `KSPFCGSetTruncationType`, `KSPFCDTruncationType`
 @*/
-PetscErrorCode KSPFCGGetTruncationType(KSP ksp, KSPFCDTruncationType *truncstrat) {
+PetscErrorCode KSPFCGGetTruncationType(KSP ksp, KSPFCDTruncationType *truncstrat)
+{
   KSP_FCG *fcg = (KSP_FCG *)ksp->data;
 
   PetscFunctionBegin;
@@ -448,7 +470,8 @@ PetscErrorCode KSPFCGGetTruncationType(KSP ksp, KSPFCDTruncationType *truncstrat
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode KSPSetFromOptions_FCG(KSP ksp, PetscOptionItems *PetscOptionsObject) {
+static PetscErrorCode KSPSetFromOptions_FCG(KSP ksp, PetscOptionItems *PetscOptionsObject)
+{
   KSP_FCG  *fcg = (KSP_FCG *)ksp->data;
   PetscInt  mmax, nprealloc;
   PetscBool flg;
@@ -487,7 +510,8 @@ static PetscErrorCode KSPSetFromOptions_FCG(KSP ksp, PetscOptionItems *PetscOpti
  .seealso `:` `KSPGCR`, `KSPFGMRES`, `KSPCG`, `KSPFCGSetMmax()`, `KSPFCGGetMmax()`, `KSPFCGSetNprealloc()`, `KSPFCGGetNprealloc()`, `KSPFCGSetTruncationType()`, `KSPFCGGetTruncationType()`
 
 M*/
-PETSC_EXTERN PetscErrorCode KSPCreate_FCG(KSP ksp) {
+PETSC_EXTERN PetscErrorCode KSPCreate_FCG(KSP ksp)
+{
   KSP_FCG *fcg;
 
   PetscFunctionBegin;

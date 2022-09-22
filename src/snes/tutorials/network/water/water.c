@@ -6,7 +6,8 @@ static char help[] = "This example demonstrates the use of DMNetwork interface f
 #include "water.h"
 #include <petscdmnetwork.h>
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   char         waterdata_file[PETSC_MAX_PATH_LEN] = "sample1.inp";
   WATERDATA   *waterdata;
   AppCtx_Water appctx;

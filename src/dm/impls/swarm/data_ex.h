@@ -1,8 +1,8 @@
 #if !defined(DMSWARM_DATA_EXCHANGER_H__)
-#define DMSWARM_DATA_EXCHANGER_H__
+  #define DMSWARM_DATA_EXCHANGER_H__
 
-#include <petscvec.h>
-#include <petscmat.h>
+  #include <petscvec.h>
+  #include <petscmat.h>
 
 typedef enum {
   DEOBJECT_INITIALIZED = 0,

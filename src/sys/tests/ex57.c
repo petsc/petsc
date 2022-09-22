@@ -3,7 +3,8 @@ static char help[] = "Tests PetscCommGetComm().\n";
 
 #include <petscsys.h>
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   MPI_Comm    comms[10], comm;
   PetscInt    i;
   PetscRandom rand;

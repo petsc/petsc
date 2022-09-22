@@ -195,7 +195,7 @@ checksource:
     - python3 ./configure --with-mpi=0 --with-fc=0 --with-cxx=0
     - vermin --version
     - make vermin
-    - make checkclangformat SHELL=bash
+    - PATH=/nfs/gce/projects/petsc/soft/u22.04/spack/opt/spack/linux-ubuntu22.04-ivybridge/gcc-11.2.0/llvm-15.0.0-m7mrrtynenjytkmiib2moeqk6kfcifmv/bin:$PATH make checkclangformat SHELL=bash
     - make checkbadSource SHELL=bash
     - make checkbadFileChange SHELL=bash
     - make -f gmakefile check_output SHELL=bash

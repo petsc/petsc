@@ -9,7 +9,8 @@ static char help[] = "Demonstrates using a local ordering to set values into a p
 */
 #include <petscvec.h>
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscMPIInt rank;
   PetscInt    i, ng, *gindices, rstart, rend, M;
   PetscScalar one = 1.0;

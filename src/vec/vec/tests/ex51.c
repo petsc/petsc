@@ -15,7 +15,8 @@ use -hdf5 to specify HDF5 viewer format for subvector I/O \n\n";
 #include <petscvec.h>
 #include <petscviewerhdf5.h>
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   Vec         testvec;         /* parent vector of size 100 */
   Vec         loadvec;         /* subvector extracted from the parent vector */
   Vec         writevec;        /* vector used to save data to be loaded by loadvec */

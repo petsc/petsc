@@ -2,7 +2,8 @@
 
 using namespace Petsc::device::cupm;
 
-PetscErrorCode PetscDeviceContextCreate_HIP(PetscDeviceContext dctx) {
+PetscErrorCode PetscDeviceContextCreate_HIP(PetscDeviceContext dctx)
+{
   static constexpr auto hip_context = CUPMContextHip();
 
   PetscFunctionBegin;
@@ -21,7 +22,8 @@ PetscErrorCode PetscDeviceContextCreate_HIP(PetscDeviceContext dctx) {
  cuda manually.
  */
 
-PetscErrorCode PetscHIPBLASGetHandle(hipblasHandle_t *handle) {
+PetscErrorCode PetscHIPBLASGetHandle(hipblasHandle_t *handle)
+{
   PetscDeviceContext dctx;
 
   PetscFunctionBegin;
@@ -31,7 +33,8 @@ PetscErrorCode PetscHIPBLASGetHandle(hipblasHandle_t *handle) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscHIPSOLVERGetHandle(hipsolverHandle_t *handle) {
+PetscErrorCode PetscHIPSOLVERGetHandle(hipsolverHandle_t *handle)
+{
   PetscDeviceContext dctx;
 
   PetscFunctionBegin;

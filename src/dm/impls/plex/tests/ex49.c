@@ -7,7 +7,8 @@ typedef struct {
   PetscInt dummy;
 } AppCtx;
 
-static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options) {
+static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
+{
   PetscFunctionBeginUser;
   options->dummy = 1;
   PetscOptionsBegin(comm, "", "Dof Ordering Options", "DMPLEX");
@@ -16,7 +17,8 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm) {
+static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
+{
   PetscFunctionBeginUser;
   PetscCall(DMCreate(comm, dm));
   PetscCall(DMSetType(*dm, DMPLEX));
@@ -26,7 +28,8 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode SetupDiscretization(DM dm, AppCtx *user) {
+static PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
+{
   DM       cdm = dm;
   PetscFE  fe;
   PetscInt dim;
@@ -46,7 +49,8 @@ static PetscErrorCode SetupDiscretization(DM dm, AppCtx *user) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode CheckOffsets(DM dm, const char *domain_name, PetscInt label_value, PetscInt height) {
+static PetscErrorCode CheckOffsets(DM dm, const char *domain_name, PetscInt label_value, PetscInt height)
+{
   const char *height_name[] = {"cells", "faces"};
   DMLabel     domain_label  = NULL;
   DM          cdm;
@@ -106,7 +110,9 @@ static PetscErrorCode CheckOffsets(DM dm, const char *domain_name, PetscInt labe
           PetscCheck(Ncl * Nc == dgdof, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Offset size %" PetscInt_FMT " should be %" PetscInt_FMT, Ncl * Nc, dgdof);
         }
         switch (cdim) {
-        case 2: PetscCall(PetscPrintf(PETSC_COMM_WORLD, "[%" PetscInt_FMT "] %" PetscInt_FMT " <-- %2" PetscInt_FMT " (% 4.2f, % 4.2f)\n", c, v, off, (double)PetscRealPart(vx[0]), (double)PetscRealPart(vx[1]))); break;
+        case 2:
+          PetscCall(PetscPrintf(PETSC_COMM_WORLD, "[%" PetscInt_FMT "] %" PetscInt_FMT " <-- %2" PetscInt_FMT " (% 4.2f, % 4.2f)\n", c, v, off, (double)PetscRealPart(vx[0]), (double)PetscRealPart(vx[1])));
+          break;
         case 3:
           PetscCall(PetscPrintf(PETSC_COMM_WORLD, "[%" PetscInt_FMT "] %" PetscInt_FMT " <-- %2" PetscInt_FMT " (% 4.2f, % 4.2f, % 4.2f)\n", c, v, off, (double)PetscRealPart(vx[0]), (double)PetscRealPart(vx[1]), (double)PetscRealPart(vx[2])));
           break;
@@ -119,7 +125,8 @@ static PetscErrorCode CheckOffsets(DM dm, const char *domain_name, PetscInt labe
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   DM     dm;
   AppCtx user;
 

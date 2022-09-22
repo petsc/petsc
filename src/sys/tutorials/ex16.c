@@ -2,7 +2,8 @@
 static char help[] = "Tests calling PetscOptionsSetValue() before PetscInitialize()\n\n";
 
 #include <petscsys.h>
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscMPIInt rank, size;
 
   /*

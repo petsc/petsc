@@ -8,7 +8,8 @@
 
 #include <../src/ksp/ksp/impls/tcqmr/tcqmrimpl.h>
 
-static PetscErrorCode KSPSolve_TCQMR(KSP ksp) {
+static PetscErrorCode KSPSolve_TCQMR(KSP ksp)
+{
   PetscReal   rnorm0, rnorm, dp1, Gamma;
   PetscScalar theta, ep, cl1, sl1, cl, sl, sprod, tau_n1, f;
   PetscScalar deltmp, rho, beta, eptmp, ta, s, c, tau_n, delta;
@@ -149,7 +150,8 @@ static PetscErrorCode KSPSolve_TCQMR(KSP ksp) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode KSPSetUp_TCQMR(KSP ksp) {
+static PetscErrorCode KSPSetUp_TCQMR(KSP ksp)
+{
   PetscFunctionBegin;
   PetscCheck(ksp->pc_side != PC_SYMMETRIC, PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "no symmetric preconditioning for KSPTCQMR");
   PetscCall(KSPSetWorkVecs(ksp, TCQMR_VECS));
@@ -179,7 +181,8 @@ static PetscErrorCode KSPSetUp_TCQMR(KSP ksp) {
 
 M*/
 
-PETSC_EXTERN PetscErrorCode KSPCreate_TCQMR(KSP ksp) {
+PETSC_EXTERN PetscErrorCode KSPCreate_TCQMR(KSP ksp)
+{
   PetscFunctionBegin;
   PetscCall(KSPSetSupportedNorm(ksp, KSP_NORM_PRECONDITIONED, PC_LEFT, 3));
   PetscCall(KSPSetSupportedNorm(ksp, KSP_NORM_UNPRECONDITIONED, PC_RIGHT, 2));

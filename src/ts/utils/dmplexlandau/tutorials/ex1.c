@@ -22,7 +22,8 @@ Input Parameters:
  +   x - Vector to data to
 
  */
-PetscErrorCode landau_field_add_to_callback(DM dm, Vec x, PetscInt local_field, PetscInt grid, PetscInt b_id, void *vctx) {
+PetscErrorCode landau_field_add_to_callback(DM dm, Vec x, PetscInt local_field, PetscInt grid, PetscInt b_id, void *vctx)
+{
   ex1Ctx *user = (ex1Ctx *)vctx;
 
   PetscFunctionBegin;
@@ -41,7 +42,8 @@ PetscErrorCode landau_field_add_to_callback(DM dm, Vec x, PetscInt local_field, 
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   DM             pack;
   Vec            X, X_0;
   PetscInt       dim = 2;

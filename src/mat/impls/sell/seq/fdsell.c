@@ -7,7 +7,8 @@
  MatGetColumnIJ_SeqSELL() and MatRestoreColumnIJ_SeqSELL() by adding an output
  spidx[], index of a->a, to be used in MatTransposeColoringCreate_SeqSELL() and MatFDColoringCreate_SeqSELL()
 */
-PetscErrorCode MatGetColumnIJ_SeqSELL_Color(Mat A, PetscInt oshift, PetscBool symmetric, PetscBool inodecompressed, PetscInt *nn, const PetscInt *ia[], const PetscInt *ja[], PetscInt *spidx[], PetscBool *done) {
+PetscErrorCode MatGetColumnIJ_SeqSELL_Color(Mat A, PetscInt oshift, PetscBool symmetric, PetscBool inodecompressed, PetscInt *nn, const PetscInt *ia[], const PetscInt *ja[], PetscInt *spidx[], PetscBool *done)
+{
   Mat_SeqSELL *a = (Mat_SeqSELL *)A->data;
   PetscInt     i, j, *collengths, *cia, *cja, n = A->cmap->n, totalslices;
   PetscInt     row, col;
@@ -54,7 +55,8 @@ PetscErrorCode MatGetColumnIJ_SeqSELL_Color(Mat A, PetscInt oshift, PetscBool sy
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatRestoreColumnIJ_SeqSELL_Color(Mat A, PetscInt oshift, PetscBool symmetric, PetscBool inodecompressed, PetscInt *n, const PetscInt *ia[], const PetscInt *ja[], PetscInt *spidx[], PetscBool *done) {
+PetscErrorCode MatRestoreColumnIJ_SeqSELL_Color(Mat A, PetscInt oshift, PetscBool symmetric, PetscBool inodecompressed, PetscInt *n, const PetscInt *ia[], const PetscInt *ja[], PetscInt *spidx[], PetscBool *done)
+{
   PetscFunctionBegin;
 
   if (!ia) PetscFunctionReturn(0);

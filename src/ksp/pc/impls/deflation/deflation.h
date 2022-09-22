@@ -1,4 +1,4 @@
-#if !defined(__DEFLATION_H)
+#ifndef __DEFLATION_H
 #define __DEFLATION_H
 
 #include <petsc/private/pcimpl.h> /*I "petscpc.h" I*/

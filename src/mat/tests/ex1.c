@@ -5,7 +5,8 @@ static char help[] = "Tests LU, Cholesky, and QR factorization and MatMatSolve()
 
 #include <petscmat.h>
 
-static PetscErrorCode createMatsAndVecs(PetscInt m, PetscInt n, PetscInt nrhs, PetscBool full, Mat *_mat, Mat *_RHS, Mat *_SOLU, Vec *_x, Vec *_y, Vec *_b) {
+static PetscErrorCode createMatsAndVecs(PetscInt m, PetscInt n, PetscInt nrhs, PetscBool full, Mat *_mat, Mat *_RHS, Mat *_SOLU, Vec *_x, Vec *_y, Vec *_b)
+{
   PetscRandom rand;
   Mat         mat, RHS, SOLU;
   PetscInt    rstart, rend;
@@ -83,7 +84,8 @@ static PetscErrorCode createMatsAndVecs(PetscInt m, PetscInt n, PetscInt nrhs, P
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   Mat         mat, F, RHS, SOLU;
   MatInfo     info;
   PetscInt    m = 15, n = 10, i, j, nrhs = 2;

@@ -3,7 +3,8 @@ static char help[] = "Tests MatCreateConstantDiagonal().\n"
 
 #include <petscmat.h>
 
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   Vec       X, Y;
   Mat       A, B, Af;
   PetscBool flg;

@@ -13,7 +13,8 @@ PETSC_EXTERN PetscErrorCode ISCreate_Block(IS);
 
 .seealso: `ISRegister()`
 @*/
-PetscErrorCode ISRegisterAll(void) {
+PetscErrorCode ISRegisterAll(void)
+{
   PetscFunctionBegin;
   if (ISRegisterAllCalled) PetscFunctionReturn(0);
   ISRegisterAllCalled = PETSC_TRUE;

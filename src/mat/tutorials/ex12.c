@@ -14,7 +14,8 @@ static char help[] = "Reads a PETSc matrix and vector from a file; expands the m
 
    Adds a new column and row to the vector (the last) containing the vector
 */
-PetscErrorCode PadMatrix(Mat A, Vec v, PetscScalar c, Mat *B) {
+PetscErrorCode PadMatrix(Mat A, Vec v, PetscScalar c, Mat *B)
+{
   PetscInt           n, i, *cnt, *indices, nc;
   const PetscInt    *aj;
   const PetscScalar *vv, *aa;
@@ -55,7 +56,8 @@ PetscErrorCode PadMatrix(Mat A, Vec v, PetscScalar c, Mat *B) {
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   Mat         A, B;
   PetscViewer fd;                       /* viewer */
   char        file[PETSC_MAX_PATH_LEN]; /* input file name */

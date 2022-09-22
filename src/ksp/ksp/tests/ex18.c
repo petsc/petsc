@@ -6,7 +6,8 @@ Input arguments are:\n\
 #include <petscmat.h>
 #include <petscksp.h>
 
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   PetscInt    its, m, n, mvec;
   PetscReal   norm;
   Vec         x, b, u;

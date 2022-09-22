@@ -2,13 +2,16 @@
 #define HOSTDEVICE_HPP
 
 #if defined(__cplusplus)
-#include "../impldevicebase.hpp" /*I "petscdevice.h" I*/
+  #include "../impldevicebase.hpp" /*I "petscdevice.h" I*/
 
-namespace Petsc {
+namespace Petsc
+{
 
-namespace device {
+namespace device
+{
 
-namespace host {
+namespace host
+{
 
 class Device : public ::Petsc::device::impl::DeviceBase<Device> {
 public:

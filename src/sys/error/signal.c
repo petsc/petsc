@@ -21,7 +21,8 @@ static PetscBool  SignalSet = PETSC_FALSE;
 /* Called by MPI_Abort() to suppress user-registered atexit()/on_exit() functions.
    See discussion at https://gitlab.com/petsc/petsc/-/merge_requests/2745.
 */
-static void MyExit(void) {
+static void MyExit(void)
+{
   _Exit(MPI_ERR_OTHER);
 }
 
@@ -67,7 +68,8 @@ static void PetscSignalHandler_Private(int sig)
    Level: advanced
 
 @*/
-PetscErrorCode PetscSignalHandlerDefault(int sig, void *ptr) {
+PetscErrorCode PetscSignalHandlerDefault(int sig, void *ptr)
+{
   const char *SIGNAME[64];
 
   if (sig == SIGSEGV) PetscSignalSegvCheckPointerOrMpi();
@@ -168,7 +170,7 @@ PetscErrorCode PetscSignalHandlerDefault(int sig, void *ptr) {
 }
 
 #if !defined(PETSC_SIGNAL_CAST)
-#define PETSC_SIGNAL_CAST
+  #define PETSC_SIGNAL_CAST
 #endif
 
 /*@C
@@ -185,7 +187,8 @@ PetscErrorCode PetscSignalHandlerDefault(int sig, void *ptr) {
 
 .seealso: `PetscPopSignalHandler()`, `PetscSignalHandlerDefault()`, `PetscPushErrorHandler()`
 @*/
-PetscErrorCode PetscPushSignalHandler(PetscErrorCode (*routine)(int, void *), void *ctx) {
+PetscErrorCode PetscPushSignalHandler(PetscErrorCode (*routine)(int, void *), void *ctx)
+{
   struct SH *newsh;
 
   PetscFunctionBegin;
@@ -237,10 +240,10 @@ PetscErrorCode PetscPushSignalHandler(PetscErrorCode (*routine)(int, void *), vo
     signal(SIGSYS, PETSC_SIGNAL_CAST PetscSignalHandler_Private);
 #endif
 #if !defined(PETSC_MISSING_SIGTERM)
-#if !defined(OMPI_MAJOR_VERSION)
+  #if !defined(OMPI_MAJOR_VERSION)
     /* OpenMPI may use SIGTERM to close down all its ranks; we don't want to generate many confusing PETSc error messages in that case */
     signal(SIGTERM, PETSC_SIGNAL_CAST PetscSignalHandler_Private);
-#endif
+  #endif
 #endif
 #if !defined(PETSC_MISSING_SIGTRAP)
     signal(SIGTRAP, PETSC_SIGNAL_CAST PetscSignalHandler_Private);
@@ -336,7 +339,8 @@ PetscErrorCode PetscPushSignalHandler(PetscErrorCode (*routine)(int, void *), vo
 
 .seealso: `PetscPushSignalHandler()`
 @*/
-PetscErrorCode PetscPopSignalHandler(void) {
+PetscErrorCode PetscPopSignalHandler(void)
+{
   struct SH *tmp;
 
   PetscFunctionBegin;

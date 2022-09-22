@@ -13,7 +13,8 @@ typedef struct {
   void *convctx;
 } SNES_TRDC_KSPConverged_Ctx;
 
-static PetscErrorCode SNESTRDC_KSPConverged_Private(KSP ksp, PetscInt n, PetscReal rnorm, KSPConvergedReason *reason, void *cctx) {
+static PetscErrorCode SNESTRDC_KSPConverged_Private(KSP ksp, PetscInt n, PetscReal rnorm, KSPConvergedReason *reason, void *cctx)
+{
   SNES_TRDC_KSPConverged_Ctx *ctx  = (SNES_TRDC_KSPConverged_Ctx *)cctx;
   SNES                        snes = ctx->snes;
   SNES_NEWTONTRDC            *neP  = (SNES_NEWTONTRDC *)snes->data;
@@ -33,7 +34,8 @@ static PetscErrorCode SNESTRDC_KSPConverged_Private(KSP ksp, PetscInt n, PetscRe
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode SNESTRDC_KSPConverged_Destroy(void *cctx) {
+static PetscErrorCode SNESTRDC_KSPConverged_Destroy(void *cctx)
+{
   SNES_TRDC_KSPConverged_Ctx *ctx = (SNES_TRDC_KSPConverged_Ctx *)cctx;
 
   PetscFunctionBegin;
@@ -48,7 +50,8 @@ static PetscErrorCode SNESTRDC_KSPConverged_Destroy(void *cctx) {
    the trust region tolerance.
 
 */
-static PetscErrorCode SNESTRDC_Converged_Private(SNES snes, PetscInt it, PetscReal xnorm, PetscReal pnorm, PetscReal fnorm, SNESConvergedReason *reason, void *dummy) {
+static PetscErrorCode SNESTRDC_Converged_Private(SNES snes, PetscInt it, PetscReal xnorm, PetscReal pnorm, PetscReal fnorm, SNESConvergedReason *reason, void *dummy)
+{
   SNES_NEWTONTRDC *neP = (SNES_NEWTONTRDC *)snes->data;
 
   PetscFunctionBegin;
@@ -77,7 +80,8 @@ static PetscErrorCode SNESTRDC_Converged_Private(SNES snes, PetscInt it, PetscRe
 .seealso: `SNESNEWTONTRDC`, `SNESNewtonTRDCPreCheck()`, `SNESNewtonTRDCGetPreCheck()`, , `SNESNewtonTRDCSetPreCheck()`,
           `SNESNewtonTRDCSetPostCheck()`, `SNESNewtonTRDCGetPostCheck()`
 @*/
-PetscErrorCode SNESNewtonTRDCGetRhoFlag(SNES snes, PetscBool *rho_flag) {
+PetscErrorCode SNESNewtonTRDCGetRhoFlag(SNES snes, PetscBool *rho_flag)
+{
   SNES_NEWTONTRDC *tr = (SNES_NEWTONTRDC *)snes->data;
 
   PetscFunctionBegin;
@@ -106,7 +110,8 @@ PetscErrorCode SNESNewtonTRDCGetRhoFlag(SNES snes, PetscBool *rho_flag) {
 .seealso: `SNESNEWTONTRDC`, `SNESNewtonTRDCPreCheck()`, `SNESNewtonTRDCGetPreCheck()`, `SNESNewtonTRDCSetPostCheck()`, `SNESNewtonTRDCGetPostCheck()`,
           `SNESNewtonTRDCGetRhoFlag()`
 @*/
-PetscErrorCode SNESNewtonTRDCSetPreCheck(SNES snes, PetscErrorCode (*func)(SNES, Vec, Vec, PetscBool *, void *), void *ctx) {
+PetscErrorCode SNESNewtonTRDCSetPreCheck(SNES snes, PetscErrorCode (*func)(SNES, Vec, Vec, PetscBool *, void *), void *ctx)
+{
   SNES_NEWTONTRDC *tr = (SNES_NEWTONTRDC *)snes->data;
 
   PetscFunctionBegin;
@@ -132,7 +137,8 @@ PetscErrorCode SNESNewtonTRDCSetPreCheck(SNES snes, PetscErrorCode (*func)(SNES,
 
 .seealso: `SNESNEWTONTRDC`, `SNESNewtonTRDCSetPreCheck()`, `SNESNewtonTRDCPreCheck()`
 @*/
-PetscErrorCode SNESNewtonTRDCGetPreCheck(SNES snes, PetscErrorCode (**func)(SNES, Vec, Vec, PetscBool *, void *), void **ctx) {
+PetscErrorCode SNESNewtonTRDCGetPreCheck(SNES snes, PetscErrorCode (**func)(SNES, Vec, Vec, PetscBool *, void *), void **ctx)
+{
   SNES_NEWTONTRDC *tr = (SNES_NEWTONTRDC *)snes->data;
 
   PetscFunctionBegin;
@@ -161,7 +167,8 @@ PetscErrorCode SNESNewtonTRDCGetPreCheck(SNES snes, PetscErrorCode (**func)(SNES
 
 .seealso: `SNESNEWTONTRDC`, `SNESNewtonTRDCPostCheck()`, `SNESNewtonTRDCGetPostCheck()`, `SNESNewtonTRDCSetPreCheck()`,  `SNESNewtonTRDCGetPreCheck()`
 @*/
-PetscErrorCode SNESNewtonTRDCSetPostCheck(SNES snes, PetscErrorCode (*func)(SNES, Vec, Vec, Vec, PetscBool *, PetscBool *, void *), void *ctx) {
+PetscErrorCode SNESNewtonTRDCSetPostCheck(SNES snes, PetscErrorCode (*func)(SNES, Vec, Vec, Vec, PetscBool *, PetscBool *, void *), void *ctx)
+{
   SNES_NEWTONTRDC *tr = (SNES_NEWTONTRDC *)snes->data;
 
   PetscFunctionBegin;
@@ -187,7 +194,8 @@ PetscErrorCode SNESNewtonTRDCSetPostCheck(SNES snes, PetscErrorCode (*func)(SNES
 
 .seealso: `SNESNEWTONTRDC`, `SNESNewtonTRDCSetPostCheck()`, `SNESNewtonTRDCPostCheck()`
 @*/
-PetscErrorCode SNESNewtonTRDCGetPostCheck(SNES snes, PetscErrorCode (**func)(SNES, Vec, Vec, Vec, PetscBool *, PetscBool *, void *), void **ctx) {
+PetscErrorCode SNESNewtonTRDCGetPostCheck(SNES snes, PetscErrorCode (**func)(SNES, Vec, Vec, Vec, PetscBool *, PetscBool *, void *), void **ctx)
+{
   SNES_NEWTONTRDC *tr = (SNES_NEWTONTRDC *)snes->data;
 
   PetscFunctionBegin;
@@ -214,7 +222,8 @@ PetscErrorCode SNESNewtonTRDCGetPostCheck(SNES snes, PetscErrorCode (**func)(SNE
 
 .seealso: `SNESNEWTONTRDC`, `SNESNewtonTRDCSetPreCheck()`, `SNESNewtonTRDCGetPreCheck()`, `SNESNewtonTRDCPostCheck()`
 @*/
-static PetscErrorCode SNESNewtonTRDCPreCheck(SNES snes, Vec X, Vec Y, PetscBool *changed_Y) {
+static PetscErrorCode SNESNewtonTRDCPreCheck(SNES snes, Vec X, Vec Y, PetscBool *changed_Y)
+{
   SNES_NEWTONTRDC *tr = (SNES_NEWTONTRDC *)snes->data;
 
   PetscFunctionBegin;
@@ -248,7 +257,8 @@ static PetscErrorCode SNESNewtonTRDCPreCheck(SNES snes, Vec X, Vec Y, PetscBool 
 
 .seealso: `SNESNEWTONTRDC`, `SNESNEWTONTRDC`, `SNESNewtonTRDCSetPostCheck()`, `SNESNewtonTRDCGetPostCheck()`, `SNESNewtonTRDCPreCheck()
 @*/
-static PetscErrorCode SNESNewtonTRDCPostCheck(SNES snes, Vec X, Vec Y, Vec W, PetscBool *changed_Y, PetscBool *changed_W) {
+static PetscErrorCode SNESNewtonTRDCPostCheck(SNES snes, Vec X, Vec Y, Vec W, PetscBool *changed_Y, PetscBool *changed_W)
+{
   SNES_NEWTONTRDC *tr = (SNES_NEWTONTRDC *)snes->data;
 
   PetscFunctionBegin;
@@ -268,7 +278,8 @@ static PetscErrorCode SNESNewtonTRDCPostCheck(SNES snes, Vec X, Vec Y, Vec W, Pe
    nonlinear equations
 
 */
-static PetscErrorCode SNESSolve_NEWTONTRDC(SNES snes) {
+static PetscErrorCode SNESSolve_NEWTONTRDC(SNES snes)
+{
   SNES_NEWTONTRDC            *neP = (SNES_NEWTONTRDC *)snes->data;
   Vec                         X, F, Y, G, W, GradF, YNtmp;
   Vec                         YCtmp;
@@ -554,26 +565,30 @@ static PetscErrorCode SNESSolve_NEWTONTRDC(SNES snes) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode SNESSetUp_NEWTONTRDC(SNES snes) {
+static PetscErrorCode SNESSetUp_NEWTONTRDC(SNES snes)
+{
   PetscFunctionBegin;
   PetscCall(SNESSetWorkVecs(snes, 6));
   PetscCall(SNESSetUpMatrices(snes));
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode SNESReset_NEWTONTRDC(SNES snes) {
+PetscErrorCode SNESReset_NEWTONTRDC(SNES snes)
+{
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode SNESDestroy_NEWTONTRDC(SNES snes) {
+static PetscErrorCode SNESDestroy_NEWTONTRDC(SNES snes)
+{
   PetscFunctionBegin;
   PetscCall(SNESReset_NEWTONTRDC(snes));
   PetscCall(PetscFree(snes->data));
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode SNESSetFromOptions_NEWTONTRDC(SNES snes, PetscOptionItems *PetscOptionsObject) {
+static PetscErrorCode SNESSetFromOptions_NEWTONTRDC(SNES snes, PetscOptionItems *PetscOptionsObject)
+{
   SNES_NEWTONTRDC *ctx = (SNES_NEWTONTRDC *)snes->data;
 
   PetscFunctionBegin;
@@ -593,7 +608,8 @@ static PetscErrorCode SNESSetFromOptions_NEWTONTRDC(SNES snes, PetscOptionItems 
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode SNESView_NEWTONTRDC(SNES snes, PetscViewer viewer) {
+static PetscErrorCode SNESView_NEWTONTRDC(SNES snes, PetscViewer viewer)
+{
   SNES_NEWTONTRDC *tr = (SNES_NEWTONTRDC *)snes->data;
   PetscBool        iascii;
 
@@ -634,7 +650,8 @@ static PetscErrorCode SNESView_NEWTONTRDC(SNES snes, PetscViewer viewer) {
           `SNESNewtonTRDCPreCheck()`, `SNESNewtonTRDCGetPreCheck()`, `SNESNewtonTRDCSetPostCheck()`, `SNESNewtonTRDCGetPostCheck()`,
           `SNESNewtonTRDCGetRhoFlag()`, `SNESNewtonTRDCSetPreCheck()`
 M*/
-PETSC_EXTERN PetscErrorCode SNESCreate_NEWTONTRDC(SNES snes) {
+PETSC_EXTERN PetscErrorCode SNESCreate_NEWTONTRDC(SNES snes)
+{
   SNES_NEWTONTRDC *neP;
 
   PetscFunctionBegin;

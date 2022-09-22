@@ -2,7 +2,7 @@
   Private data structure used for blmvm method.
 */
 
-#if !defined(__TAO_BLMVM_H)
+#ifndef __TAO_BLMVM_H
 #define __TAO_BLMVM_H
 
 #include <petsc/private/taoimpl.h>

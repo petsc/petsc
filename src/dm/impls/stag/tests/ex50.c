@@ -3,7 +3,8 @@ static char help[] = "Test DMStagVecSplitToDMDA()\n\n";
 #include <petscdm.h>
 #include <petscdmstag.h>
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   DM                    dm;
   Vec                   x;
   PetscBool             coords;
@@ -55,7 +56,8 @@ int main(int argc, char **argv) {
     n_loc[3]  = 1;
     loc[3][0] = DMSTAG_ELEMENT;
     break;
-  default: SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP, "No support for dimension %" PetscInt_FMT, dim);
+  default:
+    SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP, "No support for dimension %" PetscInt_FMT, dim);
   }
 
   PetscCall(DMSetFromOptions(dm));

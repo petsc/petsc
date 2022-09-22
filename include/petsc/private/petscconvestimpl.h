@@ -1,4 +1,4 @@
-#if !defined(PETSCCEIMPL_H)
+#ifndef PETSCCEIMPL_H
 #define PETSCCEIMPL_H
 
 #include <petscconvest.h>
@@ -27,7 +27,7 @@ struct _p_PetscConvEst {
   PetscBool   noRefine; /* Debugging flag to disable refinement */
   PetscErrorCode (**initGuess)(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar[], void *);
   PetscErrorCode (**exactSol)(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar[], void *);
-  void        **ctxs;
+  void **ctxs;
   /* Outputs */
   PetscLogEvent event;
   PetscBool     monitor;

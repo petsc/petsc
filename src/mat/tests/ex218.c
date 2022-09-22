@@ -8,7 +8,8 @@ struct _n_User {
   Mat B;
 };
 
-static PetscErrorCode MatMult_User(Mat A, Vec X, Vec Y) {
+static PetscErrorCode MatMult_User(Mat A, Vec X, Vec Y)
+{
   User user;
 
   PetscFunctionBegin;
@@ -17,7 +18,8 @@ static PetscErrorCode MatMult_User(Mat A, Vec X, Vec Y) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatMultTranspose_User(Mat A, Vec X, Vec Y) {
+static PetscErrorCode MatMultTranspose_User(Mat A, Vec X, Vec Y)
+{
   User user;
 
   PetscFunctionBegin;
@@ -26,7 +28,8 @@ static PetscErrorCode MatMultTranspose_User(Mat A, Vec X, Vec Y) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MyFunction(void *ctx, Vec x, Vec y) {
+static PetscErrorCode MyFunction(void *ctx, Vec x, Vec y)
+{
   User user = (User)ctx;
 
   PetscFunctionBegin;
@@ -34,7 +37,8 @@ static PetscErrorCode MyFunction(void *ctx, Vec x, Vec y) {
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   const PetscInt inds[]  = {0, 1};
   PetscScalar    avals[] = {2, 3, 5, 7};
   Mat            S;

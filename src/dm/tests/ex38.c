@@ -4,7 +4,8 @@ static char help[] = "Tests DMGlobalToLocal() for 3d DA with stencil width of 2.
 #include <petscdm.h>
 #include <petscdmda.h>
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscInt        N = 3, M = 2, P = 4, dof = 1, rstart, rend, i;
   PetscInt        stencil_width = 2;
   PetscMPIInt     rank;

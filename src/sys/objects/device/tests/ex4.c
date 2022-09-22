@@ -2,7 +2,8 @@ static const char help[] = "Tests PetscDeviceContextFork/Join.\n\n";
 
 #include "petscdevicetestcommon.h"
 
-static PetscErrorCode DoFork(PetscDeviceContext parent, PetscInt n, PetscDeviceContext **sub) {
+static PetscErrorCode DoFork(PetscDeviceContext parent, PetscInt n, PetscDeviceContext **sub)
+{
   PetscDeviceType dtype;
   PetscStreamType stype;
 
@@ -25,7 +26,8 @@ static PetscErrorCode DoFork(PetscDeviceContext parent, PetscInt n, PetscDeviceC
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TestNestedPetscDeviceContextForkJoin(PetscDeviceContext parCtx, PetscDeviceContext *sub) {
+static PetscErrorCode TestNestedPetscDeviceContextForkJoin(PetscDeviceContext parCtx, PetscDeviceContext *sub)
+{
   const PetscInt      nsub = 4;
   PetscDeviceContext *subsub;
 
@@ -44,7 +46,8 @@ static PetscErrorCode TestNestedPetscDeviceContextForkJoin(PetscDeviceContext pa
 }
 
 /* test fork-join */
-static PetscErrorCode TestPetscDeviceContextForkJoin(PetscDeviceContext dctx) {
+static PetscErrorCode TestPetscDeviceContextForkJoin(PetscDeviceContext dctx)
+{
   PetscDeviceContext *sub;
   const PetscInt      n = 10;
 
@@ -68,7 +71,8 @@ static PetscErrorCode TestPetscDeviceContextForkJoin(PetscDeviceContext dctx) {
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[])
+{
   MPI_Comm           comm;
   PetscDeviceContext dctx;
 

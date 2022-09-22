@@ -27,11 +27,12 @@ PETSC_HASH_MAP(HashLag, PetscHashLagKey, PetscInt, PetscHashLagKeyHash, PetscHas
 static PetscErrorCode ExpectedNumDofs_Total(PetscInt dim, PetscInt order, PetscInt formDegree, PetscBool trimmed, PetscInt tensor, PetscInt nCopies, PetscInt *nDofs);
 static PetscErrorCode ExpectedNumDofs_Interior(PetscInt dim, PetscInt order, PetscInt formDegree, PetscBool trimmed, PetscInt tensor, PetscInt nCopies, PetscInt *nDofs);
 
-static PetscErrorCode ExpectedNumDofs_Total(PetscInt dim, PetscInt order, PetscInt formDegree, PetscBool trimmed, PetscInt tensor, PetscInt nCopies, PetscInt *nDofs) {
+static PetscErrorCode ExpectedNumDofs_Total(PetscInt dim, PetscInt order, PetscInt formDegree, PetscBool trimmed, PetscInt tensor, PetscInt nCopies, PetscInt *nDofs)
+{
   PetscFunctionBegin;
   formDegree = PetscAbsInt(formDegree);
   /* see femtable.org for the source of most of these values */
-  *nDofs     = -1;
+  *nDofs = -1;
   if (tensor == 0) { /* simplex spaces */
     if (trimmed) {
       PetscInt rnchooserk;
@@ -84,11 +85,12 @@ static PetscErrorCode ExpectedNumDofs_Total(PetscInt dim, PetscInt order, PetscI
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode ExpectedNumDofs_Interior(PetscInt dim, PetscInt order, PetscInt formDegree, PetscBool trimmed, PetscInt tensor, PetscInt nCopies, PetscInt *nDofs) {
+static PetscErrorCode ExpectedNumDofs_Interior(PetscInt dim, PetscInt order, PetscInt formDegree, PetscBool trimmed, PetscInt tensor, PetscInt nCopies, PetscInt *nDofs)
+{
   PetscFunctionBegin;
   formDegree = PetscAbsInt(formDegree);
   /* see femtable.org for the source of most of these values */
-  *nDofs     = -1;
+  *nDofs = -1;
   if (tensor == 0) { /* simplex spaces */
     if (trimmed) {
       if (order + formDegree > dim) {
@@ -156,7 +158,8 @@ static PetscErrorCode ExpectedNumDofs_Interior(PetscInt dim, PetscInt order, Pet
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode testLagrange(PetscHashLag lagTable, DM K, PetscInt dim, PetscInt order, PetscInt formDegree, PetscBool trimmed, PetscInt tensor, PetscBool continuous, PetscInt nCopies) {
+PetscErrorCode testLagrange(PetscHashLag lagTable, DM K, PetscInt dim, PetscInt order, PetscInt formDegree, PetscBool trimmed, PetscInt tensor, PetscBool continuous, PetscInt nCopies)
+{
   PetscDualSpace  sp;
   MPI_Comm        comm = PETSC_COMM_SELF;
   PetscInt        Nk;
@@ -294,7 +297,8 @@ PetscErrorCode testLagrange(PetscHashLag lagTable, DM K, PetscInt dim, PetscInt 
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscInt     dim;
   PetscHashLag lagTable;
   PetscInt     tensorCell;

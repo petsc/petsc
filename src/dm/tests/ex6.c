@@ -4,7 +4,8 @@ static char help[] = "Tests various 3-dimensional DMDA routines.\n\n";
 #include <petscdmda.h>
 #include <petscao.h>
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscMPIInt     rank;
   PetscInt        M = 3, N = 5, P = 3, s = 1, w = 2, nloc, l, i, j, k, kk, m = PETSC_DECIDE, n = PETSC_DECIDE, p = PETSC_DECIDE;
   PetscInt        Xs, Xm, Ys, Ym, Zs, Zm, iloc, *iglobal;

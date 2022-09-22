@@ -9,13 +9,14 @@ static PetscBool TSPackageInitialized = PETSC_FALSE;
 
 .seealso: `PetscFinalize()`
 @*/
-PetscErrorCode   TSFinalizePackage(void) {
-    PetscFunctionBegin;
-    PetscCall(PetscFunctionListDestroy(&TSList));
-    PetscCall(PetscFunctionListDestroy(&TSTrajectoryList));
-    TSPackageInitialized = PETSC_FALSE;
-    TSRegisterAllCalled  = PETSC_FALSE;
-    PetscFunctionReturn(0);
+PetscErrorCode TSFinalizePackage(void)
+{
+  PetscFunctionBegin;
+  PetscCall(PetscFunctionListDestroy(&TSList));
+  PetscCall(PetscFunctionListDestroy(&TSTrajectoryList));
+  TSPackageInitialized = PETSC_FALSE;
+  TSRegisterAllCalled  = PETSC_FALSE;
+  PetscFunctionReturn(0);
 }
 
 /*@C
@@ -27,7 +28,8 @@ PetscErrorCode   TSFinalizePackage(void) {
 
 .seealso: `PetscInitialize()`
 @*/
-PetscErrorCode TSInitializePackage(void) {
+PetscErrorCode TSInitializePackage(void)
+{
   char      logList[256];
   PetscBool opt, pkg, cls;
 
@@ -103,7 +105,8 @@ PetscErrorCode TSInitializePackage(void) {
 
  */
 PETSC_EXTERN PetscErrorCode PetscDLLibraryRegister_petscts(void); /*prototype*/
-PETSC_EXTERN PetscErrorCode PetscDLLibraryRegister_petscts(void) {
+PETSC_EXTERN PetscErrorCode PetscDLLibraryRegister_petscts(void)
+{
   PetscFunctionBegin;
   PetscCall(TSInitializePackage());
   PetscFunctionReturn(0);

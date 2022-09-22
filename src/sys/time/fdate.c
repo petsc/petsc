@@ -1,7 +1,7 @@
 
 #include <petscsys.h>
 #if defined(PETSC_HAVE_SYS_TIME_H)
-#include <sys/time.h>
+  #include <sys/time.h>
 #endif
 #include <time.h>
 #if defined(PETSC_NEEDS_GETTIMEOFDAY_PROTO)
@@ -31,7 +31,8 @@ PETSC_EXTERN int gettimeofday(struct timeval *, struct timezone *);
   additional system errors during the call to get the date.
 
 @*/
-PetscErrorCode PetscGetDate(char date[], size_t len) {
+PetscErrorCode PetscGetDate(char date[], size_t len)
+{
   char *str = NULL;
 #if defined(PETSC_HAVE_TIME)
   time_t aclock;

@@ -3,7 +3,8 @@ static char help[] = "Test VecCreate{Seq|MPI}CUDAWithArrays.\n\n";
 
 #include "petsc.h"
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   Vec         x, y;
   PetscMPIInt size;
   PetscInt    n        = 5;

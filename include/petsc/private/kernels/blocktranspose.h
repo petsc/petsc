@@ -1,4 +1,4 @@
-#if !defined(_BLOCKTRANSPOSE_H)
+#ifndef _BLOCKTRANSPOSE_H
 #define _BLOCKTRANSPOSE_H
 
 #include <petscsys.h>
@@ -15,11 +15,13 @@
   } \
   return 0
 
-static inline PetscErrorCode PetscKernel_A_gets_transpose_A_N(MatScalar *a, PetscInt N) {
+static inline PetscErrorCode PetscKernel_A_gets_transpose_A_N(MatScalar *a, PetscInt N)
+{
   PetscKernel_A_gets_transpose_A_BODY(a, N);
 }
 #define PetscKernel_A_gets_transpose_A_DECLARE(N) \
-  static inline PetscErrorCode PetscKernel_A_gets_transpose_A_##N(MatScalar *a) { \
+  static inline PetscErrorCode PetscKernel_A_gets_transpose_A_##N(MatScalar *a) \
+  { \
     PetscKernel_A_gets_transpose_A_BODY(a, N); \
   }
 

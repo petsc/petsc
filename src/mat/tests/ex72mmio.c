@@ -13,7 +13,8 @@
 
 static char mm_buffer[MM_MAX_LINE_LENGTH];
 
-int mm_read_unsymmetric_sparse(const char *fname, int *M_, int *N_, int *nz_, double **val_, int **I_, int **J_) {
+int mm_read_unsymmetric_sparse(const char *fname, int *M_, int *N_, int *nz_, double **val_, int **I_, int **J_)
+{
   FILE       *f;
   MM_typecode matcode;
   int         M, N, nz;
@@ -73,7 +74,8 @@ int mm_read_unsymmetric_sparse(const char *fname, int *M_, int *N_, int *nz_, do
   return 0;
 }
 
-int mm_is_valid(MM_typecode matcode) {
+int mm_is_valid(MM_typecode matcode)
+{
   if (!mm_is_matrix(matcode)) return 0;
   if (mm_is_dense(matcode) && mm_is_pattern(matcode)) return 0;
   if (mm_is_real(matcode) && mm_is_hermitian(matcode)) return 0;
@@ -81,7 +83,8 @@ int mm_is_valid(MM_typecode matcode) {
   return 1;
 }
 
-int mm_read_banner(FILE *f, MM_typecode *matcode) {
+int mm_read_banner(FILE *f, MM_typecode *matcode)
+{
   char  line[MM_MAX_LINE_LENGTH];
   char  banner[MM_MAX_TOKEN_LENGTH];
   char  mtx[MM_MAX_TOKEN_LENGTH];
@@ -138,12 +141,14 @@ int mm_read_banner(FILE *f, MM_typecode *matcode) {
   return 0;
 }
 
-int mm_write_mtx_crd_size(FILE *f, int M, int N, int nz) {
+int mm_write_mtx_crd_size(FILE *f, int M, int N, int nz)
+{
   if (fprintf(f, "%d %d %d\n", M, N, nz) < 0) return MM_COULD_NOT_WRITE_FILE;
   else return 0;
 }
 
-int mm_read_mtx_crd_size(FILE *f, int *M, int *N, int *nz) {
+int mm_read_mtx_crd_size(FILE *f, int *M, int *N, int *nz)
+{
   char line[MM_MAX_LINE_LENGTH];
   int  num_items_read;
 
@@ -166,7 +171,8 @@ int mm_read_mtx_crd_size(FILE *f, int *M, int *N, int *nz) {
   return 0;
 }
 
-int mm_read_mtx_array_size(FILE *f, int *M, int *N) {
+int mm_read_mtx_array_size(FILE *f, int *M, int *N)
+{
   char line[MM_MAX_LINE_LENGTH];
   int  num_items_read;
   /* set return null parameter values, in case we exit with errors */
@@ -188,7 +194,8 @@ int mm_read_mtx_array_size(FILE *f, int *M, int *N) {
   return 0;
 }
 
-int mm_write_mtx_array_size(FILE *f, int M, int N) {
+int mm_write_mtx_array_size(FILE *f, int M, int N)
+{
   if (fprintf(f, "%d %d\n", M, N) < 0) return MM_COULD_NOT_WRITE_FILE;
   else return 0;
 }
@@ -199,7 +206,8 @@ int mm_write_mtx_array_size(FILE *f, int M, int N) {
 /* use when ia[], ja[], and val[] are already allocated */
 /******************************************************************/
 
-int mm_read_mtx_crd_data(FILE *f, int M, int N, int nz, int ia[], int ja[], double val[], MM_typecode matcode) {
+int mm_read_mtx_crd_data(FILE *f, int M, int N, int nz, int ia[], int ja[], double val[], MM_typecode matcode)
+{
   int i;
   if (mm_is_complex(matcode)) {
     for (i = 0; i < nz; i++)
@@ -218,7 +226,8 @@ int mm_read_mtx_crd_data(FILE *f, int M, int N, int nz, int ia[], int ja[], doub
   return 0;
 }
 
-int mm_read_mtx_crd_entry(FILE *f, int *ia, int *ja, double *real, double *imag, MM_typecode matcode) {
+int mm_read_mtx_crd_entry(FILE *f, int *ia, int *ja, double *real, double *imag, MM_typecode matcode)
+{
   if (mm_is_complex(matcode)) {
     if (fscanf(f, "%d %d %lg %lg", ia, ja, real, imag) != 4) return MM_PREMATURE_EOF;
   } else if (mm_is_real(matcode)) {
@@ -241,7 +250,8 @@ int mm_read_mtx_crd_entry(FILE *f, int *ia, int *ja, double *real, double *imag,
                             (nz pairs of real/imaginary values)
 ************************************************************************/
 
-int mm_read_mtx_crd(char *fname, int *M, int *N, int *nz, int **ia, int **ja, double **val, MM_typecode *matcode) {
+int mm_read_mtx_crd(char *fname, int *M, int *N, int *nz, int **ia, int **ja, double **val, MM_typecode *matcode)
+{
   int   ret_code;
   FILE *f;
 
@@ -277,7 +287,8 @@ int mm_read_mtx_crd(char *fname, int *M, int *N, int *nz, int **ia, int **ja, do
   return 0;
 }
 
-int mm_write_banner(FILE *f, MM_typecode matcode) {
+int mm_write_banner(FILE *f, MM_typecode matcode)
+{
   char *str = mm_typecode_to_str(matcode);
   int   ret_code;
 
@@ -286,7 +297,8 @@ int mm_write_banner(FILE *f, MM_typecode matcode) {
   else return 0;
 }
 
-int mm_write_mtx_crd(char fname[], int M, int N, int nz, int ia[], int ja[], double val[], MM_typecode matcode) {
+int mm_write_mtx_crd(char fname[], int M, int N, int nz, int ia[], int ja[], double val[], MM_typecode matcode)
+{
   FILE *f;
   int   i;
 
@@ -317,7 +329,8 @@ int mm_write_mtx_crd(char fname[], int M, int N, int nz, int ia[], int ja[], dou
   return 0;
 }
 
-char *mm_typecode_to_str(MM_typecode matcode) {
+char *mm_typecode_to_str(MM_typecode matcode)
+{
   const char *types[4];
 
   /* check for MTX type */

@@ -141,7 +141,8 @@ M*/
 
 .seealso: `TSGLEERegisterDestroy()`
 @*/
-PetscErrorCode TSGLEERegisterAll(void) {
+PetscErrorCode TSGLEERegisterAll(void)
+{
   PetscFunctionBegin;
   if (TSGLEERegisterAllCalled) PetscFunctionReturn(0);
   TSGLEERegisterAllCalled = PETSC_TRUE;
@@ -289,7 +290,8 @@ PetscErrorCode TSGLEERegisterAll(void) {
 
 .seealso: `TSGLEERegister()`, `TSGLEERegisterAll()`
 @*/
-PetscErrorCode TSGLEERegisterDestroy(void) {
+PetscErrorCode TSGLEERegisterDestroy(void)
+{
   GLEETableauLink link;
 
   PetscFunctionBegin;
@@ -317,7 +319,8 @@ PetscErrorCode TSGLEERegisterDestroy(void) {
 
 .seealso: `PetscInitialize()`
 @*/
-PetscErrorCode TSGLEEInitializePackage(void) {
+PetscErrorCode TSGLEEInitializePackage(void)
+{
   PetscFunctionBegin;
   if (TSGLEEPackageInitialized) PetscFunctionReturn(0);
   TSGLEEPackageInitialized = PETSC_TRUE;
@@ -335,7 +338,8 @@ PetscErrorCode TSGLEEInitializePackage(void) {
 
 .seealso: `PetscFinalize()`
 @*/
-PetscErrorCode TSGLEEFinalizePackage(void) {
+PetscErrorCode TSGLEEFinalizePackage(void)
+{
   PetscFunctionBegin;
   TSGLEEPackageInitialized = PETSC_FALSE;
   PetscCall(TSGLEERegisterDestroy());
@@ -373,7 +377,8 @@ PetscErrorCode TSGLEEFinalizePackage(void) {
 
 .seealso: `TSGLEE`
 @*/
-PetscErrorCode TSGLEERegister(TSGLEEType name, PetscInt order, PetscInt s, PetscInt r, PetscReal gamma, const PetscReal A[], const PetscReal B[], const PetscReal U[], const PetscReal V[], const PetscReal S[], const PetscReal F[], const PetscReal c[], const PetscReal Fembed[], const PetscReal Ferror[], const PetscReal Serror[], PetscInt pinterp, const PetscReal binterp[]) {
+PetscErrorCode TSGLEERegister(TSGLEEType name, PetscInt order, PetscInt s, PetscInt r, PetscReal gamma, const PetscReal A[], const PetscReal B[], const PetscReal U[], const PetscReal V[], const PetscReal S[], const PetscReal F[], const PetscReal c[], const PetscReal Fembed[], const PetscReal Ferror[], const PetscReal Serror[], PetscInt pinterp, const PetscReal binterp[])
+{
   GLEETableauLink link;
   GLEETableau     t;
   PetscInt        i, j;
@@ -416,7 +421,8 @@ PetscErrorCode TSGLEERegister(TSGLEEType name, PetscInt order, PetscInt s, Petsc
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSEvaluateStep_GLEE(TS ts, PetscInt order, Vec X, PetscBool *done) {
+static PetscErrorCode TSEvaluateStep_GLEE(TS ts, PetscInt order, Vec X, PetscBool *done)
+{
   TS_GLEE     *glee = (TS_GLEE *)ts->data;
   GLEETableau  tab  = glee->tableau;
   PetscReal    h, *B = tab->B, *V = tab->V, *F = tab->F, *Fembed = tab->Fembed;
@@ -428,9 +434,14 @@ static PetscErrorCode TSEvaluateStep_GLEE(TS ts, PetscInt order, Vec X, PetscBoo
 
   switch (glee->status) {
   case TS_STEP_INCOMPLETE:
-  case TS_STEP_PENDING: h = ts->time_step; break;
-  case TS_STEP_COMPLETE: h = ts->ptime - ts->ptime_prev; break;
-  default: SETERRQ(PetscObjectComm((PetscObject)ts), PETSC_ERR_PLIB, "Invalid TSStepStatus");
+  case TS_STEP_PENDING:
+    h = ts->time_step;
+    break;
+  case TS_STEP_COMPLETE:
+    h = ts->ptime - ts->ptime_prev;
+    break;
+  default:
+    SETERRQ(PetscObjectComm((PetscObject)ts), PETSC_ERR_PLIB, "Invalid TSStepStatus");
   }
 
   if (order == tab->order) {
@@ -473,7 +484,8 @@ static PetscErrorCode TSEvaluateStep_GLEE(TS ts, PetscInt order, Vec X, PetscBoo
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSStep_GLEE(TS ts) {
+static PetscErrorCode TSStep_GLEE(TS ts)
+{
   TS_GLEE       *glee = (TS_GLEE *)ts->data;
   GLEETableau    tab  = glee->tableau;
   const PetscInt s = tab->s, r = tab->r;
@@ -567,7 +579,8 @@ static PetscErrorCode TSStep_GLEE(TS ts) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSInterpolate_GLEE(TS ts, PetscReal itime, Vec X) {
+static PetscErrorCode TSInterpolate_GLEE(TS ts, PetscReal itime, Vec X)
+{
   TS_GLEE         *glee = (TS_GLEE *)ts->data;
   PetscInt         s = glee->tableau->s, pinterp = glee->tableau->pinterp, i, j;
   PetscReal        h, tt, t;
@@ -586,7 +599,8 @@ static PetscErrorCode TSInterpolate_GLEE(TS ts, PetscReal itime, Vec X) {
     h = ts->ptime - ts->ptime_prev;
     t = (itime - ts->ptime) / h + 1; /* In the interval [0,1] */
     break;
-  default: SETERRQ(PetscObjectComm((PetscObject)ts), PETSC_ERR_PLIB, "Invalid TSStepStatus");
+  default:
+    SETERRQ(PetscObjectComm((PetscObject)ts), PETSC_ERR_PLIB, "Invalid TSStepStatus");
   }
   PetscCall(PetscMalloc1(s, &b));
   for (i = 0; i < s; i++) b[i] = 0;
@@ -600,7 +614,8 @@ static PetscErrorCode TSInterpolate_GLEE(TS ts, PetscReal itime, Vec X) {
 }
 
 /*------------------------------------------------------------*/
-static PetscErrorCode TSReset_GLEE(TS ts) {
+static PetscErrorCode TSReset_GLEE(TS ts)
+{
   TS_GLEE *glee = (TS_GLEE *)ts->data;
   PetscInt s, r;
 
@@ -619,7 +634,8 @@ static PetscErrorCode TSReset_GLEE(TS ts) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSGLEEGetVecs(TS ts, DM dm, Vec *Ydot) {
+static PetscErrorCode TSGLEEGetVecs(TS ts, DM dm, Vec *Ydot)
+{
   TS_GLEE *glee = (TS_GLEE *)ts->data;
 
   PetscFunctionBegin;
@@ -631,7 +647,8 @@ static PetscErrorCode TSGLEEGetVecs(TS ts, DM dm, Vec *Ydot) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSGLEERestoreVecs(TS ts, DM dm, Vec *Ydot) {
+static PetscErrorCode TSGLEERestoreVecs(TS ts, DM dm, Vec *Ydot)
+{
   PetscFunctionBegin;
   if (Ydot) {
     if (dm && dm != ts->dm) PetscCall(DMRestoreNamedGlobalVector(dm, "TSGLEE_Ydot", Ydot));
@@ -642,7 +659,8 @@ static PetscErrorCode TSGLEERestoreVecs(TS ts, DM dm, Vec *Ydot) {
 /*
   This defines the nonlinear equation that is to be solved with SNES
 */
-static PetscErrorCode SNESTSFormFunction_GLEE(SNES snes, Vec X, Vec F, TS ts) {
+static PetscErrorCode SNESTSFormFunction_GLEE(SNES snes, Vec X, Vec F, TS ts)
+{
   TS_GLEE  *glee = (TS_GLEE *)ts->data;
   DM        dm, dmsave;
   Vec       Ydot;
@@ -664,7 +682,8 @@ static PetscErrorCode SNESTSFormFunction_GLEE(SNES snes, Vec X, Vec F, TS ts) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode SNESTSFormJacobian_GLEE(SNES snes, Vec X, Mat A, Mat B, TS ts) {
+static PetscErrorCode SNESTSFormJacobian_GLEE(SNES snes, Vec X, Mat A, Mat B, TS ts)
+{
   TS_GLEE  *glee = (TS_GLEE *)ts->data;
   DM        dm, dmsave;
   Vec       Ydot;
@@ -684,27 +703,32 @@ static PetscErrorCode SNESTSFormJacobian_GLEE(SNES snes, Vec X, Mat A, Mat B, TS
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMCoarsenHook_TSGLEE(DM fine, DM coarse, void *ctx) {
+static PetscErrorCode DMCoarsenHook_TSGLEE(DM fine, DM coarse, void *ctx)
+{
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMRestrictHook_TSGLEE(DM fine, Mat restrct, Vec rscale, Mat inject, DM coarse, void *ctx) {
+static PetscErrorCode DMRestrictHook_TSGLEE(DM fine, Mat restrct, Vec rscale, Mat inject, DM coarse, void *ctx)
+{
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMSubDomainHook_TSGLEE(DM dm, DM subdm, void *ctx) {
+static PetscErrorCode DMSubDomainHook_TSGLEE(DM dm, DM subdm, void *ctx)
+{
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMSubDomainRestrictHook_TSGLEE(DM dm, VecScatter gscat, VecScatter lscat, DM subdm, void *ctx) {
+static PetscErrorCode DMSubDomainRestrictHook_TSGLEE(DM dm, VecScatter gscat, VecScatter lscat, DM subdm, void *ctx)
+{
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSSetUp_GLEE(TS ts) {
+static PetscErrorCode TSSetUp_GLEE(TS ts)
+{
   TS_GLEE    *glee = (TS_GLEE *)ts->data;
   GLEETableau tab;
   PetscInt    s, r;
@@ -730,7 +754,8 @@ static PetscErrorCode TSSetUp_GLEE(TS ts) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode TSStartingMethod_GLEE(TS ts) {
+PetscErrorCode TSStartingMethod_GLEE(TS ts)
+{
   TS_GLEE    *glee = (TS_GLEE *)ts->data;
   GLEETableau tab  = glee->tableau;
   PetscInt    r    = tab->r, i;
@@ -747,7 +772,8 @@ PetscErrorCode TSStartingMethod_GLEE(TS ts) {
 
 /*------------------------------------------------------------*/
 
-static PetscErrorCode TSSetFromOptions_GLEE(TS ts, PetscOptionItems *PetscOptionsObject) {
+static PetscErrorCode TSSetFromOptions_GLEE(TS ts, PetscOptionItems *PetscOptionsObject)
+{
   char gleetype[256];
 
   PetscFunctionBegin;
@@ -771,7 +797,8 @@ static PetscErrorCode TSSetFromOptions_GLEE(TS ts, PetscOptionItems *PetscOption
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSView_GLEE(TS ts, PetscViewer viewer) {
+static PetscErrorCode TSView_GLEE(TS ts, PetscViewer viewer)
+{
   TS_GLEE    *glee = (TS_GLEE *)ts->data;
   GLEETableau tab  = glee->tableau;
   PetscBool   iascii;
@@ -790,7 +817,8 @@ static PetscErrorCode TSView_GLEE(TS ts, PetscViewer viewer) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSLoad_GLEE(TS ts, PetscViewer viewer) {
+static PetscErrorCode TSLoad_GLEE(TS ts, PetscViewer viewer)
+{
   SNES    snes;
   TSAdapt tsadapt;
 
@@ -818,7 +846,8 @@ static PetscErrorCode TSLoad_GLEE(TS ts, PetscViewer viewer) {
 
 .seealso: `TSGLEEGetType()`, `TSGLEE`
 @*/
-PetscErrorCode TSGLEESetType(TS ts, TSGLEEType gleetype) {
+PetscErrorCode TSGLEESetType(TS ts, TSGLEEType gleetype)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscValidCharPointer(gleetype, 2);
@@ -841,14 +870,16 @@ PetscErrorCode TSGLEESetType(TS ts, TSGLEEType gleetype) {
 
 .seealso: `TSGLEESetType()`
 @*/
-PetscErrorCode TSGLEEGetType(TS ts, TSGLEEType *gleetype) {
+PetscErrorCode TSGLEEGetType(TS ts, TSGLEEType *gleetype)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscUseMethod(ts, "TSGLEEGetType_C", (TS, TSGLEEType *), (ts, gleetype));
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode TSGLEEGetType_GLEE(TS ts, TSGLEEType *gleetype) {
+PetscErrorCode TSGLEEGetType_GLEE(TS ts, TSGLEEType *gleetype)
+{
   TS_GLEE *glee = (TS_GLEE *)ts->data;
 
   PetscFunctionBegin;
@@ -856,7 +887,8 @@ PetscErrorCode TSGLEEGetType_GLEE(TS ts, TSGLEEType *gleetype) {
   *gleetype = glee->tableau->name;
   PetscFunctionReturn(0);
 }
-PetscErrorCode TSGLEESetType_GLEE(TS ts, TSGLEEType gleetype) {
+PetscErrorCode TSGLEESetType_GLEE(TS ts, TSGLEEType gleetype)
+{
   TS_GLEE        *glee = (TS_GLEE *)ts->data;
   PetscBool       match;
   GLEETableauLink link;
@@ -877,7 +909,8 @@ PetscErrorCode TSGLEESetType_GLEE(TS ts, TSGLEEType gleetype) {
   SETERRQ(PetscObjectComm((PetscObject)ts), PETSC_ERR_ARG_UNKNOWN_TYPE, "Could not find '%s'", gleetype);
 }
 
-static PetscErrorCode TSGetStages_GLEE(TS ts, PetscInt *ns, Vec **Y) {
+static PetscErrorCode TSGetStages_GLEE(TS ts, PetscInt *ns, Vec **Y)
+{
   TS_GLEE *glee = (TS_GLEE *)ts->data;
 
   PetscFunctionBegin;
@@ -886,7 +919,8 @@ static PetscErrorCode TSGetStages_GLEE(TS ts, PetscInt *ns, Vec **Y) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode TSGetSolutionComponents_GLEE(TS ts, PetscInt *n, Vec *Y) {
+PetscErrorCode TSGetSolutionComponents_GLEE(TS ts, PetscInt *n, Vec *Y)
+{
   TS_GLEE    *glee = (TS_GLEE *)ts->data;
   GLEETableau tab  = glee->tableau;
 
@@ -900,7 +934,8 @@ PetscErrorCode TSGetSolutionComponents_GLEE(TS ts, PetscInt *n, Vec *Y) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode TSGetAuxSolution_GLEE(TS ts, Vec *X) {
+PetscErrorCode TSGetAuxSolution_GLEE(TS ts, Vec *X)
+{
   TS_GLEE     *glee = (TS_GLEE *)ts->data;
   GLEETableau  tab  = glee->tableau;
   PetscReal   *F    = tab->Fembed;
@@ -916,7 +951,8 @@ PetscErrorCode TSGetAuxSolution_GLEE(TS ts, Vec *X) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode TSGetTimeError_GLEE(TS ts, PetscInt n, Vec *X) {
+PetscErrorCode TSGetTimeError_GLEE(TS ts, PetscInt n, Vec *X)
+{
   TS_GLEE     *glee = (TS_GLEE *)ts->data;
   GLEETableau  tab  = glee->tableau;
   PetscReal   *F    = tab->Ferror;
@@ -936,7 +972,8 @@ PetscErrorCode TSGetTimeError_GLEE(TS ts, PetscInt n, Vec *X) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode TSSetTimeError_GLEE(TS ts, Vec X) {
+PetscErrorCode TSSetTimeError_GLEE(TS ts, Vec X)
+{
   TS_GLEE    *glee = (TS_GLEE *)ts->data;
   GLEETableau tab  = glee->tableau;
   PetscReal  *S    = tab->Serror;
@@ -953,7 +990,8 @@ PetscErrorCode TSSetTimeError_GLEE(TS ts, Vec X) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSDestroy_GLEE(TS ts) {
+static PetscErrorCode TSDestroy_GLEE(TS ts)
+{
   PetscFunctionBegin;
   PetscCall(TSReset_GLEE(ts));
   if (ts->dm) {
@@ -983,7 +1021,8 @@ static PetscErrorCode TSDestroy_GLEE(TS ts) {
           `TSGLEERK32G1`, `TSGLEERK285EX`, `TSGLEEType`, `TSGLEERegister()`
 
 M*/
-PETSC_EXTERN PetscErrorCode TSCreate_GLEE(TS ts) {
+PETSC_EXTERN PetscErrorCode TSCreate_GLEE(TS ts)
+{
   TS_GLEE *th;
 
   PetscFunctionBegin;

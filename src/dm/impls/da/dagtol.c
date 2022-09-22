@@ -4,7 +4,8 @@
 
 #include <petsc/private/dmdaimpl.h> /*I   "petscdmda.h"   I*/
 
-PetscErrorCode DMGlobalToLocalBegin_DA(DM da, Vec g, InsertMode mode, Vec l) {
+PetscErrorCode DMGlobalToLocalBegin_DA(DM da, Vec g, InsertMode mode, Vec l)
+{
   DM_DA *dd = (DM_DA *)da->data;
 
   PetscFunctionBegin;
@@ -15,7 +16,8 @@ PetscErrorCode DMGlobalToLocalBegin_DA(DM da, Vec g, InsertMode mode, Vec l) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMGlobalToLocalEnd_DA(DM da, Vec g, InsertMode mode, Vec l) {
+PetscErrorCode DMGlobalToLocalEnd_DA(DM da, Vec g, InsertMode mode, Vec l)
+{
   DM_DA *dd = (DM_DA *)da->data;
 
   PetscFunctionBegin;
@@ -26,7 +28,8 @@ PetscErrorCode DMGlobalToLocalEnd_DA(DM da, Vec g, InsertMode mode, Vec l) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMLocalToGlobalBegin_DA(DM da, Vec l, InsertMode mode, Vec g) {
+PetscErrorCode DMLocalToGlobalBegin_DA(DM da, Vec l, InsertMode mode, Vec g)
+{
   DM_DA *dd = (DM_DA *)da->data;
 
   PetscFunctionBegin;
@@ -44,7 +47,8 @@ PetscErrorCode DMLocalToGlobalBegin_DA(DM da, Vec l, InsertMode mode, Vec g) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMLocalToGlobalEnd_DA(DM da, Vec l, InsertMode mode, Vec g) {
+PetscErrorCode DMLocalToGlobalEnd_DA(DM da, Vec l, InsertMode mode, Vec g)
+{
   DM_DA *dd = (DM_DA *)da->data;
 
   PetscFunctionBegin;
@@ -77,29 +81,30 @@ extern PetscErrorCode DMDAGetNatural_Private(DM, PetscInt *, IS *);
 .seealso: `DMDAGlobalToNaturalBegin()`, `DMDAGlobalToNaturalEnd()`, `DMLocalToGlobalBegin()`, `DMDACreate2d()`,
           `DMGlobalToLocalBegin()`, `DMGlobalToLocalEnd()`, `DMDACreateNaturalVector()`
 */
-PetscErrorCode        DMDAGlobalToNatural_Create(DM da) {
-         PetscInt m, start, Nlocal;
-         IS       from, to;
-         Vec      global;
-         DM_DA   *dd = (DM_DA *)da->data;
+PetscErrorCode DMDAGlobalToNatural_Create(DM da)
+{
+  PetscInt m, start, Nlocal;
+  IS       from, to;
+  Vec      global;
+  DM_DA   *dd = (DM_DA *)da->data;
 
-         PetscFunctionBegin;
-         PetscValidHeaderSpecific(da, DM_CLASSID, 1);
-         PetscCheck(dd->natural, PetscObjectComm((PetscObject)da), PETSC_ERR_ORDER, "Natural layout vector not yet created; cannot scatter into it");
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(da, DM_CLASSID, 1);
+  PetscCheck(dd->natural, PetscObjectComm((PetscObject)da), PETSC_ERR_ORDER, "Natural layout vector not yet created; cannot scatter into it");
 
-         /* create the scatter context */
-         PetscCall(VecGetLocalSize(dd->natural, &m));
-         PetscCall(VecGetOwnershipRange(dd->natural, &start, NULL));
+  /* create the scatter context */
+  PetscCall(VecGetLocalSize(dd->natural, &m));
+  PetscCall(VecGetOwnershipRange(dd->natural, &start, NULL));
 
-         PetscCall(DMDAGetNatural_Private(da, &Nlocal, &to));
-         PetscCheck(Nlocal == m, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Internal error: Nlocal %" PetscInt_FMT " local vector size %" PetscInt_FMT, Nlocal, m);
-         PetscCall(ISCreateStride(PetscObjectComm((PetscObject)da), m, start, 1, &from));
-         PetscCall(VecCreateMPIWithArray(PetscObjectComm((PetscObject)da), dd->w, dd->Nlocal, PETSC_DETERMINE, NULL, &global));
-         PetscCall(VecScatterCreate(global, from, dd->natural, to, &dd->gton));
-         PetscCall(VecDestroy(&global));
-         PetscCall(ISDestroy(&from));
-         PetscCall(ISDestroy(&to));
-         PetscFunctionReturn(0);
+  PetscCall(DMDAGetNatural_Private(da, &Nlocal, &to));
+  PetscCheck(Nlocal == m, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Internal error: Nlocal %" PetscInt_FMT " local vector size %" PetscInt_FMT, Nlocal, m);
+  PetscCall(ISCreateStride(PetscObjectComm((PetscObject)da), m, start, 1, &from));
+  PetscCall(VecCreateMPIWithArray(PetscObjectComm((PetscObject)da), dd->w, dd->Nlocal, PETSC_DETERMINE, NULL, &global));
+  PetscCall(VecScatterCreate(global, from, dd->natural, to, &dd->gton));
+  PetscCall(VecDestroy(&global));
+  PetscCall(ISDestroy(&from));
+  PetscCall(ISDestroy(&to));
+  PetscFunctionReturn(0);
 }
 
 /*@
@@ -131,7 +136,8 @@ PetscErrorCode        DMDAGlobalToNatural_Create(DM da) {
           `DMGlobalToLocalBegin()`, `DMGlobalToLocalEnd()`, `DMDACreateNaturalVector()`
 
 @*/
-PetscErrorCode DMDAGlobalToNaturalBegin(DM da, Vec g, InsertMode mode, Vec n) {
+PetscErrorCode DMDAGlobalToNaturalBegin(DM da, Vec g, InsertMode mode, Vec n)
+{
   DM_DA *dd = (DM_DA *)da->data;
 
   PetscFunctionBegin;
@@ -172,7 +178,8 @@ PetscErrorCode DMDAGlobalToNaturalBegin(DM da, Vec g, InsertMode mode, Vec n) {
           `DMGlobalToLocalBegin()`, `DMGlobalToLocalEnd()`, `DMDACreateNaturalVector()`
 
 @*/
-PetscErrorCode DMDAGlobalToNaturalEnd(DM da, Vec g, InsertMode mode, Vec n) {
+PetscErrorCode DMDAGlobalToNaturalEnd(DM da, Vec g, InsertMode mode, Vec n)
+{
   DM_DA *dd = (DM_DA *)da->data;
 
   PetscFunctionBegin;
@@ -210,7 +217,8 @@ PetscErrorCode DMDAGlobalToNaturalEnd(DM da, Vec g, InsertMode mode, Vec n) {
           `DMGlobalToLocalBegin()`, `DMGlobalToLocalEnd()`, `DMDACreateNaturalVector()`
 
 @*/
-PetscErrorCode DMDANaturalToGlobalBegin(DM da, Vec n, InsertMode mode, Vec g) {
+PetscErrorCode DMDANaturalToGlobalBegin(DM da, Vec n, InsertMode mode, Vec g)
+{
   DM_DA *dd = (DM_DA *)da->data;
 
   PetscFunctionBegin;
@@ -251,7 +259,8 @@ PetscErrorCode DMDANaturalToGlobalBegin(DM da, Vec n, InsertMode mode, Vec g) {
           `DMGlobalToLocalBegin()`, `DMGlobalToLocalEnd()`, `DMDACreateNaturalVector()`
 
 @*/
-PetscErrorCode DMDANaturalToGlobalEnd(DM da, Vec n, InsertMode mode, Vec g) {
+PetscErrorCode DMDANaturalToGlobalEnd(DM da, Vec n, InsertMode mode, Vec g)
+{
   DM_DA *dd = (DM_DA *)da->data;
 
   PetscFunctionBegin;

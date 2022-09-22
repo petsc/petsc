@@ -5,7 +5,8 @@ static char help[] = "Test PETSc integer hash set.\n\n";
 
 #define PetscTestCheck(expr) PetscCheck(expr, PETSC_COMM_SELF, PETSC_ERR_LIB, "Assertion: `%s' failed.", PetscStringize(expr))
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscHSetI ht = NULL, hd;
   PetscInt   n, off, array[4], na, nb, i, *marray, size;
   PetscBool  has, flag;

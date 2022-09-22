@@ -24,7 +24,8 @@ static PetscBuildTwoSidedType _twosided_type = PETSC_BUILDTWOSIDED_NOTSET;
 
 .seealso: `PetscCommBuildTwoSided()`, `PetscCommBuildTwoSidedGetType()`, `PetscBuildTwoSidedType`
 @*/
-PetscErrorCode PetscCommBuildTwoSidedSetType(MPI_Comm comm, PetscBuildTwoSidedType twosided) {
+PetscErrorCode PetscCommBuildTwoSidedSetType(MPI_Comm comm, PetscBuildTwoSidedType twosided)
+{
   PetscFunctionBegin;
   if (PetscDefined(USE_DEBUG)) { /* We don't have a PetscObject so can't use PetscValidLogicalCollectiveEnum */
     PetscMPIInt b1[2], b2[2];
@@ -50,7 +51,8 @@ PetscErrorCode PetscCommBuildTwoSidedSetType(MPI_Comm comm, PetscBuildTwoSidedTy
 
 .seealso: `PetscCommBuildTwoSided()`, `PetscCommBuildTwoSidedSetType()`, `PetscBuildTwoSidedType`
 @*/
-PetscErrorCode PetscCommBuildTwoSidedGetType(MPI_Comm comm, PetscBuildTwoSidedType *twosided) {
+PetscErrorCode PetscCommBuildTwoSidedGetType(MPI_Comm comm, PetscBuildTwoSidedType *twosided)
+{
   PetscMPIInt size;
 
   PetscFunctionBegin;
@@ -68,7 +70,8 @@ PetscErrorCode PetscCommBuildTwoSidedGetType(MPI_Comm comm, PetscBuildTwoSidedTy
 }
 
 #if defined(PETSC_HAVE_MPI_NONBLOCKING_COLLECTIVES)
-static PetscErrorCode PetscCommBuildTwoSided_Ibarrier(MPI_Comm comm, PetscMPIInt count, MPI_Datatype dtype, PetscMPIInt nto, const PetscMPIInt *toranks, const void *todata, PetscMPIInt *nfrom, PetscMPIInt **fromranks, void *fromdata) {
+static PetscErrorCode PetscCommBuildTwoSided_Ibarrier(MPI_Comm comm, PetscMPIInt count, MPI_Datatype dtype, PetscMPIInt nto, const PetscMPIInt *toranks, const void *todata, PetscMPIInt *nfrom, PetscMPIInt **fromranks, void *fromdata)
+{
   PetscMPIInt    nrecvs, tag, done, i;
   MPI_Aint       lb, unitbytes;
   char          *tdata;
@@ -86,8 +89,8 @@ static PetscErrorCode PetscCommBuildTwoSided_Ibarrier(MPI_Comm comm, PetscMPIInt
   PetscCall(PetscSegBufferCreate(sizeof(PetscMPIInt), 4, &segrank));
   PetscCall(PetscSegBufferCreate(unitbytes, 4 * count, &segdata));
 
-  nrecvs          = 0;
-  barrier         = MPI_REQUEST_NULL;
+  nrecvs  = 0;
+  barrier = MPI_REQUEST_NULL;
   /* MPICH-3.2 sometimes does not create a request in some "optimized" cases.  This is arguably a standard violation,
    * but we need to work around it. */
   barrier_started = PETSC_FALSE;
@@ -127,7 +130,8 @@ static PetscErrorCode PetscCommBuildTwoSided_Ibarrier(MPI_Comm comm, PetscMPIInt
 }
 #endif
 
-static PetscErrorCode PetscCommBuildTwoSided_Allreduce(MPI_Comm comm, PetscMPIInt count, MPI_Datatype dtype, PetscMPIInt nto, const PetscMPIInt *toranks, const void *todata, PetscMPIInt *nfrom, PetscMPIInt **fromranks, void *fromdata) {
+static PetscErrorCode PetscCommBuildTwoSided_Allreduce(MPI_Comm comm, PetscMPIInt count, MPI_Datatype dtype, PetscMPIInt nto, const PetscMPIInt *toranks, const void *todata, PetscMPIInt *nfrom, PetscMPIInt **fromranks, void *fromdata)
+{
   PetscMPIInt       size, rank, *iflags, nrecvs, tag, *franks, i, flg;
   MPI_Aint          lb, unitbytes;
   char             *tdata, *fdata;
@@ -172,7 +176,8 @@ static PetscErrorCode PetscCommBuildTwoSided_Allreduce(MPI_Comm comm, PetscMPIIn
 }
 
 #if defined(PETSC_HAVE_MPI_REDUCE_SCATTER_BLOCK)
-static PetscErrorCode PetscCommBuildTwoSided_RedScatter(MPI_Comm comm, PetscMPIInt count, MPI_Datatype dtype, PetscMPIInt nto, const PetscMPIInt *toranks, const void *todata, PetscMPIInt *nfrom, PetscMPIInt **fromranks, void *fromdata) {
+static PetscErrorCode PetscCommBuildTwoSided_RedScatter(MPI_Comm comm, PetscMPIInt count, MPI_Datatype dtype, PetscMPIInt nto, const PetscMPIInt *toranks, const void *todata, PetscMPIInt *nfrom, PetscMPIInt **fromranks, void *fromdata)
+{
   PetscMPIInt       size, *iflags, nrecvs, tag, *franks, i, flg;
   MPI_Aint          lb, unitbytes;
   char             *tdata, *fdata;
@@ -250,7 +255,8 @@ static PetscErrorCode PetscCommBuildTwoSided_RedScatter(MPI_Comm comm, PetscMPII
 
 .seealso: `PetscGatherNumberOfMessages()`, `PetscGatherMessageLengths()`, `PetscCommBuildTwoSidedSetType()`, `PetscCommBuildTwoSidedType`
 @*/
-PetscErrorCode PetscCommBuildTwoSided(MPI_Comm comm, PetscMPIInt count, MPI_Datatype dtype, PetscMPIInt nto, const PetscMPIInt *toranks, const void *todata, PetscMPIInt *nfrom, PetscMPIInt **fromranks, void *fromdata) {
+PetscErrorCode PetscCommBuildTwoSided(MPI_Comm comm, PetscMPIInt count, MPI_Datatype dtype, PetscMPIInt nto, const PetscMPIInt *toranks, const void *todata, PetscMPIInt *nfrom, PetscMPIInt **fromranks, void *fromdata)
+{
   PetscBuildTwoSidedType buildtype = PETSC_BUILDTWOSIDED_NOTSET;
 
   PetscFunctionBegin;
@@ -266,7 +272,9 @@ PetscErrorCode PetscCommBuildTwoSided(MPI_Comm comm, PetscMPIInt count, MPI_Data
 #else
     SETERRQ(comm, PETSC_ERR_PLIB, "MPI implementation does not provide MPI_Ibarrier (part of MPI-3)");
 #endif
-  case PETSC_BUILDTWOSIDED_ALLREDUCE: PetscCall(PetscCommBuildTwoSided_Allreduce(comm, count, dtype, nto, toranks, todata, nfrom, fromranks, fromdata)); break;
+  case PETSC_BUILDTWOSIDED_ALLREDUCE:
+    PetscCall(PetscCommBuildTwoSided_Allreduce(comm, count, dtype, nto, toranks, todata, nfrom, fromranks, fromdata));
+    break;
   case PETSC_BUILDTWOSIDED_REDSCATTER:
 #if defined(PETSC_HAVE_MPI_REDUCE_SCATTER_BLOCK)
     PetscCall(PetscCommBuildTwoSided_RedScatter(comm, count, dtype, nto, toranks, todata, nfrom, fromranks, fromdata));
@@ -274,13 +282,15 @@ PetscErrorCode PetscCommBuildTwoSided(MPI_Comm comm, PetscMPIInt count, MPI_Data
 #else
     SETERRQ(comm, PETSC_ERR_PLIB, "MPI implementation does not provide MPI_Reduce_scatter_block (part of MPI-2.2)");
 #endif
-  default: SETERRQ(comm, PETSC_ERR_PLIB, "Unknown method for building two-sided communication");
+  default:
+    SETERRQ(comm, PETSC_ERR_PLIB, "Unknown method for building two-sided communication");
   }
   PetscCall(PetscLogEventEnd(PETSC_BuildTwoSided, 0, 0, 0, 0));
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscCommBuildTwoSidedFReq_Reference(MPI_Comm comm, PetscMPIInt count, MPI_Datatype dtype, PetscMPIInt nto, const PetscMPIInt *toranks, const void *todata, PetscMPIInt *nfrom, PetscMPIInt **fromranks, void *fromdata, PetscMPIInt ntags, MPI_Request **toreqs, MPI_Request **fromreqs, PetscErrorCode (*send)(MPI_Comm, const PetscMPIInt[], PetscMPIInt, PetscMPIInt, void *, MPI_Request[], void *), PetscErrorCode (*recv)(MPI_Comm, const PetscMPIInt[], PetscMPIInt, void *, MPI_Request[], void *), void *ctx) {
+static PetscErrorCode PetscCommBuildTwoSidedFReq_Reference(MPI_Comm comm, PetscMPIInt count, MPI_Datatype dtype, PetscMPIInt nto, const PetscMPIInt *toranks, const void *todata, PetscMPIInt *nfrom, PetscMPIInt **fromranks, void *fromdata, PetscMPIInt ntags, MPI_Request **toreqs, MPI_Request **fromreqs, PetscErrorCode (*send)(MPI_Comm, const PetscMPIInt[], PetscMPIInt, PetscMPIInt, void *, MPI_Request[], void *), PetscErrorCode (*recv)(MPI_Comm, const PetscMPIInt[], PetscMPIInt, void *, MPI_Request[], void *), void *ctx)
+{
   PetscMPIInt  i, *tag;
   MPI_Aint     lb, unitbytes;
   MPI_Request *sendreq, *recvreq;
@@ -318,7 +328,8 @@ static PetscErrorCode PetscCommBuildTwoSidedFReq_Reference(MPI_Comm comm, PetscM
 
 #if defined(PETSC_HAVE_MPI_NONBLOCKING_COLLECTIVES)
 
-static PetscErrorCode PetscCommBuildTwoSidedFReq_Ibarrier(MPI_Comm comm, PetscMPIInt count, MPI_Datatype dtype, PetscMPIInt nto, const PetscMPIInt *toranks, const void *todata, PetscMPIInt *nfrom, PetscMPIInt **fromranks, void *fromdata, PetscMPIInt ntags, MPI_Request **toreqs, MPI_Request **fromreqs, PetscErrorCode (*send)(MPI_Comm, const PetscMPIInt[], PetscMPIInt, PetscMPIInt, void *, MPI_Request[], void *), PetscErrorCode (*recv)(MPI_Comm, const PetscMPIInt[], PetscMPIInt, void *, MPI_Request[], void *), void *ctx) {
+static PetscErrorCode PetscCommBuildTwoSidedFReq_Ibarrier(MPI_Comm comm, PetscMPIInt count, MPI_Datatype dtype, PetscMPIInt nto, const PetscMPIInt *toranks, const void *todata, PetscMPIInt *nfrom, PetscMPIInt **fromranks, void *fromdata, PetscMPIInt ntags, MPI_Request **toreqs, MPI_Request **fromreqs, PetscErrorCode (*send)(MPI_Comm, const PetscMPIInt[], PetscMPIInt, PetscMPIInt, void *, MPI_Request[], void *), PetscErrorCode (*recv)(MPI_Comm, const PetscMPIInt[], PetscMPIInt, void *, MPI_Request[], void *), void *ctx)
+{
   PetscMPIInt    nrecvs, tag, *tags, done, i;
   MPI_Aint       lb, unitbytes;
   char          *tdata;
@@ -349,8 +360,8 @@ static PetscErrorCode PetscCommBuildTwoSidedFReq_Ibarrier(MPI_Comm comm, PetscMP
   PetscCall(PetscSegBufferCreate(unitbytes, 4 * count, &segdata));
   PetscCall(PetscSegBufferCreate(sizeof(MPI_Request), 4, &segreq));
 
-  nrecvs          = 0;
-  barrier         = MPI_REQUEST_NULL;
+  nrecvs  = 0;
+  barrier = MPI_REQUEST_NULL;
   /* MPICH-3.2 sometimes does not create a request in some "optimized" cases.  This is arguably a standard violation,
    * but we need to work around it. */
   barrier_started = PETSC_FALSE;
@@ -433,7 +444,8 @@ static PetscErrorCode PetscCommBuildTwoSidedFReq_Ibarrier(MPI_Comm comm, PetscMP
 
 .seealso: `PetscCommBuildTwoSided()`, `PetscCommBuildTwoSidedFReq()`, `PetscGatherNumberOfMessages()`, `PetscGatherMessageLengths()`
 @*/
-PetscErrorCode PetscCommBuildTwoSidedF(MPI_Comm comm, PetscMPIInt count, MPI_Datatype dtype, PetscMPIInt nto, const PetscMPIInt *toranks, const void *todata, PetscMPIInt *nfrom, PetscMPIInt **fromranks, void *fromdata, PetscMPIInt ntags, PetscErrorCode (*send)(MPI_Comm, const PetscMPIInt[], PetscMPIInt, PetscMPIInt, void *, MPI_Request[], void *), PetscErrorCode (*recv)(MPI_Comm, const PetscMPIInt[], PetscMPIInt, void *, MPI_Request[], void *), void *ctx) {
+PetscErrorCode PetscCommBuildTwoSidedF(MPI_Comm comm, PetscMPIInt count, MPI_Datatype dtype, PetscMPIInt nto, const PetscMPIInt *toranks, const void *todata, PetscMPIInt *nfrom, PetscMPIInt **fromranks, void *fromdata, PetscMPIInt ntags, PetscErrorCode (*send)(MPI_Comm, const PetscMPIInt[], PetscMPIInt, PetscMPIInt, void *, MPI_Request[], void *), PetscErrorCode (*recv)(MPI_Comm, const PetscMPIInt[], PetscMPIInt, void *, MPI_Request[], void *), void *ctx)
+{
   MPI_Request *toreqs, *fromreqs;
 
   PetscFunctionBegin;
@@ -483,7 +495,8 @@ PetscErrorCode PetscCommBuildTwoSidedF(MPI_Comm comm, PetscMPIInt count, MPI_Dat
 
 .seealso: `PetscCommBuildTwoSided()`, `PetscCommBuildTwoSidedF()`, `PetscGatherNumberOfMessages()`, `PetscGatherMessageLengths()`
 @*/
-PetscErrorCode PetscCommBuildTwoSidedFReq(MPI_Comm comm, PetscMPIInt count, MPI_Datatype dtype, PetscMPIInt nto, const PetscMPIInt *toranks, const void *todata, PetscMPIInt *nfrom, PetscMPIInt **fromranks, void *fromdata, PetscMPIInt ntags, MPI_Request **toreqs, MPI_Request **fromreqs, PetscErrorCode (*send)(MPI_Comm, const PetscMPIInt[], PetscMPIInt, PetscMPIInt, void *, MPI_Request[], void *), PetscErrorCode (*recv)(MPI_Comm, const PetscMPIInt[], PetscMPIInt, void *, MPI_Request[], void *), void *ctx) {
+PetscErrorCode PetscCommBuildTwoSidedFReq(MPI_Comm comm, PetscMPIInt count, MPI_Datatype dtype, PetscMPIInt nto, const PetscMPIInt *toranks, const void *todata, PetscMPIInt *nfrom, PetscMPIInt **fromranks, void *fromdata, PetscMPIInt ntags, MPI_Request **toreqs, MPI_Request **fromreqs, PetscErrorCode (*send)(MPI_Comm, const PetscMPIInt[], PetscMPIInt, PetscMPIInt, void *, MPI_Request[], void *), PetscErrorCode (*recv)(MPI_Comm, const PetscMPIInt[], PetscMPIInt, void *, MPI_Request[], void *), void *ctx)
+{
   PetscErrorCode (*f)(MPI_Comm, PetscMPIInt, MPI_Datatype, PetscMPIInt, const PetscMPIInt[], const void *, PetscMPIInt *, PetscMPIInt **, void *, PetscMPIInt, MPI_Request **, MPI_Request **, PetscErrorCode (*send)(MPI_Comm, const PetscMPIInt[], PetscMPIInt, PetscMPIInt, void *, MPI_Request[], void *), PetscErrorCode (*recv)(MPI_Comm, const PetscMPIInt[], PetscMPIInt, void *, MPI_Request[], void *), void *ctx);
   PetscBuildTwoSidedType buildtype = PETSC_BUILDTWOSIDED_NOTSET;
   PetscMPIInt            i, size;
@@ -504,8 +517,11 @@ PetscErrorCode PetscCommBuildTwoSidedFReq(MPI_Comm comm, PetscMPIInt count, MPI_
     SETERRQ(comm, PETSC_ERR_PLIB, "MPI implementation does not provide MPI_Ibarrier (part of MPI-3)");
 #endif
   case PETSC_BUILDTWOSIDED_ALLREDUCE:
-  case PETSC_BUILDTWOSIDED_REDSCATTER: f = PetscCommBuildTwoSidedFReq_Reference; break;
-  default: SETERRQ(comm, PETSC_ERR_PLIB, "Unknown method for building two-sided communication");
+  case PETSC_BUILDTWOSIDED_REDSCATTER:
+    f = PetscCommBuildTwoSidedFReq_Reference;
+    break;
+  default:
+    SETERRQ(comm, PETSC_ERR_PLIB, "Unknown method for building two-sided communication");
   }
   PetscCall((*f)(comm, count, dtype, nto, toranks, todata, nfrom, fromranks, fromdata, ntags, toreqs, fromreqs, send, recv, ctx));
   PetscCall(PetscLogEventEnd(PETSC_BuildTwoSidedF, 0, 0, 0, 0));

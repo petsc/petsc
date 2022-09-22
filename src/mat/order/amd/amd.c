@@ -4,12 +4,12 @@
 #include <amd.h>
 
 #if defined(PETSC_USE_64BIT_INDICES)
-#define amd_AMD_defaults amd_l_defaults
-/* the type casts are needed because PetscInt is long long while SuiteSparse_long is long and compilers warn even when they are identical */
-#define amd_AMD_order(a, b, c, d, e, f) amd_l_order((SuiteSparse_long)a, (SuiteSparse_long *)b, (SuiteSparse_long *)c, (SuiteSparse_long *)d, e, f)
+  #define amd_AMD_defaults amd_l_defaults
+  /* the type casts are needed because PetscInt is long long while SuiteSparse_long is long and compilers warn even when they are identical */
+  #define amd_AMD_order(a, b, c, d, e, f) amd_l_order((SuiteSparse_long)a, (SuiteSparse_long *)b, (SuiteSparse_long *)c, (SuiteSparse_long *)d, e, f)
 #else
-#define amd_AMD_defaults amd_defaults
-#define amd_AMD_order    amd_order
+  #define amd_AMD_defaults amd_defaults
+  #define amd_AMD_order    amd_order
 #endif
 
 /*
@@ -17,7 +17,8 @@
 
     This provides an interface to Tim Davis' AMD package (used by UMFPACK, CHOLMOD, MATLAB, etc).
 */
-PETSC_INTERN PetscErrorCode MatGetOrdering_AMD(Mat mat, MatOrderingType type, IS *row, IS *col) {
+PETSC_INTERN PetscErrorCode MatGetOrdering_AMD(Mat mat, MatOrderingType type, IS *row, IS *col)
+{
   PetscInt        nrow, *perm;
   const PetscInt *ia, *ja;
   int             status;
@@ -51,15 +52,20 @@ PETSC_INTERN PetscErrorCode MatGetOrdering_AMD(Mat mat, MatOrderingType type, IS
   PetscCall(PetscMalloc1(nrow, &perm));
   status = amd_AMD_order(nrow, ia, ja, perm, Control, Info);
   switch (status) {
-  case AMD_OK: break;
+  case AMD_OK:
+    break;
   case AMD_OK_BUT_JUMBLED:
     /* The result is fine, but PETSc matrices are supposed to satisfy stricter preconditions, so PETSc considers a
     * matrix that triggers this error condition to be invalid.
     */
     SETERRQ(PetscObjectComm((PetscObject)mat), PETSC_ERR_PLIB, "According to AMD, the matrix has unsorted and/or duplicate row indices");
-  case AMD_INVALID: amd_info(Info); SETERRQ(PetscObjectComm((PetscObject)mat), PETSC_ERR_PLIB, "According to AMD, the matrix is invalid");
-  case AMD_OUT_OF_MEMORY: SETERRQ(PetscObjectComm((PetscObject)mat), PETSC_ERR_MEM, "AMD could not compute ordering");
-  default: SETERRQ(PetscObjectComm((PetscObject)mat), PETSC_ERR_LIB, "Unexpected return value");
+  case AMD_INVALID:
+    amd_info(Info);
+    SETERRQ(PetscObjectComm((PetscObject)mat), PETSC_ERR_PLIB, "According to AMD, the matrix is invalid");
+  case AMD_OUT_OF_MEMORY:
+    SETERRQ(PetscObjectComm((PetscObject)mat), PETSC_ERR_MEM, "AMD could not compute ordering");
+  default:
+    SETERRQ(PetscObjectComm((PetscObject)mat), PETSC_ERR_LIB, "Unexpected return value");
   }
   PetscCall(MatRestoreRowIJ(mat, 0, PETSC_FALSE, PETSC_TRUE, NULL, &ia, &ja, &done));
 

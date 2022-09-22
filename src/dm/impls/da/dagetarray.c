@@ -39,7 +39,8 @@
           `DMDAVecGetArrayDOF()`, `DMDAVecGetArrayWrite()`, `DMDAVecRestoreArrayWrite()`, `DMDAVecGetArrayRead()`, `DMDAVecRestoreArrayRead()`,
           `DMStagVecGetArray()`
 @*/
-PetscErrorCode DMDAVecGetArray(DM da, Vec vec, void *array) {
+PetscErrorCode DMDAVecGetArray(DM da, Vec vec, void *array)
+{
   PetscInt xs, ys, zs, xm, ym, zm, gxs, gys, gzs, gxm, gym, gzm, N, dim, dof;
 
   PetscFunctionBegin;
@@ -91,7 +92,8 @@ PetscErrorCode DMDAVecGetArray(DM da, Vec vec, void *array) {
           `DMDAVecGetArrayWrite()`, `DMDAVecRestoreArrayWrite()`, `DMDAVecGetArrayRead()`, `DMDAVecRestoreArrayRead()`,
           `DMDStagVecRestoreArray()`
 @*/
-PetscErrorCode DMDAVecRestoreArray(DM da, Vec vec, void *array) {
+PetscErrorCode DMDAVecRestoreArray(DM da, Vec vec, void *array)
+{
   PetscInt xs, ys, zs, xm, ym, zm, gxs, gys, gzs, gxm, gym, gzm, N, dim, dof;
 
   PetscFunctionBegin;
@@ -162,7 +164,8 @@ PetscErrorCode DMDAVecRestoreArray(DM da, Vec vec, void *array) {
 .seealso: `DMDAGetGhostCorners()`, `DMDAGetCorners()`, `VecGetArray()`, `VecRestoreArray()`, `DMDAVecRestoreArrayWrite()`, `DMDAVecRestoreArrayDOF()`
           `DMDAVecGetArrayDOF()`, `DMDAVecGetArray()`, `DMDAVecRestoreArray()`, `DMDAVecGetArrayRead()`, `DMDAVecRestoreArrayRead()`
 @*/
-PetscErrorCode DMDAVecGetArrayWrite(DM da, Vec vec, void *array) {
+PetscErrorCode DMDAVecGetArrayWrite(DM da, Vec vec, void *array)
+{
   PetscInt xs, ys, zs, xm, ym, zm, gxs, gys, gzs, gxm, gym, gzm, N, dim, dof;
 
   PetscFunctionBegin;
@@ -217,7 +220,8 @@ PetscErrorCode DMDAVecGetArrayWrite(DM da, Vec vec, void *array) {
 .seealso: `DMDAGetGhostCorners()`, `DMDAGetCorners()`, `VecGetArray()`, `VecRestoreArray()`, `DMDAVecGetArrayWrite()`,
           `DMDAVecGetArray()`, `DMDAVecRestoreArray()`, `DMDAVecGetArrayRead()`, `DMDAVecRestoreArrayRead()`
 @*/
-PetscErrorCode DMDAVecRestoreArrayWrite(DM da, Vec vec, void *array) {
+PetscErrorCode DMDAVecRestoreArrayWrite(DM da, Vec vec, void *array)
+{
   PetscInt xs, ys, zs, xm, ym, zm, gxs, gys, gzs, gxm, gym, gzm, N, dim, dof;
 
   PetscFunctionBegin;
@@ -280,7 +284,8 @@ PetscErrorCode DMDAVecRestoreArrayWrite(DM da, Vec vec, void *array) {
 .seealso: `DMDAGetGhostCorners()`, `DMDAGetCorners()`, `VecGetArray()`, `VecRestoreArray()`, `DMDAVecRestoreArray()`, `DMDAVecGetArray()`, `DMDAVecRestoreArrayDOF()`,
           `DMDAVecGetArrayWrite()`, `DMDAVecRestoreArrayWrite()`, `DMDAVecGetArrayRead()`, `DMDAVecRestoreArrayRead()`, `DMDAVecGetArrayDOFRead()`
 @*/
-PetscErrorCode DMDAVecGetArrayDOF(DM da, Vec vec, void *array) {
+PetscErrorCode DMDAVecGetArrayDOF(DM da, Vec vec, void *array)
+{
   PetscInt xs, ys, zs, xm, ym, zm, gxs, gys, gzs, gxm, gym, gzm, N, dim, dof;
 
   PetscFunctionBegin;
@@ -325,7 +330,8 @@ PetscErrorCode DMDAVecGetArrayDOF(DM da, Vec vec, void *array) {
 .seealso: `DMDAGetGhostCorners()`, `DMDAGetCorners()`, `VecGetArray()`, `VecRestoreArray()`, `DMDAVecGetArray()`, `DMDAVecGetArrayDOF()`, `DMDAVecRestoreArrayDOF()`,
           `DMDAVecGetArrayWrite()`, `DMDAVecRestoreArrayWrite()`, `DMDAVecGetArrayRead()`, `DMDAVecRestoreArrayRead()`
 @*/
-PetscErrorCode DMDAVecRestoreArrayDOF(DM da, Vec vec, void *array) {
+PetscErrorCode DMDAVecRestoreArrayDOF(DM da, Vec vec, void *array)
+{
   PetscInt xs, ys, zs, xm, ym, zm, gxs, gys, gzs, gxm, gym, gzm, N, dim, dof;
 
   PetscFunctionBegin;
@@ -392,7 +398,8 @@ PetscErrorCode DMDAVecRestoreArrayDOF(DM da, Vec vec, void *array) {
           `DMDAVecGetArrayDOF()`, `DMDAVecGetArray()`, `DMDAVecRestoreArray()`, `DMDAVecGetArrayRead()`, `DMDAVecRestoreArrayRead()`,
           `DMStagVecGetArrayRead()`
 @*/
-PetscErrorCode DMDAVecGetArrayRead(DM da, Vec vec, void *array) {
+PetscErrorCode DMDAVecGetArrayRead(DM da, Vec vec, void *array)
+{
   PetscInt xs, ys, zs, xm, ym, zm, gxs, gys, gzs, gxm, gym, gzm, N, dim, dof;
 
   PetscFunctionBegin;
@@ -444,7 +451,8 @@ PetscErrorCode DMDAVecGetArrayRead(DM da, Vec vec, void *array) {
           `DMDAVecGetArray()`, `DMDAVecRestoreArray()`, `DMDAVecGetArrayWrite()`, `DMDAVecRestoreArrayWrite()`,
           `DMStagVecRestoreArrayRead()`
 @*/
-PetscErrorCode DMDAVecRestoreArrayRead(DM da, Vec vec, void *array) {
+PetscErrorCode DMDAVecRestoreArrayRead(DM da, Vec vec, void *array)
+{
   PetscInt xs, ys, zs, xm, ym, zm, gxs, gys, gzs, gxm, gym, gzm, N, dim, dof;
 
   PetscFunctionBegin;
@@ -503,7 +511,8 @@ PetscErrorCode DMDAVecRestoreArrayRead(DM da, Vec vec, void *array) {
 .seealso: `DMDAGetGhostCorners()`, `DMDAGetCorners()`, `VecGetArray()`, `VecRestoreArray()`, `DMDAVecRestoreArray()`, `DMDAVecGetArray()`, `DMDAVecGetArrayDOF()`,
           `DMDAVecGetArrayWrite()`, `DMDAVecRestoreArrayWrite()`, `DMDAVecGetArrayRead()`, `DMDAVecRestoreArrayRead()`
 @*/
-PetscErrorCode DMDAVecGetArrayDOFRead(DM da, Vec vec, void *array) {
+PetscErrorCode DMDAVecGetArrayDOFRead(DM da, Vec vec, void *array)
+{
   PetscInt xs, ys, zs, xm, ym, zm, gxs, gys, gzs, gxm, gym, gzm, N, dim, dof;
 
   PetscFunctionBegin;
@@ -548,7 +557,8 @@ PetscErrorCode DMDAVecGetArrayDOFRead(DM da, Vec vec, void *array) {
 .seealso: `DMDAGetGhostCorners()`, `DMDAGetCorners()`, `VecGetArray()`, `VecRestoreArray()`, `DMDAVecGetArray()`, `DMDAVecGetArrayDOF()`, `DMDAVecRestoreArrayDOF()`,
           `DMDAVecGetArrayWrite()`, `DMDAVecRestoreArrayWrite()`, `DMDAVecGetArrayRead()`, `DMDAVecRestoreArrayRead()`
 @*/
-PetscErrorCode DMDAVecRestoreArrayDOFRead(DM da, Vec vec, void *array) {
+PetscErrorCode DMDAVecRestoreArrayDOFRead(DM da, Vec vec, void *array)
+{
   PetscInt xs, ys, zs, xm, ym, zm, gxs, gys, gzs, gxm, gym, gzm, N, dim, dof;
 
   PetscFunctionBegin;
@@ -604,7 +614,8 @@ PetscErrorCode DMDAVecRestoreArrayDOFRead(DM da, Vec vec, void *array) {
 .seealso: `DMDAGetGhostCorners()`, `DMDAGetCorners()`, `VecGetArray()`, `VecRestoreArray()`, `DMDAVecRestoreArray()`, `DMDAVecGetArray()`, `DMDAVecGetArrayDOF()`,
           `DMDAVecGetArrayWrite()`, `DMDAVecRestoreArrayWrite()`, `DMDAVecGetArrayWrite()`, `DMDAVecRestoreArrayWrite()`
 @*/
-PetscErrorCode DMDAVecGetArrayDOFWrite(DM da, Vec vec, void *array) {
+PetscErrorCode DMDAVecGetArrayDOFWrite(DM da, Vec vec, void *array)
+{
   PetscInt xs, ys, zs, xm, ym, zm, gxs, gys, gzs, gxm, gym, gzm, N, dim, dof;
 
   PetscFunctionBegin;
@@ -649,7 +660,8 @@ PetscErrorCode DMDAVecGetArrayDOFWrite(DM da, Vec vec, void *array) {
 .seealso: `DMDAGetGhostCorners()`, `DMDAGetCorners()`, `VecGetArray()`, `VecRestoreArray()`, `DMDAVecGetArray()`, `DMDAVecGetArrayDOF()`, `DMDAVecRestoreArrayDOF()`,
           `DMDAVecGetArrayWrite()`, `DMDAVecRestoreArrayWrite()`, `DMDAVecGetArrayWrite()`, `DMDAVecRestoreArrayWrite()`
 @*/
-PetscErrorCode DMDAVecRestoreArrayDOFWrite(DM da, Vec vec, void *array) {
+PetscErrorCode DMDAVecRestoreArrayDOFWrite(DM da, Vec vec, void *array)
+{
   PetscInt xs, ys, zs, xm, ym, zm, gxs, gys, gzs, gxm, gym, gzm, N, dim, dof;
 
   PetscFunctionBegin;

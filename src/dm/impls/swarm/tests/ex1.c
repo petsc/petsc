@@ -11,7 +11,8 @@ typedef struct {
   PetscInt dummy;
 } AppCtx;
 
-static PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, AppCtx *user) {
+static PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, AppCtx *user)
+{
   PetscFunctionBeginUser;
   PetscCall(DMCreate(comm, dm));
   PetscCall(DMSetType(*dm, DMPLEX));
@@ -20,18 +21,21 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, AppCtx *user) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode linear(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx) {
+static PetscErrorCode linear(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
+{
   PetscInt d;
   u[0] = 0.0;
   for (d = 0; d < dim; ++d) u[0] += x[d];
   return 0;
 }
 
-static void identity(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g0[]) {
+static void identity(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g0[])
+{
   g0[0] = 1.0;
 }
 
-static PetscErrorCode CreateParticles(DM dm, DM *sw, AppCtx *user) {
+static PetscErrorCode CreateParticles(DM dm, DM *sw, AppCtx *user)
+{
   PetscDS          prob;
   PetscFE          fe;
   PetscQuadrature  quad;
@@ -86,7 +90,8 @@ static PetscErrorCode CreateParticles(DM dm, DM *sw, AppCtx *user) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TestL2Projection(DM dm, DM sw, AppCtx *user) {
+static PetscErrorCode TestL2Projection(DM dm, DM sw, AppCtx *user)
+{
   PetscErrorCode (*funcs[1])(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar *, void *);
   KSP       ksp;
   Mat       mass;
@@ -123,7 +128,8 @@ static PetscErrorCode TestL2Projection(DM dm, DM sw, AppCtx *user) {
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[])
+{
   MPI_Comm comm;
   DM       dm, sw;
   AppCtx   user;

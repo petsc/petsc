@@ -24,10 +24,11 @@
 /*       LS - A TEMPORARY VECTOR USED TO STORE THE NODES OF THE*/
 /*              COMPONENT LEVEL BY LEVEL.*/
 /*****************************************************************/
-PetscErrorCode SPARSEPACKdegree(const PetscInt *root, const PetscInt *inxadj, const PetscInt *adjncy, PetscInt *mask, PetscInt *deg, PetscInt *ccsize, PetscInt *ls) {
+PetscErrorCode SPARSEPACKdegree(const PetscInt *root, const PetscInt *inxadj, const PetscInt *adjncy, PetscInt *mask, PetscInt *deg, PetscInt *ccsize, PetscInt *ls)
+{
   PetscInt *xadj = (PetscInt *)inxadj; /* Used as temporary and reset within this function */
   /* System generated locals */
-  PetscInt  i__1, i__2;
+  PetscInt i__1, i__2;
 
   /* Local variables */
   PetscInt ideg, node, i, j, jstop, jstrt, lbegin, lvlend, lvsize, nbr;
@@ -54,7 +55,7 @@ L100:
   lvlend = *ccsize;
   /*       FIND THE DEGREES OF NODES IN THE CURRENT LEVEL,*/
   /*       AND AT THE SAME TIME, GENERATE THE NEXT LEVEL.*/
-  i__1   = lvlend;
+  i__1 = lvlend;
   for (i = lbegin; i <= i__1; ++i) {
     node  = ls[i];
     jstrt = -xadj[node];

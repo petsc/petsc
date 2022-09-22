@@ -9,7 +9,8 @@ static char help[] = "Tests vecScatter Sequential to Sequential for (CUDA) vecto
   -fromFirst # : the starting index of the input vector for strided scatters\n\
   -fromStep # : the step size into the input vector for strided scatters\n\n";
 
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[])
+{
   Vec         X, Y;
   PetscInt    m, n, i, n1, n2;
   PetscInt    toFirst, toStep, fromFirst, fromStep;

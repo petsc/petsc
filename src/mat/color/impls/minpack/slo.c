@@ -3,7 +3,8 @@
 
 #include <../src/mat/color/impls/minpack/color.h>
 
-PetscErrorCode MINPACKslo(PetscInt *n, const PetscInt *indrow, const PetscInt *jpntr, const PetscInt *indcol, const PetscInt *ipntr, PetscInt *ndeg, PetscInt *list, PetscInt *maxclq, PetscInt *iwa1, PetscInt *iwa2, PetscInt *iwa3, PetscInt *iwa4) {
+PetscErrorCode MINPACKslo(PetscInt *n, const PetscInt *indrow, const PetscInt *jpntr, const PetscInt *indcol, const PetscInt *ipntr, PetscInt *ndeg, PetscInt *list, PetscInt *maxclq, PetscInt *iwa1, PetscInt *iwa2, PetscInt *iwa3, PetscInt *iwa4)
+{
   /* System generated locals */
   PetscInt i__1, i__2, i__3, i__4;
 
@@ -78,9 +79,9 @@ PetscErrorCode MINPACKslo(PetscInt *n, const PetscInt *indrow, const PetscInt *j
     iwa4[jp]     = *n;
     list[jp]     = ndeg[jp];
     /* Computing MIN */
-    i__2         = mindeg;
-    i__3         = ndeg[jp];
-    mindeg       = PetscMin(i__2, i__3);
+    i__2   = mindeg;
+    i__3   = ndeg[jp];
+    mindeg = PetscMin(i__2, i__3);
   }
 
   /*     Create a doubly-linked list to access the degrees of the */

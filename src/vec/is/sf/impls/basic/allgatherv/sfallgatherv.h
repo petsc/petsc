@@ -1,4 +1,4 @@
-#if !defined(_SFALLGATHERV_H)
+#ifndef _SFALLGATHERV_H
 #define _SFALLGATHERV_H
 
 #include <petsc/private/sfimpl.h> /*I "petscsf.h" I*/

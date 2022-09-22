@@ -1,7 +1,8 @@
 static char help[] = "Tests MatConvert from AIJ to MATIS with a block size greater than 1.\n";
 
 #include <petscmat.h>
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   Mat         A, B;
   char        file[PETSC_MAX_PATH_LEN];
   PetscViewer fd;

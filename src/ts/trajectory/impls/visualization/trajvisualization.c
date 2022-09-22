@@ -1,7 +1,8 @@
 
 #include <petsc/private/tsimpl.h> /*I "petscts.h"  I*/
 
-static PetscErrorCode OutputBIN(MPI_Comm comm, const char *filename, PetscViewer *viewer) {
+static PetscErrorCode OutputBIN(MPI_Comm comm, const char *filename, PetscViewer *viewer)
+{
   PetscFunctionBegin;
   PetscCall(PetscViewerCreate(comm, viewer));
   PetscCall(PetscViewerSetType(*viewer, PETSCVIEWERBINARY));
@@ -10,7 +11,8 @@ static PetscErrorCode OutputBIN(MPI_Comm comm, const char *filename, PetscViewer
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSTrajectorySet_Visualization(TSTrajectory tj, TS ts, PetscInt stepnum, PetscReal time, Vec X) {
+static PetscErrorCode TSTrajectorySet_Visualization(TSTrajectory tj, TS ts, PetscInt stepnum, PetscReal time, Vec X)
+{
   PetscViewer viewer;
   char        filename[PETSC_MAX_PATH_LEN];
   PetscReal   tprev;
@@ -80,7 +82,8 @@ static PetscErrorCode TSTrajectorySet_Visualization(TSTrajectory tj, TS ts, Pets
 .seealso: `TSTrajectoryCreate()`, `TS`, `TSTrajectorySetType()`, `TSTrajectoryType`, `TSTrajectorySetVariableNames()`
 
 M*/
-PETSC_EXTERN PetscErrorCode TSTrajectoryCreate_Visualization(TSTrajectory tj, TS ts) {
+PETSC_EXTERN PetscErrorCode TSTrajectoryCreate_Visualization(TSTrajectory tj, TS ts)
+{
   PetscFunctionBegin;
   tj->ops->set    = TSTrajectorySet_Visualization;
   tj->setupcalled = PETSC_TRUE;

@@ -5,7 +5,8 @@
   MatConvert_Basic - Converts from any input format to another format.
   Does not do preallocation so in general will be slow
  */
-PETSC_INTERN PetscErrorCode MatConvert_Basic(Mat mat, MatType newtype, MatReuse reuse, Mat *newmat) {
+PETSC_INTERN PetscErrorCode MatConvert_Basic(Mat mat, MatType newtype, MatReuse reuse, Mat *newmat)
+{
   Mat                M;
   const PetscScalar *vwork;
   PetscInt           i, rstart, rend, nz;

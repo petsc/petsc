@@ -27,7 +27,8 @@ PetscErrorCode CalculateSolution(PetscInt, Vec *);
 PetscErrorCode amult(Mat, Vec, Vec);
 PetscErrorCode apply_pc(PC, Vec, Vec);
 
-int main(int Argc, char **Args) {
+int main(int Argc, char **Args)
+{
   PetscInt    x_mesh = 15, levels = 3, cycles = 1, use_jacobi = 0;
   PetscInt    i, smooths = 1, *N, its;
   PCMGType    am = PC_MG_MULTIPLICATIVE;
@@ -171,7 +172,8 @@ int main(int Argc, char **Args) {
   return 0;
 }
 
-PetscErrorCode residual(Mat mat, Vec bb, Vec xx, Vec rr) {
+PetscErrorCode residual(Mat mat, Vec bb, Vec xx, Vec rr)
+{
   PetscInt           i, n1;
   PetscScalar       *x, *r;
   const PetscScalar *b;
@@ -191,7 +193,8 @@ PetscErrorCode residual(Mat mat, Vec bb, Vec xx, Vec rr) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode amult(Mat mat, Vec xx, Vec yy) {
+PetscErrorCode amult(Mat mat, Vec xx, Vec yy)
+{
   PetscInt           i, n1;
   PetscScalar       *y;
   const PetscScalar *x;
@@ -209,12 +212,14 @@ PetscErrorCode amult(Mat mat, Vec xx, Vec yy) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode apply_pc(PC pc, Vec bb, Vec xx) {
+PetscErrorCode apply_pc(PC pc, Vec bb, Vec xx)
+{
   PetscFunctionBegin;
   SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP, "Not implemented");
 }
 
-PetscErrorCode gauss_seidel(PC pc, Vec bb, Vec xx, Vec w, PetscReal rtol, PetscReal abstol, PetscReal dtol, PetscInt m, PetscBool guesszero, PetscInt *its, PCRichardsonConvergedReason *reason) {
+PetscErrorCode gauss_seidel(PC pc, Vec bb, Vec xx, Vec w, PetscReal rtol, PetscReal abstol, PetscReal dtol, PetscInt m, PetscBool guesszero, PetscInt *its, PCRichardsonConvergedReason *reason)
+{
   PetscInt           i, n1;
   PetscScalar       *x;
   const PetscScalar *b;
@@ -238,7 +243,8 @@ PetscErrorCode gauss_seidel(PC pc, Vec bb, Vec xx, Vec w, PetscReal rtol, PetscR
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode jacobi_smoother(PC pc, Vec bb, Vec xx, Vec w, PetscReal rtol, PetscReal abstol, PetscReal dtol, PetscInt m, PetscBool guesszero, PetscInt *its, PCRichardsonConvergedReason *reason) {
+PetscErrorCode jacobi_smoother(PC pc, Vec bb, Vec xx, Vec w, PetscReal rtol, PetscReal abstol, PetscReal dtol, PetscInt m, PetscBool guesszero, PetscInt *its, PCRichardsonConvergedReason *reason)
+{
   PetscInt           i, n, n1;
   PetscScalar       *r, *x;
   const PetscScalar *b;
@@ -267,7 +273,8 @@ PetscErrorCode jacobi_smoother(PC pc, Vec bb, Vec xx, Vec w, PetscReal rtol, Pet
    We know for this application that yy  and zz are the same
 */
 
-PetscErrorCode interpolate(Mat mat, Vec xx, Vec yy, Vec zz) {
+PetscErrorCode interpolate(Mat mat, Vec xx, Vec yy, Vec zz)
+{
   PetscInt           i, n, N, i2;
   PetscScalar       *y;
   const PetscScalar *x;
@@ -288,7 +295,8 @@ PetscErrorCode interpolate(Mat mat, Vec xx, Vec yy, Vec zz) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode restrct(Mat mat, Vec rr, Vec bb) {
+PetscErrorCode restrct(Mat mat, Vec rr, Vec bb)
+{
   PetscInt           i, n, N, i2;
   PetscScalar       *b;
   const PetscScalar *r;
@@ -308,7 +316,8 @@ PetscErrorCode restrct(Mat mat, Vec rr, Vec bb) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode Create1dLaplacian(PetscInt n, Mat *mat) {
+PetscErrorCode Create1dLaplacian(PetscInt n, Mat *mat)
+{
   PetscScalar mone = -1.0, two = 2.0;
   PetscInt    i, idx;
 
@@ -328,7 +337,8 @@ PetscErrorCode Create1dLaplacian(PetscInt n, Mat *mat) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode CalculateRhs(Vec u) {
+PetscErrorCode CalculateRhs(Vec u)
+{
   PetscInt    i, n;
   PetscReal   h;
   PetscScalar uu;
@@ -343,7 +353,8 @@ PetscErrorCode CalculateRhs(Vec u) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode CalculateSolution(PetscInt n, Vec *solution) {
+PetscErrorCode CalculateSolution(PetscInt n, Vec *solution)
+{
   PetscInt    i;
   PetscReal   h, x = 0.0;
   PetscScalar uu;
@@ -359,7 +370,8 @@ PetscErrorCode CalculateSolution(PetscInt n, Vec *solution) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode CalculateError(Vec solution, Vec u, Vec r, PetscReal *e) {
+PetscErrorCode CalculateError(Vec solution, Vec u, Vec r, PetscReal *e)
+{
   PetscFunctionBegin;
   PetscCall(VecNorm(r, NORM_2, e + 2));
   PetscCall(VecWAXPY(r, -1.0, u, solution));

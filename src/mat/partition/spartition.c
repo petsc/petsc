@@ -37,7 +37,8 @@ PETSC_EXTERN PetscErrorCode MatPartitioningCreate_PTScotch(MatPartitioning);
 
 .seealso: `MatPartitioning`, `MatPartitioningType`, `MatPartitioningRegister()`, `MatPartitioningRegisterDestroy()`
 @*/
-PetscErrorCode MatPartitioningRegisterAll(void) {
+PetscErrorCode MatPartitioningRegisterAll(void)
+{
   PetscFunctionBegin;
   if (MatPartitioningRegisterAllCalled) PetscFunctionReturn(0);
   MatPartitioningRegisterAllCalled = PETSC_TRUE;

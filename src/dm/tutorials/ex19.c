@@ -7,7 +7,8 @@
 
 static char help[] = "Test for DMDA with overlap.\n\n";
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   DM da;
 
   PetscFunctionBeginUser;

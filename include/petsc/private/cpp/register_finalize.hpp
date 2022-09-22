@@ -4,12 +4,14 @@
 #include <petscsys.h>
 
 #if defined(__cplusplus)
-#include <petsc/private/cpp/crtp.hpp>
+  #include <petsc/private/cpp/crtp.hpp>
 
-namespace {
+namespace
+{
 
 template <typename T>
-PETSC_NODISCARD inline PetscErrorCode PetscCxxObjectRegisterFinalize(T *obj, MPI_Comm comm = PETSC_COMM_SELF) noexcept {
+PETSC_NODISCARD inline PetscErrorCode PetscCxxObjectRegisterFinalize(T *obj, MPI_Comm comm = PETSC_COMM_SELF) noexcept
+{
   PetscContainer contain   = nullptr;
   const auto     finalizer = [](void *ptr) {
     PetscFunctionBegin;
@@ -28,7 +30,8 @@ PETSC_NODISCARD inline PetscErrorCode PetscCxxObjectRegisterFinalize(T *obj, MPI
 
 } // anonymous namespace
 
-namespace Petsc {
+namespace Petsc
+{
 
 template <typename Derived>
 class RegisterFinalizeable : public util::crtp<Derived, RegisterFinalizeable> {
@@ -57,24 +60,28 @@ private:
 
 template <typename D>
 template <typename... Args>
-inline PetscErrorCode RegisterFinalizeable<D>::finalize_(Args &&...) noexcept {
+inline PetscErrorCode RegisterFinalizeable<D>::finalize_(Args &&...) noexcept
+{
   return 0;
 }
 
 template <typename D>
 template <typename... Args>
-inline PetscErrorCode RegisterFinalizeable<D>::register_finalize_(Args &&...) noexcept {
+inline PetscErrorCode RegisterFinalizeable<D>::register_finalize_(Args &&...) noexcept
+{
   return 0;
 }
 
 template <typename D>
-inline bool RegisterFinalizeable<D>::registered() const noexcept {
+inline bool RegisterFinalizeable<D>::registered() const noexcept
+{
   return registered_;
 }
 
 template <typename D>
 template <typename... Args>
-inline PetscErrorCode RegisterFinalizeable<D>::finalize(Args &&...args) noexcept {
+inline PetscErrorCode RegisterFinalizeable<D>::finalize(Args &&...args) noexcept
+{
   PetscFunctionBegin;
   // order of registered_ matters here, if the finalizer wants to re-register it should be able to
   registered_ = false;
@@ -84,7 +91,8 @@ inline PetscErrorCode RegisterFinalizeable<D>::finalize(Args &&...args) noexcept
 
 template <typename D>
 template <typename... Args>
-inline PetscErrorCode RegisterFinalizeable<D>::register_finalize(MPI_Comm comm, Args &&...args) noexcept {
+inline PetscErrorCode RegisterFinalizeable<D>::register_finalize(MPI_Comm comm, Args &&...args) noexcept
+{
   PetscFunctionBegin;
   if (PetscLikely(this->underlying().registered())) PetscFunctionReturn(0);
   registered_ = true;

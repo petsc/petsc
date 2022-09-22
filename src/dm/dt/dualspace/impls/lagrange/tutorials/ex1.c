@@ -4,7 +4,8 @@ const char help[] = "Construct and set a Lagrange dual space from options, then 
 #include <petscfe.h>
 #include <petscdmplex.h>
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscInt       dim;
   PetscBool      tensorCell;
   DM             K;

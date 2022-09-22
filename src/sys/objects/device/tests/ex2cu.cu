@@ -8,7 +8,8 @@ static char help[] = "Benchmarking cudaPointerGetAttributes() time\n";
 #include <petscsys.h>
 #include <petscdevice_cuda.h>
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscInt                     i, n = 4000;
   cudaError_t                  cerr;
   PetscScalar                **ptrs;

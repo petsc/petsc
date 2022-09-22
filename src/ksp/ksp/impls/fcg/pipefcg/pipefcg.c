@@ -23,7 +23,8 @@ static const char citation[] = "@article{SSM2016,\n"
 #define KSPPIPEFCG_DEFAULT_VECB       5
 #define KSPPIPEFCG_DEFAULT_TRUNCSTRAT KSP_FCD_TRUNC_TYPE_NOTAY
 
-static PetscErrorCode KSPAllocateVectors_PIPEFCG(KSP ksp, PetscInt nvecsneeded, PetscInt chunksize) {
+static PetscErrorCode KSPAllocateVectors_PIPEFCG(KSP ksp, PetscInt nvecsneeded, PetscInt chunksize)
+{
   PetscInt     i;
   KSP_PIPEFCG *pipefcg;
   PetscInt     nnewvecs, nvecsprev;
@@ -52,7 +53,8 @@ static PetscErrorCode KSPAllocateVectors_PIPEFCG(KSP ksp, PetscInt nvecsneeded, 
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode KSPSetUp_PIPEFCG(KSP ksp) {
+static PetscErrorCode KSPSetUp_PIPEFCG(KSP ksp)
+{
   KSP_PIPEFCG   *pipefcg;
   const PetscInt nworkstd = 5;
 
@@ -79,7 +81,8 @@ static PetscErrorCode KSPSetUp_PIPEFCG(KSP ksp) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode KSPSolve_PIPEFCG_cycle(KSP ksp) {
+static PetscErrorCode KSPSolve_PIPEFCG_cycle(KSP ksp)
+{
   PetscInt     i, j, k, idx, kdx, mi;
   KSP_PIPEFCG *pipefcg;
   PetscScalar  alpha = 0.0, gamma, *betas, *dots;
@@ -164,8 +167,11 @@ static PetscErrorCode KSPSolve_PIPEFCG_cycle(KSP ksp) {
     case KSP_NORM_NATURAL:
       dp = PetscSqrtReal(PetscAbsScalar(gamma)); /* dp <- sqrt(r'*z) = sqrt(e'*A'*B*A*e)    */
       break;
-    case KSP_NORM_NONE: dp = 0.0; break;
-    default: SETERRQ(PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "%s", KSPNormTypes[ksp->normtype]);
+    case KSP_NORM_NONE:
+      dp = 0.0;
+      break;
+    default:
+      SETERRQ(PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "%s", KSPNormTypes[ksp->normtype]);
     }
 
     /* Check for convergence */
@@ -191,9 +197,14 @@ static PetscErrorCode KSPSolve_PIPEFCG_cycle(KSP ksp) {
 
     /* number of old directions to orthogonalize against */
     switch (pipefcg->truncstrat) {
-    case KSP_FCD_TRUNC_TYPE_STANDARD: mi = pipefcg->mmax; break;
-    case KSP_FCD_TRUNC_TYPE_NOTAY: mi = ((i - 1) % pipefcg->mmax) + 1; break;
-    default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unrecognized Truncation Strategy");
+    case KSP_FCD_TRUNC_TYPE_STANDARD:
+      mi = pipefcg->mmax;
+      break;
+    case KSP_FCD_TRUNC_TYPE_NOTAY:
+      mi = ((i - 1) % pipefcg->mmax) + 1;
+      break;
+    default:
+      SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unrecognized Truncation Strategy");
     }
 
     /* Pick old p,s,q,zeta in a way suitable for VecMDot */
@@ -250,7 +261,8 @@ static PetscErrorCode KSPSolve_PIPEFCG_cycle(KSP ksp) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode KSPSolve_PIPEFCG(KSP ksp) {
+static PetscErrorCode KSPSolve_PIPEFCG(KSP ksp)
+{
   KSP_PIPEFCG *pipefcg;
   PetscScalar  gamma;
   PetscReal    dp = 0.0;
@@ -291,8 +303,11 @@ static PetscErrorCode KSPSolve_PIPEFCG(KSP ksp) {
     PetscCall(VecXDot(Z, R, &gamma));
     dp = PetscSqrtReal(PetscAbsScalar(gamma)); /* dp <- sqrt(r'*z) = sqrt(e'*A'*B*A*e)    */
     break;
-  case KSP_NORM_NONE: dp = 0.0; break;
-  default: SETERRQ(PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "%s", KSPNormTypes[ksp->normtype]);
+  case KSP_NORM_NONE:
+    dp = 0.0;
+    break;
+  default:
+    SETERRQ(PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "%s", KSPNormTypes[ksp->normtype]);
   }
 
   /* Initial Convergence Check */
@@ -318,7 +333,8 @@ static PetscErrorCode KSPSolve_PIPEFCG(KSP ksp) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode KSPDestroy_PIPEFCG(KSP ksp) {
+static PetscErrorCode KSPDestroy_PIPEFCG(KSP ksp)
+{
   PetscInt     i;
   KSP_PIPEFCG *pipefcg;
 
@@ -346,7 +362,8 @@ static PetscErrorCode KSPDestroy_PIPEFCG(KSP ksp) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode KSPView_PIPEFCG(KSP ksp, PetscViewer viewer) {
+static PetscErrorCode KSPView_PIPEFCG(KSP ksp, PetscViewer viewer)
+{
   KSP_PIPEFCG *pipefcg = (KSP_PIPEFCG *)ksp->data;
   PetscBool    iascii, isstring;
   const char  *truncstr;
@@ -394,7 +411,8 @@ static PetscErrorCode KSPView_PIPEFCG(KSP ksp, PetscViewer viewer) {
 
 .seealso: `KSPPIPEFCG`, `KSPPIPEFCGSetTruncationType()`, `KSPPIPEFCGSetNprealloc()`
 @*/
-PetscErrorCode KSPPIPEFCGSetMmax(KSP ksp, PetscInt mmax) {
+PetscErrorCode KSPPIPEFCGSetMmax(KSP ksp, PetscInt mmax)
+{
   KSP_PIPEFCG *pipefcg = (KSP_PIPEFCG *)ksp->data;
 
   PetscFunctionBegin;
@@ -424,7 +442,8 @@ PetscErrorCode KSPPIPEFCGSetMmax(KSP ksp, PetscInt mmax) {
 
 .seealso: `KSPPIPEFCG`, `KSPPIPEFCGGetTruncationType()`, `KSPPIPEFCGGetNprealloc()`, `KSPPIPEFCGSetMmax()`
 @*/
-PetscErrorCode KSPPIPEFCGGetMmax(KSP ksp, PetscInt *mmax) {
+PetscErrorCode KSPPIPEFCGGetMmax(KSP ksp, PetscInt *mmax)
+{
   KSP_PIPEFCG *pipefcg = (KSP_PIPEFCG *)ksp->data;
 
   PetscFunctionBegin;
@@ -449,7 +468,8 @@ PetscErrorCode KSPPIPEFCGGetMmax(KSP ksp, PetscInt *mmax) {
 
 .seealso: `KSPPIPEFCG`, `KSPPIPEFCGSetTruncationType()`, `KSPPIPEFCGGetNprealloc()`
 @*/
-PetscErrorCode KSPPIPEFCGSetNprealloc(KSP ksp, PetscInt nprealloc) {
+PetscErrorCode KSPPIPEFCGSetNprealloc(KSP ksp, PetscInt nprealloc)
+{
   KSP_PIPEFCG *pipefcg = (KSP_PIPEFCG *)ksp->data;
 
   PetscFunctionBegin;
@@ -474,7 +494,8 @@ PetscErrorCode KSPPIPEFCGSetNprealloc(KSP ksp, PetscInt nprealloc) {
 
 .seealso: `KSPPIPEFCG`, `KSPPIPEFCGGetTruncationType()`, `KSPPIPEFCGSetNprealloc()`
 @*/
-PetscErrorCode KSPPIPEFCGGetNprealloc(KSP ksp, PetscInt *nprealloc) {
+PetscErrorCode KSPPIPEFCGGetNprealloc(KSP ksp, PetscInt *nprealloc)
+{
   KSP_PIPEFCG *pipefcg = (KSP_PIPEFCG *)ksp->data;
 
   PetscFunctionBegin;
@@ -502,7 +523,8 @@ PetscErrorCode KSPPIPEFCGGetNprealloc(KSP ksp, PetscInt *nprealloc) {
 
 .seealso: `KSPPIPEFCG`, `KSPPIPEFCGGetTruncationType`, `KSPFCDTruncationType`
 @*/
-PetscErrorCode KSPPIPEFCGSetTruncationType(KSP ksp, KSPFCDTruncationType truncstrat) {
+PetscErrorCode KSPPIPEFCGSetTruncationType(KSP ksp, KSPFCDTruncationType truncstrat)
+{
   KSP_PIPEFCG *pipefcg = (KSP_PIPEFCG *)ksp->data;
 
   PetscFunctionBegin;
@@ -530,7 +552,8 @@ PetscErrorCode KSPPIPEFCGSetTruncationType(KSP ksp, KSPFCDTruncationType truncst
 
 .seealso: `KSPPIPEFCG`, `KSPPIPEFCGSetTruncationType`, `KSPFCDTruncationType`
 @*/
-PetscErrorCode KSPPIPEFCGGetTruncationType(KSP ksp, KSPFCDTruncationType *truncstrat) {
+PetscErrorCode KSPPIPEFCGGetTruncationType(KSP ksp, KSPFCDTruncationType *truncstrat)
+{
   KSP_PIPEFCG *pipefcg = (KSP_PIPEFCG *)ksp->data;
 
   PetscFunctionBegin;
@@ -539,7 +562,8 @@ PetscErrorCode KSPPIPEFCGGetTruncationType(KSP ksp, KSPFCDTruncationType *truncs
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode KSPSetFromOptions_PIPEFCG(KSP ksp, PetscOptionItems *PetscOptionsObject) {
+static PetscErrorCode KSPSetFromOptions_PIPEFCG(KSP ksp, PetscOptionItems *PetscOptionsObject)
+{
   KSP_PIPEFCG *pipefcg = (KSP_PIPEFCG *)ksp->data;
   PetscInt     mmax, nprealloc;
   PetscBool    flg;
@@ -583,7 +607,8 @@ static PetscErrorCode KSPSetFromOptions_PIPEFCG(KSP ksp, PetscOptionItems *Petsc
 .seealso: `KSPFCG`, `KSPPIPECG`, `KSPPIPECR`, `KSPGCR`, `KSPPIPEGCR`, `KSPFGMRES`, `KSPCG`, `KSPPIPEFCGSetMmax()`, `KSPPIPEFCGGetMmax()`, `KSPPIPEFCGSetNprealloc()`, `KSPPIPEFCGGetNprealloc()`, `KSPPIPEFCGSetTruncationType()`, `KSPPIPEFCGGetTruncationType()`
 
 M*/
-PETSC_EXTERN PetscErrorCode KSPCreate_PIPEFCG(KSP ksp) {
+PETSC_EXTERN PetscErrorCode KSPCreate_PIPEFCG(KSP ksp)
+{
   KSP_PIPEFCG *pipefcg;
 
   PetscFunctionBegin;

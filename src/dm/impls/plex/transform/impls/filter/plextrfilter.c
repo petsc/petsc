@@ -1,6 +1,7 @@
 #include <petsc/private/dmplextransformimpl.h> /*I "petscdmplextransform.h" I*/
 
-static PetscErrorCode DMPlexTransformView_Filter(DMPlexTransform tr, PetscViewer viewer) {
+static PetscErrorCode DMPlexTransformView_Filter(DMPlexTransform tr, PetscViewer viewer)
+{
   PetscBool isascii;
 
   PetscFunctionBegin;
@@ -18,12 +19,14 @@ static PetscErrorCode DMPlexTransformView_Filter(DMPlexTransform tr, PetscViewer
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMPlexTransformSetUp_Filter(DMPlexTransform tr) {
+static PetscErrorCode DMPlexTransformSetUp_Filter(DMPlexTransform tr)
+{
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMPlexTransformDestroy_Filter(DMPlexTransform tr) {
+static PetscErrorCode DMPlexTransformDestroy_Filter(DMPlexTransform tr)
+{
   DMPlexTransform_Filter *f = (DMPlexTransform_Filter *)tr->data;
 
   PetscFunctionBegin;
@@ -32,12 +35,14 @@ static PetscErrorCode DMPlexTransformDestroy_Filter(DMPlexTransform tr) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMPlexTransformCellTransform_Filter(DMPlexTransform cr, DMPolytopeType source, PetscInt p, PetscInt *rt, PetscInt *Nt, DMPolytopeType *target[], PetscInt *size[], PetscInt *cone[], PetscInt *ornt[]) {
+static PetscErrorCode DMPlexTransformCellTransform_Filter(DMPlexTransform cr, DMPolytopeType source, PetscInt p, PetscInt *rt, PetscInt *Nt, DMPolytopeType *target[], PetscInt *size[], PetscInt *cone[], PetscInt *ornt[])
+{
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMPlexTransformInitialize_Filter(DMPlexTransform tr) {
+static PetscErrorCode DMPlexTransformInitialize_Filter(DMPlexTransform tr)
+{
   PetscFunctionBegin;
   tr->ops->view           = DMPlexTransformView_Filter;
   tr->ops->setup          = DMPlexTransformSetUp_Filter;
@@ -47,7 +52,8 @@ static PetscErrorCode DMPlexTransformInitialize_Filter(DMPlexTransform tr) {
   PetscFunctionReturn(0);
 }
 
-PETSC_EXTERN PetscErrorCode DMPlexTransformCreate_Filter(DMPlexTransform tr) {
+PETSC_EXTERN PetscErrorCode DMPlexTransformCreate_Filter(DMPlexTransform tr)
+{
   DMPlexTransform_Filter *f;
 
   PetscFunctionBegin;

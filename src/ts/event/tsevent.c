@@ -3,7 +3,8 @@
 /*
   TSEventInitialize - Initializes TSEvent for TSSolve
 */
-PetscErrorCode TSEventInitialize(TSEvent event, TS ts, PetscReal t, Vec U) {
+PetscErrorCode TSEventInitialize(TSEvent event, TS ts, PetscReal t, Vec U)
+{
   PetscFunctionBegin;
   if (!event) PetscFunctionReturn(0);
   PetscValidPointer(event, 1);
@@ -15,7 +16,8 @@ PetscErrorCode TSEventInitialize(TSEvent event, TS ts, PetscReal t, Vec U) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode TSEventDestroy(TSEvent *event) {
+PetscErrorCode TSEventDestroy(TSEvent *event)
+{
   PetscInt i;
 
   PetscFunctionBegin;
@@ -71,7 +73,8 @@ PetscErrorCode TSEventDestroy(TSEvent *event) {
   Level: Advanced
   .seealso: `TS`, `TSEvent`, `TSSetEventHandler()`
 @*/
-PetscErrorCode TSSetPostEventIntervalStep(TS ts, PetscReal dt) {
+PetscErrorCode TSSetPostEventIntervalStep(TS ts, PetscReal dt)
+{
   PetscFunctionBegin;
   ts->event->timestep_posteventinterval = dt;
   PetscFunctionReturn(0);
@@ -99,7 +102,8 @@ PetscErrorCode TSSetPostEventIntervalStep(TS ts, PetscReal dt) {
 
 .seealso: `TS`, `TSEvent`, `TSSetEventHandler()`
 @*/
-PetscErrorCode TSSetEventTolerances(TS ts, PetscReal tol, PetscReal vtol[]) {
+PetscErrorCode TSSetEventTolerances(TS ts, PetscReal tol, PetscReal vtol[])
+{
   TSEvent  event;
   PetscInt i;
 
@@ -165,7 +169,8 @@ PetscErrorCode TSSetEventTolerances(TS ts, PetscReal tol, PetscReal vtol[]) {
 
 .seealso: `TSCreate()`, `TSSetTimeStep()`, `TSSetConvergedReason()`
 @*/
-PetscErrorCode TSSetEventHandler(TS ts, PetscInt nevents, PetscInt direction[], PetscBool terminate[], PetscErrorCode (*eventhandler)(TS, PetscReal, Vec, PetscScalar[], void *), PetscErrorCode (*postevent)(TS, PetscInt, PetscInt[], PetscReal, Vec, PetscBool, void *), void *ctx) {
+PetscErrorCode TSSetEventHandler(TS ts, PetscInt nevents, PetscInt direction[], PetscBool terminate[], PetscErrorCode (*eventhandler)(TS, PetscReal, Vec, PetscScalar[], void *), PetscErrorCode (*postevent)(TS, PetscInt, PetscInt[], PetscReal, Vec, PetscBool, void *), void *ctx)
+{
   TSAdapt   adapt;
   PetscReal hmin;
   TSEvent   event;
@@ -242,7 +247,8 @@ PetscErrorCode TSSetEventHandler(TS ts, PetscInt nevents, PetscInt direction[], 
   TSEventRecorderResize - Resizes (2X) the event recorder arrays whenever the recording limit (event->recsize)
                           is reached.
 */
-static PetscErrorCode TSEventRecorderResize(TSEvent event) {
+static PetscErrorCode TSEventRecorderResize(TSEvent event)
+{
   PetscReal *time;
   PetscInt  *stepnum;
   PetscInt  *nevents;
@@ -286,7 +292,8 @@ static PetscErrorCode TSEventRecorderResize(TSEvent event) {
 /*
    Helper routine to handle user postevents and recording
 */
-static PetscErrorCode TSPostEvent(TS ts, PetscReal t, Vec U) {
+static PetscErrorCode TSPostEvent(TS ts, PetscReal t, Vec U)
+{
   TSEvent   event     = ts->event;
   PetscBool terminate = PETSC_FALSE;
   PetscBool restart   = PETSC_FALSE;
@@ -339,7 +346,8 @@ static PetscErrorCode TSPostEvent(TS ts, PetscReal t, Vec U) {
 }
 
 /* Uses Anderson-Bjorck variant of regula falsi method */
-static inline PetscReal TSEventComputeStepSize(PetscReal tleft, PetscReal t, PetscReal tright, PetscScalar fleft, PetscScalar f, PetscScalar fright, PetscInt side, PetscReal dt) {
+static inline PetscReal TSEventComputeStepSize(PetscReal tleft, PetscReal t, PetscReal tright, PetscScalar fleft, PetscScalar f, PetscScalar fright, PetscInt side, PetscReal dt)
+{
   PetscReal new_dt, scal = 1.0;
   if (PetscRealPart(fleft) * PetscRealPart(f) < 0) {
     if (side == 1) {
@@ -357,7 +365,8 @@ static inline PetscReal TSEventComputeStepSize(PetscReal tleft, PetscReal t, Pet
   return PetscMin(dt, new_dt);
 }
 
-static PetscErrorCode TSEventDetection(TS ts) {
+static PetscErrorCode TSEventDetection(TS ts)
+{
   TSEvent   event = ts->event;
   PetscReal t;
   PetscInt  i;
@@ -390,7 +399,8 @@ static PetscErrorCode TSEventDetection(TS ts) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSEventLocation(TS ts, PetscReal *dt) {
+static PetscErrorCode TSEventLocation(TS ts, PetscReal *dt)
+{
   TSEvent   event = ts->event;
   PetscInt  i;
   PetscReal t;
@@ -459,7 +469,8 @@ static PetscErrorCode TSEventLocation(TS ts, PetscReal *dt) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode TSEventHandler(TS ts) {
+PetscErrorCode TSEventHandler(TS ts)
+{
   TSEvent   event;
   PetscReal t;
   Vec       U;
@@ -545,7 +556,8 @@ PetscErrorCode TSEventHandler(TS ts) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode TSAdjointEventHandler(TS ts) {
+PetscErrorCode TSAdjointEventHandler(TS ts)
+{
   TSEvent   event;
   PetscReal t;
   Vec       U;
@@ -589,7 +601,8 @@ PetscErrorCode TSAdjointEventHandler(TS ts) {
 .seealso: `TSSetEventHandler()`
 
 @*/
-PetscErrorCode TSGetNumEvents(TS ts, PetscInt *nevents) {
+PetscErrorCode TSGetNumEvents(TS ts, PetscInt *nevents)
+{
   PetscFunctionBegin;
   *nevents = ts->event->nevents;
   PetscFunctionReturn(0);

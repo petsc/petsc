@@ -2,7 +2,8 @@
 static char help[] = "Tests MatMPIBAIJ format in sequential run \n";
 
 #include <petscmat.h>
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   Mat         A, B;
   PetscInt    i, rstart, rend;
   PetscMPIInt rank, size;

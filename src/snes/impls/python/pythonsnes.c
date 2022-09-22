@@ -16,7 +16,8 @@
 
 .seealso: `SNESCreate()`, `SNESSetType()`, `SNESPYTHON`, `PetscPythonInitialize()`, `SNESPythonGetType()`
 @*/
-PetscErrorCode SNESPythonSetType(SNES snes, const char pyname[]) {
+PetscErrorCode SNESPythonSetType(SNES snes, const char pyname[])
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
   PetscValidCharPointer(pyname, 2);
@@ -39,7 +40,8 @@ PetscErrorCode SNESPythonSetType(SNES snes, const char pyname[]) {
 
 .seealso: `SNESCreate()`, `SNESSetType()`, `SNESPYTHON`, `PetscPythonInitialize()`, `SNESPythonSetType()`
 @*/
-PetscErrorCode SNESPythonGetType(SNES snes, const char *pyname[]) {
+PetscErrorCode SNESPythonGetType(SNES snes, const char *pyname[])
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
   PetscValidPointer(pyname, 2);

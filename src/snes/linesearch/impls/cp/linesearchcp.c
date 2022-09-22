@@ -1,7 +1,8 @@
 #include <petsc/private/linesearchimpl.h>
 #include <petscsnes.h>
 
-static PetscErrorCode SNESLineSearchApply_CP(SNESLineSearch linesearch) {
+static PetscErrorCode SNESLineSearchApply_CP(SNESLineSearch linesearch)
+{
   PetscBool   changed_y, changed_w;
   Vec         X, Y, F, W;
   SNES        snes;
@@ -139,7 +140,8 @@ static PetscErrorCode SNESLineSearchApply_CP(SNESLineSearch linesearch) {
 
 .seealso: `SNESLineSearch`, `SNESLineSearchType`, `SNESLineSearchCreate()`, `SNESLineSearchSetType()`
 M*/
-PETSC_EXTERN PetscErrorCode SNESLineSearchCreate_CP(SNESLineSearch linesearch) {
+PETSC_EXTERN PetscErrorCode SNESLineSearchCreate_CP(SNESLineSearch linesearch)
+{
   PetscFunctionBegin;
   linesearch->ops->apply          = SNESLineSearchApply_CP;
   linesearch->ops->destroy        = NULL;

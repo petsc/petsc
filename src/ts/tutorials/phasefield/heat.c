@@ -39,7 +39,8 @@ typedef struct {
   PetscDrawViewPorts *ports;
 } UserCtx;
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   TS          ts;   /* time integrator */
   Vec         x, r; /* solution, residual vectors */
   PetscInt    steps, Mx;
@@ -146,7 +147,8 @@ int main(int argc, char **argv) {
    Output Parameter:
 .  F - function vector
  */
-PetscErrorCode FormFunction(TS ts, PetscReal ftime, Vec X, Vec F, void *ptr) {
+PetscErrorCode FormFunction(TS ts, PetscReal ftime, Vec X, Vec F, void *ptr)
+{
   DM           da;
   PetscInt     i, Mx, xs, xm;
   PetscReal    hx, sx;
@@ -200,7 +202,8 @@ PetscErrorCode FormFunction(TS ts, PetscReal ftime, Vec X, Vec F, void *ptr) {
 }
 
 /* ------------------------------------------------------------------- */
-PetscErrorCode FormInitialSolution(DM da, Vec U) {
+PetscErrorCode FormInitialSolution(DM da, Vec U)
+{
   PetscInt           i, xs, xm, Mx, scale = 1, N;
   PetscScalar       *u;
   const PetscScalar *f;
@@ -268,7 +271,8 @@ PetscErrorCode FormInitialSolution(DM da, Vec U) {
 /*
     This routine is not parallel
 */
-PetscErrorCode MyMonitor(TS ts, PetscInt step, PetscReal time, Vec U, void *ptr) {
+PetscErrorCode MyMonitor(TS ts, PetscInt step, PetscReal time, Vec U, void *ptr)
+{
   UserCtx            *ctx = (UserCtx *)ptr;
   PetscDrawLG         lg;
   PetscScalar        *u;
@@ -397,7 +401,8 @@ PetscErrorCode MyMonitor(TS ts, PetscInt step, PetscReal time, Vec U, void *ptr)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MyDestroy(void **ptr) {
+PetscErrorCode MyDestroy(void **ptr)
+{
   UserCtx *ctx = *(UserCtx **)ptr;
 
   PetscFunctionBegin;

@@ -22,7 +22,8 @@
 
 .seealso: `SNESNCG`, `SNESSetTrustRegionTolerance()`
 @*/
-PetscErrorCode SNESNGSSetTolerances(SNES snes, PetscReal abstol, PetscReal rtol, PetscReal stol, PetscInt maxit) {
+PetscErrorCode SNESNGSSetTolerances(SNES snes, PetscReal abstol, PetscReal rtol, PetscReal stol, PetscInt maxit)
+{
   SNES_NGS *gs = (SNES_NGS *)snes->data;
 
   PetscFunctionBegin;
@@ -67,7 +68,8 @@ PetscErrorCode SNESNGSSetTolerances(SNES snes, PetscReal abstol, PetscReal rtol,
 
 .seealso: `SNESNCG`, `SNESSetTolerances()`
 @*/
-PetscErrorCode SNESNGSGetTolerances(SNES snes, PetscReal *atol, PetscReal *rtol, PetscReal *stol, PetscInt *maxit) {
+PetscErrorCode SNESNGSGetTolerances(SNES snes, PetscReal *atol, PetscReal *rtol, PetscReal *stol, PetscInt *maxit)
+{
   SNES_NGS *gs = (SNES_NGS *)snes->data;
 
   PetscFunctionBegin;
@@ -94,7 +96,8 @@ PetscErrorCode SNESNGSGetTolerances(SNES snes, PetscReal *atol, PetscReal *rtol,
 .seealso: `SNESNCG`, `SNESSetNGS()`, `SNESGetNGS()`, `SNESSetNPC()`, `SNESNGSGetSweeps()`
 @*/
 
-PetscErrorCode SNESNGSSetSweeps(SNES snes, PetscInt sweeps) {
+PetscErrorCode SNESNGSSetSweeps(SNES snes, PetscInt sweeps)
+{
   SNES_NGS *gs = (SNES_NGS *)snes->data;
 
   PetscFunctionBegin;
@@ -116,7 +119,8 @@ PetscErrorCode SNESNGSSetSweeps(SNES snes, PetscInt sweeps) {
 
 .seealso: `SNESNCG`, `SNESSetNGS()`, `SNESGetNGS()`, `SNESSetNPC()`, `SNESNGSSetSweeps()`
 @*/
-PetscErrorCode SNESNGSGetSweeps(SNES snes, PetscInt *sweeps) {
+PetscErrorCode SNESNGSGetSweeps(SNES snes, PetscInt *sweeps)
+{
   SNES_NGS *gs = (SNES_NGS *)snes->data;
 
   PetscFunctionBegin;
@@ -125,7 +129,8 @@ PetscErrorCode SNESNGSGetSweeps(SNES snes, PetscInt *sweeps) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode SNESReset_NGS(SNES snes) {
+PetscErrorCode SNESReset_NGS(SNES snes)
+{
   SNES_NGS *gs = (SNES_NGS *)snes->data;
 
   PetscFunctionBegin;
@@ -133,14 +138,16 @@ PetscErrorCode SNESReset_NGS(SNES snes) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode SNESDestroy_NGS(SNES snes) {
+PetscErrorCode SNESDestroy_NGS(SNES snes)
+{
   PetscFunctionBegin;
   PetscCall(SNESReset_NGS(snes));
   PetscCall(PetscFree(snes->data));
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode SNESSetUp_NGS(SNES snes) {
+PetscErrorCode SNESSetUp_NGS(SNES snes)
+{
   PetscErrorCode (*f)(SNES, Vec, Vec, void *);
 
   PetscFunctionBegin;
@@ -149,7 +156,8 @@ PetscErrorCode SNESSetUp_NGS(SNES snes) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode SNESSetFromOptions_NGS(SNES snes, PetscOptionItems *PetscOptionsObject) {
+PetscErrorCode SNESSetFromOptions_NGS(SNES snes, PetscOptionItems *PetscOptionsObject)
+{
   SNES_NGS *gs = (SNES_NGS *)snes->data;
   PetscInt  sweeps, max_its = PETSC_DEFAULT;
   PetscReal rtol = PETSC_DEFAULT, atol = PETSC_DEFAULT, stol = PETSC_DEFAULT;
@@ -178,7 +186,8 @@ PetscErrorCode SNESSetFromOptions_NGS(SNES snes, PetscOptionItems *PetscOptionsO
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode SNESView_NGS(SNES snes, PetscViewer viewer) {
+PetscErrorCode SNESView_NGS(SNES snes, PetscViewer viewer)
+{
   PetscErrorCode (*f)(SNES, Vec, Vec, void *);
   SNES_NGS *gs = (SNES_NGS *)snes->data;
   PetscBool iascii;
@@ -192,7 +201,8 @@ PetscErrorCode SNESView_NGS(SNES snes, PetscViewer viewer) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode SNESSolve_NGS(SNES snes) {
+PetscErrorCode SNESSolve_NGS(SNES snes)
+{
   Vec              F;
   Vec              X;
   Vec              B;
@@ -306,7 +316,8 @@ PetscErrorCode SNESSolve_NGS(SNES snes) {
           `SNESSetNormSchedule()`
 M*/
 
-PETSC_EXTERN PetscErrorCode SNESCreate_NGS(SNES snes) {
+PETSC_EXTERN PetscErrorCode SNESCreate_NGS(SNES snes)
+{
   SNES_NGS *gs;
 
   PetscFunctionBegin;

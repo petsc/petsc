@@ -2,7 +2,8 @@ static char help[] = "Test MatDenseGetSubMatrix() on a CUDA matrix.\n";
 
 #include <petscmat.h>
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   Mat          A, B;
   PetscScalar *b;
   PetscInt     n = 4, lda = 5, i, k;

@@ -38,7 +38,8 @@ PETSC_EXTERN PetscErrorCode VecCreate_HIP(Vec);
 
 .seealso: `VecRegister()`, `VecRegisterDestroy()`, `VecRegister()`
 @*/
-PetscErrorCode VecRegisterAll(void) {
+PetscErrorCode VecRegisterAll(void)
+{
   PetscFunctionBegin;
   if (VecRegisterAllCalled) PetscFunctionReturn(0);
   VecRegisterAllCalled = PETSC_TRUE;

@@ -1,8 +1,8 @@
-#if !defined(PETSCDMPLEXCEED_H)
+#ifndef PETSCDMPLEXCEED_H
 #define PETSCDMPLEXCEED_H
 
 #if !defined(PETSC_HAVE_LIBCEED)
-#error "PETSc not configured for libCEED; reconfigrue --with-libceed or --download-libceed"
+  #error "PETSc not configured for libCEED; reconfigrue --with-libceed or --download-libceed"
 #endif
 
 #include <petscdmplex.h>

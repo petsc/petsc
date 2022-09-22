@@ -51,7 +51,8 @@ PetscErrorCode IFunction(TS, PetscReal, Vec, Vec, Vec, void *);
 PetscErrorCode IJacobian(TS, PetscReal, Vec, Vec, PetscReal, Mat, Mat, void *);
 PetscErrorCode PostStep(TS);
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   Vec         x;    /* Solution vector */
   TS          ts;   /* Time-stepping context */
   AppCtx      user; /* Application context */
@@ -102,7 +103,8 @@ int main(int argc, char **argv) {
   return 0;
 }
 
-PetscErrorCode PostStep(TS ts) {
+PetscErrorCode PostStep(TS ts)
+{
   Vec          X, gc;
   AppCtx      *user;
   PetscScalar  sum = 0, asum;
@@ -137,7 +139,8 @@ PetscErrorCode PostStep(TS ts) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode ini_bou(Vec X, AppCtx *user) {
+PetscErrorCode ini_bou(Vec X, AppCtx *user)
+{
   DM            cda;
   DMDACoor2d  **coors;
   PetscScalar **p;
@@ -180,8 +183,8 @@ PetscErrorCode ini_bou(Vec X, AppCtx *user) {
     user->PM_min = user->Pmax * PetscSinScalar(mux);
     for (i = xs; i < xs + xm; i++) {
       for (j = ys; j < ys + ym; j++) {
-        xi      = coors[j][i].x;
-        yi      = coors[j][i].y;
+        xi = coors[j][i].x;
+        yi = coors[j][i].y;
         p[j][i] = (0.5 / (PETSC_PI * sigmax * sigmay * PetscSqrtScalar(1.0 - rho * rho))) * PetscExpScalar(-0.5 / (1 - rho * rho) * (PetscPowScalar((xi - mux) / sigmax, 2) + PetscPowScalar((yi - muy) / sigmay, 2) - 2 * rho * (xi - mux) * (yi - muy) / (sigmax * sigmay)));
       }
     }
@@ -194,7 +197,8 @@ PetscErrorCode ini_bou(Vec X, AppCtx *user) {
 }
 
 /* First advection term */
-PetscErrorCode adv1(PetscScalar **p, PetscScalar y, PetscInt i, PetscInt j, PetscInt M, PetscScalar *p1, AppCtx *user) {
+PetscErrorCode adv1(PetscScalar **p, PetscScalar y, PetscInt i, PetscInt j, PetscInt M, PetscScalar *p1, AppCtx *user)
+{
   PetscScalar f, fpos, fneg;
   PetscFunctionBegin;
   f    = (y - user->ws);
@@ -211,7 +215,8 @@ PetscErrorCode adv1(PetscScalar **p, PetscScalar y, PetscInt i, PetscInt j, Pets
 }
 
 /* Second advection term */
-PetscErrorCode adv2(PetscScalar **p, PetscScalar x, PetscInt i, PetscInt j, PetscInt N, PetscScalar *p2, AppCtx *user) {
+PetscErrorCode adv2(PetscScalar **p, PetscScalar x, PetscInt i, PetscInt j, PetscInt N, PetscScalar *p2, AppCtx *user)
+{
   PetscScalar f, fpos, fneg;
   PetscFunctionBegin;
   f    = (user->ws / (2 * user->H)) * (user->PM_min - user->Pmax * PetscSinScalar(x));
@@ -228,7 +233,8 @@ PetscErrorCode adv2(PetscScalar **p, PetscScalar x, PetscInt i, PetscInt j, Pets
 }
 
 /* Diffusion term */
-PetscErrorCode diffuse(PetscScalar **p, PetscInt i, PetscInt j, PetscReal t, PetscScalar *p_diff, AppCtx *user) {
+PetscErrorCode diffuse(PetscScalar **p, PetscInt i, PetscInt j, PetscReal t, PetscScalar *p_diff, AppCtx *user)
+{
   PetscFunctionBeginUser;
   if (user->st_width == 1) {
     *p_diff = user->disper_coe * ((p[j - 1][i] - 2 * p[j][i] + p[j + 1][i]) / (user->dy * user->dy));
@@ -240,7 +246,8 @@ PetscErrorCode diffuse(PetscScalar **p, PetscInt i, PetscInt j, PetscReal t, Pet
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode IFunction(TS ts, PetscReal t, Vec X, Vec Xdot, Vec F, void *ctx) {
+PetscErrorCode IFunction(TS ts, PetscReal t, Vec X, Vec Xdot, Vec F, void *ctx)
+{
   AppCtx       *user = (AppCtx *)ctx;
   DM            cda;
   DMDACoor2d  **coors;
@@ -289,7 +296,8 @@ PetscErrorCode IFunction(TS ts, PetscReal t, Vec X, Vec Xdot, Vec F, void *ctx) 
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode IJacobian(TS ts, PetscReal t, Vec X, Vec Xdot, PetscReal a, Mat J, Mat Jpre, void *ctx) {
+PetscErrorCode IJacobian(TS ts, PetscReal t, Vec X, Vec Xdot, PetscReal a, Mat J, Mat Jpre, void *ctx)
+{
   AppCtx      *user = (AppCtx *)ctx;
   DM           cda;
   DMDACoor2d **coors;
@@ -350,7 +358,8 @@ PetscErrorCode IJacobian(TS ts, PetscReal t, Vec X, Vec Xdot, PetscReal a, Mat J
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode Parameter_settings(AppCtx *user) {
+PetscErrorCode Parameter_settings(AppCtx *user)
+{
   PetscBool flg;
 
   PetscFunctionBeginUser;

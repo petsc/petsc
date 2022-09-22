@@ -3,20 +3,25 @@
 #include <petsc/private/cpp/macros.hpp>
 #include <petsc/private/cpp/utility.hpp>
 
-namespace Petsc {
+namespace Petsc
+{
 
-namespace device {
+namespace device
+{
 
-namespace host {
+namespace host
+{
 
-namespace impl {
+namespace impl
+{
 
 class DeviceContext {
 public:
   PETSC_CXX_COMPAT_DECL(PetscErrorCode destroy(PetscDeviceContext)) { return 0; }
   PETSC_CXX_COMPAT_DECL(PetscErrorCode changeStreamType(PetscDeviceContext, PetscStreamType)) { return 0; }
   PETSC_CXX_COMPAT_DECL(PetscErrorCode setUp(PetscDeviceContext)) { return 0; }
-  PETSC_CXX_COMPAT_DECL(PetscErrorCode query(PetscDeviceContext, PetscBool *idle)) {
+  PETSC_CXX_COMPAT_DECL(PetscErrorCode query(PetscDeviceContext, PetscBool *idle))
+  {
     PetscFunctionBegin;
     *idle = PETSC_TRUE; // the host is always idle
     PetscFunctionReturn(0);
@@ -40,7 +45,8 @@ public:
 
 } // namespace Petsc
 
-PetscErrorCode PetscDeviceContextCreate_HOST(PetscDeviceContext dctx) {
+PetscErrorCode PetscDeviceContextCreate_HOST(PetscDeviceContext dctx)
+{
   static constexpr auto hostctx = ::Petsc::device::host::impl::DeviceContext{};
 
   PetscFunctionBegin;

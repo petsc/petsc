@@ -23,7 +23,8 @@ typedef struct {
 
 .seealso: `KSPMonitorSAWs()`, `KSPMonitorSAWsDestroy()`
 @*/
-PetscErrorCode KSPMonitorSAWsCreate(KSP ksp, void **ctx) {
+PetscErrorCode KSPMonitorSAWsCreate(KSP ksp, void **ctx)
+{
   KSPMonitor_SAWs *mon;
 
   PetscFunctionBegin;
@@ -46,7 +47,8 @@ PetscErrorCode KSPMonitorSAWsCreate(KSP ksp, void **ctx) {
 
 .seealso: `KSPMonitorSAWsCreate()`
 @*/
-PetscErrorCode KSPMonitorSAWsDestroy(void **ctx) {
+PetscErrorCode KSPMonitorSAWsDestroy(void **ctx)
+{
   KSPMonitor_SAWs *mon = (KSPMonitor_SAWs *)*ctx;
 
   PetscFunctionBegin;
@@ -70,7 +72,8 @@ PetscErrorCode KSPMonitorSAWsDestroy(void **ctx) {
 
 .seealso: `KSPMonitorSingularValue()`, `KSPComputeExtremeSingularValues()`, `PetscViewerSAWsOpen()`
 @*/
-PetscErrorCode KSPMonitorSAWs(KSP ksp, PetscInt n, PetscReal rnorm, void *ctx) {
+PetscErrorCode KSPMonitorSAWs(KSP ksp, PetscInt n, PetscReal rnorm, void *ctx)
+{
   KSPMonitor_SAWs *mon = (KSPMonitor_SAWs *)ctx;
   PetscReal        emax, emin;
   PetscMPIInt      rank;

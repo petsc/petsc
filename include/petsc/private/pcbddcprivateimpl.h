@@ -1,8 +1,8 @@
 /* prototypes of all BDDC private functions */
 #if !defined(__pcbddc_private_h)
-#define __pcbddc_private_h
+  #define __pcbddc_private_h
 
-#include <petsc/private/pcbddcstructsimpl.h>
+  #include <petsc/private/pcbddcstructsimpl.h>
 
 /* main functions */
 PETSC_EXTERN PetscErrorCode PCBDDCAnalyzeInterface(PC);

@@ -13,7 +13,8 @@
 
 .seealso: `DMPlexDistribute()`, `DMPlexDistributeField()`, `DMPlexCreateMigrationSF()`, `DMPlexGetMigrationSF()`
 @*/
-PetscErrorCode DMPlexSetMigrationSF(DM dm, PetscSF migrationSF) {
+PetscErrorCode DMPlexSetMigrationSF(DM dm, PetscSF migrationSF)
+{
   PetscFunctionBegin;
   dm->sfMigration = migrationSF;
   PetscCall(PetscObjectReference((PetscObject)migrationSF));
@@ -33,7 +34,8 @@ PetscErrorCode DMPlexSetMigrationSF(DM dm, PetscSF migrationSF) {
 
 .seealso: `DMPlexDistribute()`, `DMPlexDistributeField()`, `DMPlexCreateMigrationSF()`, `DMPlexSetMigrationSF`
 @*/
-PetscErrorCode DMPlexGetMigrationSF(DM dm, PetscSF *migrationSF) {
+PetscErrorCode DMPlexGetMigrationSF(DM dm, PetscSF *migrationSF)
+{
   PetscFunctionBegin;
   *migrationSF = dm->sfMigration;
   PetscFunctionReturn(0);
@@ -50,7 +52,8 @@ PetscErrorCode DMPlexGetMigrationSF(DM dm, PetscSF *migrationSF) {
 
 .seealso: `DMPlexDistribute()`, `DMPlexDistributeField()`, `DMPlexCreateGlobalToNaturalSF()`, `DMPlexGetGlobaltoNaturalSF()`
 @*/
-PetscErrorCode DMPlexSetGlobalToNaturalSF(DM dm, PetscSF naturalSF) {
+PetscErrorCode DMPlexSetGlobalToNaturalSF(DM dm, PetscSF naturalSF)
+{
   PetscFunctionBegin;
   dm->sfNatural = naturalSF;
   PetscCall(PetscObjectReference((PetscObject)naturalSF));
@@ -71,7 +74,8 @@ PetscErrorCode DMPlexSetGlobalToNaturalSF(DM dm, PetscSF naturalSF) {
 
 .seealso: `DMPlexDistribute()`, `DMPlexDistributeField()`, `DMPlexCreateGlobalToNaturalSF()`, `DMPlexSetGlobaltoNaturalSF`
 @*/
-PetscErrorCode DMPlexGetGlobalToNaturalSF(DM dm, PetscSF *naturalSF) {
+PetscErrorCode DMPlexGetGlobalToNaturalSF(DM dm, PetscSF *naturalSF)
+{
   PetscFunctionBegin;
   *naturalSF = dm->sfNatural;
   PetscFunctionReturn(0);
@@ -94,7 +98,8 @@ PetscErrorCode DMPlexGetGlobalToNaturalSF(DM dm, PetscSF *naturalSF) {
 
 .seealso: `DMPlexDistribute()`, `DMPlexDistributeField()`
  @*/
-PetscErrorCode DMPlexCreateGlobalToNaturalSF(DM dm, PetscSection section, PetscSF sfMigration, PetscSF *sfNatural) {
+PetscErrorCode DMPlexCreateGlobalToNaturalSF(DM dm, PetscSection section, PetscSF sfMigration, PetscSF *sfNatural)
+{
   MPI_Comm     comm;
   PetscSF      sf, sfEmbed, sfField;
   PetscSection gSection, sectionDist, gLocSection;
@@ -210,7 +215,8 @@ PetscErrorCode DMPlexCreateGlobalToNaturalSF(DM dm, PetscSection section, PetscS
 
 .seealso: `DMPlexDistribute()`, `DMPlexDistributeField()`, `DMPlexNaturalToGlobalBegin()`, `DMPlexGlobalToNaturalEnd()`
 @*/
-PetscErrorCode DMPlexGlobalToNaturalBegin(DM dm, Vec gv, Vec nv) {
+PetscErrorCode DMPlexGlobalToNaturalBegin(DM dm, Vec gv, Vec nv)
+{
   const PetscScalar *inarray;
   PetscScalar       *outarray;
   PetscMPIInt        size;
@@ -252,7 +258,8 @@ PetscErrorCode DMPlexGlobalToNaturalBegin(DM dm, Vec gv, Vec nv) {
 
  .seealso: `DMPlexDistribute()`, `DMPlexDistributeField()`, `DMPlexNaturalToGlobalBegin()`, `DMPlexGlobalToNaturalBegin()`
  @*/
-PetscErrorCode DMPlexGlobalToNaturalEnd(DM dm, Vec gv, Vec nv) {
+PetscErrorCode DMPlexGlobalToNaturalEnd(DM dm, Vec gv, Vec nv)
+{
   const PetscScalar *inarray;
   PetscScalar       *outarray;
   PetscMPIInt        size;
@@ -293,7 +300,8 @@ PetscErrorCode DMPlexGlobalToNaturalEnd(DM dm, Vec gv, Vec nv) {
 
 .seealso: `DMPlexDistribute()`, `DMPlexDistributeField()`, `DMPlexNaturalToGlobalBegin()`, `DMPlexGlobalToNaturalEnd()`
 @*/
-PetscErrorCode DMPlexNaturalToGlobalBegin(DM dm, Vec nv, Vec gv) {
+PetscErrorCode DMPlexNaturalToGlobalBegin(DM dm, Vec nv, Vec gv)
+{
   const PetscScalar *inarray;
   PetscScalar       *outarray;
   PetscMPIInt        size;
@@ -339,7 +347,8 @@ PetscErrorCode DMPlexNaturalToGlobalBegin(DM dm, Vec nv, Vec gv) {
 
 .seealso: `DMPlexDistribute()`, `DMPlexDistributeField()`, `DMPlexNaturalToGlobalBegin()`, `DMPlexGlobalToNaturalBegin()`
  @*/
-PetscErrorCode DMPlexNaturalToGlobalEnd(DM dm, Vec nv, Vec gv) {
+PetscErrorCode DMPlexNaturalToGlobalEnd(DM dm, Vec nv, Vec gv)
+{
   const PetscScalar *inarray;
   PetscScalar       *outarray;
   PetscMPIInt        size;
@@ -379,7 +388,8 @@ PetscErrorCode DMPlexNaturalToGlobalEnd(DM dm, Vec nv, Vec gv) {
 
 .seealso: `DMPlexDistribute()`, `DMPlexNaturalToGlobalBegin()`, `DMPlexGlobalToNaturalBegin()`
  @*/
-PetscErrorCode DMPlexCreateNaturalVector(DM dm, Vec *nv) {
+PetscErrorCode DMPlexCreateNaturalVector(DM dm, Vec *nv)
+{
   PetscMPIInt size;
 
   PetscFunctionBegin;

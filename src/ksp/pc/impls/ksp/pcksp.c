@@ -7,7 +7,8 @@ typedef struct {
   PetscInt its; /* total number of iterations KSP uses */
 } PC_KSP;
 
-static PetscErrorCode PCKSPCreateKSP_KSP(PC pc) {
+static PetscErrorCode PCKSPCreateKSP_KSP(PC pc)
+{
   const char *prefix;
   PC_KSP     *jac = (PC_KSP *)pc->data;
   DM          dm;
@@ -27,7 +28,8 @@ static PetscErrorCode PCKSPCreateKSP_KSP(PC pc) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCApply_KSP(PC pc, Vec x, Vec y) {
+static PetscErrorCode PCApply_KSP(PC pc, Vec x, Vec y)
+{
   PetscInt its;
   PC_KSP  *jac = (PC_KSP *)pc->data;
 
@@ -44,7 +46,8 @@ static PetscErrorCode PCApply_KSP(PC pc, Vec x, Vec y) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCMatApply_KSP(PC pc, Mat X, Mat Y) {
+static PetscErrorCode PCMatApply_KSP(PC pc, Mat X, Mat Y)
+{
   PetscInt its;
   PC_KSP  *jac = (PC_KSP *)pc->data;
 
@@ -61,7 +64,8 @@ static PetscErrorCode PCMatApply_KSP(PC pc, Mat X, Mat Y) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCApplyTranspose_KSP(PC pc, Vec x, Vec y) {
+static PetscErrorCode PCApplyTranspose_KSP(PC pc, Vec x, Vec y)
+{
   PetscInt its;
   PC_KSP  *jac = (PC_KSP *)pc->data;
 
@@ -78,7 +82,8 @@ static PetscErrorCode PCApplyTranspose_KSP(PC pc, Vec x, Vec y) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCSetUp_KSP(PC pc) {
+static PetscErrorCode PCSetUp_KSP(PC pc)
+{
   PC_KSP *jac = (PC_KSP *)pc->data;
   Mat     mat;
 
@@ -95,7 +100,8 @@ static PetscErrorCode PCSetUp_KSP(PC pc) {
 }
 
 /* Default destroy, if it has never been setup */
-static PetscErrorCode PCReset_KSP(PC pc) {
+static PetscErrorCode PCReset_KSP(PC pc)
+{
   PC_KSP *jac = (PC_KSP *)pc->data;
 
   PetscFunctionBegin;
@@ -103,7 +109,8 @@ static PetscErrorCode PCReset_KSP(PC pc) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCDestroy_KSP(PC pc) {
+static PetscErrorCode PCDestroy_KSP(PC pc)
+{
   PC_KSP *jac = (PC_KSP *)pc->data;
 
   PetscFunctionBegin;
@@ -114,7 +121,8 @@ static PetscErrorCode PCDestroy_KSP(PC pc) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCView_KSP(PC pc, PetscViewer viewer) {
+static PetscErrorCode PCView_KSP(PC pc, PetscViewer viewer)
+{
   PC_KSP   *jac = (PC_KSP *)pc->data;
   PetscBool iascii;
 
@@ -133,7 +141,8 @@ static PetscErrorCode PCView_KSP(PC pc, PetscViewer viewer) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCKSPSetKSP_KSP(PC pc, KSP ksp) {
+static PetscErrorCode PCKSPSetKSP_KSP(PC pc, KSP ksp)
+{
   PC_KSP *jac = (PC_KSP *)pc->data;
 
   PetscFunctionBegin;
@@ -161,7 +170,8 @@ static PetscErrorCode PCKSPSetKSP_KSP(PC pc, KSP ksp) {
 
 .seealso: `PCKSP`, `PCKSPGetKSP()`
 @*/
-PetscErrorCode PCKSPSetKSP(PC pc, KSP ksp) {
+PetscErrorCode PCKSPSetKSP(PC pc, KSP ksp)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 2);
@@ -170,7 +180,8 @@ PetscErrorCode PCKSPSetKSP(PC pc, KSP ksp) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCKSPGetKSP_KSP(PC pc, KSP *ksp) {
+static PetscErrorCode PCKSPGetKSP_KSP(PC pc, KSP *ksp)
+{
   PC_KSP *jac = (PC_KSP *)pc->data;
 
   PetscFunctionBegin;
@@ -197,7 +208,8 @@ static PetscErrorCode PCKSPGetKSP_KSP(PC pc, KSP *ksp) {
 
 .seealso: `PCKSP`, `PCKSPSetKSP()`
 @*/
-PetscErrorCode PCKSPGetKSP(PC pc, KSP *ksp) {
+PetscErrorCode PCKSPGetKSP(PC pc, KSP *ksp)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscValidPointer(ksp, 2);
@@ -205,7 +217,8 @@ PetscErrorCode PCKSPGetKSP(PC pc, KSP *ksp) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCSetFromOptions_KSP(PC pc, PetscOptionItems *PetscOptionsObject) {
+static PetscErrorCode PCSetFromOptions_KSP(PC pc, PetscOptionItems *PetscOptionsObject)
+{
   PC_KSP *jac = (PC_KSP *)pc->data;
 
   PetscFunctionBegin;
@@ -245,7 +258,8 @@ static PetscErrorCode PCSetFromOptions_KSP(PC pc, PetscOptionItems *PetscOptions
           `PCSHELL`, `PCCOMPOSITE`, `PCSetUseAmat()`, `PCKSPGetKSP()`, `KSPFGMRES`, `KSPGCR`, `KSPFCG`
 M*/
 
-PETSC_EXTERN PetscErrorCode PCCreate_KSP(PC pc) {
+PETSC_EXTERN PetscErrorCode PCCreate_KSP(PC pc)
+{
   PC_KSP *jac;
 
   PetscFunctionBegin;

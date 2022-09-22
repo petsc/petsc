@@ -3,7 +3,8 @@ static char help[] = "Tests string options with spaces";
 
 #include <petscsys.h>
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   char      option2[20], option3[30];
   PetscBool flg;
   PetscInt  option1;

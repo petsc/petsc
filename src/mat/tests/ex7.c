@@ -5,7 +5,8 @@ routines directly.\n\n";
 
 #include <petscmat.h>
 
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   Mat           C, LU;
   MatInfo       info;
   PetscInt      i, j, m, n, Ii, J;

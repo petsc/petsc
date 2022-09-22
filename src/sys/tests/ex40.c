@@ -18,7 +18,8 @@ PETSC_HASH_MAP(HMapIS, PetscInt, Point, PetscHashInt, PetscHashEqual, origin)
 
 #define PetscTestCheck(expr) PetscCheck(expr, PETSC_COMM_SELF, PETSC_ERR_LIB, "Assertion: `%s' failed.", PetscStringize(expr))
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscHMapI   ht = NULL, hd;
   PetscHMapIV  htv;
   PetscInt     n, v, koff, keys[4], voff, vals[4], na, nb, i, size, *karray, off;

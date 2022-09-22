@@ -11,7 +11,8 @@ typedef struct {
   IS        row, col; /* index sets used for reordering */
 } PC_Cholesky;
 
-static PetscErrorCode PCSetFromOptions_Cholesky(PC pc, PetscOptionItems *PetscOptionsObject) {
+static PetscErrorCode PCSetFromOptions_Cholesky(PC pc, PetscOptionItems *PetscOptionsObject)
+{
   PetscFunctionBegin;
   PetscOptionsHeadBegin(PetscOptionsObject, "Cholesky options");
   PetscCall(PCSetFromOptions_Factor(pc, PetscOptionsObject));
@@ -19,7 +20,8 @@ static PetscErrorCode PCSetFromOptions_Cholesky(PC pc, PetscOptionItems *PetscOp
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCSetUp_Cholesky(PC pc) {
+static PetscErrorCode PCSetUp_Cholesky(PC pc)
+{
   PetscBool      flg;
   PC_Cholesky   *dir = (PC_Cholesky *)pc->data;
   MatSolverType  stype;
@@ -132,7 +134,8 @@ static PetscErrorCode PCSetUp_Cholesky(PC pc) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCReset_Cholesky(PC pc) {
+static PetscErrorCode PCReset_Cholesky(PC pc)
+{
   PC_Cholesky *dir = (PC_Cholesky *)pc->data;
 
   PetscFunctionBegin;
@@ -142,7 +145,8 @@ static PetscErrorCode PCReset_Cholesky(PC pc) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCDestroy_Cholesky(PC pc) {
+static PetscErrorCode PCDestroy_Cholesky(PC pc)
+{
   PC_Cholesky *dir = (PC_Cholesky *)pc->data;
 
   PetscFunctionBegin;
@@ -154,7 +158,8 @@ static PetscErrorCode PCDestroy_Cholesky(PC pc) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCApply_Cholesky(PC pc, Vec x, Vec y) {
+static PetscErrorCode PCApply_Cholesky(PC pc, Vec x, Vec y)
+{
   PC_Cholesky *dir = (PC_Cholesky *)pc->data;
 
   PetscFunctionBegin;
@@ -166,7 +171,8 @@ static PetscErrorCode PCApply_Cholesky(PC pc, Vec x, Vec y) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCMatApply_Cholesky(PC pc, Mat X, Mat Y) {
+static PetscErrorCode PCMatApply_Cholesky(PC pc, Mat X, Mat Y)
+{
   PC_Cholesky *dir = (PC_Cholesky *)pc->data;
 
   PetscFunctionBegin;
@@ -178,7 +184,8 @@ static PetscErrorCode PCMatApply_Cholesky(PC pc, Mat X, Mat Y) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCApplySymmetricLeft_Cholesky(PC pc, Vec x, Vec y) {
+static PetscErrorCode PCApplySymmetricLeft_Cholesky(PC pc, Vec x, Vec y)
+{
   PC_Cholesky *dir = (PC_Cholesky *)pc->data;
 
   PetscFunctionBegin;
@@ -190,7 +197,8 @@ static PetscErrorCode PCApplySymmetricLeft_Cholesky(PC pc, Vec x, Vec y) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCApplySymmetricRight_Cholesky(PC pc, Vec x, Vec y) {
+static PetscErrorCode PCApplySymmetricRight_Cholesky(PC pc, Vec x, Vec y)
+{
   PC_Cholesky *dir = (PC_Cholesky *)pc->data;
 
   PetscFunctionBegin;
@@ -202,7 +210,8 @@ static PetscErrorCode PCApplySymmetricRight_Cholesky(PC pc, Vec x, Vec y) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCApplyTranspose_Cholesky(PC pc, Vec x, Vec y) {
+static PetscErrorCode PCApplyTranspose_Cholesky(PC pc, Vec x, Vec y)
+{
   PC_Cholesky *dir = (PC_Cholesky *)pc->data;
 
   PetscFunctionBegin;
@@ -232,7 +241,8 @@ static PetscErrorCode PCApplyTranspose_Cholesky(PC pc, Vec x, Vec y) {
 
 .seealso: `PCLU`, `PCCHOLESKY`, `PCFactorSetReuseFill()`
 @*/
-PetscErrorCode PCFactorSetReuseOrdering(PC pc, PetscBool flag) {
+PetscErrorCode PCFactorSetReuseOrdering(PC pc, PetscBool flag)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscValidLogicalCollectiveBool(pc, flag, 2);
@@ -266,7 +276,8 @@ PetscErrorCode PCFactorSetReuseOrdering(PC pc, PetscBool flag) {
           `PCFactorSetUseInPlace()`, `PCFactorGetUseInPlace()`, `PCFactorSetMatOrderingType()`, `PCFactorSetReuseOrdering()`
 M*/
 
-PETSC_EXTERN PetscErrorCode PCCreate_Cholesky(PC pc) {
+PETSC_EXTERN PetscErrorCode PCCreate_Cholesky(PC pc)
+{
   PC_Cholesky *dir;
 
   PetscFunctionBegin;

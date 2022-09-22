@@ -15,7 +15,8 @@ PetscBool DMFieldRegisterAllCalled;
 
 .seealso: `DMFieldFinalizePackage()`
 @*/
-PetscErrorCode DMFieldInitializePackage(void) {
+PetscErrorCode DMFieldInitializePackage(void)
+{
   PetscFunctionBegin;
   if (DMFieldPackageInitialized) PetscFunctionReturn(0);
   DMFieldPackageInitialized = PETSC_TRUE;
@@ -35,7 +36,8 @@ PetscErrorCode DMFieldInitializePackage(void) {
 
 .seealso: `DMFieldInitializePackage()`
 @*/
-PetscErrorCode DMFieldFinalizePackage(void) {
+PetscErrorCode DMFieldFinalizePackage(void)
+{
   PetscFunctionBegin;
   PetscCall(PetscFunctionListDestroy(&DMFieldList));
   DMFieldPackageInitialized = PETSC_FALSE;

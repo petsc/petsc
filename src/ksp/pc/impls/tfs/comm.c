@@ -29,7 +29,8 @@ static PetscInt edge_not_pow_2;
 static PetscInt edge_node[sizeof(PetscInt) * 32];
 
 /***********************************comm.c*************************************/
-PetscErrorCode PCTFS_comm_init(void) {
+PetscErrorCode PCTFS_comm_init(void)
+{
   PetscFunctionBegin;
   if (p_init++) PetscFunctionReturn(0);
 
@@ -59,7 +60,8 @@ PetscErrorCode PCTFS_comm_init(void) {
 }
 
 /***********************************comm.c*************************************/
-PetscErrorCode PCTFS_giop(PetscInt *vals, PetscInt *work, PetscInt n, PetscInt *oprs) {
+PetscErrorCode PCTFS_giop(PetscInt *vals, PetscInt *work, PetscInt n, PetscInt *oprs)
+{
   PetscInt   mask, edge;
   PetscInt   type, dest;
   vfp        fp;
@@ -135,7 +137,8 @@ PetscErrorCode PCTFS_giop(PetscInt *vals, PetscInt *work, PetscInt n, PetscInt *
 }
 
 /***********************************comm.c*************************************/
-PetscErrorCode PCTFS_grop(PetscScalar *vals, PetscScalar *work, PetscInt n, PetscInt *oprs) {
+PetscErrorCode PCTFS_grop(PetscScalar *vals, PetscScalar *work, PetscInt n, PetscInt *oprs)
+{
   PetscInt   mask, edge;
   PetscInt   type, dest;
   vfp        fp;
@@ -210,7 +213,8 @@ PetscErrorCode PCTFS_grop(PetscScalar *vals, PetscScalar *work, PetscInt n, Pets
 }
 
 /***********************************comm.c*************************************/
-PetscErrorCode PCTFS_grop_hc(PetscScalar *vals, PetscScalar *work, PetscInt n, PetscInt *oprs, PetscInt dim) {
+PetscErrorCode PCTFS_grop_hc(PetscScalar *vals, PetscScalar *work, PetscInt n, PetscInt *oprs, PetscInt dim)
+{
   PetscInt   mask, edge;
   PetscInt   type, dest;
   vfp        fp;
@@ -272,7 +276,8 @@ PetscErrorCode PCTFS_grop_hc(PetscScalar *vals, PetscScalar *work, PetscInt n, P
 }
 
 /******************************************************************************/
-PetscErrorCode PCTFS_ssgl_radd(PetscScalar *vals, PetscScalar *work, PetscInt level, PetscInt *segs) {
+PetscErrorCode PCTFS_ssgl_radd(PetscScalar *vals, PetscScalar *work, PetscInt level, PetscInt *segs)
+{
   PetscInt     edge, type, dest, mask;
   PetscInt     stage_n;
   MPI_Status   status;
@@ -321,7 +326,8 @@ PetscErrorCode PCTFS_ssgl_radd(PetscScalar *vals, PetscScalar *work, PetscInt le
 }
 
 /***********************************comm.c*************************************/
-PetscErrorCode PCTFS_giop_hc(PetscInt *vals, PetscInt *work, PetscInt n, PetscInt *oprs, PetscInt dim) {
+PetscErrorCode PCTFS_giop_hc(PetscInt *vals, PetscInt *work, PetscInt n, PetscInt *oprs, PetscInt dim)
+{
   PetscInt   mask, edge;
   PetscInt   type, dest;
   vfp        fp;

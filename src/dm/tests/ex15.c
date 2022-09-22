@@ -4,7 +4,8 @@ static char help[] = "Tests DMDA interpolation.\n\n";
 #include <petscdm.h>
 #include <petscdmda.h>
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscInt       M1 = 3, M2, dof = 1, s = 1, ratio = 2, dim = 1;
   DM             da_c, da_f;
   Vec            v_c, v_f;

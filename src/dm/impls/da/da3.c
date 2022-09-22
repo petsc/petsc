@@ -7,7 +7,8 @@
 #include <petsc/private/dmdaimpl.h> /*I   "petscdmda.h"    I*/
 
 #include <petscdraw.h>
-static PetscErrorCode DMView_DA_3d(DM da, PetscViewer viewer) {
+static PetscErrorCode DMView_DA_3d(DM da, PetscViewer viewer)
+{
   PetscMPIInt rank;
   PetscBool   iascii, isdraw, isglvis, isbinary;
   DM_DA      *dd = (DM_DA *)da->data;
@@ -188,7 +189,8 @@ static PetscErrorCode DMView_DA_3d(DM da, PetscViewer viewer) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMSetUp_DA_3D(DM da) {
+PetscErrorCode DMSetUp_DA_3D(DM da)
+{
   DM_DA          *dd           = (DM_DA *)da->data;
   const PetscInt  M            = dd->M;
   const PetscInt  N            = dd->N;
@@ -1404,9 +1406,9 @@ PetscErrorCode DMSetUp_DA_3D(DM da) {
   PetscCall(ISLocalToGlobalMappingCreate(comm, dof, nn, idx, PETSC_OWN_POINTER, &da->ltogmap));
 
   PetscCall(PetscFree2(bases, ldims));
-  dd->m  = m;
-  dd->n  = n;
-  dd->p  = p;
+  dd->m = m;
+  dd->n = n;
+  dd->p = p;
   /* note petsc expects xs/xe/Xs/Xe to be multiplied by #dofs in many places */
   dd->xs = xs * dof;
   dd->xe = xe * dof;
@@ -1492,7 +1494,8 @@ PetscErrorCode DMSetUp_DA_3D(DM da) {
           `DMStagCreate3d()`
 
 @*/
-PetscErrorCode DMDACreate3d(MPI_Comm comm, DMBoundaryType bx, DMBoundaryType by, DMBoundaryType bz, DMDAStencilType stencil_type, PetscInt M, PetscInt N, PetscInt P, PetscInt m, PetscInt n, PetscInt p, PetscInt dof, PetscInt s, const PetscInt lx[], const PetscInt ly[], const PetscInt lz[], DM *da) {
+PetscErrorCode DMDACreate3d(MPI_Comm comm, DMBoundaryType bx, DMBoundaryType by, DMBoundaryType bz, DMDAStencilType stencil_type, PetscInt M, PetscInt N, PetscInt P, PetscInt m, PetscInt n, PetscInt p, PetscInt dof, PetscInt s, const PetscInt lx[], const PetscInt ly[], const PetscInt lz[], DM *da)
+{
   PetscFunctionBegin;
   PetscCall(DMDACreate(comm, da));
   PetscCall(DMSetDimension(*da, 3));

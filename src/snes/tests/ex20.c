@@ -49,7 +49,8 @@ extern PetscErrorCode FormInitialGuess(SNES, Vec, void *);
 extern PetscErrorCode FormFunction(SNES, Vec, Vec, void *);
 extern PetscErrorCode FormJacobian(SNES, Vec, Mat, Mat, void *);
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   SNES      snes;
   AppCtx    user;
   PetscInt  its, lits;
@@ -100,7 +101,8 @@ int main(int argc, char **argv) {
   return 0;
 }
 /* --------------------  Form initial approximation ----------------- */
-PetscErrorCode FormInitialGuess(SNES snes, Vec X, void *ctx) {
+PetscErrorCode FormInitialGuess(SNES snes, Vec X, void *ctx)
+{
   AppCtx        *user;
   PetscInt       i, j, k, xs, ys, xm, ym, zs, zm;
   PetscScalar ***x;
@@ -122,7 +124,8 @@ PetscErrorCode FormInitialGuess(SNES snes, Vec X, void *ctx) {
   PetscFunctionReturn(0);
 }
 /* --------------------  Evaluate Function F(x) --------------------- */
-PetscErrorCode FormFunction(SNES snes, Vec X, Vec F, void *ptr) {
+PetscErrorCode FormFunction(SNES snes, Vec X, Vec F, void *ptr)
+{
   AppCtx        *user = (AppCtx *)ptr;
   PetscInt       i, j, k, mx, my, mz, xs, ys, zs, xm, ym, zm;
   PetscScalar    zero = 0.0, one = 1.0;
@@ -433,7 +436,8 @@ PetscErrorCode FormFunction(SNES snes, Vec X, Vec F, void *ptr) {
   PetscFunctionReturn(0);
 }
 /* --------------------  Evaluate Jacobian F(x) --------------------- */
-PetscErrorCode FormJacobian(SNES snes, Vec X, Mat J, Mat jac, void *ptr) {
+PetscErrorCode FormJacobian(SNES snes, Vec X, Mat J, Mat jac, void *ptr)
+{
   AppCtx        *user = (AppCtx *)ptr;
   PetscInt       i, j, k, mx, my, mz, xs, ys, zs, xm, ym, zm;
   PetscScalar    one = 1.0;

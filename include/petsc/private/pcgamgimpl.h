@@ -1,9 +1,9 @@
 #if !defined(__GAMG_IMPL)
-#define __GAMG_IMPL
-#include <petscksp.h>
-#include <petsc/private/pcimpl.h>
-#include <petsc/private/pcmgimpl.h> /*I "petscksp.h" I*/
-#include <petscmatcoarsen.h>        /*I "petscmatcoarsen.h" I*/
+  #define __GAMG_IMPL
+  #include <petscksp.h>
+  #include <petsc/private/pcimpl.h>
+  #include <petsc/private/pcmgimpl.h> /*I "petscksp.h" I*/
+  #include <petscmatcoarsen.h>        /*I "petscmatcoarsen.h" I*/
 
 struct _PCGAMGOps {
   PetscErrorCode (*graph)(PC, Mat, Mat *);
@@ -33,13 +33,13 @@ typedef struct gamg_TAG {
   PetscInt         level_reduction_factors[PETSC_MG_MAXLEVELS];
   PetscInt         current_level; /* stash construction state */
   /* these 4 are all related to the method data and should be in the subctx */
-  PetscInt         data_sz; /* nloc*data_rows*data_cols */
-  PetscInt         data_cell_rows;
-  PetscInt         data_cell_cols;
-  PetscInt         orig_data_cell_rows;
-  PetscInt         orig_data_cell_cols;
-  PetscReal       *data;      /* [data_sz] blocked vector of vertex data on fine grid (coordinates/nullspace) */
-  PetscReal       *orig_data; /* cache data */
+  PetscInt   data_sz; /* nloc*data_rows*data_cols */
+  PetscInt   data_cell_rows;
+  PetscInt   data_cell_cols;
+  PetscInt   orig_data_cell_rows;
+  PetscInt   orig_data_cell_cols;
+  PetscReal *data;      /* [data_sz] blocked vector of vertex data on fine grid (coordinates/nullspace) */
+  PetscReal *orig_data; /* cache data */
 
   struct _PCGAMGOps *ops;
   char              *gamg_type_name;
@@ -98,8 +98,9 @@ PETSC_INTERN PetscErrorCode PCGAMGHashTableCreate(PetscInt, PCGAMGHashTable *);
 PETSC_INTERN PetscErrorCode PCGAMGHashTableDestroy(PCGAMGHashTable *);
 PETSC_INTERN PetscErrorCode PCGAMGHashTableAdd(PCGAMGHashTable *, PetscInt, PetscInt);
 
-#define GAMG_HASH(key) (PetscInt)((((PetscInt64)7) * (PetscInt64)key) % (PetscInt64)a_tab->size)
-static inline PetscErrorCode PCGAMGHashTableFind(PCGAMGHashTable *a_tab, PetscInt a_key, PetscInt *a_data) {
+  #define GAMG_HASH(key) (PetscInt)((((PetscInt64)7) * (PetscInt64)key) % (PetscInt64)a_tab->size)
+static inline PetscErrorCode PCGAMGHashTableFind(PCGAMGHashTable *a_tab, PetscInt a_key, PetscInt *a_data)
+{
   PetscInt kk, idx;
 
   PetscFunctionBegin;

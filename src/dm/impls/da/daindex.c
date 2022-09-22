@@ -10,7 +10,8 @@
 
    Used by DMDAGetAO() and DMDAGlobalToNatural_Create()
 */
-PetscErrorCode DMDAGetNatural_Private(DM da, PetscInt *outNlocal, IS *isnatural) {
+PetscErrorCode DMDAGetNatural_Private(DM da, PetscInt *outNlocal, IS *isnatural)
+{
   PetscInt Nlocal, i, j, k, *lidx, lict = 0, dim = da->dim;
   DM_DA   *dd = (DM_DA *)da->data;
 
@@ -65,7 +66,8 @@ PetscErrorCode DMDAGetNatural_Private(DM da, PetscInt *outNlocal, IS *isnatural)
           `DMGlobalToLocalBegin()`, `DMGlobalToLocalEnd()`, `DMLocalToLocalBegin()`, `DMLocalToLocalEnd()`, `DMDAGetGlobalIndices()`, `DMDAGetOwnershipRanges()`,
           `AO`, `AOPetscToApplication()`, `AOApplicationToPetsc()`
 @*/
-PetscErrorCode DMDASetAOType(DM da, AOType aotype) {
+PetscErrorCode DMDASetAOType(DM da, AOType aotype)
+{
   DM_DA    *dd;
   PetscBool isdmda;
 
@@ -112,7 +114,8 @@ PetscErrorCode DMDASetAOType(DM da, AOType aotype) {
           `DMGlobalToLocalBegin()`, `DMGlobalToLocalEnd()`, `DMLocalToLocalBegin()`, `DMLocalToLocalEnd()`, `DMDAGetOwnershipRanges()`,
           `AO`, `AOPetscToApplication()`, `AOApplicationToPetsc()`
 @*/
-PetscErrorCode DMDAGetAO(DM da, AO *ao) {
+PetscErrorCode DMDAGetAO(DM da, AO *ao)
+{
   DM_DA    *dd;
   PetscBool isdmda;
 

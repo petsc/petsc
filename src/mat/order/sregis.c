@@ -37,7 +37,8 @@ PETSC_INTERN PetscErrorCode MatGetOrdering_METISND(Mat, MatOrderingType, IS *, I
 
 .seealso: `MatOrderingType`, `MatOrderingRegister()`
 @*/
-PetscErrorCode MatOrderingRegisterAll(void) {
+PetscErrorCode MatOrderingRegisterAll(void)
+{
   PetscFunctionBegin;
   if (MatOrderingRegisterAllCalled) PetscFunctionReturn(0);
   MatOrderingRegisterAllCalled = PETSC_TRUE;

@@ -35,11 +35,13 @@ typedef struct {
   PetscBool rollback;
 } TSAdapt_DSP;
 
-static PetscReal Limiter(PetscReal value, PetscReal kappa) {
+static PetscReal Limiter(PetscReal value, PetscReal kappa)
+{
   return 1 + kappa * PetscAtanReal((value - 1) / kappa);
 }
 
-static PetscErrorCode TSAdaptRestart_DSP(TSAdapt adapt) {
+static PetscErrorCode TSAdaptRestart_DSP(TSAdapt adapt)
+{
   TSAdapt_DSP *dsp = (TSAdapt_DSP *)adapt->data;
   PetscFunctionBegin;
   dsp->cerror[0] = dsp->hratio[0] = 1.0;
@@ -48,7 +50,8 @@ static PetscErrorCode TSAdaptRestart_DSP(TSAdapt adapt) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSAdaptRollBack_DSP(TSAdapt adapt) {
+static PetscErrorCode TSAdaptRollBack_DSP(TSAdapt adapt)
+{
   TSAdapt_DSP *dsp = (TSAdapt_DSP *)adapt->data;
   PetscFunctionBegin;
   dsp->cerror[0] = dsp->cerror[1];
@@ -60,7 +63,8 @@ static PetscErrorCode TSAdaptRollBack_DSP(TSAdapt adapt) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSAdaptChoose_DSP(TSAdapt adapt, TS ts, PetscReal h, PetscInt *next_sc, PetscReal *next_h, PetscBool *accept, PetscReal *wlte, PetscReal *wltea, PetscReal *wlter) {
+static PetscErrorCode TSAdaptChoose_DSP(TSAdapt adapt, TS ts, PetscReal h, PetscInt *next_sc, PetscReal *next_h, PetscBool *accept, PetscReal *wlte, PetscReal *wltea, PetscReal *wlter)
+{
   TSAdapt_DSP *dsp   = (TSAdapt_DSP *)adapt->data;
   PetscInt     order = PETSC_DECIDE;
   PetscReal    enorm = -1;
@@ -161,7 +165,8 @@ static PetscErrorCode TSAdaptChoose_DSP(TSAdapt adapt, TS ts, PetscReal h, Petsc
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSAdaptDestroy_DSP(TSAdapt adapt) {
+static PetscErrorCode TSAdaptDestroy_DSP(TSAdapt adapt)
+{
   PetscFunctionBegin;
   PetscCall(PetscObjectComposeFunction((PetscObject)adapt, "TSAdaptDSPSetFilter_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)adapt, "TSAdaptDSPSetPID_C", NULL));
@@ -169,7 +174,8 @@ static PetscErrorCode TSAdaptDestroy_DSP(TSAdapt adapt) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSAdaptView_DSP(TSAdapt adapt, PetscViewer viewer) {
+static PetscErrorCode TSAdaptView_DSP(TSAdapt adapt, PetscViewer viewer)
+{
   TSAdapt_DSP *dsp = (TSAdapt_DSP *)adapt->data;
   PetscBool    iascii;
 
@@ -214,7 +220,8 @@ static struct FilterTab filterlist[] = {
   {"H321",    18, {6, 1, -5},  {-15, -3}},
 };
 
-static PetscErrorCode TSAdaptDSPSetFilter_DSP(TSAdapt adapt, const char *name) {
+static PetscErrorCode TSAdaptDSPSetFilter_DSP(TSAdapt adapt, const char *name)
+{
   TSAdapt_DSP      *dsp = (TSAdapt_DSP *)adapt->data;
   PetscInt          i, count = (PetscInt)(sizeof(filterlist) / sizeof(filterlist[0]));
   struct FilterTab *tab = NULL;
@@ -237,7 +244,8 @@ static PetscErrorCode TSAdaptDSPSetFilter_DSP(TSAdapt adapt, const char *name) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSAdaptDSPSetPID_DSP(TSAdapt adapt, PetscReal kkI, PetscReal kkP, PetscReal kkD) {
+static PetscErrorCode TSAdaptDSPSetPID_DSP(TSAdapt adapt, PetscReal kkI, PetscReal kkP, PetscReal kkD)
+{
   TSAdapt_DSP *dsp = (TSAdapt_DSP *)adapt->data;
 
   PetscFunctionBegin;
@@ -249,7 +257,8 @@ static PetscErrorCode TSAdaptDSPSetPID_DSP(TSAdapt adapt, PetscReal kkI, PetscRe
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSAdaptSetFromOptions_DSP(TSAdapt adapt, PetscOptionItems *PetscOptionsObject) {
+static PetscErrorCode TSAdaptSetFromOptions_DSP(TSAdapt adapt, PetscOptionItems *PetscOptionsObject)
+{
   TSAdapt_DSP *dsp = (TSAdapt_DSP *)adapt->data;
   const char  *names[sizeof(filterlist) / sizeof(filterlist[0])];
   PetscInt     count  = (PetscInt)(sizeof(filterlist) / sizeof(filterlist[0]));
@@ -311,7 +320,8 @@ static PetscErrorCode TSAdaptSetFromOptions_DSP(TSAdapt adapt, PetscOptionItems 
 
 .seealso: `TS`, `TSAdapt`, `TSGetAdapt()`, `TSAdaptDSPSetPID()`
 @*/
-PetscErrorCode TSAdaptDSPSetFilter(TSAdapt adapt, const char *name) {
+PetscErrorCode TSAdaptDSPSetFilter(TSAdapt adapt, const char *name)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(adapt, TSADAPT_CLASSID, 1);
   PetscValidCharPointer(name, 2);
@@ -338,7 +348,8 @@ PetscErrorCode TSAdaptDSPSetFilter(TSAdapt adapt, const char *name) {
 
 .seealso: `TS`, `TSAdapt`, `TSGetAdapt()`, `TSAdaptDSPSetFilter()`
 @*/
-PetscErrorCode TSAdaptDSPSetPID(TSAdapt adapt, PetscReal kkI, PetscReal kkP, PetscReal kkD) {
+PetscErrorCode TSAdaptDSPSetPID(TSAdapt adapt, PetscReal kkI, PetscReal kkP, PetscReal kkD)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(adapt, TSADAPT_CLASSID, 1);
   PetscValidLogicalCollectiveReal(adapt, kkI, 2);
@@ -365,7 +376,8 @@ PetscErrorCode TSAdaptDSPSetPID(TSAdapt adapt, PetscReal kkI, PetscReal kkP, Pet
 
 .seealso: `TS`, `TSAdapt`, `TSGetAdapt()`, `TSAdaptDSPSetPID()`, `TSAdaptDSPSetFilter()`
 M*/
-PETSC_EXTERN PetscErrorCode TSAdaptCreate_DSP(TSAdapt adapt) {
+PETSC_EXTERN PetscErrorCode TSAdaptCreate_DSP(TSAdapt adapt)
+{
   TSAdapt_DSP *dsp;
 
   PetscFunctionBegin;

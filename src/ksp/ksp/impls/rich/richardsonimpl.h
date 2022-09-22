@@ -2,7 +2,7 @@
       Private data structure for Richardson Iteration
 */
 
-#if !defined(__RICHARDSONIMPL_H)
+#ifndef __RICHARDSONIMPL_H
 #define __RICHARDSONIMPL_H
 
 #include <petsc/private/kspimpl.h>

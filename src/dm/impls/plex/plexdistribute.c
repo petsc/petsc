@@ -18,7 +18,8 @@
 
 .seealso: `DMSetAdjacency()`, `DMPlexDistribute()`, `DMPlexPreallocateOperator()`, `DMPlexGetAdjacency()`, `DMPlexGetAdjacencyUser()`
 @*/
-PetscErrorCode DMPlexSetAdjacencyUser(DM dm, PetscErrorCode (*user)(DM, PetscInt, PetscInt *, PetscInt[], void *), void *ctx) {
+PetscErrorCode DMPlexSetAdjacencyUser(DM dm, PetscErrorCode (*user)(DM, PetscInt, PetscInt *, PetscInt[], void *), void *ctx)
+{
   DM_Plex *mesh = (DM_Plex *)dm->data;
 
   PetscFunctionBegin;
@@ -42,7 +43,8 @@ PetscErrorCode DMPlexSetAdjacencyUser(DM dm, PetscErrorCode (*user)(DM, PetscInt
 
 .seealso: `DMSetAdjacency()`, `DMPlexDistribute()`, `DMPlexPreallocateOperator()`, `DMPlexGetAdjacency()`, `DMPlexSetAdjacencyUser()`
 @*/
-PetscErrorCode DMPlexGetAdjacencyUser(DM dm, PetscErrorCode (**user)(DM, PetscInt, PetscInt *, PetscInt[], void *), void **ctx) {
+PetscErrorCode DMPlexGetAdjacencyUser(DM dm, PetscErrorCode (**user)(DM, PetscInt, PetscInt *, PetscInt[], void *), void **ctx)
+{
   DM_Plex *mesh = (DM_Plex *)dm->data;
 
   PetscFunctionBegin;
@@ -63,7 +65,8 @@ PetscErrorCode DMPlexGetAdjacencyUser(DM dm, PetscErrorCode (**user)(DM, PetscIn
 
 .seealso: `DMGetAdjacency()`, `DMSetAdjacency()`, `DMPlexDistribute()`, `DMPlexPreallocateOperator()`, `DMPlexSetAnchors()`
 @*/
-PetscErrorCode DMPlexSetAdjacencyUseAnchors(DM dm, PetscBool useAnchors) {
+PetscErrorCode DMPlexSetAdjacencyUseAnchors(DM dm, PetscBool useAnchors)
+{
   DM_Plex *mesh = (DM_Plex *)dm->data;
 
   PetscFunctionBegin;
@@ -85,7 +88,8 @@ PetscErrorCode DMPlexSetAdjacencyUseAnchors(DM dm, PetscBool useAnchors) {
 
 .seealso: `DMPlexSetAdjacencyUseAnchors()`, `DMSetAdjacency()`, `DMGetAdjacency()`, `DMPlexDistribute()`, `DMPlexPreallocateOperator()`, `DMPlexSetAnchors()`
 @*/
-PetscErrorCode DMPlexGetAdjacencyUseAnchors(DM dm, PetscBool *useAnchors) {
+PetscErrorCode DMPlexGetAdjacencyUseAnchors(DM dm, PetscBool *useAnchors)
+{
   DM_Plex *mesh = (DM_Plex *)dm->data;
 
   PetscFunctionBegin;
@@ -95,7 +99,8 @@ PetscErrorCode DMPlexGetAdjacencyUseAnchors(DM dm, PetscBool *useAnchors) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMPlexGetAdjacency_Cone_Internal(DM dm, PetscInt p, PetscInt *adjSize, PetscInt adj[]) {
+static PetscErrorCode DMPlexGetAdjacency_Cone_Internal(DM dm, PetscInt p, PetscInt *adjSize, PetscInt adj[])
+{
   const PetscInt *cone   = NULL;
   PetscInt        numAdj = 0, maxAdjSize = *adjSize, coneSize, c;
 
@@ -120,7 +125,8 @@ static PetscErrorCode DMPlexGetAdjacency_Cone_Internal(DM dm, PetscInt p, PetscI
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMPlexGetAdjacency_Support_Internal(DM dm, PetscInt p, PetscInt *adjSize, PetscInt adj[]) {
+static PetscErrorCode DMPlexGetAdjacency_Support_Internal(DM dm, PetscInt p, PetscInt *adjSize, PetscInt adj[])
+{
   const PetscInt *support = NULL;
   PetscInt        numAdj = 0, maxAdjSize = *adjSize, supportSize, s;
 
@@ -145,7 +151,8 @@ static PetscErrorCode DMPlexGetAdjacency_Support_Internal(DM dm, PetscInt p, Pet
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMPlexGetAdjacency_Transitive_Internal(DM dm, PetscInt p, PetscBool useClosure, PetscInt *adjSize, PetscInt adj[]) {
+static PetscErrorCode DMPlexGetAdjacency_Transitive_Internal(DM dm, PetscInt p, PetscBool useClosure, PetscInt *adjSize, PetscInt adj[])
+{
   PetscInt *star   = NULL;
   PetscInt  numAdj = 0, maxAdjSize = *adjSize, starSize, s;
 
@@ -169,7 +176,8 @@ static PetscErrorCode DMPlexGetAdjacency_Transitive_Internal(DM dm, PetscInt p, 
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMPlexGetAdjacency_Internal(DM dm, PetscInt p, PetscBool useCone, PetscBool useTransitiveClosure, PetscBool useAnchors, PetscInt *adjSize, PetscInt *adj[]) {
+PetscErrorCode DMPlexGetAdjacency_Internal(DM dm, PetscInt p, PetscBool useCone, PetscBool useTransitiveClosure, PetscBool useAnchors, PetscInt *adjSize, PetscInt *adj[])
+{
   static PetscInt asiz       = 0;
   PetscInt        maxAnchors = 1;
   PetscInt        aStart = -1, aEnd = -1;
@@ -269,7 +277,8 @@ PetscErrorCode DMPlexGetAdjacency_Internal(DM dm, PetscInt p, PetscBool useCone,
 
 .seealso: `DMSetAdjacency()`, `DMPlexDistribute()`, `DMCreateMatrix()`, `DMPlexPreallocateOperator()`
 @*/
-PetscErrorCode DMPlexGetAdjacency(DM dm, PetscInt p, PetscInt *adjSize, PetscInt *adj[]) {
+PetscErrorCode DMPlexGetAdjacency(DM dm, PetscInt p, PetscInt *adjSize, PetscInt *adj[])
+{
   PetscBool useCone, useClosure, useAnchors;
 
   PetscFunctionBeginHot;
@@ -303,7 +312,8 @@ PetscErrorCode DMPlexGetAdjacency(DM dm, PetscInt p, PetscInt *adjSize, PetscInt
 
 .seealso: `PetscSFCreate()`, `DMPlexCreateProcessSF()`
 @*/
-PetscErrorCode DMPlexCreateTwoSidedProcessSF(DM dm, PetscSF sfPoint, PetscSection rootRankSection, IS rootRanks, PetscSection leafRankSection, IS leafRanks, IS *processRanks, PetscSF *sfProcess) {
+PetscErrorCode DMPlexCreateTwoSidedProcessSF(DM dm, PetscSF sfPoint, PetscSection rootRankSection, IS rootRanks, PetscSection leafRankSection, IS leafRanks, IS *processRanks, PetscSF *sfProcess)
+{
   const PetscSFNode *remotePoints;
   PetscInt          *localPointsNew;
   PetscSFNode       *remotePointsNew;
@@ -394,7 +404,8 @@ PetscErrorCode DMPlexCreateTwoSidedProcessSF(DM dm, PetscSF sfPoint, PetscSectio
 
 .seealso: `DMPlexCreateOverlapLabel()`, `DMPlexDistribute()`, `DMPlexDistributeOverlap()`
 @*/
-PetscErrorCode DMPlexDistributeOwnership(DM dm, PetscSection rootSection, IS *rootrank, PetscSection leafSection, IS *leafrank) {
+PetscErrorCode DMPlexDistributeOwnership(DM dm, PetscSection rootSection, IS *rootrank, PetscSection leafSection, IS *leafrank)
+{
   MPI_Comm        comm;
   PetscSF         sfPoint;
   const PetscInt *rootdegree;
@@ -474,7 +485,8 @@ static PetscErrorCode DMPlexCopyOverlapLabels(DM dm, DM ndm)
 
 .seealso: `DMPlexCreateOverlapLabelFromLabels()`, `DMPlexGetAdjacency()`, `DMPlexDistributeOwnership()`, `DMPlexDistribute()`
 @*/
-PetscErrorCode DMPlexCreateOverlapLabel(DM dm, PetscInt levels, PetscSection rootSection, IS rootrank, PetscSection leafSection, IS leafrank, DMLabel *ovLabel) {
+PetscErrorCode DMPlexCreateOverlapLabel(DM dm, PetscInt levels, PetscSection rootSection, IS rootrank, PetscSection leafSection, IS leafrank, DMLabel *ovLabel)
+{
   MPI_Comm           comm;
   DMLabel            ovAdjByRank; /* A DMLabel containing all points adjacent to shared points, separated by rank (value in label) */
   PetscSF            sfPoint;
@@ -574,7 +586,8 @@ PetscErrorCode DMPlexCreateOverlapLabel(DM dm, PetscInt levels, PetscSection roo
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode HandlePoint_Private(DM dm, PetscInt p, PetscSection section, const PetscInt ranks[], PetscInt numExLabels, const DMLabel exLabel[], const PetscInt exValue[], DMLabel ovAdjByRank) {
+static PetscErrorCode HandlePoint_Private(DM dm, PetscInt p, PetscSection section, const PetscInt ranks[], PetscInt numExLabels, const DMLabel exLabel[], const PetscInt exValue[], DMLabel ovAdjByRank)
+{
   PetscInt neighbors, el;
 
   PetscFunctionBegin;
@@ -638,7 +651,8 @@ static PetscErrorCode HandlePoint_Private(DM dm, PetscInt p, PetscSection sectio
 
 .seealso: `DMPlexCreateOverlapLabel()`, `DMPlexGetAdjacency()`, `DMPlexDistributeOwnership()`, `DMPlexDistribute()`
 @*/
-PetscErrorCode DMPlexCreateOverlapLabelFromLabels(DM dm, PetscInt numLabels, const DMLabel label[], const PetscInt value[], PetscInt numExLabels, const DMLabel exLabel[], const PetscInt exValue[], PetscSection rootSection, IS rootrank, PetscSection leafSection, IS leafrank, DMLabel *ovLabel) {
+PetscErrorCode DMPlexCreateOverlapLabelFromLabels(DM dm, PetscInt numLabels, const DMLabel label[], const PetscInt value[], PetscInt numExLabels, const DMLabel exLabel[], const PetscInt exValue[], PetscSection rootSection, IS rootrank, PetscSection leafSection, IS leafrank, DMLabel *ovLabel)
+{
   MPI_Comm           comm;
   DMLabel            ovAdjByRank; /* A DMLabel containing all points adjacent to shared points, separated by rank (value in label) */
   PetscSF            sfPoint;
@@ -749,7 +763,8 @@ PetscErrorCode DMPlexCreateOverlapLabelFromLabels(DM dm, PetscInt numLabels, con
 
 .seealso: `DMPlexCreateOverlapLabel()`, `DMPlexDistributeOverlap()`, `DMPlexDistribute()`
 @*/
-PetscErrorCode DMPlexCreateOverlapMigrationSF(DM dm, PetscSF overlapSF, PetscSF *migrationSF) {
+PetscErrorCode DMPlexCreateOverlapMigrationSF(DM dm, PetscSF overlapSF, PetscSF *migrationSF)
+{
   MPI_Comm           comm;
   PetscMPIInt        rank, size;
   PetscInt           d, dim, p, pStart, pEnd, nroots, nleaves, newLeaves, point, numSharedPoints;
@@ -859,7 +874,8 @@ PetscErrorCode DMPlexCreateOverlapMigrationSF(DM dm, PetscSF overlapSF, PetscSF 
 
 .seealso: `DMPlexPartitionLabelCreateSF()`, `DMPlexDistribute()`, `DMPlexDistributeOverlap()`
 @*/
-PetscErrorCode DMPlexStratifyMigrationSF(DM dm, PetscSF sf, PetscSF *migrationSF) {
+PetscErrorCode DMPlexStratifyMigrationSF(DM dm, PetscSF sf, PetscSF *migrationSF)
+{
   MPI_Comm           comm;
   PetscMPIInt        rank, size;
   PetscInt           d, ldepth, depth, dim, p, pStart, pEnd, nroots, nleaves;
@@ -985,7 +1001,8 @@ PetscErrorCode DMPlexStratifyMigrationSF(DM dm, PetscSF sf, PetscSF *migrationSF
 
 .seealso: `DMPlexDistribute()`, `DMPlexDistributeFieldIS()`, `DMPlexDistributeData()`
 @*/
-PetscErrorCode DMPlexDistributeField(DM dm, PetscSF pointSF, PetscSection originalSection, Vec originalVec, PetscSection newSection, Vec newVec) {
+PetscErrorCode DMPlexDistributeField(DM dm, PetscSF pointSF, PetscSection originalSection, Vec originalVec, PetscSection newSection, Vec newVec)
+{
   PetscSF      fieldSF;
   PetscInt    *remoteOffsets, fieldSize;
   PetscScalar *originalValues, *newValues;
@@ -1030,7 +1047,8 @@ PetscErrorCode DMPlexDistributeField(DM dm, PetscSF pointSF, PetscSection origin
 
 .seealso: `DMPlexDistribute()`, `DMPlexDistributeField()`, `DMPlexDistributeData()`
 @*/
-PetscErrorCode DMPlexDistributeFieldIS(DM dm, PetscSF pointSF, PetscSection originalSection, IS originalIS, PetscSection newSection, IS *newIS) {
+PetscErrorCode DMPlexDistributeFieldIS(DM dm, PetscSF pointSF, PetscSection originalSection, IS originalIS, PetscSection newSection, IS *newIS)
+{
   PetscSF         fieldSF;
   PetscInt       *newValues, *remoteOffsets, fieldSize;
   const PetscInt *originalValues;
@@ -1074,7 +1092,8 @@ PetscErrorCode DMPlexDistributeFieldIS(DM dm, PetscSF pointSF, PetscSection orig
 
 .seealso: `DMPlexDistribute()`, `DMPlexDistributeField()`
 @*/
-PetscErrorCode DMPlexDistributeData(DM dm, PetscSF pointSF, PetscSection originalSection, MPI_Datatype datatype, void *originalData, PetscSection newSection, void **newData) {
+PetscErrorCode DMPlexDistributeData(DM dm, PetscSF pointSF, PetscSection originalSection, MPI_Datatype datatype, void *originalData, PetscSection newSection, void **newData)
+{
   PetscSF     fieldSF;
   PetscInt   *remoteOffsets, fieldSize;
   PetscMPIInt dataSize;
@@ -1096,7 +1115,8 @@ PetscErrorCode DMPlexDistributeData(DM dm, PetscSF pointSF, PetscSection origina
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMPlexDistributeCones(DM dm, PetscSF migrationSF, ISLocalToGlobalMapping original, ISLocalToGlobalMapping renumbering, DM dmParallel) {
+static PetscErrorCode DMPlexDistributeCones(DM dm, PetscSF migrationSF, ISLocalToGlobalMapping original, ISLocalToGlobalMapping renumbering, DM dmParallel)
+{
   DM_Plex     *pmesh = (DM_Plex *)(dmParallel)->data;
   MPI_Comm     comm;
   PetscSF      coneSF;
@@ -1178,7 +1198,8 @@ static PetscErrorCode DMPlexDistributeCones(DM dm, PetscSF migrationSF, ISLocalT
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMPlexDistributeCoordinates(DM dm, PetscSF migrationSF, DM dmParallel) {
+static PetscErrorCode DMPlexDistributeCoordinates(DM dm, PetscSF migrationSF, DM dmParallel)
+{
   MPI_Comm         comm;
   DM               cdm, cdmParallel;
   PetscSection     originalCoordSection, newCoordSection;
@@ -1239,7 +1260,8 @@ static PetscErrorCode DMPlexDistributeCoordinates(DM dm, PetscSF migrationSF, DM
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMPlexDistributeLabels(DM dm, PetscSF migrationSF, DM dmParallel) {
+static PetscErrorCode DMPlexDistributeLabels(DM dm, PetscSF migrationSF, DM dmParallel)
+{
   DM_Plex         *mesh = (DM_Plex *)dm->data;
   MPI_Comm         comm;
   DMLabel          depthLabel;
@@ -1317,7 +1339,8 @@ static PetscErrorCode DMPlexDistributeLabels(DM dm, PetscSF migrationSF, DM dmPa
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMPlexDistributeSetupTree(DM dm, PetscSF migrationSF, ISLocalToGlobalMapping original, ISLocalToGlobalMapping renumbering, DM dmParallel) {
+static PetscErrorCode DMPlexDistributeSetupTree(DM dm, PetscSF migrationSF, ISLocalToGlobalMapping original, ISLocalToGlobalMapping renumbering, DM dmParallel)
+{
   DM_Plex     *mesh  = (DM_Plex *)dm->data;
   DM_Plex     *pmesh = (DM_Plex *)(dmParallel)->data;
   MPI_Comm     comm;
@@ -1392,7 +1415,8 @@ static PetscErrorCode DMPlexDistributeSetupTree(DM dm, PetscSF migrationSF, ISLo
   PetscFunctionReturn(0);
 }
 
-PETSC_UNUSED static PetscErrorCode DMPlexDistributeSF(DM dm, PetscSF migrationSF, DM dmParallel) {
+PETSC_UNUSED static PetscErrorCode DMPlexDistributeSF(DM dm, PetscSF migrationSF, DM dmParallel)
+{
   PetscMPIInt rank, size;
   MPI_Comm    comm;
 
@@ -1478,7 +1502,8 @@ PETSC_UNUSED static PetscErrorCode DMPlexDistributeSF(DM dm, PetscSF migrationSF
 
 .seealso: `DMPlexDistribute()`, `DMPlexGetPartitionBalance()`
 @*/
-PetscErrorCode DMPlexSetPartitionBalance(DM dm, PetscBool flg) {
+PetscErrorCode DMPlexSetPartitionBalance(DM dm, PetscBool flg)
+{
   DM_Plex *mesh = (DM_Plex *)dm->data;
 
   PetscFunctionBegin;
@@ -1499,7 +1524,8 @@ PetscErrorCode DMPlexSetPartitionBalance(DM dm, PetscBool flg) {
 
 .seealso: `DMPlexDistribute()`, `DMPlexSetPartitionBalance()`
 @*/
-PetscErrorCode DMPlexGetPartitionBalance(DM dm, PetscBool *flg) {
+PetscErrorCode DMPlexGetPartitionBalance(DM dm, PetscBool *flg)
+{
   DM_Plex *mesh = (DM_Plex *)dm->data;
 
   PetscFunctionBegin;
@@ -1514,7 +1540,8 @@ typedef struct {
 } Petsc3Int;
 
 /* MaxLoc, but carry a third piece of information around */
-static void MPIAPI MaxLocCarry(void *in_, void *inout_, PetscMPIInt *len_, MPI_Datatype *dtype) {
+static void MPIAPI MaxLocCarry(void *in_, void *inout_, PetscMPIInt *len_, MPI_Datatype *dtype)
+{
   Petsc3Int *a = (Petsc3Int *)inout_;
   Petsc3Int *b = (Petsc3Int *)in_;
   PetscInt   i, len = *len_;
@@ -1550,7 +1577,8 @@ static void MPIAPI MaxLocCarry(void *in_, void *inout_, PetscMPIInt *len_, MPI_D
 
 .seealso: `DMPlexDistribute()`, `DMPlexDistributeOverlap()`
 @*/
-PetscErrorCode DMPlexCreatePointSF(DM dm, PetscSF migrationSF, PetscBool ownership, PetscSF *pointSF) {
+PetscErrorCode DMPlexCreatePointSF(DM dm, PetscSF migrationSF, PetscBool ownership, PetscSF *pointSF)
+{
   PetscMPIInt        rank, size;
   PetscInt           p, nroots, nleaves, idx, npointLeaves;
   PetscInt          *pointLocal;
@@ -1678,7 +1706,8 @@ PetscErrorCode DMPlexCreatePointSF(DM dm, PetscSF migrationSF, PetscBool ownersh
 
 .seealso: `DMPlexDistribute()`, `DMPlexDistributeOverlap()`
 @*/
-PetscErrorCode DMPlexMigrate(DM dm, PetscSF sf, DM targetDM) {
+PetscErrorCode DMPlexMigrate(DM dm, PetscSF sf, DM targetDM)
+{
   MPI_Comm               comm;
   PetscInt               dim, cdim, nroots;
   PetscSF                sfPoint;
@@ -1758,7 +1787,8 @@ PetscErrorCode DMPlexMigrate(DM dm, PetscSF sf, DM targetDM) {
 
 .seealso: `DMPlexCreate()`, `DMSetAdjacency()`, `DMPlexGetOverlap()`
 @*/
-PetscErrorCode DMPlexDistribute(DM dm, PetscInt overlap, PetscSF *sf, DM *dmParallel) {
+PetscErrorCode DMPlexDistribute(DM dm, PetscInt overlap, PetscSF *sf, DM *dmParallel)
+{
   MPI_Comm         comm;
   PetscPartitioner partitioner;
   IS               cellPart;
@@ -1966,7 +1996,8 @@ PetscErrorCode DMPlexDistribute(DM dm, PetscInt overlap, PetscSF *sf, DM *dmPara
 
 .seealso: `DMPlexCreate()`, `DMSetAdjacency()`, `DMPlexDistribute()`, `DMPlexCreateOverlapLabel()`, `DMPlexGetOverlap()`
 @*/
-PetscErrorCode DMPlexDistributeOverlap(DM dm, PetscInt overlap, PetscSF *sf, DM *dmOverlap) {
+PetscErrorCode DMPlexDistributeOverlap(DM dm, PetscInt overlap, PetscSF *sf, DM *dmOverlap)
+{
   DM_Plex     *mesh = (DM_Plex *)dm->data;
   MPI_Comm     comm;
   PetscMPIInt  size, rank;
@@ -2048,7 +2079,8 @@ PetscErrorCode DMPlexDistributeOverlap(DM dm, PetscInt overlap, PetscSF *sf, DM 
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMPlexGetOverlap_Plex(DM dm, PetscInt *overlap) {
+PetscErrorCode DMPlexGetOverlap_Plex(DM dm, PetscInt *overlap)
+{
   DM_Plex *mesh = (DM_Plex *)dm->data;
 
   PetscFunctionBegin;
@@ -2056,7 +2088,8 @@ PetscErrorCode DMPlexGetOverlap_Plex(DM dm, PetscInt *overlap) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMPlexSetOverlap_Plex(DM dm, DM dmSrc, PetscInt overlap) {
+PetscErrorCode DMPlexSetOverlap_Plex(DM dm, DM dmSrc, PetscInt overlap)
+{
   DM_Plex *mesh    = NULL;
   DM_Plex *meshSrc = NULL;
 
@@ -2087,7 +2120,8 @@ PetscErrorCode DMPlexSetOverlap_Plex(DM dm, DM dmSrc, PetscInt overlap) {
 
 .seealso: `DMPlexSetOverlap()`, `DMPlexDistribute()`
 @*/
-PetscErrorCode DMPlexGetOverlap(DM dm, PetscInt *overlap) {
+PetscErrorCode DMPlexGetOverlap(DM dm, PetscInt *overlap)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidIntPointer(overlap, 2);
@@ -2112,7 +2146,8 @@ PetscErrorCode DMPlexGetOverlap(DM dm, PetscInt *overlap) {
 
 .seealso: `DMPlexGetOverlap()`, `DMPlexDistribute()`
 @*/
-PetscErrorCode DMPlexSetOverlap(DM dm, DM dmSrc, PetscInt overlap) {
+PetscErrorCode DMPlexSetOverlap(DM dm, DM dmSrc, PetscInt overlap)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidLogicalCollectiveInt(dm, overlap, 3);
@@ -2120,7 +2155,8 @@ PetscErrorCode DMPlexSetOverlap(DM dm, DM dmSrc, PetscInt overlap) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMPlexDistributeSetDefault_Plex(DM dm, PetscBool dist) {
+PetscErrorCode DMPlexDistributeSetDefault_Plex(DM dm, PetscBool dist)
+{
   DM_Plex *mesh = (DM_Plex *)dm->data;
 
   PetscFunctionBegin;
@@ -2141,7 +2177,8 @@ PetscErrorCode DMPlexDistributeSetDefault_Plex(DM dm, PetscBool dist) {
 
 .seealso: `DMPlexDistributeGetDefault()`, `DMPlexDistribute()`
 @*/
-PetscErrorCode DMPlexDistributeSetDefault(DM dm, PetscBool dist) {
+PetscErrorCode DMPlexDistributeSetDefault(DM dm, PetscBool dist)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidLogicalCollectiveBool(dm, dist, 2);
@@ -2149,7 +2186,8 @@ PetscErrorCode DMPlexDistributeSetDefault(DM dm, PetscBool dist) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMPlexDistributeGetDefault_Plex(DM dm, PetscBool *dist) {
+PetscErrorCode DMPlexDistributeGetDefault_Plex(DM dm, PetscBool *dist)
+{
   DM_Plex *mesh = (DM_Plex *)dm->data;
 
   PetscFunctionBegin;
@@ -2172,7 +2210,8 @@ PetscErrorCode DMPlexDistributeGetDefault_Plex(DM dm, PetscBool *dist) {
 
 .seealso: `DMPlexDistributeSetDefault()`, `DMPlexDistribute()`
 @*/
-PetscErrorCode DMPlexDistributeGetDefault(DM dm, PetscBool *dist) {
+PetscErrorCode DMPlexDistributeGetDefault(DM dm, PetscBool *dist)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidBoolPointer(dist, 2);
@@ -2197,7 +2236,8 @@ PetscErrorCode DMPlexDistributeGetDefault(DM dm, PetscBool *dist) {
 
 .seealso: `DMPlexDistribute()`, `DMPlexGetRedundantDM()`
 @*/
-PetscErrorCode DMPlexGetGatherDM(DM dm, PetscSF *sf, DM *gatherMesh) {
+PetscErrorCode DMPlexGetGatherDM(DM dm, PetscSF *sf, DM *gatherMesh)
+{
   MPI_Comm         comm;
   PetscMPIInt      size;
   PetscPartitioner oldPart, gatherPart;
@@ -2239,7 +2279,8 @@ PetscErrorCode DMPlexGetGatherDM(DM dm, PetscSF *sf, DM *gatherMesh) {
 
 .seealso: `DMPlexDistribute()`, `DMPlexGetGatherDM()`
 @*/
-PetscErrorCode DMPlexGetRedundantDM(DM dm, PetscSF *sf, DM *redundantMesh) {
+PetscErrorCode DMPlexGetRedundantDM(DM dm, PetscSF *sf, DM *redundantMesh)
+{
   MPI_Comm     comm;
   PetscMPIInt  size, rank;
   PetscInt     pStart, pEnd, p;
@@ -2318,7 +2359,8 @@ PetscErrorCode DMPlexGetRedundantDM(DM dm, PetscSF *sf, DM *redundantMesh) {
 
 .seealso: `DMPlexDistribute()`, `DMPlexGetOverlap()`, `DMPlexIsInterpolated()`
 @*/
-PetscErrorCode DMPlexIsDistributed(DM dm, PetscBool *distributed) {
+PetscErrorCode DMPlexIsDistributed(DM dm, PetscBool *distributed)
+{
   PetscInt    pStart, pEnd, count;
   MPI_Comm    comm;
   PetscMPIInt size;
@@ -2356,7 +2398,8 @@ PetscErrorCode DMPlexIsDistributed(DM dm, PetscBool *distributed) {
 
 .seealso: `DMPlexDistributionGetName()`, `DMPlexTopologyView()`, `DMPlexTopologyLoad()`
 @*/
-PetscErrorCode DMPlexDistributionSetName(DM dm, const char name[]) {
+PetscErrorCode DMPlexDistributionSetName(DM dm, const char name[])
+{
   DM_Plex *mesh = (DM_Plex *)dm->data;
 
   PetscFunctionBegin;
@@ -2386,7 +2429,8 @@ PetscErrorCode DMPlexDistributionSetName(DM dm, const char name[]) {
 
 .seealso: `DMPlexDistributionSetName()`, `DMPlexTopologyView()`, `DMPlexTopologyLoad()`
 @*/
-PetscErrorCode DMPlexDistributionGetName(DM dm, const char *name[]) {
+PetscErrorCode DMPlexDistributionGetName(DM dm, const char *name[])
+{
   DM_Plex *mesh = (DM_Plex *)dm->data;
 
   PetscFunctionBegin;

@@ -1,7 +1,8 @@
 static char help[] = "Test VecScatterCreateToZero, VecScatterCreateToAll\n\n";
 
 #include <petscvec.h>
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscInt    i, N = 10, low, high;
   PetscMPIInt size, rank;
   Vec         x, y;

@@ -1,7 +1,7 @@
 /*
    Routines to determine options set in the options database.
 */
-#if !defined(PETSCOPTIONS_H)
+#ifndef PETSCOPTIONS_H
 #define PETSCOPTIONS_H
 
 #include <petscsys.h>
@@ -129,7 +129,7 @@ PetscErrorCode           PetscOptionsBegin(MPI_Comm, const char *, const char *,
 PetscErrorCode           PetscObjectOptionsBegin(PetscObject);
 PetscErrorCode           PetscOptionsEnd(void);
 #else
-/*MC
+  /*MC
     PetscOptionsBegin - Begins a set of queries on the options database that are related and should be
      displayed on the same window of a GUI that allows the user to set the options interactively. Often one should
      use PetscObjectOptionsBegin() rather than this call.
@@ -178,15 +178,15 @@ PetscErrorCode           PetscOptionsEnd(void);
           `PetscOptionsFList()`, `PetscOptionsEList()`, `PetscObjectOptionsBegin()`
 
 M*/
-#define PetscOptionsBegin(comm, prefix, mess, sec) \
-  do { \
-    PetscOptionItems  PetscOptionsObjectBase; \
-    PetscOptionItems *PetscOptionsObject = &PetscOptionsObjectBase; \
-    PetscCall(PetscMemzero(PetscOptionsObject, sizeof(*PetscOptionsObject))); \
-    for (PetscOptionsObject->count = (PetscOptionsPublish ? -1 : 1); PetscOptionsObject->count < 2; PetscOptionsObject->count++) { \
-      PetscCall(PetscOptionsBegin_Private(PetscOptionsObject, comm, prefix, mess, sec))
+  #define PetscOptionsBegin(comm, prefix, mess, sec) \
+    do { \
+      PetscOptionItems  PetscOptionsObjectBase; \
+      PetscOptionItems *PetscOptionsObject = &PetscOptionsObjectBase; \
+      PetscCall(PetscMemzero(PetscOptionsObject, sizeof(*PetscOptionsObject))); \
+      for (PetscOptionsObject->count = (PetscOptionsPublish ? -1 : 1); PetscOptionsObject->count < 2; PetscOptionsObject->count++) { \
+        PetscCall(PetscOptionsBegin_Private(PetscOptionsObject, comm, prefix, mess, sec))
 
-/*MC
+  /*MC
     PetscObjectOptionsBegin - Begins a set of queries on the options database that are related and should be
      displayed on the same window of a GUI that allows the user to set the options interactively.
 
@@ -217,15 +217,15 @@ M*/
           `PetscOptionsFList()`, `PetscOptionsEList()`
 
 M*/
-#define PetscObjectOptionsBegin(obj) \
-  do { \
-    PetscOptionItems  PetscOptionsObjectBase; \
-    PetscOptionItems *PetscOptionsObject = &PetscOptionsObjectBase; \
-    PetscOptionsObject->options          = ((PetscObject)obj)->options; \
-    for (PetscOptionsObject->count = (PetscOptionsPublish ? -1 : 1); PetscOptionsObject->count < 2; PetscOptionsObject->count++) { \
-      PetscCall(PetscObjectOptionsBegin_Private(obj, PetscOptionsObject))
+  #define PetscObjectOptionsBegin(obj) \
+    do { \
+      PetscOptionItems  PetscOptionsObjectBase; \
+      PetscOptionItems *PetscOptionsObject = &PetscOptionsObjectBase; \
+      PetscOptionsObject->options          = ((PetscObject)obj)->options; \
+      for (PetscOptionsObject->count = (PetscOptionsPublish ? -1 : 1); PetscOptionsObject->count < 2; PetscOptionsObject->count++) { \
+        PetscCall(PetscObjectOptionsBegin_Private(obj, PetscOptionsObject))
 
-/*MC
+  /*MC
     PetscOptionsEnd - Ends a set of queries on the options database that are related and should be
      displayed on the same window of a GUI that allows the user to set the options interactively.
 
@@ -251,11 +251,11 @@ M*/
           `PetscOptionsFList()`, `PetscOptionsEList()`, `PetscObjectOptionsBegin()`
 
 M*/
-#define PetscOptionsEnd() \
-  PetscCall(PetscOptionsEnd_Private(PetscOptionsObject)); \
-  } \
-  } \
-  while (0)
+  #define PetscOptionsEnd() \
+    PetscCall(PetscOptionsEnd_Private(PetscOptionsObject)); \
+    } \
+    } \
+    while (0)
 #endif /* PETSC_CLANG_STATIC_ANALYZER */
 
 PETSC_EXTERN PetscErrorCode PetscOptionsBegin_Private(PetscOptionItems *, MPI_Comm, const char[], const char[], const char[]);
@@ -312,7 +312,7 @@ PetscErrorCode PetscOptionsDeprecated(T...);
 template <typename... T>
 PetscErrorCode PetscOptionsDeprecatedNoObject(T...);
 #else
-/*MC
+  /*MC
      PetscOptionsHeadBegin - Puts a heading before listing any more published options. Used, for example,
             in KSPSetFromOptions_GMRES().
 
@@ -337,14 +337,14 @@ PetscErrorCode PetscOptionsDeprecatedNoObject(T...);
           `PetscOptionsBoolGroupBegin()`, `PetscOptionsBoolGroup()`, `PetscOptionsBoolGroupEnd()`,
           `PetscOptionsFList()`, `PetscOptionsEList()`
 @*/
-#define PetscOptionsHeadBegin(PetscOptionsObject, head) \
-  do { \
-    if (PetscOptionsObject->printhelp && PetscOptionsObject->count == 1 && !PetscOptionsObject->alreadyprinted) PetscCall((*PetscHelpPrintf)(PetscOptionsObject->comm, "  %s\n", head)); \
-  } while (0)
+  #define PetscOptionsHeadBegin(PetscOptionsObject, head) \
+    do { \
+      if (PetscOptionsObject->printhelp && PetscOptionsObject->count == 1 && !PetscOptionsObject->alreadyprinted) PetscCall((*PetscHelpPrintf)(PetscOptionsObject->comm, "  %s\n", head)); \
+    } while (0)
 
-#define PetscOptionsHead(...) PETSC_DEPRECATED_MACRO("GCC warning \"Use PetscOptionsHeadBegin() (since version 3.18)\"") PetscOptionsHeadBegin(__VA_ARGS__)
+  #define PetscOptionsHead(...) PETSC_DEPRECATED_MACRO("GCC warning \"Use PetscOptionsHeadBegin() (since version 3.18)\"") PetscOptionsHeadBegin(__VA_ARGS__)
 
-/*MC
+  /*MC
      PetscOptionsHeadEnd - Ends a section of options begun with `PetscOptionsHeadBegin()`
             See, for example, KSPSetFromOptions_GMRES().
 
@@ -374,35 +374,35 @@ PetscErrorCode PetscOptionsDeprecatedNoObject(T...);
           `PetscOptionsBoolGroupBegin()`, `PetscOptionsBoolGroup()`, `PetscOptionsBoolGroupEnd()`,
           `PetscOptionsFList()`, `PetscOptionsEList()`, `PetscOptionsEnum()`
 M*/
-#define PetscOptionsHeadEnd() \
-  do { \
-    if (PetscOptionsObject->count != 1) PetscFunctionReturn(0); \
-  } while (0)
+  #define PetscOptionsHeadEnd() \
+    do { \
+      if (PetscOptionsObject->count != 1) PetscFunctionReturn(0); \
+    } while (0)
 
-#define PetscOptionsTail(...) PETSC_DEPRECATED_MACRO("GCC warning \"Use PetscOptionsHeadEnd() (since version 3.18)\"") PetscOptionsHeadEnd(__VA_ARGS__)
+  #define PetscOptionsTail(...) PETSC_DEPRECATED_MACRO("GCC warning \"Use PetscOptionsHeadEnd() (since version 3.18)\"") PetscOptionsHeadEnd(__VA_ARGS__)
 
-#define PetscOptionsEnum(a, b, c, d, e, f, g)        PetscOptionsEnum_Private(PetscOptionsObject, a, b, c, d, e, f, g)
-#define PetscOptionsInt(a, b, c, d, e, f)            PetscOptionsInt_Private(PetscOptionsObject, a, b, c, d, e, f, PETSC_MIN_INT, PETSC_MAX_INT)
-#define PetscOptionsBoundedInt(a, b, c, d, e, f, g)  PetscOptionsInt_Private(PetscOptionsObject, a, b, c, d, e, f, g, PETSC_MAX_INT)
-#define PetscOptionsRangeInt(a, b, c, d, e, f, g, h) PetscOptionsInt_Private(PetscOptionsObject, a, b, c, d, e, f, g, h)
-#define PetscOptionsReal(a, b, c, d, e, f)           PetscOptionsReal_Private(PetscOptionsObject, a, b, c, d, e, f)
-#define PetscOptionsScalar(a, b, c, d, e, f)         PetscOptionsScalar_Private(PetscOptionsObject, a, b, c, d, e, f)
-#define PetscOptionsName(a, b, c, d)                 PetscOptionsName_Private(PetscOptionsObject, a, b, c, d)
-#define PetscOptionsString(a, b, c, d, e, f, g)      PetscOptionsString_Private(PetscOptionsObject, a, b, c, d, e, f, g)
-#define PetscOptionsBool(a, b, c, d, e, f)           PetscOptionsBool_Private(PetscOptionsObject, a, b, c, d, e, f)
-#define PetscOptionsBoolGroupBegin(a, b, c, d)       PetscOptionsBoolGroupBegin_Private(PetscOptionsObject, a, b, c, d)
-#define PetscOptionsBoolGroup(a, b, c, d)            PetscOptionsBoolGroup_Private(PetscOptionsObject, a, b, c, d)
-#define PetscOptionsBoolGroupEnd(a, b, c, d)         PetscOptionsBoolGroupEnd_Private(PetscOptionsObject, a, b, c, d)
-#define PetscOptionsFList(a, b, c, d, e, f, g, h)    PetscOptionsFList_Private(PetscOptionsObject, a, b, c, d, e, f, g, h)
-#define PetscOptionsEList(a, b, c, d, e, f, g, h)    PetscOptionsEList_Private(PetscOptionsObject, a, b, c, d, e, f, g, h)
-#define PetscOptionsRealArray(a, b, c, d, e, f)      PetscOptionsRealArray_Private(PetscOptionsObject, a, b, c, d, e, f)
-#define PetscOptionsScalarArray(a, b, c, d, e, f)    PetscOptionsScalarArray_Private(PetscOptionsObject, a, b, c, d, e, f)
-#define PetscOptionsIntArray(a, b, c, d, e, f)       PetscOptionsIntArray_Private(PetscOptionsObject, a, b, c, d, e, f)
-#define PetscOptionsStringArray(a, b, c, d, e, f)    PetscOptionsStringArray_Private(PetscOptionsObject, a, b, c, d, e, f)
-#define PetscOptionsBoolArray(a, b, c, d, e, f)      PetscOptionsBoolArray_Private(PetscOptionsObject, a, b, c, d, e, f)
-#define PetscOptionsEnumArray(a, b, c, d, e, f, g)   PetscOptionsEnumArray_Private(PetscOptionsObject, a, b, c, d, e, f, g)
-#define PetscOptionsDeprecated(a, b, c, d)           PetscOptionsDeprecated_Private(PetscOptionsObject, a, b, c, d)
-#define PetscOptionsDeprecatedNoObject(a, b, c, d)   PetscOptionsDeprecated_Private(NULL, a, b, c, d)
+  #define PetscOptionsEnum(a, b, c, d, e, f, g)        PetscOptionsEnum_Private(PetscOptionsObject, a, b, c, d, e, f, g)
+  #define PetscOptionsInt(a, b, c, d, e, f)            PetscOptionsInt_Private(PetscOptionsObject, a, b, c, d, e, f, PETSC_MIN_INT, PETSC_MAX_INT)
+  #define PetscOptionsBoundedInt(a, b, c, d, e, f, g)  PetscOptionsInt_Private(PetscOptionsObject, a, b, c, d, e, f, g, PETSC_MAX_INT)
+  #define PetscOptionsRangeInt(a, b, c, d, e, f, g, h) PetscOptionsInt_Private(PetscOptionsObject, a, b, c, d, e, f, g, h)
+  #define PetscOptionsReal(a, b, c, d, e, f)           PetscOptionsReal_Private(PetscOptionsObject, a, b, c, d, e, f)
+  #define PetscOptionsScalar(a, b, c, d, e, f)         PetscOptionsScalar_Private(PetscOptionsObject, a, b, c, d, e, f)
+  #define PetscOptionsName(a, b, c, d)                 PetscOptionsName_Private(PetscOptionsObject, a, b, c, d)
+  #define PetscOptionsString(a, b, c, d, e, f, g)      PetscOptionsString_Private(PetscOptionsObject, a, b, c, d, e, f, g)
+  #define PetscOptionsBool(a, b, c, d, e, f)           PetscOptionsBool_Private(PetscOptionsObject, a, b, c, d, e, f)
+  #define PetscOptionsBoolGroupBegin(a, b, c, d)       PetscOptionsBoolGroupBegin_Private(PetscOptionsObject, a, b, c, d)
+  #define PetscOptionsBoolGroup(a, b, c, d)            PetscOptionsBoolGroup_Private(PetscOptionsObject, a, b, c, d)
+  #define PetscOptionsBoolGroupEnd(a, b, c, d)         PetscOptionsBoolGroupEnd_Private(PetscOptionsObject, a, b, c, d)
+  #define PetscOptionsFList(a, b, c, d, e, f, g, h)    PetscOptionsFList_Private(PetscOptionsObject, a, b, c, d, e, f, g, h)
+  #define PetscOptionsEList(a, b, c, d, e, f, g, h)    PetscOptionsEList_Private(PetscOptionsObject, a, b, c, d, e, f, g, h)
+  #define PetscOptionsRealArray(a, b, c, d, e, f)      PetscOptionsRealArray_Private(PetscOptionsObject, a, b, c, d, e, f)
+  #define PetscOptionsScalarArray(a, b, c, d, e, f)    PetscOptionsScalarArray_Private(PetscOptionsObject, a, b, c, d, e, f)
+  #define PetscOptionsIntArray(a, b, c, d, e, f)       PetscOptionsIntArray_Private(PetscOptionsObject, a, b, c, d, e, f)
+  #define PetscOptionsStringArray(a, b, c, d, e, f)    PetscOptionsStringArray_Private(PetscOptionsObject, a, b, c, d, e, f)
+  #define PetscOptionsBoolArray(a, b, c, d, e, f)      PetscOptionsBoolArray_Private(PetscOptionsObject, a, b, c, d, e, f)
+  #define PetscOptionsEnumArray(a, b, c, d, e, f, g)   PetscOptionsEnumArray_Private(PetscOptionsObject, a, b, c, d, e, f, g)
+  #define PetscOptionsDeprecated(a, b, c, d)           PetscOptionsDeprecated_Private(PetscOptionsObject, a, b, c, d)
+  #define PetscOptionsDeprecatedNoObject(a, b, c, d)   PetscOptionsDeprecated_Private(NULL, a, b, c, d)
 #endif /* PETSC_CLANG_STATIC_ANALYZER */
 
 PETSC_EXTERN PetscErrorCode PetscOptionsEnum_Private(PetscOptionItems *, const char[], const char[], const char[], const char *const *, PetscEnum, PetscEnum *, PetscBool *);

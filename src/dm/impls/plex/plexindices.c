@@ -16,7 +16,8 @@
 
 .seealso `DMPlexVecGetClosure()`, `DMPlexVecRestoreClosure()`, `DMPlexVecSetClosure()`, `DMPlexMatSetClosure()`
 @*/
-PetscErrorCode DMPlexCreateClosureIndex(DM dm, PetscSection section) {
+PetscErrorCode DMPlexCreateClosureIndex(DM dm, PetscSection section)
+{
   PetscSection closureSection;
   IS           closureIS;
   PetscInt    *clPoints;

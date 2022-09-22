@@ -9,7 +9,8 @@ static char help[] = "Tests PetscRandom functions.\n\n";
                          -random_view ascii -random_view :filename
 */
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscInt    i, n = 1000, *values;
   PetscRandom rnd;
   PetscScalar value, avg = 0.0;

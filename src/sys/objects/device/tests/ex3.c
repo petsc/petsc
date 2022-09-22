@@ -3,7 +3,8 @@ static const char help[] = "Tests PetscDeviceContextDuplicate.\n\n";
 #include "petscdevicetestcommon.h"
 
 /* test duplication creates the same object type */
-static PetscErrorCode TestPetscDeviceContextDuplicate(PetscDeviceContext dctx) {
+static PetscErrorCode TestPetscDeviceContextDuplicate(PetscDeviceContext dctx)
+{
   PetscDevice        origDevice;
   PetscStreamType    origStype;
   PetscDeviceContext ddup;
@@ -43,7 +44,8 @@ static PetscErrorCode TestPetscDeviceContextDuplicate(PetscDeviceContext dctx) {
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[])
+{
   MPI_Comm           comm;
   PetscDeviceContext dctx;
 

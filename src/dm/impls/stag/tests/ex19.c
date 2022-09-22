@@ -6,7 +6,8 @@ static char help[] = "(Partially) test DMStag default interpolation, 2d faces-on
 
 PetscErrorCode CreateSystem(DM dm, Mat *A, Vec *b);
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   DM  dm, dmCoarse;
   Mat Ai;
 

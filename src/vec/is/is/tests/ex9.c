@@ -5,7 +5,8 @@ static char help[] = "Test ISLocalToGlobalMappingCreateSF(), PetscSFSetGraphLayo
 #include <petscsf.h>
 #include <petscviewer.h>
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   MPI_Comm               comm;
   PetscViewer            viewer;
   PetscViewerFormat      format;

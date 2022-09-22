@@ -2,7 +2,8 @@
 #include <petsc/private/pcbddcimpl.h>
 #include <petsc/private/pcbddcprivateimpl.h>
 
-static PetscErrorCode PCMGGDSWSetUp(PC pc, PetscInt l, DM dm, KSP smooth, PetscInt Nc, Mat A, PetscInt *ns, Mat **sA_IG_n, KSP **sksp_n, IS **sI_n, IS **sG_n, Mat **sGf_n, IS **sGi_n, IS **sGiM_n) {
+static PetscErrorCode PCMGGDSWSetUp(PC pc, PetscInt l, DM dm, KSP smooth, PetscInt Nc, Mat A, PetscInt *ns, Mat **sA_IG_n, KSP **sksp_n, IS **sI_n, IS **sG_n, Mat **sGf_n, IS **sGi_n, IS **sGiM_n)
+{
   KSP                   *sksp;
   PC                     pcbddc = NULL, smoothpc;
   PC_BDDC               *ipcbddc;
@@ -212,7 +213,8 @@ static PetscErrorCode PCMGGDSWSetUp(PC pc, PetscInt l, DM dm, KSP smooth, PetscI
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PCMGGDSWCreateCoarseSpace_Private(PC pc, PetscInt l, DM dm, KSP smooth, PetscInt Nc, Mat guess, Mat *cspace) {
+PetscErrorCode PCMGGDSWCreateCoarseSpace_Private(PC pc, PetscInt l, DM dm, KSP smooth, PetscInt Nc, Mat guess, Mat *cspace)
+{
   KSP            *sksp;
   Mat             A, *sA_IG, *sGf, preallocator;
   IS              Gidx, GidxMult, cG;

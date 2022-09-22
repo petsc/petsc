@@ -3,7 +3,8 @@ static char help[] = "Tests MatSeqAIJKron.\n\n";
 
 #include <petscmat.h>
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   Mat                A, B, C, K, Ad, Bd;
   const PetscScalar *Bv;
   PetscInt           n = 10, m = 20, p = 7, q = 17;

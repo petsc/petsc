@@ -8,7 +8,8 @@ typedef struct {
   char        ok[3];
 } Unit;
 
-static PetscErrorCode MakeDatatype(MPI_Datatype *dtype) {
+static PetscErrorCode MakeDatatype(MPI_Datatype *dtype)
+{
   MPI_Datatype dtypes[3], tmptype;
   PetscMPIInt  lengths[3];
   MPI_Aint     displs[3];
@@ -22,9 +23,9 @@ static PetscErrorCode MakeDatatype(MPI_Datatype *dtype) {
   lengths[1] = 1;
   lengths[2] = 3;
   /* Curse the evil beings that made std::complex a non-POD type. */
-  displs[0]  = (char *)&dummy.rank - (char *)&dummy;  /* offsetof(Unit,rank); */
-  displs[1]  = (char *)&dummy.value - (char *)&dummy; /* offsetof(Unit,value); */
-  displs[2]  = (char *)&dummy.ok - (char *)&dummy;    /* offsetof(Unit,ok); */
+  displs[0] = (char *)&dummy.rank - (char *)&dummy;  /* offsetof(Unit,rank); */
+  displs[1] = (char *)&dummy.value - (char *)&dummy; /* offsetof(Unit,value); */
+  displs[2] = (char *)&dummy.ok - (char *)&dummy;    /* offsetof(Unit,ok); */
   PetscCallMPI(MPI_Type_create_struct(3, lengths, displs, dtypes, &tmptype));
   PetscCallMPI(MPI_Type_commit(&tmptype));
   PetscCallMPI(MPI_Type_create_resized(tmptype, 0, sizeof(Unit), dtype));
@@ -46,7 +47,8 @@ struct FCtx {
   PetscSegBuffer seg;
 };
 
-static PetscErrorCode FSend(MPI_Comm comm, const PetscMPIInt tag[], PetscMPIInt tonum, PetscMPIInt rank, void *todata, MPI_Request req[], void *ctx) {
+static PetscErrorCode FSend(MPI_Comm comm, const PetscMPIInt tag[], PetscMPIInt tonum, PetscMPIInt rank, void *todata, MPI_Request req[], void *ctx)
+{
   struct FCtx *fctx = (struct FCtx *)ctx;
 
   PetscFunctionBegin;
@@ -57,7 +59,8 @@ static PetscErrorCode FSend(MPI_Comm comm, const PetscMPIInt tag[], PetscMPIInt 
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode FRecv(MPI_Comm comm, const PetscMPIInt tag[], PetscMPIInt rank, void *fromdata, MPI_Request req[], void *ctx) {
+static PetscErrorCode FRecv(MPI_Comm comm, const PetscMPIInt tag[], PetscMPIInt rank, void *fromdata, MPI_Request req[], void *ctx)
+{
   struct FCtx *fctx = (struct FCtx *)ctx;
   Unit        *buf;
 
@@ -72,7 +75,8 @@ static PetscErrorCode FRecv(MPI_Comm comm, const PetscMPIInt tag[], PetscMPIInt 
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscMPIInt  rank, size, *toranks, *fromranks, nto, nfrom;
   PetscInt     i, n;
   PetscBool    verbose, build_twosided_f;

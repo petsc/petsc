@@ -2,12 +2,13 @@
 #include <petsc/private/hashmapi.h>
 
 #ifdef PETSC_HAVE_EGADS
-#include <egads_lite.h>
+  #include <egads_lite.h>
 
-PetscErrorCode DMPlexSnapToGeomModel_EGADSLite_Internal(DM dm, PetscInt p, PetscInt dE, ego model, PetscInt bodyID, PetscInt faceID, PetscInt edgeID, const PetscScalar mcoords[], PetscScalar gcoords[]) {
-  DM           cdm;
-  ego         *bodies;
-  ego          geom, body, obj;
+PetscErrorCode DMPlexSnapToGeomModel_EGADSLite_Internal(DM dm, PetscInt p, PetscInt dE, ego model, PetscInt bodyID, PetscInt faceID, PetscInt edgeID, const PetscScalar mcoords[], PetscScalar gcoords[])
+{
+  DM   cdm;
+  ego *bodies;
+  ego  geom, body, obj;
   /* result has to hold derivatives, along with the value */
   double       params[3], result[18], paramsV[16 * 3], resultV[16 * 3], range[4];
   int          Nb, oclass, mtype, *senses, peri;
@@ -48,7 +49,7 @@ PetscErrorCode DMPlexSnapToGeomModel_EGADSLite_Internal(DM dm, PetscInt p, Petsc
   PetscCall(EGlite_getRange(obj, range, &peri));
   for (v = 0; v < Nv; ++v) {
     PetscCall(EGlite_invEvaluate(obj, &coords[v * dE], &paramsV[v * 3], &resultV[v * 3]));
-#if 1
+  #if 1
     if (peri > 0) {
       if (paramsV[v * 3 + 0] + 1.e-4 < range[0]) {
         paramsV[v * 3 + 0] += 2. * PETSC_PI;
@@ -63,7 +64,7 @@ PetscErrorCode DMPlexSnapToGeomModel_EGADSLite_Internal(DM dm, PetscInt p, Petsc
         paramsV[v * 3 + 1] -= 2. * PETSC_PI;
       }
     }
-#endif
+  #endif
   }
   PetscCall(DMPlexVecRestoreClosure(cdm, NULL, coordinatesLocal, p, &Nv, &coords));
   /* Calculate parameters (t or u,v) for new vertex at edge midpoint */
@@ -80,18 +81,20 @@ PetscErrorCode DMPlexSnapToGeomModel_EGADSLite_Internal(DM dm, PetscInt p, Petsc
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMPlexEGADSLiteDestroy_Private(void *context) {
+static PetscErrorCode DMPlexEGADSLiteDestroy_Private(void *context)
+{
   if (context) EGlite_close((ego)context);
   return 0;
 }
 
-static PetscErrorCode DMPlexCreateEGADSLite_Internal(MPI_Comm comm, ego context, ego model, DM *newdm) {
-  DMLabel     bodyLabel, faceLabel, edgeLabel, vertexLabel;
-  PetscInt    cStart, cEnd, c;
+static PetscErrorCode DMPlexCreateEGADSLite_Internal(MPI_Comm comm, ego context, ego model, DM *newdm)
+{
+  DMLabel  bodyLabel, faceLabel, edgeLabel, vertexLabel;
+  PetscInt cStart, cEnd, c;
   /* EGADSLite variables */
-  ego         geom, *bodies, *objs, *nobjs, *mobjs, *lobjs;
-  int         oclass, mtype, nbodies, *senses;
-  int         b;
+  ego geom, *bodies, *objs, *nobjs, *mobjs, *lobjs;
+  int oclass, mtype, nbodies, *senses;
+  int b;
   /* PETSc variables */
   DM          dm;
   PetscHMapI  edgeMap = NULL;
@@ -155,7 +158,7 @@ static PetscErrorCode DMPlexCreateEGADSLite_Internal(MPI_Comm comm, ego context,
       for (v = 0; v < Nv; ++v) {
         ego vertex = nobjs[v];
 
-        id          = EGlite_indexBodyTopo(body, vertex);
+        id = EGlite_indexBodyTopo(body, vertex);
         /* TODO: Instead of assuming contiguous ids, we could use a hash table */
         numVertices = PetscMax(id, numVertices);
       }
@@ -385,7 +388,8 @@ static PetscErrorCode DMPlexCreateEGADSLite_Internal(MPI_Comm comm, ego context,
           cells[cOff * numCorners + 2] = cone[1];
           ++cOff;
           break;
-        default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Loop %d has %d edges, which we do not support", lid, Ner);
+        default:
+          SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Loop %d has %d edges, which we do not support", lid, Ner);
         }
         if (debug) {
           for (t = 0; t < Nt; ++t) {
@@ -482,10 +486,17 @@ static PetscErrorCode DMPlexCreateEGADSLite_Internal(MPI_Comm comm, ego context,
         PetscCall(DMPlexRestoreJoin(dm, 2, support, &numEdges, &edges));
       }
       switch (Ner) {
-      case 2: Nt = 2; break;
-      case 3: Nt = 4; break;
-      case 4: Nt = 8; break;
-      default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Loop with %d edges is unsupported", Ner);
+      case 2:
+        Nt = 2;
+        break;
+      case 3:
+        Nt = 4;
+        break;
+      case 4:
+        Nt = 8;
+        break;
+      default:
+        SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Loop with %d edges is unsupported", Ner);
       }
       for (t = 0; t < Nt; ++t) {
         PetscCall(DMLabelSetValue(bodyLabel, cOff + t, b));
@@ -514,7 +525,8 @@ static PetscErrorCode DMPlexCreateEGADSLite_Internal(MPI_Comm comm, ego context,
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMPlexEGADSLitePrintModel_Internal(ego model) {
+static PetscErrorCode DMPlexEGADSLitePrintModel_Internal(ego model)
+{
   ego geom, *bodies, *objs, *nobjs, *mobjs, *lobjs;
   int oclass, mtype, *senses;
   int Nb, b;
@@ -622,7 +634,8 @@ static PetscErrorCode DMPlexEGADSLitePrintModel_Internal(ego model) {
 
 .seealso: `DMPLEX`, `DMCreate()`, `DMPlexCreateEGADS()`, `DMPlexCreateEGADSFromFile()`
 @*/
-PetscErrorCode DMPlexCreateEGADSLiteFromFile(MPI_Comm comm, const char filename[], DM *dm) {
+PetscErrorCode DMPlexCreateEGADSLiteFromFile(MPI_Comm comm, const char filename[], DM *dm)
+{
   PetscMPIInt rank;
 #if defined(PETSC_HAVE_EGADS)
   ego context = NULL, model = NULL;

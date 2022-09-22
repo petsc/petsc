@@ -7,7 +7,8 @@ static char help[] = "Test SF cuda stream synchronization in device to host comm
  */
 
 #include <petscvec.h>
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscInt           i, n = 100000; /* Big enough to make the asynchronous copy meaningful */
   PetscScalar       *val;
   const PetscScalar *yval;

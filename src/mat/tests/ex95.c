@@ -2,7 +2,8 @@ static char help[] = "Testing MatCreateMPIAIJSumSeqAIJ().\n\n";
 
 #include <petscmat.h>
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   Mat         A, B;
   MatScalar   a[1], alpha;
   PetscMPIInt size, rank;

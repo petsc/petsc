@@ -6,7 +6,8 @@ static char help[] = "Tests MatGetRowMax(), MatGetRowMin(), MatGetRowMaxAbs()\n"
 #define M 5
 #define N 6
 
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   Mat         A;
   Vec         min, max, maxabs, e;
   PetscInt    m, n, j, imin[M], imax[M], imaxabs[M], indices[N], row, testcase = 0;
@@ -37,7 +38,8 @@ int main(int argc, char **args) {
   if (rank == 0) { /* proc[0] sets matrix A */
     for (j = 0; j < N; j++) indices[j] = j;
     switch (testcase) {
-    case 1: /* see testcast 0 */ break;
+    case 1: /* see testcast 0 */
+      break;
     case 2:
       row       = 0;
       values[0] = -2.0;

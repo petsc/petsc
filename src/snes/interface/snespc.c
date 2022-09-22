@@ -22,7 +22,8 @@
 
 .seealso: `SNESGetNPC()`, `SNESSetNPC()`, `SNESComputeFunction()`
 @*/
-PetscErrorCode SNESApplyNPC(SNES snes, Vec x, Vec f, Vec y) {
+PetscErrorCode SNESApplyNPC(SNES snes, Vec x, Vec f, Vec y)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
   PetscValidHeaderSpecific(x, VEC_CLASSID, 2);
@@ -42,7 +43,8 @@ PetscErrorCode SNESApplyNPC(SNES snes, Vec x, Vec f, Vec y) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode SNESComputeFunctionDefaultNPC(SNES snes, Vec X, Vec F) {
+PetscErrorCode SNESComputeFunctionDefaultNPC(SNES snes, Vec X, Vec F)
+{
   /* This is to be used as an argument to SNESMF -- NOT as a "function" */
   SNESConvergedReason reason;
 
@@ -73,7 +75,8 @@ PetscErrorCode SNESComputeFunctionDefaultNPC(SNES snes, Vec X, Vec F) {
 
 .seealso: `SNESGetNPC()`, `SNESSetNPC()`, `SNESComputeFunction()`, `SNESApplyNPC()`, `SNESSolve()`
 @*/
-PetscErrorCode SNESGetNPCFunction(SNES snes, Vec F, PetscReal *fnorm) {
+PetscErrorCode SNESGetNPCFunction(SNES snes, Vec F, PetscReal *fnorm)
+{
   PCSide           npcside;
   SNESFunctionType functype;
   SNESNormSchedule normschedule;

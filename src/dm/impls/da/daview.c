@@ -6,9 +6,10 @@
 #include <petsc/private/dmdaimpl.h> /*I   "petscdmda.h"   I*/
 
 #if defined(PETSC_HAVE_MATLAB)
-#include <mat.h> /* MATLAB include file */
+  #include <mat.h> /* MATLAB include file */
 
-PetscErrorCode DMView_DA_Matlab(DM da, PetscViewer viewer) {
+PetscErrorCode DMView_DA_Matlab(DM da, PetscViewer viewer)
+{
   PetscMPIInt     rank;
   PetscInt        dim, m, n, p, dof, swidth;
   DMDAStencilType stencil;
@@ -39,7 +40,8 @@ PetscErrorCode DMView_DA_Matlab(DM da, PetscViewer viewer) {
 }
 #endif
 
-PetscErrorCode DMView_DA_Binary(DM da, PetscViewer viewer) {
+PetscErrorCode DMView_DA_Binary(DM da, PetscViewer viewer)
+{
   PetscMPIInt     rank;
   PetscInt        dim, m, n, p, dof, swidth, M, N, P;
   DMDAStencilType stencil;
@@ -74,7 +76,8 @@ PetscErrorCode DMView_DA_Binary(DM da, PetscViewer viewer) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMView_DA_VTK(DM da, PetscViewer viewer) {
+PetscErrorCode DMView_DA_VTK(DM da, PetscViewer viewer)
+{
   Vec      coordinates;
   PetscInt dim, dof, M = 0, N = 0, P = 0;
 
@@ -136,7 +139,8 @@ PetscErrorCode DMView_DA_VTK(DM da, PetscViewer viewer) {
 
 .seealso: `DMView()`, `DMDAGetCorners()`, `DMDAGetLocalInfo()`
 @*/
-PetscErrorCode DMDAGetInfo(DM da, PetscInt *dim, PetscInt *M, PetscInt *N, PetscInt *P, PetscInt *m, PetscInt *n, PetscInt *p, PetscInt *dof, PetscInt *s, DMBoundaryType *bx, DMBoundaryType *by, DMBoundaryType *bz, DMDAStencilType *st) {
+PetscErrorCode DMDAGetInfo(DM da, PetscInt *dim, PetscInt *M, PetscInt *N, PetscInt *P, PetscInt *m, PetscInt *n, PetscInt *p, PetscInt *dof, PetscInt *s, DMBoundaryType *bx, DMBoundaryType *by, DMBoundaryType *bz, DMDAStencilType *st)
+{
   DM_DA *dd = (DM_DA *)da->data;
 
   PetscFunctionBegin;
@@ -184,7 +188,8 @@ PetscErrorCode DMDAGetInfo(DM da, PetscInt *dim, PetscInt *M, PetscInt *N, Petsc
 
 .seealso: `DMDAGetInfo()`, `DMDAGetCorners()`, `DMDALocalInfo`
 @*/
-PetscErrorCode DMDAGetLocalInfo(DM da, DMDALocalInfo *info) {
+PetscErrorCode DMDAGetLocalInfo(DM da, DMDALocalInfo *info)
+{
   PetscInt w;
   DM_DA   *dd = (DM_DA *)da->data;
 

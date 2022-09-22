@@ -5,7 +5,8 @@
 /*
     MatGetOrdering_RCM - Find the Reverse Cuthill-McKee ordering of a given matrix.
 */
-PETSC_INTERN PetscErrorCode MatGetOrdering_RCM(Mat mat, MatOrderingType type, IS *row, IS *col) {
+PETSC_INTERN PetscErrorCode MatGetOrdering_RCM(Mat mat, MatOrderingType type, IS *row, IS *col)
+{
   PetscInt        i, *mask, *xls, nrow, *perm;
   const PetscInt *ia, *ja;
   PetscBool       done;

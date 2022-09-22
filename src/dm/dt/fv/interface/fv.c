@@ -48,7 +48,8 @@ const char LimiterCitation[] = "@article{BergerAftosmisMurman2005,\n"
 .seealso: `PetscLimiterRegisterAll()`, `PetscLimiterRegisterDestroy()`
 
 @*/
-PetscErrorCode PetscLimiterRegister(const char sname[], PetscErrorCode (*function)(PetscLimiter)) {
+PetscErrorCode PetscLimiterRegister(const char sname[], PetscErrorCode (*function)(PetscLimiter))
+{
   PetscFunctionBegin;
   PetscCall(PetscFunctionListAdd(&PetscLimiterList, sname, function));
   PetscFunctionReturn(0);
@@ -70,7 +71,8 @@ PetscErrorCode PetscLimiterRegister(const char sname[], PetscErrorCode (*functio
 
 .seealso: `PetscLimiterGetType()`, `PetscLimiterCreate()`
 @*/
-PetscErrorCode PetscLimiterSetType(PetscLimiter lim, PetscLimiterType name) {
+PetscErrorCode PetscLimiterSetType(PetscLimiter lim, PetscLimiterType name)
+{
   PetscErrorCode (*r)(PetscLimiter);
   PetscBool match;
 
@@ -107,7 +109,8 @@ PetscErrorCode PetscLimiterSetType(PetscLimiter lim, PetscLimiterType name) {
 
 .seealso: `PetscLimiterSetType()`, `PetscLimiterCreate()`
 @*/
-PetscErrorCode PetscLimiterGetType(PetscLimiter lim, PetscLimiterType *name) {
+PetscErrorCode PetscLimiterGetType(PetscLimiter lim, PetscLimiterType *name)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(lim, PETSCLIMITER_CLASSID, 1);
   PetscValidPointer(name, 2);
@@ -129,7 +132,8 @@ PetscErrorCode PetscLimiterGetType(PetscLimiter lim, PetscLimiterType *name) {
    Level: intermediate
 .seealso: `PetscLimiter`, `PetscLimiterView`, `PetscObjectViewFromOptions()`, `PetscLimiterCreate()`
 @*/
-PetscErrorCode PetscLimiterViewFromOptions(PetscLimiter A, PetscObject obj, const char name[]) {
+PetscErrorCode PetscLimiterViewFromOptions(PetscLimiter A, PetscObject obj, const char name[])
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, PETSCLIMITER_CLASSID, 1);
   PetscCall(PetscObjectViewFromOptions((PetscObject)A, obj, name));
@@ -149,7 +153,8 @@ PetscErrorCode PetscLimiterViewFromOptions(PetscLimiter A, PetscObject obj, cons
 
 .seealso: `PetscLimiterDestroy()`
 @*/
-PetscErrorCode PetscLimiterView(PetscLimiter lim, PetscViewer v) {
+PetscErrorCode PetscLimiterView(PetscLimiter lim, PetscViewer v)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(lim, PETSCLIMITER_CLASSID, 1);
   if (!v) PetscCall(PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)lim), &v));
@@ -169,7 +174,8 @@ PetscErrorCode PetscLimiterView(PetscLimiter lim, PetscViewer v) {
 
 .seealso: `PetscLimiterView()`
 @*/
-PetscErrorCode PetscLimiterSetFromOptions(PetscLimiter lim) {
+PetscErrorCode PetscLimiterSetFromOptions(PetscLimiter lim)
+{
   const char *defaultType;
   char        name[256];
   PetscBool   flg;
@@ -207,7 +213,8 @@ PetscErrorCode PetscLimiterSetFromOptions(PetscLimiter lim) {
 
 .seealso: `PetscLimiterView()`, `PetscLimiterDestroy()`
 @*/
-PetscErrorCode PetscLimiterSetUp(PetscLimiter lim) {
+PetscErrorCode PetscLimiterSetUp(PetscLimiter lim)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(lim, PETSCLIMITER_CLASSID, 1);
   PetscTryTypeMethod(lim, setup);
@@ -226,7 +233,8 @@ PetscErrorCode PetscLimiterSetUp(PetscLimiter lim) {
 
 .seealso: `PetscLimiterView()`
 @*/
-PetscErrorCode PetscLimiterDestroy(PetscLimiter *lim) {
+PetscErrorCode PetscLimiterDestroy(PetscLimiter *lim)
+{
   PetscFunctionBegin;
   if (!*lim) PetscFunctionReturn(0);
   PetscValidHeaderSpecific((*lim), PETSCLIMITER_CLASSID, 1);
@@ -257,7 +265,8 @@ PetscErrorCode PetscLimiterDestroy(PetscLimiter *lim) {
 
 .seealso: `PetscLimiterSetType()`, `PETSCLIMITERSIN`
 @*/
-PetscErrorCode PetscLimiterCreate(MPI_Comm comm, PetscLimiter *lim) {
+PetscErrorCode PetscLimiterCreate(MPI_Comm comm, PetscLimiter *lim)
+{
   PetscLimiter l;
 
   PetscFunctionBegin;
@@ -320,7 +329,8 @@ $ w_minmod(f) = 2 min(f,(1-f))             w_superbee(r) = 4 min((1-f), f)
 
 .seealso: `PetscLimiterSetType()`, `PetscLimiterCreate()`
 @*/
-PetscErrorCode PetscLimiterLimit(PetscLimiter lim, PetscReal flim, PetscReal *phi) {
+PetscErrorCode PetscLimiterLimit(PetscLimiter lim, PetscReal flim, PetscReal *phi)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(lim, PETSCLIMITER_CLASSID, 1);
   PetscValidRealPointer(phi, 3);
@@ -328,7 +338,8 @@ PetscErrorCode PetscLimiterLimit(PetscLimiter lim, PetscReal flim, PetscReal *ph
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscLimiterDestroy_Sin(PetscLimiter lim) {
+static PetscErrorCode PetscLimiterDestroy_Sin(PetscLimiter lim)
+{
   PetscLimiter_Sin *l = (PetscLimiter_Sin *)lim->data;
 
   PetscFunctionBegin;
@@ -336,7 +347,8 @@ static PetscErrorCode PetscLimiterDestroy_Sin(PetscLimiter lim) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscLimiterView_Sin_Ascii(PetscLimiter lim, PetscViewer viewer) {
+static PetscErrorCode PetscLimiterView_Sin_Ascii(PetscLimiter lim, PetscViewer viewer)
+{
   PetscViewerFormat format;
 
   PetscFunctionBegin;
@@ -345,7 +357,8 @@ static PetscErrorCode PetscLimiterView_Sin_Ascii(PetscLimiter lim, PetscViewer v
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscLimiterView_Sin(PetscLimiter lim, PetscViewer viewer) {
+static PetscErrorCode PetscLimiterView_Sin(PetscLimiter lim, PetscViewer viewer)
+{
   PetscBool iascii;
 
   PetscFunctionBegin;
@@ -356,13 +369,15 @@ static PetscErrorCode PetscLimiterView_Sin(PetscLimiter lim, PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscLimiterLimit_Sin(PetscLimiter lim, PetscReal f, PetscReal *phi) {
+static PetscErrorCode PetscLimiterLimit_Sin(PetscLimiter lim, PetscReal f, PetscReal *phi)
+{
   PetscFunctionBegin;
   *phi = PetscSinReal(PETSC_PI * PetscMax(0, PetscMin(f, 1)));
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscLimiterInitialize_Sin(PetscLimiter lim) {
+static PetscErrorCode PetscLimiterInitialize_Sin(PetscLimiter lim)
+{
   PetscFunctionBegin;
   lim->ops->view    = PetscLimiterView_Sin;
   lim->ops->destroy = PetscLimiterDestroy_Sin;
@@ -378,7 +393,8 @@ static PetscErrorCode PetscLimiterInitialize_Sin(PetscLimiter lim) {
 .seealso: `PetscLimiterType`, `PetscLimiterCreate()`, `PetscLimiterSetType()`
 M*/
 
-PETSC_EXTERN PetscErrorCode PetscLimiterCreate_Sin(PetscLimiter lim) {
+PETSC_EXTERN PetscErrorCode PetscLimiterCreate_Sin(PetscLimiter lim)
+{
   PetscLimiter_Sin *l;
 
   PetscFunctionBegin;
@@ -390,7 +406,8 @@ PETSC_EXTERN PetscErrorCode PetscLimiterCreate_Sin(PetscLimiter lim) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscLimiterDestroy_Zero(PetscLimiter lim) {
+static PetscErrorCode PetscLimiterDestroy_Zero(PetscLimiter lim)
+{
   PetscLimiter_Zero *l = (PetscLimiter_Zero *)lim->data;
 
   PetscFunctionBegin;
@@ -398,7 +415,8 @@ static PetscErrorCode PetscLimiterDestroy_Zero(PetscLimiter lim) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscLimiterView_Zero_Ascii(PetscLimiter lim, PetscViewer viewer) {
+static PetscErrorCode PetscLimiterView_Zero_Ascii(PetscLimiter lim, PetscViewer viewer)
+{
   PetscViewerFormat format;
 
   PetscFunctionBegin;
@@ -407,7 +425,8 @@ static PetscErrorCode PetscLimiterView_Zero_Ascii(PetscLimiter lim, PetscViewer 
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscLimiterView_Zero(PetscLimiter lim, PetscViewer viewer) {
+static PetscErrorCode PetscLimiterView_Zero(PetscLimiter lim, PetscViewer viewer)
+{
   PetscBool iascii;
 
   PetscFunctionBegin;
@@ -418,13 +437,15 @@ static PetscErrorCode PetscLimiterView_Zero(PetscLimiter lim, PetscViewer viewer
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscLimiterLimit_Zero(PetscLimiter lim, PetscReal f, PetscReal *phi) {
+static PetscErrorCode PetscLimiterLimit_Zero(PetscLimiter lim, PetscReal f, PetscReal *phi)
+{
   PetscFunctionBegin;
   *phi = 0.0;
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscLimiterInitialize_Zero(PetscLimiter lim) {
+static PetscErrorCode PetscLimiterInitialize_Zero(PetscLimiter lim)
+{
   PetscFunctionBegin;
   lim->ops->view    = PetscLimiterView_Zero;
   lim->ops->destroy = PetscLimiterDestroy_Zero;
@@ -440,7 +461,8 @@ static PetscErrorCode PetscLimiterInitialize_Zero(PetscLimiter lim) {
 .seealso: `PetscLimiterType`, `PetscLimiterCreate()`, `PetscLimiterSetType()`
 M*/
 
-PETSC_EXTERN PetscErrorCode PetscLimiterCreate_Zero(PetscLimiter lim) {
+PETSC_EXTERN PetscErrorCode PetscLimiterCreate_Zero(PetscLimiter lim)
+{
   PetscLimiter_Zero *l;
 
   PetscFunctionBegin;
@@ -452,7 +474,8 @@ PETSC_EXTERN PetscErrorCode PetscLimiterCreate_Zero(PetscLimiter lim) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscLimiterDestroy_None(PetscLimiter lim) {
+static PetscErrorCode PetscLimiterDestroy_None(PetscLimiter lim)
+{
   PetscLimiter_None *l = (PetscLimiter_None *)lim->data;
 
   PetscFunctionBegin;
@@ -460,7 +483,8 @@ static PetscErrorCode PetscLimiterDestroy_None(PetscLimiter lim) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscLimiterView_None_Ascii(PetscLimiter lim, PetscViewer viewer) {
+static PetscErrorCode PetscLimiterView_None_Ascii(PetscLimiter lim, PetscViewer viewer)
+{
   PetscViewerFormat format;
 
   PetscFunctionBegin;
@@ -469,7 +493,8 @@ static PetscErrorCode PetscLimiterView_None_Ascii(PetscLimiter lim, PetscViewer 
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscLimiterView_None(PetscLimiter lim, PetscViewer viewer) {
+static PetscErrorCode PetscLimiterView_None(PetscLimiter lim, PetscViewer viewer)
+{
   PetscBool iascii;
 
   PetscFunctionBegin;
@@ -480,13 +505,15 @@ static PetscErrorCode PetscLimiterView_None(PetscLimiter lim, PetscViewer viewer
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscLimiterLimit_None(PetscLimiter lim, PetscReal f, PetscReal *phi) {
+static PetscErrorCode PetscLimiterLimit_None(PetscLimiter lim, PetscReal f, PetscReal *phi)
+{
   PetscFunctionBegin;
   *phi = 1.0;
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscLimiterInitialize_None(PetscLimiter lim) {
+static PetscErrorCode PetscLimiterInitialize_None(PetscLimiter lim)
+{
   PetscFunctionBegin;
   lim->ops->view    = PetscLimiterView_None;
   lim->ops->destroy = PetscLimiterDestroy_None;
@@ -502,7 +529,8 @@ static PetscErrorCode PetscLimiterInitialize_None(PetscLimiter lim) {
 .seealso: `PetscLimiterType`, `PetscLimiterCreate()`, `PetscLimiterSetType()`
 M*/
 
-PETSC_EXTERN PetscErrorCode PetscLimiterCreate_None(PetscLimiter lim) {
+PETSC_EXTERN PetscErrorCode PetscLimiterCreate_None(PetscLimiter lim)
+{
   PetscLimiter_None *l;
 
   PetscFunctionBegin;
@@ -514,7 +542,8 @@ PETSC_EXTERN PetscErrorCode PetscLimiterCreate_None(PetscLimiter lim) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscLimiterDestroy_Minmod(PetscLimiter lim) {
+static PetscErrorCode PetscLimiterDestroy_Minmod(PetscLimiter lim)
+{
   PetscLimiter_Minmod *l = (PetscLimiter_Minmod *)lim->data;
 
   PetscFunctionBegin;
@@ -522,7 +551,8 @@ static PetscErrorCode PetscLimiterDestroy_Minmod(PetscLimiter lim) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscLimiterView_Minmod_Ascii(PetscLimiter lim, PetscViewer viewer) {
+static PetscErrorCode PetscLimiterView_Minmod_Ascii(PetscLimiter lim, PetscViewer viewer)
+{
   PetscViewerFormat format;
 
   PetscFunctionBegin;
@@ -531,7 +561,8 @@ static PetscErrorCode PetscLimiterView_Minmod_Ascii(PetscLimiter lim, PetscViewe
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscLimiterView_Minmod(PetscLimiter lim, PetscViewer viewer) {
+static PetscErrorCode PetscLimiterView_Minmod(PetscLimiter lim, PetscViewer viewer)
+{
   PetscBool iascii;
 
   PetscFunctionBegin;
@@ -542,13 +573,15 @@ static PetscErrorCode PetscLimiterView_Minmod(PetscLimiter lim, PetscViewer view
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscLimiterLimit_Minmod(PetscLimiter lim, PetscReal f, PetscReal *phi) {
+static PetscErrorCode PetscLimiterLimit_Minmod(PetscLimiter lim, PetscReal f, PetscReal *phi)
+{
   PetscFunctionBegin;
   *phi = 2 * PetscMax(0, PetscMin(f, 1 - f));
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscLimiterInitialize_Minmod(PetscLimiter lim) {
+static PetscErrorCode PetscLimiterInitialize_Minmod(PetscLimiter lim)
+{
   PetscFunctionBegin;
   lim->ops->view    = PetscLimiterView_Minmod;
   lim->ops->destroy = PetscLimiterDestroy_Minmod;
@@ -564,7 +597,8 @@ static PetscErrorCode PetscLimiterInitialize_Minmod(PetscLimiter lim) {
 .seealso: `PetscLimiterType`, `PetscLimiterCreate()`, `PetscLimiterSetType()`
 M*/
 
-PETSC_EXTERN PetscErrorCode PetscLimiterCreate_Minmod(PetscLimiter lim) {
+PETSC_EXTERN PetscErrorCode PetscLimiterCreate_Minmod(PetscLimiter lim)
+{
   PetscLimiter_Minmod *l;
 
   PetscFunctionBegin;
@@ -576,7 +610,8 @@ PETSC_EXTERN PetscErrorCode PetscLimiterCreate_Minmod(PetscLimiter lim) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscLimiterDestroy_VanLeer(PetscLimiter lim) {
+static PetscErrorCode PetscLimiterDestroy_VanLeer(PetscLimiter lim)
+{
   PetscLimiter_VanLeer *l = (PetscLimiter_VanLeer *)lim->data;
 
   PetscFunctionBegin;
@@ -584,7 +619,8 @@ static PetscErrorCode PetscLimiterDestroy_VanLeer(PetscLimiter lim) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscLimiterView_VanLeer_Ascii(PetscLimiter lim, PetscViewer viewer) {
+static PetscErrorCode PetscLimiterView_VanLeer_Ascii(PetscLimiter lim, PetscViewer viewer)
+{
   PetscViewerFormat format;
 
   PetscFunctionBegin;
@@ -593,7 +629,8 @@ static PetscErrorCode PetscLimiterView_VanLeer_Ascii(PetscLimiter lim, PetscView
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscLimiterView_VanLeer(PetscLimiter lim, PetscViewer viewer) {
+static PetscErrorCode PetscLimiterView_VanLeer(PetscLimiter lim, PetscViewer viewer)
+{
   PetscBool iascii;
 
   PetscFunctionBegin;
@@ -604,13 +641,15 @@ static PetscErrorCode PetscLimiterView_VanLeer(PetscLimiter lim, PetscViewer vie
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscLimiterLimit_VanLeer(PetscLimiter lim, PetscReal f, PetscReal *phi) {
+static PetscErrorCode PetscLimiterLimit_VanLeer(PetscLimiter lim, PetscReal f, PetscReal *phi)
+{
   PetscFunctionBegin;
   *phi = PetscMax(0, 4 * f * (1 - f));
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscLimiterInitialize_VanLeer(PetscLimiter lim) {
+static PetscErrorCode PetscLimiterInitialize_VanLeer(PetscLimiter lim)
+{
   PetscFunctionBegin;
   lim->ops->view    = PetscLimiterView_VanLeer;
   lim->ops->destroy = PetscLimiterDestroy_VanLeer;
@@ -626,7 +665,8 @@ static PetscErrorCode PetscLimiterInitialize_VanLeer(PetscLimiter lim) {
 .seealso: `PetscLimiterType`, `PetscLimiterCreate()`, `PetscLimiterSetType()`
 M*/
 
-PETSC_EXTERN PetscErrorCode PetscLimiterCreate_VanLeer(PetscLimiter lim) {
+PETSC_EXTERN PetscErrorCode PetscLimiterCreate_VanLeer(PetscLimiter lim)
+{
   PetscLimiter_VanLeer *l;
 
   PetscFunctionBegin;
@@ -638,7 +678,8 @@ PETSC_EXTERN PetscErrorCode PetscLimiterCreate_VanLeer(PetscLimiter lim) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscLimiterDestroy_VanAlbada(PetscLimiter lim) {
+static PetscErrorCode PetscLimiterDestroy_VanAlbada(PetscLimiter lim)
+{
   PetscLimiter_VanAlbada *l = (PetscLimiter_VanAlbada *)lim->data;
 
   PetscFunctionBegin;
@@ -646,7 +687,8 @@ static PetscErrorCode PetscLimiterDestroy_VanAlbada(PetscLimiter lim) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscLimiterView_VanAlbada_Ascii(PetscLimiter lim, PetscViewer viewer) {
+static PetscErrorCode PetscLimiterView_VanAlbada_Ascii(PetscLimiter lim, PetscViewer viewer)
+{
   PetscViewerFormat format;
 
   PetscFunctionBegin;
@@ -655,7 +697,8 @@ static PetscErrorCode PetscLimiterView_VanAlbada_Ascii(PetscLimiter lim, PetscVi
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscLimiterView_VanAlbada(PetscLimiter lim, PetscViewer viewer) {
+static PetscErrorCode PetscLimiterView_VanAlbada(PetscLimiter lim, PetscViewer viewer)
+{
   PetscBool iascii;
 
   PetscFunctionBegin;
@@ -666,13 +709,15 @@ static PetscErrorCode PetscLimiterView_VanAlbada(PetscLimiter lim, PetscViewer v
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscLimiterLimit_VanAlbada(PetscLimiter lim, PetscReal f, PetscReal *phi) {
+static PetscErrorCode PetscLimiterLimit_VanAlbada(PetscLimiter lim, PetscReal f, PetscReal *phi)
+{
   PetscFunctionBegin;
   *phi = PetscMax(0, 2 * f * (1 - f) / (PetscSqr(f) + PetscSqr(1 - f)));
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscLimiterInitialize_VanAlbada(PetscLimiter lim) {
+static PetscErrorCode PetscLimiterInitialize_VanAlbada(PetscLimiter lim)
+{
   PetscFunctionBegin;
   lim->ops->view    = PetscLimiterView_VanAlbada;
   lim->ops->destroy = PetscLimiterDestroy_VanAlbada;
@@ -688,7 +733,8 @@ static PetscErrorCode PetscLimiterInitialize_VanAlbada(PetscLimiter lim) {
 .seealso: `PetscLimiterType`, `PetscLimiterCreate()`, `PetscLimiterSetType()`
 M*/
 
-PETSC_EXTERN PetscErrorCode PetscLimiterCreate_VanAlbada(PetscLimiter lim) {
+PETSC_EXTERN PetscErrorCode PetscLimiterCreate_VanAlbada(PetscLimiter lim)
+{
   PetscLimiter_VanAlbada *l;
 
   PetscFunctionBegin;
@@ -700,7 +746,8 @@ PETSC_EXTERN PetscErrorCode PetscLimiterCreate_VanAlbada(PetscLimiter lim) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscLimiterDestroy_Superbee(PetscLimiter lim) {
+static PetscErrorCode PetscLimiterDestroy_Superbee(PetscLimiter lim)
+{
   PetscLimiter_Superbee *l = (PetscLimiter_Superbee *)lim->data;
 
   PetscFunctionBegin;
@@ -708,7 +755,8 @@ static PetscErrorCode PetscLimiterDestroy_Superbee(PetscLimiter lim) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscLimiterView_Superbee_Ascii(PetscLimiter lim, PetscViewer viewer) {
+static PetscErrorCode PetscLimiterView_Superbee_Ascii(PetscLimiter lim, PetscViewer viewer)
+{
   PetscViewerFormat format;
 
   PetscFunctionBegin;
@@ -717,7 +765,8 @@ static PetscErrorCode PetscLimiterView_Superbee_Ascii(PetscLimiter lim, PetscVie
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscLimiterView_Superbee(PetscLimiter lim, PetscViewer viewer) {
+static PetscErrorCode PetscLimiterView_Superbee(PetscLimiter lim, PetscViewer viewer)
+{
   PetscBool iascii;
 
   PetscFunctionBegin;
@@ -728,13 +777,15 @@ static PetscErrorCode PetscLimiterView_Superbee(PetscLimiter lim, PetscViewer vi
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscLimiterLimit_Superbee(PetscLimiter lim, PetscReal f, PetscReal *phi) {
+static PetscErrorCode PetscLimiterLimit_Superbee(PetscLimiter lim, PetscReal f, PetscReal *phi)
+{
   PetscFunctionBegin;
   *phi = 4 * PetscMax(0, PetscMin(f, 1 - f));
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscLimiterInitialize_Superbee(PetscLimiter lim) {
+static PetscErrorCode PetscLimiterInitialize_Superbee(PetscLimiter lim)
+{
   PetscFunctionBegin;
   lim->ops->view    = PetscLimiterView_Superbee;
   lim->ops->destroy = PetscLimiterDestroy_Superbee;
@@ -750,7 +801,8 @@ static PetscErrorCode PetscLimiterInitialize_Superbee(PetscLimiter lim) {
 .seealso: `PetscLimiterType`, `PetscLimiterCreate()`, `PetscLimiterSetType()`
 M*/
 
-PETSC_EXTERN PetscErrorCode PetscLimiterCreate_Superbee(PetscLimiter lim) {
+PETSC_EXTERN PetscErrorCode PetscLimiterCreate_Superbee(PetscLimiter lim)
+{
   PetscLimiter_Superbee *l;
 
   PetscFunctionBegin;
@@ -762,7 +814,8 @@ PETSC_EXTERN PetscErrorCode PetscLimiterCreate_Superbee(PetscLimiter lim) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscLimiterDestroy_MC(PetscLimiter lim) {
+static PetscErrorCode PetscLimiterDestroy_MC(PetscLimiter lim)
+{
   PetscLimiter_MC *l = (PetscLimiter_MC *)lim->data;
 
   PetscFunctionBegin;
@@ -770,7 +823,8 @@ static PetscErrorCode PetscLimiterDestroy_MC(PetscLimiter lim) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscLimiterView_MC_Ascii(PetscLimiter lim, PetscViewer viewer) {
+static PetscErrorCode PetscLimiterView_MC_Ascii(PetscLimiter lim, PetscViewer viewer)
+{
   PetscViewerFormat format;
 
   PetscFunctionBegin;
@@ -779,7 +833,8 @@ static PetscErrorCode PetscLimiterView_MC_Ascii(PetscLimiter lim, PetscViewer vi
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscLimiterView_MC(PetscLimiter lim, PetscViewer viewer) {
+static PetscErrorCode PetscLimiterView_MC(PetscLimiter lim, PetscViewer viewer)
+{
   PetscBool iascii;
 
   PetscFunctionBegin;
@@ -791,13 +846,15 @@ static PetscErrorCode PetscLimiterView_MC(PetscLimiter lim, PetscViewer viewer) 
 }
 
 /* aka Barth-Jespersen */
-static PetscErrorCode PetscLimiterLimit_MC(PetscLimiter lim, PetscReal f, PetscReal *phi) {
+static PetscErrorCode PetscLimiterLimit_MC(PetscLimiter lim, PetscReal f, PetscReal *phi)
+{
   PetscFunctionBegin;
   *phi = PetscMin(1, 4 * PetscMax(0, PetscMin(f, 1 - f)));
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscLimiterInitialize_MC(PetscLimiter lim) {
+static PetscErrorCode PetscLimiterInitialize_MC(PetscLimiter lim)
+{
   PetscFunctionBegin;
   lim->ops->view    = PetscLimiterView_MC;
   lim->ops->destroy = PetscLimiterDestroy_MC;
@@ -813,7 +870,8 @@ static PetscErrorCode PetscLimiterInitialize_MC(PetscLimiter lim) {
 .seealso: `PetscLimiterType`, `PetscLimiterCreate()`, `PetscLimiterSetType()`
 M*/
 
-PETSC_EXTERN PetscErrorCode PetscLimiterCreate_MC(PetscLimiter lim) {
+PETSC_EXTERN PetscErrorCode PetscLimiterCreate_MC(PetscLimiter lim)
+{
   PetscLimiter_MC *l;
 
   PetscFunctionBegin;
@@ -862,7 +920,8 @@ PetscBool         PetscFVRegisterAllCalled = PETSC_FALSE;
 .seealso: `PetscFVRegisterAll()`, `PetscFVRegisterDestroy()`
 
 @*/
-PetscErrorCode PetscFVRegister(const char sname[], PetscErrorCode (*function)(PetscFV)) {
+PetscErrorCode PetscFVRegister(const char sname[], PetscErrorCode (*function)(PetscFV))
+{
   PetscFunctionBegin;
   PetscCall(PetscFunctionListAdd(&PetscFVList, sname, function));
   PetscFunctionReturn(0);
@@ -884,7 +943,8 @@ PetscErrorCode PetscFVRegister(const char sname[], PetscErrorCode (*function)(Pe
 
 .seealso: `PetscFVGetType()`, `PetscFVCreate()`
 @*/
-PetscErrorCode PetscFVSetType(PetscFV fvm, PetscFVType name) {
+PetscErrorCode PetscFVSetType(PetscFV fvm, PetscFVType name)
+{
   PetscErrorCode (*r)(PetscFV);
   PetscBool match;
 
@@ -920,7 +980,8 @@ PetscErrorCode PetscFVSetType(PetscFV fvm, PetscFVType name) {
 
 .seealso: `PetscFVSetType()`, `PetscFVCreate()`
 @*/
-PetscErrorCode PetscFVGetType(PetscFV fvm, PetscFVType *name) {
+PetscErrorCode PetscFVGetType(PetscFV fvm, PetscFVType *name)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fvm, PETSCFV_CLASSID, 1);
   PetscValidPointer(name, 2);
@@ -942,7 +1003,8 @@ PetscErrorCode PetscFVGetType(PetscFV fvm, PetscFVType *name) {
    Level: intermediate
 .seealso: `PetscFV`, `PetscFVView`, `PetscObjectViewFromOptions()`, `PetscFVCreate()`
 @*/
-PetscErrorCode PetscFVViewFromOptions(PetscFV A, PetscObject obj, const char name[]) {
+PetscErrorCode PetscFVViewFromOptions(PetscFV A, PetscObject obj, const char name[])
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, PETSCFV_CLASSID, 1);
   PetscCall(PetscObjectViewFromOptions((PetscObject)A, obj, name));
@@ -962,7 +1024,8 @@ PetscErrorCode PetscFVViewFromOptions(PetscFV A, PetscObject obj, const char nam
 
 .seealso: `PetscFVDestroy()`
 @*/
-PetscErrorCode PetscFVView(PetscFV fvm, PetscViewer v) {
+PetscErrorCode PetscFVView(PetscFV fvm, PetscViewer v)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fvm, PETSCFV_CLASSID, 1);
   if (!v) PetscCall(PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)fvm), &v));
@@ -985,7 +1048,8 @@ PetscErrorCode PetscFVView(PetscFV fvm, PetscViewer v) {
 
 .seealso: `PetscFVView()`
 @*/
-PetscErrorCode PetscFVSetFromOptions(PetscFV fvm) {
+PetscErrorCode PetscFVSetFromOptions(PetscFV fvm)
+{
   const char *defaultType;
   char        name[256];
   PetscBool   flg;
@@ -1025,7 +1089,8 @@ PetscErrorCode PetscFVSetFromOptions(PetscFV fvm) {
 
 .seealso: `PetscFVView()`, `PetscFVDestroy()`
 @*/
-PetscErrorCode PetscFVSetUp(PetscFV fvm) {
+PetscErrorCode PetscFVSetUp(PetscFV fvm)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fvm, PETSCFV_CLASSID, 1);
   PetscCall(PetscLimiterSetUp(fvm->limiter));
@@ -1045,7 +1110,8 @@ PetscErrorCode PetscFVSetUp(PetscFV fvm) {
 
 .seealso: `PetscFVView()`
 @*/
-PetscErrorCode PetscFVDestroy(PetscFV *fvm) {
+PetscErrorCode PetscFVDestroy(PetscFV *fvm)
+{
   PetscInt i;
 
   PetscFunctionBegin;
@@ -1086,7 +1152,8 @@ PetscErrorCode PetscFVDestroy(PetscFV *fvm) {
 
 .seealso: `PetscFVSetType()`, `PETSCFVUPWIND`
 @*/
-PetscErrorCode PetscFVCreate(MPI_Comm comm, PetscFV *fvm) {
+PetscErrorCode PetscFVCreate(MPI_Comm comm, PetscFV *fvm)
+{
   PetscFV f;
 
   PetscFunctionBegin;
@@ -1121,7 +1188,8 @@ PetscErrorCode PetscFVCreate(MPI_Comm comm, PetscFV *fvm) {
 
 .seealso: `PetscFVGetLimiter()`
 @*/
-PetscErrorCode PetscFVSetLimiter(PetscFV fvm, PetscLimiter lim) {
+PetscErrorCode PetscFVSetLimiter(PetscFV fvm, PetscLimiter lim)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fvm, PETSCFV_CLASSID, 1);
   PetscValidHeaderSpecific(lim, PETSCLIMITER_CLASSID, 2);
@@ -1146,7 +1214,8 @@ PetscErrorCode PetscFVSetLimiter(PetscFV fvm, PetscLimiter lim) {
 
 .seealso: `PetscFVSetLimiter()`
 @*/
-PetscErrorCode PetscFVGetLimiter(PetscFV fvm, PetscLimiter *lim) {
+PetscErrorCode PetscFVGetLimiter(PetscFV fvm, PetscLimiter *lim)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fvm, PETSCFV_CLASSID, 1);
   PetscValidPointer(lim, 2);
@@ -1167,7 +1236,8 @@ PetscErrorCode PetscFVGetLimiter(PetscFV fvm, PetscLimiter *lim) {
 
 .seealso: `PetscFVGetNumComponents()`
 @*/
-PetscErrorCode PetscFVSetNumComponents(PetscFV fvm, PetscInt comp) {
+PetscErrorCode PetscFVSetNumComponents(PetscFV fvm, PetscInt comp)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fvm, PETSCFV_CLASSID, 1);
   if (fvm->numComponents != comp) {
@@ -1198,7 +1268,8 @@ PetscErrorCode PetscFVSetNumComponents(PetscFV fvm, PetscInt comp) {
 
 .seealso: `PetscFVSetNumComponents()`
 @*/
-PetscErrorCode PetscFVGetNumComponents(PetscFV fvm, PetscInt *comp) {
+PetscErrorCode PetscFVGetNumComponents(PetscFV fvm, PetscInt *comp)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fvm, PETSCFV_CLASSID, 1);
   PetscValidIntPointer(comp, 2);
@@ -1219,7 +1290,8 @@ PetscErrorCode PetscFVGetNumComponents(PetscFV fvm, PetscInt *comp) {
 
 .seealso: `PetscFVGetComponentName()`
 @*/
-PetscErrorCode PetscFVSetComponentName(PetscFV fvm, PetscInt comp, const char *name) {
+PetscErrorCode PetscFVSetComponentName(PetscFV fvm, PetscInt comp, const char *name)
+{
   PetscFunctionBegin;
   PetscCall(PetscFree(fvm->componentNames[comp]));
   PetscCall(PetscStrallocpy(name, &fvm->componentNames[comp]));
@@ -1241,7 +1313,8 @@ PetscErrorCode PetscFVSetComponentName(PetscFV fvm, PetscInt comp, const char *n
 
 .seealso: `PetscFVSetComponentName()`
 @*/
-PetscErrorCode PetscFVGetComponentName(PetscFV fvm, PetscInt comp, const char **name) {
+PetscErrorCode PetscFVGetComponentName(PetscFV fvm, PetscInt comp, const char **name)
+{
   PetscFunctionBegin;
   *name = fvm->componentNames[comp];
   PetscFunctionReturn(0);
@@ -1260,7 +1333,8 @@ PetscErrorCode PetscFVGetComponentName(PetscFV fvm, PetscInt comp, const char **
 
 .seealso: `PetscFVGetSpatialDimension()`
 @*/
-PetscErrorCode PetscFVSetSpatialDimension(PetscFV fvm, PetscInt dim) {
+PetscErrorCode PetscFVSetSpatialDimension(PetscFV fvm, PetscInt dim)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fvm, PETSCFV_CLASSID, 1);
   fvm->dim = dim;
@@ -1282,7 +1356,8 @@ PetscErrorCode PetscFVSetSpatialDimension(PetscFV fvm, PetscInt dim) {
 
 .seealso: `PetscFVSetSpatialDimension()`
 @*/
-PetscErrorCode PetscFVGetSpatialDimension(PetscFV fvm, PetscInt *dim) {
+PetscErrorCode PetscFVGetSpatialDimension(PetscFV fvm, PetscInt *dim)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fvm, PETSCFV_CLASSID, 1);
   PetscValidIntPointer(dim, 2);
@@ -1303,7 +1378,8 @@ PetscErrorCode PetscFVGetSpatialDimension(PetscFV fvm, PetscInt *dim) {
 
 .seealso: `PetscFVGetComputeGradients()`
 @*/
-PetscErrorCode PetscFVSetComputeGradients(PetscFV fvm, PetscBool computeGradients) {
+PetscErrorCode PetscFVSetComputeGradients(PetscFV fvm, PetscBool computeGradients)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fvm, PETSCFV_CLASSID, 1);
   fvm->computeGradients = computeGradients;
@@ -1325,7 +1401,8 @@ PetscErrorCode PetscFVSetComputeGradients(PetscFV fvm, PetscBool computeGradient
 
 .seealso: `PetscFVSetComputeGradients()`
 @*/
-PetscErrorCode PetscFVGetComputeGradients(PetscFV fvm, PetscBool *computeGradients) {
+PetscErrorCode PetscFVGetComputeGradients(PetscFV fvm, PetscBool *computeGradients)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fvm, PETSCFV_CLASSID, 1);
   PetscValidBoolPointer(computeGradients, 2);
@@ -1346,7 +1423,8 @@ PetscErrorCode PetscFVGetComputeGradients(PetscFV fvm, PetscBool *computeGradien
 
 .seealso: `PetscFVGetQuadrature()`
 @*/
-PetscErrorCode PetscFVSetQuadrature(PetscFV fvm, PetscQuadrature q) {
+PetscErrorCode PetscFVSetQuadrature(PetscFV fvm, PetscQuadrature q)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fvm, PETSCFV_CLASSID, 1);
   PetscCall(PetscQuadratureDestroy(&fvm->quadrature));
@@ -1370,7 +1448,8 @@ PetscErrorCode PetscFVSetQuadrature(PetscFV fvm, PetscQuadrature q) {
 
 .seealso: `PetscFVSetQuadrature()`
 @*/
-PetscErrorCode PetscFVGetQuadrature(PetscFV fvm, PetscQuadrature *q) {
+PetscErrorCode PetscFVGetQuadrature(PetscFV fvm, PetscQuadrature *q)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fvm, PETSCFV_CLASSID, 1);
   PetscValidPointer(q, 2);
@@ -1405,7 +1484,8 @@ PetscErrorCode PetscFVGetQuadrature(PetscFV fvm, PetscQuadrature *q) {
 
 .seealso: `PetscFVCreate()`
 @*/
-PetscErrorCode PetscFVGetDualSpace(PetscFV fvm, PetscDualSpace *sp) {
+PetscErrorCode PetscFVGetDualSpace(PetscFV fvm, PetscDualSpace *sp)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fvm, PETSCFV_CLASSID, 1);
   PetscValidPointer(sp, 2);
@@ -1456,7 +1536,8 @@ PetscErrorCode PetscFVGetDualSpace(PetscFV fvm, PetscDualSpace *sp) {
 
 .seealso: `PetscFVCreate()`
 @*/
-PetscErrorCode PetscFVSetDualSpace(PetscFV fvm, PetscDualSpace sp) {
+PetscErrorCode PetscFVSetDualSpace(PetscFV fvm, PetscDualSpace sp)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fvm, PETSCFV_CLASSID, 1);
   PetscValidHeaderSpecific(sp, PETSCDUALSPACE_CLASSID, 2);
@@ -1486,7 +1567,8 @@ $ T->T[2] = H[(((p*pdim + i)*Nc + c)*dim + d)*dim + e] is the value at point p f
 
 .seealso: `PetscFEGetCellTabulation()`, `PetscFVCreateTabulation()`, `PetscFVGetQuadrature()`, `PetscQuadratureGetData()`
 @*/
-PetscErrorCode PetscFVGetCellTabulation(PetscFV fvm, PetscTabulation *T) {
+PetscErrorCode PetscFVGetCellTabulation(PetscFV fvm, PetscTabulation *T)
+{
   PetscInt         npoints;
   const PetscReal *points;
 
@@ -1523,7 +1605,8 @@ $ T->T[2] = H[(((p*pdim + i)*Nc + c)*dim + d)*dim + e] is the value at point p f
 
 .seealso: `PetscFECreateTabulation()`, `PetscTabulationDestroy()`, `PetscFEGetCellTabulation()`
 @*/
-PetscErrorCode PetscFVCreateTabulation(PetscFV fvm, PetscInt nrepl, PetscInt npoints, const PetscReal points[], PetscInt K, PetscTabulation *T) {
+PetscErrorCode PetscFVCreateTabulation(PetscFV fvm, PetscInt nrepl, PetscInt npoints, const PetscReal points[], PetscInt K, PetscTabulation *T)
+{
   PetscInt pdim = 1; /* Dimension of approximation space P */
   PetscInt cdim;     /* Spatial dimension */
   PetscInt Nc;       /* Field components */
@@ -1580,7 +1663,8 @@ PetscErrorCode PetscFVCreateTabulation(PetscFV fvm, PetscInt nrepl, PetscInt npo
 
 .seealso: `PetscFVCreate()`
 @*/
-PetscErrorCode PetscFVComputeGradient(PetscFV fvm, PetscInt numFaces, PetscScalar dx[], PetscScalar grad[]) {
+PetscErrorCode PetscFVComputeGradient(PetscFV fvm, PetscInt numFaces, PetscScalar dx[], PetscScalar grad[])
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fvm, PETSCFV_CLASSID, 1);
   PetscTryTypeMethod(fvm, computegradient, numFaces, dx, grad);
@@ -1610,7 +1694,8 @@ PetscErrorCode PetscFVComputeGradient(PetscFV fvm, PetscInt numFaces, PetscScala
 
 .seealso: `PetscFVCreate()`
 @*/
-PetscErrorCode PetscFVIntegrateRHSFunction(PetscFV fvm, PetscDS prob, PetscInt field, PetscInt Nf, PetscFVFaceGeom *fgeom, PetscReal *neighborVol, PetscScalar uL[], PetscScalar uR[], PetscScalar fluxL[], PetscScalar fluxR[]) {
+PetscErrorCode PetscFVIntegrateRHSFunction(PetscFV fvm, PetscDS prob, PetscInt field, PetscInt Nf, PetscFVFaceGeom *fgeom, PetscReal *neighborVol, PetscScalar uL[], PetscScalar uR[], PetscScalar fluxL[], PetscScalar fluxR[])
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fvm, PETSCFV_CLASSID, 1);
   PetscTryTypeMethod(fvm, integraterhsfunction, prob, field, Nf, fgeom, neighborVol, uL, uR, fluxL, fluxR);
@@ -1632,7 +1717,8 @@ PetscErrorCode PetscFVIntegrateRHSFunction(PetscFV fvm, PetscDS prob, PetscInt f
 
 .seealso: `PetscFVType`, `PetscFVCreate()`, `PetscFVSetType()`
 @*/
-PetscErrorCode PetscFVRefine(PetscFV fv, PetscFV *fvRef) {
+PetscErrorCode PetscFVRefine(PetscFV fv, PetscFV *fvRef)
+{
   PetscDualSpace  Q, Qref;
   DM              K, Kref;
   PetscQuadrature q, qref;
@@ -1689,7 +1775,8 @@ PetscErrorCode PetscFVRefine(PetscFV fv, PetscFV *fvRef) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscFVDestroy_Upwind(PetscFV fvm) {
+static PetscErrorCode PetscFVDestroy_Upwind(PetscFV fvm)
+{
   PetscFV_Upwind *b = (PetscFV_Upwind *)fvm->data;
 
   PetscFunctionBegin;
@@ -1697,7 +1784,8 @@ static PetscErrorCode PetscFVDestroy_Upwind(PetscFV fvm) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscFVView_Upwind_Ascii(PetscFV fv, PetscViewer viewer) {
+static PetscErrorCode PetscFVView_Upwind_Ascii(PetscFV fv, PetscViewer viewer)
+{
   PetscInt          Nc, c;
   PetscViewerFormat format;
 
@@ -1712,7 +1800,8 @@ static PetscErrorCode PetscFVView_Upwind_Ascii(PetscFV fv, PetscViewer viewer) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscFVView_Upwind(PetscFV fv, PetscViewer viewer) {
+static PetscErrorCode PetscFVView_Upwind(PetscFV fv, PetscViewer viewer)
+{
   PetscBool iascii;
 
   PetscFunctionBegin;
@@ -1723,7 +1812,8 @@ static PetscErrorCode PetscFVView_Upwind(PetscFV fv, PetscViewer viewer) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscFVSetUp_Upwind(PetscFV fvm) {
+static PetscErrorCode PetscFVSetUp_Upwind(PetscFV fvm)
+{
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
@@ -1732,7 +1822,8 @@ static PetscErrorCode PetscFVSetUp_Upwind(PetscFV fvm) {
   neighborVol[f*2+0] contains the left  geom
   neighborVol[f*2+1] contains the right geom
 */
-static PetscErrorCode PetscFVIntegrateRHSFunction_Upwind(PetscFV fvm, PetscDS prob, PetscInt field, PetscInt Nf, PetscFVFaceGeom *fgeom, PetscReal *neighborVol, PetscScalar uL[], PetscScalar uR[], PetscScalar fluxL[], PetscScalar fluxR[]) {
+static PetscErrorCode PetscFVIntegrateRHSFunction_Upwind(PetscFV fvm, PetscDS prob, PetscInt field, PetscInt Nf, PetscFVFaceGeom *fgeom, PetscReal *neighborVol, PetscScalar uL[], PetscScalar uR[], PetscScalar fluxL[], PetscScalar fluxR[])
+{
   void (*riemann)(PetscInt, PetscInt, const PetscReal[], const PetscReal[], const PetscScalar[], const PetscScalar[], PetscInt, const PetscScalar[], PetscScalar[], void *);
   void              *rctx;
   PetscScalar       *flux = fvm->fluxWork;
@@ -1758,7 +1849,8 @@ static PetscErrorCode PetscFVIntegrateRHSFunction_Upwind(PetscFV fvm, PetscDS pr
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscFVInitialize_Upwind(PetscFV fvm) {
+static PetscErrorCode PetscFVInitialize_Upwind(PetscFV fvm)
+{
   PetscFunctionBegin;
   fvm->ops->setfromoptions       = NULL;
   fvm->ops->setup                = PetscFVSetUp_Upwind;
@@ -1776,7 +1868,8 @@ static PetscErrorCode PetscFVInitialize_Upwind(PetscFV fvm) {
 .seealso: `PetscFVType`, `PetscFVCreate()`, `PetscFVSetType()`
 M*/
 
-PETSC_EXTERN PetscErrorCode PetscFVCreate_Upwind(PetscFV fvm) {
+PETSC_EXTERN PetscErrorCode PetscFVCreate_Upwind(PetscFV fvm)
+{
   PetscFV_Upwind *b;
 
   PetscFunctionBegin;
@@ -1790,7 +1883,8 @@ PETSC_EXTERN PetscErrorCode PetscFVCreate_Upwind(PetscFV fvm) {
 
 #include <petscblaslapack.h>
 
-static PetscErrorCode PetscFVDestroy_LeastSquares(PetscFV fvm) {
+static PetscErrorCode PetscFVDestroy_LeastSquares(PetscFV fvm)
+{
   PetscFV_LeastSquares *ls = (PetscFV_LeastSquares *)fvm->data;
 
   PetscFunctionBegin;
@@ -1800,7 +1894,8 @@ static PetscErrorCode PetscFVDestroy_LeastSquares(PetscFV fvm) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscFVView_LeastSquares_Ascii(PetscFV fv, PetscViewer viewer) {
+static PetscErrorCode PetscFVView_LeastSquares_Ascii(PetscFV fv, PetscViewer viewer)
+{
   PetscInt          Nc, c;
   PetscViewerFormat format;
 
@@ -1815,7 +1910,8 @@ static PetscErrorCode PetscFVView_LeastSquares_Ascii(PetscFV fv, PetscViewer vie
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscFVView_LeastSquares(PetscFV fv, PetscViewer viewer) {
+static PetscErrorCode PetscFVView_LeastSquares(PetscFV fv, PetscViewer viewer)
+{
   PetscBool iascii;
 
   PetscFunctionBegin;
@@ -1826,13 +1922,15 @@ static PetscErrorCode PetscFVView_LeastSquares(PetscFV fv, PetscViewer viewer) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscFVSetUp_LeastSquares(PetscFV fvm) {
+static PetscErrorCode PetscFVSetUp_LeastSquares(PetscFV fvm)
+{
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
 
 /* Overwrites A. Can only handle full-rank problems with m>=n */
-static PetscErrorCode PetscFVLeastSquaresPseudoInverse_Static(PetscInt m, PetscInt mstride, PetscInt n, PetscScalar *A, PetscScalar *Ainv, PetscScalar *tau, PetscInt worksize, PetscScalar *work) {
+static PetscErrorCode PetscFVLeastSquaresPseudoInverse_Static(PetscInt m, PetscInt mstride, PetscInt n, PetscScalar *A, PetscScalar *Ainv, PetscScalar *tau, PetscInt worksize, PetscScalar *work)
+{
   PetscBool    debug = PETSC_FALSE;
   PetscBLASInt M, N, K, lda, ldb, ldwork, info;
   PetscScalar *R, *Q, *Aback, Alpha;
@@ -1879,7 +1977,8 @@ static PetscErrorCode PetscFVLeastSquaresPseudoInverse_Static(PetscInt m, PetscI
 }
 
 /* Overwrites A. Can handle degenerate problems and m<n. */
-static PetscErrorCode PetscFVLeastSquaresPseudoInverseSVD_Static(PetscInt m, PetscInt mstride, PetscInt n, PetscScalar *A, PetscScalar *Ainv, PetscScalar *tau, PetscInt worksize, PetscScalar *work) {
+static PetscErrorCode PetscFVLeastSquaresPseudoInverseSVD_Static(PetscInt m, PetscInt mstride, PetscInt n, PetscScalar *A, PetscScalar *Ainv, PetscScalar *tau, PetscInt worksize, PetscScalar *work)
+{
   PetscScalar *Brhs;
   PetscScalar *tmpwork;
   PetscReal    rcond;
@@ -1970,7 +2069,8 @@ static PetscErrorCode PetscFVLeastSquaresDebugCell_Static(PetscFV fvm, PetscInt 
 
 .seealso: `PetscFVCreate()`
 */
-static PetscErrorCode PetscFVComputeGradient_LeastSquares(PetscFV fvm, PetscInt numFaces, const PetscScalar dx[], PetscScalar grad[]) {
+static PetscErrorCode PetscFVComputeGradient_LeastSquares(PetscFV fvm, PetscInt numFaces, const PetscScalar dx[], PetscScalar grad[])
+{
   PetscFV_LeastSquares *ls       = (PetscFV_LeastSquares *)fvm->data;
   const PetscBool       useSVD   = PETSC_TRUE;
   const PetscInt        maxFaces = ls->maxFaces;
@@ -2007,7 +2107,8 @@ static PetscErrorCode PetscFVComputeGradient_LeastSquares(PetscFV fvm, PetscInt 
   neighborVol[f*2+0] contains the left  geom
   neighborVol[f*2+1] contains the right geom
 */
-static PetscErrorCode PetscFVIntegrateRHSFunction_LeastSquares(PetscFV fvm, PetscDS prob, PetscInt field, PetscInt Nf, PetscFVFaceGeom *fgeom, PetscReal *neighborVol, PetscScalar uL[], PetscScalar uR[], PetscScalar fluxL[], PetscScalar fluxR[]) {
+static PetscErrorCode PetscFVIntegrateRHSFunction_LeastSquares(PetscFV fvm, PetscDS prob, PetscInt field, PetscInt Nf, PetscFVFaceGeom *fgeom, PetscReal *neighborVol, PetscScalar uL[], PetscScalar uR[], PetscScalar fluxL[], PetscScalar fluxR[])
+{
   void (*riemann)(PetscInt, PetscInt, const PetscReal[], const PetscReal[], const PetscScalar[], const PetscScalar[], PetscInt, const PetscScalar[], PetscScalar[], void *);
   void              *rctx;
   PetscScalar       *flux = fvm->fluxWork;
@@ -2033,7 +2134,8 @@ static PetscErrorCode PetscFVIntegrateRHSFunction_LeastSquares(PetscFV fvm, Pets
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscFVLeastSquaresSetMaxFaces_LS(PetscFV fvm, PetscInt maxFaces) {
+static PetscErrorCode PetscFVLeastSquaresSetMaxFaces_LS(PetscFV fvm, PetscInt maxFaces)
+{
   PetscFV_LeastSquares *ls = (PetscFV_LeastSquares *)fvm->data;
   PetscInt              dim, m, n, nrhs, minmn, maxmn;
 
@@ -2052,7 +2154,8 @@ static PetscErrorCode PetscFVLeastSquaresSetMaxFaces_LS(PetscFV fvm, PetscInt ma
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscFVInitialize_LeastSquares(PetscFV fvm) {
+PetscErrorCode PetscFVInitialize_LeastSquares(PetscFV fvm)
+{
   PetscFunctionBegin;
   fvm->ops->setfromoptions       = NULL;
   fvm->ops->setup                = PetscFVSetUp_LeastSquares;
@@ -2071,7 +2174,8 @@ PetscErrorCode PetscFVInitialize_LeastSquares(PetscFV fvm) {
 .seealso: `PetscFVType`, `PetscFVCreate()`, `PetscFVSetType()`
 M*/
 
-PETSC_EXTERN PetscErrorCode PetscFVCreate_LeastSquares(PetscFV fvm) {
+PETSC_EXTERN PetscErrorCode PetscFVCreate_LeastSquares(PetscFV fvm)
+{
   PetscFV_LeastSquares *ls;
 
   PetscFunctionBegin;
@@ -2105,7 +2209,8 @@ PETSC_EXTERN PetscErrorCode PetscFVCreate_LeastSquares(PetscFV fvm) {
 
 .seealso: `PetscFVCreate()`, `PETSCFVLEASTSQUARES`
 @*/
-PetscErrorCode PetscFVLeastSquaresSetMaxFaces(PetscFV fvm, PetscInt maxFaces) {
+PetscErrorCode PetscFVLeastSquaresSetMaxFaces(PetscFV fvm, PetscInt maxFaces)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fvm, PETSCFV_CLASSID, 1);
   PetscTryMethod(fvm, "PetscFVLeastSquaresSetMaxFaces_C", (PetscFV, PetscInt), (fvm, maxFaces));

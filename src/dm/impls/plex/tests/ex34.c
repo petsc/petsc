@@ -8,7 +8,8 @@ typedef struct {
   PetscInt  meshNum;                      /* Which mesh we should construct */
 } AppCtx;
 
-static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options) {
+static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
+{
   PetscFunctionBeginUser;
   options->filename[0] = '\0';
   options->interpolate = PETSC_FALSE;
@@ -23,7 +24,8 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode CreateHybridMesh(MPI_Comm comm, PetscBool interpolate, DM *dm) {
+static PetscErrorCode CreateHybridMesh(MPI_Comm comm, PetscBool interpolate, DM *dm)
+{
   PetscInt dim;
 
   PetscFunctionBegin;
@@ -71,7 +73,8 @@ static PetscErrorCode CreateHybridMesh(MPI_Comm comm, PetscBool interpolate, DM 
     |/       |/       \
     5--------11--------17
 */
-static PetscErrorCode CreateReverseHybridMesh(MPI_Comm comm, PetscBool interpolate, DM *dm) {
+static PetscErrorCode CreateReverseHybridMesh(MPI_Comm comm, PetscBool interpolate, DM *dm)
+{
   PetscInt dim;
 
   PetscFunctionBegin;
@@ -102,7 +105,8 @@ static PetscErrorCode CreateReverseHybridMesh(MPI_Comm comm, PetscBool interpola
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode OrderHybridMesh(DM *dm) {
+static PetscErrorCode OrderHybridMesh(DM *dm)
+{
   DM        pdm;
   IS        perm;
   PetscInt *ind;
@@ -140,7 +144,8 @@ static PetscErrorCode OrderHybridMesh(DM *dm) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm) {
+static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
+{
   const char *filename    = user->filename;
   PetscBool   interpolate = user->interpolate;
   PetscInt    meshNum     = user->meshNum;
@@ -162,15 +167,21 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm) {
     PetscCall(DMViewFromOptions(*dm, NULL, "-dm_view"));
   } else {
     switch (meshNum) {
-    case 0: PetscCall(CreateHybridMesh(comm, interpolate, dm)); break;
-    case 1: PetscCall(CreateReverseHybridMesh(comm, interpolate, dm)); break;
-    default: SETERRQ(comm, PETSC_ERR_ARG_WRONG, "Unknown mesh number %" PetscInt_FMT, user->meshNum);
+    case 0:
+      PetscCall(CreateHybridMesh(comm, interpolate, dm));
+      break;
+    case 1:
+      PetscCall(CreateReverseHybridMesh(comm, interpolate, dm));
+      break;
+    default:
+      SETERRQ(comm, PETSC_ERR_ARG_WRONG, "Unknown mesh number %" PetscInt_FMT, user->meshNum);
     }
   }
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   DM     dm;
   AppCtx user;
 

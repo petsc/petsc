@@ -5,7 +5,8 @@ static char help[] = "Tests error message in DMCreateColoring() with periodic bo
 #include <petscdmda.h>
 #include <petscmat.h>
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   Mat           J;
   DM            da;
   MatFDColoring matfdcoloring = 0;

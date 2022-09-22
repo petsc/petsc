@@ -19,7 +19,8 @@
 
 .seealso: `PetscObjectSetName()`, `PetscObjectSAWsViewOff()`, `PetscObjectSAWsGrantAccess()`
 @*/
-PetscErrorCode PetscObjectSAWsTakeAccess(PetscObject obj) {
+PetscErrorCode PetscObjectSAWsTakeAccess(PetscObject obj)
+{
   if (obj->amsmem) {
     /* cannot wrap with PetscPushStack() because that also deals with the locks */
     SAWs_Lock();
@@ -40,7 +41,8 @@ PetscErrorCode PetscObjectSAWsTakeAccess(PetscObject obj) {
 
 .seealso: `PetscObjectSetName()`, `PetscObjectSAWsViewOff()`, `PetscObjectSAWsTakeAccess()`
 @*/
-PetscErrorCode PetscObjectSAWsGrantAccess(PetscObject obj) {
+PetscErrorCode PetscObjectSAWsGrantAccess(PetscObject obj)
+{
   if (obj->amsmem) {
     /* cannot wrap with PetscPushStack() because that also deals with the locks */
     SAWs_Unlock();
@@ -57,7 +59,8 @@ PetscErrorCode PetscObjectSAWsGrantAccess(PetscObject obj) {
 
 .seealso: `PetscObjectSetName()`, `PetscObjectSAWsViewOff()`, `PetscObjectSAWsSetBlock()`, `PetscObjectSAWsBlock()`
 @*/
-PetscErrorCode PetscSAWsBlock(void) {
+PetscErrorCode PetscSAWsBlock(void)
+{
   volatile PetscBool block = PETSC_TRUE;
 
   PetscFunctionBegin;
@@ -87,7 +90,8 @@ PetscErrorCode PetscSAWsBlock(void) {
 
 .seealso: `PetscObjectSetName()`, `PetscObjectSAWsViewOff()`, `PetscObjectSAWsSetBlock()`, `PetscSAWsBlock()`
 @*/
-PetscErrorCode PetscObjectSAWsBlock(PetscObject obj) {
+PetscErrorCode PetscObjectSAWsBlock(PetscObject obj)
+{
   PetscFunctionBegin;
   PetscValidHeader(obj, 1);
 
@@ -109,14 +113,16 @@ PetscErrorCode PetscObjectSAWsBlock(PetscObject obj) {
 
 .seealso: `PetscObjectSetName()`, `PetscObjectSAWsViewOff()`, `PetscObjectSAWsBlock()`, `PetscSAWsBlock()`
 @*/
-PetscErrorCode PetscObjectSAWsSetBlock(PetscObject obj, PetscBool flg) {
+PetscErrorCode PetscObjectSAWsSetBlock(PetscObject obj, PetscBool flg)
+{
   PetscFunctionBegin;
   PetscValidHeader(obj, 1);
   obj->amspublishblock = flg;
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscObjectSAWsViewOff(PetscObject obj) {
+PetscErrorCode PetscObjectSAWsViewOff(PetscObject obj)
+{
   char dir[PETSC_MAX_PATH_LEN];
 
   PetscFunctionBegin;

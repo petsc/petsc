@@ -6,7 +6,8 @@ static char help[] = "Solves the trivial ODE 2 du/dt = 1, u(0) = 0. \n\n";
 PetscErrorCode IFunction(TS, PetscReal, Vec, Vec, Vec, void *);
 PetscErrorCode IJacobian(TS, PetscReal, Vec, Vec, PetscReal, Mat, Mat, void *);
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   TS  ts;
   Vec x;
   Vec f;
@@ -61,7 +62,8 @@ int main(int argc, char **argv) {
   return 0;
 }
 
-PetscErrorCode IFunction(TS ts, PetscReal t, Vec x, Vec xdot, Vec f, void *ctx) {
+PetscErrorCode IFunction(TS ts, PetscReal t, Vec x, Vec xdot, Vec f, void *ctx)
+{
   PetscFunctionBeginUser;
   PetscCall(VecCopy(xdot, f));
   PetscCall(VecScale(f, 2.0));
@@ -69,7 +71,8 @@ PetscErrorCode IFunction(TS ts, PetscReal t, Vec x, Vec xdot, Vec f, void *ctx) 
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode IJacobian(TS ts, PetscReal t, Vec x, Vec xdot, PetscReal shift, Mat A, Mat B, void *ctx) {
+PetscErrorCode IJacobian(TS ts, PetscReal t, Vec x, Vec xdot, PetscReal shift, Mat A, Mat B, void *ctx)
+{
   PetscScalar j;
 
   PetscFunctionBeginUser;

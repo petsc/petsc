@@ -3,7 +3,8 @@ static char help[] = "Tests sequential and parallel MatGetRow() and MatRestoreRo
 
 #include <petscmat.h>
 
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   Mat                C;
   PetscInt           i, j, m = 5, n = 5, Ii, J, nz, rstart, rend;
   PetscMPIInt        rank;

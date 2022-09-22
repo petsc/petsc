@@ -34,7 +34,8 @@ typedef struct {
   TSStepStatus status;
 } TS_Alpha;
 
-static PetscErrorCode TSAlpha_StageTime(TS ts) {
+static PetscErrorCode TSAlpha_StageTime(TS ts)
+{
   TS_Alpha *th      = (TS_Alpha *)ts->data;
   PetscReal t       = ts->ptime;
   PetscReal dt      = ts->time_step;
@@ -49,7 +50,8 @@ static PetscErrorCode TSAlpha_StageTime(TS ts) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSAlpha_StageVecs(TS ts, Vec X) {
+static PetscErrorCode TSAlpha_StageVecs(TS ts, Vec X)
+{
   TS_Alpha *th = (TS_Alpha *)ts->data;
   Vec       X1 = X, V1 = th->V1;
   Vec       Xa = th->Xa, Va = th->Va;
@@ -72,7 +74,8 @@ static PetscErrorCode TSAlpha_StageVecs(TS ts, Vec X) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSAlpha_SNESSolve(TS ts, Vec b, Vec x) {
+static PetscErrorCode TSAlpha_SNESSolve(TS ts, Vec b, Vec x)
+{
   PetscInt nits, lits;
 
   PetscFunctionBegin;
@@ -90,7 +93,8 @@ static PetscErrorCode TSAlpha_SNESSolve(TS ts, Vec b, Vec x) {
   - Compute the initial time derivative using backward differences.
   - If using adaptivity, estimate the LTE of the initial step.
 */
-static PetscErrorCode TSAlpha_Restart(TS ts, PetscBool *initok) {
+static PetscErrorCode TSAlpha_Restart(TS ts, PetscBool *initok)
+{
   TS_Alpha *th = (TS_Alpha *)ts->data;
   PetscReal time_step;
   PetscReal alpha_m, alpha_f, gamma;
@@ -154,7 +158,8 @@ finally:
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSStep_Alpha(TS ts) {
+static PetscErrorCode TSStep_Alpha(TS ts)
+{
   TS_Alpha *th         = (TS_Alpha *)ts->data;
   PetscInt  rejections = 0;
   PetscBool stageok, accept = PETSC_TRUE;
@@ -209,7 +214,8 @@ static PetscErrorCode TSStep_Alpha(TS ts) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSEvaluateWLTE_Alpha(TS ts, NormType wnormtype, PetscInt *order, PetscReal *wlte) {
+static PetscErrorCode TSEvaluateWLTE_Alpha(TS ts, NormType wnormtype, PetscInt *order, PetscReal *wlte)
+{
   TS_Alpha *th = (TS_Alpha *)ts->data;
   Vec       X  = th->X1;           /* X = solution */
   Vec       Y  = th->vec_lte_work; /* Y = X + LTE  */
@@ -247,7 +253,8 @@ static PetscErrorCode TSEvaluateWLTE_Alpha(TS ts, NormType wnormtype, PetscInt *
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSRollBack_Alpha(TS ts) {
+static PetscErrorCode TSRollBack_Alpha(TS ts)
+{
   TS_Alpha *th = (TS_Alpha *)ts->data;
 
   PetscFunctionBegin;
@@ -255,7 +262,8 @@ static PetscErrorCode TSRollBack_Alpha(TS ts) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSInterpolate_Alpha(TS ts, PetscReal t, Vec X) {
+static PetscErrorCode TSInterpolate_Alpha(TS ts, PetscReal t, Vec X)
+{
   TS_Alpha *th = (TS_Alpha *)ts->data;
   PetscReal dt = t - ts->ptime;
 
@@ -266,7 +274,8 @@ static PetscErrorCode TSInterpolate_Alpha(TS ts, PetscReal t, Vec X) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode SNESTSFormFunction_Alpha(PETSC_UNUSED SNES snes, Vec X, Vec F, TS ts) {
+static PetscErrorCode SNESTSFormFunction_Alpha(PETSC_UNUSED SNES snes, Vec X, Vec F, TS ts)
+{
   TS_Alpha *th = (TS_Alpha *)ts->data;
   PetscReal ta = th->stage_time;
   Vec       Xa = th->Xa, Va = th->Va;
@@ -279,7 +288,8 @@ static PetscErrorCode SNESTSFormFunction_Alpha(PETSC_UNUSED SNES snes, Vec X, Ve
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode SNESTSFormJacobian_Alpha(PETSC_UNUSED SNES snes, PETSC_UNUSED Vec X, Mat J, Mat P, TS ts) {
+static PetscErrorCode SNESTSFormJacobian_Alpha(PETSC_UNUSED SNES snes, PETSC_UNUSED Vec X, Mat J, Mat P, TS ts)
+{
   TS_Alpha *th = (TS_Alpha *)ts->data;
   PetscReal ta = th->stage_time;
   Vec       Xa = th->Xa, Va = th->Va;
@@ -291,7 +301,8 @@ static PetscErrorCode SNESTSFormJacobian_Alpha(PETSC_UNUSED SNES snes, PETSC_UNU
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSReset_Alpha(TS ts) {
+static PetscErrorCode TSReset_Alpha(TS ts)
+{
   TS_Alpha *th = (TS_Alpha *)ts->data;
 
   PetscFunctionBegin;
@@ -306,7 +317,8 @@ static PetscErrorCode TSReset_Alpha(TS ts) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSDestroy_Alpha(TS ts) {
+static PetscErrorCode TSDestroy_Alpha(TS ts)
+{
   PetscFunctionBegin;
   PetscCall(TSReset_Alpha(ts));
   PetscCall(PetscFree(ts->data));
@@ -317,7 +329,8 @@ static PetscErrorCode TSDestroy_Alpha(TS ts) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSSetUp_Alpha(TS ts) {
+static PetscErrorCode TSSetUp_Alpha(TS ts)
+{
   TS_Alpha *th = (TS_Alpha *)ts->data;
   PetscBool match;
 
@@ -341,7 +354,8 @@ static PetscErrorCode TSSetUp_Alpha(TS ts) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSSetFromOptions_Alpha(TS ts, PetscOptionItems *PetscOptionsObject) {
+static PetscErrorCode TSSetFromOptions_Alpha(TS ts, PetscOptionItems *PetscOptionsObject)
+{
   TS_Alpha *th = (TS_Alpha *)ts->data;
 
   PetscFunctionBegin;
@@ -360,7 +374,8 @@ static PetscErrorCode TSSetFromOptions_Alpha(TS ts, PetscOptionItems *PetscOptio
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSView_Alpha(TS ts, PetscViewer viewer) {
+static PetscErrorCode TSView_Alpha(TS ts, PetscViewer viewer)
+{
   TS_Alpha *th = (TS_Alpha *)ts->data;
   PetscBool iascii;
 
@@ -370,7 +385,8 @@ static PetscErrorCode TSView_Alpha(TS ts, PetscViewer viewer) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSAlphaSetRadius_Alpha(TS ts, PetscReal radius) {
+static PetscErrorCode TSAlphaSetRadius_Alpha(TS ts, PetscReal radius)
+{
   PetscReal alpha_m, alpha_f, gamma;
 
   PetscFunctionBegin;
@@ -382,7 +398,8 @@ static PetscErrorCode TSAlphaSetRadius_Alpha(TS ts, PetscReal radius) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSAlphaSetParams_Alpha(TS ts, PetscReal alpha_m, PetscReal alpha_f, PetscReal gamma) {
+static PetscErrorCode TSAlphaSetParams_Alpha(TS ts, PetscReal alpha_m, PetscReal alpha_f, PetscReal gamma)
+{
   TS_Alpha *th  = (TS_Alpha *)ts->data;
   PetscReal tol = 100 * PETSC_MACHINE_EPSILON;
   PetscReal res = ((PetscReal)0.5 + alpha_m - alpha_f) - gamma;
@@ -395,7 +412,8 @@ static PetscErrorCode TSAlphaSetParams_Alpha(TS ts, PetscReal alpha_m, PetscReal
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSAlphaGetParams_Alpha(TS ts, PetscReal *alpha_m, PetscReal *alpha_f, PetscReal *gamma) {
+static PetscErrorCode TSAlphaGetParams_Alpha(TS ts, PetscReal *alpha_m, PetscReal *alpha_f, PetscReal *gamma)
+{
   TS_Alpha *th = (TS_Alpha *)ts->data;
 
   PetscFunctionBegin;
@@ -423,7 +441,8 @@ static PetscErrorCode TSAlphaGetParams_Alpha(TS ts, PetscReal *alpha_m, PetscRea
 
 .seealso: `TS`, `TSCreate()`, `TSSetType()`, `TSAlphaSetRadius()`, `TSAlphaSetParams()`
 M*/
-PETSC_EXTERN PetscErrorCode TSCreate_Alpha(TS ts) {
+PETSC_EXTERN PetscErrorCode TSCreate_Alpha(TS ts)
+{
   TS_Alpha *th;
 
   PetscFunctionBegin;
@@ -480,7 +499,8 @@ PETSC_EXTERN PetscErrorCode TSCreate_Alpha(TS ts) {
 
 .seealso: `TSAlphaSetParams()`, `TSAlphaGetParams()`
 @*/
-PetscErrorCode TSAlphaSetRadius(TS ts, PetscReal radius) {
+PetscErrorCode TSAlphaSetRadius(TS ts, PetscReal radius)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscValidLogicalCollectiveReal(ts, radius, 2);
@@ -525,7 +545,8 @@ PetscErrorCode TSAlphaSetRadius(TS ts, PetscReal radius) {
 
 .seealso: `TSAlphaSetRadius()`, `TSAlphaGetParams()`
 @*/
-PetscErrorCode TSAlphaSetParams(TS ts, PetscReal alpha_m, PetscReal alpha_f, PetscReal gamma) {
+PetscErrorCode TSAlphaSetParams(TS ts, PetscReal alpha_m, PetscReal alpha_f, PetscReal gamma)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscValidLogicalCollectiveReal(ts, alpha_m, 2);
@@ -559,7 +580,8 @@ PetscErrorCode TSAlphaSetParams(TS ts, PetscReal alpha_m, PetscReal alpha_f, Pet
 
 .seealso: `TSAlphaSetRadius()`, `TSAlphaSetParams()`
 @*/
-PetscErrorCode TSAlphaGetParams(TS ts, PetscReal *alpha_m, PetscReal *alpha_f, PetscReal *gamma) {
+PetscErrorCode TSAlphaGetParams(TS ts, PetscReal *alpha_m, PetscReal *alpha_f, PetscReal *gamma)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   if (alpha_m) PetscValidRealPointer(alpha_m, 2);

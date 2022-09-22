@@ -1,6 +1,7 @@
 #include <petsc/private/dmplextransformimpl.h> /*I "petscdmplextransform.h" I*/
 
-static PetscErrorCode DMPlexTransformSetUp_BL(DMPlexTransform tr) {
+static PetscErrorCode DMPlexTransformSetUp_BL(DMPlexTransform tr)
+{
   DMPlexRefine_BL *bl = (DMPlexRefine_BL *)tr->data;
   const PetscInt   n  = bl->n;
   DMPolytopeType   ct;
@@ -35,8 +36,11 @@ static PetscErrorCode DMPlexTransformSetUp_BL(DMPlexTransform tr) {
         case DM_POLYTOPE_POINT_PRISM_TENSOR:
         case DM_POLYTOPE_SEG_PRISM_TENSOR:
         case DM_POLYTOPE_TRI_PRISM_TENSOR:
-        case DM_POLYTOPE_QUAD_PRISM_TENSOR: PetscCall(DMLabelSetValue(tr->trType, point, 1)); break;
-        default: break;
+        case DM_POLYTOPE_QUAD_PRISM_TENSOR:
+          PetscCall(DMLabelSetValue(tr->trType, point, 1));
+          break;
+        default:
+          break;
         }
       }
       PetscCall(DMPlexRestoreTransitiveClosure(dm, cell, PETSC_TRUE, &Ncl, &closure));
@@ -80,13 +84,13 @@ static PetscErrorCode DMPlexTransformSetUp_BL(DMPlexTransform tr) {
   bl->size[ct][0]   = n;
   bl->size[ct][1]   = n + 1;
   /*   cones for tensor segments */
-  bl->cone[ct][0]   = DM_POLYTOPE_POINT;
-  bl->cone[ct][1]   = 1;
-  bl->cone[ct][2]   = 0;
-  bl->cone[ct][3]   = 0;
-  bl->cone[ct][4]   = DM_POLYTOPE_POINT;
-  bl->cone[ct][5]   = 0;
-  bl->cone[ct][6]   = 0;
+  bl->cone[ct][0] = DM_POLYTOPE_POINT;
+  bl->cone[ct][1] = 1;
+  bl->cone[ct][2] = 0;
+  bl->cone[ct][3] = 0;
+  bl->cone[ct][4] = DM_POLYTOPE_POINT;
+  bl->cone[ct][5] = 0;
+  bl->cone[ct][6] = 0;
   for (i = 0; i < n - 1; ++i) {
     bl->cone[ct][7 + 6 * i + 0] = DM_POLYTOPE_POINT;
     bl->cone[ct][7 + 6 * i + 1] = 0;
@@ -364,7 +368,8 @@ static PetscErrorCode DMPlexTransformSetUp_BL(DMPlexTransform tr) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMPlexTransformGetSubcellOrientation_BL(DMPlexTransform tr, DMPolytopeType sct, PetscInt sp, PetscInt so, DMPolytopeType tct, PetscInt r, PetscInt o, PetscInt *rnew, PetscInt *onew) {
+static PetscErrorCode DMPlexTransformGetSubcellOrientation_BL(DMPlexTransform tr, DMPolytopeType sct, PetscInt sp, PetscInt so, DMPolytopeType tct, PetscInt r, PetscInt o, PetscInt *rnew, PetscInt *onew)
+{
   DMPlexRefine_BL *bl              = (DMPlexRefine_BL *)tr->data;
   const PetscInt   n               = bl->n;
   PetscInt         tquad_tquad_o[] = {0, 1, -2, -1, 1, 0, -1, -2, -2, -1, 0, 1, -1, -2, 1, 0};
@@ -384,7 +389,9 @@ static PetscErrorCode DMPlexTransformGetSubcellOrientation_BL(DMPlexTransform tr
   switch (sct) {
   case DM_POLYTOPE_POINT_PRISM_TENSOR:
     switch (tct) {
-    case DM_POLYTOPE_POINT: *rnew = !so ? r : n - 1 - r; break;
+    case DM_POLYTOPE_POINT:
+      *rnew = !so ? r : n - 1 - r;
+      break;
     case DM_POLYTOPE_POINT_PRISM_TENSOR:
       if (!so) {
         *rnew = r;
@@ -393,7 +400,8 @@ static PetscErrorCode DMPlexTransformGetSubcellOrientation_BL(DMPlexTransform tr
         *rnew = n - r;
         *onew = -(o + 1);
       }
-    default: break;
+    default:
+      break;
     }
     break;
   case DM_POLYTOPE_SEG_PRISM_TENSOR:
@@ -406,15 +414,18 @@ static PetscErrorCode DMPlexTransformGetSubcellOrientation_BL(DMPlexTransform tr
       *onew = tquad_tquad_o[(so + 2) * 4 + o + 2];
       *rnew = (so == 0) || (so == -1) ? r : n - r;
       break;
-    default: break;
+    default:
+      break;
     }
     break;
-  default: PetscCall(DMPlexTransformGetSubcellOrientationIdentity(tr, sct, sp, so, tct, r, o, rnew, onew));
+  default:
+    PetscCall(DMPlexTransformGetSubcellOrientationIdentity(tr, sct, sp, so, tct, r, o, rnew, onew));
   }
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMPlexTransformCellTransform_BL(DMPlexTransform tr, DMPolytopeType source, PetscInt p, PetscInt *rt, PetscInt *Nt, DMPolytopeType *target[], PetscInt *size[], PetscInt *cone[], PetscInt *ornt[]) {
+static PetscErrorCode DMPlexTransformCellTransform_BL(DMPlexTransform tr, DMPolytopeType source, PetscInt p, PetscInt *rt, PetscInt *Nt, DMPolytopeType *target[], PetscInt *size[], PetscInt *cone[], PetscInt *ornt[])
+{
   DMPlexRefine_BL *bl = (DMPlexRefine_BL *)tr->data;
 
   PetscFunctionBeginHot;
@@ -441,7 +452,8 @@ static PetscErrorCode DMPlexTransformCellTransform_BL(DMPlexTransform tr, DMPoly
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMPlexTransformMapCoordinates_BL(DMPlexTransform tr, DMPolytopeType pct, DMPolytopeType ct, PetscInt p, PetscInt r, PetscInt Nv, PetscInt dE, const PetscScalar in[], PetscScalar out[]) {
+static PetscErrorCode DMPlexTransformMapCoordinates_BL(DMPlexTransform tr, DMPolytopeType pct, DMPolytopeType ct, PetscInt p, PetscInt r, PetscInt Nv, PetscInt dE, const PetscScalar in[], PetscScalar out[])
+{
   DMPlexRefine_BL *bl = (DMPlexRefine_BL *)tr->data;
   PetscInt         d;
 
@@ -453,12 +465,14 @@ static PetscErrorCode DMPlexTransformMapCoordinates_BL(DMPlexTransform tr, DMPol
     PetscCheck(r < bl->n && r >= 0, PETSC_COMM_SELF, PETSC_ERR_SUP, "Invalid replica %" PetscInt_FMT ", must be in [0, %" PetscInt_FMT ")", r, bl->n);
     for (d = 0; d < dE; ++d) out[d] = in[d] + bl->h[r] * (in[d + dE] - in[d]);
     break;
-  default: PetscCall(DMPlexTransformMapCoordinatesBarycenter_Internal(tr, pct, ct, p, r, Nv, dE, in, out));
+  default:
+    PetscCall(DMPlexTransformMapCoordinatesBarycenter_Internal(tr, pct, ct, p, r, Nv, dE, in, out));
   }
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMPlexTransformSetFromOptions_BL(DMPlexTransform tr, PetscOptionItems *PetscOptionsObject) {
+static PetscErrorCode DMPlexTransformSetFromOptions_BL(DMPlexTransform tr, PetscOptionItems *PetscOptionsObject)
+{
   DMPlexRefine_BL *bl = (DMPlexRefine_BL *)tr->data;
   PetscInt         cells[256], n = 256, i;
   PetscBool        flg;
@@ -480,7 +494,8 @@ static PetscErrorCode DMPlexTransformSetFromOptions_BL(DMPlexTransform tr, Petsc
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMPlexTransformView_BL(DMPlexTransform tr, PetscViewer viewer) {
+static PetscErrorCode DMPlexTransformView_BL(DMPlexTransform tr, PetscViewer viewer)
+{
   PetscBool isascii;
 
   PetscFunctionBegin;
@@ -501,7 +516,8 @@ static PetscErrorCode DMPlexTransformView_BL(DMPlexTransform tr, PetscViewer vie
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMPlexTransformDestroy_BL(DMPlexTransform tr) {
+static PetscErrorCode DMPlexTransformDestroy_BL(DMPlexTransform tr)
+{
   DMPlexRefine_BL *bl = (DMPlexRefine_BL *)tr->data;
   PetscInt         ict;
 
@@ -513,7 +529,8 @@ static PetscErrorCode DMPlexTransformDestroy_BL(DMPlexTransform tr) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMPlexTransformInitialize_BL(DMPlexTransform tr) {
+static PetscErrorCode DMPlexTransformInitialize_BL(DMPlexTransform tr)
+{
   PetscFunctionBegin;
   tr->ops->view                  = DMPlexTransformView_BL;
   tr->ops->setfromoptions        = DMPlexTransformSetFromOptions_BL;
@@ -525,7 +542,8 @@ static PetscErrorCode DMPlexTransformInitialize_BL(DMPlexTransform tr) {
   PetscFunctionReturn(0);
 }
 
-PETSC_EXTERN PetscErrorCode DMPlexTransformCreate_BL(DMPlexTransform tr) {
+PETSC_EXTERN PetscErrorCode DMPlexTransformCreate_BL(DMPlexTransform tr)
+{
   DMPlexRefine_BL *bl;
 
   PetscFunctionBegin;

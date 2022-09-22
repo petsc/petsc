@@ -4,7 +4,8 @@ static char help[] = "Test the Fischer-3 initial guess routine.\n\n";
 
 #define SIZE 3
 
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   PetscInt i;
   {
     Mat         A;

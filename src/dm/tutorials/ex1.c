@@ -33,7 +33,8 @@ Use the options
 #include <petscdm.h>
 #include <petscdmda.h>
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscMPIInt     rank;
   PetscInt        M = 10, N = 8;
   PetscBool       flg = PETSC_FALSE;

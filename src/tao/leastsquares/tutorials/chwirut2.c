@@ -46,7 +46,8 @@ PetscErrorCode StopWorkers(AppCtx *user);
 PetscErrorCode RunSimulation(PetscReal *x, PetscInt i, PetscReal *f, AppCtx *user);
 
 /*--------------------------------------------------------------------*/
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   Vec    x, f; /* solution, function */
   Tao    tao;  /* Tao solver context */
   AppCtx user; /* user-defined work context */
@@ -96,7 +97,8 @@ int main(int argc, char **argv) {
 }
 
 /*--------------------------------------------------------------------*/
-PetscErrorCode EvaluateFunction(Tao tao, Vec X, Vec F, void *ptr) {
+PetscErrorCode EvaluateFunction(Tao tao, Vec X, Vec F, void *ptr)
+{
   AppCtx    *user = (AppCtx *)ptr;
   PetscInt   i;
   PetscReal *x, *f;
@@ -145,7 +147,8 @@ PetscErrorCode EvaluateFunction(Tao tao, Vec X, Vec F, void *ptr) {
 }
 
 /* ------------------------------------------------------------ */
-PetscErrorCode FormStartingPoint(Vec X) {
+PetscErrorCode FormStartingPoint(Vec X)
+{
   PetscReal *x;
 
   PetscFunctionBegin;
@@ -158,7 +161,8 @@ PetscErrorCode FormStartingPoint(Vec X) {
 }
 
 /* ---------------------------------------------------------------------- */
-PetscErrorCode InitializeData(AppCtx *user) {
+PetscErrorCode InitializeData(AppCtx *user)
+{
   PetscReal *t = user->t, *y = user->y;
   PetscInt   i = 0;
 
@@ -594,7 +598,8 @@ PetscErrorCode InitializeData(AppCtx *user) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode TaskWorker(AppCtx *user) {
+PetscErrorCode TaskWorker(AppCtx *user)
+{
   PetscReal   x[NPARAMETERS], f = 0.0;
   PetscMPIInt tag = IDLE_TAG;
   PetscInt    index;
@@ -618,7 +623,8 @@ PetscErrorCode TaskWorker(AppCtx *user) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode RunSimulation(PetscReal *x, PetscInt i, PetscReal *f, AppCtx *user) {
+PetscErrorCode RunSimulation(PetscReal *x, PetscInt i, PetscReal *f, AppCtx *user)
+{
   PetscReal *t = user->t;
   PetscReal *y = user->y;
 #if defined(PETSC_USE_REAL_SINGLE)
@@ -629,7 +635,8 @@ PetscErrorCode RunSimulation(PetscReal *x, PetscInt i, PetscReal *f, AppCtx *use
   return (0);
 }
 
-PetscErrorCode StopWorkers(AppCtx *user) {
+PetscErrorCode StopWorkers(AppCtx *user)
+{
   PetscInt   checkedin;
   MPI_Status status;
   PetscReal  f, x[NPARAMETERS];

@@ -2,7 +2,8 @@ static const char help[] = "Tests creation and destruction of PetscDevice.\n\n";
 
 #include "petscdevicetestcommon.h"
 
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[])
+{
   const PetscInt n      = 10;
   PetscDevice    device = NULL;
   PetscDevice    devices[n];

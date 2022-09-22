@@ -13,7 +13,8 @@ static PetscBool KSPMatRegisterAllCalled = PETSC_FALSE;
 
 .seealso: `MatRegisterAll()`, `KSPInitializePackage()`
 @*/
-PetscErrorCode KSPMatRegisterAll(void) {
+PetscErrorCode KSPMatRegisterAll(void)
+{
   PetscFunctionBegin;
   if (KSPMatRegisterAllCalled) PetscFunctionReturn(0);
   KSPMatRegisterAllCalled = PETSC_TRUE;

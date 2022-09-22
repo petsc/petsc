@@ -6,13 +6,15 @@
 #include <petsc/private/dmdaimpl.h> /*I   "petscdmda.h"   I*/
 #include <petscdmfield.h>
 
-PetscErrorCode DMCreateCoordinateDM_DA(DM dm, DM *cdm) {
+PetscErrorCode DMCreateCoordinateDM_DA(DM dm, DM *cdm)
+{
   PetscFunctionBegin;
   PetscCall(DMDACreateCompatibleDMDA(dm, dm->dim, cdm));
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMCreateCoordinateField_DA(DM dm, DMField *field) {
+PetscErrorCode DMCreateCoordinateField_DA(DM dm, DMField *field)
+{
   PetscReal   gmin[3], gmax[3];
   PetscScalar corners[24];
   PetscInt    dim;
@@ -51,7 +53,8 @@ PetscErrorCode DMCreateCoordinateField_DA(DM dm, DMField *field) {
 
 .seealso: `DMDAGetFieldName()`, `DMDASetCoordinateName()`, `DMDAGetCoordinateName()`, `DMDASetFieldNames()`, `DMSetUp()`
 @*/
-PetscErrorCode DMDASetFieldName(DM da, PetscInt nf, const char name[]) {
+PetscErrorCode DMDASetFieldName(DM da, PetscInt nf, const char name[])
+{
   DM_DA *dd = (DM_DA *)da->data;
 
   PetscFunctionBegin;
@@ -80,7 +83,8 @@ PetscErrorCode DMDASetFieldName(DM da, PetscInt nf, const char name[]) {
 
 .seealso: `DMDAGetFieldName()`, `DMDASetCoordinateName()`, `DMDAGetCoordinateName()`, `DMDASetFieldName()`, `DMDASetFieldNames()`
 @*/
-PetscErrorCode DMDAGetFieldNames(DM da, const char *const **names) {
+PetscErrorCode DMDAGetFieldNames(DM da, const char *const **names)
+{
   DM_DA *dd = (DM_DA *)da->data;
 
   PetscFunctionBegin;
@@ -106,7 +110,8 @@ PetscErrorCode DMDAGetFieldNames(DM da, const char *const **names) {
 
 .seealso: `DMDAGetFieldName()`, `DMDASetCoordinateName()`, `DMDAGetCoordinateName()`, `DMDASetFieldName()`, `DMSetUp()`
 @*/
-PetscErrorCode DMDASetFieldNames(DM da, const char *const *names) {
+PetscErrorCode DMDASetFieldNames(DM da, const char *const *names)
+{
   DM_DA   *dd = (DM_DA *)da->data;
   char   **fieldname;
   PetscInt nf = 0;
@@ -142,7 +147,8 @@ PetscErrorCode DMDASetFieldNames(DM da, const char *const *names) {
 
 .seealso: `DMDASetFieldName()`, `DMDASetCoordinateName()`, `DMDAGetCoordinateName()`, `DMSetUp()`
 @*/
-PetscErrorCode DMDAGetFieldName(DM da, PetscInt nf, const char **name) {
+PetscErrorCode DMDAGetFieldName(DM da, PetscInt nf, const char **name)
+{
   DM_DA *dd = (DM_DA *)da->data;
 
   PetscFunctionBegin;
@@ -173,7 +179,8 @@ PetscErrorCode DMDAGetFieldName(DM da, PetscInt nf, const char **name) {
 
 .seealso: `DMDAGetCoordinateName()`, `DMDASetFieldName()`, `DMDAGetFieldName()`, `DMSetUp()`
 @*/
-PetscErrorCode DMDASetCoordinateName(DM dm, PetscInt nf, const char name[]) {
+PetscErrorCode DMDASetCoordinateName(DM dm, PetscInt nf, const char name[])
+{
   DM_DA *dd = (DM_DA *)dm->data;
 
   PetscFunctionBegin;
@@ -206,7 +213,8 @@ PetscErrorCode DMDASetCoordinateName(DM dm, PetscInt nf, const char name[]) {
 
 .seealso: `DMDASetCoordinateName()`, `DMDASetFieldName()`, `DMDAGetFieldName()`, `DMSetUp()`
 @*/
-PetscErrorCode DMDAGetCoordinateName(DM dm, PetscInt nf, const char **name) {
+PetscErrorCode DMDAGetCoordinateName(DM dm, PetscInt nf, const char **name)
+{
   DM_DA *dd = (DM_DA *)dm->data;
 
   PetscFunctionBegin;
@@ -246,7 +254,8 @@ PetscErrorCode DMDAGetCoordinateName(DM dm, PetscInt nf, const char **name) {
 
 .seealso: `DMDAGetGhostCorners()`, `DMDAGetOwnershipRanges()`, `DMStagGetCorners()`
 @*/
-PetscErrorCode DMDAGetCorners(DM da, PetscInt *x, PetscInt *y, PetscInt *z, PetscInt *m, PetscInt *n, PetscInt *p) {
+PetscErrorCode DMDAGetCorners(DM da, PetscInt *x, PetscInt *y, PetscInt *z, PetscInt *m, PetscInt *n, PetscInt *p)
+{
   PetscInt w;
   DM_DA   *dd = (DM_DA *)da->data;
 
@@ -265,7 +274,8 @@ PetscErrorCode DMDAGetCorners(DM da, PetscInt *x, PetscInt *y, PetscInt *z, Pets
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMGetLocalBoundingIndices_DMDA(DM dm, PetscReal lmin[], PetscReal lmax[]) {
+PetscErrorCode DMGetLocalBoundingIndices_DMDA(DM dm, PetscReal lmin[], PetscReal lmax[])
+{
   DMDALocalInfo info;
 
   PetscFunctionBegin;
@@ -284,7 +294,8 @@ PetscErrorCode DMGetLocalBoundingIndices_DMDA(DM dm, PetscReal lmin[], PetscReal
 
    Level: deprecated
 @*/
-PetscErrorCode DMDAGetReducedDMDA(DM da, PetscInt nfields, DM *nda) {
+PetscErrorCode DMDAGetReducedDMDA(DM da, PetscInt nfields, DM *nda)
+{
   PetscFunctionBegin;
   PetscCall(DMDACreateCompatibleDMDA(da, nfields, nda));
   PetscFunctionReturn(0);
@@ -306,7 +317,8 @@ PetscErrorCode DMDAGetReducedDMDA(DM da, PetscInt nfields, DM *nda) {
 
 .seealso: `DMDAGetGhostCorners()`, `DMSetCoordinates()`, `DMDASetUniformCoordinates()`, `DMGetCoordinates()`, `DMDAGetGhostedCoordinates()`, `DMStagCreateCompatibleDMStag()`
 @*/
-PetscErrorCode DMDACreateCompatibleDMDA(DM da, PetscInt nfields, DM *nda) {
+PetscErrorCode DMDACreateCompatibleDMDA(DM da, PetscInt nfields, DM *nda)
+{
   DM_DA          *dd = (DM_DA *)da->data;
   PetscInt        s, m, n, p, M, N, P, dim, Mo, No, Po;
   const PetscInt *lx, *ly, *lz;
@@ -373,7 +385,8 @@ PetscErrorCode DMDACreateCompatibleDMDA(DM da, PetscInt nfields, DM *nda) {
 
 .seealso: `DMDASetCoordinateName()`, `DMDASetFieldName()`, `DMDAGetFieldName()`, `DMDARestoreCoordinateArray()`
 @*/
-PetscErrorCode DMDAGetCoordinateArray(DM dm, void *xc) {
+PetscErrorCode DMDAGetCoordinateArray(DM dm, void *xc)
+{
   DM  cdm;
   Vec x;
 
@@ -400,7 +413,8 @@ PetscErrorCode DMDAGetCoordinateArray(DM dm, void *xc) {
 
 .seealso: `DMDASetCoordinateName()`, `DMDASetFieldName()`, `DMDAGetFieldName()`, `DMDAGetCoordinateArray()`
 @*/
-PetscErrorCode DMDARestoreCoordinateArray(DM dm, void *xc) {
+PetscErrorCode DMDARestoreCoordinateArray(DM dm, void *xc)
+{
   DM  cdm;
   Vec x;
 

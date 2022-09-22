@@ -2,7 +2,8 @@ static char help[] = "Example of using graph partitioning to partition a graph\n
 
 #include <petscmat.h>
 
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   Mat             A;
   MatPartitioning part;
   IS              is;

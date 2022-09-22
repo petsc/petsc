@@ -16,7 +16,8 @@
 
 .seealso: `DMPlexCreateFromFile()`, `DMPlexCreateFluent()`, `DMPlexCreate()`
 @*/
-PetscErrorCode DMPlexCreateFluentFromFile(MPI_Comm comm, const char filename[], PetscBool interpolate, DM *dm) {
+PetscErrorCode DMPlexCreateFluentFromFile(MPI_Comm comm, const char filename[], PetscBool interpolate, DM *dm)
+{
   PetscViewer viewer;
 
   PetscFunctionBegin;
@@ -30,7 +31,8 @@ PetscErrorCode DMPlexCreateFluentFromFile(MPI_Comm comm, const char filename[], 
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMPlexCreateFluent_ReadString(PetscViewer viewer, char *buffer, char delim) {
+static PetscErrorCode DMPlexCreateFluent_ReadString(PetscViewer viewer, char *buffer, char delim)
+{
   PetscInt ret, i = 0;
 
   PetscFunctionBegin;
@@ -41,7 +43,8 @@ static PetscErrorCode DMPlexCreateFluent_ReadString(PetscViewer viewer, char *bu
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMPlexCreateFluent_ReadValues(PetscViewer viewer, void *data, PetscInt count, PetscDataType dtype, PetscBool binary) {
+static PetscErrorCode DMPlexCreateFluent_ReadValues(PetscViewer viewer, void *data, PetscInt count, PetscDataType dtype, PetscBool binary)
+{
   int      fdes = 0;
   FILE    *file;
   PetscInt i;
@@ -88,7 +91,8 @@ static PetscErrorCode DMPlexCreateFluent_ReadValues(PetscViewer viewer, void *da
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMPlexCreateFluent_ReadSection(PetscViewer viewer, FluentSection *s) {
+static PetscErrorCode DMPlexCreateFluent_ReadSection(PetscViewer viewer, FluentSection *s)
+{
   char buffer[PETSC_MAX_PATH_LEN];
   int  snum;
 
@@ -159,11 +163,20 @@ static PetscErrorCode DMPlexCreateFluent_ReadSection(PetscViewer viewer, FluentS
       PetscCheck(snum == 5, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "File is not a valid Fluent file");
       PetscCall(DMPlexCreateFluent_ReadString(viewer, buffer, '('));
       switch (s->nd) {
-      case 0: numEntries = PETSC_DETERMINE; break;
-      case 2: numEntries = 2 + 2; break; /* linear */
-      case 3: numEntries = 2 + 3; break; /* triangular */
-      case 4: numEntries = 2 + 4; break; /* quadrilateral */
-      default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unknown face type in Fluent file");
+      case 0:
+        numEntries = PETSC_DETERMINE;
+        break;
+      case 2:
+        numEntries = 2 + 2;
+        break; /* linear */
+      case 3:
+        numEntries = 2 + 3;
+        break; /* triangular */
+      case 4:
+        numEntries = 2 + 4;
+        break; /* quadrilateral */
+      default:
+        SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unknown face type in Fluent file");
       }
       numFaces = s->last - s->first + 1;
       if (numEntries != PETSC_DETERMINE) {
@@ -222,7 +235,8 @@ static PetscErrorCode DMPlexCreateFluent_ReadSection(PetscViewer viewer, FluentS
 
 .seealso: `DMPLEX`, `DMCreate()`
 @*/
-PetscErrorCode DMPlexCreateFluent(MPI_Comm comm, PetscViewer viewer, PetscBool interpolate, DM *dm) {
+PetscErrorCode DMPlexCreateFluent(MPI_Comm comm, PetscViewer viewer, PetscBool interpolate, DM *dm)
+{
   PetscMPIInt  rank;
   PetscInt     c, v, dim = PETSC_DETERMINE, numCells = 0, numVertices = 0, numCellVertices = PETSC_DETERMINE;
   PetscInt     numFaces = PETSC_DETERMINE, f, numFaceEntries = PETSC_DETERMINE, numFaceVertices = PETSC_DETERMINE;
@@ -254,14 +268,29 @@ PetscErrorCode DMPlexCreateFluent(MPI_Comm comm, PetscViewer viewer, PetscBool i
         if (s.zoneID == 0) numCells = s.last;
         else {
           switch (s.nd) {
-          case 0: numCellVertices = PETSC_DETERMINE; break;
-          case 1: numCellVertices = 3; break; /* triangular */
-          case 2: numCellVertices = 4; break; /* tetrahedral */
-          case 3: numCellVertices = 4; break; /* quadrilateral */
-          case 4: numCellVertices = 8; break; /* hexahedral */
-          case 5: numCellVertices = 5; break; /* pyramid */
-          case 6: numCellVertices = 6; break; /* wedge */
-          default: numCellVertices = PETSC_DETERMINE;
+          case 0:
+            numCellVertices = PETSC_DETERMINE;
+            break;
+          case 1:
+            numCellVertices = 3;
+            break; /* triangular */
+          case 2:
+            numCellVertices = 4;
+            break; /* tetrahedral */
+          case 3:
+            numCellVertices = 4;
+            break; /* quadrilateral */
+          case 4:
+            numCellVertices = 8;
+            break; /* hexahedral */
+          case 5:
+            numCellVertices = 5;
+            break; /* pyramid */
+          case 6:
+            numCellVertices = 6;
+            break; /* wedge */
+          default:
+            numCellVertices = PETSC_DETERMINE;
           }
         }
 

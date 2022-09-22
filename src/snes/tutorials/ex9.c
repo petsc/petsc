@@ -33,7 +33,8 @@ Example usage:
 #include <petsc.h>
 
 /* z = psi(x,y) is the hemispherical obstacle, but made C^1 with "skirt" at r=r0 */
-PetscReal psi(PetscReal x, PetscReal y) {
+PetscReal psi(PetscReal x, PetscReal y)
+{
   const PetscReal r = x * x + y * y, r0 = 0.9, psi0 = PetscSqrtReal(1.0 - r0 * r0), dpsi0 = -r0 / psi0;
   if (r <= r0) {
     return PetscSqrtReal(1.0 - r);
@@ -53,7 +54,8 @@ can then be reduced to a root-finding problem for a:
     a^2 (log(2) - log(a)) = 1 - a^2
 The solution is a = 0.697965148223374 (giving residual 1.5e-15).  Then
 A = a^2*(1-a^2)^(-0.5) and B = A*log(2) are as given below in the code.  */
-PetscReal u_exact(PetscReal x, PetscReal y) {
+PetscReal u_exact(PetscReal x, PetscReal y)
+{
   const PetscReal afree = 0.697965148223374, A = 0.680259411891719, B = 0.471519893402112;
   PetscReal       r;
   r = PetscSqrtReal(x * x + y * y);
@@ -66,7 +68,8 @@ extern PetscErrorCode FormBounds(SNES, Vec, Vec);
 extern PetscErrorCode FormFunctionLocal(DMDALocalInfo *, PetscReal **, PetscReal **, void *);
 extern PetscErrorCode FormJacobianLocal(DMDALocalInfo *, PetscReal **, Mat, Mat, void *);
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   SNES          snes;
   DM            da, da_after;
   Vec           u, u_exact;
@@ -116,7 +119,8 @@ int main(int argc, char **argv) {
   return 0;
 }
 
-PetscErrorCode FormExactSolution(DMDALocalInfo *info, Vec u) {
+PetscErrorCode FormExactSolution(DMDALocalInfo *info, Vec u)
+{
   PetscInt    i, j;
   PetscReal **au, dx, dy, x, y;
   dx = 4.0 / (PetscReal)(info->mx - 1);
@@ -133,7 +137,8 @@ PetscErrorCode FormExactSolution(DMDALocalInfo *info, Vec u) {
   return 0;
 }
 
-PetscErrorCode FormBounds(SNES snes, Vec Xl, Vec Xu) {
+PetscErrorCode FormBounds(SNES snes, Vec Xl, Vec Xu)
+{
   DM            da;
   DMDALocalInfo info;
   PetscInt      i, j;
@@ -156,7 +161,8 @@ PetscErrorCode FormBounds(SNES snes, Vec Xl, Vec Xu) {
   return 0;
 }
 
-PetscErrorCode FormFunctionLocal(DMDALocalInfo *info, PetscScalar **au, PetscScalar **af, void *user) {
+PetscErrorCode FormFunctionLocal(DMDALocalInfo *info, PetscScalar **au, PetscScalar **af, void *user)
+{
   PetscInt  i, j;
   PetscReal dx, dy, x, y, ue, un, us, uw;
 
@@ -182,7 +188,8 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info, PetscScalar **au, PetscSca
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode FormJacobianLocal(DMDALocalInfo *info, PetscScalar **au, Mat A, Mat jac, void *user) {
+PetscErrorCode FormJacobianLocal(DMDALocalInfo *info, PetscScalar **au, Mat A, Mat jac, void *user)
+{
   PetscInt   i, j, n;
   MatStencil col[5], row;
   PetscReal  v[5], dx, dy, oxx, oyy;

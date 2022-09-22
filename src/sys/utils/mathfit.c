@@ -17,7 +17,8 @@
 
 .seealso: `PetscConvEstGetConvRate()`
 @*/
-PetscErrorCode PetscLinearRegression(PetscInt n, const PetscReal x[], const PetscReal y[], PetscReal *slope, PetscReal *intercept) {
+PetscErrorCode PetscLinearRegression(PetscInt n, const PetscReal x[], const PetscReal y[], PetscReal *slope, PetscReal *intercept)
+{
   PetscScalar H[4];
   PetscReal  *X, *Y, beta[2];
 

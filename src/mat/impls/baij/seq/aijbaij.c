@@ -1,7 +1,8 @@
 
 #include <../src/mat/impls/baij/seq/baij.h>
 
-PETSC_INTERN PetscErrorCode MatConvert_SeqBAIJ_SeqAIJ(Mat A, MatType newtype, MatReuse reuse, Mat *newmat) {
+PETSC_INTERN PetscErrorCode MatConvert_SeqBAIJ_SeqAIJ(Mat A, MatType newtype, MatReuse reuse, Mat *newmat)
+{
   Mat          B;
   Mat_SeqAIJ  *b;
   PetscBool    roworiented;
@@ -57,7 +58,8 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqBAIJ_SeqAIJ(Mat A, MatType newtype, Ma
 
 #include <../src/mat/impls/aij/seq/aij.h>
 
-PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqBAIJ(Mat A, MatType newtype, MatReuse reuse, Mat *newmat) {
+PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqBAIJ(Mat A, MatType newtype, MatReuse reuse, Mat *newmat)
+{
   Mat          B;
   Mat_SeqAIJ  *a = (Mat_SeqAIJ *)A->data;
   Mat_SeqBAIJ *b;

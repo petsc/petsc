@@ -20,7 +20,8 @@ static const int GLIDER[3][3] = {
   {1, 0, 1}
 };
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   DM          da;
   PetscViewer viewer;
   Vec         Xlocal, Xglobal;
@@ -108,7 +109,8 @@ int main(int argc, char **argv) {
             case 3:
               y[j][i] = 1; /* Survive */
               break;
-            default: y[j][i] = 0; /* Death */
+            default:
+              y[j][i] = 0; /* Death */
             }
           } else {                                /* Dead cell */
             if (live_neighbors == 3) y[j][i] = 1; /* Birth */

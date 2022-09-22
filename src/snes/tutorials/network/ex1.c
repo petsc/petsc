@@ -16,7 +16,8 @@ typedef struct {
   Vec           localXold;  /* store previous solution, used by FormFunction_Dummy() */
 } UserCtx;
 
-PetscErrorCode UserMonitor(SNES snes, PetscInt its, PetscReal fnorm, void *appctx) {
+PetscErrorCode UserMonitor(SNES snes, PetscInt its, PetscReal fnorm, void *appctx)
+{
   UserCtx    *user = (UserCtx *)appctx;
   Vec         X, localXold = user->localXold;
   DM          networkdm;
@@ -43,7 +44,8 @@ PetscErrorCode UserMonitor(SNES snes, PetscInt its, PetscReal fnorm, void *appct
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode FormJacobian_subPower(SNES snes, Vec X, Mat J, Mat Jpre, void *appctx) {
+PetscErrorCode FormJacobian_subPower(SNES snes, Vec X, Mat J, Mat Jpre, void *appctx)
+{
   DM              networkdm;
   Vec             localX;
   PetscInt        nv, ne, i, j, offset, nvar, row;
@@ -90,7 +92,8 @@ PetscErrorCode FormJacobian_subPower(SNES snes, Vec X, Mat J, Mat Jpre, void *ap
 }
 
 /* Dummy equation localF(X) = localX - localXold */
-PetscErrorCode FormFunction_Dummy(DM networkdm, Vec localX, Vec localF, PetscInt nv, PetscInt ne, const PetscInt *vtx, const PetscInt *edges, void *appctx) {
+PetscErrorCode FormFunction_Dummy(DM networkdm, Vec localX, Vec localF, PetscInt nv, PetscInt ne, const PetscInt *vtx, const PetscInt *edges, void *appctx)
+{
   const PetscScalar *xarr, *xoldarr;
   PetscScalar       *farr;
   PetscInt           i, j, offset, nvar;
@@ -118,7 +121,8 @@ PetscErrorCode FormFunction_Dummy(DM networkdm, Vec localX, Vec localF, PetscInt
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode FormFunction(SNES snes, Vec X, Vec F, void *appctx) {
+PetscErrorCode FormFunction(SNES snes, Vec X, Vec F, void *appctx)
+{
   DM              networkdm;
   Vec             localX, localF;
   PetscInt        nv, ne, v;
@@ -175,10 +179,17 @@ PetscErrorCode FormFunction(SNES snes, Vec X, Vec F, void *appctx) {
 
       /* Verify the coupling vertex is a powernet load vertex or a water vertex */
       switch (k) {
-      case 0: PetscCheck(key == appctx_power.compkey_bus && nvar == 2, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "key %" PetscInt_FMT " not a power bus vertex or nvar %" PetscInt_FMT " != 2", key, nvar); break;
-      case 1: PetscCheck(key == appctx_power.compkey_load && nvar == 0 && goffset[1] == goffset[0] + 2, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Not a power load vertex"); break;
-      case 2: PetscCheck(key == appctx_water.compkey_vtx && nvar == 1 && goffset[2] == goffset[1], PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Not a water vertex"); break;
-      default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "k %" PetscInt_FMT " is wrong", k);
+      case 0:
+        PetscCheck(key == appctx_power.compkey_bus && nvar == 2, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "key %" PetscInt_FMT " not a power bus vertex or nvar %" PetscInt_FMT " != 2", key, nvar);
+        break;
+      case 1:
+        PetscCheck(key == appctx_power.compkey_load && nvar == 0 && goffset[1] == goffset[0] + 2, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Not a power load vertex");
+        break;
+      case 2:
+        PetscCheck(key == appctx_water.compkey_vtx && nvar == 1 && goffset[2] == goffset[1], PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Not a water vertex");
+        break;
+      default:
+        SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "k %" PetscInt_FMT " is wrong", k);
       }
       /* printf("  [%d] coupling vertex[%" PetscInt_FMT "]: key %" PetscInt_FMT "; nvar %" PetscInt_FMT ", goffset %" PetscInt_FMT "\n",rank,v,key,nvar,goffset[k]); */
     }
@@ -207,7 +218,8 @@ PetscErrorCode FormFunction(SNES snes, Vec X, Vec F, void *appctx) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode SetInitialGuess(DM networkdm, Vec X, void *appctx) {
+PetscErrorCode SetInitialGuess(DM networkdm, Vec X, void *appctx)
+{
   PetscInt        nv, ne, i, j, ncomp, offset, key;
   const PetscInt *vtx, *edges;
   UserCtx        *user         = (UserCtx *)appctx;
@@ -271,7 +283,8 @@ PetscErrorCode SetInitialGuess(DM networkdm, Vec X, void *appctx) {
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   DM                  networkdm;
   PetscLogStage       stage[4];
   PetscMPIInt         rank, size;

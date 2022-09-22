@@ -5,13 +5,17 @@
 // DON'T have access to. Ones defined in PETSc-defined enum classes don't seem to have to
 // need this declaration...
 
-namespace Petsc {
+namespace Petsc
+{
 
-namespace device {
+namespace device
+{
 
-namespace cupm {
+namespace cupm
+{
 
-namespace impl {
+namespace impl
+{
 
 #define PETSC_CUPM_STATIC_VARIABLE_DEFN(theirs, DEVICE, ours) const decltype(theirs) InterfaceImpl<DeviceType::DEVICE>::ours
 

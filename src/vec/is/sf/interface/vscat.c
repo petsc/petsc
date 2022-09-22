@@ -13,7 +13,8 @@ typedef enum {
   IS_STRIDE
 } ISTypeID;
 
-static inline PetscErrorCode ISGetTypeID_Private(IS is, ISTypeID *id) {
+static inline PetscErrorCode ISGetTypeID_Private(IS is, ISTypeID *id)
+{
   PetscBool same;
 
   PetscFunctionBegin;
@@ -37,7 +38,8 @@ functionend:
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode VecScatterBegin_Internal(VecScatter sf, Vec x, Vec y, InsertMode addv, ScatterMode mode) {
+static PetscErrorCode VecScatterBegin_Internal(VecScatter sf, Vec x, Vec y, InsertMode addv, ScatterMode mode)
+{
   PetscSF      wsf = NULL; /* either sf or its local part */
   MPI_Op       mop = MPI_OP_NULL;
   PetscMPIInt  size;
@@ -73,7 +75,8 @@ static PetscErrorCode VecScatterBegin_Internal(VecScatter sf, Vec x, Vec y, Inse
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode VecScatterEnd_Internal(VecScatter sf, Vec x, Vec y, InsertMode addv, ScatterMode mode) {
+static PetscErrorCode VecScatterEnd_Internal(VecScatter sf, Vec x, Vec y, InsertMode addv, ScatterMode mode)
+{
   PetscSF     wsf = NULL;
   MPI_Op      mop = MPI_OP_NULL;
   PetscMPIInt size;
@@ -106,7 +109,8 @@ static PetscErrorCode VecScatterEnd_Internal(VecScatter sf, Vec x, Vec y, Insert
    x[i] to y[j], tomap gives a plan to change vscat to scatter x[tomap[i]] to y[j]. Note that in SF,
    x is roots. That means we need to change incoming stuffs such as bas->irootloc[].
  */
-static PetscErrorCode VecScatterRemap_Internal(VecScatter sf, const PetscInt *tomap, const PetscInt *frommap) {
+static PetscErrorCode VecScatterRemap_Internal(VecScatter sf, const PetscInt *tomap, const PetscInt *frommap)
+{
   PetscInt       i, bs = sf->vscat.bs;
   PetscMPIInt    size;
   PetscBool      ident = PETSC_TRUE, isbasic, isneighbor;
@@ -188,7 +192,8 @@ static PetscErrorCode VecScatterRemap_Internal(VecScatter sf, const PetscInt *to
   Sometimes PETSc internally needs to use the matrix-vector-multiply vecscatter context for other purposes. The client code
   usually only uses MPI_Send/Recv. This group of subroutines provides info needed for such uses.
  */
-PetscErrorCode VecScatterGetRemoteCount_Private(VecScatter sf, PetscBool send, PetscInt *num_procs, PetscInt *num_entries) {
+PetscErrorCode VecScatterGetRemoteCount_Private(VecScatter sf, PetscBool send, PetscInt *num_procs, PetscInt *num_entries)
+{
   PetscInt           nranks, remote_start;
   PetscMPIInt        rank;
   const PetscInt    *offset;
@@ -235,7 +240,8 @@ PetscErrorCode VecScatterGetRemoteCount_Private(VecScatter sf, PetscBool send, P
 
   .seealso: `VecScatterRestoreRemote_Private()`, `VecScatterGetRemoteOrdered_Private()`
  */
-PetscErrorCode VecScatterGetRemote_Private(VecScatter sf, PetscBool send, PetscInt *n, const PetscInt **starts, const PetscInt **indices, const PetscMPIInt **procs, PetscInt *bs) {
+PetscErrorCode VecScatterGetRemote_Private(VecScatter sf, PetscBool send, PetscInt *n, const PetscInt **starts, const PetscInt **indices, const PetscMPIInt **procs, PetscInt *bs)
+{
   PetscInt           nranks, remote_start;
   PetscMPIInt        rank;
   const PetscInt    *offset, *location;
@@ -287,7 +293,8 @@ PetscErrorCode VecScatterGetRemote_Private(VecScatter sf, PetscBool send, PetscI
   Notes:
   Output parameters like starts, indices must also be adapted according to the sorted ranks.
  */
-PetscErrorCode VecScatterGetRemoteOrdered_Private(VecScatter sf, PetscBool send, PetscInt *n, const PetscInt **starts, const PetscInt **indices, const PetscMPIInt **procs, PetscInt *bs) {
+PetscErrorCode VecScatterGetRemoteOrdered_Private(VecScatter sf, PetscBool send, PetscInt *n, const PetscInt **starts, const PetscInt **indices, const PetscMPIInt **procs, PetscInt *bs)
+{
   PetscFunctionBegin;
   PetscCall(VecScatterGetRemote_Private(sf, send, n, starts, indices, procs, bs));
   if (PetscUnlikelyDebug(n && procs)) {
@@ -314,7 +321,8 @@ PetscErrorCode VecScatterGetRemoteOrdered_Private(VecScatter sf, PetscBool send,
 
   .seealso: `VecScatterGetRemote_Private()`
  */
-PetscErrorCode VecScatterRestoreRemote_Private(VecScatter sf, PetscBool send, PetscInt *n, const PetscInt **starts, const PetscInt **indices, const PetscMPIInt **procs, PetscInt *bs) {
+PetscErrorCode VecScatterRestoreRemote_Private(VecScatter sf, PetscBool send, PetscInt *n, const PetscInt **starts, const PetscInt **indices, const PetscMPIInt **procs, PetscInt *bs)
+{
   PetscFunctionBegin;
   if (starts) *starts = NULL;
   if (indices) *indices = NULL;
@@ -338,7 +346,8 @@ PetscErrorCode VecScatterRestoreRemote_Private(VecScatter sf, PetscBool send, Pe
 
   .seealso: `VecScatterGetRemoteOrdered_Private()`
  */
-PetscErrorCode VecScatterRestoreRemoteOrdered_Private(VecScatter sf, PetscBool send, PetscInt *n, const PetscInt **starts, const PetscInt **indices, const PetscMPIInt **procs, PetscInt *bs) {
+PetscErrorCode VecScatterRestoreRemoteOrdered_Private(VecScatter sf, PetscBool send, PetscInt *n, const PetscInt **starts, const PetscInt **indices, const PetscMPIInt **procs, PetscInt *bs)
+{
   PetscFunctionBegin;
   PetscCall(VecScatterRestoreRemote_Private(sf, send, n, starts, indices, procs, bs));
   PetscFunctionReturn(0);
@@ -356,7 +365,8 @@ PetscErrorCode VecScatterRestoreRemoteOrdered_Private(VecScatter sf, PetscBool s
 
 .seealso: `VecScatterCreate()`, `VecScatterCopy()`
 @*/
-PetscErrorCode VecScatterSetUp(VecScatter sf) {
+PetscErrorCode VecScatterSetUp(VecScatter sf)
+{
   PetscFunctionBegin;
   PetscCall(PetscSFSetUp(sf));
   PetscFunctionReturn(0);
@@ -381,7 +391,8 @@ PetscErrorCode VecScatterSetUp(VecScatter sf) {
 
 .seealso: `VecScatterGetType()`, `VecScatterCreate()`
 @*/
-PetscErrorCode VecScatterSetType(VecScatter sf, VecScatterType type) {
+PetscErrorCode VecScatterSetType(VecScatter sf, VecScatterType type)
+{
   PetscFunctionBegin;
   PetscCall(PetscSFSetType(sf, type));
   PetscFunctionReturn(0);
@@ -402,7 +413,8 @@ PetscErrorCode VecScatterSetType(VecScatter sf, VecScatterType type) {
 
 .seealso: `VecScatterSetType()`, `VecScatterCreate()`
 @*/
-PetscErrorCode VecScatterGetType(VecScatter sf, VecScatterType *type) {
+PetscErrorCode VecScatterGetType(VecScatter sf, VecScatterType *type)
+{
   PetscFunctionBegin;
   PetscCall(PetscSFGetType(sf, type));
   PetscFunctionReturn(0);
@@ -421,7 +433,8 @@ PetscErrorCode VecScatterGetType(VecScatter sf, VecScatterType *type) {
 
 .seealso: `VecRegister()`
 @*/
-PetscErrorCode VecScatterRegister(const char sname[], PetscErrorCode (*function)(VecScatter)) {
+PetscErrorCode VecScatterRegister(const char sname[], PetscErrorCode (*function)(VecScatter))
+{
   PetscFunctionBegin;
   PetscCall(PetscSFRegister(sname, function));
   PetscFunctionReturn(0);
@@ -444,7 +457,8 @@ PetscErrorCode VecScatterRegister(const char sname[], PetscErrorCode (*function)
 
 .seealso: `VecScatterCreate()`, `VecScatterEnd()`, `VecScatterBegin()`
 @*/
-PetscErrorCode VecScatterGetMerged(VecScatter sf, PetscBool *flg) {
+PetscErrorCode VecScatterGetMerged(VecScatter sf, PetscBool *flg)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sf, PETSCSF_CLASSID, 1);
   if (flg) *flg = sf->vscat.beginandendtogether;
@@ -462,7 +476,8 @@ PetscErrorCode VecScatterGetMerged(VecScatter sf, PetscBool *flg) {
 
 .seealso: `VecScatterCreate()`, `VecScatterCopy()`
 @*/
-PetscErrorCode VecScatterDestroy(VecScatter *sf) {
+PetscErrorCode VecScatterDestroy(VecScatter *sf)
+{
   PetscFunctionBegin;
   PetscCall(PetscSFDestroy(sf));
   PetscFunctionReturn(0);
@@ -483,7 +498,8 @@ PetscErrorCode VecScatterDestroy(VecScatter *sf) {
 
 .seealso: `VecScatterCreate()`, `VecScatterDestroy()`
 @*/
-PetscErrorCode VecScatterCopy(VecScatter sf, VecScatter *newsf) {
+PetscErrorCode VecScatterCopy(VecScatter sf, VecScatter *newsf)
+{
   PetscFunctionBegin;
   PetscValidPointer(newsf, 2);
   PetscCall(PetscSFDuplicate(sf, PETSCSF_DUPLICATE_GRAPH, newsf));
@@ -504,7 +520,8 @@ PetscErrorCode VecScatterCopy(VecScatter sf, VecScatter *newsf) {
    Level: intermediate
 .seealso: `VecScatter`, `VecScatterView`, `PetscObjectViewFromOptions()`, `VecScatterCreate()`
 @*/
-PetscErrorCode VecScatterViewFromOptions(VecScatter sf, PetscObject obj, const char name[]) {
+PetscErrorCode VecScatterViewFromOptions(VecScatter sf, PetscObject obj, const char name[])
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sf, PETSCSF_CLASSID, 1);
   PetscCall(PetscObjectViewFromOptions((PetscObject)sf, obj, name));
@@ -524,7 +541,8 @@ PetscErrorCode VecScatterViewFromOptions(VecScatter sf, PetscObject obj, const c
    Level: intermediate
 
 @*/
-PetscErrorCode VecScatterView(VecScatter sf, PetscViewer viewer) {
+PetscErrorCode VecScatterView(VecScatter sf, PetscViewer viewer)
+{
   PetscFunctionBegin;
   PetscCall(PetscSFView(sf, viewer));
   PetscFunctionReturn(0);
@@ -553,7 +571,8 @@ PetscErrorCode VecScatterView(VecScatter sf, PetscViewer viewer) {
      This is backwards from the paralllel case!
 
 @*/
-PetscErrorCode VecScatterRemap(VecScatter sf, PetscInt tomap[], PetscInt frommap[]) {
+PetscErrorCode VecScatterRemap(VecScatter sf, PetscInt tomap[], PetscInt frommap[])
+{
   PetscFunctionBegin;
   if (tomap) PetscValidIntPointer(tomap, 2);
   if (frommap) PetscValidIntPointer(frommap, 3);
@@ -581,7 +600,8 @@ PetscErrorCode VecScatterRemap(VecScatter sf, PetscInt tomap[], PetscInt frommap
 
 .seealso: `VecScatterCreate()`, `VecScatterDestroy()`, `VecScatterSetUp()`
 @*/
-PetscErrorCode VecScatterSetFromOptions(VecScatter sf) {
+PetscErrorCode VecScatterSetFromOptions(VecScatter sf)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sf, PETSCSF_CLASSID, 1);
   PetscObjectOptionsBegin((PetscObject)sf);
@@ -642,7 +662,8 @@ PetscErrorCode VecScatterSetFromOptions(VecScatter sf) {
 
 .seealso: `VecScatterDestroy()`, `VecScatterCreateToAll()`, `VecScatterCreateToZero()`, `PetscSFCreate()`
 @*/
-PetscErrorCode VecScatterCreate(Vec x, IS ix, Vec y, IS iy, VecScatter *newsf) {
+PetscErrorCode VecScatterCreate(Vec x, IS ix, Vec y, IS iy, VecScatter *newsf)
+{
   MPI_Comm        xcomm, ycomm, bigcomm;
   Vec             xx, yy;
   IS              ix_old = ix, iy_old = iy, ixx, iyy;
@@ -941,8 +962,10 @@ PetscErrorCode VecScatterCreate(Vec x, IS ix, Vec y, IS iy, VecScatter *newsf) {
 
     i = j = nsend = 0;
     while (i < n) {
-      if (yindices_sorted[i] >= yrange[j + 1]) {                                  /* If i-th index is out of rank j's bound */
-        do { j++; } while (yindices_sorted[i] >= yrange[j + 1] && j < ycommsize); /* Increase j until i-th index falls in rank j's bound */
+      if (yindices_sorted[i] >= yrange[j + 1]) { /* If i-th index is out of rank j's bound */
+        do {
+          j++;
+        } while (yindices_sorted[i] >= yrange[j + 1] && j < ycommsize); /* Increase j until i-th index falls in rank j's bound */
         PetscCheck(j != ycommsize, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Index %" PetscInt_FMT " not owned by any process, upper bound %" PetscInt_FMT, yindices_sorted[i], yrange[ycommsize]);
       }
       i++;
@@ -1111,7 +1134,8 @@ $        VecDestroy(&vout);
 .seealso `VecScatterCreate()`, `VecScatterCreateToZero()`, `VecScatterBegin()`, `VecScatterEnd()`
 
 @*/
-PetscErrorCode VecScatterCreateToAll(Vec vin, VecScatter *ctx, Vec *vout) {
+PetscErrorCode VecScatterCreateToAll(Vec vin, VecScatter *ctx, Vec *vout)
+{
   PetscInt  N;
   IS        is;
   Vec       tmp;
@@ -1181,7 +1205,8 @@ $        VecDestroy(&vout);
   automatically (unless you pass NULL in for that argument if you do not need it).
 
 @*/
-PetscErrorCode VecScatterCreateToZero(Vec vin, VecScatter *ctx, Vec *vout) {
+PetscErrorCode VecScatterCreateToZero(Vec vin, VecScatter *ctx, Vec *vout)
+{
   PetscInt    N;
   PetscMPIInt rank;
   IS          is;
@@ -1260,7 +1285,8 @@ PetscErrorCode VecScatterCreateToZero(Vec vin, VecScatter *ctx, Vec *vout) {
 
 .seealso: `VecScatterCreate()`, `VecScatterEnd()`
 @*/
-PetscErrorCode VecScatterBegin(VecScatter sf, Vec x, Vec y, InsertMode addv, ScatterMode mode) {
+PetscErrorCode VecScatterBegin(VecScatter sf, Vec x, Vec y, InsertMode addv, ScatterMode mode)
+{
   PetscInt to_n, from_n;
 
   PetscFunctionBegin;
@@ -1319,7 +1345,8 @@ PetscErrorCode VecScatterBegin(VecScatter sf, Vec x, Vec y, InsertMode addv, Sca
 
 .seealso: `VecScatterBegin()`, `VecScatterCreate()`
 @*/
-PetscErrorCode VecScatterEnd(VecScatter sf, Vec x, Vec y, InsertMode addv, ScatterMode mode) {
+PetscErrorCode VecScatterEnd(VecScatter sf, Vec x, Vec y, InsertMode addv, ScatterMode mode)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sf, PETSCSF_CLASSID, 1);
   PetscValidHeaderSpecific(x, VEC_CLASSID, 2);

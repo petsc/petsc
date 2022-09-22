@@ -31,7 +31,8 @@ typedef struct {
 /*
    FormIFunctionLocal - Evaluates nonlinear implicit function on local process patch
  */
-static PetscErrorCode FormIFunctionLocal(DMDALocalInfo *info, PetscReal t, PetscScalar **x, PetscScalar **xdot, PetscScalar **f, AppCtx *app) {
+static PetscErrorCode FormIFunctionLocal(DMDALocalInfo *info, PetscReal t, PetscScalar **x, PetscScalar **xdot, PetscScalar **f, AppCtx *app)
+{
   PetscInt    i, j;
   PetscReal   lambda, hx, hy;
   PetscScalar ut, u, ue, uw, un, us, uxx, uyy;
@@ -70,7 +71,8 @@ static PetscErrorCode FormIFunctionLocal(DMDALocalInfo *info, PetscReal t, Petsc
 /*
    FormIJacobianLocal - Evaluates implicit Jacobian matrix on local process patch
 */
-static PetscErrorCode FormIJacobianLocal(DMDALocalInfo *info, PetscReal t, PetscScalar **x, PetscScalar **xdot, PetscScalar shift, Mat jac, Mat jacpre, AppCtx *app) {
+static PetscErrorCode FormIJacobianLocal(DMDALocalInfo *info, PetscReal t, PetscScalar **x, PetscScalar **xdot, PetscScalar shift, Mat jac, Mat jacpre, AppCtx *app)
+{
   PetscInt    i, j, k;
   MatStencil  col[5], row;
   PetscScalar v[5], lambda, hx, hy;
@@ -130,7 +132,8 @@ static PetscErrorCode FormIJacobianLocal(DMDALocalInfo *info, PetscReal t, Petsc
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   TS              ts; /* ODE integrator */
   DM              da; /* DM context */
   Vec             U;  /* solution vector */

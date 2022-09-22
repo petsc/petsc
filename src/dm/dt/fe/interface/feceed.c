@@ -1,7 +1,7 @@
 #include <petsc/private/petscfeimpl.h> /*I "petscfe.h" I*/
 
 #ifdef PETSC_HAVE_LIBCEED
-#include <petscfeceed.h>
+  #include <petscfeceed.h>
 
 /*@C
   PetscFESetCeed - Set the Ceed object
@@ -16,7 +16,8 @@
 
 .seealso: `PetscFEGetCeedBasis()`, `DMGetCeed()`
 @*/
-PetscErrorCode PetscFESetCeed(PetscFE fe, Ceed ceed) {
+PetscErrorCode PetscFESetCeed(PetscFE fe, Ceed ceed)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fe, PETSCFE_CLASSID, 1);
   if (fe->ceed == ceed) PetscFunctionReturn(0);
@@ -41,7 +42,8 @@ PetscErrorCode PetscFESetCeed(PetscFE fe, Ceed ceed) {
 
 .seealso: `PetscFESetCeed()`, `DMGetCeed()`
 @*/
-PetscErrorCode PetscFEGetCeedBasis(PetscFE fe, CeedBasis *basis) {
+PetscErrorCode PetscFEGetCeedBasis(PetscFE fe, CeedBasis *basis)
+{
   PetscSpace      sp;
   PetscQuadrature q;
   PetscInt        dim, Nc, deg, ord;

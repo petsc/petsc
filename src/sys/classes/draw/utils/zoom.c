@@ -15,7 +15,8 @@
 
 .seealso: `PetscDraw`, `PetscDrawCreate()`
 @*/
-PetscErrorCode PetscDrawZoom(PetscDraw draw, PetscErrorCode (*func)(PetscDraw, void *), void *ctx) {
+PetscErrorCode PetscDrawZoom(PetscDraw draw, PetscErrorCode (*func)(PetscDraw, void *), void *ctx)
+{
   PetscDrawButton button;
   PetscReal       dpause, xc, yc, scale = 1.0, w, h, xr, xl, yr, yl, xmin, xmax, ymin, ymax;
   PetscBool       isnull;
@@ -49,11 +50,20 @@ PetscErrorCode PetscDrawZoom(PetscDraw draw, PetscErrorCode (*func)(PetscDraw, v
 
   while (button != PETSC_BUTTON_NONE && button != PETSC_BUTTON_RIGHT) {
     switch (button) {
-    case PETSC_BUTTON_LEFT: scale = 0.5; break;
-    case PETSC_BUTTON_CENTER: scale = 2.0; break;
-    case PETSC_BUTTON_WHEEL_UP: scale = 8 / 10.; break;
-    case PETSC_BUTTON_WHEEL_DOWN: scale = 10 / 8.; break;
-    default: scale = 1.0;
+    case PETSC_BUTTON_LEFT:
+      scale = 0.5;
+      break;
+    case PETSC_BUTTON_CENTER:
+      scale = 2.0;
+      break;
+    case PETSC_BUTTON_WHEEL_UP:
+      scale = 8 / 10.;
+      break;
+    case PETSC_BUTTON_WHEEL_DOWN:
+      scale = 10 / 8.;
+      break;
+    default:
+      scale = 1.0;
     }
     xl = scale * (xl + w - xc) + xc - w * scale;
     xr = scale * (xr - w - xc) + xc + w * scale;

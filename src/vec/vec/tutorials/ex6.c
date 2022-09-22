@@ -11,7 +11,8 @@ static char help[] = "Writes an array to a file, then reads an array from a file
 */
 #include <petscvec.h>
 
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   PetscMPIInt  size;
   int          fd;
   PetscInt     i, m = 10, sz;

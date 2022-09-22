@@ -1,4 +1,4 @@
-#if !defined(PETSCDMTYPES_H)
+#ifndef PETSCDMTYPES_H
 #define PETSCDMTYPES_H
 
 /* SUBMANSEC = DM */

@@ -1,7 +1,7 @@
 /*
   DMPlex, for parallel unstructured distributed mesh problems.
 */
-#if !defined(PETSCDMPLEX_H)
+#ifndef PETSCDMPLEX_H
 #define PETSCDMPLEX_H
 
 #include <petscsection.h>

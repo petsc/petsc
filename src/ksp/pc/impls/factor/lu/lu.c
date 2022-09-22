@@ -7,7 +7,8 @@
 
 #include <../src/ksp/pc/impls/factor/lu/lu.h> /*I "petscpc.h" I*/
 
-PetscErrorCode PCFactorReorderForNonzeroDiagonal_LU(PC pc, PetscReal z) {
+PetscErrorCode PCFactorReorderForNonzeroDiagonal_LU(PC pc, PetscReal z)
+{
   PC_LU *lu = (PC_LU *)pc->data;
 
   PetscFunctionBegin;
@@ -17,7 +18,8 @@ PetscErrorCode PCFactorReorderForNonzeroDiagonal_LU(PC pc, PetscReal z) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCSetFromOptions_LU(PC pc, PetscOptionItems *PetscOptionsObject) {
+static PetscErrorCode PCSetFromOptions_LU(PC pc, PetscOptionItems *PetscOptionsObject)
+{
   PC_LU    *lu  = (PC_LU *)pc->data;
   PetscBool flg = PETSC_FALSE;
   PetscReal tol;
@@ -36,7 +38,8 @@ static PetscErrorCode PCSetFromOptions_LU(PC pc, PetscOptionItems *PetscOptionsO
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCSetUp_LU(PC pc) {
+static PetscErrorCode PCSetUp_LU(PC pc)
+{
   PC_LU         *dir = (PC_LU *)pc->data;
   MatSolverType  stype;
   MatFactorError err;
@@ -130,7 +133,8 @@ static PetscErrorCode PCSetUp_LU(PC pc) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCReset_LU(PC pc) {
+static PetscErrorCode PCReset_LU(PC pc)
+{
   PC_LU *dir = (PC_LU *)pc->data;
 
   PetscFunctionBegin;
@@ -140,7 +144,8 @@ static PetscErrorCode PCReset_LU(PC pc) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCDestroy_LU(PC pc) {
+static PetscErrorCode PCDestroy_LU(PC pc)
+{
   PC_LU *dir = (PC_LU *)pc->data;
 
   PetscFunctionBegin;
@@ -152,7 +157,8 @@ static PetscErrorCode PCDestroy_LU(PC pc) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCApply_LU(PC pc, Vec x, Vec y) {
+static PetscErrorCode PCApply_LU(PC pc, Vec x, Vec y)
+{
   PC_LU *dir = (PC_LU *)pc->data;
 
   PetscFunctionBegin;
@@ -164,7 +170,8 @@ static PetscErrorCode PCApply_LU(PC pc, Vec x, Vec y) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCMatApply_LU(PC pc, Mat X, Mat Y) {
+static PetscErrorCode PCMatApply_LU(PC pc, Mat X, Mat Y)
+{
   PC_LU *dir = (PC_LU *)pc->data;
 
   PetscFunctionBegin;
@@ -176,7 +183,8 @@ static PetscErrorCode PCMatApply_LU(PC pc, Mat X, Mat Y) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCApplyTranspose_LU(PC pc, Vec x, Vec y) {
+static PetscErrorCode PCApplyTranspose_LU(PC pc, Vec x, Vec y)
+{
   PC_LU *dir = (PC_LU *)pc->data;
 
   PetscFunctionBegin;
@@ -224,7 +232,8 @@ static PetscErrorCode PCApplyTranspose_LU(PC pc, Vec x, Vec y) {
           `PCFactorReorderForNonzeroDiagonal()`
 M*/
 
-PETSC_EXTERN PetscErrorCode PCCreate_LU(PC pc) {
+PETSC_EXTERN PetscErrorCode PCCreate_LU(PC pc)
+{
   PC_LU *dir;
 
   PetscFunctionBegin;

@@ -2,7 +2,8 @@ static char help[] = "Test DMStagRestrictSimple()\n\n";
 
 #include <petscdmstag.h>
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   DM        dm, dm_coarse;
   Vec       vec, vec_coarse, vec_local, vec_local_coarse;
   PetscInt  dim, size_coarse;
@@ -13,10 +14,17 @@ int main(int argc, char **argv) {
   dim = 2;
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-dim", &dim, NULL));
   switch (dim) {
-  case 1: PetscCall(DMStagCreate1d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, 8, 2, 3, DMSTAG_STENCIL_BOX, 1, NULL, &dm)); break;
-  case 2: PetscCall(DMStagCreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, 8, 16, PETSC_DECIDE, PETSC_DECIDE, 2, 3, 4, DMSTAG_STENCIL_BOX, 1, NULL, NULL, &dm)); break;
-  case 3: PetscCall(DMStagCreate3d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, 4, 8, 12, PETSC_DECIDE, PETSC_DECIDE, PETSC_DECIDE, 2, 3, 4, 3, DMSTAG_STENCIL_BOX, 1, NULL, NULL, NULL, &dm)); break;
-  default: SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP, "Not Implemented!");
+  case 1:
+    PetscCall(DMStagCreate1d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, 8, 2, 3, DMSTAG_STENCIL_BOX, 1, NULL, &dm));
+    break;
+  case 2:
+    PetscCall(DMStagCreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, 8, 16, PETSC_DECIDE, PETSC_DECIDE, 2, 3, 4, DMSTAG_STENCIL_BOX, 1, NULL, NULL, &dm));
+    break;
+  case 3:
+    PetscCall(DMStagCreate3d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, 4, 8, 12, PETSC_DECIDE, PETSC_DECIDE, PETSC_DECIDE, 2, 3, 4, 3, DMSTAG_STENCIL_BOX, 1, NULL, NULL, NULL, &dm));
+    break;
+  default:
+    SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP, "Not Implemented!");
   }
   PetscCall(DMSetFromOptions(dm));
   PetscCall(DMSetUp(dm));

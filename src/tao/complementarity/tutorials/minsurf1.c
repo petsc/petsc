@@ -33,7 +33,8 @@ static PetscErrorCode MSA_InitialPoint(AppCtx *, Vec);
 PetscErrorCode        FormConstraints(Tao, Vec, Vec, void *);
 PetscErrorCode        FormJacobian(Tao, Vec, Mat, Mat, void *);
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   Vec         x;                    /* solution vector */
   Vec         c;                    /* Constraints function vector */
   Vec         xl, xu;               /* Bounds on the variables */
@@ -132,7 +133,8 @@ int main(int argc, char **argv) {
     Output Parameters:
 .   G - vector containing the newly evaluated gradient
 */
-PetscErrorCode FormConstraints(Tao tao, Vec X, Vec G, void *ptr) {
+PetscErrorCode FormConstraints(Tao tao, Vec X, Vec G, void *ptr)
+{
   AppCtx      *user = (AppCtx *)ptr;
   PetscInt     i, j, row;
   PetscInt     mx = user->mx, my = user->my;
@@ -252,7 +254,8 @@ PetscErrorCode FormConstraints(Tao tao, Vec X, Vec G, void *ptr) {
 .  tH    - Jacobian matrix
 
 */
-PetscErrorCode FormJacobian(Tao tao, Vec X, Mat H, Mat tHPre, void *ptr) {
+PetscErrorCode FormJacobian(Tao tao, Vec X, Mat H, Mat tHPre, void *ptr)
+{
   AppCtx            *user = (AppCtx *)ptr;
   PetscInt           i, j, k, row;
   PetscInt           mx = user->mx, my = user->my;
@@ -417,7 +420,8 @@ PetscErrorCode FormJacobian(Tao tao, Vec X, Mat H, Mat tHPre, void *ptr) {
    Output Parameter:
 .  user - user-defined application context
 */
-static PetscErrorCode MSA_BoundaryConditions(AppCtx *user) {
+static PetscErrorCode MSA_BoundaryConditions(AppCtx *user)
+{
   PetscInt   i, j, k, limit = 0, maxits = 5;
   PetscInt   mx = user->mx, my = user->my;
   PetscInt   bsize = 0, lsize = 0, tsize = 0, rsize = 0;
@@ -503,7 +507,8 @@ static PetscErrorCode MSA_BoundaryConditions(AppCtx *user) {
    Output Parameters:
 .  X - newly computed initial guess
 */
-static PetscErrorCode MSA_InitialPoint(AppCtx *user, Vec X) {
+static PetscErrorCode MSA_InitialPoint(AppCtx *user, Vec X)
+{
   PetscInt    start = -1, i, j;
   PetscScalar zero  = 0.0;
   PetscBool   flg;

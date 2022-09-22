@@ -3,10 +3,10 @@
 #include <petscdmda.h>
 #include <petscviewer.h>
 
-PetscClassId      CHARACTERISTIC_CLASSID;
-PetscLogEvent     CHARACTERISTIC_SetUp, CHARACTERISTIC_Solve, CHARACTERISTIC_QueueSetup, CHARACTERISTIC_DAUpdate;
-PetscLogEvent     CHARACTERISTIC_HalfTimeLocal, CHARACTERISTIC_HalfTimeRemote, CHARACTERISTIC_HalfTimeExchange;
-PetscLogEvent     CHARACTERISTIC_FullTimeLocal, CHARACTERISTIC_FullTimeRemote, CHARACTERISTIC_FullTimeExchange;
+PetscClassId  CHARACTERISTIC_CLASSID;
+PetscLogEvent CHARACTERISTIC_SetUp, CHARACTERISTIC_Solve, CHARACTERISTIC_QueueSetup, CHARACTERISTIC_DAUpdate;
+PetscLogEvent CHARACTERISTIC_HalfTimeLocal, CHARACTERISTIC_HalfTimeRemote, CHARACTERISTIC_HalfTimeExchange;
+PetscLogEvent CHARACTERISTIC_FullTimeLocal, CHARACTERISTIC_FullTimeRemote, CHARACTERISTIC_FullTimeExchange;
 /*
    Contains the list of registered characteristic routines
 */
@@ -20,7 +20,8 @@ PetscErrorCode DMDAMapToPeriodicDomain(DM, PetscScalar[]);
 PetscErrorCode CharacteristicHeapSort(Characteristic, Queue, PetscInt);
 PetscErrorCode CharacteristicSiftDown(Characteristic, Queue, PetscInt, PetscInt);
 
-PetscErrorCode CharacteristicView(Characteristic c, PetscViewer viewer) {
+PetscErrorCode CharacteristicView(Characteristic c, PetscViewer viewer)
+{
   PetscBool iascii;
 
   PetscFunctionBegin;
@@ -34,7 +35,8 @@ PetscErrorCode CharacteristicView(Characteristic c, PetscViewer viewer) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode CharacteristicDestroy(Characteristic *c) {
+PetscErrorCode CharacteristicDestroy(Characteristic *c)
+{
   PetscFunctionBegin;
   if (!*c) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(*c, CHARACTERISTIC_CLASSID, 1);
@@ -56,7 +58,8 @@ PetscErrorCode CharacteristicDestroy(Characteristic *c) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode CharacteristicCreate(MPI_Comm comm, Characteristic *c) {
+PetscErrorCode CharacteristicCreate(MPI_Comm comm, Characteristic *c)
+{
   Characteristic newC;
 
   PetscFunctionBegin;
@@ -138,7 +141,8 @@ PetscErrorCode CharacteristicCreate(MPI_Comm comm, Characteristic *c) {
 .seealso: `CharacteristicType`
 
 @*/
-PetscErrorCode CharacteristicSetType(Characteristic c, CharacteristicType type) {
+PetscErrorCode CharacteristicSetType(Characteristic c, CharacteristicType type)
+{
   PetscBool match;
   PetscErrorCode (*r)(Characteristic);
 
@@ -177,7 +181,8 @@ PetscErrorCode CharacteristicSetType(Characteristic c, CharacteristicType type) 
 
 .seealso: `CharacteristicCreate()`, `CharacteristicSolve()`, `CharacteristicDestroy()`
 @*/
-PetscErrorCode CharacteristicSetUp(Characteristic c) {
+PetscErrorCode CharacteristicSetUp(Characteristic c)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(c, CHARACTERISTIC_CLASSID, 1);
 
@@ -223,14 +228,16 @@ PetscErrorCode CharacteristicSetUp(Characteristic c) {
 
   Level: advanced
 @*/
-PetscErrorCode CharacteristicRegister(const char sname[], PetscErrorCode (*function)(Characteristic)) {
+PetscErrorCode CharacteristicRegister(const char sname[], PetscErrorCode (*function)(Characteristic))
+{
   PetscFunctionBegin;
   PetscCall(CharacteristicInitializePackage());
   PetscCall(PetscFunctionListAdd(&CharacteristicList, sname, function));
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode CharacteristicSetVelocityInterpolation(Characteristic c, DM da, Vec v, Vec vOld, PetscInt numComponents, PetscInt components[], PetscErrorCode (*interp)(Vec, PetscReal[], PetscInt, PetscInt[], PetscScalar[], void *), void *ctx) {
+PetscErrorCode CharacteristicSetVelocityInterpolation(Characteristic c, DM da, Vec v, Vec vOld, PetscInt numComponents, PetscInt components[], PetscErrorCode (*interp)(Vec, PetscReal[], PetscInt, PetscInt[], PetscScalar[], void *), void *ctx)
+{
   PetscFunctionBegin;
   c->velocityDA      = da;
   c->velocity        = v;
@@ -242,7 +249,8 @@ PetscErrorCode CharacteristicSetVelocityInterpolation(Characteristic c, DM da, V
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode CharacteristicSetVelocityInterpolationLocal(Characteristic c, DM da, Vec v, Vec vOld, PetscInt numComponents, PetscInt components[], PetscErrorCode (*interp)(void *, PetscReal[], PetscInt, PetscInt[], PetscScalar[], void *), void *ctx) {
+PetscErrorCode CharacteristicSetVelocityInterpolationLocal(Characteristic c, DM da, Vec v, Vec vOld, PetscInt numComponents, PetscInt components[], PetscErrorCode (*interp)(void *, PetscReal[], PetscInt, PetscInt[], PetscScalar[], void *), void *ctx)
+{
   PetscFunctionBegin;
   c->velocityDA          = da;
   c->velocity            = v;
@@ -254,7 +262,8 @@ PetscErrorCode CharacteristicSetVelocityInterpolationLocal(Characteristic c, DM 
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode CharacteristicSetFieldInterpolation(Characteristic c, DM da, Vec v, PetscInt numComponents, PetscInt components[], PetscErrorCode (*interp)(Vec, PetscReal[], PetscInt, PetscInt[], PetscScalar[], void *), void *ctx) {
+PetscErrorCode CharacteristicSetFieldInterpolation(Characteristic c, DM da, Vec v, PetscInt numComponents, PetscInt components[], PetscErrorCode (*interp)(Vec, PetscReal[], PetscInt, PetscInt[], PetscScalar[], void *), void *ctx)
+{
   PetscFunctionBegin;
 #if 0
   PetscCheck(numComponents <= 2,PETSC_COMM_SELF,PETSC_ERR_SUP, "Fields with more than 2 components are not supported. Send mail to petsc-maint@mcs.anl.gov.");
@@ -268,7 +277,8 @@ PetscErrorCode CharacteristicSetFieldInterpolation(Characteristic c, DM da, Vec 
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode CharacteristicSetFieldInterpolationLocal(Characteristic c, DM da, Vec v, PetscInt numComponents, PetscInt components[], PetscErrorCode (*interp)(void *, PetscReal[], PetscInt, PetscInt[], PetscScalar[], void *), void *ctx) {
+PetscErrorCode CharacteristicSetFieldInterpolationLocal(Characteristic c, DM da, Vec v, PetscInt numComponents, PetscInt components[], PetscErrorCode (*interp)(void *, PetscReal[], PetscInt, PetscInt[], PetscScalar[], void *), void *ctx)
+{
   PetscFunctionBegin;
 #if 0
   PetscCheck(numComponents <= 2,PETSC_COMM_SELF,PETSC_ERR_SUP, "Fields with more than 2 components are not supported. Send mail to petsc-maint@mcs.anl.gov.");
@@ -282,7 +292,8 @@ PetscErrorCode CharacteristicSetFieldInterpolationLocal(Characteristic c, DM da,
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode CharacteristicSolve(Characteristic c, PetscReal dt, Vec solution) {
+PetscErrorCode CharacteristicSolve(Characteristic c, PetscReal dt, Vec solution)
+{
   CharacteristicPointDA2D Qi;
   DM                      da = c->velocityDA;
   Vec                     velocityLocal, velocityLocalOld;
@@ -517,7 +528,8 @@ PetscErrorCode CharacteristicSolve(Characteristic c, PetscReal dt, Vec solution)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode CharacteristicSetNeighbors(Characteristic c, PetscInt numNeighbors, PetscMPIInt neighbors[]) {
+PetscErrorCode CharacteristicSetNeighbors(Characteristic c, PetscInt numNeighbors, PetscMPIInt neighbors[])
+{
   PetscFunctionBegin;
   c->numNeighbors = numNeighbors;
   PetscCall(PetscFree(c->neighbors));
@@ -526,14 +538,16 @@ PetscErrorCode CharacteristicSetNeighbors(Characteristic c, PetscInt numNeighbor
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode CharacteristicAddPoint(Characteristic c, CharacteristicPointDA2D *point) {
+PetscErrorCode CharacteristicAddPoint(Characteristic c, CharacteristicPointDA2D *point)
+{
   PetscFunctionBegin;
   PetscCheck(c->queueSize < c->queueMax, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Exceeded maximum queue size %" PetscInt_FMT, c->queueMax);
   c->queue[c->queueSize++] = *point;
   PetscFunctionReturn(0);
 }
 
-int CharacteristicSendCoordinatesBegin(Characteristic c) {
+int CharacteristicSendCoordinatesBegin(Characteristic c)
+{
   PetscMPIInt rank, tag = 121;
   PetscInt    i, n;
 
@@ -576,7 +590,8 @@ int CharacteristicSendCoordinatesBegin(Characteristic c) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode CharacteristicSendCoordinatesEnd(Characteristic c) {
+PetscErrorCode CharacteristicSendCoordinatesEnd(Characteristic c)
+{
 #if 0
   PetscMPIInt rank;
   PetscInt    n;
@@ -593,7 +608,8 @@ PetscErrorCode CharacteristicSendCoordinatesEnd(Characteristic c) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode CharacteristicGetValuesBegin(Characteristic c) {
+PetscErrorCode CharacteristicGetValuesBegin(Characteristic c)
+{
   PetscMPIInt tag = 121;
   PetscInt    n;
 
@@ -604,7 +620,8 @@ PetscErrorCode CharacteristicGetValuesBegin(Characteristic c) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode CharacteristicGetValuesEnd(Characteristic c) {
+PetscErrorCode CharacteristicGetValuesEnd(Characteristic c)
+{
   PetscFunctionBegin;
   PetscCallMPI(MPI_Waitall(c->numNeighbors - 1, c->request, c->status));
   /* Free queue of requests from other procs */
@@ -671,7 +688,8 @@ PetscErrorCode CharacteristicSiftDown(Characteristic c, Queue queue, PetscInt ro
 }
 
 /* [center, left, top-left, top, top-right, right, bottom-right, bottom, bottom-left] */
-PetscErrorCode DMDAGetNeighborsRank(DM da, PetscMPIInt neighbors[]) {
+PetscErrorCode DMDAGetNeighborsRank(DM da, PetscMPIInt neighbors[])
+{
   DMBoundaryType bx, by;
   PetscBool      IPeriodic = PETSC_FALSE, JPeriodic = PETSC_FALSE;
   MPI_Comm       comm;
@@ -739,7 +757,8 @@ PetscErrorCode DMDAGetNeighborsRank(DM da, PetscMPIInt neighbors[]) {
     8 | 7 | 6
       |   |
 */
-PetscInt DMDAGetNeighborRelative(DM da, PetscReal ir, PetscReal jr) {
+PetscInt DMDAGetNeighborRelative(DM da, PetscReal ir, PetscReal jr)
+{
   DMDALocalInfo info;
   PetscReal     is, ie, js, je;
 

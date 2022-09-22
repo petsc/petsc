@@ -16,7 +16,8 @@ typedef struct {
   PetscBool         use_low_level_functions;      /* Use low level functions for viewing and loading */
 } AppCtx;
 
-static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options) {
+static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
+{
   PetscFunctionBeginUser;
   options->compare                 = PETSC_FALSE;
   options->compare_labels          = PETSC_FALSE;
@@ -42,7 +43,8 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options) {
   PetscFunctionReturn(0);
 };
 
-static PetscErrorCode DMPlexWriteAndReadHDF5(DM dm, const char filename[], const char prefix[], AppCtx user, DM *dm_new) {
+static PetscErrorCode DMPlexWriteAndReadHDF5(DM dm, const char filename[], const char prefix[], AppCtx user, DM *dm_new)
+{
   DM          dmnew;
   const char  savedName[]  = "Mesh";
   const char  loadedName[] = "Mesh_new";
@@ -83,7 +85,8 @@ static PetscErrorCode DMPlexWriteAndReadHDF5(DM dm, const char filename[], const
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   DM               dm, dmnew;
   PetscPartitioner part;
   AppCtx           user;

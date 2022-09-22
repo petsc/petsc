@@ -17,7 +17,8 @@ static char help[] = "Solves -Laplacian u - exp(u) = 0,  0 < x < 1 using GPU\n\n
 extern PetscErrorCode ComputeFunction(SNES, Vec, Vec, void *), ComputeJacobian(SNES, Vec, Mat, Mat, void *);
 PetscBool             useCUDA = PETSC_FALSE;
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   SNES      snes;
   Vec       x, f;
   Mat       J;
@@ -58,7 +59,8 @@ int main(int argc, char **argv) {
 
 struct ApplyStencil {
   template <typename Tuple>
-  __host__ __device__ void operator()(Tuple t) {
+  __host__ __device__ void operator()(Tuple t)
+  {
     /* f = (2*x_i - x_(i+1) - x_(i-1))/h - h*exp(x_i) */
     thrust::get<0>(t) = 1;
     if ((thrust::get<4>(t) > 0) && (thrust::get<4>(t) < thrust::get<5>(t) - 1)) {
@@ -71,7 +73,8 @@ struct ApplyStencil {
   }
 };
 
-PetscErrorCode ComputeFunction(SNES snes, Vec x, Vec f, void *ctx) {
+PetscErrorCode ComputeFunction(SNES snes, Vec x, Vec f, void *ctx)
+{
   PetscInt           i, Mx, xs, xm, xstartshift, xendshift, fstart, lsize;
   PetscScalar       *xx, *ff, hx;
   DM                 da = (DM)ctx;
@@ -143,7 +146,8 @@ PetscErrorCode ComputeFunction(SNES snes, Vec x, Vec f, void *ctx) {
   PetscCall(DMRestoreLocalVector(da, &xlocal));
   return 0;
 }
-PetscErrorCode ComputeJacobian(SNES snes, Vec x, Mat J, Mat B, void *ctx) {
+PetscErrorCode ComputeJacobian(SNES snes, Vec x, Mat J, Mat B, void *ctx)
+{
   DM          da = (DM)ctx;
   PetscInt    i, Mx, xm, xs;
   PetscScalar hx, *xx;

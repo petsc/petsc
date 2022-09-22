@@ -11,7 +11,8 @@ static PetscBool AOPackageInitialized = PETSC_FALSE;
 
 .seealso: `PetscInitialize()`
 @*/
-PetscErrorCode AOFinalizePackage(void) {
+PetscErrorCode AOFinalizePackage(void)
+{
   PetscFunctionBegin;
   PetscCall(PetscFunctionListDestroy(&AOList));
   AOPackageInitialized = PETSC_FALSE;
@@ -28,7 +29,8 @@ PetscErrorCode AOFinalizePackage(void) {
 
 .seealso: `PetscInitialize()`
 @*/
-PetscErrorCode AOInitializePackage(void) {
+PetscErrorCode AOInitializePackage(void)
+{
   char      logList[256];
   PetscBool opt, pkg;
 

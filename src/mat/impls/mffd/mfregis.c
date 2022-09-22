@@ -14,7 +14,8 @@ PETSC_EXTERN PetscErrorCode MatCreateMFFD_WP(MatMFFD);
 .seealso: `MATMFFD`, `MatMFFDRegisterDestroy()`, `MatMFFDRegister()`, `MatCreateMFFD()`,
           `MatMFFDSetType()`
 @*/
-PetscErrorCode MatMFFDRegisterAll(void) {
+PetscErrorCode MatMFFDRegisterAll(void)
+{
   PetscFunctionBegin;
   if (MatMFFDRegisterAllCalled) PetscFunctionReturn(0);
   MatMFFDRegisterAllCalled = PETSC_TRUE;

@@ -3,7 +3,8 @@ static char help[] = "Tests ScaLAPACK interface.\n\n";
 
 #include <petscmat.h>
 
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   Mat             Cdense, Caij, B, C, Ct, Asub;
   Vec             d;
   PetscInt        i, j, M = 5, N, mb = 2, nb, nrows, ncols, mloc, nloc;

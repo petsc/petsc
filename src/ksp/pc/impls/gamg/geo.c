@@ -5,10 +5,10 @@
 #include <../src/ksp/pc/impls/gamg/gamg.h> /*I "petscpc.h" I*/
 
 #if defined(PETSC_HAVE_TRIANGLE)
-#if !defined(ANSI_DECLARATORS)
-#define ANSI_DECLARATORS
-#endif
-#include <triangle.h>
+  #if !defined(ANSI_DECLARATORS)
+    #define ANSI_DECLARATORS
+  #endif
+  #include <triangle.h>
 #endif
 
 #include <petscblaslapack.h>
@@ -19,7 +19,8 @@ typedef struct {
   PetscInt degree; /* vertex degree */
 } GAMGNode;
 
-static inline int petsc_geo_mg_compare(const void *a, const void *b) {
+static inline int petsc_geo_mg_compare(const void *a, const void *b)
+{
   return (((GAMGNode *)a)->degree - ((GAMGNode *)b)->degree);
 }
 
@@ -29,7 +30,8 @@ static inline int petsc_geo_mg_compare(const void *a, const void *b) {
    Input Parameter:
    .  pc - the preconditioner context
 */
-PetscErrorCode PCSetCoordinates_GEO(PC pc, PetscInt ndm, PetscInt a_nloc, PetscReal *coords) {
+PetscErrorCode PCSetCoordinates_GEO(PC pc, PetscInt ndm, PetscInt a_nloc, PetscReal *coords)
+{
   PC_MG   *mg      = (PC_MG *)pc->data;
   PC_GAMG *pc_gamg = (PC_GAMG *)mg->innerctx;
   PetscInt arrsz, bs, my0, kk, ii, nloc, Iend, aloc;
@@ -78,7 +80,8 @@ PetscErrorCode PCSetCoordinates_GEO(PC pc, PetscInt ndm, PetscInt a_nloc, PetscR
   Input Parameter:
    . pc -
 */
-PetscErrorCode PCSetData_GEO(PC pc, Mat m) {
+PetscErrorCode PCSetData_GEO(PC pc, Mat m)
+{
   PetscFunctionBegin;
   SETERRQ(PetscObjectComm((PetscObject)pc), PETSC_ERR_PLIB, "GEO MG needs coordinates");
 }
@@ -89,7 +92,8 @@ PetscErrorCode PCSetData_GEO(PC pc, Mat m) {
   Input Parameter:
    . pc -
 */
-PetscErrorCode PCSetFromOptions_GEO(PC pc, PetscOptionItems *PetscOptionsObject) {
+PetscErrorCode PCSetFromOptions_GEO(PC pc, PetscOptionItems *PetscOptionsObject)
+{
   PetscFunctionBegin;
   PetscOptionsHeadBegin(PetscOptionsObject, "GAMG-GEO options");
   {
@@ -122,7 +126,8 @@ PetscErrorCode PCSetFromOptions_GEO(PC pc, PetscOptionItems *PetscOptionsObject)
    . a_Prol - prolongation operator
    . a_worst_best - measure of worst missed fine vertex, 0 is no misses
 */
-static PetscErrorCode triangulateAndFormProl(IS selected_2, PetscInt data_stride, PetscReal coords[], PetscInt nselected_1, const PetscInt clid_lid_1[], const PetscCoarsenData *agg_lists_1, const PetscInt crsGID[], PetscInt bs, Mat a_Prol, PetscReal *a_worst_best) {
+static PetscErrorCode triangulateAndFormProl(IS selected_2, PetscInt data_stride, PetscReal coords[], PetscInt nselected_1, const PetscInt clid_lid_1[], const PetscCoarsenData *agg_lists_1, const PetscInt crsGID[], PetscInt bs, Mat a_Prol, PetscReal *a_worst_best)
+{
 #if defined(PETSC_HAVE_TRIANGLE)
   PetscInt             jj, tid, tt, idx, nselected_2;
   struct triangulateio in, mid;
@@ -146,9 +151,9 @@ static PetscErrorCode triangulateAndFormProl(IS selected_2, PetscInt data_stride
     PetscFunctionReturn(0);
   }
   PetscCall(MatGetOwnershipRange(a_Prol, &Istart, &Iend));
-  nFineLoc                   = (Iend - Istart) / bs;
-  myFine0                    = Istart / bs;
-  nPlotPts                   = nFineLoc; /* locals */
+  nFineLoc = (Iend - Istart) / bs;
+  myFine0  = Istart / bs;
+  nPlotPts = nFineLoc; /* locals */
   /* triangle */
   /* Define input points - in*/
   in.numberofpoints          = nselected_2;
@@ -183,21 +188,21 @@ static PetscErrorCode triangulateAndFormProl(IS selected_2, PetscInt data_stride
   in.normlist              = NULL;
 
   /* triangulate */
-  mid.pointlist             = NULL; /* Not needed if -N switch used. */
+  mid.pointlist = NULL; /* Not needed if -N switch used. */
   /* Not needed if -N switch used or number of point attributes is zero: */
-  mid.pointattributelist    = NULL;
-  mid.pointmarkerlist       = NULL; /* Not needed if -N or -B switch used. */
-  mid.trianglelist          = NULL; /* Not needed if -E switch used. */
+  mid.pointattributelist = NULL;
+  mid.pointmarkerlist    = NULL; /* Not needed if -N or -B switch used. */
+  mid.trianglelist       = NULL; /* Not needed if -E switch used. */
   /* Not needed if -E switch used or number of triangle attributes is zero: */
   mid.triangleattributelist = NULL;
   mid.neighborlist          = NULL; /* Needed only if -n switch used. */
   /* Needed only if segments are output (-p or -c) and -P not used: */
-  mid.segmentlist           = NULL;
+  mid.segmentlist = NULL;
   /* Needed only if segments are output (-p or -c) and -P and -B not used: */
-  mid.segmentmarkerlist     = NULL;
-  mid.edgelist              = NULL; /* Needed only if -e switch used. */
-  mid.edgemarkerlist        = NULL; /* Needed if -e used and -B not used. */
-  mid.numberoftriangles     = 0;
+  mid.segmentmarkerlist = NULL;
+  mid.edgelist          = NULL; /* Needed only if -e switch used. */
+  mid.edgemarkerlist    = NULL; /* Needed if -e used and -B not used. */
+  mid.numberoftriangles = 0;
 
   /* Triangulate the points.  Switches are chosen to read and write a  */
   /*   PSLG (p), preserve the convex hull (c), number everything from  */
@@ -274,7 +279,7 @@ static PetscErrorCode triangulateAndFormProl(IS selected_2, PetscInt data_stride
         nTri[cid]++;
       }
     }
-#define EPS 1.e-12
+  #define EPS 1.e-12
     /* find points and set prolongation */
     for (mm = clid = 0; mm < nFineLoc; mm++) {
       PetscBool ise;
@@ -292,12 +297,12 @@ static PetscErrorCode triangulateAndFormProl(IS selected_2, PetscInt data_stride
           PetscCall(PetscCDGetNextPos(agg_lists_1, lid, &pos));
 
           if (flid < nFineLoc) { /* could be a ghost */
-            PetscInt        bestTID    = -1;
-            PetscReal       best_alpha = 1.e10;
-            const PetscInt  fgid       = flid + myFine0;
+            PetscInt       bestTID    = -1;
+            PetscReal      best_alpha = 1.e10;
+            const PetscInt fgid       = flid + myFine0;
             /* compute shape function for gid */
-            const PetscReal fcoord[3]  = {coords[flid], coords[data_stride + flid], 1.0};
-            PetscBool       haveit     = PETSC_FALSE;
+            const PetscReal fcoord[3] = {coords[flid], coords[data_stride + flid], 1.0};
+            PetscBool       haveit    = PETSC_FALSE;
             PetscScalar     alpha[3];
             PetscInt        clids[3];
 
@@ -422,7 +427,8 @@ static PetscErrorCode triangulateAndFormProl(IS selected_2, PetscInt data_stride
    . a_Gmat_2 - graph that is squared of 'Gmat_1'
    . a_crsGID[a_selected_2.size()] - map of global IDs of coarse grid nodes
 */
-static PetscErrorCode getGIDsOnSquareGraph(PC pc, PetscInt nselected_1, const PetscInt clid_lid_1[], const Mat Gmat1, IS *a_selected_2, Mat *a_Gmat_2, PetscInt **a_crsGID) {
+static PetscErrorCode getGIDsOnSquareGraph(PC pc, PetscInt nselected_1, const PetscInt clid_lid_1[], const Mat Gmat1, IS *a_selected_2, Mat *a_Gmat_2, PetscInt **a_crsGID)
+{
   PetscMPIInt size;
   PetscInt   *crsGID, kk, my0, Iend, nloc;
   MPI_Comm    comm;
@@ -520,7 +526,8 @@ static PetscErrorCode getGIDsOnSquareGraph(PC pc, PetscInt nselected_1, const Pe
   Output Parameter:
    . a_Gmat
 */
-PetscErrorCode PCGAMGGraph_GEO(PC pc, Mat Amat, Mat *a_Gmat) {
+PetscErrorCode PCGAMGGraph_GEO(PC pc, Mat Amat, Mat *a_Gmat)
+{
   PC_MG          *mg      = (PC_MG *)pc->data;
   PC_GAMG        *pc_gamg = (PC_GAMG *)mg->innerctx;
   const PetscReal vfilter = pc_gamg->threshold[0];
@@ -554,7 +561,8 @@ PetscErrorCode PCGAMGGraph_GEO(PC pc, Mat Amat, Mat *a_Gmat) {
   Output Parameter:
    . a_llist_parent - linked list from selected indices for data locality only
 */
-PetscErrorCode PCGAMGCoarsen_GEO(PC a_pc, Mat *a_Gmat, PetscCoarsenData **a_llist_parent) {
+PetscErrorCode PCGAMGCoarsen_GEO(PC a_pc, Mat *a_Gmat, PetscCoarsenData **a_llist_parent)
+{
   PetscInt   Istart, Iend, nloc, kk, Ii, ncols;
   IS         perm;
   GAMGNode  *gnodes;
@@ -639,7 +647,8 @@ PetscErrorCode PCGAMGCoarsen_GEO(PC a_pc, Mat *a_Gmat, PetscCoarsenData **a_llis
  Output Parameter:
  . a_P_out - prolongation operator to the next level
  */
-PetscErrorCode PCGAMGProlongator_GEO(PC pc, Mat Amat, Mat Gmat, PetscCoarsenData *agg_lists, Mat *a_P_out) {
+PetscErrorCode PCGAMGProlongator_GEO(PC pc, Mat Amat, Mat Gmat, PetscCoarsenData *agg_lists, Mat *a_P_out)
+{
   PC_MG          *mg      = (PC_MG *)pc->data;
   PC_GAMG        *pc_gamg = (PC_GAMG *)mg->innerctx;
   const PetscInt  dim = pc_gamg->data_cell_cols, data_cols = pc_gamg->data_cell_cols;
@@ -755,7 +764,8 @@ PetscErrorCode PCGAMGProlongator_GEO(PC pc, Mat Amat, Mat Gmat, PetscCoarsenData
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCDestroy_GAMG_GEO(PC pc) {
+static PetscErrorCode PCDestroy_GAMG_GEO(PC pc)
+{
   PetscFunctionBegin;
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCSetCoordinates_C", NULL));
   PetscFunctionReturn(0);
@@ -767,7 +777,8 @@ static PetscErrorCode PCDestroy_GAMG_GEO(PC pc) {
   Input Parameter:
    . pc -
 */
-PetscErrorCode PCCreateGAMG_GEO(PC pc) {
+PetscErrorCode PCCreateGAMG_GEO(PC pc)
+{
   PC_MG   *mg      = (PC_MG *)pc->data;
   PC_GAMG *pc_gamg = (PC_GAMG *)mg->innerctx;
 

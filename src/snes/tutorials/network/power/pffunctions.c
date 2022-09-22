@@ -2,7 +2,8 @@
 
 #include "power.h"
 
-PetscErrorCode GetListofEdges_Power(PFDATA *pfdata, PetscInt *edgelist) {
+PetscErrorCode GetListofEdges_Power(PFDATA *pfdata, PetscInt *edgelist)
+{
   PetscInt   i, fbus, tbus, nbranches = pfdata->nbranch;
   EDGE_Power branch  = pfdata->branch;
   PetscBool  netview = PETSC_FALSE;
@@ -28,7 +29,8 @@ PetscErrorCode GetListofEdges_Power(PFDATA *pfdata, PetscInt *edgelist) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode FormJacobian_Power_private(DM networkdm, Vec localX, Mat J, PetscInt nv, PetscInt ne, const PetscInt *vtx, const PetscInt *edges, void *appctx) {
+PetscErrorCode FormJacobian_Power_private(DM networkdm, Vec localX, Mat J, PetscInt nv, PetscInt ne, const PetscInt *vtx, const PetscInt *edges, void *appctx)
+{
   const PetscScalar *xarr;
   PetscInt           i, v, row[2], col[8], e, vfrom, vto;
   PetscInt           offsetfrom, offsetto, goffsetfrom, goffsetto, numComps;
@@ -150,11 +152,11 @@ PetscErrorCode FormJacobian_Power_private(DM networkdm, Vec localX, Mat J, Petsc
               PetscCall(MatSetValues(J, 1, row, 4, col, values, ADD_VALUES));
             }
             if (busf->ide != PV_BUS && busf->ide != REF_BUS) {
-              row[0]    = goffsetfrom + 1;
-              col[0]    = goffsetfrom;
-              col[1]    = goffsetfrom + 1;
-              col[2]    = goffsetto;
-              col[3]    = goffsetto + 1;
+              row[0] = goffsetfrom + 1;
+              col[0] = goffsetfrom;
+              col[1] = goffsetfrom + 1;
+              col[2] = goffsetto;
+              col[3] = goffsetto + 1;
               /*    farr[offsetfrom+1] += -Bff*Vmf*Vmf + Vmf*Vmt*(-Bft*PetscCosScalar(thetaft) + Gft*PetscSinScalar(thetaft)); */
               values[0] = Vmf * Vmt * (Bft * PetscSinScalar(thetaft) + Gft * PetscCosScalar(thetaft));
               values[1] = -2.0 * Bff * Vmf + Vmt * (-Bft * PetscCosScalar(thetaft) + Gft * PetscSinScalar(thetaft));
@@ -165,11 +167,11 @@ PetscErrorCode FormJacobian_Power_private(DM networkdm, Vec localX, Mat J, Petsc
             }
           } else {
             if (bust->ide != REF_BUS) {
-              row[0]    = goffsetto;
-              col[0]    = goffsetto;
-              col[1]    = goffsetto + 1;
-              col[2]    = goffsetfrom;
-              col[3]    = goffsetfrom + 1;
+              row[0] = goffsetto;
+              col[0] = goffsetto;
+              col[1] = goffsetto + 1;
+              col[2] = goffsetfrom;
+              col[3] = goffsetfrom + 1;
               /*    farr[offsetto]   += Gtt*Vmt*Vmt + Vmt*Vmf*(Gtf*PetscCosScalar(thetatf) + Btf*PetscSinScalar(thetatf)); */
               values[0] = Vmt * Vmf * (Gtf * -PetscSinScalar(thetatf) + Btf * PetscCosScalar(thetaft));            /* df_dthetat */
               values[1] = 2.0 * Gtt * Vmt + Vmf * (Gtf * PetscCosScalar(thetatf) + Btf * PetscSinScalar(thetatf)); /* df_dVmt */
@@ -179,11 +181,11 @@ PetscErrorCode FormJacobian_Power_private(DM networkdm, Vec localX, Mat J, Petsc
               PetscCall(MatSetValues(J, 1, row, 4, col, values, ADD_VALUES));
             }
             if (bust->ide != PV_BUS && bust->ide != REF_BUS) {
-              row[0]    = goffsetto + 1;
-              col[0]    = goffsetto;
-              col[1]    = goffsetto + 1;
-              col[2]    = goffsetfrom;
-              col[3]    = goffsetfrom + 1;
+              row[0] = goffsetto + 1;
+              col[0] = goffsetto;
+              col[1] = goffsetto + 1;
+              col[2] = goffsetfrom;
+              col[3] = goffsetfrom + 1;
               /*    farr[offsetto+1] += -Btt*Vmt*Vmt + Vmt*Vmf*(-Btf*PetscCosScalar(thetatf) + Gtf*PetscSinScalar(thetatf)); */
               values[0] = Vmt * Vmf * (Btf * PetscSinScalar(thetatf) + Gtf * PetscCosScalar(thetatf));
               values[1] = -2.0 * Btt * Vmt + Vmf * (-Btf * PetscCosScalar(thetatf) + Gtf * PetscSinScalar(thetatf));
@@ -209,7 +211,8 @@ PetscErrorCode FormJacobian_Power_private(DM networkdm, Vec localX, Mat J, Petsc
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode FormJacobian_Power(SNES snes, Vec X, Mat J, Mat Jpre, void *appctx) {
+PetscErrorCode FormJacobian_Power(SNES snes, Vec X, Mat J, Mat Jpre, void *appctx)
+{
   DM              networkdm;
   Vec             localX;
   PetscInt        nv, ne;
@@ -234,7 +237,8 @@ PetscErrorCode FormJacobian_Power(SNES snes, Vec X, Mat J, Mat Jpre, void *appct
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode FormFunction_Power(DM networkdm, Vec localX, Vec localF, PetscInt nv, PetscInt ne, const PetscInt *vtx, const PetscInt *edges, void *appctx) {
+PetscErrorCode FormFunction_Power(DM networkdm, Vec localX, Vec localF, PetscInt nv, PetscInt ne, const PetscInt *vtx, const PetscInt *edges, void *appctx)
+{
   UserCtx_Power     *User = (UserCtx_Power *)appctx;
   PetscInt           e, v, vfrom, vto;
   const PetscScalar *xarr;
@@ -343,7 +347,8 @@ PetscErrorCode FormFunction_Power(DM networkdm, Vec localX, Vec localF, PetscInt
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode SetInitialGuess_Power(DM networkdm, Vec localX, PetscInt nv, PetscInt ne, const PetscInt *vtx, const PetscInt *edges, void *appctx) {
+PetscErrorCode SetInitialGuess_Power(DM networkdm, Vec localX, PetscInt nv, PetscInt ne, const PetscInt *vtx, const PetscInt *edges, void *appctx)
+{
   VERTEX_Power   bus;
   PetscInt       i;
   GEN            gen;

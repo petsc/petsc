@@ -1,6 +1,7 @@
 #include <../src/snes/impls/richardson/snesrichardsonimpl.h>
 
-PetscErrorCode SNESReset_NRichardson(SNES snes) {
+PetscErrorCode SNESReset_NRichardson(SNES snes)
+{
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
@@ -13,7 +14,8 @@ PetscErrorCode SNESReset_NRichardson(SNES snes) {
 
   Application Interface Routine: SNESDestroy()
 */
-PetscErrorCode SNESDestroy_NRichardson(SNES snes) {
+PetscErrorCode SNESDestroy_NRichardson(SNES snes)
+{
   PetscFunctionBegin;
   PetscCall(SNESReset_NRichardson(snes));
   PetscCall(PetscFree(snes->data));
@@ -30,7 +32,8 @@ PetscErrorCode SNESDestroy_NRichardson(SNES snes) {
 
    Application Interface Routine: SNESSetUp()
  */
-PetscErrorCode SNESSetUp_NRichardson(SNES snes) {
+PetscErrorCode SNESSetUp_NRichardson(SNES snes)
+{
   PetscFunctionBegin;
   PetscCheck(snes->npcside != PC_RIGHT, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "NRichardson only supports left preconditioning");
   if (snes->functype == SNES_FUNCTION_DEFAULT) snes->functype = SNES_FUNCTION_UNPRECONDITIONED;
@@ -45,7 +48,8 @@ PetscErrorCode SNESSetUp_NRichardson(SNES snes) {
 
   Application Interface Routine: SNESSetFromOptions()
 */
-static PetscErrorCode SNESSetFromOptions_NRichardson(SNES snes, PetscOptionItems *PetscOptionsObject) {
+static PetscErrorCode SNESSetFromOptions_NRichardson(SNES snes, PetscOptionItems *PetscOptionsObject)
+{
   PetscFunctionBegin;
   PetscOptionsHeadBegin(PetscOptionsObject, "SNES Richardson options");
   PetscOptionsHeadEnd();
@@ -61,7 +65,8 @@ static PetscErrorCode SNESSetFromOptions_NRichardson(SNES snes, PetscOptionItems
 
   Application Interface Routine: SNESView()
 */
-static PetscErrorCode SNESView_NRichardson(SNES snes, PetscViewer viewer) {
+static PetscErrorCode SNESView_NRichardson(SNES snes, PetscViewer viewer)
+{
   PetscBool iascii;
 
   PetscFunctionBegin;
@@ -81,7 +86,8 @@ static PetscErrorCode SNESView_NRichardson(SNES snes, PetscViewer viewer) {
 
   Application Interface Routine: SNESSolve()
 */
-PetscErrorCode SNESSolve_NRichardson(SNES snes) {
+PetscErrorCode SNESSolve_NRichardson(SNES snes)
+{
   Vec                  X, Y, F;
   PetscReal            xnorm, fnorm, ynorm;
   PetscInt             maxits, i;
@@ -229,7 +235,8 @@ PetscErrorCode SNESSolve_NRichardson(SNES snes) {
 
 .seealso: `SNESCreate()`, `SNES`, `SNESSetType()`, `SNESNEWTONLS`, `SNESNEWTONTR`, `SNESNGMRES`, `SNESQN`, `SNESNCG`
 M*/
-PETSC_EXTERN PetscErrorCode SNESCreate_NRichardson(SNES snes) {
+PETSC_EXTERN PetscErrorCode SNESCreate_NRichardson(SNES snes)
+{
   SNES_NRichardson *neP;
   SNESLineSearch    linesearch;
 

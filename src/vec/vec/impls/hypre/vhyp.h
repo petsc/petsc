@@ -1,4 +1,4 @@
-#if !defined(_VHYP_H)
+#ifndef _VHYP_H
 #define _VHYP_H
 
 #include <petsc/private/petschypre.h>

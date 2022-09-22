@@ -3,7 +3,8 @@ static char help[] = "Used to benchmark changes to the PETSc VecScatter routines
 #include <petscksp.h>
 extern PetscErrorCode PetscLogView_VecScatter(PetscViewer);
 
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   KSP         ksp;
   Mat         A;
   Vec         x, b;
@@ -67,7 +68,8 @@ typedef enum {
   REDUCT,
   FLOPS
 } Stats;
-PetscErrorCode PetscLogView_VecScatter(PetscViewer viewer) {
+PetscErrorCode PetscLogView_VecScatter(PetscViewer viewer)
+{
   MPI_Comm            comm      = PetscObjectComm((PetscObject)viewer);
   PetscEventPerfInfo *eventInfo = NULL;
   PetscLogDouble      locTotalTime, stats[6], maxstats[6], minstats[6], sumstats[6], avetime, ksptime;

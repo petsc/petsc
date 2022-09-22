@@ -4,7 +4,8 @@
 
 static PetscInt c_n1 = -1;
 
-PetscErrorCode MINPACKido(PetscInt *m, PetscInt *n, const PetscInt *indrow, const PetscInt *jpntr, const PetscInt *indcol, const PetscInt *ipntr, PetscInt *ndeg, PetscInt *list, PetscInt *maxclq, PetscInt *iwa1, PetscInt *iwa2, PetscInt *iwa3, PetscInt *iwa4) {
+PetscErrorCode MINPACKido(PetscInt *m, PetscInt *n, const PetscInt *indrow, const PetscInt *jpntr, const PetscInt *indcol, const PetscInt *ipntr, PetscInt *ndeg, PetscInt *list, PetscInt *maxclq, PetscInt *iwa1, PetscInt *iwa2, PetscInt *iwa3, PetscInt *iwa4)
+{
   /* System generated locals */
   PetscInt i__1, i__2, i__3, i__4;
 

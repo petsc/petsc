@@ -7,7 +7,8 @@
 
 PETSC_EXTERN PetscErrorCode DMMoab_Compute_NNZ_From_Connectivity(DM, PetscInt *, PetscInt *, PetscInt *, PetscInt *, PetscBool);
 
-PETSC_EXTERN PetscErrorCode DMCreateMatrix_Moab(DM dm, Mat *J) {
+PETSC_EXTERN PetscErrorCode DMCreateMatrix_Moab(DM dm, Mat *J)
+{
   PetscInt  innz = 0, ionz = 0, nlsiz;
   DM_Moab  *dmmoab = (DM_Moab *)dm->data;
   PetscInt *nnz = 0, *onz = 0;
@@ -59,7 +60,8 @@ PETSC_EXTERN PetscErrorCode DMCreateMatrix_Moab(DM dm, Mat *J) {
   PetscFunctionReturn(0);
 }
 
-PETSC_EXTERN PetscErrorCode DMMoab_Compute_NNZ_From_Connectivity(DM dm, PetscInt *innz, PetscInt *nnz, PetscInt *ionz, PetscInt *onz, PetscBool isbaij) {
+PETSC_EXTERN PetscErrorCode DMMoab_Compute_NNZ_From_Connectivity(DM dm, PetscInt *innz, PetscInt *nnz, PetscInt *ionz, PetscInt *onz, PetscBool isbaij)
+{
   PetscInt                        i, f, nloc, vpere, bs, n_nnz, n_onz, ivtx = 0;
   PetscInt                        ibs, jbs, inbsize, iobsize, nfields, nlsiz;
   DM_Moab                        *dmmoab = (DM_Moab *)dm->data;
@@ -171,7 +173,8 @@ PETSC_EXTERN PetscErrorCode DMMoab_Compute_NNZ_From_Connectivity(DM dm, PetscInt
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMMoabSetBlockFills_Private(PetscInt w, const PetscInt *fill, PetscInt **rfill) {
+static PetscErrorCode DMMoabSetBlockFills_Private(PetscInt w, const PetscInt *fill, PetscInt **rfill)
+{
   PetscInt i, j, *ifill;
 
   PetscFunctionBegin;
@@ -219,7 +222,8 @@ $                         0, 1, 1}
 .seealso `DMCreateMatrix()`, `DMDASetGetMatrix()`, `DMSetMatrixPreallocateOnly()`
 
 @*/
-PetscErrorCode DMMoabSetBlockFills(DM dm, const PetscInt *dfill, const PetscInt *ofill) {
+PetscErrorCode DMMoabSetBlockFills(DM dm, const PetscInt *dfill, const PetscInt *ofill)
+{
   DM_Moab *dmmoab = (DM_Moab *)dm->data;
 
   PetscFunctionBegin;

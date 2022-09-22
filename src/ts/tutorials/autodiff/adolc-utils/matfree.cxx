@@ -27,7 +27,8 @@
   Output parameters:
   Y       - product of A_shell and X
 */
-PetscErrorCode PetscAdolcIJacobianVectorProduct(Mat A_shell, Vec X, Vec Y) {
+PetscErrorCode PetscAdolcIJacobianVectorProduct(Mat A_shell, Vec X, Vec Y)
+{
   AdolcMatCtx       *mctx;
   PetscInt           m, n, i, j, k = 0, d;
   const PetscScalar *x0;
@@ -109,7 +110,8 @@ PetscErrorCode PetscAdolcIJacobianVectorProduct(Mat A_shell, Vec X, Vec Y) {
   Output parameters:
   Y       - product of A_shell and X
 */
-PetscErrorCode PetscAdolcIJacobianVectorProductIDMass(Mat A_shell, Vec X, Vec Y) {
+PetscErrorCode PetscAdolcIJacobianVectorProductIDMass(Mat A_shell, Vec X, Vec Y)
+{
   AdolcMatCtx       *mctx;
   PetscInt           m, n, i, j, k = 0, d;
   const PetscScalar *x0;
@@ -177,7 +179,8 @@ PetscErrorCode PetscAdolcIJacobianVectorProductIDMass(Mat A_shell, Vec X, Vec Y)
   Output parameters:
   X       - product of A_shell transpose and X
 */
-PetscErrorCode PetscAdolcIJacobianTransposeVectorProduct(Mat A_shell, Vec Y, Vec X) {
+PetscErrorCode PetscAdolcIJacobianTransposeVectorProduct(Mat A_shell, Vec Y, Vec X)
+{
   AdolcMatCtx       *mctx;
   PetscInt           m, n, i, j, k = 0, d;
   const PetscScalar *x;
@@ -263,7 +266,8 @@ PetscErrorCode PetscAdolcIJacobianTransposeVectorProduct(Mat A_shell, Vec Y, Vec
   Output parameters:
   X       - product of A_shell transpose and X
 */
-PetscErrorCode PetscAdolcIJacobianTransposeVectorProductIDMass(Mat A_shell, Vec Y, Vec X) {
+PetscErrorCode PetscAdolcIJacobianTransposeVectorProductIDMass(Mat A_shell, Vec Y, Vec X)
+{
   AdolcMatCtx       *mctx;
   PetscInt           m, n, i, j, k = 0, d;
   const PetscScalar *x;

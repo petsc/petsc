@@ -31,7 +31,8 @@ static const char help[] = "1D periodic Finite Volume solver in slope-limiter fo
 
 #include "finitevolume1d.h"
 
-static inline PetscReal RangeMod(PetscReal a, PetscReal xmin, PetscReal xmax) {
+static inline PetscReal RangeMod(PetscReal a, PetscReal xmin, PetscReal xmax)
+{
   PetscReal range = xmax - xmin;
   return xmin + PetscFmodReal(range + PetscFmodReal(a, range), range);
 }
@@ -42,7 +43,8 @@ typedef struct {
   PetscReal a[2]; /* advective velocity */
 } AdvectCtx;
 
-static PetscErrorCode PhysicsRiemann_Advect(void *vctx, PetscInt m, const PetscScalar *uL, const PetscScalar *uR, PetscScalar *flux, PetscReal *maxspeed, PetscReal x, PetscReal xmin, PetscReal xmax) {
+static PetscErrorCode PhysicsRiemann_Advect(void *vctx, PetscInt m, const PetscScalar *uL, const PetscScalar *uR, PetscScalar *flux, PetscReal *maxspeed, PetscReal x, PetscReal xmin, PetscReal xmax)
+{
   AdvectCtx *ctx = (AdvectCtx *)vctx;
   PetscReal *speed;
 
@@ -56,7 +58,8 @@ static PetscErrorCode PhysicsRiemann_Advect(void *vctx, PetscInt m, const PetscS
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PhysicsCharacteristic_Advect(void *vctx, PetscInt m, const PetscScalar *u, PetscScalar *X, PetscScalar *Xi, PetscReal *speeds, PetscReal x) {
+static PetscErrorCode PhysicsCharacteristic_Advect(void *vctx, PetscInt m, const PetscScalar *u, PetscScalar *X, PetscScalar *Xi, PetscReal *speeds, PetscReal x)
+{
   AdvectCtx *ctx = (AdvectCtx *)vctx;
 
   PetscFunctionBeginUser;
@@ -67,50 +70,96 @@ static PetscErrorCode PhysicsCharacteristic_Advect(void *vctx, PetscInt m, const
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PhysicsSample_Advect(void *vctx, PetscInt initial, FVBCType bctype, PetscReal xmin, PetscReal xmax, PetscReal t, PetscReal x, PetscReal *u) {
+static PetscErrorCode PhysicsSample_Advect(void *vctx, PetscInt initial, FVBCType bctype, PetscReal xmin, PetscReal xmax, PetscReal t, PetscReal x, PetscReal *u)
+{
   AdvectCtx *ctx = (AdvectCtx *)vctx;
   PetscReal *a   = ctx->a, x0;
 
   PetscFunctionBeginUser;
   if (x < 0) { /* x is cell center */
     switch (bctype) {
-    case FVBC_OUTFLOW: x0 = x - a[0] * t; break;
-    case FVBC_PERIODIC: x0 = RangeMod(x - a[0] * t, xmin, xmax); break;
-    default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_UNKNOWN_TYPE, "unknown BCType");
+    case FVBC_OUTFLOW:
+      x0 = x - a[0] * t;
+      break;
+    case FVBC_PERIODIC:
+      x0 = RangeMod(x - a[0] * t, xmin, xmax);
+      break;
+    default:
+      SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_UNKNOWN_TYPE, "unknown BCType");
     }
     switch (initial) {
-    case 0: u[0] = (x0 < 0) ? 1 : -1; break;
-    case 1: u[0] = (x0 < 0) ? -1 : 1; break;
-    case 2: u[0] = (0 < x0 && x0 < 1) ? 1 : 0; break;
-    case 3: u[0] = PetscSinReal(2 * PETSC_PI * x0); break;
-    case 4: u[0] = PetscAbs(x0); break;
-    case 5: u[0] = (x0 < 0 || x0 > 0.5) ? 0 : PetscSqr(PetscSinReal(2 * PETSC_PI * x0)); break;
-    case 6: u[0] = (x0 < 0) ? 0 : ((x0 < 1) ? x0 : ((x0 < 2) ? 2 - x0 : 0)); break;
-    case 7: u[0] = PetscPowReal(PetscSinReal(PETSC_PI * x0), 10.0); break;
-    default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_UNKNOWN_TYPE, "unknown initial condition");
+    case 0:
+      u[0] = (x0 < 0) ? 1 : -1;
+      break;
+    case 1:
+      u[0] = (x0 < 0) ? -1 : 1;
+      break;
+    case 2:
+      u[0] = (0 < x0 && x0 < 1) ? 1 : 0;
+      break;
+    case 3:
+      u[0] = PetscSinReal(2 * PETSC_PI * x0);
+      break;
+    case 4:
+      u[0] = PetscAbs(x0);
+      break;
+    case 5:
+      u[0] = (x0 < 0 || x0 > 0.5) ? 0 : PetscSqr(PetscSinReal(2 * PETSC_PI * x0));
+      break;
+    case 6:
+      u[0] = (x0 < 0) ? 0 : ((x0 < 1) ? x0 : ((x0 < 2) ? 2 - x0 : 0));
+      break;
+    case 7:
+      u[0] = PetscPowReal(PetscSinReal(PETSC_PI * x0), 10.0);
+      break;
+    default:
+      SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_UNKNOWN_TYPE, "unknown initial condition");
     }
   } else {
     switch (bctype) {
-    case FVBC_OUTFLOW: x0 = x - a[1] * t; break;
-    case FVBC_PERIODIC: x0 = RangeMod(x - a[1] * t, xmin, xmax); break;
-    default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_UNKNOWN_TYPE, "unknown BCType");
+    case FVBC_OUTFLOW:
+      x0 = x - a[1] * t;
+      break;
+    case FVBC_PERIODIC:
+      x0 = RangeMod(x - a[1] * t, xmin, xmax);
+      break;
+    default:
+      SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_UNKNOWN_TYPE, "unknown BCType");
     }
     switch (initial) {
-    case 0: u[0] = (x0 < 0) ? 1 : -1; break;
-    case 1: u[0] = (x0 < 0) ? -1 : 1; break;
-    case 2: u[0] = (0 < x0 && x0 < 1) ? 1 : 0; break;
-    case 3: u[0] = PetscSinReal(2 * PETSC_PI * x0); break;
-    case 4: u[0] = PetscAbs(x0); break;
-    case 5: u[0] = (x0 < 0 || x0 > 0.5) ? 0 : PetscSqr(PetscSinReal(2 * PETSC_PI * x0)); break;
-    case 6: u[0] = (x0 < 0) ? 0 : ((x0 < 1) ? x0 : ((x0 < 2) ? 2 - x0 : 0)); break;
-    case 7: u[0] = PetscPowReal(PetscSinReal(PETSC_PI * x0), 10.0); break;
-    default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_UNKNOWN_TYPE, "unknown initial condition");
+    case 0:
+      u[0] = (x0 < 0) ? 1 : -1;
+      break;
+    case 1:
+      u[0] = (x0 < 0) ? -1 : 1;
+      break;
+    case 2:
+      u[0] = (0 < x0 && x0 < 1) ? 1 : 0;
+      break;
+    case 3:
+      u[0] = PetscSinReal(2 * PETSC_PI * x0);
+      break;
+    case 4:
+      u[0] = PetscAbs(x0);
+      break;
+    case 5:
+      u[0] = (x0 < 0 || x0 > 0.5) ? 0 : PetscSqr(PetscSinReal(2 * PETSC_PI * x0));
+      break;
+    case 6:
+      u[0] = (x0 < 0) ? 0 : ((x0 < 1) ? x0 : ((x0 < 2) ? 2 - x0 : 0));
+      break;
+    case 7:
+      u[0] = PetscPowReal(PetscSinReal(PETSC_PI * x0), 10.0);
+      break;
+    default:
+      SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_UNKNOWN_TYPE, "unknown initial condition");
     }
   }
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PhysicsCreate_Advect(FVCtx *ctx) {
+static PetscErrorCode PhysicsCreate_Advect(FVCtx *ctx)
+{
   AdvectCtx *user;
 
   PetscFunctionBeginUser;
@@ -135,7 +184,8 @@ static PetscErrorCode PhysicsCreate_Advect(FVCtx *ctx) {
 
 /* --------------------------------- Finite Volume Solver for slow parts ----------------------------------- */
 
-PetscErrorCode FVRHSFunctionslow(TS ts, PetscReal time, Vec X, Vec F, void *vctx) {
+PetscErrorCode FVRHSFunctionslow(TS ts, PetscReal time, Vec X, Vec F, void *vctx)
+{
   FVCtx       *ctx = (FVCtx *)vctx;
   PetscInt     i, j, k, Mx, dof, xs, xm, len_slow;
   PetscReal    hx, cfl_idt = 0;
@@ -239,7 +289,8 @@ PetscErrorCode FVRHSFunctionslow(TS ts, PetscReal time, Vec X, Vec F, void *vctx
 
 /* --------------------------------- Finite Volume Solver for fast  parts ----------------------------------- */
 
-PetscErrorCode FVRHSFunctionfast(TS ts, PetscReal time, Vec X, Vec F, void *vctx) {
+PetscErrorCode FVRHSFunctionfast(TS ts, PetscReal time, Vec X, Vec F, void *vctx)
+{
   FVCtx       *ctx = (FVCtx *)vctx;
   PetscInt     i, j, k, Mx, dof, xs, xm, len_slow;
   PetscReal    hx, cfl_idt = 0;
@@ -339,7 +390,8 @@ PetscErrorCode FVRHSFunctionfast(TS ts, PetscReal time, Vec X, Vec F, void *vctx
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode FVRHSFunctionslow2(TS ts, PetscReal time, Vec X, Vec F, void *vctx) {
+PetscErrorCode FVRHSFunctionslow2(TS ts, PetscReal time, Vec X, Vec F, void *vctx)
+{
   FVCtx       *ctx = (FVCtx *)vctx;
   PetscInt     i, j, k, Mx, dof, xs, xm, len_slow1, len_slow2;
   PetscReal    hx, cfl_idt = 0;
@@ -453,7 +505,8 @@ PetscErrorCode FVRHSFunctionslow2(TS ts, PetscReal time, Vec X, Vec F, void *vct
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode FVRHSFunctionfast2(TS ts, PetscReal time, Vec X, Vec F, void *vctx) {
+PetscErrorCode FVRHSFunctionfast2(TS ts, PetscReal time, Vec X, Vec F, void *vctx)
+{
   FVCtx       *ctx = (FVCtx *)vctx;
   PetscInt     i, j, k, Mx, dof, xs, xm, len_slow1, len_slow2;
   PetscReal    hx, cfl_idt = 0;
@@ -554,7 +607,8 @@ PetscErrorCode FVRHSFunctionfast2(TS ts, PetscReal time, Vec X, Vec F, void *vct
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[])
+{
   char              lname[256] = "mc", physname[256] = "advect", final_fname[256] = "solution.m";
   PetscFunctionList limiters = 0, physics = 0;
   MPI_Comm          comm;

@@ -3,16 +3,16 @@ static const char help[] = "Integrate chemistry using TChem.\n";
 #include <petscts.h>
 
 #if defined(PETSC_HAVE_TCHEM)
-#if defined(MAX)
-#undef MAX
-#endif
-#if defined(MIN)
-#undef MIN
-#endif
-#include <TC_params.h>
-#include <TC_interface.h>
+  #if defined(MAX)
+    #undef MAX
+  #endif
+  #if defined(MIN)
+    #undef MIN
+  #endif
+  #include <TC_params.h>
+  #include <TC_interface.h>
 #else
-#error TChem is required for this example.  Reconfigure PETSc using --download-tchem.
+  #error TChem is required for this example.  Reconfigure PETSc using --download-tchem.
 #endif
 /*
     See extchem.example.1 for how to run an example
@@ -60,9 +60,12 @@ static PetscErrorCode MonitorMassConservation(TS, PetscInt, PetscReal, Vec, void
 static PetscErrorCode MonitorTempature(TS, PetscInt, PetscReal, Vec, void *);
 
 #define PetscCallTC(ierr) \
-  do { PetscCheck(!ierr, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in TChem library, return code %d", ierr); } while (0)
+  do { \
+    PetscCheck(!ierr, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in TChem library, return code %d", ierr); \
+  } while (0)
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   TS                ts; /* time integrator */
   TSAdapt           adapt;
   Vec               X, lambda; /* solution vector */
@@ -221,7 +224,8 @@ int main(int argc, char **argv) {
   return 0;
 }
 
-static PetscErrorCode FormRHSFunction(TS ts, PetscReal t, Vec X, Vec F, void *ptr) {
+static PetscErrorCode FormRHSFunction(TS ts, PetscReal t, Vec X, Vec F, void *ptr)
+{
   User               user = (User)ptr;
   PetscScalar       *f;
   const PetscScalar *x;
@@ -240,7 +244,8 @@ static PetscErrorCode FormRHSFunction(TS ts, PetscReal t, Vec X, Vec F, void *pt
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode FormRHSJacobian(TS ts, PetscReal t, Vec X, Mat Amat, Mat Pmat, void *ptr) {
+static PetscErrorCode FormRHSJacobian(TS ts, PetscReal t, Vec X, Mat Amat, Mat Pmat, void *ptr)
+{
   User               user = (User)ptr;
   const PetscScalar *x;
   PetscInt           M = user->Nspec + 1, i;
@@ -269,7 +274,8 @@ static PetscErrorCode FormRHSJacobian(TS ts, PetscReal t, Vec X, Mat Amat, Mat P
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode FormInitialSolution(TS ts, Vec X, void *ctx) {
+PetscErrorCode FormInitialSolution(TS ts, Vec X, void *ctx)
+{
   PetscScalar   *x;
   PetscInt       i;
   Vec            y;
@@ -309,7 +315,8 @@ PetscErrorCode FormInitialSolution(TS ts, Vec X, void *ctx) {
 /*
    Converts the input vector which is in mass fractions (used by tchem) to mole fractions
 */
-PetscErrorCode MassFractionToMoleFraction(User user, Vec massf, Vec *molef) {
+PetscErrorCode MassFractionToMoleFraction(User user, Vec massf, Vec *molef)
+{
   PetscScalar       *mof;
   const PetscScalar *maf;
 
@@ -327,7 +334,8 @@ PetscErrorCode MassFractionToMoleFraction(User user, Vec massf, Vec *molef) {
 /*
    Converts the input vector which is in mole fractions to mass fractions (used by tchem)
 */
-PetscErrorCode MoleFractionToMassFraction(User user, Vec molef, Vec *massf) {
+PetscErrorCode MoleFractionToMassFraction(User user, Vec molef, Vec *massf)
+{
   const PetscScalar *mof;
   PetscScalar       *maf;
 
@@ -342,13 +350,15 @@ PetscErrorCode MoleFractionToMassFraction(User user, Vec molef, Vec *massf) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode ComputeMassConservation(Vec x, PetscReal *mass, void *ctx) {
+PetscErrorCode ComputeMassConservation(Vec x, PetscReal *mass, void *ctx)
+{
   PetscFunctionBeginUser;
   PetscCall(VecSum(x, mass));
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MonitorMassConservation(TS ts, PetscInt step, PetscReal time, Vec x, void *ctx) {
+PetscErrorCode MonitorMassConservation(TS ts, PetscInt step, PetscReal time, Vec x, void *ctx)
+{
   const PetscScalar *T;
   PetscReal          mass;
 
@@ -361,7 +371,8 @@ PetscErrorCode MonitorMassConservation(TS ts, PetscInt step, PetscReal time, Vec
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MonitorTempature(TS ts, PetscInt step, PetscReal time, Vec x, void *ctx) {
+PetscErrorCode MonitorTempature(TS ts, PetscInt step, PetscReal time, Vec x, void *ctx)
+{
   User               user = (User)ctx;
   const PetscScalar *T;
 
@@ -375,7 +386,8 @@ PetscErrorCode MonitorTempature(TS ts, PetscInt step, PetscReal time, Vec x, voi
 /*
    Prints out each species with its name
 */
-PETSC_UNUSED PetscErrorCode PrintSpecies(User user, Vec molef) {
+PETSC_UNUSED PetscErrorCode PrintSpecies(User user, Vec molef)
+{
   const PetscScalar *mof;
   PetscInt           i, *idx, n = user->Nspec + 1;
 

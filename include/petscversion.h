@@ -1,4 +1,4 @@
-#if !defined(PETSCVERSION_H)
+#ifndef PETSCVERSION_H
 #define PETSCVERSION_H
 #include <petscconf.h>
 
@@ -10,11 +10,11 @@
 #define PETSC_VERSION_DATE     "unknown"
 
 #if !defined(PETSC_VERSION_GIT)
-#define PETSC_VERSION_GIT "unknown"
+  #define PETSC_VERSION_GIT "unknown"
 #endif
 
 #if !defined(PETSC_VERSION_DATE_GIT)
-#define PETSC_VERSION_DATE_GIT "unknown"
+  #define PETSC_VERSION_DATE_GIT "unknown"
 #endif
 
 #define PETSC_VERSION_EQ(MAJOR, MINOR, SUBMINOR) ((PETSC_VERSION_MAJOR == (MAJOR)) && (PETSC_VERSION_MINOR == (MINOR)) && (PETSC_VERSION_SUBMINOR == (SUBMINOR)) && (PETSC_VERSION_RELEASE == 1))

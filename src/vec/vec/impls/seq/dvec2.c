@@ -7,8 +7,9 @@
 #include <petsc/private/kernels/petscaxpy.h>
 
 #if defined(PETSC_USE_FORTRAN_KERNEL_MDOT)
-#include <../src/vec/vec/impls/seq/ftn-kernels/fmdot.h>
-PetscErrorCode VecMDot_Seq(Vec xin, PetscInt nv, const Vec yin[], PetscScalar *z) {
+  #include <../src/vec/vec/impls/seq/ftn-kernels/fmdot.h>
+PetscErrorCode VecMDot_Seq(Vec xin, PetscInt nv, const Vec yin[], PetscScalar *z)
+{
   PetscInt           i, nv_rem, n = xin->map->n;
   PetscScalar        sum0, sum1, sum2, sum3;
   const PetscScalar *yy0, *yy1, *yy2, *yy3, *x;
@@ -52,7 +53,8 @@ PetscErrorCode VecMDot_Seq(Vec xin, PetscInt nv, const Vec yin[], PetscScalar *z
     PetscCall(VecRestoreArrayRead(yy[0], &yy0));
     z[0] = sum0;
     break;
-  case 0: break;
+  case 0:
+    break;
   }
   z += nv_rem;
   i -= nv_rem;
@@ -86,7 +88,8 @@ PetscErrorCode VecMDot_Seq(Vec xin, PetscInt nv, const Vec yin[], PetscScalar *z
 }
 
 #else
-PetscErrorCode VecMDot_Seq(Vec xin, PetscInt nv, const Vec yin[], PetscScalar *z) {
+PetscErrorCode VecMDot_Seq(Vec xin, PetscInt nv, const Vec yin[], PetscScalar *z)
+{
   PetscInt           n = xin->map->n, i, j, nv_rem, j_rem;
   PetscScalar        sum0, sum1, sum2, sum3, x0, x1, x2, x3;
   const PetscScalar *yy0, *yy1, *yy2, *yy3, *x, *xbase;
@@ -200,9 +203,15 @@ PetscErrorCode VecMDot_Seq(Vec xin, PetscInt nv, const Vec yin[], PetscScalar *z
   case 1:
     PetscCall(VecGetArrayRead(yy[0], &yy0));
     switch (j_rem = j & 0x3) {
-    case 3: x2 = x[2]; sum0 += x2 * PetscConj(yy0[2]); /* fall through */
-    case 2: x1 = x[1]; sum0 += x1 * PetscConj(yy0[1]); /* fall through */
-    case 1: x0 = x[0]; sum0 += x0 * PetscConj(yy0[0]); /* fall through */
+    case 3:
+      x2 = x[2];
+      sum0 += x2 * PetscConj(yy0[2]); /* fall through */
+    case 2:
+      x1 = x[1];
+      sum0 += x1 * PetscConj(yy0[1]); /* fall through */
+    case 1:
+      x0 = x[0];
+      sum0 += x0 * PetscConj(yy0[0]); /* fall through */
     case 0:
       x += j_rem;
       yy0 += j_rem;
@@ -219,7 +228,8 @@ PetscErrorCode VecMDot_Seq(Vec xin, PetscInt nv, const Vec yin[], PetscScalar *z
 
     PetscCall(VecRestoreArrayRead(yy[0], &yy0));
     break;
-  case 0: break;
+  case 0:
+    break;
   }
   z += nv_rem;
   i -= nv_rem;
@@ -301,7 +311,8 @@ PetscErrorCode VecMDot_Seq(Vec xin, PetscInt nv, const Vec yin[], PetscScalar *z
 #endif
 
 /* ----------------------------------------------------------------------------*/
-PetscErrorCode VecMTDot_Seq(Vec xin, PetscInt nv, const Vec yin[], PetscScalar *z) {
+PetscErrorCode VecMTDot_Seq(Vec xin, PetscInt nv, const Vec yin[], PetscScalar *z)
+{
   PetscInt           n = xin->map->n, i, j, nv_rem, j_rem;
   PetscScalar        sum0, sum1, sum2, sum3, x0, x1, x2, x3;
   const PetscScalar *yy0, *yy1, *yy2, *yy3, *x, *xbase;
@@ -415,9 +426,15 @@ PetscErrorCode VecMTDot_Seq(Vec xin, PetscInt nv, const Vec yin[], PetscScalar *
   case 1:
     PetscCall(VecGetArrayRead(yy[0], &yy0));
     switch (j_rem = j & 0x3) {
-    case 3: x2 = x[2]; sum0 += x2 * yy0[2]; /* fall through */
-    case 2: x1 = x[1]; sum0 += x1 * yy0[1]; /* fall through */
-    case 1: x0 = x[0]; sum0 += x0 * yy0[0]; /* fall through */
+    case 3:
+      x2 = x[2];
+      sum0 += x2 * yy0[2]; /* fall through */
+    case 2:
+      x1 = x[1];
+      sum0 += x1 * yy0[1]; /* fall through */
+    case 1:
+      x0 = x[0];
+      sum0 += x0 * yy0[0]; /* fall through */
     case 0:
       x += j_rem;
       yy0 += j_rem;
@@ -434,7 +451,8 @@ PetscErrorCode VecMTDot_Seq(Vec xin, PetscInt nv, const Vec yin[], PetscScalar *
 
     PetscCall(VecRestoreArrayRead(yy[0], &yy0));
     break;
-  case 0: break;
+  case 0:
+    break;
   }
   z += nv_rem;
   i -= nv_rem;
@@ -514,7 +532,8 @@ PetscErrorCode VecMTDot_Seq(Vec xin, PetscInt nv, const Vec yin[], PetscScalar *
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode VecMax_Seq(Vec xin, PetscInt *idx, PetscReal *z) {
+PetscErrorCode VecMax_Seq(Vec xin, PetscInt *idx, PetscReal *z)
+{
   PetscInt           i, j = 0, n = xin->map->n;
   PetscReal          max, tmp;
   const PetscScalar *xx;
@@ -540,7 +559,8 @@ PetscErrorCode VecMax_Seq(Vec xin, PetscInt *idx, PetscReal *z) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode VecMin_Seq(Vec xin, PetscInt *idx, PetscReal *z) {
+PetscErrorCode VecMin_Seq(Vec xin, PetscInt *idx, PetscReal *z)
+{
   PetscInt           i, j = 0, n = xin->map->n;
   PetscReal          min, tmp;
   const PetscScalar *xx;
@@ -566,7 +586,8 @@ PetscErrorCode VecMin_Seq(Vec xin, PetscInt *idx, PetscReal *z) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode VecSet_Seq(Vec xin, PetscScalar alpha) {
+PetscErrorCode VecSet_Seq(Vec xin, PetscScalar alpha)
+{
   PetscInt     i, n = xin->map->n;
   PetscScalar *xx;
 
@@ -581,13 +602,14 @@ PetscErrorCode VecSet_Seq(Vec xin, PetscScalar alpha) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode VecMAXPY_Seq(Vec xin, PetscInt nv, const PetscScalar *alpha, Vec *y) {
+PetscErrorCode VecMAXPY_Seq(Vec xin, PetscInt nv, const PetscScalar *alpha, Vec *y)
+{
   PetscInt           n = xin->map->n, j, j_rem;
   const PetscScalar *yy0, *yy1, *yy2, *yy3;
   PetscScalar       *xx, alpha0, alpha1, alpha2, alpha3;
 
 #if defined(PETSC_HAVE_PRAGMA_DISJOINT)
-#pragma disjoint(*xx, *yy0, *yy1, *yy2, *yy3, *alpha)
+  #pragma disjoint(*xx, *yy0, *yy1, *yy2, *yy3, *alpha)
 #endif
 
   PetscFunctionBegin;
@@ -651,7 +673,8 @@ PetscErrorCode VecMAXPY_Seq(Vec xin, PetscInt nv, const PetscScalar *alpha, Vec 
 
 #include <../src/vec/vec/impls/seq/ftn-kernels/faypx.h>
 
-PetscErrorCode VecAYPX_Seq(Vec yin, PetscScalar alpha, Vec xin) {
+PetscErrorCode VecAYPX_Seq(Vec yin, PetscScalar alpha, Vec xin)
+{
   PetscInt           n = yin->map->n;
   PetscScalar       *yy;
   const PetscScalar *xx;
@@ -700,7 +723,8 @@ PetscErrorCode VecAYPX_Seq(Vec yin, PetscScalar alpha, Vec xin) {
    void ?zaxpy(int*,PetscScalar*,PetscScalar*,int*,PetscScalar*,int*,PetscScalar*,int*);
 */
 
-PetscErrorCode VecWAXPY_Seq(Vec win, PetscScalar alpha, Vec xin, Vec yin) {
+PetscErrorCode VecWAXPY_Seq(Vec win, PetscScalar alpha, Vec xin, Vec yin)
+{
   PetscInt           i, n = win->map->n;
   PetscScalar       *ww;
   const PetscScalar *yy, *xx;
@@ -733,7 +757,8 @@ PetscErrorCode VecWAXPY_Seq(Vec win, PetscScalar alpha, Vec xin, Vec yin) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode VecMaxPointwiseDivide_Seq(Vec xin, Vec yin, PetscReal *max) {
+PetscErrorCode VecMaxPointwiseDivide_Seq(Vec xin, Vec yin, PetscReal *max)
+{
   PetscInt           n = xin->map->n, i;
   const PetscScalar *xx, *yy;
   PetscReal          m = 0.0;
@@ -755,7 +780,8 @@ PetscErrorCode VecMaxPointwiseDivide_Seq(Vec xin, Vec yin, PetscReal *max) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode VecPlaceArray_Seq(Vec vin, const PetscScalar *a) {
+PetscErrorCode VecPlaceArray_Seq(Vec vin, const PetscScalar *a)
+{
   Vec_Seq *v = (Vec_Seq *)vin->data;
 
   PetscFunctionBegin;
@@ -765,7 +791,8 @@ PetscErrorCode VecPlaceArray_Seq(Vec vin, const PetscScalar *a) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode VecReplaceArray_Seq(Vec vin, const PetscScalar *a) {
+PetscErrorCode VecReplaceArray_Seq(Vec vin, const PetscScalar *a)
+{
   Vec_Seq *v = (Vec_Seq *)vin->data;
 
   PetscFunctionBegin;

@@ -11,7 +11,8 @@ static char help[] = "This example is intended for showing how subvectors can\n\
    that F gets updated as a result of sharing the pointers.
  */
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscInt           N = 10, i;
   Vec                X, Y, F, X1, Y1, X2, Y2, F1, F2;
   PetscScalar        value, zero = 0.0;

@@ -8,7 +8,8 @@ PetscFunctionList DMPlexTransformList              = NULL;
 PetscBool         DMPlexTransformRegisterAllCalled = PETSC_FALSE;
 
 /* Construct cell type order since we must loop over cell types in depth order */
-static PetscErrorCode DMPlexCreateCellTypeOrder_Internal(PetscInt dim, PetscInt *ctOrder[], PetscInt *ctOrderInv[]) {
+static PetscErrorCode DMPlexCreateCellTypeOrder_Internal(PetscInt dim, PetscInt *ctOrder[], PetscInt *ctOrderInv[])
+{
   PetscInt *ctO, *ctOInv;
   PetscInt  c, d, off = 0;
 
@@ -74,7 +75,8 @@ static PetscErrorCode DMPlexCreateCellTypeOrder_Internal(PetscInt dim, PetscInt 
 
 .seealso: `DMPlexTransformRegisterAll()`, `DMPlexTransformRegisterDestroy()`
 @*/
-PetscErrorCode DMPlexTransformRegister(const char name[], PetscErrorCode (*create_func)(DMPlexTransform)) {
+PetscErrorCode DMPlexTransformRegister(const char name[], PetscErrorCode (*create_func)(DMPlexTransform))
+{
   PetscFunctionBegin;
   PetscCall(DMInitializePackage());
   PetscCall(PetscFunctionListAdd(&DMPlexTransformList, name, create_func));
@@ -99,7 +101,8 @@ PETSC_EXTERN PetscErrorCode DMPlexTransformCreate_Extrude(DMPlexTransform);
 
 .seealso: `DMRegisterAll()`, `DMPlexTransformRegisterDestroy()`
 @*/
-PetscErrorCode DMPlexTransformRegisterAll(void) {
+PetscErrorCode DMPlexTransformRegisterAll(void)
+{
   PetscFunctionBegin;
   if (DMPlexTransformRegisterAllCalled) PetscFunctionReturn(0);
   DMPlexTransformRegisterAllCalled = PETSC_TRUE;
@@ -122,7 +125,8 @@ PetscErrorCode DMPlexTransformRegisterAll(void) {
 
 .seealso: `PetscInitialize()`
 @*/
-PetscErrorCode DMPlexTransformRegisterDestroy(void) {
+PetscErrorCode DMPlexTransformRegisterDestroy(void)
+{
   PetscFunctionBegin;
   PetscCall(PetscFunctionListDestroy(&DMPlexTransformList));
   DMPlexTransformRegisterAllCalled = PETSC_FALSE;
@@ -144,7 +148,8 @@ PetscErrorCode DMPlexTransformRegisterDestroy(void) {
 
 .seealso: `DMPlexTransformSetType()`, `DMPLEXREFINEREGULAR`, `DMPLEXTRANSFORMFILTER`
 @*/
-PetscErrorCode DMPlexTransformCreate(MPI_Comm comm, DMPlexTransform *tr) {
+PetscErrorCode DMPlexTransformCreate(MPI_Comm comm, DMPlexTransform *tr)
+{
   DMPlexTransform t;
 
   PetscFunctionBegin;
@@ -178,7 +183,8 @@ PetscErrorCode DMPlexTransformCreate(MPI_Comm comm, DMPlexTransform *tr) {
 
 .seealso: `DMPlexTransformGetType()`, `DMPlexTransformCreate()`
 @*/
-PetscErrorCode DMPlexTransformSetType(DMPlexTransform tr, DMPlexTransformType method) {
+PetscErrorCode DMPlexTransformSetType(DMPlexTransform tr, DMPlexTransformType method)
+{
   PetscErrorCode (*r)(DMPlexTransform);
   PetscBool match;
 
@@ -213,7 +219,8 @@ PetscErrorCode DMPlexTransformSetType(DMPlexTransform tr, DMPlexTransformType me
 
 .seealso: `DMPlexTransformSetType()`, `DMPlexTransformCreate()`
 @*/
-PetscErrorCode DMPlexTransformGetType(DMPlexTransform tr, DMPlexTransformType *type) {
+PetscErrorCode DMPlexTransformGetType(DMPlexTransform tr, DMPlexTransformType *type)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tr, DMPLEXTRANSFORM_CLASSID, 1);
   PetscValidPointer(type, 2);
@@ -222,7 +229,8 @@ PetscErrorCode DMPlexTransformGetType(DMPlexTransform tr, DMPlexTransformType *t
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMPlexTransformView_Ascii(DMPlexTransform tr, PetscViewer v) {
+static PetscErrorCode DMPlexTransformView_Ascii(DMPlexTransform tr, PetscViewer v)
+{
   PetscViewerFormat format;
 
   PetscFunctionBegin;
@@ -279,7 +287,8 @@ static PetscErrorCode DMPlexTransformView_Ascii(DMPlexTransform tr, PetscViewer 
 
 .seealso `DMPlexTransformDestroy()`, `DMPlexTransformCreate()`
 @*/
-PetscErrorCode DMPlexTransformView(DMPlexTransform tr, PetscViewer v) {
+PetscErrorCode DMPlexTransformView(DMPlexTransform tr, PetscViewer v)
+{
   PetscBool isascii;
 
   PetscFunctionBegin;
@@ -310,7 +319,8 @@ PetscErrorCode DMPlexTransformView(DMPlexTransform tr, PetscViewer v) {
 
 .seealso `DMPlexTransformView()`, `DMPlexTransformCreate()`
 @*/
-PetscErrorCode DMPlexTransformSetFromOptions(DMPlexTransform tr) {
+PetscErrorCode DMPlexTransformSetFromOptions(DMPlexTransform tr)
+{
   char        typeName[1024];
   const char *defName = DMPLEXREFINEREGULAR;
   PetscBool   flg;
@@ -340,7 +350,8 @@ PetscErrorCode DMPlexTransformSetFromOptions(DMPlexTransform tr) {
 
 .seealso `DMPlexTransformView()`, `DMPlexTransformCreate()`
 @*/
-PetscErrorCode DMPlexTransformDestroy(DMPlexTransform *tr) {
+PetscErrorCode DMPlexTransformDestroy(DMPlexTransform *tr)
+{
   PetscInt c;
 
   PetscFunctionBegin;
@@ -387,7 +398,8 @@ PetscErrorCode DMPlexTransformDestroy(DMPlexTransform *tr) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMPlexTransformCreateOffset_Internal(DMPlexTransform tr, PetscInt ctOrderOld[], PetscInt ctStart[], PetscInt **offset) {
+static PetscErrorCode DMPlexTransformCreateOffset_Internal(DMPlexTransform tr, PetscInt ctOrderOld[], PetscInt ctStart[], PetscInt **offset)
+{
   DMLabel  trType = tr->trType;
   PetscInt c, cN, *off;
 
@@ -495,7 +507,8 @@ static PetscErrorCode DMPlexTransformCreateOffset_Internal(DMPlexTransform tr, P
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMPlexTransformSetUp(DMPlexTransform tr) {
+PetscErrorCode DMPlexTransformSetUp(DMPlexTransform tr)
+{
   DM             dm;
   DMPolytopeType ctCell;
   PetscInt       pStart, pEnd, p, c, celldim = 0;
@@ -513,11 +526,20 @@ PetscErrorCode DMPlexTransformSetUp(DMPlexTransform tr) {
 
     PetscCall(DMGetDimension(dm, &dim));
     switch (dim) {
-    case 0: ctCell = DM_POLYTOPE_POINT; break;
-    case 1: ctCell = DM_POLYTOPE_SEGMENT; break;
-    case 2: ctCell = DM_POLYTOPE_TRIANGLE; break;
-    case 3: ctCell = DM_POLYTOPE_TETRAHEDRON; break;
-    default: ctCell = DM_POLYTOPE_UNKNOWN;
+    case 0:
+      ctCell = DM_POLYTOPE_POINT;
+      break;
+    case 1:
+      ctCell = DM_POLYTOPE_SEGMENT;
+      break;
+    case 2:
+      ctCell = DM_POLYTOPE_TRIANGLE;
+      break;
+    case 3:
+      ctCell = DM_POLYTOPE_TETRAHEDRON;
+      break;
+    default:
+      ctCell = DM_POLYTOPE_UNKNOWN;
     }
   }
   PetscCall(DMPlexCreateCellTypeOrder_Internal(DMPolytopeTypeGetDim(ctCell), &tr->ctOrderOld, &tr->ctOrderInvOld));
@@ -569,7 +591,8 @@ PetscErrorCode DMPlexTransformSetUp(DMPlexTransform tr) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMPlexTransformGetDM(DMPlexTransform tr, DM *dm) {
+PetscErrorCode DMPlexTransformGetDM(DMPlexTransform tr, DM *dm)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tr, DMPLEXTRANSFORM_CLASSID, 1);
   PetscValidPointer(dm, 2);
@@ -577,7 +600,8 @@ PetscErrorCode DMPlexTransformGetDM(DMPlexTransform tr, DM *dm) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMPlexTransformSetDM(DMPlexTransform tr, DM dm) {
+PetscErrorCode DMPlexTransformSetDM(DMPlexTransform tr, DM dm)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tr, DMPLEXTRANSFORM_CLASSID, 1);
   PetscValidHeaderSpecific(dm, DM_CLASSID, 2);
@@ -587,7 +611,8 @@ PetscErrorCode DMPlexTransformSetDM(DMPlexTransform tr, DM dm) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMPlexTransformGetActive(DMPlexTransform tr, DMLabel *active) {
+PetscErrorCode DMPlexTransformGetActive(DMPlexTransform tr, DMLabel *active)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tr, DMPLEXTRANSFORM_CLASSID, 1);
   PetscValidPointer(active, 2);
@@ -595,7 +620,8 @@ PetscErrorCode DMPlexTransformGetActive(DMPlexTransform tr, DMLabel *active) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMPlexTransformSetActive(DMPlexTransform tr, DMLabel active) {
+PetscErrorCode DMPlexTransformSetActive(DMPlexTransform tr, DMLabel active)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tr, DMPLEXTRANSFORM_CLASSID, 1);
   PetscValidHeaderSpecific(active, DMLABEL_CLASSID, 2);
@@ -605,7 +631,8 @@ PetscErrorCode DMPlexTransformSetActive(DMPlexTransform tr, DMLabel active) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMPlexTransformGetCoordinateFE(DMPlexTransform tr, DMPolytopeType ct, PetscFE *fe) {
+static PetscErrorCode DMPlexTransformGetCoordinateFE(DMPlexTransform tr, DMPolytopeType ct, PetscFE *fe)
+{
   PetscFunctionBegin;
   if (!tr->coordFE[ct]) {
     PetscInt dim, cdim;
@@ -657,7 +684,8 @@ static PetscErrorCode DMPlexTransformGetCoordinateFE(DMPlexTransform tr, DMPolyt
 
 .seealso: `DMPlexTransformApply()`, `DMPlexTransformCreate()`
 @*/
-PetscErrorCode DMPlexTransformSetDimensions(DMPlexTransform tr, DM dm, DM tdm) {
+PetscErrorCode DMPlexTransformSetDimensions(DMPlexTransform tr, DM dm, DM tdm)
+{
   PetscFunctionBegin;
   if (tr->ops->setdimensions) PetscUseTypeMethod(tr, setdimensions, dm, tdm);
   else {
@@ -690,7 +718,8 @@ PetscErrorCode DMPlexTransformSetDimensions(DMPlexTransform tr, DM dm, DM tdm) {
 
 .seealso: `DMPlexTransformGetSourcePoint()`, `DMPlexTransformCellTransform()`
 @*/
-PetscErrorCode DMPlexTransformGetTargetPoint(DMPlexTransform tr, DMPolytopeType ct, DMPolytopeType ctNew, PetscInt p, PetscInt r, PetscInt *pNew) {
+PetscErrorCode DMPlexTransformGetTargetPoint(DMPlexTransform tr, DMPolytopeType ct, DMPolytopeType ctNew, PetscInt p, PetscInt r, PetscInt *pNew)
+{
   DMPolytopeType *rct;
   PetscInt       *rsize, *cone, *ornt;
   PetscInt        rt, Nct, n, off, rp;
@@ -746,7 +775,8 @@ PetscErrorCode DMPlexTransformGetTargetPoint(DMPlexTransform tr, DMPolytopeType 
 
 .seealso: `DMPlexTransformGetTargetPoint()`, `DMPlexTransformCellTransform()`
 @*/
-PetscErrorCode DMPlexTransformGetSourcePoint(DMPlexTransform tr, PetscInt pNew, DMPolytopeType *ct, DMPolytopeType *ctNew, PetscInt *p, PetscInt *r) {
+PetscErrorCode DMPlexTransformGetSourcePoint(DMPlexTransform tr, PetscInt pNew, DMPolytopeType *ct, DMPolytopeType *ctNew, PetscInt *p, PetscInt *r)
+{
   DMLabel         trType = tr->trType;
   DMPolytopeType *rct;
   PetscInt       *rsize, *cone, *ornt;
@@ -862,13 +892,15 @@ $   ornt   = {                         0,                       0,              
 
 .seealso: `DMPlexTransformApply()`, `DMPlexTransformCreate()`
 @*/
-PetscErrorCode DMPlexTransformCellTransform(DMPlexTransform tr, DMPolytopeType source, PetscInt p, PetscInt *rt, PetscInt *Nt, DMPolytopeType *target[], PetscInt *size[], PetscInt *cone[], PetscInt *ornt[]) {
+PetscErrorCode DMPlexTransformCellTransform(DMPlexTransform tr, DMPolytopeType source, PetscInt p, PetscInt *rt, PetscInt *Nt, DMPolytopeType *target[], PetscInt *size[], PetscInt *cone[], PetscInt *ornt[])
+{
   PetscFunctionBegin;
   PetscUseTypeMethod(tr, celltransform, source, p, rt, Nt, target, size, cone, ornt);
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMPlexTransformGetSubcellOrientationIdentity(DMPlexTransform tr, DMPolytopeType sct, PetscInt sp, PetscInt so, DMPolytopeType tct, PetscInt r, PetscInt o, PetscInt *rnew, PetscInt *onew) {
+PetscErrorCode DMPlexTransformGetSubcellOrientationIdentity(DMPlexTransform tr, DMPolytopeType sct, PetscInt sp, PetscInt so, DMPolytopeType tct, PetscInt r, PetscInt o, PetscInt *rnew, PetscInt *onew)
+{
   PetscFunctionBegin;
   *rnew = r;
   *onew = DMPolytopeTypeComposeOrientation(tct, o, so);
@@ -876,7 +908,8 @@ PetscErrorCode DMPlexTransformGetSubcellOrientationIdentity(DMPlexTransform tr, 
 }
 
 /* Returns the same thing */
-PetscErrorCode DMPlexTransformCellTransformIdentity(DMPlexTransform tr, DMPolytopeType source, PetscInt p, PetscInt *rt, PetscInt *Nt, DMPolytopeType *target[], PetscInt *size[], PetscInt *cone[], PetscInt *ornt[]) {
+PetscErrorCode DMPlexTransformCellTransformIdentity(DMPlexTransform tr, DMPolytopeType source, PetscInt p, PetscInt *rt, PetscInt *Nt, DMPolytopeType *target[], PetscInt *size[], PetscInt *cone[], PetscInt *ornt[])
+{
   static DMPolytopeType vertexT[] = {DM_POLYTOPE_POINT};
   static PetscInt       vertexS[] = {1};
   static PetscInt       vertexC[] = {0};
@@ -1014,7 +1047,8 @@ PetscErrorCode DMPlexTransformCellTransformIdentity(DMPlexTransform tr, DMPolyto
     *cone   = pyrC;
     *ornt   = pyrO;
     break;
-  default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "No refinement strategy for %s", DMPolytopeTypes[source]);
+  default:
+    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "No refinement strategy for %s", DMPolytopeTypes[source]);
   }
   PetscFunctionReturn(0);
 }
@@ -1041,13 +1075,15 @@ PetscErrorCode DMPlexTransformCellTransformIdentity(DMPlexTransform tr, DMPolyto
 
 .seealso: `DMPlexTransformCellTransform()`, `DMPlexTransformApply()`
 @*/
-PetscErrorCode DMPlexTransformGetSubcellOrientation(DMPlexTransform tr, DMPolytopeType sct, PetscInt sp, PetscInt so, DMPolytopeType tct, PetscInt r, PetscInt o, PetscInt *rnew, PetscInt *onew) {
+PetscErrorCode DMPlexTransformGetSubcellOrientation(DMPlexTransform tr, DMPolytopeType sct, PetscInt sp, PetscInt so, DMPolytopeType tct, PetscInt r, PetscInt o, PetscInt *rnew, PetscInt *onew)
+{
   PetscFunctionBeginHot;
   PetscUseTypeMethod(tr, getsubcellorientation, sct, sp, so, tct, r, o, rnew, onew);
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMPlexTransformSetConeSizes(DMPlexTransform tr, DM rdm) {
+static PetscErrorCode DMPlexTransformSetConeSizes(DMPlexTransform tr, DM rdm)
+{
   DM       dm;
   PetscInt pStart, pEnd, p, pNew;
 
@@ -1104,7 +1140,8 @@ static PetscErrorCode DMPlexTransformGetConeSize(DMPlexTransform tr, PetscInt q,
 #endif
 
 /* The orientation o is for the interior of the cell p */
-static PetscErrorCode DMPlexTransformGetCone_Internal(DMPlexTransform tr, PetscInt p, PetscInt o, DMPolytopeType ct, DMPolytopeType ctNew, const PetscInt rcone[], PetscInt *coneoff, const PetscInt rornt[], PetscInt *orntoff, PetscInt coneNew[], PetscInt orntNew[]) {
+static PetscErrorCode DMPlexTransformGetCone_Internal(DMPlexTransform tr, PetscInt p, PetscInt o, DMPolytopeType ct, DMPolytopeType ctNew, const PetscInt rcone[], PetscInt *coneoff, const PetscInt rornt[], PetscInt *orntoff, PetscInt coneNew[], PetscInt orntNew[])
+{
   DM              dm;
   const PetscInt  csizeNew = DMPolytopeTypeGetConeSize(ctNew);
   const PetscInt *cone;
@@ -1151,7 +1188,8 @@ static PetscErrorCode DMPlexTransformGetCone_Internal(DMPlexTransform tr, PetscI
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMPlexTransformSetCones(DMPlexTransform tr, DM rdm) {
+static PetscErrorCode DMPlexTransformSetCones(DMPlexTransform tr, DM rdm)
+{
   DM             dm;
   DMPolytopeType ct;
   PetscInt      *coneNew, *orntNew;
@@ -1193,7 +1231,8 @@ static PetscErrorCode DMPlexTransformSetCones(DMPlexTransform tr, DM rdm) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMPlexTransformGetConeOriented(DMPlexTransform tr, PetscInt q, PetscInt po, const PetscInt *cone[], const PetscInt *ornt[]) {
+PetscErrorCode DMPlexTransformGetConeOriented(DMPlexTransform tr, PetscInt q, PetscInt po, const PetscInt *cone[], const PetscInt *ornt[])
+{
   DM              dm;
   DMPolytopeType  ct, qct;
   DMPolytopeType *rct;
@@ -1233,7 +1272,8 @@ PetscErrorCode DMPlexTransformGetConeOriented(DMPlexTransform tr, PetscInt q, Pe
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMPlexTransformGetCone(DMPlexTransform tr, PetscInt q, const PetscInt *cone[], const PetscInt *ornt[]) {
+PetscErrorCode DMPlexTransformGetCone(DMPlexTransform tr, PetscInt q, const PetscInt *cone[], const PetscInt *ornt[])
+{
   DM              dm;
   DMPolytopeType  ct, qct;
   DMPolytopeType *rct;
@@ -1272,7 +1312,8 @@ PetscErrorCode DMPlexTransformGetCone(DMPlexTransform tr, PetscInt q, const Pets
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMPlexTransformRestoreCone(DMPlexTransform tr, PetscInt q, const PetscInt *cone[], const PetscInt *ornt[]) {
+PetscErrorCode DMPlexTransformRestoreCone(DMPlexTransform tr, PetscInt q, const PetscInt *cone[], const PetscInt *ornt[])
+{
   DM dm;
 
   PetscFunctionBegin;
@@ -1284,7 +1325,8 @@ PetscErrorCode DMPlexTransformRestoreCone(DMPlexTransform tr, PetscInt q, const 
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMPlexTransformCreateCellVertices_Internal(DMPlexTransform tr) {
+static PetscErrorCode DMPlexTransformCreateCellVertices_Internal(DMPlexTransform tr)
+{
   PetscInt ict;
 
   PetscFunctionBegin;
@@ -1390,7 +1432,8 @@ static PetscErrorCode DMPlexTransformCreateCellVertices_Internal(DMPlexTransform
 
 .seealso: `DMPlexTransformGetSubcellVertices()`
 */
-PetscErrorCode DMPlexTransformGetCellVertices(DMPlexTransform tr, DMPolytopeType ct, PetscInt *Nv, PetscScalar *trVerts[]) {
+PetscErrorCode DMPlexTransformGetCellVertices(DMPlexTransform tr, DMPolytopeType ct, PetscInt *Nv, PetscScalar *trVerts[])
+{
   PetscFunctionBegin;
   if (!tr->trNv) PetscCall(DMPlexTransformCreateCellVertices_Internal(tr));
   if (Nv) *Nv = tr->trNv[ct];
@@ -1414,7 +1457,8 @@ PetscErrorCode DMPlexTransformGetCellVertices(DMPlexTransform tr, DMPolytopeType
 
 .seealso: `DMPlexTransformGetCellVertices()`
 */
-PetscErrorCode DMPlexTransformGetSubcellVertices(DMPlexTransform tr, DMPolytopeType ct, DMPolytopeType rct, PetscInt r, PetscInt *subVerts[]) {
+PetscErrorCode DMPlexTransformGetSubcellVertices(DMPlexTransform tr, DMPolytopeType ct, DMPolytopeType rct, PetscInt r, PetscInt *subVerts[])
+{
   PetscFunctionBegin;
   if (!tr->trNv) PetscCall(DMPlexTransformCreateCellVertices_Internal(tr));
   PetscCheck(tr->trSubVerts[ct][rct], PetscObjectComm((PetscObject)tr), PETSC_ERR_ARG_WRONG, "Cell type %s does not produce %s", DMPolytopeTypes[ct], DMPolytopeTypes[rct]);
@@ -1423,7 +1467,8 @@ PetscErrorCode DMPlexTransformGetSubcellVertices(DMPlexTransform tr, DMPolytopeT
 }
 
 /* Computes new vertex as the barycenter, or centroid */
-PetscErrorCode DMPlexTransformMapCoordinatesBarycenter_Internal(DMPlexTransform tr, DMPolytopeType pct, DMPolytopeType ct, PetscInt p, PetscInt r, PetscInt Nv, PetscInt dE, const PetscScalar in[], PetscScalar out[]) {
+PetscErrorCode DMPlexTransformMapCoordinatesBarycenter_Internal(DMPlexTransform tr, DMPolytopeType pct, DMPolytopeType ct, PetscInt p, PetscInt r, PetscInt Nv, PetscInt dE, const PetscScalar in[], PetscScalar out[])
+{
   PetscInt v, d;
 
   PetscFunctionBeginHot;
@@ -1457,13 +1502,15 @@ PetscErrorCode DMPlexTransformMapCoordinatesBarycenter_Internal(DMPlexTransform 
 
 .seealso: `DMPlexTransformApply()`
 @*/
-PetscErrorCode DMPlexTransformMapCoordinates(DMPlexTransform tr, DMPolytopeType pct, DMPolytopeType ct, PetscInt p, PetscInt r, PetscInt Nv, PetscInt dE, const PetscScalar in[], PetscScalar out[]) {
+PetscErrorCode DMPlexTransformMapCoordinates(DMPlexTransform tr, DMPolytopeType pct, DMPolytopeType ct, PetscInt p, PetscInt r, PetscInt Nv, PetscInt dE, const PetscScalar in[], PetscScalar out[])
+{
   PetscFunctionBeginHot;
   PetscUseTypeMethod(tr, mapcoordinates, pct, ct, p, r, Nv, dE, in, out);
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode RefineLabel_Internal(DMPlexTransform tr, DMLabel label, DMLabel labelNew) {
+static PetscErrorCode RefineLabel_Internal(DMPlexTransform tr, DMLabel label, DMLabel labelNew)
+{
   DM              dm;
   IS              valueIS;
   const PetscInt *values;
@@ -1511,7 +1558,8 @@ static PetscErrorCode RefineLabel_Internal(DMPlexTransform tr, DMLabel label, DM
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMPlexTransformCreateLabels(DMPlexTransform tr, DM rdm) {
+static PetscErrorCode DMPlexTransformCreateLabels(DMPlexTransform tr, DM rdm)
+{
   DM       dm;
   PetscInt numLabels, l;
 
@@ -1537,7 +1585,8 @@ static PetscErrorCode DMPlexTransformCreateLabels(DMPlexTransform tr, DM rdm) {
 }
 
 /* This refines the labels which define regions for fields and DSes since they are not in the list of labels for the DM */
-PetscErrorCode DMPlexTransformCreateDiscLabels(DMPlexTransform tr, DM rdm) {
+PetscErrorCode DMPlexTransformCreateDiscLabels(DMPlexTransform tr, DM rdm)
+{
   DM       dm;
   PetscInt Nf, f, Nds, s;
 
@@ -1573,7 +1622,8 @@ PetscErrorCode DMPlexTransformCreateDiscLabels(DMPlexTransform tr, DM rdm) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMPlexTransformCreateSF(DMPlexTransform tr, DM rdm) {
+static PetscErrorCode DMPlexTransformCreateSF(DMPlexTransform tr, DM rdm)
+{
   DM                 dm;
   PetscSF            sf, sfNew;
   PetscInt           numRoots, numLeaves, numLeavesNew = 0, l, m;
@@ -1583,11 +1633,11 @@ static PetscErrorCode DMPlexTransformCreateSF(DMPlexTransform tr, DM rdm) {
   PetscSFNode       *remotePointsNew;
   PetscInt           pStartNew, pEndNew, pNew;
   /* Brute force algorithm */
-  PetscSF            rsf;
-  PetscSection       s;
-  const PetscInt    *rootdegree;
-  PetscInt          *rootPointsNew, *remoteOffsets;
-  PetscInt           numPointsNew, pStart, pEnd, p;
+  PetscSF         rsf;
+  PetscSection    s;
+  const PetscInt *rootdegree;
+  PetscInt       *rootPointsNew, *remoteOffsets;
+  PetscInt        numPointsNew, pStart, pEnd, p;
 
   PetscFunctionBegin;
   PetscCall(DMPlexTransformGetDM(tr, &dm));
@@ -1724,7 +1774,8 @@ static PetscErrorCode DMPlexTransformCreateSF(DMPlexTransform tr, DM rdm) {
 
 .seealso: `DMPlexCellRefinerSetCoordinates()`
 */
-static PetscErrorCode DMPlexTransformMapLocalizedCoordinates(DMPlexTransform tr, DMPolytopeType ct, DMPolytopeType rct, PetscInt r, const PetscScalar x[], PetscScalar xr[]) {
+static PetscErrorCode DMPlexTransformMapLocalizedCoordinates(DMPlexTransform tr, DMPolytopeType ct, DMPolytopeType rct, PetscInt r, const PetscScalar x[], PetscScalar xr[])
+{
   PetscFE  fe = NULL;
   PetscInt cdim, v, *subcellV;
 
@@ -1736,7 +1787,8 @@ static PetscErrorCode DMPlexTransformMapLocalizedCoordinates(DMPlexTransform tr,
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMPlexTransformSetCoordinates(DMPlexTransform tr, DM rdm) {
+static PetscErrorCode DMPlexTransformSetCoordinates(DMPlexTransform tr, DM rdm)
+{
   DM                 dm, cdm, cdmCell, cdmNew, cdmCellNew;
   PetscSection       coordSection, coordSectionNew, coordSectionCell, coordSectionCellNew;
   Vec                coordsLocal, coordsLocalNew, coordsLocalCell = NULL, coordsLocalCellNew;
@@ -1965,7 +2017,8 @@ static PetscErrorCode DMPlexTransformSetCoordinates(DMPlexTransform tr, DM rdm) 
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMPlexTransformApply(DMPlexTransform tr, DM dm, DM *tdm) {
+PetscErrorCode DMPlexTransformApply(DMPlexTransform tr, DM dm, DM *tdm)
+{
   DM                     rdm;
   DMPlexInterpolatedFlag interp;
 
@@ -2000,7 +2053,8 @@ PetscErrorCode DMPlexTransformApply(DMPlexTransform tr, DM dm, DM *tdm) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMPlexTransformAdaptLabel(DM dm, PETSC_UNUSED Vec metric, DMLabel adaptLabel, PETSC_UNUSED DMLabel rgLabel, DM *rdm) {
+PetscErrorCode DMPlexTransformAdaptLabel(DM dm, PETSC_UNUSED Vec metric, DMLabel adaptLabel, PETSC_UNUSED DMLabel rgLabel, DM *rdm)
+{
   DMPlexTransform tr;
   DM              cdm, rcdm;
   const char     *prefix;

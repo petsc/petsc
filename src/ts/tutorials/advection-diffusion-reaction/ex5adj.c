@@ -17,7 +17,8 @@ static char help[] = "Demonstrates adjoint sensitivity analysis for Reaction-Dif
 
 PetscErrorCode InitialConditions(DM, Vec);
 
-PetscErrorCode InitializeLambda(DM da, Vec lambda, PetscReal x, PetscReal y) {
+PetscErrorCode InitializeLambda(DM da, Vec lambda, PetscReal x, PetscReal y)
+{
   PetscInt i, j, Mx, My, xs, ys, xm, ym;
   Field  **l;
   PetscFunctionBegin;
@@ -38,7 +39,8 @@ PetscErrorCode InitializeLambda(DM da, Vec lambda, PetscReal x, PetscReal y) {
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   TS        ts; /* ODE integrator */
   Vec       x;  /* solution */
   DM        da;
@@ -148,7 +150,8 @@ int main(int argc, char **argv) {
 }
 
 /* ------------------------------------------------------------------- */
-PetscErrorCode InitialConditions(DM da, Vec U) {
+PetscErrorCode InitialConditions(DM da, Vec U)
+{
   PetscInt  i, j, xs, ys, xm, ym, Mx, My;
   Field   **u;
   PetscReal hx, hy, x, y;

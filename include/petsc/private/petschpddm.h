@@ -1,4 +1,4 @@
-#if !defined(PETSCHPDDM_H)
+#ifndef PETSCHPDDM_H
 #define PETSCHPDDM_H
 
 #include <petsc/private/kspimpl.h>
@@ -11,7 +11,8 @@ PETSC_EXTERN PetscLogEvent  PC_HPDDM_PtBP;
 PETSC_EXTERN PetscLogEvent  PC_HPDDM_Next;
 PETSC_INTERN PetscErrorCode HPDDMLoadDL_Private(PetscBool *);
 
-namespace HPDDM {
+namespace HPDDM
+{
 template <class>
 class Schwarz; /* forward definitions of two needed HPDDM classes */
 class PETScOperator;

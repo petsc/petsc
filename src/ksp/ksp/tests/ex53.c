@@ -5,7 +5,8 @@ static char help[] = "Tests setup PCFIELDSPLIT with blocked IS.\n\n";
  */
 #include <petscksp.h>
 
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[])
+{
   Mat         A;
   KSP         ksp;
   PC          pc;

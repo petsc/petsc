@@ -7,7 +7,8 @@ static char help[] = "Tests binary I/O of vectors and illustrates the use of use
   the same program.  This example is intended only to demonstrate
   both input and output. */
 
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   PetscMPIInt rank, size;
   PetscInt    i, m = 10, low, high, ldim, iglobal;
   PetscScalar v;

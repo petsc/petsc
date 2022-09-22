@@ -4,7 +4,8 @@
 #include <petsc/private/dmswarmimpl.h>
 #include "../src/dm/impls/swarm/data_bucket.h"
 
-PetscErrorCode private_PetscViewerCreate_XDMF(MPI_Comm comm, const char filename[], PetscViewer *v) {
+PetscErrorCode private_PetscViewerCreate_XDMF(MPI_Comm comm, const char filename[], PetscViewer *v)
+{
   long int      *bytes;
   PetscContainer container;
   PetscViewer    viewer;
@@ -31,7 +32,8 @@ PetscErrorCode private_PetscViewerCreate_XDMF(MPI_Comm comm, const char filename
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode private_PetscViewerDestroy_XDMF(PetscViewer *v) {
+PetscErrorCode private_PetscViewerDestroy_XDMF(PetscViewer *v)
+{
   PetscViewer    viewer;
   DM             dm = NULL;
   long int      *bytes;
@@ -63,7 +65,8 @@ PetscErrorCode private_PetscViewerDestroy_XDMF(PetscViewer *v) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode private_CreateDataFileNameXDMF(const char filename[], char dfilename[]) {
+PetscErrorCode private_CreateDataFileNameXDMF(const char filename[], char dfilename[])
+{
   char     *ext;
   PetscBool flg;
 
@@ -81,7 +84,8 @@ PetscErrorCode private_CreateDataFileNameXDMF(const char filename[], char dfilen
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode private_DMSwarmView_XDMF(DM dm, PetscViewer viewer) {
+PetscErrorCode private_DMSwarmView_XDMF(DM dm, PetscViewer viewer)
+{
   PetscBool      isswarm = PETSC_FALSE;
   const char    *viewername;
   char           datafile[PETSC_MAX_PATH_LEN];
@@ -156,9 +160,14 @@ PetscErrorCode private_DMSwarmView_XDMF(DM dm, PetscViewer viewer) {
   PetscCall(PetscViewerASCIIPushTab(viewer));
   PetscCall(DMGetDimension(dm, &dim));
   switch (dim) {
-  case 1: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "No support for 1D");
-  case 2: PetscCall(PetscViewerASCIIPrintf(viewer, "<Geometry Type=\"XY\">\n")); break;
-  case 3: PetscCall(PetscViewerASCIIPrintf(viewer, "<Geometry Type=\"XYZ\">\n")); break;
+  case 1:
+    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "No support for 1D");
+  case 2:
+    PetscCall(PetscViewerASCIIPrintf(viewer, "<Geometry Type=\"XY\">\n"));
+    break;
+  case 3:
+    PetscCall(PetscViewerASCIIPrintf(viewer, "<Geometry Type=\"XYZ\">\n"));
+    break;
   }
   PetscCall(PetscViewerASCIIPushTab(viewer));
   PetscCall(PetscViewerASCIIPrintf(viewer, "<DataItem Format=\"Binary\" Endian=\"Big\" DataType=\"Float\" Precision=\"8\" Dimensions=\"%" PetscInt_FMT " %" PetscInt_FMT "\" Seek=\"%ld\">\n", ng, dim, bytes[0]));
@@ -180,7 +189,8 @@ PetscErrorCode private_DMSwarmView_XDMF(DM dm, PetscViewer viewer) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode private_VecView_Swarm_XDMF(Vec x, PetscViewer viewer) {
+PetscErrorCode private_VecView_Swarm_XDMF(Vec x, PetscViewer viewer)
+{
   long int      *bytes     = NULL;
   PetscContainer container = NULL;
   const char    *viewername;
@@ -243,7 +253,8 @@ PetscErrorCode private_VecView_Swarm_XDMF(Vec x, PetscViewer viewer) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode private_ISView_Swarm_XDMF(IS is, PetscViewer viewer) {
+PetscErrorCode private_ISView_Swarm_XDMF(IS is, PetscViewer viewer)
+{
   long int      *bytes     = NULL;
   PetscContainer container = NULL;
   const char    *viewername;
@@ -324,7 +335,8 @@ PetscErrorCode private_ISView_Swarm_XDMF(IS is, PetscViewer viewer) {
 
 .seealso: `DMSwarmViewXDMF()`
 @*/
-PETSC_EXTERN PetscErrorCode DMSwarmViewFieldsXDMF(DM dm, const char filename[], PetscInt nfields, const char *field_name_list[]) {
+PETSC_EXTERN PetscErrorCode DMSwarmViewFieldsXDMF(DM dm, const char filename[], PetscInt nfields, const char *field_name_list[])
+{
   Vec         dvec;
   PetscInt    f, N;
   PetscViewer viewer;
@@ -381,7 +393,8 @@ PETSC_EXTERN PetscErrorCode DMSwarmViewFieldsXDMF(DM dm, const char filename[], 
 
 .seealso: `DMSwarmViewFieldsXDMF()`
 @*/
-PETSC_EXTERN PetscErrorCode DMSwarmViewXDMF(DM dm, const char filename[]) {
+PETSC_EXTERN PetscErrorCode DMSwarmViewXDMF(DM dm, const char filename[])
+{
   DM_Swarm   *swarm = (DM_Swarm *)dm->data;
   Vec         dvec;
   PetscInt    f;

@@ -22,7 +22,8 @@ typedef struct {
   int npmax; /* Maximum interpolation points */
 } AppCtx;
 
-static PetscErrorCode EvaluateResidual(Tao tao, Vec X, Vec F, void *ptr) {
+static PetscErrorCode EvaluateResidual(Tao tao, Vec X, Vec F, void *ptr)
+{
   AppCtx *user = (AppCtx *)ptr;
 
   PetscFunctionBegin;
@@ -34,7 +35,8 @@ static PetscErrorCode EvaluateResidual(Tao tao, Vec X, Vec F, void *ptr) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode EvaluateJacobian(Tao tao, Vec X, Mat J, Mat JPre, void *ptr) {
+static PetscErrorCode EvaluateJacobian(Tao tao, Vec X, Mat J, Mat JPre, void *ptr)
+{
   AppCtx *user = (AppCtx *)ptr;
 
   PetscFunctionBegin;
@@ -46,7 +48,8 @@ static PetscErrorCode EvaluateJacobian(Tao tao, Vec X, Mat J, Mat JPre, void *pt
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TaoPounders(AppCtx *user) {
+static PetscErrorCode TaoPounders(AppCtx *user)
+{
   Tao  tao;
   Vec  X, F;
   Mat  J;
@@ -93,7 +96,8 @@ static PetscErrorCode TaoPounders(AppCtx *user) {
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   AppCtx      user;
   PetscScalar tmp;
   PetscInt    prob_id = 0;

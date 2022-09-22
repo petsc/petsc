@@ -33,7 +33,8 @@ extern PetscErrorCode RHSFunction(TS, PetscReal, Vec, Vec, void *);
 extern PetscErrorCode RHSJacobian(TS, PetscReal, Vec, Mat, Mat, void *);
 extern PetscErrorCode PostStep(TS);
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscInt      time_steps = 100, iout, NOUT = 1;
   Vec           global;
   PetscReal     dt, ftime, ftime_original;
@@ -183,14 +184,16 @@ int main(int argc, char **argv) {
 
 /* -------------------------------------------------------------------*/
 /* the initial function */
-PetscReal f_ini(PetscReal x, PetscReal y) {
+PetscReal f_ini(PetscReal x, PetscReal y)
+{
   PetscReal f;
 
   f = PetscExpReal(-20.0 * (PetscPowRealInt(x - 0.5, 2) + PetscPowRealInt(y - 0.5, 2)));
   return f;
 }
 
-PetscErrorCode Initial(Vec global, void *ctx) {
+PetscErrorCode Initial(Vec global, void *ctx)
+{
   Data        *data = (Data *)ctx;
   PetscInt     m, row, col;
   PetscReal    x, y, dx, dy;
@@ -222,7 +225,8 @@ PetscErrorCode Initial(Vec global, void *ctx) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode Monitor(TS ts, PetscInt step, PetscReal time, Vec global, void *ctx) {
+PetscErrorCode Monitor(TS ts, PetscInt step, PetscReal time, Vec global, void *ctx)
+{
   VecScatter         scatter;
   IS                 from, to;
   PetscInt           i, n, *idx, nsteps, maxsteps;
@@ -264,7 +268,8 @@ PetscErrorCode Monitor(TS ts, PetscInt step, PetscReal time, Vec global, void *c
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec x, Mat A, Mat BB, void *ptr) {
+PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec x, Mat A, Mat BB, void *ptr)
+{
   Data       *data = (Data *)ptr;
   PetscScalar v[5];
   PetscInt    idx[5], i, j, row;
@@ -394,7 +399,8 @@ PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec x, Mat A, Mat BB, void *ptr) 
 }
 
 /* globalout = -a*(u_x+u_y) + epsilon*(u_xx+u_yy) */
-PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec globalin, Vec globalout, void *ctx) {
+PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec globalin, Vec globalout, void *ctx)
+{
   Data              *data = (Data *)ctx;
   PetscInt           m, n, mn;
   PetscReal          dx, dy;
@@ -480,7 +486,8 @@ PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec globalin, Vec globalout, void
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PostStep(TS ts) {
+PetscErrorCode PostStep(TS ts)
+{
   PetscReal t;
 
   PetscFunctionBeginUser;

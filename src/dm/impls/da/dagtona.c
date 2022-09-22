@@ -26,7 +26,8 @@
 .seealso: `DMDAGlobalToNaturalEnd()`, `DMLocalToGlobalBegin()`, `DMDACreate2d()`,
           `DMGlobalToLocalBegin()`, `DMGlobalToLocalEnd()`, `DMDACreateNaturalVector()`
 @*/
-PetscErrorCode DMDAGlobalToNaturalAllCreate(DM da, VecScatter *scatter) {
+PetscErrorCode DMDAGlobalToNaturalAllCreate(DM da, VecScatter *scatter)
+{
   PetscInt N;
   IS       from, to;
   Vec      tmplocal, global;
@@ -70,7 +71,8 @@ PetscErrorCode DMDAGlobalToNaturalAllCreate(DM da, VecScatter *scatter) {
 .seealso: `DMDAGlobalToNaturalEnd()`, `DMLocalToGlobalBegin()`, `DMDACreate2d()`,
           `DMGlobalToLocalBegin()`, `DMGlobalToLocalEnd()`, `DMDACreateNaturalVector()`
 @*/
-PetscErrorCode DMDANaturalAllToGlobalCreate(DM da, VecScatter *scatter) {
+PetscErrorCode DMDANaturalAllToGlobalCreate(DM da, VecScatter *scatter)
+{
   DM_DA   *dd = (DM_DA *)da->data;
   PetscInt M, m = dd->Nlocal, start;
   IS       from, to;

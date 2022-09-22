@@ -2,7 +2,8 @@
 
 using namespace Petsc::device::cupm;
 
-PetscErrorCode PetscDeviceContextCreate_CUDA(PetscDeviceContext dctx) {
+PetscErrorCode PetscDeviceContextCreate_CUDA(PetscDeviceContext dctx)
+{
   static constexpr auto cuda_context = CUPMContextCuda();
 
   PetscFunctionBegin;
@@ -13,7 +14,8 @@ PetscErrorCode PetscDeviceContextCreate_CUDA(PetscDeviceContext dctx) {
 }
 
 /* Management of CUBLAS and CUSOLVER handles */
-PetscErrorCode PetscCUBLASGetHandle(cublasHandle_t *handle) {
+PetscErrorCode PetscCUBLASGetHandle(cublasHandle_t *handle)
+{
   PetscDeviceContext dctx;
 
   PetscFunctionBegin;
@@ -23,7 +25,8 @@ PetscErrorCode PetscCUBLASGetHandle(cublasHandle_t *handle) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscCUSOLVERDnGetHandle(cusolverDnHandle_t *handle) {
+PetscErrorCode PetscCUSOLVERDnGetHandle(cusolverDnHandle_t *handle)
+{
   PetscDeviceContext dctx;
 
   PetscFunctionBegin;

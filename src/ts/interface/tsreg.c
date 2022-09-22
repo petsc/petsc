@@ -39,7 +39,8 @@ PetscBool         TSRegisterAllCalled = PETSC_FALSE;
 .seealso: `TS`, `TSSolve()`, `TSCreate()`, `TSSetFromOptions()`, `TSDestroy()`, `TSType`
 
 @*/
-PetscErrorCode TSSetType(TS ts, TSType type) {
+PetscErrorCode TSSetType(TS ts, TSType type)
+{
   PetscErrorCode (*r)(TS);
   PetscBool match;
 
@@ -78,7 +79,8 @@ PetscErrorCode TSSetType(TS ts, TSType type) {
 
 .seealso `TSSetType()`
 @*/
-PetscErrorCode TSGetType(TS ts, TSType *type) {
+PetscErrorCode TSGetType(TS ts, TSType *type)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscValidPointer(type, 2);
@@ -120,7 +122,8 @@ PetscErrorCode TSGetType(TS ts, TSType *type) {
 
 .seealso: `TSRegisterAll()`, `TSRegisterDestroy()`
 @*/
-PetscErrorCode TSRegister(const char sname[], PetscErrorCode (*function)(TS)) {
+PetscErrorCode TSRegister(const char sname[], PetscErrorCode (*function)(TS))
+{
   PetscFunctionBegin;
   PetscCall(TSInitializePackage());
   PetscCall(PetscFunctionListAdd(&TSList, sname, function));

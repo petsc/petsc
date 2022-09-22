@@ -3,7 +3,7 @@
   degrees of freedom for finite element/finite difference functions
   on a grid. They have more mathematical structure then simple arrays.
 */
-#if !defined(PETSCVEC_H)
+#ifndef PETSCVEC_H
 #define PETSCVEC_H
 
 #include <petscsys.h>
@@ -383,7 +383,8 @@ PETSC_EXTERN PetscErrorCode VecSetValuesCOO(Vec, const PetscScalar[], InsertMode
 
 .seealso: `VecSetValues()`, `VecAssemblyBegin()`, `VecAssemblyEnd()`, `VecSetValuesBlockedLocal()`, `VecSetValueLocal()`
 M*/
-static inline PetscErrorCode VecSetValue(Vec v, PetscInt i, PetscScalar va, InsertMode mode) {
+static inline PetscErrorCode VecSetValue(Vec v, PetscInt i, PetscScalar va, InsertMode mode)
+{
   return VecSetValues(v, 1, &i, &va, mode);
 }
 
@@ -517,7 +518,8 @@ PETSC_EXTERN PetscErrorCode VecViennaCLRestoreCLMem(Vec);
 
 .seealso: `VecSetValues()`, `VecAssemblyBegin()`, `VecAssemblyEnd()`, `VecSetValuesBlockedLocal()`, `VecSetValue()`
 M*/
-static inline PetscErrorCode VecSetValueLocal(Vec v, PetscInt i, PetscScalar va, InsertMode mode) {
+static inline PetscErrorCode VecSetValueLocal(Vec v, PetscInt i, PetscScalar va, InsertMode mode)
+{
   return VecSetValuesLocal(v, 1, &i, &va, mode);
 }
 
@@ -538,7 +540,8 @@ PETSC_EXTERN PetscErrorCode VecMTDotEnd(Vec, PetscInt, const Vec[], PetscScalar[
 PETSC_EXTERN PetscErrorCode PetscCommSplitReductionBegin(MPI_Comm);
 
 PETSC_EXTERN PetscErrorCode VecBindToCPU(Vec, PetscBool);
-PETSC_DEPRECATED_FUNCTION("Use VecBindToCPU (since v3.13)") static inline PetscErrorCode VecPinToCPU(Vec v, PetscBool flg) {
+PETSC_DEPRECATED_FUNCTION("Use VecBindToCPU (since v3.13)") static inline PetscErrorCode VecPinToCPU(Vec v, PetscBool flg)
+{
   return VecBindToCPU(v, flg);
 }
 PETSC_EXTERN PetscErrorCode VecBoundToCPU(Vec, PetscBool *);
@@ -594,7 +597,8 @@ PETSC_EXTERN PetscErrorCode VecRestoreArrayWriteAndMemType(Vec, PetscScalar **);
 .seealso: `VecGetArray()`, `VecGetArrayRead()`, `VecRestoreArrayPair()`
 
 @*/
-static inline PetscErrorCode VecGetArrayPair(Vec x, Vec y, PetscScalar **xv, PetscScalar **yv) {
+static inline PetscErrorCode VecGetArrayPair(Vec x, Vec y, PetscScalar **xv, PetscScalar **yv)
+{
   PetscFunctionBegin;
   PetscCall(VecGetArray(y, yv));
   if (x == y) *xv = *yv;
@@ -622,7 +626,8 @@ static inline PetscErrorCode VecGetArrayPair(Vec x, Vec y, PetscScalar **xv, Pet
 .seealso: `VecGetArray()`, `VecGetArrayRead()`, `VecGetArrayPair()`
 
 @*/
-static inline PetscErrorCode VecRestoreArrayPair(Vec x, Vec y, PetscScalar **xv, PetscScalar **yv) {
+static inline PetscErrorCode VecRestoreArrayPair(Vec x, Vec y, PetscScalar **xv, PetscScalar **yv)
+{
   PetscFunctionBegin;
   PetscCall(VecRestoreArray(y, yv));
   if (x != y) PetscCall(VecRestoreArrayRead(x, (const PetscScalar **)xv));
@@ -635,7 +640,8 @@ PETSC_EXTERN PetscErrorCode  VecLockReadPop(Vec);
 PETSC_EXTERN PetscErrorCode  VecLockWriteSet(Vec, PetscBool);
 PETSC_EXTERN PetscErrorCode  VecLockGet(Vec, PetscInt *);
 PETSC_EXTERN PetscErrorCode  VecLockGetLocation(Vec, const char *[], const char *[], int *);
-static inline PetscErrorCode VecSetErrorIfLocked(Vec x, PetscInt arg) {
+static inline PetscErrorCode VecSetErrorIfLocked(Vec x, PetscInt arg)
+{
   PetscInt state;
 
   PetscFunctionBegin;
@@ -653,17 +659,17 @@ static inline PetscErrorCode VecSetErrorIfLocked(Vec x, PetscInt arg) {
 /* The three are deprecated */
 PETSC_EXTERN PETSC_DEPRECATED_FUNCTION("Use VecLockReadPush() (since version 3.11)") PetscErrorCode VecLockPush(Vec);
 PETSC_EXTERN PETSC_DEPRECATED_FUNCTION("Use VecLockReadPop() (since version 3.11)") PetscErrorCode VecLockPop(Vec);
-#define VecLocked(x, arg) VecSetErrorIfLocked(x, arg) PETSC_DEPRECATED_MACRO("GCC warning \"Use VecSetErrorIfLocked() (since version 3.11)\"")
+  #define VecLocked(x, arg) VecSetErrorIfLocked(x, arg) PETSC_DEPRECATED_MACRO("GCC warning \"Use VecSetErrorIfLocked() (since version 3.11)\"")
 #else
-#define VecLockReadPush(x)          0
-#define VecLockReadPop(x)           0
-#define VecLockGet(x, s)            *(s) = 0
-#define VecSetErrorIfLocked(x, arg) 0
-#define VecLockWriteSet(x, flg)     0
-/* The three are deprecated */
-#define VecLockPush(x)              0
-#define VecLockPop(x)               0
-#define VecLocked(x, arg)           0
+  #define VecLockReadPush(x)          0
+  #define VecLockReadPop(x)           0
+  #define VecLockGet(x, s)            *(s) = 0
+  #define VecSetErrorIfLocked(x, arg) 0
+  #define VecLockWriteSet(x, flg)     0
+  /* The three are deprecated */
+  #define VecLockPush(x)              0
+  #define VecLockPop(x)               0
+  #define VecLocked(x, arg)           0
 #endif
 
 /*
@@ -901,7 +907,7 @@ PETSC_EXTERN PetscErrorCode VecTaggerFinalizePackage(void);
 /* This is an internal debug-only routine that should not be used by users */
 PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode VecValidValues_Internal(Vec, PetscInt, PetscBool);
 #else
-#define VecValidValues_Internal(...) 0
+  #define VecValidValues_Internal(...) 0
 #endif /* PETSC_USE_DEBUG */
 
 #endif

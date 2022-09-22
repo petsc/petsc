@@ -3,7 +3,8 @@ static char help[] = "Demonstrates PetscOptionsGetViewer().\n\n";
 
 #include <petscviewer.h>
 
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   PetscViewer       viewer;
   PetscViewerFormat format;
 

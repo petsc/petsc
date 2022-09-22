@@ -11,7 +11,8 @@ struct KSP_CG_PIPE_PR_s {
       This is called once, usually automatically by KSPSolve() or KSPSetUp()
      but can be called directly by KSPSetUp()
 */
-static PetscErrorCode KSPSetUp_PIPEPRCG(KSP ksp) {
+static PetscErrorCode KSPSetUp_PIPEPRCG(KSP ksp)
+{
   PetscFunctionBegin;
   /* get work vectors needed by PIPEPRCG */
   PetscCall(KSPSetWorkVecs(ksp, 9));
@@ -19,7 +20,8 @@ static PetscErrorCode KSPSetUp_PIPEPRCG(KSP ksp) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode KSPSetFromOptions_PIPEPRCG(KSP ksp, PetscOptionItems *PetscOptionsObject) {
+static PetscErrorCode KSPSetFromOptions_PIPEPRCG(KSP ksp, PetscOptionItems *PetscOptionsObject)
+{
   KSP_CG_PIPE_PR *prcg = (KSP_CG_PIPE_PR *)ksp->data;
   PetscBool       flag = PETSC_FALSE;
 
@@ -34,7 +36,8 @@ static PetscErrorCode KSPSetFromOptions_PIPEPRCG(KSP ksp, PetscOptionItems *Pets
 /*
  KSPSolve_PIPEPRCG - This routine actually applies the pipelined predict and recompute conjugate gradient method
 */
-static PetscErrorCode KSPSolve_PIPEPRCG(KSP ksp) {
+static PetscErrorCode KSPSolve_PIPEPRCG(KSP ksp)
+{
   PetscInt        i;
   KSP_CG_PIPE_PR *prcg  = (KSP_CG_PIPE_PR *)ksp->data;
   PetscScalar     alpha = 0.0, beta = 0.0, nu = 0.0, nu_old = 0.0, mudelgam[3], *mu_p, *delta_p, *gamma_p;
@@ -110,9 +113,14 @@ static PetscErrorCode KSPSolve_PIPEPRCG(KSP ksp) {
       PetscCall(PetscCommSplitReductionBegin(PetscObjectComm((PetscObject)R)));
       PetscCall(VecNormEnd(R, NORM_2, &dp));
       break;
-    case KSP_NORM_NATURAL: dp = PetscSqrtReal(PetscAbsScalar(nu)); break;
-    case KSP_NORM_NONE: dp = 0.0; break;
-    default: SETERRQ(PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "%s", KSPNormTypes[ksp->normtype]);
+    case KSP_NORM_NATURAL:
+      dp = PetscSqrtReal(PetscAbsScalar(nu));
+      break;
+    case KSP_NORM_NONE:
+      dp = 0.0;
+      break;
+    default:
+      SETERRQ(PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "%s", KSPNormTypes[ksp->normtype]);
     }
 
     ksp->rnorm = dp;
@@ -191,7 +199,8 @@ static PetscErrorCode KSPSolve_PIPEPRCG(KSP ksp) {
 
 .seealso: `KSPCreate()`, `KSPSetType()`, `KSPPIPECG`, `KSPPIPECR`, `KSPGROPPCG`, `KSPPGMRES`, `KSPCG`, `KSPCGUseSingleReduction()`
 M*/
-PETSC_EXTERN PetscErrorCode KSPCreate_PIPEPRCG(KSP ksp) {
+PETSC_EXTERN PetscErrorCode KSPCreate_PIPEPRCG(KSP ksp)
+{
   KSP_CG_PIPE_PR *prcg = NULL;
   PetscBool       cite = PETSC_FALSE;
 

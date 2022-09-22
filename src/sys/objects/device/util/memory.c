@@ -22,7 +22,8 @@
 .seelso: `PetscMemType`, `PetscDeviceMalloc()`, `PetscDeviceCalloc()`, `PetscDeviceFree()`,
 `PetscDeviceArrayCopy()`, `PetscDeviceArrayZero()`
 @*/
-PetscErrorCode PetscGetMemType(const void *ptr, PetscMemType *type) {
+PetscErrorCode PetscGetMemType(const void *ptr, PetscMemType *type)
+{
   PetscFunctionBegin;
   PetscValidPointer(type, 2);
   *type = PETSC_MEMTYPE_HOST;
@@ -34,11 +35,11 @@ PetscErrorCode PetscGetMemType(const void *ptr, PetscMemType *type) {
     enum cudaMemoryType          mtype;
     cerr = cudaPointerGetAttributes(&attr, ptr); /* Do not check error since before CUDA 11.0, passing a host pointer returns cudaErrorInvalidValue */
     if (cerr) cerr = cudaGetLastError();         /* If there was an error, return it and then reset it */
-#if (CUDART_VERSION < 10000)
+  #if (CUDART_VERSION < 10000)
     mtype = attr.memoryType;
-#else
+  #else
     mtype = attr.type;
-#endif
+  #endif
     if (cerr == cudaSuccess && mtype == cudaMemoryTypeDevice) *type = PETSC_MEMTYPE_DEVICE;
     PetscFunctionReturn(0);
   }

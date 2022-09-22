@@ -25,7 +25,8 @@ PetscBool         ISRegisterAllCalled = PETSC_FALSE;
 
 .seealso: `ISCreateGeneral()`, `ISCreateStride()`, `ISCreateBlock()`, `ISAllGather()`
 @*/
-PetscErrorCode ISCreate(MPI_Comm comm, IS *is) {
+PetscErrorCode ISCreate(MPI_Comm comm, IS *is)
+{
   PetscFunctionBegin;
   PetscValidPointer(is, 2);
   PetscCall(ISInitializePackage());
@@ -56,7 +57,8 @@ PetscErrorCode ISCreate(MPI_Comm comm, IS *is) {
 
 .seealso: `ISGetType()`, `ISCreate()`
 @*/
-PetscErrorCode ISSetType(IS is, ISType method) {
+PetscErrorCode ISSetType(IS is, ISType method)
+{
   PetscErrorCode (*r)(IS);
   PetscBool match;
 
@@ -91,7 +93,8 @@ PetscErrorCode ISSetType(IS is, ISType method) {
 
 .seealso: `ISSetType()`, `ISCreate()`
 @*/
-PetscErrorCode ISGetType(IS is, ISType *type) {
+PetscErrorCode ISGetType(IS is, ISType *type)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is, IS_CLASSID, 1);
   PetscValidPointer(type, 2);
@@ -138,7 +141,8 @@ PetscErrorCode ISGetType(IS is, ISType *type) {
 
   Level: advanced
 @*/
-PetscErrorCode ISRegister(const char sname[], PetscErrorCode (*function)(IS)) {
+PetscErrorCode ISRegister(const char sname[], PetscErrorCode (*function)(IS))
+{
   PetscFunctionBegin;
   PetscCall(ISInitializePackage());
   PetscCall(PetscFunctionListAdd(&ISList, sname, function));

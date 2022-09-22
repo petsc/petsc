@@ -32,7 +32,8 @@
 /*              REACHABLE SETS.                                  */
 /*                                                               */
 /*****************************************************************/
-PetscErrorCode SPARSEPACKqmdmrg(const PetscInt *xadj, const PetscInt *adjncy, PetscInt *deg, PetscInt *qsize, PetscInt *qlink, PetscInt *marker, PetscInt *deg0, PetscInt *nhdsze, PetscInt *nbrhd, PetscInt *rchset, PetscInt *ovrlp) {
+PetscErrorCode SPARSEPACKqmdmrg(const PetscInt *xadj, const PetscInt *adjncy, PetscInt *deg, PetscInt *qsize, PetscInt *qlink, PetscInt *marker, PetscInt *deg0, PetscInt *nhdsze, PetscInt *nbrhd, PetscInt *rchset, PetscInt *ovrlp)
+{
   /* System generated locals */
   PetscInt i__1, i__2, i__3;
 
@@ -71,7 +72,7 @@ PetscErrorCode SPARSEPACKqmdmrg(const PetscInt *xadj, const PetscInt *adjncy, Pe
     jstop = xadj[root + 1] - 1;
     /*          DETERMINE THE REACHABLE SET AND ITS PETSCINTERSECT-     */
     /*          ION WITH THE INPUT REACHABLE SET.                  */
-    i__2  = jstop;
+    i__2 = jstop;
     for (j = jstrt; j <= i__2; ++j) {
       nabor = adjncy[j];
       root  = -nabor;

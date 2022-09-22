@@ -1,4 +1,4 @@
-#if !defined(__KSP_PIPEGCR_H)
+#ifndef __KSP_PIPEGCR_H
 #define __KSP_PIPEGCR_H
 
 #include <petsc/private/kspimpl.h> /*I "petscksp.h" I*/

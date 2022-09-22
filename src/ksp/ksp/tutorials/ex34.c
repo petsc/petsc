@@ -24,7 +24,8 @@ static char help[] = "Solves 3D Laplacian using multigrid.\n\n";
 extern PetscErrorCode ComputeMatrix(KSP, Mat, Mat, void *);
 extern PetscErrorCode ComputeRHS(KSP, Vec, void *);
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   KSP             ksp;
   DM              da;
   PetscReal       norm;
@@ -92,7 +93,8 @@ int main(int argc, char **argv) {
   return 0;
 }
 
-PetscErrorCode ComputeRHS(KSP ksp, Vec b, void *ctx) {
+PetscErrorCode ComputeRHS(KSP ksp, Vec b, void *ctx)
+{
   PetscInt        d, dof, i, j, k, mx, my, mz, xm, ym, zm, xs, ys, zs;
   PetscScalar     Hx, Hy, Hz;
   PetscScalar ****array;
@@ -129,7 +131,8 @@ PetscErrorCode ComputeRHS(KSP ksp, Vec b, void *ctx) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode ComputeMatrix(KSP ksp, Mat J, Mat jac, void *ctx) {
+PetscErrorCode ComputeMatrix(KSP ksp, Mat J, Mat jac, void *ctx)
+{
   PetscInt     dof, i, j, k, d, mx, my, mz, xm, ym, zm, xs, ys, zs, num, numi, numj, numk;
   PetscScalar  v[7], Hx, Hy, Hz, HyHzdHx, HxHzdHy, HxHydHz;
   MatStencil   row, col[7];

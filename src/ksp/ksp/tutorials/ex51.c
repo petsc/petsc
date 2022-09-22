@@ -25,7 +25,8 @@ static PetscErrorCode FormNodalSoln(PetscInt, PetscReal, PetscReal, PetscReal, P
 static void           leggaulob(PetscReal, PetscReal, PetscReal[], PetscReal[], int);
 static void           qAndLEvaluation(int, PetscReal, PetscReal *, PetscReal *, PetscReal *);
 
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   PetscInt     p = 2, m = 5;
   PetscInt     num1Dnodes, num2Dnodes;
   PetscScalar *Ke1D, *Ke2D, *Me1D, *Me2D;
@@ -222,7 +223,8 @@ int main(int argc, char **args) {
 /* --------------------------------------------------------------------- */
 
 /* 1d element stiffness mass matrix  */
-static PetscErrorCode Form1DElementMass(PetscReal H, PetscInt P, PetscReal *gqn, PetscReal *gqw, PetscScalar *Me1D) {
+static PetscErrorCode Form1DElementMass(PetscReal H, PetscInt P, PetscReal *gqn, PetscReal *gqw, PetscScalar *Me1D)
+{
   PetscInt i, j, k;
   PetscInt indx;
 
@@ -240,7 +242,8 @@ static PetscErrorCode Form1DElementMass(PetscReal H, PetscInt P, PetscReal *gqn,
 /* --------------------------------------------------------------------- */
 
 /* 1d element stiffness matrix for derivative */
-static PetscErrorCode Form1DElementStiffness(PetscReal H, PetscInt P, PetscReal *gqn, PetscReal *gqw, PetscScalar *Ke1D) {
+static PetscErrorCode Form1DElementStiffness(PetscReal H, PetscInt P, PetscReal *gqn, PetscReal *gqw, PetscScalar *Ke1D)
+{
   PetscInt i, j, k;
   PetscInt indx;
 
@@ -258,7 +261,8 @@ static PetscErrorCode Form1DElementStiffness(PetscReal H, PetscInt P, PetscReal 
 /* --------------------------------------------------------------------- */
 
 /* element mass matrix */
-static PetscErrorCode Form2DElementMass(PetscInt P, PetscScalar *Me1D, PetscScalar *Me2D) {
+static PetscErrorCode Form2DElementMass(PetscInt P, PetscScalar *Me1D, PetscScalar *Me2D)
+{
   PetscInt i1, j1, i2, j2;
   PetscInt indx1, indx2, indx3;
 
@@ -281,7 +285,8 @@ static PetscErrorCode Form2DElementMass(PetscInt P, PetscScalar *Me1D, PetscScal
 /* --------------------------------------------------------------------- */
 
 /* element stiffness for Laplacian */
-static PetscErrorCode Form2DElementStiffness(PetscInt P, PetscScalar *Ke1D, PetscScalar *Me1D, PetscScalar *Ke2D) {
+static PetscErrorCode Form2DElementStiffness(PetscInt P, PetscScalar *Ke1D, PetscScalar *Me1D, PetscScalar *Ke2D)
+{
   PetscInt i1, j1, i2, j2;
   PetscInt indx1, indx2, indx3;
 
@@ -303,7 +308,8 @@ static PetscErrorCode Form2DElementStiffness(PetscInt P, PetscScalar *Ke1D, Pets
 
 /* --------------------------------------------------------------------- */
 
-static PetscErrorCode FormNodalRhs(PetscInt P, PetscReal x, PetscReal y, PetscReal H, PetscReal *nds, PetscScalar *r) {
+static PetscErrorCode FormNodalRhs(PetscInt P, PetscReal x, PetscReal y, PetscReal H, PetscReal *nds, PetscScalar *r)
+{
   PetscInt i, j, indx;
 
   PetscFunctionBeginUser;
@@ -319,7 +325,8 @@ static PetscErrorCode FormNodalRhs(PetscInt P, PetscReal x, PetscReal y, PetscRe
 
 /* --------------------------------------------------------------------- */
 
-static PetscErrorCode FormNodalSoln(PetscInt P, PetscReal x, PetscReal y, PetscReal H, PetscReal *nds, PetscScalar *u) {
+static PetscErrorCode FormNodalSoln(PetscInt P, PetscReal x, PetscReal y, PetscReal H, PetscReal *nds, PetscScalar *u)
+{
   PetscInt i, j, indx;
 
   PetscFunctionBeginUser;
@@ -335,7 +342,8 @@ static PetscErrorCode FormNodalSoln(PetscInt P, PetscReal x, PetscReal y, PetscR
 
 /* --------------------------------------------------------------------- */
 
-static PetscReal polyBasisFunc(PetscInt order, PetscInt basis, PetscReal *xLocVal, PetscReal xval) {
+static PetscReal polyBasisFunc(PetscInt order, PetscInt basis, PetscReal *xLocVal, PetscReal xval)
+{
   PetscReal denominator = 1.;
   PetscReal numerator   = 1.;
   PetscInt  i           = 0;
@@ -351,7 +359,8 @@ static PetscReal polyBasisFunc(PetscInt order, PetscInt basis, PetscReal *xLocVa
 
 /* --------------------------------------------------------------------- */
 
-static PetscReal derivPolyBasisFunc(PetscInt order, PetscInt basis, PetscReal *xLocVal, PetscReal xval) {
+static PetscReal derivPolyBasisFunc(PetscInt order, PetscInt basis, PetscReal *xLocVal, PetscReal xval)
+{
   PetscReal denominator;
   PetscReal numerator;
   PetscReal numtmp;
@@ -377,11 +386,13 @@ static PetscReal derivPolyBasisFunc(PetscInt order, PetscInt basis, PetscReal *x
 
 /* --------------------------------------------------------------------- */
 
-static PetscReal ubdy(PetscReal x, PetscReal y) {
+static PetscReal ubdy(PetscReal x, PetscReal y)
+{
   return x * x * y * y;
 }
 
-static PetscReal src(PetscReal x, PetscReal y) {
+static PetscReal src(PetscReal x, PetscReal y)
+{
   return -2. * y * y - 2. * x * x;
 }
 /* --------------------------------------------------------------------- */

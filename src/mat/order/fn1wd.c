@@ -28,10 +28,11 @@
 /*    PROGRAM SUBROUTINE -                                       */
 /*       FNROOT.                                                 */
 /*****************************************************************/
-PetscErrorCode SPARSEPACKfn1wd(PetscInt *root, const PetscInt *inxadj, const PetscInt *adjncy, PetscInt *mask, PetscInt *nsep, PetscInt *sep, PetscInt *nlvl, PetscInt *xls, PetscInt *ls) {
+PetscErrorCode SPARSEPACKfn1wd(PetscInt *root, const PetscInt *inxadj, const PetscInt *adjncy, PetscInt *mask, PetscInt *nsep, PetscInt *sep, PetscInt *nlvl, PetscInt *xls, PetscInt *ls)
+{
   PetscInt *xadj = (PetscInt *)inxadj; /* Used as temporary and reset */
   /* System generated locals */
-  PetscInt  i__1, i__2;
+  PetscInt i__1, i__2;
 
   /* Local variables */
   PetscInt  node, i, j, k;

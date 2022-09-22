@@ -27,7 +27,8 @@
 
 .seealso: `PetscDraw`, `PetscDrawButton`
 @*/
-PetscErrorCode PetscDrawGetMouseButton(PetscDraw draw, PetscDrawButton *button, PetscReal *x_user, PetscReal *y_user, PetscReal *x_phys, PetscReal *y_phys) {
+PetscErrorCode PetscDrawGetMouseButton(PetscDraw draw, PetscDrawButton *button, PetscReal *x_user, PetscReal *y_user, PetscReal *x_phys, PetscReal *y_phys)
+{
   PetscReal bcast[4] = {0, 0, 0, 0};
 
   PetscFunctionBegin;

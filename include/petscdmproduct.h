@@ -1,7 +1,7 @@
 #if !defined(DMPRODUCT_H_)
-#define DMPRODUCT_H_
+  #define DMPRODUCT_H_
 
-#include <petscdm.h>
+  #include <petscdm.h>
 
 PETSC_EXTERN PetscErrorCode DMCreate_Product(DM);
 PETSC_EXTERN PetscErrorCode DMProductGetDM(DM, PetscInt, DM *);

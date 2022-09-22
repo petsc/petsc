@@ -3,7 +3,7 @@
 #include <petsc/private/petscimpl.h>
 #include <petscconfiginfo.h>
 #if defined(PETSC_HAVE_UNISTD_H)
-#include <unistd.h>
+  #include <unistd.h>
 #endif
 
 /*@C
@@ -27,7 +27,8 @@
 
 .seealso: `PetscReturnErrorHandler()`
  @*/
-PetscErrorCode PetscIgnoreErrorHandler(MPI_Comm comm, int line, const char *fun, const char *file, PetscErrorCode n, PetscErrorType p, const char *mess, void *ctx) {
+PetscErrorCode PetscIgnoreErrorHandler(MPI_Comm comm, int line, const char *fun, const char *file, PetscErrorCode n, PetscErrorType p, const char *mess, void *ctx)
+{
   return n;
 }
 
@@ -41,7 +42,8 @@ static char      version[256];
    Initializes arch, hostname, username, date so that system calls do NOT need
    to be made during the error handler.
 */
-PetscErrorCode PetscErrorPrintfInitialize(void) {
+PetscErrorCode PetscErrorPrintfInitialize(void)
+{
   PetscBool use_stdout = PETSC_FALSE, use_none = PETSC_FALSE;
 
   PetscFunctionBegin;
@@ -60,11 +62,13 @@ PetscErrorCode PetscErrorPrintfInitialize(void) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscErrorPrintfNone(const char format[], ...) {
+PetscErrorCode PetscErrorPrintfNone(const char format[], ...)
+{
   return 0;
 }
 
-PetscErrorCode PetscErrorPrintfDefault(const char format[], ...) {
+PetscErrorCode PetscErrorPrintfDefault(const char format[], ...)
+{
   va_list          Argp;
   static PetscBool PetscErrorPrintfCalled = PETSC_FALSE;
 
@@ -106,7 +110,8 @@ PetscErrorCode PetscErrorPrintfDefault(const char format[], ...) {
    the screen highlight variables being passed through the test harness. Therefore
    simply do not highlight when the PETSC_STDERR is PETSC_STDOUT.
 */
-static void PetscErrorPrintfHilight(void) {
+static void PetscErrorPrintfHilight(void)
+{
 #if defined(PETSC_HAVE_UNISTD_H) && defined(PETSC_USE_ISATTY)
   if (PetscErrorPrintf == PetscErrorPrintfDefault && PETSC_STDERR != PETSC_STDOUT) {
     if (isatty(fileno(PETSC_STDERR))) fprintf(PETSC_STDERR, "\033[1;31m");
@@ -114,7 +119,8 @@ static void PetscErrorPrintfHilight(void) {
 #endif
 }
 
-static void PetscErrorPrintfNormal(void) {
+static void PetscErrorPrintfNormal(void)
+{
 #if defined(PETSC_HAVE_UNISTD_H) && defined(PETSC_USE_ISATTY)
   if (PetscErrorPrintf == PetscErrorPrintfDefault && PETSC_STDERR != PETSC_STDOUT) {
     if (isatty(fileno(PETSC_STDERR))) fprintf(PETSC_STDERR, "\033[0;39m\033[0;49m");
@@ -154,7 +160,8 @@ PETSC_EXTERN PetscErrorCode PetscOptionsViewError(void);
 .seealso: `PetscError()`, `PetscPushErrorHandler()`, `PetscPopErrorHandler()`, `PetscAttachDebuggerErrorHandler()`,
           `PetscAbortErrorHandler()`, `PetscMPIAbortErrorHandler()`, `PetscReturnErrorHandler()`, `PetscEmacsClientErrorHandler()`
  @*/
-PetscErrorCode PetscTraceBackErrorHandler(MPI_Comm comm, int line, const char *fun, const char *file, PetscErrorCode n, PetscErrorType p, const char *mess, void *ctx) {
+PetscErrorCode PetscTraceBackErrorHandler(MPI_Comm comm, int line, const char *fun, const char *file, PetscErrorCode n, PetscErrorType p, const char *mess, void *ctx)
+{
   PetscLogDouble mem, rss;
   PetscBool      flg1 = PETSC_FALSE, flg2 = PETSC_FALSE, flg3 = PETSC_FALSE;
   PetscMPIInt    rank = 0;

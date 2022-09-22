@@ -34,7 +34,8 @@
 .seealso: `PetscViewerDestroy()`, `PetscViewerStringSPrintf()`, `PETSC_VIEWER_SAWS_()`, `PetscObjectSAWsBlock()`,
           `PetscObjectSAWsViewOff()`, `PetscObjectSAWsTakeAccess()`, `PetscObjectSAWsGrantAccess()`
 @*/
-PetscErrorCode PetscViewerSAWsOpen(MPI_Comm comm, PetscViewer *lab) {
+PetscErrorCode PetscViewerSAWsOpen(MPI_Comm comm, PetscViewer *lab)
+{
   PetscFunctionBegin;
   PetscCall(PetscViewerCreate(comm, lab));
   PetscCall(PetscViewerSetType(*lab, PETSCVIEWERSAWS));
@@ -61,7 +62,8 @@ PetscErrorCode PetscViewerSAWsOpen(MPI_Comm comm, PetscViewer *lab) {
 
 .seealso: `PetscViewer`, `PetscObject`, `PetscObjectSetName()`, `PetscObjectSAWsViewOff()`
 @*/
-PetscErrorCode PetscObjectViewSAWs(PetscObject obj, PetscViewer viewer) {
+PetscErrorCode PetscObjectViewSAWs(PetscObject obj, PetscViewer viewer)
+{
   char        dir[1024];
   PetscMPIInt rank;
 

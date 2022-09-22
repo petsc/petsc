@@ -1,4 +1,4 @@
-#if !defined(VECTAGGERANDOR_H)
+#ifndef VECTAGGERANDOR_H
 #define VECTAGGERANDOR_H
 #include <petsc/private/vecimpl.h>
 

@@ -2,7 +2,8 @@ static const char help[] = "Tests creation and destruction of PetscDeviceContext
 
 #include "petscdevicetestcommon.h"
 
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[])
+{
   PetscDeviceContext dctx = NULL, ddup = NULL;
 
   PetscFunctionBeginUser;

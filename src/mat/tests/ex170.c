@@ -39,7 +39,8 @@ bounded by p. In practice, this should be very fast.
 */
 
 /* Only isolated vertices get a 1 on the diagonal */
-PetscErrorCode CreateGraph(MPI_Comm comm, PetscInt testnum, Mat *A) {
+PetscErrorCode CreateGraph(MPI_Comm comm, PetscInt testnum, Mat *A)
+{
   Mat G;
 
   PetscFunctionBegin;
@@ -122,13 +123,15 @@ PetscErrorCode CreateGraph(MPI_Comm comm, PetscInt testnum, Mat *A) {
     PetscCall(MatAssemblyBegin(G, MAT_FINAL_ASSEMBLY));
     PetscCall(MatAssemblyEnd(G, MAT_FINAL_ASSEMBLY));
   } break;
-  default: SETERRQ(comm, PETSC_ERR_PLIB, "Unknown test %d", testnum);
+  default:
+    SETERRQ(comm, PETSC_ERR_PLIB, "Unknown test %d", testnum);
   }
   *A = G;
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   MPI_Comm     comm;
   Mat          A;    /* A graph */
   Vec          c;    /* A vector giving the component of each vertex */

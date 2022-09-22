@@ -1,7 +1,8 @@
 
 #include <../src/ksp/pc/impls/factor/factor.h> /*I "petscpc.h"  I*/
 
-PetscErrorCode PCFactorSetUpMatSolverType_Factor(PC pc) {
+PetscErrorCode PCFactorSetUpMatSolverType_Factor(PC pc)
+{
   PC_Factor *icc = (PC_Factor *)pc->data;
 
   PetscFunctionBegin;
@@ -10,7 +11,8 @@ PetscErrorCode PCFactorSetUpMatSolverType_Factor(PC pc) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PCFactorSetZeroPivot_Factor(PC pc, PetscReal z) {
+PetscErrorCode PCFactorSetZeroPivot_Factor(PC pc, PetscReal z)
+{
   PC_Factor *ilu = (PC_Factor *)pc->data;
 
   PetscFunctionBegin;
@@ -18,7 +20,8 @@ PetscErrorCode PCFactorSetZeroPivot_Factor(PC pc, PetscReal z) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PCFactorSetShiftType_Factor(PC pc, MatFactorShiftType shifttype) {
+PetscErrorCode PCFactorSetShiftType_Factor(PC pc, MatFactorShiftType shifttype)
+{
   PC_Factor *dir = (PC_Factor *)pc->data;
 
   PetscFunctionBegin;
@@ -30,7 +33,8 @@ PetscErrorCode PCFactorSetShiftType_Factor(PC pc, MatFactorShiftType shifttype) 
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PCFactorSetShiftAmount_Factor(PC pc, PetscReal shiftamount) {
+PetscErrorCode PCFactorSetShiftAmount_Factor(PC pc, PetscReal shiftamount)
+{
   PC_Factor *dir = (PC_Factor *)pc->data;
 
   PetscFunctionBegin;
@@ -39,7 +43,8 @@ PetscErrorCode PCFactorSetShiftAmount_Factor(PC pc, PetscReal shiftamount) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PCFactorSetDropTolerance_Factor(PC pc, PetscReal dt, PetscReal dtcol, PetscInt dtcount) {
+PetscErrorCode PCFactorSetDropTolerance_Factor(PC pc, PetscReal dt, PetscReal dtcol, PetscInt dtcount)
+{
   PC_Factor *ilu = (PC_Factor *)pc->data;
 
   PetscFunctionBegin;
@@ -54,7 +59,8 @@ PetscErrorCode PCFactorSetDropTolerance_Factor(PC pc, PetscReal dt, PetscReal dt
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PCFactorSetFill_Factor(PC pc, PetscReal fill) {
+PetscErrorCode PCFactorSetFill_Factor(PC pc, PetscReal fill)
+{
   PC_Factor *dir = (PC_Factor *)pc->data;
 
   PetscFunctionBegin;
@@ -62,7 +68,8 @@ PetscErrorCode PCFactorSetFill_Factor(PC pc, PetscReal fill) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PCFactorSetMatOrderingType_Factor(PC pc, MatOrderingType ordering) {
+PetscErrorCode PCFactorSetMatOrderingType_Factor(PC pc, MatOrderingType ordering)
+{
   PC_Factor *dir = (PC_Factor *)pc->data;
   PetscBool  flg;
 
@@ -77,7 +84,8 @@ PetscErrorCode PCFactorSetMatOrderingType_Factor(PC pc, MatOrderingType ordering
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PCFactorGetLevels_Factor(PC pc, PetscInt *levels) {
+PetscErrorCode PCFactorGetLevels_Factor(PC pc, PetscInt *levels)
+{
   PC_Factor *ilu = (PC_Factor *)pc->data;
 
   PetscFunctionBegin;
@@ -85,7 +93,8 @@ PetscErrorCode PCFactorGetLevels_Factor(PC pc, PetscInt *levels) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PCFactorGetZeroPivot_Factor(PC pc, PetscReal *pivot) {
+PetscErrorCode PCFactorGetZeroPivot_Factor(PC pc, PetscReal *pivot)
+{
   PC_Factor *ilu = (PC_Factor *)pc->data;
 
   PetscFunctionBegin;
@@ -93,7 +102,8 @@ PetscErrorCode PCFactorGetZeroPivot_Factor(PC pc, PetscReal *pivot) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PCFactorGetShiftAmount_Factor(PC pc, PetscReal *shift) {
+PetscErrorCode PCFactorGetShiftAmount_Factor(PC pc, PetscReal *shift)
+{
   PC_Factor *ilu = (PC_Factor *)pc->data;
 
   PetscFunctionBegin;
@@ -101,7 +111,8 @@ PetscErrorCode PCFactorGetShiftAmount_Factor(PC pc, PetscReal *shift) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PCFactorGetShiftType_Factor(PC pc, MatFactorShiftType *type) {
+PetscErrorCode PCFactorGetShiftType_Factor(PC pc, MatFactorShiftType *type)
+{
   PC_Factor *ilu = (PC_Factor *)pc->data;
 
   PetscFunctionBegin;
@@ -109,7 +120,8 @@ PetscErrorCode PCFactorGetShiftType_Factor(PC pc, MatFactorShiftType *type) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PCFactorSetLevels_Factor(PC pc, PetscInt levels) {
+PetscErrorCode PCFactorSetLevels_Factor(PC pc, PetscInt levels)
+{
   PC_Factor *ilu = (PC_Factor *)pc->data;
 
   PetscFunctionBegin;
@@ -122,7 +134,8 @@ PetscErrorCode PCFactorSetLevels_Factor(PC pc, PetscInt levels) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PCFactorSetAllowDiagonalFill_Factor(PC pc, PetscBool flg) {
+PetscErrorCode PCFactorSetAllowDiagonalFill_Factor(PC pc, PetscBool flg)
+{
   PC_Factor *dir = (PC_Factor *)pc->data;
 
   PetscFunctionBegin;
@@ -130,7 +143,8 @@ PetscErrorCode PCFactorSetAllowDiagonalFill_Factor(PC pc, PetscBool flg) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PCFactorGetAllowDiagonalFill_Factor(PC pc, PetscBool *flg) {
+PetscErrorCode PCFactorGetAllowDiagonalFill_Factor(PC pc, PetscBool *flg)
+{
   PC_Factor *dir = (PC_Factor *)pc->data;
 
   PetscFunctionBegin;
@@ -138,7 +152,8 @@ PetscErrorCode PCFactorGetAllowDiagonalFill_Factor(PC pc, PetscBool *flg) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PCFactorSetPivotInBlocks_Factor(PC pc, PetscBool pivot) {
+PetscErrorCode PCFactorSetPivotInBlocks_Factor(PC pc, PetscBool pivot)
+{
   PC_Factor *dir = (PC_Factor *)pc->data;
 
   PetscFunctionBegin;
@@ -146,7 +161,8 @@ PetscErrorCode PCFactorSetPivotInBlocks_Factor(PC pc, PetscBool pivot) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PCFactorGetMatrix_Factor(PC pc, Mat *mat) {
+PetscErrorCode PCFactorGetMatrix_Factor(PC pc, Mat *mat)
+{
   PC_Factor *ilu = (PC_Factor *)pc->data;
 
   PetscFunctionBegin;
@@ -158,7 +174,8 @@ PetscErrorCode PCFactorGetMatrix_Factor(PC pc, Mat *mat) {
 /* allow access to preallocation information */
 #include <petsc/private/matimpl.h>
 
-PetscErrorCode PCFactorSetMatSolverType_Factor(PC pc, MatSolverType stype) {
+PetscErrorCode PCFactorSetMatSolverType_Factor(PC pc, MatSolverType stype)
+{
   PC_Factor *lu = (PC_Factor *)pc->data;
 
   PetscFunctionBegin;
@@ -175,7 +192,8 @@ PetscErrorCode PCFactorSetMatSolverType_Factor(PC pc, MatSolverType stype) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PCFactorGetMatSolverType_Factor(PC pc, MatSolverType *stype) {
+PetscErrorCode PCFactorGetMatSolverType_Factor(PC pc, MatSolverType *stype)
+{
   PC_Factor *lu = (PC_Factor *)pc->data;
 
   PetscFunctionBegin;
@@ -183,7 +201,8 @@ PetscErrorCode PCFactorGetMatSolverType_Factor(PC pc, MatSolverType *stype) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PCFactorSetColumnPivot_Factor(PC pc, PetscReal dtcol) {
+PetscErrorCode PCFactorSetColumnPivot_Factor(PC pc, PetscReal dtcol)
+{
   PC_Factor *dir = (PC_Factor *)pc->data;
 
   PetscFunctionBegin;
@@ -192,7 +211,8 @@ PetscErrorCode PCFactorSetColumnPivot_Factor(PC pc, PetscReal dtcol) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PCSetFromOptions_Factor(PC pc, PetscOptionItems *PetscOptionsObject) {
+PetscErrorCode PCSetFromOptions_Factor(PC pc, PetscOptionItems *PetscOptionsObject)
+{
   PC_Factor        *factor = (PC_Factor *)pc->data;
   PetscBool         flg, set;
   char              tname[256], solvertype[64];
@@ -231,7 +251,8 @@ PetscErrorCode PCSetFromOptions_Factor(PC pc, PetscOptionItems *PetscOptionsObje
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PCView_Factor(PC pc, PetscViewer viewer) {
+PetscErrorCode PCView_Factor(PC pc, PetscViewer viewer)
+{
   PC_Factor        *factor = (PC_Factor *)pc->data;
   PetscBool         isstring, iascii, canuseordering;
   MatInfo           info;

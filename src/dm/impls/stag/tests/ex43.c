@@ -4,7 +4,8 @@ static char help[] = "Test using nested field splits with DMStag()\n\n";
 #include <petscdmstag.h>
 #include <petscksp.h>
 
-static PetscErrorCode AssembleSystem(DM dm, Mat A, Vec b) {
+static PetscErrorCode AssembleSystem(DM dm, Mat A, Vec b)
+{
   PetscInt      start[3], n[3], n_extra[3];
   DMStagStencil row[11];
   PetscScalar   val[11];
@@ -68,7 +69,8 @@ static PetscErrorCode AssembleSystem(DM dm, Mat A, Vec b) {
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   DM  dm;
   KSP ksp;
   PC  pc;

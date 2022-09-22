@@ -18,7 +18,8 @@ PETSC_INTERN PetscErrorCode PetscDrawSetColormap_X(PetscDraw_X *, Colormap);
 /*
   PetscDrawXiOpenDisplay - Open and setup a display
 */
-static PetscErrorCode PetscDrawXiOpenDisplay(PetscDraw_X *XiWin, const char display[]) {
+static PetscErrorCode PetscDrawXiOpenDisplay(PetscDraw_X *XiWin, const char display[])
+{
   PetscFunctionBegin;
   XiWin->disp = XOpenDisplay(display);
   if (!XiWin->disp) {
@@ -37,7 +38,8 @@ static PetscErrorCode PetscDrawXiOpenDisplay(PetscDraw_X *XiWin, const char disp
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscDrawXiClose(PetscDraw_X *XiWin) {
+PetscErrorCode PetscDrawXiClose(PetscDraw_X *XiWin)
+{
   PetscFunctionBegin;
   if (!XiWin) PetscFunctionReturn(0);
   PetscCall(PetscFree(XiWin->font));
@@ -65,7 +67,8 @@ PetscErrorCode PetscDrawXiClose(PetscDraw_X *XiWin) {
 /*
    PetscDrawXiCreateGC - setup the GC structure
 */
-static PetscErrorCode PetscDrawXiCreateGC(PetscDraw_X *XiWin, PetscDrawXiPixVal fg) {
+static PetscErrorCode PetscDrawXiCreateGC(PetscDraw_X *XiWin, PetscDrawXiPixVal fg)
+{
   XGCValues gcvalues; /* window graphics context values */
 
   PetscFunctionBegin;
@@ -83,7 +86,8 @@ static PetscErrorCode PetscDrawXiCreateGC(PetscDraw_X *XiWin, PetscDrawXiPixVal 
 /*
    PetscDrawXiInit - basic setup the draw (display, graphics context, font)
 */
-PetscErrorCode PetscDrawXiInit(PetscDraw_X *XiWin, const char display[]) {
+PetscErrorCode PetscDrawXiInit(PetscDraw_X *XiWin, const char display[])
+{
   PetscFunctionBegin;
   PetscCall(PetscDrawXiOpenDisplay(XiWin, display));
   PetscCall(PetscDrawXiCreateGC(XiWin, XiWin->foreground));
@@ -95,7 +99,8 @@ PetscErrorCode PetscDrawXiInit(PetscDraw_X *XiWin, const char display[]) {
     This routine waits until the window is actually created. If the window was
     never mapped it generates an error
 */
-static PetscErrorCode PetscDrawXiWaitMap(PetscDraw_X *XiWin) {
+static PetscErrorCode PetscDrawXiWaitMap(PetscDraw_X *XiWin)
+{
   XEvent event;
 
   PetscFunctionBegin;
@@ -109,7 +114,8 @@ static PetscErrorCode PetscDrawXiWaitMap(PetscDraw_X *XiWin) {
         XiWin->w = event.xconfigure.width - 2 * event.xconfigure.border_width;
         XiWin->h = event.xconfigure.height - 2 * event.xconfigure.border_width;
         break;
-      case DestroyNotify: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "Window was not properly created");
+      case DestroyNotify:
+        SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "Window was not properly created");
       case Expose:
         PetscFunctionReturn(0);
         /* else ignore event */
@@ -122,7 +128,8 @@ static PetscErrorCode PetscDrawXiWaitMap(PetscDraw_X *XiWin) {
 /*
     Actually display a window at [x,y] with sizes (w,h)
 */
-static PetscErrorCode PetscDrawXiDisplayWindow(PetscDraw_X *XiWin, char *label, int x, int y, int w, int h) {
+static PetscErrorCode PetscDrawXiDisplayWindow(PetscDraw_X *XiWin, char *label, int x, int y, int w, int h)
+{
   unsigned int         wavail, havail;
   XSizeHints           size_hints;
   XWindowAttributes    in_window_attributes;
@@ -146,15 +153,15 @@ static PetscErrorCode PetscDrawXiDisplayWindow(PetscDraw_X *XiWin, char *label, 
 
   /* We need XCreateWindow since we may need an visual other than the default one */
   XGetWindowAttributes(XiWin->disp, RootWindow(XiWin->disp, XiWin->screen), &in_window_attributes);
-  window_attributes.background_pixmap     = None;
-  window_attributes.background_pixel      = backgnd_pixel;
+  window_attributes.background_pixmap = None;
+  window_attributes.background_pixel  = backgnd_pixel;
   /* No border for now */
-  window_attributes.border_pixmap         = None;
+  window_attributes.border_pixmap = None;
   /*
   window_attributes.border_pixel      = border_pixel;
   */
-  window_attributes.bit_gravity           = in_window_attributes.bit_gravity;
-  window_attributes.win_gravity           = in_window_attributes.win_gravity;
+  window_attributes.bit_gravity = in_window_attributes.bit_gravity;
+  window_attributes.win_gravity = in_window_attributes.win_gravity;
   /* Backing store is too slow in color systems */
   window_attributes.backing_store         = NotUseful;
   window_attributes.backing_pixel         = backgnd_pixel;
@@ -164,7 +171,7 @@ static PetscErrorCode PetscDrawXiDisplayWindow(PetscDraw_X *XiWin, char *label, 
   window_attributes.override_redirect     = 0;
   window_attributes.colormap              = XiWin->cmap;
   /* None for cursor does NOT mean none, it means cursor of Parent */
-  window_attributes.cursor                = None;
+  window_attributes.cursor = None;
 
   wmask = CWBackPixmap | CWBackPixel | CWBorderPixmap | CWBitGravity | CWWinGravity | CWBackingStore | CWBackingPixel | CWOverrideRedirect | CWSaveUnder | CWEventMask | CWDontPropagate | CWCursor | CWColormap;
 
@@ -213,7 +220,8 @@ static PetscErrorCode PetscDrawXiDisplayWindow(PetscDraw_X *XiWin, char *label, 
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscDrawXiQuickWindow(PetscDraw_X *XiWin, char *name, int x, int y, int nx, int ny) {
+PetscErrorCode PetscDrawXiQuickWindow(PetscDraw_X *XiWin, char *name, int x, int y, int nx, int ny)
+{
   PetscFunctionBegin;
   PetscCall(PetscDrawSetColormap_X(XiWin, (Colormap)0));
   PetscCall(PetscDrawXiDisplayWindow(XiWin, name, x, y, nx, ny));
@@ -225,7 +233,8 @@ PetscErrorCode PetscDrawXiQuickWindow(PetscDraw_X *XiWin, char *name, int x, int
 /*
    A version from an already defined window
 */
-PetscErrorCode PetscDrawXiQuickWindowFromWindow(PetscDraw_X *XiWin, Window win) {
+PetscErrorCode PetscDrawXiQuickWindowFromWindow(PetscDraw_X *XiWin, Window win)
+{
   XWindowAttributes attributes;
 
   PetscFunctionBegin;
@@ -235,7 +244,8 @@ PetscErrorCode PetscDrawXiQuickWindowFromWindow(PetscDraw_X *XiWin, Window win) 
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscDrawXiQuickPixmap(PetscDraw_X *XiWin) {
+PetscErrorCode PetscDrawXiQuickPixmap(PetscDraw_X *XiWin)
+{
   PetscFunctionBegin;
   if (XiWin->drw) XFreePixmap(XiWin->disp, XiWin->drw);
   XiWin->drw = XCreatePixmap(XiWin->disp, RootWindow(XiWin->disp, XiWin->screen), XiWin->w, XiWin->h, XiWin->depth);
@@ -245,7 +255,8 @@ PetscErrorCode PetscDrawXiQuickPixmap(PetscDraw_X *XiWin) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscDrawXiResizeWindow(PetscDraw_X *XiWin, int w, int h) {
+PetscErrorCode PetscDrawXiResizeWindow(PetscDraw_X *XiWin, int w, int h)
+{
   XEvent event;
   PetscFunctionBegin;
   XSelectInput(XiWin->disp, XiWin->win, StructureNotifyMask);
@@ -255,7 +266,8 @@ PetscErrorCode PetscDrawXiResizeWindow(PetscDraw_X *XiWin, int w, int h) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscDrawXiGetGeometry(PetscDraw_X *XiWin, int *x, int *y, int *w, int *h) {
+PetscErrorCode PetscDrawXiGetGeometry(PetscDraw_X *XiWin, int *x, int *y, int *w, int *h)
+{
   XWindowAttributes attributes;
   Window            root, parent, child;
   int               xx = 0, yy = 0;

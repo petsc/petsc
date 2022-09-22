@@ -2,7 +2,8 @@ static char help[] = "Tests TS time span \n\n";
 
 #include <petscts.h>
 
-static PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec X, Vec F, void *ctx) {
+static PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec X, Vec F, void *ctx)
+{
   PetscInt           i, n;
   const PetscScalar *xx;
   PetscScalar       *ff;
@@ -18,7 +19,8 @@ static PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec X, Vec F, void *ctx) {
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[])
+{
   TS               ts;
   Vec              X, *Xs;
   PetscInt         i, n, N = 9;

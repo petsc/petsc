@@ -1,10 +1,10 @@
 
 #if !defined(__pcis_h)
-#define __pcis_h
+  #define __pcis_h
 
-#include <petsc/private/pcimpl.h>
-#include <petsc/private/matisimpl.h>
-#include <petscksp.h>
+  #include <petsc/private/pcimpl.h>
+  #include <petsc/private/matisimpl.h>
+  #include <petscksp.h>
 
 /*
    Context (data structure) common for all Iterative Substructuring preconditioners.

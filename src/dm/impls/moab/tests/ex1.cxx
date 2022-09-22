@@ -7,12 +7,13 @@ typedef struct {
   DM            dm; /* DM implementation using the MOAB interface */
   PetscLogEvent createMeshEvent;
   /* Domain and mesh definition */
-  PetscInt      dim;
-  char          filename[PETSC_MAX_PATH_LEN];
-  char          tagname[PETSC_MAX_PATH_LEN];
+  PetscInt dim;
+  char     filename[PETSC_MAX_PATH_LEN];
+  char     tagname[PETSC_MAX_PATH_LEN];
 } AppCtx;
 
-PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options) {
+PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
+{
   PetscBool flg;
 
   PetscFunctionBegin;
@@ -30,7 +31,8 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm) {
+PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
+{
   moab::Interface *iface    = NULL;
   moab::Tag        tag      = NULL;
   moab::Tag        ltog_tag = NULL;
@@ -100,7 +102,8 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm) {
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   AppCtx           user; /* user-defined work context */
   moab::ErrorCode  merr;
   Vec              vec;

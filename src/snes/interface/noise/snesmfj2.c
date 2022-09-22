@@ -25,7 +25,8 @@ typedef struct {                 /* default context for matrix-free SNES */
   void        *data;             /* implementation-specific data */
 } MFCtx_Private;
 
-PetscErrorCode SNESMatrixFreeDestroy2_Private(Mat mat) {
+PetscErrorCode SNESMatrixFreeDestroy2_Private(Mat mat)
+{
   MFCtx_Private *ctx;
 
   PetscFunctionBegin;
@@ -40,7 +41,8 @@ PetscErrorCode SNESMatrixFreeDestroy2_Private(Mat mat) {
 /*
    SNESMatrixFreeView2_Private - Views matrix-free parameters.
  */
-PetscErrorCode SNESMatrixFreeView2_Private(Mat J, PetscViewer viewer) {
+PetscErrorCode SNESMatrixFreeView2_Private(Mat J, PetscViewer viewer)
+{
   MFCtx_Private *ctx;
   PetscBool      iascii;
 
@@ -65,7 +67,8 @@ PetscErrorCode SNESMatrixFreeView2_Private(Mat J, PetscViewer viewer) {
         u = current iterate
         h = difference interval
 */
-PetscErrorCode SNESMatrixFreeMult2_Private(Mat mat, Vec a, Vec y) {
+PetscErrorCode SNESMatrixFreeMult2_Private(Mat mat, Vec a, Vec y)
+{
   MFCtx_Private *ctx;
   SNES           snes;
   PetscReal      h, norm, sum, umin, noise;
@@ -193,7 +196,8 @@ $          -snes_mf_jorge
 
 .seealso: `SNESCreateMF`(), `MatCreateMFFD()`, `MatDestroy()`, `MatMFFDSetFunctionError()`
 @*/
-PetscErrorCode MatCreateSNESMFMore(SNES snes, Vec x, Mat *J) {
+PetscErrorCode MatCreateSNESMFMore(SNES snes, Vec x, Mat *J)
+{
   MPI_Comm       comm;
   MFCtx_Private *mfctx;
   PetscInt       n, nloc;
@@ -282,7 +286,8 @@ PetscErrorCode MatCreateSNESMFMore(SNES snes, Vec x, Mat *J) {
 
 .seealso: `MatCreateSNESMF()`, `MatCreateSNESMFMore()`
 @*/
-PetscErrorCode MatSNESMFMoreSetParameters(Mat mat, PetscReal error, PetscReal umin, PetscReal h) {
+PetscErrorCode MatSNESMFMoreSetParameters(Mat mat, PetscReal error, PetscReal umin, PetscReal h)
+{
   MFCtx_Private *ctx;
 
   PetscFunctionBegin;
@@ -298,7 +303,8 @@ PetscErrorCode MatSNESMFMoreSetParameters(Mat mat, PetscReal error, PetscReal um
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode SNESUnSetMatrixFreeParameter(SNES snes) {
+PetscErrorCode SNESUnSetMatrixFreeParameter(SNES snes)
+{
   MFCtx_Private *ctx;
   Mat            mat;
 

@@ -11,7 +11,8 @@ static char help[] = "Test FEM layout with DM and ExodusII storage\n\n";
 
 #include <petsc/private/dmpleximpl.h>
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   DM              dm, pdm, dmU, dmA, dmS, dmUA, dmUA2, *dmList;
   Vec             X, U, A, S, UA, UA2;
   IS              isU, isA, isS, isUA;
@@ -109,7 +110,8 @@ int main(int argc, char **argv) {
       zonalVarName[4] = (char *)"Sigma_13";
       zonalVarName[5] = (char *)"Sigma_12";
       break;
-    default: SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "No layout for dimension %" PetscInt_FMT, sdim);
+    default:
+      SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "No layout for dimension %" PetscInt_FMT, sdim);
     }
     PetscCall(PetscViewerExodusIIGetId(viewer, &exoid));
     PetscCallExternal(ex_put_variable_param, exoid, EX_ELEM_BLOCK, numZonalVar);
@@ -183,9 +185,14 @@ int main(int argc, char **argv) {
       PetscInt *dofU, *dofA, *dofS;
 
       switch (sdim) {
-      case 2: dofS = dofS2D; break;
-      case 3: dofS = dofS3D; break;
-      default: SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "No layout for dimension %" PetscInt_FMT, sdim);
+      case 2:
+        dofS = dofS2D;
+        break;
+      case 3:
+        dofS = dofS3D;
+        break;
+      default:
+        SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "No layout for dimension %" PetscInt_FMT, sdim);
       }
 
       /* Identify cell type based on closure size only. This works for Tri/Tet/Quad/Hex meshes
@@ -229,7 +236,8 @@ int main(int argc, char **argv) {
           dofA = dofAP2Hex;
         }
         break;
-      default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Unknown element with closure size %" PetscInt_FMT, closureSize);
+      default:
+        SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Unknown element with closure size %" PetscInt_FMT, closureSize);
       }
       PetscCall(DMPlexRestoreTransitiveClosure(dm, cellID[0], PETSC_TRUE, &closureSize, &closureA));
 

@@ -8,7 +8,8 @@ Input arguments are:\n\
 
 #include <petscmat.h>
 
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   PetscInt    nd = 2, ov = 1, i, j, lsize, m, n, *idx, bs;
   PetscMPIInt rank, size;
   PetscBool   flg;

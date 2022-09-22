@@ -79,7 +79,8 @@ struct _n_RD {
   PetscReal final_time;
 };
 
-static PetscErrorCode RDDestroy(RD *rd) {
+static PetscErrorCode RDDestroy(RD *rd)
+{
   PetscFunctionBeginUser;
   PetscCall(DMDestroy(&(*rd)->da));
   PetscCall(PetscFree(*rd));
@@ -94,12 +95,14 @@ static PetscErrorCode RDDestroy(RD *rd) {
  *
  * There are multiple ionization models, this interface dispatches to the one currently in use.
  */
-static void RDMaterialEnergy(RD rd, const RDNode *n, PetscScalar *Em, RDNode *dEm) {
+static void RDMaterialEnergy(RD rd, const RDNode *n, PetscScalar *Em, RDNode *dEm)
+{
   rd->MaterialEnergy(rd, n, Em, dEm);
 }
 
 /* Solves a quadratic equation while propagating tangents */
-static void QuadraticSolve(PetscScalar a, PetscScalar a_t, PetscScalar b, PetscScalar b_t, PetscScalar c, PetscScalar c_t, PetscScalar *x, PetscScalar *x_t) {
+static void QuadraticSolve(PetscScalar a, PetscScalar a_t, PetscScalar b, PetscScalar b_t, PetscScalar c, PetscScalar c_t, PetscScalar *x, PetscScalar *x_t)
+{
   PetscScalar disc = b * b - 4. * a * c, disc_t = 2. * b * b_t - 4. * a_t * c - 4. * a * c_t, num = -b + PetscSqrtScalar(disc), /* choose positive sign */
     num_t = -b_t + 0.5 / PetscSqrtScalar(disc) * disc_t, den = 2. * a, den_t = 2. * a_t;
   *x   = num / den;
@@ -107,7 +110,8 @@ static void QuadraticSolve(PetscScalar a, PetscScalar a_t, PetscScalar b, PetscS
 }
 
 /* The primary model presented in the paper */
-static void RDMaterialEnergy_Saha(RD rd, const RDNode *n, PetscScalar *inEm, RDNode *dEm) {
+static void RDMaterialEnergy_Saha(RD rd, const RDNode *n, PetscScalar *inEm, RDNode *dEm)
+{
   PetscScalar Em, alpha, alpha_t, T = n->T, T_t = 1., chi = rd->I_H / (rd->k * T), chi_t = -chi / T * T_t, a = 1., a_t = 0, b = 4. * rd->m_p / rd->rho * PetscPowScalarReal(2. * PETSC_PI * rd->m_e * rd->I_H / PetscSqr(rd->h), 1.5) * PetscExpScalar(-chi) * PetscPowScalarReal(chi, 1.5), /* Eq 7 */
     b_t = -b * chi_t + 1.5 * b / chi * chi_t, c = -b, c_t = -b_t;
   QuadraticSolve(a, a_t, b, b_t, c, c_t, &alpha, &alpha_t);      /* Solve Eq 7 for alpha */
@@ -119,7 +123,8 @@ static void RDMaterialEnergy_Saha(RD rd, const RDNode *n, PetscScalar *inEm, RDN
   }
 }
 /* Reduced ionization model, Eq 30 */
-static void RDMaterialEnergy_Reduced(RD rd, const RDNode *n, PetscScalar *Em, RDNode *dEm) {
+static void RDMaterialEnergy_Reduced(RD rd, const RDNode *n, PetscScalar *Em, RDNode *dEm)
+{
   PetscScalar alpha, alpha_t, T = n->T, T_t = 1., chi = -0.3 / T, chi_t = -chi / T * T_t, a = 1., a_t = 0., b = PetscExpScalar(chi), b_t = b * chi_t, c = -b, c_t = -b_t;
   QuadraticSolve(a, a_t, b, b_t, c, c_t, &alpha, &alpha_t);
   if (Em) *Em = (1. + alpha) * T + 0.3 * alpha;
@@ -130,14 +135,16 @@ static void RDMaterialEnergy_Reduced(RD rd, const RDNode *n, PetscScalar *Em, RD
 }
 
 /* Eq 5 */
-static void RDSigma_R(RD rd, RDNode *n, PetscScalar *sigma_R, RDNode *dsigma_R) {
+static void RDSigma_R(RD rd, RDNode *n, PetscScalar *sigma_R, RDNode *dsigma_R)
+{
   *sigma_R    = rd->K_R * rd->rho * PetscPowScalar(n->T, -rd->gamma);
   dsigma_R->E = 0;
   dsigma_R->T = -rd->gamma * (*sigma_R) / n->T;
 }
 
 /* Eq 4 */
-static void RDDiffusionCoefficient(RD rd, PetscBool limit, RDNode *n, RDNode *nx, PetscScalar *D_R, RDNode *dD_R, RDNode *dxD_R) {
+static void RDDiffusionCoefficient(RD rd, PetscBool limit, RDNode *n, RDNode *nx, PetscScalar *D_R, RDNode *dD_R, RDNode *dxD_R)
+{
   PetscScalar sigma_R, denom;
   RDNode      dsigma_R, ddenom, dxdenom;
 
@@ -158,7 +165,8 @@ static void RDDiffusionCoefficient(RD rd, PetscBool limit, RDNode *n, RDNode *nx
   }
 }
 
-static PetscErrorCode RDStateView(RD rd, Vec X, Vec Xdot, Vec F) {
+static PetscErrorCode RDStateView(RD rd, Vec X, Vec Xdot, Vec F)
+{
   DMDALocalInfo info;
   PetscInt      i;
   const RDNode *x, *xdot, *f;
@@ -181,7 +189,8 @@ static PetscErrorCode RDStateView(RD rd, Vec X, Vec Xdot, Vec F) {
   PetscFunctionReturn(0);
 }
 
-static PetscScalar RDRadiation(RD rd, const RDNode *n, RDNode *dn) {
+static PetscScalar RDRadiation(RD rd, const RDNode *n, RDNode *dn)
+{
   PetscScalar sigma_p = rd->K_p * rd->rho * PetscPowScalar(n->T, -rd->beta), sigma_p_T = -rd->beta * sigma_p / n->T, tmp = 4. * rd->sigma_b * PetscSqr(PetscSqr(n->T)) / rd->c - n->E, tmp_E = -1., tmp_T = 4. * rd->sigma_b * 4 * n->T * (PetscSqr(n->T)) / rd->c, rad = sigma_p * rd->c * rd->rho * tmp, rad_E = sigma_p * rd->c * rd->rho * tmp_E, rad_T = rd->c * rd->rho * (sigma_p_T * tmp + sigma_p * tmp_T);
   if (dn) {
     dn->E = rad_E;
@@ -190,7 +199,8 @@ static PetscScalar RDRadiation(RD rd, const RDNode *n, RDNode *dn) {
   return rad;
 }
 
-static PetscScalar RDDiffusion(RD rd, PetscReal hx, const RDNode x[], PetscInt i, RDNode d[]) {
+static PetscScalar RDDiffusion(RD rd, PetscReal hx, const RDNode x[], PetscInt i, RDNode d[])
+{
   PetscReal   ihx = 1. / hx;
   RDNode      n_L, nx_L, n_R, nx_R, dD_L, dxD_L, dD_R, dxD_R, dfluxL[2], dfluxR[2];
   PetscScalar D_L, D_R, fluxL, fluxR;
@@ -228,7 +238,8 @@ static PetscScalar RDDiffusion(RD rd, PetscReal hx, const RDNode x[], PetscInt i
   return ihx * (fluxR - fluxL);
 }
 
-static PetscErrorCode RDGetLocalArrays(RD rd, TS ts, Vec X, Vec Xdot, PetscReal *Theta, PetscReal *dt, Vec *X0loc, RDNode **x0, Vec *Xloc, RDNode **x, Vec *Xloc_t, RDNode **xdot) {
+static PetscErrorCode RDGetLocalArrays(RD rd, TS ts, Vec X, Vec Xdot, PetscReal *Theta, PetscReal *dt, Vec *X0loc, RDNode **x0, Vec *Xloc, RDNode **x, Vec *Xloc_t, RDNode **xdot)
+{
   PetscBool istheta;
 
   PetscFunctionBeginUser;
@@ -261,7 +272,8 @@ static PetscErrorCode RDGetLocalArrays(RD rd, TS ts, Vec X, Vec Xdot, PetscReal 
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode RDRestoreLocalArrays(RD rd, Vec *X0loc, RDNode **x0, Vec *Xloc, RDNode **x, Vec *Xloc_t, RDNode **xdot) {
+static PetscErrorCode RDRestoreLocalArrays(RD rd, Vec *X0loc, RDNode **x0, Vec *Xloc, RDNode **x, Vec *Xloc_t, RDNode **xdot)
+{
   PetscFunctionBeginUser;
   PetscCall(DMDAVecRestoreArray(rd->da, *X0loc, x0));
   PetscCall(DMDAVecRestoreArray(rd->da, *Xloc, x));
@@ -272,7 +284,8 @@ static PetscErrorCode RDRestoreLocalArrays(RD rd, Vec *X0loc, RDNode **x0, Vec *
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PETSC_UNUSED RDCheckDomain_Private(RD rd, TS ts, Vec X, PetscBool *in) {
+static PetscErrorCode PETSC_UNUSED RDCheckDomain_Private(RD rd, TS ts, Vec X, PetscBool *in)
+{
   PetscInt  minloc;
   PetscReal min;
 
@@ -296,7 +309,8 @@ static PetscErrorCode PETSC_UNUSED RDCheckDomain_Private(RD rd, TS ts, Vec X, Pe
     if (!_in) PetscFunctionReturn(0); \
   } while (0)
 
-static PetscErrorCode RDIFunction_FD(TS ts, PetscReal t, Vec X, Vec Xdot, Vec F, void *ctx) {
+static PetscErrorCode RDIFunction_FD(TS ts, PetscReal t, Vec X, Vec Xdot, Vec F, void *ctx)
+{
   RD            rd = (RD)ctx;
   RDNode       *x, *x0, *xdot, *f;
   Vec           X0loc, Xloc, Xloc_t;
@@ -344,8 +358,11 @@ static PetscErrorCode RDIFunction_FD(TS ts, PetscReal t, Vec X, Vec Xdot, Vec F,
         RDDiffusionCoefficient(rd, rd->bclimit, &n, &nx, &D_R, 0, 0);
         f[0].E = hx * (n.E - 2. * D_R * nx.E - rd->Eapplied);
         break;
-      case BC_NEUMANN: f[0].E = x[1].E - x[0].E; break;
-      default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Case %" PetscInt_FMT, rd->initial);
+      case BC_NEUMANN:
+        f[0].E = x[1].E - x[0].E;
+        break;
+      default:
+        SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Case %" PetscInt_FMT, rd->initial);
       }
     } else if (i == info.mx - 1) {  /* Right boundary */
       f[i].E = x[i].E - x[i - 1].E; /* Homogeneous Neumann */
@@ -360,7 +377,8 @@ static PetscErrorCode RDIFunction_FD(TS ts, PetscReal t, Vec X, Vec Xdot, Vec F,
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode RDIJacobian_FD(TS ts, PetscReal t, Vec X, Vec Xdot, PetscReal a, Mat A, Mat B, void *ctx) {
+static PetscErrorCode RDIJacobian_FD(TS ts, PetscReal t, Vec X, Vec Xdot, PetscReal a, Mat A, Mat B, void *ctx)
+{
   RD            rd = (RD)ctx;
   RDNode       *x, *x0, *xdot;
   Vec           X0loc, Xloc, Xloc_t;
@@ -403,7 +421,7 @@ static PetscErrorCode RDIJacobian_FD(TS ts, PetscReal t, Vec X, Vec Xdot, PetscR
       RDMaterialEnergy(rd, &n1, NULL, &dEm1);
       /* The Jacobian needs another derivative.  We finite difference here instead of
        * propagating second derivatives through the ionization model. */
-      Em_TT   = (dEm1.T - dEm.T) / epsilon;
+      Em_TT = (dEm1.T - dEm.T) / epsilon;
       /*Em_t = dEm.E * xdot[i].E + dEm.T * xdot[i].T;*/
       dEm_t.E = dEm.E * a;
       dEm_t.T = dEm.T * a + Em_TT * xdot[i].T;
@@ -431,7 +449,8 @@ static PetscErrorCode RDIJacobian_FD(TS ts, PetscReal t, Vec X, Vec Xdot, PetscR
         K[0][1 * 2 + 0] = -1. / Theta;
         K[0][2 * 2 + 0] = 1. / Theta;
         break;
-      default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Case %" PetscInt_FMT, rd->initial);
+      default:
+        SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Case %" PetscInt_FMT, rd->initial);
       }
     } else if (i == info.mx - 1) {
       K[0][0 * 2 + 0] = -1. / Theta;
@@ -467,7 +486,8 @@ static PetscErrorCode RDIJacobian_FD(TS ts, PetscReal t, Vec X, Vec Xdot, PetscR
 }
 
 /* Evaluate interpolants and derivatives at a select quadrature point */
-static void RDEvaluate(PetscReal interp[][2], PetscReal deriv[][2], PetscInt q, const RDNode x[], PetscInt i, RDNode *n, RDNode *nx) {
+static void RDEvaluate(PetscReal interp[][2], PetscReal deriv[][2], PetscInt q, const RDNode x[], PetscInt i, RDNode *n, RDNode *nx)
+{
   PetscInt j;
   n->E  = 0;
   n->T  = 0;
@@ -484,7 +504,8 @@ static void RDEvaluate(PetscReal interp[][2], PetscReal deriv[][2], PetscInt q, 
 /*
  Various quadrature rules.  The nonlinear terms are non-polynomial so no standard quadrature will be exact.
 */
-static PetscErrorCode RDGetQuadrature(RD rd, PetscReal hx, PetscInt *nq, PetscReal weight[], PetscReal interp[][2], PetscReal deriv[][2]) {
+static PetscErrorCode RDGetQuadrature(RD rd, PetscReal hx, PetscInt *nq, PetscReal weight[], PetscReal interp[][2], PetscReal deriv[][2])
+{
   PetscInt         q, j;
   const PetscReal *refweight, (*refinterp)[2], (*refderiv)[2];
 
@@ -587,7 +608,8 @@ static PetscErrorCode RDGetQuadrature(RD rd, PetscReal hx, PetscInt *nq, PetscRe
     refinterp                    = ii;
     refderiv                     = dd;
   } break;
-  default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Unknown quadrature %d", (int)rd->quadrature);
+  default:
+    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Unknown quadrature %d", (int)rd->quadrature);
   }
 
   for (q = 0; q < *nq; q++) {
@@ -603,7 +625,8 @@ static PetscErrorCode RDGetQuadrature(RD rd, PetscReal hx, PetscInt *nq, PetscRe
 /*
  Finite element version
 */
-static PetscErrorCode RDIFunction_FE(TS ts, PetscReal t, Vec X, Vec Xdot, Vec F, void *ctx) {
+static PetscErrorCode RDIFunction_FE(TS ts, PetscReal t, Vec X, Vec Xdot, Vec F, void *ctx)
+{
   RD            rd = (RD)ctx;
   RDNode       *x, *x0, *xdot, *f;
   Vec           X0loc, Xloc, Xloc_t, Floc;
@@ -672,7 +695,8 @@ static PetscErrorCode RDIFunction_FE(TS ts, PetscReal t, Vec X, Vec Xdot, Vec F,
     case BC_NEUMANN:
       /* homogeneous Neumann is the natural condition */
       break;
-    default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Case %" PetscInt_FMT, rd->initial);
+    default:
+      SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Case %" PetscInt_FMT, rd->initial);
     }
   }
 
@@ -687,7 +711,8 @@ static PetscErrorCode RDIFunction_FE(TS ts, PetscReal t, Vec X, Vec Xdot, Vec F,
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode RDIJacobian_FE(TS ts, PetscReal t, Vec X, Vec Xdot, PetscReal a, Mat A, Mat B, void *ctx) {
+static PetscErrorCode RDIJacobian_FE(TS ts, PetscReal t, Vec X, Vec Xdot, PetscReal a, Mat A, Mat B, void *ctx)
+{
   RD            rd = (RD)ctx;
   RDNode       *x, *x0, *xdot;
   Vec           X0loc, Xloc, Xloc_t;
@@ -747,7 +772,8 @@ static PetscErrorCode RDIJacobian_FE(TS ts, PetscReal t, Vec X, Vec Xdot, PetscR
     case BC_NEUMANN:
       /* homogeneous Neumann is the natural condition */
       break;
-    default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Case %" PetscInt_FMT, rd->initial);
+    default:
+      SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Case %" PetscInt_FMT, rd->initial);
     }
   }
 
@@ -762,11 +788,13 @@ static PetscErrorCode RDIJacobian_FE(TS ts, PetscReal t, Vec X, Vec Xdot, PetscR
 }
 
 /* Temperature that is in equilibrium with the radiation density */
-static PetscScalar RDRadiationTemperature(RD rd, PetscScalar E) {
+static PetscScalar RDRadiationTemperature(RD rd, PetscScalar E)
+{
   return PetscPowScalar(E * rd->c / (4. * rd->sigma_b), 0.25);
 }
 
-static PetscErrorCode RDInitialState(RD rd, Vec X) {
+static PetscErrorCode RDInitialState(RD rd, Vec X)
+{
   DMDALocalInfo info;
   PetscInt      i;
   RDNode       *x;
@@ -789,14 +817,16 @@ static PetscErrorCode RDInitialState(RD rd, Vec X) {
       x[i].E = 7.56e-2 * rd->unit.Joule / PetscPowScalarInt(rd->unit.meter, 3);
       x[i].T = RDRadiationTemperature(rd, x[i].E);
       break;
-    default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "No initial state %" PetscInt_FMT, rd->initial);
+    default:
+      SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "No initial state %" PetscInt_FMT, rd->initial);
     }
   }
   PetscCall(DMDAVecRestoreArray(rd->da, X, &x));
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode RDView(RD rd, Vec X, PetscViewer viewer) {
+static PetscErrorCode RDView(RD rd, Vec X, PetscViewer viewer)
+{
   Vec             Y;
   const RDNode   *x;
   PetscScalar    *y;
@@ -835,7 +865,8 @@ static PetscErrorCode RDView(RD rd, Vec X, PetscViewer viewer) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode RDTestDifferentiation(RD rd) {
+static PetscErrorCode RDTestDifferentiation(RD rd)
+{
   MPI_Comm    comm;
   RDNode      n, nx;
   PetscScalar epsilon;
@@ -941,7 +972,8 @@ static PetscErrorCode RDTestDifferentiation(RD rd) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode RDCreate(MPI_Comm comm, RD *inrd) {
+static PetscErrorCode RDCreate(MPI_Comm comm, RD *inrd)
+{
   RD        rd;
   PetscReal meter = 0, kilogram = 0, second = 0, Kelvin = 0, Joule = 0, Watt = 0;
 
@@ -967,7 +999,8 @@ static PetscErrorCode RDCreate(MPI_Comm comm, RD *inrd) {
       rd->unit.second   = 1.e9;
       rd->unit.Kelvin   = 1.;
       break;
-    default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Unknown initial condition %" PetscInt_FMT, rd->initial);
+    default:
+      SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Unknown initial condition %" PetscInt_FMT, rd->initial);
     }
     /* Fundamental units */
     PetscCall(PetscOptionsReal("-rd_unit_meter", "Length of 1 meter in nondimensional units", "", rd->unit.meter, &rd->unit.meter, 0));
@@ -978,12 +1011,12 @@ static PetscErrorCode RDCreate(MPI_Comm comm, RD *inrd) {
     rd->unit.Joule = rd->unit.kilogram * PetscSqr(rd->unit.meter / rd->unit.second);
     rd->unit.Watt  = rd->unit.Joule / rd->unit.second;
     /* Local aliases */
-    meter          = rd->unit.meter;
-    kilogram       = rd->unit.kilogram;
-    second         = rd->unit.second;
-    Kelvin         = rd->unit.Kelvin;
-    Joule          = rd->unit.Joule;
-    Watt           = rd->unit.Watt;
+    meter    = rd->unit.meter;
+    kilogram = rd->unit.kilogram;
+    second   = rd->unit.second;
+    Kelvin   = rd->unit.Kelvin;
+    Joule    = rd->unit.Joule;
+    Watt     = rd->unit.Watt;
 
     PetscCall(PetscOptionsBool("-rd_monitor_residual", "Display residuals every time they are evaluated", "", rd->monitor_residual, &rd->monitor_residual, NULL));
     PetscCall(PetscOptionsEnum("-rd_discretization", "Discretization type", "", DiscretizationTypes, (PetscEnum)rd->discretization, (PetscEnum *)&rd->discretization, NULL));
@@ -1017,7 +1050,8 @@ static PetscErrorCode RDCreate(MPI_Comm comm, RD *inrd) {
       rd->gamma      = 3.5;
       rd->final_time = 20e-9 * second;
       break;
-    default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Initial %" PetscInt_FMT, rd->initial);
+    default:
+      SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Initial %" PetscInt_FMT, rd->initial);
     }
     PetscCall(PetscOptionsEnum("-rd_leftbc", "Left boundary condition", "", BCTypes, (PetscEnum)rd->leftbc, (PetscEnum *)&rd->leftbc, NULL));
     PetscCall(PetscOptionsReal("-rd_E_applied", "Radiation flux at left end of domain", "", rd->Eapplied, &rd->Eapplied, NULL));
@@ -1069,7 +1103,8 @@ static PetscErrorCode RDCreate(MPI_Comm comm, RD *inrd) {
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[])
+{
   RD        rd;
   TS        ts;
   SNES      snes;
@@ -1108,12 +1143,16 @@ int main(int argc, char *argv[]) {
   A = B;
   PetscCall(TSGetSNES(ts, &snes));
   switch (rd->jacobian) {
-  case JACOBIAN_ANALYTIC: break;
-  case JACOBIAN_MATRIXFREE: break;
+  case JACOBIAN_ANALYTIC:
+    break;
+  case JACOBIAN_MATRIXFREE:
+    break;
   case JACOBIAN_FD_COLORING: {
     PetscCall(SNESSetJacobian(snes, A, B, SNESComputeJacobianDefaultColor, 0));
   } break;
-  case JACOBIAN_FD_FULL: PetscCall(SNESSetJacobian(snes, A, B, SNESComputeJacobianDefault, ts)); break;
+  case JACOBIAN_FD_FULL:
+    PetscCall(SNESSetJacobian(snes, A, B, SNESComputeJacobianDefault, ts));
+    break;
   }
 
   if (rd->test_diff) PetscCall(RDTestDifferentiation(rd));

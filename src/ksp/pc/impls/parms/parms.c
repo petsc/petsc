@@ -8,9 +8,9 @@
 #include <petsc/private/pcimpl.h> /*I "petscpc.h" I*/
 
 #if defined(PETSC_USE_COMPLEX)
-#define DBL_CMPLX
+  #define DBL_CMPLX
 #else
-#define DBL
+  #define DBL
 #endif
 #define USE_MPI
 #define REAL double
@@ -36,7 +36,8 @@ typedef struct {
   PetscScalar      *lvec0, *lvec1;
 } PC_PARMS;
 
-static PetscErrorCode PCSetUp_PARMS(PC pc) {
+static PetscErrorCode PCSetUp_PARMS(PC pc)
+{
   Mat                pmat;
   PC_PARMS          *parms = (PC_PARMS *)pc->data;
   const PetscInt    *mapptr0;
@@ -145,15 +146,29 @@ static PetscErrorCode PCSetUp_PARMS(PC pc) {
 
   /* Transfer options from PC to pARMS */
   switch (parms->global) {
-  case 0: parms_PCSetType(parms->pc, PCRAS); break;
-  case 1: parms_PCSetType(parms->pc, PCSCHUR); break;
-  case 2: parms_PCSetType(parms->pc, PCBJ); break;
+  case 0:
+    parms_PCSetType(parms->pc, PCRAS);
+    break;
+  case 1:
+    parms_PCSetType(parms->pc, PCSCHUR);
+    break;
+  case 2:
+    parms_PCSetType(parms->pc, PCBJ);
+    break;
   }
   switch (parms->local) {
-  case 0: parms_PCSetILUType(parms->pc, PCILU0); break;
-  case 1: parms_PCSetILUType(parms->pc, PCILUK); break;
-  case 2: parms_PCSetILUType(parms->pc, PCILUT); break;
-  case 3: parms_PCSetILUType(parms->pc, PCARMS); break;
+  case 0:
+    parms_PCSetILUType(parms->pc, PCILU0);
+    break;
+  case 1:
+    parms_PCSetILUType(parms->pc, PCILUK);
+    break;
+  case 2:
+    parms_PCSetILUType(parms->pc, PCILUT);
+    break;
+  case 3:
+    parms_PCSetILUType(parms->pc, PCARMS);
+    break;
   }
   parms_PCSetInnerEps(parms->pc, parms->solvetol);
   parms_PCSetNlevels(parms->pc, parms->levels);
@@ -178,7 +193,8 @@ static PetscErrorCode PCSetUp_PARMS(PC pc) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCView_PARMS(PC pc, PetscViewer viewer) {
+static PetscErrorCode PCView_PARMS(PC pc, PetscViewer viewer)
+{
   PetscBool iascii;
   PC_PARMS *parms = (PC_PARMS *)pc->data;
   char     *str;
@@ -218,7 +234,8 @@ static PetscErrorCode PCView_PARMS(PC pc, PetscViewer viewer) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCDestroy_PARMS(PC pc) {
+static PetscErrorCode PCDestroy_PARMS(PC pc)
+{
   PC_PARMS *parms = (PC_PARMS *)pc->data;
 
   PetscFunctionBegin;
@@ -239,7 +256,8 @@ static PetscErrorCode PCDestroy_PARMS(PC pc) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCSetFromOptions_PARMS(PC pc, PetscOptionItems *PetscOptionsObject) {
+static PetscErrorCode PCSetFromOptions_PARMS(PC pc, PetscOptionItems *PetscOptionsObject)
+{
   PC_PARMS         *parms = (PC_PARMS *)pc->data;
   PetscBool         flag;
   PCPARMSGlobalType global;
@@ -280,7 +298,8 @@ static PetscErrorCode PCSetFromOptions_PARMS(PC pc, PetscOptionItems *PetscOptio
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCApply_PARMS(PC pc, Vec b, Vec x) {
+static PetscErrorCode PCApply_PARMS(PC pc, Vec b, Vec x)
+{
   PC_PARMS          *parms = (PC_PARMS *)pc->data;
   const PetscScalar *b1;
   PetscScalar       *x1;
@@ -296,7 +315,8 @@ static PetscErrorCode PCApply_PARMS(PC pc, Vec b, Vec x) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCPARMSSetGlobal_PARMS(PC pc, PCPARMSGlobalType type) {
+static PetscErrorCode PCPARMSSetGlobal_PARMS(PC pc, PCPARMSGlobalType type)
+{
   PC_PARMS *parms = (PC_PARMS *)pc->data;
 
   PetscFunctionBegin;
@@ -331,7 +351,8 @@ static PetscErrorCode PCPARMSSetGlobal_PARMS(PC pc, PCPARMSGlobalType type) {
 
 .seealso: `PCPARMS`, `PCPARMSSetLocal()`
 @*/
-PetscErrorCode PCPARMSSetGlobal(PC pc, PCPARMSGlobalType type) {
+PetscErrorCode PCPARMSSetGlobal(PC pc, PCPARMSGlobalType type)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscValidLogicalCollectiveEnum(pc, type, 2);
@@ -339,7 +360,8 @@ PetscErrorCode PCPARMSSetGlobal(PC pc, PCPARMSGlobalType type) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCPARMSSetLocal_PARMS(PC pc, PCPARMSLocalType type) {
+static PetscErrorCode PCPARMSSetLocal_PARMS(PC pc, PCPARMSLocalType type)
+{
   PC_PARMS *parms = (PC_PARMS *)pc->data;
 
   PetscFunctionBegin;
@@ -379,7 +401,8 @@ static PetscErrorCode PCPARMSSetLocal_PARMS(PC pc, PCPARMSLocalType type) {
 .seealso: `PCPARMS`, `PCPARMSSetGlobal()`, `PCPARMSSetNonsymPerm()`
 
 @*/
-PetscErrorCode PCPARMSSetLocal(PC pc, PCPARMSLocalType type) {
+PetscErrorCode PCPARMSSetLocal(PC pc, PCPARMSLocalType type)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscValidLogicalCollectiveEnum(pc, type, 2);
@@ -387,7 +410,8 @@ PetscErrorCode PCPARMSSetLocal(PC pc, PCPARMSLocalType type) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCPARMSSetSolveTolerances_PARMS(PC pc, PetscReal tol, PetscInt maxits) {
+static PetscErrorCode PCPARMSSetSolveTolerances_PARMS(PC pc, PetscReal tol, PetscInt maxits)
+{
   PC_PARMS *parms = (PC_PARMS *)pc->data;
 
   PetscFunctionBegin;
@@ -424,14 +448,16 @@ static PetscErrorCode PCPARMSSetSolveTolerances_PARMS(PC pc, PetscReal tol, Pets
 
 .seealso: `PCPARMS`, `PCPARMSSetSolveRestart()`
 @*/
-PetscErrorCode PCPARMSSetSolveTolerances(PC pc, PetscReal tol, PetscInt maxits) {
+PetscErrorCode PCPARMSSetSolveTolerances(PC pc, PetscReal tol, PetscInt maxits)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscTryMethod(pc, "PCPARMSSetSolveTolerances_C", (PC, PetscReal, PetscInt), (pc, tol, maxits));
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCPARMSSetSolveRestart_PARMS(PC pc, PetscInt restart) {
+static PetscErrorCode PCPARMSSetSolveRestart_PARMS(PC pc, PetscInt restart)
+{
   PC_PARMS *parms = (PC_PARMS *)pc->data;
 
   PetscFunctionBegin;
@@ -462,14 +488,16 @@ static PetscErrorCode PCPARMSSetSolveRestart_PARMS(PC pc, PetscInt restart) {
 
 .seealso: `PCPARMS`, `PCPARMSSetSolveTolerances()`
 @*/
-PetscErrorCode PCPARMSSetSolveRestart(PC pc, PetscInt restart) {
+PetscErrorCode PCPARMSSetSolveRestart(PC pc, PetscInt restart)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscTryMethod(pc, "PCPARMSSetSolveRestart_C", (PC, PetscInt), (pc, restart));
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCPARMSSetNonsymPerm_PARMS(PC pc, PetscBool nonsym) {
+static PetscErrorCode PCPARMSSetNonsymPerm_PARMS(PC pc, PetscBool nonsym)
+{
   PC_PARMS *parms = (PC_PARMS *)pc->data;
 
   PetscFunctionBegin;
@@ -501,14 +529,16 @@ static PetscErrorCode PCPARMSSetNonsymPerm_PARMS(PC pc, PetscBool nonsym) {
 
 .seealso: `PCPARMS`
 @*/
-PetscErrorCode PCPARMSSetNonsymPerm(PC pc, PetscBool nonsym) {
+PetscErrorCode PCPARMSSetNonsymPerm(PC pc, PetscBool nonsym)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscTryMethod(pc, "PCPARMSSetNonsymPerm_C", (PC, PetscBool), (pc, nonsym));
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCPARMSSetFill_PARMS(PC pc, PetscInt lfil0, PetscInt lfil1, PetscInt lfil2) {
+static PetscErrorCode PCPARMSSetFill_PARMS(PC pc, PetscInt lfil0, PetscInt lfil1, PetscInt lfil2)
+{
   PC_PARMS *parms = (PC_PARMS *)pc->data;
 
   PetscFunctionBegin;
@@ -552,7 +582,8 @@ static PetscErrorCode PCPARMSSetFill_PARMS(PC pc, PetscInt lfil0, PetscInt lfil1
 
 .seealso: `PCPARMS`
 @*/
-PetscErrorCode PCPARMSSetFill(PC pc, PetscInt lfil0, PetscInt lfil1, PetscInt lfil2) {
+PetscErrorCode PCPARMSSetFill(PC pc, PetscInt lfil0, PetscInt lfil1, PetscInt lfil2)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscTryMethod(pc, "PCPARMSSetFill_C", (PC, PetscInt, PetscInt, PetscInt), (pc, lfil0, lfil1, lfil2));
@@ -600,7 +631,8 @@ PetscErrorCode PCPARMSSetFill(PC pc, PetscInt lfil0, PetscInt lfil1, PetscInt lf
           `PCPARMSSetFill()`
 M*/
 
-PETSC_EXTERN PetscErrorCode PCCreate_PARMS(PC pc) {
+PETSC_EXTERN PetscErrorCode PCCreate_PARMS(PC pc)
+{
   PC_PARMS *parms;
 
   PetscFunctionBegin;

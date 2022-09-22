@@ -5,7 +5,8 @@ typedef PetscSF_Allgatherv PetscSF_Allgather;
 
 PETSC_INTERN PetscErrorCode PetscSFBcastBegin_Gather(PetscSF, MPI_Datatype, PetscMemType, const void *, PetscMemType, void *, MPI_Op);
 
-PetscErrorCode PetscSFSetUp_Allgather(PetscSF sf) {
+PetscErrorCode PetscSFSetUp_Allgather(PetscSF sf)
+{
   PetscInt           i;
   PetscSF_Allgather *dat = (PetscSF_Allgather *)sf->data;
 
@@ -29,7 +30,8 @@ PetscErrorCode PetscSFSetUp_Allgather(PetscSF sf) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscSFBcastBegin_Allgather(PetscSF sf, MPI_Datatype unit, PetscMemType rootmtype, const void *rootdata, PetscMemType leafmtype, void *leafdata, MPI_Op op) {
+static PetscErrorCode PetscSFBcastBegin_Allgather(PetscSF sf, MPI_Datatype unit, PetscMemType rootmtype, const void *rootdata, PetscMemType leafmtype, void *leafdata, MPI_Op op)
+{
   PetscSFLink  link;
   PetscMPIInt  sendcount;
   MPI_Comm     comm;
@@ -48,7 +50,8 @@ static PetscErrorCode PetscSFBcastBegin_Allgather(PetscSF sf, MPI_Datatype unit,
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscSFReduceBegin_Allgather(PetscSF sf, MPI_Datatype unit, PetscMemType leafmtype, const void *leafdata, PetscMemType rootmtype, void *rootdata, MPI_Op op) {
+static PetscErrorCode PetscSFReduceBegin_Allgather(PetscSF sf, MPI_Datatype unit, PetscMemType leafmtype, const void *leafdata, PetscMemType rootmtype, void *rootdata, MPI_Op op)
+{
   PetscSFLink        link;
   PetscInt           rstart;
   MPI_Comm           comm;
@@ -83,7 +86,8 @@ static PetscErrorCode PetscSFReduceBegin_Allgather(PetscSF sf, MPI_Datatype unit
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscSFBcastToZero_Allgather(PetscSF sf, MPI_Datatype unit, PetscMemType rootmtype, const void *rootdata, PetscMemType leafmtype, void *leafdata) {
+static PetscErrorCode PetscSFBcastToZero_Allgather(PetscSF sf, MPI_Datatype unit, PetscMemType rootmtype, const void *rootdata, PetscMemType leafmtype, void *leafdata)
+{
   PetscSFLink link;
   PetscMPIInt rank;
 
@@ -99,7 +103,8 @@ static PetscErrorCode PetscSFBcastToZero_Allgather(PetscSF sf, MPI_Datatype unit
   PetscFunctionReturn(0);
 }
 
-PETSC_INTERN PetscErrorCode PetscSFCreate_Allgather(PetscSF sf) {
+PETSC_INTERN PetscErrorCode PetscSFCreate_Allgather(PetscSF sf)
+{
   PetscSF_Allgather *dat = (PetscSF_Allgather *)sf->data;
 
   PetscFunctionBegin;

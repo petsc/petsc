@@ -1,4 +1,4 @@
-#if !defined(PETSCDMPLEXTYPES_H)
+#ifndef PETSCDMPLEXTYPES_H
 #define PETSCDMPLEXTYPES_H
 
 /* SUBMANSEC = DMPlex */

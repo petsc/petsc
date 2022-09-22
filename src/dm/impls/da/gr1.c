@@ -21,7 +21,8 @@
 .seealso: `DMSetCoordinates()`, `DMGetCoordinates()`, `DMDACreate1d()`, `DMDACreate2d()`, `DMDACreate3d()`, `DMStagSetUniformCoordinates()`
 
 @*/
-PetscErrorCode DMDASetUniformCoordinates(DM da, PetscReal xmin, PetscReal xmax, PetscReal ymin, PetscReal ymax, PetscReal zmin, PetscReal zmax) {
+PetscErrorCode DMDASetUniformCoordinates(DM da, PetscReal xmin, PetscReal xmax, PetscReal ymin, PetscReal ymax, PetscReal zmin, PetscReal zmax)
+{
   MPI_Comm       comm;
   DM             cda;
   DM_DA         *dd = (DM_DA *)da->data;
@@ -90,7 +91,8 @@ PetscErrorCode DMDASetUniformCoordinates(DM da, PetscReal xmin, PetscReal xmax, 
 /*
     Allows a user to select a subset of the fields to be drawn by VecView() when the vector comes from a DMDA
 */
-PetscErrorCode DMDASelectFields(DM da, PetscInt *outfields, PetscInt **fields) {
+PetscErrorCode DMDASelectFields(DM da, PetscInt *outfields, PetscInt **fields)
+{
   PetscInt  step, ndisplayfields, *displayfields, k, j;
   PetscBool flg;
 
@@ -130,7 +132,8 @@ PetscErrorCode DMDASelectFields(DM da, PetscInt *outfields, PetscInt **fields) {
 
 #include <petscdraw.h>
 
-PetscErrorCode VecView_MPI_Draw_DA1d(Vec xin, PetscViewer v) {
+PetscErrorCode VecView_MPI_Draw_DA1d(Vec xin, PetscViewer v)
+{
   DM                  da;
   PetscMPIInt         rank, size, tag;
   PetscInt            i, n, N, dof, istart, isize, j, nbounds;

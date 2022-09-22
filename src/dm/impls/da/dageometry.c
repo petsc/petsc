@@ -15,7 +15,8 @@
 
   Level: developer
 @*/
-PetscErrorCode DMDAConvertToCell(DM dm, MatStencil s, PetscInt *cell) {
+PetscErrorCode DMDAConvertToCell(DM dm, MatStencil s, PetscInt *cell)
+{
   DM_DA         *da  = (DM_DA *)dm->data;
   const PetscInt dim = dm->dim;
   const PetscInt mx = (da->Xe - da->Xs) / da->w, my = da->Ye - da->Ys /*, mz = da->Ze - da->Zs*/;
@@ -30,7 +31,8 @@ PetscErrorCode DMDAConvertToCell(DM dm, MatStencil s, PetscInt *cell) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode private_DMDALocatePointsIS_2D_Regular(DM dmregular, Vec pos, IS *iscell) {
+PetscErrorCode private_DMDALocatePointsIS_2D_Regular(DM dmregular, Vec pos, IS *iscell)
+{
   PetscInt           n, bs, p, npoints;
   PetscInt           xs, xe, Xs, Xe, mxlocal;
   PetscInt           ys, ye, Ys, Ye, mylocal;
@@ -109,7 +111,8 @@ PetscErrorCode private_DMDALocatePointsIS_2D_Regular(DM dmregular, Vec pos, IS *
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode private_DMDALocatePointsIS_3D_Regular(DM dmregular, Vec pos, IS *iscell) {
+PetscErrorCode private_DMDALocatePointsIS_3D_Regular(DM dmregular, Vec pos, IS *iscell)
+{
   PetscInt           n, bs, p, npoints;
   PetscInt           xs, xe, Xs, Xe, mxlocal;
   PetscInt           ys, ye, Ys, Ye, mylocal;
@@ -202,7 +205,8 @@ PetscErrorCode private_DMDALocatePointsIS_3D_Regular(DM dmregular, Vec pos, IS *
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMLocatePoints_DA_Regular(DM dm, Vec pos, DMPointLocationType ltype, PetscSF cellSF) {
+PetscErrorCode DMLocatePoints_DA_Regular(DM dm, Vec pos, DMPointLocationType ltype, PetscSF cellSF)
+{
   IS              iscell;
   PetscSFNode    *cells;
   PetscInt        p, bs, dim, npoints, nfound;
@@ -211,10 +215,16 @@ PetscErrorCode DMLocatePoints_DA_Regular(DM dm, Vec pos, DMPointLocationType lty
   PetscFunctionBegin;
   PetscCall(VecGetBlockSize(pos, &dim));
   switch (dim) {
-  case 1: SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Support not provided for 1D");
-  case 2: PetscCall(private_DMDALocatePointsIS_2D_Regular(dm, pos, &iscell)); break;
-  case 3: PetscCall(private_DMDALocatePointsIS_3D_Regular(dm, pos, &iscell)); break;
-  default: SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Unsupport spatial dimension");
+  case 1:
+    SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Support not provided for 1D");
+  case 2:
+    PetscCall(private_DMDALocatePointsIS_2D_Regular(dm, pos, &iscell));
+    break;
+  case 3:
+    PetscCall(private_DMDALocatePointsIS_3D_Regular(dm, pos, &iscell));
+    break;
+  default:
+    SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Unsupport spatial dimension");
   }
 
   PetscCall(VecGetLocalSize(pos, &npoints));

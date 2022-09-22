@@ -4,7 +4,8 @@ static char help[] = "Tests MatCreateSubmatrix() in parallel.";
 #include <petscmat.h>
 #include <../src/mat/impls/aij/mpi/mpiaij.h>
 
-PetscErrorCode ISGetSeqIS_SameColDist_Private(Mat mat, IS isrow, IS iscol, IS *isrow_d, IS *iscol_d, IS *iscol_o, const PetscInt *garray[]) {
+PetscErrorCode ISGetSeqIS_SameColDist_Private(Mat mat, IS isrow, IS iscol, IS *isrow_d, IS *iscol_d, IS *iscol_o, const PetscInt *garray[])
+{
   Vec             x, cmap;
   const PetscInt *is_idx;
   PetscScalar    *xarray, *cmaparray;
@@ -122,7 +123,8 @@ PetscErrorCode ISGetSeqIS_SameColDist_Private(Mat mat, IS isrow, IS iscol, IS *i
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   Mat         C, A;
   PetscInt    i, j, m = 3, n = 2, rstart, rend;
   PetscMPIInt size, rank;

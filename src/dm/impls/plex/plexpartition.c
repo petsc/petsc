@@ -4,11 +4,13 @@
 
 const char *const DMPlexCSRAlgorithms[] = {"mat", "graph", "overlap", "DMPlexCSRAlgorithm", "DM_PLEX_CSR_", NULL};
 
-static inline PetscInt DMPlex_GlobalID(PetscInt point) {
+static inline PetscInt DMPlex_GlobalID(PetscInt point)
+{
   return point >= 0 ? point : -(point + 1);
 }
 
-static PetscErrorCode DMPlexCreatePartitionerGraph_Overlap(DM dm, PetscInt height, PetscInt *numVertices, PetscInt **offsets, PetscInt **adjacency, IS *globalNumbering) {
+static PetscErrorCode DMPlexCreatePartitionerGraph_Overlap(DM dm, PetscInt height, PetscInt *numVertices, PetscInt **offsets, PetscInt **adjacency, IS *globalNumbering)
+{
   DM              ovdm;
   PetscSF         sfPoint;
   IS              cellNumbering;
@@ -106,7 +108,8 @@ static PetscErrorCode DMPlexCreatePartitionerGraph_Overlap(DM dm, PetscInt heigh
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMPlexCreatePartitionerGraph_Native(DM dm, PetscInt height, PetscInt *numVertices, PetscInt **offsets, PetscInt **adjacency, IS *globalNumbering) {
+static PetscErrorCode DMPlexCreatePartitionerGraph_Native(DM dm, PetscInt height, PetscInt *numVertices, PetscInt **offsets, PetscInt **adjacency, IS *globalNumbering)
+{
   PetscInt        dim, depth, p, pStart, pEnd, a, adjSize, idx, size;
   PetscInt       *adj = NULL, *vOffsets = NULL, *graph = NULL;
   IS              cellNumbering;
@@ -310,7 +313,8 @@ static PetscErrorCode DMPlexCreatePartitionerGraph_Native(DM dm, PetscInt height
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMPlexCreatePartitionerGraph_ViaMat(DM dm, PetscInt height, PetscInt *numVertices, PetscInt **offsets, PetscInt **adjacency, IS *globalNumbering) {
+static PetscErrorCode DMPlexCreatePartitionerGraph_ViaMat(DM dm, PetscInt height, PetscInt *numVertices, PetscInt **offsets, PetscInt **adjacency, IS *globalNumbering)
+{
   Mat             conn, CSR;
   IS              fis, cis, cis_own;
   PetscSF         sfPoint;
@@ -493,15 +497,22 @@ static PetscErrorCode DMPlexCreatePartitionerGraph_ViaMat(DM dm, PetscInt height
 
 .seealso: `PetscPartitionerGetType()`, `PetscPartitionerCreate()`, `DMSetAdjacency()`
 @*/
-PetscErrorCode DMPlexCreatePartitionerGraph(DM dm, PetscInt height, PetscInt *numVertices, PetscInt **offsets, PetscInt **adjacency, IS *globalNumbering) {
+PetscErrorCode DMPlexCreatePartitionerGraph(DM dm, PetscInt height, PetscInt *numVertices, PetscInt **offsets, PetscInt **adjacency, IS *globalNumbering)
+{
   DMPlexCSRAlgorithm alg = DM_PLEX_CSR_GRAPH;
 
   PetscFunctionBegin;
   PetscCall(PetscOptionsGetEnum(((PetscObject)dm)->options, ((PetscObject)dm)->prefix, "-dm_plex_csr_alg", DMPlexCSRAlgorithms, (PetscEnum *)&alg, NULL));
   switch (alg) {
-  case DM_PLEX_CSR_MAT: PetscCall(DMPlexCreatePartitionerGraph_ViaMat(dm, height, numVertices, offsets, adjacency, globalNumbering)); break;
-  case DM_PLEX_CSR_GRAPH: PetscCall(DMPlexCreatePartitionerGraph_Native(dm, height, numVertices, offsets, adjacency, globalNumbering)); break;
-  case DM_PLEX_CSR_OVERLAP: PetscCall(DMPlexCreatePartitionerGraph_Overlap(dm, height, numVertices, offsets, adjacency, globalNumbering)); break;
+  case DM_PLEX_CSR_MAT:
+    PetscCall(DMPlexCreatePartitionerGraph_ViaMat(dm, height, numVertices, offsets, adjacency, globalNumbering));
+    break;
+  case DM_PLEX_CSR_GRAPH:
+    PetscCall(DMPlexCreatePartitionerGraph_Native(dm, height, numVertices, offsets, adjacency, globalNumbering));
+    break;
+  case DM_PLEX_CSR_OVERLAP:
+    PetscCall(DMPlexCreatePartitionerGraph_Overlap(dm, height, numVertices, offsets, adjacency, globalNumbering));
+    break;
   }
   PetscFunctionReturn(0);
 }
@@ -526,7 +537,8 @@ PetscErrorCode DMPlexCreatePartitionerGraph(DM dm, PetscInt height, PetscInt *nu
 
 .seealso: `DMPlexCreate()`
 @*/
-PetscErrorCode DMPlexCreateNeighborCSR(DM dm, PetscInt cellHeight, PetscInt *numVertices, PetscInt **offsets, PetscInt **adjacency) {
+PetscErrorCode DMPlexCreateNeighborCSR(DM dm, PetscInt cellHeight, PetscInt *numVertices, PetscInt **offsets, PetscInt **adjacency)
+{
   const PetscInt maxFaceCases = 30;
   PetscInt       numFaceCases = 0;
   PetscInt       numFaceVertices[30]; /* maxFaceCases, C89 sucks sucks sucks */
@@ -725,7 +737,8 @@ PetscErrorCode DMPlexCreateNeighborCSR(DM dm, PetscInt cellHeight, PetscInt *num
 
 .seealso `DMPlexDistribute()`, `PetscPartitionerCreate()`, `PetscSectionCreate()`, `PetscSectionSetChart()`, `PetscPartitionerPartition()`
 @*/
-PetscErrorCode PetscPartitionerDMPlexPartition(PetscPartitioner part, DM dm, PetscSection targetSection, PetscSection partSection, IS *partition) {
+PetscErrorCode PetscPartitionerDMPlexPartition(PetscPartitioner part, DM dm, PetscSection targetSection, PetscSection partSection, IS *partition)
+{
   PetscMPIInt  size;
   PetscBool    isplex;
   PetscSection vertSection = NULL;
@@ -868,7 +881,8 @@ PetscErrorCode PetscPartitionerDMPlexPartition(PetscPartitioner part, DM dm, Pet
 
 .seealso `DMPlexDistribute()`, `DMPlexSetPartitioner()`, `PetscPartitionerDMPlexPartition()`, `PetscPartitionerCreate()`
 @*/
-PetscErrorCode DMPlexGetPartitioner(DM dm, PetscPartitioner *part) {
+PetscErrorCode DMPlexGetPartitioner(DM dm, PetscPartitioner *part)
+{
   DM_Plex *mesh = (DM_Plex *)dm->data;
 
   PetscFunctionBegin;
@@ -893,7 +907,8 @@ PetscErrorCode DMPlexGetPartitioner(DM dm, PetscPartitioner *part) {
 
 .seealso `DMPlexDistribute()`, `DMPlexGetPartitioner()`, `PetscPartitionerCreate()`
 @*/
-PetscErrorCode DMPlexSetPartitioner(DM dm, PetscPartitioner part) {
+PetscErrorCode DMPlexSetPartitioner(DM dm, PetscPartitioner part)
+{
   DM_Plex *mesh = (DM_Plex *)dm->data;
 
   PetscFunctionBegin;
@@ -905,7 +920,8 @@ PetscErrorCode DMPlexSetPartitioner(DM dm, PetscPartitioner part) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMPlexAddClosure_Private(DM dm, PetscHSetI ht, PetscInt point) {
+static PetscErrorCode DMPlexAddClosure_Private(DM dm, PetscHSetI ht, PetscInt point)
+{
   const PetscInt *cone;
   PetscInt        coneSize, c;
   PetscBool       missing;
@@ -920,7 +936,8 @@ static PetscErrorCode DMPlexAddClosure_Private(DM dm, PetscHSetI ht, PetscInt po
   PetscFunctionReturn(0);
 }
 
-PETSC_UNUSED static PetscErrorCode DMPlexAddClosure_Tree(DM dm, PetscHSetI ht, PetscInt point, PetscBool up, PetscBool down) {
+PETSC_UNUSED static PetscErrorCode DMPlexAddClosure_Tree(DM dm, PetscHSetI ht, PetscInt point, PetscBool up, PetscBool down)
+{
   PetscFunctionBegin;
   if (up) {
     PetscInt parent;
@@ -958,7 +975,8 @@ PETSC_UNUSED static PetscErrorCode DMPlexAddClosure_Tree(DM dm, PetscHSetI ht, P
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMPlexAddClosureTree_Up_Private(DM dm, PetscHSetI ht, PetscInt point) {
+static PetscErrorCode DMPlexAddClosureTree_Up_Private(DM dm, PetscHSetI ht, PetscInt point)
+{
   PetscInt parent;
 
   PetscFunctionBeginHot;
@@ -980,7 +998,8 @@ static PetscErrorCode DMPlexAddClosureTree_Up_Private(DM dm, PetscHSetI ht, Pets
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMPlexAddClosureTree_Down_Private(DM dm, PetscHSetI ht, PetscInt point) {
+static PetscErrorCode DMPlexAddClosureTree_Down_Private(DM dm, PetscHSetI ht, PetscInt point)
+{
   PetscInt        i, numChildren;
   const PetscInt *children;
 
@@ -990,7 +1009,8 @@ static PetscErrorCode DMPlexAddClosureTree_Down_Private(DM dm, PetscHSetI ht, Pe
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMPlexAddClosureTree_Private(DM dm, PetscHSetI ht, PetscInt point) {
+static PetscErrorCode DMPlexAddClosureTree_Private(DM dm, PetscHSetI ht, PetscInt point)
+{
   const PetscInt *cone;
   PetscInt        coneSize, c;
 
@@ -1004,7 +1024,8 @@ static PetscErrorCode DMPlexAddClosureTree_Private(DM dm, PetscHSetI ht, PetscIn
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMPlexClosurePoints_Private(DM dm, PetscInt numPoints, const PetscInt points[], IS *closureIS) {
+PetscErrorCode DMPlexClosurePoints_Private(DM dm, PetscInt numPoints, const PetscInt points[], IS *closureIS)
+{
   DM_Plex        *mesh    = (DM_Plex *)dm->data;
   const PetscBool hasTree = (mesh->parentSection || mesh->childSection) ? PETSC_TRUE : PETSC_FALSE;
   PetscInt        nelems, *elems, off = 0, p;
@@ -1050,7 +1071,8 @@ PetscErrorCode DMPlexClosurePoints_Private(DM dm, PetscInt numPoints, const Pets
 
 .seealso: `DMPlexPartitionLabelCreateSF()`, `DMPlexDistribute()`, `DMPlexCreateOverlap()`
 @*/
-PetscErrorCode DMPlexPartitionLabelClosure(DM dm, DMLabel label) {
+PetscErrorCode DMPlexPartitionLabelClosure(DM dm, DMLabel label)
+{
   IS              rankIS, pointIS, closureIS;
   const PetscInt *ranks, *points;
   PetscInt        numRanks, numPoints, r;
@@ -1086,7 +1108,8 @@ PetscErrorCode DMPlexPartitionLabelClosure(DM dm, DMLabel label) {
 
 .seealso: `DMPlexPartitionLabelCreateSF()`, `DMPlexDistribute()`, `DMPlexCreateOverlap()`
 @*/
-PetscErrorCode DMPlexPartitionLabelAdjacency(DM dm, DMLabel label) {
+PetscErrorCode DMPlexPartitionLabelAdjacency(DM dm, DMLabel label)
+{
   IS              rankIS, pointIS;
   const PetscInt *ranks, *points;
   PetscInt        numRanks, numPoints, r, p, a, adjSize;
@@ -1130,7 +1153,8 @@ PetscErrorCode DMPlexPartitionLabelAdjacency(DM dm, DMLabel label) {
 
 .seealso: `DMPlexPartitionLabelCreateSF()`, `DMPlexDistribute()`, `DMPlexCreateOverlap()`
 @*/
-PetscErrorCode DMPlexPartitionLabelPropagate(DM dm, DMLabel label) {
+PetscErrorCode DMPlexPartitionLabelPropagate(DM dm, DMLabel label)
+{
   MPI_Comm        comm;
   PetscMPIInt     rank;
   PetscSF         sfPoint;
@@ -1194,7 +1218,8 @@ PetscErrorCode DMPlexPartitionLabelPropagate(DM dm, DMLabel label) {
 
 .seealso: `DMPlexPartitionLabelCreateSF()`, `DMPlexDistribute()`, `DMPlexCreateOverlap()`
 @*/
-PetscErrorCode DMPlexPartitionLabelInvert(DM dm, DMLabel rootLabel, PetscSF processSF, DMLabel leafLabel) {
+PetscErrorCode DMPlexPartitionLabelInvert(DM dm, DMLabel rootLabel, PetscSF processSF, DMLabel leafLabel)
+{
   MPI_Comm           comm;
   PetscMPIInt        rank, size, r;
   PetscInt           p, n, numNeighbors, numPoints, dof, off, rootSize, l, nleaves, leafSize;
@@ -1337,7 +1362,8 @@ PetscErrorCode DMPlexPartitionLabelInvert(DM dm, DMLabel rootLabel, PetscSF proc
 
 .seealso: `DMPlexDistribute()`, `DMPlexCreateOverlap()`
 @*/
-PetscErrorCode DMPlexPartitionLabelCreateSF(DM dm, DMLabel label, PetscSF *sf) {
+PetscErrorCode DMPlexPartitionLabelCreateSF(DM dm, DMLabel label, PetscSF *sf)
+{
   PetscMPIInt     rank;
   PetscInt        n, numRemote, p, numPoints, pStart, pEnd, idx = 0, nNeighbors;
   PetscSFNode    *remotePoints;
@@ -1404,7 +1430,7 @@ PetscErrorCode DMPlexPartitionLabelCreateSF(DM dm, DMLabel label, PetscSF *sf) {
 }
 
 #if defined(PETSC_HAVE_PARMETIS)
-#include <parmetis.h>
+  #include <parmetis.h>
 #endif
 
 /* The two functions below are used by DMPlexRebalanceSharedPoints which errors
@@ -1425,7 +1451,8 @@ PetscErrorCode DMPlexPartitionLabelCreateSF(DM dm, DMLabel label, PetscSF *sf) {
   Level: developer
 
 @*/
-static PetscErrorCode DMPlexRewriteSF(DM dm, PetscInt n, PetscInt *pointsToRewrite, PetscInt *targetOwners, const PetscInt *degrees) {
+static PetscErrorCode DMPlexRewriteSF(DM dm, PetscInt n, PetscInt *pointsToRewrite, PetscInt *targetOwners, const PetscInt *degrees)
+{
   PetscInt           pStart, pEnd, i, j, counter, leafCounter, sumDegrees, nroots, nleafs;
   PetscInt          *cumSumDegrees, *newOwners, *newNumbers, *rankOnLeafs, *locationsOfLeafs, *remoteLocalPointOfLeafs, *points, *leafsNew;
   PetscSFNode       *leafLocationsNew;
@@ -1549,7 +1576,8 @@ static PetscErrorCode DMPlexRewriteSF(DM dm, PetscInt n, PetscInt *pointsToRewri
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMPlexViewDistribution(MPI_Comm comm, PetscInt n, PetscInt skip, PetscInt *vtxwgt, PetscInt *part, PetscViewer viewer) {
+static PetscErrorCode DMPlexViewDistribution(MPI_Comm comm, PetscInt n, PetscInt skip, PetscInt *vtxwgt, PetscInt *part, PetscViewer viewer)
+{
   PetscInt   *distribution, min, max, sum;
   PetscMPIInt rank, size;
 
@@ -1600,7 +1628,8 @@ static PetscErrorCode DMPlexViewDistribution(MPI_Comm comm, PetscInt n, PetscInt
 
   Level: intermediate
 @*/
-PetscErrorCode DMPlexRebalanceSharedPoints(DM dm, PetscInt entityDepth, PetscBool useInitialGuess, PetscBool parallel, PetscBool *success) {
+PetscErrorCode DMPlexRebalanceSharedPoints(DM dm, PetscInt entityDepth, PetscBool useInitialGuess, PetscBool parallel, PetscBool *success)
+{
 #if defined(PETSC_HAVE_PARMETIS)
   PetscSF            sf;
   PetscInt           ierr, i, j, idx, jdx;

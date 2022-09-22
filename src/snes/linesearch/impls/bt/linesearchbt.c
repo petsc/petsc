@@ -16,7 +16,8 @@ typedef struct {
 
 .seealso: `SNESLineSearch`, `SNESLineSearchSetLambda()`, `SNESLineSearchGetTolerances()`, `SNESLINESEARCHBT`, `SNESLineSearchBTGetAlpha()`
 @*/
-PetscErrorCode SNESLineSearchBTSetAlpha(SNESLineSearch linesearch, PetscReal alpha) {
+PetscErrorCode SNESLineSearchBTSetAlpha(SNESLineSearch linesearch, PetscReal alpha)
+{
   SNESLineSearch_BT *bt = (SNESLineSearch_BT *)linesearch->data;
 
   PetscFunctionBegin;
@@ -38,7 +39,8 @@ PetscErrorCode SNESLineSearchBTSetAlpha(SNESLineSearch linesearch, PetscReal alp
 
 .seealso: `SNESLineSearchGetLambda()`, `SNESLineSearchGetTolerances()` `SNESLINESEARCHBT`, `SNESLineSearchBTGetAlpha()`
 @*/
-PetscErrorCode SNESLineSearchBTGetAlpha(SNESLineSearch linesearch, PetscReal *alpha) {
+PetscErrorCode SNESLineSearchBTGetAlpha(SNESLineSearch linesearch, PetscReal *alpha)
+{
   SNESLineSearch_BT *bt = (SNESLineSearch_BT *)linesearch->data;
 
   PetscFunctionBegin;
@@ -47,7 +49,8 @@ PetscErrorCode SNESLineSearchBTGetAlpha(SNESLineSearch linesearch, PetscReal *al
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode SNESLineSearchApply_BT(SNESLineSearch linesearch) {
+static PetscErrorCode SNESLineSearchApply_BT(SNESLineSearch linesearch)
+{
   PetscBool          changed_y, changed_w;
   Vec                X, F, Y, W, G;
   SNES               snes;
@@ -366,7 +369,8 @@ static PetscErrorCode SNESLineSearchApply_BT(SNESLineSearch linesearch) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode SNESLineSearchView_BT(SNESLineSearch linesearch, PetscViewer viewer) {
+PetscErrorCode SNESLineSearchView_BT(SNESLineSearch linesearch, PetscViewer viewer)
+{
   PetscBool          iascii;
   SNESLineSearch_BT *bt = (SNESLineSearch_BT *)linesearch->data;
 
@@ -383,13 +387,15 @@ PetscErrorCode SNESLineSearchView_BT(SNESLineSearch linesearch, PetscViewer view
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode SNESLineSearchDestroy_BT(SNESLineSearch linesearch) {
+static PetscErrorCode SNESLineSearchDestroy_BT(SNESLineSearch linesearch)
+{
   PetscFunctionBegin;
   PetscCall(PetscFree(linesearch->data));
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode SNESLineSearchSetFromOptions_BT(SNESLineSearch linesearch, PetscOptionItems *PetscOptionsObject) {
+static PetscErrorCode SNESLineSearchSetFromOptions_BT(SNESLineSearch linesearch, PetscOptionItems *PetscOptionsObject)
+{
   SNESLineSearch_BT *bt = (SNESLineSearch_BT *)linesearch->data;
 
   PetscFunctionBegin;
@@ -425,7 +431,8 @@ static PetscErrorCode SNESLineSearchSetFromOptions_BT(SNESLineSearch linesearch,
 
 .seealso: `SNESLineSearch`, `SNESLineSearchType`, `SNESLineSearchCreate()`, `SNESLineSearchSetType()`
 M*/
-PETSC_EXTERN PetscErrorCode SNESLineSearchCreate_BT(SNESLineSearch linesearch) {
+PETSC_EXTERN PetscErrorCode SNESLineSearchCreate_BT(SNESLineSearch linesearch)
+{
   SNESLineSearch_BT *bt;
 
   PetscFunctionBegin;

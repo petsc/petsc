@@ -7,7 +7,8 @@ static char help[] = "Tests loading DM vector from file.\n\n";
 
 #include <petscdmda.h>
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscInt    M = PETSC_DECIDE, N = PETSC_DECIDE;
   DM          da;
   Vec         global;

@@ -38,14 +38,16 @@ typedef find_temp_path_progress_t (*find_temp_path_action_t)(int dfd, char *path
 
 static int find_temp_path(int dfd, char *path, int slen, int stat_base_dir, find_temp_path_action_t action, void *action_ctx, void *action_result);
 
-static find_temp_path_progress_t _mkdtemp_action(int dfd, char *path, void *ctx __unused, void *result __unused) {
+static find_temp_path_progress_t _mkdtemp_action(int dfd, char *path, void *ctx __unused, void *result __unused)
+{
   if (mkdir(path, 0700) == 0) return FTPP_DONE;
   return (errno == EEXIST) ? FTPP_TRY_NEXT : FTPP_ERROR; // errno is set already
 }
 
 static const char padchar[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 
-static int find_temp_path(int dfd, char *path, int slen, int stat_base_dir, find_temp_path_action_t action, void *action_ctx, void *action_result) {
+static int find_temp_path(int dfd, char *path, int slen, int stat_base_dir, find_temp_path_action_t action, void *action_ctx, void *action_result)
+{
   char       *start, *trv, *suffp, *carryp;
   const char *pad;
   struct stat sbuf;
@@ -103,9 +105,11 @@ static int find_temp_path(int dfd, char *path, int slen, int stat_base_dir, find
 
   for (;;) {
     switch (action(dfd, path, action_ctx, action_result)) {
-    case FTPP_DONE: return (1);
-    case FTPP_ERROR: return (0); // errno must be set by the action
-    default:;                    // FTPP_TRY_NEXT, fall-through
+    case FTPP_DONE:
+      return (1);
+    case FTPP_ERROR:
+      return (0); // errno must be set by the action
+    default:;     // FTPP_TRY_NEXT, fall-through
     }
 
     /* If we have a collision, cycle through the space of filenames */
@@ -138,6 +142,7 @@ static int find_temp_path(int dfd, char *path, int slen, int stat_base_dir, find
   /*NOTREACHED*/
 }
 
-char *mkdtemp(char *path) {
+char *mkdtemp(char *path)
+{
   return (find_temp_path(AT_FDCWD, path, 0, 1, _mkdtemp_action, NULL, NULL) ? path : (char *)NULL);
 }

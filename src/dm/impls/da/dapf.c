@@ -19,7 +19,8 @@
 
 .seealso: `DMDACreate1d()`, `DMDACreate2d()`, `DMDACreate3d()`, `DMDestroy()`, `DMCreateGlobalVector()`
 @*/
-PetscErrorCode DMDACreatePF(DM da, PF *pf) {
+PetscErrorCode DMDACreatePF(DM da, PF *pf)
+{
   DM_DA *dd = (DM_DA *)da->data;
 
   PetscFunctionBegin;

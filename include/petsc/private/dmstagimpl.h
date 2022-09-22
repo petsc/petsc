@@ -1,14 +1,14 @@
 #if !defined(DMSTAGIMPL_H_)
-#define DMSTAGIMPL_H_
+  #define DMSTAGIMPL_H_
 
-#include <petscdmstag.h> /*I "petscdmstag.h" I*/
-#include <petsc/private/dmimpl.h>
+  #include <petscdmstag.h> /*I "petscdmstag.h" I*/
+  #include <petsc/private/dmimpl.h>
 
-#define DMSTAG_MAX_DIM    3
-#define DMSTAG_MAX_STRATA DMSTAG_MAX_DIM + 1
+  #define DMSTAG_MAX_DIM    3
+  #define DMSTAG_MAX_STRATA DMSTAG_MAX_DIM + 1
 
-/* This value is 1 + 3^DMSTAG_MAX_DIM */
-#define DMSTAG_NUMBER_LOCATIONS 28
+  /* This value is 1 + 3^DMSTAG_MAX_DIM */
+  #define DMSTAG_NUMBER_LOCATIONS 28
 
 typedef struct {
   /* Fields which may require being set before DMSetUp() is called, set by DMStagInitialize().

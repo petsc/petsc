@@ -2,26 +2,27 @@
 #include <petscsys.h>
 #include <errno.h>
 #if defined(PETSC_HAVE_PWD_H)
-#include <pwd.h>
+  #include <pwd.h>
 #endif
 #include <ctype.h>
 #include <sys/stat.h>
 #if defined(PETSC_HAVE_UNISTD_H)
-#include <unistd.h>
+  #include <unistd.h>
 #endif
 #if defined(PETSC_HAVE_SYS_UTSNAME_H)
-#include <sys/utsname.h>
+  #include <sys/utsname.h>
 #endif
 #if defined(PETSC_HAVE_IO_H)
-#include <io.h>
+  #include <io.h>
 #endif
 #if defined(PETSC_HAVE_SYS_SYSTEMINFO_H)
-#include <sys/systeminfo.h>
+  #include <sys/systeminfo.h>
 #endif
 
 #if defined(PETSC_HAVE__ACCESS) || defined(PETSC_HAVE_ACCESS)
 
-static PetscErrorCode PetscTestOwnership(const char fname[], char mode, uid_t fuid, gid_t fgid, int fmode, PetscBool *flg) {
+static PetscErrorCode PetscTestOwnership(const char fname[], char mode, uid_t fuid, gid_t fgid, int fmode, PetscBool *flg)
+{
   int m = R_OK;
 
   PetscFunctionBegin;
@@ -29,7 +30,7 @@ static PetscErrorCode PetscTestOwnership(const char fname[], char mode, uid_t fu
   else if (mode == 'w') m = W_OK;
   else if (mode == 'x') m = X_OK;
   else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Mode must be one of r, w, or x");
-#if defined(PETSC_HAVE_ACCESS)
+  #if defined(PETSC_HAVE_ACCESS)
   if (!access(fname, m)) {
     PetscCall(PetscInfo(NULL, "System call access() succeeded on file %s\n", fname));
     *flg = PETSC_TRUE;
@@ -37,45 +38,46 @@ static PetscErrorCode PetscTestOwnership(const char fname[], char mode, uid_t fu
     PetscCall(PetscInfo(NULL, "System call access() failed on file %s\n", fname));
     *flg = PETSC_FALSE;
   }
-#else
+  #else
   PetscCheck(m != X_OK, PETSC_COMM_SELF, PETSC_ERR_SUP, "Unable to check execute permission for file %s", fname);
   if (!_access(fname, m)) *flg = PETSC_TRUE;
-#endif
+  #endif
   PetscFunctionReturn(0);
 }
 
 #else /* PETSC_HAVE_ACCESS or PETSC_HAVE__ACCESS */
 
-static PetscErrorCode PetscTestOwnership(const char fname[], char mode, uid_t fuid, gid_t fgid, int fmode, PetscBool *flg) {
+static PetscErrorCode PetscTestOwnership(const char fname[], char mode, uid_t fuid, gid_t fgid, int fmode, PetscBool *flg)
+{
   uid_t  uid;
   gid_t *gid = NULL;
   int    numGroups;
   int    rbit = S_IROTH;
   int    wbit = S_IWOTH;
   int    ebit = S_IXOTH;
-#if !defined(PETSC_MISSING_GETGROUPS)
+  #if !defined(PETSC_MISSING_GETGROUPS)
   int    err;
-#endif
+  #endif
 
   PetscFunctionBegin;
   /* Get the number of supplementary group IDs */
-#if !defined(PETSC_MISSING_GETGROUPS)
+  #if !defined(PETSC_MISSING_GETGROUPS)
   numGroups = getgroups(0, gid);
   PetscCheck(numGroups >= 0, PETSC_COMM_SELF, PETSC_ERR_SYS, "Unable to count supplementary group IDs");
   PetscCall(PetscMalloc1(numGroups + 1, &gid));
-#else
+  #else
   numGroups = 0;
-#endif
+  #endif
 
   /* Get the (effective) user and group of the caller */
   uid    = geteuid();
   gid[0] = getegid();
 
   /* Get supplementary group IDs */
-#if !defined(PETSC_MISSING_GETGROUPS)
+  #if !defined(PETSC_MISSING_GETGROUPS)
   err = getgroups(numGroups, gid + 1);
   PetscCheck(err >= 0, PETSC_COMM_SELF, PETSC_ERR_SYS, "Unable to obtain supplementary group IDs");
-#endif
+  #endif
 
   /* Test for accessibility */
   if (fuid == uid) {
@@ -108,7 +110,8 @@ static PetscErrorCode PetscTestOwnership(const char fname[], char mode, uid_t fu
 
 #endif /* PETSC_HAVE_ACCESS */
 
-static PetscErrorCode PetscGetFileStat(const char fname[], uid_t *fileUid, gid_t *fileGid, int *fileMode, PetscBool *exists) {
+static PetscErrorCode PetscGetFileStat(const char fname[], uid_t *fileUid, gid_t *fileGid, int *fileMode, PetscBool *exists)
+{
   struct stat    statbuf;
   PetscErrorCode ierr;
 
@@ -155,7 +158,8 @@ static PetscErrorCode PetscGetFileStat(const char fname[], uid_t *fileUid, gid_t
 
 .seealso: `PetscTestDirectory()`, `PetscLs()`
 @*/
-PetscErrorCode PetscTestFile(const char fname[], char mode, PetscBool *flg) {
+PetscErrorCode PetscTestFile(const char fname[], char mode, PetscBool *flg)
+{
   uid_t     fuid;
   gid_t     fgid;
   int       fmode;
@@ -194,7 +198,8 @@ PetscErrorCode PetscTestFile(const char fname[], char mode, PetscBool *flg) {
 
 .seealso: `PetscTestFile()`, `PetscLs()`
 @*/
-PetscErrorCode PetscTestDirectory(const char dirname[], char mode, PetscBool *flg) {
+PetscErrorCode PetscTestDirectory(const char dirname[], char mode, PetscBool *flg)
+{
   uid_t     fuid;
   gid_t     fgid;
   int       fmode;
@@ -232,7 +237,8 @@ PetscErrorCode PetscTestDirectory(const char dirname[], char mode, PetscBool *fl
 
 .seealso: `PetscTestFile()`, `PetscLs()`
 @*/
-PetscErrorCode PetscLs(MPI_Comm comm, const char dirname[], char found[], size_t tlen, PetscBool *flg) {
+PetscErrorCode PetscLs(MPI_Comm comm, const char dirname[], char found[], size_t tlen, PetscBool *flg)
+{
   size_t len;
   char  *f, program[PETSC_MAX_PATH_LEN];
   FILE  *fp;

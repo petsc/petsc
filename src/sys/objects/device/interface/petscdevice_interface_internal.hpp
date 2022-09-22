@@ -10,10 +10,10 @@
 #include <unordered_set>
 
 #if PetscDefined(USE_DEBUG) && PetscDefined(USE_INFO)
-#define PETSC_USE_DEBUG_AND_INFO  1
-#define PetscDebugInfo(dctx, ...) PetscInfo(dctx, __VA_ARGS__)
+  #define PETSC_USE_DEBUG_AND_INFO  1
+  #define PetscDebugInfo(dctx, ...) PetscInfo(dctx, __VA_ARGS__)
 #else
-#define PetscDebugInfo(dctx, ...) 0
+  #define PetscDebugInfo(dctx, ...) 0
 #endif
 
 // this file contains functions needed to bridge the gap between dcontext.cxx and device.cxx
@@ -25,7 +25,8 @@ PETSC_INTERN PetscErrorCode PetscDeviceContextSyncClearMap_Internal(PetscDeviceC
 PETSC_INTERN PetscErrorCode PetscDeviceContextCheckNotOrphaned_Internal(PetscDeviceContext);
 
 // open up namespace std to specialize equal_to for unordered_map
-namespace std {
+namespace std
+{
 
 template <>
 struct equal_to<PetscDeviceContext> {
@@ -35,14 +36,13 @@ struct equal_to<PetscDeviceContext> {
   using second_argument_type = PetscDeviceContext;
 #endif
 
-  constexpr bool operator()(const PetscDeviceContext &x, const PetscDeviceContext &y) const noexcept {
-    return PetscObjectCast(x)->id == PetscObjectCast(y)->id;
-  }
+  constexpr bool operator()(const PetscDeviceContext &x, const PetscDeviceContext &y) const noexcept { return PetscObjectCast(x)->id == PetscObjectCast(y)->id; }
 };
 
 } // namespace std
 
-namespace {
+namespace
+{
 
 struct CxxData {
   struct parent_type {
@@ -75,14 +75,16 @@ struct CxxData {
   PETSC_NODISCARD PetscErrorCode clear() noexcept;
 };
 
-inline PetscErrorCode CxxData::clear() noexcept {
+inline PetscErrorCode CxxData::clear() noexcept
+{
   PetscFunctionBegin;
   PetscCallCXX(this->upstream.clear());
   PetscCallCXX(this->deps.clear());
   PetscFunctionReturn(0);
 }
 
-PETSC_NODISCARD inline CxxData *CxxDataCast(PetscDeviceContext dctx) noexcept {
+PETSC_NODISCARD inline CxxData *CxxDataCast(PetscDeviceContext dctx) noexcept
+{
   return static_cast<CxxData *>(PetscObjectCast(dctx)->cpp);
 }
 
@@ -91,7 +93,8 @@ PETSC_NODISCARD inline CxxData *CxxDataCast(PetscDeviceContext dctx) noexcept {
   it does not yet have a PetscDeviceContext to call this with, the actual options queries are
   abstracted out, so you can call this without one.
 */
-inline PetscErrorCode PetscDeviceContextQueryOptions_Internal(PetscOptionItems *PetscOptionsObject, std::pair<PetscDeviceType, PetscBool> &deviceType, std::pair<PetscStreamType, PetscBool> &streamType) {
+inline PetscErrorCode PetscDeviceContextQueryOptions_Internal(PetscOptionItems *PetscOptionsObject, std::pair<PetscDeviceType, PetscBool> &deviceType, std::pair<PetscStreamType, PetscBool> &streamType)
+{
   auto dtype = static_cast<PetscInt>(deviceType.first);
   auto stype = static_cast<PetscInt>(streamType.first);
 

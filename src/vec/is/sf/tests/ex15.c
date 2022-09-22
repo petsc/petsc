@@ -8,7 +8,8 @@ general (SGToSG) vecscatter and sequential general to sequential stride 1 (SGToS
 
 #include <petscvec.h>
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscInt        i, n, *ix, *iy, *tomap, start;
   Vec             x, y;
   PetscMPIInt     nproc, rank;

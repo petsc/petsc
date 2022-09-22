@@ -4,7 +4,8 @@ static char help[] = "Demonstration of creating and viewing DMFields objects.\n\
 #include <petscdmplex.h>
 #include <petscdmda.h>
 
-static PetscErrorCode ViewResults(PetscViewer viewer, PetscInt N, PetscInt dim, PetscScalar *B, PetscScalar *D, PetscScalar *H, PetscReal *rB, PetscReal *rD, PetscReal *rH) {
+static PetscErrorCode ViewResults(PetscViewer viewer, PetscInt N, PetscInt dim, PetscScalar *B, PetscScalar *D, PetscScalar *H, PetscReal *rB, PetscReal *rD, PetscReal *rH)
+{
   PetscFunctionBegin;
   PetscCall(PetscViewerASCIIPrintf(viewer, "B:\n"));
   PetscCall(PetscScalarView(N, B, viewer));
@@ -22,7 +23,8 @@ static PetscErrorCode ViewResults(PetscViewer viewer, PetscInt N, PetscInt dim, 
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TestEvaluate(DMField field, PetscInt n, PetscRandom rand) {
+static PetscErrorCode TestEvaluate(DMField field, PetscInt n, PetscRandom rand)
+{
   DM           dm;
   PetscInt     dim, i, nc;
   PetscScalar *B, *D, *H;
@@ -56,7 +58,8 @@ static PetscErrorCode TestEvaluate(DMField field, PetscInt n, PetscRandom rand) 
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TestEvaluateFE(DMField field, PetscInt n, PetscInt cStart, PetscInt cEnd, PetscQuadrature quad, PetscRandom rand) {
+static PetscErrorCode TestEvaluateFE(DMField field, PetscInt n, PetscInt cStart, PetscInt cEnd, PetscQuadrature quad, PetscRandom rand)
+{
   DM           dm;
   PetscInt     dim, i, nc, nq;
   PetscInt     N;
@@ -99,7 +102,8 @@ static PetscErrorCode TestEvaluateFE(DMField field, PetscInt n, PetscInt cStart,
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TestEvaluateFV(DMField field, PetscInt n, PetscInt cStart, PetscInt cEnd, PetscRandom rand) {
+static PetscErrorCode TestEvaluateFV(DMField field, PetscInt n, PetscInt cStart, PetscInt cEnd, PetscRandom rand)
+{
   DM           dm;
   PetscInt     dim, i, nc;
   PetscInt     N;
@@ -139,7 +143,8 @@ static PetscErrorCode TestEvaluateFV(DMField field, PetscInt n, PetscInt cStart,
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode radiusSquared(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar u[], void *ctx) {
+static PetscErrorCode radiusSquared(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar u[], void *ctx)
+{
   PetscInt  i;
   PetscReal r2 = 0.;
 
@@ -149,7 +154,8 @@ static PetscErrorCode radiusSquared(PetscInt dim, PetscReal time, const PetscRea
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TestShellEvaluate(DMField field, Vec points, PetscDataType type, void *B, void *D, void *H) {
+static PetscErrorCode TestShellEvaluate(DMField field, Vec points, PetscDataType type, void *B, void *D, void *H)
+{
   Vec                ctxVec = NULL;
   const PetscScalar *mult;
   PetscInt           dim;
@@ -200,7 +206,8 @@ static PetscErrorCode TestShellEvaluate(DMField field, Vec points, PetscDataType
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TestShellDestroy(DMField field) {
+static PetscErrorCode TestShellDestroy(DMField field)
+{
   Vec ctxVec = NULL;
 
   PetscFunctionBegin;
@@ -209,7 +216,8 @@ static PetscErrorCode TestShellDestroy(DMField field) {
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   DM              dm = NULL;
   MPI_Comm        comm;
   char            type[256] = DMPLEX;
@@ -304,9 +312,15 @@ int main(int argc, char **argv) {
     PetscScalar *cv;
 
     switch (dim) {
-    case 1: PetscCall(DMDACreate1d(comm, DM_BOUNDARY_NONE, 3, 1, 1, NULL, &dm)); break;
-    case 2: PetscCall(DMDACreate2d(comm, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DMDA_STENCIL_BOX, 3, 3, PETSC_DETERMINE, PETSC_DETERMINE, 1, 1, NULL, NULL, &dm)); break;
-    default: PetscCall(DMDACreate3d(comm, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DMDA_STENCIL_BOX, 3, 3, 3, PETSC_DETERMINE, PETSC_DETERMINE, PETSC_DETERMINE, 1, 1, NULL, NULL, NULL, &dm)); break;
+    case 1:
+      PetscCall(DMDACreate1d(comm, DM_BOUNDARY_NONE, 3, 1, 1, NULL, &dm));
+      break;
+    case 2:
+      PetscCall(DMDACreate2d(comm, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DMDA_STENCIL_BOX, 3, 3, PETSC_DETERMINE, PETSC_DETERMINE, 1, 1, NULL, NULL, &dm));
+      break;
+    default:
+      PetscCall(DMDACreate3d(comm, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DMDA_STENCIL_BOX, 3, 3, 3, PETSC_DETERMINE, PETSC_DETERMINE, PETSC_DETERMINE, 1, 1, NULL, NULL, NULL, &dm));
+      break;
     }
     PetscCall(DMSetUp(dm));
     PetscCall(DMDAGetHeightStratum(dm, 0, &cStart, &cEnd));

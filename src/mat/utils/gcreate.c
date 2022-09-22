@@ -1,6 +1,7 @@
 #include <petsc/private/matimpl.h> /*I "petscmat.h"  I*/
 
-PETSC_INTERN PetscErrorCode MatSetBlockSizes_Default(Mat mat, PetscInt rbs, PetscInt cbs) {
+PETSC_INTERN PetscErrorCode MatSetBlockSizes_Default(Mat mat, PetscInt rbs, PetscInt cbs)
+{
   PetscFunctionBegin;
   if (!mat->preallocated) PetscFunctionReturn(0);
   PetscCheck(mat->rmap->bs <= 0 || mat->rmap->bs == rbs, PetscObjectComm((PetscObject)mat), PETSC_ERR_SUP, "Cannot change row block size %" PetscInt_FMT " to %" PetscInt_FMT, mat->rmap->bs, rbs);
@@ -8,7 +9,8 @@ PETSC_INTERN PetscErrorCode MatSetBlockSizes_Default(Mat mat, PetscInt rbs, Pets
   PetscFunctionReturn(0);
 }
 
-PETSC_INTERN PetscErrorCode MatShift_Basic(Mat Y, PetscScalar a) {
+PETSC_INTERN PetscErrorCode MatShift_Basic(Mat Y, PetscScalar a)
+{
   PetscInt    i, start, end;
   PetscScalar alpha = a;
   PetscBool   prevoption;
@@ -63,7 +65,8 @@ PETSC_INTERN PetscErrorCode MatShift_Basic(Mat Y, PetscScalar a) {
           `MatCreateSeqSBAIJ()`, `MatCreateSBAIJ()`,
           `MatConvert()`
 @*/
-PetscErrorCode MatCreate(MPI_Comm comm, Mat *A) {
+PetscErrorCode MatCreate(MPI_Comm comm, Mat *A)
+{
   Mat B;
 
   PetscFunctionBegin;
@@ -111,7 +114,8 @@ PetscErrorCode MatCreate(MPI_Comm comm, Mat *A) {
 
 .seealso: `PCSetErrorIfFailure()`, `KSPConvergedReason`, `SNESConvergedReason`
 @*/
-PetscErrorCode MatSetErrorIfFailure(Mat mat, PetscBool flg) {
+PetscErrorCode MatSetErrorIfFailure(Mat mat, PetscBool flg)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat, MAT_CLASSID, 1);
   PetscValidLogicalCollectiveBool(mat, flg, 2);
@@ -151,7 +155,8 @@ PetscErrorCode MatSetErrorIfFailure(Mat mat, PetscBool flg) {
 
 .seealso: `MatGetSize()`, `PetscSplitOwnership()`
 @*/
-PetscErrorCode MatSetSizes(Mat A, PetscInt m, PetscInt n, PetscInt M, PetscInt N) {
+PetscErrorCode MatSetSizes(Mat A, PetscInt m, PetscInt n, PetscInt M, PetscInt N)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
   PetscValidLogicalCollectiveInt(A, M, 4);
@@ -201,7 +206,8 @@ PetscErrorCode MatSetSizes(Mat A, PetscInt m, PetscInt n, PetscInt M, PetscInt N
           `MatCreateSeqSBAIJ()`, `MatCreateSBAIJ()`,
           `MatConvert()`
 @*/
-PetscErrorCode MatSetFromOptions(Mat B) {
+PetscErrorCode MatSetFromOptions(Mat B)
+{
   const char *deft = MATAIJ;
   char        type[256];
   PetscBool   flg, set;
@@ -279,7 +285,8 @@ PetscErrorCode MatSetFromOptions(Mat B) {
 .seealso: `MatSeqAIJSetPreallocation()`, `MatMPIAIJSetPreallocation()`, `MatSeqBAIJSetPreallocation()`, `MatMPIBAIJSetPreallocation()`, `MatSeqSBAIJSetPreallocation()`, `MatMPISBAIJSetPreallocation()`,
           `PetscSplitOwnership()`
 @*/
-PetscErrorCode MatXAIJSetPreallocation(Mat A, PetscInt bs, const PetscInt dnnz[], const PetscInt onnz[], const PetscInt dnnzu[], const PetscInt onnzu[]) {
+PetscErrorCode MatXAIJSetPreallocation(Mat A, PetscInt bs, const PetscInt dnnz[], const PetscInt onnz[], const PetscInt dnnzu[], const PetscInt onnzu[])
+{
   PetscInt cbs;
   void (*aij)(void);
   void (*is)(void);
@@ -340,7 +347,8 @@ PetscErrorCode MatXAIJSetPreallocation(Mat A, PetscInt bs, const PetscInt dnnz[]
 
         This is somewhat different from MatHeaderReplace() it would be nice to merge the code
 */
-PetscErrorCode MatHeaderMerge(Mat A, Mat *C) {
+PetscErrorCode MatHeaderMerge(Mat A, Mat *C)
+{
   PetscInt         refct;
   PetscOps         Abops;
   struct _MatOps   Aops;
@@ -415,7 +423,8 @@ PetscErrorCode MatHeaderMerge(Mat A, Mat *C) {
 
         Used in DM hence is declared PETSC_EXTERN
 */
-PETSC_EXTERN PetscErrorCode MatHeaderReplace(Mat A, Mat *C) {
+PETSC_EXTERN PetscErrorCode MatHeaderReplace(Mat A, Mat *C)
+{
   PetscInt         refct;
   PetscObjectState state;
   struct _p_Mat    buffer;
@@ -458,7 +467,8 @@ PETSC_EXTERN PetscErrorCode MatHeaderReplace(Mat A, Mat *C) {
 
 .seealso: `MatBoundToCPU()`
 @*/
-PetscErrorCode MatBindToCPU(Mat A, PetscBool flg) {
+PetscErrorCode MatBindToCPU(Mat A, PetscBool flg)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
   PetscValidLogicalCollectiveBool(A, flg, 2);
@@ -483,7 +493,8 @@ PetscErrorCode MatBindToCPU(Mat A, PetscBool flg) {
 
 .seealso: `MatBindToCPU()`
 @*/
-PetscErrorCode MatBoundToCPU(Mat A, PetscBool *flg) {
+PetscErrorCode MatBoundToCPU(Mat A, PetscBool *flg)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
   PetscValidBoolPointer(flg, 2);
@@ -495,7 +506,8 @@ PetscErrorCode MatBoundToCPU(Mat A, PetscBool *flg) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatSetValuesCOO_Basic(Mat A, const PetscScalar coo_v[], InsertMode imode) {
+PetscErrorCode MatSetValuesCOO_Basic(Mat A, const PetscScalar coo_v[], InsertMode imode)
+{
   IS              is_coo_i, is_coo_j;
   const PetscInt *coo_i, *coo_j;
   PetscInt        n, n_i, n_j;
@@ -518,7 +530,8 @@ PetscErrorCode MatSetValuesCOO_Basic(Mat A, const PetscScalar coo_v[], InsertMod
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatSetPreallocationCOO_Basic(Mat A, PetscCount ncoo, const PetscInt coo_i[], const PetscInt coo_j[]) {
+PetscErrorCode MatSetPreallocationCOO_Basic(Mat A, PetscCount ncoo, const PetscInt coo_i[], const PetscInt coo_j[])
+{
   Mat         preallocator;
   IS          is_coo_i, is_coo_j;
   PetscScalar zero = 0.0;
@@ -571,7 +584,8 @@ PetscErrorCode MatSetPreallocationCOO_Basic(Mat A, PetscCount ncoo, const PetscI
 
 .seealso: `MatSetValuesCOO()`, `MatSeqAIJSetPreallocation()`, `MatMPIAIJSetPreallocation()`, `MatSeqBAIJSetPreallocation()`, `MatMPIBAIJSetPreallocation()`, `MatSeqSBAIJSetPreallocation()`, `MatMPISBAIJSetPreallocation()`, `MatSetPreallocationCOOLocal()`, `DMSetMatrixPreallocateSkip()`
 @*/
-PetscErrorCode MatSetPreallocationCOO(Mat A, PetscCount ncoo, PetscInt coo_i[], PetscInt coo_j[]) {
+PetscErrorCode MatSetPreallocationCOO(Mat A, PetscCount ncoo, PetscInt coo_i[], PetscInt coo_j[])
+{
   PetscErrorCode (*f)(Mat, PetscCount, const PetscInt[], const PetscInt[]) = NULL;
 
   PetscFunctionBegin;
@@ -622,7 +636,8 @@ PetscErrorCode MatSetPreallocationCOO(Mat A, PetscCount ncoo, PetscInt coo_i[], 
 
 .seealso: `MatSetValuesCOO()`, `MatSeqAIJSetPreallocation()`, `MatMPIAIJSetPreallocation()`, `MatSeqBAIJSetPreallocation()`, `MatMPIBAIJSetPreallocation()`, `MatSeqSBAIJSetPreallocation()`, `MatMPISBAIJSetPreallocation()`, `MatSetPreallocationCOO()`, `DMSetMatrixPreallocateSkip()`
 @*/
-PetscErrorCode MatSetPreallocationCOOLocal(Mat A, PetscCount ncoo, PetscInt coo_i[], PetscInt coo_j[]) {
+PetscErrorCode MatSetPreallocationCOOLocal(Mat A, PetscCount ncoo, PetscInt coo_i[], PetscInt coo_j[])
+{
   PetscErrorCode (*f)(Mat, PetscCount, PetscInt[], PetscInt[]) = NULL;
 
   PetscFunctionBegin;
@@ -671,7 +686,8 @@ PetscErrorCode MatSetPreallocationCOOLocal(Mat A, PetscCount ncoo, PetscInt coo_
 
 .seealso: `MatSetPreallocationCOO()`, `MatSetPreallocationCOOLocal()`, `InsertMode`, `INSERT_VALUES`, `ADD_VALUES`
 @*/
-PetscErrorCode MatSetValuesCOO(Mat A, const PetscScalar coo_v[], InsertMode imode) {
+PetscErrorCode MatSetValuesCOO(Mat A, const PetscScalar coo_v[], InsertMode imode)
+{
   PetscErrorCode (*f)(Mat, const PetscScalar[], InsertMode) = NULL;
 
   PetscFunctionBegin;
@@ -715,7 +731,8 @@ PetscErrorCode MatSetValuesCOO(Mat A, const PetscScalar coo_v[], InsertMode imod
 
 .seealso: `VecSetBindingPropagates()`, `MatGetBindingPropagates()`
 @*/
-PetscErrorCode MatSetBindingPropagates(Mat A, PetscBool flg) {
+PetscErrorCode MatSetBindingPropagates(Mat A, PetscBool flg)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
 #if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
@@ -737,7 +754,8 @@ PetscErrorCode MatSetBindingPropagates(Mat A, PetscBool flg) {
 
 .seealso: `MatSetBindingPropagates()`
 @*/
-PetscErrorCode MatGetBindingPropagates(Mat A, PetscBool *flg) {
+PetscErrorCode MatGetBindingPropagates(Mat A, PetscBool *flg)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
   PetscValidBoolPointer(flg, 2);

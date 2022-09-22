@@ -4,7 +4,8 @@ static char help[] = "Tests HDF5 ISView() / ISLoad(), and ISSetLayout()\n\n";
 #include <petscis.h>
 #include <petscviewerhdf5.h>
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   const char  filename[] = "ex12.h5";
   const char  objname[]  = "is0";
   IS          is0, is1;

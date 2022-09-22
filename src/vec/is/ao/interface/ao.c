@@ -35,7 +35,8 @@ PetscLogEvent AO_PetscToApplication, AO_ApplicationToPetsc;
 
 .seealso: `PetscViewerASCIIOpen()`
 @*/
-PetscErrorCode AOView(AO ao, PetscViewer viewer) {
+PetscErrorCode AOView(AO ao, PetscViewer viewer)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ao, AO_CLASSID, 1);
   if (!viewer) PetscCall(PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)ao), &viewer));
@@ -59,7 +60,8 @@ PetscErrorCode AOView(AO ao, PetscViewer viewer) {
    Level: intermediate
 .seealso: `AO`, `AOView`, `PetscObjectViewFromOptions()`, `AOCreate()`
 @*/
-PetscErrorCode AOViewFromOptions(AO ao, PetscObject obj, const char name[]) {
+PetscErrorCode AOViewFromOptions(AO ao, PetscObject obj, const char name[])
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ao, AO_CLASSID, 1);
   PetscCall(PetscObjectViewFromOptions((PetscObject)ao, obj, name));
@@ -78,7 +80,8 @@ PetscErrorCode AOViewFromOptions(AO ao, PetscObject obj, const char name[]) {
 
 .seealso: `AOCreate()`
 @*/
-PetscErrorCode AODestroy(AO *ao) {
+PetscErrorCode AODestroy(AO *ao)
+{
   PetscFunctionBegin;
   if (!*ao) PetscFunctionReturn(0);
   PetscValidHeaderSpecific((*ao), AO_CLASSID, 1);
@@ -127,7 +130,8 @@ PETSC_INTERN PetscErrorCode ISSetUp_General(IS);
 .seealso: `AOCreateBasic()`, `AOView()`, `AOApplicationToPetsc()`,
           `AOApplicationToPetscIS()`, `AOPetscToApplication()`
 @*/
-PetscErrorCode AOPetscToApplicationIS(AO ao, IS is) {
+PetscErrorCode AOPetscToApplicationIS(AO ao, IS is)
+{
   PetscInt  n;
   PetscInt *ia;
 
@@ -170,7 +174,8 @@ PetscErrorCode AOPetscToApplicationIS(AO ao, IS is) {
 .seealso: `AOCreateBasic()`, `AOView()`, `AOPetscToApplication()`,
           `AOPetscToApplicationIS()`, `AOApplicationToPetsc()`
 @*/
-PetscErrorCode AOApplicationToPetscIS(AO ao, IS is) {
+PetscErrorCode AOApplicationToPetscIS(AO ao, IS is)
+{
   PetscInt n, *ia;
 
   PetscFunctionBegin;
@@ -213,7 +218,8 @@ PetscErrorCode AOApplicationToPetscIS(AO ao, IS is) {
 .seealso: `AOCreateBasic()`, `AOView()`, `AOApplicationToPetsc()`,
           `AOPetscToApplicationIS()`, `AOApplicationToPetsc()`
 @*/
-PetscErrorCode AOPetscToApplication(AO ao, PetscInt n, PetscInt ia[]) {
+PetscErrorCode AOPetscToApplication(AO ao, PetscInt n, PetscInt ia[])
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ao, AO_CLASSID, 1);
   if (n) PetscValidIntPointer(ia, 3);
@@ -247,7 +253,8 @@ PetscErrorCode AOPetscToApplication(AO ao, PetscInt n, PetscInt ia[]) {
 .seealso: `AOCreateBasic()`, `AOView()`, `AOPetscToApplication()`,
           `AOPetscToApplicationIS()`, `AOApplicationToPetsc()`
 @*/
-PetscErrorCode AOApplicationToPetsc(AO ao, PetscInt n, PetscInt ia[]) {
+PetscErrorCode AOApplicationToPetsc(AO ao, PetscInt n, PetscInt ia[])
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ao, AO_CLASSID, 1);
   if (n) PetscValidIntPointer(ia, 3);
@@ -280,7 +287,8 @@ PetscErrorCode AOApplicationToPetsc(AO ao, PetscInt n, PetscInt ia[]) {
 
 .seealso: `AOCreateBasic()`, `AOView()`, `AOApplicationToPetsc()`, `AOPetscToApplicationIS()`
 @*/
-PetscErrorCode AOPetscToApplicationPermuteInt(AO ao, PetscInt block, PetscInt array[]) {
+PetscErrorCode AOPetscToApplicationPermuteInt(AO ao, PetscInt block, PetscInt array[])
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ao, AO_CLASSID, 1);
   PetscValidIntPointer(array, 3);
@@ -313,7 +321,8 @@ PetscErrorCode AOPetscToApplicationPermuteInt(AO ao, PetscInt block, PetscInt ar
 
 .seealso: `AOCreateBasic()`, `AOView()`, `AOPetscToApplicationIS()`, `AOApplicationToPetsc()`
 @*/
-PetscErrorCode AOApplicationToPetscPermuteInt(AO ao, PetscInt block, PetscInt array[]) {
+PetscErrorCode AOApplicationToPetscPermuteInt(AO ao, PetscInt block, PetscInt array[])
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ao, AO_CLASSID, 1);
   PetscValidIntPointer(array, 3);
@@ -346,7 +355,8 @@ PetscErrorCode AOApplicationToPetscPermuteInt(AO ao, PetscInt block, PetscInt ar
 
 .seealso: `AOCreateBasic()`, `AOView()`, `AOApplicationToPetsc()`, `AOPetscToApplicationIS()`
 @*/
-PetscErrorCode AOPetscToApplicationPermuteReal(AO ao, PetscInt block, PetscReal array[]) {
+PetscErrorCode AOPetscToApplicationPermuteReal(AO ao, PetscInt block, PetscReal array[])
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ao, AO_CLASSID, 1);
   PetscValidRealPointer(array, 3);
@@ -379,7 +389,8 @@ PetscErrorCode AOPetscToApplicationPermuteReal(AO ao, PetscInt block, PetscReal 
 
 .seealso: `AOCreateBasic()`, `AOView()`, `AOApplicationToPetsc()`, `AOPetscToApplicationIS()`
 @*/
-PetscErrorCode AOApplicationToPetscPermuteReal(AO ao, PetscInt block, PetscReal array[]) {
+PetscErrorCode AOApplicationToPetscPermuteReal(AO ao, PetscInt block, PetscReal array[])
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ao, AO_CLASSID, 1);
   PetscValidRealPointer(array, 3);
@@ -399,7 +410,8 @@ PetscErrorCode AOApplicationToPetscPermuteReal(AO ao, PetscInt block, PetscReal 
 
 .seealso: `AOCreate()`, `AOSetType()`, `AODestroy()`, `AOPetscToApplication()`, `AOApplicationToPetsc()`
 @*/
-PetscErrorCode AOSetFromOptions(AO ao) {
+PetscErrorCode AOSetFromOptions(AO ao)
+{
   char        type[256];
   const char *def = AOBASIC;
   PetscBool   flg;
@@ -438,7 +450,8 @@ PetscErrorCode AOSetFromOptions(AO ao) {
 
 .seealso: `AOCreate()`, `AODestroy()`, `AOPetscToApplication()`, `AOApplicationToPetsc()`
 @*/
-PetscErrorCode AOSetIS(AO ao, IS isapp, IS ispetsc) {
+PetscErrorCode AOSetIS(AO ao, IS isapp, IS ispetsc)
+{
   PetscFunctionBegin;
   if (ispetsc) {
     PetscInt napp, npetsc;
@@ -474,7 +487,8 @@ PetscErrorCode AOSetIS(AO ao, IS isapp, IS ispetsc) {
 
 .seealso: `AOSetIS()`, `AODestroy()`, `AOPetscToApplication()`, `AOApplicationToPetsc()`
 @*/
-PetscErrorCode AOCreate(MPI_Comm comm, AO *ao) {
+PetscErrorCode AOCreate(MPI_Comm comm, AO *ao)
+{
   AO aonew;
 
   PetscFunctionBegin;

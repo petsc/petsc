@@ -5,7 +5,8 @@ static char help[] = "Test GLVis high-order support with DMDAs\n\n";
 #include <petscdmplex.h>
 #include <petscdt.h>
 
-static PetscErrorCode MapPoint(PetscScalar xyz[], PetscScalar mxyz[]) {
+static PetscErrorCode MapPoint(PetscScalar xyz[], PetscScalar mxyz[])
+{
   PetscScalar x, y, z, x2, y2, z2;
 
   x       = xyz[0];
@@ -20,7 +21,8 @@ static PetscErrorCode MapPoint(PetscScalar xyz[], PetscScalar mxyz[]) {
   return 0;
 }
 
-static PetscErrorCode test_3d(PetscInt cells[], PetscBool plex, PetscBool ho) {
+static PetscErrorCode test_3d(PetscInt cells[], PetscBool plex, PetscBool ho)
+{
   DM           dm;
   Vec          v;
   PetscScalar *c;
@@ -141,7 +143,8 @@ static PetscErrorCode test_3d(PetscInt cells[], PetscBool plex, PetscBool ho) {
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[])
+{
   PetscBool ho       = PETSC_TRUE;
   PetscBool plex     = PETSC_FALSE;
   PetscInt  cells[3] = {2, 2, 2};

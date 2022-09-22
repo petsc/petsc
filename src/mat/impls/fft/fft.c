@@ -4,7 +4,8 @@
 
 #include <../src/mat/impls/fft/fft.h> /*I "petscmat.h" I*/
 
-PetscErrorCode MatDestroy_FFT(Mat A) {
+PetscErrorCode MatDestroy_FFT(Mat A)
+{
   Mat_FFT *fft = (Mat_FFT *)A->data;
 
   PetscFunctionBegin;
@@ -38,7 +39,8 @@ PetscErrorCode MatDestroy_FFT(Mat A) {
 
 .seealso: `MATFFTW`, `MATSEQCUFFT`, `MatCreateVecsFFTW()`
 @*/
-PetscErrorCode MatCreateFFT(MPI_Comm comm, PetscInt ndim, const PetscInt dim[], MatType mattype, Mat *A) {
+PetscErrorCode MatCreateFFT(MPI_Comm comm, PetscInt ndim, const PetscInt dim[], MatType mattype, Mat *A)
+{
   PetscMPIInt size;
   Mat         FFT;
   PetscInt    N, i;

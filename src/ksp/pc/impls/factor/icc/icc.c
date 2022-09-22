@@ -1,7 +1,8 @@
 
 #include <../src/ksp/pc/impls/factor/icc/icc.h> /*I "petscpc.h" I*/
 
-static PetscErrorCode PCSetUp_ICC(PC pc) {
+static PetscErrorCode PCSetUp_ICC(PC pc)
+{
   PC_ICC        *icc  = (PC_ICC *)pc->data;
   IS             perm = NULL, cperm = NULL;
   MatInfo        info;
@@ -63,7 +64,8 @@ static PetscErrorCode PCSetUp_ICC(PC pc) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCReset_ICC(PC pc) {
+static PetscErrorCode PCReset_ICC(PC pc)
+{
   PC_ICC *icc = (PC_ICC *)pc->data;
 
   PetscFunctionBegin;
@@ -71,7 +73,8 @@ static PetscErrorCode PCReset_ICC(PC pc) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCDestroy_ICC(PC pc) {
+static PetscErrorCode PCDestroy_ICC(PC pc)
+{
   PC_ICC *icc = (PC_ICC *)pc->data;
 
   PetscFunctionBegin;
@@ -83,7 +86,8 @@ static PetscErrorCode PCDestroy_ICC(PC pc) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCApply_ICC(PC pc, Vec x, Vec y) {
+static PetscErrorCode PCApply_ICC(PC pc, Vec x, Vec y)
+{
   PC_ICC *icc = (PC_ICC *)pc->data;
 
   PetscFunctionBegin;
@@ -91,7 +95,8 @@ static PetscErrorCode PCApply_ICC(PC pc, Vec x, Vec y) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCMatApply_ICC(PC pc, Mat X, Mat Y) {
+static PetscErrorCode PCMatApply_ICC(PC pc, Mat X, Mat Y)
+{
   PC_ICC *icc = (PC_ICC *)pc->data;
 
   PetscFunctionBegin;
@@ -99,7 +104,8 @@ static PetscErrorCode PCMatApply_ICC(PC pc, Mat X, Mat Y) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCApplySymmetricLeft_ICC(PC pc, Vec x, Vec y) {
+static PetscErrorCode PCApplySymmetricLeft_ICC(PC pc, Vec x, Vec y)
+{
   PC_ICC *icc = (PC_ICC *)pc->data;
 
   PetscFunctionBegin;
@@ -107,7 +113,8 @@ static PetscErrorCode PCApplySymmetricLeft_ICC(PC pc, Vec x, Vec y) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCApplySymmetricRight_ICC(PC pc, Vec x, Vec y) {
+static PetscErrorCode PCApplySymmetricRight_ICC(PC pc, Vec x, Vec y)
+{
   PC_ICC *icc = (PC_ICC *)pc->data;
 
   PetscFunctionBegin;
@@ -115,7 +122,8 @@ static PetscErrorCode PCApplySymmetricRight_ICC(PC pc, Vec x, Vec y) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCSetFromOptions_ICC(PC pc, PetscOptionItems *PetscOptionsObject) {
+static PetscErrorCode PCSetFromOptions_ICC(PC pc, PetscOptionItems *PetscOptionsObject)
+{
   PC_ICC   *icc = (PC_ICC *)pc->data;
   PetscBool flg;
   /* PetscReal      dt[3];*/
@@ -173,7 +181,8 @@ extern PetscErrorCode PCFactorSetDropTolerance_ILU(PC, PetscReal, PetscReal, Pet
           `PCFactorSetLevels()`
 M*/
 
-PETSC_EXTERN PetscErrorCode PCCreate_ICC(PC pc) {
+PETSC_EXTERN PetscErrorCode PCCreate_ICC(PC pc)
+{
   PC_ICC *icc;
 
   PetscFunctionBegin;

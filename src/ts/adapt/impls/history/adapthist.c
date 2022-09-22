@@ -5,7 +5,8 @@ typedef struct {
   PetscBool bw;
 } TSAdapt_History;
 
-static PetscErrorCode TSAdaptChoose_History(TSAdapt adapt, TS ts, PetscReal h, PetscInt *next_sc, PetscReal *next_h, PetscBool *accept, PetscReal *wlte, PetscReal *wltea, PetscReal *wlter) {
+static PetscErrorCode TSAdaptChoose_History(TSAdapt adapt, TS ts, PetscReal h, PetscInt *next_sc, PetscReal *next_h, PetscBool *accept, PetscReal *wlte, PetscReal *wltea, PetscReal *wlter)
+{
   PetscInt         step;
   TSAdapt_History *thadapt = (TSAdapt_History *)adapt->data;
 
@@ -21,7 +22,8 @@ static PetscErrorCode TSAdaptChoose_History(TSAdapt adapt, TS ts, PetscReal h, P
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSAdaptReset_History(TSAdapt adapt) {
+static PetscErrorCode TSAdaptReset_History(TSAdapt adapt)
+{
   TSAdapt_History *thadapt = (TSAdapt_History *)adapt->data;
 
   PetscFunctionBegin;
@@ -29,7 +31,8 @@ static PetscErrorCode TSAdaptReset_History(TSAdapt adapt) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSAdaptDestroy_History(TSAdapt adapt) {
+static PetscErrorCode TSAdaptDestroy_History(TSAdapt adapt)
+{
   PetscFunctionBegin;
   PetscCall(TSAdaptReset_History(adapt));
   PetscCall(PetscFree(adapt->data));
@@ -37,7 +40,8 @@ static PetscErrorCode TSAdaptDestroy_History(TSAdapt adapt) {
 }
 
 /* this is not public, as TSHistory is not a public object */
-PetscErrorCode TSAdaptHistorySetTSHistory(TSAdapt adapt, TSHistory hist, PetscBool backward) {
+PetscErrorCode TSAdaptHistorySetTSHistory(TSAdapt adapt, TSHistory hist, PetscBool backward)
+{
   PetscReal *hist_t;
   PetscInt   n;
   PetscBool  flg;
@@ -71,7 +75,8 @@ PetscErrorCode TSAdaptHistorySetTSHistory(TSAdapt adapt, TSHistory hist, PetscBo
 
 .seealso: `TSGetAdapt()`, `TSAdaptSetType()`, `TSAdaptHistorySetTrajectory()`, `TSADAPTHISTORY`
 @*/
-PetscErrorCode TSAdaptHistoryGetStep(TSAdapt adapt, PetscInt step, PetscReal *t, PetscReal *dt) {
+PetscErrorCode TSAdaptHistoryGetStep(TSAdapt adapt, PetscInt step, PetscReal *t, PetscReal *dt)
+{
   TSAdapt_History *thadapt;
   PetscBool        flg;
 
@@ -103,7 +108,8 @@ PetscErrorCode TSAdaptHistoryGetStep(TSAdapt adapt, PetscInt step, PetscReal *t,
 
 .seealso: `TSGetAdapt()`, `TSAdaptSetType()`, `TSAdaptHistorySetTrajectory()`, `TSADAPTHISTORY`
 @*/
-PetscErrorCode TSAdaptHistorySetHistory(TSAdapt adapt, PetscInt n, PetscReal hist[], PetscBool backward) {
+PetscErrorCode TSAdaptHistorySetHistory(TSAdapt adapt, PetscInt n, PetscReal hist[], PetscBool backward)
+{
   TSAdapt_History *thadapt;
   PetscBool        flg;
 
@@ -138,7 +144,8 @@ PetscErrorCode TSAdaptHistorySetHistory(TSAdapt adapt, PetscInt n, PetscReal his
 
 .seealso: `TSGetAdapt()`, `TSAdaptSetType()`, `TSAdaptHistorySetHistory()`, `TSADAPTHISTORY`
 @*/
-PetscErrorCode TSAdaptHistorySetTrajectory(TSAdapt adapt, TSTrajectory tj, PetscBool backward) {
+PetscErrorCode TSAdaptHistorySetTrajectory(TSAdapt adapt, TSTrajectory tj, PetscBool backward)
+{
   PetscBool flg;
 
   PetscFunctionBegin;
@@ -158,7 +165,8 @@ PetscErrorCode TSAdaptHistorySetTrajectory(TSAdapt adapt, TSTrajectory tj, Petsc
 
 .seealso: `TS`, `TSAdapt`, `TSGetAdapt()`, `TSAdaptHistorySetHistory()`
 M*/
-PETSC_EXTERN PetscErrorCode TSAdaptCreate_History(TSAdapt adapt) {
+PETSC_EXTERN PetscErrorCode TSAdaptCreate_History(TSAdapt adapt)
+{
   TSAdapt_History *thadapt;
 
   PetscFunctionBegin;

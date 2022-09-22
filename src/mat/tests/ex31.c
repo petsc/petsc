@@ -7,7 +7,8 @@ static char help[] = "Tests binary I/O of matrices and illustrates user-defined 
   the same program.  This example is intended only to demonstrate
   both input and output. */
 
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   Mat         C;
   PetscScalar v;
   PetscInt    i, j, Ii, J, Istart, Iend, N, m = 4, n = 4;

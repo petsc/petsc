@@ -4,7 +4,8 @@
 #include <petscds.h>
 #include <petscfv.h>
 
-static PetscErrorCode DMTSConvertPlex(DM dm, DM *plex, PetscBool copy) {
+static PetscErrorCode DMTSConvertPlex(DM dm, DM *plex, PetscBool copy)
+{
   PetscBool isPlex;
 
   PetscFunctionBegin;
@@ -45,7 +46,8 @@ static PetscErrorCode DMTSConvertPlex(DM dm, DM *plex, PetscBool copy) {
 
 .seealso: `DMPlexComputeJacobianActionFEM()`
 @*/
-PetscErrorCode DMPlexTSComputeRHSFunctionFVM(DM dm, PetscReal time, Vec locX, Vec F, void *user) {
+PetscErrorCode DMPlexTSComputeRHSFunctionFVM(DM dm, PetscReal time, Vec locX, Vec F, void *user)
+{
   Vec          locF;
   IS           cellIS;
   DM           plex;
@@ -82,7 +84,8 @@ PetscErrorCode DMPlexTSComputeRHSFunctionFVM(DM dm, PetscReal time, Vec locX, Ve
 
 .seealso: `DMPlexComputeJacobianActionFEM()`
 @*/
-PetscErrorCode DMPlexTSComputeBoundary(DM dm, PetscReal time, Vec locX, Vec locX_t, void *user) {
+PetscErrorCode DMPlexTSComputeBoundary(DM dm, PetscReal time, Vec locX, Vec locX_t, void *user)
+{
   DM       plex;
   Vec      faceGeometryFVM = NULL;
   PetscInt Nf, f;
@@ -127,7 +130,8 @@ PetscErrorCode DMPlexTSComputeBoundary(DM dm, PetscReal time, Vec locX, Vec locX
 
 .seealso: `DMPlexTSComputeIFunctionFEM()`, `DMPlexTSComputeRHSFunctionFEM()`
 @*/
-PetscErrorCode DMPlexTSComputeIFunctionFEM(DM dm, PetscReal time, Vec locX, Vec locX_t, Vec locF, void *user) {
+PetscErrorCode DMPlexTSComputeIFunctionFEM(DM dm, PetscReal time, Vec locX, Vec locX_t, Vec locF, void *user)
+{
   DM       plex;
   IS       allcellIS;
   PetscInt Nds, s;
@@ -182,7 +186,8 @@ PetscErrorCode DMPlexTSComputeIFunctionFEM(DM dm, PetscReal time, Vec locX, Vec 
 
 .seealso: `DMPlexTSComputeIFunctionFEM()`, `DMPlexTSComputeRHSFunctionFEM()`
 @*/
-PetscErrorCode DMPlexTSComputeIJacobianFEM(DM dm, PetscReal time, Vec locX, Vec locX_t, PetscReal X_tShift, Mat Jac, Mat JacP, void *user) {
+PetscErrorCode DMPlexTSComputeIJacobianFEM(DM dm, PetscReal time, Vec locX, Vec locX_t, PetscReal X_tShift, Mat Jac, Mat JacP, void *user)
+{
   DM        plex;
   IS        allcellIS;
   PetscBool hasJac, hasPrec;
@@ -242,7 +247,8 @@ PetscErrorCode DMPlexTSComputeIJacobianFEM(DM dm, PetscReal time, Vec locX, Vec 
 
 .seealso: `DMPlexTSComputeIFunctionFEM()`, `DMPlexTSComputeIJacobianFEM()`
 @*/
-PetscErrorCode DMPlexTSComputeRHSFunctionFEM(DM dm, PetscReal time, Vec locX, Vec locG, void *user) {
+PetscErrorCode DMPlexTSComputeRHSFunctionFEM(DM dm, PetscReal time, Vec locX, Vec locG, void *user)
+{
   DM       plex;
   IS       allcellIS;
   PetscInt Nds, s;
@@ -297,7 +303,8 @@ PetscErrorCode DMPlexTSComputeRHSFunctionFEM(DM dm, PetscReal time, Vec locX, Ve
 
 .seealso: `DNTSCheckFromOptions()`, `DMTSCheckJacobian()`, `DNSNESCheckFromOptions()`, `DMSNESCheckDiscretization()`, `DMSNESCheckJacobian()`
 @*/
-PetscErrorCode DMTSCheckResidual(TS ts, DM dm, PetscReal t, Vec u, Vec u_t, PetscReal tol, PetscReal *residual) {
+PetscErrorCode DMTSCheckResidual(TS ts, DM dm, PetscReal t, Vec u, Vec u_t, PetscReal tol, PetscReal *residual)
+{
   MPI_Comm  comm;
   Vec       r;
   PetscReal res;
@@ -348,7 +355,8 @@ PetscErrorCode DMTSCheckResidual(TS ts, DM dm, PetscReal t, Vec u, Vec u_t, Pets
 
 .seealso: `DNTSCheckFromOptions()`, `DMTSCheckResidual()`, `DNSNESCheckFromOptions()`, `DMSNESCheckDiscretization()`, `DMSNESCheckResidual()`
 @*/
-PetscErrorCode DMTSCheckJacobian(TS ts, DM dm, PetscReal t, Vec u, Vec u_t, PetscReal tol, PetscBool *isLinear, PetscReal *convRate) {
+PetscErrorCode DMTSCheckJacobian(TS ts, DM dm, PetscReal t, Vec u, Vec u_t, PetscReal tol, PetscBool *isLinear, PetscReal *convRate)
+{
   MPI_Comm     comm;
   PetscDS      ds;
   Mat          J, M;
@@ -467,7 +475,8 @@ PetscErrorCode DMTSCheckJacobian(TS ts, DM dm, PetscReal t, Vec u, Vec u_t, Pets
 
   Level: developer
 @*/
-PetscErrorCode DMTSCheckFromOptions(TS ts, Vec u) {
+PetscErrorCode DMTSCheckFromOptions(TS ts, Vec u)
+{
   DM        dm;
   SNES      snes;
   Vec       sol, u_t;

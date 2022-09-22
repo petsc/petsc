@@ -1,7 +1,8 @@
 static char help[] = "Tests %d and %g formatting\n";
 #include <petscsys.h>
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
   PetscCall(PetscPrintf(PETSC_COMM_WORLD, "A string followed by integer %d\n", 22));

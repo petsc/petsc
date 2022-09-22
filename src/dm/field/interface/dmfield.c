@@ -4,7 +4,8 @@
 
 const char *const DMFieldContinuities[] = {"VERTEX", "EDGE", "FACET", "CELL", NULL};
 
-PETSC_INTERN PetscErrorCode DMFieldCreate(DM dm, PetscInt numComponents, DMFieldContinuity continuity, DMField *field) {
+PETSC_INTERN PetscErrorCode DMFieldCreate(DM dm, PetscInt numComponents, DMFieldContinuity continuity, DMField *field)
+{
   DMField b;
 
   PetscFunctionBegin;
@@ -33,7 +34,8 @@ PETSC_INTERN PetscErrorCode DMFieldCreate(DM dm, PetscInt numComponents, DMField
 
 .seealso: `DMFieldCreate()`
 @*/
-PetscErrorCode DMFieldDestroy(DMField *field) {
+PetscErrorCode DMFieldDestroy(DMField *field)
+{
   PetscFunctionBegin;
   if (!*field) PetscFunctionReturn(0);
   PetscValidHeaderSpecific((*field), DMFIELD_CLASSID, 1);
@@ -60,7 +62,8 @@ PetscErrorCode DMFieldDestroy(DMField *field) {
 
 .seealso: `DMFieldCreate()`
 @*/
-PetscErrorCode DMFieldView(DMField field, PetscViewer viewer) {
+PetscErrorCode DMFieldView(DMField field, PetscViewer viewer)
+{
   PetscBool iascii;
 
   PetscFunctionBegin;
@@ -102,7 +105,8 @@ PetscErrorCode DMFieldView(DMField field, PetscViewer viewer) {
 
 .seealso: `DMFieldType`,
 @*/
-PetscErrorCode DMFieldSetType(DMField field, DMFieldType type) {
+PetscErrorCode DMFieldSetType(DMField field, DMFieldType type)
+{
   PetscBool match;
   PetscErrorCode (*r)(DMField);
 
@@ -140,7 +144,8 @@ PetscErrorCode DMFieldSetType(DMField field, DMFieldType type) {
 
 .seealso: `DMFieldSetType()`
 @*/
-PetscErrorCode DMFieldGetType(DMField field, DMFieldType *type) {
+PetscErrorCode DMFieldGetType(DMField field, DMFieldType *type)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(field, DMFIELD_CLASSID, 1);
   PetscValidPointer(type, 2);
@@ -164,7 +169,8 @@ PetscErrorCode DMFieldGetType(DMField field, DMFieldType *type) {
 
 .seealso: `DMFieldEvaluate()`
 @*/
-PetscErrorCode DMFieldGetNumComponents(DMField field, PetscInt *nc) {
+PetscErrorCode DMFieldGetNumComponents(DMField field, PetscInt *nc)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(field, DMFIELD_CLASSID, 1);
   PetscValidIntPointer(nc, 2);
@@ -187,7 +193,8 @@ PetscErrorCode DMFieldGetNumComponents(DMField field, PetscInt *nc) {
 
 .seealso: `DMFieldEvaluate()`
 @*/
-PetscErrorCode DMFieldGetDM(DMField field, DM *dm) {
+PetscErrorCode DMFieldGetDM(DMField field, DM *dm)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(field, DMFIELD_CLASSID, 1);
   PetscValidPointer(dm, 2);
@@ -224,7 +231,8 @@ PetscErrorCode DMFieldGetDM(DMField field, DM *dm) {
 
 .seealso: `DMFieldGetDM()`, `DMFieldGetNumComponents()`, `DMFieldEvaluateFE()`, `DMFieldEvaluateFV()`
 @*/
-PetscErrorCode DMFieldEvaluate(DMField field, Vec points, PetscDataType datatype, void *B, void *D, void *H) {
+PetscErrorCode DMFieldEvaluate(DMField field, Vec points, PetscDataType datatype, void *B, void *D, void *H)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(field, DMFIELD_CLASSID, 1);
   PetscValidHeaderSpecific(points, VEC_CLASSID, 2);
@@ -267,7 +275,8 @@ PetscErrorCode DMFieldEvaluate(DMField field, Vec points, PetscDataType datatype
 
 .seealso: `DMFieldGetNumComponents()`, `DMFieldEvaluate()`, `DMFieldEvaluateFV()`
 @*/
-PetscErrorCode DMFieldEvaluateFE(DMField field, IS cellIS, PetscQuadrature points, PetscDataType datatype, void *B, void *D, void *H) {
+PetscErrorCode DMFieldEvaluateFE(DMField field, IS cellIS, PetscQuadrature points, PetscDataType datatype, void *B, void *D, void *H)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(field, DMFIELD_CLASSID, 1);
   PetscValidHeaderSpecific(cellIS, IS_CLASSID, 2);
@@ -308,7 +317,8 @@ PetscErrorCode DMFieldEvaluateFE(DMField field, IS cellIS, PetscQuadrature point
 
 .seealso: `DMFieldGetNumComponents()`, `DMFieldEvaluate()`, `DMFieldEvaluateFE()`
 @*/
-PetscErrorCode DMFieldEvaluateFV(DMField field, IS cellIS, PetscDataType datatype, void *B, void *D, void *H) {
+PetscErrorCode DMFieldEvaluateFV(DMField field, IS cellIS, PetscDataType datatype, void *B, void *D, void *H)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(field, DMFIELD_CLASSID, 1);
   PetscValidHeaderSpecific(cellIS, IS_CLASSID, 2);
@@ -339,7 +349,8 @@ PetscErrorCode DMFieldEvaluateFV(DMField field, IS cellIS, PetscDataType datatyp
 
 .seealso: `DMFieldEvaluateFE()`
 @*/
-PetscErrorCode DMFieldGetDegree(DMField field, IS cellIS, PetscInt *minDegree, PetscInt *maxDegree) {
+PetscErrorCode DMFieldGetDegree(DMField field, IS cellIS, PetscInt *minDegree, PetscInt *maxDegree)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(field, DMFIELD_CLASSID, 1);
   PetscValidHeaderSpecific(cellIS, IS_CLASSID, 2);
@@ -370,7 +381,8 @@ PetscErrorCode DMFieldGetDegree(DMField field, IS cellIS, PetscInt *minDegree, P
 
 .seealso: `DMFieldEvaluteFE()`, `DMFieldGetDegree()`
 @*/
-PetscErrorCode DMFieldCreateDefaultQuadrature(DMField field, IS pointIS, PetscQuadrature *quad) {
+PetscErrorCode DMFieldCreateDefaultQuadrature(DMField field, IS pointIS, PetscQuadrature *quad)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(field, DMFIELD_CLASSID, 1);
   PetscValidHeaderSpecific(pointIS, IS_CLASSID, 2);
@@ -400,7 +412,8 @@ PetscErrorCode DMFieldCreateDefaultQuadrature(DMField field, IS pointIS, PetscQu
 
 .seealso: `DMFieldEvaluateFE()`, `DMFieldCreateDefaulteQuadrature()`, `DMFieldGetDegree()`
 @*/
-PetscErrorCode DMFieldCreateFEGeom(DMField field, IS pointIS, PetscQuadrature quad, PetscBool faceData, PetscFEGeom **geom) {
+PetscErrorCode DMFieldCreateFEGeom(DMField field, IS pointIS, PetscQuadrature quad, PetscBool faceData, PetscFEGeom **geom)
+{
   PetscInt     dim, dE;
   PetscInt     nPoints;
   PetscInt     maxDegree;

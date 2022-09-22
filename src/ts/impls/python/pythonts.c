@@ -16,7 +16,8 @@
 
 .seealso: `TSCreate()`, `TSSetType()`, `TSPYTHON`, `PetscPythonInitialize()`
 @*/
-PetscErrorCode TSPythonSetType(TS ts, const char pyname[]) {
+PetscErrorCode TSPythonSetType(TS ts, const char pyname[])
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscValidCharPointer(pyname, 2);
@@ -39,7 +40,8 @@ PetscErrorCode TSPythonSetType(TS ts, const char pyname[]) {
 
 .seealso: `TSCreate()`, `TSSetType()`, `TSPYTHON`, `PetscPythonInitialize()`, `TSPythonSetType()`
 @*/
-PetscErrorCode TSPythonGetType(TS ts, const char *pyname[]) {
+PetscErrorCode TSPythonGetType(TS ts, const char *pyname[])
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscValidPointer(pyname, 2);

@@ -16,9 +16,9 @@
 /*****************************************************************************/
 
 #if !defined(__CG_GLTR)
-#define __CG_GLTR
+  #define __CG_GLTR
 
-#include <petsc/private/kspimpl.h>
+  #include <petsc/private/kspimpl.h>
 
 typedef struct {
   PetscReal *diag;   /* Diagonal part of Lanczos matrix           */

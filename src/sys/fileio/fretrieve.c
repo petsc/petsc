@@ -4,20 +4,20 @@
 */
 #include <petscsys.h>
 #if defined(PETSC_HAVE_PWD_H)
-#include <pwd.h>
+  #include <pwd.h>
 #endif
 #include <ctype.h>
 #include <sys/stat.h>
 #if defined(PETSC_HAVE_UNISTD_H)
-#include <unistd.h>
+  #include <unistd.h>
 #endif
 #if defined(PETSC_HAVE_SYS_UTSNAME_H)
-#include <sys/utsname.h>
+  #include <sys/utsname.h>
 #endif
 #include <fcntl.h>
 #include <time.h>
 #if defined(PETSC_HAVE_SYS_SYSTEMINFO_H)
-#include <sys/systeminfo.h>
+  #include <sys/systeminfo.h>
 #endif
 
 /*
@@ -28,7 +28,8 @@
    Note: this is declared extern "C" because it is passed to MPI_Comm_create_keyval()
 
 */
-PETSC_EXTERN PetscMPIInt MPIAPI Petsc_DelTmpShared(MPI_Comm comm, PetscMPIInt keyval, void *count_val, void *extra_state) {
+PETSC_EXTERN PetscMPIInt MPIAPI Petsc_DelTmpShared(MPI_Comm comm, PetscMPIInt keyval, void *count_val, void *extra_state)
+{
   PetscFunctionBegin;
   PetscCallMPI(PetscInfo(NULL, "Deleting tmp/shared data in an MPI_Comm %ld\n", (long)comm));
   PetscCallMPI(PetscFree(count_val));
@@ -61,7 +62,8 @@ PETSC_EXTERN PetscMPIInt MPIAPI Petsc_DelTmpShared(MPI_Comm comm, PetscMPIInt ke
 
 .seealso: `PetscSharedTmp()`, `PetscSharedWorkingDirectory()`, `PetscGetWorkingDirectory()`, `PetscGetHomeDirectory()`
 @*/
-PetscErrorCode PetscGetTmp(MPI_Comm comm, char dir[], size_t len) {
+PetscErrorCode PetscGetTmp(MPI_Comm comm, char dir[], size_t len)
+{
   PetscBool flg;
 
   PetscFunctionBegin;
@@ -112,7 +114,8 @@ PetscErrorCode PetscGetTmp(MPI_Comm comm, char dir[], size_t len) {
 
 .seealso: `PetscGetTmp()`, `PetscSharedWorkingDirectory()`, `PetscGetWorkingDirectory()`, `PetscGetHomeDirectory()`
 @*/
-PetscErrorCode PetscSharedTmp(MPI_Comm comm, PetscBool *shared) {
+PetscErrorCode PetscSharedTmp(MPI_Comm comm, PetscBool *shared)
+{
   PetscMPIInt        size, rank, *tagvalp, sum, cnt, i;
   PetscBool          flg, iflg;
   FILE              *fd;
@@ -226,7 +229,8 @@ $   2) each has a separate working directory
 
 .seealso: `PetscGetTmp()`, `PetscSharedTmp()`, `PetscGetWorkingDirectory()`, `PetscGetHomeDirectory()`
 @*/
-PetscErrorCode PetscSharedWorkingDirectory(MPI_Comm comm, PetscBool *shared) {
+PetscErrorCode PetscSharedWorkingDirectory(MPI_Comm comm, PetscBool *shared)
+{
   PetscMPIInt        size, rank, *tagvalp, sum, cnt, i;
   PetscBool          flg, iflg;
   FILE              *fd;
@@ -321,7 +325,8 @@ PetscErrorCode PetscSharedWorkingDirectory(MPI_Comm comm, PetscBool *shared) {
 
     Level: intermediate
 @*/
-PetscErrorCode PetscFileRetrieve(MPI_Comm comm, const char url[], char localname[], size_t llen, PetscBool *found) {
+PetscErrorCode PetscFileRetrieve(MPI_Comm comm, const char url[], char localname[], size_t llen, PetscBool *found)
+{
   char        buffer[PETSC_MAX_PATH_LEN], *par, *tlocalname, name[PETSC_MAX_PATH_LEN];
   FILE       *fp;
   PetscMPIInt rank;

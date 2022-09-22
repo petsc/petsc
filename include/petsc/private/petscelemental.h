@@ -1,4 +1,4 @@
-#if !defined(_PETSCELEMENTAL_H)
+#ifndef _PETSCELEMENTAL_H
 #define _PETSCELEMENTAL_H
 
 #include <petsc/private/matimpl.h>
@@ -30,7 +30,8 @@ PETSC_INTERN PetscErrorCode MatMatMultNumeric_Elemental(Mat, Mat, Mat);
  P2RO, RO2P, E2RO and RO2E convert indices between PETSc <-> (Rank,Offset) <-> Elemental
  (PETSc parallel vectors can be used with Elemental matries without changes)
 */
-static inline void P2RO(Mat A, PetscInt rc, PetscInt p, PetscInt *rank, PetscInt *offset) {
+static inline void P2RO(Mat A, PetscInt rc, PetscInt p, PetscInt *rank, PetscInt *offset)
+{
   Mat_Elemental *a        = (Mat_Elemental *)A->data;
   PetscInt       critical = a->m[rc] * a->mr[rc];
   if (p < critical) {
@@ -41,7 +42,8 @@ static inline void P2RO(Mat A, PetscInt rc, PetscInt p, PetscInt *rank, PetscInt
     *offset = (p - critical) % (a->m[rc] - 1);
   }
 }
-static inline void RO2P(Mat A, PetscInt rc, PetscInt rank, PetscInt offset, PetscInt *p) {
+static inline void RO2P(Mat A, PetscInt rc, PetscInt rank, PetscInt offset, PetscInt *p)
+{
   Mat_Elemental *a = (Mat_Elemental *)A->data;
   if (rank < a->mr[rc]) {
     *p = rank * a->m[rc] + offset;
@@ -50,12 +52,14 @@ static inline void RO2P(Mat A, PetscInt rc, PetscInt rank, PetscInt offset, Pets
   }
 }
 
-static inline void E2RO(Mat A, PetscInt rc, PetscInt p, PetscInt *rank, PetscInt *offset) {
+static inline void E2RO(Mat A, PetscInt rc, PetscInt p, PetscInt *rank, PetscInt *offset)
+{
   Mat_Elemental *a = (Mat_Elemental *)A->data;
   *rank            = p % a->commsize;
   *offset          = p / a->commsize;
 }
-static inline void RO2E(Mat A, PetscInt rc, PetscInt rank, PetscInt offset, PetscInt *e) {
+static inline void RO2E(Mat A, PetscInt rc, PetscInt rank, PetscInt offset, PetscInt *e)
+{
   Mat_Elemental *a = (Mat_Elemental *)A->data;
   *e               = offset * a->commsize + rank;
 }

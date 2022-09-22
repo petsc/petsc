@@ -33,7 +33,8 @@
 static PetscErrorCode KSPGMRESUpdateHessenberg(KSP, PetscInt, PetscBool, PetscReal *);
 static PetscErrorCode KSPGMRESBuildSoln(PetscScalar *, Vec, Vec, KSP, PetscInt);
 
-PetscErrorCode KSPSetUp_GMRES(KSP ksp) {
+PetscErrorCode KSPSetUp_GMRES(KSP ksp)
+{
   PetscInt   hh, hes, rs, cc;
   PetscInt   max_k, k;
   KSP_GMRES *gmres = (KSP_GMRES *)ksp->data;
@@ -98,7 +99,8 @@ PetscErrorCode KSPSetUp_GMRES(KSP ksp) {
     On entry, the value in vector VEC_VV(0) should be the initial residual
     (this allows shortcuts where the initial preconditioned residual is 0).
  */
-PetscErrorCode KSPGMRESCycle(PetscInt *itcount, KSP ksp) {
+PetscErrorCode KSPGMRESCycle(PetscInt *itcount, KSP ksp)
+{
   KSP_GMRES *gmres = (KSP_GMRES *)(ksp->data);
   PetscReal  res, hapbnd, tt;
   PetscInt   it = 0, max_k = gmres->max_k;
@@ -204,7 +206,8 @@ PetscErrorCode KSPGMRESCycle(PetscInt *itcount, KSP ksp) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode KSPSolve_GMRES(KSP ksp) {
+PetscErrorCode KSPSolve_GMRES(KSP ksp)
+{
   PetscInt   its, itcount, i;
   KSP_GMRES *gmres      = (KSP_GMRES *)ksp->data;
   PetscBool  guess_zero = ksp->guess_zero;
@@ -247,7 +250,8 @@ PetscErrorCode KSPSolve_GMRES(KSP ksp) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode KSPReset_GMRES(KSP ksp) {
+PetscErrorCode KSPReset_GMRES(KSP ksp)
+{
   KSP_GMRES *gmres = (KSP_GMRES *)ksp->data;
   PetscInt   i;
 
@@ -276,7 +280,8 @@ PetscErrorCode KSPReset_GMRES(KSP ksp) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode KSPDestroy_GMRES(KSP ksp) {
+PetscErrorCode KSPDestroy_GMRES(KSP ksp)
+{
   PetscFunctionBegin;
   PetscCall(KSPReset_GMRES(ksp));
   PetscCall(PetscFree(ksp->data));
@@ -304,7 +309,8 @@ PetscErrorCode KSPDestroy_GMRES(KSP ksp) {
 
      This is an internal routine that knows about the GMRES internals.
  */
-static PetscErrorCode KSPGMRESBuildSoln(PetscScalar *nrs, Vec vs, Vec vdest, KSP ksp, PetscInt it) {
+static PetscErrorCode KSPGMRESBuildSoln(PetscScalar *nrs, Vec vs, Vec vdest, KSP ksp, PetscInt it)
+{
   PetscScalar tt;
   PetscInt    ii, k, j;
   KSP_GMRES  *gmres = (KSP_GMRES *)(ksp->data);
@@ -352,7 +358,8 @@ static PetscErrorCode KSPGMRESBuildSoln(PetscScalar *nrs, Vec vs, Vec vdest, KSP
 /*
    Do the scalar work for the orthogonalization.  Return new residual norm.
  */
-static PetscErrorCode KSPGMRESUpdateHessenberg(KSP ksp, PetscInt it, PetscBool hapend, PetscReal *res) {
+static PetscErrorCode KSPGMRESUpdateHessenberg(KSP ksp, PetscInt it, PetscBool hapend, PetscReal *res)
+{
   PetscScalar *hh, *cc, *ss, tt;
   PetscInt     j;
   KSP_GMRES   *gmres = (KSP_GMRES *)(ksp->data);
@@ -405,7 +412,8 @@ static PetscErrorCode KSPGMRESUpdateHessenberg(KSP ksp, PetscInt it, PetscBool h
 /*
    This routine allocates more work vectors, starting from VEC_VV(it).
  */
-PetscErrorCode KSPGMRESGetNewVectors(KSP ksp, PetscInt it) {
+PetscErrorCode KSPGMRESGetNewVectors(KSP ksp, PetscInt it)
+{
   KSP_GMRES *gmres = (KSP_GMRES *)ksp->data;
   PetscInt   nwork = gmres->nwork_alloc, k, nalloc;
 
@@ -426,7 +434,8 @@ PetscErrorCode KSPGMRESGetNewVectors(KSP ksp, PetscInt it) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode KSPBuildSolution_GMRES(KSP ksp, Vec ptr, Vec *result) {
+PetscErrorCode KSPBuildSolution_GMRES(KSP ksp, Vec ptr, Vec *result)
+{
   KSP_GMRES *gmres = (KSP_GMRES *)ksp->data;
 
   PetscFunctionBegin;
@@ -444,7 +453,8 @@ PetscErrorCode KSPBuildSolution_GMRES(KSP ksp, Vec ptr, Vec *result) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode KSPView_GMRES(KSP ksp, PetscViewer viewer) {
+PetscErrorCode KSPView_GMRES(KSP ksp, PetscViewer viewer)
+{
   KSP_GMRES  *gmres = (KSP_GMRES *)ksp->data;
   const char *cstr;
   PetscBool   iascii, isstring;
@@ -454,10 +464,17 @@ PetscErrorCode KSPView_GMRES(KSP ksp, PetscViewer viewer) {
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERSTRING, &isstring));
   if (gmres->orthog == KSPGMRESClassicalGramSchmidtOrthogonalization) {
     switch (gmres->cgstype) {
-    case (KSP_GMRES_CGS_REFINE_NEVER): cstr = "Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement"; break;
-    case (KSP_GMRES_CGS_REFINE_ALWAYS): cstr = "Classical (unmodified) Gram-Schmidt Orthogonalization with one step of iterative refinement"; break;
-    case (KSP_GMRES_CGS_REFINE_IFNEEDED): cstr = "Classical (unmodified) Gram-Schmidt Orthogonalization with one step of iterative refinement when needed"; break;
-    default: SETERRQ(PetscObjectComm((PetscObject)ksp), PETSC_ERR_ARG_OUTOFRANGE, "Unknown orthogonalization");
+    case (KSP_GMRES_CGS_REFINE_NEVER):
+      cstr = "Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement";
+      break;
+    case (KSP_GMRES_CGS_REFINE_ALWAYS):
+      cstr = "Classical (unmodified) Gram-Schmidt Orthogonalization with one step of iterative refinement";
+      break;
+    case (KSP_GMRES_CGS_REFINE_IFNEEDED):
+      cstr = "Classical (unmodified) Gram-Schmidt Orthogonalization with one step of iterative refinement when needed";
+      break;
+    default:
+      SETERRQ(PetscObjectComm((PetscObject)ksp), PETSC_ERR_ARG_OUTOFRANGE, "Unknown orthogonalization");
     }
   } else if (gmres->orthog == KSPGMRESModifiedGramSchmidtOrthogonalization) {
     cstr = "Modified Gram-Schmidt Orthogonalization";
@@ -493,7 +510,8 @@ PetscErrorCode KSPView_GMRES(KSP ksp, PetscViewer viewer) {
 
 .seealso: `KSPMonitorSet()`, `KSPMonitorResidual()`, `VecView()`, `KSPViewersCreate()`, `KSPViewersDestroy()`
 @*/
-PetscErrorCode KSPGMRESMonitorKrylov(KSP ksp, PetscInt its, PetscReal fgnorm, void *dummy) {
+PetscErrorCode KSPGMRESMonitorKrylov(KSP ksp, PetscInt its, PetscReal fgnorm, void *dummy)
+{
   PetscViewers viewers = (PetscViewers)dummy;
   KSP_GMRES   *gmres   = (KSP_GMRES *)ksp->data;
   Vec          x;
@@ -512,7 +530,8 @@ PetscErrorCode KSPGMRESMonitorKrylov(KSP ksp, PetscInt its, PetscReal fgnorm, vo
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode KSPSetFromOptions_GMRES(KSP ksp, PetscOptionItems *PetscOptionsObject) {
+PetscErrorCode KSPSetFromOptions_GMRES(KSP ksp, PetscOptionItems *PetscOptionsObject)
+{
   PetscInt   restart;
   PetscReal  haptol, breakdowntol;
   KSP_GMRES *gmres = (KSP_GMRES *)ksp->data;
@@ -545,7 +564,8 @@ PetscErrorCode KSPSetFromOptions_GMRES(KSP ksp, PetscOptionItems *PetscOptionsOb
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode KSPGMRESSetHapTol_GMRES(KSP ksp, PetscReal tol) {
+PetscErrorCode KSPGMRESSetHapTol_GMRES(KSP ksp, PetscReal tol)
+{
   KSP_GMRES *gmres = (KSP_GMRES *)ksp->data;
 
   PetscFunctionBegin;
@@ -554,7 +574,8 @@ PetscErrorCode KSPGMRESSetHapTol_GMRES(KSP ksp, PetscReal tol) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode KSPGMRESSetBreakdownTolerance_GMRES(KSP ksp, PetscReal tol) {
+PetscErrorCode KSPGMRESSetBreakdownTolerance_GMRES(KSP ksp, PetscReal tol)
+{
   KSP_GMRES *gmres = (KSP_GMRES *)ksp->data;
 
   PetscFunctionBegin;
@@ -567,7 +588,8 @@ PetscErrorCode KSPGMRESSetBreakdownTolerance_GMRES(KSP ksp, PetscReal tol) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode KSPGMRESGetRestart_GMRES(KSP ksp, PetscInt *max_k) {
+PetscErrorCode KSPGMRESGetRestart_GMRES(KSP ksp, PetscInt *max_k)
+{
   KSP_GMRES *gmres = (KSP_GMRES *)ksp->data;
 
   PetscFunctionBegin;
@@ -575,7 +597,8 @@ PetscErrorCode KSPGMRESGetRestart_GMRES(KSP ksp, PetscInt *max_k) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode KSPGMRESSetRestart_GMRES(KSP ksp, PetscInt max_k) {
+PetscErrorCode KSPGMRESSetRestart_GMRES(KSP ksp, PetscInt max_k)
+{
   KSP_GMRES *gmres = (KSP_GMRES *)ksp->data;
 
   PetscFunctionBegin;
@@ -591,19 +614,22 @@ PetscErrorCode KSPGMRESSetRestart_GMRES(KSP ksp, PetscInt max_k) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode KSPGMRESSetOrthogonalization_GMRES(KSP ksp, FCN fcn) {
+PetscErrorCode KSPGMRESSetOrthogonalization_GMRES(KSP ksp, FCN fcn)
+{
   PetscFunctionBegin;
   ((KSP_GMRES *)ksp->data)->orthog = fcn;
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode KSPGMRESGetOrthogonalization_GMRES(KSP ksp, FCN *fcn) {
+PetscErrorCode KSPGMRESGetOrthogonalization_GMRES(KSP ksp, FCN *fcn)
+{
   PetscFunctionBegin;
   *fcn = ((KSP_GMRES *)ksp->data)->orthog;
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode KSPGMRESSetPreAllocateVectors_GMRES(KSP ksp) {
+PetscErrorCode KSPGMRESSetPreAllocateVectors_GMRES(KSP ksp)
+{
   KSP_GMRES *gmres;
 
   PetscFunctionBegin;
@@ -612,7 +638,8 @@ PetscErrorCode KSPGMRESSetPreAllocateVectors_GMRES(KSP ksp) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode KSPGMRESSetCGSRefinementType_GMRES(KSP ksp, KSPGMRESCGSRefinementType type) {
+PetscErrorCode KSPGMRESSetCGSRefinementType_GMRES(KSP ksp, KSPGMRESCGSRefinementType type)
+{
   KSP_GMRES *gmres = (KSP_GMRES *)ksp->data;
 
   PetscFunctionBegin;
@@ -620,7 +647,8 @@ PetscErrorCode KSPGMRESSetCGSRefinementType_GMRES(KSP ksp, KSPGMRESCGSRefinement
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode KSPGMRESGetCGSRefinementType_GMRES(KSP ksp, KSPGMRESCGSRefinementType *type) {
+PetscErrorCode KSPGMRESGetCGSRefinementType_GMRES(KSP ksp, KSPGMRESCGSRefinementType *type)
+{
   KSP_GMRES *gmres = (KSP_GMRES *)ksp->data;
 
   PetscFunctionBegin;
@@ -646,7 +674,8 @@ PetscErrorCode KSPGMRESGetCGSRefinementType_GMRES(KSP ksp, KSPGMRESCGSRefinement
 .seealso: `KSPGMRESSetOrthogonalization()`, `KSPGMRESCGSRefinementType`, `KSPGMRESClassicalGramSchmidtOrthogonalization()`, `KSPGMRESGetCGSRefinementType()`,
           `KSPGMRESGetOrthogonalization()`
 @*/
-PetscErrorCode KSPGMRESSetCGSRefinementType(KSP ksp, KSPGMRESCGSRefinementType type) {
+PetscErrorCode KSPGMRESSetCGSRefinementType(KSP ksp, KSPGMRESCGSRefinementType type)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
   PetscValidLogicalCollectiveEnum(ksp, type, 2);
@@ -674,7 +703,8 @@ PetscErrorCode KSPGMRESSetCGSRefinementType(KSP ksp, KSPGMRESCGSRefinementType t
 .seealso: `KSPGMRESSetOrthogonalization()`, `KSPGMRESCGSRefinementType`, `KSPGMRESClassicalGramSchmidtOrthogonalization()`, `KSPGMRESSetCGSRefinementType()`,
           `KSPGMRESGetOrthogonalization()`
 @*/
-PetscErrorCode KSPGMRESGetCGSRefinementType(KSP ksp, KSPGMRESCGSRefinementType *type) {
+PetscErrorCode KSPGMRESGetCGSRefinementType(KSP ksp, KSPGMRESCGSRefinementType *type)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
   PetscUseMethod(ksp, "KSPGMRESGetCGSRefinementType_C", (KSP, KSPGMRESCGSRefinementType *), (ksp, type));
@@ -699,7 +729,8 @@ PetscErrorCode KSPGMRESGetCGSRefinementType(KSP ksp, KSPGMRESCGSRefinementType *
 
 .seealso: `KSPSetTolerances()`, `KSPGMRESSetOrthogonalization()`, `KSPGMRESSetPreAllocateVectors()`, `KSPGMRESGetRestart()`
 @*/
-PetscErrorCode KSPGMRESSetRestart(KSP ksp, PetscInt restart) {
+PetscErrorCode KSPGMRESSetRestart(KSP ksp, PetscInt restart)
+{
   PetscFunctionBegin;
   PetscValidLogicalCollectiveInt(ksp, restart, 2);
 
@@ -724,7 +755,8 @@ PetscErrorCode KSPGMRESSetRestart(KSP ksp, PetscInt restart) {
 
 .seealso: `KSPSetTolerances()`, `KSPGMRESSetOrthogonalization()`, `KSPGMRESSetPreAllocateVectors()`, `KSPGMRESSetRestart()`
 @*/
-PetscErrorCode KSPGMRESGetRestart(KSP ksp, PetscInt *restart) {
+PetscErrorCode KSPGMRESGetRestart(KSP ksp, PetscInt *restart)
+{
   PetscFunctionBegin;
   PetscUseMethod(ksp, "KSPGMRESGetRestart_C", (KSP, PetscInt *), (ksp, restart));
   PetscFunctionReturn(0);
@@ -750,7 +782,8 @@ PetscErrorCode KSPGMRESGetRestart(KSP ksp, PetscInt *restart) {
 
 .seealso: `KSPSetTolerances()`
 @*/
-PetscErrorCode KSPGMRESSetHapTol(KSP ksp, PetscReal tol) {
+PetscErrorCode KSPGMRESSetHapTol(KSP ksp, PetscReal tol)
+{
   PetscFunctionBegin;
   PetscValidLogicalCollectiveReal(ksp, tol, 2);
   PetscTryMethod((ksp), "KSPGMRESSetHapTol_C", (KSP, PetscReal), ((ksp), (tol)));
@@ -776,7 +809,8 @@ PetscErrorCode KSPGMRESSetHapTol(KSP ksp, PetscReal tol) {
 
 .seealso: `KSPSetTolerances()`, `KSPGMRESSetHapTol()`
 @*/
-PetscErrorCode KSPGMRESSetBreakdownTolerance(KSP ksp, PetscReal tol) {
+PetscErrorCode KSPGMRESSetBreakdownTolerance(KSP ksp, PetscReal tol)
+{
   PetscFunctionBegin;
   PetscValidLogicalCollectiveReal(ksp, tol, 2);
   PetscTryMethod((ksp), "KSPGMRESSetBreakdownTolerance_C", (KSP, PetscReal), (ksp, tol));
@@ -814,7 +848,8 @@ PetscErrorCode KSPGMRESSetBreakdownTolerance(KSP ksp, PetscReal tol) {
 
 M*/
 
-PETSC_EXTERN PetscErrorCode KSPCreate_GMRES(KSP ksp) {
+PETSC_EXTERN PetscErrorCode KSPCreate_GMRES(KSP ksp)
+{
   KSP_GMRES *gmres;
 
   PetscFunctionBegin;

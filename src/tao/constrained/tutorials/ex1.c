@@ -52,7 +52,8 @@ PetscErrorCode FormEqualityConstraints(Tao, Vec, Vec, void *);
 PetscErrorCode FormInequalityJacobian(Tao, Vec, Mat, Mat, void *);
 PetscErrorCode FormEqualityJacobian(Tao, Vec, Mat, Mat, void *);
 
-PetscErrorCode main(int argc, char **argv) {
+PetscErrorCode main(int argc, char **argv)
+{
   Tao         tao;
   KSP         ksp;
   PC          pc;
@@ -148,7 +149,8 @@ PetscErrorCode main(int argc, char **argv) {
   return 0;
 }
 
-PetscErrorCode InitializeProblem(AppCtx *user) {
+PetscErrorCode InitializeProblem(AppCtx *user)
+{
   PetscMPIInt size;
   PetscMPIInt rank;
   PetscInt    nloc, neloc, niloc;
@@ -220,7 +222,8 @@ PetscErrorCode InitializeProblem(AppCtx *user) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DestroyProblem(AppCtx *user) {
+PetscErrorCode DestroyProblem(AppCtx *user)
+{
   PetscFunctionBegin;
   if (!user->noeqflag) PetscCall(MatDestroy(&user->Ae));
   PetscCall(MatDestroy(&user->Ai));
@@ -241,7 +244,8 @@ PetscErrorCode DestroyProblem(AppCtx *user) {
    G = grad f = [2*(x0 - 2) - 2;
                  2*(x1 - 2) - 2]
 */
-PetscErrorCode FormFunctionGradient(Tao tao, Vec X, PetscReal *f, Vec G, void *ctx) {
+PetscErrorCode FormFunctionGradient(Tao tao, Vec X, PetscReal *f, Vec G, void *ctx)
+{
   PetscScalar        g;
   const PetscScalar *x;
   MPI_Comm           comm;
@@ -279,7 +283,8 @@ PetscErrorCode FormFunctionGradient(Tao tao, Vec X, PetscReal *f, Vec G, void *c
      = [ 2*(1+de[0]-di[0]+di[1]), 0;
                    0,             2]
 */
-PetscErrorCode FormHessian(Tao tao, Vec x, Mat H, Mat Hpre, void *ctx) {
+PetscErrorCode FormHessian(Tao tao, Vec x, Mat H, Mat Hpre, void *ctx)
+{
   AppCtx            *user = (AppCtx *)ctx;
   Vec                DE, DI;
   const PetscScalar *de, *di;
@@ -336,7 +341,8 @@ PetscErrorCode FormHessian(Tao tao, Vec x, Mat H, Mat Hpre, void *ctx) {
    h = [ x0^2 - x1;
          1 -(x0^2 - x1)]
 */
-PetscErrorCode FormInequalityConstraints(Tao tao, Vec X, Vec CI, void *ctx) {
+PetscErrorCode FormInequalityConstraints(Tao tao, Vec X, Vec CI, void *ctx)
+{
   const PetscScalar *x;
   PetscScalar        ci;
   MPI_Comm           comm;
@@ -368,7 +374,8 @@ PetscErrorCode FormInequalityConstraints(Tao tao, Vec X, Vec CI, void *ctx) {
 /* Evaluate
    g = [ x0^2 + x1 - 2]
 */
-PetscErrorCode FormEqualityConstraints(Tao tao, Vec X, Vec CE, void *ctx) {
+PetscErrorCode FormEqualityConstraints(Tao tao, Vec X, Vec CE, void *ctx)
+{
   const PetscScalar *x;
   PetscScalar        ce;
   MPI_Comm           comm;
@@ -399,7 +406,8 @@ PetscErrorCode FormEqualityConstraints(Tao tao, Vec X, Vec CE, void *ctx) {
   grad h = [  2*x0, -1;
              -2*x0,  1]
 */
-PetscErrorCode FormInequalityJacobian(Tao tao, Vec X, Mat JI, Mat JIpre, void *ctx) {
+PetscErrorCode FormInequalityJacobian(Tao tao, Vec X, Mat JI, Mat JIpre, void *ctx)
+{
   AppCtx            *user = (AppCtx *)ctx;
   PetscInt           zero = 0, one = 1, cols[2];
   PetscScalar        vals[2];
@@ -436,7 +444,8 @@ PetscErrorCode FormInequalityJacobian(Tao tao, Vec X, Mat JI, Mat JIpre, void *c
   grad g = [2*x0
              1.0 ]
 */
-PetscErrorCode FormEqualityJacobian(Tao tao, Vec X, Mat JE, Mat JEpre, void *ctx) {
+PetscErrorCode FormEqualityJacobian(Tao tao, Vec X, Mat JE, Mat JEpre, void *ctx)
+{
   PetscInt           zero = 0, cols[2];
   PetscScalar        vals[2];
   const PetscScalar *x;

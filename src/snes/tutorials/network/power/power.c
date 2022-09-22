@@ -9,7 +9,8 @@ static char help[] = "This example demonstrates the use of DMNetwork interface f
 #include "power.h"
 #include <petscdmnetwork.h>
 
-PetscErrorCode FormFunction(SNES snes, Vec X, Vec F, void *appctx) {
+PetscErrorCode FormFunction(SNES snes, Vec X, Vec F, void *appctx)
+{
   DM              networkdm;
   UserCtx_Power  *User = (UserCtx_Power *)appctx;
   Vec             localX, localF;
@@ -37,7 +38,8 @@ PetscErrorCode FormFunction(SNES snes, Vec X, Vec F, void *appctx) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode SetInitialValues(DM networkdm, Vec X, void *appctx) {
+PetscErrorCode SetInitialValues(DM networkdm, Vec X, void *appctx)
+{
   PetscInt        vStart, vEnd, nv, ne;
   const PetscInt *vtx, *edges;
   Vec             localX;
@@ -61,7 +63,8 @@ PetscErrorCode SetInitialValues(DM networkdm, Vec X, void *appctx) {
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   char          pfdata_file[PETSC_MAX_PATH_LEN] = "case9.m";
   PFDATA       *pfdata;
   PetscInt      numEdges = 0;

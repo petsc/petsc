@@ -5,7 +5,8 @@
 /*
       Version for when blocks are 4 by 4 Using natural ordering
 */
-PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_4_NaturalOrdering(Mat C, Mat A, const MatFactorInfo *info) {
+PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_4_NaturalOrdering(Mat C, Mat A, const MatFactorInfo *info)
+{
   Mat_SeqSBAIJ *a = (Mat_SeqSBAIJ *)A->data, *b = (Mat_SeqSBAIJ *)C->data;
   PetscInt      i, j, mbs = a->mbs, *bi = b->i, *bj = b->j;
   PetscInt     *ai, *aj, k, k1, jmin, jmax, *jl, *il, vj, nexti, ili;

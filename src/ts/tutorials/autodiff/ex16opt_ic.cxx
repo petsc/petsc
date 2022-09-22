@@ -37,7 +37,8 @@ PetscErrorCode FormFunctionGradient(Tao, Vec, PetscReal *, Vec, void *);
 /*
   'Passive' RHS function, used in residual evaluations during the time integration.
 */
-static PetscErrorCode RHSFunctionPassive(TS ts, PetscReal t, Vec X, Vec F, void *ctx) {
+static PetscErrorCode RHSFunctionPassive(TS ts, PetscReal t, Vec X, Vec F, void *ctx)
+{
   User               user = (User)ctx;
   PetscScalar       *f;
   const PetscScalar *x;
@@ -56,7 +57,8 @@ static PetscErrorCode RHSFunctionPassive(TS ts, PetscReal t, Vec X, Vec F, void 
   Trace RHS to mark on tape 1 the dependence of f upon x. This tape is used in generating the
   Jacobian transform.
 */
-static PetscErrorCode RHSFunctionActive(TS ts, PetscReal t, Vec X, Vec F, void *ctx) {
+static PetscErrorCode RHSFunctionActive(TS ts, PetscReal t, Vec X, Vec F, void *ctx)
+{
   User               user = (User)ctx;
   PetscReal          mu   = user->mu;
   PetscScalar       *f;
@@ -86,7 +88,8 @@ static PetscErrorCode RHSFunctionActive(TS ts, PetscReal t, Vec X, Vec F, void *
 /*
   Compute the Jacobian w.r.t. x using PETSc-ADOL-C driver.
 */
-static PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec X, Mat A, Mat B, void *ctx) {
+static PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec X, Mat A, Mat B, void *ctx)
+{
   User               user = (User)ctx;
   const PetscScalar *x;
 
@@ -100,7 +103,8 @@ static PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec X, Mat A, Mat B, void 
 /*
   Monitor timesteps and use interpolation to output at integer multiples of 0.1
 */
-static PetscErrorCode Monitor(TS ts, PetscInt step, PetscReal t, Vec X, void *ctx) {
+static PetscErrorCode Monitor(TS ts, PetscInt step, PetscReal t, Vec X, void *ctx)
+{
   const PetscScalar *x;
   PetscReal          tfinal, dt, tprev;
   User               user = (User)ctx;
@@ -116,7 +120,8 @@ static PetscErrorCode Monitor(TS ts, PetscInt step, PetscReal t, Vec X, void *ct
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   TS             ts = NULL; /* nonlinear solver */
   Vec            ic, r;
   PetscBool      monitor = PETSC_FALSE;
@@ -276,7 +281,8 @@ int main(int argc, char **argv) {
    f   - the newly evaluated function
    G   - the newly evaluated gradient
 */
-PetscErrorCode FormFunctionGradient(Tao tao, Vec IC, PetscReal *f, Vec G, void *ctx) {
+PetscErrorCode FormFunctionGradient(Tao tao, Vec IC, PetscReal *f, Vec G, void *ctx)
+{
   User         user = (User)ctx;
   TS           ts;
   PetscScalar *x_ptr, *y_ptr;

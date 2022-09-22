@@ -42,7 +42,8 @@ typedef struct Context {
 static PetscErrorCode ExactSolution(Vec, void *, PetscReal);
 static PetscErrorCode RHSJacobian(TS, PetscReal, Vec, Mat, Mat, void *);
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   TS          ts;
   Mat         A;
   Vec         u, uex;
@@ -112,7 +113,8 @@ int main(int argc, char **argv) {
   return 0;
 }
 
-PetscErrorCode ExactSolution(Vec u, void *c, PetscReal t) {
+PetscErrorCode ExactSolution(Vec u, void *c, PetscReal t)
+{
   UserContext *ctxt = (UserContext *)c;
   PetscInt     i, is, ie;
   PetscScalar *uarr;
@@ -125,16 +127,22 @@ PetscErrorCode ExactSolution(Vec u, void *c, PetscReal t) {
   for (i = is; i < ie; i++) {
     x = i * dx;
     switch (ctxt->physics_type) {
-    case PHYSICS_DIFFUSION: uarr[i - is] = PetscExpScalar(-4.0 * pi * pi * a * t) * PetscSinScalar(2 * pi * x); break;
-    case PHYSICS_ADVECTION: uarr[i - is] = PetscSinScalar(2 * pi * (x - a * t)); break;
-    default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "No support for physics type %s", PhysicsTypes[ctxt->physics_type]);
+    case PHYSICS_DIFFUSION:
+      uarr[i - is] = PetscExpScalar(-4.0 * pi * pi * a * t) * PetscSinScalar(2 * pi * x);
+      break;
+    case PHYSICS_ADVECTION:
+      uarr[i - is] = PetscSinScalar(2 * pi * (x - a * t));
+      break;
+    default:
+      SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "No support for physics type %s", PhysicsTypes[ctxt->physics_type]);
     }
   }
   PetscCall(VecRestoreArray(u, &uarr));
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec U, Mat J, Mat Jpre, void *ctx) {
+static PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec U, Mat J, Mat Jpre, void *ctx)
+{
   UserContext *user = (UserContext *)ctx;
   PetscInt     matis, matie, i;
   PetscReal    dx, dx2;
@@ -157,7 +165,8 @@ static PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec U, Mat J, Mat Jpre, vo
       values[1] = 0.;
       values[2] = -user->a * .5 / dx;
       break;
-    default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "No support for physics type %s", PhysicsTypes[user->physics_type]);
+    default:
+      SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "No support for physics type %s", PhysicsTypes[user->physics_type]);
     }
     /* periodic boundaries */
     if (i == 0) {

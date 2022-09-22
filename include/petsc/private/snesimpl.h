@@ -236,7 +236,8 @@ typedef struct {
   PetscReal v4_p1, v4_p2, v4_p3, v4_m1, v4_m2, v4_m3, v4_m4;
 } SNESKSPEW;
 
-static inline PetscErrorCode SNESLogConvergenceHistory(SNES snes, PetscReal res, PetscInt its) {
+static inline PetscErrorCode SNESLogConvergenceHistory(SNES snes, PetscReal res, PetscInt its)
+{
   PetscFunctionBegin;
   PetscCall(PetscObjectSAWsTakeAccess((PetscObject)snes));
   if (snes->conv_hist && snes->conv_hist_max > snes->conv_hist_len) {

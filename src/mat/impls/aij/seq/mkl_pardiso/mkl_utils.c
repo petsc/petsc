@@ -3,6 +3,7 @@
 #include "petscsys.h"
 #include <mkl.h>
 
-PETSC_EXTERN void PetscSetMKL_PARDISOThreads(int threads) {
+PETSC_EXTERN void PetscSetMKL_PARDISOThreads(int threads)
+{
   mkl_domain_set_num_threads(threads, MKL_DOMAIN_PARDISO);
 }

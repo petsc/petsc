@@ -1,7 +1,8 @@
 static char help[] = "Reads binary matrix - twice\n";
 
 #include <petscmat.h>
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   Mat         A;
   PetscViewer fd;                       /* viewer */
   char        file[PETSC_MAX_PATH_LEN]; /* input file name */

@@ -1,18 +1,20 @@
 #include <petsc/private/viewercgnsimpl.h> /*I "petscviewer.h" I*/
 #if defined(PETSC_HDF5_HAVE_PARALLEL)
-#include <pcgnslib.h>
+  #include <pcgnslib.h>
 #else
-#include <cgnslib.h>
+  #include <cgnslib.h>
 #endif
 
-static PetscErrorCode PetscViewerSetFromOptions_CGNS(PetscViewer v, PetscOptionItems *PetscOptionsObject) {
+static PetscErrorCode PetscViewerSetFromOptions_CGNS(PetscViewer v, PetscOptionItems *PetscOptionsObject)
+{
   PetscFunctionBegin;
   PetscOptionsHeadBegin(PetscOptionsObject, "CGNS Viewer Options");
   PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscViewerView_CGNS(PetscViewer v, PetscViewer viewer) {
+static PetscErrorCode PetscViewerView_CGNS(PetscViewer v, PetscViewer viewer)
+{
   PetscViewer_CGNS *cgv = (PetscViewer_CGNS *)v->data;
 
   PetscFunctionBegin;
@@ -20,7 +22,8 @@ static PetscErrorCode PetscViewerView_CGNS(PetscViewer v, PetscViewer viewer) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscViewerFileClose_CGNS(PetscViewer viewer) {
+static PetscErrorCode PetscViewerFileClose_CGNS(PetscViewer viewer)
+{
   PetscViewer_CGNS *cgv = (PetscViewer_CGNS *)viewer->data;
 
   PetscFunctionBegin;
@@ -59,7 +62,8 @@ static PetscErrorCode PetscViewerFileClose_CGNS(PetscViewer viewer) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscViewerDestroy_CGNS(PetscViewer viewer) {
+static PetscErrorCode PetscViewerDestroy_CGNS(PetscViewer viewer)
+{
   PetscViewer_CGNS *cgv = (PetscViewer_CGNS *)viewer->data;
 
   PetscFunctionBegin;
@@ -74,7 +78,8 @@ static PetscErrorCode PetscViewerDestroy_CGNS(PetscViewer viewer) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscViewerFileSetMode_CGNS(PetscViewer viewer, PetscFileMode type) {
+static PetscErrorCode PetscViewerFileSetMode_CGNS(PetscViewer viewer, PetscFileMode type)
+{
   PetscViewer_CGNS *cgv = (PetscViewer_CGNS *)viewer->data;
 
   PetscFunctionBegin;
@@ -82,7 +87,8 @@ static PetscErrorCode PetscViewerFileSetMode_CGNS(PetscViewer viewer, PetscFileM
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscViewerFileGetMode_CGNS(PetscViewer viewer, PetscFileMode *type) {
+static PetscErrorCode PetscViewerFileGetMode_CGNS(PetscViewer viewer, PetscFileMode *type)
+{
   PetscViewer_CGNS *cgv = (PetscViewer_CGNS *)viewer->data;
 
   PetscFunctionBegin;
@@ -90,7 +96,8 @@ static PetscErrorCode PetscViewerFileGetMode_CGNS(PetscViewer viewer, PetscFileM
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscViewerFileSetName_CGNS(PetscViewer viewer, const char *filename) {
+static PetscErrorCode PetscViewerFileSetName_CGNS(PetscViewer viewer, const char *filename)
+{
   PetscViewer_CGNS *cgv = (PetscViewer_CGNS *)viewer->data;
 
   PetscFunctionBegin;
@@ -99,7 +106,9 @@ static PetscErrorCode PetscViewerFileSetName_CGNS(PetscViewer viewer, const char
   PetscCall(PetscStrallocpy(filename, &cgv->filename));
 
   switch (cgv->btype) {
-  case FILE_MODE_READ: SETERRQ(PetscObjectComm((PetscObject)viewer), PETSC_ERR_SUP, "FILE_MODE_READ not yet implemented"); break;
+  case FILE_MODE_READ:
+    SETERRQ(PetscObjectComm((PetscObject)viewer), PETSC_ERR_SUP, "FILE_MODE_READ not yet implemented");
+    break;
   case FILE_MODE_WRITE:
 #if defined(PETSC_HDF5_HAVE_PARALLEL)
     PetscCallCGNS(cgp_mpi_comm(PetscObjectComm((PetscObject)viewer)));
@@ -108,13 +117,16 @@ static PetscErrorCode PetscViewerFileSetName_CGNS(PetscViewer viewer, const char
     PetscCallCGNS(cg_open(filename, CG_MODE_WRITE, &cgv->file_num));
 #endif
     break;
-  case FILE_MODE_UNDEFINED: SETERRQ(PetscObjectComm((PetscObject)viewer), PETSC_ERR_ORDER, "Must call PetscViewerFileSetMode() before PetscViewerFileSetName()");
-  default: SETERRQ(PetscObjectComm((PetscObject)viewer), PETSC_ERR_SUP, "Unsupported file mode %s", PetscFileModes[cgv->btype]);
+  case FILE_MODE_UNDEFINED:
+    SETERRQ(PetscObjectComm((PetscObject)viewer), PETSC_ERR_ORDER, "Must call PetscViewerFileSetMode() before PetscViewerFileSetName()");
+  default:
+    SETERRQ(PetscObjectComm((PetscObject)viewer), PETSC_ERR_SUP, "Unsupported file mode %s", PetscFileModes[cgv->btype]);
   }
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscViewerFileGetName_CGNS(PetscViewer viewer, const char **filename) {
+static PetscErrorCode PetscViewerFileGetName_CGNS(PetscViewer viewer, const char **filename)
+{
   PetscViewer_CGNS *cgv = (PetscViewer_CGNS *)viewer->data;
 
   PetscFunctionBegin;
@@ -130,7 +142,8 @@ static PetscErrorCode PetscViewerFileGetName_CGNS(PetscViewer viewer, const char
 .seealso: `PetscViewerCreate()`, `VecView()`, `DMView()`, `PetscViewerFileSetName()`, `PetscViewerFileSetMode()`
 M*/
 
-PETSC_EXTERN PetscErrorCode PetscViewerCreate_CGNS(PetscViewer v) {
+PETSC_EXTERN PetscErrorCode PetscViewerCreate_CGNS(PetscViewer v)
+{
   PetscViewer_CGNS *cgv;
 
   PetscFunctionBegin;

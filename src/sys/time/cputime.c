@@ -9,19 +9,20 @@
 #include <ctype.h>
 #include <sys/stat.h>
 #if defined(PETSC_HAVE_SYS_UTSNAME_H)
-#include <sys/utsname.h>
+  #include <sys/utsname.h>
 #endif
 #if defined(PETSC_HAVE_TIME_H)
-#include <time.h>
+  #include <time.h>
 #endif
 #if defined(PETSC_HAVE_SYS_SYSTEMINFO_H)
-#include <sys/systeminfo.h>
+  #include <sys/systeminfo.h>
 #endif
 
 #if defined(PETSC_HAVE_SYS_TIMES_H)
 
-#include <sys/times.h>
-PetscErrorCode PetscGetCPUTime(PetscLogDouble *t) {
+  #include <sys/times.h>
+PetscErrorCode PetscGetCPUTime(PetscLogDouble *t)
+{
   struct tms temp;
 
   PetscFunctionBegin;
@@ -32,9 +33,10 @@ PetscErrorCode PetscGetCPUTime(PetscLogDouble *t) {
 
 #elif defined(PETSC_HAVE_CLOCK)
 
-#include <time.h>
+  #include <time.h>
 
-PetscErrorCode PetscGetCPUTime(PetscLogDouble *t) {
+PetscErrorCode PetscGetCPUTime(PetscLogDouble *t)
+{
   PetscFunctionBegin;
   *t = ((double)clock()) / ((double)CLOCKS_PER_SEC);
   PetscFunctionReturn(0);
@@ -42,8 +44,8 @@ PetscErrorCode PetscGetCPUTime(PetscLogDouble *t) {
 
 #else
 
-#include <sys/time.h>
-#include <sys/resource.h>
+  #include <sys/time.h>
+  #include <sys/resource.h>
 
 /*@
     PetscGetCPUTime - Returns the CPU time in seconds used by the process.
@@ -75,7 +77,8 @@ PetscErrorCode PetscGetCPUTime(PetscLogDouble *t) {
 
 .seealso: `PetscTime()`, `PetscLogView()`
 @*/
-PetscErrorCode PetscGetCPUTime(PetscLogDouble *t) {
+PetscErrorCode PetscGetCPUTime(PetscLogDouble *t)
+{
   static struct rusage temp;
   PetscLogDouble       foo, foo1;
 

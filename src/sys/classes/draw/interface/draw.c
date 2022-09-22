@@ -16,12 +16,13 @@ static PetscBool PetscDrawPackageInitialized = PETSC_FALSE;
 
 .seealso: `PetscDraw`, `PetscFinalize()`
 @*/
-PetscErrorCode   PetscDrawFinalizePackage(void) {
-    PetscFunctionBegin;
-    PetscCall(PetscFunctionListDestroy(&PetscDrawList));
-    PetscDrawPackageInitialized = PETSC_FALSE;
-    PetscDrawRegisterAllCalled  = PETSC_FALSE;
-    PetscFunctionReturn(0);
+PetscErrorCode PetscDrawFinalizePackage(void)
+{
+  PetscFunctionBegin;
+  PetscCall(PetscFunctionListDestroy(&PetscDrawList));
+  PetscDrawPackageInitialized = PETSC_FALSE;
+  PetscDrawRegisterAllCalled  = PETSC_FALSE;
+  PetscFunctionReturn(0);
 }
 
 /*@C
@@ -33,7 +34,8 @@ PetscErrorCode   PetscDrawFinalizePackage(void) {
 
 .seealso: `PetscDraw`, `PetscInitialize()`
 @*/
-PetscErrorCode PetscDrawInitializePackage(void) {
+PetscErrorCode PetscDrawInitializePackage(void)
+{
   char      logList[256];
   PetscBool opt, pkg;
 
@@ -92,7 +94,8 @@ PetscErrorCode PetscDrawInitializePackage(void) {
 
 .seealso: `PetscDraw`, `PetscDrawCheckResizedWindow()`
 @*/
-PetscErrorCode PetscDrawResizeWindow(PetscDraw draw, int w, int h) {
+PetscErrorCode PetscDrawResizeWindow(PetscDraw draw, int w, int h)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw, PETSC_DRAW_CLASSID, 1);
   PetscValidLogicalCollectiveInt(draw, w, 2);
@@ -116,7 +119,8 @@ PetscErrorCode PetscDrawResizeWindow(PetscDraw draw, int w, int h) {
 
 .seealso: `PetscDraw`, `PetscDrawResizeWindow()`, `PetscDrawCheckResizedWindow()`
 @*/
-PetscErrorCode PetscDrawGetWindowSize(PetscDraw draw, int *w, int *h) {
+PetscErrorCode PetscDrawGetWindowSize(PetscDraw draw, int *w, int *h)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw, PETSC_DRAW_CLASSID, 1);
   if (w) PetscValidPointer(w, 2);
@@ -138,7 +142,8 @@ PetscErrorCode PetscDrawGetWindowSize(PetscDraw draw, int *w, int *h) {
 
 .seealso: `PetscDraw`, `PetscDrawResizeWindow()`
 @*/
-PetscErrorCode PetscDrawCheckResizedWindow(PetscDraw draw) {
+PetscErrorCode PetscDrawCheckResizedWindow(PetscDraw draw)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw, PETSC_DRAW_CLASSID, 1);
   PetscTryTypeMethod(draw, checkresizedwindow);
@@ -160,7 +165,8 @@ PetscErrorCode PetscDrawCheckResizedWindow(PetscDraw draw) {
 
 .seealso: `PetscDraw`, `PetscDrawSetTitle()`
 @*/
-PetscErrorCode PetscDrawGetTitle(PetscDraw draw, const char *title[]) {
+PetscErrorCode PetscDrawGetTitle(PetscDraw draw, const char *title[])
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw, PETSC_DRAW_CLASSID, 1);
   PetscValidPointer(title, 2);
@@ -190,7 +196,8 @@ PetscErrorCode PetscDrawGetTitle(PetscDraw draw, const char *title[]) {
 
 .seealso: `PetscDraw`, `PetscDrawGetTitle()`, `PetscDrawAppendTitle()`
 @*/
-PetscErrorCode PetscDrawSetTitle(PetscDraw draw, const char title[]) {
+PetscErrorCode PetscDrawSetTitle(PetscDraw draw, const char title[])
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw, PETSC_DRAW_CLASSID, 1);
   PetscValidCharPointer(title, 2);
@@ -217,7 +224,8 @@ PetscErrorCode PetscDrawSetTitle(PetscDraw draw, const char title[]) {
 
 .seealso: `PetscDraw`, `PetscDrawSetTitle()`, `PetscDrawGetTitle()`
 @*/
-PetscErrorCode PetscDrawAppendTitle(PetscDraw draw, const char title[]) {
+PetscErrorCode PetscDrawAppendTitle(PetscDraw draw, const char title[])
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw, PETSC_DRAW_CLASSID, 1);
   if (title) PetscValidCharPointer(title, 2);
@@ -240,7 +248,8 @@ PetscErrorCode PetscDrawAppendTitle(PetscDraw draw, const char title[]) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscDrawDestroy_Private(PetscDraw draw) {
+static PetscErrorCode PetscDrawDestroy_Private(PetscDraw draw)
+{
   PetscFunctionBegin;
   if (!draw->ops->save && !draw->ops->getimage) PetscFunctionReturn(0);
   PetscCall(PetscDrawSaveMovie(draw));
@@ -265,7 +274,8 @@ static PetscErrorCode PetscDrawDestroy_Private(PetscDraw draw) {
 
 .seealso: `PetscDraw`, `PetscDrawCreate()`
 @*/
-PetscErrorCode PetscDrawDestroy(PetscDraw *draw) {
+PetscErrorCode PetscDrawDestroy(PetscDraw *draw)
+{
   PetscFunctionBegin;
   if (!*draw) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(*draw, PETSC_DRAW_CLASSID, 1);
@@ -308,7 +318,8 @@ PetscErrorCode PetscDrawDestroy(PetscDraw *draw) {
 
 .seealso: `PetscDraw`, `PetscDrawScalePopup()`, `PetscDrawCreate()`
 @*/
-PetscErrorCode PetscDrawGetPopup(PetscDraw draw, PetscDraw *popup) {
+PetscErrorCode PetscDrawGetPopup(PetscDraw draw, PetscDraw *popup)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw, PETSC_DRAW_CLASSID, 1);
   PetscValidPointer(popup, 2);
@@ -336,7 +347,8 @@ PetscErrorCode PetscDrawGetPopup(PetscDraw draw, PetscDraw *popup) {
 
 .seealso: `PetscDraw`, `PetscDrawOpenX()`, `PetscDrawCreate()`
 @*/
-PetscErrorCode PetscDrawSetDisplay(PetscDraw draw, const char display[]) {
+PetscErrorCode PetscDrawSetDisplay(PetscDraw draw, const char display[])
+{
   PetscFunctionBegin;
   PetscCall(PetscFree(draw->display));
   PetscCall(PetscStrallocpy(display, &draw->display));
@@ -355,7 +367,8 @@ PetscErrorCode PetscDrawSetDisplay(PetscDraw draw, const char display[]) {
 
 .seealso: `PetscDraw`, `PetscDrawOpenX()`, `PetscDrawCreate()`
 @*/
-PetscErrorCode PetscDrawSetDoubleBuffer(PetscDraw draw) {
+PetscErrorCode PetscDrawSetDoubleBuffer(PetscDraw draw)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw, PETSC_DRAW_CLASSID, 1);
   PetscTryTypeMethod(draw, setdoublebuffer);
@@ -378,7 +391,8 @@ PetscErrorCode PetscDrawSetDoubleBuffer(PetscDraw draw) {
 
 .seealso: `PetscDraw`, `PetscDrawRestoreSingleton()`, `PetscViewerGetSingleton()`, `PetscViewerRestoreSingleton()`
 @*/
-PetscErrorCode PetscDrawGetSingleton(PetscDraw draw, PetscDraw *sdraw) {
+PetscErrorCode PetscDrawGetSingleton(PetscDraw draw, PetscDraw *sdraw)
+{
   PetscMPIInt size;
 
   PetscFunctionBegin;
@@ -411,7 +425,8 @@ PetscErrorCode PetscDrawGetSingleton(PetscDraw draw, PetscDraw *sdraw) {
 
 .seealso: `PetscDraw`, `PetscDrawGetSingleton()`, `PetscViewerGetSingleton()`, `PetscViewerRestoreSingleton()`
 @*/
-PetscErrorCode PetscDrawRestoreSingleton(PetscDraw draw, PetscDraw *sdraw) {
+PetscErrorCode PetscDrawRestoreSingleton(PetscDraw draw, PetscDraw *sdraw)
+{
   PetscMPIInt size;
 
   PetscFunctionBegin;

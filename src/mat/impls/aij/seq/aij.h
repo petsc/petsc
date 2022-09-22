@@ -1,5 +1,5 @@
 
-#if !defined(__AIJ_H)
+#ifndef __AIJ_H
 #define __AIJ_H
 
 #include <petsc/private/matimpl.h>
@@ -60,9 +60,9 @@ typedef struct {
 } Mat_MatMatTransMult;
 
 typedef struct { /* used by MatTransposeMatMult() */
-  Mat   At;      /* transpose of the first matrix */
-  Mat   mA;      /* maij matrix of A */
-  Vec   bt, ct;  /* vectors to hold locally transposed arrays of B and C */
+  Mat At;        /* transpose of the first matrix */
+  Mat mA;        /* maij matrix of A */
+  Vec bt, ct;    /* vectors to hold locally transposed arrays of B and C */
   /* used by PtAP */
   void *data;
   PetscErrorCode (*destroy)(void *);
@@ -80,7 +80,7 @@ typedef struct {
   Mat                  ARt;  /* A*R^T used for the case -matrart_color_art */
   MatScalar           *work; /* work array to store columns of A*R^T used in MatMatMatMultNumeric_SeqAIJ_SeqAIJ_SeqDense() */
   /* free intermediate products needed for PtAP */
-  void                *data;
+  void *data;
   PetscErrorCode (*destroy)(void *);
 } Mat_RARt;
 
@@ -144,7 +144,8 @@ typedef struct {
 /*
   Frees the a, i, and j arrays from the XAIJ (AIJ, BAIJ, and SBAIJ) matrix types
 */
-static inline PetscErrorCode MatSeqXAIJFreeAIJ(Mat AA, MatScalar **a, PetscInt **j, PetscInt **i) {
+static inline PetscErrorCode MatSeqXAIJFreeAIJ(Mat AA, MatScalar **a, PetscInt **j, PetscInt **i)
+{
   Mat_SeqAIJ *A = (Mat_SeqAIJ *)AA->data;
   if (A->singlemalloc) {
     PetscCall(PetscFree3(*a, *j, *i));
@@ -161,10 +162,10 @@ static inline PetscErrorCode MatSeqXAIJFreeAIJ(Mat AA, MatScalar **a, PetscInt *
 */
 #define MatSeqXAIJReallocateAIJ(Amat, AM, BS2, NROW, ROW, COL, RMAX, AA, AI, AJ, RP, AP, AIMAX, NONEW, datatype) \
   if (NROW >= RMAX) { \
-    Mat_SeqAIJ *Ain       = (Mat_SeqAIJ *)Amat->data; \
+    Mat_SeqAIJ *Ain = (Mat_SeqAIJ *)Amat->data; \
     /* there is no extra room in row, therefore enlarge */ \
-    PetscInt    CHUNKSIZE = 15, new_nz = AI[AM] + CHUNKSIZE, len, *new_i = NULL, *new_j = NULL; \
-    datatype   *new_a; \
+    PetscInt  CHUNKSIZE = 15, new_nz = AI[AM] + CHUNKSIZE, len, *new_i = NULL, *new_j = NULL; \
+    datatype *new_a; \
 \
     PetscCheck(NONEW != -2, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "New nonzero at (%" PetscInt_FMT ",%" PetscInt_FMT ") caused a malloc\nUse MatSetOption(A, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_FALSE) to turn off this check", ROW, COL); \
     /* malloc new storage space */ \
@@ -196,9 +197,9 @@ static inline PetscErrorCode MatSeqXAIJFreeAIJ(Mat AA, MatScalar **a, PetscInt *
 
 #define MatSeqXAIJReallocateAIJ_structure_only(Amat, AM, BS2, NROW, ROW, COL, RMAX, AI, AJ, RP, AIMAX, NONEW, datatype) \
   if (NROW >= RMAX) { \
-    Mat_SeqAIJ *Ain       = (Mat_SeqAIJ *)Amat->data; \
+    Mat_SeqAIJ *Ain = (Mat_SeqAIJ *)Amat->data; \
     /* there is no extra room in row, therefore enlarge */ \
-    PetscInt    CHUNKSIZE = 15, new_nz = AI[AM] + CHUNKSIZE, len, *new_i = NULL, *new_j = NULL; \
+    PetscInt CHUNKSIZE = 15, new_nz = AI[AM] + CHUNKSIZE, len, *new_i = NULL, *new_j = NULL; \
 \
     PetscCheck(NONEW != -2, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "New nonzero at (%" PetscInt_FMT ",%" PetscInt_FMT ") caused a malloc\nUse MatSetOption(A, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_FALSE) to turn off this check", ROW, COL); \
     /* malloc new storage space */ \
@@ -430,44 +431,48 @@ PETSC_INTERN PetscErrorCode MatSetSeqAIJWithArrays_private(MPI_Comm, PetscInt, P
 .seealso: `PetscSparseDensePlusDot()`
 */
 #if defined(PETSC_KERNEL_USE_UNROLL_4)
-#define PetscSparseDenseMinusDot(sum, r, xv, xi, nnz) \
-  { \
-    if (nnz > 0) { \
-      PetscInt nnz2 = nnz, rem = nnz & 0x3; \
-      switch (rem) { \
-      case 3: sum -= *xv++ * r[*xi++]; \
-      case 2: sum -= *xv++ * r[*xi++]; \
-      case 1: sum -= *xv++ * r[*xi++]; nnz2 -= rem; \
+  #define PetscSparseDenseMinusDot(sum, r, xv, xi, nnz) \
+    { \
+      if (nnz > 0) { \
+        PetscInt nnz2 = nnz, rem = nnz & 0x3; \
+        switch (rem) { \
+        case 3: \
+          sum -= *xv++ * r[*xi++]; \
+        case 2: \
+          sum -= *xv++ * r[*xi++]; \
+        case 1: \
+          sum -= *xv++ * r[*xi++]; \
+          nnz2 -= rem; \
+        } \
+        while (nnz2 > 0) { \
+          sum -= xv[0] * r[xi[0]] + xv[1] * r[xi[1]] + xv[2] * r[xi[2]] + xv[3] * r[xi[3]]; \
+          xv += 4; \
+          xi += 4; \
+          nnz2 -= 4; \
+        } \
+        xv -= nnz; \
+        xi -= nnz; \
       } \
-      while (nnz2 > 0) { \
-        sum -= xv[0] * r[xi[0]] + xv[1] * r[xi[1]] + xv[2] * r[xi[2]] + xv[3] * r[xi[3]]; \
-        xv += 4; \
-        xi += 4; \
-        nnz2 -= 4; \
-      } \
-      xv -= nnz; \
-      xi -= nnz; \
-    } \
-  }
+    }
 
 #elif defined(PETSC_KERNEL_USE_UNROLL_2)
-#define PetscSparseDenseMinusDot(sum, r, xv, xi, nnz) \
-  { \
-    PetscInt __i, __i1, __i2; \
-    for (__i = 0; __i < nnz - 1; __i += 2) { \
-      __i1 = xi[__i]; \
-      __i2 = xi[__i + 1]; \
-      sum -= (xv[__i] * r[__i1] + xv[__i + 1] * r[__i2]); \
-    } \
-    if (nnz & 0x1) sum -= xv[__i] * r[xi[__i]]; \
-  }
+  #define PetscSparseDenseMinusDot(sum, r, xv, xi, nnz) \
+    { \
+      PetscInt __i, __i1, __i2; \
+      for (__i = 0; __i < nnz - 1; __i += 2) { \
+        __i1 = xi[__i]; \
+        __i2 = xi[__i + 1]; \
+        sum -= (xv[__i] * r[__i1] + xv[__i + 1] * r[__i2]); \
+      } \
+      if (nnz & 0x1) sum -= xv[__i] * r[xi[__i]]; \
+    }
 
 #else
-#define PetscSparseDenseMinusDot(sum, r, xv, xi, nnz) \
-  { \
-    PetscInt __i; \
-    for (__i = 0; __i < nnz; __i++) sum -= xv[__i] * r[xi[__i]]; \
-  }
+  #define PetscSparseDenseMinusDot(sum, r, xv, xi, nnz) \
+    { \
+      PetscInt __i; \
+      for (__i = 0; __i < nnz; __i++) sum -= xv[__i] * r[xi[__i]]; \
+    }
 #endif
 
 /*
@@ -492,56 +497,61 @@ PETSC_INTERN PetscErrorCode MatSetSeqAIJWithArrays_private(MPI_Comm, PetscInt, P
 .seealso: `PetscSparseDenseMinusDot()`
 */
 #if defined(PETSC_KERNEL_USE_UNROLL_4)
-#define PetscSparseDensePlusDot(sum, r, xv, xi, nnz) \
-  { \
-    if (nnz > 0) { \
-      PetscInt nnz2 = nnz, rem = nnz & 0x3; \
-      switch (rem) { \
-      case 3: sum += *xv++ * r[*xi++]; \
-      case 2: sum += *xv++ * r[*xi++]; \
-      case 1: sum += *xv++ * r[*xi++]; nnz2 -= rem; \
+  #define PetscSparseDensePlusDot(sum, r, xv, xi, nnz) \
+    { \
+      if (nnz > 0) { \
+        PetscInt nnz2 = nnz, rem = nnz & 0x3; \
+        switch (rem) { \
+        case 3: \
+          sum += *xv++ * r[*xi++]; \
+        case 2: \
+          sum += *xv++ * r[*xi++]; \
+        case 1: \
+          sum += *xv++ * r[*xi++]; \
+          nnz2 -= rem; \
+        } \
+        while (nnz2 > 0) { \
+          sum += xv[0] * r[xi[0]] + xv[1] * r[xi[1]] + xv[2] * r[xi[2]] + xv[3] * r[xi[3]]; \
+          xv += 4; \
+          xi += 4; \
+          nnz2 -= 4; \
+        } \
+        xv -= nnz; \
+        xi -= nnz; \
       } \
-      while (nnz2 > 0) { \
-        sum += xv[0] * r[xi[0]] + xv[1] * r[xi[1]] + xv[2] * r[xi[2]] + xv[3] * r[xi[3]]; \
-        xv += 4; \
-        xi += 4; \
-        nnz2 -= 4; \
-      } \
-      xv -= nnz; \
-      xi -= nnz; \
-    } \
-  }
+    }
 
 #elif defined(PETSC_KERNEL_USE_UNROLL_2)
-#define PetscSparseDensePlusDot(sum, r, xv, xi, nnz) \
-  { \
-    PetscInt __i, __i1, __i2; \
-    for (__i = 0; __i < nnz - 1; __i += 2) { \
-      __i1 = xi[__i]; \
-      __i2 = xi[__i + 1]; \
-      sum += (xv[__i] * r[__i1] + xv[__i + 1] * r[__i2]); \
-    } \
-    if (nnz & 0x1) sum += xv[__i] * r[xi[__i]]; \
-  }
+  #define PetscSparseDensePlusDot(sum, r, xv, xi, nnz) \
+    { \
+      PetscInt __i, __i1, __i2; \
+      for (__i = 0; __i < nnz - 1; __i += 2) { \
+        __i1 = xi[__i]; \
+        __i2 = xi[__i + 1]; \
+        sum += (xv[__i] * r[__i1] + xv[__i + 1] * r[__i2]); \
+      } \
+      if (nnz & 0x1) sum += xv[__i] * r[xi[__i]]; \
+    }
 
 #elif defined(PETSC_USE_AVX512_KERNELS) && defined(PETSC_HAVE_IMMINTRIN_H) && defined(__AVX512F__) && defined(PETSC_USE_REAL_DOUBLE) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_64BIT_INDICES) && !defined(PETSC_SKIP_IMMINTRIN_H_CUDAWORKAROUND)
-#define PetscSparseDensePlusDot(sum, r, xv, xi, nnz) PetscSparseDensePlusDot_AVX512_Private(&(sum), (r), (xv), (xi), (nnz))
+  #define PetscSparseDensePlusDot(sum, r, xv, xi, nnz) PetscSparseDensePlusDot_AVX512_Private(&(sum), (r), (xv), (xi), (nnz))
 
 #else
-#define PetscSparseDensePlusDot(sum, r, xv, xi, nnz) \
-  { \
-    PetscInt __i; \
-    for (__i = 0; __i < nnz; __i++) sum += xv[__i] * r[xi[__i]]; \
-  }
+  #define PetscSparseDensePlusDot(sum, r, xv, xi, nnz) \
+    { \
+      PetscInt __i; \
+      for (__i = 0; __i < nnz; __i++) sum += xv[__i] * r[xi[__i]]; \
+    }
 #endif
 
 #if defined(PETSC_USE_AVX512_KERNELS) && defined(PETSC_HAVE_IMMINTRIN_H) && defined(__AVX512F__) && defined(PETSC_USE_REAL_DOUBLE) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_64BIT_INDICES) && !defined(PETSC_SKIP_IMMINTRIN_H_CUDAWORKAROUND)
-#include <immintrin.h>
-#if !defined(_MM_SCALE_8)
-#define _MM_SCALE_8 8
-#endif
+  #include <immintrin.h>
+  #if !defined(_MM_SCALE_8)
+    #define _MM_SCALE_8 8
+  #endif
 
-static inline void PetscSparseDensePlusDot_AVX512_Private(PetscScalar *sum, const PetscScalar *x, const MatScalar *aa, const PetscInt *aj, PetscInt n) {
+static inline void PetscSparseDensePlusDot_AVX512_Private(PetscScalar *sum, const PetscScalar *x, const MatScalar *aa, const PetscInt *aj, PetscInt n)
+{
   __m512d  vec_x, vec_y, vec_vals;
   __m256i  vec_idx;
   __mmask8 mask;

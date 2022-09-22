@@ -7,7 +7,8 @@
     This routine is shared by SeqAIJ and SeqBAIJ matrices,
     since it operators only on the nonzero structure of the elements or blocks.
 */
-PetscErrorCode MatFDColoringCreate_SeqXAIJ(Mat mat, ISColoring iscoloring, MatFDColoring c) {
+PetscErrorCode MatFDColoringCreate_SeqXAIJ(Mat mat, ISColoring iscoloring, MatFDColoring c)
+{
   PetscInt  bs, nis = iscoloring->n, m = mat->rmap->n;
   PetscBool isBAIJ, isSELL;
 
@@ -57,7 +58,8 @@ PetscErrorCode MatFDColoringCreate_SeqXAIJ(Mat mat, ISColoring iscoloring, MatFD
 .  color - the coloring context
 -  nz - number of local non-zeros in mat
 */
-PetscErrorCode MatFDColoringSetUpBlocked_AIJ_Private(Mat mat, MatFDColoring c, PetscInt nz) {
+PetscErrorCode MatFDColoringSetUpBlocked_AIJ_Private(Mat mat, MatFDColoring c, PetscInt nz)
+{
   PetscInt  i, j, nrows, nbcols, brows = c->brows, bcols = c->bcols, mbs = c->m, nis = c->ncolors;
   PetscInt *color_start, *row_start, *nrows_new, nz_new, row_end;
 
@@ -170,7 +172,8 @@ PetscErrorCode MatFDColoringSetUpBlocked_AIJ_Private(Mat mat, MatFDColoring c, P
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatFDColoringSetUp_SeqXAIJ(Mat mat, ISColoring iscoloring, MatFDColoring c) {
+PetscErrorCode MatFDColoringSetUp_SeqXAIJ(Mat mat, ISColoring iscoloring, MatFDColoring c)
+{
   PetscInt           i, n, nrows, mbs = c->m, j, k, m, ncols, col, nis = iscoloring->n, *rowhit, bs, bs2, *spidx, nz, tmp;
   const PetscInt    *is, *row, *ci, *cj;
   PetscBool          isBAIJ, isSELL;

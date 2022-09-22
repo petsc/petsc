@@ -16,7 +16,7 @@ static char help[] = "Grid based Landau collision operator with PIC interface wi
 #include "petscksp.h"
 #include <petsc/private/petscimpl.h>
 #if defined(PETSC_HAVE_OPENMP) && defined(PETSC_HAVE_THREADSAFETY)
-#include <omp.h>
+  #include <omp.h>
 #endif
 #include <petsclandau.h>
 #include <petscdmcomposite.h>
@@ -28,7 +28,8 @@ typedef struct {
   Vec uu;
 } MatShellCtx;
 
-PetscErrorCode MatMultMtM_SeqAIJ(Mat MtM, Vec xx, Vec yy) {
+PetscErrorCode MatMultMtM_SeqAIJ(Mat MtM, Vec xx, Vec yy)
+{
   MatShellCtx *matshellctx;
 
   PetscFunctionBeginUser;
@@ -39,7 +40,8 @@ PetscErrorCode MatMultMtM_SeqAIJ(Mat MtM, Vec xx, Vec yy) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatMultAddMtM_SeqAIJ(Mat MtM, Vec xx, Vec yy, Vec zz) {
+PetscErrorCode MatMultAddMtM_SeqAIJ(Mat MtM, Vec xx, Vec yy, Vec zz)
+{
   MatShellCtx *matshellctx;
 
   PetscFunctionBeginUser;
@@ -50,7 +52,8 @@ PetscErrorCode MatMultAddMtM_SeqAIJ(Mat MtM, Vec xx, Vec yy, Vec zz) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode createSwarm(const DM dm, PetscInt dim, DM *sw) {
+PetscErrorCode createSwarm(const DM dm, PetscInt dim, DM *sw)
+{
   PetscInt Nc = 1;
 
   PetscFunctionBeginUser;
@@ -65,7 +68,8 @@ PetscErrorCode createSwarm(const DM dm, PetscInt dim, DM *sw) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode gridToParticles(const DM dm, DM sw, Vec rhs, Vec work, Mat M_p, Mat Mass) {
+PetscErrorCode gridToParticles(const DM dm, DM sw, Vec rhs, Vec work, Mat M_p, Mat Mass)
+{
   PetscBool    is_lsqr;
   KSP          ksp;
   Mat          PM_p = NULL, MtM, D;
@@ -152,7 +156,8 @@ PetscErrorCode gridToParticles(const DM dm, DM sw, Vec rhs, Vec work, Mat M_p, M
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode particlesToGrid(const DM dm, DM sw, const PetscInt Np, const PetscInt a_tid, const PetscInt dim, const PetscReal xx[], const PetscReal yy[], const PetscReal zz[], const PetscReal a_wp[], Vec rho, Mat *Mp_out) {
+PetscErrorCode particlesToGrid(const DM dm, DM sw, const PetscInt Np, const PetscInt a_tid, const PetscInt dim, const PetscReal xx[], const PetscReal yy[], const PetscReal zz[], const PetscReal a_wp[], Vec rho, Mat *Mp_out)
+{
   PetscBool     removePoints = PETSC_TRUE;
   PetscReal    *wq, *coords;
   PetscDataType dtype;
@@ -189,7 +194,8 @@ PetscErrorCode particlesToGrid(const DM dm, DM sw, const PetscInt Np, const Pets
 
   PetscFunctionReturn(0);
 }
-static void maxwellian(PetscInt dim, const PetscReal x[], PetscReal kt_m, PetscReal n, PetscScalar *u) {
+static void maxwellian(PetscInt dim, const PetscReal x[], PetscReal kt_m, PetscReal n, PetscScalar *u)
+{
   PetscInt  i;
   PetscReal v2 = 0, theta = 2.0 * kt_m; /* theta = 2kT/mc^2 */
 
@@ -200,7 +206,8 @@ static void maxwellian(PetscInt dim, const PetscReal x[], PetscReal kt_m, PetscR
 }
 
 #define MAX_NUM_THRDS 12
-PetscErrorCode go(TS ts, Vec X, const PetscInt NUserV, const PetscInt a_Np, const PetscInt dim, const PetscInt b_target, const PetscInt g_target) {
+PetscErrorCode go(TS ts, Vec X, const PetscInt NUserV, const PetscInt a_Np, const PetscInt dim, const PetscInt b_target, const PetscInt g_target)
+{
   DM             pack, *globSwarmArray, grid_dm[LANDAU_MAX_GRIDS];
   Mat           *globMpArray, g_Mass[LANDAU_MAX_GRIDS];
   KSP            t_ksp[LANDAU_MAX_GRIDS][MAX_NUM_THRDS];
@@ -318,7 +325,8 @@ PetscErrorCode go(TS ts, Vec X, const PetscInt NUserV, const PetscInt a_Np, cons
       }     // fake threads
       /* Create particle swarm */
       PetscPragmaOMP(parallel for)
-        for (int tid=0; tid<numthreads; tid++) {
+        for (int tid=0; tid<numthreads; tid++)
+      {
         const PetscInt b_id = b_id_0 + tid;
         if ((glb_b_id = global_batch_id + b_id) < NUserV) { // the ragged edge of the last batch
           //PetscCall(PetscInfo(pack,"Create swarms for 'glob' index %" PetscInt_FMT " create swarm\n",glb_b_id));
@@ -343,7 +351,8 @@ PetscErrorCode go(TS ts, Vec X, const PetscInt NUserV, const PetscInt a_Np, cons
       PetscCall(ierr);
       // p --> g: make globMpArray & set X
       PetscPragmaOMP(parallel for)
-        for (int tid=0; tid<numthreads; tid++) {
+        for (int tid=0; tid<numthreads; tid++)
+      {
         const PetscInt b_id = b_id_0 + tid;
         if ((glb_b_id = global_batch_id + b_id) < NUserV) {
           for (PetscInt grid = 0; grid < ctx->num_grids; grid++) { // add same particels for all grids
@@ -386,7 +395,8 @@ PetscErrorCode go(TS ts, Vec X, const PetscInt NUserV, const PetscInt a_Np, cons
     for (PetscInt b_id_0 = 0; b_id_0 < ctx->batch_sz; b_id_0 += numthreads) {
       PetscCall(PetscInfo(pack, "g2p: global batch %" PetscInt_FMT " of %" PetscInt_FMT ", Landau batch %" PetscInt_FMT " of %" PetscInt_FMT ": map back to particles\n", global_batch_id + 1, NUserV, b_id_0 + 1, ctx->batch_sz));
       PetscPragmaOMP(parallel for)
-        for (int tid=0; tid<numthreads; tid++) {
+        for (int tid=0; tid<numthreads; tid++)
+      {
         const PetscInt b_id = b_id_0 + tid;
         if ((glb_b_id = global_batch_id + b_id) < NUserV) {
           for (PetscInt grid = 0; grid < ctx->num_grids; grid++) { // add same particels for all grids
@@ -446,7 +456,8 @@ PetscErrorCode go(TS ts, Vec X, const PetscInt NUserV, const PetscInt a_Np, cons
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   DM         pack;
   Vec        X;
   PetscInt   dim = 2, nvert = 1, Np = 10, btarget = 0, gtarget = 0;

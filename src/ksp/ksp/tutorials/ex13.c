@@ -27,7 +27,8 @@ extern PetscErrorCode UserInitializeLinearSolver(PetscInt, PetscInt, UserCtx *);
 extern PetscErrorCode UserFinalizeLinearSolver(UserCtx *);
 extern PetscErrorCode UserDoLinearSolver(PetscScalar *, UserCtx *userctx, PetscScalar *b, PetscScalar *x);
 
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   UserCtx      userctx;
   PetscInt     m = 6, n = 7, t, tmax = 2, i, Ii, j, N;
   PetscScalar *userx, *rho, *solution, *userb, hx, hy, x, y;
@@ -124,7 +125,8 @@ int main(int argc, char **args) {
 }
 
 /* ------------------------------------------------------------------------*/
-PetscErrorCode UserInitializeLinearSolver(PetscInt m, PetscInt n, UserCtx *userctx) {
+PetscErrorCode UserInitializeLinearSolver(PetscInt m, PetscInt n, UserCtx *userctx)
+{
   PetscInt N;
 
   /*
@@ -167,7 +169,8 @@ PetscErrorCode UserInitializeLinearSolver(PetscInt m, PetscInt n, UserCtx *userc
    style by columns. userb is a standard one-dimensional array.
 */
 /* ------------------------------------------------------------------------*/
-PetscErrorCode UserDoLinearSolver(PetscScalar *rho, UserCtx *userctx, PetscScalar *userb, PetscScalar *userx) {
+PetscErrorCode UserDoLinearSolver(PetscScalar *rho, UserCtx *userctx, PetscScalar *userb, PetscScalar *userx)
+{
   PetscInt    i, j, Ii, J, m = userctx->m, n = userctx->n;
   Mat         A = userctx->A;
   PC          pc;
@@ -276,7 +279,8 @@ PetscErrorCode UserDoLinearSolver(PetscScalar *rho, UserCtx *userctx, PetscScala
 }
 
 /* ------------------------------------------------------------------------*/
-PetscErrorCode UserFinalizeLinearSolver(UserCtx *userctx) {
+PetscErrorCode UserFinalizeLinearSolver(UserCtx *userctx)
+{
   /*
      We are all done and don't need to solve any more linear systems, so
      we free the work space.  All PETSc objects should be destroyed when

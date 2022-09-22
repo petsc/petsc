@@ -58,7 +58,8 @@ PETSC_EXTERN PetscErrorCode KSPCreate_HPDDM(KSP);
 
   Level: advanced
 @*/
-PetscErrorCode KSPRegisterAll(void) {
+PetscErrorCode KSPRegisterAll(void)
+{
   PetscFunctionBegin;
   if (KSPRegisterAllCalled) PetscFunctionReturn(0);
   KSPRegisterAllCalled = PETSC_TRUE;
@@ -124,7 +125,8 @@ PetscErrorCode KSPRegisterAll(void) {
 
   Level: advanced
 @*/
-PetscErrorCode KSPMonitorRegisterAll(void) {
+PetscErrorCode KSPMonitorRegisterAll(void)
+{
   PetscFunctionBegin;
   if (KSPMonitorRegisterAllCalled) PetscFunctionReturn(0);
   KSPMonitorRegisterAllCalled = PETSC_TRUE;

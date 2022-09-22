@@ -2,7 +2,8 @@ static char help[] = "Tests for periodic mesh output\n\n";
 
 #include <petscdmplex.h>
 
-PetscErrorCode CheckMesh(DM dm) {
+PetscErrorCode CheckMesh(DM dm)
+{
   PetscReal detJ, J[9];
   PetscReal vol;
   PetscInt  dim, depth, cStart, cEnd, c;
@@ -22,7 +23,8 @@ PetscErrorCode CheckMesh(DM dm) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm) {
+PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm)
+{
   PetscFunctionBegin;
   PetscCall(DMCreate(comm, dm));
   PetscCall(DMSetType(*dm, DMPLEX));
@@ -31,7 +33,8 @@ PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm) {
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   DM dm;
 
   PetscFunctionBeginUser;

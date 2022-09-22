@@ -6,7 +6,7 @@ PetscStack petscstack;
 #endif
 
 #if defined(PETSC_HAVE_SAWS)
-#include <petscviewersaws.h>
+  #include <petscviewersaws.h>
 
 static PetscBool amsmemstack = PETSC_FALSE;
 
@@ -22,7 +22,8 @@ static PetscBool amsmemstack = PETSC_FALSE;
 
 .seealso: `PetscObjectSetName()`, `PetscObjectSAWsViewOff()`, `PetscObjectSAWsTakeAccess()`
 @*/
-void PetscStackSAWsGrantAccess(void) {
+void PetscStackSAWsGrantAccess(void)
+{
   if (amsmemstack) {
     /* ignore any errors from SAWs */
     SAWs_Unlock();
@@ -41,27 +42,30 @@ void PetscStackSAWsGrantAccess(void) {
 
 .seealso: `PetscObjectSetName()`, `PetscObjectSAWsViewOff()`, `PetscObjectSAWsTakeAccess()`
 @*/
-void PetscStackSAWsTakeAccess(void) {
+void PetscStackSAWsTakeAccess(void)
+{
   if (amsmemstack) {
     /* ignore any errors from SAWs */
     SAWs_Lock();
   }
 }
 
-PetscErrorCode PetscStackViewSAWs(void) {
+PetscErrorCode PetscStackViewSAWs(void)
+{
   PetscMPIInt rank;
 
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
   if (rank) return 0;
-#if PetscDefined(USE_DEBUG)
+  #if PetscDefined(USE_DEBUG)
   PetscCallSAWs(SAWs_Register, ("/PETSc/Stack/functions", petscstack.function, 20, SAWs_READ, SAWs_STRING));
   PetscCallSAWs(SAWs_Register, ("/PETSc/Stack/__current_size", &petscstack.currentsize, 1, SAWs_READ, SAWs_INT));
-#endif
+  #endif
   amsmemstack = PETSC_TRUE;
   return 0;
 }
 
-PetscErrorCode PetscStackSAWsViewOff(void) {
+PetscErrorCode PetscStackSAWsViewOff(void)
+{
   PetscFunctionBegin;
   if (!amsmemstack) PetscFunctionReturn(0);
   PetscCallSAWs(SAWs_Delete, ("/PETSc/Stack"));
@@ -71,12 +75,14 @@ PetscErrorCode PetscStackSAWsViewOff(void) {
 #endif /* PETSC_HAVE_SAWS */
 
 #if PetscDefined(USE_DEBUG)
-PetscErrorCode PetscStackSetCheck(PetscBool check) {
+PetscErrorCode PetscStackSetCheck(PetscBool check)
+{
   petscstack.check = check;
   return 0;
 }
 
-PetscErrorCode PetscStackReset(void) {
+PetscErrorCode PetscStackReset(void)
+{
   memset(&petscstack, 0, sizeof(petscstack));
   return 0;
 }
@@ -100,7 +106,8 @@ PetscErrorCode PetscStackReset(void) {
 
 .seealso: `PetscAttachDebugger()`, `PetscStackCopy()`, `PetscStackPrint()`, `PetscStackSAWsGrantAccess()`, `PetscStackSAWsTakeAccess()`
 @*/
-PetscErrorCode PetscStackView(FILE *file) {
+PetscErrorCode PetscStackView(FILE *file)
+{
   if (!file) file = PETSC_STDOUT;
   if (petscstack.currentsize < 0) {
     /* < 0 is absolutely a corrupted stack, but this function is usually called in an error
@@ -161,7 +168,8 @@ PetscErrorCode PetscStackView(FILE *file) {
 
 .seealso: `PetscAttachDebugger()`, `PetscStackView()`
 @*/
-PetscErrorCode PetscStackCopy(PetscStack *sint, PetscStack *sout) {
+PetscErrorCode PetscStackCopy(PetscStack *sint, PetscStack *sout)
+{
   if (sint) {
     for (int i = 0; i < sint->currentsize; ++i) {
       sout->function[i]     = sint->function[i];
@@ -199,7 +207,8 @@ PetscErrorCode PetscStackCopy(PetscStack *sint, PetscStack *sout) {
 
 .seealso: `PetscAttachDebugger()`, `PetscStackCopy()`, `PetscStackView()`
 @*/
-PetscErrorCode PetscStackPrint(PetscStack *sint, FILE *fp) {
+PetscErrorCode PetscStackPrint(PetscStack *sint, FILE *fp)
+{
   if (sint) {
     for (int i = sint->currentsize - 2; i >= 0; --i) {
       if (sint->file[i]) fprintf(fp, "      [%d]  %s() at %s:%d\n", PetscGlobalRank, sint->function[i], PetscCIFilename(sint->file[i]), PetscCILinenumber(sint->line[i]));

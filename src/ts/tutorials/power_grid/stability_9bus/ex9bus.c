@@ -55,8 +55,8 @@ const PetscInt gbus[3] = {0, 1, 2}; /* Buses at which generators are incident */
 const PetscInt lbus[3] = {4, 5, 7}; /* Buses at which loads are incident */
 
 /* Generator real and reactive powers (found via loadflow) */
-const PetscScalar PG[3]   = {0.716786142395021, 1.630000000000000, 0.850000000000000};
-const PetscScalar QG[3]   = {0.270702180178785, 0.066120127797275, -0.108402221791588};
+const PetscScalar PG[3] = {0.716786142395021, 1.630000000000000, 0.850000000000000};
+const PetscScalar QG[3] = {0.270702180178785, 0.066120127797275, -0.108402221791588};
 /* Generator constants */
 const PetscScalar H[3]    = {23.64, 6.4, 3.01};       /* Inertia constant */
 const PetscScalar Rs[3]   = {0.0, 0.0, 0.0};          /* Stator Resistance */
@@ -69,7 +69,7 @@ const PetscScalar Tq0p[3] = {0.31, 0.535, 0.6};       /* q-axis open circuit tim
 PetscScalar       M[3];                               /* M = 2*H/w_s */
 PetscScalar       D[3];                               /* D = 0.1*M */
 
-PetscScalar       TM[3]; /* Mechanical Torque */
+PetscScalar TM[3]; /* Mechanical Torque */
 /* Exciter system constants */
 const PetscScalar KA[3]    = {20.0, 20.0, 20.0};    /* Voltage regulartor gain constant */
 const PetscScalar TA[3]    = {0.2, 0.2, 0.2};       /* Voltage regulator time constant */
@@ -84,7 +84,7 @@ const PetscScalar VRMAX[3] = {7.0, 7.0, 7.0};
 PetscInt          VRatmin[3];
 PetscInt          VRatmax[3];
 
-PetscScalar       Vref[3];
+PetscScalar Vref[3];
 /* Load constants
   We use a composite load model that describes the load and reactive powers at each time instant as follows
   P(t) = \sum\limits_{i=0}^ld_nsegsp \ld_alphap_i*P_D0(\frac{V_m(t)}{V_m0})^\ld_betap_i
@@ -134,7 +134,8 @@ typedef struct {
   to check the min/max limits on the state variable VR. A non windup limiter is used for
   the VR limits.
 */
-PetscErrorCode EventFunction(TS ts, PetscReal t, Vec X, PetscScalar *fvalue, void *ctx) {
+PetscErrorCode EventFunction(TS ts, PetscReal t, Vec X, PetscScalar *fvalue, void *ctx)
+{
   Userctx           *user = (Userctx *)ctx;
   Vec                Xgen, Xnet;
   PetscInt           i, idx = 0;
@@ -183,7 +184,8 @@ PetscErrorCode EventFunction(TS ts, PetscReal t, Vec X, PetscScalar *fvalue, voi
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PostEventFunction(TS ts, PetscInt nevents, PetscInt event_list[], PetscReal t, Vec X, PetscBool forwardsolve, void *ctx) {
+PetscErrorCode PostEventFunction(TS ts, PetscInt nevents, PetscInt event_list[], PetscReal t, Vec X, PetscBool forwardsolve, void *ctx)
+{
   Userctx     *user = (Userctx *)ctx;
   Vec          Xgen, Xnet;
   PetscScalar *xgen, *xnet;
@@ -297,7 +299,8 @@ PetscErrorCode PostEventFunction(TS ts, PetscInt nevents, PetscInt event_list[],
 }
 
 /* Converts from machine frame (dq) to network (phase a real,imag) reference frame */
-PetscErrorCode dq2ri(PetscScalar Fd, PetscScalar Fq, PetscScalar delta, PetscScalar *Fr, PetscScalar *Fi) {
+PetscErrorCode dq2ri(PetscScalar Fd, PetscScalar Fq, PetscScalar delta, PetscScalar *Fr, PetscScalar *Fi)
+{
   PetscFunctionBegin;
   *Fr = Fd * PetscSinScalar(delta) + Fq * PetscCosScalar(delta);
   *Fi = -Fd * PetscCosScalar(delta) + Fq * PetscSinScalar(delta);
@@ -305,7 +308,8 @@ PetscErrorCode dq2ri(PetscScalar Fd, PetscScalar Fq, PetscScalar delta, PetscSca
 }
 
 /* Converts from network frame ([phase a real,imag) to machine (dq) reference frame */
-PetscErrorCode ri2dq(PetscScalar Fr, PetscScalar Fi, PetscScalar delta, PetscScalar *Fd, PetscScalar *Fq) {
+PetscErrorCode ri2dq(PetscScalar Fr, PetscScalar Fi, PetscScalar delta, PetscScalar *Fd, PetscScalar *Fq)
+{
   PetscFunctionBegin;
   *Fd = Fr * PetscSinScalar(delta) - Fi * PetscCosScalar(delta);
   *Fq = Fr * PetscCosScalar(delta) + Fi * PetscSinScalar(delta);
@@ -313,7 +317,8 @@ PetscErrorCode ri2dq(PetscScalar Fr, PetscScalar Fi, PetscScalar delta, PetscSca
 }
 
 /* Saves the solution at each time to a matrix */
-PetscErrorCode SaveSolution(TS ts) {
+PetscErrorCode SaveSolution(TS ts)
+{
   Userctx           *user;
   Vec                X;
   const PetscScalar *x;
@@ -336,7 +341,8 @@ PetscErrorCode SaveSolution(TS ts) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode SetInitialGuess(Vec X, Userctx *user) {
+PetscErrorCode SetInitialGuess(Vec X, Userctx *user)
+{
   Vec                Xgen, Xnet;
   PetscScalar       *xgen;
   const PetscScalar *xnet;
@@ -426,7 +432,8 @@ PetscErrorCode SetInitialGuess(Vec X, Userctx *user) {
 }
 
 /* Computes F = [f(x,y);g(x,y)] */
-PetscErrorCode ResidualFunction(Vec X, Vec F, Userctx *user) {
+PetscErrorCode ResidualFunction(Vec X, Vec F, Userctx *user)
+{
   Vec                Xgen, Xnet, Fgen, Fnet;
   const PetscScalar *xgen, *xnet;
   PetscScalar       *fgen, *fnet;
@@ -550,7 +557,8 @@ PetscErrorCode ResidualFunction(Vec X, Vec F, Userctx *user) {
 /*   f(x,y)
      g(x,y)
  */
-PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec X, Vec F, void *ctx) {
+PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec X, Vec F, void *ctx)
+{
   Userctx *user = (Userctx *)ctx;
 
   PetscFunctionBegin;
@@ -562,7 +570,8 @@ PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec X, Vec F, void *ctx) {
 /* f(x,y) - \dot{x}
      g(x,y) = 0
  */
-PetscErrorCode IFunction(TS ts, PetscReal t, Vec X, Vec Xdot, Vec F, void *ctx) {
+PetscErrorCode IFunction(TS ts, PetscReal t, Vec X, Vec Xdot, Vec F, void *ctx)
+{
   PetscScalar       *f;
   const PetscScalar *xdot;
   PetscInt           i;
@@ -591,7 +600,8 @@ PetscErrorCode IFunction(TS ts, PetscReal t, Vec X, Vec Xdot, Vec F, void *ctx) 
    differential equations
  F = [0;g(y)];
 */
-PetscErrorCode AlgFunction(SNES snes, Vec X, Vec F, void *ctx) {
+PetscErrorCode AlgFunction(SNES snes, Vec X, Vec F, void *ctx)
+{
   Userctx     *user = (Userctx *)ctx;
   PetscScalar *f;
   PetscInt     i;
@@ -612,7 +622,8 @@ PetscErrorCode AlgFunction(SNES snes, Vec X, Vec F, void *ctx) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PostStage(TS ts, PetscReal t, PetscInt i, Vec *X) {
+PetscErrorCode PostStage(TS ts, PetscReal t, PetscInt i, Vec *X)
+{
   Userctx *user;
 
   PetscFunctionBegin;
@@ -621,7 +632,8 @@ PetscErrorCode PostStage(TS ts, PetscReal t, PetscInt i, Vec *X) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PostEvaluate(TS ts) {
+PetscErrorCode PostEvaluate(TS ts)
+{
   Userctx *user;
   Vec      X;
 
@@ -632,7 +644,8 @@ PetscErrorCode PostEvaluate(TS ts) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PreallocateJacobian(Mat J, Userctx *user) {
+PetscErrorCode PreallocateJacobian(Mat J, Userctx *user)
+{
   PetscInt *d_nnz;
   PetscInt  i, idx = 0, start = 0;
   PetscInt  ncols;
@@ -675,7 +688,8 @@ PetscErrorCode PreallocateJacobian(Mat J, Userctx *user) {
    J = [df_dx, df_dy
         dg_dx, dg_dy]
 */
-PetscErrorCode ResidualJacobian(Vec X, Mat J, Mat B, void *ctx) {
+PetscErrorCode ResidualJacobian(Vec X, Mat J, Mat B, void *ctx)
+{
   Userctx           *user = (Userctx *)ctx;
   Vec                Xgen, Xnet;
   const PetscScalar *xgen, *xnet;
@@ -978,7 +992,8 @@ PetscErrorCode ResidualJacobian(Vec X, Mat J, Mat B, void *ctx) {
    J = [I, 0
         dg_dx, dg_dy]
 */
-PetscErrorCode AlgJacobian(SNES snes, Vec X, Mat A, Mat B, void *ctx) {
+PetscErrorCode AlgJacobian(SNES snes, Vec X, Mat A, Mat B, void *ctx)
+{
   Userctx *user = (Userctx *)ctx;
 
   PetscFunctionBegin;
@@ -993,7 +1008,8 @@ PetscErrorCode AlgJacobian(SNES snes, Vec X, Mat A, Mat B, void *ctx) {
         dg_dx, dg_dy]
 */
 
-PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec X, Mat A, Mat B, void *ctx) {
+PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec X, Mat A, Mat B, void *ctx)
+{
   Userctx *user = (Userctx *)ctx;
 
   PetscFunctionBegin;
@@ -1009,7 +1025,8 @@ PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec X, Mat A, Mat B, void *ctx) {
         dg_dx, dg_dy]
 */
 
-PetscErrorCode IJacobian(TS ts, PetscReal t, Vec X, Vec Xdot, PetscReal a, Mat A, Mat B, Userctx *user) {
+PetscErrorCode IJacobian(TS ts, PetscReal t, Vec X, Vec Xdot, PetscReal a, Mat A, Mat B, Userctx *user)
+{
   PetscScalar atmp = (PetscScalar)a;
   PetscInt    i, row;
 
@@ -1039,7 +1056,8 @@ PetscErrorCode IJacobian(TS ts, PetscReal t, Vec X, Vec Xdot, PetscReal a, Mat A
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   TS                 ts;
   SNES               snes_alg;
   PetscMPIInt        size;

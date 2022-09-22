@@ -13,7 +13,8 @@ Level: intermediate
 
 .seealso: `SNESFAS`, `PCMGSetType()`, `SNESFASGetType()`
 @*/
-PetscErrorCode SNESFASSetType(SNES snes, SNESFASType fastype) {
+PetscErrorCode SNESFASSetType(SNES snes, SNESFASType fastype)
+{
   SNES_FAS *fas;
 
   PetscFunctionBegin;
@@ -40,7 +41,8 @@ PetscErrorCode SNESFASSetType(SNES snes, SNESFASType fastype) {
 
 .seealso: `SNESFAS`, `PCMGSetType()`, `SNESFASSetType()`
 @*/
-PetscErrorCode SNESFASGetType(SNES snes, SNESFASType *fastype) {
+PetscErrorCode SNESFASGetType(SNES snes, SNESFASType *fastype)
+{
   SNES_FAS *fas;
 
   PetscFunctionBegin;
@@ -69,7 +71,8 @@ PetscErrorCode SNESFASGetType(SNES snes, SNESFASType *fastype) {
 
 .seealso: `SNESFAS`, `SNESFASGetLevels()`
 @*/
-PetscErrorCode SNESFASSetLevels(SNES snes, PetscInt levels, MPI_Comm *comms) {
+PetscErrorCode SNESFASSetLevels(SNES snes, PetscInt levels, MPI_Comm *comms)
+{
   PetscInt    i;
   const char *optionsprefix;
   char        tprefix[128];
@@ -133,7 +136,8 @@ PetscErrorCode SNESFASSetLevels(SNES snes, PetscInt levels, MPI_Comm *comms) {
 
 .seealso: `SNESFAS`, `SNESFASSetLevels()`, `PCMGGetLevels()`
 @*/
-PetscErrorCode SNESFASGetLevels(SNES snes, PetscInt *levels) {
+PetscErrorCode SNESFASGetLevels(SNES snes, PetscInt *levels)
+{
   SNES_FAS *fas;
 
   PetscFunctionBegin;
@@ -159,7 +163,8 @@ PetscErrorCode SNESFASGetLevels(SNES snes, PetscInt *levels) {
 
 .seealso: `SNESFAS`, `SNESFASSetLevels()`, `SNESFASGetLevels()`
 @*/
-PetscErrorCode SNESFASGetCycleSNES(SNES snes, PetscInt level, SNES *lsnes) {
+PetscErrorCode SNESFASGetCycleSNES(SNES snes, PetscInt level, SNES *lsnes)
+{
   SNES_FAS *fas;
   PetscInt  i;
 
@@ -196,7 +201,8 @@ PetscErrorCode SNESFASGetCycleSNES(SNES snes, PetscInt level, SNES *lsnes) {
 
 .seealso: `SNESFAS`, `SNESFASSetNumberSmoothDown()`
 @*/
-PetscErrorCode SNESFASSetNumberSmoothUp(SNES snes, PetscInt n) {
+PetscErrorCode SNESFASSetNumberSmoothUp(SNES snes, PetscInt n)
+{
   SNES_FAS *fas;
 
   PetscFunctionBegin;
@@ -226,7 +232,8 @@ PetscErrorCode SNESFASSetNumberSmoothUp(SNES snes, PetscInt n) {
 
 .seealso: `SNESFAS`,  `SNESFASSetNumberSmoothUp()`
 @*/
-PetscErrorCode SNESFASSetNumberSmoothDown(SNES snes, PetscInt n) {
+PetscErrorCode SNESFASSetNumberSmoothDown(SNES snes, PetscInt n)
+{
   SNES_FAS *fas;
 
   PetscFunctionBegin;
@@ -259,7 +266,8 @@ PetscErrorCode SNESFASSetNumberSmoothDown(SNES snes, PetscInt n) {
 
 .seealso: `SNESFAS`, `SNESFASSetNumberSmoothUp()`
 @*/
-PetscErrorCode SNESFASSetContinuation(SNES snes, PetscBool continuation) {
+PetscErrorCode SNESFASSetContinuation(SNES snes, PetscBool continuation)
+{
   const char *optionsprefix;
   char        tprefix[128];
   SNES_FAS   *fas;
@@ -296,7 +304,8 @@ PetscErrorCode SNESFASSetContinuation(SNES snes, PetscBool continuation) {
 
 .seealso: `SNES`, `SNESFAS`, `SNESFASSetCyclesOnLevel()`
 @*/
-PetscErrorCode SNESFASSetCycles(SNES snes, PetscInt cycles) {
+PetscErrorCode SNESFASSetCycles(SNES snes, PetscInt cycles)
+{
   SNES_FAS *fas;
   PetscBool isFine;
 
@@ -324,7 +333,8 @@ PetscErrorCode SNESFASSetCycles(SNES snes, PetscInt cycles) {
 
 .seealso: `SNESFAS`, `SNESSetMonitor()`, `SNESFASSetCyclesOnLevel()`
 @*/
-PetscErrorCode SNESFASSetMonitor(SNES snes, PetscViewerAndFormat *vf, PetscBool flg) {
+PetscErrorCode SNESFASSetMonitor(SNES snes, PetscViewerAndFormat *vf, PetscBool flg)
+{
   SNES_FAS *fas;
   PetscBool isFine;
   PetscInt  i, levels;
@@ -366,7 +376,8 @@ PetscErrorCode SNESFASSetMonitor(SNES snes, PetscViewerAndFormat *vf, PetscBool 
 
 .seealso: `SNESFAS`, `SNESFASSetMonitor()`
 @*/
-PetscErrorCode SNESFASSetLog(SNES snes, PetscBool flg) {
+PetscErrorCode SNESFASSetLog(SNES snes, PetscBool flg)
+{
   SNES_FAS *fas;
   PetscBool isFine;
   PetscInt  i, levels;
@@ -408,7 +419,8 @@ Creates the default smoother type.
 This is SNESNRICHARDSON on each fine level and SNESNEWTONLS on the coarse level.
 
  */
-PetscErrorCode SNESFASCycleCreateSmoother_Private(SNES snes, SNES *smooth) {
+PetscErrorCode SNESFASCycleCreateSmoother_Private(SNES snes, SNES *smooth)
+{
   SNES_FAS   *fas;
   const char *optionsprefix;
   char        tprefix[128];
@@ -457,7 +469,8 @@ PetscErrorCode SNESFASCycleCreateSmoother_Private(SNES snes, SNES *smooth) {
 
 .seealso: `SNESFAS`, `SNESFASSetCycles()`
 @*/
-PetscErrorCode SNESFASCycleSetCycles(SNES snes, PetscInt cycles) {
+PetscErrorCode SNESFASCycleSetCycles(SNES snes, PetscInt cycles)
+{
   SNES_FAS *fas;
 
   PetscFunctionBegin;
@@ -483,7 +496,8 @@ PetscErrorCode SNESFASCycleSetCycles(SNES snes, PetscInt cycles) {
 
 .seealso: `SNESFAS`, `SNESFASCycleGetSmootherUp()`, `SNESFASCycleGetSmootherDown()`
 @*/
-PetscErrorCode SNESFASCycleGetSmoother(SNES snes, SNES *smooth) {
+PetscErrorCode SNESFASCycleGetSmoother(SNES snes, SNES *smooth)
+{
   SNES_FAS *fas;
 
   PetscFunctionBegin;
@@ -512,7 +526,8 @@ PetscErrorCode SNESFASCycleGetSmoother(SNES snes, SNES *smooth) {
 
 .seealso: `SNESFAS`, `SNESFASCycleGetSmoother()`, `SNESFASCycleGetSmootherDown()`
 @*/
-PetscErrorCode SNESFASCycleGetSmootherUp(SNES snes, SNES *smoothu) {
+PetscErrorCode SNESFASCycleGetSmootherUp(SNES snes, SNES *smoothu)
+{
   SNES_FAS *fas;
 
   PetscFunctionBegin;
@@ -539,7 +554,8 @@ PetscErrorCode SNESFASCycleGetSmootherUp(SNES snes, SNES *smoothu) {
 
 .seealso: `SNESFAS`, `SNESFASCycleGetSmootherUp()`, `SNESFASCycleGetSmoother()`
 @*/
-PetscErrorCode SNESFASCycleGetSmootherDown(SNES snes, SNES *smoothd) {
+PetscErrorCode SNESFASCycleGetSmootherDown(SNES snes, SNES *smoothd)
+{
   SNES_FAS *fas;
 
   PetscFunctionBegin;
@@ -568,7 +584,8 @@ PetscErrorCode SNESFASCycleGetSmootherDown(SNES snes, SNES *smoothd) {
 
 .seealso: `SNESFAS` `SNESFASCycleGetSmootherUp()`, `SNESFASCycleGetSmoother()`
 @*/
-PetscErrorCode SNESFASCycleGetCorrection(SNES snes, SNES *correction) {
+PetscErrorCode SNESFASCycleGetCorrection(SNES snes, SNES *correction)
+{
   SNES_FAS *fas;
 
   PetscFunctionBegin;
@@ -594,7 +611,8 @@ PetscErrorCode SNESFASCycleGetCorrection(SNES snes, SNES *correction) {
 
 .seealso: `SNESFAS`, `SNESFASCycleGetSmootherUp()`, `SNESFASCycleGetSmoother()`
 @*/
-PetscErrorCode SNESFASCycleGetInterpolation(SNES snes, Mat *mat) {
+PetscErrorCode SNESFASCycleGetInterpolation(SNES snes, Mat *mat)
+{
   SNES_FAS *fas;
 
   PetscFunctionBegin;
@@ -620,7 +638,8 @@ PetscErrorCode SNESFASCycleGetInterpolation(SNES snes, Mat *mat) {
 
 .seealso: `SNESFAS`, `SNESFASGetRestriction()`, `SNESFASCycleGetInterpolation()`
 @*/
-PetscErrorCode SNESFASCycleGetRestriction(SNES snes, Mat *mat) {
+PetscErrorCode SNESFASCycleGetRestriction(SNES snes, Mat *mat)
+{
   SNES_FAS *fas;
 
   PetscFunctionBegin;
@@ -646,7 +665,8 @@ PetscErrorCode SNESFASCycleGetRestriction(SNES snes, Mat *mat) {
 
 .seealso: `SNESFAS`, `SNESFASGetInjection()`, `SNESFASCycleGetRestriction()`
 @*/
-PetscErrorCode SNESFASCycleGetInjection(SNES snes, Mat *mat) {
+PetscErrorCode SNESFASCycleGetInjection(SNES snes, Mat *mat)
+{
   SNES_FAS *fas;
 
   PetscFunctionBegin;
@@ -672,7 +692,8 @@ PetscErrorCode SNESFASCycleGetInjection(SNES snes, Mat *mat) {
 
 .seealso: `SNESFAS`, `SNESFASCycleGetRestriction()`, `SNESFASGetRScale()`
 @*/
-PetscErrorCode SNESFASCycleGetRScale(SNES snes, Vec *vec) {
+PetscErrorCode SNESFASCycleGetRScale(SNES snes, Vec *vec)
+{
   SNES_FAS *fas;
 
   PetscFunctionBegin;
@@ -698,7 +719,8 @@ PetscErrorCode SNESFASCycleGetRScale(SNES snes, Vec *vec) {
 
 .seealso: `SNESFAS`, `SNESFASSetLevels()`
 @*/
-PetscErrorCode SNESFASCycleIsFine(SNES snes, PetscBool *flg) {
+PetscErrorCode SNESFASCycleIsFine(SNES snes, PetscBool *flg)
+{
   SNES_FAS *fas;
 
   PetscFunctionBegin;
@@ -732,7 +754,8 @@ PetscErrorCode SNESFASCycleIsFine(SNES snes, PetscBool *flg) {
 
 .seealso: `SNESFAS`, `SNESFASSetInjection()`, `SNESFASSetRestriction()`, `SNESFASSetRScale()`
 @*/
-PetscErrorCode SNESFASSetInterpolation(SNES snes, PetscInt level, Mat mat) {
+PetscErrorCode SNESFASSetInterpolation(SNES snes, PetscInt level, Mat mat)
+{
   SNES_FAS *fas;
   SNES      levelsnes;
 
@@ -762,7 +785,8 @@ PetscErrorCode SNESFASSetInterpolation(SNES snes, PetscInt level, Mat mat) {
 
 .seealso: `SNESFAS`, `SNESFASSetInterpolation()`, `SNESFASGetInjection()`, `SNESFASGetRestriction()`, `SNESFASGetRScale()`
 @*/
-PetscErrorCode SNESFASGetInterpolation(SNES snes, PetscInt level, Mat *mat) {
+PetscErrorCode SNESFASGetInterpolation(SNES snes, PetscInt level, Mat *mat)
+{
   SNES_FAS *fas;
   SNES      levelsnes;
 
@@ -798,7 +822,8 @@ PetscErrorCode SNESFASGetInterpolation(SNES snes, PetscInt level, Mat *mat) {
 
 .seealso: `SNESFAS`, `SNESFASSetInterpolation()`, `SNESFASSetInjection()`
 @*/
-PetscErrorCode SNESFASSetRestriction(SNES snes, PetscInt level, Mat mat) {
+PetscErrorCode SNESFASSetRestriction(SNES snes, PetscInt level, Mat mat)
+{
   SNES_FAS *fas;
   SNES      levelsnes;
 
@@ -828,7 +853,8 @@ PetscErrorCode SNESFASSetRestriction(SNES snes, PetscInt level, Mat mat) {
 
 .seealso: `SNESFAS`, `SNESFASSetRestriction()`, `SNESFASGetInjection()`, `SNESFASGetInterpolation()`, `SNESFASGetRScale()`
 @*/
-PetscErrorCode SNESFASGetRestriction(SNES snes, PetscInt level, Mat *mat) {
+PetscErrorCode SNESFASGetRestriction(SNES snes, PetscInt level, Mat *mat)
+{
   SNES_FAS *fas;
   SNES      levelsnes;
 
@@ -858,7 +884,8 @@ PetscErrorCode SNESFASGetRestriction(SNES snes, PetscInt level, Mat *mat) {
 
 .seealso: `SNESFAS`, `SNESFASSetInterpolation()`, `SNESFASSetRestriction()`
 @*/
-PetscErrorCode SNESFASSetInjection(SNES snes, PetscInt level, Mat mat) {
+PetscErrorCode SNESFASSetInjection(SNES snes, PetscInt level, Mat mat)
+{
   SNES_FAS *fas;
   SNES      levelsnes;
 
@@ -889,7 +916,8 @@ PetscErrorCode SNESFASSetInjection(SNES snes, PetscInt level, Mat mat) {
 
 .seealso: `SNESFAS`, `SNESFASSetInjection()`, `SNESFASGetRestriction()`, `SNESFASGetInterpolation()`, `SNESFASGetRScale()`
 @*/
-PetscErrorCode SNESFASGetInjection(SNES snes, PetscInt level, Mat *mat) {
+PetscErrorCode SNESFASGetInjection(SNES snes, PetscInt level, Mat *mat)
+{
   SNES_FAS *fas;
   SNES      levelsnes;
 
@@ -918,7 +946,8 @@ PetscErrorCode SNESFASGetInjection(SNES snes, PetscInt level, Mat *mat) {
 
 .seealso: `SNESFAS`, `SNESFASSetInjection()`, `SNESFASSetRestriction()`
 @*/
-PetscErrorCode SNESFASSetRScale(SNES snes, PetscInt level, Vec rscale) {
+PetscErrorCode SNESFASSetRScale(SNES snes, PetscInt level, Vec rscale)
+{
   SNES_FAS *fas;
   SNES      levelsnes;
 
@@ -947,7 +976,8 @@ PetscErrorCode SNESFASSetRScale(SNES snes, PetscInt level, Vec rscale) {
 
 .seealso: `SNESFAS`, `SNESFASSetInjection()`, `SNESFASSetRestriction()`
 @*/
-PetscErrorCode SNESFASGetSmoother(SNES snes, PetscInt level, SNES *smooth) {
+PetscErrorCode SNESFASGetSmoother(SNES snes, PetscInt level, SNES *smooth)
+{
   SNES_FAS *fas;
   SNES      levelsnes;
 
@@ -975,7 +1005,8 @@ PetscErrorCode SNESFASGetSmoother(SNES snes, PetscInt level, SNES *smooth) {
 
 .seealso: `SNESFAS`, `SNESFASSetInjection()`, `SNESFASSetRestriction()`
 @*/
-PetscErrorCode SNESFASGetSmootherDown(SNES snes, PetscInt level, SNES *smooth) {
+PetscErrorCode SNESFASGetSmootherDown(SNES snes, PetscInt level, SNES *smooth)
+{
   SNES_FAS *fas;
   SNES      levelsnes;
 
@@ -1005,7 +1036,8 @@ PetscErrorCode SNESFASGetSmootherDown(SNES snes, PetscInt level, SNES *smooth) {
 
 .seealso: `SNESFAS`, `SNESFASSetInjection()`, `SNESFASSetRestriction()`
 @*/
-PetscErrorCode SNESFASGetSmootherUp(SNES snes, PetscInt level, SNES *smooth) {
+PetscErrorCode SNESFASGetSmootherUp(SNES snes, PetscInt level, SNES *smooth)
+{
   SNES_FAS *fas;
   SNES      levelsnes;
 
@@ -1034,7 +1066,8 @@ PetscErrorCode SNESFASGetSmootherUp(SNES snes, PetscInt level, SNES *smooth) {
 
 .seealso: `SNESFAS`, `SNESFASSetInjection()`, `SNESFASSetRestriction()`
 @*/
-PetscErrorCode SNESFASGetCoarseSolve(SNES snes, SNES *coarse) {
+PetscErrorCode SNESFASGetCoarseSolve(SNES snes, SNES *coarse)
+{
   SNES_FAS *fas;
   SNES      levelsnes;
 
@@ -1065,7 +1098,8 @@ PetscErrorCode SNESFASGetCoarseSolve(SNES snes, SNES *coarse) {
 
 .seealso: `SNESFAS`, `SNESFASSetNumberSmoothUp()`
 @*/
-PetscErrorCode SNESFASFullSetDownSweep(SNES snes, PetscBool swp) {
+PetscErrorCode SNESFASFullSetDownSweep(SNES snes, PetscBool swp)
+{
   SNES_FAS *fas;
 
   PetscFunctionBegin;
@@ -1096,7 +1130,8 @@ PetscErrorCode SNESFASFullSetDownSweep(SNES snes, PetscBool swp) {
 
 .seealso: `SNESFAS`, `SNESFASSetNumberSmoothUp()`, `DMInterpolateSolution()`
 @*/
-PetscErrorCode SNESFASFullSetTotal(SNES snes, PetscBool total) {
+PetscErrorCode SNESFASFullSetTotal(SNES snes, PetscBool total)
+{
   SNES_FAS *fas;
 
   PetscFunctionBegin;
@@ -1122,7 +1157,8 @@ PetscErrorCode SNESFASFullSetTotal(SNES snes, PetscBool total) {
 
 .seealso: `SNESFAS`, `SNESFASSetNumberSmoothUp()`, `DMInterpolateSolution()`, `SNESFullSetTotal()`
 @*/
-PetscErrorCode SNESFASFullGetTotal(SNES snes, PetscBool *total) {
+PetscErrorCode SNESFASFullGetTotal(SNES snes, PetscBool *total)
+{
   SNES_FAS *fas;
 
   PetscFunctionBegin;

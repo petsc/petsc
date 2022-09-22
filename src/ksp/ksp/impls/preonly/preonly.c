@@ -1,12 +1,14 @@
 
 #include <petsc/private/kspimpl.h>
 
-static PetscErrorCode KSPSetUp_PREONLY(KSP ksp) {
+static PetscErrorCode KSPSetUp_PREONLY(KSP ksp)
+{
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode KSPSolve_PREONLY(KSP ksp) {
+static PetscErrorCode KSPSolve_PREONLY(KSP ksp)
+{
   PetscBool      diagonalscale;
   PCFailedReason pcreason;
 
@@ -44,7 +46,8 @@ static PetscErrorCode KSPSolve_PREONLY(KSP ksp) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode KSPMatSolve_PREONLY(KSP ksp, Mat B, Mat X) {
+static PetscErrorCode KSPMatSolve_PREONLY(KSP ksp, Mat B, Mat X)
+{
   PetscBool      diagonalscale;
   PCFailedReason pcreason;
 
@@ -93,7 +96,8 @@ static PetscErrorCode KSPMatSolve_PREONLY(KSP ksp, Mat B, Mat X) {
 
 M*/
 
-PETSC_EXTERN PetscErrorCode KSPCreate_PREONLY(KSP ksp) {
+PETSC_EXTERN PetscErrorCode KSPCreate_PREONLY(KSP ksp)
+{
   PetscFunctionBegin;
   PetscCall(KSPSetSupportedNorm(ksp, KSP_NORM_NONE, PC_LEFT, 3));
   PetscCall(KSPSetSupportedNorm(ksp, KSP_NORM_NONE, PC_RIGHT, 2));

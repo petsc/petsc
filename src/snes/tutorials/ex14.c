@@ -55,7 +55,8 @@ extern PetscErrorCode FormFunction(SNES, Vec, Vec, void *);
 extern PetscErrorCode FormInitialGuess(AppCtx *, Vec);
 extern PetscErrorCode FormJacobian(SNES, Vec, Mat, Mat, void *);
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   SNES          snes;     /* nonlinear solver */
   Vec           x, r;     /* solution, residual vectors */
   Mat           J = NULL; /* Jacobian matrix */
@@ -199,7 +200,8 @@ int main(int argc, char **argv) {
    Output Parameter:
    X - vector
  */
-PetscErrorCode FormInitialGuess(AppCtx *user, Vec X) {
+PetscErrorCode FormInitialGuess(AppCtx *user, Vec X)
+{
   PetscInt       i, j, k, Mx, My, Mz, xs, ys, zs, xm, ym, zm;
   PetscReal      lambda, temp1, hx, hy, hz, tempk, tempj;
   PetscScalar ***x;
@@ -266,7 +268,8 @@ PetscErrorCode FormInitialGuess(AppCtx *user, Vec X) {
    Output Parameter:
 .  F - function vector, this does not contain a ghosted region
  */
-PetscErrorCode FormFunctionLocal(SNES snes, Vec localX, Vec F, void *ptr) {
+PetscErrorCode FormFunctionLocal(SNES snes, Vec localX, Vec F, void *ptr)
+{
   AppCtx     *user = (AppCtx *)ptr;
   PetscInt    i, j, k, Mx, My, Mz, xs, ys, zs, xm, ym, zm;
   PetscReal   two = 2.0, lambda, hx, hy, hz, hxhzdhy, hyhzdhx, hxhydhz, sc;
@@ -342,7 +345,8 @@ PetscErrorCode FormFunctionLocal(SNES snes, Vec localX, Vec F, void *ptr) {
    Output Parameter:
 .  F - function vector
  */
-PetscErrorCode FormFunction(SNES snes, Vec X, Vec F, void *ptr) {
+PetscErrorCode FormFunction(SNES snes, Vec X, Vec F, void *ptr)
+{
   Vec localX;
   DM  da;
 
@@ -377,7 +381,8 @@ PetscErrorCode FormFunction(SNES snes, Vec X, Vec F, void *ptr) {
 .  B - optionally different preconditioning matrix
 
 */
-PetscErrorCode FormJacobian(SNES snes, Vec X, Mat J, Mat jac, void *ptr) {
+PetscErrorCode FormJacobian(SNES snes, Vec X, Mat J, Mat jac, void *ptr)
+{
   AppCtx     *user = (AppCtx *)ptr; /* user-defined application context */
   Vec         localX;
   PetscInt    i, j, k, Mx, My, Mz;

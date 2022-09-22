@@ -81,7 +81,8 @@ static const PetscInt paths2apaths[np] = {
 static const char *datasets[ns] = {"", "x", "nonExistingVec", "y"};
 
 /* beware this yields PETSC_FALSE for "" but group "" is interpreted as "/" */
-static inline PetscErrorCode shouldExist(const char name[], PetscBool emptyExists, PetscBool *has) {
+static inline PetscErrorCode shouldExist(const char name[], PetscBool emptyExists, PetscBool *has)
+{
   size_t len = 0;
 
   PetscFunctionBegin;
@@ -95,19 +96,22 @@ static inline PetscErrorCode shouldExist(const char name[], PetscBool emptyExist
   PetscFunctionReturn(0);
 }
 
-static inline PetscErrorCode isPop(const char path[], PetscBool *has) {
+static inline PetscErrorCode isPop(const char path[], PetscBool *has)
+{
   PetscFunctionBegin;
   PetscCall(PetscStrcmp(path, "<", has));
   PetscFunctionReturn(0);
 }
 
-static inline PetscErrorCode isDot(const char path[], PetscBool *has) {
+static inline PetscErrorCode isDot(const char path[], PetscBool *has)
+{
   PetscFunctionBegin;
   PetscCall(PetscStrcmp(path, ".", has));
   PetscFunctionReturn(0);
 }
 
-static inline PetscErrorCode isRoot(const char path[], PetscBool *flg) {
+static inline PetscErrorCode isRoot(const char path[], PetscBool *flg)
+{
   size_t len;
 
   PetscFunctionBegin;
@@ -117,7 +121,8 @@ static inline PetscErrorCode isRoot(const char path[], PetscBool *flg) {
   PetscFunctionReturn(0);
 }
 
-static inline PetscErrorCode compare(PetscDataType dt, void *ptr0, void *ptr1, PetscBool *flg) {
+static inline PetscErrorCode compare(PetscDataType dt, void *ptr0, void *ptr1, PetscBool *flg)
+{
   PetscFunctionBegin;
   switch (dt) {
   case PETSC_INT:
@@ -160,12 +165,14 @@ static inline PetscErrorCode compare(PetscDataType dt, void *ptr0, void *ptr1, P
       }
     }
     break;
-  default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "PetscDataType %s not handled here", PetscDataTypes[dt]);
+  default:
+    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "PetscDataType %s not handled here", PetscDataTypes[dt]);
   }
   PetscFunctionReturn(0);
 }
 
-static inline PetscErrorCode alterString(const char oldstr[], char str[]) {
+static inline PetscErrorCode alterString(const char oldstr[], char str[])
+{
   size_t i, n;
 
   PetscFunctionBegin;
@@ -182,7 +189,8 @@ static inline PetscErrorCode alterString(const char oldstr[], char str[]) {
 
 /* if name given, check dataset with this name exists under current group, otherwise just check current group exists */
 /* flg: 0 doesn't exist, 1 group, 2 dataset */
-static PetscErrorCode hasGroupOrDataset(PetscViewer viewer, const char path[], int *flg) {
+static PetscErrorCode hasGroupOrDataset(PetscViewer viewer, const char path[], int *flg)
+{
   PetscBool has;
 
   PetscFunctionBegin;
@@ -207,7 +215,8 @@ struct _n_Capsule {
   PetscInt      id, ntypes;
 };
 
-static PetscErrorCode CapsuleCreate(Capsule old, Capsule *newcapsule) {
+static PetscErrorCode CapsuleCreate(Capsule old, Capsule *newcapsule)
+{
   Capsule       c;
   PetscBool     bool0      = PETSC_TRUE;
   PetscInt      int0       = -1;
@@ -250,7 +259,8 @@ static PetscErrorCode CapsuleCreate(Capsule old, Capsule *newcapsule) {
 }
 #undef nt
 
-static PetscErrorCode CapsuleWriteAttributes(Capsule c, PetscViewer v, const char parent[]) {
+static PetscErrorCode CapsuleWriteAttributes(Capsule c, PetscViewer v, const char parent[])
+{
   PetscInt  t;
   PetscBool flg = PETSC_FALSE;
 
@@ -263,7 +273,8 @@ static PetscErrorCode CapsuleWriteAttributes(Capsule c, PetscViewer v, const cha
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode CapsuleReadAndCompareAttributes(Capsule c, PetscViewer v, const char parent[]) {
+static PetscErrorCode CapsuleReadAndCompareAttributes(Capsule c, PetscViewer v, const char parent[])
+{
   char     *group;
   int       gd = 0;
   PetscInt  t;
@@ -313,7 +324,8 @@ static PetscErrorCode CapsuleReadAndCompareAttributes(Capsule c, PetscViewer v, 
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode CapsuleDestroy(Capsule *c) {
+static PetscErrorCode CapsuleDestroy(Capsule *c)
+{
   PetscInt t;
 
   PetscFunctionBegin;
@@ -323,7 +335,8 @@ static PetscErrorCode CapsuleDestroy(Capsule *c) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode testGroupsDatasets(PetscViewer viewer) {
+static PetscErrorCode testGroupsDatasets(PetscViewer viewer)
+{
   char        buf[PETSC_MAX_PATH_LEN];
   Vec         vecs[nap][ns];
   PetscInt    p, s;
@@ -452,7 +465,8 @@ static PetscErrorCode testGroupsDatasets(PetscViewer viewer) {
   PetscFunctionReturn(0);
 }
 
-static inline PetscErrorCode formPath(PetscBool relativize, const char path[], const char dataset[], char buf[], size_t bufsize) {
+static inline PetscErrorCode formPath(PetscBool relativize, const char path[], const char dataset[], char buf[], size_t bufsize)
+{
   PetscBool isroot = PETSC_FALSE;
 
   PetscFunctionBegin;
@@ -471,7 +485,8 @@ static inline PetscErrorCode formPath(PetscBool relativize, const char path[], c
 }
 
 /* test attribute writing, existence checking and reading, use absolute paths */
-static PetscErrorCode testAttributesAbsolutePath(PetscViewer viewer, const char prefix[]) {
+static PetscErrorCode testAttributesAbsolutePath(PetscViewer viewer, const char prefix[])
+{
   char      buf[PETSC_MAX_PATH_LEN];
   Capsule   capsules[nap][ns], c = NULL, old = NULL;
   PetscInt  p, s;
@@ -563,7 +578,8 @@ static PetscErrorCode testAttributesAbsolutePath(PetscViewer viewer, const char 
 }
 
 /* test attribute writing, existence checking and reading, use group push/pop */
-static PetscErrorCode testAttributesPushedPath(PetscViewer viewer) {
+static PetscErrorCode testAttributesPushedPath(PetscViewer viewer)
+{
   Capsule   capsules[nap][ns], c = NULL, old = NULL;
   PetscInt  p, s;
   int       gd;
@@ -639,7 +655,8 @@ static PetscErrorCode testAttributesPushedPath(PetscViewer viewer) {
 }
 
 /* test attribute writing, existence checking and reading, use group push/pop */
-static PetscErrorCode testObjectAttributes(PetscViewer viewer) {
+static PetscErrorCode testObjectAttributes(PetscViewer viewer)
+{
   Capsule   capsules[nap][ns], c = NULL, old = NULL;
   PetscInt  p, s;
   PetscBool flg = PETSC_FALSE, flg1 = PETSC_FALSE;
@@ -730,7 +747,8 @@ static PetscErrorCode testObjectAttributes(PetscViewer viewer) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode testAttributesDefaultValue(PetscViewer viewer) {
+static PetscErrorCode testAttributesDefaultValue(PetscViewer viewer)
+{
 #define nv 4
   PetscBool bools[nv];
   PetscInt  ints[nv];
@@ -784,7 +802,8 @@ static PetscErrorCode testAttributesDefaultValue(PetscViewer viewer) {
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   static char filename[PETSC_MAX_PATH_LEN] = "ex48.h5";
   PetscMPIInt rank;
   MPI_Comm    comm;

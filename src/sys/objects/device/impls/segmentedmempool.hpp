@@ -13,9 +13,11 @@
 #include <deque>
 #include <vector>
 
-namespace Petsc {
+namespace Petsc
+{
 
-namespace device {
+namespace device
+{
 
 template <typename T>
 class StreamBase {
@@ -32,12 +34,14 @@ public:
   PETSC_NODISCARD id_type get_id() const noexcept { return static_cast<const T &>(*this).get_id_(); }
 
   template <typename E>
-  PETSC_NODISCARD PetscErrorCode record_event(E &&event) const noexcept {
+  PETSC_NODISCARD PetscErrorCode record_event(E &&event) const noexcept
+  {
     return static_cast<const T &>(*this).record_event_(std::forward<E>(event));
   }
 
   template <typename E>
-  PETSC_NODISCARD PetscErrorCode wait_for_event(E &&event) const noexcept {
+  PETSC_NODISCARD PetscErrorCode wait_for_event(E &&event) const noexcept
+  {
     return static_cast<const T &>(*this).wait_for_(std::forward<E>(event));
   }
 
@@ -52,12 +56,14 @@ protected:
   PETSC_NODISCARD static constexpr id_type get_id_() noexcept { return 0; }
 
   template <typename U = T>
-  PETSC_NODISCARD static constexpr PetscErrorCode record_event_(const typename U::event_type &) noexcept {
+  PETSC_NODISCARD static constexpr PetscErrorCode record_event_(const typename U::event_type &) noexcept
+  {
     return 0;
   }
 
   template <typename U = T>
-  PETSC_NODISCARD static constexpr PetscErrorCode wait_for_(const typename U::event_type &) noexcept {
+  PETSC_NODISCARD static constexpr PetscErrorCode wait_for_(const typename U::event_type &) noexcept
+  {
     return 0;
   }
 };
@@ -73,9 +79,11 @@ struct DefaultStream : StreamBase<DefaultStream> {
 
 } // namespace device
 
-namespace memory {
+namespace memory
+{
 
-namespace impl {
+namespace impl
+{
 
 // ==========================================================================================
 // MemoryChunk
@@ -137,7 +145,8 @@ private:
 // asks and answers the question: can this stream claim this chunk without serializing?
 template <typename E>
 template <typename U>
-inline bool MemoryChunk<E>::stream_compat_(const device::StreamBase<U> *strm) const noexcept {
+inline bool MemoryChunk<E>::stream_compat_(const device::StreamBase<U> *strm) const noexcept
+{
   return (stream_id_ == strm->INVALID_ID) || (stream_id_ == strm->get_id());
 }
 
@@ -146,17 +155,24 @@ inline bool MemoryChunk<E>::stream_compat_(const device::StreamBase<U> *strm) co
 // ==========================================================================================
 
 template <typename E>
-inline MemoryChunk<E>::MemoryChunk(size_type start, size_type size) noexcept : size_(size), start_(start) { }
+inline MemoryChunk<E>::MemoryChunk(size_type start, size_type size) noexcept : size_(size), start_(start)
+{
+}
 
 template <typename E>
-inline MemoryChunk<E>::MemoryChunk(size_type size) noexcept : MemoryChunk(0, size) { }
+inline MemoryChunk<E>::MemoryChunk(size_type size) noexcept : MemoryChunk(0, size)
+{
+}
 
 template <typename E>
 inline MemoryChunk<E>::MemoryChunk(MemoryChunk<E> &&other) noexcept :
-  event_(std::move(other.event_)), open_(util::exchange(other.open_, false)), stream_id_(util::exchange(other.stream_id_, device::DefaultStream::INVALID_ID)), size_(util::exchange(other.size_, 0)), start_(std::move(other.start_)) { }
+  event_(std::move(other.event_)), open_(util::exchange(other.open_, false)), stream_id_(util::exchange(other.stream_id_, device::DefaultStream::INVALID_ID)), size_(util::exchange(other.size_, 0)), start_(std::move(other.start_))
+{
+}
 
 template <typename E>
-inline MemoryChunk<E> &MemoryChunk<E>::operator=(MemoryChunk<E> &&other) noexcept {
+inline MemoryChunk<E> &MemoryChunk<E>::operator=(MemoryChunk<E> &&other) noexcept
+{
   PetscFunctionBegin;
   if (this != &other) {
     event_     = std::move(other.event_);
@@ -186,7 +202,8 @@ inline MemoryChunk<E> &MemoryChunk<E>::operator=(MemoryChunk<E> &&other) noexcep
 */
 template <typename E>
 template <typename U>
-inline PetscErrorCode MemoryChunk<E>::release(const device::StreamBase<U> *stream) noexcept {
+inline PetscErrorCode MemoryChunk<E>::release(const device::StreamBase<U> *stream) noexcept
+{
   PetscFunctionBegin;
   open_      = true;
   stream_id_ = stream->get_id();
@@ -207,7 +224,8 @@ inline PetscErrorCode MemoryChunk<E>::release(const device::StreamBase<U> *strea
 */
 template <typename E>
 template <typename U>
-inline PetscErrorCode MemoryChunk<E>::claim(const device::StreamBase<U> *stream, size_type req_size, bool *success, bool serialize) noexcept {
+inline PetscErrorCode MemoryChunk<E>::claim(const device::StreamBase<U> *stream, size_type req_size, bool *success, bool serialize) noexcept
+{
   PetscFunctionBegin;
   if ((*success = can_claim(stream, req_size, serialize))) {
     if (serialize && !stream_compat_(stream)) PetscCall(stream->wait_for_event(event_));
@@ -230,7 +248,8 @@ inline PetscErrorCode MemoryChunk<E>::claim(const device::StreamBase<U> *stream,
 */
 template <typename E>
 template <typename U>
-inline bool MemoryChunk<E>::can_claim(const device::StreamBase<U> *stream, size_type req_size, bool serialize) const noexcept {
+inline bool MemoryChunk<E>::can_claim(const device::StreamBase<U> *stream, size_type req_size, bool serialize) const noexcept
+{
   if (open_ && (req_size <= capacity())) {
     // fully compatible
     if (stream_compat_(stream)) return true;
@@ -251,7 +270,8 @@ inline bool MemoryChunk<E>::can_claim(const device::StreamBase<U> *stream, size_
   newsize cannot be larger than capacity
 */
 template <typename E>
-inline PetscErrorCode MemoryChunk<E>::resize(size_type newsize) noexcept {
+inline PetscErrorCode MemoryChunk<E>::resize(size_type newsize) noexcept
+{
   PetscFunctionBegin;
   PetscAssert(newsize <= capacity(), PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "New size %zu larger than capacity %zu", newsize, capacity());
   size_ = newsize;
@@ -268,7 +288,8 @@ inline PetscErrorCode MemoryChunk<E>::resize(size_type newsize) noexcept {
   Returns true if the chunk contains the offset, false otherwise
 */
 template <typename E>
-inline bool MemoryChunk<E>::contains(size_type offset) const noexcept {
+inline bool MemoryChunk<E>::contains(size_type offset) const noexcept
+{
   return (offset >= start()) && (offset < total_offset());
 }
 
@@ -327,7 +348,8 @@ private:
 
 // clear the memory block, called from destructors and move assignment/construction
 template <typename T, typename A, typename S>
-PETSC_NODISCARD PetscErrorCode MemoryBlock<T, A, S>::clear_(const stream_type *stream) noexcept {
+PETSC_NODISCARD PetscErrorCode MemoryBlock<T, A, S>::clear_(const stream_type *stream) noexcept
+{
   PetscFunctionBegin;
   if (PetscLikely(mem_)) {
     PetscCall(allocator_->deallocate(mem_, stream));
@@ -345,7 +367,8 @@ PETSC_NODISCARD PetscErrorCode MemoryBlock<T, A, S>::clear_(const stream_type *s
 // default constructor, allocates memory immediately
 template <typename T, typename A, typename S>
 template <typename U>
-MemoryBlock<T, A, S>::MemoryBlock(allocator_type *alloc, size_type s, const device::StreamBase<U> *stream) noexcept : allocator_(alloc), size_(s) {
+MemoryBlock<T, A, S>::MemoryBlock(allocator_type *alloc, size_type s, const device::StreamBase<U> *stream) noexcept : allocator_(alloc), size_(s)
+{
   PetscFunctionBegin;
   PetscCallAbort(PETSC_COMM_SELF, alloc->allocate(&mem_, s, stream));
   PetscAssertAbort(mem_, PETSC_COMM_SELF, PETSC_ERR_MEM, "Failed to allocate memory block of size %zu", s);
@@ -353,7 +376,8 @@ MemoryBlock<T, A, S>::MemoryBlock(allocator_type *alloc, size_type s, const devi
 }
 
 template <typename T, typename A, typename S>
-MemoryBlock<T, A, S>::~MemoryBlock() noexcept(std::is_nothrow_destructible<chunk_list_type>::value) {
+MemoryBlock<T, A, S>::~MemoryBlock() noexcept(std::is_nothrow_destructible<chunk_list_type>::value)
+{
   stream_type stream;
 
   PetscFunctionBegin;
@@ -362,10 +386,13 @@ MemoryBlock<T, A, S>::~MemoryBlock() noexcept(std::is_nothrow_destructible<chunk
 }
 
 template <typename T, typename A, typename S>
-MemoryBlock<T, A, S>::MemoryBlock(MemoryBlock &&other) noexcept : mem_(util::exchange(other.mem_, nullptr)), allocator_(other.allocator_), size_(util::exchange(other.size_, 0)), chunks_(std::move(other.chunks_)) { }
+MemoryBlock<T, A, S>::MemoryBlock(MemoryBlock &&other) noexcept : mem_(util::exchange(other.mem_, nullptr)), allocator_(other.allocator_), size_(util::exchange(other.size_, 0)), chunks_(std::move(other.chunks_))
+{
+}
 
 template <typename T, typename A, typename S>
-MemoryBlock<T, A, S> &MemoryBlock<T, A, S>::operator=(MemoryBlock &&other) noexcept {
+MemoryBlock<T, A, S> &MemoryBlock<T, A, S>::operator=(MemoryBlock &&other) noexcept
+{
   PetscFunctionBegin;
   if (this != &other) {
     stream_type stream;
@@ -383,7 +410,8 @@ MemoryBlock<T, A, S> &MemoryBlock<T, A, S>::operator=(MemoryBlock &&other) noexc
   MemoryBock::owns_pointer - returns true if this block owns a pointer, false otherwise
 */
 template <typename T, typename A, typename S>
-inline bool MemoryBlock<T, A, S>::owns_pointer(const T *ptr) const noexcept {
+inline bool MemoryBlock<T, A, S>::owns_pointer(const T *ptr) const noexcept
+{
   // each pool is linear in memory, so it suffices to check the bounds
   return (ptr >= mem_) && (ptr < std::next(mem_, size()));
 }
@@ -403,7 +431,8 @@ inline bool MemoryBlock<T, A, S>::owns_pointer(const T *ptr) const noexcept {
   If the current memory could not satisfy the memory request, ptr is unchanged
 */
 template <typename T, typename A, typename S>
-inline PetscErrorCode MemoryBlock<T, A, S>::try_allocate_chunk(size_type req_size, T **ptr, const stream_type *stream, bool *success) noexcept {
+inline PetscErrorCode MemoryBlock<T, A, S>::try_allocate_chunk(size_type req_size, T **ptr, const stream_type *stream, bool *success) noexcept
+{
   PetscFunctionBegin;
   *success = false;
   if (req_size <= size()) {
@@ -486,7 +515,8 @@ inline PetscErrorCode MemoryBlock<T, A, S>::try_allocate_chunk(size_type req_siz
   stream is idle again.
 */
 template <typename T, typename A, typename S>
-inline PetscErrorCode MemoryBlock<T, A, S>::try_deallocate_chunk(T **ptr, const stream_type *stream, bool *success) noexcept {
+inline PetscErrorCode MemoryBlock<T, A, S>::try_deallocate_chunk(T **ptr, const stream_type *stream, bool *success) noexcept
+{
   chunk_type *chunk = nullptr;
 
   PetscFunctionBegin;
@@ -511,7 +541,8 @@ inline PetscErrorCode MemoryBlock<T, A, S>::try_deallocate_chunk(T **ptr, const 
 . ret_chunk - pointer to the owning chunk or nullptr if not found
 */
 template <typename T, typename A, typename S>
-inline PetscErrorCode MemoryBlock<T, A, S>::try_find_chunk(const T *ptr, chunk_type **ret_chunk) noexcept {
+inline PetscErrorCode MemoryBlock<T, A, S>::try_find_chunk(const T *ptr, chunk_type **ret_chunk) noexcept
+{
   PetscFunctionBegin;
   *ret_chunk = nullptr;
   if (owns_pointer(ptr)) {
@@ -529,7 +560,8 @@ inline PetscErrorCode MemoryBlock<T, A, S>::try_find_chunk(const T *ptr, chunk_t
   PetscFunctionReturn(0);
 }
 
-namespace detail {
+namespace detail
+{
 
 template <typename T>
 struct real_type {
@@ -563,7 +595,8 @@ struct SegmentedMemoryPoolAllocatorBase {
 
 template <typename T>
 template <typename U>
-inline PetscErrorCode SegmentedMemoryPoolAllocatorBase<T>::allocate(value_type **ptr, size_type n, const device::StreamBase<U> *) noexcept {
+inline PetscErrorCode SegmentedMemoryPoolAllocatorBase<T>::allocate(value_type **ptr, size_type n, const device::StreamBase<U> *) noexcept
+{
   PetscFunctionBegin;
   PetscCall(PetscMalloc1(n, ptr));
   PetscFunctionReturn(0);
@@ -571,7 +604,8 @@ inline PetscErrorCode SegmentedMemoryPoolAllocatorBase<T>::allocate(value_type *
 
 template <typename T>
 template <typename U>
-inline PetscErrorCode SegmentedMemoryPoolAllocatorBase<T>::deallocate(value_type *ptr, const device::StreamBase<U> *) noexcept {
+inline PetscErrorCode SegmentedMemoryPoolAllocatorBase<T>::deallocate(value_type *ptr, const device::StreamBase<U> *) noexcept
+{
   PetscFunctionBegin;
   PetscCall(PetscFree(ptr));
   PetscFunctionReturn(0);
@@ -579,7 +613,8 @@ inline PetscErrorCode SegmentedMemoryPoolAllocatorBase<T>::deallocate(value_type
 
 template <typename T>
 template <typename U>
-inline PetscErrorCode SegmentedMemoryPoolAllocatorBase<T>::zero(value_type *ptr, size_type n, const device::StreamBase<U> *) noexcept {
+inline PetscErrorCode SegmentedMemoryPoolAllocatorBase<T>::zero(value_type *ptr, size_type n, const device::StreamBase<U> *) noexcept
+{
   PetscFunctionBegin;
   PetscCall(PetscArrayzero(ptr, n));
   PetscFunctionReturn(0);
@@ -587,7 +622,8 @@ inline PetscErrorCode SegmentedMemoryPoolAllocatorBase<T>::zero(value_type *ptr,
 
 template <typename T>
 template <typename U>
-inline PetscErrorCode SegmentedMemoryPoolAllocatorBase<T>::uninitialized_copy(value_type *dest, const value_type *src, size_type n, const device::StreamBase<U> *) noexcept {
+inline PetscErrorCode SegmentedMemoryPoolAllocatorBase<T>::uninitialized_copy(value_type *dest, const value_type *src, size_type n, const device::StreamBase<U> *) noexcept
+{
   PetscFunctionBegin;
   PetscCall(PetscArraycpy(dest, src, n));
   PetscFunctionReturn(0);
@@ -595,7 +631,8 @@ inline PetscErrorCode SegmentedMemoryPoolAllocatorBase<T>::uninitialized_copy(va
 
 template <typename T>
 template <typename U>
-inline PetscErrorCode SegmentedMemoryPoolAllocatorBase<T>::set_canary(value_type *ptr, size_type n, const device::StreamBase<U> *) noexcept {
+inline PetscErrorCode SegmentedMemoryPoolAllocatorBase<T>::set_canary(value_type *ptr, size_type n, const device::StreamBase<U> *) noexcept
+{
   using limit_type            = std::numeric_limits<real_value_type>;
   constexpr value_type canary = limit_type::has_signaling_NaN ? limit_type::signaling_NaN() : limit_type::max();
 
@@ -688,7 +725,8 @@ private:
 // ==========================================================================================
 
 template <typename MemType, typename StreamType, typename AllocType, std::size_t DefaultChunkSize>
-inline PetscErrorCode SegmentedMemoryPool<MemType, StreamType, AllocType, DefaultChunkSize>::make_block_(size_type size, const stream_type *stream) noexcept {
+inline PetscErrorCode SegmentedMemoryPool<MemType, StreamType, AllocType, DefaultChunkSize>::make_block_(size_type size, const stream_type *stream) noexcept
+{
   const auto block_size = std::max(size, chunk_size_);
 
   PetscFunctionBegin;
@@ -698,14 +736,16 @@ inline PetscErrorCode SegmentedMemoryPool<MemType, StreamType, AllocType, Defaul
 }
 
 template <typename MemType, typename StreamType, typename AllocType, std::size_t DefaultChunkSize>
-inline PetscErrorCode SegmentedMemoryPool<MemType, StreamType, AllocType, DefaultChunkSize>::register_finalize_(const stream_type *stream) noexcept {
+inline PetscErrorCode SegmentedMemoryPool<MemType, StreamType, AllocType, DefaultChunkSize>::register_finalize_(const stream_type *stream) noexcept
+{
   PetscFunctionBegin;
   PetscCall(make_block_(chunk_size_, stream));
   PetscFunctionReturn(0);
 }
 
 template <typename MemType, typename StreamType, typename AllocType, std::size_t DefaultChunkSize>
-inline PetscErrorCode SegmentedMemoryPool<MemType, StreamType, AllocType, DefaultChunkSize>::finalize_() noexcept {
+inline PetscErrorCode SegmentedMemoryPool<MemType, StreamType, AllocType, DefaultChunkSize>::finalize_() noexcept
+{
   PetscFunctionBegin;
   PetscCallCXX(pool_.clear());
   chunk_size_ = DefaultChunkSize;
@@ -713,7 +753,8 @@ inline PetscErrorCode SegmentedMemoryPool<MemType, StreamType, AllocType, Defaul
 }
 
 template <typename MemType, typename StreamType, typename AllocType, std::size_t DefaultChunkSize>
-inline PetscErrorCode SegmentedMemoryPool<MemType, StreamType, AllocType, DefaultChunkSize>::allocate_(size_type size, value_type **ptr, const stream_type *stream) noexcept {
+inline PetscErrorCode SegmentedMemoryPool<MemType, StreamType, AllocType, DefaultChunkSize>::allocate_(size_type size, value_type **ptr, const stream_type *stream) noexcept
+{
   auto found = false;
 
   PetscFunctionBegin;
@@ -737,8 +778,9 @@ inline PetscErrorCode SegmentedMemoryPool<MemType, StreamType, AllocType, Defaul
 // ==========================================================================================
 
 template <typename MemType, typename StreamType, typename AllocType, std::size_t DefaultChunkSize>
-inline SegmentedMemoryPool<MemType, StreamType, AllocType, DefaultChunkSize>::SegmentedMemoryPool(AllocType alloc, std::size_t size) noexcept(std::is_nothrow_default_constructible<pool_type>::value) :
-  allocator_(std::move(alloc)), chunk_size_(size) { }
+inline SegmentedMemoryPool<MemType, StreamType, AllocType, DefaultChunkSize>::SegmentedMemoryPool(AllocType alloc, std::size_t size) noexcept(std::is_nothrow_default_constructible<pool_type>::value) : allocator_(std::move(alloc)), chunk_size_(size)
+{
+}
 
 /*
   SegmentedMemoryPool::allocate - get an allocation from the memory pool
@@ -755,7 +797,8 @@ inline SegmentedMemoryPool<MemType, StreamType, AllocType, DefaultChunkSize>::Se
   req_size cannot be negative. If req_size if zero, ptr is set to nullptr
 */
 template <typename MemType, typename StreamType, typename AllocType, std::size_t DefaultChunkSize>
-inline PetscErrorCode SegmentedMemoryPool<MemType, StreamType, AllocType, DefaultChunkSize>::allocate(PetscInt req_size, value_type **ptr, const stream_type *stream, size_type alignment) noexcept {
+inline PetscErrorCode SegmentedMemoryPool<MemType, StreamType, AllocType, DefaultChunkSize>::allocate(PetscInt req_size, value_type **ptr, const stream_type *stream, size_type alignment) noexcept
+{
   value_type *ret_ptr = nullptr;
 
   PetscFunctionBegin;
@@ -790,7 +833,8 @@ inline PetscErrorCode SegmentedMemoryPool<MemType, StreamType, AllocType, Defaul
   If ptr is not owned by the pool it is unchanged.
 */
 template <typename MemType, typename StreamType, typename AllocType, std::size_t DefaultChunkSize>
-inline PetscErrorCode SegmentedMemoryPool<MemType, StreamType, AllocType, DefaultChunkSize>::deallocate(value_type **ptr, const stream_type *stream) noexcept {
+inline PetscErrorCode SegmentedMemoryPool<MemType, StreamType, AllocType, DefaultChunkSize>::deallocate(value_type **ptr, const stream_type *stream) noexcept
+{
   PetscFunctionBegin;
   PetscValidPointer(ptr, 1);
   PetscValidPointer(stream, 2);
@@ -822,7 +866,8 @@ inline PetscErrorCode SegmentedMemoryPool<MemType, StreamType, AllocType, Defaul
   It's OK to shrink the buffer, even down to 0 (in which case it is just deallocated).
 */
 template <typename MemType, typename StreamType, typename AllocType, std::size_t DefaultChunkSize>
-inline PetscErrorCode SegmentedMemoryPool<MemType, StreamType, AllocType, DefaultChunkSize>::reallocate(PetscInt new_req_size, value_type **ptr, const stream_type *stream) noexcept {
+inline PetscErrorCode SegmentedMemoryPool<MemType, StreamType, AllocType, DefaultChunkSize>::reallocate(PetscInt new_req_size, value_type **ptr, const stream_type *stream) noexcept
+{
   using chunk_type = typename block_type::chunk_type;
 
   const auto  new_size = static_cast<size_type>(new_req_size);

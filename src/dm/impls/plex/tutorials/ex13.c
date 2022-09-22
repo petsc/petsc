@@ -2,7 +2,8 @@ static char help[] = "Create a Plex Schwarz P surface with quads\n\n";
 
 #include <petscdmplex.h>
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   DM             dm;
   PetscInt       extent[3] = {1, 1, 1}, refine = 0, layers = 0, three;
   PetscReal      thickness   = 0.;

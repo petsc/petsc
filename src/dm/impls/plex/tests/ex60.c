@@ -2,7 +2,8 @@ static char help[] = "Test metric utils in the uniform, isotropic case.\n\n";
 
 #include <petscdmplex.h>
 
-static PetscErrorCode bowl(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx) {
+static PetscErrorCode bowl(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
+{
   PetscInt d;
 
   *u = 0.0;
@@ -11,7 +12,8 @@ static PetscErrorCode bowl(PetscInt dim, PetscReal time, const PetscReal x[], Pe
   return 0;
 }
 
-static PetscErrorCode CreateIndicator(DM dm, Vec *indicator, DM *dmIndi) {
+static PetscErrorCode CreateIndicator(DM dm, Vec *indicator, DM *dmIndi)
+{
   MPI_Comm comm;
   PetscFE  fe;
   PetscInt dim;
@@ -28,7 +30,8 @@ static PetscErrorCode CreateIndicator(DM dm, Vec *indicator, DM *dmIndi) {
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   DM        dm, dmAdapt;
   DMLabel   bdLabel = NULL, rgLabel = NULL;
   MPI_Comm  comm;

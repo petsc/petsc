@@ -2,13 +2,15 @@
 
 static char help[] = "Solves a linear system with a block of right-hand sides, apply a preconditioner to the same block.\n\n";
 
-PetscErrorCode MatApply(PC pc, Mat X, Mat Y) {
+PetscErrorCode MatApply(PC pc, Mat X, Mat Y)
+{
   PetscFunctionBeginUser;
   PetscCall(MatCopy(X, Y, SAME_NONZERO_PATTERN));
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   Mat      X, B; /* computed solutions and RHS */
   Mat      A;    /* linear system matrix */
   KSP      ksp;  /* linear solver context */

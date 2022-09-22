@@ -1,4 +1,4 @@
-#if !defined(__VECIMPL_KOKKOS_HPP)
+#ifndef __VECIMPL_KOKKOS_HPP
 #define __VECIMPL_KOKKOS_HPP
 
 /* types used by all petsc kokkos code */
@@ -13,7 +13,7 @@ using DefaultMemorySpace    = Kokkos::DefaultExecutionSpace::memory_space;
 
 /* Define a macro if DefaultMemorySpace is HostSpace */
 #if defined(KOKKOS_ENABLE_DEFAULT_DEVICE_TYPE_SERIAL) || defined(KOKKOS_ENABLE_DEFAULT_DEVICE_TYPE_OPENMP) || defined(KOKKOS_ENABLE_DEFAULT_DEVICE_TYPE_THREADS) || defined(KOKKOS_ENABLE_DEFAULT_DEVICE_TYPE_HPX)
-#define KOKKOS_ENABLE_DEFAULT_DEVICE_TYPE_HOST
+  #define KOKKOS_ENABLE_DEFAULT_DEVICE_TYPE_HOST
 #endif
 
 /* 1 to 4D PetscScalar Kokkos Views */

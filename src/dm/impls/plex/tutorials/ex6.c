@@ -8,7 +8,8 @@ typedef struct {
   PetscInt *k;  /* Spectral order per field */
 } AppCtx;
 
-static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options) {
+static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
+{
   PetscInt  len;
   PetscBool flg;
 
@@ -33,7 +34,8 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode LoadData2D(DM dm, PetscInt Ni, PetscInt Nj, PetscInt clSize, Vec u, AppCtx *user) {
+static PetscErrorCode LoadData2D(DM dm, PetscInt Ni, PetscInt Nj, PetscInt clSize, Vec u, AppCtx *user)
+{
   PetscInt     i, j, f, c;
   PetscScalar *closure;
 
@@ -60,7 +62,8 @@ static PetscErrorCode LoadData2D(DM dm, PetscInt Ni, PetscInt Nj, PetscInt clSiz
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode LoadData3D(DM dm, PetscInt Ni, PetscInt Nj, PetscInt Nk, PetscInt clSize, Vec u, AppCtx *user) {
+static PetscErrorCode LoadData3D(DM dm, PetscInt Ni, PetscInt Nj, PetscInt Nk, PetscInt clSize, Vec u, AppCtx *user)
+{
   PetscInt     i, j, k, f, c;
   PetscScalar *closure;
 
@@ -91,7 +94,8 @@ static PetscErrorCode LoadData3D(DM dm, PetscInt Ni, PetscInt Nj, PetscInt Nk, P
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode CheckPoint(DM dm, Vec u, PetscInt point, AppCtx *user) {
+static PetscErrorCode CheckPoint(DM dm, Vec u, PetscInt point, AppCtx *user)
+{
   PetscSection       s;
   PetscScalar       *a;
   const PetscScalar *array;
@@ -112,7 +116,8 @@ static PetscErrorCode CheckPoint(DM dm, Vec u, PetscInt point, AppCtx *user) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode ReadData2D(DM dm, Vec u, AppCtx *user) {
+static PetscErrorCode ReadData2D(DM dm, Vec u, AppCtx *user)
+{
   PetscInt cStart, cEnd, cell;
 
   PetscFunctionBeginUser;
@@ -144,7 +149,8 @@ static PetscErrorCode ReadData2D(DM dm, Vec u, AppCtx *user) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode ReadData3D(DM dm, Vec u, AppCtx *user) {
+static PetscErrorCode ReadData3D(DM dm, Vec u, AppCtx *user)
+{
   PetscInt cStart, cEnd, cell;
 
   PetscFunctionBeginUser;
@@ -179,7 +185,8 @@ static PetscErrorCode ReadData3D(DM dm, Vec u, AppCtx *user) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode SetSymmetries(DM dm, PetscSection s, AppCtx *user) {
+static PetscErrorCode SetSymmetries(DM dm, PetscSection s, AppCtx *user)
+{
   PetscInt dim, f, o, i, j, k, c, d;
   DMLabel  depthLabel;
 
@@ -231,8 +238,9 @@ static PetscErrorCode SetSymmetries(DM dm, PetscSection s, AppCtx *user) {
           PetscCall(PetscMalloc1(numDof * numComp, &perm));
           /* We want to perm[k] to list which *localArray* position the *sectionArray* position k should go to for the given orientation*/
           switch (o) {
-          case 0: break; /* identity */
-          case -2:       /* flip along (-1,-1)--( 1, 1), which swaps edges 0 and 3 and edges 1 and 2.  This swaps the i and j variables */
+          case 0:
+            break; /* identity */
+          case -2: /* flip along (-1,-1)--( 1, 1), which swaps edges 0 and 3 and edges 1 and 2.  This swaps the i and j variables */
             for (i = 0, k = 0; i < perEdge; i++) {
               for (j = 0; j < perEdge; j++, k++) {
                 for (c = 0; c < numComp; c++) perm[k * numComp + c] = (perEdge * j + i) * numComp + c;
@@ -281,7 +289,8 @@ static PetscErrorCode SetSymmetries(DM dm, PetscSection s, AppCtx *user) {
               }
             }
             break;
-          default: break;
+          default:
+            break;
           }
           perms[o - minOrnt] = perm;
         }
@@ -295,7 +304,8 @@ static PetscErrorCode SetSymmetries(DM dm, PetscSection s, AppCtx *user) {
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   DM           dm;
   PetscSection s;
   Vec          u;
@@ -329,8 +339,12 @@ int main(int argc, char **argv) {
   PetscCall(DMPlexSetClosurePermutationTensor(dm, PETSC_DETERMINE, NULL));
   PetscCall(DMGetLocalVector(dm, &u));
   switch (dim) {
-  case 2: PetscCall(LoadData2D(dm, 2, 2, size, u, &user)); break;
-  case 3: PetscCall(LoadData3D(dm, 2, 2, 2, size, u, &user)); break;
+  case 2:
+    PetscCall(LoadData2D(dm, 2, 2, size, u, &user));
+    break;
+  case 3:
+    PetscCall(LoadData3D(dm, 2, 2, 2, size, u, &user));
+    break;
   }
   /* Remove ordering and check some values */
   PetscCall(PetscSectionSetClosurePermutation(s, (PetscObject)dm, dim, NULL));
@@ -351,8 +365,12 @@ int main(int argc, char **argv) {
   /* Recreate spectral ordering and read out data */
   PetscCall(DMPlexSetClosurePermutationTensor(dm, PETSC_DETERMINE, s));
   switch (dim) {
-  case 2: PetscCall(ReadData2D(dm, u, &user)); break;
-  case 3: PetscCall(ReadData3D(dm, u, &user)); break;
+  case 2:
+    PetscCall(ReadData2D(dm, u, &user));
+    break;
+  case 3:
+    PetscCall(ReadData3D(dm, u, &user));
+    break;
   }
   PetscCall(DMRestoreLocalVector(dm, &u));
   PetscCall(PetscSectionDestroy(&s));

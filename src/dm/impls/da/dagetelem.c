@@ -1,7 +1,8 @@
 
 #include <petsc/private/dmdaimpl.h> /*I  "petscdmda.h"   I*/
 
-static PetscErrorCode DMDAGetElements_1D(DM dm, PetscInt *nel, PetscInt *nen, const PetscInt *e[]) {
+static PetscErrorCode DMDAGetElements_1D(DM dm, PetscInt *nel, PetscInt *nen, const PetscInt *e[])
+{
   DM_DA   *da = (DM_DA *)dm->data;
   PetscInt i, xs, xe, Xs, Xe;
   PetscInt cnt = 0;
@@ -34,7 +35,8 @@ static PetscErrorCode DMDAGetElements_1D(DM dm, PetscInt *nel, PetscInt *nen, co
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMDAGetElements_2D(DM dm, PetscInt *nel, PetscInt *nen, const PetscInt *e[]) {
+static PetscErrorCode DMDAGetElements_2D(DM dm, PetscInt *nel, PetscInt *nen, const PetscInt *e[])
+{
   DM_DA   *da = (DM_DA *)dm->data;
   PetscInt i, xs, xe, Xs, Xe;
   PetscInt j, ys, ye, Ys, Ye;
@@ -48,9 +50,14 @@ static PetscErrorCode DMDAGetElements_2D(DM dm, PetscInt *nel, PetscInt *nen, co
     PetscCheck(da->s, PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Cannot get elements for DMDA with zero stencil width");
 
     switch (da->elementtype) {
-    case DMDA_ELEMENT_Q1: da->nen = 4; break;
-    case DMDA_ELEMENT_P1: da->nen = 3; break;
-    default: SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Unknown element type %d", da->elementtype);
+    case DMDA_ELEMENT_Q1:
+      da->nen = 4;
+      break;
+    case DMDA_ELEMENT_P1:
+      da->nen = 3;
+      break;
+    default:
+      SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Unknown element type %d", da->elementtype);
     }
     nn = da->nen;
 
@@ -93,7 +100,8 @@ static PetscErrorCode DMDAGetElements_2D(DM dm, PetscInt *nel, PetscInt *nen, co
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMDAGetElements_3D(DM dm, PetscInt *nel, PetscInt *nen, const PetscInt *e[]) {
+static PetscErrorCode DMDAGetElements_3D(DM dm, PetscInt *nel, PetscInt *nen, const PetscInt *e[])
+{
   DM_DA   *da = (DM_DA *)dm->data;
   PetscInt i, xs, xe, Xs, Xe;
   PetscInt j, ys, ye, Ys, Ye;
@@ -108,9 +116,14 @@ static PetscErrorCode DMDAGetElements_3D(DM dm, PetscInt *nel, PetscInt *nen, co
     PetscCheck(da->s, PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Cannot get elements for DMDA with zero stencil width");
 
     switch (da->elementtype) {
-    case DMDA_ELEMENT_Q1: da->nen = 8; break;
-    case DMDA_ELEMENT_P1: da->nen = 4; break;
-    default: SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Unknown element type %d", da->elementtype);
+    case DMDA_ELEMENT_Q1:
+      da->nen = 8;
+      break;
+    case DMDA_ELEMENT_P1:
+      da->nen = 4;
+      break;
+    default:
+      SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Unknown element type %d", da->elementtype);
     }
     nn = da->nen;
 
@@ -186,7 +199,8 @@ static PetscErrorCode DMDAGetElements_3D(DM dm, PetscInt *nel, PetscInt *nen, co
 
 .seealso: `DMDAElementType`, `DMDASetElementType()`, `DMDAGetElements()`
 @*/
-PetscErrorCode DMDAGetElementsCorners(DM da, PetscInt *gx, PetscInt *gy, PetscInt *gz) {
+PetscErrorCode DMDAGetElementsCorners(DM da, PetscInt *gx, PetscInt *gy, PetscInt *gz)
+{
   PetscInt  xs, Xs;
   PetscInt  ys, Ys;
   PetscInt  zs, Zs;
@@ -230,7 +244,8 @@ PetscErrorCode DMDAGetElementsCorners(DM da, PetscInt *gx, PetscInt *gy, PetscIn
 
 .seealso: `DMDAElementType`, `DMDASetElementType()`, `DMDAGetElements`
 @*/
-PetscErrorCode DMDAGetElementsSizes(DM da, PetscInt *mx, PetscInt *my, PetscInt *mz) {
+PetscErrorCode DMDAGetElementsSizes(DM da, PetscInt *mx, PetscInt *my, PetscInt *mz)
+{
   PetscInt  xs, xe, Xs;
   PetscInt  ys, ye, Ys;
   PetscInt  zs, ze, Zs;
@@ -283,7 +298,8 @@ PetscErrorCode DMDAGetElementsSizes(DM da, PetscInt *mx, PetscInt *my, PetscInt 
 
 .seealso: `DMDAElementType`, `DMDAGetElementType()`, `DMDAGetElements()`, `DMDARestoreElements()`
 @*/
-PetscErrorCode DMDASetElementType(DM da, DMDAElementType etype) {
+PetscErrorCode DMDASetElementType(DM da, DMDAElementType etype)
+{
   DM_DA    *dd = (DM_DA *)da->data;
   PetscBool isda;
 
@@ -319,7 +335,8 @@ PetscErrorCode DMDASetElementType(DM da, DMDAElementType etype) {
 
 .seealso: `DMDAElementType`, `DMDASetElementType()`, `DMDAGetElements()`, `DMDARestoreElements()`
 @*/
-PetscErrorCode DMDAGetElementType(DM da, DMDAElementType *etype) {
+PetscErrorCode DMDAGetElementType(DM da, DMDAElementType *etype)
+{
   DM_DA    *dd = (DM_DA *)da->data;
   PetscBool isda;
 
@@ -359,7 +376,8 @@ PetscErrorCode DMDAGetElementType(DM da, DMDAElementType *etype) {
 
 .seealso: `DMDAElementType`, `DMDASetElementType()`, `VecSetValuesLocal()`, `MatSetValuesLocal()`, `DMGlobalToLocalBegin()`, `DMLocalToGlobalBegin()`
 @*/
-PetscErrorCode DMDAGetElements(DM dm, PetscInt *nel, PetscInt *nen, const PetscInt *e[]) {
+PetscErrorCode DMDAGetElements(DM dm, PetscInt *nel, PetscInt *nen, const PetscInt *e[])
+{
   PetscInt  dim;
   DM_DA    *dd = (DM_DA *)dm->data;
   PetscBool isda;
@@ -412,7 +430,8 @@ PetscErrorCode DMDAGetElements(DM dm, PetscInt *nel, PetscInt *nen, const PetscI
 
 .seealso: `DMDAElementType`, `DMDASetElementType()`, `DMDAGetElements()`, `DMDARestoreElementsCornersIS()`
 @*/
-PetscErrorCode DMDAGetSubdomainCornersIS(DM dm, IS *is) {
+PetscErrorCode DMDAGetSubdomainCornersIS(DM dm, IS *is)
+{
   DM_DA    *dd = (DM_DA *)dm->data;
   PetscBool isda;
 
@@ -454,7 +473,8 @@ PetscErrorCode DMDAGetSubdomainCornersIS(DM dm, IS *is) {
 
 .seealso: `DMDAElementType`, `DMDASetElementType()`, `DMDAGetElements()`
 @*/
-PetscErrorCode DMDARestoreElements(DM dm, PetscInt *nel, PetscInt *nen, const PetscInt *e[]) {
+PetscErrorCode DMDARestoreElements(DM dm, PetscInt *nel, PetscInt *nen, const PetscInt *e[])
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(dm, DM_CLASSID, 1, DMDA);
   PetscValidIntPointer(nel, 2);
@@ -481,7 +501,8 @@ PetscErrorCode DMDARestoreElements(DM dm, PetscInt *nel, PetscInt *nen, const Pe
 
 .seealso: `DMDAElementType`, `DMDASetElementType()`, `DMDAGetSubdomainCornersIS()`
 @*/
-PetscErrorCode DMDARestoreSubdomainCornersIS(DM dm, IS *is) {
+PetscErrorCode DMDARestoreSubdomainCornersIS(DM dm, IS *is)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(dm, DM_CLASSID, 1, DMDA);
   PetscValidHeaderSpecific(*is, IS_CLASSID, 2);

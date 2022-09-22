@@ -2,7 +2,8 @@ static char help[] = "  Test VecScatter with x, y on different communicators\n\n
 
 #include <petscvec.h>
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscInt           i, n = 5, rstart;
   PetscScalar       *val;
   const PetscScalar *dat;

@@ -9,7 +9,8 @@ Modified from the code contributed by Yaning Liu @lbl.gov \n\n";
 
 #include <petscmat.h>
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   Mat             A, A_elemental;
   PetscInt        i, j, M = 10, N = 5, nrows, ncols;
   PetscMPIInt     rank, size;

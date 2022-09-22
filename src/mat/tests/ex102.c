@@ -3,7 +3,8 @@ static char help[] = "Tests MatCreateLRC()\n\n";
 
 #include <petscmat.h>
 
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   Vec       x, b, c = NULL;
   Mat       A, U, V, LR, X, LRe;
   PetscInt  M = 5, N = 7;

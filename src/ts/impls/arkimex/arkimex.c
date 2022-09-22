@@ -250,7 +250,8 @@ M*/
 
 .seealso: `TSARKIMEXRegisterDestroy()`
 @*/
-PetscErrorCode TSARKIMEXRegisterAll(void) {
+PetscErrorCode TSARKIMEXRegisterAll(void)
+{
   PetscFunctionBegin;
   if (TSARKIMEXRegisterAllCalled) PetscFunctionReturn(0);
   TSARKIMEXRegisterAllCalled = PETSC_TRUE;
@@ -415,7 +416,8 @@ PetscErrorCode TSARKIMEXRegisterAll(void) {
 
 .seealso: `TSARKIMEXRegister()`, `TSARKIMEXRegisterAll()`
 @*/
-PetscErrorCode TSARKIMEXRegisterDestroy(void) {
+PetscErrorCode TSARKIMEXRegisterDestroy(void)
+{
   ARKTableauLink link;
 
   PetscFunctionBegin;
@@ -440,7 +442,8 @@ PetscErrorCode TSARKIMEXRegisterDestroy(void) {
 
 .seealso: `PetscInitialize()`
 @*/
-PetscErrorCode TSARKIMEXInitializePackage(void) {
+PetscErrorCode TSARKIMEXInitializePackage(void)
+{
   PetscFunctionBegin;
   if (TSARKIMEXPackageInitialized) PetscFunctionReturn(0);
   TSARKIMEXPackageInitialized = PETSC_TRUE;
@@ -457,7 +460,8 @@ PetscErrorCode TSARKIMEXInitializePackage(void) {
 
 .seealso: `PetscFinalize()`
 @*/
-PetscErrorCode TSARKIMEXFinalizePackage(void) {
+PetscErrorCode TSARKIMEXFinalizePackage(void)
+{
   PetscFunctionBegin;
   TSARKIMEXPackageInitialized = PETSC_FALSE;
   PetscCall(TSARKIMEXRegisterDestroy());
@@ -492,7 +496,8 @@ PetscErrorCode TSARKIMEXFinalizePackage(void) {
 
 .seealso: `TSARKIMEX`
 @*/
-PetscErrorCode TSARKIMEXRegister(TSARKIMEXType name, PetscInt order, PetscInt s, const PetscReal At[], const PetscReal bt[], const PetscReal ct[], const PetscReal A[], const PetscReal b[], const PetscReal c[], const PetscReal bembedt[], const PetscReal bembed[], PetscInt pinterp, const PetscReal binterpt[], const PetscReal binterp[]) {
+PetscErrorCode TSARKIMEXRegister(TSARKIMEXType name, PetscInt order, PetscInt s, const PetscReal At[], const PetscReal bt[], const PetscReal ct[], const PetscReal A[], const PetscReal b[], const PetscReal c[], const PetscReal bembedt[], const PetscReal bembed[], PetscInt pinterp, const PetscReal binterpt[], const PetscReal binterp[])
+{
   ARKTableauLink link;
   ARKTableau     t;
   PetscInt       i, j;
@@ -559,7 +564,8 @@ PetscErrorCode TSARKIMEXRegister(TSARKIMEXType name, PetscInt order, PetscInt s,
 
  so we can evaluate the method with different order even after the step has been optimistically completed.
 */
-static PetscErrorCode TSEvaluateStep_ARKIMEX(TS ts, PetscInt order, Vec X, PetscBool *done) {
+static PetscErrorCode TSEvaluateStep_ARKIMEX(TS ts, PetscInt order, Vec X, PetscBool *done)
+{
   TS_ARKIMEX  *ark = (TS_ARKIMEX *)ts->data;
   ARKTableau   tab = ark->tableau;
   PetscScalar *w   = ark->work;
@@ -569,9 +575,14 @@ static PetscErrorCode TSEvaluateStep_ARKIMEX(TS ts, PetscInt order, Vec X, Petsc
   PetscFunctionBegin;
   switch (ark->status) {
   case TS_STEP_INCOMPLETE:
-  case TS_STEP_PENDING: h = ts->time_step; break;
-  case TS_STEP_COMPLETE: h = ts->ptime - ts->ptime_prev; break;
-  default: SETERRQ(PetscObjectComm((PetscObject)ts), PETSC_ERR_PLIB, "Invalid TSStepStatus");
+  case TS_STEP_PENDING:
+    h = ts->time_step;
+    break;
+  case TS_STEP_COMPLETE:
+    h = ts->ptime - ts->ptime_prev;
+    break;
+  default:
+    SETERRQ(PetscObjectComm((PetscObject)ts), PETSC_ERR_PLIB, "Invalid TSStepStatus");
   }
   if (order == tab->order) {
     if (ark->status == TS_STEP_INCOMPLETE) {
@@ -615,7 +626,8 @@ unavailable:
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSARKIMEXTestMassIdentity(TS ts, PetscBool *id) {
+static PetscErrorCode TSARKIMEXTestMassIdentity(TS ts, PetscBool *id)
+{
   Vec         Udot, Y1, Y2;
   TS_ARKIMEX *ark = (TS_ARKIMEX *)ts->data;
   PetscReal   norm;
@@ -642,7 +654,8 @@ static PetscErrorCode TSARKIMEXTestMassIdentity(TS ts, PetscBool *id) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSRollBack_ARKIMEX(TS ts) {
+static PetscErrorCode TSRollBack_ARKIMEX(TS ts)
+{
   TS_ARKIMEX      *ark = (TS_ARKIMEX *)ts->data;
   ARKTableau       tab = ark->tableau;
   const PetscInt   s   = tab->s;
@@ -655,9 +668,14 @@ static PetscErrorCode TSRollBack_ARKIMEX(TS ts) {
   PetscFunctionBegin;
   switch (ark->status) {
   case TS_STEP_INCOMPLETE:
-  case TS_STEP_PENDING: h = ts->time_step; break;
-  case TS_STEP_COMPLETE: h = ts->ptime - ts->ptime_prev; break;
-  default: SETERRQ(PetscObjectComm((PetscObject)ts), PETSC_ERR_PLIB, "Invalid TSStepStatus");
+  case TS_STEP_PENDING:
+    h = ts->time_step;
+    break;
+  case TS_STEP_COMPLETE:
+    h = ts->ptime - ts->ptime_prev;
+    break;
+  default:
+    SETERRQ(PetscObjectComm((PetscObject)ts), PETSC_ERR_PLIB, "Invalid TSStepStatus");
   }
   for (j = 0; j < s; j++) w[j] = -h * bt[j];
   PetscCall(VecMAXPY(ts->vec_sol, s, w, YdotI));
@@ -666,7 +684,8 @@ static PetscErrorCode TSRollBack_ARKIMEX(TS ts) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSStep_ARKIMEX(TS ts) {
+static PetscErrorCode TSStep_ARKIMEX(TS ts)
+{
   TS_ARKIMEX      *ark = (TS_ARKIMEX *)ts->data;
   ARKTableau       tab = ark->tableau;
   const PetscInt   s   = tab->s;
@@ -837,7 +856,8 @@ static PetscErrorCode TSStep_ARKIMEX(TS ts) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSInterpolate_ARKIMEX(TS ts, PetscReal itime, Vec X) {
+static PetscErrorCode TSInterpolate_ARKIMEX(TS ts, PetscReal itime, Vec X)
+{
   TS_ARKIMEX      *ark = (TS_ARKIMEX *)ts->data;
   PetscInt         s = ark->tableau->s, pinterp = ark->tableau->pinterp, i, j;
   PetscReal        h;
@@ -857,7 +877,8 @@ static PetscErrorCode TSInterpolate_ARKIMEX(TS ts, PetscReal itime, Vec X) {
     h = ts->ptime - ts->ptime_prev;
     t = (itime - ts->ptime) / h + 1; /* In the interval [0,1] */
     break;
-  default: SETERRQ(PetscObjectComm((PetscObject)ts), PETSC_ERR_PLIB, "Invalid TSStepStatus");
+  default:
+    SETERRQ(PetscObjectComm((PetscObject)ts), PETSC_ERR_PLIB, "Invalid TSStepStatus");
   }
   PetscCall(PetscMalloc2(s, &bt, s, &b));
   for (i = 0; i < s; i++) bt[i] = b[i] = 0;
@@ -874,7 +895,8 @@ static PetscErrorCode TSInterpolate_ARKIMEX(TS ts, PetscReal itime, Vec X) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSExtrapolate_ARKIMEX(TS ts, PetscReal c, Vec X) {
+static PetscErrorCode TSExtrapolate_ARKIMEX(TS ts, PetscReal c, Vec X)
+{
   TS_ARKIMEX      *ark = (TS_ARKIMEX *)ts->data;
   PetscInt         s = ark->tableau->s, pinterp = ark->tableau->pinterp, i, j;
   PetscReal        h, h_prev, t, tt;
@@ -903,7 +925,8 @@ static PetscErrorCode TSExtrapolate_ARKIMEX(TS ts, PetscReal c, Vec X) {
 
 /*------------------------------------------------------------*/
 
-static PetscErrorCode TSARKIMEXTableauReset(TS ts) {
+static PetscErrorCode TSARKIMEXTableauReset(TS ts)
+{
   TS_ARKIMEX *ark = (TS_ARKIMEX *)ts->data;
   ARKTableau  tab = ark->tableau;
 
@@ -919,7 +942,8 @@ static PetscErrorCode TSARKIMEXTableauReset(TS ts) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSReset_ARKIMEX(TS ts) {
+static PetscErrorCode TSReset_ARKIMEX(TS ts)
+{
   TS_ARKIMEX *ark = (TS_ARKIMEX *)ts->data;
 
   PetscFunctionBegin;
@@ -930,7 +954,8 @@ static PetscErrorCode TSReset_ARKIMEX(TS ts) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSARKIMEXGetVecs(TS ts, DM dm, Vec *Z, Vec *Ydot) {
+static PetscErrorCode TSARKIMEXGetVecs(TS ts, DM dm, Vec *Z, Vec *Ydot)
+{
   TS_ARKIMEX *ax = (TS_ARKIMEX *)ts->data;
 
   PetscFunctionBegin;
@@ -947,7 +972,8 @@ static PetscErrorCode TSARKIMEXGetVecs(TS ts, DM dm, Vec *Z, Vec *Ydot) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSARKIMEXRestoreVecs(TS ts, DM dm, Vec *Z, Vec *Ydot) {
+static PetscErrorCode TSARKIMEXRestoreVecs(TS ts, DM dm, Vec *Z, Vec *Ydot)
+{
   PetscFunctionBegin;
   if (Z) {
     if (dm && dm != ts->dm) PetscCall(DMRestoreNamedGlobalVector(dm, "TSARKIMEX_Z", Z));
@@ -962,7 +988,8 @@ static PetscErrorCode TSARKIMEXRestoreVecs(TS ts, DM dm, Vec *Z, Vec *Ydot) {
   This defines the nonlinear equation that is to be solved with SNES
   G(U) = F[t0+Theta*dt, U, (U-U0)*shift] = 0
 */
-static PetscErrorCode SNESTSFormFunction_ARKIMEX(SNES snes, Vec X, Vec F, TS ts) {
+static PetscErrorCode SNESTSFormFunction_ARKIMEX(SNES snes, Vec X, Vec F, TS ts)
+{
   TS_ARKIMEX *ark = (TS_ARKIMEX *)ts->data;
   DM          dm, dmsave;
   Vec         Z, Ydot;
@@ -982,7 +1009,8 @@ static PetscErrorCode SNESTSFormFunction_ARKIMEX(SNES snes, Vec X, Vec F, TS ts)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode SNESTSFormJacobian_ARKIMEX(SNES snes, Vec X, Mat A, Mat B, TS ts) {
+static PetscErrorCode SNESTSFormJacobian_ARKIMEX(SNES snes, Vec X, Mat A, Mat B, TS ts)
+{
   TS_ARKIMEX *ark = (TS_ARKIMEX *)ts->data;
   DM          dm, dmsave;
   Vec         Ydot;
@@ -1002,12 +1030,14 @@ static PetscErrorCode SNESTSFormJacobian_ARKIMEX(SNES snes, Vec X, Mat A, Mat B,
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMCoarsenHook_TSARKIMEX(DM fine, DM coarse, void *ctx) {
+static PetscErrorCode DMCoarsenHook_TSARKIMEX(DM fine, DM coarse, void *ctx)
+{
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMRestrictHook_TSARKIMEX(DM fine, Mat restrct, Vec rscale, Mat inject, DM coarse, void *ctx) {
+static PetscErrorCode DMRestrictHook_TSARKIMEX(DM fine, Mat restrct, Vec rscale, Mat inject, DM coarse, void *ctx)
+{
   TS  ts = (TS)ctx;
   Vec Z, Z_c;
 
@@ -1021,12 +1051,14 @@ static PetscErrorCode DMRestrictHook_TSARKIMEX(DM fine, Mat restrct, Vec rscale,
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMSubDomainHook_TSARKIMEX(DM dm, DM subdm, void *ctx) {
+static PetscErrorCode DMSubDomainHook_TSARKIMEX(DM dm, DM subdm, void *ctx)
+{
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMSubDomainRestrictHook_TSARKIMEX(DM dm, VecScatter gscat, VecScatter lscat, DM subdm, void *ctx) {
+static PetscErrorCode DMSubDomainRestrictHook_TSARKIMEX(DM dm, VecScatter gscat, VecScatter lscat, DM subdm, void *ctx)
+{
   TS  ts = (TS)ctx;
   Vec Z, Z_c;
 
@@ -1042,7 +1074,8 @@ static PetscErrorCode DMSubDomainRestrictHook_TSARKIMEX(DM dm, VecScatter gscat,
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSARKIMEXTableauSetUp(TS ts) {
+static PetscErrorCode TSARKIMEXTableauSetUp(TS ts)
+{
   TS_ARKIMEX *ark = (TS_ARKIMEX *)ts->data;
   ARKTableau  tab = ark->tableau;
 
@@ -1059,7 +1092,8 @@ static PetscErrorCode TSARKIMEXTableauSetUp(TS ts) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSSetUp_ARKIMEX(TS ts) {
+static PetscErrorCode TSSetUp_ARKIMEX(TS ts)
+{
   TS_ARKIMEX *ark = (TS_ARKIMEX *)ts->data;
   DM          dm;
   SNES        snes;
@@ -1077,7 +1111,8 @@ static PetscErrorCode TSSetUp_ARKIMEX(TS ts) {
 }
 /*------------------------------------------------------------*/
 
-static PetscErrorCode TSSetFromOptions_ARKIMEX(TS ts, PetscOptionItems *PetscOptionsObject) {
+static PetscErrorCode TSSetFromOptions_ARKIMEX(TS ts, PetscOptionItems *PetscOptionsObject)
+{
   TS_ARKIMEX *ark = (TS_ARKIMEX *)ts->data;
 
   PetscFunctionBegin;
@@ -1104,7 +1139,8 @@ static PetscErrorCode TSSetFromOptions_ARKIMEX(TS ts, PetscOptionItems *PetscOpt
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSView_ARKIMEX(TS ts, PetscViewer viewer) {
+static PetscErrorCode TSView_ARKIMEX(TS ts, PetscViewer viewer)
+{
   TS_ARKIMEX *ark = (TS_ARKIMEX *)ts->data;
   PetscBool   iascii;
 
@@ -1131,7 +1167,8 @@ static PetscErrorCode TSView_ARKIMEX(TS ts, PetscViewer viewer) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSLoad_ARKIMEX(TS ts, PetscViewer viewer) {
+static PetscErrorCode TSLoad_ARKIMEX(TS ts, PetscViewer viewer)
+{
   SNES    snes;
   TSAdapt adapt;
 
@@ -1163,7 +1200,8 @@ static PetscErrorCode TSLoad_ARKIMEX(TS ts, PetscViewer viewer) {
 .seealso: `TSARKIMEXGetType()`, `TSARKIMEX`, `TSARKIMEXType`, `TSARKIMEX1BEE`, `TSARKIMEXA2`, `TSARKIMEXL2`, `TSARKIMEXARS122`, `TSARKIMEX2C`, `TSARKIMEX2D`, `TSARKIMEX2E`, `TSARKIMEXPRSSP2`,
           `TSARKIMEX3`, `TSARKIMEXBPR3`, `TSARKIMEXARS443`, `TSARKIMEX4`, `TSARKIMEX5`
 @*/
-PetscErrorCode TSARKIMEXSetType(TS ts, TSARKIMEXType arktype) {
+PetscErrorCode TSARKIMEXSetType(TS ts, TSARKIMEXType arktype)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscValidCharPointer(arktype, 2);
@@ -1186,7 +1224,8 @@ PetscErrorCode TSARKIMEXSetType(TS ts, TSARKIMEXType arktype) {
 
 .seealso: `TSARKIMEXGetType()`
 @*/
-PetscErrorCode TSARKIMEXGetType(TS ts, TSARKIMEXType *arktype) {
+PetscErrorCode TSARKIMEXGetType(TS ts, TSARKIMEXType *arktype)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscUseMethod(ts, "TSARKIMEXGetType_C", (TS, TSARKIMEXType *), (ts, arktype));
@@ -1206,7 +1245,8 @@ PetscErrorCode TSARKIMEXGetType(TS ts, TSARKIMEXType *arktype) {
 
 .seealso: `TSARKIMEXGetType()`, `TSARKIMEXGetFullyImplicit()`
 @*/
-PetscErrorCode TSARKIMEXSetFullyImplicit(TS ts, PetscBool flg) {
+PetscErrorCode TSARKIMEXSetFullyImplicit(TS ts, PetscBool flg)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscValidLogicalCollectiveBool(ts, flg, 2);
@@ -1229,7 +1269,8 @@ PetscErrorCode TSARKIMEXSetFullyImplicit(TS ts, PetscBool flg) {
 
 .seealso: `TSARKIMEXGetType()`, `TSARKIMEXSetFullyImplicit()`
 @*/
-PetscErrorCode TSARKIMEXGetFullyImplicit(TS ts, PetscBool *flg) {
+PetscErrorCode TSARKIMEXGetFullyImplicit(TS ts, PetscBool *flg)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscValidBoolPointer(flg, 2);
@@ -1237,14 +1278,16 @@ PetscErrorCode TSARKIMEXGetFullyImplicit(TS ts, PetscBool *flg) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSARKIMEXGetType_ARKIMEX(TS ts, TSARKIMEXType *arktype) {
+static PetscErrorCode TSARKIMEXGetType_ARKIMEX(TS ts, TSARKIMEXType *arktype)
+{
   TS_ARKIMEX *ark = (TS_ARKIMEX *)ts->data;
 
   PetscFunctionBegin;
   *arktype = ark->tableau->name;
   PetscFunctionReturn(0);
 }
-static PetscErrorCode TSARKIMEXSetType_ARKIMEX(TS ts, TSARKIMEXType arktype) {
+static PetscErrorCode TSARKIMEXSetType_ARKIMEX(TS ts, TSARKIMEXType arktype)
+{
   TS_ARKIMEX    *ark = (TS_ARKIMEX *)ts->data;
   PetscBool      match;
   ARKTableauLink link;
@@ -1267,7 +1310,8 @@ static PetscErrorCode TSARKIMEXSetType_ARKIMEX(TS ts, TSARKIMEXType arktype) {
   SETERRQ(PetscObjectComm((PetscObject)ts), PETSC_ERR_ARG_UNKNOWN_TYPE, "Could not find '%s'", arktype);
 }
 
-static PetscErrorCode TSARKIMEXSetFullyImplicit_ARKIMEX(TS ts, PetscBool flg) {
+static PetscErrorCode TSARKIMEXSetFullyImplicit_ARKIMEX(TS ts, PetscBool flg)
+{
   TS_ARKIMEX *ark = (TS_ARKIMEX *)ts->data;
 
   PetscFunctionBegin;
@@ -1275,7 +1319,8 @@ static PetscErrorCode TSARKIMEXSetFullyImplicit_ARKIMEX(TS ts, PetscBool flg) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSARKIMEXGetFullyImplicit_ARKIMEX(TS ts, PetscBool *flg) {
+static PetscErrorCode TSARKIMEXGetFullyImplicit_ARKIMEX(TS ts, PetscBool *flg)
+{
   TS_ARKIMEX *ark = (TS_ARKIMEX *)ts->data;
 
   PetscFunctionBegin;
@@ -1283,7 +1328,8 @@ static PetscErrorCode TSARKIMEXGetFullyImplicit_ARKIMEX(TS ts, PetscBool *flg) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSDestroy_ARKIMEX(TS ts) {
+static PetscErrorCode TSDestroy_ARKIMEX(TS ts)
+{
   PetscFunctionBegin;
   PetscCall(TSReset_ARKIMEX(ts));
   if (ts->dm) {
@@ -1322,7 +1368,8 @@ static PetscErrorCode TSDestroy_ARKIMEX(TS ts) {
           `TSARKIMEX4`, `TSARKIMEX5`, `TSARKIMEXPRSSP2`, `TSARKIMEXARS443`, `TSARKIMEXBPR3`, `TSARKIMEXType`, `TSARKIMEXRegister()`
 
 M*/
-PETSC_EXTERN PetscErrorCode TSCreate_ARKIMEX(TS ts) {
+PETSC_EXTERN PetscErrorCode TSCreate_ARKIMEX(TS ts)
+{
   TS_ARKIMEX *th;
 
   PetscFunctionBegin;

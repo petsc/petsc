@@ -16,7 +16,8 @@
 
 .seealso: `PC`, `PCSHELL`, `PCCreate()`, `PCSetType()`, `PCPYTHON`, `PetscPythonInitialize()`
 @*/
-PetscErrorCode PCPythonSetType(PC pc, const char pyname[]) {
+PetscErrorCode PCPythonSetType(PC pc, const char pyname[])
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscValidCharPointer(pyname, 2);
@@ -39,7 +40,8 @@ PetscErrorCode PCPythonSetType(PC pc, const char pyname[]) {
 
 .seealso: `PC`, `PCSHELL`, `PCCreate()`, `PCSetType()`, `PCPYTHON`, `PetscPythonInitialize()`, `PCPythonSetType()`
 @*/
-PetscErrorCode PCPythonGetType(PC pc, const char *pyname[]) {
+PetscErrorCode PCPythonGetType(PC pc, const char *pyname[])
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscValidPointer(pyname, 2);

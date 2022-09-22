@@ -5,11 +5,14 @@
 #include <vector>
 #include <CL/sycl.hpp>
 
-namespace Petsc {
+namespace Petsc
+{
 
-namespace device {
+namespace device
+{
 
-namespace sycl {
+namespace sycl
+{
 
 // definition for static
 std::array<Device::DeviceInternal *, PETSC_DEVICE_MAX_DEVICES> Device::devices_array_ = {};
@@ -32,7 +35,8 @@ public:
   int  id() const { return id_; }
   bool initialized() const { return devInitialized_; }
 
-  PETSC_NODISCARD PetscErrorCode initialize() noexcept {
+  PETSC_NODISCARD PetscErrorCode initialize() noexcept
+  {
     PetscFunctionBegin;
     if (initialized()) PetscFunctionReturn(0);
     if (syclDevice_.is_gpu() && use_gpu_aware_mpi) {
@@ -46,7 +50,8 @@ public:
     PetscFunctionReturn(0);
   }
 
-  PETSC_NODISCARD PetscErrorCode view(PetscViewer viewer) const noexcept {
+  PETSC_NODISCARD PetscErrorCode view(PetscViewer viewer) const noexcept
+  {
     MPI_Comm    comm;
     PetscMPIInt rank;
     PetscBool   iascii;
@@ -71,18 +76,22 @@ public:
     PetscFunctionReturn(0);
   }
 
-  PETSC_NODISCARD PetscErrorCode getattribute(PetscDeviceAttribute attr, void *value) const noexcept {
+  PETSC_NODISCARD PetscErrorCode getattribute(PetscDeviceAttribute attr, void *value) const noexcept
+  {
     PetscFunctionBegin;
     PetscCheck(initialized(), PETSC_COMM_SELF, PETSC_ERR_COR, "Device %d not initialized", id());
     switch (attr) {
-    case PETSC_DEVICE_ATTR_SIZE_T_SHARED_MEM_PER_BLOCK: *static_cast<std::size_t *>(value) = syclDevice_.get_info<::sycl::info::device::local_mem_size>();
-    case PETSC_DEVICE_ATTR_MAX: break;
+    case PETSC_DEVICE_ATTR_SIZE_T_SHARED_MEM_PER_BLOCK:
+      *static_cast<std::size_t *>(value) = syclDevice_.get_info<::sycl::info::device::local_mem_size>();
+    case PETSC_DEVICE_ATTR_MAX:
+      break;
     }
     PetscFunctionReturn(0);
   }
 
 private:
-  static ::sycl::device chooseSYCLDevice_(int id) {
+  static ::sycl::device chooseSYCLDevice_(int id)
+  {
     if (id == PETSC_SYCL_DEVICE_HOST) {
       return ::sycl::device(::sycl::host_selector());
     } else {
@@ -91,7 +100,8 @@ private:
   }
 
   // Is the underlying MPI aware of sycl (GPU) devices?
-  bool isMPISyclAware_() noexcept {
+  bool isMPISyclAware_() noexcept
+  {
     const int  bufSize           = 2;
     const int  hbuf[bufSize]     = {1, 0};
     int       *dbuf              = nullptr;
@@ -119,7 +129,8 @@ private:
   }
 };
 
-PetscErrorCode Device::initialize(MPI_Comm comm, PetscInt *defaultDeviceId, PetscBool *defaultView, PetscDeviceInitType *defaultInitType) noexcept {
+PetscErrorCode Device::initialize(MPI_Comm comm, PetscInt *defaultDeviceId, PetscBool *defaultView, PetscDeviceInitType *defaultInitType) noexcept
+{
   auto     id       = *defaultDeviceId;
   auto     initType = *defaultInitType;
   auto     view = *defaultView, flg = PETSC_FALSE;
@@ -166,7 +177,8 @@ PetscErrorCode Device::initialize(MPI_Comm comm, PetscInt *defaultDeviceId, Pets
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode Device::finalize_() noexcept {
+PetscErrorCode Device::finalize_() noexcept
+{
   PetscFunctionBegin;
   if (!initialized_) PetscFunctionReturn(0);
   for (auto &&devPtr : devices_array_) delete devPtr;
@@ -175,7 +187,8 @@ PetscErrorCode Device::finalize_() noexcept {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode Device::init_device_id_(PetscInt *inid) const noexcept {
+PetscErrorCode Device::init_device_id_(PetscInt *inid) const noexcept
+{
   const auto id = *inid == PETSC_DECIDE ? defaultDevice_ : *inid;
 
   PetscFunctionBegin;
@@ -189,13 +202,15 @@ PetscErrorCode Device::init_device_id_(PetscInt *inid) const noexcept {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode Device::view_device_(PetscDevice device, PetscViewer viewer) noexcept {
+PetscErrorCode Device::view_device_(PetscDevice device, PetscViewer viewer) noexcept
+{
   PetscFunctionBegin;
   PetscCall(devices_[device->deviceId]->view(viewer));
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode Device::get_attribute_(PetscInt id, PetscDeviceAttribute attr, void *value) noexcept {
+PetscErrorCode Device::get_attribute_(PetscInt id, PetscDeviceAttribute attr, void *value) noexcept
+{
   PetscFunctionBegin;
   PetscCall(devices_[id]->getattribute(attr, value));
   PetscFunctionReturn(0);

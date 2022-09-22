@@ -14,7 +14,8 @@ typedef struct {
   PetscBool usediag; /* indicates preconditioner should include diagonal scaling*/
 } PC_Eisenstat;
 
-static PetscErrorCode PCMult_Eisenstat(Mat mat, Vec b, Vec x) {
+static PetscErrorCode PCMult_Eisenstat(Mat mat, Vec b, Vec x)
+{
   PC            pc;
   PC_Eisenstat *eis;
 
@@ -26,7 +27,8 @@ static PetscErrorCode PCMult_Eisenstat(Mat mat, Vec b, Vec x) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCNorm_Eisenstat(Mat mat, NormType type, PetscReal *nrm) {
+static PetscErrorCode PCNorm_Eisenstat(Mat mat, NormType type, PetscReal *nrm)
+{
   PC            pc;
   PC_Eisenstat *eis;
 
@@ -37,7 +39,8 @@ static PetscErrorCode PCNorm_Eisenstat(Mat mat, NormType type, PetscReal *nrm) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCApply_Eisenstat(PC pc, Vec x, Vec y) {
+static PetscErrorCode PCApply_Eisenstat(PC pc, Vec x, Vec y)
+{
   PC_Eisenstat *eis = (PC_Eisenstat *)pc->data;
   PetscBool     hasop;
 
@@ -53,7 +56,8 @@ static PetscErrorCode PCApply_Eisenstat(PC pc, Vec x, Vec y) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCApplyTranspose_Eisenstat(PC pc, Vec x, Vec y) {
+static PetscErrorCode PCApplyTranspose_Eisenstat(PC pc, Vec x, Vec y)
+{
   PC_Eisenstat *eis = (PC_Eisenstat *)pc->data;
   PetscBool     hasop, set, sym;
 
@@ -71,7 +75,8 @@ static PetscErrorCode PCApplyTranspose_Eisenstat(PC pc, Vec x, Vec y) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCPreSolve_Eisenstat(PC pc, KSP ksp, Vec b, Vec x) {
+static PetscErrorCode PCPreSolve_Eisenstat(PC pc, KSP ksp, Vec b, Vec x)
+{
   PC_Eisenstat *eis = (PC_Eisenstat *)pc->data;
   PetscBool     nonzero;
 
@@ -102,7 +107,8 @@ static PetscErrorCode PCPreSolve_Eisenstat(PC pc, KSP ksp, Vec b, Vec x) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCPostSolve_Eisenstat(PC pc, KSP ksp, Vec b, Vec x) {
+static PetscErrorCode PCPostSolve_Eisenstat(PC pc, KSP ksp, Vec b, Vec x)
+{
   PC_Eisenstat *eis = (PC_Eisenstat *)pc->data;
 
   PetscFunctionBegin;
@@ -117,7 +123,8 @@ static PetscErrorCode PCPostSolve_Eisenstat(PC pc, KSP ksp, Vec b, Vec x) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCReset_Eisenstat(PC pc) {
+static PetscErrorCode PCReset_Eisenstat(PC pc)
+{
   PC_Eisenstat *eis = (PC_Eisenstat *)pc->data;
 
   PetscFunctionBegin;
@@ -128,7 +135,8 @@ static PetscErrorCode PCReset_Eisenstat(PC pc) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCDestroy_Eisenstat(PC pc) {
+static PetscErrorCode PCDestroy_Eisenstat(PC pc)
+{
   PetscFunctionBegin;
   PetscCall(PCReset_Eisenstat(pc));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCEisenstatSetOmega_C", NULL));
@@ -140,7 +148,8 @@ static PetscErrorCode PCDestroy_Eisenstat(PC pc) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCSetFromOptions_Eisenstat(PC pc, PetscOptionItems *PetscOptionsObject) {
+static PetscErrorCode PCSetFromOptions_Eisenstat(PC pc, PetscOptionItems *PetscOptionsObject)
+{
   PC_Eisenstat *eis = (PC_Eisenstat *)pc->data;
   PetscBool     set, flg;
 
@@ -153,7 +162,8 @@ static PetscErrorCode PCSetFromOptions_Eisenstat(PC pc, PetscOptionItems *PetscO
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCView_Eisenstat(PC pc, PetscViewer viewer) {
+static PetscErrorCode PCView_Eisenstat(PC pc, PetscViewer viewer)
+{
   PC_Eisenstat *eis = (PC_Eisenstat *)pc->data;
   PetscBool     iascii;
 
@@ -170,7 +180,8 @@ static PetscErrorCode PCView_Eisenstat(PC pc, PetscViewer viewer) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCSetUp_Eisenstat(PC pc) {
+static PetscErrorCode PCSetUp_Eisenstat(PC pc)
+{
   PetscInt      M, N, m, n;
   PetscBool     set, sym;
   PC_Eisenstat *eis = (PC_Eisenstat *)pc->data;
@@ -197,7 +208,8 @@ static PetscErrorCode PCSetUp_Eisenstat(PC pc) {
 
 /* --------------------------------------------------------------------*/
 
-static PetscErrorCode PCEisenstatSetOmega_Eisenstat(PC pc, PetscReal omega) {
+static PetscErrorCode PCEisenstatSetOmega_Eisenstat(PC pc, PetscReal omega)
+{
   PC_Eisenstat *eis = (PC_Eisenstat *)pc->data;
 
   PetscFunctionBegin;
@@ -206,7 +218,8 @@ static PetscErrorCode PCEisenstatSetOmega_Eisenstat(PC pc, PetscReal omega) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCEisenstatSetNoDiagonalScaling_Eisenstat(PC pc, PetscBool flg) {
+static PetscErrorCode PCEisenstatSetNoDiagonalScaling_Eisenstat(PC pc, PetscBool flg)
+{
   PC_Eisenstat *eis = (PC_Eisenstat *)pc->data;
 
   PetscFunctionBegin;
@@ -214,7 +227,8 @@ static PetscErrorCode PCEisenstatSetNoDiagonalScaling_Eisenstat(PC pc, PetscBool
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCEisenstatGetOmega_Eisenstat(PC pc, PetscReal *omega) {
+static PetscErrorCode PCEisenstatGetOmega_Eisenstat(PC pc, PetscReal *omega)
+{
   PC_Eisenstat *eis = (PC_Eisenstat *)pc->data;
 
   PetscFunctionBegin;
@@ -222,7 +236,8 @@ static PetscErrorCode PCEisenstatGetOmega_Eisenstat(PC pc, PetscReal *omega) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCEisenstatGetNoDiagonalScaling_Eisenstat(PC pc, PetscBool *flg) {
+static PetscErrorCode PCEisenstatGetNoDiagonalScaling_Eisenstat(PC pc, PetscBool *flg)
+{
   PC_Eisenstat *eis = (PC_Eisenstat *)pc->data;
 
   PetscFunctionBegin;
@@ -257,7 +272,8 @@ $    -pc_type  sor  -pc_sor_symmetric
 
 .seealso: `PCSORSetOmega()`, `PCEISENSTAT`
 @*/
-PetscErrorCode PCEisenstatSetOmega(PC pc, PetscReal omega) {
+PetscErrorCode PCEisenstatSetOmega(PC pc, PetscReal omega)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscValidLogicalCollectiveReal(pc, omega, 2);
@@ -287,7 +303,8 @@ PetscErrorCode PCEisenstatSetOmega(PC pc, PetscReal omega) {
 
 .seealso: `PCEisenstatSetOmega()`, `PCEISENSTAT`
 @*/
-PetscErrorCode PCEisenstatSetNoDiagonalScaling(PC pc, PetscBool flg) {
+PetscErrorCode PCEisenstatSetNoDiagonalScaling(PC pc, PetscBool flg)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscTryMethod(pc, "PCEisenstatSetNoDiagonalScaling_C", (PC, PetscBool), (pc, flg));
@@ -323,7 +340,8 @@ $    -pc_type  sor  -pc_sor_symmetric
 
 .seealso: `PCEISENSTAT`, `PCSORGetOmega()`, `PCEisenstatSetOmega()`
 @*/
-PetscErrorCode PCEisenstatGetOmega(PC pc, PetscReal *omega) {
+PetscErrorCode PCEisenstatGetOmega(PC pc, PetscReal *omega)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscUseMethod(pc, "PCEisenstatGetOmega_C", (PC, PetscReal *), (pc, omega));
@@ -354,14 +372,16 @@ PetscErrorCode PCEisenstatGetOmega(PC pc, PetscReal *omega) {
 
 .seealso: , `PCEISENSTAT`, `PCEisenstatGetOmega()`
 @*/
-PetscErrorCode PCEisenstatGetNoDiagonalScaling(PC pc, PetscBool *flg) {
+PetscErrorCode PCEisenstatGetNoDiagonalScaling(PC pc, PetscBool *flg)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscUseMethod(pc, "PCEisenstatGetNoDiagonalScaling_C", (PC, PetscBool *), (pc, flg));
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCPreSolveChangeRHS_Eisenstat(PC pc, PetscBool *change) {
+static PetscErrorCode PCPreSolveChangeRHS_Eisenstat(PC pc, PetscBool *change)
+{
   PetscFunctionBegin;
   *change = PETSC_TRUE;
   PetscFunctionReturn(0);
@@ -390,7 +410,8 @@ static PetscErrorCode PCPreSolveChangeRHS_Eisenstat(PC pc, PetscBool *change) {
           `PCEisenstatSetNoDiagonalScaling()`, `PCEisenstatSetOmega()`, `PCSOR`
 M*/
 
-PETSC_EXTERN PetscErrorCode PCCreate_Eisenstat(PC pc) {
+PETSC_EXTERN PetscErrorCode PCCreate_Eisenstat(PC pc)
+{
   PC_Eisenstat *eis;
 
   PetscFunctionBegin;

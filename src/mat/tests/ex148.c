@@ -3,7 +3,8 @@ static char help[] = "This program illustrates the use of PETSc-fftw interface f
 
 #include <petscmat.h>
 
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   PetscMPIInt rank, size;
   PetscInt    N0 = 50, N1 = 50, N = N0 * N1;
   PetscRandom rdm;

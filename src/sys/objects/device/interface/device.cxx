@@ -83,7 +83,8 @@ static sycl::Device SYCLDevice{PetscDeviceContextCreate_SYCL};
 `PetscDeviceInitialize()`,`PetscDeviceInitialized()`, `PetscDeviceConfigure()`,
 `PetscDeviceView()`, `PetscDeviceDestroy()`
 @*/
-PetscErrorCode PetscDeviceCreate(PetscDeviceType type, PetscInt devid, PetscDevice *device) {
+PetscErrorCode PetscDeviceCreate(PetscDeviceType type, PetscInt devid, PetscDevice *device)
+{
   static PetscInt PetscDeviceCounter = 0;
 
   PetscFunctionBegin;
@@ -124,7 +125,8 @@ PetscErrorCode PetscDeviceCreate(PetscDeviceType type, PetscInt devid, PetscDevi
 .seealso: `PetscDevice`, `PetscDeviceCreate()`, `PetscDeviceConfigure()`, `PetscDeviceView()`,
 `PetscDeviceGetType()`, `PetscDeviceGetDeviceId()`
 @*/
-PetscErrorCode PetscDeviceDestroy(PetscDevice *device) {
+PetscErrorCode PetscDeviceDestroy(PetscDevice *device)
+{
   PetscFunctionBegin;
   PetscValidPointer(device, 1);
   if (!*device) PetscFunctionReturn(0);
@@ -155,7 +157,8 @@ PetscErrorCode PetscDeviceDestroy(PetscDevice *device) {
 .seealso: `PetscDevice`, `PetscDeviceCreate()`, `PetscDeviceView()`, `PetscDeviceDestroy()`,
 `PetscDeviceGetType()`, `PetscDeviceGetDeviceId()`
 @*/
-PetscErrorCode PetscDeviceConfigure(PetscDevice device) {
+PetscErrorCode PetscDeviceConfigure(PetscDevice device)
+{
   PetscFunctionBegin;
   PetscValidDevice(device, 1);
   /*
@@ -196,7 +199,8 @@ PetscErrorCode PetscDeviceConfigure(PetscDevice device) {
 .seealso: `PetscDevice`, `PetscDeviceCreate()`, `PetscDeviceConfigure()`,
 `PetscDeviceDestroy()`, `PetscDeviceGetType()`, `PetscDeviceGetDeviceId()`
 @*/
-PetscErrorCode PetscDeviceView(PetscDevice device, PetscViewer viewer) {
+PetscErrorCode PetscDeviceView(PetscDevice device, PetscViewer viewer)
+{
   auto      sub = viewer;
   PetscBool iascii;
 
@@ -257,7 +261,8 @@ PetscErrorCode PetscDeviceView(PetscDevice device, PetscViewer viewer) {
 `PetscDeviceCreate()`, `PetscDeviceConfigure()`, `PetscDeviceDestroy()`,
 `PetscDeviceGetDeviceId()`, `PETSC_DEVICE_DEFAULT()`
 @*/
-PetscErrorCode PetscDeviceGetType(PetscDevice device, PetscDeviceType *type) {
+PetscErrorCode PetscDeviceGetType(PetscDevice device, PetscDeviceType *type)
+{
   PetscFunctionBegin;
   PetscValidDevice(device, 1);
   PetscValidPointer(type, 2);
@@ -285,7 +290,8 @@ PetscErrorCode PetscDeviceGetType(PetscDevice device, PetscDeviceType *type) {
 
 .seealso: `PetscDevice`, `PetscDeviceCreate()`, `PetscDeviceGetType()`
 @*/
-PetscErrorCode PetscDeviceGetDeviceId(PetscDevice device, PetscInt *id) {
+PetscErrorCode PetscDeviceGetDeviceId(PetscDevice device, PetscInt *id)
+{
   PetscFunctionBegin;
   PetscValidDevice(device, 1);
   PetscValidIntPointer(id, 2);
@@ -296,7 +302,8 @@ PetscErrorCode PetscDeviceGetDeviceId(PetscDevice device, PetscInt *id) {
 struct DefaultDeviceType : public Petsc::RegisterFinalizeable<DefaultDeviceType> {
   PetscDeviceType type = PETSC_DEVICE_HARDWARE_DEFAULT_TYPE;
 
-  PETSC_NODISCARD PetscErrorCode finalize_() noexcept {
+  PETSC_NODISCARD PetscErrorCode finalize_() noexcept
+  {
     PetscFunctionBegin;
     type = PETSC_DEVICE_HARDWARE_DEFAULT_TYPE;
     PetscFunctionReturn(0);
@@ -318,7 +325,8 @@ static auto default_device_type = DefaultDeviceType();
 
 .seealso: `PetscDeviceType`, `PetscDeviceSetDefaultDeviceType()`, `PetscDeviceGetType()`
 @*/
-PetscDeviceType PETSC_DEVICE_DEFAULT(void) {
+PetscDeviceType PETSC_DEVICE_DEFAULT(void)
+{
   return default_device_type.type;
 }
 
@@ -337,7 +345,8 @@ PetscDeviceType PETSC_DEVICE_DEFAULT(void) {
 
 .seealso: `PetscDeviceType`, `PetscDeviceGetType`,
 @*/
-PetscErrorCode PetscDeviceSetDefaultDeviceType(PetscDeviceType type) {
+PetscErrorCode PetscDeviceSetDefaultDeviceType(PetscDeviceType type)
+{
   PetscFunctionBegin;
   PetscValidDeviceType(type, 1);
   if (default_device_type.type != type) {
@@ -354,7 +363,8 @@ static std::array<std::pair<PetscDevice, bool>, PETSC_DEVICE_MAX> defaultDevices
   Actual intialization function; any functions claiming to initialize PetscDevice or
   PetscDeviceContext will have to run through this one
 */
-static PetscErrorCode PetscDeviceInitializeDefaultDevice_Internal(PetscDeviceType type, PetscInt defaultDeviceId) {
+static PetscErrorCode PetscDeviceInitializeDefaultDevice_Internal(PetscDeviceType type, PetscInt defaultDeviceId)
+{
   PetscFunctionBegin;
   PetscValidDeviceType(type, 1);
   if (PetscUnlikely(!PetscDeviceInitialized(type))) {
@@ -386,7 +396,8 @@ static PetscErrorCode PetscDeviceInitializeDefaultDevice_Internal(PetscDeviceTyp
 .seealso: `PetscDevice`, `PetscDeviceInitType`, `PetscDeviceInitialized()`,
 `PetscDeviceCreate()`, `PetscDeviceDestroy()`
 @*/
-PetscErrorCode PetscDeviceInitialize(PetscDeviceType type) {
+PetscErrorCode PetscDeviceInitialize(PetscDeviceType type)
+{
   PetscFunctionBegin;
   PetscValidDeviceType(type, 1);
   PetscCall(PetscDeviceInitializeDefaultDevice_Internal(type, PETSC_DECIDE));
@@ -413,12 +424,14 @@ PetscErrorCode PetscDeviceInitialize(PetscDeviceType type) {
 .seealso: `PetscDevice`, `PetscDeviceInitType`, `PetscDeviceInitialize()`,
 `PetscDeviceCreate()`, `PetscDeviceDestroy()`
 @*/
-PetscBool PetscDeviceInitialized(PetscDeviceType type) {
+PetscBool PetscDeviceInitialized(PetscDeviceType type)
+{
   return static_cast<PetscBool>(PetscDeviceConfiguredFor_Internal(type) && defaultDevices[type].second);
 }
 
 /* Get the default PetscDevice for a particular type and constructs them if lazily initialized. */
-PetscErrorCode PetscDeviceGetDefaultForType_Internal(PetscDeviceType type, PetscDevice *device) {
+PetscErrorCode PetscDeviceGetDefaultForType_Internal(PetscDeviceType type, PetscDevice *device)
+{
   PetscFunctionBegin;
   PetscValidPointer(device, 2);
   PetscCall(PetscDeviceInitialize(type));
@@ -448,7 +461,8 @@ PetscErrorCode PetscDeviceGetDefaultForType_Internal(PetscDeviceType type, Petsc
 
 .seealso: `PetscDeviceAtrtibute`, `PetscDeviceConfigure()`, `PetscDevice`
 @*/
-PetscErrorCode PetscDeviceGetAttribute(PetscDevice device, PetscDeviceAttribute attr, void *value) {
+PetscErrorCode PetscDeviceGetAttribute(PetscDevice device, PetscDeviceAttribute attr, void *value)
+{
   PetscFunctionBegin;
   PetscValidDevice(device, 1);
   PetscValidDeviceAttribute(attr, 2);
@@ -457,7 +471,8 @@ PetscErrorCode PetscDeviceGetAttribute(PetscDevice device, PetscDeviceAttribute 
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscDeviceInitializeTypeFromOptions_Private(MPI_Comm comm, PetscDeviceType type, PetscInt defaultDeviceId, PetscBool defaultView, PetscDeviceInitType *defaultInitType) {
+static PetscErrorCode PetscDeviceInitializeTypeFromOptions_Private(MPI_Comm comm, PetscDeviceType type, PetscInt defaultDeviceId, PetscBool defaultView, PetscDeviceInitType *defaultInitType)
+{
   PetscFunctionBegin;
   if (!PetscDeviceConfiguredFor_Internal(type)) {
     PetscCall(PetscInfo(nullptr, "PetscDeviceType %s not available\n", PetscDeviceTypes[type]));
@@ -471,7 +486,8 @@ static PetscErrorCode PetscDeviceInitializeTypeFromOptions_Private(MPI_Comm comm
     PETSC_DEVICE_CASE_IF_PETSC_DEFINED(CUDA, initialize, comm, &defaultDeviceId, &defaultView, defaultInitType);
     PETSC_DEVICE_CASE_IF_PETSC_DEFINED(HIP, initialize, comm, &defaultDeviceId, &defaultView, defaultInitType);
     PETSC_DEVICE_CASE_IF_PETSC_DEFINED(SYCL, initialize, comm, &defaultDeviceId, &defaultView, defaultInitType);
-  default: SETERRQ(comm, PETSC_ERR_PLIB, "PETSc was seemingly configured for PetscDeviceType %s but we've fallen through all cases in a switch", PetscDeviceTypes[type]);
+  default:
+    SETERRQ(comm, PETSC_ERR_PLIB, "PETSc was seemingly configured for PetscDeviceType %s but we've fallen through all cases in a switch", PetscDeviceTypes[type]);
   }
   PetscCall(PetscInfo(nullptr, "PetscDevice %s initialized, default device id %" PetscInt_FMT ", view %s, init type %s\n", PetscDeviceTypes[type], defaultDeviceId, PetscBools[defaultView], PetscDeviceInitTypes[Petsc::util::integral_value(*defaultInitType)]));
   /*
@@ -486,7 +502,8 @@ static PetscErrorCode PetscDeviceInitializeTypeFromOptions_Private(MPI_Comm comm
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscDeviceInitializeQueryOptions_Private(MPI_Comm comm, PetscDeviceType *deviceContextInitDevice, PetscDeviceInitType *defaultInitType, PetscInt *defaultDevice, PetscBool *defaultDeviceSet, PetscBool *defaultView) {
+static PetscErrorCode PetscDeviceInitializeQueryOptions_Private(MPI_Comm comm, PetscDeviceType *deviceContextInitDevice, PetscDeviceInitType *defaultInitType, PetscInt *defaultDevice, PetscBool *defaultDeviceSet, PetscBool *defaultView)
+{
   PetscInt initIdx       = PETSC_DEVICE_INIT_LAZY;
   auto     initDeviceIdx = static_cast<PetscInt>(*deviceContextInitDevice);
   auto     flg           = PETSC_FALSE;
@@ -517,7 +534,8 @@ static PetscErrorCode PetscDeviceInitializeQueryOptions_Private(MPI_Comm comm, P
 }
 
 /* called from PetscFinalize() do not call yourself! */
-static PetscErrorCode PetscDeviceFinalize_Private() {
+static PetscErrorCode PetscDeviceFinalize_Private()
+{
   PetscFunctionBegin;
   if (PetscDefined(USE_DEBUG)) {
     const auto PetscDeviceCheckAllDestroyedAfterFinalize = [] {
@@ -574,7 +592,8 @@ static PetscErrorCode PetscDeviceFinalize_Private() {
       subTypeDefaultInitType -> EAGER. disabled once again overrides all.
 */
 
-PetscErrorCode PetscDeviceInitializeFromOptions_Internal(MPI_Comm comm) {
+PetscErrorCode PetscDeviceInitializeFromOptions_Internal(MPI_Comm comm)
+{
   auto defaultView                    = PETSC_FALSE;
   auto initializeDeviceContextEagerly = PETSC_FALSE;
   auto defaultDeviceSet               = PETSC_FALSE;

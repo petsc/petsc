@@ -1,4 +1,4 @@
-#if !defined(SFIMPL_H)
+#ifndef SFIMPL_H
 #define SFIMPL_H
 
 #include <petscvec.h>
@@ -157,24 +157,24 @@ PETSC_EXTERN PetscErrorCode MPIPetsc_Type_compare(MPI_Datatype, MPI_Datatype, Pe
 PETSC_EXTERN PetscErrorCode MPIPetsc_Type_compare_contig(MPI_Datatype, MPI_Datatype, PetscInt *);
 
 #if defined(PETSC_HAVE_MPI_NONBLOCKING_COLLECTIVES)
-#define MPIU_Iscatter(a, b, c, d, e, f, g, h, req)     MPI_Iscatter(a, b, c, d, e, f, g, h, req)
-#define MPIU_Iscatterv(a, b, c, d, e, f, g, h, i, req) MPI_Iscatterv(a, b, c, d, e, f, g, h, i, req)
-#define MPIU_Igather(a, b, c, d, e, f, g, h, req)      MPI_Igather(a, b, c, d, e, f, g, h, req)
-#define MPIU_Igatherv(a, b, c, d, e, f, g, h, i, req)  MPI_Igatherv(a, b, c, d, e, f, g, h, i, req)
-#define MPIU_Iallgather(a, b, c, d, e, f, g, req)      MPI_Iallgather(a, b, c, d, e, f, g, req)
-#define MPIU_Iallgatherv(a, b, c, d, e, f, g, h, req)  MPI_Iallgatherv(a, b, c, d, e, f, g, h, req)
-#define MPIU_Ialltoall(a, b, c, d, e, f, g, req)       MPI_Ialltoall(a, b, c, d, e, f, g, req)
+  #define MPIU_Iscatter(a, b, c, d, e, f, g, h, req)     MPI_Iscatter(a, b, c, d, e, f, g, h, req)
+  #define MPIU_Iscatterv(a, b, c, d, e, f, g, h, i, req) MPI_Iscatterv(a, b, c, d, e, f, g, h, i, req)
+  #define MPIU_Igather(a, b, c, d, e, f, g, h, req)      MPI_Igather(a, b, c, d, e, f, g, h, req)
+  #define MPIU_Igatherv(a, b, c, d, e, f, g, h, i, req)  MPI_Igatherv(a, b, c, d, e, f, g, h, i, req)
+  #define MPIU_Iallgather(a, b, c, d, e, f, g, req)      MPI_Iallgather(a, b, c, d, e, f, g, req)
+  #define MPIU_Iallgatherv(a, b, c, d, e, f, g, h, req)  MPI_Iallgatherv(a, b, c, d, e, f, g, h, req)
+  #define MPIU_Ialltoall(a, b, c, d, e, f, g, req)       MPI_Ialltoall(a, b, c, d, e, f, g, req)
 #else
-/* Ignore req, the MPI_Request argument, and use MPI blocking collectives. One should initialize req
+  /* Ignore req, the MPI_Request argument, and use MPI blocking collectives. One should initialize req
    to MPI_REQUEST_NULL so that one can do MPI_Wait(req,status) no matter the call is blocking or not.
  */
-#define MPIU_Iscatter(a, b, c, d, e, f, g, h, req)     MPI_Scatter(a, b, c, d, e, f, g, h)
-#define MPIU_Iscatterv(a, b, c, d, e, f, g, h, i, req) MPI_Scatterv(a, b, c, d, e, f, g, h, i)
-#define MPIU_Igather(a, b, c, d, e, f, g, h, req)      MPI_Gather(a, b, c, d, e, f, g, h)
-#define MPIU_Igatherv(a, b, c, d, e, f, g, h, i, req)  MPI_Gatherv(a, b, c, d, e, f, g, h, i)
-#define MPIU_Iallgather(a, b, c, d, e, f, g, req)      MPI_Allgather(a, b, c, d, e, f, g)
-#define MPIU_Iallgatherv(a, b, c, d, e, f, g, h, req)  MPI_Allgatherv(a, b, c, d, e, f, g, h)
-#define MPIU_Ialltoall(a, b, c, d, e, f, g, req)       MPI_Alltoall(a, b, c, d, e, f, g)
+  #define MPIU_Iscatter(a, b, c, d, e, f, g, h, req)     MPI_Scatter(a, b, c, d, e, f, g, h)
+  #define MPIU_Iscatterv(a, b, c, d, e, f, g, h, i, req) MPI_Scatterv(a, b, c, d, e, f, g, h, i)
+  #define MPIU_Igather(a, b, c, d, e, f, g, h, req)      MPI_Gather(a, b, c, d, e, f, g, h)
+  #define MPIU_Igatherv(a, b, c, d, e, f, g, h, i, req)  MPI_Gatherv(a, b, c, d, e, f, g, h, i)
+  #define MPIU_Iallgather(a, b, c, d, e, f, g, req)      MPI_Allgather(a, b, c, d, e, f, g)
+  #define MPIU_Iallgatherv(a, b, c, d, e, f, g, h, req)  MPI_Allgatherv(a, b, c, d, e, f, g, h)
+  #define MPIU_Ialltoall(a, b, c, d, e, f, g, req)       MPI_Alltoall(a, b, c, d, e, f, g)
 #endif
 
 PETSC_EXTERN PetscErrorCode VecScatterGetRemoteCount_Private(VecScatter, PetscBool, PetscInt *, PetscInt *);
@@ -200,13 +200,13 @@ PETSC_EXTERN PetscErrorCode PetscSFFree_Kokkos(PetscMemType, void *);
    Through VecGetArray(), we copy data of VECVIENNACL from device to host and pass host pointers to SF.
  */
 #if defined(PETSC_HAVE_CUDA) || defined(PETSC_HAVE_KOKKOS) || defined(PETSC_HAVE_HIP)
-#define PetscSFMalloc(sf, mtype, sz, ptr) ((*(sf)->ops->Malloc)(mtype, sz, ptr))
-/* Free memory and set ptr to NULL when succeeded */
-#define PetscSFFree(sf, mtype, ptr) ((ptr) && ((*(sf)->ops->Free)(mtype, ptr) || ((ptr) = NULL, 0)))
+  #define PetscSFMalloc(sf, mtype, sz, ptr) ((*(sf)->ops->Malloc)(mtype, sz, ptr))
+  /* Free memory and set ptr to NULL when succeeded */
+  #define PetscSFFree(sf, mtype, ptr) ((ptr) && ((*(sf)->ops->Free)(mtype, ptr) || ((ptr) = NULL, 0)))
 #else
-/* If pure host code, do with less indirection */
-#define PetscSFMalloc(sf, mtype, sz, ptr) PetscMalloc(sz, ptr)
-#define PetscSFFree(sf, mtype, ptr)       PetscFree(ptr)
+  /* If pure host code, do with less indirection */
+  #define PetscSFMalloc(sf, mtype, sz, ptr) PetscMalloc(sz, ptr)
+  #define PetscSFFree(sf, mtype, ptr)       PetscFree(ptr)
 #endif
 
 #endif

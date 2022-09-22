@@ -1,4 +1,4 @@
-#if !defined(_PATCHIMPL_H)
+#ifndef _PATCHIMPL_H
 #define _PATCHIMPL_H
 
 #include <petscmat.h>     /*I      "petscmat.h"        I*/

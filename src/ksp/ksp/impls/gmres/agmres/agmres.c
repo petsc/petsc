@@ -25,7 +25,8 @@ extern PetscErrorCode KSPDGMRESSetEigen_DGMRES(KSP, PetscInt);
    Note that most data are allocated in KSPSetUp_DGMRES and KSPSetUp_GMRES, including the space for the basis vectors, the various Hessenberg matrices and the Givens rotations coefficients
 
 */
-static PetscErrorCode KSPSetUp_AGMRES(KSP ksp) {
+static PetscErrorCode KSPSetUp_AGMRES(KSP ksp)
+{
   PetscInt       hes;
   PetscInt       nloc;
   KSP_AGMRES    *agmres = (KSP_AGMRES *)ksp->data;
@@ -36,12 +37,12 @@ static PetscErrorCode KSPSetUp_AGMRES(KSP ksp) {
 
   PetscFunctionBegin;
   PetscCheck(ksp->pc_side != PC_SYMMETRIC, PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "no symmetric preconditioning for KSPAGMRES");
-  N                     = MAXKSPSIZE;
+  N = MAXKSPSIZE;
   /* Preallocate space during the call to KSPSetup_GMRES for the Krylov basis */
   agmres->q_preallocate = PETSC_TRUE; /* No allocation on the fly */
   /* Preallocate space to compute later the eigenvalues in GMRES */
-  ksp->calc_sings       = PETSC_TRUE;
-  agmres->max_k         = N; /* Set the augmented size to be allocated in KSPSetup_GMRES */
+  ksp->calc_sings = PETSC_TRUE;
+  agmres->max_k   = N; /* Set the augmented size to be allocated in KSPSetup_GMRES */
   PetscCall(KSPSetUp_DGMRES(ksp));
   agmres->max_k = max_k;
   hes           = (N + 1) * (N + 1);
@@ -73,7 +74,8 @@ static PetscErrorCode KSPSetUp_AGMRES(KSP ksp) {
 /*
     Returns the current solution from the private data structure of AGMRES back to ptr.
 */
-static PetscErrorCode KSPBuildSolution_AGMRES(KSP ksp, Vec ptr, Vec *result) {
+static PetscErrorCode KSPBuildSolution_AGMRES(KSP ksp, Vec ptr, Vec *result)
+{
   KSP_AGMRES *agmres = (KSP_AGMRES *)ksp->data;
 
   PetscFunctionBegin;
@@ -95,7 +97,8 @@ static PetscErrorCode KSPBuildSolution_AGMRES(KSP ksp, Vec ptr, Vec *result) {
    One cycle of GMRES with the Arnoldi process is performed and the eigenvalues of the induced Hessenberg matrix (the Ritz values) are computed.
    NOTE: This function is not currently used; the next function is rather used when  the eigenvectors are needed next to augment the basis
 */
-PetscErrorCode KSPComputeShifts_GMRES(KSP ksp) {
+PetscErrorCode KSPComputeShifts_GMRES(KSP ksp)
+{
   KSP_AGMRES    *agmres = (KSP_AGMRES *)(ksp->data);
   KSP            kspgmres;
   Mat            Amat, Pmat;
@@ -161,7 +164,8 @@ PetscErrorCode KSPComputeShifts_GMRES(KSP ksp) {
     - The shifts as complex pair of arrays in wr and wi (size max_k).
     - The harmonic Ritz vectors (agmres->U) if deflation is needed.
 */
-static PetscErrorCode KSPComputeShifts_DGMRES(KSP ksp) {
+static PetscErrorCode KSPComputeShifts_DGMRES(KSP ksp)
+{
   KSP_AGMRES    *agmres = (KSP_AGMRES *)(ksp->data);
   PetscInt       max_k  = agmres->max_k; /* size of the (non augmented) Krylov subspace */
   PetscInt       Neig   = 0;
@@ -246,7 +250,8 @@ static PetscErrorCode KSPComputeShifts_DGMRES(KSP ksp) {
     - agmres->vecs or VEC_V : basis vectors
     - agmres->Scale : Scaling factors (equal to 1 if no scaling is done)
 */
-static PetscErrorCode KSPAGMRESBuildBasis(KSP ksp) {
+static PetscErrorCode KSPAGMRESBuildBasis(KSP ksp)
+{
   KSP_AGMRES    *agmres  = (KSP_AGMRES *)ksp->data;
   PetscReal     *Rshift  = agmres->Rshift;
   PetscReal     *Ishift  = agmres->Ishift;
@@ -354,7 +359,8 @@ static PetscErrorCode KSPAGMRESBuildBasis(KSP ksp) {
 
    NOTE: Note that the computed Hessenberg matrix is not mathematically equivalent to that in the real Arnoldi process (in KSP GMRES). If it is needed, it can be explicitly  formed as H <-- H * RLoc^-1.
  */
-static PetscErrorCode KSPAGMRESBuildHessenberg(KSP ksp) {
+static PetscErrorCode KSPAGMRESBuildHessenberg(KSP ksp)
+{
   KSP_AGMRES    *agmres = (KSP_AGMRES *)ksp->data;
   PetscScalar   *Rshift = agmres->Rshift;
   PetscScalar   *Ishift = agmres->Ishift;
@@ -391,7 +397,8 @@ static PetscErrorCode KSPAGMRESBuildHessenberg(KSP ksp) {
 /*
   Form the new approximate solution from the least-square problem
 */
-static PetscErrorCode KSPAGMRESBuildSoln(KSP ksp, PetscInt it) {
+static PetscErrorCode KSPAGMRESBuildSoln(KSP ksp, PetscInt it)
+{
   KSP_AGMRES    *agmres = (KSP_AGMRES *)ksp->data;
   const PetscInt max_k  = agmres->max_k; /* Size of the non-augmented Krylov basis */
   PetscInt       i, j;
@@ -454,7 +461,8 @@ static PetscErrorCode KSPAGMRESBuildSoln(KSP ksp, PetscInt it) {
  .
  NOTE: Unlike GMRES where the residual norm is available at each (inner) iteration,  here it is available at the end of the cycle.
 */
-static PetscErrorCode KSPAGMRESCycle(PetscInt *itcount, KSP ksp) {
+static PetscErrorCode KSPAGMRESCycle(PetscInt *itcount, KSP ksp)
+{
   KSP_AGMRES *agmres = (KSP_AGMRES *)(ksp->data);
   PetscReal   res;
   PetscInt    KspSize = KSPSIZE;
@@ -491,7 +499,8 @@ static PetscErrorCode KSPAGMRESCycle(PetscInt *itcount, KSP ksp) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode KSPSolve_AGMRES(KSP ksp) {
+static PetscErrorCode KSPSolve_AGMRES(KSP ksp)
+{
   PetscInt    its;
   KSP_AGMRES *agmres     = (KSP_AGMRES *)ksp->data;
   PetscBool   guess_zero = ksp->guess_zero;
@@ -542,7 +551,8 @@ static PetscErrorCode KSPSolve_AGMRES(KSP ksp) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode KSPDestroy_AGMRES(KSP ksp) {
+static PetscErrorCode KSPDestroy_AGMRES(KSP ksp)
+{
   KSP_AGMRES *agmres = (KSP_AGMRES *)ksp->data;
 
   PetscFunctionBegin;
@@ -569,7 +579,8 @@ static PetscErrorCode KSPDestroy_AGMRES(KSP ksp) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode KSPView_AGMRES(KSP ksp, PetscViewer viewer) {
+static PetscErrorCode KSPView_AGMRES(KSP ksp, PetscViewer viewer)
+{
   KSP_AGMRES *agmres = (KSP_AGMRES *)ksp->data;
   const char *cstr   = "RODDEC ORTHOGONOLIZATION";
   char        ritzvec[25];
@@ -609,7 +620,8 @@ static PetscErrorCode KSPView_AGMRES(KSP ksp, PetscViewer viewer) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode KSPSetFromOptions_AGMRES(KSP ksp, PetscOptionItems *PetscOptionsObject) {
+static PetscErrorCode KSPSetFromOptions_AGMRES(KSP ksp, PetscOptionItems *PetscOptionsObject)
+{
   PetscInt    neig;
   KSP_AGMRES *agmres = (KSP_AGMRES *)ksp->data;
   PetscBool   flg;
@@ -675,7 +687,8 @@ Mathematics, 62(9), pp. 1171-1186, 2012
            `KSPGMRESCGSRefinementType`, `KSPGMRESSetCGSRefinementType()`, `KSPGMRESGetCGSRefinementType()`, `KSPGMRESMonitorKrylov()`, `KSPSetPCSide()`
  M*/
 
-PETSC_EXTERN PetscErrorCode KSPCreate_AGMRES(KSP ksp) {
+PETSC_EXTERN PetscErrorCode KSPCreate_AGMRES(KSP ksp)
+{
   KSP_AGMRES *agmres;
 
   PetscFunctionBegin;

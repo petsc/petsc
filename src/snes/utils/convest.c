@@ -4,7 +4,8 @@
 
 #include <petsc/private/petscconvestimpl.h>
 
-static PetscErrorCode zero_private(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx) {
+static PetscErrorCode zero_private(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
+{
   PetscInt c;
   for (c = 0; c < Nc; ++c) u[c] = 0.0;
   return 0;
@@ -22,7 +23,8 @@ static PetscErrorCode zero_private(PetscInt dim, PetscReal time, const PetscReal
 
 .seealso: `PetscConvEstCreate()`, `PetscConvEstGetConvRate()`
 @*/
-PetscErrorCode PetscConvEstDestroy(PetscConvEst *ce) {
+PetscErrorCode PetscConvEstDestroy(PetscConvEst *ce)
+{
   PetscFunctionBegin;
   if (!*ce) PetscFunctionReturn(0);
   PetscValidHeaderSpecific((*ce), PETSC_OBJECT_CLASSID, 1);
@@ -48,7 +50,8 @@ PetscErrorCode PetscConvEstDestroy(PetscConvEst *ce) {
 
 .seealso: `PetscConvEstCreate()`, `PetscConvEstGetConvRate()`
 @*/
-PetscErrorCode PetscConvEstSetFromOptions(PetscConvEst ce) {
+PetscErrorCode PetscConvEstSetFromOptions(PetscConvEst ce)
+{
   PetscFunctionBegin;
   PetscOptionsBegin(PetscObjectComm((PetscObject)ce), "", "Convergence Estimator Options", "PetscConvEst");
   PetscCall(PetscOptionsInt("-convest_num_refine", "The number of refinements for the convergence check", "PetscConvEst", ce->Nr, &ce->Nr, NULL));
@@ -72,7 +75,8 @@ PetscErrorCode PetscConvEstSetFromOptions(PetscConvEst ce) {
 
 .seealso: `PetscConvEstCreate()`, `PetscConvEstGetConvRate()`
 @*/
-PetscErrorCode PetscConvEstView(PetscConvEst ce, PetscViewer viewer) {
+PetscErrorCode PetscConvEstView(PetscConvEst ce, PetscViewer viewer)
+{
   PetscFunctionBegin;
   PetscCall(PetscObjectPrintClassNamePrefixType((PetscObject)ce, viewer));
   PetscCall(PetscViewerASCIIPrintf(viewer, "ConvEst with %" PetscInt_FMT " levels\n", ce->Nr + 1));
@@ -94,7 +98,8 @@ PetscErrorCode PetscConvEstView(PetscConvEst ce, PetscViewer viewer) {
 
 .seealso: `PetscConvEstSetSolver()`, `PetscConvEstCreate()`, `PetscConvEstGetConvRate()`
 @*/
-PetscErrorCode PetscConvEstGetSolver(PetscConvEst ce, PetscObject *solver) {
+PetscErrorCode PetscConvEstGetSolver(PetscConvEst ce, PetscObject *solver)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ce, PETSC_OBJECT_CLASSID, 1);
   PetscValidPointer(solver, 2);
@@ -117,7 +122,8 @@ PetscErrorCode PetscConvEstGetSolver(PetscConvEst ce, PetscObject *solver) {
 
 .seealso: `PetscConvEstGetSNES()`, `PetscConvEstCreate()`, `PetscConvEstGetConvRate()`
 @*/
-PetscErrorCode PetscConvEstSetSolver(PetscConvEst ce, PetscObject solver) {
+PetscErrorCode PetscConvEstSetSolver(PetscConvEst ce, PetscObject solver)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ce, PETSC_OBJECT_CLASSID, 1);
   PetscValidHeader(solver, 2);
@@ -138,7 +144,8 @@ PetscErrorCode PetscConvEstSetSolver(PetscConvEst ce, PetscObject solver) {
 
 .seealso: `PetscConvEstCreate()`, `PetscConvEstGetConvRate()`
 @*/
-PetscErrorCode PetscConvEstSetUp(PetscConvEst ce) {
+PetscErrorCode PetscConvEstSetUp(PetscConvEst ce)
+{
   PetscInt Nf, f, Nds, s;
 
   PetscFunctionBegin;
@@ -168,7 +175,8 @@ PetscErrorCode PetscConvEstSetUp(PetscConvEst ce) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscConvEstComputeInitialGuess(PetscConvEst ce, PetscInt r, DM dm, Vec u) {
+PetscErrorCode PetscConvEstComputeInitialGuess(PetscConvEst ce, PetscInt r, DM dm, Vec u)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ce, PETSC_OBJECT_CLASSID, 1);
   if (dm) PetscValidHeaderSpecific(dm, DM_CLASSID, 3);
@@ -177,7 +185,8 @@ PetscErrorCode PetscConvEstComputeInitialGuess(PetscConvEst ce, PetscInt r, DM d
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscConvEstComputeError(PetscConvEst ce, PetscInt r, DM dm, Vec u, PetscReal errors[]) {
+PetscErrorCode PetscConvEstComputeError(PetscConvEst ce, PetscInt r, DM dm, Vec u, PetscReal errors[])
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ce, PETSC_OBJECT_CLASSID, 1);
   if (dm) PetscValidHeaderSpecific(dm, DM_CLASSID, 3);
@@ -203,7 +212,8 @@ PetscErrorCode PetscConvEstComputeError(PetscConvEst ce, PetscInt r, DM dm, Vec 
 
 .seealso: `PetscConvEst`, `PetscConvEstCreate()`, `PetscConvEstGetConvRate()`, `SNESSolve()`, `TSSolve()`
 @*/
-PetscErrorCode PetscConvEstMonitorDefault(PetscConvEst ce, PetscInt r) {
+PetscErrorCode PetscConvEstMonitorDefault(PetscConvEst ce, PetscInt r)
+{
   MPI_Comm comm;
   PetscInt f;
 
@@ -234,7 +244,8 @@ PetscErrorCode PetscConvEstMonitorDefault(PetscConvEst ce, PetscInt r) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscConvEstSetSNES_Private(PetscConvEst ce, PetscObject solver) {
+static PetscErrorCode PetscConvEstSetSNES_Private(PetscConvEst ce, PetscObject solver)
+{
   PetscClassId id;
 
   PetscFunctionBegin;
@@ -244,19 +255,22 @@ static PetscErrorCode PetscConvEstSetSNES_Private(PetscConvEst ce, PetscObject s
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscConvEstInitGuessSNES_Private(PetscConvEst ce, PetscInt r, DM dm, Vec u) {
+static PetscErrorCode PetscConvEstInitGuessSNES_Private(PetscConvEst ce, PetscInt r, DM dm, Vec u)
+{
   PetscFunctionBegin;
   PetscCall(DMProjectFunction(dm, 0.0, ce->initGuess, ce->ctxs, INSERT_VALUES, u));
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscConvEstComputeErrorSNES_Private(PetscConvEst ce, PetscInt r, DM dm, Vec u, PetscReal errors[]) {
+static PetscErrorCode PetscConvEstComputeErrorSNES_Private(PetscConvEst ce, PetscInt r, DM dm, Vec u, PetscReal errors[])
+{
   PetscFunctionBegin;
   PetscCall(DMComputeL2FieldDiff(dm, 0.0, ce->exactSol, ce->ctxs, u, errors));
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscConvEstSetJacobianNullspace_Private(PetscConvEst ce, SNES snes) {
+static PetscErrorCode PetscConvEstSetJacobianNullspace_Private(PetscConvEst ce, SNES snes)
+{
   DM       dm;
   PetscInt f;
 
@@ -281,7 +295,8 @@ static PetscErrorCode PetscConvEstSetJacobianNullspace_Private(PetscConvEst ce, 
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscConvEstGetConvRateSNES_Private(PetscConvEst ce, PetscReal alpha[]) {
+static PetscErrorCode PetscConvEstGetConvRateSNES_Private(PetscConvEst ce, PetscReal alpha[])
+{
   SNES        snes = (SNES)ce->solver;
   DM         *dm;
   PetscObject disc;
@@ -442,7 +457,8 @@ $ || u_\Delta - u_exact || < C \Delta^alpha
 
 .seealso: `PetscConvEstSetSolver()`, `PetscConvEstCreate()`, `PetscConvEstGetConvRate()`, `SNESSolve()`, `TSSolve()`
 @*/
-PetscErrorCode PetscConvEstGetConvRate(PetscConvEst ce, PetscReal alpha[]) {
+PetscErrorCode PetscConvEstGetConvRate(PetscConvEst ce, PetscReal alpha[])
+{
   PetscInt f;
 
   PetscFunctionBegin;
@@ -469,7 +485,8 @@ PetscErrorCode PetscConvEstGetConvRate(PetscConvEst ce, PetscReal alpha[]) {
 
 .seealso: `PetscConvEst`, `PetscConvEstGetRate()`
 @*/
-PetscErrorCode PetscConvEstRateView(PetscConvEst ce, const PetscReal alpha[], PetscViewer viewer) {
+PetscErrorCode PetscConvEstRateView(PetscConvEst ce, const PetscReal alpha[], PetscViewer viewer)
+{
   PetscBool isAscii;
 
   PetscFunctionBegin;
@@ -506,7 +523,8 @@ PetscErrorCode PetscConvEstRateView(PetscConvEst ce, const PetscReal alpha[], Pe
 
 .seealso: `PetscConvEst`, `PetscConvEstDestroy()`, `PetscConvEstGetConvRate()`
 @*/
-PetscErrorCode PetscConvEstCreate(MPI_Comm comm, PetscConvEst *ce) {
+PetscErrorCode PetscConvEstCreate(MPI_Comm comm, PetscConvEst *ce)
+{
   PetscFunctionBegin;
   PetscValidPointer(ce, 2);
   PetscCall(PetscSysInitializePackage());

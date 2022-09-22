@@ -4,11 +4,13 @@
 
 jmp_buf PetscXIOErrorHandlerJumpBuf;
 
-void PetscXIOErrorHandlerJump(PETSC_UNUSED void *ctx) {
+void PetscXIOErrorHandlerJump(PETSC_UNUSED void *ctx)
+{
   longjmp(PetscXIOErrorHandlerJumpBuf, 1);
 }
 
-PetscXIOErrorHandler PetscSetXIOErrorHandler(PetscXIOErrorHandler xioerrhdl) {
+PetscXIOErrorHandler PetscSetXIOErrorHandler(PetscXIOErrorHandler xioerrhdl)
+{
   return (PetscXIOErrorHandler)XSetIOErrorHandler((XIOErrorHandler)xioerrhdl);
 }
 

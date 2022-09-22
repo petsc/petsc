@@ -3,7 +3,8 @@ static char help[] = "Tests MatTranspose() and MatEqual() for MPIAIJ matrices.\n
 
 #include <petscmat.h>
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   Mat         A, B;
   PetscInt    m = 7, n, i, rstart, rend, cols[3];
   PetscScalar v[3];

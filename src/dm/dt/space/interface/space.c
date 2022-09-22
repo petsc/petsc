@@ -39,7 +39,8 @@ PetscBool         PetscSpaceRegisterAllCalled = PETSC_FALSE;
 .seealso: `PetscSpaceRegisterAll()`, `PetscSpaceRegisterDestroy()`
 
 @*/
-PetscErrorCode PetscSpaceRegister(const char sname[], PetscErrorCode (*function)(PetscSpace)) {
+PetscErrorCode PetscSpaceRegister(const char sname[], PetscErrorCode (*function)(PetscSpace))
+{
   PetscFunctionBegin;
   PetscCall(PetscFunctionListAdd(&PetscSpaceList, sname, function));
   PetscFunctionReturn(0);
@@ -61,7 +62,8 @@ PetscErrorCode PetscSpaceRegister(const char sname[], PetscErrorCode (*function)
 
 .seealso: `PetscSpaceGetType()`, `PetscSpaceCreate()`
 @*/
-PetscErrorCode PetscSpaceSetType(PetscSpace sp, PetscSpaceType name) {
+PetscErrorCode PetscSpaceSetType(PetscSpace sp, PetscSpaceType name)
+{
   PetscErrorCode (*r)(PetscSpace);
   PetscBool match;
 
@@ -98,7 +100,8 @@ PetscErrorCode PetscSpaceSetType(PetscSpace sp, PetscSpaceType name) {
 
 .seealso: `PetscSpaceSetType()`, `PetscSpaceCreate()`
 @*/
-PetscErrorCode PetscSpaceGetType(PetscSpace sp, PetscSpaceType *name) {
+PetscErrorCode PetscSpaceGetType(PetscSpace sp, PetscSpaceType *name)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCSPACE_CLASSID, 1);
   PetscValidPointer(name, 2);
@@ -120,7 +123,8 @@ PetscErrorCode PetscSpaceGetType(PetscSpace sp, PetscSpaceType *name) {
    Level: intermediate
 .seealso: `PetscSpace`, `PetscSpaceView`, `PetscObjectViewFromOptions()`, `PetscSpaceCreate()`
 @*/
-PetscErrorCode PetscSpaceViewFromOptions(PetscSpace A, PetscObject obj, const char name[]) {
+PetscErrorCode PetscSpaceViewFromOptions(PetscSpace A, PetscObject obj, const char name[])
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, PETSCSPACE_CLASSID, 1);
   PetscCall(PetscObjectViewFromOptions((PetscObject)A, obj, name));
@@ -140,7 +144,8 @@ PetscErrorCode PetscSpaceViewFromOptions(PetscSpace A, PetscObject obj, const ch
 
 .seealso `PetscSpaceDestroy()`
 @*/
-PetscErrorCode PetscSpaceView(PetscSpace sp, PetscViewer v) {
+PetscErrorCode PetscSpaceView(PetscSpace sp, PetscViewer v)
+{
   PetscInt  pdim;
   PetscBool iascii;
 
@@ -175,7 +180,8 @@ PetscErrorCode PetscSpaceView(PetscSpace sp, PetscViewer v) {
 
 .seealso `PetscSpaceView()`
 @*/
-PetscErrorCode PetscSpaceSetFromOptions(PetscSpace sp) {
+PetscErrorCode PetscSpaceSetFromOptions(PetscSpace sp)
+{
   const char *defaultType;
   char        name[256];
   PetscBool   flg;
@@ -223,7 +229,8 @@ PetscErrorCode PetscSpaceSetFromOptions(PetscSpace sp) {
 
 .seealso `PetscSpaceView()`, `PetscSpaceDestroy()`
 @*/
-PetscErrorCode PetscSpaceSetUp(PetscSpace sp) {
+PetscErrorCode PetscSpaceSetUp(PetscSpace sp)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCSPACE_CLASSID, 1);
   PetscTryTypeMethod(sp, setup);
@@ -242,7 +249,8 @@ PetscErrorCode PetscSpaceSetUp(PetscSpace sp) {
 
 .seealso `PetscSpaceView()`
 @*/
-PetscErrorCode PetscSpaceDestroy(PetscSpace *sp) {
+PetscErrorCode PetscSpaceDestroy(PetscSpace *sp)
+{
   PetscFunctionBegin;
   if (!*sp) PetscFunctionReturn(0);
   PetscValidHeaderSpecific((*sp), PETSCSPACE_CLASSID, 1);
@@ -274,7 +282,8 @@ PetscErrorCode PetscSpaceDestroy(PetscSpace *sp) {
 
 .seealso: `PetscSpaceSetType()`, `PETSCSPACEPOLYNOMIAL`
 @*/
-PetscErrorCode PetscSpaceCreate(MPI_Comm comm, PetscSpace *sp) {
+PetscErrorCode PetscSpaceCreate(MPI_Comm comm, PetscSpace *sp)
+{
   PetscSpace s;
 
   PetscFunctionBegin;
@@ -310,7 +319,8 @@ PetscErrorCode PetscSpaceCreate(MPI_Comm comm, PetscSpace *sp) {
 
 .seealso: `PetscSpaceGetDegree()`, `PetscSpaceCreate()`, `PetscSpace`
 @*/
-PetscErrorCode PetscSpaceGetDimension(PetscSpace sp, PetscInt *dim) {
+PetscErrorCode PetscSpaceGetDimension(PetscSpace sp, PetscInt *dim)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCSPACE_CLASSID, 1);
   PetscValidIntPointer(dim, 2);
@@ -333,7 +343,8 @@ PetscErrorCode PetscSpaceGetDimension(PetscSpace sp, PetscInt *dim) {
 
 .seealso: `PetscSpaceSetDegree()`, `PetscSpaceGetDimension()`, `PetscSpaceCreate()`, `PetscSpace`
 @*/
-PetscErrorCode PetscSpaceGetDegree(PetscSpace sp, PetscInt *minDegree, PetscInt *maxDegree) {
+PetscErrorCode PetscSpaceGetDegree(PetscSpace sp, PetscInt *minDegree, PetscInt *maxDegree)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCSPACE_CLASSID, 1);
   if (minDegree) PetscValidIntPointer(minDegree, 2);
@@ -355,7 +366,8 @@ PetscErrorCode PetscSpaceGetDegree(PetscSpace sp, PetscInt *minDegree, PetscInt 
 
 .seealso: `PetscSpaceGetDegree()`, `PetscSpaceCreate()`, `PetscSpace`
 @*/
-PetscErrorCode PetscSpaceSetDegree(PetscSpace sp, PetscInt degree, PetscInt maxDegree) {
+PetscErrorCode PetscSpaceSetDegree(PetscSpace sp, PetscInt degree, PetscInt maxDegree)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCSPACE_CLASSID, 1);
   sp->degree    = degree;
@@ -378,7 +390,8 @@ PetscErrorCode PetscSpaceSetDegree(PetscSpace sp, PetscInt degree, PetscInt maxD
 
 .seealso: `PetscSpaceSetNumComponents()`, `PetscSpaceGetNumVariables()`, `PetscSpaceGetDimension()`, `PetscSpaceCreate()`, `PetscSpace`
 @*/
-PetscErrorCode PetscSpaceGetNumComponents(PetscSpace sp, PetscInt *Nc) {
+PetscErrorCode PetscSpaceGetNumComponents(PetscSpace sp, PetscInt *Nc)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCSPACE_CLASSID, 1);
   PetscValidIntPointer(Nc, 2);
@@ -397,7 +410,8 @@ PetscErrorCode PetscSpaceGetNumComponents(PetscSpace sp, PetscInt *Nc) {
 
 .seealso: `PetscSpaceGetNumComponents()`, `PetscSpaceSetNumVariables()`, `PetscSpaceCreate()`, `PetscSpace`
 @*/
-PetscErrorCode PetscSpaceSetNumComponents(PetscSpace sp, PetscInt Nc) {
+PetscErrorCode PetscSpaceSetNumComponents(PetscSpace sp, PetscInt Nc)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCSPACE_CLASSID, 1);
   sp->Nc = Nc;
@@ -415,7 +429,8 @@ PetscErrorCode PetscSpaceSetNumComponents(PetscSpace sp, PetscInt Nc) {
 
 .seealso: `PetscSpaceGetNumVariables()`, `PetscSpaceSetNumComponents()`, `PetscSpaceCreate()`, `PetscSpace`
 @*/
-PetscErrorCode PetscSpaceSetNumVariables(PetscSpace sp, PetscInt n) {
+PetscErrorCode PetscSpaceSetNumVariables(PetscSpace sp, PetscInt n)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCSPACE_CLASSID, 1);
   sp->Nv = n;
@@ -435,7 +450,8 @@ PetscErrorCode PetscSpaceSetNumVariables(PetscSpace sp, PetscInt n) {
 
 .seealso: `PetscSpaceSetNumVariables()`, `PetscSpaceGetNumComponents()`, `PetscSpaceGetDimension()`, `PetscSpaceCreate()`, `PetscSpace`
 @*/
-PetscErrorCode PetscSpaceGetNumVariables(PetscSpace sp, PetscInt *n) {
+PetscErrorCode PetscSpaceGetNumVariables(PetscSpace sp, PetscInt *n)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCSPACE_CLASSID, 1);
   PetscValidIntPointer(n, 2);
@@ -463,7 +479,8 @@ PetscErrorCode PetscSpaceGetNumVariables(PetscSpace sp, PetscInt *n) {
 
 .seealso: `PetscFECreateTabulation()`, `PetscFEGetCellTabulation()`, `PetscSpaceCreate()`
 @*/
-PetscErrorCode PetscSpaceEvaluate(PetscSpace sp, PetscInt npoints, const PetscReal points[], PetscReal B[], PetscReal D[], PetscReal H[]) {
+PetscErrorCode PetscSpaceEvaluate(PetscSpace sp, PetscInt npoints, const PetscReal points[], PetscReal B[], PetscReal D[], PetscReal H[])
+{
   PetscFunctionBegin;
   if (!npoints) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(sp, PETSCSPACE_CLASSID, 1);
@@ -497,7 +514,8 @@ PetscErrorCode PetscSpaceEvaluate(PetscSpace sp, PetscInt npoints, const PetscRe
 
 .seealso: `PetscDualSpaceGetHeightSubspace()`, `PetscSpace`
 @*/
-PetscErrorCode PetscSpaceGetHeightSubspace(PetscSpace sp, PetscInt height, PetscSpace *subsp) {
+PetscErrorCode PetscSpaceGetHeightSubspace(PetscSpace sp, PetscInt height, PetscSpace *subsp)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCSPACE_CLASSID, 1);
   PetscValidPointer(subsp, 3);

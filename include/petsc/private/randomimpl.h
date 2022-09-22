@@ -1,5 +1,5 @@
 
-#if !defined(PETSCRANDOMIMPL_H)
+#ifndef PETSCRANDOMIMPL_H
 #define PETSCRANDOMIMPL_H
 
 #include <petsc/private/petscimpl.h>

@@ -2,7 +2,8 @@ static const char help[] = "Test parallel assembly of SBAIJ matrices\n\n";
 
 #include <petscmat.h>
 
-PetscErrorCode Assemble(MPI_Comm comm, PetscInt n, MatType mtype) {
+PetscErrorCode Assemble(MPI_Comm comm, PetscInt n, MatType mtype)
+{
   Mat         A;
   PetscInt    first, last, i;
   PetscMPIInt rank, size;
@@ -32,7 +33,8 @@ PetscErrorCode Assemble(MPI_Comm comm, PetscInt n, MatType mtype) {
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[])
+{
   MPI_Comm comm;
   PetscInt n = 6;
 

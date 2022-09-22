@@ -46,7 +46,8 @@ const PetscInt sInitialPartition2x5Mesh[2][5] = {
 const PetscInt sNLoclCells2x5Mesh = 5;
 const PetscInt sNGlobVerts2x5Mesh = 18;
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   const PetscInt  Nc                 = sNLoclCells2x5Mesh; //Same on each rank for this example...
   const PetscInt  Nv                 = sNGlobVerts2x5Mesh;
   const PetscInt *InitPartForRank[2] = {&sInitialPartition2x5Mesh[0][0], &sInitialPartition2x5Mesh[1][0]};

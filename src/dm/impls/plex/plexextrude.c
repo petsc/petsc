@@ -44,7 +44,8 @@ $  v0--- original ----v3
 
 .seealso: `DMExtrude()`, `DMPlexTransform`, `DMPlexTransformExtrudeSetThickness()`, `DMPlexTransformExtrudeSetTensor()`
 @*/
-PetscErrorCode DMPlexExtrude(DM dm, PetscInt layers, PetscReal thickness, PetscBool tensor, PetscBool symmetric, const PetscReal normal[], const PetscReal thicknesses[], DM *edm) {
+PetscErrorCode DMPlexExtrude(DM dm, PetscInt layers, PetscReal thickness, PetscBool tensor, PetscBool symmetric, const PetscReal normal[], const PetscReal thicknesses[], DM *edm)
+{
   DMPlexTransform tr;
   DM              cdm, ecdm;
   const char     *prefix;
@@ -82,7 +83,8 @@ PetscErrorCode DMPlexExtrude(DM dm, PetscInt layers, PetscReal thickness, PetscB
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMExtrude_Plex(DM dm, PetscInt layers, DM *edm) {
+PetscErrorCode DMExtrude_Plex(DM dm, PetscInt layers, DM *edm)
+{
   PetscFunctionBegin;
   PetscCall(DMPlexExtrude(dm, layers, PETSC_DETERMINE, PETSC_TRUE, PETSC_FALSE, NULL, NULL, edm));
   PetscCall(DMViewFromOptions(*edm, NULL, "-check_extrude"));

@@ -1,5 +1,5 @@
 
-#if !defined(__GENERAL_H)
+#ifndef __GENERAL_H
 #define __GENERAL_H
 
 /*

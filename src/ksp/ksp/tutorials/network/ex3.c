@@ -11,7 +11,8 @@ typedef struct {
   PetscScalar val;
 } Comp1;
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscMPIInt     size, rank;
   DM              dmnetwork;
   PetscInt        i, j, net, Nsubnet, nsubnet, ne, nv, nvar, v, ncomp, compkey0, compkey1, compkey, goffset, row;

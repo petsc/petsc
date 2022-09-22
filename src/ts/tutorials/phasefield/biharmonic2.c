@@ -41,7 +41,8 @@ typedef struct {
   PetscReal theta_c;
 } UserCtx;
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   TS            ts;   /* nonlinear solver */
   Vec           x, r; /* solution, residual vectors */
   Mat           J;    /* Jacobian matrix */
@@ -180,7 +181,8 @@ typedef struct {
    Output Parameter:
 .  F - function vector
  */
-PetscErrorCode FormFunction(TS ts, PetscReal ftime, Vec X, Vec Xdot, Vec F, void *ptr) {
+PetscErrorCode FormFunction(TS ts, PetscReal ftime, Vec X, Vec Xdot, Vec F, void *ptr)
+{
   DM        da;
   PetscInt  i, Mx, xs, xm;
   PetscReal hx, sx;
@@ -227,8 +229,12 @@ PetscErrorCode FormFunction(TS ts, PetscReal ftime, Vec X, Vec Xdot, Vec F, void
     f[i].w = x[i].w + ctx->kappa * (x[i - 1].u + x[i + 1].u - 2.0 * x[i].u) * sx;
     if (ctx->cahnhillard) {
       switch (ctx->energy) {
-      case 1: /* double well */ f[i].w += -x[i].u * x[i].u * x[i].u + x[i].u; break;
-      case 2: /* double obstacle */ f[i].w += x[i].u; break;
+      case 1: /* double well */
+        f[i].w += -x[i].u * x[i].u * x[i].u + x[i].u;
+        break;
+      case 2: /* double obstacle */
+        f[i].w += x[i].u;
+        break;
       case 3: /* logarithmic */
         if (PetscRealPart(x[i].u) < -1.0 + 2.0 * ctx->tol) f[i].w += .5 * ctx->theta * (-PetscLogReal(ctx->tol) + PetscLogScalar((1.0 - x[i].u) / 2.0)) + ctx->theta_c * x[i].u;
         else if (PetscRealPart(x[i].u) > 1.0 - 2.0 * ctx->tol) f[i].w += .5 * ctx->theta * (-PetscLogScalar((1.0 + x[i].u) / 2.0) + PetscLogReal(ctx->tol)) + ctx->theta_c * x[i].u;
@@ -251,7 +257,8 @@ PetscErrorCode FormFunction(TS ts, PetscReal ftime, Vec X, Vec Xdot, Vec F, void
 }
 
 /* ------------------------------------------------------------------- */
-PetscErrorCode FormInitialSolution(DM da, Vec X, PetscReal kappa) {
+PetscErrorCode FormInitialSolution(DM da, Vec X, PetscReal kappa)
+{
   PetscInt  i, xs, xm, Mx, xgs, xgm;
   Field    *x;
   PetscReal hx, xx, r, sx;

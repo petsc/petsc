@@ -36,7 +36,8 @@ typedef struct {
   PetscReal  gamma;
 } Blasius;
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   SNES        snes; /* nonlinear solver context */
   Vec         x, r; /* solution, residual vectors */
   PetscMPIInt size;
@@ -126,7 +127,8 @@ int main(int argc, char **argv) {
    Helper function to evaluate Chebyshev polynomials with a set of coefficients
    with all their derivatives represented as a recurrence table
 */
-static void ChebyshevEval(PetscInt N, const PetscScalar *Tf, PetscReal x, PetscReal dx_deta, PetscScalar *f) {
+static void ChebyshevEval(PetscInt N, const PetscScalar *Tf, PetscReal x, PetscReal dx_deta, PetscScalar *f)
+{
   PetscScalar table[4][3] = {
     {1, x, 2 * x * x - 1},
     {0, 1, 4 * x        },
@@ -156,7 +158,8 @@ static void ChebyshevEval(PetscInt N, const PetscScalar *Tf, PetscReal x, PetscR
    Output Parameter:
 .  R - function vector
  */
-PetscErrorCode FormFunction(SNES snes, Vec X, Vec R, void *ctx) {
+PetscErrorCode FormFunction(SNES snes, Vec X, Vec R, void *ctx)
+{
   Blasius           *blasius = (Blasius *)ctx;
   const PetscScalar *Tf, *Th; /* Tf and Th are Chebyshev coefficients */
   PetscScalar       *r, f[4], h[4];

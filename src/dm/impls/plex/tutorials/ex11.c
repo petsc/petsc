@@ -13,7 +13,8 @@ typedef struct {
   PetscInt  initOrnt;      /* Initial orientation for starting mesh */
 } AppCtx;
 
-static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options) {
+static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
+{
   PetscInt  n = 2;
   PetscBool flg;
 
@@ -42,7 +43,8 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options) {
   PetscFunctionReturn(0);
 }
 
-static PetscBool ignoreOrnt(AppCtx *user, PetscInt o) {
+static PetscBool ignoreOrnt(AppCtx *user, PetscInt o)
+{
   PetscInt       loc;
   PetscErrorCode ierr;
 
@@ -52,7 +54,8 @@ static PetscBool ignoreOrnt(AppCtx *user, PetscInt o) {
   return PETSC_FALSE;
 }
 
-static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm) {
+static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
+{
   PetscFunctionBeginUser;
   PetscCall(DMCreate(comm, dm));
   PetscCall(DMSetType(*dm, DMPLEX));
@@ -61,7 +64,8 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode CheckCellVertices(DM dm, PetscInt cell, PetscInt o) {
+static PetscErrorCode CheckCellVertices(DM dm, PetscInt cell, PetscInt o)
+{
   DMPolytopeType  ct;
   const PetscInt *arrVerts;
   PetscInt       *closure = NULL;
@@ -89,7 +93,8 @@ static PetscErrorCode CheckCellVertices(DM dm, PetscInt cell, PetscInt o) {
 }
 
 /* Transform cell with group operation o */
-static PetscErrorCode ReorientCell(DM dm, PetscInt cell, PetscInt o, PetscBool swapCoords) {
+static PetscErrorCode ReorientCell(DM dm, PetscInt cell, PetscInt o, PetscBool swapCoords)
+{
   DM           cdm;
   Vec          coordinates;
   PetscScalar *coords, *ccoords = NULL;
@@ -125,7 +130,8 @@ static PetscErrorCode ReorientCell(DM dm, PetscInt cell, PetscInt o, PetscBool s
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode GenerateArrangments(DM dm, AppCtx *user) {
+static PetscErrorCode GenerateArrangments(DM dm, AppCtx *user)
+{
   DM             odm;
   DMPolytopeType ct;
   PetscInt       No, o;
@@ -148,7 +154,8 @@ static PetscErrorCode GenerateArrangments(DM dm, AppCtx *user) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode VerifyCayleyTable(DM dm, AppCtx *user) {
+static PetscErrorCode VerifyCayleyTable(DM dm, AppCtx *user)
+{
   DM              dm1, dm2;
   DMPolytopeType  ct;
   const PetscInt *refcone, *cone;
@@ -194,7 +201,8 @@ static PetscErrorCode VerifyCayleyTable(DM dm, AppCtx *user) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode VerifyInverse(DM dm, AppCtx *user) {
+static PetscErrorCode VerifyInverse(DM dm, AppCtx *user)
+{
   DM              dm1, dm2;
   DMPolytopeType  ct;
   const PetscInt *refcone, *cone;
@@ -238,7 +246,8 @@ static PetscErrorCode VerifyInverse(DM dm, AppCtx *user) {
 }
 
 /* Suppose that point p has the same arrangement as o from canonical, compare the subcells to canonical subcells */
-static PetscErrorCode CheckSubcells(DM dm, DM odm, PetscInt p, PetscInt o, AppCtx *user) {
+static PetscErrorCode CheckSubcells(DM dm, DM odm, PetscInt p, PetscInt o, AppCtx *user)
+{
   DMPlexTransform tr, otr;
   DMPolytopeType  ct;
   DMPolytopeType *rct;
@@ -342,7 +351,8 @@ static PetscErrorCode CheckSubcells(DM dm, DM odm, PetscInt p, PetscInt o, AppCt
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode RefineArrangments(DM dm, AppCtx *user) {
+static PetscErrorCode RefineArrangments(DM dm, AppCtx *user)
+{
   DM             odm, rdm;
   DMPolytopeType ct;
   PetscInt       No, o;
@@ -370,7 +380,8 @@ static PetscErrorCode RefineArrangments(DM dm, AppCtx *user) {
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   DM     dm;
   AppCtx user;
 

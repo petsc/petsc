@@ -31,7 +31,8 @@ typedef struct {
     dX <- dX + (zeta * Q[i])
   end
 */
-static PetscErrorCode MatSolve_LMVMSR1(Mat B, Vec F, Vec dX) {
+static PetscErrorCode MatSolve_LMVMSR1(Mat B, Vec F, Vec dX)
+{
   Mat_LMVM   *lmvm = (Mat_LMVM *)B->data;
   Mat_LSR1   *lsr1 = (Mat_LSR1 *)lmvm->ctx;
   PetscInt    i, j;
@@ -88,7 +89,8 @@ static PetscErrorCode MatSolve_LMVMSR1(Mat B, Vec F, Vec dX) {
     Z <- Z + (zeta * P[i])
   end
 */
-static PetscErrorCode MatMult_LMVMSR1(Mat B, Vec X, Vec Z) {
+static PetscErrorCode MatMult_LMVMSR1(Mat B, Vec X, Vec Z)
+{
   Mat_LMVM   *lmvm = (Mat_LMVM *)B->data;
   Mat_LSR1   *lsr1 = (Mat_LSR1 *)lmvm->ctx;
   PetscInt    i, j;
@@ -123,7 +125,8 @@ static PetscErrorCode MatMult_LMVMSR1(Mat B, Vec X, Vec Z) {
 
 /*------------------------------------------------------------*/
 
-static PetscErrorCode MatUpdate_LMVMSR1(Mat B, Vec X, Vec F) {
+static PetscErrorCode MatUpdate_LMVMSR1(Mat B, Vec X, Vec F)
+{
   Mat_LMVM   *lmvm = (Mat_LMVM *)B->data;
   Mat_LSR1   *lsr1 = (Mat_LSR1 *)lmvm->ctx;
   PetscReal   snorm, pnorm;
@@ -160,7 +163,8 @@ static PetscErrorCode MatUpdate_LMVMSR1(Mat B, Vec X, Vec F) {
 
 /*------------------------------------------------------------*/
 
-static PetscErrorCode MatCopy_LMVMSR1(Mat B, Mat M, MatStructure str) {
+static PetscErrorCode MatCopy_LMVMSR1(Mat B, Mat M, MatStructure str)
+{
   Mat_LMVM *bdata = (Mat_LMVM *)B->data;
   Mat_LSR1 *bctx  = (Mat_LSR1 *)bdata->ctx;
   Mat_LMVM *mdata = (Mat_LMVM *)M->data;
@@ -181,7 +185,8 @@ static PetscErrorCode MatCopy_LMVMSR1(Mat B, Mat M, MatStructure str) {
 
 /*------------------------------------------------------------*/
 
-static PetscErrorCode MatReset_LMVMSR1(Mat B, PetscBool destructive) {
+static PetscErrorCode MatReset_LMVMSR1(Mat B, PetscBool destructive)
+{
   Mat_LMVM *lmvm = (Mat_LMVM *)B->data;
   Mat_LSR1 *lsr1 = (Mat_LSR1 *)lmvm->ctx;
 
@@ -200,7 +205,8 @@ static PetscErrorCode MatReset_LMVMSR1(Mat B, PetscBool destructive) {
 
 /*------------------------------------------------------------*/
 
-static PetscErrorCode MatAllocate_LMVMSR1(Mat B, Vec X, Vec F) {
+static PetscErrorCode MatAllocate_LMVMSR1(Mat B, Vec X, Vec F)
+{
   Mat_LMVM *lmvm = (Mat_LMVM *)B->data;
   Mat_LSR1 *lsr1 = (Mat_LSR1 *)lmvm->ctx;
 
@@ -220,7 +226,8 @@ static PetscErrorCode MatAllocate_LMVMSR1(Mat B, Vec X, Vec F) {
 
 /*------------------------------------------------------------*/
 
-static PetscErrorCode MatDestroy_LMVMSR1(Mat B) {
+static PetscErrorCode MatDestroy_LMVMSR1(Mat B)
+{
   Mat_LMVM *lmvm = (Mat_LMVM *)B->data;
   Mat_LSR1 *lsr1 = (Mat_LSR1 *)lmvm->ctx;
 
@@ -239,7 +246,8 @@ static PetscErrorCode MatDestroy_LMVMSR1(Mat B) {
 
 /*------------------------------------------------------------*/
 
-static PetscErrorCode MatSetUp_LMVMSR1(Mat B) {
+static PetscErrorCode MatSetUp_LMVMSR1(Mat B)
+{
   Mat_LMVM *lmvm = (Mat_LMVM *)B->data;
   Mat_LSR1 *lsr1 = (Mat_LSR1 *)lmvm->ctx;
 
@@ -259,7 +267,8 @@ static PetscErrorCode MatSetUp_LMVMSR1(Mat B) {
 
 /*------------------------------------------------------------*/
 
-PetscErrorCode MatCreate_LMVMSR1(Mat B) {
+PetscErrorCode MatCreate_LMVMSR1(Mat B)
+{
   Mat_LMVM *lmvm;
   Mat_LSR1 *lsr1;
 
@@ -320,7 +329,8 @@ PetscErrorCode MatCreate_LMVMSR1(Mat B) {
 .seealso: `MatCreate()`, `MATLMVM`, `MATLMVMSR1`, `MatCreateLMVMBFGS()`, `MatCreateLMVMDFP()`,
           `MatCreateLMVMBrdn()`, `MatCreateLMVMBadBrdn()`, `MatCreateLMVMSymBrdn()`
 @*/
-PetscErrorCode MatCreateLMVMSR1(MPI_Comm comm, PetscInt n, PetscInt N, Mat *B) {
+PetscErrorCode MatCreateLMVMSR1(MPI_Comm comm, PetscInt n, PetscInt N, Mat *B)
+{
   PetscFunctionBegin;
   PetscCall(MatCreate(comm, B));
   PetscCall(MatSetSizes(*B, n, n, N, N));

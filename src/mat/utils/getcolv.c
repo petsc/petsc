@@ -23,7 +23,8 @@
 
 .seealso: `MatGetRow()`, `MatGetDiagonal()`, `MatMult()`
 @*/
-PetscErrorCode MatGetColumnVector(Mat A, Vec yy, PetscInt col) {
+PetscErrorCode MatGetColumnVector(Mat A, Vec yy, PetscInt col)
+{
   PetscScalar       *y;
   const PetscScalar *v;
   PetscInt           i, j, nz, N, Rs, Re, rs, re;
@@ -83,7 +84,8 @@ PetscErrorCode MatGetColumnVector(Mat A, Vec yy, PetscInt col) {
 
 .seealso: `NormType`, `MatNorm()`
 @*/
-PetscErrorCode MatGetColumnNorms(Mat A, NormType type, PetscReal norms[]) {
+PetscErrorCode MatGetColumnNorms(Mat A, NormType type, PetscReal norms[])
+{
   /* NOTE: MatGetColumnNorms() could simply be a macro that calls MatGetColumnReductions().
    * I've kept this as a function because it allows slightly more in the way of error checking,
    * erroring out if MatGetColumnNorms() is not called with a valid NormType. */
@@ -112,7 +114,8 @@ PetscErrorCode MatGetColumnNorms(Mat A, NormType type, PetscReal norms[]) {
 
 .seealso: `MatGetColumnSumsImaginaryPart()`, `VecSum()`, `MatGetColumnMeans()`, `MatGetColumnNorms()`, `MatGetColumnReductions()`
 @*/
-PetscErrorCode MatGetColumnSumsRealPart(Mat A, PetscReal sums[]) {
+PetscErrorCode MatGetColumnSumsRealPart(Mat A, PetscReal sums[])
+{
   PetscFunctionBegin;
   PetscCall(MatGetColumnReductions(A, REDUCTION_SUM_REALPART, sums));
   PetscFunctionReturn(0);
@@ -135,7 +138,8 @@ PetscErrorCode MatGetColumnSumsRealPart(Mat A, PetscReal sums[]) {
 
 .seealso: `MatGetColumnSumsRealPart()`, `VecSum()`, `MatGetColumnMeans()`, `MatGetColumnNorms()`, `MatGetColumnReductions()`
 @*/
-PetscErrorCode MatGetColumnSumsImaginaryPart(Mat A, PetscReal sums[]) {
+PetscErrorCode MatGetColumnSumsImaginaryPart(Mat A, PetscReal sums[])
+{
   PetscFunctionBegin;
   PetscCall(MatGetColumnReductions(A, REDUCTION_SUM_IMAGINARYPART, sums));
   PetscFunctionReturn(0);
@@ -158,7 +162,8 @@ PetscErrorCode MatGetColumnSumsImaginaryPart(Mat A, PetscReal sums[]) {
 
 .seealso: `VecSum()`, `MatGetColumnMeans()`, `MatGetColumnNorms()`, `MatGetColumnReductions()`
 @*/
-PetscErrorCode MatGetColumnSums(Mat A, PetscScalar sums[]) {
+PetscErrorCode MatGetColumnSums(Mat A, PetscScalar sums[])
+{
 #if defined(PETSC_USE_COMPLEX)
   PetscInt   i, n;
   PetscReal *work;
@@ -198,7 +203,8 @@ PetscErrorCode MatGetColumnSums(Mat A, PetscScalar sums[]) {
 
 .seealso: `MatGetColumnMeansImaginaryPart()`, `VecSum()`, `MatGetColumnSums()`, `MatGetColumnNorms()`, `MatGetColumnReductions()`
 @*/
-PetscErrorCode MatGetColumnMeansRealPart(Mat A, PetscReal means[]) {
+PetscErrorCode MatGetColumnMeansRealPart(Mat A, PetscReal means[])
+{
   PetscFunctionBegin;
   PetscCall(MatGetColumnReductions(A, REDUCTION_MEAN_REALPART, means));
   PetscFunctionReturn(0);
@@ -221,7 +227,8 @@ PetscErrorCode MatGetColumnMeansRealPart(Mat A, PetscReal means[]) {
 
 .seealso: `MatGetColumnMeansRealPart()`, `VecSum()`, `MatGetColumnSums()`, `MatGetColumnNorms()`, `MatGetColumnReductions()`
 @*/
-PetscErrorCode MatGetColumnMeansImaginaryPart(Mat A, PetscReal means[]) {
+PetscErrorCode MatGetColumnMeansImaginaryPart(Mat A, PetscReal means[])
+{
   PetscFunctionBegin;
   PetscCall(MatGetColumnReductions(A, REDUCTION_MEAN_IMAGINARYPART, means));
   PetscFunctionReturn(0);
@@ -244,7 +251,8 @@ PetscErrorCode MatGetColumnMeansImaginaryPart(Mat A, PetscReal means[]) {
 
 .seealso: `VecSum()`, `MatGetColumnSums()`, `MatGetColumnNorms()`, `MatGetColumnReductions()`
 @*/
-PetscErrorCode MatGetColumnMeans(Mat A, PetscScalar means[]) {
+PetscErrorCode MatGetColumnMeans(Mat A, PetscScalar means[])
+{
 #if defined(PETSC_USE_COMPLEX)
   PetscInt   i, n;
   PetscReal *work;
@@ -290,7 +298,8 @@ PetscErrorCode MatGetColumnMeans(Mat A, PetscScalar means[]) {
 
 .seealso: `ReductionType`, `NormType`, `MatGetColumnNorms()`, `MatGetColumnSums()`, `MatGetColumnMeans()`
 @*/
-PetscErrorCode MatGetColumnReductions(Mat A, PetscInt type, PetscReal reductions[]) {
+PetscErrorCode MatGetColumnReductions(Mat A, PetscInt type, PetscReal reductions[])
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
   PetscUseTypeMethod(A, getcolumnreductions, type, reductions);

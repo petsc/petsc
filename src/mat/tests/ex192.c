@@ -3,7 +3,8 @@ Example: mpiexec -n 1 ./ex192 -f <matrix binary file> -nrhs 4 -symmetric_solve -
 
 #include <petscmat.h>
 
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   Mat         A, RHS, C, F, X, S;
   Vec         u, x, b;
   Vec         xschur, bschur, uschur;
@@ -91,12 +92,18 @@ int main(int argc, char **args) {
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-solver", &isolver, NULL));
   switch (isolver) {
 #if defined(PETSC_HAVE_MUMPS)
-  case 0: PetscCall(PetscStrcpy(solver, MATSOLVERMUMPS)); break;
+  case 0:
+    PetscCall(PetscStrcpy(solver, MATSOLVERMUMPS));
+    break;
 #endif
 #if defined(PETSC_HAVE_MKL_PARDISO)
-  case 1: PetscCall(PetscStrcpy(solver, MATSOLVERMKL_PARDISO)); break;
+  case 1:
+    PetscCall(PetscStrcpy(solver, MATSOLVERMKL_PARDISO));
+    break;
 #endif
-  default: PetscCall(PetscStrcpy(solver, MATSOLVERPETSC)); break;
+  default:
+    PetscCall(PetscStrcpy(solver, MATSOLVERPETSC));
+    break;
   }
 
 #if defined(PETSC_USE_COMPLEX)

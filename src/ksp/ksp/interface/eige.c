@@ -8,7 +8,8 @@ typedef struct {
   Vec work;
 } Mat_KSP;
 
-static PetscErrorCode MatCreateVecs_KSP(Mat A, Vec *X, Vec *Y) {
+static PetscErrorCode MatCreateVecs_KSP(Mat A, Vec *X, Vec *Y)
+{
   Mat_KSP *ctx;
   Mat      M;
 
@@ -19,7 +20,8 @@ static PetscErrorCode MatCreateVecs_KSP(Mat A, Vec *X, Vec *Y) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatMult_KSP(Mat A, Vec X, Vec Y) {
+static PetscErrorCode MatMult_KSP(Mat A, Vec X, Vec Y)
+{
   Mat_KSP *ctx;
 
   PetscFunctionBegin;
@@ -52,7 +54,8 @@ static PetscErrorCode MatMult_KSP(Mat A, Vec X, Vec Y) {
 
 .seealso: `KSPComputeEigenvaluesExplicitly()`, `PCComputeOperator()`, `KSPSetDiagonalScale()`, `KSPSetNullSpace()`, `MatType`
 @*/
-PetscErrorCode KSPComputeOperator(KSP ksp, MatType mattype, Mat *mat) {
+PetscErrorCode KSPComputeOperator(KSP ksp, MatType mattype, Mat *mat)
+{
   PetscInt N, M, m, n;
   Mat_KSP  ctx;
   Mat      A, Aksp;
@@ -106,7 +109,8 @@ PetscErrorCode KSPComputeOperator(KSP ksp, MatType mattype, Mat *mat) {
 
 .seealso: `KSPComputeEigenvalues()`, `KSPMonitorSingularValue()`, `KSPComputeExtremeSingularValues()`, `KSPSetOperators()`, `KSPSolve()`
 @*/
-PetscErrorCode KSPComputeEigenvaluesExplicitly(KSP ksp, PetscInt nmax, PetscReal r[], PetscReal c[]) {
+PetscErrorCode KSPComputeEigenvaluesExplicitly(KSP ksp, PetscInt nmax, PetscReal r[], PetscReal c[])
+{
   Mat                BA;
   PetscMPIInt        size, rank;
   MPI_Comm           comm;
@@ -229,7 +233,8 @@ PetscErrorCode KSPComputeEigenvaluesExplicitly(KSP ksp, PetscInt nmax, PetscReal
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PolyEval(PetscInt nroots, const PetscReal *r, const PetscReal *c, PetscReal x, PetscReal y, PetscReal *px, PetscReal *py) {
+static PetscErrorCode PolyEval(PetscInt nroots, const PetscReal *r, const PetscReal *c, PetscReal x, PetscReal y, PetscReal *px, PetscReal *py)
+{
   PetscInt  i;
   PetscReal rprod = 1, iprod = 0;
 
@@ -247,7 +252,8 @@ static PetscErrorCode PolyEval(PetscInt nroots, const PetscReal *r, const PetscR
 
 #include <petscdraw.h>
 /* collective on ksp */
-PetscErrorCode KSPPlotEigenContours_Private(KSP ksp, PetscInt neig, const PetscReal *r, const PetscReal *c) {
+PetscErrorCode KSPPlotEigenContours_Private(KSP ksp, PetscInt neig, const PetscReal *r, const PetscReal *c)
+{
   PetscReal     xmin, xmax, ymin, ymax, *xloc, *yloc, *value, px0, py0, rscale, iscale;
   PetscInt      M, N, i, j;
   PetscMPIInt   rank;

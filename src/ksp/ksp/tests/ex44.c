@@ -3,7 +3,8 @@ static char help[] = "Solves a tridiagonal linear system.  Designed to compare S
 
 #include <petscksp.h>
 
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   KSP         ksp;  /* linear solver context */
   Mat         A;    /* linear system matrix */
   Vec         x, b; /* approx solution, RHS */

@@ -66,7 +66,8 @@ typedef struct {
   PetscBool fixdiag; /* fix zero diagonal terms */
 } PC_Jacobi;
 
-static PetscErrorCode PCJacobiSetType_Jacobi(PC pc, PCJacobiType type) {
+static PetscErrorCode PCJacobiSetType_Jacobi(PC pc, PCJacobiType type)
+{
   PC_Jacobi *j = (PC_Jacobi *)pc->data;
 
   PetscFunctionBegin;
@@ -80,7 +81,8 @@ static PetscErrorCode PCJacobiSetType_Jacobi(PC pc, PCJacobiType type) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCJacobiGetType_Jacobi(PC pc, PCJacobiType *type) {
+static PetscErrorCode PCJacobiGetType_Jacobi(PC pc, PCJacobiType *type)
+{
   PC_Jacobi *j = (PC_Jacobi *)pc->data;
 
   PetscFunctionBegin;
@@ -94,7 +96,8 @@ static PetscErrorCode PCJacobiGetType_Jacobi(PC pc, PCJacobiType *type) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCJacobiSetUseAbs_Jacobi(PC pc, PetscBool flg) {
+static PetscErrorCode PCJacobiSetUseAbs_Jacobi(PC pc, PetscBool flg)
+{
   PC_Jacobi *j = (PC_Jacobi *)pc->data;
 
   PetscFunctionBegin;
@@ -102,7 +105,8 @@ static PetscErrorCode PCJacobiSetUseAbs_Jacobi(PC pc, PetscBool flg) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCJacobiGetUseAbs_Jacobi(PC pc, PetscBool *flg) {
+static PetscErrorCode PCJacobiGetUseAbs_Jacobi(PC pc, PetscBool *flg)
+{
   PC_Jacobi *j = (PC_Jacobi *)pc->data;
 
   PetscFunctionBegin;
@@ -110,7 +114,8 @@ static PetscErrorCode PCJacobiGetUseAbs_Jacobi(PC pc, PetscBool *flg) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCJacobiSetFixDiagonal_Jacobi(PC pc, PetscBool flg) {
+static PetscErrorCode PCJacobiSetFixDiagonal_Jacobi(PC pc, PetscBool flg)
+{
   PC_Jacobi *j = (PC_Jacobi *)pc->data;
 
   PetscFunctionBegin;
@@ -118,7 +123,8 @@ static PetscErrorCode PCJacobiSetFixDiagonal_Jacobi(PC pc, PetscBool flg) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCJacobiGetFixDiagonal_Jacobi(PC pc, PetscBool *flg) {
+static PetscErrorCode PCJacobiGetFixDiagonal_Jacobi(PC pc, PetscBool *flg)
+{
   PC_Jacobi *j = (PC_Jacobi *)pc->data;
 
   PetscFunctionBegin;
@@ -139,7 +145,8 @@ static PetscErrorCode PCJacobiGetFixDiagonal_Jacobi(PC pc, PetscBool *flg) {
    The interface routine PCSetUp() is not usually called directly by
    the user, but instead is called by PCApply() if necessary.
 */
-static PetscErrorCode PCSetUp_Jacobi(PC pc) {
+static PetscErrorCode PCSetUp_Jacobi(PC pc)
+{
   PC_Jacobi   *jac = (PC_Jacobi *)pc->data;
   Vec          diag, diagsqrt;
   PetscInt     n, i;
@@ -226,7 +233,8 @@ static PetscErrorCode PCSetUp_Jacobi(PC pc) {
    Input Parameter:
 .  pc - the preconditioner context
 */
-static PetscErrorCode PCSetUp_Jacobi_Symmetric(PC pc) {
+static PetscErrorCode PCSetUp_Jacobi_Symmetric(PC pc)
+{
   PC_Jacobi *jac = (PC_Jacobi *)pc->data;
 
   PetscFunctionBegin;
@@ -243,7 +251,8 @@ static PetscErrorCode PCSetUp_Jacobi_Symmetric(PC pc) {
    Input Parameter:
 .  pc - the preconditioner context
 */
-static PetscErrorCode PCSetUp_Jacobi_NonSymmetric(PC pc) {
+static PetscErrorCode PCSetUp_Jacobi_NonSymmetric(PC pc)
+{
   PC_Jacobi *jac = (PC_Jacobi *)pc->data;
 
   PetscFunctionBegin;
@@ -264,7 +273,8 @@ static PetscErrorCode PCSetUp_Jacobi_NonSymmetric(PC pc) {
 
    Application Interface Routine: PCApply()
  */
-static PetscErrorCode PCApply_Jacobi(PC pc, Vec x, Vec y) {
+static PetscErrorCode PCApply_Jacobi(PC pc, Vec x, Vec y)
+{
   PC_Jacobi *jac = (PC_Jacobi *)pc->data;
 
   PetscFunctionBegin;
@@ -286,7 +296,8 @@ static PetscErrorCode PCApply_Jacobi(PC pc, Vec x, Vec y) {
 
    Application Interface Routines: PCApplySymmetricLeft(), PCApplySymmetricRight()
 */
-static PetscErrorCode PCApplySymmetricLeftOrRight_Jacobi(PC pc, Vec x, Vec y) {
+static PetscErrorCode PCApplySymmetricLeftOrRight_Jacobi(PC pc, Vec x, Vec y)
+{
   PC_Jacobi *jac = (PC_Jacobi *)pc->data;
 
   PetscFunctionBegin;
@@ -295,7 +306,8 @@ static PetscErrorCode PCApplySymmetricLeftOrRight_Jacobi(PC pc, Vec x, Vec y) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCReset_Jacobi(PC pc) {
+static PetscErrorCode PCReset_Jacobi(PC pc)
+{
   PC_Jacobi *jac = (PC_Jacobi *)pc->data;
 
   PetscFunctionBegin;
@@ -313,7 +325,8 @@ static PetscErrorCode PCReset_Jacobi(PC pc) {
 
    Application Interface Routine: PCDestroy()
 */
-static PetscErrorCode PCDestroy_Jacobi(PC pc) {
+static PetscErrorCode PCDestroy_Jacobi(PC pc)
+{
   PetscFunctionBegin;
   PetscCall(PCReset_Jacobi(pc));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCJacobiSetType_C", NULL));
@@ -330,7 +343,8 @@ static PetscErrorCode PCDestroy_Jacobi(PC pc) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCSetFromOptions_Jacobi(PC pc, PetscOptionItems *PetscOptionsObject) {
+static PetscErrorCode PCSetFromOptions_Jacobi(PC pc, PetscOptionItems *PetscOptionsObject)
+{
   PC_Jacobi   *jac = (PC_Jacobi *)pc->data;
   PetscBool    flg;
   PCJacobiType deflt, type;
@@ -346,7 +360,8 @@ static PetscErrorCode PCSetFromOptions_Jacobi(PC pc, PetscOptionItems *PetscOpti
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCView_Jacobi(PC pc, PetscViewer viewer) {
+static PetscErrorCode PCView_Jacobi(PC pc, PetscViewer viewer)
+{
   PC_Jacobi *jac = (PC_Jacobi *)pc->data;
   PetscBool  iascii;
 
@@ -402,7 +417,8 @@ static PetscErrorCode PCView_Jacobi(PC pc, PetscViewer viewer) {
            `PCJacobiSetType()`, `PCJacobiSetUseAbs()`, `PCJacobiGetUseAbs()`, `PCPBJACOBI`, `PCBJACOBI`, `PCVPBJACOBI`
 M*/
 
-PETSC_EXTERN PetscErrorCode PCCreate_Jacobi(PC pc) {
+PETSC_EXTERN PetscErrorCode PCCreate_Jacobi(PC pc)
+{
   PC_Jacobi *jac;
 
   PetscFunctionBegin;
@@ -471,7 +487,8 @@ PETSC_EXTERN PetscErrorCode PCCreate_Jacobi(PC pc) {
 
 .seealso: `PCJACOBI`, `PCJacobiaSetType()`, `PCJacobiGetUseAbs()`
 @*/
-PetscErrorCode PCJacobiSetUseAbs(PC pc, PetscBool flg) {
+PetscErrorCode PCJacobiSetUseAbs(PC pc, PetscBool flg)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscTryMethod(pc, "PCJacobiSetUseAbs_C", (PC, PetscBool), (pc, flg));
@@ -494,7 +511,8 @@ PetscErrorCode PCJacobiSetUseAbs(PC pc, PetscBool flg) {
 
 .seealso: `PCJACOBI`, `PCJacobiaSetType()`, `PCJacobiSetUseAbs()`, `PCJacobiGetType()`
 @*/
-PetscErrorCode PCJacobiGetUseAbs(PC pc, PetscBool *flg) {
+PetscErrorCode PCJacobiGetUseAbs(PC pc, PetscBool *flg)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscUseMethod(pc, "PCJacobiGetUseAbs_C", (PC, PetscBool *), (pc, flg));
@@ -520,7 +538,8 @@ PetscErrorCode PCJacobiGetUseAbs(PC pc, PetscBool *flg) {
 
 .seealso: `PCJACOBI`, `PCJacobiSetType()`, `PCJacobiGetFixDiagonal()`, `PCJacobiSetUseAbs()`
 @*/
-PetscErrorCode PCJacobiSetFixDiagonal(PC pc, PetscBool flg) {
+PetscErrorCode PCJacobiSetFixDiagonal(PC pc, PetscBool flg)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscTryMethod(pc, "PCJacobiSetFixDiagonal_C", (PC, PetscBool), (pc, flg));
@@ -545,7 +564,8 @@ PetscErrorCode PCJacobiSetFixDiagonal(PC pc, PetscBool flg) {
 
 .seealso: `PCJACOBI`, `PCJacobiSetType()`, `PCJacobiSetFixDiagonal()`
 @*/
-PetscErrorCode PCJacobiGetFixDiagonal(PC pc, PetscBool *flg) {
+PetscErrorCode PCJacobiGetFixDiagonal(PC pc, PetscBool *flg)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscUseMethod(pc, "PCJacobiGetFixDiagonal_C", (PC, PetscBool *), (pc, flg));
@@ -572,7 +592,8 @@ PetscErrorCode PCJacobiGetFixDiagonal(PC pc, PetscBool *flg) {
 
 .seealso: `PCJACOBI`, `PCJacobiSetUseAbs()`, `PCJacobiGetType()`
 @*/
-PetscErrorCode PCJacobiSetType(PC pc, PCJacobiType type) {
+PetscErrorCode PCJacobiSetType(PC pc, PCJacobiType type)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscTryMethod(pc, "PCJacobiSetType_C", (PC, PCJacobiType), (pc, type));
@@ -594,7 +615,8 @@ PetscErrorCode PCJacobiSetType(PC pc, PCJacobiType type) {
 
 .seealso: `PCJACOBI`, `PCJacobiaUseAbs()`, `PCJacobiSetType()`
 @*/
-PetscErrorCode PCJacobiGetType(PC pc, PCJacobiType *type) {
+PetscErrorCode PCJacobiGetType(PC pc, PCJacobiType *type)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscUseMethod(pc, "PCJacobiGetType_C", (PC, PCJacobiType *), (pc, type));

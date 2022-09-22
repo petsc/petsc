@@ -8,7 +8,8 @@ static char help[] = "Show MatShift BUG happening after copying a matrix with no
 /* DEFINE this to turn on/off the bug: */
 #define SET_2nd_PROC_TO_HAVE_NO_LOCAL_LINES
 
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   Mat         C;
   PetscInt    i, m = 3;
   PetscMPIInt rank, size;

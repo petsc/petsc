@@ -1,9 +1,9 @@
-#if !defined(PETSCFEIMPL_H)
+#ifndef PETSCFEIMPL_H
 #define PETSCFEIMPL_H
 
 #include <petscfe.h>
 #ifdef PETSC_HAVE_LIBCEED
-#include <petscfeceed.h>
+  #include <petscfeceed.h>
 #endif
 #include <petscds.h>
 #include <petsc/private/petscimpl.h>
@@ -223,11 +223,11 @@ typedef struct {
 
 #ifdef PETSC_HAVE_OPENCL
 
-#ifdef __APPLE__
-#include <OpenCL/cl.h>
-#else
-#include <CL/cl.h>
-#endif
+  #ifdef __APPLE__
+    #include <OpenCL/cl.h>
+  #else
+    #include <CL/cl.h>
+  #endif
 
 typedef struct {
   cl_platform_id   pf_id;
@@ -248,7 +248,8 @@ typedef struct {
 } PetscFE_Composite;
 
 /* Utility functions */
-static inline void CoordinatesRefToReal(PetscInt dimReal, PetscInt dimRef, const PetscReal xi0[], const PetscReal v0[], const PetscReal J[], const PetscReal xi[], PetscReal x[]) {
+static inline void CoordinatesRefToReal(PetscInt dimReal, PetscInt dimRef, const PetscReal xi0[], const PetscReal v0[], const PetscReal J[], const PetscReal xi[], PetscReal x[])
+{
   PetscInt d, e;
 
   for (d = 0; d < dimReal; ++d) {
@@ -257,7 +258,8 @@ static inline void CoordinatesRefToReal(PetscInt dimReal, PetscInt dimRef, const
   }
 }
 
-static inline void CoordinatesRealToRef(PetscInt dimReal, PetscInt dimRef, const PetscReal xi0[], const PetscReal v0[], const PetscReal invJ[], const PetscReal x[], PetscReal xi[]) {
+static inline void CoordinatesRealToRef(PetscInt dimReal, PetscInt dimRef, const PetscReal xi0[], const PetscReal v0[], const PetscReal invJ[], const PetscReal x[], PetscReal xi[])
+{
   PetscInt d, e;
 
   for (d = 0; d < dimRef; ++d) {
@@ -266,7 +268,8 @@ static inline void CoordinatesRealToRef(PetscInt dimReal, PetscInt dimRef, const
   }
 }
 
-static inline PetscErrorCode PetscFEInterpolate_Static(PetscFE fe, const PetscScalar x[], PetscFEGeom *fegeom, PetscInt q, PetscScalar interpolant[]) {
+static inline PetscErrorCode PetscFEInterpolate_Static(PetscFE fe, const PetscScalar x[], PetscFEGeom *fegeom, PetscInt q, PetscScalar interpolant[])
+{
   PetscTabulation T;
 
   PetscFunctionBeginHot;
@@ -284,7 +287,8 @@ static inline PetscErrorCode PetscFEInterpolate_Static(PetscFE fe, const PetscSc
   PetscFunctionReturn(0);
 }
 
-static inline PetscErrorCode PetscFEInterpolateGradient_Static(PetscFE fe, PetscInt k, const PetscScalar x[], PetscFEGeom *fegeom, PetscInt q, PetscScalar interpolant[]) {
+static inline PetscErrorCode PetscFEInterpolateGradient_Static(PetscFE fe, PetscInt k, const PetscScalar x[], PetscFEGeom *fegeom, PetscInt q, PetscScalar interpolant[])
+{
   PetscTabulation T;
   PetscInt        fc, f, d;
 
@@ -319,7 +323,8 @@ static inline PetscErrorCode PetscFEInterpolateGradient_Static(PetscFE fe, Petsc
   PetscFunctionReturn(0);
 }
 
-static inline PetscErrorCode PetscFEFreeInterpolateGradient_Static(PetscFE fe, const PetscReal basisDer[], const PetscScalar x[], PetscInt dim, const PetscReal invJ[], const PetscReal n[], PetscInt q, PetscScalar interpolant[]) {
+static inline PetscErrorCode PetscFEFreeInterpolateGradient_Static(PetscFE fe, const PetscReal basisDer[], const PetscScalar x[], PetscInt dim, const PetscReal invJ[], const PetscReal n[], PetscInt q, PetscScalar interpolant[])
+{
   PetscReal   realSpaceDer[3];
   PetscScalar compGradient[3];
   PetscInt    Nb, Nc, fc, f = 0, d, g;
@@ -347,7 +352,8 @@ static inline PetscErrorCode PetscFEFreeInterpolateGradient_Static(PetscFE fe, c
   PetscFunctionReturn(0);
 }
 
-static inline PetscErrorCode PetscFEInterpolateFieldAndGradient_Static(PetscFE fe, PetscInt k, const PetscScalar x[], PetscFEGeom *fegeom, PetscInt q, PetscScalar interpolant[], PetscScalar interpolantGrad[]) {
+static inline PetscErrorCode PetscFEInterpolateFieldAndGradient_Static(PetscFE fe, PetscInt k, const PetscScalar x[], PetscFEGeom *fegeom, PetscInt q, PetscScalar interpolant[], PetscScalar interpolantGrad[])
+{
   PetscTabulation T;
   PetscInt        fc, f, d;
 

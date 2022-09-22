@@ -26,7 +26,8 @@ PetscBool         VecRegisterAllCalled = PETSC_FALSE;
 
 .seealso: `VecGetType()`, `VecCreate()`
 @*/
-PetscErrorCode VecSetType(Vec vec, VecType method) {
+PetscErrorCode VecSetType(Vec vec, VecType method)
+{
   PetscErrorCode (*r)(Vec);
   PetscBool   match;
   PetscMPIInt size;
@@ -105,7 +106,8 @@ PetscErrorCode VecSetType(Vec vec, VecType method) {
 
 .seealso: `VecSetType()`, `VecCreate()`
 @*/
-PetscErrorCode VecGetType(Vec vec, VecType *type) {
+PetscErrorCode VecGetType(Vec vec, VecType *type)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(vec, VEC_CLASSID, 1);
   PetscValidPointer(type, 2);
@@ -114,7 +116,8 @@ PetscErrorCode VecGetType(Vec vec, VecType *type) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode VecGetRootType_Private(Vec vec, VecType *vtype) {
+PetscErrorCode VecGetRootType_Private(Vec vec, VecType *vtype)
+{
   PetscBool iscuda, iship, iskokkos, isvcl;
 
   PetscFunctionBegin;
@@ -171,7 +174,8 @@ PetscErrorCode VecGetRootType_Private(Vec vec, VecType *vtype) {
 
 .seealso: `VecRegisterAll()`, `VecRegisterDestroy()`
 @*/
-PetscErrorCode VecRegister(const char sname[], PetscErrorCode (*function)(Vec)) {
+PetscErrorCode VecRegister(const char sname[], PetscErrorCode (*function)(Vec))
+{
   PetscFunctionBegin;
   PetscCall(VecInitializePackage());
   PetscCall(PetscFunctionListAdd(&VecList, sname, function));

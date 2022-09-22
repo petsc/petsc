@@ -2,12 +2,13 @@
 #include <petsc/private/vecimpl.h>
 #include <petscsf.h>
 #if defined(PETSC_HAVE_CUDA)
-#include <thrust/for_each.h>
-#include <thrust/device_vector.h>
-#include <thrust/execution_policy.h>
+  #include <thrust/for_each.h>
+  #include <thrust/device_vector.h>
+  #include <thrust/execution_policy.h>
 #endif
 
-PETSC_INTERN PetscErrorCode PetscSFGetVectorSF(PetscSF sf, PetscInt nv, PetscInt ldr, PetscInt ldl, PetscSF *vsf) {
+PETSC_INTERN PetscErrorCode PetscSFGetVectorSF(PetscSF sf, PetscInt nv, PetscInt ldr, PetscInt ldl, PetscSF *vsf)
+{
   PetscSF            rankssf;
   const PetscSFNode *iremote;
   PetscSFNode       *viremote, *rremotes;
@@ -78,7 +79,8 @@ PETSC_INTERN PetscErrorCode PetscSFGetVectorSF(PetscSF sf, PetscInt nv, PetscInt
   PetscFunctionReturn(0);
 }
 
-PETSC_INTERN PetscErrorCode MatDenseGetH2OpusVectorSF(Mat A, PetscSF h2sf, PetscSF *osf) {
+PETSC_INTERN PetscErrorCode MatDenseGetH2OpusVectorSF(Mat A, PetscSF h2sf, PetscSF *osf)
+{
   PetscSF asf;
 
   PetscFunctionBegin;
@@ -108,7 +110,8 @@ struct SignVector_Functor {
 };
 #endif
 
-PETSC_INTERN PetscErrorCode VecSign(Vec v, Vec s) {
+PETSC_INTERN PetscErrorCode VecSign(Vec v, Vec s)
+{
   const PetscScalar *av;
   PetscScalar       *as;
   PetscInt           i, n;
@@ -156,7 +159,8 @@ struct StandardBasis_Functor {
 };
 #endif
 
-PETSC_INTERN PetscErrorCode VecSetDelta(Vec x, PetscInt i) {
+PETSC_INTERN PetscErrorCode VecSetDelta(Vec x, PetscInt i)
+{
 #if defined(PETSC_HAVE_CUDA)
   PetscBool iscuda;
 #endif
@@ -187,7 +191,8 @@ PETSC_INTERN PetscErrorCode VecSetDelta(Vec x, PetscInt i) {
 /* these are approximate norms */
 /* NORM_2: Estimating the matrix p-norm Nicholas J. Higham
    NORM_1/NORM_INFINITY: A block algorithm for matrix 1-norm estimation, with an application to 1-norm pseudospectra Higham, Nicholas J. and Tisseur, Francoise */
-PETSC_INTERN PetscErrorCode MatApproximateNorm_Private(Mat A, NormType normtype, PetscInt normsamples, PetscReal *n) {
+PETSC_INTERN PetscErrorCode MatApproximateNorm_Private(Mat A, NormType normtype, PetscInt normsamples, PetscReal *n)
+{
   Vec         x, y, w, z;
   PetscReal   normz, adot;
   PetscScalar dot;
@@ -277,7 +282,8 @@ PETSC_INTERN PetscErrorCode MatApproximateNorm_Private(Mat A, NormType normtype,
     PetscCall(VecDestroy(&y));
     PetscCall(VecDestroy(&z));
     break;
-  default: SETERRQ(PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "%s norm not supported", NormTypes[normtype]);
+  default:
+    SETERRQ(PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "%s norm not supported", NormTypes[normtype]);
   }
   PetscCall(PetscInfo(A, "%s norm %g computed in %" PetscInt_FMT " iterations\n", NormTypes[normtype], (double)*n, i));
   PetscFunctionReturn(0);

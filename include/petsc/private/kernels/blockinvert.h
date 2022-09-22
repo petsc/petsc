@@ -10,7 +10,7 @@
        does not have some arguments in single and some in double.
 
 */
-#if !defined(__ILU_H)
+#ifndef __ILU_H
 #define __ILU_H
 #include <petscblaslapack.h>
 
@@ -49,244 +49,244 @@ PETSC_EXTERN PetscErrorCode PetscKernel_A_gets_inverse_A_15(MatScalar *, PetscIn
 /* -----------------------------------------------------------------------*/
 
 #if !defined(PETSC_USE_REAL_MAT_SINGLE)
-/*
+  /*
         Version that calls the BLAS directly
 */
-/*
+  /*
       A = A * B   A_gets_A_times_B
 
    A, B - square bs by bs arrays stored in column major order
    W    - square bs by bs work array
 
 */
-#define PetscKernel_A_gets_A_times_B(bs, A, B, W) \
-  do { \
-    PetscBLASInt _bbs; \
-    PetscScalar  _one = 1.0, _zero = 0.0; \
-    PetscCall(PetscBLASIntCast(bs, &_bbs)); \
-    PetscCall(PetscArraycpy((W), (A), (bs) * (bs))); \
-    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(A, 2)); \
-    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(B, 3)); \
-    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(W, 4)); \
-    PetscCallBLAS("BLASgemm", BLASgemm_("N", "N", &(_bbs), &(_bbs), &(_bbs), &_one, (W), &(_bbs), (B), &(_bbs), &_zero, (A), &(_bbs))); \
-  } while (0)
+  #define PetscKernel_A_gets_A_times_B(bs, A, B, W) \
+    do { \
+      PetscBLASInt _bbs; \
+      PetscScalar  _one = 1.0, _zero = 0.0; \
+      PetscCall(PetscBLASIntCast(bs, &_bbs)); \
+      PetscCall(PetscArraycpy((W), (A), (bs) * (bs))); \
+      PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(A, 2)); \
+      PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(B, 3)); \
+      PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(W, 4)); \
+      PetscCallBLAS("BLASgemm", BLASgemm_("N", "N", &(_bbs), &(_bbs), &(_bbs), &_one, (W), &(_bbs), (B), &(_bbs), &_zero, (A), &(_bbs))); \
+    } while (0)
 
-/*
+  /*
 
     A = A - B * C  A_gets_A_minus_B_times_C
 
    A, B, C - square bs by bs arrays stored in column major order
 */
-#define PetscKernel_A_gets_A_minus_B_times_C(bs, A, B, C) \
-  do { \
-    PetscScalar  _mone = -1.0, _one = 1.0; \
-    PetscBLASInt _bbs; \
-    PetscCall(PetscBLASIntCast(bs, &_bbs)); \
-    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(A, 2)); \
-    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(B, 3)); \
-    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(C, 4)); \
-    PetscCallBLAS("BLASgemm", BLASgemm_("N", "N", &(_bbs), &(_bbs), &(_bbs), &_mone, (B), &(_bbs), (C), &(_bbs), &_one, (A), &(_bbs))); \
-  } while (0)
+  #define PetscKernel_A_gets_A_minus_B_times_C(bs, A, B, C) \
+    do { \
+      PetscScalar  _mone = -1.0, _one = 1.0; \
+      PetscBLASInt _bbs; \
+      PetscCall(PetscBLASIntCast(bs, &_bbs)); \
+      PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(A, 2)); \
+      PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(B, 3)); \
+      PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(C, 4)); \
+      PetscCallBLAS("BLASgemm", BLASgemm_("N", "N", &(_bbs), &(_bbs), &(_bbs), &_mone, (B), &(_bbs), (C), &(_bbs), &_one, (A), &(_bbs))); \
+    } while (0)
 
-/*
+  /*
 
     A = A + B^T * C  A_gets_A_plus_Btranspose_times_C
 
    A, B, C - square bs by bs arrays stored in column major order
 */
-#define PetscKernel_A_gets_A_plus_Btranspose_times_C(bs, A, B, C) \
-  do { \
-    PetscScalar  _one = 1.0; \
-    PetscBLASInt _bbs; \
-    PetscCall(PetscBLASIntCast(bs, &_bbs)); \
-    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(A, 2)); \
-    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(B, 3)); \
-    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(C, 4)); \
-    PetscCallBLAS("BLASgemm", BLASgemm_("T", "N", &(_bbs), &(_bbs), &(_bbs), &_one, (B), &(_bbs), (C), &(_bbs), &_one, (A), &(_bbs))); \
-  } while (0)
+  #define PetscKernel_A_gets_A_plus_Btranspose_times_C(bs, A, B, C) \
+    do { \
+      PetscScalar  _one = 1.0; \
+      PetscBLASInt _bbs; \
+      PetscCall(PetscBLASIntCast(bs, &_bbs)); \
+      PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(A, 2)); \
+      PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(B, 3)); \
+      PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(C, 4)); \
+      PetscCallBLAS("BLASgemm", BLASgemm_("T", "N", &(_bbs), &(_bbs), &(_bbs), &_one, (B), &(_bbs), (C), &(_bbs), &_one, (A), &(_bbs))); \
+    } while (0)
 
-/*
+  /*
     v = v + A^T w  v_gets_v_plus_Atranspose_times_w
 
    v - array of length bs
    A - square bs by bs array
    w - array of length bs
 */
-#define PetscKernel_v_gets_v_plus_Atranspose_times_w(bs, v, A, w) \
-  do { \
-    PetscScalar  _one  = 1.0; \
-    PetscBLASInt _ione = 1, _bbs; \
-    PetscCall(PetscBLASIntCast(bs, &_bbs)); \
-    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(v, 2)); \
-    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(A, 3)); \
-    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(w, 4)); \
-    PetscCallBLAS("BLASgemv", BLASgemv_("T", &(_bbs), &(_bbs), &_one, A, &(_bbs), w, &_ione, &_one, v, &_ione)); \
-  } while (0)
+  #define PetscKernel_v_gets_v_plus_Atranspose_times_w(bs, v, A, w) \
+    do { \
+      PetscScalar  _one  = 1.0; \
+      PetscBLASInt _ione = 1, _bbs; \
+      PetscCall(PetscBLASIntCast(bs, &_bbs)); \
+      PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(v, 2)); \
+      PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(A, 3)); \
+      PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(w, 4)); \
+      PetscCallBLAS("BLASgemv", BLASgemv_("T", &(_bbs), &(_bbs), &_one, A, &(_bbs), w, &_ione, &_one, v, &_ione)); \
+    } while (0)
 
-/*
+  /*
     v = v - A w  v_gets_v_minus_A_times_w
 
    v - array of length bs
    A - square bs by bs array
    w - array of length bs
 */
-#define PetscKernel_v_gets_v_minus_A_times_w(bs, v, A, w) \
-  do { \
-    PetscScalar  _mone = -1.0, _one = 1.0; \
-    PetscBLASInt _ione = 1, _bbs; \
-    PetscCall(PetscBLASIntCast(bs, &_bbs)); \
-    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(v, 2)); \
-    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(A, 3)); \
-    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(w, 4)); \
-    PetscCallBLAS("BLASgemv", BLASgemv_("N", &(_bbs), &(_bbs), &_mone, A, &(_bbs), w, &_ione, &_one, v, &_ione)); \
-  } while (0)
+  #define PetscKernel_v_gets_v_minus_A_times_w(bs, v, A, w) \
+    do { \
+      PetscScalar  _mone = -1.0, _one = 1.0; \
+      PetscBLASInt _ione = 1, _bbs; \
+      PetscCall(PetscBLASIntCast(bs, &_bbs)); \
+      PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(v, 2)); \
+      PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(A, 3)); \
+      PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(w, 4)); \
+      PetscCallBLAS("BLASgemv", BLASgemv_("N", &(_bbs), &(_bbs), &_mone, A, &(_bbs), w, &_ione, &_one, v, &_ione)); \
+    } while (0)
 
-/*
+  /*
     v = v - A w  v_gets_v_minus_transA_times_w
 
    v - array of length bs
    A - square bs by bs array
    w - array of length bs
 */
-#define PetscKernel_v_gets_v_minus_transA_times_w(bs, v, A, w) \
-  do { \
-    PetscScalar  _mone = -1.0, _one = 1.0; \
-    PetscBLASInt _ione = 1, _bbs; \
-    PetscCall(PetscBLASIntCast(bs, &_bbs)); \
-    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(v, 2)); \
-    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(A, 3)); \
-    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(w, 4)); \
-    PetscCallBLAS("BLASgemv", BLASgemv_("T", &(_bbs), &(_bbs), &_mone, A, &(_bbs), w, &_ione, &_one, v, &_ione)); \
-  } while (0)
+  #define PetscKernel_v_gets_v_minus_transA_times_w(bs, v, A, w) \
+    do { \
+      PetscScalar  _mone = -1.0, _one = 1.0; \
+      PetscBLASInt _ione = 1, _bbs; \
+      PetscCall(PetscBLASIntCast(bs, &_bbs)); \
+      PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(v, 2)); \
+      PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(A, 3)); \
+      PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(w, 4)); \
+      PetscCallBLAS("BLASgemv", BLASgemv_("T", &(_bbs), &(_bbs), &_mone, A, &(_bbs), w, &_ione, &_one, v, &_ione)); \
+    } while (0)
 
-/*
+  /*
     v = v + A w  v_gets_v_plus_A_times_w
 
    v - array of length bs
    A - square bs by bs array
    w - array of length bs
 */
-#define PetscKernel_v_gets_v_plus_A_times_w(bs, v, A, w) \
-  do { \
-    PetscScalar  _one  = 1.0; \
-    PetscBLASInt _ione = 1, _bbs; \
-    PetscCall(PetscBLASIntCast(bs, &_bbs)); \
-    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(v, 2)); \
-    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(A, 3)); \
-    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(w, 4)); \
-    PetscCallBLAS("BLASgemv", BLASgemv_("N", &(_bbs), &(_bbs), &_one, A, &(_bbs), w, &_ione, &_one, v, &_ione)); \
-  } while (0)
+  #define PetscKernel_v_gets_v_plus_A_times_w(bs, v, A, w) \
+    do { \
+      PetscScalar  _one  = 1.0; \
+      PetscBLASInt _ione = 1, _bbs; \
+      PetscCall(PetscBLASIntCast(bs, &_bbs)); \
+      PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(v, 2)); \
+      PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(A, 3)); \
+      PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(w, 4)); \
+      PetscCallBLAS("BLASgemv", BLASgemv_("N", &(_bbs), &(_bbs), &_one, A, &(_bbs), w, &_ione, &_one, v, &_ione)); \
+    } while (0)
 
-/*
+  /*
     v = v + A w  v_gets_v_plus_Ar_times_w
 
    v - array of length bs
    A - square bs by bs array
    w - array of length bs
 */
-#define PetscKernel_w_gets_w_plus_Ar_times_v(bs, ncols, v, A, w) \
-  do { \
-    PetscScalar  _one  = 1.0; \
-    PetscBLASInt _ione = 1, _bbs, _bncols; \
-    PetscCall(PetscBLASIntCast(bs, &_bbs)); \
-    PetscCall(PetscBLASIntCast(ncols, &_bncols)); \
-    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(v, 3)); \
-    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(A, 4)); \
-    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(w, 5)); \
-    PetscCallBLAS("BLASgemv", BLASgemv_("N", &(_bbs), &(_bncols), &_one, A, &(_bbs), v, &_ione, &_one, w, &_ione)); \
-  } while (0)
+  #define PetscKernel_w_gets_w_plus_Ar_times_v(bs, ncols, v, A, w) \
+    do { \
+      PetscScalar  _one  = 1.0; \
+      PetscBLASInt _ione = 1, _bbs, _bncols; \
+      PetscCall(PetscBLASIntCast(bs, &_bbs)); \
+      PetscCall(PetscBLASIntCast(ncols, &_bncols)); \
+      PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(v, 3)); \
+      PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(A, 4)); \
+      PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(w, 5)); \
+      PetscCallBLAS("BLASgemv", BLASgemv_("N", &(_bbs), &(_bncols), &_one, A, &(_bbs), v, &_ione, &_one, w, &_ione)); \
+    } while (0)
 
-/*
+  /*
     w <- w - A v  w_gets_w_minus_Ar_times_v
 
    v - array of length ncol
    A(bs,ncols)
    w - array of length bs
 */
-#define PetscKernel_w_gets_w_minus_Ar_times_v(bs, ncols, w, A, v) \
-  do { \
-    PetscScalar  _one = 1.0, _mone = -1.0; \
-    PetscBLASInt _ione = 1, _bbs, _bncols; \
-    PetscCall(PetscBLASIntCast(bs, &_bbs)); \
-    PetscCall(PetscBLASIntCast(ncols, &_bncols)); \
-    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(w, 3)); \
-    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(A, 4)); \
-    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(v, 5)); \
-    PetscCallBLAS("BLASgemv", BLASgemv_("N", &(_bbs), &(_bncols), &_mone, A, &(_bbs), v, &_ione, &_one, w, &_ione)); \
-  } while (0)
+  #define PetscKernel_w_gets_w_minus_Ar_times_v(bs, ncols, w, A, v) \
+    do { \
+      PetscScalar  _one = 1.0, _mone = -1.0; \
+      PetscBLASInt _ione = 1, _bbs, _bncols; \
+      PetscCall(PetscBLASIntCast(bs, &_bbs)); \
+      PetscCall(PetscBLASIntCast(ncols, &_bncols)); \
+      PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(w, 3)); \
+      PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(A, 4)); \
+      PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(v, 5)); \
+      PetscCallBLAS("BLASgemv", BLASgemv_("N", &(_bbs), &(_bncols), &_mone, A, &(_bbs), v, &_ione, &_one, w, &_ione)); \
+    } while (0)
 
-/*
+  /*
     w = A v   w_gets_A_times_v
 
    v - array of length bs
    A - square bs by bs array
    w - array of length bs
  */
-#define PetscKernel_w_gets_A_times_v(bs, v, A, w) \
-  do { \
-    PetscScalar  _zero = 0.0, _one = 1.0; \
-    PetscBLASInt _ione = 1, _bbs; \
-    PetscCall(PetscBLASIntCast(bs, &_bbs)); \
-    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(v, 2)); \
-    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(A, 3)); \
-    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(w, 4)); \
-    PetscCallBLAS("BLASgemv", BLASgemv_("N", &(_bbs), &(_bbs), &_one, A, &(_bbs), v, &_ione, &_zero, w, &_ione)); \
-  } while (0)
+  #define PetscKernel_w_gets_A_times_v(bs, v, A, w) \
+    do { \
+      PetscScalar  _zero = 0.0, _one = 1.0; \
+      PetscBLASInt _ione = 1, _bbs; \
+      PetscCall(PetscBLASIntCast(bs, &_bbs)); \
+      PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(v, 2)); \
+      PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(A, 3)); \
+      PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(w, 4)); \
+      PetscCallBLAS("BLASgemv", BLASgemv_("N", &(_bbs), &(_bbs), &_one, A, &(_bbs), v, &_ione, &_zero, w, &_ione)); \
+    } while (0)
 
-/*
+  /*
     w = A' v   w_gets_transA_times_v
 
    v - array of length bs
    A - square bs by bs array
    w - array of length bs
 */
-#define PetscKernel_w_gets_transA_times_v(bs, v, A, w) \
-  do { \
-    PetscScalar  _zero = 0.0, _one = 1.0; \
-    PetscBLASInt _ione = 1, _bbs; \
-    PetscCall(PetscBLASIntCast(bs, &_bbs)); \
-    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(v, 2)); \
-    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(A, 3)); \
-    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(w, 4)); \
-    PetscCallBLAS("BLASgemv", BLASgemv_("T", &(_bbs), &(_bbs), &_one, A, &(_bbs), v, &_ione, &_zero, w, &_ione)); \
-  } while (0)
+  #define PetscKernel_w_gets_transA_times_v(bs, v, A, w) \
+    do { \
+      PetscScalar  _zero = 0.0, _one = 1.0; \
+      PetscBLASInt _ione = 1, _bbs; \
+      PetscCall(PetscBLASIntCast(bs, &_bbs)); \
+      PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(v, 2)); \
+      PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(A, 3)); \
+      PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(w, 4)); \
+      PetscCallBLAS("BLASgemv", BLASgemv_("T", &(_bbs), &(_bbs), &_one, A, &(_bbs), v, &_ione, &_zero, w, &_ione)); \
+    } while (0)
 
-/*
+  /*
         z = A*x
 */
-#define PetscKernel_w_gets_Ar_times_v(bs, ncols, x, A, z) \
-  do { \
-    PetscScalar  _one = 1.0, _zero = 0.0; \
-    PetscBLASInt _ione = 1, _bbs, _bncols; \
-    PetscCall(PetscBLASIntCast(bs, &_bbs)); \
-    PetscCall(PetscBLASIntCast(ncols, &_bncols)); \
-    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(x, 3)); \
-    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(A, 4)); \
-    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(z, 5)); \
-    PetscCallBLAS("BLASgemv", BLASgemv_("N", &(_bbs), &_bncols, &_one, A, &(_bbs), x, &_ione, &_zero, z, &_ione)); \
-  } while (0)
+  #define PetscKernel_w_gets_Ar_times_v(bs, ncols, x, A, z) \
+    do { \
+      PetscScalar  _one = 1.0, _zero = 0.0; \
+      PetscBLASInt _ione = 1, _bbs, _bncols; \
+      PetscCall(PetscBLASIntCast(bs, &_bbs)); \
+      PetscCall(PetscBLASIntCast(ncols, &_bncols)); \
+      PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(x, 3)); \
+      PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(A, 4)); \
+      PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(z, 5)); \
+      PetscCallBLAS("BLASgemv", BLASgemv_("N", &(_bbs), &_bncols, &_one, A, &(_bbs), x, &_ione, &_zero, z, &_ione)); \
+    } while (0)
 
-/*
+  /*
         z = trans(A)*x
 */
-#define PetscKernel_w_gets_w_plus_trans_Ar_times_v(bs, ncols, x, A, z) \
-  do { \
-    PetscScalar  _one  = 1.0; \
-    PetscBLASInt _ione = 1, _bbs, _bncols; \
-    PetscCall(PetscBLASIntCast(bs, &_bbs)); \
-    PetscCall(PetscBLASIntCast(ncols, &_bncols)); \
-    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(x, 3)); \
-    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(A, 4)); \
-    PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(z, 5)); \
-    PetscCallBLAS("BLASgemv", BLASgemv_("T", &_bbs, &_bncols, &_one, A, &_bbs, x, &_ione, &_one, z, &_ione)); \
-  } while (0)
+  #define PetscKernel_w_gets_w_plus_trans_Ar_times_v(bs, ncols, x, A, z) \
+    do { \
+      PetscScalar  _one  = 1.0; \
+      PetscBLASInt _ione = 1, _bbs, _bncols; \
+      PetscCall(PetscBLASIntCast(bs, &_bbs)); \
+      PetscCall(PetscBLASIntCast(ncols, &_bncols)); \
+      PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(x, 3)); \
+      PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(A, 4)); \
+      PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidScalarPointer(z, 5)); \
+      PetscCallBLAS("BLASgemv", BLASgemv_("T", &_bbs, &_bncols, &_one, A, &_bbs, x, &_ione, &_one, z, &_ione)); \
+    } while (0)
 
 #else /* !defined(PETSC_USE_REAL_MAT_SINGLE) */
-/*
+  /*
        Version that calls Fortran routines; can handle different precision
    of matrix (array) and vectors
 */
-/*
+  /*
      These are Fortran kernels: They replace certain BLAS routines but
    have some arguments that may be single precision,rather than double
    These routines are provided in src/fortran/kernels/sgemv.F
@@ -295,21 +295,21 @@ PETSC_EXTERN PetscErrorCode PetscKernel_A_gets_inverse_A_15(MatScalar *, PetscIn
    code is used.
 */
 
-#if defined(PETSC_HAVE_FORTRAN_CAPS)
-#define msgemv_  MSGEMV
-#define msgemvp_ MSGEMVP
-#define msgemvm_ MSGEMVM
-#define msgemvt_ MSGEMVT
-#define msgemmi_ MSGEMMI
-#define msgemm_  MSGEMM
-#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
-#define msgemv_  msgemv
-#define msgemvp_ msgemvp
-#define msgemvm_ msgemvm
-#define msgemvt_ msgemvt
-#define msgemmi_ msgemmi
-#define msgemm_  msgemm
-#endif
+  #if defined(PETSC_HAVE_FORTRAN_CAPS)
+    #define msgemv_  MSGEMV
+    #define msgemvp_ MSGEMVP
+    #define msgemvm_ MSGEMVM
+    #define msgemvt_ MSGEMVT
+    #define msgemmi_ MSGEMMI
+    #define msgemm_  MSGEMM
+  #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+    #define msgemv_  msgemv
+    #define msgemvp_ msgemvp
+    #define msgemvm_ msgemvm
+    #define msgemvt_ msgemvt
+    #define msgemmi_ msgemmi
+    #define msgemm_  msgemm
+  #endif
 
 PETSC_EXTERN void msgemv_(PetscInt *, PetscInt *, MatScalar *, PetscScalar *, PetscScalar *);
 PETSC_EXTERN void msgemvp_(PetscInt *, PetscInt *, MatScalar *, PetscScalar *, PetscScalar *);
@@ -318,76 +318,76 @@ PETSC_EXTERN void msgemvt_(PetscInt *, PetscInt *, MatScalar *, PetscScalar *, P
 PETSC_EXTERN void msgemmi_(PetscInt *, MatScalar *, MatScalar *, MatScalar *);
 PETSC_EXTERN void msgemm_(PetscInt *, MatScalar *, MatScalar *, MatScalar *);
 
-/*
+  /*
       A = A * B   A_gets_A_times_B
 
    A, B - square bs by bs arrays stored in column major order
    W    - square bs by bs work array
 
 */
-#define PetscKernel_A_gets_A_times_B(bs, A, B, W) \
-  do { \
-    PetscCall(PetscArraycpy((W), (A), (bs) * (bs))); \
-    msgemmi_(&bs, A, B, W); \
-  } while (0)
+  #define PetscKernel_A_gets_A_times_B(bs, A, B, W) \
+    do { \
+      PetscCall(PetscArraycpy((W), (A), (bs) * (bs))); \
+      msgemmi_(&bs, A, B, W); \
+    } while (0)
 
-/*
+  /*
 
     A = A - B * C  A_gets_A_minus_B_times_C
 
    A, B, C - square bs by bs arrays stored in column major order
 */
-#define PetscKernel_A_gets_A_minus_B_times_C(bs, A, B, C)              msgemm_(&(bs), (A), (B), (C))
+  #define PetscKernel_A_gets_A_minus_B_times_C(bs, A, B, C)              msgemm_(&(bs), (A), (B), (C))
 
-/*
+  /*
     v = v - A w  v_gets_v_minus_A_times_w
 
    v - array of length bs
    A - square bs by bs array
    w - array of length bs
 */
-#define PetscKernel_v_gets_v_minus_A_times_w(bs, v, A, w)              msgemvm_(&(bs), &(bs), (A), (w), (v))
+  #define PetscKernel_v_gets_v_minus_A_times_w(bs, v, A, w)              msgemvm_(&(bs), &(bs), (A), (w), (v))
 
-/*
+  /*
     v = v + A w  v_gets_v_plus_A_times_w
 
    v - array of length bs
    A - square bs by bs array
    w - array of length bs
 */
-#define PetscKernel_v_gets_v_plus_A_times_w(bs, v, A, w)               msgemvp_(&(bs), &(bs), (A), (w), (v))
+  #define PetscKernel_v_gets_v_plus_A_times_w(bs, v, A, w)               msgemvp_(&(bs), &(bs), (A), (w), (v))
 
-/*
+  /*
     v = v + A w  v_gets_v_plus_Ar_times_w
 
    v - array of length bs
    A - square bs by bs array
    w - array of length bs
 */
-#define PetscKernel_w_gets_w_plus_Ar_times_v(bs, ncol, v, A, w)        msgemvp_(&(bs), &(ncol), (A), (v), (w))
+  #define PetscKernel_w_gets_w_plus_Ar_times_v(bs, ncol, v, A, w)        msgemvp_(&(bs), &(ncol), (A), (v), (w))
 
-/*
+  /*
     w = A v   w_gets_A_times_v
 
    v - array of length bs
    A - square bs by bs array
    w - array of length bs
 */
-#define PetscKernel_w_gets_A_times_v(bs, v, A, w)                      msgemv_(&(bs), &(bs), (A), (v), (w))
+  #define PetscKernel_w_gets_A_times_v(bs, v, A, w)                      msgemv_(&(bs), &(bs), (A), (v), (w))
 
-/*
+  /*
         z = A*x
 */
-#define PetscKernel_w_gets_Ar_times_v(bs, ncols, x, A, z)              msgemv_(&(bs), &(ncols), (A), (x), (z))
+  #define PetscKernel_w_gets_Ar_times_v(bs, ncols, x, A, z)              msgemv_(&(bs), &(ncols), (A), (x), (z))
 
-/*
+  /*
         z = trans(A)*x
 */
-#define PetscKernel_w_gets_w_plus_trans_Ar_times_v(bs, ncols, x, A, z) msgemvt_(&(bs), &(ncols), (A), (x), (z))
+  #define PetscKernel_w_gets_w_plus_trans_Ar_times_v(bs, ncols, x, A, z) msgemvt_(&(bs), &(ncols), (A), (x), (z))
 
-/* These do not work yet */
-#define PetscKernel_A_gets_A_plus_Btranspose_times_C(bs, A, B, C)
-#define PetscKernel_v_gets_v_plus_Atranspose_times_w(bs, v, A, w)
+  /* These do not work yet */
+  #define PetscKernel_A_gets_A_plus_Btranspose_times_C(bs, A, B, C)
+  #define PetscKernel_v_gets_v_plus_Atranspose_times_w(bs, v, A, w)
 
 #endif /* !defined(PETSC_USE_REAL_MAT_SINGLE) */
 

@@ -37,13 +37,15 @@
 
 #define GMSH_MAX_ORDER 10
 
-static inline int GmshLexOrder_VTX(int p, int lex[], int node) {
+static inline int GmshLexOrder_VTX(int p, int lex[], int node)
+{
   lex[0] = node++;
   (void)p;
   return node;
 }
 
-static inline int GmshLexOrder_SEG(int p, int lex[], int node) {
+static inline int GmshLexOrder_SEG(int p, int lex[], int node)
+{
 #define loop1(i) SL1(p, i)
 #define index(i) SI1(p, i)
   int i;
@@ -61,7 +63,8 @@ static inline int GmshLexOrder_SEG(int p, int lex[], int node) {
 #undef index
 }
 
-static inline int GmshLexOrder_TRI(int p, int lex[], int node) {
+static inline int GmshLexOrder_TRI(int p, int lex[], int node)
+{
 #define loop1(i)    SL1(p, i)
 #define loop2(i, j) SL2(p, i, j)
 #define index(i, j) SI2(p, i, j)
@@ -88,7 +91,8 @@ static inline int GmshLexOrder_TRI(int p, int lex[], int node) {
 #undef index
 }
 
-static inline int GmshLexOrder_QUA(int p, int lex[], int node) {
+static inline int GmshLexOrder_QUA(int p, int lex[], int node)
+{
 #define loop1(i)    BL1(p, i)
 #define loop2(i, j) BL2(p, i, j)
 #define index(i, j) BI2(p, i, j)
@@ -108,15 +112,16 @@ static inline int GmshLexOrder_QUA(int p, int lex[], int node) {
   loop1(i) lex[index(p - i, p)] = node++;
   loop1(j) lex[index(0, p - j)] = node++;
   /* internal cell nodes */
-  node                          = GmshLexOrder_QUA(p - 2, sub = buf, node);
-  loop2(j, i) lex[index(i, j)]  = *sub++;
+  node                         = GmshLexOrder_QUA(p - 2, sub = buf, node);
+  loop2(j, i) lex[index(i, j)] = *sub++;
   return node;
 #undef loop1
 #undef loop2
 #undef index
 }
 
-static inline int GmshLexOrder_TET(int p, int lex[], int node) {
+static inline int GmshLexOrder_TET(int p, int lex[], int node)
+{
 #define loop1(i)       SL1(p, i)
 #define loop2(i, j)    SL2(p, i, j)
 #define loop3(i, j, k) SL3(p, i, j, k)
@@ -159,7 +164,8 @@ static inline int GmshLexOrder_TET(int p, int lex[], int node) {
 #undef index
 }
 
-static inline int GmshLexOrder_HEX(int p, int lex[], int node) {
+static inline int GmshLexOrder_HEX(int p, int lex[], int node)
+{
 #define loop1(i)       BL1(p, i)
 #define loop2(i, j)    BL2(p, i, j)
 #define loop3(i, j, k) BL3(p, i, j, k)
@@ -179,18 +185,18 @@ static inline int GmshLexOrder_HEX(int p, int lex[], int node) {
   lex[index(0, p, p)] = node++;
   if (p == 1) return node;
   /* internal edge nodes */
-  loop1(i) lex[index(i, 0, 0)]        = node++;
-  loop1(j) lex[index(0, j, 0)]        = node++;
-  loop1(k) lex[index(0, 0, k)]        = node++;
-  loop1(j) lex[index(p, j, 0)]        = node++;
-  loop1(k) lex[index(p, 0, k)]        = node++;
-  loop1(i) lex[index(p - i, p, 0)]    = node++;
-  loop1(k) lex[index(p, p, k)]        = node++;
-  loop1(k) lex[index(0, p, k)]        = node++;
-  loop1(i) lex[index(i, 0, p)]        = node++;
-  loop1(j) lex[index(0, j, p)]        = node++;
-  loop1(j) lex[index(p, j, p)]        = node++;
-  loop1(i) lex[index(p - i, p, p)]    = node++;
+  loop1(i) lex[index(i, 0, 0)]     = node++;
+  loop1(j) lex[index(0, j, 0)]     = node++;
+  loop1(k) lex[index(0, 0, k)]     = node++;
+  loop1(j) lex[index(p, j, 0)]     = node++;
+  loop1(k) lex[index(p, 0, k)]     = node++;
+  loop1(i) lex[index(p - i, p, 0)] = node++;
+  loop1(k) lex[index(p, p, k)]     = node++;
+  loop1(k) lex[index(0, p, k)]     = node++;
+  loop1(i) lex[index(i, 0, p)]     = node++;
+  loop1(j) lex[index(0, j, p)]     = node++;
+  loop1(j) lex[index(p, j, p)]     = node++;
+  loop1(i) lex[index(p - i, p, p)] = node++;
   /* internal face nodes */
   node                                = GmshLexOrder_QUA(p - 2, sub = buf, node);
   loop2(i, j) lex[index(i, j, 0)]     = *sub++;
@@ -205,8 +211,8 @@ static inline int GmshLexOrder_HEX(int p, int lex[], int node) {
   node                                = GmshLexOrder_QUA(p - 2, sub = buf, node);
   loop2(j, i) lex[index(i, j, p)]     = *sub++;
   /* internal cell nodes */
-  node                                = GmshLexOrder_HEX(p - 2, sub = buf, node);
-  loop3(k, j, i) lex[index(i, j, k)]  = *sub++;
+  node                               = GmshLexOrder_HEX(p - 2, sub = buf, node);
+  loop3(k, j, i) lex[index(i, j, k)] = *sub++;
   return node;
 #undef loop1
 #undef loop2
@@ -214,7 +220,8 @@ static inline int GmshLexOrder_HEX(int p, int lex[], int node) {
 #undef index
 }
 
-static inline int GmshLexOrder_PRI(int p, int lex[], int node) {
+static inline int GmshLexOrder_PRI(int p, int lex[], int node)
+{
 #define loop1(i)       BL1(p, i)
 #define loops(i, j)    SL2(p, i, j)
 #define loopb(i, j)    BL2(p, i, j)
@@ -251,11 +258,11 @@ static inline int GmshLexOrder_PRI(int p, int lex[], int node) {
   }
   if (p >= 2) {
     /* internal front face nodes */
-    node                                = GmshLexOrder_QUA(p - 2, sub = buf, node);
-    loopb(k, i) lex[index(i, 0, k)]     = *sub++;
+    node                            = GmshLexOrder_QUA(p - 2, sub = buf, node);
+    loopb(k, i) lex[index(i, 0, k)] = *sub++;
     /* internal left face nodes */
-    node                                = GmshLexOrder_QUA(p - 2, sub = buf, node);
-    loopb(j, k) lex[index(0, j, k)]     = *sub++;
+    node                            = GmshLexOrder_QUA(p - 2, sub = buf, node);
+    loopb(j, k) lex[index(0, j, k)] = *sub++;
     /* internal back face nodes */
     node                                = GmshLexOrder_QUA(p - 2, sub = buf, node);
     loopb(k, j) lex[index(p - j, j, k)] = *sub++;
@@ -267,7 +274,8 @@ static inline int GmshLexOrder_PRI(int p, int lex[], int node) {
     } pair;
     pair ij[SN2(GMSH_MAX_ORDER)], tmp[SN2(GMSH_MAX_ORDER)];
     int  m = GmshLexOrder_TRI(p - 3, sub = buf, 0), l = 0;
-    loops(j, i) {
+    loops(j, i)
+    {
       tmp[l].i = i;
       tmp[l].j = j;
       l++;
@@ -287,7 +295,8 @@ static inline int GmshLexOrder_PRI(int p, int lex[], int node) {
 #undef index
 }
 
-static inline int GmshLexOrder_PYR(int p, int lex[], int node) {
+static inline int GmshLexOrder_PYR(int p, int lex[], int node)
+{
   int i, m = GmshNumNodes_PYR(p);
   for (i = 0; i < m; ++i) lex[i] = node++; /* TODO */
   return node;

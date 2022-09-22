@@ -1,16 +1,17 @@
 #include <petsc/private/sfimpl.h>
 
 #if !defined(PETSC_HAVE_MPI_COMBINER_DUP) && !defined(MPI_COMBINER_DUP) /* We have no way to interpret output of MPI_Type_get_envelope without this. */
-#define MPI_COMBINER_DUP 0
+  #define MPI_COMBINER_DUP 0
 #endif
 #if !defined(PETSC_HAVE_MPI_COMBINER_NAMED) && !defined(MPI_COMBINER_NAMED)
-#define MPI_COMBINER_NAMED -2
+  #define MPI_COMBINER_NAMED -2
 #endif
 #if !defined(PETSC_HAVE_MPI_COMBINER_CONTIGUOUS) && !defined(MPI_COMBINER_CONTIGUOUS) && MPI_VERSION < 2
-#define MPI_COMBINER_CONTIGUOUS -1
+  #define MPI_COMBINER_CONTIGUOUS -1
 #endif
 
-static PetscErrorCode MPIPetsc_Type_free(MPI_Datatype *a) {
+static PetscErrorCode MPIPetsc_Type_free(MPI_Datatype *a)
+{
   PetscMPIInt nints, naddrs, ntypes, combiner;
 
   PetscFunctionBegin;
@@ -32,7 +33,8 @@ static PetscErrorCode MPIPetsc_Type_free(MPI_Datatype *a) {
 + atype - the unwrapped datatype, which is either equal(=) to a or equivalent to a.
 - flg   - true if atype != a, which implies caller should MPIPetsc_Type_free(atype) after use. Note atype might be MPI builtin.
 */
-PetscErrorCode MPIPetsc_Type_unwrap(MPI_Datatype a, MPI_Datatype *atype, PetscBool *flg) {
+PetscErrorCode MPIPetsc_Type_unwrap(MPI_Datatype a, MPI_Datatype *atype, PetscBool *flg)
+{
   PetscMPIInt  nints, naddrs, ntypes, combiner, ints[1];
   MPI_Aint     addrs[1];
   MPI_Datatype types[1];
@@ -69,7 +71,8 @@ PetscErrorCode MPIPetsc_Type_unwrap(MPI_Datatype a, MPI_Datatype *atype, PetscBo
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MPIPetsc_Type_compare(MPI_Datatype a, MPI_Datatype b, PetscBool *match) {
+PetscErrorCode MPIPetsc_Type_compare(MPI_Datatype a, MPI_Datatype b, PetscBool *match)
+{
   MPI_Datatype atype, btype;
   PetscMPIInt  aintcount, aaddrcount, atypecount, acombiner;
   PetscMPIInt  bintcount, baddrcount, btypecount, bcombiner;
@@ -130,7 +133,8 @@ free_types:
 /* Check whether a was created via MPI_Type_contiguous from b
  *
  */
-PetscErrorCode MPIPetsc_Type_compare_contig(MPI_Datatype a, MPI_Datatype b, PetscInt *n) {
+PetscErrorCode MPIPetsc_Type_compare_contig(MPI_Datatype a, MPI_Datatype b, PetscInt *n)
+{
   MPI_Datatype atype, btype;
   PetscMPIInt  aintcount, aaddrcount, atypecount, acombiner;
   PetscBool    freeatype, freebtype;

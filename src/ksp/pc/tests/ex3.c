@@ -6,7 +6,8 @@ also tests the MatSOR() routines.  Input parameters are:\n\
 #include <petscksp.h>
 #include <petscpc.h>
 
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   Mat         mat;         /* matrix */
   Vec         b, ustar, u; /* vectors (RHS, exact solution, approx solution) */
   PC          pc;          /* PC context */

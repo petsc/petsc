@@ -1,4 +1,4 @@
-#if !defined(PETSCDMPLEXTRANSFORM_H)
+#ifndef PETSCDMPLEXTRANSFORM_H
 #define PETSCDMPLEXTRANSFORM_H
 
 #include <petscdmplex.h>

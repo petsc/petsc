@@ -68,7 +68,8 @@
 
 #include "petsc.h"
 
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[])
+{
   Teuchos::GlobalMPISession mpiSession(&argc, &argv);
 
   typedef double                                                 Scalar;

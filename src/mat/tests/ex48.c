@@ -3,7 +3,8 @@ static char help[] = "Tests various routines in MatSeqBAIJ format.\n";
 
 #include <petscmat.h>
 
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   Mat           A, B, C, D, Fact;
   Vec           xx, s1, s2, yy;
   PetscInt      m = 45, rows[2], cols[2], bs = 1, i, row, col, *idx, M;

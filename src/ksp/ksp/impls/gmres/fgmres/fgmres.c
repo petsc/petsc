@@ -29,7 +29,8 @@ static PetscErrorCode KSPFGMRESBuildSoln(PetscScalar *, Vec, Vec, KSP, PetscInt)
     but can be called directly by KSPSetUp().
 
 */
-PetscErrorCode KSPSetUp_FGMRES(KSP ksp) {
+PetscErrorCode KSPSetUp_FGMRES(KSP ksp)
+{
   PetscInt    max_k, k;
   KSP_FGMRES *fgmres = (KSP_FGMRES *)ksp->data;
 
@@ -52,7 +53,8 @@ PetscErrorCode KSPSetUp_FGMRES(KSP ksp) {
 /*
     KSPFGMRESResidual - This routine computes the initial residual (NOT PRECONDITIONED)
 */
-static PetscErrorCode KSPFGMRESResidual(KSP ksp) {
+static PetscErrorCode KSPFGMRESResidual(KSP ksp)
+{
   KSP_FGMRES *fgmres = (KSP_FGMRES *)(ksp->data);
   Mat         Amat, Pmat;
 
@@ -83,7 +85,8 @@ static PetscErrorCode KSPFGMRESResidual(KSP ksp) {
     the initial residual.
 
  */
-PetscErrorCode KSPFGMRESCycle(PetscInt *itcount, KSP ksp) {
+PetscErrorCode KSPFGMRESCycle(PetscInt *itcount, KSP ksp)
+{
   KSP_FGMRES *fgmres = (KSP_FGMRES *)(ksp->data);
   PetscReal   res_norm;
   PetscReal   hapbnd, tt;
@@ -244,7 +247,8 @@ PetscErrorCode KSPFGMRESCycle(PetscInt *itcount, KSP ksp) {
 
 */
 
-PetscErrorCode KSPSolve_FGMRES(KSP ksp) {
+PetscErrorCode KSPSolve_FGMRES(KSP ksp)
+{
   PetscInt    cycle_its = 0; /* iterations done in a call to KSPFGMRESCycle */
   KSP_FGMRES *fgmres    = (KSP_FGMRES *)ksp->data;
   PetscBool   diagonalscale;
@@ -286,12 +290,13 @@ extern PetscErrorCode KSPReset_FGMRES(KSP);
    KSPDestroy_FGMRES - Frees all memory space used by the Krylov method.
 
 */
-PetscErrorCode        KSPDestroy_FGMRES(KSP ksp) {
-         PetscFunctionBegin;
-         PetscCall(KSPReset_FGMRES(ksp));
-         PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPFGMRESSetModifyPC_C", NULL));
-         PetscCall(KSPDestroy_GMRES(ksp));
-         PetscFunctionReturn(0);
+PetscErrorCode KSPDestroy_FGMRES(KSP ksp)
+{
+  PetscFunctionBegin;
+  PetscCall(KSPReset_FGMRES(ksp));
+  PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPFGMRESSetModifyPC_C", NULL));
+  PetscCall(KSPDestroy_GMRES(ksp));
+  PetscFunctionReturn(0);
 }
 
 /*
@@ -307,7 +312,8 @@ PetscErrorCode        KSPDestroy_FGMRES(KSP ksp) {
 
      This is an internal routine that knows about the FGMRES internals.
  */
-static PetscErrorCode KSPFGMRESBuildSoln(PetscScalar *nrs, Vec vguess, Vec vdest, KSP ksp, PetscInt it) {
+static PetscErrorCode KSPFGMRESBuildSoln(PetscScalar *nrs, Vec vguess, Vec vdest, KSP ksp, PetscInt it)
+{
   PetscScalar tt;
   PetscInt    ii, k, j;
   KSP_FGMRES *fgmres = (KSP_FGMRES *)(ksp->data);
@@ -368,7 +374,8 @@ static PetscErrorCode KSPFGMRESBuildSoln(PetscScalar *nrs, Vec vguess, Vec vdest
 .        res - the new residual
 
  */
-static PetscErrorCode KSPFGMRESUpdateHessenberg(KSP ksp, PetscInt it, PetscBool hapend, PetscReal *res) {
+static PetscErrorCode KSPFGMRESUpdateHessenberg(KSP ksp, PetscInt it, PetscBool hapend, PetscReal *res)
+{
   PetscScalar *hh, *cc, *ss, tt;
   PetscInt     j;
   KSP_FGMRES  *fgmres = (KSP_FGMRES *)(ksp->data);
@@ -441,7 +448,8 @@ static PetscErrorCode KSPFGMRESUpdateHessenberg(KSP ksp, PetscInt it, PetscBool 
                          from PREVEC(i).
 
 */
-static PetscErrorCode KSPFGMRESGetNewVectors(KSP ksp, PetscInt it) {
+static PetscErrorCode KSPFGMRESGetNewVectors(KSP ksp, PetscInt it)
+{
   KSP_FGMRES *fgmres = (KSP_FGMRES *)ksp->data;
   PetscInt    nwork  = fgmres->nwork_alloc; /* number of work vector chunks allocated */
   PetscInt    nalloc;                       /* number to allocate */
@@ -488,7 +496,8 @@ static PetscErrorCode KSPFGMRESGetNewVectors(KSP ksp, PetscInt it) {
    calls directly.
 
 */
-PetscErrorCode KSPBuildSolution_FGMRES(KSP ksp, Vec ptr, Vec *result) {
+PetscErrorCode KSPBuildSolution_FGMRES(KSP ksp, Vec ptr, Vec *result)
+{
   KSP_FGMRES *fgmres = (KSP_FGMRES *)ksp->data;
 
   PetscFunctionBegin;
@@ -506,7 +515,8 @@ PetscErrorCode KSPBuildSolution_FGMRES(KSP ksp, Vec ptr, Vec *result) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode KSPSetFromOptions_FGMRES(KSP ksp, PetscOptionItems *PetscOptionsObject) {
+PetscErrorCode KSPSetFromOptions_FGMRES(KSP ksp, PetscOptionItems *PetscOptionsObject)
+{
   PetscBool flg;
 
   PetscFunctionBegin;
@@ -523,7 +533,8 @@ PetscErrorCode KSPSetFromOptions_FGMRES(KSP ksp, PetscOptionItems *PetscOptionsO
 typedef PetscErrorCode (*FCN1)(KSP, PetscInt, PetscInt, PetscReal, void *); /* force argument to next function to not be extern C*/
 typedef PetscErrorCode (*FCN2)(void *);
 
-static PetscErrorCode KSPFGMRESSetModifyPC_FGMRES(KSP ksp, FCN1 fcn, void *ctx, FCN2 d) {
+static PetscErrorCode KSPFGMRESSetModifyPC_FGMRES(KSP ksp, FCN1 fcn, void *ctx, FCN2 d)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
   ((KSP_FGMRES *)ksp->data)->modifypc      = fcn;
@@ -532,7 +543,8 @@ static PetscErrorCode KSPFGMRESSetModifyPC_FGMRES(KSP ksp, FCN1 fcn, void *ctx, 
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode KSPReset_FGMRES(KSP ksp) {
+PetscErrorCode KSPReset_FGMRES(KSP ksp)
+{
   KSP_FGMRES *fgmres = (KSP_FGMRES *)ksp->data;
   PetscInt    i;
 
@@ -550,7 +562,8 @@ PetscErrorCode KSPReset_FGMRES(KSP ksp) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode KSPGMRESSetRestart_FGMRES(KSP ksp, PetscInt max_k) {
+PetscErrorCode KSPGMRESSetRestart_FGMRES(KSP ksp, PetscInt max_k)
+{
   KSP_FGMRES *gmres = (KSP_FGMRES *)ksp->data;
 
   PetscFunctionBegin;
@@ -566,7 +579,8 @@ PetscErrorCode KSPGMRESSetRestart_FGMRES(KSP ksp, PetscInt max_k) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode KSPGMRESGetRestart_FGMRES(KSP ksp, PetscInt *max_k) {
+PetscErrorCode KSPGMRESGetRestart_FGMRES(KSP ksp, PetscInt *max_k)
+{
   KSP_FGMRES *gmres = (KSP_FGMRES *)ksp->data;
 
   PetscFunctionBegin;
@@ -612,7 +626,8 @@ PetscErrorCode KSPGMRESGetRestart_FGMRES(KSP ksp, PetscInt *max_k) {
 
 M*/
 
-PETSC_EXTERN PetscErrorCode KSPCreate_FGMRES(KSP ksp) {
+PETSC_EXTERN PetscErrorCode KSPCreate_FGMRES(KSP ksp)
+{
   KSP_FGMRES *fgmres;
 
   PetscFunctionBegin;

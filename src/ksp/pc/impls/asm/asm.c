@@ -13,7 +13,8 @@
 #include <petsc/private/pcasmimpl.h> /*I "petscpc.h" I*/
 #include "petsc/private/matimpl.h"
 
-static PetscErrorCode PCView_ASM(PC pc, PetscViewer viewer) {
+static PetscErrorCode PCView_ASM(PC pc, PetscViewer viewer)
+{
   PC_ASM           *osm = (PC_ASM *)pc->data;
   PetscMPIInt       rank;
   PetscInt          i, bsz;
@@ -76,7 +77,8 @@ static PetscErrorCode PCView_ASM(PC pc, PetscViewer viewer) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCASMPrintSubdomains(PC pc) {
+static PetscErrorCode PCASMPrintSubdomains(PC pc)
+{
   PC_ASM         *osm = (PC_ASM *)pc->data;
   const char     *prefix;
   char            fname[PETSC_MAX_PATH_LEN + 1];
@@ -149,7 +151,8 @@ static PetscErrorCode PCASMPrintSubdomains(PC pc) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCSetUp_ASM(PC pc) {
+static PetscErrorCode PCSetUp_ASM(PC pc)
+{
   PC_ASM     *osm = (PC_ASM *)pc->data;
   PetscBool   flg;
   PetscInt    i, m, m_local;
@@ -403,7 +406,8 @@ static PetscErrorCode PCSetUp_ASM(PC pc) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCSetUpOnBlocks_ASM(PC pc) {
+static PetscErrorCode PCSetUpOnBlocks_ASM(PC pc)
+{
   PC_ASM            *osm = (PC_ASM *)pc->data;
   PetscInt           i;
   KSPConvergedReason reason;
@@ -417,7 +421,8 @@ static PetscErrorCode PCSetUpOnBlocks_ASM(PC pc) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCApply_ASM(PC pc, Vec x, Vec y) {
+static PetscErrorCode PCApply_ASM(PC pc, Vec x, Vec y)
+{
   PC_ASM     *osm = (PC_ASM *)pc->data;
   PetscInt    i, n_local_true = osm->n_local_true;
   ScatterMode forward = SCATTER_FORWARD, reverse = SCATTER_REVERSE;
@@ -482,7 +487,8 @@ static PetscErrorCode PCApply_ASM(PC pc, Vec x, Vec y) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCMatApply_ASM(PC pc, Mat X, Mat Y) {
+static PetscErrorCode PCMatApply_ASM(PC pc, Mat X, Mat Y)
+{
   PC_ASM     *osm = (PC_ASM *)pc->data;
   Mat         Z, W;
   Vec         x;
@@ -553,7 +559,8 @@ static PetscErrorCode PCMatApply_ASM(PC pc, Mat X, Mat Y) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCApplyTranspose_ASM(PC pc, Vec x, Vec y) {
+static PetscErrorCode PCApplyTranspose_ASM(PC pc, Vec x, Vec y)
+{
   PC_ASM     *osm = (PC_ASM *)pc->data;
   PetscInt    i, n_local_true = osm->n_local_true;
   ScatterMode forward = SCATTER_FORWARD, reverse = SCATTER_REVERSE;
@@ -614,7 +621,8 @@ static PetscErrorCode PCApplyTranspose_ASM(PC pc, Vec x, Vec y) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCReset_ASM(PC pc) {
+static PetscErrorCode PCReset_ASM(PC pc)
+{
   PC_ASM  *osm = (PC_ASM *)pc->data;
   PetscInt i;
 
@@ -651,7 +659,8 @@ static PetscErrorCode PCReset_ASM(PC pc) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCDestroy_ASM(PC pc) {
+static PetscErrorCode PCDestroy_ASM(PC pc)
+{
   PC_ASM  *osm = (PC_ASM *)pc->data;
   PetscInt i;
 
@@ -677,7 +686,8 @@ static PetscErrorCode PCDestroy_ASM(PC pc) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCSetFromOptions_ASM(PC pc, PetscOptionItems *PetscOptionsObject) {
+static PetscErrorCode PCSetFromOptions_ASM(PC pc, PetscOptionItems *PetscOptionsObject)
+{
   PC_ASM         *osm = (PC_ASM *)pc->data;
   PetscInt        blocks, ovl;
   PetscBool       flg;
@@ -715,7 +725,8 @@ static PetscErrorCode PCSetFromOptions_ASM(PC pc, PetscOptionItems *PetscOptions
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCASMSetLocalSubdomains_ASM(PC pc, PetscInt n, IS is[], IS is_local[]) {
+static PetscErrorCode PCASMSetLocalSubdomains_ASM(PC pc, PetscInt n, IS is[], IS is_local[])
+{
   PC_ASM  *osm = (PC_ASM *)pc->data;
   PetscInt i;
 
@@ -761,7 +772,8 @@ static PetscErrorCode PCASMSetLocalSubdomains_ASM(PC pc, PetscInt n, IS is[], IS
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCASMSetTotalSubdomains_ASM(PC pc, PetscInt N, IS *is, IS *is_local) {
+static PetscErrorCode PCASMSetTotalSubdomains_ASM(PC pc, PetscInt N, IS *is, IS *is_local)
+{
   PC_ASM     *osm = (PC_ASM *)pc->data;
   PetscMPIInt rank, size;
   PetscInt    n;
@@ -788,7 +800,8 @@ static PetscErrorCode PCASMSetTotalSubdomains_ASM(PC pc, PetscInt N, IS *is, IS 
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCASMSetOverlap_ASM(PC pc, PetscInt ovl) {
+static PetscErrorCode PCASMSetOverlap_ASM(PC pc, PetscInt ovl)
+{
   PC_ASM *osm = (PC_ASM *)pc->data;
 
   PetscFunctionBegin;
@@ -798,7 +811,8 @@ static PetscErrorCode PCASMSetOverlap_ASM(PC pc, PetscInt ovl) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCASMSetType_ASM(PC pc, PCASMType type) {
+static PetscErrorCode PCASMSetType_ASM(PC pc, PCASMType type)
+{
   PC_ASM *osm = (PC_ASM *)pc->data;
 
   PetscFunctionBegin;
@@ -807,7 +821,8 @@ static PetscErrorCode PCASMSetType_ASM(PC pc, PCASMType type) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCASMGetType_ASM(PC pc, PCASMType *type) {
+static PetscErrorCode PCASMGetType_ASM(PC pc, PCASMType *type)
+{
   PC_ASM *osm = (PC_ASM *)pc->data;
 
   PetscFunctionBegin;
@@ -815,7 +830,8 @@ static PetscErrorCode PCASMGetType_ASM(PC pc, PCASMType *type) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCASMSetLocalType_ASM(PC pc, PCCompositeType type) {
+static PetscErrorCode PCASMSetLocalType_ASM(PC pc, PCCompositeType type)
+{
   PC_ASM *osm = (PC_ASM *)pc->data;
 
   PetscFunctionBegin;
@@ -824,7 +840,8 @@ static PetscErrorCode PCASMSetLocalType_ASM(PC pc, PCCompositeType type) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCASMGetLocalType_ASM(PC pc, PCCompositeType *type) {
+static PetscErrorCode PCASMGetLocalType_ASM(PC pc, PCCompositeType *type)
+{
   PC_ASM *osm = (PC_ASM *)pc->data;
 
   PetscFunctionBegin;
@@ -832,7 +849,8 @@ static PetscErrorCode PCASMGetLocalType_ASM(PC pc, PCCompositeType *type) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCASMSetSortIndices_ASM(PC pc, PetscBool doSort) {
+static PetscErrorCode PCASMSetSortIndices_ASM(PC pc, PetscBool doSort)
+{
   PC_ASM *osm = (PC_ASM *)pc->data;
 
   PetscFunctionBegin;
@@ -840,7 +858,8 @@ static PetscErrorCode PCASMSetSortIndices_ASM(PC pc, PetscBool doSort) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCASMGetSubKSP_ASM(PC pc, PetscInt *n_local, PetscInt *first_local, KSP **ksp) {
+static PetscErrorCode PCASMGetSubKSP_ASM(PC pc, PetscInt *n_local, PetscInt *first_local, KSP **ksp)
+{
   PC_ASM *osm = (PC_ASM *)pc->data;
 
   PetscFunctionBegin;
@@ -855,7 +874,8 @@ static PetscErrorCode PCASMGetSubKSP_ASM(PC pc, PetscInt *n_local, PetscInt *fir
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCASMGetSubMatType_ASM(PC pc, MatType *sub_mat_type) {
+static PetscErrorCode PCASMGetSubMatType_ASM(PC pc, MatType *sub_mat_type)
+{
   PC_ASM *osm = (PC_ASM *)pc->data;
 
   PetscFunctionBegin;
@@ -865,7 +885,8 @@ static PetscErrorCode PCASMGetSubMatType_ASM(PC pc, MatType *sub_mat_type) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCASMSetSubMatType_ASM(PC pc, MatType sub_mat_type) {
+static PetscErrorCode PCASMSetSubMatType_ASM(PC pc, MatType sub_mat_type)
+{
   PC_ASM *osm = (PC_ASM *)pc->data;
 
   PetscFunctionBegin;
@@ -911,7 +932,8 @@ static PetscErrorCode PCASMSetSubMatType_ASM(PC pc, MatType sub_mat_type) {
 .seealso: `PCASM`, `PCASMSetTotalSubdomains()`, `PCASMSetOverlap()`, `PCASMGetSubKSP()`,
           `PCASMCreateSubdomains2D()`, `PCASMGetLocalSubdomains()`, `PCASMType`, `PCASMSetType()`, `PCGASM`
 @*/
-PetscErrorCode PCASMSetLocalSubdomains(PC pc, PetscInt n, IS is[], IS is_local[]) {
+PetscErrorCode PCASMSetLocalSubdomains(PC pc, PetscInt n, IS is[], IS is_local[])
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscTryMethod(pc, "PCASMSetLocalSubdomains_C", (PC, PetscInt, IS[], IS[]), (pc, n, is, is_local));
@@ -954,7 +976,8 @@ PetscErrorCode PCASMSetLocalSubdomains(PC pc, PetscInt n, IS is[], IS is_local[]
 .seealso: `PCASM`, `PCASMSetLocalSubdomains()`, `PCASMSetOverlap()`, `PCASMGetSubKSP()`,
           `PCASMCreateSubdomains2D()`, `PCGASM`
 @*/
-PetscErrorCode PCASMSetTotalSubdomains(PC pc, PetscInt N, IS is[], IS is_local[]) {
+PetscErrorCode PCASMSetTotalSubdomains(PC pc, PetscInt N, IS is[], IS is_local[])
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscTryMethod(pc, "PCASMSetTotalSubdomains_C", (PC, PetscInt, IS[], IS[]), (pc, N, is, is_local));
@@ -1000,7 +1023,8 @@ PetscErrorCode PCASMSetTotalSubdomains(PC pc, PetscInt N, IS is[], IS is_local[]
 .seealso: `PCASM`, `PCASMSetTotalSubdomains()`, `PCASMSetLocalSubdomains()`, `PCASMGetSubKSP()`,
           `PCASMCreateSubdomains2D()`, `PCASMGetLocalSubdomains()`, `MatIncreaseOverlap()`, `PCGASM`
 @*/
-PetscErrorCode PCASMSetOverlap(PC pc, PetscInt ovl) {
+PetscErrorCode PCASMSetOverlap(PC pc, PetscInt ovl)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscValidLogicalCollectiveInt(pc, ovl, 2);
@@ -1036,7 +1060,8 @@ PetscErrorCode PCASMSetOverlap(PC pc, PetscInt ovl) {
 .seealso: `PCASM`, `PCASMSetTotalSubdomains()`, `PCASMSetTotalSubdomains()`, `PCASMGetSubKSP()`,
           `PCASMCreateSubdomains2D()`, `PCASMType`, `PCASMSetLocalType()`, `PCASMGetLocalType()`, `PCGASM`
 @*/
-PetscErrorCode PCASMSetType(PC pc, PCASMType type) {
+PetscErrorCode PCASMSetType(PC pc, PCASMType type)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscValidLogicalCollectiveEnum(pc, type, 2);
@@ -1071,7 +1096,8 @@ PetscErrorCode PCASMSetType(PC pc, PCASMType type) {
 .seealso: `PCASM`, `PCASMSetTotalSubdomains()`, `PCASMSetTotalSubdomains()`, `PCASMGetSubKSP()`, `PCGASM`,
           `PCASMCreateSubdomains2D()`, `PCASMType`, `PCASMSetType()`, `PCASMSetLocalType()`, `PCASMGetLocalType()`
 @*/
-PetscErrorCode PCASMGetType(PC pc, PCASMType *type) {
+PetscErrorCode PCASMGetType(PC pc, PCASMType *type)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscUseMethod(pc, "PCASMGetType_C", (PC, PCASMType *), (pc, type));
@@ -1098,7 +1124,8 @@ PetscErrorCode PCASMGetType(PC pc, PCASMType *type) {
 
 .seealso: `PCASM`, `PCASMSetType()`, `PCASMGetType()`, `PCASMGetLocalType()`, `PCASM`, `PCASMType`, `PCASMSetType()`, `PCASMGetType()`, `PCCompositeType`
 @*/
-PetscErrorCode PCASMSetLocalType(PC pc, PCCompositeType type) {
+PetscErrorCode PCASMSetLocalType(PC pc, PCCompositeType type)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscValidLogicalCollectiveEnum(pc, type, 2);
@@ -1128,7 +1155,8 @@ PetscErrorCode PCASMSetLocalType(PC pc, PCCompositeType type) {
 
 .seealso: `PCASM`, `PCASMSetType()`, `PCASMGetType()`, `PCASMSetLocalType()`, `PCASMCreate()`, `PCASMType`, `PCASMSetType()`, `PCASMGetType()`, `PCCompositeType`
 @*/
-PetscErrorCode PCASMGetLocalType(PC pc, PCCompositeType *type) {
+PetscErrorCode PCASMGetLocalType(PC pc, PCCompositeType *type)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscValidPointer(type, 2);
@@ -1150,7 +1178,8 @@ PetscErrorCode PCASMGetLocalType(PC pc, PCCompositeType *type) {
 .seealso: `PCASM`, `PCASMSetLocalSubdomains()`, `PCASMSetTotalSubdomains()`, `PCASMGetSubKSP()`,
           `PCASMCreateSubdomains2D()`
 @*/
-PetscErrorCode PCASMSetSortIndices(PC pc, PetscBool doSort) {
+PetscErrorCode PCASMSetSortIndices(PC pc, PetscBool doSort)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscValidLogicalCollectiveBool(pc, doSort, 2);
@@ -1186,7 +1215,8 @@ PetscErrorCode PCASMSetSortIndices(PC pc, PetscBool doSort) {
 .seealso: `PCASM`, `PCASMSetTotalSubdomains()`, `PCASMSetTotalSubdomains()`, `PCASMSetOverlap()`,
           `PCASMCreateSubdomains2D()`,
 @*/
-PetscErrorCode PCASMGetSubKSP(PC pc, PetscInt *n_local, PetscInt *first_local, KSP *ksp[]) {
+PetscErrorCode PCASMGetSubKSP(PC pc, PetscInt *n_local, PetscInt *first_local, KSP *ksp[])
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscUseMethod(pc, "PCASMGetSubKSP_C", (PC, PetscInt *, PetscInt *, KSP **), (pc, n_local, first_local, ksp));
@@ -1230,7 +1260,8 @@ PetscErrorCode PCASMGetSubKSP(PC pc, PetscInt *n_local, PetscInt *first_local, K
           `PCASMSetTotalSubdomains()`, `PCSetModifySubMatrices()`, `PCASMSetOverlap()`, `PCASMSetType()`, `PCCompositeType`
 M*/
 
-PETSC_EXTERN PetscErrorCode PCCreate_ASM(PC pc) {
+PETSC_EXTERN PetscErrorCode PCCreate_ASM(PC pc)
+{
   PC_ASM *osm;
 
   PetscFunctionBegin;
@@ -1306,7 +1337,8 @@ PETSC_EXTERN PetscErrorCode PCCreate_ASM(PC pc) {
 
 .seealso: `PCASM`, `PCASMSetLocalSubdomains()`, `PCASMDestroySubdomains()`
 @*/
-PetscErrorCode PCASMCreateSubdomains(Mat A, PetscInt n, IS *outis[]) {
+PetscErrorCode PCASMCreateSubdomains(Mat A, PetscInt n, IS *outis[])
+{
   MatPartitioning mpart;
   const char     *prefix;
   PetscInt        i, j, rstart, rend, bs;
@@ -1467,7 +1499,8 @@ PetscErrorCode PCASMCreateSubdomains(Mat A, PetscInt n, IS *outis[]) {
 
 .seealso: `PCASM`, `PCASMCreateSubdomains()`, `PCASMSetLocalSubdomains()`
 @*/
-PetscErrorCode PCASMDestroySubdomains(PetscInt n, IS is[], IS is_local[]) {
+PetscErrorCode PCASMDestroySubdomains(PetscInt n, IS is[], IS is_local[])
+{
   PetscInt i;
 
   PetscFunctionBegin;
@@ -1514,7 +1547,8 @@ PetscErrorCode PCASMDestroySubdomains(PetscInt n, IS is[], IS is_local[]) {
 .seealso: `PCASM`, `PCASMSetTotalSubdomains()`, `PCASMSetLocalSubdomains()`, `PCASMGetSubKSP()`,
           `PCASMSetOverlap()`
 @*/
-PetscErrorCode PCASMCreateSubdomains2D(PetscInt m, PetscInt n, PetscInt M, PetscInt N, PetscInt dof, PetscInt overlap, PetscInt *Nsub, IS **is, IS **is_local) {
+PetscErrorCode PCASMCreateSubdomains2D(PetscInt m, PetscInt n, PetscInt M, PetscInt N, PetscInt dof, PetscInt overlap, PetscInt *Nsub, IS **is, IS **is_local)
+{
   PetscInt i, j, height, width, ystart, xstart, yleft, yright, xleft, xright, loc_outer;
   PetscInt nidx, *idx, loc, ii, jj, count;
 
@@ -1591,7 +1625,8 @@ PetscErrorCode PCASMCreateSubdomains2D(PetscInt m, PetscInt n, PetscInt M, Petsc
 .seealso: `PCASM`, `PCASMSetTotalSubdomains()`, `PCASMSetOverlap()`, `PCASMGetSubKSP()`,
           `PCASMCreateSubdomains2D()`, `PCASMSetLocalSubdomains()`, `PCASMGetLocalSubmatrices()`
 @*/
-PetscErrorCode PCASMGetLocalSubdomains(PC pc, PetscInt *n, IS *is[], IS *is_local[]) {
+PetscErrorCode PCASMGetLocalSubdomains(PC pc, PetscInt *n, IS *is[], IS *is_local[])
+{
   PC_ASM   *osm = (PC_ASM *)pc->data;
   PetscBool match;
 
@@ -1631,7 +1666,8 @@ PetscErrorCode PCASMGetLocalSubdomains(PC pc, PetscInt *n, IS *is[], IS *is_loca
 .seealso: `PCASM`, `PCASMSetTotalSubdomains()`, `PCASMSetOverlap()`, `PCASMGetSubKSP()`,
           `PCASMCreateSubdomains2D()`, `PCASMSetLocalSubdomains()`, `PCASMGetLocalSubdomains()`, `PCSetModifySubMatrices()`
 @*/
-PetscErrorCode PCASMGetLocalSubmatrices(PC pc, PetscInt *n, Mat *mat[]) {
+PetscErrorCode PCASMGetLocalSubmatrices(PC pc, PetscInt *n, Mat *mat[])
+{
   PC_ASM   *osm;
   PetscBool match;
 
@@ -1673,7 +1709,8 @@ PetscErrorCode PCASMGetLocalSubmatrices(PC pc, PetscInt *n, Mat *mat[]) {
 .seealso: `PCASM`, `PCASMGetDMSubdomains()`, `PCASMSetTotalSubdomains()`, `PCASMSetOverlap()`
           `PCASMCreateSubdomains2D()`, `PCASMSetLocalSubdomains()`, `PCASMGetLocalSubdomains()`
 @*/
-PetscErrorCode PCASMSetDMSubdomains(PC pc, PetscBool flg) {
+PetscErrorCode PCASMSetDMSubdomains(PC pc, PetscBool flg)
+{
   PC_ASM   *osm = (PC_ASM *)pc->data;
   PetscBool match;
 
@@ -1702,7 +1739,8 @@ PetscErrorCode PCASMSetDMSubdomains(PC pc, PetscBool flg) {
 .seealso: `PCASM`, `PCASMSetDMSubdomains()`, `PCASMSetTotalSubdomains()`, `PCASMSetOverlap()`
           `PCASMCreateSubdomains2D()`, `PCASMSetLocalSubdomains()`, `PCASMGetLocalSubdomains()`
 @*/
-PetscErrorCode PCASMGetDMSubdomains(PC pc, PetscBool *flg) {
+PetscErrorCode PCASMGetDMSubdomains(PC pc, PetscBool *flg)
+{
   PC_ASM   *osm = (PC_ASM *)pc->data;
   PetscBool match;
 
@@ -1730,7 +1768,8 @@ PetscErrorCode PCASMGetDMSubdomains(PC pc, PetscBool *flg) {
 
 .seealso: `PCASM`, `PCASMSetSubMatType()`, `PCASM`, `PCSetType()`, `VecSetType()`, `MatType`, `Mat`
 @*/
-PetscErrorCode PCASMGetSubMatType(PC pc, MatType *sub_mat_type) {
+PetscErrorCode PCASMGetSubMatType(PC pc, MatType *sub_mat_type)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscTryMethod(pc, "PCASMGetSubMatType_C", (PC, MatType *), (pc, sub_mat_type));
@@ -1757,7 +1796,8 @@ PetscErrorCode PCASMGetSubMatType(PC pc, MatType *sub_mat_type) {
 
 .seealso: `PCASM`, `PCASMGetSubMatType()`, `PCASM`, `PCSetType()`, `VecSetType()`, `MatType`, `Mat`
 @*/
-PetscErrorCode PCASMSetSubMatType(PC pc, MatType sub_mat_type) {
+PetscErrorCode PCASMSetSubMatType(PC pc, MatType sub_mat_type)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscTryMethod(pc, "PCASMSetSubMatType_C", (PC, MatType), (pc, sub_mat_type));

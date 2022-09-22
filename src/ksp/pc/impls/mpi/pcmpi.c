@@ -39,7 +39,8 @@ static MPI_Comm  PCMPIComms[PC_MPI_MAX_RANKS];
 static PetscBool PCMPICommSet = PETSC_FALSE;
 static PetscInt  PCMPISolveCounts[PC_MPI_MAX_RANKS], PCMPIKSPCounts[PC_MPI_MAX_RANKS], PCMPIMatCounts[PC_MPI_MAX_RANKS], PCMPISolveCountsSeq = 0, PCMPIKSPCountsSeq = 0;
 
-static PetscErrorCode PCMPICommsCreate(void) {
+static PetscErrorCode PCMPICommsCreate(void)
+{
   MPI_Comm    comm = PC_MPI_COMM_WORLD;
   PetscMPIInt size, rank, i;
 
@@ -58,7 +59,8 @@ static PetscErrorCode PCMPICommsCreate(void) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PCMPICommsDestroy(void) {
+PetscErrorCode PCMPICommsDestroy(void)
+{
   MPI_Comm    comm = PC_MPI_COMM_WORLD;
   PetscMPIInt size, rank, i;
 
@@ -73,7 +75,8 @@ PetscErrorCode PCMPICommsDestroy(void) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCMPICreate(PC pc) {
+static PetscErrorCode PCMPICreate(PC pc)
+{
   PC_MPI     *km   = pc ? (PC_MPI *)pc->data : NULL;
   MPI_Comm    comm = PC_MPI_COMM_WORLD;
   KSP         ksp;
@@ -122,7 +125,8 @@ static PetscErrorCode PCMPICreate(PC pc) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCMPISetMat(PC pc) {
+static PetscErrorCode PCMPISetMat(PC pc)
+{
   PC_MPI            *km = pc ? (PC_MPI *)pc->data : NULL;
   Mat                A;
   PetscInt           N[2], n, *ia, *ja, j, bs;
@@ -212,7 +216,8 @@ static PetscErrorCode PCMPISetMat(PC pc) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCMPIUpdateMatValues(PC pc) {
+static PetscErrorCode PCMPIUpdateMatValues(PC pc)
+{
   PC_MPI            *km = pc ? (PC_MPI *)pc->data : NULL;
   KSP                ksp;
   Mat                sA, A;
@@ -242,7 +247,8 @@ static PetscErrorCode PCMPIUpdateMatValues(PC pc) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCMPISolve(PC pc, Vec B, Vec X) {
+static PetscErrorCode PCMPISolve(PC pc, Vec B, Vec X)
+{
   PC_MPI            *km = pc ? (PC_MPI *)pc->data : NULL;
   KSP                ksp;
   MPI_Comm           comm = PC_MPI_COMM_WORLD;
@@ -282,7 +288,8 @@ static PetscErrorCode PCMPISolve(PC pc, Vec B, Vec X) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCMPIDestroy(PC pc) {
+static PetscErrorCode PCMPIDestroy(PC pc)
+{
   PC_MPI  *km = pc ? (PC_MPI *)pc->data : NULL;
   KSP      ksp;
   MPI_Comm comm = PC_MPI_COMM_WORLD;
@@ -318,7 +325,8 @@ static PetscErrorCode PCMPIDestroy(PC pc) {
 
 .seealso: `PCMPIServerEnd()`, `PCMPI`
 @*/
-PetscErrorCode PCMPIServerBegin(void) {
+PetscErrorCode PCMPIServerBegin(void)
+{
   PetscMPIInt rank;
 
   PetscFunctionBegin;
@@ -344,19 +352,30 @@ PetscErrorCode PCMPIServerBegin(void) {
     PCMPICommand request = PCMPI_CREATE;
     PetscCallMPI(MPI_Bcast(&request, 1, MPIU_ENUM, 0, PC_MPI_COMM_WORLD));
     switch (request) {
-    case PCMPI_CREATE: PetscCall(PCMPICreate(NULL)); break;
-    case PCMPI_SET_MAT: PetscCall(PCMPISetMat(NULL)); break;
-    case PCMPI_UPDATE_MAT_VALUES: PetscCall(PCMPIUpdateMatValues(NULL)); break;
+    case PCMPI_CREATE:
+      PetscCall(PCMPICreate(NULL));
+      break;
+    case PCMPI_SET_MAT:
+      PetscCall(PCMPISetMat(NULL));
+      break;
+    case PCMPI_UPDATE_MAT_VALUES:
+      PetscCall(PCMPIUpdateMatValues(NULL));
+      break;
     case PCMPI_VIEW:
       // PetscCall(PCMPIView(NULL));
       break;
-    case PCMPI_SOLVE: PetscCall(PCMPISolve(NULL, NULL, NULL)); break;
-    case PCMPI_DESTROY: PetscCall(PCMPIDestroy(NULL)); break;
+    case PCMPI_SOLVE:
+      PetscCall(PCMPISolve(NULL, NULL, NULL));
+      break;
+    case PCMPI_DESTROY:
+      PetscCall(PCMPIDestroy(NULL));
+      break;
     case PCMPI_EXIT:
       PetscCall(PetscFinalize());
       exit(0); /* not sure if this is a good idea, but cannot return because it will run users main program */
       break;
-    default: break;
+    default:
+      break;
     }
   }
   PetscFunctionReturn(0);
@@ -375,7 +394,8 @@ PetscErrorCode PCMPIServerBegin(void) {
 
 .seealso: `PCMPIServerBegin()`, `PCMPI`
 @*/
-PetscErrorCode PCMPIServerEnd(void) {
+PetscErrorCode PCMPIServerEnd(void)
+{
   PCMPICommand request = PCMPI_EXIT;
 
   PetscFunctionBegin;
@@ -417,7 +437,8 @@ PetscErrorCode PCMPIServerEnd(void) {
     This version is used in the trivial case when the MPI parallel solver server is running on just the original MPI rank 0
     because, for example, the problem is small. This version is more efficient because it does not require copying any data
 */
-static PetscErrorCode PCSetUp_Seq(PC pc) {
+static PetscErrorCode PCSetUp_Seq(PC pc)
+{
   PC_MPI     *km = (PC_MPI *)pc->data;
   Mat         sA;
   const char *prefix;
@@ -436,7 +457,8 @@ static PetscErrorCode PCSetUp_Seq(PC pc) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCApply_Seq(PC pc, Vec b, Vec x) {
+static PetscErrorCode PCApply_Seq(PC pc, Vec b, Vec x)
+{
   PC_MPI *km = (PC_MPI *)pc->data;
 
   PetscFunctionBegin;
@@ -445,7 +467,8 @@ static PetscErrorCode PCApply_Seq(PC pc, Vec b, Vec x) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCView_Seq(PC pc, PetscViewer viewer) {
+static PetscErrorCode PCView_Seq(PC pc, PetscViewer viewer)
+{
   PC_MPI     *km = (PC_MPI *)pc->data;
   const char *prefix;
 
@@ -458,7 +481,8 @@ static PetscErrorCode PCView_Seq(PC pc, PetscViewer viewer) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCDestroy_Seq(PC pc) {
+static PetscErrorCode PCDestroy_Seq(PC pc)
+{
   PC_MPI *km = (PC_MPI *)pc->data;
 
   PetscFunctionBegin;
@@ -471,7 +495,8 @@ static PetscErrorCode PCDestroy_Seq(PC pc) {
      PCSetUp_MPI - Trigger the creation of the MPI parallel PC and copy parts of the matrix and
      right hand side to the parallel PC
 */
-static PetscErrorCode PCSetUp_MPI(PC pc) {
+static PetscErrorCode PCSetUp_MPI(PC pc)
+{
   PC_MPI      *km = (PC_MPI *)pc->data;
   PetscMPIInt  rank, size;
   PCMPICommand request;
@@ -520,7 +545,8 @@ static PetscErrorCode PCSetUp_MPI(PC pc) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCApply_MPI(PC pc, Vec b, Vec x) {
+static PetscErrorCode PCApply_MPI(PC pc, Vec b, Vec x)
+{
   PCMPICommand request = PCMPI_SOLVE;
 
   PetscFunctionBegin;
@@ -529,7 +555,8 @@ static PetscErrorCode PCApply_MPI(PC pc, Vec b, Vec x) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PCDestroy_MPI(PC pc) {
+PetscErrorCode PCDestroy_MPI(PC pc)
+{
   PCMPICommand request = PCMPI_DESTROY;
 
   PetscFunctionBegin;
@@ -542,7 +569,8 @@ PetscErrorCode PCDestroy_MPI(PC pc) {
 /*
      PCView_MPI - Cannot call view on the MPI parallel KSP because other ranks do not have access to the viewer
 */
-PetscErrorCode PCView_MPI(PC pc, PetscViewer viewer) {
+PetscErrorCode PCView_MPI(PC pc, PetscViewer viewer)
+{
   PC_MPI     *km = (PC_MPI *)pc->data;
   MPI_Comm    comm;
   PetscMPIInt size;
@@ -559,7 +587,8 @@ PetscErrorCode PCView_MPI(PC pc, PetscViewer viewer) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PCSetFromOptions_MPI(PC pc, PetscOptionItems *PetscOptionsObject) {
+PetscErrorCode PCSetFromOptions_MPI(PC pc, PetscOptionItems *PetscOptionsObject)
+{
   PC_MPI *km = (PC_MPI *)pc->data;
 
   PetscFunctionBegin;
@@ -594,7 +623,8 @@ PetscErrorCode PCSetFromOptions_MPI(PC pc, PetscOptionItems *PetscOptionsObject)
 
 .seealso: `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `PC`, `PCMPIServerBegin()`, `PCMPIServerEnd()`
 M*/
-PETSC_EXTERN PetscErrorCode PCCreate_MPI(PC pc) {
+PETSC_EXTERN PetscErrorCode PCCreate_MPI(PC pc)
+{
   PC_MPI *km;
 
   PetscFunctionBegin;

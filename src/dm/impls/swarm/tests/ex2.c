@@ -19,7 +19,8 @@ typedef struct {
 
 /* const char *const ex2FunctionTypes[] = {"linear","x2_x4","sin","ex2FunctionTypes","EX2_FUNCTION_",0}; */
 
-static PetscErrorCode linear(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *a_ctx) {
+static PetscErrorCode linear(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *a_ctx)
+{
   AppCtx  *ctx = (AppCtx *)a_ctx;
   PetscInt d;
 
@@ -28,7 +29,8 @@ static PetscErrorCode linear(PetscInt dim, PetscReal time, const PetscReal x[], 
   return 0;
 }
 
-static PetscErrorCode x2_x4(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *a_ctx) {
+static PetscErrorCode x2_x4(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *a_ctx)
+{
   AppCtx  *ctx = (AppCtx *)a_ctx;
   PetscInt d;
 
@@ -37,14 +39,16 @@ static PetscErrorCode x2_x4(PetscInt dim, PetscReal time, const PetscReal x[], P
   return 0;
 }
 
-static PetscErrorCode sinx(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *a_ctx) {
+static PetscErrorCode sinx(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *a_ctx)
+{
   AppCtx *ctx = (AppCtx *)a_ctx;
 
   u[0] = PetscSinScalar(2 * PETSC_PI * ctx->k * x[0] / (ctx->L[0]));
   return 0;
 }
 
-static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options) {
+static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
+{
   char      fstring[PETSC_MAX_PATH_LEN] = "linear";
   PetscBool flag;
 
@@ -82,7 +86,8 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PerturbVertices(DM dm, AppCtx *user) {
+static PetscErrorCode PerturbVertices(DM dm, AppCtx *user)
+{
   PetscRandom  rnd;
   PetscReal    interval = user->meshRelDx;
   Vec          coordinates;
@@ -118,7 +123,8 @@ static PetscErrorCode PerturbVertices(DM dm, AppCtx *user) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, AppCtx *user) {
+static PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, AppCtx *user)
+{
   PetscReal low[3], high[3];
   PetscInt  cdim, d;
 
@@ -135,11 +141,13 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, AppCtx *user) {
   PetscFunctionReturn(0);
 }
 
-static void identity(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g0[]) {
+static void identity(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g0[])
+{
   g0[0] = 1.0;
 }
 
-static PetscErrorCode CreateFEM(DM dm, AppCtx *user) {
+static PetscErrorCode CreateFEM(DM dm, AppCtx *user)
+{
   PetscFE        fe;
   PetscDS        ds;
   DMPolytopeType ct;
@@ -162,7 +170,8 @@ static PetscErrorCode CreateFEM(DM dm, AppCtx *user) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode CreateParticles(DM dm, DM *sw, AppCtx *user) {
+static PetscErrorCode CreateParticles(DM dm, DM *sw, AppCtx *user)
+{
   PetscRandom    rnd, rndp;
   PetscReal      interval = user->particleRelDx;
   DMPolytopeType ct;
@@ -246,7 +255,8 @@ static PetscErrorCode CreateParticles(DM dm, DM *sw, AppCtx *user) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode computeParticleMoments(DM sw, PetscReal moments[3], AppCtx *user) {
+static PetscErrorCode computeParticleMoments(DM sw, PetscReal moments[3], AppCtx *user)
+{
   DM                 dm;
   const PetscReal   *coords;
   const PetscScalar *w;
@@ -282,22 +292,26 @@ static PetscErrorCode computeParticleMoments(DM sw, PetscReal moments[3], AppCtx
   PetscFunctionReturn(0);
 }
 
-static void f0_1(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[]) {
+static void f0_1(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
+{
   f0[0] = u[0];
 }
 
-static void f0_x(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[]) {
+static void f0_x(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
+{
   f0[0] = x[0] * u[0];
 }
 
-static void f0_r2(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[]) {
+static void f0_r2(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
+{
   PetscInt d;
 
   f0[0] = 0.0;
   for (d = 0; d < dim; ++d) f0[0] += PetscSqr(x[d]) * u[0];
 }
 
-static PetscErrorCode computeFEMMoments(DM dm, Vec u, PetscReal moments[3], AppCtx *user) {
+static PetscErrorCode computeFEMMoments(DM dm, Vec u, PetscReal moments[3], AppCtx *user)
+{
   PetscDS     prob;
   PetscScalar mom;
 
@@ -315,7 +329,8 @@ static PetscErrorCode computeFEMMoments(DM dm, Vec u, PetscReal moments[3], AppC
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TestL2ProjectionParticlesToField(DM dm, DM sw, AppCtx *user) {
+static PetscErrorCode TestL2ProjectionParticlesToField(DM dm, DM sw, AppCtx *user)
+{
   MPI_Comm  comm;
   KSP       ksp;
   Mat       M;            /* FEM mass matrix */
@@ -370,7 +385,8 @@ static PetscErrorCode TestL2ProjectionParticlesToField(DM dm, DM sw, AppCtx *use
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TestL2ProjectionFieldToParticles(DM dm, DM sw, AppCtx *user) {
+static PetscErrorCode TestL2ProjectionFieldToParticles(DM dm, DM sw, AppCtx *user)
+{
   MPI_Comm  comm;
   KSP       ksp;
   Mat       M;            /* FEM mass matrix */
@@ -433,7 +449,8 @@ static PetscErrorCode TestL2ProjectionFieldToParticles(DM dm, DM sw, AppCtx *use
 }
 
 /* Interpolate the gradient of an FEM (FVM) field. Code repurposed from DMPlexComputeGradientClementInterpolant */
-static PetscErrorCode InterpolateGradient(DM dm, Vec locX, Vec locC) {
+static PetscErrorCode InterpolateGradient(DM dm, Vec locX, Vec locC)
+{
   DM_Plex         *mesh  = (DM_Plex *)dm->data;
   PetscInt         debug = mesh->printFEM;
   DM               dmC;
@@ -541,7 +558,8 @@ static PetscErrorCode InterpolateGradient(DM dm, Vec locX, Vec locC) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TestFieldGradientProjection(DM dm, DM sw, AppCtx *user) {
+static PetscErrorCode TestFieldGradientProjection(DM dm, DM sw, AppCtx *user)
+{
   MPI_Comm  comm;
   KSP       ksp;
   Mat       M;                  /* FEM mass matrix */
@@ -601,7 +619,8 @@ static PetscErrorCode TestFieldGradientProjection(DM dm, DM sw, AppCtx *user) {
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[])
+{
   MPI_Comm comm;
   DM       dm, sw;
   AppCtx   user;

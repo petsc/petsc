@@ -16,7 +16,8 @@
 
 .seealso: `PetscFEGeomDestroy()`, `PetscFEGeomComplete()`
 @*/
-PetscErrorCode PetscFEGeomCreate(PetscQuadrature quad, PetscInt numCells, PetscInt dimEmbed, PetscBool faceData, PetscFEGeom **geom) {
+PetscErrorCode PetscFEGeomCreate(PetscQuadrature quad, PetscInt numCells, PetscInt dimEmbed, PetscBool faceData, PetscFEGeom **geom)
+{
   PetscFEGeom     *g;
   PetscInt         dim, Nq, N;
   const PetscReal *p;
@@ -51,7 +52,8 @@ PetscErrorCode PetscFEGeomCreate(PetscQuadrature quad, PetscInt numCells, PetscI
 
 .seealso: `PetscFEGeomCreate()`
 @*/
-PetscErrorCode PetscFEGeomDestroy(PetscFEGeom **geom) {
+PetscErrorCode PetscFEGeomDestroy(PetscFEGeom **geom)
+{
   PetscFunctionBegin;
   if (!*geom) PetscFunctionReturn(0);
   PetscCall(PetscFree3((*geom)->v, (*geom)->J, (*geom)->detJ));
@@ -77,7 +79,8 @@ PetscErrorCode PetscFEGeomDestroy(PetscFEGeom **geom) {
 
 .seealso: `PetscFEGeomRestoreChunk()`, `PetscFEGeomCreate()`
 @*/
-PetscErrorCode PetscFEGeomGetChunk(PetscFEGeom *geom, PetscInt cStart, PetscInt cEnd, PetscFEGeom **chunkGeom) {
+PetscErrorCode PetscFEGeomGetChunk(PetscFEGeom *geom, PetscInt cStart, PetscInt cEnd, PetscFEGeom **chunkGeom)
+{
   PetscInt Nq;
   PetscInt dE;
 
@@ -121,7 +124,8 @@ PetscErrorCode PetscFEGeomGetChunk(PetscFEGeom *geom, PetscInt cStart, PetscInt 
 
 .seealso: `PetscFEGeomGetChunk()`, `PetscFEGeomCreate()`
 @*/
-PetscErrorCode PetscFEGeomRestoreChunk(PetscFEGeom *geom, PetscInt cStart, PetscInt cEnd, PetscFEGeom **chunkGeom) {
+PetscErrorCode PetscFEGeomRestoreChunk(PetscFEGeom *geom, PetscInt cStart, PetscInt cEnd, PetscFEGeom **chunkGeom)
+{
   PetscFunctionBegin;
   PetscCall(PetscFree(*chunkGeom));
   PetscFunctionReturn(0);
@@ -148,7 +152,8 @@ PetscErrorCode PetscFEGeomRestoreChunk(PetscFEGeom *geom, PetscInt cStart, Petsc
 
 .seealso: `PetscFEGeomRestoreChunk()`, `PetscFEGeomCreate()`
 @*/
-PetscErrorCode PetscFEGeomGetPoint(PetscFEGeom *geom, PetscInt c, PetscInt p, const PetscReal pcoords[], PetscFEGeom *pgeom) {
+PetscErrorCode PetscFEGeomGetPoint(PetscFEGeom *geom, PetscInt c, PetscInt p, const PetscReal pcoords[], PetscFEGeom *pgeom)
+{
   const PetscInt dim = geom->dim;
   const PetscInt dE  = geom->dimEmbed;
   const PetscInt Np  = geom->numPoints;
@@ -194,7 +199,8 @@ PetscErrorCode PetscFEGeomGetPoint(PetscFEGeom *geom, PetscInt c, PetscInt p, co
 
 .seealso: `PetscFEGeomRestoreChunk()`, `PetscFEGeomCreate()`
 @*/
-PetscErrorCode PetscFEGeomGetCellPoint(PetscFEGeom *geom, PetscInt c, PetscInt p, PetscFEGeom *pgeom) {
+PetscErrorCode PetscFEGeomGetCellPoint(PetscFEGeom *geom, PetscInt c, PetscInt p, PetscFEGeom *pgeom)
+{
   const PetscBool bd  = geom->dimEmbed > geom->dim && !geom->isCohesive ? PETSC_TRUE : PETSC_FALSE;
   const PetscInt  dim = bd ? geom->dimEmbed : geom->dim;
   const PetscInt  dE  = geom->dimEmbed;
@@ -240,7 +246,8 @@ PetscErrorCode PetscFEGeomGetCellPoint(PetscFEGeom *geom, PetscInt c, PetscInt p
 
 .seealso: `PetscFEGeomCreate()`
 @*/
-PetscErrorCode PetscFEGeomComplete(PetscFEGeom *geom) {
+PetscErrorCode PetscFEGeomComplete(PetscFEGeom *geom)
+{
   PetscInt i, j, N, dE;
 
   PetscFunctionBeginHot;

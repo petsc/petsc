@@ -58,7 +58,8 @@ extern PetscErrorCode ConvergenceTest(KSP, PetscInt, PetscReal, KSPConvergedReas
 extern PetscErrorCode ConvergenceDestroy(void *);
 extern PetscErrorCode postcheck(SNES, Vec, Vec, Vec, PetscBool *, PetscBool *, void *);
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   SNES          snes; /* nonlinear solver context */
   Vec           x, r; /* solution, residual vectors */
   Mat           J;    /* Jacobian matrix */
@@ -272,7 +273,8 @@ int main(int argc, char **argv) {
    Output Parameter:
    X - vector
  */
-PetscErrorCode FormInitialGuess(AppCtx *user, Vec X) {
+PetscErrorCode FormInitialGuess(AppCtx *user, Vec X)
+{
   PetscInt     i, j, row, mx, my;
   PetscReal    lambda, temp1, temp, hx, hy;
   PetscScalar *x;
@@ -323,7 +325,8 @@ PetscErrorCode FormInitialGuess(AppCtx *user, Vec X) {
    Output Parameter:
 .  F - function vector
  */
-PetscErrorCode FormFunction(SNES snes, Vec X, Vec F, void *ptr) {
+PetscErrorCode FormFunction(SNES snes, Vec X, Vec F, void *ptr)
+{
   AppCtx            *user = (AppCtx *)ptr;
   PetscInt           i, j, row, mx, my;
   PetscReal          two = 2.0, one = 1.0, lambda, hx, hy, hxdhy, hydhx;
@@ -387,7 +390,8 @@ PetscErrorCode FormFunction(SNES snes, Vec X, Vec F, void *ptr) {
 .  B - optionally different preconditioning matrix
 .  flag - flag indicating matrix structure
 */
-PetscErrorCode FormJacobian(SNES snes, Vec X, Mat J, Mat jac, void *ptr) {
+PetscErrorCode FormJacobian(SNES snes, Vec X, Mat J, Mat jac, void *ptr)
+{
   AppCtx            *user = (AppCtx *)ptr; /* user-defined applicatin context */
   PetscInt           i, j, row, mx, my, col[5];
   PetscScalar        two = 2.0, one = 1.0, lambda, v[5], sc;
@@ -451,7 +455,8 @@ PetscErrorCode FormJacobian(SNES snes, Vec X, Mat J, Mat jac, void *ptr) {
   return 0;
 }
 
-PetscErrorCode ConvergenceTest(KSP ksp, PetscInt it, PetscReal nrm, KSPConvergedReason *reason, void *ctx) {
+PetscErrorCode ConvergenceTest(KSP ksp, PetscInt it, PetscReal nrm, KSPConvergedReason *reason, void *ctx)
+{
   PetscFunctionBegin;
   *reason = KSP_CONVERGED_ITERATING;
   if (it > 1) {
@@ -461,14 +466,16 @@ PetscErrorCode ConvergenceTest(KSP ksp, PetscInt it, PetscReal nrm, KSPConverged
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode ConvergenceDestroy(void *ctx) {
+PetscErrorCode ConvergenceDestroy(void *ctx)
+{
   PetscFunctionBegin;
   PetscCall(PetscInfo(NULL, "User provided convergence destroy called\n"));
   PetscCall(PetscFree(ctx));
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode postcheck(SNES snes, Vec x, Vec y, Vec w, PetscBool *changed_y, PetscBool *changed_w, void *ctx) {
+PetscErrorCode postcheck(SNES snes, Vec x, Vec y, Vec w, PetscBool *changed_y, PetscBool *changed_w, void *ctx)
+{
   PetscReal norm;
   Vec       tmp;
 

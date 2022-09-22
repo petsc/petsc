@@ -7,18 +7,19 @@ typedef struct {
   PetscBool     debug; /* The debugging level */
   PetscLogEvent createMeshEvent;
   /* Domain and mesh definition */
-  PetscInt      dim;                             /* The topological mesh dimension */
-  PetscInt      nele;                            /* Elements in each dimension */
-  PetscInt      degree;                          /* Degree of refinement */
-  PetscBool     simplex;                         /* Use simplex elements */
-  PetscInt      nlevels;                         /* Number of levels in mesh hierarchy */
-  PetscInt      nghost;                          /* Number of ghost layers in the mesh */
-  char          input_file[PETSC_MAX_PATH_LEN];  /* Import mesh from file */
-  char          output_file[PETSC_MAX_PATH_LEN]; /* Output mesh file name */
-  PetscBool     write_output;                    /* Write output mesh and data to file */
+  PetscInt  dim;                             /* The topological mesh dimension */
+  PetscInt  nele;                            /* Elements in each dimension */
+  PetscInt  degree;                          /* Degree of refinement */
+  PetscBool simplex;                         /* Use simplex elements */
+  PetscInt  nlevels;                         /* Number of levels in mesh hierarchy */
+  PetscInt  nghost;                          /* Number of ghost layers in the mesh */
+  char      input_file[PETSC_MAX_PATH_LEN];  /* Import mesh from file */
+  char      output_file[PETSC_MAX_PATH_LEN]; /* Output mesh file name */
+  PetscBool write_output;                    /* Write output mesh and data to file */
 } AppCtx;
 
-PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options) {
+PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
+{
   PetscFunctionBegin;
   options->debug         = PETSC_FALSE;
   options->nlevels       = 1;
@@ -47,7 +48,8 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options) {
   PetscFunctionReturn(0);
 };
 
-PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user) {
+PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user)
+{
   size_t      len;
   PetscMPIInt rank;
 
@@ -69,7 +71,8 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user) {
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   AppCtx    user; /* user-defined work context */
   MPI_Comm  comm;
   PetscInt  i;

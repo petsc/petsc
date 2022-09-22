@@ -43,7 +43,8 @@ struct _n_TSMonitorSPEigCtx {
 .seealso: `TSMonitorSPEigTimeStep()`, `TSMonitorSet()`, `TSMonitorLGSolution()`, `TSMonitorLGError()`
 
 @*/
-PetscErrorCode TSMonitorSPEigCtxCreate(MPI_Comm comm, const char host[], const char label[], int x, int y, int m, int n, PetscInt howoften, TSMonitorSPEigCtx *ctx) {
+PetscErrorCode TSMonitorSPEigCtxCreate(MPI_Comm comm, const char host[], const char label[], int x, int y, int m, int n, PetscInt howoften, TSMonitorSPEigCtx *ctx)
+{
   PetscDraw win;
   PC        pc;
 
@@ -77,7 +78,8 @@ PetscErrorCode TSMonitorSPEigCtxCreate(MPI_Comm comm, const char host[], const c
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSLinearStabilityIndicator(TS ts, PetscReal xr, PetscReal xi, PetscBool *flg) {
+static PetscErrorCode TSLinearStabilityIndicator(TS ts, PetscReal xr, PetscReal xi, PetscBool *flg)
+{
   PetscReal yr, yi;
 
   PetscFunctionBegin;
@@ -87,7 +89,8 @@ static PetscErrorCode TSLinearStabilityIndicator(TS ts, PetscReal xr, PetscReal 
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode TSMonitorSPEig(TS ts, PetscInt step, PetscReal ptime, Vec v, void *monctx) {
+PetscErrorCode TSMonitorSPEig(TS ts, PetscInt step, PetscReal ptime, Vec v, void *monctx)
+{
   TSMonitorSPEigCtx ctx = (TSMonitorSPEigCtx)monctx;
   KSP               ksp = ctx->ksp;
   PetscInt          n, N, nits, neig, i, its = 200;
@@ -182,7 +185,8 @@ PetscErrorCode TSMonitorSPEig(TS ts, PetscInt step, PetscReal ptime, Vec v, void
 
 .seealso: `TSMonitorSPEigCtxCreate()`, `TSMonitorSet()`, `TSMonitorSPEig();`
 @*/
-PetscErrorCode TSMonitorSPEigCtxDestroy(TSMonitorSPEigCtx *ctx) {
+PetscErrorCode TSMonitorSPEigCtxDestroy(TSMonitorSPEigCtx *ctx)
+{
   PetscDraw draw;
 
   PetscFunctionBegin;

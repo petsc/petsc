@@ -16,7 +16,8 @@
 
 .seealso: `KSPCreate()`, `KSPSetType()`, `KSPPYTHON`, `PetscPythonInitialize()`
 @*/
-PetscErrorCode KSPPythonSetType(KSP ksp, const char pyname[]) {
+PetscErrorCode KSPPythonSetType(KSP ksp, const char pyname[])
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
   PetscValidCharPointer(pyname, 2);
@@ -39,7 +40,8 @@ PetscErrorCode KSPPythonSetType(KSP ksp, const char pyname[]) {
 
 .seealso: `KSPCreate()`, `KSPSetType()`, `KSPPYTHON`, `PetscPythonInitialize()`, `KSPPythonSetType()`
 @*/
-PetscErrorCode KSPPythonGetType(KSP ksp, const char *pyname[]) {
+PetscErrorCode KSPPythonGetType(KSP ksp, const char *pyname[])
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
   PetscValidPointer(pyname, 2);

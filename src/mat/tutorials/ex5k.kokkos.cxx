@@ -11,7 +11,8 @@ static char help[] = "Test of Kokkos matrix assemble with 1D Laplacian. Kokkos v
 
 #include <petscaijdevice.h>
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   Mat                        A;
   PetscInt                   N = 11, nz = 3, Istart, Iend, num_threads = 128;
   PetscSplitCSRDataStructure d_mat;

@@ -5,33 +5,38 @@
 #include <petsc/private/cupminterface.hpp>
 
 #if defined(__cplusplus)
-#include <thrust/device_ptr.h>
-#include <thrust/transform.h>
+  #include <thrust/device_ptr.h>
+  #include <thrust/transform.h>
 
-namespace Petsc {
+namespace Petsc
+{
 
-namespace device {
+namespace device
+{
 
-namespace cupm {
+namespace cupm
+{
 
-namespace impl {
+namespace impl
+{
 
-#if PetscDefined(USING_NVCC)
-#if !defined(THRUST_VERSION)
-#error "THRUST_VERSION not defined!"
-#endif
-#if !PetscDefined(USE_DEBUG) && (THRUST_VERSION >= 101600)
-#define thrust_call_par_on(func, s, ...) func(thrust::cuda::par_nosync.on(s), __VA_ARGS__)
-#else
-#define thrust_call_par_on(func, s, ...) func(thrust::cuda::par.on(s), __VA_ARGS__)
-#endif
-#elif PetscDefined(USING_HCC) // rocThrust has no par_nosync
-#define thrust_call_par_on(func, s, ...) func(thrust::hip::par.on(s), __VA_ARGS__)
-#else
-#define thrust_call_par_on(func, s, ...) func(__VA_ARGS__)
-#endif
+  #if PetscDefined(USING_NVCC)
+    #if !defined(THRUST_VERSION)
+      #error "THRUST_VERSION not defined!"
+    #endif
+    #if !PetscDefined(USE_DEBUG) && (THRUST_VERSION >= 101600)
+      #define thrust_call_par_on(func, s, ...) func(thrust::cuda::par_nosync.on(s), __VA_ARGS__)
+    #else
+      #define thrust_call_par_on(func, s, ...) func(thrust::cuda::par.on(s), __VA_ARGS__)
+    #endif
+  #elif PetscDefined(USING_HCC) // rocThrust has no par_nosync
+    #define thrust_call_par_on(func, s, ...) func(thrust::hip::par.on(s), __VA_ARGS__)
+  #else
+    #define thrust_call_par_on(func, s, ...) func(__VA_ARGS__)
+  #endif
 
-namespace detail {
+namespace detail
+{
 
 struct PetscLogGpuTimer {
   PetscLogGpuTimer() noexcept { PetscCallAbort(PETSC_COMM_SELF, PetscLogGpuTimeBegin()); }
@@ -42,18 +47,20 @@ struct private_tag { };
 
 } // namespace detail
 
-#define THRUST_CALL(...) \
-  [&] { \
-    const auto timer = ::Petsc::device::cupm::impl::detail::PetscLogGpuTimer{}; \
-    return thrust_call_par_on(__VA_ARGS__); \
-  }()
+  #define THRUST_CALL(...) \
+    [&] { \
+      const auto timer = ::Petsc::device::cupm::impl::detail::PetscLogGpuTimer{}; \
+      return thrust_call_par_on(__VA_ARGS__); \
+    }()
 
-#define PetscCallThrust(...) \
-  do { \
-    try { \
-      __VA_ARGS__; \
-    } catch (const thrust::system_error &ex) { SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "Thrust error: %s", ex.what()); } \
-  } while (0)
+  #define PetscCallThrust(...) \
+    do { \
+      try { \
+        __VA_ARGS__; \
+      } catch (const thrust::system_error &ex) { \
+        SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "Thrust error: %s", ex.what()); \
+      } \
+    } while (0)
 
 template <typename T, typename BinaryOperator>
 struct shift_operator {
@@ -66,11 +73,12 @@ struct shift_operator {
 template <typename T, typename BinaryOperator>
 static inline auto make_shift_operator(T *s, BinaryOperator &&op) PETSC_DECLTYPE_NOEXCEPT_AUTO_RETURNS(shift_operator<T, BinaryOperator>{s, std::forward<BinaryOperator>(op)});
 
-#define PetscValidDevicePointer(ptr, argno) PetscAssert(ptr, PETSC_COMM_SELF, PETSC_ERR_POINTER, "Null device pointer for " PetscStringize(ptr) " Argument #%d", argno);
+  #define PetscValidDevicePointer(ptr, argno) PetscAssert(ptr, PETSC_COMM_SELF, PETSC_ERR_POINTER, "Null device pointer for " PetscStringize(ptr) " Argument #%d", argno);
 
 // actual implementation that calls thrust, 2 argument version
 template <DeviceType DT, typename FunctorType, typename T>
-PETSC_CXX_COMPAT_DEFN(PetscErrorCode ThrustApplyPointwise(detail::private_tag, typename Interface<DT>::cupmStream_t stream, FunctorType &&functor, PetscInt n, T *xinout, T *yin = nullptr)) {
+PETSC_CXX_COMPAT_DEFN(PetscErrorCode ThrustApplyPointwise(detail::private_tag, typename Interface<DT>::cupmStream_t stream, FunctorType &&functor, PetscInt n, T *xinout, T *yin = nullptr))
+{
   const auto xptr   = thrust::device_pointer_cast(xinout);
   const auto retptr = (yin && (yin != xinout)) ? thrust::device_pointer_cast(yin) : xptr;
 
@@ -82,7 +90,8 @@ PETSC_CXX_COMPAT_DEFN(PetscErrorCode ThrustApplyPointwise(detail::private_tag, t
 
 // actual implementation that calls thrust, 3 argument version
 template <DeviceType DT, typename FunctorType, typename T>
-PETSC_CXX_COMPAT_DEFN(PetscErrorCode ThrustApplyPointwise(detail::private_tag, typename Interface<DT>::cupmStream_t stream, FunctorType &&functor, PetscInt n, T *xin, T *yin, T *zin)) {
+PETSC_CXX_COMPAT_DEFN(PetscErrorCode ThrustApplyPointwise(detail::private_tag, typename Interface<DT>::cupmStream_t stream, FunctorType &&functor, PetscInt n, T *xin, T *yin, T *zin))
+{
   const auto xptr = thrust::device_pointer_cast(xin);
 
   PetscFunctionBegin;
@@ -95,7 +104,8 @@ PETSC_CXX_COMPAT_DEFN(PetscErrorCode ThrustApplyPointwise(detail::private_tag, t
 
 // one last intermediate function to check n, and log flops for everything
 template <DeviceType DT, typename F, typename... T>
-PETSC_CXX_COMPAT_DEFN(PetscErrorCode ThrustApplyPointwise(typename Interface<DT>::cupmStream_t stream, F &&functor, PetscInt n, T &&...rest)) {
+PETSC_CXX_COMPAT_DEFN(PetscErrorCode ThrustApplyPointwise(typename Interface<DT>::cupmStream_t stream, F &&functor, PetscInt n, T &&...rest))
+{
   PetscFunctionBegin;
   PetscAssert(n >= 0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "n %" PetscInt_FMT " must be >= 0", n);
   if (PetscLikely(n)) {
@@ -107,7 +117,8 @@ PETSC_CXX_COMPAT_DEFN(PetscErrorCode ThrustApplyPointwise(typename Interface<DT>
 
 // serves as setup to the real implementation above
 template <DeviceType T, typename F, typename... Args>
-PETSC_CXX_COMPAT_DEFN(PetscErrorCode ThrustApplyPointwise(PetscDeviceContext dctx, F &&functor, PetscInt n, Args &&...rest)) {
+PETSC_CXX_COMPAT_DEFN(PetscErrorCode ThrustApplyPointwise(PetscDeviceContext dctx, F &&functor, PetscInt n, Args &&...rest))
+{
   typename Interface<T>::cupmStream_t stream;
 
   PetscFunctionBegin;
@@ -118,19 +129,20 @@ PETSC_CXX_COMPAT_DEFN(PetscErrorCode ThrustApplyPointwise(PetscDeviceContext dct
   PetscFunctionReturn(0);
 }
 
-#define PetscCallCUPM_(...) \
-  do { \
-    using interface               = Interface<DT>; \
-    using cupmError_t             = typename interface::cupmError_t; \
-    const auto cupmName           = []() { return interface::cupmName(); }; \
-    const auto cupmGetErrorName   = [](cupmError_t e) { return interface::cupmGetErrorName(e); }; \
-    const auto cupmGetErrorString = [](cupmError_t e) { return interface::cupmGetErrorString(e); }; \
-    const auto cupmSuccess        = interface::cupmSuccess; \
-    PetscCallCUPM(__VA_ARGS__); \
-  } while (0)
+  #define PetscCallCUPM_(...) \
+    do { \
+      using interface               = Interface<DT>; \
+      using cupmError_t             = typename interface::cupmError_t; \
+      const auto cupmName           = []() { return interface::cupmName(); }; \
+      const auto cupmGetErrorName   = [](cupmError_t e) { return interface::cupmGetErrorName(e); }; \
+      const auto cupmGetErrorString = [](cupmError_t e) { return interface::cupmGetErrorString(e); }; \
+      const auto cupmSuccess        = interface::cupmSuccess; \
+      PetscCallCUPM(__VA_ARGS__); \
+    } while (0)
 
 template <DeviceType DT, typename T>
-PETSC_CXX_COMPAT_DEFN(PetscErrorCode ThrustSet(typename Interface<DT>::cupmStream_t stream, PetscInt n, T *ptr, const T *val)) {
+PETSC_CXX_COMPAT_DEFN(PetscErrorCode ThrustSet(typename Interface<DT>::cupmStream_t stream, PetscInt n, T *ptr, const T *val))
+{
   PetscFunctionBegin;
   PetscValidPointer(val, 4);
   if (n) {
@@ -153,11 +165,12 @@ PETSC_CXX_COMPAT_DEFN(PetscErrorCode ThrustSet(typename Interface<DT>::cupmStrea
   PetscFunctionReturn(0);
 }
 
-#undef PetscCallCUPM_
-#undef PetscValidDevicePointer
+  #undef PetscCallCUPM_
+  #undef PetscValidDevicePointer
 
 template <DeviceType DT, typename T>
-PETSC_CXX_COMPAT_DEFN(PetscErrorCode ThrustSet(PetscDeviceContext dctx, PetscInt n, T *ptr, const T *val)) {
+PETSC_CXX_COMPAT_DEFN(PetscErrorCode ThrustSet(PetscDeviceContext dctx, PetscInt n, T *ptr, const T *val))
+{
   typename Interface<DT>::cupmStream_t stream;
 
   PetscFunctionBegin;

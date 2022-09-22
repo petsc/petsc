@@ -4,7 +4,8 @@ static char help[] = "Makes a simple histogram.\n";
 #include <petscsys.h>
 #include <petscdraw.h>
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscDraw     draw;
   PetscDrawHG   hist;
   PetscDrawAxis axis;

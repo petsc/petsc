@@ -22,7 +22,8 @@ The option -aij_only allows to use MATAIJ for all cases.\n\\n";
 #include <petscmat.h>
 #include "ex72mmio.h"
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   MM_typecode  matcode;
   FILE        *file;
   PetscInt     M, N, ninput;

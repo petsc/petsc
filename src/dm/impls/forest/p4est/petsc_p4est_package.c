@@ -10,26 +10,29 @@ static PetscClassId P4ESTLOGGING_CLASSID;
 
 PetscObject P4estLoggingObject; /* Just a vehicle for its classid */
 
-static void PetscScLogHandler(FILE *log_stream, const char *filename, int lineno, int package, int category, int priority, const char *msg) {
+static void PetscScLogHandler(FILE *log_stream, const char *filename, int lineno, int package, int category, int priority, const char *msg)
+{
   PetscInfo_Private(filename, P4estLoggingObject, ":%d{%s} %s", lineno, package == sc_package_id ? "sc" : package == p4est_package_id ? "p4est" : "", msg);
 }
 
 /* p4est tries to abort: if possible, use setjmp to enable at least a little unwinding */
 #if defined(PETSC_HAVE_SETJMP_H) && defined(PETSC_USE_DEBUG)
-#include <setjmp.h>
+  #include <setjmp.h>
 PETSC_VISIBILITY_INTERNAL jmp_buf PetscScJumpBuf;
-PETSC_INTERN void                 PetscScAbort_longjmp(void) {
-                  PetscError(PETSC_COMM_SELF, -1, "p4est function", "p4est file", PETSC_ERR_LIB, PETSC_ERROR_INITIAL, "Error in p4est stack call\n");
-                  longjmp(PetscScJumpBuf, 1);
-                  return;
+PETSC_INTERN void                 PetscScAbort_longjmp(void)
+{
+  PetscError(PETSC_COMM_SELF, -1, "p4est function", "p4est file", PETSC_ERR_LIB, PETSC_ERROR_INITIAL, "Error in p4est stack call\n");
+  longjmp(PetscScJumpBuf, 1);
+  return;
 }
 
-#define PetscScAbort PetscScAbort_longjmp
+  #define PetscScAbort PetscScAbort_longjmp
 #else
-#define PetscScAbort NULL
+  #define PetscScAbort NULL
 #endif
 
-static PetscErrorCode PetscP4estFinalize(void) {
+static PetscErrorCode PetscP4estFinalize(void)
+{
   PetscFunctionBegin;
   if (PetscBeganSc) {
     /* We do not want libsc to abort on a mismatched allocation and prevent further Petsc unwinding */
@@ -42,7 +45,8 @@ static PetscErrorCode PetscP4estFinalize(void) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscP4estInitialize(void) {
+PetscErrorCode PetscP4estInitialize(void)
+{
   PetscBool psc_catch_signals    = PETSC_FALSE;
   PetscBool psc_print_backtrace  = PETSC_TRUE;
   int       psc_log_threshold    = SC_LP_DEFAULT;

@@ -2,7 +2,8 @@ static const char help[] = "Test VecGetSubVector()\n\n";
 
 #include <petscvec.h>
 
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[])
+{
   MPI_Comm     comm;
   Vec          X, Y, Z, W;
   PetscMPIInt  rank, size;

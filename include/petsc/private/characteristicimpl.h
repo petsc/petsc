@@ -51,7 +51,7 @@ struct _p_Characteristic {
   PetscInt *velocityComp;    /* Components of the velocity in the DM */
   PetscErrorCode (*velocityInterp)(Vec, PetscReal[], PetscInt, PetscInt[], PetscScalar[], void *);
   PetscErrorCode (*velocityInterpLocal)(void *, PetscReal[], PetscInt, PetscInt[], PetscScalar[], void *);
-  void     *velocityCtx; /* User context for velocity inteprolation */
+  void *velocityCtx; /* User context for velocity inteprolation */
   /* Field interpolation structures */
   DM        fieldDA;      /* DM for the field field */
   Vec       field;        /* Field field at t_n */
@@ -60,7 +60,7 @@ struct _p_Characteristic {
   PetscInt *fieldComp;    /* Components of the field in the DM */
   PetscErrorCode (*fieldInterp)(Vec, PetscReal[], PetscInt, PetscInt[], PetscScalar[], void *);
   PetscErrorCode (*fieldInterpLocal)(void *, PetscReal[], PetscInt, PetscInt[], PetscScalar[], void *);
-  void        *fieldCtx; /* User context for field inteprolation */
+  void *fieldCtx; /* User context for field inteprolation */
   /* Communication structures*/
   MPI_Datatype itemType; /* Type corresponding to the item struct */
   Queue        queue;

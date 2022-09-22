@@ -7,7 +7,8 @@
 #include <petsc/private/dmdaimpl.h> /*I  "petscdmda.h"   I*/
 
 #include <petscdraw.h>
-static PetscErrorCode DMView_DA_1d(DM da, PetscViewer viewer) {
+static PetscErrorCode DMView_DA_1d(DM da, PetscViewer viewer)
+{
   PetscMPIInt rank;
   PetscBool   iascii, isdraw, isglvis, isbinary;
   DM_DA      *dd = (DM_DA *)da->data;
@@ -121,7 +122,8 @@ static PetscErrorCode DMView_DA_1d(DM da, PetscViewer viewer) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMSetUp_DA_1D(DM da) {
+PetscErrorCode DMSetUp_DA_1D(DM da)
+{
   DM_DA          *dd    = (DM_DA *)da->data;
   const PetscInt  M     = dd->M;
   const PetscInt  dof   = dd->w;
@@ -357,7 +359,8 @@ PetscErrorCode DMSetUp_DA_1D(DM da) {
           `DMStagCreate1d()`
 
 @*/
-PetscErrorCode DMDACreate1d(MPI_Comm comm, DMBoundaryType bx, PetscInt M, PetscInt dof, PetscInt s, const PetscInt lx[], DM *da) {
+PetscErrorCode DMDACreate1d(MPI_Comm comm, DMBoundaryType bx, PetscInt M, PetscInt dof, PetscInt s, const PetscInt lx[], DM *da)
+{
   PetscMPIInt size;
 
   PetscFunctionBegin;

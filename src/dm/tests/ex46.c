@@ -4,7 +4,8 @@ static char help[] = "Tests DMGetCompatibility() with a 3D DMDA.\n\n";
 #include <petscdmda.h>
 #include <petscdmstag.h>
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscInt        M = 3, N = 5, P = 3, s = 1, w = 2, i, m = PETSC_DECIDE, n = PETSC_DECIDE, p = PETSC_DECIDE;
   PetscInt       *lx = NULL, *ly = NULL, *lz = NULL;
   PetscBool       test_order = PETSC_FALSE;

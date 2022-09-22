@@ -3,7 +3,8 @@ static char help[] = "Tests binary viewers.\n\n";
 #include <petscsys.h>
 #include <petscviewer.h>
 
-static PetscErrorCode TestOpen(PetscFileMode mode, PetscViewer *viewer) {
+static PetscErrorCode TestOpen(PetscFileMode mode, PetscViewer *viewer)
+{
   const char *name;
   PetscBool   skipinfo, skipheader, skipoptions;
 
@@ -22,7 +23,8 @@ static PetscErrorCode TestOpen(PetscFileMode mode, PetscViewer *viewer) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TestWrite(PetscViewer viewer) {
+static PetscErrorCode TestWrite(PetscViewer viewer)
+{
   PetscInt    idata = 42;
   PetscReal   rdata = 42;
   PetscInt    s = PETSC_DETERMINE, t = PETSC_DETERMINE;
@@ -54,7 +56,8 @@ static PetscErrorCode TestWrite(PetscViewer viewer) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TestRead(PetscViewer viewer) {
+static PetscErrorCode TestRead(PetscViewer viewer)
+{
   PetscInt    idata = 0;
   PetscReal   rdata = 0;
   PetscInt    s = PETSC_DETERMINE, t = PETSC_DETERMINE;
@@ -99,7 +102,8 @@ static PetscErrorCode TestRead(PetscViewer viewer) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TestEOF(PetscViewer viewer) {
+static PetscErrorCode TestEOF(PetscViewer viewer)
+{
   char     data;
   PetscInt count = PETSC_MAX_INT;
   MPI_Comm comm  = PetscObjectComm((PetscObject)viewer);
@@ -110,7 +114,8 @@ static PetscErrorCode TestEOF(PetscViewer viewer) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TestClose(PetscViewer *viewer) {
+static PetscErrorCode TestClose(PetscViewer *viewer)
+{
   PetscFileMode mode;
 
   PetscFunctionBegin;
@@ -120,7 +125,8 @@ static PetscErrorCode TestClose(PetscViewer *viewer) {
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   PetscViewer viewer;
 
   PetscFunctionBeginUser;

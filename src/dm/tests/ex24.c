@@ -4,7 +4,8 @@ static char help[] = "Tests DMLocalToGlobal() for dof > 1\n\n";
 #include <petscdm.h>
 #include <petscdmda.h>
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscInt       M = 6, N = 5, m = PETSC_DECIDE, n = PETSC_DECIDE, i, j, is, js, in, jen;
   DM             da;
   Vec            local, global;

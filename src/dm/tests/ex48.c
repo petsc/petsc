@@ -5,7 +5,8 @@ static char help[] = "Test VTK structured (.vts)  and rectilinear (.vtr) viewer 
 #include <petscdmda.h>
 
 /* Helper function to name DMDA fields */
-PetscErrorCode NameFields(DM da, PetscInt dof) {
+PetscErrorCode NameFields(DM da, PetscInt dof)
+{
   PetscInt c;
 
   PetscFunctionBeginUser;
@@ -20,7 +21,8 @@ PetscErrorCode NameFields(DM da, PetscInt dof) {
 /*
   Write 3D DMDA vector with coordinates in VTK format
 */
-PetscErrorCode test_3d(const char filename[], PetscInt dof, PetscBool namefields) {
+PetscErrorCode test_3d(const char filename[], PetscInt dof, PetscBool namefields)
+{
   MPI_Comm          comm = MPI_COMM_WORLD;
   const PetscInt    M = 10, N = 15, P = 30, sw = 1;
   const PetscScalar Lx = 1.0, Ly = 1.0, Lz = 1.0;
@@ -62,7 +64,8 @@ PetscErrorCode test_3d(const char filename[], PetscInt dof, PetscBool namefields
 /*
   Write 2D DMDA vector with coordinates in VTK format
 */
-PetscErrorCode test_2d(const char filename[], PetscInt dof, PetscBool namefields) {
+PetscErrorCode test_2d(const char filename[], PetscInt dof, PetscBool namefields)
+{
   MPI_Comm          comm = MPI_COMM_WORLD;
   const PetscInt    M = 10, N = 20, sw = 1;
   const PetscScalar Lx = 1.0, Ly = 1.0, Lz = 1.0;
@@ -100,7 +103,8 @@ PetscErrorCode test_2d(const char filename[], PetscInt dof, PetscBool namefields
 /*
   Write a scalar and a vector field from two compatible 3d DMDAs
 */
-PetscErrorCode test_3d_compat(const char filename[], PetscInt dof, PetscBool namefields) {
+PetscErrorCode test_3d_compat(const char filename[], PetscInt dof, PetscBool namefields)
+{
   MPI_Comm          comm = MPI_COMM_WORLD;
   const PetscInt    M = 10, N = 15, P = 30, sw = 1;
   const PetscScalar Lx = 1.0, Ly = 1.0, Lz = 1.0;
@@ -151,7 +155,8 @@ PetscErrorCode test_3d_compat(const char filename[], PetscInt dof, PetscBool nam
 /*
   Write a scalar and a vector field from two compatible 2d DMDAs
 */
-PetscErrorCode test_2d_compat(const char filename[], PetscInt dof, PetscBool namefields) {
+PetscErrorCode test_2d_compat(const char filename[], PetscInt dof, PetscBool namefields)
+{
   MPI_Comm          comm = MPI_COMM_WORLD;
   const PetscInt    M = 10, N = 20, sw = 1;
   const PetscScalar Lx = 1.0, Ly = 1.0, Lz = 1.0;
@@ -195,7 +200,8 @@ PetscErrorCode test_2d_compat(const char filename[], PetscInt dof, PetscBool nam
   return 0;
 }
 
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[])
+{
   PetscInt  dof;
   PetscBool namefields;
 

@@ -8,10 +8,10 @@
 #include <petsc/private/petscimpl.h> /*I  "petscsys.h"   I*/
 
 #if defined(PETSC_HAVE_SYS_SYSINFO_H)
-#include <sys/sysinfo.h>
+  #include <sys/sysinfo.h>
 #endif
 #if defined(PETSC_HAVE_UNISTD_H)
-#include <unistd.h>
+  #include <unistd.h>
 #endif
 
 /* ------------------------Nasty global variables -------------------------------*/
@@ -41,10 +41,10 @@ PetscBool use_gpu_aware_mpi = PetscDefined(HAVE_MPIUNI) ? PETSC_FALSE : PETSC_TR
 PetscBool PetscPrintFunctionList = PETSC_FALSE;
 
 #if defined(PETSC_HAVE_COMPLEX)
-#if defined(PETSC_COMPLEX_INSTANTIATE)
+  #if defined(PETSC_COMPLEX_INSTANTIATE)
 template <>
 class std::complex<double>; /* instantiate complex template class */
-#endif
+  #endif
 
 /*MC
    PETSC_i - the imaginary number i
@@ -96,7 +96,8 @@ PetscErrorCode (*PetscVFPrintf)(FILE *, const char[], va_list) = PetscVFPrintfDe
 PETSC_INTERN FILE *petsc_history;
 FILE              *petsc_history = NULL;
 
-PetscErrorCode PetscOpenHistoryFile(const char filename[], FILE **fd) {
+PetscErrorCode PetscOpenHistoryFile(const char filename[], FILE **fd)
+{
   PetscMPIInt rank, size;
   char        pfile[PETSC_MAX_PATH_LEN], pname[PETSC_MAX_PATH_LEN], fname[PETSC_MAX_PATH_LEN], date[64];
   char        version[256];
@@ -134,7 +135,8 @@ PetscErrorCode PetscOpenHistoryFile(const char filename[], FILE **fd) {
   PetscFunctionReturn(0);
 }
 
-PETSC_INTERN PetscErrorCode PetscCloseHistoryFile(FILE **fd) {
+PETSC_INTERN PetscErrorCode PetscCloseHistoryFile(FILE **fd)
+{
   PetscMPIInt rank;
   char        date[64];
   int         err;
@@ -165,13 +167,15 @@ PETSC_INTERN PetscErrorCode PetscCloseHistoryFile(FILE **fd) {
   in the debugger hence we call abort() instead of MPI_Abort().
 */
 
-void Petsc_MPI_AbortOnError(MPI_Comm *comm, PetscMPIInt *flag, ...) {
+void Petsc_MPI_AbortOnError(MPI_Comm *comm, PetscMPIInt *flag, ...)
+{
   PetscFunctionBegin;
   (*PetscErrorPrintf)("MPI error %d\n", *flag);
   abort();
 }
 
-void Petsc_MPI_DebuggerOnError(MPI_Comm *comm, PetscMPIInt *flag, ...) {
+void Petsc_MPI_DebuggerOnError(MPI_Comm *comm, PetscMPIInt *flag, ...)
+{
   PetscFunctionBegin;
   (*PetscErrorPrintf)("MPI error %d\n", *flag);
   if (PetscAttachDebugger()) PETSCABORT(*comm, *flag); /* hopeless so get out */
@@ -192,7 +196,8 @@ void Petsc_MPI_DebuggerOnError(MPI_Comm *comm, PetscMPIInt *flag, ...) {
 
 .seealso: `PetscInitialize()`, `PetscOptionsView()`, `PetscMallocDump()`, `PetscMPIDump()`, `PetscFinalize()`
 @*/
-PetscErrorCode PetscEnd(void) {
+PetscErrorCode PetscEnd(void)
+{
   PetscFunctionBegin;
   PetscFinalize();
   exit(0);
@@ -208,7 +213,7 @@ PetscErrorCode (*PetscExternalVersionFunction)(MPI_Comm) = NULL;
 PetscErrorCode (*PetscExternalHelpFunction)(MPI_Comm)    = NULL;
 
 #if PetscDefined(USE_LOG)
-#include <petscviewer.h>
+  #include <petscviewer.h>
 #endif
 
 /*@C
@@ -223,7 +228,8 @@ PetscErrorCode (*PetscExternalHelpFunction)(MPI_Comm)    = NULL;
    Level: developer
 
 @*/
-PetscErrorCode PetscSetHelpVersionFunctions(PetscErrorCode (*help)(MPI_Comm), PetscErrorCode (*version)(MPI_Comm)) {
+PetscErrorCode PetscSetHelpVersionFunctions(PetscErrorCode (*help)(MPI_Comm), PetscErrorCode (*version)(MPI_Comm))
+{
   PetscFunctionBegin;
   PetscExternalHelpFunction    = help;
   PetscExternalVersionFunction = version;
@@ -234,7 +240,8 @@ PetscErrorCode PetscSetHelpVersionFunctions(PetscErrorCode (*help)(MPI_Comm), Pe
 PETSC_INTERN PetscBool PetscObjectsLog;
 #endif
 
-PETSC_INTERN PetscErrorCode PetscOptionsCheckInitial_Private(const char help[]) {
+PETSC_INTERN PetscErrorCode PetscOptionsCheckInitial_Private(const char help[])
+{
   char        string[64];
   MPI_Comm    comm = PETSC_COMM_WORLD;
   PetscBool   flg1 = PETSC_FALSE, flg2 = PETSC_FALSE, flg3 = PETSC_FALSE, flag, hasHelp;
@@ -297,9 +304,9 @@ PETSC_INTERN PetscErrorCode PetscOptionsCheckInitial_Private(const char help[]) 
       PetscCall(PetscOptionsGetReal(NULL, NULL, "-malloc_view_threshold", &logthreshold, NULL));
       PetscCall(PetscMallocViewSet(logthreshold));
     }
-#if defined(PETSC_USE_LOG)
+  #if defined(PETSC_USE_LOG)
     PetscCall(PetscOptionsGetBool(NULL, NULL, "-log_view_memory", &PetscLogMemory, NULL));
-#endif
+  #endif
   }
 
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-malloc_coalesce", &flg1, &flg2));
@@ -489,7 +496,9 @@ PETSC_INTERN PetscErrorCode PetscOptionsCheckInitial_Private(const char help[]) 
         Setup profiling and logging
   */
 #if defined(PETSC_USE_INFO)
-  { PetscCall(PetscInfoSetFromOptions(NULL)); }
+  {
+    PetscCall(PetscInfoSetFromOptions(NULL));
+  }
 #endif
   PetscCall(PetscDetermineInitialFPTrap());
   flg1 = PETSC_FALSE;
@@ -510,11 +519,11 @@ PETSC_INTERN PetscErrorCode PetscOptionsCheckInitial_Private(const char help[]) 
 
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-log_sync", &PetscLogSyncOn, NULL));
 
-#if defined(PETSC_HAVE_MPE)
+  #if defined(PETSC_HAVE_MPE)
   flg1 = PETSC_FALSE;
   PetscCall(PetscOptionsHasName(NULL, NULL, "-log_mpe", &flg1));
   if (flg1) PetscCall(PetscLogMPEBegin());
-#endif
+  #endif
   flg1 = PETSC_FALSE;
   flg3 = PETSC_FALSE;
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-log_all", &flg1, NULL));
@@ -597,12 +606,12 @@ PETSC_INTERN PetscErrorCode PetscOptionsCheckInitial_Private(const char help[]) 
     PetscCall((*PetscHelpPrintf)(comm, " -log_view [:filename:[format]]: logging objects and events\n"));
     PetscCall((*PetscHelpPrintf)(comm, " -log_trace [filename]: prints trace of all PETSc calls\n"));
     PetscCall((*PetscHelpPrintf)(comm, " -log_exclude <list,of,classnames>: exclude given classes from logging\n"));
-#if defined(PETSC_HAVE_DEVICE)
+  #if defined(PETSC_HAVE_DEVICE)
     PetscCall((*PetscHelpPrintf)(comm, " -log_view_gpu_time: log the GPU time for each and event\n"));
-#endif
-#if defined(PETSC_HAVE_MPE)
+  #endif
+  #if defined(PETSC_HAVE_MPE)
     PetscCall((*PetscHelpPrintf)(comm, " -log_mpe: Also create logfile viewable through Jumpshot\n"));
-#endif
+  #endif
 #endif
 #if defined(PETSC_USE_INFO)
     PetscCall((*PetscHelpPrintf)(comm, " -info [filename][:[~]<list,of,classnames>[:[~]self]]: print verbose information\n"));

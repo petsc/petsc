@@ -15,7 +15,8 @@ static const char help[] = "Test star forest communication (PetscSF)\n\n";
 #include <petscviewer.h>
 
 /* like PetscSFView() but with alternative array of local indices */
-static PetscErrorCode PetscSFViewCustomLocals_Private(PetscSF sf, const PetscInt locals[], PetscViewer viewer) {
+static PetscErrorCode PetscSFViewCustomLocals_Private(PetscSF sf, const PetscInt locals[], PetscViewer viewer)
+{
   const PetscSFNode *iremote;
   PetscInt           i, nroots, nleaves, nranks;
   PetscMPIInt        rank;
@@ -34,7 +35,8 @@ static PetscErrorCode PetscSFViewCustomLocals_Private(PetscSF sf, const PetscInt
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscInt     i, nroots, nrootsalloc, nleaves, nleavesalloc, *mine, stride;
   PetscSFNode *remote;
   PetscMPIInt  rank, size;

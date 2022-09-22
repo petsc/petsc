@@ -17,7 +17,8 @@
 
   Level: advanced
 @*/
-PetscErrorCode VecWhichEqual(Vec Vec1, Vec Vec2, IS *S) {
+PetscErrorCode VecWhichEqual(Vec Vec1, Vec Vec2, IS *S)
+{
   PetscInt           i, n_same = 0;
   PetscInt           n, low, high;
   PetscInt          *same = NULL;
@@ -79,7 +80,8 @@ PetscErrorCode VecWhichEqual(Vec Vec1, Vec Vec2, IS *S) {
 
   Level: advanced
 @*/
-PetscErrorCode VecWhichLessThan(Vec Vec1, Vec Vec2, IS *S) {
+PetscErrorCode VecWhichLessThan(Vec Vec1, Vec Vec2, IS *S)
+{
   PetscInt           i, n_lt = 0;
   PetscInt           n, low, high;
   PetscInt          *lt = NULL;
@@ -141,7 +143,8 @@ PetscErrorCode VecWhichLessThan(Vec Vec1, Vec Vec2, IS *S) {
 
   Level: advanced
 @*/
-PetscErrorCode VecWhichGreaterThan(Vec Vec1, Vec Vec2, IS *S) {
+PetscErrorCode VecWhichGreaterThan(Vec Vec1, Vec Vec2, IS *S)
+{
   PetscInt           i, n_gt = 0;
   PetscInt           n, low, high;
   PetscInt          *gt = NULL;
@@ -205,7 +208,8 @@ PetscErrorCode VecWhichGreaterThan(Vec Vec1, Vec Vec2, IS *S) {
 
   Level: advanced
 @*/
-PetscErrorCode VecWhichBetween(Vec VecLow, Vec V, Vec VecHigh, IS *S) {
+PetscErrorCode VecWhichBetween(Vec VecLow, Vec V, Vec VecHigh, IS *S)
+{
   PetscInt           i, n_vm = 0;
   PetscInt           n, low, high;
   PetscInt          *vm = NULL;
@@ -271,7 +275,8 @@ PetscErrorCode VecWhichBetween(Vec VecLow, Vec V, Vec VecHigh, IS *S) {
   Level: advanced
 @*/
 
-PetscErrorCode VecWhichBetweenOrEqual(Vec VecLow, Vec V, Vec VecHigh, IS *S) {
+PetscErrorCode VecWhichBetweenOrEqual(Vec VecLow, Vec V, Vec VecHigh, IS *S)
+{
   PetscInt           i, n_vm = 0;
   PetscInt           n, low, high;
   PetscInt          *vm = NULL;
@@ -342,7 +347,8 @@ PetscErrorCode VecWhichBetweenOrEqual(Vec VecLow, Vec V, Vec VecHigh, IS *S) {
   Level: advanced
 @*/
 
-PetscErrorCode VecWhichInactive(Vec VecLow, Vec V, Vec D, Vec VecHigh, PetscBool Strong, IS *S) {
+PetscErrorCode VecWhichInactive(Vec VecLow, Vec V, Vec D, Vec VecHigh, PetscBool Strong, IS *S)
+{
   PetscInt           i, n_vm = 0;
   PetscInt           n, low, high;
   PetscInt          *vm = NULL;
@@ -451,7 +457,8 @@ PetscErrorCode VecWhichInactive(Vec VecLow, Vec V, Vec D, Vec VecHigh, PetscBool
 
 .seealso: `VecISCopy()`, `VecISSet()`, `VecAXPY()`
 @*/
-PetscErrorCode VecISAXPY(Vec vfull, IS is, PetscScalar alpha, Vec vreduced) {
+PetscErrorCode VecISAXPY(Vec vfull, IS is, PetscScalar alpha, Vec vreduced)
+{
   PetscInt nfull, nreduced;
 
   PetscFunctionBegin;
@@ -521,7 +528,8 @@ PetscErrorCode VecISAXPY(Vec vfull, IS is, PetscScalar alpha, Vec vreduced) {
 
 .seealso: `VecISSet()`, `VecISAXPY()`, `VecCopy()`
 @*/
-PetscErrorCode VecISCopy(Vec vfull, IS is, ScatterMode mode, Vec vreduced) {
+PetscErrorCode VecISCopy(Vec vfull, IS is, ScatterMode mode, Vec vreduced)
+{
   PetscInt nfull, nreduced;
 
   PetscFunctionBegin;
@@ -596,7 +604,8 @@ PetscErrorCode VecISCopy(Vec vfull, IS is, ScatterMode mode, Vec vreduced) {
 
 .seealso: `ISCreateGeneral()`
 @*/
-PetscErrorCode ISComplementVec(IS S, Vec V, IS *T) {
+PetscErrorCode ISComplementVec(IS S, Vec V, IS *T)
+{
   PetscInt start, end;
 
   PetscFunctionBegin;
@@ -621,7 +630,8 @@ PetscErrorCode ISComplementVec(IS S, Vec V, IS *T) {
 
 .seealso: `VecISCopy()`, `VecISAXPY()`, `VecSet()`
 @*/
-PetscErrorCode VecISSet(Vec V, IS S, PetscScalar c) {
+PetscErrorCode VecISSet(Vec V, IS S, PetscScalar c)
+{
   PetscInt        nloc, low, high, i;
   const PetscInt *s;
   PetscScalar    *v;
@@ -667,7 +677,8 @@ PetscErrorCode VecISSet(Vec V, IS S, PetscScalar c) {
 
   Level: advanced
 @*/
-PetscErrorCode VecBoundGradientProjection(Vec G, Vec X, Vec XL, Vec XU, Vec GP) {
+PetscErrorCode VecBoundGradientProjection(Vec G, Vec X, Vec XL, Vec XU, Vec GP)
+{
   PetscInt         n, i;
   const PetscReal *xptr, *xlptr, *xuptr;
   PetscReal       *gptr, *gpptr;
@@ -728,7 +739,8 @@ PetscErrorCode VecBoundGradientProjection(Vec G, Vec X, Vec XL, Vec XU, Vec GP) 
   Level: intermediate
 
 @*/
-PetscErrorCode VecStepMaxBounded(Vec X, Vec DX, Vec XL, Vec XU, PetscReal *stepmax) {
+PetscErrorCode VecStepMaxBounded(Vec X, Vec DX, Vec XL, Vec XU, PetscReal *stepmax)
+{
   PetscInt           i, nn;
   const PetscScalar *xx, *dx, *xl, *xu;
   PetscReal          localmax = 0;
@@ -780,7 +792,8 @@ PetscErrorCode VecStepMaxBounded(Vec X, Vec DX, Vec XL, Vec XU, PetscReal *stepm
 
   Level: advanced
 @*/
-PetscErrorCode VecStepBoundInfo(Vec X, Vec DX, Vec XL, Vec XU, PetscReal *boundmin, PetscReal *wolfemin, PetscReal *boundmax) {
+PetscErrorCode VecStepBoundInfo(Vec X, Vec DX, Vec XL, Vec XU, PetscReal *boundmin, PetscReal *wolfemin, PetscReal *boundmax)
+{
   PetscInt           n, i;
   const PetscScalar *x, *xl, *xu, *dx;
   PetscReal          t;
@@ -851,7 +864,8 @@ PetscErrorCode VecStepBoundInfo(Vec X, Vec DX, Vec XL, Vec XU, PetscReal *boundm
 
   Level: advanced
  @*/
-PetscErrorCode VecStepMax(Vec X, Vec DX, PetscReal *step) {
+PetscErrorCode VecStepMax(Vec X, Vec DX, PetscReal *step)
+{
   PetscInt           i, nn;
   PetscReal          stepmax = PETSC_INFINITY;
   const PetscScalar *xx, *dx;
@@ -885,7 +899,8 @@ PetscErrorCode VecStepMax(Vec X, Vec DX, PetscReal *step) {
   Level: intermediate
 
 @*/
-PetscErrorCode VecPow(Vec v, PetscScalar p) {
+PetscErrorCode VecPow(Vec v, PetscScalar p)
+{
   PetscInt     n, i;
   PetscScalar *v1;
 
@@ -954,7 +969,8 @@ PetscErrorCode VecPow(Vec v, PetscScalar p) {
 
   Level: advanced
 @*/
-PetscErrorCode VecMedian(Vec Vec1, Vec Vec2, Vec Vec3, Vec VMedian) {
+PetscErrorCode VecMedian(Vec Vec1, Vec Vec2, Vec Vec3, Vec VMedian)
+{
   PetscInt           i, n, low1, high1;
   const PetscScalar *v1, *v2, *v3;
   PetscScalar       *vmed;

@@ -1,8 +1,8 @@
 #if !defined(__GSIMPL)
-#define __GSIMPL
+  #define __GSIMPL
 
-#include <petsc/private/snesimpl.h> /*I "petscsnes.h"  I*/
-#include <petscdm.h>
+  #include <petsc/private/snesimpl.h> /*I "petscsnes.h"  I*/
+  #include <petscdm.h>
 
 typedef struct {
   PetscInt   sweeps;     /* number of sweeps through the local subdomain before neighbor communication */

@@ -4,7 +4,8 @@ Also MatMultTransposeAdd(), MatScale(), MatGetDiagonal(), and MatDiagonalScale()
 
 #include <petscmat.h>
 
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   Mat         C;
   Vec         s, u, w, x, y, z;
   PetscInt    i, j, m = 8, n, rstart, rend, vstart, vend;

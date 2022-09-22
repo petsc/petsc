@@ -3,13 +3,15 @@ static char help[] = "Demonstrates PETSc error handlers.\n";
 
 #include <petscsys.h>
 
-int CreateError(int n) {
+int CreateError(int n)
+{
   PetscCheck(n, PETSC_COMM_SELF, PETSC_ERR_USER, "Error Created");
   PetscCall(CreateError(n - 1));
   return 0;
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
   PetscCall(PetscFPrintf(PETSC_COMM_WORLD, stdout, "Demonstrates PETSc Error Handlers\n"));

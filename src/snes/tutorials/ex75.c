@@ -9,7 +9,8 @@ typedef struct {
   PetscBool fem; /* Flag for FEM tests */
 } AppCtx;
 
-PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options) {
+PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
+{
   PetscFunctionBeginUser;
   options->fem = PETSC_FALSE;
   PetscOptionsBegin(comm, "", "Stokes Problem Options", "DMPLEX");
@@ -50,7 +51,8 @@ $    kn = n*Pi
 $
 $  meaning that the density rho is -sigma*sin(km*z)*cos(kn*x). The viscosity eta is exp(2*B*x).
 */
-PetscErrorCode SolKxSolution(PetscReal x, PetscReal z, PetscReal kn, PetscReal km, PetscReal B, PetscScalar *vx, PetscScalar *vz, PetscScalar *p, PetscScalar *sxx, PetscScalar *sxz, PetscScalar *szz) {
+PetscErrorCode SolKxSolution(PetscReal x, PetscReal z, PetscReal kn, PetscReal km, PetscReal B, PetscScalar *vx, PetscScalar *vz, PetscScalar *p, PetscScalar *sxx, PetscScalar *sxz, PetscScalar *szz)
+{
   PetscScalar sigma;
   PetscScalar _C1, _C2, _C3, _C4;
   PetscScalar Rp, UU, VV;
@@ -80,13 +82,13 @@ PetscErrorCode SolKxSolution(PetscReal x, PetscReal z, PetscReal kn, PetscReal k
   sigma = 1.0;
   /*************************************************************************/
   /*************************************************************************/
-  a     = B * B + km * km;
-  b     = 2.0 * km * B;
-  r     = sqrt(a * a + b * b);
-  Rp    = sqrt((r + a) / 2.0);
-  Rm    = sqrt((r - a) / 2.0);
-  UU    = Rp - B;
-  VV    = Rp + B;
+  a  = B * B + km * km;
+  b  = 2.0 * km * B;
+  r  = sqrt(a * a + b * b);
+  Rp = sqrt((r + a) / 2.0);
+  Rm = sqrt((r - a) / 2.0);
+  UU = Rp - B;
+  VV = Rp + B;
 
   /*******************************************/
   /*         calculate the constants         */
@@ -394,32 +396,32 @@ PetscErrorCode SolKxSolution(PetscReal x, PetscReal z, PetscReal kn, PetscReal k
   t106 = cos(t90);
   *sxx = -((t19 * t21 + t36 * t37) * _C1 + (t36 * t21 - t19 * t37) * _C2 + (t53 * t21 + t64 * t37) * _C3 + (t64 * t21 - t53 * t37) * _C4 + (-AA * t74 - 0.4e1 * BB * t73 * B + 0.4e1 * t79 * AA * kn - 0.3e1 * t8 * AA * kn - 0.8e1 * t86 * BB) * t91 + (-0.8e1 * t86 * AA - 0.4e1 * AA * t73 * B - 0.4e1 * t79 * BB * kn + 0.3e1 * t8 * BB * kn + BB * t74) * t106) / km;
 
-  t3   = exp(0.2e1 * x * B);
-  t4   = km * km;
-  t5   = t3 * t4;
-  t6   = Rm * x;
-  t7   = cos(t6);
-  t8   = _C1 * t7;
-  t10  = sin(t6);
-  t11  = _C2 * t10;
-  t13  = _C3 * t7;
-  t15  = _C4 * t10;
-  t18  = kn * x;
-  t19  = cos(t18);
-  t22  = sin(t18);
-  t24  = UU * UU;
-  t25  = t3 * t24;
-  t28  = t3 * UU;
-  t38  = Rm * Rm;
-  t39  = t7 * t38;
-  t42  = t10 * t38;
-  t44  = t5 * t8 + t5 * t11 + t5 * t13 + t5 * t15 + t4 * AA * t19 + t4 * BB * t22 + t25 * t8 + t25 * t11 - 0.2e1 * t28 * _C1 * t10 * Rm + 0.2e1 * t28 * _C2 * t7 * Rm - t3 * _C1 * t39 - t3 * _C2 * t42;
-  t45  = VV * VV;
-  t46  = t3 * t45;
-  t49  = t3 * VV;
-  t62  = B * B;
-  t78  = kn * kn;
-  t82  = t46 * t13 + t46 * t15 + 0.2e1 * t49 * _C3 * t10 * Rm - 0.2e1 * t49 * _C4 * t7 * Rm - t3 * _C3 * t39 - t3 * _C4 * t42 + 0.4e1 * t62 * AA * t19 + 0.4e1 * t62 * BB * t22 + 0.4e1 * B * AA * t22 * kn - 0.4e1 * B * BB * t19 * kn - AA * t19 * t78 - BB * t22 * t78;
+  t3  = exp(0.2e1 * x * B);
+  t4  = km * km;
+  t5  = t3 * t4;
+  t6  = Rm * x;
+  t7  = cos(t6);
+  t8  = _C1 * t7;
+  t10 = sin(t6);
+  t11 = _C2 * t10;
+  t13 = _C3 * t7;
+  t15 = _C4 * t10;
+  t18 = kn * x;
+  t19 = cos(t18);
+  t22 = sin(t18);
+  t24 = UU * UU;
+  t25 = t3 * t24;
+  t28 = t3 * UU;
+  t38 = Rm * Rm;
+  t39 = t7 * t38;
+  t42 = t10 * t38;
+  t44 = t5 * t8 + t5 * t11 + t5 * t13 + t5 * t15 + t4 * AA * t19 + t4 * BB * t22 + t25 * t8 + t25 * t11 - 0.2e1 * t28 * _C1 * t10 * Rm + 0.2e1 * t28 * _C2 * t7 * Rm - t3 * _C1 * t39 - t3 * _C2 * t42;
+  t45 = VV * VV;
+  t46 = t3 * t45;
+  t49 = t3 * VV;
+  t62 = B * B;
+  t78 = kn * kn;
+  t82 = t46 * t13 + t46 * t15 + 0.2e1 * t49 * _C3 * t10 * Rm - 0.2e1 * t49 * _C4 * t7 * Rm - t3 * _C3 * t39 - t3 * _C4 * t42 + 0.4e1 * t62 * AA * t19 + 0.4e1 * t62 * BB * t22 + 0.4e1 * B * AA * t22 * kn - 0.4e1 * B * BB * t19 * kn - AA * t19 * t78 - BB * t22 * t78;
   *sxz = t44 + t82;
 
   t3   = exp(0.2e1 * x * B);
@@ -447,32 +449,32 @@ PetscErrorCode SolKxSolution(PetscReal x, PetscReal z, PetscReal kn, PetscReal k
   t86  = kn * x;
   t87  = sin(t86);
   t101 = cos(t86);
-  *p   = ((t18 * t20 + t34 * t35) * _C1 + (t34 * t20 - t18 * t35) * _C2 + (t51 * t20 + t61 * t35) * _C3 + (t61 * t20 - t51 * t35) * _C4 + (-AA * t71 - 0.4e1 * BB * t70 * B + 0.4e1 * t76 * AA * kn - t8 * AA * kn - 0.4e1 * t82 * BB) * t87 + (-0.4e1 * t82 * AA - 0.4e1 * AA * t70 * B - 0.4e1 * t76 * BB * kn + t8 * BB * kn + BB * t71) * t101) / km;
+  *p = ((t18 * t20 + t34 * t35) * _C1 + (t34 * t20 - t18 * t35) * _C2 + (t51 * t20 + t61 * t35) * _C3 + (t61 * t20 - t51 * t35) * _C4 + (-AA * t71 - 0.4e1 * BB * t70 * B + 0.4e1 * t76 * AA * kn - t8 * AA * kn - 0.4e1 * t82 * BB) * t87 + (-0.4e1 * t82 * AA - 0.4e1 * AA * t70 * B - 0.4e1 * t76 * BB * kn + t8 * BB * kn + BB * t71) * t101) / km;
 
-  t3   = exp(0.2e1 * x * B);
-  t4   = UU * UU;
-  t8   = km * km;
-  t9   = t3 * t8;
-  t10  = t9 * Rm;
-  t11  = Rm * Rm;
-  t13  = t3 * t11 * Rm;
-  t14  = t3 * B;
-  t18  = 0.3e1 * t3 * t4 * Rm + t10 - t13 + 0.4e1 * t14 * UU * Rm;
-  t19  = Rm * x;
-  t20  = sin(t19);
-  t23  = 0.2e1 * t9 * B;
-  t33  = 0.2e1 * t14 * t11;
-  t34  = -t23 + 0.3e1 * t3 * UU * t11 - t9 * UU - t3 * t4 * UU - 0.2e1 * t4 * t14 + t33;
-  t35  = cos(t19);
-  t47  = VV * VV;
-  t51  = t10 - 0.4e1 * t14 * VV * Rm + 0.3e1 * t3 * t47 * Rm - t13;
-  t61  = t9 * VV - t23 + t3 * t47 * VV - 0.2e1 * t14 * t47 + t33 - 0.3e1 * t3 * VV * t11;
-  t70  = B * B;
-  t74  = kn * kn;
-  t75  = t74 * kn;
-  t83  = kn * x;
-  t84  = sin(t83);
-  t96  = cos(t83);
+  t3  = exp(0.2e1 * x * B);
+  t4  = UU * UU;
+  t8  = km * km;
+  t9  = t3 * t8;
+  t10 = t9 * Rm;
+  t11 = Rm * Rm;
+  t13 = t3 * t11 * Rm;
+  t14 = t3 * B;
+  t18 = 0.3e1 * t3 * t4 * Rm + t10 - t13 + 0.4e1 * t14 * UU * Rm;
+  t19 = Rm * x;
+  t20 = sin(t19);
+  t23 = 0.2e1 * t9 * B;
+  t33 = 0.2e1 * t14 * t11;
+  t34 = -t23 + 0.3e1 * t3 * UU * t11 - t9 * UU - t3 * t4 * UU - 0.2e1 * t4 * t14 + t33;
+  t35 = cos(t19);
+  t47 = VV * VV;
+  t51 = t10 - 0.4e1 * t14 * VV * Rm + 0.3e1 * t3 * t47 * Rm - t13;
+  t61 = t9 * VV - t23 + t3 * t47 * VV - 0.2e1 * t14 * t47 + t33 - 0.3e1 * t3 * VV * t11;
+  t70 = B * B;
+  t74 = kn * kn;
+  t75 = t74 * kn;
+  t83 = kn * x;
+  t84 = sin(t83);
+  t96 = cos(t83);
   *szz = -((t18 * t20 + t34 * t35) * _C1 + (t34 * t20 - t18 * t35) * _C2 + (t51 * t20 + t61 * t35) * _C3 + (t61 * t20 - t51 * t35) * _C4 + (0.4e1 * t70 * AA * kn - AA * t75 - 0.4e1 * BB * t74 * B + t8 * AA * kn) * t84 + (-t8 * BB * kn - 0.4e1 * AA * t74 * B - 0.4e1 * t70 * BB * kn + BB * t75) * t96) / km;
 
   /* vx = Vx, vz = Vz, sxx = xx-component of stress tensor, sxz = xz-component of stress tensor, p = pressure, szz = zz-component of stress tensor */
@@ -487,7 +489,8 @@ PetscErrorCode SolKxSolution(PetscReal x, PetscReal z, PetscReal kn, PetscReal k
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode SolKxWrapperV(PetscInt dim, const PetscReal x[], PetscInt Nf, PetscScalar v[], void *ctx) {
+PetscErrorCode SolKxWrapperV(PetscInt dim, const PetscReal x[], PetscInt Nf, PetscScalar v[], void *ctx)
+{
   PetscReal   B  = 100.0;
   PetscReal   kn = 100 * M_PI;
   PetscReal   km = 100 * M_PI;
@@ -498,7 +501,8 @@ PetscErrorCode SolKxWrapperV(PetscInt dim, const PetscReal x[], PetscInt Nf, Pet
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode SolKxWrapperP(PetscInt dim, const PetscReal x[], PetscInt Nf, PetscScalar v[], void *ctx) {
+PetscErrorCode SolKxWrapperP(PetscInt dim, const PetscReal x[], PetscInt Nf, PetscScalar v[], void *ctx)
+{
   PetscReal   B  = 100.0;
   PetscReal   kn = 100 * M_PI;
   PetscReal   km = 100 * M_PI;
@@ -512,7 +516,8 @@ PetscErrorCode SolKxWrapperP(PetscInt dim, const PetscReal x[], PetscInt Nf, Pet
 /*
   Compare the C implementation with generated data from Maple
 */
-PetscErrorCode MapleTest(MPI_Comm comm, AppCtx *ctx) {
+PetscErrorCode MapleTest(MPI_Comm comm, AppCtx *ctx)
+{
   const PetscInt n = 41;
   PetscScalar    vxMaple[41][41], vzMaple[41][41], pMaple[41][41], sxxMaple[41][41], sxzMaple[41][41], szzMaple[41][41];
   PetscReal      x[41], z[41];
@@ -536,7 +541,8 @@ PetscCall(PetscPrintf(comm, "Verified Maple test 5\n"));
 PetscFunctionReturn(0);
 }
 
-PetscErrorCode FEMTest(MPI_Comm comm, AppCtx *ctx) {
+PetscErrorCode FEMTest(MPI_Comm comm, AppCtx *ctx)
+{
   DM  dm;
   Vec u;
   PetscErrorCode (*funcs[2])(PetscInt, const PetscReal[], PetscInt, PetscScalar *, void *) = {SolKxWrapperV, SolKxWrapperP};
@@ -558,7 +564,8 @@ PetscErrorCode FEMTest(MPI_Comm comm, AppCtx *ctx) {
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   AppCtx user; /* user-defined work context */
 
   PetscFunctionBeginUser;

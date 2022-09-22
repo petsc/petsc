@@ -14,7 +14,8 @@ PetscLogEvent TS_Step, TS_PseudoComputeTimeStep, TS_FunctionEval, TS_JacobianEva
 
 const char *const TSExactFinalTimeOptions[] = {"UNSPECIFIED", "STEPOVER", "INTERPOLATE", "MATCHSTEP", "TSExactFinalTimeOption", "TS_EXACTFINALTIME_", NULL};
 
-static PetscErrorCode TSAdaptSetDefaultType(TSAdapt adapt, TSAdaptType default_type) {
+static PetscErrorCode TSAdaptSetDefaultType(TSAdapt adapt, TSAdaptType default_type)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(adapt, TSADAPT_CLASSID, 1);
   PetscValidCharPointer(default_type, 2);
@@ -80,7 +81,8 @@ static PetscErrorCode TSAdaptSetDefaultType(TSAdapt adapt, TSAdaptType default_t
 
 .seealso: `TSGetType()`
 @*/
-PetscErrorCode TSSetFromOptions(TS ts) {
+PetscErrorCode TSSetFromOptions(TS ts)
+{
   PetscBool              opt, flg, tflg;
   char                   monfilename[PETSC_MAX_PATH_LEN];
   PetscReal              time_step, tspan[100];
@@ -424,7 +426,8 @@ PetscErrorCode TSSetFromOptions(TS ts) {
 .seealso: `TSGetTrajectory()`, `TSAdjointSolve()`, `TSTrajectory`, `TSTrajectoryCreate()`
 
 @*/
-PetscErrorCode TSGetTrajectory(TS ts, TSTrajectory *tr) {
+PetscErrorCode TSGetTrajectory(TS ts, TSTrajectory *tr)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   *tr = ts->trajectory;
@@ -453,7 +456,8 @@ Note: This routine should be called after all TS options have been set
 .seealso: `TSGetTrajectory()`, `TSAdjointSolve()`
 
 @*/
-PetscErrorCode TSSetSaveTrajectory(TS ts) {
+PetscErrorCode TSSetSaveTrajectory(TS ts)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   if (!ts->trajectory) PetscCall(TSTrajectoryCreate(PetscObjectComm((PetscObject)ts), &ts->trajectory));
@@ -473,7 +477,8 @@ PetscErrorCode TSSetSaveTrajectory(TS ts) {
 .seealso: `TSGetTrajectory()`, `TSAdjointSolve()`, `TSRemoveTrajectory()`
 
 @*/
-PetscErrorCode TSResetTrajectory(TS ts) {
+PetscErrorCode TSResetTrajectory(TS ts)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   if (ts->trajectory) {
@@ -496,7 +501,8 @@ PetscErrorCode TSResetTrajectory(TS ts) {
 .seealso: `TSResetTrajectory()`, `TSAdjointSolve()`
 
 @*/
-PetscErrorCode TSRemoveTrajectory(TS ts) {
+PetscErrorCode TSRemoveTrajectory(TS ts)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   if (ts->trajectory) PetscCall(TSTrajectoryDestroy(&ts->trajectory));
@@ -526,7 +532,8 @@ PetscErrorCode TSRemoveTrajectory(TS ts) {
 
 .seealso: `TSSetRHSJacobian()`, `KSPSetOperators()`
 @*/
-PetscErrorCode TSComputeRHSJacobian(TS ts, PetscReal t, Vec U, Mat A, Mat B) {
+PetscErrorCode TSComputeRHSJacobian(TS ts, PetscReal t, Vec U, Mat A, Mat B)
+{
   PetscObjectState Ustate;
   PetscObjectId    Uid;
   DM               dm;
@@ -587,7 +594,8 @@ PetscErrorCode TSComputeRHSJacobian(TS ts, PetscReal t, Vec U, Mat A, Mat B) {
 
 .seealso: `TSSetRHSFunction()`, `TSComputeIFunction()`
 @*/
-PetscErrorCode TSComputeRHSFunction(TS ts, PetscReal t, Vec U, Vec y) {
+PetscErrorCode TSComputeRHSFunction(TS ts, PetscReal t, Vec U, Vec y)
+{
   TSRHSFunction rhsfunction;
   TSIFunction   ifunction;
   void         *ctx;
@@ -634,7 +642,8 @@ PetscErrorCode TSComputeRHSFunction(TS ts, PetscReal t, Vec U, Vec y) {
 
 .seealso: `TSSetSolutionFunction()`, `TSSetRHSFunction()`, `TSComputeIFunction()`
 @*/
-PetscErrorCode TSComputeSolutionFunction(TS ts, PetscReal t, Vec U) {
+PetscErrorCode TSComputeSolutionFunction(TS ts, PetscReal t, Vec U)
+{
   TSSolutionFunction solutionfunction;
   void              *ctx;
   DM                 dm;
@@ -668,7 +677,8 @@ PetscErrorCode TSComputeSolutionFunction(TS ts, PetscReal t, Vec U) {
 
 .seealso: `TSSetSolutionFunction()`, `TSSetRHSFunction()`, `TSComputeIFunction()`
 @*/
-PetscErrorCode TSComputeForcingFunction(TS ts, PetscReal t, Vec U) {
+PetscErrorCode TSComputeForcingFunction(TS ts, PetscReal t, Vec U)
+{
   void             *ctx;
   DM                dm;
   TSForcingFunction forcing;
@@ -683,7 +693,8 @@ PetscErrorCode TSComputeForcingFunction(TS ts, PetscReal t, Vec U) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSGetRHSVec_Private(TS ts, Vec *Frhs) {
+static PetscErrorCode TSGetRHSVec_Private(TS ts, Vec *Frhs)
+{
   Vec F;
 
   PetscFunctionBegin;
@@ -694,7 +705,8 @@ static PetscErrorCode TSGetRHSVec_Private(TS ts, Vec *Frhs) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode TSGetRHSMats_Private(TS ts, Mat *Arhs, Mat *Brhs) {
+PetscErrorCode TSGetRHSMats_Private(TS ts, Mat *Arhs, Mat *Brhs)
+{
   Mat         A, B;
   TSIJacobian ijacobian;
 
@@ -768,7 +780,8 @@ PetscErrorCode TSGetRHSMats_Private(TS ts, Mat *Arhs, Mat *Brhs) {
 
 .seealso: `TSSetIFunction()`, `TSComputeRHSFunction()`
 @*/
-PetscErrorCode TSComputeIFunction(TS ts, PetscReal t, Vec U, Vec Udot, Vec Y, PetscBool imex) {
+PetscErrorCode TSComputeIFunction(TS ts, PetscReal t, Vec U, Vec Udot, Vec Y, PetscBool imex)
+{
   TSIFunction   ifunction;
   TSRHSFunction rhsfunction;
   void         *ctx;
@@ -815,7 +828,8 @@ PetscErrorCode TSComputeIFunction(TS ts, PetscReal t, Vec U, Vec Udot, Vec Y, Pe
    This routine is needed when one switches from TSComputeIJacobian() to TSComputeRHSJacobian() because the Jacobian matrix may be shifted or scaled in TSComputeIJacobian().
 
 */
-static PetscErrorCode TSRecoverRHSJacobian(TS ts, Mat A, Mat B) {
+static PetscErrorCode TSRecoverRHSJacobian(TS ts, Mat A, Mat B)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscCheck(A == ts->Arhs, PetscObjectComm((PetscObject)ts), PETSC_ERR_SUP, "Invalid Amat");
@@ -862,7 +876,8 @@ static PetscErrorCode TSRecoverRHSJacobian(TS ts, Mat A, Mat B) {
 
 .seealso: `TSSetIJacobian()`
 @*/
-PetscErrorCode TSComputeIJacobian(TS ts, PetscReal t, Vec U, Vec Udot, PetscReal shift, Mat A, Mat B, PetscBool imex) {
+PetscErrorCode TSComputeIJacobian(TS ts, PetscReal t, Vec U, Vec Udot, PetscReal shift, Mat A, Mat B, PetscBool imex)
+{
   TSIJacobian   ijacobian;
   TSRHSJacobian rhsjacobian;
   DM            dm;
@@ -1003,7 +1018,8 @@ $     PetscErrorCode f(TS ts,PetscReal t,Vec u,Vec F,void *ctx);
 
 .seealso: `TSSetRHSJacobian()`, `TSSetIJacobian()`, `TSSetIFunction()`
 @*/
-PetscErrorCode TSSetRHSFunction(TS ts, Vec r, PetscErrorCode (*f)(TS, PetscReal, Vec, Vec, void *), void *ctx) {
+PetscErrorCode TSSetRHSFunction(TS ts, Vec r, PetscErrorCode (*f)(TS, PetscReal, Vec, Vec, void *), void *ctx)
+{
   SNES snes;
   Vec  ralloc = NULL;
   DM   dm;
@@ -1057,7 +1073,8 @@ $     PetscErrorCode f(TS ts,PetscReal t,Vec u,void *ctx);
 
 .seealso: `TSSetRHSJacobian()`, `TSSetIJacobian()`, `TSComputeSolutionFunction()`, `TSSetForcingFunction()`, `TSSetSolution()`, `TSGetSolution()`, `TSMonitorLGError()`, `TSMonitorDrawError()`
 @*/
-PetscErrorCode TSSetSolutionFunction(TS ts, PetscErrorCode (*f)(TS, PetscReal, Vec, void *), void *ctx) {
+PetscErrorCode TSSetSolutionFunction(TS ts, PetscErrorCode (*f)(TS, PetscReal, Vec, void *), void *ctx)
+{
   DM dm;
 
   PetscFunctionBegin;
@@ -1101,7 +1118,8 @@ $     PetscErrorCode func (TS ts,PetscReal t,Vec f,void *ctx);
 
 .seealso: `TSSetRHSJacobian()`, `TSSetIJacobian()`, `TSComputeSolutionFunction()`, `TSSetSolutionFunction()`
 @*/
-PetscErrorCode TSSetForcingFunction(TS ts, TSForcingFunction func, void *ctx) {
+PetscErrorCode TSSetForcingFunction(TS ts, TSForcingFunction func, void *ctx)
+{
   DM dm;
 
   PetscFunctionBegin;
@@ -1145,7 +1163,8 @@ $     PetscErrorCode f(TS ts,PetscReal t,Vec u,Mat A,Mat B,void *ctx);
 .seealso: `SNESComputeJacobianDefaultColor()`, `TSSetRHSFunction()`, `TSRHSJacobianSetReuse()`, `TSSetIJacobian()`
 
 @*/
-PetscErrorCode TSSetRHSJacobian(TS ts, Mat Amat, Mat Pmat, TSRHSJacobian f, void *ctx) {
+PetscErrorCode TSSetRHSJacobian(TS ts, Mat Amat, Mat Pmat, TSRHSJacobian f, void *ctx)
+{
   SNES        snes;
   DM          dm;
   TSIJacobian ijacobian;
@@ -1202,7 +1221,8 @@ $     PetscErrorCode f(TS ts,PetscReal t,Vec u,Vec u_t,Vec F,ctx);
 
 .seealso: `TSSetRHSJacobian()`, `TSSetRHSFunction()`, `TSSetIJacobian()`
 @*/
-PetscErrorCode TSSetIFunction(TS ts, Vec r, TSIFunction f, void *ctx) {
+PetscErrorCode TSSetIFunction(TS ts, Vec r, TSIFunction f, void *ctx)
+{
   SNES snes;
   Vec  ralloc = NULL;
   DM   dm;
@@ -1241,7 +1261,8 @@ PetscErrorCode TSSetIFunction(TS ts, Vec r, TSIFunction f, void *ctx) {
 
 .seealso: `TSSetIFunction()`, `SNESGetFunction()`
 @*/
-PetscErrorCode TSGetIFunction(TS ts, Vec *r, TSIFunction *func, void **ctx) {
+PetscErrorCode TSGetIFunction(TS ts, Vec *r, TSIFunction *func, void **ctx)
+{
   SNES snes;
   DM   dm;
 
@@ -1271,7 +1292,8 @@ PetscErrorCode TSGetIFunction(TS ts, Vec *r, TSIFunction *func, void **ctx) {
 
 .seealso: `TSSetRHSFunction()`, `SNESGetFunction()`
 @*/
-PetscErrorCode TSGetRHSFunction(TS ts, Vec *r, TSRHSFunction *func, void **ctx) {
+PetscErrorCode TSGetRHSFunction(TS ts, Vec *r, TSRHSFunction *func, void **ctx)
+{
   SNES snes;
   DM   dm;
 
@@ -1331,7 +1353,8 @@ $    PetscErrorCode f(TS ts,PetscReal t,Vec U,Vec U_t,PetscReal a,Mat Amat,Mat P
 .seealso: `TSSetIFunction()`, `TSSetRHSJacobian()`, `SNESComputeJacobianDefaultColor()`, `SNESComputeJacobianDefault()`, `TSSetRHSFunction()`
 
 @*/
-PetscErrorCode TSSetIJacobian(TS ts, Mat Amat, Mat Pmat, TSIJacobian f, void *ctx) {
+PetscErrorCode TSSetIJacobian(TS ts, Mat Amat, Mat Pmat, TSIJacobian f, void *ctx)
+{
   SNES snes;
   DM   dm;
 
@@ -1366,7 +1389,8 @@ PetscErrorCode TSSetIJacobian(TS ts, Mat Amat, Mat Pmat, TSIJacobian f, void *ct
 
 .seealso: `TSSetRHSJacobian()`, `TSComputeRHSJacobianConstant()`
 @*/
-PetscErrorCode TSRHSJacobianSetReuse(TS ts, PetscBool reuse) {
+PetscErrorCode TSRHSJacobianSetReuse(TS ts, PetscBool reuse)
+{
   PetscFunctionBegin;
   ts->rhsjacobian.reuse = reuse;
   PetscFunctionReturn(0);
@@ -1397,7 +1421,8 @@ $     PetscErrorCode fun(TS ts,PetscReal t,Vec U,Vec U_t,Vec U_tt,Vec F,ctx);
 
 .seealso: `TSSetI2Jacobian()`, `TSSetIFunction()`, `TSCreate()`, `TSSetRHSFunction()`
 @*/
-PetscErrorCode TSSetI2Function(TS ts, Vec F, TSI2Function fun, void *ctx) {
+PetscErrorCode TSSetI2Function(TS ts, Vec F, TSI2Function fun, void *ctx)
+{
   DM dm;
 
   PetscFunctionBegin;
@@ -1426,7 +1451,8 @@ PetscErrorCode TSSetI2Function(TS ts, Vec F, TSI2Function fun, void *ctx) {
 
 .seealso: `TSSetIFunction()`, `SNESGetFunction()`, `TSCreate()`
 @*/
-PetscErrorCode TSGetI2Function(TS ts, Vec *r, TSI2Function *fun, void **ctx) {
+PetscErrorCode TSGetI2Function(TS ts, Vec *r, TSI2Function *fun, void **ctx)
+{
   SNES snes;
   DM   dm;
 
@@ -1477,7 +1503,8 @@ $    PetscErrorCode jac(TS ts,PetscReal t,Vec U,Vec U_t,Vec U_tt,PetscReal v,Pet
 
 .seealso: `TSSetI2Function()`, `TSGetI2Jacobian()`
 @*/
-PetscErrorCode TSSetI2Jacobian(TS ts, Mat J, Mat P, TSI2Jacobian jac, void *ctx) {
+PetscErrorCode TSSetI2Jacobian(TS ts, Mat J, Mat P, TSI2Jacobian jac, void *ctx)
+{
   DM dm;
 
   PetscFunctionBegin;
@@ -1512,7 +1539,8 @@ PetscErrorCode TSSetI2Jacobian(TS ts, Mat J, Mat P, TSI2Jacobian jac, void *ctx)
 .seealso: `TSGetTimeStep()`, `TSGetMatrices()`, `TSGetTime()`, `TSGetStepNumber()`, `TSSetI2Jacobian()`, `TSGetI2Function()`, `TSCreate()`
 
 @*/
-PetscErrorCode TSGetI2Jacobian(TS ts, Mat *J, Mat *P, TSI2Jacobian *jac, void **ctx) {
+PetscErrorCode TSGetI2Jacobian(TS ts, Mat *J, Mat *P, TSI2Jacobian *jac, void **ctx)
+{
   SNES snes;
   DM   dm;
 
@@ -1548,7 +1576,8 @@ PetscErrorCode TSGetI2Jacobian(TS ts, Mat *J, Mat *P, TSI2Jacobian *jac, void **
 
 .seealso: `TSSetI2Function()`, `TSGetI2Function()`
 @*/
-PetscErrorCode TSComputeI2Function(TS ts, PetscReal t, Vec U, Vec V, Vec A, Vec F) {
+PetscErrorCode TSComputeI2Function(TS ts, PetscReal t, Vec U, Vec V, Vec A, Vec F)
+{
   DM            dm;
   TSI2Function  I2Function;
   void         *ctx;
@@ -1615,7 +1644,8 @@ PetscErrorCode TSComputeI2Function(TS ts, PetscReal t, Vec U, Vec V, Vec A, Vec 
 
 .seealso: `TSSetI2Jacobian()`
 @*/
-PetscErrorCode TSComputeI2Jacobian(TS ts, PetscReal t, Vec U, Vec V, Vec A, PetscReal shiftV, PetscReal shiftA, Mat J, Mat P) {
+PetscErrorCode TSComputeI2Jacobian(TS ts, PetscReal t, Vec U, Vec V, Vec A, PetscReal shiftV, PetscReal shiftA, Mat J, Mat P)
+{
   DM            dm;
   TSI2Jacobian  I2Jacobian;
   void         *ctx;
@@ -1683,7 +1713,8 @@ $     PetscErrorCode tvar(TS ts,Vec p,Vec c,void *ctx);
 
 .seealso: `DMTSSetTransientVariable()`, `DMTSGetTransientVariable()`, `TSSetIFunction()`, `TSSetIJacobian()`
 @*/
-PetscErrorCode TSSetTransientVariable(TS ts, TSTransientVariable tvar, void *ctx) {
+PetscErrorCode TSSetTransientVariable(TS ts, TSTransientVariable tvar, void *ctx)
+{
   DM dm;
 
   PetscFunctionBegin;
@@ -1714,7 +1745,8 @@ PetscErrorCode TSSetTransientVariable(TS ts, TSTransientVariable tvar, void *ctx
 
 .seealso: `DMTSSetTransientVariable()`, `TSComputeIFunction()`, `TSComputeIJacobian()`
 @*/
-PetscErrorCode TSComputeTransientVariable(TS ts, Vec U, Vec C) {
+PetscErrorCode TSComputeTransientVariable(TS ts, Vec U, Vec C)
+{
   DM   dm;
   DMTS dmts;
 
@@ -1745,7 +1777,8 @@ PetscErrorCode TSComputeTransientVariable(TS ts, Vec U, Vec C) {
 
 .seealso: `DMTSSetTransientVariable()`, `TSComputeTransientVariable()`
 @*/
-PetscErrorCode TSHasTransientVariable(TS ts, PetscBool *has) {
+PetscErrorCode TSHasTransientVariable(TS ts, PetscBool *has)
+{
   DM   dm;
   DMTS dmts;
 
@@ -1771,7 +1804,8 @@ PetscErrorCode TSHasTransientVariable(TS ts, PetscBool *has) {
    Level: beginner
 
 @*/
-PetscErrorCode TS2SetSolution(TS ts, Vec u, Vec v) {
+PetscErrorCode TS2SetSolution(TS ts, Vec u, Vec v)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscValidHeaderSpecific(u, VEC_CLASSID, 2);
@@ -1803,7 +1837,8 @@ PetscErrorCode TS2SetSolution(TS ts, Vec u, Vec v) {
 .seealso: `TS2SetSolution()`, `TSGetTimeStep()`, `TSGetTime()`
 
 @*/
-PetscErrorCode TS2GetSolution(TS ts, Vec *u, Vec *v) {
+PetscErrorCode TS2GetSolution(TS ts, Vec *u, Vec *v)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   if (u) PetscValidPointer(u, 2);
@@ -1839,7 +1874,8 @@ PetscErrorCode TS2GetSolution(TS ts, Vec *u, Vec *v) {
 
 .seealso: `PetscViewerBinaryOpen()`, `TSView()`, `MatLoad()`, `VecLoad()`
 @*/
-PetscErrorCode TSLoad(TS ts, PetscViewer viewer) {
+PetscErrorCode TSLoad(TS ts, PetscViewer viewer)
+{
   PetscBool isbinary;
   PetscInt  classid;
   char      type[256];
@@ -1869,7 +1905,7 @@ PetscErrorCode TSLoad(TS ts, PetscViewer viewer) {
 
 #include <petscdraw.h>
 #if defined(PETSC_HAVE_SAWS)
-#include <petscviewersaws.h>
+  #include <petscviewersaws.h>
 #endif
 
 /*@C
@@ -1885,7 +1921,8 @@ PetscErrorCode TSLoad(TS ts, PetscViewer viewer) {
    Level: intermediate
 .seealso: `TS`, `TSView`, `PetscObjectViewFromOptions()`, `TSCreate()`
 @*/
-PetscErrorCode TSViewFromOptions(TS A, PetscObject obj, const char name[]) {
+PetscErrorCode TSViewFromOptions(TS A, PetscObject obj, const char name[])
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, TS_CLASSID, 1);
   PetscCall(PetscObjectViewFromOptions((PetscObject)A, obj, name));
@@ -1921,7 +1958,8 @@ PetscErrorCode TSViewFromOptions(TS A, PetscObject obj, const char name[]) {
 
 .seealso: `PetscViewerASCIIOpen()`
 @*/
-PetscErrorCode TSView(TS ts, PetscViewer viewer) {
+PetscErrorCode TSView(TS ts, PetscViewer viewer)
+{
   TSType    type;
   PetscBool iascii, isstring, isundials, isbinary, isdraw;
   DMTS      sdm;
@@ -2060,7 +2098,8 @@ PetscErrorCode TSView(TS ts, PetscViewer viewer) {
 
 .seealso: `TSGetApplicationContext()`
 @*/
-PetscErrorCode TSSetApplicationContext(TS ts, void *usrP) {
+PetscErrorCode TSSetApplicationContext(TS ts, void *usrP)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   ts->user = usrP;
@@ -2087,7 +2126,8 @@ PetscErrorCode TSSetApplicationContext(TS ts, void *usrP) {
 
 .seealso: `TSSetApplicationContext()`
 @*/
-PetscErrorCode TSGetApplicationContext(TS ts, void *usrP) {
+PetscErrorCode TSGetApplicationContext(TS ts, void *usrP)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   *(void **)usrP = ts->user;
@@ -2109,7 +2149,8 @@ PetscErrorCode TSGetApplicationContext(TS ts, void *usrP) {
 
 .seealso: `TSGetTime()`, `TSGetTimeStep()`, `TSSetPreStep()`, `TSSetPreStage()`, `TSSetPostStage()`, `TSSetPostStep()`
 @*/
-PetscErrorCode TSGetStepNumber(TS ts, PetscInt *steps) {
+PetscErrorCode TSGetStepNumber(TS ts, PetscInt *steps)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscValidIntPointer(steps, 2);
@@ -2140,7 +2181,8 @@ PetscErrorCode TSGetStepNumber(TS ts, PetscInt *steps) {
 
 .seealso: `TSGetStepNumber()`, `TSSetTime()`, `TSSetTimeStep()`, `TSSetSolution()`
 @*/
-PetscErrorCode TSSetStepNumber(TS ts, PetscInt steps) {
+PetscErrorCode TSSetStepNumber(TS ts, PetscInt steps)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscValidLogicalCollectiveInt(ts, steps, 2);
@@ -2164,7 +2206,8 @@ PetscErrorCode TSSetStepNumber(TS ts, PetscInt steps) {
 .seealso: `TSGetTimeStep()`, `TSSetTime()`
 
 @*/
-PetscErrorCode TSSetTimeStep(TS ts, PetscReal time_step) {
+PetscErrorCode TSSetTimeStep(TS ts, PetscReal time_step)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscValidLogicalCollectiveReal(ts, time_step, 2);
@@ -2197,7 +2240,8 @@ $  TS_EXACTFINALTIME_MATCHSTEP - Adapt final time step to match the final time
 
 .seealso: `TSExactFinalTimeOption`, `TSGetExactFinalTime()`
 @*/
-PetscErrorCode TSSetExactFinalTime(TS ts, TSExactFinalTimeOption eftopt) {
+PetscErrorCode TSSetExactFinalTime(TS ts, TSExactFinalTimeOption eftopt)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscValidLogicalCollectiveEnum(ts, eftopt, 2);
@@ -2220,7 +2264,8 @@ PetscErrorCode TSSetExactFinalTime(TS ts, TSExactFinalTimeOption eftopt) {
 
 .seealso: `TSExactFinalTimeOption`, `TSSetExactFinalTime()`
 @*/
-PetscErrorCode TSGetExactFinalTime(TS ts, TSExactFinalTimeOption *eftopt) {
+PetscErrorCode TSGetExactFinalTime(TS ts, TSExactFinalTimeOption *eftopt)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscValidPointer(eftopt, 2);
@@ -2244,7 +2289,8 @@ PetscErrorCode TSGetExactFinalTime(TS ts, TSExactFinalTimeOption *eftopt) {
 .seealso: `TSSetTimeStep()`, `TSGetTime()`
 
 @*/
-PetscErrorCode TSGetTimeStep(TS ts, PetscReal *dt) {
+PetscErrorCode TSGetTimeStep(TS ts, PetscReal *dt)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscValidRealPointer(dt, 2);
@@ -2274,7 +2320,8 @@ PetscErrorCode TSGetTimeStep(TS ts, PetscReal *dt) {
 .seealso: `TSGetTimeStep()`, `TSGetTime()`, `TSGetSolveTime()`, `TSGetSolutionComponents()`, `TSSetSolutionFunction()`
 
 @*/
-PetscErrorCode TSGetSolution(TS ts, Vec *v) {
+PetscErrorCode TSGetSolution(TS ts, Vec *v)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscValidPointer(v, 2);
@@ -2304,7 +2351,8 @@ PetscErrorCode TSGetSolution(TS ts, Vec *v) {
 .seealso: `TSGetSolution()`
 
 @*/
-PetscErrorCode TSGetSolutionComponents(TS ts, PetscInt *n, Vec *v) {
+PetscErrorCode TSGetSolutionComponents(TS ts, PetscInt *n, Vec *v)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   if (!ts->ops->getsolutioncomponents) *n = 0;
@@ -2327,7 +2375,8 @@ PetscErrorCode TSGetSolutionComponents(TS ts, PetscInt *n, Vec *v) {
 .seealso: `TSGetSolution()`
 
 @*/
-PetscErrorCode TSGetAuxSolution(TS ts, Vec *v) {
+PetscErrorCode TSGetAuxSolution(TS ts, Vec *v)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   if (ts->ops->getauxsolution) PetscUseTypeMethod(ts, getauxsolution, v);
@@ -2353,7 +2402,8 @@ PetscErrorCode TSGetAuxSolution(TS ts, Vec *v) {
 .seealso: `TSGetSolution()`, `TSSetTimeError()`
 
 @*/
-PetscErrorCode TSGetTimeError(TS ts, PetscInt n, Vec *v) {
+PetscErrorCode TSGetTimeError(TS ts, PetscInt n, Vec *v)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   if (ts->ops->gettimeerror) PetscUseTypeMethod(ts, gettimeerror, n, v);
@@ -2377,7 +2427,8 @@ PetscErrorCode TSGetTimeError(TS ts, PetscInt n, Vec *v) {
 .seealso: `TSSetSolution()`, `TSGetTimeError)`
 
 @*/
-PetscErrorCode TSSetTimeError(TS ts, Vec v) {
+PetscErrorCode TSSetTimeError(TS ts, Vec v)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscCheck(ts->setupcalled, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Must call TSSetUp() first");
@@ -2404,7 +2455,8 @@ PetscErrorCode TSSetTimeError(TS ts, Vec v) {
 
 .seealso: `TSSetUp()`, `TSProblemType`, `TS`
 @*/
-PetscErrorCode TSSetProblemType(TS ts, TSProblemType type) {
+PetscErrorCode TSSetProblemType(TS ts, TSProblemType type)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   ts->problem_type = type;
@@ -2436,7 +2488,8 @@ PetscErrorCode TSSetProblemType(TS ts, TSProblemType type) {
 
 .seealso: `TSSetUp()`, `TSProblemType`, `TS`
 @*/
-PetscErrorCode TSGetProblemType(TS ts, TSProblemType *type) {
+PetscErrorCode TSGetProblemType(TS ts, TSProblemType *type)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscValidIntPointer(type, 2);
@@ -2447,7 +2500,8 @@ PetscErrorCode TSGetProblemType(TS ts, TSProblemType *type) {
 /*
     Attempt to check/preset a default value for the exact final time option. This is needed at the beginning of TSSolve() and in TSSetUp()
 */
-static PetscErrorCode TSSetExactFinalTimeDefault(TS ts) {
+static PetscErrorCode TSSetExactFinalTimeDefault(TS ts)
+{
   PetscBool isnone;
 
   PetscFunctionBegin;
@@ -2479,7 +2533,8 @@ static PetscErrorCode TSSetExactFinalTimeDefault(TS ts) {
 
 .seealso: `TSCreate()`, `TSStep()`, `TSDestroy()`, `TSSolve()`
 @*/
-PetscErrorCode TSSetUp(TS ts) {
+PetscErrorCode TSSetUp(TS ts)
+{
   DM dm;
   PetscErrorCode (*func)(SNES, Vec, Vec, void *);
   PetscErrorCode (*jac)(SNES, Vec, Mat, Mat, void *);
@@ -2579,7 +2634,8 @@ PetscErrorCode TSSetUp(TS ts) {
 
 .seealso: `TSCreate()`, `TSSetup()`, `TSDestroy()`
 @*/
-PetscErrorCode TSReset(TS ts) {
+PetscErrorCode TSReset(TS ts)
+{
   TS_RHSSplitLink ilink = ts->tsrhssplit, next;
 
   PetscFunctionBegin;
@@ -2637,7 +2693,8 @@ PetscErrorCode TSReset(TS ts) {
 
 .seealso: `TSCreate()`, `TSSetUp()`, `TSSolve()`
 @*/
-PetscErrorCode TSDestroy(TS *ts) {
+PetscErrorCode TSDestroy(TS *ts)
+{
   PetscFunctionBegin;
   if (!*ts) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(*ts, TS_CLASSID, 1);
@@ -2692,7 +2749,8 @@ PetscErrorCode TSDestroy(TS *ts) {
    Level: beginner
 
 @*/
-PetscErrorCode TSGetSNES(TS ts, SNES *snes) {
+PetscErrorCode TSGetSNES(TS ts, SNES *snes)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscValidPointer(snes, 2);
@@ -2723,7 +2781,8 @@ PetscErrorCode TSGetSNES(TS ts, SNES *snes) {
    Level: developer
 
 @*/
-PetscErrorCode TSSetSNES(TS ts, SNES snes) {
+PetscErrorCode TSSetSNES(TS ts, SNES snes)
+{
   PetscErrorCode (*func)(SNES, Vec, Mat, Mat, void *);
 
   PetscFunctionBegin;
@@ -2763,7 +2822,8 @@ PetscErrorCode TSSetSNES(TS ts, SNES snes) {
    Level: beginner
 
 @*/
-PetscErrorCode TSGetKSP(TS ts, KSP *ksp) {
+PetscErrorCode TSGetKSP(TS ts, KSP *ksp)
+{
   SNES snes;
 
   PetscFunctionBegin;
@@ -2797,7 +2857,8 @@ PetscErrorCode TSGetKSP(TS ts, KSP *ksp) {
 
 .seealso: `TSGetMaxSteps()`, `TSSetMaxTime()`, `TSSetExactFinalTime()`
 @*/
-PetscErrorCode TSSetMaxSteps(TS ts, PetscInt maxsteps) {
+PetscErrorCode TSSetMaxSteps(TS ts, PetscInt maxsteps)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscValidLogicalCollectiveInt(ts, maxsteps, 2);
@@ -2821,7 +2882,8 @@ PetscErrorCode TSSetMaxSteps(TS ts, PetscInt maxsteps) {
 
 .seealso: `TSSetMaxSteps()`, `TSGetMaxTime()`, `TSSetMaxTime()`
 @*/
-PetscErrorCode TSGetMaxSteps(TS ts, PetscInt *maxsteps) {
+PetscErrorCode TSGetMaxSteps(TS ts, PetscInt *maxsteps)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscValidIntPointer(maxsteps, 2);
@@ -2848,7 +2910,8 @@ PetscErrorCode TSGetMaxSteps(TS ts, PetscInt *maxsteps) {
 
 .seealso: `TSGetMaxTime()`, `TSSetMaxSteps()`, `TSSetExactFinalTime()`
 @*/
-PetscErrorCode TSSetMaxTime(TS ts, PetscReal maxtime) {
+PetscErrorCode TSSetMaxTime(TS ts, PetscReal maxtime)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscValidLogicalCollectiveReal(ts, maxtime, 2);
@@ -2871,7 +2934,8 @@ PetscErrorCode TSSetMaxTime(TS ts, PetscReal maxtime) {
 
 .seealso: `TSSetMaxTime()`, `TSGetMaxSteps()`, `TSSetMaxSteps()`
 @*/
-PetscErrorCode TSGetMaxTime(TS ts, PetscReal *maxtime) {
+PetscErrorCode TSGetMaxTime(TS ts, PetscReal *maxtime)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscValidRealPointer(maxtime, 2);
@@ -2885,7 +2949,8 @@ PetscErrorCode TSGetMaxTime(TS ts, PetscReal *maxtime) {
    Level: deprecated
 
 @*/
-PetscErrorCode TSSetInitialTimeStep(TS ts, PetscReal initial_time, PetscReal time_step) {
+PetscErrorCode TSSetInitialTimeStep(TS ts, PetscReal initial_time, PetscReal time_step)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscCall(TSSetTime(ts, initial_time));
@@ -2899,7 +2964,8 @@ PetscErrorCode TSSetInitialTimeStep(TS ts, PetscReal initial_time, PetscReal tim
    Level: deprecated
 
 @*/
-PetscErrorCode TSGetDuration(TS ts, PetscInt *maxsteps, PetscReal *maxtime) {
+PetscErrorCode TSGetDuration(TS ts, PetscInt *maxsteps, PetscReal *maxtime)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   if (maxsteps) {
@@ -2919,7 +2985,8 @@ PetscErrorCode TSGetDuration(TS ts, PetscInt *maxsteps, PetscReal *maxtime) {
    Level: deprecated
 
 @*/
-PetscErrorCode TSSetDuration(TS ts, PetscInt maxsteps, PetscReal maxtime) {
+PetscErrorCode TSSetDuration(TS ts, PetscInt maxsteps, PetscReal maxtime)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscValidLogicalCollectiveInt(ts, maxsteps, 2);
@@ -2935,7 +3002,8 @@ PetscErrorCode TSSetDuration(TS ts, PetscInt maxsteps, PetscReal maxtime) {
    Level: deprecated
 
 @*/
-PetscErrorCode TSGetTimeStepNumber(TS ts, PetscInt *steps) {
+PetscErrorCode TSGetTimeStepNumber(TS ts, PetscInt *steps)
+{
   return TSGetStepNumber(ts, steps);
 }
 
@@ -2945,7 +3013,8 @@ PetscErrorCode TSGetTimeStepNumber(TS ts, PetscInt *steps) {
    Level: deprecated
 
 @*/
-PetscErrorCode TSGetTotalSteps(TS ts, PetscInt *steps) {
+PetscErrorCode TSGetTotalSteps(TS ts, PetscInt *steps)
+{
   return TSGetStepNumber(ts, steps);
 }
 
@@ -2963,7 +3032,8 @@ PetscErrorCode TSGetTotalSteps(TS ts, PetscInt *steps) {
 
 .seealso: `TSSetSolutionFunction()`, `TSGetSolution()`, `TSCreate()`
 @*/
-PetscErrorCode TSSetSolution(TS ts, Vec u) {
+PetscErrorCode TSSetSolution(TS ts, Vec u)
+{
   DM dm;
 
   PetscFunctionBegin;
@@ -2997,7 +3067,8 @@ PetscErrorCode TSSetSolution(TS ts, Vec u) {
 
 .seealso: `TSSetPreStage()`, `TSSetPostStage()`, `TSSetPostStep()`, `TSStep()`, `TSRestartStep()`
 @*/
-PetscErrorCode TSSetPreStep(TS ts, PetscErrorCode (*func)(TS)) {
+PetscErrorCode TSSetPreStep(TS ts, PetscErrorCode (*func)(TS))
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   ts->prestep = func;
@@ -3020,7 +3091,8 @@ PetscErrorCode TSSetPreStep(TS ts, PetscErrorCode (*func)(TS)) {
 
 .seealso: `TSSetPreStep()`, `TSPreStage()`, `TSPostStage()`, `TSPostStep()`
 @*/
-PetscErrorCode TSPreStep(TS ts) {
+PetscErrorCode TSPreStep(TS ts)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   if (ts->prestep) {
@@ -3065,7 +3137,8 @@ PetscErrorCode TSPreStep(TS ts) {
 
 .seealso: `TSSetPostStage()`, `TSSetPreStep()`, `TSSetPostStep()`, `TSGetApplicationContext()`
 @*/
-PetscErrorCode TSSetPreStage(TS ts, PetscErrorCode (*func)(TS, PetscReal)) {
+PetscErrorCode TSSetPreStage(TS ts, PetscErrorCode (*func)(TS, PetscReal))
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   ts->prestage = func;
@@ -3096,7 +3169,8 @@ PetscErrorCode TSSetPreStage(TS ts, PetscErrorCode (*func)(TS, PetscReal)) {
 
 .seealso: `TSSetPreStage()`, `TSSetPreStep()`, `TSSetPostStep()`, `TSGetApplicationContext()`
 @*/
-PetscErrorCode TSSetPostStage(TS ts, PetscErrorCode (*func)(TS, PetscReal, PetscInt, Vec *)) {
+PetscErrorCode TSSetPostStage(TS ts, PetscErrorCode (*func)(TS, PetscReal, PetscInt, Vec *))
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   ts->poststage = func;
@@ -3129,7 +3203,8 @@ PetscErrorCode TSSetPostStage(TS ts, PetscErrorCode (*func)(TS, PetscReal, Petsc
 
 .seealso: `TSSetPreStage()`, `TSSetPreStep()`, `TSSetPostStep()`, `TSGetApplicationContext()`
 @*/
-PetscErrorCode TSSetPostEvaluate(TS ts, PetscErrorCode (*func)(TS)) {
+PetscErrorCode TSSetPostEvaluate(TS ts, PetscErrorCode (*func)(TS))
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   ts->postevaluate = func;
@@ -3153,7 +3228,8 @@ PetscErrorCode TSSetPostEvaluate(TS ts, PetscErrorCode (*func)(TS)) {
 
 .seealso: `TSPostStage()`, `TSSetPreStep()`, `TSPreStep()`, `TSPostStep()`
 @*/
-PetscErrorCode TSPreStage(TS ts, PetscReal stagetime) {
+PetscErrorCode TSPreStage(TS ts, PetscReal stagetime)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   if (ts->prestage) PetscCallBack("TS callback prestage", (*ts->prestage)(ts, stagetime));
@@ -3180,7 +3256,8 @@ PetscErrorCode TSPreStage(TS ts, PetscReal stagetime) {
 
 .seealso: `TSPreStage()`, `TSSetPreStep()`, `TSPreStep()`, `TSPostStep()`
 @*/
-PetscErrorCode TSPostStage(TS ts, PetscReal stagetime, PetscInt stageindex, Vec *Y) {
+PetscErrorCode TSPostStage(TS ts, PetscReal stagetime, PetscInt stageindex, Vec *Y)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   if (ts->poststage) PetscCallBack("TS callback poststage", (*ts->poststage)(ts, stagetime, stageindex, Y));
@@ -3203,7 +3280,8 @@ PetscErrorCode TSPostStage(TS ts, PetscReal stagetime, PetscInt stageindex, Vec 
 
 .seealso: `TSSetPostEvaluate()`, `TSSetPreStep()`, `TSPreStep()`, `TSPostStep()`
 @*/
-PetscErrorCode TSPostEvaluate(TS ts) {
+PetscErrorCode TSPostEvaluate(TS ts)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   if (ts->postevaluate) {
@@ -3241,7 +3319,8 @@ $ func (TS ts);
 
 .seealso: `TSSetPreStep()`, `TSSetPreStage()`, `TSSetPostEvaluate()`, `TSGetTimeStep()`, `TSGetStepNumber()`, `TSGetTime()`, `TSRestartStep()`
 @*/
-PetscErrorCode TSSetPostStep(TS ts, PetscErrorCode (*func)(TS)) {
+PetscErrorCode TSSetPostStep(TS ts, PetscErrorCode (*func)(TS))
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   ts->poststep = func;
@@ -3263,7 +3342,8 @@ PetscErrorCode TSSetPostStep(TS ts, PetscErrorCode (*func)(TS)) {
   Level: developer
 
 @*/
-PetscErrorCode TSPostStep(TS ts) {
+PetscErrorCode TSPostStep(TS ts)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   if (ts->poststep) {
@@ -3303,7 +3383,8 @@ PetscErrorCode TSPostStep(TS ts) {
 
 .seealso: `TSSetExactFinalTime()`, `TSSolve()`
 @*/
-PetscErrorCode TSInterpolate(TS ts, PetscReal t, Vec U) {
+PetscErrorCode TSInterpolate(TS ts, PetscReal t, Vec U)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscValidHeaderSpecific(U, VEC_CLASSID, 3);
@@ -3333,7 +3414,8 @@ PetscErrorCode TSInterpolate(TS ts, PetscReal t, Vec U) {
 
 .seealso: `TSCreate()`, `TSSetUp()`, `TSDestroy()`, `TSSolve()`, `TSSetPreStep()`, `TSSetPreStage()`, `TSSetPostStage()`, `TSInterpolate()`
 @*/
-PetscErrorCode TSStep(TS ts) {
+PetscErrorCode TSStep(TS ts)
+{
   static PetscBool cite = PETSC_FALSE;
   PetscReal        ptime;
 
@@ -3407,7 +3489,8 @@ PetscErrorCode TSStep(TS ts) {
 
 .seealso: `TSStep()`, `TSAdapt`, `TSErrorWeightedNorm()`
 @*/
-PetscErrorCode TSEvaluateWLTE(TS ts, NormType wnormtype, PetscInt *order, PetscReal *wlte) {
+PetscErrorCode TSEvaluateWLTE(TS ts, NormType wnormtype, PetscInt *order, PetscReal *wlte)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscValidType(ts, 1);
@@ -3441,7 +3524,8 @@ PetscErrorCode TSEvaluateWLTE(TS ts, NormType wnormtype, PetscInt *order, PetscR
 
 .seealso: `TSStep()`, `TSAdapt`
 @*/
-PetscErrorCode TSEvaluateStep(TS ts, PetscInt order, Vec U, PetscBool *done) {
+PetscErrorCode TSEvaluateStep(TS ts, PetscInt order, Vec U, PetscBool *done)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscValidType(ts, 1);
@@ -3471,7 +3555,8 @@ $ u  - The input vector in which the initial condition is stored
 
 .seealso: `TSSetComputeInitialCondition()`, `TSComputeInitialCondition()`
 @*/
-PetscErrorCode TSGetComputeInitialCondition(TS ts, PetscErrorCode (**initCondition)(TS, Vec)) {
+PetscErrorCode TSGetComputeInitialCondition(TS ts, PetscErrorCode (**initCondition)(TS, Vec))
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscValidPointer(initCondition, 2);
@@ -3498,7 +3583,8 @@ $ PetscErrorCode initCondition(TS ts, Vec u)
 
 .seealso: `TSGetComputeInitialCondition()`, `TSComputeInitialCondition()`
 @*/
-PetscErrorCode TSSetComputeInitialCondition(TS ts, PetscErrorCode (*initCondition)(TS, Vec)) {
+PetscErrorCode TSSetComputeInitialCondition(TS ts, PetscErrorCode (*initCondition)(TS, Vec))
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscValidFunction(initCondition, 2);
@@ -3519,7 +3605,8 @@ PetscErrorCode TSSetComputeInitialCondition(TS ts, PetscErrorCode (*initConditio
 
 .seealso: `TSGetComputeInitialCondition()`, `TSSetComputeInitialCondition()`, `TSSolve()`
 @*/
-PetscErrorCode TSComputeInitialCondition(TS ts, Vec u) {
+PetscErrorCode TSComputeInitialCondition(TS ts, Vec u)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscValidHeaderSpecific(u, VEC_CLASSID, 2);
@@ -3549,7 +3636,8 @@ $ PetscErrorCode exactError(TS ts, Vec u)
 
 .seealso: `TSGetComputeExactError()`, `TSComputeExactError()`
 @*/
-PetscErrorCode TSGetComputeExactError(TS ts, PetscErrorCode (**exactError)(TS, Vec, Vec)) {
+PetscErrorCode TSGetComputeExactError(TS ts, PetscErrorCode (**exactError)(TS, Vec, Vec))
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscValidPointer(exactError, 2);
@@ -3577,7 +3665,8 @@ $ PetscErrorCode exactError(TS ts, Vec u)
 
 .seealso: `TSGetComputeExactError()`, `TSComputeExactError()`
 @*/
-PetscErrorCode TSSetComputeExactError(TS ts, PetscErrorCode (*exactError)(TS, Vec, Vec)) {
+PetscErrorCode TSSetComputeExactError(TS ts, PetscErrorCode (*exactError)(TS, Vec, Vec))
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscValidFunction(exactError, 2);
@@ -3599,7 +3688,8 @@ PetscErrorCode TSSetComputeExactError(TS ts, PetscErrorCode (*exactError)(TS, Ve
 
 .seealso: `TSGetComputeInitialCondition()`, `TSSetComputeInitialCondition()`, `TSSolve()`
 @*/
-PetscErrorCode TSComputeExactError(TS ts, Vec u, Vec e) {
+PetscErrorCode TSComputeExactError(TS ts, Vec u, Vec e)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscValidHeaderSpecific(u, VEC_CLASSID, 2);
@@ -3627,7 +3717,8 @@ PetscErrorCode TSComputeExactError(TS ts, Vec u, Vec e) {
 
 .seealso: `TSCreate()`, `TSSetSolution()`, `TSStep()`, `TSGetTime()`, `TSGetSolveTime()`
 @*/
-PetscErrorCode TSSolve(TS ts, Vec u) {
+PetscErrorCode TSSolve(TS ts, Vec u)
+{
   Vec solution;
 
   PetscFunctionBegin;
@@ -3804,7 +3895,8 @@ PetscErrorCode TSSolve(TS ts, Vec u) {
 .seealso: `TSGetSolveTime()`, `TSSetTime()`, `TSGetTimeStep()`, `TSGetStepNumber()`
 
 @*/
-PetscErrorCode TSGetTime(TS ts, PetscReal *t) {
+PetscErrorCode TSGetTime(TS ts, PetscReal *t)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscValidRealPointer(t, 2);
@@ -3828,7 +3920,8 @@ PetscErrorCode TSGetTime(TS ts, PetscReal *t) {
 .seealso: `TSGetTime()`, `TSGetSolveTime()`, `TSGetTimeStep()`
 
 @*/
-PetscErrorCode TSGetPrevTime(TS ts, PetscReal *t) {
+PetscErrorCode TSGetPrevTime(TS ts, PetscReal *t)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscValidRealPointer(t, 2);
@@ -3850,7 +3943,8 @@ PetscErrorCode TSGetPrevTime(TS ts, PetscReal *t) {
 .seealso: `TSGetTime()`, `TSSetMaxSteps()`
 
 @*/
-PetscErrorCode TSSetTime(TS ts, PetscReal t) {
+PetscErrorCode TSSetTime(TS ts, PetscReal t)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscValidLogicalCollectiveReal(ts, t, 2);
@@ -3878,7 +3972,8 @@ PetscErrorCode TSSetTime(TS ts, PetscReal t) {
 .seealso: `TSSetFromOptions()`
 
 @*/
-PetscErrorCode TSSetOptionsPrefix(TS ts, const char prefix[]) {
+PetscErrorCode TSSetOptionsPrefix(TS ts, const char prefix[])
+{
   SNES snes;
 
   PetscFunctionBegin;
@@ -3909,7 +4004,8 @@ PetscErrorCode TSSetOptionsPrefix(TS ts, const char prefix[]) {
 .seealso: `TSGetOptionsPrefix()`
 
 @*/
-PetscErrorCode TSAppendOptionsPrefix(TS ts, const char prefix[]) {
+PetscErrorCode TSAppendOptionsPrefix(TS ts, const char prefix[])
+{
   SNES snes;
 
   PetscFunctionBegin;
@@ -3940,7 +4036,8 @@ PetscErrorCode TSAppendOptionsPrefix(TS ts, const char prefix[]) {
 
 .seealso: `TSAppendOptionsPrefix()`
 @*/
-PetscErrorCode TSGetOptionsPrefix(TS ts, const char *prefix[]) {
+PetscErrorCode TSGetOptionsPrefix(TS ts, const char *prefix[])
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscValidPointer(prefix, 2);
@@ -3970,7 +4067,8 @@ PetscErrorCode TSGetOptionsPrefix(TS ts, const char *prefix[]) {
 .seealso: `TSGetTimeStep()`, `TSGetMatrices()`, `TSGetTime()`, `TSGetStepNumber()`
 
 @*/
-PetscErrorCode TSGetRHSJacobian(TS ts, Mat *Amat, Mat *Pmat, TSRHSJacobian *func, void **ctx) {
+PetscErrorCode TSGetRHSJacobian(TS ts, Mat *Amat, Mat *Pmat, TSRHSJacobian *func, void **ctx)
+{
   DM dm;
 
   PetscFunctionBegin;
@@ -4007,7 +4105,8 @@ PetscErrorCode TSGetRHSJacobian(TS ts, Mat *Amat, Mat *Pmat, TSRHSJacobian *func
 .seealso: `TSGetTimeStep()`, `TSGetRHSJacobian()`, `TSGetMatrices()`, `TSGetTime()`, `TSGetStepNumber()`
 
 @*/
-PetscErrorCode TSGetIJacobian(TS ts, Mat *Amat, Mat *Pmat, TSIJacobian *f, void **ctx) {
+PetscErrorCode TSGetIJacobian(TS ts, Mat *Amat, Mat *Pmat, TSIJacobian *f, void **ctx)
+{
   DM dm;
 
   PetscFunctionBegin;
@@ -4041,7 +4140,8 @@ PetscErrorCode TSGetIJacobian(TS ts, Mat *Amat, Mat *Pmat, TSIJacobian *f, void 
 
 .seealso: `TSGetDM()`, `SNESSetDM()`, `SNESGetDM()`
 @*/
-PetscErrorCode TSSetDM(TS ts, DM dm) {
+PetscErrorCode TSSetDM(TS ts, DM dm)
+{
   SNES snes;
   DMTS tsdm;
 
@@ -4080,7 +4180,8 @@ PetscErrorCode TSSetDM(TS ts, DM dm) {
 
 .seealso: `TSSetDM()`, `SNESSetDM()`, `SNESGetDM()`
 @*/
-PetscErrorCode TSGetDM(TS ts, DM *dm) {
+PetscErrorCode TSGetDM(TS ts, DM *dm)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   if (!ts->dm) {
@@ -4112,7 +4213,8 @@ PetscErrorCode TSGetDM(TS ts, DM *dm) {
 
 .seealso: `SNESSetFunction()`, `MatFDColoringSetFunction()`
 @*/
-PetscErrorCode SNESTSFormFunction(SNES snes, Vec U, Vec F, void *ctx) {
+PetscErrorCode SNESTSFormFunction(SNES snes, Vec U, Vec F, void *ctx)
+{
   TS ts = (TS)ctx;
 
   PetscFunctionBegin;
@@ -4145,7 +4247,8 @@ PetscErrorCode SNESTSFormFunction(SNES snes, Vec U, Vec F, void *ctx) {
 
 .seealso: `SNESSetJacobian()`
 @*/
-PetscErrorCode SNESTSFormJacobian(SNES snes, Vec U, Mat A, Mat B, void *ctx) {
+PetscErrorCode SNESTSFormJacobian(SNES snes, Vec U, Mat A, Mat B, void *ctx)
+{
   TS ts = (TS)ctx;
 
   PetscFunctionBegin;
@@ -4182,7 +4285,8 @@ PetscErrorCode SNESTSFormJacobian(SNES snes, Vec U, Mat A, Mat B, void *ctx) {
 
 .seealso: `TSSetRHSFunction()`, `TSSetRHSJacobian()`, `TSComputeRHSJacobianConstant()`
 @*/
-PetscErrorCode TSComputeRHSFunctionLinear(TS ts, PetscReal t, Vec U, Vec F, void *ctx) {
+PetscErrorCode TSComputeRHSFunctionLinear(TS ts, PetscReal t, Vec U, Vec F, void *ctx)
+{
   Mat Arhs, Brhs;
 
   PetscFunctionBegin;
@@ -4216,7 +4320,8 @@ PetscErrorCode TSComputeRHSFunctionLinear(TS ts, PetscReal t, Vec U, Vec F, void
 
 .seealso: `TSSetRHSFunction()`, `TSSetRHSJacobian()`, `TSComputeRHSFunctionLinear()`
 @*/
-PetscErrorCode TSComputeRHSJacobianConstant(TS ts, PetscReal t, Vec U, Mat A, Mat B, void *ctx) {
+PetscErrorCode TSComputeRHSJacobianConstant(TS ts, PetscReal t, Vec U, Mat A, Mat B, void *ctx)
+{
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
@@ -4248,7 +4353,8 @@ PetscErrorCode TSComputeRHSJacobianConstant(TS ts, PetscReal t, Vec U, Mat A, Ma
 
 .seealso: `TSSetIFunction()`, `TSSetIJacobian()`, `TSComputeIJacobianConstant()`, `TSComputeRHSFunctionLinear()`
 @*/
-PetscErrorCode TSComputeIFunctionLinear(TS ts, PetscReal t, Vec U, Vec Udot, Vec F, void *ctx) {
+PetscErrorCode TSComputeIFunctionLinear(TS ts, PetscReal t, Vec U, Vec Udot, Vec F, void *ctx)
+{
   Mat A, B;
 
   PetscFunctionBegin;
@@ -4295,7 +4401,8 @@ $    shift*M + J
 
 .seealso: `TSSetIFunction()`, `TSSetIJacobian()`, `TSComputeIFunctionLinear()`
 @*/
-PetscErrorCode TSComputeIJacobianConstant(TS ts, PetscReal t, Vec U, Vec Udot, PetscReal shift, Mat A, Mat B, void *ctx) {
+PetscErrorCode TSComputeIJacobianConstant(TS ts, PetscReal t, Vec U, Vec Udot, PetscReal shift, Mat A, Mat B, void *ctx)
+{
   PetscFunctionBegin;
   PetscCall(MatScale(A, shift / ts->ijacobian.shift));
   ts->ijacobian.shift = shift;
@@ -4317,7 +4424,8 @@ PetscErrorCode TSComputeIJacobianConstant(TS ts, PetscReal t, Vec U, Vec Udot, P
 
 .seealso: `TSSetEquationType()`, `TSEquationType`
 @*/
-PetscErrorCode TSGetEquationType(TS ts, TSEquationType *equation_type) {
+PetscErrorCode TSGetEquationType(TS ts, TSEquationType *equation_type)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscValidPointer(equation_type, 2);
@@ -4338,7 +4446,8 @@ PetscErrorCode TSGetEquationType(TS ts, TSEquationType *equation_type) {
 
 .seealso: `TSGetEquationType()`, `TSEquationType`
 @*/
-PetscErrorCode TSSetEquationType(TS ts, TSEquationType equation_type) {
+PetscErrorCode TSSetEquationType(TS ts, TSEquationType equation_type)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   ts->equation_type = equation_type;
@@ -4364,7 +4473,8 @@ PetscErrorCode TSSetEquationType(TS ts, TSEquationType equation_type) {
 
 .seealso: `TSSetConvergenceTest()`, `TSConvergedReason`
 @*/
-PetscErrorCode TSGetConvergedReason(TS ts, TSConvergedReason *reason) {
+PetscErrorCode TSGetConvergedReason(TS ts, TSConvergedReason *reason)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscValidPointer(reason, 2);
@@ -4389,7 +4499,8 @@ PetscErrorCode TSGetConvergedReason(TS ts, TSConvergedReason *reason) {
 
 .seealso: `TSConvergedReason`
 @*/
-PetscErrorCode TSSetConvergedReason(TS ts, TSConvergedReason reason) {
+PetscErrorCode TSSetConvergedReason(TS ts, TSConvergedReason reason)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   ts->reason = reason;
@@ -4414,7 +4525,8 @@ PetscErrorCode TSSetConvergedReason(TS ts, TSConvergedReason reason) {
 
 .seealso: `TSSetConvergenceTest()`, `TSConvergedReason`
 @*/
-PetscErrorCode TSGetSolveTime(TS ts, PetscReal *ftime) {
+PetscErrorCode TSGetSolveTime(TS ts, PetscReal *ftime)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscValidRealPointer(ftime, 2);
@@ -4441,7 +4553,8 @@ PetscErrorCode TSGetSolveTime(TS ts, PetscReal *ftime) {
 
 .seealso: `TSGetKSPIterations()`
 @*/
-PetscErrorCode TSGetSNESIterations(TS ts, PetscInt *nits) {
+PetscErrorCode TSGetSNESIterations(TS ts, PetscInt *nits)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscValidIntPointer(nits, 2);
@@ -4468,7 +4581,8 @@ PetscErrorCode TSGetSNESIterations(TS ts, PetscInt *nits) {
 
 .seealso: `TSGetSNESIterations()`, `SNESGetKSPIterations()`
 @*/
-PetscErrorCode TSGetKSPIterations(TS ts, PetscInt *lits) {
+PetscErrorCode TSGetKSPIterations(TS ts, PetscInt *lits)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscValidIntPointer(lits, 2);
@@ -4494,7 +4608,8 @@ PetscErrorCode TSGetKSPIterations(TS ts, PetscInt *lits) {
 
 .seealso: `TSGetSNESIterations()`, `TSGetKSPIterations()`, `TSSetMaxStepRejections()`, `TSGetSNESFailures()`, `TSSetMaxSNESFailures()`, `TSSetErrorIfStepFails()`
 @*/
-PetscErrorCode TSGetStepRejections(TS ts, PetscInt *rejects) {
+PetscErrorCode TSGetStepRejections(TS ts, PetscInt *rejects)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscValidIntPointer(rejects, 2);
@@ -4520,7 +4635,8 @@ PetscErrorCode TSGetStepRejections(TS ts, PetscInt *rejects) {
 
 .seealso: `TSGetSNESIterations()`, `TSGetKSPIterations()`, `TSSetMaxStepRejections()`, `TSGetStepRejections()`, `TSSetMaxSNESFailures()`
 @*/
-PetscErrorCode TSGetSNESFailures(TS ts, PetscInt *fails) {
+PetscErrorCode TSGetSNESFailures(TS ts, PetscInt *fails)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscValidIntPointer(fails, 2);
@@ -4547,7 +4663,8 @@ PetscErrorCode TSGetSNESFailures(TS ts, PetscInt *fails) {
 
 .seealso: `TSGetSNESIterations()`, `TSGetKSPIterations()`, `TSSetMaxSNESFailures()`, `TSGetStepRejections()`, `TSGetSNESFailures()`, `TSSetErrorIfStepFails()`, `TSGetConvergedReason()`
 @*/
-PetscErrorCode TSSetMaxStepRejections(TS ts, PetscInt rejects) {
+PetscErrorCode TSSetMaxStepRejections(TS ts, PetscInt rejects)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   ts->max_reject = rejects;
@@ -4573,7 +4690,8 @@ PetscErrorCode TSSetMaxStepRejections(TS ts, PetscInt rejects) {
 
 .seealso: `TSGetSNESIterations()`, `TSGetKSPIterations()`, `TSSetMaxStepRejections()`, `TSGetStepRejections()`, `TSGetSNESFailures()`, `SNESGetConvergedReason()`, `TSGetConvergedReason()`
 @*/
-PetscErrorCode TSSetMaxSNESFailures(TS ts, PetscInt fails) {
+PetscErrorCode TSSetMaxSNESFailures(TS ts, PetscInt fails)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   ts->max_snes_failures = fails;
@@ -4596,7 +4714,8 @@ PetscErrorCode TSSetMaxSNESFailures(TS ts, PetscInt fails) {
 
 .seealso: `TSGetSNESIterations()`, `TSGetKSPIterations()`, `TSSetMaxStepRejections()`, `TSGetStepRejections()`, `TSGetSNESFailures()`, `TSSetErrorIfStepFails()`, `TSGetConvergedReason()`
 @*/
-PetscErrorCode TSSetErrorIfStepFails(TS ts, PetscBool err) {
+PetscErrorCode TSSetErrorIfStepFails(TS ts, PetscBool err)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   ts->errorifstepfailed = err;
@@ -4618,7 +4737,8 @@ PetscErrorCode TSSetErrorIfStepFails(TS ts, PetscBool err) {
 
 .seealso: `TSAdapt`, `TSAdaptSetType()`, `TSAdaptChoose()`
 @*/
-PetscErrorCode TSGetAdapt(TS ts, TSAdapt *adapt) {
+PetscErrorCode TSGetAdapt(TS ts, TSAdapt *adapt)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscValidPointer(adapt, 2);
@@ -4658,7 +4778,8 @@ PetscErrorCode TSGetAdapt(TS ts, TSAdapt *adapt) {
 
 .seealso: `TS`, `TSAdapt`, `TSErrorWeightedNorm()`, `TSGetTolerances()`
 @*/
-PetscErrorCode TSSetTolerances(TS ts, PetscReal atol, Vec vatol, PetscReal rtol, Vec vrtol) {
+PetscErrorCode TSSetTolerances(TS ts, PetscReal atol, Vec vatol, PetscReal rtol, Vec vrtol)
+{
   PetscFunctionBegin;
   if (atol != PETSC_DECIDE && atol != PETSC_DEFAULT) ts->atol = atol;
   if (vatol) {
@@ -4693,7 +4814,8 @@ PetscErrorCode TSSetTolerances(TS ts, PetscReal atol, Vec vatol, PetscReal rtol,
 
 .seealso: `TS`, `TSAdapt`, `TSErrorWeightedNorm()`, `TSSetTolerances()`
 @*/
-PetscErrorCode TSGetTolerances(TS ts, PetscReal *atol, Vec *vatol, PetscReal *rtol, Vec *vrtol) {
+PetscErrorCode TSGetTolerances(TS ts, PetscReal *atol, Vec *vatol, PetscReal *rtol, Vec *vrtol)
+{
   PetscFunctionBegin;
   if (atol) *atol = ts->atol;
   if (vatol) *vatol = ts->vatol;
@@ -4721,7 +4843,8 @@ PetscErrorCode TSGetTolerances(TS ts, PetscReal *atol, Vec *vatol, PetscReal *rt
 
 .seealso: `TSErrorWeightedNorm()`, `TSErrorWeightedNormInfinity()`
 @*/
-PetscErrorCode TSErrorWeightedNorm2(TS ts, Vec U, Vec Y, PetscReal *norm, PetscReal *norma, PetscReal *normr) {
+PetscErrorCode TSErrorWeightedNorm2(TS ts, Vec U, Vec Y, PetscReal *norm, PetscReal *norma, PetscReal *normr)
+{
   PetscInt           i, n, N, rstart;
   PetscInt           n_loc, na_loc, nr_loc;
   PetscReal          n_glb, na_glb, nr_glb;
@@ -4896,7 +5019,8 @@ PetscErrorCode TSErrorWeightedNorm2(TS ts, Vec U, Vec Y, PetscReal *norm, PetscR
 
 .seealso: `TSErrorWeightedNorm()`, `TSErrorWeightedNorm2()`
 @*/
-PetscErrorCode TSErrorWeightedNormInfinity(TS ts, Vec U, Vec Y, PetscReal *norm, PetscReal *norma, PetscReal *normr) {
+PetscErrorCode TSErrorWeightedNormInfinity(TS ts, Vec U, Vec Y, PetscReal *norm, PetscReal *norma, PetscReal *normr)
+{
   PetscInt           i, n, N, rstart;
   const PetscScalar *u, *y;
   PetscReal          max, gmax, maxa, gmaxa, maxr, gmaxr;
@@ -5026,7 +5150,8 @@ PetscErrorCode TSErrorWeightedNormInfinity(TS ts, Vec U, Vec Y, PetscReal *norm,
 
 .seealso: `TSErrorWeightedNormInfinity()`, `TSErrorWeightedNorm2()`, `TSErrorWeightedENorm`
 @*/
-PetscErrorCode TSErrorWeightedNorm(TS ts, Vec U, Vec Y, NormType wnormtype, PetscReal *norm, PetscReal *norma, PetscReal *normr) {
+PetscErrorCode TSErrorWeightedNorm(TS ts, Vec U, Vec Y, NormType wnormtype, PetscReal *norm, PetscReal *norma, PetscReal *normr)
+{
   PetscFunctionBegin;
   if (wnormtype == NORM_2) PetscCall(TSErrorWeightedNorm2(ts, U, Y, norm, norma, normr));
   else if (wnormtype == NORM_INFINITY) PetscCall(TSErrorWeightedNormInfinity(ts, U, Y, norm, norma, normr));
@@ -5054,7 +5179,8 @@ PetscErrorCode TSErrorWeightedNorm(TS ts, Vec U, Vec Y, NormType wnormtype, Pets
 
 .seealso: `TSErrorWeightedENorm()`, `TSErrorWeightedENormInfinity()`
 @*/
-PetscErrorCode TSErrorWeightedENorm2(TS ts, Vec E, Vec U, Vec Y, PetscReal *norm, PetscReal *norma, PetscReal *normr) {
+PetscErrorCode TSErrorWeightedENorm2(TS ts, Vec E, Vec U, Vec Y, PetscReal *norm, PetscReal *norma, PetscReal *normr)
+{
   PetscInt           i, n, N, rstart;
   PetscInt           n_loc, na_loc, nr_loc;
   PetscReal          n_glb, na_glb, nr_glb;
@@ -5233,7 +5359,8 @@ PetscErrorCode TSErrorWeightedENorm2(TS ts, Vec E, Vec U, Vec Y, PetscReal *norm
 
 .seealso: `TSErrorWeightedENorm()`, `TSErrorWeightedENorm2()`
 @*/
-PetscErrorCode TSErrorWeightedENormInfinity(TS ts, Vec E, Vec U, Vec Y, PetscReal *norm, PetscReal *norma, PetscReal *normr) {
+PetscErrorCode TSErrorWeightedENormInfinity(TS ts, Vec E, Vec U, Vec Y, PetscReal *norm, PetscReal *norma, PetscReal *normr)
+{
   PetscInt           i, n, N, rstart;
   const PetscScalar *e, *u, *y;
   PetscReal          err, max, gmax, maxa, gmaxa, maxr, gmaxr;
@@ -5368,7 +5495,8 @@ PetscErrorCode TSErrorWeightedENormInfinity(TS ts, Vec E, Vec U, Vec Y, PetscRea
 
 .seealso: `TSErrorWeightedENormInfinity()`, `TSErrorWeightedENorm2()`, `TSErrorWeightedNormInfinity()`, `TSErrorWeightedNorm2()`
 @*/
-PetscErrorCode TSErrorWeightedENorm(TS ts, Vec E, Vec U, Vec Y, NormType wnormtype, PetscReal *norm, PetscReal *norma, PetscReal *normr) {
+PetscErrorCode TSErrorWeightedENorm(TS ts, Vec E, Vec U, Vec Y, NormType wnormtype, PetscReal *norm, PetscReal *norma, PetscReal *normr)
+{
   PetscFunctionBegin;
   if (wnormtype == NORM_2) PetscCall(TSErrorWeightedENorm2(ts, E, U, Y, norm, norma, normr));
   else if (wnormtype == NORM_INFINITY) PetscCall(TSErrorWeightedENormInfinity(ts, E, U, Y, norm, norma, normr));
@@ -5392,7 +5520,8 @@ PetscErrorCode TSErrorWeightedENorm(TS ts, Vec E, Vec U, Vec Y, NormType wnormty
 
 .seealso: `TSGetCFLTime()`, `TSADAPTCFL`
 @*/
-PetscErrorCode TSSetCFLTimeLocal(TS ts, PetscReal cfltime) {
+PetscErrorCode TSSetCFLTimeLocal(TS ts, PetscReal cfltime)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   ts->cfltime_local = cfltime;
@@ -5415,7 +5544,8 @@ PetscErrorCode TSSetCFLTimeLocal(TS ts, PetscReal cfltime) {
 
 .seealso: `TSSetCFLTimeLocal()`
 @*/
-PetscErrorCode TSGetCFLTime(TS ts, PetscReal *cfltime) {
+PetscErrorCode TSGetCFLTime(TS ts, PetscReal *cfltime)
+{
   PetscFunctionBegin;
   if (ts->cfltime < 0) PetscCall(MPIU_Allreduce(&ts->cfltime_local, &ts->cfltime, 1, MPIU_REAL, MPIU_MIN, PetscObjectComm((PetscObject)ts)));
   *cfltime = ts->cfltime;
@@ -5437,7 +5567,8 @@ PetscErrorCode TSGetCFLTime(TS ts, PetscReal *cfltime) {
    Level: advanced
 
 @*/
-PetscErrorCode TSVISetVariableBounds(TS ts, Vec xl, Vec xu) {
+PetscErrorCode TSVISetVariableBounds(TS ts, Vec xl, Vec xu)
+{
   SNES snes;
 
   PetscFunctionBegin;
@@ -5462,7 +5593,8 @@ PetscErrorCode TSVISetVariableBounds(TS ts, Vec xl, Vec xu) {
 
 .seealso: `TSSetRHSFunction()`, `TSComputeIFunction()`
 @*/
-PetscErrorCode TSComputeLinearStability(TS ts, PetscReal xr, PetscReal xi, PetscReal *yr, PetscReal *yi) {
+PetscErrorCode TSComputeLinearStability(TS ts, PetscReal xr, PetscReal xi, PetscReal *yr, PetscReal *yi)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscUseTypeMethod(ts, linearstability, xr, xi, yr, yi);
@@ -5489,7 +5621,8 @@ PetscErrorCode TSComputeLinearStability(TS ts, PetscReal xr, PetscReal xi, Petsc
 
 .seealso: `TSSolve()`, `TSSetPreStep()`, `TSSetPostStep()`
 @*/
-PetscErrorCode TSRestartStep(TS ts) {
+PetscErrorCode TSRestartStep(TS ts)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   ts->steprestart = PETSC_TRUE;
@@ -5508,7 +5641,8 @@ PetscErrorCode TSRestartStep(TS ts) {
 
 .seealso: `TSCreate()`, `TSSetUp()`, `TSDestroy()`, `TSSolve()`, `TSSetPreStep()`, `TSSetPreStage()`, `TSInterpolate()`
 @*/
-PetscErrorCode TSRollBack(TS ts) {
+PetscErrorCode TSRollBack(TS ts)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscCheck(!ts->steprollback, PetscObjectComm((PetscObject)ts), PETSC_ERR_ARG_WRONGSTATE, "TSRollBack already called");
@@ -5537,7 +5671,8 @@ PetscErrorCode TSRollBack(TS ts) {
 
 .seealso: `TSCreate()`
 @*/
-PetscErrorCode TSGetStages(TS ts, PetscInt *ns, Vec **Y) {
+PetscErrorCode TSGetStages(TS ts, PetscInt *ns, Vec **Y)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   if (ns) PetscValidIntPointer(ns, 2);
@@ -5582,7 +5717,8 @@ PetscErrorCode TSGetStages(TS ts, PetscInt *ns, Vec **Y) {
 
 .seealso: `TSSetIJacobian()`, `MatFDColoringCreate()`, `MatFDColoringSetFunction()`
 @*/
-PetscErrorCode TSComputeIJacobianDefaultColor(TS ts, PetscReal t, Vec U, Vec Udot, PetscReal shift, Mat J, Mat B, void *ctx) {
+PetscErrorCode TSComputeIJacobianDefaultColor(TS ts, PetscReal t, Vec U, Vec Udot, PetscReal shift, Mat J, Mat B, void *ctx)
+{
   SNES          snes;
   MatFDColoring color;
   PetscBool     hascolor, matcolor = PETSC_FALSE;
@@ -5660,7 +5796,8 @@ $     PetscErrorCode func(TS ts,PetscReal time,Vec state,PetscBool reject)
 .seealso: `TSAdaptCheckStage()`, `TSFunctionDomainError()`, `SNESSetFunctionDomainError()`, `TSGetSNES()`
 @*/
 
-PetscErrorCode TSSetFunctionDomainError(TS ts, PetscErrorCode (*func)(TS, PetscReal, Vec, PetscBool *)) {
+PetscErrorCode TSSetFunctionDomainError(TS ts, PetscErrorCode (*func)(TS, PetscReal, Vec, PetscBool *))
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   ts->functiondomainerror = func;
@@ -5686,7 +5823,8 @@ PetscErrorCode TSSetFunctionDomainError(TS ts, PetscErrorCode (*func)(TS, PetscR
 
 .seealso: `TSSetFunctionDomainError()`
 @*/
-PetscErrorCode TSFunctionDomainError(TS ts, PetscReal stagetime, Vec Y, PetscBool *accept) {
+PetscErrorCode TSFunctionDomainError(TS ts, PetscReal stagetime, Vec Y, PetscBool *accept)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   *accept = PETSC_TRUE;
@@ -5714,7 +5852,8 @@ PetscErrorCode TSFunctionDomainError(TS ts, PetscReal stagetime, Vec Y, PetscBoo
 
 .seealso: `TSCreate()`, `TSSetType()`, `TSSetUp()`, `TSDestroy()`, `TSSetProblemType()`
 @*/
-PetscErrorCode TSClone(TS tsin, TS *tsout) {
+PetscErrorCode TSClone(TS tsin, TS *tsout)
+{
   TS     t;
   SNES   snes_start;
   DM     dm;
@@ -5786,7 +5925,8 @@ PetscErrorCode TSClone(TS tsin, TS *tsout) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode RHSWrapperFunction_TSRHSJacobianTest(void *ctx, Vec x, Vec y) {
+static PetscErrorCode RHSWrapperFunction_TSRHSJacobianTest(void *ctx, Vec x, Vec y)
+{
   TS ts = (TS)ctx;
 
   PetscFunctionBegin;
@@ -5815,7 +5955,8 @@ static PetscErrorCode RHSWrapperFunction_TSRHSJacobianTest(void *ctx, Vec x, Vec
 
 .seealso: `MatCreateShell()`, `MatShellGetContext()`, `MatShellGetOperation()`, `MatShellTestMultTranspose()`, `TSRHSJacobianTestTranspose()`
 @*/
-PetscErrorCode TSRHSJacobianTest(TS ts, PetscBool *flg) {
+PetscErrorCode TSRHSJacobianTest(TS ts, PetscBool *flg)
+{
   Mat           J, B;
   TSRHSJacobian func;
   void         *ctx;
@@ -5848,7 +5989,8 @@ PetscErrorCode TSRHSJacobianTest(TS ts, PetscBool *flg) {
 
 .seealso: `MatCreateShell()`, `MatShellGetContext()`, `MatShellGetOperation()`, `MatShellTestMultTranspose()`, `TSRHSJacobianTest()`
 @*/
-PetscErrorCode TSRHSJacobianTestTranspose(TS ts, PetscBool *flg) {
+PetscErrorCode TSRHSJacobianTestTranspose(TS ts, PetscBool *flg)
+{
   Mat           J, B;
   void         *ctx;
   TSRHSJacobian func;
@@ -5879,7 +6021,8 @@ PetscErrorCode TSRHSJacobianTestTranspose(TS ts, PetscBool *flg) {
 
 .seealso: `TSGetUseSplitRHSFunction()`
 @*/
-PetscErrorCode TSSetUseSplitRHSFunction(TS ts, PetscBool use_splitrhsfunction) {
+PetscErrorCode TSSetUseSplitRHSFunction(TS ts, PetscBool use_splitrhsfunction)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   ts->use_splitrhsfunction = use_splitrhsfunction;
@@ -5901,7 +6044,8 @@ PetscErrorCode TSSetUseSplitRHSFunction(TS ts, PetscBool use_splitrhsfunction) {
 
 .seealso: `TSSetUseSplitRHSFunction()`
 @*/
-PetscErrorCode TSGetUseSplitRHSFunction(TS ts, PetscBool *use_splitrhsfunction) {
+PetscErrorCode TSGetUseSplitRHSFunction(TS ts, PetscBool *use_splitrhsfunction)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   *use_splitrhsfunction = ts->use_splitrhsfunction;
@@ -5924,7 +6068,8 @@ PetscErrorCode TSGetUseSplitRHSFunction(TS ts, PetscBool *use_splitrhsfunction) 
 
 .seealso: `MatAXPY()`, `MatStructure`
  @*/
-PetscErrorCode TSSetMatStructure(TS ts, MatStructure str) {
+PetscErrorCode TSSetMatStructure(TS ts, MatStructure str)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   ts->axpy_pattern = str;
@@ -5954,7 +6099,8 @@ PetscErrorCode TSSetMatStructure(TS ts, MatStructure str) {
 
 .seealso: `TSGetTimeSpan()`, `TSGetSolutions()`
  @*/
-PetscErrorCode TSSetTimeSpan(TS ts, PetscInt n, PetscReal *span_times) {
+PetscErrorCode TSSetTimeSpan(TS ts, PetscInt n, PetscReal *span_times)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscCheck(n >= 2, PetscObjectComm((PetscObject)ts), PETSC_ERR_ARG_WRONG, "Minimum time span size is 2 but %" PetscInt_FMT " is provided", n);
@@ -5995,7 +6141,8 @@ PetscErrorCode TSSetTimeSpan(TS ts, PetscInt n, PetscReal *span_times) {
 
 .seealso: `TSSetTimeSpan()`, `TSGetSolutions()`
  @*/
-PetscErrorCode TSGetTimeSpan(TS ts, PetscInt *n, const PetscReal **span_times) {
+PetscErrorCode TSGetTimeSpan(TS ts, PetscInt *n, const PetscReal **span_times)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   if (n) PetscValidIntPointer(n, 2);
@@ -6028,7 +6175,8 @@ PetscErrorCode TSGetTimeSpan(TS ts, PetscInt *n, const PetscReal **span_times) {
 
 .seealso: `TSSetTimeSpan()`
 @*/
-PetscErrorCode TSGetTimeSpanSolutions(TS ts, PetscInt *nsol, Vec **Sols) {
+PetscErrorCode TSGetTimeSpanSolutions(TS ts, PetscInt *nsol, Vec **Sols)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   if (nsol) PetscValidIntPointer(nsol, 2);

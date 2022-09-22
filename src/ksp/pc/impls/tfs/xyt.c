@@ -62,7 +62,8 @@ static PetscErrorCode xyt_generate(xyt_ADT xyt_handle);
 static PetscErrorCode do_xyt_factor(xyt_ADT xyt_handle);
 static mv_info       *set_mvi(PetscInt *local2global, PetscInt n, PetscInt m, PetscErrorCode (*matvec)(mv_info *, PetscScalar *, PetscScalar *), void *grid_data);
 
-xyt_ADT XYT_new(void) {
+xyt_ADT XYT_new(void)
+{
   xyt_ADT xyt_handle;
 
   /* rolling count on n_xyt ... pot. problem here */
@@ -104,7 +105,8 @@ PetscErrorCode XYT_factor(xyt_ADT   xyt_handle,                                 
   return (do_xyt_factor(xyt_handle));
 }
 
-PetscErrorCode XYT_solve(xyt_ADT xyt_handle, PetscScalar *x, PetscScalar *b) {
+PetscErrorCode XYT_solve(xyt_ADT xyt_handle, PetscScalar *x, PetscScalar *b)
+{
   PCTFS_comm_init();
   check_handle(xyt_handle);
 
@@ -113,7 +115,8 @@ PetscErrorCode XYT_solve(xyt_ADT xyt_handle, PetscScalar *x, PetscScalar *b) {
   return do_xyt_solve(xyt_handle, x);
 }
 
-PetscErrorCode XYT_free(xyt_ADT xyt_handle) {
+PetscErrorCode XYT_free(xyt_ADT xyt_handle)
+{
   PCTFS_comm_init();
   check_handle(xyt_handle);
   n_xyt_handles--;
@@ -145,7 +148,8 @@ PetscErrorCode XYT_free(xyt_ADT xyt_handle) {
 }
 
 /* This function is currently not used */
-PetscErrorCode XYT_stats(xyt_ADT xyt_handle) {
+PetscErrorCode XYT_stats(xyt_ADT xyt_handle)
+{
   PetscInt    op[]  = {NON_UNIFORM, GL_MIN, GL_MAX, GL_ADD, GL_MIN, GL_MAX, GL_ADD, GL_MIN, GL_MAX, GL_ADD};
   PetscInt    fop[] = {NON_UNIFORM, GL_MIN, GL_MAX, GL_ADD};
   PetscInt    vals[9], work[9];
@@ -203,11 +207,13 @@ is a row dist. nxm matrix w/ n<m.
 mylocmatvec = my_ml->Amat[grid_tag].matvec->external;
 mylocmatvec (void :: void *data, double *in, double *out)
 */
-static PetscErrorCode do_xyt_factor(xyt_ADT xyt_handle) {
+static PetscErrorCode do_xyt_factor(xyt_ADT xyt_handle)
+{
   return xyt_generate(xyt_handle);
 }
 
-static PetscErrorCode xyt_generate(xyt_ADT xyt_handle) {
+static PetscErrorCode xyt_generate(xyt_ADT xyt_handle)
+{
   PetscInt      i, j, k, idx;
   PetscInt      dim, col;
   PetscScalar  *u, *uu, *v, *z, *w, alpha, alpha_w;
@@ -504,7 +510,8 @@ static PetscErrorCode xyt_generate(xyt_ADT xyt_handle) {
   return (0);
 }
 
-static PetscErrorCode do_xyt_solve(xyt_ADT xyt_handle, PetscScalar *uc) {
+static PetscErrorCode do_xyt_solve(xyt_ADT xyt_handle, PetscScalar *uc)
+{
   PetscInt     off, len, *iptr;
   PetscInt     level        = xyt_handle->level;
   PetscInt     n            = xyt_handle->info->n;
@@ -547,7 +554,8 @@ static PetscErrorCode do_xyt_solve(xyt_ADT xyt_handle, PetscScalar *uc) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode check_handle(xyt_ADT xyt_handle) {
+static PetscErrorCode check_handle(xyt_ADT xyt_handle)
+{
   PetscInt vals[2], work[2], op[] = {NON_UNIFORM, GL_MIN, GL_MAX};
 
   PetscFunctionBegin;
@@ -559,7 +567,8 @@ static PetscErrorCode check_handle(xyt_ADT xyt_handle) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode det_separators(xyt_ADT xyt_handle) {
+static PetscErrorCode det_separators(xyt_ADT xyt_handle)
+{
   PetscInt     i, ct, id;
   PetscInt     mask, edge, *iptr;
   PetscInt    *dir, *used;
@@ -711,7 +720,8 @@ static PetscErrorCode det_separators(xyt_ADT xyt_handle) {
   PetscFunctionReturn(0);
 }
 
-static mv_info *set_mvi(PetscInt *local2global, PetscInt n, PetscInt m, PetscErrorCode (*matvec)(mv_info *, PetscScalar *, PetscScalar *), void *grid_data) {
+static mv_info *set_mvi(PetscInt *local2global, PetscInt n, PetscInt m, PetscErrorCode (*matvec)(mv_info *, PetscScalar *, PetscScalar *), void *grid_data)
+{
   mv_info *mvi;
 
   mvi               = (mv_info *)malloc(sizeof(mv_info));
@@ -732,7 +742,8 @@ static mv_info *set_mvi(PetscInt *local2global, PetscInt n, PetscInt m, PetscErr
   return (mvi);
 }
 
-static PetscErrorCode do_matvec(mv_info *A, PetscScalar *v, PetscScalar *u) {
+static PetscErrorCode do_matvec(mv_info *A, PetscScalar *v, PetscScalar *u)
+{
   PetscFunctionBegin;
   A->matvec((mv_info *)A->grid_data, v, u);
   PetscFunctionReturn(0);

@@ -1,8 +1,8 @@
 #if !defined(_matcliqueimpl_h)
-#define _matcliqueimpl_h
+  #define _matcliqueimpl_h
 
-#include <petsc/private/matimpl.h>
-#include <petscmatelemental.h>
+  #include <petsc/private/matimpl.h>
+  #include <petscmatelemental.h>
 
 typedef struct {
   MatStructure matstruc;
