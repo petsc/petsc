@@ -809,7 +809,7 @@ this warning message')
       self.logPrintWarning('Cannot determine if BLAS sdot() returns a float or a double \
 in batch-mode! Assuming float. Run with --known-sdot-returns-double=1 \
 if you know it returns a double (very unlikely). Run with \
---known-sdor-returns-double=0 to remove this warning message')
+--known-sdot-returns-double=0 to remove this warning message')
     else:
       includes = '''#include <sys/types.h>\n#include <stdlib.h>\n#include <stdio.h>\n#include <stddef.h>\n'''
       body     = '''extern float '''+self.mangleBlasNoPrefix('sdot')+'''(const int*,const float*,const int *,const float*,const int*);
