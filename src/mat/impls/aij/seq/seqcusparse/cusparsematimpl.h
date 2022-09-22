@@ -92,28 +92,29 @@ const PetscScalar PETSC_CUSPARSE_ZERO = 0.0;
         #define cusparseXcsrsv_solve    cusparseDcsrsv2_solve
       #endif
     #endif
-  #else
+  #else /* PETSC_PKG_CUDA_VERSION_GE(9, 0, 0) */
     #define csrsvInfo_t              cusparseSolveAnalysisInfo_t
     #define cusparseCreateCsrsvInfo  cusparseCreateSolveAnalysisInfo
     #define cusparseDestroyCsrsvInfo cusparseDestroySolveAnalysisInfo
     #if defined(PETSC_USE_COMPLEX)
       #if defined(PETSC_USE_REAL_SINGLE)
-        #define cusparseXcsrsv_solve(a, b, c, d, e, f, g, h, i, j, k) cusparseCcsrsv_solve((a), (b), (c), (cuComplex *)(d), (e), (cuComplex *)(f), (g), (h), (i), (cuComplex *)(j), (cuComplex *)(k))
-        #define cusparseXcsrsv_analysis(a, b, c, d, e, f, g, h, i)    cusparseCcsrsv_analysis((a), (b), (c), (d), (e), (cuComplex *)(f), (g), (h), (i))
+        #define cusparseXcsrsv_solve(a, b, c, d_IGNORED, e, f, g, h, i, j, k, l, m_IGNORED, n_IGNORED) cusparseCcsrsv_solve((a), (b), (c), (cuComplex *)(e), (f), (cuComplex *)(g), (h), (i), (j), (cuComplex *)(k), (cuComplex *)(l))
+        #define cusparseXcsrsv_analysis(a, b, c, d, e, f, g, h, i, j_IGNORED, k_IGNORED)               cusparseCcsrsv_analysis((a), (b), (c), (d), (e), (cuComplex *)(f), (g), (h), (i))
       #elif defined(PETSC_USE_REAL_DOUBLE)
-        #define cusparseXcsrsv_solve(a, b, c, d, e, f, g, h, i, j, k) cusparseZcsrsv_solve((a), (b), (c), (cuDoubleComplex *)(d), (e), (cuDoubleComplex *)(f), (g), (h), (i), (cuDoubleComplex *)(j), (cuDoubleComplex *)(k))
-        #define cusparseXcsrsv_analysis(a, b, c, d, e, f, g, h, i)    cusparseZcsrsv_analysis((a), (b), (c), (d), (e), (cuDoubleComplex *)(f), (g), (h), (i))
+        #define cusparseXcsrsv_solve(a, b, c, d_IGNORED, e, f, g, h, i, j, k, l, m_IGNORED, n_IGNORED) \
+          cusparseZcsrsv_solve((a), (b), (c), (cuDoubleComplex *)(e), (f), (cuDoubleComplex *)(g), (h), (i), (j), (cuDoubleComplex *)(k), (cuDoubleComplex *)(l))
+        #define cusparseXcsrsv_analysis(a, b, c, d, e, f, g, h, i, j_IGNORED, k_IGNORED) cusparseZcsrsv_analysis((a), (b), (c), (d), (e), (cuDoubleComplex *)(f), (g), (h), (i))
       #endif
     #else /* not complex */
       #if defined(PETSC_USE_REAL_SINGLE)
-        #define cusparseXcsrsv_solve    cusparseScsrsv_solve
-        #define cusparseXcsrsv_analysis cusparseScsrsv_analysis
+        #define cusparseXcsrsv_solve                                     cusparseScsrsv_solve
+        #define cusparseXcsrsv_analysis(a, b, c, d, e, f, g, h, i, j, k) cusparseScsrsv_analysis(a, b, c, d, e, f, g, h, i)
       #elif defined(PETSC_USE_REAL_DOUBLE)
-        #define cusparseXcsrsv_solve    cusparseDcsrsv_solve
-        #define cusparseXcsrsv_analysis cusparseDcsrsv_analysis
+        #define cusparseXcsrsv_solve                                     cusparseDcsrsv_solve
+        #define cusparseXcsrsv_analysis(a, b, c, d, e, f, g, h, i, j, k) cusparseDcsrsv_analysis(a, b, c, d, e, f, g, h, i)
       #endif
     #endif
-  #endif
+  #endif /* PETSC_PKG_CUDA_VERSION_GE(9, 0, 0) */
 
   #if PETSC_PKG_CUDA_VERSION_GE(11, 0, 0)
     #define cusparse_csr2csc cusparseCsr2cscEx2
@@ -141,7 +142,7 @@ const PetscScalar PETSC_CUSPARSE_ZERO = 0.0;
         #define cusparse_csr_spgeam_bufferSize cusparseDcsrgeam2_bufferSizeExt
       #endif
     #endif
-  #else
+  #else /* PETSC_PKG_CUDA_VERSION_GE(11, 0, 0) */
     #if defined(PETSC_USE_COMPLEX)
       #if defined(PETSC_USE_REAL_SINGLE)
         #define cusparse_csr_spmv(a, b, c, d, e, f, g, h, i, j, k, l, m)                        cusparseCcsrmv((a), (b), (c), (d), (e), (cuComplex *)(f), (g), (cuComplex *)(h), (i), (j), (cuComplex *)(k), (cuComplex *)(l), (cuComplex *)(m))
@@ -185,7 +186,7 @@ const PetscScalar PETSC_CUSPARSE_ZERO = 0.0;
         #define cusparse_csr_spgeam cusparseDcsrgeam
       #endif
     #endif
-  #endif
+  #endif /* PETSC_PKG_CUDA_VERSION_GE(11, 0, 0) */
 
   #define THRUSTINTARRAY32 thrust::device_vector<int>
   #define THRUSTINTARRAY   thrust::device_vector<PetscInt>
