@@ -6,7 +6,7 @@
   #include <petscmatcoarsen.h>        /*I "petscmatcoarsen.h" I*/
 
 struct _PCGAMGOps {
-  PetscErrorCode (*graph)(PC, Mat, Mat *);
+  PetscErrorCode (*creategraph)(PC, Mat, Mat *);
   PetscErrorCode (*coarsen)(PC, Mat *, PetscCoarsenData **);
   PetscErrorCode (*prolongator)(PC, Mat, Mat, PetscCoarsenData *, Mat *);
   PetscErrorCode (*optprolongator)(PC, Mat, Mat *);
@@ -67,7 +67,6 @@ enum tag {
   GAMG_MESH,
   GAMG_MATRIX,
   GAMG_GRAPH,
-  GAMG_FILTER,
   GAMG_COARSEN,
   GAMG_SQUARE,
   GAMG_MIS,

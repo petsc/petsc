@@ -517,38 +517,14 @@ static PetscErrorCode getGIDsOnSquareGraph(PC pc, PetscInt nselected_1, const Pe
   PetscFunctionReturn(0);
 }
 
-/*
-   PCGAMGGraph_GEO
-
-  Input Parameter:
-   . pc - this
-   . Amat - matrix on this fine level
-  Output Parameter:
-   . a_Gmat
-*/
-PetscErrorCode PCGAMGGraph_GEO(PC pc, Mat Amat, Mat *a_Gmat)
+PetscErrorCode PCGAMGCreateGraph_GEO(PC pc, Mat Amat, Mat *a_Gmat)
 {
   PC_MG          *mg      = (PC_MG *)pc->data;
   PC_GAMG        *pc_gamg = (PC_GAMG *)mg->innerctx;
   const PetscReal vfilter = pc_gamg->threshold[0];
-  MPI_Comm        comm;
-  Mat             Gmat, F = NULL;
-  PetscBool       set, flg, symm;
 
   PetscFunctionBegin;
-  PetscCall(PetscObjectGetComm((PetscObject)Amat, &comm));
-
-  PetscCall(MatIsSymmetricKnown(Amat, &set, &flg));
-  symm = (PetscBool) !(set && flg);
-
-  PetscCall(MatCreateGraph(Amat, symm, PETSC_TRUE, &Gmat));
-  PetscCall(MatFilter(Gmat, vfilter, &F));
-  if (F) {
-    PetscCall(MatDestroy(&Gmat));
-    Gmat = F;
-  }
-  *a_Gmat = Gmat;
-
+  PetscCall(MatCreateGraph(Amat, PETSC_TRUE, PETSC_TRUE, vfilter, a_Gmat));
   PetscFunctionReturn(0);
 }
 
@@ -788,7 +764,7 @@ PetscErrorCode PCCreateGAMG_GEO(PC pc)
   /* reset does not do anything; setup not virtual */
 
   /* set internal function pointers */
-  pc_gamg->ops->graph             = PCGAMGGraph_GEO;
+  pc_gamg->ops->creategraph       = PCGAMGCreateGraph_GEO;
   pc_gamg->ops->coarsen           = PCGAMGCoarsen_GEO;
   pc_gamg->ops->prolongator       = PCGAMGProlongator_GEO;
   pc_gamg->ops->optprolongator    = NULL;

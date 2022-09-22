@@ -1128,7 +1128,7 @@ number of equation on a grid falls below at threshold give by
 
 **Coarse grid parameters:** There are several options to provide
 parameters to the coarsening algorithm and parallel data layout. Run a
-code that uses GAMG with ``-help`` to get full listing of GAMG
+code that uses ``PCGAMG`` with ``-help`` to get full listing of GAMG
 parameters with short parameter descriptions. The rate of coarsening is
 critical in AMG performance – too slow coarsening will result in an
 overly expensive solver per iteration and too fast coarsening will
@@ -1144,9 +1144,20 @@ coarsening slower. Zero will keep all non-zero edges, a negative number
 will keep zero edges, a positive number will drop small edges. Typical
 finite threshold values are in the range of :math:`0.01 - 0.05`. There
 are additional parameters for changing the weights on coarse grids.
-Note, the parallel algorithm requires symmetric weights/matrix. You must
-use ``-pc_gamg_symmetrize_graph <true>`` to symmetrize the graph if your
-problem is not symmetric.
+
+The parallel MIS algorithms requires symmetric weights/matrix. Thus ``PCGAMG``
+will automatically make the graph symmetric if it is not symmetric. Since this
+has additional cost users should indicate the symmetry of the matrices they
+provide by calling
+``MatSetOption``(mat,``MAT_SYMMETRIC``,``PETSC_TRUE`` (or ``PETSC_FALSE``))
+or
+``MatSetOption``(mat,``MAT_STRUCTURALLY_SYMMETRIC``,``PETSC_TRUE`` (or ``PETSC_FALSE``))
+. If they know that the matrix will always have symmetry, despite future changes
+to the matrix (with, for example, ``MatSetValues()``) then they should also call
+``MatSetOption``(mat,``MAT_SYMMETRY_ETERNAL``,``PETSC_TRUE`` (or ``PETSC_FALSE``))
+or
+``MatSetOption``(mat,``MAT_STRUCTURAL_SYMMETRY_ETERNAL``,``PETSC_TRUE`` (or ``PETSC_FALSE``)).
+Using this information allows the algorithm to skip the unnecessary computations.
 
 **Trouble shooting algebraic multigrid methods:** If *GAMG*, *ML*, *AMGx* or
 *hypre* does not perform well the first thing to try is one of the other

@@ -52,7 +52,6 @@ SNES Object: 5 MPI processes
                 Threshold for dropping small values in graph on each level =           0.          
                 Threshold scaling factor for each level not specified = 1.
                 AGG specific options
-                  Symmetric graph false
                   Number of levels to square graph 1
                   Number smoothing steps 1
           Coarse grid solver -- level 0 -------------------------------
@@ -218,7 +217,6 @@ SNES Object: 5 MPI processes
                         Threshold for dropping small values in graph on each level =                   0.                  
                         Threshold scaling factor for each level not specified = 1.
                         AGG specific options
-                          Symmetric graph false
                           Number of levels to square graph 1
                           Number smoothing steps 1
                   Coarse grid solver -- level 0 -------------------------------

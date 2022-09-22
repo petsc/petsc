@@ -214,8 +214,8 @@ struct _MatOps {
   PetscErrorCode (*destroysubmatrices)(PetscInt, Mat *[]);
   PetscErrorCode (*mattransposesolve)(Mat, Mat, Mat);
   PetscErrorCode (*getvalueslocal)(Mat, PetscInt, const PetscInt[], PetscInt, const PetscInt[], PetscScalar[]);
-  PetscErrorCode (*creategraph)(Mat, PetscBool, PetscBool, Mat *);
-  PetscErrorCode (*filter)(Mat, PetscReal, Mat *);
+  PetscErrorCode (*creategraph)(Mat, PetscBool, PetscBool, PetscReal, Mat *);
+  PetscErrorCode (*dummy)(Mat);
   /*150*/
   PetscErrorCode (*transposesymbolic)(Mat, Mat *);
 };
@@ -271,9 +271,8 @@ PETSC_INTERN PetscErrorCode MatProductCreate_Private(Mat, Mat, Mat, Mat);
    does not rely on the function pointers; used by cuSPARSE and KOKKOS-KERNELS */
 PETSC_INTERN PetscErrorCode MatProductSymbolic_ABC_Basic(Mat);
 
-/* Filter and graph create are common to AIJ seq and mpi */
-PETSC_INTERN PetscErrorCode MatCreateGraph_Simple_AIJ(Mat, PetscBool, PetscBool, Mat *);
-PETSC_INTERN PetscErrorCode MatFilter_AIJ(Mat, PetscReal, Mat *);
+/* CreateGraph is common to AIJ seq and mpi */
+PETSC_INTERN PetscErrorCode MatCreateGraph_Simple_AIJ(Mat, PetscBool, PetscBool, PetscReal, Mat *);
 
 #if defined(PETSC_CLANG_STATIC_ANALYZER)
 template <typename Tm>

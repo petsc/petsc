@@ -2294,7 +2294,5 @@ PETSC_EXTERN PetscErrorCode MatHeaderReplace(Mat, Mat *);
 
 PETSC_EXTERN PetscErrorCode MatSeqAIJGetCSRAndMemType(Mat, const PetscInt **, const PetscInt **, PetscScalar **, PetscMemType *);
 
-PETSC_EXTERN PetscErrorCode MatCreateGraph(Mat, PetscBool, PetscBool, Mat *);
-PETSC_EXTERN PetscErrorCode MatFilter(Mat, PetscReal, Mat *);
-
+PETSC_EXTERN PetscErrorCode MatCreateGraph(Mat, PetscBool, PetscBool, PetscReal, Mat *);
 #endif

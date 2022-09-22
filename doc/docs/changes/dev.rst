@@ -165,7 +165,6 @@ exec-name``.
 - Add ``MatIsStructurallySymmetricKnown()`` and ``MatIsSPDKnown()``
 - Change ``MatGetOption()`` to no longer produce results for ``MAT_STRUCTURALLY_SYMMETRIC``, ``MAT_SYMMETRIC``, ``MAT_SPD``, and ``MAT_HERMITIAN``
 - Add ``MatCreateGraph()`` to create a scalar matrix for use in graph algorithms
-- Add ``MatFilter()`` to remove values with an absolute value equal to or below a give threshold
 - Add an option -mat_factor_bind_factorization <host, device> to control where to do matrix factorization. Currently only supported with SEQAIJCUSPARSE matrices.
 - Add ``MatUpdateMPIAIJWithArray()`` and deprecate ``MatUpdateMPIAIJWithArrays()``
 - Change the coordinate array parameters in ``MatSetPreallocationCOO`` from const to non-const
@@ -185,6 +184,7 @@ exec-name``.
 - Add PC type of mpi which can be used in conjunction with -mpi_linear_solver_server to use MPI parallelism to solve a system created on a single MPI rank
 - Add ``PCHYPREAMSSetInteriorNodes()`` to set interior nodes for HYPRE AMS
 - Add ``PCAMGX``, a PC interface for NVIDIA's AMGx AMG solver
+- Remove ``PCGAMGSetSymmetrizeGraph()`` and ``-pc_gamg_sym_graph``. The user should indicate symmetry and structural symmetry using ``MatSetOptions()``.
 
 .. rubric:: KSP:
 

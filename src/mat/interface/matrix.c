@@ -10964,55 +10964,29 @@ PetscErrorCode MatSetInf(Mat A)
 
 /*C
    MatCreateGraph - create a scalar matrix (that is a matrix with one vertex for each block vertex in the original matrix), for use in graph algorithms
+   and possibly removes small values from the graph structure.
 
    Collective on mat
 
    Input Parameters:
 +  A - the matrix
--  sym - `PETSC_TRUE` indicates that the graph will be symmetrized
-.  scale - `PETSC_TRUE` indicates that the graph will be scaled with the diagonal
+.  sym - `PETSC_TRUE` indicates that the graph should be symmetrized
+.  scale - `PETSC_TRUE` indicates that the graph edge weights should be symmetrically scaled with the diagonal entry
+-  filter - filter value - < 0: does nothing; == 0: removes only 0.0 entries; otherwise: removes entries with abs(entries) <= value
 
    Output Parameter:
 .  graph - the resulting graph
 
    Level: advanced
 
-.seealso: `MatCreate()`, `MatFilter()`
+.seealso: `MatCreate()`, `PCGAMG`
 */
-PETSC_EXTERN PetscErrorCode MatCreateGraph(Mat A, PetscBool sym, PetscBool scale, Mat *graph)
+PETSC_EXTERN PetscErrorCode MatCreateGraph(Mat A, PetscBool sym, PetscBool scale, PetscReal filter, Mat *graph)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
   PetscValidType(A, 1);
   PetscValidPointer(graph, 3);
-  PetscUseTypeMethod(A, creategraph, sym, scale, graph);
-  PetscFunctionReturn(0);
-}
-
-/*C
-   MatFilter - filters a matrices values with an absolut value equal to or below a give threshold
-
-   Collective on mat
-
-   Input Parameter:
-.  value - filter value - < 0: does nothing; == 0: removes only 0.0 entries; otherwise: removes entries <= value
-
-   Input/Output Parameter:
-.  A - the `Mat` to filter in place
-
-   Level: developer
-
-   Note:
-   This is called before graph coarsers are called in `PCGAMG`
-
-.seealso: `MatCreate()`, `MatCreateGraph()`
-*/
-PETSC_EXTERN PetscErrorCode MatFilter(Mat G, PetscReal value, Mat *F)
-{
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(G, MAT_CLASSID, 1);
-  PetscValidType(G, 1);
-  PetscValidPointer(F, 3);
-  if (value >= 0.0) PetscCall((G->ops->filter)(G, value, F));
+  PetscUseTypeMethod(A, creategraph, sym, scale, filter, graph);
   PetscFunctionReturn(0);
 }
