@@ -8,14 +8,14 @@ cp /mcs/logs/http/ftp.mcs.anl.gov/access_log.2011* .
 gunzip -f *.gz
 
 echo "total ftp downloads"
-cat xferlog.2011* | egrep \(petsc-dev\|\(petsc-\|petsc-lite-\)\[1-3]\) | grep 'tar.gz ' | grep c\$ | wc -l
-cat xferlog.2011* | egrep \(petsc-dev\|\(petsc-\|petsc-lite-\)\[1-3]\) | grep 'tar.gz ' | grep c\$ | tr -s ' '| cut -d ' ' -f 7 > /sandbox/balay/tmp/machines-ftp
+cat xferlog.2011* | grep -E \(petsc-dev\|\(petsc-\|petsc-lite-\)\[1-3]\) | grep 'tar.gz ' | grep c\$ | wc -l
+cat xferlog.2011* | grep -E \(petsc-dev\|\(petsc-\|petsc-lite-\)\[1-3]\) | grep 'tar.gz ' | grep c\$ | tr -s ' '| cut -d ' ' -f 7 > /sandbox/balay/tmp/machines-ftp
 echo "unique ftp downloads"
 cat /sandbox/balay/tmp/machines-ftp| sort | uniq| wc -l
 
 echo "total http downloads"
-cat access_log.2011* | egrep \(petsc-dev\|\(petsc-\|petsc-lite-\)\[1-3]\) | grep 'tar.gz ' | grep ' 200 ' | wc -l
-cat access_log.2011* | egrep \(petsc-dev\|\(petsc-\|petsc-lite-\)\[1-3]\) | grep 'tar.gz ' | grep ' 200 ' | cut -d ' ' -f 1 > /sandbox/balay/tmp/machines-http
+cat access_log.2011* | grep -E \(petsc-dev\|\(petsc-\|petsc-lite-\)\[1-3]\) | grep 'tar.gz ' | grep ' 200 ' | wc -l
+cat access_log.2011* | grep -E \(petsc-dev\|\(petsc-\|petsc-lite-\)\[1-3]\) | grep 'tar.gz ' | grep ' 200 ' | cut -d ' ' -f 1 > /sandbox/balay/tmp/machines-http
 echo "unique http downloads"
 cat /sandbox/balay/tmp/machines-http | sort | uniq | wc -l
 

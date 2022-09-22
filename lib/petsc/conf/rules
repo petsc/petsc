@@ -97,7 +97,7 @@ clean:: clean-legacy
 tree: ${ACTION}
 	-@for dir in ${DIRS} ftn-auto ftn-custom f90-custom; do \
             if [ -d $$dir ]; then \
-	      r=`egrep '#(requirespackage|requiresfunction|requiresdefine)' $$dir/makefile | cut -d \' -f2`; \
+	      r=`grep -E '#(requirespackage|requiresfunction|requiresdefine)' $$dir/makefile | cut -d \' -f2`; \
               if [ "$$?" = 0 ]; then \
                 flg=0; \
                 for PKGFLG in $$r; do \
@@ -367,7 +367,7 @@ getautoconfargs:
           grep -v " -Werror " | \
           grep -v " was built for newer macOS version " | \
           grep -v "only the last is used because nvcc can only accept a single optimization setting" | \
-	  egrep -i '(Error|warning|Can|Unresolved)' >> /dev/null;\
+	  grep -E -i '(Error|warning|Can|Unresolved)' >> /dev/null;\
 	  if [ "$$?" != 1 ]; then \
           printf ${PETSC_TEXT_HILIGHT}"*******************Error detected during compile or link!*******************\n";\
           echo "See https://petsc.org/release/faq/";\
@@ -415,7 +415,7 @@ getautoconfargs:
           grep -v "Werror=format-security" | \
           grep -v " -Werror " | \
           grep -v " was built for newer macOS version " | \
-	  egrep -i '(Error|warning|Can|Unresolved)'  >> /dev/null ; \
+	  grep -E -i '(Error|warning|Can|Unresolved)'  >> /dev/null ; \
 	  if [ "$$?" != 1 ]; then \
           printf ${PETSC_TEXT_HILIGHT}"*******************Error detected during compile or link!*******************\n";\
           echo "See https://petsc.org/release/faq/";\
@@ -614,7 +614,7 @@ html: chk_c2html
                      -e "s/ierr\s+=\s+//g" \
                      -e "s/PETSC[A-Z]*_DLLEXPORT//g" $$i | ${C2HTML} -n | \
               awk '{ sub(/<pre width="80">/,"<pre width=\"80\">\n"); print }' | ${PYTHON} ${PETSC_DIR}/lib/petsc/bin/maint/fixinclude.py $$i $${PETSC_DIR} | \
-              egrep -v '(PetscValid|PetscFunctionBegin|PetscCheck|PetscErrorCode ierr;|#if !defined\(__|#define __|#undef __|EXTERN_C )' | \
+              grep -E -v '(PetscValid|PetscFunctionBegin|PetscCheck|PetscErrorCode ierr;|#if !defined\(__|#define __|#undef __|EXTERN_C )' | \
               ${MAPNAMES} -map $$htmlmap_tmp -inhtml | sed -e s?ROOT?$${IROOT}?g >> $${loc}/$$i.html ; \
             fi; \
           done ;\
@@ -705,7 +705,7 @@ checkbadSource:
 	-@echo "------PetscCall for an MPI error code ------------------------------" >> checkbadSource.out
 	-@git --no-pager grep -n -P -e '= MPI[U]*_\w*\(.*PetscCall' -- ${GITSRC} | grep -v MPIU_File >> checkbadSource.out;true
 	-@echo "------Missing if (ierr) return ierr; -------------------------------" >> checkbadSource.out
-	-@git --no-pager grep -n -P -e 'ierr = PetscInitialize\(' -- '*.[ch]' '*.cpp' '*.cxx' '*.cu' | grep -v 'if (ierr) return ierr;' | egrep "(test|tutorial)" >> checkbadSource.out;true
+	-@git --no-pager grep -n -P -e 'ierr = PetscInitialize\(' -- '*.[ch]' '*.cpp' '*.cxx' '*.cu' | grep -v 'if (ierr) return ierr;' | grep -E "(test|tutorial)" >> checkbadSource.out;true
 	-@echo "------DOS file (with DOS newlines) ---------------------------------" >> checkbadSource.out
 	-@git --no-pager grep -n -P '\r' -- ${GITSRC} >> checkbadSource.out;true
 	-@echo "------{ before SETERRQ ---------------------------------------------" >> checkbadSource.out
@@ -727,7 +727,7 @@ checkbadSource:
 	-@echo "------Using PetscFunctionReturn(ierr) ------------------------------" >> checkbadSource.out
 	-@git --no-pager grep -n -P 'PetscFunctionReturn(ierr)' -- ${GITSRC} >> checkbadSource.out;true
 	-@echo "------Defining a returning macro without PetscMacroReturns() -------" >> checkbadSource.out
-	-@git --no-pager grep -n -P 'define .*\w+;\s+do' -- ${GITSRC} | egrep -v '(PetscMacroReturns|PetscDrawCollectiveBegin|MatPreallocateBegin|PetscOptionsBegin|PetscObjectOptionsBegin|PetscOptionsHeadEnd)' >> checkbadSource.out;true
+	-@git --no-pager grep -n -P 'define .*\w+;\s+do' -- ${GITSRC} | grep -E -v '(PetscMacroReturns|PetscDrawCollectiveBegin|MatPreallocateBegin|PetscOptionsBegin|PetscObjectOptionsBegin|PetscOptionsHeadEnd)' >> checkbadSource.out;true
 	-@echo "------Defining an error checking macro using CHKERR style ----------" >> checkbadSource.out
 	-@git --no-pager grep -n -P 'define\s+CHKERR\w*\(.*\)\s*do\s+{' -- ${GITSRC} >> checkbadSource.out;true
 	@a=`cat checkbadSource.out | wc -l`; l=`expr $$a - 19` ;\
@@ -803,7 +803,7 @@ check_petsc4py_rst:
 #    The code recursively follows the permanently moved (301) redirections until it reaches the final URL
 #    For DropBox we need to check the validity of the new URL but do not want to return to user the internal "raw" URL
 checkbadURLS:
-	-@x=`git grep "http[s]*://" -- '*.[chF]' '*.html' '*.cpp' '*.cxx' '*.cu' '*.F90' '*.py' '*.tex' | egrep -v "(config/packages|HandsOnExercises)" | tr '[[:blank:]]' '\n' | grep 'http[s]*://' | sed 's!.*(\(http[s]*://[-a-zA-Z0-9_./()?=&+%~]*\))!\1!g' | sed 's!.*\(http[s]*://[-a-zA-Z0-9_./()?=&+%~]*\).*!\1!g' | sed 's/\.$$//g' | sort | uniq| awk '{ print length, $$0 }' | sort -r -n -s | cut -d" " -f2` ; \
+	-@x=`git grep "http[s]*://" -- '*.[chF]' '*.html' '*.cpp' '*.cxx' '*.cu' '*.F90' '*.py' '*.tex' | grep -E -v "(config/packages|HandsOnExercises)" | tr '[[:blank:]]' '\n' | grep 'http[s]*://' | sed 's!.*(\(http[s]*://[-a-zA-Z0-9_./()?=&+%~]*\))!\1!g' | sed 's!.*\(http[s]*://[-a-zA-Z0-9_./()?=&+%~]*\).*!\1!g' | sed 's/\.$$//g' | sort | uniq| awk '{ print length, $$0 }' | sort -r -n -s | cut -d" " -f2` ; \
         for i in $$x; do \
           url=$$i; \
           msg=''; \
@@ -825,7 +825,7 @@ checkbadURLS:
                 dp=`echo $${ws}$${l} | grep "dropbox.com/s/raw"` ; \
                 if [[ "$${dp}D" != "D" ]] ; then \
                   b=`curl --connect-timeout 5 --head --silent $${ws}$$l | head -n 1` ; \
-                  c=`echo $${b} | egrep "( 2[0-9]* | 302 )"` ; \
+                  c=`echo $${b} | grep -E "( 2[0-9]* | 302 )"` ; \
                   if [[ "$${c}D" == "D" ]] ; then \
                     msg=`echo "dropbox file doesn't exist" $${c}` ; \
                   else \

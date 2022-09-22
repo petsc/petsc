@@ -22,7 +22,7 @@ program main
 !/*TEST
 !
 ! testset:
-!   filter: egrep -v "(options_left)"
+!   filter: grep -E -v "(options_left)"
 !
 !   test:
 !      suffix: 1

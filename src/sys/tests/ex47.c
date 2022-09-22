@@ -34,7 +34,7 @@ int main(int argc, char **argv)
 
    testset:
      args: -options_left false
-     filter:  egrep -v "(options_left|options_monitor)"
+     filter:  grep -E -v "(options_left|options_monitor)"
      localrunfiles: petsc.yml
 
      test:

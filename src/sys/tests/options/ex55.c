@@ -43,7 +43,7 @@ int main(int argc, char **argv)
 
    testset:
       localrunfiles: ex55options .petscrc petscrc
-      filter: egrep -v -e "(options_left)"
+      filter: grep -E -v -e "(options_left)"
       args: -options_left 0 -options_view -options_monitor_viewer ascii
       args: -skip_petscrc {{0 1}separate output} -options_monitor_cancel {{0 1}separate output}
       test:
@@ -58,12 +58,12 @@ int main(int argc, char **argv)
       # test effect of -skip_petscrc in ex55options file
       suffix: 4
       localrunfiles: ex55options .petscrc petscrc
-      filter: egrep -v -e "(options_left)"
+      filter: grep -E -v -e "(options_left)"
       args: -options_left 0 -options_view -options_monitor
    testset:
       # test -help / -help intro / -version from command line
       localrunfiles: ex55options .petscrc petscrc
-      filter: egrep -e "(version|help|^See)"
+      filter: grep -E -e "(version|help|^See)"
       args: -options_left -options_view -options_monitor
       test:
         suffix: 5a
@@ -77,7 +77,7 @@ int main(int argc, char **argv)
    testset:
       # test -help / -help intro / -version from file
       localrunfiles: ex55options rc_help rc_help_intro rc_version
-      filter: egrep -e "(version|help|^See)"
+      filter: grep -E -e "(version|help|^See)"
       args: -skip_petscrc
       args: -options_left -options_view -options_monitor
       test:

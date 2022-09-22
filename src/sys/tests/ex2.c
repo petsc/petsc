@@ -30,7 +30,7 @@ int main(int argc, char **argv)
 
    test:
      args: -error_output_stdout
-     filter: egrep "(Caught signal number 11 SEGV|Caught signal number 4 Illegal)" | wc -l
+     filter: grep -E "(Caught signal number 11 SEGV|Caught signal number 4 Illegal)" | wc -l
      TODO:  Does not always produce exactly expected output on all systems for all runs
 
 TEST*/

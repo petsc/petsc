@@ -18,7 +18,7 @@ amrex: $(OBJECTS)
 
 #  these tests are used by the makefile in PETSC_DIR for basic tests of the install and should not be removed
 testamrex: amrex
-	-@${MPIEXEC} -n 1 ./amrex inputs.rt.2d.petsc | egrep -v "(AMReX|Timers)" > amrex_1.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./amrex inputs.rt.2d.petsc | grep -E -v "(AMReX|Timers)" > amrex_1.tmp 2>&1; \
 	 if (${DIFF} output/amrex_1.testout amrex_1.tmp > /dev/null 2>&1) then \
            echo "example src/ksp/ksp/tutorials/amrex/amrex run successfully with 1 MPI process"; \
 	   else echo "Possible error running  example src/ksp/ksp/tutorials/amrex/amrex with 1 MPI process"; \
