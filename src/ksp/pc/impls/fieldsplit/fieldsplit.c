@@ -2266,7 +2266,7 @@ PetscErrorCode PCFieldSplitSchurGetSubKSP(PC pc, PetscInt *n, KSP *subksp[])
 .   ptype   - which matrix to use for preconditioning the Schur complement: `PC_FIELDSPLIT_SCHUR_PRE_A11` (default),
               `PC_FIELDSPLIT_SCHUR_PRE_SELF`, `PC_FIELDSPLIT_SCHUR_PRE_USER`,
               `PC_FIELDSPLIT_SCHUR_PRE_SELFP`, and `PC_FIELDSPLIT_SCHUR_PRE_FULL`
--   userpre - matrix to use for preconditioning, or NULL
+-   pre - matrix to use for preconditioning, or NULL
 
     Options Database Keys:
 +    -pc_fieldsplit_schur_precondition <self,selfp,user,a11,full> - default is a11. See notes for meaning of various arguments
