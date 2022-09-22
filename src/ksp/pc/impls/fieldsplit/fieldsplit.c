@@ -2322,7 +2322,7 @@ PetscErrorCode PCFieldSplitSchurPrecondition(PC pc, PCFieldSplitSchurPreType pty
 
     Output Parameters:
 +   ptype   - which matrix to use for preconditioning the Schur complement: `PC_FIELDSPLIT_SCHUR_PRE_A11`, `PC_FIELDSPLIT_SCHUR_PRE_SELF`, `PC_FIELDSPLIT_PRE_USER`
--   userpre - matrix to use for preconditioning (with `PC_FIELDSPLIT_PRE_USER`), or NULL
+-   pre - matrix to use for preconditioning (with `PC_FIELDSPLIT_PRE_USER`), or NULL
 
     Level: intermediate
 
