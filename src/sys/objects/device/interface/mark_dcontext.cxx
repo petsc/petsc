@@ -144,6 +144,14 @@ struct PetscStackFrame</* use_debug = */ true> {
 
   bool operator==(const PetscStackFrame &other) const noexcept { return line == other.line && file == other.file && function == other.function; }
 
+  PETSC_NODISCARD std::string to_string() const noexcept
+  {
+    std::string ret;
+
+    ret = '(' + function + "() at " + file + ':' + std::to_string(line) + ')';
+    return ret;
+  }
+
 private:
   static std::string split_on_petsc_path_(std::string &&in) noexcept
   {
@@ -156,8 +164,17 @@ private:
 
   friend std::ostream &operator<<(std::ostream &os, const PetscStackFrame &frame)
   {
-    os << '(' << frame.function << "() at " << frame.file << ':' << frame.line << ')';
+    os << frame.to_string();
     return os;
+  }
+
+  friend void swap(PetscStackFrame &lhs, PetscStackFrame &rhs) noexcept
+  {
+    using std::swap;
+
+    swap(lhs.file, rhs.file);
+    swap(lhs.function, rhs.function);
+    swap(lhs.line, rhs.line);
   }
 };
 
@@ -169,6 +186,8 @@ struct PetscStackFrame</* use_debug = */ false> {
   }
 
   constexpr bool operator==(const PetscStackFrame &) const noexcept { return true; }
+
+  PETSC_NODISCARD static std::string to_string() noexcept { return "(unknown)"; }
 
   friend std::ostream &operator<<(std::ostream &os, const PetscStackFrame &) noexcept
   {
@@ -208,7 +227,17 @@ public:
     PETSC_NODISCARD PetscEvent        event() const noexcept { return event_; }
     PETSC_NODISCARD const frame_type &frame() const noexcept { return *this; }
     PETSC_NODISCARD frame_type       &frame() noexcept { return *this; }
-    PETSC_NODISCARD PetscObjectId     dctx_id() const noexcept { return event()->dctx_id; }
+
+    PETSC_NODISCARD PetscObjectId dctx_id() const noexcept
+    {
+      PetscFunctionBegin;
+      PetscAssertAbort(event(), PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Snapshot %s does not contain an event!", frame().to_string().c_str());
+      PetscFunctionReturn(event()->dctx_id);
+    }
+
+    PETSC_NODISCARD PetscErrorCode ensure_event(PetscDeviceContext) noexcept;
+
+    friend void swap(snapshot_type &, snapshot_type &) noexcept;
 
   private:
     PetscEvent event_{}; // the state of device context when this snapshot was recorded
@@ -322,6 +351,21 @@ MarkedObjectMap::snapshot_type &MarkedObjectMap::snapshot_type::operator=(snapsh
   PetscFunctionReturn(*this);
 }
 
+PetscErrorCode MarkedObjectMap::snapshot_type::ensure_event(PetscDeviceContext dctx) noexcept
+{
+  PetscFunctionBegin;
+  if (PetscUnlikely(!event_)) PetscCall(PetscDeviceContextCreateEvent_Private(dctx, &event_));
+  PetscFunctionReturn(0);
+}
+
+void swap(MarkedObjectMap::snapshot_type &lhs, MarkedObjectMap::snapshot_type &rhs) noexcept
+{
+  using std::swap;
+
+  swap(lhs.frame(), rhs.frame());
+  swap(lhs.event_, rhs.event_);
+}
+
 // A mapping between PetscObjectId (i.e. some PetscObject) to the list of PetscEvent's encoding
 // the last time the PetscObject was accessed
 static MarkedObjectMap marked_object_map;
@@ -432,66 +476,127 @@ PetscErrorCode PetscDeviceContextCheckNotOrphaned_Internal(PetscDeviceContext dc
   PetscFunctionReturn(0);
 }
 
+#define DEBUG_INFO(mess, ...) PetscDebugInfo(dctx, "dctx %" PetscInt64_FMT " (%s) - obj %" PetscInt64_FMT " (%s): " mess, PetscObjectCast(dctx)->id, PetscObjectCast(dctx)->name ? PetscObjectCast(dctx)->name : "unnamed", id, name, ##__VA_ARGS__)
+
+// The current mode is compatible with the previous mode (i.e. read-read) so we need only
+// update the existing version and possibly appeand ourselves to the dependency list
+
+template <bool use_debug>
+static PetscErrorCode MarkFromID_CompatibleModes(MarkedObjectMap::mapped_type &marked, PetscDeviceContext dctx, PetscObjectId id, PetscMemoryAccessMode mode, PetscStackFrame<use_debug> &frame, const char *PETSC_UNUSED name, bool *update_object_dependencies)
+{
+  const auto dctx_id             = PetscObjectCast(dctx)->id;
+  auto      &object_dependencies = marked.dependencies;
+  const auto end                 = object_dependencies.end();
+  const auto it                  = std::find_if(object_dependencies.begin(), end, [&](const MarkedObjectMap::snapshot_type &obj) { return obj.dctx_id() == dctx_id; });
+
+  PetscFunctionBegin;
+  PetscCall(DEBUG_INFO("new mode (%s) COMPATIBLE with %s mode (%s), no need to serialize\n", PetscMemoryAccessModeToString(mode), object_dependencies.empty() ? "default" : "old", PetscMemoryAccessModeToString(marked.mode)));
+  if (it != end) {
+    using std::swap;
+
+    // we have been here before, all we must do is update our entry then we can bail
+    PetscCall(DEBUG_INFO("found old self as dependency, updating\n"));
+    PetscAssert(CxxDataCast(dctx)->deps.find(id) != CxxDataCast(dctx)->deps.end(), PETSC_COMM_SELF, PETSC_ERR_PLIB, "PetscDeviceContext %" PetscInt64_FMT " listed as dependency for object %" PetscInt64_FMT " (%s), but does not have the object in private dependency list!", dctx_id, id, name);
+    swap(it->frame(), frame);
+    PetscCall(PetscDeviceContextRecordEvent_Private(dctx, it->event()));
+    *update_object_dependencies = false;
+    PetscFunctionReturn(0);
+  }
+
+  // we have not been here before, need to serialize with the last write event (if it exists)
+  // and add ourselves to the dependency list
+  if (const auto event = marked.last_write.event()) PetscCall(PetscDeviceContextWaitForEvent_Private(dctx, event));
+  PetscFunctionReturn(0);
+}
+
+template <bool use_debug>
+static PetscErrorCode MarkFromID_IncompatibleModes_UpdateLastWrite(MarkedObjectMap::mapped_type &marked, PetscDeviceContext dctx, PetscObjectId id, PetscMemoryAccessMode mode, PetscStackFrame<use_debug> &frame, const char *PETSC_UNUSED name, bool *update_object_dependencies)
+{
+  const auto      dctx_id    = PetscObjectCast(dctx)->id;
+  auto           &last_write = marked.last_write;
+  auto           &last_dep   = marked.dependencies.back();
+  PetscDeviceType dtype;
+
+  PetscFunctionBegin;
+  PetscAssert(marked.dependencies.size() == 1, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Can only have a single writer as dependency, have %zu!", marked.dependencies.size());
+  PetscCall(PetscDeviceContextGetDeviceType(dctx, &dtype));
+  if (last_dep.event()->dtype != dtype) {
+    PetscCall(DEBUG_INFO("moving last write dependency (intent %s)\n", PetscMemoryAccessModeToString(marked.mode)));
+    last_write = std::move(last_dep);
+    PetscFunctionReturn(0);
+  }
+
+  // we match the device type of the dependency, we can reuse its event!
+  auto      &dctx_upstream_deps     = CxxDataCast(dctx)->deps;
+  const auto last_write_was_also_us = last_write.event() && (last_write.dctx_id() == dctx_id);
+  using std::swap;
+
+  PetscCall(DEBUG_INFO("we matched the previous write dependency's (intent %s) device type (%s), swapping last dependency with last write\n", PetscMemoryAccessModeToString(marked.mode), PetscDeviceTypes[dtype]));
+  if (last_dep.event()->dctx_id != dctx_id) dctx_upstream_deps.emplace(id);
+  PetscAssert(dctx_upstream_deps.find(id) != dctx_upstream_deps.end(), PETSC_COMM_SELF, PETSC_ERR_PLIB, "Did not find id %" PetscInt64_FMT "in object dependencies, but we have apparently recorded the last dependency %s!", id,
+              last_write.frame().to_string().c_str());
+  swap(last_write, last_dep);
+  if (last_write_was_also_us) {
+    PetscCall(DEBUG_INFO("we were also the last write event (intent %s), updating\n", PetscMemoryAccessModeToString(mode)));
+    // we are both the last to write *and* the last to leave a write event. This is the
+    // fast path, we only need to update the frame and update the recorded event
+    swap(last_dep.frame(), frame);
+    // last used to be last_write which is not guaranteed to have an event, so must
+    // create it now
+    PetscCall(last_dep.ensure_event(dctx));
+    PetscCall(PetscDeviceContextRecordEvent_Private(dctx, last_dep.event()));
+    *update_object_dependencies = false;
+  }
+  PetscFunctionReturn(0);
+}
+
+// The current mode is NOT compatible with the previous mode. We must serialize with all events
+// in the dependency list, possibly clear it, and update the previous write event
+
+template <bool use_debug>
+static PetscErrorCode MarkFromID_IncompatibleModes(MarkedObjectMap::mapped_type &marked, PetscDeviceContext dctx, PetscObjectId id, PetscMemoryAccessMode mode, PetscStackFrame<use_debug> &frame, const char *name, bool *update_object_dependencies)
+{
+  auto &old_mode            = marked.mode;
+  auto &object_dependencies = marked.dependencies;
+
+  PetscFunctionBegin;
+  // we are NOT compatible  with the previous mode
+  PetscCall(DEBUG_INFO("new mode (%s) NOT COMPATIBLE with %s mode (%s), serializing then clearing (%zu) %s\n", PetscMemoryAccessModeToString(mode), object_dependencies.empty() ? "default" : "old", PetscMemoryAccessModeToString(old_mode),
+                       object_dependencies.size(), object_dependencies.size() == 1 ? "dependency" : "dependencies"));
+
+  for (const auto &dep : object_dependencies) PetscCall(PetscDeviceContextWaitForEvent_Private(dctx, dep.event()));
+  // if the previous mode wrote, update the last write node with it
+  if (PetscMemoryAccessWrite(old_mode)) PetscCall(MarkFromID_IncompatibleModes_UpdateLastWrite(marked, dctx, id, mode, frame, name, update_object_dependencies));
+
+  old_mode = mode;
+  // clear out the old dependencies if are about to append ourselves
+  if (*update_object_dependencies) object_dependencies.clear();
+  PetscFunctionReturn(0);
+}
+
 template <bool use_debug>
 static PetscErrorCode PetscDeviceContextMarkIntentFromID_Private(PetscDeviceContext dctx, PetscObjectId id, PetscMemoryAccessMode mode, PetscStackFrame<use_debug> frame, const char *name)
 {
-#define DEBUG_INFO(mess, ...) PetscDebugInfo(dctx, "dctx %" PetscInt64_FMT " (%s) - obj %" PetscInt64_FMT " (%s): " mess, dctx_id, PetscObjectCast(dctx)->name ? PetscObjectCast(dctx)->name : "unnamed", id, name, ##__VA_ARGS__)
-  const auto dctx_id             = PetscObjectCast(dctx)->id;
-  auto      &marked              = marked_object_map.map[id];
-  auto      &old_mode            = marked.mode;
-  auto      &object_dependencies = marked.dependencies;
+  auto &marked                     = marked_object_map.map[id];
+  auto &object_dependencies        = marked.dependencies;
+  auto  update_object_dependencies = true;
 
   PetscFunctionBegin;
-  if ((mode == PETSC_MEMORY_ACCESS_READ) && (old_mode == mode)) {
-    const auto end = object_dependencies.end();
-    const auto it  = std::find_if(object_dependencies.begin(), end, [&](const MarkedObjectMap::snapshot_type &obj) { return obj.dctx_id() == dctx_id; });
-
-    PetscCall(DEBUG_INFO("new mode (%s) COMPATIBLE with %s mode (%s), no need to serialize\n", PetscMemoryAccessModeToString(mode), PetscMemoryAccessModeToString(old_mode), object_dependencies.empty() ? "default" : "old"));
-    if (it != end) {
-      // we have been here before, all we must do is update our entry then we can bail
-      PetscCall(DEBUG_INFO("found old self as dependency, updating\n"));
-      PetscAssert(CxxDataCast(dctx)->deps.find(id) != CxxDataCast(dctx)->deps.end(), PETSC_COMM_SELF, PETSC_ERR_PLIB, "PetscDeviceContext %" PetscInt64_FMT " listed as dependency for object %" PetscInt64_FMT " (%s), but does not have the object in private dependency list!", dctx_id, id, name);
-
-      it->frame() = std::move(frame);
-      PetscCall(PetscDeviceContextRecordEvent_Private(dctx, it->event()));
-      PetscFunctionReturn(0);
-    }
-
-    // we have not been here before, need to serialize with the last write event (if it exists)
-    // and add ourselves to the dependency list
-    if (const auto event = marked.last_write.event()) PetscCall(PetscDeviceContextWaitForEvent_Private(dctx, event));
+  if ((marked.mode == PETSC_MEMORY_ACCESS_READ) && (mode == PETSC_MEMORY_ACCESS_READ)) {
+    PetscCall(MarkFromID_CompatibleModes(marked, dctx, id, mode, frame, name, &update_object_dependencies));
   } else {
-    // we are incompatible with the previous mode
-    PetscCall(DEBUG_INFO("new mode (%s) NOT COMPATIBLE with %s mode (%s), serializing then clearing (%zu) %s\n", PetscMemoryAccessModeToString(mode), object_dependencies.empty() ? "default" : "old", PetscMemoryAccessModeToString(old_mode),
-                         object_dependencies.size(), object_dependencies.size() == 1 ? "dependency" : "dependencies"));
-    for (const auto &dep : object_dependencies) {
-      if (dep.dctx_id() == dctx_id) {
-        PetscCall(DEBUG_INFO("found old self as dependency, skipping\n"));
-        continue;
-      }
-      PetscCall(PetscDeviceContextWaitForEvent_Private(dctx, dep.event()));
-    }
-
-    // if the previous mode wrote, bump it to the previous write spot
-    if (PetscMemoryAccessWrite(old_mode)) {
-      PetscAssert(object_dependencies.size() == 1, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Can only have a single writer as dependency!");
-      PetscCall(DEBUG_INFO("moving last write dependency (intent %s)\n", PetscMemoryAccessModeToString(old_mode)));
-      // note the move around object_dependencies.back() not around event(), this is to enable
-      // the rvalue event() overload
-      marked.last_write = std::move(object_dependencies.back());
-    }
-
-    // clear out the old dependencies and update the mode, we are about to append ourselves
-    object_dependencies.clear();
-    old_mode = mode;
+    PetscCall(MarkFromID_IncompatibleModes(marked, dctx, id, mode, frame, name, &update_object_dependencies));
   }
-  // become the new leaf by appending ourselves
-  PetscCall(DEBUG_INFO("%s with intent %s\n", object_dependencies.empty() ? "dependency list is empty, creating new leaf" : "appending to existing leaves", PetscMemoryAccessModeToString(mode)));
-  PetscCallCXX(object_dependencies.emplace_back(dctx, std::move(frame)));
-  PetscCallCXX(CxxDataCast(dctx)->deps.emplace(id));
+  if (update_object_dependencies) {
+    // become the new leaf by appending ourselves
+    PetscCall(DEBUG_INFO("%s with intent %s\n", object_dependencies.empty() ? "dependency list is empty, creating new leaf" : "appending to existing leaves", PetscMemoryAccessModeToString(mode)));
+    PetscCallCXX(object_dependencies.emplace_back(dctx, std::move(frame)));
+    PetscCallCXX(CxxDataCast(dctx)->deps.emplace(id));
+  }
   PetscFunctionReturn(0);
-#undef DEBUG_INFO
 }
+
+#undef DEBUG_INFO
 
 /*@C
   PetscDeviceContextMarkIntentFromID - Indicate a `PetscDeviceContext`s access intent to the
