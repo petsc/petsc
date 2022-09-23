@@ -34,19 +34,17 @@ struct PetscEventAllocator : public Petsc::AllocatorBase<PetscEvent> {
     PetscFunctionReturn(0);
   }
 
-  PETSC_NODISCARD static PetscErrorCode reset(PetscEvent event, bool zero = true) noexcept
+  PETSC_NODISCARD static PetscErrorCode reset(PetscEvent event) noexcept
   {
     PetscFunctionBegin;
-    if (zero) {
-      if (auto &destroy = event->destroy) {
-        PetscCall((*destroy)(event));
-        destroy = nullptr;
-      }
-      event->dctx_id    = 0;
-      event->dctx_state = 0;
-      PetscAssert(!event->data, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Event failed to destroy its data member: %p", event->data);
+    if (auto &destroy = event->destroy) {
+      PetscCall((*destroy)(event));
+      destroy = nullptr;
     }
-    event->dtype = PETSC_DEVICE_DEFAULT();
+    PetscAssert(!event->data, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Event failed to destroy its data member: %p", event->data);
+    event->dctx_id    = 0;
+    event->dctx_state = 0;
+    event->dtype      = PETSC_DEVICE_DEFAULT();
     PetscFunctionReturn(0);
   }
 };
@@ -259,7 +257,7 @@ public:
   map_type map;
 
 private:
-  friend class RegisterFinalizeable<MarkedObjectMap>;
+  friend RegisterFinalizeable;
 
   PETSC_NODISCARD PetscErrorCode finalize_() noexcept;
 };
@@ -272,41 +270,7 @@ inline PetscErrorCode MarkedObjectMap::finalize_() noexcept
 {
   PetscFunctionBegin;
   PetscCall(PetscInfo(nullptr, "Finalizing marked object map\n"));
-  if (PetscDefined(USE_DEBUG)) {
-    std::ostringstream oss;
-    auto               wrote_to_oss = false;
-    const auto         end          = this->map.cend();
-    PetscMPIInt        rank;
-
-    PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
-    for (auto it = this->map.cbegin(); it != end; ++it) {
-      // need a temporary since we want to prepend "object xxx has orphaned dependencies" if
-      // any of the dependencies have orphans. but we also need to check that in the loop, so
-      // use a temporary to accumulate and then build the rest from it.
-      std::ostringstream oss_tmp;
-      auto               wrote_to_oss_tmp = false;
-      //const auto        &mapped           = it->second;
-      //const auto         mode             = PetscMemoryAccessModes(mapped.mode);
-
-      // for (auto &&dep : mapped.dependencies) {
-      //   // if (!dep.ctx->options.allow_orphans) {
-      //   //   wrote_to_oss_tmp = true;
-      //   //   oss_tmp<<"  ["<<rank<<"] dctx "<<dep.ctx<<" (id "<<dep.dctx_id()<<", state "<<dep.dctx_state<<", intent "<<mode<<' '<<dep.frame()<<")\n";
-      //   // }
-      // }
-      // check if we wrote to it
-      if (wrote_to_oss_tmp) {
-        oss << '[' << rank << "] object " << it->first << " has orphaned dependencies:\n" << oss_tmp.str();
-        wrote_to_oss = true;
-      }
-    }
-    if (wrote_to_oss) {
-      //PetscCall((*PetscErrorPrintf)("%s\n",oss.str().c_str()));
-      //SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Orphaned dependencies found, see above");
-    }
-  }
-  // replace with new map, since clear() does not necessarily free memory
-  PetscCallCXX(this->map = map_type{});
+  map.clear();
   PetscFunctionReturn(0);
 }
 
