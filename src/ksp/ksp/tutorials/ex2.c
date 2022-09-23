@@ -378,4 +378,14 @@ int main(int argc, char **args)
       filter: sed -e "s/ iterations 9/ iterations 8/g"
       args: -ksp_converged_reason -ksp_type hpddm -ksp_hpddm_precision {{double quadruple}shared output} -ksp_pc_side {{left right}shared output}
 
+   test:
+      suffix: symmetric_pc
+      nsize: 1
+      args: -ksp_monitor -ksp_type gmres -pc_type bjacobi -sub_pc_type icc -ksp_pc_side symmetric
+
+   test:
+      suffix: symmetric_pc2
+      nsize: 1
+      args: -ksp_monitor -ksp_type gmres -pc_type bjacobi -sub_pc_type icc -ksp_pc_side symmetric -pc_bjacobi_blocks 2
+
  TEST*/
