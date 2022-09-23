@@ -36,7 +36,6 @@ static PetscErrorCode KSPSetUp_AGMRES(KSP ksp)
   PetscInt       lwork  = PetscMax(8 * N + 16, 4 * neig * (N - neig));
 
   PetscFunctionBegin;
-  PetscCheck(ksp->pc_side != PC_SYMMETRIC, PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "no symmetric preconditioning for KSPAGMRES");
   N = MAXKSPSIZE;
   /* Preallocate space during the call to KSPSetup_GMRES for the Krylov basis */
   agmres->q_preallocate = PETSC_TRUE; /* No allocation on the fly */

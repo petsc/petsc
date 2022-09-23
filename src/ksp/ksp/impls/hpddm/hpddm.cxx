@@ -46,7 +46,6 @@ static PetscErrorCode KSPSetFromOptions_HPDDM(KSP ksp, PetscOptionItems *PetscOp
       if (ksp->pc_side_set == PC_SIDE_DEFAULT)
         PetscCall(PetscOptionsEList("-ksp_hpddm_variant", "Left, right, or variable preconditioning", "KSPHPDDM", HPDDMVariant, PETSC_STATIC_ARRAY_LENGTH(HPDDMVariant), HPDDMVariant[HPDDM_VARIANT_LEFT], &i, NULL));
       else if (ksp->pc_side_set == PC_RIGHT) i = HPDDM_VARIANT_RIGHT;
-      PetscCheck(ksp->pc_side_set != PC_SYMMETRIC, PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "Symmetric preconditioning not implemented");
       data->cntl[1] = i;
       if (i > 0) PetscCall(KSPSetPCSide(ksp, PC_RIGHT));
     }
@@ -149,7 +148,6 @@ static PetscErrorCode KSPSetUp_HPDDM(KSP ksp)
       if (data->cntl[0] != HPDDM_KRYLOV_METHOD_BCG && data->cntl[0] != HPDDM_KRYLOV_METHOD_BFBCG) {
         data->cntl[1] = HPDDM_VARIANT_LEFT; /* left preconditioning by default */
         if (ksp->pc_side_set == PC_RIGHT) data->cntl[1] = HPDDM_VARIANT_RIGHT;
-        PetscCheck(ksp->pc_side_set != PC_SYMMETRIC, PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "Symmetric preconditioning not implemented");
         if (data->cntl[1] > 0) PetscCall(KSPSetPCSide(ksp, PC_RIGHT));
       }
       if (data->cntl[0] == HPDDM_KRYLOV_METHOD_BGMRES || data->cntl[0] == HPDDM_KRYLOV_METHOD_BGCRODR || data->cntl[0] == HPDDM_KRYLOV_METHOD_BFBCG) {
