@@ -117,6 +117,6 @@ int main(int argc, char **argv)
     nsize: {{1 2 4}separate output}
     args: -fname ex51_dump.h5 -dm_view ascii::ascii_info_detail
     args: -petscpartitioner_type parmetis
-    args: -dm_plex_view_hdf5_storage_version 2.0.0
+    args: -dm_plex_view_hdf5_storage_version 2.1.0
 
 TEST*/
