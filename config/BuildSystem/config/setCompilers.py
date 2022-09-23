@@ -547,17 +547,40 @@ class Configure(config.base.Configure):
       pass
 
   @staticmethod
-  def isWindows(compiler, log):
+  def isWindows(compiler, log, disambiguate_win32fe = False):
     '''Returns true if the compiler is a Windows compiler'''
-    if compiler in ['icl', 'cl', 'bcc32', 'ifl', 'df']:
-      if log: log.write('Detected Windows OS\n')
+    if disambiguate_win32fe:
+      compiler_or_path = str(compiler).split()
+      if len(compiler_or_path) == 1:
+        # compiler was just the bare unqualified name, i.e. 'cl' or 'ifort'
+        compiler = compiler_or_path[0]
+      else:
+        # compiler may be /path/to/petsc/win32fe cl, we need to extract only 'cl' from it
+        last = ''
+        for sub_elem in compiler_or_path:
+          # last entry is the win32fe path, so current must be compiler name
+          if last.casefold().endswith('win32fe'):
+            compiler = sub_elem
+            break
+          last = sub_elem
+    if compiler in {'icl', 'cl', 'bcc32', 'ifl', 'df', 'lib', 'tlib'}:
+      if log: log.write('Detected Windows compiler\n')
       return 1
-    if compiler in ['ifort','f90'] and Configure.isCygwin(log):
-      if log: log.write('Detected Windows OS\n')
+    if compiler in {'ifort','f90'} and Configure.isCygwin(log):
+      if log: log.write('Detected Windows compiler\n')
       return 1
-    if compiler in ['lib', 'tlib']:
-      if log: log.write('Detected Windows OS\n')
-      return 1
+
+  @classmethod
+  def isMSVC(cls, compiler, log):
+    """Returns true if the compiler is MSVC"""
+    if cls.isWindows(compiler,log,disambiguate_win32fe=True):
+      output, error, _ = cls.executeShellCommand(compiler+' --version',checkCommand=noCheck,log=log)
+      output = '\n'.join((output,error)).casefold()
+      if all(sub.casefold() in output for sub in ('microsoft','c/c++ optimizing compiler')):
+        if log:
+          log.write('Detected MSVC\n')
+        return 1
+    return 0
 
   @staticmethod
   def isSolarisAR(ar, log):
@@ -904,11 +927,12 @@ class Configure(config.base.Configure):
         """
       )))
 
-    DialectFlags = namedtuple('DialectFlags',['standard','gnu'])
-    BaseFlags    = DialectFlags(standard='-std=c++',gnu='-std=gnu++')
     isGNUish     = bool(isGNUish)
     lang,LANG    = language.lower(),language.upper()
     compiler     = self.getCompiler(lang=language)
+    stdflag_base = '-std:' if self.isMSVC(compiler, self.log) else '-std='
+    DialectFlags = namedtuple('DialectFlags',['standard','gnu'])
+    BaseFlags    = DialectFlags(standard=stdflag_base+'c++',gnu=stdflag_base+'gnu++')
     self.logPrint('checkCxxDialect: checking C++ dialect version for language "{lang}" using compiler "{compiler}"'.format(lang=LANG,compiler=compiler))
     self.logPrint('checkCxxDialect: PETSc believes compiler ({compiler}) {isgnuish} gnu-ish'.format(compiler=compiler,isgnuish='IS' if isGNUish else 'is NOT'))
 
@@ -958,7 +982,7 @@ class Configure(config.base.Configure):
       allFlags = tuple(self.getCompilerFlags().strip().split())
     langDialectFromFlags = tuple(f for f in allFlags for flg in BaseFlags if f.startswith(flg))
     if len(langDialectFromFlags):
-      sanitized = langDialectFromFlags[-1].lower().replace('-std=','')
+      sanitized = langDialectFromFlags[-1].lower().replace(stdflag_base,'')
       if not processedBefore:
         # check that we didn't set the compiler flag ourselves before we yell at the user
         if withLangDialect != 'AUTO':
@@ -1088,9 +1112,12 @@ class Configure(config.base.Configure):
           # failure, flag is discarded, but first check we haven't run out of flags
           if index == len(flagPool)-1:
             # compiler does not support the minimum required c++ dialect
-            mess = '\n'.join((
+            base_mess = '\n'.join((
               '{lang} compiler ({compiler}) appears non-compliant with C++{ver} or didn\'t accept:',
-              '\n'.join('- '+(flag[:-2] if flag.startswith('(NO FLAG)') else flag) for flg,_ in flagPool[:index+1])+'\n'
+              '\n'.join(
+                '- '+(f[:-2] if f.startswith('(NO FLAG)') else f) for f,_ in flagPool[:index+1]
+              ),
+              '' # for extra newline at the end
             ))
             if flag.endswith(dialects[0].num):
               # it's the compilers fault we can't try the next dialect
@@ -1099,16 +1126,16 @@ class Configure(config.base.Configure):
               # it's a packages fault we can't try the next dialect
               packDialects   = self.cxxDialectPackageRanges[0]
               minPackDialect = max(packDialects.keys())
-              mess = '\n'.join((
+              base_mess = '\n'.join((
                 'Using {lang} dialect C++{ver} as lower bound due to package(s):',
                 '\n'.join('- '+s for s in packDialects[minPackDialect]),
-                ' '.join(('But',mess))
+                ' '.join(('But',base_mess))
               ))
               dialectNum = minPackDiaect[-2:]
             else:
               # if nothing else then it's because the user requested a particular version
               dialectNum = dialectNumStr
-            mess = mess.format(lang=language.replace('x','+'),compiler=compiler,ver=dialectNum)
+            mess = base_mess.format(lang=language.replace('x','+'),compiler=compiler,ver=dialectNum)
             raise RuntimeError(mess)
         else:
           # success
