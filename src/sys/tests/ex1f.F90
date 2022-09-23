@@ -48,6 +48,6 @@
 !
 !   test:
 !     args: -error_output_stdout
-!     filter:Error: egrep  "(My error handler|Operating system error: Cannot allocate memory)" | wc -l
+!     filter:Error: grep -E  "(My error handler|Operating system error: Cannot allocate memory)" | wc -l
 !
 !TEST*/
