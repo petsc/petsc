@@ -683,6 +683,8 @@ static PetscErrorCode PCApplySymmetricRight_BJacobi_Singleblock(PC pc, Vec x, Ve
   PetscCall(KSPGetPC(jac->ksp[0], &subpc));
   PetscCall(PCApplySymmetricRight(subpc, bjac->x, bjac->y));
 
+  PetscCall(VecResetArray(bjac->x));
+  PetscCall(VecResetArray(bjac->y));
   PetscCall(VecRestoreArrayRead(x, &x_array));
   PetscCall(VecRestoreArray(y, &y_array));
   PetscFunctionReturn(0);
