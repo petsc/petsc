@@ -202,7 +202,7 @@ static PetscErrorCode PCHPDDMHasNeumannMat_HPDDM(PC pc, PetscBool has)
    Level: intermediate
 
    Notes:
-   This may be used to bypass a call to `MatCreateSubMatrices()` and to `MatConvert()` for `MATMPISBAIJ` matrices.
+   This may be used to bypass a call to `MatCreateSubMatrices()` and to `MatConvert()` for `MATSBAIJ` matrices.
 
    If a `DMCreateNeumannOverlap()` implementation is available in the `DM` attached to the Pmat, or the Amat, or the `PC`, the flag is internally set to `PETSC_TRUE`. Its default value is otherwise `PETSC_FALSE`.
 
@@ -1725,7 +1725,7 @@ PetscErrorCode HPDDMLoadDL_Private(PetscBool *found)
    This `PC` may be used to build multilevel spectral domain decomposition methods based on the GenEO framework [2011, 2019]. It may be viewed as an alternative to spectral
    AMGe or `PCBDDC` with adaptive selection of constraints. The interface is explained in details in [2021] (see references below)
 
-   The matrix to be preconditioned (Pmat) may be unassembled (`MATIS`), assembled (`MATMPIAIJ`, `MATMPIBAIJ`, or `MATMPISBAIJ`), hierarchical (`MATHTOOL`), or `MATNORMAL`.
+   The matrix to be preconditioned (Pmat) may be unassembled (`MATIS`), assembled (`MATAIJ`, `MATBAIJ`, or `MATSBAIJ`), hierarchical (`MATHTOOL`), or `MATNORMAL`.
 
    For multilevel preconditioning, when using an assembled or hierarchical Pmat, one must provide an auxiliary local `Mat` (unassembled local operator for GenEO) using
    `PCHPDDMSetAuxiliaryMat()`. Calling this routine is not needed when using a `MATIS` Pmat, assembly is done internally using `MatConvert()`.
@@ -1751,11 +1751,11 @@ PetscErrorCode HPDDMLoadDL_Private(PetscBool *found)
    e.g., -pc_hpddm_levels_1_sub_pc_type lu -pc_hpddm_levels_1_eps_nev 10 -pc_hpddm_levels_2_p 4 -pc_hpddm_levels_2_sub_pc_type lu -pc_hpddm_levels_2_eps_nev 10
     -pc_hpddm_coarse_p 2 -pc_hpddm_coarse_mat_type baij will use 10 deflation vectors per subdomain on the fine "level 1",
     aggregate the fine subdomains into 4 "level 2" subdomains, then use 10 deflation vectors per subdomain on "level 2",
-    and assemble the coarse matrix (of dimension 4 x 10 = 40) on two processes as a `MATMPIBAIJ` (default is `MATMPISBAIJ`).
+    and assemble the coarse matrix (of dimension 4 x 10 = 40) on two processes as a `MATBAIJ` (default is `MATSBAIJ`).
 
    In order to activate a "level N+1" coarse correction, it is mandatory to call -pc_hpddm_levels_N_eps_nev <nu> or -pc_hpddm_levels_N_eps_threshold <val>. The default -pc_hpddm_coarse_p value is 1, meaning that the coarse operator is aggregated on a single process.
 
-   This preconditioner requires that you build PETSc with SLEPc (--download-slepc=1). By default, the underlying concurrent eigenproblems are solved using
+   This preconditioner requires that you build PETSc with SLEPc (``--download-slepc``). By default, the underlying concurrent eigenproblems are solved using
    SLEPc shift-and-invert spectral transformation. This is usually what gives the best performance for GenEO, cf. [2011, 2013]. As stated above, SLEPc options
    are available through -pc_hpddm_levels_%d_, e.g., -pc_hpddm_levels_1_eps_type arpack -pc_hpddm_levels_1_eps_threshold 0.1 -pc_hpddm_levels_1_st_type sinvert.
 
@@ -1771,7 +1771,7 @@ PetscErrorCode HPDDMLoadDL_Private(PetscBool *found)
    Level: intermediate
 
 .seealso: `PCCreate()`, `PCSetType()`, `PCType`, `PC`, `PCHPDDMSetAuxiliaryMat()`, `MATIS`, `PCBDDC`, `PCDEFLATION`, `PCTELESCOPE`, `PCASM`,
-          `PCHPDDMSetCoarseCorrectionType()`, `PCHPDDMHasNeumannMat()`, `CHPDDMSetRHSMat()`, `PCHPDDMSetDeflationMat()`, `PCHPDDMGetSTShareSubKSP()`,
+          `PCHPDDMSetCoarseCorrectionType()`, `PCHPDDMHasNeumannMat()`, `PCHPDDMSetRHSMat()`, `PCHPDDMSetDeflationMat()`, `PCHPDDMGetSTShareSubKSP()`,
           `PCHPDDMSetCoarseCorrectionType()`, `PCHPDDMGetComplexities()`
 M*/
 PETSC_EXTERN PetscErrorCode PCCreate_HPDDM(PC pc)
