@@ -6,7 +6,7 @@ User-Guide
   \thispagestyle{plain}
   {\Huge\textbf{PETSc/TAO Users Manual}}
 
-`PETSc/TAO Users Manual in PDF <manual/manual.pdf>`__
+`PETSc/TAO Users Manual in PDF <manual.pdf>`__
 
 **Argonne National Laboratory**
 

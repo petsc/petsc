@@ -300,7 +300,7 @@ a linear system with ``KSP``, the interface to the preconditioners,
 Krylov subspace methods, and direct linear solvers of PETSc. Following
 the code we highlight a few of the most important parts of this example.
 
-.. admonition:: Listing: `KSP Tutorial src/ksp/ksp/tutorials/ex1.c <PETSC_DOC_OUT_ROOT_PLACEHOLDER/src/ksp/ksp/tutorials/ex1..c.html>`__
+.. admonition:: Listing: `KSP Tutorial src/ksp/ksp/tutorials/ex1.c <PETSC_DOC_OUT_ROOT_PLACEHOLDER/src/ksp/ksp/tutorials/ex1.c.html>`__
    :name: ksp-ex1
 
    .. literalinclude:: /../src/ksp/ksp/tutorials/ex1.c
@@ -611,7 +611,7 @@ multiprocessor examples. The primary difference between the examples in
 here is that each processor forms only its
 local part of the matrix and vectors in the parallel case.
 
-.. admonition:: Listing: `KSP Tutorial src/ksp/ksp/tutorials/ex2.c <PETSC_DOC_OUT_ROOT_PLACEHOLDER/src/ksp/ksp/tutorials/ex2..c.html>`__
+.. admonition:: Listing: `KSP Tutorial src/ksp/ksp/tutorials/ex2.c <PETSC_DOC_OUT_ROOT_PLACEHOLDER/src/ksp/ksp/tutorials/ex2.c.html>`__
    :name: ksp-ex2
 
    .. literalinclude:: /../src/ksp/ksp/tutorials/ex2.c
@@ -658,7 +658,7 @@ PETSc MPI based linear solvers may be accessed from a sequential or OpenMP progr
 
 
 There is an OpenMP thread-safe subset of PETSc that may be configured for using ``--with-threadsafety --with-log=0 [--with-openmp or
---download-concurrencykit]``. `KSP Tutorial ex61f <../../src/ksp/ksp/tutorials/ex61f.F90.html>`__ demonstrates
+--download-concurrencykit]``. `KSP Tutorial ex61f <PETSC_DOC_OUT_ROOT_PLACEHOLDER/src/ksp/ksp/tutorials/ex61f.F90.html>`__ demonstrates
 how this may be used with OpenMP. In this mode one may have individual OpenMP threads that each manage their own
 (sequential) PETSc objects (each thread can interact only with its own objects). This
 is useful when one has many small systems (or sets of ODEs) that must be integrated in an
