@@ -866,7 +866,7 @@ M*/
 
    Level: beginner
 
-.seealso: `PetscFree()`, `PetscMalloc()`, `PetscNewLog()`, `PetscCalloc1()`, `PetscMalloc1()`
+.seealso: `PetscFree()`, `PetscMalloc()`, `PetscCalloc1()`, `PetscMalloc1()`
 
 M*/
 #define PetscNew(b) PetscCalloc1(1, (b))
@@ -892,7 +892,7 @@ M*/
 
    It is safe to call `PetscFree()` on a NULL pointer.
 
-.seealso: `PetscNew()`, `PetscMalloc()`, `PetscNewLog()`, `PetscMalloc1()`, `PetscCalloc1()`
+.seealso: `PetscNew()`, `PetscMalloc()`, `PetscMalloc1()`, `PetscCalloc1()`
 
 M*/
 #define PetscFree(a) ((*PetscTrFree)((void *)(a), __LINE__, PETSC_FUNCTION_NAME, __FILE__) || ((a) = NULL, 0))

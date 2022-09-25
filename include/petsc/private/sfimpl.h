@@ -157,6 +157,8 @@ PETSC_EXTERN PetscErrorCode MPIPetsc_Type_compare(MPI_Datatype, MPI_Datatype, Pe
 PETSC_EXTERN PetscErrorCode MPIPetsc_Type_compare_contig(MPI_Datatype, MPI_Datatype, PetscInt *);
 
 #if defined(PETSC_HAVE_MPI_NONBLOCKING_COLLECTIVES)
+  #define MPIU_Ibcast(a, b, c, d, e, req)                MPI_Ibcast(a, b, c, d, e, req)
+  #define MPIU_Ireduce(a, b, c, d, e, f, g, req)         MPI_Ireduce(a, b, c, d, e, f, g, req)
   #define MPIU_Iscatter(a, b, c, d, e, f, g, h, req)     MPI_Iscatter(a, b, c, d, e, f, g, h, req)
   #define MPIU_Iscatterv(a, b, c, d, e, f, g, h, i, req) MPI_Iscatterv(a, b, c, d, e, f, g, h, i, req)
   #define MPIU_Igather(a, b, c, d, e, f, g, h, req)      MPI_Igather(a, b, c, d, e, f, g, h, req)
@@ -168,6 +170,8 @@ PETSC_EXTERN PetscErrorCode MPIPetsc_Type_compare_contig(MPI_Datatype, MPI_Datat
   /* Ignore req, the MPI_Request argument, and use MPI blocking collectives. One should initialize req
    to MPI_REQUEST_NULL so that one can do MPI_Wait(req,status) no matter the call is blocking or not.
  */
+  #define MPIU_Ibcast(a, b, c, d, e, req)                MPI_Bcast(a, b, c, d, e)
+  #define MPIU_Ireduce(a, b, c, d, e, f, g, req)         MPI_Reduce(a, b, c, d, e, f, g)
   #define MPIU_Iscatter(a, b, c, d, e, f, g, h, req)     MPI_Scatter(a, b, c, d, e, f, g, h)
   #define MPIU_Iscatterv(a, b, c, d, e, f, g, h, i, req) MPI_Scatterv(a, b, c, d, e, f, g, h, i)
   #define MPIU_Igather(a, b, c, d, e, f, g, h, req)      MPI_Gather(a, b, c, d, e, f, g, h)

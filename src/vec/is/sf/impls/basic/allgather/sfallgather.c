@@ -80,7 +80,7 @@ static PetscErrorCode PetscSFReduceBegin_Allgather(PetscSF sf, MPI_Datatype unit
     if (rank == 0 && link->leafbuf_alloc[PETSCSF_REMOTE][link->leafmtype_mpi] == leafbuf) leafbuf = MPI_IN_PLACE;
     PetscCall(PetscMPIIntCast(sf->nleaves * link->bs, &count));
     PetscCall(PetscSFLinkSyncStreamBeforeCallMPI(sf, link, PETSCSF_LEAF2ROOT));
-    PetscCallMPI(MPI_Reduce(leafbuf, link->leafbuf_alloc[PETSCSF_REMOTE][link->leafmtype_mpi], count, link->basicunit, op, 0, comm)); /* Must do reduce with MPI builltin datatype basicunit */
+    PetscCallMPI(MPI_Reduce(leafbuf, link->leafbuf_alloc[PETSCSF_REMOTE][link->leafmtype_mpi], count, link->basicunit, op, 0, comm)); /* Must do reduce with MPI builtin datatype basicunit */
     PetscCallMPI(MPIU_Iscatter(link->leafbuf_alloc[PETSCSF_REMOTE][link->leafmtype_mpi], recvcount, unit, rootbuf, recvcount, unit, 0 /*rank 0*/, comm, req));
   }
   PetscFunctionReturn(0);

@@ -3302,7 +3302,7 @@ conjugate gradient algorithm shown above can be implemented as follows.
 
      PetscFunctionBegin;
 
-     PetscCall(PetscNewLog(tao,&cg));
+     PetscCall(PetscNew(&cg));
      tao->data = (void*)cg;
      cg->eta = 0.1;
      cg->delta_min = 1e-7;
