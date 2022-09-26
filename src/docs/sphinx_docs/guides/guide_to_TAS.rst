@@ -6,7 +6,6 @@ Guide to PETSc Quick Start Tutorial on Time, Accuracy, Speed Analysis(TAS)
 Below is the guide to running TAS using ex13, which is a Poisson Problem in 2D and 3D with Finite Elements:
 
 1. Compile ``ex13.c``
-
   a. This file is located in ``PETSC_DIR/src/snes/tutorials/``
   b. If you do not know how to build a PETSc code here is an example makefile
 
