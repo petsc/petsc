@@ -12,7 +12,7 @@ namespace util
 // A useful crtp helper class to abstract away all the static_cast<Derived *>(this) nonsense
 template <typename T, template <typename> class CRTPType>
 class crtp {
-public:
+protected:
   T       &underlying() noexcept { return static_cast<T &>(*this); }
   const T &underlying() const noexcept { return static_cast<const T &>(*this); }
 

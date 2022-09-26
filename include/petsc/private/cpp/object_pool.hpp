@@ -101,9 +101,8 @@ inline PetscErrorCode ObjectPool<T, Allocator, Container>::finalize_() noexcept
   PetscFunctionBegin;
   while (!stack_.empty()) {
     PetscCall(this->allocator().destroy(std::move(stack_.top())));
-    PetscCallCXX(stack_.pop());
+    stack_.pop();
   }
-  stack_ = stack_type{};
   PetscCall(this->allocator().finalize());
   PetscFunctionReturn(0);
 }
@@ -120,8 +119,8 @@ inline PetscErrorCode ObjectPool<T, Allocator, Container>::allocate(value_type *
     PetscFunctionReturn(0);
   }
   PetscCall(this->allocator().reset(stack_.top(), std::forward<Args>(args)...));
-  PetscCallCXX(*obj = std::move(stack_.top()));
-  PetscCallCXX(stack_.pop());
+  *obj = std::move(stack_.top());
+  stack_.pop();
   PetscFunctionReturn(0);
 }
 
