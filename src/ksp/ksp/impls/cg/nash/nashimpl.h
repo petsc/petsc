@@ -12,10 +12,10 @@
 /*     Journal on Numerical Analysis, 21, pages 553-572, 1984.               */
 /*****************************************************************************/
 
-#if !defined(__CG_NASH)
-  #define __CG_NASH
+#ifndef PETSC_CG_NASHIMPL_H
+#define PETSC_CG_NASHIMPL_H
 
-  #include <petsc/private/kspimpl.h>
+#include <petsc/private/kspimpl.h>
 
 typedef struct {
   PetscReal radius;
@@ -24,4 +24,4 @@ typedef struct {
   PetscInt  dtype;
 } KSPCG_NASH;
 
-#endif
+#endif // PETSC_CG_NASHIMPL_H

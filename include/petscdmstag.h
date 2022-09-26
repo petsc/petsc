@@ -1,8 +1,8 @@
-#if !defined(DMSTAG_H_)
-  #define DMSTAG_H_
+#ifndef PETSC_DMSTAG_H
+#define PETSC_DMSTAG_H
 
-  #include <petscdm.h>
-  #include <petscdmproduct.h>
+#include <petscdm.h>
+#include <petscdmproduct.h>
 
 /* SUBMANSEC = DMStag */
 
@@ -174,4 +174,4 @@ PETSC_DEPRECATED_FUNCTION("Use DMStagVecRestoreArrayRead() (since version 3.13")
   return DMStagVecRestoreArrayRead(dm, v, a);
 }
 
-#endif
+#endif // PETSC_DMSTAG_H

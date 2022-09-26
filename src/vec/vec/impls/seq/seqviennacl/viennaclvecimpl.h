@@ -1,19 +1,19 @@
-#if !defined(__VIENNACLVECIMPL)
-  #define __VIENNACLVECIMPL
+#ifndef PETSC_VIENNACLVECIMPL_H
+#define PETSC_VIENNACLVECIMPL_H
 
-  #include <petscviennacl.h>
-  #include <petsc/private/vecimpl.h>
-  #include <petsc/private/deviceimpl.h>
+#include <petscviennacl.h>
+#include <petsc/private/vecimpl.h>
+#include <petsc/private/deviceimpl.h>
 
-  #include <algorithm>
-  #include <vector>
-  #include <string>
-  #include <exception>
+#include <algorithm>
+#include <vector>
+#include <string>
+#include <exception>
 
-  #include "viennacl/vector.hpp"
+#include "viennacl/vector.hpp"
 
-  #define ViennaCLWaitForGPU() \
-    if (PetscViennaCLSynchronize) viennacl::backend::finish();
+#define ViennaCLWaitForGPU() \
+  if (PetscViennaCLSynchronize) viennacl::backend::finish();
 
 typedef viennacl::vector<PetscScalar> ViennaCLVector;
 
@@ -62,4 +62,4 @@ struct Vec_ViennaCL {
   viennacl::vector<PetscScalar> *GPUarray_allocated; // if the array was allocated by PETSc this is its pointer
 };
 
-#endif
+#endif // PETSC_VIENNACLVECIMPL_H

@@ -1,9 +1,9 @@
-#if !defined(__GAMG_IMPL)
-  #define __GAMG_IMPL
-  #include <petscksp.h>
-  #include <petsc/private/pcimpl.h>
-  #include <petsc/private/pcmgimpl.h> /*I "petscksp.h" I*/
-  #include <petscmatcoarsen.h>        /*I "petscmatcoarsen.h" I*/
+#ifndef PETSC_PCGAMGIMPL_H
+#define PETSC_PCGAMGIMPL_H
+#include <petscksp.h>
+#include <petsc/private/pcimpl.h>
+#include <petsc/private/pcmgimpl.h> /*I "petscksp.h" I*/
+#include <petscmatcoarsen.h>        /*I "petscmatcoarsen.h" I*/
 
 struct _PCGAMGOps {
   PetscErrorCode (*creategraph)(PC, Mat, Mat *);
@@ -97,7 +97,7 @@ PETSC_INTERN PetscErrorCode PCGAMGHashTableCreate(PetscInt, PCGAMGHashTable *);
 PETSC_INTERN PetscErrorCode PCGAMGHashTableDestroy(PCGAMGHashTable *);
 PETSC_INTERN PetscErrorCode PCGAMGHashTableAdd(PCGAMGHashTable *, PetscInt, PetscInt);
 
-  #define GAMG_HASH(key) (PetscInt)((((PetscInt64)7) * (PetscInt64)key) % (PetscInt64)a_tab->size)
+#define GAMG_HASH(key) (PetscInt)((((PetscInt64)7) * (PetscInt64)key) % (PetscInt64)a_tab->size)
 static inline PetscErrorCode PCGAMGHashTableFind(PCGAMGHashTable *a_tab, PetscInt a_key, PetscInt *a_data)
 {
   PetscInt kk, idx;
@@ -118,4 +118,4 @@ static inline PetscErrorCode PCGAMGHashTableFind(PCGAMGHashTable *a_tab, PetscIn
   PetscFunctionReturn(0);
 }
 
-#endif
+#endif // PETSC_PCGAMGIMPL_H

@@ -8,16 +8,15 @@
           F'(u)a  ~=  ----------------
                             h
 */
+#ifndef PETSC_MFFDIMPL_H
+#define PETSC_MFFDIMPL_H
 
-#if !defined(__MFFD_H__)
-  #define __MFFD_H__
-
-  #include <petscmat.h> /*I  "petscmat.h"   I*/
-  #include <petsc/private/petscimpl.h>
+#include <petscmat.h> /*I  "petscmat.h"   I*/
+#include <petsc/private/petscimpl.h>
 
 /*
-    Table of functions that manage the computation and understanding
-    of the parameter for finite difference based matrix-free computations
+ Table of functions that manage the computation and understanding
+ of the parameter for finite difference based matrix-free computations
 */
 struct _MFOps {
   PetscErrorCode (*compute)(MatMFFD, Vec, Vec, PetscScalar *, PetscBool *zeroa);
@@ -51,13 +50,13 @@ struct _p_MatMFFD {
   PetscErrorCode (*funcisetbase)(void *, Vec);                   /* Sets base for future evaluations of func_[i]() */
 
   void *ctx; /* this is used by MatCreateSNESMF() to store the SNES object */
-  #if defined(PETSC_USE_COMPLEX)
+#if defined(PETSC_USE_COMPLEX)
   PetscBool usecomplex; /* use Lyness complex number trick to compute the matrix-vector product */
-  #endif
+#endif
 };
 
 PETSC_EXTERN PetscFunctionList MatMFFDList;
 PETSC_EXTERN PetscBool         MatMFFDRegisterAllCalled;
 PETSC_EXTERN PetscErrorCode    MatMFFDRegisterAll(void);
 
-#endif
+#endif // PETSC_MFFDIMPL_H
