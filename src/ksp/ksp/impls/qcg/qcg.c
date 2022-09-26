@@ -101,7 +101,6 @@ PetscErrorCode KSPSolve_QCG(KSP ksp)
   PetscReal   dzero = 0.0, bsnrm = 0.0;
   PetscInt    i, maxit;
   PC          pc = ksp->pc;
-  PCSide      side;
   PetscBool   diagonalscale;
 
   PetscFunctionBegin;
@@ -122,8 +121,6 @@ PetscErrorCode KSPSolve_QCG(KSP ksp)
   B        = ksp->vec_rhs;
 
   PetscCheck(pcgP->delta > dzero, PetscObjectComm((PetscObject)ksp), PETSC_ERR_ARG_OUTOFRANGE, "Input error: delta <= 0");
-  PetscCall(KSPGetPCSide(ksp, &side));
-  PetscCheck(side == PC_SYMMETRIC, PetscObjectComm((PetscObject)ksp), PETSC_ERR_ARG_OUTOFRANGE, "Requires symmetric preconditioner!");
 
   /* Initialize variables */
   PetscCall(VecSet(W, 0.0)); /* W = 0 */

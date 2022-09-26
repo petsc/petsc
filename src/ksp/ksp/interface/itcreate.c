@@ -401,9 +401,9 @@ PetscErrorCode KSPSetUpNorms_Private(KSP ksp, PetscBool errorifnotsupported, KSP
   }
   if (best < 1 && errorifnotsupported) {
     PetscCheck(ksp->normtype != KSP_NORM_DEFAULT || ksp->pc_side != PC_SIDE_DEFAULT, PetscObjectComm((PetscObject)ksp), PETSC_ERR_PLIB, "The %s KSP implementation did not call KSPSetSupportedNorm()", ((PetscObject)ksp)->type_name);
-    PetscCheck(ksp->normtype != KSP_NORM_DEFAULT, PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "KSP %s does not support %s", ((PetscObject)ksp)->type_name, PCSides[ksp->pc_side]);
-    PetscCheck(ksp->pc_side != PC_SIDE_DEFAULT, PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "KSP %s does not support %s", ((PetscObject)ksp)->type_name, KSPNormTypes[ksp->normtype]);
-    SETERRQ(PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "KSP %s does not support %s with %s", ((PetscObject)ksp)->type_name, KSPNormTypes[ksp->normtype], PCSides[ksp->pc_side]);
+    PetscCheck(ksp->normtype != KSP_NORM_DEFAULT, PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "KSP %s does not support preconditioner side %s", ((PetscObject)ksp)->type_name, PCSides[ksp->pc_side]);
+    PetscCheck(ksp->pc_side != PC_SIDE_DEFAULT, PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "KSP %s does not support norm type %s", ((PetscObject)ksp)->type_name, KSPNormTypes[ksp->normtype]);
+    SETERRQ(PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "KSP %s does not support norm type %s with preconditioner side %s", ((PetscObject)ksp)->type_name, KSPNormTypes[ksp->normtype], PCSides[ksp->pc_side]);
   }
   if (normtype) *normtype = (KSPNormType)ibest;
   if (pcside) *pcside = (PCSide)jbest;

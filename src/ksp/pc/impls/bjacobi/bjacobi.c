@@ -683,6 +683,8 @@ static PetscErrorCode PCApplySymmetricRight_BJacobi_Singleblock(PC pc, Vec x, Ve
   PetscCall(KSPGetPC(jac->ksp[0], &subpc));
   PetscCall(PCApplySymmetricRight(subpc, bjac->x, bjac->y));
 
+  PetscCall(VecResetArray(bjac->x));
+  PetscCall(VecResetArray(bjac->y));
   PetscCall(VecRestoreArrayRead(x, &x_array));
   PetscCall(VecRestoreArray(y, &y_array));
   PetscFunctionReturn(0);
@@ -849,9 +851,6 @@ static PetscErrorCode PCSetUpOnBlocks_BJacobi_Multiblock(PC pc)
   PetscFunctionReturn(0);
 }
 
-/*
-      Preconditioner for block Jacobi
-*/
 static PetscErrorCode PCApply_BJacobi_Multiblock(PC pc, Vec x, Vec y)
 {
   PC_BJacobi            *jac = (PC_BJacobi *)pc->data;
@@ -885,9 +884,78 @@ static PetscErrorCode PCApply_BJacobi_Multiblock(PC pc, Vec x, Vec y)
   PetscFunctionReturn(0);
 }
 
-/*
-      Preconditioner for block Jacobi
-*/
+static PetscErrorCode PCApplySymmetricLeft_BJacobi_Multiblock(PC pc, Vec x, Vec y)
+{
+  PC_BJacobi            *jac = (PC_BJacobi *)pc->data;
+  PetscInt               i, n_local = jac->n_local;
+  PC_BJacobi_Multiblock *bjac = (PC_BJacobi_Multiblock *)jac->data;
+  PetscScalar           *yin;
+  const PetscScalar     *xin;
+  PC                     subpc;
+
+  PetscFunctionBegin;
+  PetscCall(VecGetArrayRead(x, &xin));
+  PetscCall(VecGetArray(y, &yin));
+  for (i = 0; i < n_local; i++) {
+    /*
+       To avoid copying the subvector from x into a workspace we instead
+       make the workspace vector array point to the subpart of the array of
+       the global vector.
+    */
+    PetscCall(VecPlaceArray(bjac->x[i], xin + bjac->starts[i]));
+    PetscCall(VecPlaceArray(bjac->y[i], yin + bjac->starts[i]));
+
+    PetscCall(PetscLogEventBegin(PC_ApplyOnBlocks, jac->ksp[i], bjac->x[i], bjac->y[i], 0));
+    /* apply the symmetric left portion of the inner PC operator */
+    /* note this by-passes the inner KSP and its options completely */
+    PetscCall(KSPGetPC(jac->ksp[i], &subpc));
+    PetscCall(PCApplySymmetricLeft(subpc, bjac->x[i], bjac->y[i]));
+    PetscCall(PetscLogEventEnd(PC_ApplyOnBlocks, jac->ksp[i], bjac->x[i], bjac->y[i], 0));
+
+    PetscCall(VecResetArray(bjac->x[i]));
+    PetscCall(VecResetArray(bjac->y[i]));
+  }
+  PetscCall(VecRestoreArrayRead(x, &xin));
+  PetscCall(VecRestoreArray(y, &yin));
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode PCApplySymmetricRight_BJacobi_Multiblock(PC pc, Vec x, Vec y)
+{
+  PC_BJacobi            *jac = (PC_BJacobi *)pc->data;
+  PetscInt               i, n_local = jac->n_local;
+  PC_BJacobi_Multiblock *bjac = (PC_BJacobi_Multiblock *)jac->data;
+  PetscScalar           *yin;
+  const PetscScalar     *xin;
+  PC                     subpc;
+
+  PetscFunctionBegin;
+  PetscCall(VecGetArrayRead(x, &xin));
+  PetscCall(VecGetArray(y, &yin));
+  for (i = 0; i < n_local; i++) {
+    /*
+       To avoid copying the subvector from x into a workspace we instead
+       make the workspace vector array point to the subpart of the array of
+       the global vector.
+    */
+    PetscCall(VecPlaceArray(bjac->x[i], xin + bjac->starts[i]));
+    PetscCall(VecPlaceArray(bjac->y[i], yin + bjac->starts[i]));
+
+    PetscCall(PetscLogEventBegin(PC_ApplyOnBlocks, jac->ksp[i], bjac->x[i], bjac->y[i], 0));
+    /* apply the symmetric left portion of the inner PC operator */
+    /* note this by-passes the inner KSP and its options completely */
+    PetscCall(KSPGetPC(jac->ksp[i], &subpc));
+    PetscCall(PCApplySymmetricRight(subpc, bjac->x[i], bjac->y[i]));
+    PetscCall(PetscLogEventEnd(PC_ApplyOnBlocks, jac->ksp[i], bjac->x[i], bjac->y[i], 0));
+
+    PetscCall(VecResetArray(bjac->x[i]));
+    PetscCall(VecResetArray(bjac->y[i]));
+  }
+  PetscCall(VecRestoreArrayRead(x, &xin));
+  PetscCall(VecRestoreArray(y, &yin));
+  PetscFunctionReturn(0);
+}
+
 static PetscErrorCode PCApplyTranspose_BJacobi_Multiblock(PC pc, Vec x, Vec y)
 {
   PC_BJacobi            *jac = (PC_BJacobi *)pc->data;
@@ -949,12 +1017,14 @@ static PetscErrorCode PCSetUp_BJacobi_Multiblock(PC pc, Mat mat, Mat pmat)
     scall = MAT_INITIAL_MATRIX;
 
     if (!jac->ksp) {
-      pc->ops->reset          = PCReset_BJacobi_Multiblock;
-      pc->ops->destroy        = PCDestroy_BJacobi_Multiblock;
-      pc->ops->apply          = PCApply_BJacobi_Multiblock;
-      pc->ops->matapply       = NULL;
-      pc->ops->applytranspose = PCApplyTranspose_BJacobi_Multiblock;
-      pc->ops->setuponblocks  = PCSetUpOnBlocks_BJacobi_Multiblock;
+      pc->ops->reset               = PCReset_BJacobi_Multiblock;
+      pc->ops->destroy             = PCDestroy_BJacobi_Multiblock;
+      pc->ops->apply               = PCApply_BJacobi_Multiblock;
+      pc->ops->matapply            = NULL;
+      pc->ops->applysymmetricleft  = PCApplySymmetricLeft_BJacobi_Multiblock;
+      pc->ops->applysymmetricright = PCApplySymmetricRight_BJacobi_Multiblock;
+      pc->ops->applytranspose      = PCApplyTranspose_BJacobi_Multiblock;
+      pc->ops->setuponblocks       = PCSetUpOnBlocks_BJacobi_Multiblock;
 
       PetscCall(PetscNew(&bjac));
       PetscCall(PetscMalloc1(n_local, &jac->ksp));
