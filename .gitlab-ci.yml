@@ -392,10 +392,10 @@ freebsd-c-single-opt:
 
 mswin-opt-impi:
   extends:
-    - .stage-2
+    - .stage-3
     - .mswin_test
   tags:
-    - mswin-stage2
+    - mswin-stage3
   variables:
     TEST_ARCH: arch-ci-mswin-opt-impi
     TEST_OPTS: search='ksp_ksp_tests*'
