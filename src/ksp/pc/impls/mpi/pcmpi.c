@@ -107,7 +107,9 @@ static PetscErrorCode PCMPICreate(PC pc)
     ksp = NULL;
     PetscFunctionReturn(0);
   }
+  PetscCall(PetscLogStagePush(PCMPIStage));
   PetscCall(KSPCreate(comm, &ksp));
+  PetscCall(PetscLogStagePop());
   PetscCallMPI(MPI_Gather(&ksp, 1, MPI_AINT, pc ? km->ksps : NULL, 1, MPI_AINT, 0, comm));
   if (pc) {
     size_t slen;
@@ -198,6 +200,7 @@ static PetscErrorCode PCMPISetMat(PC pc)
 
   for (j = 1; j < n + 1; j++) ia[j] -= ia[0];
   ia[0] = 0;
+  PetscCall(PetscLogStagePush(PCMPIStage));
   PetscCall(MatCreateMPIAIJWithArrays(comm, n, n, N[0], N[0], ia, ja, a, &A));
   PetscCall(MatSetBlockSize(A, bs));
   PetscCall(MatSetOptionsPrefix(A, "mpi_"));
@@ -205,6 +208,7 @@ static PetscErrorCode PCMPISetMat(PC pc)
   PetscCall(PetscFree3(ia, ja, a));
   PetscCall(KSPSetOperators(ksp, A, A));
   if (!ksp->vec_sol) PetscCall(MatCreateVecs(A, &ksp->vec_sol, &ksp->vec_rhs));
+  PetscCall(PetscLogStagePop());
   if (pc) { /* needed for scatterv/gatherv of rhs and solution */
     const PetscInt *range;
 
@@ -283,7 +287,9 @@ static PetscErrorCode PCMPISolve(PC pc, Vec B, Vec X)
   PetscCall(VecRestoreArray(ksp->vec_rhs, &b));
   if (pc) PetscCall(VecRestoreArrayRead(B, &sb));
 
+  PetscCall(PetscLogStagePush(PCMPIStage));
   PetscCall(KSPSolve(ksp, NULL, NULL));
+  PetscCall(PetscLogStagePop());
   PetscCall(KSPGetIterationNumber(ksp,&its));
   PCMPIIterations[size - 1] += its;
 
@@ -638,6 +644,12 @@ PetscErrorCode PCSetFromOptions_MPI(PC pc, PetscOptionItems *PetscOptionsObject)
 
    When the program is running with a single MPI rank then this directly uses the provided matrix and right hand side (still in a `KSP` with the options prefix of -mpi)
    and does not need to distribute the matrix and vector to the various MPI ranks; thus it incurs no extra overhead over just using the `KSP` directly.
+
+   The solver options for `KSP` and `PC` must be controlled via the options database, calls to set options directly on the user level `KSP` and `PC` have no effect
+   because they are not the actual solver objects.
+
+   When `-log_view` is used with this solver the events within the parallel solve are logging in their own stage. Some of the logging in the other
+   stages will be confusing since the event times are are only recorded on the 0th MPI rank, thus the percent of time in the events will be misleading.
 
 .seealso: `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `PC`, `PCMPIServerBegin()`, `PCMPIServerEnd()`
 M*/

@@ -70,5 +70,6 @@ PETSC_EXTERN PetscLogEvent PC_ApplySymmetricRight;
 PETSC_EXTERN PetscLogEvent PC_ModifySubMatrices;
 PETSC_EXTERN PetscLogEvent PC_ApplyOnBlocks;
 PETSC_EXTERN PetscLogEvent PC_ApplyTransposeOnBlocks;
+PETSC_EXTERN PetscLogStage PCMPIStage;
 
 #endif

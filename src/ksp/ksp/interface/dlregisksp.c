@@ -87,6 +87,9 @@ PetscErrorCode PCInitializePackage(void)
   PetscCall(PetscLogEventRegister("KSPSolve_FS_Schu", KSP_CLASSID, &KSP_Solve_FS_S));
   PetscCall(PetscLogEventRegister("KSPSolve_FS_Up", KSP_CLASSID, &KSP_Solve_FS_U));
   PetscCall(PetscLogEventRegister("KSPSolve_FS_Low", KSP_CLASSID, &KSP_Solve_FS_L));
+
+  PetscCall(PetscLogStageRegister("PCMPI", &PCMPIStage));
+
   /* Process Info */
   {
     PetscClassId classids[1];
