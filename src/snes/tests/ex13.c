@@ -148,6 +148,11 @@ int main(int argc, char **argv)
   PetscCall(SNESSetDM(snes, dm));
   PetscCall(SetupDiscretization(dm, "potential", SetupPrimalProblem, &user));
   PetscCall(DMCreateGlobalVector(dm, &u));
+  {
+    PetscInt N;
+    PetscCall(VecGetSize(u, &N));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Number equations N = %" PetscInt_FMT "\n", N));
+  }
   PetscCall(SNESSetFromOptions(snes));
   PetscCall(PetscObjectSetName((PetscObject)u, "potential"));
   PetscCall(DMPlexSetSNESLocalFEM(dm, &user, &user, &user));

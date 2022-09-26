@@ -1553,14 +1553,14 @@ PetscErrorCode PCSetFromOptions_GAMG(PC pc, PetscOptionItems *PetscOptionsObject
      PCGAMG - Geometric algebraic multigrid (AMG) preconditioner
 
    Options Database Keys:
-+   -pc_gamg_type <type> - one of agg, geo, or classical, agg is the default
-.   -pc_gamg_repartition  <true,default=false> - repartition the degrees of freedom accross the coarse grids as they are determined
-.   -pc_gamg_reuse_interpolation <true,default=false> - when rebuilding the algebraic multigrid preconditioner reuse the previously computed interpolations
-.   -pc_gamg_asm_use_agg <true,default=false> - use the aggregates from the coasening process to defined the subdomains on each level for the PCASM smoother
++   -pc_gamg_type <type,default=agg> - one of agg, geo, or classical
+.   -pc_gamg_repartition  <bool,default=false> - repartition the degrees of freedom accross the coarse grids as they are determined
+.   -pc_gamg_asm_use_agg <bool,default=false> - use the aggregates from the coasening process to defined the subdomains on each level for the PCASM smoother
 .   -pc_gamg_process_eq_limit <limit, default=50> - `PCGAMG` will reduce the number of MPI processes used directly on the coarse grids so that there are around <limit>
                                         equations on each process that has degrees of freedom
 .   -pc_gamg_coarse_eq_limit <limit, default=50> - Set maximum number of equations on coarsest grid to aim for.
-.   -pc_gamg_threshold[] <thresh,default=-1> - Before aggregating the graph `PCGAMG` will remove small values from the graph on each level (< 0 is no filtering)
+.   -pc_gamg_reuse_interpolation <bool,default=true> - when rebuilding the algebraic multigrid preconditioner reuse the previously computed interpolations (should always be true)
+.   -pc_gamg_threshold[] <thresh,default=[-1,...]> - Before aggregating the graph `PCGAMG` will remove small values from the graph on each level (< 0 does no filtering)
 -   -pc_gamg_threshold_scale <scale,default=1> - Scaling of threshold on each coarser grid if not specified
 
    Options Database Keys for Aggregation:
@@ -1572,7 +1572,7 @@ PetscErrorCode PCSetFromOptions_GAMG(PC pc, PetscOptionItems *PetscOptionsObject
 +  -pc_mg_cycles <v> - v or w, see `PCMGSetCycleType()`
 .  -pc_mg_distinct_smoothup - configure the up and down (pre and post) smoothers separately, see PCMGSetDistinctSmoothUp()
 .  -pc_mg_type <multiplicative> - (one of) additive multiplicative full kascade
--  -pc_mg_levels <levels> - Number of levels of multigrid to use.
+-  -pc_mg_levels <levels> - Number of levels of multigrid to use. GAMG has a heuristic so pc_mg_levels is not usually used with GAMG
 
   Notes:
   To obtain good performance for `PCGAMG` for vector valued problems you must
@@ -1636,7 +1636,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_GAMG(PC pc)
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCGAMGGetType_C", PCGAMGGetType_GAMG));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCGAMGSetNlevels_C", PCGAMGSetNlevels_GAMG));
   pc_gamg->repart                          = PETSC_FALSE;
-  pc_gamg->reuse_prol                      = PETSC_FALSE;
+  pc_gamg->reuse_prol                      = PETSC_TRUE;
   pc_gamg->use_aggs_in_asm                 = PETSC_FALSE;
   pc_gamg->use_parallel_coarse_grid_solver = PETSC_FALSE;
   pc_gamg->cpu_pin_coarse_grids            = PETSC_FALSE;
