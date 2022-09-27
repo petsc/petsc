@@ -657,7 +657,7 @@ PetscErrorCode DMView_PlexCGNS(DM dm, PetscViewer viewer)
   PetscInt          cStart, cEnd, num_local_nodes, num_global_nodes, nStart, nEnd;
   const PetscInt   *node_l2g;
   Vec               coord;
-  DM                cdm;
+  DM                colloc_dm, cdm;
   PetscMPIInt       size;
   const char       *dm_name;
   int               base, zone;
@@ -672,9 +672,37 @@ PetscErrorCode DMView_PlexCGNS(DM dm, PetscViewer viewer)
   PetscCallCGNS(cg_goto(cgv->file_num, base, NULL));
   PetscCallCGNS(cg_dataclass_write(CGNS_ENUMV(NormalizedByDimensional)));
 
-  PetscCall(DMGetCoordinateDM(dm, &cdm));
+  {
+    PetscFE        fe, fe_coord;
+    PetscDualSpace dual_space, dual_space_coord;
+    PetscInt       field_order, field_order_coord;
+    PetscBool      is_simplex;
+    PetscCall(DMGetField(dm, 0, NULL, (PetscObject *)&fe));
+    if (fe) {
+      PetscCall(PetscFEGetDualSpace(fe, &dual_space));
+      PetscCall(PetscDualSpaceGetOrder(dual_space, &field_order));
+    } else field_order = 1;
+    PetscCall(DMGetCoordinateDM(dm, &cdm));
+    PetscCall(DMGetField(cdm, 0, NULL, (PetscObject *)&fe_coord));
+    if (fe_coord) {
+      PetscCall(PetscFEGetDualSpace(fe_coord, &dual_space_coord));
+      PetscCall(PetscDualSpaceGetOrder(dual_space_coord, &field_order_coord));
+    } else field_order_coord = 1;
+    if (field_order != field_order_coord) {
+      PetscInt quadrature_order = field_order;
+      PetscCall(DMClone(dm, &colloc_dm));
+      PetscCall(DMPlexIsSimplex(dm, &is_simplex));
+      PetscCall(PetscFECreateLagrange(PetscObjectComm((PetscObject)dm), topo_dim, coord_dim, is_simplex, field_order, quadrature_order, &fe));
+      PetscCall(DMProjectCoordinates(colloc_dm, fe));
+      PetscCall(PetscFEDestroy(&fe));
+    } else {
+      PetscCall(PetscObjectReference((PetscObject)dm));
+      colloc_dm = dm;
+    }
+  }
+  PetscCall(DMGetCoordinateDM(colloc_dm, &cdm));
   PetscCall(DMPlexCreateNodeNumbering(cdm, &num_local_nodes, &num_global_nodes, &nStart, &nEnd, &node_l2g));
-  PetscCall(DMGetCoordinatesLocal(dm, &coord));
+  PetscCall(DMGetCoordinatesLocal(colloc_dm, &coord));
   PetscCall(DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd));
   num_global_elems = cEnd - cStart;
   PetscCallMPI(MPI_Allreduce(MPI_IN_PLACE, &num_global_elems, 1, MPIU_INT, MPI_SUM, PetscObjectComm((PetscObject)dm)));
@@ -769,6 +797,7 @@ PetscErrorCode DMView_PlexCGNS(DM dm, PetscViewer viewer)
       PetscCall(PetscFree(efield));
     }
   }
+  PetscCall(DMDestroy(&colloc_dm));
   PetscFunctionReturn(0);
 }
 
