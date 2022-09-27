@@ -108,19 +108,27 @@ PetscErrorCode MatGetMPIMatType_Private(Mat mat, MatType *MPIType)
 @*/
 PetscErrorCode MatSetType(Mat mat, MatType matype)
 {
-  PetscBool   sametype, found, subclass = PETSC_FALSE;
+  PetscBool   sametype, found, subclass = PETSC_FALSE, matMPI = PETSC_FALSE, requestSeq = PETSC_FALSE;
   MatRootName names = MatRootNameList;
   PetscErrorCode (*r)(Mat);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat, MAT_CLASSID, 1);
 
+  /* suppose with one MPI process, one created an MPIAIJ (mpiaij) matrix with MatCreateMPIAIJWithArrays(), and later tried
+     to change its type via '-mat_type aijcusparse'. Even there is only one MPI rank, we need to adapt matype to
+     'mpiaijcusparse' so that it will be treated as a subclass of MPIAIJ and proper MatCovert() will be called.
+  */
+  if (((PetscObject)mat)->type_name) PetscCall(PetscStrbeginswith(((PetscObject)mat)->type_name, "mpi", &matMPI)); /* mat claims itself is an 'mpi' matrix */
+  if (matype) PetscCall(PetscStrbeginswith(matype, "seq", &requestSeq));                                           /* user is requesting a 'seq' matrix */
+  PetscCheck(!(matMPI && requestSeq), PetscObjectComm((PetscObject)mat), PETSC_ERR_SUP, "Changing an MPI matrix (%s) to a sequential one (%s) is not allowed. Please remove the 'seq' prefix from your matrix type.", ((PetscObject)mat)->type_name, matype);
+
   while (names) {
     PetscCall(PetscStrcmp(matype, names->rname, &found));
     if (found) {
       PetscMPIInt size;
       PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)mat), &size));
-      if (size == 1) matype = names->sname;
+      if (size == 1 && !matMPI) matype = names->sname; /* try to align the requested type (matype) with the existing type per seq/mpi */
       else matype = names->mname;
       break;
     }
@@ -134,7 +142,7 @@ PetscErrorCode MatSetType(Mat mat, MatType matype)
   PetscCheck(r, PETSC_COMM_SELF, PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown Mat type given: %s", matype);
 
   if (mat->assembled && ((PetscObject)mat)->type_name) PetscCall(PetscStrbeginswith(matype, ((PetscObject)mat)->type_name, &subclass));
-  if (subclass) {
+  if (subclass) { /* mat is a subclass of the requested 'matype'? */
     PetscCall(MatConvert(mat, matype, MAT_INPLACE_MATRIX, &mat));
     PetscFunctionReturn(0);
   }

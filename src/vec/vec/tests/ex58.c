@@ -5,7 +5,7 @@ static char help[] = "Test VecCreate{Seq|MPI}CUDAWithArrays.\n\n";
 
 int main(int argc, char **argv)
 {
-  Vec         x, y;
+  Vec         x, y, z;
   PetscMPIInt size;
   PetscInt    n        = 5;
   PetscScalar xHost[5] = {0., 1., 2., 3., 4.};
@@ -29,8 +29,13 @@ int main(int argc, char **argv)
   /* print y should be all 42 */
   PetscCall(VecView(y, PETSC_VIEWER_STDOUT_WORLD));
 
+  PetscCall(VecCreateMPIWithArray(PETSC_COMM_WORLD, 1, n, PETSC_DECIDE, xHost, &z));
+  PetscCall(VecSetFromOptions(z));
+  PetscCall(VecView(z, PETSC_VIEWER_STDOUT_WORLD));
+
   PetscCall(VecDestroy(&y));
   PetscCall(VecDestroy(&x));
+  PetscCall(VecDestroy(&z));
   PetscCall(PetscFinalize());
   return 0;
 }
