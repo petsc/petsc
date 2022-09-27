@@ -71,7 +71,11 @@ PetscErrorCode VecMaxPointwiseDivide(Vec x, Vec y, PetscReal *max)
   PetscValidType(y, 2);
   PetscCheckSameTypeAndComm(x, 1, y, 2);
   VecCheckSameSize(x, 1, y, 2);
+  PetscCall(VecLockReadPush(x));
+  PetscCall(VecLockReadPush(y));
   PetscUseTypeMethod(x, maxpointwisedivide, y, max);
+  PetscCall(VecLockReadPop(x));
+  PetscCall(VecLockReadPop(y));
   PetscFunctionReturn(0);
 }
 
@@ -117,9 +121,13 @@ PetscErrorCode VecDot(Vec x, Vec y, PetscScalar *val)
   PetscCheckSameTypeAndComm(x, 1, y, 2);
   VecCheckSameSize(x, 1, y, 2);
 
+  PetscCall(VecLockReadPush(x));
+  PetscCall(VecLockReadPush(y));
   PetscCall(PetscLogEventBegin(VEC_Dot, x, y, 0, 0));
   PetscUseTypeMethod(x, dot, y, val);
   PetscCall(PetscLogEventEnd(VEC_Dot, x, y, 0, 0));
+  PetscCall(VecLockReadPop(x));
+  PetscCall(VecLockReadPop(y));
   PetscFunctionReturn(0);
 }
 
@@ -206,23 +214,25 @@ PetscErrorCode VecDotRealPart(Vec x, Vec y, PetscReal *val)
 @*/
 PetscErrorCode VecNorm(Vec x, NormType type, PetscReal *val)
 {
-  PetscBool flg;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x, VEC_CLASSID, 1);
   PetscValidRealPointer(val, 3);
   PetscValidType(x, 1);
 
-  /*
-   * Cached data?
-   */
+  /* Cached data? */
   if (type != NORM_1_AND_2) {
+    PetscBool flg;
+
     PetscCall(PetscObjectComposedDataGetReal((PetscObject)x, NormIds[type], *val, flg));
     if (flg) PetscFunctionReturn(0);
   }
+
+  PetscCall(VecLockReadPush(x));
   PetscCall(PetscLogEventBegin(VEC_Norm, x, 0, 0, 0));
   PetscUseTypeMethod(x, norm, type, val);
   PetscCall(PetscLogEventEnd(VEC_Norm, x, 0, 0, 0));
+  PetscCall(VecLockReadPop(x));
+
   if (type != NORM_1_AND_2) PetscCall(PetscObjectComposedDataSetReal((PetscObject)x, NormIds[type], *val));
   PetscFunctionReturn(0);
 }
@@ -267,11 +277,15 @@ PetscErrorCode VecNormAvailable(Vec x, NormType type, PetscBool *available, Pets
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x, VEC_CLASSID, 1);
-  PetscValidRealPointer(val, 4);
   PetscValidType(x, 1);
+  PetscValidBoolPointer(available, 3);
+  PetscValidRealPointer(val, 4);
 
-  *available = PETSC_FALSE;
-  if (type != NORM_1_AND_2) PetscCall(PetscObjectComposedDataGetReal((PetscObject)x, NormIds[type], *val, *available));
+  if (type == NORM_1_AND_2) {
+    *available = PETSC_FALSE;
+  } else {
+    PetscCall(PetscObjectComposedDataGetReal((PetscObject)x, NormIds[type], *val, *available));
+  }
   PetscFunctionReturn(0);
 }
 
@@ -296,16 +310,17 @@ PetscErrorCode VecNormalize(Vec x, PetscReal *val)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x, VEC_CLASSID, 1);
   PetscValidType(x, 1);
+  PetscCall(VecSetErrorIfLocked(x, 1));
+  if (val) PetscValidRealPointer(val, 2);
   PetscCall(PetscLogEventBegin(VEC_Normalize, x, 0, 0, 0));
   PetscCall(VecNorm(x, NORM_2, &norm));
   if (norm == 0.0) {
     PetscCall(PetscInfo(x, "Vector of zero norm can not be normalized; Returning only the zero norm\n"));
   } else if (norm != 1.0) {
-    PetscScalar tmp = 1.0 / norm;
-    PetscCall(VecScale(x, tmp));
+    PetscCall(VecScale(x, 1.0 / norm));
   }
-  if (val) *val = norm;
   PetscCall(PetscLogEventEnd(VEC_Normalize, x, 0, 0, 0));
+  if (val) *val = norm;
   PetscFunctionReturn(0);
 }
 
@@ -333,11 +348,14 @@ PetscErrorCode VecMax(Vec x, PetscInt *p, PetscReal *val)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x, VEC_CLASSID, 1);
-  PetscValidRealPointer(val, 3);
   PetscValidType(x, 1);
+  if (p) PetscValidIntPointer(p, 2);
+  PetscValidRealPointer(val, 3);
+  PetscCall(VecLockReadPush(x));
   PetscCall(PetscLogEventBegin(VEC_Max, x, 0, 0, 0));
   PetscUseTypeMethod(x, max, p, val);
   PetscCall(PetscLogEventEnd(VEC_Max, x, 0, 0, 0));
+  PetscCall(VecLockReadPop(x));
   PetscFunctionReturn(0);
 }
 
@@ -366,11 +384,14 @@ PetscErrorCode VecMin(Vec x, PetscInt *p, PetscReal *val)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x, VEC_CLASSID, 1);
-  PetscValidRealPointer(val, 3);
   PetscValidType(x, 1);
+  if (p) PetscValidIntPointer(p, 2);
+  PetscValidRealPointer(val, 3);
+  PetscCall(VecLockReadPush(x));
   PetscCall(PetscLogEventBegin(VEC_Min, x, 0, 0, 0));
   PetscUseTypeMethod(x, min, p, val);
   PetscCall(PetscLogEventEnd(VEC_Min, x, 0, 0, 0));
+  PetscCall(VecLockReadPop(x));
   PetscFunctionReturn(0);
 }
 
@@ -410,9 +431,13 @@ PetscErrorCode VecTDot(Vec x, Vec y, PetscScalar *val)
   PetscCheckSameTypeAndComm(x, 1, y, 2);
   VecCheckSameSize(x, 1, y, 2);
 
+  PetscCall(VecLockReadPush(x));
+  PetscCall(VecLockReadPush(y));
   PetscCall(PetscLogEventBegin(VEC_TDot, x, y, 0, 0));
   PetscUseTypeMethod(x, tdot, y, val);
   PetscCall(PetscLogEventEnd(VEC_TDot, x, y, 0, 0));
+  PetscCall(VecLockReadPop(x));
+  PetscCall(VecLockReadPop(y));
   PetscFunctionReturn(0);
 }
 
@@ -434,27 +459,28 @@ $      x[i] = alpha * x[i], for i=1,...,n.
 @*/
 PetscErrorCode VecScale(Vec x, PetscScalar alpha)
 {
-  PetscReal norms[4] = {0.0, 0.0, 0.0, 0.0};
+  PetscReal norms[4];
   PetscBool flgs[4];
-  PetscInt  i;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x, VEC_CLASSID, 1);
   PetscValidType(x, 1);
   PetscCheck(x->stash.insertmode == NOT_SET_VALUES, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Not for unassembled vector");
+  PetscCall(VecSetErrorIfLocked(x, 1));
+  if (alpha == (PetscScalar)1.0) PetscFunctionReturn(0);
+
+  /* get current stashed norms */
+  for (PetscInt i = 0; i < 4; i++) PetscCall(PetscObjectComposedDataGetReal((PetscObject)x, NormIds[i], norms[i], flgs[i]));
+
   PetscCall(PetscLogEventBegin(VEC_Scale, x, 0, 0, 0));
-  if (alpha != (PetscScalar)1.0) {
-    PetscCall(VecSetErrorIfLocked(x, 1));
-    /* get current stashed norms */
-    for (i = 0; i < 4; i++) PetscCall(PetscObjectComposedDataGetReal((PetscObject)x, NormIds[i], norms[i], flgs[i]));
-    PetscUseTypeMethod(x, scale, alpha);
-    PetscCall(PetscObjectStateIncrease((PetscObject)x));
-    /* put the scaled stashed norms back into the Vec */
-    for (i = 0; i < 4; i++) {
-      if (flgs[i]) PetscCall(PetscObjectComposedDataSetReal((PetscObject)x, NormIds[i], PetscAbsScalar(alpha) * norms[i]));
-    }
-  }
+  PetscUseTypeMethod(x, scale, alpha);
   PetscCall(PetscLogEventEnd(VEC_Scale, x, 0, 0, 0));
+
+  PetscCall(PetscObjectStateIncrease((PetscObject)x));
+  /* put the scaled stashed norms back into the Vec */
+  for (PetscInt i = 0; i < 4; i++) {
+    if (flgs[i]) PetscCall(PetscObjectComposedDataSetReal((PetscObject)x, NormIds[i], PetscAbsScalar(alpha) * norms[i]));
+  }
   PetscFunctionReturn(0);
 }
 
@@ -487,8 +513,6 @@ $     x[i] = alpha, for i=1,...,n,
 @*/
 PetscErrorCode VecSet(Vec x, PetscScalar alpha)
 {
-  PetscReal val;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x, VEC_CLASSID, 1);
   PetscValidType(x, 1);
@@ -502,20 +526,25 @@ PetscErrorCode VecSet(Vec x, PetscScalar alpha)
   PetscCall(PetscObjectStateIncrease((PetscObject)x));
 
   /*  norms can be simply set (if |alpha|*N not too large) */
-  val = PetscAbsScalar(alpha);
-  if (x->map->N == 0) {
-    PetscCall(PetscObjectComposedDataSetReal((PetscObject)x, NormIds[NORM_1], 0.0l));
-    PetscCall(PetscObjectComposedDataSetReal((PetscObject)x, NormIds[NORM_INFINITY], 0.0));
-    PetscCall(PetscObjectComposedDataSetReal((PetscObject)x, NormIds[NORM_2], 0.0));
-    PetscCall(PetscObjectComposedDataSetReal((PetscObject)x, NormIds[NORM_FROBENIUS], 0.0));
-  } else if (val > PETSC_MAX_REAL / x->map->N) {
-    PetscCall(PetscObjectComposedDataSetReal((PetscObject)x, NormIds[NORM_INFINITY], val));
-  } else {
-    PetscCall(PetscObjectComposedDataSetReal((PetscObject)x, NormIds[NORM_1], x->map->N * val));
-    PetscCall(PetscObjectComposedDataSetReal((PetscObject)x, NormIds[NORM_INFINITY], val));
-    val = PetscSqrtReal((PetscReal)x->map->N) * val;
-    PetscCall(PetscObjectComposedDataSetReal((PetscObject)x, NormIds[NORM_2], val));
-    PetscCall(PetscObjectComposedDataSetReal((PetscObject)x, NormIds[NORM_FROBENIUS], val));
+
+  {
+    PetscReal      val = PetscAbsScalar(alpha);
+    const PetscInt N   = x->map->N;
+
+    if (N == 0) {
+      PetscCall(PetscObjectComposedDataSetReal((PetscObject)x, NormIds[NORM_1], 0.0l));
+      PetscCall(PetscObjectComposedDataSetReal((PetscObject)x, NormIds[NORM_INFINITY], 0.0));
+      PetscCall(PetscObjectComposedDataSetReal((PetscObject)x, NormIds[NORM_2], 0.0));
+      PetscCall(PetscObjectComposedDataSetReal((PetscObject)x, NormIds[NORM_FROBENIUS], 0.0));
+    } else if (val > PETSC_MAX_REAL / N) {
+      PetscCall(PetscObjectComposedDataSetReal((PetscObject)x, NormIds[NORM_INFINITY], val));
+    } else {
+      PetscCall(PetscObjectComposedDataSetReal((PetscObject)x, NormIds[NORM_1], N * val));
+      PetscCall(PetscObjectComposedDataSetReal((PetscObject)x, NormIds[NORM_INFINITY], val));
+      val = PetscSqrtReal((PetscReal)N) * val;
+      PetscCall(PetscObjectComposedDataSetReal((PetscObject)x, NormIds[NORM_2], val));
+      PetscCall(PetscObjectComposedDataSetReal((PetscObject)x, NormIds[NORM_FROBENIUS], val));
+    }
   }
   PetscFunctionReturn(0);
 }
@@ -559,14 +588,59 @@ PetscErrorCode VecAXPY(Vec y, PetscScalar alpha, Vec x)
   PetscCheck(x != y, PetscObjectComm((PetscObject)x), PETSC_ERR_ARG_IDN, "x and y cannot be the same vector");
   PetscValidLogicalCollectiveScalar(y, alpha, 2);
   if (alpha == (PetscScalar)0.0) PetscFunctionReturn(0);
-  PetscCall(VecSetErrorIfLocked(y, 1));
 
+  PetscCall(VecSetErrorIfLocked(y, 1));
   PetscCall(VecLockReadPush(x));
   PetscCall(PetscLogEventBegin(VEC_AXPY, x, y, 0, 0));
   PetscUseTypeMethod(y, axpy, alpha, x);
   PetscCall(PetscLogEventEnd(VEC_AXPY, x, y, 0, 0));
   PetscCall(VecLockReadPop(x));
   PetscCall(PetscObjectStateIncrease((PetscObject)y));
+  PetscFunctionReturn(0);
+}
+
+/*@
+   VecAYPX - Computes y = x + beta y.
+
+   Logically Collective on Vec
+
+   Input Parameters:
++  beta - the scalar
+-  x, y  - the vectors
+
+   Output Parameter:
+.  y - output vector
+
+   Level: intermediate
+
+   Notes:
+    x and y MUST be different vectors
+    The implementation is optimized for beta of -1.0, 0.0, and 1.0
+
+.seealso: `VecMAXPY()`, `VecWAXPY()`, `VecAXPY()`, `VecAXPBYPCZ()`, `VecAXPBY()`
+@*/
+PetscErrorCode VecAYPX(Vec y, PetscScalar beta, Vec x)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(x, VEC_CLASSID, 3);
+  PetscValidHeaderSpecific(y, VEC_CLASSID, 1);
+  PetscValidType(x, 3);
+  PetscValidType(y, 1);
+  PetscCheckSameTypeAndComm(x, 3, y, 1);
+  VecCheckSameSize(x, 1, y, 3);
+  PetscCheck(x != y, PetscObjectComm((PetscObject)x), PETSC_ERR_ARG_IDN, "x and y must be different vectors");
+  PetscValidLogicalCollectiveScalar(y, beta, 2);
+  PetscCall(VecSetErrorIfLocked(y, 1));
+  PetscCall(VecLockReadPush(x));
+  if (beta == (PetscScalar)0.0) {
+    PetscCall(VecCopy(x, y));
+  } else {
+    PetscCall(PetscLogEventBegin(VEC_AYPX, x, y, 0, 0));
+    PetscUseTypeMethod(y, aypx, beta, x);
+    PetscCall(PetscLogEventEnd(VEC_AYPX, x, y, 0, 0));
+    PetscCall(PetscObjectStateIncrease((PetscObject)y));
+  }
+  PetscCall(VecLockReadPop(x));
   PetscFunctionReturn(0);
 }
 
@@ -603,11 +677,14 @@ PetscErrorCode VecAXPBY(Vec y, PetscScalar alpha, PetscScalar beta, Vec x)
   PetscValidLogicalCollectiveScalar(y, alpha, 2);
   PetscValidLogicalCollectiveScalar(y, beta, 3);
   if (alpha == (PetscScalar)0.0 && beta == (PetscScalar)1.0) PetscFunctionReturn(0);
+
   PetscCall(VecSetErrorIfLocked(y, 1));
-  PetscCall(PetscLogEventBegin(VEC_AXPY, x, y, 0, 0));
+  PetscCall(VecLockReadPush(x));
+  PetscCall(PetscLogEventBegin(VEC_AXPY, y, x, 0, 0));
   PetscUseTypeMethod(y, axpby, alpha, beta, x);
-  PetscCall(PetscLogEventEnd(VEC_AXPY, x, y, 0, 0));
+  PetscCall(PetscLogEventEnd(VEC_AXPY, y, x, 0, 0));
   PetscCall(PetscObjectStateIncrease((PetscObject)y));
+  PetscCall(VecLockReadPop(x));
   PetscFunctionReturn(0);
 }
 
@@ -634,12 +711,12 @@ PetscErrorCode VecAXPBY(Vec y, PetscScalar alpha, PetscScalar beta, Vec x)
 PetscErrorCode VecAXPBYPCZ(Vec z, PetscScalar alpha, PetscScalar beta, PetscScalar gamma, Vec x, Vec y)
 {
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(z, VEC_CLASSID, 1);
   PetscValidHeaderSpecific(x, VEC_CLASSID, 5);
   PetscValidHeaderSpecific(y, VEC_CLASSID, 6);
-  PetscValidHeaderSpecific(z, VEC_CLASSID, 1);
+  PetscValidType(z, 1);
   PetscValidType(x, 5);
   PetscValidType(y, 6);
-  PetscValidType(z, 1);
   PetscCheckSameTypeAndComm(x, 5, y, 6);
   PetscCheckSameTypeAndComm(x, 5, z, 1);
   VecCheckSameSize(x, 1, y, 5);
@@ -650,52 +727,16 @@ PetscErrorCode VecAXPBYPCZ(Vec z, PetscScalar alpha, PetscScalar beta, PetscScal
   PetscValidLogicalCollectiveScalar(z, beta, 3);
   PetscValidLogicalCollectiveScalar(z, gamma, 4);
   if (alpha == (PetscScalar)0.0 && beta == (PetscScalar)0.0 && gamma == (PetscScalar)1.0) PetscFunctionReturn(0);
-  PetscCall(VecSetErrorIfLocked(z, 1));
 
+  PetscCall(VecSetErrorIfLocked(z, 1));
+  PetscCall(VecLockReadPush(x));
+  PetscCall(VecLockReadPush(y));
   PetscCall(PetscLogEventBegin(VEC_AXPBYPCZ, x, y, z, 0));
   PetscUseTypeMethod(z, axpbypcz, alpha, beta, gamma, x, y);
   PetscCall(PetscLogEventEnd(VEC_AXPBYPCZ, x, y, z, 0));
   PetscCall(PetscObjectStateIncrease((PetscObject)z));
-  PetscFunctionReturn(0);
-}
-
-/*@
-   VecAYPX - Computes y = x + beta y.
-
-   Logically Collective on Vec
-
-   Input Parameters:
-+  beta - the scalar
--  x, y  - the vectors
-
-   Output Parameter:
-.  y - output vector
-
-   Level: intermediate
-
-   Notes:
-    x and y MUST be different vectors
-    The implementation is optimized for beta of -1.0, 0.0, and 1.0
-
-.seealso: `VecMAXPY()`, `VecWAXPY()`, `VecAXPY()`, `VecAXPBYPCZ()`, `VecAXPBY()`
-@*/
-PetscErrorCode VecAYPX(Vec y, PetscScalar beta, Vec x)
-{
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(x, VEC_CLASSID, 3);
-  PetscValidHeaderSpecific(y, VEC_CLASSID, 1);
-  PetscValidType(x, 3);
-  PetscValidType(y, 1);
-  PetscCheckSameTypeAndComm(x, 3, y, 1);
-  VecCheckSameSize(x, 1, y, 3);
-  PetscCheck(x != y, PetscObjectComm((PetscObject)x), PETSC_ERR_ARG_IDN, "x and y must be different vectors");
-  PetscValidLogicalCollectiveScalar(y, beta, 2);
-  PetscCall(VecSetErrorIfLocked(y, 1));
-
-  PetscCall(PetscLogEventBegin(VEC_AYPX, x, y, 0, 0));
-  PetscUseTypeMethod(y, aypx, beta, x);
-  PetscCall(PetscLogEventEnd(VEC_AYPX, x, y, 0, 0));
-  PetscCall(PetscObjectStateIncrease((PetscObject)y));
+  PetscCall(VecLockReadPop(x));
+  PetscCall(VecLockReadPop(y));
   PetscFunctionReturn(0);
 }
 
@@ -737,10 +778,18 @@ PetscErrorCode VecWAXPY(Vec w, PetscScalar alpha, Vec x, Vec y)
   PetscValidLogicalCollectiveScalar(y, alpha, 2);
   PetscCall(VecSetErrorIfLocked(w, 1));
 
-  PetscCall(PetscLogEventBegin(VEC_WAXPY, x, y, w, 0));
-  PetscUseTypeMethod(w, waxpy, alpha, x, y);
-  PetscCall(PetscLogEventEnd(VEC_WAXPY, x, y, w, 0));
-  PetscCall(PetscObjectStateIncrease((PetscObject)w));
+  PetscCall(VecLockReadPush(x));
+  PetscCall(VecLockReadPush(y));
+  if (alpha == (PetscScalar)0.0) {
+    PetscCall(VecCopy(y, w));
+  } else {
+    PetscCall(PetscLogEventBegin(VEC_WAXPY, x, y, w, 0));
+    PetscUseTypeMethod(w, waxpy, alpha, x, y);
+    PetscCall(PetscLogEventEnd(VEC_WAXPY, x, y, w, 0));
+    PetscCall(PetscObjectStateIncrease((PetscObject)w));
+  }
+  PetscCall(VecLockReadPop(x));
+  PetscCall(VecLockReadPop(y));
   PetscFunctionReturn(0);
 }
 
@@ -1038,19 +1087,25 @@ PetscErrorCode VecMTDot(Vec x, PetscInt nv, const Vec y[], PetscScalar val[])
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x, VEC_CLASSID, 1);
+  PetscValidType(x, 1);
   PetscValidLogicalCollectiveInt(x, nv, 2);
   if (!nv) PetscFunctionReturn(0);
   PetscValidPointer(y, 3);
-  PetscValidHeaderSpecific(*y, VEC_CLASSID, 3);
+  for (PetscInt i = 0; i < nv; ++i) {
+    PetscValidHeaderSpecific(y[i], VEC_CLASSID, 3);
+    PetscValidType(y[i], 3);
+    PetscCheckSameTypeAndComm(x, 1, y[i], 3);
+    VecCheckSameSize(x, 1, y[i], 3);
+    PetscCall(VecLockReadPush(y[i]));
+  }
   PetscValidScalarPointer(val, 4);
-  PetscValidType(x, 1);
-  PetscValidType(*y, 3);
-  PetscCheckSameTypeAndComm(x, 1, *y, 3);
-  VecCheckSameSize(x, 1, *y, 3);
 
+  PetscCall(VecLockReadPush(x));
   PetscCall(PetscLogEventBegin(VEC_MTDot, x, *y, 0, 0));
   PetscUseTypeMethod(x, mtdot, nv, y, val);
   PetscCall(PetscLogEventEnd(VEC_MTDot, x, *y, 0, 0));
+  PetscCall(VecLockReadPop(x));
+  for (PetscInt i = 0; i < nv; ++i) PetscCall(VecLockReadPop(y[i]));
   PetscFunctionReturn(0);
 }
 
@@ -1084,20 +1139,25 @@ PetscErrorCode VecMDot(Vec x, PetscInt nv, const Vec y[], PetscScalar val[])
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x, VEC_CLASSID, 1);
+  PetscValidType(x, 1);
   PetscValidLogicalCollectiveInt(x, nv, 2);
   if (!nv) PetscFunctionReturn(0);
-  PetscCheck(nv >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Number of vectors (given %" PetscInt_FMT ") cannot be negative", nv);
   PetscValidPointer(y, 3);
-  PetscValidHeaderSpecific(*y, VEC_CLASSID, 3);
+  for (PetscInt i = 0; i < nv; ++i) {
+    PetscValidHeaderSpecific(y[i], VEC_CLASSID, 3);
+    PetscValidType(y[i], 3);
+    PetscCheckSameTypeAndComm(x, 1, y[i], 3);
+    VecCheckSameSize(x, 1, y[i], 3);
+    PetscCall(VecLockReadPush(y[i]));
+  }
   PetscValidScalarPointer(val, 4);
-  PetscValidType(x, 1);
-  PetscValidType(*y, 3);
-  PetscCheckSameTypeAndComm(x, 1, *y, 3);
-  VecCheckSameSize(x, 1, *y, 3);
 
+  PetscCall(VecLockReadPush(x));
   PetscCall(PetscLogEventBegin(VEC_MDot, x, *y, 0, 0));
   PetscUseTypeMethod(x, mdot, nv, y, val);
   PetscCall(PetscLogEventEnd(VEC_MDot, x, *y, 0, 0));
+  PetscCall(VecLockReadPop(x));
+  for (PetscInt i = 0; i < nv; ++i) PetscCall(VecLockReadPop(y[i]));
   PetscFunctionReturn(0);
 }
 
@@ -1121,29 +1181,36 @@ PetscErrorCode VecMDot(Vec x, PetscInt nv, const Vec y[], PetscScalar val[])
 @*/
 PetscErrorCode VecMAXPY(Vec y, PetscInt nv, const PetscScalar alpha[], Vec x[])
 {
-  PetscInt  i;
-  PetscBool nonzero;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(y, VEC_CLASSID, 1);
   PetscValidLogicalCollectiveInt(y, nv, 2);
-  if (!nv) PetscFunctionReturn(0);
-  PetscCheck(nv >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Number of vectors (given %" PetscInt_FMT ") cannot be negative", nv);
-  PetscValidScalarPointer(alpha, 3);
-  PetscValidPointer(x, 4);
-  PetscValidHeaderSpecific(*x, VEC_CLASSID, 4);
-  PetscValidType(y, 1);
-  PetscValidType(*x, 4);
-  PetscCheckSameTypeAndComm(y, 1, *x, 4);
-  VecCheckSameSize(y, 1, *x, 4);
-  for (i = 0; i < nv; i++) PetscValidLogicalCollectiveScalar(y, alpha[i], 3);
-  for (i = 0, nonzero = PETSC_FALSE; i < nv && !nonzero; i++) nonzero = (PetscBool)(nonzero || alpha[i] != (PetscScalar)0.0);
-  if (!nonzero) PetscFunctionReturn(0);
   PetscCall(VecSetErrorIfLocked(y, 1));
-  PetscCall(PetscLogEventBegin(VEC_MAXPY, *x, y, 0, 0));
-  PetscUseTypeMethod(y, maxpy, nv, alpha, x);
-  PetscCall(PetscLogEventEnd(VEC_MAXPY, *x, y, 0, 0));
-  PetscCall(PetscObjectStateIncrease((PetscObject)y));
+  PetscCheck(nv >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Number of vectors (given %" PetscInt_FMT ") cannot be negative", nv);
+  if (nv) {
+    PetscInt zeros = 0;
+
+    PetscValidScalarPointer(alpha, 3);
+    PetscValidPointer(x, 4);
+    for (PetscInt i = 0; i < nv; ++i) {
+      PetscValidLogicalCollectiveScalar(y, alpha[i], 3);
+      PetscValidHeaderSpecific(x[i], VEC_CLASSID, 4);
+      PetscValidType(x[i], 4);
+      PetscCheckSameTypeAndComm(y, 1, x[i], 4);
+      VecCheckSameSize(y, 1, x[i], 4);
+      PetscCheck(y != x[i], PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Array of vectors 'x' cannot contain y, found x[%" PetscInt_FMT "] == y", i);
+      PetscCall(VecLockReadPush(x[i]));
+      zeros += alpha[i] == (PetscScalar)0.0;
+    }
+
+    if (zeros < nv) {
+      PetscCall(PetscLogEventBegin(VEC_MAXPY, y, *x, 0, 0));
+      PetscUseTypeMethod(y, maxpy, nv, alpha, x);
+      PetscCall(PetscLogEventEnd(VEC_MAXPY, y, *x, 0, 0));
+      PetscCall(PetscObjectStateIncrease((PetscObject)y));
+    }
+
+    for (PetscInt i = 0; i < nv; ++i) PetscCall(VecLockReadPop(x[i]));
+  }
   PetscFunctionReturn(0);
 }
 
@@ -1610,8 +1677,6 @@ PetscErrorCode VecCreateLocalVector(Vec v, Vec *w)
 @*/
 PetscErrorCode VecGetLocalVectorRead(Vec v, Vec w)
 {
-  PetscScalar *a;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v, VEC_CLASSID, 1);
   PetscValidHeaderSpecific(w, VEC_CLASSID, 2);
@@ -1619,6 +1684,8 @@ PetscErrorCode VecGetLocalVectorRead(Vec v, Vec w)
   if (v->ops->getlocalvectorread) {
     PetscUseTypeMethod(v, getlocalvectorread, w);
   } else {
+    PetscScalar *a;
+
     PetscCall(VecGetArrayRead(v, (const PetscScalar **)&a));
     PetscCall(VecPlaceArray(w, a));
   }
@@ -1644,15 +1711,16 @@ PetscErrorCode VecGetLocalVectorRead(Vec v, Vec w)
 @*/
 PetscErrorCode VecRestoreLocalVectorRead(Vec v, Vec w)
 {
-  PetscScalar *a;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v, VEC_CLASSID, 1);
   PetscValidHeaderSpecific(w, VEC_CLASSID, 2);
-  if (v->ops->restorelocalvectorread) PetscUseTypeMethod(v, restorelocalvectorread, w);
-  else {
-    PetscCall(VecGetArrayRead(w, (const PetscScalar **)&a));
-    PetscCall(VecRestoreArrayRead(v, (const PetscScalar **)&a));
+  if (v->ops->restorelocalvectorread) {
+    PetscUseTypeMethod(v, restorelocalvectorread, w);
+  } else {
+    const PetscScalar *a;
+
+    PetscCall(VecGetArrayRead(w, &a));
+    PetscCall(VecRestoreArrayRead(v, &a));
     PetscCall(VecResetArray(w));
   }
   PetscCall(VecLockReadPop(v));
@@ -1690,14 +1758,15 @@ PetscErrorCode VecRestoreLocalVectorRead(Vec v, Vec w)
 @*/
 PetscErrorCode VecGetLocalVector(Vec v, Vec w)
 {
-  PetscScalar *a;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v, VEC_CLASSID, 1);
   PetscValidHeaderSpecific(w, VEC_CLASSID, 2);
   VecCheckSameLocalSize(v, 1, w, 2);
-  if (v->ops->getlocalvector) PetscUseTypeMethod(v, getlocalvector, w);
-  else {
+  if (v->ops->getlocalvector) {
+    PetscUseTypeMethod(v, getlocalvector, w);
+  } else {
+    PetscScalar *a;
+
     PetscCall(VecGetArray(v, &a));
     PetscCall(VecPlaceArray(w, a));
   }
@@ -1721,13 +1790,13 @@ PetscErrorCode VecGetLocalVector(Vec v, Vec w)
 @*/
 PetscErrorCode VecRestoreLocalVector(Vec v, Vec w)
 {
-  PetscScalar *a;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v, VEC_CLASSID, 1);
   PetscValidHeaderSpecific(w, VEC_CLASSID, 2);
-  if (v->ops->restorelocalvector) PetscUseTypeMethod(v, restorelocalvector, w);
-  else {
+  if (v->ops->restorelocalvector) {
+    PetscUseTypeMethod(v, restorelocalvector, w);
+  } else {
+    PetscScalar *a;
     PetscCall(VecGetArray(w, &a));
     PetscCall(VecRestoreArray(v, &a));
     PetscCall(VecResetArray(w));
@@ -1808,8 +1877,10 @@ PetscErrorCode VecRestoreArray(Vec x, PetscScalar **a)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x, VEC_CLASSID, 1);
-  if (x->ops->restorearray) PetscUseTypeMethod(x, restorearray, a);
-  else PetscCheck(x->petscnative, PetscObjectComm((PetscObject)x), PETSC_ERR_SUP, "Cannot restore array for vector type \"%s\"", ((PetscObject)x)->type_name);
+  if (a) PetscValidPointer(a, 2);
+  if (x->ops->restorearray) {
+    PetscUseTypeMethod(x, restorearray, a);
+  } else PetscCheck(x->petscnative, PetscObjectComm((PetscObject)x), PETSC_ERR_SUP, "Cannot restore array for vector type \"%s\"", ((PetscObject)x)->type_name);
   if (a) *a = NULL;
   PetscCall(PetscObjectStateIncrease((PetscObject)x));
   PetscFunctionReturn(0);
@@ -1842,9 +1913,14 @@ PetscErrorCode VecGetArrayRead(Vec x, const PetscScalar **a)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x, VEC_CLASSID, 1);
-  if (x->ops->getarray) { /* VECNEST, VECCUDA, VECKOKKOS etc */
-    PetscCall((*x->ops->getarray)(x, (PetscScalar **)a));
-  } else if (x->petscnative) { /* VECSTANDARD */
+  PetscValidPointer(a, 2);
+  if (x->ops->getarrayread) {
+    PetscUseTypeMethod(x, getarrayread, a);
+  } else if (x->ops->getarray) {
+    /* VECNEST, VECCUDA, VECKOKKOS etc */
+    PetscUseTypeMethod(x, getarray, (PetscScalar **)a);
+  } else if (x->petscnative) {
+    /* VECSTANDARD */
     *a = *((PetscScalar **)x->data);
   } else SETERRQ(PetscObjectComm((PetscObject)x), PETSC_ERR_SUP, "Cannot get array read for vector type \"%s\"", ((PetscObject)x)->type_name);
   PetscFunctionReturn(0);
@@ -1867,12 +1943,13 @@ PetscErrorCode VecRestoreArrayRead(Vec x, const PetscScalar **a)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x, VEC_CLASSID, 1);
+  if (a) PetscValidPointer(a, 2);
   if (x->petscnative) { /* VECSTANDARD, VECCUDA, VECKOKKOS etc */
     /* nothing */
   } else if (x->ops->restorearrayread) { /* VECNEST */
     PetscUseTypeMethod(x, restorearrayread, a);
   } else { /* No one? */
-    PetscCall((*x->ops->restorearray)(x, (PetscScalar **)a));
+    PetscUseTypeMethod(x, restorearray, (PetscScalar **)a);
   }
   if (a) *a = NULL;
   PetscFunctionReturn(0);
@@ -1903,9 +1980,13 @@ PetscErrorCode VecGetArrayWrite(Vec x, PetscScalar **a)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x, VEC_CLASSID, 1);
+  PetscValidPointer(a, 2);
   PetscCall(VecSetErrorIfLocked(x, 1));
-  if (x->ops->getarraywrite) PetscUseTypeMethod(x, getarraywrite, a);
-  else PetscCall(VecGetArray(x, a));
+  if (x->ops->getarraywrite) {
+    PetscUseTypeMethod(x, getarraywrite, a);
+  } else {
+    PetscCall(VecGetArray(x, a));
+  }
   PetscFunctionReturn(0);
 }
 
@@ -1927,8 +2008,12 @@ PetscErrorCode VecRestoreArrayWrite(Vec x, PetscScalar **a)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x, VEC_CLASSID, 1);
-  if (x->ops->restorearraywrite) PetscUseTypeMethod(x, restorearraywrite, a);
-  else PetscCall(VecRestoreArray(x, a));
+  if (a) PetscValidPointer(a, 2);
+  if (x->ops->restorearraywrite) {
+    PetscUseTypeMethod(x, restorearraywrite, a);
+  } else if (x->ops->restorearray) {
+    PetscUseTypeMethod(x, restorearray, a);
+  }
   if (a) *a = NULL;
   PetscCall(PetscObjectStateIncrease((PetscObject)x));
   PetscFunctionReturn(0);
@@ -2034,19 +2119,20 @@ PetscErrorCode VecRestoreArrays(const Vec x[], PetscInt n, PetscScalar **a[])
 @*/
 PetscErrorCode VecGetArrayAndMemType(Vec x, PetscScalar **a, PetscMemType *mtype)
 {
-  PetscMemType omtype;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x, VEC_CLASSID, 1);
   PetscValidType(x, 1);
+  PetscValidPointer(a, 2);
+  if (mtype) PetscValidPointer(mtype, 3);
   PetscCall(VecSetErrorIfLocked(x, 1));
-  if (x->ops->getarrayandmemtype) { /* VECCUDA, VECKOKKOS etc */
-    PetscUseTypeMethod(x, getarrayandmemtype, a, &omtype);
-  } else { /* VECSTANDARD, VECNEST, VECVIENNACL */
+  if (x->ops->getarrayandmemtype) {
+    /* VECCUDA, VECKOKKOS etc */
+    PetscUseTypeMethod(x, getarrayandmemtype, a, mtype);
+  } else {
+    /* VECSTANDARD, VECNEST, VECVIENNACL */
     PetscCall(VecGetArray(x, a));
-    omtype = PETSC_MEMTYPE_HOST;
+    if (mtype) *mtype = PETSC_MEMTYPE_HOST;
   }
-  if (mtype) *mtype = omtype;
   PetscFunctionReturn(0);
 }
 
@@ -2069,8 +2155,14 @@ PetscErrorCode VecRestoreArrayAndMemType(Vec x, PetscScalar **a)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x, VEC_CLASSID, 1);
   PetscValidType(x, 1);
-  if (x->ops->restorearrayandmemtype) PetscUseTypeMethod(x, restorearrayandmemtype, a);
-  else PetscTryTypeMethod(x, restorearray, a);
+  if (a) PetscValidPointer(a, 2);
+  if (x->ops->restorearrayandmemtype) {
+    /* VECCUDA, VECKOKKOS etc */
+    PetscUseTypeMethod(x, restorearrayandmemtype, a);
+  } else {
+    /* VECNEST, VECVIENNACL */
+    PetscCall(VecRestoreArray(x, a));
+  } /* VECSTANDARD does nothing */
   if (a) *a = NULL;
   PetscCall(PetscObjectStateIncrease((PetscObject)x));
   PetscFunctionReturn(0);
@@ -2097,25 +2189,22 @@ PetscErrorCode VecRestoreArrayAndMemType(Vec x, PetscScalar **a)
 @*/
 PetscErrorCode VecGetArrayReadAndMemType(Vec x, const PetscScalar **a, PetscMemType *mtype)
 {
-  PetscMemType omtype;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x, VEC_CLASSID, 1);
   PetscValidType(x, 1);
-#if defined(PETSC_USE_DEBUG)
-  PetscCheck(!x->ops->getarrayreadandmemtype, PetscObjectComm((PetscObject)x), PETSC_ERR_SUP, "Not expected vector type \"%s\" has ops->getarrayreadandmemtype", ((PetscObject)x)->type_name);
-#endif
-
-  if (x->ops->getarrayandmemtype) { /* VECCUDA, VECKOKKOS etc, though they are also petscnative */
-    PetscCall((*x->ops->getarrayandmemtype)(x, (PetscScalar **)a, &omtype));
-  } else if (x->ops->getarray) { /* VECNEST, VECVIENNACL */
-    PetscCall((*x->ops->getarray)(x, (PetscScalar **)a));
-    omtype = PETSC_MEMTYPE_HOST;
-  } else if (x->petscnative) { /* VECSTANDARD */
-    *a     = *((PetscScalar **)x->data);
-    omtype = PETSC_MEMTYPE_HOST;
-  } else SETERRQ(PetscObjectComm((PetscObject)x), PETSC_ERR_SUP, "Cannot get array read in place for vector type \"%s\"", ((PetscObject)x)->type_name);
-  if (mtype) *mtype = omtype;
+  PetscValidPointer(a, 2);
+  if (mtype) PetscValidPointer(mtype, 3);
+  if (x->ops->getarrayreadandmemtype) {
+    /* VECCUDA/VECHIP though they are also petscnative */
+    PetscUseTypeMethod(x, getarrayreadandmemtype, a, mtype);
+  } else if (x->ops->getarrayandmemtype) {
+    /* VECKOKKOS */
+    PetscUseTypeMethod(x, getarrayandmemtype, (PetscScalar **)a, mtype);
+  } else {
+    PetscCall(VecGetArrayRead(x, a));
+    if (mtype) *mtype = PETSC_MEMTYPE_HOST;
+  }
+  PetscFunctionReturn(0);
   PetscFunctionReturn(0);
 }
 
@@ -2137,7 +2226,14 @@ PetscErrorCode VecRestoreArrayReadAndMemType(Vec x, const PetscScalar **a)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x, VEC_CLASSID, 1);
   PetscValidType(x, 1);
-  if (!x->petscnative) PetscUseTypeMethod(x, restorearrayread, a);
+  if (a) PetscValidPointer(a, 2);
+  if (x->ops->restorearrayreadandmemtype) {
+    /* VECCUDA/VECHIP */
+    PetscUseTypeMethod(x, restorearrayreadandmemtype, a);
+  } else if (!x->petscnative) {
+    /* VECNEST */
+    PetscCall(VecRestoreArrayRead(x, a));
+  }
   if (a) *a = NULL;
   PetscFunctionReturn(0);
 }
@@ -2164,21 +2260,22 @@ PetscErrorCode VecRestoreArrayReadAndMemType(Vec x, const PetscScalar **a)
 @*/
 PetscErrorCode VecGetArrayWriteAndMemType(Vec x, PetscScalar **a, PetscMemType *mtype)
 {
-  PetscMemType omtype;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x, VEC_CLASSID, 1);
   PetscValidType(x, 1);
-  if (x->ops->getarraywriteandmemtype) { /* VECCUDA, VECHIP, VECKOKKOS etc, though they are also petscnative */
-    PetscUseTypeMethod(x, getarrayandmemtype, a, &omtype);
-  } else if (x->ops->getarraywrite) { /* VECNEST, VECVIENNACL */
-    PetscUseTypeMethod(x, getarraywrite, a);
-    omtype = PETSC_MEMTYPE_HOST;
-  } else if (x->petscnative) { /* VECSTANDARD */
-    *a     = *((PetscScalar **)x->data);
-    omtype = PETSC_MEMTYPE_HOST;
-  } else SETERRQ(PetscObjectComm((PetscObject)x), PETSC_ERR_SUP, "Cannot get array read in place for vector type \"%s\"", ((PetscObject)x)->type_name);
-  if (mtype) *mtype = omtype;
+  PetscCall(VecSetErrorIfLocked(x, 1));
+  PetscValidPointer(a, 2);
+  if (mtype) PetscValidPointer(mtype, 3);
+  if (x->ops->getarraywriteandmemtype) {
+    /* VECCUDA, VECHIP, VECKOKKOS etc, though they are also petscnative */
+    PetscUseTypeMethod(x, getarraywriteandmemtype, a, mtype);
+  } else if (x->ops->getarrayandmemtype) {
+    PetscCall(VecGetArrayAndMemType(x, a, mtype));
+  } else {
+    /* VECNEST, VECVIENNACL */
+    PetscCall(VecGetArrayWrite(x, a));
+    if (mtype) *mtype = PETSC_MEMTYPE_HOST;
+  }
   PetscFunctionReturn(0);
 }
 
@@ -2198,7 +2295,20 @@ PetscErrorCode VecGetArrayWriteAndMemType(Vec x, PetscScalar **a, PetscMemType *
 PetscErrorCode VecRestoreArrayWriteAndMemType(Vec x, PetscScalar **a)
 {
   PetscFunctionBegin;
-  PetscCall(VecRestoreArrayAndMemType(x, a));
+  PetscValidHeaderSpecific(x, VEC_CLASSID, 1);
+  PetscValidType(x, 1);
+  PetscCall(VecSetErrorIfLocked(x, 1));
+  if (a) PetscValidPointer(a, 2);
+  if (x->ops->restorearraywriteandmemtype) {
+    /* VECCUDA/VECHIP */
+    PetscMemType PETSC_UNUSED mtype; // since this function doesn't accept a memtype?
+    PetscUseTypeMethod(x, restorearraywriteandmemtype, a, &mtype);
+  } else if (x->ops->restorearrayandmemtype) {
+    PetscCall(VecRestoreArrayAndMemType(x, a));
+  } else {
+    PetscCall(VecRestoreArray(x, a));
+  }
+  if (a) *a = NULL;
   PetscFunctionReturn(0);
 }
 
@@ -2265,9 +2375,7 @@ PetscErrorCode VecReplaceArray(Vec vec, const PetscScalar array[])
   PetscFunctionBegin;
   PetscValidHeaderSpecific(vec, VEC_CLASSID, 1);
   PetscValidType(vec, 1);
-  if (vec->ops->replacearray) {
-    PetscUseTypeMethod(vec, replacearray, array);
-  } else SETERRQ(PetscObjectComm((PetscObject)vec), PETSC_ERR_SUP, "Cannot replace array in this type of vector");
+  PetscUseTypeMethod(vec, replacearray, array);
   PetscCall(PetscObjectStateIncrease((PetscObject)vec));
   PetscFunctionReturn(0);
 }

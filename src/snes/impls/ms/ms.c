@@ -230,36 +230,23 @@ PetscErrorCode SNESMSRegister(SNESMSType name, PetscInt nstages, PetscInt nregis
 */
 static PetscErrorCode SNESMSStep_3Sstar(SNES snes, Vec X, Vec F)
 {
-  SNES_MS         *ms    = (SNES_MS *)snes->data;
-  SNESMSTableau    t     = ms->tableau;
+  SNES_MS         *ms      = (SNES_MS *)snes->data;
+  SNESMSTableau    t       = ms->tableau;
+  const PetscInt   nstages = t->nstages;
   const PetscReal *gamma = t->gamma, *delta = t->delta, *betasub = t->betasub;
-  Vec              S1, S2, S3, Y;
-  PetscInt         i, nstages = t->nstages;
+  Vec              S1 = X, S2 = snes->work[1], S3 = snes->work[2], Y = snes->work[0], S1copy = snes->work[3];
 
   PetscFunctionBegin;
-  Y  = snes->work[0];
-  S1 = X;
-  S2 = snes->work[1];
-  S3 = snes->work[2];
   PetscCall(VecZeroEntries(S2));
   PetscCall(VecCopy(X, S3));
-  for (i = 0; i < nstages; i++) {
-    Vec         Ss[4];
-    PetscScalar scoeff[4];
-
-    Ss[0] = S1;
-    Ss[1] = S2;
-    Ss[2] = S3;
-    Ss[3] = Y;
-
-    scoeff[0] = gamma[0 * nstages + i] - 1;
-    scoeff[1] = gamma[1 * nstages + i];
-    scoeff[2] = gamma[2 * nstages + i];
-    scoeff[3] = -betasub[i] * ms->damping;
+  for (PetscInt i = 0; i < nstages; i++) {
+    Vec               Ss[]     = {S1copy, S2, S3, Y};
+    const PetscScalar scoeff[] = {gamma[0 * nstages + i] - 1, gamma[1 * nstages + i], gamma[2 * nstages + i], -betasub[i] * ms->damping};
 
     PetscCall(VecAXPY(S2, delta[i], S1));
     if (i > 0) PetscCall(SNESComputeFunction(snes, S1, F));
     PetscCall(KSPSolve(snes->ksp, F, Y));
+    PetscCall(VecCopy(S1, S1copy));
     PetscCall(VecMAXPY(S1, 4, scoeff, Ss));
   }
   PetscFunctionReturn(0);
@@ -376,7 +363,8 @@ static PetscErrorCode SNESSetUp_MS(SNES snes)
 {
   SNES_MS      *ms    = (SNES_MS *)snes->data;
   SNESMSTableau tab   = ms->tableau;
-  PetscInt      nwork = tab->nregisters;
+  PetscInt      nwork = tab->nregisters + 1; // +1 because VecMAXPY() in SNESMSStep_3Sstar()
+                                             // needs an extra work vec
 
   PetscFunctionBegin;
   PetscCall(SNESSetWorkVecs(snes, nwork));
