@@ -7,6 +7,9 @@
 
 #include <../src/mat/impls/baij/seq/baij.h>
 #include <../src/mat/impls/baij/seq/baijmkl/baijmkl.h>
+#if defined(PETSC_HAVE_MKL_INTEL_ILP64)
+  #define MKL_ILP64
+#endif
 #include <mkl_spblas.h>
 
 static PetscBool PetscSeqBAIJSupportsZeroBased(void)
@@ -18,7 +21,7 @@ static PetscBool PetscSeqBAIJSupportsZeroBased(void)
   sparse_matrix_t  A;
 
   if (!set) {
-    status = mkl_sparse_s_create_bsr(&A, SPARSE_INDEX_BASE_ZERO, SPARSE_LAYOUT_COLUMN_MAJOR, n, n, n, ia, ia, ja, a);
+    status = mkl_sparse_s_create_bsr(&A, SPARSE_INDEX_BASE_ZERO, SPARSE_LAYOUT_COLUMN_MAJOR, (MKL_INT)n, (MKL_INT)n, (MKL_INT)n, (MKL_INT *)ia, (MKL_INT *)ia, (MKL_INT *)ja, a);
     value  = (status != SPARSE_STATUS_NOT_SUPPORTED) ? PETSC_TRUE : PETSC_FALSE;
     (void)mkl_sparse_destroy(A);
     set = PETSC_TRUE;
@@ -170,13 +173,13 @@ static PetscErrorCode MatSeqBAIJMKL_create_mkl_handle(Mat A)
     if (PetscSeqBAIJSupportsZeroBased()) {
       aj = a->j;
       ai = a->i;
-      PetscCallMKL(mkl_sparse_x_create_bsr(&(baijmkl->bsrA), SPARSE_INDEX_BASE_ZERO, SPARSE_LAYOUT_COLUMN_MAJOR, mbs, nbs, bs, ai, ai + 1, aj, aa));
+      PetscCallMKL(mkl_sparse_x_create_bsr(&(baijmkl->bsrA), SPARSE_INDEX_BASE_ZERO, SPARSE_LAYOUT_COLUMN_MAJOR, (MKL_INT)mbs, (MKL_INT)nbs, (MKL_INT)bs, (MKL_INT *)ai, (MKL_INT *)(ai + 1), (MKL_INT *)aj, aa));
     } else {
       PetscCall(PetscMalloc2(mbs + 1, &ai, nz, &aj));
       for (i = 0; i < mbs + 1; i++) ai[i] = a->i[i] + 1;
       for (i = 0; i < nz; i++) aj[i] = a->j[i] + 1;
       aa = a->a;
-      PetscCallMKL(mkl_sparse_x_create_bsr(&baijmkl->bsrA, SPARSE_INDEX_BASE_ONE, SPARSE_LAYOUT_COLUMN_MAJOR, mbs, nbs, bs, ai, ai + 1, aj, aa));
+      PetscCallMKL(mkl_sparse_x_create_bsr(&baijmkl->bsrA, SPARSE_INDEX_BASE_ONE, SPARSE_LAYOUT_COLUMN_MAJOR, (MKL_INT)mbs, (MKL_INT)nbs, (MKL_INT)bs, (MKL_INT *)i, (MKL_INT *)(ai + 1), (MKL_INT *)aj, aa));
       baijmkl->ai1 = ai;
       baijmkl->aj1 = aj;
     }
