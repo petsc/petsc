@@ -2205,7 +2205,6 @@ PetscErrorCode VecGetArrayReadAndMemType(Vec x, const PetscScalar **a, PetscMemT
     if (mtype) *mtype = PETSC_MEMTYPE_HOST;
   }
   PetscFunctionReturn(0);
-  PetscFunctionReturn(0);
 }
 
 /*@C
