@@ -441,7 +441,7 @@ PetscErrorCode PetscCitationsInitialize(void)
     and Jose~E. Roman and Karl Rupp and Patrick Sanan and Jason Sarich and Barry~F. Smith\n\
     and Stefano Zampini and Hong Zhang and Hong Zhang and Junchao Zhang},\n\
   Title = {{PETSc/TAO} Users Manual},\n\
-  Number = {ANL-21/39 - Revision 3.17},\n\
+  Number = {ANL-21/39 - Revision 3.18},\n\
   Institution = {Argonne National Laboratory},\n\
   Year = {2022}\n}\n",
                                    NULL));
