@@ -1,10 +1,9 @@
+#ifndef PETSC_PCISIMPL_H
+#define PETSC_PCISIMPL_H
 
-#if !defined(__pcis_h)
-  #define __pcis_h
-
-  #include <petsc/private/pcimpl.h>
-  #include <petsc/private/matisimpl.h>
-  #include <petscksp.h>
+#include <petsc/private/pcimpl.h>
+#include <petsc/private/matisimpl.h>
+#include <petscksp.h>
 
 /*
    Context (data structure) common for all Iterative Substructuring preconditioners.
@@ -73,4 +72,4 @@ PETSC_EXTERN PetscErrorCode PCISApplySchur(PC, Vec, Vec, Vec, Vec, Vec);
 PETSC_EXTERN PetscErrorCode PCISScatterArrayNToVecB(PetscScalar *, Vec, InsertMode, ScatterMode, PC);
 PETSC_EXTERN PetscErrorCode PCISApplyInvSchur(PC, Vec, Vec, Vec, Vec);
 
-#endif /* __pcis_h */
+#endif // PETSC_PCISIMPL_H

@@ -1,12 +1,13 @@
 /*
       Data structure used for Multigrid preconditioner.
 */
-#include "petscpctypes.h"
-#if !defined(__MG_IMPL)
-  #define __MG_IMPL
-  #include <petsc/private/pcimpl.h>
-  #include <petscksp.h>
-  #define PETSC_MG_MAXLEVELS 10
+#ifndef PETSC_PCMGIMPL_H
+#define PETSC_PCMGIMPL_H
+
+#include <petsc/private/pcimpl.h>
+#include <petscksp.h>
+#include <petscpctypes.h>
+#define PETSC_MG_MAXLEVELS 10
 /*
      Each level has its own copy of this data.
      Level (0) is always the coarsest level and Level (levels-1) is the finest.
@@ -99,4 +100,4 @@ PETSC_INTERN PetscErrorCode PCMGKCycle_Private(PC, PC_MG_Levels **, PetscBool, P
 PETSC_INTERN PetscErrorCode PCMGMCycle_Private(PC, PC_MG_Levels **, PetscBool, PetscBool, PCRichardsonConvergedReason *);
 
 PETSC_INTERN PetscErrorCode PCMGGDSWCreateCoarseSpace_Private(PC, PetscInt, DM, KSP, PetscInt, Mat, Mat *);
-#endif
+#endif // PETSC_PCMGIMPL_H

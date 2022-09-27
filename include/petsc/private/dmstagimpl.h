@@ -1,14 +1,14 @@
-#if !defined(DMSTAGIMPL_H_)
-  #define DMSTAGIMPL_H_
+#ifndef PETSC_DMSTAGIMPL_H
+#define PETSC_DMSTAGIMPL_H
 
-  #include <petscdmstag.h> /*I "petscdmstag.h" I*/
-  #include <petsc/private/dmimpl.h>
+#include <petscdmstag.h> /*I "petscdmstag.h" I*/
+#include <petsc/private/dmimpl.h>
 
-  #define DMSTAG_MAX_DIM    3
-  #define DMSTAG_MAX_STRATA DMSTAG_MAX_DIM + 1
+#define DMSTAG_MAX_DIM    3
+#define DMSTAG_MAX_STRATA DMSTAG_MAX_DIM + 1
 
-  /* This value is 1 + 3^DMSTAG_MAX_DIM */
-  #define DMSTAG_NUMBER_LOCATIONS 28
+/* This value is 1 + 3^DMSTAG_MAX_DIM */
+#define DMSTAG_NUMBER_LOCATIONS 28
 
 typedef struct {
   /* Fields which may require being set before DMSetUp() is called, set by DMStagInitialize().
@@ -71,4 +71,4 @@ PETSC_INTERN PetscErrorCode DMStagSetUniformCoordinatesExplicit_2d(DM, PetscReal
 PETSC_INTERN PetscErrorCode DMStagSetUniformCoordinatesExplicit_3d(DM, PetscReal, PetscReal, PetscReal, PetscReal, PetscReal, PetscReal);
 PETSC_INTERN PetscErrorCode DMStagStencilLocationCanonicalize(DMStagStencilLocation, DMStagStencilLocation *);
 
-#endif
+#endif // PETSC_DMSTAGIMPL_H

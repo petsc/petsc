@@ -1,8 +1,7 @@
+#ifndef PETSC_PVECIMPL_H
+#define PETSC_PVECIMPL_H
 
-#if !defined(__PVECIMPL)
-  #define __PVECIMPL
-
-  #include <../src/vec/vec/impls/dvecimpl.h>
+#include <../src/vec/vec/impls/dvecimpl.h>
 
 typedef struct {
   PetscInt insertmode;
@@ -39,9 +38,9 @@ typedef struct {
   PetscSegBuffer     segrecvint;
   PetscSegBuffer     segrecvscalar;
   PetscSegBuffer     segrecvframe;
-  #if defined(PETSC_HAVE_NVSHMEM)
+#if defined(PETSC_HAVE_NVSHMEM)
   PetscBool use_nvshmem; /* Try to use NVSHMEM in communication of, for example, VecNorm */
-  #endif
+#endif
 
   /* COO fields, assuming m is the vector's local size */
   PetscCount  coo_n;
@@ -86,4 +85,4 @@ PETSC_EXTERN PetscErrorCode VecCreate_MPI(Vec);
 PETSC_INTERN PetscErrorCode VecDuplicate_MPI(Vec, Vec *);
 PETSC_INTERN PetscErrorCode VecSetPreallocationCOO_MPI(Vec, PetscCount, const PetscInt[]);
 PETSC_INTERN PetscErrorCode VecSetValuesCOO_MPI(Vec, const PetscScalar[], InsertMode);
-#endif
+#endif // PETSC_PVECIMPL_H

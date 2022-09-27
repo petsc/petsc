@@ -1,10 +1,9 @@
+#ifndef PETSC_PFIMPL_H
+#define PETSC_PFIMPL_H
 
-#if !defined(_PFIMPL)
-  #define _PFIMPL
-
-  #include <petscpf.h>
-  #include <petsc/private/petscimpl.h>
-  #include <petscviewer.h>
+#include <petscpf.h>
+#include <petsc/private/petscimpl.h>
+#include <petscviewer.h>
 
 PETSC_EXTERN PetscBool      PFRegisterAllCalled;
 PETSC_EXTERN PetscErrorCode PFRegisterAll(void);
@@ -24,4 +23,4 @@ struct _p_PF {
   void    *data;
 };
 
-#endif
+#endif // PETSC_PFIMPL_H

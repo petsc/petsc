@@ -11,10 +11,10 @@
 /*     pages 626-637, 1983.                                                  */
 /*****************************************************************************/
 
-#if !defined(__CG_STCG)
-  #define __CG_STCG
+#ifndef PETSC_CG_STCGIMPL_H
+#define PETSC_CG_STCGIMPL_H
 
-  #include <petsc/private/kspimpl.h>
+#include <petsc/private/kspimpl.h>
 
 typedef struct {
   PetscReal radius;
@@ -23,4 +23,4 @@ typedef struct {
   PetscInt  dtype;
 } KSPCG_STCG;
 
-#endif
+#endif // PETSC_CG_STCGIMPL_H

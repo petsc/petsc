@@ -2,10 +2,10 @@
     Private data structure for Chebyshev Iteration
 */
 
-#if !defined(__CHEBY)
-  #define __CHEBY
+#ifndef PETSC_CHEBYSHEVIMPL_H
+#define PETSC_CHEBYSHEVIMPL_H
 
-  #include <petsc/private/kspimpl.h>
+#include <petsc/private/kspimpl.h>
 
 typedef struct {
   PetscReal emin, emax;                   /* store user provided estimates of extreme eigenvalues or computed with kspest and transformed with tform[] */
@@ -20,4 +20,4 @@ typedef struct {
   PetscObjectState amatstate, pmatstate;
 } KSP_Chebyshev;
 
-#endif
+#endif // PETSC_CHEBYSHEVIMPL_H

@@ -3,11 +3,11 @@
    Private data structure used by the LGMRES method.
 */
 
-#if !defined(__LGMRES)
-  #define __LGMRES
+#ifndef PETSC_LGMRESIMPL_H
+#define PETSC_LGMRESIMPL_H
 
-  #define KSPGMRES_NO_MACROS
-  #include <../src/ksp/ksp/impls/gmres/gmresimpl.h>
+#define KSPGMRES_NO_MACROS
+#include <../src/ksp/ksp/impls/gmres/gmresimpl.h>
 
 typedef struct {
   KSPGMRESHEADER
@@ -42,27 +42,28 @@ typedef struct {
   PetscInt matvecs; /*keep track of matvecs */
 } KSP_LGMRES;
 
-  #define HH(a, b) (lgmres->hh_origin + (b) * (lgmres->max_k + 2) + (a))
-  /* HH will be size (max_k+2)*(max_k+1)  -  think of HH as
+#define HH(a, b) (lgmres->hh_origin + (b) * (lgmres->max_k + 2) + (a))
+/* HH will be size (max_k+2)*(max_k+1)  -  think of HH as
    being stored columnwise (inc. zeros) for access purposes. */
-  #define HES(a, b) (lgmres->hes_origin + (b) * (lgmres->max_k + 1) + (a))
-  /* HES will be size (max_k + 1) * (max_k + 1) -
+#define HES(a, b) (lgmres->hes_origin + (b) * (lgmres->max_k + 1) + (a))
+/* HES will be size (max_k + 1) * (max_k + 1) -
    again, think of HES as being stored columnwise */
-  #define CC(a)  (lgmres->cc_origin + (a)) /* CC will be length (max_k+1) - cosines */
-  #define SS(a)  (lgmres->ss_origin + (a)) /* SS will be length (max_k+1) - sines */
-  #define GRS(a) (lgmres->rs_origin + (a)) /* GRS will be length (max_k+2) - rt side */
+#define CC(a)  (lgmres->cc_origin + (a)) /* CC will be length (max_k+1) - cosines */
+#define SS(a)  (lgmres->ss_origin + (a)) /* SS will be length (max_k+1) - sines */
+#define GRS(a) (lgmres->rs_origin + (a)) /* GRS will be length (max_k+2) - rt side */
 
-  /* vector names */
-  #define VEC_OFFSET     2
-  #define VEC_TEMP       lgmres->vecs[0] /* work space */
-  #define VEC_TEMP_MATOP lgmres->vecs[1] /* work space */
-  #define VEC_VV(i) \
-    lgmres->vecs[VEC_OFFSET + i] /* use to access
+/* vector names */
+#define VEC_OFFSET     2
+#define VEC_TEMP       lgmres->vecs[0] /* work space */
+#define VEC_TEMP_MATOP lgmres->vecs[1] /* work space */
+#define VEC_VV(i) \
+  lgmres->vecs[VEC_OFFSET + i] /* use to access
                                                         othog basis vectors */
-  /*LGMRES_MOD */
-  #define AUG_OFFSET   1
-  #define AUGVEC(i)    lgmres->augvecs[AUG_OFFSET + i]                   /*error approx vectors */
-  #define AUG_ORDER(i) lgmres->aug_order[i]                              /*order in which to augment */
-  #define A_AUGVEC(i)  lgmres->augvecs[AUG_OFFSET + i + lgmres->aug_dim] /*A times error vector */
-  #define AUG_TEMP     lgmres->augvecs[0]                                /* work vector */
-#endif
+/*LGMRES_MOD */
+#define AUG_OFFSET   1
+#define AUGVEC(i)    lgmres->augvecs[AUG_OFFSET + i]                   /*error approx vectors */
+#define AUG_ORDER(i) lgmres->aug_order[i]                              /*order in which to augment */
+#define A_AUGVEC(i)  lgmres->augvecs[AUG_OFFSET + i + lgmres->aug_dim] /*A times error vector */
+#define AUG_TEMP     lgmres->augvecs[0]                                /* work vector */
+
+#endif // PETSC_LGMRESIMPL_H

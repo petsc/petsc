@@ -1,9 +1,9 @@
-#if !defined(_SNES_FASIMPLS)
-  #define _SNES_FASIMPLS
+#ifndef PETSC_SNES_FASIMPLS_H
+#define PETSC_SNES_FASIMPLS_H
 
-  #include <petsc/private/snesimpl.h>
-  #include <petsc/private/linesearchimpl.h>
-  #include <petscdm.h>
+#include <petsc/private/snesimpl.h>
+#include <petsc/private/linesearchimpl.h>
+#include <petscdm.h>
 
 typedef struct {
   /* flags for knowing the global place of this FAS object */
@@ -48,4 +48,4 @@ typedef struct {
 
 PETSC_INTERN PetscErrorCode SNESFASCycleCreateSmoother_Private(SNES, SNES *);
 
-#endif
+#endif // PETSC_SNES_FASIMPLS_H

@@ -1,8 +1,8 @@
-#if !defined(_matcliqueimpl_h)
-  #define _matcliqueimpl_h
+#ifndef PETSC_MATCLIQUEIMPL_H
+#define PETSC_MATCLIQUEIMPL_H
 
-  #include <petsc/private/matimpl.h>
-  #include <petscmatelemental.h>
+#include <petsc/private/matimpl.h>
+#include <petscmatelemental.h>
 
 typedef struct {
   MatStructure matstruc;
@@ -17,4 +17,4 @@ typedef struct {
   El::DistMultiVec<PetscElemScalar>     *rhs;
 } Mat_SparseElemental;
 
-#endif
+#endif // PETSC_MATCLIQUEIMPL_H

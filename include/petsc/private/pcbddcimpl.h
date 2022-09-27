@@ -1,12 +1,12 @@
-#if !defined(__pcbddc_h)
-  #define __pcbddc_h
+#ifndef PETSC_PCBDDCIMPL_H
+#define PETSC_PCBDDCIMPL_H
 
-  #include <petsc/private/pcisimpl.h>
-  #include <petsc/private/pcbddcstructsimpl.h>
+#include <petsc/private/pcisimpl.h>
+#include <petsc/private/pcbddcstructsimpl.h>
 
-  #if !defined(PETSC_PCBDDC_MAXLEVELS)
-    #define PETSC_PCBDDC_MAXLEVELS 8
-  #endif
+#if !defined(PETSC_PCBDDC_MAXLEVELS)
+  #define PETSC_PCBDDC_MAXLEVELS 8
+#endif
 
 PETSC_EXTERN PetscLogEvent PC_BDDC_Topology[PETSC_PCBDDC_MAXLEVELS];
 PETSC_EXTERN PetscLogEvent PC_BDDC_LocalSolvers[PETSC_PCBDDC_MAXLEVELS];
@@ -190,4 +190,4 @@ typedef struct {
   PetscViewer dbg_viewer;
 } PC_BDDC;
 
-#endif /* __pcbddc_h */
+#endif // PETSC_PCBDDCIMPL_H

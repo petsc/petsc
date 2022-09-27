@@ -6,10 +6,10 @@
   These are shared by dvec1.c dvec2.c dvec3.c bvec1.c bvec2.c pvec.c pbvec.c
 */
 
-#if !defined(__DVECIMPL)
-  #define __DVECIMPL
+#ifndef PETSC_DVECIMPL_H
+#define PETSC_DVECIMPL_H
 
-  #include <petsc/private/vecimpl.h>
+#include <petsc/private/vecimpl.h>
 
 typedef struct {
   VECHEADER
@@ -60,4 +60,4 @@ PETSC_EXTERN PetscErrorCode VecCreate_Seq(Vec);
 PETSC_INTERN PetscErrorCode VecCreate_Seq_Private(Vec, const PetscScalar[]);
 PETSC_INTERN PetscErrorCode VecSetPreallocationCOO_Seq(Vec, PetscCount, const PetscInt[]);
 PETSC_INTERN PetscErrorCode VecSetValuesCOO_Seq(Vec, const PetscScalar[], InsertMode);
-#endif
+#endif // PETSC_DVECIMPL_H
