@@ -125,7 +125,8 @@
       PetscEnum, parameter :: PC_FACTOR_NUMERIC_ZEROPIVOT=2
       PetscEnum, parameter :: PC_FACTOR_OUTMEMORY=3
       PetscEnum, parameter :: PC_FACTOR_OTHER=4
-      PetscEnum, parameter :: PC_SUBPC_ERROR=5
+      PetscEnum, parameter :: PC_INCONSISTENT_RHS=5
+      PetscEnum, parameter :: PC_SUBPC_ERROR=6
 
       external  PCMGRESIDUALDEFAULT
 
