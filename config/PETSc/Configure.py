@@ -619,36 +619,52 @@ prepend-path PATH "%s"
 
   def configureDeprecated(self):
     '''Check if __attribute((deprecated)) is supported'''
-    self.pushLanguage(self.languages.clanguage)
-    ## Recent versions of gcc and clang support __attribute((deprecated("string argument"))), which is very useful, but
-    ## Intel has conspired to make a supremely environment-sensitive compiler.  The Intel compiler looks at the gcc
-    ## executable in the environment to determine the language compatibility that it should attempt to emulate.  Some
-    ## important Cray installations have built PETSc using the Intel compiler, but with a newer gcc module loaded (e.g.,
-    ## 4.7).  Thus at PETSc configure time, the Intel compiler decides to support the string argument, but the gcc
-    ## found in the default user environment is older and does not support the argument.  If GCC and Intel were cool
-    ## like Clang and supported __has_attribute, we could avoid configure tests entirely, but they don't.  And that is
-    ## why we can't have nice things.
-    #
-    # if self.checkCompile("""__attribute((deprecated("Why you shouldn't use myfunc"))) static int myfunc(void) { return 1;}""", ''):
-    #   self.addDefine('DEPRECATED_FUNCTION(why)', '__attribute((deprecated(why)))')
-    #   self.addDefine('DEPRECATED_TYPEDEF(why)', '__attribute((deprecated(why)))')
-    if self.checkCompile("""__attribute((deprecated)) static int myfunc(void) { return 1;}""", ''):
-      self.addDefine('DEPRECATED_FUNCTION(why)', '__attribute((deprecated))')
-      self.addDefine('DEPRECATED_TYPEDEF(why)', '__attribute((deprecated))')
-    else:
-      self.addDefine('DEPRECATED_FUNCTION(why)', ' ')
-      self.addDefine('DEPRECATED_TYPEDEF(why)', ' ')
-    if self.checkCompile("""enum E {oldval __attribute((deprecated)), newval };""", ''):
-      self.addDefine('DEPRECATED_ENUM(why)', '__attribute((deprecated))')
-    else:
-      self.addDefine('DEPRECATED_ENUM(why)', ' ')
-    # I was unable to make a CPP macro that takes the old and new values as separate arguments and builds the message needed by _Pragma
-    # hence the deprecation message is handled as it is
-    if self.checkCompile('#define TEST _Pragma("GCC warning \"Testing _Pragma\"") value'):
-      self.addDefine('DEPRECATED_MACRO(why)', '_Pragma(why)')
-    else:
-      self.addDefine('DEPRECATED_MACRO(why)', ' ')
-    self.popLanguage()
+    def checkDeprecated(macro_base, src, is_intel):
+      '''
+      run through the various attribute deprecated combinations and define MACRO_BAS(why) to the result
+      it if it compiles.
+
+      If none of the combos work, defines MACRO_BASE(why) as empty
+      '''
+      full_macro_name = macro_base + '(why)'
+      for prefix in ('__attribute__', '__attribute','__declspec'):
+        if prefix == '__declspec':
+          # declspec does not have an extra set of brackets around the arguments
+          attr_bodies = ('deprecated(why)', 'deprecated')
+        else:
+          attr_bodies = ('(deprecated(why))', '(deprecated)')
+
+        for attr_body in attr_bodies:
+          attr_def = '{}({})'.format(prefix, attr_body)
+          test_src = '\n'.join((
+            '#define {} {}'.format(full_macro_name, attr_def),
+            src.format(macro_base + '("asdasdadsasd")')
+          ))
+          if self.checkCompile(test_src, ''):
+            self.logPrint('configureDeprecated: \'{}\' appears to work'.format(attr_def))
+            if is_intel and '(why)' in attr_body:
+              self.logPrint('configureDeprecated: Intel has conspired to make a supremely environment-sensitive compiler. The Intel compiler looks at the gcc executable in the environment to determine the language compatibility that it should attempt to emulate. Some important Cray installations have built PETSc using the Intel compiler, but with a newer gcc module loaded (e.g. 4.7). Thus at PETSc configure time, the Intel compiler decides to support the string argument, but the gcc found in the default user environment is older and does not support the argument.\n'.format(attr_def))
+              self.logPrint('*** WE WILL THEREFORE REJECT \'{}\' AND CONTINUE TESTING ***'.format(attr_def))
+              continue
+            self.addDefine(full_macro_name, attr_def)
+            return
+
+      self.addDefine(full_macro_name, ' ')
+      return
+
+    lang = self.languages.clanguage
+    with self.Language(lang):
+      is_intel = self.setCompilers.isIntel(self.getCompiler(lang=lang), self.log)
+      checkDeprecated('DEPRECATED_FUNCTION', '{} int myfunc(void) {{ return 1; }}', is_intel)
+      checkDeprecated('DEPRECATED_TYPEDEF', 'typedef int my_int {};', is_intel)
+      checkDeprecated('DEPRECATED_ENUM', 'enum E {{ oldval {}, newval }};', is_intel)
+      # I was unable to make a CPP macro that takes the old and new values as separate
+      # arguments and builds the message needed by _Pragma hence the deprecation message is
+      # handled as it is
+      if self.checkCompile('#define TEST _Pragma("GCC warning \"Testing _Pragma\"") value'):
+        self.addDefine('DEPRECATED_MACRO(why)', '_Pragma(why)')
+      else:
+        self.addDefine('DEPRECATED_MACRO(why)', ' ')
 
   def configureAlign(self):
     '''Check if __attribute(aligned) is supported'''
