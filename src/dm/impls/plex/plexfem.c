@@ -4956,7 +4956,7 @@ PetscErrorCode DMPlexComputeResidual_Hybrid_Internal(DM dm, PetscFormKey key[], 
         else if (support[1] == cellStart) s = 0;
         else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Face %" PetscInt_FMT " does not have cell %" PetscInt_FMT " in its support", cone[c], cellStart);
         PetscCall(DMGetAuxiliaryVec(dm, key[c].label, key[c].value, key[c].part, &locA[c]));
-        PetscCheck(locA[c], PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Must have auxiliary vector for (%p, %" PetscInt_FMT ", %" PetscInt_FMT ")", key[c].label, key[c].value, key[c].part);
+        PetscCheck(locA[c], PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Must have auxiliary vector for (%p, %" PetscInt_FMT ", %" PetscInt_FMT ")", (void *)key[c].label, key[c].value, key[c].part);
         if (locA[c]) PetscCall(VecGetDM(locA[c], &dmAux[c]));
         else dmAux[c] = dmAux[2];
         PetscCall(DMGetCellDS(dmAux[c], support[s], &dsAux[c]));

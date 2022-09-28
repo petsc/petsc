@@ -982,7 +982,7 @@ static PetscErrorCode PetscWeakFormViewTable_Ascii(PetscWeakForm wf, PetscViewer
       PetscInt       n, f;
 
       if (keys[i].label) {
-        if (showPointer) PetscCall(PetscViewerASCIIPrintf(viewer, "(%s:%p, %" PetscInt_FMT ") ", names[i], keys[i].label, keys[i].value));
+        if (showPointer) PetscCall(PetscViewerASCIIPrintf(viewer, "(%s:%p, %" PetscInt_FMT ") ", names[i], (void *)keys[i].label, keys[i].value));
         else PetscCall(PetscViewerASCIIPrintf(viewer, "(%s, %" PetscInt_FMT ") ", names[i], keys[i].value));
       }
       PetscCall(PetscViewerASCIIUseTabs(viewer, PETSC_FALSE));
