@@ -9,6 +9,9 @@
 
 #include <../src/mat/impls/aij/seq/aij.h>
 #include <../src/mat/impls/aij/seq/aijmkl/aijmkl.h>
+#if defined(PETSC_HAVE_MKL_INTEL_ILP64)
+  #define MKL_ILP64
+#endif
 #include <mkl_spblas.h>
 
 typedef struct {
@@ -146,7 +149,7 @@ PETSC_INTERN PetscErrorCode MatSeqAIJMKL_create_mkl_handle(Mat A)
   if (a->nz && aa && !A->structure_only) {
     /* Create a new, optimized sparse matrix handle only if the matrix has nonzero entries.
      * The MKL sparse-inspector executor routines don't like being passed an empty matrix. */
-    PetscCallExternal(mkl_sparse_x_create_csr, &aijmkl->csrA, SPARSE_INDEX_BASE_ZERO, m, n, ai, ai + 1, aj, aa);
+    PetscCallExternal(mkl_sparse_x_create_csr, &aijmkl->csrA, SPARSE_INDEX_BASE_ZERO, (MKL_INT)m, (MKL_INT)n, (MKL_INT *)ai, (MKL_INT *)(ai + 1), (MKL_INT *)aj, aa);
     PetscCallExternal(mkl_sparse_set_mv_hint, aijmkl->csrA, SPARSE_OPERATION_NON_TRANSPOSE, aijmkl->descr, 1000);
     PetscCallExternal(mkl_sparse_set_memory_hint, aijmkl->csrA, SPARSE_MEMORY_AGGRESSIVE);
     if (!aijmkl->no_SpMV2) PetscCallExternal(mkl_sparse_optimize, aijmkl->csrA);
@@ -173,7 +176,7 @@ static PetscErrorCode MatSeqAIJMKL_setup_structure_from_mkl_handle(MPI_Comm comm
   PetscFunctionBegin;
   if (csrA) {
     /* Note: Must pass in &dummy below since MKL can't accept NULL for this output array we don't actually want. */
-    PetscCallExternal(mkl_sparse_x_export_csr, csrA, &indexing, &m, &n, &ai, &dummy, &aj, &aa);
+    PetscCallExternal(mkl_sparse_x_export_csr, csrA, &indexing, (MKL_INT *)&m, (MKL_INT *)&n, (MKL_INT **)&ai, (MKL_INT **)&dummy, (MKL_INT **)&aj, &aa);
     PetscCheck((m == nrows) && (n == ncols), PETSC_COMM_SELF, PETSC_ERR_LIB, "Number of rows/columns does not match those from mkl_sparse_x_export_csr()");
   } else {
     aj = ai = PETSC_NULL;
@@ -236,7 +239,7 @@ static PetscErrorCode MatSeqAIJMKL_update_from_mkl_handle(Mat A)
   if (!aijmkl->csrA) PetscFunctionReturn(0);
 
   /* Note: Must pass in &dummy below since MKL can't accept NULL for this output array we don't actually want. */
-  PetscCallExternal(mkl_sparse_x_export_csr, aijmkl->csrA, &indexing, &nrows, &ncols, &ai, &dummy, &aj, &aa);
+  PetscCallExternal(mkl_sparse_x_export_csr, aijmkl->csrA, &indexing, (MKL_INT *)&nrows, (MKL_INT *)&ncols, (MKL_INT **)&ai, (MKL_INT **)&dummy, (MKL_INT **)&aj, &aa);
 
   /* We can't just do a copy from the arrays exported by MKL to those used for the PETSc AIJ storage, because the MKL and PETSc
    * representations differ in small ways (e.g., more explicit nonzeros per row due to preallocation). */
@@ -278,7 +281,7 @@ PETSC_INTERN PetscErrorCode MatSeqAIJMKL_view_mkl_handle(Mat A, PetscViewer view
   }
 
   /* Note: Must pass in &dummy below since MKL can't accept NULL for this output array we don't actually want. */
-  PetscCallExternal(mkl_sparse_x_export_csr, aijmkl->csrA, &indexing, &nrows, &ncols, &ai, &dummy, &aj, &aa);
+  PetscCallExternal(mkl_sparse_x_export_csr, aijmkl->csrA, &indexing, (MKL_INT *)&nrows, (MKL_INT *)&ncols, (MKL_INT **)&ai, (MKL_INT **)&dummy, (MKL_INT **)&aj, &aa);
 
   k = 0;
   for (i = 0; i < nrows; i++) {
