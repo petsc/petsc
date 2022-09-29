@@ -10,8 +10,8 @@ PetscFunctionList PetscViewerList = NULL;
 PetscOptionsHelpPrinted PetscOptionsHelpPrintedSingleton = NULL;
 KHASH_SET_INIT_STR(HTPrinted)
 struct _n_PetscOptionsHelpPrinted {
-  khash_t(HTPrinted) * printed;
-  PetscSegBuffer strings;
+  khash_t(HTPrinted) *printed;
+  PetscSegBuffer      strings;
 };
 
 PetscErrorCode PetscOptionsHelpPrintedDestroy(PetscOptionsHelpPrinted *hp)

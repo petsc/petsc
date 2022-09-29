@@ -35,7 +35,7 @@ M*/
 \
   KHASH_INIT(HashT, KeyType, char, 0, HashFunc, EqualFunc) \
 \
-  typedef khash_t(HashT) * Petsc##HashT; \
+  typedef khash_t(HashT) *Petsc##HashT; \
 \
   static inline PETSC_UNUSED PetscErrorCode Petsc##HashT##Create(Petsc##HashT *ht) \
   { \
