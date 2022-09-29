@@ -159,3 +159,5 @@ UseTab: Never
 WhitespaceSensitiveMacros:
   - PetscStringize
   - PetscStringize_
+TypenameMacros:
+  - khash_t

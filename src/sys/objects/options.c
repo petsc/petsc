@@ -76,7 +76,7 @@ struct _n_PetscOptions {
   PetscBool    precedentProcessed;
 
   /* Hash table */
-  khash_t(HO) * ht;
+  khash_t(HO) *ht;
 
   /* Prefixes */
   int  prefixind;
@@ -1465,9 +1465,9 @@ PetscErrorCode PetscOptionsFindPair(PetscOptions options, const char pre[], cons
   }
 
   if (!options->ht && usehashtable) {
-    int      i, ret;
-    khiter_t it;
-    khash_t(HO) * ht;
+    int          i, ret;
+    khiter_t     it;
+    khash_t(HO) *ht;
     ht = kh_init(HO);
     PetscCheck(ht, PETSC_COMM_SELF, PETSC_ERR_MEM, "Hash table allocation failed");
     ret = kh_resize(HO, ht, options->N * 2); /* twice the required size to reduce risk of collisions */
@@ -1482,7 +1482,7 @@ PetscErrorCode PetscOptionsFindPair(PetscOptions options, const char pre[], cons
 
   if (usehashtable) { /* fast search */
     khash_t(HO) *ht = options->ht;
-    khiter_t it     = kh_get(HO, ht, name);
+    khiter_t     it = kh_get(HO, ht, name);
     if (it != kh_end(ht)) {
       int i            = kh_val(ht, it);
       options->used[i] = PETSC_TRUE;
