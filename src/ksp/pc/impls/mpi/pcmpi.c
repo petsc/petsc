@@ -38,6 +38,7 @@ typedef enum {
 static MPI_Comm  PCMPIComms[PC_MPI_MAX_RANKS];
 static PetscBool PCMPICommSet = PETSC_FALSE;
 static PetscInt  PCMPISolveCounts[PC_MPI_MAX_RANKS], PCMPIKSPCounts[PC_MPI_MAX_RANKS], PCMPIMatCounts[PC_MPI_MAX_RANKS], PCMPISolveCountsSeq = 0, PCMPIKSPCountsSeq = 0;
+static PetscInt  PCMPIIterations[PC_MPI_MAX_RANKS], PCMPISizes[PC_MPI_MAX_RANKS], PCMPIIterationsSeq = 0, PCMPISizesSeq = 0;
 
 static PetscErrorCode PCMPICommsCreate(void)
 {
@@ -54,6 +55,8 @@ static PetscErrorCode PCMPICommsCreate(void)
     PetscCallMPI(MPI_Comm_split(comm, color, 0, &PCMPIComms[i]));
     PCMPISolveCounts[i] = 0;
     PCMPIKSPCounts[i]   = 0;
+    PCMPIIterations[i]  = 0;
+    PCMPISizes[i]       = 0;
   }
   PCMPICommSet = PETSC_TRUE;
   PetscFunctionReturn(0);
@@ -104,7 +107,9 @@ static PetscErrorCode PCMPICreate(PC pc)
     ksp = NULL;
     PetscFunctionReturn(0);
   }
+  PetscCall(PetscLogStagePush(PCMPIStage));
   PetscCall(KSPCreate(comm, &ksp));
+  PetscCall(PetscLogStagePop());
   PetscCallMPI(MPI_Gather(&ksp, 1, MPI_AINT, pc ? km->ksps : NULL, 1, MPI_AINT, 0, comm));
   if (pc) {
     size_t slen;
@@ -129,7 +134,7 @@ static PetscErrorCode PCMPISetMat(PC pc)
 {
   PC_MPI            *km = pc ? (PC_MPI *)pc->data : NULL;
   Mat                A;
-  PetscInt           N[2], n, *ia, *ja, j, bs;
+  PetscInt           m, n, *ia, *ja, j, bs;
   Mat                sA;
   MPI_Comm           comm = PC_MPI_COMM_WORLD;
   KSP                ksp;
@@ -138,29 +143,47 @@ static PetscErrorCode PCMPISetMat(PC pc)
   const PetscInt    *range;
   PetscMPIInt       *NZ = NULL, sendcounti[PC_MPI_MAX_RANKS], displi[PC_MPI_MAX_RANKS], *NZdispl = NULL, nz, size, i;
   PetscScalar       *a;
-  const PetscScalar *sa = NULL;
+  const PetscScalar *sa               = NULL;
+  PetscInt           matproperties[7] = {0, 0, 0, 0, 0, 0, 0};
 
   PetscFunctionBegin;
   PetscCallMPI(MPI_Scatter(pc ? km->ksps : NULL, 1, MPI_AINT, &ksp, 1, MPI_AINT, 0, comm));
   if (!ksp) PetscFunctionReturn(0);
   PetscCall(PetscObjectGetComm((PetscObject)ksp, &comm));
   if (pc) {
+    PetscBool isset, issymmetric, ishermitian, isspd, isstructurallysymmetric;
+
     PetscCallMPI(MPI_Comm_size(comm, &size));
     PCMPIMatCounts[size - 1]++;
     PetscCall(PCGetOperators(pc, &sA, &sA));
-    PetscCall(MatGetSize(sA, &N[0], &N[1]));
+    PetscCall(MatGetSize(sA, &matproperties[0], &matproperties[1]));
     PetscCall(MatGetBlockSize(sA, &bs));
-    /* need to broadcast symmetry flags etc if set */
+    matproperties[2] = bs;
+    PetscCall(MatIsSymmetricKnown(sA, &isset, &issymmetric));
+    matproperties[3] = !isset ? 0 : (issymmetric ? 1 : 2);
+    PetscCall(MatIsHermitianKnown(sA, &isset, &ishermitian));
+    matproperties[4] = !isset ? 0 : (ishermitian ? 1 : 2);
+    PetscCall(MatIsSPDKnown(sA, &isset, &isspd));
+    matproperties[5] = !isset ? 0 : (isspd ? 1 : 2);
+    PetscCall(MatIsStructurallySymmetricKnown(sA, &isset, &isstructurallysymmetric));
+    matproperties[6] = !isset ? 0 : (isstructurallysymmetric ? 1 : 2);
   }
-  PetscCallMPI(MPI_Bcast(N, 2, MPIU_INT, 0, comm));
-  PetscCallMPI(MPI_Bcast(&bs, 1, MPIU_INT, 0, comm));
+  PetscCallMPI(MPI_Bcast(matproperties, 7, MPIU_INT, 0, comm));
 
-  /* determine ownership ranges of matrix */
+  /* determine ownership ranges of matrix columns */
   PetscCall(PetscLayoutCreate(comm, &layout));
-  PetscCall(PetscLayoutSetBlockSize(layout, bs));
-  PetscCall(PetscLayoutSetSize(layout, N[0]));
+  PetscCall(PetscLayoutSetBlockSize(layout, matproperties[2]));
+  PetscCall(PetscLayoutSetSize(layout, matproperties[1]));
   PetscCall(PetscLayoutSetUp(layout));
   PetscCall(PetscLayoutGetLocalSize(layout, &n));
+  PetscCall(PetscLayoutDestroy(&layout));
+
+  /* determine ownership ranges of matrix rows */
+  PetscCall(PetscLayoutCreate(comm, &layout));
+  PetscCall(PetscLayoutSetBlockSize(layout, matproperties[2]));
+  PetscCall(PetscLayoutSetSize(layout, matproperties[0]));
+  PetscCall(PetscLayoutSetUp(layout));
+  PetscCall(PetscLayoutGetLocalSize(layout, &m));
 
   /* copy over the matrix nonzero structure and values */
   if (pc) {
@@ -195,13 +218,19 @@ static PetscErrorCode PCMPISetMat(PC pc)
 
   for (j = 1; j < n + 1; j++) ia[j] -= ia[0];
   ia[0] = 0;
-  PetscCall(MatCreateMPIAIJWithArrays(comm, n, n, N[0], N[0], ia, ja, a, &A));
-  PetscCall(MatSetBlockSize(A, bs));
+  PetscCall(PetscLogStagePush(PCMPIStage));
+  PetscCall(MatCreateMPIAIJWithArrays(comm, m, n, matproperties[0], matproperties[1], ia, ja, a, &A));
+  PetscCall(MatSetBlockSize(A, matproperties[2]));
   PetscCall(MatSetOptionsPrefix(A, "mpi_"));
+  if (matproperties[3]) PetscCall(MatSetOption(A, MAT_SYMMETRIC, matproperties[3] == 1 ? PETSC_TRUE : PETSC_FALSE));
+  if (matproperties[4]) PetscCall(MatSetOption(A, MAT_HERMITIAN, matproperties[4] == 1 ? PETSC_TRUE : PETSC_FALSE));
+  if (matproperties[5]) PetscCall(MatSetOption(A, MAT_SPD, matproperties[5] == 1 ? PETSC_TRUE : PETSC_FALSE));
+  if (matproperties[6]) PetscCall(MatSetOption(A, MAT_STRUCTURALLY_SYMMETRIC, matproperties[6] == 1 ? PETSC_TRUE : PETSC_FALSE));
 
   PetscCall(PetscFree3(ia, ja, a));
   PetscCall(KSPSetOperators(ksp, A, A));
   if (!ksp->vec_sol) PetscCall(MatCreateVecs(A, &ksp->vec_sol, &ksp->vec_rhs));
+  PetscCall(PetscLogStagePop());
   if (pc) { /* needed for scatterv/gatherv of rhs and solution */
     const PetscInt *range;
 
@@ -226,6 +255,7 @@ static PetscErrorCode PCMPIUpdateMatValues(PC pc)
   PetscCount         nz;
   const PetscScalar *sa = NULL;
   PetscMPIInt        size;
+  PetscInt           matproperties[4] = {0, 0, 0, 0};
 
   PetscFunctionBegin;
   if (pc) {
@@ -241,9 +271,28 @@ static PetscErrorCode PCMPIUpdateMatValues(PC pc)
   PetscCall(MatMPIAIJGetNumberNonzeros(A, &nz));
   PetscCall(PetscMalloc1(nz, &a));
   PetscCallMPI(MPI_Scatterv(sa, pc ? km->NZ : NULL, pc ? km->NZdispl : NULL, MPIU_SCALAR, a, nz, MPIU_SCALAR, 0, comm));
-  if (pc) PetscCall(MatSeqAIJRestoreArrayRead(sA, &sa));
+  if (pc) {
+    PetscBool isset, issymmetric, ishermitian, isspd, isstructurallysymmetric;
+
+    PetscCall(MatSeqAIJRestoreArrayRead(sA, &sa));
+
+    PetscCall(MatIsSymmetricKnown(sA, &isset, &issymmetric));
+    matproperties[0] = !isset ? 0 : (issymmetric ? 1 : 2);
+    PetscCall(MatIsHermitianKnown(sA, &isset, &ishermitian));
+    matproperties[1] = !isset ? 0 : (ishermitian ? 1 : 2);
+    PetscCall(MatIsSPDKnown(sA, &isset, &isspd));
+    matproperties[2] = !isset ? 0 : (isspd ? 1 : 2);
+    PetscCall(MatIsStructurallySymmetricKnown(sA, &isset, &isstructurallysymmetric));
+    matproperties[3] = !isset ? 0 : (isstructurallysymmetric ? 1 : 2);
+  }
   PetscCall(MatUpdateMPIAIJWithArray(A, a));
   PetscCall(PetscFree(a));
+  PetscCallMPI(MPI_Bcast(matproperties, 4, MPIU_INT, 0, comm));
+  /* if any of these properties was previously set and is now not set this will result in incorrect properties in A since there is no way to unset a property */
+  if (matproperties[0]) PetscCall(MatSetOption(A, MAT_SYMMETRIC, matproperties[0] == 1 ? PETSC_TRUE : PETSC_FALSE));
+  if (matproperties[1]) PetscCall(MatSetOption(A, MAT_HERMITIAN, matproperties[1] == 1 ? PETSC_TRUE : PETSC_FALSE));
+  if (matproperties[2]) PetscCall(MatSetOption(A, MAT_SPD, matproperties[2] == 1 ? PETSC_TRUE : PETSC_FALSE));
+  if (matproperties[3]) PetscCall(MatSetOption(A, MAT_STRUCTURALLY_SYMMETRIC, matproperties[3] == 1 ? PETSC_TRUE : PETSC_FALSE));
   PetscFunctionReturn(0);
 }
 
@@ -254,7 +303,8 @@ static PetscErrorCode PCMPISolve(PC pc, Vec B, Vec X)
   MPI_Comm           comm = PC_MPI_COMM_WORLD;
   const PetscScalar *sb   = NULL, *x;
   PetscScalar       *b, *sx = NULL;
-  PetscInt           n;
+  PetscInt           its, n;
+  PetscMPIInt        size;
 
   PetscFunctionBegin;
   PetscCallMPI(MPI_Scatter(pc ? km->ksps : &ksp, 1, MPI_AINT, &ksp, 1, MPI_AINT, 0, comm));
@@ -264,11 +314,14 @@ static PetscErrorCode PCMPISolve(PC pc, Vec B, Vec X)
   /* TODO: optimize code to not require building counts/displ everytime */
 
   /* scatterv rhs */
+  PetscCallMPI(MPI_Comm_size(comm, &size));
   if (pc) {
-    PetscMPIInt size;
+    PetscInt N;
 
-    PetscCallMPI(MPI_Comm_size(comm, &size));
     PCMPISolveCounts[size - 1]++;
+    PetscCall(MatGetSize(pc->pmat, &N, NULL));
+    ;
+    PCMPISizes[size - 1] += N;
     PetscCall(VecGetArrayRead(B, &sb));
   }
   PetscCall(VecGetLocalSize(ksp->vec_rhs, &n));
@@ -277,7 +330,11 @@ static PetscErrorCode PCMPISolve(PC pc, Vec B, Vec X)
   PetscCall(VecRestoreArray(ksp->vec_rhs, &b));
   if (pc) PetscCall(VecRestoreArrayRead(B, &sb));
 
+  PetscCall(PetscLogStagePush(PCMPIStage));
   PetscCall(KSPSolve(ksp, NULL, NULL));
+  PetscCall(PetscLogStagePop());
+  PetscCall(KSPGetIterationNumber(ksp, &its));
+  PCMPIIterations[size - 1] += its;
 
   /* gather solution */
   PetscCall(VecGetArrayRead(ksp->vec_sol, &x));
@@ -414,17 +471,19 @@ PetscErrorCode PCMPIServerEnd(void)
       PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
       if (isascii) {
         PetscMPIInt size;
-        PetscInt    i, ksp = 0, mat = 0, solve = 0;
+        PetscMPIInt i;
 
         PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
-        for (i = 0; i < size; i++) {
-          ksp += PCMPIKSPCounts[i];
-          mat += PCMPIMatCounts[i];
-          solve += PCMPISolveCounts[i];
+        PetscCall(PetscViewerASCIIPrintf(viewer, "MPI linear solver server statistics:\n"));
+        PetscCall(PetscViewerASCIIPrintf(viewer, "    Ranks        KSPSolve()s     Mats        KSPs       Avg. Size      Avg. Its\n"));
+        if (PCMPIKSPCountsSeq) {
+          PetscCall(PetscViewerASCIIPrintf(viewer, "  Sequential         %" PetscInt_FMT "                         %" PetscInt_FMT "            %" PetscInt_FMT "           %" PetscInt_FMT "\n", PCMPISolveCountsSeq, PCMPIKSPCountsSeq, PCMPISizesSeq / PCMPISolveCountsSeq, PCMPIIterationsSeq / PCMPISolveCountsSeq));
         }
-        PetscCall(PetscViewerASCIIPrintf(viewer, "MPI linear solver server:\n"));
-        PetscCall(PetscViewerASCIIPrintf(viewer, "  Parallel KSPs  %" PetscInt_FMT " Mats  %" PetscInt_FMT " Solves %" PetscInt_FMT "\n", ksp, mat, solve));
-        PetscCall(PetscViewerASCIIPrintf(viewer, "  Sequential KSPs  %" PetscInt_FMT " Solves %" PetscInt_FMT "\n", PCMPIKSPCountsSeq, PCMPISolveCountsSeq));
+        for (i = 0; i < size; i++) {
+          if (PCMPIKSPCounts[i]) {
+            PetscCall(PetscViewerASCIIPrintf(viewer, "     %d               %" PetscInt_FMT "            %" PetscInt_FMT "           %" PetscInt_FMT "            %" PetscInt_FMT "            %" PetscInt_FMT "\n", i + 1, PCMPISolveCounts[i], PCMPIMatCounts[i], PCMPIKSPCounts[i], PCMPISizes[i] / PCMPISolveCounts[i], PCMPIIterations[i] / PCMPISolveCounts[i]));
+          }
+        }
       }
       PetscCall(PetscViewerDestroy(&viewer));
     }
@@ -459,11 +518,18 @@ static PetscErrorCode PCSetUp_Seq(PC pc)
 
 static PetscErrorCode PCApply_Seq(PC pc, Vec b, Vec x)
 {
-  PC_MPI *km = (PC_MPI *)pc->data;
+  PC_MPI  *km = (PC_MPI *)pc->data;
+  PetscInt its, n;
+  Mat      A;
 
   PetscFunctionBegin;
   PetscCall(KSPSolve(km->ksps[0], b, x));
+  PetscCall(KSPGetIterationNumber(km->ksps[0], &its));
   PCMPISolveCountsSeq++;
+  PCMPIIterationsSeq += its;
+  PetscCall(KSPGetOperators(km->ksps[0], NULL, &A));
+  PetscCall(MatGetSize(A, &n, NULL));
+  PCMPISizesSeq += n;
   PetscFunctionReturn(0);
 }
 
@@ -476,8 +542,9 @@ static PetscErrorCode PCView_Seq(PC pc, PetscViewer viewer)
   PetscCall(PetscViewerASCIIPrintf(viewer, "Running MPI linear solver server directly on rank 0 due to its small size\n"));
   PetscCall(PetscViewerASCIIPrintf(viewer, "Desired minimum number of nonzeros per rank for MPI parallel solve %d\n", (int)km->mincntperrank));
   PetscCall(PCGetOptionsPrefix(pc, &prefix));
-  if (prefix) PetscCall(PetscViewerASCIIPrintf(viewer, "*** Use -%smpi_ksp_view to see the MPI KSP parameters***\n", prefix));
-  else PetscCall(PetscViewerASCIIPrintf(viewer, "*** Use -mpi_ksp_view to see the MPI KSP parameters***\n"));
+  if (prefix) PetscCall(PetscViewerASCIIPrintf(viewer, "*** Use -%smpi_ksp_view to see the MPI KSP parameters ***\n", prefix));
+  else PetscCall(PetscViewerASCIIPrintf(viewer, "*** Use -mpi_ksp_view to see the MPI KSP parameters ***\n"));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "*** Use -mpi_linear_solver_server_view to statistics on all the solves ***\n"));
   PetscFunctionReturn(0);
 }
 
@@ -582,8 +649,9 @@ PetscErrorCode PCView_MPI(PC pc, PetscViewer viewer)
   PetscCall(PetscViewerASCIIPrintf(viewer, "Size of MPI communicator used for MPI parallel KSP solve %d\n", size));
   PetscCall(PetscViewerASCIIPrintf(viewer, "Desired minimum number of nonzeros per rank for MPI parallel solve %d\n", (int)km->mincntperrank));
   PetscCall(PCGetOptionsPrefix(pc, &prefix));
-  if (prefix) PetscCall(PetscViewerASCIIPrintf(viewer, "*** Use -%smpi_ksp_view to see the MPI KSP parameters***\n", prefix));
-  else PetscCall(PetscViewerASCIIPrintf(viewer, "*** Use -mpi_ksp_view to see the MPI KSP parameters***\n"));
+  if (prefix) PetscCall(PetscViewerASCIIPrintf(viewer, "*** Use -%smpi_ksp_view to see the MPI KSP parameters ***\n", prefix));
+  else PetscCall(PetscViewerASCIIPrintf(viewer, "*** Use -mpi_ksp_view to see the MPI KSP parameters ***\n"));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "*** Use -mpi_linear_solver_server_view to statistics on all the solves ***\n"));
   PetscFunctionReturn(0);
 }
 
@@ -620,6 +688,12 @@ PetscErrorCode PCSetFromOptions_MPI(PC pc, PetscOptionItems *PetscOptionsObject)
 
    When the program is running with a single MPI rank then this directly uses the provided matrix and right hand side (still in a `KSP` with the options prefix of -mpi)
    and does not need to distribute the matrix and vector to the various MPI ranks; thus it incurs no extra overhead over just using the `KSP` directly.
+
+   The solver options for `KSP` and `PC` must be controlled via the options database, calls to set options directly on the user level `KSP` and `PC` have no effect
+   because they are not the actual solver objects.
+
+   When `-log_view` is used with this solver the events within the parallel solve are logging in their own stage. Some of the logging in the other
+   stages will be confusing since the event times are only recorded on the 0th MPI rank, thus the percent of time in the events will be misleading.
 
 .seealso: `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `PC`, `PCMPIServerBegin()`, `PCMPIServerEnd()`
 M*/
