@@ -1157,6 +1157,9 @@ PETSC_EXTERN MPI_Op MPIU_MIN;
   #define MPIU_MAX MPI_MAX
   #define MPIU_MIN MPI_MIN
 #endif
+PETSC_EXTERN MPI_Op         Petsc_Garbage_SetIntersectOp;
+PETSC_EXTERN PetscErrorCode PetscMaxSum(MPI_Comm, const PetscInt[], PetscInt *, PetscInt *);
+
 #if defined(PETSC_HAVE_REAL___FLOAT128) || defined(PETSC_HAVE_REAL___FP16)
 /*MC
     MPIU_SUM___FP16___FLOAT128 - MPI_Op that acts as a replacement for MPI_SUM with
@@ -2326,9 +2329,12 @@ PETSC_EXTERN PetscErrorCode PetscGetVersion(char[], size_t);
 PETSC_EXTERN PetscErrorCode PetscGetVersionNumber(PetscInt *, PetscInt *, PetscInt *, PetscInt *);
 
 PETSC_EXTERN PetscErrorCode PetscSortedInt(PetscInt, const PetscInt[], PetscBool *);
+PETSC_EXTERN PetscErrorCode PetscSortedInt64(PetscInt, const PetscInt64[], PetscBool *);
 PETSC_EXTERN PetscErrorCode PetscSortedMPIInt(PetscInt, const PetscMPIInt[], PetscBool *);
 PETSC_EXTERN PetscErrorCode PetscSortedReal(PetscInt, const PetscReal[], PetscBool *);
 PETSC_EXTERN PetscErrorCode PetscSortInt(PetscInt, PetscInt[]);
+PETSC_EXTERN PetscErrorCode PetscSortInt64(PetscInt, PetscInt64[]);
+PETSC_EXTERN PetscErrorCode PetscSortCount(PetscInt, PetscCount[]);
 PETSC_EXTERN PetscErrorCode PetscSortReverseInt(PetscInt, PetscInt[]);
 PETSC_EXTERN PetscErrorCode PetscSortedRemoveDupsInt(PetscInt *, PetscInt[]);
 PETSC_EXTERN PetscErrorCode PetscSortedCheckDupsInt(PetscInt, const PetscInt[], PetscBool *);

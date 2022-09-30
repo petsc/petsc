@@ -27,6 +27,7 @@ class TestNullSpace(unittest.TestCase):
     def tearDown(self):
         self.basis = None
         self.nullsp = None
+        PETSc.garbage_cleanup()
 
     def _remove(self):
         v = PETSc.Vec().createSeq(3);

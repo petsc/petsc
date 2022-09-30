@@ -1,7 +1,6 @@
 import unittest
 from petsc4py import PETSc
 from sys import getrefcount
-import gc
 
 # --------------------------------------------------------------------
 class Objective:
@@ -71,6 +70,7 @@ class TestTaoPython(unittest.TestCase):
         self.assertTrue('destroy' not in ctx.log)
         self.tao.destroy()
         self.tao = None
+        PETSc.garbage_cleanup()
         self.assertEqual(ctx.log['destroy'], 1)
         self.assertEqual(getrefcount(ctx),   2)
 

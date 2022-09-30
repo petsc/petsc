@@ -59,6 +59,8 @@ PetscErrorCode DMCreate(MPI_Comm comm, DM *dm)
 
   PetscCall(PetscHeaderCreate(v, DM_CLASSID, "DM", "Distribution Manager", "DM", comm, DMDestroy, DMView));
 
+  ((PetscObject)v)->non_cyclic_references = &DMCountNonCyclicReferences;
+
   v->setupcalled          = PETSC_FALSE;
   v->setfromoptionscalled = PETSC_FALSE;
   v->ltogmap              = NULL;
@@ -549,7 +551,7 @@ PetscErrorCode DMGetOptionsPrefix(DM dm, const char *prefix[])
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMCountNonCyclicReferences(DM dm, PetscBool recurseCoarse, PetscBool recurseFine, PetscInt *ncrefct)
+static PetscErrorCode DMCountNonCyclicReferences_Internal(DM dm, PetscBool recurseCoarse, PetscBool recurseFine, PetscInt *ncrefct)
 {
   PetscInt refct = ((PetscObject)dm)->refct;
 
@@ -560,7 +562,7 @@ static PetscErrorCode DMCountNonCyclicReferences(DM dm, PetscBool recurseCoarse,
     if (recurseCoarse) {
       PetscInt coarseCount;
 
-      PetscCall(DMCountNonCyclicReferences(dm->coarseMesh, PETSC_TRUE, PETSC_FALSE, &coarseCount));
+      PetscCall(DMCountNonCyclicReferences_Internal(dm->coarseMesh, PETSC_TRUE, PETSC_FALSE, &coarseCount));
       refct += coarseCount;
     }
   }
@@ -569,11 +571,19 @@ static PetscErrorCode DMCountNonCyclicReferences(DM dm, PetscBool recurseCoarse,
     if (recurseFine) {
       PetscInt fineCount;
 
-      PetscCall(DMCountNonCyclicReferences(dm->fineMesh, PETSC_FALSE, PETSC_TRUE, &fineCount));
+      PetscCall(DMCountNonCyclicReferences_Internal(dm->fineMesh, PETSC_FALSE, PETSC_TRUE, &fineCount));
       refct += fineCount;
     }
   }
   *ncrefct = refct;
+  PetscFunctionReturn(0);
+}
+
+/* Generic wrapper for DMCountNonCyclicReferences_Internal() */
+PetscErrorCode DMCountNonCyclicReferences(PetscObject dm, PetscInt *ncrefct)
+{
+  PetscFunctionBegin;
+  PetscCall(DMCountNonCyclicReferences_Internal((DM)dm, PETSC_TRUE, PETSC_TRUE, ncrefct));
   PetscFunctionReturn(0);
 }
 
@@ -630,7 +640,7 @@ PetscErrorCode DMDestroy(DM *dm)
   PetscValidHeaderSpecific((*dm), DM_CLASSID, 1);
 
   /* count all non-cyclic references in the doubly-linked list of coarse<->fine meshes */
-  PetscCall(DMCountNonCyclicReferences(*dm, PETSC_TRUE, PETSC_TRUE, &cnt));
+  PetscCall(DMCountNonCyclicReferences_Internal(*dm, PETSC_TRUE, PETSC_TRUE, &cnt));
   --((PetscObject)(*dm))->refct;
   if (--cnt > 0) {
     *dm = NULL;

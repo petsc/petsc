@@ -63,6 +63,7 @@ class BaseTestMatFactor(object):
         self.A.destroy(); self.A = None
         self.x.destroy(); self.x = None
         self.b.destroy(); self.b = None
+        PETSc.garbage_cleanup()
 
 class BaseTestMatFactorLU(BaseTestMatFactor):
 
@@ -86,7 +87,7 @@ class BaseTestMatFactorILU(BaseTestMatFactor):
         self.assertTrue(x.norm() < 1e-3)
 
 ## class BaseTestMatFactorILUDT(BaseTestMatFactor):
-## 
+##
 ##     def testFactorILUDT(self):
 ##         r, c = self.A.getOrdering("natural")
 ##         self.A = self.A.factorILUDT(r,c)
@@ -94,7 +95,7 @@ class BaseTestMatFactorILU(BaseTestMatFactor):
 ##         self.A.solve(self.b, x)
 ##         x.axpy(-1, self.x)
 ##         self.assertTrue(x.norm() < 1e-3)
-## 
+##
 class BaseTestMatFactorChol(BaseTestMatFactor):
 
     def testFactorChol(self):

@@ -4,6 +4,7 @@
 */
 #include <petsc/private/petscimpl.h> /*I  "petscsys.h"   I*/
 #include <petscviewer.h>
+#include <petsc/private/garbagecollector.h>
 
 #if !defined(PETSC_HAVE_WINDOWS_COMPILERS)
   #include <petsc/private/valgrind/valgrind.h>
@@ -49,10 +50,12 @@ PetscMPIInt PETSC_MPI_THREAD_REQUIRED = MPI_THREAD_FUNNELED;
 PetscMPIInt PETSC_MPI_THREAD_REQUIRED = 0;
 #endif
 
-PetscMPIInt Petsc_Counter_keyval   = MPI_KEYVAL_INVALID;
-PetscMPIInt Petsc_InnerComm_keyval = MPI_KEYVAL_INVALID;
-PetscMPIInt Petsc_OuterComm_keyval = MPI_KEYVAL_INVALID;
-PetscMPIInt Petsc_ShmComm_keyval   = MPI_KEYVAL_INVALID;
+PetscMPIInt Petsc_Counter_keyval      = MPI_KEYVAL_INVALID;
+PetscMPIInt Petsc_InnerComm_keyval    = MPI_KEYVAL_INVALID;
+PetscMPIInt Petsc_OuterComm_keyval    = MPI_KEYVAL_INVALID;
+PetscMPIInt Petsc_ShmComm_keyval      = MPI_KEYVAL_INVALID;
+PetscMPIInt Petsc_CreationIdx_keyval  = MPI_KEYVAL_INVALID;
+PetscMPIInt Petsc_Garbage_HMap_keyval = MPI_KEYVAL_INVALID;
 
 /*
      Declare and set all the string names of the PETSc enums
@@ -169,7 +172,8 @@ PETSC_INTERN PetscErrorCode PetscOptionsCheckInitial_Private(const char[]);
        This function is the MPI reduction operation used to compute the sum of the
    first half of the datatype and the max of the second half.
 */
-MPI_Op MPIU_MAXSUM_OP = 0;
+MPI_Op MPIU_MAXSUM_OP               = 0;
+MPI_Op Petsc_Garbage_SetIntersectOp = 0;
 
 PETSC_INTERN void MPIAPI MPIU_MaxSum_Local(void *in, void *out, int *cnt, MPI_Datatype *datatype)
 {
@@ -915,6 +919,7 @@ PETSC_INTERN PetscErrorCode PetscInitialize_Common(const char *prog, const char 
 #endif
 
   PetscCallMPI(MPI_Type_contiguous(2, MPIU_SCALAR, &MPIU_2SCALAR));
+  PetscCallMPI(MPI_Op_create(PetscGarbageKeySortedIntersect, 1, &Petsc_Garbage_SetIntersectOp));
   PetscCallMPI(MPI_Type_commit(&MPIU_2SCALAR));
 
   /* create datatypes used by MPIU_MAXLOC, MPIU_MINLOC and PetscSplitReduction_Op */
@@ -957,6 +962,8 @@ PETSC_INTERN PetscErrorCode PetscInitialize_Common(const char *prog, const char 
   PetscCallMPI(MPI_Comm_create_keyval(MPI_COMM_NULL_COPY_FN, Petsc_InnerComm_Attr_Delete_Fn, &Petsc_InnerComm_keyval, (void *)0));
   PetscCallMPI(MPI_Comm_create_keyval(MPI_COMM_NULL_COPY_FN, Petsc_OuterComm_Attr_Delete_Fn, &Petsc_OuterComm_keyval, (void *)0));
   PetscCallMPI(MPI_Comm_create_keyval(MPI_COMM_NULL_COPY_FN, Petsc_ShmComm_Attr_Delete_Fn, &Petsc_ShmComm_keyval, (void *)0));
+  PetscCallMPI(MPI_Comm_create_keyval(MPI_COMM_NULL_COPY_FN, MPI_COMM_NULL_DELETE_FN, &Petsc_CreationIdx_keyval, (void *)0));
+  PetscCallMPI(MPI_Comm_create_keyval(MPI_COMM_NULL_COPY_FN, MPI_COMM_NULL_DELETE_FN, &Petsc_Garbage_HMap_keyval, (void *)0));
 
 #if defined(PETSC_HAVE_FORTRAN)
   if (ftn) PetscCall(PetscInitFortran_Private(readarguments, file, len));
@@ -1299,6 +1306,7 @@ PetscErrorCode PetscFreeMPIResources(void)
   PetscCallMPI(MPI_Type_free(&MPI_4INT));
   PetscCallMPI(MPI_Type_free(&MPIU_4INT));
   PetscCallMPI(MPI_Op_free(&MPIU_MAXSUM_OP));
+  PetscCallMPI(MPI_Op_free(&Petsc_Garbage_SetIntersectOp));
   PetscFunctionReturn(0);
 }
 
@@ -1345,6 +1353,24 @@ PetscErrorCode PetscFinalize(void)
 
   PetscCall(PetscOptionsHasName(NULL, NULL, "-mpi_linear_solver_server", &flg));
   if (PetscDefined(USE_SINGLE_LIBRARY) && flg) PetscCall(PCMPIServerEnd());
+
+  /* Clean up Garbage automatically on COMM_SELF and COMM_WORLD at finalize */
+  {
+    union
+    {
+      MPI_Comm comm;
+      void    *ptr;
+    } ucomm;
+    PetscMPIInt flg;
+    void       *tmp;
+
+    PetscCallMPI(MPI_Comm_get_attr(PETSC_COMM_SELF, Petsc_InnerComm_keyval, &ucomm, &flg));
+    if (flg) PetscCallMPI(MPI_Comm_get_attr(ucomm.comm, Petsc_Garbage_HMap_keyval, &tmp, &flg));
+    if (flg) PetscCall(PetscGarbageCleanup(PETSC_COMM_SELF));
+    PetscCallMPI(MPI_Comm_get_attr(PETSC_COMM_WORLD, Petsc_InnerComm_keyval, &ucomm, &flg));
+    if (flg) PetscCallMPI(MPI_Comm_get_attr(ucomm.comm, Petsc_Garbage_HMap_keyval, &tmp, &flg));
+    if (flg) PetscCall(PetscGarbageCleanup(PETSC_COMM_WORLD));
+  }
 
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
 #if defined(PETSC_HAVE_ADIOS)
@@ -1722,6 +1748,8 @@ PetscErrorCode PetscFinalize(void)
   PetscCallMPI(MPI_Comm_free_keyval(&Petsc_InnerComm_keyval));
   PetscCallMPI(MPI_Comm_free_keyval(&Petsc_OuterComm_keyval));
   PetscCallMPI(MPI_Comm_free_keyval(&Petsc_ShmComm_keyval));
+  PetscCallMPI(MPI_Comm_free_keyval(&Petsc_CreationIdx_keyval));
+  PetscCallMPI(MPI_Comm_free_keyval(&Petsc_Garbage_HMap_keyval));
 
   PetscCall(PetscSpinlockDestroy(&PetscViewerASCIISpinLockOpen));
   PetscCall(PetscSpinlockDestroy(&PetscViewerASCIISpinLockStdout));

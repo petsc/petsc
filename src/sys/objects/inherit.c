@@ -34,12 +34,17 @@ PetscObjectId PetscObjectNewId_Internal(void)
 */
 PetscErrorCode PetscHeaderCreate_Private(PetscObject h, PetscClassId classid, const char class_name[], const char descr[], const char mansec[], MPI_Comm comm, PetscObjectDestroyFunction destroy, PetscObjectViewFunction view)
 {
+  void       *get_tmp;
+  PetscInt64 *cidx;
+  PetscMPIInt flg;
+
   PetscFunctionBegin;
   h->classid               = classid;
   h->class_name            = (char *)class_name;
   h->description           = (char *)descr;
   h->mansec                = (char *)mansec;
   h->refct                 = 1;
+  h->non_cyclic_references = NULL;
   h->id                    = PetscObjectNewId_Internal();
   h->bops->destroy         = destroy;
   h->bops->view            = view;
@@ -49,6 +54,14 @@ PetscErrorCode PetscHeaderCreate_Private(PetscObject h, PetscClassId classid, co
   h->bops->queryfunction   = PetscObjectQueryFunction_Petsc;
 
   PetscCall(PetscCommDuplicate(comm, &h->comm, &h->tag));
+
+  /* Increment and store current object creation index */
+  PetscCallMPI(MPI_Comm_get_attr(h->comm, Petsc_CreationIdx_keyval, &get_tmp, &flg));
+  if (flg) {
+    cidx    = (PetscInt64 *)get_tmp;
+    h->cidx = (*cidx)++;
+    PetscCallMPI(MPI_Comm_set_attr(h->comm, Petsc_CreationIdx_keyval, cidx));
+  } else SETERRQ(h->comm, PETSC_ERR_ARG_CORRUPT, "MPI_Comm does not have an object creation index");
 
 #if defined(PETSC_USE_LOG)
   /* Keep a record of object created */

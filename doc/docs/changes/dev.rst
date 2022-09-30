@@ -110,6 +110,9 @@ In addition to the changes above
 - Deprecate ``PetscNewLog()``, users should just use ``PetscNew()`` instead
 - Add ``PetscHasBuiltin()`` to detect whether a particular builtin function is supported by the compiler
 - Add ``PetscAssume()`` to indicate an invariant condition to the compiler
+- Add ``PetscSortedInt64()``, ``PetscSortInt64()`` and ``PetscSortCount()`` for sorting and checking arrays of these types
+- Add ``PetscHMapObjCreate()`` and all associated hash map routines for holding PETSc objects
+- Add ``PetscObjectDelayedDestroy()``, ``PetscGarbageKeySortedIntersect()``, ``PetscGarbageCleanup()`` and ``PetscGarbageView()`` for memory cleanup operations in managed languages
 
 .. rubric:: Event Logging:
 
@@ -139,7 +142,7 @@ exec-name``.
 
 .. rubric:: VecScatter / PetscSF:
 
-- Add ``PetscSFGetGraphLayout()`` 
+- Add ``PetscSFGetGraphLayout()``
 
 .. rubric:: PF:
 
@@ -217,6 +220,8 @@ exec-name``.
 - Add ``DMFieldCreateDSWithDG()`` to allow multiple representations of a given field
 - Add ``DMProjectFieldLabel()``
 - Make public ``DMSetVI()`` and ``DMDestroyVI()``
+- Change ``DMCountNonCyclicReferences()`` to ``DMCountNonCyclicReferences_Internal()``
+- Add ``DMCountNonCyclicReferences()`` as a more generic wrapper for ``DMCountNonCyclicReferences_Internal()``
 
 .. rubric:: DMSwarm:
 
@@ -254,7 +259,7 @@ exec-name``.
 
 .. rubric:: DMNetwork:
 
-- Add ``DMNetworkFinalizeComponents()`` to setup the internal data structures for components on a network. Previously this could only be done by calling DMSetUp. 
+- Add ``DMNetworkFinalizeComponents()`` to setup the internal data structures for components on a network. Previously this could only be done by calling DMSetUp
 
 .. rubric:: DMStag:
 

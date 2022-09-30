@@ -95,11 +95,13 @@ typedef struct {
 */
 #define PETSC_MAX_OPTIONS_HANDLER 5
 typedef struct _p_PetscObject {
-  PetscOps          bops[1];
-  PetscClassId      classid;
-  MPI_Comm          comm;
-  PetscObjectId     id; /* this is used to compare object for identity that may no longer exist since memory addresses get recycled for new objects */
-  PetscInt          refct;
+  PetscOps      bops[1];
+  PetscClassId  classid;
+  MPI_Comm      comm;
+  PetscObjectId id; /* this is used to compare object for identity that may no longer exist since memory addresses get recycled for new objects */
+  PetscInt      refct;
+  PetscErrorCode (*non_cyclic_references)(PetscObject, PetscInt *);
+  PetscInt64        cidx;
   PetscMPIInt       tag;
   PetscFunctionList qlist;
   PetscObjectList   olist;
@@ -237,6 +239,14 @@ PETSC_EXTERN PetscBool PetscCheckPointer(const void *, PetscDataType);
       do { \
         (void)(h); \
       } while (0)
+    #define PetscValidInt64Pointer(h, arg) \
+      do { \
+        (void)(h); \
+      } while (0)
+    #define PetscValidCountPointer(h, arg) \
+      do { \
+        (void)(h); \
+      } while (0)
     #define PetscValidBoolPointer(h, arg) \
       do { \
         (void)(h); \
@@ -290,6 +300,8 @@ PETSC_EXTERN PetscBool PetscCheckPointer(const void *, PetscDataType);
     #define PetscValidPointer(h, arg)       PetscValidPointer_Internal(h, arg, PETSC_CHAR, memory)
     #define PetscValidCharPointer(h, arg)   PetscValidPointer_Internal(h, arg, PETSC_CHAR, char)
     #define PetscValidIntPointer(h, arg)    PetscValidPointer_Internal(h, arg, PETSC_INT, PetscInt)
+    #define PetscValidInt64Pointer(h, arg)  PetscValidPointer_Internal(h, arg, PETSC_INT64, PetscInt)
+    #define PetscValidCountPointer(h, arg)  PetscValidPointer_Internal(h, arg, PETSC_COUNT, PetscCount)
     #define PetscValidBoolPointer(h, arg)   PetscValidPointer_Internal(h, arg, PETSC_BOOL, PetscBool)
     #define PetscValidScalarPointer(h, arg) PetscValidPointer_Internal(h, arg, PETSC_SCALAR, PetscScalar)
     #define PetscValidRealPointer(h, arg)   PetscValidPointer_Internal(h, arg, PETSC_REAL, PetscReal)
@@ -314,6 +326,10 @@ template <typename T>
 void PetscValidCharPointer(T *, int);
 template <typename T>
 void PetscValidIntPointer(T *, int);
+template <typename T>
+void PetscValidInt64Pointer(T *, int);
+template <typename T>
+void PetscValidCountPointer(T *, int);
 template <typename T>
 void PetscValidBoolPointer(T *, int);
 template <typename T>
@@ -1132,6 +1148,8 @@ PETSC_EXTERN PetscMPIInt Petsc_InnerComm_keyval;
 PETSC_EXTERN PetscMPIInt Petsc_OuterComm_keyval;
 PETSC_EXTERN PetscMPIInt Petsc_Seq_keyval;
 PETSC_EXTERN PetscMPIInt Petsc_ShmComm_keyval;
+PETSC_EXTERN PetscMPIInt Petsc_CreationIdx_keyval;
+PETSC_EXTERN PetscMPIInt Petsc_Garbage_HMap_keyval;
 
 struct PetscCommStash {
   struct PetscCommStash *next;
