@@ -479,7 +479,8 @@ typedef enum {
   PETSC___FP16           = 14,
   PETSC_STRUCT           = 15,
   PETSC_INT              = 16,
-  PETSC_INT64            = 17
+  PETSC_INT64            = 17,
+  PETSC_COUNT            = 18
 } PetscDataType;
 
 #if defined(PETSC_USE_REAL_SINGLE)

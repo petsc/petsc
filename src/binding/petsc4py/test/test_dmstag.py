@@ -17,7 +17,7 @@ class BaseTestDMStag(object):
                                         dofs=self.DOFS, sizes=self.SIZES, boundary_types=self.BOUNDARY,
                                         stencil_type=self.STENCIL, stencil_width=self.SWIDTH,
                                         comm=self.COMM, proc_sizes=self.PROC_SIZES, ownership_ranges=self.OWNERSHIP_RANGES, setUp=True)
-        
+
         self.directda = PETSc.DMStag().create(dim)
         self.directda.setStencilType(self.STENCIL)
         self.directda.setStencilWidth(self.SWIDTH)
@@ -29,10 +29,11 @@ class BaseTestDMStag(object):
         if self.OWNERSHIP_RANGES is not None:
             self.directda.setOwnershipRanges(self.OWNERSHIP_RANGES)
         self.directda.setUp()
-                                    
+
     def tearDown(self):
         self.da = None
         self.directda = None
+        PETSc.garbage_cleanup()
 
     def testCoordinates(self):
         self.da.setCoordinateDMType('stag')
@@ -42,7 +43,7 @@ class BaseTestDMStag(object):
         datype = cda.getType()
         self.assertEqual(datype,'stag')
         cda.destroy()
-        
+
         c = self.da.getCoordinatesLocal()
         self.da.setCoordinatesLocal(c)
         gc = self.da.getCoordinatesLocal()
@@ -54,7 +55,7 @@ class BaseTestDMStag(object):
         gc = self.da.getCoordinates()
         self.assertEqual(c.max()[1], gc.max()[1])
         self.assertEqual(c.min()[1], gc.min()[1])
-        
+
         self.directda.setCoordinateDMType('product')
         self.directda.setUniformCoordinates(0,1,0,1,0,1)
         self.directda.setUniformCoordinatesProduct(0,1,0,1,0,1)
@@ -66,19 +67,19 @@ class BaseTestDMStag(object):
     def testGetVec(self):
         vg = self.da.getGlobalVec()
         vl = self.da.getLocalVec()
-        
+
         vg.set(1.0)
         self.assertEqual(vg.max()[1], 1.0)
         self.assertEqual(vg.min()[1], 1.0)
         self.da.globalToLocal(vg,vl)
         self.assertEqual(vl.max()[1], 1.0)
         self.assertTrue (vl.min()[1] in (1.0, 0.0))
-        
+
         vl.set(2.0)
         self.da.localToGlobal(vl,vg)
         self.assertEqual(vg.max()[1], 2.0)
         self.assertTrue (vg.min()[1] in (2.0, 0.0))
-        
+
         self.da.restoreGlobalVec(vg)
         self.da.restoreLocalVec(vl)
 
@@ -254,17 +255,17 @@ for dim in DIM:
                             for width in STENCIL_WIDTH:
                                 if stencil == 'none' and width > 0: continue
                                 if stencil in ['star','box'] and width == 0: continue
-                                kargs = dict(dim=dim, dofs=dofs, boundary_type=boundary, 
+                                kargs = dict(dim=dim, dofs=dofs, boundary_type=boundary,
                                 stencil_type=stencil, stencil_width=width)
 
                                 def testCreate(self,kargs=kargs):
                                     kargs = dict(kargs)
                                     cda = PETSc.DMStag().create(kargs['dim'],
-                                    dofs = kargs['dofs'], 
-                                    sizes = [8*SCALE,]*kargs['dim'], 
-                                    boundary_types = [kargs['boundary_type'],]*kargs['dim'], 
-                                    stencil_type = kargs['stencil_type'], 
-                                    stencil_width = kargs['stencil_width'], 
+                                    dofs = kargs['dofs'],
+                                    sizes = [8*SCALE,]*kargs['dim'],
+                                    boundary_types = [kargs['boundary_type'],]*kargs['dim'],
+                                    stencil_type = kargs['stencil_type'],
+                                    stencil_width = kargs['stencil_width'],
                                     setUp=True)
 
                                     dda = PETSc.DMStag().create(kargs['dim'])
@@ -288,7 +289,7 @@ for dim in DIM:
                                     cisFirstRank = cda.getIsFirstRank()
                                     cownershipranges = cda.getOwnershipRanges()
                                     cprocsizes = cda.getProcSizes()
-            
+
                                     ddim = dda.getDim()
                                     ddof = dda.getDof()
                                     dgsizes = dda.getGlobalSizes()
@@ -301,15 +302,15 @@ for dim in DIM:
                                     disLastRank = dda.getIsLastRank()
                                     disFirstRank = dda.getIsFirstRank()
                                     downershipranges = dda.getOwnershipRanges()
-                                    dprocsizes = dda.getProcSizes()            
-                                    
+                                    dprocsizes = dda.getProcSizes()
+
                                     self.assertEqual(cdim,kargs['dim'])
                                     self.assertEqual(cdof,tuple(kargs['dofs']))
                                     self.assertEqual(cboundary,tuple([kargs['boundary_type'],]*kargs['dim']))
                                     self.assertEqual(cstencil_type,kargs['stencil_type'])
                                     self.assertEqual(cstencil_width,kargs['stencil_width'])
                                     self.assertEqual(cgsizes,tuple([8*SCALE,]*kargs['dim']))
-                                    
+
                                     self.assertEqual(cdim,ddim)
                                     self.assertEqual(cdof,ddof)
                                     self.assertEqual(cgsizes,dgsizes)
@@ -327,7 +328,7 @@ for dim in DIM:
                                     for co,do in zip(cownershipranges, downershipranges):
                                         for i,j in zip(co,do):
                                             self.assertEqual(i,j)
-            
+
                                     self.assertEqual(cdim+1,len(cdof))
                                     self.assertEqual(cdim,len(cgsizes))
                                     self.assertEqual(cdim,len(clsizes))
@@ -348,7 +349,7 @@ for dim in DIM:
                                     self.assertEqual(len(cprocsizes), len(cownershipranges))
                                     self.assertEqual(len(cprocsizes), cdim)
                                     for i,m in enumerate(cprocsizes):
-                                        self.assertEqual(m, len(cownershipranges[i]))    
+                                        self.assertEqual(m, len(cownershipranges[i]))
                                     dda.destroy()
                                     cda.destroy()
 

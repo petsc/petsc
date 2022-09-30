@@ -22,6 +22,7 @@ class BaseTestGC(object):
         self.obj = None
         gc.collect()
         self.assertTrue(wref() is None)
+        PETSc.garbage_cleanup()
 
     def make_weakref(self):
         wref = weakref.ref(self.obj)
