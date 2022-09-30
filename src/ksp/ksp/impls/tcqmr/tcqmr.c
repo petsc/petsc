@@ -158,26 +158,22 @@ static PetscErrorCode KSPSetUp_TCQMR(KSP ksp)
 }
 
 /*MC
-     KSPTCQMR - A variant of QMR (quasi minimal residual) developed by Tony Chan
-
-   Options Database Keys:
-    see KSPSolve()
+     KSPTCQMR - A variant of QMR (quasi minimal residual) [1]
 
    Level: beginner
 
   Notes:
-    Supports either left or right preconditioning, but not symmetric
+  Supports either left or right preconditioning, but not symmetric
 
-          The "residual norm" computed in this algorithm is actually just an upper bound on the actual residual norm.
-          That is for left preconditioning it is a bound on the preconditioned residual and for right preconditioning
-          it is a bound on the true residual.
+  The "residual norm" computed in this algorithm is actually just an upper bound on the actual residual norm.
+  That is for left preconditioning it is a bound on the preconditioned residual and for right preconditioning
+  it is a bound on the true residual.
 
   References:
-. * - Tony F. Chan, Lisette de Pillis, and Henk van der Vorst, Transpose free formulations of Lanczos type methods for nonsymmetric linear systems,
+. [1] - Tony F. Chan, Lisette de Pillis, and Henk van der Vorst, Transpose free formulations of Lanczos type methods for nonsymmetric linear systems,
   Numerical Algorithms, Volume 17, 1998.
 
-.seealso: `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPTFQMR`
-
+.seealso: [](chapter_ksp), `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPTFQMR`
 M*/
 
 PETSC_EXTERN PetscErrorCode KSPCreate_TCQMR(KSP ksp)

@@ -59,7 +59,6 @@ PetscErrorCode KSPSetUp_LGMRES(KSP ksp)
 }
 
 /*
-
     KSPLGMRESCycle - Run lgmres, possibly with restart.  Return residual
                   history if requested.
 
@@ -77,7 +76,6 @@ PetscErrorCode KSPSetUp_LGMRES(KSP ksp)
     Notes:
     On entry, the value in vector VEC_VV(0) should be
     the initial residual.
-
  */
 PetscErrorCode KSPLGMRESCycle(PetscInt *itcount, KSP ksp)
 {
@@ -305,7 +303,6 @@ PetscErrorCode KSPLGMRESCycle(PetscInt *itcount, KSP ksp)
 .     outits - number of iterations used
 
 */
-
 PetscErrorCode KSPSolve_LGMRES(KSP ksp)
 {
   PetscInt    cycle_its; /* iterations done in a call to KSPLGMRESCycle */
@@ -346,9 +343,7 @@ PetscErrorCode KSPSolve_LGMRES(KSP ksp)
 }
 
 /*
-
    KSPDestroy_LGMRES - Frees all memory space used by the Krylov method.
-
 */
 PetscErrorCode KSPDestroy_LGMRES(KSP ksp)
 {
@@ -468,7 +463,6 @@ static PetscErrorCode KSPLGMRESBuildSoln(PetscScalar *nrs, Vec vguess, Vec vdest
 }
 
 /*
-
     KSPLGMRESUpdateHessenberg - Do the scalar work for the orthogonalization.
                             Return new residual.
 
@@ -587,7 +581,6 @@ static PetscErrorCode KSPLGMRESGetNewVectors(KSP ksp, PetscInt it)
 }
 
 /*
-
    KSPBuildSolution_LGMRES
 
      Input Parameter:
@@ -674,8 +667,6 @@ static PetscErrorCode KSPLGMRESSetAugDim_LGMRES(KSP ksp, PetscInt aug_dim)
   PetscFunctionReturn(0);
 }
 
-/* end new lgmres functions */
-
 /*MC
     KSPLGMRES - Augments the standard GMRES approximation space with approximations to
                 the error from previous restart cycles.
@@ -693,29 +684,29 @@ static PetscErrorCode KSPLGMRESSetAugDim_LGMRES(KSP ksp, PetscInt aug_dim)
 .   -ksp_lgmres_augment <k> - number of error approximations to augment the Krylov space with
 -   -ksp_lgmres_constant - use a constant approx. space size (only affects restart cycles < num. error approx.(k), i.e. the first k restarts)
 
-    To run LGMRES(m, k) as described in the above paper, use:
+    To run LGMRES(m, k) as described in [1], use:
        -ksp_gmres_restart <m+k>
        -ksp_lgmres_augment <k>
 
   Level: beginner
 
-   Notes:
+   Note:
     Supports both left and right preconditioning, but not symmetric.
 
+  Developer Note:
+    This object is subclassed off of `KSPGMRES`
+
+  Contributed by:
+  Allison Baker
+
    References:
-.  * - A. H. Baker, E.R. Jessup, and T.A. Manteuffel. A technique for accelerating the convergence of restarted GMRES. SIAM Journal on Matrix Analysis and Applications, 26 (2005).
+.  [1] - A. H. Baker, E.R. Jessup, and T.A. Manteuffel. A technique for accelerating the convergence of restarted GMRES. SIAM Journal on Matrix Analysis and Applications, 26 (2005).
 
-  Developer Notes:
-    This object is subclassed off of KSPGMRES
-
-  Contributed by: Allison Baker
-
-.seealso: `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPFGMRES`, `KSPGMRES`,
+.seealso: [](chapter_ksp), `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPFGMRES`, `KSPGMRES`,
           `KSPGMRESSetRestart()`, `KSPGMRESSetHapTol()`, `KSPGMRESSetPreAllocateVectors()`, `KSPGMRESSetOrthogonalization()`, `KSPGMRESGetOrthogonalization()`,
           `KSPGMRESClassicalGramSchmidtOrthogonalization()`, `KSPGMRESModifiedGramSchmidtOrthogonalization()`,
           `KSPGMRESCGSRefinementType`, `KSPGMRESSetCGSRefinementType()`, `KSPGMRESGetCGSRefinementType()`, `KSPGMRESMonitorKrylov()`, `KSPLGMRESSetAugDim()`,
           `KSPGMRESSetConstant()`
-
 M*/
 
 PETSC_EXTERN PetscErrorCode KSPCreate_LGMRES(KSP ksp)

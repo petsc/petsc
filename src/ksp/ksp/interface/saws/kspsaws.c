@@ -9,19 +9,19 @@ typedef struct {
 } KSPMonitor_SAWs;
 
 /*@C
-   KSPMonitorSAWsCreate - create an SAWs monitor context
+   KSPMonitorSAWsCreate - create an SAWs monitor context for `KSP`
 
    Collective
 
    Input Parameter:
-.  ksp - KSP to monitor
+.  ksp - `KSP` to monitor
 
    Output Parameter:
 .  ctx - context for monitor
 
    Level: developer
 
-.seealso: `KSPMonitorSAWs()`, `KSPMonitorSAWsDestroy()`
+.seealso: [](chapter_ksp), `KSP`, `KSPMonitorSet()`, `KSPMonitorSAWs()`, `KSPMonitorSAWsDestroy()`
 @*/
 PetscErrorCode KSPMonitorSAWsCreate(KSP ksp, void **ctx)
 {
@@ -36,7 +36,7 @@ PetscErrorCode KSPMonitorSAWsCreate(KSP ksp, void **ctx)
 }
 
 /*@C
-   KSPMonitorSAWsDestroy - destroy a monitor context created with KSPMonitorSAWsCreate()
+   KSPMonitorSAWsDestroy - destroy a monitor context created with `KSPMonitorSAWsCreate()`
 
    Collective
 
@@ -45,7 +45,7 @@ PetscErrorCode KSPMonitorSAWsCreate(KSP ksp, void **ctx)
 
    Level: developer
 
-.seealso: `KSPMonitorSAWsCreate()`
+.seealso: [](chapter_ksp), `KSP`, `KSPMonitorSet()`, `KSPMonitorSAWsCreate()`
 @*/
 PetscErrorCode KSPMonitorSAWsDestroy(void **ctx)
 {
@@ -58,7 +58,7 @@ PetscErrorCode KSPMonitorSAWsDestroy(void **ctx)
 }
 
 /*@C
-   KSPMonitorSAWs - monitor solution using SAWs
+   KSPMonitorSAWs - monitor `KSP` solution using SAWs
 
    Logically Collective on ksp
 
@@ -66,11 +66,14 @@ PetscErrorCode KSPMonitorSAWsDestroy(void **ctx)
 +  ksp   - iterative context
 .  n     - iteration number
 .  rnorm - 2-norm (preconditioned) residual value (may be estimated).
--  ctx -  PetscViewer of type SAWs
+-  ctx -  created with `KSPMonitorSAWsCreate()`
 
    Level: advanced
 
-.seealso: `KSPMonitorSingularValue()`, `KSPComputeExtremeSingularValues()`, `PetscViewerSAWsOpen()`
+   Note:
+   Create the ctx with `KSPMonitorSAWsCreate()` then call `KSPMonitorSet()` with the context, this function, and `KSPMonitorSAWsDestroy()`
+
+.seealso: [](chapter_ksp), `KSP`, `KSPMonitorSet()`, `KSPMonitorSAWsCreate()`, `KSPMonitorSAWsDestroy()`, `KSPMonitorSingularValue()`, `KSPComputeExtremeSingularValues()`, `PetscViewerSAWsOpen()`
 @*/
 PetscErrorCode KSPMonitorSAWs(KSP ksp, PetscInt n, PetscReal rnorm, void *ctx)
 {

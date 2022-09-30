@@ -128,18 +128,18 @@ static PetscErrorCode KSPSolve_PIPECR(KSP ksp)
 }
 
 /*MC
-   KSPPIPECR - Pipelined conjugate residual method
-
-   This method has only a single non-blocking reduction per iteration, compared to 2 blocking for standard CR.  The
-   non-blocking reduction is overlapped by the matrix-vector product, but not the preconditioner application.
-
-   See also KSPPIPECG, where the reduction is only overlapped with the matrix-vector product.
+   KSPPIPECR - Pipelined conjugate residual method. [](sec_pipelineksp)
 
    Level: intermediate
 
    Notes:
+   This method has only a single non-blocking reduction per iteration, compared to 2 blocking for standard `KSPCR`.  The
+   non-blocking reduction is overlapped by the matrix-vector product, but not the preconditioner application.
+
+   See also `KSPPIPECG`, where the reduction is only overlapped with the matrix-vector product.
+
    MPI configuration may be necessary for reductions to make asynchronous progress, which is important for performance of pipelined methods.
-   See the FAQ on the PETSc website for details.
+   See [](doc_faq_pipelined)
 
    Contributed by:
    Pieter Ghysels, Universiteit Antwerpen, Intel Exascience lab Flanders
@@ -148,7 +148,7 @@ static PetscErrorCode KSPSolve_PIPECR(KSP ksp)
    P. Ghysels and W. Vanroose, "Hiding global synchronization latency in the preconditioned Conjugate Gradient algorithm",
    Submitted to Parallel Computing, 2012.
 
-.seealso: `KSPCreate()`, `KSPSetType()`, `KSPPIPECG`, `KSPGROPPCG`, `KSPPGMRES`, `KSPCG`, `KSPCGUseSingleReduction()`
+.seealso: [](chapter_ksp), [](sec_pipelineksp), [](doc_faq_pipelined), `KSPCreate()`, `KSPSetType()`, `KSPPIPECG`, `KSPGROPPCG`, `KSPPGMRES`, `KSPCG`, `KSPCGUseSingleReduction()`
 M*/
 
 PETSC_EXTERN PetscErrorCode KSPCreate_PIPECR(KSP ksp)

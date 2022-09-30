@@ -9,14 +9,14 @@
 
     Input Parameters:
 +   ksp - the iterative context
--   scale - the relaxation factor
+-   scale - the damping factor
 
     Options Database Keys:
 . -ksp_richardson_self <scale> - Set the scale factor
 
     Level: intermediate
 
-    .seealso: `KSPRICHARDSON`, `KSPRichardsonSetSelfScale()`
+ .seealso: [](chapter_ksp), `KSPRICHARDSON`, `KSPRichardsonSetSelfScale()`
 @*/
 PetscErrorCode KSPRichardsonSetScale(KSP ksp, PetscReal scale)
 {
@@ -35,20 +35,20 @@ PetscErrorCode KSPRichardsonSetScale(KSP ksp, PetscReal scale)
 
     Input Parameters:
 +   ksp - the iterative context
--   scale - PETSC_TRUE or the default of PETSC_FALSE
+-   scale - `PETSC_TRUE` or the default of `PETSC_FALSE`
 
     Options Database Keys:
 . -ksp_richardson_self_scale - Use self-scaling
 
     Level: intermediate
 
-    Notes:
-    Requires two extra work vectors. Uses an extra VecAXPY() and VecDotNorm2() per iteration.
+    Note:
+    Requires two extra work vectors. Uses an extra `VecAXPY()` and `VecDotNorm2()` per iteration.
 
-    Developer Notes:
+    Developer Note:
     Could also minimize the 2-norm of the true residual with one less work vector
 
-    .seealso: `KSPRICHARDSON`, `KSPRichardsonSetScale()`
+.seealso: [](chapter_ksp), `KSPRICHARDSON`, `KSPRichardsonSetScale()`
 @*/
 PetscErrorCode KSPRichardsonSetSelfScale(KSP ksp, PetscBool scale)
 {

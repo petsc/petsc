@@ -281,25 +281,22 @@ PetscErrorCode MatCreate_LMVMBadBrdn(Mat B)
    symmetric or positive-definite.
 
    The provided local and global sizes must match the solution and function vectors
-   used with MatLMVMUpdate() and MatSolve(). The resulting L-BadBrdn matrix will have
-   storage vectors allocated with VecCreateSeq() in serial and VecCreateMPI() in
+   used with `MatLMVMUpdate()` and `MatSolve()`. The resulting L-BadBrdn matrix will have
+   storage vectors allocated with `VecCreateSeq()` in serial and `VecCreateMPI()` in
    parallel. To use the L-BadBrdn matrix with other vector types, the matrix must be
-   created using MatCreate() and MatSetType(), followed by MatLMVMAllocate().
+   created using `MatCreate()` and `MatSetType()`, followed by `MatLMVMAllocate()`.
    This ensures that the internal storage and work vectors are duplicated from the
    correct type of vector.
 
    Collective
 
    Input Parameters:
-+  comm - MPI communicator, set to PETSC_COMM_SELF
++  comm - MPI communicator
 .  n - number of local rows for storage vectors
 -  N - global size of the storage vectors
 
    Output Parameter:
 .  B - the matrix
-
-   It is recommended that one use the MatCreate(), MatSetType() and/or MatSetFromOptions()
-   paradigm instead of this routine directly.
 
    Options Database Keys:
 +   -mat_lmvm_scale_type - (developer) type of scaling applied to J0 (none, scalar, diagonal)
@@ -311,7 +308,11 @@ PetscErrorCode MatCreate_LMVMBadBrdn(Mat B)
 
    Level: intermediate
 
-.seealso: `MatCreate()`, `MATLMVM`, `MATLMVMBADBRDN`, `MatCreateLMVMDFP()`, `MatCreateLMVMSR1()`,
+   Note:
+   It is recommended that one use the `MatCreate()`, `MatSetType()` and/or `MatSetFromOptions()`
+   paradigm instead of this routine directly.
+
+.seealso: [](chapter_ksp), `MatCreate()`, `MATLMVM`, `MATLMVMBADBRDN`, `MatCreateLMVMDFP()`, `MatCreateLMVMSR1()`,
           `MatCreateLMVMBFGS()`, `MatCreateLMVMBrdn()`, `MatCreateLMVMSymBrdn()`
 @*/
 PetscErrorCode MatCreateLMVMBadBroyden(MPI_Comm comm, PetscInt n, PetscInt N, Mat *B)

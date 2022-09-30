@@ -1,12 +1,12 @@
 #include <../src/ksp/ksp/utils/lmvm/lmvm.h> /*I "petscksp.h" I*/
 
 /*@
-   MatLMVMUpdate - Adds (X-Xprev) and (F-Fprev) updates to an LMVM matrix.
-   The first time the function is called for an LMVM matrix, no update is
+   MatLMVMUpdate - Adds (X-Xprev) and (F-Fprev) updates to an LMVM-type matrix.
+   The first time the function is called for an LMVM-type matrix, no update is
    applied, but the given X and F vectors are stored for use as Xprev and
    Fprev in the next update.
 
-   If the user has provided another LMVM matrix in place of J0, the J0
+   If the user has provided another LMVM-type matrix in place of J0, the J0
    matrix is also updated recursively.
 
    Input Parameters:
@@ -16,7 +16,7 @@
 
    Level: intermediate
 
-.seealso: [LMVM Matrices](sec_matlmvm), `MATLMVM`, `MatLMVMReset()`, `MatLMVMAllocate()`
+.seealso: [](chapter_ksp), [LMVM Matrices](sec_matlmvm), `MATLMVM`, `MatLMVMReset()`, `MatLMVMAllocate()`
 @*/
 PetscErrorCode MatLMVMUpdate(Mat B, Vec X, Vec F)
 {
@@ -52,7 +52,7 @@ PetscErrorCode MatLMVMUpdate(Mat B, Vec X, Vec F)
 
    Level: advanced
 
-.seealso: [LMVM Matrices](sec_matlmvm), `MATLMVM`, `MatLMVMSetJ0()`
+.seealso: [](chapter_ksp), [LMVM Matrices](sec_matlmvm), `MATLMVM`, `MatLMVMSetJ0()`
 @*/
 PetscErrorCode MatLMVMClearJ0(Mat B)
 {
@@ -84,7 +84,7 @@ PetscErrorCode MatLMVMClearJ0(Mat B)
 
    Level: advanced
 
-.seealso: [LMVM Matrices](sec_matlmvm), `MATLMVM`, `MatLMVMSetDiagScale()`, `MatLMVMSetJ0()`
+.seealso: [](chapter_ksp), [LMVM Matrices](sec_matlmvm), `MATLMVM`, `MatLMVMSetDiagScale()`, `MatLMVMSetJ0()`
 @*/
 PetscErrorCode MatLMVMSetJ0Scale(Mat B, PetscReal scale)
 {
@@ -113,7 +113,7 @@ PetscErrorCode MatLMVMSetJ0Scale(Mat B, PetscReal scale)
 
    Level: advanced
 
-.seealso: [LMVM Matrices](sec_matlmvm), `MATLMVM`, `MatLMVMSetScale()`, `MatLMVMSetJ0()`
+.seealso: [](chapter_ksp), [LMVM Matrices](sec_matlmvm), `MATLMVM`, `MatLMVMSetScale()`, `MatLMVMSetJ0()`
 @*/
 PetscErrorCode MatLMVMSetJ0Diag(Mat B, Vec V)
 {
@@ -139,17 +139,17 @@ PetscErrorCode MatLMVMSetJ0Diag(Mat B, Vec V)
 
 /*@
    MatLMVMSetJ0 - Allows the user to define the initial
-   Jacobian matrix from which the LMVM approximation is
+   Jacobian matrix from which the LMVM-type approximation is
    built up. Inverse of this initial Jacobian is applied
-   using an internal KSP solver, which defaults to GMRES.
-   This internal KSP solver has the "mat_lmvm_" option
+   using an internal `KSP` solver, which defaults to `KSPGMRES`.
+   This internal `KSP` solver has the "mat_lmvm_" option
    prefix.
 
-   Note that another LMVM matrix can be used in place of
-   J0, in which case updating the outer LMVM matrix will
-   also trigger the update for the inner LMVM matrix. This
+   Note that another LMVM-type matrix can be used in place of
+   J0, in which case updating the outer LMVM-type matrix will
+   also trigger the update for the inner LMVM-type matrix. This
    is useful in cases where a full-memory diagonal approximation
-   such as MATLMVMDIAGBRDN is used in place of J0.
+   such as `MATLMVMDIAGBRDN` is used in place of J0.
 
    Input Parameters:
 +  B - An LMVM-type matrix
@@ -157,7 +157,7 @@ PetscErrorCode MatLMVMSetJ0Diag(Mat B, Vec V)
 
    Level: advanced
 
-.seealso: [LMVM Matrices](sec_matlmvm), `MATLMVM`, `MatLMVMSetJ0PC()`, `MatLMVMSetJ0KSP()`
+.seealso: [](chapter_ksp), [LMVM Matrices](sec_matlmvm), `MATLMVM`, `MatLMVMSetJ0PC()`, `MatLMVMSetJ0KSP()`
 @*/
 PetscErrorCode MatLMVMSetJ0(Mat B, Mat J0)
 {
@@ -180,19 +180,19 @@ PetscErrorCode MatLMVMSetJ0(Mat B, Mat J0)
 }
 
 /*@
-   MatLMVMSetJ0PC - Allows the user to define a PC object that
-   acts as the initial inverse-Jacobian matrix. This PC should
+   MatLMVMSetJ0PC - Allows the user to define a `PC` object that
+   acts as the initial inverse-Jacobian matrix. This `PC` should
    already contain all the operators necessary for its application.
-   The LMVM matrix only calls PCApply() without changing any other
+   The LMVM-type matrix only calls `PCApply()` without changing any other
    options.
 
    Input Parameters:
 +  B - An LMVM-type matrix
--  J0pc - PC object where PCApply defines an inverse application for J0
+-  J0pc - `PC` object where `PCApply()` defines an inverse application for J0
 
    Level: advanced
 
-.seealso: [LMVM Matrices](sec_matlmvm), `MATLMVM`, `MatLMVMGetJ0PC()`
+.seealso: [](chapter_ksp), [LMVM Matrices](sec_matlmvm), `MATLMVM`, `MatLMVMGetJ0PC()`
 @*/
 PetscErrorCode MatLMVMSetJ0PC(Mat B, PC J0pc)
 {
@@ -216,17 +216,17 @@ PetscErrorCode MatLMVMSetJ0PC(Mat B, PC J0pc)
 /*@
    MatLMVMSetJ0KSP - Allows the user to provide a pre-configured
    KSP solver for the initial inverse-Jacobian approximation.
-   This KSP solver should already contain all the operators
-   necessary to perform the inversion. The LMVM matrix only
-   calls KSPSolve() without changing any other options.
+   This `KSP` solver should already contain all the operators
+   necessary to perform the inversion. The LMVM-type matrix only
+   calls `KSPSolve()` without changing any other options.
 
    Input Parameters:
 +  B - An LMVM-type matrix
--  J0ksp - KSP solver for the initial inverse-Jacobian application
+-  J0ksp - `KSP` solver for the initial inverse-Jacobian application
 
    Level: advanced
 
-.seealso: [LMVM Matrices](sec_matlmvm), `MATLMVM`, `MatLMVMGetJ0KSP()`
+.seealso: [](chapter_ksp), [LMVM Matrices](sec_matlmvm), `MATLMVM`, `MatLMVMGetJ0KSP()`
 @*/
 PetscErrorCode MatLMVMSetJ0KSP(Mat B, KSP J0ksp)
 {
@@ -255,11 +255,11 @@ PetscErrorCode MatLMVMSetJ0KSP(Mat B, KSP J0ksp)
 .  B - An LMVM-type matrix
 
    Output Parameter:
-.  J0 - Mat object for defining the initial Jacobian
+.  J0 - `Mat` object for defining the initial Jacobian
 
    Level: advanced
 
-.seealso: [LMVM Matrices](sec_matlmvm), `MATLMVM`, `MatLMVMSetJ0()`
+.seealso: [](chapter_ksp), [LMVM Matrices](sec_matlmvm), `MATLMVM`, `MatLMVMSetJ0()`
 @*/
 PetscErrorCode MatLMVMGetJ0(Mat B, Mat *J0)
 {
@@ -275,18 +275,18 @@ PetscErrorCode MatLMVMGetJ0(Mat B, Mat *J0)
 }
 
 /*@
-   MatLMVMGetJ0PC - Returns a pointer to the internal PC object
+   MatLMVMGetJ0PC - Returns a pointer to the internal `PC` object
    associated with the initial Jacobian.
 
    Input Parameters:
 .  B - An LMVM-type matrix
 
    Output Parameter:
-.  J0pc - PC object for defining the initial inverse-Jacobian
+.  J0pc - `PC` object for defining the initial inverse-Jacobian
 
    Level: advanced
 
-.seealso: [LMVM Matrices](sec_matlmvm), `MATLMVM`, `MatLMVMSetJ0PC()`
+.seealso: [](chapter_ksp), [LMVM Matrices](sec_matlmvm), `MATLMVM`, `MatLMVMSetJ0PC()`
 @*/
 PetscErrorCode MatLMVMGetJ0PC(Mat B, PC *J0pc)
 {
@@ -306,18 +306,18 @@ PetscErrorCode MatLMVMGetJ0PC(Mat B, PC *J0pc)
 }
 
 /*@
-   MatLMVMGetJ0KSP - Returns a pointer to the internal KSP solver
+   MatLMVMGetJ0KSP - Returns a pointer to the internal `KSP` solver
    associated with the initial Jacobian.
 
    Input Parameters:
 .  B - An LMVM-type matrix
 
    Output Parameter:
-.  J0ksp - KSP solver for defining the initial inverse-Jacobian
+.  J0ksp - `KSP` solver for defining the initial inverse-Jacobian
 
    Level: advanced
 
-.seealso: [LMVM Matrices](sec_matlmvm), `MATLMVM`, `MatLMVMSetJ0KSP()`
+.seealso: [](chapter_ksp), [LMVM Matrices](sec_matlmvm), `MATLMVM`, `MatLMVMSetJ0KSP()`
 @*/
 PetscErrorCode MatLMVMGetJ0KSP(Mat B, KSP *J0ksp)
 {
@@ -345,7 +345,7 @@ PetscErrorCode MatLMVMGetJ0KSP(Mat B, KSP *J0ksp)
 
    Level: advanced
 
-.seealso: [LMVM Matrices](sec_matlmvm), `MATLMVM`, `MatLMVMSetJ0()`, `MatLMVMSetJ0Scale()`, `MatLMVMSetJ0ScaleDiag()`,
+.seealso: [](chapter_ksp), [LMVM Matrices](sec_matlmvm), `MATLMVM`, `MatLMVMSetJ0()`, `MatLMVMSetJ0Scale()`, `MatLMVMSetJ0ScaleDiag()`,
           `MatLMVMSetJ0PC()`, `MatLMVMSetJ0KSP()`, `MatLMVMApplyJ0Inv()`
 @*/
 PetscErrorCode MatLMVMApplyJ0Fwd(Mat B, Vec X, Vec Y)
@@ -400,7 +400,7 @@ PetscErrorCode MatLMVMApplyJ0Fwd(Mat B, Vec X, Vec Y)
    MatLMVMApplyJ0Inv - Applies some estimation of the initial Jacobian
    inverse to the given vector. The specific form of the application
    depends on whether the user provided a scaling factor, a J0 matrix,
-   a J0 PC, or a J0 KSP object. If no form of the initial Jacobian is
+   a J0 `PC`, or a J0 `KSP` object. If no form of the initial Jacobian is
    provided, the function simply does an identity matrix application
    (vector copy).
 
@@ -413,7 +413,7 @@ PetscErrorCode MatLMVMApplyJ0Fwd(Mat B, Vec X, Vec Y)
 
    Level: advanced
 
-.seealso: [LMVM Matrices](sec_matlmvm), `MATLMVM`, `MatLMVMSetJ0()`, `MatLMVMSetJ0Scale()`, `MatLMVMSetJ0ScaleDiag()`,
+.seealso: [](chapter_ksp), [LMVM Matrices](sec_matlmvm), `MATLMVM`, `MatLMVMSetJ0()`, `MatLMVMSetJ0Scale()`, `MatLMVMSetJ0ScaleDiag()`,
           `MatLMVMSetJ0PC()`, `MatLMVMSetJ0KSP()`, `MatLMVMApplyJ0Fwd()`
 @*/
 PetscErrorCode MatLMVMApplyJ0Inv(Mat B, Vec X, Vec Y)
@@ -467,11 +467,11 @@ PetscErrorCode MatLMVMApplyJ0Inv(Mat B, Vec X, Vec Y)
 .  B - An LMVM-type matrix
 
    Output Parameter:
-.  flg - PETSC_TRUE if allocated, PETSC_FALSE otherwise
+.  flg - `PETSC_TRUE` if allocated, `PETSC_FALSE` otherwise
 
    Level: intermediate
 
-.seealso: [LMVM Matrices](sec_matlmvm), `MATLMVM`, `MatLMVMAllocate()`, `MatLMVMReset()`
+.seealso: [](chapter_ksp), [LMVM Matrices](sec_matlmvm), `MATLMVM`, `MatLMVMAllocate()`, `MatLMVMReset()`
 @*/
 
 PetscErrorCode MatLMVMIsAllocated(Mat B, PetscBool *flg)
@@ -491,8 +491,8 @@ PetscErrorCode MatLMVMIsAllocated(Mat B, PetscBool *flg)
 /*@
    MatLMVMAllocate - Produces all necessary common memory for
    LMVM approximations based on the solution and function vectors
-   provided. If MatSetSizes() and MatSetUp() have not been called
-   before MatLMVMAllocate(), the allocation will read sizes from
+   provided. If `MatSetSizes()` and `MatSetUp()` have not been called
+   before `MatLMVMAllocate()`, the allocation will read sizes from
    the provided vectors and update the matrix.
 
    Input Parameters:
@@ -502,7 +502,7 @@ PetscErrorCode MatLMVMIsAllocated(Mat B, PetscBool *flg)
 
    Level: intermediate
 
-.seealso: [LMVM Matrices](sec_matlmvm), `MATLMVM`, `MatLMVMReset()`, `MatLMVMUpdate()`
+.seealso: [](chapter_ksp), [LMVM Matrices](sec_matlmvm), `MATLMVM`, `MatLMVMReset()`, `MatLMVMUpdate()`
 @*/
 PetscErrorCode MatLMVMAllocate(Mat B, Vec X, Vec F)
 {
@@ -531,7 +531,7 @@ PetscErrorCode MatLMVMAllocate(Mat B, Vec X, Vec F)
 
    Level: intermediate
 
-.seealso: [LMVM Matrices](sec_matlmvm), `MATLMVM`, `MatLMVMAllocate()`, `MatLMVMUpdate()`
+.seealso: [](chapter_ksp), [LMVM Matrices](sec_matlmvm), `MATLMVM`, `MatLMVMAllocate()`, `MatLMVMUpdate()`
 @*/
 PetscErrorCode MatLMVMResetShift(Mat B)
 {
@@ -551,7 +551,7 @@ PetscErrorCode MatLMVMResetShift(Mat B)
    the LMVM approximation. In practice, this will not actually
    destroy the data associated with the updates. It simply resets
    counters, which leads to existing data being overwritten, and
-   MatSolve() being applied as if there are no updates. A boolean
+   `MatSolve()` being applied as if there are no updates. A boolean
    flag is available to force destruction of the update vectors.
 
    If the user has provided another LMVM matrix as J0, the J0
@@ -563,7 +563,7 @@ PetscErrorCode MatLMVMResetShift(Mat B)
 
    Level: intermediate
 
-.seealso: [LMVM Matrices](sec_matlmvm), `MATLMVM`, `MatLMVMAllocate()`, `MatLMVMUpdate()`
+.seealso: [](chapter_ksp), [LMVM Matrices](sec_matlmvm), `MATLMVM`, `MatLMVMAllocate()`, `MatLMVMUpdate()`
 @*/
 PetscErrorCode MatLMVMReset(Mat B, PetscBool destructive)
 {
@@ -590,12 +590,12 @@ PetscErrorCode MatLMVMReset(Mat B, PetscBool destructive)
 +  B - An LMVM-type matrix
 -  hist_size - number of past iterates (default 5)
 
-   Options Database:
+   Options Database Key:
 .  -mat_lmvm_hist_size <m> - set number of past iterates
 
    Level: beginner
 
-.seealso: [LMVM Matrices](sec_matlmvm), `MATLMVM`, `MatLMVMGetUpdateCount()`
+.seealso: [](chapter_ksp), [LMVM Matrices](sec_matlmvm), `MATLMVM`, `MatLMVMGetUpdateCount()`
 @*/
 PetscErrorCode MatLMVMSetHistorySize(Mat B, PetscInt hist_size)
 {
@@ -624,7 +624,7 @@ PetscErrorCode MatLMVMSetHistorySize(Mat B, PetscInt hist_size)
 /*@
    MatLMVMGetUpdateCount - Returns the number of accepted updates.
    This number may be greater than the total number of update vectors
-   stored in the matrix. The counters are reset when MatLMVMReset()
+   stored in the matrix. The counters are reset when `MatLMVMReset()`
    is called.
 
    Input Parameters:
@@ -635,7 +635,7 @@ PetscErrorCode MatLMVMSetHistorySize(Mat B, PetscInt hist_size)
 
    Level: intermediate
 
-.seealso: [LMVM Matrices](sec_matlmvm), `MATLMVM`, `MatLMVMGetRejectCount()`, `MatLMVMReset()`
+.seealso: [](chapter_ksp), [LMVM Matrices](sec_matlmvm), `MATLMVM`, `MatLMVMGetRejectCount()`, `MatLMVMReset()`
 @*/
 PetscErrorCode MatLMVMGetUpdateCount(Mat B, PetscInt *nupdates)
 {
@@ -652,7 +652,7 @@ PetscErrorCode MatLMVMGetUpdateCount(Mat B, PetscInt *nupdates)
 
 /*@
    MatLMVMGetRejectCount - Returns the number of rejected updates.
-   The counters are reset when MatLMVMReset() is called.
+   The counters are reset when `MatLMVMReset()` is called.
 
    Input Parameters:
 .  B - An LMVM-type matrix
@@ -662,7 +662,7 @@ PetscErrorCode MatLMVMGetUpdateCount(Mat B, PetscInt *nupdates)
 
    Level: intermediate
 
-.seealso: [LMVM Matrices](sec_matlmvm), `MATLMVM`, `MatLMVMGetRejectCount()`, `MatLMVMReset()`
+.seealso: [](chapter_ksp), [LMVM Matrices](sec_matlmvm), `MATLMVM`, `MatLMVMGetRejectCount()`, `MatLMVMReset()`
 @*/
 PetscErrorCode MatLMVMGetRejectCount(Mat B, PetscInt *nrejects)
 {

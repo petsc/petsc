@@ -1,6 +1,5 @@
 /*
     This file implements the FCG (Flexible Conjugate Gradient) method
-
 */
 
 #include <../src/ksp/ksp/impls/fcg/fcgimpl.h> /*I  "petscksp.h"  I*/
@@ -307,21 +306,25 @@ static PetscErrorCode KSPView_FCG(KSP ksp, PetscViewer viewer)
 }
 
 /*@
-  KSPFCGSetMmax - set the maximum number of previous directions FCG will store for orthogonalization
-
-  Note: mmax + 1 directions are stored (mmax previous ones along with a current one)
-  and whether all are used in each iteration also depends on the truncation strategy
-  (see KSPFCGSetTruncationType())
+  KSPFCGSetMmax - set the maximum number of previous directions `KSPFCG` will store for orthogonalization
 
   Logically Collective on ksp
 
   Input Parameters:
 +  ksp - the Krylov space context
--  mmax - the maximum number of previous directions to orthogonalize againt
+-  mmax - the maximum number of previous directions to orthogonalize against
+
+  Options Database Key:
+.   -ksp_fcg_mmax <N>  - maximum number of search directions
 
   Level: intermediate
 
-.seealso: `KSPFCG`, `KSPFCGGetTruncationType()`, `KSPFCGGetNprealloc()`
+  Note:
+   mmax + 1 directions are stored (mmax previous ones along with a current one)
+  and whether all are used in each iteration also depends on the truncation strategy
+  (see KSPFCGSetTruncationType())
+
+.seealso: [](chapter_ksp), `KSPFCG`, `KSPFCGGetTruncationType()`, `KSPFCGGetNprealloc()`, `KSPFCGetMmax()`
 @*/
 PetscErrorCode KSPFCGSetMmax(KSP ksp, PetscInt mmax)
 {
@@ -335,9 +338,7 @@ PetscErrorCode KSPFCGSetMmax(KSP ksp, PetscInt mmax)
 }
 
 /*@
-  KSPFCGGetMmax - get the maximum number of previous directions FCG will store
-
-  Note: FCG stores mmax+1 directions at most (mmax previous ones, and one current one)
+  KSPFCGGetMmax - get the maximum number of previous directions `KSPFCG` will store
 
    Not Collective
 
@@ -349,7 +350,10 @@ PetscErrorCode KSPFCGSetMmax(KSP ksp, PetscInt mmax)
 
    Level: intermediate
 
-.seealso: `KSPFCG`, `KSPFCGGetTruncationType()`, `KSPFCGGetNprealloc()`, `KSPFCGSetMmax()`
+  Note:
+  FCG stores mmax+1 directions at most (mmax previous ones, and one current one)
+
+.seealso: [](chapter_ksp), `KSPFCG`, `KSPFCGGetTruncationType()`, `KSPFCGGetNprealloc()`, `KSPFCGSetMmax()`
 @*/
 
 PetscErrorCode KSPFCGGetMmax(KSP ksp, PetscInt *mmax)
@@ -363,7 +367,7 @@ PetscErrorCode KSPFCGGetMmax(KSP ksp, PetscInt *mmax)
 }
 
 /*@
-  KSPFCGSetNprealloc - set the number of directions to preallocate with FCG
+  KSPFCGSetNprealloc - set the number of directions to preallocate with `KSPFCG`
 
   Logically Collective on ksp
 
@@ -371,12 +375,12 @@ PetscErrorCode KSPFCGGetMmax(KSP ksp, PetscInt *mmax)
 +  ksp - the Krylov space context
 -  nprealloc - the number of vectors to preallocate
 
-  Level: advanced
-
-  Options Database:
+  Options Database Key:
 . -ksp_fcg_nprealloc <N> - number of directions to preallocate
 
-.seealso: `KSPFCG`, `KSPFCGGetTruncationType()`, `KSPFCGGetNprealloc()`
+  Level: advanced
+
+.seealso: [](chapter_ksp), `KSPFCG`, `KSPFCGGetTruncationType()`, `KSPFCGGetNprealloc()`, `KSPFCGSetMmax()`, `KSPFCGGetMmax()`
 @*/
 PetscErrorCode KSPFCGSetNprealloc(KSP ksp, PetscInt nprealloc)
 {
@@ -391,7 +395,7 @@ PetscErrorCode KSPFCGSetNprealloc(KSP ksp, PetscInt nprealloc)
 }
 
 /*@
-  KSPFCGGetNprealloc - get the number of directions preallocate by FCG
+  KSPFCGGetNprealloc - get the number of directions preallocate by `KSPFCG`
 
    Not Collective
 
@@ -403,7 +407,7 @@ PetscErrorCode KSPFCGSetNprealloc(KSP ksp, PetscInt nprealloc)
 
    Level: advanced
 
-.seealso: `KSPFCG`, `KSPFCGGetTruncationType()`, `KSPFCGSetNprealloc()`
+.seealso: [](chapter_ksp), `KSPFCG`, `KSPFCGGetTruncationType()`, `KSPFCGSetNprealloc()`, `KSPFCGSetMmax()`, `KSPFCGGetMmax()`
 @*/
 PetscErrorCode KSPFCGGetNprealloc(KSP ksp, PetscInt *nprealloc)
 {
@@ -416,23 +420,24 @@ PetscErrorCode KSPFCGGetNprealloc(KSP ksp, PetscInt *nprealloc)
 }
 
 /*@
-  KSPFCGSetTruncationType - specify how many of its stored previous directions FCG uses during orthoganalization
+  KSPFCGSetTruncationType - specify how many of its stored previous directions `KSPFCG` uses during orthoganalization
 
   Logically Collective on ksp
-
-  KSP_FCD_TRUNC_TYPE_STANDARD uses all (up to mmax) stored directions
-  KSP_FCD_TRUNC_TYPE_NOTAY uses the last max(1,mod(i,mmax)) stored directions at iteration i=0,1,..
 
   Input Parameters:
 +  ksp - the Krylov space context
 -  truncstrat - the choice of strategy
+.vb
+  KSP_FCD_TRUNC_TYPE_STANDARD uses all (up to mmax) stored directions
+  KSP_FCD_TRUNC_TYPE_NOTAY uses the last max(1,mod(i,mmax)) stored directions at iteration i=0,1,..
+.ve
+
+  Options Database Key:
+. -ksp_fcg_truncation_type <standard, notay> - specify how many of its stored previous directions `KSPFCG` uses during orthoganalization
 
   Level: intermediate
 
-  Options Database:
-. -ksp_fcg_truncation_type <standard, notay> - specify how many of its stored previous directions FCG uses during orthoganalization
-
-  .seealso: `KSPFCDTruncationType`, `KSPFCGGetTruncationType`
+.seealso: [](chapter_ksp), `KSPFCDTruncationType`, `KSPFCGGetTruncationType`, `KSPFCGSetNprealloc()`, `KSPFCGSetMmax()`, `KSPFCGGetMmax()`
 @*/
 PetscErrorCode KSPFCGSetTruncationType(KSP ksp, KSPFCDTruncationType truncstrat)
 {
@@ -446,7 +451,7 @@ PetscErrorCode KSPFCGSetTruncationType(KSP ksp, KSPFCDTruncationType truncstrat)
 }
 
 /*@
-  KSPFCGGetTruncationType - get the truncation strategy employed by FCG
+  KSPFCGGetTruncationType - get the truncation strategy employed by `KSPFCG`
 
    Not Collective
 
@@ -458,7 +463,7 @@ PetscErrorCode KSPFCGSetTruncationType(KSP ksp, KSPFCDTruncationType truncstrat)
 
    Level: intermediate
 
-.seealso: `KSPFCG`, `KSPFCGSetTruncationType`, `KSPFCDTruncationType`
+.seealso: [](chapter_ksp), `KSPFCG`, `KSPFCGSetTruncationType`, `KSPFCDTruncationType`, `KSPFCGSetTruncationType()`
 @*/
 PetscErrorCode KSPFCGGetTruncationType(KSP ksp, KSPFCDTruncationType *truncstrat)
 {
@@ -488,27 +493,28 @@ static PetscErrorCode KSPSetFromOptions_FCG(KSP ksp, PetscOptionItems *PetscOpti
 }
 
 /*MC
-      KSPFCG - Implements the Flexible Conjugate Gradient method (FCG)
+      KSPFCG - Implements the Flexible Conjugate Gradient method (FCG). Unlike most `KSP` methods this allows the preconditioner to be nonlinear. [](sec_flexibleksp)
 
   Options Database Keys:
 +   -ksp_fcg_mmax <N>  - maximum number of search directions
 .   -ksp_fcg_nprealloc <N> - number of directions to preallocate
 -   -ksp_fcg_truncation_type <standard,notay> - truncation approach for directions
 
-    Contributed by Patrick Sanan
+  Level: beginner
 
-   Notes:
+   Note:
    Supports left preconditioning only.
 
-   Level: beginner
+  Contributed by:
+  Patrick Sanan
 
   References:
 + * - Notay, Y."Flexible Conjugate Gradients", SIAM J. Sci. Comput. 22:4, 2000
 - * - Axelsson, O. and Vassilevski, P. S. "A Black Box Generalized Conjugate Gradient Solver with Inner Iterations and Variable step Preconditioning",
     SIAM J. Matrix Anal. Appl. 12:4, 1991
 
- .seealso `:` `KSPGCR`, `KSPFGMRES`, `KSPCG`, `KSPFCGSetMmax()`, `KSPFCGGetMmax()`, `KSPFCGSetNprealloc()`, `KSPFCGGetNprealloc()`, `KSPFCGSetTruncationType()`, `KSPFCGGetTruncationType()`
-
+.seealso: [](chapter_ksp), [](sec_flexibleksp), `KSPGCR`, `KSPFGMRES`, `KSPCG`, `KSPFCGSetMmax()`, `KSPFCGGetMmax()`, `KSPFCGSetNprealloc()`, `KSPFCGGetNprealloc()`, `KSPFCGSetTruncationType()`, `KSPFCGGetTruncationType()`,
+           `KSPFCGGetTruncationType`
 M*/
 PETSC_EXTERN PetscErrorCode KSPCreate_FCG(KSP ksp)
 {

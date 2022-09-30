@@ -8,13 +8,15 @@
 
 /*@C
    KSPSetOptionsPrefix - Sets the prefix used for searching for all
-   KSP options in the database.
+   `KSP` options in the database.
 
    Logically Collective on ksp
 
    Input Parameters:
 +  ksp - the Krylov context
--  prefix - the prefix string to prepend to all KSP option requests
+-  prefix - the prefix string to prepend to all `KSP` option requests
+
+   Level: advanced
 
    Notes:
    A hyphen (-) must NOT be given at the beginning of the prefix name.
@@ -22,7 +24,7 @@
    hyphen.
 
    For example, to distinguish between the runtime options for two
-   different KSP contexts, one could call
+   different `KSP` contexts, one could call
 .vb
       KSPSetOptionsPrefix(ksp1,"sys1_")
       KSPSetOptionsPrefix(ksp2,"sys2_")
@@ -34,9 +36,7 @@
       -sys2_ksp_type bcgs  -sys2_ksp_rtol 1.e-4
 .ve
 
-   Level: advanced
-
-.seealso: `KSPAppendOptionsPrefix()`, `KSPGetOptionsPrefix()`
+.seealso: [](chapter_ksp), `KSP`, `KSPAppendOptionsPrefix()`, `KSPGetOptionsPrefix()`, `KSPSetFromOptions()`
 @*/
 PetscErrorCode KSPSetOptionsPrefix(KSP ksp, const char prefix[])
 {
@@ -50,13 +50,13 @@ PetscErrorCode KSPSetOptionsPrefix(KSP ksp, const char prefix[])
 
 /*@C
    KSPAppendOptionsPrefix - Appends to the prefix used for searching for all
-   KSP options in the database.
+   `KSP` options in the database.
 
    Logically Collective on ksp
 
    Input Parameters:
 +  ksp - the Krylov context
--  prefix - the prefix string to prepend to all KSP option requests
+-  prefix - the prefix string to prepend to all `KSP` option requests
 
    Notes:
    A hyphen (-) must NOT be given at the beginning of the prefix name.
@@ -64,7 +64,7 @@ PetscErrorCode KSPSetOptionsPrefix(KSP ksp, const char prefix[])
 
    Level: advanced
 
-.seealso: `KSPSetOptionsPrefix()`, `KSPGetOptionsPrefix()`
+.seealso: [](chapter_ksp), `KSP`, `KSPSetOptionsPrefix()`, `KSPGetOptionsPrefix()`, `KSPSetFromOptions()`
 @*/
 PetscErrorCode KSPAppendOptionsPrefix(KSP ksp, const char prefix[])
 {
@@ -77,7 +77,7 @@ PetscErrorCode KSPAppendOptionsPrefix(KSP ksp, const char prefix[])
 }
 
 /*@
-   KSPSetUseFischerGuess - Use the Paul Fischer algorithm or its variants
+   KSPSetUseFischerGuess - Use the Paul Fischer algorithm or its variants to compute initial guesses for a set of solves with related right hand sides
 
    Logically Collective on ksp
 
@@ -86,12 +86,12 @@ PetscErrorCode KSPAppendOptionsPrefix(KSP ksp, const char prefix[])
 .  model - use model 1, model 2, model 3, or any other number to turn it off
 -  size - size of subspace used to generate initial guess
 
-    Options Database:
+    Options Database Key:
 .   -ksp_fischer_guess <model,size> - uses the Fischer initial guess generator for repeated linear solves
 
    Level: advanced
 
-.seealso: `KSPSetOptionsPrefix()`, `KSPAppendOptionsPrefix()`, `KSPSetUseFischerGuess()`, `KSPSetGuess()`, `KSPGetGuess()`
+.seealso: [](chapter_ksp), `KSP`, `KSPSetOptionsPrefix()`, `KSPAppendOptionsPrefix()`, `KSPSetUseFischerGuess()`, `KSPSetGuess()`, `KSPGetGuess()`, `KSPGuess`
 @*/
 PetscErrorCode KSPSetUseFischerGuess(KSP ksp, PetscInt model, PetscInt size)
 {
@@ -114,18 +114,18 @@ PetscErrorCode KSPSetUseFischerGuess(KSP ksp, PetscInt model, PetscInt size)
 
    Input Parameters:
 +  ksp - the Krylov context
--  guess - the object created with KSPGuessCreate()
+-  guess - the object created with `KSPGuessCreate()`
 
    Level: advanced
 
    Notes:
-    this allows a single KSP to be used with several different initial guess generators (likely for different linear
-          solvers, see KSPSetPC()).
+    this allows a single `KSP` to be used with several different initial guess generators (likely for different linear
+          solvers, see `KSPSetPC()`).
 
-          This increases the reference count of the guess object, you must destroy the object with KSPGuessDestroy()
+          This increases the reference count of the guess object, you must destroy the object with `KSPGuessDestroy()`
           before the end of the program.
 
-.seealso: `KSPSetOptionsPrefix()`, `KSPAppendOptionsPrefix()`, `KSPSetUseFischerGuess()`, `KSPGetGuess()`
+.seealso: [](chapter_ksp), `KSP`, `KSPGuess`, `KSPSetOptionsPrefix()`, `KSPAppendOptionsPrefix()`, `KSPSetUseFischerGuess()`, `KSPGetGuess()`
 @*/
 PetscErrorCode KSPSetGuess(KSP ksp, KSPGuess guess)
 {
@@ -140,7 +140,7 @@ PetscErrorCode KSPSetGuess(KSP ksp, KSPGuess guess)
 }
 
 /*@
-   KSPGetGuess - Gets the initial guess generator for the KSP.
+   KSPGetGuess - Gets the initial guess generator for the `KSP`.
 
    Not Collective
 
@@ -152,7 +152,7 @@ PetscErrorCode KSPSetGuess(KSP ksp, KSPGuess guess)
 
    Level: developer
 
-.seealso: `KSPSetOptionsPrefix()`, `KSPAppendOptionsPrefix()`, `KSPSetUseFischerGuess()`, `KSPSetGuess()`
+.seealso: [](chapter_ksp), `KSPGuess`, `KSP`, `KSPSetOptionsPrefix()`, `KSPAppendOptionsPrefix()`, `KSPSetUseFischerGuess()`, `KSPSetGuess()`
 @*/
 PetscErrorCode KSPGetGuess(KSP ksp, KSPGuess *guess)
 {
@@ -173,7 +173,7 @@ PetscErrorCode KSPGetGuess(KSP ksp, KSPGuess *guess)
 
 /*@C
    KSPGetOptionsPrefix - Gets the prefix used for searching for all
-   KSP options in the database.
+   `KSP` options in the database.
 
    Not Collective
 
@@ -189,7 +189,7 @@ PetscErrorCode KSPGetGuess(KSP ksp, KSPGuess *guess)
 
    Level: advanced
 
-.seealso: `KSPSetOptionsPrefix()`, `KSPAppendOptionsPrefix()`
+.seealso: [](chapter_ksp), `KSP`, `KSPSetFromOptions()`, `KSPSetOptionsPrefix()`, `KSPAppendOptionsPrefix()`
 @*/
 PetscErrorCode KSPGetOptionsPrefix(KSP ksp, const char *prefix[])
 {
@@ -208,19 +208,19 @@ static PetscErrorCode PetscViewerAndFormatCreate_Internal(PetscViewer viewer, Pe
 }
 
 /*@C
-   KSPMonitorSetFromOptions - Sets a monitor function and viewer appropriate for the type indicated by the user
+   KSPMonitorSetFromOptions - Sets a monitor function and viewer appropriate for the type indicated by the user in the options database
 
    Collective on ksp
 
    Input Parameters:
-+  ksp  - KSP object you wish to monitor
++  ksp  - `KSP` object you wish to monitor
 .  opt  - the command line option for this monitor
 .  name - the monitor type one is seeking
 -  ctx  - An optional user context for the monitor, or NULL
 
    Level: developer
 
-.seealso: `PetscOptionsGetViewer()`, `PetscOptionsGetReal()`, `PetscOptionsHasName()`, `PetscOptionsGetString()`,
+.seealso: [](chapter_ksp), `KSPMonitorRegister()`, `KSPMonitorSet()`, `PetscOptionsGetViewer()`, `PetscOptionsGetReal()`, `PetscOptionsHasName()`, `PetscOptionsGetString()`,
           `PetscOptionsGetIntArray()`, `PetscOptionsGetRealArray()`, `PetscOptionsBool()`
           `PetscOptionsInt()`, `PetscOptionsString()`, `PetscOptionsReal()`, `PetscOptionsBool()`,
           `PetscOptionsName()`, `PetscOptionsBegin()`, `PetscOptionsEnd()`, `PetscOptionsHeadBegin()`,
@@ -262,8 +262,8 @@ PetscErrorCode KSPMonitorSetFromOptions(KSP ksp, const char opt[], const char na
 }
 
 /*@
-   KSPSetFromOptions - Sets KSP options from the options database.
-   This routine must be called before KSPSetUp() if the user is to be
+   KSPSetFromOptions - Sets `KSP` options from the options database.
+   This routine must be called before `KSPSetUp()` if the user is to be
    allowed to set the Krylov type.
 
    Collective on ksp
@@ -278,46 +278,45 @@ PetscErrorCode KSPMonitorSetFromOptions(KSP ksp, const char opt[], const char na
 .   -ksp_atol abstol - absolute tolerance used in default convergence test, i.e. if residual
                 norm is less than this then convergence is declared
 .   -ksp_divtol tol - if residual norm increases by this factor than divergence is declared
-.   -ksp_converged_use_initial_residual_norm - see KSPConvergedDefaultSetUIRNorm()
-.   -ksp_converged_use_min_initial_residual_norm - see KSPConvergedDefaultSetUMIRNorm()
-.   -ksp_converged_maxits - see KSPConvergedDefaultSetConvergedMaxits()
+.   -ksp_converged_use_initial_residual_norm - see `KSPConvergedDefaultSetUIRNorm()`
+.   -ksp_converged_use_min_initial_residual_norm - see `KSPConvergedDefaultSetUMIRNorm()`
+.   -ksp_converged_maxits - see `KSPConvergedDefaultSetConvergedMaxits()`
 .   -ksp_norm_type - none - skip norms used in convergence tests (useful only when not using
                        convergence test (say you always want to run with 5 iterations) to
                        save on communication overhead
                     preconditioned - default for left preconditioning
-                    unpreconditioned - see KSPSetNormType()
-                    natural - see KSPSetNormType()
+                    unpreconditioned - see `KSPSetNormType()`
+                    natural - see `KSPSetNormType()`
 .   -ksp_check_norm_iteration it - do not compute residual norm until iteration number it (does compute at 0th iteration)
-       works only for PCBCGS, PCIBCGS and and PCCG
+       works only for `KSPBCGS`, `KSPIBCGS` and and `KSPCG`
 .   -ksp_lag_norm - compute the norm of the residual for the ith iteration on the i+1 iteration; this means that one can use
-       the norm of the residual for convergence test WITHOUT an extra MPI_Allreduce() limiting global synchronizations.
+       the norm of the residual for convergence test WITHOUT an extra `MPI_Allreduce()` limiting global synchronizations.
        This will require 1 more iteration of the solver than usual.
 .   -ksp_guess_type - Type of initial guess generator for repeated linear solves
 .   -ksp_fischer_guess <model,size> - uses the Fischer initial guess generator for repeated linear solves
 .   -ksp_constant_null_space - assume the operator (matrix) has the constant vector in its null space
-.   -ksp_test_null_space - tests the null space set with MatSetNullSpace() to see if it truly is a null space
+.   -ksp_test_null_space - tests the null space set with `MatSetNullSpace()` to see if it truly is a null space
 .   -ksp_knoll - compute initial guess by applying the preconditioner to the right hand side
 .   -ksp_monitor_cancel - cancel all previous convergene monitor routines set
 .   -ksp_monitor - print residual norm at each iteration
 .   -ksp_monitor draw::draw_lg - plot residual norm at each iteration
 .   -ksp_monitor_true_residual - print true residual norm at each iteration
 .   -all_ksp_monitor <optional filename> - print residual norm at each iteration for ALL KSP solves, regardless of their prefix. This is
-                                           useful for PCFIELDSPLIT, PCMG, etc that have inner solvers and you wish to track the convergence of all the solvers
+                                           useful for `PCFIELDSPLIT`, `PCMG`, etc that have inner solvers and you wish to track the convergence of all the solvers
 .   -ksp_monitor_solution [ascii binary or draw][:filename][:format option] - plot solution at each iteration
 .   -ksp_monitor_singular_value - monitor extreme singular values at each iteration
 .   -ksp_converged_reason - view the convergence state at the end of the solve
 .   -ksp_use_explicittranspose - transpose the system explicitly in KSPSolveTranspose
-.   -ksp_error_if_not_converged - stop the program as soon as an error is detected in a KSPSolve(), KSP_DIVERGED_ITS is not treated as an error on inner KSPSolves
+.   -ksp_error_if_not_converged - stop the program as soon as an error is detected in a `KSPSolve()`, `KSP_DIVERGED_ITS` is not treated as an error on inner solves
 -   -ksp_converged_rate - view the convergence rate at the end of the solve
 
    Notes:
    To see all options, run your program with the -help option
-   or consult Users-Manual: ch_ksp
+   or consult [](chapter_ksp)
 
    Level: beginner
 
-.seealso: `KSPSetOptionsPrefix()`, `KSPResetFromOptions()`, `KSPSetUseFischerGuess()`
-
+.seealso: [](chapter_ksp), `KSP`, `KSPSetOptionsPrefix()`, `KSPResetFromOptions()`, `KSPSetUseFischerGuess()`
 @*/
 PetscErrorCode KSPSetFromOptions(KSP ksp)
 {
@@ -632,16 +631,16 @@ skipoptions:
 }
 
 /*@
-   KSPResetFromOptions - Sets various KSP parameters from user options ONLY if the KSP was previously set from options
+   KSPResetFromOptions - Sets `KSP` parameters from user options ONLY if the `KSP` was previously set from options
 
    Collective on ksp
 
    Input Parameter:
-.  ksp - the KSP context
+.  ksp - the `KSP` context
 
-   Level: beginner
+   Level: advanced
 
-.seealso: `KSPSetFromOptions()`, `KSPSetOptionsPrefix()`
+.seealso: [](chapter_ksp), `KSPSetFromOptions()`, `KSPSetOptionsPrefix()`
 @*/
 PetscErrorCode KSPResetFromOptions(KSP ksp)
 {

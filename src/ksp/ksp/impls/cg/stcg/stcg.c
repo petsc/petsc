@@ -589,15 +589,13 @@ static PetscErrorCode KSPCGSetFromOptions_STCG(KSP ksp, PetscOptionItems *PetscO
 }
 
 /*MC
-     KSPSTCG -   Code to run conjugate gradient method subject to a constraint
-         on the solution norm. This is used in Trust Region methods for
-         nonlinear equations, SNESNEWTONTR
+     KSPSTCG -   Code to run conjugate gradient method subject to a constraint on the solution norm.
 
    Options Database Keys:
 .      -ksp_cg_radius <r> - Trust Region Radius
 
    Notes:
-    This is rarely used directly
+    This is rarely used directly, it is used in Trust Region methods for nonlinear equations, `SNESNEWTONTR`
 
   Use preconditioned conjugate gradient to compute
   an approximate minimizer of the quadratic function
@@ -615,21 +613,22 @@ static PetscErrorCode KSPCGSetFromOptions_STCG(KSP ksp, PetscOptionItems *PetscO
      H is the Hessian approximation, and
      M is the positive definite preconditioner matrix.
 
-   KSPConvergedReason may be
-$  KSP_CONVERGED_CG_NEG_CURVE if convergence is reached along a negative curvature direction,
-$  KSP_CONVERGED_CG_CONSTRAINED if convergence is reached along a constrained step,
-$  other KSP converged/diverged reasons
+   `KSPConvergedReason` may be
+.vb
+   KSP_CONVERGED_CG_NEG_CURVE if convergence is reached along a negative curvature direction,
+   KSP_CONVERGED_CG_CONSTRAINED if convergence is reached along a constrained step,
+.ve
+   other `KSP` converged/diverged reasons
 
-  Notes:
   The preconditioner supplied should be symmetric and positive definite.
 
-  References:
-+ * - Steihaug, T. (1983): The conjugate gradient method and trust regions in large scale optimization. SIAM J. Numer. Anal. 20, 626--637
-- * - Toint, Ph.L. (1981): Towards an efficient sparsity exploiting Newton method for minimization. In: Duff, I., ed., Sparse Matrices and Their Uses, pp. 57--88. Academic Press
+   References:
++  * - Steihaug, T. (1983): The conjugate gradient method and trust regions in large scale optimization. SIAM J. Numer. Anal. 20, 626--637
+-  * - Toint, Ph.L. (1981): Towards an efficient sparsity exploiting Newton method for minimization. In: Duff, I., ed., Sparse Matrices and Their Uses, pp. 57--88. Academic Press
 
    Level: developer
 
-.seealso: `KSPCreate()`, `KSPCGSetType()`, `KSPType`, `KSP`, `KSPCGSetRadius()`, `KSPCGGetNormD()`, `KSPCGGetObjFcn()`
+.seealso: [](chapter_ksp), `KSPCreate()`, `KSPCGSetType()`, `KSPType`, `KSP`, `KSPCGSetRadius()`, `KSPCGGetNormD()`, `KSPCGGetObjFcn()`, `KSPNASH`, `KSPGLTR`, `KSPQCG`
 M*/
 
 PETSC_EXTERN PetscErrorCode KSPCreate_STCG(KSP ksp)

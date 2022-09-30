@@ -97,18 +97,15 @@ static PetscErrorCode KSPDestroy_CGLS(KSP ksp)
 }
 
 /*MC
-     KSPCGLS - Conjugate Gradient method for Least-Squares problems
+     KSPCGLS - Conjugate Gradient method for Least-Squares problems. Supports non-square (rectangular) matrices.
 
    Level: beginner
 
-   Supports non-square (rectangular) matrices.
+   Note:
+   This does not use the preconditioner, so one should probably use `KSPLSQR` instead.
 
-   Notes:
-    This does not use the preconditioner, so one should probably use KSPLSQR instead.
-
-.seealso: `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`,
+.seealso: [](chapter_ksp), `KSPLSQR`, `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`,
           `KSPCGSetType()`, `KSPCGUseSingleReduction()`, `KSPPIPECG`, `KSPGROPPCG`
-
 M*/
 PETSC_EXTERN PetscErrorCode KSPCreate_CGLS(KSP ksp)
 {

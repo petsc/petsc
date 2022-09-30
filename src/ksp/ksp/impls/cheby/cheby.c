@@ -219,21 +219,21 @@ static PetscErrorCode KSPChebyshevEstEigSetUseNoisy_Chebyshev(KSP ksp, PetscBool
 +  ksp - the Krylov space context
 -  emax, emin - the eigenvalue estimates
 
-  Options Database:
+  Options Database Key:
 .  -ksp_chebyshev_eigenvalues emin,emax - extreme eigenvalues
 
-   Note:
-   Call KSPChebyshevEstEigSet() or use the option -ksp_chebyshev_esteig a,b,c,d to have the KSP
+   Notes:
+   Call `KSPChebyshevEstEigSet()` or use the option -ksp_chebyshev_esteig a,b,c,d to have the KSP
    estimate the eigenvalues and use these estimated values automatically.
 
-   When KSPCHEBYSHEV is used as a smoother, one often wants to target a portion of the spectrum rather than the entire
+   When `KSPCHEBYSHEV` is used as a smoother, one often wants to target a portion of the spectrum rather than the entire
    spectrum. This function takes the range of target eigenvalues for Chebyshev, which will often slightly over-estimate
    the largest eigenvalue of the actual operator (for safety) and greatly overestimate the smallest eigenvalue to
    improve the smoothing properties of Chebyshev iteration on the higher frequencies in the spectrum.
 
    Level: intermediate
 
-.seealso: `KSPChebyshevEstEigSet()`
+.seealso: [](chapter_ksp), `KSPCHEBYSHEV`, `KSPChebyshevEstEigSet()`,
 @*/
 PetscErrorCode KSPChebyshevSetEigenvalues(KSP ksp, PetscReal emax, PetscReal emin)
 {
@@ -257,7 +257,7 @@ PetscErrorCode KSPChebyshevSetEigenvalues(KSP ksp, PetscReal emax, PetscReal emi
 .  c - multiple of min eigenvalue estimate to use for max Chebyshev bound (or PETSC_DECIDE)
 -  d - multiple of max eigenvalue estimate to use for max Chebyshev bound (or PETSC_DECIDE)
 
-  Options Database:
+  Options Database Key:
 .  -ksp_chebyshev_esteig a,b,c,d - estimate eigenvalues using a Krylov method, then use this transform for Chebyshev eigenvalue bounds
 
    Notes:
@@ -273,10 +273,11 @@ PetscErrorCode KSPChebyshevSetEigenvalues(KSP ksp, PetscReal emax, PetscReal emi
 
    The default transform is (0,0.1; 0,1.1) which targets the "upper" part of the spectrum, as desirable for use with multigrid.
 
-   The eigenvalues are estimated using the Lanczo (KSPCG) or Arnoldi (KSPGMRES) process using a noisy right hand side vector.
+   The eigenvalues are estimated using the Lanczo (`KSPCG`) or Arnoldi (`KSPGMRES`) process using a noisy right hand side vector.
 
    Level: intermediate
 
+.seealso: [](chapter_ksp), `KSPCHEBYSHEV`, `KSPChebyshevEstEigSet()`, `KSPChebyshevEstEigSetUseNoisy()`, `KSPChebyshevEstEigGetKSP()`
 @*/
 PetscErrorCode KSPChebyshevEstEigSet(KSP ksp, PetscReal a, PetscReal b, PetscReal c, PetscReal d)
 {
@@ -297,17 +298,17 @@ PetscErrorCode KSPChebyshevEstEigSet(KSP ksp, PetscReal a, PetscReal b, PetscRea
 
    Input Parameters:
 +  ksp - linear solver context
--  use - PETSC_TRUE to use noisy
+-  use - `PETSC_TRUE` to use noisy
 
-   Options Database:
+   Options Database Key:
 .  -ksp_chebyshev_esteig_noisy <true,false> - Use noisy right hand side for estimate
 
-  Notes:
-    This alledgely works better for multigrid smoothers
+   Note:
+    This allegedly works better for multigrid smoothers
 
   Level: intermediate
 
-.seealso: `KSPChebyshevEstEigSet()`
+.seealso: [](chapter_ksp), `KSPCHEBYSHEV`, `KSPChebyshevEstEigSet()`, `KSPChebyshevEstEigGetKSP()`
 @*/
 PetscErrorCode KSPChebyshevEstEigSetUseNoisy(KSP ksp, PetscBool use)
 {
@@ -319,7 +320,7 @@ PetscErrorCode KSPChebyshevEstEigSetUseNoisy(KSP ksp, PetscBool use)
 
 /*@
   KSPChebyshevEstEigGetKSP - Get the Krylov method context used to estimate eigenvalues for the Chebyshev method.  If
-  a Krylov method is not being used for this purpose, NULL is returned.  The reference count of the returned KSP is
+  a Krylov method is not being used for this purpose, NULL is returned.  The reference count of the returned `KSP` is
   not incremented: it should not be destroyed by the user.
 
   Input Parameters:
@@ -328,9 +329,9 @@ PetscErrorCode KSPChebyshevEstEigSetUseNoisy(KSP ksp, PetscBool use)
   Output Parameters:
 . kspest - the eigenvalue estimation Krylov space context
 
-  Level: intermediate
+  Level: advanced
 
-.seealso: `KSPChebyshevEstEigSet()`
+.seealso: [](chapter_ksp), `KSPCHEBYSHEV`, `KSPChebyshevEstEigSet()`
 @*/
 PetscErrorCode KSPChebyshevEstEigGetKSP(KSP ksp, KSP *kspest)
 {
@@ -610,24 +611,24 @@ static PetscErrorCode KSPDestroy_Chebyshev(KSP ksp)
 +   -ksp_chebyshev_eigenvalues <emin,emax> - set approximations to the smallest and largest eigenvalues
                   of the preconditioned operator. If these are accurate you will get much faster convergence.
 .   -ksp_chebyshev_esteig <a,b,c,d> - estimate eigenvalues using a Krylov method, then use this
-                         transform for Chebyshev eigenvalue bounds (KSPChebyshevEstEigSet())
+                         transform for Chebyshev eigenvalue bounds (`KSPChebyshevEstEigSet()`)
 .   -ksp_chebyshev_esteig_steps - number of estimation steps
 -   -ksp_chebyshev_esteig_noisy - use noisy number generator to create right hand side for eigenvalue estimator
 
    Level: beginner
 
    Notes:
-    The Chebyshev method requires both the matrix and preconditioner to
-          be symmetric positive (semi) definite.
-          Only support for left preconditioning.
+   The Chebyshev method requires both the matrix and preconditioner to be symmetric positive (semi) definite, but it can work as a smoother in other situations
 
-          Chebyshev is configured as a smoother by default, targetting the "upper" part of the spectrum.
-          The user should call KSPChebyshevSetEigenvalues() if they have eigenvalue estimates.
+   Only support for left preconditioning.
 
-.seealso: `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`,
+   Chebyshev is configured as a smoother by default, targetting the "upper" part of the spectrum.
+
+   The user should call `KSPChebyshevSetEigenvalues()` to get eigenvalue estimates.
+
+.seealso: [](chapter_ksp), `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`,
           `KSPChebyshevSetEigenvalues()`, `KSPChebyshevEstEigSet()`, `KSPChebyshevEstEigSetUseNoisy()`
           `KSPRICHARDSON`, `KSPCG`, `PCMG`
-
 M*/
 
 PETSC_EXTERN PetscErrorCode KSPCreate_Chebyshev(KSP ksp)

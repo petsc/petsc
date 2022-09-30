@@ -73,7 +73,7 @@ static PetscErrorCode KSPFETIDPSetPressureOperator_FETIDP(KSP ksp, Mat P)
 }
 
 /*@
- KSPFETIDPSetPressureOperator - Sets the operator used to setup the pressure preconditioner for saddle point FETI-DP.
+ KSPFETIDPSetPressureOperator - Sets the operator used to setup the pressure preconditioner for the saddle point `KSPFETIDP` solver,
 
    Collective on ksp
 
@@ -91,7 +91,7 @@ static PetscErrorCode KSPFETIDPSetPressureOperator_FETIDP(KSP ksp, Mat P)
           where pid_1 and pid_2 are two different pressure dof numbers and gid_1 and gid_2 the corresponding
           id in the monolithic global ordering.
 
-.seealso: `MATIS`, `PCBDDC`, `KSPFETIDPGetInnerBDDC`, `KSPFETIDPGetInnerKSP`, `KSPSetOperators`
+.seealso: [](chapter_ksp), `KSPFETIDP`, `MATIS`, `PCBDDC`, `KSPFETIDPGetInnerBDDC()`, `KSPFETIDPGetInnerKSP()`, `KSPSetOperators()`
 @*/
 PetscErrorCode KSPFETIDPSetPressureOperator(KSP ksp, Mat P)
 {
@@ -112,17 +112,15 @@ static PetscErrorCode KSPFETIDPGetInnerKSP_FETIDP(KSP ksp, KSP *innerksp)
 }
 
 /*@
- KSPFETIDPGetInnerKSP - Gets the KSP object for the Lagrange multipliers
+ KSPFETIDPGetInnerKSP - Gets the `KSP` object for the Lagrange multipliers from inside a `KSPFETIDP`
 
    Input Parameters:
-+  ksp - the FETI-DP KSP
--  innerksp - the KSP for the multipliers
++  ksp - the `KSPFETIDP`
+-  innerksp - the `KSP` for the multipliers
 
    Level: advanced
 
-   Notes:
-
-.seealso: `MATIS`, `PCBDDC`, `KSPFETIDPSetInnerBDDC`, `KSPFETIDPGetInnerBDDC`
+.seealso: [](chapter_ksp), `KSPFETIDP`, `MATIS`, `PCBDDC`, `KSPFETIDPSetInnerBDDC()`, `KSPFETIDPGetInnerBDDC()`
 @*/
 PetscErrorCode KSPFETIDPGetInnerKSP(KSP ksp, KSP *innerksp)
 {
@@ -143,17 +141,15 @@ static PetscErrorCode KSPFETIDPGetInnerBDDC_FETIDP(KSP ksp, PC *pc)
 }
 
 /*@
- KSPFETIDPGetInnerBDDC - Gets the BDDC preconditioner used to setup the FETI-DP matrix for the Lagrange multipliers
+  KSPFETIDPGetInnerBDDC - Gets the `PCBDDC` preconditioner used to setup the `KSPFETIDP` matrix for the Lagrange multipliers
 
    Input Parameters:
-+  ksp - the FETI-DP Krylov solver
--  pc - the BDDC preconditioner
++  ksp - the `KSPFETIDP` Krylov solver
+-  pc - the `PCBDDC` preconditioner
 
    Level: advanced
 
-   Notes:
-
-.seealso: `MATIS`, `PCBDDC`, `KSPFETIDPSetInnerBDDC`, `KSPFETIDPGetInnerKSP`
+.seealso: [](chapter_ksp), `MATIS`, `PCBDDC`, `KSPFETIDPSetInnerBDDC()`, `KSPFETIDPGetInnerKSP()`
 @*/
 PetscErrorCode KSPFETIDPGetInnerBDDC(KSP ksp, PC *pc)
 {
@@ -177,19 +173,20 @@ static PetscErrorCode KSPFETIDPSetInnerBDDC_FETIDP(KSP ksp, PC pc)
 }
 
 /*@
- KSPFETIDPSetInnerBDDC - Sets the BDDC preconditioner used to setup the FETI-DP matrix for the Lagrange multipliers
+  KSPFETIDPSetInnerBDDC - Provides the `PCBDDC` preconditioner used to setup the `KSPFETIDP` matrix for the Lagrange multipliers
 
    Collective on ksp
 
    Input Parameters:
-+  ksp - the FETI-DP Krylov solver
--  pc - the BDDC preconditioner
++  ksp - the `KSPFETIDP` Krylov solver
+-  pc - the `PCBDDC` preconditioner
 
    Level: advanced
 
-   Notes:
+   Note:
+   A `PC` is automatically created for the `KSPFETIDP` and can be accessed to change options with  `KSPFETIDPGetInnerBDDC()` hence this routine is rarely needed
 
-.seealso: `MATIS`, `PCBDDC`, `KSPFETIDPGetInnerBDDC`, `KSPFETIDPGetInnerKSP`
+.seealso: [](chapter_ksp), `MATIS`, `PCBDDC`, `KSPFETIDPGetInnerBDDC()`, `KSPFETIDPGetInnerKSP()`
 @*/
 PetscErrorCode KSPFETIDPSetInnerBDDC(KSP ksp, PC pc)
 {
@@ -1261,11 +1258,7 @@ static PetscErrorCode KSPSetFromOptions_FETIDP(KSP ksp, PetscOptionItems *PetscO
 }
 
 /*MC
-     KSPFETIDP - The FETI-DP method
-
-   This class implements the FETI-DP method [1].
-   The matrix for the KSP must be of type MATIS.
-   The FETI-DP linear system (automatically generated constructing an internal PCBDDC object) is solved using an internal KSP object.
+     KSPFETIDP - The FETI-DP method [1]
 
    Options Database Keys:
 +   -ksp_fetidp_fullyredundant <false>   - use a fully redundant set of Lagrange multipliers
@@ -1284,38 +1277,42 @@ static PetscErrorCode KSPSetFromOptions_FETIDP(KSP ksp, PetscOptionItems *PetscO
    Level: Advanced
 
    Notes:
-    Options for the inner KSP and for the customization of the PCBDDC object can be specified at command line by using the prefixes -fetidp_ and -fetidp_bddc_. E.g.,
+   The matrix for the KSP must be of type `MATIS`.
+
+   The FETI-DP linear system (automatically generated constructing an internal `PCBDDC` object) is solved using an internal `KSP` object.
+
+    Options for the inner `KSP` and for the customization of the `PCBDDC` object can be specified at command line by using the prefixes -fetidp_ and -fetidp_bddc_. E.g.,
 .vb
       -fetidp_ksp_type gmres -fetidp_bddc_pc_bddc_symmetric false
 .ve
-   will use GMRES for the solution of the linear system on the Lagrange multipliers, generated using a non-symmetric PCBDDC.
+   will use `KSPGMRES` for the solution of the linear system on the Lagrange multipliers, generated using a non-symmetric `PCBDDC`.
 
-   For saddle point problems with continuous pressures, the preconditioned operator for the pressure solver can be specified with KSPFETIDPSetPressureOperator().
+   For saddle point problems with continuous pressures, the preconditioned operator for the pressure solver can be specified with `KSPFETIDPSetPressureOperator()`.
    Alternatively, the pressure operator is extracted from the precondioned matrix (if it is different from the linear solver matrix).
    If none of the above, an identity matrix will be created; the user then needs to scale it through a Richardson solver.
    Options for the pressure solver can be prefixed with -fetidp_fielsplit_p_, E.g.
 .vb
       -fetidp_fielsplit_p_ksp_type preonly -fetidp_fielsplit_p_pc_type lu -fetidp_fielsplit_p_pc_factor_mat_solver_type mumps
 .ve
-   In order to use the deluxe version of FETI-DP, you must customize the inner BDDC operator with -fetidp_bddc_pc_bddc_use_deluxe_scaling -fetidp_bddc_pc_bddc_deluxe_singlemat and use
+   In order to use the deluxe version of FETI-DP, you must customize the inner `PCBDDC` operator with -fetidp_bddc_pc_bddc_use_deluxe_scaling -fetidp_bddc_pc_bddc_deluxe_singlemat and use
    non-redundant multipliers, i.e. -ksp_fetidp_fullyredundant false. Options for the scaling solver are prefixed by -fetidp_bddelta_, E.g.
 .vb
       -fetidp_bddelta_pc_factor_mat_solver_type mumps -fetidp_bddelta_pc_type lu
 .ve
 
-   Some of the basic options such as the maximum number of iterations and tolerances are automatically passed from this KSP to the inner KSP that actually performs the iterations.
+   Some of the basic options such as the maximum number of iterations and tolerances are automatically passed from this `KSP` to the inner `KSP` that actually performs the iterations.
 
-   The converged reason and number of iterations computed are passed from the inner KSP to this KSP at the end of the solution.
+   The converged reason and number of iterations computed are passed from the inner `KSP` to this `KSP` at the end of the solution.
 
-   Developer Notes:
-    Even though this method does not directly use any norms, the user is allowed to set the KSPNormType to any value.
-    This is so users do not have to change KSPNormType options when they switch from other KSP methods to this one.
+   Developer Note:
+   Even though this method does not directly use any norms, the user is allowed to set the `KSPNormType` to any value.
+   This is so users do not have to change `KSPNormTyp`e options when they switch from other `KSP` methods to this one.
 
    References:
-+  * - C. Farhat, M. Lesoinne, P. LeTallec, K. Pierson, and D. Rixen, FETI-DP: a dual-primal unified FETI method. I. A faster alternative to the two-level FETI method, Internat. J. Numer. Methods Engrg., 50 (2001), pp. 1523--1544
--  * - X. Tu, J. Li, A FETI-DP type domain decomposition algorithm for three-dimensional incompressible Stokes equations, SIAM J. Numer. Anal., 53 (2015), pp. 720-742
++  [1] - C. Farhat, M. Lesoinne, P. LeTallec, K. Pierson, and D. Rixen, FETI-DP: a dual-primal unified FETI method. I. A faster alternative to the two-level FETI method, Internat. J. Numer. Methods Engrg., 50 (2001), pp. 1523--1544
+-  [2] - X. Tu, J. Li, A FETI-DP type domain decomposition algorithm for three-dimensional incompressible Stokes equations, SIAM J. Numer. Anal., 53 (2015), pp. 720-742
 
-.seealso: `MATIS`, `PCBDDC`, `KSPFETIDPSetInnerBDDC()`, `KSPFETIDPGetInnerBDDC()`, `KSPFETIDPGetInnerKSP()`
+.seealso: [](chapter_ksp), `MATIS`, `PCBDDC`, `KSPFETIDPSetInnerBDDC()`, `KSPFETIDPGetInnerBDDC()`, `KSPFETIDPGetInnerKSP()`
 M*/
 PETSC_EXTERN PetscErrorCode KSPCreate_FETIDP(KSP ksp)
 {

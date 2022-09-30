@@ -116,21 +116,19 @@ static PetscErrorCode KSPSolve_BiCG(KSP ksp)
      KSPBICG - Implements the Biconjugate gradient method (similar to running the conjugate
          gradient on the normal equations).
 
-   Options Database Keys:
-   see KSPSolve()
-
    Level: beginner
 
    Notes:
-    this method requires that one be apply to apply the transpose of the preconditioner and operator
-         as well as the operator and preconditioner.
-         Supports only left preconditioning
+   This method requires that one be apply to apply the transpose of the preconditioner and operator
+   as well as the operator and preconditioner.
 
-         See KSPCGNE for code that EXACTLY runs the preconditioned conjugate gradient method on the
-         normal equations
+   Supports only left preconditioning
 
-.seealso: `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPBCGS`, `KSPCGNE`
+   See `KSPCGNE` for code that EXACTLY runs the preconditioned conjugate gradient method on the normal equations
 
+   See `KSPBCGS` for the famous stabilized variant of this algorithm
+
+.seealso: [](chapter_ksp), `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPBCGS`, `KSPCGNE`
 M*/
 PETSC_EXTERN PetscErrorCode KSPCreate_BiCG(KSP ksp)
 {

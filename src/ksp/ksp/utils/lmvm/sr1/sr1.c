@@ -303,30 +303,30 @@ PetscErrorCode MatCreate_LMVMSR1(Mat B)
    guaranteed to be positive-definite.
 
    The provided local and global sizes must match the solution and function vectors
-   used with MatLMVMUpdate() and MatSolve(). The resulting L-SR1 matrix will have
-   storage vectors allocated with VecCreateSeq() in serial and VecCreateMPI() in
+   used with `MatLMVMUpdate()` and `MatSolve()`. The resulting L-SR1 matrix will have
+   storage vectors allocated with `VecCreateSeq()` in serial and `VecCreateMPI()` in
    parallel. To use the L-SR1 matrix with other vector types, the matrix must be
-   created using MatCreate() and MatSetType(), followed by MatLMVMAllocate().
+   created using `MatCreate()` and `MatSetType()`, followed by `MatLMVMAllocate()`.
    This ensures that the internal storage and work vectors are duplicated from the
    correct type of vector.
 
    Collective
 
    Input Parameters:
-+  comm - MPI communicator, set to PETSC_COMM_SELF
++  comm - MPI communicator
 .  n - number of local rows for storage vectors
 -  N - global size of the storage vectors
 
    Output Parameter:
 .  B - the matrix
 
-   Note:
-   It is recommended that one use the MatCreate(), MatSetType() and/or MatSetFromOptions()
-   paradigm instead of this routine directly.
-
    Level: intermediate
 
-.seealso: `MatCreate()`, `MATLMVM`, `MATLMVMSR1`, `MatCreateLMVMBFGS()`, `MatCreateLMVMDFP()`,
+   Note:
+   It is recommended that one use the `MatCreate()`, `MatSetType()` and/or `MatSetFromOptions()`
+   paradigm instead of this routine directly.
+
+.seealso: [](chapter_ksp), `MatCreate()`, `MATLMVM`, `MATLMVMSR1`, `MatCreateLMVMBFGS()`, `MatCreateLMVMDFP()`,
           `MatCreateLMVMBrdn()`, `MatCreateLMVMBadBrdn()`, `MatCreateLMVMSymBrdn()`
 @*/
 PetscErrorCode MatCreateLMVMSR1(MPI_Comm comm, PetscInt n, PetscInt N, Mat *B)

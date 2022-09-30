@@ -9,9 +9,6 @@
     at each iteration.
 
     Restarts:  Restarts are basically solves with x0 not equal to zero.
-
-       Contributed by Allison Baker
-
 */
 
 #include <../src/ksp/ksp/impls/gmres/fgmres/fgmresimpl.h> /*I  "petscksp.h"  I*/
@@ -589,8 +586,7 @@ PetscErrorCode KSPGMRESGetRestart_FGMRES(KSP ksp, PetscInt *max_k)
 }
 
 /*MC
-     KSPFGMRES - Implements the Flexible Generalized Minimal Residual method.
-                developed by Saad with restart
+     KSPFGMRES - Implements the Flexible Generalized Minimal Residual method. [](sec_flexibleksp)
 
    Options Database Keys:
 +   -ksp_gmres_restart <restart> - the number of Krylov directions to orthogonalize against
@@ -603,27 +599,29 @@ PetscErrorCode KSPGMRESGetRestart_FGMRES(KSP ksp, PetscInt *max_k)
                                    stability of the classical Gram-Schmidt  orthogonalization.
 .   -ksp_gmres_krylov_monitor - plot the Krylov space generated
 .   -ksp_fgmres_modifypcnochange - do not change the preconditioner between iterations
--   -ksp_fgmres_modifypcksp - modify the preconditioner using KSPFGMRESModifyPCKSP()
+-   -ksp_fgmres_modifypcksp - modify the preconditioner using `KSPFGMRESModifyPCKSP()`
 
    Level: beginner
 
     Notes:
-    See KSPFGMRESSetModifyPC() for how to vary the preconditioner between iterations
-           Only right preconditioning is supported.
+    See `KSPFGMRESSetModifyPC()` for how to vary the preconditioner between iterations
 
-    Notes:
+    Only right preconditioning is supported.
+
     The following options -ksp_type fgmres -pc_type ksp -ksp_ksp_type bcgs -ksp_view -ksp_pc_type jacobi make the preconditioner (or inner solver)
-           be bi-CG-stab with a preconditioner of Jacobi.
+    be bi-CG-stab with a preconditioner of Jacobi.
 
-    Developer Notes:
-    This object is subclassed off of KSPGMRES
+    Developer Note:
+    This object is subclassed off of `KSPGMRES`
 
-.seealso: `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPGMRES`, `KSPLGMRES`,
+    Contributed by:
+    Allison Baker
+
+.seealso: [](chapter_ksp), [](sec_flexibleksp), `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPGMRES`, `KSPLGMRES`,
           `KSPGMRESSetRestart()`, `KSPGMRESSetHapTol()`, `KSPGMRESSetPreAllocateVectors()`, `KSPGMRESSetOrthogonalization()`, `KSPGMRESGetOrthogonalization()`,
           `KSPGMRESClassicalGramSchmidtOrthogonalization()`, `KSPGMRESModifiedGramSchmidtOrthogonalization()`,
           `KSPGMRESCGSRefinementType`, `KSPGMRESSetCGSRefinementType()`, `KSPGMRESGetCGSRefinementType()`, `KSPGMRESMonitorKrylov()`, `KSPFGMRESSetModifyPC()`,
           `KSPFGMRESModifyPCKSP()`
-
 M*/
 
 PETSC_EXTERN PetscErrorCode KSPCreate_FGMRES(KSP ksp)

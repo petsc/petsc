@@ -491,24 +491,25 @@ PetscErrorCode KSPView_GMRES(KSP ksp, PetscViewer viewer)
 }
 
 /*@C
-   KSPGMRESMonitorKrylov - Calls VecView() for each new direction in the GMRES accumulated Krylov space.
+   KSPGMRESMonitorKrylov - Calls `VecView()` for each new direction in the `KSPGMRES` accumulated Krylov space.
 
    Collective on ksp
 
    Input Parameters:
-+  ksp - the KSP context
++  ksp - the `KSP` context
 .  its - iteration number
 .  fgnorm - 2-norm of residual (or gradient)
--  dummy - an collection of viewers created with KSPViewerCreate()
+-  dummy - an collection of viewers created with `KSPViewerCreate()`
 
-   Options Database Keys:
+   Options Database Key:
 .   -ksp_gmres_krylov_monitor <bool> - Plot the Krylov directions
 
-   Notes:
-    A new PETSCVIEWERDRAW is created for each Krylov vector so they can all be simultaneously viewed
    Level: intermediate
 
-.seealso: `KSPMonitorSet()`, `KSPMonitorResidual()`, `VecView()`, `KSPViewersCreate()`, `KSPViewersDestroy()`
+   Note:
+    A new `PETSCVIEWERDRAW` is created for each Krylov vector so they can all be simultaneously viewed
+
+.seealso: [](chapter_ksp), `KSPGMRES`, `KSPMonitorSet()`, `KSPMonitorResidual()`, `VecView()`, `KSPViewersCreate()`, `KSPViewersDestroy()`
 @*/
 PetscErrorCode KSPGMRESMonitorKrylov(KSP ksp, PetscInt its, PetscReal fgnorm, void *dummy)
 {
@@ -665,13 +666,18 @@ PetscErrorCode KSPGMRESGetCGSRefinementType_GMRES(KSP ksp, KSPGMRESCGSRefinement
    Input Parameters:
 +  ksp - the Krylov space context
 -  type - the type of refinement
+.vb
+  KSP_GMRES_CGS_REFINE_NEVER
+  KSP_GMRES_CGS_REFINE_IFNEEDED
+  KSP_GMRES_CGS_REFINE_ALWAYS
+.ve
 
-  Options Database:
+  Options Database Key:
 .  -ksp_gmres_cgs_refinement_type <refine_never,refine_ifneeded,refine_always> - refinement type
 
    Level: intermediate
 
-.seealso: `KSPGMRESSetOrthogonalization()`, `KSPGMRESCGSRefinementType`, `KSPGMRESClassicalGramSchmidtOrthogonalization()`, `KSPGMRESGetCGSRefinementType()`,
+.seealso: [](chapter_ksp), `KSPGMRES`, `KSPGMRESSetOrthogonalization()`, `KSPGMRESCGSRefinementType`, `KSPGMRESClassicalGramSchmidtOrthogonalization()`, `KSPGMRESGetCGSRefinementType()`,
           `KSPGMRESGetOrthogonalization()`
 @*/
 PetscErrorCode KSPGMRESSetCGSRefinementType(KSP ksp, KSPGMRESCGSRefinementType type)
@@ -695,12 +701,12 @@ PetscErrorCode KSPGMRESSetCGSRefinementType(KSP ksp, KSPGMRESCGSRefinementType t
    Output Parameter:
 .  type - the type of refinement
 
-  Options Database:
+  Options Database Key:
 .  -ksp_gmres_cgs_refinement_type <refine_never,refine_ifneeded,refine_always> - type of refinement
 
    Level: intermediate
 
-.seealso: `KSPGMRESSetOrthogonalization()`, `KSPGMRESCGSRefinementType`, `KSPGMRESClassicalGramSchmidtOrthogonalization()`, `KSPGMRESSetCGSRefinementType()`,
+.seealso: [](chapter_ksp), `KSPGMRES`, `KSPGMRESSetOrthogonalization()`, `KSPGMRESCGSRefinementType`, `KSPGMRESClassicalGramSchmidtOrthogonalization()`, `KSPGMRESSetCGSRefinementType()`,
           `KSPGMRESGetOrthogonalization()`
 @*/
 PetscErrorCode KSPGMRESGetCGSRefinementType(KSP ksp, KSPGMRESCGSRefinementType *type)
@@ -712,7 +718,7 @@ PetscErrorCode KSPGMRESGetCGSRefinementType(KSP ksp, KSPGMRESCGSRefinementType *
 }
 
 /*@
-   KSPGMRESSetRestart - Sets number of iterations at which GMRES, FGMRES and LGMRES restarts.
+   KSPGMRESSetRestart - Sets number of iterations at which `KSPGMRES`, `KSPFGMRES` and `KSPLGMRES` restarts.
 
    Logically Collective on ksp
 
@@ -720,14 +726,15 @@ PetscErrorCode KSPGMRESGetCGSRefinementType(KSP ksp, KSPGMRESCGSRefinementType *
 +  ksp - the Krylov space context
 -  restart - integer restart value
 
-  Options Database:
+  Options Database Key:
 .  -ksp_gmres_restart <positive integer> - integer restart value
-
-    Note: The default value is 30.
 
    Level: intermediate
 
-.seealso: `KSPSetTolerances()`, `KSPGMRESSetOrthogonalization()`, `KSPGMRESSetPreAllocateVectors()`, `KSPGMRESGetRestart()`
+    Note:
+    The default value is 30.
+
+.seealso: [](chapter_ksp), `KSPGMRES`, `KSPSetTolerances()`, `KSPGMRESSetOrthogonalization()`, `KSPGMRESSetPreAllocateVectors()`, `KSPGMRESGetRestart()`
 @*/
 PetscErrorCode KSPGMRESSetRestart(KSP ksp, PetscInt restart)
 {
@@ -739,7 +746,7 @@ PetscErrorCode KSPGMRESSetRestart(KSP ksp, PetscInt restart)
 }
 
 /*@
-   KSPGMRESGetRestart - Gets number of iterations at which GMRES, FGMRES and LGMRES restarts.
+   KSPGMRESGetRestart - Gets number of iterations at which `KSPGMRES`, `KSPFGMRES` and `KSPLGMRES` restarts.
 
    Not Collective
 
@@ -749,11 +756,9 @@ PetscErrorCode KSPGMRESSetRestart(KSP ksp, PetscInt restart)
    Output Parameter:
 .   restart - integer restart value
 
-    Note: The default value is 30.
-
    Level: intermediate
 
-.seealso: `KSPSetTolerances()`, `KSPGMRESSetOrthogonalization()`, `KSPGMRESSetPreAllocateVectors()`, `KSPGMRESSetRestart()`
+.seealso: [](chapter_ksp), `KSPGMRES`, `KSPSetTolerances()`, `KSPGMRESSetOrthogonalization()`, `KSPGMRESSetPreAllocateVectors()`, `KSPGMRESSetRestart()`
 @*/
 PetscErrorCode KSPGMRESGetRestart(KSP ksp, PetscInt *restart)
 {
@@ -763,7 +768,7 @@ PetscErrorCode KSPGMRESGetRestart(KSP ksp, PetscInt *restart)
 }
 
 /*@
-   KSPGMRESSetHapTol - Sets tolerance for determining happy breakdown in GMRES, FGMRES and LGMRES.
+   KSPGMRESSetHapTol - Sets tolerance for determining happy breakdown in `KSPGMRES`, `KSPFGMRES` and `KSPLGMRES`
 
    Logically Collective on ksp
 
@@ -771,16 +776,17 @@ PetscErrorCode KSPGMRESGetRestart(KSP ksp, PetscInt *restart)
 +  ksp - the Krylov space context
 -  tol - the tolerance
 
-  Options Database:
+  Options Database Key:
 .  -ksp_gmres_haptol <positive real value> - set tolerance for determining happy breakdown
-
-   Note: Happy breakdown is the rare case in GMRES where an 'exact' solution is obtained after
-         a certain number of iterations. If you attempt more iterations after this point unstable
-         things can happen hence very occasionally you may need to set this value to detect this condition
 
    Level: intermediate
 
-.seealso: `KSPSetTolerances()`
+   Note:
+   Happy breakdown is the rare case in `KSPGMRES` where an 'exact' solution is obtained after
+   a certain number of iterations. If you attempt more iterations after this point unstable
+   things can happen hence very occasionally you may need to set this value to detect this condition
+
+.seealso: [](chapter_ksp), `KSPGMRES`, `KSPSetTolerances()`
 @*/
 PetscErrorCode KSPGMRESSetHapTol(KSP ksp, PetscReal tol)
 {
@@ -791,7 +797,7 @@ PetscErrorCode KSPGMRESSetHapTol(KSP ksp, PetscReal tol)
 }
 
 /*@
-   KSPGMRESSetBreakdownTolerance - Sets tolerance for determining divergence breakdown in GMRES.
+   KSPGMRESSetBreakdownTolerance - Sets tolerance for determining divergence breakdown in `KSPGMRES`.
 
    Logically Collective on ksp
 
@@ -799,15 +805,15 @@ PetscErrorCode KSPGMRESSetHapTol(KSP ksp, PetscReal tol)
 +  ksp - the Krylov space context
 -  tol - the tolerance
 
-  Options Database:
+  Options Database Key:
 .  -ksp_gmres_breakdown_tolerance <positive real value> - set tolerance for determining divergence breakdown
-
-   Note: divergence breakdown occurs when GMRES residual increases significantly
-         during restart
 
    Level: intermediate
 
-.seealso: `KSPSetTolerances()`, `KSPGMRESSetHapTol()`
+   Note:
+   Divergence breakdown occurs when GMRES residual increases significantly during restart
+
+.seealso: [](chapter_ksp), `KSPGMRES`, `KSPSetTolerances()`, `KSPGMRESSetHapTol()`
 @*/
 PetscErrorCode KSPGMRESSetBreakdownTolerance(KSP ksp, PetscReal tol)
 {
@@ -818,8 +824,7 @@ PetscErrorCode KSPGMRESSetBreakdownTolerance(KSP ksp, PetscReal tol)
 }
 
 /*MC
-     KSPGMRES - Implements the Generalized Minimal Residual method.
-                (Saad and Schultz, 1986) with restart
+     KSPGMRES - Implements the Generalized Minimal Residual method [1] with restart
 
    Options Database Keys:
 +   -ksp_gmres_restart <restart> - the number of Krylov directions to orthogonalize against
@@ -834,18 +839,17 @@ PetscErrorCode KSPGMRESSetBreakdownTolerance(KSP ksp, PetscReal tol)
 
    Level: beginner
 
-   Notes:
+   Note:
     Left and right preconditioning are supported, but not symmetric preconditioning.
 
-   References:
-.  * - YOUCEF SAAD AND MARTIN H. SCHULTZ, GMRES: A GENERALIZED MINIMAL RESIDUAL ALGORITHM FOR SOLVING NONSYMMETRIC LINEAR SYSTEMS.
+   Reference:
+.  [1] - YOUCEF SAAD AND MARTIN H. SCHULTZ, GMRES: A GENERALIZED MINIMAL RESIDUAL ALGORITHM FOR SOLVING NONSYMMETRIC LINEAR SYSTEMS.
           SIAM J. ScI. STAT. COMPUT. Vo|. 7, No. 3, July 1986.
 
-.seealso: `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPFGMRES`, `KSPLGMRES`,
+.seealso: [](chapter_ksp), `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPFGMRES`, `KSPLGMRES`,
           `KSPGMRESSetRestart()`, `KSPGMRESSetHapTol()`, `KSPGMRESSetPreAllocateVectors()`, `KSPGMRESSetOrthogonalization()`, `KSPGMRESGetOrthogonalization()`,
           `KSPGMRESClassicalGramSchmidtOrthogonalization()`, `KSPGMRESModifiedGramSchmidtOrthogonalization()`,
           `KSPGMRESCGSRefinementType`, `KSPGMRESSetCGSRefinementType()`, `KSPGMRESGetCGSRefinementType()`, `KSPGMRESMonitorKrylov()`, `KSPSetPCSide()`
-
 M*/
 
 PETSC_EXTERN PetscErrorCode KSPCreate_GMRES(KSP ksp)

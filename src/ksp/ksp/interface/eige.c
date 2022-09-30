@@ -52,7 +52,7 @@ static PetscErrorCode MatMult_KSP(Mat A, Vec X, Vec Y)
 
     Level: advanced
 
-.seealso: `KSPComputeEigenvaluesExplicitly()`, `PCComputeOperator()`, `KSPSetDiagonalScale()`, `KSPSetNullSpace()`, `MatType`
+.seealso: [](chapter_ksp), `KSP`, `KSPSetOperators()`, `KSPComputeEigenvaluesExplicitly()`, `PCComputeOperator()`, `KSPSetDiagonalScale()`, `KSPSetNullSpace()`, `MatType`
 @*/
 PetscErrorCode KSPComputeOperator(KSP ksp, MatType mattype, Mat *mat)
 {
@@ -84,7 +84,7 @@ PetscErrorCode KSPComputeOperator(KSP ksp, MatType mattype, Mat *mat)
    Collective on ksp
 
    Input Parameters:
-+  ksp - iterative context obtained from KSPCreate()
++  ksp - iterative context obtained from `KSPCreate()`
 -  n - size of arrays r and c
 
    Output Parameters:
@@ -98,16 +98,15 @@ PetscErrorCode KSPComputeOperator(KSP ksp, MatType mattype, Mat *mat)
    problems, say n < 500.
 
    Many users may just want to use the monitoring routine
-   KSPMonitorSingularValue() (which can be set with option -ksp_monitor_singular_value)
+   `KSPMonitorSingularValue()` (which can be set with option -ksp_monitor_singular_value)
    to print the singular values at each iteration of the linear solve.
 
    The preconditoner operator, rhs vector, solution vectors should be
-   set before this routine is called. i.e use KSPSetOperators(),KSPSolve() or
-   KSPSetOperators()
+   set before this routine is called. i.e use `KSPSetOperators()`, `KSPSolve()`
 
    Level: advanced
 
-.seealso: `KSPComputeEigenvalues()`, `KSPMonitorSingularValue()`, `KSPComputeExtremeSingularValues()`, `KSPSetOperators()`, `KSPSolve()`
+.seealso: [](chapter_ksp), `KSP`, `KSPComputeEigenvalues()`, `KSPMonitorSingularValue()`, `KSPComputeExtremeSingularValues()`, `KSPSetOperators()`, `KSPSolve()`
 @*/
 PetscErrorCode KSPComputeEigenvaluesExplicitly(KSP ksp, PetscInt nmax, PetscReal r[], PetscReal c[])
 {

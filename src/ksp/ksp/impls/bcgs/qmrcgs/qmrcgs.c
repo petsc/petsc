@@ -1,9 +1,6 @@
 
 /*
     This file implements QMRCGS (QMRCGStab).
-    Only right preconditioning is supported.
-
-    Contributed by: Xiangmin Jiao (xiangmin.jiao@stonybrook.edu)
 
     References:
 .   * - Chan, Gallopoulos, Simoncini, Szeto, and Tong (SISC 1994), Ghai, Lu, and Jiao (NLAA 2019)
@@ -215,18 +212,19 @@ static PetscErrorCode KSPSolve_QMRCGS(KSP ksp)
 /*MC
      KSPQMRCGS - Implements the QMRCGStab method.
 
-   Options Database Keys:
-    see KSPSolve()
-
    Level: beginner
 
-   Notes:
-    Only right preconditioning is supported.
+   Note:
+   Only right preconditioning is supported.
+
+   Contributed by:
+   Xiangmin Jiao (xiangmin.jiao@stonybrook.edu)
 
    References:
-. * - Chan, Gallopoulos, Simoncini, Szeto, and Tong (SISC 1994), Ghai, Lu, and Jiao (NLAA 2019)
++ * - Chan, Gallopoulos, Simoncini, Szeto, and Tong (SISC 1994)
+- * - Ghai, Lu, and Jiao (NLAA 2019)
 
-.seealso: `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPBICG`, `KSPFBICGS`, `KSPFBCGSL`, `KSPSetPCSide()`
+.seealso: [](chapter_ksp), `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPBICG`, `KSPFBICGS`, `KSPFBCGSL`, `KSPSetPCSide()`
 M*/
 PETSC_EXTERN PetscErrorCode KSPCreate_QMRCGS(KSP ksp)
 {
@@ -254,7 +252,6 @@ PETSC_EXTERN PetscErrorCode KSPCreate_QMRCGS(KSP ksp)
   PetscBool         cite        = PETSC_FALSE;
 
   PetscFunctionBegin;
-
   PetscCall(PetscCitationsRegister(citations, &cite));
   PetscCall(PetscNew(&bcgs));
 
