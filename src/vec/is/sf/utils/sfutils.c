@@ -76,7 +76,6 @@ PetscErrorCode PetscSFSetGraphLayout(PetscSF sf, PetscLayout layout, PetscInt nl
    The outputs layout and gremote are freshly created each time this function is called,
    so they need to be freed by user and cannot be qualified as const.
 
-
 .seealso: `PetscSFSetGraphLayout()`, `PetscSFCreate()`, `PetscSFView()`, `PetscSFSetGraph()`, `PetscSFGetGraph()`
 @*/
 PetscErrorCode PetscSFGetGraphLayout(PetscSF sf, PetscLayout *layout, PetscInt *nleaves, const PetscInt *ilocal[], PetscInt *gremote[])

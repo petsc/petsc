@@ -1,3 +1,7 @@
+/* Portions of this code are under:
+   Copyright (c) 2022 Advanced Micro Devices, Inc. All rights reserved.
+*/
+
 #ifndef PETSCSYSTYPES_H
 #define PETSCSYSTYPES_H
 
@@ -205,6 +209,22 @@ typedef int       PetscBLASInt;
 
 M*/
 typedef int PetscCuBLASInt;
+
+/*MC
+   PetscHipBLASInt - datatype used to represent 'int' parameters to hipBLAS/hipSOLVER functions.
+
+   Notes:
+    As of this writing PetscHipBLASInt is always the system `int`.
+
+    PetscErrorCode PetscHipBLASIntCast(a,&b) checks if the given PetscInt a will fit in a PetscHipBLASInt, if not it
+      generates a PETSC_ERR_ARG_OUTOFRANGE error
+
+   Level: intermediate
+
+.seealso: PetscBLASInt, PetscMPIInt, PetscInt, PetscHipBLASIntCast()
+
+M*/
+typedef int PetscHipBLASInt;
 
 /*E
     PetscBool  - Logical variable. Actually an enum in C and a logical in Fortran.

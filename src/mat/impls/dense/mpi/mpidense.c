@@ -1,6 +1,8 @@
 
 /*
    Basic functions for basic parallel dense matrices.
+   Portions of this code are under:
+   Copyright (c) 2022 Advanced Micro Devices, Inc. All rights reserved.
 */
 
 #include <../src/mat/impls/dense/mpi/mpidense.h> /*I   "petscmat.h"  I*/
@@ -105,9 +107,13 @@ PetscErrorCode MatGetDiagonalBlock_MPIDense(Mat A, Mat *a)
   PetscCheck(flg, PETSC_COMM_SELF, PETSC_ERR_SUP, "Only square matrices supported.");
   PetscCall(PetscObjectQuery((PetscObject)A, "DiagonalBlock", (PetscObject *)&B));
   if (!B) { /* This should use MatDenseGetSubMatrix (not create), but we would need a call like MatRestoreDiagonalBlock */
-
+#if defined(PETSC_HAVE_CUDA)
     PetscCall(PetscObjectTypeCompare((PetscObject)mdn->A, MATSEQDENSECUDA, &flg));
     PetscCheck(!flg, PETSC_COMM_SELF, PETSC_ERR_SUP, "Not coded for %s. Send an email to petsc-dev@mcs.anl.gov to request this feature", MATSEQDENSECUDA);
+#elif (PETSC_HAVE_HIP)
+    PetscCall(PetscObjectTypeCompare((PetscObject)mdn->A, MATSEQDENSEHIP, &flg));
+    PetscCheck(!flg, PETSC_COMM_SELF, PETSC_ERR_SUP, "Not coded for %s. Send an email to petsc-dev@mcs.anl.gov to request this feature", MATSEQDENSEHIP);
+#endif
     PetscCall(PetscObjectGetComm((PetscObject)(mdn->A), &comm));
     PetscCall(MatCreate(comm, &B));
     PetscCall(MatSetSizes(B, m, m, m, m));
@@ -187,8 +193,8 @@ static PetscErrorCode MatDenseGetLDA_MPIDense(Mat A, PetscInt *lda)
 
 static PetscErrorCode MatDenseSetLDA_MPIDense(Mat A, PetscInt lda)
 {
-  Mat_MPIDense *a = (Mat_MPIDense *)A->data;
-  PetscBool     iscuda;
+  Mat_MPIDense *a     = (Mat_MPIDense *)A->data;
+  MatType       mtype = MATSEQDENSE;
 
   PetscFunctionBegin;
   if (!a->A) {
@@ -197,8 +203,16 @@ static PetscErrorCode MatDenseSetLDA_MPIDense(Mat A, PetscInt lda)
     PetscCall(PetscLayoutSetUp(A->cmap));
     PetscCall(MatCreate(PETSC_COMM_SELF, &a->A));
     PetscCall(MatSetSizes(a->A, A->rmap->n, A->cmap->N, A->rmap->n, A->cmap->N));
+#if defined(PETSC_HAVE_CUDA)
+    PetscBool iscuda;
     PetscCall(PetscObjectTypeCompare((PetscObject)A, MATMPIDENSECUDA, &iscuda));
-    PetscCall(MatSetType(a->A, iscuda ? MATSEQDENSECUDA : MATSEQDENSE));
+    if (iscuda) mtype = MATSEQDENSECUDA;
+#elif (PETSC_HAVE_HIP)
+    PetscBool iship;
+    PetscCall(PetscObjectTypeCompare((PetscObject)A, MATMPIDENSEHIP, &iship));
+    if (iship) mtype = MATSEQDENSEHIP;
+#endif
+    PetscCall(MatSetType(a->A, mtype));
   }
   PetscCall(MatDenseSetLDA(a->A, lda));
   PetscFunctionReturn(0);
@@ -615,6 +629,25 @@ PetscErrorCode MatDestroy_MPIDense(Mat mat)
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatDenseCUDAPlaceArray_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatDenseCUDAResetArray_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatDenseCUDAReplaceArray_C", NULL));
+#endif
+#if defined(PETSC_HAVE_HIP)
+  PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatProductSetFromOptions_mpiaijhipsparse_mpidense_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatProductSetFromOptions_mpidense_mpiaijhipsparse_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatConvert_mpidense_mpidensehip_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatConvert_mpidensehip_mpidense_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatProductSetFromOptions_mpiaij_mpidensehip_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatProductSetFromOptions_mpiaijhipsparse_mpidensehip_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatProductSetFromOptions_mpidensehip_mpiaij_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatProductSetFromOptions_mpidensehip_mpiaijhipsparse_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatDenseHIPGetArray_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatDenseHIPGetArrayRead_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatDenseHIPGetArrayWrite_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatDenseHIPRestoreArray_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatDenseHIPRestoreArrayRead_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatDenseHIPRestoreArrayWrite_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatDenseHIPPlaceArray_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatDenseHIPResetArray_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatDenseHIPReplaceArray_C", NULL));
 #endif
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatDenseGetColumn_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatDenseRestoreColumn_C", NULL));
@@ -1321,6 +1354,284 @@ PetscErrorCode MatMPIDenseCUDASetPreallocation(Mat A, PetscScalar *d_data)
 }
 #endif
 
+#if defined(PETSC_HAVE_HIP)
+PetscErrorCode MatShift_MPIDenseHIP(Mat A, PetscScalar alpha)
+{
+  PetscScalar *da;
+  PetscInt     lda;
+
+  PetscFunctionBegin;
+  PetscCall(MatDenseHIPGetArray(A, &da));
+  PetscCall(MatDenseGetLDA(A, &lda));
+  PetscCall(PetscInfo(A, "Performing Shift on backend\n"));
+  PetscCall(MatShift_DenseHIP_Private(da, alpha, lda, A->rmap->rstart, A->rmap->rend, A->cmap->N));
+  PetscCall(MatDenseHIPRestoreArray(A, &da));
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode MatDenseGetColumnVec_MPIDenseHIP(Mat A, PetscInt col, Vec *v)
+{
+  Mat_MPIDense *a = (Mat_MPIDense *)A->data;
+  PetscInt      lda;
+
+  PetscFunctionBegin;
+  PetscCheck(!a->vecinuse, PetscObjectComm((PetscObject)A), PETSC_ERR_ORDER, "Need to call MatDenseRestoreColumnVec() first");
+  PetscCheck(!a->matinuse, PetscObjectComm((PetscObject)A), PETSC_ERR_ORDER, "Need to call MatDenseRestoreSubMatrix() first");
+  if (!a->cvec) {
+    PetscCall(VecCreateMPIHIPWithArray(PetscObjectComm((PetscObject)A), A->rmap->bs, A->rmap->n, A->rmap->N, NULL, &a->cvec));
+    PetscCall(PetscLogObjectParent((PetscObject)A, (PetscObject)a->cvec));
+  }
+  a->vecinuse = col + 1;
+  PetscCall(MatDenseGetLDA(a->A, &lda));
+  PetscCall(MatDenseHIPGetArray(a->A, (PetscScalar **)&a->ptrinuse));
+  PetscCall(VecHIPPlaceArray(a->cvec, a->ptrinuse + (size_t)col * (size_t)lda));
+  *v = a->cvec;
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode MatDenseRestoreColumnVec_MPIDenseHIP(Mat A, PetscInt col, Vec *v)
+{
+  Mat_MPIDense *a = (Mat_MPIDense *)A->data;
+
+  PetscFunctionBegin;
+  PetscCheck(a->vecinuse, PETSC_COMM_SELF, PETSC_ERR_ORDER, "Need to call MatDenseGetColumnVec() first");
+  PetscCheck(a->cvec, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Missing internal column vector");
+  a->vecinuse = 0;
+  PetscCall(MatDenseHIPRestoreArray(a->A, (PetscScalar **)&a->ptrinuse));
+  PetscCall(VecHIPResetArray(a->cvec));
+  if (v) *v = NULL;
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode MatDenseGetColumnVecRead_MPIDenseHIP(Mat A, PetscInt col, Vec *v)
+{
+  Mat_MPIDense *a = (Mat_MPIDense *)A->data;
+  PetscInt      lda;
+
+  PetscFunctionBegin;
+  PetscCheck(!a->vecinuse, PetscObjectComm((PetscObject)A), PETSC_ERR_ORDER, "Need to call MatDenseRestoreColumnVec() first");
+  PetscCheck(!a->matinuse, PetscObjectComm((PetscObject)A), PETSC_ERR_ORDER, "Need to call MatDenseRestoreSubMatrix() first");
+  if (!a->cvec) {
+    PetscCall(VecCreateMPIHIPWithArray(PetscObjectComm((PetscObject)A), A->rmap->bs, A->rmap->n, A->rmap->N, NULL, &a->cvec));
+    PetscCall(PetscLogObjectParent((PetscObject)A, (PetscObject)a->cvec));
+  }
+  a->vecinuse = col + 1;
+  PetscCall(MatDenseGetLDA(a->A, &lda));
+  PetscCall(MatDenseHIPGetArrayRead(a->A, &a->ptrinuse));
+  PetscCall(VecHIPPlaceArray(a->cvec, a->ptrinuse + (size_t)col * (size_t)lda));
+  PetscCall(VecLockReadPush(a->cvec));
+  *v = a->cvec;
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode MatDenseRestoreColumnVecRead_MPIDenseHIP(Mat A, PetscInt col, Vec *v)
+{
+  Mat_MPIDense *a = (Mat_MPIDense *)A->data;
+
+  PetscFunctionBegin;
+  PetscCheck(a->vecinuse, PetscObjectComm((PetscObject)A), PETSC_ERR_ORDER, "Need to call MatDenseGetColumnVec() first");
+  PetscCheck(a->cvec, PetscObjectComm((PetscObject)A), PETSC_ERR_PLIB, "Missing internal column vector");
+  a->vecinuse = 0;
+  PetscCall(MatDenseHIPRestoreArrayRead(a->A, &a->ptrinuse));
+  PetscCall(VecLockReadPop(a->cvec));
+  PetscCall(VecHIPResetArray(a->cvec));
+  if (v) *v = NULL;
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode MatDenseGetColumnVecWrite_MPIDenseHIP(Mat A, PetscInt col, Vec *v)
+{
+  Mat_MPIDense *a = (Mat_MPIDense *)A->data;
+  PetscInt      lda;
+
+  PetscFunctionBegin;
+  PetscCheck(!a->vecinuse, PetscObjectComm((PetscObject)A), PETSC_ERR_ORDER, "Need to call MatDenseRestoreColumnVec() first");
+  PetscCheck(!a->matinuse, PetscObjectComm((PetscObject)A), PETSC_ERR_ORDER, "Need to call MatDenseRestoreSubMatrix() first");
+  if (!a->cvec) {
+    PetscCall(VecCreateMPIHIPWithArray(PetscObjectComm((PetscObject)A), A->rmap->bs, A->rmap->n, A->rmap->N, NULL, &a->cvec));
+    PetscCall(PetscLogObjectParent((PetscObject)A, (PetscObject)a->cvec));
+  }
+  a->vecinuse = col + 1;
+  PetscCall(MatDenseGetLDA(a->A, &lda));
+  PetscCall(MatDenseHIPGetArrayWrite(a->A, (PetscScalar **)&a->ptrinuse));
+  PetscCall(VecHIPPlaceArray(a->cvec, a->ptrinuse + (size_t)col * (size_t)lda));
+  *v = a->cvec;
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode MatDenseRestoreColumnVecWrite_MPIDenseHIP(Mat A, PetscInt col, Vec *v)
+{
+  Mat_MPIDense *a = (Mat_MPIDense *)A->data;
+
+  PetscFunctionBegin;
+  PetscCheck(a->vecinuse, PetscObjectComm((PetscObject)A), PETSC_ERR_ORDER, "Need to call MatDenseGetColumnVec() first");
+  PetscCheck(a->cvec, PetscObjectComm((PetscObject)A), PETSC_ERR_PLIB, "Missing internal column vector");
+  a->vecinuse = 0;
+  PetscCall(MatDenseHIPRestoreArrayWrite(a->A, (PetscScalar **)&a->ptrinuse));
+  PetscCall(VecHIPResetArray(a->cvec));
+  if (v) *v = NULL;
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode MatDenseHIPPlaceArray_MPIDenseHIP(Mat A, const PetscScalar *a)
+{
+  Mat_MPIDense *l = (Mat_MPIDense *)A->data;
+
+  PetscFunctionBegin;
+  PetscCheck(!l->vecinuse, PetscObjectComm((PetscObject)A), PETSC_ERR_ORDER, "Need to call MatDenseRestoreColumnVec() first");
+  PetscCheck(!l->matinuse, PetscObjectComm((PetscObject)A), PETSC_ERR_ORDER, "Need to call MatDenseRestoreSubMatrix() first");
+  PetscCall(MatDenseHIPPlaceArray(l->A, a));
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode MatDenseHIPResetArray_MPIDenseHIP(Mat A)
+{
+  Mat_MPIDense *l = (Mat_MPIDense *)A->data;
+
+  PetscFunctionBegin;
+  PetscCheck(!l->vecinuse, PetscObjectComm((PetscObject)A), PETSC_ERR_ORDER, "Need to call MatDenseRestoreColumnVec() first");
+  PetscCheck(!l->matinuse, PetscObjectComm((PetscObject)A), PETSC_ERR_ORDER, "Need to call MatDenseRestoreSubMatrix() first");
+  PetscCall(MatDenseHIPResetArray(l->A));
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode MatDenseHIPReplaceArray_MPIDenseHIP(Mat A, const PetscScalar *a)
+{
+  Mat_MPIDense *l = (Mat_MPIDense *)A->data;
+
+  PetscFunctionBegin;
+  PetscCheck(!l->vecinuse, PetscObjectComm((PetscObject)A), PETSC_ERR_ORDER, "Need to call MatDenseRestoreColumnVec() first");
+  PetscCheck(!l->matinuse, PetscObjectComm((PetscObject)A), PETSC_ERR_ORDER, "Need to call MatDenseRestoreSubMatrix() first");
+  PetscCall(MatDenseHIPReplaceArray(l->A, a));
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode MatDenseHIPGetArrayWrite_MPIDenseHIP(Mat A, PetscScalar **a)
+{
+  Mat_MPIDense *l = (Mat_MPIDense *)A->data;
+
+  PetscFunctionBegin;
+  PetscCall(MatDenseHIPGetArrayWrite(l->A, a));
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode MatDenseHIPRestoreArrayWrite_MPIDenseHIP(Mat A, PetscScalar **a)
+{
+  Mat_MPIDense *l = (Mat_MPIDense *)A->data;
+
+  PetscFunctionBegin;
+  PetscCall(MatDenseHIPRestoreArrayWrite(l->A, a));
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode MatDenseHIPGetArrayRead_MPIDenseHIP(Mat A, const PetscScalar **a)
+{
+  Mat_MPIDense *l = (Mat_MPIDense *)A->data;
+
+  PetscFunctionBegin;
+  PetscCall(MatDenseHIPGetArrayRead(l->A, a));
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode MatDenseHIPRestoreArrayRead_MPIDenseHIP(Mat A, const PetscScalar **a)
+{
+  Mat_MPIDense *l = (Mat_MPIDense *)A->data;
+
+  PetscFunctionBegin;
+  PetscCall(MatDenseHIPRestoreArrayRead(l->A, a));
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode MatDenseHIPGetArray_MPIDenseHIP(Mat A, PetscScalar **a)
+{
+  Mat_MPIDense *l = (Mat_MPIDense *)A->data;
+
+  PetscFunctionBegin;
+  PetscCall(MatDenseHIPGetArray(l->A, a));
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode MatDenseHIPRestoreArray_MPIDenseHIP(Mat A, PetscScalar **a)
+{
+  Mat_MPIDense *l = (Mat_MPIDense *)A->data;
+
+  PetscFunctionBegin;
+  PetscCall(MatDenseHIPRestoreArray(l->A, a));
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode MatDenseGetColumnVecWrite_MPIDense(Mat, PetscInt, Vec *);
+static PetscErrorCode MatDenseGetColumnVecRead_MPIDense(Mat, PetscInt, Vec *);
+static PetscErrorCode MatDenseGetColumnVec_MPIDense(Mat, PetscInt, Vec *);
+static PetscErrorCode MatDenseRestoreColumnVecWrite_MPIDense(Mat, PetscInt, Vec *);
+static PetscErrorCode MatDenseRestoreColumnVecRead_MPIDense(Mat, PetscInt, Vec *);
+static PetscErrorCode MatDenseRestoreColumnVec_MPIDense(Mat, PetscInt, Vec *);
+static PetscErrorCode MatDenseRestoreSubMatrix_MPIDense(Mat, Mat *);
+
+static PetscErrorCode MatBindToCPU_MPIDenseHIP(Mat mat, PetscBool bind)
+{
+  Mat_MPIDense *d = (Mat_MPIDense *)mat->data;
+
+  PetscFunctionBegin;
+  PetscCheck(!d->vecinuse, PetscObjectComm((PetscObject)mat), PETSC_ERR_ORDER, "Need to call MatDenseRestoreColumnVec() first");
+  PetscCheck(!d->matinuse, PetscObjectComm((PetscObject)mat), PETSC_ERR_ORDER, "Need to call MatDenseRestoreSubMatrix() first");
+  if (d->A) PetscCall(MatBindToCPU(d->A, bind));
+  mat->boundtocpu = bind;
+  if (!bind) {
+    PetscBool iscuda;
+
+    PetscCall(PetscFree(mat->defaultrandtype));
+    PetscCall(PetscStrallocpy(PETSCCURAND, &mat->defaultrandtype));
+    PetscCall(PetscObjectTypeCompare((PetscObject)d->cvec, VECMPIHIP, &iscuda));
+    if (!iscuda) PetscCall(VecDestroy(&d->cvec));
+    PetscCall(PetscObjectTypeCompare((PetscObject)d->cmat, MATMPIDENSEHIP, &iscuda));
+    if (!iscuda) PetscCall(MatDestroy(&d->cmat));
+    PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatDenseGetColumnVec_C", MatDenseGetColumnVec_MPIDenseHIP));
+    PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatDenseRestoreColumnVec_C", MatDenseRestoreColumnVec_MPIDenseHIP));
+    PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatDenseGetColumnVecRead_C", MatDenseGetColumnVecRead_MPIDenseHIP));
+    PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatDenseRestoreColumnVecRead_C", MatDenseRestoreColumnVecRead_MPIDenseHIP));
+    PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatDenseGetColumnVecWrite_C", MatDenseGetColumnVecWrite_MPIDenseHIP));
+    PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatDenseRestoreColumnVecWrite_C", MatDenseRestoreColumnVecWrite_MPIDenseHIP));
+    mat->ops->shift = MatShift_MPIDenseHIP;
+  } else {
+    PetscCall(PetscFree(mat->defaultrandtype));
+    PetscCall(PetscStrallocpy(PETSCRANDER48, &mat->defaultrandtype));
+    PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatDenseGetColumnVec_C", MatDenseGetColumnVec_MPIDense));
+    PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatDenseRestoreColumnVec_C", MatDenseRestoreColumnVec_MPIDense));
+    PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatDenseGetColumnVecRead_C", MatDenseGetColumnVecRead_MPIDense));
+    PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatDenseRestoreColumnVecRead_C", MatDenseRestoreColumnVecRead_MPIDense));
+    PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatDenseGetColumnVecWrite_C", MatDenseGetColumnVecWrite_MPIDense));
+    PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatDenseRestoreColumnVecWrite_C", MatDenseRestoreColumnVecWrite_MPIDense));
+    mat->ops->shift = MatShift_MPIDense;
+  }
+  if (d->cmat) PetscCall(MatBindToCPU(d->cmat, bind));
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode MatMPIDenseHIPSetPreallocation(Mat A, PetscScalar *d_data)
+{
+  Mat_MPIDense *d = (Mat_MPIDense *)A->data;
+  PetscBool     iscuda;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
+  PetscCall(PetscObjectTypeCompare((PetscObject)A, MATMPIDENSEHIP, &iscuda));
+  if (!iscuda) PetscFunctionReturn(0);
+  PetscCall(PetscLayoutSetUp(A->rmap));
+  PetscCall(PetscLayoutSetUp(A->cmap));
+  if (!d->A) {
+    PetscCall(MatCreate(PETSC_COMM_SELF, &d->A));
+    PetscCall(PetscLogObjectParent((PetscObject)A, (PetscObject)d->A));
+    PetscCall(MatSetSizes(d->A, A->rmap->n, A->cmap->N, A->rmap->n, A->cmap->N));
+  }
+  PetscCall(MatSetType(d->A, MATSEQDENSEHIP));
+  PetscCall(MatSeqDenseHIPSetPreallocation(d->A, d_data));
+  A->preallocated = PETSC_TRUE;
+  A->assembled    = PETSC_TRUE;
+  PetscFunctionReturn(0);
+}
+#endif
+
 static PetscErrorCode MatSetRandom_MPIDense(Mat x, PetscRandom rctx)
 {
   Mat_MPIDense *d = (Mat_MPIDense *)x->data;
@@ -1502,8 +1813,8 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIDense,
 
 PetscErrorCode MatMPIDenseSetPreallocation_MPIDense(Mat mat, PetscScalar *data)
 {
-  Mat_MPIDense *a = (Mat_MPIDense *)mat->data;
-  PetscBool     iscuda;
+  Mat_MPIDense *a     = (Mat_MPIDense *)mat->data;
+  MatType       mtype = MATSEQDENSE;
 
   PetscFunctionBegin;
   PetscCheck(!a->matinuse, PetscObjectComm((PetscObject)mat), PETSC_ERR_ORDER, "Need to call MatDenseRestoreSubMatrix() first");
@@ -1513,10 +1824,19 @@ PetscErrorCode MatMPIDenseSetPreallocation_MPIDense(Mat mat, PetscScalar *data)
     PetscCall(MatCreate(PETSC_COMM_SELF, &a->A));
     PetscCall(MatSetSizes(a->A, mat->rmap->n, mat->cmap->N, mat->rmap->n, mat->cmap->N));
   }
+#if defined(PETSC_HAVE_CUDA)
+  PetscBool iscuda;
   PetscCall(PetscObjectTypeCompare((PetscObject)mat, MATMPIDENSECUDA, &iscuda));
-  PetscCall(MatSetType(a->A, iscuda ? MATSEQDENSECUDA : MATSEQDENSE));
+  if (iscuda) mtype = MATSEQDENSECUDA;
+#endif
+#if defined(PETSC_HAVE_HIP)
+  PetscBool iship;
+  PetscCall(PetscObjectTypeCompare((PetscObject)mat, MATMPIDENSEHIP, &iship));
+  if (iship) mtype = MATSEQDENSEHIP;
+#endif
+  PetscCall(MatSetType(a->A, mtype));
   PetscCall(MatSeqDenseSetPreallocation(a->A, data));
-#if defined(PETSC_HAVE_DEVICE)
+#if defined(PETSC_HAVE_CUDA) || defined(PETSC_HAVE_HIP)
   mat->offloadmask = a->A->offloadmask;
 #endif
   mat->preallocated = PETSC_TRUE;
@@ -1724,6 +2044,89 @@ PetscErrorCode MatConvert_MPIDense_MPIDenseCUDA(Mat M, MatType type, MatReuse re
   PetscCall(MatBindToCPU_MPIDenseCUDA(B, PETSC_FALSE));
 
   B->ops->bindtocpu = MatBindToCPU_MPIDenseCUDA;
+  PetscFunctionReturn(0);
+}
+#endif
+
+#if defined(PETSC_HAVE_HIP)
+PetscErrorCode MatConvert_MPIDenseHIP_MPIDense(Mat M, MatType type, MatReuse reuse, Mat *newmat)
+{
+  Mat           B;
+  Mat_MPIDense *m;
+
+  PetscFunctionBegin;
+  if (reuse == MAT_INITIAL_MATRIX) {
+    PetscCall(MatDuplicate(M, MAT_COPY_VALUES, newmat));
+  } else if (reuse == MAT_REUSE_MATRIX) {
+    PetscCall(MatCopy(M, *newmat, SAME_NONZERO_PATTERN));
+  }
+
+  B = *newmat;
+  PetscCall(MatBindToCPU_MPIDenseHIP(B, PETSC_TRUE));
+  PetscCall(PetscFree(B->defaultvectype));
+  PetscCall(PetscStrallocpy(VECSTANDARD, &B->defaultvectype));
+  PetscCall(PetscObjectChangeTypeName((PetscObject)B, MATMPIDENSE));
+  PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatConvert_mpidensehip_mpidense_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatProductSetFromOptions_mpiaij_mpidensehip_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatProductSetFromOptions_mpiaijhipsparse_mpidensehip_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatProductSetFromOptions_mpidensehip_mpiaij_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatProductSetFromOptions_mpidensehip_mpiaijhipsparse_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatDenseHIPGetArray_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatDenseHIPGetArrayRead_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatDenseHIPGetArrayWrite_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatDenseHIPRestoreArray_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatDenseHIPRestoreArrayRead_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatDenseHIPRestoreArrayWrite_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatDenseHIPPlaceArray_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatDenseHIPResetArray_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatDenseHIPReplaceArray_C", NULL));
+  m = (Mat_MPIDense *)(B)->data;
+  if (m->A) PetscCall(MatConvert(m->A, MATSEQDENSE, MAT_INPLACE_MATRIX, &m->A));
+  B->ops->bindtocpu = NULL;
+  B->offloadmask    = PETSC_OFFLOAD_CPU;
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode MatConvert_MPIDense_MPIDenseHIP(Mat M, MatType type, MatReuse reuse, Mat *newmat)
+{
+  Mat           B;
+  Mat_MPIDense *m;
+
+  PetscFunctionBegin;
+  if (reuse == MAT_INITIAL_MATRIX) {
+    PetscCall(MatDuplicate(M, MAT_COPY_VALUES, newmat));
+  } else if (reuse == MAT_REUSE_MATRIX) {
+    PetscCall(MatCopy(M, *newmat, SAME_NONZERO_PATTERN));
+  }
+
+  B = *newmat;
+  PetscCall(PetscFree(B->defaultvectype));
+  PetscCall(PetscStrallocpy(VECHIP, &B->defaultvectype));
+  PetscCall(PetscObjectChangeTypeName((PetscObject)B, MATMPIDENSEHIP));
+  PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatConvert_mpidensehip_mpidense_C", MatConvert_MPIDenseHIP_MPIDense));
+  PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatProductSetFromOptions_mpiaij_mpidensehip_C", MatProductSetFromOptions_MPIAIJ_MPIDense));
+  PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatProductSetFromOptions_mpiaijhipsparse_mpidensehip_C", MatProductSetFromOptions_MPIAIJ_MPIDense));
+  PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatProductSetFromOptions_mpidensehip_mpiaij_C", MatProductSetFromOptions_MPIDense_MPIAIJ));
+  PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatProductSetFromOptions_mpidensehip_mpiaijhipsparse_C", MatProductSetFromOptions_MPIDense_MPIAIJ));
+  PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatDenseHIPGetArray_C", MatDenseHIPGetArray_MPIDenseHIP));
+  PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatDenseHIPGetArrayRead_C", MatDenseHIPGetArrayRead_MPIDenseHIP));
+  PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatDenseHIPGetArrayWrite_C", MatDenseHIPGetArrayWrite_MPIDenseHIP));
+  PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatDenseHIPRestoreArray_C", MatDenseHIPRestoreArray_MPIDenseHIP));
+  PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatDenseHIPRestoreArrayRead_C", MatDenseHIPRestoreArrayRead_MPIDenseHIP));
+  PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatDenseHIPRestoreArrayWrite_C", MatDenseHIPRestoreArrayWrite_MPIDenseHIP));
+  PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatDenseHIPPlaceArray_C", MatDenseHIPPlaceArray_MPIDenseHIP));
+  PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatDenseHIPResetArray_C", MatDenseHIPResetArray_MPIDenseHIP));
+  PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatDenseHIPReplaceArray_C", MatDenseHIPReplaceArray_MPIDenseHIP));
+  m = (Mat_MPIDense *)(B->data);
+  if (m->A) {
+    PetscCall(MatConvert(m->A, MATSEQDENSEHIP, MAT_INPLACE_MATRIX, &m->A));
+    B->offloadmask = PETSC_OFFLOAD_BOTH;
+  } else {
+    B->offloadmask = PETSC_OFFLOAD_UNALLOCATED;
+  }
+  PetscCall(MatBindToCPU_MPIDenseHIP(B, PETSC_FALSE));
+
+  B->ops->bindtocpu = MatBindToCPU_MPIDenseHIP;
   PetscFunctionReturn(0);
 }
 #endif
@@ -1968,7 +2371,11 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIDense(Mat mat)
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatProductSetFromOptions_mpiaijcusparse_mpidense_C", MatProductSetFromOptions_MPIAIJ_MPIDense));
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatProductSetFromOptions_mpidense_mpiaijcusparse_C", MatProductSetFromOptions_MPIDense_MPIAIJ));
 #endif
-
+#if defined(PETSC_HAVE_HIP)
+  PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatConvert_mpidense_mpidensehip_C", MatConvert_MPIDense_MPIDenseHIP));
+  PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatProductSetFromOptions_mpiaijhipsparse_mpidense_C", MatProductSetFromOptions_MPIAIJ_MPIDense));
+  PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatProductSetFromOptions_mpidense_mpiaijhipsparse_C", MatProductSetFromOptions_MPIDense_MPIAIJ));
+#endif
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatDenseGetColumn_C", MatDenseGetColumn_MPIDense));
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatDenseRestoreColumn_C", MatDenseRestoreColumn_MPIDense));
   PetscCall(PetscObjectChangeTypeName((PetscObject)mat, MATMPIDENSE));
@@ -1983,7 +2390,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIDense(Mat mat)
 
   Level: beginner
 
-.seealso: `MATMPIDENSE`, `MATSEQDENSE`, `MATSEQDENSECUDA`
+.seealso: `MATMPIDENSE`, `MATSEQDENSE`, `MATSEQDENSECUDA`, `MATSEQDENSEHIP`
 M*/
 #if defined(PETSC_HAVE_CUDA)
   #include <petsc/private/deviceimpl.h>
@@ -1993,6 +2400,28 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIDenseCUDA(Mat B)
   PetscCall(PetscDeviceInitialize(PETSC_DEVICE_CUDA));
   PetscCall(MatCreate_MPIDense(B));
   PetscCall(MatConvert_MPIDense_MPIDenseCUDA(B, MATMPIDENSECUDA, MAT_INPLACE_MATRIX, &B));
+  PetscFunctionReturn(0);
+}
+#endif
+
+/*MC
+   MATMPIDENSEHIP - MATMPIDENSEHIP = "mpidensehip" - A matrix type to be used for distributed dense matrices on GPUs.
+
+   Options Database Keys:
+. -mat_type mpidensehip - sets the matrix type to `MATMPIDENSEHIP` during a call to `MatSetFromOptions()`
+
+  Level: beginner
+
+.seealso: `MATMPIDENSE`, `MATSEQDENSE`, `MATSEQDENSECUDA`, `MATMPIDENSEHIP`
+M*/
+#if defined(PETSC_HAVE_HIP)
+  #include <petsc/private/deviceimpl.h>
+PETSC_EXTERN PetscErrorCode MatCreate_MPIDenseHIP(Mat B)
+{
+  PetscFunctionBegin;
+  PetscCall(PetscDeviceInitialize(PETSC_DEVICE_HIP));
+  PetscCall(MatCreate_MPIDense(B));
+  PetscCall(MatConvert_MPIDense_MPIDenseHIP(B, MATMPIDENSEHIP, MAT_INPLACE_MATRIX, &B));
   PetscFunctionReturn(0);
 }
 #endif
@@ -2008,11 +2437,13 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIDenseCUDA(Mat B)
 
   Level: beginner
 
-.seealso: `MATSEQDENSE`, `MATMPIDENSE`, `MATDENSECUDA`
+.seealso: `MATSEQDENSE`, `MATMPIDENSE`, `MATDENSECUDA`, `MATDENSEHIP`
 M*/
 
 /*MC
    MATDENSECUDA - MATDENSECUDA = "densecuda" - A matrix type to be used for dense matrices on GPUs.
+   Similarly,
+   MATDENSEHIP - MATDENSEHIP = "densehip"
 
    This matrix type is identical to `MATSEQDENSECUDA` when constructed with a single process communicator,
    and `MATMPIDENSECUDA` otherwise.
@@ -2022,7 +2453,21 @@ M*/
 
   Level: beginner
 
-.seealso: `MATSEQDENSECUDA`, `MATMPIDENSECUDA`, `MATDENSE`
+.seealso: `MATSEQDENSECUDA`, `MATMPIDENSECUDA`, `MATSEQDENSEHIP`, `MATMPIDENSEHIP`, `MATDENSE`
+M*/
+
+/*MC
+   MATDENSEHIP - MATDENSEHIP = "densehip" - A matrix type to be used for dense matrices on GPUs.
+
+   This matrix type is identical to `MATSEQDENSEHIP` when constructed with a single process communicator,
+   and `MATMPIDENSEHIP` otherwise.
+
+   Options Database Keys:
+. -mat_type densehip - sets the matrix type to `MATDENSEHIP` during a call to `MatSetFromOptions()`
+
+  Level: beginner
+
+.seealso: `MATSEQDENSECUDA`, `MATMPIDENSECUDA`, `MATSEQDENSEHIP`, `MATMPIDENSEHIP`, `MATDENSE`
 M*/
 
 /*@C
@@ -2081,7 +2526,7 @@ PetscErrorCode MatDensePlaceArray(Mat mat, const PetscScalar *array)
   PetscValidHeaderSpecific(mat, MAT_CLASSID, 1);
   PetscUseMethod(mat, "MatDensePlaceArray_C", (Mat, const PetscScalar *), (mat, array));
   PetscCall(PetscObjectStateIncrease((PetscObject)mat));
-#if defined(PETSC_HAVE_DEVICE)
+#if defined(PETSC_HAVE_CUDA) || defined(PETSC_HAVE_HIP)
   mat->offloadmask = PETSC_OFFLOAD_CPU;
 #endif
   PetscFunctionReturn(0);
@@ -2136,7 +2581,7 @@ PetscErrorCode MatDenseReplaceArray(Mat mat, const PetscScalar *array)
   PetscValidHeaderSpecific(mat, MAT_CLASSID, 1);
   PetscUseMethod(mat, "MatDenseReplaceArray_C", (Mat, const PetscScalar *), (mat, array));
   PetscCall(PetscObjectStateIncrease((PetscObject)mat));
-#if defined(PETSC_HAVE_DEVICE)
+#if defined(PETSC_HAVE_CUDA) || defined(PETSC_HAVE_HIP)
   mat->offloadmask = PETSC_OFFLOAD_CPU;
 #endif
   PetscFunctionReturn(0);
@@ -2378,6 +2823,245 @@ PetscErrorCode MatDenseCUDARestoreArray(Mat A, PetscScalar **a)
 }
 #endif
 
+#if defined(PETSC_HAVE_HIP)
+/*@C
+   MatDenseHIPPlaceArray - Allows one to replace the GPU array in a dense matrix with an
+   array provided by the user. This is useful to avoid copying an array
+   into a matrix
+
+   Not Collective
+
+   Input Parameters:
++  mat - the matrix
+-  array - the array in column major order
+
+   Notes:
+   You can return to the original array with a call to MatDenseHIPResetArray(). The user is responsible for freeing this array; it will not be
+   freed when the matrix is destroyed. The array must have been allocated with hipMalloc().
+
+   Level: developer
+
+.seealso: MatDenseHIPGetArray(), MatDenseHIPResetArray()
+@*/
+PetscErrorCode MatDenseHIPPlaceArray(Mat mat, const PetscScalar *array)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat, MAT_CLASSID, 1);
+  PetscUseMethod(mat, "MatDenseHIPPlaceArray_C", (Mat, const PetscScalar *), (mat, array));
+  PetscCall(PetscObjectStateIncrease((PetscObject)mat));
+  mat->offloadmask = PETSC_OFFLOAD_GPU;
+  PetscFunctionReturn(0);
+}
+
+/*@C
+   MatDenseHIPResetArray - Resets the matrix array to that it previously had before the call to MatDenseHIPPlaceArray()
+
+   Not Collective
+
+   Input Parameters:
+.  mat - the matrix
+
+   Notes:
+   You can only call this after a call to MatDenseHIPPlaceArray()
+
+   Level: developer
+
+.seealso: MatDenseHIPGetArray(), MatDenseHIPPlaceArray()
+
+@*/
+PetscErrorCode MatDenseHIPResetArray(Mat mat)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat, MAT_CLASSID, 1);
+  PetscUseMethod(mat, "MatDenseHIPResetArray_C", (Mat), (mat));
+  PetscCall(PetscObjectStateIncrease((PetscObject)mat));
+  PetscFunctionReturn(0);
+}
+
+/*@C
+   MatDenseHIPReplaceArray - Allows one to replace the GPU array in a dense matrix with an
+   array provided by the user. This is useful to avoid copying an array
+   into a matrix
+
+   Not Collective
+
+   Input Parameters:
++  mat - the matrix
+-  array - the array in column major order
+
+   Notes:
+   This permanently replaces the GPU array and frees the memory associated with the old GPU array.
+   The memory passed in CANNOT be freed by the user. It will be freed
+   when the matrix is destroyed. The array should respect the matrix leading dimension.
+
+   Level: developer
+
+.seealso: MatDenseHIPGetArray(), MatDenseHIPPlaceArray(), MatDenseHIPResetArray()
+@*/
+PetscErrorCode MatDenseHIPReplaceArray(Mat mat, const PetscScalar *array)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat, MAT_CLASSID, 1);
+  PetscUseMethod(mat, "MatDenseHIPReplaceArray_C", (Mat, const PetscScalar *), (mat, array));
+  PetscCall(PetscObjectStateIncrease((PetscObject)mat));
+  mat->offloadmask = PETSC_OFFLOAD_GPU;
+  PetscFunctionReturn(0);
+}
+
+/*@C
+   MatDenseHIPGetArrayWrite - Provides write access to the HIP buffer inside a dense matrix.
+
+   Not Collective
+
+   Input Parameters:
+.  A - the matrix
+
+   Output Parameters
+.  array - the GPU array in column major order
+
+   Notes:
+   The data on the GPU may not be updated due to operations done on the CPU. If you need updated data, use MatDenseHIPGetArray(). The array must be restored with MatDenseHIPRestoreArrayWrite() when no longer needed.
+
+   Level: developer
+
+.seealso: MatDenseHIPGetArray(), MatDenseHIPRestoreArray(), MatDenseHIPRestoreArrayWrite(), MatDenseHIPGetArrayRead(), MatDenseHIPRestoreArrayRead()
+@*/
+PetscErrorCode MatDenseHIPGetArrayWrite(Mat A, PetscScalar **a)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
+  PetscUseMethod(A, "MatDenseHIPGetArrayWrite_C", (Mat, PetscScalar **), (A, a));
+  PetscCall(PetscObjectStateIncrease((PetscObject)A));
+  PetscFunctionReturn(0);
+}
+
+/*@C
+   MatDenseHIPRestoreArrayWrite - Restore write access to the HIP buffer inside a dense matrix previously obtained with MatDenseHIPGetArrayWrite().
+
+   Not Collective
+
+   Input Parameters:
++  A - the matrix
+-  array - the GPU array in column major order
+
+   Notes:
+
+   Level: developer
+
+.seealso: MatDenseHIPGetArray(), MatDenseHIPRestoreArray(), MatDenseHIPGetArrayWrite(), MatDenseHIPRestoreArrayRead(), MatDenseHIPGetArrayRead()
+@*/
+PetscErrorCode MatDenseHIPRestoreArrayWrite(Mat A, PetscScalar **a)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
+  PetscUseMethod(A, "MatDenseHIPRestoreArrayWrite_C", (Mat, PetscScalar **), (A, a));
+  PetscCall(PetscObjectStateIncrease((PetscObject)A));
+  A->offloadmask = PETSC_OFFLOAD_GPU;
+  PetscFunctionReturn(0);
+}
+
+/*@C
+   MatDenseHIPGetArrayRead - Provides read-only access to the HIP buffer inside a dense matrix. The array must be restored with MatDenseHIPRestoreArrayRead() when no longer needed.
+
+   Not Collective
+
+   Input Parameters:
+.  A - the matrix
+
+   Output Parameters
+.  array - the GPU array in column major order
+
+   Notes:
+   Data can be copied to the GPU due to operations done on the CPU. If you need write only access, use MatDenseHIPGetArrayWrite().
+
+   Level: developer
+
+.seealso: MatDenseHIPGetArray(), MatDenseHIPRestoreArray(), MatDenseHIPRestoreArrayWrite(), MatDenseHIPGetArrayWrite(), MatDenseHIPRestoreArrayRead()
+@*/
+PetscErrorCode MatDenseHIPGetArrayRead(Mat A, const PetscScalar **a)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
+  PetscUseMethod(A, "MatDenseHIPGetArrayRead_C", (Mat, const PetscScalar **), (A, a));
+  PetscFunctionReturn(0);
+}
+
+/*@C
+   MatDenseHIPRestoreArrayRead - Restore read-only access to the HIP buffer inside a dense matrix previously obtained with a call to MatDenseHIPGetArrayRead().
+
+   Not Collective
+
+   Input Parameters:
++  A - the matrix
+-  array - the GPU array in column major order
+
+   Notes:
+   Data can be copied to the GPU due to operations done on the CPU. If you need write only access, use MatDenseHIPGetArrayWrite().
+
+   Level: developer
+
+.seealso: MatDenseHIPGetArray(), MatDenseHIPRestoreArray(), MatDenseHIPRestoreArrayWrite(), MatDenseHIPGetArrayWrite(), MatDenseHIPGetArrayRead()
+@*/
+PetscErrorCode MatDenseHIPRestoreArrayRead(Mat A, const PetscScalar **a)
+{
+  PetscFunctionBegin;
+  PetscUseMethod(A, "MatDenseHIPRestoreArrayRead_C", (Mat, const PetscScalar **), (A, a));
+  PetscFunctionReturn(0);
+}
+
+/*@C
+   MatDenseHIPGetArray - Provides access to the HIP buffer inside a dense matrix. The array must be restored with MatDenseHIPRestoreArray() when no longer needed.
+
+   Not Collective
+
+   Input Parameters:
+.  A - the matrix
+
+   Output Parameters
+.  array - the GPU array in column major order
+
+   Notes:
+   Data can be copied to the GPU due to operations done on the CPU. If you need write only access, use MatDenseHIPGetArrayWrite(). For read-only access, use MatDenseHIPGetArrayRead().
+
+   Level: developer
+
+.seealso: MatDenseHIPGetArrayRead(), MatDenseHIPRestoreArray(), MatDenseHIPRestoreArrayWrite(), MatDenseHIPGetArrayWrite(), MatDenseHIPRestoreArrayRead()
+@*/
+PetscErrorCode MatDenseHIPGetArray(Mat A, PetscScalar **a)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
+  PetscUseMethod(A, "MatDenseHIPGetArray_C", (Mat, PetscScalar **), (A, a));
+  PetscCall(PetscObjectStateIncrease((PetscObject)A));
+  PetscFunctionReturn(0);
+}
+
+/*@C
+   MatDenseHIPRestoreArray - Restore access to the HIP buffer inside a dense matrix previously obtained with MatDenseHIPGetArray().
+
+   Not Collective
+
+   Input Parameters:
++  A - the matrix
+-  array - the GPU array in column major order
+
+   Notes:
+
+   Level: developer
+
+.seealso: MatDenseHIPGetArray(), MatDenseHIPRestoreArrayWrite(), MatDenseHIPGetArrayWrite(), MatDenseHIPRestoreArrayRead(), MatDenseHIPGetArrayRead()
+@*/
+PetscErrorCode MatDenseHIPRestoreArray(Mat A, PetscScalar **a)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
+  PetscUseMethod(A, "MatDenseHIPRestoreArray_C", (Mat, PetscScalar **), (A, a));
+  PetscCall(PetscObjectStateIncrease((PetscObject)A));
+  A->offloadmask = PETSC_OFFLOAD_GPU;
+  PetscFunctionReturn(0);
+}
+#endif
+
 /*@C
    MatCreateDense - Creates a matrix in `MATDENSE` format.
 
@@ -2455,6 +3139,41 @@ PetscErrorCode MatCreateDenseCUDA(MPI_Comm comm, PetscInt m, PetscInt n, PetscIn
   PetscCall(MatSetType(*A, MATDENSECUDA));
   PetscCall(MatSeqDenseCUDASetPreallocation(*A, data));
   PetscCall(MatMPIDenseCUDASetPreallocation(*A, data));
+  PetscFunctionReturn(0);
+}
+#endif
+
+#if defined(PETSC_HAVE_HIP)
+/*@C
+   MatCreateDenseHIP - Creates a matrix in `MATDENSEHIP` format using HIP.
+
+   Collective
+
+   Input Parameters:
++  comm - MPI communicator
+.  m - number of local rows (or `PETSC_DECIDE` to have calculated if M is given)
+.  n - number of local columns (or `PETSC_DECIDE` to have calculated if N is given)
+.  M - number of global rows (or `PETSC_DECIDE` to have calculated if m is given)
+.  N - number of global columns (or `PETSC_DECIDE` to have calculated if n is given)
+-  data - optional location of GPU matrix data.  Set data=NULL for PETSc
+   to control matrix memory allocation.
+
+   Output Parameter:
+.  A - the matrix
+
+   Level: intermediate
+
+.seealso: `MATDENSEHIP`, `MatCreate()`, `MatCreateDense()`
+@*/
+PetscErrorCode MatCreateDenseHIP(MPI_Comm comm, PetscInt m, PetscInt n, PetscInt M, PetscInt N, PetscScalar *data, Mat *A)
+{
+  PetscFunctionBegin;
+  PetscCall(MatCreate(comm, A));
+  PetscValidLogicalCollectiveBool(*A, !!data, 6);
+  PetscCall(MatSetSizes(*A, m, n, M, N));
+  PetscCall(MatSetType(*A, MATDENSEHIP));
+  PetscCall(MatSeqDenseHIPSetPreallocation(*A, data));
+  PetscCall(MatMPIDenseHIPSetPreallocation(*A, data));
   PetscFunctionReturn(0);
 }
 #endif
@@ -2599,7 +3318,7 @@ static PetscErrorCode MatTransposeMatMultSymbolic_MPIDense_MPIDense(Mat A, Mat B
   PetscMPIInt            size;
   PetscInt               cm = A->cmap->n, cM, cN = B->cmap->N;
   Mat_TransMatMultDense *atb;
-  PetscBool              cisdense;
+  PetscBool              cisdense = PETSC_FALSE;
   PetscInt               i;
   const PetscInt        *ranges;
 
@@ -2613,7 +3332,12 @@ static PetscErrorCode MatTransposeMatMultSymbolic_MPIDense_MPIDense(Mat A, Mat B
 
   /* create matrix product C */
   PetscCall(MatSetSizes(C, cm, B->cmap->n, A->cmap->N, B->cmap->N));
+#if defined(PETSC_HAVE_CUDA)
   PetscCall(PetscObjectTypeCompareAny((PetscObject)C, &cisdense, MATMPIDENSE, MATMPIDENSECUDA, ""));
+#endif
+#if defined(PETSC_HAVE_HIP)
+  PetscCall(PetscObjectTypeCompareAny((PetscObject)C, &cisdense, MATMPIDENSE, MATMPIDENSEHIP, ""));
+#endif
   if (!cisdense) PetscCall(MatSetType(C, ((PetscObject)A)->type_name));
   PetscCall(MatSetUp(C));
 

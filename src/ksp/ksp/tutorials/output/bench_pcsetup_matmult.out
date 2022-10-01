@@ -1,0 +1,11 @@
+===========================================
+Test: MatMult performance - Poisson
+	Input matrix: 27-pt finite difference stencil
+	-n 8
+	-its 10
+	DoFs = 512
+	Number of nonzeros = 10648
+
+Step0 - creating Vecs and Mat...
+Step1 - running MatMult() 10 times...
+===========================================

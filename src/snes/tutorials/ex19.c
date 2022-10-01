@@ -1,4 +1,6 @@
-
+/* Portions of this code are under:
+   Copyright (C) 2022 Advanced Micro Devices, Inc. All rights reserved.
+*/
 static char help[] = "Nonlinear driven cavity with multigrid in 2d.\n \
   \n\
 The 2D driven cavity problem is solved in a velocity-vorticity formulation.\n\
@@ -814,6 +816,11 @@ PetscErrorCode NonlinearGS(SNES snes, Vec X, Vec B, void *ctx)
       args: -dm_vec_type cuda -dm_mat_type aijcusparse -pc_type none -ksp_type fgmres -snes_monitor_short -snes_rtol 1.e-5
 
    test:
+      suffix: hip
+      requires: hip !single
+      args: -dm_vec_type hip -dm_mat_type aijhipsparse -pc_type none -ksp_type fgmres -snes_monitor_short -snes_rtol 1.e-5
+
+   test:
       suffix: draw
       args: -pc_type fieldsplit -snes_view draw -fieldsplit_x_velocity_pc_type mg -fieldsplit_x_velocity_pc_mg_galerkin pmat -fieldsplit_x_velocity_pc_mg_levels 2 -da_refine 1 -fieldsplit_x_velocity_mg_coarse_pc_type svd
       requires: x !single
@@ -1117,6 +1124,25 @@ PetscErrorCode NonlinearGS(SNES snes, Vec X, Vec B, void *ctx)
       nsize: 2
       requires: cuda
       args: -dm_mat_type aijcusparse -dm_vec_type cuda -da_refine 3 -pc_type mg -mg_levels_ksp_type chebyshev -mg_levels_pc_type jacobi -log_view -pc_mg_log -dm_bind_below 10000
+      filter: awk "/Level/ {print \$NF}"
+
+   test:
+      suffix: hip_1
+      nsize: 1
+      requires: hip
+      args: -snes_monitor -dm_mat_type mpiaijhipsparse -dm_vec_type hip -pc_type gamg -pc_gamg_esteig_ksp_max_it 10 -ksp_monitor -mg_levels_ksp_max_it 3
+
+   test:
+      suffix: hip_2
+      nsize: 3
+      requires: hip !single
+      args: -snes_monitor -dm_mat_type mpiaijhipsparse -dm_vec_type mpihip -pc_type gamg -pc_gamg_esteig_ksp_max_it 10 -ksp_monitor  -mg_levels_ksp_max_it 3
+
+   test:
+      suffix: hip_dm_bind_below
+      nsize: 2
+      requires: hip
+      args: -dm_mat_type aijhipsparse -dm_vec_type hip -da_refine 3 -pc_type mg -mg_levels_ksp_type chebyshev -mg_levels_pc_type jacobi -log_view -pc_mg_log -dm_bind_below 10000
       filter: awk "/Level/ {print \$NF}"
 
    test:

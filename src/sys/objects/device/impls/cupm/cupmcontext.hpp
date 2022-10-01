@@ -86,7 +86,7 @@ private:
   // handles
   PETSC_CXX_COMPAT_DECL(PetscErrorCode initialize_handle_(stream_tag, PetscDeviceContext)) { return 0; }
 
-  PETSC_NODISCARD static PetscErrorCode create_handle_(cupmBlasHandle_t &handle) noexcept
+  PETSC_NODISCARD static PetscErrorCode create_handle_(blas_tag, cupmBlasHandle_t &handle) noexcept
   {
     PetscLogEvent event;
 
@@ -109,19 +109,19 @@ private:
     PetscFunctionReturn(0);
   }
 
-  PETSC_NODISCARD static PetscErrorCode initialize_handle_(blas_tag, PetscDeviceContext dctx) noexcept
+  PETSC_NODISCARD static PetscErrorCode initialize_handle_(blas_tag tag, PetscDeviceContext dctx) noexcept
   {
     const auto dci    = impls_cast_(dctx);
     auto      &handle = blashandles_[dctx->device->deviceId];
 
     PetscFunctionBegin;
-    PetscCall(create_handle_(handle));
+    PetscCall(create_handle_(tag, handle));
     PetscCallCUPMBLAS(cupmBlasSetStream(handle, dci->stream.get_stream()));
     dci->blas = handle;
     PetscFunctionReturn(0);
   }
 
-  PETSC_CXX_COMPAT_DECL(PetscErrorCode create_handle_(cupmSolverHandle_t &handle))
+  PETSC_CXX_COMPAT_DECL(PetscErrorCode create_handle_(solver_tag, cupmSolverHandle_t &handle))
   {
     PetscLogEvent event;
 
@@ -134,13 +134,13 @@ private:
     PetscFunctionReturn(0);
   }
 
-  PETSC_NODISCARD static PetscErrorCode initialize_handle_(solver_tag, PetscDeviceContext dctx) noexcept
+  PETSC_NODISCARD static PetscErrorCode initialize_handle_(solver_tag tag, PetscDeviceContext dctx) noexcept
   {
     const auto dci    = impls_cast_(dctx);
     auto      &handle = solverhandles_[dctx->device->deviceId];
 
     PetscFunctionBegin;
-    PetscCall(create_handle_(handle));
+    PetscCall(create_handle_(tag, handle));
     PetscCall(cupmBlasInterface_t::SetHandleStream(handle, dci->stream.get_stream()));
     dci->solver = handle;
     PetscFunctionReturn(0);

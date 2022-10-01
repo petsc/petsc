@@ -1,3 +1,6 @@
+# Portions of this code are under:
+# Copyright (c) 2022 Advanced Micro Devices, Inc. All rights reserved.
+
 import config.package
 import os
 
@@ -12,8 +15,8 @@ class Configure(config.package.Package):
     self.functionsCxx     = [1,'', 'rocblas_create']
     self.includes         = ['hip/hip_runtime.h']
     # PETSc does not use hipsparse or hipblas, but dependencies can (e.g., magma)
-    self.liblist          = [['libhipsparse.a','libhipblas.a','librocsparse.a','librocsolver.a','librocblas.a','librocrand.a','libamdhip64.a'],
-                             ['hipsparse.lib','hipblas.lib','rocsparse.lib','rocsolver.lib','rocblas.lib','rocrand.lib','amdhip64.lib'],]
+    self.liblist          = [['libhipsparse.a','libhipblas.a','libhipsolver.a','librocsparse.a','librocsolver.a','librocblas.a','librocrand.a','libamdhip64.a'],
+                             ['hipsparse.lib','hipblas.lib','hipsolver.lib','rocsparse.lib','rocsolver.lib','rocblas.lib','rocrand.lib','amdhip64.lib'],]
     self.precisions       = ['single','double']
     self.buildLanguages   = ['HIP']
     self.devicePackage    = 1

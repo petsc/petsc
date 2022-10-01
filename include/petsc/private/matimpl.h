@@ -268,7 +268,7 @@ PETSC_INTERN PetscErrorCode MatProductNumeric_ABC(Mat);
 
 PETSC_INTERN PetscErrorCode MatProductCreate_Private(Mat, Mat, Mat, Mat);
 /* this callback handles all the different triple products and
-   does not rely on the function pointers; used by cuSPARSE and KOKKOS-KERNELS */
+   does not rely on the function pointers; used by cuSPARSE/hipSPARSE and KOKKOS-KERNELS */
 PETSC_INTERN PetscErrorCode MatProductSymbolic_ABC_Basic(Mat);
 
 /* CreateGraph is common to AIJ seq and mpi */
@@ -1728,6 +1728,10 @@ PETSC_EXTERN PetscLogEvent MAT_CUSPARSECopyToGPU;
 PETSC_EXTERN PetscLogEvent MAT_CUSPARSECopyFromGPU;
 PETSC_EXTERN PetscLogEvent MAT_CUSPARSEGenerateTranspose;
 PETSC_EXTERN PetscLogEvent MAT_CUSPARSESolveAnalysis;
+PETSC_EXTERN PetscLogEvent MAT_HIPSPARSECopyToGPU;
+PETSC_EXTERN PetscLogEvent MAT_HIPSPARSECopyFromGPU;
+PETSC_EXTERN PetscLogEvent MAT_HIPSPARSEGenerateTranspose;
+PETSC_EXTERN PetscLogEvent MAT_HIPSPARSESolveAnalysis;
 PETSC_EXTERN PetscLogEvent MAT_SetValuesBatch;
 PETSC_EXTERN PetscLogEvent MAT_ViennaCLCopyToGPU;
 PETSC_EXTERN PetscLogEvent MAT_DenseCopyToGPU;

@@ -1,5 +1,7 @@
 /*
    This is where the abstract matrix operations are defined
+   Portions of this code are under:
+   Copyright (c) 2022 Advanced Micro Devices, Inc. All rights reserved.
 */
 
 #include <petsc/private/matimpl.h> /*I "petscmat.h" I*/
@@ -33,6 +35,7 @@ PetscLogEvent MAT_GetBrowsOfAocols, MAT_Getlocalmat, MAT_Getlocalmatcondensed, M
 PetscLogEvent MAT_Applypapt, MAT_Applypapt_numeric, MAT_Applypapt_symbolic, MAT_GetSequentialNonzeroStructure;
 PetscLogEvent MAT_GetMultiProcBlock;
 PetscLogEvent MAT_CUSPARSECopyToGPU, MAT_CUSPARSECopyFromGPU, MAT_CUSPARSEGenerateTranspose, MAT_CUSPARSESolveAnalysis;
+PetscLogEvent MAT_HIPSPARSECopyToGPU, MAT_HIPSPARSECopyFromGPU, MAT_HIPSPARSEGenerateTranspose, MAT_HIPSPARSESolveAnalysis;
 PetscLogEvent MAT_PreallCOO, MAT_SetVCOO;
 PetscLogEvent MAT_SetValuesBatch;
 PetscLogEvent MAT_ViennaCLCopyToGPU;
@@ -3598,8 +3601,13 @@ static PetscErrorCode MatMatSolve_Basic(Mat A, Mat B, Mat X, PetscBool trans)
     PetscCall(PetscObjectTypeCompareAny((PetscObject)B, &Bneedconv, MATSEQDENSE, MATMPIDENSE, ""));
     PetscCall(PetscObjectTypeCompareAny((PetscObject)X, &Xneedconv, MATSEQDENSE, MATMPIDENSE, ""));
   }
+#if defined(PETSC_HAVE_CUDA)
   if (Bneedconv) PetscCall(MatConvert(B, MATDENSECUDA, MAT_INPLACE_MATRIX, &B));
   if (Xneedconv) PetscCall(MatConvert(X, MATDENSECUDA, MAT_INPLACE_MATRIX, &X));
+#elif (PETSC_HAVE_HIP)
+  if (Bneedconv) PetscCall(MatConvert(B, MATDENSEHIP, MAT_INPLACE_MATRIX, &B));
+  if (Xneedconv) PetscCall(MatConvert(X, MATDENSEHIP, MAT_INPLACE_MATRIX, &X));
+#endif
   PetscCall(MatGetSize(B, NULL, &N));
   for (i = 0; i < N; i++) {
     PetscCall(MatDenseGetColumnVecRead(B, i, &b));
@@ -6993,7 +7001,7 @@ PetscErrorCode MatCreateSubMatrices(Mat mat, PetscInt n, const IS irow[], const 
     (*submat)[i]->factortype = MAT_FACTOR_NONE; /* in case in place factorization was previously done on submatrix */
     PetscCall(ISEqualUnsorted(irow[i], icol[i], &eq));
     if (eq) PetscCall(MatPropagateSymmetryOptions(mat, (*submat)[i]));
-#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
+#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA) || defined(PETSC_HAVE_HIP)
     if (mat->boundtocpu && mat->bindingpropagates) {
       PetscCall(MatBindToCPU((*submat)[i], PETSC_TRUE));
       PetscCall(MatSetBindingPropagates((*submat)[i], PETSC_TRUE));
@@ -9330,7 +9338,7 @@ PetscErrorCode MatCreateVecs(Mat mat, Vec *right, Vec *left)
       PetscCall(VecSetSizes(*right, mat->cmap->n, PETSC_DETERMINE));
       PetscCall(VecSetBlockSize(*right, cbs));
       PetscCall(VecSetType(*right, mat->defaultvectype));
-#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
+#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA) || defined(PETSC_HAVE_HIP)
       if (mat->boundtocpu && mat->bindingpropagates) {
         PetscCall(VecSetBindingPropagates(*right, PETSC_TRUE));
         PetscCall(VecBindToCPU(*right, PETSC_TRUE));
@@ -9344,7 +9352,7 @@ PetscErrorCode MatCreateVecs(Mat mat, Vec *right, Vec *left)
       PetscCall(VecSetSizes(*left, mat->rmap->n, PETSC_DETERMINE));
       PetscCall(VecSetBlockSize(*left, rbs));
       PetscCall(VecSetType(*left, mat->defaultvectype));
-#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
+#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA) || defined(PETSC_HAVE_HIP)
       if (mat->boundtocpu && mat->bindingpropagates) {
         PetscCall(VecSetBindingPropagates(*left, PETSC_TRUE));
         PetscCall(VecBindToCPU(*left, PETSC_TRUE));
@@ -10150,7 +10158,7 @@ PetscErrorCode MatCreateRedundantMatrix(Mat mat, PetscInt nsubcomm, MPI_Comm sub
   } else {
     PetscCall(MatCreateMPIMatConcatenateSeqMat(subcomm, matseq[0], PETSC_DECIDE, reuse, matredundant));
   }
-#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
+#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA) || defined(PETSC_HAVE_HIP)
   if (matseq[0]->boundtocpu && matseq[0]->bindingpropagates) {
     PetscCall(MatBindToCPU(*matredundant, PETSC_TRUE));
     PetscCall(MatSetBindingPropagates(*matredundant, PETSC_TRUE));
