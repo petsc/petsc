@@ -1066,7 +1066,67 @@ PetscErrorCode KSPMonitorSingularValueCreate(PetscViewer viewer, PetscViewerForm
 }
 
 /*@C
-   KSPMonitorDynamicTolerance - Recompute the inner tolerance in every outer iteration in an adaptive way.
+   KSPMonitorDynamicToleranceCreate - Creates the context used by `KSPMonitorDynamicTolerance()`
+
+   Logically Collective
+
+   Output Parameter:
+.  ctx - a void pointer
+
+   Options Database Key:
+.   -sub_ksp_dynamic_tolerance <coef> - coefficient of dynamic tolerance for inner solver, default is 1.0
+
+   Level: advanced
+
+   Note:
+   Use before calling `KSPMonitorSet()` with `KSPMonitorDynamicTolerance()`
+
+   The default coefficient for the tolerance can be changed with `KSPMonitorDynamicToleranceSetCoefficient()`
+
+.seealso: [](sec_flexibleksp), `KSP`, `KSPMonitorDynamicTolerance()`, `KSPMonitorDynamicToleranceDestroy()`, `KSPMonitorDynamicToleranceSetCoefficient()`
+@*/
+PetscErrorCode KSPMonitorDynamicToleranceCreate(void *ctx)
+{
+  KSPDynTolCtx *scale;
+
+  PetscFunctionBegin;
+  PetscCall(PetscMalloc1(1, &scale));
+  scale->bnrm   = -1.0;
+  scale->coef   = 1.0;
+  *(void **)ctx = scale;
+  PetscFunctionReturn(0);
+}
+
+/*@C
+   KSPMonitorDynamicToleranceSetCoefficient - Sets the coefficient in the context used by `KSPMonitorDynamicTolerance()`
+
+   Logically Collective
+
+   Output Parameters:
++  ctx - the context for `KSPMonitorDynamicTolerance()`
+-  coeff - the coefficient, default is 1.0
+
+   Options Database Key:
+.   -sub_ksp_dynamic_tolerance <coef> - coefficient of dynamic tolerance for inner solver, default is 1.0
+
+   Level: advanced
+
+   Note:
+   Use before calling `KSPMonitorSet()` and after `KSPMonitorDynamicToleranceCreate()`
+
+.seealso: [](sec_flexibleksp), `KSP`, `KSPMonitorDynamicTolerance()`, `KSPMonitorDynamicToleranceDestroy()`, `KSPMonitorDynamicToleranceCreate()`
+@*/
+PetscErrorCode KSPMonitorDynamicToleranceSetCoefficient(void *ctx, PetscReal coeff)
+{
+  KSPDynTolCtx *scale = (KSPDynTolCtx *)ctx;
+
+  PetscFunctionBegin;
+  scale->coef = coeff;
+  PetscFunctionReturn(0);
+}
+
+/*@C
+   KSPMonitorDynamicTolerance - A monitor that changes the inner tolerance of nested preconditioners in every outer iteration in an adaptive way.
 
    Collective on ksp
 
@@ -1074,22 +1134,28 @@ PetscErrorCode KSPMonitorSingularValueCreate(PetscViewer viewer, PetscViewerForm
 +  ksp   - iterative context
 .  n     - iteration number (not used)
 .  fnorm - the current residual norm
--  dummy - some context as a C struct. fields:
-             coef: a scaling coefficient. default 1.0. can be passed through
-                   -sub_ksp_dynamic_tolerance_param
-             bnrm: norm of the right-hand side. store it to avoid repeated calculation
+-  ctx   - context used by monitor
 
-   Notes:
-   This may be useful for a flexibly preconditioner Krylov method to
-   control the accuracy of the inner solves needed to guarantee the
-   convergence of the outer iterations.
-
-   This is not called directly by users, rather one calls `KSPMonitorSet()`, with this function as an argument, to cause the monitor
-   to be used during the KSP solve.
+   Options Database Key:
+.   -sub_ksp_dynamic_tolerance <coef> - coefficient of dynamic tolerance for inner solver, default is 1.0
 
    Level: advanced
 
-.seealso: `KSPMonitorDynamicToleranceDestroy()`
+   Notes:
+   Applies for `PCKSP`, `PCBJACOBI`, and `PCDEFLATION` preconditioners
+
+   This may be useful for a flexible preconditioned Krylov method, such as `KSPFGMRES`, [](sec_flexibleksp) to
+   control the accuracy of the inner solves needed to guarantee convergence of the outer iterations.
+
+   This is not called directly by users, rather one calls `KSPMonitorSet()`, with this function as an argument, to cause the monitor
+   to be used during the `KSP` solve.
+
+   Use `KSPMonitorDynamicToleranceCreate()` and `KSPMonitorDynamicToleranceSetCoefficient()` to create the context needed by this
+   monitor function.
+
+   Pass the context and `KSPMonitorDynamicToleranceDestroy()` to `KSPMonitorSet()`
+
+.seealso: [](sec_flexibleksp), `KSP`, `KSPMonitorDynamicToleranceCreate()`, `KSPMonitorDynamicToleranceDestroy()`, `KSPMonitorDynamicToleranceSetCoefficient()`
 @*/
 PetscErrorCode KSPMonitorDynamicTolerance(KSP ksp, PetscInt its, PetscReal fnorm, void *dummy)
 {
@@ -1112,8 +1178,6 @@ PetscErrorCode KSPMonitorDynamicTolerance(KSP ksp, PetscInt its, PetscReal fnorm
   }
   PetscCall(KSPGetTolerances(ksp, &outer_rtol, &outer_abstol, &outer_dtol, &outer_maxits));
   inner_rtol = PetscMin(scale->coef * scale->bnrm * outer_rtol / fnorm, 0.999);
-  /* PetscCall(PetscPrintf(PETSC_COMM_WORLD, "        Inner rtol = %g\n",
-     (double)inner_rtol)); */
 
   /* if pc is ksp */
   PetscCall(PetscObjectTypeCompare((PetscObject)pc, PCKSP, &flg));
@@ -1141,17 +1205,27 @@ PetscErrorCode KSPMonitorDynamicTolerance(KSP ksp, PetscInt its, PetscReal fnorm
     PetscFunctionReturn(0);
   }
 
-  /* todo: dynamic tolerance may apply to other types of pc too */
+  /* todo: dynamic tolerance may apply to other types of pc */
   PetscFunctionReturn(0);
 }
 
-/*
-  Destroy the dummy context used in KSPMonitorDynamicTolerance()
-*/
-PetscErrorCode KSPMonitorDynamicToleranceDestroy(void **dummy)
+/*@C
+     KSPMonitorDynamicToleranceDestroy - Destroy the monitor context used in `KSPMonitorDynamicTolerance()`
+
+   Input Parameter:
+.   ctx - the monitor context
+
+   Level: advanced
+
+   Note:
+   This is not called directly but is passed to `KSPMonitorSet()` along with `KSPMonitorDynamicTolerance()`
+
+.seealso: `KSP`, `KSPMonitorDynamicTolerance()`, `KSPMonitorSet()`, `KSPMonitorDynamicToleranceCreate()`
+@*/
+PetscErrorCode KSPMonitorDynamicToleranceDestroy(void **ctx)
 {
   PetscFunctionBegin;
-  PetscCall(PetscFree(*dummy));
+  PetscCall(PetscFree(*ctx));
   PetscFunctionReturn(0);
 }
 

@@ -482,14 +482,15 @@ PetscErrorCode KSPSetFromOptions(KSP ksp)
   }
 
   if (flg) {
-    /* A hack for using dynamic tolerance in preconditioner */
-    PetscCall(PetscOptionsString("-sub_ksp_dynamic_tolerance", "Use dynamic tolerance for PC if PC is a KSP", "KSPMonitorDynamicTolerance", "stdout", monfilename, sizeof(monfilename), &flg));
+    /* Using dynamic tolerance in preconditioner */
+    PetscCall(PetscOptionsString("-sub_ksp_dynamic_tolerance", "Use dynamic tolerance for inner PC", "KSPMonitorDynamicTolerance", "stdout", monfilename, sizeof(monfilename), &flg));
     if (flg) {
-      KSPDynTolCtx *scale;
-      PetscCall(PetscMalloc1(1, &scale));
-      scale->bnrm = -1.0;
-      scale->coef = 1.0;
-      PetscCall(PetscOptionsReal("-sub_ksp_dynamic_tolerance_param", "Parameter of dynamic tolerance for inner PCKSP", "KSPMonitorDynamicToleranceParam", scale->coef, &scale->coef, &flg));
+      void     *scale;
+      PetscReal coeff = 1.0;
+
+      PetscCall(KSPMonitorDynamicToleranceCreate(&scale));
+      PetscCall(PetscOptionsReal("-sub_ksp_dynamic_tolerance", "Coeffcient of dynamic tolerance for inner PC", "KSPMonitorDynamicTolerance", coeff, &coeff, &flg));
+      if (flg) PetscCall(KSPMonitorDynamicToleranceSetCoefficient(scale, coeff));
       PetscCall(KSPMonitorSet(ksp, KSPMonitorDynamicTolerance, scale, KSPMonitorDynamicToleranceDestroy));
     }
   }

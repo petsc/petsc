@@ -43,6 +43,9 @@ Changes: Development
 
 .. rubric:: KSP:
 
+- Add ``KSPMonitorDynamicToleranceCreate()`` and ``KSPMonitorDynamicToleranceSetCoefficient()``
+- Change ``-sub_ksp_dynamic_tolerance_param`` to ``-sub_ksp_dynamic_tolerance``
+
 .. rubric:: SNES:
 
 .. rubric:: SNESLineSearch:
