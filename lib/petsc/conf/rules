@@ -676,6 +676,7 @@ GITSRCEXCL = \
 ':!*yaml/*'
 GITCFSRC = '*.[ch]' '*.hpp' '*.cpp' '*.cxx' '*.cu' ${GITSRCEXCL} ${GITCFSRCEXCL}
 GITCFSRCEXCL = \
+':!*petscversion.h' \
 ':!*mpif.h' \
 ':!*mpiunifdef.h' \
 ':!*finclude/*' \
