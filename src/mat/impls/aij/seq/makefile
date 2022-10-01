@@ -4,7 +4,7 @@ SOURCEC  = aij.c aijfact.c ij.c fdaij.c matmatmult.c symtranspose.c matptap.c ma
 SOURCEF  =
 SOURCEH  = aij.h
 LIBBASE  = libpetscmat
-DIRS     = superlu umfpack essl lusol matlab aijperm aijsell aijmkl crl bas ftn-kernels seqviennacl seqviennaclcuda cholmod seqcusparse klu mkl_pardiso kokkos spqr
+DIRS     = superlu umfpack essl lusol matlab aijperm aijsell aijmkl crl bas ftn-kernels seqviennacl seqviennaclcuda cholmod seqcusparse seqhipsparse klu mkl_pardiso kokkos spqr
 MANSEC   = Mat
 LOCDIR   = src/mat/impls/aij/seq/
 

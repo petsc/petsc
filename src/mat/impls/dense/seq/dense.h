@@ -1,4 +1,6 @@
-
+/* Portions of this code are under:
+   Copyright (c) 2022 Advanced Micro Devices, Inc. All rights reserved.
+*/
 #ifndef __DENSE_H
 #define __DENSE_H
 #include <petsc/private/matimpl.h>
@@ -55,7 +57,7 @@ PETSC_INTERN PetscErrorCode MatProductSetFromOptions_SeqDense_SeqAIJ(Mat);
 
 PETSC_EXTERN PetscErrorCode MatCreate_SeqDense(Mat);
 
-/* Used by SeqDenseCUDA */
+/* Used by SeqDenseCUDA and seqDenseHIP */
 PETSC_INTERN PetscErrorCode MatDuplicateNoCreate_SeqDense(Mat, Mat, MatDuplicateOption);
 PETSC_INTERN PetscErrorCode MatNorm_SeqDense(Mat, NormType, PetscReal *);
 PETSC_INTERN PetscErrorCode MatView_SeqDense(Mat, PetscViewer);
@@ -98,6 +100,13 @@ PETSC_INTERN PetscErrorCode MatShift_DenseCUDA_Private(PetscScalar *, PetscScala
 PETSC_EXTERN PetscErrorCode MatSeqDenseCUDAInvertFactors_Private(Mat);
 PETSC_INTERN PetscErrorCode MatConvert_SeqDenseCUDA_SeqDense(Mat, MatType, MatReuse, Mat *);
 PETSC_INTERN PetscErrorCode MatConvert_SeqDense_SeqDenseCUDA(Mat, MatType, MatReuse, Mat *);
+#endif
+
+#if defined(PETSC_HAVE_HIP)
+PETSC_INTERN PetscErrorCode MatShift_DenseHIP_Private(PetscScalar *, PetscScalar, PetscInt, PetscInt, PetscInt, PetscInt);
+PETSC_EXTERN PetscErrorCode MatSeqDenseHIPInvertFactors_Private(Mat);
+PETSC_INTERN PetscErrorCode MatConvert_SeqDenseHIP_SeqDense(Mat, MatType, MatReuse, Mat *);
+PETSC_INTERN PetscErrorCode MatConvert_SeqDense_SeqDenseHIP(Mat, MatType, MatReuse, Mat *);
 #endif
 
 PETSC_EXTERN PetscErrorCode MatSeqDenseInvertFactors_Private(Mat);

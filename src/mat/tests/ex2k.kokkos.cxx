@@ -211,4 +211,9 @@ int main(int argc, char **args)
       suffix: 2
       args: -mat_type aijkokkos
 
+    test:
+      suffix: 3
+      requires: hip
+      args: -mat_type aijhipsparse
+
 TEST*/

@@ -43,6 +43,9 @@ typedef const char *MatType;
 #define MATAIJCUSPARSE               "aijcusparse"
 #define MATSEQAIJCUSPARSE            "seqaijcusparse"
 #define MATMPIAIJCUSPARSE            "mpiaijcusparse"
+#define MATAIJHIPSPARSE              "aijhipsparse"
+#define MATSEQAIJHIPSPARSE           "seqaijhipsparse"
+#define MATMPIAIJHIPSPARSE           "mpiaijhipsparse"
 #define MATAIJKOKKOS                 "aijkokkos"
 #define MATSEQAIJKOKKOS              "seqaijkokkos"
 #define MATMPIAIJKOKKOS              "mpiaijkokkos"
@@ -65,10 +68,13 @@ typedef const char *MatType;
 #define MATCENTERING                 "centering"
 #define MATDENSE                     "dense"
 #define MATDENSECUDA                 "densecuda"
+#define MATDENSEHIP                  "densehip"
 #define MATSEQDENSE                  "seqdense"
 #define MATSEQDENSECUDA              "seqdensecuda"
+#define MATSEQDENSEHIP               "seqdensehip"
 #define MATMPIDENSE                  "mpidense"
 #define MATMPIDENSECUDA              "mpidensecuda"
+#define MATMPIDENSEHIP               "mpidensehip"
 #define MATELEMENTAL                 "elemental"
 #define MATSCALAPACK                 "scalapack"
 #define MATBAIJ                      "baij"
@@ -88,6 +94,7 @@ typedef const char *MatType;
 #define MATFFT                       "fft"
 #define MATFFTW                      "fftw"
 #define MATSEQCUFFT                  "seqcufft"
+#define MATSEQHIPFFT                 "seqhipfft"
 #define MATTRANSPOSEMAT              PETSC_DEPRECATED_MACRO("GCC warning \"MATTRANSPOSEMAT macro is deprecated use MATTRANSPOSEVIRTUAL (since version 3.18)\"") "transpose"
 #define MATTRANSPOSEVIRTUAL          "transpose"
 #define MATHERMITIANTRANSPOSEVIRTUAL "hermitiantranspose"
@@ -150,6 +157,9 @@ typedef const char *MatSolverType;
 #define MATSOLVERCUSPARSE        "cusparse"
 #define MATSOLVERCUSPARSEBAND    "cusparseband"
 #define MATSOLVERCUDA            "cuda"
+#define MATSOLVERHIPSPARSE       "hipsparse"
+#define MATSOLVERHIPSPARSEBAND   "hipsparseband"
+#define MATSOLVERHIP             "hip"
 #define MATSOLVERKOKKOS          "kokkos"
 #define MATSOLVERKOKKOSDEVICE    "kokkosdevice"
 #define MATSOLVERSPQR            "spqr"
@@ -2225,19 +2235,18 @@ typedef enum {
   MAT_CUSPARSE_ALL
 } MatCUSPARSEFormatOperation;
 
-PETSC_EXTERN PetscErrorCode                  MatCreateSeqAIJCUSPARSE(MPI_Comm, PetscInt, PetscInt, PetscInt, const PetscInt[], Mat *);
-PETSC_EXTERN PetscErrorCode                  MatCreateAIJCUSPARSE(MPI_Comm, PetscInt, PetscInt, PetscInt, PetscInt, PetscInt, const PetscInt[], PetscInt, const PetscInt[], Mat *);
-PETSC_EXTERN PetscErrorCode                  MatCUSPARSESetFormat(Mat, MatCUSPARSEFormatOperation, MatCUSPARSEStorageFormat);
-PETSC_EXTERN PetscErrorCode                  MatCUSPARSESetUseCPUSolve(Mat, PetscBool);
-typedef struct Mat_SeqAIJCUSPARSETriFactors *Mat_SeqAIJCUSPARSETriFactors_p;
-PETSC_EXTERN PetscErrorCode                  MatSeqAIJCUSPARSEGetIJ(Mat, PetscBool, const int **, const int **);
-PETSC_EXTERN PetscErrorCode                  MatSeqAIJCUSPARSERestoreIJ(Mat, PetscBool, const int **, const int **);
-PETSC_EXTERN PetscErrorCode                  MatSeqAIJCUSPARSEGetArrayRead(Mat, const PetscScalar **);
-PETSC_EXTERN PetscErrorCode                  MatSeqAIJCUSPARSERestoreArrayRead(Mat, const PetscScalar **);
-PETSC_EXTERN PetscErrorCode                  MatSeqAIJCUSPARSEGetArrayWrite(Mat, PetscScalar **);
-PETSC_EXTERN PetscErrorCode                  MatSeqAIJCUSPARSERestoreArrayWrite(Mat, PetscScalar **);
-PETSC_EXTERN PetscErrorCode                  MatSeqAIJCUSPARSEGetArray(Mat, PetscScalar **);
-PETSC_EXTERN PetscErrorCode                  MatSeqAIJCUSPARSERestoreArray(Mat, PetscScalar **);
+PETSC_EXTERN PetscErrorCode MatCreateSeqAIJCUSPARSE(MPI_Comm, PetscInt, PetscInt, PetscInt, const PetscInt[], Mat *);
+PETSC_EXTERN PetscErrorCode MatCreateAIJCUSPARSE(MPI_Comm, PetscInt, PetscInt, PetscInt, PetscInt, PetscInt, const PetscInt[], PetscInt, const PetscInt[], Mat *);
+PETSC_EXTERN PetscErrorCode MatCUSPARSESetFormat(Mat, MatCUSPARSEFormatOperation, MatCUSPARSEStorageFormat);
+PETSC_EXTERN PetscErrorCode MatCUSPARSESetUseCPUSolve(Mat, PetscBool);
+PETSC_EXTERN PetscErrorCode MatSeqAIJCUSPARSEGetIJ(Mat, PetscBool, const int **, const int **);
+PETSC_EXTERN PetscErrorCode MatSeqAIJCUSPARSERestoreIJ(Mat, PetscBool, const int **, const int **);
+PETSC_EXTERN PetscErrorCode MatSeqAIJCUSPARSEGetArrayRead(Mat, const PetscScalar **);
+PETSC_EXTERN PetscErrorCode MatSeqAIJCUSPARSERestoreArrayRead(Mat, const PetscScalar **);
+PETSC_EXTERN PetscErrorCode MatSeqAIJCUSPARSEGetArrayWrite(Mat, PetscScalar **);
+PETSC_EXTERN PetscErrorCode MatSeqAIJCUSPARSERestoreArrayWrite(Mat, PetscScalar **);
+PETSC_EXTERN PetscErrorCode MatSeqAIJCUSPARSEGetArray(Mat, PetscScalar **);
+PETSC_EXTERN PetscErrorCode MatSeqAIJCUSPARSERestoreArray(Mat, PetscScalar **);
 
 PETSC_EXTERN PetscErrorCode MatCreateDenseCUDA(MPI_Comm, PetscInt, PetscInt, PetscInt, PetscInt, PetscScalar[], Mat *);
 PETSC_EXTERN PetscErrorCode MatCreateSeqDenseCUDA(MPI_Comm, PetscInt, PetscInt, PetscScalar[], Mat *);
@@ -2252,6 +2261,84 @@ PETSC_EXTERN PetscErrorCode MatDenseCUDARestoreArray(Mat, PetscScalar **);
 PETSC_EXTERN PetscErrorCode MatDenseCUDAPlaceArray(Mat, const PetscScalar *);
 PETSC_EXTERN PetscErrorCode MatDenseCUDAReplaceArray(Mat, const PetscScalar *);
 PETSC_EXTERN PetscErrorCode MatDenseCUDAResetArray(Mat);
+
+#endif
+
+#ifdef PETSC_HAVE_HIP
+/*E
+    MatHIPSPARSEStorageFormat - indicates the storage format for HIPSPARSE (GPU)
+    matrices.
+
+    Not Collective
+
++   MAT_HIPSPARSE_CSR - Compressed Sparse Row
+.   MAT_HIPSPARSE_ELL - Ellpack
+-   MAT_HIPSPARSE_HYB - Hybrid, a combination of Ellpack and Coordinate format (requires CUDA 4.2 or later).
+
+    Level: intermediate
+
+   Any additions/changes here MUST also be made in include/petsc/finclude/petscmat.h
+
+.seealso: `MatHIPSPARSESetFormat()`, `MatHIPSPARSEFormatOperation`
+E*/
+
+typedef enum {
+  MAT_HIPSPARSE_CSR,
+  MAT_HIPSPARSE_ELL,
+  MAT_HIPSPARSE_HYB
+} MatHIPSPARSEStorageFormat;
+
+/* these will be strings associated with enumerated type defined above */
+PETSC_EXTERN const char *const MatHIPSPARSEStorageFormats[];
+
+/*E
+    MatHIPSPARSEFormatOperation - indicates the operation of HIPSPARSE (GPU)
+    matrices whose operation should use a particular storage format.
+
+    Not Collective
+
++   MAT_HIPSPARSE_MULT_DIAG - sets the storage format for the diagonal matrix in the parallel MatMult
+.   MAT_HIPSPARSE_MULT_OFFDIAG - sets the storage format for the offdiagonal matrix in the parallel MatMult
+.   MAT_HIPSPARSE_MULT - sets the storage format for the entire matrix in the serial (single GPU) MatMult
+-   MAT_HIPSPARSE_ALL - sets the storage format for all HIPSPARSE (GPU) matrices
+
+    Level: intermediate
+
+.seealso: `MatHIPSPARSESetFormat()`, `MatHIPSPARSEStorageFormat`
+E*/
+typedef enum {
+  MAT_HIPSPARSE_MULT_DIAG,
+  MAT_HIPSPARSE_MULT_OFFDIAG,
+  MAT_HIPSPARSE_MULT,
+  MAT_HIPSPARSE_ALL
+} MatHIPSPARSEFormatOperation;
+
+PETSC_EXTERN PetscErrorCode MatCreateSeqAIJHIPSPARSE(MPI_Comm, PetscInt, PetscInt, PetscInt, const PetscInt[], Mat *);
+PETSC_EXTERN PetscErrorCode MatCreateAIJHIPSPARSE(MPI_Comm, PetscInt, PetscInt, PetscInt, PetscInt, PetscInt, const PetscInt[], PetscInt, const PetscInt[], Mat *);
+PETSC_EXTERN PetscErrorCode MatHIPSPARSESetFormat(Mat, MatHIPSPARSEFormatOperation, MatHIPSPARSEStorageFormat);
+PETSC_EXTERN PetscErrorCode MatHIPSPARSESetUseCPUSolve(Mat, PetscBool);
+PETSC_EXTERN PetscErrorCode MatSeqAIJHIPSPARSEGetIJ(Mat, PetscBool, const int **, const int **);
+PETSC_EXTERN PetscErrorCode MatSeqAIJHIPSPARSERestoreIJ(Mat, PetscBool, const int **, const int **);
+PETSC_EXTERN PetscErrorCode MatSeqAIJHIPSPARSEGetArrayRead(Mat, const PetscScalar **);
+PETSC_EXTERN PetscErrorCode MatSeqAIJHIPSPARSERestoreArrayRead(Mat, const PetscScalar **);
+PETSC_EXTERN PetscErrorCode MatSeqAIJHIPSPARSEGetArrayWrite(Mat, PetscScalar **);
+PETSC_EXTERN PetscErrorCode MatSeqAIJHIPSPARSERestoreArrayWrite(Mat, PetscScalar **);
+PETSC_EXTERN PetscErrorCode MatSeqAIJHIPSPARSEGetArray(Mat, PetscScalar **);
+PETSC_EXTERN PetscErrorCode MatSeqAIJHIPSPARSERestoreArray(Mat, PetscScalar **);
+
+PETSC_EXTERN PetscErrorCode MatCreateDenseHIP(MPI_Comm, PetscInt, PetscInt, PetscInt, PetscInt, PetscScalar[], Mat *);
+PETSC_EXTERN PetscErrorCode MatCreateSeqDenseHIP(MPI_Comm, PetscInt, PetscInt, PetscScalar[], Mat *);
+PETSC_EXTERN PetscErrorCode MatMPIDenseHIPSetPreallocation(Mat, PetscScalar[]);
+PETSC_EXTERN PetscErrorCode MatSeqDenseHIPSetPreallocation(Mat, PetscScalar[]);
+PETSC_EXTERN PetscErrorCode MatDenseHIPGetArrayWrite(Mat, PetscScalar **);
+PETSC_EXTERN PetscErrorCode MatDenseHIPGetArrayRead(Mat, const PetscScalar **);
+PETSC_EXTERN PetscErrorCode MatDenseHIPGetArray(Mat, PetscScalar **);
+PETSC_EXTERN PetscErrorCode MatDenseHIPRestoreArrayWrite(Mat, PetscScalar **);
+PETSC_EXTERN PetscErrorCode MatDenseHIPRestoreArrayRead(Mat, const PetscScalar **);
+PETSC_EXTERN PetscErrorCode MatDenseHIPRestoreArray(Mat, PetscScalar **);
+PETSC_EXTERN PetscErrorCode MatDenseHIPPlaceArray(Mat, const PetscScalar *);
+PETSC_EXTERN PetscErrorCode MatDenseHIPReplaceArray(Mat, const PetscScalar *);
+PETSC_EXTERN PetscErrorCode MatDenseHIPResetArray(Mat);
 
 #endif
 

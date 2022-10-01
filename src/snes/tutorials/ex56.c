@@ -1,3 +1,6 @@
+/* Portions of this code are under:
+   Copyright (C) 2022 Advanced Micro Devices, Inc. All rights reserved.
+*/
 static char help[] = "3D, tensor hexahedra (Q1-K), displacement finite element formulation\n\
 of linear elasticity.  E=1.0, nu=1/3.\n\
 Unit cube domain with Dirichlet boundary\n\n";
@@ -565,6 +568,11 @@ int main(int argc, char **args)
       suffix: cuda
       requires: cuda
       args: -ex56_dm_mat_type aijcusparse -ex56_dm_vec_type cuda
+
+    test:
+      suffix: hip
+      requires: hip
+      args: -ex56_dm_mat_type aijhipsparse -ex56_dm_vec_type hip
 
     test:
       suffix: viennacl

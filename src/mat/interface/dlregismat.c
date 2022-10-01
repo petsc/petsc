@@ -1,4 +1,6 @@
-
+/* Portions of this code are under:
+   Copyright (c) 2022 Advanced Micro Devices, Inc. All rights reserved.
+*/
 #include <petsc/private/matimpl.h>
 
 const char *MatOptions_Shifted[] = {"UNUSED_NONZERO_LOCATION_ERR", "ROW_ORIENTED", "NOT_A_VALID_OPTION", "SYMMETRIC", "STRUCTURALLY_SYMMETRIC", "FORCE_DIAGONAL_ENTRIES", "IGNORE_OFF_PROC_ENTRIES", "USE_HASH_TABLE", "KEEP_NONZERO_PATTERN", "IGNORE_ZERO_ENTRIES", "USE_INODES", "HERMITIAN", "SYMMETRY_ETERNAL", "NEW_NONZERO_LOCATION_ERR", "IGNORE_LOWER_TRIANGULAR", "ERROR_LOWER_TRIANGULAR", "GETROW_UPPERTRIANGULAR", "SPD", "NO_OFF_PROC_ZERO_ROWS", "NO_OFF_PROC_ENTRIES", "NEW_NONZERO_LOCATIONS", "NEW_NONZERO_ALLOCATION_ERR", "SUBSET_OFF_PROC_ENTRIES", "SUBMAT_SINGLEIS", "STRUCTURE_ONLY", "SORTED_FULL", "FORM_EXPLICIT_TRANSPOSE", "STRUCTURAL_SYMMETRY_ETERNAL", "SPD_ETERNAL", "MatOption", "MAT_", NULL};
@@ -60,6 +62,9 @@ PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_MUMPS(void);
 #if defined(PETSC_HAVE_CUDA)
 PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_CUSPARSE(void);
 #endif
+#if defined(PETSC_HAVE_HIP)
+PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_HIPSPARSE(void);
+#endif
 #if defined(PETSC_HAVE_KOKKOS_KERNELS)
 PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_KOKKOS(void);
 #endif
@@ -112,6 +117,9 @@ PETSC_INTERN PetscErrorCode MatGetFactor_seqsbaij_petsc(Mat, MatFactorType, Mat 
 PETSC_INTERN PetscErrorCode MatGetFactor_seqdense_petsc(Mat, MatFactorType, Mat *);
 #if defined(PETSC_HAVE_CUDA)
 PETSC_INTERN PetscErrorCode MatGetFactor_seqdense_cuda(Mat, MatFactorType, Mat *);
+#endif
+#if defined(PETSC_HAVE_HIP)
+PETSC_INTERN PetscErrorCode MatGetFactor_seqdense_hip(Mat, MatFactorType, Mat *);
 #endif
 PETSC_INTERN PetscErrorCode MatGetFactor_constantdiagonal_petsc(Mat, MatFactorType, Mat *);
 PETSC_INTERN PetscErrorCode MatGetFactor_seqaij_bas(Mat, MatFactorType, Mat *);
@@ -244,6 +252,10 @@ PetscErrorCode MatInitializePackage(void)
   PetscCall(PetscLogEventRegister("MatCUSPARSCopyFr", MAT_CLASSID, &MAT_CUSPARSECopyFromGPU));
   PetscCall(PetscLogEventRegister("MatCUSPARSSolAnl", MAT_CLASSID, &MAT_CUSPARSESolveAnalysis));
   PetscCall(PetscLogEventRegister("MatCUSPARSGenT", MAT_CLASSID, &MAT_CUSPARSEGenerateTranspose));
+  PetscCall(PetscLogEventRegister("MatHIPSPARSCopyTo", MAT_CLASSID, &MAT_HIPSPARSECopyToGPU));
+  PetscCall(PetscLogEventRegister("MatHIPSPARSCopyFr", MAT_CLASSID, &MAT_HIPSPARSECopyFromGPU));
+  PetscCall(PetscLogEventRegister("MatHIPSPARSSolAnl", MAT_CLASSID, &MAT_HIPSPARSESolveAnalysis));
+  PetscCall(PetscLogEventRegister("MatHIPSPARSGenT", MAT_CLASSID, &MAT_HIPSPARSEGenerateTranspose));
   PetscCall(PetscLogEventRegister("MatVCLCopyTo", MAT_CLASSID, &MAT_ViennaCLCopyToGPU));
   PetscCall(PetscLogEventRegister("MatDenseCopyTo", MAT_CLASSID, &MAT_DenseCopyToGPU));
   PetscCall(PetscLogEventRegister("MatDenseCopyFrom", MAT_CLASSID, &MAT_DenseCopyFromGPU));
@@ -354,6 +366,14 @@ PetscErrorCode MatInitializePackage(void)
   PetscCall(MatSolverTypeRegister(MATSOLVERCUDA, MATSEQDENSECUDA, MAT_FACTOR_CHOLESKY, MatGetFactor_seqdense_cuda));
   PetscCall(MatSolverTypeRegister(MATSOLVERCUDA, MATSEQDENSECUDA, MAT_FACTOR_QR, MatGetFactor_seqdense_cuda));
 #endif
+#if defined(PETSC_HAVE_HIP)
+  PetscCall(MatSolverTypeRegister(MATSOLVERHIP, MATSEQDENSE, MAT_FACTOR_LU, MatGetFactor_seqdense_hip));
+  PetscCall(MatSolverTypeRegister(MATSOLVERHIP, MATSEQDENSE, MAT_FACTOR_CHOLESKY, MatGetFactor_seqdense_hip));
+  PetscCall(MatSolverTypeRegister(MATSOLVERHIP, MATSEQDENSE, MAT_FACTOR_QR, MatGetFactor_seqdense_hip));
+  PetscCall(MatSolverTypeRegister(MATSOLVERHIP, MATSEQDENSEHIP, MAT_FACTOR_LU, MatGetFactor_seqdense_hip));
+  PetscCall(MatSolverTypeRegister(MATSOLVERHIP, MATSEQDENSEHIP, MAT_FACTOR_CHOLESKY, MatGetFactor_seqdense_hip));
+  PetscCall(MatSolverTypeRegister(MATSOLVERHIP, MATSEQDENSEHIP, MAT_FACTOR_QR, MatGetFactor_seqdense_hip));
+#endif
 
   PetscCall(MatSolverTypeRegister(MATSOLVERBAS, MATSEQAIJ, MAT_FACTOR_ICC, MatGetFactor_seqaij_bas));
 
@@ -366,6 +386,9 @@ PetscErrorCode MatInitializePackage(void)
 #endif
 #if defined(PETSC_HAVE_CUDA)
   PetscCall(MatSolverTypeRegister_CUSPARSE());
+#endif
+#if defined(PETSC_HAVE_HIP)
+  PetscCall(MatSolverTypeRegister_HIPSPARSE());
 #endif
 #if defined(PETSC_HAVE_KOKKOS_KERNELS)
   PetscCall(MatSolverTypeRegister_KOKKOS());

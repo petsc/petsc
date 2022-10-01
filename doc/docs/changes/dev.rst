@@ -27,6 +27,7 @@ In addition to the changes above
 
 .. rubric:: General:
 
+- Add native PETSc/HIP backend for AMD GPUs
 - Add ``PETSC_ERR_RETURN`` to signal when an error handler returns 0 in ``PetscError()``
 - Change behavior of ``SETERRQ()`` when ``PetscError()`` returns 0 via user-set error handler. In such cases ``SETERRQ()`` now returns ``PETSC_ERR_RETURN`` (a nonzero value) instead. Previously the value (0) would be propagated as-is. Note that while returning 0 from error handlers in ``PetscError()`` is supported, doing so is discouraged
 - Change ``PetscOptionsBegin()``, ``PetscOptionsEnd()``, and ``PetscObjectOptionsBegin()`` to not return an error code

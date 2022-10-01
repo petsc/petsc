@@ -331,6 +331,8 @@ struct Mat_SeqAIJCUSPARSE {
   Mat_SeqAIJCUSPARSE() : use_extended_coo(PETSC_FALSE), perm_d(NULL), jmap_d(NULL) { }
 };
 
+typedef struct Mat_SeqAIJCUSPARSETriFactors *Mat_SeqAIJCUSPARSETriFactors_p;
+
 PETSC_INTERN PetscErrorCode MatSeqAIJCUSPARSECopyToGPU(Mat);
 PETSC_INTERN PetscErrorCode MatSetPreallocationCOO_SeqAIJCUSPARSE_Basic(Mat, PetscCount, PetscInt[], PetscInt[]);
 PETSC_INTERN PetscErrorCode MatSetValuesCOO_SeqAIJCUSPARSE_Basic(Mat, const PetscScalar[], InsertMode);

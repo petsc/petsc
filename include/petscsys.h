@@ -1,6 +1,8 @@
 /*
    This is the main PETSc include file (for C and C++).  It is included by all
    other PETSc include files, so it almost never has to be specifically included.
+   Portions of this code are under:
+   Copyright (c) 2022 Advanced Micro Devices, Inc. All rights reserved.
 */
 #ifndef PETSCSYS_H
 #define PETSCSYS_H
@@ -1935,9 +1937,10 @@ PETSC_EXTERN PetscErrorCode MPIU_File_read_at_all(MPI_File, MPI_Offset, void *, 
 #define PETSC_MPI_INT_MAX 2147483647
 #define PETSC_MPI_INT_MIN -2147483647
 /* Limit BLAS to 32-bits */
-#define PETSC_BLAS_INT_MAX   2147483647
-#define PETSC_BLAS_INT_MIN   -2147483647
-#define PETSC_CUBLAS_INT_MAX 2147483647
+#define PETSC_BLAS_INT_MAX    2147483647
+#define PETSC_BLAS_INT_MIN    -2147483647
+#define PETSC_CUBLAS_INT_MAX  2147483647
+#define PETSC_HIPBLAS_INT_MAX 2147483647
 
 /*@C
     PetscIntCast - casts a `PetscInt64` (which is 64 bits in size) to a `PetscInt` (which may be 32 bits in size), generates an
@@ -2067,8 +2070,36 @@ static inline PetscErrorCode PetscCuBLASIntCast(PetscInt a, PetscCuBLASInt *b)
 }
 
 /*@C
-    PetscMPIIntCast - casts a `PetscInt` (which may be 64 bits in size) to a `PetscMPIInt` (which may be 32 bits in size), generates an
-         error if the `PetscMPIInt` is not large enough to hold the number.
+    PetscHipBLASIntCast - like `PetscBLASIntCast()`, but for `PetscHipBLASInt`.
+
+   Not Collective
+
+   Input Parameter:
+.     a - the `PetscInt` value
+
+   Output Parameter:
+.     b - the resulting `PetscHipBLASInt` value
+
+   Level: advanced
+
+   Notes:
+      Errors if the integer is negative since PETSc calls to hipBLAS and friends never need to cast negative integer inputs
+
+.seealso: `PetscHipBLASInt`, `PetscBLASInt`, `PetscMPIInt`, `PetscInt`, `PetscBLASIntCast()`, `PetscMPIIntCast()`, `PetscIntCast()`
+@*/
+static inline PetscErrorCode PetscHipBLASIntCast(PetscInt a, PetscHipBLASInt *b)
+{
+  PetscFunctionBegin;
+  *b = 0;
+  if (PetscDefined(USE_64BIT_INDICES)) PetscCheck(a <= PETSC_HIPBLAS_INT_MAX, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "%" PetscInt_FMT " is too big for hipBLAS, which is restricted to 32 bit integers.", a);
+  PetscCheck(a >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Passing negative integer to hipBLAS routine");
+  *b = (PetscHipBLASInt)(a);
+  PetscFunctionReturn(0);
+}
+
+/*@C
+    PetscMPIIntCast - casts a PetscInt (which may be 64 bits in size) to a PetscMPIInt (which may be 32 bits in size), generates an
+         error if the PetscMPIInt is not large enough to hold the number.
 
    Not Collective
 

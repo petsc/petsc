@@ -1,0 +1,66 @@
+  0 SNES Function norm 122.396 
+    0 KSP Residual norm 122.396 
+    1 KSP Residual norm 20.4849 
+    2 KSP Residual norm 3.95337 
+    3 KSP Residual norm 0.180684 
+    4 KSP Residual norm 0.0212116 
+    5 KSP Residual norm 0.00283526 
+    6 KSP Residual norm 0.000492888 
+    7 KSP Residual norm 4.7627e-05 
+    8 KSP Residual norm 5.57848e-06 
+    9 KSP Residual norm 5.10101e-07 
+   10 KSP Residual norm 2.68643e-08 
+   11 KSP Residual norm 5.01548e-09 
+  Linear solve converged due to CONVERGED_RTOL iterations 11
+  1 SNES Function norm 5.01548e-09 
+Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
+DM Object: Mesh (ex56_) 4 MPI processes
+  type: plex
+Mesh in 3 dimensions:
+  Number of 0-cells per rank: 8 8 8 8
+  Number of 1-cells per rank: 12 12 12 12
+  Number of 2-cells per rank: 6 6 6 6
+  Number of 3-cells per rank: 1 1 1 1
+Labels:
+  depth: 4 strata with value/size (0 (8), 1 (12), 2 (6), 3 (1))
+  marker: 1 strata with value/size (1 (15))
+  Face Sets: 4 strata with value/size (1 (1), 2 (1), 3 (1), 6 (1))
+  boundary: 1 strata with value/size (1 (23))
+  celltype: 4 strata with value/size (0 (8), 1 (12), 4 (6), 7 (1))
+Field deformation:
+  adjacency FEM
+  0 SNES Function norm 49.7106 
+    0 KSP Residual norm 49.7106 
+    1 KSP Residual norm 13.0376 
+    2 KSP Residual norm 2.62078 
+    3 KSP Residual norm 0.440369 
+    4 KSP Residual norm 0.0725041 
+    5 KSP Residual norm 0.0129041 
+    6 KSP Residual norm 0.00215534 
+    7 KSP Residual norm 0.000321698 
+    8 KSP Residual norm 6.35318e-05 
+    9 KSP Residual norm 1.03817e-05 
+   10 KSP Residual norm 1.63549e-06 
+   11 KSP Residual norm 2.83813e-07 
+   12 KSP Residual norm 5.35202e-08 
+   13 KSP Residual norm 8.28474e-09 
+   14 KSP Residual norm 1.3614e-09 
+  Linear solve converged due to CONVERGED_RTOL iterations 14
+  1 SNES Function norm 1.3614e-09 
+Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
+DM Object: Mesh (ex56_) 4 MPI processes
+  type: plex
+Mesh in 3 dimensions:
+  Number of 0-cells per rank: 27 27 27 27
+  Number of 1-cells per rank: 54 54 54 54
+  Number of 2-cells per rank: 36 36 36 36
+  Number of 3-cells per rank: 8 8 8 8
+Labels:
+  celltype: 4 strata with value/size (0 (27), 1 (54), 4 (36), 7 (8))
+  depth: 4 strata with value/size (0 (27), 1 (54), 2 (36), 3 (8))
+  marker: 1 strata with value/size (1 (69))
+  Face Sets: 4 strata with value/size (1 (9), 2 (9), 3 (9), 6 (9))
+  boundary: 1 strata with value/size (1 (77))
+Field deformation:
+  adjacency FEM
+[0] 1) N=         441, max displ=5.5560415e+01, disp diff= 1.19e+01, error=4.415e+00, rate=1.9
