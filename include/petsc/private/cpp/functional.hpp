@@ -85,8 +85,9 @@ struct func_traits : detail::func_traits_impl<decay_t<T>> {
 
   #define PETSC_ALIAS_FUNCTION_WITH_PROLOGUE_AND_EPILOGUE_(alias, original, dispatch, prologue, epilogue) \
     template <typename... Args> \
-    static inline auto dispatch(int, Args &&...args) PETSC_DECLTYPE_NOEXCEPT_AUTO_RETURNS(original(std::forward<Args>(args)...)) template <typename... Args> \
-    static inline int  dispatch(char, Args...) \
+    static inline auto dispatch(int, Args &&...args) PETSC_DECLTYPE_NOEXCEPT_AUTO_RETURNS(original(std::forward<Args>(args)...)) \
+    template <typename... Args> \
+    static inline int dispatch(char, Args...) \
     { \
       using namespace Petsc::util; \
       static_assert(is_callable_with<Args...>(original) && always_false<Args...>::value, "function " PetscStringize(original) "() is not callable with given arguments"); \
@@ -151,7 +152,8 @@ struct func_traits : detail::func_traits_impl<decay_t<T>> {
   #define PETSC_ALIAS_FUNCTION_GOBBLE_NTH_LAST_ARGS_(alias, original, gobblefn, N) \
     static_assert(std::is_integral<decltype(N)>::value && ((N) >= 0), ""); \
     template <typename TupleT, std::size_t... idx> \
-    static inline auto   gobblefn(TupleT &&tuple, Petsc::util::index_sequence<idx...>) PETSC_DECLTYPE_NOEXCEPT_AUTO_RETURNS(original(std::get<idx>(tuple)...)) template <typename... Args> \
+    static inline auto gobblefn(TupleT &&tuple, Petsc::util::index_sequence<idx...>) PETSC_DECLTYPE_NOEXCEPT_AUTO_RETURNS(original(std::get<idx>(tuple)...)) \
+    template <typename... Args> \
     PETSC_NODISCARD auto alias(Args &&...args) PETSC_DECLTYPE_NOEXCEPT_AUTO_RETURNS(gobblefn(std::forward_as_tuple(args...), Petsc::util::make_index_sequence<sizeof...(Args) - (N)>{}))
 
   #define PETSC_ALIAS_FUNCTION_GOBBLE_NTH_LAST_ARGS(alias, original, N) PETSC_ALIAS_FUNCTION_GOBBLE_NTH_LAST_ARGS_(alias, original, PETSC_ALIAS_UNIQUE_NAME_INTERNAL(PetscAliasFunctionGobbleDispatch, original), N)

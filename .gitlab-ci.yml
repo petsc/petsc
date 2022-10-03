@@ -791,6 +791,7 @@ linux-analyzer:
     paths:
     - ${TEST_ARCH}/lib/petsc/conf/*.log
     - ./petscLintPatches/*.patch
+    expire_in: 4 days
 
 linux-intel:
   extends:
@@ -1031,7 +1032,7 @@ docs-review:
     - .docs
     - .test-basic
   script:
-    - (make html BUILDDIR="../public" SPHINXOPTS="-T -E -W --keep-going") || (printf "Sphinx build failed (warnings count as errors)\n" && false)
+    - (make html BUILDDIR="../public" SPHINXOPTS="-T -E -W --keep-going -j 1") || (printf "Sphinx build failed (warnings count as errors)\n" && false)
     - (make latexpdf SPHINXOPTS="-T -E -W --keep-going") || (printf "Sphinx build failed (warnings count as errors)\n" && false)
     - cp _build/latex/manual.pdf ../public/html/docs/manual/
   environment:
@@ -1040,6 +1041,7 @@ docs-review:
   artifacts:
     paths:
       - public
+    expire_in: 4 days
   except:
     variables:
       - $PETSC_CI_SCHEDULED =~ /yes/
@@ -1053,15 +1055,17 @@ pages:  # this job name has special meaning to GitLab
   script:
     - mkdir -p ../public/ && cp public/* ../public/
     - git fetch --unshallow --no-tags origin +release:remotes/origin/release +main:remotes/origin/main
-    - git checkout origin/main && pip install -r requirements.txt && make website-deploy BUILDDIR="../public/main" && make latexpdf && mkdir -p ../public/main/docs/manual && cp _build/latex/manual.pdf ../public/main/docs/manual/
+    - git checkout origin/main && pip install -r requirements.txt && make website-deploy SPHINXOPTS="-j 1" BUILDDIR="../public/main" && make latexpdf && mkdir -p ../public/main/docs/manual && cp _build/latex/manual.pdf ../public/main/docs/manual/
     - make clean BUILDDIR="../public/release"
-    - git checkout origin/release && pip install -r requirements.txt && make website-deploy BUILDDIR="../public/release" && make latexpdf && mkdir -p ../public/release/docs/manual && cp _build/latex/manual.pdf ../public/release/docs/manual/
+    - git checkout origin/release && pip install -r requirements.txt && make website-deploy SPHINXOPTS="-j 1"  BUILDDIR="../public/release" && make latexpdf && mkdir -p ../public/release/docs/manual && cp _build/latex/manual.pdf ../public/release/docs/manual/
+    - rm -rf ../public/*/.doctrees
   only:
     variables:
       - $PETSC_CI_SCHEDULED == "yes"
   artifacts:
     paths:
       - public
+    expire_in: 4 days
 
 #
 #
