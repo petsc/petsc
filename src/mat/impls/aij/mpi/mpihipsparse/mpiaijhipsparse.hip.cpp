@@ -169,11 +169,9 @@ static PetscErrorCode MatSetPreallocationCOO_MPIAIJHIPSPARSE_Basic(Mat B, PetscC
   PetscCall(MatCreate(PETSC_COMM_SELF, &b->A));
   PetscCall(MatSetSizes(b->A, B->rmap->n, B->cmap->n, B->rmap->n, B->cmap->n));
   PetscCall(MatSetType(b->A, MATSEQAIJHIPSPARSE));
-  PetscCall(PetscLogObjectParent((PetscObject)B, (PetscObject)b->A));
   PetscCall(MatCreate(PETSC_COMM_SELF, &b->B));
   PetscCall(MatSetSizes(b->B, B->rmap->n, noff, B->rmap->n, noff));
   PetscCall(MatSetType(b->B, MATSEQAIJHIPSPARSE));
-  PetscCall(PetscLogObjectParent((PetscObject)B, (PetscObject)b->B));
 
   /* GPU memory, hipsparse specific call handles it internally */
   PetscCall(MatSetPreallocationCOO_SeqAIJHIPSPARSE_Basic(b->A, cusp->coo_nd, d_i.data().get(), d_j.data().get()));
@@ -429,14 +427,12 @@ PetscErrorCode MatMPIAIJSetPreallocation_MPIAIJHIPSPARSE(Mat B, PetscInt d_nz, c
   if (!b->A) {
     PetscCall(MatCreate(PETSC_COMM_SELF, &b->A));
     PetscCall(MatSetSizes(b->A, B->rmap->n, B->cmap->n, B->rmap->n, B->cmap->n));
-    PetscCall(PetscLogObjectParent((PetscObject)B, (PetscObject)b->A));
   }
   if (!b->B) {
     PetscMPIInt size;
     PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)B), &size));
     PetscCall(MatCreate(PETSC_COMM_SELF, &b->B));
     PetscCall(MatSetSizes(b->B, B->rmap->n, size > 1 ? B->cmap->N : 0, B->rmap->n, size > 1 ? B->cmap->N : 0));
-    PetscCall(PetscLogObjectParent((PetscObject)B, (PetscObject)b->B));
   }
   PetscCall(MatSetType(b->A, MATSEQAIJHIPSPARSE));
   PetscCall(MatSetType(b->B, MATSEQAIJHIPSPARSE));

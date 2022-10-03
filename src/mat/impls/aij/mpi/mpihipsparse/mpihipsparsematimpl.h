@@ -1,15 +1,15 @@
 /* Portions of this code are under:
    Copyright (c) 2022 Advanced Micro Devices, Inc. All rights reserved.
 */
-#if !defined(__MPIHIPSPARSEMATIMPL)
-  #define __MPIHIPSPARSEMATIMPL
+#ifndef __MPIHIPSPARSEMATIMPL
+#define __MPIHIPSPARSEMATIMPL
 
-  #if PETSC_PKG_HIP_VERSION_GE(5, 2, 0)
-    #include <hipsparse/hipsparse.h>
-  #else
-    #include <hipsparse.h>
-  #endif
-  #include <petsc/private/hipvecimpl.h>
+#if PETSC_PKG_HIP_VERSION_GE(5, 2, 0)
+  #include <hipsparse/hipsparse.h>
+#else
+  #include <hipsparse.h>
+#endif
+#include <petsc/private/hipvecimpl.h>
 
 struct Mat_MPIAIJHIPSPARSE {
   /* The following are used by GPU capabilities to store matrix storage formats on the device */
