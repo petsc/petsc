@@ -13,9 +13,11 @@ if __name__ == '__main__':
     'CC=icc',
     'CXX=icpc',
     'FC=ifort',
-    'COPTFLAGS=-g -O',
-    'FOPTFLAGS=-g -O',
-    'CXXOPTFLAGS=-g -O',
+    # Intel compilers enable GCC/clangs equivalent of -ffast-math *by default*. This is
+    # bananas, so we make sure they use the same model as everyone else
+    'COPTFLAGS=-g -O -fp-model=precise',
+    'FOPTFLAGS=-g -O -fp-model=precise',
+    'CXXOPTFLAGS=-g -O -fp-model=precise',
     '--with-blaslapack-dir='+os.environ['MKLROOT'],
     '--with-mkl_pardiso-dir='+os.environ['MKLROOT'],
     '--download-mpich=1',
