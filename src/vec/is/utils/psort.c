@@ -293,8 +293,8 @@ static PetscErrorCode PetscParallelSortInt_Samplesort(PetscLayout mapin, PetscLa
   Collective
 
   Input Parameters:
-+ mapin - PetscLayout describing the distribution of the input keys
-. mapout - PetscLayout describing the distribution of the output keys
++ mapin - `PetscLayout` describing the distribution of the input keys
+. mapout - `PetscLayout` describing the desired distribution of the output keys
 - keysin - the pre-sorted array of integers
 
   Output Parameter:
@@ -302,17 +302,19 @@ static PetscErrorCode PetscParallelSortInt_Samplesort(PetscLayout mapin, PetscLa
 
   Level: developer
 
-  Notes: This implements a distributed samplesort, which, with local array sizes n_in and n_out, global size N, and global number of processes P, does:
-
+  Notes:
+  This implements a distributed samplesort, which, with local array sizes n_in and n_out, global size N, and global number of processes P, does:
+.vb
   - sorts locally
   - chooses pivots by sorting (in parallel) (P-1) pivot suggestions from each process using bitonic sort and allgathering a subset of (P-1) of those
   - using to the pivots to repartition the keys by all-to-all exchange
   - sorting the repartitioned keys locally (the array is now globally sorted, but does not match the mapout layout)
   - redistributing to match the mapout layout
+.ve
 
-  If keysin != keysout, then keysin will not be changed during PetscParallelSortInt.
+  If keysin != keysout, then keysin will not be changed during `PetscParallelSortInt()`.
 
-.seealso: `PetscParallelSortedInt()`
+.seealso: `PetscSortInt()`, `PetscParallelSortedInt()`
 @*/
 PetscErrorCode PetscParallelSortInt(PetscLayout mapin, PetscLayout mapout, PetscInt keysin[], PetscInt keysout[])
 {

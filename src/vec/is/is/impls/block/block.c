@@ -387,30 +387,31 @@ static struct _ISOps myops = {ISGetIndices_Block, ISRestoreIndices_Block, ISInve
                               ISSortedLocal_Block, NULL, ISUniqueLocal_Block, NULL, ISPermutationLocal_Block, NULL, ISIntervalLocal_Block, NULL};
 
 /*@
-   ISBlockSetIndices - Set integers representing blocks of indices in an index set.
+   ISBlockSetIndices - Set integers representing blocks of indices in an index set of `ISType` `ISBLOCK`
 
-   Collective on IS
+   Collective on is
 
    Input Parameters:
 +  is - the index set
 .  bs - number of elements in each block
 .   n - the length of the index set (the number of blocks)
 .  idx - the list of integers, one for each block, the integers contain the index of the first index of each block divided by the block size
--  mode - see PetscCopyMode, only PETSC_COPY_VALUES and PETSC_OWN_POINTER are supported
+-  mode - see `PetscCopyMode`, only `PETSC_COPY_VALUES` and `PETSC_OWN_POINTER` are supported
+
+   Level: beginner
 
    Notes:
-   When the communicator is not MPI_COMM_SELF, the operations on the
-   index sets, IS, are NOT conceptually the same as MPI_Group operations.
+   When the communicator is not `MPI_COMM_SELF`, the operations on the
+   index sets, IS, are NOT conceptually the same as `MPI_Group` operations.
    The index sets are then distributed sets of indices and thus certain operations
    on them are collective.
 
+   The convenience routine `ISCreateBlock()` allows one to create the `IS` and provide the blocks in a single function call.
    Example:
    If you wish to index the values {0,1,4,5}, then use
    a block size of 2 and idx of {0,2}.
 
-   Level: beginner
-
-.seealso: `ISCreateStride()`, `ISCreateGeneral()`, `ISAllGather()`, `ISCreateBlock()`, `ISBLOCK`, `ISGeneralSetIndices()`
+.seealso: [](sec_scatter), `IS`, `ISCreateStride()`, `ISCreateGeneral()`, `ISAllGather()`, `ISCreateBlock()`, `ISBLOCK`, `ISGeneralSetIndices()`
 @*/
 PetscErrorCode ISBlockSetIndices(IS is, PetscInt bs, PetscInt n, const PetscInt idx[], PetscCopyMode mode)
 {
@@ -474,24 +475,26 @@ static PetscErrorCode ISBlockSetIndices_Block(IS is, PetscInt bs, PetscInt n, co
 .  bs - number of elements in each block
 .  n - the length of the index set (the number of blocks)
 .  idx - the list of integers, one for each block, the integers contain the index of the first entry of each block divided by the block size
--  mode - see PetscCopyMode, only PETSC_COPY_VALUES and PETSC_OWN_POINTER are supported in this routine
+-  mode - see `PetscCopyMode`, only `PETSC_COPY_VALUES` and `PETSC_OWN_POINTER` are supported in this routine
 
    Output Parameter:
 .  is - the new index set
 
+   Level: beginner
+
    Notes:
-   When the communicator is not MPI_COMM_SELF, the operations on the
-   index sets, IS, are NOT conceptually the same as MPI_Group operations.
+   When the communicator is not `MPI_COMM_SELF`, the operations on the
+   index sets, `IS`, are NOT conceptually the same as `MPI_Group` operations.
    The index sets are then distributed sets of indices and thus certain operations
    on them are collective.
+
+   The routine `ISBlockSetIndices()` can be used to provide the indices to a preexisting block `IS`
 
    Example:
    If you wish to index the values {0,1,6,7}, then use
    a block size of 2 and idx of {0,3}.
 
-   Level: beginner
-
-.seealso: `ISCreateStride()`, `ISCreateGeneral()`, `ISAllGather()`, `ISBlockSetIndices()`, `ISBLOCK`, `ISGENERAL`
+.seealso: [](sec_scatter), `IS`, `ISCreateStride()`, `ISCreateGeneral()`, `ISAllGather()`, `ISBlockSetIndices()`, `ISBLOCK`, `ISGENERAL`
 @*/
 PetscErrorCode ISCreateBlock(MPI_Comm comm, PetscInt bs, PetscInt n, const PetscInt idx[], PetscCopyMode mode, IS *is)
 {
@@ -523,7 +526,7 @@ static PetscErrorCode ISBlockRestoreIndices_Block(IS is, const PetscInt *idx[])
 }
 
 /*@C
-   ISBlockGetIndices - Gets the indices associated with each block.
+   ISBlockGetIndices - Gets the indices associated with each block in an `ISBLOCK`
 
    Not Collective
 
@@ -535,7 +538,10 @@ static PetscErrorCode ISBlockRestoreIndices_Block(IS is, const PetscInt *idx[])
 
    Level: intermediate
 
-.seealso: `ISGetIndices()`, `ISBlockRestoreIndices()`, `ISBLOCK`, `ISBlockSetIndices()`, `ISCreateBlock()`
+   Note:
+   Call `ISBlockRestoreIndices()` when you no longer need access to the indices
+
+.seealso: [](sec_scatter), `IS`, `ISBLOCK`, `ISGetIndices()`, `ISBlockRestoreIndices()`, `ISBLOCK`, `ISBlockSetIndices()`, `ISCreateBlock()`
 @*/
 PetscErrorCode ISBlockGetIndices(IS is, const PetscInt *idx[])
 {
@@ -545,7 +551,7 @@ PetscErrorCode ISBlockGetIndices(IS is, const PetscInt *idx[])
 }
 
 /*@C
-   ISBlockRestoreIndices - Restores the indices associated with each block.
+   ISBlockRestoreIndices - Restores the indices associated with each block  in an `ISBLOCK` obtained with `ISBlockGetIndices()`
 
    Not Collective
 
@@ -557,7 +563,7 @@ PetscErrorCode ISBlockGetIndices(IS is, const PetscInt *idx[])
 
    Level: intermediate
 
-.seealso: `ISRestoreIndices()`, `ISBlockGetIndices()`
+.seealso: [](sec_scatter), `IS`, `ISBLOCK`, `ISRestoreIndices()`, `ISBlockGetIndices()`
 @*/
 PetscErrorCode ISBlockRestoreIndices(IS is, const PetscInt *idx[])
 {
@@ -567,7 +573,7 @@ PetscErrorCode ISBlockRestoreIndices(IS is, const PetscInt *idx[])
 }
 
 /*@
-   ISBlockGetLocalSize - Returns the local number of blocks in the index set.
+   ISBlockGetLocalSize - Returns the local number of blocks in the index set of `ISType` `ISBLOCK`
 
    Not Collective
 
@@ -579,7 +585,7 @@ PetscErrorCode ISBlockRestoreIndices(IS is, const PetscInt *idx[])
 
    Level: intermediate
 
-.seealso: `ISGetBlockSize()`, `ISBlockGetSize()`, `ISGetSize()`, `ISCreateBlock()`, `ISBLOCK`
+.seealso: [](sec_scatter), `IS`, `ISGetBlockSize()`, `ISBlockGetSize()`, `ISGetSize()`, `ISCreateBlock()`, `ISBLOCK`
 @*/
 PetscErrorCode ISBlockGetLocalSize(IS is, PetscInt *size)
 {
@@ -600,7 +606,7 @@ static PetscErrorCode ISBlockGetLocalSize_Block(IS is, PetscInt *size)
 }
 
 /*@
-   ISBlockGetSize - Returns the global number of blocks in the index set.
+   ISBlockGetSize - Returns the global number of blocks in parallel in the index set of `ISType` `ISBLOCK`
 
    Not Collective
 
@@ -612,7 +618,7 @@ static PetscErrorCode ISBlockGetLocalSize_Block(IS is, PetscInt *size)
 
    Level: intermediate
 
-.seealso: `ISGetBlockSize()`, `ISBlockGetLocalSize()`, `ISGetSize()`, `ISCreateBlock()`, `ISBLOCK`
+.seealso: [](sec_scatter), `IS`, `ISGetBlockSize()`, `ISBlockGetLocalSize()`, `ISGetSize()`, `ISCreateBlock()`, `ISBLOCK`
 @*/
 PetscErrorCode ISBlockGetSize(IS is, PetscInt *size)
 {

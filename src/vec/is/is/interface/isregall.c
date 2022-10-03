@@ -5,13 +5,13 @@ PETSC_EXTERN PetscErrorCode ISCreate_Stride(IS);
 PETSC_EXTERN PetscErrorCode ISCreate_Block(IS);
 
 /*@C
-  ISRegisterAll - Registers all of the index set components in the IS package.
+  ISRegisterAll - Registers all of the index set components in the `IS` package.
 
   Not Collective
 
   Level: advanced
 
-.seealso: `ISRegister()`
+.seealso: [](sec_scatter), `IS`, `ISType`, `ISRegister()`
 @*/
 PetscErrorCode ISRegisterAll(void)
 {
