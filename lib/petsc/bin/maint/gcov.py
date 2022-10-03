@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 #
 # Usage:
 #       Run gcov on the results of "make alltests" and create tar ball containing coverage results for one machine
@@ -18,10 +18,48 @@ import sys
 import subprocess
 from   time import gmtime,strftime
 import tempfile
+import pathlib
 
 thisfile = os.path.abspath(inspect.getfile(inspect.currentframe()))
 pdir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(thisfile)))))
 sys.path.insert(0, os.path.join(pdir, 'config'))
+
+def subprocess_run(*args, **kwargs):
+  if sys.version_info >= (3,7):
+    output = subprocess.run(*args,**kwargs)
+  else:
+    if kwargs.pop("capture_output",None):
+      kwargs.setdefault("stdout",subprocess.PIPE)
+      kwargs.setdefault("stderr",subprocess.PIPE)
+    output = subprocess.run(*args,**kwargs)
+  return output
+
+def pathlib_walk(path):
+  dirs,files = [],[]
+  for p in pathlib.Path(path).iterdir():
+    if p.is_dir():
+      dirs.append(p)
+    else:
+      files.append(p)
+  # To emulate os.walk() we yield the current directory, and any subdirectories and files
+  # in it. The caller can modify dirs to control which directories are decended into next
+  yield path, dirs, files
+  for d in dirs:
+    yield from pathlib_walk(d)
+
+def pathlib_append_suffix(path, suff):
+  return pathlib.Path(str(path)+suff)
+
+def pathlib_remove_all_suffix(path):
+  # want to reduce 'foo.kokkos.cxx' to just 'foo'. Using a single .stem only results
+  # in the outermost suffix being removed (i.e. 'foo.kokkos')
+  path_stem = path.stem
+  while 1:
+    new_stem = pathlib.Path(path_stem).stem
+    if new_stem == path_stem:
+      break
+    path_stem = new_stem
+  return path_stem
 
 def run_gcov(gcov_dir,petsc_dir,petsc_arch):
 
@@ -36,58 +74,107 @@ def run_gcov(gcov_dir,petsc_dir,petsc_arch):
     else: ignore_h = ''
     print("gcov flags: %s" % ignore_h)
 
-    # avoid errors of the type: UnicodeDecodeError: 'utf-8' codec can't decode byte 0x88 in position 7892: invalid start byte
-    files  = subprocess.check_output('make -f gmakefile showcsrc', shell=True).decode(encoding='UTF-8',errors='replace').split()
-    for file_name in files:
-        root = os.path.join(petsc_dir,os.path.dirname(file_name))
-        c_file = file_name.split('.c')[0]
-        OBJDIR = os.path.join(petsc_dir, petsc_arch, 'obj')
-        objpath = os.path.join(OBJDIR, os.path.relpath(c_file, os.path.join(petsc_dir,"src")))
-        gcov_graph_file = objpath+".gcno"
-        gcov_data_file  = objpath+".gcda"
-        if os.path.isfile(gcov_graph_file) and os.path.isfile(gcov_data_file):
-            # gcov created .gcno and .gcda files => create .gcov file,parse it and save the tested code line
-            # numbers in .tested file
-            dir = os.getcwd()
-            os.chdir(os.path.dirname(os.path.join(petsc_dir,file_name)))
-            os.system('gcov '+ignore_h+' --object-directory "%s" "%s" > /dev/null 2>&1' % (os.path.dirname(gcov_data_file), os.path.basename(file_name)))
-            os.chdir(dir)
-            gcov_file = file_name+".gcov"
-            try:
-                src_fid = open(file_name,'r')
-                src = src_fid.read().split('\n')
-                src_fid.close()
-                gcov_fid = open(gcov_file,'r')
-                root_tmp1 = root.split(petsc_dir+os.sep)[1].replace(os.sep,'__')
-                tested_fid = open(os.path.join(gcov_dir,root_tmp1+'__'+os.path.basename(file_name)+'.tested'),'w')
-                code_fid = open(os.path.join(gcov_dir,root_tmp1+'__'+os.path.basename(file_name)+'.code'),'w')
-                nsrc = 0
-                for line in gcov_fid:
-                    try:
-                       line_num = line.split(":")[1].strip()
-                    except Exception as e:
-                       print("Error processing %s, invalid gcov data, skipping data for file" % gcov_file)
-                       print("  Error message %s" % str(e))
-                       print("  Line %s" % line)
-                       break
-                    if line.find("#####") == -1 and line.find("-:") == -1:
-                        print("""%s"""%(line_num), file=tested_fid)
-                    if line.find("-:") == -1 and int(line_num) > 0 and src[int(line_num)-1].find('SETERRQ') == -1:
-                        print("""%s"""%(line_num), file=code_fid)
-            except IOError as e:
-                print("IO error processing %s, skipping data for file" % gcov_file)
-                print("  Error message %s" % str(e))
-                continue
-            except Exception as e:
-                print("Error processing %s, skipping data for file" % gcov_file)
-                print("  Error message %s" % str(e))
-                continue
-            try:
-                gcov_fid.close()
-                code_fid.close()
-                tested_fid.close()
-            except:
-                pass
+    # tuple of suffixes which the current installation can compile
+    suffixes = tuple(set(
+      subprocess_run(
+        ['make','-f','gmakefile','print','VAR=langs'],
+        capture_output=True, check=True, universal_newlines=True
+      ).stdout.split()
+    ))
+
+    # no point in traversing into these directories
+    skip_dirs = {'docs', 'binding'}
+    petsc_dir = pathlib.Path(petsc_dir).resolve()
+    obj_dir   = petsc_dir/petsc_arch/'obj'
+    src_dir   = petsc_dir/'src'
+    cwd_path  = pathlib.Path(os.getcwd())
+
+    if cwd_path != petsc_dir:
+      mess = '\n'.join([
+        'Must be run from the same directory as source code was compiled from!',
+        'This routine assumes that place is PETSC_DIR: {}'.format(petsc_dir),
+        'Current working directory is:                 {}'.format(cwd_path)
+      ])
+      raise RuntimeError(mess)
+
+    # walk the src tree search for files with allowed suffixes
+    for par_dir, dirs, files in pathlib_walk(src_dir):
+      dirs = [d for d in dirs if str(d) not in skip_dirs]
+      for path in files:
+        path_name = path.name
+        if not path_name.endswith(suffixes):
+          continue
+
+        path_stem       = pathlib_remove_all_suffix(path)
+        obj_path_base   = obj_dir/par_dir.relative_to(src_dir)/path_stem
+        gcov_graph_file = obj_path_base.with_suffix('.gcno')
+        gcov_data_file  = obj_path_base.with_suffix('.gcda')
+        gcov_file       = pathlib_append_suffix(cwd_path/path_name, '.gcov')
+
+        # no gcov data for this file? bail
+        if not gcov_data_file.is_file() or not gcov_graph_file.is_file():
+          continue
+
+        # generate the source annotations
+        cmd_list = ['gcov']
+        if ignore_h:
+          cmd_list.append(ignore_h)
+        cmd_list.extend([
+          '--object-directory={}'.format(gcov_data_file.parent),
+          str(path)
+        ])
+        try:
+          subprocess_run(cmd_list, capture_output=True, universal_newlines=True, check=True)
+        except subprocess.CalledProcessError as cpe:
+          print('*** subprocess error ***')
+          print(cpe)
+          print('stdout:')
+          print(cpe.stdout)
+          print('stderr:')
+          print(cpe.stderr)
+
+        if not gcov_file.exists():
+          print('gcov output does not exist at expected path:', gcov_file)
+          print('skipping',path)
+          continue
+
+        src           = path.read_text().splitlines()
+        tested_output = []
+        code_output   = []
+        good_data     = True
+        for line in gcov_file.read_text().splitlines():
+          stripped = line.strip()
+          if stripped.startswith('-:'):
+            continue
+          try:
+            line_num = stripped.split(':')[1].strip()
+          except IndexError as ie:
+            print('Error processing', gcov_file, 'invalid gcov data, skipping data for file')
+            print('  Line:', line)
+            print('  Error message:')
+            print(str(ie))
+            good_data = False
+            break
+
+          assert line_num.isdigit(), 'Line number {} is not a number!'.format(line_num)
+
+          if not stripped.startswith('#####'):
+            tested_output.append(line_num)
+
+          line_no = int(line_num)
+          if line_no > 0 and 'SETERR' not in src[line_no-1]:
+            code_output.append(line_num)
+
+        if good_data:
+          test_base = os.path.join(
+            gcov_dir,'__'.join(('__'.join(par_dir.relative_to(petsc_dir).parts), path_name))
+          )
+          # create a 'tag' file, its existence indicates the file has been processed
+          pathlib_append_suffix(test_base, '.tested').write_text('\n'.join(tested_output))
+          # write the annotated version to file
+          pathlib_append_suffix(test_base, '.code').write_text('\n'.join(code_output))
+      for file in cwd_path.glob('*.gcov'):
+        os.remove(file)
 
     print("""Finshed running gcov on PETSc source code""")
     return
@@ -130,7 +217,6 @@ def print_htmltable(nsrc_files,nsrc_files_not_tested,ntotal_lines,ntotal_lines_n
           print("<tr><td><a href = %s>%s</a></td><td>%s</td><td>%s</td><td>%3.2f</td></tr>" % (l[1],l[0],l[2],l[3],l[4]), file=out_fid)
         print("""</table></p>""", file=out_fid)
 
-
 def make_htmlpage(gcov_dir,petsc_dir,petsc_arch,tarballs,isCI,destBranch):
     # Create index_gcov webpages using information processed from running gcov
 
@@ -158,6 +244,8 @@ def make_htmlpage(gcov_dir,petsc_dir,petsc_arch,tarballs,isCI,destBranch):
     print("""<center>%s</center>"""%(date_time), file=out_fid)
 
     print("""<center><font size = "4"><a href = #fortran>Statistics for Fortran stubs</a></font></center>""", file=out_fid)
+    # there are so many 'n_lines_not_tested' variables in this function...
+    grand_total_lines_not_tested = 0
     for lang in ['C','Fortran stubs']:
 
       if lang == 'Fortran stubs':print("""<a name = fortran></a>""", file=out_fid)
@@ -259,10 +347,12 @@ def make_htmlpage(gcov_dir,petsc_dir,petsc_arch,tarballs,isCI,destBranch):
       new_ntotal_lines_not_tested = 0
       new_output_list = []
       diff = str(subprocess.check_output('git diff --name-only '+destBranch+'...', shell=True).decode(encoding='UTF-8',errors='replace')).split('\n')
+      ftn_keywords = ('ftn-', 'f90-')
       if lang == 'C':
-         diff = [ i for i in diff if i.endswith('.c') and not i.find('ftn-') > -1 and not i.find('f90-') > -1]
+         clang_suffixes = ('.c','.cxx','.cpp','.h','.hxx','.hpp','.cu','.cuh','.inl','.inc','.C','.cc')
+         diff = [i for i in diff if i.endswith(clang_suffixes) and all(kw not in i for kw in ftn_keywords)]
       if lang == 'Fortran stubs':
-         diff = [i for i in diff if i.endswith('.c') and (i.find('ftn-') > -1 or i.find('f90-') > -1)]
+         diff = [i for i in diff if i.endswith('.c') and any(kw in i for kw in ftn_keywords)]
       for file in diff:
          t_nsrc_lines = 0
          t_nsrc_lines_not_tested = 0
