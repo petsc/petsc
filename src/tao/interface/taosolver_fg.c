@@ -234,9 +234,7 @@ PetscErrorCode TaoComputeObjectiveAndGradient(Tao tao, Vec X, PetscReal *f, Vec 
     if (tao->ops->computegradient == TaoDefaultComputeGradient) {
       PetscCall(TaoComputeObjective(tao, X, f));
       PetscCall(TaoDefaultComputeGradient(tao, X, G, NULL));
-    } else {
-      PetscCallBack("Tao callback objective/gradient", (*tao->ops->computeobjectiveandgradient)(tao, X, f, G, tao->user_objgradP));
-    }
+    } else PetscCallBack("Tao callback objective/gradient", (*tao->ops->computeobjectiveandgradient)(tao, X, f, G, tao->user_objgradP));
     PetscCall(PetscLogEventEnd(TAO_ObjGradEval, tao, X, G, NULL));
     tao->nfuncgrads++;
   } else if (tao->ops->computeobjective && tao->ops->computegradient) {
