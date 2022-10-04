@@ -244,8 +244,8 @@ def make_htmlpage(gcov_dir,petsc_dir,petsc_arch,tarballs,isCI,destBranch):
     print("""<center>%s</center>"""%(date_time), file=out_fid)
 
     print("""<center><font size = "4"><a href = #fortran>Statistics for Fortran stubs</a></font></center>""", file=out_fid)
-    # there are so many 'n_lines_not_tested' variables in this function...
-    grand_total_lines_not_tested = 0
+    # list of files that have been changed in the branch and introduce untested lines
+    global_new_src_not_tested = []
     for lang in ['C','Fortran stubs']:
 
       if lang == 'Fortran stubs':print("""<a name = fortran></a>""", file=out_fid)
@@ -346,7 +346,7 @@ def make_htmlpage(gcov_dir,petsc_dir,petsc_arch,tarballs,isCI,destBranch):
       new_ntotal_lines = 0
       new_ntotal_lines_not_tested = 0
       new_output_list = []
-      diff = str(subprocess.check_output('git diff --name-only '+destBranch+'...', shell=True).decode(encoding='UTF-8',errors='replace')).split('\n')
+      diff = str(subprocess.check_output('git diff --name-only '+destBranch+'...', shell=True).decode(encoding='UTF-8',errors='replace')).splitlines()
       ftn_keywords = ('ftn-', 'f90-')
       if lang == 'C':
          clang_suffixes = ('.c','.cxx','.cpp','.h','.hxx','.hpp','.cu','.cuh','.inl','.inc','.C','.cc')
@@ -419,6 +419,7 @@ def make_htmlpage(gcov_dir,petsc_dir,petsc_arch,tarballs,isCI,destBranch):
           branchname = os.getenv('CI_COMMIT_BRANCH')
       else:
           branchname = str(subprocess.check_output('command git rev-parse --abbrev-ref HEAD', shell=True).decode(encoding='UTF-8',errors='replace'))
+      global_new_src_not_tested.extend((fname, nlines) for fname,_,_,nlines,_ in new_output_list)
       print_htmltable(new_nsrc_files,new_nsrc_files_not_tested,new_ntotal_lines,new_ntotal_lines_not_tested,new_output_list,out_fid,'Changes in '+lang+' coverage data for branch '+branchname,'Lines marked with Untested are lines changed in the branch that are not tested')
       print_htmltable(nsrc_files,nsrc_files_not_tested,ntotal_lines,ntotal_lines_not_tested,output_list,out_fid,lang+' coverage data','Lines marked with Untested are any source code that has not been tested')
     print("""</body></html>""", file=out_fid)
@@ -430,7 +431,7 @@ def make_htmlpage(gcov_dir,petsc_dir,petsc_arch,tarballs,isCI,destBranch):
 
     print("End of gcov script")
     print("""See %s""" % os.path.join(petsc_dir,outfile_name))
-    return
+    return global_new_src_not_tested
 
 def main():
 
@@ -492,8 +493,14 @@ def main():
         else: destBranch = 'origin/main'
         print('destBranch:',destBranch)
         gcov_dir = tempfile.mkdtemp()
-        make_htmlpage(gcov_dir,petsc_dir,petsc_arch,tarballs,isCI,destBranch)
+        untested_files = make_htmlpage(gcov_dir,petsc_dir,petsc_arch,tarballs,isCI,destBranch)
         shutil.rmtree(gcov_dir)
+        if len(untested_files):
+          print('*'*30,'WARNING','*'*30)
+          print('Branch introduces new untested code!\n')
+          for fname, linenos in untested_files:
+            print('-',linenos,'lines in:',fname)
+          sys.exit(1) # so CI fails
     else:
         parser.print_usage()
 
