@@ -8,7 +8,6 @@ static PetscErrorCode DoFork(PetscDeviceContext parent, PetscInt n, PetscDeviceC
   PetscStreamType stype;
 
   PetscFunctionBegin;
-  PetscCall(AssertDeviceContextExists(parent));
   PetscCall(PetscDeviceContextGetDeviceType(parent, &dtype));
   PetscCall(PetscDeviceContextGetStreamType(parent, &stype));
   PetscCall(PetscDeviceContextFork(parent, n, sub));
@@ -32,7 +31,6 @@ static PetscErrorCode TestNestedPetscDeviceContextForkJoin(PetscDeviceContext pa
   PetscDeviceContext *subsub;
 
   PetscFunctionBegin;
-  PetscValidDeviceContext(parCtx, 1);
   PetscValidPointer(sub, 2);
   PetscCall(AssertPetscDeviceContextsValidAndEqual(parCtx, sub[0], "Current global context does not match expected global context"));
   /* create some children from an active child */
@@ -52,7 +50,6 @@ static PetscErrorCode TestPetscDeviceContextForkJoin(PetscDeviceContext dctx)
   const PetscInt      n = 10;
 
   PetscFunctionBegin;
-  PetscValidDeviceContext(dctx, 1);
   /* mostly for valgrind to catch errors */
   PetscCall(DoFork(dctx, n, &sub));
   PetscCall(PetscDeviceContextJoin(dctx, n, PETSC_DEVICE_CONTEXT_JOIN_DESTROY, &sub));
@@ -88,6 +85,8 @@ int main(int argc, char *argv[])
 
   PetscCall(PetscDeviceContextGetCurrentContext(&dctx));
   PetscCall(TestPetscDeviceContextForkJoin(dctx));
+
+  PetscCall(TestPetscDeviceContextForkJoin(NULL));
 
   PetscCall(PetscPrintf(comm, "EXIT_SUCCESS\n"));
   PetscCall(PetscFinalize());

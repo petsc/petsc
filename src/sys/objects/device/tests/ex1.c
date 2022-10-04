@@ -73,7 +73,7 @@ int main(int argc, char *argv[])
  testset:
    output_file: ./output/ExitSuccess.out
    nsize: {{1 2 5}}
-   args: -device_enable {{lazy eager}}
+   args: -device_enable {{none lazy eager}}
    test:
      requires: !device
      suffix: host_no_device

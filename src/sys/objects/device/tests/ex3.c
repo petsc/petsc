@@ -10,7 +10,6 @@ static PetscErrorCode TestPetscDeviceContextDuplicate(PetscDeviceContext dctx)
   PetscDeviceContext ddup;
 
   PetscFunctionBegin;
-  PetscValidDeviceContext(dctx, 1);
   /* get everything we want first before any duplication */
   PetscCall(PetscDeviceContextGetStreamType(dctx, &origStype));
   PetscCall(PetscDeviceContextGetDevice(dctx, &origDevice));
@@ -18,7 +17,7 @@ static PetscErrorCode TestPetscDeviceContextDuplicate(PetscDeviceContext dctx)
   /* duplicate */
   PetscCall(PetscDeviceContextDuplicate(dctx, &ddup));
   PetscValidDeviceContext(ddup, 2);
-  PetscCheckCompatibleDeviceContexts(dctx, 1, ddup, 2);
+  if (dctx) PetscCheckCompatibleDeviceContexts(dctx, 1, ddup, 2);
 
   {
     PetscDevice parDevice, dupDevice;
@@ -40,7 +39,7 @@ static PetscErrorCode TestPetscDeviceContextDuplicate(PetscDeviceContext dctx)
 
   PetscCall(PetscDeviceContextDestroy(&ddup));
   /* duplicate should not take the original down with it */
-  PetscValidDeviceContext(dctx, 1);
+  if (dctx) PetscValidDeviceContext(dctx, 1);
   PetscFunctionReturn(0);
 }
 
@@ -62,6 +61,8 @@ int main(int argc, char *argv[])
 
   PetscCall(PetscDeviceContextGetCurrentContext(&dctx));
   PetscCall(TestPetscDeviceContextDuplicate(dctx));
+
+  PetscCall(TestPetscDeviceContextDuplicate(NULL));
 
   PetscCall(PetscPrintf(comm, "EXIT_SUCCESS\n"));
   PetscCall(PetscFinalize());

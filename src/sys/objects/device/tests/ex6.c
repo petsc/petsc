@@ -21,12 +21,10 @@ static PetscErrorCode TestView(PetscDeviceContext dctx)
 
 int main(int argc, char *argv[])
 {
-  MPI_Comm           comm;
   PetscDeviceContext dctx, dup;
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
-  comm = PETSC_COMM_WORLD;
 
   PetscCall(PetscDeviceContextGetCurrentContext(&dctx));
   PetscCall(TestView(dctx));
@@ -35,7 +33,9 @@ int main(int argc, char *argv[])
   PetscCall(TestView(dup));
   PetscCall(PetscDeviceContextDestroy(&dup));
 
-  PetscCall(PetscPrintf(comm, "EXIT_SUCCESS\n"));
+  PetscCall(TestView(NULL));
+
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "EXIT_SUCCESS\n"));
   PetscCall(PetscFinalize());
   return 0;
 }
