@@ -172,19 +172,17 @@ void SilenceVariableIsNotNeededAndWillNotBeEmittedWarning_ThisFunctionShouldNeve
 template <DeviceType T>
 PETSC_CXX_COMPAT_DEFN(PetscErrorCode Device<T>::DeviceInternal::CUPMAwareMPI_(bool *awareness))
 {
-  constexpr int  bufSize           = 2;
-  constexpr int  hbuf[bufSize]     = {1, 0};
-  int           *dbuf              = nullptr;
-  constexpr auto bytes             = bufSize * sizeof(*dbuf);
-  const auto     cupmSignalHandler = [](int signal, void *ptr) -> PetscErrorCode {
+  constexpr int hbuf[]            = {1, 0};
+  int          *dbuf              = nullptr;
+  const auto    cupmSignalHandler = [](int signal, void *ptr) -> PetscErrorCode {
     if ((signal == SIGSEGV) && cupmMPIAwareJumpBufferSet) std::longjmp(cupmMPIAwareJumpBuffer, 1);
     return PetscSignalHandlerDefault(signal, ptr);
   };
 
   PetscFunctionBegin;
   *awareness = false;
-  PetscCallCUPM(cupmMalloc(reinterpret_cast<void **>(&dbuf), bytes));
-  PetscCallCUPM(cupmMemcpy(dbuf, hbuf, bytes, cupmMemcpyHostToDevice));
+  PetscCallCUPM(cupmMalloc(reinterpret_cast<void **>(&dbuf), sizeof(hbuf)));
+  PetscCallCUPM(cupmMemcpy(dbuf, hbuf, sizeof(hbuf), cupmMemcpyHostToDevice));
   PetscCallCUPM(cupmDeviceSynchronize());
   PetscCall(PetscPushSignalHandler(cupmSignalHandler, nullptr));
   cupmMPIAwareJumpBufferSet = true;
