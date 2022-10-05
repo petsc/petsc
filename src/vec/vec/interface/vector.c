@@ -1919,15 +1919,21 @@ PetscErrorCode VecSetLayout(Vec x, PetscLayout map)
 
 PetscErrorCode VecSetInf(Vec xin)
 {
-  PetscInt     i, n = xin->map->n;
-  PetscScalar *xx;
-  PetscScalar  zero = 0.0, one = 1.0, inf = one / zero;
+  // use of variables one and zero over just doing 1.0/0.0 is deliberate. MSVC complains that
+  // we are dividing by zero in the latter case (ostensibly because dividing by 0 is UB, but
+  // only for *integers* not floats).
+  const PetscScalar one = 1.0, zero = 0.0, inf = one / zero;
 
   PetscFunctionBegin;
-  if (xin->ops->set) PetscUseTypeMethod(xin, set, inf);
-  else {
+  if (xin->ops->set) {
+    PetscUseTypeMethod(xin, set, inf);
+  } else {
+    PetscInt     n;
+    PetscScalar *xx;
+
+    PetscCall(VecGetLocalSize(xin, &n));
     PetscCall(VecGetArrayWrite(xin, &xx));
-    for (i = 0; i < n; i++) xx[i] = inf;
+    for (PetscInt i = 0; i < n; ++i) xx[i] = inf;
     PetscCall(VecRestoreArrayWrite(xin, &xx));
   }
   PetscFunctionReturn(0);
