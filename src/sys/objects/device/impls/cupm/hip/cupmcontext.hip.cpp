@@ -7,7 +7,7 @@ PetscErrorCode PetscDeviceContextCreate_HIP(PetscDeviceContext dctx)
   static constexpr auto hip_context = CUPMContextHip();
 
   PetscFunctionBegin;
-  PetscCall(hip_context.initialize());
+  PetscCall(hip_context.initialize(dctx->device));
   dctx->data = new PetscDeviceContext_(HIP);
   PetscCall(PetscMemcpy(dctx->ops, &hip_context.ops, sizeof(hip_context.ops)));
   PetscFunctionReturn(0);

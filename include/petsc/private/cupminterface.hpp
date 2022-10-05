@@ -395,8 +395,10 @@ struct InterfaceImpl<DeviceType::CUDA> : InterfaceBase<DeviceType::CUDA> {
   template <typename FunctionT, typename... KernelArgsT>
   PETSC_NODISCARD static cudaError_t cupmLaunchKernel(FunctionT &&func, dim3 gridDim, dim3 blockDim, std::size_t sharedMem, cudaStream_t stream, KernelArgsT &&...kernelArgs) noexcept
   {
+    static_assert(!std::is_pointer<FunctionT>::value, "kernel function must not be passed by pointer");
+
     void *args[] = {(void *)&kernelArgs...};
-    return cudaLaunchKernel((void *)func, std::move(gridDim), std::move(blockDim), args, sharedMem, std::move(stream));
+    return cudaLaunchKernel<util::remove_reference_t<FunctionT>>(std::addressof(func), std::move(gridDim), std::move(blockDim), args, sharedMem, std::move(stream));
   }
 };
     #undef PETSC_CUPM_PREFIX_L
@@ -641,23 +643,22 @@ struct Interface : InterfaceImpl<T> {
   using cupmReal_t   = util::conditional_t<PetscDefined(USE_REAL_SINGLE), float, double>;
   using cupmScalar_t = util::conditional_t<PetscDefined(USE_COMPLEX), cupmComplex_t, cupmReal_t>;
 
-  // REVIEW ME: this needs to be cleaned up, it is unreadable
-  PETSC_NODISCARD static constexpr cupmScalar_t makeCupmScalar(PetscScalar s) noexcept
+  PETSC_NODISCARD static constexpr cupmScalar_t cupmScalarCast(PetscScalar s) noexcept
   {
   #if PetscDefined(USE_COMPLEX)
     return cupmComplex_t{PetscRealPart(s), PetscImaginaryPart(s)};
   #else
-    return static_cast<cupmReal_t>(s);
+    return static_cast<cupmScalar_t>(s);
   #endif
   }
 
-  PETSC_NODISCARD static constexpr const cupmScalar_t *cupmScalarCast(const PetscScalar *s) noexcept { return reinterpret_cast<const cupmScalar_t *>(s); }
+  PETSC_NODISCARD static constexpr const cupmScalar_t *cupmScalarPtrCast(const PetscScalar *s) noexcept { return reinterpret_cast<const cupmScalar_t *>(s); }
 
-  PETSC_NODISCARD static constexpr cupmScalar_t *cupmScalarCast(PetscScalar *s) noexcept { return reinterpret_cast<cupmScalar_t *>(s); }
+  PETSC_NODISCARD static constexpr cupmScalar_t *cupmScalarPtrCast(PetscScalar *s) noexcept { return reinterpret_cast<cupmScalar_t *>(s); }
 
-  PETSC_NODISCARD static constexpr const cupmReal_t *cupmRealCast(const PetscReal *s) noexcept { return reinterpret_cast<const cupmReal_t *>(s); }
+  PETSC_NODISCARD static constexpr const cupmReal_t *cupmRealPtrCast(const PetscReal *s) noexcept { return reinterpret_cast<const cupmReal_t *>(s); }
 
-  PETSC_NODISCARD static constexpr cupmReal_t *cupmRealCast(PetscReal *s) noexcept { return reinterpret_cast<cupmReal_t *>(s); }
+  PETSC_NODISCARD static constexpr cupmReal_t *cupmRealPtrCast(PetscReal *s) noexcept { return reinterpret_cast<cupmReal_t *>(s); }
 
   #if !defined(PETSC_PKG_CUDA_VERSION_GE)
     #define PETSC_PKG_CUDA_VERSION_GE(...) 0
@@ -725,10 +726,19 @@ struct Interface : InterfaceImpl<T> {
 
     PetscFunctionBegin;
     PetscValidPointer(ptr, 1);
-    if (PetscLikely(n)) {
-      PetscCallCUPM(cupmMallocAsync(reinterpret_cast<void **>(ptr), n * sizeof(M), stream));
-    } else {
-      *ptr = nullptr;
+    *ptr = nullptr;
+    if (n) {
+      const auto bytes = n * sizeof(M);
+      // https://developer.nvidia.com/blog/using-cuda-stream-ordered-memory-allocator-part-2/
+      //
+      // TLD;DR: cudaMallocAsync() does not work with NVIDIA GPUDirect which OPENMPI uses to
+      // underpin its cuda-aware MPI implementation, so we cannot just async allocate
+      // blindly...
+      if (stream) {
+        PetscCallCUPM(cupmMallocAsync(reinterpret_cast<void **>(ptr), bytes, stream));
+      } else {
+        PetscCallCUPM(cupmMalloc(reinterpret_cast<void **>(ptr), bytes));
+      }
     }
     PetscFunctionReturn(0);
   }
@@ -749,7 +759,7 @@ struct Interface : InterfaceImpl<T> {
     PetscFunctionBegin;
     PetscValidPointer(ptr, 1);
     *ptr = nullptr;
-    PetscCall(cupmMallocHost(reinterpret_cast<void **>(ptr), n * sizeof(M), flags));
+    if (n) PetscCall(cupmMallocHost(reinterpret_cast<void **>(ptr), n * sizeof(M), flags));
     PetscFunctionReturn(0);
   }
 
@@ -826,9 +836,10 @@ struct Interface : InterfaceImpl<T> {
 
   // these we can transparently wrap, no need to namespace it to Petsc
   template <typename M>
-  PETSC_NODISCARD static cupmError_t cupmFreeAsync(M &&ptr, cupmStream_t stream = nullptr) noexcept
+  PETSC_NODISCARD static cupmError_t cupmFreeAsync(M &ptr, cupmStream_t stream = nullptr) noexcept
   {
     static_assert(std::is_pointer<util::decay_t<M>>::value, "");
+    static_assert(!std::is_const<M>::value, "");
 
     if (ptr) {
       auto cerr = interface_type::cupmFreeAsync(std::forward<M>(ptr), stream);
@@ -839,18 +850,18 @@ struct Interface : InterfaceImpl<T> {
     return cupmSuccess;
   }
 
-  PETSC_NODISCARD static cupmError_t cupmFreeAsync(std::nullptr_t ptr, cupmStream_t stream = nullptr) noexcept { return interface_type::cupmFreeAsync(ptr, stream); }
+  PETSC_NODISCARD static cupmError_t cupmFreeAsync(std::nullptr_t ptr, cupmStream_t stream = nullptr) { return interface_type::cupmFreeAsync(ptr, stream); }
 
   template <typename M>
-  PETSC_NODISCARD static cupmError_t cupmFree(M &&ptr) noexcept
+  PETSC_NODISCARD static cupmError_t cupmFree(M &ptr) noexcept
   {
-    return cupmFreeAsync(std::forward<M>(ptr));
+    return cupmFreeAsync(ptr);
   }
 
-  PETSC_NODISCARD static cupmError_t cupmFree(std::nullptr_t ptr) noexcept { return cupmFreeAsync(ptr); }
+  PETSC_NODISCARD static cupmError_t cupmFree(std::nullptr_t ptr) { return cupmFreeAsync(ptr); }
 
   template <typename M>
-  PETSC_NODISCARD static cupmError_t cupmFreeHost(M &&ptr) noexcept
+  PETSC_NODISCARD static cupmError_t cupmFreeHost(M &ptr) noexcept
   {
     static_assert(std::is_pointer<util::decay_t<M>>::value, "");
     const auto cerr = interface_type::cupmFreeHost(std::forward<M>(ptr));
@@ -858,7 +869,7 @@ struct Interface : InterfaceImpl<T> {
     return cerr;
   }
 
-  PETSC_NODISCARD static cupmError_t cupmFreeHost(std::nullptr_t ptr) noexcept { return interface_type::cupmFreeHost(ptr); }
+  PETSC_NODISCARD static cupmError_t cupmFreeHost(std::nullptr_t ptr) { return interface_type::cupmFreeHost(ptr); }
 
   // specific wrapper for device launch function, as the real function is a C routine and
   // doesn't have variable arguments. The actual mechanics of this are a bit complicated but
@@ -925,17 +936,19 @@ private:
       std::forward<F>(func),
       std::move(gridDim), std::move(blockDim), std::move(sharedMem), std::move(stream),
       // can't static_cast() here since the function argument type may be cv-qualified, in
-      // which case we would need to const_cast(). But you can only const_cast()
-      // indirect types (pointers, references) and I don't want to add a
-      // static_cast_that_becomes_a_const_cast() SFINAE monster to this template mess. C-style
-      // casts luckily work here since it tries the following and uses the first one that
-      // succeeds:
+      // which case we would need to const_cast(). But you can only const_cast() indirect types
+      // (pointers, references). So we need a SFINAE monster that is a static_cast() if
+      // possible, and a const_cast() if not. We could just use a C-style cast which *would*
+      // work here since it tries the following and uses the first one that succeeds:
+      //
       // 1. const_cast()
       // 2. static_cast()
       // 3. static_cast() then const_cast()
       // 4. reinterpret_cast()...
-      // hopefully we never get to reinterpret_cast() land
-      //(typename util::func_traits<F>::template arg<Idx>::type)(kernelArgs)...
+      //
+      // the issue however is the final reinterpret_cast(). We absolutely cannot get there
+      // because doing so would silently hide a ton of bugs, for example casting a PetscScalar
+      // * to double * in complex builds, a PetscInt * to int * in 64idx builds, etc.
       cast_to<typename util::func_traits<F>::template arg<Idx>::type>(std::forward<Args>(kernelArgs))...
     );
     // clang-format on
@@ -947,9 +960,9 @@ private:
     using base_name = ::Petsc::device::cupm::impl::Interface<T>; \
     using typename base_name::cupmReal_t; \
     using typename base_name::cupmScalar_t; \
-    using base_name::makeCupmScalar; \
     using base_name::cupmScalarCast; \
-    using base_name::cupmRealCast; \
+    using base_name::cupmScalarPtrCast; \
+    using base_name::cupmRealPtrCast; \
     using base_name::PetscCUPMGetMemType; \
     using base_name::PetscCUPMMemset; \
     using base_name::PetscCUPMMemsetAsync; \

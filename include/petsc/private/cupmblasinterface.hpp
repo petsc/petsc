@@ -5,6 +5,8 @@
   #include <petsc/private/cupminterface.hpp>
   #include <petsc/private/petscadvancedmacros.h>
 
+  #include <limits> // std::numeric_limits
+
 namespace Petsc
 {
 
@@ -28,6 +30,20 @@ namespace impl
                   cupmBlasName(), static_cast<PetscErrorCode>(cberr_p_), cupmBlasGetErrorName(cberr_p_)); \
         } \
         SETERRQ(PETSC_COMM_SELF, PETSC_ERR_GPU, "%s error %d (%s)", cupmBlasName(), static_cast<PetscErrorCode>(cberr_p_), cupmBlasGetErrorName(cberr_p_)); \
+      } \
+    } while (0)
+
+  #define PetscCallCUPMBLASAbort(comm, ...) \
+    do { \
+      const cupmBlasError_t cberr_abort_p_ = __VA_ARGS__; \
+      if (PetscUnlikely(cberr_abort_p_ != CUPMBLAS_STATUS_SUCCESS)) { \
+        if (((cberr_abort_p_ == CUPMBLAS_STATUS_NOT_INITIALIZED) || (cberr_abort_p_ == CUPMBLAS_STATUS_ALLOC_FAILED)) && PetscDeviceInitialized(PETSC_DEVICE_CUPM())) { \
+          SETERRABORT(comm, PETSC_ERR_GPU_RESOURCE, \
+                      "%s error %d (%s). Reports not initialized or alloc failed; " \
+                      "this indicates the GPU may have run out resources", \
+                      cupmBlasName(), static_cast<PetscErrorCode>(cberr_abort_p_), cupmBlasGetErrorName(cberr_abort_p_)); \
+        } \
+        SETERRABORT(comm, PETSC_ERR_GPU, "%s error %d (%s)", cupmBlasName(), static_cast<PetscErrorCode>(cberr_abort_p_), cupmBlasGetErrorName(cberr_abort_p_)); \
       } \
     } while (0)
 
@@ -478,12 +494,29 @@ struct BlasInterface : BlasInterfaceImpl<T> {
     PetscCallCUPMBLAS(cupmBlasSetPointerMode(handle, PetscMemTypeDevice(mtype) ? CUPMBLAS_POINTER_MODE_DEVICE : CUPMBLAS_POINTER_MODE_HOST));
     PetscFunctionReturn(0);
   }
+
+  PETSC_NODISCARD static PetscErrorCode checkCupmBlasIntCast(PetscInt x) noexcept
+  {
+    PetscFunctionBegin;
+    PetscCheck((std::is_same<PetscInt, cupmBlasInt_t>::value) || (x <= std::numeric_limits<cupmBlasInt_t>::max()), PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "%" PetscInt_FMT " is too big for %s, which may be restricted to 32 bit integers", x, cupmBlasName());
+    PetscCheck(x >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Passing negative integer to %s routine: %" PetscInt_FMT, cupmBlasName(), x);
+    PetscFunctionReturn(0);
+  }
+
+  PETSC_NODISCARD static cupmBlasInt_t cupmBlasIntCast(PetscInt x) noexcept
+  {
+    PetscFunctionBegin;
+    PetscCallAbort(PETSC_COMM_SELF, checkCupmBlasIntCast(x));
+    PetscFunctionReturn(static_cast<cupmBlasInt_t>(x));
+  }
 };
 
   #define PETSC_CUPMBLAS_INHERIT_INTERFACE_TYPEDEFS_USING(base_name, T) \
     PETSC_CUPMBLAS_IMPL_CLASS_HEADER(PetscConcat(base_name, _impl), T); \
     using base_name = ::Petsc::device::cupm::impl::BlasInterface<T>; \
-    using base_name::PetscCUPMBlasSetPointerModeFromPointer
+    using base_name::PetscCUPMBlasSetPointerModeFromPointer; \
+    using base_name::checkCupmBlasIntCast; \
+    using base_name::cupmBlasIntCast
 
   #if PetscDefined(HAVE_CUDA)
 extern template struct BlasInterface<DeviceType::CUDA>;

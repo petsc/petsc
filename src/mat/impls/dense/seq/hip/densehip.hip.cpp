@@ -4,8 +4,9 @@
      Copyright (c) 2022 Advanced Micro Devices, Inc. All rights reserved.
 */
 #include <petscpkg_version.h>
-#include <../src/mat/impls/dense/seq/dense.h> /*I "petscmat.h" I*/
-#include <petsc/private/hipvecimpl.h>         /* hipblas definitions are here */
+#include <../src/mat/impls/dense/seq/dense.h>           /*I "petscmat.h" I*/
+#include <../src/vec/vec/impls/seq/cupm/vecseqcupm.hpp> /* for VecSeq_CUPM */
+#include <petsc/private/petsclegacycupmblas.h>          /* hipblas definitions are here */
 #if PETSC_PKG_HIP_VERSION_GE(5, 2, 0)
   #include <hipsolver/hipsolver.h>
 #else
@@ -19,75 +20,7 @@
 #include <thrust/transform.h>
 #include <thrust/device_vector.h>
 
-#if defined(PETSC_USE_COMPLEX)
-  #if defined(PETSC_USE_REAL_SINGLE)
-    #define hipsolverDnXpotrf(a, b, c, d, e, f, g, h)                        hipsolverCpotrf((a), (b), (c), (hipComplex *)(d), (e), (hipComplex *)(f), (g), (h))
-    #define hipsolverDnXpotrf_bufferSize(a, b, c, d, e, f)                   hipsolverCpotrf_bufferSize((a), (b), (c), (hipComplex *)(d), (e), (f))
-    #define hipsolverDnXpotrs(a, b, c, d, e, f, g, h, i, j, k)               hipsolverCpotrs((a), (b), (c), (d), (hipComplex *)(e), (f), (hipComplex *)(g), (h), (hipComplex *)(i), (j), (k))
-    #define hipsolverDnXpotri(a, b, c, d, e, f, g, h)                        hipsolverCpotri((a), (b), (c), (hipComplex *)(d), (e), (hipComplex *)(f), (g), (h))
-    #define hipsolverDnXpotri_bufferSize(a, b, c, d, e, f)                   hipsolverCpotri_bufferSize((a), (b), (c), (hipComplex *)(d), (e), (f))
-    #define hipsolverDnXsytrf(a, b, c, d, e, f, g, h, i)                     hipsolverCsytrf((a), (b), (c), (hipComplex *)(d), (e), (f), (hipComplex *)(g), (h), (i))
-    #define hipsolverDnXsytrf_bufferSize(a, b, c, d, e)                      hipsolverCsytrf_bufferSize((a), (b), (hipComplex *)(c), (d), (e))
-    #define hipsolverDnXgetrf(a, b, c, d, e, f, g, h, i)                     hipsolverCgetrf((a), (b), (c), (hipComplex *)(d), (e), (hipComplex *)(f), (g), (h), (i))
-    #define hipsolverDnXgetrf_bufferSize(a, b, c, d, e, f)                   hipsolverCgetrf_bufferSize((a), (b), (c), (hipComplex *)(d), (e), (f))
-    #define hipsolverDnXgetrs(a, b, c, d, e, f, g, h, i, j, k, l)            hipsolverCgetrs((a), (b), (c), (d), (hipComplex *)(e), (f), (g), (hipComplex *)(h), (i), (hipComplex *)(j), (k), (l))
-    #define hipsolverDnXgeqrf_bufferSize(a, b, c, d, e, f)                   hipsolverCgeqrf_bufferSize((a), (b), (c), (hipComplex *)(d), (e), (f))
-    #define hipsolverDnXgeqrf(a, b, c, d, e, f, g, h, i)                     hipsolverCgeqrf((a), (b), (c), (hipComplex *)(d), (e), (hipComplex *)(f), (hipComplex *)(g), (h), (i))
-    #define hipsolverDnXormqr_bufferSize(a, b, c, d, e, f, g, h, i, j, k, l) hipsolverCunmqr_bufferSize((a), (b), (c), (d), (e), (f), (hipComplex *)(g), (h), (hipComplex *)(i), (hipComplex *)(j), (k), (l))
-    #define hipsolverDnXormqr(a, b, c, d, e, f, g, h, i, j, k, l, m, n)      hipsolverCunmqr((a), (b), (c), (d), (e), (f), (hipComplex *)(g), (h), (hipComplex *)(i), (hipComplex *)(j), (k), (hipComplex *)(l), (m), (n))
-    #define hipblasXtrsm(a, b, c, d, e, f, g, h, i, j, k, l)                 hipblasCtrsm((a), (b), (c), (d), (e), (f), (g), (hipComplex *)(h), (hipComplex *)(i), (j), (hipComplex *)(k), (l))
-  #else /* complex double */
-    #define hipsolverDnXpotrf(a, b, c, d, e, f, g, h)                        hipsolverZpotrf((a), (b), (c), (hipDoubleComplex *)(d), (e), (hipDoubleComplex *)(f), (g), (h))
-    #define hipsolverDnXpotrf_bufferSize(a, b, c, d, e, f)                   hipsolverZpotrf_bufferSize((a), (b), (c), (hipDoubleComplex *)(d), (e), (f))
-    #define hipsolverDnXpotrs(a, b, c, d, e, f, g, h, i, j, k)               hipsolverZpotrs((a), (b), (c), (d), (hipDoubleComplex *)(e), (f), (hipDoubleComplex *)(g), (h), (hipDoubleComplex *)(i), (j), (k))
-    #define hipsolverDnXpotri(a, b, c, d, e, f, g, h)                        hipsolverZpotri((a), (b), (c), (hipDoubleComplex *)(d), (e), (hipDoubleComplex *)(f), (g), (h))
-    #define hipsolverDnXpotri_bufferSize(a, b, c, d, e, f)                   hipsolverZpotri_bufferSize((a), (b), (c), (hipDoubleComplex *)(d), (e), (f))
-    #define hipsolverDnXsytrf(a, b, c, d, e, f, g, h, i)                     hipsolverZsytrf((a), (b), (c), (hipDoubleComplex *)(d), (e), (f), (hipDoubleComplex *)(g), (h), (i))
-    #define hipsolverDnXsytrf_bufferSize(a, b, c, d, e)                      hipsolverZsytrf_bufferSize((a), (b), (hipDoubleComplex *)(c), (d), (e))
-    #define hipsolverDnXgetrf(a, b, c, d, e, f, g, h, i)                     hipsolverZgetrf((a), (b), (c), (hipDoubleComplex *)(d), (e), (hipDoubleComplex *)(f), (g), (h), (i))
-    #define hipsolverDnXgetrf_bufferSize(a, b, c, d, e, f)                   hipsolverZgetrf_bufferSize((a), (b), (c), (hipDoubleComplex *)(d), (e), (f))
-    #define hipsolverDnXgetrs(a, b, c, d, e, f, g, h, i, j, k, l)            hipsolverZgetrs((a), (b), (c), (d), (hipDoubleComplex *)(e), (f), (g), (hipDoubleComplex *)(h), (i), (hipDoubleComplex *)(j), (k), (l))
-    #define hipsolverDnXgeqrf_bufferSize(a, b, c, d, e, f)                   hipsolverZgeqrf_bufferSize((a), (b), (c), (hipDoubleComplex *)(d), (e), (f))
-    #define hipsolverDnXgeqrf(a, b, c, d, e, f, g, h, i)                     hipsolverZgeqrf((a), (b), (c), (hipDoubleComplex *)(d), (e), (hipDoubleComplex *)(f), (hipDoubleComplex *)(g), (h), (i))
-    #define hipsolverDnXormqr_bufferSize(a, b, c, d, e, f, g, h, i, j, k, l) hipsolverZunmqr_bufferSize((a), (b), (c), (d), (e), (f), (hipDoubleComplex *)(g), (h), (hipDoubleComplex *)(i), (hipDoubleComplex *)(j), (k), (l))
-    #define hipsolverDnXormqr(a, b, c, d, e, f, g, h, i, j, k, l, m, n)      hipsolverZunmqr((a), (b), (c), (d), (e), (f), (hipDoubleComplex *)(g), (h), (hipDoubleComplex *)(i), (hipDoubleComplex *)(j), (k), (hipDoubleComplex *)(l), (m), (n))
-    #define hipblasXtrsm(a, b, c, d, e, f, g, h, i, j, k, l)                 hipblasZtrsm((a), (b), (c), (d), (e), (f), (g), (hipDoubleComplex *)(h), (hipDoubleComplex *)(i), (j), (hipDoubleComplex *)(k), (l))
-  #endif
-#else /* real single */
-  #if defined(PETSC_USE_REAL_SINGLE)
-    #define hipsolverDnXpotrf(a, b, c, d, e, f, g, h)          hipsolverSpotrf((a), (b), (c), (float *)(d), (e), (float *)(f), (g), (h))
-    #define hipsolverDnXpotrf_bufferSize(a, b, c, d, e, f)     hipsolverSpotrf_bufferSize((a), (b), (c), (float *)(d), (e), (f))
-    #define hipsolverDnXpotrs(a, b, c, d, e, f, g, h, i, j, k) hipsolverSpotrs((a), (b), (c), (d), (float *)(e), (f), (float *)(g), (h), (float *)(i), (j), (k))
-    #define hipsolverDnXpotri(a, b, c, d, e, f, g, h)          hipsolverSpotri((a), (b), (c), (float *)(d), (e), (float *)(f), (g), (h))
-    #define hipsolverDnXpotri_bufferSize(a, b, c, d, e, f)     hipsolverSpotri_bufferSize((a), (b), (c), (float *)(d), (e), (f))
-    #define hipsolverDnXsytrf(a, b, c, d, e, f, g, h, i)       hipsolverSsytrf((a), (b), (c), (float *)(d), (e), (f), (float *)(g), (h), (i))
-    #define hipsolverDnXsytrf_bufferSize(a, b, c, d, e)        hipsolverSsytrf_bufferSize((a), (b), (float *)(c), (d), (e))
-    #define hipsolverDnXgetrf(a, b, c, d, e, f, g, h, i)       hipsolverSgetrf((a), (b), (c), (float *)(d), (e), (float *)(f), (g), (h), (i))
-    #define hipsolverDnXgetrf_bufferSize(a, b, c, d, e, f)     hipsolverSgetrf_bufferSize((a), (b), (c), (float *)(d), (e), (f))
-    #define hipsolverDnXgetrs(a, b, c, d, e, f, g, h, i, j, k, l)            hipsolverSgetrs((a),(b),(c),(d),(float*)(e),(f),(g),(float*)(h),(i),(float*)(j),(k),(l)))
-    #define hipsolverDnXgeqrf_bufferSize(a, b, c, d, e, f)                   hipsolverSgeqrf_bufferSize((a), (b), (c), (float *)(d), (e), (f))
-    #define hipsolverDnXgeqrf(a, b, c, d, e, f, g, h, i)                     hipsolverSgeqrf((a), (b), (c), (float *)(d), (e), (float *)(f), (float *)(g), (h), (i))
-    #define hipsolverDnXormqr_bufferSize(a, b, c, d, e, f, g, h, i, j, k, l) hipsolverSormqr_bufferSize((a), (b), (c), (d), (e), (f), (float *)(g), (h), (float *)(i), (float *)(j), (k), (l))
-    #define hipsolverDnXormqr(a, b, c, d, e, f, g, h, i, j, k, l, m, n)      hipsolverSormqr((a), (b), (c), (d), (e), (f), (float *)(g), (h), (float *)(i), (float *)(j), (k), (float *)(l), (m), (n))
-    #define hipblasXtrsm(a, b, c, d, e, f, g, h, i, j, k, l)                 hipblasStrsm((a), (b), (c), (d), (e), (f), (g), (float *)(h), (float *)(i), (j), (float *)(k), (l))
-  #else /* real double */
-    #define hipsolverDnXpotrf(a, b, c, d, e, f, g, h)                        hipsolverDpotrf((a), (b), (c), (double *)(d), (e), (double *)(f), (g), (h))
-    #define hipsolverDnXpotrf_bufferSize(a, b, c, d, e, f)                   hipsolverDpotrf_bufferSize((a), (b), (c), (double *)(d), (e), (f))
-    #define hipsolverDnXpotrs(a, b, c, d, e, f, g, h, i, j, k)               hipsolverDpotrs((a), (b), (c), (d), (double *)(e), (f), (double *)(g), (h), (double *)(i), (j), (k))
-    #define hipsolverDnXpotri(a, b, c, d, e, f, g, h)                        hipsolverDpotri((a), (b), (c), (double *)(d), (e), (double *)(f), (g), (h))
-    #define hipsolverDnXpotri_bufferSize(a, b, c, d, e, f)                   hipsolverDpotri_bufferSize((a), (b), (c), (double *)(d), (e), (f))
-    #define hipsolverDnXsytrf(a, b, c, d, e, f, g, h, i)                     hipsolverDsytrf((a), (b), (c), (double *)(d), (e), (f), (double *)(g), (h), (i))
-    #define hipsolverDnXsytrf_bufferSize(a, b, c, d, e)                      hipsolverDsytrf_bufferSize((a), (b), (double *)(c), (d), (e))
-    #define hipsolverDnXgetrf(a, b, c, d, e, f, g, h, i)                     hipsolverDgetrf((a), (b), (c), (double *)(d), (e), (double *)(f), (g), (h), (i))
-    #define hipsolverDnXgetrf_bufferSize(a, b, c, d, e, f)                   hipsolverDgetrf_bufferSize((a), (b), (c), (double *)(d), (e), (f))
-    #define hipsolverDnXgetrs(a, b, c, d, e, f, g, h, i, j, k, l)            hipsolverDgetrs((a), (b), (c), (d), (double *)(e), (f), (g), (double *)(h), (i), (double *)(j), (k), (l))
-    #define hipsolverDnXgeqrf_bufferSize(a, b, c, d, e, f)                   hipsolverDgeqrf_bufferSize((a), (b), (c), (double *)(d), (e), (f))
-    #define hipsolverDnXgeqrf(a, b, c, d, e, f, g, h, i)                     hipsolverDgeqrf((a), (b), (c), (double *)(d), (e), (double *)(f), (double *)(g), (h), (i))
-    #define hipsolverDnXormqr_bufferSize(a, b, c, d, e, f, g, h, i, j, k, l) hipsolverDormqr_bufferSize((a), (b), (c), (d), (e), (f), (double *)(g), (h), (double *)(i), (double *)(j), (k), (l))
-    #define hipsolverDnXormqr(a, b, c, d, e, f, g, h, i, j, k, l, m, n)      hipsolverDormqr((a), (b), (c), (d), (e), (f), (double *)(g), (h), (double *)(i), (double *)(j), (k), (double *)(l), (m), (n))
-    #define hipblasXtrsm(a, b, c, d, e, f, g, h, i, j, k, l)                 hipblasDtrsm((a), (b), (c), (d), (e), (f), (g), (double *)(h), (double *)(i), (j), (double *)(k), (l))
-  #endif
-#endif
+using VecSeq_HIP = Petsc::vec::cupm::impl::VecSeq_CUPM<Petsc::device::cupm::DeviceType::HIP>;
 
 typedef struct {
   PetscScalar *d_v; /* pointer to the matrix on the GPU */
@@ -931,9 +864,9 @@ static PetscErrorCode MatMultAdd_SeqDenseHIP_Private(Mat A, Vec xx, Vec yy, Vec 
   hipblasHandle_t    hipblasv2handle;
 
   PetscFunctionBegin;
-  if (yy && yy != zz) PetscCall(VecCopy_SeqHIP(yy, zz)); /* mult add */
+  if (yy && yy != zz) PetscCall(VecSeq_HIP::copy(yy, zz)); /* mult add */
   if (!A->rmap->n || !A->cmap->n) {
-    if (!yy) PetscCall(VecSet_SeqHIP(zz, 0.0)); /* mult only */
+    if (!yy) PetscCall(VecSeq_HIP::set(zz, 0.0)); /* mult only */
     PetscFunctionReturn(0);
   }
   PetscCall(PetscInfo(A, "Matrix-vector product %d x %d on backend\n", A->rmap->n, A->cmap->n));

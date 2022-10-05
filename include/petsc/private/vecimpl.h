@@ -218,25 +218,13 @@ PETSC_EXTERN PetscLogEvent VEC_ViennaCLCopyToGPU;
 PETSC_EXTERN PetscLogEvent VEC_ViennaCLCopyFromGPU;
 PETSC_EXTERN PetscLogEvent VEC_CUDACopyToGPU;
 PETSC_EXTERN PetscLogEvent VEC_CUDACopyFromGPU;
-PETSC_EXTERN PetscLogEvent VEC_CUDACopyToGPUSome;
-PETSC_EXTERN PetscLogEvent VEC_CUDACopyFromGPUSome;
 PETSC_EXTERN PetscLogEvent VEC_HIPCopyToGPU;
 PETSC_EXTERN PetscLogEvent VEC_HIPCopyFromGPU;
-PETSC_EXTERN PetscLogEvent VEC_HIPCopyToGPUSome;
-PETSC_EXTERN PetscLogEvent VEC_HIPCopyFromGPUSome;
 
 PETSC_EXTERN PetscErrorCode VecView_Seq(Vec, PetscViewer);
 #if defined(PETSC_HAVE_VIENNACL)
 PETSC_EXTERN PetscErrorCode VecViennaCLAllocateCheckHost(Vec v);
 PETSC_EXTERN PetscErrorCode VecViennaCLCopyFromGPU(Vec v);
-#endif
-#if defined(PETSC_HAVE_CUDA)
-PETSC_EXTERN PetscErrorCode VecCUDAAllocateCheckHost(Vec v);
-PETSC_EXTERN PetscErrorCode VecCUDACopyFromGPU(Vec v);
-#endif
-#if defined(PETSC_HAVE_HIP)
-PETSC_EXTERN PetscErrorCode VecHIPAllocateCheckHost(Vec v);
-PETSC_EXTERN PetscErrorCode VecHIPCopyFromGPU(Vec v);
 #endif
 
 /*
@@ -373,6 +361,20 @@ PETSC_EXTERN PetscMPIInt    Petsc_Reduction_keyval;
 PETSC_INTERN PetscInt       VecGetSubVectorSavedStateId;
 PETSC_INTERN PetscErrorCode VecGetSubVectorContiguityAndBS_Private(Vec, IS, PetscBool *, PetscInt *, PetscInt *);
 PETSC_INTERN PetscErrorCode VecGetSubVectorThroughVecScatter_Private(Vec, IS, PetscInt, Vec *);
+
+#if PetscDefined(HAVE_CUDA)
+PETSC_INTERN PetscErrorCode VecCreate_CUDA(Vec);
+PETSC_INTERN PetscErrorCode VecCreate_SeqCUDA(Vec);
+PETSC_INTERN PetscErrorCode VecCreate_MPICUDA(Vec);
+PETSC_INTERN PetscErrorCode VecCUDAGetArrays_Private(Vec, const PetscScalar **, const PetscScalar **, PetscOffloadMask *);
+#endif
+
+#if PetscDefined(HAVE_HIP)
+PETSC_INTERN PetscErrorCode VecCreate_HIP(Vec);
+PETSC_INTERN PetscErrorCode VecCreate_SeqHIP(Vec);
+PETSC_INTERN PetscErrorCode VecCreate_MPIHIP(Vec);
+PETSC_INTERN PetscErrorCode VecHIPGetArrays_Private(Vec, const PetscScalar **, const PetscScalar **, PetscOffloadMask *);
+#endif
 
 #if defined(PETSC_HAVE_KOKKOS)
 PETSC_INTERN PetscErrorCode VecCreateSeqKokkosWithArrays_Private(MPI_Comm, PetscInt, PetscInt, const PetscScalar *, const PetscScalar *, Vec *);

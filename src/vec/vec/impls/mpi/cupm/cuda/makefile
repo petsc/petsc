@@ -1,12 +1,10 @@
--include ../../../../../../petscdir.mk
+-include ../../../../../../../petscdir.mk
 #requirespackage 'PETSC_HAVE_CUDA'
 
-SOURCECU = mpicuda.cu
-SOURCEF  =
-SOURCEH  =
+SOURCECU = vecmpicupm.cu
 LIBBASE  = libpetscvec
 MANSEC   = Vec
-LOCDIR   = src/vec/vec/impls/mpi/mpicuda/
+LOCDIR   = src/vec/vec/impls/mpi/cupm/cuda/
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules

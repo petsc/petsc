@@ -35,7 +35,6 @@ PETSC_INTERN PetscErrorCode VecReplaceArray_Seq(Vec, const PetscScalar *);
 PETSC_INTERN PetscErrorCode VecDot_Seq(Vec, Vec, PetscScalar *);
 PETSC_INTERN PetscErrorCode VecTDot_Seq(Vec, Vec, PetscScalar *);
 PETSC_INTERN PetscErrorCode VecScale_Seq(Vec, PetscScalar);
-PETSC_INTERN PetscErrorCode VecAXPY_Seq(Vec, PetscScalar, Vec);
 PETSC_INTERN PetscErrorCode VecAXPBY_Seq(Vec, PetscScalar, PetscScalar, Vec);
 PETSC_INTERN PetscErrorCode VecMax_Seq(Vec, PetscInt *, PetscReal *);
 PETSC_INTERN PetscErrorCode VecNorm_Seq(Vec, NormType, PetscReal *);
@@ -55,6 +54,8 @@ PETSC_INTERN PetscErrorCode VecPointwiseMax_Seq(Vec, Vec, Vec);
 PETSC_INTERN PetscErrorCode VecPointwiseMaxAbs_Seq(Vec, Vec, Vec);
 PETSC_INTERN PetscErrorCode VecPointwiseMin_Seq(Vec, Vec, Vec);
 PETSC_INTERN PetscErrorCode VecPointwiseDivide_Seq(Vec, Vec, Vec);
+
+PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode VecAXPY_Seq(Vec, PetscScalar, Vec);
 
 PETSC_EXTERN PetscErrorCode VecCreate_Seq(Vec);
 PETSC_INTERN PetscErrorCode VecCreate_Seq_Private(Vec, const PetscScalar[]);

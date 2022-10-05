@@ -217,14 +217,10 @@ PetscErrorCode VecInitializePackage(void)
 #if defined(PETSC_HAVE_CUDA)
   PetscCall(PetscLogEventRegister("VecCUDACopyTo", VEC_CLASSID, &VEC_CUDACopyToGPU));
   PetscCall(PetscLogEventRegister("VecCUDACopyFrom", VEC_CLASSID, &VEC_CUDACopyFromGPU));
-  PetscCall(PetscLogEventRegister("VecCopyToSome", VEC_CLASSID, &VEC_CUDACopyToGPUSome));
-  PetscCall(PetscLogEventRegister("VecCopyFromSome", VEC_CLASSID, &VEC_CUDACopyFromGPUSome));
 #endif
 #if defined(PETSC_HAVE_HIP)
   PetscCall(PetscLogEventRegister("VecHIPCopyTo", VEC_CLASSID, &VEC_HIPCopyToGPU));
   PetscCall(PetscLogEventRegister("VecHIPCopyFrom", VEC_CLASSID, &VEC_HIPCopyFromGPU));
-  PetscCall(PetscLogEventRegister("VecCopyToSome", VEC_CLASSID, &VEC_HIPCopyToGPUSome));
-  PetscCall(PetscLogEventRegister("VecCopyFromSome", VEC_CLASSID, &VEC_HIPCopyFromGPUSome));
 #endif
 
   /* Mark non-collective events */
@@ -236,14 +232,10 @@ PetscErrorCode VecInitializePackage(void)
 #if defined(PETSC_HAVE_CUDA)
   PetscCall(PetscLogEventSetCollective(VEC_CUDACopyToGPU, PETSC_FALSE));
   PetscCall(PetscLogEventSetCollective(VEC_CUDACopyFromGPU, PETSC_FALSE));
-  PetscCall(PetscLogEventSetCollective(VEC_CUDACopyToGPUSome, PETSC_FALSE));
-  PetscCall(PetscLogEventSetCollective(VEC_CUDACopyFromGPUSome, PETSC_FALSE));
 #endif
 #if defined(PETSC_HAVE_HIP)
   PetscCall(PetscLogEventSetCollective(VEC_HIPCopyToGPU, PETSC_FALSE));
   PetscCall(PetscLogEventSetCollective(VEC_HIPCopyFromGPU, PETSC_FALSE));
-  PetscCall(PetscLogEventSetCollective(VEC_HIPCopyToGPUSome, PETSC_FALSE));
-  PetscCall(PetscLogEventSetCollective(VEC_HIPCopyFromGPUSome, PETSC_FALSE));
 #endif
   /* Turn off high traffic events by default */
   PetscCall(PetscLogEventSetActiveAll(VEC_SetValues, PETSC_FALSE));

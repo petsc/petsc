@@ -33,6 +33,7 @@ Changes: Development
 
 - Document ``VecOperation``
 - Add ``VECOP_SET``
+- Significantly improve performance of ``VecMDot()``, ``VecMAXPY()`` and ``VecDotNorm2()`` for CUDA and HIP vector types. These routines should be between 2x and 4x faster.
 
 .. rubric:: PetscSection:
 
