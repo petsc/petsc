@@ -753,11 +753,10 @@ struct Interface : InterfaceImpl<T> {
     PetscFunctionReturn(0);
   }
 
-  template <typename D, typename S = D>
-  PETSC_NODISCARD static PetscErrorCode PetscCUPMMemcpyAsync(D *dest, const S *src, std::size_t n, cupmMemcpyKind_t kind, cupmStream_t stream = nullptr, bool use_async = false) noexcept
+  template <typename D>
+  PETSC_NODISCARD static PetscErrorCode PetscCUPMMemcpyAsync(D *dest, const util::type_identity_t<D> *src, std::size_t n, cupmMemcpyKind_t kind, cupmStream_t stream = nullptr, bool use_async = false) noexcept
   {
-    static_assert(sizeof(D) == sizeof(S), "");
-    static_assert(!std::is_void<D>::value && !std::is_void<S>::value, "");
+    static_assert(!std::is_void<D>::value, "");
     const auto size = n * sizeof(D);
 
     PetscFunctionBegin;
@@ -790,8 +789,8 @@ struct Interface : InterfaceImpl<T> {
     PetscFunctionReturn(0);
   }
 
-  template <typename D, typename S = D>
-  PETSC_NODISCARD static PetscErrorCode PetscCUPMMemcpy(D *dest, const S *src, std::size_t n, cupmMemcpyKind_t kind) noexcept
+  template <typename D>
+  PETSC_NODISCARD static PetscErrorCode PetscCUPMMemcpy(D *dest, const util::type_identity_t<D> *src, std::size_t n, cupmMemcpyKind_t kind) noexcept
   {
     PetscFunctionBegin;
     PetscCall(PetscCUPMMemcpyAsync(dest, src, n, kind));
