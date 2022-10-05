@@ -10,7 +10,6 @@ int main(int argc, char *argv[])
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
 
-  /* basic creation and destruction */
   PetscCall(PetscDeviceContextCreate(&dctx));
   PetscCall(AssertDeviceContextExists(dctx));
 
