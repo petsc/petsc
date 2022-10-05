@@ -28,30 +28,33 @@ int main(int argc, char *argv[])
 
 /*TEST
 
-  build:
-   requires: defined(PETSC_HAVE_CXX)
+  testset:
+    requires: cxx
+    output_file: ./output/ExitSuccess.out
+    args: -device_enable {{lazy eager}}
+    test:
+      requires: !device
+      suffix: host_no_device
+    test:
+      requires: device
+      args: -default_device_type host
+      suffix: host_with_device
+    test:
+      requires: cuda
+      args: -default_device_type cuda
+      suffix: cuda
+    test:
+      requires: hip
+      args: -default_device_type hip
+      suffix: hip
+    test:
+      requires: sycl
+      args: -default_device_type sycl
+      suffix: sycl
 
   testset:
-   output_file: ./output/ExitSuccess.out
-   args: -device_enable {{lazy eager}}
-   test:
-     requires: !device
-     suffix: host_no_device
-   test:
-     requires: device
-     args: -default_device_type host
-     suffix: host_with_device
-   test:
-     requires: cuda
-     args: -default_device_type cuda
-     suffix: cuda
-   test:
-     requires: hip
-     args: -default_device_type hip
-     suffix: hip
-   test:
-     requires: sycl
-     args: -default_device_type sycl
-     suffix: sycl
+    requires: !cxx
+    output_file: ./output/ExitSuccess.out
+    suffix: no_cxx
 
 TEST*/
