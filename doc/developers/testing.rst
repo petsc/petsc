@@ -572,9 +572,10 @@ With this background, these keywords are as follows.
    -  The value of this is the command to be run, for example,
       ``grep foo`` or ``sort -nr``.
 
-   -  If the filter begins with ``Error:``, then the test is assumed to
-      be testing the ``stderr`` output, and the error code and output
-      are set up to be tested.
+   -  **NOTE: this method of testing error output is NOT recommended. See section on**
+      :ref:`testing errors <sec_testing_error_testing>` **instead.** If the filter begins
+      with ``Error:``, then the test is assumed to be testing the ``stderr`` output, and the
+      error code and output are set up to be tested.
 
 -  **filter_output**: (*Optional*; *Default:* ``""``)
 
@@ -724,6 +725,49 @@ supported.
    Note that ``{{...}shared output}`` is equivalent to ``{{...}}``.
 
    See examples below for how it works in practice.
+
+.. _sec_testing_error_testing:
+
+Testing Errors And Exceptional Code
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+It is possible (and encouraged!) to test error conditions within the test harness. Since
+error messages produced by ``SETERRQ()`` and friends are not portable between systems,
+additional arguments must be passed to tests to modify error handling, specifically:
+
+.. code-block:: yaml
+
+   args: -petsc_ci_portable_error_output -error_output_stdout
+
+These arguments have the following effect:
+
+-  ``-petsc_ci_portable_error_output``: Strips system or configuration-specific information
+   from error messages. Specifically this:
+
+   -  Removes all path components except the file name from the traceback
+   -  Removes line and column numbers from the traceback
+   -  Removes PETSc version information
+   -  Removes ``configure`` options used
+   -  Removes system name
+   -  Removes hostname
+   -  Removes date
+
+   With this option error messages will be identical across systems, runs, and PETSc
+   configurations (barring of course configurations in which the error is not raised).
+
+   Furthermore, this option also changes the default behavior of the error handler to
+   **gracefully** exit where possible. For single-ranked runs this means returning with
+   exit-code ``0`` and calling ``MPI_Finalize()`` instead of ``MPI_Abort()``. Multi-rank
+   tests will call ``MPI_Abort()`` on errors raised on ``PETSC_COMM_SELF``, but will call
+   ``MPI_Finalize()`` otherwise.
+
+-  ``-error_output_stdout``: Forces ``SETERRQ()`` and friends to dump error messages to
+   ``stdout`` instead of ``stderr``. While using ``stderr`` (alongside the ``Error:``
+   sub-directive under ``filter:``) also works it appears to be unstable under heavy
+   load, especially in CI.
+
+Using both options in tandem allows one to use the normal ``output:`` mechanism to compare
+expected and actual error outputs.
 
 Test Block Examples
 ~~~~~~~~~~~~~~~~~~~

@@ -13,6 +13,7 @@ stages:
   - stage-1
   - stage-2
   - stage-3
+  - stage-4
 variables:
   GIT_STRATEGY: fetch
   GIT_CLEAN_FLAGS: -ffdxq
@@ -238,6 +239,7 @@ pause-for-approval:
 .stage-23:
   extends: .test
   script:
+    - if [ ! -z ${RUN_GCOV+x} ]; then gcovr --version; fi
     - if [ -d ${HOME}/petsc-hash-pkgs/ ]; then find ${HOME}/petsc-hash-pkgs/ -maxdepth 1 -mindepth 1 -type d -mtime +25 -exec rm -rf {} \; ; fi
     - printf "PATH:$PATH\n"
     - printf "PYTHONPATH:$PYTHONPATH\n"
@@ -263,7 +265,7 @@ pause-for-approval:
     - ${TEST_ARCH}/tests/testresults.xml
     - ${TEST_ARCH}/tests/test_${TEST_ARCH}_tap.log
     - ${TEST_ARCH}/tests/test_${TEST_ARCH}_err.log
-    - ${TEST_ARCH}/gcov.tar.gz
+    - ${TEST_ARCH}/${TEST_ARCH}-gcovr-report.json.tar.gz
     expire_in: 4 days
   variables:
     OPENBLAS_NUM_THREADS: 1
@@ -676,8 +678,8 @@ linux-pkgs-gcov:
     - gce-nfs, linux-gcov
   variables:
     TEST_ARCH: arch-ci-linux-pkgs-gcov
+    LOAD_MODULES: python-3.9.13-gcc-7.5.0-fq67pdh py-gcovr-5.2-gcc-7.5.0-o7fu4xq
     RUN_GCOV: 1
-
 linux-cmplx-gcov:
   extends:
     - .stage-3
@@ -687,7 +689,7 @@ linux-cmplx-gcov:
   variables:
     PETSC_OPTIONS:  -vecscatter_mpi1 false -options_left false -checkfunctionlist
     TEST_ARCH: arch-ci-linux-cmplx-gcov
-    LOAD_MODULES: gcc/8.3.0-fjpc5ys
+    LOAD_MODULES: gcc/8.3.0-fjpc5ys python-3.9.13-gcc-7.5.0-fq67pdh py-gcovr-5.2-gcc-7.5.0-o7fu4xq
     RUN_GCOV: 1
 
 linux-matlab-ilp64-gcov:
@@ -698,7 +700,7 @@ linux-matlab-ilp64-gcov:
     - gce-nfs, linux-gcov
   variables:
     TEST_ARCH: arch-ci-linux-matlab-ilp64-gcov
-    LOAD_MODULES: matlab/R2018a
+    LOAD_MODULES: matlab/R2018a python-3.9.13-gcc-7.5.0-fq67pdh py-gcovr-5.2-gcc-7.5.0-o7fu4xq
     RUN_GCOV: 1
   allow_failure: true
 
@@ -710,6 +712,7 @@ linux-gcov:
     - gce-nfs, linux-gcov
   variables:
     TEST_ARCH: arch-ci-linux-gcov
+    LOAD_MODULES: python-3.9.13-gcc-7.5.0-fq67pdh py-gcovr-5.2-gcc-7.5.0-o7fu4xq
     RUN_GCOV: 1
 
 linux-pgi:
@@ -982,10 +985,10 @@ osx-xsdk-opt:
   variables:
     TEST_ARCH: arch-ci-osx-xsdk-opt
 
-# job for analyzing the final coverage results
-analyze-pipeline:
+# job for analyzing the coverage results and generating the various reports
+analyze-coverage:
   extends: .test
-  stage: .post
+  stage: stage-4
   tags:
     - gce-nfs-short
   dependencies:
@@ -994,21 +997,81 @@ analyze-pipeline:
     - linux-matlab-ilp64-gcov
     - linux-gcov
   variables:
+    PYTHON: python3
     PETSC_ARCH: arch-ci-analyze-pipeline
+    LOAD_MODULES: python-3.9.13-gcc-7.5.0-fq67pdh py-gcovr-5.2-gcc-7.5.0-o7fu4xq
   before_script:
     - date
     - hostname
+    - if [ ! -z ${LOAD_MODULES+x} ]; then module --trace load ${LOAD_MODULES}; module list; fi
+    - ${PYTHON} --version
+    - gcovr --version
   script:
-  - ./configure --with-mpi=0 --with-cxx=0 --with-c2html
-  - make srchtml
-  - make mergegcov
+    - printf "PATH:$PATH\n"
+    - printf "PYTHONPATH:$PYTHONPATH\n"
+    - if [ ! -z ${CI_MERGE_REQUEST_SOURCE_BRANCH_NAME+x} ]; then printf "CI_MERGE_REQUEST_SOURCE_BRANCH_NAME:$CI_MERGE_REQUEST_SOURCE_BRANCH_NAME\n" ;fi
+    - ${PYTHON} ./configure --with-mpi=0 --with-cxx=0 --download-sowing --with-fortran-bindings
+    - make mergegcov PETSC_GCOV_OPTIONS='--ci-mode --verbose'
+  coverage: /^\s*lines:\s*\d+.\d+\%/
   artifacts:
     name: "$CI_JOB_NAME"
     when: always
     paths:
-    - arch-ci-analyze-pipeline/*
+    - arch-ci-analyze-pipeline/gcovr/*
+    - arch-ci-analyze-pipeline/lib/petsc/conf/*.log
+    expire_in: 4 days
+    reports:
+      coverage_report:
+        coverage_format: cobertura
+        path: arch-ci-analyze-pipeline/gcovr/xml/*.xml
+
+# template for the coverage review jobs, these must be separate jobs as you cannot deploy multiple
+# environments from one job...
+.coverage-review:
+  extends: .test
+  stage: .post
+  tags:
+    - gce-nfs-short
+  dependencies:
+    - analyze-coverage
+  script:
+    - date
+    - hostname
+  artifacts:
+    name: "$CI_JOB_NAME"
+    when: always
+    paths:
+    - arch-ci-analyze-pipeline/gcovr/*
+    - arch-ci-analyze-pipeline/lib/petsc/conf/*.log
     expire_in: 4 days
 
+coverage-total-review:
+  extends: .coverage-review
+  environment:
+    name: coverage/all/$CI_COMMIT_REF_SLUG
+    url: https://$CI_PROJECT_NAMESPACE.gitlab.io/-/$CI_PROJECT_NAME/-/jobs/$CI_JOB_ID/artifacts/arch-ci-analyze-pipeline/gcovr/html/report.html
+    auto_stop_in: one week
+    deployment_tier: testing
+
+coverage-untested-review:
+  extends: .coverage-review
+  environment:
+    name: coverage/untested/$CI_COMMIT_REF_SLUG
+    url: https://$CI_PROJECT_NAMESPACE.gitlab.io/-/$CI_PROJECT_NAME/-/jobs/$CI_JOB_ID/artifacts/arch-ci-analyze-pipeline/gcovr/html_untested/report_untested.html
+    auto_stop_in: one week
+    deployment_tier: testing
+
+analyze-pipeline:
+  extends: .coverage-review
+  script:
+    - date
+    - hostname
+    # This file is created by lib/petsc/bin/maint/gcov.py. If it exists then the CI
+    # pipeline should fail
+    - if [ -f ./arch-ci-analyze-pipeline/gcovr/.CI_FAIL ]; then
+        cat ./arch-ci-analyze-pipeline/gcovr/merge_gcov_errors.log;
+        exit 1;
+      fi
 
 #
 # Base job for a documentation build
