@@ -5,28 +5,6 @@
 #include <petscsys.h>
 #include <../src/vec/vec/impls/mpi/pvecimpl.h> /*I  "petscvec.h"   I*/
 
-PetscErrorCode VecDot_MPI(Vec xin, Vec yin, PetscScalar *z)
-{
-  PetscScalar sum, work;
-
-  PetscFunctionBegin;
-  PetscCall(VecDot_Seq(xin, yin, &work));
-  PetscCall(MPIU_Allreduce(&work, &sum, 1, MPIU_SCALAR, MPIU_SUM, PetscObjectComm((PetscObject)xin)));
-  *z = sum;
-  PetscFunctionReturn(0);
-}
-
-PetscErrorCode VecTDot_MPI(Vec xin, Vec yin, PetscScalar *z)
-{
-  PetscScalar sum, work;
-
-  PetscFunctionBegin;
-  PetscCall(VecTDot_Seq(xin, yin, &work));
-  PetscCall(MPIU_Allreduce(&work, &sum, 1, MPIU_SCALAR, MPIU_SUM, PetscObjectComm((PetscObject)xin)));
-  *z = sum;
-  PetscFunctionReturn(0);
-}
-
 extern PetscErrorCode VecView_MPI_Draw(Vec, PetscViewer);
 
 static PetscErrorCode VecPlaceArray_MPI(Vec vin, const PetscScalar *a)
