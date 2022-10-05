@@ -128,8 +128,9 @@ PetscErrorCode PetscRandomGetValues(PetscRandom r, PetscInt n, PetscScalar *val)
   PetscValidHeaderSpecific(r, PETSC_RANDOM_CLASSID, 1);
   PetscValidType(r, 1);
   if (!r->ops->getvalues) {
-    PetscInt i;
-    for (i = 0; i < n; i++) PetscCall((*r->ops->getvalue)(r, val + i));
+    PetscErrorCode (*const getvalue)(PetscRandom, PetscScalar *) = r->ops->getvalue;
+
+    for (PetscInt i = 0; i < n; ++i) PetscCall(getvalue(r, val + i));
   } else PetscUseTypeMethod(r, getvalues, n, val);
   PetscCall(PetscObjectStateIncrease((PetscObject)r));
   PetscFunctionReturn(0);
