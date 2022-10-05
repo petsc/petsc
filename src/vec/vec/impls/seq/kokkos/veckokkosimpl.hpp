@@ -128,7 +128,6 @@ PETSC_INTERN PetscErrorCode VecCreate_MPIKokkos(Vec);
 PETSC_INTERN PetscErrorCode VecCreate_MPIKokkos_Private(Vec, PetscBool, PetscInt, const PetscScalar *);
 PETSC_INTERN PetscErrorCode VecCreate_Kokkos(Vec);
 PETSC_INTERN PetscErrorCode VecDestroy_SeqKokkos(Vec);
-PETSC_INTERN PetscErrorCode VecDestroy_MPIKokkos(Vec);
 PETSC_INTERN PetscErrorCode VecAYPX_SeqKokkos(Vec, PetscScalar, Vec);
 PETSC_INTERN PetscErrorCode VecSetRandom_SeqKokkos(Vec, PetscRandom);
 PETSC_INTERN PetscErrorCode VecGetLocalVector_SeqKokkos(Vec, Vec);
