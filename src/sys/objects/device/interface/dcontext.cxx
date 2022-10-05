@@ -238,13 +238,14 @@ static PetscErrorCode PetscDeviceContextSetDevice_Private(PetscDeviceContext dct
   PetscValidDevice(device, 2);
   if (dctx->device && (dctx->device->id == device->id)) PetscFunctionReturn(0);
   PetscCall(PetscLogEventBegin(DCONTEXT_SetDevice, dctx, nullptr, nullptr, nullptr));
-  if (const auto destroy = dctx->ops->destroy) PetscCall((*destroy)(dctx));
+  PetscTryTypeMethod(dctx, destroy);
   PetscCall(PetscDeviceDestroy(&dctx->device));
   PetscCall(PetscMemzero(dctx->ops, sizeof(*dctx->ops)));
+  PetscCall(PetscDeviceReference_Internal(device));
+  // set it before calling the method
+  dctx->device = device;
   PetscCall((*device->ops->createcontext)(dctx));
   PetscCall(PetscLogEventEnd(DCONTEXT_SetDevice, dctx, nullptr, nullptr, nullptr));
-  PetscCall(PetscDeviceReference_Internal(device));
-  dctx->device        = device;
   dctx->setup         = PETSC_FALSE;
   dctx->usersetdevice = user_set;
   PetscFunctionReturn(0);
