@@ -540,7 +540,7 @@ PetscErrorCode VecSet(Vec x, PetscScalar alpha)
     } else {
       PetscCall(PetscObjectComposedDataSetReal((PetscObject)x, NormIds[NORM_1], N * val));
       PetscCall(PetscObjectComposedDataSetReal((PetscObject)x, NormIds[NORM_INFINITY], val));
-      val = PetscSqrtReal((PetscReal)N) * val;
+      val *= PetscSqrtReal((PetscReal)N);
       PetscCall(PetscObjectComposedDataSetReal((PetscObject)x, NormIds[NORM_2], val));
       PetscCall(PetscObjectComposedDataSetReal((PetscObject)x, NormIds[NORM_FROBENIUS], val));
     }
@@ -1055,6 +1055,33 @@ PetscErrorCode VecSetValuesBlockedLocal(Vec x, PetscInt ni, const PetscInt ix[],
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode VecMXDot_Priate(Vec x, PetscInt nv, const Vec y[], PetscScalar result[], PetscErrorCode (*mxdot)(Vec, PetscInt, const Vec[], PetscScalar[]), PetscLogEvent event)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(x, VEC_CLASSID, 1);
+  PetscValidType(x, 1);
+  PetscValidLogicalCollectiveInt(x, nv, 2);
+  if (!nv) PetscFunctionReturn(0);
+  PetscValidPointer(y, 3);
+  for (PetscInt i = 0; i < nv; ++i) {
+    PetscValidHeaderSpecific(y[i], VEC_CLASSID, 3);
+    PetscValidType(y[i], 3);
+    PetscCheckSameTypeAndComm(x, 1, y[i], 3);
+    VecCheckSameSize(x, 1, y[i], 3);
+    PetscCall(VecLockReadPush(y[i]));
+  }
+  PetscValidScalarPointer(result, 4);
+  PetscValidFunction(mxdot, 5);
+
+  PetscCall(VecLockReadPush(x));
+  PetscCall(PetscLogEventBegin(event, x, *y, 0, 0));
+  PetscCall((*mxdot)(x, nv, y, result));
+  PetscCall(PetscLogEventEnd(event, x, *y, 0, 0));
+  PetscCall(VecLockReadPop(x));
+  for (PetscInt i = 0; i < nv; ++i) PetscCall(VecLockReadPop(y[i]));
+  PetscFunctionReturn(0);
+}
+
 /*@
    VecMTDot - Computes indefinite vector multiple dot products.
    That is, it does NOT use the complex conjugate.
@@ -1086,25 +1113,7 @@ PetscErrorCode VecMTDot(Vec x, PetscInt nv, const Vec y[], PetscScalar val[])
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x, VEC_CLASSID, 1);
-  PetscValidType(x, 1);
-  PetscValidLogicalCollectiveInt(x, nv, 2);
-  if (!nv) PetscFunctionReturn(0);
-  PetscValidPointer(y, 3);
-  for (PetscInt i = 0; i < nv; ++i) {
-    PetscValidHeaderSpecific(y[i], VEC_CLASSID, 3);
-    PetscValidType(y[i], 3);
-    PetscCheckSameTypeAndComm(x, 1, y[i], 3);
-    VecCheckSameSize(x, 1, y[i], 3);
-    PetscCall(VecLockReadPush(y[i]));
-  }
-  PetscValidScalarPointer(val, 4);
-
-  PetscCall(VecLockReadPush(x));
-  PetscCall(PetscLogEventBegin(VEC_MTDot, x, *y, 0, 0));
-  PetscUseTypeMethod(x, mtdot, nv, y, val);
-  PetscCall(PetscLogEventEnd(VEC_MTDot, x, *y, 0, 0));
-  PetscCall(VecLockReadPop(x));
-  for (PetscInt i = 0; i < nv; ++i) PetscCall(VecLockReadPop(y[i]));
+  PetscCall(VecMXDot_Priate(x, nv, y, val, x->ops->mtdot, VEC_MTDot));
   PetscFunctionReturn(0);
 }
 
@@ -1138,25 +1147,7 @@ PetscErrorCode VecMDot(Vec x, PetscInt nv, const Vec y[], PetscScalar val[])
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x, VEC_CLASSID, 1);
-  PetscValidType(x, 1);
-  PetscValidLogicalCollectiveInt(x, nv, 2);
-  if (!nv) PetscFunctionReturn(0);
-  PetscValidPointer(y, 3);
-  for (PetscInt i = 0; i < nv; ++i) {
-    PetscValidHeaderSpecific(y[i], VEC_CLASSID, 3);
-    PetscValidType(y[i], 3);
-    PetscCheckSameTypeAndComm(x, 1, y[i], 3);
-    VecCheckSameSize(x, 1, y[i], 3);
-    PetscCall(VecLockReadPush(y[i]));
-  }
-  PetscValidScalarPointer(val, 4);
-
-  PetscCall(VecLockReadPush(x));
-  PetscCall(PetscLogEventBegin(VEC_MDot, x, *y, 0, 0));
-  PetscUseTypeMethod(x, mdot, nv, y, val);
-  PetscCall(PetscLogEventEnd(VEC_MDot, x, *y, 0, 0));
-  PetscCall(VecLockReadPop(x));
-  for (PetscInt i = 0; i < nv; ++i) PetscCall(VecLockReadPop(y[i]));
+  PetscCall(VecMXDot_Priate(x, nv, y, val, x->ops->mdot, VEC_MDot));
   PetscFunctionReturn(0);
 }
 
