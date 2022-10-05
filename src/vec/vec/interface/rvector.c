@@ -214,18 +214,17 @@ PetscErrorCode VecDotRealPart(Vec x, Vec y, PetscReal *val)
 @*/
 PetscErrorCode VecNorm(Vec x, NormType type, PetscReal *val)
 {
+  PetscBool flg = PETSC_TRUE;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x, VEC_CLASSID, 1);
-  PetscValidRealPointer(val, 3);
   PetscValidType(x, 1);
+  PetscValidLogicalCollectiveEnum(x, type, 2);
+  PetscValidRealPointer(val, 3);
 
   /* Cached data? */
-  if (type != NORM_1_AND_2) {
-    PetscBool flg;
-
-    PetscCall(PetscObjectComposedDataGetReal((PetscObject)x, NormIds[type], *val, flg));
-    if (flg) PetscFunctionReturn(0);
-  }
+  PetscCall(VecNormAvailable(x, type, &flg, val));
+  if (flg) PetscFunctionReturn(0);
 
   PetscCall(VecLockReadPush(x));
   PetscCall(PetscLogEventBegin(VEC_Norm, x, 0, 0, 0));
