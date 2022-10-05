@@ -4,7 +4,6 @@ cdef extern from * nogil:
 
     ctypedef int PetscClassId
     ctypedef int PetscObjectState
-    int PetscObjectCreate(MPI_Comm,PetscObject*)
     int PetscObjectView(PetscObject,PetscViewer)
     int PetscObjectDestroy(PetscObject*)
     int PetscObjectGetReference(PetscObject,PetscInt*)
