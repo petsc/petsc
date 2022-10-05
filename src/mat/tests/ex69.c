@@ -102,7 +102,6 @@ int main(int argc, char **argv)
     reset = PETSC_FALSE;
     break;
   }
-  PetscCall(VecCUDARestoreArray(v, &vv));
 
   /* Test MatMatMult */
   if (use_shell) {
