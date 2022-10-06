@@ -8,7 +8,7 @@ from build_classic_docs import classic_docs_subdirs
 
 
 def make_links_relative(root, placeholder=PETSC_DOC_OUT_ROOT_PLACEHOLDER):
-    """ For .html files in root, replace placeholder with a relative path back up to root
+    """ For .html files in directory root and all its descendants replace placeholder with a relative path back up to root
 
         Exclude a specific set of subdirectories.
     """
