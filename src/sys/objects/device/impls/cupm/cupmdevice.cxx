@@ -235,12 +235,12 @@ PetscErrorCode Device<T>::initialize(MPI_Comm comm, PetscInt *defaultDeviceId, P
     initId.first = PETSC_CUPM_DEVICE_NONE;
   } else if (const auto cerr = cupmGetDeviceCount(&ndev)) {
     auto PETSC_UNUSED ignored = cupmGetLastError();
+
+    PetscCheck((initType.first != PETSC_DEVICE_INIT_EAGER) && !initView.first, comm, PETSC_ERR_USER_INPUT, "Cannot eagerly initialize %s, as doing so results in %s error %d (%s) : %s", cupmName(), cupmName(), static_cast<PetscErrorCode>(cerr), cupmGetErrorName(cerr), cupmGetErrorString(cerr));
     // we won't be initializing anything anyways
     initType.first = PETSC_DEVICE_INIT_NONE;
     // save the error code for later
     initId.first = -static_cast<decltype(initId.first)>(cerr);
-
-    PetscCheck((initType.first != PETSC_DEVICE_INIT_EAGER) && !initView.first, comm, PETSC_ERR_USER_INPUT, "Cannot eagerly initialize %s, as doing so results in %s error %d (%s) : %s", cupmName(), cupmName(), static_cast<PetscErrorCode>(cerr), cupmGetErrorName(cerr), cupmGetErrorString(cerr));
   }
 
   // check again for init type, since the device count may have changed it
