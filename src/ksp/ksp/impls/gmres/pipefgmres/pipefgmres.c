@@ -1,6 +1,3 @@
-/*
-  Contributed by Patrick Sanan and Sascha M. Schnepp
-*/
 
 #include <../src/ksp/ksp/impls/gmres/pipefgmres/pipefgmresimpl.h> /*I  "petscksp.h"  I*/
 
@@ -620,9 +617,7 @@ PetscErrorCode KSPReset_PIPEFGMRES(KSP ksp)
 }
 
 /*MC
-   KSPPIPEFGMRES - Implements the Pipelined Generalized Minimal Residual method.
-
-   A flexible, 1-stage pipelined variant of GMRES.
+   KSPPIPEFGMRES - Implements the Pipelined (1-stage) Flexible Generalized Minimal Residual method. [](sec_pipelineksp). [](sec_flexibleksp)
 
    Options Database Keys:
 +   -ksp_gmres_restart <restart> - the number of Krylov directions to orthogonalize against
@@ -635,17 +630,20 @@ PetscErrorCode KSPReset_PIPEFGMRES(KSP ksp)
    Level: intermediate
 
    Notes:
-
-   This variant is not "explicitly normalized" like KSPPGMRES, and requires a shift parameter.
+   This variant is not "explicitly normalized" like `KSPPGMRES`, and requires a shift parameter.
 
    A heuristic for choosing the shift parameter is the largest eigenvalue of the preconditioned operator.
 
-   Only right preconditioning is supported (but this preconditioner may be nonlinear/variable/inexact, as with KSPFGMRES).
-   MPI configuration may be necessary for reductions to make asynchronous progress, which is important for performance of pipelined methods.
-   See the FAQ on the PETSc website for details.
+   Only right preconditioning is supported (but this preconditioner may be nonlinear/variable/inexact, as with `KSPFGMRES`).
 
-   Developer Notes:
-    This class is subclassed off of KSPGMRES.
+   MPI configuration may be necessary for reductions to make asynchronous progress, which is important for performance of pipelined methods.
+   See [](doc_faq_pipelined)
+
+   Developer Note:
+    This class is subclassed off of `KSPGMRES`.
+
+   Contributed by:
+   P. Sanan and S.M. Schnepp
 
    Reference:
     P. Sanan, S.M. Schnepp, and D.A. May,
@@ -653,7 +651,7 @@ PetscErrorCode KSPReset_PIPEFGMRES(KSP ksp)
     SIAM Journal on Scientific Computing 2016 38:5, C441-C470,
     DOI: 10.1137/15M1049130
 
-.seealso: `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPLGMRES`, `KSPPIPECG`, `KSPPIPECR`, `KSPPGMRES`, `KSPFGMRES`
+.seealso: [](chapter_ksp), [](doc_faq_pipelined), [](sec_pipelineksp), [](sec_flexibleksp), `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPLGMRES`, `KSPPIPECG`, `KSPPIPECR`, `KSPPGMRES`, `KSPFGMRES`
           `KSPGMRESSetRestart()`, `KSPGMRESSetHapTol()`, `KSPGMRESSetPreAllocateVectors()`, `KSPGMRESMonitorKrylov()`, `KSPPIPEFGMRESSetShift()`
 M*/
 
@@ -734,22 +732,25 @@ static PetscErrorCode KSPPIPEFGMRESGetNewVectors(KSP ksp, PetscInt it)
 }
 
 /*@
-  KSPPIPEFGMRESSetShift - Set the shift parameter for the flexible, pipelined GMRES solver.
+  KSPPIPEFGMRESSetShift - Set the shift parameter for the flexible, pipelined `KSPPIPEFGMRES` solver.
 
-  A heuristic is to set this to be comparable to the largest eigenvalue of the preconditioned operator. This can be acheived with PETSc itself by using a few iterations of a Krylov method. See KSPComputeEigenvalues (and note the caveats there).
+  Logically Collective on ksp
 
-Logically Collective on ksp
-
-Input Parameters:
+  Input Parameters:
 +  ksp - the Krylov space context
 -  shift - the shift
 
-Level: intermediate
+  Options Database Key:
+.  -ksp_pipefgmres_shift <shift> - set the shift parameter
 
-Options Database:
-. -ksp_pipefgmres_shift <shift> - set the shift parameter
+  Level: intermediate
 
-.seealso: `KSPComputeEigenvalues()`
+  Note:
+  A heuristic is to set this to be comparable to the largest eigenvalue of the preconditioned operator.
+  This can be acheived with PETSc itself by using a few iterations of a Krylov method.
+  See `KSPComputeEigenvalues()` (and note the caveats there).
+
+.seealso: [](chapter_ksp), `KSPPIPEFGMRES`, `KSPComputeEigenvalues()`
 @*/
 PetscErrorCode KSPPIPEFGMRESSetShift(KSP ksp, PetscScalar shift)
 {

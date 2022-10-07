@@ -52,11 +52,13 @@ PETSC_EXTERN PetscErrorCode KSPCreate_HPDDM(KSP);
 #endif
 
 /*@C
-  KSPRegisterAll - Registers all of the Krylov subspace methods in the KSP package.
+  KSPRegisterAll - Registers all of the Krylov subspace methods in the `KSP` package.
 
   Not Collective
 
   Level: advanced
+
+.seealso: [](chapter_ksp), `KSP`, `KSPRegister()`, `KSPType`
 @*/
 PetscErrorCode KSPRegisterAll(void)
 {
@@ -119,11 +121,13 @@ PetscErrorCode KSPRegisterAll(void)
 }
 
 /*@C
-  KSPMonitoRegisterAll - Registers all of the Krylov subspace monitors in the KSP package.
+  KSPMonitoRegisterAll - Registers all of the Krylov subspace monitors in the `KSP` package.
 
   Not Collective
 
   Level: advanced
+
+.seealso: [](chapter_ksp), `KSP`, `KSPMonitorRegister()`, `KSPRegister()`
 @*/
 PetscErrorCode KSPMonitorRegisterAll(void)
 {

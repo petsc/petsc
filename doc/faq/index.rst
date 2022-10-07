@@ -1504,6 +1504,8 @@ This can happen for many reasons:
    processes. You may also consider multigrid preconditioners like ``PCMG`` or BoomerAMG
    in ``PCHYPRE``.
 
+.. _doc_faq_pipelined:
+
 What steps are necessary to make the pipelined solvers execute efficiently?
 ---------------------------------------------------------------------------
 
@@ -1511,7 +1513,7 @@ Pipelined solvers like ``KSPPGMRES``, ``KSPPIPECG``, ``KSPPIPECR``, and ``KSPGRO
 require special MPI configuration to effectively overlap reductions with computation. In
 general, this requires an MPI-3 implementation, an implementation that supports multiple
 threads, and use of a "progress thread". Consult the documentation from your vendor or
-computing facility for more.
+computing facility for more details.
 
 .. glossary::
    :sorted:

@@ -607,6 +607,43 @@ options data base commands ``-ksp_view_eigenvalues draw`` and
 screen in ASCII text via ``-ksp_view_eigenvalues`` and
 ``-ksp_view_eigenvalues_explicit``.
 
+.. _sec_flexibleksp:
+
+Flexible Krylov Methods
+^^^^^^^^^^^^^^^^^^^^^^^
+
+Standard Krylov methods require that the preconditioner be a linear operator, thus, for example, a standard ``KSP`` method
+cannot use a ``KSP`` in its preconditioner, as is common in the Block-Jacobi method ``PCBJACOBI``, for example.
+Flexible Krylov methods are a subset of methods that allow (with modest additional requirements
+on memory) the preconditioner to be nonlinear. For example, they can be used with the ``PCKSP`` preconditioner.
+The flexible ``KSP`` methods have the label "Flexible" in :any:`tab-kspdefaults`.
+
+One can use ``KSPMonitorDynamicTolerance()`` to control the tolerances used by inner ``KSP`` solvers in ``PCKSP``, ``PCBJACOBI``, and ``PCDEFLATION``.
+
+In addition to supporting ``PCKSP``, the flexible methods support ``KSP*SetModifyPC()``, for example, ``KSPFGMRESSetModifyPC()``, these functions
+allow the user to provide a callback function that changes the preconditioner at each Krylov iteration. Its calling sequence is as follows.
+
+.. code-block::
+
+   PetscErrorCode f(KSP ksp,PetscInt total_its,PetscInt its_since_restart,PetscReal res_norm,void *ctx);
+
+.. _sec_pipelineksp:
+
+Pipelined Krylov Methods
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+Standard Krylov methods have one or more global reductions resulting from the computations of inner products or norms in each iteration.
+These reductions need to block until all MPI ranks have received the results. For a large number of MPI ranks (this number is machine dependent
+but can be above 10,000 ranks) this synchronization is very time consuming and can significantly slow the computation. Pipelined Krylov
+methods overlap the reduction operations with local computations (generally the application of the matrix-vector products and precondtiioners)
+thus effectively "hiding" the time of the reductions. In addition, they may reduce the number of global synchronizations by rearranging the
+computations in a way that some of them can be collapsed, e.g., two or more calls to ``MPI_Allreduce()`` may be combined into one call.
+The pipeline ``KSP`` methods have the label "Pipeline" in :any:`tab-kspdefaults`.
+
+Special configuration of MPI may be necessary for reductions to make asynchronous progress, which is important for
+performance of pipelined methods. See :any:`doc_faq_pipelined` for details.
+
+
 Other KSP Options
 ^^^^^^^^^^^^^^^^^
 

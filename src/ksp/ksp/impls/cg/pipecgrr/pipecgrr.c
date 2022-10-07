@@ -240,23 +240,23 @@ static PetscErrorCode KSPSolve_PIPECGRR(KSP ksp)
 }
 
 /*MC
-   KSPPIPECGRR - Pipelined conjugate gradient method with automated residual replacements.
-
-   This method has only a single non-blocking reduction per iteration, compared to 2 blocking for standard CG.  The
-   non-blocking reduction is overlapped by the matrix-vector product and preconditioner application.
-
-   KSPPIPECGRR improves the robustness of KSPPIPECG by adding an automated residual replacement strategy.
-   True residual and other auxiliary variables are computed explicitly in a number of dynamically determined
-   iterations to counteract the accumulation of rounding errors and thus attain a higher maximal final accuracy.
-
-   See also KSPPIPECG, which is identical to KSPPIPECGRR without residual replacements.
-   See also KSPPIPECR, where the reduction is only overlapped with the matrix-vector product.
+   KSPPIPECGRR - Pipelined conjugate gradient method with automated residual replacements. [](sec_pipelineksp)
 
    Level: intermediate
 
    Notes:
+   This method has only a single non-blocking reduction per iteration, compared to 2 blocking for standard `KSPCG`.  The
+   non-blocking reduction is overlapped by the matrix-vector product and preconditioner application.
+
+   `KSPPIPECGRR` improves the robustness of `KSPPIPECG` by adding an automated residual replacement strategy.
+   True residual and other auxiliary variables are computed explicitly in a number of dynamically determined
+   iterations to counteract the accumulation of rounding errors and thus attain a higher maximal final accuracy.
+
+   See also `KSPPIPECG`, which is identical to `KSPPIPECGRR` without residual replacements.
+   See also `KSPPIPECR`, where the reduction is only overlapped with the matrix-vector product.
+
    MPI configuration may be necessary for reductions to make asynchronous progress, which is important for
-   performance of pipelined methods. See the FAQ on the PETSc website for details.
+   performance of pipelined methods. See [](doc_faq_pipelined)
 
    Contributed by:
    Siegfried Cools, Universiteit Antwerpen, Dept. Mathematics & Computer Science,
@@ -267,7 +267,7 @@ static PetscErrorCode KSPSolve_PIPECGRR(KSP ksp)
    propagation on the maximal attainable accuracy of the pipelined Conjugate Gradients method",
    SIAM Journal on Matrix Analysis and Applications (SIMAX), 39(1):426--450, 2018.
 
-.seealso: `KSPCreate()`, `KSPSetType()`, `KSPPIPECR`, `KSPGROPPCG`, `KSPPIPECG`, `KSPPGMRES`, `KSPCG`, `KSPPIPEBCGS`, `KSPCGUseSingleReduction()`
+.seealso: [](chapter_ksp), [](doc_faq_pipelined), [](sec_pipelineksp), `KSPCreate()`, `KSPSetType()`, `KSPPIPECR`, `KSPGROPPCG`, `KSPPIPECG`, `KSPPGMRES`, `KSPCG`, `KSPPIPEBCGS`, `KSPCGUseSingleReduction()`
 M*/
 PETSC_EXTERN PetscErrorCode KSPCreate_PIPECGRR(KSP ksp)
 {

@@ -429,25 +429,22 @@ PetscErrorCode MatCreate_LMVMDFP(Mat B)
    construction, and is the dual of L-BFGS where Y and S vectors swap roles.
 
    The provided local and global sizes must match the solution and function vectors
-   used with MatLMVMUpdate() and MatSolve(). The resulting L-DFP matrix will have
-   storage vectors allocated with VecCreateSeq() in serial and VecCreateMPI() in
+   used with `MatLMVMUpdate()` and `MatSolve()`. The resulting L-DFP matrix will have
+   storage vectors allocated with `VecCreateSeq()` in serial and `VecCreateMPI()` in
    parallel. To use the L-DFP matrix with other vector types, the matrix must be
-   created using MatCreate() and MatSetType(), followed by MatLMVMAllocate().
+   created using `MatCreate()` and `MatSetType()`, followed by `MatLMVMAllocate()`.
    This ensures that the internal storage and work vectors are duplicated from the
    correct type of vector.
 
    Collective
 
    Input Parameters:
-+  comm - MPI communicator, set to PETSC_COMM_SELF
++  comm - MPI communicator
 .  n - number of local rows for storage vectors
 -  N - global size of the storage vectors
 
    Output Parameter:
 .  B - the matrix
-
-   It is recommended that one use the MatCreate(), MatSetType() and/or MatSetFromOptions()
-   paradigm instead of this routine directly.
 
    Options Database Keys:
 +   -mat_lmvm_scale_type - (developer) type of scaling applied to J0 (none, scalar, diagonal)
@@ -459,7 +456,11 @@ PetscErrorCode MatCreate_LMVMDFP(Mat B)
 
    Level: intermediate
 
-.seealso: `MatCreate()`, `MATLMVM`, `MATLMVMDFP`, `MatCreateLMVMBFGS()`, `MatCreateLMVMSR1()`,
+   Note:
+   It is recommended that one use the `MatCreate()`, `MatSetType()` and/or `MatSetFromOptions()`
+   paradigm instead of this routine directly.
+
+.seealso: [](chapter_ksp), `MatCreate()`, `MATLMVM`, `MATLMVMDFP`, `MatCreateLMVMBFGS()`, `MatCreateLMVMSR1()`,
           `MatCreateLMVMBrdn()`, `MatCreateLMVMBadBrdn()`, `MatCreateLMVMSymBrdn()`
 @*/
 PetscErrorCode MatCreateLMVMDFP(MPI_Comm comm, PetscInt n, PetscInt N, Mat *B)

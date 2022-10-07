@@ -1,6 +1,5 @@
 
 /*
-
     Note that for the complex numbers version, the VecDot() arguments
     within the code MUST remain in the order given for correct computation
     of inner products.
@@ -130,23 +129,21 @@ static PetscErrorCode KSPSolve_CGS(KSP ksp)
 /*MC
      KSPCGS - This code implements the CGS (Conjugate Gradient Squared) method.
 
-   Options Database Keys:
-    see KSPSolve()
-
    Level: beginner
+
+   Notes:
+   Does not require a symmetric matrix. Does not apply transpose of the matrix.
+
+   Supports left and right preconditioning, but not symmetric.
+
+   Developer Note:
+   Has this weird support for doing the convergence test with the natural norm, I assume this works only with
+   no preconditioning and symmetric positive definite operator.
 
    References:
 .  * - Sonneveld, 1989.
 
-   Notes:
-    Does not require a symmetric matrix. Does not apply transpose of the matrix.
-        Supports left and right preconditioning, but not symmetric.
-
-   Developer Notes:
-    Has this weird support for doing the convergence test with the natural norm, I assume this works only with
-      no preconditioning and symmetric positive definite operator.
-
-.seealso: `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPBCGS`, `KSPSetPCSide()`
+.seealso: [](chapter_ksp), `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPBCGS`, `KSPSetPCSide()`
 M*/
 PETSC_EXTERN PetscErrorCode KSPCreate_CGS(KSP ksp)
 {

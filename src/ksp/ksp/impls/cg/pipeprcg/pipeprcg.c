@@ -2,7 +2,7 @@
 
 typedef struct KSP_CG_PIPE_PR_s KSP_CG_PIPE_PR;
 struct KSP_CG_PIPE_PR_s {
-  PetscBool rc_w_q; /* flag to determine whether w_k should be recomputer with A r_k */
+  PetscBool rc_w_q; /* flag to determine whether w_k should be recomputed with A r_k */
 };
 
 /*
@@ -177,16 +177,19 @@ static PetscErrorCode KSPSolve_PIPEPRCG(KSP ksp)
 }
 
 /*MC
-   KSPPIPEPRCG - Pipelined predict-and-recompute conjugate gradient method.
+   KSPPIPEPRCG - Pipelined predict-and-recompute conjugate gradient method. [](sec_pipelineksp)
 
-   This method has only a single non-blocking reduction per iteration, compared to 2 blocking for standard CG.
-   The non-blocking reduction is overlapped by the matrix-vector product and preconditioner application.
+   Options Database Key:
+.  -ksp_pipeprcg_recompute_w - recompute the w_k with Ar_k, default is true
 
    Level: intermediate
 
    Notes:
+   This method has only a single non-blocking reduction per iteration, compared to 2 blocking for standard `KSPCG`.
+   The non-blocking reduction is overlapped by the matrix-vector product and preconditioner application.
+
    MPI configuration may be necessary for reductions to make asynchronous progress, which is important for performance of pipelined methods.
-   See the FAQ on the PETSc website for details.
+   See [](doc_faq_pipelined)
 
    Contributed by:
    Tyler Chen, University of Washington, Applied Mathematics Department
@@ -195,9 +198,11 @@ static PetscErrorCode KSPSolve_PIPEPRCG(KSP ksp)
    Tyler Chen and Erin Carson. "Predict-and-recompute conjugate gradient variants." SIAM Journal on Scientific Computing 42.5 (2020): A3084-A3108.
 
    Acknowledgments:
-   This material is based upon work supported by the National Science Foundation Graduate Research Fellowship Program under Grant No. DGE-1762114. Any opinions, findings, and conclusions or recommendations expressed in this material are those of the author and do not necessarily reflect the views of the National Science Foundation.
+   This material is based upon work supported by the National Science Foundation Graduate Research Fellowship Program under Grant No. DGE-1762114.
+   Any opinions, findings, and conclusions or recommendations expressed in this material are those of the author and do not necessarily
+   reflect the views of the National Science Foundation.
 
-.seealso: `KSPCreate()`, `KSPSetType()`, `KSPPIPECG`, `KSPPIPECR`, `KSPGROPPCG`, `KSPPGMRES`, `KSPCG`, `KSPCGUseSingleReduction()`
+.seealso: [](chapter_ksp), [](doc_faq_pipelined), [](sec_pipelineksp), `KSPCreate()`, `KSPSetType()`, `KSPCG`, `KSPPIPECG`, `KSPPIPECR`, `KSPGROPPCG`, `KSPPGMRES`, `KSPCG`, `KSPCGUseSingleReduction()`
 M*/
 PETSC_EXTERN PetscErrorCode KSPCreate_PIPEPRCG(KSP ksp)
 {
