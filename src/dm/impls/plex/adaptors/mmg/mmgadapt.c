@@ -25,7 +25,7 @@ PETSC_EXTERN PetscErrorCode DMAdaptMetric_Mmg_Plex(DM dm, Vec vertexMetric, DMLa
   PetscReal         *vertices, *metric, *verticesNew, gradationFactor, hausdorffNumber;
   PetscInt          *cells, *cellsNew, *cellTags, *cellTagsNew, *verTags, *verTagsNew;
   PetscInt          *bdFaces, *faceTags, *facesNew, *faceTagsNew;
-  PetscInt          *corners, *requiredCells, *requiredVer, *ridges, *requiredFaces;
+  int               *corners, *requiredCells, *requiredVer, *ridges, *requiredFaces;
   PetscInt           cStart, cEnd, c, numCells, fStart, fEnd, numFaceTags, f, vStart, vEnd, v, numVertices;
   PetscInt           dim, off, coff, maxConeSize, bdSize, i, j, k, Neq, verbosity, pStart, pEnd;
   PetscInt           numCellsNew, numVerticesNew, numCornersNew, numFacesNew;
