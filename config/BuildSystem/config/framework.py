@@ -430,6 +430,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     # Intel
     lines = [s for s in lines if s.find("icc: command line remark #10148: option '-i-dynamic' not supported") < 0]
     lines = [s for s in lines if s.find("[: unexpected operator") < 0]  # Deals with error in mpiicc and mpiicpc wrappers from some versions of Intel MPI.
+    lines = [s for s in lines if s.find(': remark #10441:') < 0]
     # IBM:
     lines = [s for s in lines if not s.startswith('cc_r:')]
     # PGI: Ignore warning about temporary license
@@ -487,6 +488,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       lines = [s for s in lines if s.find('warning: unused variable') < 0]
       # Intel
       lines = [s for s in lines if s.find("icc: command line remark #10148: option '-i-dynamic' not supported") < 0]
+      lines = [s for s in lines if s.find(': remark #10441:') < 0]
       # PGI: Ignore warning about temporary license
       lines = [s for s in lines if s.find('license.dat') < 0]
       # Cray XT3
@@ -521,6 +523,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
         lines = [s for s in lines if not self.warningRE.search(s)]
       #Intel
       lines = [s for s in lines if s.find(": command line warning #10121: overriding") < 0]
+      lines = [s for s in lines if s.find(': remark #10441:') < 0]
       # PGI: Ignore warning about temporary license
       lines = [s for s in lines if s.find('license.dat') < 0]
       # Cray XT3
