@@ -21,7 +21,7 @@ const char HPDDMCitation[] = "@article{jolivet2020petsc,\n"
                              "  Url = {https://github.com/prj-/jolivet2020petsc}\n"
                              "}\n";
 
-#if defined(PETSC_HAVE_SLEPC) && defined(PETSC_USE_SHARED_LIBRARIES)
+#if PetscDefined(HAVE_SLEPC) && PetscDefined(USE_SHARED_LIBRARIES)
 static PetscBool loadedDL = PETSC_FALSE;
 #endif
 
@@ -608,7 +608,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_HPDDM(KSP ksp)
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPHPDDMGetDeflationMat_C", KSPHPDDMGetDeflationMat_HPDDM));
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPHPDDMSetType_C", KSPHPDDMSetType_HPDDM));
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPHPDDMGetType_C", KSPHPDDMGetType_HPDDM));
-#if defined(PETSC_HAVE_SLEPC) && PetscDefined(HAVE_DYNAMIC_LIBRARIES) && defined(PETSC_USE_SHARED_LIBRARIES)
+#if PetscDefined(HAVE_SLEPC) && PetscDefined(HAVE_DYNAMIC_LIBRARIES) && PetscDefined(USE_SHARED_LIBRARIES)
   if (!loadedDL) PetscCall(HPDDMLoadDL_Private(&loadedDL));
 #endif
   data->precision = PETSC_KSPHPDDM_DEFAULT_PRECISION;

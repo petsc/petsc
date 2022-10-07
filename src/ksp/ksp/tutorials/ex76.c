@@ -77,12 +77,8 @@ int main(int argc, char **args)
   PetscCall(KSPGetPC(ksp, &pc));
   PetscCall(PCSetType(pc, PCHPDDM));
 #if defined(PETSC_HAVE_HPDDM) && defined(PETSC_HAVE_DYNAMIC_LIBRARIES) && defined(PETSC_USE_SHARED_LIBRARIES)
-  flg = PETSC_FALSE;
-  PetscCall(PetscOptionsGetBool(NULL, NULL, "-pc_hpddm_block_splitting", &flg, NULL));
-  if (!flg) {
-    PetscCall(PCHPDDMSetAuxiliaryMat(pc, is, aux, NULL, NULL));
-    PetscCall(PCHPDDMHasNeumannMat(pc, PETSC_FALSE)); /* PETSC_TRUE is fine as well, just testing */
-  }
+  PetscCall(PCHPDDMSetAuxiliaryMat(pc, is, aux, NULL, NULL));
+  PetscCall(PCHPDDMHasNeumannMat(pc, PETSC_FALSE)); /* PETSC_TRUE is fine as well, just testing */
   flg = PETSC_FALSE;
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-set_rhs", &flg, NULL));
   if (flg) {          /* user-provided RHS for concurrent generalized eigenvalue problems                                 */
