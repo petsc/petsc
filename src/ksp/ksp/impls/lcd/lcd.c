@@ -181,15 +181,15 @@ PetscErrorCode KSPSetFromOptions_LCD(KSP ksp, PetscOptionItems *PetscOptionsObje
 }
 
 /*MC
-     KSPLCD -  Implements the LCD (left conjugate direction) method in PETSc.
+     KSPLCD -  Implements the LCD (left conjugate direction) method
 
    Options Database Keys:
-+   -ksp_lcd_restart - number of vectors conjudate
++   -ksp_lcd_restart - number of vectors conjugate
 -   -ksp_lcd_haptol - tolerance for exact convergence (happing ending)
 
    Level: beginner
 
-    Notes:
+    Note:
     Support only for left preconditioning
 
     References:
@@ -209,11 +209,11 @@ PetscErrorCode KSPSetFromOptions_LCD(KSP ksp, PetscOptionItems *PetscOptionsObje
      equations,  Communications in Numerical Methods in Engineering, (Early
      View).
 
-  Contributed by: Lucia Catabriga <luciac@ices.utexas.edu>
+  Contributed by:
+  Lucia Catabriga <luciac@ices.utexas.edu>
 
-.seealso: `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`,
+.seealso: [](chapter_ksp), `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`,
           `KSPCGSetType()`, `KSPLCDSetRestart()`, `KSPLCDSetHapTol()`
-
 M*/
 
 PETSC_EXTERN PetscErrorCode KSPCreate_LCD(KSP ksp)

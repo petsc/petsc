@@ -439,9 +439,9 @@ static PetscErrorCode KSPSolve_PIPELCG(KSP ksp)
 
 /*MC
     KSPPIPELCG - Deep pipelined (length l) Conjugate Gradient method. This method has only a single non-blocking global
-    reduction per iteration, compared to 2 blocking reductions for standard CG. The reduction is overlapped by the
+    reduction per iteration, compared to 2 blocking reductions for standard `KSPCG`. The reduction is overlapped by the
     matrix-vector product and preconditioner application of the next l iterations. The pipeline length l is a parameter
-    of the method.
+    of the method. [](sec_pipelineksp)
 
     Options Database Keys:
 +   -ksp_pipelcg_pipel - pipelined length
@@ -449,25 +449,25 @@ static PetscErrorCode KSPSolve_PIPELCG(KSP ksp)
 .   -ksp_pipelcg_lmax - approximation to the largest eigenvalue of the preconditioned operator (default: 0.0)
 -   -ksp_pipelcg_monitor - output where/why the method restarts when a sqrt breakdown occurs
 
-   see KSPSolve() for additional options
-
     Level: advanced
 
     Notes:
     MPI configuration may be necessary for reductions to make asynchronous progress, which is important for
-    performance of pipelined methods. See the FAQ on the PETSc website for details.
+    performance of pipelined methods. See [](doc_faq_pipelined)
 
     Contributed by:
     Siegfried Cools, University of Antwerp, Dept. Mathematics and Computer Science,
     funded by Flemish Research Foundation (FWO) grant number 12H4617N.
 
     Example usage:
-    [*] KSP ex2, no preconditioner, pipel = 2, lmin = 0.0, lmax = 8.0 :
+.vb
+    KSP tutorials ex2, no preconditioner, pipel = 2, lmin = 0.0, lmax = 8.0 :
         $mpiexec -n 14 ./ex2 -m 1000 -n 1000 -ksp_type pipelcg -pc_type none -ksp_norm_type natural
-        -ksp_rtol 1e-10 -ksp_max_it 1000 -ksp_pipelcg_pipel 2 -ksp_pipelcg_lmin 0.0 -ksp_pipelcg_lmax 8.0 -log_view
-    [*] SNES ex48, bjacobi preconditioner, pipel = 3, lmin = 0.0, lmax = 2.0, show restart information :
+           -ksp_rtol 1e-10 -ksp_max_it 1000 -ksp_pipelcg_pipel 2 -ksp_pipelcg_lmin 0.0 -ksp_pipelcg_lmax 8.0 -log_view
+    SNES tutorials ex48, bjacobi preconditioner, pipel = 3, lmin = 0.0, lmax = 2.0, show restart information :
         $mpiexec -n 14 ./ex48 -M 150 -P 100 -ksp_type pipelcg -pc_type bjacobi -ksp_rtol 1e-10 -ksp_pipelcg_pipel 3
-        -ksp_pipelcg_lmin 0.0 -ksp_pipelcg_lmax 2.0 -ksp_pipelcg_monitor -log_view
+           -ksp_pipelcg_lmin 0.0 -ksp_pipelcg_lmax 2.0 -ksp_pipelcg_monitor -log_view
+.ve
 
     References:
 +   * - J. Cornelis, S. Cools and W. Vanroose,
@@ -477,8 +477,8 @@ static PetscErrorCode KSPSolve_PIPELCG(KSP ksp)
         "Numerically Stable Recurrence Relations for the Communication Hiding Pipelined Conjugate Gradient Method"
         Submitted to IEEE Transactions on Parallel and Distributed Systems, 2019.
 
-.seealso: `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSPCG`, `KSPPIPECG`, `KSPPIPECGRR`, `KSPPGMRES`,
-          `KSPPIPEBCGS`, `KSPSetPCSide()`
+.seealso: [](chapter_ksp), [](sec_pipelineksp), [](doc_faq_pipelined), `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSPCG`, `KSPPIPECG`, `KSPPIPECGRR`, `KSPPGMRES`,
+          `KSPPIPEBCGS`, `KSPSetPCSide()`, `KSPGROPPCG`
 M*/
 PETSC_EXTERN PetscErrorCode KSPCreate_PIPELCG(KSP ksp)
 {

@@ -285,11 +285,8 @@ cdef object load_module(object path):
     module.__package__ = None
     module_cache[path] = module
     try:
-        source = open(path, 'rU')
-        try:
+        with open(path, 'r') as source:
             code = compile(source.read(), path, 'exec')
-        finally:
-            source.close()
         exec(code, module.__dict__)
     except:
         del module_cache[path]

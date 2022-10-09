@@ -206,15 +206,14 @@ static PetscErrorCode KSPSolve_CGNE(KSP ksp)
    Level: beginner
 
    Notes:
-    eigenvalue computation routines will return information about the
-          spectrum of A^t*A, rather than A.
+   Eigenvalue computation routines including `KSPSetComputeEigenvalues()` and `KSPComputeEigenvalues()` will return information about the
+    spectrum of A^t*A, rather than A.
 
-   CGNE is a general-purpose non-symmetric method. It works well when the singular values are much better behaved than
-   eigenvalues. A unitary matrix is a classic example where CGNE converges in one iteration, but GMRES and CGS need N
-   iterations (see Nachtigal, Reddy, and Trefethen, "How fast are nonsymmetric matrix iterations", 1992). If you intend
-   to solve least squares problems, use KSPLSQR.
+   `KSPCGNE` is a general-purpose non-symmetric method. It works well when the singular values are much better behaved than
+   eigenvalues. A unitary matrix is a classic example where `KSPCGNE` converges in one iteration, but `KSPGMRES` and `KSPCGS` need N
+   iterations, see [1]. If you intend to solve least squares problems, use `KSPLSQR`.
 
-   This is NOT a different algorithm than used with KSPCG, it merely uses that algorithm with the
+   This is NOT a different algorithm than used with `KSPCG`, it merely uses that algorithm with the
    matrix defined by A^t*A and preconditioner defined by B^t*B where B is the preconditioner for A.
 
    This method requires that one be able to apply the transpose of the preconditioner and operator
@@ -223,11 +222,14 @@ static PetscErrorCode KSPSolve_CGNE(KSP ksp)
 
    This only supports left preconditioning.
 
-   This object is subclassed off of KSPCG
+   Reference:
+.   [1] -  Nachtigal, Reddy, and Trefethen, "How fast are nonsymmetric matrix iterations", 1992
 
-.seealso: `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`,
-          `KSPCGSetType()`, `KSPBICG`
+   Developer Note:
+   This object is subclassed off of `KSPCG`
 
+.seealso: [](chapter_ksp), `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, 'KSPCG', `KSPLSQR', 'KSPCGLS`,
+          `KSPCGSetType()`, `KSPBICG`, `KSPSetComputeEigenvalues()`, `KSPComputeEigenvalues()`
 M*/
 
 PETSC_EXTERN PetscErrorCode KSPCreate_CGNE(KSP ksp)

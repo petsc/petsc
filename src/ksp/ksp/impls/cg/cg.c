@@ -525,19 +525,13 @@ PETSC_INTERN PetscErrorCode KSPBuildResidual_CG(KSP ksp, Vec t, Vec v, Vec *V)
   PetscFunctionReturn(0);
 }
 
-/*
-    KSPCreate_CG - Creates the data structure for the Krylov method CG and sets the
-       function pointers for all the routines it needs to call (KSPSolve_CG() etc)
-
-    It must be labeled as PETSC_EXTERN to be dynamically linkable in C++
-*/
 /*MC
      KSPCG - The Preconditioned Conjugate Gradient (PCG) iterative method
 
    Options Database Keys:
-+   -ksp_cg_type Hermitian - (for complex matrices only) indicates the matrix is Hermitian, see KSPCGSetType()
++   -ksp_cg_type Hermitian - (for complex matrices only) indicates the matrix is Hermitian, see `KSPCGSetType()`
 .   -ksp_cg_type symmetric - (for complex matrices only) indicates the matrix is symmetric
--   -ksp_cg_single_reduction - performs both inner products needed in the algorithm with a single MPI_Allreduce() call, see KSPCGUseSingleReduction()
+-   -ksp_cg_single_reduction - performs both inner products needed in the algorithm with a single `MPI_Allreduce()` call, see `KSPCGUseSingleReduction()`
 
    Level: beginner
 
@@ -553,11 +547,13 @@ PETSC_INTERN PetscErrorCode KSPBuildResidual_CG(KSP ksp, Vec t, Vec v, Vec *V)
 .n  In all cases, the resulting algorithm only requires application of B to vectors.
 
    For complex numbers there are two different CG methods, one for Hermitian symmetric matrices and one for non-Hermitian symmetric matrices. Use
-   KSPCGSetType() to indicate which type you are using.
+   `KSPCGSetType()` to indicate which type you are using.
+
+   One can use `KSPSetComputeEigenvalues()` and `KSPComputeEigenvalues()` to compute the eigenvalues of the (preconditioned) operator
 
    Developer Notes:
     KSPSolve_CG() should actually query the matrix to determine if it is Hermitian symmetric or not and NOT require the user to
-   indicate it to the KSP object.
+   indicate it to the `KSP` object.
 
    References:
 +  * - Magnus R. Hestenes and Eduard Stiefel, Methods of Conjugate Gradients for Solving Linear Systems,
@@ -565,10 +561,16 @@ PETSC_INTERN PetscErrorCode KSPBuildResidual_CG(KSP ksp, Vec t, Vec v, Vec *V)
 -  * - Josef Malek and Zdenek Strakos, Preconditioning and the Conjugate Gradient Method in the Context of Solving PDEs,
     SIAM, 2014.
 
-.seealso: `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`,
+.seealso: [](chapter_ksp), `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPSetComputeEigenvalues()`, `KSPComputeEigenvalues()`
           `KSPCGSetType()`, `KSPCGUseSingleReduction()`, `KSPPIPECG`, `KSPGROPPCG`
-
 M*/
+
+/*
+    KSPCreate_CG - Creates the data structure for the Krylov method CG and sets the
+       function pointers for all the routines it needs to call (KSPSolve_CG() etc)
+
+    It must be labeled as PETSC_EXTERN to be dynamically linkable in C++
+*/
 PETSC_EXTERN PetscErrorCode KSPCreate_CG(KSP ksp)
 {
   KSP_CG *cg;

@@ -4,7 +4,7 @@
 static PetscErrorCode KSPQCGQuadraticRoots(Vec, Vec, PetscReal, PetscReal *, PetscReal *);
 
 /*@
-    KSPQCGSetTrustRegionRadius - Sets the radius of the trust region.
+    KSPQCGSetTrustRegionRadius - Sets the radius of the trust region for `KSPQCG`
 
     Logically Collective on ksp
 
@@ -28,8 +28,8 @@ PetscErrorCode KSPQCGSetTrustRegionRadius(KSP ksp, PetscReal delta)
 }
 
 /*@
-    KSPQCGGetTrialStepNorm - Gets the norm of a trial step vector.  The WCG step may be
-    constrained, so this is not necessarily the length of the ultimate step taken in QCG.
+    KSPQCGGetTrialStepNorm - Gets the norm of a trial step vector in `KSPQCG`.  The WCG step may be
+    constrained, so this is not necessarily the length of the ultimate step taken in `KSPQCG`.
 
     Not Collective
 
@@ -74,6 +74,8 @@ PetscErrorCode KSPQCGGetTrialStepNorm(KSP ksp, PetscReal *tsnorm)
 .   quadratic - the quadratic function evaluated at the new iterate
 
     Level: advanced
+
+.seealso: [](chapter_ksp), `KSPQCG`
 @*/
 PetscErrorCode KSPQCGGetQuadratic(KSP ksp, PetscReal *quadratic)
 {
@@ -323,19 +325,17 @@ PetscErrorCode KSPSetFromOptions_QCG(KSP ksp, PetscOptionItems *PetscOptionsObje
 }
 
 /*MC
-     KSPQCG -   Code to run conjugate gradient method subject to a constraint
-         on the solution norm. This is used in Trust Region methods for nonlinear equations, SNESNEWTONTR
+     KSPQCG -   Code to run conjugate gradient method subject to a constraint on the solution norm.
 
-   Options Database Keys:
+   Options Database Key:
 .      -ksp_qcg_trustregionradius <r> - Trust Region Radius
-
-   Notes:
-    This is rarely used directly
 
    Level: developer
 
-  Notes:
-    Use preconditioned conjugate gradient to compute
+   Notes:
+    This is rarely used directly, ir is used in Trust Region methods for nonlinear equations, `SNESNEWTONTR`
+
+    Uses preconditioned conjugate gradient to compute
       an approximate minimizer of the quadratic function
 
             q(s) = g^T * s + .5 * s^T * H * s
@@ -351,23 +351,26 @@ PetscErrorCode KSPSetFromOptions_QCG(KSP ksp, PetscOptionItems *PetscOptionsObje
      H is Hessian matrix,
      D is a scaling matrix.
 
-   KSPConvergedReason may be
-$  KSP_CONVERGED_CG_NEG_CURVE if convergence is reached along a negative curvature direction,
-$  KSP_CONVERGED_CG_CONSTRAINED if convergence is reached along a constrained step,
-$  other KSP converged/diverged reasons
+   `KSPConvergedReason` may be
+.vb
+   KSP_CONVERGED_CG_NEG_CURVE if convergence is reached along a negative curvature direction,
+   KSP_CONVERGED_CG_CONSTRAINED if convergence is reached along a constrained step,
+.ve
+   and other `KSP` converged/diverged reasons
 
   Notes:
   Currently we allow symmetric preconditioning with the following scaling matrices:
-      PCNONE:   D = Identity matrix
-      PCJACOBI: D = diag [d_1, d_2, ...., d_n], where d_i = sqrt(H[i,i])
-      PCICC:    D = L^T, implemented with forward and backward solves.
-                Here L is an incomplete Cholesky factor of H.
+.vb
+      `PCNONE`:   D = Identity matrix
+      `PCJACOBI`: D = diag [d_1, d_2, ...., d_n], where d_i = sqrt(H[i,i])
+      `PCICC`:    D = L^T, implemented with forward and backward solves. Here L is an incomplete Cholesky factor of H.
+.ve
 
   References:
 . * - Trond Steihaug, The Conjugate Gradient Method and Trust Regions in Large Scale Optimization,
    SIAM Journal on Numerical Analysis, Vol. 20, No. 3 (Jun., 1983).
 
-.seealso: `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPQCGSetTrustRegionRadius()`
+.seealso: [](chapter_ksp), 'KSPNASH`, `KSPGLTR`, `KSPSTCG`, `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPQCGSetTrustRegionRadius()`
           `KSPQCGGetTrialStepNorm()`, `KSPQCGGetQuadratic()`
 M*/
 

@@ -181,21 +181,21 @@ PetscErrorCode KSPDestroy_BCGS(KSP ksp)
 }
 
 /*MC
-     KSPBCGS - Implements the BiCGStab (Stabilized version of BiConjugate Gradient) method.
-
-   Options Database Keys:
-    see KSPSolve()
+     KSPBCGS - Implements the BiCGStab (Stabilized version of Biconjugate Gradient) method.
 
    Level: beginner
 
    Notes:
-    See KSPBCGSL for additional stabilization
-          Supports left and right preconditioning but not symmetric
+   Supports left and right preconditioning but not symmetric
 
-   References:
+   See `KSPBCGSL` for additional stabilization
+
+   See `KSPFBCGS`, `KSPFBCGSR`, and `KSPPIPEBCGS` for flexible and pipelined versions of the algorithm
+
+   Reference:
 .  * - van der Vorst, SIAM J. Sci. Stat. Comput., 1992.
 
-.seealso: `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPBICG`, `KSPBCGSL`, `KSPFBICG`, `KSPQMRCGS`, `KSPSetPCSide()`
+.seealso: [](chapter_ksp), `KSPFBCGS`, `KSPFBCGSR`, `KSPPIPEBCGS`, `KSPBCGSL`, `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPBICG`, `KSPBCGSL`, `KSPFBICG`, `KSPQMRCGS`, `KSPSetPCSide()`
 M*/
 PETSC_EXTERN PetscErrorCode KSPCreate_BCGS(KSP ksp)
 {

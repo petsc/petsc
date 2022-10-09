@@ -185,21 +185,20 @@ static PetscErrorCode KSPSolve_MINRES(KSP ksp)
 /*MC
      KSPMINRES - This code implements the MINRES (Minimum Residual) method.
 
-   Options Database Keys:
-    see KSPSolve()
-
    Level: beginner
 
    Notes:
-    The operator and the preconditioner must be symmetric and the preconditioner must
-          be positive definite for this method.
-          Supports only left preconditioning.
+   The operator and the preconditioner must be symmetric and the preconditioner must be positive definite for this method.
 
-   Reference: Paige & Saunders, 1975.
+   Supports only left preconditioning.
 
-   Contributed by: Robert Scheichl: maprs@maths.bath.ac.uk
+   Reference:
+. * - Paige & Saunders, Solution of sparse indefinite systems of linear equations, SIAM J. Numer. Anal. 12, 1975.
 
-.seealso: `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPCG`, `KSPCR`
+   Contributed by:
+   Robert Scheichl: maprs@maths.bath.ac.uk
+
+.seealso: [](chapter_ksp), `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPCG`, `KSPCR`
 M*/
 PETSC_EXTERN PetscErrorCode KSPCreate_MINRES(KSP ksp)
 {

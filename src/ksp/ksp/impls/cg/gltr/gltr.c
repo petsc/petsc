@@ -9,16 +9,19 @@
 static const char *DType_Table[64] = {"preconditioned", "unpreconditioned"};
 
 /*@
-    KSPGLTRGetMinEig - Get minimum eigenvalue.
+    KSPGLTRGetMinEig - Get minimum eigenvalue computed by `KSPGLTR`
 
     Collective on ksp
 
-    Input Parameters:
-+   ksp   - the iterative context
--   e_min - the minimum eigenvalue
+    Input Parameter:
+.   ksp   - the iterative context
+
+    Output Parameter:
+.   e_min - the minimum eigenvalue
 
     Level: advanced
 
+.seealso: [](chapter_ksp), `KSPGLTR`, `KSPGLTRGetLambda()`
 @*/
 PetscErrorCode KSPGLTRGetMinEig(KSP ksp, PetscReal *e_min)
 {
@@ -29,16 +32,19 @@ PetscErrorCode KSPGLTRGetMinEig(KSP ksp, PetscReal *e_min)
 }
 
 /*@
-    KSPGLTRGetLambda - Get multiplier on trust-region constraint.
-
+    KSPGLTRGetLambda - Get the multiplier on the trust-region constraint when using `KSPGLTR`
+t
     Not Collective
 
-    Input Parameters:
-+   ksp    - the iterative context
--   lambda - the multiplier
+    Input Parameter:
+.   ksp    - the iterative context
+
+    Output Parameter:
+.   lambda - the multiplier
 
     Level: advanced
 
+.seealso: [](chapter_ksp), `KSPGLTR`, `KSPGLTRGetMinEig()`
 @*/
 PetscErrorCode KSPGLTRGetLambda(KSP ksp, PetscReal *lambda)
 {
@@ -1285,16 +1291,15 @@ static PetscErrorCode KSPCGSetFromOptions_GLTR(KSP ksp, PetscOptionItems *PetscO
 
 /*MC
      KSPGLTR -   Code to run conjugate gradient method subject to a constraint
-         on the solution norm. This is used in Trust Region methods for
-         nonlinear equations, SNESNEWTONTR
+         on the solution norm.
 
    Options Database Keys:
 .      -ksp_cg_radius <r> - Trust Region Radius
 
-   Notes:
-    This is rarely used directly
+   Level: developer
 
-  Use preconditioned conjugate gradient to compute
+  Notes:
+  Uses preconditioned conjugate gradient to compute
   an approximate minimizer of the quadratic function
 
             q(s) = g^T * s + .5 * s^T * H * s
@@ -1310,21 +1315,21 @@ static PetscErrorCode KSPCGSetFromOptions_GLTR(KSP ksp, PetscOptionItems *PetscO
      H is the Hessian approximation,
      M is the positive definite preconditioner matrix.
 
-   KSPConvergedReason may be
-$  KSP_CONVERGED_CG_NEG_CURVE if convergence is reached along a negative curvature direction,
-$  KSP_CONVERGED_CG_CONSTRAINED if convergence is reached along a constrained step,
-$  other KSP converged/diverged reasons
+   `KSPConvergedReason` may have the additional values
+.vb
+   KSP_CONVERGED_CG_NEG_CURVE if convergence is reached along a negative curvature direction,
+   KSP_CONVERGED_CG_CONSTRAINED if convergence is reached along a constrained step.
+.ve
 
-  Notes:
-  The preconditioner supplied should be symmetric and positive definite.
+  The operator and the preconditioner supplied must be symmetric and positive definite.
+
+  This is rarely used directly, it is used in Trust Region methods for nonlinear equations, `SNESNEWTONTR`
 
   Reference:
-   Gould, N. and Lucidi, S. and Roma, M. and Toint, P., Solving the Trust-Region Subproblem using the Lanczos Method,
+. * -  Gould, N. and Lucidi, S. and Roma, M. and Toint, P., Solving the Trust-Region Subproblem using the Lanczos Method,
    SIAM Journal on Optimization, volume 9, number 2, 1999, 504-525
 
-   Level: developer
-
-.seealso: `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPCGSetRadius()`, `KSPCGGetNormD()`, `KSPCGGetObjFcn()`, `KSPGLTRGetMinEig()`, `KSPGLTRGetLambda()`
+.seealso: [](chapter_ksp), `KSPQCG`, `KSPNASH`, `KSPSTCG`, `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPCGSetRadius()`, `KSPCGGetNormD()`, `KSPCGGetObjFcn()`, `KSPGLTRGetMinEig()`, `KSPGLTRGetLambda()`, `KSPCG`
 M*/
 
 PETSC_EXTERN PetscErrorCode KSPCreate_GLTR(KSP ksp)

@@ -16,7 +16,7 @@
 
     Level: intermediate
 
-.seealso: `KSPGMRESSetRestart()`, `KSPGMRESSetOrthogonalization()`, `KSPGMRESGetOrthogonalization()`
+.seealso: [](chapter_ksp), `KSPGMRESSetRestart()`, `KSPGMRESSetOrthogonalization()`, `KSPGMRESGetOrthogonalization()`
 @*/
 PetscErrorCode KSPGMRESSetPreAllocateVectors(KSP ksp)
 {

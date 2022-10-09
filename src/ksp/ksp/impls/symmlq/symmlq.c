@@ -185,20 +185,19 @@ PetscErrorCode KSPSolve_SYMMLQ(KSP ksp)
 /*MC
      KSPSYMMLQ -  This code implements the SYMMLQ method.
 
-   Options Database Keys:
-    see KSPSolve()
-
    Level: beginner
 
    Notes:
-    The operator and the preconditioner must be symmetric for this method. The
-          preconditioner must be POSITIVE-DEFINITE.
+   The operator and the preconditioner must be symmetric for this method.
 
-          Supports only left preconditioning.
+   The preconditioner must be POSITIVE-DEFINITE.
 
-   Reference: Paige & Saunders, 1975.
+   Supports only left preconditioning.
 
-.seealso: `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`
+   Reference:
+. * - Paige & Saunders, Solution of sparse indefinite systems of linear equations, SIAM J. Numer. Anal. 12, 1975.
+
+.seealso: [](chapter_ksp), `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`
 M*/
 PETSC_EXTERN PetscErrorCode KSPCreate_SYMMLQ(KSP ksp)
 {

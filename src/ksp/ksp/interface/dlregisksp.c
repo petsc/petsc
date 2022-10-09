@@ -17,12 +17,12 @@ const char *const *const PCFailedReasons           = PCFailedReasons_Shifted + 1
 
 static PetscBool PCPackageInitialized = PETSC_FALSE;
 /*@C
-  PCFinalizePackage - This function destroys everything in the Petsc interface to the characteristics package. It is
-  called from PetscFinalize().
+  PCFinalizePackage - This function destroys everything in the `PC` package. It is
+  called from `PetscFinalize()`.
 
   Level: developer
 
-.seealso: `PetscFinalize()`
+.seealso: [](chapter_ksp), `PetscFinalize()`, `PCInitializePackage()`
 @*/
 PetscErrorCode PCFinalizePackage(void)
 {
@@ -35,13 +35,13 @@ PetscErrorCode PCFinalizePackage(void)
 }
 
 /*@C
-  PCInitializePackage - This function initializes everything in the PC package. It is called
-  from PetscDLLibraryRegister_petscksp() when using dynamic libraries, and on the first call to PCCreate()
+  PCInitializePackage - This function initializes everything in the `PC` package. It is called
+  from `PetscDLLibraryRegister_petscksp()` when using dynamic libraries, and on the first call to `PCCreate()`
   when using shared static libraries.
 
   Level: developer
 
-.seealso: `PetscInitialize()`
+.seealso: [](chapter_ksp), `PetscInitialize()`, `PCFinalizePackage()`
 @*/
 PetscErrorCode PCInitializePackage(void)
 {
@@ -125,7 +125,7 @@ static PetscBool KSPPackageInitialized = PETSC_FALSE;
 
   Level: developer
 
-.seealso: `PetscFinalize()`
+.seealso: [](chapter_ksp), `PetscFinalize()`, `KSPInitializePackage()`
 @*/
 PetscErrorCode KSPFinalizePackage(void)
 {
@@ -142,13 +142,13 @@ PetscErrorCode KSPFinalizePackage(void)
 }
 
 /*@C
-  KSPInitializePackage - This function initializes everything in the KSP package. It is called
-  from PetscDLLibraryRegister_petscksp() when using dynamic libraries, and on the first call to KSPCreate()
+  KSPInitializePackage - This function initializes everything in the `KSP` package. It is called
+  from `PetscDLLibraryRegister_petscksp()` when using dynamic libraries, and on the first call to `KSPCreate()`
   when using shared or static libraries.
 
   Level: developer
 
-.seealso: `PetscInitialize()`
+.seealso: [](chapter_ksp), `PetscInitialize()`, `KSPFinalizePackage()`
 @*/
 PetscErrorCode KSPInitializePackage(void)
 {
@@ -207,9 +207,7 @@ PetscErrorCode KSPInitializePackage(void)
 /*
   PetscDLLibraryRegister - This function is called when the dynamic library it is in is opened.
 
-  This one registers all the KSP and PC methods that are in the basic PETSc libpetscksp
-  library.
-
+  This one registers all the `KSP` and `PC` methods that are in the basic PETSc libpetscksp library.
  */
 PETSC_EXTERN PetscErrorCode PetscDLLibraryRegister_petscksp(void)
 {

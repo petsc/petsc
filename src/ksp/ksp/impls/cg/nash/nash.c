@@ -572,19 +572,17 @@ static PetscErrorCode KSPCGSetFromOptions_NASH(KSP ksp, PetscOptionItems *PetscO
 }
 
 /*MC
-     KSPNASH -   Code to run conjugate gradient method subject to a constraint
-         on the solution norm. This is used in Trust Region methods for
-         nonlinear equations, SNESNEWTONTR
+     KSPNASH -   Code to run conjugate gradient method subject to a constraint on the solution norm.
 
    Options Database Keys:
 .      -ksp_cg_radius <r> - Trust Region Radius
 
-   Notes:
-    This is rarely used directly
-
    Level: developer
 
-  Use preconditioned conjugate gradient to compute
+   Notes:
+    This is rarely used directly, it is used in Trust Region methods for nonlinear equations, `SNESNEWTONTR`
+
+  Uses preconditioned conjugate gradient to compute
   an approximate minimizer of the quadratic function
 
             q(s) = g^T * s + 0.5 * s^T * H * s
@@ -600,18 +598,19 @@ static PetscErrorCode KSPCGSetFromOptions_NASH(KSP ksp, PetscOptionItems *PetscO
      H is the Hessian approximation, and
      M is the positive definite preconditioner matrix.
 
-   KSPConvergedReason may be
-$  KSP_CONVERGED_CG_NEG_CURVE if convergence is reached along a negative curvature direction,
-$  KSP_CONVERGED_CG_CONSTRAINED if convergence is reached along a constrained step,
-$  other KSP converged/diverged reasons
+   `KSPConvergedReason` may be
+.vb
+  KSP_CONVERGED_CG_NEG_CURVE if convergence is reached along a negative curvature direction,
+  KSP_CONVERGED_CG_CONSTRAINED if convergence is reached along a constrained step,
+.ve
+  other `KSP` converged/diverged reasons
 
-  Notes:
   The preconditioner supplied should be symmetric and positive definite.
 
   Reference:
    Nash, Stephen G. Newton-type minimization via the Lanczos method. SIAM Journal on Numerical Analysis 21, no. 4 (1984): 770-788.
 
-.seealso: `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPCGSetRadius()`, `KSPCGGetNormD()`, `KSPCGGetObjFcn()`
+.seealso: [](chapter_ksp), `KSPQCG`, `KSPGLTR`, `KSPSTCG`, `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPCGSetRadius()`, `KSPCGGetNormD()`, `KSPCGGetObjFcn()`
 M*/
 
 PETSC_EXTERN PetscErrorCode KSPCreate_NASH(KSP ksp)

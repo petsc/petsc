@@ -24,30 +24,21 @@ PetscFunctionList KSPMonitorDestroyList       = NULL;
 PetscBool         KSPMonitorRegisterAllCalled = PETSC_FALSE;
 
 /*@C
-  KSPLoad - Loads a KSP that has been stored in binary  with KSPView().
+  KSPLoad - Loads a `KSP` that has been stored in a `PETSCVIEWERBINARY`  with `KSPView()`.
 
   Collective on viewer
 
   Input Parameters:
-+ newdm - the newly loaded KSP, this needs to have been created with KSPCreate() or
-           some related function before a call to KSPLoad().
-- viewer - binary file viewer, obtained from PetscViewerBinaryOpen()
++ newdm - the newly loaded `KSP`, this needs to have been created with `KSPCreate()` or
+           some related function before a call to `KSPLoad()`.
+- viewer - binary file viewer, obtained from `PetscViewerBinaryOpen()`
 
    Level: intermediate
 
-  Notes:
-   The type is determined by the data in the file, any type set into the KSP before this call is ignored.
+  Note:
+   The type is determined by the data in the file, any type set into the `KSP` before this call is ignored.
 
-  Notes for advanced users:
-  Most users should not need to know the details of the binary storage
-  format, since KSPLoad() and KSPView() completely hide these details.
-  But for anyone who's interested, the standard binary matrix storage
-  format is
-.vb
-     has not yet been determined
-.ve
-
-.seealso: `PetscViewerBinaryOpen()`, `KSPView()`, `MatLoad()`, `VecLoad()`
+.seealso: `KSP`, `PetscViewerBinaryOpen()`, `KSPView()`, `MatLoad()`, `VecLoad()`
 @*/
 PetscErrorCode KSPLoad(KSP newdm, PetscViewer viewer)
 {
@@ -77,7 +68,7 @@ PetscErrorCode KSPLoad(KSP newdm, PetscViewer viewer)
   #include <petscviewersaws.h>
 #endif
 /*@C
-   KSPView - Prints the KSP data structure.
+   KSPView - Prints the `KSP` data structure.
 
    Collective on ksp
 
@@ -86,28 +77,28 @@ PetscErrorCode KSPLoad(KSP newdm, PetscViewer viewer)
 -  viewer - visualization context
 
    Options Database Keys:
-.  -ksp_view - print the KSP data structure at the end of a KSPSolve call
+.  -ksp_view - print the `KSP` data structure at the end of each `KSPSolve()` call
 
-   Note:
+   Notes:
    The available visualization contexts include
-+     PETSC_VIEWER_STDOUT_SELF - standard output (default)
--     PETSC_VIEWER_STDOUT_WORLD - synchronized standard
++     `PETSC_VIEWER_STDOUT_SELF` - standard output (default)
+-     `PETSC_VIEWER_STDOUT_WORLD` - synchronized standard
          output where only the first processor opens
          the file.  All other processors send their
          data to the first processor to print.
 
    The available formats include
-+     PETSC_VIEWER_DEFAULT - standard output (default)
--     PETSC_VIEWER_ASCII_INFO_DETAIL - more verbose output for PCBJACOBI and PCASM
++     `PETSC_VIEWER_DEFAULT` - standard output (default)
+-     `PETSC_VIEWER_ASCII_INFO_DETAIL` - more verbose output for PCBJACOBI and PCASM
 
    The user can open an alternative visualization context with
-   PetscViewerASCIIOpen() - output to a specified file.
+   `PetscViewerASCIIOpen()` - output to a specified file.
 
-  In the debugger you can do "call KSPView(ksp,0)" to display the KSP. (The same holds for any PETSc object viewer).
+  In the debugger you can do call `KSPView(ksp,0)` to display the `KSP`. (The same holds for any PETSc object viewer).
 
    Level: beginner
 
-.seealso: `PCView()`, `PetscViewerASCIIOpen()`
+.seealso: `KSP`, `PetscViewer`, `PCView()`, `PetscViewerASCIIOpen()`
 @*/
 PetscErrorCode KSPView(KSP ksp, PetscViewer viewer)
 {
@@ -221,9 +212,9 @@ PetscErrorCode KSPView(KSP ksp, PetscViewer viewer)
 }
 
 /*@C
-   KSPViewFromOptions - View from Options
+   KSPViewFromOptions - View a `KSP` object based on values in the options database
 
-   Collective on KSP
+   Collective on A
 
    Input Parameters:
 +  A - Krylov solver context
@@ -231,6 +222,7 @@ PetscErrorCode KSPView(KSP ksp, PetscViewer viewer)
 -  name - command line option
 
    Level: intermediate
+
 .seealso: `KSP`, `KSPView`, `PetscObjectViewFromOptions()`, `KSPCreate()`
 @*/
 PetscErrorCode KSPViewFromOptions(KSP A, PetscObject obj, const char name[])
@@ -249,29 +241,31 @@ PetscErrorCode KSPViewFromOptions(KSP A, PetscObject obj, const char name[])
    Input Parameters:
 +  ksp - Krylov solver context
 -  normtype - one of
-$   KSP_NORM_NONE - skips computing the norm, this should generally only be used if you are using
-$                 the Krylov method as a smoother with a fixed small number of iterations.
-$                 Implicitly sets KSPConvergedSkip() as KSP convergence test.
-$                 Note that certain algorithms such as KSPGMRES ALWAYS require the norm calculation,
-$                 for these methods the norms are still computed, they are just not used in
-$                 the convergence test.
-$   KSP_NORM_PRECONDITIONED - the default for left preconditioned solves, uses the l2 norm
-$                 of the preconditioned residual P^{-1}(b - A x)
-$   KSP_NORM_UNPRECONDITIONED - uses the l2 norm of the true b - Ax residual.
-$   KSP_NORM_NATURAL - supported  by KSPCG, KSPCR, KSPCGNE, KSPCGS
+.vb
+   KSP_NORM_NONE - skips computing the norm, this should generally only be used if you are using
+                 the Krylov method as a smoother with a fixed small number of iterations.
+                 Implicitly sets KSPConvergedSkip() as KSP convergence test.
+                 Note that certain algorithms such as KSPGMRES ALWAYS require the norm calculation,
+                 for these methods the norms are still computed, they are just not used in
+                 the convergence test.
+   KSP_NORM_PRECONDITIONED - the default for left preconditioned solves, uses the l2 norm
+                 of the preconditioned residual P^{-1}(b - A x)
+   KSP_NORM_UNPRECONDITIONED - uses the l2 norm of the true b - Ax residual.
+   KSP_NORM_NATURAL - supported  by KSPCG, KSPCR, KSPCGNE, KSPCGS
+.ve
 
    Options Database Key:
-.   -ksp_norm_type <none,preconditioned,unpreconditioned,natural> - set KSP norm type
+.   -ksp_norm_type <none,preconditioned,unpreconditioned,natural> - set `KSP` norm type
 
-   Notes:
-   Not all combinations of preconditioner side (see KSPSetPCSide()) and norm type are supported by all Krylov methods.
+   Level: advanced
+
+   Note:
+   Not all combinations of preconditioner side (see `KSPSetPCSide()`) and norm type are supported by all Krylov methods.
    If only one is set, PETSc tries to automatically change the other to find a compatible pair.  If no such combination
    is supported, PETSc will generate an error.
 
-   Developer Notes:
-   Supported combinations of norm and preconditioner side are set using KSPSetSupportedNorm().
-
-   Level: advanced
+   Developer Note:
+   Supported combinations of norm and preconditioner side are set using `KSPSetSupportedNorm()`.
 
 .seealso: `KSPSetUp()`, `KSPSolve()`, `KSPDestroy()`, `KSPConvergedSkip()`, `KSPSetCheckNormIteration()`, `KSPSetPCSide()`, `KSPGetPCSide()`, `KSPNormType`
 @*/
@@ -295,15 +289,15 @@ PetscErrorCode KSPSetNormType(KSP ksp, KSPNormType normtype)
 -  it  - use -1 to check at all iterations
 
    Notes:
-   Currently only works with KSPCG, KSPBCGS and KSPIBCGS
+   Currently only works with `KSPCG`, `KSPBCGS` and `KSPIBCGS`
 
-   Use KSPSetNormType(ksp,KSP_NORM_NONE) to never check the norm
+   Use `KSPSetNormType`(ksp,`KSP_NORM_NONE`) to never check the norm
 
    On steps where the norm is not computed, the previous norm is still in the variable, so if you run with, for example,
     -ksp_monitor the residual norm will appear to be unchanged for several iterations (though it is not really unchanged).
    Level: advanced
 
-.seealso: `KSPSetUp()`, `KSPSolve()`, `KSPDestroy()`, `KSPConvergedSkip()`, `KSPSetNormType()`
+.seealso: `KSP`, `KSPSetUp()`, `KSPSolve()`, `KSPDestroy()`, `KSPConvergedSkip()`, `KSPSetNormType()`
 @*/
 PetscErrorCode KSPSetCheckNormIteration(KSP ksp, PetscInt it)
 {
@@ -315,7 +309,7 @@ PetscErrorCode KSPSetCheckNormIteration(KSP ksp, PetscInt it)
 }
 
 /*@
-   KSPSetLagNorm - Lags the residual norm calculation so that it is computed as part of the MPI_Allreduce() for
+   KSPSetLagNorm - Lags the residual norm calculation so that it is computed as part of the `MPI_Allreduce()` for
    computing the inner products for the next iteration.  This can reduce communication costs at the expense of doing
    one additional iteration.
 
@@ -323,18 +317,19 @@ PetscErrorCode KSPSetCheckNormIteration(KSP ksp, PetscInt it)
 
    Input Parameters:
 +  ksp - Krylov solver context
--  flg - PETSC_TRUE or PETSC_FALSE
+-  flg - `PETSC_TRUE` or `PETSC_FALSE`
 
    Options Database Keys:
 .  -ksp_lag_norm - lag the calculated residual norm
 
-   Notes:
-   Currently only works with KSPIBCGS.
+   Level: advanced
 
-   Use KSPSetNormType(ksp,KSP_NORM_NONE) to never check the norm
+   Notes:
+   Currently only works with `KSPIBCGS`.
+
+   Use `KSPSetNormType`(ksp,`KSP_NORM_NONE`) to never check the norm
 
    If you lag the norm and run with, for example, -ksp_monitor, the residual norm reported will be the lagged one.
-   Level: advanced
 
 .seealso: `KSPSetUp()`, `KSPSolve()`, `KSPDestroy()`, `KSPConvergedSkip()`, `KSPSetNormType()`, `KSPSetCheckNormIteration()`
 @*/
@@ -348,7 +343,7 @@ PetscErrorCode KSPSetLagNorm(KSP ksp, PetscBool flg)
 }
 
 /*@
-   KSPSetSupportedNorm - Sets a norm and preconditioner side supported by a KSP
+   KSPSetSupportedNorm - Sets a norm and preconditioner side supported by a `KSP`
 
    Logically Collective
 
@@ -360,12 +355,12 @@ PetscErrorCode KSPSetLagNorm(KSP ksp, PetscBool flg)
 
    Level: developer
 
-   Notes:
-   This function should be called from the implementation files KSPCreate_XXX() to declare
+   Note:
+   This function should be called from the implementation files `KSPCreate_XXX()` to declare
    which norms and preconditioner sides are supported. Users should not need to call this
    function.
 
-.seealso: `KSPSetNormType()`, `KSPSetPCSide()`
+.seealso: `KSP`, `KSPNormType`, `PCSide`, `KSPSetNormType()`, `KSPSetPCSide()`
 @*/
 PetscErrorCode KSPSetSupportedNorm(KSP ksp, KSPNormType normtype, PCSide pcside, PetscInt priority)
 {
@@ -441,68 +436,70 @@ PetscErrorCode KSPGetNormType(KSP ksp, KSPNormType *normtype)
 
 /*@
    KSPSetOperators - Sets the matrix associated with the linear system
-   and a (possibly) different one associated with the preconditioner.
+   and a (possibly) different one from which the preconditioner will be built
 
    Collective on ksp
 
    Input Parameters:
-+  ksp - the KSP context
++  ksp - the `KSP` context
 .  Amat - the matrix that defines the linear system
 -  Pmat - the matrix to be used in constructing the preconditioner, usually the same as Amat.
 
+    Level: beginner
+
    Notes:
+    If you know the operator Amat has a null space you can use `MatSetNullSpace()` and `MatSetTransposeNullSpace()` to supply the null
+    space to Amat and the `KSP` solvers will automatically use that null space as needed during the solution process.
 
-    If you know the operator Amat has a null space you can use MatSetNullSpace() and MatSetTransposeNullSpace() to supply the null
-    space to Amat and the KSP solvers will automatically use that null space as needed during the solution process.
-
-    All future calls to KSPSetOperators() must use the same size matrices!
+    All future calls to `KSPSetOperators()` must use the same size matrices!
 
     Passing a NULL for Amat or Pmat removes the matrix that is currently used.
 
     If you wish to replace either Amat or Pmat but leave the other one untouched then
-    first call KSPGetOperators() to get the one you wish to keep, call PetscObjectReference()
-    on it and then pass it back in in your call to KSPSetOperators().
+    first call KSPGetOperators() to get the one you wish to keep, call `PetscObjectReference()`
+    on it and then pass it back in in your call to `KSPSetOperators()`.
 
-    Level: beginner
-
-   Alternative usage: If the operators have NOT been set with KSP/PCSetOperators() then the operators
-      are created in PC and returned to the user. In this case, if both operators
+   Developer Notes:
+   If the operators have NOT been set with `KSPSetOperators()` then the operators
+      are created in the `PC` and returned to the user. In this case, if both operators
       mat and pmat are requested, two DIFFERENT operators will be returned. If
       only one is requested both operators in the PC will be the same (i.e. as
-      if one had called KSP/PCSetOperators() with the same argument for both Mats).
+      if one had called `KSPSetOperators()` with the same argument for both `Mat`s).
       The user must set the sizes of the returned matrices and their type etc just
-      as if the user created them with MatCreate(). For example,
+      as if the user created them with `MatCreate()`. For example,
 
-$         KSP/PCGetOperators(ksp/pc,&mat,NULL); is equivalent to
-$           set size, type, etc of mat
+.vb
+         KSPGetOperators(ksp/pc,&mat,NULL); is equivalent to
+           set size, type, etc of mat
 
-$         MatCreate(comm,&mat);
-$         KSP/PCSetOperators(ksp/pc,mat,mat);
-$         PetscObjectDereference((PetscObject)mat);
-$           set size, type, etc of mat
+         MatCreate(comm,&mat);
+         KSP/PCSetOperators(ksp/pc,mat,mat);
+         PetscObjectDereference((PetscObject)mat);
+           set size, type, etc of mat
 
      and
 
-$         KSP/PCGetOperators(ksp/pc,&mat,&pmat); is equivalent to
-$           set size, type, etc of mat and pmat
+         KSP/PCGetOperators(ksp/pc,&mat,&pmat); is equivalent to
+           set size, type, etc of mat and pmat
 
-$         MatCreate(comm,&mat);
-$         MatCreate(comm,&pmat);
-$         KSP/PCSetOperators(ksp/pc,mat,pmat);
-$         PetscObjectDereference((PetscObject)mat);
-$         PetscObjectDereference((PetscObject)pmat);
-$           set size, type, etc of mat and pmat
+         MatCreate(comm,&mat);
+         MatCreate(comm,&pmat);
+         KSP/PCSetOperators(ksp/pc,mat,pmat);
+         PetscObjectDereference((PetscObject)mat);
+         PetscObjectDereference((PetscObject)pmat);
+           set size, type, etc of mat and pmat
+.ve
 
-    The rational for this support is so that when creating a TS, SNES, or KSP the hierarchy
-    of underlying objects (i.e. SNES, KSP, PC, Mat) and their livespans can be completely
-    managed by the top most level object (i.e. the TS, SNES, or KSP). Another way to look
-    at this is when you create a SNES you do not NEED to create a KSP and attach it to
-    the SNES object (the SNES object manages it for you). Similarly when you create a KSP
-    you do not need to attach a PC to it (the KSP object manages the PC object for you).
-    Thus, why should YOU have to create the Mat and attach it to the SNES/KSP/PC, when
+    The rationale for this support is so that when creating a `TS`, `SNES`, or `KSP` the hierarchy
+    of underlying objects (i.e. `SNES`, `KSP`, `PC`, `Mat`) and their livespans can be completely
+    managed by the top most level object (i.e. the `TS`, `SNES`, or `KSP`). Another way to look
+    at this is when you create a `SNES` you do not NEED to create a `KSP` and attach it to
+    the `SNES` object (the `SNES` object manages it for you). Similarly when you create a `KSP`
+    you do not need to attach a `PC` to it (the `KSP` object manages the `PC` object for you).
+    Thus, why should YOU have to create the `Mat` and attach it to the `SNES`/`KSP`/`PC`, when
     it can be created for you?
 
-.seealso: `KSPSolve()`, `KSPGetPC()`, `PCGetOperators()`, `PCSetOperators()`, `KSPGetOperators()`, `KSPSetComputeOperators()`, `KSPSetComputeInitialGuess()`, `KSPSetComputeRHS()`
+.seealso: `KSP`, `Mat`, `KSPSolve()`, `KSPGetPC()`, `PCGetOperators()`, `PCSetOperators()`, `KSPGetOperators()`, `KSPSetComputeOperators()`, `KSPSetComputeInitialGuess()`, `KSPSetComputeRHS()`
 @*/
 PetscErrorCode KSPSetOperators(KSP ksp, Mat Amat, Mat Pmat)
 {
@@ -520,12 +517,12 @@ PetscErrorCode KSPSetOperators(KSP ksp, Mat Amat, Mat Pmat)
 
 /*@
    KSPGetOperators - Gets the matrix associated with the linear system
-   and a (possibly) different one associated with the preconditioner.
+   and a (possibly) different one used to construct the preconditioner.
 
    Collective on ksp
 
    Input Parameter:
-.  ksp - the KSP context
+.  ksp - the `KSP` context
 
    Output Parameters:
 +  Amat - the matrix that defines the linear system
@@ -533,10 +530,10 @@ PetscErrorCode KSPSetOperators(KSP ksp, Mat Amat, Mat Pmat)
 
     Level: intermediate
 
-   Notes:
+   Note:
     DOES NOT increase the reference counts of the matrix, so you should NOT destroy them.
 
-.seealso: `KSPSolve()`, `KSPGetPC()`, `PCGetOperators()`, `PCSetOperators()`, `KSPSetOperators()`, `KSPGetOperatorsSet()`
+.seealso: `KSP`, `KSPSolve()`, `KSPGetPC()`, `PCGetOperators()`, `PCSetOperators()`, `KSPSetOperators()`, `KSPGetOperatorsSet()`
 @*/
 PetscErrorCode KSPGetOperators(KSP ksp, Mat *Amat, Mat *Pmat)
 {
@@ -549,12 +546,12 @@ PetscErrorCode KSPGetOperators(KSP ksp, Mat *Amat, Mat *Pmat)
 
 /*@C
    KSPGetOperatorsSet - Determines if the matrix associated with the linear system and
-   possibly a different one associated with the preconditioner have been set in the KSP.
+   possibly a different one associated with the preconditioner have been set in the `KSP`.
 
    Not collective, though the results on all processes should be the same
 
    Input Parameter:
-.  pc - the KSP context
+.  pc - the `KSP` context
 
    Output Parameters:
 +  mat - the matrix associated with the linear system was set
@@ -562,7 +559,11 @@ PetscErrorCode KSPGetOperators(KSP ksp, Mat *Amat, Mat *Pmat)
 
    Level: intermediate
 
-.seealso: `PCSetOperators()`, `KSPGetOperators()`, `KSPSetOperators()`, `PCGetOperators()`, `PCGetOperatorsSet()`
+   Note:
+   This routine exists because if you call `KSPGetOperators()` on a `KSP` that does not yet have operators they are
+   automatically created in the call.
+
+.seealso: `KSP`, `PCSetOperators()`, `KSPGetOperators()`, `KSPSetOperators()`, `PCGetOperators()`, `PCGetOperatorsSet()`
 @*/
 PetscErrorCode KSPGetOperatorsSet(KSP ksp, PetscBool *mat, PetscBool *pmat)
 {
@@ -574,7 +575,7 @@ PetscErrorCode KSPGetOperatorsSet(KSP ksp, PetscBool *mat, PetscBool *pmat)
 }
 
 /*@C
-   KSPSetPreSolve - Sets a function that is called before every KSPSolve() is started
+   KSPSetPreSolve - Sets a function that is called at the beginning of each `KSPSolve()`
 
    Logically Collective on ksp
 
@@ -586,14 +587,14 @@ PetscErrorCode KSPGetOperatorsSet(KSP ksp, PetscBool *mat, PetscBool *pmat)
    Calling sequence of presolve:
 $  func(KSP ksp,Vec rhs,Vec x,void *ctx)
 
-+  ksp - the KSP context
++  ksp - the `KSP` context
 .  rhs - the right-hand side vector
 .  x - the solution vector
 -  ctx - optional user-provided context
 
    Level: developer
 
-.seealso: `KSPSetUp()`, `KSPSolve()`, `KSPDestroy()`, `KSP`, `KSPSetPostSolve()`
+.seealso: `KSPSetUp()`, `KSPSolve()`, `KSPDestroy()`, `KSP`, `KSPSetPostSolve()`, `PCEISENSTAT`
 @*/
 PetscErrorCode KSPSetPreSolve(KSP ksp, PetscErrorCode (*presolve)(KSP, Vec, Vec, void *), void *prectx)
 {
@@ -605,7 +606,7 @@ PetscErrorCode KSPSetPreSolve(KSP ksp, PetscErrorCode (*presolve)(KSP, Vec, Vec,
 }
 
 /*@C
-   KSPSetPostSolve - Sets a function that is called after every KSPSolve() completes (whether it converges or not)
+   KSPSetPostSolve - Sets a function that is called at the end of each `KSPSolve()` (whether it converges or not)
 
    Logically Collective on ksp
 
@@ -614,17 +615,17 @@ PetscErrorCode KSPSetPreSolve(KSP ksp, PetscErrorCode (*presolve)(KSP, Vec, Vec,
 .   postsolve - the function to call after the solve
 -   postctx - any context needed by the function
 
-   Level: developer
-
    Calling sequence of postsolve:
 $  func(KSP ksp,Vec rhs,Vec x,void *ctx)
 
-+  ksp - the KSP context
++  ksp - the `KSP` context
 .  rhs - the right-hand side vector
 .  x - the solution vector
 -  ctx - optional user-provided context
 
-.seealso: `KSPSetUp()`, `KSPSolve()`, `KSPDestroy()`, `KSP`, `KSPSetPreSolve()`
+   Level: developer
+
+.seealso: `KSPSetUp()`, `KSPSolve()`, `KSPDestroy()`, `KSP`, `KSPSetPreSolve()`, `PCEISENSTAT`
 @*/
 PetscErrorCode KSPSetPostSolve(KSP ksp, PetscErrorCode (*postsolve)(KSP, Vec, Vec, void *), void *postctx)
 {
@@ -636,7 +637,7 @@ PetscErrorCode KSPSetPostSolve(KSP ksp, PetscErrorCode (*postsolve)(KSP, Vec, Ve
 }
 
 /*@
-   KSPCreate - Creates the default KSP context.
+   KSPCreate - Creates the `KSP` context.
 
    Collective
 
@@ -644,15 +645,14 @@ PetscErrorCode KSPSetPostSolve(KSP ksp, PetscErrorCode (*postsolve)(KSP, Vec, Ve
 .  comm - MPI communicator
 
    Output Parameter:
-.  ksp - location to put the KSP context
+.  ksp - location to put the `KSP` context
 
-   Notes:
-   The default KSP type is GMRES with a restart of 30, using modified Gram-Schmidt
-   orthogonalization.
+   Note:
+   The default `KSPType` is `KSPGMRES` with a restart of 30, using modified Gram-Schmidt orthogonalization.
 
    Level: beginner
 
-.seealso: `KSPSetUp()`, `KSPSolve()`, `KSPDestroy()`, `KSP`
+.seealso: [](chapter_ksp), `KSPSetUp()`, `KSPSolve()`, `KSPDestroy()`, `KSP`, `KSPGMRES`, `KSPType`
 @*/
 PetscErrorCode KSPCreate(MPI_Comm comm, KSP *inksp)
 {
@@ -718,27 +718,25 @@ PetscErrorCode KSPCreate(MPI_Comm comm, KSP *inksp)
 }
 
 /*@C
-   KSPSetType - Builds KSP for a particular solver.
+   KSPSetType - Builds the `KSP` datastructure for a particular `KSPType`
 
    Logically Collective on ksp
 
    Input Parameters:
-+  ksp      - the Krylov space context
++  ksp  - the Krylov space context
 -  type - a known method
 
    Options Database Key:
-.  -ksp_type  <method> - Sets the method; use -help for a list
-    of available methods (for instance, cg or gmres)
+.  -ksp_type  <method> - Sets the method; use -help for a list  of available methods (for instance, cg or gmres)
 
    Notes:
-   See "petsc/include/petscksp.h" for available methods (for instance,
-   KSPCG or KSPGMRES).
+   See "petsc/include/petscksp.h" for available methods (for instance, `KSPCG` or `KSPGMRES`).
 
-  Normally, it is best to use the KSPSetFromOptions() command and
-  then set the KSP type from the options database rather than by using
+  Normally, it is best to use the `KSPSetFromOptions()` command and
+  then set the `KSP` type from the options database rather than by using
   this routine.  Using the options database provides the user with
   maximum flexibility in evaluating the many different Krylov methods.
-  The KSPSetType() routine is provided for those situations where it
+  The `KSPSetType()` routine is provided for those situations where it
   is necessary to set the iterative solver independently of the command
   line or options database.  This might be the case, for example, when
   the choice of iterative solver changes during the execution of the
@@ -748,11 +746,10 @@ PetscErrorCode KSPCreate(MPI_Comm comm, KSP *inksp)
 
   Level: intermediate
 
-  Developer Note: KSPRegister() is used to add Krylov types to KSPList from which they
-  are accessed by KSPSetType().
+  Developer Note:
+  `KSPRegister()` is used to add Krylov types to `KSPList` from which they are accessed by `KSPSetType()`.
 
-.seealso: `PCSetType()`, `KSPType`, `KSPRegister()`, `KSPCreate()`
-
+.seealso: [](chapter_ksp), `PCSetType()`, `KSPType`, `KSPRegister()`, `KSPCreate()`, `KSP`
 @*/
 PetscErrorCode KSPSetType(KSP ksp, KSPType type)
 {
@@ -786,7 +783,7 @@ PetscErrorCode KSPSetType(KSP ksp, KSPType type)
 }
 
 /*@C
-   KSPGetType - Gets the KSP type as a string from the KSP object.
+   KSPGetType - Gets the `KSP` type as a string from the KSP object.
 
    Not Collective
 
@@ -794,11 +791,11 @@ PetscErrorCode KSPSetType(KSP ksp, KSPType type)
 .  ksp - Krylov context
 
    Output Parameter:
-.  name - name of KSP method
+.  name - name of the `KSP` method
 
    Level: intermediate
 
-.seealso: `KSPSetType()`
+.seealso: [](chapter_ksp), `KSPType`, `KSP`, `KSPSetType()`
 @*/
 PetscErrorCode KSPGetType(KSP ksp, KSPType *type)
 {
@@ -810,7 +807,7 @@ PetscErrorCode KSPGetType(KSP ksp, KSPType *type)
 }
 
 /*@C
-  KSPRegister -  Adds a method to the Krylov subspace solver package.
+  KSPRegister -  Adds a method, `KSPType`, to the Krylov subspace solver package.
 
    Not Collective
 
@@ -818,8 +815,10 @@ PetscErrorCode KSPGetType(KSP ksp, KSPType *type)
 +  name_solver - name of a new user-defined solver
 -  routine_create - routine to create method context
 
-   Notes:
-   KSPRegister() may be called multiple times to add several user-defined solvers.
+   Level: advanced
+
+   Note:
+   `KSPRegister()` may be called multiple times to add several user-defined solvers.
 
    Sample usage:
 .vb
@@ -827,13 +826,11 @@ PetscErrorCode KSPGetType(KSP ksp, KSPType *type)
 .ve
 
    Then, your solver can be chosen with the procedural interface via
-$     KSPSetType(ksp,"my_solver")
+$    ` KSPSetType`(ksp,"my_solver")
    or at runtime via the option
 $     -ksp_type my_solver
 
-   Level: advanced
-
-.seealso: `KSPRegisterAll()`
+.seealso: [](chapter_ksp), `KSP`, `KSPType`, `KSPSetType`, `KSPRegisterAll()`
 @*/
 PetscErrorCode KSPRegister(const char sname[], PetscErrorCode (*function)(KSP))
 {
@@ -855,20 +852,22 @@ PetscErrorCode KSPMonitorMakeKey_Internal(const char name[], PetscViewerType vty
 }
 
 /*@C
-  KSPMonitorRegister -  Adds Krylov subspace solver monitor routine.
+  KSPMonitorRegister -  Registers a Krylov subspace solver monitor routine that may be accessed with `KSPMonitorSetFromOptions()`
 
   Not Collective
 
   Input Parameters:
 + name    - name of a new monitor routine
-. vtype   - A PetscViewerType for the output
-. format  - A PetscViewerFormat for the output
+. vtype   - A `PetscViewerType` for the output
+. format  - A `PetscViewerFormat` for the output
 . monitor - Monitor routine
 . create  - Creation routine, or NULL
 - destroy - Destruction routine, or NULL
 
-  Notes:
-  KSPMonitorRegister() may be called multiple times to add several user-defined monitors.
+  Level: advanced
+
+  Note:
+  `KSPMonitorRegister()` may be called multiple times to add several user-defined monitors.
 
   Sample usage:
 .vb
@@ -880,9 +879,7 @@ $     KSPMonitorSetFromOptions(ksp,"-ksp_monitor_my_monitor","my_monitor",NULL)
   or at runtime via the option
 $     -ksp_monitor_my_monitor
 
-   Level: advanced
-
-.seealso: `KSPMonitorRegisterAll()`
+.seealso: [](chapter_ksp), `KSP`, `KSPMonitorSet()`, `KSPMonitorRegisterAll()`, `KSPMonitorSetFromOptions()`
 @*/
 PetscErrorCode KSPMonitorRegister(const char name[], PetscViewerType vtype, PetscViewerFormat format, PetscErrorCode (*monitor)(KSP, PetscInt, PetscReal, PetscViewerAndFormat *), PetscErrorCode (*create)(PetscViewer, PetscViewerFormat, void *, PetscViewerAndFormat **), PetscErrorCode (*destroy)(PetscViewerAndFormat **))
 {

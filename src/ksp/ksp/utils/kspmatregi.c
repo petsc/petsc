@@ -5,13 +5,13 @@
 static PetscBool KSPMatRegisterAllCalled = PETSC_FALSE;
 
 /*@C
-  KSPMatRegisterAll - Registers all matrix implementations in the KSP package.
+  KSPMatRegisterAll - Registers all matrix implementations in the `KSP` package.
 
   Not Collective
 
   Level: advanced
 
-.seealso: `MatRegisterAll()`, `KSPInitializePackage()`
+.seealso: [](chapter_ksp), `Mat`, `MatRegister()`, `MatRegisterAll()`, `KSPInitializePackage()`
 @*/
 PetscErrorCode KSPMatRegisterAll(void)
 {

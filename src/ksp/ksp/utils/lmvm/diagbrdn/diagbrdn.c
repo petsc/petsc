@@ -549,7 +549,7 @@ PetscErrorCode MatCreate_LMVMDiagBrdn(Mat B)
    for approximating Hessians. It consists of a convex combination of DFP and BFGS
    diagonal approximation schemes, such that DiagBrdn = (1-theta)*BFGS + theta*DFP.
    To preserve symmetric positive-definiteness, we restrict theta to be in [0, 1].
-   We also ensure positive definiteness by taking the VecAbs() of the final vector.
+   We also ensure positive definiteness by taking the `VecAbs()` of the final vector.
 
    There are two ways of approximating the diagonal: using the forward (B) update
    schemes for BFGS and DFP and then taking the inverse, or directly working with
@@ -557,24 +557,20 @@ PetscErrorCode MatCreate_LMVMDiagBrdn(Mat B)
    Sherman-Morrison-Woodbury formula. We have implemented both, controlled by a
    parameter below.
 
-   In order to use the DiagBrdn matrix with other vector types, i.e. doing MatMults
-   and MatSolves, the matrix must first be created using MatCreate() and MatSetType(),
-   followed by MatLMVMAllocate(). Then it will be available for updating
-   (via MatLMVMUpdate) in one's favored solver implementation.
-   This allows for MPI compatibility.
+   In order to use the DiagBrdn matrix with other vector types, i.e. doing matrix-vector products
+   and matrix solves, the matrix must first be created using `MatCreate()` and `MatSetType()`,
+   followed by `MatLMVMAllocate()`. Then it will be available for updating
+   (via `MatLMVMUpdate()`) in one's favored solver implementation.
 
    Collective
 
    Input Parameters:
-+  comm - MPI communicator, set to PETSC_COMM_SELF
++  comm - MPI communicator
 .  n - number of local rows for storage vectors
 -  N - global size of the storage vectors
 
    Output Parameter:
 .  B - the matrix
-
-   It is recommended that one use the MatCreate(), MatSetType() and/or MatSetFromOptions()
-   paradigm instead of this routine directly.
 
    Options Database Keys:
 +   -mat_lmvm_theta - (developer) convex ratio between BFGS and DFP components of the diagonal J0 scaling
@@ -587,7 +583,11 @@ PetscErrorCode MatCreate_LMVMDiagBrdn(Mat B)
 
    Level: intermediate
 
-.seealso: `MatCreate()`, `MATLMVM`, `MATLMVMDIAGBRDN`, `MatCreateLMVMDFP()`, `MatCreateLMVMSR1()`,
+   Note:
+   It is recommended that one use the `MatCreate()`, `MatSetType()` and/or `MatSetFromOptions()`
+   paradigm instead of this routine directly.
+
+.seealso: [](chapter_ksp), `MatCreate()`, `MATLMVM`, `MATLMVMDIAGBRDN`, `MatCreateLMVMDFP()`, `MatCreateLMVMSR1()`,
           `MatCreateLMVMBFGS()`, `MatCreateLMVMBrdn()`, `MatCreateLMVMSymBrdn()`
 @*/
 PetscErrorCode MatCreateLMVMDiagBroyden(MPI_Comm comm, PetscInt n, PetscInt N, Mat *B)

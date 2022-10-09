@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-""" Configure PETSc and build and place still-required classic docs"""
+""" Configure PETSc and build and place the generated manual pages (as .md files) and html source (as .html files)"""
 
 import os
 import errno
