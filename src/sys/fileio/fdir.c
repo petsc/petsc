@@ -44,13 +44,6 @@ PetscErrorCode PetscMkdir(const char dir[])
   PetscFunctionReturn(0);
 }
 
-#if defined(PETSC_USING_DARWIN) && defined(PETSC_HAVE_FSTATAT)
-  /*
-    Apple's mkdtemp() crashes under Valgrind so this replaces it with a version that does not crash under valgrind
-*/
-  #include "apple_fdir.h"
-#endif
-
 /*@C
   PetscMkdtemp - Create a folder with a unique name given a filename template.
 
