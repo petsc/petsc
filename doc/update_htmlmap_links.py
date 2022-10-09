@@ -8,10 +8,10 @@ from build_classic_docs import HTMLMAP_DEFAULT_LOCATION
 def update_htmlmap_links(builder,
                          htmlmap_filename=HTMLMAP_DEFAULT_LOCATION,
                          htmlmap_modified_filename=HTMLMAP_DEFAULT_LOCATION + "_modified"):
-    """ Update manualpage links in an htmlmap file for use with Sphinx HTML builders
+    """ Update manualpage links in an htmlmap file for use with Sphinx HTML builders html and dirhtml
 
-        This converts source files (.md) to the locations of the resulting .html pages
-        or directories (which a web server will redirect to the index.html inside).
+        This converts file names in the htmlmap file (ending with .md) to the locations of the
+        file that Sphinx generates.
     """
 
     if builder.name == "dirhtml":
