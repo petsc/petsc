@@ -58,9 +58,12 @@ class Configure(config.package.GNUPackage):
       ver = re.compile('bfort \(sowing\) release ([0-9]+).([0-9]+).([0-9]+)').match(output)
       foundversion = tuple(map(int,ver.groups()))
       self.foundversion = ".".join(map(str,foundversion))
-    except RuntimeError as e:
-      self.log.write(self.bfort+' version check failed: '+str(e)+'\n')
-      return
+    except (RuntimeError,AttributeError) as e:
+      if self.foundinpath:
+         msg = self.bfort
+      else:
+         msg = os.path.join(self.petscdir.dir,self.arch,'lib','petsc','conf','pkg.conf.sowing')
+      raise RuntimeError('The '+self.bfort+' version check failed:\nlikely the bfort is broken/outdated.\nTry removing '+msg+'\nThen rerun ./configure\nThe error message from the failed test was:'+str(e))
     version = tuple(map(int, self.minversion.split('.')))
     if foundversion < version:
       raise RuntimeError(self.bfort+' version '+".".join(map(str,foundversion))+' is older than required '+self.minversion+'.\nRun ./configure with --download-sowing or install a new version of Sowing')
@@ -91,6 +94,7 @@ class Configure(config.package.GNUPackage):
         if hasattr(self, 'bfort'):
           self.logPrint('Found bfort in user provided directory, not installing sowing')
           self.found = 1
+          self.foundinpath = 1
         else:
           raise RuntimeError("You passed --with-sowing-dir='+installDir+' but it does not contain Sowing's bfort program")
 
@@ -104,6 +108,7 @@ class Configure(config.package.GNUPackage):
         if hasattr(self, 'bfort'):
           self.logPrint('Found bfort, not installing sowing')
           self.found = 1
+          self.foundinpath = 1
         else:
           self.logPrint('Bfort not found. Installing sowing for FortranStubs')
           if (not self.argDB['download-sowing']):  self.argDB['download-sowing'] = 1
@@ -117,6 +122,7 @@ class Configure(config.package.GNUPackage):
           self.getExecutable('mapnames', path=installDir, getFullPath = 1)
           self.getExecutable('bib2html', path=installDir, getFullPath = 1)
           self.found = 1
+          self.foundinpath = 0
           if not hasattr(self,'bfort'): raise RuntimeError('Unable to locate the bfort program (part of Sowing) in its expected location in '+installDir+'\n\
 Perhaps the installation has been corrupted or changed, remove the directory '+os.path.join(self.petscdir.dir,self.arch)+'\n\
 and run configure again\n')
