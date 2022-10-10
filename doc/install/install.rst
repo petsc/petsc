@@ -619,6 +619,26 @@ Run ``configure`` with ``--download-viennacl``; check
 
 `OpenCL`_/`ViennaCL`_ builds of PETSc currently work on Mac OS X, Linux, and Microsoft Windows.
 
+.. _doc_emcc:
+
+Installing To Run in Browser with Emscripten
+============================================
+
+PETSc can be used to run applications in the browser using https://emscripten.org, see https://emscripten.org/docs/getting_started/downloads.html,
+for instructions on installing Emscripten. Run
+
+.. code-block:: console
+
+   $  ./configure --with-cc=emcc --with-cxx=0 --with-fc=0 --with-ranlib=emranlib --with-ar=emar --with-shared-libraries=0 --download-f2cblaslapack=1 --with-mpi=0 --with-batch
+
+Applications may be compiled with, for example,
+
+.. code-block:: console
+
+   $  make ex19.html
+
+The rule for linking may be found in `lib/petsc/conf/test <PETSC_DOC_OUT_ROOT_PLACEHOLDER/lib/petsc/conf/test>`__
+
 .. _doc_config_hpc:
 
 Installing On Large Scale DOE Systems
