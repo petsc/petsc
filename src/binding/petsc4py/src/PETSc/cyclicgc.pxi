@@ -47,6 +47,8 @@ def garbage_cleanup(comm=None):
 
     No return value.
     """
+    if not (<int>PetscInitializeCalled): return
+    if (<int>PetscFinalizeCalled):   return
     cdef MPI_Comm ccomm
     if comm is None:
         ccomm = GetComm(COMM_WORLD, MPI_COMM_NULL)
@@ -68,6 +70,8 @@ def garbage_view(comm=None):
 
     No return value.
     """
+    if not (<int>PetscInitializeCalled): return
+    if (<int>PetscFinalizeCalled):   return
     cdef MPI_Comm ccomm
     if comm is None:
         comm = COMM_WORLD

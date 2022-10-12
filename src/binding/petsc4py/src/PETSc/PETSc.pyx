@@ -494,6 +494,7 @@ cdef int register() except -1:
 # --------------------------------------------------------------------
 
 def _initialize(args=None, comm=None):
+    import atexit
     global tracebacklist
     Error._traceback_ = tracebacklist
     global PetscError
@@ -508,6 +509,12 @@ def _initialize(args=None, comm=None):
     #
     global PETSC_COMM_DEFAULT
     PETSC_COMM_DEFAULT = PETSC_COMM_WORLD
+    # Register finalizer
+    atexit.register(_pre_finalize)
+
+def _pre_finalize():
+    # Called while the Python interpreter is still running
+    garbage_cleanup()
 
 def _finalize():
     finalize()
