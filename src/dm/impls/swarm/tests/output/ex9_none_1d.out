@@ -1,0 +1,15 @@
+DM Object: box 1 MPI process
+  type: plex
+box in 2 dimensions:
+  Number of 0-cells per rank: 40
+  Number of 1-cells per rank: 60
+  Number of 2-cells per rank: 20
+Periodic mesh (PERIODIC, NONE) coordinates localized
+Labels:
+  marker: 1 strata with value/size (1 (80))
+  Face Sets: 2 strata with value/size (1 (20), 3 (20))
+  depth: 3 strata with value/size (0 (40), 1 (60), 2 (20))
+  celltype: 3 strata with value/size (4 (20), 0 (40), 1 (60))
+dim = 2	totalWeight = 1.000000, user->charges[species[p]] = -1.000000	totalCharge = -1.000000, Total Area = 12.566400
+sigma: 0.0795773
+(x0,v0,t0,m0,q0,phi0): (1.000000e+00, 1.000000e+00, 1.000000e+00, 1.000000e+00, 1.000000e+00, 0.000000e+00) - (P, V) = (1.000000e+00, 1.000000e+00)
