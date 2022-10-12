@@ -90,9 +90,9 @@ static PetscErrorCode GarbageKeySortedIntersect_Private(PetscInt64 seta[], Petsc
     PetscBool sorted = PETSC_FALSE;
     /* In debug mode check whether the array are sorted */
     PetscCall(PetscSortedInt64(*lena, seta, &sorted));
-    PetscCheck(sorted == PETSC_FALSE, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Provided array in argument 1 is not sorted");
+    PetscCheck(sorted, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Provided array in argument 1 is not sorted");
     PetscCall(PetscSortedInt64(lenb, setb, &sorted));
-    PetscCheck(sorted == PETSC_FALSE, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Provided array in argument 3 is not sorted");
+    PetscCheck(sorted, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Provided array in argument 3 is not sorted");
   }
   endb = setb + (PetscInt64)lenb;
   for (ii = 0; ii < *lena; ii++) {
