@@ -287,6 +287,24 @@ static inline PetscErrorCode PetscFEInterpolate_Static(PetscFE fe, const PetscSc
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+static inline PetscErrorCode PetscFEInterpolateAtPoints_Static(PetscFE fe, PetscTabulation T, const PetscScalar x[], PetscFEGeom *fegeom, PetscInt q, PetscScalar interpolant[])
+{
+  PetscInt fc, f;
+
+  PetscFunctionBeginHot;
+  {
+    const PetscReal *basis = T->T[0];
+    const PetscInt   Nb    = T->Nb;
+    const PetscInt   Nc    = T->Nc;
+    for (fc = 0; fc < Nc; ++fc) {
+      interpolant[fc] = 0.0;
+      for (f = 0; f < Nb; ++f) { interpolant[fc] += x[f] * basis[(q * Nb + f) * Nc + fc]; }
+    }
+  }
+  PetscCall(PetscFEPushforward(fe, fegeom, 1, interpolant));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 static inline PetscErrorCode PetscFEInterpolateGradient_Static(PetscFE fe, PetscInt k, const PetscScalar x[], PetscFEGeom *fegeom, PetscInt q, PetscScalar interpolant[])
 {
   PetscTabulation T;
@@ -327,7 +345,7 @@ static inline PetscErrorCode PetscFEFreeInterpolateGradient_Static(PetscFE fe, c
 {
   PetscReal   realSpaceDer[3];
   PetscScalar compGradient[3];
-  PetscInt    Nb, Nc, fc, f = 0, d, g;
+  PetscInt    Nb, Nc, fc, f, d, g;
 
   PetscFunctionBeginHot;
   PetscCall(PetscFEGetDimension(fe, &Nb));
@@ -336,7 +354,7 @@ static inline PetscErrorCode PetscFEFreeInterpolateGradient_Static(PetscFE fe, c
   for (fc = 0; fc < Nc; ++fc) {
     interpolant[fc] = 0.0;
     for (d = 0; d < dim; ++d) compGradient[d] = 0.0;
-    for (d = 0; d < dim; ++d) {
+    for (f = 0; f < Nb; ++f) {
       for (d = 0; d < dim; ++d) {
         realSpaceDer[d] = 0.0;
         for (g = 0; g < dim; ++g) realSpaceDer[d] += invJ[g * dim + d] * basisDer[((q * Nb + f) * Nc + fc) * dim + g];
