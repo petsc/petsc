@@ -4549,11 +4549,12 @@ PetscErrorCode DMPlexComputeResidual_Internal(DM dm, PetscFormKey key, IS cellIS
 
   PetscFunctionBegin;
   if (!cellIS) PetscFunctionReturn(0);
+  PetscCall(ISGetPointRange(cellIS, &cStart, &cEnd, &cells));
+  if (cStart >= cEnd) PetscFunctionReturn(0);
   PetscCall(PetscLogEventBegin(DMPLEX_ResidualFEM, dm, 0, 0, 0));
   /* TODO The places where we have to use isFE are probably the member functions for the PetscDisc class */
   /* TODO The FVM geometry is over-manipulated. Make the precalc functions return exactly what we need */
   /* FEM+FVM */
-  PetscCall(ISGetPointRange(cellIS, &cStart, &cEnd, &cells));
   PetscCall(DMPlexGetHeightStratum(dm, 1, &fStart, &fEnd));
   /* 1: Get sizes from dm and dmAux */
   PetscCall(DMGetLocalSection(dm, &section));
@@ -4917,6 +4918,10 @@ PetscErrorCode DMPlexComputeResidual_Hybrid_Internal(DM dm, PetscFormKey key[], 
   PetscFEGeom    *affineGeom = NULL, **geoms = NULL;
 
   PetscFunctionBegin;
+  if (!cellIS) PetscFunctionReturn(0);
+  PetscCall(ISGetPointRange(cellIS, &cStart, &cEnd, &cells));
+  PetscCall(ISGetLocalSize(cellIS, &numCells));
+  if (cStart >= cEnd) PetscFunctionReturn(0);
   if ((key[0].label == key[1].label) && (key[0].value == key[1].value) && (key[0].part == key[1].part)) {
     const char *name;
     PetscCall(PetscObjectGetName((PetscObject)key[0].label, &name));
@@ -4925,8 +4930,6 @@ PetscErrorCode DMPlexComputeResidual_Hybrid_Internal(DM dm, PetscFormKey key[], 
   PetscCall(PetscLogEventBegin(DMPLEX_ResidualFEM, dm, 0, 0, 0));
   /* TODO The places where we have to use isFE are probably the member functions for the PetscDisc class */
   /* FEM */
-  PetscCall(ISGetLocalSize(cellIS, &numCells));
-  PetscCall(ISGetPointRange(cellIS, &cStart, &cEnd, &cells));
   /* 1: Get sizes from dm and dmAux */
   PetscCall(DMGetSection(dm, &section));
   PetscCall(DMGetLabel(dm, "ghost", &ghostLabel));
@@ -5299,9 +5302,10 @@ PetscErrorCode DMPlexComputeJacobian_Internal(DM dm, PetscFormKey key, IS cellIS
 
   PetscFunctionBegin;
   if (!cellIS) goto end;
-  PetscCall(PetscLogEventBegin(DMPLEX_JacobianFEM, dm, 0, 0, 0));
-  PetscCall(ISGetLocalSize(cellIS, &numCells));
   PetscCall(ISGetPointRange(cellIS, &cStart, &cEnd, &cells));
+  PetscCall(ISGetLocalSize(cellIS, &numCells));
+  if (cStart >= cEnd) goto end;
+  PetscCall(PetscLogEventBegin(DMPLEX_JacobianFEM, dm, 0, 0, 0));
   PetscCall(DMHasBasisTransform(dm, &transform));
   PetscCall(DMGetBasisTransformDM_Internal(dm, &tdm));
   PetscCall(DMGetBasisTransformVec_Internal(dm, &tv));
@@ -5520,14 +5524,16 @@ PetscErrorCode DMPlexComputeJacobian_Hybrid_Internal(DM dm, PetscFormKey key[], 
   PetscBool       hasBdJac, hasBdPrec;
 
   PetscFunctionBegin;
+  if (!cellIS) PetscFunctionReturn(0);
+  PetscCall(ISGetPointRange(cellIS, &cStart, &cEnd, &cells));
+  PetscCall(ISGetLocalSize(cellIS, &numCells));
+  if (cStart >= cEnd) PetscFunctionReturn(0);
   if ((key[0].label == key[1].label) && (key[0].value == key[1].value) && (key[0].part == key[1].part)) {
     const char *name;
     PetscCall(PetscObjectGetName((PetscObject)key[0].label, &name));
     SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Form keys for each side of a cohesive surface must be different (%s, %" PetscInt_FMT ", %" PetscInt_FMT ")", name, key[0].value, key[0].part);
   }
   PetscCall(PetscLogEventBegin(DMPLEX_JacobianFEM, dm, 0, 0, 0));
-  PetscCall(ISGetLocalSize(cellIS, &numCells));
-  PetscCall(ISGetPointRange(cellIS, &cStart, &cEnd, &cells));
   PetscCall(DMConvert(dm, DMPLEX, &plex));
   PetscCall(DMGetSection(dm, &section));
   PetscCall(DMGetGlobalSection(dm, &globalSection));
