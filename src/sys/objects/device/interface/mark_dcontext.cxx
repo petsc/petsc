@@ -338,6 +338,36 @@ static MarkedObjectMap marked_object_map;
 // Utility Functions
 // ==========================================================================================
 
+PetscErrorCode PetscGetMarkedObjectMap_Internal(std::size_t *nkeys, PetscObjectId **keys, PetscMemoryAccessMode **modes, std::size_t **ndeps, PetscEvent ***dependencies)
+{
+  std::size_t i    = 0;
+  const auto &map  = marked_object_map.map;
+  const auto  size = *nkeys = map.size();
+
+  PetscFunctionBegin;
+  PetscCall(PetscMalloc4(size, keys, size, modes, size, ndeps, size, dependencies));
+  for (auto &&it : map) {
+    std::size_t j = 0;
+
+    (*keys)[i]         = it.first;
+    (*modes)[i]        = it.second.mode;
+    (*ndeps)[i]        = it.second.dependencies.size();
+    (*dependencies)[i] = nullptr;
+    PetscCall(PetscMalloc1((*ndeps)[i], (*dependencies) + i));
+    for (auto &&dep : it.second.dependencies) (*dependencies)[i][j++] = dep.event();
+    ++i;
+  }
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode PetscRestoreMarkedObjectMap_Internal(std::size_t nkeys, PetscObjectId **keys, PetscMemoryAccessMode **modes, std::size_t **ndeps, PetscEvent ***dependencies)
+{
+  PetscFunctionBegin;
+  for (std::size_t i = 0; i < nkeys; ++i) PetscCall(PetscFree((*dependencies)[i]));
+  PetscCall(PetscFree4(*keys, *modes, *ndeps, *dependencies));
+  PetscFunctionReturn(0);
+}
+
 template <typename T>
 static PetscErrorCode PetscDeviceContextMapIterVisitor(PetscDeviceContext dctx, T &&callback) noexcept
 {
@@ -524,7 +554,7 @@ static PetscErrorCode MarkFromID_IncompatibleModes(MarkedObjectMap::mapped_type 
   auto &object_dependencies = marked.dependencies;
 
   PetscFunctionBegin;
-  // we are NOT compatible  with the previous mode
+  // we are NOT compatible with the previous mode
   PetscCall(DEBUG_INFO("new mode (%s) NOT COMPATIBLE with %s mode (%s), serializing then clearing (%zu) %s\n", PetscMemoryAccessModeToString(mode), object_dependencies.empty() ? "default" : "old", PetscMemoryAccessModeToString(old_mode),
                        object_dependencies.size(), object_dependencies.size() == 1 ? "dependency" : "dependencies"));
 
