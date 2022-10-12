@@ -752,50 +752,59 @@ PetscErrorCode DMSwarmComputeLocalSize(DM sw, PetscInt N, PetscProbFunc density)
   DM               dm;
   PetscQuadrature  quad;
   const PetscReal *xq, *wq;
-  PetscInt        *npc, *cellid;
-  PetscReal        xi0[3];
-  PetscInt         Ns, cStart, cEnd, c, dim, d, Nq, q, Np = 0, p;
+  PetscReal       *n_int;
+  PetscInt        *npc_s, *cellid, Ni;
+  PetscReal        gmin[3], gmax[3], xi0[3];
+  PetscInt         Ns, cStart, cEnd, c, dim, d, Nq, q, Np = 0, p, s;
   PetscBool        simplex;
 
   PetscFunctionBegin;
   PetscCall(DMSwarmGetNumSpecies(sw, &Ns));
   PetscCall(DMSwarmGetCellDM(sw, &dm));
   PetscCall(DMGetDimension(dm, &dim));
+  PetscCall(DMGetBoundingBox(dm, gmin, gmax));
   PetscCall(DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd));
   PetscCall(DMPlexIsSimplex(dm, &simplex));
   PetscCall(DMGetCoordinatesLocalSetUp(dm));
   if (simplex) PetscCall(PetscDTStroudConicalQuadrature(dim, 1, 5, -1.0, 1.0, &quad));
   else PetscCall(PetscDTGaussTensorQuadrature(dim, 1, 5, -1.0, 1.0, &quad));
   PetscCall(PetscQuadratureGetData(quad, NULL, NULL, &Nq, &xq, &wq));
-  PetscCall(PetscMalloc1(cEnd - cStart, &npc));
+  PetscCall(PetscCalloc2(Ns, &n_int, (cEnd - cStart) * Ns, &npc_s));
   /* Integrate the density function to get the number of particles in each cell */
   for (d = 0; d < dim; ++d) xi0[d] = -1.0;
   for (c = 0; c < cEnd - cStart; ++c) {
     const PetscInt cell = c + cStart;
-    PetscReal      v0[3], J[9], invJ[9], detJ;
-    PetscReal      n_int = 0.;
+    PetscReal      v0[3], J[9], invJ[9], detJ, detJp = 2. / (gmax[0] - gmin[0]), xr[3], den;
 
+    /*Have to transform quadrature points/weights to cell domain*/
     PetscCall(DMPlexComputeCellGeometryFEM(dm, cell, NULL, v0, J, invJ, &detJ));
+    PetscCall(PetscArrayzero(n_int, Ns));
     for (q = 0; q < Nq; ++q) {
-      PetscReal xr[3], den[3];
-
       CoordinatesRefToReal(dim, dim, xi0, v0, J, &xq[q * dim], xr);
-      PetscCall(density(xr, NULL, den));
-      n_int += den[0] * wq[q];
+      /* Have to transform mesh to domain of definition of PDF, [-1, 1], and weight PDF by |J|/2 */
+      xr[0] = detJp * (xr[0] - gmin[0]) - 1.;
+
+      for (s = 0; s < Ns; ++s) {
+        PetscCall(density(xr, NULL, &den));
+        n_int[s] += (detJp * den) * (detJ * wq[q]) / (PetscReal)Ns;
+      }
     }
-    npc[c] = (PetscInt)(N * n_int);
-    npc[c] *= Ns;
-    Np += npc[c];
+    for (s = 0; s < Ns; ++s) {
+      Ni = N;
+      npc_s[c * Ns + s] += (PetscInt)(Ni * n_int[s]);
+      Np += npc_s[c * Ns + s];
+    }
   }
   PetscCall(PetscQuadratureDestroy(&quad));
   PetscCall(DMSwarmSetLocalSizes(sw, Np, 0));
-
   PetscCall(DMSwarmGetField(sw, DMSwarmPICField_cellid, NULL, NULL, (void **)&cellid));
   for (c = 0, p = 0; c < cEnd - cStart; ++c) {
-    for (q = 0; q < npc[c]; ++q, ++p) cellid[p] = c;
+    for (s = 0; s < Ns; ++s) {
+      for (q = 0; q < npc_s[c * Ns + s]; ++q, ++p) cellid[p] = c;
+    }
   }
   PetscCall(DMSwarmRestoreField(sw, DMSwarmPICField_cellid, NULL, NULL, (void **)&cellid));
-  PetscCall(PetscFree(npc));
+  PetscCall(PetscFree2(n_int, npc_s));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -903,6 +912,7 @@ PetscErrorCode DMSwarmInitializeCoordinates(DM sw)
 
     PetscCall(DMSwarmGetCellDM(sw, &dm));
     PetscCall(DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd));
+    PetscCall(DMGetApplicationContext(sw, &ctx));
 
     /* Set particle position randomly in cell, set weights to 1 */
     PetscCall(PetscRandomCreate(PetscObjectComm((PetscObject)dm), &rnd));
@@ -923,7 +933,7 @@ PetscErrorCode DMSwarmInitializeCoordinates(DM sw)
         for (d = 0; d < dim; ++d) PetscCall(PetscRandomGetValueReal(rnd, &xref[d]));
         CoordinatesRefToReal(dim, dim, xi0, v0, J, xref, &x[p * dim]);
 
-        weight[p]  = 1.0;
+        weight[p]  = 1.0 / Np;
         species[p] = p % Ns;
       }
       PetscCall(PetscFree(pidx));

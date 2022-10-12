@@ -247,8 +247,8 @@ static PetscErrorCode SetProblem(TS ts)
     PetscCall(MatSetBlockSize(J, 2 * dim));
     PetscCall(MatSetFromOptions(J));
     PetscCall(MatSetUp(J));
-    PetscCall(TSSetRHSFunction(ts, NULL, RHSFunction, &user));
-    PetscCall(TSSetRHSJacobian(ts, J, J, RHSJacobian, &user));
+    PetscCall(TSSetRHSFunction(ts, NULL, RHSFunction, user));
+    PetscCall(TSSetRHSJacobian(ts, J, J, RHSJacobian, user));
     PetscCall(MatDestroy(&J));
   }
   // Define split system for X and V
@@ -276,12 +276,12 @@ static PetscErrorCode SetProblem(TS ts)
     PetscCall(TSRHSSplitSetIS(ts, "momentum", isv));
     PetscCall(ISDestroy(&isx));
     PetscCall(ISDestroy(&isv));
-    PetscCall(TSRHSSplitSetRHSFunction(ts, "position", NULL, RHSFunctionX, &user));
-    PetscCall(TSRHSSplitSetRHSFunction(ts, "momentum", NULL, RHSFunctionV, &user));
+    PetscCall(TSRHSSplitSetRHSFunction(ts, "position", NULL, RHSFunctionX, user));
+    PetscCall(TSRHSSplitSetRHSFunction(ts, "momentum", NULL, RHSFunctionV, user));
   }
   // Define symplectic formulation U_t = S . G, where G = grad F
   {
-    //PetscCall(TSDiscGradSetFormulation(ts, RHSJacobianS, RHSObjectiveF, RHSFunctionG, &user));
+    //PetscCall(TSDiscGradSetFormulation(ts, RHSJacobianS, RHSObjectiveF, RHSFunctionG, user));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
