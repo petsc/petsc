@@ -57,6 +57,10 @@ Changes: Development
 
 .. rubric:: DMPlex:
 
+- Add ``DMPlexGetOrientedCone()`` and ``DMPlexRestoreOrientedCone()`` to return both cone and orientation together
+- Add ``DMPlexTransformGetChart()``, ``DMPlexTransformGetCellType()``, ``DMPlexTransformGetDepth()``, ``DMPlexTransformGetDepthStratum()``, ``DMPlexTransformGetConeSize()`` to enable ephemeral meshes
+- Remove ``DMPlexAddConeSize()``
+
 .. rubric:: FE/FV:
 
 .. rubric:: DMNetwork:

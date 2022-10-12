@@ -134,6 +134,7 @@ static PetscErrorCode DMPlexTransformInitialize_1D(DMPlexTransform tr)
   tr->ops->setfromoptions        = DMPlexTransformSetFromOptions_1D;
   tr->ops->setup                 = DMPlexTransformSetUp_1D;
   tr->ops->destroy               = DMPlexTransformDestroy_1D;
+  tr->ops->setdimensions         = DMPlexTransformSetDimensions_Internal;
   tr->ops->celltransform         = DMPlexTransformCellTransform_1D;
   tr->ops->getsubcellorientation = DMPlexTransformGetSubcellOrientation_1D;
   tr->ops->mapcoordinates        = DMPlexTransformMapCoordinatesBarycenter_Internal;

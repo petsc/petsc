@@ -73,6 +73,7 @@ int main(int argc, char **argv)
     Vec      X;
     PetscInt cdim;
 
+    PetscCall(DMGetCoordinatesLocalSetUp(dm));
     PetscCall(DMGetCoordinateDim(dm, &cdim));
     PetscCall(DMGetCoordinateDM(dm, &cdm));
     PetscCall(PetscObjectSetName((PetscObject)cdm, "coords"));

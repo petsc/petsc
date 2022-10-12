@@ -177,6 +177,7 @@ static PetscErrorCode DMPlexTransformInitialize_Alfeld(DMPlexTransform tr)
   tr->ops->view                  = DMPlexTransformView_Alfeld;
   tr->ops->setup                 = DMPlexTransformSetUp_Alfeld;
   tr->ops->destroy               = DMPlexTransformDestroy_Alfeld;
+  tr->ops->setdimensions         = DMPlexTransformSetDimensions_Internal;
   tr->ops->celltransform         = DMPlexTransformCellRefine_Alfeld;
   tr->ops->getsubcellorientation = DMPlexTransformGetSubcellOrientation_Alfeld;
   tr->ops->mapcoordinates        = DMPlexTransformMapCoordinatesBarycenter_Internal;

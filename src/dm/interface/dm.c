@@ -3211,7 +3211,9 @@ PetscErrorCode DMLocalToLocalBegin(DM dm, Vec g, InsertMode mode, Vec l)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscCall((*dm->ops->localtolocalbegin)(dm, g, mode == INSERT_ALL_VALUES ? INSERT_VALUES : (mode == ADD_ALL_VALUES ? ADD_VALUES : mode), l));
+  PetscValidHeaderSpecific(g, VEC_CLASSID, 2);
+  PetscValidHeaderSpecific(l, VEC_CLASSID, 4);
+  PetscUseTypeMethod(dm, localtolocalbegin, g, mode == INSERT_ALL_VALUES ? INSERT_VALUES : (mode == ADD_ALL_VALUES ? ADD_VALUES : mode), l);
   PetscFunctionReturn(0);
 }
 
@@ -3238,7 +3240,9 @@ PetscErrorCode DMLocalToLocalEnd(DM dm, Vec g, InsertMode mode, Vec l)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscCall((*dm->ops->localtolocalend)(dm, g, mode == INSERT_ALL_VALUES ? INSERT_VALUES : (mode == ADD_ALL_VALUES ? ADD_VALUES : mode), l));
+  PetscValidHeaderSpecific(g, VEC_CLASSID, 2);
+  PetscValidHeaderSpecific(l, VEC_CLASSID, 4);
+  PetscUseTypeMethod(dm, localtolocalend, g, mode == INSERT_ALL_VALUES ? INSERT_VALUES : (mode == ADD_ALL_VALUES ? ADD_VALUES : mode), l);
   PetscFunctionReturn(0);
 }
 
