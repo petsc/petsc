@@ -2220,7 +2220,7 @@ PetscErrorCode PCMGGalerkinGetMatProductAlgorithm(PC pc, const char *name[])
    Notes:
     Apart from pc_hypre_type (for which there is `PCHYPRESetType()`),
           the many hypre options can ONLY be set via the options database (e.g. the command line
-          or with PetscOptionsSetValue(), there are no functions to set them)
+          or with `PetscOptionsSetValue()`, there are no functions to set them)
 
           The options -pc_hypre_boomeramg_max_iter and -pc_hypre_boomeramg_tol refer to the number of iterations
           (V-cycles) and tolerance that boomeramg does EACH time it is called. So for example, if
@@ -2237,17 +2237,14 @@ PetscErrorCode PCMGGalerkinGetMatProductAlgorithm(PC pc, const char *name[])
           and use -ksp_max_it to control the number of V-cycles.
           (see the PETSc FAQ.html at the PETSc website under the Documentation tab).
 
-          2007-02-03 Using HYPRE-1.11.1b, the routine HYPRE_BoomerAMGSolveT and the option
-          -pc_hypre_parasails_reuse were failing with SIGSEGV. Dalcin L.
-
           `MatSetNearNullSpace()` - if you provide a near null space to your matrix it is ignored by hypre UNLESS you also use
-          the following two options:
+          the following two options: ``-pc_hypre_boomeramg_nodal_coarsen <n> -pc_hypre_boomeramg_vec_interp_variant <v>``
 
           See `PCPFMG`, `PCSMG`, and `PCSYSPFMG` for access to hypre's other (nonalgebraic) multigrid solvers
 
           For `PCHYPRE` type of ams or ads auxiliary data must be provided to the preconditioner with `PCHYPRESetDiscreteGradient()`,
           `PCHYPRESetDiscreteCurl()`, `PCHYPRESetInterpolations()`, `PCHYPRESetAlphaPoissonMatrix()`, `PCHYPRESetBetaPoissonMatrix()`, `PCHYPRESetEdgeConstantVectors()`,
-          PCHYPREAMSSetInteriorNodes()
+          `PCHYPREAMSSetInteriorNodes()`
 
    PETSc provides its own geometric and algebraic multigrid solvers `PCMG` and `PCGAMG`, also see `PCHMG` which is useful for certain multicomponent problems
 
