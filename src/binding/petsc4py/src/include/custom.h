@@ -142,18 +142,6 @@ PetscLogEventFindName(PetscLogEvent eventid,
   PetscFunctionReturn(0);
 }
 
-#if !defined(PETSC_USE_LOG)
-static PetscErrorCode
-PetscLogEventGetPerfInfo(int stage,PetscLogEvent event,PetscEventPerfInfo *info)
-{
-  PetscFunctionBegin;
-  PetscValidPointer(info,3);
-  (void)stage; (void)event; /* unused */
-  PetscCall(PetscMemzero(info,sizeof(PetscEventPerfInfo)));
-  PetscFunctionReturn(0);
-}
-#endif
-
 /* ---------------------------------------------------------------- */
 
 /* The object is not used so far. I expect PETSc will sooner or later support
