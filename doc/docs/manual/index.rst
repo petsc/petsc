@@ -3,10 +3,14 @@ User-Guide
 
 .. raw:: latex
 
-  \thispagestyle{plain}
+  \thispagestyle{empty}
+  \vspace*{-0.5in}
+  \hfill  {\large {\bf ANL-21/39 Rev \techreportversion{}}}
+  \break
+  \break
+  \break
+  \break
   {\Huge\textbf{PETSc/TAO Users Manual}}
-
-`PETSc/TAO Users Manual in PDF <manual.pdf>`__
 
 **Argonne National Laboratory**
 
@@ -73,6 +77,10 @@ Prepared by
 | :sup:`19`\ Institute for Microelectronics, TU Wien
 | :sup:`20`\ Department of Computer Science, Durham University
 | :sup:`21`\ Scripps Institution of Oceanography, University of California, San Diego
+
+.. raw:: latex
+
+  {\bf \today}
 
 --------------
 

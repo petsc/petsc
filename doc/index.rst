@@ -43,6 +43,9 @@ Main Topics
    developers/index
    miscellaneous/index
 
+* `PETSc/TAO Users Manual in PDF <docs/manual/manual.pdf>`__
+
+
 Toolkits/libraries that use PETSc
 ==========================================
 
