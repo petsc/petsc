@@ -76,7 +76,7 @@ PETSC_EXTERN PetscErrorCode PetscDeviceContextJoin(PetscDeviceContext, PetscInt,
 PETSC_EXTERN PetscErrorCode PetscDeviceContextSynchronize(PetscDeviceContext);
 PETSC_EXTERN PetscErrorCode PetscDeviceContextSetFromOptions(MPI_Comm, PetscDeviceContext);
 PETSC_EXTERN PetscErrorCode PetscDeviceContextView(PetscDeviceContext, PetscViewer);
-PETSC_EXTERN PetscErrorCode PetscDeviceContextViewFromOptions(PetscDeviceContext, PetscObject, PetscViewer);
+PETSC_EXTERN PetscErrorCode PetscDeviceContextViewFromOptions(PetscDeviceContext, PetscObject, const char name[]);
 PETSC_EXTERN PetscErrorCode PetscDeviceContextGetCurrentContext(PetscDeviceContext *);
 PETSC_EXTERN PetscErrorCode PetscDeviceContextSetCurrentContext(PetscDeviceContext);
 #else

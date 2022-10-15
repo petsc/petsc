@@ -199,56 +199,60 @@ int main(int argc, char *argv[])
 
 /*TEST
 
-  build:
-   requires: defined(PETSC_HAVE_CXX)
+  testset:
+    requires: defined(PETSC_USE_INFO), defined(PETSC_USE_DEBUG), cxx
+    args: -info :device
+    suffix: with_info
+    test:
+      requires: !device
+      suffix: host_no_device
+    test:
+      requires: device
+      args: -default_device_type host
+      filter: sed -e 's/host/IMPL/g' -e 's/cuda/IMPL/g' -e 's/hip/IMPL/g' -e 's/sycl/IMPL/g'
+      suffix: host_with_device
+    test:
+      requires: cuda
+      args: -default_device_type cuda
+      suffix: cuda
+    test:
+      requires: hip
+      args: -default_device_type hip
+      suffix: hip
+    test:
+      requires: sycl
+      args: -default_device_type sycl
+      suffix: sycl
 
   testset:
-   requires: defined(PETSC_USE_INFO), defined(PETSC_USE_DEBUG)
-   args: -info :device
-   suffix: with_info
-   test:
-     requires: !device
-     suffix: host_no_device
-   test:
-     requires: device
-     args: -default_device_type host
-     filter: sed -e 's/host/IMPL/g' -e 's/cuda/IMPL/g' -e 's/hip/IMPL/g' -e 's/sycl/IMPL/g'
-     suffix: host_with_device
-   test:
-     requires: cuda
-     args: -default_device_type cuda
-     suffix: cuda
-   test:
-     requires: hip
-     args: -default_device_type hip
-     suffix: hip
-   test:
-     requires: sycl
-     args: -default_device_type sycl
-     suffix: sycl
+    output_file: ./output/ExitSuccess.out
+    requires: !defined(PETSC_USE_DEBUG)
+    filter: grep -v "\[DEBUG OUTPUT\]"
+    suffix: no_info
+    test:
+      requires: !device
+      suffix: host_no_device
+    test:
+      requires: device
+      args: -default_device_type host
+      suffix: host_with_device
+    test:
+      requires: cuda
+      args: -default_device_type cuda
+      suffix: cuda
+    test:
+      requires: hip
+      args: -default_device_type hip
+      suffix: hip
+    test:
+      requires: sycl
+      args: -default_device_type sycl
+      suffix: sycl
 
-  testset:
-   output_file: ./output/ExitSuccess.out
-   requires: !defined(PETSC_USE_DEBUG)
-   filter: grep -v "\[DEBUG OUTPUT\]"
-   suffix: no_info
-   test:
-     requires: !device
-     suffix: host_no_device
-   test:
-     requires: device
-     args: -default_device_type host
-     suffix: host_with_device
-   test:
-     requires: cuda
-     args: -default_device_type cuda
-     suffix: cuda
-   test:
-     requires: hip
-     args: -default_device_type hip
-     suffix: hip
-   test:
-     requires: sycl
-     args: -default_device_type sycl
-     suffix: sycl
+  test:
+    requires: !cxx
+    output_file: ./output/ExitSuccess.out
+    filter: grep -v "\[DEBUG OUTPUT\]"
+    suffix: no_cxx
+
 TEST*/

@@ -64,7 +64,7 @@ static inline PetscErrorCode AssertPetscDevicesValidAndEqual(PetscDevice left, P
 {
   PetscFunctionBegin;
   PetscCheckCompatibleDevices(left, 1, right, 2);
-  PetscCheck(left == right, PETSC_COMM_SELF, PETSC_ERR_ARG_CORRUPT, "%s", errStr);
+  PetscCheck(left == right, PETSC_COMM_SELF, PETSC_ERR_ARG_CORRUPT, "%s: %p != %p", errStr, left, right);
   PetscFunctionReturn(0);
 }
 
