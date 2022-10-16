@@ -31,6 +31,9 @@ Changes: Development
 
 .. rubric:: Vec:
 
+- Document ``VecOperation``
+- Add ``VECOP_SET``
+
 .. rubric:: PetscSection:
 
 .. rubric:: PetscPartitioner:

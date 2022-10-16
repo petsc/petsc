@@ -672,12 +672,31 @@ PETSC_EXTERN PETSC_DEPRECATED_FUNCTION("Use VecLockReadPop() (since version 3.11
   #define VecLocked(x, arg)           0
 #endif
 
-/*
-    These numbers need to match the entries in
-  the function table in vecimpl.h
+/*E
+  VecOperation - Enumeration of overide-able methods in the `Vec` implementation function-table.
+
++ VECOP_DUPLICATE  - `VecDuplicate()`
+. VECOP_SET        - `VecSet()`
+. VECOP_VIEW       - `VecView()`
+. VECOP_LOAD       - `VecLoad()`
+. VECOP_VIEWNATIVE - `VecViewNative()`
+- VECOP_LOADNATIVE - `VecLoadNative()`
+
+  Notes:
+  Some operations may serve as the implementation for other routines not listed above. For
+  example `VECOP_SET` can be used to simultaneously overriding the implementation used in
+  `VecSet()`, `VecSetInf()`, and `VecZeroEntries()`.
+
+  Entries to `VecOperation` are added as needed so if you do not see the operation listed which
+  you'd like to replace, please send mail to `petsc-maint@mcs.anl.gov`!
+
+  Level: advanced
+
+.seealso: `Vec`, `VecSetOperation()`
 */
 typedef enum {
   VECOP_DUPLICATE  = 0,
+  VECOP_SET        = 10,
   VECOP_VIEW       = 33,
   VECOP_LOAD       = 41,
   VECOP_VIEWNATIVE = 68,
