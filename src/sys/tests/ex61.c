@@ -67,7 +67,6 @@ int main(int argc, char *argv[])
       env: BOP=${FOO}
       suffix: all_seperate_lines
 
-
   test:
     output_file: ./output/empty.out
     args: -env_vars_def 'FOO=hello'

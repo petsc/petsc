@@ -97,5 +97,4 @@ int main(int argc, char *argv[])
       args: -default_device_type sycl -root_device_context_device_type sycl
       suffix: sycl
 
-
 TEST*/
