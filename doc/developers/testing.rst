@@ -631,6 +631,71 @@ With this background, these keywords are as follows.
       the ``TIMEOUT`` argument to ``gmakefile`` (see
       ``ptmake help``.
 
+-  **env**: (*Optional*; *Default:* ``env=""``)
+
+   -  Allows you to set environment variables for the test. Values are copied verbatim to
+      the runscript and defined and exported prior to all other variables.
+
+   -  Variables defined within ``env:`` blocks are expanded and processed by the shell that
+      runs the runscript. No prior preprocessing (other than splitting the lines into
+      separate declarations) is done. This means that any escaping of special characters
+      must be done in the text of the ``TEST`` block.
+
+   -  Defining the ``env:`` keyword more than once is allowed. Subsequent declarations are
+      then appended to prior list of declarations . Multiple environment variables may also
+      be defined in the same ``env:`` block, i.e. given a test ``ex1.c`` with the following
+      spec:
+
+      .. code-block:: yaml
+
+         test:
+           env: FOO=1 BAR=1
+           # equivalently
+           env: FOO=1
+           env: BAR=1
+
+      results in
+
+      .. code-block:: console
+
+         $ export FOO=1; export BAR=1; ./ex1
+
+   -  Variables defined in an ``env:`` block are evaluated by the runscript in the order in
+      which they are defined in the ``TEST`` block. Thus it is possible for later variables
+      to refer to previously defined ones:
+
+      .. code-block:: yaml
+
+         test:
+           env: FOO='hello' BAR=${FOO}
+           # equivalently
+           env: FOO='hello'
+           env: BAR=${FOO}
+
+      results in
+
+      .. code-block:: console
+
+         $ export FOO='hello'; export BAR=${FOO}; ./ex1
+         # expanded by shell to
+         $ export FOO='hello'; export BAR='hello'; ./ex1
+
+      Note this also implies that
+
+      .. code-block:: yaml
+
+         test:
+           env: FOO=1 FOO=0
+           # equivalently
+           env: FOO=1
+           env: FOO=0
+
+      results in
+
+      .. code-block:: console
+
+         $ export FOO=1; export FOO=0; ./ex1
+
 Additional Specifications
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 

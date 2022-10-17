@@ -4,6 +4,8 @@ header="""#!/usr/bin/env bash
 
 @COMMENTS@
 
+@ENV@
+
 # PATH for DLLs on windows
 PATH="$PATH":@PETSC_LIB_DIR@
 exec='@EXEC@'
