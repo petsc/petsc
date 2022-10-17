@@ -74,6 +74,7 @@ static PetscErrorCode SetInitialCoordinates(DM sw)
   Np = user->particlesPerCell;
   PetscCall(DMGetDimension(sw, &dim));
   PetscCall(DMSwarmGetCellDM(sw, &dm));
+  PetscCall(DMGetCoordinatesLocalSetUp(dm));
   PetscCall(DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd));
   PetscCall(DMPlexGetCellType(dm, cStart, &ct));
   simplex = DMPolytopeTypeGetNumVertices(ct) == DMPolytopeTypeGetDim(ct) + 1 ? PETSC_TRUE : PETSC_FALSE;

@@ -1213,6 +1213,7 @@ static PetscErrorCode DMPlexTransformInitialize_Regular(DMPlexTransform tr)
   tr->ops->view                  = DMPlexTransformView_Regular;
   tr->ops->setup                 = DMPlexTransformSetUp_Regular;
   tr->ops->destroy               = DMPlexTransformDestroy_Regular;
+  tr->ops->setdimensions         = DMPlexTransformSetDimensions_Internal;
   tr->ops->celltransform         = DMPlexTransformCellRefine_Regular;
   tr->ops->getsubcellorientation = DMPlexTransformGetSubcellOrientation_Regular;
   tr->ops->mapcoordinates        = DMPlexTransformMapCoordinatesBarycenter_Internal;

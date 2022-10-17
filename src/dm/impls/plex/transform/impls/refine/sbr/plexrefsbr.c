@@ -619,6 +619,7 @@ static PetscErrorCode DMPlexTransformInitialize_SBR(DMPlexTransform tr)
   tr->ops->setfromoptions        = DMPlexTransformSetFromOptions_SBR;
   tr->ops->setup                 = DMPlexTransformSetUp_SBR;
   tr->ops->destroy               = DMPlexTransformDestroy_SBR;
+  tr->ops->setdimensions         = DMPlexTransformSetDimensions_Internal;
   tr->ops->celltransform         = DMPlexTransformCellTransform_SBR;
   tr->ops->getsubcellorientation = DMPlexTransformGetSubcellOrientation_SBR;
   tr->ops->mapcoordinates        = DMPlexTransformMapCoordinatesBarycenter_Internal;

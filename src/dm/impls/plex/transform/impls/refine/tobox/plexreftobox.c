@@ -625,6 +625,7 @@ static PetscErrorCode DMPlexTransformInitialize_ToBox(DMPlexTransform tr)
   tr->ops->view                  = DMPlexTransformView_ToBox;
   tr->ops->setup                 = DMPlexTransformSetUp_ToBox;
   tr->ops->destroy               = DMPlexTransformDestroy_ToBox;
+  tr->ops->setdimensions         = DMPlexTransformSetDimensions_Internal;
   tr->ops->celltransform         = DMPlexTransformCellRefine_ToBox;
   tr->ops->getsubcellorientation = DMPlexTransformGetSubcellOrientation_ToBox;
   tr->ops->mapcoordinates        = DMPlexTransformMapCoordinatesBarycenter_Internal;

@@ -1,5 +1,16 @@
 #include <petsc/private/dmplextransformimpl.h> /*I "petscdmplextransform.h" I*/
 
+/*
+  When using the active label, refine types are as follows:
+
+    Two types are allocated for
+      DM_POLYTOPE_POINT_PRISM_TENSOR
+      DM_POLYTOPE_SEG_PRISM_TENSOR
+      DM_POLYTOPE_TRI_PRISM_TENSOR
+      DM_POLYTOPE_QUAD_PRISM_TENSOR
+    the first is identity, and the second refines.
+    All other types are identity. All the refine types are numbered in order.
+*/
 static PetscErrorCode DMPlexTransformSetUp_BL(DMPlexTransform tr)
 {
   DMPlexRefine_BL *bl = (DMPlexRefine_BL *)tr->data;
@@ -16,7 +27,7 @@ static PetscErrorCode DMPlexTransformSetUp_BL(DMPlexTransform tr)
   if (active) {
     IS              refineIS;
     const PetscInt *refineCells;
-    PetscInt        c;
+    PetscInt        pStart, pEnd, p, c;
 
     PetscCall(DMLabelCreate(PETSC_COMM_SELF, "Refine Type", &tr->trType));
     PetscCall(DMLabelGetStratumIS(active, DM_ADAPT_REFINE, &refineIS));
@@ -28,22 +39,45 @@ static PetscErrorCode DMPlexTransformSetUp_BL(DMPlexTransform tr)
       PetscInt       Ncl, cl;
 
       PetscCall(DMPlexGetTransitiveClosure(dm, cell, PETSC_TRUE, &Ncl, &closure));
-      for (cl = 0; cl < Ncl; cl += 2) {
+      for (cl = 0; cl < Ncl * 2; cl += 2) {
         const PetscInt point = closure[cl];
+        PetscInt       val;
 
         PetscCall(DMPlexGetCellType(dm, point, &ct));
+        val = (PetscInt)ct;
+        if (ct > DM_POLYTOPE_POINT_PRISM_TENSOR) ++val;
+        if (ct > DM_POLYTOPE_SEG_PRISM_TENSOR) ++val;
+        if (ct > DM_POLYTOPE_TRI_PRISM_TENSOR) ++val;
+        if (ct > DM_POLYTOPE_QUAD_PRISM_TENSOR) ++val;
         switch (ct) {
         case DM_POLYTOPE_POINT_PRISM_TENSOR:
         case DM_POLYTOPE_SEG_PRISM_TENSOR:
         case DM_POLYTOPE_TRI_PRISM_TENSOR:
         case DM_POLYTOPE_QUAD_PRISM_TENSOR:
-          PetscCall(DMLabelSetValue(tr->trType, point, 1));
+          PetscCall(DMLabelSetValue(tr->trType, point, val + 1));
           break;
         default:
           break;
         }
       }
       PetscCall(DMPlexRestoreTransitiveClosure(dm, cell, PETSC_TRUE, &Ncl, &closure));
+    }
+    if (refineIS) PetscCall(ISRestoreIndices(refineIS, &refineCells));
+    PetscCall(ISDestroy(&refineIS));
+    PetscCall(DMPlexGetChart(dm, &pStart, &pEnd));
+    for (p = pStart; p < pEnd; ++p) {
+      PetscInt val;
+
+      PetscCall(DMLabelGetValue(tr->trType, p, &val));
+      if (val < 0) {
+        PetscCall(DMPlexGetCellType(dm, p, &ct));
+        val = (PetscInt)ct;
+        if (ct > DM_POLYTOPE_POINT_PRISM_TENSOR) ++val;
+        if (ct > DM_POLYTOPE_SEG_PRISM_TENSOR) ++val;
+        if (ct > DM_POLYTOPE_TRI_PRISM_TENSOR) ++val;
+        if (ct > DM_POLYTOPE_QUAD_PRISM_TENSOR) ++val;
+        PetscCall(DMLabelSetValue(tr->trType, p, val));
+      }
     }
   }
   /* Cell heights */
@@ -381,7 +415,7 @@ static PetscErrorCode DMPlexTransformGetSubcellOrientation_BL(DMPlexTransform tr
     PetscInt rt;
 
     PetscCall(DMLabelGetValue(tr->trType, sp, &rt));
-    if (rt < 0) {
+    if ((rt != DM_POLYTOPE_POINT_PRISM_TENSOR + 1) && (rt != DM_POLYTOPE_SEG_PRISM_TENSOR + 2) && (rt != DM_POLYTOPE_TRI_PRISM_TENSOR + 3) && (rt != DM_POLYTOPE_QUAD_PRISM_TENSOR + 4)) {
       PetscCall(DMPlexTransformGetSubcellOrientationIdentity(tr, sct, sp, so, tct, r, o, rnew, onew));
       PetscFunctionReturn(0);
     }
@@ -434,11 +468,11 @@ static PetscErrorCode DMPlexTransformCellTransform_BL(DMPlexTransform tr, DMPoly
     PetscInt val;
 
     PetscCall(DMLabelGetValue(tr->trType, p, &val));
-    if (val < 0) {
+    if (rt) *rt = val;
+    if ((val != DM_POLYTOPE_POINT_PRISM_TENSOR + 1) && (val != DM_POLYTOPE_SEG_PRISM_TENSOR + 2) && (val != DM_POLYTOPE_TRI_PRISM_TENSOR + 3) && (val != DM_POLYTOPE_QUAD_PRISM_TENSOR + 4)) {
       PetscCall(DMPlexTransformCellTransformIdentity(tr, source, p, NULL, Nt, target, size, cone, ornt));
       PetscFunctionReturn(0);
     }
-    if (rt) *rt = val;
   }
   if (bl->Nt[source] < 0) {
     PetscCall(DMPlexTransformCellTransformIdentity(tr, source, p, NULL, Nt, target, size, cone, ornt));
@@ -536,6 +570,7 @@ static PetscErrorCode DMPlexTransformInitialize_BL(DMPlexTransform tr)
   tr->ops->setfromoptions        = DMPlexTransformSetFromOptions_BL;
   tr->ops->setup                 = DMPlexTransformSetUp_BL;
   tr->ops->destroy               = DMPlexTransformDestroy_BL;
+  tr->ops->setdimensions         = DMPlexTransformSetDimensions_Internal;
   tr->ops->celltransform         = DMPlexTransformCellTransform_BL;
   tr->ops->getsubcellorientation = DMPlexTransformGetSubcellOrientation_BL;
   tr->ops->mapcoordinates        = DMPlexTransformMapCoordinates_BL;

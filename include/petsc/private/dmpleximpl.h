@@ -3,6 +3,7 @@
 
 #include <petscmat.h>    /*I      "petscmat.h"          I*/
 #include <petscdmplex.h> /*I      "petscdmplex.h"    I*/
+#include <petscdmplextransform.h>
 #include <petscbt.h>
 #include <petscsf.h>
 #include <petsc/private/dmimpl.h>
@@ -132,9 +133,10 @@ typedef struct {
   PetscInt    *facesTmp;         /* Work space for faces operation */
 
   /* Transformation */
-  PetscBool refinementUniform;                                      /* Flag for uniform cell refinement */
-  char     *transformType;                                          /* Type of transform for uniform cell refinement */
-  PetscReal refinementLimit;                                        /* Maximum volume for refined cell */
+  DMPlexTransform tr;                                               /* Type of transform used to define an ephemeral mesh */
+  char           *transformType;                                    /* Type of transform for uniform cell refinement */
+  PetscBool       refinementUniform;                                /* Flag for uniform cell refinement */
+  PetscReal       refinementLimit;                                  /* Maximum volume for refined cell */
   PetscErrorCode (*refinementFunc)(const PetscReal[], PetscReal *); /* Function giving the maximum volume for refined cell */
 
   /* Interpolation */

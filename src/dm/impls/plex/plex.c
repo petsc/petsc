@@ -823,12 +823,6 @@ static PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
   PetscViewerFormat format;
 
   PetscFunctionBegin;
-  PetscCall(DMGetCoordinateDM(dm, &cdm));
-  PetscCall(DMGetCoordinateSection(dm, &coordSection));
-  PetscCall(DMGetCoordinatesLocal(dm, &coordinates));
-  PetscCall(DMGetCellCoordinateDM(dm, &cdmCell));
-  PetscCall(DMGetCellCoordinateSection(dm, &coordSectionCell));
-  PetscCall(DMGetCellCoordinatesLocal(dm, &coordinatesCell));
   PetscCall(PetscViewerGetFormat(viewer, &format));
   if (format == PETSC_VIEWER_ASCII_INFO_DETAIL) {
     const char *name;
@@ -836,6 +830,12 @@ static PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
     PetscInt    pStart, pEnd, p, numLabels, l;
     PetscMPIInt rank, size;
 
+    PetscCall(DMGetCoordinateDM(dm, &cdm));
+    PetscCall(DMGetCoordinateSection(dm, &coordSection));
+    PetscCall(DMGetCoordinatesLocal(dm, &coordinates));
+    PetscCall(DMGetCellCoordinateDM(dm, &cdmCell));
+    PetscCall(DMGetCellCoordinateSection(dm, &coordSectionCell));
+    PetscCall(DMGetCellCoordinatesLocal(dm, &coordinatesCell));
     PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)dm), &rank));
     PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)dm), &size));
     PetscCall(PetscObjectGetName((PetscObject)dm, &name));
@@ -957,6 +957,12 @@ static PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
     PetscBT      wp = NULL;
     PetscInt     pEnd, pStart;
 
+    PetscCall(DMGetCoordinateDM(dm, &cdm));
+    PetscCall(DMGetCoordinateSection(dm, &coordSection));
+    PetscCall(DMGetCoordinatesLocal(dm, &coordinates));
+    PetscCall(DMGetCellCoordinateDM(dm, &cdmCell));
+    PetscCall(DMGetCellCoordinateSection(dm, &coordSectionCell));
+    PetscCall(DMGetCellCoordinatesLocal(dm, &coordinatesCell));
     PetscCall(DMGetDimension(dm, &dim));
     PetscCall(DMPlexGetDepth(dm, &depth));
     PetscCall(DMGetNumLabels(dm, &numLabels));
@@ -1575,6 +1581,7 @@ static PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
     PetscCall(DMGetCoarseDM(dm, &cdm));
     if (cdm) {
       PetscCall(PetscViewerASCIIPushTab(viewer));
+      PetscCall(PetscViewerASCIIPrintf(viewer, "Defined by transform from:\n"));
       PetscCall(DMPlexView_Ascii(cdm, viewer));
       PetscCall(PetscViewerASCIIPopTab(viewer));
     }
@@ -1630,6 +1637,14 @@ static PetscErrorCode DMPlexDrawCell(DM dm, PetscDraw draw, PetscInt cell, const
     PetscCall(PetscDrawLine(draw, PetscRealPart(coords[2]), PetscRealPart(coords[3]), PetscRealPart(coords[4]), PetscRealPart(coords[5]), PETSC_DRAW_BLACK));
     PetscCall(PetscDrawLine(draw, PetscRealPart(coords[4]), PetscRealPart(coords[5]), PetscRealPart(coords[6]), PetscRealPart(coords[7]), PETSC_DRAW_BLACK));
     PetscCall(PetscDrawLine(draw, PetscRealPart(coords[6]), PetscRealPart(coords[7]), PetscRealPart(coords[0]), PetscRealPart(coords[1]), PETSC_DRAW_BLACK));
+    break;
+  case DM_POLYTOPE_SEG_PRISM_TENSOR:
+    PetscCall(PetscDrawTriangle(draw, PetscRealPart(coords[0]), PetscRealPart(coords[1]), PetscRealPart(coords[2]), PetscRealPart(coords[3]), PetscRealPart(coords[4]), PetscRealPart(coords[5]), PETSC_DRAW_WHITE + rank % (PETSC_DRAW_BASIC_COLORS - 2) + 2, PETSC_DRAW_WHITE + rank % (PETSC_DRAW_BASIC_COLORS - 2) + 2, PETSC_DRAW_WHITE + rank % (PETSC_DRAW_BASIC_COLORS - 2) + 2));
+    PetscCall(PetscDrawTriangle(draw, PetscRealPart(coords[2]), PetscRealPart(coords[3]), PetscRealPart(coords[6]), PetscRealPart(coords[7]), PetscRealPart(coords[4]), PetscRealPart(coords[5]), PETSC_DRAW_WHITE + rank % (PETSC_DRAW_BASIC_COLORS - 2) + 2, PETSC_DRAW_WHITE + rank % (PETSC_DRAW_BASIC_COLORS - 2) + 2, PETSC_DRAW_WHITE + rank % (PETSC_DRAW_BASIC_COLORS - 2) + 2));
+    PetscCall(PetscDrawLine(draw, PetscRealPart(coords[0]), PetscRealPart(coords[1]), PetscRealPart(coords[2]), PetscRealPart(coords[3]), PETSC_DRAW_BLACK));
+    PetscCall(PetscDrawLine(draw, PetscRealPart(coords[2]), PetscRealPart(coords[3]), PetscRealPart(coords[6]), PetscRealPart(coords[7]), PETSC_DRAW_BLACK));
+    PetscCall(PetscDrawLine(draw, PetscRealPart(coords[6]), PetscRealPart(coords[7]), PetscRealPart(coords[4]), PetscRealPart(coords[5]), PETSC_DRAW_BLACK));
+    PetscCall(PetscDrawLine(draw, PetscRealPart(coords[4]), PetscRealPart(coords[5]), PetscRealPart(coords[0]), PetscRealPart(coords[1]), PETSC_DRAW_BLACK));
     break;
   case DM_POLYTOPE_FV_GHOST:
     break;
@@ -2514,6 +2529,7 @@ PetscErrorCode DMDestroy_Plex(DM dm)
   PetscCall(PetscSectionDestroy(&mesh->supportSection));
   PetscCall(PetscSectionDestroy(&mesh->subdomainSection));
   PetscCall(PetscFree(mesh->supports));
+  PetscCall(DMPlexTransformDestroy(&mesh->tr));
   PetscCall(PetscFree(mesh->facesTmp));
   PetscCall(PetscFree(mesh->tetgenOpts));
   PetscCall(PetscFree(mesh->triangleOpts));
@@ -2683,7 +2699,8 @@ PetscErrorCode DMPlexGetChart(DM dm, PetscInt *pStart, PetscInt *pEnd)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscCall(PetscSectionGetChart(mesh->coneSection, pStart, pEnd));
+  if (mesh->tr) PetscCall(DMPlexTransformGetChart(mesh->tr, pStart, pEnd));
+  else PetscCall(PetscSectionGetChart(mesh->coneSection, pStart, pEnd));
   PetscFunctionReturn(0);
 }
 
@@ -2737,7 +2754,8 @@ PetscErrorCode DMPlexGetConeSize(DM dm, PetscInt p, PetscInt *size)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidIntPointer(size, 3);
-  PetscCall(PetscSectionGetDof(mesh->coneSection, p, size));
+  if (mesh->tr) PetscCall(DMPlexTransformGetConeSize(mesh->tr, p, size));
+  else PetscCall(PetscSectionGetDof(mesh->coneSection, p, size));
   PetscFunctionReturn(0);
 }
 
@@ -2766,35 +2784,8 @@ PetscErrorCode DMPlexSetConeSize(DM dm, PetscInt p, PetscInt size)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscCheck(!mesh->tr, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Cannot call DMPlexSetConeSize() on a mesh with a transform defined.");
   PetscCall(PetscSectionSetDof(mesh->coneSection, p, size));
-  PetscFunctionReturn(0);
-}
-
-/*@
-  DMPlexAddConeSize - Add the given number of in-edges to this point in the DAG
-
-  Not collective
-
-  Input Parameters:
-+ mesh - The DMPlex
-. p - The point, which must lie in the chart set with DMPlexSetChart()
-- size - The additional cone size for point p
-
-  Output Parameter:
-
-  Note:
-  This should be called after DMPlexSetChart().
-
-  Level: beginner
-
-.seealso: `DMPlexCreate()`, `DMPlexSetConeSize()`, `DMPlexGetConeSize()`, `DMPlexSetChart()`
-@*/
-PetscErrorCode DMPlexAddConeSize(DM dm, PetscInt p, PetscInt size)
-{
-  DM_Plex *mesh = (DM_Plex *)dm->data;
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscCall(PetscSectionAddDof(mesh->coneSection, p, size));
   PetscFunctionReturn(0);
 }
 
@@ -3231,6 +3222,99 @@ PetscErrorCode DMPlexInsertConeOrientation(DM dm, PetscInt p, PetscInt conePos, 
   PetscCall(PetscSectionGetOffset(mesh->coneSection, p, &off));
   PetscCheck(!(conePos < 0) && !(conePos >= dof), PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Cone position %" PetscInt_FMT " of point %" PetscInt_FMT " is not in the valid range [0, %" PetscInt_FMT ")", conePos, p, dof);
   mesh->coneOrientations[off + conePos] = coneOrientation;
+  PetscFunctionReturn(0);
+}
+
+/*@C
+  DMPlexGetOrientedCone - Return the points and orientations on the in-edges for this point in the DAG
+
+  Not collective
+
+  Input Parameters:
++ dm - The DMPlex
+- p  - The point, which must lie in the chart set with DMPlexSetChart()
+
+  Output Parameters:
++ cone - An array of points which are on the in-edges for point p
+- ornt - An array of orientations which are on the in-edges for point p. An orientation is an
+        integer giving the prescription for cone traversal.
+
+  Level: beginner
+
+  Notes:
+  The number indexes the symmetry transformations for the cell type (see manual). Orientation 0 is always
+  the identity transformation. Negative orientation indicates reflection so that -(o+1) is the reflection
+  of o, however it is not necessarily the inverse. To get the inverse, use DMPolytopeTypeComposeOrientationInv()
+  with the identity.
+
+  Fortran Notes:
+  Since it returns an array, this routine is only available in Fortran 90, and you must
+  include petsc.h90 in your code.
+  You must also call DMPlexRestoreCone() after you finish using the returned array.
+  DMPlexRestoreCone() is not needed/available in C.
+
+.seealso: `DMPlexRestoreOrientedCone()`, `DMPlexGetConeSize()`, `DMPlexGetCone()`, `DMPlexGetChart()`
+@*/
+PetscErrorCode DMPlexGetOrientedCone(DM dm, PetscInt p, const PetscInt *cone[], const PetscInt *ornt[])
+{
+  DM_Plex *mesh = (DM_Plex *)dm->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  if (mesh->tr) {
+    PetscCall(DMPlexTransformGetCone(mesh->tr, p, cone, ornt));
+  } else {
+    PetscInt off;
+    if (PetscDefined(USE_DEBUG)) {
+      PetscInt dof;
+      PetscCall(PetscSectionGetDof(mesh->coneSection, p, &dof));
+      if (dof) {
+        if (cone) PetscValidPointer(cone, 3);
+        if (ornt) PetscValidPointer(ornt, 4);
+      }
+    }
+    PetscCall(PetscSectionGetOffset(mesh->coneSection, p, &off));
+    if (cone) *cone = &mesh->cones[off];
+    if (ornt) *ornt = &mesh->coneOrientations[off];
+  }
+  PetscFunctionReturn(0);
+}
+
+/*@C
+  DMPlexRestoreOrientedCone - Restore the points and orientations on the in-edges for this point in the DAG
+
+  Not collective
+
+  Input Parameters:
++ dm - The DMPlex
+. p  - The point, which must lie in the chart set with DMPlexSetChart()
+. cone - An array of points which are on the in-edges for point p
+- ornt - An array of orientations which are on the in-edges for point p. An orientation is an
+        integer giving the prescription for cone traversal.
+
+  Level: beginner
+
+  Notes:
+  The number indexes the symmetry transformations for the cell type (see manual). Orientation 0 is always
+  the identity transformation. Negative orientation indicates reflection so that -(o+1) is the reflection
+  of o, however it is not necessarily the inverse. To get the inverse, use DMPolytopeTypeComposeOrientationInv()
+  with the identity.
+
+  Fortran Notes:
+  Since it returns an array, this routine is only available in Fortran 90, and you must
+  include petsc.h90 in your code.
+  You must also call DMPlexRestoreCone() after you finish using the returned array.
+  DMPlexRestoreCone() is not needed/available in C.
+
+.seealso: `DMPlexGetOrientedCone()`, `DMPlexGetConeSize()`, `DMPlexGetCone()`, `DMPlexGetChart()`
+@*/
+PetscErrorCode DMPlexRestoreOrientedCone(DM dm, PetscInt p, const PetscInt *cone[], const PetscInt *ornt[])
+{
+  DM_Plex *mesh = (DM_Plex *)dm->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  if (mesh->tr) PetscCall(DMPlexTransformRestoreCone(mesh->tr, p, cone, ornt));
   PetscFunctionReturn(0);
 }
 
@@ -4842,15 +4926,20 @@ PetscErrorCode DMPlexGetDepthLabel(DM dm, DMLabel *depthLabel)
 @*/
 PetscErrorCode DMPlexGetDepth(DM dm, PetscInt *depth)
 {
+  DM_Plex *mesh = (DM_Plex *)dm->data;
   DMLabel  label;
   PetscInt d = 0;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidIntPointer(depth, 2);
-  PetscCall(DMPlexGetDepthLabel(dm, &label));
-  if (label) PetscCall(DMLabelGetNumValues(label, &d));
-  *depth = d - 1;
+  if (mesh->tr) {
+    PetscCall(DMPlexTransformGetDepth(mesh->tr, depth));
+  } else {
+    PetscCall(DMPlexGetDepthLabel(dm, &label));
+    if (label) PetscCall(DMLabelGetNumValues(label, &d));
+    *depth = d - 1;
+  }
   PetscFunctionReturn(0);
 }
 
@@ -4878,6 +4967,7 @@ PetscErrorCode DMPlexGetDepth(DM dm, PetscInt *depth)
 @*/
 PetscErrorCode DMPlexGetDepthStratum(DM dm, PetscInt depth, PetscInt *start, PetscInt *end)
 {
+  DM_Plex *mesh = (DM_Plex *)dm->data;
   DMLabel  label;
   PetscInt pStart, pEnd;
 
@@ -4898,9 +4988,13 @@ PetscErrorCode DMPlexGetDepthStratum(DM dm, PetscInt depth, PetscInt *start, Pet
     if (end) *end = pEnd;
     PetscFunctionReturn(0);
   }
-  PetscCall(DMPlexGetDepthLabel(dm, &label));
-  PetscCheck(label, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "No label named depth was found");
-  PetscCall(DMLabelGetStratumBounds(label, depth, start, end));
+  if (mesh->tr) {
+    PetscCall(DMPlexTransformGetDepthStratum(mesh->tr, depth, start, end));
+  } else {
+    PetscCall(DMPlexGetDepthLabel(dm, &label));
+    PetscCheck(label, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "No label named depth was found");
+    PetscCall(DMLabelGetStratumBounds(label, depth, start, end));
+  }
   PetscFunctionReturn(0);
 }
 
@@ -5055,16 +5149,21 @@ PetscErrorCode DMPlexGetCellTypeLabel(DM dm, DMLabel *celltypeLabel)
 @*/
 PetscErrorCode DMPlexGetCellType(DM dm, PetscInt cell, DMPolytopeType *celltype)
 {
+  DM_Plex *mesh = (DM_Plex *)dm->data;
   DMLabel  label;
   PetscInt ct;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidPointer(celltype, 3);
-  PetscCall(DMPlexGetCellTypeLabel(dm, &label));
-  PetscCall(DMLabelGetValue(label, cell, &ct));
-  PetscCheck(ct >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Cell %" PetscInt_FMT " has not been assigned a cell type", cell);
-  *celltype = (DMPolytopeType)ct;
+  if (mesh->tr) {
+    PetscCall(DMPlexTransformGetCellType(mesh->tr, cell, celltype));
+  } else {
+    PetscCall(DMPlexGetCellTypeLabel(dm, &label));
+    PetscCall(DMLabelGetValue(label, cell, &ct));
+    PetscCheck(ct >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Cell %" PetscInt_FMT " has not been assigned a cell type", cell);
+    *celltype = (DMPolytopeType)ct;
+  }
   PetscFunctionReturn(0);
 }
 

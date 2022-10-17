@@ -317,6 +317,10 @@ int main(int argc, char **argv)
 
   # Parallel extrusion tests
   test:
+    suffix: 1d_extruded
+    args: -dm_plex_dim 1 -dm_plex_box_faces 5 -dm_extrude 3 -dm_plex_check_all -dm_view draw
+
+  test:
     suffix: spheresurface_extruded
     nsize : 4
     args: -dm_coord_space 0 -dm_plex_shape sphere -dm_extrude 3 -dist_dm_distribute -petscpartitioner_type simple \
