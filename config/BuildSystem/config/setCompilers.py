@@ -237,6 +237,9 @@ class Configure(config.base.Configure):
                                                  'Unrecognised option --help passed to ld', # NAG f95 compiler
                                                  'IBM XL', # XL compiler
                                                  ]]))
+      if not found and Configure.isCrayPEWrapper(compiler,log):
+        (output, error, status) = config.base.Configure.executeShellCommand(compiler+' --version', log = log)
+        found = any([s in output for s in ['(GCC)']])
       if found:
         if log: log.write('Detected GNU compiler\n')
         return 1
