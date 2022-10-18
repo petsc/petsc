@@ -451,8 +451,10 @@ PETSC_DEPRECATED_FUNCTION("Use KSPMonitorTrueResidualMax() (since version 3.15)"
 }
 
 PETSC_EXTERN PetscErrorCode KSPGMRESMonitorKrylov(KSP, PetscInt, PetscReal, void *);
-PETSC_EXTERN PetscErrorCode KSPMonitorDynamicTolerance(KSP ksp, PetscInt its, PetscReal fnorm, void *dummy);
-PETSC_EXTERN PetscErrorCode KSPMonitorDynamicToleranceDestroy(void **dummy);
+PETSC_EXTERN PetscErrorCode KSPMonitorDynamicTolerance(KSP, PetscInt, PetscReal, void *);
+PETSC_EXTERN PetscErrorCode KSPMonitorDynamicToleranceDestroy(void **);
+PETSC_EXTERN PetscErrorCode KSPMonitorDynamicToleranceCreate(void *);
+PETSC_EXTERN PetscErrorCode KSPMonitorDynamicToleranceSetCoefficient(void *, PetscReal);
 PETSC_EXTERN PetscErrorCode KSPMonitorSAWs(KSP, PetscInt, PetscReal, void *);
 PETSC_EXTERN PetscErrorCode KSPMonitorSAWsCreate(KSP, void **);
 PETSC_EXTERN PetscErrorCode KSPMonitorSAWsDestroy(void **);
