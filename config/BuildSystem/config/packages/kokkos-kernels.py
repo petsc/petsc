@@ -10,9 +10,8 @@ class Configure(config.package.CMakePackage):
     self.includes         = ['KokkosBlas.hpp','KokkosSparse_CrsMatrix.hpp']
     self.liblist          = [['libkokkoskernels.a']]
     self.functions        = ['']
-    # use one of the only non-templated functions in all of KK to check this library
-    # exists
-    self.functionsCxx     = [1,'namespace KokkosBatched { void print_compiler_info(); }','KokkosBatched::print_compiler_info();']
+    # Even libkokkoskernels exists, we really don't know which KK components are enabled and which functions/symbols are there
+    self.functionsCxx     = [1,'#include <iostream>','std::cout << "Assume Kokkos-Kernels is header only and skip the function test";']
     self.buildLanguages   = ['Cxx']
     self.hastests         = 1
     self.requiresrpath    = 1
