@@ -915,7 +915,7 @@ PetscErrorCode DMPlexTransformGetSourcePoint(DMPlexTransform tr, PetscInt pNew, 
   PetscCall(DMPlexTransformCellTransform(tr, (DMPolytopeType)ctO, rtS, &rtTmp, &Nct, &rct, &rsize, &cone, &ornt));
   PetscCheck(!trType || rt == rtTmp, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Point %" PetscInt_FMT " has refine type %" PetscInt_FMT " != %" PetscInt_FMT " refine type which produced point %" PetscInt_FMT, rtS, rtTmp, rt, pNew);
   for (n = 0; n < Nct; ++n) {
-    if ((PetscInt)rct[n] == ctN) {
+    if (rct[n] == ctN) {
       PetscInt tmp = pNew - tr->ctStartNew[ctN] - offset, val, c;
 
       if (trType) {
