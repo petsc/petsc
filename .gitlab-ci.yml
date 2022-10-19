@@ -133,7 +133,7 @@ uni-complex-float-int64:
 c99-mlib-static-py:
   extends: .stage-1
   variables:
-    CONFIG_OPTS: --with-single-library=0 --with-shared-libraries=0 CFLAGS=-std=c99
+    CONFIG_OPTS: --with-single-library=0 --with-shared-libraries=0 CFLAGS=-std=c99 FFLAGS= CXXFLAGS=
     TEST_SEARCH: snes_tutorials-ex19% snes_tutorials-ex5f90t%
     MAKE_TEST_FFLAGS: -Werror -std=f2008
     LOAD_MODULES: gcc/12.1.0 mpich/4.1a1-gcc-12.1.0

@@ -1437,7 +1437,8 @@ the solvers have converged.
 Assembling large sparse matrices takes a long time. What can I do to make this process faster? Or MatSetValues() is so slow; what can I do to speed it up?
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-See the :ref:`performance chapter <ch_performance>` of the users manual.
+You probably need to do preallocation, as explained in :any:`sec_matsparse`.
+See also the :ref:`performance chapter <ch_performance>` of the users manual.
 
 How can I generate performance summaries with PETSc?
 ----------------------------------------------------
