@@ -6094,10 +6094,10 @@ PetscErrorCode TSSetMatStructure(TS ts, MatStructure str)
   Notes:
   The elements in tspan must be all increasing. They correspond to the intermediate points for time integration.
   TS_EXACTFINALTIME_MATCHSTEP must be used to make the last time step in each sub-interval match the intermediate points specified.
-  The intermediate solutions are saved in a vector array that can be accessed with TSGetSolutions(). Thus using time span may
+  The intermediate solutions are saved in a vector array that can be accessed with TSGetTimeSpanSolutions(). Thus using time span may
   pressure the memory system when using a large number of span points.
 
-.seealso: `TSGetTimeSpan()`, `TSGetSolutions()`
+.seealso: `TSGetTimeSpan()`, `TSGetTimeSpanSolutions()`
  @*/
 PetscErrorCode TSSetTimeSpan(TS ts, PetscInt n, PetscReal *span_times)
 {
@@ -6139,7 +6139,7 @@ PetscErrorCode TSSetTimeSpan(TS ts, PetscInt n, PetscReal *span_times)
   Level: beginner
   Notes: Both n and span_times can be NULL.
 
-.seealso: `TSSetTimeSpan()`, `TSGetSolutions()`
+.seealso: `TSSetTimeSpan()`, `TSGetTimeSpanSolutions()`
  @*/
 PetscErrorCode TSGetTimeSpan(TS ts, PetscInt *n, const PetscReal **span_times)
 {
