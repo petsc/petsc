@@ -239,19 +239,42 @@ def get_branch_diff(merge_branch):
   ).splitlines()
   for file_name in files_changed_by_branch:
     blame_output = subprocess_run(
-      ['git', 'blame', '-s', merge_branch_name+'..', file_name],
-      check=True, capture_output=True, universal_newlines=True
+      ['git', 'blame', '-s', '--show-name', merge_branch_name+'..', file_name],
+      capture_output=True, universal_newlines=True
     )
-    changed_lines = subprocess_check_output(
-      ['grep', '-v', r'^\^'], input=blame_output.stdout
-    ).splitlines()
+
+    try:
+      blame_output.check_returncode()
+    except subprocess.CalledProcessError:
+      stderr = blame_output.stderr.strip()
+      if stderr.startswith('fatal: no such path') and stderr.endswith('in HEAD'):
+        # The branch removed a file from the repository. Since it no longer exists there
+        # will obviously not be any coverage of it. So we ignore it.
+        gcov_logger.log('File', "'"+file_name+"'", 'was deleted by branch. Skipping it')
+        continue
+      raise
+
+    changed_ret = subprocess_run(
+      ['grep', '-v', r'^\^'], input=blame_output.stdout, capture_output=True, universal_newlines=True
+    )
+
+    try:
+      changed_ret.check_returncode()
+    except subprocess.CalledProcessError:
+      if changed_ret.returncode == 1:
+        # git returns exitcode 1 if it finds nothing
+        gcov_logger.log('File', "'"+file_name+"'", 'only contained deletions. Skipping it!')
+        continue
+      raise
 
     # each line in the blame is in the format
     #
     # commit_hash line_number) line_of_code
     #
     # we want a list of line_numbers
-    ret[file_name] = [int(line[1].replace(')','')) for line in map(str.split, changed_lines)]
+    ret[file_name] = [
+      int(line[2].replace(')','')) for line in map(str.split, changed_ret.stdout.splitlines())
+    ]
   return ret
 
 def extract_tarballs(base_paths, dest_dir):
