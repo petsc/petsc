@@ -434,7 +434,7 @@ int main(int argc, char **argv)
      nsize: 1
      suffix: 2_cuda
      output_file: output/ex66_2.out
-     args: -n {{17 33}} -kernel 0 -dim 2 -symm 1 -checkexpl -bgpu {{0 1}} -agpu {{0 1}}
+     args: -n {{17 29}} -kernel 0 -dim 2 -symm 1 -checkexpl -bgpu {{0 1}} -agpu {{0 1}}
 
 #tests view operation
    test:
