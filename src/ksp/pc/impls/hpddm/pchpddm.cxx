@@ -75,6 +75,7 @@ static inline PetscErrorCode PCHPDDMSetAuxiliaryMat_Private(PC pc, IS is, Mat A,
     if (data->is) { /* new overlap definition resets the PC */
       PetscCall(PCReset_HPDDM(pc));
       pc->setfromoptionscalled = 0;
+      pc->setupcalled          = 0;
     }
     PetscCall(ISDestroy(&data->is));
     data->is = is;
@@ -1127,6 +1128,11 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
 
   if (!ismatis) {
     PetscCall(PCHPDDMSetUpNeumannOverlap_Private(pc));
+    PetscCall(PetscOptionsGetBool(NULL, pcpre, "-pc_hpddm_block_splitting", &block, NULL));
+    if (data->is && block) {
+      PetscCall(ISDestroy(&data->is));
+      PetscCall(MatDestroy(&data->aux));
+    }
     if (!data->is && data->N > 1) {
       char type[256] = {}; /* same size as in src/ksp/pc/interface/pcset.c */
       PetscCall(PetscObjectTypeCompareAny((PetscObject)P, &flg, MATNORMAL, MATNORMALHERMITIAN, ""));
