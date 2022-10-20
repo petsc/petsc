@@ -214,7 +214,9 @@ int main(int argc, char **args)
   char        groupname[PETSC_MAX_PATH_LEN], matname[PETSC_MAX_PATH_LEN];
   char       *matformats[5];
   char      **filenames = NULL, **groupnames = NULL, **matnames = NULL;
-  PetscBool   bflg, flg1, flg2, flg3, use_gpu = PETSC_FALSE;
+  char        ordering[256] = MATORDERINGRCM;
+  PetscBool   bflg, flg1, flg2, flg3, use_gpu = PETSC_FALSE, permute = PETSC_FALSE;
+  IS          rowperm = NULL, colperm = NULL;
   PetscViewer fd;
   PetscReal   starting_spmv_time = 0, *spmv_times;
 
@@ -233,6 +235,9 @@ int main(int argc, char **args)
   PetscCall(PetscOptionsGetString(NULL, NULL, "-ABIN", filename, PETSC_MAX_PATH_LEN, &flg1));
   PetscCall(PetscOptionsGetString(NULL, NULL, "-AMTX", filename, PETSC_MAX_PATH_LEN, &flg2));
   PetscCall(PetscOptionsGetString(NULL, NULL, "-AJSON", jfilename, PETSC_MAX_PATH_LEN, &flg3));
+  PetscOptionsBegin(PETSC_COMM_WORLD, NULL, "Extra options", "");
+  PetscCall(PetscOptionsFList("-permute", "Permute matrix and vector to solving in new ordering", "", MatOrderingList, ordering, ordering, sizeof(ordering), &permute));
+  PetscOptionsEnd();
 #if !defined(PETSC_HAVE_DEVICE)
   PetscCheck(!use_gpu, PETSC_COMM_WORLD, PETSC_ERR_USER_INPUT, "To use the option -use_gpu 1, PETSc must be configured with GPU support");
 #endif
@@ -249,6 +254,13 @@ int main(int argc, char **args)
     PetscCall(MatSetFromOptions(A));
     PetscCall(MatLoad(A, fd));
     PetscCall(PetscViewerDestroy(&fd));
+  }
+  if (permute) {
+    Mat Aperm;
+    PetscCall(MatGetOrdering(A, ordering, &rowperm, &colperm));
+    PetscCall(MatPermute(A, rowperm, colperm, &Aperm));
+    PetscCall(MatDestroy(&A));
+    A = Aperm; /* Replace original operator with permuted version */
   }
   /* Let the vec object trigger the first CUDA call, which takes a relatively long time to init CUDA */
   PetscCall(PetscOptionsGetString(NULL, NULL, "-b", bfilename, PETSC_MAX_PATH_LEN, &bflg));
@@ -305,6 +317,8 @@ int main(int argc, char **args)
   for (j = 0; j < nformats; j++) PetscCall(PetscFree(matformats[j]));
   if (flg1 || flg2) PetscCall(MatDestroy(&A));
   if (bflg) PetscCall(VecDestroy(&b));
+  PetscCall(ISDestroy(&rowperm));
+  PetscCall(ISDestroy(&colperm));
   PetscCall(PetscFinalize());
   return 0;
 }
