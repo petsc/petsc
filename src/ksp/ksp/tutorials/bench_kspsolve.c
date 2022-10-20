@@ -10,18 +10,18 @@ With exact solution:
 Exampe usage:
 
   Run on GPU (requires respective backends installed):
-    ./bench_pcsetup -vec_type cuda   -mat_type aijcusparse
-    ./bench_pcsetup -vec_type hip    -mat_type aijhipsparse
-    ./bench_pcsetup -vec_type kokkos -mat_type aijkokkos
+    ./bench_kspsolve -vec_type cuda   -mat_type aijcusparse
+    ./bench_kspsolve -vec_type hip    -mat_type aijhipsparse
+    ./bench_kspsolve -vec_type kokkos -mat_type aijkokkos
 
   Test only MatMult:
-    ./bench_pcsetup -matmult
+    ./bench_kspsolve -matmult
 
   Test MatMult over 1000 iterations:
-    ./bench_pcsetup -matmult -its 1000
+    ./bench_kspsolve -matmult -its 1000
 
   Change size of problem (e.g., use a 128x128x128 grid):
-    ./bench_pcsetup -n 128
+    ./bench_kspsolve -n 128
 */
 static char help[] = "Solves 3D Laplacian with 27-point finite difference stencil.\n";
 
@@ -449,7 +449,7 @@ int main(int argc, char **argv)
   testset:
     args: -print_timing false -matmult -its 10 -n 8
     nsize: {{1 3}}
-    output_file: output/bench_pcsetup_matmult.out
+    output_file: output/bench_kspsolve_matmult.out
 
     test:
       suffix: matmult
@@ -472,7 +472,7 @@ int main(int argc, char **argv)
   testset:
     args: -print_timing false -its 10 -n 8
     nsize: {{1 3}}
-    output_file: output/bench_pcsetup_ksp.out
+    output_file: output/bench_kspsolve_ksp.out
 
     test:
       suffix: ksp

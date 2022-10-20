@@ -2,7 +2,7 @@
 
 LOCDIR           = src/ksp/ksp/tutorials/
 MANSEC           = KSP
-CLEANFILES       = rhs.vtk solution.vtk bench_pcsetup
+CLEANFILES       = rhs.vtk solution.vtk bench_kspsolve
 NP               = 1
 DIRS             = network amrex
 
