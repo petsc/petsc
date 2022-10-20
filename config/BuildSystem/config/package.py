@@ -3,7 +3,21 @@ import config.base
 
 import os
 import re
+import itertools
 from hashlib import md5 as new_md5
+
+def sliding_window(seq, n=2):
+  """
+  Returns a sliding window (of width n) over data from the iterable
+  s -> (s0,s1,...s[n-1]), (s1,s2,...,sn), ...
+  """
+  it     = iter(seq)
+  result = tuple(itertools.islice(it, n))
+  if len(result) == n:
+    yield result
+  for elem in it:
+    result = result[1:] + (elem,)
+    yield result
 
 class FakePETScDir:
   def __init__(self):
@@ -258,6 +272,49 @@ class Package(config.base.Configure):
         outflags.append(flag)
     return ' '.join(outflags)
 
+  def rmArgs(self,args,rejects):
+    self.logPrint('Removing configure arguments '+str(rejects))
+    return [arg for arg in args if not arg in rejects]
+
+  def rmArgsPair(self,args,rejects,remove_ahead=True):
+    '''Remove an argument and the next argument from a list of arguments'''
+    '''For example: --ccbin compiler'''
+    '''If remove_ahead is true, arguments rejects specifies the first entry in the pair and the following argument is removed, otherwise rejects specifies the second entry in the pair and the previous argument is removed as well.'''
+    self.logPrint('Removing paired configure arguments '+str(rejects))
+    rejects = set(rejects)
+    nargs   = []
+    skip    = 0
+    for flag, next_flag in sliding_window(args):
+      if skip:
+        skip = 0
+        continue
+
+      flag_to_check = flag if remove_ahead else next_flag
+      if flag_to_check in rejects:
+        skip = 1
+      else:
+        nargs.append(flag)
+    return nargs
+
+  def rmArgsStartsWith(self,args,rejectstarts):
+    rejects = []
+    if not isinstance(rejectstarts, list): rejectstarts = [rejectstarts]
+    for i in rejectstarts:
+      rejects.extend([arg for arg in args if arg.startswith(i)])
+    return self.rmArgs(args,rejects)
+
+  def addArgStartsWith(self,args,sw,value):
+    keep = []
+    found = 0
+    for i in args:
+      if i.startswith(sw+'="'):
+        i = i[:-1] + ' ' + value + '"'
+        found = 1
+      keep.append(i)
+    if not found:
+      keep.append(sw+'="' + value + '"')
+    return keep
+
   def removeWarningFlags(self,flags):
     outflags = []
     for flag in flags:
@@ -267,6 +324,13 @@ class Package(config.base.Configure):
                       '-fstack-protector']:
         outflags.append(flag)
     return outflags
+
+  def removeCoverageFlag(self, flags, is_pair = False, **kwargs):
+    if isinstance(flags, str):
+      flags = flags.split()
+
+    rm_func = self.rmArgsPair if is_pair else self.rmArgs
+    return rm_func(flags, {'--coverage'}, **kwargs)
 
   def removeStdCxxFlag(self,flags):
     '''Remove the -std=[CXX_VERSION] flag from the list of flags, but only for CMake packages'''
@@ -300,6 +364,7 @@ class Package(config.base.Configure):
   def updatePackageCFlags(self,flags):
     '''To turn off various warnings or errors the compilers may produce with external packages, remove or add appropriate compiler flags'''
     outflags = self.removeWarningFlags(flags.split())
+    outflags = self.removeCoverageFlag(outflags)
     with self.Language('C'):
       if config.setCompilers.Configure.isClang(self.getCompiler(), self.log):
         if config.setCompilers.Configure.isDarwin(self.log):
@@ -310,6 +375,7 @@ class Package(config.base.Configure):
 
   def updatePackageFFlags(self,flags):
     outflags = self.removeWarningFlags(flags.split())
+    outflags = self.removeCoverageFlag(outflags)
     with self.Language('FC'):
       if config.setCompilers.Configure.isNAG(self.getLinker(), self.log):
          outflags.extend(['-mismatch','-dusty','-dcfuns'])
@@ -319,7 +385,12 @@ class Package(config.base.Configure):
 
   def updatePackageCxxFlags(self,flags):
     outflags = self.removeWarningFlags(flags.split())
+    outflags = self.removeCoverageFlag(outflags)
     outflags = self.removeStdCxxFlag(outflags)
+    return ' '.join(outflags)
+
+  def updatePackageCUDAFlags(self, flags):
+    outflags = self.removeCoverageFlag(flags, is_pair=True, remove_ahead=False)
     return ' '.join(outflags)
 
   def getDefaultLanguage(self):
@@ -1280,44 +1351,6 @@ char     *ver = "petscpkgver(" PetscXstr_({y}) ")";
       self.cuda.configureLibrary()
     return
 
-  def rmArgs(self,args,rejects):
-    self.logPrint('Removing configure arguments '+str(rejects))
-    return [arg for arg in args if not arg in rejects]
-
-  def rmArgsPair(self,args,rejects):
-    '''Remove an argument and the next argument from a list of arguments'''
-    '''For example: --ccbin compiler'''
-    self.logPrint('Removing paired configure arguments '+str(rejects))
-    nargs = []
-    rmnext = 0
-    for arg in args:
-      if rmnext:
-        rmnext = 0
-      elif arg in rejects:
-        rmnext = 1
-      else:
-        nargs.append(arg)
-    return nargs
-
-  def rmArgsStartsWith(self,args,rejectstarts):
-    rejects = []
-    if not isinstance(rejectstarts, list): rejectstarts = [rejectstarts]
-    for i in rejectstarts:
-      rejects.extend([arg for arg in args if arg.startswith(i)])
-    return self.rmArgs(args,rejects)
-
-  def addArgStartsWith(self,args,sw,value):
-    keep = []
-    found = 0
-    for i in args:
-      if i.startswith(sw+'="'):
-        i = i[:-1] + ' ' + value + '"'
-        found = 1
-      keep.append(i)
-    if not found:
-      keep.append(sw+'="' + value + '"')
-    return keep
-
   def checkSharedLibrariesEnabled(self):
     if self.havePETSc:
       useShared = self.sharedLibraries.useShared
@@ -1708,6 +1741,11 @@ class GNUPackage(Package):
     else:
       args.append('--disable-shared')
 
+    cuda_module = self.framework.findModule(self, config.packages.cuda)
+    if cuda_module and cuda_module.found:
+      with self.Language('CUDA'):
+        args.append('CUDAC='+self.getCompiler())
+        args.append('CUDAFLAGS="'+self.updatePackageCUDAFlags(self.getCompilerFlags())+'"')
     return args
 
   def preInstall(self):
@@ -1891,6 +1929,15 @@ class CMakePackage(Package):
       args.append('-DBUILD_SHARED_LIBS:BOOL=ON')
     else:
       args.append('-DBUILD_SHARED_LIBS:BOOL=OFF')
+
+    cuda_module = self.framework.findModule(self, config.packages.cuda)
+    if cuda_module and cuda_module.found:
+      with self.Language('CUDA'):
+        args.append('-DCMAKE_CUDA_COMPILER='+self.getCompiler())
+        cuda_flags = self.updatePackageCUDAFlags(self.getCompilerFlags())
+        args.append('-DCMAKE_CUDA_FLAGS:STRING="{}"'.format(cuda_flags))
+        args.append('-DCMAKE_CUDA_FLAGS_DEBUG:STRING="{}"'.format(cuda_flags))
+        args.append('-DCMAKE_CUDA_FLAGS_RELEASE:STRING="{}"'.format(cuda_flags))
     return args
 
   def updateControlFiles(self):

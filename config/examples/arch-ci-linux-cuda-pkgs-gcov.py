@@ -11,9 +11,10 @@ if __name__ == '__main__':
   configure_options = [
     '--package-prefix-hash='+petsc_hash_pkgs,
     '--with-make-test-np=3',
-    'COPTFLAGS=-g -O',
-    'FOPTFLAGS=-g -O',
-    'CXXOPTFLAGS=-g -O',
+    'COPTFLAGS=-g -O0',
+    'FOPTFLAGS=-g -O0',
+    'CXXOPTFLAGS=-g -O0',
+    '--with-coverage',
     '--download-suitesparse',
     '--download-mumps',
     '--download-scalapack',

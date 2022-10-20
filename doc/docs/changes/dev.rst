@@ -13,6 +13,9 @@ Changes: Development
 
 .. rubric:: Configure/Build:
 
+- Deprecate ``--with-gcov`` configure option. Users should use ``--with-coverage`` instead
+- Add ``--with-coverage-exec`` configure option to specify the coverage-collection tool to be used e.g. ``gcov`` or ``/path/to/llvm-cov-15``
+
 .. rubric:: Sys:
 
 .. rubric:: Event Logging:

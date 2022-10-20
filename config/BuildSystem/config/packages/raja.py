@@ -81,8 +81,11 @@ class Configure(config.package.CMakePackage):
 
       with self.Language('CUDA'):
         args.append('-DCMAKE_CUDA_COMPILER='+self.getCompiler())
-        # Raja cmake adds the -ccbin and -std therefor remove them from provided options to prevent error from double use
-        args.append('-DCMAKE_CUDA_FLAGS="'+' '.join(self.rmArgsStartsWith(self.rmArgsPair(self.getCompilerFlags().split(' '),['-ccbin']),['-std=']))+'"')
+        # Raja cmake adds the -ccbin and -std therefor remove them from provided options
+        # to prevent error from double use
+        cuda_flags = self.rmArgsStartsWith(self.rmArgsPair(self.getCompilerFlags().split(' '),['-ccbin']),['-std='])
+        cuda_flags = self.updatePackageCUDAFlags(cuda_flags)
+        args.append('-DCMAKE_CUDA_FLAGS="{}"'.format(cuda_flags))
 
       if hasattr(self.cuda,'cudaArch'):
         generation = 'sm_'+self.cuda.cudaArch

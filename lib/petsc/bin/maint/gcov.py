@@ -168,12 +168,14 @@ def sanitize_path(path):
   assert path.exists(), 'path {} does not exist'.format(path)
   return path
 
-def call_subprocess(func, *args, **kwargs):
+def call_subprocess(func, *args, error_ok=False, **kwargs):
   gcov_logger.log('running', ' '.join(map(str, args[0])).join(("'","'")))
+  ret = None
   try:
     ret = func(*args, **kwargs)
   except subprocess.CalledProcessError as cpe:
-    print('subprocess error, command returned exit code:', cpe.returncode)
+    return_code = cpe.returncode
+    print('subprocess error, command returned exit code:', return_code)
     print('command:')
     print(' '.join(map(str, cpe.cmd)))
     print('stdout:')
@@ -181,6 +183,15 @@ def call_subprocess(func, *args, **kwargs):
     if getattr(cpe, 'stderr', None):
       print('stderr:')
       print(cpe.stderr)
+
+    if error_ok:
+      if isinstance(error_ok, int):
+        error_ok = {error_ok}
+      else:
+        error_ok = set(map(int, error_ok))
+
+      if return_code in error_ok:
+        return ret
     raise cpe
   return ret
 
@@ -393,8 +404,10 @@ def generate_html(runner, merged_report, dest_dir, symlink_dir=None, report_name
       '--html-self-contained',
       '--sort-percentage',
       '--decisions',
-      '--exclude-lines-by-pattern', r'^\s*SETERR.*'
-    )
+      '--exclude-lines-by-pattern', r'^\s*SETERR.*',
+      '--exclude', r'arch-ci.*'
+    ),
+    error_ok = 7 # return-code of 7 means some files were not found
   )
 
   symlink_name = None
@@ -417,8 +430,14 @@ def generate_xml(runner, merged_report, dest_dir):
 
   ret = subprocess_check_output(
     runner.build_command(
-      '--output', mega_report, '--add-tracefile', merged_report, '--xml-pretty', '--exclude-unreachable-branches', '--print-summary'
-    )
+      '--output', mega_report,
+      '--add-tracefile', merged_report,
+      '--xml-pretty',
+      '--exclude-unreachable-branches',
+      '--print-summary',
+      '--exclude', r'arch-ci.*'
+    ),
+    error_ok = 7 # return-code of 7 means some files were not found
   )
   # print the output for CI
   print(ret)
