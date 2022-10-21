@@ -24,9 +24,9 @@
     #define fortranmaxpy3_ fortranmaxpy3
     #define fortranmaxpy2_ fortranmaxpy2
   #endif
-PETSC_EXTERN void fortranmaxpy4_(void *, void *, void *, void *, void *, const void *, const void *, const void *, const void *, PetscInt *);
-PETSC_EXTERN void fortranmaxpy3_(void *, void *, void *, void *, const void *, const void *, const void *, PetscInt *);
-PETSC_EXTERN void fortranmaxpy2_(void *, void *, void *, const void *, const void *, PetscInt *);
+PETSC_EXTERN void fortranmaxpy4_(void *, const void *, const void *, const void *, const void *, const void *, const void *, const void *, const void *, const PetscInt *);
+PETSC_EXTERN void fortranmaxpy3_(void *, const void *, const void *, const void *, const void *, const void *, const void *, const PetscInt *);
+PETSC_EXTERN void fortranmaxpy2_(void *, const void *, const void *, const void *, const void *, const PetscInt *);
 #endif
 #include <petscblaslapack.h>
 
@@ -194,61 +194,61 @@ PETSC_EXTERN void fortranmaxpy2_(void *, void *, void *, const void *, const voi
       PetscKernelAXPY2(U, a3, a4, p3, p4, n); \
     }
 
-#elif defined(PETSC_USE_FOR_KERNELS)
-
-  #define PetscKernelAXPY(U, a1, p1, n) \
-    { \
-      PetscInt    __i; \
-      PetscScalar __s1, __s2; \
-      for (__i = 0; __i < n - 1; __i += 2) { \
-        __s1 = a1 * p1[__i]; \
-        __s2 = a1 * p1[__i + 1]; \
-        __s1 += U[__i]; \
-        __s2 += U[__i + 1]; \
-        U[__i]     = __s1; \
-        U[__i + 1] = __s2; \
-      } \
-      if (n & 0x1) U[__i] += a1 * p1[__i]; \
-    }
-  #define PetscKernelAXPY2(U, a1, a2, p1, p2, n) \
-    { \
-      PetscInt __i; \
-      for (__i = 0; __i < n; __i++) U[__i] += a1 * p1[__i] + a2 * p2[__i]; \
-    }
-  #define PetscKernelAXPY3(U, a1, a2, a3, p1, p2, p3, n) \
-    { \
-      PetscInt __i; \
-      for (__i = 0; __i < n; __i++) U[__i] += a1 * p1[__i] + a2 * p2[__i] + a3 * p3[__i]; \
-    }
-  #define PetscKernelAXPY4(U, a1, a2, a3, a4, p1, p2, p3, p4, n) \
-    { \
-      PetscInt __i; \
-      for (__i = 0; __i < n; __i++) U[__i] += a1 * p1[__i] + a2 * p2[__i] + a3 * p3[__i] + a4 * p4[__i]; \
-    }
-
 #else
 
   #define PetscKernelAXPY(U, a1, p1, n) \
-    { \
-      PetscInt    __i; \
-      PetscScalar _a1 = a1; \
-      for (__i = 0; __i < n; __i++) U[__i] += _a1 * p1[__i]; \
-    }
+    do { \
+      const PetscInt                    _n  = n; \
+      const PetscScalar                 _a1 = a1; \
+      const PetscScalar *PETSC_RESTRICT _p1 = p1; \
+      PetscScalar *PETSC_RESTRICT       _U  = U; \
+      PetscInt                          __i = 0; \
+      for (; __i < _n - 1; __i += 2) { \
+        PetscScalar __s1 = _a1 * _p1[__i]; \
+        PetscScalar __s2 = _a1 * _p1[__i + 1]; \
+        __s1 += _U[__i]; \
+        __s2 += _U[__i + 1]; \
+        _U[__i]     = __s1; \
+        _U[__i + 1] = __s2; \
+      } \
+      if (_n & 0x1) _U[__i] += _a1 * _p1[__i]; \
+    } while (0)
   #define PetscKernelAXPY2(U, a1, a2, p1, p2, n) \
-    { \
-      PetscInt __i; \
-      for (__i = 0; __i < n; __i++) U[__i] += a1 * p1[__i] + a2 * p2[__i]; \
-    }
+    do { \
+      const PetscInt                    _n  = n; \
+      const PetscScalar                 _a1 = a1; \
+      const PetscScalar                 _a2 = a2; \
+      const PetscScalar *PETSC_RESTRICT _p1 = p1; \
+      const PetscScalar *PETSC_RESTRICT _p2 = p2; \
+      PetscScalar *PETSC_RESTRICT       _U  = U; \
+      for (PetscInt __i = 0; __i < _n; __i++) _U[__i] += _a1 * _p1[__i] + _a2 * _p2[__i]; \
+    } while (0)
   #define PetscKernelAXPY3(U, a1, a2, a3, p1, p2, p3, n) \
-    { \
-      PetscInt __i; \
-      for (__i = 0; __i < n; __i++) U[__i] += a1 * p1[__i] + a2 * p2[__i] + a3 * p3[__i]; \
-    }
+    do { \
+      const PetscInt                    _n  = n; \
+      const PetscScalar                 _a1 = a1; \
+      const PetscScalar                 _a2 = a2; \
+      const PetscScalar                 _a3 = a3; \
+      const PetscScalar *PETSC_RESTRICT _p1 = p1; \
+      const PetscScalar *PETSC_RESTRICT _p2 = p2; \
+      const PetscScalar *PETSC_RESTRICT _p3 = p3; \
+      PetscScalar *PETSC_RESTRICT       _U  = U; \
+      for (PetscInt __i = 0; __i < _n; __i++) _U[__i] += _a1 * _p1[__i] + _a2 * _p2[__i] + _a3 * _p3[__i]; \
+    } while (0)
   #define PetscKernelAXPY4(U, a1, a2, a3, a4, p1, p2, p3, p4, n) \
-    { \
-      PetscInt __i; \
-      for (__i = 0; __i < n; __i++) U[__i] += a1 * p1[__i] + a2 * p2[__i] + a3 * p3[__i] + a4 * p4[__i]; \
-    }
+    do { \
+      const PetscInt                    _n  = n; \
+      const PetscScalar                 _a1 = a1; \
+      const PetscScalar                 _a2 = a2; \
+      const PetscScalar                 _a3 = a3; \
+      const PetscScalar                 _a4 = a4; \
+      const PetscScalar *PETSC_RESTRICT _p1 = p1; \
+      const PetscScalar *PETSC_RESTRICT _p2 = p2; \
+      const PetscScalar *PETSC_RESTRICT _p3 = p3; \
+      const PetscScalar *PETSC_RESTRICT _p4 = p4; \
+      PetscScalar *PETSC_RESTRICT       _U  = U; \
+      for (PetscInt __i = 0; __i < _n; __i++) _U[__i] += _a1 * _p1[__i] + _a2 * _p2[__i] + _a3 * _p3[__i] + _a4 * _p4[__i]; \
+    } while (0)
 
 #endif
 

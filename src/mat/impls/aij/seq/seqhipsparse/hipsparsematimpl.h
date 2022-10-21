@@ -5,7 +5,8 @@
 #define PETSC_HIPSPARSEMATIMPL_H
 
 #include <petscpkg_version.h>
-#include <petsc/private/hipvecimpl.h>
+#include <../src/vec/vec/impls/seq/cupm/vecseqcupm.hpp> /* for VecSeq_CUPM */
+#include <petsc/private/petsclegacycupmblas.h>
 #include <petscaijdevice.h>
 
 #if PETSC_PKG_HIP_VERSION_GE(5, 2, 0)
@@ -25,15 +26,6 @@
 #include <thrust/functional.h>
 #include <thrust/sequence.h>
 #include <thrust/system/system_error.h>
-
-#define PetscCallThrust(body) \
-  do { \
-    try { \
-      body; \
-    } catch (thrust::system_error & e) { \
-      SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in Thrust %s", e.what()); \
-    } \
-  } while (0)
 
 #if defined(PETSC_USE_COMPLEX)
   #if defined(PETSC_USE_REAL_SINGLE)
@@ -318,16 +310,16 @@ PETSC_INTERN PetscErrorCode MatSetValuesCOO_SeqAIJHIPSPARSE_Basic(Mat, const Pet
 PETSC_INTERN PetscErrorCode MatSeqAIJHIPSPARSEMergeMats(Mat, Mat, MatReuse, Mat *);
 PETSC_INTERN PetscErrorCode MatSeqAIJHIPSPARSETriFactors_Reset(Mat_SeqAIJHIPSPARSETriFactors_p *);
 
+using VecSeq_HIP = Petsc::vec::cupm::impl::VecSeq_CUPM<Petsc::device::cupm::DeviceType::HIP>;
+
 static inline bool isHipMem(const void *data)
 {
-  hipError_t                   cerr;
-  struct hipPointerAttribute_t attr;
-  enum hipMemoryType           mtype;
-  cerr = hipPointerGetAttributes(&attr, data); /* Do not check error since before CUDA 11.0, passing a host pointer returns hipErrorInvalidValue */
-  hipGetLastError();                           /* Reset the last error */
-  mtype = attr.memoryType;
-  if (cerr == hipSuccess && mtype == hipMemoryTypeDevice) return true;
-  else return false;
+  using namespace Petsc::device::cupm;
+  auto mtype = PETSC_MEMTYPE_HOST;
+
+  PetscFunctionBegin;
+  PetscCallAbort(PETSC_COMM_SELF, impl::Interface<DeviceType::HIP>::PetscCUPMGetMemType(data, &mtype));
+  PetscFunctionReturn(PetscMemTypeDevice(mtype));
 }
 
 #endif // PETSC_HIPSPARSEIMPL_H

@@ -62,17 +62,6 @@ struct private_tag { };
       } \
     } while (0)
 
-template <typename T, typename BinaryOperator>
-struct shift_operator {
-  const T *const       s;
-  const BinaryOperator op;
-
-  PETSC_HOSTDEVICE_DECL PETSC_FORCEINLINE auto operator()(T x) const PETSC_DECLTYPE_NOEXCEPT_AUTO_RETURNS(op(std::move(x), *s))
-};
-
-template <typename T, typename BinaryOperator>
-static inline auto make_shift_operator(T *s, BinaryOperator &&op) PETSC_DECLTYPE_NOEXCEPT_AUTO_RETURNS(shift_operator<T, BinaryOperator>{s, std::forward<BinaryOperator>(op)});
-
   #define PetscValidDevicePointer(ptr, argno) PetscAssert(ptr, PETSC_COMM_SELF, PETSC_ERR_POINTER, "Null device pointer for " PetscStringize(ptr) " Argument #%d", argno);
 
 // actual implementation that calls thrust, 2 argument version

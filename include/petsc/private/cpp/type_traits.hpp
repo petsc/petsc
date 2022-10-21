@@ -59,6 +59,8 @@ using void_t = void;
 
   #if PETSC_CPP_VERSION >= 20
 using std::remove_cvref_t;
+using std::type_identity;
+using std::type_identity_t;
   #else
 namespace detail
 {
@@ -69,8 +71,15 @@ struct remove_cvref {
 } // namespace detail
 
 template <class T>
+struct type_identity {
+  using type = T;
+};
+
+template <class T>
 using remove_cvref_t = typename detail::remove_cvref<T>::type;
-  #endif
+template <class T>
+using type_identity_t = typename type_identity<T>::type;
+  #endif // C++20
 
 template <typename... T>
 struct always_false : std::false_type { };

@@ -15,9 +15,7 @@ PetscLogEvent VEC_SetRandom, VEC_ReduceArithmetic, VEC_ReduceCommunication, VEC_
 PetscLogEvent VEC_DotNorm2, VEC_AXPBYPCZ;
 PetscLogEvent VEC_ViennaCLCopyFromGPU, VEC_ViennaCLCopyToGPU;
 PetscLogEvent VEC_CUDACopyFromGPU, VEC_CUDACopyToGPU;
-PetscLogEvent VEC_CUDACopyFromGPUSome, VEC_CUDACopyToGPUSome;
 PetscLogEvent VEC_HIPCopyFromGPU, VEC_HIPCopyToGPU;
-PetscLogEvent VEC_HIPCopyFromGPUSome, VEC_HIPCopyToGPUSome;
 
 /*@
    VecStashGetInfo - Gets how many values are currently in the vector stash, i.e. need
@@ -1118,31 +1116,55 @@ PetscErrorCode VecReciprocal(Vec vec)
 }
 
 /*@C
-    VecSetOperation - Allows user to set a vector operation.
+  VecSetOperation - Allows the user to override a particular vector operation.
 
-   Logically Collective on Vec
+  Logically Collective on `vec`
 
-    Input Parameters:
-+   vec - the vector
-.   op - the name of the operation
--   f - the function that provides the operation.
+  Input Parameters:
++ vec - The vector to modify
+. op  - The name of the operation
+- f   - The function that provides the operation.
 
-   Level: advanced
+  Notes:
+  `f` may be `NULL` to remove the operation from `vec`. Depending on the operation this may be
+  allowed, however some always expect a valid function. In these cases an error will be raised
+  when calling the interface routine in question.
 
-    Usage:
-$      PetscErrorCode userview(Vec,PetscViewer);
-$      PetscCall(VecCreateMPI(comm,m,M,&x));
-$      PetscCall(VecSetOperation(x,VECOP_VIEW,(void(*)(void))userview));
+  See `VecOperation` for an up-to-date list of override-able operations. The operations listed
+  there have the form `VECOP_<OPERATION>`, where `<OPERATION>` is the suffix (in all capital
+  letters) of the public interface routine (e.g., `VecView()` -> `VECOP_VIEW`).
 
-    Notes:
-    See the file include/petscvec.h for a complete list of matrix
-    operations, which all have the form VECOP_<OPERATION>, where
-    <OPERATION> is the name (in all capital letters) of the
-    user interface routine (e.g., VecView() -> VECOP_VIEW).
+  Overriding a particular `Vec`'s operation has no affect on any other `Vec`s past, present,
+  or future. The user should also note that overriding a method is "destructive"; the previous
+  method is not retained in any way.
 
-    This function is not currently available from Fortran.
+  Fortran Notes:
+  This function is not currently available from Fortran.
 
-.seealso: `VecCreate()`, `MatShellSetOperation()`
+  Example Usage:
+.vb
+  // some new VecView() implementation, must have the same signature as the function it seeks
+  // to replace
+  PetscErrorCode UserVecView(Vec x, PetscViewer viewer)
+  {
+    PetscFunctionBeginUser;
+    // ...
+    PetscFunctionReturn(0);
+  }
+
+  // Create a VECMPI which has a pre-defined VecView() implementation
+  VecCreateMPI(comm, n, N, &x);
+  // Calls the VECMPI implementation for VecView()
+  VecView(x, viewer);
+
+  VecSetOperation(x, VECOP_VIEW, (void (*)(void))UserVecView);
+  // Now calls UserVecView()
+  VecView(x, viewer);
+.ve
+
+  Level: advanced
+
+.seealso: `VecOperation`, `VecCreate()`, `MatShellSetOperation()`
 @*/
 PetscErrorCode VecSetOperation(Vec vec, VecOperation op, void (*f)(void))
 {
@@ -1153,7 +1175,7 @@ PetscErrorCode VecSetOperation(Vec vec, VecOperation op, void (*f)(void))
   } else if (op == VECOP_LOAD && !vec->ops->loadnative) {
     vec->ops->loadnative = vec->ops->load;
   }
-  (((void (**)(void))vec->ops)[(int)op]) = f;
+  ((void (**)(void))vec->ops)[(int)op] = f;
   PetscFunctionReturn(0);
 }
 
@@ -1895,15 +1917,21 @@ PetscErrorCode VecSetLayout(Vec x, PetscLayout map)
 
 PetscErrorCode VecSetInf(Vec xin)
 {
-  PetscInt     i, n = xin->map->n;
-  PetscScalar *xx;
-  PetscScalar  zero = 0.0, one = 1.0, inf = one / zero;
+  // use of variables one and zero over just doing 1.0/0.0 is deliberate. MSVC complains that
+  // we are dividing by zero in the latter case (ostensibly because dividing by 0 is UB, but
+  // only for *integers* not floats).
+  const PetscScalar one = 1.0, zero = 0.0, inf = one / zero;
 
   PetscFunctionBegin;
-  if (xin->ops->set) PetscUseTypeMethod(xin, set, inf);
-  else {
+  if (xin->ops->set) {
+    PetscUseTypeMethod(xin, set, inf);
+  } else {
+    PetscInt     n;
+    PetscScalar *xx;
+
+    PetscCall(VecGetLocalSize(xin, &n));
     PetscCall(VecGetArrayWrite(xin, &xx));
-    for (i = 0; i < n; i++) xx[i] = inf;
+    for (PetscInt i = 0; i < n; ++i) xx[i] = inf;
     PetscCall(VecRestoreArrayWrite(xin, &xx));
   }
   PetscFunctionReturn(0);

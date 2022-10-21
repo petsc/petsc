@@ -5,31 +5,9 @@
 #include <petscsys.h>
 #include <../src/vec/vec/impls/mpi/pvecimpl.h> /*I  "petscvec.h"   I*/
 
-PetscErrorCode VecDot_MPI(Vec xin, Vec yin, PetscScalar *z)
-{
-  PetscScalar sum, work;
-
-  PetscFunctionBegin;
-  PetscCall(VecDot_Seq(xin, yin, &work));
-  PetscCall(MPIU_Allreduce(&work, &sum, 1, MPIU_SCALAR, MPIU_SUM, PetscObjectComm((PetscObject)xin)));
-  *z = sum;
-  PetscFunctionReturn(0);
-}
-
-PetscErrorCode VecTDot_MPI(Vec xin, Vec yin, PetscScalar *z)
-{
-  PetscScalar sum, work;
-
-  PetscFunctionBegin;
-  PetscCall(VecTDot_Seq(xin, yin, &work));
-  PetscCall(MPIU_Allreduce(&work, &sum, 1, MPIU_SCALAR, MPIU_SUM, PetscObjectComm((PetscObject)xin)));
-  *z = sum;
-  PetscFunctionReturn(0);
-}
-
 extern PetscErrorCode VecView_MPI_Draw(Vec, PetscViewer);
 
-static PetscErrorCode VecPlaceArray_MPI(Vec vin, const PetscScalar *a)
+PetscErrorCode VecPlaceArray_MPI(Vec vin, const PetscScalar *a)
 {
   Vec_MPI *v = (Vec_MPI *)vin->data;
 
@@ -52,13 +30,13 @@ PetscErrorCode VecDuplicate_MPI(Vec win, Vec *v)
 
   PetscCall(VecCreate_MPI_Private(*v, PETSC_TRUE, w->nghost, NULL));
   vw = (Vec_MPI *)(*v)->data;
-  PetscCall(PetscMemcpy((*v)->ops, win->ops, sizeof(struct _VecOps)));
+  PetscCall(PetscMemcpy((*v)->ops, win->ops, sizeof(*win->ops)));
 
   /* save local representation of the parallel vector (and scatter) if it exists */
   if (w->localrep) {
     PetscCall(VecGetArray(*v, &array));
     PetscCall(VecCreateSeqWithArray(PETSC_COMM_SELF, PetscAbs(win->map->bs), win->map->n + w->nghost, array, &vw->localrep));
-    PetscCall(PetscMemcpy(vw->localrep->ops, w->localrep->ops, sizeof(struct _VecOps)));
+    PetscCall(PetscMemcpy(vw->localrep->ops, w->localrep->ops, sizeof(*w->localrep->ops)));
     PetscCall(VecRestoreArray(*v, &array));
 
     vw->localupdate = w->localupdate;
@@ -101,7 +79,7 @@ static PetscErrorCode VecSetOption_MPI(Vec V, VecOption op, PetscBool flag)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode VecResetArray_MPI(Vec vin)
+PetscErrorCode VecResetArray_MPI(Vec vin)
 {
   Vec_MPI *v = (Vec_MPI *)vin->data;
 

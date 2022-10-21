@@ -30,7 +30,7 @@ PetscErrorCode VecDestroy_MPI(Vec v)
 
   PetscFunctionBegin;
 #if defined(PETSC_USE_LOG)
-  PetscLogObjectState((PetscObject)v, "Length=%" PetscInt_FMT, v->map->N);
+  PetscCall(PetscLogObjectState((PetscObject)v, "Length=%" PetscInt_FMT, v->map->N));
 #endif
   if (!x) PetscFunctionReturn(0);
   PetscCall(PetscFree(x->array_allocated));
@@ -815,13 +815,14 @@ PetscErrorCode VecGetSize_MPI(Vec xin, PetscInt *N)
 PetscErrorCode VecGetValues_MPI(Vec xin, PetscInt ni, const PetscInt ix[], PetscScalar y[])
 {
   const PetscScalar *xx;
-  PetscInt           i, tmp, start = xin->map->range[xin->stash.rank];
+  const PetscInt     start = xin->map->range[xin->stash.rank];
 
   PetscFunctionBegin;
   PetscCall(VecGetArrayRead(xin, &xx));
-  for (i = 0; i < ni; i++) {
+  for (PetscInt i = 0; i < ni; i++) {
     if (xin->stash.ignorenegidx && ix[i] < 0) continue;
-    tmp = ix[i] - start;
+    const PetscInt tmp = ix[i] - start;
+
     PetscCheck(tmp >= 0 && tmp < xin->map->n, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Can only get local values, trying %" PetscInt_FMT, ix[i]);
     y[i] = xx[tmp];
   }
@@ -831,10 +832,12 @@ PetscErrorCode VecGetValues_MPI(Vec xin, PetscInt ni, const PetscInt ix[], Petsc
 
 PetscErrorCode VecSetValues_MPI(Vec xin, PetscInt ni, const PetscInt ix[], const PetscScalar y[], InsertMode addv)
 {
-  PetscMPIInt  rank   = xin->stash.rank;
-  PetscInt    *owners = xin->map->range, start = owners[rank];
-  PetscInt     end = owners[rank + 1], i, row;
-  PetscScalar *xx;
+  const PetscBool   ignorenegidx = xin->stash.ignorenegidx;
+  const PetscBool   donotstash   = xin->stash.donotstash;
+  const PetscMPIInt rank         = xin->stash.rank;
+  const PetscInt   *owners       = xin->map->range;
+  const PetscInt    start = owners[rank], end = owners[rank + 1];
+  PetscScalar      *xx;
 
   PetscFunctionBegin;
   if (PetscDefined(USE_DEBUG)) {
@@ -843,28 +846,20 @@ PetscErrorCode VecSetValues_MPI(Vec xin, PetscInt ni, const PetscInt ix[], const
   }
   PetscCall(VecGetArray(xin, &xx));
   xin->stash.insertmode = addv;
+  for (PetscInt i = 0; i < ni; ++i) {
+    PetscInt row;
 
-  if (addv == INSERT_VALUES) {
-    for (i = 0; i < ni; i++) {
-      if (xin->stash.ignorenegidx && ix[i] < 0) continue;
-      PetscCheck(ix[i] >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Out of range index value %" PetscInt_FMT " cannot be negative", ix[i]);
-      if ((row = ix[i]) >= start && row < end) {
+    if (ignorenegidx && ix[i] < 0) continue;
+    PetscCheck(ix[i] >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Out of range index value %" PetscInt_FMT " cannot be negative", ix[i]);
+    if ((row = ix[i]) >= start && row < end) {
+      if (addv == INSERT_VALUES) {
         xx[row - start] = y[i];
-      } else if (!xin->stash.donotstash) {
-        PetscCheck(ix[i] < xin->map->N, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Out of range index value %" PetscInt_FMT " maximum %" PetscInt_FMT, ix[i], xin->map->N);
-        PetscCall(VecStashValue_Private(&xin->stash, row, y[i]));
-      }
-    }
-  } else {
-    for (i = 0; i < ni; i++) {
-      if (xin->stash.ignorenegidx && ix[i] < 0) continue;
-      PetscCheck(ix[i] >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Out of range index value %" PetscInt_FMT " cannot be negative", ix[i]);
-      if ((row = ix[i]) >= start && row < end) {
+      } else {
         xx[row - start] += y[i];
-      } else if (!xin->stash.donotstash) {
-        PetscCheck(ix[i] < xin->map->N, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Out of range index value %" PetscInt_FMT " maximum %" PetscInt_FMT, ix[i], xin->map->N);
-        PetscCall(VecStashValue_Private(&xin->stash, row, y[i]));
       }
+    } else if (!donotstash) {
+      PetscCheck(ix[i] < xin->map->N, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Out of range index value %" PetscInt_FMT " maximum %" PetscInt_FMT, ix[i], xin->map->N);
+      PetscCall(VecStashValue_Private(&xin->stash, row, y[i]));
     }
   }
   PetscCall(VecRestoreArray(xin, &xx));

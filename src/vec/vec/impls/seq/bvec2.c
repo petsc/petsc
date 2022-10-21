@@ -13,60 +13,62 @@
 extern PetscErrorCode VecView_MPI_HDF5(Vec, PetscViewer);
 #endif
 
-PetscErrorCode VecPointwiseMax_Seq(Vec win, Vec xin, Vec yin)
+static PetscErrorCode VecPointwiseApply_Seq(Vec win, Vec xin, Vec yin, PetscScalar (*const func)(PetscScalar, PetscScalar))
 {
-  PetscInt     n = win->map->n, i;
-  PetscScalar *ww, *xx, *yy; /* cannot make xx or yy const since might be ww */
+  const PetscInt n = win->map->n;
+  PetscScalar   *ww, *xx, *yy; /* cannot make xx or yy const since might be ww */
 
   PetscFunctionBegin;
   PetscCall(VecGetArrayRead(xin, (const PetscScalar **)&xx));
   PetscCall(VecGetArrayRead(yin, (const PetscScalar **)&yy));
   PetscCall(VecGetArray(win, &ww));
-
-  for (i = 0; i < n; i++) ww[i] = PetscMax(PetscRealPart(xx[i]), PetscRealPart(yy[i]));
-
+  for (PetscInt i = 0; i < n; ++i) ww[i] = func(xx[i], yy[i]);
   PetscCall(VecRestoreArrayRead(xin, (const PetscScalar **)&xx));
   PetscCall(VecRestoreArrayRead(yin, (const PetscScalar **)&yy));
   PetscCall(VecRestoreArray(win, &ww));
   PetscCall(PetscLogFlops(n));
   PetscFunctionReturn(0);
+}
+
+static PetscScalar MaxRealPart(PetscScalar x, PetscScalar y)
+{
+  // use temporaries to avoid reevaluating side-effects
+  const PetscReal rx = PetscRealPart(x), ry = PetscRealPart(y);
+
+  return PetscMax(rx, ry);
+}
+
+PetscErrorCode VecPointwiseMax_Seq(Vec win, Vec xin, Vec yin)
+{
+  PetscFunctionBegin;
+  PetscCall(VecPointwiseApply_Seq(win, xin, yin, MaxRealPart));
+  PetscFunctionReturn(0);
+}
+
+static PetscScalar MinRealPart(PetscScalar x, PetscScalar y)
+{
+  // use temporaries to avoid reevaluating side-effects
+  const PetscReal rx = PetscRealPart(x), ry = PetscRealPart(y);
+
+  return PetscMin(rx, ry);
 }
 
 PetscErrorCode VecPointwiseMin_Seq(Vec win, Vec xin, Vec yin)
 {
-  PetscInt     n = win->map->n, i;
-  PetscScalar *ww, *xx, *yy; /* cannot make xx or yy const since might be ww */
-
   PetscFunctionBegin;
-  PetscCall(VecGetArrayRead(xin, (const PetscScalar **)&xx));
-  PetscCall(VecGetArrayRead(yin, (const PetscScalar **)&yy));
-  PetscCall(VecGetArray(win, &ww));
-
-  for (i = 0; i < n; i++) ww[i] = PetscMin(PetscRealPart(xx[i]), PetscRealPart(yy[i]));
-
-  PetscCall(VecRestoreArrayRead(xin, (const PetscScalar **)&xx));
-  PetscCall(VecRestoreArrayRead(yin, (const PetscScalar **)&yy));
-  PetscCall(VecRestoreArray(win, &ww));
-  PetscCall(PetscLogFlops(n));
+  PetscCall(VecPointwiseApply_Seq(win, xin, yin, MinRealPart));
   PetscFunctionReturn(0);
+}
+
+static PetscScalar MaxAbs(PetscScalar x, PetscScalar y)
+{
+  return (PetscScalar)PetscMax(PetscAbsScalar(x), PetscAbsScalar(y));
 }
 
 PetscErrorCode VecPointwiseMaxAbs_Seq(Vec win, Vec xin, Vec yin)
 {
-  PetscInt     n = win->map->n, i;
-  PetscScalar *ww, *xx, *yy; /* cannot make xx or yy const since might be ww */
-
   PetscFunctionBegin;
-  PetscCall(VecGetArrayRead(xin, (const PetscScalar **)&xx));
-  PetscCall(VecGetArrayRead(yin, (const PetscScalar **)&yy));
-  PetscCall(VecGetArray(win, &ww));
-
-  for (i = 0; i < n; i++) ww[i] = PetscMax(PetscAbsScalar(xx[i]), PetscAbsScalar(yy[i]));
-
-  PetscCall(PetscLogFlops(n));
-  PetscCall(VecRestoreArrayRead(xin, (const PetscScalar **)&xx));
-  PetscCall(VecRestoreArrayRead(yin, (const PetscScalar **)&yy));
-  PetscCall(VecRestoreArray(win, &ww));
+  PetscCall(VecPointwiseApply_Seq(win, xin, yin, MaxAbs));
   PetscFunctionReturn(0);
 }
 
@@ -99,36 +101,25 @@ PetscErrorCode VecPointwiseMult_Seq(Vec win, Vec xin, Vec yin)
   PetscFunctionReturn(0);
 }
 
+static PetscScalar ScalDiv(PetscScalar x, PetscScalar y)
+{
+  return y == 0.0 ? 0.0 : x / y;
+}
+
 PetscErrorCode VecPointwiseDivide_Seq(Vec win, Vec xin, Vec yin)
 {
-  PetscInt     n = win->map->n, i;
-  PetscScalar *ww, *xx, *yy; /* cannot make xx or yy const since might be ww */
-
   PetscFunctionBegin;
-  PetscCall(VecGetArrayRead(xin, (const PetscScalar **)&xx));
-  PetscCall(VecGetArrayRead(yin, (const PetscScalar **)&yy));
-  PetscCall(VecGetArray(win, &ww));
-
-  for (i = 0; i < n; i++) {
-    if (yy[i] != 0.0) ww[i] = xx[i] / yy[i];
-    else ww[i] = 0.0;
-  }
-
-  PetscCall(PetscLogFlops(n));
-  PetscCall(VecRestoreArrayRead(xin, (const PetscScalar **)&xx));
-  PetscCall(VecRestoreArrayRead(yin, (const PetscScalar **)&yy));
-  PetscCall(VecRestoreArray(win, &ww));
+  PetscCall(VecPointwiseApply_Seq(win, xin, yin, ScalDiv));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode VecSetRandom_Seq(Vec xin, PetscRandom r)
 {
-  PetscInt     n = xin->map->n, i;
   PetscScalar *xx;
 
   PetscFunctionBegin;
   PetscCall(VecGetArrayWrite(xin, &xx));
-  for (i = 0; i < n; i++) PetscCall(PetscRandomGetValue(r, &xx[i]));
+  PetscCall(PetscRandomGetValues(r, xin->map->n, xx));
   PetscCall(VecRestoreArrayWrite(xin, &xx));
   PetscFunctionReturn(0);
 }
@@ -142,16 +133,15 @@ PetscErrorCode VecGetSize_Seq(Vec vin, PetscInt *size)
 
 PetscErrorCode VecConjugate_Seq(Vec xin)
 {
-  PetscScalar *x;
-  PetscInt     n = xin->map->n;
-
   PetscFunctionBegin;
-  PetscCall(VecGetArray(xin, &x));
-  while (n-- > 0) {
-    *x = PetscConj(*x);
-    x++;
+  if (PetscDefined(USE_COMPLEX)) {
+    const PetscInt n = xin->map->n;
+    PetscScalar   *x;
+
+    PetscCall(VecGetArray(xin, &x));
+    for (PetscInt i = 0; i < n; ++i) x[i] = PetscConj(x[i]);
+    PetscCall(VecRestoreArray(xin, &x));
   }
-  PetscCall(VecRestoreArray(xin, &x));
   PetscFunctionReturn(0);
 }
 
@@ -167,11 +157,11 @@ PetscErrorCode VecResetArray_Seq(Vec vin)
 
 PetscErrorCode VecCopy_Seq(Vec xin, Vec yin)
 {
-  PetscScalar       *ya;
-  const PetscScalar *xa;
-
   PetscFunctionBegin;
   if (xin != yin) {
+    const PetscScalar *xa;
+    PetscScalar       *ya;
+
     PetscCall(VecGetArrayRead(xin, &xa));
     PetscCall(VecGetArray(yin, &ya));
     PetscCall(PetscArraycpy(ya, xa, xin->map->n));
@@ -183,11 +173,12 @@ PetscErrorCode VecCopy_Seq(Vec xin, Vec yin)
 
 PetscErrorCode VecSwap_Seq(Vec xin, Vec yin)
 {
-  PetscScalar *ya, *xa;
-  PetscBLASInt one = 1, bn;
-
   PetscFunctionBegin;
   if (xin != yin) {
+    const PetscBLASInt one = 1;
+    PetscScalar       *ya, *xa;
+    PetscBLASInt       bn;
+
     PetscCall(PetscBLASIntCast(xin->map->n, &bn));
     PetscCall(VecGetArray(xin, &xa));
     PetscCall(VecGetArray(yin, &ya));
@@ -202,57 +193,53 @@ PetscErrorCode VecSwap_Seq(Vec xin, Vec yin)
 
 PetscErrorCode VecNorm_Seq(Vec xin, NormType type, PetscReal *z)
 {
-  const PetscScalar *xx;
-  PetscInt           n   = xin->map->n;
-  PetscBLASInt       one = 1, bn = 0;
+  // use a local variable to ensure compiler doesn't think z aliases any of the other arrays
+  PetscReal      ztmp[] = {0.0, 0.0};
+  const PetscInt n      = xin->map->n;
 
   PetscFunctionBegin;
-  PetscCall(PetscBLASIntCast(n, &bn));
-  if (type == NORM_2 || type == NORM_FROBENIUS) {
-    PetscCall(VecGetArrayRead(xin, &xx));
-#if defined(PETSC_USE_REAL___FP16)
-    PetscCallBLAS("BLASnrm2", *z = BLASnrm2_(&bn, xx, &one));
-#else
-    PetscCallBLAS("BLASdot", *z = PetscRealPart(BLASdot_(&bn, xx, &one, xx, &one)));
-    *z = PetscSqrtReal(*z);
-#endif
-    PetscCall(VecRestoreArrayRead(xin, &xx));
-    PetscCall(PetscLogFlops(PetscMax(2.0 * n - 1, 0.0)));
-  } else if (type == NORM_INFINITY) {
-    PetscInt  i;
-    PetscReal max = 0.0, tmp;
+  if (n) {
+    const PetscScalar *xx;
+    const PetscBLASInt one = 1;
+    PetscBLASInt       bn  = 0;
 
+    PetscCall(PetscBLASIntCast(n, &bn));
     PetscCall(VecGetArrayRead(xin, &xx));
-    for (i = 0; i < n; i++) {
-      if ((tmp = PetscAbsScalar(*xx)) > max) max = tmp;
-      /* check special case of tmp == NaN */
-      if (tmp != tmp) {
-        max = tmp;
-        break;
+    if (type == NORM_2 || type == NORM_FROBENIUS) {
+    NORM_1_AND_2_DOING_NORM_2:
+      if (PetscDefined(USE_REAL___FP16)) {
+        PetscCallBLAS("BLASnrm2", ztmp[type == NORM_1_AND_2] = BLASnrm2_(&bn, xx, &one));
+      } else {
+        PetscCallBLAS("BLASdot", ztmp[type == NORM_1_AND_2] = PetscSqrtReal(PetscRealPart(BLASdot_(&bn, xx, &one, xx, &one))));
       }
-      xx++;
+      PetscCall(PetscLogFlops(2.0 * n - 1));
+    } else if (type == NORM_INFINITY) {
+      for (PetscInt i = 0; i < n; ++i) {
+        const PetscReal tmp = PetscAbsScalar(xx[i]);
+
+        /* check special case of tmp == NaN */
+        if ((tmp > ztmp[0]) || (tmp != tmp)) {
+          ztmp[0] = tmp;
+          if (tmp != tmp) break;
+        }
+      }
+    } else if (type == NORM_1 || type == NORM_1_AND_2) {
+      if (PetscDefined(USE_COMPLEX)) {
+        // BLASasum() returns the nonstandard 1 norm of the 1 norm of the complex entries so we
+        // provide a custom loop instead
+        for (PetscInt i = 0; i < n; ++i) ztmp[0] += PetscAbsScalar(xx[i]);
+      } else {
+        PetscCallBLAS("BLASasum", ztmp[0] = BLASasum_(&bn, xx, &one));
+      }
+      PetscCall(PetscLogFlops(n - 1.0));
+      /* slight reshuffle so we can skip getting the array again (but still log the flops) if we
+         do norm2 after this */
+      if (type == NORM_1_AND_2) goto NORM_1_AND_2_DOING_NORM_2;
     }
     PetscCall(VecRestoreArrayRead(xin, &xx));
-    *z = max;
-  } else if (type == NORM_1) {
-#if defined(PETSC_USE_COMPLEX)
-    PetscReal tmp = 0.0;
-    PetscInt  i;
-#endif
-    PetscCall(VecGetArrayRead(xin, &xx));
-#if defined(PETSC_USE_COMPLEX)
-    /* BLASasum() returns the nonstandard 1 norm of the 1 norm of the complex entries so we provide a custom loop instead */
-    for (i = 0; i < n; i++) tmp += PetscAbsScalar(xx[i]);
-    *z = tmp;
-#else
-    PetscCallBLAS("BLASasum", *z = BLASasum_(&bn, xx, &one));
-#endif
-    PetscCall(VecRestoreArrayRead(xin, &xx));
-    PetscCall(PetscLogFlops(PetscMax(n - 1.0, 0.0)));
-  } else if (type == NORM_1_AND_2) {
-    PetscCall(VecNorm_Seq(xin, NORM_1, z));
-    PetscCall(VecNorm_Seq(xin, NORM_2, z + 1));
   }
+  z[0] = ztmp[0];
+  if (type == NORM_1_AND_2) z[1] = ztmp[1];
   PetscFunctionReturn(0);
 }
 
@@ -590,13 +577,13 @@ PETSC_EXTERN PetscErrorCode VecView_Seq(Vec xin, PetscViewer viewer)
 
 PetscErrorCode VecGetValues_Seq(Vec xin, PetscInt ni, const PetscInt ix[], PetscScalar y[])
 {
+  const PetscBool    ignorenegidx = xin->stash.ignorenegidx;
   const PetscScalar *xx;
-  PetscInt           i;
 
   PetscFunctionBegin;
   PetscCall(VecGetArrayRead(xin, &xx));
-  for (i = 0; i < ni; i++) {
-    if (xin->stash.ignorenegidx && ix[i] < 0) continue;
+  for (PetscInt i = 0; i < ni; ++i) {
+    if (ignorenegidx && (ix[i] < 0)) continue;
     if (PetscDefined(USE_DEBUG)) {
       PetscCheck(ix[i] >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Out of range index value %" PetscInt_FMT " cannot be negative", ix[i]);
       PetscCheck(ix[i] < xin->map->n, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Out of range index value %" PetscInt_FMT " to large maximum allowed %" PetscInt_FMT, ix[i], xin->map->n);
@@ -609,27 +596,23 @@ PetscErrorCode VecGetValues_Seq(Vec xin, PetscInt ni, const PetscInt ix[], Petsc
 
 PetscErrorCode VecSetValues_Seq(Vec xin, PetscInt ni, const PetscInt ix[], const PetscScalar y[], InsertMode m)
 {
-  PetscScalar *xx;
-  PetscInt     i;
+  const PetscBool ignorenegidx = xin->stash.ignorenegidx;
+  PetscScalar    *xx;
 
   PetscFunctionBegin;
+  // call to getarray (not e.g. getarraywrite() if m is INSERT_VALUES) is deliberate! If this
+  // is secretly a VECSEQCUDA it may have values currently on the device, in which case --
+  // unless we are replacing the entire array -- we need to copy them up
   PetscCall(VecGetArray(xin, &xx));
-  if (m == INSERT_VALUES) {
-    for (i = 0; i < ni; i++) {
-      if (xin->stash.ignorenegidx && ix[i] < 0) continue;
-      if (PetscDefined(USE_DEBUG)) {
-        PetscCheck(ix[i] >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Out of range index value %" PetscInt_FMT " cannot be negative", ix[i]);
-        PetscCheck(ix[i] < xin->map->n, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Out of range index value %" PetscInt_FMT " maximum %" PetscInt_FMT, ix[i], xin->map->n);
-      }
-      xx[ix[i]] = y[i];
+  for (PetscInt i = 0; i < ni; i++) {
+    if (ignorenegidx && (ix[i] < 0)) continue;
+    if (PetscDefined(USE_DEBUG)) {
+      PetscCheck(ix[i] >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Out of range index value %" PetscInt_FMT " cannot be negative", ix[i]);
+      PetscCheck(ix[i] < xin->map->n, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Out of range index value %" PetscInt_FMT " maximum %" PetscInt_FMT, ix[i], xin->map->n);
     }
-  } else {
-    for (i = 0; i < ni; i++) {
-      if (xin->stash.ignorenegidx && ix[i] < 0) continue;
-      if (PetscDefined(USE_DEBUG)) {
-        PetscCheck(ix[i] >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Out of range index value %" PetscInt_FMT " cannot be negative", ix[i]);
-        PetscCheck(ix[i] < xin->map->n, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Out of range index value %" PetscInt_FMT " maximum %" PetscInt_FMT, ix[i], xin->map->n);
-      }
+    if (m == INSERT_VALUES) {
+      xx[ix[i]] = y[i];
+    } else {
       xx[ix[i]] += y[i];
     }
   }
@@ -639,28 +622,24 @@ PetscErrorCode VecSetValues_Seq(Vec xin, PetscInt ni, const PetscInt ix[], const
 
 PetscErrorCode VecSetValuesBlocked_Seq(Vec xin, PetscInt ni, const PetscInt ix[], const PetscScalar yin[], InsertMode m)
 {
-  PetscScalar *xx, *y = (PetscScalar *)yin;
-  PetscInt     i, bs, start, j;
+  PetscScalar *xx;
+  PetscInt     bs;
 
-  /*
-       For optimization could treat bs = 2, 3, 4, 5 as special cases with loop unrolling
-  */
+  /* For optimization could treat bs = 2, 3, 4, 5 as special cases with loop unrolling */
   PetscFunctionBegin;
   PetscCall(VecGetBlockSize(xin, &bs));
   PetscCall(VecGetArray(xin, &xx));
-  if (m == INSERT_VALUES) {
-    for (i = 0; i < ni; i++, y += bs) {
-      start = bs * ix[i];
-      if (start < 0) continue;
-      PetscCheck(start < xin->map->n, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Out of range index value %" PetscInt_FMT " maximum %" PetscInt_FMT, start, xin->map->n);
-      for (j = 0; j < bs; j++) xx[start + j] = y[j];
-    }
-  } else {
-    for (i = 0; i < ni; i++, y += bs) {
-      start = bs * ix[i];
-      if (start < 0) continue;
-      PetscCheck(start < xin->map->n, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Out of range index value %" PetscInt_FMT " maximum %" PetscInt_FMT, start, xin->map->n);
-      for (j = 0; j < bs; j++) xx[start + j] += y[j];
+  for (PetscInt i = 0; i < ni; ++i, yin += bs) {
+    const PetscInt start = bs * ix[i];
+
+    if (start < 0) continue;
+    PetscCheck(start < xin->map->n, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Out of range index value %" PetscInt_FMT " maximum %" PetscInt_FMT, start, xin->map->n);
+    for (PetscInt j = 0; j < bs; j++) {
+      if (m == INSERT_VALUES) {
+        xx[start + j] = yin[j];
+      } else {
+        xx[start + j] += yin[j];
+      }
     }
   }
   PetscCall(VecRestoreArray(xin, &xx));
@@ -748,7 +727,7 @@ PetscErrorCode VecDestroy_Seq(Vec v)
 
   PetscFunctionBegin;
 #if defined(PETSC_USE_LOG)
-  PetscLogObjectState((PetscObject)v, "Length=%" PetscInt_FMT, v->map->n);
+  PetscCall(PetscLogObjectState((PetscObject)v, "Length=%" PetscInt_FMT, v->map->n));
 #endif
   if (vs) PetscCall(PetscFree(vs->array_allocated));
   PetscCall(VecResetPreallocationCOO_Seq(v));

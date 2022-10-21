@@ -61,7 +61,7 @@ runex19_hypre_cuda:
 	   if (${DIFF} output/ex19_hypre.out ex19_1.tmp) then \
            echo "C/C++ example src/snes/tutorials/ex19 run successfully with hypre/cuda"; \
            else  \
-             printf "${PWD}\nPossible problem with ex19 running with hypre, diffs above\n=========================================\n"; \
+             printf "${PWD}\nPossible problem with ex19 running with hypre/cuda, diffs above\n=========================================\n"; \
              touch ${PETSC_DIR}/check_error;\
              fi; \
 	   ${RM} -f ex19_1.tmp
@@ -70,7 +70,7 @@ runex19_hypre_hip:
 	   if (${DIFF} output/ex19_hypre.out ex19_1.tmp) then \
            echo "C/C++ example src/snes/tutorials/ex19 run successfully with hypre/hip"; \
            else \
-             printf "${PWD}\nPossible problem with ex19 running with hypre, diffs above\n=========================================\n";\
+             printf "${PWD}\nPossible problem with ex19 running with hypre/hip, diffs above\n=========================================\n";\
              touch ${PETSC_DIR}/check_error;\
            fi; \
 	   ${RM} -f ex19_1.tmp

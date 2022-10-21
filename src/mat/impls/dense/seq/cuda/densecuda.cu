@@ -3,8 +3,9 @@
 */
 #include <petscpkg_version.h>
 #define PETSC_SKIP_IMMINTRIN_H_CUDAWORKAROUND 1
-#include <../src/mat/impls/dense/seq/dense.h> /*I "petscmat.h" I*/
-#include <petsc/private/cudavecimpl.h>        /* cublas definitions are here */
+#include <../src/mat/impls/dense/seq/dense.h>           /*I "petscmat.h" I*/
+#include <../src/vec/vec/impls/seq/cupm/vecseqcupm.hpp> /* for VecSeq_CUPM */
+#include <petsc/private/petsclegacycupmblas.h>          /* cublas definitions are here */
 #include <thrust/device_ptr.h>
 #include <thrust/functional.h>
 #include <thrust/iterator/counting_iterator.h>
@@ -13,75 +14,7 @@
 #include <thrust/transform.h>
 #include <thrust/device_vector.h>
 
-#if defined(PETSC_USE_COMPLEX)
-  #if defined(PETSC_USE_REAL_SINGLE)
-    #define cusolverDnXpotrf(a, b, c, d, e, f, g, h)                        cusolverDnCpotrf((a), (b), (c), (cuComplex *)(d), (e), (cuComplex *)(f), (g), (h))
-    #define cusolverDnXpotrf_bufferSize(a, b, c, d, e, f)                   cusolverDnCpotrf_bufferSize((a), (b), (c), (cuComplex *)(d), (e), (f))
-    #define cusolverDnXpotrs(a, b, c, d, e, f, g, h, i)                     cusolverDnCpotrs((a), (b), (c), (d), (cuComplex *)(e), (f), (cuComplex *)(g), (h), (i))
-    #define cusolverDnXpotri(a, b, c, d, e, f, g, h)                        cusolverDnCpotri((a), (b), (c), (cuComplex *)(d), (e), (cuComplex *)(f), (g), (h))
-    #define cusolverDnXpotri_bufferSize(a, b, c, d, e, f)                   cusolverDnCpotri_bufferSize((a), (b), (c), (cuComplex *)(d), (e), (f))
-    #define cusolverDnXsytrf(a, b, c, d, e, f, g, h, i)                     cusolverDnCsytrf((a), (b), (c), (cuComplex *)(d), (e), (f), (cuComplex *)(g), (h), (i))
-    #define cusolverDnXsytrf_bufferSize(a, b, c, d, e)                      cusolverDnCsytrf_bufferSize((a), (b), (cuComplex *)(c), (d), (e))
-    #define cusolverDnXgetrf(a, b, c, d, e, f, g, h)                        cusolverDnCgetrf((a), (b), (c), (cuComplex *)(d), (e), (cuComplex *)(f), (g), (h))
-    #define cusolverDnXgetrf_bufferSize(a, b, c, d, e, f)                   cusolverDnCgetrf_bufferSize((a), (b), (c), (cuComplex *)(d), (e), (f))
-    #define cusolverDnXgetrs(a, b, c, d, e, f, g, h, i, j)                  cusolverDnCgetrs((a), (b), (c), (d), (cuComplex *)(e), (f), (g), (cuComplex *)(h), (i), (j))
-    #define cusolverDnXgeqrf_bufferSize(a, b, c, d, e, f)                   cusolverDnCgeqrf_bufferSize((a), (b), (c), (cuComplex *)(d), (e), (f))
-    #define cusolverDnXgeqrf(a, b, c, d, e, f, g, h, i)                     cusolverDnCgeqrf((a), (b), (c), (cuComplex *)(d), (e), (cuComplex *)(f), (cuComplex *)(g), (h), (i))
-    #define cusolverDnXormqr_bufferSize(a, b, c, d, e, f, g, h, i, j, k, l) cusolverDnCunmqr_bufferSize((a), (b), (c), (d), (e), (f), (cuComplex *)(g), (h), (cuComplex *)(i), (cuComplex *)(j), (k), (l))
-    #define cusolverDnXormqr(a, b, c, d, e, f, g, h, i, j, k, l, m, n)      cusolverDnCunmqr((a), (b), (c), (d), (e), (f), (cuComplex *)(g), (h), (cuComplex *)(i), (cuComplex *)(j), (k), (cuComplex *)(l), (m), (n))
-    #define cublasXtrsm(a, b, c, d, e, f, g, h, i, j, k, l)                 cublasCtrsm((a), (b), (c), (d), (e), (f), (g), (cuComplex *)(h), (cuComplex *)(i), (j), (cuComplex *)(k), (l))
-  #else /* complex double */
-    #define cusolverDnXpotrf(a, b, c, d, e, f, g, h)                        cusolverDnZpotrf((a), (b), (c), (cuDoubleComplex *)(d), (e), (cuDoubleComplex *)(f), (g), (h))
-    #define cusolverDnXpotrf_bufferSize(a, b, c, d, e, f)                   cusolverDnZpotrf_bufferSize((a), (b), (c), (cuDoubleComplex *)(d), (e), (f))
-    #define cusolverDnXpotrs(a, b, c, d, e, f, g, h, i)                     cusolverDnZpotrs((a), (b), (c), (d), (cuDoubleComplex *)(e), (f), (cuDoubleComplex *)(g), (h), (i))
-    #define cusolverDnXpotri(a, b, c, d, e, f, g, h)                        cusolverDnZpotri((a), (b), (c), (cuDoubleComplex *)(d), (e), (cuDoubleComplex *)(f), (g), (h))
-    #define cusolverDnXpotri_bufferSize(a, b, c, d, e, f)                   cusolverDnZpotri_bufferSize((a), (b), (c), (cuDoubleComplex *)(d), (e), (f))
-    #define cusolverDnXsytrf(a, b, c, d, e, f, g, h, i)                     cusolverDnZsytrf((a), (b), (c), (cuDoubleComplex *)(d), (e), (f), (cuDoubleComplex *)(g), (h), (i))
-    #define cusolverDnXsytrf_bufferSize(a, b, c, d, e)                      cusolverDnZsytrf_bufferSize((a), (b), (cuDoubleComplex *)(c), (d), (e))
-    #define cusolverDnXgetrf(a, b, c, d, e, f, g, h)                        cusolverDnZgetrf((a), (b), (c), (cuDoubleComplex *)(d), (e), (cuDoubleComplex *)(f), (g), (h))
-    #define cusolverDnXgetrf_bufferSize(a, b, c, d, e, f)                   cusolverDnZgetrf_bufferSize((a), (b), (c), (cuDoubleComplex *)(d), (e), (f))
-    #define cusolverDnXgetrs(a, b, c, d, e, f, g, h, i, j)                  cusolverDnZgetrs((a), (b), (c), (d), (cuDoubleComplex *)(e), (f), (g), (cuDoubleComplex *)(h), (i), (j))
-    #define cusolverDnXgeqrf_bufferSize(a, b, c, d, e, f)                   cusolverDnZgeqrf_bufferSize((a), (b), (c), (cuDoubleComplex *)(d), (e), (f))
-    #define cusolverDnXgeqrf(a, b, c, d, e, f, g, h, i)                     cusolverDnZgeqrf((a), (b), (c), (cuDoubleComplex *)(d), (e), (cuDoubleComplex *)(f), (cuDoubleComplex *)(g), (h), (i))
-    #define cusolverDnXormqr_bufferSize(a, b, c, d, e, f, g, h, i, j, k, l) cusolverDnZunmqr_bufferSize((a), (b), (c), (d), (e), (f), (cuDoubleComplex *)(g), (h), (cuDoubleComplex *)(i), (cuDoubleComplex *)(j), (k), (l))
-    #define cusolverDnXormqr(a, b, c, d, e, f, g, h, i, j, k, l, m, n)      cusolverDnZunmqr((a), (b), (c), (d), (e), (f), (cuDoubleComplex *)(g), (h), (cuDoubleComplex *)(i), (cuDoubleComplex *)(j), (k), (cuDoubleComplex *)(l), (m), (n))
-    #define cublasXtrsm(a, b, c, d, e, f, g, h, i, j, k, l)                 cublasZtrsm((a), (b), (c), (d), (e), (f), (g), (cuDoubleComplex *)(h), (cuDoubleComplex *)(i), (j), (cuDoubleComplex *)(k), (l))
-  #endif
-#else /* real single */
-  #if defined(PETSC_USE_REAL_SINGLE)
-    #define cusolverDnXpotrf(a, b, c, d, e, f, g, h)                        cusolverDnSpotrf((a), (b), (c), (d), (e), (f), (g), (h))
-    #define cusolverDnXpotrf_bufferSize(a, b, c, d, e, f)                   cusolverDnSpotrf_bufferSize((a), (b), (c), (d), (e), (f))
-    #define cusolverDnXpotrs(a, b, c, d, e, f, g, h, i)                     cusolverDnSpotrs((a), (b), (c), (d), (e), (f), (g), (h), (i))
-    #define cusolverDnXpotri(a, b, c, d, e, f, g, h)                        cusolverDnSpotri((a), (b), (c), (d), (e), (f), (g), (h))
-    #define cusolverDnXpotri_bufferSize(a, b, c, d, e, f)                   cusolverDnSpotri_bufferSize((a), (b), (c), (d), (e), (f))
-    #define cusolverDnXsytrf(a, b, c, d, e, f, g, h, i)                     cusolverDnSsytrf((a), (b), (c), (d), (e), (f), (g), (h), (i))
-    #define cusolverDnXsytrf_bufferSize(a, b, c, d, e)                      cusolverDnSsytrf_bufferSize((a), (b), (c), (d), (e))
-    #define cusolverDnXgetrf(a, b, c, d, e, f, g, h)                        cusolverDnSgetrf((a), (b), (c), (d), (e), (f), (g), (h))
-    #define cusolverDnXgetrf_bufferSize(a, b, c, d, e, f)                   cusolverDnSgetrf_bufferSize((a), (b), (c), (d), (e), (f))
-    #define cusolverDnXgetrs(a, b, c, d, e, f, g, h, i, j)                  cusolverDnSgetrs((a), (b), (c), (d), (e), (f), (g), (h), (i), (j))
-    #define cusolverDnXgeqrf_bufferSize(a, b, c, d, e, f)                   cusolverDnSgeqrf_bufferSize((a), (b), (c), (float *)(d), (e), (f))
-    #define cusolverDnXgeqrf(a, b, c, d, e, f, g, h, i)                     cusolverDnSgeqrf((a), (b), (c), (float *)(d), (e), (float *)(f), (float *)(g), (h), (i))
-    #define cusolverDnXormqr_bufferSize(a, b, c, d, e, f, g, h, i, j, k, l) cusolverDnSormqr_bufferSize((a), (b), (c), (d), (e), (f), (float *)(g), (h), (float *)(i), (float *)(j), (k), (l))
-    #define cusolverDnXormqr(a, b, c, d, e, f, g, h, i, j, k, l, m, n)      cusolverDnSormqr((a), (b), (c), (d), (e), (f), (float *)(g), (h), (float *)(i), (float *)(j), (k), (float *)(l), (m), (n))
-    #define cublasXtrsm(a, b, c, d, e, f, g, h, i, j, k, l)                 cublasStrsm((a), (b), (c), (d), (e), (f), (g), (float *)(h), (float *)(i), (j), (float *)(k), (l))
-  #else /* real double */
-    #define cusolverDnXpotrf(a, b, c, d, e, f, g, h)                        cusolverDnDpotrf((a), (b), (c), (d), (e), (f), (g), (h))
-    #define cusolverDnXpotrf_bufferSize(a, b, c, d, e, f)                   cusolverDnDpotrf_bufferSize((a), (b), (c), (d), (e), (f))
-    #define cusolverDnXpotrs(a, b, c, d, e, f, g, h, i)                     cusolverDnDpotrs((a), (b), (c), (d), (e), (f), (g), (h), (i))
-    #define cusolverDnXpotri(a, b, c, d, e, f, g, h)                        cusolverDnDpotri((a), (b), (c), (d), (e), (f), (g), (h))
-    #define cusolverDnXpotri_bufferSize(a, b, c, d, e, f)                   cusolverDnDpotri_bufferSize((a), (b), (c), (d), (e), (f))
-    #define cusolverDnXsytrf(a, b, c, d, e, f, g, h, i)                     cusolverDnDsytrf((a), (b), (c), (d), (e), (f), (g), (h), (i))
-    #define cusolverDnXsytrf_bufferSize(a, b, c, d, e)                      cusolverDnDsytrf_bufferSize((a), (b), (c), (d), (e))
-    #define cusolverDnXgetrf(a, b, c, d, e, f, g, h)                        cusolverDnDgetrf((a), (b), (c), (d), (e), (f), (g), (h))
-    #define cusolverDnXgetrf_bufferSize(a, b, c, d, e, f)                   cusolverDnDgetrf_bufferSize((a), (b), (c), (d), (e), (f))
-    #define cusolverDnXgetrs(a, b, c, d, e, f, g, h, i, j)                  cusolverDnDgetrs((a), (b), (c), (d), (e), (f), (g), (h), (i), (j))
-    #define cusolverDnXgeqrf_bufferSize(a, b, c, d, e, f)                   cusolverDnDgeqrf_bufferSize((a), (b), (c), (double *)(d), (e), (f))
-    #define cusolverDnXgeqrf(a, b, c, d, e, f, g, h, i)                     cusolverDnDgeqrf((a), (b), (c), (double *)(d), (e), (double *)(f), (double *)(g), (h), (i))
-    #define cusolverDnXormqr_bufferSize(a, b, c, d, e, f, g, h, i, j, k, l) cusolverDnDormqr_bufferSize((a), (b), (c), (d), (e), (f), (double *)(g), (h), (double *)(i), (double *)(j), (k), (l))
-    #define cusolverDnXormqr(a, b, c, d, e, f, g, h, i, j, k, l, m, n)      cusolverDnDormqr((a), (b), (c), (d), (e), (f), (double *)(g), (h), (double *)(i), (double *)(j), (k), (double *)(l), (m), (n))
-    #define cublasXtrsm(a, b, c, d, e, f, g, h, i, j, k, l)                 cublasDtrsm((a), (b), (c), (d), (e), (f), (g), (double *)(h), (double *)(i), (j), (double *)(k), (l))
-  #endif
-#endif
+using VecSeq_CUDA = Petsc::vec::cupm::impl::VecSeq_CUPM<Petsc::device::cupm::DeviceType::CUDA>;
 
 typedef struct {
   PetscScalar *d_v; /* pointer to the matrix on the GPU */
@@ -894,7 +827,6 @@ PETSC_INTERN PetscErrorCode MatMatMultNumeric_SeqDenseCUDA_SeqDenseCUDA_Private(
   PetscInt           alda, blda, clda;
   cublasHandle_t     cublasv2handle;
   PetscBool          Aiscuda, Biscuda;
-  cublasStatus_t     berr;
 
   PetscFunctionBegin;
   /* we may end up with SEQDENSE as one of the arguments */
@@ -916,8 +848,7 @@ PETSC_INTERN PetscErrorCode MatMatMultNumeric_SeqDenseCUDA_SeqDenseCUDA_Private(
   PetscCall(MatDenseGetLDA(C, &clda));
   PetscCall(PetscCUBLASGetHandle(&cublasv2handle));
   PetscCall(PetscLogGpuTimeBegin());
-  berr = cublasXgemm(cublasv2handle, tA ? CUBLAS_OP_T : CUBLAS_OP_N, tB ? CUBLAS_OP_T : CUBLAS_OP_N, m, n, k, &one, da, alda, db, blda, &zero, dc, clda);
-  PetscCallCUBLAS(berr);
+  PetscCallCUBLAS(cublasXgemm(cublasv2handle, tA ? CUBLAS_OP_T : CUBLAS_OP_N, tB ? CUBLAS_OP_T : CUBLAS_OP_N, m, n, k, &one, da, alda, db, blda, &zero, dc, clda));
   PetscCall(PetscLogGpuTimeEnd());
   PetscCall(PetscLogGpuFlops(1.0 * m * n * k + 1.0 * m * n * (k - 1)));
   PetscCall(MatDenseCUDARestoreArrayRead(A, &da));
@@ -966,14 +897,12 @@ static PetscErrorCode MatMultAdd_SeqDenseCUDA_Private(Mat A, Vec xx, Vec yy, Vec
   PetscScalar        one = 1.0, zero = 0.0;
   PetscCuBLASInt     m, n, lda;
   cublasHandle_t     cublasv2handle;
-  cublasStatus_t     berr;
 
   PetscFunctionBegin;
-  /* mult add */
-  if (yy && yy != zz) PetscCall(VecCopy_SeqCUDA(yy, zz));
+  if (yy && yy != zz) PetscCall(VecSeq_CUDA::copy(yy, zz)); /* mult add */
   if (!A->rmap->n || !A->cmap->n) {
     /* mult only */
-    if (!yy) PetscCall(VecSet_SeqCUDA(zz, 0.0));
+    if (!yy) PetscCall(VecSeq_CUDA::set(zz, 0.0));
     PetscFunctionReturn(0);
   }
   PetscCall(PetscInfo(A, "Matrix-vector product %" PetscInt_FMT " x %" PetscInt_FMT " on backend\n", A->rmap->n, A->cmap->n));
@@ -985,8 +914,7 @@ static PetscErrorCode MatMultAdd_SeqDenseCUDA_Private(Mat A, Vec xx, Vec yy, Vec
   PetscCall(VecCUDAGetArrayRead(xx, &xarray));
   PetscCall(VecCUDAGetArray(zz, &zarray));
   PetscCall(PetscLogGpuTimeBegin());
-  berr = cublasXgemv(cublasv2handle, trans ? CUBLAS_OP_T : CUBLAS_OP_N, m, n, &one, da, lda, xarray, 1, (yy ? &one : &zero), zarray, 1);
-  PetscCallCUBLAS(berr);
+  PetscCallCUBLAS(cublasXgemv(cublasv2handle, trans ? CUBLAS_OP_T : CUBLAS_OP_N, m, n, &one, da, lda, xarray, 1, (yy ? &one : &zero), zarray, 1));
   PetscCall(PetscLogGpuTimeEnd());
   PetscCall(PetscLogGpuFlops(2.0 * A->rmap->n * A->cmap->n - (yy ? 0 : A->rmap->n)));
   PetscCall(VecCUDARestoreArrayRead(xx, &xarray));

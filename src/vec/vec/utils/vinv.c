@@ -1167,19 +1167,44 @@ PetscErrorCode VecStrideSubSetScatter_Default(Vec s, PetscInt nidx, const PetscI
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode VecApplyUnary_Private(Vec v, PetscErrorCode (*unary_op)(Vec), PetscScalar (*UnaryFunc)(PetscScalar))
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(v, VEC_CLASSID, 1);
+  PetscCall(VecSetErrorIfLocked(v, 1));
+  if (unary_op) {
+    PetscValidFunction(unary_op, 2);
+    PetscCall((*unary_op)(v));
+  } else {
+    PetscInt     n;
+    PetscScalar *x;
+
+    PetscValidFunction(UnaryFunc, 3);
+    PetscCall(VecGetLocalSize(v, &n));
+    PetscCall(VecGetArray(v, &x));
+    for (PetscInt i = 0; i < n; ++i) x[i] = UnaryFunc(x[i]);
+    PetscCall(VecRestoreArray(v, &x));
+  }
+  PetscFunctionReturn(0);
+}
+
+static PetscScalar ScalarReciprocal_Fn(PetscScalar x)
+{
+  const PetscScalar zero = 0.0;
+
+  return x == zero ? zero : ((PetscScalar)1.0) / x;
+}
+
 PetscErrorCode VecReciprocal_Default(Vec v)
 {
-  PetscInt     i, n;
-  PetscScalar *x;
-
   PetscFunctionBegin;
-  PetscCall(VecGetLocalSize(v, &n));
-  PetscCall(VecGetArray(v, &x));
-  for (i = 0; i < n; i++) {
-    if (x[i] != (PetscScalar)0.0) x[i] = (PetscScalar)1.0 / x[i];
-  }
-  PetscCall(VecRestoreArray(v, &x));
+  PetscCall(VecApplyUnary_Private(v, NULL, ScalarReciprocal_Fn));
   PetscFunctionReturn(0);
+}
+
+static PetscScalar ScalarExp_Fn(PetscScalar x)
+{
+  return PetscExpScalar(x);
 }
 
 /*@
@@ -1200,19 +1225,15 @@ PetscErrorCode VecReciprocal_Default(Vec v)
 @*/
 PetscErrorCode VecExp(Vec v)
 {
-  PetscScalar *x;
-  PetscInt     i, n;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v, VEC_CLASSID, 1);
-  if (v->ops->exp) PetscUseTypeMethod(v, exp);
-  else {
-    PetscCall(VecGetLocalSize(v, &n));
-    PetscCall(VecGetArray(v, &x));
-    for (i = 0; i < n; i++) x[i] = PetscExpScalar(x[i]);
-    PetscCall(VecRestoreArray(v, &x));
-  }
+  PetscCall(VecApplyUnary_Private(v, v->ops->exp, ScalarExp_Fn));
   PetscFunctionReturn(0);
+}
+
+static PetscScalar ScalarLog_Fn(PetscScalar x)
+{
+  return PetscLogScalar(x);
 }
 
 /*@
@@ -1233,19 +1254,39 @@ PetscErrorCode VecExp(Vec v)
 @*/
 PetscErrorCode VecLog(Vec v)
 {
-  PetscScalar *x;
-  PetscInt     i, n;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v, VEC_CLASSID, 1);
-  if (v->ops->log) PetscUseTypeMethod(v, log);
-  else {
-    PetscCall(VecGetLocalSize(v, &n));
-    PetscCall(VecGetArray(v, &x));
-    for (i = 0; i < n; i++) x[i] = PetscLogScalar(x[i]);
-    PetscCall(VecRestoreArray(v, &x));
-  }
+  PetscCall(VecApplyUnary_Private(v, v->ops->log, ScalarLog_Fn));
   PetscFunctionReturn(0);
+}
+
+static PetscScalar ScalarAbs_Fn(PetscScalar x)
+{
+  return PetscAbsScalar(x);
+}
+
+/*@
+   VecAbs - Replaces every element in a vector with its absolute value.
+
+   Logically Collective on Vec
+
+   Input Parameters:
+.  v - the vector
+
+   Level: intermediate
+
+@*/
+PetscErrorCode VecAbs(Vec v)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(v, VEC_CLASSID, 1);
+  PetscCall(VecApplyUnary_Private(v, v->ops->abs, ScalarAbs_Fn));
+  PetscFunctionReturn(0);
+}
+
+static PetscScalar ScalarSqrtAbs_Fn(PetscScalar x)
+{
+  return PetscSqrtScalar(ScalarAbs_Fn(x));
 }
 
 /*@
@@ -1268,18 +1309,71 @@ PetscErrorCode VecLog(Vec v)
 @*/
 PetscErrorCode VecSqrtAbs(Vec v)
 {
-  PetscScalar *x;
-  PetscInt     i, n;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v, VEC_CLASSID, 1);
-  if (v->ops->sqrt) PetscUseTypeMethod(v, sqrt);
-  else {
-    PetscCall(VecGetLocalSize(v, &n));
-    PetscCall(VecGetArray(v, &x));
-    for (i = 0; i < n; i++) x[i] = PetscSqrtReal(PetscAbsScalar(x[i]));
-    PetscCall(VecRestoreArray(v, &x));
-  }
+  PetscCall(VecApplyUnary_Private(v, v->ops->sqrt, ScalarSqrtAbs_Fn));
+  PetscFunctionReturn(0);
+}
+
+static PetscScalar ScalarImaginaryPart_Fn(PetscScalar x)
+{
+  const PetscReal imag = PetscImaginaryPart(x);
+
+#if PetscDefined(USE_COMPLEX)
+  return PetscCMPLX(imag, 0.0);
+#else
+  return imag;
+#endif
+}
+
+/*@
+   VecImaginaryPart - Replaces a complex vector with its imginary part
+
+   Collective on Vec
+
+   Input Parameter:
+.  v - the vector
+
+   Level: beginner
+
+.seealso: `VecNorm()`, `VecRealPart()`
+@*/
+PetscErrorCode VecImaginaryPart(Vec v)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(v, VEC_CLASSID, 1);
+  PetscCall(VecApplyUnary_Private(v, NULL, ScalarImaginaryPart_Fn));
+  PetscFunctionReturn(0);
+}
+
+static PetscScalar ScalarRealPart_Fn(PetscScalar x)
+{
+  const PetscReal real = PetscRealPart(x);
+
+#if PetscDefined(USE_COMPLEX)
+  return PetscCMPLX(real, 0.0);
+#else
+  return real;
+#endif
+}
+
+/*@
+   VecRealPart - Replaces a complex vector with its real part
+
+   Collective on Vec
+
+   Input Parameter:
+.  v - the vector
+
+   Level: beginner
+
+.seealso: `VecNorm()`, `VecImaginaryPart()`
+@*/
+PetscErrorCode VecRealPart(Vec v)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(v, VEC_CLASSID, 1);
+  PetscCall(VecApplyUnary_Private(v, NULL, ScalarRealPart_Fn));
   PetscFunctionReturn(0);
 }
 
@@ -1306,9 +1400,7 @@ PetscErrorCode VecSqrtAbs(Vec v)
 @*/
 PetscErrorCode VecDotNorm2(Vec s, Vec t, PetscScalar *dp, PetscReal *nm)
 {
-  const PetscScalar *sx, *tx;
-  PetscScalar        dpx = 0.0, nmx = 0.0, work[2], sum[2];
-  PetscInt           i, n;
+  PetscScalar work[] = {0.0, 0.0};
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(s, VEC_CLASSID, 1);
@@ -1323,29 +1415,28 @@ PetscErrorCode VecDotNorm2(Vec s, Vec t, PetscScalar *dp, PetscReal *nm)
 
   PetscCall(PetscLogEventBegin(VEC_DotNorm2, s, t, 0, 0));
   if (s->ops->dotnorm2) {
-    PetscUseTypeMethod(s, dotnorm2, t, dp, &dpx);
-    *nm = PetscRealPart(dpx);
+    PetscUseTypeMethod(s, dotnorm2, t, work, work + 1);
   } else {
+    const PetscScalar *sx, *tx;
+    PetscInt           n;
+
     PetscCall(VecGetLocalSize(s, &n));
     PetscCall(VecGetArrayRead(s, &sx));
     PetscCall(VecGetArrayRead(t, &tx));
+    for (PetscInt i = 0; i < n; ++i) {
+      const PetscScalar txconj = PetscConj(tx[i]);
 
-    for (i = 0; i < n; i++) {
-      dpx += sx[i] * PetscConj(tx[i]);
-      nmx += tx[i] * PetscConj(tx[i]);
+      work[0] += sx[i] * txconj;
+      work[1] += tx[i] * txconj;
     }
-    work[0] = dpx;
-    work[1] = nmx;
-
-    PetscCall(MPIU_Allreduce(work, sum, 2, MPIU_SCALAR, MPIU_SUM, PetscObjectComm((PetscObject)s)));
-    *dp = sum[0];
-    *nm = PetscRealPart(sum[1]);
-
     PetscCall(VecRestoreArrayRead(t, &tx));
     PetscCall(VecRestoreArrayRead(s, &sx));
+    PetscCall(MPIU_Allreduce(MPI_IN_PLACE, work, 2, MPIU_SCALAR, MPIU_SUM, PetscObjectComm((PetscObject)s)));
     PetscCall(PetscLogFlops(4.0 * n));
   }
   PetscCall(PetscLogEventEnd(VEC_DotNorm2, s, t, 0, 0));
+  *dp = work[0];
+  *nm = PetscRealPart(work[1]);
   PetscFunctionReturn(0);
 }
 
@@ -1366,22 +1457,24 @@ PetscErrorCode VecDotNorm2(Vec s, Vec t, PetscScalar *dp, PetscReal *nm)
 @*/
 PetscErrorCode VecSum(Vec v, PetscScalar *sum)
 {
-  PetscInt           i, n;
-  const PetscScalar *x;
+  PetscScalar tmp = 0.0;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v, VEC_CLASSID, 1);
   PetscValidScalarPointer(sum, 2);
-  *sum = 0.0;
   if (v->ops->sum) {
-    PetscUseTypeMethod(v, sum, sum);
+    PetscUseTypeMethod(v, sum, &tmp);
   } else {
+    const PetscScalar *x;
+    PetscInt           n;
+
     PetscCall(VecGetLocalSize(v, &n));
     PetscCall(VecGetArrayRead(v, &x));
-    for (i = 0; i < n; i++) *sum += x[i];
+    for (PetscInt i = 0; i < n; ++i) tmp += x[i];
     PetscCall(VecRestoreArrayRead(v, &x));
   }
-  PetscCall(MPIU_Allreduce(MPI_IN_PLACE, sum, 1, MPIU_SCALAR, MPIU_SUM, PetscObjectComm((PetscObject)v)));
+  PetscCall(MPIU_Allreduce(MPI_IN_PLACE, &tmp, 1, MPIU_SCALAR, MPIU_SUM, PetscObjectComm((PetscObject)v)));
+  *sum = tmp;
   PetscFunctionReturn(0);
 }
 
@@ -1414,58 +1507,6 @@ PetscErrorCode VecMean(Vec v, PetscScalar *mean)
 }
 
 /*@
-   VecImaginaryPart - Replaces a complex vector with its imginary part
-
-   Collective on Vec
-
-   Input Parameter:
-.  v - the vector
-
-   Level: beginner
-
-.seealso: `VecNorm()`, `VecRealPart()`
-@*/
-PetscErrorCode VecImaginaryPart(Vec v)
-{
-  PetscInt     i, n;
-  PetscScalar *x;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(v, VEC_CLASSID, 1);
-  PetscCall(VecGetLocalSize(v, &n));
-  PetscCall(VecGetArray(v, &x));
-  for (i = 0; i < n; i++) x[i] = PetscImaginaryPart(x[i]);
-  PetscCall(VecRestoreArray(v, &x));
-  PetscFunctionReturn(0);
-}
-
-/*@
-   VecRealPart - Replaces a complex vector with its real part
-
-   Collective on Vec
-
-   Input Parameter:
-.  v - the vector
-
-   Level: beginner
-
-.seealso: `VecNorm()`, `VecImaginaryPart()`
-@*/
-PetscErrorCode VecRealPart(Vec v)
-{
-  PetscInt     i, n;
-  PetscScalar *x;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(v, VEC_CLASSID, 1);
-  PetscCall(VecGetLocalSize(v, &n));
-  PetscCall(VecGetArray(v, &x));
-  for (i = 0; i < n; i++) x[i] = PetscRealPart(x[i]);
-  PetscCall(VecRestoreArray(v, &x));
-  PetscFunctionReturn(0);
-}
-
-/*@
    VecShift - Shifts all of the components of a vector by computing
    x[i] = x[i] + shift.
 
@@ -1480,51 +1521,21 @@ PetscErrorCode VecRealPart(Vec v)
 @*/
 PetscErrorCode VecShift(Vec v, PetscScalar shift)
 {
-  PetscInt     i, n;
-  PetscScalar *x;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v, VEC_CLASSID, 1);
   PetscValidLogicalCollectiveScalar(v, shift, 2);
   PetscCall(VecSetErrorIfLocked(v, 1));
-  if (shift == 0.0) PetscFunctionReturn(0);
+  if (shift == (PetscScalar)0.0) PetscFunctionReturn(0);
 
-  if (v->ops->shift) PetscUseTypeMethod(v, shift, shift);
-  else {
-    PetscCall(VecGetLocalSize(v, &n));
-    PetscCall(VecGetArray(v, &x));
-    for (i = 0; i < n; i++) x[i] += shift;
-    PetscCall(VecRestoreArray(v, &x));
-  }
-  PetscFunctionReturn(0);
-}
-
-/*@
-   VecAbs - Replaces every element in a vector with its absolute value.
-
-   Logically Collective on Vec
-
-   Input Parameters:
-.  v - the vector
-
-   Level: intermediate
-
-@*/
-PetscErrorCode VecAbs(Vec v)
-{
-  PetscInt     i, n;
-  PetscScalar *x;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(v, VEC_CLASSID, 1);
-  PetscCall(VecSetErrorIfLocked(v, 1));
-
-  if (v->ops->abs) {
-    PetscUseTypeMethod(v, abs);
+  if (v->ops->shift) {
+    PetscUseTypeMethod(v, shift, shift);
   } else {
+    PetscInt     n;
+    PetscScalar *x;
+
     PetscCall(VecGetLocalSize(v, &n));
     PetscCall(VecGetArray(v, &x));
-    for (i = 0; i < n; i++) x[i] = PetscAbsScalar(x[i]);
+    for (PetscInt i = 0; i < n; ++i) x[i] += shift;
     PetscCall(VecRestoreArray(v, &x));
   }
   PetscFunctionReturn(0);

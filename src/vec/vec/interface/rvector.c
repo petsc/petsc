@@ -5,14 +5,7 @@
 #include "petsc/private/sfimpl.h"
 #include "petscsystypes.h"
 #include <petsc/private/vecimpl.h> /*I  "petscvec.h"   I*/
-#if defined(PETSC_HAVE_CUDA)
-  #include <../src/vec/vec/impls/dvecimpl.h>
-  #include <petsc/private/cudavecimpl.h>
-#endif
-#if defined(PETSC_HAVE_HIP)
-  #include <../src/vec/vec/impls/dvecimpl.h>
-  #include <petsc/private/hipvecimpl.h>
-#endif
+
 PetscInt VecGetSubVectorSavedStateId = -1;
 
 #if PetscDefined(USE_DEBUG)
@@ -214,18 +207,17 @@ PetscErrorCode VecDotRealPart(Vec x, Vec y, PetscReal *val)
 @*/
 PetscErrorCode VecNorm(Vec x, NormType type, PetscReal *val)
 {
+  PetscBool flg = PETSC_TRUE;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x, VEC_CLASSID, 1);
-  PetscValidRealPointer(val, 3);
   PetscValidType(x, 1);
+  PetscValidLogicalCollectiveEnum(x, type, 2);
+  PetscValidRealPointer(val, 3);
 
   /* Cached data? */
-  if (type != NORM_1_AND_2) {
-    PetscBool flg;
-
-    PetscCall(PetscObjectComposedDataGetReal((PetscObject)x, NormIds[type], *val, flg));
-    if (flg) PetscFunctionReturn(0);
-  }
+  PetscCall(VecNormAvailable(x, type, &flg, val));
+  if (flg) PetscFunctionReturn(0);
 
   PetscCall(VecLockReadPush(x));
   PetscCall(PetscLogEventBegin(VEC_Norm, x, 0, 0, 0));
@@ -541,7 +533,7 @@ PetscErrorCode VecSet(Vec x, PetscScalar alpha)
     } else {
       PetscCall(PetscObjectComposedDataSetReal((PetscObject)x, NormIds[NORM_1], N * val));
       PetscCall(PetscObjectComposedDataSetReal((PetscObject)x, NormIds[NORM_INFINITY], val));
-      val = PetscSqrtReal((PetscReal)N) * val;
+      val *= PetscSqrtReal((PetscReal)N);
       PetscCall(PetscObjectComposedDataSetReal((PetscObject)x, NormIds[NORM_2], val));
       PetscCall(PetscObjectComposedDataSetReal((PetscObject)x, NormIds[NORM_FROBENIUS], val));
     }
@@ -1056,6 +1048,33 @@ PetscErrorCode VecSetValuesBlockedLocal(Vec x, PetscInt ni, const PetscInt ix[],
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode VecMXDot_Priate(Vec x, PetscInt nv, const Vec y[], PetscScalar result[], PetscErrorCode (*mxdot)(Vec, PetscInt, const Vec[], PetscScalar[]), PetscLogEvent event)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(x, VEC_CLASSID, 1);
+  PetscValidType(x, 1);
+  PetscValidLogicalCollectiveInt(x, nv, 2);
+  if (!nv) PetscFunctionReturn(0);
+  PetscValidPointer(y, 3);
+  for (PetscInt i = 0; i < nv; ++i) {
+    PetscValidHeaderSpecific(y[i], VEC_CLASSID, 3);
+    PetscValidType(y[i], 3);
+    PetscCheckSameTypeAndComm(x, 1, y[i], 3);
+    VecCheckSameSize(x, 1, y[i], 3);
+    PetscCall(VecLockReadPush(y[i]));
+  }
+  PetscValidScalarPointer(result, 4);
+  PetscValidFunction(mxdot, 5);
+
+  PetscCall(VecLockReadPush(x));
+  PetscCall(PetscLogEventBegin(event, x, *y, 0, 0));
+  PetscCall((*mxdot)(x, nv, y, result));
+  PetscCall(PetscLogEventEnd(event, x, *y, 0, 0));
+  PetscCall(VecLockReadPop(x));
+  for (PetscInt i = 0; i < nv; ++i) PetscCall(VecLockReadPop(y[i]));
+  PetscFunctionReturn(0);
+}
+
 /*@
    VecMTDot - Computes indefinite vector multiple dot products.
    That is, it does NOT use the complex conjugate.
@@ -1087,25 +1106,7 @@ PetscErrorCode VecMTDot(Vec x, PetscInt nv, const Vec y[], PetscScalar val[])
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x, VEC_CLASSID, 1);
-  PetscValidType(x, 1);
-  PetscValidLogicalCollectiveInt(x, nv, 2);
-  if (!nv) PetscFunctionReturn(0);
-  PetscValidPointer(y, 3);
-  for (PetscInt i = 0; i < nv; ++i) {
-    PetscValidHeaderSpecific(y[i], VEC_CLASSID, 3);
-    PetscValidType(y[i], 3);
-    PetscCheckSameTypeAndComm(x, 1, y[i], 3);
-    VecCheckSameSize(x, 1, y[i], 3);
-    PetscCall(VecLockReadPush(y[i]));
-  }
-  PetscValidScalarPointer(val, 4);
-
-  PetscCall(VecLockReadPush(x));
-  PetscCall(PetscLogEventBegin(VEC_MTDot, x, *y, 0, 0));
-  PetscUseTypeMethod(x, mtdot, nv, y, val);
-  PetscCall(PetscLogEventEnd(VEC_MTDot, x, *y, 0, 0));
-  PetscCall(VecLockReadPop(x));
-  for (PetscInt i = 0; i < nv; ++i) PetscCall(VecLockReadPop(y[i]));
+  PetscCall(VecMXDot_Priate(x, nv, y, val, x->ops->mtdot, VEC_MTDot));
   PetscFunctionReturn(0);
 }
 
@@ -1139,25 +1140,7 @@ PetscErrorCode VecMDot(Vec x, PetscInt nv, const Vec y[], PetscScalar val[])
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x, VEC_CLASSID, 1);
-  PetscValidType(x, 1);
-  PetscValidLogicalCollectiveInt(x, nv, 2);
-  if (!nv) PetscFunctionReturn(0);
-  PetscValidPointer(y, 3);
-  for (PetscInt i = 0; i < nv; ++i) {
-    PetscValidHeaderSpecific(y[i], VEC_CLASSID, 3);
-    PetscValidType(y[i], 3);
-    PetscCheckSameTypeAndComm(x, 1, y[i], 3);
-    VecCheckSameSize(x, 1, y[i], 3);
-    PetscCall(VecLockReadPush(y[i]));
-  }
-  PetscValidScalarPointer(val, 4);
-
-  PetscCall(VecLockReadPush(x));
-  PetscCall(PetscLogEventBegin(VEC_MDot, x, *y, 0, 0));
-  PetscUseTypeMethod(x, mdot, nv, y, val);
-  PetscCall(PetscLogEventEnd(VEC_MDot, x, *y, 0, 0));
-  PetscCall(VecLockReadPop(x));
-  for (PetscInt i = 0; i < nv; ++i) PetscCall(VecLockReadPop(y[i]));
+  PetscCall(VecMXDot_Priate(x, nv, y, val, x->ops->mdot, VEC_MDot));
   PetscFunctionReturn(0);
 }
 
@@ -2376,651 +2359,6 @@ PetscErrorCode VecReplaceArray(Vec vec, const PetscScalar array[])
   PetscValidType(vec, 1);
   PetscUseTypeMethod(vec, replacearray, array);
   PetscCall(PetscObjectStateIncrease((PetscObject)vec));
-  PetscFunctionReturn(0);
-}
-
-/*@C
-   VecCUDAGetArray - Provides access to the CUDA buffer inside a vector.
-
-   This function has semantics similar to VecGetArray():  the pointer
-   returned by this function points to a consistent view of the vector
-   data.  This may involve a copy operation of data from the host to the
-   device if the data on the device is out of date.  If the device
-   memory hasn't been allocated previously it will be allocated as part
-   of this function call.  VecCUDAGetArray() assumes that
-   the user will modify the vector data.  This is similar to
-   intent(inout) in fortran.
-
-   The CUDA device pointer has to be released by calling
-   VecCUDARestoreArray().  Upon restoring the vector data
-   the data on the host will be marked as out of date.  A subsequent
-   access of the host data will thus incur a data transfer from the
-   device to the host.
-
-   Input Parameter:
-.  v - the vector
-
-   Output Parameter:
-.  a - the CUDA device pointer
-
-   Fortran note:
-   This function is not currently available from Fortran.
-
-   Level: intermediate
-
-.seealso: `VecCUDARestoreArray()`, `VecCUDAGetArrayRead()`, `VecCUDAGetArrayWrite()`, `VecGetArray()`, `VecGetArrayRead()`
-@*/
-PETSC_EXTERN PetscErrorCode VecCUDAGetArray(Vec v, PetscScalar **a)
-{
-  PetscFunctionBegin;
-  PetscCheckTypeNames(v, VECSEQCUDA, VECMPICUDA);
-#if defined(PETSC_HAVE_CUDA)
-  {
-    PetscCall(VecCUDACopyToGPU(v));
-    *a = ((Vec_CUDA *)v->spptr)->GPUarray;
-  }
-#endif
-  PetscFunctionReturn(0);
-}
-
-/*@C
-   VecCUDARestoreArray - Restore a CUDA device pointer previously acquired with VecCUDAGetArray().
-
-   This marks the host data as out of date.  Subsequent access to the
-   vector data on the host side with for instance VecGetArray() incurs a
-   data transfer.
-
-   Input Parameters:
-+  v - the vector
--  a - the CUDA device pointer.  This pointer is invalid after
-       VecCUDARestoreArray() returns.
-
-   Fortran note:
-   This function is not currently available from Fortran.
-
-   Level: intermediate
-
-.seealso: `VecCUDAGetArray()`, `VecCUDAGetArrayRead()`, `VecCUDAGetArrayWrite()`, `VecGetArray()`, `VecRestoreArray()`, `VecGetArrayRead()`
-@*/
-PETSC_EXTERN PetscErrorCode VecCUDARestoreArray(Vec v, PetscScalar **a)
-{
-  PetscFunctionBegin;
-  PetscCheckTypeNames(v, VECSEQCUDA, VECMPICUDA);
-#if defined(PETSC_HAVE_CUDA)
-  v->offloadmask = PETSC_OFFLOAD_GPU;
-#endif
-  PetscCall(PetscObjectStateIncrease((PetscObject)v));
-  PetscFunctionReturn(0);
-}
-
-/*@C
-   VecCUDAGetArrayRead - Provides read access to the CUDA buffer inside a vector.
-
-   This function is analogous to VecGetArrayRead():  The pointer
-   returned by this function points to a consistent view of the vector
-   data.  This may involve a copy operation of data from the host to the
-   device if the data on the device is out of date.  If the device
-   memory hasn't been allocated previously it will be allocated as part
-   of this function call.  VecCUDAGetArrayRead() assumes that the
-   user will not modify the vector data.  This is analgogous to
-   intent(in) in Fortran.
-
-   The CUDA device pointer has to be released by calling
-   VecCUDARestoreArrayRead().  If the data on the host side was
-   previously up to date it will remain so, i.e. data on both the device
-   and the host is up to date.  Accessing data on the host side does not
-   incur a device to host data transfer.
-
-   Input Parameter:
-.  v - the vector
-
-   Output Parameter:
-.  a - the CUDA pointer.
-
-   Fortran note:
-   This function is not currently available from Fortran.
-
-   Level: intermediate
-
-.seealso: `VecCUDARestoreArrayRead()`, `VecCUDAGetArray()`, `VecCUDAGetArrayWrite()`, `VecGetArray()`, `VecGetArrayRead()`
-@*/
-PETSC_EXTERN PetscErrorCode VecCUDAGetArrayRead(Vec v, const PetscScalar **a)
-{
-  PetscFunctionBegin;
-  PetscCall(VecCUDAGetArray(v, (PetscScalar **)a));
-  PetscFunctionReturn(0);
-}
-
-/*@C
-   VecCUDARestoreArrayRead - Restore a CUDA device pointer previously acquired with VecCUDAGetArrayRead().
-
-   If the data on the host side was previously up to date it will remain
-   so, i.e. data on both the device and the host is up to date.
-   Accessing data on the host side e.g. with VecGetArray() does not
-   incur a device to host data transfer.
-
-   Input Parameters:
-+  v - the vector
--  a - the CUDA device pointer.  This pointer is invalid after
-       VecCUDARestoreArrayRead() returns.
-
-   Fortran note:
-   This function is not currently available from Fortran.
-
-   Level: intermediate
-
-.seealso: `VecCUDAGetArrayRead()`, `VecCUDAGetArrayWrite()`, `VecCUDAGetArray()`, `VecGetArray()`, `VecRestoreArray()`, `VecGetArrayRead()`
-@*/
-PETSC_EXTERN PetscErrorCode VecCUDARestoreArrayRead(Vec v, const PetscScalar **a)
-{
-  PetscFunctionBegin;
-  PetscCheckTypeNames(v, VECSEQCUDA, VECMPICUDA);
-  *a = NULL;
-  PetscFunctionReturn(0);
-}
-
-/*@C
-   VecCUDAGetArrayWrite - Provides write access to the CUDA buffer inside a vector.
-
-   The data pointed to by the device pointer is uninitialized.  The user
-   may not read from this data.  Furthermore, the entire array needs to
-   be filled by the user to obtain well-defined behaviour.  The device
-   memory will be allocated by this function if it hasn't been allocated
-   previously.  This is analogous to intent(out) in Fortran.
-
-   The device pointer needs to be released with
-   VecCUDARestoreArrayWrite().  When the pointer is released the
-   host data of the vector is marked as out of data.  Subsequent access
-   of the host data with e.g. VecGetArray() incurs a device to host data
-   transfer.
-
-   Input Parameter:
-.  v - the vector
-
-   Output Parameter:
-.  a - the CUDA pointer
-
-   Fortran note:
-   This function is not currently available from Fortran.
-
-   Level: advanced
-
-.seealso: `VecCUDARestoreArrayWrite()`, `VecCUDAGetArray()`, `VecCUDAGetArrayRead()`, `VecCUDAGetArrayWrite()`, `VecGetArray()`, `VecGetArrayRead()`
-@*/
-PETSC_EXTERN PetscErrorCode VecCUDAGetArrayWrite(Vec v, PetscScalar **a)
-{
-  PetscFunctionBegin;
-  PetscCheckTypeNames(v, VECSEQCUDA, VECMPICUDA);
-#if defined(PETSC_HAVE_CUDA)
-  {
-    PetscCall(VecCUDAAllocateCheck(v));
-    *a = ((Vec_CUDA *)v->spptr)->GPUarray;
-  }
-#endif
-  PetscFunctionReturn(0);
-}
-
-/*@C
-   VecCUDARestoreArrayWrite - Restore a CUDA device pointer previously acquired with VecCUDAGetArrayWrite().
-
-   Data on the host will be marked as out of date.  Subsequent access of
-   the data on the host side e.g. with VecGetArray() will incur a device
-   to host data transfer.
-
-   Input Parameters:
-+  v - the vector
--  a - the CUDA device pointer.  This pointer is invalid after
-       VecCUDARestoreArrayWrite() returns.
-
-   Fortran note:
-   This function is not currently available from Fortran.
-
-   Level: intermediate
-
-.seealso: `VecCUDAGetArrayWrite()`, `VecCUDAGetArray()`, `VecCUDAGetArrayRead()`, `VecCUDAGetArrayWrite()`, `VecGetArray()`, `VecRestoreArray()`, `VecGetArrayRead()`
-@*/
-PETSC_EXTERN PetscErrorCode VecCUDARestoreArrayWrite(Vec v, PetscScalar **a)
-{
-  PetscFunctionBegin;
-  PetscCheckTypeNames(v, VECSEQCUDA, VECMPICUDA);
-#if defined(PETSC_HAVE_CUDA)
-  v->offloadmask = PETSC_OFFLOAD_GPU;
-  if (a) *a = NULL;
-#endif
-  PetscCall(PetscObjectStateIncrease((PetscObject)v));
-  PetscFunctionReturn(0);
-}
-
-/*@C
-   VecCUDAPlaceArray - Allows one to replace the GPU array in a vector with a
-   GPU array provided by the user. This is useful to avoid copying an
-   array into a vector.
-
-   Not Collective
-
-   Input Parameters:
-+  vec - the vector
--  array - the GPU array
-
-   Notes:
-   You can return to the original GPU array with a call to VecCUDAResetArray()
-   It is not possible to use VecCUDAPlaceArray() and VecPlaceArray() at the
-   same time on the same vector.
-
-   `vec` does not take ownership of `array` in any way. The user must free `array` themselves
-   but be careful not to do so before the vector has either been destroyed, had its original
-   array restored with `VecCUDAResetArray()` or permanently replaced with
-   `VecCUDAReplaceArray()`.
-
-   Level: developer
-
-.seealso: `VecPlaceArray()`, `VecGetArray()`, `VecRestoreArray()`, `VecReplaceArray()`, `VecResetArray()`, `VecCUDAResetArray()`, `VecCUDAReplaceArray()`
-
-@*/
-PetscErrorCode VecCUDAPlaceArray(Vec vin, const PetscScalar a[])
-{
-  PetscFunctionBegin;
-  PetscCheckTypeNames(vin, VECSEQCUDA, VECMPICUDA);
-#if defined(PETSC_HAVE_CUDA)
-  PetscCall(VecCUDACopyToGPU(vin));
-  PetscCheck(!((Vec_Seq *)vin->data)->unplacedarray, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "VecCUDAPlaceArray()/VecPlaceArray() was already called on this vector, without a call to VecCUDAResetArray()/VecResetArray()");
-  ((Vec_Seq *)vin->data)->unplacedarray = (PetscScalar *)((Vec_CUDA *)vin->spptr)->GPUarray; /* save previous GPU array so reset can bring it back */
-  ((Vec_CUDA *)vin->spptr)->GPUarray    = (PetscScalar *)a;
-  vin->offloadmask                      = PETSC_OFFLOAD_GPU;
-#endif
-  PetscCall(PetscObjectStateIncrease((PetscObject)vin));
-  PetscFunctionReturn(0);
-}
-
-/*@C
-   VecCUDAReplaceArray - Allows one to replace the GPU array in a vector
-   with a GPU array provided by the user. This is useful to avoid copying
-   a GPU array into a vector.
-
-   Not Collective
-
-   Input Parameters:
-+  vec - the vector
--  array - the GPU array
-
-   Notes:
-   This permanently replaces the GPU array and frees the memory associated
-   with the old GPU array.
-
-   The memory passed in CANNOT be freed by the user. It will be freed
-   when the vector is destroyed.
-
-   Not supported from Fortran
-
-   Level: developer
-
-.seealso: `VecGetArray()`, `VecRestoreArray()`, `VecPlaceArray()`, `VecResetArray()`, `VecCUDAResetArray()`, `VecCUDAPlaceArray()`, `VecReplaceArray()`
-
-@*/
-PetscErrorCode VecCUDAReplaceArray(Vec vin, const PetscScalar a[])
-{
-#if defined(PETSC_HAVE_CUDA)
-#endif
-
-  PetscFunctionBegin;
-  PetscCheckTypeNames(vin, VECSEQCUDA, VECMPICUDA);
-#if defined(PETSC_HAVE_CUDA)
-  if (((Vec_CUDA *)vin->spptr)->GPUarray_allocated) PetscCallCUDA(cudaFree(((Vec_CUDA *)vin->spptr)->GPUarray_allocated));
-  ((Vec_CUDA *)vin->spptr)->GPUarray_allocated = ((Vec_CUDA *)vin->spptr)->GPUarray = (PetscScalar *)a;
-  vin->offloadmask                                                                  = PETSC_OFFLOAD_GPU;
-#endif
-  PetscCall(PetscObjectStateIncrease((PetscObject)vin));
-  PetscFunctionReturn(0);
-}
-
-/*@C
-   VecCUDAResetArray - Resets a vector to use its default memory. Call this
-   after the use of VecCUDAPlaceArray().
-
-   Not Collective
-
-   Input Parameters:
-.  vec - the vector
-
-   Level: developer
-
-.seealso: `VecGetArray()`, `VecRestoreArray()`, `VecReplaceArray()`, `VecPlaceArray()`, `VecResetArray()`, `VecCUDAPlaceArray()`, `VecCUDAReplaceArray()`
-
-@*/
-PetscErrorCode VecCUDAResetArray(Vec vin)
-{
-  PetscFunctionBegin;
-  PetscCheckTypeNames(vin, VECSEQCUDA, VECMPICUDA);
-#if defined(PETSC_HAVE_CUDA)
-  PetscCall(VecCUDACopyToGPU(vin));
-  ((Vec_CUDA *)vin->spptr)->GPUarray    = (PetscScalar *)((Vec_Seq *)vin->data)->unplacedarray;
-  ((Vec_Seq *)vin->data)->unplacedarray = 0;
-  vin->offloadmask                      = PETSC_OFFLOAD_GPU;
-#endif
-  PetscCall(PetscObjectStateIncrease((PetscObject)vin));
-  PetscFunctionReturn(0);
-}
-
-/*@C
-   VecHIPGetArray - Provides access to the HIP buffer inside a vector.
-
-   This function has semantics similar to VecGetArray():  the pointer
-   returned by this function points to a consistent view of the vector
-   data.  This may involve a copy operation of data from the host to the
-   device if the data on the device is out of date.  If the device
-   memory hasn't been allocated previously it will be allocated as part
-   of this function call.  VecHIPGetArray() assumes that
-   the user will modify the vector data.  This is similar to
-   intent(inout) in fortran.
-
-   The HIP device pointer has to be released by calling
-   VecHIPRestoreArray().  Upon restoring the vector data
-   the data on the host will be marked as out of date.  A subsequent
-   access of the host data will thus incur a data transfer from the
-   device to the host.
-
-   Input Parameter:
-.  v - the vector
-
-   Output Parameter:
-.  a - the HIP device pointer
-
-   Fortran note:
-   This function is not currently available from Fortran.
-
-   Level: intermediate
-
-.seealso: `VecHIPRestoreArray()`, `VecHIPGetArrayRead()`, `VecHIPGetArrayWrite()`, `VecGetArray()`, `VecGetArrayRead()`
-@*/
-PETSC_EXTERN PetscErrorCode VecHIPGetArray(Vec v, PetscScalar **a)
-{
-  PetscFunctionBegin;
-  PetscCheckTypeNames(v, VECSEQHIP, VECMPIHIP);
-#if defined(PETSC_HAVE_HIP)
-  *a = 0;
-  PetscCall(VecHIPCopyToGPU(v));
-  *a = ((Vec_HIP *)v->spptr)->GPUarray;
-#endif
-  PetscFunctionReturn(0);
-}
-
-/*@C
-   VecHIPRestoreArray - Restore a HIP device pointer previously acquired with VecHIPGetArray().
-
-   This marks the host data as out of date.  Subsequent access to the
-   vector data on the host side with for instance VecGetArray() incurs a
-   data transfer.
-
-   Input Parameters:
-+  v - the vector
--  a - the HIP device pointer.  This pointer is invalid after
-       VecHIPRestoreArray() returns.
-
-   Fortran note:
-   This function is not currently available from Fortran.
-
-   Level: intermediate
-
-.seealso: `VecHIPGetArray()`, `VecHIPGetArrayRead()`, `VecHIPGetArrayWrite()`, `VecGetArray()`, `VecRestoreArray()`, `VecGetArrayRead()`
-@*/
-PETSC_EXTERN PetscErrorCode VecHIPRestoreArray(Vec v, PetscScalar **a)
-{
-  PetscFunctionBegin;
-  PetscCheckTypeNames(v, VECSEQHIP, VECMPIHIP);
-#if defined(PETSC_HAVE_HIP)
-  v->offloadmask = PETSC_OFFLOAD_GPU;
-#endif
-
-  PetscCall(PetscObjectStateIncrease((PetscObject)v));
-  PetscFunctionReturn(0);
-}
-
-/*@C
-   VecHIPGetArrayRead - Provides read access to the HIP buffer inside a vector.
-
-   This function is analogous to VecGetArrayRead():  The pointer
-   returned by this function points to a consistent view of the vector
-   data.  This may involve a copy operation of data from the host to the
-   device if the data on the device is out of date.  If the device
-   memory hasn't been allocated previously it will be allocated as part
-   of this function call.  VecHIPGetArrayRead() assumes that the
-   user will not modify the vector data.  This is analgogous to
-   intent(in) in Fortran.
-
-   The HIP device pointer has to be released by calling
-   VecHIPRestoreArrayRead().  If the data on the host side was
-   previously up to date it will remain so, i.e. data on both the device
-   and the host is up to date.  Accessing data on the host side does not
-   incur a device to host data transfer.
-
-   Input Parameter:
-.  v - the vector
-
-   Output Parameter:
-.  a - the HIP pointer.
-
-   Fortran note:
-   This function is not currently available from Fortran.
-
-   Level: intermediate
-
-.seealso: `VecHIPRestoreArrayRead()`, `VecHIPGetArray()`, `VecHIPGetArrayWrite()`, `VecGetArray()`, `VecGetArrayRead()`
-@*/
-PETSC_EXTERN PetscErrorCode VecHIPGetArrayRead(Vec v, const PetscScalar **a)
-{
-  PetscFunctionBegin;
-  PetscCheckTypeNames(v, VECSEQHIP, VECMPIHIP);
-#if defined(PETSC_HAVE_HIP)
-  *a = 0;
-  PetscCall(VecHIPCopyToGPU(v));
-  *a = ((Vec_HIP *)v->spptr)->GPUarray;
-#endif
-  PetscFunctionReturn(0);
-}
-
-/*@C
-   VecHIPRestoreArrayRead - Restore a HIP device pointer previously acquired with VecHIPGetArrayRead().
-
-   If the data on the host side was previously up to date it will remain
-   so, i.e. data on both the device and the host is up to date.
-   Accessing data on the host side e.g. with VecGetArray() does not
-   incur a device to host data transfer.
-
-   Input Parameters:
-+  v - the vector
--  a - the HIP device pointer.  This pointer is invalid after
-       VecHIPRestoreArrayRead() returns.
-
-   Fortran note:
-   This function is not currently available from Fortran.
-
-   Level: intermediate
-
-.seealso: `VecHIPGetArrayRead()`, `VecHIPGetArrayWrite()`, `VecHIPGetArray()`, `VecGetArray()`, `VecRestoreArray()`, `VecGetArrayRead()`
-@*/
-PETSC_EXTERN PetscErrorCode VecHIPRestoreArrayRead(Vec v, const PetscScalar **a)
-{
-  PetscFunctionBegin;
-  PetscCheckTypeNames(v, VECSEQHIP, VECMPIHIP);
-  *a = NULL;
-  PetscFunctionReturn(0);
-}
-
-/*@C
-   VecHIPGetArrayWrite - Provides write access to the HIP buffer inside a vector.
-
-   The data pointed to by the device pointer is uninitialized.  The user
-   may not read from this data.  Furthermore, the entire array needs to
-   be filled by the user to obtain well-defined behaviour.  The device
-   memory will be allocated by this function if it hasn't been allocated
-   previously.  This is analogous to intent(out) in Fortran.
-
-   The device pointer needs to be released with
-   VecHIPRestoreArrayWrite().  When the pointer is released the
-   host data of the vector is marked as out of data.  Subsequent access
-   of the host data with e.g. VecGetArray() incurs a device to host data
-   transfer.
-
-   Input Parameter:
-.  v - the vector
-
-   Output Parameter:
-.  a - the HIP pointer
-
-   Fortran note:
-   This function is not currently available from Fortran.
-
-   Level: advanced
-
-.seealso: `VecHIPRestoreArrayWrite()`, `VecHIPGetArray()`, `VecHIPGetArrayRead()`, `VecHIPGetArrayWrite()`, `VecGetArray()`, `VecGetArrayRead()`
-@*/
-PETSC_EXTERN PetscErrorCode VecHIPGetArrayWrite(Vec v, PetscScalar **a)
-{
-  PetscFunctionBegin;
-  PetscCheckTypeNames(v, VECSEQHIP, VECMPIHIP);
-#if defined(PETSC_HAVE_HIP)
-  *a = 0;
-  PetscCall(VecHIPAllocateCheck(v));
-  *a = ((Vec_HIP *)v->spptr)->GPUarray;
-#endif
-  PetscFunctionReturn(0);
-}
-
-/*@C
-   VecHIPRestoreArrayWrite - Restore a HIP device pointer previously acquired with VecHIPGetArrayWrite().
-
-   Data on the host will be marked as out of date.  Subsequent access of
-   the data on the host side e.g. with VecGetArray() will incur a device
-   to host data transfer.
-
-   Input Parameters:
-+  v - the vector
--  a - the HIP device pointer.  This pointer is invalid after
-       VecHIPRestoreArrayWrite() returns.
-
-   Fortran note:
-   This function is not currently available from Fortran.
-
-   Level: intermediate
-
-.seealso: `VecHIPGetArrayWrite()`, `VecHIPGetArray()`, `VecHIPGetArrayRead()`, `VecHIPGetArrayWrite()`, `VecGetArray()`, `VecRestoreArray()`, `VecGetArrayRead()`
-@*/
-PETSC_EXTERN PetscErrorCode VecHIPRestoreArrayWrite(Vec v, PetscScalar **a)
-{
-  PetscFunctionBegin;
-  PetscCheckTypeNames(v, VECSEQHIP, VECMPIHIP);
-#if defined(PETSC_HAVE_HIP)
-  v->offloadmask = PETSC_OFFLOAD_GPU;
-#endif
-
-  PetscCall(PetscObjectStateIncrease((PetscObject)v));
-  PetscFunctionReturn(0);
-}
-
-/*@C
-   VecHIPPlaceArray - Allows one to replace the GPU array in a vector with a
-   GPU array provided by the user. This is useful to avoid copying an
-   array into a vector.
-
-   Not Collective
-
-   Input Parameters:
-+  vec - the vector
--  array - the GPU array
-
-   Notes:
-   You can return to the original GPU array with a call to VecHIPResetArray()
-   It is not possible to use VecHIPPlaceArray() and VecPlaceArray() at the
-   same time on the same vector.
-
-   `vec` does not take ownership of `array` in any way. The user must free `array` themselves
-   but be careful not to do so before the vector has either been destroyed, had its original
-   array restored with `VecHIPResetArray()` or permanently replaced with
-   `VecHIPReplaceArray()`.
-
-   Level: developer
-
-.seealso: `VecPlaceArray()`, `VecGetArray()`, `VecRestoreArray()`, `VecReplaceArray()`, `VecResetArray()`, `VecHIPResetArray()`, `VecHIPReplaceArray()`
-
-@*/
-PetscErrorCode VecHIPPlaceArray(Vec vin, const PetscScalar a[])
-{
-  PetscFunctionBegin;
-  PetscCheckTypeNames(vin, VECSEQHIP, VECMPIHIP);
-#if defined(PETSC_HAVE_HIP)
-  PetscCall(VecHIPCopyToGPU(vin));
-  PetscCheck(!((Vec_Seq *)vin->data)->unplacedarray, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "VecHIPPlaceArray()/VecPlaceArray() was already called on this vector, without a call to VecHIPResetArray()/VecResetArray()");
-  ((Vec_Seq *)vin->data)->unplacedarray = (PetscScalar *)((Vec_HIP *)vin->spptr)->GPUarray; /* save previous GPU array so reset can bring it back */
-  ((Vec_HIP *)vin->spptr)->GPUarray     = (PetscScalar *)a;
-  vin->offloadmask                      = PETSC_OFFLOAD_GPU;
-#endif
-  PetscCall(PetscObjectStateIncrease((PetscObject)vin));
-  PetscFunctionReturn(0);
-}
-
-/*@C
-   VecHIPReplaceArray - Allows one to replace the GPU array in a vector
-   with a GPU array provided by the user. This is useful to avoid copying
-   a GPU array into a vector.
-
-   Not Collective
-
-   Input Parameters:
-+  vec - the vector
--  array - the GPU array
-
-   Notes:
-   This permanently replaces the GPU array and frees the memory associated
-   with the old GPU array.
-
-   The memory passed in CANNOT be freed by the user. It will be freed
-   when the vector is destroyed.
-
-   Not supported from Fortran
-
-   Level: developer
-
-.seealso: `VecGetArray()`, `VecRestoreArray()`, `VecPlaceArray()`, `VecResetArray()`, `VecHIPResetArray()`, `VecHIPPlaceArray()`, `VecReplaceArray()`
-
-@*/
-PetscErrorCode VecHIPReplaceArray(Vec vin, const PetscScalar a[])
-{
-  PetscFunctionBegin;
-  PetscCheckTypeNames(vin, VECSEQHIP, VECMPIHIP);
-#if defined(PETSC_HAVE_HIP)
-  PetscCallHIP(hipFree(((Vec_HIP *)vin->spptr)->GPUarray));
-  ((Vec_HIP *)vin->spptr)->GPUarray = (PetscScalar *)a;
-  vin->offloadmask                  = PETSC_OFFLOAD_GPU;
-#endif
-  PetscCall(PetscObjectStateIncrease((PetscObject)vin));
-  PetscFunctionReturn(0);
-}
-
-/*@C
-   VecHIPResetArray - Resets a vector to use its default memory. Call this
-   after the use of VecHIPPlaceArray().
-
-   Not Collective
-
-   Input Parameters:
-.  vec - the vector
-
-   Level: developer
-
-.seealso: `VecGetArray()`, `VecRestoreArray()`, `VecReplaceArray()`, `VecPlaceArray()`, `VecResetArray()`, `VecHIPPlaceArray()`, `VecHIPReplaceArray()`
-
-@*/
-PetscErrorCode VecHIPResetArray(Vec vin)
-{
-  PetscFunctionBegin;
-  PetscCheckTypeNames(vin, VECSEQHIP, VECMPIHIP);
-#if defined(PETSC_HAVE_HIP)
-  PetscCall(VecHIPCopyToGPU(vin));
-  ((Vec_HIP *)vin->spptr)->GPUarray     = (PetscScalar *)((Vec_Seq *)vin->data)->unplacedarray;
-  ((Vec_Seq *)vin->data)->unplacedarray = 0;
-  vin->offloadmask                      = PETSC_OFFLOAD_GPU;
-#endif
-  PetscCall(PetscObjectStateIncrease((PetscObject)vin));
   PetscFunctionReturn(0);
 }
 

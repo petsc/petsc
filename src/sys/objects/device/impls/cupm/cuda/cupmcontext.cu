@@ -7,7 +7,7 @@ PetscErrorCode PetscDeviceContextCreate_CUDA(PetscDeviceContext dctx)
   static constexpr auto cuda_context = CUPMContextCuda();
 
   PetscFunctionBegin;
-  PetscCall(cuda_context.initialize());
+  PetscCall(cuda_context.initialize(dctx->device));
   dctx->data = new PetscDeviceContext_(CUDA);
   PetscCall(PetscMemcpy(dctx->ops, &cuda_context.ops, sizeof(cuda_context.ops)));
   PetscFunctionReturn(0);
