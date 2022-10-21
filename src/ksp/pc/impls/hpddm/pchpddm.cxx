@@ -75,6 +75,7 @@ static inline PetscErrorCode PCHPDDMSetAuxiliaryMat_Private(PC pc, IS is, Mat A,
     if (data->is) { /* new overlap definition resets the PC */
       PetscCall(PCReset_HPDDM(pc));
       pc->setfromoptionscalled = 0;
+      pc->setupcalled          = 0;
     }
     PetscCall(ISDestroy(&data->is));
     data->is = is;

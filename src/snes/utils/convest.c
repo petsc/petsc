@@ -269,7 +269,7 @@ static PetscErrorCode PetscConvEstComputeErrorSNES_Private(PetscConvEst ce, Pets
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscConvEstSetJacobianNullspace_Private(PetscConvEst ce, SNES snes)
+static PetscErrorCode PetscConvEstSetJacobianNullSpace_Private(PetscConvEst ce, SNES snes)
 {
   DM       dm;
   PetscInt f;
@@ -362,7 +362,7 @@ static PetscErrorCode PetscConvEstGetConvRateSNES_Private(PetscConvEst ce, Petsc
     PetscCall(DMPlexSetSNESLocalFEM(dm[r], ctx, ctx, ctx));
     PetscCall(SNESSetFromOptions(snes));
     /* Set nullspace for Jacobian */
-    PetscCall(PetscConvEstSetJacobianNullspace_Private(ce, snes));
+    PetscCall(PetscConvEstSetJacobianNullSpace_Private(ce, snes));
     /* Create initial guess */
     PetscCall(PetscConvEstComputeInitialGuess(ce, r, dm[r], u));
     PetscCall(SNESSolve(snes, NULL, u));
@@ -425,7 +425,7 @@ static PetscErrorCode PetscConvEstGetConvRateSNES_Private(PetscConvEst ce, Petsc
   PetscCall(SNESSetDM(snes, ce->idm));
   PetscCall(DMPlexSetSNESLocalFEM(ce->idm, ctx, ctx, ctx));
   PetscCall(SNESSetFromOptions(snes));
-  PetscCall(PetscConvEstSetJacobianNullspace_Private(ce, snes));
+  PetscCall(PetscConvEstSetJacobianNullSpace_Private(ce, snes));
   PetscFunctionReturn(0);
 }
 

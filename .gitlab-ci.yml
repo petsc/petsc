@@ -79,6 +79,7 @@ check-ci-settings:
     - if [ ! -z ${CI_MERGE_REQUEST_SOURCE_BRANCH_NAME+x} ]; then printf "CI_MERGE_REQUEST_SOURCE_BRANCH_NAME:$CI_MERGE_REQUEST_SOURCE_BRANCH_NAME\n" ;fi
     - ${PYTHON} ./configure --with-debugging=0 COPTFLAGS='-O -march=native' CXXOPTFLAGS='-O -march=native' FOPTFLAGS='-O -march=native' ${CONFIG_OPTS}
     - make CFLAGS="${MAKE_CFLAGS}" CXXFLAGS="${MAKE_CXXFLAGS}" FFLAGS="${MAKE_FFLAGS}"
+    - if [ ! -z ${ENABLE_CHECK+x} ]; then make CFLAGS="${MAKE_CFLAGS}" CXXFLAGS="${MAKE_CXXFLAGS}" FFLAGS="${MAKE_FFLAGS}" check; fi
     - make CFLAGS="${MAKE_TEST_CFLAGS}" CXXFLAGS="${MAKE_TEST_CXXFLAGS}" FFLAGS="${MAKE_TEST_FFLAGS}" allgtests-tap gmakesearch="${TEST_SEARCH}" TIMEOUT=${TIMEOUT}
   variables:
     PYTHON: python3
@@ -115,6 +116,7 @@ ompi-cuda:
   variables:
     CONFIG_OPTS: --with-mpi-dir=/nfs/gce/software/custom/linux-ubuntu22.04-x86_64/spack/opt/spack/linux-ubuntu22.04-x86_64/gcc-11.3.0/openmpi-4.1.3-qrpnszy --with-cuda=1 --with-fc=0
     TEST_SEARCH: snes_tutorials-ex19_cuda%
+    ENABLE_CHECK: 1
     MAKE_CXXFLAGS: -Werror
 
 mpich-cxx-py3:
@@ -135,6 +137,7 @@ c99-mlib-static-py:
   extends: .stage-1
   variables:
     CONFIG_OPTS: --with-single-library=0 --with-shared-libraries=0 CFLAGS=-std=c99 FFLAGS= CXXFLAGS=
+    ENABLE_CHECK: 1
     TEST_SEARCH: snes_tutorials-ex19% snes_tutorials-ex5f90t%
     MAKE_TEST_FFLAGS: -Werror -std=f2008
     LOAD_MODULES: gcc/12.1.0 mpich/4.1a1-gcc-12.1.0
