@@ -219,7 +219,7 @@ PetscErrorCode SNESNCGComputeYtJtF_Private(SNES snes, Vec X, Vec F, Vec Y, Vec W
    Developer Note:
    There should be a `SNESNCGSetType()`
 
-.seealso: `SNESNCGType`, `SNES_NCG_FR`, `SNES_NCG_PRP`,  `SNES_NCG_HS`, `SNES_NCG_DY`, `SNES_NCG_CD`
+.seealso: `SNESNCGType`, `SNES_NCG_FR`, `SNES_NCG_PRP`, `SNES_NCG_HS`, `SNES_NCG_DY`, `SNES_NCG_CD`
 @*/
 PetscErrorCode SNESNCGSetType(SNES snes, SNESNCGType btype)
 {

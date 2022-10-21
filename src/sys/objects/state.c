@@ -86,7 +86,7 @@ PetscInt PetscObjectComposedDataMax = 10;
 
 .seealso: `PetscObjectComposedDataSetInt()`, `PetscObjectComposedDataSetReal()`, `PetscObjectComposedDataGetReal()`, `PetscObjectComposedDataSetIntstar()`,
           `PetscObjectComposedDataSetIntstar()`, `PetscObjectComposedDataGetInt()`, `PetscObject`,
-          `PetscObjectCompose()`,  `PetscObjectQuery()`, `PetscObjectComposedDataSetRealstar()`, `PetscObjectComposedDataGetScalarstar()`,
+          `PetscObjectCompose()`, `PetscObjectQuery()`, `PetscObjectComposedDataSetRealstar()`, `PetscObjectComposedDataGetScalarstar()`,
           `PetscObjectComposedDataSetScalarstar()`, `PetscObjectComposedDataSetScalarstar()`
 @*/
 PetscErrorCode PetscObjectComposedDataRegister(PetscInt *id)

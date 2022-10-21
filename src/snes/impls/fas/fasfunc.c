@@ -230,7 +230,7 @@ PetscErrorCode SNESFASSetNumberSmoothUp(SNES snes, PetscInt n)
 
    Level: advanced
 
-.seealso: `SNESFAS`,  `SNESFASSetNumberSmoothUp()`
+.seealso: `SNESFAS`, `SNESFASSetNumberSmoothUp()`
 @*/
 PetscErrorCode SNESFASSetNumberSmoothDown(SNES snes, PetscInt n)
 {

@@ -518,7 +518,7 @@ PetscErrorCode PCCompositeAddPC(PC pc, PC subpc)
 
    Level: Developer
 
-.seealso: `PCCOMPOSITE`, `PCCompositeGetPC()`, `PCCompositeAddPC()`,  `PCCompositeAddPCType()`
+.seealso: `PCCOMPOSITE`, `PCCompositeGetPC()`, `PCCompositeAddPC()`, `PCCompositeAddPCType()`
 @*/
 PetscErrorCode PCCompositeGetNumberPC(PC pc, PetscInt *num)
 {

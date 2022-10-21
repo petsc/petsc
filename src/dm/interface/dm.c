@@ -336,7 +336,7 @@ PetscErrorCode DMSetISColoringType(DM dm, ISColoringType ctype)
 }
 
 /*@C
-       DMGetISColoringType - Gets the type of coloring,  `IS_COLORING_GLOBAL` or `IS_COLORING_LOCAL` that is created by the `DM`
+       DMGetISColoringType - Gets the type of coloring, `IS_COLORING_GLOBAL` or `IS_COLORING_LOCAL` that is created by the `DM`
 
    Logically Collective on dm
 
@@ -1090,7 +1090,7 @@ PetscErrorCode DMCreateLocalVector(DM dm, Vec *vec)
 
    This mapping can then be used by `VecSetLocalToGlobalMapping()` or `MatSetLocalToGlobalMapping()`.
 
-.seealso: `DMCreateLocalVector()`,  `DMCreateLocalVector()`, `DMCreateGlobalVector()`, `VecSetLocalToGlobalMapping()`, `MatSetLocalToGlobalMapping()`,
+.seealso: `DMCreateLocalVector()`, `DMCreateLocalVector()`, `DMCreateGlobalVector()`, `VecSetLocalToGlobalMapping()`, `MatSetLocalToGlobalMapping()`,
           `DMCreateMatrix()`
 @*/
 PetscErrorCode DMGetLocalToGlobalMapping(DM dm, ISLocalToGlobalMapping *ltog)
@@ -2966,7 +2966,7 @@ static PetscErrorCode DMLocalToGlobalHook_Constraints(DM dm, Vec l, InsertMode m
 
     Level: beginner
 
-.seealso: `DMLocalToGlobalBegin()`, `DMLocalToGlobalEnd()`, `DMCoarsen()`, `DMDestroy()`, `DMView()`, `DMCreateGlobalVector()`, `DMCreateInterpolation()`, `DMGlobalToLocal()`, `DMGlobalToLocalEnd()`, `DMGlobalToLocalBegin()`,  `DMLocalToGlobalHookAdd()`,  `DMGlobaToLocallHookAdd()`
+.seealso: `DMLocalToGlobalBegin()`, `DMLocalToGlobalEnd()`, `DMCoarsen()`, `DMDestroy()`, `DMView()`, `DMCreateGlobalVector()`, `DMCreateInterpolation()`, `DMGlobalToLocal()`, `DMGlobalToLocalEnd()`, `DMGlobalToLocalBegin()`, `DMLocalToGlobalHookAdd()`,  `DMGlobaToLocallHookAdd()`
 
 @*/
 PetscErrorCode DMLocalToGlobal(DM dm, Vec l, InsertMode mode, Vec g)
@@ -8671,7 +8671,7 @@ PetscErrorCode DMGetCompatibility(DM dm1, DM dm2, PetscBool *compatible, PetscBo
 
   Level: intermediate
 
-.seealso: `DMMonitorCancel()`,`DMMonitorSetFromOptions()`, `DMMonitor()`
+.seealso: `DMMonitorCancel()`, `DMMonitorSetFromOptions()`, `DMMonitor()`
 @*/
 PetscErrorCode DMMonitorSet(DM dm, PetscErrorCode (*f)(DM, void *), void *mctx, PetscErrorCode (*monitordestroy)(void **))
 {
@@ -8710,7 +8710,7 @@ PetscErrorCode DMMonitorSet(DM dm, PetscErrorCode (*f)(DM, void *), void *mctx, 
 
   Level: intermediate
 
-.seealso: `DMMonitorSet()`, `DMMonitorSetFromOptions()`,  `DMMonitor()`
+.seealso: `DMMonitorSet()`, `DMMonitorSetFromOptions()`, `DMMonitor()`
 @*/
 PetscErrorCode DMMonitorCancel(DM dm)
 {

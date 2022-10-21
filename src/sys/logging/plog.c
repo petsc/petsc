@@ -966,7 +966,7 @@ PetscErrorCode PetscLogEventActivateClass(PetscClassId classid)
 
   Level: developer
 
-.seealso: `PetscLogEventIncludeClass()`, `PetscLogEventExcludeClass()`,`PetscLogEventActivateClass()`, `PetscLogEventActivate()`, `PetscLogEventDeactivate()`
+.seealso: `PetscLogEventIncludeClass()`, `PetscLogEventExcludeClass()`, `PetscLogEventActivateClass()`, `PetscLogEventActivate()`, `PetscLogEventDeactivate()`
 @*/
 PetscErrorCode PetscLogEventDeactivateClass(PetscClassId classid)
 {

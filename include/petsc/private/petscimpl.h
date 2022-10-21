@@ -814,7 +814,7 @@ PETSC_EXTERN PetscInt       PetscObjectComposedDataMax;
 
 .seealso: `PetscObjectComposedDataGetInt()`, `PetscObjectComposedDataGetReal()`, `PetscObjectComposedDataSetReal()`,
           `PetscObjectComposedDataGetIntstar()`, `PetscObjectComposedDataSetIntstar()`, `PetscObject`,
-          `PetscObjectCompose()`,  `PetscObjectQuery()`
+          `PetscObjectCompose()`, `PetscObjectQuery()`
 M*/
 #define PetscObjectComposedDataSetInt(obj, id, data) ((((obj)->int_idmax < PetscObjectComposedDataMax) && PetscObjectComposedDataIncreaseInt(obj)) || ((obj)->intcomposeddata[id] = data, (obj)->intcomposedstate[id] = (obj)->state, 0))
 
@@ -844,7 +844,7 @@ M*/
 
 .seealso: `PetscObjectComposedDataSetInt()`, `PetscObjectComposedDataGetReal()`, `PetscObjectComposedDataSetReal()`,
           `PetscObjectComposedDataGetIntstar()`, `PetscObjectComposedDataSetIntstar()`, `PetscObject`,
-          `PetscObjectCompose()`,  `PetscObjectQuery()`
+          `PetscObjectCompose()`, `PetscObjectQuery()`
 M*/
 #define PetscObjectComposedDataGetInt(obj, id, data, flag) (((obj)->intcomposedstate ? (data = (obj)->intcomposeddata[id], flag = (PetscBool)((obj)->intcomposedstate[id] == (obj)->state)) : (flag = PETSC_FALSE)), 0)
 
@@ -871,7 +871,7 @@ M*/
 
 .seealso: `PetscObjectComposedDataSetInt()`, `PetscObjectComposedDataGetReal()`, `PetscObjectComposedDataSetReal()`,
           `PetscObjectComposedDataGetIntstar()`, `PetscObjectComposedDataGetInt()`, `PetscObject`,
-          `PetscObjectCompose()`,  `PetscObjectQuery()`
+          `PetscObjectCompose()`, `PetscObjectQuery()`
 M*/
 #define PetscObjectComposedDataSetIntstar(obj, id, data) \
   ((((obj)->intstar_idmax < PetscObjectComposedDataMax) && PetscObjectComposedDataIncreaseIntstar(obj)) || ((obj)->intstarcomposeddata[id] = data, (obj)->intstarcomposedstate[id] = (obj)->state, 0))
@@ -902,7 +902,7 @@ M*/
 
 .seealso: `PetscObjectComposedDataSetInt()`, `PetscObjectComposedDataGetReal()`, `PetscObjectComposedDataSetReal()`,
           `PetscObjectComposedDataSetIntstar()`, `PetscObjectComposedDataGetInt()`, `PetscObject`,
-          `PetscObjectCompose()`,  `PetscObjectQuery()`
+          `PetscObjectCompose()`, `PetscObjectQuery()`
 M*/
 #define PetscObjectComposedDataGetIntstar(obj, id, data, flag) (((obj)->intstarcomposedstate ? (data = (obj)->intstarcomposeddata[id], flag = (PetscBool)((obj)->intstarcomposedstate[id] == (obj)->state)) : (flag = PETSC_FALSE)), 0)
 
@@ -927,7 +927,7 @@ M*/
 
 .seealso: `PetscObjectComposedDataSetInt()`, `PetscObjectComposedDataGetReal()`, `PetscObjectComposedDataSetIntstar()`,
           `PetscObjectComposedDataSetIntstar()`, `PetscObjectComposedDataGetInt()`, `PetscObject`,
-          `PetscObjectCompose()`,  `PetscObjectQuery()`
+          `PetscObjectCompose()`, `PetscObjectQuery()`
 M*/
 #define PetscObjectComposedDataSetReal(obj, id, data) ((((obj)->real_idmax < PetscObjectComposedDataMax) && PetscObjectComposedDataIncreaseReal(obj)) || ((obj)->realcomposeddata[id] = data, (obj)->realcomposedstate[id] = (obj)->state, 0))
 
@@ -955,7 +955,7 @@ M*/
 
 .seealso: `PetscObjectComposedDataSetInt()`, `PetscObjectComposedDataSetReal()`, `PetscObjectComposedDataSetIntstar()`,
           `PetscObjectComposedDataSetIntstar()`, `PetscObjectComposedDataGetInt()`, `PetscObject`,
-          `PetscObjectCompose()`,  `PetscObjectQuery()`
+          `PetscObjectCompose()`, `PetscObjectQuery()`
 M*/
 #define PetscObjectComposedDataGetReal(obj, id, data, flag) (((obj)->realcomposedstate ? (data = (obj)->realcomposeddata[id], flag = (PetscBool)((obj)->realcomposedstate[id] == (obj)->state)) : (flag = PETSC_FALSE)), 0)
 
@@ -982,7 +982,7 @@ M*/
 
 .seealso: `PetscObjectComposedDataSetInt()`, `PetscObjectComposedDataSetReal()`, `PetscObjectComposedDataGetReal()`, `PetscObjectComposedDataSetIntstar()`,
           `PetscObjectComposedDataSetIntstar()`, `PetscObjectComposedDataGetInt()`, `PetscObject`,
-          `PetscObjectCompose()`,  `PetscObjectQuery()`, `PetscObjectComposedDataGetRealstar()`
+          `PetscObjectCompose()`, `PetscObjectQuery()`, `PetscObjectComposedDataGetRealstar()`
 M*/
 #define PetscObjectComposedDataSetRealstar(obj, id, data) \
   ((((obj)->realstar_idmax < PetscObjectComposedDataMax) && PetscObjectComposedDataIncreaseRealstar(obj)) || ((obj)->realstarcomposeddata[id] = data, (obj)->realstarcomposedstate[id] = (obj)->state, 0))
@@ -1013,7 +1013,7 @@ M*/
 
 .seealso: `PetscObjectComposedDataSetInt()`, `PetscObjectComposedDataSetReal()`, `PetscObjectComposedDataGetReal()`, `PetscObjectComposedDataSetIntstar()`,
           `PetscObjectComposedDataSetIntstar()`, `PetscObjectComposedDataGetInt()`, `PetscObject`,
-          `PetscObjectCompose()`,  `PetscObjectQuery()`, `PetscObjectComposedDataSetRealstar()`
+          `PetscObjectCompose()`, `PetscObjectQuery()`, `PetscObjectComposedDataSetRealstar()`
 M*/
 #define PetscObjectComposedDataGetRealstar(obj, id, data, flag) (((obj)->realstarcomposedstate ? (data = (obj)->realstarcomposeddata[id], flag = (PetscBool)((obj)->realstarcomposedstate[id] == (obj)->state)) : (flag = PETSC_FALSE)), 0)
 
@@ -1038,7 +1038,7 @@ M*/
 
 .seealso: `PetscObjectComposedDataSetInt()`, `PetscObjectComposedDataSetReal()`, `PetscObjectComposedDataGetReal()`, `PetscObjectComposedDataSetIntstar()`,
           `PetscObjectComposedDataSetIntstar()`, `PetscObjectComposedDataGetInt()`, `PetscObject`,
-          `PetscObjectCompose()`,  `PetscObjectQuery()`, `PetscObjectComposedDataSetRealstar()`, `PetscObjectComposedDataGetScalar()`
+          `PetscObjectCompose()`, `PetscObjectQuery()`, `PetscObjectComposedDataSetRealstar()`, `PetscObjectComposedDataGetScalar()`
 M*/
 #if defined(PETSC_USE_COMPLEX)
   #define PetscObjectComposedDataSetScalar(obj, id, data) ((((obj)->scalar_idmax < PetscObjectComposedDataMax) && PetscObjectComposedDataIncreaseScalar(obj)) || ((obj)->scalarcomposeddata[id] = data, (obj)->scalarcomposedstate[id] = (obj)->state, 0))
@@ -1069,7 +1069,7 @@ M*/
 
 .seealso: `PetscObjectComposedDataSetInt()`, `PetscObjectComposedDataSetReal()`, `PetscObjectComposedDataGetReal()`, `PetscObjectComposedDataSetIntstar()`,
           `PetscObjectComposedDataSetIntstar()`, `PetscObjectComposedDataGetInt()`, `PetscObject`,
-          `PetscObjectCompose()`,  `PetscObjectQuery()`, `PetscObjectComposedDataSetRealstar()`, `PetscObjectComposedDataSetScalar()`
+          `PetscObjectCompose()`, `PetscObjectQuery()`, `PetscObjectComposedDataSetRealstar()`, `PetscObjectComposedDataSetScalar()`
 M*/
 #if defined(PETSC_USE_COMPLEX)
   #define PetscObjectComposedDataGetScalar(obj, id, data, flag) (((obj)->scalarcomposedstate ? (data = (obj)->scalarcomposeddata[id], flag = (PetscBool)((obj)->scalarcomposedstate[id] == (obj)->state)) : (flag = PETSC_FALSE)), 0)
@@ -1100,7 +1100,7 @@ M*/
 
 .seealso: `PetscObjectComposedDataSetInt()`, `PetscObjectComposedDataSetReal()`, `PetscObjectComposedDataGetReal()`, `PetscObjectComposedDataSetIntstar()`,
           `PetscObjectComposedDataSetIntstar()`, `PetscObjectComposedDataGetInt()`, `PetscObject`,
-          `PetscObjectCompose()`,  `PetscObjectQuery()`, `PetscObjectComposedDataSetRealstar()`, `PetscObjectComposedDataGetScalarstar()`
+          `PetscObjectCompose()`, `PetscObjectQuery()`, `PetscObjectComposedDataSetRealstar()`, `PetscObjectComposedDataGetScalarstar()`
 M*/
 #if defined(PETSC_USE_COMPLEX)
   #define PetscObjectComposedDataSetScalarstar(obj, id, data) \
@@ -1135,7 +1135,7 @@ M*/
 
 .seealso: `PetscObjectComposedDataSetInt()`, `PetscObjectComposedDataSetReal()`, `PetscObjectComposedDataGetReal()`, `PetscObjectComposedDataSetIntstar()`,
           `PetscObjectComposedDataSetIntstar()`, `PetscObjectComposedDataGetInt()`, `PetscObject`,
-          `PetscObjectCompose()`,  `PetscObjectQuery()`, `PetscObjectComposedDataSetRealstar()`, `PetscObjectComposedDataSetScalarstar()`
+          `PetscObjectCompose()`, `PetscObjectQuery()`, `PetscObjectComposedDataSetRealstar()`, `PetscObjectComposedDataSetScalarstar()`
 M*/
 #if defined(PETSC_USE_COMPLEX)
   #define PetscObjectComposedDataGetScalarstar(obj, id, data, flag) (((obj)->scalarstarcomposedstate ? (data = (obj)->scalarstarcomposeddata[id], flag = (PetscBool)((obj)->scalarstarcomposedstate[id] == (obj)->state)) : (flag = PETSC_FALSE)), 0)

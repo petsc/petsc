@@ -199,7 +199,7 @@ next rank has entries from ``rend1`` to ``rend2`` - 1, etc. Thus the ownership r
 obtained with ``VecGetOwnershipRange``\(``Vec`` x, ``PetscInt`` \* ``rstart``, ``PetscInt`` \* ``rend``). Each PETSc ``Vec`` has a ``PetscLayout`` object that contains this information.
 
 All PETSc matrices have two ``PetscLayout``\s, they define the vector layouts for y and x in the product, y = A \* x. Their ownership range information
-can be obtained with ``MatGetOwnershipRange()``, ``MatGetOwnershipRangeColumn()``,  ``MatGetOwnershipRanges()``, and  ``MatGetOwnershipRangesColumn()``.
+can be obtained with ``MatGetOwnershipRange()``, ``MatGetOwnershipRangeColumn()``, ``MatGetOwnershipRanges()``, and  ``MatGetOwnershipRangesColumn()``.
 Note that ``MatCreateVecs()`` provides two vectors that have compatible layouts for the associated vector.
 
 For most PETSc matrices, excluding ``MATELEMENTAL`` and ``MATSCALAPACK``, the row ownership range obtained with  ``MatGetOwnershipRange()`` also defines

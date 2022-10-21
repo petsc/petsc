@@ -14,7 +14,7 @@ In addition to the changes above
 
 - Change  ``PetscOptionsHead()`` and ``PetscOptionsTail()`` to  ``PetscOptionsHeadBegin()`` and ``PetscOptionsHeadEnd()``
 - Change ``MatPreallocateInitialize()`` and ``MatPreallocateFinalize()`` to ``MatPreallocateBegin()`` and ``MatPreallocateEnd()``
-- Change uses of `MatGetOption()` with `MAT_SYMMETRIC`, `MAT_STRUCTURALLY_SYMMETRIC`, `MAT_HERMITIAN`,  `MAT_SPD` to calls to `MatIsSymmetric()`, `MatIsSymmetricKnown()` etc.
+- Change uses of `MatGetOption()` with `MAT_SYMMETRIC`, `MAT_STRUCTURALLY_SYMMETRIC`, `MAT_HERMITIAN`, `MAT_SPD` to calls to `MatIsSymmetric()`, `MatIsSymmetricKnown()` etc.
 - Whenever you call `MatSetOption()` with one of the above options and it is intended to stay with the matrix through calls to `MatSetValues()` etc add a call
   to `MatSetOption()` with `MAT_SYMMETRY_ETERNAL` etc
 
@@ -209,7 +209,7 @@ exec-name``.
 
 - Add ``TSSetTimeSpan()``, ``TSGetTimeSpan()`` and ``TSGetTimeSpanSolutions()`` to support time span
 - Add ``DMTSGetIFunctionLocal()``, ``DMTSGetIJacobianLocal()``, and ``DMTSGetRHSFunctionLocal()``
-- Add ``DMTSSetIFunctionContextDestroy()``, ``DMTSSetIJacobianContextDestroy()``, ``DMTSSetRHSFunctionContextDestroy()``,  ``DMTSSetRHSJacobianContextDestroy()``, ``DMTSSetI2FunctionContextDestroy()``, and ``DMTSSetI2JacobianContextDestroy()`` and use ``PetscContainter`` for user context to facilitate automatic destruction of user set context
+- Add ``DMTSSetIFunctionContextDestroy()``, ``DMTSSetIJacobianContextDestroy()``, ``DMTSSetRHSFunctionContextDestroy()``, ``DMTSSetRHSJacobianContextDestroy()``, ``DMTSSetI2FunctionContextDestroy()``, and ``DMTSSetI2JacobianContextDestroy()`` and use ``PetscContainter`` for user context to facilitate automatic destruction of user set context
 - Make public ``SNESVIComputeMeritFunction()`` and ``SNESVIComputeFunction()``
 
 .. rubric:: TAO:
