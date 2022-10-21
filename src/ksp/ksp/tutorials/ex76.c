@@ -78,11 +78,15 @@ int main(int argc, char **args)
   PetscCall(PCSetType(pc, PCHPDDM));
 #if defined(PETSC_HAVE_HPDDM) && defined(PETSC_HAVE_DYNAMIC_LIBRARIES) && defined(PETSC_USE_SHARED_LIBRARIES)
   flg = PETSC_FALSE;
-  PetscCall(PetscOptionsGetBool(NULL, NULL, "-pc_hpddm_block_splitting", &flg, NULL));
-  if (!flg) {
-    PetscCall(PCHPDDMSetAuxiliaryMat(pc, is, aux, NULL, NULL));
-    PetscCall(PCHPDDMHasNeumannMat(pc, PETSC_FALSE)); /* PETSC_TRUE is fine as well, just testing */
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-reset", &flg, NULL));
+  if (flg) {
+    PetscCall(PetscOptionsSetValue(NULL, "-pc_hpddm_block_splitting", "true"));
+    PetscCall(PCSetFromOptions(pc));
+    PetscCall(PCSetUp(pc));
+    PetscCall(PetscOptionsClearValue(NULL, "-pc_hpddm_block_splitting"));
   }
+  PetscCall(PCHPDDMSetAuxiliaryMat(pc, is, aux, NULL, NULL));
+  PetscCall(PCHPDDMHasNeumannMat(pc, PETSC_FALSE)); /* PETSC_TRUE is fine as well, just testing */
   flg = PETSC_FALSE;
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-set_rhs", &flg, NULL));
   if (flg) {          /* user-provided RHS for concurrent generalized eigenvalue problems                                 */
@@ -216,7 +220,7 @@ int main(int argc, char **args)
       test:
         suffix: geneo_share
         output_file: output/ex76_geneo_pc_hpddm_levels_1_eps_nev-5.out
-        args: -pc_hpddm_levels_1_st_pc_type cholesky -pc_hpddm_levels_1_eps_nev 5 -pc_hpddm_levels_1_st_share_sub_ksp
+        args: -pc_hpddm_levels_1_st_pc_type cholesky -pc_hpddm_levels_1_eps_nev 5 -pc_hpddm_levels_1_st_share_sub_ksp -reset {{false true}shared output}
 
    testset:
       requires: hpddm slepc datafilespath double !complex !defined(PETSC_USE_64BIT_INDICES) defined(PETSC_HAVE_DYNAMIC_LIBRARIES) defined(PETSC_USE_SHARED_LIBRARIES)
