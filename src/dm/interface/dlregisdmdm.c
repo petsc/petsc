@@ -170,6 +170,8 @@ PetscErrorCode DMInitializePackage(void)
   PetscCall(PetscRegisterFinalize(DMGenerateRegisterDestroy));
   PetscCall(DMPlexTransformRegisterAll());
   PetscCall(PetscRegisterFinalize(DMPlexTransformRegisterDestroy));
+  PetscCall(DMLabelRegisterAll());
+  PetscCall(PetscRegisterFinalize(DMLabelRegisterDestroy));
   PetscCall(PetscRegisterFinalize(DMFinalizePackage));
   PetscFunctionReturn(0);
 }

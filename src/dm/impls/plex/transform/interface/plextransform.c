@@ -165,7 +165,7 @@ PetscErrorCode DMPlexTransformCreate(MPI_Comm comm, DMPlexTransform *tr)
 }
 
 /*@C
-  DMSetType - Sets the particular implementation for a transform.
+  DMPlexTransformSetType - Sets the particular implementation for a transform.
 
   Collective on tr
 
@@ -1649,8 +1649,6 @@ static PetscErrorCode DMPlexTransformCreateLabels(DMPlexTransform tr, DM rdm)
 
   PetscFunctionBegin;
   PetscCall(DMPlexTransformGetDM(tr, &dm));
-  // TODO Figure out labels for ephemeral meshes
-  if (((DM_Plex *)dm->data)->tr) PetscFunctionReturn(0);
   PetscCall(DMGetNumLabels(dm, &numLabels));
   for (l = 0; l < numLabels; ++l) {
     DMLabel     label, labelNew;
