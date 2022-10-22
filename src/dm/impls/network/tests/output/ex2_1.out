@@ -1,0 +1,23 @@
+DM Object: 2 MPI processes
+  type: network
+  NSubnets: 1; NEdges: 4; NVertices: 5; NSharedVertices: 0.
+  [0] nEdges: 2; nVertices: 3; nSharedVertices: 0
+     Subnet 0: nEdges 2, nVertices(include shared vertices) 3
+       edge 0: 1 ----> 0
+       edge 1: 2 ----> 0
+  [1] nEdges: 2; nVertices: 3; nSharedVertices: 0
+     Subnet 0: nEdges 2, nVertices(include shared vertices) 3
+       edge 2: 3 ----> 0
+       edge 3: 4 ----> 0
+
+ Rank 0
+
+Vertex: 0, x =  0.000000 y = 0.000000 
+Vertex: 1, x =  1.000000 y = 0.000000 
+Vertex: 2, x =  0.000000 y = 1.000000 
+
+ Rank 1
+
+Vertex: 0, x =  0.000000 y = 0.000000 
+Vertex: 3, x =  -1.000000 y = 0.000000 
+Vertex: 4, x =  -0.000000 y = -1.000000 

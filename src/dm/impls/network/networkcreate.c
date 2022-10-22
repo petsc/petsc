@@ -20,6 +20,7 @@ extern PetscErrorCode DMLocalToGlobalBegin_Network(DM, Vec, InsertMode, Vec);
 extern PetscErrorCode DMLocalToGlobalEnd_Network(DM, Vec, InsertMode, Vec);
 extern PetscErrorCode DMSetUp_Network(DM);
 extern PetscErrorCode DMClone_Network(DM, DM *);
+extern PetscErrorCode DMCreateCoordinateDM_Network(DM, DM *);
 
 static PetscErrorCode VecArrayPrint_private(PetscViewer viewer, PetscInt n, const PetscScalar *xv)
 {
@@ -325,7 +326,7 @@ PetscErrorCode DMInitialize_Network(DM dm)
   dm->ops->createlocalvector       = DMCreateLocalVector_Network;
   dm->ops->getlocaltoglobalmapping = NULL;
   dm->ops->createfieldis           = NULL;
-  dm->ops->createcoordinatedm      = NULL;
+  dm->ops->createcoordinatedm      = DMCreateCoordinateDM_Network;
   dm->ops->getcoloring             = NULL;
   dm->ops->creatematrix            = DMCreateMatrix_Network;
   dm->ops->createinterpolation     = NULL;
@@ -387,6 +388,20 @@ PetscErrorCode DMClone_Network(DM dm, DM *newdm)
   PetscCall(DMNetworkInitializeNonTopological(*newdm)); /* initialize all non-topological data to the state after DMNetworkLayoutSetUp as been called */
   PetscCall(PetscObjectChangeTypeName((PetscObject)*newdm, DMNETWORK));
   PetscCall(DMInitialize_Network(*newdm));
+  PetscFunctionReturn(0);
+}
+/* Developer Note: Be aware that the plex inside of the network does not have a coordinate plex.
+*/
+PetscErrorCode DMCreateCoordinateDM_Network(DM dm, DM *cdm)
+{
+  DM_Network *newnetwork = NULL;
+  PetscInt    Nf;
+
+  PetscFunctionBegin;
+  PetscCall(DMClone(dm, cdm));
+  newnetwork = (DM_Network *)(*cdm)->data;
+  PetscCall(DMGetNumFields(newnetwork->plex, &Nf));
+  PetscCall(DMSetNumFields(*cdm, Nf)); /* consistency with the coordinate plex */
   PetscFunctionReturn(0);
 }
 

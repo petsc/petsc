@@ -949,6 +949,72 @@ PetscErrorCode DMNetworkRegisterComponent(DM dm, const char *name, size_t size, 
 }
 
 /*@
+  DMNetworkGetNumVertices - Get the local and global number of vertices for the entire network.
+
+  Not Collective
+
+  Input Parameter:
+. dm - the DMNetwork object
+
+  Output Parameters:
++ nVertices - the local number of vertices
+- NVertices - the global number of vertices
+
+  Level: beginner
+
+.seealso: `DMNetworkGetNumEdges()`
+@*/
+PetscErrorCode DMNetworkGetNumVertices(DM dm, PetscInt *nVertices, PetscInt *NVertices)
+{
+  DM_Network *network = (DM_Network *)dm->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecificType(dm, DM_CLASSID, 1, DMNETWORK);
+  if (nVertices) {
+    PetscValidIntPointer(nVertices, 2);
+    *nVertices = network->cloneshared->nVertices;
+  }
+  if (NVertices) {
+    PetscValidIntPointer(NVertices, 3);
+    *NVertices = network->cloneshared->NVertices;
+  }
+  PetscFunctionReturn(0);
+}
+
+/*@
+  DMNetworkGetNumEdges - Get the local and global number of edges for the entire network.
+
+  Not Collective
+
+  Input Parameter:
+. dm - the DMNetwork object
+
+  Output Parameters:
++ nEdges - the local number of edges
+-  NEdges - the global number of edges
+
+  Level: beginner
+
+.seealso: `DMNetworkGetNumVertices()`
+@*/
+PetscErrorCode DMNetworkGetNumEdges(DM dm, PetscInt *nEdges, PetscInt *NEdges)
+{
+  DM_Network *network = (DM_Network *)dm->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecificType(dm, DM_CLASSID, 1, DMNETWORK);
+  if (nEdges) {
+    PetscValidIntPointer(nEdges, 2);
+    *nEdges = network->cloneshared->nEdges;
+  }
+  if (NEdges) {
+    PetscValidIntPointer(NEdges, 3);
+    *NEdges = network->cloneshared->NEdges;
+  }
+  PetscFunctionReturn(0);
+}
+
+/*@
   DMNetworkGetVertexRange - Get the bounds [start, end) for the local vertices
 
   Not Collective
@@ -1585,6 +1651,71 @@ static inline PetscErrorCode SetSubnetIdLookupBT(DM dm, PetscInt v, PetscInt Nsu
   PetscFunctionReturn(0);
 }
 
+/*
+  DMNetworkDistributeCoordinates - Internal function to distribute the coordinate network and coordinates.
+
+  Collective
+
+  Input Parameters:
+  + dm - The original DMNetwork object
+  - migrationSF - The PetscSF discribing the migrgration from dm to dmnew
+  - newDM - The new distributed dmnetwork object.
+*/
+
+static PetscErrorCode DMNetworkDistributeCoordinates(DM dm, PetscSF migrationSF, DM newDM)
+{
+  DM_Network              *newDMnetwork = (DM_Network *)((newDM)->data), *newCoordnetwork, *oldCoordnetwork;
+  DM                       cdm, newcdm;
+  PetscInt                 cdim, bs, p, pStart, pEnd, offset;
+  Vec                      oldCoord, newCoord;
+  DMNetworkComponentHeader header;
+  const char              *name;
+
+  PetscFunctionBegin;
+  /* Distribute the coordinate network and coordinates */
+  PetscCall(DMGetCoordinateDim(dm, &cdim));
+  PetscCall(DMSetCoordinateDim(newDM, cdim));
+
+  /* Migrate only if original network had coordinates */
+  PetscCall(DMGetCoordinatesLocal(dm, &oldCoord));
+  if (oldCoord) {
+    PetscCall(DMGetCoordinateDM(dm, &cdm));
+    PetscCall(DMGetCoordinateDM(newDM, &newcdm));
+    newCoordnetwork = (DM_Network *)newcdm->data;
+    oldCoordnetwork = (DM_Network *)cdm->data;
+
+    PetscCall(VecCreate(PETSC_COMM_SELF, &newCoord));
+    PetscCall(PetscObjectGetName((PetscObject)oldCoord, &name));
+    PetscCall(PetscObjectSetName((PetscObject)newCoord, name));
+    PetscCall(VecGetBlockSize(oldCoord, &bs));
+    PetscCall(VecSetBlockSize(newCoord, bs));
+
+    PetscCall(DMPlexDistributeField(newDMnetwork->plex, migrationSF, oldCoordnetwork->DofSection, oldCoord, newCoordnetwork->DofSection, newCoord));
+    PetscCall(DMSetCoordinatesLocal(newDM, newCoord));
+
+    PetscCall(VecDestroy(&newCoord));
+    /* Migrate the components from the orignal coordinate network to the new coordinate network */
+    PetscCall(DMPlexDistributeData(newDMnetwork->plex, migrationSF, oldCoordnetwork->DataSection, MPIU_INT, (void *)oldCoordnetwork->componentdataarray, newCoordnetwork->DataSection, (void **)&newCoordnetwork->componentdataarray));
+    /* update the header pointers in the new coordinate network components */
+    PetscCall(PetscSectionGetChart(newCoordnetwork->DataSection, &pStart, &pEnd));
+    for (p = pStart; p < pEnd; p++) {
+      PetscCall(PetscSectionGetOffset(newCoordnetwork->DataSection, p, &offset));
+      header = (DMNetworkComponentHeader)(newCoordnetwork->componentdataarray + offset);
+      /* Update pointers */
+      header->size         = (PetscInt *)(header + 1);
+      header->key          = header->size + header->maxcomps;
+      header->offset       = header->key + header->maxcomps;
+      header->nvar         = header->offset + header->maxcomps;
+      header->offsetvarrel = header->nvar + header->maxcomps;
+    }
+
+    PetscCall(DMSetLocalSection(newCoordnetwork->plex, newCoordnetwork->DofSection));
+    PetscCall(DMGetGlobalSection(newCoordnetwork->plex, &newCoordnetwork->GlobalDofSection));
+    newCoordnetwork->componentsetup = PETSC_TRUE;
+  }
+  PetscFunctionReturn(0);
+}
+
 /*@
   DMNetworkDistribute - Distributes the network and moves associated component data
 
@@ -1609,12 +1740,11 @@ PetscErrorCode DMNetworkDistribute(DM *dm, PetscInt overlap)
 {
   MPI_Comm                 comm;
   PetscMPIInt              size;
-  DM_Network              *oldDMnetwork = (DM_Network *)((*dm)->data);
-  DM_Network              *newDMnetwork;
-  PetscSF                  pointsf = NULL;
+  DM_Network              *oldDMnetwork = (DM_Network *)((*dm)->data), *newDMnetwork;
+  PetscSF                  pointsf      = NULL;
   DM                       newDM;
-  PetscInt                 j, e, v, offset, *subnetvtx, *subnetedge, Nsubnet, gidx, svtx_idx, nv;
-  PetscInt                 net, *sv;
+  PetscInt                 j, e, v, offset, *subnetvtx, *subnetedge, Nsubnet, gidx, svtx_idx, nv, net;
+  PetscInt                *sv;
   PetscBT                  btable;
   PetscPartitioner         part;
   DMNetworkComponentHeader header;
@@ -1783,6 +1913,7 @@ PetscErrorCode DMNetworkDistribute(DM *dm, PetscInt overlap)
   }
   newDMnetwork->cloneshared->nsvtx = nv; /* num of local shared vertices */
 
+  PetscCall(DMNetworkDistributeCoordinates(*dm, pointsf, newDM));
   newDM->setupcalled                          = (*dm)->setupcalled;
   newDMnetwork->cloneshared->distributecalled = PETSC_TRUE;
 

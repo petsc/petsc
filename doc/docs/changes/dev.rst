@@ -71,6 +71,8 @@ Changes: Development
 .. rubric:: FE/FV:
 
 .. rubric:: DMNetwork:
+  - Add DMNetworkGetNumVertices to retrieve the local and global number of vertices in DMNetwork 
+  - Add DMNetworkGetNumEdges to retrieve the local and global number of edges in DMNetwork 
 
 .. rubric:: DMStag:
 
