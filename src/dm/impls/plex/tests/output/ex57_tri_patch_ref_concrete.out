@@ -32,6 +32,17 @@ Offsets
  1  |             -1              0             -1             -1             -1             -1             -1             -1 |
  0  |              0             -1             -1             -1             -1             -1             -1             -1 |
 Filter transformation Transform
+DM Object: Ephemeral Mesh (eph_) 1 MPI process
+  type: plex
+Ephemeral Mesh in 2 dimensions:
+  Number of 0-cells per rank: 15
+  Number of 1-cells per rank: 30
+  Number of 2-cells per rank: 16
+Labels:
+  celltype: 3 strata with value/size (0 (9), 3 (8), 1 (16))
+  depth: 3 strata with value/size (0 (9), 1 (16), 2 (8))
+  marker: 1 strata with value/size (1 (17))
+  Face Sets: 1 strata with value/size (1 (12))
 DM Object: Concrete Mesh (ref_) 1 MPI process
   type: plex
 Concrete Mesh in 2 dimensions:
