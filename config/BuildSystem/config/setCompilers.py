@@ -20,9 +20,9 @@ except NameError:
 def _picTestIncludes(export=''):
   return '\n'.join(['#include <stdio.h>',
                     'int (*fprintf_ptr)(FILE*,const char*,...) = fprintf;',
-                    'void '+export+' foo(void){',
+                    'int '+export+' foo(void){',
                     '  fprintf_ptr(stdout,"hello");',
-                    '  return;',
+                    '  return 0;',
                     '}',
                     'void bar(void){foo();}\n'])
 
@@ -1891,7 +1891,7 @@ class Configure(config.base.Configure):
 
   def containsInvalidFlag(self, output):
     '''If the output contains evidence that an invalid flag was used, return True'''
-    substrings = ('unrecognized command line option','unrecognised command line option',
+    substrings = ('unknown argument', 'ignoring unsupported linker flag', 'unrecognized command line option','unrecognised command line option',
                   'unrecognized option','unrecognised option','not recognized',
                   'not recognised','unknown option','unknown warning option',
                   'unknown flag','unknown switch','ignoring option','ignored','argument unused',
@@ -2110,16 +2110,16 @@ class Configure(config.base.Configure):
       envRanlib = self.argDB['RANLIB']
     if defaultAr and defaultRanlib:
       yield(defaultAr,self.getArchiverFlags(defaultAr),defaultRanlib)
-      raise RuntimeError('The archiver set --with-ar="'+defaultAr+'" is incompatible with the ranlib set --with-ranlib="'+defaultRanlib+'".')
+      raise RuntimeError('The archiver set --with-ar="'+defaultAr+'" is broken or incompatible with the ranlib set --with-ranlib="'+defaultRanlib+'".')
     if defaultAr and envRanlib:
       yield(defaultAr,self.getArchiverFlags(defaultAr),envRanlib)
-      raise RuntimeError('The archiver set --with-ar="'+defaultAr+'" is incompatible with the ranlib set (perhaps in your environment) -RANLIB="'+envRanlib+'".')
+      raise RuntimeError('The archiver set --with-ar="'+defaultAr+'" is broken or incompatible with the ranlib set (perhaps in your environment) -RANLIB="'+envRanlib+'".')
     if envAr and defaultRanlib:
       yield(envAr,self.getArchiverFlags(envAr),defaultRanlib)
-      raise RuntimeError('The archiver set --AR="'+envAr+'" is incompatible with the ranlib set --with-ranlib="'+defaultRanlib+'".')
+      raise RuntimeError('The archiver set --AR="'+envAr+'" is broken or incompatible with the ranlib set --with-ranlib="'+defaultRanlib+'".')
     if envAr and envRanlib:
       yield(envAr,self.getArchiverFlags(envAr),envRanlib)
-      raise RuntimeError('The archiver set --AR="'+envAr+'" is incompatible with the ranlib set (perhaps in your environment) -RANLIB="'+envRanlib+'".')
+      raise RuntimeError('The archiver set --AR="'+envAr+'" is broken or incompatible with the ranlib set (perhaps in your environment) -RANLIB="'+envRanlib+'".')
     if defaultAr:
       yield (defaultAr,self.getArchiverFlags(defaultAr),'ranlib')
       yield (defaultAr,self.getArchiverFlags(defaultAr),'true')
@@ -2203,12 +2203,15 @@ class Configure(config.base.Configure):
           else:
             os.remove(arcWindows)
             break
-    else:
-      if os.path.isfile(objName):
-        os.remove(objName)
-      self.LIBS = oldLibs
-      self.popLanguage()
-      raise RuntimeError('Could not find a suitable archiver.  Use --with-ar to specify an archiver.')
+      else:
+        if os.path.isfile(objName):
+          os.remove(objName)
+        self.LIBS = oldLibs
+        self.popLanguage()
+        if 'with-ar' in self.argDB:
+          raise RuntimeError('Archiver set with --with-ar='+self.argDB['with-ar']+' does not exist')
+        else:
+          raise RuntimeError('Could not find a suitable archiver.  Use --with-ar to specify an archiver.')
     self.AR_FLAGS      = arflags
     self.AR_LIB_SUFFIX = arext
     self.framework.addMakeMacro('AR_FLAGS', self.AR_FLAGS)

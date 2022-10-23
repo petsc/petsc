@@ -337,7 +337,11 @@ PetscErrorCode PetscAttachDebugger(void)
             PetscCall(PetscGetFullPath(program, fullprogram, sizeof(fullprogram)));
             PetscCall(PetscSNPrintf(command, sizeof(command), "osascript -e 'tell app \"Terminal\" to do script \"%s  %s %s \"'\n", PetscDebugger, fullprogram, pid));
           }
+  #if defined(PETSC_HAVE_POPEN)
           PetscCall(PetscPOpen(PETSC_COMM_SELF, NULL, command, "r", NULL));
+  #else
+          printf("-debug_terminal Terminal is not available on this system since PETSC_HAVE_POPEN is not defined in this configuration\n");
+  #endif
           exit(0);
         }
 

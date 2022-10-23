@@ -445,6 +445,7 @@ PetscErrorCode PetscDetermineInitialFPTrap(void)
    granularity, feenableexcept()), xmmintrin.h offers _MM_SET_EXCEPTION_MASK().
 */
   #include <fenv.h>
+  #if defined(PETSC_HAVE_FE_VALUES)
 typedef struct {
   int         code;
   const char *name;
@@ -457,12 +458,15 @@ static const FPNode error_codes[] = {
   {FE_UNDERFLOW, "floating point underflow"                       },
   {0,            "unknown error"                                  }
 };
+  #endif
 
 void PetscDefaultFPTrap(int sig)
 {
+  #if defined(PETSC_HAVE_FE_VALUES)
   const FPNode *node;
   int           code;
   PetscBool     matched = PETSC_FALSE;
+  #endif
 
   PetscFunctionBegin;
   /* Note: While it is possible for the exception state to be preserved by the
@@ -470,6 +474,7 @@ void PetscDefaultFPTrap(int sig)
    * useless.  But on a system where the flags can be preserved, it would provide
    * more detail.
    */
+  #if defined(PETSC_HAVE_FE_VALUES)
   code = fetestexcept(FE_ALL_EXCEPT);
   for (node = &error_codes[0]; node->code; node++) {
     if (code & node->code) {
@@ -485,6 +490,9 @@ void PetscDefaultFPTrap(int sig)
     (*PetscErrorPrintf)("where the result is a bitwise OR of the following flags:\n");
     (*PetscErrorPrintf)("FE_INVALID=0x%x FE_DIVBYZERO=0x%x FE_OVERFLOW=0x%x FE_UNDERFLOW=0x%x FE_INEXACT=0x%x\n", FE_INVALID, FE_DIVBYZERO, FE_OVERFLOW, FE_UNDERFLOW, FE_INEXACT);
   }
+  #else
+  (*PetscErrorPrintf)("*** unknown floating point error occurred ***\n");
+  #endif
 
   (*PetscErrorPrintf)("Try option -start_in_debugger\n");
   #if PetscDefined(USE_DEBUG)
@@ -505,7 +513,7 @@ PetscErrorCode PetscSetFPTrap(PetscFPTrap flag)
   if (flag == PETSC_FP_TRAP_ON) {
     /* Clear any flags that are currently set so that activating trapping will not immediately call the signal handler. */
     PetscCheck(!feclearexcept(FE_ALL_EXCEPT), PETSC_COMM_SELF, PETSC_ERR_LIB, "Cannot clear floating point exception flags");
-  #if defined(FE_NOMASK_ENV)
+  #if defined(FE_NOMASK_ENV) && defined(PETSC_HAVE_FE_VALUES)
     /* Could use fesetenv(FE_NOMASK_ENV), but that causes spurious exceptions (like gettimeofday() -> PetscLogDouble). */
     /* PetscCheck(feenableexcept(FE_DIVBYZERO | FE_INVALID | FE_OVERFLOW | FE_UNDERFLOW) != -1,PETSC_COMM_SELF,PETSC_ERR_LIB,"Cannot activate floating point exceptions"); */
     /* Doesn't work on AArch64 targets. There's a known hardware limitation. Need to detect hardware at configure time? */

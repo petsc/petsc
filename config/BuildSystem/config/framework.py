@@ -567,6 +567,9 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       lines = [s for s in lines if s.find('clang-offload-bundler: error:') < 0]
       lines = [s for s in lines if s.find('Compilation from IR - skipping loading of FCL') < 0]
       lines = [s for s in lines if s.find('Build succeeded') < 0]
+      # emcc complaints incompatable linking
+      lines = [s for s in lines if s.find('wasm-ld: warning: function signature mismatch') < 0]
+      lines = [s for s in lines if s.find('>>> defined as') < 0]
 
       lines = [s for s in lines if len(s)]
       # a line with a single : can be created on macOS when the linker jumbles the output from warning messages with was "built for newer" warnings

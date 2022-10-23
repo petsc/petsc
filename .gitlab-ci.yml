@@ -437,6 +437,17 @@ linux-gcc-complex-opt-32bit:
   variables:
     TEST_ARCH: arch-ci-linux-gcc-complex-opt-32bit
 
+linux-emcc:
+  extends:
+    - .stage-2
+    - .linux_test
+  tags:
+    - gce-stage2
+  variables:
+    TEST_ARCH: arch-ci-linux-emcc
+    INIT_SCRIPT: /nfs/gce/projects/petsc/soft/u22.04/emsdk/emsdk_env.sh
+    DISABLE_TESTS: 1
+
 #
 # The following tests run as part of stage-3.
 #

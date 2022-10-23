@@ -54,4 +54,16 @@ ifneq (,$(findstring -TP,$(PCC_FLAGS)))
 	${CLINKER} $(EXEFLAGS) -o $@ $@.o  $(PETSC_LIB)
 endif
 
+#  makes an Emscripten https://emscripten.org/ executable from a PETSc C main program
+#  See config/examples/arch-ci-linux-emcc.py for an example of building the PETSc libraries with Emscripten
+#  node drops a variety of silly crums that are not all trivially blockable
+#
+ifneq (,$(findstring emcc,$(CC)))
+% : %.c
+	${PETSC_COMPILE_SINGLE} `pwd`/$<
+	${CLINKER} -s MAIN_MODULE -s ASSERTIONS=2 -s SAFE_HEAP=1 -s STACK_OVERFLOW_CHECK=1 -s ALLOW_MEMORY_GROWTH $(EXEFLAGS) -o $@.js $@.o $(PETSC_LIB)
+	-@printf '#!/usr/bin/env sh\nnode --redirect-warnings=/dev/null $@.js $$* | grep -v "Heap resize call from" ' > $@
+	-@chmod u+x $@
+endif
+
 include ${PETSC_DIR}/lib/petsc/conf/test.common
