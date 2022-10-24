@@ -557,7 +557,7 @@ PetscErrorCode MatPartitioningChacoGetEigenTol_Chaco(MatPartitioning part, Petsc
 
    Level: advanced
 
-.seealso: `MatPartitioningType`, `MatPartitioning`, `MATPARTITIONINGCHACO`,`MatPartitioningChacoSetEigenSolver()`, `MatPartitioningChacoGetEigenTol()`
+.seealso: `MatPartitioningType`, `MatPartitioning`, `MATPARTITIONINGCHACO`, `MatPartitioningChacoSetEigenSolver()`, `MatPartitioningChacoGetEigenTol()`
 @*/
 PetscErrorCode MatPartitioningChacoSetEigenNumber(MatPartitioning part, PetscInt num)
 {

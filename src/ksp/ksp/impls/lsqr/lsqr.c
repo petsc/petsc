@@ -495,7 +495,7 @@ PetscErrorCode KSPLSQRMonitorResidualDrawLG(KSP ksp, PetscInt n, PetscReal rnorm
 
   Level: intermediate
 
-.seealso: [](chapter_ksp), `KSPLSQR`, `KSPMonitorSet()`, `KSPLSQRMonitorResidual()`,  `KSPLSQRMonitorResidualDrawLG()`
+.seealso: [](chapter_ksp), `KSPLSQR`, `KSPMonitorSet()`, `KSPLSQRMonitorResidual()`, `KSPLSQRMonitorResidualDrawLG()`
 @*/
 PetscErrorCode KSPLSQRMonitorResidualDrawLGCreate(PetscViewer viewer, PetscViewerFormat format, void *ctx, PetscViewerAndFormat **vf)
 {

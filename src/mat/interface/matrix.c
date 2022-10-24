@@ -5951,13 +5951,13 @@ PetscErrorCode MatSetOption(Mat mat, MatOption op, PetscBool flg)
     Notes:
     Can only be called after `MatSetSizes()` and `MatSetType()` have been set.
 
-    Certain option values may be unknown, for those use the routines `MatIsSymmetric()`, `MatIsHermitian()`,  `MatIsStructurallySymmetric()`, or
-    `MatIsSymmetricKnown()`, `MatIsHermitianKnown()`,  `MatIsStructurallySymmetricKnown()`
+    Certain option values may be unknown, for those use the routines `MatIsSymmetric()`, `MatIsHermitian()`, `MatIsStructurallySymmetric()`, or
+    `MatIsSymmetricKnown()`, `MatIsHermitianKnown()`, `MatIsStructurallySymmetricKnown()`
 
    Level: intermediate
 
-.seealso: `MatOption`, `MatSetOption()`, `MatIsSymmetric()`, `MatIsHermitian()`,  `MatIsStructurallySymmetric()`,
-    `MatIsSymmetricKnown()`, `MatIsHermitianKnown()`,  `MatIsStructurallySymmetricKnown()`
+.seealso: `MatOption`, `MatSetOption()`, `MatIsSymmetric()`, `MatIsHermitian()`, `MatIsStructurallySymmetric()`,
+    `MatIsSymmetricKnown()`, `MatIsHermitianKnown()`, `MatIsStructurallySymmetricKnown()`
 @*/
 PetscErrorCode MatGetOption(Mat mat, MatOption op, PetscBool *flg)
 {

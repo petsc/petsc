@@ -486,7 +486,7 @@ void PetscStrcmpNoError(const char a[], const char b[], PetscBool *flg)
    Fortran Note:
     Not for use in Fortran
 
-.seealso: `PetscStrgrt()`, `PetscStrncmp()`, `PetscStrcasecmp()`, `PetscStrrchr()`,`PetscStrcmp()`,`PetscStrstr()`,
+.seealso: `PetscStrgrt()`, `PetscStrncmp()`, `PetscStrcasecmp()`, `PetscStrrchr()`, `PetscStrcmp()`, `PetscStrstr()`,
           `PetscTokenCreate()`, `PetscStrToArray()`, `PetscStrInList()`
 @*/
 const char *PetscBasename(const char a[])
