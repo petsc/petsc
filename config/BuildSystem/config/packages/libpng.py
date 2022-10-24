@@ -26,6 +26,11 @@ class Configure(config.package.GNUPackage):
     args = config.package.GNUPackage.formGNUConfigureArgs(self)
     args.append('CPPFLAGS="'+self.headers.toStringNoDupes(self.dinclude)+'"')
     args.append('LIBS="'+self.libraries.toStringNoDupes(self.dlib)+'"')
+    # Switch -g3 to -g - as libpng build can break with -g3 ref - https://github.com/glennrp/libpng/issues/254
+    args = self.rmArgsStartsWith(args,'CFLAGS=')
+    cflags = 'CFLAGS="'+self.updatePackageCFlags(self.getCompilerFlags())+'"'
+    cflags = cflags.replace('-g3','-g')
+    args.append(cflags)
     return args
 
   def configureLibrary(self):
