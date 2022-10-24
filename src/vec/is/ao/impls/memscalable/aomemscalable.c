@@ -452,7 +452,7 @@ PETSC_EXTERN PetscErrorCode AOCreate_MemoryScalable(AO ao)
    Collective
 
    Input Parameters:
-+  comm - MPI communicator that is to share AO
++  comm - MPI communicator that is to share the `AO`
 .  napp - size of integer arrays
 .  myapp - integer array that defines an ordering
 -  mypetsc - integer array that defines another ordering (may be NULL to
@@ -463,12 +463,12 @@ PETSC_EXTERN PetscErrorCode AOCreate_MemoryScalable(AO ao)
 
    Level: beginner
 
-    Notes:
+    Note:
     The arrays myapp and mypetsc must contain the all the integers 0 to napp-1 with no duplicates; that is there cannot be any "holes"
-           in the indices. Use AOCreateMapping() or AOCreateMappingIS() if you wish to have "holes" in the indices.
-           Comparing with AOCreateBasic(), this routine trades memory with message communication.
+    in the indices. Use `AOCreateMapping()` or `AOCreateMappingIS()` if you wish to have "holes" in the indices.
+    Comparing with `AOCreateBasic()`, this routine trades memory with message communication.
 
-.seealso: `AOCreateMemoryScalableIS()`, `AODestroy()`, `AOPetscToApplication()`, `AOApplicationToPetsc()`
+.seealso: [](sec_ao), [](sec_scatter), `AO`, `AOCreateMemoryScalableIS()`, `AODestroy()`, `AOPetscToApplication()`, `AOApplicationToPetsc()`
 @*/
 PetscErrorCode AOCreateMemoryScalable(MPI_Comm comm, PetscInt napp, const PetscInt myapp[], const PetscInt mypetsc[], AO *aoout)
 {
@@ -491,7 +491,7 @@ PetscErrorCode AOCreateMemoryScalable(MPI_Comm comm, PetscInt napp, const PetscI
 /*@C
    AOCreateMemoryScalableIS - Creates a memory scalable application ordering using two index sets.
 
-   Collective on IS
+   Collective on isapp
 
    Input Parameters:
 +  isapp - index set that defines an ordering
@@ -505,9 +505,11 @@ PetscErrorCode AOCreateMemoryScalable(MPI_Comm comm, PetscInt napp, const PetscI
 
     Notes:
     The index sets isapp and ispetsc must contain the all the integers 0 to napp-1 (where napp is the length of the index sets) with no duplicates;
-           that is there cannot be any "holes".
-           Comparing with AOCreateBasicIS(), this routine trades memory with message communication.
-.seealso: `AOCreateMemoryScalable()`, `AODestroy()`
+    that is there cannot be any "holes".
+
+    Comparing with `AOCreateBasicIS()`, this routine trades memory with message communication.
+
+.seealso: [](sec_ao), [](sec_scatter), `AO`, `AOCreateBasicIS()`, `AOCreateMemoryScalable()`, `AODestroy()`
 @*/
 PetscErrorCode AOCreateMemoryScalableIS(IS isapp, IS ispetsc, AO *aoout)
 {

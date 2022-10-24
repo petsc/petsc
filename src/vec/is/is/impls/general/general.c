@@ -472,8 +472,7 @@ PetscErrorCode ISSetUp_General(IS is)
 }
 
 /*@
-   ISCreateGeneral - Creates a data structure for an index set
-   containing a list of integers.
+   ISCreateGeneral - Creates a data structure for an index set containing a list of integers.
 
    Collective
 
@@ -481,20 +480,23 @@ PetscErrorCode ISSetUp_General(IS is)
 +  comm - the MPI communicator
 .  n - the length of the index set
 .  idx - the list of integers
--  mode - PETSC_COPY_VALUES, PETSC_OWN_POINTER, or PETSC_USE_POINTER; see PetscCopyMode for meaning of this flag.
+-  mode - `PETSC_COPY_VALUES`, `PETSC_OWN_POINTER`, or `PETSC_USE_POINTER`; see `PetscCopyMode` for meaning of this flag.
 
    Output Parameter:
 .  is - the new index set
 
+   Level: beginner
+
    Notes:
-   When the communicator is not MPI_COMM_SELF, the operations on IS are NOT
-   conceptually the same as MPI_Group operations. The IS are then
+   When the communicator is not `MPI_COMM_SELF`, the operations on IS are NOT
+   conceptually the same as `MPI_Group` operations. The `IS` are then
    distributed sets of indices and thus certain operations on them are
    collective.
 
-   Level: beginner
+   Use `ISGeneralSetIndices()` to provide indices to an already existing `IS` of `ISType` `ISGENERAL`
 
-.seealso: `ISCreateStride()`, `ISCreateBlock()`, `ISAllGather()`, `PETSC_COPY_VALUES`, `PETSC_OWN_POINTER`, `PETSC_USE_POINTER`, `PetscCopyMode`
+.seealso: [](sec_scatter), `IS`, `ISGENERAL`, `ISCreateStride()`, `ISCreateBlock()`, `ISAllGather()`, `PETSC_COPY_VALUES`, `PETSC_OWN_POINTER`,
+          `PETSC_USE_POINTER`, `PetscCopyMode`, `ISGeneralSetIndicesFromMask()`
 @*/
 PetscErrorCode ISCreateGeneral(MPI_Comm comm, PetscInt n, const PetscInt idx[], PetscCopyMode mode, IS *is)
 {
@@ -506,19 +508,22 @@ PetscErrorCode ISCreateGeneral(MPI_Comm comm, PetscInt n, const PetscInt idx[], 
 }
 
 /*@
-   ISGeneralSetIndices - Sets the indices for an ISGENERAL index set
+   ISGeneralSetIndices - Sets the indices for an `ISGENERAL` index set
 
-   Collective on IS
+   Logically Collective on is
 
    Input Parameters:
 +  is - the index set
 .  n - the length of the index set
 .  idx - the list of integers
--  mode - see PetscCopyMode for meaning of this flag.
+-  mode - see `PetscCopyMode` for meaning of this flag.
 
    Level: beginner
 
-.seealso: `ISCreateGeneral()`, `ISGeneralSetIndicesFromMask()`, `ISBlockSetIndices()`, `ISGENERAL`, `PetscCopyMode`
+   Note:
+   Use `ISCreateGeneral()` to create the `IS` and set its indices in a single function call
+
+.seealso: [](sec_scatter), `IS`, `ISBLOCK`, `ISCreateGeneral()`, `ISGeneralSetIndicesFromMask()`, `ISBlockSetIndices()`, `ISGENERAL`, `PetscCopyMode`
 @*/
 PetscErrorCode ISGeneralSetIndices(IS is, PetscInt n, const PetscInt idx[], PetscCopyMode mode)
 {
@@ -562,29 +567,33 @@ PetscErrorCode ISGeneralSetIndices_General(IS is, PetscInt n, const PetscInt idx
 }
 
 /*@
-   ISGeneralSetIndicesFromMask - Sets the indices for an ISGENERAL index set using a boolean mask
+   ISGeneralSetIndicesFromMask - Sets the indices for an `ISGENERAL` index set using a boolean mask
 
-   Collective on IS
+   Collective on is
 
    Input Parameters:
 +  is - the index set
 .  rstart - the range start index (inclusive)
 .  rend - the range end index (exclusive)
--  mask - the boolean mask array of length rend-rstart, indices will be set for each PETSC_TRUE value in the array
-
-   Notes:
-   The mask array may be freed by the user after this call.
-
-   Example:
-$  PetscBool mask[] = {PETSC_FALSE, PETSC_TRUE, PETSC_FALSE, PETSC_FALSE, PETSC_TRUE};
-$  ISGeneralSetIndicesFromMask(is,10,15,mask);
-   will feed the IS with indices
-$  {11, 14}
-   locally.
+-  mask - the boolean mask array of length rend-rstart, indices will be set for each `PETSC_TRUE` value in the array
 
    Level: beginner
 
-.seealso: `ISCreateGeneral()`, `ISGeneralSetIndices()`, `ISGENERAL`
+   Note:
+   The mask array may be freed by the user after this call.
+
+   Example:
+.vb
+   PetscBool mask[] = {PETSC_FALSE, PETSC_TRUE, PETSC_FALSE, PETSC_FALSE, PETSC_TRUE};
+   ISGeneralSetIndicesFromMask(is,10,15,mask);
+.ve
+   will feed the `IS` with indices
+.vb
+  {11, 14}
+.ve
+  locally.
+
+.seealso: [](sec_scatter), `IS`, `ISCreateGeneral()`, `ISGeneralSetIndices()`, `ISGENERAL`
 @*/
 PetscErrorCode ISGeneralSetIndicesFromMask(IS is, PetscInt rstart, PetscInt rend, const PetscBool mask[])
 {
@@ -633,9 +642,9 @@ static PetscErrorCode ISGeneralFilter_General(IS is, PetscInt start, PetscInt en
 }
 
 /*@
-   ISGeneralFilter - Remove all indices outside of [start, end)
+   ISGeneralFilter - Remove all indices outside of [start, end) from an `ISGENERAL`
 
-   Collective on IS
+   Collective on is
 
    Input Parameters:
 +  is - the index set
@@ -644,7 +653,7 @@ static PetscErrorCode ISGeneralFilter_General(IS is, PetscInt start, PetscInt en
 
    Level: beginner
 
-.seealso: `ISCreateGeneral()`, `ISGeneralSetIndices()`
+.seealso: [](sec_scatter), `IS`, `ISGENERAL`, `ISCreateGeneral()`, `ISGeneralSetIndices()`
 @*/
 PetscErrorCode ISGeneralFilter(IS is, PetscInt start, PetscInt end)
 {
