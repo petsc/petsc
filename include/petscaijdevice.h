@@ -142,7 +142,7 @@ static
    Level: advanced
 
 .seealso: `MatSetValues()`, `MatCreate()`, `MatCreateDenseCUDA()`, `MatCreateAIJCUSPARSE()`, `MatKokkosGetDeviceMatWrite()`,
-          `MatCUSPARSEGetDeviceMatWrite()`,  `MatSetValuesCOO()`
+          `MatCUSPARSEGetDeviceMatWrite()`, `MatSetValuesCOO()`
 @*/
   PetscErrorCode
   MatSetValuesDevice(PetscSplitCSRDataStructure d_mat, PetscInt m, const PetscInt im[], PetscInt n, const PetscInt in[], const PetscScalar v[], InsertMode is)

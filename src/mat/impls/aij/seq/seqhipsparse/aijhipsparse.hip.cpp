@@ -4086,7 +4086,7 @@ PetscErrorCode MatSetValuesCOO_SeqAIJHIPSPARSE(Mat A, const PetscScalar v[], Ins
     Notes:
       When compressed is true, the CSR structure does not contain empty rows
 
-.seealso: `MatSeqAIJHIPSPARSERestoreIJ()`,`MatSeqAIJHIPSPARSEGetArrayRead()`
+.seealso: `MatSeqAIJHIPSPARSERestoreIJ()`, `MatSeqAIJHIPSPARSEGetArrayRead()`
 @*/
 PetscErrorCode MatSeqAIJHIPSPARSEGetIJ(Mat A, PetscBool compressed, const int **i, const int **j)
 {

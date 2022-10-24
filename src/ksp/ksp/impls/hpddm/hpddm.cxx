@@ -338,7 +338,7 @@ static PetscErrorCode KSPSolve_HPDDM(KSP ksp)
 
    Level: intermediate
 
-.seealso: [](chapter_ksp),  `KSPHPDDM`, `KSPCreate()`, `KSPType`, `KSPHPDDMGetDeflationMat()`
+.seealso: [](chapter_ksp), `KSPHPDDM`, `KSPCreate()`, `KSPType`, `KSPHPDDMGetDeflationMat()`
 @*/
 PetscErrorCode KSPHPDDMSetDeflationMat(KSP ksp, Mat U)
 {
@@ -362,7 +362,7 @@ PetscErrorCode KSPHPDDMSetDeflationMat(KSP ksp, Mat U)
 
    Level: intermediate
 
-.seealso: [](chapter_ksp),  `KSPHPDDM`, `KSPCreate()`, `KSPType`, `KSPHPDDMSetDeflationMat()`
+.seealso: [](chapter_ksp), `KSPHPDDM`, `KSPCreate()`, `KSPType`, `KSPHPDDMSetDeflationMat()`
 @*/
 PetscErrorCode KSPHPDDMGetDeflationMat(KSP ksp, Mat *U)
 {

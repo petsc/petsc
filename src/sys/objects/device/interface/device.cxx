@@ -80,7 +80,7 @@ static sycl::Device SYCLDevice{PetscDeviceContextCreate_SYCL};
   Level: beginner
 
 .seealso: `PetscDevice`, `PetscDeviceInitType`,
-`PetscDeviceInitialize()`,`PetscDeviceInitialized()`, `PetscDeviceConfigure()`,
+`PetscDeviceInitialize()`, `PetscDeviceInitialized()`, `PetscDeviceConfigure()`,
 `PetscDeviceView()`, `PetscDeviceDestroy()`
 @*/
 PetscErrorCode PetscDeviceCreate(PetscDeviceType type, PetscInt devid, PetscDevice *device)

@@ -165,7 +165,7 @@ PetscErrorCode SNESNewtonTRDCGetPreCheck(SNES snes, PetscErrorCode (**func)(SNES
    This function is called BEFORE the function evaluation within the `SNESNEWTONTRDC` solver while the function set in
    `SNESLineSearchSetPostCheck()` is called AFTER the function evaluation.
 
-.seealso: `SNESNEWTONTRDC`, `SNESNewtonTRDCPostCheck()`, `SNESNewtonTRDCGetPostCheck()`, `SNESNewtonTRDCSetPreCheck()`,  `SNESNewtonTRDCGetPreCheck()`
+.seealso: `SNESNEWTONTRDC`, `SNESNewtonTRDCPostCheck()`, `SNESNewtonTRDCGetPostCheck()`, `SNESNewtonTRDCSetPreCheck()`, `SNESNewtonTRDCGetPreCheck()`
 @*/
 PetscErrorCode SNESNewtonTRDCSetPostCheck(SNES snes, PetscErrorCode (*func)(SNES, Vec, Vec, Vec, PetscBool *, PetscBool *, void *), void *ctx)
 {

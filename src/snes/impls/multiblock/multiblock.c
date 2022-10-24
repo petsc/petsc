@@ -799,7 +799,7 @@ PetscErrorCode SNESMultiblockSetIS(SNES snes, const char name[], IS is)
 
   Level: advanced
 
-.seealso: `SNESMULTBLOCK`, `PCCompositeSetType()`, `PC_COMPOSITE_ADDITIVE`, `PC_COMPOSITE_MULTIPLICATIVE`,`PC_COMPOSITE_SYMMETRIC_MULTIPLICATIVE`
+.seealso: `SNESMULTBLOCK`, `PCCompositeSetType()`, `PC_COMPOSITE_ADDITIVE`, `PC_COMPOSITE_MULTIPLICATIVE`, `PC_COMPOSITE_SYMMETRIC_MULTIPLICATIVE`
 @*/
 PetscErrorCode SNESMultiblockSetType(SNES snes, PCCompositeType type)
 {
@@ -869,7 +869,7 @@ PetscErrorCode SNESMultiblockGetSubSNES(SNES snes, PetscInt *n, SNES *subsnes[])
   Level: beginner
 
 .seealso: `SNESCreate()`, `SNES`, `SNESSetType()`, `SNESNEWTONLS`, `SNESNEWTONTR`, `SNESNRICHARDSON`, `SNESMultiblockSetType()`,
-          `PC_COMPOSITE_ADDITIVE`, `PC_COMPOSITE_MULTIPLICATIVE`,`PC_COMPOSITE_SYMMETRIC_MULTIPLICATIVE`
+          `PC_COMPOSITE_ADDITIVE`, `PC_COMPOSITE_MULTIPLICATIVE`, `PC_COMPOSITE_SYMMETRIC_MULTIPLICATIVE`
 M*/
 PETSC_EXTERN PetscErrorCode SNESCreate_Multiblock(SNES snes)
 {

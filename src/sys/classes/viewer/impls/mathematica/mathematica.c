@@ -412,7 +412,7 @@ PetscErrorCode PetscViewerMathematicaSkipPackets(PetscViewer viewer, int type)
 
   Level: intermediate
 
-.seealso:`PETSCVIEWERMATHEMATICA`, `PetscViewerMathematicaSetName()`, `PetscViewerMathematicaClearName()`
+.seealso: `PETSCVIEWERMATHEMATICA`, `PetscViewerMathematicaSetName()`, `PetscViewerMathematicaClearName()`
 @*/
 PetscErrorCode PetscViewerMathematicaGetName(PetscViewer viewer, const char **name)
 {
@@ -434,7 +434,7 @@ PetscErrorCode PetscViewerMathematicaGetName(PetscViewer viewer, const char **na
 
   Level: intermediate
 
-.seealso:`PETSCVIEWERMATHEMATICA`, `PetscViewerMathematicaSetName()`, `PetscViewerMathematicaClearName()`
+.seealso: `PETSCVIEWERMATHEMATICA`, `PetscViewerMathematicaSetName()`, `PetscViewerMathematicaClearName()`
 @*/
 PetscErrorCode PetscViewerMathematicaSetName(PetscViewer viewer, const char name[])
 {
@@ -455,7 +455,7 @@ PetscErrorCode PetscViewerMathematicaSetName(PetscViewer viewer, const char name
 
   Level: intermediate
 
-.seealso:`PETSCVIEWERMATHEMATICA`,`PetscViewerMathematicaGetName()`, `PetscViewerMathematicaSetName()`
+.seealso: `PETSCVIEWERMATHEMATICA`, `PetscViewerMathematicaGetName()`, `PetscViewerMathematicaSetName()`
 @*/
 PetscErrorCode PetscViewerMathematicaClearName(PetscViewer viewer)
 {

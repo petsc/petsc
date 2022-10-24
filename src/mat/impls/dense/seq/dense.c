@@ -3482,7 +3482,7 @@ PetscErrorCode MatDenseGetColumnVec(Mat A, PetscInt col, Vec *v)
 
    Level: intermediate
 
-.seealso: `MATDENSE`, `MATDENSECUDA`, `MATDENSEHIP`, `MatDenseGetColumnVec()`, `MatDenseGetColumnVecRead()`, `MatDenseGetColumnVecWrite()`, `MatDenseRestoreColumnVecRead()`,`MatDenseRestoreColumnVecWrite()`
+.seealso: `MATDENSE`, `MATDENSECUDA`, `MATDENSEHIP`, `MatDenseGetColumnVec()`, `MatDenseGetColumnVecRead()`, `MatDenseGetColumnVecWrite()`, `MatDenseRestoreColumnVecRead()`, `MatDenseRestoreColumnVecWrite()`
 @*/
 PetscErrorCode MatDenseRestoreColumnVec(Mat A, PetscInt col, Vec *v)
 {
@@ -3604,7 +3604,7 @@ PetscErrorCode MatDenseGetColumnVecWrite(Mat A, PetscInt col, Vec *v)
 
    Level: intermediate
 
-.seealso: `MATDENSE`, `MATDENSECUDA`, `MATDENSEHIP`, `MatDenseGetColumnVec()`,`MatDenseGetColumnVecRead()`, `MatDenseGetColumnVecWrite()`, `MatDenseRestoreColumnVec()`, `MatDenseRestoreColumnVecRead()`
+.seealso: `MATDENSE`, `MATDENSECUDA`, `MATDENSEHIP`, `MatDenseGetColumnVec()`, `MatDenseGetColumnVecRead()`, `MatDenseGetColumnVecWrite()`, `MatDenseRestoreColumnVec()`, `MatDenseRestoreColumnVecRead()`
 @*/
 PetscErrorCode MatDenseRestoreColumnVecWrite(Mat A, PetscInt col, Vec *v)
 {

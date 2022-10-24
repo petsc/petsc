@@ -403,7 +403,7 @@ PetscErrorCode PetscError(MPI_Comm comm, int line, const char *func, const char 
     Input Parameters:
 +   N - number of integers in array
 .   idx - array of integers
--   viewer - location to print array,  `PETSC_VIEWER_STDOUT_WORLD`, `PETSC_VIEWER_STDOUT_SELF` or 0
+-   viewer - location to print array, `PETSC_VIEWER_STDOUT_WORLD`, `PETSC_VIEWER_STDOUT_SELF` or 0
 
   Level: intermediate
 
@@ -500,7 +500,7 @@ PetscErrorCode PetscIntView(PetscInt N, const PetscInt idx[], PetscViewer viewer
     Input Parameters:
 +   N - number of `PetscReal` in array
 .   idx - array of `PetscReal`
--   viewer - location to print array,  `PETSC_VIEWER_STDOUT_WORLD`, `PETSC_VIEWER_STDOUT_SELF` or 0
+-   viewer - location to print array, `PETSC_VIEWER_STDOUT_WORLD`, `PETSC_VIEWER_STDOUT_SELF` or 0
 
   Level: intermediate
 
@@ -605,7 +605,7 @@ PetscErrorCode PetscRealView(PetscInt N, const PetscReal idx[], PetscViewer view
     Input Parameters:
 +   N - number of scalars in array
 .   idx - array of scalars
--   viewer - location to print array,  `PETSC_VIEWER_STDOUT_WORLD`, `PETSC_VIEWER_STDOUT_SELF` or 0
+-   viewer - location to print array, `PETSC_VIEWER_STDOUT_WORLD`, `PETSC_VIEWER_STDOUT_SELF` or 0
 
   Level: intermediate
 

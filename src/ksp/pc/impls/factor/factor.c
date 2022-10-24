@@ -133,7 +133,7 @@ PetscErrorCode PCFactorSetZeroPivot(PC pc, PetscReal zero)
 
    Input Parameters:
 +  pc - the preconditioner context
--  shifttype - type of shift; one of `MAT_SHIFT_NONE`, `MAT_SHIFT_NONZERO`,  `MAT_SHIFT_POSITIVE_DEFINITE`, `MAT_SHIFT_INBLOCKS`
+-  shifttype - type of shift; one of `MAT_SHIFT_NONE`, `MAT_SHIFT_NONZERO`, `MAT_SHIFT_POSITIVE_DEFINITE`, `MAT_SHIFT_INBLOCKS`
 
    Options Database Key:
 .  -pc_factor_shift_type <shifttype> - Sets shift type; use '-help' for a list of available types
@@ -266,7 +266,7 @@ PetscErrorCode PCFactorGetShiftAmount(PC pc, PetscReal *shift)
 .  pc - the preconditioner context
 
    Output Parameter:
-.  type - one of `MAT_SHIFT_NONE`, `MAT_SHIFT_NONZERO`,  `MAT_SHIFT_POSITIVE_DEFINITE`, or `MAT_SHIFT_INBLOCKS`
+.  type - one of `MAT_SHIFT_NONE`, `MAT_SHIFT_NONZERO`, `MAT_SHIFT_POSITIVE_DEFINITE`, or `MAT_SHIFT_INBLOCKS`
 
    Level: intermediate
 
@@ -446,7 +446,7 @@ PetscErrorCode PCFactorSetMatSolverType(PC pc, MatSolverType stype)
 .  pc - the preconditioner context
 
    Output Parameter:
-.   stype - for example,  `MATSOLVERSUPERLU`, `MATSOLVERSUPERLU_DIST`, `MATSOLVERMUMPS`
+.   stype - for example, `MATSOLVERSUPERLU`, `MATSOLVERSUPERLU_DIST`, `MATSOLVERMUMPS`
 
    Level: intermediate
 

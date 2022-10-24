@@ -194,7 +194,7 @@ typedef struct {
       DMDAVecRestoreArray(dac,vcoors,&coors);
 .ve
 
-.seealso: `DMDACoor2d`, `DMDAVecRestoreArray()`, `DMDAVecGetArray()`,`DMGetCoordinateDM()`, `DMGetCoordinates()`
+.seealso: `DMDACoor2d`, `DMDAVecRestoreArray()`, `DMDAVecGetArray()`, `DMGetCoordinateDM()`, `DMGetCoordinates()`
 M*/
 typedef struct {
   PetscScalar x, y, z;

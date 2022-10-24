@@ -338,7 +338,7 @@ PETSC_EXTERN const char *const PetscDeviceContextJoinModes[];
   Level: beginner
 
 .seealso: `PetscDevice`, `PetscDeviceContextCreate()`, `PetscDeviceContextSetDevice()`,
-`PetscDeviceContextDestroy()`,`PetscDeviceContextFork()`, `PetscDeviceContextJoin()`
+`PetscDeviceContextDestroy()`, `PetscDeviceContextFork()`, `PetscDeviceContextJoin()`
 S*/
 typedef struct _p_PetscDeviceContext *PetscDeviceContext;
 
