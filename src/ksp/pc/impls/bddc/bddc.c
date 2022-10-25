@@ -1576,9 +1576,7 @@ PetscErrorCode PCSetUp_BDDC(PC pc)
   if (!pcbddc->graphanalyzed) {
     PetscCall(PCBDDCAnalyzeInterface(pc));
     computeconstraintsmatrix = PETSC_TRUE;
-    if (pcbddc->adaptive_selection && !pcbddc->use_deluxe_scaling && !pcbddc->mat_graph->twodim) {
-      SETERRQ(PetscObjectComm((PetscObject)pc), PETSC_ERR_SUP, "Cannot compute the adaptive primal space for a problem with 3D edges without deluxe scaling");
-    }
+    PetscCheck(!(pcbddc->adaptive_selection && !pcbddc->use_deluxe_scaling && !pcbddc->mat_graph->twodim), PetscObjectComm((PetscObject)pc), PETSC_ERR_SUP, "Cannot compute the adaptive primal space for a problem with 3D edges without deluxe scaling");
     if (pcbddc->compute_nonetflux) {
       MatNullSpace nnfnnsp;
 
@@ -2727,9 +2725,8 @@ PetscErrorCode PCBDDCCreateFETIDPOperators(PC pc, PetscBool fully_redundant, con
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
-  if (pc->setupcalled) {
-    PetscUseMethod(pc, "PCBDDCCreateFETIDPOperators_C", (PC, PetscBool, const char *, Mat *, PC *), (pc, fully_redundant, prefix, fetidp_mat, fetidp_pc));
-  } else SETERRQ(PetscObjectComm((PetscObject)pc), PETSC_ERR_SUP, "You must call PCSetup_BDDC() first");
+  PetscCheck(pc->setupcalled, PetscObjectComm((PetscObject)pc), PETSC_ERR_SUP, "You must call PCSetup_BDDC() first");
+  PetscUseMethod(pc, "PCBDDCCreateFETIDPOperators_C", (PC, PetscBool, const char *, Mat *, PC *), (pc, fully_redundant, prefix, fetidp_mat, fetidp_pc));
   PetscFunctionReturn(0);
 }
 

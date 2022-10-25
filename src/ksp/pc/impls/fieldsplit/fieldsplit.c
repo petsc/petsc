@@ -536,15 +536,14 @@ static PetscErrorCode PCFieldSplitSetDefaults(PC pc)
       }
     }
   } else if (jac->nsplits == 1) {
-    if (ilink->is) {
-      IS       is2;
-      PetscInt nmin, nmax;
+    IS       is2;
+    PetscInt nmin, nmax;
 
-      PetscCall(MatGetOwnershipRange(pc->mat, &nmin, &nmax));
-      PetscCall(ISComplement(ilink->is, nmin, nmax, &is2));
-      PetscCall(PCFieldSplitSetIS(pc, "1", is2));
-      PetscCall(ISDestroy(&is2));
-    } else SETERRQ(PetscObjectComm((PetscObject)pc), PETSC_ERR_SUP, "Must provide at least two sets of fields to PCFieldSplit()");
+    PetscCheck(ilink->is, PetscObjectComm((PetscObject)pc), PETSC_ERR_SUP, "Must provide at least two sets of fields to PCFieldSplit()");
+    PetscCall(MatGetOwnershipRange(pc->mat, &nmin, &nmax));
+    PetscCall(ISComplement(ilink->is, nmin, nmax, &is2));
+    PetscCall(PCFieldSplitSetIS(pc, "1", is2));
+    PetscCall(ISDestroy(&is2));
   }
 
   PetscCheck(jac->nsplits >= 2, PetscObjectComm((PetscObject)pc), PETSC_ERR_PLIB, "Unhandled case, must have at least two fields, not %" PetscInt_FMT, jac->nsplits);

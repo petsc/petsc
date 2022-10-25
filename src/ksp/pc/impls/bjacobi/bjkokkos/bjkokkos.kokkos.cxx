@@ -727,9 +727,8 @@ static PetscErrorCode PCApply_BJKOKKOS(PC pc, Vec bin, Vec xout)
   PetscFunctionBegin;
   PetscCheck(jac->vec_diag && A, PetscObjectComm((PetscObject)pc), PETSC_ERR_USER, "Not setup???? %p %p", jac->vec_diag, A);
   aijkok = static_cast<Mat_SeqAIJKokkos *>(A->spptr);
-  if (!aijkok) {
-    SETERRQ(PetscObjectComm((PetscObject)pc), PETSC_ERR_USER, "No aijkok");
-  } else {
+  PetscCheck(aijkok, PetscObjectComm((PetscObject)pc), PETSC_ERR_USER, "No aijkok");
+  {
     PetscInt           maxit = jac->ksp->max_it;
     const PetscInt     conc = Kokkos::DefaultExecutionSpace().concurrency(), openmp = !!(conc < 1000), team_size = (openmp == 0 && PCBJKOKKOS_VEC_SIZE != 1) ? PCBJKOKKOS_TEAM_SIZE : 1;
     const PetscInt     nwork = jac->nwork, nBlk = jac->nBlocks;
@@ -1106,9 +1105,8 @@ static PetscErrorCode PCSetUp_BJKOKKOS(PC pc)
   PetscCheck(A, PetscObjectComm((PetscObject)A), PETSC_ERR_USER, "No matrix - A is used above");
   PetscCall(PetscObjectTypeCompareAny((PetscObject)A, &flg, MATSEQAIJKOKKOS, MATMPIAIJKOKKOS, MATAIJKOKKOS, ""));
   PetscCheck(flg, PetscObjectComm((PetscObject)A), PETSC_ERR_ARG_WRONG, "must use '-dm_mat_type aijkokkos -dm_vec_type kokkos' for -pc_type bjkokkos");
-  if (!(aijkok = static_cast<Mat_SeqAIJKokkos *>(A->spptr))) {
-    SETERRQ(PetscObjectComm((PetscObject)A), PETSC_ERR_USER, "No aijkok");
-  } else {
+  PetscCheck((aijkok = static_cast<Mat_SeqAIJKokkos *>(A->spptr)), PetscObjectComm((PetscObject)A), PETSC_ERR_USER, "No aijkok");
+  {
     if (!jac->vec_diag) {
       Vec           *subX;
       DM             pack, *subDM;
@@ -1168,12 +1166,9 @@ static PetscErrorCode PCSetUp_BJKOKKOS(PC pc)
           jac->nwork        = 10;
         } else {
           PetscCall(PetscObjectTypeCompareAny((PetscObject)jac->ksp, &flg, KSPGMRES, ""));
-          if (flg) {
-            jac->ksp_type_idx = BATCH_KSP_GMRES_IDX;
-            jac->nwork        = 0;
-          } else {
-            SETERRQ(PetscObjectComm((PetscObject)A), PETSC_ERR_ARG_WRONG, "Unsupported batch ksp type");
-          }
+          PetscCheck(flg, PetscObjectComm((PetscObject)A), PETSC_ERR_ARG_WRONG, "Unsupported batch ksp type");
+          jac->ksp_type_idx = BATCH_KSP_GMRES_IDX;
+          jac->nwork        = 0;
         }
       }
       PetscOptionsBegin(PetscObjectComm((PetscObject)jac->ksp), ((PetscObject)jac->ksp)->prefix, "Options for Kokkos batch solver", "none");

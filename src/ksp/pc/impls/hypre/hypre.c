@@ -869,10 +869,9 @@ static PetscErrorCode PCSetFromOptions_HYPRE_BoomerAMG(PC pc, PetscOptionItems *
   twodbl[0] = twodbl[1] = 1.0;
   PetscCall(PetscOptionsRealArray("-pc_hypre_boomeramg_relax_weight_level", "Set the relaxation weight for a particular level (weight,level)", "None", twodbl, &n, &flg));
   if (flg) {
-    if (n == 2) {
-      indx = (int)PetscAbsReal(twodbl[1]);
-      PetscCallExternal(HYPRE_BoomerAMGSetLevelRelaxWt, jac->hsolver, twodbl[0], indx);
-    } else SETERRQ(PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_OUTOFRANGE, "Relax weight level: you must provide 2 values separated by a comma (and no space), you provided %" PetscInt_FMT, n);
+    PetscCheck(n == 2, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_OUTOFRANGE, "Relax weight level: you must provide 2 values separated by a comma (and no space), you provided %" PetscInt_FMT, n);
+    indx = (int)PetscAbsReal(twodbl[1]);
+    PetscCallExternal(HYPRE_BoomerAMGSetLevelRelaxWt, jac->hsolver, twodbl[0], indx);
   }
 
   /* Outer relaxation Weight */
@@ -886,10 +885,9 @@ static PetscErrorCode PCSetFromOptions_HYPRE_BoomerAMG(PC pc, PetscOptionItems *
   twodbl[0] = twodbl[1] = 1.0;
   PetscCall(PetscOptionsRealArray("-pc_hypre_boomeramg_outer_relax_weight_level", "Set the outer relaxation weight for a particular level (weight,level)", "None", twodbl, &n, &flg));
   if (flg) {
-    if (n == 2) {
-      indx = (int)PetscAbsReal(twodbl[1]);
-      PetscCallExternal(HYPRE_BoomerAMGSetLevelOuterWt, jac->hsolver, twodbl[0], indx);
-    } else SETERRQ(PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_OUTOFRANGE, "Relax weight outer level: You must provide 2 values separated by a comma (and no space), you provided %" PetscInt_FMT, n);
+    PetscCheck(n == 2, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_OUTOFRANGE, "Relax weight outer level: You must provide 2 values separated by a comma (and no space), you provided %" PetscInt_FMT, n);
+    indx = (int)PetscAbsReal(twodbl[1]);
+    PetscCallExternal(HYPRE_BoomerAMGSetLevelOuterWt, jac->hsolver, twodbl[0], indx);
   }
 
   /* the Relax Order */

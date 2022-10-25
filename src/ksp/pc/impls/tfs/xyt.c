@@ -622,76 +622,73 @@ static PetscErrorCode det_separators(xyt_ADT xyt_handle)
   xyt_handle->mvi->n_global = xyt_handle->mvi->m_global = (PetscInt)rsum[0];
 
   /* determine separator sets top down */
-  if (shared) {
-    /* solution is to do as in the symmetric shared case but then */
-    /* pick the sub-hc with the most free dofs and do a mat-vec   */
-    /* and pick up the responses on the other sub-hc from the     */
-    /* initial separator set obtained from the symm. shared case  */
-    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "shared dof separator determination not ready ... see hmt!!!");
-    /* [dead code deleted since it is unlikely to be completed] */
-  } else {
-    for (iptr = fo + n, id = PCTFS_my_id, mask = PCTFS_num_nodes >> 1, edge = level; edge > 0; edge--, mask >>= 1) {
-      /* set rsh of hc, fire, and collect lhs responses */
-      (id < mask) ? PCTFS_rvec_zero(lhs, m) : PCTFS_rvec_set(lhs, 1.0, m);
-      PCTFS_gs_gop_hc(PCTFS_gs_handle, lhs, "+\0", edge);
+  PetscCheck(!shared, PETSC_COMM_SELF, PETSC_ERR_PLIB, "shared dof separator determination not ready ... see hmt!!!");
+  /* solution is to do as in the symmetric shared case but then */
+  /* pick the sub-hc with the most free dofs and do a mat-vec   */
+  /* and pick up the responses on the other sub-hc from the     */
+  /* initial separator set obtained from the symm. shared case  */
+  /* [dead code deleted since it is unlikely to be completed] */
+  for (iptr = fo + n, id = PCTFS_my_id, mask = PCTFS_num_nodes >> 1, edge = level; edge > 0; edge--, mask >>= 1) {
+    /* set rsh of hc, fire, and collect lhs responses */
+    (id < mask) ? PCTFS_rvec_zero(lhs, m) : PCTFS_rvec_set(lhs, 1.0, m);
+    PCTFS_gs_gop_hc(PCTFS_gs_handle, lhs, "+\0", edge);
 
-      /* set lsh of hc, fire, and collect rhs responses */
-      (id < mask) ? PCTFS_rvec_set(rhs, 1.0, m) : PCTFS_rvec_zero(rhs, m);
-      PCTFS_gs_gop_hc(PCTFS_gs_handle, rhs, "+\0", edge);
+    /* set lsh of hc, fire, and collect rhs responses */
+    (id < mask) ? PCTFS_rvec_set(rhs, 1.0, m) : PCTFS_rvec_zero(rhs, m);
+    PCTFS_gs_gop_hc(PCTFS_gs_handle, rhs, "+\0", edge);
 
-      /* count number of dofs I own that have signal and not in sep set */
-      for (PCTFS_ivec_zero(sum, 4), ct = i = 0; i < n; i++) {
-        if (!used[i]) {
-          /* number of unmarked dofs on node */
-          ct++;
-          /* number of dofs to be marked on lhs hc */
-          if ((id < mask) && (lhs[i] != 0.0)) sum[0]++;
-          /* number of dofs to be marked on rhs hc */
-          if ((id >= mask) && (rhs[i] != 0.0)) sum[1]++;
-        }
+    /* count number of dofs I own that have signal and not in sep set */
+    for (PCTFS_ivec_zero(sum, 4), ct = i = 0; i < n; i++) {
+      if (!used[i]) {
+        /* number of unmarked dofs on node */
+        ct++;
+        /* number of dofs to be marked on lhs hc */
+        if ((id < mask) && (lhs[i] != 0.0)) sum[0]++;
+        /* number of dofs to be marked on rhs hc */
+        if ((id >= mask) && (rhs[i] != 0.0)) sum[1]++;
       }
-
-      /* for the non-symmetric case we need separators of width 2 */
-      /* so take both sides */
-      (id < mask) ? (sum[2] = ct) : (sum[3] = ct);
-      PCTFS_giop_hc(sum, w, 4, op, edge);
-
-      ct = 0;
-      if (id < mask) {
-        /* mark dofs I own that have signal and not in sep set */
-        for (i = 0; i < n; i++) {
-          if ((!used[i]) && (lhs[i] != 0.0)) {
-            ct++;
-            nfo++;
-            *--iptr = local2global[i];
-            used[i] = edge;
-          }
-        }
-        /* LSH hc summation of ct should be sum[0] */
-      } else {
-        /* mark dofs I own that have signal and not in sep set */
-        for (i = 0; i < n; i++) {
-          if ((!used[i]) && (rhs[i] != 0.0)) {
-            ct++;
-            nfo++;
-            *--iptr = local2global[i];
-            used[i] = edge;
-          }
-        }
-        /* RSH hc summation of ct should be sum[1] */
-      }
-
-      if (ct > 1) PCTFS_ivec_sort(iptr, ct);
-      lnsep[edge] = ct;
-      nsep[edge]  = sum[0] + sum[1];
-      dir[edge]   = BOTH;
-
-      /* LATER or we can recur on these to order seps at this level */
-      /* do we need full set of separators for this?                */
-
-      /* fold rhs hc into lower */
-      if (id >= mask) id -= mask;
     }
+
+    /* for the non-symmetric case we need separators of width 2 */
+    /* so take both sides */
+    (id < mask) ? (sum[2] = ct) : (sum[3] = ct);
+    PCTFS_giop_hc(sum, w, 4, op, edge);
+
+    ct = 0;
+    if (id < mask) {
+      /* mark dofs I own that have signal and not in sep set */
+      for (i = 0; i < n; i++) {
+        if ((!used[i]) && (lhs[i] != 0.0)) {
+          ct++;
+          nfo++;
+          *--iptr = local2global[i];
+          used[i] = edge;
+        }
+      }
+      /* LSH hc summation of ct should be sum[0] */
+    } else {
+      /* mark dofs I own that have signal and not in sep set */
+      for (i = 0; i < n; i++) {
+        if ((!used[i]) && (rhs[i] != 0.0)) {
+          ct++;
+          nfo++;
+          *--iptr = local2global[i];
+          used[i] = edge;
+        }
+      }
+      /* RSH hc summation of ct should be sum[1] */
+    }
+
+    if (ct > 1) PCTFS_ivec_sort(iptr, ct);
+    lnsep[edge] = ct;
+    nsep[edge]  = sum[0] + sum[1];
+    dir[edge]   = BOTH;
+
+    /* LATER or we can recur on these to order seps at this level */
+    /* do we need full set of separators for this?                */
+
+    /* fold rhs hc into lower */
+    if (id >= mask) id -= mask;
   }
 
   /* level 0 is on processor case - so mark the remainder */

@@ -311,10 +311,9 @@ static PetscErrorCode xxt_generate(xxt_ADT xxt_handle)
     if (col == fo[start]) {
       start++;
       idex = PCTFS_ivec_linear_search(col, a_local2global, a_n);
-      if (idex != -1) {
-        v[idex] = 1.0;
-        j++;
-      } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "NOT FOUND!");
+      PetscCheck(idex != -1, PETSC_COMM_SELF, PETSC_ERR_PLIB, "NOT FOUND!");
+      v[idex] = 1.0;
+      j++;
     } else {
       idex = PCTFS_ivec_linear_search(col, a_local2global, a_m);
       if (idex != -1) v[idex] = 1.0;

@@ -350,10 +350,9 @@ PetscErrorCode KSPSetUp(KSP ksp)
     if (kdm->ops->computerhs) PetscCallBack("KSP callback rhs", (*kdm->ops->computerhs)(ksp, ksp->vec_rhs, kdm->rhsctx));
 
     if (ksp->setupstage != KSP_SETUP_NEWRHS) {
-      if (kdm->ops->computeoperators) {
-        PetscCall(KSPGetOperators(ksp, &A, &B));
-        PetscCallBack("KSP callback operators", (*kdm->ops->computeoperators)(ksp, A, B, kdm->operatorsctx));
-      } else SETERRQ(PetscObjectComm((PetscObject)ksp), PETSC_ERR_ARG_WRONGSTATE, "You called KSPSetDM() but did not use DMKSPSetComputeOperators() or KSPSetDMActive(ksp,PETSC_FALSE);");
+      PetscCheck(kdm->ops->computeoperators, PetscObjectComm((PetscObject)ksp), PETSC_ERR_ARG_WRONGSTATE, "You called KSPSetDM() but did not use DMKSPSetComputeOperators() or KSPSetDMActive(ksp,PETSC_FALSE);");
+      PetscCall(KSPGetOperators(ksp, &A, &B));
+      PetscCallBack("KSP callback operators", (*kdm->ops->computeoperators)(ksp, A, B, kdm->operatorsctx));
     }
   }
 
@@ -980,11 +979,11 @@ static PetscErrorCode KSPSolve_Private(KSP ksp, Vec b, Vec x)
   }
   PetscCall(PetscObjectSAWsBlock((PetscObject)ksp));
   if (ksp->errorifnotconverged && ksp->reason < 0 && ((level == 1) || (ksp->reason != KSP_DIVERGED_ITS))) {
-    if (ksp->reason == KSP_DIVERGED_PC_FAILED) {
-      PCFailedReason reason;
-      PetscCall(PCGetFailedReason(ksp->pc, &reason));
-      SETERRQ(comm, PETSC_ERR_NOT_CONVERGED, "KSPSolve has not converged, reason %s PC failed due to %s", KSPConvergedReasons[ksp->reason], PCFailedReasons[reason]);
-    } else SETERRQ(comm, PETSC_ERR_NOT_CONVERGED, "KSPSolve has not converged, reason %s", KSPConvergedReasons[ksp->reason]);
+    PCFailedReason reason;
+
+    PetscCheck(ksp->reason == KSP_DIVERGED_PC_FAILED, comm, PETSC_ERR_NOT_CONVERGED, "KSPSolve has not converged, reason %s", KSPConvergedReasons[ksp->reason]);
+    PetscCall(PCGetFailedReason(ksp->pc, &reason));
+    SETERRQ(comm, PETSC_ERR_NOT_CONVERGED, "KSPSolve has not converged, reason %s PC failed due to %s", KSPConvergedReasons[ksp->reason], PCFailedReasons[reason]);
   }
   level--;
   PetscFunctionReturn(0);

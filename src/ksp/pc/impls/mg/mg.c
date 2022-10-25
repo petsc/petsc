@@ -1304,8 +1304,8 @@ PetscErrorCode PCMGGetGridComplexity(PC pc, PetscReal *gc, PetscReal *oc)
       n0   = N;
     }
   }
-  if (n0 > 0 && gc) *gc = (PetscReal)(sgc / n0);
-  else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number for grid points on finest level is not available");
+  PetscCheck(n0 > 0 && gc, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number for grid points on finest level is not available");
+  *gc = (PetscReal)(sgc / n0);
   if (nnz0 > 0 && oc) *oc = (PetscReal)(soc / nnz0);
   PetscFunctionReturn(0);
 }

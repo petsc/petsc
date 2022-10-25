@@ -439,51 +439,50 @@ static PetscErrorCode PCApply_ASM(PC pc, Vec x, Vec y)
   }
   if (!(osm->type & PC_ASM_INTERPOLATE)) reverse = SCATTER_REVERSE_LOCAL;
 
-  if (osm->loctype == PC_COMPOSITE_MULTIPLICATIVE || osm->loctype == PC_COMPOSITE_ADDITIVE) {
-    /* zero the global and the local solutions */
-    PetscCall(VecSet(y, 0.0));
-    PetscCall(VecSet(osm->ly, 0.0));
+  PetscCheck(osm->loctype == PC_COMPOSITE_MULTIPLICATIVE || osm->loctype == PC_COMPOSITE_ADDITIVE, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_WRONG, "Invalid local composition type: %s", PCCompositeTypes[osm->loctype]);
+  /* zero the global and the local solutions */
+  PetscCall(VecSet(y, 0.0));
+  PetscCall(VecSet(osm->ly, 0.0));
 
-    /* copy the global RHS to local RHS including the ghost nodes */
-    PetscCall(VecScatterBegin(osm->restriction, x, osm->lx, INSERT_VALUES, forward));
-    PetscCall(VecScatterEnd(osm->restriction, x, osm->lx, INSERT_VALUES, forward));
+  /* copy the global RHS to local RHS including the ghost nodes */
+  PetscCall(VecScatterBegin(osm->restriction, x, osm->lx, INSERT_VALUES, forward));
+  PetscCall(VecScatterEnd(osm->restriction, x, osm->lx, INSERT_VALUES, forward));
 
-    /* restrict local RHS to the overlapping 0-block RHS */
-    PetscCall(VecScatterBegin(osm->lrestriction[0], osm->lx, osm->x[0], INSERT_VALUES, forward));
-    PetscCall(VecScatterEnd(osm->lrestriction[0], osm->lx, osm->x[0], INSERT_VALUES, forward));
+  /* restrict local RHS to the overlapping 0-block RHS */
+  PetscCall(VecScatterBegin(osm->lrestriction[0], osm->lx, osm->x[0], INSERT_VALUES, forward));
+  PetscCall(VecScatterEnd(osm->lrestriction[0], osm->lx, osm->x[0], INSERT_VALUES, forward));
 
-    /* do the local solves */
-    for (i = 0; i < n_local_true; ++i) {
-      /* solve the overlapping i-block */
-      PetscCall(PetscLogEventBegin(PC_ApplyOnBlocks, osm->ksp[i], osm->x[i], osm->y[i], 0));
-      PetscCall(KSPSolve(osm->ksp[i], osm->x[i], osm->y[i]));
-      PetscCall(KSPCheckSolve(osm->ksp[i], pc, osm->y[i]));
-      PetscCall(PetscLogEventEnd(PC_ApplyOnBlocks, osm->ksp[i], osm->x[i], osm->y[i], 0));
+  /* do the local solves */
+  for (i = 0; i < n_local_true; ++i) {
+    /* solve the overlapping i-block */
+    PetscCall(PetscLogEventBegin(PC_ApplyOnBlocks, osm->ksp[i], osm->x[i], osm->y[i], 0));
+    PetscCall(KSPSolve(osm->ksp[i], osm->x[i], osm->y[i]));
+    PetscCall(KSPCheckSolve(osm->ksp[i], pc, osm->y[i]));
+    PetscCall(PetscLogEventEnd(PC_ApplyOnBlocks, osm->ksp[i], osm->x[i], osm->y[i], 0));
 
-      if (osm->lprolongation) { /* interpolate the non-overlapping i-block solution to the local solution (only for restrictive additive) */
-        PetscCall(VecScatterBegin(osm->lprolongation[i], osm->y[i], osm->ly, ADD_VALUES, forward));
-        PetscCall(VecScatterEnd(osm->lprolongation[i], osm->y[i], osm->ly, ADD_VALUES, forward));
-      } else { /* interpolate the overlapping i-block solution to the local solution */
-        PetscCall(VecScatterBegin(osm->lrestriction[i], osm->y[i], osm->ly, ADD_VALUES, reverse));
-        PetscCall(VecScatterEnd(osm->lrestriction[i], osm->y[i], osm->ly, ADD_VALUES, reverse));
-      }
+    if (osm->lprolongation) { /* interpolate the non-overlapping i-block solution to the local solution (only for restrictive additive) */
+      PetscCall(VecScatterBegin(osm->lprolongation[i], osm->y[i], osm->ly, ADD_VALUES, forward));
+      PetscCall(VecScatterEnd(osm->lprolongation[i], osm->y[i], osm->ly, ADD_VALUES, forward));
+    } else { /* interpolate the overlapping i-block solution to the local solution */
+      PetscCall(VecScatterBegin(osm->lrestriction[i], osm->y[i], osm->ly, ADD_VALUES, reverse));
+      PetscCall(VecScatterEnd(osm->lrestriction[i], osm->y[i], osm->ly, ADD_VALUES, reverse));
+    }
 
-      if (i < n_local_true - 1) {
-        /* restrict local RHS to the overlapping (i+1)-block RHS */
-        PetscCall(VecScatterBegin(osm->lrestriction[i + 1], osm->lx, osm->x[i + 1], INSERT_VALUES, forward));
-        PetscCall(VecScatterEnd(osm->lrestriction[i + 1], osm->lx, osm->x[i + 1], INSERT_VALUES, forward));
+    if (i < n_local_true - 1) {
+      /* restrict local RHS to the overlapping (i+1)-block RHS */
+      PetscCall(VecScatterBegin(osm->lrestriction[i + 1], osm->lx, osm->x[i + 1], INSERT_VALUES, forward));
+      PetscCall(VecScatterEnd(osm->lrestriction[i + 1], osm->lx, osm->x[i + 1], INSERT_VALUES, forward));
 
-        if (osm->loctype == PC_COMPOSITE_MULTIPLICATIVE) {
-          /* update the overlapping (i+1)-block RHS using the current local solution */
-          PetscCall(MatMult(osm->lmats[i + 1], osm->ly, osm->y[i + 1]));
-          PetscCall(VecAXPBY(osm->x[i + 1], -1., 1., osm->y[i + 1]));
-        }
+      if (osm->loctype == PC_COMPOSITE_MULTIPLICATIVE) {
+        /* update the overlapping (i+1)-block RHS using the current local solution */
+        PetscCall(MatMult(osm->lmats[i + 1], osm->ly, osm->y[i + 1]));
+        PetscCall(VecAXPBY(osm->x[i + 1], -1., 1., osm->y[i + 1]));
       }
     }
-    /* add the local solution to the global solution including the ghost nodes */
-    PetscCall(VecScatterBegin(osm->restriction, osm->ly, y, ADD_VALUES, reverse));
-    PetscCall(VecScatterEnd(osm->restriction, osm->ly, y, ADD_VALUES, reverse));
-  } else SETERRQ(PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_WRONG, "Invalid local composition type: %s", PCCompositeTypes[osm->loctype]);
+  }
+  /* add the local solution to the global solution including the ghost nodes */
+  PetscCall(VecScatterBegin(osm->restriction, osm->ly, y, ADD_VALUES, reverse));
+  PetscCall(VecScatterEnd(osm->restriction, osm->ly, y, ADD_VALUES, reverse));
   PetscFunctionReturn(0);
 }
 
@@ -510,52 +509,52 @@ static PetscErrorCode PCMatApply_ASM(PC pc, Mat X, Mat Y)
   PetscCall(VecGetLocalSize(osm->x[0], &m));
   PetscCall(MatGetSize(X, NULL, &N));
   PetscCall(MatCreateSeqDense(PETSC_COMM_SELF, m, N, NULL, &Z));
-  if (osm->loctype == PC_COMPOSITE_MULTIPLICATIVE || osm->loctype == PC_COMPOSITE_ADDITIVE) {
-    /* zero the global and the local solutions */
-    PetscCall(MatZeroEntries(Y));
+
+  PetscCheck(osm->loctype == PC_COMPOSITE_MULTIPLICATIVE || osm->loctype == PC_COMPOSITE_ADDITIVE, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_WRONG, "Invalid local composition type: %s", PCCompositeTypes[osm->loctype]);
+  /* zero the global and the local solutions */
+  PetscCall(MatZeroEntries(Y));
+  PetscCall(VecSet(osm->ly, 0.0));
+
+  for (i = 0; i < N; ++i) {
+    PetscCall(MatDenseGetColumnVecRead(X, i, &x));
+    /* copy the global RHS to local RHS including the ghost nodes */
+    PetscCall(VecScatterBegin(osm->restriction, x, osm->lx, INSERT_VALUES, forward));
+    PetscCall(VecScatterEnd(osm->restriction, x, osm->lx, INSERT_VALUES, forward));
+    PetscCall(MatDenseRestoreColumnVecRead(X, i, &x));
+
+    PetscCall(MatDenseGetColumnVecWrite(Z, i, &x));
+    /* restrict local RHS to the overlapping 0-block RHS */
+    PetscCall(VecScatterBegin(osm->lrestriction[0], osm->lx, x, INSERT_VALUES, forward));
+    PetscCall(VecScatterEnd(osm->lrestriction[0], osm->lx, x, INSERT_VALUES, forward));
+    PetscCall(MatDenseRestoreColumnVecWrite(Z, i, &x));
+  }
+  PetscCall(MatCreateSeqDense(PETSC_COMM_SELF, m, N, NULL, &W));
+  /* solve the overlapping 0-block */
+  PetscCall(PetscLogEventBegin(PC_ApplyOnBlocks, osm->ksp[0], Z, W, 0));
+  PetscCall(KSPMatSolve(osm->ksp[0], Z, W));
+  PetscCall(KSPCheckSolve(osm->ksp[0], pc, NULL));
+  PetscCall(PetscLogEventEnd(PC_ApplyOnBlocks, osm->ksp[0], Z, W, 0));
+  PetscCall(MatDestroy(&Z));
+
+  for (i = 0; i < N; ++i) {
     PetscCall(VecSet(osm->ly, 0.0));
-
-    for (i = 0; i < N; ++i) {
-      PetscCall(MatDenseGetColumnVecRead(X, i, &x));
-      /* copy the global RHS to local RHS including the ghost nodes */
-      PetscCall(VecScatterBegin(osm->restriction, x, osm->lx, INSERT_VALUES, forward));
-      PetscCall(VecScatterEnd(osm->restriction, x, osm->lx, INSERT_VALUES, forward));
-      PetscCall(MatDenseRestoreColumnVecRead(X, i, &x));
-
-      PetscCall(MatDenseGetColumnVecWrite(Z, i, &x));
-      /* restrict local RHS to the overlapping 0-block RHS */
-      PetscCall(VecScatterBegin(osm->lrestriction[0], osm->lx, x, INSERT_VALUES, forward));
-      PetscCall(VecScatterEnd(osm->lrestriction[0], osm->lx, x, INSERT_VALUES, forward));
-      PetscCall(MatDenseRestoreColumnVecWrite(Z, i, &x));
+    PetscCall(MatDenseGetColumnVecRead(W, i, &x));
+    if (osm->lprolongation) { /* interpolate the non-overlapping 0-block solution to the local solution (only for restrictive additive) */
+      PetscCall(VecScatterBegin(osm->lprolongation[0], x, osm->ly, ADD_VALUES, forward));
+      PetscCall(VecScatterEnd(osm->lprolongation[0], x, osm->ly, ADD_VALUES, forward));
+    } else { /* interpolate the overlapping 0-block solution to the local solution */
+      PetscCall(VecScatterBegin(osm->lrestriction[0], x, osm->ly, ADD_VALUES, reverse));
+      PetscCall(VecScatterEnd(osm->lrestriction[0], x, osm->ly, ADD_VALUES, reverse));
     }
-    PetscCall(MatCreateSeqDense(PETSC_COMM_SELF, m, N, NULL, &W));
-    /* solve the overlapping 0-block */
-    PetscCall(PetscLogEventBegin(PC_ApplyOnBlocks, osm->ksp[0], Z, W, 0));
-    PetscCall(KSPMatSolve(osm->ksp[0], Z, W));
-    PetscCall(KSPCheckSolve(osm->ksp[0], pc, NULL));
-    PetscCall(PetscLogEventEnd(PC_ApplyOnBlocks, osm->ksp[0], Z, W, 0));
-    PetscCall(MatDestroy(&Z));
+    PetscCall(MatDenseRestoreColumnVecRead(W, i, &x));
 
-    for (i = 0; i < N; ++i) {
-      PetscCall(VecSet(osm->ly, 0.0));
-      PetscCall(MatDenseGetColumnVecRead(W, i, &x));
-      if (osm->lprolongation) { /* interpolate the non-overlapping 0-block solution to the local solution (only for restrictive additive) */
-        PetscCall(VecScatterBegin(osm->lprolongation[0], x, osm->ly, ADD_VALUES, forward));
-        PetscCall(VecScatterEnd(osm->lprolongation[0], x, osm->ly, ADD_VALUES, forward));
-      } else { /* interpolate the overlapping 0-block solution to the local solution */
-        PetscCall(VecScatterBegin(osm->lrestriction[0], x, osm->ly, ADD_VALUES, reverse));
-        PetscCall(VecScatterEnd(osm->lrestriction[0], x, osm->ly, ADD_VALUES, reverse));
-      }
-      PetscCall(MatDenseRestoreColumnVecRead(W, i, &x));
-
-      PetscCall(MatDenseGetColumnVecWrite(Y, i, &x));
-      /* add the local solution to the global solution including the ghost nodes */
-      PetscCall(VecScatterBegin(osm->restriction, osm->ly, x, ADD_VALUES, reverse));
-      PetscCall(VecScatterEnd(osm->restriction, osm->ly, x, ADD_VALUES, reverse));
-      PetscCall(MatDenseRestoreColumnVecWrite(Y, i, &x));
-    }
-    PetscCall(MatDestroy(&W));
-  } else SETERRQ(PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_WRONG, "Invalid local composition type: %s", PCCompositeTypes[osm->loctype]);
+    PetscCall(MatDenseGetColumnVecWrite(Y, i, &x));
+    /* add the local solution to the global solution including the ghost nodes */
+    PetscCall(VecScatterBegin(osm->restriction, osm->ly, x, ADD_VALUES, reverse));
+    PetscCall(VecScatterEnd(osm->restriction, osm->ly, x, ADD_VALUES, reverse));
+    PetscCall(MatDenseRestoreColumnVecWrite(Y, i, &x));
+  }
+  PetscCall(MatDestroy(&W));
   PetscFunctionReturn(0);
 }
 
