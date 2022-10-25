@@ -94,7 +94,7 @@
       PetscCallA(VecDuplicate(x,ub,ierr))
       PetscCallA(VecSet(lb,zero,ierr))
 !      PetscCallA(VecGetArrayF90(lb,xx,ierr))
-!      PetscCallA(ShashiLowerBound(xx)
+!      PetscCallA(ShashiLowerBound(xx))
 !      PetscCallA(VecRestoreArrayF90(lb,xx,ierr))
       PetscCallA(VecSet(ub,big,ierr))
 !      PetscCallA(SNESVISetVariableBounds(snes,lb,ub,ierr))
@@ -108,7 +108,7 @@
 !     set initial guess
 
       PetscCallA(VecGetArrayF90(x,xx,ierr))
-      PetscCallA(ShashiInitialGuess(xx)
+      PetscCallA(ShashiInitialGuess(xx))
       PetscCallA(VecRestoreArrayF90(x,xx,ierr))
 
       PetscCallA(SNESSolve(snes,PETSC_NULL_VEC,x,ierr))
@@ -162,7 +162,7 @@
 
       PetscCall(VecGetArrayRead(x,lx_v,lx_i,ierr))
       PetscCall(VecGetArray(f,lf_v,lf_i,ierr))
-      PetscCall(ShashiFormFunction(lx_a(1),lf_a(1))
+      PetscCall(ShashiFormFunction(lx_a(1),lf_a(1)))
       PetscCall(VecRestoreArrayRead(x,lx_v,lx_i,ierr))
       PetscCall(VecRestoreArray(f,lf_v,lf_i,ierr))
 
@@ -204,7 +204,7 @@
 
       PetscCall(VecGetArrayRead(x,lx_v,lx_i,ierr))
       PetscCall(MatDenseGetArray(B,lf_v,lf_i,ierr))
-      PetscCall(ShashiFormJacobian(lx_a(1),lf_a(1))
+      PetscCall(ShashiFormJacobian(lx_a(1),lf_a(1)))
       PetscCall(MatDenseRestoreArray(B,lf_v,lf_i,ierr))
       PetscCall(VecRestoreArrayRead(x,lx_v,lx_i,ierr))
 
