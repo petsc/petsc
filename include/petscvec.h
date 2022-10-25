@@ -667,7 +667,7 @@ PETSC_EXTERN PETSC_DEPRECATED_FUNCTION("Use VecLockReadPop() (since version 3.11
   Level: advanced
 
 .seealso: `Vec`, `VecSetOperation()`
-*/
+E*/
 typedef enum {
   VECOP_DUPLICATE  = 0,
   VECOP_SET        = 10,
