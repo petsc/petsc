@@ -1228,7 +1228,10 @@ inline PetscErrorCode VecSeq_CUPM<T>::norm(Vec xin, NormType type, PetscReal *z)
       PetscCallCUPMBLAS(cupmBlasXasum(cupmBlasHandle, n, xptr.cupmdata(), 1, cupmRealPtrCast(z)));
       flopCount = std::max(n - 1, 0);
       if (type == NORM_1) break;
-      ++z; // fall through
+      ++z; // fall-through
+  #if PETSC_CPP_VERSION >= 17
+      [[fallthrough]];
+  #endif
     case NORM_2:
     case NORM_FROBENIUS:
       PetscCallCUPMBLAS(cupmBlasXnrm2(cupmBlasHandle, n, xptr.cupmdata(), 1, cupmRealPtrCast(z)));
