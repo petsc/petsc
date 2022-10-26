@@ -662,8 +662,11 @@ cleanhtml:
 cleangcov:
 	-@find ${PETSC_DIR} -maxdepth 1 -name \*.gcov -delete
 	-@find ${PETSC_DIR}/${PETSC_ARCH} -maxdepth 1 -name \*.gcov -delete
-	-@find ${PETSC_DIR}/${PETSC_ARCH}/obj -name \*.gcov -name \*.gcno -name \*.gcda -delete
+	-@find ${PETSC_DIR}/${PETSC_ARCH}/obj -name \*.gcov -delete
 	-@find src -name \*.gcov -delete
+
+cleangcovfull: cleangcov
+	-@find ${PETSC_DIR}/${PETSC_ARCH}/obj -name \*.gcno -name \*.gcda -delete
 #
 #----------------------------------------------------------------------------------
 checkbadPetscFunctionBegin:
