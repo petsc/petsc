@@ -67,7 +67,7 @@ Prepared by
 | :sup:`9`\ Department of Computer Science and Engineering, University at Buffalo
 | :sup:`10`\ Department of Computer Science, University of Colorado, Boulder
 | :sup:`11`\ Computational Frameworks, Idaho National Laboratory
-| :sup:`12`\ Toulouse Institute of Compute Science Research
+| :sup:`12`\ Toulouse Institute of Computer Science Research
 | :sup:`13`\ NVIDIA Corporation
 | :sup:`14`\ College of Computing, Georgia Tech
 | :sup:`15`\ Tech-X Corporation
