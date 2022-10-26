@@ -1,0 +1,341 @@
+#!/usr/bin/env bash
+
+# Copyright 2017-2018
+# 
+# Karlsruhe Institute of Technology
+# Universitat Jaume I
+# University of Tennessee
+# 
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+# 
+# 1. Redistributions of source code must retain the above copyright notice,
+#    this list of conditions and the following disclaimer.
+# 
+# 2. Redistributions in binary form must reproduce the above copyright notice,
+#    this list of conditions and the following disclaimer in the documentation
+#    and/or other materials provided with the distribution.
+# 
+# 3. Neither the name of the copyright holder nor the names of its contributors
+#    may be used to endorse or promote products derived from this software
+#    without specific prior written permission.
+# 
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+# ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+# LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+# CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+# SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+# CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+# ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+# POSSIBILITY OF SUCH DAMAGE.
+
+set -e
+
+ARCHIVE_LOCATION=${ARCHIVE_LOCATION:="./ssget_archive"}
+THIS_DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" &>/dev/null && pwd )
+SS_URL="https://sparse.tamu.edu"
+
+mkdir -p "${ARCHIVE_LOCATION}"
+
+COMMAND=get_database_version
+MATRIX_TYPE="MM"
+MATRIX_ID=1
+PROP_NAMES=(
+    "group"
+    "name"
+    "rows"
+    "cols"
+    "nonzeros"
+    "real"
+    "binary"
+    "2d3d"
+    "posdef"
+    "psym"
+    "nsym"
+    "kind")
+
+
+redownload_info() {
+    curl -Lo "${ARCHIVE_LOCATION}/ssstats.csv" "${SS_URL}/files/ssstats.csv"
+}
+
+
+download_info() {
+    if [ ! -f "${ARCHIVE_LOCATION}/ssstats.csv" ]; then
+        redownload_info
+    fi
+}
+
+
+PROPS=""
+get_properties() {
+    download_info
+    if [ "${PROPS}" == "" ]; then
+        PROPS=$(head -$((${MATRIX_ID} + 2)) "${ARCHIVE_LOCATION}/ssstats.csv" \
+                | tail -1)
+    fi
+    echo "${PROPS}"
+}
+
+
+get_property() {
+    IFS="," read -ra PROPS <<< "$(get_properties)"
+    NPARAM=${#PROP_NAMES[@]}
+    for (( i=0; i < ${NPARAM}; ++i)); do
+        if [ "$1" = "${PROP_NAMES[$i]}" ]; then
+            echo ${PROPS[$i]}
+            return
+        fi
+    done
+}
+
+
+get_as_json() {
+    BOOL_MAP=("false" "true")
+    IFS="," read -ra PROPS <<< "$(get_properties)"
+    cat << JSON 
+{
+    "id": ${MATRIX_ID},
+    "group": "${PROPS[0]}",
+    "name": "${PROPS[1]}",
+    "rows": ${PROPS[2]},
+    "cols": ${PROPS[3]},
+    "nonzeros": ${PROPS[4]},
+    "real": ${BOOL_MAP[${PROPS[5]}]},
+    "binary": ${BOOL_MAP[${PROPS[6]}]},
+    "2d3d": ${BOOL_MAP[${PROPS[7]}]},
+    "posdef": ${BOOL_MAP[${PROPS[8]}]},
+    "psym": ${PROPS[9]},
+    "nsym": ${PROPS[10]},
+    "kind": "${PROPS[11]}"
+}
+JSON
+}
+
+
+get_path_info() {
+    GROUP=$(get_property group)
+    NAME=$(get_property name)
+    if [ "${MATRIX_TYPE}" = "mat" ]; then
+        EXT="mat"
+    else
+        EXT="tar.gz"
+    fi
+    MATRIX_URI="${MATRIX_TYPE}/${GROUP}/${NAME}"
+    UPSTREAM_URL="${SS_URL}/${MATRIX_URI}.${EXT}"
+    DOWNLOAD_PATH="${ARCHIVE_LOCATION}/${MATRIX_URI}.${EXT}"
+    EXTRACT_PATH="${ARCHIVE_LOCATION}/${MATRIX_URI}"
+    cat <<- EOT
+        ${GROUP}
+        ${NAME}
+        ${MATRIX_URI}
+        ${UPSTREAM_URL}
+        ${DOWNLOAD_PATH}
+        ${EXTRACT_PATH}
+EOT
+}
+
+
+download_archive() {
+    PATH_INFO=($(get_path_info))
+    if [ ! -f ${PATH_INFO[4]} ]; then
+        mkdir -p $(dirname ${PATH_INFO[4]})
+        curl -Lo ${PATH_INFO[4]} ${PATH_INFO[3]}
+    fi
+    echo ${PATH_INFO[4]}
+}
+
+
+extract_archive() {
+    PATH_INFO=($(get_path_info))
+    download_archive >/dev/null
+    if [ "${MATRIX_TYPE}" = "mat" ]; then
+        echo ${PATH_INFO[4]}
+        return
+    fi
+    mkdir -p ${PATH_INFO[5]}
+    tar -xzf ${PATH_INFO[4]} -C  ${PATH_INFO[5]} --strip-components=1
+    if [ "${MATRIX_TYPE}" = "RB" ]; then
+        EXT="rb"
+    else
+        EXT="mtx"
+    fi
+    echo "${PATH_INFO[5]}/${PATH_INFO[1]}.${EXT}"
+}
+
+
+clean_extracted() {
+    PATH_INFO=($(get_path_info))
+    if [ ! -e ${PATH_INFO[5]} ]; then
+        echo 0
+        return
+    fi
+
+    SIZE=($(du -b ${PATH_INFO[5]}))
+    rm -rf ${PATH_INFO[5]}
+    echo ${SIZE[0]}
+}
+
+
+remove_archive() {
+    PATH_INFO=($(get_path_info))
+    SIZE=($(du -b ${PATH_INFO[4]}))
+    rm -rf ${PATH_INFO[4]}
+    echo ${SIZE[0]}
+}
+
+
+get_collection_size() {
+    download_info
+    head -1 "${ARCHIVE_LOCATION}/ssstats.csv"
+}
+
+
+get_database_version() {
+    download_info
+    echo -n "${ARCHIVE_LOCATION}/ssstats.csv "
+    echo "$(head -2 "${ARCHIVE_LOCATION}/ssstats.csv" | tail -1)"
+}
+
+
+CONDITION=""
+TEMP_PROPS=""
+replace_placeholder() {
+    BOOL_MAP=("false" "true")
+    EVAL_COND=${CONDITION}
+    # s/@kind/${TEMP_PROPS[11]}/g is failed because s/@kind/2D/3D Problem/g has 
+    # too many slashes
+    REPLACE="s/@group/${TEMP_PROPS[0]}/g;"
+    REPLACE="${REPLACE}s/@name/${TEMP_PROPS[1]}/g;"
+    REPLACE="${REPLACE}s/@rows/${TEMP_PROPS[2]}/g;"
+    REPLACE="${REPLACE}s/@cols/${TEMP_PROPS[3]}/g;"
+    REPLACE="${REPLACE}s/@nonzeros/${TEMP_PROPS[4]}/g;"
+    REPLACE="${REPLACE}s/@real/${BOOL_MAP[${TEMP_PROPS[5]}]}/g;"
+    REPLACE="${REPLACE}s/@binary/${BOOL_MAP[${TEMP_PROPS[6]}]}/g;"
+    REPLACE="${REPLACE}s/@2d3d/${BOOL_MAP[${TEMP_PROPS[7]}]}/g;"
+    REPLACE="${REPLACE}s/@posdef/${BOOL_MAP[${TEMP_PROPS[8]}]}/g;"
+    REPLACE="${REPLACE}s/@psym/${TEMP_PROPS[9]}/g;"
+    REPLACE="${REPLACE}s/@nsym/${TEMP_PROPS[10]}/g;"
+    REPLACE="${REPLACE}s~@kind~${TEMP_PROPS[11]}~g"
+    EVAL_COND=$(echo $EVAL_COND | sed -e "$REPLACE")
+}
+
+
+search_database() {
+    download_info
+    INDEX=-2;
+    while IFS='' read -r LINE || [[ -n "$LINE" ]]; do
+        INDEX=$(( $INDEX + 1 ))
+        if [[ $INDEX -gt 0 ]]; then
+            IFS="," read -ra TEMP_PROPS <<< "$LINE"
+            EVAL_COND=""
+            replace_placeholder
+            if eval $EVAL_COND ; then
+                echo $INDEX
+            fi
+        fi
+    done < "${ARCHIVE_LOCATION}/ssstats.csv"
+}
+
+
+print_usage_and_exit() {
+    cat 1>&2 << EOT
+Usage: $0 [options]
+
+Available options:
+    -c           clean files extracted from archive
+    -d           (re)download matrix info file
+    -e           download matrix and extract archive
+    -f           download matrix and get path to archive
+    -h           show this help
+    -i ID        matrix id
+    -j           print information about the matrix in JSON format
+    -n           get number of matrices in collection
+    -p PROPERTY  print information about the matrix, PROPERTY is the propery to
+                 print, one of group, name, rows, cols, nonzeros, real, binary,
+                 2d3d, posdef, psym, nsym, kind
+    -r           remove archive
+    -t TYPE      matrix type, TYPE is one of: MM (matrix market, '.mtx'), RB
+                 (Rutherford Boeing, '.rb'), mat (MATLAB, '.mat')
+    -v           get database version
+    -s           search database with conditions. It uses @PROPERTY as the
+                 placeholder
+
+Calling $0 without arguments is equivalent to: $0 -i 0 -t MM -v
+EOT
+    exit $1
+}
+
+
+while getopts ":cdefhi:jnp:rt:vs:" opt; do
+    case ${opt} in
+        :)
+            echo 1>&2 "Option -${OPTARG} provided without an argument"
+            print_usage_and_exit 2
+            ;;
+        \?)
+            echo 1>&2 "Unknown option: -${OPTARG}"
+            print_usage_and_exit 1
+            ;;
+        c)  
+            COMMAND=clean_extracted
+            ;;
+        d)
+            COMMAND=redownload_info
+            ;;
+        e)
+            COMMAND=extract_archive
+            ;;
+        f)  
+            COMMAND=download_archive
+            ;;
+        h)
+            print_usage_and_exit 0
+            ;;
+        i)
+            if [[ ! "${OPTARG}" =~ ^([0-9]+)$ ]]; then
+                echo 1>&2 "Matrix ID has to be a number, got: ${OPTARG}"
+                print_usage_and_exit 4
+            fi
+            MATRIX_ID=${OPTARG}
+            ;;
+        j)
+            COMMAND=get_as_json
+            ;;
+        n)
+            COMMAND=get_collection_size
+            ;;
+        p)
+            PROP_LIST="group|name|rows|cols|nonzeros"
+            PROP_LIST="${PROP_LIST}|real|binary|2d3d|posdef|psym|nsym|kind"
+            if [[ ! "${OPTARG}" =~ ^(${PROP_LIST})$ ]]; then
+                echo 1>&2 "Unknown property: ${OPTARG}"
+                print_usage_and_exit 5
+            fi
+            COMMAND="get_property ${OPTARG}"
+            ;;
+        r)
+            COMMAND=remove_archive
+            ;;
+        t) 
+            if [[ ! "${OPTARG}" =~ ^(MM|RB|mat)$ ]]; then
+                echo 1>&2 "Wrong matrix type: ${OPTARG}"
+                print_usage_and_exit 3
+            fi
+            MATRIX_TYPE=${OPTARG}
+            ;;
+        v)
+            COMMAND=get_database_version
+            ;;
+        s)
+            COMMAND=search_database
+            CONDITION=${OPTARG}
+            ;;
+    esac
+done
+
+
+${COMMAND}

@@ -9,7 +9,7 @@
 #include <string.h>
 #include <ctype.h>
 
-#include "ex72mmio.h"
+#include "mmio.h"
 
 static char mm_buffer[MM_MAX_LINE_LENGTH];
 
