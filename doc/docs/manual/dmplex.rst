@@ -112,6 +112,8 @@ search structures and indices for the different types of points using
 
    DMPlexStratify(dm);
 
+.. _sec_petscsection:
+
 Data on Unstructured Grids (PetscSection)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

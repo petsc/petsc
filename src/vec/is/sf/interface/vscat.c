@@ -176,7 +176,8 @@ static PetscErrorCode VecScatterRemap_Internal(VecScatter sf, const PetscInt *to
   PetscFunctionReturn(0);
 }
 
-/* Given a parallel VecScatter context, return number of procs and vector entries involved in remote (i.e., off-process) communication
+/*
+  Given a parallel VecScatter context, return number of procs and vector entries involved in remote (i.e., off-process) communication
 
   Input Parameters:
 + sf   - the context (must be a parallel vecscatter)
@@ -186,11 +187,11 @@ static PetscErrorCode VecScatterRemap_Internal(VecScatter sf, const PetscInt *to
 + num_procs   - number of remote processors
 - num_entries - number of vector entries to send or recv
 
-  .seealso: `VecScatterGetRemote_Private()`, `VecScatterGetRemoteOrdered_Private()`
-
   Notes:
   Sometimes PETSc internally needs to use the matrix-vector-multiply vecscatter context for other purposes. The client code
   usually only uses MPI_Send/Recv. This group of subroutines provides info needed for such uses.
+
+.seealso: [](sec_scatter), `VecScatterGetRemote_Private()`, `VecScatterGetRemoteOrdered_Private()`
  */
 PetscErrorCode VecScatterGetRemoteCount_Private(VecScatter sf, PetscBool send, PetscInt *num_procs, PetscInt *num_entries)
 {
@@ -238,7 +239,7 @@ PetscErrorCode VecScatterGetRemoteCount_Private(VecScatter sf, PetscBool send, P
 . procs    - ranks of remote processors
 - bs       - block size
 
-  .seealso: `VecScatterRestoreRemote_Private()`, `VecScatterGetRemoteOrdered_Private()`
+.seealso: `VecScatterRestoreRemote_Private()`, `VecScatterGetRemoteOrdered_Private()`
  */
 PetscErrorCode VecScatterGetRemote_Private(VecScatter sf, PetscBool send, PetscInt *n, const PetscInt **starts, const PetscInt **indices, const PetscMPIInt **procs, PetscInt *bs)
 {
@@ -288,10 +289,10 @@ PetscErrorCode VecScatterGetRemote_Private(VecScatter sf, PetscBool send, PetscI
 . procs    - ranks of remote processors
 - bs       - block size
 
-  .seealso: `VecScatterRestoreRemoteOrdered_Private()`, `VecScatterGetRemote_Private()`
-
   Notes:
   Output parameters like starts, indices must also be adapted according to the sorted ranks.
+
+.seealso: `VecScatterRestoreRemoteOrdered_Private()`, `VecScatterGetRemote_Private()`
  */
 PetscErrorCode VecScatterGetRemoteOrdered_Private(VecScatter sf, PetscBool send, PetscInt *n, const PetscInt **starts, const PetscInt **indices, const PetscMPIInt **procs, PetscInt *bs)
 {
@@ -319,7 +320,7 @@ PetscErrorCode VecScatterGetRemoteOrdered_Private(VecScatter sf, PetscBool send,
 . procs    - ranks of remote processors
 - bs       - block size
 
-  .seealso: `VecScatterGetRemote_Private()`
+.seealso: `VecScatterGetRemote_Private()`
  */
 PetscErrorCode VecScatterRestoreRemote_Private(VecScatter sf, PetscBool send, PetscInt *n, const PetscInt **starts, const PetscInt **indices, const PetscMPIInt **procs, PetscInt *bs)
 {
@@ -344,7 +345,7 @@ PetscErrorCode VecScatterRestoreRemote_Private(VecScatter sf, PetscBool send, Pe
 . procs    - ranks of remote processors
 - bs       - block size
 
-  .seealso: `VecScatterGetRemoteOrdered_Private()`
+.seealso: `VecScatterGetRemoteOrdered_Private()`
  */
 PetscErrorCode VecScatterRestoreRemoteOrdered_Private(VecScatter sf, PetscBool send, PetscInt *n, const PetscInt **starts, const PetscInt **indices, const PetscMPIInt **procs, PetscInt *bs)
 {
@@ -354,16 +355,16 @@ PetscErrorCode VecScatterRestoreRemoteOrdered_Private(VecScatter sf, PetscBool s
 }
 
 /*@
-   VecScatterSetUp - Sets up the VecScatter to be able to actually scatter information between vectors
+   VecScatterSetUp - Sets up the `VecScatter` to be able to actually scatter information between vectors
 
-   Collective on VecScatter
+   Collective on sf
 
    Input Parameter:
 .  sf - the scatter context
 
    Level: intermediate
 
-.seealso: `VecScatterCreate()`, `VecScatterCopy()`
+.seealso: [](sec_scatter), `VecScatter`, `VecScatterCreate()`, `VecScatterCopy()`
 @*/
 PetscErrorCode VecScatterSetUp(VecScatter sf)
 {
@@ -375,21 +376,21 @@ PetscErrorCode VecScatterSetUp(VecScatter sf)
 /*@C
   VecScatterSetType - Builds a vector scatter, for a particular vector scatter implementation.
 
-  Collective on VecScatter
+  Collective on sf
 
   Input Parameters:
-+ sf - The VecScatter (SF) object
++ sf - The `VecScatter` object
 - type - The name of the vector scatter type
 
   Options Database Key:
-. -sf_type <type> - Sets the VecScatter (SF) type
-
-  Notes:
-  Use VecScatterDuplicate() to form additional vectors scatter of the same type as an existing vector scatter.
+. -sf_type <type> - Sets the `VecScatterType`
 
   Level: intermediate
 
-.seealso: `VecScatterGetType()`, `VecScatterCreate()`
+  Note:
+  Use `VecScatterDuplicate()` to form additional vectors scatter of the same type as an existing vector scatter.
+
+.seealso: [](sec_scatter), `VecScatter`, `VecScatterType`, `VecScatterGetType()`, `VecScatterCreate()`
 @*/
 PetscErrorCode VecScatterSetType(VecScatter sf, VecScatterType type)
 {
@@ -399,19 +400,19 @@ PetscErrorCode VecScatterSetType(VecScatter sf, VecScatterType type)
 }
 
 /*@C
-  VecScatterGetType - Gets the vector scatter type name (as a string) from the VecScatter.
+  VecScatterGetType - Gets the vector scatter type name (as a string) from the `VecScatter`.
 
   Not Collective
 
   Input Parameter:
-. sf  - The vector scatter (SF)
+. sf  - The vector scatter
 
   Output Parameter:
 . type - The vector scatter type name
 
   Level: intermediate
 
-.seealso: `VecScatterSetType()`, `VecScatterCreate()`
+.seealso: [](sec_scatter), `VecScatter`, `VecScatterType`, `VecScatterSetType()`, `VecScatterCreate()`
 @*/
 PetscErrorCode VecScatterGetType(VecScatter sf, VecScatterType *type)
 {
@@ -431,7 +432,7 @@ PetscErrorCode VecScatterGetType(VecScatter sf, VecScatterType *type)
 
   Level: advanced
 
-.seealso: `VecRegister()`
+.seealso: [](sec_scatter), `VecScatter`, `VecScatterType`, `VecRegister()`
 @*/
 PetscErrorCode VecScatterRegister(const char sname[], PetscErrorCode (*function)(VecScatter))
 {
@@ -442,20 +443,20 @@ PetscErrorCode VecScatterRegister(const char sname[], PetscErrorCode (*function)
 
 /* ------------------------------------------------------------------*/
 /*@
-   VecScatterGetMerged - Returns true if the scatter is completed in the VecScatterBegin()
-      and the VecScatterEnd() does nothing
+   VecScatterGetMerged - Returns true if the scatter is completed in the `VecScatterBegin()`
+      and the `VecScatterEnd()` does nothing
 
    Not Collective
 
    Input Parameter:
-.   sf - scatter context created with VecScatterCreate()
+.   sf - scatter context created with `VecScatterCreate()`
 
    Output Parameter:
-.   flg - PETSC_TRUE if the VecScatterBegin/End() are all done during the VecScatterBegin()
+.   flg - `PETSC_TRUE` if the `VecScatterBegin()`/`VecScatterEnd()` are all done during the `VecScatterBegin()`
 
    Level: developer
 
-.seealso: `VecScatterCreate()`, `VecScatterEnd()`, `VecScatterBegin()`
+.seealso:  [](sec_scatter), `VecScatter`, `VecScatterCreate()`, `VecScatterEnd()`, `VecScatterBegin()`
 @*/
 PetscErrorCode VecScatterGetMerged(VecScatter sf, PetscBool *flg)
 {
@@ -465,16 +466,16 @@ PetscErrorCode VecScatterGetMerged(VecScatter sf, PetscBool *flg)
   PetscFunctionReturn(0);
 }
 /*@C
-   VecScatterDestroy - Destroys a scatter context created by VecScatterCreate()
+   VecScatterDestroy - Destroys a scatter context created by `VecScatterCreate()`
 
-   Collective on VecScatter
+   Collective on sf
 
    Input Parameter:
 .  sf - the scatter context
 
    Level: intermediate
 
-.seealso: `VecScatterCreate()`, `VecScatterCopy()`
+.seealso: [](sec_scatter), `VecScatter`, `VecScatterCreate()`, `VecScatterCopy()`
 @*/
 PetscErrorCode VecScatterDestroy(VecScatter *sf)
 {
@@ -486,7 +487,7 @@ PetscErrorCode VecScatterDestroy(VecScatter *sf)
 /*@
    VecScatterCopy - Makes a copy of a scatter context.
 
-   Collective on VecScatter
+   Collective on sf
 
    Input Parameter:
 .  sf - the scatter context
@@ -496,7 +497,7 @@ PetscErrorCode VecScatterDestroy(VecScatter *sf)
 
    Level: advanced
 
-.seealso: `VecScatterCreate()`, `VecScatterDestroy()`
+.seealso: [](sec_scatter), `VecScatter`, `VecScatterType`, `VecScatterCreate()`, `VecScatterDestroy()`
 @*/
 PetscErrorCode VecScatterCopy(VecScatter sf, VecScatter *newsf)
 {
@@ -508,9 +509,9 @@ PetscErrorCode VecScatterCopy(VecScatter sf, VecScatter *newsf)
 }
 
 /*@C
-   VecScatterViewFromOptions - View from Options
+   VecScatterViewFromOptions - View a `VecScatter` object based on the options database
 
-   Collective on VecScatter
+   Collective on sf
 
    Input Parameters:
 +  sf - the scatter context
@@ -518,7 +519,8 @@ PetscErrorCode VecScatterCopy(VecScatter sf, VecScatter *newsf)
 -  name - command line option
 
    Level: intermediate
-.seealso: `VecScatter`, `VecScatterView`, `PetscObjectViewFromOptions()`, `VecScatterCreate()`
+
+.seealso: [](sec_scatter), `VecScatter`, `VecScatterView()`, `PetscObjectViewFromOptions()`, `VecScatterCreate()`
 @*/
 PetscErrorCode VecScatterViewFromOptions(VecScatter sf, PetscObject obj, const char name[])
 {
@@ -532,7 +534,7 @@ PetscErrorCode VecScatterViewFromOptions(VecScatter sf, PetscObject obj, const c
 /*@C
    VecScatterView - Views a vector scatter context.
 
-   Collective on VecScatter
+   Collective on sf
 
    Input Parameters:
 +  sf - the scatter context
@@ -540,6 +542,7 @@ PetscErrorCode VecScatterViewFromOptions(VecScatter sf, PetscObject obj, const c
 
    Level: intermediate
 
+.seealso: [](sec_scatter), `VecScatter`, `VecScatterViewFromOptions()`, `PetscObjectViewFromOptions()`, `VecScatterCreate()`
 @*/
 PetscErrorCode VecScatterView(VecScatter sf, PetscViewer viewer)
 {
@@ -552,7 +555,7 @@ PetscErrorCode VecScatterView(VecScatter sf, PetscViewer viewer)
    VecScatterRemap - Remaps the "from" and "to" indices in a
    vector scatter context. FOR EXPERTS ONLY!
 
-   Collective on VecScatter
+   Collective on sf
 
    Input Parameters:
 +  sf    - vector scatter context
@@ -570,6 +573,7 @@ PetscErrorCode VecScatterView(VecScatter sf, PetscViewer viewer)
      and the fromdata contains indices from where the data is taken from.
      This is backwards from the paralllel case!
 
+.seealso: [](sec_scatter), `VecScatter`, `VecScatterCreate()`
 @*/
 PetscErrorCode VecScatterRemap(VecScatter sf, PetscInt tomap[], PetscInt frommap[])
 {
@@ -587,18 +591,19 @@ PetscErrorCode VecScatterRemap(VecScatter sf, PetscInt tomap[], PetscInt frommap
 /*@
   VecScatterSetFromOptions - Configures the vector scatter from the options database.
 
-  Collective on VecScatter
+  Collective on sf
 
   Input Parameter:
 . sf - The vector scatter
 
   Notes:
-    To see all options, run your program with the -help option, or consult the users manual.
-          Must be called before VecScatterSetUp() but before the vector scatter is used.
+  To see all options, run your program with the -help option, or consult the users manual.
+
+  Must be called before `VecScatterSetUp()` but before the vector scatter is used.
 
   Level: beginner
 
-.seealso: `VecScatterCreate()`, `VecScatterDestroy()`, `VecScatterSetUp()`
+.seealso: [](sec_scatter), `VecScatter`, `VecScatterCreate()`, `VecScatterDestroy()`, `VecScatterSetUp()`
 @*/
 PetscErrorCode VecScatterSetFromOptions(VecScatter sf)
 {
@@ -617,7 +622,7 @@ PetscErrorCode VecScatterSetFromOptions(VecScatter sf)
 /*@
    VecScatterCreate - Creates a vector scatter context.
 
-   Collective on Vec
+   Collective on x
 
    Input Parameters:
 +  xin - a vector that defines the shape (parallel data layout of the vector)
@@ -628,12 +633,12 @@ PetscErrorCode VecScatterSetFromOptions(VecScatter sf)
 -  iy - the indices of yin to hold results (if NULL fills entire vector yin)
 
    Output Parameter:
-.  newsf - location to store the new scatter (SF) context
+.  newsf - location to store the new scatter context
 
    Options Database Keys:
 +  -vecscatter_view         - Prints detail of communications
 .  -vecscatter_view ::ascii_info    - Print less details about communication
--  -vecscatter_merge        - VecScatterBegin() handles all of the communication, VecScatterEnd() is a nop
+-  -vecscatter_merge        - `VecScatterBegin()` handles all of the communication, `VecScatterEnd()` is a nop
                               eliminates the chance for overlap of computation and communication
 
   Level: intermediate
@@ -641,26 +646,21 @@ PetscErrorCode VecScatterSetFromOptions(VecScatter sf)
   Notes:
    If both xin and yin are parallel, their communicator must be on the same
    set of processes, but their process order can be different.
-   In calls to VecScatter() you can use different vectors than the xin and
+   In calls to the scatter options you can use different vectors than the xin and
    yin you used above; BUT they must have the same parallel data layout, for example,
-   they could be obtained from VecDuplicate().
+   they could be obtained from `VecDuplicate()`.
    A VecScatter context CANNOT be used in two or more simultaneous scatters;
-   that is you cannot call a second VecScatterBegin() with the same scatter
-   context until the VecScatterEnd() has been called on the first VecScatterBegin().
-   In this case a separate VecScatter is needed for each concurrent scatter.
-
-   Currently the MPI_Send() use PERSISTENT versions.
-   (this unfortunately requires that the same in and out arrays be used for each use, this
-    is why  we always need to pack the input into the work array before sending
-    and unpack upon receiving instead of using MPI datatypes to avoid the packing/unpacking).
+   that is you cannot call a second `VecScatterBegin()` with the same scatter
+   context until the `VecScatterEnd()` has been called on the first `VecScatterBegin()`.
+   In this case a separate `VecScatter` is needed for each concurrent scatter.
 
    Both ix and iy cannot be NULL at the same time.
 
-   Use VecScatterCreateToAll() to create a vecscatter that copies an MPI vector to sequential vectors on all MPI ranks.
-   Use VecScatterCreateToZero() to create a vecscatter that copies an MPI vector to a sequential vector on MPI rank 0.
+   Use `VecScatterCreateToAll()` to create a vecscatter that copies an MPI vector to sequential vectors on all MPI ranks.
+   Use `VecScatterCreateToZero()` to create a vecscatter that copies an MPI vector to a sequential vector on MPI rank 0.
    These special vecscatters have better performance than general ones.
 
-.seealso: `VecScatterDestroy()`, `VecScatterCreateToAll()`, `VecScatterCreateToZero()`, `PetscSFCreate()`
+.seealso: [](sec_scatter), `VecScatter`, `VecScatterDestroy()`, `VecScatterCreateToAll()`, `VecScatterCreateToZero()`, `PetscSFCreate()`
 @*/
 PetscErrorCode VecScatterCreate(Vec x, IS ix, Vec y, IS iy, VecScatter *newsf)
 {
@@ -1103,36 +1103,38 @@ functionend:
       VecScatterCreateToAll - Creates a vector and a scatter context that copies all
           vector values to each processor
 
-  Collective on Vec
+ Collective on vin
 
   Input Parameter:
-.  vin  - input MPIVEC
+.  vin  - an `MPIVEC`
 
   Output Parameters:
 +  ctx - scatter context
--  vout - output SEQVEC that is large enough to scatter into
+-  vout - output `SEQVEC` that is large enough to scatter into
 
   Level: intermediate
 
-   Note: vout may be NULL [PETSC_NULL_VEC from fortran] if you do not
-   need to have it created
-
    Usage:
-$        VecScatterCreateToAll(vin,&ctx,&vout);
-$
-$        // scatter as many times as you need
-$        VecScatterBegin(ctx,vin,vout,INSERT_VALUES,SCATTER_FORWARD);
-$        VecScatterEnd(ctx,vin,vout,INSERT_VALUES,SCATTER_FORWARD);
-$
-$        // destroy scatter context and local vector when no longer needed
-$        VecScatterDestroy(&ctx);
-$        VecDestroy(&vout);
+.vb
+        VecScatterCreateToAll(vin,&ctx,&vout);
+
+        // scatter as many times as you need
+        VecScatterBegin(ctx,vin,vout,INSERT_VALUES,SCATTER_FORWARD);
+        VecScatterEnd(ctx,vin,vout,INSERT_VALUES,SCATTER_FORWARD);
+
+        // destroy scatter context and local vector when no longer needed
+        VecScatterDestroy(&ctx);
+        VecDestroy(&vout);
+.ve
+
+   Notes:
+   vout may be NULL [`PETSC_NULL_VEC` from fortran] if you do not
+   need to have it created
 
     Do NOT create a vector and then pass it in as the final argument vout! vout is created by this routine
   automatically (unless you pass NULL in for that argument if you do not need it).
 
-.seealso `VecScatterCreate()`, `VecScatterCreateToZero()`, `VecScatterBegin()`, `VecScatterEnd()`
-
+.seealso: [](sec_scatter), `VecScatter`, `VecScatterCreate()`, `VecScatterCreateToZero()`, `VecScatterBegin()`, `VecScatterEnd()`
 @*/
 PetscErrorCode VecScatterCreateToAll(Vec vin, VecScatter *ctx, Vec *vout)
 {
@@ -1173,37 +1175,39 @@ PetscErrorCode VecScatterCreateToAll(Vec vin, VecScatter *ctx, Vec *vout)
       VecScatterCreateToZero - Creates an output vector and a scatter context used to
               copy all vector values into the output vector on the zeroth processor
 
-  Collective on Vec
+  Collective on vin
 
   Input Parameter:
-.  vin  - input MPIVEC
+.  vin  - `Vec` of type `MPIVEC`
 
   Output Parameters:
 +  ctx - scatter context
--  vout - output SEQVEC that is large enough to scatter into on processor 0 and
+-  vout - output `SEQVEC` that is large enough to scatter into on processor 0 and
           of length zero on all other processors
 
   Level: intermediate
 
-   Note: vout may be NULL [PETSC_NULL_VEC from fortran] if you do not
-   need to have it created
-
    Usage:
-$        VecScatterCreateToZero(vin,&ctx,&vout);
-$
-$        // scatter as many times as you need
-$        VecScatterBegin(ctx,vin,vout,INSERT_VALUES,SCATTER_FORWARD);
-$        VecScatterEnd(ctx,vin,vout,INSERT_VALUES,SCATTER_FORWARD);
-$
-$        // destroy scatter context and local vector when no longer needed
-$        VecScatterDestroy(&ctx);
-$        VecDestroy(&vout);
+.vb
+        VecScatterCreateToZero(vin,&ctx,&vout);
 
-.seealso `VecScatterCreate()`, `VecScatterCreateToAll()`, `VecScatterBegin()`, `VecScatterEnd()`
+        // scatter as many times as you need
+        VecScatterBegin(ctx,vin,vout,INSERT_VALUES,SCATTER_FORWARD);
+        VecScatterEnd(ctx,vin,vout,INSERT_VALUES,SCATTER_FORWARD);
+
+        // destroy scatter context and local vector when no longer needed
+        VecScatterDestroy(&ctx);
+        VecDestroy(&vout);
+.ve
+
+   Notes:
+   vout may be NULL [`PETSC_NULL_VEC` from fortran] if you do not
+   need to have it created
 
     Do NOT create a vector and then pass it in as the final argument vout! vout is created by this routine
   automatically (unless you pass NULL in for that argument if you do not need it).
 
+.seealso: [](sec_scatter), `VecScatter`, `VecScatterCreate()`, `VecScatterCreateToAll()`, `VecScatterBegin()`, `VecScatterEnd()`
 @*/
 PetscErrorCode VecScatterCreateToZero(Vec vin, VecScatter *ctx, Vec *vout)
 {
@@ -1245,34 +1249,31 @@ PetscErrorCode VecScatterCreateToZero(Vec vin, VecScatter *ctx, Vec *vout)
 
 /*@
    VecScatterBegin - Begins a generalized scatter from one vector to
-   another. Complete the scattering phase with VecScatterEnd().
+   another. Complete the scattering phase with `VecScatterEnd()`.
 
-   Neighbor-wise Collective on VecScatter
+   Neighbor-wise Collective on sf
 
    Input Parameters:
 +  sf - scatter context generated by VecScatterCreate()
 .  x - the vector from which we scatter
 .  y - the vector to which we scatter
-.  addv - either ADD_VALUES, MAX_VALUES, MIN_VALUES or INSERT_VALUES, with INSERT_VALUES mode any location
+.  addv - either `ADD_VALUES`, `MAX_VALUES`, `MIN_VALUES` or `INSERT_VALUES`, with `INSERT_VALUES` mode any location
           not scattered to retains its old value; i.e. the vector is NOT first zeroed.
--  mode - the scattering mode, usually SCATTER_FORWARD.  The available modes are:
-    SCATTER_FORWARD or SCATTER_REVERSE
+-  mode - the scattering mode, usually `SCATTER_FORWARD`.  The available modes are: `SCATTER_FORWARD` or `SCATTER_REVERSE`
 
    Level: intermediate
 
-   Options Database: See VecScatterCreate()
-
    Notes:
    The vectors x and y need not be the same vectors used in the call
-   to VecScatterCreate(), but x must have the same parallel data layout
-   as that passed in as the x to VecScatterCreate(), similarly for the y.
+   to `VecScatterCreate()`, but x must have the same parallel data layout
+   as that passed in as the x to `VecScatterCreate()`, similarly for the y.
    Most likely they have been obtained from VecDuplicate().
 
-   You cannot change the values in the input vector between the calls to VecScatterBegin()
-   and VecScatterEnd().
+   You cannot change the values in the input vector between the calls to `VecScatterBegin()`
+   and `VecScatterEnd()`.
 
-   If you use SCATTER_REVERSE the two arguments x and y should be reversed, from
-   the SCATTER_FORWARD.
+   If you use `SCATTER_REVERSE` the two arguments x and y should be reversed, from
+   the `SCATTER_FORWARD`.
 
    y[iy[i]] = x[ix[i]], for i=0,...,ni-1
 
@@ -1283,7 +1284,7 @@ PetscErrorCode VecScatterCreateToZero(Vec vin, VecScatter *ctx, Vec *vout)
    single processor.  Similarly, if y is parallel and x sequential, the
    routine can scatter from one processor to many processors.
 
-.seealso: `VecScatterCreate()`, `VecScatterEnd()`
+.seealso: [](sec_scatter),  `VecScatter`, `VecScatterCreate()`, `VecScatterEnd()`
 @*/
 PetscErrorCode VecScatterBegin(VecScatter sf, Vec x, Vec y, InsertMode addv, ScatterMode mode)
 {
@@ -1323,27 +1324,26 @@ PetscErrorCode VecScatterBegin(VecScatter sf, Vec x, Vec y, InsertMode addv, Sca
 }
 
 /*@
-   VecScatterEnd - Ends a generalized scatter from one vector to another.  Call
-   after first calling VecScatterBegin().
+   VecScatterEnd - Ends a generalized scatter from one vector to another. Call
+   after first calling `VecScatterBegin()`.
 
-   Neighbor-wise Collective on VecScatter
+   Neighbor-wise Collective on sf
 
    Input Parameters:
-+  sf - scatter context generated by VecScatterCreate()
++  sf - scatter context generated by `VecScatterCreate()`
 .  x - the vector from which we scatter
 .  y - the vector to which we scatter
-.  addv - one of ADD_VALUES, MAX_VALUES, MIN_VALUES or INSERT_VALUES
--  mode - the scattering mode, usually SCATTER_FORWARD.  The available modes are:
-     SCATTER_FORWARD, SCATTER_REVERSE
+.  addv - one of `ADD_VALUES`, `MAX_VALUES`, `MIN_VALUES` or `INSERT_VALUES`
+-  mode - the scattering mode, usually `SCATTER_FORWARD`.  The available modes are: `SCATTER_FORWARD`, `SCATTER_REVERSE`
 
    Level: intermediate
 
    Notes:
-   If you use SCATTER_REVERSE the arguments x and y should be reversed, from the SCATTER_FORWARD.
+   If you use `SCATTER_REVERSE` the arguments x and y should be reversed, from the `SCATTER_FORWARD`.
 
    y[iy[i]] = x[ix[i]], for i=0,...,ni-1
 
-.seealso: `VecScatterBegin()`, `VecScatterCreate()`
+.seealso: [](sec_scatter), `VecScatter`, `VecScatterBegin()`, `VecScatterCreate()`
 @*/
 PetscErrorCode VecScatterEnd(VecScatter sf, Vec x, Vec y, InsertMode addv, ScatterMode mode)
 {

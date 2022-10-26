@@ -209,6 +209,9 @@ Note that for
 most PETSc matrices the values returned by ``MatGetOwnershipIS()`` are the same as those returned by  ``MatGetOwnershipRange()`` and
 ``MatGetOwnershipRangeColumn()``.
 
+The PETSc object ``PetscLayout`` contains the ownership information that is provided by ``VecGetOwnershipRange()`` and with ``MatGetOwnershipRange()``, ``MatGetOwnershipRangeColumn()``. Each vector has one layout, which can be obtained with ``VecGetLayout()`` and ``MatGetLayouts()``. Layouts support the routines ``PetscLayoutGetLocalSize()``, ``PetscLayoutGetSize()``, ``PetscLayoutGetBlockSize()``, ``PetscLayoutGetRanges()``, ``PetscLayoutCompare()`` as well as a variety of creation routines. These are used by the ``Vec`` and ``Mat`` and so are rarely needed directly. Finally ``PetscSplitOwnership()`` is a utility routine that does the same splitting of ownership ranges as `PetscLayout``.
+
+
 .. _sec_matsparse:
 
 Sparse Matrices

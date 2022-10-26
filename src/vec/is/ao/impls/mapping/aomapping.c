@@ -122,18 +122,23 @@ static struct _AOOps AOps = {
 };
 
 /*@C
-  AOMappingHasApplicationIndex - Searches for the supplied application index.
+  AOMappingHasApplicationIndex - Checks if an `AO` has a requested application index.
+
+  Not Collective
 
   Input Parameters:
-+ ao       - The AOMapping
++ ao       - The `AO`
 - index    - The application index
 
   Output Parameter:
-. hasIndex - Flag is PETSC_TRUE if the index exists
+. hasIndex - Flag is `PETSC_TRUE` if the index exists
 
   Level: intermediate
 
-.seealso: `AOMappingHasPetscIndex()`, `AOCreateMapping()`
+  Developer Note:
+  The name of the function is wrong, it should be `AOHasApplicationIndex`
+
+.seealso: [](sec_ao), `AOMappingHasPetscIndex()`, `AOCreateMapping()`, `AO`
 @*/
 PetscErrorCode AOMappingHasApplicationIndex(AO ao, PetscInt idex, PetscBool *hasIndex)
 {
@@ -161,18 +166,23 @@ PetscErrorCode AOMappingHasApplicationIndex(AO ao, PetscInt idex, PetscBool *has
 }
 
 /*@
-  AOMappingHasPetscIndex - Searches for the supplied petsc index.
+  AOMappingHasPetscIndex - checks if an `AO` has a requested petsc index.
+
+  Not Collective
 
   Input Parameters:
-+ ao       - The AOMapping
++ ao       - The `AO`
 - index    - The petsc index
 
   Output Parameter:
-. hasIndex - Flag is PETSC_TRUE if the index exists
+. hasIndex - Flag is `PETSC_TRUE` if the index exists
 
   Level: intermediate
 
-.seealso: `AOMappingHasApplicationIndex()`, `AOCreateMapping()`
+  Developer Note:
+  The name of the function is wrong, it should be `AOHasPetscIndex`
+
+.seealso: [](sec_ao), `AOMappingHasApplicationIndex()`, `AOCreateMapping()`
 @*/
 PetscErrorCode AOMappingHasPetscIndex(AO ao, PetscInt idex, PetscBool *hasIndex)
 {
@@ -200,10 +210,10 @@ PetscErrorCode AOMappingHasPetscIndex(AO ao, PetscInt idex, PetscBool *hasIndex)
 }
 
 /*@C
-  AOCreateMapping - Creates a basic application mapping using two integer arrays.
+  AOCreateMapping - Creates an application mapping using two integer arrays.
 
   Input Parameters:
-+ comm    - MPI communicator that is to share AO
++ comm    - MPI communicator that is to share the `AO`
 . napp    - size of integer arrays
 . myapp   - integer array that defines an ordering
 - mypetsc - integer array that defines another ordering (may be NULL to indicate the identity ordering)
@@ -212,15 +222,15 @@ PetscErrorCode AOMappingHasPetscIndex(AO ao, PetscInt idex, PetscBool *hasIndex)
 . aoout   - the new application mapping
 
   Options Database Key:
-. -ao_view - call AOView() at the conclusion of AOCreateMapping()
+. -ao_view - call `AOView()` at the conclusion of `AOCreateMapping()`
 
   Level: beginner
 
-    Notes:
-    the arrays myapp and mypetsc need NOT contain the all the integers 0 to napp-1, that is there CAN be "holes"  in the indices.
-       Use AOCreateBasic() or AOCreateBasicIS() if they do not have holes for better performance.
+    Note:
+    The arrays myapp and mypetsc need NOT contain the all the integers 0 to napp-1, that is there CAN be "holes"  in the indices.
+    Use `AOCreateBasic()` or `AOCreateBasicIS()` if they do not have holes for better performance.
 
-.seealso: `AOCreateBasic()`, `AOCreateBasic()`, `AOCreateMappingIS()`, `AODestroy()`
+.seealso: [](sec_ao), `AOCreateBasic()`, `AOCreateBasic()`, `AOCreateMappingIS()`, `AODestroy()`
 @*/
 PetscErrorCode AOCreateMapping(MPI_Comm comm, PetscInt napp, const PetscInt myapp[], const PetscInt mypetsc[], AO *aoout)
 {
@@ -313,26 +323,26 @@ PetscErrorCode AOCreateMapping(MPI_Comm comm, PetscInt napp, const PetscInt myap
 }
 
 /*@
-  AOCreateMappingIS - Creates a basic application ordering using two index sets.
+  AOCreateMappingIS - Creates an application mapping using two index sets.
 
   Input Parameters:
-+ comm    - MPI communicator that is to share AO
++ comm    - MPI communicator that is to share `AO`
 . isapp   - index set that defines an ordering
-- ispetsc - index set that defines another ordering, maybe NULL for identity IS
+- ispetsc - index set that defines another ordering, maybe NULL for identity `IS`
 
   Output Parameter:
 . aoout   - the new application ordering
 
   Options Database Key:
-. -ao_view - call AOView() at the conclusion of AOCreateMappingIS()
+. -ao_view - call `AOView()` at the conclusion of `AOCreateMappingIS()`
 
   Level: beginner
 
-    Notes:
-    the index sets isapp and ispetsc need NOT contain the all the integers 0 to N-1, that is there CAN be "holes"  in the indices.
-       Use AOCreateBasic() or AOCreateBasicIS() if they do not have holes for better performance.
+  Note:
+  The index sets isapp and ispetsc need NOT contain the all the integers 0 to N-1, that is there CAN be "holes"  in the indices.
+  Use `AOCreateBasic()` or `AOCreateBasicIS()` if they do not have holes for better performance.
 
-.seealso: `AOCreateBasic()`, `AOCreateMapping()`, `AODestroy()`
+.seealso: [](sec_ao), [](sec_scatter), `AOCreateBasic()`, `AOCreateMapping()`, `AODestroy()`
 @*/
 PetscErrorCode AOCreateMappingIS(IS isapp, IS ispetsc, AO *aoout)
 {

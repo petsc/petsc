@@ -64,7 +64,7 @@ PetscErrorCode ISInvertPermutation_Stride(IS is, PetscInt nlocal, IS *perm)
 }
 
 /*@
-   ISStrideGetInfo - Returns the first index in a stride index set and the stride width.
+   ISStrideGetInfo - Returns the first index in a stride index set and the stride width from an `IS` of `ISType` `ISSTRIDE`
 
    Not Collective
 
@@ -77,11 +77,7 @@ PetscErrorCode ISInvertPermutation_Stride(IS is, PetscInt nlocal, IS *perm)
 
    Level: intermediate
 
-   Notes:
-   Returns info on stride index set. This is a pseudo-public function that
-   should not be needed by most users.
-
-.seealso: `ISCreateStride()`, `ISGetSize()`, `ISSTRIDE`
+.seealso: [](sec_scatter), `IS`, `ISCreateStride()`, `ISGetSize()`, `ISSTRIDE`
 @*/
 PetscErrorCode ISStrideGetInfo(IS is, PetscInt *first, PetscInt *step)
 {
@@ -301,7 +297,7 @@ static struct _ISOps myops = {PetscDesignatedInitializer(getindices, ISGetIndice
 /*@
    ISStrideSetStride - Sets the stride information for a stride index set.
 
-   Collective on IS
+   Logically Collective on is
 
    Input Parameters:
 +  is - the index set
@@ -311,7 +307,10 @@ static struct _ISOps myops = {PetscDesignatedInitializer(getindices, ISGetIndice
 
    Level: beginner
 
-.seealso: `ISCreateGeneral()`, `ISCreateBlock()`, `ISAllGather()`, `ISSTRIDE`, `ISCreateStride()`, `ISStrideGetInfo()`
+   Note:
+   `ISCreateStride()` can be used to create an `ISSTRIDE` and set its stride in one function call
+
+.seealso: [](sec_scatter), `IS`, `ISCreateGeneral()`, `ISCreateBlock()`, `ISAllGather()`, `ISSTRIDE`, `ISCreateStride()`, `ISStrideGetInfo()`
 @*/
 PetscErrorCode ISStrideSetStride(IS is, PetscInt n, PetscInt first, PetscInt step)
 {
@@ -350,8 +349,7 @@ PetscErrorCode ISStrideSetStride_Stride(IS is, PetscInt n, PetscInt first, Petsc
 }
 
 /*@
-   ISCreateStride - Creates a data structure for an index set
-   containing a list of evenly spaced integers.
+   ISCreateStride - Creates a data structure for an index set containing a list of evenly spaced integers.
 
    Collective
 
@@ -364,14 +362,16 @@ PetscErrorCode ISStrideSetStride_Stride(IS is, PetscInt n, PetscInt first, Petsc
    Output Parameter:
 .  is - the new index set
 
-   Notes:
-   When the communicator is not MPI_COMM_SELF, the operations on IS are NOT
-   conceptually the same as MPI_Group operations. The IS are the
-   distributed sets of indices and thus certain operations on them are collective.
-
    Level: beginner
 
-.seealso: `ISCreateGeneral()`, `ISCreateBlock()`, `ISAllGather()`, `ISSTRIDE`
+   Notes:
+   `ISStrideSetStride()` may be used to set the stride of an `ISSTRIDE` that already exists
+
+   When the communicator is not `MPI_COMM_SELF`, the operations on `IS` are NOT
+   conceptually the same as `MPI_Group` operations. The `IS` are the
+   distributed sets of indices and thus certain operations on them are collective.
+
+.seealso: [](sec_scatter), `IS`, `ISStrideSetStride()`, `ISCreateGeneral()`, `ISCreateBlock()`, `ISAllGather()`, `ISSTRIDE`
 @*/
 PetscErrorCode ISCreateStride(MPI_Comm comm, PetscInt n, PetscInt first, PetscInt step, IS *is)
 {

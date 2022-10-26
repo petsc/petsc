@@ -180,7 +180,7 @@ static PetscErrorCode PetscViewerHDF5ReadArray_Private(PetscViewer viewer, HDF5R
 }
 
 /*@C
-  PetscViewerHDF5Load - Read a raw array from the HDF5 dataset.
+  PetscViewerHDF5Load - Read a raw array from the `PETSCVIEWERHDF5` dataset.
 
   Input Parameters:
 + viewer   - The HDF5 viewer
@@ -197,14 +197,16 @@ static PetscErrorCode PetscViewerHDF5ReadArray_Private(PetscViewer viewer, HDF5R
   Level: developer
 
   Notes:
-  This is intended mainly for internal use; users should use higher level routines such as ISLoad(), VecLoad(), DMLoad().
-  The array is partitioned according to the given PetscLayout which is converted to an HDF5 hyperslab.
-  This name is relative to the current group returned by PetscViewerHDF5OpenGroup().
+  This is intended mainly for internal use; users should use higher level routines such as `ISLoad()`, `VecLoad()`, `DMLoad()`.
 
-  Fortran Notes:
+  The array is partitioned according to the given `PetscLayout` which is converted to an HDF5 hyperslab.
+
+  This name is relative to the current group returned by `PetscViewerHDF5OpenGroup()`.
+
+  Fortran Note:
   This routine is not available in Fortran.
 
-.seealso `PetscViewerHDF5Open()`, `PetscViewerHDF5PushGroup()`, `PetscViewerHDF5OpenGroup()`, `PetscViewerHDF5ReadSizes()`, `VecLoad()`, `ISLoad()`
+.seealso `PetscViewer`, `PETSCVIEWERHDF5`, `PetscViewerHDF5Open()`, `PetscViewerHDF5PushGroup()`, `PetscViewerHDF5OpenGroup()`, `PetscViewerHDF5ReadSizes()`, `VecLoad()`, `ISLoad()`
 @*/
 PetscErrorCode PetscViewerHDF5Load(PetscViewer viewer, const char *name, PetscLayout map, hid_t datatype, void **newarr)
 {
@@ -247,7 +249,7 @@ PetscErrorCode PetscViewerHDF5Load(PetscViewer viewer, const char *name, PetscLa
 }
 
 /*@C
- PetscViewerHDF5ReadSizes - Read block size and global size of a vector (Vec or IS) stored in an HDF5 file.
+ PetscViewerHDF5ReadSizes - Read block size and global size of a `Vec` or `IS` stored in an HDF5 file.
 
   Input Parameters:
 + viewer - The HDF5 viewer
@@ -257,15 +259,15 @@ PetscErrorCode PetscViewerHDF5Load(PetscViewer viewer, const char *name, PetscLa
 + bs     - block size
 - N      - global size
 
+  Level: advanced
+
   Notes:
   The dataset is stored as an HDF5 dataspace with 1-4 dimensions in the order
   1) # timesteps (optional), 2) # blocks, 3) # elements per block (optional), 4) real and imaginary part (only for complex).
 
-  The dataset can be stored as a 2D dataspace even if its blocksize is 1; see PetscViewerHDF5SetBaseDimension2().
+  The dataset can be stored as a 2D dataspace even if its blocksize is 1; see `PetscViewerHDF5SetBaseDimension2()`.
 
-  Level: advanced
-
-.seealso: `PetscViewerHDF5Open()`, `VecLoad()`, `ISLoad()`, `VecGetSize()`, `ISGetSize()`, `PetscViewerHDF5SetBaseDimension2()`
+.seealso: `PetscViewer`, `PETSCVIEWERHDF5`, `PetscViewerHDF5Open()`, `VecLoad()`, `ISLoad()`, `VecGetSize()`, `ISGetSize()`, `PetscViewerHDF5SetBaseDimension2()`
 @*/
 PetscErrorCode PetscViewerHDF5ReadSizes(PetscViewer viewer, const char name[], PetscInt *bs, PetscInt *N)
 {
