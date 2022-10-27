@@ -1154,11 +1154,11 @@ static PetscErrorCode PetscFEInitialize_Basic(PetscFE fem)
 }
 
 /*MC
-  PETSCFEBASIC = "basic" - A PetscFE object that integrates with basic tiling and no vectorization
+  PETSCFEBASIC = "basic" - A `PetscFE` object that integrates with basic tiling and no vectorization
 
   Level: intermediate
 
-.seealso: `PetscFEType`, `PetscFECreate()`, `PetscFESetType()`
+.seealso: `PetscFE`, `PetscFEType`, `PetscFECreate()`, `PetscFESetType()`
 M*/
 
 PETSC_EXTERN PetscErrorCode PetscFECreate_Basic(PetscFE fem)

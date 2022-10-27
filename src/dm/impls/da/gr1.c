@@ -6,7 +6,7 @@
 #include <petsc/private/dmdaimpl.h> /*I  "petscdmda.h"   I*/
 
 /*@
-    DMDASetUniformCoordinates - Sets a DMDA coordinates to be a uniform grid
+    DMDASetUniformCoordinates - Sets a `DMDA` coordinates to be a uniform grid
 
   Collective on da
 
@@ -18,8 +18,7 @@
 
   Level: beginner
 
-.seealso: `DMSetCoordinates()`, `DMGetCoordinates()`, `DMDACreate1d()`, `DMDACreate2d()`, `DMDACreate3d()`, `DMStagSetUniformCoordinates()`
-
+.seealso: `DM`, `DMDA`, `DMSetCoordinates()`, `DMGetCoordinates()`, `DMDACreate1d()`, `DMDACreate2d()`, `DMDACreate3d()`, `DMStagSetUniformCoordinates()`
 @*/
 PetscErrorCode DMDASetUniformCoordinates(DM da, PetscReal xmin, PetscReal xmax, PetscReal ymin, PetscReal ymax, PetscReal zmin, PetscReal zmax)
 {

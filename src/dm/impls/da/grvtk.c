@@ -486,8 +486,8 @@ static PetscErrorCode DMDAVTKWriteAll_VTR(DM da, PetscViewer viewer)
    Collective
 
    Input Parameters:
-+  odm - DM specifying the grid layout, passed as a PetscObject
--  viewer - viewer of type VTK
++  odm - `DMDA` specifying the grid layout, passed as a `PetscObject`
+-  viewer - viewer of type `PETSCVIEWERVTK`
 
    Level: developer
 
@@ -499,7 +499,7 @@ static PetscErrorCode DMDAVTKWriteAll_VTR(DM da, PetscViewer viewer)
    If any fields have been named (see e.g. DMDASetFieldName()), then individual scalar
    fields are written. Otherwise, a single multi-dof (vector) field is written.
 
-.seealso: `PETSCVIEWERVTK`
+.seealso: `DMDA`, `DM`, `PETSCVIEWERVTK`
 @*/
 PetscErrorCode DMDAVTKWriteAll(PetscObject odm, PetscViewer viewer)
 {

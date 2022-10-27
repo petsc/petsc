@@ -42,19 +42,19 @@ PetscBool PetscDTGaussQuadratureNewton_Internal = PETSC_TRUE;
 PetscClassId PETSCQUADRATURE_CLASSID = 0;
 
 /*@
-  PetscQuadratureCreate - Create a PetscQuadrature object
+  PetscQuadratureCreate - Create a `PetscQuadrature` object
 
   Collective
 
   Input Parameter:
-. comm - The communicator for the PetscQuadrature object
+. comm - The communicator for the `PetscQuadrature` object
 
   Output Parameter:
 . q  - The PetscQuadrature object
 
   Level: beginner
 
-.seealso: `PetscQuadratureDestroy()`, `PetscQuadratureGetData()`
+.seealso: `PetscQuadrature`, `Petscquadraturedestroy()`, `PetscQuadratureGetData()`
 @*/
 PetscErrorCode PetscQuadratureCreate(MPI_Comm comm, PetscQuadrature *q)
 {
@@ -72,19 +72,19 @@ PetscErrorCode PetscQuadratureCreate(MPI_Comm comm, PetscQuadrature *q)
 }
 
 /*@
-  PetscQuadratureDuplicate - Create a deep copy of the PetscQuadrature object
+  PetscQuadratureDuplicate - Create a deep copy of the `PetscQuadrature` object
 
   Collective on q
 
   Input Parameter:
-. q  - The PetscQuadrature object
+. q  - The `PetscQuadrature` object
 
   Output Parameter:
-. r  - The new PetscQuadrature object
+. r  - The new `PetscQuadrature` object
 
   Level: beginner
 
-.seealso: `PetscQuadratureCreate()`, `PetscQuadratureDestroy()`, `PetscQuadratureGetData()`
+.seealso: `PetscQuadrature`, `PetscQuadratureCreate()`, `PetscQuadratureDestroy()`, `PetscQuadratureGetData()`
 @*/
 PetscErrorCode PetscQuadratureDuplicate(PetscQuadrature q, PetscQuadrature *r)
 {
@@ -107,16 +107,16 @@ PetscErrorCode PetscQuadratureDuplicate(PetscQuadrature q, PetscQuadrature *r)
 }
 
 /*@
-  PetscQuadratureDestroy - Destroys a PetscQuadrature object
+  PetscQuadratureDestroy - Destroys a `PetscQuadrature` object
 
   Collective on q
 
   Input Parameter:
-. q  - The PetscQuadrature object
+. q  - The `PetscQuadrature` object
 
   Level: beginner
 
-.seealso: `PetscQuadratureCreate()`, `PetscQuadratureGetData()`
+.seealso: `PetscQuadrature`, `PetscQuadratureCreate()`, `PetscQuadratureGetData()`
 @*/
 PetscErrorCode PetscQuadratureDestroy(PetscQuadrature *q)
 {
@@ -134,19 +134,19 @@ PetscErrorCode PetscQuadratureDestroy(PetscQuadrature *q)
 }
 
 /*@
-  PetscQuadratureGetOrder - Return the order of the method
+  PetscQuadratureGetOrder - Return the order of the method in the `PetscQuadrature`
 
   Not collective
 
   Input Parameter:
-. q - The PetscQuadrature object
+. q - The `PetscQuadrature` object
 
   Output Parameter:
 . order - The order of the quadrature, i.e. the highest degree polynomial that is exactly integrated
 
   Level: intermediate
 
-.seealso: `PetscQuadratureSetOrder()`, `PetscQuadratureGetData()`, `PetscQuadratureSetData()`
+.seealso: `PetscQuadrature`, `PetscQuadratureSetOrder()`, `PetscQuadratureGetData()`, `PetscQuadratureSetData()`
 @*/
 PetscErrorCode PetscQuadratureGetOrder(PetscQuadrature q, PetscInt *order)
 {
@@ -158,17 +158,17 @@ PetscErrorCode PetscQuadratureGetOrder(PetscQuadrature q, PetscInt *order)
 }
 
 /*@
-  PetscQuadratureSetOrder - Return the order of the method
+  PetscQuadratureSetOrder - Set the order of the method in the `PetscQuadrature`
 
   Not collective
 
   Input Parameters:
-+ q - The PetscQuadrature object
++ q - The `PetscQuadrature` object
 - order - The order of the quadrature, i.e. the highest degree polynomial that is exactly integrated
 
   Level: intermediate
 
-.seealso: `PetscQuadratureGetOrder()`, `PetscQuadratureGetData()`, `PetscQuadratureSetData()`
+.seealso: `PetscQuadrature`, `PetscQuadratureGetOrder()`, `PetscQuadratureGetData()`, `PetscQuadratureSetData()`
 @*/
 PetscErrorCode PetscQuadratureSetOrder(PetscQuadrature q, PetscInt order)
 {
@@ -184,16 +184,17 @@ PetscErrorCode PetscQuadratureSetOrder(PetscQuadrature q, PetscInt order)
   Not collective
 
   Input Parameter:
-. q - The PetscQuadrature object
+. q - The `PetscQuadrature` object
 
   Output Parameter:
 . Nc - The number of components
 
-  Note: We are performing an integral int f(x) . w(x) dx, where both f and w (the weight) have Nc components.
+  Note:
+  We are performing an integral int f(x) . w(x) dx, where both f and w (the weight) have Nc components.
 
   Level: intermediate
 
-.seealso: `PetscQuadratureSetNumComponents()`, `PetscQuadratureGetData()`, `PetscQuadratureSetData()`
+.seealso: `PetscQuadrature`, `PetscQuadratureSetNumComponents()`, `PetscQuadratureGetData()`, `PetscQuadratureSetData()`
 @*/
 PetscErrorCode PetscQuadratureGetNumComponents(PetscQuadrature q, PetscInt *Nc)
 {
@@ -213,11 +214,12 @@ PetscErrorCode PetscQuadratureGetNumComponents(PetscQuadrature q, PetscInt *Nc)
 + q  - The PetscQuadrature object
 - Nc - The number of components
 
-  Note: We are performing an integral int f(x) . w(x) dx, where both f and w (the weight) have Nc components.
+  Note:
+  We are performing an integral int f(x) . w(x) dx, where both f and w (the weight) have Nc components.
 
   Level: intermediate
 
-.seealso: `PetscQuadratureGetNumComponents()`, `PetscQuadratureGetData()`, `PetscQuadratureSetData()`
+.seealso: `PetscQuadrature`, `PetscQuadratureGetNumComponents()`, `PetscQuadratureGetData()`, `PetscQuadratureSetData()`
 @*/
 PetscErrorCode PetscQuadratureSetNumComponents(PetscQuadrature q, PetscInt Nc)
 {
@@ -228,12 +230,12 @@ PetscErrorCode PetscQuadratureSetNumComponents(PetscQuadrature q, PetscInt Nc)
 }
 
 /*@C
-  PetscQuadratureGetData - Returns the data defining the quadrature
+  PetscQuadratureGetData - Returns the data defining the `PetscQuadrature`
 
   Not collective
 
   Input Parameter:
-. q  - The PetscQuadrature object
+. q  - The `PetscQuadrature` object
 
   Output Parameters:
 + dim - The spatial dimension
@@ -244,10 +246,10 @@ PetscErrorCode PetscQuadratureSetNumComponents(PetscQuadrature q, PetscInt Nc)
 
   Level: intermediate
 
-  Fortran Notes:
-    From Fortran you must call PetscQuadratureRestoreData() when you are done with the data
+  Fortran Note:
+  From Fortran you must call `PetscQuadratureRestoreData()` when you are done with the data
 
-.seealso: `PetscQuadratureCreate()`, `PetscQuadratureSetData()`
+.seealso: `PetscQuadrature`, `PetscQuadratureCreate()`, `PetscQuadratureSetData()`
 @*/
 PetscErrorCode PetscQuadratureGetData(PetscQuadrature q, PetscInt *dim, PetscInt *Nc, PetscInt *npoints, const PetscReal *points[], const PetscReal *weights[])
 {
@@ -280,15 +282,15 @@ PetscErrorCode PetscQuadratureGetData(PetscQuadrature q, PetscInt *dim, PetscInt
   PetscQuadratureEqual - determine whether two quadratures are equivalent
 
   Input Parameters:
-+ A - A PetscQuadrature object
-- B - Another PetscQuadrature object
++ A - A `PetscQuadrature` object
+- B - Another `PetscQuadrature` object
 
   Output Parameters:
-. equal - PETSC_TRUE if the quadratures are the same
+. equal - `PETSC_TRUE` if the quadratures are the same
 
   Level: intermediate
 
-.seealso: `PetscQuadratureCreate()`
+.seealso: `PetscQuadrature`, `PetscQuadratureCreate()`
 @*/
 PetscErrorCode PetscQuadratureEqual(PetscQuadrature A, PetscQuadrature B, PetscBool *equal)
 {
@@ -414,7 +416,7 @@ static PetscErrorCode PetscDTJacobianInverse_Internal(PetscInt m, PetscInt n, co
 /*@
    PetscQuadraturePushForward - Push forward a quadrature functional under an affine transformation.
 
-   Collecive on PetscQuadrature
+   Collecive on `PetscQuadrature`
 
    Input Parameters:
 +  q - the quadrature functional
@@ -422,16 +424,17 @@ static PetscErrorCode PetscDTJacobianInverse_Internal(PetscInt m, PetscInt n, co
 .  origin - a point in the original space
 .  originImage - the image of the origin under the transformation
 .  J - the Jacobian of the image: an [imageDim x dim] matrix in row major order
--  formDegree - transform the quadrature weights as k-forms of this form degree (if the number of components is a multiple of (dim choose formDegree), it is assumed that they represent multiple k-forms) [see PetscDTAltVPullback() for interpretation of formDegree]
+-  formDegree - transform the quadrature weights as k-forms of this form degree (if the number of components is a multiple of (dim choose formDegree), it is assumed that they represent multiple k-forms) [see `PetscDTAltVPullback()` for interpretation of formDegree]
 
    Output Parameters:
 .  Jinvstarq - a quadrature rule where each point is the image of a point in the original quadrature rule, and where the k-form weights have been pulled-back by the pseudoinverse of J to the k-form weights in the image space.
 
-   Note: the new quadrature rule will have a different number of components if spaces have different dimensions.  For example, pushing a 2-form forward from a two dimensional space to a three dimensional space changes the number of components from 1 to 3.
-
    Level: intermediate
 
-.seealso: `PetscDTAltVPullback()`, `PetscDTAltVPullbackMatrix()`
+   Note:
+   The new quadrature rule will have a different number of components if spaces have different dimensions.  For example, pushing a 2-form forward from a two dimensional space to a three dimensional space changes the number of components from 1 to 3.
+
+.seealso: `PetscQuadrature`, `PetscDTAltVPullback()`, `PetscDTAltVPullbackMatrix()`
 @*/
 PetscErrorCode PetscQuadraturePushForward(PetscQuadrature q, PetscInt imageDim, const PetscReal origin[], const PetscReal originImage[], const PetscReal J[], PetscInt formDegree, PetscQuadrature *Jinvstarq)
 {
@@ -490,18 +493,19 @@ PetscErrorCode PetscQuadraturePushForward(PetscQuadrature q, PetscInt imageDim, 
   Not collective
 
   Input Parameters:
-+ q  - The PetscQuadrature object
++ q  - The `PetscQuadrature` object
 . dim - The spatial dimension
 . Nc - The number of components
 . npoints - The number of quadrature points
 . points - The coordinates of each quadrature point
 - weights - The weight of each quadrature point
 
-  Note: This routine owns the references to points and weights, so they must be allocated using PetscMalloc() and the user should not free them.
-
   Level: intermediate
 
-.seealso: `PetscQuadratureCreate()`, `PetscQuadratureGetData()`
+  Note:
+  This routine owns the references to points and weights, so they must be allocated using `PetscMalloc()` and the user should not free them.
+
+.seealso: `PetscQuadrature`, `PetscQuadratureCreate()`, `PetscQuadratureGetData()`
 @*/
 PetscErrorCode PetscQuadratureSetData(PetscQuadrature q, PetscInt dim, PetscInt Nc, PetscInt npoints, const PetscReal points[], const PetscReal weights[])
 {
@@ -552,17 +556,17 @@ static PetscErrorCode PetscQuadratureView_Ascii(PetscQuadrature quad, PetscViewe
 }
 
 /*@C
-  PetscQuadratureView - Views a PetscQuadrature object
+  PetscQuadratureView - View a `PetscQuadrature` object
 
   Collective on quad
 
   Input Parameters:
-+ quad  - The PetscQuadrature object
-- viewer - The PetscViewer object
++ quad  - The `PetscQuadrature` object
+- viewer - The `PetscViewer` object
 
   Level: beginner
 
-.seealso: `PetscQuadratureCreate()`, `PetscQuadratureGetData()`
+.seealso: `PetscQuadrature`, `PetscViewer`, `PetscQuadratureCreate()`, `PetscQuadratureGetData()`
 @*/
 PetscErrorCode PetscQuadratureView(PetscQuadrature quad, PetscViewer viewer)
 {
@@ -585,7 +589,7 @@ PetscErrorCode PetscQuadratureView(PetscQuadrature quad, PetscViewer viewer)
   Not collective
 
   Input Parameters:
-+ q - The original PetscQuadrature
++ q - The original `PetscQuadrature`
 . numSubelements - The number of subelements the original element is divided into
 . v0 - An array of the initial points for each subelement
 - jac - An array of the Jacobian mappings from the reference to each subelement
@@ -593,13 +597,15 @@ PetscErrorCode PetscQuadratureView(PetscQuadrature quad, PetscViewer viewer)
   Output Parameters:
 . dim - The dimension
 
-  Note: Together v0 and jac define an affine mapping from the original reference element to each subelement
+  Note:
+  Together v0 and jac define an affine mapping from the original reference element to each subelement
 
- Not available from Fortran
+  Fortran Note:
+  Not available from Fortran
 
   Level: intermediate
 
-.seealso: `PetscFECreate()`, `PetscSpaceGetDimension()`, `PetscDualSpaceGetDimension()`
+.seealso: `PetscQuadrature`, `PetscFECreate()`, `PetscSpaceGetDimension()`, `PetscDualSpaceGetDimension()`
 @*/
 PetscErrorCode PetscQuadratureExpandComposite(PetscQuadrature q, PetscInt numSubelements, const PetscReal v0[], const PetscReal jac[], PetscQuadrature *qref)
 {
@@ -673,7 +679,7 @@ PetscErrorCode PetscQuadratureExpandComposite(PetscQuadrature q, PetscInt numSub
 
   Level: beginner
 
-.seealso: `PetscDTJacobiEval()`
+.seealso: `PetscQuadrature`, `PetscDTJacobiEval()`
 @*/
 PetscErrorCode PetscDTJacobiNorm(PetscReal alpha, PetscReal beta, PetscInt n, PetscReal *norm)
 {
@@ -775,7 +781,9 @@ static PetscErrorCode PetscDTJacobiEval_Internal(PetscInt npoints, PetscReal a, 
 }
 
 /*@
-  PetscDTJacobiEvalJet - Evaluate the jet (function and derivatives) of the Jacobi polynomials basis up to a given degree.  The Jacobi polynomials with indices $\alpha$ and $\beta$ are orthogonal with respect to the weighted inner product $\langle f, g \rangle = \int_{-1}^1 (1+x)^{\alpha} (1-x)^{\beta) f(x) g(x) dx$.
+  PetscDTJacobiEvalJet - Evaluate the jet (function and derivatives) of the Jacobi polynomials basis up to a given degree.
+  The Jacobi polynomials with indices $\alpha$ and $\beta$ are orthogonal with respect to the weighted inner product
+  $\langle f, g \rangle = \int_{-1}^1 (1+x)^{\alpha} (1-x)^{\beta} f(x) g(x) dx$.
 
   Input Parameters:
 + alpha - the left exponent of the weight
@@ -823,7 +831,7 @@ PetscErrorCode PetscDTJacobiEvalJet(PetscReal alpha, PetscReal beta, PetscInt np
 }
 
 /*@
-   PetscDTJacobiEval - evaluate Jacobi polynomials for the weight function $(1.+x)^{\alpha} (1.-x)^{\beta}$
+   PetscDTJacobiEval - evaluate Jacobi polynomials for the weight function $(1.+x)^{\alpha} (1.-x)^{\beta}$ at a set of points
                        at points
 
    Not Collective
@@ -843,7 +851,7 @@ PetscErrorCode PetscDTJacobiEvalJet(PetscReal alpha, PetscReal beta, PetscInt np
 
    Level: intermediate
 
-.seealso: `PetscDTGaussQuadrature()`
+.seealso: `PetscDTGaussQuadrature()`, `PetscDTLegendreEval()`
 @*/
 PetscErrorCode PetscDTJacobiEval(PetscInt npoints, PetscReal alpha, PetscReal beta, const PetscReal *points, PetscInt ndegree, const PetscInt *degrees, PetscReal *B, PetscReal *D, PetscReal *D2)
 {
@@ -896,7 +904,8 @@ PetscErrorCode PetscDTLegendreEval(PetscInt npoints, const PetscReal *points, Pe
 
   Level: beginner
 
-  Note: for two tuples x and y with the same degree sum, partial degree sums over the final elements of the tuples
+  Note:
+  For two tuples x and y with the same degree sum, partial degree sums over the final elements of the tuples
   acts as a tiebreaker.  For example, (2, 1, 1) and (1, 2, 1) have the same degree sum, but the degree sum over the
   last two elements is smaller for the former, so (2, 1, 1) < (1, 2, 1).
 
@@ -934,7 +943,7 @@ PetscErrorCode PetscDTIndexToGradedOrder(PetscInt len, PetscInt index, PetscInt 
 }
 
 /*@
-  PetscDTGradedOrderToIndex - convert a tuple into an index in a graded order, the inverse of PetscDTIndexToGradedOrder().
+  PetscDTGradedOrderToIndex - convert a tuple into an index in a graded order, the inverse of `PetscDTIndexToGradedOrder()`.
 
   Input Parameters:
 + len - the length of the degree tuple
@@ -945,7 +954,8 @@ PetscErrorCode PetscDTIndexToGradedOrder(PetscInt len, PetscInt index, PetscInt 
 
   Level: Beginner
 
-  Note: for two tuples x and y with the same degree sum, partial degree sums over the final elements of the tuples
+  Note:
+  For two tuples x and y with the same degree sum, partial degree sums over the final elements of the tuples
   acts as a tiebreaker.  For example, (2, 1, 1) and (1, 2, 1) have the same degree sum, but the degree sum over the
   last two elements is smaller for the former, so (2, 1, 1) < (1, 2, 1).
 
@@ -1011,9 +1021,10 @@ const char       PKDCitation[] = "@article{Kirby2010,\n"
 
   Level: advanced
 
-  Note: The ordering of the basis functions, and the ordering of the derivatives in the jet, both follow the graded
-  ordering of PetscDTIndexToGradedOrder() and PetscDTGradedOrderToIndex().  For example, in 3D, the polynomial with
-  leading monomial x^2,y^0,z^1, which has degree tuple (2,0,1), which by PetscDTGradedOrderToIndex() has index 12 (it is the 13th basis function in the space);
+  Notes:
+  The ordering of the basis functions, and the ordering of the derivatives in the jet, both follow the graded
+  ordering of `PetscDTIndexToGradedOrder()` and `PetscDTGradedOrderToIndex()`.  For example, in 3D, the polynomial with
+  leading monomial x^2,y^0,z^1, which has degree tuple (2,0,1), which by `PetscDTGradedOrderToIndex()` has index 12 (it is the 13th basis function in the space);
   the partial derivative $\partial_x \partial_z$ has order tuple (1,0,1), appears at index 6 in the jet (it is the 7th partial derivative in the jet).
 
   The implementation uses Kirby's singularity-free evaluation algorithm, https://doi.org/10.1145/1644001.1644006.
@@ -1158,7 +1169,7 @@ PetscErrorCode PetscDTPKDEvalJet(PetscInt dim, PetscInt npoints, const PetscReal
 
 /*@
   PetscDTPTrimmedSize - The size of the trimmed polynomial space of k-forms with a given degree and form degree,
-  which can be evaluated in PetscDTPTrimmedEvalJet().
+  which can be evaluated in `PetscDTPTrimmedEvalJet()`.
 
   Input Parameters:
 + dim - the number of variables in the multivariate polynomials
@@ -1303,14 +1314,14 @@ static PetscErrorCode PetscDTPTrimmedEvalJet_Internal(PetscInt dim, PetscInt npo
 . points - [npoints x dim] array of point coordinates
 . degree - the degree (sum of degrees on the variables in a monomial) of the trimmed polynomial space to evaluate.
            There are ((dim + degree) choose (dim + formDegree)) x ((degree + formDegree - 1) choose (formDegree)) polynomials in this space.
-           (You can use PetscDTPTrimmedSize() to compute this size.)
+           (You can use `PetscDTPTrimmedSize()` to compute this size.)
 . formDegree - the degree of the form
 - jetDegree - the maximum order partial derivative to evaluate in the jet.  There are ((dim + jetDegree) choose dim) partial derivatives
               in the jet.  Choosing jetDegree = 0 means to evaluate just the function and no derivatives
 
   Output Parameters:
 - p - an array containing the evaluations of the PKD polynomials' jets on the points.  The size is
-      PetscDTPTrimmedSize() x ((dim + formDegree) choose dim) x ((dim + k) choose dim) x npoints,
+      `PetscDTPTrimmedSize()` x ((dim + formDegree) choose dim) x ((dim + k) choose dim) x npoints,
       which also describes the order of the dimensions of this
       four-dimensional array:
         the first (slowest varying) dimension is basis function index;
@@ -1320,8 +1331,9 @@ static PetscErrorCode PetscDTPTrimmedEvalJet_Internal(PetscInt dim, PetscInt npo
 
   Level: advanced
 
-  Note: The ordering of the basis functions is not graded, so the basis functions are not nested by degree like PetscDTPKDEvalJet().
-        The basis functions are not an L2-orthonormal basis on any particular domain.
+  Notes:
+  The ordering of the basis functions is not graded, so the basis functions are not nested by degree like `PetscDTPKDEvalJet()`.
+  The basis functions are not an L2-orthonormal basis on any particular domain.
 
   The implementation is based on the description of the trimmed polynomials up to degree r as
   the direct sum of polynomials up to degree (r-1) and the Koszul differential applied to
@@ -1666,7 +1678,10 @@ static PetscErrorCode PetscDTGaussJacobiQuadrature_Internal(PetscInt npoints, Pe
 
   Level: intermediate
 
-  Note: this quadrature rule is exact for polynomials up to degree 2*npoints - 1.
+  Note:
+  This quadrature rule is exact for polynomials up to degree 2*npoints - 1.
+
+.seealso: `PetscDTGaussQuadrature()`
 @*/
 PetscErrorCode PetscDTGaussJacobiQuadrature(PetscInt npoints, PetscReal a, PetscReal b, PetscReal alpha, PetscReal beta, PetscReal x[], PetscReal w[])
 {
@@ -1720,7 +1735,10 @@ static PetscErrorCode PetscDTGaussLobattoJacobiQuadrature_Internal(PetscInt npoi
 
   Level: intermediate
 
-  Note: this quadrature rule is exact for polynomials up to degree 2*npoints - 3.
+  Note:
+  This quadrature rule is exact for polynomials up to degree 2*npoints - 3.
+
+.seealso: `PetscDTGaussJacobiQuadrature()`
 @*/
 PetscErrorCode PetscDTGaussLobattoJacobiQuadrature(PetscInt npoints, PetscReal a, PetscReal b, PetscReal alpha, PetscReal beta, PetscReal x[], PetscReal w[])
 {
@@ -1756,7 +1774,7 @@ PetscErrorCode PetscDTGaussLobattoJacobiQuadrature(PetscInt npoints, PetscReal a
    References:
 .  * - Golub and Welsch, Calculation of Quadrature Rules, Math. Comp. 23(106), 1969.
 
-.seealso: `PetscDTLegendreEval()`
+.seealso: `PetscDTLegendreEval()`, `PetscDTGaussJacobiQuadrature()`
 @*/
 PetscErrorCode PetscDTGaussQuadrature(PetscInt npoints, PetscReal a, PetscReal b, PetscReal *x, PetscReal *w)
 {
@@ -1781,11 +1799,13 @@ PetscErrorCode PetscDTGaussQuadrature(PetscInt npoints, PetscReal a, PetscReal b
 
    Input Parameters:
 +  n - number of grid nodes
--  type - PETSCGAUSSLOBATTOLEGENDRE_VIA_LINEAR_ALGEBRA or PETSCGAUSSLOBATTOLEGENDRE_VIA_NEWTON
+-  type - `PETSCGAUSSLOBATTOLEGENDRE_VIA_LINEAR_ALGEBRA` or `PETSCGAUSSLOBATTOLEGENDRE_VIA_NEWTON`
 
    Output Parameters:
 +  x - quadrature points
 -  w - quadrature weights
+
+   Level: intermediate
 
    Notes:
     For n > 30  the Newton approach computes duplicate (incorrect) values for some nodes because the initial guess is apparently not
@@ -1795,9 +1815,7 @@ PetscErrorCode PetscDTGaussQuadrature(PetscInt npoints, PetscReal a, PetscReal b
 
    See  https://epubs.siam.org/doi/abs/10.1137/110855442  https://epubs.siam.org/doi/abs/10.1137/120889873 for better ways to compute GLL nodes
 
-   Level: intermediate
-
-.seealso: `PetscDTGaussQuadrature()`
+.seealso: `PetscDTGaussQuadrature()`, `PetscGaussLobattoLegendreCreateType`
 
 @*/
 PetscErrorCode PetscDTGaussLobattoLegendreQuadrature(PetscInt npoints, PetscGaussLobattoLegendreCreateType type, PetscReal *x, PetscReal *w)
@@ -1824,7 +1842,7 @@ PetscErrorCode PetscDTGaussLobattoLegendreQuadrature(PetscInt npoints, PetscGaus
 - b       - right end of interval (often +1)
 
   Output Parameter:
-. q - A PetscQuadrature object
+. q - A `PetscQuadrature` object
 
   Level: intermediate
 
@@ -1909,10 +1927,11 @@ PetscErrorCode PetscDTGaussTensorQuadrature(PetscInt dim, PetscInt Nc, PetscInt 
 
   Level: intermediate
 
+  Note:
+  For dim == 1, this is Gauss-Legendre quadrature
+
   References:
 . * - Karniadakis and Sherwin.  FIAT
-
-  Note: For dim == 1, this is Gauss-Legendre quadrature
 
 .seealso: `PetscDTGaussTensorQuadrature()`, `PetscDTGaussQuadrature()`
 @*/
@@ -2015,13 +2034,13 @@ static PetscErrorCode PetscDTPartitionNumber(PetscInt n, PetscInt *p)
 - type    - left end of interval (often-1)
 
   Output Parameter:
-. quad    - A PetscQuadrature object for integration over the biunit simplex
+. quad    - A `PetscQuadrature` object for integration over the biunit simplex
             (defined by the bounds $x_i >= -1$ and $\sum_i x_i <= 2 - d$) that is exact for
             polynomials up to the given degree
 
   Level: intermediate
 
-.seealso: `PetscDTSimplexQuadratureType`, `PetscDTGaussQuadrature()`, `PetscDTStroudCononicalQuadrature()`
+.seealso: `PetscDTSimplexQuadratureType`, `PetscDTGaussQuadrature()`, `PetscDTStroudCononicalQuadrature()`, `PetscQuadrature`
 @*/
 PetscErrorCode PetscDTSimplexQuadrature(PetscInt dim, PetscInt degree, PetscDTSimplexQuadratureType type, PetscQuadrature *quad)
 {
@@ -2194,11 +2213,11 @@ PetscErrorCode PetscDTSimplexQuadrature(PetscInt dim, PetscInt degree, PetscDTSi
 - b     - right end of interval (often +1)
 
   Output Parameter:
-. q - A PetscQuadrature object
+. q - A `PetscQuadrature` object
 
   Level: intermediate
 
-.seealso: `PetscDTGaussTensorQuadrature()`
+.seealso: `PetscDTGaussTensorQuadrature()`, `PetscQuadrature`
 @*/
 PetscErrorCode PetscDTTanhSinhTensorQuadrature(PetscInt dim, PetscInt level, PetscReal a, PetscReal b, PetscQuadrature *q)
 {
@@ -2434,11 +2453,11 @@ PetscErrorCode PetscDTTanhSinhIntegrateMPFR(void (*func)(const PetscReal[], void
 - q2 - The second quadrature
 
   Output Parameter:
-. q - A PetscQuadrature object
+. q - A `PetscQuadrature` object
 
   Level: intermediate
 
-.seealso: `PetscDTGaussTensorQuadrature()`
+.seealso: `PetscQuadrature`, `PetscDTGaussTensorQuadrature()`
 @*/
 PetscErrorCode PetscDTTensorQuadratureCreate(PetscQuadrature q1, PetscQuadrature q2, PetscQuadrature *q)
 {
@@ -2479,10 +2498,10 @@ PetscErrorCode PetscDTTensorQuadratureCreate(PetscQuadrature q1, PetscQuadrature
 }
 
 /* Overwrites A. Can only handle full-rank problems with m>=n
- * A in column-major format
- * Ainv in row-major format
- * tau has length m
- * worksize must be >= max(1,n)
+   A in column-major format
+   Ainv in row-major format
+   tau has length m
+   worksize must be >= max(1,n)
  */
 static PetscErrorCode PetscDTPseudoInverseQR(PetscInt m, PetscInt mstride, PetscInt n, PetscReal *A_in, PetscReal *Ainv_out, PetscScalar *tau, PetscInt worksize, PetscScalar *work)
 {
@@ -2637,7 +2656,6 @@ PetscErrorCode PetscDTReconstructPoly(PetscInt degree, PetscInt nsource, const P
    Level: beginner
 
 .seealso: `PetscDTGaussLobattoLegendreQuadrature()`
-
 @*/
 PetscErrorCode PetscGaussLobattoLegendreIntegrate(PetscInt n, PetscReal *nodes, PetscReal *weights, const PetscReal *f, PetscReal *in)
 {
@@ -2665,12 +2683,11 @@ PetscErrorCode PetscGaussLobattoLegendreIntegrate(PetscInt n, PetscReal *nodes, 
    Level: beginner
 
    Notes:
-    Destroy this with PetscGaussLobattoLegendreElementLaplacianDestroy()
+   Destroy this with `PetscGaussLobattoLegendreElementLaplacianDestroy()`
 
    You can access entries in this array with AA[i][j] but in memory it is stored in contiguous memory, row oriented (the array is symmetric)
 
 .seealso: `PetscDTGaussLobattoLegendreQuadrature()`, `PetscGaussLobattoLegendreElementLaplacianDestroy()`
-
 @*/
 PetscErrorCode PetscGaussLobattoLegendreElementLaplacianCreate(PetscInt n, PetscReal *nodes, PetscReal *weights, PetscReal ***AA)
 {
@@ -2746,7 +2763,7 @@ PetscErrorCode PetscGaussLobattoLegendreElementLaplacianCreate(PetscInt n, Petsc
 }
 
 /*@C
-   PetscGaussLobattoLegendreElementLaplacianDestroy - frees the Laplacian for a single 1d GLL element
+   PetscGaussLobattoLegendreElementLaplacianDestroy - frees the Laplacian for a single 1d GLL element created with `PetscGaussLobattoLegendreElementLaplacianCreate()`
 
    Not Collective
 
@@ -2759,7 +2776,6 @@ PetscErrorCode PetscGaussLobattoLegendreElementLaplacianCreate(PetscInt n, Petsc
    Level: beginner
 
 .seealso: `PetscDTGaussLobattoLegendreQuadrature()`, `PetscGaussLobattoLegendreElementLaplacianCreate()`
-
 @*/
 PetscErrorCode PetscGaussLobattoLegendreElementLaplacianDestroy(PetscInt n, PetscReal *nodes, PetscReal *weights, PetscReal ***AA)
 {
@@ -2787,12 +2803,11 @@ PetscErrorCode PetscGaussLobattoLegendreElementLaplacianDestroy(PetscInt n, Pets
    Level: beginner
 
    Notes:
-    Destroy this with PetscGaussLobattoLegendreElementGradientDestroy()
+   Destroy this with `PetscGaussLobattoLegendreElementGradientDestroy()`
 
    You can access entries in these arrays with AA[i][j] but in memory it is stored in contiguous memory, row oriented
 
-.seealso: `PetscDTGaussLobattoLegendreQuadrature()`, `PetscGaussLobattoLegendreElementLaplacianDestroy()`
-
+.seealso: `PetscDTGaussLobattoLegendreQuadrature()`, `PetscGaussLobattoLegendreElementLaplacianDestroy()`, `PetscGaussLobattoLegendreElementGradientDestroy()`
 @*/
 PetscErrorCode PetscGaussLobattoLegendreElementGradientCreate(PetscInt n, PetscReal *nodes, PetscReal *weights, PetscReal ***AA, PetscReal ***AAT)
 {
@@ -2832,7 +2847,7 @@ PetscErrorCode PetscGaussLobattoLegendreElementGradientCreate(PetscInt n, PetscR
 }
 
 /*@C
-   PetscGaussLobattoLegendreElementGradientDestroy - frees the gradient for a single 1d GLL element obtained with PetscGaussLobattoLegendreElementGradientCreate()
+   PetscGaussLobattoLegendreElementGradientDestroy - frees the gradient for a single 1d GLL element obtained with `PetscGaussLobattoLegendreElementGradientCreate()`
 
    Not Collective
 
@@ -2846,7 +2861,6 @@ PetscErrorCode PetscGaussLobattoLegendreElementGradientCreate(PetscInt n, PetscR
    Level: beginner
 
 .seealso: `PetscDTGaussLobattoLegendreQuadrature()`, `PetscGaussLobattoLegendreElementLaplacianCreate()`, `PetscGaussLobattoLegendreElementAdvectionCreate()`
-
 @*/
 PetscErrorCode PetscGaussLobattoLegendreElementGradientDestroy(PetscInt n, PetscReal *nodes, PetscReal *weights, PetscReal ***AA, PetscReal ***AAT)
 {
@@ -2878,14 +2892,13 @@ PetscErrorCode PetscGaussLobattoLegendreElementGradientDestroy(PetscInt n, Petsc
    Level: beginner
 
    Notes:
-    Destroy this with PetscGaussLobattoLegendreElementAdvectionDestroy()
+   Destroy this with `PetscGaussLobattoLegendreElementAdvectionDestroy()`
 
    This is the same as the Gradient operator multiplied by the diagonal mass matrix
 
    You can access entries in this array with AA[i][j] but in memory it is stored in contiguous memory, row oriented
 
 .seealso: `PetscDTGaussLobattoLegendreQuadrature()`, `PetscGaussLobattoLegendreElementLaplacianCreate()`, `PetscGaussLobattoLegendreElementAdvectionDestroy()`
-
 @*/
 PetscErrorCode PetscGaussLobattoLegendreElementAdvectionCreate(PetscInt n, PetscReal *nodes, PetscReal *weights, PetscReal ***AA)
 {
@@ -2904,7 +2917,7 @@ PetscErrorCode PetscGaussLobattoLegendreElementAdvectionCreate(PetscInt n, Petsc
 }
 
 /*@C
-   PetscGaussLobattoLegendreElementAdvectionDestroy - frees the advection stiffness for a single 1d GLL element
+   PetscGaussLobattoLegendreElementAdvectionDestroy - frees the advection stiffness for a single 1d GLL element created with `PetscGaussLobattoLegendreElementAdvectionCreate()`
 
    Not Collective
 
@@ -2917,7 +2930,6 @@ PetscErrorCode PetscGaussLobattoLegendreElementAdvectionCreate(PetscInt n, Petsc
    Level: beginner
 
 .seealso: `PetscDTGaussLobattoLegendreQuadrature()`, `PetscGaussLobattoLegendreElementAdvectionCreate()`
-
 @*/
 PetscErrorCode PetscGaussLobattoLegendreElementAdvectionDestroy(PetscInt n, PetscReal *nodes, PetscReal *weights, PetscReal ***AA)
 {
@@ -2972,7 +2984,8 @@ PetscErrorCode PetscGaussLobattoLegendreElementMassDestroy(PetscInt n, PetscReal
 
   Level: beginner
 
-  Note: the indices map to barycentric coordinates in lexicographic order, where the first index is the
+  Note:
+  The indices map to barycentric coordinates in lexicographic order, where the first index is the
   least significant and the last index is the most significant.
 
 .seealso: `PetscDTBaryToIndex()`
@@ -3028,7 +3041,8 @@ PetscErrorCode PetscDTIndexToBary(PetscInt len, PetscInt sum, PetscInt index, Pe
 
   Level: beginner
 
-  Note: the indices map to barycentric coordinates in lexicographic order, where the first index is the
+  Note:
+  The indices map to barycentric coordinates in lexicographic order, where the first index is the
   least significant and the last index is the most significant.
 
 .seealso: `PetscDTIndexToBary`

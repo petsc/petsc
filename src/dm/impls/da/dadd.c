@@ -1,30 +1,30 @@
 #include <petsc/private/dmdaimpl.h> /*I   "petscdmda.h"   I*/
 
 /*@
-  DMDACreatePatchIS - Creates an index set corresponding to a patch of the DA.
+  DMDACreatePatchIS - Creates an index set corresponding to a patch of the `DMDA`.
 
   Collective
 
   Input Parameters:
-+  da - the DMDA
++  da - the `DMDA`
 .  lower - a matstencil with i, j and k corresponding to the lower corner of the patch
 .  upper - a matstencil with i, j and k corresponding to the upper corner of the patch
 -  offproc - indicate whether the returned IS will contain off process indices
 
   Output Parameters:
-.  is - the IS corresponding to the patch
+.  is - the `IS` corresponding to the patch
 
   Level: developer
 
-Notes:
-This routine always returns an IS on the DMDA's comm, if offproc is set to PETSC_TRUE,
-the routine returns an IS with all the indices requested regardless of whether these indices
-are present on the requesting rank or not. Thus, it is upon the caller to ensure that
-the indices returned in this mode are appropriate. If offproc is set to PETSC_FALSE,
-the IS only returns the subset of indices that are present on the requesting rank and there
-is no duplication of indices.
+  Notes:
+  This routine always returns an `IS` on the `DMDA` comm, if offproc is set to `PETSC_TRUE`,
+  the routine returns an `IS` with all the indices requested regardless of whether these indices
+  are present on the requesting rank or not. Thus, it is upon the caller to ensure that
+  the indices returned in this mode are appropriate. If offproc is set to `PETSC_FALSE`,
+  the `IS` only returns the subset of indices that are present on the requesting rank and there
+  is no duplication of indices.
 
-.seealso: `DMCreateDomainDecomposition()`, `DMCreateDomainDecompositionScatters()`
+.seealso: `DM`, `DMDA`, `DMCreateDomainDecomposition()`, `DMCreateDomainDecompositionScatters()`
 @*/
 PetscErrorCode DMDACreatePatchIS(DM da, MatStencil *lower, MatStencil *upper, IS *is, PetscBool offproc)
 {
