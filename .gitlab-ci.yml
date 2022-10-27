@@ -514,8 +514,9 @@ linux-cuda-pkgs-gcov:
     # 2. require device, OR
     # 3. require kokkos[_kernels], AND lives in the vec subdirectory
     #
-    # need to do the silly escaping otherwise get '/usr/bin/bash: line 1: name: command not found'
-    TEST_OPTS: -j3 queryval='cuda,device,kokkos*,vec*' query='"requires,requires,requires|name"'
+    # need to use the alternate OR spelling since '|' is interpreted as a pipe by the
+    # shell, and I could not manage to escape it enough times...
+    TEST_OPTS: -j3 queryval='cuda,device,kokkos*,vec*' query='requires,requires,requires%OR%name'
     LOAD_MODULES: py-gcovr-5.2-gcc-11.2.0-wcsmyet
     RUN_GCOV: 1
     RUN_GCOV_OPTIONS: --decisions

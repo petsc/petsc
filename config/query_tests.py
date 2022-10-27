@@ -358,9 +358,15 @@ def main():
         string = ret[0]
       return string
 
+    def alternate_command_preprocess(string):
+      """
+      Replace the alternate versions in STRING with the regular variants
+      """
+      return string.replace('%OR%', '|').replace('%AND%', ',').replace('%NEG%', '!')
+
     # Process arguments and options -- mostly just paths here
-    field=shell_unquote(args[0])
-    match=shell_unquote(args[1])
+    field=alternate_command_preprocess(shell_unquote(args[0]))
+    match=alternate_command_preprocess(shell_unquote(args[1]))
     searchin=opts.searchin
 
     petsc_dir = opts.petsc_dir
