@@ -2507,7 +2507,7 @@ PetscErrorCode TaoGetType(Tao tao, TaoType *type)
 /*@C
   TaoMonitor - Monitor the solver and the current solution.  This
   routine will record the iteration number and residual statistics,
-  call any monitors specified by the user, and calls the convergence-check routine.
+  and call any monitors specified by the user.
 
    Input Parameters:
 +  tao - the Tao context
