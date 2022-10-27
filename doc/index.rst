@@ -45,9 +45,10 @@ Main Topics
 
 * `PETSc/TAO Users Manual in PDF <docs/manual/manual.pdf>`__
 
+.. _doc_toolkits_use_petsc:
 
 Toolkits/libraries that use PETSc
-==========================================
+=================================
 
 -  `ADflow <https://github.com/mdolab/adflow>`__ An Open-Source
    Computational Fluid Dynamics Solver for Aerodynamic and
