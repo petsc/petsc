@@ -82,8 +82,7 @@ PetscErrorCode PetscObjectDelayedDestroy(PetscObject *obj)
 static PetscErrorCode GarbageKeySortedIntersect_Private(PetscInt64 seta[], PetscInt *lena, PetscInt64 setb[], PetscInt lenb)
 {
   /* The arrays seta and setb MUST be sorted! */
-  PetscInt    ii, counter = 0;
-  PetscInt64 *endb;
+  PetscInt ii, jj = 0, counter = 0;
 
   PetscFunctionBegin;
   if (PetscDefined(USE_DEBUG)) {
@@ -94,14 +93,15 @@ static PetscErrorCode GarbageKeySortedIntersect_Private(PetscInt64 seta[], Petsc
     PetscCall(PetscSortedInt64(lenb, setb, &sorted));
     PetscCheck(sorted, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Provided array in argument 3 is not sorted");
   }
-  endb = setb + (PetscInt64)lenb;
   for (ii = 0; ii < *lena; ii++) {
-    while ((seta[ii] > *setb) && (setb < endb)) { setb++; }
-    if (seta[ii] == *setb) {
+    while (jj < lenb && seta[ii] > setb[jj]) { jj++; }
+    if (jj >= lenb) break;
+    if (seta[ii] == setb[jj]) {
       seta[counter] = seta[ii];
       counter++;
     }
   }
+
   *lena = counter;
   PetscFunctionReturn(0);
 }
