@@ -151,7 +151,10 @@ class GcovrRunner:
       # #endif
       #
       # So to work around it we exclude offending files
-      args.extend(['--exclude', 'src/sys/error/fp.c'])
+      args.extend([
+        '--exclude', 'src/sys/error/fp.c',
+        '--exclude', 'src/dm/impls/da/kokkos/dagetov.kokkos.cxx'
+      ])
     if version > (5,2):
       # so we don't forget to check in case we update
       raise RuntimeError(

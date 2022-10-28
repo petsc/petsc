@@ -52,6 +52,8 @@ configure_options = [
   '--download-revolve=1',
   '--download-cams=1',
   '--download-slepc',
+  '--download-kokkos',
+  '--download-kokkos-kernels',
   ]
 
 if __name__ == '__main__':
