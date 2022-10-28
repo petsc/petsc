@@ -3921,6 +3921,7 @@ static PetscErrorCode DMSetFromOptions_Plex(DM dm, PetscOptionItems *PetscOption
     ((DM_Plex *)dm->data)->coordFunc = NULL;
     PetscCall(DMSetFromOptions_NonRefinement_Plex(dm, PetscOptionsObject));
     extLayers = 0;
+    PetscCall(DMGetDimension(dm, &dim));
   }
   /* Handle DMPlex reordering before distribution */
   PetscCall(DMPlexReorderGetDefault(dm, &reorder));
