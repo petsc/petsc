@@ -3,6 +3,7 @@
 #include <petsc/private/hashseti.h>   /*I   "petscdmplex.h"   I*/
 #include <petscsf.h>
 #include <petscdmplextransform.h>
+#include <petscdmlabelephemeral.h>
 #include <petsc/private/kernels/blockmatmult.h>
 #include <petsc/private/kernels/blockinvert.h>
 
@@ -5216,5 +5217,57 @@ PetscErrorCode DMPlexCreateFromFile(MPI_Comm comm, const char filename[], const 
   PetscCall(PetscStrlen(plexname, &len));
   if (len) PetscCall(PetscObjectSetName((PetscObject)(*dm), plexname));
   PetscCall(PetscLogEventEnd(DMPLEX_CreateFromFile, 0, 0, 0, 0));
+  PetscFunctionReturn(0);
+}
+/*@C
+  DMPlexCreateEphemeral - This takes a `DMPlexTransform` and a base `DMPlex` and produces an ephemeral `DM`, meaning one that is created on the fly in response to queries.
+
+  Input Parameter:
+. tr - The `DMPlexTransform`
+
+  Output Parameter:
+. dm - The `DM`
+
+  Notes:
+  An emphemeral mesh is one that is not stored concretely, as in the default Plex implementation, but rather is produced on the fly in response to queries, using information from the transform and the base mesh.
+
+  Level: beginner
+
+.seealso: `DMPlexCreateFromFile`, `DMPlexCreateFromDAG()`, `DMPlexCreateFromCellListPetsc()`, `DMPlexCreate()`
+@*/
+PetscErrorCode DMPlexCreateEphemeral(DMPlexTransform tr, DM *dm)
+{
+  DM       bdm;
+  PetscInt Nl;
+
+  PetscFunctionBegin;
+  PetscCall(DMCreate(PetscObjectComm((PetscObject)tr), dm));
+  PetscCall(DMSetType(*dm, DMPLEX));
+  PetscCall(DMSetFromOptions(*dm));
+
+  PetscCall(PetscObjectReference((PetscObject)tr));
+  PetscCall(DMPlexTransformDestroy(&((DM_Plex *)(*dm)->data)->tr));
+  ((DM_Plex *)(*dm)->data)->tr = tr;
+
+  PetscCall(DMPlexTransformGetDM(tr, &bdm));
+  PetscCall(DMGetNumLabels(bdm, &Nl));
+  for (PetscInt l = 0; l < Nl; ++l) {
+    DMLabel     label, labelNew;
+    const char *lname;
+    PetscBool   isDepth, isCellType;
+
+    PetscCall(DMGetLabelName(bdm, l, &lname));
+    PetscCall(PetscStrcmp(lname, "depth", &isDepth));
+    if (isDepth) continue;
+    PetscCall(PetscStrcmp(lname, "celltype", &isCellType));
+    if (isCellType) continue;
+    PetscCall(DMCreateLabel(*dm, lname));
+    PetscCall(DMGetLabel(bdm, lname, &label));
+    PetscCall(DMGetLabel(*dm, lname, &labelNew));
+    PetscCall(DMLabelSetType(labelNew, DMLABELEPHEMERAL));
+    PetscCall(DMLabelEphemeralSetLabel(labelNew, label));
+    PetscCall(DMLabelEphemeralSetTransform(labelNew, tr));
+    PetscCall(DMLabelSetUp(labelNew));
+  }
   PetscFunctionReturn(0);
 }

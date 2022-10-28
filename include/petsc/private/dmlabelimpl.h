@@ -7,6 +7,15 @@
 #include <petsc/private/hashmapi.h>
 #include <petsc/private/hashseti.h>
 
+typedef struct _p_DMLabelOps *DMLabelOps;
+struct _p_DMLabelOps {
+  PetscErrorCode (*view)(DMLabel, PetscViewer);
+  PetscErrorCode (*setup)(DMLabel);
+  PetscErrorCode (*destroy)(DMLabel);
+  PetscErrorCode (*duplicate)(DMLabel, DMLabel *);
+  PetscErrorCode (*getstratumis)(DMLabel, PetscInt, IS *);
+};
+
 /* This is an integer map, in addition it is also a container class
    Design points:
      - Low storage is the most important design point
@@ -14,7 +23,8 @@
      - We can live with O(log) query, but we need O(1) iteration over strata
 */
 struct _p_DMLabel {
-  PETSCHEADER(int);
+  PETSCHEADER(struct _p_DMLabelOps);
+  PetscBool readonly;      /* Flag for labels which cannot be modified after creation */
   PetscInt  numStrata;     /* Number of integer values */
   PetscInt  defaultValue;  /* Background value when no value explicitly given */
   PetscInt *stratumValues; /* Value of each stratum */
@@ -32,6 +42,8 @@ struct _p_DMLabel {
   PetscInt *propArray; /* Array of values for propagation */
 };
 
+PETSC_INTERN PetscErrorCode DMLabelLookupStratum(DMLabel, PetscInt, PetscInt *);
+PETSC_INTERN PetscErrorCode DMLabelGetStratumSize_Private(DMLabel, PetscInt, PetscInt *);
 PETSC_INTERN PetscErrorCode PetscSectionSymCreate_Label(PetscSectionSym);
 PETSC_INTERN PetscErrorCode DMLabelMakeAllInvalid_Internal(DMLabel);
 #endif

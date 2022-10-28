@@ -2,6 +2,7 @@ static char help[] = "Tests for ephemeral meshes.\n";
 
 #include <petscdmplex.h>
 #include <petscdmplextransform.h>
+#include <petscdmlabelephemeral.h>
 
 /*
   Use
@@ -76,14 +77,7 @@ static PetscErrorCode CreateTransform(DM dm, DMLabel active, const char prefix[]
 static PetscErrorCode CreateEphemeralMesh(DMPlexTransform tr, DM *tdm)
 {
   PetscFunctionBegin;
-  PetscCall(DMCreate(PetscObjectComm((PetscObject)tr), tdm));
-  PetscCall(DMSetType(*tdm, DMPLEX));
-  PetscCall(DMSetFromOptions(*tdm));
-
-  PetscCall(PetscObjectReference((PetscObject)tr));
-  PetscCall(DMPlexTransformDestroy(&((DM_Plex *)(*tdm)->data)->tr));
-  ((DM_Plex *)(*tdm)->data)->tr = tr;
-
+  PetscCall(DMPlexCreateEphemeral(tr, tdm));
   PetscCall(PetscObjectSetName((PetscObject)*tdm, "Ephemeral Mesh"));
   PetscCall(PetscObjectSetOptionsPrefix((PetscObject)*tdm, "eph_"));
   PetscFunctionReturn(0);
@@ -200,10 +194,11 @@ int main(int argc, char *argv[])
     suffix: quad
     args: -dm_plex_simplex 0
 
+  # Here I am checking that the 'marker' label is correct for the ephemeral mesh
   test:
     suffix: tet
     requires: ctetgen
-    args: -dm_plex_dim 3
+    args: -dm_plex_dim 3 -ref_dm_view -eph_dm_view -eph_dm_plex_view_labels marker
 
   test:
     suffix: hex
@@ -224,7 +219,7 @@ int main(int argc, char *argv[])
 
   # Tests for refined filter patches
   testset:
-    args: -first_dm_plex_transform_type transform_filter -ref_dm_view -second
+    args: -first_dm_plex_transform_type transform_filter -ref_dm_view -eph_dm_view -second
 
     test:
       suffix: tri_patch_ref

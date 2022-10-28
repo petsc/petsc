@@ -1,13 +1,14 @@
--include ../../../petscdir.mk
+-include ../../../../petscdir.mk
 
-SOURCEC  = dmlabel.c
+SOURCEC  = dmlabeleph.c
 SOURCEF  =
 SOURCEH  =
-DIRS     = impls tutorials
+DIRS     =
 LIBBASE  = libpetscdm
+DIRS     = plex
 MANSEC   = DM
 SUBMANSEC= DMLabel
-LOCDIR   = src/dm/label/
+LOCDIR   = src/dm/label/impls/ephemeral/
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules

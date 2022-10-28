@@ -60,6 +60,9 @@ Changes: Development
 
 .. rubric:: DM/DA:
 
+- Add ``DMLabelGetType()``, ``DMLabelSetType()``, ``DMLabelSetUp()``, ``DMLabelRegister()``, ``DMLabelRegisterAll()``, ``DMLabelRegisterDestroy()``
+- Add ``DMLabelEphemeralGetLabel()``, ``DMLabelEphemeralSetLabel()``, ``DMLabelEphemeralGetTransform()``, ``DMLabelEphemeralSetTransform()``
+
 .. rubric:: DMSwarm:
 
 .. rubric:: DMPlex:
@@ -67,6 +70,7 @@ Changes: Development
 - Add ``DMPlexGetOrientedCone()`` and ``DMPlexRestoreOrientedCone()`` to return both cone and orientation together
 - Add ``DMPlexTransformGetChart()``, ``DMPlexTransformGetCellType()``, ``DMPlexTransformGetDepth()``, ``DMPlexTransformGetDepthStratum()``, ``DMPlexTransformGetConeSize()`` to enable ephemeral meshes
 - Remove ``DMPlexAddConeSize()``
+- Add ``DMPlexCreateEphemeral()``
 
 .. rubric:: FE/FV:
 
