@@ -37,6 +37,7 @@ class Configure(config.package.CMakePackage):
   def formCMakeConfigureArgs(self):
     args = config.package.CMakePackage.formCMakeConfigureArgs(self)
 
+    # ref. https://portal.nersc.gov/project/sparse/strumpack/master/installation.html
     args.append('-DTPL_BLAS_LIBRARIES="'+self.libraries.toString(self.blasLapack.dlib)+'"')
     args.append('-DTPL_LAPACK_LIBRARIES="'+self.libraries.toString(self.blasLapack.dlib)+'"')
     args.append('-DTPL_SCALAPACK_LIBRARIES="'+self.libraries.toString(self.scalapack.lib)+'"')
@@ -52,11 +53,11 @@ class Configure(config.package.CMakePackage):
       args.append('-DTPL_ENABLE_PARMETIS=OFF')
 
     if self.ptscotch.found:
-      args.append('-DTPL_ENABLE_SCOTCH=ON')
-      args.append('-DTPL_SCOTCH_LIBRARIES="'+self.libraries.toString(self.ptscotch.lib)+'"')
-      args.append('-DTPL_SCOTCH_INCLUDE_DIRS="'+self.headers.toStringNoDupes(self.ptscotch.include)[2:]+'"')
+      args.append('-DTPL_ENABLE_PTSCOTCH=ON')
+      args.append('-DTPL_PTSCOTCH_LIBRARIES="'+self.libraries.toString(self.ptscotch.lib)+'"')
+      args.append('-DTPL_PTSCOTCH_INCLUDE_DIRS="'+self.headers.toStringNoDupes(self.ptscotch.include)[2:]+'"')
     else:
-      args.append('-DTPL_ENABLE_SCOTCH=OFF')
+      args.append('-DTPL_ENABLE_PTSCOTCH=OFF')
 
     if self.openmp.found:
       args.append('-DSTRUMPACK_USE_OPENMP=ON')
