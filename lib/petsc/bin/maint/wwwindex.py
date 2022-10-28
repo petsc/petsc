@@ -29,7 +29,8 @@ def printindex(outfilename, headfilename, levels, titles, tables):
                 headbuf = fd.read()
                 headbuf = headbuf.replace('PETSC_DIR', '../../../')
       else:
-            print('Header file "%s" does not exist' % headfilename)
+            print('Error! SUBMANSEC header file "%s" does not exist' % headfilename)
+            print('Likley you introduced a new set of manual pages but did not add the header file that describes them')
 
       with open(outfilename, "w") as fd:
           fd.write(headbuf)

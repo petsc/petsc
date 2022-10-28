@@ -426,6 +426,12 @@ preconditioner matrix, or a user-provided preconditioner shell
 direct solver is to be employed. Details about using matrix-free methods
 are provided in the :doc:`/docs/manual/index`.
 
+.. figure:: /images/docs/manual/taofig.svg
+  :name: fig_taocallbacks
+
+  Tao use of PETSc and callbacks
+
+
 .. _sec_bounds:
 
 Constraints

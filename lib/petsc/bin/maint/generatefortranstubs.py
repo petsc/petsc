@@ -1,7 +1,21 @@
 #!/usr/bin/env python
 #!/bin/env python
 #
-#    Generates fortran stubs for PETSc using Sowings bfort program
+#    Generates fortran stubs for PETSc using the Sowing bfort program
+#
+#    This tool looks for the values MANSEC and [BFORT]SUBMANSEC (where BFORTSUBMANSEC has priority over SUBMANSEC)
+#    defined in the makefile (or include file when there is no makefile)
+#
+#    The F90 generated interface fils are stored in src/MANSEC/f90-mod/ftn-auto-interfaces/petsc[BFORT]SUBMANSEC.h90
+#
+#    These are then included by the petsc[[BFORT]SUB]MANSECmod.F90 files to create the Fortran module files
+#
+#    SUBMANSEC (but not BFORTSUBMANSEC) is also used (in the documentation generating part of PETSc) to determine what
+#    directory in doc/docs/manualpages/ the manual pages are deposited.
+#
+#    An example of when the BFORTSUBMANSEC may be different than SUBMANSEC is src/dm/label/impls/ephemeral/plex where we would like
+#    the documentation to be stored under DMLabel but the function interfaces need to go into the DMPLEX Fortran module
+#    (not the DM Fortran module) since they depend on DMPlexTransform.
 #
 from __future__ import print_function
 import os
@@ -92,6 +106,7 @@ def FixDir(petscdir,dir,verbose):
 
   submansec = 'unknown'
   mansec = 'unknown'
+  bfortsubmansec = 'unknown'
   cnames = []
   hnames = []
   parentdir = os.path.abspath(os.path.join(dir,'..'))
@@ -123,10 +138,15 @@ def FixDir(petscdir,dir,verbose):
         locdir = line.rstrip() + 'ftn-auto/'
       elif line.find('SUBMANSEC') >=0:
         submansec = line.split('=')[1].lower().strip()
+      elif line.find('BFORTSUBMANSEC') >=0:
+        bfortsubmansec = line.split('=')[1].lower().strip()
       elif line.find('MANSEC') >=0:
         submansec = line.split('=')[1].lower().strip()
       if line.find('MANSEC') >=0 and not line.find('SUBMANSEC') >=0:
         mansec = line.split('=')[1].lower().strip()
+
+    if not bfortsubmansec == 'unknown':
+      submansec = bfortsubmansec
 
     # now assemble the makefile
     outbuf  =  '\n'
