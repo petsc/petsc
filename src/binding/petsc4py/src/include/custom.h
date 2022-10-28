@@ -1,6 +1,7 @@
 #ifndef PETSC4PY_CUSTOM_H
 #define PETSC4PY_CUSTOM_H
 
+#include "petsc/private/deviceimpl.h"
 #include "petsc/private/vecimpl.h"
 #include "petsc/private/matimpl.h"
 #include "petsc/private/kspimpl.h"

@@ -122,6 +122,7 @@ include "petsclog.pxi"
 include "petscobj.pxi"
 include "petscvwr.pxi"
 include "petscrand.pxi"
+include "petscdevice.pxi"
 include "petscis.pxi"
 include "petscsf.pxi"
 include "petscvec.pxi"
@@ -165,6 +166,7 @@ include "Comm.pyx"
 include "Object.pyx"
 include "Viewer.pyx"
 include "Random.pyx"
+include "Device.pyx"
 include "IS.pyx"
 include "SF.pyx"
 include "Vec.pyx"
@@ -436,6 +438,8 @@ cdef extern from *:
     PetscClassId PETSC_DMLABEL_CLASSID          "DMLABEL_CLASSID"
     PetscClassId PETSC_SPACE_CLASSID            "PETSCSPACE_CLASSID"
     PetscClassId PETSC_DUALSPACE_CLASSID        "PETSCDUALSPACE_CLASSID"
+    PetscClassId PETSC_DEVICE_CLASSID           "PETSC_DEVICE_CLASSID"
+    PetscClassId PETSC_DEVICE_CONTEXT_CLASSID   "PETSC_DEVICE_CONTEXT_CLASSID"
 
 cdef bint registercalled = 0
 
@@ -468,6 +472,8 @@ cdef int register() except -1:
     PyPetscType_Register(PETSC_OBJECT_CLASSID,           Object)
     PyPetscType_Register(PETSC_VIEWER_CLASSID,           Viewer)
     PyPetscType_Register(PETSC_RANDOM_CLASSID,           Random)
+    PyPetscType_Register(PETSC_DEVICE_CLASSID,           Device)
+    PyPetscType_Register(PETSC_DEVICE_CONTEXT_CLASSID,   DeviceContext)
     PyPetscType_Register(PETSC_IS_CLASSID,               IS)
     PyPetscType_Register(PETSC_LGMAP_CLASSID,            LGMap)
     PyPetscType_Register(PETSC_SF_CLASSID,               SF)
