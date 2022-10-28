@@ -2975,8 +2975,6 @@ cdef PetscErrorCode TaoCreate_Python(
             <PetscObject>tao, b"TaoPythonGetType_C",
             <PetscVoidFunction>TaoPythonGetType_PYTHON) )
     #
-    tao.max_it = 10000
-    #
     CHKERR( TaoCreateDefaultLineSearch(tao) )
     CHKERR( TaoCreateDefaultKSP(tao) )
     #
