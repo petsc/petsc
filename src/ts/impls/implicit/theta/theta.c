@@ -1170,15 +1170,15 @@ static PetscErrorCode TSGetStages_Theta(TS ts, PetscInt *ns, Vec *Y[])
 
    Level: beginner
 
-   Options Database:
+   Options Database Keys:
 +  -ts_theta_theta <Theta> - Location of stage (0<Theta<=1)
 .  -ts_theta_endpoint <flag> - Use the endpoint (like Crank-Nicholson) instead of midpoint form of the Theta method
 -  -ts_theta_initial_guess_extrapolate <flg> - Extrapolate stage initial guess from previous solution (sometimes unstable)
 
    Notes:
-$  -ts_type theta -ts_theta_theta 1.0 corresponds to backward Euler (TSBEULER)
+$  -ts_type theta -ts_theta_theta 1.0 corresponds to backward Euler (`TSBEULER`)
 $  -ts_type theta -ts_theta_theta 0.5 corresponds to the implicit midpoint rule
-$  -ts_type theta -ts_theta_theta 0.5 -ts_theta_endpoint corresponds to Crank-Nicholson (TSCN)
+$  -ts_type theta -ts_theta_theta 0.5 -ts_theta_endpoint corresponds to Crank-Nicholson (`TSCN`)
 
    The endpoint variant of the Theta method and backward Euler can be applied to DAE. The midpoint variant is not suitable for DAEs because it is not stiffly accurate.
 
@@ -1209,8 +1209,7 @@ $  Y_i = X + h sum_j a_ij Y'_j
 
    is interpreted as a formula for Y'_i in terms of Y_i and known values (Y'_j, j<i)
 
-.seealso: `TSCreate()`, `TS`, `TSSetType()`, `TSCN`, `TSBEULER`, `TSThetaSetTheta()`, `TSThetaSetEndpoint()`
-
+.seealso: [](chapter_ts), `TSCreate()`, `TS`, `TSSetType()`, `TSCN`, `TSBEULER`, `TSThetaSetTheta()`, `TSThetaSetEndpoint()`
 M*/
 PETSC_EXTERN PetscErrorCode TSCreate_Theta(TS ts)
 {
@@ -1266,7 +1265,7 @@ PETSC_EXTERN PetscErrorCode TSCreate_Theta(TS ts)
 }
 
 /*@
-  TSThetaGetTheta - Get the abscissa of the stage in (0,1].
+  TSThetaGetTheta - Get the abscissa of the stage in (0,1] for `TSTHETA`
 
   Not Collective
 
@@ -1276,12 +1275,12 @@ PETSC_EXTERN PetscErrorCode TSCreate_Theta(TS ts)
   Output Parameter:
 .  theta - stage abscissa
 
+  Level: advanced
+
   Note:
-  Use of this function is normally only required to hack TSTHETA to use a modified integration scheme.
+  Use of this function is normally only required to hack `TSTHETA` to use a modified integration scheme.
 
-  Level: Advanced
-
-.seealso: `TSThetaSetTheta()`
+.seealso: [](chapter_ts), `TSThetaSetTheta()`, `TSTHETA`
 @*/
 PetscErrorCode TSThetaGetTheta(TS ts, PetscReal *theta)
 {
@@ -1293,7 +1292,7 @@ PetscErrorCode TSThetaGetTheta(TS ts, PetscReal *theta)
 }
 
 /*@
-  TSThetaSetTheta - Set the abscissa of the stage in (0,1].
+  TSThetaSetTheta - Set the abscissa of the stage in (0,1]  for `TSTHETA`
 
   Not Collective
 
@@ -1301,12 +1300,12 @@ PetscErrorCode TSThetaGetTheta(TS ts, PetscReal *theta)
 +  ts - timestepping context
 -  theta - stage abscissa
 
-  Options Database:
+  Options Database Key:
 .  -ts_theta_theta <theta> - set theta
 
-  Level: Intermediate
+  Level: intermediate
 
-.seealso: `TSThetaGetTheta()`
+.seealso: [](chapter_ts), `TSThetaGetTheta()`, `TSTHETA`, `TSCN`
 @*/
 PetscErrorCode TSThetaSetTheta(TS ts, PetscReal theta)
 {
@@ -1317,7 +1316,7 @@ PetscErrorCode TSThetaSetTheta(TS ts, PetscReal theta)
 }
 
 /*@
-  TSThetaGetEndpoint - Gets whether to use the endpoint variant of the method (e.g. trapezoid/Crank-Nicolson instead of midpoint rule).
+  TSThetaGetEndpoint - Gets whether to use the endpoint variant of the method (e.g. trapezoid/Crank-Nicolson instead of midpoint rule) for `TSTHETA`
 
   Not Collective
 
@@ -1325,11 +1324,11 @@ PetscErrorCode TSThetaSetTheta(TS ts, PetscReal theta)
 .  ts - timestepping context
 
   Output Parameter:
-.  endpoint - PETSC_TRUE when using the endpoint variant
+.  endpoint - `PETSC_TRUE` when using the endpoint variant
 
-  Level: Advanced
+  Level: advanced
 
-.seealso: `TSThetaSetEndpoint()`, `TSTHETA`, `TSCN`
+.seealso: [](chapter_ts), `TSThetaSetEndpoint()`, `TSTHETA`, `TSCN`
 @*/
 PetscErrorCode TSThetaGetEndpoint(TS ts, PetscBool *endpoint)
 {
@@ -1341,20 +1340,20 @@ PetscErrorCode TSThetaGetEndpoint(TS ts, PetscBool *endpoint)
 }
 
 /*@
-  TSThetaSetEndpoint - Sets whether to use the endpoint variant of the method (e.g. trapezoid/Crank-Nicolson instead of midpoint rule).
+  TSThetaSetEndpoint - Sets whether to use the endpoint variant of the method (e.g. trapezoid/Crank-Nicolson instead of midpoint rule) for `TSTHETA`
 
   Not Collective
 
   Input Parameters:
 +  ts - timestepping context
--  flg - PETSC_TRUE to use the endpoint variant
+-  flg - `PETSC_TRUE` to use the endpoint variant
 
-  Options Database:
+  Options Database Key:
 .  -ts_theta_endpoint <flg> - use the endpoint variant
 
-  Level: Intermediate
+  Level: intermediate
 
-.seealso: `TSTHETA`, `TSCN`
+.seealso: [](chapter_ts), `TSTHETA`, `TSCN`
 @*/
 PetscErrorCode TSThetaSetEndpoint(TS ts, PetscBool flg)
 {
@@ -1391,13 +1390,11 @@ static PetscErrorCode TSView_BEuler(TS ts, PetscViewer viewer)
 
   Level: beginner
 
-  Notes:
-  TSBEULER is equivalent to TSTHETA with Theta=1.0
-
+  Note:
+  `TSBEULER` is equivalent to `TSTHETA` with Theta=1.0
 $  -ts_type theta -ts_theta_theta 1.0
 
-.seealso: `TSCreate()`, `TS`, `TSSetType()`, `TSEULER`, `TSCN`, `TSTHETA`
-
+.seealso: [](chapter_ts), `TSCreate()`, `TS`, `TSSetType()`, `TSEULER`, `TSCN`, `TSTHETA`
 M*/
 PETSC_EXTERN PetscErrorCode TSCreate_BEuler(TS ts)
 {
@@ -1433,12 +1430,14 @@ static PetscErrorCode TSView_CN(TS ts, PetscViewer viewer)
   Level: beginner
 
   Notes:
-  TSCN is equivalent to TSTHETA with Theta=0.5 and the "endpoint" option set. I.e.
+  `TSCN` is equivalent to `TSTHETA` with Theta=0.5 and the "endpoint" option set. I.e.
+.vb
+  -ts_type theta
+  -ts_theta_theta 0.5
+  -ts_theta_endpoint
+.ve
 
-$  -ts_type theta -ts_theta_theta 0.5 -ts_theta_endpoint
-
-.seealso: `TSCreate()`, `TS`, `TSSetType()`, `TSBEULER`, `TSTHETA`
-
+.seealso: [](chapter_ts), `TSCreate()`, `TS`, `TSSetType()`, `TSBEULER`, `TSTHETA`, `TSType`,
 M*/
 PETSC_EXTERN PetscErrorCode TSCreate_CN(TS ts)
 {

@@ -24,55 +24,55 @@ static RKTableauLink RKTableauList;
 
      This method has one stage.
 
-     Options database:
+     Options Database Key:
 .     -ts_rk_type 1fe - use type 1fe
 
      Level: advanced
 
-.seealso: `TSRK`, `TSRKType`, `TSRKSetType()`
+.seealso: [](chapter_ts), `TSRK`, `TSRKType`, `TSRKSetType()`
 M*/
 /*MC
      TSRK2A - Second order RK scheme (Heun's method).
 
      This method has two stages.
 
-     Options database:
+     Options Database Key:
 .     -ts_rk_type 2a - use type 2a
 
      Level: advanced
 
-.seealso: `TSRK`, `TSRKType`, `TSRKSetType()`
+.seealso: [](chapter_ts), `TSRK`, `TSRKType`, `TSRKSetType()`
 M*/
 /*MC
      TSRK2B - Second order RK scheme (the midpoint method).
 
      This method has two stages.
 
-     Options database:
+     Options Database Key:
 .     -ts_rk_type 2b - use type 2b
 
      Level: advanced
 
-.seealso: `TSRK`, `TSRKType`, `TSRKSetType()`
+.seealso: [](chapter_ts), `TSRK`, `TSRKType`, `TSRKSetType()`
 M*/
 /*MC
      TSRK3 - Third order RK scheme.
 
      This method has three stages.
 
-     Options database:
+     Options Database Key:
 .     -ts_rk_type 3 - use type 3
 
      Level: advanced
 
-.seealso: `TSRK`, `TSRKType`, `TSRKSetType()`
+.seealso: [](chapter_ts), `TSRK`, `TSRKType`, `TSRKSetType()`
 M*/
 /*MC
      TSRK3BS - Third order RK scheme of Bogacki-Shampine with 2nd order embedded method.
 
      This method has four stages with the First Same As Last (FSAL) property.
 
-     Options database:
+     Options Database Key:
 .     -ts_rk_type 3bs - use type 3bs
 
      Level: advanced
@@ -80,38 +80,38 @@ M*/
      References:
 . * - https://doi.org/10.1016/0893-9659(89)90079-7
 
-.seealso: `TSRK`, `TSRKType`, `TSRKSetType()`
+.seealso: [](chapter_ts), `TSRK`, `TSRKType`, `TSRKSetType()`
 M*/
 /*MC
      TSRK4 - Fourth order RK scheme.
 
      This is the classical Runge-Kutta method with four stages.
 
-     Options database:
+     Options Database Key:
 .     -ts_rk_type 4 - use type 4
 
      Level: advanced
 
-.seealso: `TSRK`, `TSRKType`, `TSRKSetType()`
+.seealso: [](chapter_ts), `TSRK`, `TSRKType`, `TSRKSetType()`
 M*/
 /*MC
      TSRK5F - Fifth order Fehlberg RK scheme with a 4th order embedded method.
 
      This method has six stages.
 
-     Options database:
+     Options Database Key:
 .     -ts_rk_type 5f - use type 5f
 
      Level: advanced
 
-.seealso: `TSRK`, `TSRKType`, `TSRKSetType()`
+.seealso: [](chapter_ts), `TSRK`, `TSRKType`, `TSRKSetType()`
 M*/
 /*MC
      TSRK5DP - Fifth order Dormand-Prince RK scheme with the 4th order embedded method.
 
      This method has seven stages with the First Same As Last (FSAL) property.
 
-     Options database:
+     Options Database Key:
 .     -ts_rk_type 5dp - use type 5dp
 
      Level: advanced
@@ -119,14 +119,14 @@ M*/
      References:
 . * - https://doi.org/10.1016/0771-050X(80)90013-3
 
-.seealso: `TSRK`, `TSRKType`, `TSRKSetType()`
+.seealso: [](chapter_ts), `TSRK`, `TSRKType`, `TSRKSetType()`
 M*/
 /*MC
      TSRK5BS - Fifth order Bogacki-Shampine RK scheme with 4th order embedded method.
 
      This method has eight stages with the First Same As Last (FSAL) property.
 
-     Options database:
+     Options Database Key:
 .     -ts_rk_type 5bs - use type 5bs
 
      Level: advanced
@@ -134,14 +134,14 @@ M*/
      References:
 . * - https://doi.org/10.1016/0898-1221(96)00141-1
 
-.seealso: `TSRK`, `TSRKType`, `TSRKSetType()`
+.seealso: [](chapter_ts), `TSRK`, `TSRKType`, `TSRKSetType()`
 M*/
 /*MC
      TSRK6VR - Sixth order robust Verner RK scheme with fifth order embedded method.
 
      This method has nine stages with the First Same As Last (FSAL) property.
 
-     Options database:
+     Options Database Key:
 .     -ts_rk_type 6vr - use type 6vr
 
      Level: advanced
@@ -149,14 +149,14 @@ M*/
      References:
 . * - http://people.math.sfu.ca/~jverner/RKV65.IIIXb.Robust.00010102836.081204.CoeffsOnlyRAT
 
-.seealso: `TSRK`, `TSRKType`, `TSRKSetType()`
+.seealso: [](chapter_ts), `TSRK`, `TSRKType`, `TSRKSetType()`
 M*/
 /*MC
      TSRK7VR - Seventh order robust Verner RK scheme with sixth order embedded method.
 
      This method has ten stages.
 
-     Options database:
+     Options Database Key:
 .     -ts_rk_type 7vr - use type 7vr
 
      Level: advanced
@@ -164,14 +164,14 @@ M*/
      References:
 . * - http://people.math.sfu.ca/~jverner/RKV76.IIa.Robust.000027015646.081206.CoeffsOnlyRAT
 
-.seealso: `TSRK`, `TSRKType`, `TSRKSetType()`
+.seealso: [](chapter_ts), `TSRK`, `TSRKType`, `TSRKSetType()`
 M*/
 /*MC
      TSRK8VR - Eigth order robust Verner RK scheme with seventh order embedded method.
 
      This method has thirteen stages.
 
-     Options database:
+     Options Database Key:
 .     -ts_rk_type 8vr - use type 8vr
 
      Level: advanced
@@ -179,17 +179,17 @@ M*/
      References:
 . * - http://people.math.sfu.ca/~jverner/RKV87.IIa.Robust.00000754677.081208.CoeffsOnlyRATandFLOAT
 
-.seealso: `TSRK`, `TSRKType`, `TSRKSetType()`
+.seealso: [](chapter_ts), `TSRK`, `TSRKType`, `TSRKSetType()`
 M*/
 
 /*@C
-  TSRKRegisterAll - Registers all of the Runge-Kutta explicit methods in TSRK
+  TSRKRegisterAll - Registers all of the Runge-Kutta explicit methods in `TSRK`
 
   Not Collective, but should be called by all processes which will need the schemes to be registered
 
   Level: advanced
 
-.seealso: `TSRKRegisterDestroy()`
+.seealso: [](chapter_ts), `TSRKRegisterDestroy()`, `TSRKRegister()`
 @*/
 PetscErrorCode TSRKRegisterAll(void)
 {
@@ -358,13 +358,13 @@ PetscErrorCode TSRKRegisterAll(void)
 }
 
 /*@C
-   TSRKRegisterDestroy - Frees the list of schemes that were registered by TSRKRegister().
+   TSRKRegisterDestroy - Frees the list of schemes that were registered by `TSRKRegister()`.
 
    Not Collective
 
    Level: advanced
 
-.seealso: `TSRKRegister()`, `TSRKRegisterAll()`
+.seealso: [](chapter_ts), `TSRK`, `TSRKRegister()`, `TSRKRegisterAll()`
 @*/
 PetscErrorCode TSRKRegisterDestroy(void)
 {
@@ -385,12 +385,12 @@ PetscErrorCode TSRKRegisterDestroy(void)
 }
 
 /*@C
-  TSRKInitializePackage - This function initializes everything in the TSRK package. It is called
-  from TSInitializePackage().
+  TSRKInitializePackage - This function initializes everything in the `TSRK` package. It is called
+  from `TSInitializePackage()`.
 
   Level: developer
 
-.seealso: `PetscInitialize()`
+.seealso: [](chapter_ts), `TSInitializePackage()`, `PetscInitialize()`, `TSRKFinalizePackage()`
 @*/
 PetscErrorCode TSRKInitializePackage(void)
 {
@@ -403,12 +403,12 @@ PetscErrorCode TSRKInitializePackage(void)
 }
 
 /*@C
-  TSRKFinalizePackage - This function destroys everything in the TSRK package. It is
-  called from PetscFinalize().
+  TSRKFinalizePackage - This function destroys everything in the `TSRK` package. It is
+  called from `PetscFinalize()`.
 
   Level: developer
 
-.seealso: `PetscFinalize()`
+.seealso: [](chapter_ts), `PetscFinalize()`, `TSRKInitializePackage()`
 @*/
 PetscErrorCode TSRKFinalizePackage(void)
 {
@@ -419,7 +419,7 @@ PetscErrorCode TSRKFinalizePackage(void)
 }
 
 /*@C
-   TSRKRegister - register an RK scheme by providing the entries in the Butcher tableau and optionally embedded approximations and interpolation
+   TSRKRegister - register an `TSRK` scheme by providing the entries in the Butcher tableau and optionally embedded approximations and interpolation
 
    Not Collective, but the same schemes should be registered on all processes on which they will be used
 
@@ -434,12 +434,12 @@ PetscErrorCode TSRKFinalizePackage(void)
 .  p - Order of the interpolation scheme, equal to the number of columns of binterp
 -  binterp - Coefficients of the interpolation formula (dimension s*p; NULL to reuse b with p=1)
 
-   Notes:
-   Several RK methods are provided, this function is only needed to create new methods.
-
    Level: advanced
 
-.seealso: `TSRK`
+   Note:
+   Several `TSRK` methods are provided, this function is only needed to create new methods.
+
+.seealso: [](chapter_ts), `TSRK`
 @*/
 PetscErrorCode TSRKRegister(TSRKType name, PetscInt order, PetscInt s, const PetscReal A[], const PetscReal b[], const PetscReal c[], const PetscReal bembed[], PetscInt p, const PetscReal binterp[])
 {
@@ -511,7 +511,7 @@ PetscErrorCode TSRKGetTableau_RK(TS ts, PetscInt *s, const PetscReal **A, const 
 }
 
 /*@C
-   TSRKGetTableau - Get info on the RK tableau
+   TSRKGetTableau - Get info on the `TSRK` tableau
 
    Not Collective
 
@@ -530,7 +530,7 @@ PetscErrorCode TSRKGetTableau_RK(TS ts, PetscInt *s, const PetscReal **A, const 
 
    Level: developer
 
-.seealso: `TSRK`
+.seealso: [](chapter_ts), `TSRK`, `TSRKRegister()`, `TSRKSetType()`
 @*/
 PetscErrorCode TSRKGetTableau(TS ts, PetscInt *s, const PetscReal **A, const PetscReal **b, const PetscReal **c, const PetscReal **bembed, PetscInt *p, const PetscReal **binterp, PetscBool *FSAL)
 {
@@ -1240,7 +1240,7 @@ static PetscErrorCode TSLoad_RK(TS ts, PetscViewer viewer)
 }
 
 /*@
-  TSRKGetOrder - Get the order of RK scheme
+  TSRKGetOrder - Get the order of the `TSRK` scheme
 
   Not collective
 
@@ -1248,11 +1248,11 @@ static PetscErrorCode TSLoad_RK(TS ts, PetscViewer viewer)
 .  ts - timestepping context
 
   Output Parameter:
-.  order - order of RK-scheme
+.  order - order of `TSRK` scheme
 
   Level: intermediate
 
-.seealso: `TSRKGetType()`
+.seealso: [](chapter_ts), `TSRK`, `TSRKGetType()`
 @*/
 PetscErrorCode TSRKGetOrder(TS ts, PetscInt *order)
 {
@@ -1264,20 +1264,20 @@ PetscErrorCode TSRKGetOrder(TS ts, PetscInt *order)
 }
 
 /*@C
-  TSRKSetType - Set the type of RK scheme
+  TSRKSetType - Set the type of the `TSRK` scheme
 
   Logically collective
 
   Input Parameters:
 +  ts - timestepping context
--  rktype - type of RK-scheme
+-  rktype - type of `TSRK` scheme
 
-  Options Database:
+  Options Database Key:
 .   -ts_rk_type - <1fe,2a,3,3bs,4,5f,5dp,5bs>
 
   Level: intermediate
 
-.seealso: `TSRKGetType()`, `TSRK`, `TSRKType`, `TSRK1FE`, `TSRK2A`, `TSRK2B`, `TSRK3`, `TSRK3BS`, `TSRK4`, `TSRK5F`, `TSRK5DP`, `TSRK5BS`, `TSRK6VR`, `TSRK7VR`, `TSRK8VR`
+.seealso: [](chapter_ts), `TSRKGetType()`, `TSRK`, `TSRKType`, `TSRK1FE`, `TSRK2A`, `TSRK2B`, `TSRK3`, `TSRK3BS`, `TSRK4`, `TSRK5F`, `TSRK5DP`, `TSRK5BS`, `TSRK6VR`, `TSRK7VR`, `TSRK8VR`
 @*/
 PetscErrorCode TSRKSetType(TS ts, TSRKType rktype)
 {
@@ -1289,7 +1289,7 @@ PetscErrorCode TSRKSetType(TS ts, TSRKType rktype)
 }
 
 /*@C
-  TSRKGetType - Get the type of RK scheme
+  TSRKGetType - Get the type of `TSRK` scheme
 
   Not collective
 
@@ -1297,11 +1297,11 @@ PetscErrorCode TSRKSetType(TS ts, TSRKType rktype)
 .  ts - timestepping context
 
   Output Parameter:
-.  rktype - type of RK-scheme
+.  rktype - type of `TSRK`-scheme
 
   Level: intermediate
 
-.seealso: `TSRKSetType()`
+.seealso: [](chapter_ts), `TSRKSetType()`
 @*/
 PetscErrorCode TSRKGetType(TS ts, TSRKType *rktype)
 {
@@ -1419,23 +1419,23 @@ static PetscErrorCode SNESTSFormJacobian_RK(SNES snes, Vec x, Mat A, Mat B, TS t
 }
 
 /*@C
-  TSRKSetMultirate - Use the interpolation-based multirate RK method
+  TSRKSetMultirate - Use the interpolation-based multirate `TSRK` method
 
   Logically collective
 
   Input Parameters:
 +  ts - timestepping context
--  use_multirate - PETSC_TRUE enables the multirate RK method, sets the basic method to be RK2A and sets the ratio between slow stepsize and fast stepsize to be 2
+-  use_multirate - `PETSC_TRUE` enables the multirate `TSRK` method, sets the basic method to be RK2A and sets the ratio between slow stepsize and fast stepsize to be 2
 
-  Options Database:
+  Options Database Key:
 .   -ts_rk_multirate - <true,false>
-
-  Notes:
-  The multirate method requires interpolation. The default interpolation works for 1st- and 2nd- order RK, but not for high-order RKs except TSRK5DP which comes with the interpolation coeffcients (binterp).
 
   Level: intermediate
 
-.seealso: `TSRKGetMultirate()`
+  Note:
+  The multirate method requires interpolation. The default interpolation works for 1st- and 2nd- order RK, but not for high-order RKs except `TSRK5DP` which comes with the interpolation coeffcients (binterp).
+
+.seealso: [](chapter_ts), `TSRK`, `TSRKGetMultirate()`
 @*/
 PetscErrorCode TSRKSetMultirate(TS ts, PetscBool use_multirate)
 {
@@ -1445,7 +1445,7 @@ PetscErrorCode TSRKSetMultirate(TS ts, PetscBool use_multirate)
 }
 
 /*@C
-  TSRKGetMultirate - Gets whether to Use the interpolation-based multirate RK method
+  TSRKGetMultirate - Gets whether to use the interpolation-based multirate `TSRK` method
 
   Not collective
 
@@ -1453,11 +1453,11 @@ PetscErrorCode TSRKSetMultirate(TS ts, PetscBool use_multirate)
 .  ts - timestepping context
 
   Output Parameter:
-.  use_multirate - PETSC_TRUE if the multirate RK method is enabled, PETSC_FALSE otherwise
+.  use_multirate - `PETSC_TRUE` if the multirate RK method is enabled, `PETSC_FALSE` otherwise
 
   Level: intermediate
 
-.seealso: `TSRKSetMultirate()`
+.seealso: [](chapter_ts), `TSRK`, `TSRKSetMultirate()`
 @*/
 PetscErrorCode TSRKGetMultirate(TS ts, PetscBool *use_multirate)
 {
@@ -1470,16 +1470,15 @@ PetscErrorCode TSRKGetMultirate(TS ts, PetscBool *use_multirate)
       TSRK - ODE and DAE solver using Runge-Kutta schemes
 
   The user should provide the right hand side of the equation
-  using TSSetRHSFunction().
-
-  Notes:
-  The default is TSRK3BS, it can be changed with TSRKSetType() or -ts_rk_type
+  using `TSSetRHSFunction()`.
 
   Level: beginner
 
-.seealso: `TSCreate()`, `TS`, `TSSetType()`, `TSRKSetType()`, `TSRKGetType()`, `TSRK2D`, `TTSRK2E`, `TSRK3`,
-          `TSRK4`, `TSRK5`, `TSRKPRSSP2`, `TSRKBPR3`, `TSRKType`, `TSRKRegister()`, `TSRKSetMultirate()`, `TSRKGetMultirate()`
+  Notes:
+  The default is `TSRK3BS`, it can be changed with `TSRKSetType()` or -ts_rk_type
 
+.seealso: [](chapter_ts), `TSCreate()`, `TS`, `TSRK`, `TSSetType()`, `TSRKSetType()`, `TSRKGetType()`, `TSRK2D`, `TSRK2E`, `TSRK3`,
+          `TSRK4`, `TSRK5`, `TSRKPRSSP2`, `TSRKBPR3`, `TSRKType`, `TSRKRegister()`, `TSRKSetMultirate()`, `TSRKGetMultirate()`, `TSType`
 M*/
 PETSC_EXTERN PetscErrorCode TSCreate_RK(TS ts)
 {

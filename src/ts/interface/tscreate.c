@@ -4,8 +4,8 @@ const char *const TSConvergedReasons_Shifted[] = {"ADJOINT_DIVERGED_LINEAR_SOLVE
 const char *const *TSConvergedReasons = TSConvergedReasons_Shifted + 4;
 
 /*@C
-  TSCreate - This function creates an empty timestepper. The problem type can then be set with TSSetProblemType() and the
-       type of solver can then be set with TSSetType().
+  TSCreate - This function creates an empty timestepper. The problem type can then be set with `TSSetProblemType()` and the
+       type of solver can then be set with `TSSetType()`.
 
   Collective
 
@@ -13,18 +13,18 @@ const char *const *TSConvergedReasons = TSConvergedReasons_Shifted + 4;
 . comm - The communicator
 
   Output Parameter:
-. ts   - The TS
+. ts   - The `TS`
 
   Level: beginner
 
   Developer Notes:
-    TS essentially always creates a SNES object even though explicit methods do not use it. This is
+    `TS` essentially always creates a `SNES` object even though explicit methods do not use it. This is
                     unfortunate and should be fixed at some point. The flag snes->usessnes indicates if the
-                    particular method does use SNES and regulates if the information about the SNES is printed
-                    in TSView(). TSSetFromOptions() does call SNESSetFromOptions() which can lead to users being confused
-                    by help messages about meaningless SNES options.
+                    particular method does use SNES and regulates if the information about the `SNES` is printed
+                    in `TSView()`. `TSSetFromOptions(`) does call `SNESSetFromOptions()` which can lead to users being confused
+                    by help messages about meaningless `SNES` options.
 
-.seealso: `TSSetType()`, `TSSetUp()`, `TSDestroy()`, `TSSetProblemType()`
+.seealso: [](chapter_ts), `TS`, `SNES`, `TSSetType()`, `TSSetUp()`, `TSDestroy()`, `TSSetProblemType()`
 @*/
 PetscErrorCode TSCreate(MPI_Comm comm, TS *ts)
 {

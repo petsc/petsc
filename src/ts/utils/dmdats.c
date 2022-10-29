@@ -216,12 +216,12 @@ static PetscErrorCode TSComputeRHSJacobian_DMDA(TS ts, PetscReal ptime, Vec X, M
 }
 
 /*@C
-   DMDATSSetRHSFunctionLocal - set a local residual evaluation function
+   DMDATSSetRHSFunctionLocal - set a local residual evaluation function for use with `DMDA`
 
    Logically Collective
 
    Input Parameters:
-+  dm - DM to associate callback with
++  dm - `DM` to associate callback with
 .  imode - insert mode for the residual
 .  func - local residual evaluation
 -  ctx - optional context for local residual evaluation
@@ -230,7 +230,7 @@ static PetscErrorCode TSComputeRHSJacobian_DMDA(TS ts, PetscReal ptime, Vec X, M
 
 $ func(DMDALocalInfo info,PetscReal t,void *x,void *f,void *ctx)
 
-+  info - DMDALocalInfo defining the subdomain to evaluate the residual on
++  info - `DMDALocalInfo` defining the subdomain to evaluate the residual on
 .  t - time at which to evaluate residual
 .  x - array of local state information
 .  f - output array of local residual information
@@ -238,7 +238,7 @@ $ func(DMDALocalInfo info,PetscReal t,void *x,void *f,void *ctx)
 
    Level: beginner
 
-.seealso: `DMTSSetRHSFunction()`, `DMDATSSetRHSJacobianLocal()`, `DMDASNESSetFunctionLocal()`
+.seealso: [](chapter_ts), `DMDA`, `TS`, `TSSetRHSFunction()`, `DMTSSetRHSFunction()`, `DMDATSSetRHSJacobianLocal()`, `DMDASNESSetFunctionLocal()`
 @*/
 PetscErrorCode DMDATSSetRHSFunctionLocal(DM dm, InsertMode imode, DMDATSRHSFunctionLocal func, void *ctx)
 {
@@ -257,12 +257,12 @@ PetscErrorCode DMDATSSetRHSFunctionLocal(DM dm, InsertMode imode, DMDATSRHSFunct
 }
 
 /*@C
-   DMDATSSetRHSJacobianLocal - set a local residual evaluation function
+   DMDATSSetRHSJacobianLocal - set a local residual evaluation function for use with `DMDA`
 
    Logically Collective
 
    Input Parameters:
-+  dm    - DM to associate callback with
++  dm    - `DM` to associate callback with
 .  func  - local RHS Jacobian evaluation routine
 -  ctx   - optional context for local jacobian evaluation
 
@@ -270,7 +270,7 @@ PetscErrorCode DMDATSSetRHSFunctionLocal(DM dm, InsertMode imode, DMDATSRHSFunct
 
 $ func(DMDALocalInfo* info,PetscReal t,void* x,Mat J,Mat B,void *ctx);
 
-+  info - DMDALocalInfo defining the subdomain to evaluate the residual on
++  info - `DMDALocalInfo` defining the subdomain to evaluate the residual on
 .  t    - time at which to evaluate residual
 .  x    - array of local state information
 .  J    - Jacobian matrix
@@ -279,7 +279,7 @@ $ func(DMDALocalInfo* info,PetscReal t,void* x,Mat J,Mat B,void *ctx);
 
    Level: beginner
 
-.seealso: `DMTSSetRHSJacobian()`, `DMDATSSetRHSFunctionLocal()`, `DMDASNESSetJacobianLocal()`
+.seealso: [](chapter_ts), `DMDA`, `DMTSSetRHSJacobian()`, `DMDATSSetRHSFunctionLocal()`, `DMDASNESSetJacobianLocal()`
 @*/
 PetscErrorCode DMDATSSetRHSJacobianLocal(DM dm, DMDATSRHSJacobianLocal func, void *ctx)
 {
@@ -297,17 +297,17 @@ PetscErrorCode DMDATSSetRHSJacobianLocal(DM dm, DMDATSRHSJacobianLocal func, voi
 }
 
 /*@C
-   DMDATSSetIFunctionLocal - set a local residual evaluation function
+   DMDATSSetIFunctionLocal - set a local residual evaluation function for use with `DMDA`
 
    Logically Collective
 
    Input Parameters:
-+  dm   - DM to associate callback with
++  dm   - `DM` to associate callback with
 .  func - local residual evaluation
 -  ctx  - optional context for local residual evaluation
 
    Calling sequence for func:
-+  info - DMDALocalInfo defining the subdomain to evaluate the residual on
++  info - `DMDALocalInfo` defining the subdomain to evaluate the residual on
 .  t    - time at which to evaluate residual
 .  x    - array of local state information
 .  xdot - array of local time derivative information
@@ -316,7 +316,7 @@ PetscErrorCode DMDATSSetRHSJacobianLocal(DM dm, DMDATSRHSJacobianLocal func, voi
 
    Level: beginner
 
-.seealso: `DMTSSetIFunction()`, `DMDATSSetIJacobianLocal()`, `DMDASNESSetFunctionLocal()`
+.seealso: [](chapter_ts), `DMDA`, `DMTSSetIFunction()`, `DMDATSSetIJacobianLocal()`, `DMDASNESSetFunctionLocal()`
 @*/
 PetscErrorCode DMDATSSetIFunctionLocal(DM dm, InsertMode imode, DMDATSIFunctionLocal func, void *ctx)
 {
@@ -335,12 +335,12 @@ PetscErrorCode DMDATSSetIFunctionLocal(DM dm, InsertMode imode, DMDATSIFunctionL
 }
 
 /*@C
-   DMDATSSetIJacobianLocal - set a local residual evaluation function
+   DMDATSSetIJacobianLocal - set a local residual evaluation function for use with `DMDA`
 
    Logically Collective
 
    Input Parameters:
-+  dm   - DM to associate callback with
++  dm   - `DM` to associate callback with
 .  func - local residual evaluation
 -  ctx   - optional context for local residual evaluation
 
@@ -348,7 +348,7 @@ PetscErrorCode DMDATSSetIFunctionLocal(DM dm, InsertMode imode, DMDATSIFunctionL
 
 $ func(DMDALocalInfo* info,PetscReal t,void* x,void *xdot,PetscScalar shift,Mat J,Mat B,void *ctx);
 
-+  info - DMDALocalInfo defining the subdomain to evaluate the residual on
++  info - `DMDALocalInfo` defining the subdomain to evaluate the residual on
 .  t    - time at which to evaluate the jacobian
 .  x    - array of local state information
 .  xdot - time derivative at this state
@@ -359,7 +359,7 @@ $ func(DMDALocalInfo* info,PetscReal t,void* x,void *xdot,PetscScalar shift,Mat 
 
    Level: beginner
 
-.seealso: `DMTSSetJacobian()`, `DMDATSSetIFunctionLocal()`, `DMDASNESSetJacobianLocal()`
+.seealso: [](chapter_ts), `DMDA`, `DMTSSetJacobian()`, `DMDATSSetIFunctionLocal()`, `DMDASNESSetJacobianLocal()`
 @*/
 PetscErrorCode DMDATSSetIJacobianLocal(DM dm, DMDATSIJacobianLocal func, void *ctx)
 {

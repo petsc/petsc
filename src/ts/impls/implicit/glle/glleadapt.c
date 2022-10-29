@@ -23,7 +23,7 @@ PETSC_EXTERN PetscErrorCode TSGLLEAdaptCreate_Size(TSGLLEAdapt);
 PETSC_EXTERN PetscErrorCode TSGLLEAdaptCreate_Both(TSGLLEAdapt);
 
 /*@C
-   TSGLLEAdaptRegister -  adds a TSGLLEAdapt implementation
+   TSGLLEAdaptRegister -  adds a `TSGLLEAdapt` implementation
 
    Not Collective
 
@@ -31,8 +31,8 @@ PETSC_EXTERN PetscErrorCode TSGLLEAdaptCreate_Both(TSGLLEAdapt);
 +  name_scheme - name of user-defined adaptivity scheme
 -  routine_create - routine to create method context
 
-   Notes:
-   TSGLLEAdaptRegister() may be called multiple times to add several user-defined families.
+   Note:
+   `TSGLLEAdaptRegister()` may be called multiple times to add several user-defined families.
 
    Sample usage:
 .vb
@@ -46,7 +46,7 @@ $     -ts_adapt_type my_scheme
 
    Level: advanced
 
-.seealso: `TSGLLEAdaptRegisterAll()`
+.seealso: [](chapter_ts), `TSGLLE`, `TSGLLEAdapt`, `TSGLLEAdaptRegisterAll()`
 @*/
 PetscErrorCode TSGLLEAdaptRegister(const char sname[], PetscErrorCode (*function)(TSGLLEAdapt))
 {
@@ -57,13 +57,13 @@ PetscErrorCode TSGLLEAdaptRegister(const char sname[], PetscErrorCode (*function
 }
 
 /*@C
-  TSGLLEAdaptRegisterAll - Registers all of the adaptivity schemes in TSGLLEAdapt
+  TSGLLEAdaptRegisterAll - Registers all of the adaptivity schemes in `TSGLLEAdapt`
 
   Not Collective
 
   Level: advanced
 
-.seealso: `TSGLLEAdaptRegisterDestroy()`
+.seealso: [](chapter_ts), `TSGLLEAdapt`, `TSGLLE`, `TSGLLEAdaptRegisterDestroy()`
 @*/
 PetscErrorCode TSGLLEAdaptRegisterAll(void)
 {
@@ -77,12 +77,12 @@ PetscErrorCode TSGLLEAdaptRegisterAll(void)
 }
 
 /*@C
-  TSGLLEFinalizePackage - This function destroys everything in the TSGLLE package. It is
-  called from PetscFinalize().
+  TSGLLEFinalizePackage - This function destroys everything in the `TSGLLE` package. It is
+  called from `PetscFinalize()`.
 
   Level: developer
 
-.seealso: `PetscFinalize()`
+.seealso: [](chapter_ts), `PetscFinalize()`, `TSGLLEAdapt`, `TSGLLEAdaptInitializePackage()`
 @*/
 PetscErrorCode TSGLLEAdaptFinalizePackage(void)
 {
@@ -94,12 +94,12 @@ PetscErrorCode TSGLLEAdaptFinalizePackage(void)
 }
 
 /*@C
-  TSGLLEAdaptInitializePackage - This function initializes everything in the TSGLLEAdapt package. It is
-  called from TSInitializePackage().
+  TSGLLEAdaptInitializePackage - This function initializes everything in the `TSGLLEAdapt` package. It is
+  called from `TSInitializePackage()`.
 
   Level: developer
 
-.seealso: `PetscInitialize()`
+.seealso: [](chapter_ts), `PetscInitialize()`, `TSGLLEAdapt`, `TSGLLEAdaptFinalizePackage()`
 @*/
 PetscErrorCode TSGLLEAdaptInitializePackage(void)
 {

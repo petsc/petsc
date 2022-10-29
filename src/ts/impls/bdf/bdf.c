@@ -490,7 +490,7 @@ static PetscErrorCode TSBDFGetOrder_BDF(TS ts, PetscInt *order)
 
   Level: beginner
 
-.seealso: `TS`, `TSCreate()`, `TSSetType()`
+.seealso: [](chapter_ts), `TS`, `TSCreate()`, `TSSetType()`, `TSType`
 M*/
 PETSC_EXTERN PetscErrorCode TSCreate_BDF(TS ts)
 {
@@ -526,19 +526,20 @@ PETSC_EXTERN PetscErrorCode TSCreate_BDF(TS ts)
 /* ------------------------------------------------------------ */
 
 /*@
-  TSBDFSetOrder - Set the order of the BDF method
+  TSBDFSetOrder - Set the order of the `TSBDF` method
 
-  Logically Collective on TS
+  Logically Collective on ts
 
   Input Parameters:
 +  ts - timestepping context
 -  order - order of the method
 
-  Options Database:
+  Options Database Key:
 .  -ts_bdf_order <order> - select the order
 
   Level: intermediate
 
+.seealso: `TSBDFGetOrder()`, `TS`, `TSBDF`
 @*/
 PetscErrorCode TSBDFSetOrder(TS ts, PetscInt order)
 {
@@ -550,7 +551,7 @@ PetscErrorCode TSBDFSetOrder(TS ts, PetscInt order)
 }
 
 /*@
-  TSBDFGetOrder - Get the order of the BDF method
+  TSBDFGetOrder - Get the order of the `TSBDF` method
 
   Not Collective
 
@@ -562,6 +563,7 @@ PetscErrorCode TSBDFSetOrder(TS ts, PetscInt order)
 
   Level: intermediate
 
+.seealso: `TSBDFSetOrder()`, `TS`, `TSBDF`
 @*/
 PetscErrorCode TSBDFGetOrder(TS ts, PetscInt *order)
 {

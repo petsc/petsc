@@ -131,18 +131,20 @@ PetscErrorCode TSDestroy_Radau5(TS ts)
 }
 
 /*MC
-      TSRADAU5 - ODE solver using the RADAU5 package
-
-    Notes:
-    This uses its own nonlinear solver and dense matrix direct solver so PETSc SNES and KSP options do not apply.
-           Uses its own time-step adaptivity (but uses the TS rtol and atol, and initial timestep)
-           Uses its own memory for the dense matrix storage and factorization
-           Can only handle ODEs of the form \cdot{u} = -F(t,u) + G(t,u)
+      TSRADAU5 - ODE solver using the external RADAU5 package, requires ./configure --download-radau5
 
     Level: beginner
 
-.seealso: `TSCreate()`, `TS`, `TSSetType()`
+    Notes:
+    This uses its own nonlinear solver and dense matrix direct solver so PETSc `SNES` and `KSP` options do not apply.
 
+    Uses its own time-step adaptivity (but uses the TS rtol and atol, and initial timestep)
+
+    Uses its own memory for the dense matrix storage and factorization
+
+    Can only handle ODEs of the form \cdot{u} = -F(t,u) + G(t,u)
+
+.seealso: [](chapter_ts), `TSCreate()`, `TS`, `TSSetType()`, `TSType`
 M*/
 PETSC_EXTERN PetscErrorCode TSCreate_Radau5(TS ts)
 {
