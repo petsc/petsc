@@ -857,7 +857,7 @@ inline PetscErrorCode SegmentedMemoryPool<MemType, StreamType, AllocType, Defaul
 . ptr          - pointer to the buffer
 - stream       - stream to resize with
 
-  Ouput Parameter:
+  Output Parameter:
 . ptr - pointer to the new region
 
   Notes:

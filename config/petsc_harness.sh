@@ -203,7 +203,7 @@ function petsc_testrun() {
     cmd_res=$?
   fi
   touch "$2" "$3"
-  # It appears current MPICH and OpenMPI just shut down the job executation and do not return an error code to the executable
+  # It appears current MPICH and OpenMPI just shut down the job execution and do not return an error code to the executable
   # ETIMEDOUT=110 was used by OpenMPI 3.0.  MPICH used 255
   # Earlier OpenMPI versions returned 1 and the error string
   if [ $cmd_res -eq 110 -o $cmd_res -eq 255 ] || \

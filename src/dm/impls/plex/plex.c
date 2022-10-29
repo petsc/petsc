@@ -3542,7 +3542,7 @@ static PetscErrorCode DMPlexGetTransitiveClosure_Depth1_Private(DM dm, PetscInt 
   PetscFunctionReturn(0);
 }
 
-/* We need a special tensor verison becasue we want to allow duplicate points in the endcaps for hybrid cells */
+/* We need a special tensor version because we want to allow duplicate points in the endcaps for hybrid cells */
 static PetscErrorCode DMPlexTransitiveClosure_Tensor_Internal(DM dm, PetscInt point, DMPolytopeType ct, PetscInt o, PetscBool useCone, PetscInt *numPoints, PetscInt **points)
 {
   const PetscInt *arr = DMPolytopeTypeGetArrangment(ct, o);
@@ -9287,7 +9287,7 @@ PetscErrorCode DMPlexComputeOrthogonalQuality(DM dm, PetscFV fv, PetscReal atol,
   PetscFunctionReturn(0);
 }
 
-/* this is here insead of DMGetOutputDM because output DM still has constraints in the local indices that affect
+/* this is here instead of DMGetOutputDM because output DM still has constraints in the local indices that affect
  * interpolator construction */
 static PetscErrorCode DMGetFullDM(DM dm, DM *odm)
 {

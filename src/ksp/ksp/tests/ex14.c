@@ -93,7 +93,7 @@ int main(int argc, char **argv)
   PetscInt  max_functions  = 50;     /* maximum number of function evaluations */
   PetscInt  lin_its;                 /* number of linear solver iterations for each step */
   PetscInt  i;                       /* nonlinear solve iteration number */
-  PetscBool no_output = PETSC_FALSE; /* flag indicating whether to surpress output */
+  PetscBool no_output = PETSC_FALSE; /* flag indicating whether to supress output */
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));

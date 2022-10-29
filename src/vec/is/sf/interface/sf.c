@@ -352,7 +352,7 @@ PetscErrorCode PetscSFSetFromOptions(PetscSF sf)
     char      backendstr[32] = {0};
     PetscBool isCuda = PETSC_FALSE, isHip = PETSC_FALSE, isKokkos = PETSC_FALSE, set;
     /* Change the defaults set in PetscSFCreate() with command line options */
-    PetscCall(PetscOptionsBool("-sf_unknown_input_stream", "SF root/leafdata is computed on arbitary streams unknown to SF", "PetscSFSetFromOptions", sf->unknown_input_stream, &sf->unknown_input_stream, NULL));
+    PetscCall(PetscOptionsBool("-sf_unknown_input_stream", "SF root/leafdata is computed on arbitrary streams unknown to SF", "PetscSFSetFromOptions", sf->unknown_input_stream, &sf->unknown_input_stream, NULL));
     PetscCall(PetscOptionsBool("-sf_use_stream_aware_mpi", "Assume the underlying MPI is cuda-stream aware", "PetscSFSetFromOptions", sf->use_stream_aware_mpi, &sf->use_stream_aware_mpi, NULL));
     PetscCall(PetscOptionsString("-sf_backend", "Select the device backend SF uses", "PetscSFSetFromOptions", NULL, backendstr, sizeof(backendstr), &set));
     PetscCall(PetscStrcasecmp("cuda", backendstr, &isCuda));

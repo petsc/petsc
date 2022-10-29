@@ -827,7 +827,7 @@ M*/
 
     PetscCallCXX(
       bar();
-      foo(); // OK mutliple statements allowed
+      foo(); // OK multiple statements allowed
     );
   }
 
@@ -1532,7 +1532,7 @@ M*/
    Assumes the error return code of the function is an integer and that a value of 0 indicates success
 
    Developer Note:
-   This is so that when an external packge routine results in a crash or corrupts memory, they get blamed instead of PETSc.
+   This is so that when an external package routine results in a crash or corrupts memory, they get blamed instead of PETSc.
 
 .seealso: `PetscCall()`, `PetscStackPushNoCheck()`, `PetscStackPush()`, `PetscStackCallExternalVoid()`
 M*/

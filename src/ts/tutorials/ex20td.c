@@ -387,7 +387,7 @@ int main(int argc, char **argv)
   if (sa == SA_GLOBAL) PetscCall(TSAdjointSolve(ts));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-     Dispaly adjoint sensitivities wrt parameters and initial conditions
+     Display adjoint sensitivities wrt parameters and initial conditions
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   if (sa == SA_TRACK) {
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, "\n sensitivity wrt  mu1: d[cost]/d[mu1]\n"));

@@ -733,7 +733,7 @@ static PetscErrorCode DMPlexCreateEGADS(MPI_Comm comm, ego context, ego model, D
     //  Cycle through bodies, cycle through loops, recorde NODE IDs in a correctly formatted array
     //  We need to uniformly refine the initial geometry to guarantee a valid mesh
 
-    // Caluculate cell and vertex sizes
+    // Calculate cell and vertex sizes
     PetscCall(EG_getTopology(model, &geom, &oclass, &mtype, NULL, &nbodies, &bodies, &senses));
 
     PetscCall(PetscHMapICreate(&edgeMap));
@@ -923,7 +923,7 @@ static PetscErrorCode DMPlexCreateEGADS(MPI_Comm comm, ego context, ego model, D
         // TODO :: Only handles single loop faces (No holes). The choices for handling multiloop faces are:
         //            1) Use the DMPlexCreateEGADSFromFile() with the -dm_plex_egads_with_tess = 1 option.
         //               This will use a default EGADS tessellation as an initial surface mesh.
-        //            2) Create the initial surface mesh via a 2D mesher :: Currently not availble (?future?)
+        //            2) Create the initial surface mesh via a 2D mesher :: Currently not available (?future?)
         //               May I suggest the XXXX as a starting point?
 
         PetscCall(EG_getTopology(face, &geom, &oclass, &mtype, NULL, &Nl, &lobjs, &lSenses));
@@ -1141,7 +1141,7 @@ static PetscErrorCode DMPlexCreateEGADS_Tess_Internal(MPI_Comm comm, ego context
     // Generate Petsc Plex from EGADSlite created Tessellation of geometry
     // ---------------------------------------------------------------------------------------------------
 
-    // Caluculate cell and vertex sizes
+    // Calculate cell and vertex sizes
     PetscCall(EG_getTopology(model, &geom, &oclass, &mtype, NULL, &nbodies, &bodies, &senses));
 
     PetscCall(PetscHMapICreate(&pointIndexStartMap));

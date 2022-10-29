@@ -173,7 +173,7 @@ M*/
 . name - the name of the builtin routine
 
   Notes:
-  Evalutates to `1` if the builtin is supported and `0` otherwise. Note the term "evaluates"
+  Evaluates to `1` if the builtin is supported and `0` otherwise. Note the term "evaluates"
   (vs "expands") is deliberate; even though `PetscHasBuiltin()` is a macro the underlying
   detector is itself is a compiler extension with implementation-defined return type and
   semantics. Some compilers implement it as a macro, others as a compiler function. In practice
@@ -390,7 +390,7 @@ M*/
 
   Notes:
   Equivalent to constexpr when using a C++ compiler that supports C++14. Expands to nothing
-  if the C++ compiler does not suppport C++14 or when not compiling with a C++ compiler. Note
+  if the C++ compiler does not support C++14 or when not compiling with a C++ compiler. Note
   that this cannot be used in cases where an empty expansion would result in invalid code. It
   is safe to use this in C source files.
 
@@ -646,7 +646,7 @@ M*/
   optimizer cannot deduce any information from them.
 
   Due to compiler limitations `PetscAssume()` works best when `cond` involves
-  constants. Certain compilers do not yet propogate symbolic inequalities i.e.\:
+  constants. Certain compilers do not yet propagate symbolic inequalities i.e.\:
 
 .vb
   int a, b, var_five;
@@ -868,7 +868,7 @@ M*/
   Input Parameter:
 . def - PETSc-style preprocessor variable (without PETSC_ prepended!)
 
-  Outut Parameter:
+  Output Parameter:
 . <return-value> - Either integer literal 0 or 1
 
   Notes:

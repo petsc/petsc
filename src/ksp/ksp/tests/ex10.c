@@ -196,7 +196,7 @@ PetscReal part_N[3][20][64]; /* Partials of interpolation function. */
 PetscReal rst[3][64];        /* Location of integration pts in (r,s,t) */
 PetscReal weight[64];        /* Gaussian quadrature weights. */
 PetscReal xyz[20][3];        /* (x,y,z) coordinates of nodes  */
-PetscReal E, nu;             /* Physcial constants. */
+PetscReal E, nu;             /* Physical constants. */
 PetscInt  n_int, N_int;      /* N_int = n_int^3, number of int. pts. */
 /* Ordering of the vertices, (r,s,t) coordinates, of the canonical cell. */
 PetscReal r2[20]   = {-1.0, 0.0, 1.0, -1.0, 1.0, -1.0, 0.0, 1.0, -1.0, 1.0, -1.0, 1.0, -1.0, 0.0, 1.0, -1.0, 1.0, -1.0, 0.0, 1.0};

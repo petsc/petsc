@@ -3,6 +3,6 @@
 
 setenv DOCTEXT_PATH /home/bsmith/petsc/doc/classic/doctext
 
-contains the "formating" files used by doctext to format
+contains the "formatting" files used by doctext to format
 the HTML manual pages.
 

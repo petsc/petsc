@@ -603,7 +603,7 @@ void PetscCheckSorted(PetscInt, T);
    Notes:
    The object is always the implicit first argument of the method and is not listed in arg_types or args
 
-   This does not return an error code, it is a macro that returns with an erorr code on error.
+   This does not return an error code, it is a macro that returns with an error code on error.
 
    Use `PetscUseTypeMethod()` or `PetscTryTypeMethod()` to call functions that are included in the objects function table, the `ops` array
    in the object.
@@ -635,7 +635,7 @@ M*/
    Notes:
    The object is always the implicit first argument of the method and is not listed in arg_types or args
 
-   This does not return an error code, it is a macro that returns with an erorr code on error.
+   This does not return an error code, it is a macro that returns with an error code on error.
 
    Use `PetscUseTypeMethod()` or `PetscTryTypeMethod()` to call functions that are included in the objects function table, the `ops` array
    in the object.
@@ -700,7 +700,7 @@ M*/
    Level: developer
 
    Note:
-   This does not return an error code, it is a macro that returns with an erorr code on error.
+   This does not return an error code, it is a macro that returns with an error code on error.
 
    Use `PetscUseMethod()` or `PetscTryMethod()` to call functions that have been composed to an object with `PetscObjectComposeFunction()`
 
@@ -728,7 +728,7 @@ M*/
    Level: developer
 
    Note:
-   This does not return an error code, it is a macro that returns with an erorr code on error.
+   This does not return an error code, it is a macro that returns with an error code on error.
 
    Use `PetscUseMethod()` or `PetscTryMethod()` to call functions that have been composed to an object with `PetscObjectComposeFunction()`
 

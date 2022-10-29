@@ -85,7 +85,7 @@ PetscErrorCode UserFunction(SNES snes, Vec X, Vec F, void *ptr)
   for (i = 0; i < N; ++i) {
     /*
        Test for domain error.
-       Artifical test is applied.  With starting value 1.0, first iterate will be 0.5 + user->value/2.
+       Artificial test is applied.  With starting value 1.0, first iterate will be 0.5 + user->value/2.
        Declare (0.5-value,0.5+value) to be infeasible.
        In later iterations, snes->domainerror should be cleared, allowing iterations in the feasible region to be accepted.
     */

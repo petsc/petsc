@@ -19,7 +19,7 @@ if __name__ == '__main__':
     
     # Cray supports the use of Intel, Cray, or GCC compilers.
     # Make sure that the correct programming environment module is loaded, 
-    # and then comment/uncomment the apprpriate stanzas below.
+    # and then comment/uncomment the appropriate stanzas below.
 
     # Flags for the Intel compilers:
     # NOTE: For versions of the Intel compiler < 18.x, one may need to specify
@@ -60,7 +60,7 @@ if __name__ == '__main__':
     '--LDFLAGS=-dynamic', # Needed if wish to use dynamic shared libraries.
 
     # Below "--known-" options are from the "reconfigure.py" script generated 
-    # after an intial configure.py run using '--with-batch'.
+    # after an initial configure.py run using '--with-batch'.
     '--known-level1-dcache-size=32768',
     '--known-level1-dcache-linesize=64',
     '--known-level1-dcache-assoc=8',

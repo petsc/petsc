@@ -478,7 +478,7 @@ PetscErrorCode KSPPIPEGCRGetUnrollW(KSP ksp, PetscBool *unroll_w)
 
   Input Parameters:
 +  ksp - the Krylov space context
--  mmax - the maximum number of previous directions to orthogonalize againt
+-  mmax - the maximum number of previous directions to orthogonalize against
 
   Options Database Key:
 . -ksp_pipegcr_mmax <N> - maximum number of previous directions

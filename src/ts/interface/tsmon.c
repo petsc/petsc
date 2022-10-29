@@ -550,7 +550,7 @@ PetscErrorCode TSMonitorDrawCtxDestroy(TSMonitorDrawCtx *ictx)
    Input Parameter:
 .    ts - time-step context
 
-   Output Patameter:
+   Output Parameter:
 .    ctx - the monitor context
 
    Options Database Keys:

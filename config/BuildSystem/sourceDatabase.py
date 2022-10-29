@@ -316,7 +316,7 @@ class DependencyAnalyzer (logger.Logger):
   def calculateDependencies(self):
     '''Should this be a generator?
     First assemble the DAG using #include relations
-    Then calculate the depdencies with all pairs shortest-path
+    Then calculate the dependencies with all pairs shortest-path
       - I think Floyd-Warshell and N-source Dijkstra are just as good
     '''
     # Assembling DAG

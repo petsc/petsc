@@ -137,7 +137,7 @@ class Configure(config.package.Package):
     g.write('# Uncomment the following line to enable a progression thread\n')
     g.write('#CCPASTIX   := $(CCPASTIX) -DTHREAD_COMM\n')
     g.write('\n')
-    g.write('# Uncomment the following line if your MPI doesn\'t support MPI_THREAD_MULTIPLE leve\n')
+    g.write('# Uncomment the following line if your MPI doesn\'t support MPI_THREAD_MULTIPLE level\n')
     g.write('#CCPASTIX   := $(CCPASTIX) -DPASTIX_FUNNELED\n')
     g.write('\n')
     g.write('# Uncomment the following line if your MPI doesn\'t support MPI_Datatype correctly\n')

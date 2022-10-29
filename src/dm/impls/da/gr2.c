@@ -154,7 +154,7 @@ PetscErrorCode VecView_MPI_Draw_DA2d(Vec xin, PetscViewer viewer)
   /*
      Obtain a sequential vector that is going to contain the local values plus ONE layer of
      ghosted values to draw the graphics from. We also need its corresponding DMDA (dac) that will
-     update the local values pluse ONE layer of ghost values.
+     update the local values plus ONE layer of ghost values.
   */
   PetscCall(PetscObjectQuery((PetscObject)da, "GraphicsGhosted", (PetscObject *)&xlocal));
   if (!xlocal) {

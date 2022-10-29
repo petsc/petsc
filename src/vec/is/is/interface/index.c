@@ -934,7 +934,7 @@ PetscErrorCode ISContiguousLocal(IS is, PetscInt gstart, PetscInt gend, PetscInt
 
    Level: intermediate
 
-   Note: If it is not alread known that the IS is a permutation (if ISSetPermutation()
+   Note: If it is not already known that the IS is a permutation (if ISSetPermutation()
    or ISSetInfo() has not been called), this routine will not attempt to compute
    whether the index set is a permutation and will assume perm is PETSC_FALSE.
    To compute the value when it is not already known, use ISGetInfo() with

@@ -149,7 +149,7 @@ class Configure(config.package.Package):
       else:
         raise RuntimeError('You must set --with-hip-arch=gfx900, gfx906, gfx908, gfx90a etc or make ROCM utility "rocminfo" available on your PATH')
 
-      # Record rocBlas and rocSparse directories as they are needed by Kokkos-Kernels HIP TPL, so that we can hanle
+      # Record rocBlas and rocSparse directories as they are needed by Kokkos-Kernels HIP TPL, so that we can handle
       # a weird (but valid) case --with-hipcc=/opt/rocm-4.5.2/hip/bin/hipcc --with-hip-dir=/opt/rocm-4.5.2 (which
       # should be better written as --with-hipcc=/opt/rocm-4.5.2/bin/hipcc --with-hip-dir=/opt/rocm-4.5.2 or simply
       # --with-hip-dir=/opt/rocm-4.5.2)

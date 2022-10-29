@@ -144,7 +144,7 @@ PETSC_ARCH from environment does not match command-line or name of script. Using
         self.arch = 'arch-'+hprefix[0:6]
       else:
         if not os.path.isdir(self.argDB['package-prefix-hash']):
-          self.logPrint('Specified package-prefix-hash location %s not found! Attemping to create this dir!' % self.argDB['package-prefix-hash'])
+          self.logPrint('Specified package-prefix-hash location %s not found! Attempting to create this dir!' % self.argDB['package-prefix-hash'])
           try:
             os.makedirs(self.argDB['package-prefix-hash'])
           except Exception as e:

@@ -157,7 +157,7 @@ class Configure(config.package.Package):
 
   def checkSharedLibrary_ThisIsBroken(self):
   # TODO: Fix this routine, currently
-  #       * the visibility flag is passed to the compiling/linking so the symbols are not visable to the loader and the test fails (this is easily fixed)
+  #       * the visibility flag is passed to the compiling/linking so the symbols are not visible to the loader and the test fails (this is easily fixed)
   #       * even with that fixed the dlsym() is unable to locate the checkInit symbol in the library even though nm shows it is there; I am not sure the cause
     '''Sets flag indicating if MPI libraries are shared or not and
     determines if MPI libraries CANNOT be used by shared libraries'''
@@ -172,7 +172,7 @@ shared - run with --known-mpi-shared-libraries=1 option to remove this \
 warning message')
         elif not self.argDB['known-mpi-shared-libraries']:
           raise RuntimeError('Provided MPI library is flagged as static library! If its linked\n\
-into multipe shared libraries that an application uses, sometimes\n\
+into multiple shared libraries that an application uses, sometimes\n\
 compiles go through - but one might get run-time errors.  Either\n\
 reconfigure PETSc with --with-shared-libraries=0 or provide MPI with\n\
 shared libraries and run with --known-mpi-shared-libraries=1')
@@ -665,7 +665,7 @@ Unable to run hostname to check the network')
     oldFlags = self.compilers.CPPFLAGS
     self.compilers.CPPFLAGS += ' '+self.headers.toString(self.include)
 
-    # the following packages are all derived orginally from the MPICH implementation
+    # the following packages are all derived originally from the MPICH implementation
     MPI_VER = ''
     # I_MPI_NUMVERSION is broken on Windows and only has a value of 0 so test also for the named version
     MPICHPKG = 'I_MPI'
@@ -833,7 +833,7 @@ Unable to run hostname to check the network')
   def PetscArchMPICheck(self):
     '''Check that previously configured for MPI include files are not in the PETSC_ARCH directory'''
     import os
-    '''Makes sure incompatable mpi.h is not in the PETSC_ARCH/include directory'''
+    '''Makes sure incompatible mpi.h is not in the PETSC_ARCH/include directory'''
     build_mpi_h_dir = os.path.join(self.petscdir.dir,self.arch,'include')
     build_mpi_h = os.path.join(build_mpi_h_dir,'mpi.h')
     if os.path.isfile(build_mpi_h):

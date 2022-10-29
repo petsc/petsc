@@ -354,7 +354,7 @@ class Package(config.base.Configure):
 
   # This construct should be removed and just have getInstallDir() handle the process
   def getDefaultInstallDir(self):
-    '''The installation directroy of the library'''
+    '''The installation directory of the library'''
     if hasattr(self, 'installDirProvider'):
       if hasattr(self.installDirProvider, 'dir'):
         return self.installDirProvider.dir
@@ -1226,7 +1226,7 @@ char     *ver = "petscpkgver(" PetscXstr_({y}) ")";
 
   def updateCompilers(self, installDir, mpiccName, mpicxxName, mpif77Name, mpif90Name):
     '''Check if mpicc, mpicxx etc binaries exist - and update setCompilers() database.
-    The input arguments are the names of the binaries specified by the respective pacakges
+    The input arguments are the names of the binaries specified by the respective packages
     This should really be part of compilers.py but it also uses compilerFlags.configure() so
     I am putting it here and Matt can fix it'''
 
@@ -1372,13 +1372,13 @@ Brief overview of how BuildSystem\'s configuration of packages works.
 
     Packages essentially encapsulate libraries, that either
     (A) are already (prefix-)installed already somewhere on the system or
-    (B) need to be dowloaded, built and installed first
+    (B) need to be downloaded, built and installed first
   If (A), the parent class provides a generic mechanism for locating the installation, by looking in user-specified and standard locations.
   If (B), the parent class provides a generic mechanism for determining whether a download is necessary, downloading and unpacking
   the source (if the download is, indeed, required), determining whether the package needs to be built, providing the build and
   installation directories, and a few other helper tasks.  The package subclass is responsible for implementing the "Install" hook,
   which is called by the parent class when the actual installation (building the source code, etc.) is done.  As an aside, BuildSystem-
-  controled build and install of a package at configuration time has a much better chance of guaranteeing language, compiler and library
+  controlled build and install of a package at configuration time has a much better chance of guaranteeing language, compiler and library
   (shared or not) consistency among packages.
     No matter whether (A) or (B) is realized, the parent class control flow demands that the located or installed package
   be checked to ensure it is functional.  Since a package is conceptualized as a library, the check consists in testing whether
@@ -1801,7 +1801,7 @@ class GNUPackage(Package):
       try:
         self.executeShellCommand(command,cwd=self.packageDir,log=self.log)
       except RuntimeError as e:
-        raise RuntimeError('Could not boostrap '+self.PACKAGE+': maybe autotools (or recent enough autotools) could not be found?\nError: '+str(e))
+        raise RuntimeError('Could not bootstrap '+self.PACKAGE+': maybe autotools (or recent enough autotools) could not be found?\nError: '+str(e))
 
 class CMakePackage(Package):
   def __init__(self, framework):
@@ -1842,7 +1842,7 @@ class CMakePackage(Package):
     self.framework.pushLanguage('C')
     args.append('-DCMAKE_C_COMPILER="'+self.framework.getCompiler()+'"')
     # bypass CMake findMPI() bug that can find compilers later in the PATH before the first one in the PATH.
-    # relevent lines of findMPI() begins with if(_MPI_BASE_DIR)
+    # relevant lines of findMPI() begins with if(_MPI_BASE_DIR)
     self.getExecutable(self.framework.getCompiler(), getFullPath=1, resultName='mpi_C',setMakeMacro=0)
     args.append('-DMPI_C_COMPILER="'+self.mpi_C+'"')
     args.append('-DCMAKE_AR='+self.setCompilers.AR)
@@ -1857,7 +1857,7 @@ class CMakePackage(Package):
       lang = self.framework.pushLanguage('Cxx')
       args.append('-DCMAKE_CXX_COMPILER="'+self.framework.getCompiler()+'"')
       # bypass CMake findMPI() bug that can find compilers later in the PATH before the first one in the PATH.
-      # relevent lines of findMPI() begins with if(_MPI_BASE_DIR)
+      # relevant lines of findMPI() begins with if(_MPI_BASE_DIR)
       self.getExecutable(self.framework.getCompiler(), getFullPath=1, resultName='mpi_CC',setMakeMacro=0)
       args.append('-DMPI_CXX_COMPILER="'+self.mpi_CC+'"')
       cxxFlags = self.updatePackageCxxFlags(self.framework.getCompilerFlags())
@@ -1875,7 +1875,7 @@ class CMakePackage(Package):
       self.framework.pushLanguage('FC')
       args.append('-DCMAKE_Fortran_COMPILER="'+self.framework.getCompiler()+'"')
       # bypass CMake findMPI() bug that can find compilers later in the PATH before the first one in the PATH.
-      # relevent lines of findMPI() begins with if(_MPI_BASE_DIR)
+      # relevant lines of findMPI() begins with if(_MPI_BASE_DIR)
       self.getExecutable(self.framework.getCompiler(), getFullPath=1, resultName='mpi_FC',setMakeMacro=0)
       args.append('-DMPI_Fortran_COMPILER="'+self.mpi_FC+'"')
       args.append('-DCMAKE_Fortran_FLAGS:STRING="'+self.updatePackageFFlags(self.framework.getCompilerFlags())+'"')

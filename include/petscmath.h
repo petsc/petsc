@@ -636,7 +636,7 @@ M*/
 #define PetscMin(a, b) (((a) < (b)) ? (a) : (b))
 
 /*MC
-   PetscMax - Returns maxium of two numbers
+   PetscMax - Returns maximum of two numbers
 
    Synopsis:
    #include <petscmath.h>

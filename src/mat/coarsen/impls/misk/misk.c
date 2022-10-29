@@ -456,7 +456,7 @@ PetscErrorCode MatCoarsenMISKSetDistance(MatCoarsen crs, PetscInt k)
    Input Parameter:
 .   coarsen - the coarsen
 
-   Output Paramter:
+   Output Parameter:
 .   k - the distance
 
    Level: advanced

@@ -17,7 +17,7 @@ with Dirichlet boundary conditions
 or pure Neumman boundary conditions.
 */
 
-static char help[] = "Solves 2D inhomogeneous Laplacian. Demonstates using PCTelescopeSetCoarseDM functionality of PCTelescope via a DMShell\n\n";
+static char help[] = "Solves 2D inhomogeneous Laplacian. Demonstrates using PCTelescopeSetCoarseDM functionality of PCTelescope via a DMShell\n\n";
 
 #include <petscdm.h>
 #include <petscdmda.h>

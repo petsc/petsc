@@ -20,10 +20,10 @@ static char help[] = "Test: Solve a toy 2D problem on a staggered grid using 2-l
   call below for the prefix).
 
   This is for testing purposes, and uses some routines to make
-  sure that transfer operators are consistent with extrating submatrices.
+  sure that transfer operators are consistent with extracting submatrices.
 
   -extractTransferOperators (true by default) defines transfer operators for
-  the velocity-velocity system by extracing submatrices from the operators for
+  the velocity-velocity system by extracting submatrices from the operators for
   the full system.
 
 */

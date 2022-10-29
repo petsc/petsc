@@ -2206,7 +2206,7 @@ PetscErrorCode DMPlexLandauCreateVelocitySpace(MPI_Comm comm, PetscInt dim, cons
 }
 
 /*@
- DMPlexLandauAccess - Acess to the distribution function with user callback
+ DMPlexLandauAccess - Access to the distribution function with user callback
 
  Collective on dm
 

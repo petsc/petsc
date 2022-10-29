@@ -449,7 +449,7 @@ PetscErrorCode PetscSectionSetFieldName(PetscSection s, PetscInt field, const ch
 . field - the field number
 - comp  - the component number
 
-  Ouput Parameter:
+  Output Parameter:
 . compName - the component name
 
   Level: intermediate

@@ -74,7 +74,7 @@ PetscErrorCode TaoSetVariableBoundsRoutine(Tao tao, PetscErrorCode (*func)(Tao, 
   Input Parameter:
 . tao - the Tao context
 
-  Output Parametrs:
+  Output Parameters:
 + XL  - vector of lower bounds
 - XU  - vector of upper bounds
 

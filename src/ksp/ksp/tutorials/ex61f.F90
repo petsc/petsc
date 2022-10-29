@@ -155,9 +155,9 @@
 
        print*,'nz = ', nz
 
-!      ---------------------------------
-!      convert from fortan to c indexing
-!      ---------------------------------
+!      ----------------------------------
+!      convert from fortran to c indexing
+!      ----------------------------------
        ilist(1:nz) = ilist(1:nz) - 1
        jlist(1:nz) = jlist(1:nz) - 1
 
