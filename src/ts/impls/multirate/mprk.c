@@ -131,12 +131,12 @@ static PetscErrorCode TSMPRKGenerateTableau3(PetscInt ratio, PetscInt s, const P
      This method has four stages for slow and fast parts. The refinement factor of the stepsize is 2.
      r = 2, np = 2
 
-     Options database:
+     Options Database Key:
 .     -ts_mprk_type 2a22 - select this scheme
 
      Level: advanced
 
-.seealso: `TSMPRK`, `TSMPRKType`, `TSMPRKSetType()`
+.seealso: [](chapter_ts), `TSMPRK`, `TSMPRKType`, `TSMPRKSetType()`
 M*/
 /*MC
      TSMPRK2A23 - Second Order Multirate Partitioned Runge-Kutta scheme based on RK2A.
@@ -144,12 +144,12 @@ M*/
      This method has eight stages for slow and medium and fast parts. The refinement factor of the stepsize is 2.
      r = 2, np = 3
 
-     Options database:
+     Options Database Key:
 .     -ts_mprk_type 2a23 - select this scheme
 
      Level: advanced
 
-.seealso: `TSMPRK`, `TSMPRKType`, `TSMPRKSetType()`
+.seealso: [](chapter_ts), `TSMPRK`, `TSMPRKType`, `TSMPRKSetType()`
 M*/
 /*MC
      TSMPRK2A32 - Second Order Multirate Partitioned Runge-Kutta scheme based on RK2A.
@@ -157,12 +157,12 @@ M*/
      This method has four stages for slow and fast parts. The refinement factor of the stepsize is 3.
      r = 3, np = 2
 
-     Options database:
+     Options Database Key:
 .     -ts_mprk_type 2a32 - select this scheme
 
      Level: advanced
 
-.seealso: `TSMPRK`, `TSMPRKType`, `TSMPRKSetType()`
+.seealso: [](chapter_ts), `TSMPRK`, `TSMPRKType`, `TSMPRKSetType()`
 M*/
 /*MC
      TSMPRK2A33 - Second Order Multirate Partitioned Runge-Kutta scheme based on RK2A.
@@ -170,58 +170,58 @@ M*/
      This method has eight stages for slow and medium and fast parts. The refinement factor of the stepsize is 3.
      r = 3, np = 3
 
-     Options database:
+     Options Database Key:
 .     -ts_mprk_type 2a33- select this scheme
 
      Level: advanced
 
-.seealso: `TSMPRK`, `TSMPRKType`, `TSMPRKSetType()`
+.seealso: [](chapter_ts), `TSMPRK`, `TSMPRKType`, `TSMPRKSetType()`
 M*/
 /*MC
      TSMPRK3P2M - Third Order Multirate Partitioned Runge-Kutta scheme.
 
      This method has eight stages for both slow and fast parts.
 
-     Options database:
+     Options Database Key:
 .     -ts_mprk_type pm3 - select this scheme
 
      Level: advanced
 
-.seealso: `TSMPRK`, `TSMPRKType`, `TSMPRKSetType()`
+.seealso: [](chapter_ts), `TSMPRK`, `TSMPRKType`, `TSMPRKSetType()`
 M*/
 /*MC
      TSMPRKP2 - Second Order Multirate Partitioned Runge-Kutta scheme.
 
      This method has five stages for both slow and fast parts.
 
-     Options database:
+     Options Database Key:
 .     -ts_mprk_type p2 - select this scheme
 
      Level: advanced
 
-.seealso: `TSMPRK`, `TSMPRKType`, `TSMPRKSetType()`
+.seealso: [](chapter_ts), `TSMPRK`, `TSMPRKType`, `TSMPRKSetType()`
 M*/
 /*MC
      TSMPRKP3 - Third Order Multirate Partitioned Runge-Kutta scheme.
 
      This method has ten stages for both slow and fast parts.
 
-     Options database:
+     Options Database Key:
 .     -ts_mprk_type p3 - select this scheme
 
      Level: advanced
 
-.seealso: `TSMPRK`, `TSMPRKType`, `TSMPRKSetType()`
+.seealso: [](chapter_ts), `TSMPRK`, `TSMPRKType`, `TSMPRKSetType()`
 M*/
 
 /*@C
-  TSMPRKRegisterAll - Registers all of the Partirioned Runge-Kutta explicit methods in TSMPRK
+  TSMPRKRegisterAll - Registers all of the Partirioned Runge-Kutta explicit methods in `TSMPRK`
 
   Not Collective, but should be called by all processes which will need the schemes to be registered
 
   Level: advanced
 
-.seealso: `TSMPRKRegisterDestroy()`
+.seealso: [](chapter_ts), `TSMPRK`, `TSMPRKRegisterDestroy()`
 @*/
 PetscErrorCode TSMPRKRegisterAll(void)
 {
@@ -368,13 +368,13 @@ PetscErrorCode TSMPRKRegisterAll(void)
 }
 
 /*@C
-   TSMPRKRegisterDestroy - Frees the list of schemes that were registered by TSMPRKRegister().
+   TSMPRKRegisterDestroy - Frees the list of schemes that were registered by `TSMPRKRegister()`.
 
    Not Collective
 
    Level: advanced
 
-.seealso: `TSMPRKRegister()`, `TSMPRKRegisterAll()`
+.seealso: [](chapter_ts), `TSMPRK`, `TSMPRKRegister()`, `TSMPRKRegisterAll()`
 @*/
 PetscErrorCode TSMPRKRegisterDestroy(void)
 {
@@ -397,13 +397,13 @@ PetscErrorCode TSMPRKRegisterDestroy(void)
 }
 
 /*@C
-  TSMPRKInitializePackage - This function initializes everything in the TSMPRK package. It is called
-  from PetscDLLibraryRegister() when using dynamic libraries, and on the first call to TSCreate_MPRK()
+  TSMPRKInitializePackage - This function initializes everything in the `TSMPRK` package. It is called
+  from `PetscDLLibraryRegister()` when using dynamic libraries, and on the first call to `TSCreate_MPRK()`
   when using static libraries.
 
   Level: developer
 
-.seealso: `PetscInitialize()`
+.seealso: [](chapter_ts), `TSMPRK`, `PetscInitialize()`
 @*/
 PetscErrorCode TSMPRKInitializePackage(void)
 {
@@ -416,12 +416,12 @@ PetscErrorCode TSMPRKInitializePackage(void)
 }
 
 /*@C
-  TSMPRKFinalizePackage - This function destroys everything in the TSMPRK package. It is
-  called from PetscFinalize().
+  TSMPRKFinalizePackage - This function destroys everything in the `TSMPRK` package. It is
+  called from `PetscFinalize()`.
 
   Level: developer
 
-.seealso: `PetscFinalize()`
+.seealso: [](chapter_ts), `TSMPRK`, `PetscFinalize()`
 @*/
 PetscErrorCode TSMPRKFinalizePackage(void)
 {
@@ -432,7 +432,7 @@ PetscErrorCode TSMPRKFinalizePackage(void)
 }
 
 /*@C
-   TSMPRKRegister - register a MPRK scheme by providing the entries in the Butcher tableau
+   TSMPRKRegister - register a `TSMPRK` scheme by providing the entries in the Butcher tableau
 
    Not Collective, but the same schemes should be registered on all processes on which they will be used
 
@@ -449,12 +449,12 @@ PetscErrorCode TSMPRKFinalizePackage(void)
 .  bs - step completion table for slow components(dimension s)
 -  cs - abscissa for slow components(dimension s)
 
-   Notes:
-   Several MPRK methods are provided, this function is only needed to create new methods.
-
    Level: advanced
 
-.seealso: `TSMPRK`
+   Note:
+   Several `TSMPRK` methods are provided, this function is only needed to create new methods.
+
+.seealso: [](chapter_ts), `TSMPRK`
 @*/
 PetscErrorCode TSMPRKRegister(TSMPRKType name, PetscInt order, PetscInt sbase, PetscInt ratio1, PetscInt ratio2, const PetscReal Asb[], const PetscReal bsb[], const PetscReal csb[], const PetscInt rsb[], const PetscReal Amb[], const PetscReal bmb[], const PetscReal cmb[], const PetscInt rmb[], const PetscReal Af[], const PetscReal bf[], const PetscReal cf[])
 {
@@ -1136,20 +1136,20 @@ static PetscErrorCode TSLoad_MPRK(TS ts, PetscViewer viewer)
 }
 
 /*@C
-  TSMPRKSetType - Set the type of MPRK scheme
+  TSMPRKSetType - Set the type of `TSMPRK` scheme
 
   Not collective
 
   Input Parameters:
 +  ts - timestepping context
--  mprktype - type of MPRK-scheme
+-  mprktype - type of `TSMPRK` scheme
 
-  Options Database:
+  Options Database Key:
 .   -ts_mprk_type - <pm2,p2,p3> - select the specific scheme
 
   Level: intermediate
 
-.seealso: `TSMPRKGetType()`, `TSMPRK`, `TSMPRKType`
+.seealso: [](chapter_ts), `TSMPRKGetType()`, `TSMPRK`, `TSMPRKType`
 @*/
 PetscErrorCode TSMPRKSetType(TS ts, TSMPRKType mprktype)
 {
@@ -1161,7 +1161,7 @@ PetscErrorCode TSMPRKSetType(TS ts, TSMPRKType mprktype)
 }
 
 /*@C
-  TSMPRKGetType - Get the type of MPRK scheme
+  TSMPRKGetType - Get the type of `TSMPRK` scheme
 
   Not collective
 
@@ -1169,11 +1169,11 @@ PetscErrorCode TSMPRKSetType(TS ts, TSMPRKType mprktype)
 .  ts - timestepping context
 
   Output Parameter:
-.  mprktype - type of MPRK-scheme
+.  mprktype - type of `TSMPRK` scheme
 
   Level: intermediate
 
-.seealso: `TSMPRKGetType()`
+.seealso: [](chapter_ts), `TSMPRKGetType()`, `TSMPRK`
 @*/
 PetscErrorCode TSMPRKGetType(TS ts, TSMPRKType *mprktype)
 {
@@ -1242,17 +1242,15 @@ static PetscErrorCode TSDestroy_MPRK(TS ts)
 /*MC
       TSMPRK - ODE solver using Multirate Partitioned Runge-Kutta schemes
 
-  The user should provide the right hand side of the equation
-  using TSSetRHSFunction().
-
-  Notes:
-  The default is TSMPRKPM2, it can be changed with TSMPRKSetType() or -ts_mprk_type
+  The user should provide the right hand side of the equation using `TSSetRHSFunction()`.
 
   Level: beginner
 
-.seealso: `TSCreate()`, `TS`, `TSSetType()`, `TSMPRKSetType()`, `TSMPRKGetType()`, `TSMPRKType`, `TSMPRKRegister()`, `TSMPRKSetMultirateType()`
-          `TSMPRKM2`, `TSMPRKM3`, `TSMPRKRFSMR3`, `TSMPRKRFSMR2`
+  Note:
+  The default is `TSMPRKPM2`, it can be changed with `TSMPRKSetType()` or -ts_mprk_type
 
+.seealso: [](chapter_ts), `TSCreate()`, `TS`, `TSSetType()`, `TSMPRKSetType()`, `TSMPRKGetType()`, `TSMPRKType`, `TSMPRKRegister()`, `TSMPRKSetMultirateType()`
+          `TSMPRKM2`, `TSMPRKM3`, `TSMPRKRFSMR3`, `TSMPRKRFSMR2`, `TSType`
 M*/
 PETSC_EXTERN PetscErrorCode TSCreate_MPRK(TS ts)
 {

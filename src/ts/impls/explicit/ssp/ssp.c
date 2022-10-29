@@ -50,7 +50,7 @@ static PetscErrorCode TSSSPRestoreWorkVectors(TS ts, PetscInt n, Vec **work)
 
    Level: beginner
 
-.seealso: `TSSSP`, `TSSSPSetType()`, `TSSSPSetNumStages()`
+.seealso: [](chapter_ts), `TSSSP`, `TSSSPSetType()`, `TSSSPSetNumStages()`
 M*/
 static PetscErrorCode TSSSPStep_RK_2(TS ts, PetscReal t0, PetscReal dt, Vec sol)
 {
@@ -82,7 +82,7 @@ static PetscErrorCode TSSSPStep_RK_2(TS ts, PetscReal t0, PetscReal dt, Vec sol)
 
    Level: beginner
 
-.seealso: `TSSSP`, `TSSSPSetType()`, `TSSSPSetNumStages()`
+.seealso: [](chapter_ts), `TSSSP`, `TSSSPSetType()`, `TSSSPSetNumStages()`
 M*/
 static PetscErrorCode TSSSPStep_RK_3(TS ts, PetscReal t0, PetscReal dt, Vec sol)
 {
@@ -141,7 +141,7 @@ static PetscErrorCode TSSSPStep_RK_3(TS ts, PetscReal t0, PetscReal dt, Vec sol)
 
    Level: beginner
 
-.seealso: `TSSSP`, `TSSSPSetType()`
+.seealso: [](chapter_ts), `TSSSP`, `TSSSPSetType()`
 M*/
 static PetscErrorCode TSSSPStep_RK_10_4(TS ts, PetscReal t0, PetscReal dt, Vec sol)
 {
@@ -242,7 +242,7 @@ static PetscErrorCode TSDestroy_SSP(TS ts)
 /*------------------------------------------------------------*/
 
 /*@C
-   TSSSPSetType - set the SSP time integration scheme to use
+   TSSSPSetType - set the `TSSSP` time integration scheme to use
 
    Logically Collective
 
@@ -251,12 +251,12 @@ static PetscErrorCode TSDestroy_SSP(TS ts)
 -  ssptype - type of scheme to use
 
    Options Database Keys:
-   -ts_ssp_type <rks2>               : Type of SSP method (one of) rks2 rks3 rk104
-   -ts_ssp_nstages<rks2: 5, rks3: 9> : Number of stages
++   -ts_ssp_type <rks2>               - Type of `TSSSP` method (one of) rks2 rks3 rk104
+-  -ts_ssp_nstages<rks2: 5, rks3: 9> - Number of stages
 
    Level: beginner
 
-.seealso: `TSSSP`, `TSSSPGetType()`, `TSSSPSetNumStages()`, `TSSSPRKS2`, `TSSSPRKS3`, `TSSSPRK104`
+.seealso: [](chapter_ts), `TSSSP`, `TSSSPGetType()`, `TSSSPSetNumStages()`, `TSSSPRKS2`, `TSSSPRKS3`, `TSSSPRK104`
 @*/
 PetscErrorCode TSSSPSetType(TS ts, TSSSPType ssptype)
 {
@@ -268,7 +268,7 @@ PetscErrorCode TSSSPSetType(TS ts, TSSSPType ssptype)
 }
 
 /*@C
-   TSSSPGetType - get the SSP time integration scheme
+   TSSSPGetType - get the `TSSSP` time integration scheme
 
    Logically Collective
 
@@ -280,7 +280,7 @@ PetscErrorCode TSSSPSetType(TS ts, TSSSPType ssptype)
 
    Level: beginner
 
-.seealso: `TSSSP`, `TSSSPSettype()`, `TSSSPSetNumStages()`, `TSSSPRKS2`, `TSSSPRKS3`, `TSSSPRK104`
+.seealso: [](chapter_ts), `TSSSP`, `TSSSPSettype()`, `TSSSPSetNumStages()`, `TSSSPRKS2`, `TSSSPRKS3`, `TSSSPRK104`
 @*/
 PetscErrorCode TSSSPGetType(TS ts, TSSSPType *type)
 {
@@ -291,8 +291,8 @@ PetscErrorCode TSSSPGetType(TS ts, TSSSPType *type)
 }
 
 /*@
-   TSSSPSetNumStages - set the number of stages to use with the SSP method. Must be called after
-   TSSSPSetType().
+   TSSSPSetNumStages - set the number of stages to use with the `TSSSP` method. Must be called after
+   `TSSSPSetType()`.
 
    Logically Collective
 
@@ -301,12 +301,12 @@ PetscErrorCode TSSSPGetType(TS ts, TSSSPType *type)
 -  nstages - number of stages
 
    Options Database Keys:
-   -ts_ssp_type <rks2>               : Type of SSP method (one of) rks2 rks3 rk104
-   -ts_ssp_nstages<rks2: 5, rks3: 9> : Number of stages
++   -ts_ssp_type <rks2>               - Type of `TSSSP` method (one of) rks2 rks3 rk104
+-   -ts_ssp_nstages<rks2: 5, rks3: 9> - Number of stages
 
    Level: beginner
 
-.seealso: `TSSSP`, `TSSSPGetNumStages()`, `TSSSPSetNumStages()`, `TSSSPRKS2`, `TSSSPRKS3`, `TSSSPRK104`
+.seealso: [](chapter_ts), `TSSSP`, `TSSSPGetNumStages()`, `TSSSPSetNumStages()`, `TSSSPRKS2`, `TSSSPRKS3`, `TSSSPRK104`
 @*/
 PetscErrorCode TSSSPSetNumStages(TS ts, PetscInt nstages)
 {
@@ -317,7 +317,7 @@ PetscErrorCode TSSSPSetNumStages(TS ts, PetscInt nstages)
 }
 
 /*@
-   TSSSPGetNumStages - get the number of stages in the SSP time integration scheme
+   TSSSPGetNumStages - get the number of stages in the `TSSSP` time integration scheme
 
    Logically Collective
 
@@ -329,7 +329,7 @@ PetscErrorCode TSSSPSetNumStages(TS ts, PetscInt nstages)
 
    Level: beginner
 
-.seealso: `TSSSP`, `TSSSPGetType()`, `TSSSPSetNumStages()`, `TSSSPRKS2`, `TSSSPRKS3`, `TSSSPRK104`
+.seealso: [](chapter_ts), `TSSSP`, `TSSSPGetType()`, `TSSSPSetNumStages()`, `TSSSPRKS2`, `TSSSPRKS3`, `TSSSPRK104`
 @*/
 PetscErrorCode TSSSPGetNumStages(TS ts, PetscInt *nstages)
 {
@@ -459,7 +459,7 @@ static PetscErrorCode TSView_SSP(TS ts, PetscViewer viewer)
 +  * - Ketcheson, Highly efficient strong stability preserving Runge Kutta methods with low storage implementations, SISC, 2008.
 -  * - Gottlieb, Ketcheson, and Shu, High order strong stability preserving time discretizations, J Scientific Computing, 2009.
 
-.seealso: `TSCreate()`, `TS`, `TSSetType()`
+.seealso: [](chapter_ts), `TSCreate()`, `TS`, `TSSetType()`
 
 M*/
 PETSC_EXTERN PetscErrorCode TSCreate_SSP(TS ts)
@@ -489,12 +489,12 @@ PETSC_EXTERN PetscErrorCode TSCreate_SSP(TS ts)
 }
 
 /*@C
-  TSSSPInitializePackage - This function initializes everything in the TSSSP package. It is called
-  from TSInitializePackage().
+  TSSSPInitializePackage - This function initializes everything in the `TSSSP` package. It is called
+  from `TSInitializePackage()`.
 
   Level: developer
 
-.seealso: `PetscInitialize()`
+.seealso: [](chapter_ts), `PetscInitialize()`, `TSSSPFinalizePackage()`, `TSInitializePackage()`
 @*/
 PetscErrorCode TSSSPInitializePackage(void)
 {
@@ -509,12 +509,12 @@ PetscErrorCode TSSSPInitializePackage(void)
 }
 
 /*@C
-  TSSSPFinalizePackage - This function destroys everything in the TSSSP package. It is
-  called from PetscFinalize().
+  TSSSPFinalizePackage - This function destroys everything in the `TSSSP` package. It is
+  called from `PetscFinalize()`.
 
   Level: developer
 
-.seealso: `PetscFinalize()`
+.seealso: [](chapter_ts), `PetscFinalize()`, `TSSSPInitiallizePackage()`, `TSInitializePackage()`
 @*/
 PetscErrorCode TSSSPFinalizePackage(void)
 {

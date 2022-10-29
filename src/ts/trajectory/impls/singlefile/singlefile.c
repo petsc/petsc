@@ -34,12 +34,12 @@ static PetscErrorCode TSTrajectoryDestroy_Singlefile(TSTrajectory tj)
 }
 
 /*MC
-      TSTRAJECTORYSINGLEFILE - Stores all solutions of the ODE/ADE into a single file followed by each timestep. Does not save the intermediate stages in a multistage method
+      TSTRAJECTORYSINGLEFILE - Stores all solutions of the ODE/ADE into a single file followed by each timestep.
+      Does not save the intermediate stages in a multistage method
 
   Level: intermediate
 
-.seealso: `TSTrajectoryCreate()`, `TS`, `TSTrajectorySetType()`
-
+.seealso: [](chapter_ts), `TSTrajectoryCreate()`, `TS`, `TSTrajectorySetType()`, `TSTrajectoryType`, `TSTrajectory`
 M*/
 PETSC_EXTERN PetscErrorCode TSTrajectoryCreate_Singlefile(TSTrajectory tj, TS ts)
 {

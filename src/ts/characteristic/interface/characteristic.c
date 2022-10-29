@@ -111,7 +111,7 @@ PetscErrorCode CharacteristicCreate(MPI_Comm comm, Characteristic *c)
 /*@C
    CharacteristicSetType - Builds Characteristic for a particular solver.
 
-   Logically Collective on Characteristic
+   Logically Collective on c
 
    Input Parameters:
 +  c    - the method of characteristics context
@@ -120,6 +120,8 @@ PetscErrorCode CharacteristicCreate(MPI_Comm comm, Characteristic *c)
    Options Database Key:
 .  -characteristic_type <method> - Sets the method; use -help for a list
     of available methods
+
+  Level: intermediate
 
    Notes:
    See "include/petsccharacteristic.h" for available methods
@@ -136,10 +138,7 @@ PetscErrorCode CharacteristicCreate(MPI_Comm comm, Characteristic *c)
   choosing the appropriate method.  In other words, this routine is
   not for beginners.
 
-  Level: intermediate
-
-.seealso: `CharacteristicType`
-
+.seealso: [](chapter_ts), `CharacteristicType`
 @*/
 PetscErrorCode CharacteristicSetType(Characteristic c, CharacteristicType type)
 {
@@ -172,14 +171,14 @@ PetscErrorCode CharacteristicSetType(Characteristic c, CharacteristicType type)
    CharacteristicSetUp - Sets up the internal data structures for the
    later use of an iterative solver.
 
-   Collective on Characteristic
+   Collective on c
 
    Input Parameter:
 .  ksp   - iterative context obtained from CharacteristicCreate()
 
    Level: developer
 
-.seealso: `CharacteristicCreate()`, `CharacteristicSolve()`, `CharacteristicDestroy()`
+.seealso: [](chapter_ts), `CharacteristicCreate()`, `CharacteristicSolve()`, `CharacteristicDestroy()`
 @*/
 PetscErrorCode CharacteristicSetUp(Characteristic c)
 {
@@ -206,6 +205,8 @@ PetscErrorCode CharacteristicSetUp(Characteristic c)
 +  name_solver - name of a new user-defined solver
 -  routine_create - routine to create method context
 
+  Level: advanced
+
   Sample usage:
 .vb
     CharacteristicRegister("my_char", MyCharCreate);
@@ -224,9 +225,7 @@ PetscErrorCode CharacteristicSetUp(Characteristic c)
    Notes:
    CharacteristicRegister() may be called multiple times to add several user-defined solvers.
 
-.seealso: `CharacteristicRegisterAll()`, `CharacteristicRegisterDestroy()`
-
-  Level: advanced
+.seealso: [](chapter_ts), `CharacteristicRegisterAll()`, `CharacteristicRegisterDestroy()`
 @*/
 PetscErrorCode CharacteristicRegister(const char sname[], PetscErrorCode (*function)(Characteristic))
 {

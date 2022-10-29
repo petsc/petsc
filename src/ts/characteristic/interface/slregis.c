@@ -2,12 +2,12 @@
 
 static PetscBool CharacteristicPackageInitialized = PETSC_FALSE;
 /*@C
-  CharacteristicFinalizePackage - This function destroys everything in the Petsc interface to the characteristics package. It is
-  called from PetscFinalize().
+  CharacteristicFinalizePackage - This function destroys everything in the `Characteristics` package. It is
+  called from `PetscFinalize()`.
 
   Level: developer
 
-.seealso: `PetscFinalize()`
+.seealso: [](chapter_ts), `PetscFinalize()`, `CharacteristicInitializePackage()`
 @*/
 PetscErrorCode CharacteristicFinalizePackage(void)
 {
@@ -25,7 +25,7 @@ PetscErrorCode CharacteristicFinalizePackage(void)
 
   Level: developer
 
-.seealso: `PetscInitialize()`
+.seealso: [](chapter_ts), `PetscInitialize()`, `CharacteristicFinalizePackage()`
 @*/
 PetscErrorCode CharacteristicInitializePackage(void)
 {
@@ -73,7 +73,6 @@ PetscErrorCode CharacteristicInitializePackage(void)
   PetscDLLibraryRegister - This function is called when the dynamic library it is in is opened.
 
   This one registers the method of characteristics code
-
  */
 PETSC_EXTERN PetscErrorCode PetscDLLibraryRegister_petsccharacteristic(void)
 {

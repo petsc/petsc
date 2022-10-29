@@ -1890,10 +1890,10 @@ PETSC_UNUSED static PetscErrorCode TSTrajectorySetUseDRAM(TSTrajectory tj, Petsc
 /*@C
    TSTrajectoryMemorySetType - sets the software that is used to generate the checkpointing schedule.
 
-   Logically Collective on TSTrajectory
+   Logically Collective on tj
 
    Input Parameters:
-+  tj - the TSTrajectory context
++  tj - the `TSTrajectory` context
 -  tj_memory_type - Revolve or CAMS
 
    Options Database Key:
@@ -1901,8 +1901,7 @@ PETSC_UNUSED static PetscErrorCode TSTrajectorySetUseDRAM(TSTrajectory tj, Petsc
 
    Level: intermediate
 
-   Note:
-     By default this will use Revolve if it exists
+.seealso: [](chapter_ts), `TSTrajectory`, `TSTrajectorySetMaxUnitsRAM()`, `TSTrajectoryMemoryType`
 @*/
 PetscErrorCode TSTrajectoryMemorySetType(TSTrajectory tj, TSTrajectoryMemoryType tj_memory_type)
 {
@@ -1924,7 +1923,7 @@ PetscErrorCode TSTrajectoryMemorySetType(TSTrajectory tj, TSTrajectoryMemoryType
 
   Level: intermediate
 
-.seealso: `TSTrajectorySetMaxUnitsRAM()`
+.seealso: [](chapter_ts), `TSTrajectory`, `TSTrajectorySetMaxUnitsRAM()`
 @*/
 PetscErrorCode TSTrajectorySetMaxCpsRAM(TSTrajectory tj, PetscInt max_cps_ram)
 {
@@ -1946,7 +1945,7 @@ PetscErrorCode TSTrajectorySetMaxCpsRAM(TSTrajectory tj, PetscInt max_cps_ram)
 
   Level: intermediate
 
-.seealso: `TSTrajectorySetMaxUnitsDisk()`, `TSTrajectorySetMaxUnitsRAM()`
+.seealso: [](chapter_ts), `TSTrajectory`, `TSTrajectorySetMaxUnitsDisk()`, `TSTrajectorySetMaxUnitsRAM()`
 @*/
 PetscErrorCode TSTrajectorySetMaxCpsDisk(TSTrajectory tj, PetscInt max_cps_disk)
 {
@@ -1968,7 +1967,7 @@ PetscErrorCode TSTrajectorySetMaxCpsDisk(TSTrajectory tj, PetscInt max_cps_disk)
 
   Level: intermediate
 
-.seealso: `TSTrajectorySetMaxCpsRAM()`
+.seealso: [](chapter_ts), `TSTrajectory`, `TSTrajectorySetMaxCpsRAM()`
 @*/
 PetscErrorCode TSTrajectorySetMaxUnitsRAM(TSTrajectory tj, PetscInt max_units_ram)
 {
@@ -1990,7 +1989,7 @@ PetscErrorCode TSTrajectorySetMaxUnitsRAM(TSTrajectory tj, PetscInt max_units_ra
 
   Level: intermediate
 
-.seealso: `TSTrajectorySetMaxCpsDisk()`
+.seealso: [](chapter_ts), `TSTrajectory`, `TSTrajectorySetMaxCpsDisk()`
 @*/
 PetscErrorCode TSTrajectorySetMaxUnitsDisk(TSTrajectory tj, PetscInt max_units_disk)
 {
@@ -2256,8 +2255,7 @@ static PetscErrorCode TSTrajectoryDestroy_Memory(TSTrajectory tj)
 
   Level: intermediate
 
-.seealso: `TSTrajectoryCreate()`, `TS`, `TSTrajectorySetType()`
-
+.seealso: [](chapter_ts), `TSTrajectoryCreate()`, `TS`, `TSTrajectorySetType()`, `TSTrajectoryType`, `TSTrajectory`
 M*/
 PETSC_EXTERN PetscErrorCode TSTrajectoryCreate_Memory(TSTrajectory tj, TS ts)
 {
