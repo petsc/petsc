@@ -139,7 +139,7 @@ typedef struct {
 } ULambda;
 
 /*
-      Evaluates FU = Gradiant(L(w,u,lambda))
+      Evaluates FU = Gradient(L(w,u,lambda))
 
      This local function acts on the ghosted version of U (accessed via DMCompositeGetLocalVectors() and
    DMCompositeScatter()) BUT the global, nonghosted version of FU (via DMCompositeGetAccess()).

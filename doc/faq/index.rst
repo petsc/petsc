@@ -1445,7 +1445,7 @@ How can I generate performance summaries with PETSc?
 
 Use these options at runtime:
 
--log_view  Outputs a comprehensive timing, memory consumption, and comunications digest
+-log_view  Outputs a comprehensive timing, memory consumption, and communications digest
            for your program. See the :ref:`profiling chapter <ch_profiling>` of the users
            manual for information on interpreting the summary data.
 

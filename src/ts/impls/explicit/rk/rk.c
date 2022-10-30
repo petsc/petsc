@@ -167,7 +167,7 @@ M*/
 .seealso: [](chapter_ts), `TSRK`, `TSRKType`, `TSRKSetType()`
 M*/
 /*MC
-     TSRK8VR - Eigth order robust Verner RK scheme with seventh order embedded method.
+     TSRK8VR - Eighth order robust Verner RK scheme with seventh order embedded method.
 
      This method has thirteen stages.
 

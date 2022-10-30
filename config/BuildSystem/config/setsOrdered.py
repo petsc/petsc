@@ -639,7 +639,7 @@ if __name__ == '__main__':
             return
 
         def testOrder(self):
-            '''Verify that sets maintain the creatin order'''
+            '''Verify that sets maintain the creation order'''
             self.assertEquals(str(Set([1, 2, 3])), 'Set([1, 2, 3])')
             self.assertEquals(str(Set([2, 3, 3, 3, 1, 2, 3, 1])), 'Set([2, 3, 1])')
             return

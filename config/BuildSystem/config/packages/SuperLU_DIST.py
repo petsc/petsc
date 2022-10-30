@@ -40,7 +40,7 @@ class Configure(config.package.CMakePackage):
     else:
       args.append('-DCMAKE_DISABLE_FIND_PACKAGE_OpenMP=TRUE')
     if self.cuda.found:
-      # SuperLU_DIST C/C++ sources also inlcude CUDA includes so add cuda.include to CFLAGS/CXXFLAGS
+      # SuperLU_DIST C/C++ sources also include CUDA includes so add cuda.include to CFLAGS/CXXFLAGS
       for place,item in enumerate(args):
         if item.find('CMAKE_C_FLAGS') >= 0 or item.find('CMAKE_CXX_FLAGS') >= 0:
           args[place]=item[:-1]+' '+self.headers.toString(self.cuda.include)+' -DDEBUGlevel=0 -DPRNTlevel=0"'

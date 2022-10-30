@@ -92,7 +92,7 @@ def query(invDict,fields,labels):
     Search the keys using fnmatch to find matching names and return list with
     the results 
     """
-    setlist=[]  # setlist is a list of lists that set opertions will operate on
+    setlist=[]  # setlist is a list of lists that set operations will operate on
     llist=labels.replace('|',',').split(',')
     i=-1
     for field in fields.replace('|',',').split(','):

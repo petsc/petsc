@@ -62,7 +62,7 @@ Options: \n"
                               -sponge_t   : the number of elements defining the border around each inclusion \n\
                               -sponge_w   : the number of elements in x and y each inclusion will span\n\
      -use_gp_coords : Evaluate the Youngs modulus, Poisson ratio and the body force at the global coordinates of the quadrature points.\n\
-     By default, E, nu and the body force are evaulated at the element center and applied as a constant over the entire element.\n\
+     By default, E, nu and the body force are evaluated at the element center and applied as a constant over the entire element.\n\
      -use_nonsymbc : Option to use non-symmetric boundary condition imposition. This choice will use less memory.";
 
 /* Contributed by Dave May */
@@ -953,7 +953,7 @@ static PetscErrorCode solve_elasticity_2d(PetscInt mx, PetscInt my)
 
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-no_view", &no_view, NULL));
   if (!no_view) {
-    PetscCall(DMDAViewCoefficientsGnuplot2d(da_prop, properties, "Coeffcients for elasticity eqn.", "properties"));
+    PetscCall(DMDAViewCoefficientsGnuplot2d(da_prop, properties, "Coefficients for elasticity eqn.", "properties"));
     PetscCall(DMDACoordViewGnuplot2d(elas_da, "mesh"));
   }
 

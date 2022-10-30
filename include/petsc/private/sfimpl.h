@@ -54,7 +54,7 @@ struct _PetscSFOps {
   PetscErrorCode (*ReduceEnd)(PetscSF, MPI_Datatype, const void *, void *, MPI_Op);
   PetscErrorCode (*FetchAndOpBegin)(PetscSF, MPI_Datatype, PetscMemType, void *, PetscMemType, const void *, void *, MPI_Op);
   PetscErrorCode (*FetchAndOpEnd)(PetscSF, MPI_Datatype, void *, const void *, void *, MPI_Op);
-  PetscErrorCode (*BcastToZero)(PetscSF, MPI_Datatype, PetscMemType, const void *, PetscMemType, void *); /* For interal use only */
+  PetscErrorCode (*BcastToZero)(PetscSF, MPI_Datatype, PetscMemType, const void *, PetscMemType, void *); /* For internal use only */
   PetscErrorCode (*GetRootRanks)(PetscSF, PetscInt *, const PetscMPIInt **, const PetscInt **, const PetscInt **, const PetscInt **);
   PetscErrorCode (*GetLeafRanks)(PetscSF, PetscInt *, const PetscMPIInt **, const PetscInt **, const PetscInt **);
   PetscErrorCode (*CreateLocalSF)(PetscSF, PetscSF *);

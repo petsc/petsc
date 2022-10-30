@@ -1168,7 +1168,7 @@ PetscErrorCode DMLabelGetValueIS(DMLabel label, IS *values)
   Input Parameter:
 . label - the DMLabel
 
-  Output Paramater:
+  Output Parameter:
 . is    - the value IS
 
   Level: intermediate

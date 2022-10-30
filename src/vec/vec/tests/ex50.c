@@ -1,7 +1,7 @@
 static char help[] = "Test if VecLoad_HDF5 can correctly handle FFTW vectors\n\n";
 
 /*
-  fftw vectors alloate their data array through fftw_malloc() and have their specialized VecDestroy().
+  fftw vectors allocate their data array through fftw_malloc() and have their specialized VecDestroy().
   When doing VecLoad on these vectors, we must take care of the v->array, v->array_allocated properly
   to avoid memory leaks and double-free.
 

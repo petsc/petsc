@@ -7360,7 +7360,7 @@ PetscErrorCode MatProductSymbolic_MPIAIJBACKEND(Mat C)
 
     ncoo = ncoo_d + ncoo_oown + ncoo2, which ncoo2 is number of nonzeros inserted to me by other procs.
 
-    off[0] points to a big index array, which is shared by off[1,2,...]. Similarily, for own[0].
+    off[0] points to a big index array, which is shared by off[1,2,...]. Similarly, for own[0].
 
     off[p]: points to the segment for matrix mp[p], storing location of nonzeros that mp[p] will insert to others
     own[p]: points to the segment for matrix mp[p], storing location of nonzeros that mp[p] will insert locally

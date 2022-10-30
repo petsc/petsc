@@ -323,7 +323,7 @@ M*/
     #if !defined(PETSC_USE_REAL___FP16) && !defined(PETSC_USE_REAL___FLOAT128)
       #if defined(__cplusplus) && defined(PETSC_HAVE_CXX_COMPLEX) /* enable complex for library code */
         #define PETSC_HAVE_COMPLEX 1
-      #elif !defined(__cplusplus) && defined(PETSC_HAVE_C99_COMPLEX) && defined(PETSC_HAVE_CXX_COMPLEX) /* User code only - conditional on libary code complex support */
+      #elif !defined(__cplusplus) && defined(PETSC_HAVE_C99_COMPLEX) && defined(PETSC_HAVE_CXX_COMPLEX) /* User code only - conditional on library code complex support */
         #define PETSC_HAVE_COMPLEX 1
       #endif
     #elif defined(PETSC_USE_REAL___FLOAT128) && defined(PETSC_HAVE_C99_COMPLEX)
@@ -333,7 +333,7 @@ M*/
     #if !defined(PETSC_USE_REAL___FP16)
       #if !defined(__cplusplus) && defined(PETSC_HAVE_C99_COMPLEX) /* enable complex for library code */
         #define PETSC_HAVE_COMPLEX 1
-      #elif defined(__cplusplus) && defined(PETSC_HAVE_C99_COMPLEX) && defined(PETSC_HAVE_CXX_COMPLEX) /* User code only - conditional on libary code complex support */
+      #elif defined(__cplusplus) && defined(PETSC_HAVE_C99_COMPLEX) && defined(PETSC_HAVE_CXX_COMPLEX) /* User code only - conditional on library code complex support */
         #define PETSC_HAVE_COMPLEX 1
       #endif
     #endif

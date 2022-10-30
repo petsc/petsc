@@ -105,8 +105,8 @@ int main(int argc, char **argv)
 
   /*
      Create a matrix data structure to store the Hessian and set
-     the Hessian evalution routine.
-     Set the matrix structure to be used for Hessian evalutions
+     the Hessian evaluation routine.
+     Set the matrix structure to be used for Hessian evaluations
   */
   PetscCall(DMCreateMatrix(user.dm, &user.H));
   PetscCall(MatSetOption(user.H, MAT_SYMMETRIC, PETSC_TRUE));

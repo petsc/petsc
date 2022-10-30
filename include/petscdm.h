@@ -754,7 +754,7 @@ static inline const PetscInt *DMPolytopeTypeGetArrangment(DMPolytopeType ct, Pet
   }
 }
 
-/* A vertex arrangment is a vertex order */
+/* A vertex arrangement is a vertex order */
 static inline const PetscInt *DMPolytopeTypeGetVertexArrangment(DMPolytopeType ct, PetscInt o)
 {
   static const PetscInt pntVerts[1]      = {0};

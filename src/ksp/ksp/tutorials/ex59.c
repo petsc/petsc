@@ -3,7 +3,7 @@ Discrete system: 1D, 2D or 3D laplacian, discretized with spectral elements.\n\
 Spectral degree can be specified by passing values to -p option.\n\
 Global problem either with dirichlet boundary conditions on one side or in the pure neumann case (depending on runtime parameters).\n\
 Domain is [-nex,nex]x[-ney,ney]x[-nez,nez]: ne_ number of elements in _ direction.\n\
-Exaple usage: \n\
+Example usage: \n\
 1D: mpiexec -n 4 ex59 -nex 7\n\
 2D: mpiexec -n 4 ex59 -npx 2 -npy 2 -nex 2 -ney 2\n\
 3D: mpiexec -n 4 ex59 -npx 2 -npy 2 -npz 1 -nex 2 -ney 2 -nez 1\n\

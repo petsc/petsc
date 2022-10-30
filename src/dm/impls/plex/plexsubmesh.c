@@ -3143,7 +3143,7 @@ static PetscErrorCode DMPlexCreateSubmesh_Uninterpolated(DM dm, DMLabel vertexLa
   PetscFunctionReturn(0);
 }
 
-/* TODO: Fix this to properly propogate up error conditions it may find */
+/* TODO: Fix this to properly propagate up error conditions it may find */
 static inline PetscInt DMPlexFilterPoint_Internal(PetscInt point, PetscInt firstSubPoint, PetscInt numSubPoints, const PetscInt subPoints[])
 {
   PetscInt       subPoint;
@@ -3154,7 +3154,7 @@ static inline PetscInt DMPlexFilterPoint_Internal(PetscInt point, PetscInt first
   return subPoint < 0 ? subPoint : firstSubPoint + subPoint;
 }
 
-/* TODO: Fix this to properly propogate up error conditions it may find */
+/* TODO: Fix this to properly propagate up error conditions it may find */
 static inline PetscInt DMPlexFilterPointPerm_Internal(PetscInt point, PetscInt firstSubPoint, PetscInt numSubPoints, const PetscInt subPoints[], const PetscInt subIndices[])
 {
   PetscInt       subPoint;

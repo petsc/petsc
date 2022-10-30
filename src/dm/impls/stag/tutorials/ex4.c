@@ -1880,7 +1880,7 @@ PetscErrorCode PopulateCoefficientData(Ctx ctx, PetscInt level)
   PetscCall(DMGetLocalVector(dm_coefficients, &coeff_local));
   PetscCall(DMGlobalToLocal(dm_coefficients, coeff, INSERT_VALUES, coeff_local));
 
-  /* Use direct array acccess to coefficient and coordinate arrays, to popoulate coefficient data */
+  /* Use direct array access to coefficient and coordinate arrays, to popoulate coefficient data */
   PetscCall(DMStagGetGhostCorners(dm_coefficients, &startx, &starty, &startz, &nx, &ny, &nz));
   PetscCall(DMStagGetGlobalSizes(dm_coefficients, &N[0], &N[1], &N[2]));
   PetscCall(DMStagGetProductCoordinateArraysRead(dm_coefficients, &arr_coordinates_x, &arr_coordinates_y, &arr_coordinates_z));

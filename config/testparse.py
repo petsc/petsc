@@ -395,7 +395,7 @@ def parseTest(testStr,srcfile,verbosity):
   but in practice we only support two levels of test:
   """
   basename=os.path.basename(srcfile)
-  # Handle the new at the begininng
+  # Handle the new at the beginning
   bn=re.sub("new_","",basename)
   # This is the default
   testname="run"+getlangsplit(bn)

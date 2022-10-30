@@ -613,7 +613,7 @@ PetscErrorCode CharacteristicGetValuesBegin(Characteristic c)
   PetscInt    n;
 
   PetscFunctionBegin;
-  /* SEND AND RECIEVE FILLED REQUESTS for velocities at t_n+1/2 */
+  /* SEND AND RECEIVE FILLED REQUESTS for velocities at t_n+1/2 */
   for (n = 1; n < c->numNeighbors; n++) PetscCallMPI(MPI_Irecv(&(c->queue[c->localOffsets[n]]), c->needCount[n], c->itemType, c->neighbors[n], tag, PetscObjectComm((PetscObject)c), &(c->request[n - 1])));
   for (n = 1; n < c->numNeighbors; n++) PetscCallMPI(MPI_Send(&(c->queueRemote[c->remoteOffsets[n]]), c->fillCount[n], c->itemType, c->neighbors[n], tag, PetscObjectComm((PetscObject)c)));
   PetscFunctionReturn(0);

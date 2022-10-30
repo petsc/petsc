@@ -369,7 +369,7 @@ M*/
 #define PetscMalloc(a, b) ((*PetscTrMalloc)((a), PETSC_FALSE, __LINE__, PETSC_FUNCTION_NAME, __FILE__, (void **)(b)))
 
 /*MC
-   PetscRealloc - Rellocates memory
+   PetscRealloc - Reallocates memory
 
    Synopsis:
     #include <petscsys.h>
@@ -1428,7 +1428,7 @@ $PetscErrorCode mypetschelpprintf(MPI_Comm comm,const char format[],....)
 ${
 $ PetscFunctionReturn(0);
 $}
-then do the assigment
+then do the assignment
 $    PetscHelpPrintf = mypetschelpprintf;
    You can do the assignment before `PetscInitialize()`.
 

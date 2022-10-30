@@ -2787,7 +2787,7 @@ PetscErrorCode TaoGradientNorm(Tao tao, Vec gradient, NormType type, PetscReal *
 
    Collective on tao
 
-   Output Patameter:
+   Output Parameter:
 .    ctx - the monitor context
 
    Options Database:

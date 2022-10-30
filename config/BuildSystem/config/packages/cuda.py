@@ -19,7 +19,7 @@ class Configure(config.package.Package):
     #    (for ex:) /usr/lib64/libcuda.so (compile), libcuda.so.1 (runtime)
     # -	stub library - useable only for compiles
     # 	 (for ex:) /usr/local/cuda/lib64/stubs/libcuda.so  (without corresponding libcuda.so.1 for runtime)
-    # We are prefering this stub library - as it enables compiles on non-GPU nodes (for ex: login nodes).
+    # We are preferring this stub library - as it enables compiles on non-GPU nodes (for ex: login nodes).
     # Using RPATH to this stub location is not appropriate - so skipping via libraries.rpathSkipDirs()
     # Note: PETSc does not use CUDA driver API (as of Sep 29, 2021), but external package for ex: Kokkos does.
     #

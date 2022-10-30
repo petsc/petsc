@@ -215,7 +215,7 @@ M*/
 M*/
 
 /*@C
-  TSMPRKRegisterAll - Registers all of the Partirioned Runge-Kutta explicit methods in `TSMPRK`
+  TSMPRKRegisterAll - Registers all of the Partitioned Runge-Kutta explicit methods in `TSMPRK`
 
   Not Collective, but should be called by all processes which will need the schemes to be registered
 

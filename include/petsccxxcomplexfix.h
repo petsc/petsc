@@ -2,7 +2,7 @@
 #define PETSCCXXCOMPLEXFIX_H
 
 /*
-    The pragma below silence all compiler warnings comming from code in this header file.
+    The pragma below silence all compiler warnings coming from code in this header file.
     In particular, it silences `-Wfloat-equal` warnings in `operator==()` and `operator!=` below.
     Other compilers beyond GCC support this pragma.
 */

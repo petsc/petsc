@@ -475,7 +475,7 @@ static PetscErrorCode do_xxt_solve(xxt_ADT xxt_handle, PetscScalar *uc)
     PetscCallBLAS("BLASdot", *uu_ptr++ = BLASdot_(&dlen, uc + off, &i1, x_ptr, &i1));
   }
 
-  /* comunication of beta */
+  /* communication of beta */
   uu_ptr = solve_uu;
   if (level) PetscCall(PCTFS_ssgl_radd(uu_ptr, solve_w, level, stages));
 

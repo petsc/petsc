@@ -8,14 +8,14 @@ module.
   We must now have three distinct phases: location, construction, and testing.
 This is very similar to the current compiler checks. The construction phase is
 optional, and only necessary when the package has not been previously configured.
-The phases will necessarily interact, as an installtion must be located before
-testing, however anothe should be located if the testing fails.
+The phases will necessarily interact, as an installation must be located before
+testing, however another should be located if the testing fails.
 
   We will give each installation a unique key, which is returned by the location
 method. This will allow us to identify working installations, as well as those
 that failed testing.
 
-  There is a wierd role reversal that can happen. If we look for PETSc, but
+  There is a weird role reversal that can happen. If we look for PETSc, but
 cannot find it, it is reasonable to ask to have it automatically downloaded.
 However, in this case, rather than using the configure objects from the existing
 PETSc, we contribute objects to the PETSc which will be built.

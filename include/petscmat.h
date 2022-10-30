@@ -1617,7 +1617,7 @@ PETSC_EXTERN PetscErrorCode MatTransposeColoringDestroy(MatTransposeColoring *);
      via `PetscPartitionerSetType`(p,`PETSCPARTITIONERMATPARTITIONING`)
 
    Developers Note:
-     It is an extra maintainance and documentation cost to have two objects with the same functionality.
+     It is an extra maintenance and documentation cost to have two objects with the same functionality.
 
 .seealso: `MatPartitioningCreate()`, `MatPartitioningType`, `MatColoring`, `MatGetOrdering()`
 S*/

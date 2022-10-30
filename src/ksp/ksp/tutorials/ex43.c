@@ -47,7 +47,7 @@ Options: \n"
                               -jump_nz        : Wavenumber in the y direction for rhs \n"
                      "\
      -use_gp_coords : Evaluate the viscosity and force term at the global coordinates of each quadrature point \n\
-                      By default, the viscosity and force term are evaulated at the element center and applied as a constant over the entire element \n";
+                      By default, the viscosity and force term are evaluated at the element center and applied as a constant over the entire element \n";
 
 /* Contributed by Dave May */
 

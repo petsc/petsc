@@ -4483,7 +4483,7 @@ PetscErrorCode VecLockReadPop(Vec x)
        VecGetArray(x,&xdata); // begin phase
        VecLockWriteSet(v,PETSC_TRUE);
 
-       Other operations, which can not acceess x anymore (they can access xdata, of course)
+       Other operations, which can not access x anymore (they can access xdata, of course)
 
        VecRestoreArray(x,&vdata); // end phase
        VecLockWriteSet(v,PETSC_FALSE);

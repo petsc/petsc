@@ -874,7 +874,7 @@ class generateExamples(Petsc):
 
     data = {}
     for exfile in files:
-      #TST: Until we replace files, still leaving the orginals as is
+      #TST: Until we replace files, still leaving the originals as is
       #if not exfile.startswith("new_"+"ex"): continue
       #if not exfile.startswith("ex"): continue
 

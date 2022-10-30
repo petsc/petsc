@@ -104,7 +104,7 @@ int main(int argc, char **argv)
 }
 
 /*
-      Evaluates FU = Gradiant(L(w,u,lambda))
+      Evaluates FU = Gradient(L(w,u,lambda))
 
 */
 PetscErrorCode FormFunction(SNES snes, Vec U, Vec FU, void *dummy)

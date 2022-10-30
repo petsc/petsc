@@ -437,7 +437,7 @@ PetscErrorCode DMSwarmDataBucketCreateFromSubset(DMSwarmDataBucket DBIn, const P
   PetscFunctionReturn(0);
 }
 
-/* insert into an exisitng location */
+/* insert into an existing location */
 PetscErrorCode DMSwarmDataFieldInsertPoint(const DMSwarmDataField field, const PetscInt index, const void *ctx)
 {
   PetscFunctionBegin;

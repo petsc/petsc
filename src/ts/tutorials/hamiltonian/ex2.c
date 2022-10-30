@@ -404,7 +404,7 @@ int main(int argc, char **argv)
 
     PetscCall(ISCreateGeneral(comm, locSize, idx1, PETSC_OWN_POINTER, &is1));
     PetscCall(ISCreateGeneral(comm, locSize, idx2, PETSC_OWN_POINTER, &is2));
-    /* DM needs to be set before splits so it propogates to sub TSs */
+    /* DM needs to be set before splits so it propagates to sub TSs */
     PetscCall(TSSetDM(ts, sw));
     PetscCall(TSSetType(ts, TSBASICSYMPLECTIC));
     PetscCall(TSRHSSplitSetIS(ts, "position", is1));

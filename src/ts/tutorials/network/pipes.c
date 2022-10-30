@@ -538,7 +538,7 @@ PetscErrorCode WashNetworkCreate(MPI_Comm comm, PetscInt pipesCase, Wash *wash_p
     (RESERVOIR)               (VALVE)
     =============================  */
 
-    /* Set application parameters -- to be used in function evalutions */
+    /* Set application parameters -- to be used in function evaluations */
     npipes        = 3;
     wash->nedge   = npipes;
     wash->nvertex = npipes + 1;

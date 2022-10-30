@@ -188,7 +188,7 @@ int main(int argc, char **argv)
   deep_grnd_temp = sfctemp - 10;   /* set underlying ground layer temperature */
   emma           = emission(pwat); /* accounts for radiative effects of water vapor */
 
-  /* Converts from Fahrenheit to Celsuis */
+  /* Converts from Fahrenheit to Celsius */
   sfctemp        = fahr_to_cel(sfctemp);
   airtemp        = fahr_to_cel(airtemp);
   dewtemp        = fahr_to_cel(dewtemp);
@@ -462,12 +462,12 @@ extern PetscScalar mph2mpers(PetscScalar wind)
 }
 extern PetscScalar fahr_to_cel(PetscScalar temp)
 {
-  temp = (5 * (temp - 32)) / 9; /* converts from farhrenheit to celsuis */
+  temp = (5 * (temp - 32)) / 9; /* converts from farhrenheit to celsius */
   return temp;
 }
 extern PetscScalar cel_to_fahr(PetscScalar temp)
 {
-  temp = ((temp * 9) / 5) + 32; /* converts from celsuis to farhrenheit */
+  temp = ((temp * 9) / 5) + 32; /* converts from celsius to farhrenheit */
   return temp;
 }
 PetscErrorCode readinput(struct in *put)

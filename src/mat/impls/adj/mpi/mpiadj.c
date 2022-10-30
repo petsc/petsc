@@ -1015,7 +1015,7 @@ PetscErrorCode MatMPIAdjToSeq(Mat A, Mat *B)
    Note:
      This routine has the advantage on systems with multiple ranks per node since only one copy of the matrix
      is stored on the first node, instead of the number of ranks copies. This can allow partitioning much larger
-     paralllel graph sequentially.
+     parallel graph sequentially.
 
 .seealso: `MATMPIADJ`, `MatCreate()`, `MatCreateMPIAdj()`, `MatSetValues()`, `MatMPIAdjToSeq()`
 @*/

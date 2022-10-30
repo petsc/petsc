@@ -48,7 +48,7 @@ typedef struct _PetscCoarsenData {
   PetscCDArrNd   pool_list; /* node pool */
   PetscCDIntNd  *new_node;
   PetscInt       new_left;
-  PetscInt       chk_sz; /* chunck size */
+  PetscInt       chk_sz; /* chunk size */
   PetscCDIntNd  *extra_nodes;
   PetscCDIntNd **array; /* Array of lists */
   PetscInt       size;  /* size of 'array' */

@@ -108,7 +108,7 @@ PetscErrorCode VecView_Swarm(Vec v, PetscViewer viewer)
    The field with name fieldname must be defined as having a data type of PetscScalar.
 
    This function must be called prior to calling DMCreateLocalVector(), DMCreateGlobalVector().
-   Mutiple calls to DMSwarmVectorDefineField() are permitted.
+   Multiple calls to DMSwarmVectorDefineField() are permitted.
 
 .seealso: `DMSwarmRegisterPetscDatatypeField()`, `DMCreateGlobalVector()`, `DMCreateLocalVector()`
 @*/
@@ -826,7 +826,7 @@ PetscErrorCode DMSwarmSetLocalSizes(DM dm, PetscInt nlocal, PetscInt buffer)
 }
 
 /*@
-   DMSwarmSetCellDM - Attachs a DM to a DMSwarm
+   DMSwarmSetCellDM - Attaches a DM to a DMSwarm
 
    Collective on dm
 
@@ -876,7 +876,7 @@ PetscErrorCode DMSwarmGetCellDM(DM dm, DM *dmcell)
 }
 
 /*@
-   DMSwarmGetLocalSize - Retrives the local length of fields registered
+   DMSwarmGetLocalSize - Retrieves the local length of fields registered
 
    Not collective
 
@@ -900,7 +900,7 @@ PetscErrorCode DMSwarmGetLocalSize(DM dm, PetscInt *nlocal)
 }
 
 /*@
-   DMSwarmGetSize - Retrives the total length of fields registered
+   DMSwarmGetSize - Retrieves the total length of fields registered
 
    Collective on dm
 

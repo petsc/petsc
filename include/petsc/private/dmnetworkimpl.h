@@ -29,7 +29,7 @@ struct _p_DMNetworkComponentHeader {
   PetscInt *size;         /* component data struct sizes */
   PetscInt *key;          /* component keys */
   PetscInt *offset;       /* component offset in the vector */
-  PetscInt *nvar;         /* number of variabes for the component */
+  PetscInt *nvar;         /* number of variables for the component */
   PetscInt *offsetvarrel; /* relative offset from the first component at this point */
 } PETSC_ATTRIBUTEALIGNED(PetscMax(sizeof(double), sizeof(PetscScalar)));
 
@@ -92,7 +92,7 @@ typedef struct {
 
 /* The data structure for DMNetwork is split into two parts:
    1. DMNetworkCloneShared : The part of the Network that holds information that is shared between
-      clones. Mostly topological data/refereence counting information
+      clones. Mostly topological data/reference counting information
 
    2. Everything else in the structure:  The part of the network not shared between clones. This is the data on
       the network, so dof and component type information.
