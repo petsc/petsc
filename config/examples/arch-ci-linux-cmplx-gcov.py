@@ -7,7 +7,7 @@ configure_options = [
   '--package-prefix-hash='+petsc_hash_pkgs,
   '--with-clanguage=cxx',
   '--with-scalar-type=complex',
-  '--with-gcov=1',
+  '--with-coverage=1',
   '--download-mpich=1',
   '--download-metis',
   '--download-parmetis',

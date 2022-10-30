@@ -116,10 +116,15 @@ class Configure(config.package.CMakePackage):
       self.system = 'CUDA'
       self.pushLanguage('CUDA')
       petscNvcc = self.getCompiler()
-      cudaFlags = self.getCompilerFlags()
+      cudaFlags = self.updatePackageCUDAFlags(self.getCompilerFlags()).replace(' ', ';')
       self.popLanguage()
-      args.append('-DKOKKOS_CUDA_OPTIONS="'+cudaFlags.replace(' ',';')+'"')
+      args = self.rmArgsStartsWith(args, '-DCMAKE_CUDA_COMPILER')
+      args = self.rmArgsStartsWith(args, '-DCMAKE_CUDA_FLAGS')
+      args.append('-DKOKKOS_CUDA_OPTIONS="'+cudaFlags+'"')
       args = self.rmArgsStartsWith(args,'-DCMAKE_CXX_COMPILER=')
+      # Kokkos passes the C++ compiler flags to nvcc which barfs with
+      # nvcc fatal   : 'g': expected a number
+      args = [a.replace('-Og', '-O1') if a.startswith('-DCMAKE_CXX_FLAG') else a for a in args]
       args.append('-DCMAKE_CXX_COMPILER='+self.getCompiler('Cxx')) # use the host CXX compiler, let Kokkos handle the nvcc_wrapper business
       genToName = {'3': 'KEPLER','5': 'MAXWELL', '6': 'PASCAL', '7': 'VOLTA', '8': 'AMPERE', '9': 'LOVELACE', '10': 'HOPPER'}
       if hasattr(self.cuda,'cudaArch'):

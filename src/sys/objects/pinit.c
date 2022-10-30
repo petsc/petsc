@@ -14,7 +14,7 @@
   #include <petsc/private/fortranimpl.h>
 #endif
 
-#if defined(PETSC_USE_GCOV)
+#if PetscDefined(USE_COVERAGE)
 EXTERN_C_BEGIN
   #if defined(PETSC_HAVE___GCOV_DUMP)
     #define __gcov_flush(x) __gcov_dump(x)
@@ -1781,7 +1781,7 @@ PetscErrorCode PetscFinalize(void)
 
   PetscInitializeCalled = PETSC_FALSE;
   PetscFinalizeCalled   = PETSC_TRUE;
-#if defined(PETSC_USE_GCOV)
+#if defined(PETSC_USE_COVERAGE)
   /*
      flush gcov, otherwise during CI the flushing continues into the next pipeline resulting in git not being able to delete directories since the
      gcov files are still being added to the directories as git tries to remove the directories.

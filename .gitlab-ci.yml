@@ -256,7 +256,8 @@ pause-for-approval:
     - make updatedatafiles
     - if [ -z ${DISABLE_PETSC4PY_TESTS+x} ]; then if [ -z ${ENABLE_PETSC4PY_LDPRELOAD+x} ]; then echo "NOT using LD_PRELOAD"; make petsc4pytest; else echo "using LD_PRELOAD"; LD_PRELOAD=${PWD}/${TEST_ARCH}/lib/libpetsc.so make petsc4pytest; fi; fi
     - if [ -z ${DISABLE_TESTS+x} ]; then make CFLAGS="${MAKE_CFLAGS}" CXXFLAGS="${MAKE_CXXFLAGS}" FFLAGS="${MAKE_FFLAGS}" cleantest allgtests-tap TIMEOUT=${TIMEOUT}  ${TEST_OPTS}; fi
-    - if [ ! -z ${RUN_GCOV+x} ]; then make gcov; fi
+    - if [ ! -z ${RUN_GCOV_OPTIONS+x} ]; then printf "RUN_GCOV_OPTIONS:$RUN_GCOV_OPTIONS\n"; fi
+    - if [ ! -z ${RUN_GCOV+x} ]; then make gcov PETSC_GCOV_OPTIONS="${RUN_GCOV_OPTIONS}"; fi
   artifacts:
     reports:
       junit: ${TEST_ARCH}/tests/testresults.xml
@@ -500,15 +501,25 @@ linux-sycl-double:
     LOAD_MODULES: compiler/latest mpi/latest cmake/3.20.5-yjp2hz6
     TEST_OPTS: query=requires queryval=kokkos_kernels
 
-linux-cuda-pkgs:
+linux-cuda-pkgs-gcov:
   extends:
     - .stage-3
     - .linux_test
   tags:
     - cuda-stage3
   variables:
-    TEST_ARCH: arch-ci-linux-cuda-pkgs
-    TEST_OPTS: -j3 query=requires queryval=cuda
+    TEST_ARCH: arch-ci-linux-cuda-pkgs-gcov
+    # run all tests that:
+    # 1. require cuda, OR
+    # 2. require device, OR
+    # 3. require kokkos[_kernels], AND lives in the vec subdirectory
+    #
+    # need to use the alternate OR spelling since '|' is interpreted as a pipe by the
+    # shell, and I could not manage to escape it enough times...
+    TEST_OPTS: -j3 queryval='cuda,device,kokkos*,vec*' query='requires,requires,requires%OR%name'
+    LOAD_MODULES: py-gcovr-5.2-gcc-11.2.0-wcsmyet
+    RUN_GCOV: 1
+    RUN_GCOV_OPTIONS: --decisions
 
 linux-cuda112-omp:
   extends:
@@ -694,6 +705,8 @@ linux-pkgs-gcov:
     TEST_ARCH: arch-ci-linux-pkgs-gcov
     LOAD_MODULES: python-3.9.13-gcc-7.5.0-fq67pdh py-gcovr-5.2-gcc-7.5.0-o7fu4xq
     RUN_GCOV: 1
+    RUN_GCOV_OPTIONS: --decisions
+
 linux-cmplx-gcov:
   extends:
     - .stage-3
@@ -705,6 +718,7 @@ linux-cmplx-gcov:
     TEST_ARCH: arch-ci-linux-cmplx-gcov
     LOAD_MODULES: gcc/8.3.0-fjpc5ys python-3.9.13-gcc-7.5.0-fq67pdh py-gcovr-5.2-gcc-7.5.0-o7fu4xq
     RUN_GCOV: 1
+    RUN_GCOV_OPTIONS: --decisions
 
 linux-matlab-ilp64-gcov:
   extends:
@@ -716,6 +730,7 @@ linux-matlab-ilp64-gcov:
     TEST_ARCH: arch-ci-linux-matlab-ilp64-gcov
     LOAD_MODULES: matlab/R2018a python-3.9.13-gcc-7.5.0-fq67pdh py-gcovr-5.2-gcc-7.5.0-o7fu4xq
     RUN_GCOV: 1
+    RUN_GCOV_OPTIONS: --decisions
   allow_failure: true
 
 linux-gcov:
@@ -728,6 +743,7 @@ linux-gcov:
     TEST_ARCH: arch-ci-linux-gcov
     LOAD_MODULES: python-3.9.13-gcc-7.5.0-fq67pdh py-gcovr-5.2-gcc-7.5.0-o7fu4xq
     RUN_GCOV: 1
+    RUN_GCOV_OPTIONS: --decisions
 
 linux-pgi:
   extends:
@@ -1010,6 +1026,7 @@ analyze-coverage:
     - linux-cmplx-gcov
     - linux-matlab-ilp64-gcov
     - linux-gcov
+    - linux-cuda-pkgs-gcov
   variables:
     PYTHON: python3
     PETSC_ARCH: arch-ci-analyze-pipeline

@@ -436,7 +436,8 @@ class ArgExecutable(Arg):
             break
       if not found:
         raise ValueError('Invalid executable: '+str(value)+' for key '+str(self.key))
-    self.value = value+options
+      value += options
+    self.value = value
     return
 
 class ArgString(Arg):

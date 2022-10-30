@@ -35,6 +35,6 @@ if __name__ == '__main__':
     '--with-shared-libraries=1',
     '-known-64-bit-blas-indices=1',
     '--with-ssl=0',
-    '--with-gcov=1',
+    '--with-coverage=1',
   ]
   configure.petsc_configure(configure_options)

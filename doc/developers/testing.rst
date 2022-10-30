@@ -331,31 +331,43 @@ Examples of argument searching:
    $ ptmake print-test query='args' queryval='pc_type ml'
 
 
-Multiple simultaneous queries can be performed with union (``,``), and intesection (``|``)  operators in the ``query`` field.  Examples:
+Multiple simultaneous queries can be performed with union (``,``), and intersection
+(``|``) operators in the ``query`` field. One may also use their alternate spellings
+(``%AND%`` and ``%OR%`` respectively). The alternate spellings are useful in cases where
+one cannot avoid (possibly multiple) shell expansions that might otherwise interpret the
+``|`` operator as a shell pipe.  Examples:
 
 -  All examples using ``cuda`` and all examples using ``hip``:
 
    .. code-block:: console
 
       $ ptmake print-test query='requires,requires' queryval='cuda,hip'
+      # equivalently
+      $ ptmake print-test query='requires%AND%requires' queryval='cuda%AND%hip'
 
 -  Examples that require both triangle and ctetgen (intersection of tests)
 
    .. code-block:: console
 
       $ ptmake print-test query='requires|requires' queryval='ctetgen,triangle'
+      # equivalently
+      $ ptmake print-test query='requires%OR%requires' queryval='ctetgen%AND%triangle'
 
 -  Tests that require either ``ctetgen`` or ``triangle``
 
    .. code-block:: console
 
       $ ptmake print-test query='requires,requires' queryval='ctetgen,triangle'
+      # equivalently
+      $ ptmake print-test query='requires%AND%requires' queryval='ctetgen%AND%triangle'
 
 -  Find ``cuda`` examples in the ``dm`` package.
 
    .. code-block:: console
 
       $ ptmake print-test query='requires|name' queryval='cuda,dm*'
+      # equivalently
+      $ ptmake print-test query='requires%OR%name' queryval='cuda%AND%dm*'
 
 
 Here is a way of getting a feel for how the union and intersect operators work:
@@ -379,6 +391,8 @@ The union and intersection have fixed grouping.  So this string argument
 .. code-block:: none
 
     query='requires,requires|args' queryval='cuda,hip,*log*'
+    # equivalently
+    query='requires%AND%requires%OR%args' queryval='cuda%AND%hip%AND%*log*'
 
 will can be read as
 
@@ -389,13 +403,15 @@ will can be read as
 which is probably not what is intended.
 
 
-``query/queryval`` also support negation (``!``), but is limited.
-The negation only applies to tests that have a related field in it.  So for
-example, the arguments of
+``query/queryval`` also support negation (``!``, alternate ```%NEG%``), but is limited.
+The negation only applies to tests that have a related field in it. So for example, the
+arguments of
 
-.. code-block:: none
+.. code-block:: console
 
   query=requires queryval='!cuda'
+  # equivalently
+  query=requires queryval='%NEG%cuda'
 
 will only match if they explicitly have::
 

@@ -338,18 +338,38 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       self.getChild(moduleName)
     return
 
-  def require(self, moduleName, depChild = None, keywordArgs = {}):
-    '''Return a child from moduleName, creating it if necessary and making sure it runs before depChild'''
-    config = self.getChild(moduleName, keywordArgs)
-    if not config is depChild:
-      self.childGraph.addEdges(depChild, [config])
-    return config
-
   def requireModule(self, mod, depChild):
     '''Return the input module, making sure it runs before depChild'''
     if not mod is depChild:
       self.childGraph.addEdges(depChild, [mod])
     return mod
+
+  def require(self, moduleName, depChild = None, keywordArgs = {}):
+    '''Return a child from moduleName, creating it if necessary and making sure it runs before depChild'''
+    return self.requireModule(self.getChild(moduleName, keywordArgs), depChild)
+
+  @staticmethod
+  def findModule(obj, module):
+    """
+    Search OBJ's attributes for an attribute of type MODULE_TYPE.
+
+    Return the module if found, otherwise return None.
+    """
+    import inspect
+
+    if not inspect.ismodule(module):
+      raise NotImplementedError
+
+    if isinstance(module, str):
+      module_name = module
+    else:
+      module_name = module.__name__
+
+    for attr in dir(obj):
+      obj_attr = getattr(obj, attr)
+      if inspect.ismodule(obj_attr) and obj_attr.__name__ == module_name:
+        return module
+    return
 
   ###############################################
   # Dependency Mechanisms
@@ -1288,7 +1308,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
   def serialEvaluation(self, depGraph):
     import graph
 
-    def findModule(dependencyGraph,moduleType):
+    def findGraphModule(dependencyGraph,moduleType):
       moduleList = [c for c in dependencyGraph if isinstance(c,moduleType)]
       if len(moduleList) != 1:
         if len(moduleList) < 1:
@@ -1316,7 +1336,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       return minCxx,maxCxx
 
     ndepGraph     = list(graph.DirectedGraph.topologicalSort(depGraph))
-    setCompilers  = findModule(ndepGraph,config.setCompilers.Configure)
+    setCompilers  = findGraphModule(ndepGraph,config.setCompilers.Configure)
     minCxx,maxCxx = setCompilers.cxxDialectRange['Cxx']
     self.logPrint('serialEvaluation: initial cxxDialectRanges {rng}'.format(rng=setCompilers.cxxDialectRange['Cxx']))
     minCxxVersionBlameList = {}
