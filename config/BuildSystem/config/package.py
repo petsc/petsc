@@ -910,7 +910,7 @@ To use currently downloaded (local) git snapshot - use: --download-'+self.packag
       if not hasattr(package, 'found'):
         raise RuntimeError('Package '+package.name+' does not have found attribute!')
       if not package.found:
-        if self.argDB['with-'+package.package] == 1:
+        if 'with-'+package.package in self.framework.clArgDB and self.framework.clArgDB['with-'+package.package] == 1:
           raise RuntimeError('Package '+package.PACKAGE+' needed by '+self.name+' failed to configure.\nMail configure.log to petsc-maint@mcs.anl.gov.')
 
     dpkgs = Package.sortPackageDependencies(self)
