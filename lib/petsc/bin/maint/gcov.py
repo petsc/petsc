@@ -106,8 +106,9 @@ class Version:
     return self.__version < other.__version
 
 class GcovrRunner:
-  def __init__(self, petsc_dir):
+  def __init__(self, petsc_dir, verbosity):
     self.petsc_dir = petsc_dir
+    self.verbosity = verbosity
     return
 
   @classmethod
@@ -130,12 +131,16 @@ class GcovrRunner:
     return version
 
   def build_command(self, *args):
+    base_args = ['gcovr', '-j', '4', '--root', self.petsc_dir]
+    if self.verbosity > 1:
+      base_args.append('--verbose')
+
+    args    = base_args + list(args)
     version = self.gcovr_version()
-    args    = ['gcovr', '-j', '4', '--root', self.petsc_dir] + list(args)
-    if version < (5,):
+    if version < (5,) and '--html-self-contained' in args:
       # --html-self-contained since gcovr 5.0
       args.remove('--html-self-contained')
-    if version < (5,1):
+    if version < (5,1) and '--decisions' in args:
       # --decisions since gcovr 5.1
       args.remove('--decisions')
     if (5,) < version <= (5,2):
@@ -503,7 +508,7 @@ def main(petsc_dir, petsc_arch, merge_branch, base_path, formats, verbosity, ci_
     stderr = sys.stderr
   gcov_logger.setup(stdout, stderr, verbosity)
 
-  runner        = GcovrRunner(petsc_dir)
+  runner        = GcovrRunner(petsc_dir, verbosity)
   merged_report = merge_reports(runner, base_path, gcovr_dir/'merged-gcovr-report.json')
 
   files_changed_by_branch = get_branch_diff(merge_branch)
