@@ -331,7 +331,7 @@ M*/
   PetscDeviceArrayZero(dctx,ptr,n*sizeof(*ptr));
 .ve
 
-  See `PetscDeviceMemset()` for futher discussion.
+  See `PetscDeviceMemset()` for further discussion.
 
   Level: beginner
 

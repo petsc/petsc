@@ -510,7 +510,7 @@ static PetscErrorCode TSAlpha2GetParams_Alpha(TS ts, PetscReal *alpha_m, PetscRe
   Dynamics with Improved Numerical Dissipation: The Generalized-alpha
   Method" ASME Journal of Applied Mechanics, 60, 371:375, 1993.
 
-.seealso: `TS`, `TSCreate()`, `TSSetType()`, `TSAlpha2SetRadius()`, `TSAlpha2SetParams()`
+.seealso: [](chapter_ts), `TS`, `TSCreate()`, `TSSetType()`, `TSAlpha2SetRadius()`, `TSAlpha2SetParams()`
 M*/
 PETSC_EXTERN PetscErrorCode TSCreate_Alpha2(TS ts)
 {
@@ -548,10 +548,10 @@ PETSC_EXTERN PetscErrorCode TSCreate_Alpha2(TS ts)
 }
 
 /*@
-  TSAlpha2SetRadius - sets the desired spectral radius of the method
+  TSAlpha2SetRadius - sets the desired spectral radius of the method for `TSALPHA2`
                       (i.e. high-frequency numerical damping)
 
-  Logically Collective on TS
+  Logically Collective on ts
 
   The algorithmic parameters \alpha_m and \alpha_f of the
   generalized-\alpha method can be computed in terms of a specified
@@ -564,12 +564,12 @@ PETSC_EXTERN PetscErrorCode TSCreate_Alpha2(TS ts)
 +  ts - timestepping context
 -  radius - the desired spectral radius
 
-  Options Database:
+  Options Database Key:
 .  -ts_alpha_radius <radius> - set the desired spectral radius
 
   Level: intermediate
 
-.seealso: `TSAlpha2SetParams()`, `TSAlpha2GetParams()`
+.seealso: [](chapter_ts), `TS`, `TSALPHA2`, `TSAlpha2SetParams()`, `TSAlpha2GetParams()`
 @*/
 PetscErrorCode TSAlpha2SetRadius(TS ts, PetscReal radius)
 {
@@ -582,9 +582,9 @@ PetscErrorCode TSAlpha2SetRadius(TS ts, PetscReal radius)
 }
 
 /*@
-  TSAlpha2SetParams - sets the algorithmic parameters for TSALPHA2
+  TSAlpha2SetParams - sets the algorithmic parameters for `TSALPHA2`
 
-  Logically Collective on TS
+  Logically Collective on ts
 
   Second-order accuracy can be obtained so long as:
     \gamma = 1/2 + alpha_m - alpha_f
@@ -600,22 +600,22 @@ PetscErrorCode TSAlpha2SetRadius(TS ts, PetscReal radius)
 . \gamma   - algorithmic parameter
 - \beta    - algorithmic parameter
 
-  Options Database:
+  Options Database Keys:
 + -ts_alpha_alpha_m <alpha_m> - set alpha_m
 . -ts_alpha_alpha_f <alpha_f> - set alpha_f
 . -ts_alpha_gamma   <gamma> - set gamma
 - -ts_alpha_beta    <beta> - set beta
 
+  Level: advanced
+
   Note:
-  Use of this function is normally only required to hack TSALPHA2 to
+  Use of this function is normally only required to hack `TSALPHA2` to
   use a modified integration scheme. Users should call
-  TSAlpha2SetRadius() to set the desired spectral radius of the methods
+  `TSAlpha2SetRadius()` to set the desired spectral radius of the methods
   (i.e. high-frequency damping) in order so select optimal values for
   these parameters.
 
-  Level: advanced
-
-.seealso: `TSAlpha2SetRadius()`, `TSAlpha2GetParams()`
+.seealso: [](chapter_ts), `TS`, `TSALPHA2`, `TSAlpha2SetRadius()`, `TSAlpha2GetParams()`
 @*/
 PetscErrorCode TSAlpha2SetParams(TS ts, PetscReal alpha_m, PetscReal alpha_f, PetscReal gamma, PetscReal beta)
 {
@@ -630,7 +630,7 @@ PetscErrorCode TSAlpha2SetParams(TS ts, PetscReal alpha_m, PetscReal alpha_f, Pe
 }
 
 /*@
-  TSAlpha2GetParams - gets the algorithmic parameters for TSALPHA2
+  TSAlpha2GetParams - gets the algorithmic parameters for `TSALPHA2`
 
   Not Collective
 
@@ -643,16 +643,16 @@ PetscErrorCode TSAlpha2SetParams(TS ts, PetscReal alpha_m, PetscReal alpha_f, Pe
 . \gamma   - algorithmic parameter
 - \beta    - algorithmic parameter
 
+  Level: advanced
+
   Note:
-  Use of this function is normally only required to hack TSALPHA2 to
+  Use of this function is normally only required to hack `TSALPHA2` to
   use a modified integration scheme. Users should call
-  TSAlpha2SetRadius() to set the high-frequency damping (i.e. spectral
+  `TSAlpha2SetRadius()` to set the high-frequency damping (i.e. spectral
   radius of the method) in order so select optimal values for these
   parameters.
 
-  Level: advanced
-
-.seealso: `TSAlpha2SetRadius()`, `TSAlpha2SetParams()`
+.seealso: [](chapter_ts), `TS`, `TSALPHA2`, `TSAlpha2SetRadius()`, `TSAlpha2SetParams()`
 @*/
 PetscErrorCode TSAlpha2GetParams(TS ts, PetscReal *alpha_m, PetscReal *alpha_f, PetscReal *gamma, PetscReal *beta)
 {

@@ -208,7 +208,7 @@ PetscErrorCode MatFDColoringSetUp_SeqXAIJ(Mat mat, ISColoring iscoloring, MatFDC
   }
 
   PetscCall(PetscMalloc2(nis, &c->ncolumns, nis, &c->columns));
-  PetscCall(PetscMalloc1(nis, &c->nrows)); /* nrows is freeed separately from ncolumns and columns */
+  PetscCall(PetscMalloc1(nis, &c->nrows)); /* nrows is freed separately from ncolumns and columns */
 
   if (c->htype[0] == 'd') {
     PetscCall(PetscMalloc1(nz, &Jentry));

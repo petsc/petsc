@@ -79,7 +79,7 @@ struct _p_Characteristic {
   PetscInt    *fillCount;     /* Number of Items requested by other processes */
   PetscInt    *remoteOffsets; /* Offset into remote queue for each process (Prefix sums of fill_count) */
   MPI_Request *request;       /* Requests for sizes/velocities/fields from other processes */
-  MPI_Status  *status;        /* Status structues for the persistent requests */
+  MPI_Status  *status;        /* Status structures for the persistent requests */
   void        *data;          /* Holder for implementation class */
 };
 

@@ -571,7 +571,7 @@ PetscErrorCode VecScatterView(VecScatter sf, PetscViewer viewer)
 
      In the sequential case the todata contains indices from where the data is put
      and the fromdata contains indices from where the data is taken from.
-     This is backwards from the paralllel case!
+     This is backwards from the parallel case!
 
 .seealso: [](sec_scatter), `VecScatter`, `VecScatterCreate()`
 @*/
@@ -695,7 +695,7 @@ PetscErrorCode VecScatterCreate(Vec x, IS ix, Vec y, IS iy, VecScatter *newsf)
   /*
    Let P and S stand for parallel and sequential vectors respectively. There are four combinations of vecscatters: PtoP, PtoS,
    StoP and StoS. The assumption of VecScatterCreate(Vec x,IS ix,Vec y,IS iy,VecScatter *newctx) is: if x is parallel, then ix
-   contains global indices of x. If x is sequential, ix contains local indices of x. Similarily for y and iy.
+   contains global indices of x. If x is sequential, ix contains local indices of x. Similarly for y and iy.
 
    SF builds around concepts of local leaves and remote roots. We treat source vector x as roots and destination vector y as
    leaves. A PtoS scatter can be naturally mapped to SF. We transform PtoP and StoP to PtoS, and treat StoS as trivial PtoS.

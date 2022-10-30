@@ -1,6 +1,6 @@
 #include <petsc/private/dmplextransformimpl.h> /*I "petscdmplextransform.h" I*/
 
-/* Regular Refinment of Hybrid Meshes
+/* Regular Refinement of Hybrid Meshes
 
    We would like to express regular refinement as a small set of rules that can be applied on every point of the Plex
    to automatically generate a refined Plex. In fact, we would like these rules to be general enough to encompass other

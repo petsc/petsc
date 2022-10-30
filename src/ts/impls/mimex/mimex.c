@@ -209,7 +209,7 @@ static PetscErrorCode TSStep_Mimex_Split(TS ts)
   PetscFunctionReturn(0);
 }
 
-/* Evalute F at U and G at U0 for explicit fields and U for implicit fields */
+/* Evaluate F at U and G at U0 for explicit fields and U for implicit fields */
 static PetscErrorCode TSStep_Mimex_Implicit(TS ts)
 {
   TS_Mimex *mimex  = (TS_Mimex *)ts->data;
@@ -324,8 +324,7 @@ static PetscErrorCode TSComputeLinearStability_Mimex(TS ts, PetscReal xr, PetscR
 
   Level: beginner
 
-.seealso: `TSCreate()`, `TS`, `TSSetType()`, `TSBEULER`
-
+.seealso: [](chapter_ts), `TSCreate()`, `TS`, `TSSetType()`, `TSBEULER`
 M*/
 PETSC_EXTERN PetscErrorCode TSCreate_Mimex(TS ts)
 {

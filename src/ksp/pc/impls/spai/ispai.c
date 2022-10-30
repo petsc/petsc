@@ -81,7 +81,7 @@ static PetscErrorCode PCSetUp_SPAI(PC pc)
   /* int nbsteps */       /* max number of "improvement" steps per line */
   /* int max */           /* max dimensions of is_I, q, etc. */
   /* int maxnew */        /* max number of new entries per step */
-  /* int block_size */    /* block_size == 1 specifies scalar elments
+  /* int block_size */    /* block_size == 1 specifies scalar elements
                               block_size == n specifies nxn constant-block elements
                               block_size == 0 specifies variable-block elements */
   /* int cache_size */    /* one of (1,2,3,4,5,6) indicting size of cache. cache_size == 0 indicates no caching */

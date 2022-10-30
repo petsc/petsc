@@ -251,7 +251,7 @@ check_usermakefile:
 
 checkgitclean:
 	@if ! git diff --quiet; then \
-           echo "The repository has uncommited files, cannot run checkclangformat" ;\
+           echo "The repository has uncommitted files, cannot run checkclangformat" ;\
            git status -s --untracked-files=no ;\
            false;\
         fi;

@@ -6131,7 +6131,7 @@ PetscErrorCode DMCopyDS(DM dm, DM newdm)
     PetscCall(DMGetRegionNumDS(dm, s, &label, &fields, &ds));
     /* TODO: We need to change all keys from labels in the old DM to labels in the new DM */
     PetscCall(DMTransferDS_Internal(newdm, label, fields, ds));
-    /* Commplete new labels in the new DS */
+    /* Complete new labels in the new DS */
     PetscCall(DMGetRegionDS(newdm, label, NULL, &newds));
     PetscCall(PetscDSGetNumBoundary(newds, &Nbd));
     for (bd = 0; bd < Nbd; ++bd) {

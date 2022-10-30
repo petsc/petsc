@@ -604,7 +604,7 @@ static PetscErrorCode PCBDDCSetCoarseningRatio_BDDC(PC pc, PetscInt k)
    Level: intermediate
 
    Note:
-   Approximatively k subdomains at the finer level will be aggregated into a single subdomain at the coarser level
+   Approximately k subdomains at the finer level will be aggregated into a single subdomain at the coarser level
 
 .seealso: `PCBDDC`, `PCBDDCSetLevels()`
 @*/

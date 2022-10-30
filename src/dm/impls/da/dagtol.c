@@ -125,7 +125,7 @@ PetscErrorCode DMDAGlobalToNatural_Create(DM da)
    Level: advanced
 
    Notes:
-   The global and natrual vectors used here need not be the same as those
+   The global and natural vectors used here need not be the same as those
    obtained from DMCreateGlobalVector() and DMDACreateNaturalVector(), BUT they
    must have the same parallel data layout; they could, for example, be
    obtained with VecDuplicate() from the DMDA originating vectors.

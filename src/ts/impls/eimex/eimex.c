@@ -382,7 +382,7 @@ static PetscErrorCode TSView_EIMEX(TS ts, PetscViewer viewer)
 }
 
 /*@C
-  TSEIMEXSetMaxRows - Set the maximum number of rows for EIMEX schemes
+  TSEIMEXSetMaxRows - Set the maximum number of rows for `TSEIMEX` schemes
 
   Logically collective
 
@@ -392,7 +392,7 @@ static PetscErrorCode TSView_EIMEX(TS ts, PetscViewer viewer)
 
   Level: intermediate
 
-.seealso: `TSEIMEXSetRowCol()`, `TSEIMEXSetOrdAdapt()`, `TSEIMEX`
+.seealso: [](chapter_ts), `TSEIMEXSetRowCol()`, `TSEIMEXSetOrdAdapt()`, `TSEIMEX`
 @*/
 PetscErrorCode TSEIMEXSetMaxRows(TS ts, PetscInt nrows)
 {
@@ -403,7 +403,7 @@ PetscErrorCode TSEIMEXSetMaxRows(TS ts, PetscInt nrows)
 }
 
 /*@C
-  TSEIMEXSetRowCol - Set the type index in the T table for the return value
+  TSEIMEXSetRowCol - Set the type index in the T table for the return value for the `TSEIMEX` scheme
 
   Logically collective
 
@@ -413,7 +413,7 @@ PetscErrorCode TSEIMEXSetMaxRows(TS ts, PetscInt nrows)
 
   Level: intermediate
 
-.seealso: `TSEIMEXSetMaxRows()`, `TSEIMEXSetOrdAdapt()`, `TSEIMEX`
+.seealso: [](chapter_ts), `TSEIMEXSetMaxRows()`, `TSEIMEXSetOrdAdapt()`, `TSEIMEX`
 @*/
 PetscErrorCode TSEIMEXSetRowCol(TS ts, PetscInt row, PetscInt col)
 {
@@ -424,7 +424,7 @@ PetscErrorCode TSEIMEXSetRowCol(TS ts, PetscInt row, PetscInt col)
 }
 
 /*@C
-  TSEIMEXSetOrdAdapt - Set the order adaptativity
+  TSEIMEXSetOrdAdapt - Set the order adaptativity for the `TSEIMEX` schemes
 
   Logically collective
 
@@ -434,7 +434,7 @@ PetscErrorCode TSEIMEXSetRowCol(TS ts, PetscInt row, PetscInt col)
 
   Level: intermediate
 
-.seealso: `TSEIMEXSetRowCol()`, `TSEIMEXSetOrdAdapt()`, `TSEIMEX`
+.seealso: [](chapter_ts), `TSEIMEXSetRowCol()`, `TSEIMEXSetOrdAdapt()`, `TSEIMEX`
 @*/
 PetscErrorCode TSEIMEXSetOrdAdapt(TS ts, PetscBool flg)
 {
@@ -485,11 +485,13 @@ static PetscErrorCode TSEIMEXSetOrdAdapt_EIMEX(TS ts, PetscBool flg)
       TSEIMEX - Time stepping with Extrapolated IMEX methods.
 
    These methods are intended for problems with well-separated time scales, especially when a slow scale is strongly nonlinear such that it
-   is expensive to solve with a fully implicit method. The user should provide the stiff part of the equation using TSSetIFunction() and the
-   non-stiff part with TSSetRHSFunction().
+   is expensive to solve with a fully implicit method. The user should provide the stiff part of the equation using `TSSetIFunction()` and the
+   non-stiff part with `TSSetRHSFunction()`.
 
-   Notes:
-  The default is a 3-stage scheme, it can be changed with TSEIMEXSetMaxRows() or -ts_eimex_max_rows
+      Level: beginner
+
+  Notes:
+  The default is a 3-stage scheme, it can be changed with `TSEIMEXSetMaxRows()` or -ts_eimex_max_rows
 
   This method currently only works with ODE, for which the stiff part G(t,X,Xdot) has the form Xdot + Ghat(t,X).
 
@@ -498,7 +500,7 @@ static PetscErrorCode TSEIMEXSetOrdAdapt_EIMEX(TS ts, PetscBool flg)
   G(t,X,Xdot) = F(t,X)
 
   where G represents the stiff part and F represents the non-stiff part. The user should provide the stiff part
-  of the equation using TSSetIFunction() and the non-stiff part with TSSetRHSFunction().
+  of the equation using TSSetIFunction() and the non-stiff part with `TSSetRHSFunction()`.
   This method is designed to be linearly implicit on G and can use an approximate and lagged Jacobian.
 
   Another common form for the system is
@@ -509,14 +511,10 @@ static PetscErrorCode TSEIMEXSetOrdAdapt_EIMEX(TS ts, PetscBool flg)
 
   G = y'-g(x), F = f(x)
 
- References
-  E. Constantinescu and A. Sandu, Extrapolated implicit-explicit time stepping, SIAM Journal on Scientific
-Computing, 31 (2010), pp. 4452-4477.
+ Reference:
+. [1] -  E. Constantinescu and A. Sandu, Extrapolated implicit-explicit time stepping, SIAM Journal on Scientific Computing, 31 (2010), pp. 4452-4477.
 
-      Level: beginner
-
-.seealso: `TSCreate()`, `TS`, `TSSetType()`, `TSEIMEXSetMaxRows()`, `TSEIMEXSetRowCol()`, `TSEIMEXSetOrdAdapt()`
-
+.seealso: [](chapter_ts), `TSCreate()`, `TS`, `TSSetType()`, `TSEIMEXSetMaxRows()`, `TSEIMEXSetRowCol()`, `TSEIMEXSetOrdAdapt()`, `TSType`
  M*/
 PETSC_EXTERN PetscErrorCode TSCreate_EIMEX(TS ts)
 {

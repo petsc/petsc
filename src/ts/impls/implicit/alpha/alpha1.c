@@ -439,7 +439,7 @@ static PetscErrorCode TSAlphaGetParams_Alpha(TS ts, PetscReal *alpha_m, PetscRea
   Dynamics with Improved Numerical Dissipation: The Generalized-alpha
   Method" ASME Journal of Applied Mechanics, 60, 371:375, 1993.
 
-.seealso: `TS`, `TSCreate()`, `TSSetType()`, `TSAlphaSetRadius()`, `TSAlphaSetParams()`
+.seealso: [](chapter_ts), `TS`, `TSCreate()`, `TSSetType()`, `TSAlphaSetRadius()`, `TSAlphaSetParams()`
 M*/
 PETSC_EXTERN PetscErrorCode TSCreate_Alpha(TS ts)
 {
@@ -476,10 +476,10 @@ PETSC_EXTERN PetscErrorCode TSCreate_Alpha(TS ts)
 }
 
 /*@
-  TSAlphaSetRadius - sets the desired spectral radius of the method
+  TSAlphaSetRadius - sets the desired spectral radius of the method for `TSALPHA`
                      (i.e. high-frequency numerical damping)
 
-  Logically Collective on TS
+  Logically Collective on ts
 
   The algorithmic parameters \alpha_m and \alpha_f of the
   generalized-\alpha method can be computed in terms of a specified
@@ -492,12 +492,12 @@ PETSC_EXTERN PetscErrorCode TSCreate_Alpha(TS ts)
 +  ts - timestepping context
 -  radius - the desired spectral radius
 
-  Options Database:
+  Options Database Key:
 .  -ts_alpha_radius <radius> - set alpha radius
 
   Level: intermediate
 
-.seealso: `TSAlphaSetParams()`, `TSAlphaGetParams()`
+.seealso: [](chapter_ts), `TS`, `TSALPHA`, `TSAlphaSetParams()`, `TSAlphaGetParams()`
 @*/
 PetscErrorCode TSAlphaSetRadius(TS ts, PetscReal radius)
 {
@@ -510,9 +510,9 @@ PetscErrorCode TSAlphaSetRadius(TS ts, PetscReal radius)
 }
 
 /*@
-  TSAlphaSetParams - sets the algorithmic parameters for TSALPHA
+  TSAlphaSetParams - sets the algorithmic parameters for `TSALPHA`
 
-  Logically Collective on TS
+  Logically Collective on ts
 
   Second-order accuracy can be obtained so long as:
     \gamma = 0.5 + alpha_m - alpha_f
@@ -529,21 +529,21 @@ PetscErrorCode TSAlphaSetRadius(TS ts, PetscReal radius)
 .  \alpha_f - algorithmic parameter
 -  \gamma   - algorithmic parameter
 
-   Options Database:
+   Options Database Keys:
 +  -ts_alpha_alpha_m <alpha_m> - set alpha_m
 .  -ts_alpha_alpha_f <alpha_f> - set alpha_f
 -  -ts_alpha_gamma   <gamma> - set gamma
 
+  Level: advanced
+
   Note:
   Use of this function is normally only required to hack TSALPHA to
   use a modified integration scheme. Users should call
-  TSAlphaSetRadius() to set the desired spectral radius of the methods
+  `TSAlphaSetRadius()` to set the desired spectral radius of the methods
   (i.e. high-frequency damping) in order so select optimal values for
   these parameters.
 
-  Level: advanced
-
-.seealso: `TSAlphaSetRadius()`, `TSAlphaGetParams()`
+.seealso: [](chapter_ts), `TS`, `TSALPHA`, `TSAlphaSetRadius()`, `TSAlphaGetParams()`
 @*/
 PetscErrorCode TSAlphaSetParams(TS ts, PetscReal alpha_m, PetscReal alpha_f, PetscReal gamma)
 {
@@ -557,7 +557,7 @@ PetscErrorCode TSAlphaSetParams(TS ts, PetscReal alpha_m, PetscReal alpha_f, Pet
 }
 
 /*@
-  TSAlphaGetParams - gets the algorithmic parameters for TSALPHA
+  TSAlphaGetParams - gets the algorithmic parameters for `TSALPHA`
 
   Not Collective
 
@@ -569,16 +569,16 @@ PetscErrorCode TSAlphaSetParams(TS ts, PetscReal alpha_m, PetscReal alpha_f, Pet
 .  \alpha_f - algorithmic parameter
 -  \gamma   - algorithmic parameter
 
+  Level: advanced
+
   Note:
-  Use of this function is normally only required to hack TSALPHA to
+  Use of this function is normally only required to hack `TSALPHA` to
   use a modified integration scheme. Users should call
-  TSAlphaSetRadius() to set the high-frequency damping (i.e. spectral
+  `TSAlphaSetRadius()` to set the high-frequency damping (i.e. spectral
   radius of the method) in order so select optimal values for these
   parameters.
 
-  Level: advanced
-
-.seealso: `TSAlphaSetRadius()`, `TSAlphaSetParams()`
+.seealso: [](chapter_ts), `TS`, `TSALPHA`, `TSAlphaSetRadius()`, `TSAlphaSetParams()`
 @*/
 PetscErrorCode TSAlphaGetParams(TS ts, PetscReal *alpha_m, PetscReal *alpha_f, PetscReal *gamma)
 {

@@ -17,7 +17,7 @@ This uses multigrid to solve the linear system
        Contributed by Andrei Draganescu <aidraga@sandia.gov>
 
 Note the nice multigrid convergence despite the fact it is only using
-peicewise constant interpolation/restriction. This is because cell-centered multigrid
+piecewise constant interpolation/restriction. This is because cell-centered multigrid
 does not need the same rule:
 
     polynomial degree(interpolation) + polynomial degree(restriction) + 2 > degree of PDE

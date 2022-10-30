@@ -479,7 +479,7 @@ static inline PetscErrorCode DMGetGlobalFieldOffset_Private(DM dm, PetscInt poin
     PetscInt loff, lfoff, fdof, fcdof, ffcdof, f;
     *start = *end = 0; /* Silence overzealous compiler warning */
     PetscCheck(dm->localSection, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "DM must have a local section, see DMSetLocalSection()");
-    PetscCheck(dm->globalSection, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "DM must have a global section. It will be crated automatically by DMGetGlobalSection()");
+    PetscCheck(dm->globalSection, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "DM must have a global section. It will be created automatically by DMGetGlobalSection()");
     PetscCall(PetscSectionGetOffset(dm->globalSection, point, start));
     PetscCall(PetscSectionGetOffset(dm->localSection, point, &loff));
     PetscCall(PetscSectionGetFieldOffset(dm->localSection, point, field, &lfoff));

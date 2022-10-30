@@ -539,7 +539,7 @@ static PetscErrorCode do_xyt_solve(xyt_ADT xyt_handle, PetscScalar *uc)
     PetscCallBLAS("BLASdot", *uu_ptr++ = BLASdot_(&dlen, uc + off, &i1, y_ptr, &i1));
   }
 
-  /* comunication of beta */
+  /* communication of beta */
   uu_ptr = solve_uu;
   if (level) PetscCall(PCTFS_ssgl_radd(uu_ptr, solve_w, level, stages));
   PCTFS_rvec_zero(uc, n);

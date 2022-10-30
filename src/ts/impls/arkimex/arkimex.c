@@ -62,90 +62,90 @@ typedef struct {
 
      This method has one explicit stage and one implicit stage.
 
-     Options Database:
+     Options Database Key:
 .      -ts_arkimex_type ars122 - set arkimex type to ars122
+
+     Level: advanced
 
      References:
 .    * -  U. Ascher, S. Ruuth, R. J. Spiteri, Implicit explicit Runge Kutta methods for time dependent Partial Differential Equations. Appl. Numer. Math. 25, (1997).
 
-     Level: advanced
-
-.seealso: `TSARKIMEX`, `TSARKIMEXType`, `TSARKIMEXSetType()`
+.seealso: [](chapter_ts), `TSARKIMEX`, `TSARKIMEXType`, `TSARKIMEXSetType()`
 M*/
 /*MC
      TSARKIMEXA2 - Second order ARK IMEX scheme with A-stable implicit part.
 
      This method has an explicit stage and one implicit stage, and has an A-stable implicit scheme. This method was provided by Emil Constantinescu.
 
-     Options Database:
+     Options Database Key:
 .      -ts_arkimex_type a2 - set arkimex type to a2
 
      Level: advanced
 
-.seealso: `TSARKIMEX`, `TSARKIMEXType`, `TSARKIMEXSetType()`
+.seealso: [](chapter_ts), `TSARKIMEX`, `TSARKIMEXType`, `TSARKIMEXSetType()`
 M*/
 /*MC
      TSARKIMEXL2 - Second order ARK IMEX scheme with L-stable implicit part.
 
      This method has two implicit stages, and L-stable implicit scheme.
 
-     Options Database:
+     Options Database Key:
 .      -ts_arkimex_type l2 - set arkimex type to l2
+
+     Level: advanced
 
     References:
 .   * -  L. Pareschi, G. Russo, Implicit Explicit Runge Kutta schemes and applications to hyperbolic systems with relaxations. Journal of Scientific Computing Volume: 25, Issue: 1, October, 2005.
 
-     Level: advanced
-
-.seealso: `TSARKIMEX`, `TSARKIMEXType`, `TSARKIMEXSetType()`
+.seealso: [](chapter_ts), `TSARKIMEX`, `TSARKIMEXType`, `TSARKIMEXSetType()`
 M*/
 /*MC
      TSARKIMEX1BEE - First order backward Euler represented as an ARK IMEX scheme with extrapolation as error estimator. This is a 3-stage method.
 
      This method is aimed at starting the integration of implicit DAEs when explicit first-stage ARK methods are used.
 
-     Options Database:
+     Options Database Key:
 .      -ts_arkimex_type 1bee - set arkimex type to 1bee
 
      Level: advanced
 
-.seealso: `TSARKIMEX`, `TSARKIMEXType`, `TSARKIMEXSetType()`
+.seealso: [](chapter_ts), `TSARKIMEX`, `TSARKIMEXType`, `TSARKIMEXSetType()`
 M*/
 /*MC
      TSARKIMEX2C - Second order ARK IMEX scheme with L-stable implicit part.
 
      This method has one explicit stage and two implicit stages. The implicit part is the same as in TSARKIMEX2D and TSARKIMEX2E, but the explicit part has a larger stability region on the negative real axis. This method was provided by Emil Constantinescu.
 
-     Options Database:
+     Options Database Key:
 .      -ts_arkimex_type 2c - set arkimex type to 2c
 
      Level: advanced
 
-.seealso: `TSARKIMEX`, `TSARKIMEXType`, `TSARKIMEXSetType()`
+.seealso: [](chapter_ts), `TSARKIMEX`, `TSARKIMEXType`, `TSARKIMEXSetType()`
 M*/
 /*MC
      TSARKIMEX2D - Second order ARK IMEX scheme with L-stable implicit part.
 
      This method has one explicit stage and two implicit stages. The stability function is independent of the explicit part in the infinity limit of the implict component. This method was provided by Emil Constantinescu.
 
-     Options Database:
+     Options Database Key:
 .      -ts_arkimex_type 2d - set arkimex type to 2d
 
      Level: advanced
 
-.seealso: `TSARKIMEX`, `TSARKIMEXType`, `TSARKIMEXSetType()`
+.seealso: [](chapter_ts), `TSARKIMEX`, `TSARKIMEXType`, `TSARKIMEXSetType()`
 M*/
 /*MC
      TSARKIMEX2E - Second order ARK IMEX scheme with L-stable implicit part.
 
      This method has one explicit stage and two implicit stages. It is is an optimal method developed by Emil Constantinescu.
 
-     Options Database:
+     Options Database Key:
 .      -ts_arkimex_type 2e - set arkimex type to 2e
 
     Level: advanced
 
-.seealso: `TSARKIMEX`, `TSARKIMEXType`, `TSARKIMEXSetType()`
+.seealso: [](chapter_ts), `TSARKIMEX`, `TSARKIMEXType`, `TSARKIMEXSetType()`
 M*/
 /*MC
      TSARKIMEXPRSSP2 - Second order SSP ARK IMEX scheme.
@@ -157,98 +157,98 @@ M*/
 
      This method is referred to as SSP2-(3,3,2) in https://arxiv.org/abs/1110.4375
 
-     Options Database:
+     Options Database Key:
 .      -ts_arkimex_type prssp2 - set arkimex type to prssp2
 
      Level: advanced
 
-.seealso: `TSARKIMEX`, `TSARKIMEXType`, `TSARKIMEXSetType()`
+.seealso: [](chapter_ts), `TSARKIMEX`, `TSARKIMEXType`, `TSARKIMEXSetType()`
 M*/
 /*MC
      TSARKIMEX3 - Third order ARK IMEX scheme with L-stable implicit part.
 
      This method has one explicit stage and three implicit stages.
 
-     Options Database:
+     Options Database Key:
 .      -ts_arkimex_type 3 - set arkimex type to 3
+
+     Level: advanced
 
      References:
 .    * -  Kennedy and Carpenter 2003.
 
-     Level: advanced
-
-.seealso: `TSARKIMEX`, `TSARKIMEXType`, `TSARKIMEXSetType()`
+.seealso: [](chapter_ts), `TSARKIMEX`, `TSARKIMEXType`, `TSARKIMEXSetType()`
 M*/
 /*MC
      TSARKIMEXARS443 - Third order ARK IMEX scheme.
 
      This method has one explicit stage and four implicit stages.
 
-     Options Database:
+     Options Database Key:
 .      -ts_arkimex_type ars443 - set arkimex type to ars443
+
+     Level: advanced
 
      References:
 +    * -  U. Ascher, S. Ruuth, R. J. Spiteri, Implicit explicit Runge Kutta methods for time dependent Partial Differential Equations. Appl. Numer. Math. 25, (1997).
 -    * -  This method is referred to as ARS(4,4,3) in https://arxiv.org/abs/1110.4375
 
-     Level: advanced
-
-.seealso: `TSARKIMEX`, `TSARKIMEXType`, `TSARKIMEXSetType()`
+.seealso: [](chapter_ts), `TSARKIMEX`, `TSARKIMEXType`, `TSARKIMEXSetType()`
 M*/
 /*MC
      TSARKIMEXBPR3 - Third order ARK IMEX scheme.
 
      This method has one explicit stage and four implicit stages.
 
-     Options Database:
+     Options Database Key:
 .      -ts_arkimex_type bpr3 - set arkimex type to bpr3
+
+     Level: advanced
 
      References:
 .    * - This method is referred to as ARK3 in https://arxiv.org/abs/1110.4375
 
-     Level: advanced
-
-.seealso: `TSARKIMEX`, `TSARKIMEXType`, `TSARKIMEXSetType()`
+.seealso: [](chapter_ts), `TSARKIMEX`, `TSARKIMEXType`, `TSARKIMEXSetType()`
 M*/
 /*MC
      TSARKIMEX4 - Fourth order ARK IMEX scheme with L-stable implicit part.
 
      This method has one explicit stage and four implicit stages.
 
-     Options Database:
+     Options Database Key:
 .      -ts_arkimex_type 4 - set arkimex type to4
+
+     Level: advanced
 
      References:
 .    * - Kennedy and Carpenter 2003.
 
-     Level: advanced
-
-.seealso: `TSARKIMEX`, `TSARKIMEXType`, `TSARKIMEXSetType()`
+.seealso: [](chapter_ts), `TSARKIMEX`, `TSARKIMEXType`, `TSARKIMEXSetType()`
 M*/
 /*MC
      TSARKIMEX5 - Fifth order ARK IMEX scheme with L-stable implicit part.
 
      This method has one explicit stage and five implicit stages.
 
-     Options Database:
+     Options Database Key:
 .      -ts_arkimex_type 5 - set arkimex type to 5
+
+     Level: advanced
 
      References:
 .    * - Kennedy and Carpenter 2003.
 
-     Level: advanced
-
-.seealso: `TSARKIMEX`, `TSARKIMEXType`, `TSARKIMEXSetType()`
+.seealso: [](chapter_ts), `TSARKIMEX`, `TSARKIMEXType`, `TSARKIMEXSetType()`
 M*/
 
 /*@C
-  TSARKIMEXRegisterAll - Registers all of the additive Runge-Kutta implicit-explicit methods in TSARKIMEX
+  TSARKIMEXRegisterAll - Registers all of the additive Runge-Kutta implicit-explicit methods in `TSARKIMEX`
 
   Not Collective, but should be called by all processes which will need the schemes to be registered
 
   Level: advanced
 
-.seealso: `TSARKIMEXRegisterDestroy()`
+.seealso: [](chapter_ts), `TS`, `TSARKIMEX`, `TSARKIMEXRegisterDestroy()`
 @*/
 PetscErrorCode TSARKIMEXRegisterAll(void)
 {
@@ -408,13 +408,13 @@ PetscErrorCode TSARKIMEXRegisterAll(void)
 }
 
 /*@C
-   TSARKIMEXRegisterDestroy - Frees the list of schemes that were registered by TSARKIMEXRegister().
+   TSARKIMEXRegisterDestroy - Frees the list of schemes that were registered by `TSARKIMEXRegister()`.
 
    Not Collective
 
    Level: advanced
 
-.seealso: `TSARKIMEXRegister()`, `TSARKIMEXRegisterAll()`
+.seealso: [](chapter_ts), `TSARKIMEX`, `TSARKIMEXRegister()`, `TSARKIMEXRegisterAll()`
 @*/
 PetscErrorCode TSARKIMEXRegisterDestroy(void)
 {
@@ -435,12 +435,12 @@ PetscErrorCode TSARKIMEXRegisterDestroy(void)
 }
 
 /*@C
-  TSARKIMEXInitializePackage - This function initializes everything in the TSARKIMEX package. It is called
-  from TSInitializePackage().
+  TSARKIMEXInitializePackage - This function initializes everything in the `TSARKIMEX` package. It is called
+  from `TSInitializePackage()`.
 
   Level: developer
 
-.seealso: `PetscInitialize()`
+.seealso: [](chapter_ts), `PetscInitialize()`, `TSARKIMEXFinalizePackage()`
 @*/
 PetscErrorCode TSARKIMEXInitializePackage(void)
 {
@@ -453,12 +453,12 @@ PetscErrorCode TSARKIMEXInitializePackage(void)
 }
 
 /*@C
-  TSARKIMEXFinalizePackage - This function destroys everything in the TSARKIMEX package. It is
-  called from PetscFinalize().
+  TSARKIMEXFinalizePackage - This function destroys everything in the `TSARKIMEX` package. It is
+  called from `PetscFinalize()`.
 
   Level: developer
 
-.seealso: `PetscFinalize()`
+.seealso: [](chapter_ts), `PetscFinalize()`, `TSARKIMEXInitializePackage()`
 @*/
 PetscErrorCode TSARKIMEXFinalizePackage(void)
 {
@@ -469,7 +469,7 @@ PetscErrorCode TSARKIMEXFinalizePackage(void)
 }
 
 /*@C
-   TSARKIMEXRegister - register an ARK IMEX scheme by providing the entries in the Butcher tableau and optionally embedded approximations and interpolation
+   TSARKIMEXRegister - register a `TSARKIMEX` scheme by providing the entries in the Butcher tableau and optionally embedded approximations and interpolation
 
    Not Collective, but the same schemes should be registered on all processes on which they will be used
 
@@ -489,12 +489,12 @@ PetscErrorCode TSARKIMEXFinalizePackage(void)
 .  binterpt - Coefficients of the interpolation formula for the stiff part (dimension s*pinterp)
 -  binterp - Coefficients of the interpolation formula for the non-stiff part (dimension s*pinterp; NULL to reuse binterpt)
 
-   Notes:
-   Several ARK IMEX methods are provided, this function is only needed to create new methods.
-
    Level: advanced
 
-.seealso: `TSARKIMEX`
+   Note:
+   Several `TSARKIMEX` methods are provided, this function is only needed to create new methods.
+
+.seealso: [](chapter_ts), `TSARKIMEX`, `TSType`, `TS`
 @*/
 PetscErrorCode TSARKIMEXRegister(TSARKIMEXType name, PetscInt order, PetscInt s, const PetscReal At[], const PetscReal bt[], const PetscReal ct[], const PetscReal A[], const PetscReal b[], const PetscReal c[], const PetscReal bembedt[], const PetscReal bembed[], PetscInt pinterp, const PetscReal binterpt[], const PetscReal binterp[])
 {
@@ -1184,20 +1184,20 @@ static PetscErrorCode TSLoad_ARKIMEX(TS ts, PetscViewer viewer)
 }
 
 /*@C
-  TSARKIMEXSetType - Set the type of ARK IMEX scheme
+  TSARKIMEXSetType - Set the type of `TSARKIMEX` scheme
 
   Logically collective
 
   Input Parameters:
 +  ts - timestepping context
--  arktype - type of ARK-IMEX scheme
+-  arktype - type of `TSARKIMEX` scheme
 
-  Options Database:
-.  -ts_arkimex_type <1bee,a2,l2,ars122,2c,2d,2e,prssp2,3,bpr3,ars443,4,5> - set ARK IMEX scheme type
+  Options Database Key:
+.  -ts_arkimex_type <1bee,a2,l2,ars122,2c,2d,2e,prssp2,3,bpr3,ars443,4,5> - set `TSARKIMEX` scheme type
 
   Level: intermediate
 
-.seealso: `TSARKIMEXGetType()`, `TSARKIMEX`, `TSARKIMEXType`, `TSARKIMEX1BEE`, `TSARKIMEXA2`, `TSARKIMEXL2`, `TSARKIMEXARS122`, `TSARKIMEX2C`, `TSARKIMEX2D`, `TSARKIMEX2E`, `TSARKIMEXPRSSP2`,
+.seealso: [](chapter_ts), `TSARKIMEXGetType()`, `TSARKIMEX`, `TSARKIMEXType`, `TSARKIMEX1BEE`, `TSARKIMEXA2`, `TSARKIMEXL2`, `TSARKIMEXARS122`, `TSARKIMEX2C`, `TSARKIMEX2D`, `TSARKIMEX2E`, `TSARKIMEXPRSSP2`,
           `TSARKIMEX3`, `TSARKIMEXBPR3`, `TSARKIMEXARS443`, `TSARKIMEX4`, `TSARKIMEX5`
 @*/
 PetscErrorCode TSARKIMEXSetType(TS ts, TSARKIMEXType arktype)
@@ -1210,7 +1210,7 @@ PetscErrorCode TSARKIMEXSetType(TS ts, TSARKIMEXType arktype)
 }
 
 /*@C
-  TSARKIMEXGetType - Get the type of ARK IMEX scheme
+  TSARKIMEXGetType - Get the type of `TSARKIMEX` scheme
 
   Logically collective
 
@@ -1218,11 +1218,11 @@ PetscErrorCode TSARKIMEXSetType(TS ts, TSARKIMEXType arktype)
 .  ts - timestepping context
 
   Output Parameter:
-.  arktype - type of ARK-IMEX scheme
+.  arktype - type of `TSARKIMEX` scheme
 
   Level: intermediate
 
-.seealso: `TSARKIMEXGetType()`
+.seealso: [](chapter_ts), `TSARKIMEX`c, `TSARKIMEXGetType()`
 @*/
 PetscErrorCode TSARKIMEXGetType(TS ts, TSARKIMEXType *arktype)
 {
@@ -1233,17 +1233,17 @@ PetscErrorCode TSARKIMEXGetType(TS ts, TSARKIMEXType *arktype)
 }
 
 /*@
-  TSARKIMEXSetFullyImplicit - Solve both parts of the equation implicitly
+  TSARKIMEXSetFullyImplicit - Solve both parts of the equation implicitly, including the part that is normally solved explicitly
 
   Logically collective
 
   Input Parameters:
 +  ts - timestepping context
--  flg - PETSC_TRUE for fully implicit
+-  flg - `PETSC_TRUE` for fully implicit
 
   Level: intermediate
 
-.seealso: `TSARKIMEXGetType()`, `TSARKIMEXGetFullyImplicit()`
+.seealso: [](chapter_ts), `TSARKIMEX`, `TSARKIMEXGetType()`, `TSARKIMEXGetFullyImplicit()`
 @*/
 PetscErrorCode TSARKIMEXSetFullyImplicit(TS ts, PetscBool flg)
 {
@@ -1263,11 +1263,11 @@ PetscErrorCode TSARKIMEXSetFullyImplicit(TS ts, PetscBool flg)
 .  ts - timestepping context
 
   Output Parameter:
-.  flg - PETSC_TRUE for fully implicit
+.  flg - `PETSC_TRUE` for fully implicit
 
   Level: intermediate
 
-.seealso: `TSARKIMEXGetType()`, `TSARKIMEXSetFullyImplicit()`
+.seealso: [](chapter_ts), `TSARKIMEXGetType()`, `TSARKIMEXSetFullyImplicit()`
 @*/
 PetscErrorCode TSARKIMEXGetFullyImplicit(TS ts, PetscBool *flg)
 {
@@ -1350,23 +1350,22 @@ static PetscErrorCode TSDestroy_ARKIMEX(TS ts)
 
   These methods are intended for problems with well-separated time scales, especially when a slow scale is strongly
   nonlinear such that it is expensive to solve with a fully implicit method. The user should provide the stiff part
-  of the equation using TSSetIFunction() and the non-stiff part with TSSetRHSFunction().
-
-  Notes:
-  The default is TSARKIMEX3, it can be changed with TSARKIMEXSetType() or -ts_arkimex_type
-
-  If the equation is implicit or a DAE, then TSSetEquationType() needs to be set accordingly. Refer to the manual for further information.
-
-  Methods with an explicit stage can only be used with ODE in which the stiff part G(t,X,Xdot) has the form Xdot + Ghat(t,X).
-
-  Consider trying TSROSW if the stiff part is linear or weakly nonlinear.
+  of the equation using `TSSetIFunction()` and the non-stiff part with `TSSetRHSFunction()`.
 
   Level: beginner
 
-.seealso: `TSCreate()`, `TS`, `TSSetType()`, `TSARKIMEXSetType()`, `TSARKIMEXGetType()`, `TSARKIMEXSetFullyImplicit()`, `TSARKIMEXGetFullyImplicit()`,
-          `TSARKIMEX1BEE`, `TSARKIMEX2C`, `TSARKIMEX2D`, `TSARKIMEX2E`, `TSARKIMEX3`, `TSARKIMEXL2`, `TSARKIMEXA2`, `TSARKIMEXARS122`,
-          `TSARKIMEX4`, `TSARKIMEX5`, `TSARKIMEXPRSSP2`, `TSARKIMEXARS443`, `TSARKIMEXBPR3`, `TSARKIMEXType`, `TSARKIMEXRegister()`
+  Notes:
+  The default is `TSARKIMEX3`, it can be changed with `TSARKIMEXSetType()` or -ts_arkimex_type
 
+  If the equation is implicit or a DAE, then `TSSetEquationType()` needs to be set accordingly. Refer to the manual for further information.
+
+  Methods with an explicit stage can only be used with ODE in which the stiff part G(t,X,Xdot) has the form Xdot + Ghat(t,X).
+
+  Consider trying `TSROSW` if the stiff part is linear or weakly nonlinear.
+
+.seealso: [](chapter_ts), `TSCreate()`, `TS`, `TSSetType()`, `TSARKIMEXSetType()`, `TSARKIMEXGetType()`, `TSARKIMEXSetFullyImplicit()`, `TSARKIMEXGetFullyImplicit()`,
+          `TSARKIMEX1BEE`, `TSARKIMEX2C`, `TSARKIMEX2D`, `TSARKIMEX2E`, `TSARKIMEX3`, `TSARKIMEXL2`, `TSARKIMEXA2`, `TSARKIMEXARS122`,
+          `TSARKIMEX4`, `TSARKIMEX5`, `TSARKIMEXPRSSP2`, `TSARKIMEXARS443`, `TSARKIMEXBPR3`, `TSARKIMEXType`, `TSARKIMEXRegister()`, `TSType`
 M*/
 PETSC_EXTERN PetscErrorCode TSCreate_ARKIMEX(TS ts)
 {

@@ -607,34 +607,35 @@ static PetscErrorCode TSGLLECreate_IRKS(TS ts)
 }
 
 /*@C
-   TSGLLESetType - sets the class of general linear method to use for time-stepping
+   TSGLLESetType - sets the class of general linear method, `TSGLLE` to use for time-stepping
 
-   Collective on TS
+   Collective on ts
 
    Input Parameters:
-+  ts - the TS context
++  ts - the `TS` context
 -  type - a method
 
    Options Database Key:
 .  -ts_gl_type <type> - sets the method, use -help for a list of available method (e.g. irks)
 
+   Level: intermediate
+
    Notes:
    See "petsc/include/petscts.h" for available methods (for instance)
 .    TSGLLE_IRKS - Diagonally implicit methods with inherent Runge-Kutta stability (for stiff problems)
 
-   Normally, it is best to use the TSSetFromOptions() command and
-   then set the TSGLLE type from the options database rather than by using
+   Normally, it is best to use the `TSSetFromOptions()` command and
+   then set the `TSGLLE` type from the options database rather than by using
    this routine.  Using the options database provides the user with
    maximum flexibility in evaluating the many different solvers.
-   The TSGLLESetType() routine is provided for those situations where it
+   The `TSGLLESetType()` routine is provided for those situations where it
    is necessary to set the timestepping solver independently of the
    command line or options database.  This might be the case, for example,
    when the choice of solver changes during the execution of the
    program, and the user's application is taking responsibility for
    choosing the appropriate method.
 
-   Level: intermediate
-
+.seealso: [](chapter_ts), `TS`, `TSGLLEType`, `TSGLLE`
 @*/
 PetscErrorCode TSGLLESetType(TS ts, TSGLLEType type)
 {
@@ -646,15 +647,15 @@ PetscErrorCode TSGLLESetType(TS ts, TSGLLEType type)
 }
 
 /*@C
-   TSGLLESetAcceptType - sets the acceptance test
+   TSGLLESetAcceptType - sets the acceptance test for `TSGLLE`
 
    Time integrators that need to control error must have the option to reject a time step based on local error
    estimates.  This function allows different schemes to be set.
 
-   Logically Collective on TS
+   Logically Collective on ts
 
    Input Parameters:
-+  ts - the TS context
++  ts - the `TS` context
 -  type - the type
 
    Options Database Key:
@@ -662,7 +663,7 @@ PetscErrorCode TSGLLESetType(TS ts, TSGLLEType type)
 
    Level: intermediate
 
-.seealso: `TS`, `TSGLLE`, `TSGLLEAcceptRegister()`, `TSGLLEAdapt`, `set` `type`
+.seealso: [](chapter_ts), `TS`, `TSGLLE`, `TSGLLEAcceptRegister()`, `TSGLLEAdapt`
 @*/
 PetscErrorCode TSGLLESetAcceptType(TS ts, TSGLLEAcceptType type)
 {
@@ -674,23 +675,23 @@ PetscErrorCode TSGLLESetAcceptType(TS ts, TSGLLEAcceptType type)
 }
 
 /*@C
-   TSGLLEGetAdapt - gets the TSGLLEAdapt object from the TS
+   TSGLLEGetAdapt - gets the `TSGLLEAdapt` object from the `TS`
 
    Not Collective
 
    Input Parameter:
-.  ts - the TS context
+.  ts - the `TS` context
 
    Output Parameter:
-.  adapt - the TSGLLEAdapt context
-
-   Notes:
-   This allows the user set options on the TSGLLEAdapt object.  Usually it is better to do this using the options
-   database, so this function is rarely needed.
+.  adapt - the `TSGLLEAdapt` context
 
    Level: advanced
 
-.seealso: `TSGLLEAdapt`, `TSGLLEAdaptRegister()`
+   Note:
+   This allows the user set options on the `TSGLLEAdapt` object.  Usually it is better to do this using the options
+   database, so this function is rarely needed.
+
+.seealso: [](chapter_ts), `TS`, `TSGLLE`, `TSGLLEAdapt`, `TSGLLEAdaptRegister()`
 @*/
 PetscErrorCode TSGLLEGetAdapt(TS ts, TSGLLEAdapt *adapt)
 {
@@ -1195,7 +1196,7 @@ static PetscErrorCode TSView_GLLE(TS ts, PetscViewer viewer)
 }
 
 /*@C
-   TSGLLERegister -  adds a TSGLLE implementation
+   TSGLLERegister -  adds a `TSGLLE` implementation
 
    Not Collective
 
@@ -1203,8 +1204,10 @@ static PetscErrorCode TSView_GLLE(TS ts, PetscViewer viewer)
 +  name_scheme - name of user-defined general linear scheme
 -  routine_create - routine to create method context
 
-   Notes:
-   TSGLLERegister() may be called multiple times to add several user-defined families.
+   Level: advanced
+
+   Note:
+   `TSGLLERegister()` may be called multiple times to add several user-defined families.
 
    Sample usage:
 .vb
@@ -1216,9 +1219,7 @@ $     TSGLLESetType(ts,"my_scheme")
    or at runtime via the option
 $     -ts_gl_type my_scheme
 
-   Level: advanced
-
-.seealso: `TSGLLERegisterAll()`
+.seealso: [](chapter_ts), `TSGLLE`, `TSGLLEType`, `TSGLLERegisterAll()`
 @*/
 PetscErrorCode TSGLLERegister(const char sname[], PetscErrorCode (*function)(TS))
 {
@@ -1229,7 +1230,7 @@ PetscErrorCode TSGLLERegister(const char sname[], PetscErrorCode (*function)(TS)
 }
 
 /*@C
-   TSGLLEAcceptRegister -  adds a TSGLLE acceptance scheme
+   TSGLLEAcceptRegister -  adds a `TSGLLE` acceptance scheme
 
    Not Collective
 
@@ -1237,8 +1238,10 @@ PetscErrorCode TSGLLERegister(const char sname[], PetscErrorCode (*function)(TS)
 +  name_scheme - name of user-defined acceptance scheme
 -  routine_create - routine to create method context
 
-   Notes:
-   TSGLLEAcceptRegister() may be called multiple times to add several user-defined families.
+   Level: advanced
+
+   Note:
+   `TSGLLEAcceptRegister()` may be called multiple times to add several user-defined families.
 
    Sample usage:
 .vb
@@ -1250,9 +1253,7 @@ $     TSGLLESetAcceptType(ts,"my_scheme")
    or at runtime via the option
 $     -ts_gl_accept_type my_scheme
 
-   Level: advanced
-
-.seealso: `TSGLLERegisterAll()`
+.seealso: [](chapter_ts), `TSGLLE`, `TSGLLEType`, `TSGLLERegisterAll()`, `TSGLLEAcceptFunction`
 @*/
 PetscErrorCode TSGLLEAcceptRegister(const char sname[], TSGLLEAcceptFunction function)
 {
@@ -1262,13 +1263,13 @@ PetscErrorCode TSGLLEAcceptRegister(const char sname[], TSGLLEAcceptFunction fun
 }
 
 /*@C
-  TSGLLERegisterAll - Registers all of the general linear methods in TSGLLE
+  TSGLLERegisterAll - Registers all of the general linear methods in `TSGLLE`
 
   Not Collective
 
   Level: advanced
 
-.seealso: `TSGLLERegisterDestroy()`
+.seealso: [](chapter_ts), `TSGLLE`, `TSGLLERegisterDestroy()`
 @*/
 PetscErrorCode TSGLLERegisterAll(void)
 {
@@ -1282,12 +1283,12 @@ PetscErrorCode TSGLLERegisterAll(void)
 }
 
 /*@C
-  TSGLLEInitializePackage - This function initializes everything in the TSGLLE package. It is called
-  from TSInitializePackage().
+  TSGLLEInitializePackage - This function initializes everything in the `TSGLLE` package. It is called
+  from `TSInitializePackage()`.
 
   Level: developer
 
-.seealso: `PetscInitialize()`
+.seealso: [](chapter_ts), `PetscInitialize()`, `TSInitializePackage()`, `TSGLLEFinalizePackage()`
 @*/
 PetscErrorCode TSGLLEInitializePackage(void)
 {
@@ -1300,12 +1301,12 @@ PetscErrorCode TSGLLEInitializePackage(void)
 }
 
 /*@C
-  TSGLLEFinalizePackage - This function destroys everything in the TSGLLE package. It is
-  called from PetscFinalize().
+  TSGLLEFinalizePackage - This function destroys everything in the `TSGLLE` package. It is
+  called from `PetscFinalize()`.
 
   Level: developer
 
-.seealso: `PetscFinalize()`
+.seealso: [](chapter_ts), `PetscFinalize()`, `TSGLLEInitializePackage()`, `TSInitializePackage()`
 @*/
 PetscErrorCode TSGLLEFinalizePackage(void)
 {
@@ -1328,7 +1329,7 @@ PetscErrorCode TSGLLEFinalizePackage(void)
   reliable error estimates for both 1 and 2 orders higher to facilitate adaptive step sizes and adaptive order schemes.
   All this is possible while preserving a singly diagonally implicit structure.
 
-  Options database keys:
+  Options Database Keys:
 +  -ts_gl_type <type> - the class of general linear method (irks)
 .  -ts_gl_rtol <tol>  - relative error
 .  -ts_gl_atol <tol>  - absolute error
@@ -1337,6 +1338,8 @@ PetscErrorCode TSGLLEFinalizePackage(void)
 .  -ts_gl_start_order <p> - order of starting method (default=1)
 .  -ts_gl_complete <method> - method to use for completing the step (rescale-and-modify or rescale)
 -  -ts_adapt_type <method> - adaptive controller to use (none step both)
+
+  Level: beginner
 
   Notes:
   This integrator can be applied to DAE.
@@ -1383,7 +1386,7 @@ PetscErrorCode TSGLLEFinalizePackage(void)
   Error estimation
 
   At present, the most attractive GL methods for stiff problems are singly diagonally implicit schemes which posses
-  Inherent Runge-Kutta Stability (IRKS).  These methods have r=s, the number of items passed between steps is equal to
+  Inherent Runge-Kutta Stability (`TSIRKS`).  These methods have r=s, the number of items passed between steps is equal to
   the number of stages.  The order and stage-order are one less than the number of stages.  We use the error estimates
   in the 2007 paper which provide the following estimates
 
@@ -1399,15 +1402,12 @@ PetscErrorCode TSGLLEFinalizePackage(void)
 
   We use the generalized "rescale and modify" scheme, see equation (4.5) of the 2007 paper.
 
-  Level: beginner
-
   References:
 + * - John Butcher and Z. Jackieweicz and W. Wright, On error propagation in general linear methods for
   ordinary differential equations, Journal of Complexity, Vol 23, 2007.
 - * - John Butcher, Numerical methods for ordinary differential equations, second edition, Wiley, 2009.
 
-.seealso: `TSCreate()`, `TS`, `TSSetType()`
-
+.seealso: [](chapter_ts), `TSCreate()`, `TS`, `TSSetType()`, `TSType`
 M*/
 PETSC_EXTERN PetscErrorCode TSCreate_GLLE(TS ts)
 {

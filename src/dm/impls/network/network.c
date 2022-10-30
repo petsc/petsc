@@ -105,7 +105,7 @@ PetscErrorCode DMNetworkSetNumSubNetworks(DM dm, PetscInt nsubnet, PetscInt Nsub
   DM_Network *network = (DM_Network *)dm->data;
 
   PetscFunctionBegin;
-  PetscCheck(network->cloneshared->Nsubnet == 0, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_INCOMP, "Network sizes alread set, cannot resize the network");
+  PetscCheck(network->cloneshared->Nsubnet == 0, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_INCOMP, "Network sizes already set, cannot resize the network");
 
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidLogicalCollectiveInt(dm, nsubnet, 2);
@@ -153,7 +153,7 @@ $            [first vertex of first edge, second vertex of first edge, first ver
 
   Example usage:
   Consider the following networks:
-  1) A sigle subnetwork:
+  1) A single subnetwork:
 .vb
  network 0:
  rank[0]:
@@ -528,7 +528,7 @@ static PetscErrorCode GetEdgelist_Coupling(DM dm, PetscInt *edges, PetscInt *nme
   Nsv  = network->cloneshared->Nsvtx;
   svtx = network->cloneshared->svtx;
 
-  /* (2) Merge shared vto vertices to their vfrom vertex with same global vetex index (gidx) */
+  /* (2) Merge shared vto vertices to their vfrom vertex with same global vertex index (gidx) */
   /* --------------------------------------------------------------------------------------- */
   /* (2.1) compute vrage[rank]: global index of 1st local vertex in proc[rank] */
   PetscCall(PetscMalloc4(size + 1, &vrange, size, &displs, size, &recvcounts, network->cloneshared->nVertices, &vidxlTog));
@@ -3233,7 +3233,7 @@ PetscErrorCode DMNetworkCreateLocalIS(DM dm, PetscInt numkeys, PetscInt keys[], 
   PetscFunctionReturn(0);
 }
 /*@
-  DMNetworkFinalizeComponents - Sets up interal data structures for the sections and components. It is called after registering new components and adding all components
+  DMNetworkFinalizeComponents - Sets up internal data structures for the sections and components. It is called after registering new components and adding all components
   to the cloned network. After calling this subroutine, no new components can be added to the network.
 
   Collective

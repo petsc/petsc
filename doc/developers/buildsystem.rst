@@ -313,7 +313,7 @@ for a configure run. It maintains a graph of all the configure modules
 involved, which is also used to track dependencies between them. It
 initiates the run, compiles the results, and handles the final output.
 It maintains the help list for all options available in the run. The
-``setup()`` method preforms generic ``Script`` setup and then is called
+``setup()`` method performs generic ``Script`` setup and then is called
 recursively on all the child modules. The ``cleanup()`` method performs
 the final output and logging actions,
 

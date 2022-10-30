@@ -69,7 +69,7 @@ class Configure(config.package.Package):
       if self.cuda.cudaArch:
         gencodestr = '-DTARGET_SM='+self.cuda.cudaArch+' -arch sm_'+self.cuda.cudaArch
       else:
-        # kblas as of v4.0.0 uses __ldg intrinsincs, available starting from 35
+        # kblas as of v4.0.0 uses __ldg intrinsics, available starting from 35
         gencodestr = '-DTARGET_SM=35 -arch sm_35'
       g.write('NVCC = '+nvcc+'\n')
       g.write('CC = '+cxx+'\n')

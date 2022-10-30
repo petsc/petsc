@@ -358,7 +358,7 @@ class Configure(config.base.Configure):
 
   def checkCFormatting(self):
     '''Activate format string checking if using the GNU compilers'''
-    '''No checking because we use additional formating conventions'''
+    '''No checking because we use additional formatting conventions'''
     if self.isGCC and 0:
       self.gccFormatChecking = ('PRINTF_FORMAT_CHECK(A,B)', '__attribute__((format (printf, A, B)))')
       self.logPrint('Added gcc printf format checking', 4, 'compilers')
@@ -1408,7 +1408,7 @@ Otherwise you need a different combination of C, C++, and Fortran compilers")
         self.logWrite(self.setCompilers.restoreLog())
     self.setCompilers.popLanguage()
     if self.c99flag is None:
-      if self.isGCC: additionalErrorMsg = '\nPerhaps you have an Intel compiler environment or module set that is interferring with the GNU compilers.\nTry removing that environment or module and running ./configure again.'
+      if self.isGCC: additionalErrorMsg = '\nPerhaps you have an Intel compiler environment or module set that is interfering with the GNU compilers.\nTry removing that environment or module and running ./configure again.'
       else: additionalErrorMsg = ''
       raise RuntimeError('PETSc requires c99 compiler! Configure could not determine compatible compiler flag.\nPerhaps you can specify it via CFLAGS.'+additionalErrorMsg)
     return

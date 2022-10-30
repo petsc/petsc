@@ -225,7 +225,7 @@ class Configure(config.base.Configure):
     if not self.fortranIsF90:
       self.logPrint('Not a Fortran90 compiler - hence skipping f90-array test')
       return
-    # do an apporximate test when batch mode is used, as we cannot run the proper test..
+    # do an approximate test when batch mode is used, as we cannot run the proper test..
     if self.argDB['with-batch']:
       if config.setCompilers.Configure.isPGI(self.setCompilers.FC, self.log):
         self.addDefine('HAVE_F90_2PTR_ARG', 1)

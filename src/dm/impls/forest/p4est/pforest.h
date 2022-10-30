@@ -1714,7 +1714,7 @@ static PetscErrorCode DMPlexCreateConnectivity_pforest(DM dm, p4est_connectivity
             /* p4est orientations are positive: -2 => 1, -1 => 0 */
             totalOrient             = (totalOrient < 0) ? -(totalOrient + 1) : totalOrient;
             conn->edge_to_tree[off] = (p4est_locidx_t)(p - cStart);
-            /* encode cell-edge and orientation in edge_to_edge per p8est_connectivity standart (see
+            /* encode cell-edge and orientation in edge_to_edge per p8est_connectivity standard (see
              * p8est_connectivity.h) */
             conn->edge_to_edge[off++]                                  = (int8_t)p4estEdge + P8EST_EDGES * totalOrient;
             conn->tree_to_edge[P8EST_EDGES * (p - cStart) + p4estEdge] = e - eStart;

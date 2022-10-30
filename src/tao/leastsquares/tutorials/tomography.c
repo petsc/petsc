@@ -229,7 +229,7 @@ PetscErrorCode InitializeUserData(AppCtx *user)
   }
   */
 
-  /* Speficy D */
+  /* Specify D */
   /* (1) Specify D Size */
   switch (dictChoice) {
   case 0: /* 0:identity */

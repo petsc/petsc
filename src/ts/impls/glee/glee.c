@@ -69,7 +69,7 @@ typedef struct {
 
      Level: advanced
 
-.seealso: `TSGLEE`
+.seealso: [](chapter_ts), `TSGLEE`
 M*/
 /*MC
      TSGLEE24 - Second order four stage GLEE method
@@ -79,7 +79,7 @@ M*/
 
      Level: advanced
 
-.seealso: `TSGLEE`
+.seealso: [](chapter_ts), `TSGLEE`
 M*/
 /*MC
      TSGLEE25i - Second order five stage GLEE method
@@ -89,7 +89,7 @@ M*/
 
      Level: advanced
 
-.seealso: `TSGLEE`
+.seealso: [](chapter_ts), `TSGLEE`
 M*/
 /*MC
      TSGLEE35  - Third order five stage GLEE method
@@ -99,7 +99,7 @@ M*/
 
      Level: advanced
 
-.seealso: `TSGLEE`
+.seealso: [](chapter_ts), `TSGLEE`
 M*/
 /*MC
      TSGLEEEXRK2A  - Second order six stage GLEE method
@@ -109,7 +109,7 @@ M*/
 
      Level: advanced
 
-.seealso: `TSGLEE`
+.seealso: [](chapter_ts), `TSGLEE`
 M*/
 /*MC
      TSGLEERK32G1  - Third order eight stage GLEE method
@@ -119,7 +119,7 @@ M*/
 
      Level: advanced
 
-.seealso: `TSGLEE`
+.seealso: [](chapter_ts), `TSGLEE`
 M*/
 /*MC
      TSGLEERK285EX  - Second order nine stage GLEE method
@@ -129,17 +129,17 @@ M*/
 
      Level: advanced
 
-.seealso: `TSGLEE`
+.seealso: [](chapter_ts), `TSGLEE`
 M*/
 
 /*@C
-  TSGLEERegisterAll - Registers all of the General Linear with Error Estimation methods in TSGLEE
+  TSGLEERegisterAll - Registers all of the General Linear with Error Estimation methods in `TSGLEE`
 
   Not Collective, but should be called by all processes which will need the schemes to be registered
 
   Level: advanced
 
-.seealso: `TSGLEERegisterDestroy()`
+.seealso: [](chapter_ts), `TSGLEERegisterDestroy()`
 @*/
 PetscErrorCode TSGLEERegisterAll(void)
 {
@@ -282,13 +282,13 @@ PetscErrorCode TSGLEERegisterAll(void)
 }
 
 /*@C
-   TSGLEERegisterDestroy - Frees the list of schemes that were registered by TSGLEERegister().
+   TSGLEERegisterDestroy - Frees the list of schemes that were registered by `TSGLEERegister()`.
 
    Not Collective
 
    Level: advanced
 
-.seealso: `TSGLEERegister()`, `TSGLEERegisterAll()`
+.seealso: [](chapter_ts), `TSGLEERegister()`, `TSGLEERegisterAll()`
 @*/
 PetscErrorCode TSGLEERegisterDestroy(void)
 {
@@ -312,12 +312,12 @@ PetscErrorCode TSGLEERegisterDestroy(void)
 }
 
 /*@C
-  TSGLEEInitializePackage - This function initializes everything in the TSGLEE package. It is called
-  from TSInitializePackage().
+  TSGLEEInitializePackage - This function initializes everything in the `TSGLEE` package. It is called
+  from `TSInitializePackage()`.
 
   Level: developer
 
-.seealso: `PetscInitialize()`
+.seealso: [](chapter_ts), `PetscInitialize()`
 @*/
 PetscErrorCode TSGLEEInitializePackage(void)
 {
@@ -331,12 +331,12 @@ PetscErrorCode TSGLEEInitializePackage(void)
 }
 
 /*@C
-  TSGLEEFinalizePackage - This function destroys everything in the TSGLEE package. It is
-  called from PetscFinalize().
+  TSGLEEFinalizePackage - This function destroys everything in the `TSGLEE` package. It is
+  called from `PetscFinalize()`.
 
   Level: developer
 
-.seealso: `PetscFinalize()`
+.seealso: [](chapter_ts), `PetscFinalize()`
 @*/
 PetscErrorCode TSGLEEFinalizePackage(void)
 {
@@ -347,7 +347,7 @@ PetscErrorCode TSGLEEFinalizePackage(void)
 }
 
 /*@C
-   TSGLEERegister - register an GLEE scheme by providing the entries in the Butcher tableau
+   TSGLEERegister - register a new `TSGLEE` scheme by providing the entries in the Butcher tableau
 
    Not Collective, but the same schemes should be registered on all processes on which they will be used
 
@@ -370,12 +370,12 @@ PetscErrorCode TSGLEEFinalizePackage(void)
 .  pinterp - order of interpolation (0 if unavailable)
 -  binterp - array of interpolation coefficients (NULL if unavailable)
 
-   Notes:
-   Several GLEE methods are provided, this function is only needed to create new methods.
-
    Level: advanced
 
-.seealso: `TSGLEE`
+   Note:
+   Several `TSGLEE` methods are provided, this function is only needed to create new methods.
+
+.seealso: [](chapter_ts), `TSGLEE`
 @*/
 PetscErrorCode TSGLEERegister(TSGLEEType name, PetscInt order, PetscInt s, PetscInt r, PetscReal gamma, const PetscReal A[], const PetscReal B[], const PetscReal U[], const PetscReal V[], const PetscReal S[], const PetscReal F[], const PetscReal c[], const PetscReal Fembed[], const PetscReal Ferror[], const PetscReal Serror[], PetscInt pinterp, const PetscReal binterp[])
 {
@@ -834,17 +834,17 @@ static PetscErrorCode TSLoad_GLEE(TS ts, PetscViewer viewer)
 }
 
 /*@C
-  TSGLEESetType - Set the type of GLEE scheme
+  TSGLEESetType - Set the type of `TSGLEE` scheme
 
   Logically collective
 
   Input Parameters:
 +  ts - timestepping context
--  gleetype - type of GLEE-scheme
+-  gleetype - type of `TSGLEE` scheme
 
   Level: intermediate
 
-.seealso: `TSGLEEGetType()`, `TSGLEE`
+.seealso: [](chapter_ts), `TSGLEEGetType()`, `TSGLEE`
 @*/
 PetscErrorCode TSGLEESetType(TS ts, TSGLEEType gleetype)
 {
@@ -856,7 +856,7 @@ PetscErrorCode TSGLEESetType(TS ts, TSGLEEType gleetype)
 }
 
 /*@C
-  TSGLEEGetType - Get the type of GLEE scheme
+  TSGLEEGetType - Get the type of `TSGLEE` scheme
 
   Logically collective
 
@@ -864,11 +864,11 @@ PetscErrorCode TSGLEESetType(TS ts, TSGLEEType gleetype)
 .  ts - timestepping context
 
   Output Parameter:
-.  gleetype - type of GLEE-scheme
+.  gleetype - type of `TSGLEE` scheme
 
   Level: intermediate
 
-.seealso: `TSGLEESetType()`
+.seealso: [](chapter_ts), `TSGLEE`, `TSGLEESetType()`
 @*/
 PetscErrorCode TSGLEEGetType(TS ts, TSGLEEType *gleetype)
 {
@@ -1008,18 +1008,16 @@ static PetscErrorCode TSDestroy_GLEE(TS ts)
 /*MC
       TSGLEE - ODE and DAE solver using General Linear with Error Estimation schemes
 
-  The user should provide the right hand side of the equation
-  using TSSetRHSFunction().
-
-  Notes:
-  The default is TSGLEE35, it can be changed with TSGLEESetType() or -ts_glee_type
+  The user should provide the right hand side of the equation using `TSSetRHSFunction()`.
 
   Level: beginner
 
-.seealso: `TSCreate()`, `TS`, `TSSetType()`, `TSGLEESetType()`, `TSGLEEGetType()`,
-          `TSGLEE23`, `TTSGLEE24`, `TSGLEE35`, `TSGLEE25I`, `TSGLEEEXRK2A`,
-          `TSGLEERK32G1`, `TSGLEERK285EX`, `TSGLEEType`, `TSGLEERegister()`
+  Note:
+  The default is `TSGLEE35`, it can be changed with `TSGLEESetType()` or -ts_glee_type
 
+.seealso: [](chapter_ts), `TSCreate()`, `TS`, `TSSetType()`, `TSGLEESetType()`, `TSGLEEGetType()`,
+          `TSGLEE23`, `TTSGLEE24`, `TSGLEE35`, `TSGLEE25I`, `TSGLEEEXRK2A`,
+          `TSGLEERK32G1`, `TSGLEERK285EX`, `TSGLEEType`, `TSGLEERegister()`, `TSType`
 M*/
 PETSC_EXTERN PetscErrorCode TSCreate_GLEE(TS ts)
 {

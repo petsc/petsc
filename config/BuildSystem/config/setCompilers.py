@@ -767,7 +767,7 @@ class Configure(config.base.Configure):
     return
 
   def checkCxxDialect(self, language, isGNUish=False):
-    """Determine the CXX dialect supported by the compiler (language) [and correspoding compiler
+    """Determine the CXX dialect supported by the compiler (language) [and corresponding compiler
     option - if any].
 
     isGNUish indicates if the compiler is gnu compliant (i.e. clang).
@@ -789,7 +789,7 @@ class Configure(config.base.Configure):
     Raises a config.base.ConfigureSetupError if:
     - The user has set both the --with-dialect=[...] configure options and -std=[...] in their
       compiler flags
-    - The combination of specifically requested packages cannnot all be compiled with the same flag
+    - The combination of specifically requested packages cannot all be compiled with the same flag
     - An unknown C++ dialect is provided
 
     The config.base.ConfigureSetupErrors are NOT meant to be caught, as they are fatal errors
@@ -2503,7 +2503,7 @@ class Configure(config.base.Configure):
     self.logPrint('Unable to find working dynamic linker')
 
   def checkDynamicLinker(self):
-    '''Check that the linker can dynamicaly load shared libraries'''
+    '''Check that the linker can dynamically load shared libraries'''
     self.dynamicLibraries = 0
     if not self.headers.check('dlfcn.h'):
       self.logPrint('Dynamic loading disabled since dlfcn.h was missing')
@@ -2653,7 +2653,7 @@ if (dlclose(handle)) {
     return
 
   def resetEnvCompilers(self):
-    '''Remove compilers from the shell environment so they do not interfer with testing'''
+    '''Remove compilers from the shell environment so they do not interfere with testing'''
     ignoreEnvCompilers = ['CC','CXX','FC','F77','F90']
     ignoreEnv = ['CFLAGS','CXXFLAGS','FCFLAGS','FFLAGS','F90FLAGS','CPP','CPPFLAGS','CXXPP','CXXPPFLAGS','LDFLAGS','LIBS','MPI_DIR','RM','MAKEFLAGS','AR','RANLIB']
     for envVal in ignoreEnvCompilers + ignoreEnv:

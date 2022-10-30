@@ -683,7 +683,7 @@ PetscErrorCode PetscLogEventRegister(const char name[], PetscClassId classid, Pe
 
   Input Parameters:
 + event - The event id
-- collective - Bolean flag indicating whether a particular event is collective
+- collective - Boolean flag indicating whether a particular event is collective
 
   Notes:
   New events returned from `PetscLogEventRegister()` are collective by default.

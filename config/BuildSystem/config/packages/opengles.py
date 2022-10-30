@@ -6,7 +6,7 @@ class Configure(config.package.Package):
     config.package.Package.__init__(self, framework)
     self.functions         = []
     self.includes          = []
-    self.worksonWindows    = 0  # 1 means that package can be used on Microsof Windows
+    self.worksonWindows    = 0  # 1 means that package can be used on Microsoft Windows
     return
 
   def setupDependencies(self, framework):

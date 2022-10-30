@@ -93,12 +93,12 @@ int main(int argc, char **argv)
      Set an optional user-defined reasonview routine
   */
   PetscCall(PetscViewerASCIIGetStdout(comm, &monP.viewer));
-  /* Just make sure we can not repeat addding the same function
+  /* Just make sure we can not repeat adding the same function
    * PETSc will be able to igore the repeated function
    */
   for (i = 0; i < 4; i++) PetscCall(SNESConvergedReasonViewSet(snes, MySNESConvergedReasonView, &monP, 0));
   PetscCall(SNESGetKSP(snes, &ksp));
-  /* Just make sure we can not repeat addding the same function
+  /* Just make sure we can not repeat adding the same function
    * PETSc will be able to igore the repeated function
    */
   for (i = 0; i < 4; i++) PetscCall(KSPConvergedReasonViewSet(ksp, MyKSPConvergedReasonView, &monP, 0));

@@ -63,7 +63,7 @@ static Petsc::ObjectPool<PetscDeviceContext, PetscDeviceContextAllocator> contex
 
   Not Collective
 
-  Output Paramemter:
+  Output Parameter:
 . dctx - The `PetscDeviceContext`
 
   Note:

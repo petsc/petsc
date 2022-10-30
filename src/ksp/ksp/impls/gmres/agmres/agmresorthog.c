@@ -102,7 +102,7 @@ static PetscErrorCode KSPAGMRESRoddecGivens(PetscReal *c, PetscReal *s, PetscRea
 /*
  * Compute the QR factorization of the Krylov basis vectors
  * Input :
- *  - the vectors are availabe in agmres->vecs (alias VEC_V)
+ *  - the vectors are available in agmres->vecs (alias VEC_V)
  *  - nvec :  the number of vectors
  * Output :
  *  - agmres->Qloc : product of elementary reflectors for the QR of the (local part) of the vectors.

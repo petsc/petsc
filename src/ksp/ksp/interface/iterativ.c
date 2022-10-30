@@ -1407,7 +1407,7 @@ PetscErrorCode KSPConvergedDefaultSetConvergedMaxits(KSP ksp, PetscBool flg)
 .  reason - the convergence reason; it is positive if the iteration has converged,
             negative if the iteration has diverged, and `KSP_CONVERGED_ITERATING` otherwise
 
-   Options Databse Keys:
+   Options Database Keys:
 +   -ksp_max_it - maximum number of linear iterations
 .   -ksp_rtol rtol - relative tolerance used in default determination of convergence, i.e. if residual norm decreases by this factor than convergence is declared
 .   -ksp_atol abstol - absolute tolerance used in default convergence test, i.e. if residual norm is less than this then convergence is declared

@@ -829,7 +829,7 @@ PetscErrorCode DMPlexInsertBoundaryValuesEssentialField(DM dm, PetscReal time, V
 }
 
 /*@C
-  DMPlexInsertBoundaryValuesEssentialBdField - Insert boundary values into a local vector using a function of the coodinates and boundary field data
+  DMPlexInsertBoundaryValuesEssentialBdField - Insert boundary values into a local vector using a function of the coordinates and boundary field data
 
   Collective on dm
 

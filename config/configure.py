@@ -475,11 +475,11 @@ def petsc_configure(configure_options):
   except ImportError as e :
     # this exception is automatically deleted by Python so we need to save it to print below
     tbo = sys.exc_info()[2]
-    msg = logger.build_multiline_error_message('ImportError while runing ./configure', str(e))
+    msg = logger.build_multiline_error_message('ImportError while running ./configure', str(e))
     se = ''
   except OSError as e :
     tbo = sys.exc_info()[2]
-    msg = logger.build_multiline_error_message('OSError while runing ./configure', str(e))
+    msg = logger.build_multiline_error_message('OSError while running ./configure', str(e))
     se = ''
   except SystemExit as e:
     tbo = sys.exc_info()[2]

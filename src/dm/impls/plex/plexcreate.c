@@ -3767,7 +3767,7 @@ PetscErrorCode DMSetFromOptions_NonRefinement_Plex(DM dm, PetscOptionItems *Pets
   /* Generation and remeshing */
   PetscCall(PetscOptionsBool("-dm_plex_remesh_bd", "Allow changes to the boundary on remeshing", "DMAdapt", PETSC_FALSE, &mesh->remeshBd, NULL));
   /* Projection behavior */
-  PetscCall(PetscOptionsBoundedInt("-dm_plex_max_projection_height", "Maxmimum mesh point height used to project locally", "DMPlexSetMaxProjectionHeight", 0, &mesh->maxProjectionHeight, NULL, 0));
+  PetscCall(PetscOptionsBoundedInt("-dm_plex_max_projection_height", "Maximum mesh point height used to project locally", "DMPlexSetMaxProjectionHeight", 0, &mesh->maxProjectionHeight, NULL, 0));
   PetscCall(PetscOptionsBool("-dm_plex_regular_refinement", "Use special nested projection algorithm for regular refinement", "DMPlexSetRegularRefinement", mesh->regularRefinement, &mesh->regularRefinement, NULL));
   /* Checking structure */
   {
@@ -4264,7 +4264,7 @@ PETSC_INTERN PetscErrorCode DMClone_Plex(DM dm, DM *newdm)
 . -dm_plex_hash_box_faces <n,m,p>    - The number of divisions in each direction of the grid hash
 . -dm_plex_partition_balance         - Attempt to evenly divide points on partition boundary between processes
 . -dm_plex_remesh_bd                 - Allow changes to the boundary on remeshing
-. -dm_plex_max_projection_height     - Maxmimum mesh point height used to project locally
+. -dm_plex_max_projection_height     - Maximum mesh point height used to project locally
 . -dm_plex_regular_refinement        - Use special nested projection algorithm for regular refinement
 . -dm_plex_check_all                 - Perform all shecks below
 . -dm_plex_check_symmetry            - Check that the adjacency information in the mesh is symmetric

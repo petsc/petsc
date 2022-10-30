@@ -25,7 +25,7 @@ int main(int argc, char **argv)
   PetscCall(DMSetFromOptions(base));
   PetscCall(DMViewFromOptions(base, NULL, "-dm_view"));
 
-  /* Covert Plex mesh to Forest and destroy base */
+  /* Convert Plex mesh to Forest and destroy base */
   PetscCall(DMCreate(PETSC_COMM_WORLD, &forest));
   PetscCall(DMSetType(forest, DMP4EST));
   PetscCall(DMForestSetBaseDM(forest, base));

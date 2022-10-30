@@ -168,7 +168,7 @@ M*/
    Level: beginner
 
    Options Database:
-.   -ts_pseudo_frtol <rtol> - use sepcified rtol
+.   -ts_pseudo_frtol <rtol> - use specified rtol
 
 .seealso: `TSSolve()`, `TSGetConvergedReason()`, `TSSetConvergedReason()`, `TS_CONVERGED_PSEUDO_FATOL`
 M*/

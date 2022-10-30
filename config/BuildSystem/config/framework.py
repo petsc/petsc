@@ -5,10 +5,10 @@ track dependencies between them. It initiates the run, compiles the results, and
 handles the final output. It maintains the help list for all options available
 in the run.
 
-  The setup() method preforms generic Script setup and then is called recursively
+  The setup() method performs generic Script setup and then is called recursively
 on all the child modules. The cleanup() method performs the final output and
 logging actions
-    - Subtitute files
+    - Substitute files
     - Output configure header
     - Log filesystem actions
 
@@ -225,7 +225,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
 
   def dumpConfFiles(self):
     '''Performs:
-       - Subtitute files
+       - Substitute files
        - Output configure header
        - Log actions'''
     self.substitute()
@@ -1248,7 +1248,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
             out += tb.getvalue()
             tb.close()
           except: pass
-        # Udpate queue
+        # Update queue
         #self.logPrint('PUSH  %s to DONE ' % child.__class__.__module__)
         done.put((ret, out, emsg, child))
         q.task_done() # novermin

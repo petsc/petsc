@@ -425,7 +425,7 @@ typedef enum {
 .   `PC_DEFLATION_SPACE_DB16`        - same as above, but with db16 (16 coefficient Daubechies)
 .   `PC_DEFLATION_SPACE_BIORTH22`    - same as above, but with biorthogonal 2.2 (6 coefficients)
 .   `PC_DEFLATION_SPACE_MEYER`       - same as above, but with Meyer/FIR (62 coefficients)
-.   `PC_DEFLATION_SPACE_AGGREGATION` - aggregates local indices (given by operator matix distribution) into a subdomain
+.   `PC_DEFLATION_SPACE_AGGREGATION` - aggregates local indices (given by operator matrix distribution) into a subdomain
 -   `PC_DEFLATION_SPACE_USER`        - indicates space set by user
 
     Notes:

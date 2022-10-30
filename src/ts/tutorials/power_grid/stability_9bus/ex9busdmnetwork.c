@@ -181,7 +181,7 @@ PetscErrorCode read_data(PetscInt nc, Gen **pgen, Exc **pexc, Load **pload, Bus 
   D[1] = 0.1 * M[1];
   D[2] = 0.1 * M[2];
 
-  /* Alocate memory for bus, generators, exciter, loads and branches */
+  /* Allocate memory for bus, generators, exciter, loads and branches */
   PetscCall(PetscCalloc5(NBUS * nc, &bus, NGEN * nc, &gen, NLOAD * nc, &load, NBRANCH * nc + (nc - 1), &branch, NGEN * nc, &exc));
 
   PetscCall(VecGetArrayRead(V0, &varr));

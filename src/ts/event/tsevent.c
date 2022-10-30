@@ -58,20 +58,21 @@ PetscErrorCode TSEventDestroy(TSEvent *event)
 + ts - time integration context
 - dt - post event interval step
 
-  Options Database Keys:
+  Options Database Key:
 . -ts_event_post_eventinterval_step <dt> time-step after event interval
 
-  Notes:
-  TSSetPostEventIntervalStep allows one to set a time-step that is used immediately following an event interval.
+  Level: advanced
 
-  This function should be called from the postevent function set with TSSetEventHandler().
+  Notes:
+ `TSSetPostEventIntervalStep()` allows one to set a time-step that is used immediately following an event interval.
+
+  This function should be called from the postevent function set with `TSSetEventHandler()`.
 
   The post event interval time-step should be selected based on the dynamics following the event.
   If the dynamics are stiff, a conservative (small) step should be used.
   If not, then a larger time-step can be used.
 
-  Level: Advanced
-  .seealso: `TS`, `TSEvent`, `TSSetEventHandler()`
+.seealso: [](chapter_ts), `TS`, `TSEvent`, `TSSetEventHandler()`
 @*/
 PetscErrorCode TSSetPostEventIntervalStep(TS ts, PetscReal dt)
 {
@@ -87,20 +88,20 @@ PetscErrorCode TSSetPostEventIntervalStep(TS ts, PetscReal dt)
 
    Input Parameters:
 +  ts - time integration context
-.  tol - scalar tolerance, PETSC_DECIDE to leave current value
+.  tol - scalar tolerance, `PETSC_DECIDE` to leave current value
 -  vtol - array of tolerances or NULL, used in preference to tol if present
 
-   Options Database Keys:
+   Options Database Key:
 .  -ts_event_tol <tol> - tolerance for event zero crossing
-
-   Notes:
-   Must call TSSetEventHandler() before setting the tolerances.
-
-   The size of vtol is equal to the number of events.
 
    Level: beginner
 
-.seealso: `TS`, `TSEvent`, `TSSetEventHandler()`
+   Notes:
+   Must call `TSSetEventHandler(`) before setting the tolerances.
+
+   The size of vtol is equal to the number of events.
+
+.seealso: [](chapter_ts), `TS`, `TSEvent`, `TSSetEventHandler()`
 @*/
 PetscErrorCode TSSetEventTolerances(TS ts, PetscReal tol, PetscReal vtol[])
 {
@@ -126,10 +127,10 @@ PetscErrorCode TSSetEventTolerances(TS ts, PetscReal tol, PetscReal vtol[])
 /*@C
    TSSetEventHandler - Sets a function used for detecting events
 
-   Logically Collective on TS
+   Logically Collective on ts
 
    Input Parameters:
-+  ts - the TS context obtained from TSCreate()
++  ts - the `TS` context obtained from `TSCreate()`
 .  nevents - number of local events
 .  direction - direction of zero crossing to be detected. -1 => Zero crossing in negative direction,
                +1 => Zero crossing in positive direction, 0 => both ways (one for each event)
@@ -167,7 +168,7 @@ PetscErrorCode TSSetEventTolerances(TS ts, PetscReal tol, PetscReal vtol[])
 
    Level: intermediate
 
-.seealso: `TSCreate()`, `TSSetTimeStep()`, `TSSetConvergedReason()`
+.seealso: [](chapter_ts), `TSEvent`, `TSCreate()`, `TSSetTimeStep()`, `TSSetConvergedReason()`
 @*/
 PetscErrorCode TSSetEventHandler(TS ts, PetscInt nevents, PetscInt direction[], PetscBool terminate[], PetscErrorCode (*eventhandler)(TS, PetscReal, Vec, PetscScalar[], void *), PetscErrorCode (*postevent)(TS, PetscInt, PetscInt[], PetscReal, Vec, PetscBool, void *), void *ctx)
 {
@@ -591,15 +592,14 @@ PetscErrorCode TSAdjointEventHandler(TS ts)
   Logically Collective
 
   Input Parameter:
-. ts - the TS context
+. ts - the `TS` context
 
   Output Parameter:
 . nevents - number of events
 
   Level: intermediate
 
-.seealso: `TSSetEventHandler()`
-
+.seealso: [](chapter_ts), `TSEvent`, `TSSetEventHandler()`
 @*/
 PetscErrorCode TSGetNumEvents(TS ts, PetscInt *nevents)
 {
