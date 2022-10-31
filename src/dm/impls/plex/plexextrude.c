@@ -47,7 +47,9 @@ $  v0--- original ----v3
 PetscErrorCode DMPlexExtrude(DM dm, PetscInt layers, PetscReal thickness, PetscBool tensor, PetscBool symmetric, const PetscReal normal[], const PetscReal thicknesses[], DM *edm)
 {
   DMPlexTransform tr;
-  DM              cdm, ecdm;
+  DM              cdm;
+  PetscObject     disc;
+  PetscClassId    id;
   const char     *prefix;
   PetscOptions    options;
 
@@ -71,9 +73,18 @@ PetscErrorCode DMPlexExtrude(DM dm, PetscInt layers, PetscReal thickness, PetscB
   PetscCall(PetscObjectViewFromOptions((PetscObject)tr, NULL, "-dm_plex_transform_view"));
   PetscCall(DMPlexTransformApply(tr, dm, edm));
   PetscCall(DMCopyDisc(dm, *edm));
+  // It is too hard to raise the dimension of a discretization, so just remake it
   PetscCall(DMGetCoordinateDM(dm, &cdm));
-  PetscCall(DMGetCoordinateDM(*edm, &ecdm));
-  PetscCall(DMCopyDisc(cdm, ecdm));
+  PetscCall(DMGetField(cdm, 0, NULL, &disc));
+  PetscCall(PetscObjectGetClassId(disc, &id));
+  if (id == PETSCFE_CLASSID) {
+    PetscSpace sp;
+    PetscInt   deg;
+
+    PetscCall(PetscFEGetBasisSpace((PetscFE)disc, &sp));
+    PetscCall(PetscSpaceGetDegree(sp, &deg, NULL));
+    PetscCall(DMPlexCreateCoordinateSpace(*edm, deg, NULL));
+  }
   PetscCall(DMPlexTransformCreateDiscLabels(tr, *edm));
   PetscCall(DMPlexTransformDestroy(&tr));
   if (*edm) {
