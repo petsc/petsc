@@ -402,11 +402,11 @@ PETSC_EXTERN PetscErrorCode PetscViewerFlowControlStepMain(PetscViewer, PetscInt
 PETSC_EXTERN PetscErrorCode PetscViewerFlowControlEndMain(PetscViewer, PetscInt *);
 PETSC_EXTERN PetscErrorCode PetscViewerFlowControlStepWorker(PetscViewer, PetscMPIInt, PetscInt *);
 PETSC_EXTERN PetscErrorCode PetscViewerFlowControlEndWorker(PetscViewer, PetscInt *);
-PETSC_DEPRECATED_FUNCTION("Use PetscViewerFlowControlStepMaster (since v3.15)") static inline PetscErrorCode PetscViewerFlowControlStepMaster(PetscViewer viewer, PetscInt i, PetscInt *mcnt, PetscInt cnt)
+PETSC_DEPRECATED_FUNCTION("Use PetscViewerFlowControlStepMain (since v3.15)") static inline PetscErrorCode PetscViewerFlowControlStepMaster(PetscViewer viewer, PetscInt i, PetscInt *mcnt, PetscInt cnt)
 {
   return PetscViewerFlowControlStepMain(viewer, i, mcnt, cnt);
 }
-PETSC_DEPRECATED_FUNCTION("Use PetscViewerFlowControlEndMaster (since v3.15)") static inline PetscErrorCode PetscViewerFlowControlEndMaster(PetscViewer viewer, PetscInt *mcnt)
+PETSC_DEPRECATED_FUNCTION("Use PetscViewerFlowControlEndMain (since v3.15)") static inline PetscErrorCode PetscViewerFlowControlEndMaster(PetscViewer viewer, PetscInt *mcnt)
 {
   return PetscViewerFlowControlEndMain(viewer, mcnt);
 }
