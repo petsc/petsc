@@ -954,6 +954,7 @@ PetscErrorCode DMProjectCoordinates(DM dm, PetscFE disc)
   Vec          coordsOld, coordsNew;
   Mat          matInterp;
   PetscBool    same_space = PETSC_TRUE;
+  const char  *prefix;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
@@ -1006,8 +1007,12 @@ PetscErrorCode DMProjectCoordinates(DM dm, PetscFE disc)
   }
   /* Make a fresh clone of the coordinate DM */
   PetscCall(DMClone(cdmOld, &cdmNew));
+  cdmNew->cloneOpts = PETSC_TRUE;
+  PetscCall(PetscObjectGetOptionsPrefix((PetscObject)cdmOld, &prefix));
+  PetscCall(PetscObjectSetOptionsPrefix((PetscObject)cdmNew, prefix));
   PetscCall(DMSetField(cdmNew, 0, NULL, (PetscObject)disc));
   PetscCall(DMCreateDS(cdmNew));
+  if (dm->setfromoptionscalled) PetscCall(DMSetFromOptions(cdmNew));
   PetscCall(DMGetCoordinates(dm, &coordsOld));
   if (same_space) {
     PetscCall(PetscObjectReference((PetscObject)coordsOld));

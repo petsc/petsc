@@ -305,6 +305,8 @@ struct _p_DM {
   PetscErrorCode (*monitordestroy[MAXDMMONITORS])(void **);
   void    *monitorcontext[MAXDMMONITORS];
   PetscInt numbermonitors;
+  /* Configuration */
+  PetscBool cloneOpts; /* Flag indicating that this is a linked clone and should not respond to some options. This is currently used to prevent transformations from also affecting the coordinate DM */
 
   PetscObject dmksp, dmsnes, dmts;
 #ifdef PETSC_HAVE_LIBCEED

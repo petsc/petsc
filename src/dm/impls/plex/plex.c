@@ -5202,9 +5202,13 @@ PetscErrorCode DMCreateCoordinateDM_Plex(DM dm, DM *cdm)
   PetscSection section, s;
   Mat          m;
   PetscInt     maxHeight;
+  const char  *prefix;
 
   PetscFunctionBegin;
   PetscCall(DMClone(dm, cdm));
+  PetscCall(PetscObjectGetOptionsPrefix((PetscObject)dm, &prefix));
+  PetscCall(PetscObjectSetOptionsPrefix((PetscObject)*cdm, prefix));
+  PetscCall(PetscObjectAppendOptionsPrefix((PetscObject)*cdm, "cdm_"));
   PetscCall(DMPlexGetMaxProjectionHeight(dm, &maxHeight));
   PetscCall(DMPlexSetMaxProjectionHeight(*cdm, maxHeight));
   PetscCall(PetscSectionCreate(PetscObjectComm((PetscObject)dm), &section));
@@ -5218,6 +5222,8 @@ PetscErrorCode DMCreateCoordinateDM_Plex(DM dm, DM *cdm)
 
   PetscCall(DMSetNumFields(*cdm, 1));
   PetscCall(DMCreateDS(*cdm));
+  (*cdm)->cloneOpts = PETSC_TRUE;
+  if (dm->setfromoptionscalled) PetscCall(DMSetFromOptions(*cdm));
   PetscFunctionReturn(0);
 }
 
@@ -8874,6 +8880,7 @@ PetscErrorCode DMPlexCheckGeometry(DM dm)
   PetscCall(DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd));
   /* Make sure local coordinates are created, because that step is collective */
   PetscCall(DMGetCoordinatesLocal(dm, &coordinates));
+  if (!coordinates) PetscFunctionReturn(0);
   for (c = cStart; c < cEnd; ++c) {
     DMPolytopeType ct;
     PetscInt       unsplit;

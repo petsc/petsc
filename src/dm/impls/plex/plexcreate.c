@@ -201,7 +201,7 @@ PetscErrorCode DMPlexCreateCoordinateSpace(DM dm, PetscInt degree, PetscPointFun
   PetscCall(PetscObjectGetClassId((PetscObject)fe, &id));
   if (id != PETSCFE_CLASSID) {
     PetscBool simplex;
-    PetscInt  dim, dE, qorder;
+    PetscInt dim, dE, qorder;
 
     PetscCall(DMGetDimension(dm, &dim));
     PetscCall(DMGetCoordinateDim(dm, &dE));
@@ -3858,6 +3858,7 @@ static PetscErrorCode DMSetFromOptions_Plex(DM dm, PetscOptionItems *PetscOption
 
   PetscFunctionBegin;
   PetscOptionsHeadBegin(PetscOptionsObject, "DMPlex Options");
+  if (dm->cloneOpts) goto non_refine;
   /* Handle automatic creation */
   PetscCall(DMGetDimension(dm, &dim));
   if (dim < 0) {
@@ -4098,7 +4099,8 @@ static PetscErrorCode DMSetFromOptions_Plex(DM dm, PetscOptionItems *PetscOption
       PetscCall(ISDestroy(&perm));
     }
   }
-  /* Handle */
+/* Handle */
+non_refine:
   PetscCall(DMSetFromOptions_NonRefinement_Plex(dm, PetscOptionsObject));
   PetscOptionsHeadEnd();
   PetscFunctionReturn(0);

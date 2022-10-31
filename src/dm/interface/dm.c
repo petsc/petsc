@@ -904,6 +904,7 @@ PetscErrorCode DMSetFromOptions(DM dm)
   dm->setfromoptionscalled = PETSC_TRUE;
   if (dm->sf) PetscCall(PetscSFSetFromOptions(dm->sf));
   if (dm->sectionSF) PetscCall(PetscSFSetFromOptions(dm->sectionSF));
+  if (dm->coordinates[0].dm) PetscCall(DMSetFromOptions(dm->coordinates[0].dm));
   PetscObjectOptionsBegin((PetscObject)dm);
   PetscCall(PetscOptionsBool("-dm_preallocate_only", "only preallocate matrix, but do not set column indices", "DMSetMatrixPreallocateOnly", dm->prealloc_only, &dm->prealloc_only, NULL));
   PetscCall(PetscOptionsFList("-dm_vec_type", "Vector type used for created vectors", "DMSetVecType", VecList, dm->vectype, typeName, 256, &flg));
