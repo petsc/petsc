@@ -1014,11 +1014,12 @@ PetscErrorCode DMProjectCoordinates(DM dm, PetscFE disc)
   PetscCall(DMCreateDS(cdmNew));
   if (dm->setfromoptionscalled) PetscCall(DMSetFromOptions(cdmNew));
   PetscCall(DMGetCoordinates(dm, &coordsOld));
+  PetscCall(DMCreateGlobalVector(cdmNew, &coordsNew));
   if (same_space) {
-    PetscCall(PetscObjectReference((PetscObject)coordsOld));
-    coordsNew = coordsOld;
-  } else { // Project the coordinate vector from old to new space
-    PetscCall(DMCreateGlobalVector(cdmNew, &coordsNew));
+    // Need to copy so that the new vector has the right dm
+    PetscCall(VecCopy(coordsOld, coordsNew));
+  } else {
+    // Project the coordinate vector from old to new space
     PetscCall(DMCreateInterpolation(cdmOld, cdmNew, &matInterp, NULL));
     PetscCall(MatInterpolate(matInterp, coordsOld, coordsNew));
     PetscCall(MatDestroy(&matInterp));
