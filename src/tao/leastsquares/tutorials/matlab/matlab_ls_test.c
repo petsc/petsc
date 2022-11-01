@@ -58,9 +58,9 @@ static PetscErrorCode TaoPounders(AppCtx *user)
   PetscFunctionBegin;
 
   /* Set the values for the algorithm options we want to use */
-  sprintf(buf, "%d", user->npmax);
+  PetscCall(PetscSNPrintf(buf, PETSC_STATIC_ARRAY_LENGTH(buf), "%d", user->npmax));
   PetscCall(PetscOptionsSetValue(NULL, "-tao_pounders_npmax", buf));
-  sprintf(buf, "%5.4e", user->delta);
+  PetscCall(PetscSNPrintf(buf, PETSC_STATIC_ARRAY_LENGTH(buf), "%5.4e", user->delta));
   PetscCall(PetscOptionsSetValue(NULL, "-tao_pounders_delta", buf));
 
   /* Create the TAO objects and set the type */

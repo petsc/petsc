@@ -35,7 +35,7 @@ int main(int argc, char **argv)
   PetscCall(DMSetUp(da));
   PetscCall(DMDASetUniformCoordinates(da, 0.0, 1.0, 0.0, 1.0, 0.0, 0.0));
   for (i = 0; i < dof; i++) {
-    sprintf(fname, "Field %d", (int)i);
+    PetscCall(PetscSNPrintf(fname, PETSC_STATIC_ARRAY_LENGTH(fname), "Field %" PetscInt_FMT, i));
     PetscCall(DMDASetFieldName(da, i, fname));
   }
 

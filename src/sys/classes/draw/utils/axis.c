@@ -16,7 +16,7 @@ PetscErrorCode PetscADefLabel(PetscReal val, PetscReal sep, char **p)
     buf[0] = '0';
     buf[1] = 0;
   } else {
-    sprintf(buf, "%0.1e", (double)val);
+    PetscCall(PetscSNPrintf(buf, PETSC_STATIC_ARRAY_LENGTH(buf), "%0.1e", (double)val));
     PetscCall(PetscStripZerosPlus(buf));
     PetscCall(PetscStripe0(buf));
     PetscCall(PetscStripInitialZero(buf));

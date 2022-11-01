@@ -218,7 +218,7 @@ static PetscErrorCode triangulateAndFormProl(IS selected_2, PetscInt data_stride
       FILE      *file;
       char       fname[32];
 
-      sprintf(fname, "C%d_%d.poly", level, rank);
+      PetscCall(PetscSNPrintf(fname, PETSC_STATIC_ARRAY_LENGTH(fname), "C%d_%d.poly", level, rank));
       file = fopen(fname, "w");
       /*First line: <# of vertices> <dimension (must be 2)> <# of attributes> <# of boundary markers (0 or 1)>*/
       fprintf(file, "%d  %d  %d  %d\n", in.numberofpoints, 2, 0, 0);
@@ -235,7 +235,7 @@ static PetscErrorCode triangulateAndFormProl(IS selected_2, PetscInt data_stride
       fclose(file);
 
       /* elems */
-      sprintf(fname, "C%d_%d.ele", level, rank);
+      PetscCall(PetscSNPrintf(fname, PETSC_STATIC_ARRAY_LENGTH(fname), "C%d_%d.ele", level, rank));
       file = fopen(fname, "w");
       /* First line: <# of triangles> <nodes per triangle> <# of attributes> */
       fprintf(file, "%d %d %d\n", mid.numberoftriangles, 3, 0);
@@ -243,7 +243,7 @@ static PetscErrorCode triangulateAndFormProl(IS selected_2, PetscInt data_stride
       for (kk = 0, sid = 0; kk < mid.numberoftriangles; kk++, sid += 3) fprintf(file, "%d %d %d %d\n", kk, mid.trianglelist[sid], mid.trianglelist[sid + 1], mid.trianglelist[sid + 2]);
       fclose(file);
 
-      sprintf(fname, "C%d_%d.node", level, rank);
+      PetscCall(PetscSNPrintf(fname, PETSC_STATIC_ARRAY_LENGTH(fname), "C%d_%d.node", level, rank));
       file = fopen(fname, "w");
       /* First line: <# of vertices> <dimension (must be 2)> <# of attributes> <# of boundary markers (0 or 1)> */
       /* fprintf(file, "%d  %d  %d  %d\n",in.numberofpoints,2,0,0); */

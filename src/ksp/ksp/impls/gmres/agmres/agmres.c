@@ -582,7 +582,6 @@ static PetscErrorCode KSPView_AGMRES(KSP ksp, PetscViewer viewer)
 {
   KSP_AGMRES *agmres = (KSP_AGMRES *)ksp->data;
   const char *cstr   = "RODDEC ORTHOGONOLIZATION";
-  char        ritzvec[25];
   PetscBool   iascii, isstring;
 #if defined(KSP_AGMRES_NONORM)
   const char *Nstr = "SCALING FACTORS : NO";
@@ -606,10 +605,8 @@ static PetscErrorCode KSPView_AGMRES(KSP ksp, PetscViewer viewer)
       PetscCall(PetscViewerASCIIPrintf(viewer, "  Total number of extracted eigenvalues = %" PetscInt_FMT "\n", agmres->r));
       PetscCall(PetscViewerASCIIPrintf(viewer, "  Maximum number of eigenvalues set to be extracted = %" PetscInt_FMT "\n", agmres->max_neig));
     } else {
-      if (agmres->ritz) sprintf(ritzvec, "Ritz vectors");
-      else sprintf(ritzvec, "Harmonic Ritz vectors");
       PetscCall(PetscViewerASCIIPrintf(viewer, " STRATEGY OF DEFLATION: AUGMENT\n"));
-      PetscCall(PetscViewerASCIIPrintf(viewer, " augmented vectors  %" PetscInt_FMT " at frequency %" PetscInt_FMT " with %s\n", agmres->r, agmres->neig, ritzvec));
+      PetscCall(PetscViewerASCIIPrintf(viewer, " augmented vectors  %" PetscInt_FMT " at frequency %" PetscInt_FMT " with %sRitz vectors\n", agmres->r, agmres->neig, agmres->ritz ? "" : "Harmonic "));
     }
     PetscCall(PetscViewerASCIIPrintf(viewer, " Minimum relaxation parameter for the adaptive strategy(smv)  = %g\n", (double)agmres->smv));
     PetscCall(PetscViewerASCIIPrintf(viewer, " Maximum relaxation parameter for the adaptive strategy(bgv)  = %g\n", (double)agmres->bgv));

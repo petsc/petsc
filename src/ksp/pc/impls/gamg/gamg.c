@@ -612,7 +612,7 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
 #if defined(GAMG_STAGES)
     if (!gamg_stages[level]) {
       char str[32];
-      sprintf(str, "GAMG Level %d", (int)level);
+      PetscCall(PetscSNPrintf(str, PETSC_STATIC_ARRAY_LENGTH(str), "GAMG Level %d", (int)level));
       PetscCall(PetscLogStageRegister(str, &gamg_stages[level]));
     }
     PetscCall(PetscLogStagePush(gamg_stages[level]));
@@ -1708,7 +1708,7 @@ PetscErrorCode PCGAMGInitializePackage(void)
 #if defined(GAMG_STAGES)
   { /* create timer stages */
     char str[32];
-    sprintf(str, "GAMG Level %d", 0);
+    PetscCall(PetscSNPrintf(str, PETSC_STATIC_ARRAY_LENGTH(str), "GAMG Level %d", 0));
     PetscCall(PetscLogStageRegister(str, &gamg_stages[0]));
   }
 #endif

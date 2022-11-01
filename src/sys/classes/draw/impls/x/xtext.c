@@ -51,7 +51,7 @@ static PetscErrorCode PetscDrawXiLoadFont(PetscDraw_X *XBWin, PetscDrawXiFont *f
   XGCValues    values;
 
   PetscFunctionBegin;
-  (void)sprintf(font_name, "%dx%d", font->font_w, font->font_h);
+  PetscCall(PetscSNPrintf(font_name, PETSC_STATIC_ARRAY_LENGTH(font_name), "%dx%d", font->font_w, font->font_h));
   font->fnt = XLoadFont(XBWin->disp, font_name);
 
   /* The font->descent may not have been set correctly; get it now that

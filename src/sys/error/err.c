@@ -55,7 +55,8 @@ PetscErrorCode PetscEmacsClientErrorHandler(MPI_Comm comm, int line, const char 
 
   ierr = PetscGetPetscDir(&pdir);
   if (ierr) return ierr;
-  sprintf(command, "cd %s; emacsclient --no-wait +%d %s\n", pdir, line, file);
+  ierr = PetscSNPrintf(command, PETSC_STATIC_ARRAY_LENGTH(command), "cd %s; emacsclient --no-wait +%d %s\n", pdir, line, file);
+  if (ierr) return ierr;
 #if defined(PETSC_HAVE_POPEN)
   ierr = PetscPOpen(MPI_COMM_WORLD, (char *)ctx, command, "r", &fp);
   if (ierr) return ierr;
