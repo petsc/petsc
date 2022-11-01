@@ -450,16 +450,9 @@ deleteshared:
 # ---------------------------------------------------------------------------------------
 #   Rules for the generation of manual pages, html of source code etc
 #
-
-chk_manualpage_dir:
-	@if [ "${SUBMANSEC}" = "" ] ; then LMANSEC=${MANSEC}; else LMANSEC=${SUBMANSEC}; fi; \
-         if [ ! -d "${LOC}/docs/manualpages/$${LMANSEC}" ]; then \
-	  echo Making directory ${LOC}/docs/manualpages/$${LMANSEC} for manual pages; ${MKDIR} ${LOC}/docs/manualpages/$${LMANSEC}; fi
-
-#
 #  If this produces an error such as Could not open output file /Users/barrysmith/Src/petsc/docs/manualpages/MissingSUBMANSEC/*
 #  this indicates the makefile is missing a MANSEC definition or the include file is missing a SUBMANSEC definition
-manualpages: chk_manualpage_dir
+manualpages:
 	-@base=`basename ${LOCDIR}`; \
         doctext_common_def="${PETSC_DIR}/doc/classic/doctext/doctextcommon.txt"; \
         if [ "${MANSEC}" = "" ] ; then \
@@ -469,8 +462,11 @@ manualpages: chk_manualpage_dir
               LMANSEC="MissingSUBMANSEC"; \
               pwd | grep -e ftn-custom -e petsc/finclude -e petsc/fprivate > /dev/null; fnd=$?; \
               if [ "$${fnd}" == "1" ]; then \
-                echo "Missing MANSEC or SUBMANSEC definition in " `pwd`/$$f ; \
+                echo "Missing MANSEC or SUBMANSEC definition in " `pwd`/$${f} ; \
               fi; \
+            fi; \
+            if [ ! -d "${LOC}/docs/manualpages/$${LMANSEC}" ]; then \
+              echo Making directory ${LOC}/docs/manualpages/$${LMANSEC} for manual pages from $${f}; ${MKDIR} ${LOC}/docs/manualpages/$${LMANSEC}; \
             fi; \
             DOCTEXT_PATH=${PETSC_DIR}/doc/classic/doctext \
             ${DOCTEXT} -myst -mpath ${LOC}/docs/manualpages/$${LMANSEC} -heading PETSc -defn ${PETSC_DIR}/doc/classic/doctext/myst.def \
@@ -479,6 +475,9 @@ manualpages: chk_manualpage_dir
           done; \
         else \
           if [ "${SUBMANSEC}" = "" ] ; then LMANSEC=${MANSEC}; else LMANSEC=${SUBMANSEC}; fi; \
+          if [ ! -d "${LOC}/docs/manualpages/$${LMANSEC}" ]; then \
+            echo Making directory ${LOC}/docs/manualpages/$${LMANSEC} for manual pages; ${MKDIR} ${LOC}/docs/manualpages/$${LMANSEC}; \
+          fi; \
           DOCTEXT_PATH=${PETSC_DIR}/doc/classic/doctext  \
           ${DOCTEXT} -myst -mpath ${LOC}/docs/manualpages/$${LMANSEC} -heading PETSc -defn ${PETSC_DIR}/doc/classic/doctext/myst.def \
               -indexdir ../$${LMANSEC} -index ${LOC}/docs/manualpages/manualpages.cit -locdir ${LOCDIR} -Wargdesc $${doctext_common_def} ${SOURCED} 2>&1 | tee -a ${PETSC_DIR}/${PETSC_ARCH}/manualpages.err; \
