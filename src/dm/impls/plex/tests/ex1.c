@@ -321,15 +321,27 @@ int main(int argc, char **argv)
     args: -dm_plex_dim 1 -dm_plex_box_faces 5 -dm_extrude 3 -dm_plex_check_all -dm_view draw
 
   test:
+    # This test needs a non-tensor prism so we can make a coordinate space
     suffix: spheresurface_extruded
     nsize : 4
-    args: -dm_coord_space 0 -dm_plex_shape sphere -dm_extrude 3 -dist_dm_distribute -petscpartitioner_type simple \
+    args: -dm_plex_shape sphere -dm_extrude 3 -dm_plex_transform_extrude_use_tensor 0 \
+          -dist_dm_distribute -petscpartitioner_type simple \
           -dm_plex_check_all -dm_view ::ascii_info_detail -dm_plex_view_coord_system spherical
 
   test:
+    # This test needs a non-tensor prism so we can make a coordinate space
     suffix: spheresurface_extruded_symmetric
     nsize : 4
-    args: -dm_coord_space 0 -dm_plex_shape sphere -dm_extrude 3 -dm_plex_transform_extrude_symmetric -dist_dm_distribute -petscpartitioner_type simple \
+    args: -dm_plex_shape sphere -dm_extrude 3 -dm_plex_transform_extrude_use_tensor 0 -dm_plex_transform_extrude_symmetric \
+          -dist_dm_distribute -petscpartitioner_type simple \
+          -dm_plex_check_all -dm_view ::ascii_info_detail -dm_plex_view_coord_system spherical
+
+  test:
+    # Test with a tensor prism which cannot have a coordinate space
+    suffix: spheresurface_extruded_nocoord
+    nsize : 4
+    args: -dm_coord_space 0 -dm_plex_shape sphere -dm_extrude 3 \
+          -dist_dm_distribute -petscpartitioner_type simple \
           -dm_plex_check_all -dm_view ::ascii_info_detail -dm_plex_view_coord_system spherical
 
   # Parallel simple partitioner tests
