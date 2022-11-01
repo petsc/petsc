@@ -193,7 +193,7 @@ check_build:
           fi; \
 	  ${RUN_TEST} clean-legacy; \
           cd - > /dev/null; \
-          if [ "${AMREX_LIB}" != "" && "${CUDA_LIB}" = "" ]; then \
+          if ( [ "${AMREX_LIB}" != "" ] && [ "${CUDA_LIB}" = "" ] ); then \
             echo "Running amrex test example to verify correct installation";\
             echo "Using PETSC_DIR=${PETSC_DIR} and PETSC_ARCH=${PETSC_ARCH}";\
             cd src/ksp/ksp/tutorials/amrex >/dev/null;\
