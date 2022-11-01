@@ -1391,7 +1391,11 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
           PetscCheck(cmp[0] == cmp[1] && cmp[2] == cmp[3], PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "-%spc_hpddm_levels_1_pc_asm_sub_mat_type %s and auxiliary Mat of type %s", pcpre ? pcpre : "", ((PetscObject)D)->type_name, ((PetscObject)C)->type_name);
           if (!cmp[0] && !cmp[2]) {
             if (!block) PetscCall(MatAXPY(D, 1.0, C, SUBSET_NONZERO_PATTERN));
-            else PetscCall(MatAXPY(D, 1.0, data->aux, SAME_NONZERO_PATTERN));
+            else {
+              PetscCall(MatMissingDiagonal(D, cmp, NULL));
+              if (cmp[0]) structure = DIFFERENT_NONZERO_PATTERN; /* data->aux has no missing diagonal entry */
+              PetscCall(MatAXPY(D, 1.0, data->aux, structure));
+            }
           } else {
             Mat mat[2];
             if (cmp[0]) {
@@ -1456,7 +1460,7 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
       if (data->share) {
         Mat st[2];
         PetscCall(KSPGetOperators(ksp[0], st, st + 1));
-        PetscCall(MatCopy(subA[0], st[0], SAME_NONZERO_PATTERN));
+        PetscCall(MatCopy(subA[0], st[0], structure));
         if (subA[1] != subA[0] || st[1] != st[0]) PetscCall(MatCopy(subA[1], st[1], SAME_NONZERO_PATTERN));
       }
       if (data->log_separate) PetscCall(PetscLogEventEnd(PC_HPDDM_SetUp[0], data->levels[0]->ksp, 0, 0, 0));
