@@ -3,7 +3,7 @@
 
 #include <petsc/private/hashtable.h>
 
-/* SUBMANSEC = Sys */
+/* SUBMANSEC = PetscH */
 
 /*MC
   PETSC_HASH_SET - Instantiate a new PETSc hash set type
@@ -20,7 +20,7 @@
 
   Level: developer
 
-  Developer Notes:
+  Developer Note:
     Each time this macro is used to create a new hash set type, the make rule for allmanpages in $PETSC_DIR/makefile should
     be updated to cause the automatic generation of appropriate manual pages for that type. The manual pages
     are generated from the templated version of the documentation in include/petsc/private/hashset.txt.
@@ -28,7 +28,7 @@
   References:
     This code uses the standalone and portable C language khash software https://github.com/attractivechaos/klib
 
-.seealso: `PetscHSetI`, `PetscHSetICreate()`, `PetscHSetIJ`, `PetscHSetIJCreate()`
+.seealso: `PetscHSetI`, `PetscHSetICreate()`, `PetscHSetIJ`, `PetscHSetIJCreate()`, `PETSC_HASH_MAP()`
 M*/
 
 #define PETSC_HASH_SET(HashT, KeyType, HashFunc, EqualFunc) \

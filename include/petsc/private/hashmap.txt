@@ -1,0 +1,411 @@
+This file is processed by make allmanpages in $PETSC_DIR/makefile to create manual pages
+for the types and macros created by PETSC_HASH_MAP(). For example, PetscHMAPIJ.
+
+/*S
+  PetscHMap<T> - Hash table map
+
+  Synopsis:
+  typedef khash_t(HMap<T>) *PetscHMap<T>;
+
+  Level: developer
+
+.seealso: `PETSC_HASH_MAP()`, `PetscHMap<T>Create()`
+S*/
+typedef struct _PetscHash<T> PetscHMap<T>;
+
+/*MC
+  PetscHMap<T>Create - Create a hash table
+
+  Synopsis:
+  #include <petsc/private/hashmap<t>.h>
+  PetscErrorCode PetscHMap<T>Create(PetscHMap<T> *ht)
+
+  Output Parameter:
+. ht - The hash table
+
+  Level: developer
+
+.seealso: `PetscHMap<T>Destroy()`
+M*/
+
+/*MC
+  PetscHMap<T>Destroy - Destroy a hash table
+
+  Synopsis:
+  #include <petsc/private/hashmap<t>.h>
+  PetscErrorCode PetscHMap<T>Destroy(PetscHMap<T> *ht)
+
+  Input Parameter:
+. ht - The hash table
+
+  Level: developer
+
+.seealso: `PetscHMap<T>Create()`
+M*/
+
+/*MC
+  PetscHMap<T>Reset - Reset a hash table
+
+  Synopsis:
+  #include <petsc/private/hashmap<t>.h>
+  PetscErrorCode PetscHMap<T>Reset(PetscHMap<T> ht)
+
+  Input Parameter:
+. ht - The hash table
+
+  Level: developer
+
+.seealso: `PetscHMap<T>Clear()`
+M*/
+
+/*MC
+  PetscHMap<T>Duplicate - Duplicate a hash table
+
+  Synopsis:
+  #include <petsc/private/hashmap<t>.h>
+  PetscErrorCode PetscHMap<T>Duplicate(PetscHMap<T> ht, PetscHMap<T> *hd)
+
+  Input Parameter:
+. ht - The source hash table
+
+  Output Parameter:
+. ht - The duplicated hash table
+
+  Level: developer
+
+.seealso: `PetscHMap<T>Create()`
+M*/
+
+/*MC
+  PetscHMap<T>Clear - Clear a hash table
+
+  Synopsis:
+  #include <petsc/private/hashmap<t>.h>
+  PetscErrorCode PetscHMap<T>Clear(PetscHMap<T> ht)
+
+  Input Parameter:
+. ht - The hash table
+
+  Level: developer
+
+.seealso: `PetscHMap<T>Reset()`
+M*/
+
+/*MC
+  PetscHMap<T>Resize - Set the number of buckets in a hash table
+
+  Synopsis:
+  #include <petsc/private/hashmap<t>.h>
+  PetscErrorCode PetscHMap<T>Resize(PetscHMap<T> ht, PetscInt nb)
+
+  Input Parameters:
++ ht - The hash table
+- nb - The number of buckets
+
+  Level: developer
+
+.seealso: `PetscHMap<T>Create()`
+M*/
+
+/*MC
+  PetscHMap<T>GetSize - Get the number of entries in a hash table
+
+  Synopsis:
+  #include <petsc/private/hashmap<t>.h>
+  PetscErrorCode PetscHMap<T>GetSize(PetscHMap<T> ht, PetscInt *n)
+
+  Input Parameter:
+. ht - The hash table
+
+  Output Parameter:
+. n - The number of entries
+
+  Level: developer
+
+.seealso: `PetscHMap<T>Resize()`
+M*/
+
+/*MC
+  PetscHMap<T>GetCapacity - Get the current size of the array in the hash table
+
+  Synopsis:
+  #include <petsc/private/hashmap<t>.h>
+  PetscErrorCode PetscHMap<T>GetCapacity(PetscHMap<T> ht, PetscInt *n)
+
+  Input Parameter:
+. ht - The hash table
+
+  Output Parameter:
+. n - The capacity
+
+  Level: developer
+
+.seealso: `PetscHMap<T>Resize()`, `PetscHMap<T>GetSize()`
+M*/
+
+/*MC
+  PetscHMap<T>Has - Query for a key in the hash table
+
+  Synopsis:
+  #include <petsc/private/hashmap<t>.h>
+  PetscErrorCode PetscHMap<T>Has(PetscHMap<T> ht, <KeyType> key, PetscBool *has)
+
+  Input Parameters:
++ ht  - The hash table
+- key - The key
+
+  Output Parameter:
+. has - Boolean indicating whether key is in the hash table
+
+  Level: developer
+
+.seealso: `PetscHMap<T>Get()`, `PetscHMap<T>Set()`, `PetscHMap<T>Find()`
+M*/
+
+/*MC
+  PetscHMap<T>Get - Get the value for a key in the hash table
+
+  Synopsis:
+  #include <petsc/private/hashmap<t>.h>
+  PetscErrorCode PetscHMap<T>Get(PetscHMap<T> ht, <KeyType> key, <ValType> *val)
+
+  Input Parameters:
++ ht  - The hash table
+- key - The key
+
+  Output Parameter:
+. val - The value
+
+  Level: developer
+
+.seealso: `PetscHMap<T>Set()`, `PetscHMap<T>IterGet()`
+M*/
+
+/*MC
+  PetscHMap<T>Set - Set a (key,value) entry in the hash table
+
+  Synopsis:
+  #include <petsc/private/hashmap<t>.h>
+  PetscErrorCode PetscHMap<T>Set(PetscHMap<T> ht, <KeyType> key, <ValType> val)
+
+  Input Parameters:
++ ht  - The hash table
+. key - The key
+- val - The value
+
+  Level: developer
+
+.seealso: `PetscHMap<T>Get()`, `PetscHMap<T>IterSet()`
+M*/
+
+/*MC
+  PetscHMap<T>Del - Remove a key and its value from the hash table
+
+  Synopsis:
+  #include <petsc/private/hashmap<t>.h>
+  PetscErrorCode PetscHMap<T>Del(PetscHMap<T> ht,<KeyType> key)
+
+  Input Parameters:
++ ht  - The hash table
+- key - The key
+
+  Level: developer
+
+.seealso: `PetscHMap<T>Has()`, `PetscHMap<T>IterDel()`
+M*/
+
+/*MC
+  PetscHMap<T>QuerySet - Query and set a (key,value) entry in the hash table
+
+  Synopsis:
+  #include <petsc/private/hashmap<t>.h>
+  PetscErrorCode PetscHMap<T>QuerySet(PetscHMap<T> ht, <KeyType> key, <ValType> val, PetscBool *missing)
+
+  Input Parameters:
++ ht  - The hash table
+. key - The key
+- val - The value
+
+  Output Parameter:
+. missing - Boolean indicating whether the key was missing
+
+  Level: developer
+
+.seealso: `PetscHMap<T>QueryDel()`, `PetscHMap<T>Set()`
+M*/
+
+/*MC
+  PetscHMap<T>QueryDel - Query and remove a (key,value) entry from the hash table
+
+  Synopsis:
+  #include <petsc/private/hashmap<t>.h>
+  PetscErrorCode PetscHMap<T>QueryDel(PetscHMap<T> ht, <KeyType> key, PetscBool *present)
+
+  Input Parameters:
++ ht  - The hash table
+- key - The key
+
+  Output Parameter:
+. present - Boolean indicating whether the key was present
+
+  Level: developer
+
+.seealso: `PetscHMap<T>QuerySet()`, `PetscHMap<T>Del()`
+M*/
+
+/*MC
+  PetscHMap<T>Find - Query for key in the hash table
+
+  Synopsis:
+  #include <petsc/private/hashmap<t>.h>
+  PetscErrorCode PetscHMap<T>Find(PetscHMap<T> ht, <KeyType> key, PetscHashIter *iter, PetscBool *found)
+
+  Input Parameters:
++ ht  - The hash table
+- key - The key
+
+  Output Parameters:
++ iter - Iterator referencing the value for key
+- found - Boolean indicating whether the key was present
+
+  Level: developer
+
+.seealso: `PetscHMap<T>IterGet()`, `PetscHMap<T>IterDel()`
+M*/
+
+/*MC
+  PetscHMap<T>Put - Set a key in the hash table
+
+  Synopsis:
+  #include <petsc/private/hashmap<t>.h>
+  PetscErrorCode PetscHMap<T>Put(PetscHMap<T> ht, <KeyType> key, PetscHashIter *iter, PetscBool *missing)
+
+  Input Parameters:
++ ht  - The hash table
+- key - The key
+
+  Output Parameters:
++ iter - Iterator referencing the value for key
+- missing - Boolean indicating whether the key was missing
+
+  Level: developer
+
+.seealso: `PetscHMap<T>IterSet()`, `PetscHMap<T>QuerySet()`, `PetscHMap<T>Set()`
+M*/
+
+/*MC
+  PetscHMap<T>IterGet - Get the value referenced by an iterator in the hash table
+
+  Synopsis:
+  #include <petsc/private/hashmap<t>.h>
+  PetscErrorCode PetscHMap<T>IterGet(PetscHMap<T> ht, PetscHashIter iter, <ValType> *val)
+
+  Input Parameters:
++ ht   - The hash table
+- iter - The iterator
+
+  Output Parameter:
+. val  - The value
+
+  Level: developer
+
+.seealso: `PetscHMap<T>Find()`, `PetscHMap<T>Get()`
+M*/
+
+/*MC
+  PetscHMap<T>IterSet - Set the value referenced by an iterator in the hash
+
+  Synopsis:
+  #include <petsc/private/hashmap<t>.h>
+  PetscErrorCode PetscHMap<T>IterSet(PetscHMap<T> ht, PetscHashIter iter, <ValType> val)
+
+  Input Parameters:
++ ht   - The hash table
+. iter - The iterator
+- val  - The value
+
+  Level: developer
+
+.seealso: `PetscHMap<T>Put()`, `PetscHMap<T>QuerySet()`, `PetscHMap<T>Set()`
+M*/
+
+/*MC
+  PetscHMap<T>IterDel - Remove the (key,value) referenced by an iterator from the hash table
+
+  Synopsis:
+  #include <petsc/private/hashmap<t>.h>
+  PetscErrorCode PetscHMap<T>IterDel(PetscHMap<T> ht, PetscHashIter iter)
+
+  Input Parameters:
++ ht   - The hash table
+- iter - The iterator
+
+  Level: developer
+
+.seealso: `PetscHMap<T>Find()`, `PetscHMap<T>QueryDel()`, `PetscHMap<T>Del()`
+M*/
+
+/*MC
+  PetscHMap<T>GetKeys - Get all keys from a hash table
+
+  Synopsis:
+  #include <petsc/private/hashmap<t>.h>
+  PetscErrorCode PetscHMap<T>GetKeys(PetscHMap<T> ht, PetscInt *off, <KeyType> array[])
+
+  Input Parameters:
++ ht    - The hash table
+. off   - Input offset in array (usually zero)
+- array - Array where to put hash table keys into
+
+  Output Parameters:
++ off   - Output offset in array (output offset = input offset + hash table size)
+- array - Array filled with the hash table keys
+
+  Level: developer
+
+.seealso: `PetscHSet<T>GetSize()`, `PetscHMap<T>GetVals()`
+M*/
+
+/*MC
+  PetscHMap<T>GetVals - Get all values from a hash table
+
+  Synopsis:
+  #include <petsc/private/hashmap<t>.h>
+  PetscErrorCode PetscHMap<T>GetVals(PetscHMap<T> ht, PetscInt *off, <ValType> array[])
+
+  Input Parameters:
++ ht    - The hash table
+. off   - Input offset in array (usually zero)
+- array - Array where to put hash table values into
+
+  Output Parameters:
++ off   - Output offset in array (output offset = input offset + hash table size)
+- array - Array filled with the hash table values
+
+  Level: developer
+
+.seealso: `PetscHSet<T>GetSize()`, `PetscHMap<T>GetKeys()`
+M*/
+
+/*MC
+  PetscHMap<T>GetPairs - Get all (key,value) pairs from a hash table
+
+  Synopsis:
+  #include <petsc/private/hashmap<t>.h>
+  PetscErrorCode PetscHMap<T>GetPairs(PetscHMap<T> ht, PetscInt *off, <KeyType> karray[], <ValType> varray[])
+
+  Input Parameters:
++ ht    - The hash table
+. off   - Input offset in array (usually zero)
+. karray - Array where to put hash table keys into
+- varray - Array where to put hash table values into
+
+  Output Parameters:
++ off   - Output offset in array (output offset = input offset + hash table size)
+. karray - Array filled with the hash table keys
+- varray - Array filled with the hash table values
+
+  Level: developer
+
+.seealso: `PetscHSet<T>GetSize()`, `PetscHMap<T>GetKeys()`, `PetscHMap<T>GetVals()`
+M*/

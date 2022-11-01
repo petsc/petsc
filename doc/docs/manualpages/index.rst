@@ -56,6 +56,7 @@ sophisticated library features.
    SPACE/index
    Sensitivity/index
    Sys/index
+   PetscH/index
    TS/index
    Tao/index
    TaoLineSearch/index
