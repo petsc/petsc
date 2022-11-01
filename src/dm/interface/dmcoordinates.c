@@ -968,25 +968,18 @@ PetscErrorCode DMProjectCoordinates(DM dm, PetscFE disc)
     if (classid == PETSC_CONTAINER_CLASSID) {
       PetscFE        feLinear;
       DMPolytopeType ct;
-      PetscInt       dim, dE, cStart, cEnd;
-      PetscBool      simplex;
+      PetscInt       dim, dE, cStart, cEnd, ctTmp;
 
       /* Assume linear vertex coordinates */
       PetscCall(DMGetDimension(dm, &dim));
       PetscCall(DMGetCoordinateDim(dm, &dE));
       PetscCall(DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd));
-      if (cEnd > cStart) {
-        PetscCall(DMPlexGetCellType(dm, cStart, &ct));
-        switch (ct) {
-        case DM_POLYTOPE_TRI_PRISM:
-        case DM_POLYTOPE_TRI_PRISM_TENSOR:
-          SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Cannot autoamtically create coordinate space for prisms");
-        default:
-          break;
-        }
-      }
-      PetscCall(DMPlexIsSimplex(dm, &simplex));
-      PetscCall(PetscFECreateLagrange(PETSC_COMM_SELF, dim, dE, simplex, 1, -1, &feLinear));
+      if (cEnd > cStart) PetscCall(DMPlexGetCellType(dm, cStart, &ct));
+      else ct = DM_POLYTOPE_UNKNOWN;
+      ctTmp = (PetscInt)ct;
+      PetscCallMPI(MPI_Allreduce(MPI_IN_PLACE, &ctTmp, 1, MPIU_INT, MPI_MIN, PetscObjectComm((PetscObject)dm)));
+      ct = (DMPolytopeType)ctTmp;
+      PetscCall(PetscFECreateLagrangeByCell(PETSC_COMM_SELF, dim, dE, ct, 1, -1, &feLinear));
       PetscCall(DMSetField(cdmOld, 0, NULL, (PetscObject)feLinear));
       PetscCall(PetscFEDestroy(&feLinear));
       PetscCall(DMCreateDS(cdmOld));

@@ -200,21 +200,31 @@ PetscErrorCode DMPlexCreateCoordinateSpace(DM dm, PetscInt degree, PetscPointFun
   PetscCall(PetscDSGetDiscretization(cds, 0, (PetscObject *)&fe));
   PetscCall(PetscObjectGetClassId((PetscObject)fe, &id));
   if (id != PETSCFE_CLASSID) {
-    PetscBool simplex;
     PetscInt dim, dE, qorder;
 
     PetscCall(DMGetDimension(dm, &dim));
     PetscCall(DMGetCoordinateDim(dm, &dE));
     qorder = degree;
     PetscObjectOptionsBegin((PetscObject)cdm);
-    PetscCall(PetscOptionsBoundedInt("-coord_dm_default_quadrature_order", "Quadrature order is one less than quadrature points per edge", "DMPlexCreateCoordinateSpace", qorder, &qorder, NULL, 0));
+    PetscCall(PetscOptionsBoundedInt("-default_quadrature_order", "Quadrature order is one less than quadrature points per edge", "DMPlexCreateCoordinateSpace", qorder, &qorder, NULL, 0));
     PetscOptionsEnd();
     if (degree == PETSC_DECIDE) fe = NULL;
     else {
-      PetscCall(DMPlexIsSimplex(dm, &simplex));
-      PetscCall(PetscFECreateLagrange(PETSC_COMM_SELF, dim, dE, simplex, degree, qorder, &fe));
+      DMPolytopeType ct;
+      PetscInt       cStart, cEnd, ctTmp;
+
+      PetscCall(DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd));
+      // Want to match cell types
+      if (cEnd > cStart) PetscCall(DMPlexGetCellType(dm, cStart, &ct));
+      else ct = DM_POLYTOPE_UNKNOWN;
+      ctTmp = (PetscInt)ct;
+      PetscCallMPI(MPI_Allreduce(MPI_IN_PLACE, &ctTmp, 1, MPIU_INT, MPI_MIN, PetscObjectComm((PetscObject)dm)));
+      ct = (DMPolytopeType)ctTmp;
+      // Work around current bug
+      if (ct == DM_POLYTOPE_SEG_PRISM_TENSOR || ct == DM_POLYTOPE_TRI_PRISM_TENSOR || ct == DM_POLYTOPE_QUAD_PRISM_TENSOR) fe = NULL;
+      else PetscCall(PetscFECreateLagrangeByCell(PETSC_COMM_SELF, dim, dE, ct, degree, qorder, &fe));
     }
-    PetscCall(DMProjectCoordinates(dm, fe));
+    if (fe) PetscCall(DMProjectCoordinates(dm, fe));
     PetscCall(PetscFEDestroy(&fe));
   }
   mesh->coordFunc = coordFunc;
