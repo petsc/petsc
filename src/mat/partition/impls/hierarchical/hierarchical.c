@@ -419,9 +419,15 @@ PetscErrorCode MatPartitioningSetFromOptions_Hierarchical(MatPartitioning part, 
   PetscFunctionBegin;
   PetscOptionsHeadBegin(PetscOptionsObject, "Set hierarchical partitioning options");
   PetscCall(PetscOptionsString("-mat_partitioning_hierarchical_coarseparttype", "coarse part type", NULL, NULL, value, sizeof(value), &flag));
-  if (flag) PetscCall(PetscStrallocpy(value, &hpart->coarseparttype));
+  if (flag) {
+    PetscCall(PetscFree(hpart->coarseparttype));
+    PetscCall(PetscStrallocpy(value, &hpart->coarseparttype));
+  }
   PetscCall(PetscOptionsString("-mat_partitioning_hierarchical_fineparttype", "fine part type", NULL, NULL, value, sizeof(value), &flag));
-  if (flag) PetscCall(PetscStrallocpy(value, &hpart->fineparttype));
+  if (flag) {
+    PetscCall(PetscFree(hpart->fineparttype));
+    PetscCall(PetscStrallocpy(value, &hpart->fineparttype));
+  }
   PetscCall(PetscOptionsInt("-mat_partitioning_hierarchical_ncoarseparts", "number of coarse parts", NULL, hpart->ncoarseparts, &hpart->ncoarseparts, &flag));
   PetscCall(PetscOptionsInt("-mat_partitioning_hierarchical_nfineparts", "number of fine parts", NULL, hpart->nfineparts, &hpart->nfineparts, &flag));
   PetscOptionsHeadEnd();
