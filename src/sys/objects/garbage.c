@@ -118,7 +118,7 @@ void PetscGarbageKeySortedIntersect(void *inset, void *inoutset, PetscMPIInt *le
 }
 
 /* Performs a collective allreduce intersection of one array per rank */
-static PetscErrorCode GarbageKeyAllReduceIntersect_Private(MPI_Comm comm, PetscInt64 *set, PetscInt *entries)
+PetscErrorCode GarbageKeyAllReduceIntersect_Private(MPI_Comm comm, PetscInt64 *set, PetscInt *entries)
 {
   PetscInt     ii, max_entries;
   PetscInt64  *sendset, *recvset;
