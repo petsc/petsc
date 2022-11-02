@@ -226,8 +226,8 @@ static PetscErrorCode MatCreateVecs_LMVM(Mat B, Vec *L, Vec *R)
 
   PetscFunctionBegin;
   PetscCheck(lmvm->allocated, PetscObjectComm((PetscObject)B), PETSC_ERR_ORDER, "LMVM matrix must be allocated first");
-  PetscCall(VecDuplicate(lmvm->Xprev, L));
-  PetscCall(VecDuplicate(lmvm->Fprev, R));
+  if (L) PetscCall(VecDuplicate(lmvm->Xprev, L));
+  if (R) PetscCall(VecDuplicate(lmvm->Fprev, R));
   PetscFunctionReturn(0);
 }
 
