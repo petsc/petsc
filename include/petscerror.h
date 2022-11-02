@@ -1081,7 +1081,7 @@ typedef struct {
   #define PetscFunctionBegin
   #define PetscFunctionBeginUser
   #define PetscFunctionBeginHot
-  #define PetscFunctionReturn(a)    return a
+  #define PetscFunctionReturn(...)  return __VA_ARGS__
   #define PetscFunctionReturnVoid() return
   #define PetscStackPop
   #define PetscStackPush(f)
@@ -1433,29 +1433,62 @@ M*/
     } while (0)
 
   /*MC
-   PetscFunctionReturn - Last executable line of each PETSc function
-        used for error handling. Replaces `return()`
+   PetscFunctionReturn - Last executable line of each PETSc function used for error
+   handling. Replaces `return()`.
 
    Synopsis:
-   #include <petscsys.h>
-   void PetscFunctionReturn(0);
+   #include <petscerror.h>
+   void PetscFunctionReturn(...)
 
    Not Collective
 
-   Usage:
+   Notes:
+   This routine is a macro, so while it does not "return" anything itself, it does return from
+   the function in the literal sense.
+
+   Usually the return value is the integer literal `0` (for example in any function returning
+   `PetscErrorCode`), however it is possible to return any arbitrary type. The arguments of
+   this macro are placed before the `return` statement as-is.
+
+   Any routine which returns via `PetscFunctionReturn()` must begin with a corresponding
+   `PetscFunctionBegin`.
+
+   For routines which return `void` use `PetscFunctionReturnVoid()` instead.
+
+   Example Usage:
 .vb
-    ....
+   PetscErrorCode foo(int *x)
+   {
+     PetscFunctionBegin; // don't forget the begin!
+     *x = 10;
      PetscFunctionReturn(0);
    }
 .ve
 
-   Note:
-     Not available in Fortran
+   May return any arbitrary type\:
+.vb
+  struct Foo
+  {
+    int x;
+  };
 
-   Level: developer
+  struct Foo make_foo(int value)
+  {
+    struct Foo f;
 
-.seealso: `PetscFunctionBegin()`, `PetscStackPopNoCheck()`
+    PetscFunctionBegin;
+    f.x = value;
+    PetscFunctionReturn(f);
+  }
+.ve
 
+   Fortran Notes:
+   Not available in Fortran
+
+   Level: beginner
+
+.seealso: `PetscFunctionBegin`, `PetscFunctionBeginUser`, `PetscFunctionReturnVoid()`,
+`PetscStackPopNoCheck()`
 M*/
   #define PetscFunctionReturn(a) \
     do { \
@@ -1463,6 +1496,34 @@ M*/
       return a; \
     } while (0)
 
+  /*MC
+  PetscFunctionReturnVoid - Like `PetscFunctionReturn()` but returns `void`
+
+  Synopsis:
+  #include <petscerror.h>
+  void PetscFunctionReturnVoid()
+
+  Not Collective
+
+  Notes:
+  Behaves identically to `PetscFunctionReturn()` except that it returns `void`. That is, this
+  macro expands to and ends with.
+
+  Example Usage:
+.vb
+  void foo()
+  {
+    PetscFunctionBegin; // must start with PetscFunctionBegin!
+    bar();
+    baz();
+    PetscFunctionReturnVoid();
+  }
+.ve
+
+  Level: beginner
+
+.seealso: `PetscFunctionReturn()`, `PetscFunctionBegin`, PetscFunctionBeginUser`
+M*/
   #define PetscFunctionReturnVoid() \
     do { \
       PetscStackPopNoCheck(PETSC_FUNCTION_NAME); \
@@ -1477,7 +1538,7 @@ M*/
   #define PetscFunctionBegin
   #define PetscFunctionBeginUser
   #define PetscFunctionBeginHot
-  #define PetscFunctionReturn(a)    return a
+  #define PetscFunctionReturn(...)  return __VA_ARGS__
   #define PetscFunctionReturnVoid() return
   #define PetscStackPop             CHKMEMQ
   #define PetscStackPush(f)         CHKMEMQ
