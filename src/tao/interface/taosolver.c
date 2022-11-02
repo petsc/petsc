@@ -387,151 +387,161 @@ PetscErrorCode TaoSetFromOptions(Tao tao)
   PetscValidHeaderSpecific(tao, TAO_CLASSID, 1);
   PetscCall(PetscObjectGetComm((PetscObject)tao, &comm));
 
+  if (((PetscObject)tao)->type_name) default_type = ((PetscObject)tao)->type_name;
+
   /* So no warnings are given about unused options */
   PetscCall(PetscOptionsHasName(((PetscObject)tao)->options, ((PetscObject)tao)->prefix, "-tao_ls_type", &flg));
 
   PetscObjectOptionsBegin((PetscObject)tao);
-  {
-    if (((PetscObject)tao)->type_name) default_type = ((PetscObject)tao)->type_name;
-    /* Check for type from options */
-    PetscCall(PetscOptionsFList("-tao_type", "Tao Solver type", "TaoSetType", TaoList, default_type, type, 256, &flg));
-    if (flg) {
-      PetscCall(TaoSetType(tao, type));
-    } else if (!((PetscObject)tao)->type_name) {
-      PetscCall(TaoSetType(tao, default_type));
-    }
-
-    PetscCall(PetscOptionsReal("-tao_catol", "Stop if constraints violations within", "TaoSetConstraintTolerances", tao->catol, &tao->catol, &flg));
-    if (flg) tao->catol_changed = PETSC_TRUE;
-    PetscCall(PetscOptionsReal("-tao_crtol", "Stop if relative constraint violations within", "TaoSetConstraintTolerances", tao->crtol, &tao->crtol, &flg));
-    if (flg) tao->crtol_changed = PETSC_TRUE;
-    PetscCall(PetscOptionsReal("-tao_gatol", "Stop if norm of gradient less than", "TaoSetTolerances", tao->gatol, &tao->gatol, &flg));
-    if (flg) tao->gatol_changed = PETSC_TRUE;
-    PetscCall(PetscOptionsReal("-tao_grtol", "Stop if norm of gradient divided by the function value is less than", "TaoSetTolerances", tao->grtol, &tao->grtol, &flg));
-    if (flg) tao->grtol_changed = PETSC_TRUE;
-    PetscCall(PetscOptionsReal("-tao_gttol", "Stop if the norm of the gradient is less than the norm of the initial gradient times tol", "TaoSetTolerances", tao->gttol, &tao->gttol, &flg));
-    if (flg) tao->gttol_changed = PETSC_TRUE;
-    PetscCall(PetscOptionsInt("-tao_max_it", "Stop if iteration number exceeds", "TaoSetMaximumIterations", tao->max_it, &tao->max_it, &flg));
-    if (flg) tao->max_it_changed = PETSC_TRUE;
-    PetscCall(PetscOptionsInt("-tao_max_funcs", "Stop if number of function evaluations exceeds", "TaoSetMaximumFunctionEvaluations", tao->max_funcs, &tao->max_funcs, &flg));
-    if (flg) tao->max_funcs_changed = PETSC_TRUE;
-    PetscCall(PetscOptionsReal("-tao_fmin", "Stop if function less than", "TaoSetFunctionLowerBound", tao->fmin, &tao->fmin, &flg));
-    if (flg) tao->fmin_changed = PETSC_TRUE;
-    PetscCall(PetscOptionsReal("-tao_steptol", "Stop if step size or trust region radius less than", "", tao->steptol, &tao->steptol, &flg));
-    if (flg) tao->steptol_changed = PETSC_TRUE;
-    PetscCall(PetscOptionsReal("-tao_trust0", "Initial trust region radius", "TaoSetTrustRegionRadius", tao->trust0, &tao->trust0, &flg));
-    if (flg) tao->trust0_changed = PETSC_TRUE;
-    PetscCall(PetscOptionsString("-tao_view_solution", "view solution vector after each evaluation", "TaoSetMonitor", "stdout", monfilename, sizeof(monfilename), &flg));
-    if (flg) {
-      PetscCall(PetscViewerASCIIOpen(comm, monfilename, &monviewer));
-      PetscCall(TaoSetMonitor(tao, TaoSolutionMonitor, monviewer, (PetscErrorCode(*)(void **))PetscViewerDestroy));
-    }
-
-    PetscCall(PetscOptionsBool("-tao_converged_reason", "Print reason for Tao converged", "TaoSolve", tao->printreason, &tao->printreason, NULL));
-    PetscCall(PetscOptionsString("-tao_view_gradient", "view gradient vector after each evaluation", "TaoSetMonitor", "stdout", monfilename, sizeof(monfilename), &flg));
-    if (flg) {
-      PetscCall(PetscViewerASCIIOpen(comm, monfilename, &monviewer));
-      PetscCall(TaoSetMonitor(tao, TaoGradientMonitor, monviewer, (PetscErrorCode(*)(void **))PetscViewerDestroy));
-    }
-
-    PetscCall(PetscOptionsString("-tao_view_stepdirection", "view step direction vector after each iteration", "TaoSetMonitor", "stdout", monfilename, sizeof(monfilename), &flg));
-    if (flg) {
-      PetscCall(PetscViewerASCIIOpen(comm, monfilename, &monviewer));
-      PetscCall(TaoSetMonitor(tao, TaoStepDirectionMonitor, monviewer, (PetscErrorCode(*)(void **))PetscViewerDestroy));
-    }
-
-    PetscCall(PetscOptionsString("-tao_view_residual", "view least-squares residual vector after each evaluation", "TaoSetMonitor", "stdout", monfilename, sizeof(monfilename), &flg));
-    if (flg) {
-      PetscCall(PetscViewerASCIIOpen(comm, monfilename, &monviewer));
-      PetscCall(TaoSetMonitor(tao, TaoResidualMonitor, monviewer, (PetscErrorCode(*)(void **))PetscViewerDestroy));
-    }
-
-    PetscCall(PetscOptionsString("-tao_monitor", "Use the default convergence monitor", "TaoSetMonitor", "stdout", monfilename, sizeof(monfilename), &flg));
-    if (flg) {
-      PetscCall(PetscViewerASCIIOpen(comm, monfilename, &monviewer));
-      PetscCall(TaoSetMonitor(tao, TaoMonitorDefault, monviewer, (PetscErrorCode(*)(void **))PetscViewerDestroy));
-    }
-
-    PetscCall(PetscOptionsString("-tao_gmonitor", "Use the convergence monitor with extra globalization info", "TaoSetMonitor", "stdout", monfilename, sizeof(monfilename), &flg));
-    if (flg) {
-      PetscCall(PetscViewerASCIIOpen(comm, monfilename, &monviewer));
-      PetscCall(TaoSetMonitor(tao, TaoDefaultGMonitor, monviewer, (PetscErrorCode(*)(void **))PetscViewerDestroy));
-    }
-
-    PetscCall(PetscOptionsString("-tao_smonitor", "Use the short convergence monitor", "TaoSetMonitor", "stdout", monfilename, sizeof(monfilename), &flg));
-    if (flg) {
-      PetscCall(PetscViewerASCIIOpen(comm, monfilename, &monviewer));
-      PetscCall(TaoSetMonitor(tao, TaoDefaultSMonitor, monviewer, (PetscErrorCode(*)(void **))PetscViewerDestroy));
-    }
-
-    PetscCall(PetscOptionsString("-tao_cmonitor", "Use the default convergence monitor with constraint norm", "TaoSetMonitor", "stdout", monfilename, sizeof(monfilename), &flg));
-    if (flg) {
-      PetscCall(PetscViewerASCIIOpen(comm, monfilename, &monviewer));
-      PetscCall(TaoSetMonitor(tao, TaoDefaultCMonitor, monviewer, (PetscErrorCode(*)(void **))PetscViewerDestroy));
-    }
-
-    flg = PETSC_FALSE;
-    PetscCall(PetscOptionsBool("-tao_cancelmonitors", "cancel all monitors and call any registered destroy routines", "TaoCancelMonitors", flg, &flg, NULL));
-    if (flg) PetscCall(TaoCancelMonitors(tao));
-
-    flg = PETSC_FALSE;
-    PetscCall(PetscOptionsBool("-tao_draw_solution", "Plot solution vector at each iteration", "TaoSetMonitor", flg, &flg, NULL));
-    if (flg) {
-      TaoMonitorDrawCtx drawctx;
-      PetscInt          howoften = 1;
-      PetscCall(TaoMonitorDrawCtxCreate(PetscObjectComm((PetscObject)tao), NULL, NULL, PETSC_DECIDE, PETSC_DECIDE, 300, 300, howoften, &drawctx));
-      PetscCall(TaoSetMonitor(tao, TaoDrawSolutionMonitor, drawctx, (PetscErrorCode(*)(void **))TaoMonitorDrawCtxDestroy));
-    }
-
-    flg = PETSC_FALSE;
-    PetscCall(PetscOptionsBool("-tao_draw_step", "plots step direction at each iteration", "TaoSetMonitor", flg, &flg, NULL));
-    if (flg) PetscCall(TaoSetMonitor(tao, TaoDrawStepMonitor, NULL, NULL));
-
-    flg = PETSC_FALSE;
-    PetscCall(PetscOptionsBool("-tao_draw_gradient", "plots gradient at each iteration", "TaoSetMonitor", flg, &flg, NULL));
-    if (flg) {
-      TaoMonitorDrawCtx drawctx;
-      PetscInt          howoften = 1;
-      PetscCall(TaoMonitorDrawCtxCreate(PetscObjectComm((PetscObject)tao), NULL, NULL, PETSC_DECIDE, PETSC_DECIDE, 300, 300, howoften, &drawctx));
-      PetscCall(TaoSetMonitor(tao, TaoDrawGradientMonitor, drawctx, (PetscErrorCode(*)(void **))TaoMonitorDrawCtxDestroy));
-    }
-    flg = PETSC_FALSE;
-    PetscCall(PetscOptionsBool("-tao_fd_gradient", "compute gradient using finite differences", "TaoDefaultComputeGradient", flg, &flg, NULL));
-    if (flg) PetscCall(TaoSetGradient(tao, NULL, TaoDefaultComputeGradient, NULL));
-    flg = PETSC_FALSE;
-    PetscCall(PetscOptionsBool("-tao_fd_hessian", "compute hessian using finite differences", "TaoDefaultComputeHessian", flg, &flg, NULL));
-    if (flg) {
-      Mat H;
-
-      PetscCall(MatCreate(PetscObjectComm((PetscObject)tao), &H));
-      PetscCall(MatSetType(H, MATAIJ));
-      PetscCall(TaoSetHessian(tao, H, H, TaoDefaultComputeHessian, NULL));
-      PetscCall(MatDestroy(&H));
-    }
-    flg = PETSC_FALSE;
-    PetscCall(PetscOptionsBool("-tao_mf_hessian", "compute matrix-free hessian using finite differences", "TaoDefaultComputeHessianMFFD", flg, &flg, NULL));
-    if (flg) {
-      Mat H;
-
-      PetscCall(MatCreate(PetscObjectComm((PetscObject)tao), &H));
-      PetscCall(TaoSetHessian(tao, H, H, TaoDefaultComputeHessianMFFD, NULL));
-      PetscCall(MatDestroy(&H));
-    }
-    flg = PETSC_FALSE;
-    PetscCall(PetscOptionsBool("-tao_recycle_history", "enable recycling/re-using information from the previous TaoSolve() call for some algorithms", "TaoSetRecycleHistory", flg, &flg, NULL));
-    if (flg) PetscCall(TaoSetRecycleHistory(tao, PETSC_TRUE));
-    PetscCall(PetscOptionsEnum("-tao_subset_type", "subset type", "", TaoSubSetTypes, (PetscEnum)tao->subset_type, (PetscEnum *)&tao->subset_type, NULL));
-
-    if (tao->ksp) {
-      PetscCall(PetscOptionsBool("-tao_ksp_ew", "Use Eisentat-Walker linear system convergence test", "TaoKSPSetUseEW", tao->ksp_ewconv, &tao->ksp_ewconv, NULL));
-      PetscCall(TaoKSPSetUseEW(tao, tao->ksp_ewconv));
-    }
-
-    if (tao->linesearch) PetscCall(TaoLineSearchSetFromOptions(tao->linesearch));
-
-    PetscTryTypeMethod(tao, setfromoptions, PetscOptionsObject);
+  /* Check for type from options */
+  PetscCall(PetscOptionsFList("-tao_type", "Tao Solver type", "TaoSetType", TaoList, default_type, type, 256, &flg));
+  if (flg) {
+    PetscCall(TaoSetType(tao, type));
+  } else if (!((PetscObject)tao)->type_name) {
+    PetscCall(TaoSetType(tao, default_type));
   }
+
+  /* Tao solvers do not set the prefix, set it here if not yet done
+     We do it after SetType since solver may have been changed */
+  if (tao->linesearch) {
+    const char *prefix;
+    PetscCall(TaoLineSearchGetOptionsPrefix(tao->linesearch, &prefix));
+    if (!prefix) PetscCall(TaoLineSearchSetOptionsPrefix(tao->linesearch, ((PetscObject)(tao))->prefix));
+  }
+
+  PetscCall(PetscOptionsReal("-tao_catol", "Stop if constraints violations within", "TaoSetConstraintTolerances", tao->catol, &tao->catol, &flg));
+  if (flg) tao->catol_changed = PETSC_TRUE;
+  PetscCall(PetscOptionsReal("-tao_crtol", "Stop if relative constraint violations within", "TaoSetConstraintTolerances", tao->crtol, &tao->crtol, &flg));
+  if (flg) tao->crtol_changed = PETSC_TRUE;
+  PetscCall(PetscOptionsReal("-tao_gatol", "Stop if norm of gradient less than", "TaoSetTolerances", tao->gatol, &tao->gatol, &flg));
+  if (flg) tao->gatol_changed = PETSC_TRUE;
+  PetscCall(PetscOptionsReal("-tao_grtol", "Stop if norm of gradient divided by the function value is less than", "TaoSetTolerances", tao->grtol, &tao->grtol, &flg));
+  if (flg) tao->grtol_changed = PETSC_TRUE;
+  PetscCall(PetscOptionsReal("-tao_gttol", "Stop if the norm of the gradient is less than the norm of the initial gradient times tol", "TaoSetTolerances", tao->gttol, &tao->gttol, &flg));
+  if (flg) tao->gttol_changed = PETSC_TRUE;
+  PetscCall(PetscOptionsInt("-tao_max_it", "Stop if iteration number exceeds", "TaoSetMaximumIterations", tao->max_it, &tao->max_it, &flg));
+  if (flg) tao->max_it_changed = PETSC_TRUE;
+  PetscCall(PetscOptionsInt("-tao_max_funcs", "Stop if number of function evaluations exceeds", "TaoSetMaximumFunctionEvaluations", tao->max_funcs, &tao->max_funcs, &flg));
+  if (flg) tao->max_funcs_changed = PETSC_TRUE;
+  PetscCall(PetscOptionsReal("-tao_fmin", "Stop if function less than", "TaoSetFunctionLowerBound", tao->fmin, &tao->fmin, &flg));
+  if (flg) tao->fmin_changed = PETSC_TRUE;
+  PetscCall(PetscOptionsReal("-tao_steptol", "Stop if step size or trust region radius less than", "", tao->steptol, &tao->steptol, &flg));
+  if (flg) tao->steptol_changed = PETSC_TRUE;
+  PetscCall(PetscOptionsReal("-tao_trust0", "Initial trust region radius", "TaoSetTrustRegionRadius", tao->trust0, &tao->trust0, &flg));
+  if (flg) tao->trust0_changed = PETSC_TRUE;
+  PetscCall(PetscOptionsString("-tao_view_solution", "view solution vector after each evaluation", "TaoSetMonitor", "stdout", monfilename, sizeof(monfilename), &flg));
+  if (flg) {
+    PetscCall(PetscViewerASCIIOpen(comm, monfilename, &monviewer));
+    PetscCall(TaoSetMonitor(tao, TaoSolutionMonitor, monviewer, (PetscErrorCode(*)(void **))PetscViewerDestroy));
+  }
+
+  PetscCall(PetscOptionsBool("-tao_converged_reason", "Print reason for Tao converged", "TaoSolve", tao->printreason, &tao->printreason, NULL));
+  PetscCall(PetscOptionsString("-tao_view_gradient", "view gradient vector after each evaluation", "TaoSetMonitor", "stdout", monfilename, sizeof(monfilename), &flg));
+  if (flg) {
+    PetscCall(PetscViewerASCIIOpen(comm, monfilename, &monviewer));
+    PetscCall(TaoSetMonitor(tao, TaoGradientMonitor, monviewer, (PetscErrorCode(*)(void **))PetscViewerDestroy));
+  }
+
+  PetscCall(PetscOptionsString("-tao_view_stepdirection", "view step direction vector after each iteration", "TaoSetMonitor", "stdout", monfilename, sizeof(monfilename), &flg));
+  if (flg) {
+    PetscCall(PetscViewerASCIIOpen(comm, monfilename, &monviewer));
+    PetscCall(TaoSetMonitor(tao, TaoStepDirectionMonitor, monviewer, (PetscErrorCode(*)(void **))PetscViewerDestroy));
+  }
+
+  PetscCall(PetscOptionsString("-tao_view_residual", "view least-squares residual vector after each evaluation", "TaoSetMonitor", "stdout", monfilename, sizeof(monfilename), &flg));
+  if (flg) {
+    PetscCall(PetscViewerASCIIOpen(comm, monfilename, &monviewer));
+    PetscCall(TaoSetMonitor(tao, TaoResidualMonitor, monviewer, (PetscErrorCode(*)(void **))PetscViewerDestroy));
+  }
+
+  PetscCall(PetscOptionsString("-tao_monitor", "Use the default convergence monitor", "TaoSetMonitor", "stdout", monfilename, sizeof(monfilename), &flg));
+  if (flg) {
+    PetscCall(PetscViewerASCIIOpen(comm, monfilename, &monviewer));
+    PetscCall(TaoSetMonitor(tao, TaoMonitorDefault, monviewer, (PetscErrorCode(*)(void **))PetscViewerDestroy));
+  }
+
+  PetscCall(PetscOptionsString("-tao_gmonitor", "Use the convergence monitor with extra globalization info", "TaoSetMonitor", "stdout", monfilename, sizeof(monfilename), &flg));
+  if (flg) {
+    PetscCall(PetscViewerASCIIOpen(comm, monfilename, &monviewer));
+    PetscCall(TaoSetMonitor(tao, TaoDefaultGMonitor, monviewer, (PetscErrorCode(*)(void **))PetscViewerDestroy));
+  }
+
+  PetscCall(PetscOptionsString("-tao_smonitor", "Use the short convergence monitor", "TaoSetMonitor", "stdout", monfilename, sizeof(monfilename), &flg));
+  if (flg) {
+    PetscCall(PetscViewerASCIIOpen(comm, monfilename, &monviewer));
+    PetscCall(TaoSetMonitor(tao, TaoDefaultSMonitor, monviewer, (PetscErrorCode(*)(void **))PetscViewerDestroy));
+  }
+
+  PetscCall(PetscOptionsString("-tao_cmonitor", "Use the default convergence monitor with constraint norm", "TaoSetMonitor", "stdout", monfilename, sizeof(monfilename), &flg));
+  if (flg) {
+    PetscCall(PetscViewerASCIIOpen(comm, monfilename, &monviewer));
+    PetscCall(TaoSetMonitor(tao, TaoDefaultCMonitor, monviewer, (PetscErrorCode(*)(void **))PetscViewerDestroy));
+  }
+
+  flg = PETSC_FALSE;
+  PetscCall(PetscOptionsBool("-tao_cancelmonitors", "cancel all monitors and call any registered destroy routines", "TaoCancelMonitors", flg, &flg, NULL));
+  if (flg) PetscCall(TaoCancelMonitors(tao));
+
+  flg = PETSC_FALSE;
+  PetscCall(PetscOptionsBool("-tao_draw_solution", "Plot solution vector at each iteration", "TaoSetMonitor", flg, &flg, NULL));
+  if (flg) {
+    TaoMonitorDrawCtx drawctx;
+    PetscInt          howoften = 1;
+    PetscCall(TaoMonitorDrawCtxCreate(PetscObjectComm((PetscObject)tao), NULL, NULL, PETSC_DECIDE, PETSC_DECIDE, 300, 300, howoften, &drawctx));
+    PetscCall(TaoSetMonitor(tao, TaoDrawSolutionMonitor, drawctx, (PetscErrorCode(*)(void **))TaoMonitorDrawCtxDestroy));
+  }
+
+  flg = PETSC_FALSE;
+  PetscCall(PetscOptionsBool("-tao_draw_step", "plots step direction at each iteration", "TaoSetMonitor", flg, &flg, NULL));
+  if (flg) PetscCall(TaoSetMonitor(tao, TaoDrawStepMonitor, NULL, NULL));
+
+  flg = PETSC_FALSE;
+  PetscCall(PetscOptionsBool("-tao_draw_gradient", "plots gradient at each iteration", "TaoSetMonitor", flg, &flg, NULL));
+  if (flg) {
+    TaoMonitorDrawCtx drawctx;
+    PetscInt          howoften = 1;
+    PetscCall(TaoMonitorDrawCtxCreate(PetscObjectComm((PetscObject)tao), NULL, NULL, PETSC_DECIDE, PETSC_DECIDE, 300, 300, howoften, &drawctx));
+    PetscCall(TaoSetMonitor(tao, TaoDrawGradientMonitor, drawctx, (PetscErrorCode(*)(void **))TaoMonitorDrawCtxDestroy));
+  }
+  flg = PETSC_FALSE;
+  PetscCall(PetscOptionsBool("-tao_fd_gradient", "compute gradient using finite differences", "TaoDefaultComputeGradient", flg, &flg, NULL));
+  if (flg) PetscCall(TaoSetGradient(tao, NULL, TaoDefaultComputeGradient, NULL));
+  flg = PETSC_FALSE;
+  PetscCall(PetscOptionsBool("-tao_fd_hessian", "compute hessian using finite differences", "TaoDefaultComputeHessian", flg, &flg, NULL));
+  if (flg) {
+    Mat H;
+
+    PetscCall(MatCreate(PetscObjectComm((PetscObject)tao), &H));
+    PetscCall(MatSetType(H, MATAIJ));
+    PetscCall(TaoSetHessian(tao, H, H, TaoDefaultComputeHessian, NULL));
+    PetscCall(MatDestroy(&H));
+  }
+  flg = PETSC_FALSE;
+  PetscCall(PetscOptionsBool("-tao_mf_hessian", "compute matrix-free hessian using finite differences", "TaoDefaultComputeHessianMFFD", flg, &flg, NULL));
+  if (flg) {
+    Mat H;
+
+    PetscCall(MatCreate(PetscObjectComm((PetscObject)tao), &H));
+    PetscCall(TaoSetHessian(tao, H, H, TaoDefaultComputeHessianMFFD, NULL));
+    PetscCall(MatDestroy(&H));
+  }
+  flg = PETSC_FALSE;
+  PetscCall(PetscOptionsBool("-tao_recycle_history", "enable recycling/re-using information from the previous TaoSolve() call for some algorithms", "TaoSetRecycleHistory", flg, &flg, NULL));
+  if (flg) PetscCall(TaoSetRecycleHistory(tao, PETSC_TRUE));
+  PetscCall(PetscOptionsEnum("-tao_subset_type", "subset type", "", TaoSubSetTypes, (PetscEnum)tao->subset_type, (PetscEnum *)&tao->subset_type, NULL));
+
+  if (tao->ksp) {
+    PetscCall(PetscOptionsBool("-tao_ksp_ew", "Use Eisentat-Walker linear system convergence test", "TaoKSPSetUseEW", tao->ksp_ewconv, &tao->ksp_ewconv, NULL));
+    PetscCall(TaoKSPSetUseEW(tao, tao->ksp_ewconv));
+  }
+
+  PetscTryTypeMethod(tao, setfromoptions, PetscOptionsObject);
+
+  /* process any options handlers added with PetscObjectAddOptionsHandler() */
+  PetscCall(PetscObjectProcessOptionsHandlers((PetscObject)tao, PetscOptionsObject));
   PetscOptionsEnd();
+
+  if (tao->linesearch) PetscCall(TaoLineSearchSetFromOptions(tao->linesearch));
   PetscFunctionReturn(0);
 }
 
