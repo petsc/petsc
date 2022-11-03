@@ -748,6 +748,7 @@ static PetscErrorCode DMCreateCoordinateDM_Stag(DM dm, DM *dmc)
   DM_Stag *const stag = (DM_Stag *)dm->data;
   PetscInt       dim;
   PetscBool      isstag, isproduct;
+  const char    *prefix;
 
   PetscFunctionBegin;
 
@@ -763,6 +764,9 @@ static PetscErrorCode DMCreateCoordinateDM_Stag(DM dm, DM *dmc)
     PetscCall(DMSetType(*dmc, DMPRODUCT));
     PetscCall(DMSetDimension(*dmc, dim));
   } else SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Unsupported coordinate DM type %s", stag->coordinateDMType);
+  PetscCall(PetscObjectGetOptionsPrefix((PetscObject)dm, &prefix));
+  PetscCall(PetscObjectSetOptionsPrefix((PetscObject)*dmc, prefix));
+  PetscCall(PetscObjectAppendOptionsPrefix((PetscObject)*dmc, "cdm_"));
   PetscFunctionReturn(0);
 }
 

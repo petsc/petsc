@@ -2135,6 +2135,9 @@ PetscErrorCode DMPlexTransformApply(DMPlexTransform tr, DM dm, DM *tdm)
   /* Step 7: Set coordinates */
   PetscCall(DMPlexTransformSetCoordinates(tr, rdm));
   PetscCall(DMPlexCopy_Internal(dm, PETSC_TRUE, PETSC_TRUE, rdm));
+  // If the original DM was configured from options, the transformed DM should be as well
+  rdm->setfromoptionscalled = dm->setfromoptionscalled;
+
   *tdm = rdm;
   PetscFunctionReturn(0);
 }

@@ -8,8 +8,13 @@
 
 PetscErrorCode DMCreateCoordinateDM_DA(DM dm, DM *cdm)
 {
+  const char *prefix;
+
   PetscFunctionBegin;
   PetscCall(DMDACreateCompatibleDMDA(dm, dm->dim, cdm));
+  PetscCall(PetscObjectGetOptionsPrefix((PetscObject)dm, &prefix));
+  PetscCall(PetscObjectSetOptionsPrefix((PetscObject)*cdm, prefix));
+  PetscCall(PetscObjectAppendOptionsPrefix((PetscObject)*cdm, "cdm_"));
   PetscFunctionReturn(0);
 }
 
