@@ -205,9 +205,9 @@ class Configure(config.base.Configure):
     '''Checks for the math headers and defines'''
     haveMath = self.check('math.h',adddefine=0)
     if haveMath:
-      if self.checkCompile('#include <math.h>\n', 'double pi = M_PI;\n\nif (pi);\n'):
+      if self.checkCompile('#include <math.h>\n', 'double pi = M_PI;\n(void)pi'):
         self.logPrint('Found math #defines, like M_PI')
-      elif self.checkCompile('#define _USE_MATH_DEFINES 1\n#include <math.h>\n', 'double pi = M_PI;\n\nif (pi);\n'):
+      elif self.checkCompile('#define _USE_MATH_DEFINES 1\n#include <math.h>\n', 'double pi = M_PI;\n(void)pi'):
         self.framework.addDefine('_USE_MATH_DEFINES', 1)
         self.logPrint('Activated Windows math #defines, like M_PI')
       else:

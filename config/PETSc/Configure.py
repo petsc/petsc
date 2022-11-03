@@ -596,7 +596,7 @@ prepend-path PATH "%s"
 
   def configureAtoll(self):
     '''Checks if atoll exists'''
-    if self.checkLink('#define _POSIX_C_SOURCE 200112L\n#include <stdlib.h>','long v = atoll("25")') or self.checkLink ('#include <stdlib.h>','long v = atoll("25")'):
+    if self.checkLink('#define _POSIX_C_SOURCE 200112L\n#include <stdlib.h>','long v = atoll("25");\n(void)v') or self.checkLink ('#include <stdlib.h>','long v = atoll("25");\n(void)v'):
        self.addDefine('HAVE_ATOLL', '1')
 
   def configureUnused(self):
@@ -605,7 +605,7 @@ prepend-path PATH "%s"
       self.addDefine('UNUSED', ' ')
       return
     self.pushLanguage(self.languages.clanguage)
-    if self.checkLink('__attribute((unused)) static int myfunc(__attribute((unused)) void *name){ return 1;}', 'int i = 0;\nint j = myfunc(&i);\ntypedef void* atype;\n__attribute((unused))  atype a;\n'):
+    if self.checkLink('__attribute((unused)) static int myfunc(__attribute((unused)) void *name){ return 1;}', 'int i = 0;\nint j = myfunc(&i);\n(void)j;\ntypedef void* atype;\n__attribute((unused))  atype a'):
       self.addDefine('UNUSED', '__attribute((unused))')
     else:
       self.addDefine('UNUSED', ' ')
@@ -715,7 +715,7 @@ char assert_aligned[(sizeof(struct mystruct)==16)*2-1];
       return self.checkCompile(inc, ('#define STATIC_ASSERT(cond) char negative_length_if_false[2*(!!(cond))-1]\n'
                                      + 'STATIC_ASSERT(sizeof(void*) == sizeof(%s));'%typename))
     self.pushLanguage(self.languages.clanguage)
-    if self.checkCompile('#include <stdint.h>', 'int x; uintptr_t i = (uintptr_t)&x;'):
+    if self.checkCompile('#include <stdint.h>', 'int x; uintptr_t i = (uintptr_t)&x; (void)i'):
       self.addDefine('UINTPTR_T', 'uintptr_t')
     elif staticAssertSizeMatchesVoidStar('','unsigned long long'):
       self.addDefine('UINTPTR_T', 'unsigned long long')
@@ -800,10 +800,10 @@ char assert_aligned[(sizeof(struct mystruct)==16)*2-1];
       self.libraries.add('gdi32','CreateCompatibleDC',prototype='#include <windows.h>',call='CreateCompatibleDC(0);')
 
     self.types.check('int32_t', 'int')
-    if not self.checkCompile('#include <sys/types.h>\n','uid_t u;\n'):
+    if not self.checkCompile('#include <sys/types.h>\n','uid_t u;\n(void)u'):
       self.addTypedef('int', 'uid_t')
       self.addTypedef('int', 'gid_t')
-    if not self.checkLink('#if defined(PETSC_HAVE_UNISTD_H)\n#include <unistd.h>\n#endif\n','int a=R_OK;\n'):
+    if not self.checkLink('#if defined(PETSC_HAVE_UNISTD_H)\n#include <unistd.h>\n#endif\n','int a=R_OK;\n(void)a'):
       self.framework.addDefine('R_OK', '04')
       self.framework.addDefine('W_OK', '02')
       self.framework.addDefine('X_OK', '01')

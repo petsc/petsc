@@ -47,7 +47,7 @@ class Configure(config.package.CMakePackage):
     config.package.Package.configureLibrary(self)
     oldFlags = self.compilers.CPPFLAGS
     self.compilers.CPPFLAGS += ' '+self.headers.toString(self.include)
-    if not self.checkCompile('#include "metis.h"', '#if (IDXTYPEWIDTH != '+ str(self.getDefaultIndexSize())+')\n#error incompatible IDXTYPEWIDTH\n#endif'):
+    if not self.checkCompile('#include "metis.h"', '#if (IDXTYPEWIDTH != '+ str(self.getDefaultIndexSize())+')\n#error incompatible IDXTYPEWIDTH\n#endif\n'):
       if self.defaultIndexSize == 64:
         msg= '--with-64-bit-indices option requires a metis build with IDXTYPEWIDTH=64.\n'
       else:
