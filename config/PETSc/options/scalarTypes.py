@@ -56,26 +56,26 @@ class Configure(config.base.Configure):
     # On apple isinf() and isnan() do not work when <complex> is included
     self.pushLanguage(self.languages.clanguage)
     if self.scalartype == 'complex' and self.languages.clanguage == 'Cxx':
-      if self.checkLink('#include <math.h>\n#include <complex>\n','double b = 2.0;int a = isnormal(b);\n'):
+      if self.checkLink('#include <math.h>\n#include <complex>\n','double b = 2.0;int a = isnormal(b);(void)a'):
         self.addDefine('HAVE_ISNORMAL',1)
-      if self.checkLink('#include <math.h>\n#include <complex>\n','double b = 2.0;int a = isnan(b);\n'):
+      if self.checkLink('#include <math.h>\n#include <complex>\n','double b = 2.0;int a = isnan(b);(void)a'):
         self.addDefine('HAVE_ISNAN',1)
-      elif self.checkLink('#include <float.h>\n#include <complex>\n','double b = 2.0;int a = _isnan(b);\n'):
+      elif self.checkLink('#include <float.h>\n#include <complex>\n','double b = 2.0;int a = _isnan(b);(void)a'):
         self.addDefine('HAVE__ISNAN',1)
-      if self.checkLink('#include <math.h>\n#include <complex>\n','double b = 2.0;int a = isinf(b);\n'):
+      if self.checkLink('#include <math.h>\n#include <complex>\n','double b = 2.0;int a = isinf(b);(void)a'):
         self.addDefine('HAVE_ISINF',1)
-      elif self.checkLink('#include <float.h>\n#include <complex>\n','double b = 2.0;int a = _finite(b);\n'):
+      elif self.checkLink('#include <float.h>\n#include <complex>\n','double b = 2.0;int a = _finite(b);(void)a'):
         self.addDefine('HAVE__FINITE',1)
     else:
-      if self.checkLink('#include <math.h>\n','double b = 2.0; int a = isnormal(b);\n'):
+      if self.checkLink('#include <math.h>\n','double b = 2.0; int a = isnormal(b);(void)a'):
         self.addDefine('HAVE_ISNORMAL',1)
-      if self.checkLink('#include <math.h>\n','double b = 2.0; int a = isnan(b);\n'):
+      if self.checkLink('#include <math.h>\n','double b = 2.0; int a = isnan(b);(void)a'):
         self.addDefine('HAVE_ISNAN',1)
-      elif self.checkLink('#include <float.h>\n','double b = 2.0;int a = _isnan(b);\n'):
+      elif self.checkLink('#include <float.h>\n','double b = 2.0;int a = _isnan(b);(void)a'):
         self.addDefine('HAVE__ISNAN',1)
-      if self.checkLink('#include <math.h>\n','double b = 2.0; int a = isinf(b);\n'):
+      if self.checkLink('#include <math.h>\n','double b = 2.0; int a = isinf(b);(void)a'):
         self.addDefine('HAVE_ISINF',1)
-      elif self.checkLink('#include <float.h>\n','double b = 2.0;int a = _finite(b);\n'):
+      elif self.checkLink('#include <float.h>\n','double b = 2.0;int a = _finite(b);(void)a'):
         self.addDefine('HAVE__FINITE',1)
     self.popLanguage()
     return
@@ -84,7 +84,7 @@ class Configure(config.base.Configure):
     '''Set the default real number precision for PETSc objects'''
     self.log.write('Checking C compiler works with __float128\n')
     self.have__float128 = 0
-    if self.libraries.check('quadmath','logq',prototype='#include <quadmath.h>',call='__float128 f; logq(f);'):
+    if self.libraries.check('quadmath','logq',prototype='#include <quadmath.h>',call='__float128 f = 0.0; logq(f)'):
       self.log.write('C compiler with quadmath library\n')
       self.have__float128 = 1
       if hasattr(self.compilers, 'FC'):
@@ -97,12 +97,12 @@ class Configure(config.base.Configure):
           self.log.write('Fortran fails with quadmath library\n')
         self.libraries.popLanguage()
       if self.have__float128:
-          self.libraries.add('quadmath','logq',prototype='#include <quadmath.h>',call='__float128 f; logq(f);')
+          self.libraries.add('quadmath','logq',prototype='#include <quadmath.h>',call='__float128 f = 0.0; logq(f)')
           self.addDefine('HAVE_REAL___FLOAT128', '1')
 
     self.log.write('Checking C compiler works with __fp16\n')
     self.have__fp16 = 0
-    if self.libraries.check('','',call='__fp16 f = 1.0, g; g = ret___fp16(f);',prototype='static __fp16 ret___fp16(__fp16 f) { return f; }'):
+    if self.libraries.check('','',call='__fp16 f = 1.0, g; g = ret___fp16(f); (void)g',prototype='static __fp16 ret___fp16(__fp16 f) { return f; }'):
       self.have__fp16 = 1
       self.addDefine('HAVE_REAL___FP16', '1')
 

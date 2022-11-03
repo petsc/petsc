@@ -460,7 +460,7 @@ manualpages:
             LMANSEC=`grep SUBMANSEC $${f} | sed s'?[ ]*/\*[ ]*SUBMANSEC[ ]*=[ ]*\([a-zA-Z]*\)[ ]*\*/?\1?'g`; \
             if [ "$${LMANSEC}" = "" ] ; then \
               LMANSEC="MissingSUBMANSEC"; \
-              pwd | grep -e ftn-custom -e petsc/finclude -e petsc/fprivate > /dev/null; fnd=$?; \
+              pwd | grep -e ftn-custom -e petsc/finclude -e petsc/private > /dev/null; fnd=$?; \
               if [ "$${fnd}" == "1" ]; then \
                 echo "Missing MANSEC or SUBMANSEC definition in " `pwd`/$${f} ; \
               fi; \

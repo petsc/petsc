@@ -2192,11 +2192,11 @@ class Configure(config.base.Configure):
             self.logPrint(str(e))
             continue
           self.LIBS = '-L'+self.tmpDir+' -lconf1 ' + oldLibs
-          success =  self.checkLink('extern int foo(int);', '  int b = foo(1);  if (b);\n')
+          success =  self.checkLink('extern int foo(int);', '  int b = foo(1);  (void)b')
           os.rename(arcUnix, arcWindows)
           if not success:
             arext = 'lib'
-            success = self.checkLink('extern int foo(int);', '  int b = foo(1);  if (b);\n')
+            success = self.checkLink('extern int foo(int);', '  int b = foo(1);  (void)b')
             os.remove(arcWindows)
             if success:
               break
