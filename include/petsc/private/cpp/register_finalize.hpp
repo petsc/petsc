@@ -37,7 +37,6 @@ template <typename Derived>
 class RegisterFinalizeable : public util::crtp<Derived, RegisterFinalizeable> {
 public:
   using derived_type = Derived;
-  using crtp_type    = util::crtp<Derived, RegisterFinalizeable>;
 
   PETSC_NODISCARD bool registered() const noexcept;
   template <typename... Args>
