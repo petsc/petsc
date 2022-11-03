@@ -260,7 +260,7 @@ PetscErrorCode JacMatMultCompare(SNES snes, Vec x, Vec p, double hopt)
 
     /* View product vector if desired */
     if (printv) {
-      sprintf(filename, "y2.%d.out", (int)i);
+      PetscCall(PetscSNPrintf(filename, PETSC_STATIC_ARRAY_LENGTH(filename), "y2.%d.out", (int)i));
       PetscCall(PetscViewerASCIIOpen(comm, filename, &view2));
       PetscCall(PetscViewerPushFormat(view2, PETSC_VIEWER_ASCII_COMMON));
       PetscCall(VecView(yy2, view2));

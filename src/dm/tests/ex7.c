@@ -70,7 +70,7 @@ int main(int argc, char **argv)
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-save", &flg, NULL));
   if (flg) {
     PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
-    sprintf(filename, "local.%d", rank);
+    PetscCall(PetscSNPrintf(filename, PETSC_STATIC_ARRAY_LENGTH(filename), "local.%d", rank));
     PetscCall(PetscViewerASCIIOpen(PETSC_COMM_SELF, filename, &viewer));
     PetscCall(PetscViewerASCIIGetPointer(viewer, &file));
     PetscCall(VecView(local, viewer));

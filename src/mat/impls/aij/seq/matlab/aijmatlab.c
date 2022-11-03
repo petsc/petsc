@@ -137,7 +137,7 @@ PetscErrorCode MatLUFactorNumeric_Matlab(Mat F, Mat A, const MatFactorInfo *info
 
     PetscCall(PetscStrlen(_A, &len));
     PetscCall(PetscMalloc1(len + 2, &name));
-    sprintf(name, "_%s", _A);
+    PetscCall(PetscSNPrintf(name, len + 2, "_%s", _A));
     PetscCall(PetscObjectSetName((PetscObject)F, name));
     PetscCall(PetscFree(name));
   } else {
@@ -147,7 +147,7 @@ PetscErrorCode MatLUFactorNumeric_Matlab(Mat F, Mat A, const MatFactorInfo *info
     PetscCall(PetscMatlabEngineEvaluate(PETSC_MATLAB_ENGINE_(PetscObjectComm((PetscObject)A)), "%s = 0;", _A));
     PetscCall(PetscStrlen(_A, &len));
     PetscCall(PetscMalloc1(len + 2, &name));
-    sprintf(name, "_%s", _A);
+    PetscCall(PetscSNPrintf(name, len + 2, "_%s", _A));
     PetscCall(PetscObjectSetName((PetscObject)F, name));
     PetscCall(PetscFree(name));
 

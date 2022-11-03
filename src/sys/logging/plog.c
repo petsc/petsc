@@ -1202,8 +1202,7 @@ PetscErrorCode PetscLogDump(const char sname[])
   _TotalTime -= petsc_BaseTime;
   /* Open log file */
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
-  if (sname && sname[0]) sprintf(file, "%s.%d", sname, rank);
-  else sprintf(file, "Log.%d", rank);
+  PetscCall(PetscSNPrintf(file, PETSC_STATIC_ARRAY_LENGTH(file), "%s.%d", sname && sname[0] ? sname : "Log", rank));
   PetscCall(PetscFixFilename(file, fname));
   PetscCall(PetscFOpen(PETSC_COMM_WORLD, fname, "w", &fd));
   PetscCheck(!(rank == 0) || !(!fd), PETSC_COMM_SELF, PETSC_ERR_FILE_OPEN, "Cannot open file: %s", fname);

@@ -703,14 +703,14 @@ PetscErrorCode PCSetFromOptions_MG(PC pc, PetscOptionItems *PetscOptionsObject)
 
     levels = mglevels[0]->levels;
     for (i = 0; i < levels; i++) {
-      sprintf(eventname, "MGSetup Level %d", (int)i);
+      PetscCall(PetscSNPrintf(eventname, PETSC_STATIC_ARRAY_LENGTH(eventname), "MGSetup Level %d", (int)i));
       PetscCall(PetscLogEventRegister(eventname, ((PetscObject)pc)->classid, &mglevels[i]->eventsmoothsetup));
-      sprintf(eventname, "MGSmooth Level %d", (int)i);
+      PetscCall(PetscSNPrintf(eventname, PETSC_STATIC_ARRAY_LENGTH(eventname), "MGSmooth Level %d", (int)i));
       PetscCall(PetscLogEventRegister(eventname, ((PetscObject)pc)->classid, &mglevels[i]->eventsmoothsolve));
       if (i) {
-        sprintf(eventname, "MGResid Level %d", (int)i);
+        PetscCall(PetscSNPrintf(eventname, PETSC_STATIC_ARRAY_LENGTH(eventname), "MGResid Level %d", (int)i));
         PetscCall(PetscLogEventRegister(eventname, ((PetscObject)pc)->classid, &mglevels[i]->eventresidual));
-        sprintf(eventname, "MGInterp Level %d", (int)i);
+        PetscCall(PetscSNPrintf(eventname, PETSC_STATIC_ARRAY_LENGTH(eventname), "MGInterp Level %d", (int)i));
         PetscCall(PetscLogEventRegister(eventname, ((PetscObject)pc)->classid, &mglevels[i]->eventinterprestrict));
       }
     }

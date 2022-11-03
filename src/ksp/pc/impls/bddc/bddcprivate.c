@@ -129,7 +129,7 @@ PetscErrorCode PCBDDCComputeNedelecChangeEdge(Mat lG, IS edge, IS extrow, IS ext
     {
       PetscViewer viewer;
       char        filename[256];
-      sprintf(filename, "Gdet_l%d_r%d_cc%d.m", lev, PetscGlobalRank, inc++);
+      PetscCall(PetscSNPrintf(filename, PETSC_STATIC_ARRAY_LENGTH(filename), "Gdet_l%d_r%d_cc%d.m", lev, PetscGlobalRank, inc++));
       PetscCall(PetscViewerASCIIOpen(PETSC_COMM_SELF, filename, &viewer));
       PetscCall(PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_MATLAB));
       PetscCall(PetscObjectSetName((PetscObject)GEc, "GEc"));
@@ -4668,7 +4668,7 @@ PetscErrorCode PCBDDCSetUpCorrection(PC pc, PetscScalar **coarse_submat_vals_n)
   {
     PetscViewer viewer;
     char filename[256];
-    sprintf(filename,"details_local_coarse_mat%d_level%d.m",PetscGlobalRank,pcbddc->current_level);
+    PetscCall(PetscSNPrintf(filename, PETSC_STATIC_ARRAY_LENGTH(filename), "details_local_coarse_mat%d_level%d.m",PetscGlobalRank,pcbddc->current_level));
     PetscCall(PetscViewerASCIIOpen(PETSC_COMM_SELF,filename,&viewer));
     PetscCall(PetscViewerPushFormat(viewer,PETSC_VIEWER_ASCII_MATLAB));
     PetscCall(PetscObjectSetName((PetscObject)coarse_sub_mat,"computed"));
@@ -8282,7 +8282,7 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc, PetscScalar *coarse_submat_vals)
   {
     PetscViewer viewer;
     char filename[256];
-    sprintf(filename,"coarse_mat_level%d.m",pcbddc->current_level);
+    PetscCall(PetscSNPrintf(filename, PETSC_STATIC_ARRAY_LENGTH(filename), "coarse_mat_level%d.m",pcbddc->current_level));
     PetscCall(PetscViewerASCIIOpen(PetscObjectComm((PetscObject)coarse_mat),filename,&viewer));
     PetscCall(PetscViewerPushFormat(viewer,PETSC_VIEWER_ASCII_MATLAB));
     PetscCall(MatView(coarse_mat,viewer));

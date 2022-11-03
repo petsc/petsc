@@ -319,7 +319,7 @@ static PetscErrorCode PetscLogEventBeginNested(NestedEventId nstEvent, int t, Pe
       char           name[100];
 
       /* Register a new default timer */
-      sprintf(name, "%d -> %d", (int)dftParentActive, (int)nstEvent);
+      PetscCall(PetscSNPrintf(name, PETSC_STATIC_ARRAY_LENGTH(name), "%d -> %d", (int)dftParentActive, (int)nstEvent));
       PetscCall(PetscLogEventRegister(name, 0, &dftEvent));
       PetscCall(PetscLogEventFindDefaultTimer(dftEvent, dftEventsSorted, nParents, &tentry));
 

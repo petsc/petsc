@@ -158,7 +158,7 @@ static PetscErrorCode DMView_DA_3d(DM da, PetscViewer viewer)
         xmax = (dd->M + 1) * plane * dd->w + dd->M * dd->w;
         for (y = ymin; y < ymax; y++) {
           for (x = xmin + dd->Xs; x < xmin + dd->Xe; x += dd->w) {
-            sprintf(node, "%d", (int)(idx[base]));
+            PetscCall(PetscSNPrintf(node, PETSC_STATIC_ARRAY_LENGTH(node), "%" PetscInt_FMT, idx[base]));
             ycoord = y;
             /*Keep y wrap around points on drawing */
             if (y < 0) ycoord = dd->N + y;

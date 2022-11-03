@@ -389,7 +389,7 @@ PetscErrorCode PetscOptionsSAWsInput(PetscOptionItems *PetscOptionsObject)
 
   PetscFunctionBegin;
   /* the next line is a bug, this will only work if all processors are here, the comm passed in is ignored!!! */
-  sprintf(options, "Options_%d", count++);
+  PetscCall(PetscSNPrintf(options, PETSC_STATIC_ARRAY_LENGTH(options), "Options_%d", count++));
 
   PetscOptionsObject->pprefix = PetscOptionsObject->prefix; /* SAWs will change this, so cannot pass prefix directly */
 
@@ -401,10 +401,10 @@ PetscErrorCode PetscOptionsSAWsInput(PetscOptionItems *PetscOptionsObject)
   PetscCallSAWs(SAWs_Register, ("/PETSc/Options/StopAsking", &stopasking, 1, SAWs_WRITE, SAWs_BOOLEAN));
 
   while (next) {
-    sprintf(manname, "_man_%d", mancount);
+    PetscCall(PetscSNPrintf(manname, PETSC_STATIC_ARRAY_LENGTH(manname), "_man_%d", mancount));
     PetscCall(PetscSNPrintf(dir, 1024, "/PETSc/Options/%s", manname));
     PetscCallSAWs(SAWs_Register, (dir, &next->man, 1, SAWs_READ, SAWs_STRING));
-    sprintf(textname, "_text_%d", mancount++);
+    PetscCall(PetscSNPrintf(textname, PETSC_STATIC_ARRAY_LENGTH(textname), "_text_%d", mancount++));
     PetscCall(PetscSNPrintf(dir, 1024, "/PETSc/Options/%s", textname));
     PetscCallSAWs(SAWs_Register, (dir, &next->text, 1, SAWs_READ, SAWs_STRING));
 
@@ -530,42 +530,42 @@ PetscErrorCode PetscOptionsEnd_Private(PetscOptionItems *PetscOptionsObject)
       case OPTION_HEAD:
         break;
       case OPTION_INT_ARRAY:
-        sprintf(value, "%d", (int)((PetscInt *)PetscOptionsObject->next->data)[0]);
+        PetscCall(PetscSNPrintf(value, PETSC_STATIC_ARRAY_LENGTH(value), "%d", (int)((PetscInt *)PetscOptionsObject->next->data)[0]));
         for (j = 1; j < PetscOptionsObject->next->arraylength; j++) {
-          sprintf(tmp, "%d", (int)((PetscInt *)PetscOptionsObject->next->data)[j]);
+          PetscCall(PetscSNPrintf(tmp, PETSC_STATIC_ARRAY_LENGTH(tmp), "%d", (int)((PetscInt *)PetscOptionsObject->next->data)[j]));
           PetscCall(PetscStrcat(value, ","));
           PetscCall(PetscStrcat(value, tmp));
         }
         break;
       case OPTION_INT:
-        sprintf(value, "%d", (int)*(PetscInt *)PetscOptionsObject->next->data);
+        PetscCall(PetscSNPrintf(value, PETSC_STATIC_ARRAY_LENGTH(value), "%d", (int)*(PetscInt *)PetscOptionsObject->next->data));
         break;
       case OPTION_REAL:
-        sprintf(value, "%g", (double)*(PetscReal *)PetscOptionsObject->next->data);
+        PetscCall(PetscSNPrintf(value, PETSC_STATIC_ARRAY_LENGTH(value), "%g", (double)*(PetscReal *)PetscOptionsObject->next->data));
         break;
       case OPTION_REAL_ARRAY:
-        sprintf(value, "%g", (double)((PetscReal *)PetscOptionsObject->next->data)[0]);
+        PetscCall(PetscSNPrintf(value, PETSC_STATIC_ARRAY_LENGTH(value), "%g", (double)((PetscReal *)PetscOptionsObject->next->data)[0]));
         for (j = 1; j < PetscOptionsObject->next->arraylength; j++) {
-          sprintf(tmp, "%g", (double)((PetscReal *)PetscOptionsObject->next->data)[j]);
+          PetscCall(PetscSNPrintf(tmp, PETSC_STATIC_ARRAY_LENGTH(tmp), "%g", (double)((PetscReal *)PetscOptionsObject->next->data)[j]));
           PetscCall(PetscStrcat(value, ","));
           PetscCall(PetscStrcat(value, tmp));
         }
         break;
       case OPTION_SCALAR_ARRAY:
-        sprintf(value, "%g+%gi", (double)PetscRealPart(((PetscScalar *)PetscOptionsObject->next->data)[0]), (double)PetscImaginaryPart(((PetscScalar *)PetscOptionsObject->next->data)[0]));
+        PetscCall(PetscSNPrintf(value, PETSC_STATIC_ARRAY_LENGTH(value), "%g+%gi", (double)PetscRealPart(((PetscScalar *)PetscOptionsObject->next->data)[0]), (double)PetscImaginaryPart(((PetscScalar *)PetscOptionsObject->next->data)[0])));
         for (j = 1; j < PetscOptionsObject->next->arraylength; j++) {
-          sprintf(tmp, "%g+%gi", (double)PetscRealPart(((PetscScalar *)PetscOptionsObject->next->data)[j]), (double)PetscImaginaryPart(((PetscScalar *)PetscOptionsObject->next->data)[j]));
+          PetscCall(PetscSNPrintf(tmp, PETSC_STATIC_ARRAY_LENGTH(tmp), "%g+%gi", (double)PetscRealPart(((PetscScalar *)PetscOptionsObject->next->data)[j]), (double)PetscImaginaryPart(((PetscScalar *)PetscOptionsObject->next->data)[j])));
           PetscCall(PetscStrcat(value, ","));
           PetscCall(PetscStrcat(value, tmp));
         }
         break;
       case OPTION_BOOL:
-        sprintf(value, "%d", *(int *)PetscOptionsObject->next->data);
+        PetscCall(PetscSNPrintf(value, PETSC_STATIC_ARRAY_LENGTH(value), "%d", *(int *)PetscOptionsObject->next->data));
         break;
       case OPTION_BOOL_ARRAY:
-        sprintf(value, "%d", (int)((PetscBool *)PetscOptionsObject->next->data)[0]);
+        PetscCall(PetscSNPrintf(value, PETSC_STATIC_ARRAY_LENGTH(value), "%d", (int)((PetscBool *)PetscOptionsObject->next->data)[0]));
         for (j = 1; j < PetscOptionsObject->next->arraylength; j++) {
-          sprintf(tmp, "%d", (int)((PetscBool *)PetscOptionsObject->next->data)[j]);
+          PetscCall(PetscSNPrintf(tmp, PETSC_STATIC_ARRAY_LENGTH(tmp), "%d", (int)((PetscBool *)PetscOptionsObject->next->data)[j]));
           PetscCall(PetscStrcat(value, ","));
           PetscCall(PetscStrcat(value, tmp));
         }
@@ -580,9 +580,9 @@ PetscErrorCode PetscOptionsEnd_Private(PetscOptionItems *PetscOptionsObject)
         PetscCall(PetscStrcpy(value, (char *)PetscOptionsObject->next->data));
         break;
       case OPTION_STRING_ARRAY:
-        sprintf(value, "%s", ((char **)PetscOptionsObject->next->data)[0]);
+        PetscCall(PetscSNPrintf(value, PETSC_STATIC_ARRAY_LENGTH(value), "%s", ((char **)PetscOptionsObject->next->data)[0]));
         for (j = 1; j < PetscOptionsObject->next->arraylength; j++) {
-          sprintf(tmp, "%s", ((char **)PetscOptionsObject->next->data)[j]);
+          PetscCall(PetscSNPrintf(tmp, PETSC_STATIC_ARRAY_LENGTH(tmp), "%s", ((char **)PetscOptionsObject->next->data)[j]));
           PetscCall(PetscStrcat(value, ","));
           PetscCall(PetscStrcat(value, tmp));
         }

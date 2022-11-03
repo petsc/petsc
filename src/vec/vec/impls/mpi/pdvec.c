@@ -539,9 +539,9 @@ PetscErrorCode VecView_MPI_ADIOS(Vec xin, PetscViewer viewer)
   PetscCall(VecGetSize(xin, &N));
   PetscCall(VecGetOwnershipRange(xin, &rstart, NULL));
 
-  sprintf(nlocalname, "%d", (int)n);
-  sprintf(nglobalname, "%d", (int)N);
-  sprintf(coffset, "%d", (int)rstart);
+  PetscCall(PetscSNPrintf(nlocalname, PETSC_STATIC_ARRAY_LENGTH(nlocalname), "%" PetscInt_FMT, n));
+  PetscCall(PetscSNPrintf(nglobalname, PETSC_STATIC_ARRAY_LENGTH(nglobalname), "%" PetscInt_FMT, N));
+  PetscCall(PetscSNPrintf(coffset, PETSC_STATIC_ARRAY_LENGTH(coffset), "%" PetscInt_FMT, rstart));
   id = adios_define_var(Petsc_adios_group, vecname, "", adios_double, nlocalname, nglobalname, coffset);
   PetscCall(VecGetArrayRead(xin, &array));
   PetscCall(adios_write_byid(adios->adios_handle, id, array));

@@ -257,7 +257,7 @@ PetscErrorCode PetscAttachDebugger(void)
   #if defined(PETSC_NEED_KILL_FOR_DEBUGGER)
     kill(child, SIGCONT);
   #endif
-    sprintf(pid, "%d", child);
+    PetscCall(PetscSNPrintf(pid, PETSC_STATIC_ARRAY_LENGTH(pid), "%d", child));
 
     PetscCall(PetscStrcmp(PetscDebugger, "xxgdb", &isxxgdb));
     PetscCall(PetscStrcmp(PetscDebugger, "ddd", &isddd));
