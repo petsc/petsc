@@ -122,18 +122,6 @@ builtin and then its argument prototype would still apply. */
         self.addDefine('HAVE_SYSINFO_3ARG', 1)
     return
 
-  def checkVPrintf(self):
-    '''Checks whether vprintf requires a char * last argument, and if it does defines HAVE_VPRINTF_CHAR'''
-    if not self.checkLink('#include <stdio.h>\n#include <stdarg.h>\n', 'va_list Argp = { 0 };\nvprintf( "%d", Argp )'):
-      self.addDefine('HAVE_VPRINTF_CHAR', 1)
-    return
-
-  def checkVFPrintf(self):
-    '''Checks whether vfprintf requires a char * last argument, and if it does defines HAVE_VFPRINTF_CHAR'''
-    if not self.checkLink('#include <stdio.h>\n#include <stdarg.h>\n', 'va_list Argp = { 0 };\nvfprintf(stdout, "%d", Argp )'):
-      self.addDefine('HAVE_VFPRINTF_CHAR', 1)
-    return
-
   def checkVSNPrintf(self):
     '''Checks whether vsnprintf requires a char * last argument, and if it does defines HAVE_VSNPRINTF_CHAR'''
     if self.checkLink('#include <stdio.h>\n#include <stdarg.h>\n', 'va_list Argp = { 0 };char str[6];\nvsnprintf(str,5, "%d", Argp )'):
@@ -184,8 +172,6 @@ builtin and then its argument prototype would still apply. */
 
   def configure(self):
     self.executeTest(self.checkSysinfo)
-    self.executeTest(self.checkVPrintf)
-    self.executeTest(self.checkVFPrintf)
     self.executeTest(self.checkVSNPrintf)
     self.executeTest(self.checkNanosleep)
     self.executeTest(self.checkMemmove)

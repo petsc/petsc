@@ -71,13 +71,6 @@ class Configure(config.base.Configure):
     '''Checks for pid_t, and defines it if necessary'''
     return self.check('pid_t', 'int')
 
-  def checkUID(self):
-    '''Checks for uid_t and gid_t, and defines them if necessary'''
-    if self.outputPreprocess('#include <sys/types.h>').find('uid_t') < 0:
-      self.addDefine('uid_t', 'int')
-      self.addDefine('gid_t', 'int')
-    return
-
   def checkC99Complex(self):
     '''Check for complex numbers in in C99 std
        Note that since PETSc source code uses _Complex we test specifically for that, not complex'''
@@ -203,7 +196,6 @@ char petsc_max_path_len[] = xstr(PETSC_MAX_PATH_LEN);
     self.executeTest(self.checkFileTypes)
     self.executeTest(self.checkIntegerTypes)
     self.executeTest(self.checkPID)
-    self.executeTest(self.checkUID)
     self.executeTest(self.checkC99Complex)
     if hasattr(self.compilers, 'CXX'):
       self.executeTest(self.checkCxxComplex)
