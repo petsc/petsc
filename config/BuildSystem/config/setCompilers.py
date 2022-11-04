@@ -2509,8 +2509,8 @@ class Configure(config.base.Configure):
       self.logPrint('Dynamic loading disabled since dlfcn.h was missing')
       return
     self.libraries.saveLog()
-    if not self.libraries.add('dl', ['dlopen', 'dlsym', 'dlclose']):
-      if not self.libraries.check('', ['dlopen', 'dlsym', 'dlclose']):
+    if not self.libraries.check('', ['dlopen', 'dlsym', 'dlclose']):
+      if not self.libraries.add('dl', ['dlopen', 'dlsym', 'dlclose']):
         self.logWrite(self.libraries.restoreLog())
         self.logPrint('Dynamic linking disabled since functions dlopen(), dlsym(), and dlclose() were not found')
         return
