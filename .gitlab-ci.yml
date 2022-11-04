@@ -650,6 +650,9 @@ linux-pkgs-cxx-mlib:
     - gce-u22-stage3
   variables:
     TEST_ARCH: arch-ci-linux-pkgs-cxx-mlib
+  except:
+    variables:
+      - $PETSC_CI_SCHEDULED =~ /yes/
 
 linux-pkgs-valgrind:
   extends:
