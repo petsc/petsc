@@ -266,7 +266,7 @@ PetscErrorCode PetscDLSym(PetscDLHandle handle, const char symbol[], void **valu
       if (!(PETSC_RUNNING_ON_VALGRIND)) { dlerror(); /* clear any previous error; valgrind does not like this */ }
       #endif
           /* Attempt to open the main executable as a dynamic library. */
-      #if defined(PETSC_HAVE_RTDL_DEFAULT)
+      #if defined(PETSC_HAVE_RTLD_DEFAULT)
       dlhandle = RTLD_DEFAULT;
       #else
       dlhandle = dlopen(NULL, dlflags1 | dlflags2);
