@@ -36,14 +36,6 @@ class Configure(config.base.Configure):
       self.addDefine('HAVE_FORTRAN_GET_COMMAND_ARGUMENT',1)
       return
 
-    self.libraries.pushLanguage('FC')
-    self.libraries.saveLog()
-    if self.libraries.check('','', call = '      integer i\n      character*(80) arg\n       call getarg(i,arg)'):
-      self.logWrite(self.libraries.restoreLog())
-      self.libraries.popLanguage()
-      self.addDefine('HAVE_FORTRAN_GETARG',1)
-      return
-
     # These are for when the routines are called from C
     # We should unify the naming conventions of these.
     self.pushLanguage('C')

@@ -268,7 +268,7 @@ PetscErrorCode PetscDLSym(PetscDLHandle handle, const char symbol[], void **valu
             #endif /* PETSC_HAVE_DLERROR */
             #if defined(PETSC_HAVE_RTDL_DEFAULT)
               dlhandle = RTLD_DEFAULT;
-            #else /* PETSC_HAVE_RTDL_DEFAULT */
+            #else /* PETSC_HAVE_RTLD_DEFAULT */
               /* Attempt to open the main executable as a dynamic library. */
               dlhandle = dlopen(NULL, dlflags1 | dlflags2);
               #if defined(PETSC_HAVE_DLERROR)
@@ -277,7 +277,7 @@ PetscErrorCode PetscDLSym(PetscDLHandle handle, const char symbol[], void **valu
                   PetscCheck(!e, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Error opening main executable as a dynamic library:\n  Error message from dlopen(): '%s'", e);
                 }
               #endif /* PETSC_HAVE_DLERROR */
-            #endif /* PETSC_HAVE_RTDL_DEFAULT */
+            #endif /* PETSC_HAVE_RTLD_DEFAULT */
           }
         #endif /* PETSC_HAVE_DLOPEN */
       }
