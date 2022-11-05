@@ -48,13 +48,10 @@ PetscErrorCode private_DMDALocatePointsIS_2D_Regular(DM dmregular, Vec pos, IS *
   PetscCall(DMDAGetGhostCorners(dmregular, &Xs, &Ys, NULL, &Xe, &Ye, NULL));
   xe += xs;
   Xe += Xs;
-  if (xs != Xs) xs -= 1;
   ye += ys;
   Ye += Ys;
-  if (ys != Ys) ys -= 1;
-
-  mxlocal = xe - xs - 1;
-  mylocal = ye - ys - 1;
+  if (xs != Xs && Xs >= 0) xs -= 1;
+  if (ys != Ys && Ys >= 0) ys -= 1;
 
   PetscCall(DMGetCoordinatesLocal(dmregular, &coor));
   PetscCall(VecGetArrayRead(coor, &_coor));
@@ -66,11 +63,13 @@ PetscErrorCode private_DMDALocatePointsIS_2D_Regular(DM dmregular, Vec pos, IS *
 
   gmax_l[0] = PetscRealPart(_coor[2 * c1 + 0]);
   gmax_l[1] = PetscRealPart(_coor[2 * c1 + 1]);
+  PetscCall(VecRestoreArrayRead(coor, &_coor));
+
+  mxlocal = xe - xs - 1;
+  mylocal = ye - ys - 1;
 
   dx[0] = (gmax_l[0] - gmin_l[0]) / ((PetscReal)mxlocal);
   dx[1] = (gmax_l[1] - gmin_l[1]) / ((PetscReal)mylocal);
-
-  PetscCall(VecRestoreArrayRead(coor, &_coor));
 
   PetscCall(DMGetBoundingBox(dmregular, gmin, gmax));
 
@@ -129,17 +128,13 @@ PetscErrorCode private_DMDALocatePointsIS_3D_Regular(DM dmregular, Vec pos, IS *
   PetscCall(DMDAGetGhostCorners(dmregular, &Xs, &Ys, &Zs, &Xe, &Ye, &Ze));
   xe += xs;
   Xe += Xs;
-  if (xs != Xs) xs -= 1;
   ye += ys;
   Ye += Ys;
-  if (ys != Ys) ys -= 1;
   ze += zs;
   Ze += Zs;
-  if (zs != Zs) zs -= 1;
-
-  mxlocal = xe - xs - 1;
-  mylocal = ye - ys - 1;
-  mzlocal = ze - zs - 1;
+  if (xs != Xs && Xs >= 0) xs -= 1;
+  if (ys != Ys && Ys >= 0) ys -= 1;
+  if (zs != Zs && Zs >= 0) zs -= 1;
 
   PetscCall(DMGetCoordinatesLocal(dmregular, &coor));
   PetscCall(VecGetArrayRead(coor, &_coor));
@@ -153,12 +148,19 @@ PetscErrorCode private_DMDALocatePointsIS_3D_Regular(DM dmregular, Vec pos, IS *
   gmax_l[0] = PetscRealPart(_coor[3 * c1 + 0]);
   gmax_l[1] = PetscRealPart(_coor[3 * c1 + 1]);
   gmax_l[2] = PetscRealPart(_coor[3 * c1 + 2]);
+  PetscCall(VecRestoreArrayRead(coor, &_coor));
+
+  if (xs != Xs) xs -= 1;
+  if (ys != Ys) ys -= 1;
+  if (zs != Zs) zs -= 1;
+
+  mxlocal = xe - xs - 1;
+  mylocal = ye - ys - 1;
+  mzlocal = ze - zs - 1;
 
   dx[0] = (gmax_l[0] - gmin_l[0]) / ((PetscReal)mxlocal);
   dx[1] = (gmax_l[1] - gmin_l[1]) / ((PetscReal)mylocal);
   dx[2] = (gmax_l[2] - gmin_l[2]) / ((PetscReal)mzlocal);
-
-  PetscCall(VecRestoreArrayRead(coor, &_coor));
 
   PetscCall(DMGetBoundingBox(dmregular, gmin, gmax));
 
