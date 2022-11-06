@@ -54,7 +54,7 @@ PETSC_INTERN jmp_buf PetscScJumpBuf;
   #define PETSC_P4EST_ASSERT(x) (void)(x)
 #endif
 
-PETSC_EXTERN PetscErrorCode PetscP4estInitialize();
+PETSC_EXTERN PetscErrorCode PetscP4estInitialize(void);
 
 static inline PetscErrorCode P4estLocidxCast(PetscInt a, p4est_locidx_t *b)
 {

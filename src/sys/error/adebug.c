@@ -180,7 +180,7 @@ PetscErrorCode PetscSetDebuggerFromString(const char *string)
 
 .seealso: `PetscSetDebugger()`, `PetscAttachDebugger()`
 @*/
-PetscErrorCode PetscWaitOnError()
+PetscErrorCode PetscWaitOnError(void)
 {
   petscwaitonerrorflg = PETSC_TRUE;
   return 0;
