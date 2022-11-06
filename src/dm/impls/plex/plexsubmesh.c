@@ -49,15 +49,33 @@ static PetscErrorCode DMPlexGetTensorPrismBounds_Internal(DM dm, PetscInt dim, P
 
 static PetscErrorCode DMPlexMarkBoundaryFaces_Internal(DM dm, PetscInt val, PetscInt cellHeight, DMLabel label)
 {
-  PetscInt fStart, fEnd, f;
+  PetscSF         sf;
+  const PetscInt *rootdegree, *leaves;
+  PetscInt        overlap, Nr = -1, Nl, pStart, fStart, fEnd;
 
   PetscFunctionBegin;
+  PetscCall(DMGetPointSF(dm, &sf));
+  PetscCall(DMPlexGetOverlap(dm, &overlap));
+  if (sf && !overlap) PetscCall(PetscSFGetGraph(sf, &Nr, &Nl, &leaves, NULL));
+  if (Nr > 0) {
+    PetscCall(PetscSFComputeDegreeBegin(sf, &rootdegree));
+    PetscCall(PetscSFComputeDegreeEnd(sf, &rootdegree));
+  } else rootdegree = NULL;
+  PetscCall(DMPlexGetChart(dm, &pStart, NULL));
   PetscCall(DMPlexGetHeightStratum(dm, cellHeight + 1, &fStart, &fEnd));
-  for (f = fStart; f < fEnd; ++f) {
-    PetscInt supportSize;
+  for (PetscInt f = fStart; f < fEnd; ++f) {
+    PetscInt supportSize, loc = -1;
 
     PetscCall(DMPlexGetSupportSize(dm, f, &supportSize));
     if (supportSize == 1) {
+      /* Do not mark faces which are shared, meaning
+           they are  present in the pointSF, or
+           they have rootdegree > 0
+         since they presumably have cells on the other side */
+      if (Nr > 0) {
+        PetscCall(PetscFindInt(f, Nl, leaves, &loc));
+        if (rootdegree[f - pStart] || loc >= 0) continue;
+      }
       if (val < 0) {
         PetscInt *closure = NULL;
         PetscInt  clSize, cl, cval;
@@ -85,11 +103,14 @@ static PetscErrorCode DMPlexMarkBoundaryFaces_Internal(DM dm, PetscInt val, Pets
   Not Collective
 
   Input Parameters:
-+ dm - The original DM
++ dm - The original `DM`
 - val - The marker value, or PETSC_DETERMINE to use some value in the closure (or 1 if none are found)
 
   Output Parameter:
 . label - The DMLabel marking boundary faces with the given value
+
+  Note:
+  This function will use the point `PetscSF` from the input `DM` to exclude points on the partition boundary from being marked, unless the partition overlap is greater than zero. If you also wish to mark the partition boundary, you can use `DMSetPointSF()` to temporarily set it to NULL, and then reset it to the original object after the call.
 
   Level: developer
 

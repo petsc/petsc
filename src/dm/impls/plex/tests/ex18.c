@@ -1209,13 +1209,20 @@ static PetscErrorCode DMPlexGetInterfaceFaces_Private(DM ipdm, IS boundary_faces
   PetscCheck(intp == DMPLEX_INTERPOLATED_FULL, comm, PETSC_ERR_ARG_WRONG, "only for fully interpolated DMPlex");
 
   /* get ipdm partition boundary (partBoundary) */
-  PetscCall(DMLabelCreate(PETSC_COMM_SELF, partBoundaryName, &label));
-  PetscCall(DMAddLabel(ipdm, label));
-  PetscCall(DMPlexMarkBoundaryFaces(ipdm, value, label));
-  PetscCall(DMLabelViewFromOptionsOnComm_Private(label, "-ipdm_part_boundary_view", comm));
-  PetscCall(DMLabelGetStratumISOnComm_Private(label, value, comm, &part_boundary_faces_is));
-  PetscCall(DMRemoveLabelBySelf(ipdm, &label, PETSC_TRUE));
-  PetscCall(DMLabelDestroy(&label));
+  {
+    PetscSF sf;
+
+    PetscCall(DMLabelCreate(PETSC_COMM_SELF, partBoundaryName, &label));
+    PetscCall(DMAddLabel(ipdm, label));
+    PetscCall(DMGetPointSF(ipdm, &sf));
+    PetscCall(DMSetPointSF(ipdm, NULL));
+    PetscCall(DMPlexMarkBoundaryFaces(ipdm, value, label));
+    PetscCall(DMSetPointSF(ipdm, sf));
+    PetscCall(DMLabelViewFromOptionsOnComm_Private(label, "-ipdm_part_boundary_view", comm));
+    PetscCall(DMLabelGetStratumISOnComm_Private(label, value, comm, &part_boundary_faces_is));
+    PetscCall(DMRemoveLabelBySelf(ipdm, &label, PETSC_TRUE));
+    PetscCall(DMLabelDestroy(&label));
+  }
 
   /* remove ipdm whole-domain boundary (boundary_faces_is) from ipdm partition boundary (part_boundary_faces_is), resulting just in inter-partition interface */
   PetscCall(ISDifference(part_boundary_faces_is, boundary_faces_is, interface_faces_is));
