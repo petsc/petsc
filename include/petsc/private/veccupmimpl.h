@@ -1229,16 +1229,18 @@ inline PetscErrorCode Vec_CUPMBase<T, D>::BindToCPU_CUPMBase(Vec v, PetscBool us
   PetscCall(ChangeDefaultRandType(usehost ? PETSCRANDER48 : PETSCDEVICERAND(), &v->defaultrandtype));
 
   // set the base functions that are guaranteed to be the same for both
-  v->ops->duplicate    = D::duplicate;
-  v->ops->create       = create;
-  v->ops->destroy      = destroy;
-  v->ops->bindtocpu    = D::bindtocpu;
+  v->ops->duplicate = D::duplicate;
+  v->ops->create    = create;
+  v->ops->destroy   = destroy;
+  v->ops->bindtocpu = D::bindtocpu;
+  // Note that setting these to NULL on host breaks convergence in certain areas. I don't know
+  // why, and I don't know how, but it is IMPERATIVE these are set as such!
   v->ops->replacearray = replacearray<PETSC_MEMTYPE_HOST>;
+  v->ops->restorearray = restorearray<PETSC_MEMTYPE_HOST, PETSC_MEMORY_ACCESS_READ_WRITE>;
 
   // set device-only common functions
   VecSetOp_CUPM(dotnorm2, nullptr, D::dotnorm2);
   VecSetOp_CUPM(getarray, nullptr, getarray<PETSC_MEMTYPE_HOST, PETSC_MEMORY_ACCESS_READ_WRITE>);
-  VecSetOp_CUPM(restorearray, nullptr, restorearray<PETSC_MEMTYPE_HOST, PETSC_MEMORY_ACCESS_READ_WRITE>);
   VecSetOp_CUPM(getarraywrite, nullptr, getarray<PETSC_MEMTYPE_HOST, PETSC_MEMORY_ACCESS_WRITE>);
   VecSetOp_CUPM(restorearraywrite, nullptr, restorearray<PETSC_MEMTYPE_HOST, PETSC_MEMORY_ACCESS_WRITE>);
 
