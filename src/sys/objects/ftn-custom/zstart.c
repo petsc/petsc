@@ -52,23 +52,12 @@
 #define iargc_  ipxfargc_
 #define getarg_ pxfgetarg_
 #endif
-#if defined(PETSC_HAVE_FORTRAN_IARGC_UNDERSCORE) /* HPUX + no underscore */
-#undef iargc_
-#undef getarg_
-#define iargc_   iargc_
-#define getarg_  getarg_
-#endif
 
 #if defined(PETSC_HAVE_FORTRAN_GET_COMMAND_ARGUMENT) /* Fortran 2003 */
 #undef iargc_
 #undef getarg_
 #define iargc_ petsccommandargumentcount_
 #define getarg_ petscgetcommandargument_
-#elif defined(PETSC_HAVE__GFORTRAN_IARGC) /* gfortran from gcc4 */
-#undef iargc_
-#undef getarg_
-#define iargc_  _gfortran_iargc
-#define getarg_ _gfortran_getarg_i4
 #elif defined(PETSC_HAVE_BGL_IARGC) /* bgl g77 has different external & internal name mangling */
 #undef iargc_
 #undef getarg_
@@ -292,10 +281,6 @@ PETSC_EXTERN void petscinitializef_(char* filename,char* help,PetscBool *readarg
 
 PETSC_EXTERN void petscfinalize_(PetscErrorCode *ierr)
 {
-#if defined(PETSC_HAVE_SUNMATHPRO)
-  extern void standard_arithmetic();
-  standard_arithmetic();
-#endif
   /* was malloced with PetscMallocAlign() so free the same way */
   *ierr = PetscFreeAlign(PetscGlobalArgs,0,0,0);if (*ierr) {(*PetscErrorPrintf)("PetscFinalize:Freeing args\n");return;}
 
@@ -304,10 +289,5 @@ PETSC_EXTERN void petscfinalize_(PetscErrorCode *ierr)
 
 PETSC_EXTERN void petscend_(PetscErrorCode *ierr)
 {
-#if defined(PETSC_HAVE_SUNMATHPRO)
-  extern void standard_arithmetic();
-  standard_arithmetic();
-#endif
-
   *ierr = PetscEnd();
 }
