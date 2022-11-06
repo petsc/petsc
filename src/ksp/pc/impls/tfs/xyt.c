@@ -559,7 +559,7 @@ static PetscErrorCode check_handle(xyt_ADT xyt_handle)
   PetscInt vals[2], work[2], op[] = {NON_UNIFORM, GL_MIN, GL_MAX};
 
   PetscFunctionBegin;
-  PetscCheck(xyt_handle, PETSC_COMM_SELF, PETSC_ERR_PLIB, "check_handle() :: bad handle :: NULL %p", xyt_handle);
+  PetscCheck(xyt_handle, PETSC_COMM_SELF, PETSC_ERR_PLIB, "check_handle() :: bad handle :: NULL %p", (void *)xyt_handle);
 
   vals[0] = vals[1] = xyt_handle->id;
   PCTFS_giop(vals, work, PETSC_STATIC_ARRAY_LENGTH(op) - 1, op);

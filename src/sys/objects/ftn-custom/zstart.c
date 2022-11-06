@@ -110,15 +110,15 @@ PETSC_EXTERN void petscgetcomm_(PetscMPIInt*);
 PETSC_EXTERN int iargc_(void);
 PETSC_EXTERN void getarg_(int*,char*,int);
 #elif defined(PETSC_USE_NARGS)
-PETSC_EXTERN short __stdcall NARGS();
+PETSC_EXTERN short __stdcall NARGS(void);
 PETSC_EXTERN void __stdcall GETARG(short*,char*,int,short *);
 
 #elif defined(PETSC_HAVE_PXFGETARG_NEW)
-PETSC_EXTERN int iargc_();
+PETSC_EXTERN int iargc_(void);
 PETSC_EXTERN void getarg_(int*,char*,int*,int*,int);
 
 #else
-PETSC_EXTERN int iargc_();
+PETSC_EXTERN int iargc_(void);
 PETSC_EXTERN void getarg_(int*,char*,int);
 /*
       The Cray T3D/T3E use the PXFGETARG() function
@@ -204,7 +204,7 @@ PetscErrorCode PETScParseFortranArgs_Private(int *argc,char ***argv)
 
 /* -----------------------------------------------------------------------------------------------*/
 
-PETSC_INTERN PetscErrorCode PetscPreMPIInit_Private();
+PETSC_INTERN PetscErrorCode PetscPreMPIInit_Private(void);
 
 PETSC_INTERN PetscErrorCode PetscInitFortran_Private(PetscBool readarguments,const char *filename,PetscInt len)
 {
