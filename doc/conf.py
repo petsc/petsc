@@ -67,7 +67,7 @@ numfig = True
 
 extensions = [
     'sphinx_copybutton',
-    'sphinx_panels',
+    'sphinx_design',
     'sphinxcontrib.bibtex',
     'sphinxcontrib.katex',
     'sphinxcontrib.rsvgconverter',

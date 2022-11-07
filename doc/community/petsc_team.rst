@@ -20,274 +20,154 @@ The full list of contributors can be found `on GitLab <https://gitlab.com/petsc/
    <doc_creepycrawly>` for more information.
 
 
-.. panels::
-    :container: container-lg pb-3
-    :column: col-lg-4 col-md-4 col-sm-6 col-xs-6 p-2
+.. grid:: 2 3 3 4
 
-    .. image:: https://gitlab.com/uploads/-/system/user/avatar/4214304/avatar.png
-      :width: 100%
+    .. grid-item-card:: Shrirang Abhyankar
+       :link: https://gitlab.com/abhyshr
+       :img-top: https://gitlab.com/uploads/-/system/user/avatar/4214304/avatar.png
 
-    +++++++++++++++
-    `Shrirang Abhyankar <https://gitlab.com/abhyshr>`__
-    ---------------
+    .. grid-item-card:: Mark Adams
+       :link: https://gitlab.com/markadams4
+       :img-top: https://gitlab.com/uploads/-/system/user/avatar/524115/avatar.png
 
-    .. image:: https://gitlab.com/uploads/-/system/user/avatar/524115/avatar.png
-      :width: 100%
+    .. grid-item-card:: Satish Balay
+       :link: https://gitlab.com/sbalay
+       :img-top: https://gitlab.com/uploads/-/system/user/avatar/3919065/avatar.png
 
-    +++++++++++++++
-    `Mark Adams <https://gitlab.com/markadams4>`__
-    ---------------
+    .. grid-item-card:: Blaise Bourdin
+       :link: https://gitlab.com/blaisebourdin
+       :img-top: https://gitlab.com/uploads/-/system/user/avatar/4484951/avatar.png
 
-    .. image:: https://gitlab.com/uploads/-/system/user/avatar/3919065/avatar.png
-      :width: 100%
+    .. grid-item-card:: Jed Brown
+       :link: https://gitlab.com/jedbrown
+       :img-top: https://gitlab.com/uploads/-/system/user/avatar/500187/avatar.png
 
-    +++++++++++++++
-    `Satish Balay <https://gitlab.com/sbalay>`__
-    ---------------
+    .. grid-item-card:: Emil M. Constantinescu
+       :link: https://gitlab.com/emconsta
+       :img-top: https://gitlab.com/uploads/-/system/user/avatar/389994/avatar.png
 
-    .. image:: https://gitlab.com/uploads/-/system/user/avatar/4484951/avatar.png
-      :width: 100%
+    .. grid-item-card:: Lisandro Dalcin
+       :link: https://gitlab.com/dalcinl
+       :img-top: https://secure.gravatar.com/avatar/5f37aff3d274a0effbf20be82804d012?s=80&d=identicon
 
-    +++++++++++++++
-    `Blaise Bourdin <https://gitlab.com/blaisebourdin>`__
-    ---------------
-    .. image:: https://gitlab.com/uploads/-/system/user/avatar/500187/avatar.png
-      :width: 100%
+    .. grid-item-card:: Alp Dener
+       :link: https://gitlab.com/adener
+       :img-top: https://gitlab.com/uploads/-/system/user/avatar/3899183/avatar.png
 
-    +++++++++++++++
-    `Jed Brown <https://gitlab.com/jedbrown>`__
-    ---------------
+    .. grid-item-card:: Jacob Faibussowitsch
+       :link: https://gitlab.com/Jfaibussowitsch
+       :img-top: https://gitlab.com/uploads/-/system/user/avatar/4473654/avatar.png
 
-    .. image:: https://gitlab.com/uploads/-/system/user/avatar/389994/avatar.png
-      :width: 100%
+    .. grid-item-card:: Vaclav Hapla
+       :link: https://gitlab.com/haplav
+       :img-top: https://gitlab.com/uploads/-/system/user/avatar/1614413/avatar.png
 
-    +++++++++++++++
-    `Emil M. Constantinescu <https://gitlab.com/emconsta>`__
-    ---------------
+    .. grid-item-card:: Toby Isaac
+       :link: https://gitlab.com/tisaac
+       :img-top: https://gitlab.com/uploads/-/system/user/avatar/1230244/avatar.png
 
-    .. image:: https://secure.gravatar.com/avatar/5f37aff3d274a0effbf20be82804d012?s=80&d=identicon
-      :width: 100%
+    .. grid-item-card:: Pierre Jolivet
+       :link: https://gitlab.com/prj-
+       :img-top: https://secure.gravatar.com/avatar/c75a786b2cc0f7866dcda4ed6367d8a5?s=80&d=identicon
 
-    +++++++++++++++
-    `Lisandro Dalcin <https://gitlab.com/dalcinl>`__
-    ---------------
+    .. grid-item-card:: Matthew Knepley
+       :link: https://gitlab.com/knepley
+       :img-top: https://secure.gravatar.com/avatar/77d89568403a82b73d163f477cfb2498?s=80&d=identicon
 
-    .. image:: https://gitlab.com/uploads/-/system/user/avatar/3899183/avatar.png
-      :width: 100%
+    .. grid-item-card:: Fande Kong
+       :link: https://gitlab.com/fdkong
+       :img-top: https://gitlab.com/uploads/-/system/user/avatar/4470976/avatar.png
 
-    +++++++++++++++
-    `Alp Dener <https://gitlab.com/adener>`__
-    ---------------
+    .. grid-item-card:: Scott Kruger
+       :link: https://gitlab.com/krugers
+       :img-top: https://secure.gravatar.com/avatar/5e9fd9d0c027f9f2d0c6d0a79cdc0998?s=80&d=identicon
 
-    .. image:: https://gitlab.com/uploads/-/system/user/avatar/4473654/avatar.png
-      :width: 100%
+    .. grid-item-card:: Dave May
+       :link: https://gitlab.com/dmay
+       :img-top: /images/community/team/dave.jpg
 
-    +++++++++++++++
-    `Jacob Faibussowitsch <https://gitlab.com/Jfaibussowitsch>`__
-    ---------------
+    .. grid-item-card:: Lois Curfman McInnes
+       :link: https://wordpress.cels.anl.gov/curfman/
+       :img-top: /images/community/team/lois.gif
 
-    .. image:: https://gitlab.com/uploads/-/system/user/avatar/1614413/avatar.png
-      :width: 100%
+    .. grid-item-card:: Richard Tran Mills
+       :link: https://gitlab.com/rtmills
+       :img-top: https://gitlab.com/uploads/-/system/user/avatar/1189493/avatar.png
 
-    +++++++++++++++
-    `Vaclav Hapla <https://gitlab.com/haplav>`__
-    ---------------
+    .. grid-item-card:: Lawrence Mitchell
+       :link: https://gitlab.com/wence
+       :img-top: https://secure.gravatar.com/avatar/3cf8d69621da52450f7e4f3c19b6978d?s=80&d=identicon
 
-    .. image:: https://gitlab.com/uploads/-/system/user/avatar/1230244/avatar.png
-      :width: 100%
+    .. grid-item-card:: Todd Munson
+       :link: https://gitlab.com/tmunson
+       :img-top: /images/community/team/todd.jpg
 
-    +++++++++++++++
-    `Toby Isaac <https://gitlab.com/tisaac>`__
-    ---------------
+    .. grid-item-card:: Jose E. Roman
+       :link: https://gitlab.com/joseroman
+       :img-top: https://secure.gravatar.com/avatar/f266db21c3f1e06294ab31304e4f177c?s=80&d=ident
 
-    .. image:: https://secure.gravatar.com/avatar/c75a786b2cc0f7866dcda4ed6367d8a5?s=80&d=identicon
-      :width: 100%
+    .. grid-item-card:: Karl Rupp
+       :link: https://gitlab.com/karlrupp
+       :img-top: https://gitlab.com/uploads/-/system/user/avatar/4331259/avatar.png
 
-    +++++++++++++++
-    `Pierre Jolivet <https://gitlab.com/prj->`__
-    ---------------
+    .. grid-item-card:: Patrick Sanan
+       :link: https://gitlab.com/psanan
+       :img-top: https://gitlab.com/uploads/-/system/user/avatar/1651691/avatar.png
 
-    .. image:: https://secure.gravatar.com/avatar/77d89568403a82b73d163f477cfb2498?s=80&d=identicon
-      :width: 100%
+    .. grid-item-card:: Barry Smith
+       :link: https://gitlab.com/BarrySmith
+       :img-top: https://gitlab.com/uploads/-/system/user/avatar/3972971/avatar.png
 
-    +++++++++++++++
-    `Matthew Knepley <https://gitlab.com/knepley>`__
-    ---------------
+    .. grid-item-card:: Stefano Zampini
+       :link: https://gitlab.com/stefanozampini
+       :img-top: https://gitlab.com/uploads/-/system/user/avatar/3718257/avatar.png
 
-    .. image:: https://gitlab.com/uploads/-/system/user/avatar/4470976/avatar.png
-      :width: 100%
+    .. grid-item-card:: Hong Zhang
+       :link: https://gitlab.com/hongzhangsun
+       :img-top: https://gitlab.com/uploads/-/system/user/avatar/4067501/avatar.png
 
-    +++++++++++++++
-    `Fande Kong <https://gitlab.com/fdkong>`__
-    ---------------
+    .. grid-item-card:: Hong Zhang
+       :link: https://gitlab.com/caidao22
+       :img-top: https://gitlab.com/uploads/-/system/user/avatar/4458631/avatar.png
 
-    .. image:: https://secure.gravatar.com/avatar/5e9fd9d0c027f9f2d0c6d0a79cdc0998?s=80&d=identicon
-      :width: 100%
-
-    +++++++++++++++
-    `Scott Kruger <https://gitlab.com/krugers>`__
-    ---------------
-
-    .. image:: /images/community/team/dave.jpg
-      :width: 100%
-
-    +++++++++++++++
-    `Dave May <https://gitlab.com/dmay>`__
-    ---------------
-
-    .. image:: /images/community/team/lois.gif
-      :width: 100%
-
-    +++++++++++++++
-    `Lois Curfman McInnes <https://press3.mcs.anl.gov/curfman/>`__
-    ---------------
-
-    .. image:: https://gitlab.com/uploads/-/system/user/avatar/1189493/avatar.png
-      :width: 100%
-
-    +++++++++++++++
-    `Richard Tran Mills <https://gitlab.com/rtmills>`__
-    ---------------
-
-    .. image:: https://secure.gravatar.com/avatar/3cf8d69621da52450f7e4f3c19b6978d?s=80&d=identicon
-      :width: 100%
-
-    +++++++++++++++
-    `Lawrence Mitchell <https://gitlab.com/wence>`__
-    ---------------
-
-    .. image:: /images/community/team/todd.jpg
-      :width: 100%
-
-    +++++++++++++++
-    `Todd Munson <https://gitlab.com/tmunson>`__
-    ---------------
-
-    .. image:: https://secure.gravatar.com/avatar/f266db21c3f1e06294ab31304e4f177c?s=80&d=identicon
-      :width: 100%
-
-    +++++++++++++++
-    `Jose E. Roman <https://gitlab.com/joseroman>`__
-    ---------------
-
-    .. image:: https://gitlab.com/uploads/-/system/user/avatar/4331259/avatar.png
-      :width: 100%
-
-    +++++++++++++++
-    `Karl Rupp <https://gitlab.com/karlrupp>`__
-    ---------------
-
-    .. image:: https://gitlab.com/uploads/-/system/user/avatar/1651691/avatar.png
-      :width: 100%
-
-    +++++++++++++++
-    `Patrick Sanan <https://gitlab.com/psanan>`__
-    ---------------
-
-    .. image:: https://gitlab.com/uploads/-/system/user/avatar/3972971/avatar.png
-      :width: 100%
-
-    +++++++++++++++
-    `Barry Smith <https://gitlab.com/BarrySmith>`__
-    ---------------
-
-    .. image:: https://gitlab.com/uploads/-/system/user/avatar/3718257/avatar.png
-      :width: 100%
-
-    +++++++++++++++
-    `Stefano Zampini <https://gitlab.com/stefanozampini>`__
-    ---------------
-
-    .. image:: https://gitlab.com/uploads/-/system/user/avatar/4067501/avatar.png
-      :width: 100%
-
-    +++++++++++++++
-    `Hong Zhang <https://gitlab.com/hongzhangsun>`__
-    ---------------
-
-    .. image:: https://gitlab.com/uploads/-/system/user/avatar/4458631/avatar.png
-      :width: 100%
-
-    +++++++++++++++
-    `Hong Zhang <https://gitlab.com/caidao22>`__
-    ---------------
-
-    .. image:: https://gitlab.com/uploads/-/system/user/avatar/4331267/avatar.png
-      :width: 100%
-
-    +++++++++++++++
-    `Junchao Zhang <https://gitlab.com/jczhang07>`__
-
+    .. grid-item-card:: Junchao Zhang
+       :link: https://gitlab.com/jczhang07
+       :img-top: https://gitlab.com/uploads/-/system/user/avatar/4331267/avatar.png
 
 Emeritus Core Developers
 ========================
 
-.. panels::
-    :container: container-lg pb-3
-    :column: col-lg-4 col-md-4 col-sm-6 col-xs-6 p-2
+.. grid:: 2 3 3 4
 
-    +++++++++++++++
-    Steven J. Benson
-    ---------------
+    .. grid-item-card:: Steven J. Benson
 
-    .. image:: /images/community/team/peter.jpg
-      :width: 100%
+    .. grid-item-card:: Peter Brune
+       :img-top: /images/community/team/peter.jpg
 
-    +++++++++++++++
-    Peter Brune
-    ---------------
+    .. grid-item-card:: Kris Buschelman
+       :img-top: /images/community/team/buschelman.jpg
 
-    .. image:: /images/community/team/buschelman.jpg
-      :width: 100%
+    .. grid-item-card:: Victor Eijkhout
+       :link: https://www.tacc.utexas.edu/staff/victor-eijkhout
+       :img-top: /images/community/team/victor.jpg
 
-    +++++++++++++++
-    Kris Buschelman
-    ---------------
+    .. grid-item-card:: Sean Farley
+       :img-top: /images/community/team/sean.jpg
 
-    .. image:: /images/community/team/victor.jpg
-      :width: 100%
+    .. grid-item-card:: Bill Gropp
+       :link: https://cs.illinois.edu/directory/profile/wgropp
+       :img-top: /images/community/team/bill.gif
 
-    +++++++++++++++
-    `Victor Eijkhout <https://www.tacc.utexas.edu/staff/victor-eijkhout>`__
-    ---------------
+    .. grid-item-card:: Dmitry Karpeev
+       :link: https://www.ci.uchicago.edu/profile/224
+       :img-top: /images/community/team/dmitry.jpg
 
-    .. image:: /images/community/team/sean.jpg
-      :width: 100%
+    .. grid-item-card:: Dinesh Kaushik
+       :img-top: /images/community/team/dinesh.jpg
 
-    +++++++++++++++
-    Sean Farley
-    ---------------
+    .. grid-item-card:: Victor Minden
+       :img-top: /images/community/team/victorminden.jpg
 
-    .. image:: /images/community/team/bill.gif
-      :width: 100%
-
-    +++++++++++++++
-    `William Gropp <https://cs.illinois.edu/directory/profile/wgropp>`__
-    ---------------
-
-    .. image:: /images/community/team/dmitry.jpg
-      :width: 100%
-
-    +++++++++++++++
-    `Dmitry Karpeev <https://www.ci.uchicago.edu/profile/224>`__
-    ---------------
-
-    .. image:: /images/community/team/dinesh.jpg
-      :width: 100%
-
-    +++++++++++++++
-    Dinesh Kaushik
-    ---------------
-
-    .. image:: /images/community/team/victorminden.jpg
-      :width: 100%
-
-    +++++++++++++++
-    Victor Minden
-    ---------------
-
-    .. image:: /images/community/team/sarich.jpg
-      :width: 100%
-
-    +++++++++++++++
-    `Jason Sarich <https://www.anl.gov/mcs/person/jason-sarich>`__
+    .. grid-item-card:: Jason Sarich
+       :link: https://www.anl.gov/mcs/person/jason-sarich
+       :img-top: /images/community/team/sarich.jpg
