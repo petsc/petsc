@@ -117,14 +117,26 @@ PETSC_COMPILE.F = $(call quiet,FC) -c $(FC_FLAGS) $(FFLAGS) $(FCPPFLAGS) $(FC_DE
 ifneq ($(KOKKOS_USE_CUDA_COMPILER),)
   # Kokkos requires nvcc to be in PATH and the C++ compiler to be given in an environmental variable
   KOKC = PATH=`dirname $(CUDAC)`:$(PATH) NVCC_WRAPPER_DEFAULT_COMPILER="$(CUDA_CXX)" $(KOKKOS_BIN)/nvcc_wrapper --expt-extended-lambda
-  PETSC_COMPILE.kokkos.cxx = $(call quiet,KOKC) -c $(CUDAC_FLAGS) ${PETSC_CXXCPPFLAGS} $(CUDACPPFLAGS) $(CUDA_CXXFLAGS) $(MPICXX_INCLUDES)
+  KOKKOS_COMPILE = $(call quiet,KOKC) -c $(CUDAC_FLAGS) ${PETSC_CXXCPPFLAGS} $(CUDACPPFLAGS) $(CUDA_CXXFLAGS) $(MPICXX_INCLUDES)
 else ifneq ($(KOKKOS_USE_HIP_COMPILER),)
-  PETSC_COMPILE.kokkos.cxx = $(PETSC_COMPILE.hip.cpp)
+  KOKKOS_COMPILE = $(PETSC_COMPILE.hip.cpp)
 else ifneq ($(KOKKOS_USE_SYCL_COMPILER),)
-  PETSC_COMPILE.kokkos.cxx = $(PETSC_COMPILE.sycl.cxx)
+  KOKKOS_COMPILE = $(PETSC_COMPILE.sycl.cxx)
 else
-  PETSC_COMPILE.kokkos.cxx = $(PETSC_COMPILE.cxx)
+  KOKKOS_COMPILE = $(PETSC_COMPILE.cxx)
 endif
+# https://github.com/kokkos/kokkos/pull/5473 used a C++17 feature, inline static variables.
+# We found -fvisibility=hidden could hide these variables such that the supposed globally unique
+# variables become local to each file including them and thus have multiple copies (see an example
+# at the end of PR5473). It might be a gcc bug thus we also filed at https://gcc.gnu.org/bugzilla/show_bug.cgi?id=107535
+# See also an older bug report related to visibility, https://gcc.gnu.org/bugzilla/show_bug.cgi?id=59693
+#
+# Our workaround here is to git rid of -fvisibility=hidden from Kokkos compiler options, so that petsc
+# files including Kokkos headers won't be affected by this flag.
+#
+# The solution is not ideal in the sense we have to duplicate the same workaround to any external libraries
+# using C++17 inline static variables. We have to wait for GNU to clarify this issue.
+PETSC_COMPILE.kokkos.cxx = $(filter-out -fvisibility=hidden,$(KOKKOS_COMPILE))
 
 ifneq ($(RAJA_USE_CUDA_COMPILER),)
   PETSC_COMPILE.raja.cxx  = ${CUDAC} $(MPICXX_INCLUDES) ${CUDAC_FLAGS} -x cu -Xcudafe "--display_error_number" -c --compiler-options="${PETSC_CXXCPPFLAGS} ${PETSC_CC_INCLUDES} ${CUDA_CXXFLAGS}" --expt-extended-lambda --expt-relaxed-constexpr
