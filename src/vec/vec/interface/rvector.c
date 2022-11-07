@@ -1900,8 +1900,14 @@ PetscErrorCode VecGetArrayRead(Vec x, const PetscScalar **a)
   if (x->ops->getarrayread) {
     PetscUseTypeMethod(x, getarrayread, a);
   } else if (x->ops->getarray) {
+    PetscObjectState state;
+
     /* VECNEST, VECCUDA, VECKOKKOS etc */
+    // x->ops->getarray may bump the object state, but since we know this is a read-only get
+    // we can just undo that
+    PetscCall(PetscObjectStateGet((PetscObject)x, &state));
     PetscUseTypeMethod(x, getarray, (PetscScalar **)a);
+    PetscCall(PetscObjectStateSet((PetscObject)x, state));
   } else if (x->petscnative) {
     /* VECSTANDARD */
     *a = *((PetscScalar **)x->data);
@@ -1932,7 +1938,13 @@ PetscErrorCode VecRestoreArrayRead(Vec x, const PetscScalar **a)
   } else if (x->ops->restorearrayread) { /* VECNEST */
     PetscUseTypeMethod(x, restorearrayread, a);
   } else { /* No one? */
+    PetscObjectState state;
+
+    // x->ops->restorearray may bump the object state, but since we know this is a read-restore
+    // we can just undo that
+    PetscCall(PetscObjectStateGet((PetscObject)x, &state));
     PetscUseTypeMethod(x, restorearray, (PetscScalar **)a);
+    PetscCall(PetscObjectStateSet((PetscObject)x, state));
   }
   if (a) *a = NULL;
   PetscFunctionReturn(0);
@@ -2182,7 +2194,12 @@ PetscErrorCode VecGetArrayReadAndMemType(Vec x, const PetscScalar **a, PetscMemT
     PetscUseTypeMethod(x, getarrayreadandmemtype, a, mtype);
   } else if (x->ops->getarrayandmemtype) {
     /* VECKOKKOS */
+    PetscObjectState state;
+
+    // see VecGetArrayRead() for why
+    PetscCall(PetscObjectStateGet((PetscObject)x, &state));
     PetscUseTypeMethod(x, getarrayandmemtype, (PetscScalar **)a, mtype);
+    PetscCall(PetscObjectStateSet((PetscObject)x, state));
   } else {
     PetscCall(VecGetArrayRead(x, a));
     if (mtype) *mtype = PETSC_MEMTYPE_HOST;
