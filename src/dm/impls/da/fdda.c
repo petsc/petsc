@@ -266,7 +266,7 @@ PetscErrorCode DMCreateColoring_DA(DM da, ISColoringType ctype, ISColoring *colo
 PetscErrorCode DMCreateColoring_DA_2d_MPIAIJ(DM da, ISColoringType ctype, ISColoring *coloring)
 {
   PetscInt         xs, ys, nx, ny, i, j, ii, gxs, gys, gnx, gny, m, n, M, N, dim, s, k, nc, col;
-  PetscInt         ncolors;
+  PetscInt         ncolors = 0;
   MPI_Comm         comm;
   DMBoundaryType   bx, by;
   DMDAStencilType  st;

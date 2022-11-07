@@ -35,6 +35,7 @@ PetscErrorCode MatFDColoringCreate_SeqXAIJ(Mat mat, ISColoring iscoloring, MatFD
     bs    = 1; /* only bs=1 is supported for SeqAIJ matrix */
     mem   = nz * (sizeof(PetscScalar) + sizeof(PetscInt)) + 3 * m * sizeof(PetscInt);
     bcols = (PetscInt)(0.5 * mem / (m * sizeof(PetscScalar)));
+    if (!bcols) bcols = 1;
     brows = 1000 / bcols;
     if (bcols > nis) bcols = nis;
     if (brows == 0 || brows > m) brows = m;

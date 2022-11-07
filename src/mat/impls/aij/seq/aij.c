@@ -1120,7 +1120,6 @@ PetscErrorCode MatAssemblyEnd_SeqAIJ(Mat A, MatAssemblyType mode)
     fshift += imax[m - 1] - ailen[m - 1];
     ai[m] = ai[m - 1] + ailen[m - 1];
   }
-
   /* reset ilen and imax for each row */
   a->nonzerorowcnt = 0;
   if (A->structure_only) {
@@ -3581,7 +3580,8 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqAIJ,
                                        NULL,
                                        MatCreateGraph_Simple_AIJ,
                                        NULL,
-                                       /*150*/ MatTransposeSymbolic_SeqAIJ};
+                                       /*150*/ MatTransposeSymbolic_SeqAIJ,
+                                       MatEliminateZeros_SeqAIJ};
 
 PetscErrorCode MatSeqAIJSetColumnIndices_SeqAIJ(Mat mat, PetscInt *indices)
 {
@@ -5259,6 +5259,47 @@ PetscErrorCode MatSetSeqMat_SeqAIJ(Mat C, IS rowemb, IS colemb, MatStructure pat
   C->preallocated  = PETSC_TRUE;
   C->assembled     = PETSC_TRUE;
   C->was_assembled = PETSC_FALSE;
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode MatEliminateZeros_SeqAIJ(Mat A)
+{
+  Mat_SeqAIJ *a  = (Mat_SeqAIJ *)A->data;
+  MatScalar  *aa = a->a;
+  PetscInt    m = A->rmap->n, fshift = 0, fshift_prev = 0, i, k;
+  PetscInt   *ailen = a->ilen, *imax = a->imax, *ai = a->i, *aj = a->j, rmax = 0;
+
+  PetscFunctionBegin;
+  PetscCheck(A->assembled, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Cannot eliminate zeros for unassembled matrix");
+  if (m) rmax = ailen[0]; /* determine row with most nonzeros */
+  for (i = 1; i <= m; i++) {
+    /* move each nonzero entry back by the amount of zero slots (fshift) before it*/
+    for (k = ai[i - 1]; k < ai[i]; k++) {
+      if (aa[k] == 0 && aj[k] != i - 1) fshift++;
+      else {
+        if (aa[k] == 0 && aj[k] == i - 1) PetscCall(PetscInfo(A, "Keep the diagonal zero at row %" PetscInt_FMT "\n", i - 1));
+        aa[k - fshift] = aa[k];
+        aj[k - fshift] = aj[k];
+      }
+    }
+    ai[i - 1] -= fshift_prev; // safe to update ai[i-1] now since it will not be used in the next iteration
+    fshift_prev = fshift;
+    /* reset ilen and imax for each row */
+    ailen[i - 1] = imax[i - 1] = ai[i] - fshift - ai[i - 1];
+    a->nonzerorowcnt += ((ai[i] - fshift - ai[i - 1]) > 0);
+    rmax = PetscMax(rmax, ailen[i - 1]);
+  }
+  if (m) {
+    ai[m] -= fshift;
+    a->nz = ai[m];
+  }
+  PetscCall(PetscInfo(A, "Matrix size: %" PetscInt_FMT " X %" PetscInt_FMT "; zeros eliminated: %" PetscInt_FMT "; nonzeros left: %" PetscInt_FMT "\n", m, A->cmap->n, fshift, a->nz));
+  A->nonzerostate -= fshift;
+  A->info.nz_unneeded += (PetscReal)fshift;
+  a->rmax = rmax;
+  if (a->inode.use && a->inode.checked) PetscCall(MatSeqAIJCheckInode(A));
+  PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
   PetscFunctionReturn(0);
 }
 
