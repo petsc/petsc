@@ -1571,9 +1571,8 @@ PetscErrorCode SNESLineSearchGetOptionsPrefix(SNESLineSearch linesearch, const c
 PetscErrorCode SNESLineSearchSetWorkVecs(SNESLineSearch linesearch, PetscInt nwork)
 {
   PetscFunctionBegin;
-  if (linesearch->vec_sol) {
-    PetscCall(VecDuplicateVecs(linesearch->vec_sol, nwork, &linesearch->work));
-  } else SETERRQ(PetscObjectComm((PetscObject)linesearch), PETSC_ERR_USER, "Cannot get linesearch work-vectors without setting a solution vec!");
+  PetscCheck(linesearch->vec_sol, PetscObjectComm((PetscObject)linesearch), PETSC_ERR_USER, "Cannot get linesearch work-vectors without setting a solution vec!");
+  PetscCall(VecDuplicateVecs(linesearch->vec_sol, nwork, &linesearch->work));
   PetscFunctionReturn(0);
 }
 

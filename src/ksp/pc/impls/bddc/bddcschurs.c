@@ -814,10 +814,9 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
       PetscCall(MatCreateSeqDense(PETSC_COMM_SELF, subset_size, subset_size, work, &S_Ej_expl));
       PetscCall(PCBDDCComputeExplicitSchur(S_Ej, sub_schurs->is_symmetric, MAT_REUSE_MATRIX, &S_Ej_expl));
       PetscCall(PetscObjectTypeCompare((PetscObject)S_Ej_expl, MATSEQDENSE, &Sdense));
-      if (Sdense) {
-        for (j = 0; j < subset_size; j++) dummy_idx[j] = local_size + j;
-        PetscCall(MatSetValues(sub_schurs->S_Ej_all, subset_size, dummy_idx, subset_size, dummy_idx, work, INSERT_VALUES));
-      } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Not yet implemented for sparse matrices");
+      PetscCheck(Sdense, PETSC_COMM_SELF, PETSC_ERR_SUP, "Not yet implemented for sparse matrices");
+      for (j = 0; j < subset_size; j++) dummy_idx[j] = local_size + j;
+      PetscCall(MatSetValues(sub_schurs->S_Ej_all, subset_size, dummy_idx, subset_size, dummy_idx, work, INSERT_VALUES));
       PetscCall(MatDestroy(&S_Ej));
       PetscCall(MatDestroy(&S_Ej_expl));
       local_size += subset_size;
@@ -1699,35 +1698,33 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
 
       /* move back factors if needed */
       if (schur_has_vertices && factor_workaround && !sub_schurs->gdsw) {
-        Mat      S_tmp;
-        PetscInt nd = 0;
+        Mat          S_tmp;
+        PetscInt     nd = 0;
+        PetscScalar *data;
 
+        PetscCheck(use_potr, PETSC_COMM_SELF, PETSC_ERR_SUP, "Factor update not yet implemented for non SPD matrices");
         PetscCheck(solver_S, PETSC_COMM_SELF, PETSC_ERR_PLIB, "This should not happen");
         PetscCall(MatFactorGetSchurComplement(F, &S_tmp, NULL));
-        if (use_potr) {
-          PetscScalar *data;
+        PetscCall(MatDenseGetArray(S_tmp, &data));
+        PetscCall(PetscArrayzero(data, size_schur * size_schur));
 
-          PetscCall(MatDenseGetArray(S_tmp, &data));
-          PetscCall(PetscArrayzero(data, size_schur * size_schur));
-
-          if (S_lower_triangular) {
-            cum = 0;
-            for (i = 0; i < size_active_schur; i++) {
-              PetscCall(PetscArraycpy(data + i * (size_schur + 1), schur_factor + cum, size_active_schur - i));
-              cum += size_active_schur - i;
-            }
-          } else {
-            PetscCall(PetscArraycpy(data, schur_factor, size_schur * size_schur));
+        if (S_lower_triangular) {
+          cum = 0;
+          for (i = 0; i < size_active_schur; i++) {
+            PetscCall(PetscArraycpy(data + i * (size_schur + 1), schur_factor + cum, size_active_schur - i));
+            cum += size_active_schur - i;
           }
-          if (sub_schurs->is_dir) {
-            PetscCall(ISGetLocalSize(sub_schurs->is_dir, &nd));
-            for (i = 0; i < nd; i++) data[(i + size_active_schur) * (size_schur + 1)] = schur_factor[cum + i];
-          }
-          /* workaround: since I cannot modify the matrices used inside the solvers for the forward and backward substitutions,
+        } else {
+          PetscCall(PetscArraycpy(data, schur_factor, size_schur * size_schur));
+        }
+        if (sub_schurs->is_dir) {
+          PetscCall(ISGetLocalSize(sub_schurs->is_dir, &nd));
+          for (i = 0; i < nd; i++) data[(i + size_active_schur) * (size_schur + 1)] = schur_factor[cum + i];
+        }
+        /* workaround: since I cannot modify the matrices used inside the solvers for the forward and backward substitutions,
              set the diagonal entry of the Schur factor to a very large value */
-          for (i = size_active_schur + nd; i < size_schur; i++) data[i * (size_schur + 1)] = infty;
-          PetscCall(MatDenseRestoreArray(S_tmp, &data));
-        } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Factor update not yet implemented for non SPD matrices");
+        for (i = size_active_schur + nd; i < size_schur; i++) data[i * (size_schur + 1)] = infty;
+        PetscCall(MatDenseRestoreArray(S_tmp, &data));
         PetscCall(MatFactorRestoreSchurComplement(F, &S_tmp, MAT_FACTOR_SCHUR_FACTORED));
       }
     } else if (factor_workaround && !sub_schurs->gdsw) { /* we need to eliminate any unneeded coupling */

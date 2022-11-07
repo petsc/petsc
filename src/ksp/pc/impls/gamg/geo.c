@@ -703,8 +703,10 @@ PetscErrorCode PCGAMGProlongator_GEO(PC pc, Mat Amat, Mat Gmat, PetscCoarsenData
     PetscCall(MatDestroy(&Gmat2));
 
     /* triangulate */
-    if (dim == 2) {
+    {
       PetscReal metric, tm;
+
+      PetscCheck(dim == 2, comm, PETSC_ERR_PLIB, "3D not implemented for 'geo' AMG");
       PetscCall(triangulateAndFormProl(selected_2, data_stride, coords, nLocalSelected, clid_flid, agg_lists, crsGID, bs, Prol, &metric));
       PetscCall(PetscFree(crsGID));
 
@@ -718,7 +720,7 @@ PetscErrorCode PCGAMGProlongator_GEO(PC pc, Mat Amat, Mat Gmat, PetscCoarsenData
       } else if (metric > .0) {
         PetscCall(PetscInfo(pc, "worst metric for coarse grid = %e\n", (double)metric));
       }
-    } else SETERRQ(comm, PETSC_ERR_PLIB, "3D not implemented for 'geo' AMG");
+    }
     { /* create next coords - output */
       PetscReal *crs_crds;
       PetscCall(PetscMalloc1(dim * nLocalSelected, &crs_crds));

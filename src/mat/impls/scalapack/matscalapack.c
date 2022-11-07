@@ -627,11 +627,10 @@ static PetscErrorCode MatTranspose_ScaLAPACK(Mat A, MatReuse reuse, Mat *B)
 
   PetscFunctionBegin;
   if (reuse == MAT_REUSE_MATRIX) PetscCall(MatTransposeCheckNonzeroState_Private(A, *B));
-  if (reuse == MAT_INITIAL_MATRIX) {
-    PetscCall(MatCreateScaLAPACK(PetscObjectComm((PetscObject)A), a->nb, a->mb, a->N, a->M, a->csrc, a->rsrc, &Bs));
-    *B = Bs;
-  } else SETERRQ(PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "Only MAT_INITIAL_MATRIX supported");
-  b = (Mat_ScaLAPACK *)Bs->data;
+  PetscCheck(reuse == MAT_INITIAL_MATRIX, PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "Only MAT_INITIAL_MATRIX supported");
+  PetscCall(MatCreateScaLAPACK(PetscObjectComm((PetscObject)A), a->nb, a->mb, a->N, a->M, a->csrc, a->rsrc, &Bs));
+  *B = Bs;
+  b  = (Mat_ScaLAPACK *)Bs->data;
   PetscCallBLAS("PBLAStran", PBLAStran_(&a->N, &a->M, &sone, a->loc, &one, &one, a->desc, &zero, b->loc, &one, &one, b->desc));
 #if defined(PETSC_USE_COMPLEX)
   /* undo conjugation */
@@ -661,11 +660,10 @@ static PetscErrorCode MatHermitianTranspose_ScaLAPACK(Mat A, MatReuse reuse, Mat
   PetscScalar    sone = 1.0, zero = 0.0;
 
   PetscFunctionBegin;
-  if (reuse == MAT_INITIAL_MATRIX) {
-    PetscCall(MatCreateScaLAPACK(PetscObjectComm((PetscObject)A), a->nb, a->mb, a->N, a->M, a->csrc, a->rsrc, &Bs));
-    *B = Bs;
-  } else SETERRQ(PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "Only MAT_INITIAL_MATRIX supported");
-  b = (Mat_ScaLAPACK *)Bs->data;
+  PetscCheck(reuse == MAT_INITIAL_MATRIX, PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "Only MAT_INITIAL_MATRIX supported");
+  PetscCall(MatCreateScaLAPACK(PetscObjectComm((PetscObject)A), a->nb, a->mb, a->N, a->M, a->csrc, a->rsrc, &Bs));
+  *B = Bs;
+  b  = (Mat_ScaLAPACK *)Bs->data;
   PetscCallBLAS("PBLAStran", PBLAStran_(&a->N, &a->M, &sone, a->loc, &one, &one, a->desc, &zero, b->loc, &one, &one, b->desc));
   Bs->assembled = PETSC_TRUE;
   PetscFunctionReturn(0);

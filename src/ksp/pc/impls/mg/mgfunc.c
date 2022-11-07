@@ -432,16 +432,18 @@ PetscErrorCode PCMGGetRScale(PC pc, PetscInt l, Vec *rscale)
     Mat      R;
     Vec      X, Y, coarse, fine;
     PetscInt M, N;
+
     PetscCall(PCMGGetRestriction(pc, l, &R));
     PetscCall(MatCreateVecs(R, &X, &Y));
     PetscCall(MatGetSize(R, &M, &N));
+    PetscCheck(N != M, PetscObjectComm((PetscObject)R), PETSC_ERR_SUP, "Restriction matrix is square, cannot determine which Vec is coarser");
     if (M < N) {
       fine   = X;
       coarse = Y;
-    } else if (N < M) {
+    } else {
       fine   = Y;
       coarse = X;
-    } else SETERRQ(PetscObjectComm((PetscObject)R), PETSC_ERR_SUP, "Restriction matrix is square, cannot determine which Vec is coarser");
+    }
     PetscCall(VecSet(fine, 1.));
     PetscCall(MatRestrict(R, fine, coarse));
     PetscCall(VecDestroy(&fine));

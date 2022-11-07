@@ -105,11 +105,10 @@ PetscErrorCode SNESComputeObjective(SNES snes, Vec X, PetscReal *ob)
   PetscValidRealPointer(ob, 3);
   PetscCall(SNESGetDM(snes, &dm));
   PetscCall(DMGetDMSNES(dm, &sdm));
-  if (sdm->ops->computeobjective) {
-    PetscCall(PetscLogEventBegin(SNES_ObjectiveEval, snes, X, 0, 0));
-    PetscCall((sdm->ops->computeobjective)(snes, X, ob, sdm->objectivectx));
-    PetscCall(PetscLogEventEnd(SNES_ObjectiveEval, snes, X, 0, 0));
-  } else SETERRQ(PetscObjectComm((PetscObject)snes), PETSC_ERR_ARG_WRONGSTATE, "Must call SNESSetObjective() before SNESComputeObjective().");
+  PetscCheck(sdm->ops->computeobjective, PetscObjectComm((PetscObject)snes), PETSC_ERR_ARG_WRONGSTATE, "Must call SNESSetObjective() before SNESComputeObjective().");
+  PetscCall(PetscLogEventBegin(SNES_ObjectiveEval, snes, X, 0, 0));
+  PetscCall((sdm->ops->computeobjective)(snes, X, ob, sdm->objectivectx));
+  PetscCall(PetscLogEventEnd(SNES_ObjectiveEval, snes, X, 0, 0));
   PetscFunctionReturn(0);
 }
 

@@ -8919,9 +8919,8 @@ PetscErrorCode MatDiagonalScaleLocal(Mat mat, Vec diag)
     PetscInt n, m;
     PetscCall(VecGetSize(diag, &n));
     PetscCall(MatGetSize(mat, NULL, &m));
-    if (m == n) {
-      PetscCall(MatDiagonalScale(mat, NULL, diag));
-    } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Only supported for sequential matrices when no ghost points/periodic conditions");
+    PetscCheck(m == n, PETSC_COMM_SELF, PETSC_ERR_SUP, "Only supported for sequential matrices when no ghost points/periodic conditions");
+    PetscCall(MatDiagonalScale(mat, NULL, diag));
   } else {
     PetscUseMethod(mat, "MatDiagonalScaleLocal_C", (Mat, Vec), (mat, diag));
   }
@@ -9829,18 +9828,17 @@ static PetscErrorCode MatProduct_Private(Mat A, Mat B, MatReuse scall, PetscReal
     }
     PetscCall(PetscInfo(A, "Calling MatProduct API with MAT_REUSE_MATRIX %s product present and product type %s\n", product ? "with" : "without", MatProductTypes[ptype]));
     if (!product) { /* user provide the dense matrix *C without calling MatProductCreate() or reusing it from previous calls */
-      if (isdense) {
-        PetscCall(MatProductCreate_Private(A, B, NULL, *C));
-        product           = (*C)->product;
-        product->fill     = fill;
-        product->api_user = PETSC_TRUE;
-        product->clear    = PETSC_TRUE;
+      PetscCheck(isdense, PetscObjectComm((PetscObject)(*C)), PETSC_ERR_SUP, "Call MatProductCreate() first");
+      PetscCall(MatProductCreate_Private(A, B, NULL, *C));
+      product           = (*C)->product;
+      product->fill     = fill;
+      product->api_user = PETSC_TRUE;
+      product->clear    = PETSC_TRUE;
 
-        PetscCall(MatProductSetType(*C, ptype));
-        PetscCall(MatProductSetFromOptions(*C));
-        PetscCheck((*C)->ops->productsymbolic, PetscObjectComm((PetscObject)(*C)), PETSC_ERR_SUP, "MatProduct %s not supported for %s and %s", MatProductTypes[ptype], ((PetscObject)A)->type_name, ((PetscObject)B)->type_name);
-        PetscCall(MatProductSymbolic(*C));
-      } else SETERRQ(PetscObjectComm((PetscObject)(*C)), PETSC_ERR_SUP, "Call MatProductCreate() first");
+      PetscCall(MatProductSetType(*C, ptype));
+      PetscCall(MatProductSetFromOptions(*C));
+      PetscCheck((*C)->ops->productsymbolic, PetscObjectComm((PetscObject)(*C)), PETSC_ERR_SUP, "MatProduct %s not supported for %s and %s", MatProductTypes[ptype], ((PetscObject)A)->type_name, ((PetscObject)B)->type_name);
+      PetscCall(MatProductSymbolic(*C));
     } else { /* user may change input matrices A or B when REUSE */
       PetscCall(MatProductReplaceMats(A, B, NULL, *C));
     }
@@ -10615,9 +10613,7 @@ PetscErrorCode MatTransposeColoringCreate(Mat mat, ISColoring iscoloring, MatTra
   PetscCall(PetscHeaderCreate(c, MAT_TRANSPOSECOLORING_CLASSID, "MatTransposeColoring", "Matrix product C=A*B^T via coloring", "Mat", comm, MatTransposeColoringDestroy, NULL));
 
   c->ctype = iscoloring->ctype;
-  if (mat->ops->transposecoloringcreate) {
-    PetscUseTypeMethod(mat, transposecoloringcreate, iscoloring, c);
-  } else SETERRQ(PetscObjectComm((PetscObject)mat), PETSC_ERR_SUP, "Code not yet written for matrix type %s", ((PetscObject)mat)->type_name);
+  PetscUseTypeMethod(mat, transposecoloringcreate, iscoloring, c);
 
   *color = c;
   PetscCall(PetscLogEventEnd(MAT_TransposeColoringCreate, mat, 0, 0, 0));

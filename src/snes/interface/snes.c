@@ -576,19 +576,20 @@ static PetscErrorCode SNESSetUpMatrixFree_Private(SNES snes, PetscBool hasOperat
     PetscCall(MatCreateVecs(A ? A : B, NULL, &snes->vec_func));
   }
 
+  PetscCheck(version == 1 || version == 2, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "matrix-free operator routines, only version 1 and 2");
   if (version == 1) {
     PetscCall(MatCreateSNESMF(snes, &J));
     PetscCall(MatMFFDSetOptionsPrefix(J, ((PetscObject)snes)->prefix));
     PetscCall(MatSetFromOptions(J));
     /* TODO: the version 2 code should be merged into the MatCreateSNESMF() and MatCreateMFFD() infrastructure and then removed */
-  } else if (version == 2) {
+  } else /* if (version == 2) */ {
     PetscCheck(snes->vec_func, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "SNESSetFunction() must be called first");
 #if !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_REAL_SINGLE) && !defined(PETSC_USE_REAL___FLOAT128) && !defined(PETSC_USE_REAL___FP16)
     PetscCall(MatCreateSNESMFMore(snes, snes->vec_func, &J));
 #else
     SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "matrix-free operator routines (version 2)");
 #endif
-  } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "matrix-free operator routines, only version 1 and 2");
+  }
 
   /* attach any user provided null space that was on Amat to the newly created matrix free matrix */
   if (snes->jacobian) {
@@ -2422,6 +2423,7 @@ PetscErrorCode SNESComputeFunction(SNES snes, Vec x, Vec y)
 
   PetscCall(SNESGetDM(snes, &dm));
   PetscCall(DMGetDMSNES(dm, &sdm));
+  PetscCheck(sdm->ops->computefunction || snes->vec_rhs, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Must call SNESSetFunction() or SNESSetDM() before SNESComputeFunction(), likely called from SNESSolve().");
   if (sdm->ops->computefunction) {
     if (sdm->ops->computefunction != SNESObjectiveComputeFunctionDefaultFD) PetscCall(PetscLogEventBegin(SNES_FunctionEval, snes, x, y, 0));
     PetscCall(VecLockReadPush(x));
@@ -2435,9 +2437,9 @@ PetscErrorCode SNESComputeFunction(SNES snes, Vec x, Vec y)
     }
     PetscCall(VecLockReadPop(x));
     if (sdm->ops->computefunction != SNESObjectiveComputeFunctionDefaultFD) PetscCall(PetscLogEventEnd(SNES_FunctionEval, snes, x, y, 0));
-  } else if (snes->vec_rhs) {
+  } else /* if (snes->vec_rhs) */ {
     PetscCall(MatMult(snes->jacobian, x, y));
-  } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Must call SNESSetFunction() or SNESSetDM() before SNESComputeFunction(), likely called from SNESSolve().");
+  }
   if (snes->vec_rhs) PetscCall(VecAXPY(y, -1.0, snes->vec_rhs));
   snes->nfuncs++;
   /*
@@ -2540,11 +2542,10 @@ PetscErrorCode SNESComputeNGS(SNES snes, Vec b, Vec x)
   PetscCall(PetscLogEventBegin(SNES_NGSEval, snes, x, b, 0));
   PetscCall(SNESGetDM(snes, &dm));
   PetscCall(DMGetDMSNES(dm, &sdm));
-  if (sdm->ops->computegs) {
-    if (b) PetscCall(VecLockReadPush(b));
-    PetscCallBack("SNES callback NGS", (*sdm->ops->computegs)(snes, x, b, sdm->gsctx));
-    if (b) PetscCall(VecLockReadPop(b));
-  } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Must call SNESSetNGS() before SNESComputeNGS(), likely called from SNESSolve().");
+  PetscCheck(sdm->ops->computegs, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Must call SNESSetNGS() before SNESComputeNGS(), likely called from SNESSolve().");
+  if (b) PetscCall(VecLockReadPush(b));
+  PetscCallBack("SNES callback NGS", (*sdm->ops->computegs)(snes, x, b, sdm->gsctx));
+  if (b) PetscCall(VecLockReadPop(b));
   PetscCall(PetscLogEventEnd(SNES_NGSEval, snes, x, b, 0));
   PetscFunctionReturn(0);
 }
@@ -5321,6 +5322,7 @@ PetscErrorCode KSPPreSolve_SNESEW(KSP ksp, Vec b, Vec x, SNES snes)
     rtol = kctx->rtol_0; /* first time in, so use the original user rtol */
     PetscCall(VecNorm(snes->vec_func, NORM_2, &kctx->norm_first));
   } else {
+    PetscCheck(kctx->version >= 1 && kctx->version <= 4, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Only versions 1-4 are supported: %" PetscInt_FMT, kctx->version);
     if (kctx->version == 1) {
       rtol = PetscAbsReal(snes->norm - kctx->lresid_last) / kctx->norm_last;
       stol = PetscPowReal(kctx->rtol_last, kctx->alpha2);
@@ -5339,7 +5341,8 @@ PetscErrorCode KSPPreSolve_SNESEW(KSP ksp, Vec b, Vec x, SNES snes)
       stol = kctx->gamma * (kctx->norm_first * snes->rtol) / snes->norm;
       stol = PetscMax(rtol, stol);
       rtol = PetscMin(kctx->rtol_0, stol);
-    } else if (kctx->version == 4) { /* H.-B. An et al. Journal of Computational and Applied Mathematics 200 (2007) 47-60 */
+    } else /* if (kctx->version == 4) */ {
+      /* H.-B. An et al. Journal of Computational and Applied Mathematics 200 (2007) 47-60 */
       PetscReal ared = PetscAbsReal(kctx->norm_last - snes->norm);
       PetscReal pred = PetscAbsReal(kctx->norm_last - kctx->lresid_last);
       PetscReal rk   = ared / pred;
@@ -5357,7 +5360,7 @@ PetscErrorCode KSPPreSolve_SNESEW(KSP ksp, Vec b, Vec x, SNES snes)
       kctx->rtol_last_2 = kctx->rtol_last;
       kctx->rk_last_2   = kctx->rk_last;
       kctx->rk_last     = rk;
-    } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Only versions 1-4 are supported: %" PetscInt_FMT, kctx->version);
+    }
   }
   /* safeguard: avoid rtol greater than rtol_max */
   rtol = PetscMin(rtol, kctx->rtol_max);

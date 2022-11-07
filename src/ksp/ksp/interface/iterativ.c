@@ -1590,10 +1590,9 @@ PetscErrorCode KSPBuildSolutionDefault(KSP ksp, Vec v, Vec *V)
   PetscFunctionBegin;
   if (ksp->pc_side == PC_RIGHT) {
     if (ksp->pc) {
-      if (v) {
-        PetscCall(KSP_PCApply(ksp, ksp->vec_sol, v));
-        *V = v;
-      } else SETERRQ(PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "Not working with right preconditioner");
+      PetscCheck(v, PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "Not working with right preconditioner");
+      PetscCall(KSP_PCApply(ksp, ksp->vec_sol, v));
+      *V = v;
     } else {
       if (v) {
         PetscCall(VecCopy(ksp->vec_sol, v));
@@ -1603,10 +1602,9 @@ PetscErrorCode KSPBuildSolutionDefault(KSP ksp, Vec v, Vec *V)
   } else if (ksp->pc_side == PC_SYMMETRIC) {
     if (ksp->pc) {
       PetscCheck(!ksp->transpose_solve, PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "Not working with symmetric preconditioner and transpose solve");
-      if (v) {
-        PetscCall(PCApplySymmetricRight(ksp->pc, ksp->vec_sol, v));
-        *V = v;
-      } else SETERRQ(PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "Not working with symmetric preconditioner");
+      PetscCheck(v, PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "Not working with symmetric preconditioner");
+      PetscCall(PCApplySymmetricRight(ksp->pc, ksp->vec_sol, v));
+      *V = v;
     } else {
       if (v) {
         PetscCall(VecCopy(ksp->vec_sol, v));

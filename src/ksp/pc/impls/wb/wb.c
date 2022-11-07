@@ -689,11 +689,12 @@ PetscErrorCode PCSetUp_Exotic(PC pc)
   PetscFunctionBegin;
   PetscCheck(pc->dm, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_WRONGSTATE, "Need to call PCSetDM() before using this PC");
   PetscCall(PCGetOperators(pc, NULL, &A));
+  PetscCheck(ex->type == PC_EXOTIC_FACE || ex->type == PC_EXOTIC_WIREBASKET, PetscObjectComm((PetscObject)pc), PETSC_ERR_PLIB, "Unknown exotic coarse space %d", ex->type);
   if (ex->type == PC_EXOTIC_FACE) {
     PetscCall(DMDAGetFaceInterpolation(pc, pc->dm, ex, A, reuse, &ex->P));
-  } else if (ex->type == PC_EXOTIC_WIREBASKET) {
+  } else /* if (ex->type == PC_EXOTIC_WIREBASKET) */ {
     PetscCall(DMDAGetWireBasketInterpolation(pc, pc->dm, ex, A, reuse, &ex->P));
-  } else SETERRQ(PetscObjectComm((PetscObject)pc), PETSC_ERR_PLIB, "Unknown exotic coarse space %d", ex->type);
+  }
   PetscCall(PCMGSetInterpolation(pc, 1, ex->P));
   /* if PC has attached DM we must remove it or the PCMG will use it to compute incorrect sized vectors and interpolations */
   PetscCall(PCSetDM(pc, NULL));

@@ -33,10 +33,9 @@ static PetscErrorCode PCBDDCMatTransposeMatSolve_SeqDense(Mat A, Mat B, Mat X)
   PetscCall(PetscArraycpy(x, b, m * nrhs));
   PetscCall(MatDenseRestoreArrayRead(B, &b));
 
-  if (A->factortype == MAT_FACTOR_LU) {
-    PetscCallBLAS("LAPACKgetrs", LAPACKgetrs_("T", &m, &nrhs, mat->v, &mat->lda, mat->pivots, x, &m, &info));
-    PetscCheck(!info, PETSC_COMM_SELF, PETSC_ERR_LIB, "GETRS - Bad solve");
-  } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Only LU factor supported");
+  PetscCheck(A->factortype == MAT_FACTOR_LU, PETSC_COMM_SELF, PETSC_ERR_SUP, "Only LU factor supported");
+  PetscCallBLAS("LAPACKgetrs", LAPACKgetrs_("T", &m, &nrhs, mat->v, &mat->lda, mat->pivots, x, &m, &info));
+  PetscCheck(!info, PETSC_COMM_SELF, PETSC_ERR_LIB, "GETRS - Bad solve");
 
   PetscCall(MatDenseRestoreArray(X, &x));
   PetscCall(PetscLogFlops(nrhs * (2.0 * m * m - m)));

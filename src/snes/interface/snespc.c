@@ -38,7 +38,6 @@ PetscErrorCode SNESApplyNPC(SNES snes, Vec x, Vec f, Vec y)
     PetscCall(SNESSolve(snes->npc, snes->vec_rhs, y));
     PetscCall(PetscLogEventEnd(SNES_NPCSolve, snes->npc, x, y, 0));
     PetscCall(VecAYPX(y, -1.0, x));
-    PetscFunctionReturn(0);
   }
   PetscFunctionReturn(0);
 }
@@ -83,25 +82,24 @@ PetscErrorCode SNESGetNPCFunction(SNES snes, Vec F, PetscReal *fnorm)
   Vec              FPC, XPC;
 
   PetscFunctionBegin;
-  if (snes->npc) {
-    PetscCall(SNESGetNPCSide(snes->npc, &npcside));
-    PetscCall(SNESGetFunctionType(snes->npc, &functype));
-    PetscCall(SNESGetNormSchedule(snes->npc, &normschedule));
+  PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
+  if (fnorm) PetscValidRealPointer(fnorm, 3);
+  PetscCheck(snes->npc, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "No nonlinear preconditioner set");
+  PetscCall(SNESGetNPCSide(snes->npc, &npcside));
+  PetscCall(SNESGetFunctionType(snes->npc, &functype));
+  PetscCall(SNESGetNormSchedule(snes->npc, &normschedule));
 
-    /* check if the function is valid based upon how the inner solver is preconditioned */
-    if (normschedule != SNES_NORM_NONE && normschedule != SNES_NORM_INITIAL_ONLY && (npcside == PC_RIGHT || functype == SNES_FUNCTION_UNPRECONDITIONED)) {
-      PetscCall(SNESGetFunction(snes->npc, &FPC, NULL, NULL));
-      if (FPC) {
-        if (fnorm) PetscCall(VecNorm(FPC, NORM_2, fnorm));
-        PetscCall(VecCopy(FPC, F));
-      } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Nonlinear preconditioner has no function");
-    } else {
-      PetscCall(SNESGetSolution(snes->npc, &XPC));
-      if (XPC) {
-        PetscCall(SNESComputeFunction(snes->npc, XPC, F));
-        if (fnorm) PetscCall(VecNorm(F, NORM_2, fnorm));
-      } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Nonlinear preconditioner has no solution");
-    }
-  } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "No nonlinear preconditioner set");
+  /* check if the function is valid based upon how the inner solver is preconditioned */
+  if (normschedule != SNES_NORM_NONE && normschedule != SNES_NORM_INITIAL_ONLY && (npcside == PC_RIGHT || functype == SNES_FUNCTION_UNPRECONDITIONED)) {
+    PetscCall(SNESGetFunction(snes->npc, &FPC, NULL, NULL));
+    PetscCheck(FPC, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Nonlinear preconditioner has no function");
+    if (fnorm) PetscCall(VecNorm(FPC, NORM_2, fnorm));
+    PetscCall(VecCopy(FPC, F));
+  } else {
+    PetscCall(SNESGetSolution(snes->npc, &XPC));
+    PetscCheck(XPC, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Nonlinear preconditioner has no solution");
+    PetscCall(SNESComputeFunction(snes->npc, XPC, F));
+    if (fnorm) PetscCall(VecNorm(F, NORM_2, fnorm));
+  }
   PetscFunctionReturn(0);
 }

@@ -468,10 +468,9 @@ PetscErrorCode KSPSetFromOptions(KSP ksp)
 
     PetscCall(MatNullSpaceCreate(comm, PETSC_TRUE, 0, NULL, &nsp));
     if (ksp->pc) PetscCall(PCGetOperators(ksp->pc, &Amat, NULL));
-    if (Amat) {
-      PetscCall(MatSetNullSpace(Amat, nsp));
-      PetscCall(MatNullSpaceDestroy(&nsp));
-    } else SETERRQ(comm, PETSC_ERR_ARG_WRONGSTATE, "Cannot set nullspace, matrix has not yet been provided");
+    PetscCheck(Amat, comm, PETSC_ERR_ARG_WRONGSTATE, "Cannot set nullspace, matrix has not yet been provided");
+    PetscCall(MatSetNullSpace(Amat, nsp));
+    PetscCall(MatNullSpaceDestroy(&nsp));
   }
 
   flg = PETSC_FALSE;

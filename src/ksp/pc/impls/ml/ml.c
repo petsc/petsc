@@ -540,12 +540,13 @@ PetscErrorCode PCSetUp_ML(PC pc)
 
       PetscCall(PetscObjectBaseTypeCompare((PetscObject)A, MATSEQAIJ, &isSeq));
       PetscCall(PetscObjectBaseTypeCompare((PetscObject)A, MATMPIAIJ, &isMPI));
+      PetscCheck(isMPI || isSeq, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_WRONG, "Matrix type '%s' cannot be used with ML. ML can only handle AIJ matrices.", ((PetscObject)A)->type_name);
       if (isMPI) {
         PetscCall(MatConvert_MPIAIJ_ML(A, NULL, MAT_INITIAL_MATRIX, &Aloc));
-      } else if (isSeq) {
+      } else {
         Aloc = A;
         PetscCall(PetscObjectReference((PetscObject)Aloc));
-      } else SETERRQ(PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_WRONG, "Matrix type '%s' cannot be used with ML. ML can only handle AIJ matrices.", ((PetscObject)A)->type_name);
+      }
 
       PetscCall(MatGetSize(Aloc, &m, &nlocal_allcols));
       PetscMLdata = pc_ml->PetscMLdata;
@@ -603,12 +604,13 @@ PetscErrorCode PCSetUp_ML(PC pc)
   pc_ml->size = size;
   PetscCall(PetscObjectBaseTypeCompare((PetscObject)A, MATSEQAIJ, &isSeq));
   PetscCall(PetscObjectBaseTypeCompare((PetscObject)A, MATMPIAIJ, &isMPI));
+  PetscCheck(isMPI || isSeq, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_WRONG, "Matrix type '%s' cannot be used with ML. ML can only handle AIJ matrices.", ((PetscObject)A)->type_name);
   if (isMPI) {
     PetscCall(MatConvert_MPIAIJ_ML(A, NULL, MAT_INITIAL_MATRIX, &Aloc));
-  } else if (isSeq) {
+  } else {
     Aloc = A;
     PetscCall(PetscObjectReference((PetscObject)Aloc));
-  } else SETERRQ(PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_WRONG, "Matrix type '%s' cannot be used with ML. ML can only handle AIJ matrices.", ((PetscObject)A)->type_name);
+  }
 
   /* create and initialize struct 'PetscMLdata' */
   PetscCall(PetscNew(&PetscMLdata));
