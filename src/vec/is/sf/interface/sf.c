@@ -2360,7 +2360,7 @@ PetscErrorCode PetscSFConcatenate(MPI_Comm comm, PetscInt nsfs, PetscSF sfs[], P
   PetscMPIInt  rank, size;
 
   PetscFunctionBegin;
-  {
+  if (PetscDefined(USE_DEBUG)) {
     PetscSF dummy; /* just to have a PetscObject on comm for input validation */
 
     PetscCall(PetscSFCreate(comm, &dummy));
