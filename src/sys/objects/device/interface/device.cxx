@@ -641,7 +641,7 @@ PetscErrorCode PetscDeviceInitializeFromOptions_Internal(MPI_Comm comm)
           PetscCall(PetscInfo(nullptr, "PetscDevice %s set as default device type due to eager initialization\n", PetscDeviceTypes[deviceType]));
         }
       } else if (initType == PETSC_DEVICE_INIT_NONE) {
-        if (deviceType != PETSC_DEVICE_HOST) PetscCheck(deviceType != deviceContextInitDevice, comm, PETSC_ERR_USER_INPUT, "Cannot explicitly disable the device set as default device type (%s)", PetscDeviceTypes[deviceType]);
+        if (deviceType != PETSC_DEVICE_HOST) PetscCheck(!defaultDeviceSet || (deviceType != deviceContextInitDevice), comm, PETSC_ERR_USER_INPUT, "Cannot explicitly disable the device set as default device type (%s)", PetscDeviceTypes[deviceType]);
       }
     }
   }
