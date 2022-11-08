@@ -937,29 +937,28 @@ template <device::cupm::DeviceType T, typename D>
 template <PetscMemType mtype>
 inline PetscErrorCode Vec_CUPMBase<T, D>::placearray(Vec v, const PetscScalar *a) noexcept
 {
+  PetscDeviceContext dctx;
+
   PetscFunctionBegin;
   static_assert((mtype == PETSC_MEMTYPE_HOST) || (mtype == PETSC_MEMTYPE_DEVICE), "");
   PetscCheckTypeNames(v, VECSEQCUPM(), VECMPICUPM());
   PetscCall(CheckPointerMatchesMemType_(a, mtype));
+  PetscCall(GetHandles_(&dctx));
   if (PetscMemTypeHost(mtype)) {
-    PetscDeviceContext dctx;
-
-    PetscCall(GetHandles_(&dctx));
     PetscCall(CopyToHost_(dctx, v));
     PetscCall(VecPlaceArray_IMPL(v, a));
     v->offloadmask = PETSC_OFFLOAD_CPU;
   } else {
-    PetscCall(VecCUPMAllocateCheck_(v));
     PetscCall(VecIMPLAllocateCheck_(v));
     {
-      auto &device_array = VecCUPMCast(v)->array_d;
       auto &backup_array = VecIMPLCast(v)->unplacedarray;
 
       PetscCheck(!backup_array, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "VecPlaceArray() was already called on this vector, without a call to VecResetArray()");
+      PetscCall(CopyToDevice_(dctx, v));
       PetscCall(PetscObjectStateIncrease(PetscObjectCast(v)));
-      backup_array = device_array;
+      backup_array = util::exchange(VecCUPMCast(v)->array_d, const_cast<PetscScalar *>(a));
       // only update the offload mask if we actually assign a pointer
-      if ((device_array = const_cast<PetscScalar *>(a))) v->offloadmask = PETSC_OFFLOAD_GPU;
+      if (a) v->offloadmask = PETSC_OFFLOAD_GPU;
     }
   }
   PetscFunctionReturn(0);
@@ -970,6 +969,7 @@ template <device::cupm::DeviceType T, typename D>
 template <PetscMemType mtype>
 inline PetscErrorCode Vec_CUPMBase<T, D>::replacearray(Vec v, const PetscScalar *a) noexcept
 {
+  const auto         aptr = const_cast<PetscScalar *>(a);
   PetscDeviceContext dctx;
 
   PetscFunctionBegin;
@@ -991,18 +991,23 @@ inline PetscErrorCode Vec_CUPMBase<T, D>::replacearray(Vec v, const PetscScalar 
 
         PetscCall(PetscFree(host_array));
       }
-      host_array       = const_cast<PetscScalar *>(a);
+      host_array       = aptr;
       vimpl->array     = host_array;
       v->pinned_memory = PETSC_FALSE; // REVIEW ME: we can determine this
       v->offloadmask   = PETSC_OFFLOAD_CPU;
     }
   } else {
     PetscCall(VecCUPMAllocateCheck_(v));
-    PetscCall(ResetAllocatedDevicePtr_(dctx, v, const_cast<PetscScalar *>(a)));
-    // don't update the offloadmask if placed pointer is NULL
-    if ((VecCUPMCast(v)->array_d = VecCUPMCast(v)->array_allocated_d)) v->offloadmask = PETSC_OFFLOAD_GPU;
-    PetscCall(PetscObjectStateIncrease(PetscObjectCast(v)));
+    {
+      const auto vcu = VecCUPMCast(v);
+
+      PetscCall(ResetAllocatedDevicePtr_(dctx, v, aptr));
+      // don't update the offloadmask if placed pointer is NULL
+      vcu->array_d = vcu->array_allocated_d /* = aptr */;
+      if (aptr) v->offloadmask = PETSC_OFFLOAD_GPU;
+    }
   }
+  PetscCall(PetscObjectStateIncrease(PetscObjectCast(v)));
   PetscFunctionReturn(0);
 }
 
@@ -1036,10 +1041,12 @@ inline PetscErrorCode Vec_CUPMBase<T, D>::resetarray(Vec v) noexcept
       PetscCall(CopyToDevice_(dctx, v));
       PetscCall(PetscObjectStateIncrease(PetscObjectCast(v)));
       // Need to reset the offloadmask. If we had a stashed pointer we are on the GPU,
-      // otherwise check if the host has a valid pointer. If neither, then we are not allocated.
-      if ((vcu->array_d = host_array)) {
-        v->offloadmask = PETSC_OFFLOAD_GPU;
+      // otherwise check if the host has a valid pointer. If neither, then we are not
+      // allocated.
+      vcu->array_d = host_array;
+      if (host_array) {
         host_array     = nullptr;
+        v->offloadmask = PETSC_OFFLOAD_GPU;
       } else if (vimpl->array) {
         v->offloadmask = PETSC_OFFLOAD_CPU;
       } else {
@@ -1135,7 +1142,6 @@ inline PetscErrorCode Vec_CUPMBase<T, D>::Initialize_CUPMBase(Vec v, PetscBool a
   }
   if (host_array) {
     PetscCall(CheckPointerMatchesMemType_(host_array, PETSC_MEMTYPE_HOST));
-    PetscCall(HostAllocateCheck_(dctx, v));
     VecIMPLCast(v)->array = host_array;
   }
   if (allocate_missing) {
@@ -1194,23 +1200,6 @@ inline PetscErrorCode Vec_CUPMBase<T, D>::Duplicate_CUPMBase(Vec v, Vec *y, Pets
   PetscFunctionReturn(0);
 }
 
-namespace
-{
-
-PETSC_NODISCARD inline PetscErrorCode ChangeDefaultRandType(PetscRandomType target, char **ptr) noexcept
-{
-  PetscFunctionBegin;
-  PetscValidPointer(ptr, 2);
-  PetscValidCharPointer(*ptr, 2);
-  if (std::strcmp(target, *ptr)) {
-    PetscCall(PetscFree(*ptr));
-    PetscCall(PetscStrallocpy(target, ptr));
-  }
-  PetscFunctionReturn(0);
-}
-
-} // anonymous namespace
-
   #define VecSetOp_CUPM(op_name, op_host, ...) \
     do { \
       if (usehost) { \
@@ -1224,21 +1213,35 @@ PETSC_NODISCARD inline PetscErrorCode ChangeDefaultRandType(PetscRandomType targ
 template <device::cupm::DeviceType T, typename D>
 inline PetscErrorCode Vec_CUPMBase<T, D>::BindToCPU_CUPMBase(Vec v, PetscBool usehost, PetscDeviceContext dctx) noexcept
 {
+  const auto change_default_rand_type = [](PetscRandomType target, char **ptr) {
+    PetscFunctionBegin;
+    PetscValidPointer(ptr, 2);
+    PetscValidCharPointer(*ptr, 2);
+    if (std::strcmp(target, *ptr)) {
+      PetscCall(PetscFree(*ptr));
+      PetscCall(PetscStrallocpy(target, ptr));
+    }
+    PetscFunctionReturn(0);
+  };
+
   PetscFunctionBegin;
-  if ((v->boundtocpu = usehost)) PetscCall(CopyToHost_(dctx, v));
-  PetscCall(ChangeDefaultRandType(usehost ? PETSCRANDER48 : PETSCDEVICERAND(), &v->defaultrandtype));
+  v->boundtocpu = usehost;
+  if (usehost) PetscCall(CopyToHost_(dctx, v));
+  PetscCall(change_default_rand_type(usehost ? PETSCRANDER48 : PETSCDEVICERAND(), &v->defaultrandtype));
 
   // set the base functions that are guaranteed to be the same for both
-  v->ops->duplicate    = D::duplicate;
-  v->ops->create       = create;
-  v->ops->destroy      = destroy;
-  v->ops->bindtocpu    = D::bindtocpu;
+  v->ops->duplicate = D::duplicate;
+  v->ops->create    = create;
+  v->ops->destroy   = destroy;
+  v->ops->bindtocpu = D::bindtocpu;
+  // Note that setting these to NULL on host breaks convergence in certain areas. I don't know
+  // why, and I don't know how, but it is IMPERATIVE these are set as such!
   v->ops->replacearray = replacearray<PETSC_MEMTYPE_HOST>;
+  v->ops->restorearray = restorearray<PETSC_MEMTYPE_HOST, PETSC_MEMORY_ACCESS_READ_WRITE>;
 
   // set device-only common functions
   VecSetOp_CUPM(dotnorm2, nullptr, D::dotnorm2);
   VecSetOp_CUPM(getarray, nullptr, getarray<PETSC_MEMTYPE_HOST, PETSC_MEMORY_ACCESS_READ_WRITE>);
-  VecSetOp_CUPM(restorearray, nullptr, restorearray<PETSC_MEMTYPE_HOST, PETSC_MEMORY_ACCESS_READ_WRITE>);
   VecSetOp_CUPM(getarraywrite, nullptr, getarray<PETSC_MEMTYPE_HOST, PETSC_MEMORY_ACCESS_WRITE>);
   VecSetOp_CUPM(restorearraywrite, nullptr, restorearray<PETSC_MEMTYPE_HOST, PETSC_MEMORY_ACCESS_WRITE>);
 
