@@ -289,8 +289,8 @@ PetscErrorCode MatCreateColmap_MPIAIJ_Private(Mat mat)
   PetscFunctionBegin;
   PetscCheck(!n || aij->garray, PETSC_COMM_SELF, PETSC_ERR_PLIB, "MPIAIJ Matrix was assembled but is missing garray");
 #if defined(PETSC_USE_CTABLE)
-  PetscCall(PetscTableCreate(n, mat->cmap->N + 1, &aij->colmap));
-  for (i = 0; i < n; i++) PetscCall(PetscTableAdd(aij->colmap, aij->garray[i] + 1, i + 1, INSERT_VALUES));
+  PetscCall(PetscHMapICreateWithSize(n, &aij->colmap));
+  for (i = 0; i < n; i++) PetscCall(PetscHMapISetWithMode(aij->colmap, aij->garray[i] + 1, i + 1, INSERT_VALUES));
 #else
   PetscCall(PetscCalloc1(mat->cmap->N + 1, &aij->colmap));
   for (i = 0; i < n; i++) aij->colmap[aij->garray[i]] = i + 1;
@@ -485,7 +485,7 @@ PetscErrorCode MatSetValues_MPIAIJ(Mat mat, PetscInt m, const PetscInt im[], Pet
           if (mat->was_assembled) {
             if (!aij->colmap) PetscCall(MatCreateColmap_MPIAIJ_Private(mat));
 #if defined(PETSC_USE_CTABLE)
-            PetscCall(PetscTableFind(aij->colmap, in[j] + 1, &col)); /* map global col ids to local ones */
+            PetscCall(PetscHMapIGetWithDefault(aij->colmap, in[j] + 1, 0, &col)); /* map global col ids to local ones */
             col--;
 #else
             col = aij->colmap[in[j]] - 1;
@@ -645,7 +645,7 @@ PetscErrorCode MatGetValues_MPIAIJ(Mat mat, PetscInt m, const PetscInt idxm[], P
         } else {
           if (!aij->colmap) PetscCall(MatCreateColmap_MPIAIJ_Private(mat));
 #if defined(PETSC_USE_CTABLE)
-          PetscCall(PetscTableFind(aij->colmap, idxn[j] + 1, &col));
+          PetscCall(PetscHMapIGetWithDefault(aij->colmap, idxn[j] + 1, 0, &col));
           col--;
 #else
           col = aij->colmap[idxn[j]] - 1;
@@ -1133,7 +1133,7 @@ PetscErrorCode MatDestroy_MPIAIJ(Mat mat)
   PetscCall(MatDestroy(&aij->A));
   PetscCall(MatDestroy(&aij->B));
 #if defined(PETSC_USE_CTABLE)
-  PetscCall(PetscTableDestroy(&aij->colmap));
+  PetscCall(PetscHMapIDestroy(&aij->colmap));
 #else
   PetscCall(PetscFree(aij->colmap));
 #endif
@@ -2913,7 +2913,7 @@ PetscErrorCode MatMPIAIJSetPreallocation_MPIAIJ(Mat B, PetscInt d_nz, const Pets
   b = (Mat_MPIAIJ *)B->data;
 
 #if defined(PETSC_USE_CTABLE)
-  PetscCall(PetscTableDestroy(&b->colmap));
+  PetscCall(PetscHMapIDestroy(&b->colmap));
 #else
   PetscCall(PetscFree(b->colmap));
 #endif
@@ -2955,7 +2955,7 @@ PetscErrorCode MatResetPreallocation_MPIAIJ(Mat B)
   b = (Mat_MPIAIJ *)B->data;
 
 #if defined(PETSC_USE_CTABLE)
-  PetscCall(PetscTableDestroy(&b->colmap));
+  PetscCall(PetscHMapIDestroy(&b->colmap));
 #else
   PetscCall(PetscFree(b->colmap));
 #endif
@@ -3002,7 +3002,7 @@ PetscErrorCode MatDuplicate_MPIAIJ(Mat matin, MatDuplicateOption cpvalues, Mat *
 
   if (oldmat->colmap) {
 #if defined(PETSC_USE_CTABLE)
-    PetscCall(PetscTableCreateCopy(oldmat->colmap, &a->colmap));
+    PetscCall(PetscHMapIDuplicate(oldmat->colmap, &a->colmap));
 #else
     PetscCall(PetscMalloc1(mat->cmap->N, &a->colmap));
     PetscCall(PetscArraycpy(a->colmap, oldmat->colmap, mat->cmap->N));
@@ -5653,8 +5653,7 @@ PetscErrorCode MatGetBrowsOfAcols_MPIXAIJ(Mat A, Mat P, PetscInt dof, MatReuse r
    * */
   if (reuse == MAT_INITIAL_MATRIX) {
     /* Use a hash table to figure out unique keys */
-    PetscCall(PetscHMapICreate(&hamp));
-    PetscCall(PetscHMapIResize(hamp, a->B->cmap->n));
+    PetscCall(PetscHMapICreateWithSize(a->B->cmap->n, &hamp));
     PetscCall(PetscCalloc1(a->B->cmap->n, &mapping));
     count = 0;
     /* Assume that  a->g is sorted, otherwise the following does not make sense */
@@ -5671,7 +5670,7 @@ PetscErrorCode MatGetBrowsOfAcols_MPIXAIJ(Mat A, Mat P, PetscInt dof, MatReuse r
     }
     PetscCall(ISCreateGeneral(comm, a->B->cmap->n, mapping, PETSC_OWN_POINTER, &map));
     PetscCall(PetscHMapIGetSize(hamp, &htsize));
-    PetscCheck(htsize == count, comm, PETSC_ERR_ARG_INCOMP, " Size of hash map %" PetscInt_FMT " is inconsistent with count %" PetscInt_FMT " ", htsize, count);
+    PetscCheck(htsize == count, comm, PETSC_ERR_ARG_INCOMP, " Size of hash map %" PetscInt_FMT " is inconsistent with count %" PetscInt_FMT, htsize, count);
     PetscCall(PetscCalloc1(htsize, &rowindices));
     off = 0;
     PetscCall(PetscHMapIGetKeys(hamp, &off, rowindices));
@@ -6366,7 +6365,7 @@ PetscErrorCode MatSetPreallocationCOO_MPIAIJ(Mat mat, PetscCount coo_n, PetscInt
   PetscCall(PetscFree(mpiaij->garray));
   PetscCall(VecDestroy(&mpiaij->lvec));
 #if defined(PETSC_USE_CTABLE)
-  PetscCall(PetscTableDestroy(&mpiaij->colmap));
+  PetscCall(PetscHMapIDestroy(&mpiaij->colmap));
 #else
   PetscCall(PetscFree(mpiaij->colmap));
 #endif
@@ -8091,7 +8090,7 @@ PETSC_EXTERN void matsetvaluesmpiaij_(Mat *mmat, PetscInt *mm, const PetscInt im
             if (mat->was_assembled) {
               if (!aij->colmap) PetscCall(MatCreateColmap_MPIAIJ_Private(mat));
 #if defined(PETSC_USE_CTABLE)
-              PetscCall(PetscTableFind(aij->colmap, in[j] + 1, &col));
+              PetscCall(PetscHMapIGetWithDefault(aij->colmap, in[j] + 1, 0, &col));
               col--;
 #else
               col = aij->colmap[in[j]] - 1;

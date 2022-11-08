@@ -1,7 +1,7 @@
 
 #include <petscdmda.h>              /*I "petscdmda.h" I*/
 #include <petsc/private/pcmgimpl.h> /*I "petscksp.h" I*/
-#include <petscctable.h>
+#include <petsc/private/hashmapi.h>
 
 typedef struct {
   PCExoticType type;
@@ -19,7 +19,7 @@ const char *const PCExoticTypes[] = {"face", "wirebasket", "PCExoticType", "PC_E
 PetscErrorCode DMDAGetWireBasketInterpolation(PC pc, DM da, PC_Exotic *exotic, Mat Aglobal, MatReuse reuse, Mat *P)
 {
   PetscInt               dim, i, j, k, m, n, p, dof, Nint, Nface, Nwire, Nsurf, *Iint, *Isurf, cint = 0, csurf = 0, istart, jstart, kstart, *II, N, c = 0;
-  PetscInt               mwidth, nwidth, pwidth, cnt, mp, np, pp, Ntotal, gl[26], *globals, Ng, *IIint, *IIsurf, Nt;
+  PetscInt               mwidth, nwidth, pwidth, cnt, mp, np, pp, Ntotal, gl[26], *globals, Ng, *IIint, *IIsurf;
   Mat                    Xint, Xsurf, Xint_tmp;
   IS                     isint, issurf, is, row, col;
   ISLocalToGlobalMapping ltg;
@@ -31,7 +31,7 @@ PetscErrorCode DMDAGetWireBasketInterpolation(PC pc, DM da, PC_Exotic *exotic, M
 #if defined(PETSC_USE_DEBUG_foo)
   PetscScalar tmp;
 #endif
-  PetscTable ht;
+  PetscHMapI ht = NULL;
 
   PetscFunctionBegin;
   PetscCall(DMDAGetInfo(da, &dim, NULL, NULL, NULL, &mp, &np, &pp, &dof, NULL, NULL, NULL, NULL, NULL));
@@ -155,6 +155,7 @@ PetscErrorCode DMDAGetWireBasketInterpolation(PC pc, DM da, PC_Exotic *exotic, M
       }
     }
   }
+#undef Endpoint
   PetscCheck(c == N, PETSC_COMM_SELF, PETSC_ERR_PLIB, "c != N");
   PetscCheck(cint == Nint, PETSC_COMM_SELF, PETSC_ERR_PLIB, "cint != Nint");
   PetscCheck(csurf == Nsurf, PETSC_COMM_SELF, PETSC_ERR_PLIB, "csurf != Nsurf");
@@ -294,17 +295,24 @@ PetscErrorCode DMDAGetWireBasketInterpolation(PC pc, DM da, PC_Exotic *exotic, M
   PetscCallMPI(MPI_Allgather(gl, 26, MPIU_INT, globals, 26, MPIU_INT, PetscObjectComm((PetscObject)da)));
 
   /* Number the coarse grid points from 0 to Ntotal */
-  PetscCall(MatGetSize(Aglobal, &Nt, NULL));
-  PetscCall(PetscTableCreate(Ntotal / 3, Nt + 1, &ht));
-  for (i = 0; i < 26 * mp * np * pp; i++) PetscCall(PetscTableAddCount(ht, globals[i] + 1));
-  PetscCall(PetscTableGetCount(ht, &cnt));
+  PetscCall(PetscHMapICreateWithSize(Ntotal / 3, &ht));
+  for (i = 0, cnt = 0; i < 26 * mp * np * pp; i++) {
+    PetscHashIter it      = 0;
+    PetscBool     missing = PETSC_TRUE;
+
+    PetscCall(PetscHMapIPut(ht, globals[i] + 1, &it, &missing));
+    if (missing) {
+      ++cnt;
+      PetscCall(PetscHMapIIterSet(ht, it, cnt));
+    }
+  }
   PetscCheck(cnt == Ntotal, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Hash table size %" PetscInt_FMT " not equal to total number coarse grid points %" PetscInt_FMT, cnt, Ntotal);
   PetscCall(PetscFree(globals));
   for (i = 0; i < 26; i++) {
-    PetscCall(PetscTableFind(ht, gl[i] + 1, &gl[i]));
-    gl[i]--;
+    PetscCall(PetscHMapIGetWithDefault(ht, gl[i] + 1, 0, gl + i));
+    --(gl[i]);
   }
-  PetscCall(PetscTableDestroy(&ht));
+  PetscCall(PetscHMapIDestroy(&ht));
   /* PetscIntView(26,gl,PETSC_VIEWER_STDOUT_WORLD); */
 
   /* construct global interpolation matrix */
@@ -360,7 +368,7 @@ PetscErrorCode DMDAGetWireBasketInterpolation(PC pc, DM da, PC_Exotic *exotic, M
 PetscErrorCode DMDAGetFaceInterpolation(PC pc, DM da, PC_Exotic *exotic, Mat Aglobal, MatReuse reuse, Mat *P)
 {
   PetscInt               dim, i, j, k, m, n, p, dof, Nint, Nface, Nwire, Nsurf, *Iint, *Isurf, cint = 0, csurf = 0, istart, jstart, kstart, *II, N, c = 0;
-  PetscInt               mwidth, nwidth, pwidth, cnt, mp, np, pp, Ntotal, gl[6], *globals, Ng, *IIint, *IIsurf, Nt;
+  PetscInt               mwidth, nwidth, pwidth, cnt, mp, np, pp, Ntotal, gl[6], *globals, Ng, *IIint, *IIsurf;
   Mat                    Xint, Xsurf, Xint_tmp;
   IS                     isint, issurf, is, row, col;
   ISLocalToGlobalMapping ltg;
@@ -372,7 +380,7 @@ PetscErrorCode DMDAGetFaceInterpolation(PC pc, DM da, PC_Exotic *exotic, Mat Agl
 #if defined(PETSC_USE_DEBUG_foo)
   PetscScalar tmp;
 #endif
-  PetscTable ht;
+  PetscHMapI ht;
 
   PetscFunctionBegin;
   PetscCall(DMDAGetInfo(da, &dim, NULL, NULL, NULL, &mp, &np, &pp, &dof, NULL, NULL, NULL, NULL, NULL));
@@ -468,6 +476,7 @@ PetscErrorCode DMDAGetFaceInterpolation(PC pc, DM da, PC_Exotic *exotic, Mat Agl
       }
     }
   }
+#undef Endpoint
   PetscCheck(c == N, PETSC_COMM_SELF, PETSC_ERR_PLIB, "c != N");
   PetscCheck(cint == Nint, PETSC_COMM_SELF, PETSC_ERR_PLIB, "cint != Nint");
   PetscCheck(csurf == Nsurf, PETSC_COMM_SELF, PETSC_ERR_PLIB, "csurf != Nsurf");
@@ -574,17 +583,24 @@ PetscCall(PetscMalloc1(6 * mp * np * pp, &globals));
 PetscCallMPI(MPI_Allgather(gl, 6, MPIU_INT, globals, 6, MPIU_INT, PetscObjectComm((PetscObject)da)));
 
 /* Number the coarse grid points from 0 to Ntotal */
-PetscCall(MatGetSize(Aglobal, &Nt, NULL));
-PetscCall(PetscTableCreate(Ntotal / 3, Nt + 1, &ht));
-for (i = 0; i < 6 * mp * np * pp; i++) PetscCall(PetscTableAddCount(ht, globals[i] + 1));
-PetscCall(PetscTableGetCount(ht, &cnt));
+PetscCall(PetscHMapICreateWithSize(Ntotal / 3, &ht));
+for (i = 0, cnt = 0; i < 6 * mp * np * pp; i++) {
+  PetscHashIter it      = 0;
+  PetscBool     missing = PETSC_TRUE;
+
+  PetscCall(PetscHMapIPut(ht, globals[i] + 1, &it, &missing));
+  if (missing) {
+    ++cnt;
+    PetscCall(PetscHMapIIterSet(ht, it, cnt));
+  }
+}
 PetscCheck(cnt == Ntotal, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Hash table size %" PetscInt_FMT " not equal to total number coarse grid points %" PetscInt_FMT, cnt, Ntotal);
 PetscCall(PetscFree(globals));
 for (i = 0; i < 6; i++) {
-  PetscCall(PetscTableFind(ht, gl[i] + 1, &gl[i]));
-  gl[i]--;
+  PetscCall(PetscHMapIGetWithDefault(ht, gl[i] + 1, 0, gl + i));
+  --(gl[i]);
 }
-PetscCall(PetscTableDestroy(&ht));
+PetscCall(PetscHMapIDestroy(&ht));
 /* PetscIntView(6,gl,PETSC_VIEWER_STDOUT_WORLD); */
 
 /* construct global interpolation matrix */

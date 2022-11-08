@@ -299,7 +299,7 @@ PetscErrorCode DMNetworkSharedVertexGetInfo(DM dm, PetscInt v, PetscInt *gidx, P
 
   PetscFunctionBegin;
   PetscCall(DMNetworkGetGlobalVertexIndex(dm, v, &gidx_tmp));
-  PetscCall(PetscTableFind(network->cloneshared->svtable, gidx_tmp + 1, &i));
+  PetscCall(PetscHMapIGetWithDefault(network->cloneshared->svtable, gidx_tmp + 1, 0, &i));
   PetscCheck(i > 0, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "input vertex is not a shared vertex");
 
   i--;
@@ -361,7 +361,7 @@ static inline PetscErrorCode VtxGetInfo(PetscInt Nsvtx, SVtx *svtx, PetscInt net
   Input:  network, sedgelist, k, svta
   Output: svta, tdata, ta2sv
 */
-static inline PetscErrorCode TableAddSVtx(DM_Network *network, PetscInt *sedgelist, PetscInt k, PetscTable svta, PetscInt *tdata, PetscInt *ta2sv)
+static inline PetscErrorCode TableAddSVtx(DM_Network *network, PetscInt *sedgelist, PetscInt k, PetscHMapI svta, PetscInt *tdata, PetscInt *ta2sv)
 {
   PetscInt net, idx, gidx;
 
@@ -369,7 +369,7 @@ static inline PetscErrorCode TableAddSVtx(DM_Network *network, PetscInt *sedgeli
   net  = sedgelist[k];
   idx  = sedgelist[k + 1];
   gidx = network->cloneshared->subnet[net].vStart + idx;
-  PetscCall(PetscTableAdd(svta, gidx + 1, *tdata + 1, INSERT_VALUES));
+  PetscCall(PetscHMapISetWithMode(svta, gidx + 1, *tdata + 1, INSERT_VALUES));
 
   ta2sv[*tdata] = k; /* maps tdata to index of sedgelist */
   (*tdata)++;
@@ -391,12 +391,12 @@ static inline PetscErrorCode TableAddSVtx(DM_Network *network, PetscInt *sedgeli
  */
 static PetscErrorCode SharedVtxCreate(DM dm, PetscInt Nsedgelist, PetscInt *sedgelist)
 {
-  SVtx              *svtx = NULL;
-  PetscInt          *sv, k, j, nsv, *tdata, **ta2sv;
-  PetscTable        *svtas;
-  PetscInt           gidx, net, idx, i, nta, ita, idx_from, idx_to, n, *net_tmp, *idx_tmp, *gidx_tmp;
-  DM_Network        *network = (DM_Network *)dm->data;
-  PetscTablePosition ppos;
+  SVtx         *svtx = NULL;
+  PetscInt     *sv, k, j, nsv, *tdata, **ta2sv;
+  PetscHMapI   *svtas;
+  PetscInt      gidx, net, idx, i, nta, ita, idx_from, idx_to, n, *net_tmp, *idx_tmp, *gidx_tmp;
+  DM_Network   *network = (DM_Network *)dm->data;
+  PetscHashIter ppos;
 
   PetscFunctionBegin;
   /* (1) Crete an array of ctables svtas to map (net,idx) -> gidx; a svtas[] for a shared/merged vertex */
@@ -406,7 +406,7 @@ static PetscErrorCode SharedVtxCreate(DM dm, PetscInt Nsedgelist, PetscInt *sedg
   nta = 0; /* num of svta tables created = num of groups of shared vertices */
 
   /* for j=0 */
-  PetscCall(PetscTableCreate(2 * Nsedgelist, network->cloneshared->NVertices + 1, &svtas[nta]));
+  PetscCall(PetscHMapICreateWithSize(2 * Nsedgelist, svtas + nta));
   PetscCall(PetscMalloc1(2 * Nsedgelist, &ta2sv[nta]));
 
   PetscCall(TableAddSVtx(network, sedgelist, k, svtas[nta], &tdata[nta], ta2sv[nta]));
@@ -420,13 +420,13 @@ static PetscErrorCode SharedVtxCreate(DM dm, PetscInt Nsedgelist, PetscInt *sedg
       net  = sedgelist[k];
       idx  = sedgelist[k + 1];
       gidx = network->cloneshared->subnet[net].vStart + idx; /* global index of the vertex net.idx before merging shared vertices */
-      PetscCall(PetscTableFind(svtas[ita], gidx + 1, &idx_from));
+      PetscCall(PetscHMapIGetWithDefault(svtas[ita], gidx + 1, 0, &idx_from));
 
       /* vto */
       net  = sedgelist[k + 2];
       idx  = sedgelist[k + 3];
       gidx = network->cloneshared->subnet[net].vStart + idx;
-      PetscCall(PetscTableFind(svtas[ita], gidx + 1, &idx_to));
+      PetscCall(PetscHMapIGetWithDefault(svtas[ita], gidx + 1, 0, &idx_to));
 
       if (idx_from || idx_to) { /* vfrom or vto is on table svtas[ita] */
         idx_from--;
@@ -442,7 +442,7 @@ static PetscErrorCode SharedVtxCreate(DM dm, PetscInt Nsedgelist, PetscInt *sedg
     }
 
     if (ita == nta) {
-      PetscCall(PetscTableCreate(2 * Nsedgelist, network->cloneshared->NVertices + 1, &svtas[nta]));
+      PetscCall(PetscHMapICreateWithSize(2 * Nsedgelist, svtas + nta));
       PetscCall(PetscMalloc1(2 * Nsedgelist, &ta2sv[nta]));
 
       PetscCall(TableAddSVtx(network, sedgelist, k, svtas[nta], &tdata[nta], ta2sv[nta]));
@@ -453,23 +453,25 @@ static PetscErrorCode SharedVtxCreate(DM dm, PetscInt Nsedgelist, PetscInt *sedg
   }
 
   /* (2) Create svtable for query shared vertices using gidx */
-  PetscCall(PetscTableCreate(nta, network->cloneshared->NVertices + 1, &network->cloneshared->svtable));
+  PetscCall(PetscHMapICreateWithSize(nta, &network->cloneshared->svtable));
 
   /* (3) Construct svtx from svtas
    svtx: array of SVtx: sv[0]=(net[0],idx[0]) to vertices sv[k], k=1,...,n-1. */
   PetscCall(PetscMalloc1(nta, &svtx));
   for (nsv = 0; nsv < nta; nsv++) {
     /* for a single svtx, put shared vertices in ascending order of gidx */
-    PetscCall(PetscTableGetCount(svtas[nsv], &n));
+    PetscCall(PetscHMapIGetSize(svtas[nsv], &n));
     PetscCall(PetscCalloc1(2 * n, &sv));
     PetscCall(PetscMalloc3(n, &gidx_tmp, n, &net_tmp, n, &idx_tmp));
     svtx[nsv].sv   = sv;
     svtx[nsv].n    = n;
     svtx[nsv].gidx = network->cloneshared->NVertices; /* initialization */
 
-    PetscCall(PetscTableGetHeadPosition(svtas[nsv], &ppos));
+    PetscHashIterBegin(svtas[nsv], ppos);
     for (k = 0; k < n; k++) { /* gidx is sorted in ascending order */
-      PetscCall(PetscTableGetNext(svtas[nsv], &ppos, &gidx, &i));
+      PetscHashIterGetKey(svtas[nsv], ppos, gidx);
+      PetscHashIterGetVal(svtas[nsv], ppos, i);
+      PetscHashIterNext(svtas[nsv], ppos);
       gidx--;
       i--;
       j           = ta2sv[nsv][i];    /* maps i to index of sedgelist */
@@ -488,11 +490,11 @@ static PetscErrorCode SharedVtxCreate(DM dm, PetscInt Nsedgelist, PetscInt *sedg
     PetscCall(PetscFree3(gidx_tmp, net_tmp, idx_tmp));
 
     /* Setup svtable for query shared vertices */
-    PetscCall(PetscTableAdd(network->cloneshared->svtable, svtx[nsv].gidx + 1, nsv + 1, INSERT_VALUES));
+    PetscCall(PetscHMapISetWithMode(network->cloneshared->svtable, svtx[nsv].gidx + 1, nsv + 1, INSERT_VALUES));
   }
 
   for (j = 0; j < nta; j++) {
-    PetscCall(PetscTableDestroy(&svtas[j]));
+    PetscCall(PetscHMapIDestroy(svtas + j));
     PetscCall(PetscFree(ta2sv[j]));
   }
   PetscCall(PetscFree3(svtas, tdata, ta2sv));
@@ -678,7 +680,7 @@ PetscErrorCode DMNetworkLayoutSetUp(DM dm)
     PetscCall(GetEdgelist_Coupling(dm, edges, &nmerged));
   } else { /* subnetworks are not coupled */
     /* Create a 0-size svtable for query shared vertices */
-    PetscCall(PetscTableCreate(0, network->cloneshared->NVertices + 1, &network->cloneshared->svtable));
+    PetscCall(PetscHMapICreate(&network->cloneshared->svtable));
     ctr = 0;
     for (i = 0; i < Nsubnet; i++) {
       for (j = 0; j < network->cloneshared->subnet[i].nedge; j++) {
@@ -770,7 +772,7 @@ PetscErrorCode DMNetworkLayoutSetUp(DM dm)
   j = 0;
   for (v = network->cloneshared->vStart; v < network->cloneshared->vEnd; v++) {
     /* local shared vertex */
-    PetscCall(PetscTableFind(network->cloneshared->svtable, network->header[v].index + 1, &i));
+    PetscCall(PetscHMapIGetWithDefault(network->cloneshared->svtable, network->header[v].index + 1, 0, &i));
     if (i) network->cloneshared->svertices[j++] = v;
   }
 
@@ -1850,7 +1852,7 @@ PetscErrorCode DMNetworkDistribute(DM *dm, PetscInt overlap)
 
     /* shared vertices: use gidx=header->index to check if v is a shared vertex */
     gidx = header->index;
-    PetscCall(PetscTableFind(newDMnetwork->cloneshared->svtable, gidx + 1, &svtx_idx));
+    PetscCall(PetscHMapIGetWithDefault(newDMnetwork->cloneshared->svtable, gidx + 1, 0, &svtx_idx));
     svtx_idx--;
 
     if (svtx_idx < 0) { /* not a shared vertex */
@@ -1901,7 +1903,7 @@ PetscErrorCode DMNetworkDistribute(DM *dm, PetscInt overlap)
     header = (DMNetworkComponentHeader)(newDMnetwork->componentdataarray + offset);
 
     /* coupling vertices: use gidx = header->index to check if v is a coupling vertex */
-    PetscCall(PetscTableFind(newDMnetwork->cloneshared->svtable, header->index + 1, &svtx_idx));
+    PetscCall(PetscHMapIGetWithDefault(newDMnetwork->cloneshared->svtable, header->index + 1, 0, &svtx_idx));
     svtx_idx--;
     if (svtx_idx < 0) {
       newDMnetwork->cloneshared->subnet[header->subnetid].vertices[newDMnetwork->cloneshared->subnet[header->subnetid].nvtx++] = v;
@@ -2077,27 +2079,27 @@ PetscErrorCode DMNetworkGetConnectedVertices(DM dm, PetscInt edge, const PetscIn
 @*/
 PetscErrorCode DMNetworkIsSharedVertex(DM dm, PetscInt p, PetscBool *flag)
 {
-  PetscInt i;
-
   PetscFunctionBegin;
-  *flag = PETSC_FALSE;
-
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidBoolPointer(flag, 3);
   if (dm->setupcalled) { /* DMNetworkGetGlobalVertexIndex() requires DMSetUp() be called */
     DM_Network *network = (DM_Network *)dm->data;
     PetscInt    gidx;
+
     PetscCall(DMNetworkGetGlobalVertexIndex(dm, p, &gidx));
-    PetscCall(PetscTableFind(network->cloneshared->svtable, gidx + 1, &i));
-    if (i) *flag = PETSC_TRUE;
+    PetscCall(PetscHMapIHas(network->cloneshared->svtable, gidx + 1, flag));
   } else { /* would be removed? */
     PetscInt        nv;
     const PetscInt *vtx;
+
     PetscCall(DMNetworkGetSharedVertices(dm, &nv, &vtx));
-    for (i = 0; i < nv; i++) {
+    for (PetscInt i = 0; i < nv; i++) {
       if (p == vtx[i]) {
         *flag = PETSC_TRUE;
-        break;
+        PetscFunctionReturn(0);
       }
     }
+    *flag = PETSC_FALSE;
   }
   PetscFunctionReturn(0);
 }
@@ -2779,7 +2781,7 @@ PetscErrorCode DMDestroy_Network(DM dm)
     for (j = 0; j < network->cloneshared->Nsvtx; j++) PetscCall(PetscFree(network->cloneshared->svtx[j].sv));
     PetscCall(PetscFree(network->cloneshared->svtx));
     PetscCall(PetscFree2(network->cloneshared->subnetedge, network->cloneshared->subnetvtx));
-    PetscCall(PetscTableDestroy(&network->cloneshared->svtable));
+    PetscCall(PetscHMapIDestroy(&network->cloneshared->svtable));
     PetscCall(PetscFree(network->cloneshared->subnet));
     PetscCall(PetscFree(network->cloneshared));
   }

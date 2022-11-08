@@ -154,7 +154,7 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ_LLCondensed(Mat A, Mat B, PetscR
   PetscInt           am = A->rmap->N, bn = B->cmap->N, bm = B->rmap->N;
   PetscReal          afill;
   PetscInt           i, j, anzi, brow, bnzj, cnzi, *bj, *aj, *lnk, ndouble = 0, Crmax;
-  PetscTable         ta;
+  PetscHMapI         ta;
   PetscBT            lnkbt;
   PetscFreeSpaceList free_space = NULL, current_space = NULL;
 
@@ -167,10 +167,10 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ_LLCondensed(Mat A, Mat B, PetscR
   ci[0] = 0;
 
   /* create and initialize a linked list */
-  PetscCall(PetscTableCreate(bn, bn, &ta));
+  PetscCall(PetscHMapICreateWithSize(bn, &ta));
   MatRowMergeMax_SeqAIJ(b, bm, ta);
-  PetscCall(PetscTableGetCount(ta, &Crmax));
-  PetscCall(PetscTableDestroy(&ta));
+  PetscCall(PetscHMapIGetSize(ta, &Crmax));
+  PetscCall(PetscHMapIDestroy(&ta));
 
   PetscCall(PetscLLCondensedCreate(Crmax, bn, &lnk, &lnkbt));
 
@@ -397,7 +397,7 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ_Scalable_fast(Mat A, Mat B, Pets
   MatScalar         *ca;
   PetscReal          afill;
   PetscInt           i, j, anzi, brow, bnzj, cnzi, *bj, *aj, *lnk, ndouble = 0, Crmax;
-  PetscTable         ta;
+  PetscHMapI         ta;
   PetscFreeSpaceList free_space = NULL, current_space = NULL;
 
   PetscFunctionBegin;
@@ -408,10 +408,10 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ_Scalable_fast(Mat A, Mat B, Pets
   ci[0] = 0;
 
   /* create and initialize a linked list */
-  PetscCall(PetscTableCreate(bn, bn, &ta));
+  PetscCall(PetscHMapICreateWithSize(bn, &ta));
   MatRowMergeMax_SeqAIJ(b, bm, ta);
-  PetscCall(PetscTableGetCount(ta, &Crmax));
-  PetscCall(PetscTableDestroy(&ta));
+  PetscCall(PetscHMapIGetSize(ta, &Crmax));
+  PetscCall(PetscHMapIDestroy(&ta));
 
   PetscCall(PetscLLCondensedCreate_fast(Crmax, &lnk));
 
@@ -501,7 +501,7 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ_Scalable(Mat A, Mat B, PetscReal
   MatScalar         *ca;
   PetscReal          afill;
   PetscInt           i, j, anzi, brow, bnzj, cnzi, *bj, *aj, *lnk, ndouble = 0, Crmax;
-  PetscTable         ta;
+  PetscHMapI         ta;
   PetscFreeSpaceList free_space = NULL, current_space = NULL;
 
   PetscFunctionBegin;
@@ -512,10 +512,10 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ_Scalable(Mat A, Mat B, PetscReal
   ci[0] = 0;
 
   /* create and initialize a linked list */
-  PetscCall(PetscTableCreate(bn, bn, &ta));
+  PetscCall(PetscHMapICreateWithSize(bn, &ta));
   MatRowMergeMax_SeqAIJ(b, bm, ta);
-  PetscCall(PetscTableGetCount(ta, &Crmax));
-  PetscCall(PetscTableDestroy(&ta));
+  PetscCall(PetscHMapIGetSize(ta, &Crmax));
+  PetscCall(PetscHMapIDestroy(&ta));
   PetscCall(PetscLLCondensedCreate_Scalable(Crmax, &lnk));
 
   /* Initial FreeSpace size is fill*(nnz(A)+nnz(B)) */

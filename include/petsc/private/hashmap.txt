@@ -25,7 +25,28 @@ typedef struct _PetscHash<T> PetscHMap<T>;
 
   Level: developer
 
-.seealso: `PetscHMap<T>Destroy()`
+.seealso: `PetscHMap<T>CreateWithSize()`, `PetscHMap<T>Destroy()`
+M*/
+
+/*MC
+  PetscHMap<T>CreateWithSize - Create a hash table with a given initial size
+
+  Synopsis:
+  #include <petsc/private/hashmap<t>.h>
+  PetscErrorCode PetscHMap<T>CreateWithSize(PetscInt n, PetscHMap<T> *ht)
+
+  Input Parameter:
+. n - The size of the hash table
+
+  Output Parameter:
+. ht - The hash table
+
+  Level: developer
+
+  Note:
+  `n` must be non-negative.
+
+.seealso: `PetscHMap<T>Create()`, `PetscHMap<T>Destroy()`
 M*/
 
 /*MC
@@ -40,7 +61,7 @@ M*/
 
   Level: developer
 
-.seealso: `PetscHMap<T>Create()`
+.seealso: `PetscHMap<T>Create()`, `PetscHMap<T>CreateWithSize()`
 M*/
 
 /*MC
@@ -159,7 +180,8 @@ M*/
 
   Level: developer
 
-.seealso: `PetscHMap<T>Get()`, `PetscHMap<T>Set()`, `PetscHMap<T>Find()`
+.seealso: `PetscHMap<T>Get()`, `PetscHMap<T>GetWithDefault()`, `PetscHMap<T>Set()`,
+`PetscHMap<T>SetWithMode()`, `PetscHMap<T>Find()`
 M*/
 
 /*MC
@@ -178,8 +200,31 @@ M*/
 
   Level: developer
 
-.seealso: `PetscHMap<T>Set()`, `PetscHMap<T>IterGet()`
+.seealso: `PetscHMap<T>Set()`, `PetscHMap<T>SetWithMode()`, `PetscHMap<T>IterGet()`,
+`PetscHMap<T>GetWithDefault()`
 M*/
+
+/*MC
+  PetscHMap<T>GetWithDefault - Get the value for a key in the hash table but override the default
+  value returned if the key was not found
+
+  Synopsis:
+  #include <petsc/private/hashmap<t>.h>
+  PetscErrorCode PetscHMap<T>GetWithDefault(PetscHMap<T> ht, <KeyType> key, <ValType> default_val, <ValType> *val)
+
+  Input Parameters:
++ ht          - The hash table
+. key         - The key
+- default_val - The default value to set `val` to if `key` was not found
+
+  Output Parameter:
+. val - The value
+
+  Level: developer
+
+.seealso: `PetscHMap<T>Get()`, `PetscHMap<T>Set()`, `PetscHMap<T>SetWithMode()`, `PetscHMap<T>IterGet()`
+M*/
+
 
 /*MC
   PetscHMap<T>Set - Set a (key,value) entry in the hash table
@@ -195,7 +240,46 @@ M*/
 
   Level: developer
 
-.seealso: `PetscHMap<T>Get()`, `PetscHMap<T>IterSet()`
+.seealso: `PetscHMap<T>Get()`, `PetscHMap<T>SetWithMode()`, `PetscHMap<T>GetWithDefault()`,
+`PetscHMap<T>IterSet()`
+M*/
+
+/*MC
+  PetscHMap<T>SetWithMode - Set a (key,value) entry in the hash table according to an `InsertMode`
+
+  Synopsis:
+  #include <petsc/private/hashmap<t>.h>
+  PetscErrorCode PetscHMap<T>SetWithMode(PetscHMap<T> ht, <KeyType> key, <ValType> val, InsertMode mode)
+
+  Input Parameters:
++ ht   - The hash table
+. key  - The key
+. val  - The value
+- mode - The insertion mode
+
+  Level: developer
+
+  Notes:
+  `mode` may be any of the following\:
+  - `INSERT_VALUES`\: this routine behaves identically to `PetscHMap<T>Set()`.
+  - `ADD_VALUES`\: if `key` is found `val` is added to the current entry, otherwise (`key`, `value`)
+                   is inserted into `ht` as-if-by `INSERT_VALUES`.
+  - `MAX_VALUES`\: if `key` is found the current value is replaced by the maximum of `val` and the
+                   current entry, otherwise (`key`, `value`) is inserted into `ht` as-if-by
+                   `INSERT_VALUES`.
+  - `MIN_VALUES`\: if `key` is found the current value is replaced by the minimum of `val` and the
+                   current entry, otherwise (`key`, `value`) is inserted into `ht` as-if-by
+                   `INSERT_VALUES`.
+
+   All other `InsertMode`s will raise an error if used.
+
+   Since this routine relies on `+`, `<`, and `>` being well-formed for a particular type
+   it is not available by default for all PETSc hash table instantiations. If a particular
+   instantiation supports this routine it must define `PETSC_HMAP<T>_HAVE_EXTENDED_API` to
+   `1`.
+
+.seealso: `PetscHMap<T>Set()`, `PetscHMap<T>Get()`, `PetscHMap<T>GetWithDefault()`,
+`PetscHMap<T>IterSet()`
 M*/
 
 /*MC
@@ -231,7 +315,7 @@ M*/
 
   Level: developer
 
-.seealso: `PetscHMap<T>QueryDel()`, `PetscHMap<T>Set()`
+.seealso: `PetscHMap<T>QueryDel()`, `PetscHMap<T>Set()`, `PetscHMap<T>SetWithMode()`
 M*/
 
 /*MC
@@ -290,7 +374,8 @@ M*/
 
   Level: developer
 
-.seealso: `PetscHMap<T>IterSet()`, `PetscHMap<T>QuerySet()`, `PetscHMap<T>Set()`
+.seealso: `PetscHMap<T>IterSet()`, `PetscHMap<T>QuerySet()`, `PetscHMap<T>Set()`,
+`PetscHMap<T>SetWithMode()`
 M*/
 
 /*MC
@@ -309,7 +394,7 @@ M*/
 
   Level: developer
 
-.seealso: `PetscHMap<T>Find()`, `PetscHMap<T>Get()`
+.seealso: `PetscHMap<T>Find()`, `PetscHMap<T>Get()`, `PetscHMap<T>GetWithDefault()`
 M*/
 
 /*MC
@@ -326,7 +411,8 @@ M*/
 
   Level: developer
 
-.seealso: `PetscHMap<T>Put()`, `PetscHMap<T>QuerySet()`, `PetscHMap<T>Set()`
+.seealso: `PetscHMap<T>Put()`, `PetscHMap<T>QuerySet()`, `PetscHMap<T>Set()`,
+`PetscHMap<T>SetWithMode()`
 M*/
 
 /*MC

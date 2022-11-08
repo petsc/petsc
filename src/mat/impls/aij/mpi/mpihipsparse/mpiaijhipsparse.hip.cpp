@@ -198,7 +198,7 @@ static PetscErrorCode MatSetPreallocationCOO_MPIAIJHIPSPARSE(Mat mat, PetscCount
   PetscCall(PetscFree(mpiaij->garray));
   PetscCall(VecDestroy(&mpiaij->lvec));
 #if defined(PETSC_USE_CTABLE)
-  PetscCall(PetscTableDestroy(&mpiaij->colmap));
+  PetscCall(PetscHMapIDestroy(&mpiaij->colmap));
 #else
   PetscCall(PetscFree(mpiaij->colmap));
 #endif
@@ -415,7 +415,7 @@ PetscErrorCode MatMPIAIJSetPreallocation_MPIAIJHIPSPARSE(Mat B, PetscInt d_nz, c
     for (i = 0; i < B->rmap->n; i++) { PetscCheck(o_nnz[i] >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "o_nnz cannot be less than 0: local row %" PetscInt_FMT " value %" PetscInt_FMT, i, o_nnz[i]); }
   }
 #if defined(PETSC_USE_CTABLE)
-  PetscCall(PetscTableDestroy(&b->colmap));
+  PetscCall(PetscHMapIDestroy(&b->colmap));
 #else
   PetscCall(PetscFree(b->colmap));
 #endif

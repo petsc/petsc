@@ -37,7 +37,7 @@ PetscErrorCode MatMPIAIJSetPreallocation_MPIAIJKokkos(Mat mat, PetscInt d_nz, co
   }
 #endif
 #if defined(PETSC_USE_CTABLE)
-  PetscCall(PetscTableDestroy(&mpiaij->colmap));
+  PetscCall(PetscHMapIDestroy(&mpiaij->colmap));
 #else
   PetscCall(PetscFree(mpiaij->colmap));
 #endif

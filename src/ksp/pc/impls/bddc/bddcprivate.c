@@ -9044,7 +9044,7 @@ PetscErrorCode MatMPIAIJRestrict(Mat A, MPI_Comm ccomm, Mat *B)
 
     if (a->colmap) {
 #if defined(PETSC_USE_CTABLE)
-      PetscCall(PetscTableCreateCopy(a->colmap, &b->colmap));
+      PetscCall(PetscHMapIDuplicate(a->colmap, &b->colmap));
 #else
       PetscCall(PetscMalloc1(At->cmap->N, &b->colmap));
       PetscCall(PetscArraycpy(b->colmap, a->colmap, At->cmap->N));

@@ -1,7 +1,7 @@
 #include <petsc/private/sfimpl.h> /*I "petscsf.h" I*/
 #include <petsc/private/hashseti.h>
 #include <petsc/private/viewerimpl.h>
-#include <petscctable.h>
+#include <petsc/private/hashmapi.h>
 
 #if defined(PETSC_HAVE_CUDA)
   #include <cuda_runtime.h>
@@ -997,30 +997,32 @@ static PetscBool InList(PetscMPIInt needle, PetscMPIInt n, const PetscMPIInt *li
 @*/
 PetscErrorCode PetscSFSetUpRanks(PetscSF sf, MPI_Group dgroup)
 {
-  PetscTable         table;
-  PetscTablePosition pos;
-  PetscMPIInt        size, groupsize, *groupranks;
-  PetscInt          *rcount, *ranks;
-  PetscInt           i, irank = -1, orank = -1;
+  PetscHMapI    table;
+  PetscHashIter pos;
+  PetscMPIInt   size, groupsize, *groupranks;
+  PetscInt     *rcount, *ranks;
+  PetscInt      i, irank = -1, orank = -1;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sf, PETSCSF_CLASSID, 1);
   PetscSFCheckGraphSet(sf, 1);
   PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)sf), &size));
-  PetscCall(PetscTableCreate(10, size, &table));
+  PetscCall(PetscHMapICreateWithSize(10, &table));
   for (i = 0; i < sf->nleaves; i++) {
     /* Log 1-based rank */
-    PetscCall(PetscTableAdd(table, sf->remote[i].rank + 1, 1, ADD_VALUES));
+    PetscCall(PetscHMapISetWithMode(table, sf->remote[i].rank + 1, 1, ADD_VALUES));
   }
-  PetscCall(PetscTableGetCount(table, &sf->nranks));
+  PetscCall(PetscHMapIGetSize(table, &sf->nranks));
   PetscCall(PetscMalloc4(sf->nranks, &sf->ranks, sf->nranks + 1, &sf->roffset, sf->nleaves, &sf->rmine, sf->nleaves, &sf->rremote));
   PetscCall(PetscMalloc2(sf->nranks, &rcount, sf->nranks, &ranks));
-  PetscCall(PetscTableGetHeadPosition(table, &pos));
+  PetscHashIterBegin(table, pos);
   for (i = 0; i < sf->nranks; i++) {
-    PetscCall(PetscTableGetNext(table, &pos, &ranks[i], &rcount[i]));
+    PetscHashIterGetKey(table, pos, ranks[i]);
+    PetscHashIterGetVal(table, pos, rcount[i]);
+    PetscHashIterNext(table, pos);
     ranks[i]--; /* Convert back to 0-based */
   }
-  PetscCall(PetscTableDestroy(&table));
+  PetscCall(PetscHMapIDestroy(&table));
 
   /* We expect that dgroup is reliably "small" while nranks could be large */
   {

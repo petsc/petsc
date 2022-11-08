@@ -45,7 +45,7 @@ typedef struct {
   PetscScalar *svalues, *rvalues; /* sending and receiving data */
   PetscInt     rmax;              /* maximum message length */
 #if defined(PETSC_USE_CTABLE)
-  PetscTable colmap;
+  PetscHMapI colmap;
 #else
   PetscInt *colmap; /* local col number of off-diag col */
 #endif

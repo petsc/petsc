@@ -3,7 +3,7 @@
 #define __SELL_H
 
 #include <petsc/private/matimpl.h>
-#include <petscctable.h>
+#include <petsc/private/hashmapi.h>
 
 /*
  Struct header for SeqSELL matrix format

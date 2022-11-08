@@ -733,7 +733,7 @@ typedef struct {
 /*
  Used by MatCreateSubMatrices_MPIXAIJ_Local()
 */
-#include <petscctable.h>
+#include <petsc/private/hashmapi.h>
 typedef struct { /* used by MatCreateSubMatrices_MPIAIJ_SingleIS_Local() and MatCreateSubMatrices_MPIAIJ_Local */
   PetscInt   id; /* index of submats, only submats[0] is responsible for deleting some arrays below */
   PetscInt   nrqs, nrqr;
@@ -748,7 +748,7 @@ typedef struct { /* used by MatCreateSubMatrices_MPIAIJ_SingleIS_Local() and Mat
   PetscInt  *row2proc; /* row to proc map */
   PetscInt   nstages;
 #if defined(PETSC_USE_CTABLE)
-  PetscTable cmap, rmap;
+  PetscHMapI cmap, rmap;
   PetscInt  *cmap_loc, *rmap_loc;
 #else
   PetscInt *cmap, *rmap;

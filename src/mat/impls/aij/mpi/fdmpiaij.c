@@ -392,7 +392,7 @@ PetscErrorCode MatFDColoringSetUp_MPIXAIJ(Mat mat, ISColoring iscoloring, MatFDC
   PetscBool              isBAIJ, isSELL;
   PetscInt               bcols = c->bcols;
 #if defined(PETSC_USE_CTABLE)
-  PetscTable colmap = NULL;
+  PetscHMapI colmap = NULL;
 #else
   PetscInt *colmap = NULL;      /* local col number of off-diag col */
 #endif
@@ -560,7 +560,7 @@ PetscErrorCode MatFDColoringSetUp_MPIXAIJ(Mat mat, ISColoring iscoloring, MatFDC
         }
       } else { /* column is in B, off-diagonal block of mat */
 #if defined(PETSC_USE_CTABLE)
-        PetscCall(PetscTableFind(colmap, col + 1, &colb));
+        PetscCall(PetscHMapIGetWithDefault(colmap, col + 1, 0, &colb));
         colb--;
 #else
         colb = colmap[col] - 1; /* local column index */
