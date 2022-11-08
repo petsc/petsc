@@ -37,6 +37,8 @@ Changes: Development
 
 .. rubric:: Mat:
 
+- Add ``MatEliminateZeros()``
+
 .. rubric:: MatCoarsen:
 
 .. rubric:: PC:
