@@ -31,6 +31,8 @@ Changes: Development
 
 .. rubric:: VecScatter / PetscSF:
 
+- Change ``PetscSFConcatenate()`` to accept ``PetscSFConcatenateRootMode`` parameter; add option to concatenate root spaces globally
+
 .. rubric:: PF:
 
 .. rubric:: Vec:
