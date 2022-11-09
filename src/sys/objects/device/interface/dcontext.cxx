@@ -945,7 +945,7 @@ PetscErrorCode PetscDeviceContextSetFromOptions(MPI_Comm comm, PetscDeviceContex
   const auto pobj     = PetscObjectCast(dctx);
   auto       dtype    = std::make_pair(PETSC_DEVICE_DEFAULT(), PETSC_FALSE);
   auto       stype    = std::make_pair(PETSC_DEVICE_CONTEXT_DEFAULT_STREAM_TYPE, PETSC_FALSE);
-  auto       old_comm = PETSC_COMM_SELF;
+  MPI_Comm   old_comm = PETSC_COMM_SELF;
 
   PetscFunctionBegin;
   // do not user getoptionalnullcontext here, the user is not allowed to set it from options!
