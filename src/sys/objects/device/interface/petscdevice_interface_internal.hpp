@@ -44,26 +44,27 @@ struct equal_to<PetscDeviceContext> {
 namespace
 {
 
+// workaround for bug in:
+// clang: https://bugs.llvm.org/show_bug.cgi?id=36684
+// gcc: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=96645
+//
+// see also:
+// https://stackoverflow.com/questions/53408962/try-to-understand-compiler-error-message-default-member-initializer-required-be
+struct CxxDataParent {
+  PetscObjectId    id    = 0;
+  PetscObjectState state = 0;
+
+  constexpr CxxDataParent() noexcept = default;
+
+  constexpr explicit CxxDataParent(PetscDeviceContext dctx) noexcept : CxxDataParent(PetscObjectCast(dctx)->id, PetscObjectCast(dctx)->state) { }
+
+private:
+  // make this private, we do not want to accept any old id and state pairing
+  constexpr CxxDataParent(PetscObjectId id_, PetscObjectState state_) noexcept : id(id_), state(state_) { }
+};
+
 struct CxxData {
-  struct parent_type {
-    PetscObjectId    id    = 0;
-    PetscObjectState state = 0;
-
-    constexpr parent_type() noexcept = default;
-
-    constexpr explicit parent_type(PetscDeviceContext dctx) noexcept : parent_type(PetscObjectCast(dctx)->id, PetscObjectCast(dctx)->state) { }
-
-    constexpr parent_type(const parent_type &) noexcept                     = default;
-    PETSC_CONSTEXPR_14 parent_type &operator=(const parent_type &) noexcept = default;
-    constexpr parent_type(parent_type &&) noexcept                          = default;
-    PETSC_CONSTEXPR_14 parent_type &operator=(parent_type &&) noexcept      = default;
-
-  private:
-    // make this private, we do not want to accept any old id and state pairing
-    constexpr parent_type(PetscObjectId id_, PetscObjectState state_) noexcept : id(id_), state(state_) { }
-  };
-
-  using upstream_type = std::unordered_map<PetscDeviceContext, parent_type>;
+  using upstream_type = std::unordered_map<PetscDeviceContext, CxxDataParent>;
   using dep_type      = std::unordered_set<PetscObjectId>;
 
   // double check we didn't specialize for no reason

@@ -14,6 +14,60 @@ static_assert(Petsc::util::integral_value(PETSC_DEVICE_COPY_HTOD) == 2, "");
 static_assert(Petsc::util::integral_value(PETSC_DEVICE_COPY_DTOD) == 3, "");
 static_assert(Petsc::util::integral_value(PETSC_DEVICE_COPY_AUTO) == 4, "");
 
+// GCC implementation for std::hash<T*>. LLVM's libc++ is almost 2x slower because they do all
+// kinds of complicated murmur hashing, so we make sure to enforce GCC's version.
+struct PointerHash {
+  template <typename T>
+  PETSC_NODISCARD std::size_t operator()(const T *ptr) const noexcept
+  {
+    return reinterpret_cast<std::size_t>(ptr);
+  }
+};
+
+// ==========================================================================================
+// PointerAttributes
+// ==========================================================================================
+
+struct PointerAttributes {
+  PetscMemType  mtype = PETSC_MEMTYPE_HOST; // memtype of allocation
+  PetscObjectId id    = 0;                  // id of allocation
+  std::size_t   size  = 0;                  // size of allocation (bytes)
+
+  // even though this is a POD and can be aggregate initialized, the STL uses () constructors
+  // in unordered_map and so we need to provide a trivial contructor...
+  constexpr PointerAttributes(PetscMemType, PetscObjectId, std::size_t) noexcept;
+
+  bool operator==(const PointerAttributes &) const noexcept;
+
+  PETSC_NODISCARD bool contains(const void *, const void *) const noexcept;
+};
+
+// ==========================================================================================
+// PointerAttributes - Public API
+// ==========================================================================================
+
+inline constexpr PointerAttributes::PointerAttributes(PetscMemType mtype_, PetscObjectId id_, std::size_t size_) noexcept : mtype(mtype_), id(id_), size(size_) { }
+
+inline bool PointerAttributes::operator==(const PointerAttributes &other) const noexcept
+{
+  return (mtype == other.mtype) && (id == other.id) && (size == other.size);
+}
+
+/*
+  PointerAttributes::contains - asks and answers the question, does ptr_begin contain ptr
+
+  Input Parameters:
++ ptr_begin - pointer to the start of the range to check
+- ptr       - the pointer to query
+
+  Notes:
+  Returns true if ptr falls within ptr_begins range, false otherwise.
+*/
+inline bool PointerAttributes::contains(const void *ptr_begin, const void *ptr) const noexcept
+{
+  return (ptr >= ptr_begin) && (ptr < (static_cast<const char *>(ptr_begin) + size));
+}
+
 // ==========================================================================================
 // MemoryMap
 //
@@ -29,42 +83,12 @@ static_assert(Petsc::util::integral_value(PETSC_DEVICE_COPY_AUTO) == 4, "");
 // }
 // ==========================================================================================
 
-// GCC implementation for std::hash<T*>. LLVM's libc++ is almost 2x slower because they do all
-// kinds of complicated murmur hashing, so we make sure to enforce GCC's version.
-struct PointerHash {
-  template <typename T>
-  PETSC_NODISCARD std::size_t operator()(const T *ptr) const noexcept
-  {
-    return reinterpret_cast<std::size_t>(ptr);
-  }
-};
-
 class MemoryMap : public Petsc::RegisterFinalizeable<MemoryMap> {
 public:
-  struct PointerAttributes {
-    PetscMemType  mtype{}; // memtype of allocation
-    PetscObjectId id{};    // id of allocation
-    std::size_t   size{};  // size of allocation (bytes)
-
-    // even though this is a POD and can be aggregate initialized, the STL uses () constructors
-    // in unordered_map and so we need to provide a trivial contructor...
-    constexpr PointerAttributes(PetscMemType, PetscObjectId, std::size_t) noexcept;
-    constexpr PointerAttributes() noexcept                                              = default;
-    constexpr PointerAttributes(const PointerAttributes &) noexcept                     = default;
-    PETSC_CONSTEXPR_14 PointerAttributes &operator=(const PointerAttributes &) noexcept = default;
-    constexpr PointerAttributes(PointerAttributes &&) noexcept                          = default;
-    PETSC_CONSTEXPR_14 PointerAttributes &operator=(PointerAttributes &&) noexcept      = default;
-
-    bool operator==(const PointerAttributes &) const noexcept;
-
-    PETSC_NODISCARD bool contains(const void *, const void *) const noexcept;
-  };
-
   using map_type = std::unordered_map<void *, PointerAttributes, PointerHash>;
 
-  map_type map;
+  map_type map{};
 
-  // return the iterator of the allocation containing ptr, or map.cend() if not found
   PETSC_NODISCARD map_type::const_iterator search_for(const void *, bool = false) const noexcept;
 
 private:
@@ -74,23 +98,7 @@ private:
 };
 
 // ==========================================================================================
-// PointerAttributes
-// ==========================================================================================
-
-constexpr MemoryMap::PointerAttributes::PointerAttributes(PetscMemType mtype_, PetscObjectId id_, std::size_t size_) noexcept : mtype(mtype_), id(id_), size(size_) { }
-
-bool MemoryMap::PointerAttributes::operator==(const PointerAttributes &other) const noexcept
-{
-  return mtype == other.mtype && id == other.id && size == other.size;
-}
-
-bool MemoryMap::PointerAttributes::contains(const void *ptr_begin, const void *ptr) const noexcept
-{
-  return (ptr >= ptr_begin) && (ptr < (static_cast<const char *>(ptr_begin) + size));
-}
-
-// ==========================================================================================
-// Memory map - Private API
+// MemoryMap - Private API
 // ==========================================================================================
 
 PetscErrorCode MemoryMap::register_finalize_() noexcept
@@ -112,7 +120,7 @@ PetscErrorCode MemoryMap::finalize_() noexcept
 }
 
 // ==========================================================================================
-// Memory map - Public API
+// MemoryMap - Public API
 // ==========================================================================================
 
 /*
@@ -173,7 +181,7 @@ static PetscErrorCode PetscDeviceRegisterMemory_Private(const void *PETSC_RESTRI
     const auto newid = PetscObjectNewId_Internal();
 
     if (PetscDefined(USE_DEBUG)) {
-      const auto tmp = MemoryMap::PointerAttributes(mtype, newid, size);
+      const auto tmp = PointerAttributes(mtype, newid, size);
 
       for (const auto &entry : map) {
         // REVIEW ME: maybe this should just be handled...
@@ -194,7 +202,7 @@ static PetscErrorCode PetscDeviceRegisterMemory_Private(const void *PETSC_RESTRI
   if (PetscDefined(USE_DEBUG)) {
     const auto &old = it->second;
 
-    PetscCheck(MemoryMap::PointerAttributes(mtype, old.id, size) == old, PETSC_COMM_SELF, PETSC_ERR_LIB, "Pointer %p appears to have been previously allocated with memtype %s, size %zu and assigned id %" PetscInt64_FMT ", which does not match new values: (mtype %s, size %zu, id %" PetscInt64_FMT ")", it->first,
+    PetscCheck(PointerAttributes(mtype, old.id, size) == old, PETSC_COMM_SELF, PETSC_ERR_LIB, "Pointer %p appears to have been previously allocated with memtype %s, size %zu and assigned id %" PetscInt64_FMT ", which does not match new values: (mtype %s, size %zu, id %" PetscInt64_FMT ")", it->first,
                PetscMemTypeToString(old.mtype), old.size, old.id, PetscMemTypeToString(mtype), size, old.id);
   }
   if (id) *id = it->second.id;

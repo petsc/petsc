@@ -758,7 +758,7 @@ inline PetscErrorCode SegmentedMemoryPool<MemType, StreamType, AllocType, Defaul
   auto found = false;
 
   PetscFunctionBegin;
-  PetscCall(this->register_finalize(PETSC_COMM_SELF, stream));
+  PetscCall(this->register_finalize(stream));
   for (auto &block : pool_) {
     PetscCall(block.try_allocate_chunk(size, ptr, stream, &found));
     if (PetscLikely(found)) PetscFunctionReturn(0);

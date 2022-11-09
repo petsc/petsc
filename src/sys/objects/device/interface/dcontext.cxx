@@ -517,7 +517,7 @@ PetscErrorCode PetscDeviceContextWaitForContext(PetscDeviceContext dctxa, PetscD
   aobj = PetscObjectCast(dctxa);
   PetscCall(PetscLogEventBegin(DCONTEXT_WaitForCtx, dctxa, dctxb, nullptr, nullptr));
   PetscUseTypeMethod(dctxa, waitforcontext, dctxb);
-  PetscCallCXX(CxxDataCast(dctxa)->upstream[dctxb] = CxxData::parent_type(dctxb));
+  PetscCallCXX(CxxDataCast(dctxa)->upstream[dctxb] = CxxDataParent(dctxb));
   PetscCall(PetscLogEventEnd(DCONTEXT_WaitForCtx, dctxa, dctxb, nullptr, nullptr));
   PetscCall(PetscInfo(dctxa, "dctx %" PetscInt64_FMT " waiting on dctx %" PetscInt64_FMT "\n", aobj->id, PetscObjectCast(dctxb)->id));
   PetscCall(PetscObjectStateIncrease(aobj));
