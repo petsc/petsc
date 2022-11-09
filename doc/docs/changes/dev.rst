@@ -50,6 +50,8 @@ Changes: Development
 
 .. rubric:: SNES:
 
+- Add ``SNESPruneJacobianColor`` to improve the MFFD coloring
+
 .. rubric:: SNESLineSearch:
 
 .. rubric:: TS:
