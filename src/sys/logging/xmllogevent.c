@@ -1501,7 +1501,7 @@ PETSC_EXTERN PetscErrorCode PetscARecv(int count, int datatype)
   PetscFunctionReturn(0);
 }
 
-PETSC_EXTERN PetscErrorCode PetscAReduce()
+PETSC_EXTERN PetscErrorCode PetscAReduce(void)
 {
   PetscFunctionBegin;
   petsc_allreduce_ct++;

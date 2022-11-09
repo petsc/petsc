@@ -726,7 +726,7 @@ hipStream_t PetscDefaultHipStream = NULL;
 PETSC_INTERN PetscErrorCode PetscLogInitialize(void);
 #endif
 #if PetscDefined(HAVE_VIENNACL)
-PETSC_EXTERN PetscErrorCode PetscViennaCLInit();
+PETSC_EXTERN PetscErrorCode PetscViennaCLInit(void);
 PetscBool                   PetscViennaCLSynchronize = PETSC_FALSE;
 #endif
 

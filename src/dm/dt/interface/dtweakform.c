@@ -98,7 +98,7 @@ PetscErrorCode PetscFormKeySort(PetscInt n, PetscFormKey arr[])
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscWeakFormGetFunction_Private(PetscWeakForm wf, PetscHMapForm ht, DMLabel label, PetscInt value, PetscInt f, PetscInt part, PetscInt *n, void (***func)())
+PetscErrorCode PetscWeakFormGetFunction_Private(PetscWeakForm wf, PetscHMapForm ht, DMLabel label, PetscInt value, PetscInt f, PetscInt part, PetscInt *n, void (***func)(void))
 {
   PetscFormKey key;
   PetscChunk   chunk;
@@ -114,13 +114,13 @@ PetscErrorCode PetscWeakFormGetFunction_Private(PetscWeakForm wf, PetscHMapForm 
     *func = NULL;
   } else {
     *n    = chunk.size;
-    *func = (void (**)()) & wf->funcs->array[chunk.start];
+    *func = (void (**)(void)) & wf->funcs->array[chunk.start];
   }
   PetscFunctionReturn(0);
 }
 
 /* A NULL argument for func causes this to clear the key */
-PetscErrorCode PetscWeakFormSetFunction_Private(PetscWeakForm wf, PetscHMapForm ht, DMLabel label, PetscInt value, PetscInt f, PetscInt part, PetscInt n, void (**func)())
+PetscErrorCode PetscWeakFormSetFunction_Private(PetscWeakForm wf, PetscHMapForm ht, DMLabel label, PetscInt value, PetscInt f, PetscInt part, PetscInt n, void (**func)(void))
 {
   PetscFormKey key;
   PetscChunk   chunk;
@@ -142,11 +142,11 @@ PetscErrorCode PetscWeakFormSetFunction_Private(PetscWeakForm wf, PetscHMapForm 
     PetscCall(PetscChunkBufferEnlargeChunk(wf->funcs, n - chunk.size, &chunk));
     PetscCall(PetscHMapFormSet(ht, key, chunk));
   }
-  for (i = 0; i < n; ++i) ((void (**)()) & wf->funcs->array[chunk.start])[i] = func[i];
+  for (i = 0; i < n; ++i) ((void (**)(void)) & wf->funcs->array[chunk.start])[i] = func[i];
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscWeakFormAddFunction_Private(PetscWeakForm wf, PetscHMapForm ht, DMLabel label, PetscInt value, PetscInt f, PetscInt part, void (*func)())
+PetscErrorCode PetscWeakFormAddFunction_Private(PetscWeakForm wf, PetscHMapForm ht, DMLabel label, PetscInt value, PetscInt f, PetscInt part, void (*func)(void))
 {
   PetscFormKey key;
   PetscChunk   chunk;
@@ -161,16 +161,16 @@ PetscErrorCode PetscWeakFormAddFunction_Private(PetscWeakForm wf, PetscHMapForm 
   if (chunk.size < 0) {
     PetscCall(PetscChunkBufferCreateChunk(wf->funcs, 1, &chunk));
     PetscCall(PetscHMapFormSet(ht, key, chunk));
-    ((void (**)()) & wf->funcs->array[chunk.start])[0] = func;
+    ((void (**)(void)) & wf->funcs->array[chunk.start])[0] = func;
   } else {
     PetscCall(PetscChunkBufferEnlargeChunk(wf->funcs, 1, &chunk));
     PetscCall(PetscHMapFormSet(ht, key, chunk));
-    ((void (**)()) & wf->funcs->array[chunk.start])[chunk.size - 1] = func;
+    ((void (**)(void)) & wf->funcs->array[chunk.start])[chunk.size - 1] = func;
   }
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscWeakFormGetIndexFunction_Private(PetscWeakForm wf, PetscHMapForm ht, DMLabel label, PetscInt value, PetscInt f, PetscInt part, PetscInt ind, void (**func)())
+PetscErrorCode PetscWeakFormGetIndexFunction_Private(PetscWeakForm wf, PetscHMapForm ht, DMLabel label, PetscInt value, PetscInt f, PetscInt part, PetscInt ind, void (**func)(void))
 {
   PetscFormKey key;
   PetscChunk   chunk;
@@ -185,13 +185,13 @@ PetscErrorCode PetscWeakFormGetIndexFunction_Private(PetscWeakForm wf, PetscHMap
     *func = NULL;
   } else {
     PetscCheck(ind < chunk.size, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Index %" PetscInt_FMT " not in [0, %" PetscInt_FMT ")", ind, chunk.size);
-    *func = ((void (**)()) & wf->funcs->array[chunk.start])[ind];
+    *func = ((void (**)(void)) & wf->funcs->array[chunk.start])[ind];
   }
   PetscFunctionReturn(0);
 }
 
 /* Ignore a NULL func */
-PetscErrorCode PetscWeakFormSetIndexFunction_Private(PetscWeakForm wf, PetscHMapForm ht, DMLabel label, PetscInt value, PetscInt f, PetscInt part, PetscInt ind, void (*func)())
+PetscErrorCode PetscWeakFormSetIndexFunction_Private(PetscWeakForm wf, PetscHMapForm ht, DMLabel label, PetscInt value, PetscInt f, PetscInt part, PetscInt ind, void (*func)(void))
 {
   PetscFormKey key;
   PetscChunk   chunk;
@@ -210,7 +210,7 @@ PetscErrorCode PetscWeakFormSetIndexFunction_Private(PetscWeakForm wf, PetscHMap
     PetscCall(PetscChunkBufferEnlargeChunk(wf->funcs, ind - chunk.size + 1, &chunk));
     PetscCall(PetscHMapFormSet(ht, key, chunk));
   }
-  ((void (**)()) & wf->funcs->array[chunk.start])[ind] = func;
+  ((void (**)(void)) & wf->funcs->array[chunk.start])[ind] = func;
   PetscFunctionReturn(0);
 }
 
@@ -233,7 +233,7 @@ PetscErrorCode PetscWeakFormClearIndexFunction_Private(PetscWeakForm wf, PetscHM
   } else if (chunk.size <= ind) {
     PetscFunctionReturn(0);
   }
-  ((void (**)()) & wf->funcs->array[chunk.start])[ind] = NULL;
+  ((void (**)(void)) & wf->funcs->array[chunk.start])[ind] = NULL;
   PetscFunctionReturn(0);
 }
 
@@ -300,7 +300,7 @@ static PetscErrorCode PetscWeakFormRewriteKeys_Internal(PetscWeakForm wf, PetscH
   for (i = 0; i < n; ++i) {
     if (keys[i].label == label) {
       PetscBool clear = PETSC_TRUE;
-      void (**funcs)();
+      void (**funcs)(void);
       PetscInt Nf;
 
       PetscCall(PetscWeakFormGetFunction_Private(wf, hmap, keys[i].label, keys[i].value, keys[i].field, keys[i].part, &Nf, &funcs));
@@ -345,7 +345,7 @@ static PetscErrorCode PetscWeakFormReplaceLabel_Internal(PetscWeakForm wf, Petsc
 {
   PetscFormKey *keys;
   PetscInt      n, i, off = 0, maxFuncs = 0;
-  void (**tmpf)();
+  void (**tmpf)(void);
   const char *name = NULL;
 
   PetscFunctionBegin;
@@ -361,7 +361,7 @@ static PetscErrorCode PetscWeakFormReplaceLabel_Internal(PetscWeakForm wf, Petsc
     if (keys[i].label) PetscCall(PetscObjectGetName((PetscObject)keys[i].label, &lname));
     PetscCall(PetscStrcmp(name, lname, &match));
     if ((!name && !lname) || match) {
-      void (**funcs)();
+      void (**funcs)(void);
       PetscInt Nf;
 
       PetscCall(PetscWeakFormGetFunction_Private(wf, hmap, keys[i].label, keys[i].value, keys[i].field, keys[i].part, &Nf, &funcs));
@@ -378,7 +378,7 @@ static PetscErrorCode PetscWeakFormReplaceLabel_Internal(PetscWeakForm wf, Petsc
     if (keys[i].label) PetscCall(PetscObjectGetName((PetscObject)keys[i].label, &lname));
     PetscCall(PetscStrcmp(name, lname, &match));
     if ((!name && !lname) || match) {
-      void (**funcs)();
+      void (**funcs)(void);
       PetscInt Nf, j;
 
       PetscCall(PetscWeakFormGetFunction_Private(wf, hmap, keys[i].label, keys[i].value, keys[i].field, keys[i].part, &Nf, &funcs));

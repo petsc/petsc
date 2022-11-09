@@ -109,7 +109,11 @@ from conf.petscconf import setup, Extension
 from conf.petscconf import config, build, build_src, build_ext, install
 from conf.petscconf import clean, test, sdist
 
-CYTHON = '0.24'
+# python-3.11+ requires cython 0.29.32+
+if pyver >= (3, 11):
+  CYTHON = '0.29.32'
+else:
+  CYTHON = '0.24'
 
 def get_release():
     release = 1

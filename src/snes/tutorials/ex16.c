@@ -68,7 +68,7 @@ typedef PetscScalar JacField[9];
 PetscErrorCode FormFunctionLocal(DMDALocalInfo *, Field ***, Field ***, void *);
 PetscErrorCode FormJacobianLocal(DMDALocalInfo *, Field ***, Mat, Mat, void *);
 PetscErrorCode DisplayLine(SNES, Vec);
-PetscErrorCode FormElements();
+PetscErrorCode FormElements(void);
 
 typedef struct {
   PetscReal loading;
