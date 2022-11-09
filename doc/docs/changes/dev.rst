@@ -54,6 +54,8 @@ Changes: Development
 
 .. rubric:: TS:
 
+- Add ``TSPruneIJacobianColor`` to improve the MFFD coloring
+
 .. rubric:: TAO:
 
 .. rubric:: DM/DA:

@@ -170,7 +170,7 @@ int main(int argc, char **argv)
   PetscBool     use_coloring  = PETSC_TRUE;
   MatFDColoring matfdcoloring = 0;
   PetscBool     monitor_off   = PETSC_FALSE;
-  PetscBool     removezero    = PETSC_FALSE;
+  PetscBool     prunejacobian = PETSC_FALSE;
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
@@ -303,14 +303,11 @@ int main(int argc, char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set runtime options
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  PetscCall(PetscOptionsGetBool(NULL, NULL, "-removezero", &removezero, NULL));
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-prune_jacobian", &prunejacobian, NULL));
   PetscCall(TSSetFromOptions(ts));
-  if (removezero && matfdcoloring) {
+  if (prunejacobian && matfdcoloring) {
     PetscRandom rctx;
     Vec         Tdot;
-    MatColoring mc;
-    ISColoring  iscoloring;
-    PetscInt    ncolors;
     /* Compute the Jacobian with randomized vector values to capture the sparsity pattern for coloring */
     PetscCall(VecDuplicate(T, &Tdot));
     PetscCall(PetscRandomCreate(PETSC_COMM_WORLD, &rctx));
@@ -321,24 +318,8 @@ int main(int argc, char **argv)
     PetscCall(TSSetUp(ts));
     PetscCall(TSComputeIJacobian(ts, 0.0, T, Tdot, 0.12345, J, J, PETSC_FALSE));
     PetscCall(VecDestroy(&Tdot));
-    /* Generate new coloring after eliminating zeros in the matrix */
-    PetscCall(MatEliminateZeros(J));
-    PetscCall(MatColoringCreate(J, &mc));
-    PetscCall(MatColoringSetDistance(mc, 2));
-    PetscCall(MatColoringSetType(mc, MATCOLORINGSL));
-    PetscCall(MatColoringSetFromOptions(mc));
-    PetscCall(MatColoringApply(mc, &iscoloring));
-    PetscCall(MatColoringDestroy(&mc));
-    PetscCall(ISColoringGetColors(iscoloring, NULL, &ncolors, NULL));
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "MatColoring after eliminating zeros generates %" PetscInt_FMT " colors\n", ncolors));
-    /* Replace the old coloring with the new one */
     PetscCall(MatFDColoringDestroy(&matfdcoloring));
-    PetscCall(MatFDColoringCreate(J, iscoloring, &matfdcoloring));
-    PetscCall(MatFDColoringSetFunction(matfdcoloring, (PetscErrorCode(*)(void))SNESTSFormFunction, (void *)ts));
-    PetscCall(MatFDColoringSetFromOptions(matfdcoloring));
-    PetscCall(MatFDColoringSetUp(J, iscoloring, matfdcoloring));
-    PetscCall(PetscObjectCompose((PetscObject)J, "TSMatFDColoring", (PetscObject)matfdcoloring));
-    PetscCall(ISColoringDestroy(&iscoloring));
+    PetscCall(TSPruneIJacobianColor(ts, J, J));
   }
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Solve nonlinear system
@@ -782,10 +763,11 @@ PetscErrorCode Monitor(TS ts, PetscInt step, PetscReal time, Vec T, void *ctx)
       localrunfiles: ex5_control.txt
       requires: !complex !single
 
-   # Test MatEliminateZeros() for improved FD coloring
+   # Test TSPruneIJacobianColor() for improved FD coloring
    test:
       suffix: 3
-      args: -ts_max_steps 130 -monitor_interval 60 -removezero
+      nsize: 4
+      args: -ts_max_steps 130 -monitor_interval 60 -prune_jacobian -mat_coloring_view
       requires: !complex !single
       localrunfiles: ex5_control.txt
 
