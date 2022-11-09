@@ -627,7 +627,7 @@ M*/
   Level: intermediate
 
 .seealso: `SETERRABORT()`, `PetscTraceBackErrorHandler()`, `PetscPushErrorHandler()`, `PetscError()`,
-          `SETERRQ()`, `CHKMEMQ`, `PetscCallMPI()`
+          `SETERRQ()`, `CHKMEMQ`, `PetscCallMPI()`, `PetscCallCXXAbort()`
 M*/
 #if defined(PETSC_CLANG_STATIC_ANALYZER)
 void PetscCallAbort(MPI_Comm, PetscErrorCode);
@@ -794,23 +794,27 @@ M*/
 
   Synopsis:
   #include <petscerror.h>
-  void PetscCallCXX(expr) noexcept;
+  void PetscCallCXX(...) noexcept;
 
   Not Collective
 
   Input Parameter:
-. expr - An arbitrary expression
+. __VA_ARGS__ - An arbitrary expression
+
+  Level: beginner
 
   Notes:
-  PetscCallCXX(expr) is a macro replacement for
+  `PetscCallCXX(...)` is a macro replacement for
 .vb
   try {
-    expr;
+    __VA_ARGS__;
   } catch (const std::exception& e) {
     return ConvertToPetscErrorCode(e);
   }
 .ve
   Due to the fact that it catches any (reasonable) exception, it is essentially noexcept.
+
+  If you cannot return a `PetscErrorCode` use `PetscCallCXXAbort()` instead.
 
   Example Usage:
 .vb
@@ -848,18 +852,111 @@ M*/
   )
 .ve
 
+.seealso: `PetscCallCXXAbort()`, `PetscCallThrow()`, `SETERRQ()`, `PetscCall()`,
+`SETERRABORT()`, `PetscCallAbort()`, `PetscTraceBackErrorHandler()`, `PetscPushErrorHandler()`,
+`PetscError()`, `CHKMEMQ`
+M*/
+#if defined(PETSC_CLANG_STATIC_ANALYZER)
+void PetscCallCXX(PetscErrorCode);
+#else
+  #define PetscCallCXX(...) \
+    do { \
+      PetscStackUpdateLine; \
+      try { \
+        __VA_ARGS__; \
+      } catch (const std::exception &e) { \
+        SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "%s", e.what()); \
+      } \
+    } while (0)
+#endif
+
+/*MC
+  PetscCallCXXAbort - Like `PetscCallCXX()` but calls `MPI_Abort()` instead of returning an
+  error-code
+
+  Synopsis:
+  #include <petscerror.h>
+  void PetscCallCXXAbort(MPI_Comm comm, ...) noexcept;
+
+  Collective on `comm`
+
+  Input Parameters:
++ comm        - The MPI communicator to abort on
+- __VA_ARGS__ - An arbitrary expression
+
   Level: beginner
 
-.seealso: `PetscCallThrow()`, `SETERRQ()`, `PetscCall()`, `SETERRABORT()`, `PetscCallAbort()`,
-          `PetscTraceBackErrorHandler()`, `PetscPushErrorHandler()`, `PetscError()`, `CHKMEMQ`
+  Notes:
+  This macro may be used to check C++ expressions for exceptions in cases where you cannot
+  return an error code. This includes constructors, destructors, copy/move assignment functions
+  or constructors among others.
+
+  If an exception is caught, the macro calls `SETERRABORT()` on `comm`. The exception must
+  derive from `std::exception` in order to be caught.
+
+  If the routine _can_ return an error-code it is highly advised to use `PetscCallCXX()`
+  instead.
+
+  See `PetscCallCXX()` for additional discussion.
+
+  Fortran Note:
+  Not available from Fortran.
+
+  Example Usage:
+.vb
+  class Foo
+  {
+    std::vector<int> data_;
+
+  public:
+    // normally std::vector::reserve() may raise an exception, but since we handle it with
+    // PetscCallCXXAbort() we may mark this routine as noexcept!
+    Foo() noexcept
+    {
+      PetscCallCXXAbort(PETSC_COMM_SELF, data_.reserve(10));
+    }
+  };
+
+  std::vector<int> bar()
+  {
+    std::vector<int> v;
+
+    PetscFunctionBegin;
+    // OK!
+    PetscCallCXXAbort(PETSC_COMM_SELF, v.emplace_back(1));
+    PetscFunctionReturn(v);
+  }
+
+  PetscErrorCode baz()
+  {
+    std::vector<int> v;
+
+    PetscFunctionBegin;
+    // WRONG! baz() returns a PetscErrorCode, prefer PetscCallCXX() instead
+    PetscCallCXXAbort(PETSC_COMM_SELF, v.emplace_back(1));
+    PetscFunctionReturn(0);
+  }
+.ve
+
+.seealso: `PetscCallCXX()`, `SETERRABORT()`, `PetscCallAbort()`
 M*/
-#define PetscCallCXX(...) \
+#define PetscCallCXXAbort(comm, ...) \
   do { \
     PetscStackUpdateLine; \
     try { \
       __VA_ARGS__; \
     } catch (const std::exception &e) { \
-      SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "%s", e.what()); \
+      SETERRABORT(comm, PETSC_ERR_LIB, "%s", e.what()); \
+    } \
+  } while (0)
+
+#define PetscCallCXXAbort(comm, ...) \
+  do { \
+    PetscStackUpdateLine; \
+    try { \
+      __VA_ARGS__; \
+    } catch (const std::exception &e) { \
+      SETERRABORT(comm, PETSC_ERR_LIB, "%s", e.what()); \
     } \
   } while (0)
 
@@ -1442,6 +1539,8 @@ M*/
 
    Not Collective
 
+   Level: beginner
+
    Notes:
    This routine is a macro, so while it does not "return" anything itself, it does return from
    the function in the literal sense.
@@ -1482,18 +1581,16 @@ M*/
   }
 .ve
 
-   Fortran Notes:
+   Fortran Note:
    Not available in Fortran
-
-   Level: beginner
 
 .seealso: `PetscFunctionBegin`, `PetscFunctionBeginUser`, `PetscFunctionReturnVoid()`,
 `PetscStackPopNoCheck()`
 M*/
-  #define PetscFunctionReturn(a) \
+  #define PetscFunctionReturn(...) \
     do { \
       PetscStackPopNoCheck(PETSC_FUNCTION_NAME); \
-      return a; \
+      return __VA_ARGS__; \
     } while (0)
 
   /*MC
@@ -1505,9 +1602,11 @@ M*/
 
   Not Collective
 
-  Notes:
+  Level: beginner
+
+  Note:
   Behaves identically to `PetscFunctionReturn()` except that it returns `void`. That is, this
-  macro expands to and ends with.
+  macro culminates with `return`.
 
   Example Usage:
 .vb
@@ -1519,8 +1618,6 @@ M*/
     PetscFunctionReturnVoid();
   }
 .ve
-
-  Level: beginner
 
 .seealso: `PetscFunctionReturn()`, `PetscFunctionBegin`, PetscFunctionBeginUser`
 M*/
