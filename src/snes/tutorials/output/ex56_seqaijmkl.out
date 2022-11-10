@@ -1,21 +1,6 @@
-  0 SNES Function norm 122.396
-    0 KSP Residual norm 122.396
-    1 KSP Residual norm 11.5745
-    2 KSP Residual norm 3.60108
-    3 KSP Residual norm 0.238408
-    4 KSP Residual norm 0.0574787
-    5 KSP Residual norm 0.00507786
-    6 KSP Residual norm 0.00017392
-    7 KSP Residual norm 6.71288e-06
-    8 KSP Residual norm 2.70595e-07
-    9 KSP Residual norm 1.45828e-08
-   10 KSP Residual norm 2.223e-10
-  Linear solve converged due to CONVERGED_RTOL iterations 10
-  1 SNES Function norm 2.222e-10
-Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
-DM Object: Mesh (ex56_) 1 MPI process
+DM Object: box 1 MPI process
   type: plex
-Mesh in 3 dimensions:
+box in 3 dimensions:
   Number of 0-cells per rank: 18
   Number of 1-cells per rank: 33
   Number of 2-cells per rank: 20
@@ -24,37 +9,23 @@ Labels:
   marker: 1 strata with value/size (1 (66))
   Face Sets: 6 strata with value/size (6 (2), 5 (2), 3 (2), 4 (2), 1 (4), 2 (4))
   depth: 4 strata with value/size (0 (18), 1 (33), 2 (20), 3 (4))
-  boundary: 1 strata with value/size (1 (66))
   celltype: 4 strata with value/size (7 (4), 0 (18), 4 (20), 1 (33))
-Field deformation:
-  adjacency FEM
-  0 SNES Function norm 49.7106
-    0 KSP Residual norm 49.7106
-    1 KSP Residual norm 23.9028
-    2 KSP Residual norm 6.73562
-    3 KSP Residual norm 2.11962
-    4 KSP Residual norm 0.689733
-    5 KSP Residual norm 0.207942
-    6 KSP Residual norm 0.0540621
-    7 KSP Residual norm 0.0139094
-    8 KSP Residual norm 0.00390972
-    9 KSP Residual norm 0.00101569
-   10 KSP Residual norm 0.00030072
-   11 KSP Residual norm 9.10064e-05
-   12 KSP Residual norm 3.31799e-05
-   13 KSP Residual norm 9.52625e-06
-   14 KSP Residual norm 2.59807e-06
-   15 KSP Residual norm 8.14097e-07
-   16 KSP Residual norm 2.49894e-07
-   17 KSP Residual norm 7.10462e-08
-   18 KSP Residual norm 1.97985e-08
-   19 KSP Residual norm 4.61424e-09
-   20 KSP Residual norm 1.08604e-09
-   21 KSP Residual norm 2.956e-10
-  Linear solve converged due to CONVERGED_RTOL iterations 21
-  1 SNES Function norm 2.956e-10
-Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
-DM Object: Mesh (ex56_) 1 MPI process
+  boundary: 1 strata with value/size (1 (16))
+  0 SNES Function norm 70.6653 
+    0 KSP Residual norm 70.6653 
+    1 KSP Residual norm 5.43996 
+    2 KSP Residual norm 1.43823 
+    3 KSP Residual norm 0.232536 
+    4 KSP Residual norm 0.0153506 
+    5 KSP Residual norm 0.00192467 
+    6 KSP Residual norm 0.00022404 
+    7 KSP Residual norm 1.01081e-05 
+    8 KSP Residual norm 4.18332e-07 
+    9 KSP Residual norm 6.39192e-09 
+   10 KSP Residual norm 2.389e-10 
+  Linear solve converged due to CONVERGED_RTOL iterations 10
+  1 SNES Function norm 2.389e-10 
+DM Object: Mesh 1 MPI process
   type: plex
 Mesh in 3 dimensions:
   Number of 0-cells per rank: 75
@@ -69,4 +40,30 @@ Labels:
   boundary: 1 strata with value/size (1 (258))
 Field deformation:
   adjacency FEM
-[0] 1) N=         441, max displ=5.5560415e+01, disp diff= 1.19e+01, error=4.415e+00, rate=1.9
+  0 SNES Function norm 28.7004 
+    0 KSP Residual norm 28.7004 
+    1 KSP Residual norm 16.3544 
+    2 KSP Residual norm 5.142 
+    3 KSP Residual norm 1.48953 
+    4 KSP Residual norm 0.449489 
+    5 KSP Residual norm 0.135932 
+    6 KSP Residual norm 0.0358557 
+    7 KSP Residual norm 0.011102 
+    8 KSP Residual norm 0.00322736 
+    9 KSP Residual norm 0.000936443 
+   10 KSP Residual norm 0.000269682 
+   11 KSP Residual norm 8.32144e-05 
+   12 KSP Residual norm 2.33364e-05 
+   13 KSP Residual norm 5.91528e-06 
+   14 KSP Residual norm 1.53916e-06 
+   15 KSP Residual norm 4.32253e-07 
+   16 KSP Residual norm 1.25648e-07 
+   17 KSP Residual norm 3.63292e-08 
+   18 KSP Residual norm 1.02813e-08 
+   19 KSP Residual norm 3.14654e-09 
+   20 KSP Residual norm 8.034e-10 
+   21 KSP Residual norm 2.021e-10 
+  Linear solve converged due to CONVERGED_RTOL iterations 21
+  1 SNES Function norm 2.021e-10 
+[0] 0) N=          27, max displ=4.1232123e+01, error=1.850e+01
+[0] 1) N=         441, max displ=5.3174288e+01, disp diff= 1.19e+01, error=6.557e+00, rate=1.5
