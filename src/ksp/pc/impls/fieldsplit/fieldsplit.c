@@ -1874,7 +1874,9 @@ static PetscErrorCode PCFieldSplitSetIS_FieldSplit(PC pc, const char splitname[]
 +   pc  - the preconditioner context
 .   splitname - name of this split, if NULL the number of the split is used
 .   n - the number of fields in this split
--   fields - the fields in this split
+.   fields - the fields in this split
+-   fields_col - generally the same as fields, if it does not match fields then the matrix block that is solved for this set of fields comes from an off-diagonal block
+                 of the matrix and fields_col provides the column indices for that block
 
     Level: intermediate
 
@@ -1888,6 +1890,8 @@ static PetscErrorCode PCFieldSplitSetIS_FieldSplit(PC pc, const char splitname[]
 
      This function is called once per split (it creates a new split each time).  Solve options
      for this split will be available under the prefix -fieldsplit_SPLITNAME_.
+
+   `PCFieldSplitSetIS()` does not support having a fields_col different from fields
 
    Developer Note:
    This routine does not actually create the `IS` representing the split, that is delayed
