@@ -463,10 +463,8 @@ What Fortran compiler do you recommend on macOS?
 ------------------------------------------------
 
 We recommend using `homebrew <https://brew.sh/>`__ to install `gfortran
-<https://gcc.gnu.org/wiki/GFortran>`__
+<https://gcc.gnu.org/wiki/GFortran>`__, see :any:`doc_macos_install`
 
-Please contact Apple at https://www.apple.com/feedback/ and urge them to bundle gfortran
-with future versions of Xcode.
 
 How can I find the URL locations of the packages you install using ``--download-PACKAGE``?
 ------------------------------------------------------------------------------------------
