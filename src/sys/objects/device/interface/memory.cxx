@@ -35,6 +35,7 @@ struct PointerAttributes {
 
   // even though this is a POD and can be aggregate initialized, the STL uses () constructors
   // in unordered_map and so we need to provide a trivial contructor...
+  constexpr PointerAttributes() = default;
   constexpr PointerAttributes(PetscMemType, PetscObjectId, std::size_t) noexcept;
 
   bool operator==(const PointerAttributes &) const noexcept;
