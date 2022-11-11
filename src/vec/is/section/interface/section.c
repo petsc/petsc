@@ -30,9 +30,9 @@ PetscClassId PETSC_SECTION_CLASSID;
        PetscSectionDestroy(PetscSection);
 .ve
 
-  The `PetscSection` object and methods are intended to be used in the PETSc `Vec` and `Mat` implementations.
+  The `PetscSection` object and methods are intended to be used in the PETSc `Vec` and `Mat` implementations. The indices returned by the `PetscSection` are appropriate for the kind of `Vec` it is asociated with. For example, if the vector being indexed is a local vector, we call the section a local section. If the section indexes a global vector, we call it a global section. For parallel vectors, like global vectors, we use negative indices to indicate dofs owned by other processes.
 
-.seealso: [PetscSection](sec_petscsection), `PetscSection`, `PetscSectionDestroy()`
+.seealso: [PetscSection](sec_petscsection), `PetscSection`, `PetscSectionDestroy()`, `PetscSectionCreateGlobalSection()`
 @*/
 PetscErrorCode PetscSectionCreate(MPI_Comm comm, PetscSection *s)
 {
@@ -793,6 +793,9 @@ PetscErrorCode PetscSectionSetIncludesConstraints(PetscSection s, PetscBool incl
   Output Parameter:
 . numDof - the number of dof
 
+  Note:
+  In a global section, this size will be negative for points not owned by this process.
+
   Level: intermediate
 
 .seealso: [PetscSection](sec_petscsection), `PetscSection`, `PetscSectionSetDof()`, `PetscSectionCreate()`
@@ -1283,7 +1286,9 @@ PetscErrorCode PetscSectionGetConstrainedStorageSize(PetscSection s, PetscInt *s
 
   Level: intermediate
 
-  Note:
+  Notes:
+  If we have a set of local sections defining the layout of a set of local vectors, and also a `PetscSF` to determine which section points are shared and the ownership, we can calculate a global section defining the parallel data layout, and the associated global vector.
+
   This gives negative sizes and offsets to points not owned by this process
 
 .seealso: [PetscSection](sec_petscsection), `PetscSection`, `PetscSectionCreate()`
@@ -1580,7 +1585,7 @@ PetscErrorCode PetscSectionGetValueLayout(MPI_Comm comm, PetscSection s, PetscLa
 }
 
 /*@
-  PetscSectionGetOffset - Return the offset into an array or local `Vec` for the dof associated with the given point.
+  PetscSectionGetOffset - Return the offset into an array or `Vec` for the dof associated with the given point.
 
   Not Collective
 
@@ -1590,6 +1595,9 @@ PetscErrorCode PetscSectionGetValueLayout(MPI_Comm comm, PetscSection s, PetscLa
 
   Output Parameter:
 . offset - the offset
+
+  Note:
+  In a global section, this offset will be negative for points not owned by this process.
 
   Level: intermediate
 
@@ -1606,7 +1614,7 @@ PetscErrorCode PetscSectionGetOffset(PetscSection s, PetscInt point, PetscInt *o
 }
 
 /*@
-  PetscSectionSetOffset - Set the offset into an array or local `Vec` for the dof associated with the given point.
+  PetscSectionSetOffset - Set the offset into an array or `Vec` for the dof associated with the given point.
 
   Not Collective
 
@@ -1632,7 +1640,7 @@ PetscErrorCode PetscSectionSetOffset(PetscSection s, PetscInt point, PetscInt of
 }
 
 /*@
-  PetscSectionGetFieldOffset - Return the offset into an array or local `Vec` for the dof associated with the given point.
+  PetscSectionGetFieldOffset - Return the offset into an array or `Vec` for the field dof associated with the given point.
 
   Not Collective
 
@@ -1643,6 +1651,9 @@ PetscErrorCode PetscSectionSetOffset(PetscSection s, PetscInt point, PetscInt of
 
   Output Parameter:
 . offset - the offset
+
+  Note:
+  In a global section, this offset will be negative for points not owned by this process.
 
   Level: intermediate
 
@@ -1659,7 +1670,7 @@ PetscErrorCode PetscSectionGetFieldOffset(PetscSection s, PetscInt point, PetscI
 }
 
 /*@
-  PetscSectionSetFieldOffset - Set the offset into an array or local `Vec` for the dof associated with the given field at a point.
+  PetscSectionSetFieldOffset - Set the offset into an array or `Vec` for the dof associated with the given field at a point.
 
   Not Collective
 
