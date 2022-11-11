@@ -827,6 +827,7 @@ PetscErrorCode VecView_Plex_Local_CGNS(Vec V, PetscViewer viewer)
   PetscSection       section;
   PetscInt           ncomp, time_step;
   PetscReal          time, *time_slot;
+  size_t            *step_slot;
   const PetscInt     field = 0;
   const PetscScalar *v;
   char               solution_name[PETSC_MAX_PATH_LEN];
@@ -837,6 +838,7 @@ PetscErrorCode VecView_Plex_Local_CGNS(Vec V, PetscViewer viewer)
   if (!cgv->node_l2g) PetscCall(DMView(dm, viewer));
   if (!cgv->nodal_field) PetscCall(PetscMalloc1(cgv->nEnd - cgv->nStart, &cgv->nodal_field));
   if (!cgv->output_times) PetscCall(PetscSegBufferCreate(sizeof(PetscReal), 20, &cgv->output_times));
+  if (!cgv->output_steps) PetscCall(PetscSegBufferCreate(sizeof(size_t), 20, &cgv->output_steps));
 
   PetscCall(DMGetOutputSequenceNumber(dm, &time_step, &time));
   if (time_step < 0) {
@@ -845,6 +847,8 @@ PetscErrorCode VecView_Plex_Local_CGNS(Vec V, PetscViewer viewer)
   }
   PetscCall(PetscSegBufferGet(cgv->output_times, 1, &time_slot));
   *time_slot = time;
+  PetscCall(PetscSegBufferGet(cgv->output_steps, 1, &step_slot));
+  *step_slot = time_step;
   PetscCall(PetscSNPrintf(solution_name, sizeof solution_name, "FlowSolution%" PetscInt_FMT, time_step));
   PetscCallCGNS(cg_sol_write(cgv->file_num, cgv->base, cgv->zone, solution_name, CGNS_ENUMV(Vertex), &sol));
   PetscCall(DMGetLocalSection(dm, &section));
