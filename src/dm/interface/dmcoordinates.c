@@ -1043,7 +1043,7 @@ PetscErrorCode DMProjectCoordinates(DM dm, PetscFE disc)
   Level: developer
 
   Notes:
-  To do a search of the local cells of the mesh, v should have PETSC_COMM_SELF as its communicator.
+  To do a search of the local cells of the mesh, v should have `PETSC_COMM_SELF` as its communicator.
   To do a search of all the cells in the distributed mesh, v should have the same communicator as dm.
 
   Points will only be located in owned cells, not overlap cells arising from `DMPlexDistribute()` or other overlapping distributions.
@@ -1059,8 +1059,8 @@ $    const PetscInt    *found;
 $
 $    PetscSFGetGraph(cellSF,NULL,&nFound,&found,&cells);
 
-  Where cells[i].rank is the rank of the cell containing point found[i] (or i if found == NULL), and cells[i].index is
-  the index of the cell in its rank's local numbering.
+  Where cells[i].rank is the rank of the process owning the cell containing point found[i] (or i if found == NULL), and cells[i].index is
+  the index of the cell in its rank's local numbering. Note that this rank is in the communicator for v, so if v is on `PETSC_COMM_SELF` then the rank will always be 0.
 
 .seealso: `DMSetCoordinates()`, `DMSetCoordinatesLocal()`, `DMGetCoordinates()`, `DMGetCoordinatesLocal()`, `DMPointLocationType`
 @*/
