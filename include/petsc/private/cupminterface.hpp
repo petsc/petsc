@@ -424,17 +424,17 @@ struct InterfaceImpl<DeviceType::HIP> : InterfaceBase<DeviceType::HIP> {
     PETSC_CUPM_BASE_CLASS_HEADER(PetscConcat(base_, base_name), T); \
     using base_name = ::Petsc::device::cupm::impl::InterfaceImpl<T>; \
     /* types */ \
-    using typename base_name::cupmComplex_t; \
-    using typename base_name::cupmError_t; \
-    using typename base_name::cupmEvent_t; \
-    using typename base_name::cupmStream_t; \
-    using typename base_name::cupmDeviceProp_t; \
-    using typename base_name::cupmMemcpyKind_t; \
-    using typename base_name::cupmPointerAttributes_t; \
-    using typename base_name::cupmMemoryType_t; \
-    using typename base_name::cupmDim3; \
-    using typename base_name::cupmMemPool_t; \
-    using typename base_name::cupmMemPoolAttr; \
+    using cupmComplex_t           = typename base_name::cupmComplex_t; \
+    using cupmError_t             = typename base_name::cupmError_t; \
+    using cupmEvent_t             = typename base_name::cupmEvent_t; \
+    using cupmStream_t            = typename base_name::cupmStream_t; \
+    using cupmDeviceProp_t        = typename base_name::cupmDeviceProp_t; \
+    using cupmMemcpyKind_t        = typename base_name::cupmMemcpyKind_t; \
+    using cupmPointerAttributes_t = typename base_name::cupmPointerAttributes_t; \
+    using cupmMemoryType_t        = typename base_name::cupmMemoryType_t; \
+    using cupmDim3                = typename base_name::cupmDim3; \
+    using cupmMemPool_t           = typename base_name::cupmMemPool_t; \
+    using cupmMemPoolAttr         = typename base_name::cupmMemPoolAttr; \
     /* variables */ \
     using base_name::cupmSuccess; \
     using base_name::cupmErrorNotReady; \
@@ -817,9 +817,9 @@ private:
 
   #define PETSC_CUPM_INHERIT_INTERFACE_TYPEDEFS_USING(base_name, T) \
     PETSC_CUPM_IMPL_CLASS_HEADER(PetscConcat(base_name, _impl), T); \
-    using base_name = ::Petsc::device::cupm::impl::Interface<T>; \
-    using typename base_name::cupmReal_t; \
-    using typename base_name::cupmScalar_t; \
+    using base_name    = ::Petsc::device::cupm::impl::Interface<T>; \
+    using cupmReal_t   = typename base_name::cupmReal_t; \
+    using cupmScalar_t = typename base_name::cupmScalar_t; \
     using base_name::makeCupmScalar; \
     using base_name::cupmScalarCast; \
     using base_name::cupmRealCast; \

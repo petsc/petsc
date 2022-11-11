@@ -395,12 +395,12 @@ struct BlasInterfaceImpl<DeviceType::HIP> : BlasInterfaceBase<DeviceType::HIP> {
     using base_name::cupmBlasName; \
     using base_name::cupmBlasGetErrorName; \
     /* types */ \
-    using typename base_name::cupmBlasHandle_t; \
-    using typename base_name::cupmBlasError_t; \
-    using typename base_name::cupmBlasInt_t; \
-    using typename base_name::cupmSolverHandle_t; \
-    using typename base_name::cupmSolverError_t; \
-    using typename base_name::cupmBlasPointerMode_t; \
+    using cupmBlasHandle_t      = typename base_name::cupmBlasHandle_t; \
+    using cupmBlasError_t       = typename base_name::cupmBlasError_t; \
+    using cupmBlasInt_t         = typename base_name::cupmBlasInt_t; \
+    using cupmSolverHandle_t    = typename base_name::cupmSolverHandle_t; \
+    using cupmSolverError_t     = typename base_name::cupmSolverError_t; \
+    using cupmBlasPointerMode_t = typename base_name::cupmBlasPointerMode_t; \
     /* values */ \
     using base_name::CUPMBLAS_STATUS_SUCCESS; \
     using base_name::CUPMBLAS_STATUS_NOT_INITIALIZED; \
