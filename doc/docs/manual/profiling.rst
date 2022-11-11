@@ -688,6 +688,61 @@ For example one can in a bash script use something like:
        "$@"
    fi
 
+.. _sec_using_tau:
+
+Using TAU
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+TAU profiles can be generated without the need for instrumentation through the
+use of the perfstubs package. PETSc by default is configured with ``--with-tau-perfstubs``.
+To generate profiles with TAU, first setup TAU:
+
+.. code-block:: bash
+
+  wget http://tau.uoregon.edu/tau.tgz
+  ./configure -cc=mpicc -c++=mpicxx -mpi -bfd=download -unwind=download && make install
+  export PATH=<tau dir>/x86_64/bin:$PATH
+
+For more information on configuring TAU, see `http://tau.uoregon.edu <http://tau.uoregon.edu>`_.
+Next, run your program with TAU. For instance, to profile `ex56`,
+
+.. code-block:: bash
+
+  cd $PETSC_DIR/src/snes/tutorials
+  make ex56
+  mpirun -n 4 tau_exec -T mpi ./ex56 <args>
+
+This should produce four ``profile.*`` files with profile data that can be
+viewed with ``paraprof/pprof``:
+
+.. code-block:: shell
+
+   Reading Profile files in profile.*
+
+   NODE 0;CONTEXT 0;THREAD 0:
+   ---------------------------------------------------------------------------------------
+   %Time    Exclusive    Inclusive       #Call      #Subrs  Inclusive Name
+                 msec   total msec                          usec/call
+   ---------------------------------------------------------------------------------------
+   100.0           26        1,838           1       41322    1838424 .TAU application
+    73.2            1        1,345           2         168     672950 SNESSolve
+    62.2            3        1,142           2        1282     571442 SNESJacobianEval
+    62.0        1,136        1,138           2          76     569494 DMPlexJacobianFE
+    60.1        0.046        1,105           1          32    1105001 Solve 1
+    15.2           87          279           5       11102      55943 Mesh Setup
+    13.2        0.315          241           1          32     241765 Solve 0
+     7.8           80          144       38785       38785          4 MPI_Allreduce()
+     7.0           69          128           6       43386      21491 DualSpaceSetUp
+     6.2            1          114           4          54      28536 PCSetUp
+     6.0           12          110           2         892      55407 PCSetUp_GAMG+
+     3.9           70           70           1           0      70888 MPI_Init_thread()
+     3.7           68           68       41747           0          2 MPI Collective Sync
+     3.6            8           66           4        3536      16548 SNESFunctionEval
+     2.6           45           48         171         171        281 MPI_Bcast()
+     1.9           34           34        7836           0          4 MPI_Barrier()
+     1.8        0.567           33           2          68      16912  GAMG Coarsen
+
+
 .. raw:: html
 
     <hr>

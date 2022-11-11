@@ -29,6 +29,7 @@ configure_options = [
   '--download-hpddm=1',
   '--download-triangle=1',
   '--download-mmg=1',
+  '--with-tau-perfstubs=0',
   ]
 
 if __name__ == '__main__':

@@ -11,6 +11,8 @@ Changes: Development
 
 .. rubric:: General:
 
+- Add perfstubs package, see https://petsc.org/release/docs/manual/profiling/#using-tau for more information on usage
+
 .. rubric:: Configure/Build:
 
 - Remove unused preprocessor variables ``PETSC_HAVE_VPRINTF_CHAR``, ``PETSC_HAVE_VFPRINTF_CHAR``, ``PETSC_STAT_MACROS_BROKEN``, ``PETSC_HAVE_FORTRAN_GETARG``, ``PETSC_uid_t``, ``PETSC_gid_t``, ``PETSC_HAVE_PTHREAD_BARRIER_T``, ``PETSC_HAVE_SCHED_CPU_SET_T``, and ``PETSC_HAVE_SYS_SYSCTL_H``
