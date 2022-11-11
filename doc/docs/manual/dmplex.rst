@@ -463,6 +463,7 @@ The output file "example.h5" now looks like the following:
 
 ::
 
+   $ h5dump --contents example.h5
    HDF5 "example.h5" {
    FILE_CONTENTS {
     group      /
@@ -477,6 +478,7 @@ The output file "example.h5" now looks like the following:
     group      /topologies/plexA/dms/dmA/vecs
     group      /topologies/plexA/dms/dmA/vecs/vecA
     dataset    /topologies/plexA/dms/dmA/vecs/vecA/vecA
+    group      /topologies/plexA/labels
     group      /topologies/plexA/topology
     dataset    /topologies/plexA/topology/cells
     dataset    /topologies/plexA/topology/cones
@@ -484,6 +486,64 @@ The output file "example.h5" now looks like the following:
     dataset    /topologies/plexA/topology/orientation
     }
    }
+
+Saving in the new parallel HDF5 format
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Since PETSc 3.19, we offer a new format which supports parallel loading.
+To write in this format, you currently need to specify it explicitly using the option
+
+::
+
+   -dm_plex_view_hdf5_storage_version 3.0.0
+
+The storage version is stored in the file and set automatically when loading (described below).
+You can check the storage version of the HDF5 file with
+
+::
+
+   $ h5dump -a /dmplex_storage_version example.h5
+
+To allow for simple and efficient implementation, and good load balancing, the 3.0.0 format changes the way the mesh topology is stored.
+Different strata (sets of mesh entities with an equal dimension; or vertices, edges, faces, and cells) are now stored separately.
+The new structure of ``/topologies/<mesh_name>/topology`` is following:
+
+::
+
+   $ h5dump --contents example.h5
+   HDF5 "example.h5" {
+   FILE_CONTENTS {
+    ...
+    group      /topologies/plexA/topology
+    dataset    /topologies/plexA/topology/permutation
+    group      /topologies/plexA/topology/strata
+    group      /topologies/plexA/topology/strata/0
+    dataset    /topologies/plexA/topology/strata/0/cone_sizes
+    dataset    /topologies/plexA/topology/strata/0/cones
+    dataset    /topologies/plexA/topology/strata/0/orientations
+    group      /topologies/plexA/topology/strata/1
+    dataset    /topologies/plexA/topology/strata/1/cone_sizes
+    dataset    /topologies/plexA/topology/strata/1/cones
+    dataset    /topologies/plexA/topology/strata/1/orientations
+    group      /topologies/plexA/topology/strata/2
+    dataset    /topologies/plexA/topology/strata/2/cone_sizes
+    dataset    /topologies/plexA/topology/strata/2/cones
+    dataset    /topologies/plexA/topology/strata/2/orientations
+    group      /topologies/plexA/topology/strata/3
+    dataset    /topologies/plexA/topology/strata/3/cone_sizes
+    dataset    /topologies/plexA/topology/strata/3/cones
+    dataset    /topologies/plexA/topology/strata/3/orientations
+    }
+   }
+
+Group ``/topologies/<mesh_name>/topology/strata`` contains a subgroup for each stratum depth (dimension; 0 for vertices up to 3 for cells).
+DAG points (mesh entities) have an implicit global numbering, given by the position in ``orientations`` (or ``cone_sizes``) plus the stratum offset.
+The stratum offset is given by a sum of lengths of all previous strata with respect to the order stored in ``/topologies/<mesh_name>/topology/permutation``.
+This global numbering is compatible with the explicit numbering in dataset ``topology/order`` of previous versions.
+
+For a DAG point with index ``i`` at depth ``s``, ``cone_sizes[i]`` gives a size of this point's cone (set of adjacent entities with depth ``s-1``).
+Let ``o = sum(cone_sizes[0:i]])`` (in Python syntax).
+Points forming the cone are then given by ``cones[o:o+cone_sizes[i]]`` (in numbering relative to the depth ``s-1``).
+The orientation of the cone with respect to point ``i`` is then stored in ``orientations[i]``.
 
 Loading
 ^^^^^^^
