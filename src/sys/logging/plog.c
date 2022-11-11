@@ -11,6 +11,9 @@
 #include <petsc/private/logimpl.h> /*I    "petscsys.h"   I*/
 #include <petsctime.h>
 #include <petscviewer.h>
+#if defined(PETSC_HAVE_TAU_PERFSTUBS)
+  #include <../src/sys/perfstubs/timer.h>
+#endif
 
 PetscLogEvent PETSC_LARGEST_EVENT = PETSC_EVENT;
 
@@ -103,6 +106,9 @@ PETSC_INTERN PetscErrorCode PetscLogInitialize(void)
   PetscCallMPI(MPI_Barrier(PETSC_COMM_WORLD));
   PetscTime(&petsc_BaseTime);
   PetscCall(PetscLogStagePush(stage));
+  #if defined(PETSC_HAVE_TAU_PERFSTUBS)
+  PetscStackCallExternalVoid("ps_initialize_", ps_initialize_());
+  #endif
   PetscFunctionReturn(0);
 }
 
@@ -398,6 +404,9 @@ PetscErrorCode PetscLogStageRegister(const char sname[], PetscLogStage *stage)
   PetscCall(PetscEventPerfLogEnsureSize(stageLog->stageInfo[*stage].eventLog, stageLog->eventLog->numEvents));
   for (event = 0; event < stageLog->eventLog->numEvents; event++) PetscCall(PetscEventPerfInfoCopy(&stageLog->stageInfo[0].eventLog->eventInfo[event], &stageLog->stageInfo[*stage].eventLog->eventInfo[event]));
   PetscCall(PetscClassPerfLogEnsureSize(stageLog->stageInfo[*stage].classLog, stageLog->classLog->numClasses));
+  #if defined(PETSC_HAVE_TAU_PERFSTUBS)
+  if (perfstubs_initialized == PERFSTUBS_SUCCESS) PetscStackCallExternalVoid("ps_timer_create_", stageLog->stageInfo[*stage].timer = ps_timer_create_(sname));
+  #endif
   PetscFunctionReturn(0);
 }
 
@@ -438,6 +447,9 @@ PetscErrorCode PetscLogStagePush(PetscLogStage stage)
   PetscFunctionBegin;
   PetscCall(PetscLogGetStageLog(&stageLog));
   PetscCall(PetscStageLogPush(stageLog, stage));
+  #if defined(PETSC_HAVE_TAU_PERFSTUBS)
+  if (perfstubs_initialized == PERFSTUBS_SUCCESS && stageLog->stageInfo[stage].timer != NULL) PetscStackCallExternalVoid("ps_timer_start_", ps_timer_start_(stageLog->stageInfo[stage].timer));
+  #endif
   PetscFunctionReturn(0);
 }
 
@@ -471,6 +483,9 @@ PetscErrorCode PetscLogStagePop(void)
 
   PetscFunctionBegin;
   PetscCall(PetscLogGetStageLog(&stageLog));
+  #if defined(PETSC_HAVE_TAU_PERFSTUBS)
+  if (perfstubs_initialized == PERFSTUBS_SUCCESS && stageLog->stageInfo[stageLog->curStage].timer != NULL) PetscStackCallExternalVoid("ps_timer_stop_", ps_timer_stop_(stageLog->stageInfo[stageLog->curStage].timer));
+  #endif
   PetscCall(PetscStageLogPop(stageLog));
   PetscFunctionReturn(0);
 }

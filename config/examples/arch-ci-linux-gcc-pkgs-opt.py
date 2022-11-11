@@ -30,6 +30,7 @@ configure_options = [
   '--download-hypre',
   '--download-ks',
   '--with-ssl=1',
+  '--with-tau-perfstubs=0',
 ]
 
 if __name__ == '__main__':

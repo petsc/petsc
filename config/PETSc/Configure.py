@@ -46,6 +46,7 @@ class Configure(config.base.Configure):
     help.addArgument('PETSc', '-with-package-scripts=<pyscripts>',           nargs.ArgFileList(None,None,'Specify configure package scripts for user provided packages'))
     help.addArgument('PETSc', '-with-coverage=<bool>',                       nargs.ArgFuzzyBool(None, value=0, help='Enable or disable code-coverage collection'))
     help.addArgument('PETSc', '-with-coverage-exec=<executable>',            nargs.ArgExecutable(None, value='default-auto', mustExist=0, help='Name of executable to use for post-processing coverage data, e.g. \'gcov\' or \'llvm-cov\'. Pass \'auto\' to let configure infer from compiler'))
+    help.addArgument('PETSc', '-with-tau-perfstubs=<bool>',                  nargs.ArgBool(None, 1,'Enable TAU profiler stubs'))
     return
 
   def registerPythonFile(self,filename,directory):
@@ -487,6 +488,9 @@ prepend-path PATH "%s"
 
     # add a makefile entry for configure options
     self.addMakeMacro('CONFIGURE_OPTIONS', self.framework.getOptionsString(['configModules', 'optionsModule']).replace('\"','\\"'))
+
+    if self.framework.argDB['with-tau-perfstubs']:
+      self.addDefine('HAVE_TAU_PERFSTUBS',1)
     return
 
   def dumpConfigInfo(self):
@@ -1167,7 +1171,7 @@ char assert_aligned[(sizeof(struct mystruct)==16)*2-1];
     self.executeTest(self.configureIntptrt)
     self.executeTest(self.configureSolaris)
     self.executeTest(self.configureLinux)
-    self.executeTest(self.configureDarwin)    
+    self.executeTest(self.configureDarwin)
     self.executeTest(self.configureWin32)
     self.executeTest(self.configureCygwinBrokenPipe)
     self.executeTest(self.configureDefaultArch)

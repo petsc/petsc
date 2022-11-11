@@ -677,7 +677,8 @@ GITSRC = '*.[chF]' '*.F90' '*.hpp' '*.cpp' '*.cxx' '*.cu' ${GITSRCEXCL}
 GITSRCEXCL = \
 ':!*khash/*' \
 ':!*valgrind/*' \
-':!*yaml/*'
+':!*yaml/*' \
+':!*perfstubs/*'
 GITCFSRC = '*.[ch]' '*.hpp' '*.cpp' '*.cxx' '*.cu' ${GITSRCEXCL} ${GITCFSRCEXCL}
 GITCFSRCEXCL = \
 ':!*petscversion.h' \
