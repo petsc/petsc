@@ -62,13 +62,13 @@ Changes: Development
 
 .. rubric:: SNES:
 
-- Add ``SNESPruneJacobianColor`` to improve the MFFD coloring
+- Add ``SNESPruneJacobianColor()`` to improve the MFFD coloring
 
 .. rubric:: SNESLineSearch:
 
 .. rubric:: TS:
 
-- Add ``TSPruneIJacobianColor`` to improve the MFFD coloring
+- Add ``TSPruneIJacobianColor()`` to improve the MFFD coloring
 
 .. rubric:: TAO:
 
