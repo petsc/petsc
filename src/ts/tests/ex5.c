@@ -170,6 +170,7 @@ int main(int argc, char **argv)
   PetscBool     use_coloring  = PETSC_TRUE;
   MatFDColoring matfdcoloring = 0;
   PetscBool     monitor_off   = PETSC_FALSE;
+  PetscBool     prunejacobian = PETSC_FALSE;
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
@@ -268,24 +269,26 @@ int main(int argc, char **argv)
   /* Set Jacobian evaluation routine - use coloring to compute finite difference Jacobian efficiently */
   PetscCall(DMSetMatType(da, MATAIJ));
   PetscCall(DMCreateMatrix(da, &J));
-  PetscCall(TSGetSNES(ts, &snes));
   if (use_coloring) {
     ISColoring iscoloring;
+    PetscInt   ncolors;
+
     PetscCall(DMCreateColoring(da, IS_COLORING_GLOBAL, &iscoloring));
     PetscCall(MatFDColoringCreate(J, iscoloring, &matfdcoloring));
     PetscCall(MatFDColoringSetFromOptions(matfdcoloring));
     PetscCall(MatFDColoringSetUp(J, iscoloring, matfdcoloring));
+    PetscCall(ISColoringGetColors(iscoloring, NULL, &ncolors, NULL));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "DMColoring generates %" PetscInt_FMT " colors\n", ncolors));
     PetscCall(ISColoringDestroy(&iscoloring));
-    PetscCall(MatFDColoringSetFunction(matfdcoloring, (PetscErrorCode(*)(void))SNESTSFormFunction, ts));
-    PetscCall(SNESSetJacobian(snes, J, J, SNESComputeJacobianDefaultColor, matfdcoloring));
+    PetscCall(TSSetIJacobian(ts, J, J, TSComputeIJacobianDefaultColor, NULL));
   } else {
+    PetscCall(TSGetSNES(ts, &snes));
     PetscCall(SNESSetJacobian(snes, J, J, SNESComputeJacobianDefault, NULL));
   }
 
   /* Define what to print for ts_monitor option */
   PetscCall(PetscOptionsHasName(NULL, NULL, "-monitor_off", &monitor_off));
   if (!monitor_off) PetscCall(TSMonitorSet(ts, Monitor, &usermonitor, NULL));
-  PetscCall(FormInitialSolution(da, T, &user));
   dt    = TIMESTEP; /* initial time step */
   ftime = TIMESTEP * time;
   PetscCall(PetscPrintf(PETSC_COMM_WORLD, "time %" PetscInt_FMT ", ftime %g hour, TIMESTEP %g\n", time, (double)(ftime / 3600), (double)dt));
@@ -300,11 +303,28 @@ int main(int argc, char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set runtime options
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-prune_jacobian", &prunejacobian, NULL));
   PetscCall(TSSetFromOptions(ts));
-
+  if (prunejacobian && matfdcoloring) {
+    PetscRandom rctx;
+    Vec         Tdot;
+    /* Compute the Jacobian with randomized vector values to capture the sparsity pattern for coloring */
+    PetscCall(VecDuplicate(T, &Tdot));
+    PetscCall(PetscRandomCreate(PETSC_COMM_WORLD, &rctx));
+    PetscCall(PetscRandomSetInterval(rctx, 1.0, 2.0));
+    PetscCall(VecSetRandom(T, rctx));
+    PetscCall(VecSetRandom(Tdot, rctx));
+    PetscCall(PetscRandomDestroy(&rctx));
+    PetscCall(TSSetUp(ts));
+    PetscCall(TSComputeIJacobian(ts, 0.0, T, Tdot, 0.12345, J, J, PETSC_FALSE));
+    PetscCall(VecDestroy(&Tdot));
+    PetscCall(MatFDColoringDestroy(&matfdcoloring));
+    PetscCall(TSPruneIJacobianColor(ts, J, J));
+  }
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Solve nonlinear system
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+  PetscCall(FormInitialSolution(da, T, &user));
   PetscCall(TSSolve(ts, T));
   PetscCall(TSGetSolveTime(ts, &ftime));
   PetscCall(TSGetStepNumber(ts, &steps));
@@ -742,5 +762,13 @@ PetscErrorCode Monitor(TS ts, PetscInt step, PetscReal time, Vec T, void *ctx)
       output_file: output/ex5.out
       localrunfiles: ex5_control.txt
       requires: !complex !single
+
+   # Test TSPruneIJacobianColor() for improved FD coloring
+   test:
+      suffix: 3
+      nsize: 4
+      args: -ts_max_steps 130 -monitor_interval 60 -prune_jacobian -mat_coloring_view
+      requires: !complex !single
+      localrunfiles: ex5_control.txt
 
 TEST*/

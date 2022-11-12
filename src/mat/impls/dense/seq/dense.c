@@ -3030,7 +3030,8 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqDense,
                                        NULL,
                                        NULL,
                                        NULL,
-                                       /*150*/ NULL};
+                                       /*150*/ NULL,
+                                       NULL};
 
 /*@C
    MatCreateSeqDense - Creates a `MATSEQDENSE` that

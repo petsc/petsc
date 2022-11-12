@@ -245,7 +245,8 @@ static struct _MatOps MatOps_Values = {NULL,
                                        NULL,
                                        NULL,
                                        NULL,
-                                       /*150*/ NULL};
+                                       /*150*/ NULL,
+                                       NULL};
 
 /*MC
    MATSCATTER - MATSCATTER = "scatter" - A matrix type that simply applies a `VecScatterBegin()` and `VecScatterEnd()`

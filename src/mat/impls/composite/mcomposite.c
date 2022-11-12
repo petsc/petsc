@@ -1072,7 +1072,8 @@ static struct _MatOps MatOps_Values = {NULL,
                                        NULL,
                                        NULL,
                                        NULL,
-                                       /*150*/ NULL};
+                                       /*150*/ NULL,
+                                       NULL};
 
 /*MC
    MATCOMPOSITE - A matrix defined by the sum (or product) of one or more matrices.

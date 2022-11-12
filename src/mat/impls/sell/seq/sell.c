@@ -1886,7 +1886,8 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqSELL,
                                        NULL,
                                        NULL,
                                        NULL,
-                                       /*150*/ NULL};
+                                       /*150*/ NULL,
+                                       NULL};
 
 PetscErrorCode MatStoreValues_SeqSELL(Mat mat)
 {

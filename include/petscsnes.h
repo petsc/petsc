@@ -399,6 +399,7 @@ PETSC_EXTERN PetscErrorCode SNESGetJacobian(SNES, Mat *, Mat *, PetscErrorCode (
 PETSC_EXTERN PetscErrorCode SNESObjectiveComputeFunctionDefaultFD(SNES, Vec, Vec, void *);
 PETSC_EXTERN PetscErrorCode SNESComputeJacobianDefault(SNES, Vec, Mat, Mat, void *);
 PETSC_EXTERN PetscErrorCode SNESComputeJacobianDefaultColor(SNES, Vec, Mat, Mat, void *);
+PETSC_EXTERN PetscErrorCode SNESPruneJacobianColor(SNES, Mat, Mat);
 PETSC_EXTERN PetscErrorCode SNESSetComputeInitialGuess(SNES, PetscErrorCode (*)(SNES, Vec, void *), void *);
 PETSC_EXTERN PetscErrorCode SNESSetPicard(SNES, Vec, PetscErrorCode (*)(SNES, Vec, Vec, void *), Mat, Mat, PetscErrorCode (*)(SNES, Vec, Mat, Mat, void *), void *);
 PETSC_EXTERN PetscErrorCode SNESGetPicard(SNES, Vec *, PetscErrorCode (**)(SNES, Vec, Vec, void *), Mat *, Mat *, PetscErrorCode (**)(SNES, Vec, Mat, Mat, void *), void **);

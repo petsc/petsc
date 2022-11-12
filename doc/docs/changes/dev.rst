@@ -49,6 +49,8 @@ Changes: Development
 
 .. rubric:: Mat:
 
+- Add ``MatEliminateZeros()``
+
 .. rubric:: MatCoarsen:
 
 .. rubric:: PC:
@@ -60,9 +62,13 @@ Changes: Development
 
 .. rubric:: SNES:
 
+- Add ``SNESPruneJacobianColor`` to improve the MFFD coloring
+
 .. rubric:: SNESLineSearch:
 
 .. rubric:: TS:
+
+- Add ``TSPruneIJacobianColor`` to improve the MFFD coloring
 
 .. rubric:: TAO:
 

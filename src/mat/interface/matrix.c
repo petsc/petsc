@@ -10994,3 +10994,26 @@ PETSC_EXTERN PetscErrorCode MatCreateGraph(Mat A, PetscBool sym, PetscBool scale
   PetscUseTypeMethod(A, creategraph, sym, scale, filter, graph);
   PetscFunctionReturn(0);
 }
+
+/*C
+  MatEliminateZeros - eliminate the nondiagonal zero entries in place.
+
+  Collective on mat
+
+  Input Parameter:
+. A - the matrix
+
+  Output Parameter:
+. A - the matrix
+
+  Level: intermeidiate
+
+.seealso: `MatCreate()`
+*/
+PetscErrorCode MatEliminateZeros(Mat A)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
+  PetscUseTypeMethod(A, eliminatezeros);
+  PetscFunctionReturn(0);
+}

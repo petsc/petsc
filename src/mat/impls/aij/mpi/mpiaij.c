@@ -2716,6 +2716,16 @@ PetscErrorCode MatInvertVariableBlockDiagonal_MPIAIJ(Mat A, PetscInt nblocks, co
   PetscFunctionReturn(0);
 }
 
+PetscErrorCode MatEliminateZeros_MPIAIJ(Mat A)
+{
+  Mat_MPIAIJ *a = (Mat_MPIAIJ *)A->data;
+
+  PetscFunctionBegin;
+  PetscCall(MatEliminateZeros(a->A));
+  PetscCall(MatEliminateZeros(a->B));
+  PetscFunctionReturn(0);
+}
+
 /* -------------------------------------------------------------------*/
 static struct _MatOps MatOps_Values = {MatSetValues_MPIAIJ,
                                        MatGetRow_MPIAIJ,
@@ -2867,7 +2877,8 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIAIJ,
                                        NULL,
                                        MatCreateGraph_Simple_AIJ,
                                        NULL,
-                                       /*150*/ NULL};
+                                       /*150*/ NULL,
+                                       MatEliminateZeros_MPIAIJ};
 
 /* ----------------------------------------------------------------------------------------*/
 
