@@ -37,7 +37,7 @@ class Configure(config.base.Configure):
 
   def configureLibraryOptions(self):
     '''Sets PETSC_USE_DEBUG, PETSC_USE_INFO, PETSC_USE_LOG, PETSC_USE_CTABLE, PETSC_USE_DMLANDAU_2D, PETSC_USE_FORTRAN_KERNELS, and PETSC_USE_AVX512_KERNELS'''
-    '''Also sets PETSC_AssertAlignx() in Fortran and PETSC_Alignx() in C for IBM BG/P compiler '''
+    '''Also sets PETSC_AssertAlignx() in Fortran for IBM BG/P compiler '''
     if self.framework.argDB['with-threadsafety']:
       self.addDefine('HAVE_THREADSAFETY',1)
       self.useThreadSafety = 1
@@ -93,11 +93,6 @@ class Configure(config.base.Configure):
     self.useAVX512Kernels = self.framework.argDB['with-avx512-kernels']
     if self.useAVX512Kernels:
       self.addDefine('USE_AVX512_KERNELS', 1)
-
-    if self.libraries.isBGL():
-      self.addDefine('Alignx(a,b)','__alignx(a,b)')
-    else:
-      self.addDefine('Alignx(a,b)','  ')
     return
 
   def configureISColorValueType(self):

@@ -732,7 +732,7 @@ char assert_aligned[(sizeof(struct mystruct)==16)*2-1];
   def configureRTLDDefault(self):
     '''Check for dynamic library feature'''
     if self.checkCompile('#include <dlfcn.h>\n void *ptr =  RTLD_DEFAULT;'):
-      self.addDefine('RTLD_DEFAULT','1')
+      self.addDefine('HAVE_RTLD_DEFAULT','1')
     return
 
   def configureSolaris(self):

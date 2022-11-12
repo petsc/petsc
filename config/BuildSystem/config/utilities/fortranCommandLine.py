@@ -49,16 +49,6 @@ class Configure(config.base.Configure):
     self.pushLanguage('C')
     self.libraries.saveLog()
     self.functions.saveLog()
-    if self.libraries.check('','getarg', otherLibs = self.compilers.flibs, fortranMangle = 1):
-      self.logWrite(self.functions.restoreLog())
-      self.logWrite(self.libraries.restoreLog())
-      self.popLanguage()
-      self.addDefine('HAVE_GETARG',1)
-      return
-
-    self.pushLanguage('C')
-    self.libraries.saveLog()
-    self.functions.saveLog()
     if self.functions.check('ipxfargc_', libraries = self.compilers.flibs):
       self.logWrite(self.functions.restoreLog())
       self.logWrite(self.libraries.restoreLog())
