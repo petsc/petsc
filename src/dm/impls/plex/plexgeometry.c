@@ -604,14 +604,16 @@ PetscErrorCode DMPlexComputeGridHash_Internal(DM dm, PetscGridHash *localBox)
   PetscInt           debug = ((DM_Plex *)dm->data)->printLocate;
   MPI_Comm           comm;
   PetscGridHash      lbox;
+  PetscSF            sf;
   Vec                coordinates;
   PetscSection       coordSection;
   Vec                coordsLocal;
   const PetscScalar *coords;
   PetscScalar       *edgeCoords;
   PetscInt          *dboxes, *boxes;
+  const PetscInt    *leaves;
   PetscInt           n[3] = {2, 2, 2};
-  PetscInt           dim, N, maxConeSize, cStart, cEnd, c, eStart, eEnd, i;
+  PetscInt           dim, N, Nl = 0, maxConeSize, cStart, cEnd, c, eStart, eEnd, i;
   PetscBool          flg;
 
   PetscFunctionBegin;
@@ -651,16 +653,21 @@ PetscErrorCode DMPlexComputeGridHash_Internal(DM dm, PetscGridHash *localBox)
   /* Compute boxes which overlap each cell: https://stackoverflow.com/questions/13790208/triangle-square-intersection-test-in-2d */
   PetscCall(DMGetCoordinatesLocal(dm, &coordsLocal));
   PetscCall(DMGetCoordinateSection(dm, &coordSection));
+  PetscCall(DMGetPointSF(dm, &sf));
+  if (sf) PetscCall(PetscSFGetGraph(sf, NULL, &Nl, &leaves, NULL));
+  Nl = PetscMax(Nl, 0);
   PetscCall(PetscCalloc3(16 * dim, &dboxes, 16, &boxes, PetscPowInt(maxConeSize, dim) * dim, &edgeCoords));
   for (c = cStart; c < cEnd; ++c) {
     const PetscReal *h       = lbox->h;
     PetscScalar     *ccoords = NULL;
     PetscInt         csize   = 0;
     PetscInt        *closure = NULL;
-    PetscInt         Ncl, cl, Ne = 0;
+    PetscInt         Ncl, cl, Ne = 0, idx;
     PetscScalar      point[3];
     PetscInt         dlim[6], d, e, i, j, k;
 
+    PetscCall(PetscFindInt(c, Nl, leaves, &idx));
+    if (idx >= 0) continue;
     /* Get all edges in cell */
     PetscCall(DMPlexGetTransitiveClosure(dm, c, PETSC_TRUE, &Ncl, &closure));
     for (cl = 0; cl < Ncl * 2; ++cl) {
@@ -844,7 +851,7 @@ PetscErrorCode DMLocatePoints_Plex(DM dm, Vec v, DMPointLocationType ltype, Pets
   PetscCall(DMGetBoundingBox(dm, gmin, gmax));
   if (hash) {
     if (!mesh->lbox) {
-      PetscCall(PetscInfo(dm, "Initializing grid hashing"));
+      PetscCall(PetscInfo(dm, "Initializing grid hashing\n"));
       PetscCall(DMPlexComputeGridHash_Internal(dm, &mesh->lbox));
     }
     /* Designate the local box for each point */
