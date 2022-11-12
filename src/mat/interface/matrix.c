@@ -1072,7 +1072,6 @@ PetscErrorCode MatView(Mat mat, PetscViewer viewer)
   if (!viewer) PetscCall(PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)mat), &viewer));
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
   PetscCheckSameComm(mat, 1, viewer, 2);
-  MatCheckPreallocated(mat, 1);
 
   PetscCall(PetscViewerGetFormat(viewer, &format));
   PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)mat), &size));
@@ -1085,7 +1084,14 @@ PetscErrorCode MatView(Mat mat, PetscViewer viewer)
 
   PetscCall(PetscLogEventBegin(MAT_View, mat, viewer, 0, 0));
   if (isascii) {
-    PetscCheck(mat->assembled, PetscObjectComm((PetscObject)mat), PETSC_ERR_ORDER, "Must call MatAssemblyBegin/End() before viewing matrix");
+    if (!mat->preallocated) {
+      PetscCall(PetscViewerASCIIPrintf(viewer, "Matrix has not been preallocated yet\n"));
+      PetscFunctionReturn(0);
+    }
+    if (!mat->assembled) {
+      PetscCall(PetscViewerASCIIPrintf(viewer, "Matrix has not been assembled yet\n"));
+      PetscFunctionReturn(0);
+    }
     PetscCall(PetscObjectPrintClassNamePrefixType((PetscObject)mat, viewer));
     if (format == PETSC_VIEWER_ASCII_INFO || format == PETSC_VIEWER_ASCII_INFO_DETAIL) {
       MatNullSpace nullsp, transnullsp;
