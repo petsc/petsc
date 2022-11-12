@@ -1891,6 +1891,9 @@ class CMakePackage(Package):
       args.append('-DBUILD_SHARED_LIBS:BOOL=ON')
     else:
       args.append('-DBUILD_SHARED_LIBS:BOOL=OFF')
+
+    if 'MSYSTEM' in os.environ:
+      args.append('-G "MSYS Makefiles"')
     return args
 
   def updateControlFiles(self):

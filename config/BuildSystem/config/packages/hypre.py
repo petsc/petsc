@@ -170,6 +170,13 @@ class Configure(config.package.GNUPackage):
         cppflag = '-std=c++'+dialect
         args    = [a.replace(gnuflag,stdflag).replace(cppflag,stdflag) for a in args]
 
+    # On MSYS2, need to bypass the following error by forcing the architecture
+    # configure:2898: checking host system type
+    # configure:2911: result:
+    # configure:2915: error: invalid value of canonical host
+    if 'MSYSTEM' in os.environ and os.environ['MSYSTEM'].endswith('64'):
+      args.append('--build=x86_64-linux-gnu --host=x86_64-linux-gnu')
+
     return args
 
   def consistencyChecks(self):
