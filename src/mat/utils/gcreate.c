@@ -579,10 +579,13 @@ PetscErrorCode MatSetPreallocationCOO_Basic(Mat A, PetscCount ncoo, const PetscI
 
    Entries can be repeated, see `MatSetValuesCOO()`. Entries with negative row or column indices are allowed
    but will be ignored. The corresponding entries in `MatSetValuesCOO()` will be ignored too. Remote entries
-   are allowed and will be properly added or inserted to the matrix, unless the matrix option MAT_IGNORE_OFF_PROC_ENTRIES
+   are allowed and will be properly added or inserted to the matrix, unless the matrix option `MAT_IGNORE_OFF_PROC_ENTRIES`
    is set, in which case remote entries are ignored, or `MAT_NO_OFF_PROC_ENTRIES` is set, in which case an error will be generated.
 
-.seealso: `MatSetValuesCOO()`, `MatSeqAIJSetPreallocation()`, `MatMPIAIJSetPreallocation()`, `MatSeqBAIJSetPreallocation()`, `MatMPIBAIJSetPreallocation()`, `MatSeqSBAIJSetPreallocation()`, `MatMPISBAIJSetPreallocation()`, `MatSetPreallocationCOOLocal()`, `DMSetMatrixPreallocateSkip()`
+   If you just want to create a sequential AIJ matrix (`MATSEQAIJ`), and your matrix entries in COO format are unique, you can also use
+   `MatCreateSeqAIJFromTriple()`. But that is not recommended for iterative applications.
+
+.seealso: `MatSetValuesCOO()`, `MatSeqAIJSetPreallocation()`, `MatMPIAIJSetPreallocation()`, `MatSeqBAIJSetPreallocation()`, `MatMPIBAIJSetPreallocation()`, `MatSeqSBAIJSetPreallocation()`, `MatMPISBAIJSetPreallocation()`, `MatSetPreallocationCOOLocal()`, `DMSetMatrixPreallocateSkip()`, `MatCreateSeqAIJFromTriple()`
 @*/
 PetscErrorCode MatSetPreallocationCOO(Mat A, PetscCount ncoo, PetscInt coo_i[], PetscInt coo_j[])
 {

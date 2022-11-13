@@ -5146,8 +5146,11 @@ PetscErrorCode MatCreateSeqAIJWithArrays(MPI_Comm comm, PetscInt m, PetscInt n, 
         j =  {0,0,2,0,1,2}
         v =  {1,2,3,4,5,6}
 .ve
+  Notes:
+    Instead of using this function, users should also consider `MatSetPreallocationCOO()` and `MatSetValuesCOO()`, which allow repeated or remote entries,
+    and are particularly useful in iterative applications.
 
-.seealso: `MatCreate()`, `MatCreateAIJ()`, `MatCreateSeqAIJ()`, `MatCreateSeqAIJWithArrays()`, `MatMPIAIJSetPreallocationCSR()`, `MatSetValuesCOO()`
+.seealso: `MatCreate()`, `MatCreateAIJ()`, `MatCreateSeqAIJ()`, `MatCreateSeqAIJWithArrays()`, `MatMPIAIJSetPreallocationCSR()`, `MatSetValuesCOO()`, `MatSetPreallocationCOO()`
 @*/
 PetscErrorCode MatCreateSeqAIJFromTriple(MPI_Comm comm, PetscInt m, PetscInt n, PetscInt i[], PetscInt j[], PetscScalar a[], Mat *mat, PetscInt nz, PetscBool idx)
 {
