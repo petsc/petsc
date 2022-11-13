@@ -15,4 +15,6 @@ PETSC_EXTERN void           PetscGarbageKeySortedIntersect(void *, void *, Petsc
 PETSC_EXTERN PetscErrorCode PetscGarbageCleanup(MPI_Comm);
 PETSC_EXTERN PetscErrorCode PetscGarbageView(MPI_Comm, PetscViewer);
 
+PETSC_EXTERN PetscErrorCode GarbageKeyAllReduceIntersect_Private(MPI_Comm, PetscInt64 *, PetscInt *);
+
 #endif
