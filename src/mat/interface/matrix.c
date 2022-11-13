@@ -10996,7 +10996,8 @@ PETSC_EXTERN PetscErrorCode MatCreateGraph(Mat A, PetscBool sym, PetscBool scale
 }
 
 /*C
-  MatEliminateZeros - eliminate the nondiagonal zero entries in place.
+  MatEliminateZeros - eliminate the nondiagonal zero entries in place from the nonzero structure of a sparse `Mat` in place,
+  meaning the same memory is used for the matrix, and no new memory is allocated.
 
   Collective on mat
 
@@ -11008,7 +11009,7 @@ PETSC_EXTERN PetscErrorCode MatCreateGraph(Mat A, PetscBool sym, PetscBool scale
 
   Level: intermeidiate
 
-.seealso: `MatCreate()`
+.seealso: `Mat`, `MatCreate()`, `MatCreateGraph()`, `MatChop()`
 */
 PetscErrorCode MatEliminateZeros(Mat A)
 {
