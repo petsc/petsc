@@ -18,6 +18,7 @@ class Configure(config.package.GNUPackage):
     self.cuda            = framework.require('config.packages.cuda',self)
     self.hip             = framework.require('config.packages.hip',self)
     self.hwloc           = framework.require('config.packages.hwloc',self)
+    self.python          = framework.require('config.packages.python',self)
     self.odeps           = [self.cuda, self.hip, self.hwloc]
     return
 
@@ -83,6 +84,9 @@ class Configure(config.package.GNUPackage):
     # MPICH configure errors out on certain standard configure arguments
     args = self.rmArgs(args,['--disable-f90','--enable-f90'])
     args = self.rmArgsStartsWith(args,['F90=','F90FLAGS='])
+    args.append('PYTHON='+self.python.pyexe)
+    args.append('--disable-maintainer-mode')
+    args.append('--disable-dependency-tracking')
     return args
 
   def Install(self):
