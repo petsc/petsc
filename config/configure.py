@@ -527,7 +527,7 @@ def petsc_configure(configure_options):
     +'*******************************************************************************\n'
     se  = str(e)
 
-  print(msg)
+  print('\n'+msg)
   if not framework is None:
     framework.logClear()
     if hasattr(framework, 'log'):

@@ -58,7 +58,6 @@ class Configure(config.package.CMakePackage):
       args.append('-DTPL_PARMETIS_INCLUDE_DIRS="'+';'.join(self.parmetis.dinclude)+'"')
       args.append('-DTPL_PARMETIS_LIBRARIES="'+self.libraries.toString(self.parmetis.dlib)+'"')
     else:
-      args.append('-Denable_parmetislib=FALSE')
       args.append('-DTPL_ENABLE_PARMETISLIB=FALSE')
 
     if self.getDefaultIndexSize() == 64:
@@ -71,8 +70,8 @@ class Configure(config.package.CMakePackage):
 
     args.append('-Denable_tests=0')
     args.append('-Denable_examples=0')
-    empty = True
-    if 'download-superlu_dist-cmake-arguments' in self.argDB and self.argDB['download-superlu_dist-cmake-arguments']:
+    empty = not ('MSYSTEM' in os.environ and 'HAVE_MSMPI' in self.mpi.defines)
+    if empty and 'download-superlu_dist-cmake-arguments' in self.argDB and self.argDB['download-superlu_dist-cmake-arguments']:
       empty = (not '-DMPI_GUESS_LIBRARY_NAME=' in self.argDB['download-superlu_dist-cmake-arguments'])
     if empty:
       args.append('-DMPI_C_COMPILE_FLAGS:STRING=""')
