@@ -1330,7 +1330,8 @@ static struct _MatOps MatOps_Values = {MatSetValues_Elemental,
                                        0,
                                        0,
                                        0,
-                                       /*150*/ 0};
+                                       /*150*/ 0,
+                                       0};
 
 /*MC
    MATELEMENTAL = "elemental" - A matrix type for dense matrices using the Elemental package
