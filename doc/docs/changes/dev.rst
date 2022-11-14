@@ -85,6 +85,7 @@ Changes: Development
 - Add ``DMPlexTransformGetChart()``, ``DMPlexTransformGetCellType()``, ``DMPlexTransformGetDepth()``, ``DMPlexTransformGetDepthStratum()``, ``DMPlexTransformGetConeSize()`` to enable ephemeral meshes
 - Remove ``DMPlexAddConeSize()``
 - Add ``DMPlexCreateEphemeral()``
+- Both ``DMView()`` and ``DMLoad()`` now support parallel I/O with a new HDF5 format (see the manual for details)
 
 .. rubric:: FE/FV:
 
