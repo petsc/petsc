@@ -32,10 +32,6 @@ PETSC_INTERN PetscErrorCode PetscStackPrint(PetscStack *, FILE *);
 #include <stdarg.h>
 PETSC_EXTERN PetscErrorCode PetscVFPrintfDefault(FILE *, const char[], va_list);
 
-#if defined(PETSC_HAVE_CLOSURE)
-PETSC_EXTERN PetscErrorCode PetscVFPrintfSetClosure(int (^)(const char *));
-#endif
-
 /*
    All major PETSc data structures have a common core; this is defined
    below by PETSCHEADER.
