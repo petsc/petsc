@@ -217,7 +217,7 @@ PETSC_INTERN PetscErrorCode PetscSocketEstablish(int portnum, int *ss)
   }
   listen(s, 0);
   *ss = s;
-  return (0);
+  PetscFunctionReturn(0);
 }
 
 /*@C
