@@ -599,6 +599,16 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
     if (jac->defaultsplit || !ilink->is) {
       if (jac->bs <= 0) jac->bs = nsplit;
     }
+
+    /*  MatCreateSubMatrix() for [S]BAIJ matrices can only work if the indices include entire blocks of the matrix */
+    PetscCall(MatGetBlockSize(pc->pmat, &bs));
+    if (bs > 1 && (jac->bs <= bs || jac->bs % bs)) {
+      PetscBool blk;
+
+      PetscCall(PetscObjectTypeCompareAny((PetscObject)pc->pmat, &blk, MATBAIJ, MATSBAIJ, MATSEQBAIJ, MATSEQSBAIJ, MATMPIBAIJ, MATMPISBAIJ, NULL));
+      PetscCheck(!blk, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_WRONG, "Cannot use MATBAIJ with PCFIELDSPLIT and currently set matrix and PC blocksizes");
+    }
+
     bs = jac->bs;
     PetscCall(MatGetOwnershipRange(pc->pmat, &rstart, &rend));
     nslots = (rend - rstart) / bs;
