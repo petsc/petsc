@@ -108,18 +108,37 @@
 
 typedef khiter_t PetscHashIter;
 
+#define PetscHashIterAtEnd(ht, i) ((i) == kh_end((ht)))
+
+#define PetscHashIterAtBegin(ht, i) ((i) == kh_begin((ht)))
+
+#define PetscHashIterIncContinue(ht, it) (!PetscHashIterAtEnd((ht), (it)) && !kh_exist((ht), (it)))
+
 #define PetscHashIterBegin(ht, i) \
   do { \
-    (i) = kh_begin((ht)); \
-    if ((i) != kh_end((ht)) && !kh_exist((ht), (i))) PetscHashIterNext((ht), (i)); \
+    PetscHashIter phib_it_ = kh_begin((ht)); \
+    if (PetscHashIterIncContinue((ht), phib_it_)) PetscHashIterNext((ht), phib_it_); \
+    (i) = phib_it_; \
   } while (0)
 
 #define PetscHashIterNext(ht, i) \
   do { \
     ++(i); \
-  } while ((i) != kh_end((ht)) && !kh_exist((ht), (i)))
+  } while (PetscHashIterIncContinue((ht), (i)))
 
-#define PetscHashIterAtEnd(ht, i) ((i) == kh_end((ht)))
+#define PetscHashIterEnd(ht, i) ((i) = kh_end((ht)))
+
+#define PetscHashIterDecContinue(ht, it) (PetscHashIterAtEnd((ht), (it)) || (!PetscHashIterAtBegin((ht), (it)) && !kh_exist((ht), (it))))
+
+#define PetscHashIterPrevious(ht, i) \
+  do { \
+    PetscHashIter phip_it_ = (i); \
+    PetscAssertAbort(!PetscHashIterAtBegin((ht), phip_it_), PETSC_COMM_SELF, PETSC_ERR_PLIB, "Trying to decrement iterator past begin"); \
+    do { \
+      --phip_it_; \
+    } while (PetscHashIterDecContinue((ht), phip_it_)); \
+    (i) = phip_it_; \
+  } while (0)
 
 #define PetscHashIterGetKey(ht, i, k) ((k) = kh_key((ht), (i)))
 
@@ -201,7 +220,7 @@ static inline PetscHash_t PetscHashInt(PetscInt key)
 #endif
 }
 
-static inline PetscHash_t PetscHashPointer(void *key)
+static inline PetscHash_t PetscHashPointer(const void *key)
 {
 #if PETSC_SIZEOF_VOID_P == 8
   return PetscHash_UInt64((PetscHash64_t)key);
