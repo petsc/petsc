@@ -2,8 +2,8 @@
 
 #include <petsc/private/cpp/object_pool.hpp>
 #include <petsc/private/cpp/utility.hpp>
+#include <petsc/private/cpp/unordered_map.hpp>
 
-#include <unordered_map>
 #include <algorithm> // std::remove_if(), std::find_if()
 #include <vector>
 #include <string>
@@ -252,7 +252,7 @@ public:
     dependency_type       dependencies{};
   };
 
-  using map_type = std::unordered_map<PetscObjectId, mapped_type>;
+  using map_type = Petsc::UnorderedMap<PetscObjectId, mapped_type>;
 
   map_type map;
 
@@ -263,19 +263,19 @@ private:
 };
 
 // ==========================================================================================
-// MarkedObejctMap Private API
+// MarkedObjectMap Private API
 // ==========================================================================================
 
 inline PetscErrorCode MarkedObjectMap::finalize_() noexcept
 {
   PetscFunctionBegin;
   PetscCall(PetscInfo(nullptr, "Finalizing marked object map\n"));
-  map.clear();
+  PetscCall(map.clear());
   PetscFunctionReturn(0);
 }
 
 // ==========================================================================================
-// MarkedObejctMap::snapshot_type Private API
+// MarkedObjectMap::snapshot_type Private API
 // ==========================================================================================
 
 inline PetscEvent MarkedObjectMap::snapshot_type::init_event_(PetscDeviceContext dctx) noexcept
@@ -289,7 +289,7 @@ inline PetscEvent MarkedObjectMap::snapshot_type::init_event_(PetscDeviceContext
 }
 
 // ==========================================================================================
-// MarkedObejctMap::snapshot_type Public API
+// MarkedObjectMap::snapshot_type Public API
 // ==========================================================================================
 
 MarkedObjectMap::snapshot_type::snapshot_type(PetscDeviceContext dctx, frame_type frame) noexcept : frame_type(std::move(frame)), event_(init_event_(dctx)) { }
@@ -346,8 +346,9 @@ PetscErrorCode PetscGetMarkedObjectMap_Internal(std::size_t *nkeys, PetscObjectI
 
   PetscFunctionBegin;
   PetscCall(PetscMalloc4(size, keys, size, modes, size, ndeps, size, dependencies));
-  for (auto &&it : map) {
-    std::size_t j = 0;
+  for (auto it_ = map.begin(); it_ != map.end(); ++it_) {
+    auto       &it = *it_;
+    std::size_t j  = 0;
 
     (*keys)[i]         = it.first;
     (*modes)[i]        = it.second.mode;
