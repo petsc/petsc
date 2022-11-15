@@ -494,7 +494,7 @@ def petsc_configure(configure_options):
     msg = logger.build_multiline_error_message('CONFIGURATION CRASH (Please send configure.log to petsc-maint@mcs.anl.gov)', str(e))
     se  = str(e)
 
-  print(msg)
+  print('\n'+msg)
   if not framework is None:
     framework.logClear()
     if hasattr(framework, 'log'):

@@ -721,35 +721,6 @@ PetscErrorCode PetscSynchronizedFGets(MPI_Comm comm, FILE *fp, size_t len, char 
   PetscFunctionReturn(0);
 }
 
-#if defined(PETSC_HAVE_CLOSURE)
-int (^SwiftClosure)(const char *) = 0;
-
-PetscErrorCode PetscVFPrintfToString(FILE *fd, const char format[], va_list Argp)
-{
-  PetscFunctionBegin;
-  if (fd != stdout && fd != stderr) { /* handle regular files */
-    PetscCall(PetscVFPrintfDefault(fd, format, Argp));
-  } else {
-    size_t length;
-    char   buff[PETSCDEFAULTBUFFERSIZE];
-
-    PetscCall(PetscVSNPrintf(buff, sizeof(buff), format, &length, Argp));
-    PetscCall(SwiftClosure(buff));
-  }
-  PetscFunctionReturn(0);
-}
-
-/*
-   Provide a Swift function that processes all the PETSc calls to PetscVFPrintf()
-*/
-PetscErrorCode PetscVFPrintfSetClosure(int (^closure)(const char *))
-{
-  PetscVFPrintf = PetscVFPrintfToString;
-  SwiftClosure  = closure;
-  return 0;
-}
-#endif
-
 /*@C
      PetscFormatStrip - Takes a PETSc format string and removes all numerical modifiers to % operations
 

@@ -50,7 +50,7 @@ class Configure(config.package.Package):
       self.addMakeMacro('BAMG','yes')
       self.addMakeRule('bamgbuild',slepcbuilddep, \
                          ['@echo "*** Building PETSc BAMG ***"',\
-                            '@${RM} -f ${PETSC_ARCH}/lib/petsc/conf/bamg.errorflg',\
+                            '@${RM} ${PETSC_ARCH}/lib/petsc/conf/bamg.errorflg',\
                             '@(cd '+self.packageDir+' && \\\n\
              '+carg+'./configure --prefix='+prefix+' --with-clean && \\\n\
                mkdir -p ${PETSC_ARCH}/tests && \\\n\

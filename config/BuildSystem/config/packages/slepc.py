@@ -62,7 +62,7 @@ class Configure(config.package.Package):
     self.addMakeMacro('SLEPC','yes')
     self.addMakeRule('slepcbuild','', \
                        ['@echo "*** Building SLEPc ***"',\
-                          '@${RM} -f ${PETSC_ARCH}/lib/petsc/conf/slepc.errorflg',\
+                          '@${RM} ${PETSC_ARCH}/lib/petsc/conf/slepc.errorflg',\
                           '@(cd '+self.packageDir+' && \\\n\
            '+carg+self.python.pyexe+' ./configure --with-clean --prefix='+prefix+' '+configargs+' && \\\n\
            '+barg+'${OMAKE} '+barg+') || \\\n\

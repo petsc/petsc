@@ -142,7 +142,7 @@ class Configure(config.package.CMakePackage):
     self.addMakeMacro('AMREX','yes')
     self.addMakeRule('amrexbuild','', \
                        ['@echo "*** Building amrex ***"',\
-                          '@${RM} -f ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/amrex.errorflg',\
+                          '@${RM} ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/amrex.errorflg',\
                           '@cd '+os.path.join(self.packageDir,'petsc-build')+' && \\\n\
            '+carg+' '+self.cmake.cmake+' .. '+args+'  > ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/amrex.log 2>&1 &&'+\
            self.make.make_jnp+' '+self.makerulename+'  >> ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/amrex.log 2>&1  || \\\n\

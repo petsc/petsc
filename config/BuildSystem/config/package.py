@@ -1930,6 +1930,8 @@ class CMakePackage(Package):
     else:
       args.append('-DBUILD_SHARED_LIBS:BOOL=OFF')
 
+    if 'MSYSTEM' in os.environ:
+      args.append('-G "MSYS Makefiles"')
     cuda_module = self.framework.findModule(self, config.packages.cuda)
     if cuda_module and cuda_module.found:
       with self.Language('CUDA'):
