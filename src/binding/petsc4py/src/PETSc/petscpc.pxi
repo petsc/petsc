@@ -119,6 +119,15 @@ cdef extern from * nogil:
         PC_HPDDM_COARSE_CORRECTION_ADDITIVE
         PC_HPDDM_COARSE_CORRECTION_BALANCED
 
+    ctypedef enum PetscPCFailedReason "PCFailedReason":
+        PC_SETUP_ERROR
+        PC_NOERROR
+        PC_FACTOR_STRUCT_ZEROPIVOT
+        PC_FACTOR_NUMERIC_ZEROPIVOT
+        PC_FACTOR_OUTMEMORY
+        PC_FACTOR_OTHER
+        PC_SUBPC_ERROR
+
     int PCCreate(MPI_Comm,PetscPC*)
     int PCDestroy(PetscPC*)
     int PCView(PetscPC,PetscViewer)
@@ -130,6 +139,10 @@ cdef extern from * nogil:
     int PCAppendOptionsPrefix(PetscPC,char[])
     int PCGetOptionsPrefix(PetscPC,char*[])
     int PCSetFromOptions(PetscPC)
+
+    int PCSetFailedReason(PetscPC,PetscPCFailedReason)
+    int PCGetFailedReason(PetscPC,PetscPCFailedReason*)
+    int PCGetFailedReasonRank(PetscPC,PetscPCFailedReason*)
 
     int PCSetUp(PetscPC)
     int PCReset(PetscPC)
