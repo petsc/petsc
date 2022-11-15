@@ -1,7 +1,12 @@
 #include <petsc/private/viewerimpl.h> /*I   "petscviewer.h"   I*/
 
+/*
+   This needs to start the same as PetscViewer_Socket.
+*/
 typedef struct {
-  int fdes; /* file descriptor, ignored if using MPI IO */
+  int       fdes;        /* file descriptor, ignored if using MPI IO */
+  PetscInt  flowcontrol; /* allow only <flowcontrol> messages outstanding at a time while doing IO */
+  PetscBool skipheader;  /* don't write header, only raw data */
 #if defined(PETSC_HAVE_MPIIO)
   PetscBool  usempiio;
   MPI_File   mfdes; /* ignored unless using MPI IO */
@@ -15,8 +20,6 @@ typedef struct {
   char         *ogzfilename;         /* gzip can be run after the filename has been updated */
   PetscBool     skipinfo;            /* Don't create info file for writing; don't use for reading */
   PetscBool     skipoptions;         /* don't use PETSc options database when loading */
-  PetscInt      flowcontrol;         /* allow only <flowcontrol> messages outstanding at a time while doing IO */
-  PetscBool     skipheader;          /* don't write header, only raw data */
   PetscBool     matlabheaderwritten; /* if format is PETSC_VIEWER_BINARY_MATLAB has the MATLAB .info header been written yet */
   PetscBool     setfromoptionscalled;
 } PetscViewer_Binary;
@@ -390,7 +393,7 @@ PetscErrorCode PetscViewerBinaryGetFlowControl(PetscViewer viewer, PetscInt *fc)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscViewerBinaryGetFlowControl_Binary(PetscViewer viewer, PetscInt *fc)
+PETSC_INTERN PetscErrorCode PetscViewerBinaryGetFlowControl_Binary(PetscViewer viewer, PetscInt *fc)
 {
   PetscViewer_Binary *vbinary = (PetscViewer_Binary *)viewer->data;
 
