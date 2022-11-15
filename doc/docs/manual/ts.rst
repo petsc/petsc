@@ -987,8 +987,11 @@ Monitoring and visualizing solutions
    if ``TSSetSolutionFunction()`` is provided,
    ``TSMonitorDrawSolution()``.
 
--  ``-ts_monitor_solution binary[:filename]`` - saves the solution at
-   each iteration to a binary file, ``TSMonitorSolution()``.
+-  ``-ts_monitor_solution binary[:filename]`` - saves the solution at each
+   iteration to a binary file, ``TSMonitorSolution()``. Solution viewers work
+   with other time-aware formats, e.g., ``-ts_monitor_solution cgns:sol.cgns``,
+   and can output one solution every 10 time steps by adding
+   ``-ts_monitor_solution_interval 10``.
 
 -  ``-ts_monitor_solution_vtk <filename-%03D.vts>`` - saves the solution
    at each iteration to a file in vtk format,
