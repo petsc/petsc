@@ -78,6 +78,30 @@ cdef api PetscRandom PyPetscRandom_Get(object arg) except ? NULL:
     retv = ob.rnd
     return retv
 
+# -- Device --
+
+cdef api Device PyPetscDevice_New(PetscDevice arg):
+    cdef Device ret = Device()
+    ret.device = arg
+    return ret
+
+cdef api PetscDevice PyPetscDevice_Get(object arg) except ? NULL:
+    cdef Device      obj = <Device?>arg
+    cdef PetscDevice ret = obj.device
+    return ret
+
+# -- DeviceContext --
+
+cdef api DeviceContext PyPetscDeviceContext_New(PetscDeviceContext arg):
+    cdef DeviceContext retv = DeviceContext()
+    setref(&retv.dctx, arg)
+    return retv
+
+cdef api PetscDeviceContext PyPetscDeviceContext_Get(object arg) except ? NULL:
+    cdef DeviceContext      obj = <DeviceContext?>arg
+    cdef PetscDeviceContext ret = obj.dctx
+    return ret
+
 # -- IS --
 
 cdef api object PyPetscIS_New(PetscIS arg):
