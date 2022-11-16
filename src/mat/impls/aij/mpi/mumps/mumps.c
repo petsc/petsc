@@ -2461,7 +2461,7 @@ PetscErrorCode MatMumpsGetIcntl_MUMPS(Mat F, PetscInt icntl, PetscInt *ival)
 .  icntl - index of MUMPS parameter array ICNTL()
 -  ival - value of MUMPS ICNTL(icntl)
 
-  Options Database:
+  Options Database Key:
 .   -mat_mumps_icntl_<icntl> <ival> - change the option numbered icntl to ival
 
    Level: beginner
@@ -2554,7 +2554,7 @@ PetscErrorCode MatMumpsGetCntl_MUMPS(Mat F, PetscInt icntl, PetscReal *val)
 .  icntl - index of MUMPS parameter array CNTL()
 -  val - value of MUMPS CNTL(icntl)
 
-  Options Database:
+  Options Database Key:
 .   -mat_mumps_cntl_<icntl> <val>  - change the option numbered icntl to ival
 
    Level: beginner

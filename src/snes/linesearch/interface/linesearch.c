@@ -912,7 +912,7 @@ PetscErrorCode SNESLineSearchGetType(SNESLineSearch linesearch, SNESLineSearchTy
 .  `SNESLINESEARCHNLEQERR` - Affine-covariant error-oriented linesearch
 -  `SNESLINESEARCHSHELL` - User provided `SNESLineSearch` implementation
 
-   Options Database:
+   Options Database Key:
 .  -snes_linesearch_type <type> - basic (or equivalently none), bt, l2, cp, nleqerr, shell
 
    Level: intermediate

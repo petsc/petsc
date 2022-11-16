@@ -190,14 +190,14 @@ PetscErrorCode PetscDrawCreate(MPI_Comm comm, const char display[], const char t
 +  draw      - the graphics context
 -  type      - for example, `PETSC_DRAW_X`
 
-   Options Database Command:
+   Options Database Key:
 .  -draw_type  <type> - Sets the type; use -help for a list of available methods (for instance, x)
-
-   See PetscDrawSetFromOptions() for additional options database keys
 
    Level: intermediate
 
    Note:
+   See `PetscDrawSetFromOptions()` for additional options database keys
+
    See "petsc/include/petscdraw.h" for available methods (for instance,
    `PETSC_DRAW_X`, `PETSC_DRAW_TIKZ` or `PETSC_DRAW_IMAGE`)
 

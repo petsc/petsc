@@ -4929,8 +4929,6 @@ PetscErrorCode DMPlexCreateFromDAG(DM dm, PetscInt depth, const PetscInt numPoin
 
   Collective
 
-  Collective
-
 + comm        - The MPI communicator
 . filename    - Name of the .dat file
 - interpolate - Create faces and edges in the mesh

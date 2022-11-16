@@ -1533,7 +1533,7 @@ PetscErrorCode TaoSetMonitor(Tao tao, PetscErrorCode (*func)(Tao, void *), void 
    Input Parameters:
 .  tao - the Tao solver context
 
-   Options Database:
+   Options Database Key:
 .  -tao_cancelmonitors - cancels all monitors that have been hardwired
     into a code by calls to `TaoSetMonitor()`, but does not cancel those
     set via the options database
@@ -2801,7 +2801,7 @@ PetscErrorCode TaoGradientNorm(Tao tao, Vec gradient, NormType type, PetscReal *
    Output Parameter:
 .    ctx - the monitor context
 
-   Options Database:
+   Options Database Key:
 .   -tao_draw_solution_initial - show initial guess as well as current solution
 
    Level: intermediate

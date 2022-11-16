@@ -487,7 +487,7 @@ static PetscErrorCode MatSuperluSetILUDropTol_SuperLU(Mat F, PetscReal dtol)
 +  F - the factored matrix obtained by calling `MatGetFactor()` from PETSc-SuperLU interface
 -  dtol - drop tolerance
 
-  Options Database:
+  Options Database Key:
 .   -mat_superlu_ilu_droptol <dtol> - the drop tolerance
 
    Level: beginner

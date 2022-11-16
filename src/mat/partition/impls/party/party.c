@@ -160,7 +160,7 @@ PetscErrorCode MatPartitioningView_Party(MatPartitioning part, PetscViewer viewe
 +  part - the partitioning context
 -  method - a string representing the method
 
-   Options Database:
+   Options Database Key:
 .  -mat_partitioning_party_global <method> - the global method
 
    Level: advanced
@@ -199,7 +199,7 @@ PetscErrorCode MatPartitioningPartySetGlobal_Party(MatPartitioning part, const c
 +  part - the partitioning context
 -  method - a string representing the method
 
-   Options Database:
+   Options Database Key:
 .  -mat_partitioning_party_local <method> - the local method
 
    Level: advanced
@@ -238,7 +238,7 @@ PetscErrorCode MatPartitioningPartySetLocal_Party(MatPartitioning part, const ch
 +  part - the partitioning context
 -  level - the coarse level in range [0.0,1.0]
 
-   Options Database:
+   Options Database Key:
 .  -mat_partitioning_party_coarse <l> - Coarse level
 
    Level: advanced
@@ -275,7 +275,7 @@ PetscErrorCode MatPartitioningPartySetCoarseLevel_Party(MatPartitioning part, Pe
 +  part - the partitioning context
 -  opt - boolean flag
 
-   Options Database:
+   Options Database Key:
 .  -mat_partitioning_party_match_optimization - Matching optimization on/off
 
    Level: advanced
@@ -309,7 +309,7 @@ PetscErrorCode MatPartitioningPartySetMatchOptimization_Party(MatPartitioning pa
 +  part - the partitioning context
 -  bp - boolean flag
 
-   Options Database:
+   Options Database Key:
 -  -mat_partitioning_party_bipart - Bipartitioning option on/off
 
    Level: advanced

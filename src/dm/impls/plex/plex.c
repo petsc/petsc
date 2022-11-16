@@ -4646,7 +4646,7 @@ PetscErrorCode DMPlexGetFullMeet(DM dm, PetscInt numPoints, const PetscInt point
   Level: intermediate
 
   Note:
-  We are not solving graph isomorphism, so we do not permutate.
+  We are not solving graph isomorphism, so we do not permute.
 
 .seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPlexGetCone()`
 @*/

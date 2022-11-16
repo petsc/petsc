@@ -288,10 +288,8 @@ PetscErrorCode MatCoarsenView(MatCoarsen agg, PetscViewer viewer)
 +  coarser - the coarsen context.
 -  type - a known coarsening method
 
-   Options Database Command:
-$  -mat_coarsen_type  <type>
-$      Use -help for a list of available methods
-$      (for instance, misk)
+   Options Database Key:
+.  -mat_coarsen_type  <type> - (for instance, misk), use -help for a list of available methods
 
    Level: advanced
 
@@ -379,15 +377,13 @@ PetscErrorCode MatCoarsenGetData(MatCoarsen coarser, PetscCoarsenData **llist)
    Input Parameter:
 .  coarser - the coarsen context.
 
-   Options Database Command:
-$  -mat_coarsen_type  <type>
-$      Use -help for a list of available methods
-$      (for instance, mis)
+   Options Database Key:
+.  -mat_coarsen_type  <type> - (for instance, mis), use -help for a list of available methods
 
    Level: advanced
 
    Note:
-   Set the `MatCoarsenType` to `MATCOARSENMISK` if has not been set previously
+   Sets the `MatCoarsenType` to `MATCOARSENMISK` if has not been set previously
 
 .seealso: `MatCoarsen`, `MatCoarsenType`, `MatCoarsenApply()`, `MatCoarsenCreate()`, `MatCoarsenSetType()`
 @*/
