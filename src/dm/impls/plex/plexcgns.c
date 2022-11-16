@@ -2,7 +2,7 @@
 #include <petsc/private/dmpleximpl.h> /*I   "petscdmplex.h"   I*/
 
 /*@C
-  DMPlexCreateCGNS - Create a DMPlex mesh from a CGNS file.
+  DMPlexCreateCGNS - Create a `DMPLEX` mesh from a CGNS file.
 
   Collective
 
@@ -12,13 +12,14 @@
 - interpolate - Create faces and edges in the mesh
 
   Output Parameter:
-. dm  - The DM object representing the mesh
-
-  Note: https://cgns.github.io
+. dm  - The `DM` object representing the mesh
 
   Level: beginner
 
-.seealso: `DMPlexCreate()`, `DMPlexCreateCGNS()`, `DMPlexCreateExodus()`
+  Note:
+  https://cgns.github.io
+
+.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPlexCreate()`, `DMPlexCreateCGNS()`, `DMPlexCreateExodus()`
 @*/
 PetscErrorCode DMPlexCreateCGNSFromFile(MPI_Comm comm, const char filename[], PetscBool interpolate, DM *dm)
 {
@@ -33,7 +34,7 @@ PetscErrorCode DMPlexCreateCGNSFromFile(MPI_Comm comm, const char filename[], Pe
 }
 
 /*@
-  DMPlexCreateCGNS - Create a DMPlex mesh from a CGNS file ID.
+  DMPlexCreateCGNS - Create a `DMPLEX` mesh from a CGNS file ID.
 
   Collective
 
@@ -43,13 +44,14 @@ PetscErrorCode DMPlexCreateCGNSFromFile(MPI_Comm comm, const char filename[], Pe
 - interpolate - Create faces and edges in the mesh
 
   Output Parameter:
-. dm  - The DM object representing the mesh
-
-  Note: https://cgns.github.io
+. dm  - The `DM` object representing the mesh
 
   Level: beginner
 
-.seealso: `DMPlexCreate()`, `DMPlexCreateExodus()`
+  Note:
+  https://cgns.github.io
+
+.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPlexCreate()`, `DMPlexCreateExodus()`
 @*/
 PetscErrorCode DMPlexCreateCGNS(MPI_Comm comm, PetscInt cgid, PetscBool interpolate, DM *dm)
 {

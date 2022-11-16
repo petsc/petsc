@@ -143,19 +143,19 @@ PetscErrorCode TSAdaptSetType(TSAdapt adapt, TSAdaptType type)
 }
 
 /*@C
-  TSAdaptGetType - gets the TS adapter method type (as a string).
+  TSAdaptGetType - gets the `TS` adapter method type (as a string).
 
   Not Collective
 
   Input Parameter:
-. adapt - The TS adapter, most likely obtained with TSGetAdapt()
+. adapt - The `TS` adapter, most likely obtained with `TSGetAdapt()`
 
   Output Parameter:
-. type - The name of TS adapter method
+. type - The name of `TS` adapter method
 
   Level: intermediate
 
-.seealso `TSAdaptSetType()`
+.seealso: `TSAdapt`, `TSAdaptType`, `TSAdaptSetType()`
 @*/
 PetscErrorCode TSAdaptGetType(TSAdapt adapt, TSAdaptType *type)
 {

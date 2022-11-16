@@ -1,7 +1,7 @@
 #include <petsc/private/dmpleximpl.h> /*I      "petscdmplex.h"   I*/
 
 /*@C
-  DMPlexInvertCell - Flips cell orientations since Plex stores some of them internally with outward normals.
+  DMPlexInvertCell - Flips cell orientations since `DMPLEX` stores some of them internally with outward normals.
 
   Input Parameters:
 + cellType - The cell type
@@ -12,7 +12,7 @@
 
   Level: developer
 
-.seealso: `DMPlexGenerate()`
+.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPolytopeType`, `DMPlexGenerate()`
 @*/
 PetscErrorCode DMPlexInvertCell(DMPolytopeType cellType, PetscInt cone[])
 {
@@ -63,10 +63,10 @@ PetscErrorCode DMPlexInvertCell(DMPolytopeType cellType, PetscInt cone[])
 }
 
 /*@C
-  DMPlexReorderCell - Flips cell orientations since Plex stores some of them internally with outward normals.
+  DMPlexReorderCell - Flips cell orientations since `DMPLEX` stores some of them internally with outward normals.
 
   Input Parameters:
-+ dm - The DMPlex object
++ dm - The `DMPLEX` object
 . cell - The cell
 - cone - The incoming cone
 
@@ -75,7 +75,7 @@ PetscErrorCode DMPlexInvertCell(DMPolytopeType cellType, PetscInt cone[])
 
   Level: developer
 
-.seealso: `DMPlexGenerate()`
+.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPolytopeType`, `DMPlexGenerate()`
 @*/
 PetscErrorCode DMPlexReorderCell(DM dm, PetscInt cell, PetscInt cone[])
 {
@@ -93,12 +93,12 @@ PetscErrorCode DMPlexReorderCell(DM dm, PetscInt cell, PetscInt cone[])
   Not Collective
 
   Inputs Parameters:
-+ dm - The DMPlex object
++ dm - The `DMPLEX` object
 - opts - The command line options
 
   Level: developer
 
-.seealso: `DMPlexTetgenSetOptions()`, `DMPlexGenerate()`
+.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPlexTetgenSetOptions()`, `DMPlexGenerate()`
 @*/
 PetscErrorCode DMPlexTriangleSetOptions(DM dm, const char *opts)
 {
@@ -118,12 +118,12 @@ PetscErrorCode DMPlexTriangleSetOptions(DM dm, const char *opts)
   Not Collective
 
   Inputs Parameters:
-+ dm - The DMPlex object
++ dm - The `DMPLEX` object
 - opts - The command line options
 
   Level: developer
 
-.seealso: `DMPlexTriangleSetOptions()`, `DMPlexGenerate()`
+.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPlexTriangleSetOptions()`, `DMPlexGenerate()`
 @*/
 PetscErrorCode DMPlexTetgenSetOptions(DM dm, const char *opts)
 {
@@ -143,20 +143,20 @@ PetscErrorCode DMPlexTetgenSetOptions(DM dm, const char *opts)
   Not Collective
 
   Input Parameters:
-+ boundary - The DMPlex boundary object
++ boundary - The `DMPLEX` boundary object
 . name - The mesh generation package name
 - interpolate - Flag to create intermediate mesh elements
 
   Output Parameter:
-. mesh - The DMPlex object
+. mesh - The `DMPLEX` object
 
-  Options Database:
+  Options Database Keys:
 +  -dm_plex_generate <name> - package to generate mesh, for example, triangle, ctetgen or tetgen
 -  -dm_generator <name> - package to generate mesh, for example, triangle, ctetgen or tetgen
 
   Level: intermediate
 
-.seealso: `DMPlexCreate()`, `DMRefine()`
+.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPlexCreate()`, `DMRefine()`
 @*/
 PetscErrorCode DMPlexGenerate(DM boundary, const char name[], PetscBool interpolate, DM *mesh)
 {

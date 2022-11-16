@@ -8,14 +8,14 @@
   Not collective
 
   Input Parameter:
-. dm   - the DM
+. dm   - the `DM`
 
   Output Parameter:
 . point - The mesh point involved in the current projection
 
   Level: developer
 
-.seealso: `DMPlexSetActivePoint()`
+.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPlexSetActivePoint()`
 @*/
 PetscErrorCode DMPlexGetActivePoint(DM dm, PetscInt *point)
 {
@@ -30,12 +30,12 @@ PetscErrorCode DMPlexGetActivePoint(DM dm, PetscInt *point)
   Not collective
 
   Input Parameters:
-+ dm   - the DM
++ dm   - the `DM`
 - point - The mesh point involved in the current projection
 
   Level: developer
 
-.seealso: `DMPlexGetActivePoint()`
+.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPlexGetActivePoint()`
 @*/
 PetscErrorCode DMPlexSetActivePoint(DM dm, PetscInt point)
 {
@@ -48,15 +48,15 @@ PetscErrorCode DMPlexSetActivePoint(DM dm, PetscInt point)
   DMProjectPoint_Func_Private - Interpolate the given function in the output basis on the given point
 
   Input Parameters:
-+ dm     - The output DM
-. ds     - The output DS
-. dmIn   - The input DM
-. dsIn   - The input DS
++ dm     - The output `DM`
+. ds     - The output `DS`
+. dmIn   - The input `DM`
+. dsIn   - The input `DS`
 . time   - The time for this evaluation
 . fegeom - The FE geometry for this point
 . fvgeom - The FV geometry for this point
 . isFE   - Flag indicating whether each output field has an FE discretization
-. sp     - The output PetscDualSpace for each field
+. sp     - The output `PetscDualSpace` for each field
 . funcs  - The evaluation function for each field
 - ctxs   - The user context for each field
 
@@ -65,7 +65,7 @@ PetscErrorCode DMPlexSetActivePoint(DM dm, PetscInt point)
 
   Level: developer
 
-.seealso: `DMProjectPoint_Field_Private()`
+.seealso:[](chapter_unstructured), `DM`, `DMPLEX`, `PetscDS`, `PetscFEGeom`, `PetscFVCellGeom`, `PetscDualSpace`
 */
 static PetscErrorCode DMProjectPoint_Func_Private(DM dm, PetscDS ds, DM dmIn, PetscDS dsIn, PetscReal time, PetscFEGeom *fegeom, PetscFVCellGeom *fvgeom, PetscBool isFE[], PetscDualSpace sp[], PetscErrorCode (**funcs)(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar *, void *), void **ctxs, PetscScalar values[])
 {
@@ -173,9 +173,10 @@ static PetscErrorCode DMProjectPoint_Func_Private(DM dm, PetscDS ds, DM dmIn, Pe
   Output Parameter:
 . values         - The value for each dual basis vector in the output dual space
 
-  Note: Not supported for FV
-
   Level: developer
+
+  Note:
+  Not supported for FV
 
 .seealso: `DMProjectPoint_Field_Private()`
 */
@@ -451,18 +452,20 @@ static PetscErrorCode PetscDualSpaceGetAllPointsUnion(PetscInt Nf, PetscDualSpac
   DMGetFirstLabeledPoint - Find first labeled point p_o in odm such that the corresponding point p in dm has the specified height. Return p and the corresponding ds.
 
   Input Parameters:
-  dm - the DM
-  odm - the enclosing DM
-  label - label for DM domain, or NULL for whole domain
+  dm - the `DM`
+  odm - the enclosing `DM`
+  label - label for `DM` domain, or NULL for whole domain
   numIds - the number of ids
   ids - An array of the label ids in sequence for the domain
-  height - Height of target cells in DMPlex topology
+  height - Height of target cells in `DMPLEX` topology
 
   Output Parameters:
   point - the first labeled point
   ds - the ds corresponding to the first labeled point
 
   Level: developer
+
+.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPlexSetActivePoint()`, `DMLabel`, `PetscDS`
 @*/
 PetscErrorCode DMGetFirstLabeledPoint(DM dm, DM odm, DMLabel label, PetscInt numIds, const PetscInt ids[], PetscInt height, PetscInt *point, PetscDS *ds)
 {

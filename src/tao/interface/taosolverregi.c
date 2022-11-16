@@ -66,7 +66,7 @@ const char **TaoConvergedReasons           = TaoConvergedReasons_Shifted - TAO_D
 
   Level: developer
 
-.seealso `TaoRegister()`, `TaoRegisterDestroy()`
+.seealso: `Tao`, `TaoRegister()`, `TaoRegisterDestroy()`
 @*/
 PetscErrorCode TaoRegisterAll(void)
 {

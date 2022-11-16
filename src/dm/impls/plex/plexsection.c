@@ -396,35 +396,36 @@ static PetscErrorCode DMPlexCreateSectionBCIndices(DM dm, PetscSection section)
 }
 
 /*@C
-  DMPlexCreateSection - Create a PetscSection based upon the dof layout specification provided.
+  DMPlexCreateSection - Create a `PetscSection` based upon the dof layout specification provided.
 
   Not Collective
 
   Input Parameters:
-+ dm        - The DMPlex object
++ dm        - The `DMPLEX` object
 . label     - The label indicating the mesh support of each field, or NULL for the whole mesh
 . numComp   - An array of size numFields that holds the number of components for each field
 . numDof    - An array of size numFields*(dim+1) which holds the number of dof for each field on a mesh piece of dimension d
 . numBC     - The number of boundary conditions
 . bcField   - An array of size numBC giving the field number for each boundry condition
-. bcComps   - [Optional] An array of size numBC giving an IS holding the field components to which each boundary condition applies
-. bcPoints  - An array of size numBC giving an IS holding the Plex points to which each boundary condition applies
+. bcComps   - [Optional] An array of size numBC giving an `IS` holding the field components to which each boundary condition applies
+. bcPoints  - An array of size numBC giving an `IS` holding the `DMPLEX` points to which each boundary condition applies
 - perm      - Optional permutation of the chart, or NULL
 
   Output Parameter:
-. section - The PetscSection object
-
-  Notes:
-    numDof[f*(dim+1)+d] gives the number of dof for field f on points of dimension d. For instance, numDof[1] is the
-  number of dof for field 0 on each edge.
-
-  The chart permutation is the same one set using PetscSectionSetPermutation()
+. section - The `PetscSection` object
 
   Level: developer
 
-  TODO: How is this related to DMCreateLocalSection()
+  Notes:
+  numDof[f*(dim+1)+d] gives the number of dof for field f on points of dimension d. For instance, numDof[1] is the
+  number of dof for field 0 on each edge.
 
-.seealso: `DMPlexCreate()`, `PetscSectionCreate()`, `PetscSectionSetPermutation()`
+  The chart permutation is the same one set using `PetscSectionSetPermutation()`
+
+  Developer Note:
+  This is used by `DMCreateLocalSection()`?
+
+.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPlexCreate()`, `PetscSectionCreate()`, `PetscSectionSetPermutation()`
 @*/
 PetscErrorCode DMPlexCreateSection(DM dm, DMLabel label[], const PetscInt numComp[], const PetscInt numDof[], PetscInt numBC, const PetscInt bcField[], const IS bcComps[], const IS bcPoints[], IS perm, PetscSection *section)
 {
