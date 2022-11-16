@@ -52,7 +52,7 @@ class Configure(config.package.Package):
     if 'download-slepc-configure-arguments' in self.argDB and self.argDB['download-slepc-configure-arguments']:
       configargs = self.argDB['download-slepc-configure-arguments']
       if '--with-slepc4py' in self.argDB['download-slepc-configure-arguments']:
-        carg += ' PYTHONPATH='+os.path.join(self.installDir,'lib')+':${PYTHONPATH}'
+        carg += 'PYTHONPATH='+os.path.join(self.installDir,'lib')+':${PYTHONPATH} '
     else:
       configargs = ''
 
