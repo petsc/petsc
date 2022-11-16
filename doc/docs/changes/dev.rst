@@ -21,6 +21,8 @@ Changes: Development
 
 .. rubric:: Sys:
 
+- Change ``PetscOptionsMonitorDefault()`` to also take in the option source, and ``PetscOptionsMonitorSet()`` to take the new monitor function.
+
 .. rubric:: Event Logging:
 
 .. rubric:: PetscViewer:

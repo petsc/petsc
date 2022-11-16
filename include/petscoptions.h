@@ -9,6 +9,14 @@
 
 /* SUBMANSEC = Sys */
 
+typedef enum {
+  PETSC_OPT_CODE,
+  PETSC_OPT_COMMAND_LINE,
+  PETSC_OPT_FILE,
+  PETSC_OPT_ENVIRONMENT,
+  NUM_PETSC_OPT_SOURCE
+} PetscOptionSource;
+
 #define PETSC_MAX_OPTION_NAME 512
 typedef struct _n_PetscOptions *PetscOptions;
 PETSC_EXTERN PetscErrorCode     PetscOptionsCreate(PetscOptions *);
@@ -66,8 +74,8 @@ PETSC_EXTERN PetscErrorCode PetscOptionsStringToInt(const char[], PetscInt *);
 PETSC_EXTERN PetscErrorCode PetscOptionsStringToReal(const char[], PetscReal *);
 PETSC_EXTERN PetscErrorCode PetscOptionsStringToScalar(const char[], PetscScalar *);
 
-PETSC_EXTERN PetscErrorCode PetscOptionsMonitorSet(PetscErrorCode (*)(const char[], const char[], void *), void *, PetscErrorCode (*)(void **));
-PETSC_EXTERN PetscErrorCode PetscOptionsMonitorDefault(const char[], const char[], void *);
+PETSC_EXTERN PetscErrorCode PetscOptionsMonitorSet(PetscErrorCode (*)(const char[], const char[], PetscOptionSource, void *), void *, PetscErrorCode (*)(void **));
+PETSC_EXTERN PetscErrorCode PetscOptionsMonitorDefault(const char[], const char[], PetscOptionSource, void *);
 
 PETSC_EXTERN PetscErrorCode PetscObjectSetOptions(PetscObject, PetscOptions);
 PETSC_EXTERN PetscErrorCode PetscObjectGetOptions(PetscObject, PetscOptions *);
@@ -95,6 +103,7 @@ typedef enum {
   OPTION_BOOL_ARRAY,
   OPTION_STRING_ARRAY
 } PetscOptionType;
+
 typedef struct _n_PetscOptionItem *PetscOptionItem;
 struct _n_PetscOptionItem {
   char              *option;

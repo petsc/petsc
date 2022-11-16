@@ -7,6 +7,9 @@
   #include <../src/sys/yaml/include/yaml.h>
 #endif
 
+PETSC_INTERN PetscErrorCode PetscOptionsSetValue_Private(PetscOptions, const char[], const char[], int *, PetscOptionSource);
+PETSC_INTERN PetscErrorCode PetscOptionsInsertStringYAML_Private(PetscOptions, const char[], PetscOptionSource);
+
 static MPI_Comm petsc_yaml_comm = MPI_COMM_NULL; /* only used for parallel error handling */
 
 static inline MPI_Comm PetscYAMLGetComm(void)
@@ -26,7 +29,7 @@ static inline MPI_Comm PetscYAMLSetComm(MPI_Comm comm)
 #define SEQ(node) ((node)->data.sequence.items)
 #define MAP(node) ((node)->data.mapping.pairs)
 
-static PetscErrorCode PetscParseLayerYAML(PetscOptions options, yaml_document_t *doc, yaml_node_t *node)
+static PetscErrorCode PetscParseLayerYAML(PetscOptions options, yaml_document_t *doc, yaml_node_t *node, PetscOptionSource source)
 {
   MPI_Comm comm                        = PetscYAMLGetComm();
   char     name[PETSC_MAX_OPTION_NAME] = "", prefix[PETSC_MAX_OPTION_NAME] = "";
@@ -51,10 +54,10 @@ static PetscErrorCode PetscParseLayerYAML(PetscOptions options, yaml_document_t 
           yaml_node_t *itemnode = yaml_document_get_node(doc, *item);
           PetscCheck(itemnode, comm, PETSC_ERR_LIB, "Corrupt YAML document");
           PetscCheck(itemnode->type == YAML_MAPPING_NODE, comm, PETSC_ERR_SUP, "Unsupported YAML node type: expected mapping");
-          PetscCall(PetscParseLayerYAML(options, doc, itemnode));
+          PetscCall(PetscParseLayerYAML(options, doc, itemnode, source));
         }
       } else if (valnode->type == YAML_MAPPING_NODE) {
-        PetscCall(PetscParseLayerYAML(options, doc, valnode));
+        PetscCall(PetscParseLayerYAML(options, doc, valnode, source));
       } else SETERRQ(comm, PETSC_ERR_SUP, "Unsupported YAML node type: expected sequence or mapping");
       continue; /* to next pair */
     }
@@ -71,7 +74,7 @@ static PetscErrorCode PetscParseLayerYAML(PetscOptions options, yaml_document_t 
 
     if (valnode->type == YAML_SCALAR_NODE) {
       PetscCall(PetscSNPrintf(name, sizeof(name), "-%s", STR(keynode)));
-      PetscCall(PetscOptionsSetValue(options, name, STR(valnode)));
+      PetscCall(PetscOptionsSetValue_Private(options, name, STR(valnode), NULL, source));
 
     } else if (valnode->type == YAML_SEQUENCE_NODE) {
       PetscSegBuffer seg;
@@ -112,7 +115,7 @@ static PetscErrorCode PetscParseLayerYAML(PetscOptions options, yaml_document_t 
 
           PetscCall(PetscSNPrintf(prefix, sizeof(prefix), "%s_", STR(keynode)));
           PetscCall(PetscOptionsPrefixPush(options, prefix));
-          PetscCall(PetscParseLayerYAML(options, doc, itemnode));
+          PetscCall(PetscParseLayerYAML(options, doc, itemnode, source));
           PetscCall(PetscOptionsPrefixPop(options));
 
         } else SETERRQ(comm, PETSC_ERR_SUP, "Unsupported YAML node type: expected scalar or mapping");
@@ -134,13 +137,13 @@ static PetscErrorCode PetscParseLayerYAML(PetscOptions options, yaml_document_t 
       PetscCall(PetscSegBufferDestroy(&seg));
 
       PetscCall(PetscSNPrintf(name, sizeof(name), "-%s", STR(keynode)));
-      PetscCall(PetscOptionsSetValue(options, name, strlist));
+      PetscCall(PetscOptionsSetValue_Private(options, name, strlist, NULL, source));
       PetscCall(PetscFree(strlist));
 
     } else if (valnode->type == YAML_MAPPING_NODE) {
       PetscCall(PetscSNPrintf(prefix, sizeof(prefix), "%s_", STR(keynode)));
       PetscCall(PetscOptionsPrefixPush(options, prefix));
-      PetscCall(PetscParseLayerYAML(options, doc, valnode));
+      PetscCall(PetscParseLayerYAML(options, doc, valnode, source));
       PetscCall(PetscOptionsPrefixPop(options));
 
     } else SETERRQ(comm, PETSC_ERR_SUP, "Unsupported YAML node type: expected scalar, sequence or mapping");
@@ -148,6 +151,29 @@ static PetscErrorCode PetscParseLayerYAML(PetscOptions options, yaml_document_t 
   PetscFunctionReturn(0);
 }
 
+PetscErrorCode PetscOptionsInsertStringYAML_Private(PetscOptions options, const char in_str[], PetscOptionSource source)
+{
+  MPI_Comm        comm = PetscYAMLGetComm();
+  yaml_parser_t   parser;
+  yaml_document_t doc;
+  yaml_node_t    *root;
+  int             err;
+
+  PetscFunctionBegin;
+  if (!in_str) in_str = "";
+  err = !yaml_parser_initialize(&parser);
+  PetscCheck(!err, comm, PETSC_ERR_LIB, "YAML parser initialization error");
+  yaml_parser_set_input_string(&parser, (const unsigned char *)in_str, strlen(in_str));
+  do {
+    err = !yaml_parser_load(&parser, &doc);
+    PetscCheck(!err, comm, PETSC_ERR_LIB, "YAML parser loading error");
+    root = yaml_document_get_root_node(&doc);
+    if (root) PetscCall(PetscParseLayerYAML(options, &doc, root, source));
+    yaml_document_delete(&doc);
+  } while (root);
+  yaml_parser_delete(&parser);
+  PetscFunctionReturn(0);
+}
 /*@C
    PetscOptionsInsertStringYAML - Inserts YAML-formatted options into the options database from a string
 
@@ -168,25 +194,8 @@ static PetscErrorCode PetscParseLayerYAML(PetscOptions options, yaml_document_t 
 @*/
 PetscErrorCode PetscOptionsInsertStringYAML(PetscOptions options, const char in_str[])
 {
-  MPI_Comm        comm = PetscYAMLGetComm();
-  yaml_parser_t   parser;
-  yaml_document_t doc;
-  yaml_node_t    *root;
-  int             err;
-
   PetscFunctionBegin;
-  if (!in_str) in_str = "";
-  err = !yaml_parser_initialize(&parser);
-  PetscCheck(!err, comm, PETSC_ERR_LIB, "YAML parser initialization error");
-  yaml_parser_set_input_string(&parser, (const unsigned char *)in_str, strlen(in_str));
-  do {
-    err = !yaml_parser_load(&parser, &doc);
-    PetscCheck(!err, comm, PETSC_ERR_LIB, "YAML parser loading error");
-    root = yaml_document_get_root_node(&doc);
-    if (root) PetscCall(PetscParseLayerYAML(options, &doc, root));
-    yaml_document_delete(&doc);
-  } while (root);
-  yaml_parser_delete(&parser);
+  PetscCall(PetscOptionsInsertStringYAML_Private(options, in_str, PETSC_OPT_CODE));
   PetscFunctionReturn(0);
 }
 
@@ -257,7 +266,7 @@ PetscErrorCode PetscOptionsInsertFileYAML(MPI_Comm comm, PetscOptions options, c
   PetscCallMPI(MPI_Bcast(yamlString, yamlLength + 1, MPI_CHAR, 0, comm));
 
   prev = PetscYAMLSetComm(comm);
-  PetscCall(PetscOptionsInsertStringYAML(options, yamlString));
+  PetscCall(PetscOptionsInsertStringYAML_Private(options, yamlString, PETSC_OPT_FILE));
   (void)PetscYAMLSetComm(prev);
 
   PetscCall(PetscFree(yamlString));
