@@ -8210,7 +8210,8 @@ M*/
     The submatrix will be able to be multiplied with vectors using the same layout as iscol.
 
     Some matrix types place restrictions on the row and column indices, such
-    as that they be sorted or that they be equal to each other.
+    as that they be sorted or that they be equal to each other. For `MATBAIJ` and `MATSBAIJ` matrices the indices must include all rows/columns of a block;
+    for example, if the block size is 3 one cannot select the 0 and 2 rows without selecting the 1 row.
 
     The index sets may not have duplicate entries.
 
