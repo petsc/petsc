@@ -17,6 +17,8 @@ There are three basic ways to use MATLAB with PETSc:
    not interactively but from a script or the PETSc program (this uses
    the MATLAB Engine).
 
+For the latter two approaches one must ``./configure`` PETSc with the argument ``--with-matlab [-with-matlab-dir=matlab_root_directory]``.
+
 .. _sec_matlabdump:
 
 Dumping Data for MATLAB
