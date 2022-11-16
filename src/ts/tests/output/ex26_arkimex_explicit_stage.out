@@ -7,5 +7,5 @@
 [0]PETSC ERROR: #3 TSSolve() at ts.c:0
 [0]PETSC ERROR: #4 main() at ex26.c:0
 [0]PETSC ERROR: PETSc Option Table entries:
-[0]PETSC ERROR: -ts_type arkimex
+[0]PETSC ERROR: -ts_type arkimex (source: command line)
 [0]PETSC ERROR: ----------------End of Error Message -------send entire error message to petsc-maint@mcs.anl.gov----------
