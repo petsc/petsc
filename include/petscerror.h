@@ -7,6 +7,10 @@
 #include <petscmacros.h>
 #include <petscsystypes.h>
 
+#if defined(__cplusplus)
+  #include <exception> // std::exception
+#endif
+
 /* SUBMANSEC = Sys */
 
 /*
