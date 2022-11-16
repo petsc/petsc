@@ -1,16 +1,16 @@
 #PETSc Option Table entries:
--cs0001_force 0.
--cs0010_force 0.
--cs0010_hookeslaw 1,2,3,4,5,6
--cs0020_force 0.
--f petsc.yml
--temp_KSP_monitor_true_residual
--temp_KSP_type cg
--temp_snes_type ksponly
--vs0010_temp 0.
--vs0010_tempBC 1
--vs0020_temp 1.
--vs0020_tempBC 12
--vs0030_temp 1.
--vs0030_tempBC 1
+-cs0001_force 0. # (source: file)
+-cs0010_force 0. # (source: file)
+-cs0010_hookeslaw 1,2,3,4,5,6 # (source: file)
+-cs0020_force 0. # (source: file)
+-f petsc.yml # (source: command line)
+-temp_KSP_monitor_true_residual # (source: file)
+-temp_KSP_type cg # (source: file)
+-temp_snes_type ksponly # (source: file)
+-vs0010_temp 0. # (source: file)
+-vs0010_tempBC 1 # (source: file)
+-vs0020_temp 1. # (source: file)
+-vs0020_tempBC 12 # (source: file)
+-vs0030_temp 1. # (source: file)
+-vs0030_tempBC 1 # (source: file)
 #End of PETSc Option Table entries

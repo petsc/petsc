@@ -1,5 +1,5 @@
-Setting option: name = value
-Setting option: name = value
+Setting option: name = value (souce: file)
+Setting option: name = value (souce: file)
 #PETSc Option Table entries:
--name value
+-name value # (source: file)
 #End of PETSc Option Table entries

@@ -10,9 +10,9 @@
 [0]PETSC ERROR: #3 PetscDeviceInitializeFromOptions_Internal() at device.cxx:0
 [0]PETSC ERROR: #4 PetscInitialize_Common() at pinit.c:0
 [0]PETSC ERROR: #5 PetscInitialize() at pinit.c:0
-[0]PETSC ERROR: #6 main() at ex10.c:0
+[0]PETSC ERROR: #6 main() at ex12.c:0
 [0]PETSC ERROR: PETSc Option Table entries:
-[0]PETSC ERROR: -device_enable eager
-[0]PETSC ERROR: -device_enable_cuda eager
-[0]PETSC ERROR: -info
+[0]PETSC ERROR: -device_enable eager (source: command line)
+[0]PETSC ERROR: -device_enable_cuda eager (source: command line)
+[0]PETSC ERROR: -info (source: command line)
 [0]PETSC ERROR: ----------------End of Error Message -------send entire error message to petsc-maint@mcs.anl.gov----------

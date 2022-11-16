@@ -54,7 +54,6 @@ int main(int argc, char *argv[])
 /*TEST
 
   testset:
-    output_file: ./output/empty.out
     args: -env_vars_def 'FOO=1 BAR=0 BAZ= BOP=1'
     suffix: env_set
     test:
@@ -68,13 +67,11 @@ int main(int argc, char *argv[])
       suffix: all_seperate_lines
 
   test:
-    output_file: ./output/empty.out
     args: -env_vars_def 'FOO=hello'
     env: FOO='hello'
     suffix: env_set_quoted
 
   test:
-    output_file: ./output/empty.out
     suffix: env_not_set
 
 TEST*/

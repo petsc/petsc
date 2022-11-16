@@ -4,7 +4,7 @@ static char help[] = "Tests options database monitoring and precedence.\n\n";
 #include <petscsys.h>
 #include <petscviewer.h>
 
-PetscErrorCode PetscOptionsMonitorCustom(const char name[], const char value[], void *ctx)
+PetscErrorCode PetscOptionsMonitorCustom(const char name[], const char value[], PetscOptionSource source, void *ctx)
 {
   PetscViewer viewer = (PetscViewer)ctx;
 
@@ -89,5 +89,11 @@ int main(int argc, char **argv)
       test:
         suffix: 6c
         args: -options_file rc_version
+
+   test:
+     localrunfiles: ex55options .petscrc petscrc
+     suffix: 7
+     filter: grep -E -v -e "(options_left)"
+     args: -options_monitor -options_left 0
 
 TEST*/
