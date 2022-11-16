@@ -113,7 +113,7 @@ PetscErrorCode TSAdaptInitializePackage(void)
   Logicially Collective onadapt
 
   Input Parameters:
-+ adapt - the TS adapter, most likely obtained with `TSGetAdapt()`
++ adapt - the `TS` adapter, most likely obtained with `TSGetAdapt()`
 - type - one of the `TSAdaptType`
 
   Options Database Key:
