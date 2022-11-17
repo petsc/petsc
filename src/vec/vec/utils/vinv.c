@@ -8,7 +8,7 @@
    VecStrideSet - Sets a subvector of a vector defined
    by a starting point and a stride with a given value
 
-   Logically Collective on Vec
+   Logically Collective
 
    Input Parameters:
 +  v - the vector
@@ -46,7 +46,7 @@ PetscErrorCode VecStrideSet(Vec v, PetscInt start, PetscScalar s)
    VecStrideScale - Scales a subvector of a vector defined
    by a starting point and a stride.
 
-   Logically Collective on Vec
+   Logically Collective
 
    Input Parameters:
 +  v - the vector
@@ -84,7 +84,7 @@ PetscErrorCode VecStrideScale(Vec v, PetscInt start, PetscScalar scale)
    VecStrideNorm - Computes the norm of subvector of a vector defined
    by a starting point and a stride.
 
-   Collective on Vec
+   Collective
 
    Input Parameters:
 +  v - the vector
@@ -150,7 +150,7 @@ PetscErrorCode VecStrideNorm(Vec v, PetscInt start, NormType ntype, PetscReal *n
    VecStrideMax - Computes the maximum of subvector of a vector defined
    by a starting point and a stride and optionally its location.
 
-   Collective on Vec
+   Collective
 
    Input Parameters:
 +  v - the vector
@@ -224,7 +224,7 @@ PetscErrorCode VecStrideMax(Vec v, PetscInt start, PetscInt *idex, PetscReal *nr
    VecStrideMin - Computes the minimum of subvector of a vector defined
    by a starting point and a stride and optionally its location.
 
-   Collective on Vec
+   Collective
 
    Input Parameters:
 +  v - the vector
@@ -298,7 +298,7 @@ PetscErrorCode VecStrideMin(Vec v, PetscInt start, PetscInt *idex, PetscReal *nr
    VecStrideSum - Computes the sum of subvector of a vector defined
    by a starting point and a stride.
 
-   Collective on v
+   Collective
 
    Input Parameters:
 +  v - the vector
@@ -342,7 +342,7 @@ PetscErrorCode VecStrideSum(Vec v, PetscInt start, PetscScalar *sum)
    VecStrideScaleAll - Scales the subvectors of a vector defined
    by a starting point and a stride.
 
-   Logically Collective on Vec
+   Logically Collective
 
    Input Parameters:
 +  v - the vector
@@ -381,7 +381,7 @@ PetscErrorCode VecStrideScaleAll(Vec v, const PetscScalar *scales)
    VecStrideNormAll - Computes the norms of subvectors of a vector defined
    by a starting point and a stride.
 
-   Collective on Vec
+   Collective
 
    Input Parameters:
 +  v - the vector
@@ -465,7 +465,7 @@ PetscErrorCode VecStrideNormAll(Vec v, NormType ntype, PetscReal nrm[])
    VecStrideMaxAll - Computes the maximums of subvectors of a vector defined
    by a starting point and a stride and optionally its location.
 
-   Collective on Vec
+   Collective
 
    Input Parameter:
 .  v - the vector
@@ -524,7 +524,7 @@ PetscErrorCode VecStrideMaxAll(Vec v, PetscInt idex[], PetscReal nrm[])
    VecStrideMinAll - Computes the minimum of subvector of a vector defined
    by a starting point and a stride and optionally its location.
 
-   Collective on Vec
+   Collective
 
    Input Parameter:
 .  v - the vector
@@ -582,7 +582,7 @@ PetscErrorCode VecStrideMinAll(Vec v, PetscInt idex[], PetscReal nrm[])
 /*@
    VecStrideSumAll - Computes the sums of subvectors of a vector defined by a stride.
 
-   Collective on Vec
+   Collective
 
    Input Parameter:
 .  v - the vector
@@ -633,7 +633,7 @@ PetscErrorCode VecStrideSumAll(Vec v, PetscScalar sums[])
    VecStrideGatherAll - Gathers all the single components from a multi-component vector into
    separate vectors.
 
-   Collective on Vec
+   Collective
 
    Input Parameters:
 +  v - the vector
@@ -728,7 +728,7 @@ PetscErrorCode VecStrideGatherAll(Vec v, Vec s[], InsertMode addv)
    VecStrideScatterAll - Scatters all the single components from separate vectors into
      a multi-component vector.
 
-   Collective on Vec
+   Collective
 
    Input Parameters:
 +  s - the location where the subvectors are stored
@@ -818,7 +818,7 @@ PetscErrorCode VecStrideScatterAll(Vec s[], Vec v, InsertMode addv)
    VecStrideGather - Gathers a single component from a multi-component vector into
    another vector.
 
-   Collective on Vec
+   Collective
 
    Input Parameters:
 +  v - the vector
@@ -860,7 +860,7 @@ PetscErrorCode VecStrideGather(Vec v, PetscInt start, Vec s, InsertMode addv)
 /*@
    VecStrideScatter - Scatters a single component from a vector into a multi-component vector.
 
-   Collective on Vec
+   Collective
 
    Input Parameters:
 +  s - the single-component vector
@@ -900,7 +900,7 @@ PetscErrorCode VecStrideScatter(Vec s, PetscInt start, Vec v, InsertMode addv)
    VecStrideSubSetGather - Gathers a subset of components from a multi-component vector into
    another vector.
 
-   Collective on Vec
+   Collective
 
    Input Parameters:
 +  v - the vector
@@ -938,7 +938,7 @@ PetscErrorCode VecStrideSubSetGather(Vec v, PetscInt nidx, const PetscInt idxv[]
 /*@
    VecStrideSubSetScatter - Scatters components from a vector into a subset of components of a multi-component vector.
 
-   Collective on Vec
+   Collective
 
    Input Parameters:
 +  s - the smaller-component vector
@@ -1286,7 +1286,7 @@ PetscErrorCode VecSqrtAbs(Vec v)
 /*@
   VecDotNorm2 - computes the inner product of two vectors and the 2-norm squared of the second vector
 
-  Collective on Vec
+  Collective
 
   Input Parameters:
 + s - first vector
@@ -1352,7 +1352,7 @@ PetscErrorCode VecDotNorm2(Vec s, Vec t, PetscScalar *dp, PetscReal *nm)
 /*@
    VecSum - Computes the sum of all the components of a vector.
 
-   Collective on Vec
+   Collective
 
    Input Parameter:
 .  v - the vector
@@ -1388,7 +1388,7 @@ PetscErrorCode VecSum(Vec v, PetscScalar *sum)
 /*@
    VecMean - Computes the arithmetic mean of all the components of a vector.
 
-   Collective on Vec
+   Collective
 
    Input Parameter:
 .  v - the vector
@@ -1416,7 +1416,7 @@ PetscErrorCode VecMean(Vec v, PetscScalar *mean)
 /*@
    VecImaginaryPart - Replaces a complex vector with its imginary part
 
-   Collective on Vec
+   Collective
 
    Input Parameter:
 .  v - the vector
@@ -1442,7 +1442,7 @@ PetscErrorCode VecImaginaryPart(Vec v)
 /*@
    VecRealPart - Replaces a complex vector with its real part
 
-   Collective on Vec
+   Collective
 
    Input Parameter:
 .  v - the vector
@@ -1469,7 +1469,7 @@ PetscErrorCode VecRealPart(Vec v)
    VecShift - Shifts all of the components of a vector by computing
    x[i] = x[i] + shift.
 
-   Logically Collective on Vec
+   Logically Collective
 
    Input Parameters:
 +  v - the vector
@@ -1502,7 +1502,7 @@ PetscErrorCode VecShift(Vec v, PetscScalar shift)
 /*@
    VecAbs - Replaces every element in a vector with its absolute value.
 
-   Logically Collective on Vec
+   Logically Collective
 
    Input Parameters:
 .  v - the vector
@@ -1578,7 +1578,7 @@ PetscErrorCode VecPermute(Vec x, IS row, PetscBool inv)
    or if the two vectors have the same local and global layout as well as bitwise equality of all entries.
    Does NOT take round-off errors into account.
 
-   Collective on Vec
+   Collective
 
    Input Parameters:
 +  vec1 - the first vector
@@ -1625,7 +1625,7 @@ PetscErrorCode VecEqual(Vec vec1, Vec vec2, PetscBool *flg)
 /*@
    VecUniqueEntries - Compute the number of unique entries, and those entries
 
-   Collective on Vec
+   Collective
 
    Input Parameter:
 .  vec - the vector

@@ -13,7 +13,7 @@ typedef struct {
 /*@C
    PCGAMGClassicalSetType - Sets the type of classical interpolation to use with `PCGAMG`
 
-   Collective on pc
+   Collective
 
    Input Parameters:
 .  pc - the preconditioner context
@@ -36,7 +36,7 @@ PetscErrorCode PCGAMGClassicalSetType(PC pc, PCGAMGClassicalType type)
 /*@C
    PCGAMGClassicalGetType - Gets the type of classical interpolation to use with `PCGAMG`
 
-   Collective on pc
+   Collective
 
    Input Parameter:
 .  pc - the preconditioner context

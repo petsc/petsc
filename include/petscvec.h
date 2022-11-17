@@ -580,7 +580,7 @@ PETSC_EXTERN PetscErrorCode VecRestoreArrayWriteAndMemType(Vec, PetscScalar **);
 /*@C
    VecGetArrayPair - Accesses a pair of pointers for two vectors that may be common. When not common the first is read only
 
-   Logically Collective on x
+   Logically Collective
 
    Input Parameters:
 +  x - the vector
@@ -609,7 +609,7 @@ static inline PetscErrorCode VecGetArrayPair(Vec x, Vec y, PetscScalar **xv, Pet
 /*@C
    VecRestoreArrayPair - Returns a pair of pointers for two vectors that may be common. When not common the first is read only
 
-   Logically Collective on x
+   Logically Collective
 
    Input Parameters:
 +  x - the vector

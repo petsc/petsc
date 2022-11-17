@@ -12,7 +12,7 @@ static PetscErrorCode PetscDrawSave_SAWs(PetscDraw);
 /*@C
    PetscDrawSetSave - Saves images produced in a `PetscDraw` into a file
 
-   Collective on draw
+   Collective
 
    Input Parameters:
 +  draw      - the graphics context
@@ -78,7 +78,7 @@ PetscErrorCode PetscDrawSetSave(PetscDraw draw, const char filename[])
 /*@C
    PetscDrawSetSaveMovie - Saves a movie produced from a `PetscDraw` into a file
 
-   Collective on draw
+   Collective
 
    Input Parameters:
 +  draw      - the graphics context
@@ -113,7 +113,7 @@ PetscErrorCode PetscDrawSetSaveMovie(PetscDraw draw, const char movieext[])
 /*@C
    PetscDrawSetSaveFinalImage - Saves the final image produced in a `PetscDraw` into a file
 
-   Collective on draw
+   Collective
 
    Input Parameters:
 +  draw      - the graphics context
@@ -159,7 +159,7 @@ PetscErrorCode PetscDrawSetSaveFinalImage(PetscDraw draw, const char filename[])
 /*@
    PetscDrawSave - Saves a drawn image
 
-   Collective on draw
+   Collective
 
    Input Parameters:
 .  draw - the drawing context
@@ -237,7 +237,7 @@ finally:
 /*@
    PetscDrawSaveMovie - Saves a movie from previously saved images
 
-   Collective on draw
+   Collective
 
    Input Parameters:
 .  draw - the drawing context

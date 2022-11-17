@@ -636,7 +636,7 @@ PetscFunctionReturn(0);
 /*@
    PCExoticSetType - Sets the type of coarse grid interpolation to use
 
-   Logically Collective on pc
+   Logically Collective
 
    Input Parameters:
 +  pc - the preconditioner context

@@ -127,7 +127,7 @@ PetscErrorCode TSSetEventTolerances(TS ts, PetscReal tol, PetscReal vtol[])
 /*@C
    TSSetEventHandler - Sets a function used for detecting events
 
-   Logically Collective on ts
+   Logically Collective
 
    Input Parameters:
 +  ts - the `TS` context obtained from `TSCreate()`

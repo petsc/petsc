@@ -624,7 +624,7 @@ PetscErrorCode TSSundialsGetIterations(TS ts, int *nonlin, int *lin)
 /*@
    TSSundialsSetType - Sets the method that `TSSUNDIALS` will use for integration.
 
-   Logically Collective on ts
+   Logically Collective
 
    Input Parameters:
 +    ts     - the time-step context
@@ -648,7 +648,7 @@ PetscErrorCode TSSundialsSetType(TS ts, TSSundialsLmmType type)
 /*@
    TSSundialsSetMaxord - Sets the maximum order for BDF/Adams method used by `TSSUNDIALS`.
 
-   Logically Collective on ts
+   Logically Collective
 
    Input Parameters:
 +    ts      - the time-step context
@@ -675,7 +675,7 @@ PetscErrorCode TSSundialsSetMaxord(TS ts, PetscInt maxord)
        GMRES in the linear solver in `TSSUNDIALS`. `TSSUNDIALS` DOES NOT use restarted GMRES so
        this is the maximum number of GMRES steps that will be used.
 
-   Logically Collective on ts
+   Logically Collective
 
    Input Parameters:
 +    ts      - the time-step context
@@ -701,7 +701,7 @@ PetscErrorCode TSSundialsSetMaxl(TS ts, PetscInt maxl)
    TSSundialsSetLinearTolerance - Sets the tolerance used to solve the linear
        system by `TSSUNDIALS`.
 
-   Logically Collective on ts
+   Logically Collective
 
    Input Parameters:
 +    ts     - the time-step context
@@ -728,7 +728,7 @@ PetscErrorCode TSSundialsSetLinearTolerance(TS ts, PetscReal tol)
    TSSundialsSetGramSchmidtType - Sets type of orthogonalization used
         in GMRES method by `TSSUNDIALS` linear solver.
 
-   Logically Collective on ts
+   Logically Collective
 
    Input Parameters:
 +    ts  - the time-step context
@@ -753,7 +753,7 @@ PetscErrorCode TSSundialsSetGramSchmidtType(TS ts, TSSundialsGramSchmidtType typ
    TSSundialsSetTolerance - Sets the absolute and relative tolerance used by
                          `TSSUNDIALS` for error control.
 
-   Logically Collective on ts
+   Logically Collective
 
    Input Parameters:
 +    ts  - the time-step context

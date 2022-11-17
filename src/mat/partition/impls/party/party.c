@@ -154,7 +154,7 @@ PetscErrorCode MatPartitioningView_Party(MatPartitioning part, PetscViewer viewe
 /*@C
    MatPartitioningPartySetGlobal - Set global method for Party partitioner.
 
-   Collective on part
+   Collective
 
    Input Parameters:
 +  part - the partitioning context
@@ -193,7 +193,7 @@ PetscErrorCode MatPartitioningPartySetGlobal_Party(MatPartitioning part, const c
 /*@C
    MatPartitioningPartySetLocal - Set local method used by the Party partitioner.
 
-   Collective on part
+   Collective
 
    Input Parameters:
 +  part - the partitioning context
@@ -232,7 +232,7 @@ PetscErrorCode MatPartitioningPartySetLocal_Party(MatPartitioning part, const ch
    MatPartitioningPartySetCoarseLevel - Set the coarse level parameter for the
    Party partitioner.
 
-   Collective on part
+   Collective
 
    Input Parameters:
 +  part - the partitioning context
@@ -269,7 +269,7 @@ PetscErrorCode MatPartitioningPartySetCoarseLevel_Party(MatPartitioning part, Pe
    MatPartitioningPartySetMatchOptimization - Activate matching optimization for
    graph reduction.
 
-   Collective on part
+   Collective
 
    Input Parameters:
 +  part - the partitioning context
@@ -303,7 +303,7 @@ PetscErrorCode MatPartitioningPartySetMatchOptimization_Party(MatPartitioning pa
 /*@
    MatPartitioningPartySetBipart - Activate or deactivate recursive bisection in the Party partitioner
 
-   Collective on part
+   Collective
 
    Input Parameters:
 +  part - the partitioning context

@@ -422,7 +422,7 @@ static PetscErrorCode KSPDestroy_PIPEGCR(KSP ksp)
 /*@
   KSPPIPEGCRSetUnrollW - Set to `PETSC_TRUE` to use `KSPPIPEGCR` with unrolling of the w vector
 
-  Logically Collective on ksp
+  Logically Collective
 
   Input Parameters:
 +  ksp - the Krylov space context
@@ -449,7 +449,7 @@ PetscErrorCode KSPPIPEGCRSetUnrollW(KSP ksp, PetscBool unroll_w)
 /*@
   KSPPIPEGCRGetUnrollW - Get information on `KSPPIPEGCR` if it uses unrolling the w vector
 
-  Logically Collective on ksp
+  Logically Collective
 
    Input Parameter:
 .  ksp - the Krylov space context
@@ -474,7 +474,7 @@ PetscErrorCode KSPPIPEGCRGetUnrollW(KSP ksp, PetscBool *unroll_w)
 /*@
   KSPPIPEGCRSetMmax - set the maximum number of previous directions `KSPPIPEGCR` will store for orthogonalization
 
-  Logically Collective on ksp
+  Logically Collective
 
   Input Parameters:
 +  ksp - the Krylov space context
@@ -532,7 +532,7 @@ PetscErrorCode KSPPIPEGCRGetMmax(KSP ksp, PetscInt *mmax)
 /*@
   KSPPIPEGCRSetNprealloc - set the number of directions to preallocate with `KSPPIPEGCR`
 
-  Logically Collective on ksp
+  Logically Collective
 
   Input Parameters:
 +  ksp - the Krylov space context
@@ -584,7 +584,7 @@ PetscErrorCode KSPPIPEGCRGetNprealloc(KSP ksp, PetscInt *nprealloc)
 /*@
   KSPPIPEGCRSetTruncationType - specify how many of its stored previous directions `KSPPIPEGCR` uses during orthogonalization
 
-  Logically Collective on ksp
+  Logically Collective
 
   Input Parameters:
 +  ksp - the Krylov space context
@@ -681,7 +681,7 @@ static PetscErrorCode KSPPIPEGCRSetModifyPC_PIPEGCR(KSP ksp, KSPPIPEGCRModifyPCF
 /*@C
  KSPPIPEGCRSetModifyPC - Sets the routine used by `KSPPIPEGCR` to modify the preconditioner at each iteration
 
- Logically Collective on ksp
+ Logically Collective
 
  Input Parameters:
  +  ksp      - iterative context obtained from KSPCreate()

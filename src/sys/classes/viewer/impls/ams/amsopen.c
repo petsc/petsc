@@ -45,7 +45,7 @@ PetscErrorCode PetscViewerSAWsOpen(MPI_Comm comm, PetscViewer *lab)
 /*@C
    PetscObjectViewSAWs - View the base portion of any object with an SAWs viewer
 
-   Collective on obj
+   Collective
 
    Input Parameters:
 +  obj - the `PetscObject` variable. Thus must be cast with a (`PetscObject`), for example, `PetscObjectSetName`((`PetscObject`)mat,name);

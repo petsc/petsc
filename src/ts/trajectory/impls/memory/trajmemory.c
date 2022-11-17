@@ -1890,7 +1890,7 @@ PETSC_UNUSED static PetscErrorCode TSTrajectorySetUseDRAM(TSTrajectory tj, Petsc
 /*@C
    TSTrajectoryMemorySetType - sets the software that is used to generate the checkpointing schedule.
 
-   Logically Collective on tj
+   Logically Collective
 
    Input Parameters:
 +  tj - the `TSTrajectory` context

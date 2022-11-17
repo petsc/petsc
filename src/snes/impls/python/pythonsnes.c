@@ -3,7 +3,7 @@
 /*@C
    SNESPythonSetType - Initialize a `SNES` object implemented in Python.
 
-   Collective on snes
+   Collective
 
    Input Parameters:
 +  snes - the nonlinear solver (`SNES`) context.

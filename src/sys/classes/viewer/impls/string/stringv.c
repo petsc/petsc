@@ -21,7 +21,7 @@ static PetscErrorCode PetscViewerDestroy_String(PetscViewer viewer)
 /*@C
     PetscViewerStringSPrintf - Prints information to a `PETSCVIEWERSTRING` `PetscViewer` object
 
-    Logically Collective on viewer
+    Logically Collective
 
     Input Parameters:
 +   v - a string `PetscViewer`, formed by `PetscViewerStringOpen()`
@@ -148,7 +148,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_String(PetscViewer v)
 
    PetscViewerStringGetStringRead - Returns the string that a `PETSCVIEWERSTRING` uses
 
-   Logically Collective on viewer
+   Logically Collective
 
   Input Parameter:
 .   viewer -  `PETSCVIEWERSTRING` viewer
@@ -183,7 +183,7 @@ PetscErrorCode PetscViewerStringGetStringRead(PetscViewer viewer, const char *st
 
    PetscViewerStringSetString - sets the string that a string viewer will print to
 
-   Logically Collective on viewer
+   Logically Collective
 
   Input Parameters:
 +   viewer - string viewer you wish to attach string to
@@ -224,7 +224,7 @@ PetscErrorCode PetscViewerStringSetString(PetscViewer viewer, char string[], siz
 
    PetscViewerStringSetOwnString - tells the viewer that it now owns the string and is responsible for freeing it
 
-   Logically Collective on viewer
+   Logically Collective
 
   Input Parameters:
 .   viewer - string viewer

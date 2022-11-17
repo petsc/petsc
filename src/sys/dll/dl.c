@@ -468,7 +468,7 @@ PetscErrorCode PetscDLLibraryPrepend(MPI_Comm comm, PetscDLLibrary *outlist, con
 /*@C
      PetscDLLibraryClose - Destroys the search path of dynamic libraries and closes the libraries.
 
-    Collective on list
+    Collective
 
     Input Parameter:
 .     head - library list

@@ -11,7 +11,7 @@ PetscLogEvent TAOLINESEARCH_Eval;
 /*@C
    TaoLineSearchViewFromOptions - View from Options
 
-   Collective on TaoLineSearch
+   Collective
 
    Input Parameters:
 +  A - the Tao context
@@ -32,7 +32,7 @@ PetscErrorCode TaoLineSearchViewFromOptions(TaoLineSearch A, PetscObject obj, co
 /*@C
   TaoLineSearchView - Prints information about the TaoLineSearch
 
-  Collective on TaoLineSearch
+  Collective
 
   InputParameters:
 + ls - the Tao context
@@ -143,7 +143,7 @@ PetscErrorCode TaoLineSearchCreate(MPI_Comm comm, TaoLineSearch *newls)
   TaoLineSearchSetUp - Sets up the internal data structures for the later use
   of a Tao solver
 
-  Collective on ls
+  Collective
 
   Input Parameters:
 . ls - the TaoLineSearch context
@@ -202,7 +202,7 @@ PetscErrorCode TaoLineSearchSetUp(TaoLineSearch ls)
   from one TaoLineSearchApply() to the next.  This function resets this
   state information.
 
-  Collective on TaoLineSearch
+  Collective
 
   Input Parameter:
 . ls - the TaoLineSearch context
@@ -223,7 +223,7 @@ PetscErrorCode TaoLineSearchReset(TaoLineSearch ls)
   TaoLineSearchDestroy - Destroys the TAO context that was created with
   TaoLineSearchCreate()
 
-  Collective on TaoLineSearch
+  Collective
 
   Input Parameter:
 . ls - the TaoLineSearch context
@@ -254,7 +254,7 @@ PetscErrorCode TaoLineSearchDestroy(TaoLineSearch *ls)
 /*@
   TaoLineSearchApply - Performs a line-search in a given step direction.  Criteria for acceptable step length depends on the line-search algorithm chosen
 
-  Collective on TaoLineSearch
+  Collective
 
   Input Parameters:
 + ls - the Tao context
@@ -372,7 +372,7 @@ PetscErrorCode TaoLineSearchApply(TaoLineSearch ls, Vec x, PetscReal *f, Vec g, 
 /*@C
    TaoLineSearchSetType - Sets the algorithm used in a line search
 
-   Collective on TaoLineSearch
+   Collective
 
    Input Parameters:
 +  ls - the TaoLineSearch context
@@ -473,7 +473,7 @@ PetscErrorCode TaoLineSearchMonitor(TaoLineSearch ls, PetscInt its, PetscReal f,
   TaoLineSearchSetFromOptions - Sets various TaoLineSearch parameters from user
   options.
 
-  Collective on TaoLineSearch
+  Collective
 
   Input Parameter:
 . ls - the TaoLineSearch context
@@ -609,7 +609,7 @@ PetscErrorCode TaoLineSearchIsUsingTaoRoutines(TaoLineSearch ls, PetscBool *flg)
 /*@C
   TaoLineSearchSetObjectiveRoutine - Sets the function evaluation routine for the line search
 
-  Logically Collective on TaoLineSearch
+  Logically Collective
 
   Input Parameters:
 + ls - the TaoLineSearch context
@@ -652,7 +652,7 @@ PetscErrorCode TaoLineSearchSetObjectiveRoutine(TaoLineSearch ls, PetscErrorCode
 /*@C
   TaoLineSearchSetGradientRoutine - Sets the gradient evaluation routine for the line search
 
-  Logically Collective on TaoLineSearch
+  Logically Collective
 
   Input Parameters:
 + ls - the TaoLineSearch context
@@ -694,7 +694,7 @@ PetscErrorCode TaoLineSearchSetGradientRoutine(TaoLineSearch ls, PetscErrorCode 
 /*@C
   TaoLineSearchSetObjectiveAndGradientRoutine - Sets the objective/gradient evaluation routine for the line search
 
-  Logically Collective on TaoLineSearch
+  Logically Collective
 
   Input Parameters:
 + ls - the TaoLineSearch context
@@ -740,7 +740,7 @@ PetscErrorCode TaoLineSearchSetObjectiveAndGradientRoutine(TaoLineSearch ls, Pet
   and the step direction than it is to compute the gradient, and this is all
   the line search typically needs of the gradient.
 
-  Logically Collective on TaoLineSearch
+  Logically Collective
 
   Input Parameters:
 + ls - the TaoLineSearch context
@@ -788,7 +788,7 @@ PetscErrorCode TaoLineSearchSetObjectiveAndGTSRoutine(TaoLineSearch ls, PetscErr
   TaoLineSearchUseTaoRoutines - Informs the TaoLineSearch to use the
   objective and gradient evaluation routines from the given Tao object.
 
-  Logically Collective on TaoLineSearch
+  Logically Collective
 
   Input Parameters:
 + ls - the TaoLineSearch context
@@ -811,7 +811,7 @@ PetscErrorCode TaoLineSearchUseTaoRoutines(TaoLineSearch ls, Tao ts)
 /*@
   TaoLineSearchComputeObjective - Computes the objective function value at a given point
 
-  Collective on TaoLineSearch
+  Collective
 
   Input Parameters:
 + ls - the TaoLineSearch context
@@ -858,7 +858,7 @@ PetscErrorCode TaoLineSearchComputeObjective(TaoLineSearch ls, Vec x, PetscReal 
 /*@
   TaoLineSearchComputeObjectiveAndGradient - Computes the objective function value at a given point
 
-  Collective on Tao
+  Collective
 
   Input Parameters:
 + ls - the TaoLineSearch context
@@ -904,7 +904,7 @@ PetscErrorCode TaoLineSearchComputeObjectiveAndGradient(TaoLineSearch ls, Vec x,
 /*@
   TaoLineSearchComputeGradient - Computes the gradient of the objective function
 
-  Collective on TaoLineSearch
+  Collective
 
   Input Parameters:
 + ls - the TaoLineSearch context
@@ -946,7 +946,7 @@ PetscErrorCode TaoLineSearchComputeGradient(TaoLineSearch ls, Vec x, Vec g)
 /*@
   TaoLineSearchComputeObjectiveAndGTS - Computes the objective function value and inner product of gradient and step direction at a given point
 
-  Collective on Tao
+  Collective
 
   Input Parameters:
 + ls - the TaoLineSearch context
@@ -983,7 +983,7 @@ PetscErrorCode TaoLineSearchComputeObjectiveAndGTS(TaoLineSearch ls, Vec x, Pets
 /*@
   TaoLineSearchGetSolution - Returns the solution to the line search
 
-  Collective on TaoLineSearch
+  Collective
 
   Input Parameter:
 . ls - the TaoLineSearch context
@@ -1098,7 +1098,7 @@ PetscErrorCode TaoLineSearchGetFullStepObjective(TaoLineSearch ls, PetscReal *f_
 /*@
   TaoLineSearchSetVariableBounds - Sets the upper and lower bounds.
 
-  Logically Collective on Tao
+  Logically Collective
 
   Input Parameters:
 + ls - the TaoLineSearch context
@@ -1132,7 +1132,7 @@ PetscErrorCode TaoLineSearchSetVariableBounds(TaoLineSearch ls, Vec xl, Vec xu)
   TaoLineSearchSetInitialStepLength - Sets the initial step length of a line
   search.  If this value is not set then 1.0 is assumed.
 
-  Logically Collective on TaoLineSearch
+  Logically Collective
 
   Input Parameters:
 + ls - the TaoLineSearch context
@@ -1211,7 +1211,7 @@ PetscErrorCode TaoLineSearchRegister(const char sname[], PetscErrorCode (*func)(
    TaoLineSearchAppendOptionsPrefix - Appends to the prefix used for searching
    for all TaoLineSearch options in the database.
 
-   Collective on TaoLineSearch
+   Collective
 
    Input Parameters:
 +  ls - the TaoLineSearch solver context
@@ -1259,7 +1259,7 @@ PetscErrorCode TaoLineSearchGetOptionsPrefix(TaoLineSearch ls, const char *p[])
    TaoLineSearchSetOptionsPrefix - Sets the prefix used for searching for all
    TaoLineSearch options in the database.
 
-   Logically Collective on TaoLineSearch
+   Logically Collective
 
    Input Parameters:
 +  ls - the TaoLineSearch context

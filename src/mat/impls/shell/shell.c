@@ -1749,7 +1749,7 @@ PetscErrorCode MatCreateShell(MPI_Comm comm, PetscInt m, PetscInt n, PetscInt M,
 /*@
     MatShellSetContext - sets the context for a `MATSHELL` shell matrix
 
-   Logically Collective on mat
+   Logically Collective
 
     Input Parameters:
 +   mat - the `MATSHELL` shell matrix
@@ -1774,7 +1774,7 @@ PetscErrorCode MatShellSetContext(Mat mat, void *ctx)
 /*@
     MatShellSetContextDestroy - sets the destroy function for a `MATSHELL` shell matrix context
 
-   Logically Collective on mat
+   Logically Collective
 
     Input Parameters:
 +   mat - the shell matrix
@@ -1842,7 +1842,7 @@ PetscErrorCode MatShellSetManageScalingShifts(Mat A)
 /*@C
     MatShellTestMult - Compares the multiply routine provided to the `MATSHELL` with differencing on a given function.
 
-   Logically Collective on mat
+   Logically Collective
 
     Input Parameters:
 +   mat - the `MATSHELL` shell matrix
@@ -1907,7 +1907,7 @@ PetscErrorCode MatShellTestMult(Mat mat, PetscErrorCode (*f)(void *, Vec, Vec), 
 /*@C
     MatShellTestMultTranspose - Compares the multiply transpose routine provided to the `MATSHELL` with differencing on a given function.
 
-   Logically Collective on mat
+   Logically Collective
 
     Input Parameters:
 +   mat - the `MATSHELL` shell matrix
@@ -1979,7 +1979,7 @@ PetscErrorCode MatShellTestMultTranspose(Mat mat, PetscErrorCode (*f)(void *, Ve
 /*@C
     MatShellSetOperation - Allows user to set a matrix operation for a `MATSHELL` shell matrix.
 
-   Logically Collective on mat
+   Logically Collective
 
     Input Parameters:
 +   mat - the `MATSHELL` shell matrix
@@ -1989,9 +1989,11 @@ PetscErrorCode MatShellTestMultTranspose(Mat mat, PetscErrorCode (*f)(void *, Ve
    Level: advanced
 
     Usage:
-$      extern PetscErrorCode usermult(Mat,Vec,Vec);
-$      MatCreateShell(comm,m,n,M,N,ctx,&A);
-$      MatShellSetOperation(A,MATOP_MULT,(void(*)(void))usermult);
+.vb
+      extern PetscErrorCode usermult(Mat,Vec,Vec);
+      MatCreateShell(comm,m,n,M,N,ctx,&A);
+      MatShellSetOperation(A,MATOP_MULT,(void(*)(void))usermult);
+.ve
 
     Notes:
     See the file include/petscmat.h for a complete list of matrix

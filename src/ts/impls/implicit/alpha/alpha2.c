@@ -551,7 +551,7 @@ PETSC_EXTERN PetscErrorCode TSCreate_Alpha2(TS ts)
   TSAlpha2SetRadius - sets the desired spectral radius of the method for `TSALPHA2`
                       (i.e. high-frequency numerical damping)
 
-  Logically Collective on ts
+  Logically Collective
 
   The algorithmic parameters \alpha_m and \alpha_f of the
   generalized-\alpha method can be computed in terms of a specified
@@ -584,7 +584,7 @@ PetscErrorCode TSAlpha2SetRadius(TS ts, PetscReal radius)
 /*@
   TSAlpha2SetParams - sets the algorithmic parameters for `TSALPHA2`
 
-  Logically Collective on ts
+  Logically Collective
 
   Second-order accuracy can be obtained so long as:
     \gamma = 1/2 + alpha_m - alpha_f

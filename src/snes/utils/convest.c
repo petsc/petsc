@@ -14,7 +14,7 @@ static PetscErrorCode zero_private(PetscInt dim, PetscReal time, const PetscReal
 /*@
   PetscConvEstDestroy - Destroys a PetscConvEst object
 
-  Collective on ce
+  Collective
 
   Input Parameter:
 . ce - The PetscConvEst object
@@ -41,7 +41,7 @@ PetscErrorCode PetscConvEstDestroy(PetscConvEst *ce)
 /*@
   PetscConvEstSetFromOptions - Sets a PetscConvEst object from options
 
-  Collective on ce
+  Collective
 
   Input Parameters:
 . ce - The PetscConvEst object
@@ -65,7 +65,7 @@ PetscErrorCode PetscConvEstSetFromOptions(PetscConvEst ce)
 /*@
   PetscConvEstView - Views a PetscConvEst object
 
-  Collective on ce
+  Collective
 
   Input Parameters:
 + ce     - The PetscConvEst object
@@ -135,7 +135,7 @@ PetscErrorCode PetscConvEstSetSolver(PetscConvEst ce, PetscObject solver)
 /*@
   PetscConvEstSetUp - After the solver is specified, we create structures for estimating convergence
 
-  Collective on ce
+  Collective
 
   Input Parameters:
 . ce - The PetscConvEst object
@@ -199,7 +199,7 @@ PetscErrorCode PetscConvEstComputeError(PetscConvEst ce, PetscInt r, DM dm, Vec 
 /*@
   PetscConvEstMonitorDefault - Monitors the convergence estimation loop
 
-  Collective on ce
+  Collective
 
   Input Parameters:
 + ce - The `PetscConvEst` object
@@ -471,7 +471,7 @@ PetscErrorCode PetscConvEstGetConvRate(PetscConvEst ce, PetscReal alpha[])
 /*@
   PetscConvEstRateView - Displays the convergence rate to a viewer
 
-   Collective on snes
+   Collective
 
    Parameter:
 +  snes - iterative context obtained from `SNESCreate()`

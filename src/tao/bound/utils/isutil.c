@@ -378,7 +378,7 @@ PetscErrorCode TaoBoundStep(Vec X, Vec XL, Vec XU, IS active_lower, IS active_up
 /*@C
   TaoBoundSolution - Ensures that the solution vector is snapped into the bounds within a given tolerance.
 
-  Collective on Vec
+  Collective
 
   Input Parameters:
 + X - solution vector

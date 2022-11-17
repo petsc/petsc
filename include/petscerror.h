@@ -578,7 +578,7 @@ M*/
   #include <petscerror.h>
   void PetscCallAbort(MPI_Comm comm, PetscErrorCode ierr)
 
-  Collective on comm
+  Collective
 
   Input Parameters:
 + comm - the MPI communicator on which to abort

@@ -3,7 +3,7 @@
 /*@
    SNESNGSSetTolerances - Sets various parameters used in convergence tests for nonlinear Gauss-Seidel `SNESNCG`
 
-   Logically Collective on snes
+   Logically Collective
 
    Input Parameters:
 +  snes - the `SNES` context

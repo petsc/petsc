@@ -3,7 +3,7 @@
 /*
    TaoPDIPMEvaluateFunctionsAndJacobians - Evaluate the objective function f, gradient fx, constraints, and all the Jacobians at current vector
 
-   Collective on tao
+   Collective
 
    Input Parameter:
 +  tao - solver context
@@ -698,7 +698,7 @@ PetscErrorCode PCPreSolve_PDIPM(PC pc, KSP ksp)
 /*
    SNESLineSearch_PDIPM - Custom line search used with PDIPM.
 
-   Collective on TAO
+   Collective
 
    Notes:
    This routine employs a simple backtracking line-search to keep

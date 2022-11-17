@@ -1350,7 +1350,7 @@ static PetscErrorCode PCHYPRESetDiscreteGradient_HYPRE(PC pc, Mat G)
 /*@
    PCHYPRESetDiscreteGradient - Set discrete gradient matrix for `PCHYPRE` type of ams or ads
 
-   Collective on pc
+   Collective
 
    Input Parameters:
 +  pc - the preconditioning context
@@ -1399,7 +1399,7 @@ static PetscErrorCode PCHYPRESetDiscreteCurl_HYPRE(PC pc, Mat C)
 /*@
    PCHYPRESetDiscreteCurl - Set discrete curl matrx for `PCHYPRE` type of ads
 
-   Collective on pc
+   Collective
 
    Input Parameters:
 +  pc - the preconditioning context
@@ -1495,7 +1495,7 @@ static PetscErrorCode PCHYPRESetInterpolations_HYPRE(PC pc, PetscInt dim, Mat RT
 /*@
    PCHYPRESetInterpolations - Set interpolation matrices for `PCHYPRE` type of ams or ads
 
-   Collective on pc
+   Collective
 
    Input Parameters:
 +  pc - the preconditioning context
@@ -1594,7 +1594,7 @@ static PetscErrorCode PCHYPRESetPoissonMatrix_HYPRE(PC pc, Mat A, PetscBool isal
 /*@
    PCHYPRESetAlphaPoissonMatrix - Set vector Poisson matrix for `PCHYPRE` of type ams
 
-   Collective on pc
+   Collective
 
    Input Parameters:
 +  pc - the preconditioning context
@@ -1625,7 +1625,7 @@ PetscErrorCode PCHYPRESetAlphaPoissonMatrix(PC pc, Mat A)
 /*@
    PCHYPRESetBetaPoissonMatrix - Set Poisson matrix for `PCHYPRE` of type ams
 
-   Collective on pc
+   Collective
 
    Input Parameters:
 +  pc - the preconditioning context
@@ -1680,7 +1680,7 @@ static PetscErrorCode PCHYPRESetEdgeConstantVectors_HYPRE(PC pc, Vec ozz, Vec zo
 /*@
    PCHYPRESetEdgeConstantVectors - Set the representation of the constant vector fields in the edge element basis for `PCHYPRE` of type ams
 
-   Collective on pc
+   Collective
 
    Input Parameters:
 +  pc - the preconditioning context
@@ -1724,7 +1724,7 @@ static PetscErrorCode PCHYPREAMSSetInteriorNodes_HYPRE(PC pc, Vec interior)
 /*@
   PCHYPREAMSSetInteriorNodes - Set the list of interior nodes to a zero-conductivity region for `PCHYPRE` of type ams
 
-   Collective on pc
+   Collective
 
    Input Parameters:
 +  pc - the preconditioning context
@@ -2159,7 +2159,7 @@ PetscErrorCode PCHYPREGetType(PC pc, const char *name[])
 /*@C
    PCMGGalerkinSetMatProductAlgorithm - Set type of SpGEMM for hypre to use on GPUs
 
-   Logically Collective on pc
+   Logically Collective
 
    Input Parameters:
 +  pc - the hypre context

@@ -133,7 +133,7 @@ static PetscErrorCode MatLRCGetMats_LRC(Mat N, Mat *A, Mat *U, Vec *c, Mat *V)
 /*@
    MatLRCGetMats - Returns the constituents of an LRC matrix
 
-   Collective on N
+   Collective
 
    Input Parameter:
 .  N - matrix of type `MATLRC`
@@ -173,7 +173,7 @@ M*/
 /*@
    MatCreateLRC - Creates a new matrix object that behaves like A + U*C*V' of type `MATLRC`
 
-   Collective on A
+   Collective
 
    Input Parameters:
 +  A    - the (sparse) matrix (can be NULL)

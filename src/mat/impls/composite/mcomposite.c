@@ -534,7 +534,7 @@ static PetscErrorCode MatCompositeAddMat_Composite(Mat mat, Mat smat)
 /*@
     MatCompositeAddMat - Add another matrix to a composite matrix.
 
-   Collective on mat
+   Collective
 
     Input Parameters:
 +   mat - the composite matrix
@@ -542,7 +542,7 @@ static PetscErrorCode MatCompositeAddMat_Composite(Mat mat, Mat smat)
 
    Level: advanced
 
-.seealso: `MatCreateComposite()`, `MatCompositeGetMat()`, `MATCOMPOSITE`
+.seealso: `Mat`, `MatCreateComposite()`, `MatCompositeGetMat()`, `MATCOMPOSITE`
 @*/
 PetscErrorCode MatCompositeAddMat(Mat mat, Mat smat)
 {
@@ -575,14 +575,14 @@ static PetscErrorCode MatCompositeSetType_Composite(Mat mat, MatCompositeType ty
 /*@
    MatCompositeSetType - Indicates if the matrix is defined as the sum of a set of matrices or the product.
 
-   Logically Collective on mat
+   Logically Collective
 
    Input Parameters:
 .  mat - the composite matrix
 
    Level: advanced
 
-.seealso: `MatDestroy()`, `MatMult()`, `MatCompositeAddMat()`, `MatCreateComposite()`, `MatCompositeGetType()`, `MATCOMPOSITE`
+.seealso: `Mat`, `MatDestroy()`, `MatMult()`, `MatCompositeAddMat()`, `MatCreateComposite()`, `MatCompositeGetType()`, `MATCOMPOSITE`
 @*/
 PetscErrorCode MatCompositeSetType(Mat mat, MatCompositeType type)
 {
@@ -704,7 +704,7 @@ static PetscErrorCode MatCompositeSetMergeType_Composite(Mat mat, MatCompositeMe
 /*@
    MatCompositeSetMergeType - Sets order of `MatCompositeMerge()`.
 
-   Logically Collective on mat
+   Logically Collective
 
    Input Parameters:
 +  mat - the composite matrix
@@ -864,7 +864,7 @@ static PetscErrorCode MatCompositeGetMat_Composite(Mat mat, PetscInt i, Mat *Ai)
 /*@
    MatCompositeGetMat - Returns the ith matrix from the composite matrix.
 
-   Logically Collective on mat
+   Logically Collective
 
    Input Parameters:
 +  mat - the composite matrix
@@ -902,7 +902,7 @@ PetscErrorCode MatCompositeSetScalings_Composite(Mat mat, const PetscScalar *sca
 /*@
    MatCompositeSetScalings - Sets separate scaling factors for component matrices.
 
-   Logically Collective on mat
+   Logically Collective
 
    Input Parameters:
 +  mat      - the composite matrix

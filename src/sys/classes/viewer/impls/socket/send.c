@@ -394,7 +394,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_Socket(PetscViewer v)
       PetscViewerSocketSetConnection - Sets the machine and port that a PETSc socket
              viewer is to use
 
-  Logically Collective on v
+  Logically Collective
 
   Input Parameters:
 +   v - viewer to connect

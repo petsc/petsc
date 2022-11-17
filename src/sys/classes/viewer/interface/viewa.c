@@ -6,7 +6,7 @@ const char *const PetscViewerFormats[] = {"DEFAULT", "ASCII_MATLAB", "ASCII_MATH
 /*@C
    PetscViewerSetFormat - Sets the format for a `PetscViewer`.
 
-   Logically Collective on viewer
+   Logically Collective
 
    This routine is deprecated, you should use `PetscViewerPushFormat()`/`PetscViewerPopFormat()`
 
@@ -66,7 +66,7 @@ PetscErrorCode PetscViewerSetFormat(PetscViewer viewer, PetscViewerFormat format
 /*@C
    PetscViewerPushFormat - Sets the format for a `PetscViewer`.
 
-   Logically Collective on viewer
+   Logically Collective
 
    Input Parameters:
 +  viewer - the `PetscViewer`
@@ -116,7 +116,7 @@ PetscErrorCode PetscViewerPushFormat(PetscViewer viewer, PetscViewerFormat forma
 /*@C
    PetscViewerPopFormat - Resets the format for a `PetscViewer`.
 
-   Logically Collective on viewer
+   Logically Collective
 
    Input Parameters:
 .  viewer - the `PetscViewer`

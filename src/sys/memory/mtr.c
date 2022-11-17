@@ -468,7 +468,7 @@ PetscErrorCode PetscTrReallocDefault(size_t len, int lineno, const char function
 /*@C
     PetscMemoryView - Shows the amount of memory currently being used in a communicator.
 
-    Collective on viewer
+    Collective
 
     Input Parameters:
 +    viewer - the viewer that defines the communicator

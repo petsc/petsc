@@ -111,7 +111,7 @@ PetscErrorCode CharacteristicCreate(MPI_Comm comm, Characteristic *c)
 /*@C
    CharacteristicSetType - Builds Characteristic for a particular solver.
 
-   Logically Collective on c
+   Logically Collective
 
    Input Parameters:
 +  c    - the method of characteristics context
@@ -171,7 +171,7 @@ PetscErrorCode CharacteristicSetType(Characteristic c, CharacteristicType type)
    CharacteristicSetUp - Sets up the internal data structures for the
    later use of an iterative solver.
 
-   Collective on c
+   Collective
 
    Input Parameter:
 .  ksp   - iterative context obtained from CharacteristicCreate()

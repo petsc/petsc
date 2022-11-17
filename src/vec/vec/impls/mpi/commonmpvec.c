@@ -160,7 +160,7 @@ PetscErrorCode VecGhostRestoreLocalForm(Vec g, Vec *l)
    VecGhostUpdateBegin - Begins the vector scatter to update the vector from
    local representation to global or global representation to local.
 
-   Neighbor-wise Collective on Vec
+   Neighbor-wise Collective
 
    Input Parameters:
 +  g - the vector (obtained with VecCreateGhost() or VecDuplicate())
@@ -223,7 +223,7 @@ PetscErrorCode VecGhostUpdateBegin(Vec g, InsertMode insertmode, ScatterMode sca
    VecGhostUpdateEnd - End the vector scatter to update the vector from
    local representation to global or global representation to local.
 
-   Neighbor-wise Collective on Vec
+   Neighbor-wise Collective
 
    Input Parameters:
 +  g - the vector (obtained with VecCreateGhost() or VecDuplicate())

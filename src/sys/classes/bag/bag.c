@@ -23,7 +23,7 @@ static PetscErrorCode PetscBagRegister_Private(PetscBag bag, PetscBagItem item, 
 /*@C
    PetscBagRegisterEnum - add an enum value to a `PetscBag`
 
-   Logically Collective on bag
+   Logically Collective
 
    Input Parameters:
 +  bag - the bag of values
@@ -79,7 +79,7 @@ PetscErrorCode PetscBagRegisterEnum(PetscBag bag, void *addr, const char *const 
 /*@C
    PetscBagRegisterIntArray - add an `PetscInt` array to a `PetscBag`
 
-   Logically Collective on bag
+   Logically Collective
 
    Input Parameters:
 +  bag - the bag of values
@@ -130,7 +130,7 @@ PetscErrorCode PetscBagRegisterIntArray(PetscBag bag, void *addr, PetscInt msize
 /*@C
    PetscBagRegisterRealArray - add an `PetscReal` array to a `PetscBag`
 
-   Logically Collective on bag
+   Logically Collective
 
    Input Parameters:
 +  bag - the bag of values
@@ -181,7 +181,7 @@ PetscErrorCode PetscBagRegisterRealArray(PetscBag bag, void *addr, PetscInt msiz
 /*@C
    PetscBagRegisterInt - add an `PetscInt` value to a `PetscBag`
 
-   Logically Collective on bag
+   Logically Collective
 
    Input Parameters:
 +  bag - the bag of values
@@ -228,7 +228,7 @@ PetscErrorCode PetscBagRegisterInt(PetscBag bag, void *addr, PetscInt mdefault, 
 /*@C
    PetscBagRegisterInt64 - add a `PetscInt64` value to a `PetscBag`
 
-   Logically Collective on bag
+   Logically Collective
 
    Input Parameters:
 +  bag - the bag of values
@@ -274,7 +274,7 @@ PetscErrorCode PetscBagRegisterInt64(PetscBag bag, void *addr, PetscInt64 mdefau
 /*@C
    PetscBagRegisterBoolArray - add a n `PetscBool` values to a `PetscBag`
 
-   Logically Collective on bag
+   Logically Collective
 
    Input Parameters:
 +  bag - the bag of values
@@ -325,7 +325,7 @@ PetscErrorCode PetscBagRegisterBoolArray(PetscBag bag, void *addr, PetscInt msiz
 /*@C
    PetscBagRegisterString - add a string value to a `PetscBag`
 
-   Logically Collective on bag
+   Logically Collective
 
    Input Parameters:
 +  bag - the bag of values
@@ -376,7 +376,7 @@ PetscErrorCode PetscBagRegisterString(PetscBag bag, void *addr, PetscInt msize, 
 /*@C
    PetscBagRegisterReal - add a `PetscReal` value to a `PetscBag`
 
-   Logically Collective on bag
+   Logically Collective
 
    Input Parameters:
 +  bag - the bag of values
@@ -423,7 +423,7 @@ PetscErrorCode PetscBagRegisterReal(PetscBag bag, void *addr, PetscReal mdefault
 /*@C
    PetscBagRegisterScalar - add a `PetscScalar` value to a `PetscBag`
 
-   Logically Collective on bag
+   Logically Collective
 
    Input Parameters:
 +  bag - the bag of values
@@ -470,7 +470,7 @@ PetscErrorCode PetscBagRegisterScalar(PetscBag bag, void *addr, PetscScalar mdef
 /*@C
    PetscBagRegisterBool - add a `PetscBool` to a `PetscBag`
 
-   Logically Collective on bag
+   Logically Collective
 
    Input Parameters:
 +  bag - the bag of values
@@ -519,7 +519,7 @@ PetscErrorCode PetscBagRegisterBool(PetscBag bag, void *addr, PetscBool mdefault
 /*@C
    PetscBagDestroy - Destroys a `PetscBag`
 
-   Collective on bag
+   Collective
 
    Input Parameter:
 .  bag - the bag of values
@@ -553,7 +553,7 @@ PetscErrorCode PetscBagDestroy(PetscBag *bag)
 /*@
    PetscBagSetFromOptions - Allows setting entries to a `PetscBag` using the options database
 
-   Collective on bag
+   Collective
 
    Input Parameter:
 .  bag - the bag of values
@@ -629,7 +629,7 @@ PetscErrorCode PetscBagSetFromOptions(PetscBag bag)
 /*@C
    PetscBagView - Views a bag of values as either ASCII text or a binary file
 
-   Collective on bag
+   Collective
 
    Input Parameters:
 +  bag - the bag of values
@@ -751,7 +751,7 @@ PetscErrorCode PetscBagView(PetscBag bag, PetscViewer view)
 /*@C
   PetscBagViewFromOptions - Processes command line options to determine if/how a PetscBag is to be viewed.
 
-  Collective on bag
+  Collective
 
   Input Parameters:
 + obj   - the object
@@ -791,7 +791,7 @@ PetscErrorCode PetscBagViewFromOptions(PetscBag bag, PetscObject bobj, const cha
 /*@C
    PetscBagLoad - Loads a bag of values from a binary file
 
-   Collective on view
+   Collective
 
    Input Parameters:
 +  viewer - file to load values from
@@ -988,7 +988,7 @@ PetscErrorCode PetscBagGetData(PetscBag bag, void **data)
   PetscBagSetOptionsPrefix - Sets the prefix used for searching for all
   `PetscBag` items in the options database.
 
-  Logically collective on bag
+  Logically collective
 
   Level: Intermediate
 

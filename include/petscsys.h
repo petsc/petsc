@@ -1410,7 +1410,7 @@ M*/
     #include <petscsys.h>
      PetscErrorCode (*PetscHelpPrintf)(MPI_Comm comm, const char format[],args);
 
-    Collective on comm
+    Note Collective, only applies on rank 0
 
     Input Parameters:
 +  comm - the MPI communicator over which the help message is printed

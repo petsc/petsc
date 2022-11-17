@@ -76,7 +76,7 @@ PetscErrorCode PetscViewerInitializePackage(void)
 /*@
    PetscViewerDestroy - Destroys a `PetscViewer`.
 
-   Collective on viewer
+   Collective
 
    Input Parameters:
 .  viewer - the `PetscViewer` to be destroyed.
@@ -106,7 +106,7 @@ PetscErrorCode PetscViewerDestroy(PetscViewer *viewer)
 /*@C
    PetscViewerAndFormatCreate - Creates a `PetscViewerAndFormat` struct.
 
-   Collective on viewer
+   Collective
 
    Input Parameters:
 +  viewer - the viewer
@@ -139,7 +139,7 @@ PetscErrorCode PetscViewerAndFormatCreate(PetscViewer viewer, PetscViewerFormat 
 /*@C
    PetscViewerAndFormatDestroy - Destroys a `PetscViewerAndFormat` struct.
 
-   Collective on vf
+   Collective
 
    Input Parameters:
 .  vf - the `PetscViewerAndFormat` to be destroyed.
@@ -197,7 +197,7 @@ PetscErrorCode PetscViewerGetType(PetscViewer viewer, PetscViewerType *type)
    PetscViewerSetOptionsPrefix - Sets the prefix used for searching for all
    `PetscViewer` options in the database.
 
-   Logically Collective on viewer
+   Logically Collective
 
    Input Parameters:
 +  viewer - the `PetscViewer` context
@@ -223,7 +223,7 @@ PetscErrorCode PetscViewerSetOptionsPrefix(PetscViewer viewer, const char prefix
    PetscViewerAppendOptionsPrefix - Appends to the prefix used for searching for all
    `PetscViewer` options in the database.
 
-   Logically Collective on viewer
+   Logically Collective
 
    Input Parameters:
 +  viewer - the PetscViewer context
@@ -275,7 +275,7 @@ PetscErrorCode PetscViewerGetOptionsPrefix(PetscViewer viewer, const char *prefi
 /*@
    PetscViewerSetUp - Sets up the internal viewer data structures for the later use.
 
-   Collective on viewer
+   Collective
 
    Input Parameters:
 .  viewer - the `PetscViewer` context
@@ -301,7 +301,7 @@ PetscErrorCode PetscViewerSetUp(PetscViewer viewer)
 /*@C
    PetscViewerViewFromOptions - View from the viewer based on the options database values
 
-   Collective on A
+   Collective
 
    Input Parameters:
 +  A - the `PetscViewer` context
@@ -323,7 +323,7 @@ PetscErrorCode PetscViewerViewFromOptions(PetscViewer A, PetscObject obj, const 
 /*@C
    PetscViewerView - Visualizes a viewer object.
 
-   Collective on v
+   Collective
 
    Input Parameters:
 +  v - the viewer to be viewed

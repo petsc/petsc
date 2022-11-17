@@ -2646,7 +2646,7 @@ PetscErrorCode MatMPIAIJGetNumberNonzeros(Mat A, PetscCount *nz)
 /*@
    MatMPIAIJSetUseScalableIncreaseOverlap - Determine if the matrix uses a scalable algorithm to compute the overlap
 
-   Collective on A
+   Collective
 
    Input Parameters:
 +    A - the matrix
@@ -5700,7 +5700,7 @@ PetscErrorCode MatGetBrowsOfAcols_MPIXAIJ(Mat A, Mat P, PetscInt dof, MatReuse r
 /*@C
   MatGetBrowsOfAcols - Returns `IS` that contain rows of B that equal to nonzero columns of local A
 
-  Collective on A
+  Collective
 
   Input Parameters:
 + A - the first matrix in `MATMPIAIJ` format
@@ -5772,7 +5772,7 @@ PetscErrorCode MatGetBrowsOfAcols(Mat A, Mat B, MatReuse scall, IS *rowb, IS *co
     MatGetBrowsOfAoCols_MPIAIJ - Creates a SeqAIJ matrix by taking rows of B that equal to nonzero columns
     of the OFF-DIAGONAL portion of local A
 
-    Collective on Mat
+    Collective
 
    Input Parameters:
 +    A,B - the matrices in mpiaij format

@@ -277,7 +277,7 @@ static PetscErrorCode PCHMGSetReuseInterpolation_HMG(PC pc, PetscBool reuse)
 /*@
    PCHMGSetReuseInterpolation - Reuse the interpolation matrices in `PCHMG` after changing the matrices numerical values
 
-   Logically Collective on pc
+   Logically Collective
 
    Input Parameters:
 +  pc - the `PCHMG` context
@@ -311,7 +311,7 @@ static PetscErrorCode PCHMGSetUseSubspaceCoarsening_HMG(PC pc, PetscBool subspac
 /*@
    PCHMGSetUseSubspaceCoarsening - Use subspace coarsening in `PCHMG`
 
-   Logically Collective on pc
+   Logically Collective
 
    Input Parameters:
 +  pc - the `PCHMG` context
@@ -345,7 +345,7 @@ static PetscErrorCode PCHMGSetInnerPCType_HMG(PC pc, PCType type)
 /*@C
    PCHMGSetInnerPCType - Set an inner `PC` type
 
-   Logically Collective on pc
+   Logically Collective
 
    Input Parameters:
 +  pc - the `PCHMG` context
@@ -379,7 +379,7 @@ static PetscErrorCode PCHMGSetCoarseningComponent_HMG(PC pc, PetscInt component)
 /*@
    PCHMGSetCoarseningComponent - Set which component of the PDE is used for the subspace-based coarsening algorithm
 
-   Logically Collective on pc
+   Logically Collective
 
    Input Parameters:
 +  pc - the `PCHMG` context
@@ -413,7 +413,7 @@ static PetscErrorCode PCHMGUseMatMAIJ_HMG(PC pc, PetscBool usematmaij)
 /*@
    PCHMGUseMatMAIJ - Set a flag that indicates if or not to use `MATMAIJ` for the interpolation matrices for saving memory
 
-   Logically Collective on pc
+   Logically Collective
 
    Input Parameters:
 +  pc - the `PCHMG` context

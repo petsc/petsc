@@ -8,7 +8,7 @@
    SNESMonitorSolution - Monitors progress of the `SNES` solvers by calling
    `VecView()` for the approximate solution at each iteration.
 
-   Collective on snes
+   Collective
 
    Input Parameters:
 +  snes - the `SNES` context
@@ -45,7 +45,7 @@ PetscErrorCode SNESMonitorSolution(SNES snes, PetscInt its, PetscReal fgnorm, Pe
    SNESMonitorResidual - Monitors progress of the `SNES` solvers by calling
    `VecView()` for the residual at each iteration.
 
-   Collective on snes
+   Collective
 
    Input Parameters:
 +  snes - the `SNES` context
@@ -81,7 +81,7 @@ PetscErrorCode SNESMonitorResidual(SNES snes, PetscInt its, PetscReal fgnorm, Pe
    SNESMonitorSolutionUpdate - Monitors progress of the `SNES` solvers by calling
    `VecView()` for the UPDATE to the solution at each iteration.
 
-   Collective on snes
+   Collective
 
    Input Parameters:
 +  snes - the `SNES` context
@@ -119,7 +119,7 @@ PetscErrorCode SNESMonitorSolutionUpdate(SNES snes, PetscInt its, PetscReal fgno
 /*@C
   KSPMonitorSNESResidual - Prints the `SNES` residual norm, as well as the `KSP` residual norm, at each iteration of an iterative solver.
 
-  Collective on ksp
+  Collective
 
   Input Parameters:
 + ksp   - iterative context
@@ -174,7 +174,7 @@ PetscErrorCode KSPMonitorSNESResidual(KSP ksp, PetscInt n, PetscReal rnorm, Pets
 /*@C
   KSPMonitorSNESResidualDrawLG - Plots the linear `KSP` residual norm and the `SNES` residual norm at each iteration of an iterative solver.
 
-  Collective on ksp
+  Collective
 
   Input Parameters:
 + ksp   - iterative context
@@ -238,7 +238,7 @@ PetscErrorCode KSPMonitorSNESResidualDrawLG(KSP ksp, PetscInt n, PetscReal rnorm
 /*@C
   KSPMonitorSNESResidualDrawLGCreate - Creates the `PetscViewer` used by `KSPMonitorSNESResidualDrawLG()`
 
-  Collective on ksp
+  Collective
 
   Input Parameters:
 + viewer - The PetscViewer
@@ -273,7 +273,7 @@ PetscErrorCode SNESMonitorDefaultSetUp(SNES snes, PetscViewerAndFormat *vf)
 /*@C
    SNESMonitorDefault - Monitors progress of the `SNES` solvers (default).
 
-   Collective on snes
+   Collective
 
    Input Parameters:
 +  snes - the `SNES` context
@@ -335,7 +335,7 @@ PetscErrorCode SNESMonitorDefault(SNES snes, PetscInt its, PetscReal fgnorm, Pet
 /*@C
    SNESMonitorScaling - Monitors the largest value in each row of the Jacobian.
 
-   Collective on snes
+   Collective
 
    Input Parameters:
 +  snes - the `SNES` context
@@ -379,7 +379,7 @@ PetscErrorCode SNESMonitorScaling(SNES snes, PetscInt its, PetscReal fgnorm, Pet
 /*@C
    SNESMonitorJacUpdateSpectrum - Monitors the spectrun of the change in the Jacobian from the last Jacobian evaluation
 
-   Collective on snes
+   Collective
 
    Input Parameters:
 +  snes - the `SNES` context
@@ -478,7 +478,7 @@ PetscErrorCode SNESMonitorRange_Private(SNES snes, PetscInt it, PetscReal *per)
 /*@C
    SNESMonitorRange - Prints the percentage of residual elements that are more then 10 percent of the maximum entry in the residual
 
-   Collective on snes
+   Collective
 
    Input Parameters:
 +  snes   - iterative context
@@ -523,7 +523,7 @@ PetscErrorCode SNESMonitorRange(SNES snes, PetscInt it, PetscReal rnorm, PetscVi
    SNESMonitorRatio - Monitors progress of the `SNES` solvers by printing the ratio
    of residual norm at each iteration to the previous.
 
-   Collective on snes
+   Collective
 
    Input Parameters:
 +  snes - the `SNES` context
@@ -568,7 +568,7 @@ PetscErrorCode SNESMonitorRatio(SNES snes, PetscInt its, PetscReal fgnorm, Petsc
 /*@C
    SNESMonitorRatioSetUp - Insures the `SNES` object is saving its history since this monitor needs access to it
 
-   Collective on snes
+   Collective
 
    Input Parameters:
 +   snes - the `SNES` context
@@ -620,7 +620,7 @@ PetscErrorCode SNESMonitorDefaultShort(SNES snes, PetscInt its, PetscReal fgnorm
 /*@C
   SNESMonitorDefaultField - Monitors progress of the `SNES` solvers, separated into fields.
 
-  Collective on snes
+  Collective
 
   Input Parameters:
 + snes   - the `SNES` context
@@ -683,7 +683,7 @@ PetscErrorCode SNESMonitorDefaultField(SNES snes, PetscInt its, PetscReal fgnorm
    SNESConvergedDefault - Default onvergence test of the solvers for
    systems of nonlinear equations.
 
-   Collective on snes
+   Collective
 
    Input Parameters:
 +  snes - the `SNES` context
@@ -769,7 +769,7 @@ PetscErrorCode SNESConvergedDefault(SNES snes, PetscInt it, PetscReal xnorm, Pet
    SNESConvergedSkip - Convergence test for `SNES` that NEVER returns as
    converged, UNLESS the maximum number of iteration have been reached.
 
-   Logically Collective on snes
+   Logically Collective
 
    Input Parameters:
 +  snes - the `SNES` context

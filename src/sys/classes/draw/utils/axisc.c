@@ -6,7 +6,7 @@ PetscClassId PETSC_DRAWAXIS_CLASSID = 0;
 /*@
    PetscDrawAxisCreate - Generate the axis data structure.
 
-   Collective on draw
+   Collective
 
    Input Parameters:
 .  win - `PetscDraw` object where axis to to be made
@@ -55,7 +55,7 @@ PetscErrorCode PetscDrawAxisCreate(PetscDraw draw, PetscDrawAxis *axis)
 /*@
     PetscDrawAxisDestroy - Frees the space used by an axis structure.
 
-    Collective on axis
+    Collective
 
     Input Parameters:
 .   axis - the axis context
@@ -86,7 +86,7 @@ PetscErrorCode PetscDrawAxisDestroy(PetscDrawAxis *axis)
     PetscDrawAxisSetColors -  Sets the colors to be used for the axis,
                          tickmarks, and text.
 
-    Logically Collective on axis
+    Logically Collective
 
     Input Parameters:
 +   axis - the axis
@@ -114,7 +114,7 @@ PetscErrorCode PetscDrawAxisSetColors(PetscDrawAxis axis, int ac, int tc, int cc
 /*@C
     PetscDrawAxisSetLabels -  Sets the x and y axis labels.
 
-    Logically Collective on axis
+    Logically Collective
 
     Input Parameters:
 +   axis - the axis
@@ -146,7 +146,7 @@ PetscErrorCode PetscDrawAxisSetLabels(PetscDrawAxis axis, const char top[], cons
 /*@
     PetscDrawAxisSetLimits -  Sets the limits (in user coords) of the axis
 
-    Logically Collective on axis
+    Logically Collective
 
     Input Parameters:
 +   axis - the axis
@@ -202,7 +202,7 @@ PetscErrorCode PetscDrawAxisGetLimits(PetscDrawAxis axis, PetscReal *xmin, Petsc
     PetscDrawAxisSetHoldLimits -  Causes an axis to keep the same limits until this is called
         again
 
-    Logically Collective on axis
+    Logically Collective
 
     Input Parameters:
 +   axis - the axis
@@ -228,7 +228,7 @@ PetscErrorCode PetscDrawAxisSetHoldLimits(PetscDrawAxis axis, PetscBool hold)
 /*@
     PetscDrawAxisDraw - draws an axis.
 
-    Collective on axis
+    Collective
 
     Input Parameter:
 .   axis - `PetscDrawAxis` structure

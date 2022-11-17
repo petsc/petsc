@@ -37,7 +37,7 @@ static PetscErrorCode MatTransposeAXPY_Private(Mat Y, PetscScalar a, Mat X, MatS
 /*@
    MatAXPY - Computes Y = a*X + Y.
 
-   Logically  Collective on Mat
+   Logically  Collective
 
    Input Parameters:
 +  a - the scalar multiplier
@@ -268,7 +268,7 @@ PetscErrorCode MatAXPY_BasicWithPreallocation(Mat B, Mat Y, PetscScalar a, Mat X
 /*@
    MatShift - Computes Y =  Y + a I, where a is a PetscScalar and I is the identity matrix.
 
-   Neighbor-wise Collective on Mat
+   Neighbor-wise Collective
 
    Input Parameters:
 +  Y - the matrices
@@ -323,7 +323,7 @@ PetscErrorCode MatDiagonalSet_Default(Mat Y, Vec D, InsertMode is)
    that is represented as a vector. Or Y[i,i] = D[i] if InsertMode is
    INSERT_VALUES.
 
-   Neighbor-wise Collective on Mat
+   Neighbor-wise Collective
 
    Input Parameters:
 +  Y - the input matrix
@@ -381,7 +381,7 @@ PetscErrorCode MatAYPX(Mat Y, PetscScalar a, Mat X, MatStructure str)
 /*@
     MatComputeOperator - Computes the explicit matrix
 
-    Collective on Mat
+    Collective
 
     Input Parameters:
 +   inmat - the matrix
@@ -411,7 +411,7 @@ PetscErrorCode MatComputeOperator(Mat inmat, MatType mattype, Mat *mat)
     MatComputeOperatorTranspose - Computes the explicit matrix representation of
         a give matrix that can apply MatMultTranspose()
 
-    Collective on Mat
+    Collective
 
     Input Parameters:
 +   inmat - the matrix

@@ -9,7 +9,7 @@
        Jacobian matrix vector products will be computed at, i.e. J(x) * a. The x is obtained
        from the `SNES` object (using `SNESGetSolution()`).
 
-   Collective on snes
+   Collective
 
    Input Parameters:
 +   snes - the nonlinear solver context
@@ -154,7 +154,7 @@ static PetscErrorCode MatSNESMFSetReuseBase_SNESMF(Mat J, PetscBool use)
     MatSNESMFSetReuseBase - Causes the base vector to be used for differencing even if the function provided to `SNESSetFunction()` is not the
                        same as that provided to `MatMFFDSetFunction()`.
 
-    Logically Collective on J
+    Logically Collective
 
     Input Parameters:
 +   J - the `MATMFFD` matrix
@@ -194,7 +194,7 @@ static PetscErrorCode MatSNESMFGetReuseBase_SNESMF(Mat J, PetscBool *use)
     MatSNESMFGetReuseBase - Determines if the base vector is to be used for differencing even if the function provided to `SNESSetFunction()` is not the
                        same as that provided to `MatMFFDSetFunction()`.
 
-    Logically Collective on J
+    Logically Collective
 
     Input Parameter:
 .   J - the `MATMFFD` matrix
@@ -224,7 +224,7 @@ PetscErrorCode MatSNESMFGetReuseBase(Mat J, PetscBool *use)
    the routine `SNESSetJacobian()`. See `MatCreateMFFD()` for details on how
    the finite difference computation is done.
 
-   Collective on snes
+   Collective
 
    Input Parameters:
 .  snes - the `SNES` context

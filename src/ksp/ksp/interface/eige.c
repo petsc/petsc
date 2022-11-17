@@ -34,7 +34,7 @@ static PetscErrorCode MatMult_KSP(Mat A, Vec X, Vec Y)
     KSPComputeOperator - Computes the explicit preconditioned operator, including diagonal scaling and null
     space removal if applicable.
 
-    Collective on ksp
+    Collective
 
     Input Parameters:
 +   ksp - the Krylov subspace context
@@ -81,7 +81,7 @@ PetscErrorCode KSPComputeOperator(KSP ksp, MatType mattype, Mat *mat)
    KSPComputeEigenvaluesExplicitly - Computes all of the eigenvalues of the
    preconditioned operator using LAPACK.
 
-   Collective on ksp
+   Collective
 
    Input Parameters:
 +  ksp - iterative context obtained from `KSPCreate()`
@@ -250,7 +250,7 @@ static PetscErrorCode PolyEval(PetscInt nroots, const PetscReal *r, const PetscR
 }
 
 #include <petscdraw.h>
-/* collective on ksp */
+/* Collective */
 PetscErrorCode KSPPlotEigenContours_Private(KSP ksp, PetscInt neig, const PetscReal *r, const PetscReal *c)
 {
   PetscReal     xmin, xmax, ymin, ymax, *xloc, *yloc, *value, px0, py0, rscale, iscale;

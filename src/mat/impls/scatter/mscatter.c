@@ -319,7 +319,7 @@ PetscErrorCode MatCreateScatter(MPI_Comm comm, VecScatter scatter, Mat *A)
 /*@
     MatScatterSetVecScatter - sets the scatter that the matrix is to apply as its linear operator in a `MATSCATTER`
 
-   Collective on mat
+   Collective
 
     Input Parameters:
 +   mat - the `MATSCATTER` matrix

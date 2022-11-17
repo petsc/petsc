@@ -175,7 +175,7 @@ PetscErrorCode TSMonitorSPEig(TS ts, PetscInt step, PetscReal ptime, Vec v, void
 /*@C
    TSMonitorSPEigCtxDestroy - Destroys a scatter plot context that was created with `TSMonitorSPEigCtxCreate()`.
 
-   Collective on ctx
+   Collective
 
    Input Parameter:
 .  ctx - the monitor context

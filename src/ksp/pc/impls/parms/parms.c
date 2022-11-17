@@ -330,7 +330,7 @@ static PetscErrorCode PCPARMSSetGlobal_PARMS(PC pc, PCPARMSGlobalType type)
 /*@
    PCPARMSSetGlobal - Sets the global preconditioner to be used in `PCPARMS`.
 
-   Collective on pc
+   Collective
 
    Input Parameters:
 +  pc - the preconditioner context
@@ -375,7 +375,7 @@ static PetscErrorCode PCPARMSSetLocal_PARMS(PC pc, PCPARMSLocalType type)
 /*@
    PCPARMSSetLocal - Sets the local preconditioner to be used in `PCPARMS`.
 
-   Collective on pc
+   Collective
 
    Input Parameters:
 +  pc - the preconditioner context
@@ -430,7 +430,7 @@ static PetscErrorCode PCPARMSSetSolveTolerances_PARMS(PC pc, PetscReal tol, Pets
    PCPARMSSetSolveTolerances - Sets the convergence tolerance and the maximum iterations for the
    inner GMRES solver, when the Schur global preconditioner is used.
 
-   Collective on pc
+   Collective
 
    Input Parameters:
 +  pc - the preconditioner context
@@ -472,7 +472,7 @@ static PetscErrorCode PCPARMSSetSolveRestart_PARMS(PC pc, PetscInt restart)
    PCPARMSSetSolveRestart - Sets the number of iterations at which the
    inner GMRES solver restarts.
 
-   Collective on pc
+   Collective
 
    Input Parameters:
 +  pc - the preconditioner context
@@ -512,7 +512,7 @@ static PetscErrorCode PCPARMSSetNonsymPerm_PARMS(PC pc, PetscBool nonsym)
    PCPARMSSetNonsymPerm - Sets the type of permutation for the ARMS preconditioner: the standard
    symmetric ARMS or the non-symmetric ARMS (ARMS-ddPQ).
 
-   Collective on pc
+   Collective
 
    Input Parameters:
 +  pc - the preconditioner context
@@ -562,7 +562,7 @@ static PetscErrorCode PCPARMSSetFill_PARMS(PC pc, PetscInt lfil0, PetscInt lfil1
    Consider the original matrix A = [B F; E C] and the approximate version
    M = [LB 0; E/UB I]*[UB LB\F; 0 S].
 
-   Collective on pc
+   Collective
 
    Input Parameters:
 +  pc - the preconditioner context

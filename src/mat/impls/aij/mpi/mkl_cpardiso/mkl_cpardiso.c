@@ -752,7 +752,7 @@ PetscErrorCode MatMkl_CPardisoSetCntl_MKL_CPARDISO(Mat F, PetscInt icntl, PetscI
 /*@
   MatMkl_CPardisoSetCntl - Set Mkl_Pardiso parameters
 
-   Logically Collective on Mat
+   Logically Collective
 
    Input Parameters:
 +  F - the factored matrix obtained by calling `MatGetFactor()`

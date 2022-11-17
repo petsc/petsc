@@ -359,7 +359,7 @@ PetscErrorCode PetscViewerASCIISubtractTab(PetscViewer viewer, PetscInt tabs)
 /*@C
     PetscViewerASCIIPushSynchronized - Allows calls to `PetscViewerASCIISynchronizedPrintf()` for this viewer
 
-    Collective on viewer
+    Collective
 
     Input Parameters:
 .    viewer - obtained with `PetscViewerASCIIOpen()`
@@ -389,7 +389,7 @@ PetscErrorCode PetscViewerASCIIPushSynchronized(PetscViewer viewer)
 /*@C
     PetscViewerASCIIPopSynchronized - Undoes most recent `PetscViewerASCIIPushSynchronized()` for this viewer
 
-    Collective on viewer
+    Collective
 
     Input Parameters:
 .    viewer - obtained with `PetscViewerASCIIOpen()`
@@ -605,7 +605,7 @@ PetscErrorCode PetscViewerASCIIPrintf(PetscViewer viewer, const char format[], .
 /*@C
      PetscViewerFileSetName - Sets the name of the file the `PetscViewer` uses.
 
-    Collective on viewer
+    Collective
 
   Input Parameters:
 +  viewer - the PetscViewer; either `PETSCVIEWERASCII` or `PETSCVIEWERBINARY`

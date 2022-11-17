@@ -264,7 +264,7 @@ PetscErrorCode PetscViewerBinaryGetMPIIODescriptor(PetscViewer viewer, MPI_File 
     PetscViewerBinarySetUseMPIIO - Sets a binary viewer to use MPI-IO for reading/writing. Must be called
         before `PetscViewerFileSetName()`
 
-    Logically Collective on viewer
+    Logically Collective
 
     Input Parameters:
 +   viewer - the `PetscViewer`; must be a `PETSCVIEWERBINARY`
@@ -1228,7 +1228,7 @@ PetscErrorCode PetscViewerBinaryReadStringArray(PetscViewer viewer, char ***data
 /*@C
      PetscViewerFileSetMode - Sets the open mode of file
 
-    Logically Collective on viewer
+    Logically Collective
 
   Input Parameters:
 +  viewer - the `PetscViewer`; must be a a `PETSCVIEWERBINARY`, `PETSCVIEWERMATLAB`, `PETSCVIEWERHDF5`, or `PETSCVIEWERASCII`  `PetscViewer`

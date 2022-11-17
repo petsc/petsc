@@ -7,7 +7,7 @@
 /*@C
    TSMonitor - Runs all user-provided monitor routines set using `TSMonitorSet()`
 
-   Collective on ts
+   Collective
 
    Input Parameters:
 +  ts - time stepping context obtained from `TSCreate()`
@@ -46,7 +46,7 @@ PetscErrorCode TSMonitor(TS ts, PetscInt step, PetscReal ptime, Vec u)
 /*@C
    TSMonitorSetFromOptions - Sets a monitor function and viewer appropriate for the type indicated by the user
 
-   Collective on ts
+   Collective
 
    Input Parameters:
 +  ts - `TS` object you wish to monitor
@@ -88,7 +88,7 @@ PetscErrorCode TSMonitorSetFromOptions(TS ts, const char name[], const char help
    TSMonitorSet - Sets an ADDITIONAL function that is to be used at every
    timestep to display the iteration's  progress.
 
-   Logically Collective on ts
+   Logically Collective
 
    Input Parameters:
 +  ts - the `TS` context obtained from `TSCreate()`
@@ -141,7 +141,7 @@ PetscErrorCode TSMonitorSet(TS ts, PetscErrorCode (*monitor)(TS, PetscInt, Petsc
 /*@C
    TSMonitorCancel - Clears all the monitors that have been set on a time-step object.
 
-   Logically Collective on ts
+   Logically Collective
 
    Input Parameters:
 .  ts - the `TS` context obtained from `TSCreate()`
@@ -254,7 +254,7 @@ PetscErrorCode TSMonitorExtreme(TS ts, PetscInt step, PetscReal ptime, Vec v, Pe
    TSMonitorLGCtxCreate - Creates a `TSMonitorLGCtx` context for use with
    `TS` to monitor the solution process graphically in various ways
 
-   Collective on ts
+   Collective
 
    Input Parameters:
 +  host - the X display to open, or null for the local machine
@@ -337,7 +337,7 @@ PetscErrorCode TSMonitorLGTimeStep(TS ts, PetscInt step, PetscReal ptime, Vec v,
    TSMonitorLGCtxDestroy - Destroys a line graph context that was created
    with `TSMonitorLGCtxCreate()`.
 
-   Collective on ctx
+   Collective
 
    Input Parameter:
 .  ctx - the monitor context
@@ -396,7 +396,7 @@ PetscErrorCode TSMonitorSPCtxDestroy(TSMonitorSPCtx *ctx)
    TSMonitorDrawSolution - Monitors progress of the `TS` solvers by calling
    `VecView()` for the solution at each timestep
 
-   Collective on ts
+   Collective
 
    Input Parameters:
 +  ts - the `TS` context
@@ -459,7 +459,7 @@ PetscErrorCode TSMonitorDrawSolution(TS ts, PetscInt step, PetscReal ptime, Vec 
 /*@C
    TSMonitorDrawSolutionPhase - Monitors progress of the `TS` solvers by plotting the solution as a phase diagram
 
-   Collective on ts
+   Collective
 
    Input Parameters:
 +  ts - the `TS` context
@@ -524,7 +524,7 @@ PetscErrorCode TSMonitorDrawSolutionPhase(TS ts, PetscInt step, PetscReal ptime,
 /*@C
    TSMonitorDrawCtxDestroy - Destroys the monitor context for `TSMonitorDrawSolution()`
 
-   Collective on ts
+   Collective
 
    Input Parameters:
 .    ctx - the monitor context
@@ -545,7 +545,7 @@ PetscErrorCode TSMonitorDrawCtxDestroy(TSMonitorDrawCtx *ictx)
 /*@C
    TSMonitorDrawCtxCreate - Creates the monitor context for `TSMonitorDrawCtx`
 
-   Collective on ts
+   Collective
 
    Input Parameter:
 .    ts - time-step context
@@ -584,7 +584,7 @@ PetscErrorCode TSMonitorDrawCtxCreate(MPI_Comm comm, const char host[], const ch
    TSMonitorDrawSolutionFunction - Monitors progress of the `TS` solvers by calling
    `VecView()` for the solution provided by `TSSetSolutionFunction()` at each timestep
 
-   Collective on ts
+   Collective
 
    Input Parameters:
 +  ts - the `TS` context
@@ -622,7 +622,7 @@ PetscErrorCode TSMonitorDrawSolutionFunction(TS ts, PetscInt step, PetscReal pti
    TSMonitorDrawError - Monitors progress of the `TS` solvers by calling
    `VecView()` for the error at each timestep
 
-   Collective on ts
+   Collective
 
    Input Parameters:
 +  ts - the `TS` context
@@ -660,7 +660,7 @@ PetscErrorCode TSMonitorDrawError(TS ts, PetscInt step, PetscReal ptime, Vec u, 
 /*@C
    TSMonitorSolution - Monitors progress of the TS solvers by `VecView()` for the solution at each timestep. Normally the viewer is a binary file or a `PetscDraw` object
 
-   Collective on ts
+   Collective
 
    Input Parameters:
 +  ts - the `TS` context
@@ -689,7 +689,7 @@ PetscErrorCode TSMonitorSolution(TS ts, PetscInt step, PetscReal ptime, Vec u, P
 /*@C
    TSMonitorSolutionVTK - Monitors progress of the `TS` solvers by `VecView()` for the solution at each timestep.
 
-   Collective on ts
+   Collective
 
    Input Parameters:
 +  ts - the `TS` context
@@ -749,7 +749,7 @@ PetscErrorCode TSMonitorSolutionVTKDestroy(void *filenametemplate)
    TSMonitorLGSolution - Monitors progress of the `TS` solvers by plotting each component of the solution vector
        in a time based line graph
 
-   Collective on ts
+   Collective
 
    Input Parameters:
 +  ts - the `TS` context
@@ -860,7 +860,7 @@ PetscErrorCode TSMonitorLGSolution(TS ts, PetscInt step, PetscReal ptime, Vec u,
 /*@C
    TSMonitorLGSetVariableNames - Sets the name of each component in the solution vector so that it may be displayed in the plot
 
-   Collective on ts
+   Collective
 
    Input Parameters:
 +  ts - the `TS` context
@@ -890,7 +890,7 @@ PetscErrorCode TSMonitorLGSetVariableNames(TS ts, const char *const *names)
 /*@C
    TSMonitorLGCtxSetVariableNames - Sets the name of each component in the solution vector so that it may be displayed in the plot
 
-   Collective on ctx
+   Collective
 
    Input Parameters:
 +  ts - the `TS` context
@@ -911,7 +911,7 @@ PetscErrorCode TSMonitorLGCtxSetVariableNames(TSMonitorLGCtx ctx, const char *co
 /*@C
    TSMonitorLGGetVariableNames - Gets the name of each component in the solution vector so that it may be displayed in the plot
 
-   Collective on ts
+   Collective
 
    Input Parameter:
 .  ts - the `TS` context
@@ -945,7 +945,7 @@ PetscErrorCode TSMonitorLGGetVariableNames(TS ts, const char *const **names)
 /*@C
    TSMonitorLGCtxSetDisplayVariables - Sets the variables that are to be display in the monitor
 
-   Collective on ctx
+   Collective
 
    Input Parameters:
 +  ctx - the `TSMonitorLG` context
@@ -987,7 +987,7 @@ PetscErrorCode TSMonitorLGCtxSetDisplayVariables(TSMonitorLGCtx ctx, const char 
 /*@C
    TSMonitorLGSetDisplayVariables - Sets the variables that are to be display in the monitor
 
-   Collective on ts
+   Collective
 
    Input Parameters:
 +  ts - the `TS` context
@@ -1017,7 +1017,7 @@ PetscErrorCode TSMonitorLGSetDisplayVariables(TS ts, const char *const *displayn
 /*@C
    TSMonitorLGSetTransform - Solution vector will be transformed by provided function before being displayed
 
-   Collective on ts
+   Collective
 
    Input Parameters:
 +  ts - the `TS` context
@@ -1046,7 +1046,7 @@ PetscErrorCode TSMonitorLGSetTransform(TS ts, PetscErrorCode (*transform)(void *
 /*@C
    TSMonitorLGCtxSetTransform - Solution vector will be transformed by provided function before being displayed
 
-   Collective on ctx
+   Collective
 
    Input Parameters:
 +  ts - the `TS` context
@@ -1071,7 +1071,7 @@ PetscErrorCode TSMonitorLGCtxSetTransform(TSMonitorLGCtx ctx, PetscErrorCode (*t
    TSMonitorLGError - Monitors progress of the `TS` solvers by plotting each component of the error
        in a time based line graph
 
-   Collective on ts
+   Collective
 
    Input Parameters:
 +  ts - the `TS` context
@@ -1222,7 +1222,7 @@ PetscErrorCode TSMonitorSPSwarmSolution(TS ts, PetscInt step, PetscReal ptime, V
 /*@C
    TSMonitorError - Monitors progress of the `TS` solvers by printing the 2 norm of the error at each timestep
 
-   Collective on ts
+   Collective
 
    Input Parameters:
 +  ts - the `TS` context
@@ -1356,7 +1356,7 @@ PetscErrorCode TSMonitorLGKSPIterations(TS ts, PetscInt n, PetscReal ptime, Vec 
 /*@C
    TSMonitorEnvelopeCtxCreate - Creates a context for use with `TSMonitorEnvelope()`
 
-   Collective on ts
+   Collective
 
    Input Parameters:
 .  ts  - the `TS` solver object
@@ -1378,7 +1378,7 @@ PetscErrorCode TSMonitorEnvelopeCtxCreate(TS ts, TSMonitorEnvelopeCtx *ctx)
 /*@C
    TSMonitorEnvelope - Monitors the maximum and minimum value of each component of the solution
 
-   Collective on ts
+   Collective
 
    Input Parameters:
 +  ts - the TS context
@@ -1420,7 +1420,7 @@ PetscErrorCode TSMonitorEnvelope(TS ts, PetscInt step, PetscReal ptime, Vec u, v
 /*@C
    TSMonitorEnvelopeGetBounds - Gets the bounds for the components of the solution
 
-   Collective on ts
+   Collective
 
    Input Parameter:
 .  ts - the `TS` context
@@ -1457,7 +1457,7 @@ PetscErrorCode TSMonitorEnvelopeGetBounds(TS ts, Vec *max, Vec *min)
 /*@C
    TSMonitorEnvelopeCtxDestroy - Destroys a context that was created  with `TSMonitorEnvelopeCtxCreate()`.
 
-   Collective on ctx
+   Collective
 
    Input Parameter:
 .  ctx - the monitor context

@@ -16,7 +16,7 @@ typedef struct {
 /*@
    PCGAMGSetNSmooths - Set number of smoothing steps (1 is typical) used for multigrid on all the levels
 
-   Logically Collective on pc
+   Logically Collective
 
    Input Parameters:
 .  pc - the preconditioner context
@@ -51,7 +51,7 @@ static PetscErrorCode PCGAMGSetNSmooths_AGG(PC pc, PetscInt n)
 /*@
    PCGAMGSetAggressiveLevels -  Use aggressive coarsening on first n levels
 
-   Logically Collective on pc
+   Logically Collective
 
    Input Parameters:
 +  pc - the preconditioner context

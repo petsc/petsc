@@ -331,7 +331,7 @@ static PetscErrorCode MatNorm_ADA(Mat mat, NormType type, PetscReal *norm)
 /*@C
    MatCreateADA - Creates a matrix M=A^T D1 A + D2 where D1, D2 are diagonal
 
-   Collective on matrix
+   Collective
 
    Input Parameters:
 +  mat - matrix of arbitrary type
@@ -341,13 +341,13 @@ static PetscErrorCode MatNorm_ADA(Mat mat, NormType type, PetscReal *norm)
    Output Parameters:
 .  J - New matrix whose operations are defined in terms of mat, D1, and D2.
 
-   Notes:
+   Level: developer
+
+   Note:
    The user provides the input data and is responsible for destroying
    this data after matrix J has been destroyed.
 
-   Level: developer
-
-.seealso: `MatCreate()`
+.seealso: `Mat`, `MatCreate()`
 @*/
 PetscErrorCode MatCreateADA(Mat mat, Vec d1, Vec d2, Mat *J)
 {

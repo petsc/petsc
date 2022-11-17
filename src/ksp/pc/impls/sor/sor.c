@@ -178,7 +178,7 @@ static PetscErrorCode PCSORGetIterations_SOR(PC pc, PetscInt *its, PetscInt *lit
    PCSORGetSymmetric - Gets the form the SOR preconditioner is using;   backward, or forward relaxation.  The local variants perform SOR on
    each processor.  By default forward relaxation is used.
 
-   Logically Collective on pc
+   Logically Collective
 
    Input Parameter:
 .  pc - the preconditioner context
@@ -222,7 +222,7 @@ PetscErrorCode PCSORGetSymmetric(PC pc, MatSORType *flag)
    PCSORGetOmega - Gets the SOR relaxation coefficient, omega
    (where omega = 1.0 by default).
 
-   Logically Collective on pc
+   Logically Collective
 
    Input Parameter:
 .  pc - the preconditioner context
@@ -249,7 +249,7 @@ PetscErrorCode PCSORGetOmega(PC pc, PetscReal *omega)
    PCSORGetIterations - Gets the number of inner iterations to
    be used by the SOR preconditioner. The default is 1.
 
-   Logically Collective on pc
+   Logically Collective
 
    Input Parameter:
 .  pc - the preconditioner context
@@ -282,7 +282,7 @@ PetscErrorCode PCSORGetIterations(PC pc, PetscInt *its, PetscInt *lits)
    backward, or forward relaxation.  The local variants perform SOR on
    each processor.  By default forward relaxation is used.
 
-   Logically Collective on pc
+   Logically Collective
 
    Input Parameters:
 +  pc - the preconditioner context
@@ -325,7 +325,7 @@ PetscErrorCode PCSORSetSymmetric(PC pc, MatSORType flag)
    PCSORSetOmega - Sets the SOR relaxation coefficient, omega
    (where omega = 1.0 by default).
 
-   Logically Collective on pc
+   Logically Collective
 
    Input Parameters:
 +  pc - the preconditioner context
@@ -354,7 +354,7 @@ PetscErrorCode PCSORSetOmega(PC pc, PetscReal omega)
    PCSORSetIterations - Sets the number of inner iterations to
    be used by the SOR preconditioner. The default is 1.
 
-   Logically Collective on pc
+   Logically Collective
 
    Input Parameters:
 +  pc - the preconditioner context

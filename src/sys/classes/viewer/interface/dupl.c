@@ -5,7 +5,7 @@
    PetscViewerGetSubViewer - Creates a new `PetscViewer` (same type as the old)
     that lives on a subcommunicator
 
-    Collective on viewer
+    Collective
 
    Input Parameter:
 .  viewer - the `PetscViewer` to be reproduced
@@ -55,7 +55,7 @@ PetscErrorCode PetscViewerGetSubViewer(PetscViewer viewer, MPI_Comm comm, PetscV
 /*@C
    PetscViewerRestoreSubViewer - Restores a new `PetscViewer` obtained with `PetscViewerGetSubViewer()`.
 
-    Collective on viewer
+    Collective
 
    Input Parameters:
 +  viewer - the `PetscViewer` that was reproduced

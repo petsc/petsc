@@ -609,7 +609,7 @@ static PetscErrorCode TSGLLECreate_IRKS(TS ts)
 /*@C
    TSGLLESetType - sets the class of general linear method, `TSGLLE` to use for time-stepping
 
-   Collective on ts
+   Collective
 
    Input Parameters:
 +  ts - the `TS` context
@@ -652,7 +652,7 @@ PetscErrorCode TSGLLESetType(TS ts, TSGLLEType type)
    Time integrators that need to control error must have the option to reject a time step based on local error
    estimates.  This function allows different schemes to be set.
 
-   Logically Collective on ts
+   Logically Collective
 
    Input Parameters:
 +  ts - the `TS` context

@@ -69,7 +69,7 @@ static PetscErrorCode PetscViewerGLVisSetPrecision_GLVis(PetscViewer viewer, Pet
 /*@
      PetscViewerGLVisSetSnapId - Set the snapshot id. Only relevant when the `PetscViewerGLVisType` is `PETSC_VIEWER_GLVIS_DUMP`
 
-  Logically Collective on viewer
+  Logically Collective
 
   Input Parameters:
 +  viewer - the `PetscViewer` of type `PETSCVIEWERGLVIS`
@@ -100,7 +100,7 @@ static PetscErrorCode PetscViewerGLVisSetSnapId_GLVis(PetscViewer viewer, PetscI
 /*@C
      PetscViewerGLVisSetFields - Sets the required information to visualize different fields from a vector.
 
-  Logically Collective on viewer
+  Logically Collective
 
   Input Parameters:
 +  viewer     - the `PetscViewer` of type `PETSCVIEWERGLVIS`

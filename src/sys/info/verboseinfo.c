@@ -520,7 +520,7 @@ PETSC_INTERN FILE *petsc_history;
        PetscErrorCode PetscInfo(PetscObject obj, const char formatmessage[],arg1,arg2)
        ...
 
-    Collective on obj
+    Collective
 
     Input Parameters:
 +   obj - object most closely associated with the logging statement or NULL

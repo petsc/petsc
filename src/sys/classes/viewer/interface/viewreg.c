@@ -385,7 +385,7 @@ PetscErrorCode PetscViewerCreate(MPI_Comm comm, PetscViewer *inviewer)
 /*@C
    PetscViewerSetType - Builds `PetscViewer` for a particular implementation.
 
-   Collective on viewer
+   Collective
 
    Input Parameters:
 +  viewer      - the `PetscViewer` context obtained with `PetscViewerCreate()`
@@ -465,7 +465,7 @@ PetscErrorCode PetscViewerRegister(const char *sname, PetscErrorCode (*function)
 /*@C
    PetscViewerSetFromOptions - Sets various options for a viewer from the options database.
 
-   Collective on viewer
+   Collective
 
    Input Parameter:
 .     viewer - the viewer context

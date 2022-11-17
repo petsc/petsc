@@ -3,7 +3,7 @@
 /*@
   TaoSetVariableBounds - Sets the upper and lower bounds for the optimization problem
 
-  Logically collective on tao
+  Logically collective
 
   Input Parameters:
 + tao - the Tao context
@@ -33,7 +33,7 @@ PetscErrorCode TaoSetVariableBounds(Tao tao, Vec XL, Vec XU)
 /*@C
   TaoSetVariableBoundsRoutine - Sets a function to be used to compute lower and upper variable bounds for the optimization
 
-  Logically collective on tao
+  Logically collective
 
   Input Parameters:
 + tao - the Tao context
@@ -95,7 +95,7 @@ PetscErrorCode TaoGetVariableBounds(Tao tao, Vec *XL, Vec *XU)
    TaoComputeVariableBounds - Compute the variable bounds using the
    routine set by `TaoSetVariableBoundsRoutine()`.
 
-   Collective on tao
+   Collective
 
    Input Parameter:
 .  tao - the Tao context
@@ -126,7 +126,7 @@ PetscErrorCode TaoComputeVariableBounds(Tao tao)
 /*@
   TaoSetInequalityBounds - Sets the upper and lower bounds
 
-  Logically collective on tao
+  Logically collective
 
   Input Parameters:
 + tao - the Tao context
@@ -156,7 +156,7 @@ PetscErrorCode TaoSetInequalityBounds(Tao tao, Vec IL, Vec IU)
 /*@
   TaoGetInequalityBounds - Gets the upper and lower bounds set via `TaoSetInequalityBounds()`
 
-  Logically collective on tao
+  Logically collective
 
   Input Parameter:
 . tao - the Tao context
@@ -182,7 +182,7 @@ PetscErrorCode TaoGetInequalityBounds(Tao tao, Vec *IL, Vec *IU)
    TaoComputeConstraints - Compute the variable bounds using the
    routine set by `TaoSetConstraintsRoutine()`.
 
-   Collective on tao
+   Collective
 
    Input Parameters:
 .  tao - the Tao context
@@ -210,7 +210,7 @@ PetscErrorCode TaoComputeConstraints(Tao tao, Vec X, Vec C)
 /*@C
   TaoSetConstraintsRoutine - Sets a function to be used to compute constraints.  Tao only handles constraints under certain conditions, see manual for details
 
-  Logically collective on tao
+  Logically collective
 
   Input Parameters:
 + tao - the Tao context
@@ -249,7 +249,7 @@ PetscErrorCode TaoSetConstraintsRoutine(Tao tao, Vec c, PetscErrorCode (*func)(T
   TaoComputeDualVariables - Computes the dual vectors corresponding to the bounds
   of the variables
 
-  Collective on tao
+  Collective
 
   Input Parameter:
 . tao - the Tao context
@@ -289,7 +289,7 @@ PetscErrorCode TaoComputeDualVariables(Tao tao, Vec DL, Vec DU)
 /*@
   TaoGetDualVariables - Gets the dual vectors
 
-  Collective on tao
+  Collective
 
   Input Parameter:
 . tao - the Tao context
@@ -314,7 +314,7 @@ PetscErrorCode TaoGetDualVariables(Tao tao, Vec *DE, Vec *DI)
 /*@C
   TaoSetEqualityConstraintsRoutine - Sets a function to be used to compute constraints.  Tao only handles constraints under certain conditions, see manual for details
 
-  Logically collective on tao
+  Logically collective
 
   Input Parameters:
 + tao - the Tao context
@@ -352,7 +352,7 @@ PetscErrorCode TaoSetEqualityConstraintsRoutine(Tao tao, Vec ce, PetscErrorCode 
 /*@C
   TaoSetInequalityConstraintsRoutine - Sets a function to be used to compute constraints.  Tao only handles constraints under certain conditions, see manual for details
 
-  Logically collective on tao
+  Logically collective
 
   Input Parameters:
 + tao - the Tao context
@@ -391,7 +391,7 @@ PetscErrorCode TaoSetInequalityConstraintsRoutine(Tao tao, Vec ci, PetscErrorCod
    TaoComputeEqualityConstraints - Compute the variable bounds using the
    routine set by `TaoSetEqualityConstraintsRoutine()`.
 
-   Collective on tao
+   Collective
 
    Input Parameter:
 .  tao - the Tao context
@@ -424,7 +424,7 @@ PetscErrorCode TaoComputeEqualityConstraints(Tao tao, Vec X, Vec CE)
    TaoComputeInequalityConstraints - Compute the variable bounds using the
    routine set by `TaoSetInequalityConstraintsRoutine()`.
 
-   Collective on tao
+   Collective
 
    Input Parameter:
 .  tao - the Tao context

@@ -59,7 +59,7 @@ PetscErrorCode KSPGuessRegisterAll(void)
 /*@
     KSPGuessSetFromOptions - Sets the options for a `KSPGuess` from the options database
 
-    Collective on guess
+    Collective
 
     Input Parameter:
 .    guess - `KSPGuess` object
@@ -80,7 +80,7 @@ PetscErrorCode KSPGuessSetFromOptions(KSPGuess guess)
     KSPGuessSetTolerance - Sets the relative tolerance used in either eigenvalue (POD) or singular value (Fischer type 3) calculations.
     Ignored by the first and second Fischer types.
 
-    Collective on guess
+    Collective
 
     Input Parameter:
 .    guess - `KSPGuess` object
@@ -100,7 +100,7 @@ PetscErrorCode KSPGuessSetTolerance(KSPGuess guess, PetscReal tol)
 /*@
    KSPGuessDestroy - Destroys `KSPGuess` context.
 
-   Collective on guess
+   Collective
 
    Input Parameter:
 .  guess - initial guess object
@@ -127,7 +127,7 @@ PetscErrorCode KSPGuessDestroy(KSPGuess *guess)
 /*@C
    KSPGuessView - View the `KSPGuess` object
 
-   Logically Collective on guess
+   Logically Collective
 
    Input Parameters:
 +  guess  - the initial guess object for the Krylov method
@@ -188,7 +188,7 @@ PetscErrorCode KSPGuessCreate(MPI_Comm comm, KSPGuess *guess)
 /*@C
    KSPGuessSetType - Sets the type of a `KSPGuess`
 
-   Logically Collective on guess
+   Logically Collective
 
    Input Parameters:
 +  guess - the initial guess object for the Krylov method
@@ -251,7 +251,7 @@ PetscErrorCode KSPGuessGetType(KSPGuess guess, KSPGuessType *type)
 /*@
     KSPGuessUpdate - Updates the guess object with the current solution and rhs vector
 
-   Collective on guess
+   Collective
 
    Input Parameters:
 +  guess - the initial guess context
@@ -275,7 +275,7 @@ PetscErrorCode KSPGuessUpdate(KSPGuess guess, Vec rhs, Vec sol)
 /*@
     KSPGuessFormGuess - Form the initial guess
 
-   Collective on guess
+   Collective
 
    Input Parameters:
 +  guess - the initial guess context
@@ -299,7 +299,7 @@ PetscErrorCode KSPGuessFormGuess(KSPGuess guess, Vec rhs, Vec sol)
 /*@
     KSPGuessSetUp - Setup the initial guess object
 
-   Collective on guess
+   Collective
 
    Input Parameter:
 -  guess - the initial guess context

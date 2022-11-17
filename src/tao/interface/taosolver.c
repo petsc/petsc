@@ -139,7 +139,7 @@ PetscErrorCode TaoCreate(MPI_Comm comm, Tao *newtao)
 /*@
   TaoSolve - Solves an optimization problem min F(x) s.t. l <= x <= u
 
-  Collective on tao
+  Collective
 
   Input Parameters:
 . tao - the Tao context
@@ -199,7 +199,7 @@ PetscErrorCode TaoSolve(Tao tao)
   TaoSetUp - Sets up the internal data structures for the later use
   of a Tao solver
 
-  Collective on tao
+  Collective
 
   Input Parameters:
 . tao - the Tao context
@@ -229,7 +229,7 @@ PetscErrorCode TaoSetUp(Tao tao)
 /*@C
   TaoDestroy - Destroys the Tao context that was created with `TaoCreate()`
 
-  Collective on tao
+  Collective
 
   Input Parameter:
 . tao - the Tao context
@@ -308,7 +308,7 @@ PetscErrorCode TaoDestroy(Tao *tao)
    TaoKSPSetUseEW - Sets `SNES` use Eisenstat-Walker method for
    computing relative tolerance for linear solvers.
 
-   Logically Collective on tao
+   Logically Collective
 
    Input Parameters:
 +  tao - Tao context
@@ -338,7 +338,7 @@ PetscErrorCode TaoKSPSetUseEW(Tao tao, PetscBool flag)
   TaoSetFromOptions - Sets various Tao parameters from user
   options.
 
-  Collective on tao
+  Collective
 
   Input Parameter:
 . tao - the Tao solver context
@@ -548,7 +548,7 @@ PetscErrorCode TaoSetFromOptions(Tao tao)
 /*@C
    TaoViewFromOptions - View a Tao options from the options database
 
-   Collective on tao
+   Collective
 
    Input Parameters:
 +  A - the  Tao context
@@ -569,7 +569,7 @@ PetscErrorCode TaoViewFromOptions(Tao A, PetscObject obj, const char name[])
 /*@C
   TaoView - Prints information about the Tao object
 
-  Collective on tao
+  Collective
 
   InputParameters:
 + tao - the Tao context
@@ -742,7 +742,7 @@ PetscErrorCode TaoView(Tao tao, PetscViewer viewer)
 
   For any other algorithm, this setting has no effect.
 
-  Logically collective on tao
+  Logically collective
 
   Input Parameters:
 + tao - the Tao context
@@ -769,7 +769,7 @@ PetscErrorCode TaoSetRecycleHistory(Tao tao, PetscBool recycle)
   TaoGetRecycleHistory - Retrieve the boolean flag for re-using iterate information
   from the previous `TaoSolve()`. This feature is disabled by default.
 
-  Logically collective on tao
+  Logically collective
 
   Input Parameters:
 . tao - the Tao context
@@ -794,7 +794,7 @@ PetscErrorCode TaoGetRecycleHistory(Tao tao, PetscBool *recycle)
 /*@
   TaoSetTolerances - Sets parameters used in Tao convergence tests
 
-  Logically collective on tao
+  Logically collective
 
   Input Parameters:
 + tao - the Tao context
@@ -860,7 +860,7 @@ PetscErrorCode TaoSetTolerances(Tao tao, PetscReal gatol, PetscReal grtol, Petsc
 /*@
   TaoSetConstraintTolerances - Sets constraint tolerance parameters used in Tao convergence tests
 
-  Logically collective on tao
+  Logically collective
 
   Input Parameters:
 + tao - the Tao context
@@ -937,7 +937,7 @@ PetscErrorCode TaoGetConstraintTolerances(Tao tao, PetscReal *catol, PetscReal *
    When an approximate solution with an objective value below this number
    has been found, the solver will terminate.
 
-   Logically Collective on tao
+   Logically Collective
 
    Input Parameters:
 +  tao - the Tao solver context
@@ -965,7 +965,7 @@ PetscErrorCode TaoSetFunctionLowerBound(Tao tao, PetscReal fmin)
    When an approximate solution with an objective value below this number
    has been found, the solver will terminate.
 
-   Not collective on tao
+   Not collective
 
    Input Parameters:
 .  tao - the Tao solver context
@@ -990,7 +990,7 @@ PetscErrorCode TaoGetFunctionLowerBound(Tao tao, PetscReal *fmin)
    TaoSetMaximumFunctionEvaluations - Sets a maximum number of
    function evaluations.
 
-   Logically Collective on tao
+   Logically Collective
 
    Input Parameters:
 +  tao - the Tao solver context
@@ -1022,7 +1022,7 @@ PetscErrorCode TaoSetMaximumFunctionEvaluations(Tao tao, PetscInt nfcn)
    TaoGetMaximumFunctionEvaluations - Gets a maximum number of
    function evaluations.
 
-   Logically Collective on tao
+   Logically Collective
 
    Input Parameters:
 .  tao - the Tao solver context
@@ -1073,7 +1073,7 @@ PetscErrorCode TaoGetCurrentFunctionEvaluations(Tao tao, PetscInt *nfuncs)
 /*@
    TaoSetMaximumIterations - Sets a maximum number of iterates.
 
-   Logically Collective on tao
+   Logically Collective
 
    Input Parameters:
 +  tao - the Tao solver context
@@ -1123,7 +1123,7 @@ PetscErrorCode TaoGetMaximumIterations(Tao tao, PetscInt *maxits)
 /*@
    TaoSetInitialTrustRegionRadius - Sets the initial trust region radius.
 
-   Logically collective on tao
+   Logically collective
 
    Input Parameters:
 +  tao - a Tao optimization solver
@@ -1366,7 +1366,7 @@ PetscErrorCode TaoGetSolution(Tao tao, Vec *X)
    These statistics include the iteration number, residual norms, and convergence status.
    This routine gets called before solving each optimization problem.
 
-   Collective on tao
+   Collective
 
    Input Parameters:
 .  solver - the Tao context
@@ -1403,7 +1403,7 @@ PetscErrorCode TaoResetStatistics(Tao tao)
   it is called at the top of every iteration, after the new solution and the gradient
   is determined, but before the Hessian is computed (if applicable).
 
-  Logically Collective on tao
+  Logically Collective
 
   Input Parameters:
 + tao - The tao solver context
@@ -1432,7 +1432,7 @@ PetscErrorCode TaoSetUpdate(Tao tao, PetscErrorCode (*func)(Tao, PetscInt, void 
   for convergence o fthe iterative minimization solution.  The new convergence
   testing routine will replace Tao's default convergence test.
 
-  Logically Collective on tao
+  Logically Collective
 
   Input Parameters:
 + tao - the Tao object
@@ -1468,7 +1468,7 @@ PetscErrorCode TaoSetConvergenceTest(Tao tao, PetscErrorCode (*conv)(Tao, void *
    iteration of the solver to display the iteration's
    progress.
 
-   Logically Collective on tao
+   Logically Collective
 
    Input Parameters:
 +  tao - the Tao solver context
@@ -1528,7 +1528,7 @@ PetscErrorCode TaoSetMonitor(Tao tao, PetscErrorCode (*func)(Tao, void *), void 
 /*@
    TaoCancelMonitors - Clears all the monitor functions for a Tao object.
 
-   Logically Collective on tao
+   Logically Collective
 
    Input Parameters:
 .  tao - the Tao solver context
@@ -1564,7 +1564,7 @@ PetscErrorCode TaoCancelMonitors(Tao tao)
    norm at each iteration.  It can be turned on from the command line using the
    -tao_monitor option
 
-   Collective on tao
+   Collective
 
    Input Parameters:
 +  tao - the Tao context
@@ -1615,7 +1615,7 @@ PetscErrorCode TaoMonitorDefault(Tao tao, void *ctx)
    It can be turned on from the command line using the
    -tao_gmonitor option
 
-   Collective on tao
+   Collective
 
    Input Parameters:
 +  tao - the Tao context
@@ -1669,7 +1669,7 @@ PetscErrorCode TaoDefaultGMonitor(Tao tao, void *ctx)
    machines will usually generate the same output. It can be turned on
    by using the -tao_smonitor option
 
-   Collective on tao
+   Collective
 
    Input Parameters:
 +  tao - the Tao context
@@ -1716,7 +1716,7 @@ PetscErrorCode TaoDefaultSMonitor(Tao tao, void *ctx)
    it prints the norm of the constraints function. It can be turned on
    from the command line using the -tao_cmonitor option
 
-   Collective on tao
+   Collective
 
    Input Parameters:
 +  tao - the Tao context
@@ -1756,7 +1756,7 @@ PetscErrorCode TaoDefaultCMonitor(Tao tao, void *ctx)
    It can be turned on from the command line using the
    -tao_view_solution option
 
-   Collective on tao
+   Collective
 
    Input Parameters:
 +  tao - the Tao context
@@ -1785,7 +1785,7 @@ PetscErrorCode TaoSolutionMonitor(Tao tao, void *ctx)
    It can be turned on from the command line using the
    -tao_view_gradient option
 
-   Collective on tao
+   Collective
 
    Input Parameters:
 +  tao - the Tao context
@@ -1812,7 +1812,7 @@ PetscErrorCode TaoGradientMonitor(Tao tao, void *ctx)
 /*@C
    TaoStepDirectionMonitor - Views the step-direction at each iteration
 
-   Collective on tao
+   Collective
 
    Input Parameters:
 +  tao - the Tao context
@@ -1841,7 +1841,7 @@ PetscErrorCode TaoStepDirectionMonitor(Tao tao, void *ctx)
    It can be turned on from the command line using the
    -tao_draw_solution option
 
-   Collective on tao
+   Collective
 
    Input Parameters:
 +  tao - the Tao context
@@ -1870,7 +1870,7 @@ PetscErrorCode TaoDrawSolutionMonitor(Tao tao, void *ctx)
    It can be turned on from the command line using the
    -tao_draw_gradient option
 
-   Collective on tao
+   Collective
 
    Input Parameters:
 +  tao - the Tao context
@@ -1897,7 +1897,7 @@ PetscErrorCode TaoDrawGradientMonitor(Tao tao, void *ctx)
 /*@C
    TaoDrawStepMonitor - Plots the step direction at each iteration
 
-   Collective on tao
+   Collective
 
    Input Parameters:
 +  tao - the Tao context
@@ -1924,7 +1924,7 @@ PetscErrorCode TaoDrawStepMonitor(Tao tao, void *ctx)
 /*@C
    TaoResidualMonitor - Views the least-squares residual at each iteration
 
-   Collective on tao
+   Collective
 
    Input Parameters:
 +  tao - the Tao context
@@ -1952,7 +1952,7 @@ PetscErrorCode TaoResidualMonitor(Tao tao, void *ctx)
    TaoDefaultConvergenceTest - Determines whether the solver should continue iterating
    or terminate.
 
-   Collective on tao
+   Collective
 
    Input Parameters:
 +  tao - the Tao context
@@ -2025,7 +2025,7 @@ PetscErrorCode TaoDefaultConvergenceTest(Tao tao, void *dummy)
    TaoSetOptionsPrefix - Sets the prefix used for searching for all
    Tao options in the database.
 
-   Logically Collective on tao
+   Logically Collective
 
    Input Parameters:
 +  tao - the Tao context
@@ -2067,7 +2067,7 @@ PetscErrorCode TaoSetOptionsPrefix(Tao tao, const char p[])
    TaoAppendOptionsPrefix - Appends to the prefix used for searching for all
    Tao options in the database.
 
-   Logically Collective on tao
+   Logically Collective
 
    Input Parameters:
 +  tao - the Tao solver context
@@ -2122,7 +2122,7 @@ PetscErrorCode TaoGetOptionsPrefix(Tao tao, const char *p[])
 /*@C
    TaoSetType - Sets the method for the unconstrained minimization solver.
 
-   Collective on tao
+   Collective
 
    Input Parameters:
 +  solver - the Tao solver context
@@ -2295,7 +2295,7 @@ PetscErrorCode TaoGetResidualNorm(Tao tao, PetscReal *value)
 /*@
    TaoSetIterationNumber - Sets the current iteration number.
 
-   Logically Collective on tao
+   Logically Collective
 
    Input Parameters:
 +  tao - Tao context
@@ -2349,7 +2349,7 @@ PetscErrorCode TaoGetTotalIterationNumber(Tao tao, PetscInt *iter)
 /*@
    TaoSetTotalIterationNumber - Sets the current total iteration number.
 
-   Logically Collective on tao
+   Logically Collective
 
    Input Parameters:
 +  tao - Tao context
@@ -2373,7 +2373,7 @@ PetscErrorCode TaoSetTotalIterationNumber(Tao tao, PetscInt iter)
 /*@
   TaoSetConvergedReason - Sets the termination flag on a Tao object
 
-  Logically Collective on tao
+  Logically Collective
 
   Input Parameters:
 + tao - the Tao context
@@ -2561,7 +2561,7 @@ PetscErrorCode TaoMonitor(Tao tao, PetscInt its, PetscReal f, PetscReal res, Pet
 /*@
    TaoSetConvergenceHistory - Sets the array used to hold the convergence history.
 
-   Logically Collective on tao
+   Logically Collective
 
    Input Parameters:
 +  tao - the Tao solver context
@@ -2620,7 +2620,7 @@ PetscErrorCode TaoSetConvergenceHistory(Tao tao, PetscReal obj[], PetscReal resi
 /*@C
    TaoGetConvergenceHistory - Gets the arrays used that hold the convergence history.
 
-   Collective on tao
+   Collective
 
    Input Parameter:
 .  tao - the Tao context
@@ -2663,7 +2663,7 @@ PetscErrorCode TaoGetConvergenceHistory(Tao tao, PetscReal **obj, PetscReal **re
    TaoSetApplicationContext - Sets the optional user-defined context for
    a solver.
 
-   Logically Collective on tao
+   Logically Collective
 
    Input Parameters:
 +  tao  - the Tao context
@@ -2709,7 +2709,7 @@ PetscErrorCode TaoGetApplicationContext(Tao tao, void *usrP)
 /*@
    TaoSetGradientNorm - Sets the matrix used to define the norm that measures the size of the gradient.
 
-   Collective on tao
+   Collective
 
    Input Parameters:
 +  tao  - the Tao context
@@ -2759,7 +2759,7 @@ PetscErrorCode TaoGetGradientNorm(Tao tao, Mat *M)
 /*@C
    TaoGradientNorm - Compute the norm with respect to the norm the user has set.
 
-   Collective on tao
+   Collective
 
    Input Parameters:
 +  tao      - the Tao context
@@ -2796,7 +2796,7 @@ PetscErrorCode TaoGradientNorm(Tao tao, Vec gradient, NormType type, PetscReal *
 /*@C
    TaoMonitorDrawCtxCreate - Creates the monitor context `TaoMonitorDrawSolution()`
 
-   Collective on tao
+   Collective
 
    Output Parameter:
 .    ctx - the monitor context
@@ -2821,7 +2821,7 @@ PetscErrorCode TaoMonitorDrawCtxCreate(MPI_Comm comm, const char host[], const c
 /*@C
    TaoMonitorDrawCtxDestroy - Destroys the monitor context for `TaoMonitorDrawSolution()`
 
-   Collective on tao
+   Collective
 
    Input Parameters:
 .    ctx - the monitor context

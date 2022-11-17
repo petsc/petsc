@@ -304,7 +304,7 @@ PetscErrorCode AOCreateBasic(MPI_Comm comm, PetscInt napp, const PetscInt myapp[
 /*@C
    AOCreateBasicIS - Creates a basic application ordering using two `IS` index sets.
 
-   Collective on isapp
+   Collective
 
    Input Parameters:
 +  isapp - index set that defines an ordering

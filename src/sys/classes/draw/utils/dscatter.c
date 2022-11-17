@@ -12,7 +12,7 @@ PetscClassId PETSC_DRAWSP_CLASSID = 0;
 /*@C
   PetscDrawSPCreate - Creates a scatter plot data structure.
 
-  Collective on draw
+  Collective
 
   Input Parameters:
 + win - the window where the graph will be made.
@@ -145,7 +145,7 @@ PetscErrorCode PetscDrawSPReset(PetscDrawSP sp)
 /*@
   PetscDrawSPDestroy - Frees all space taken up by scatter plot data structure.
 
-  Collective on sp
+  Collective
 
   Input Parameter:
 . sp - the scatter plot context
@@ -335,7 +335,7 @@ PetscErrorCode PetscDrawSPAddPointColorized(PetscDrawSP sp, PetscReal *x, PetscR
 /*@
   PetscDrawSPDraw - Redraws a scatter plot.
 
-  Collective on sp
+  Collective
 
   Input Parameters:
 + sp - the scatter plot context
@@ -394,7 +394,7 @@ PetscErrorCode PetscDrawSPDraw(PetscDrawSP sp, PetscBool clear)
 /*@
   PetscDrawSPSave - Saves a drawn image
 
-  Collective on sp
+  Collective
 
   Input Parameter:
 . sp - the scatter plot context

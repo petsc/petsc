@@ -391,7 +391,7 @@ static PetscErrorCode KSPView_PIPEFCG(KSP ksp, PetscViewer viewer)
 /*@
   KSPPIPEFCGSetMmax - set the maximum number of previous directions `KSPPIPEFCG` will store for orthogonalization
 
-  Logically Collective on ksp
+  Logically Collective
 
   Input Parameters:
 +  ksp - the Krylov space context
@@ -450,7 +450,7 @@ PetscErrorCode KSPPIPEFCGGetMmax(KSP ksp, PetscInt *mmax)
 /*@
   KSPPIPEFCGSetNprealloc - set the number of directions to preallocate with `KSPPIPEFCG`
 
-  Logically Collective on ksp
+  Logically Collective
 
   Input Parameters:
 +  ksp - the Krylov space context
@@ -502,7 +502,7 @@ PetscErrorCode KSPPIPEFCGGetNprealloc(KSP ksp, PetscInt *nprealloc)
 /*@
   KSPPIPEFCGSetTruncationType - specify how many of its stored previous directions `KSPPIPEFCG` uses during orthoganalization
 
-  Logically Collective on ksp
+  Logically Collective
 
   Input Parameters:
 +  ksp - the Krylov space context

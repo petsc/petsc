@@ -493,7 +493,7 @@ PetscErrorCode KSPView_GMRES(KSP ksp, PetscViewer viewer)
 /*@C
    KSPGMRESMonitorKrylov - Calls `VecView()` for each new direction in the `KSPGMRES` accumulated Krylov space.
 
-   Collective on ksp
+   Collective
 
    Input Parameters:
 +  ksp - the `KSP` context
@@ -661,7 +661,7 @@ PetscErrorCode KSPGMRESGetCGSRefinementType_GMRES(KSP ksp, KSPGMRESCGSRefinement
    KSPGMRESSetCGSRefinementType - Sets the type of iterative refinement to use
          in the classical Gram Schmidt orthogonalization.
 
-   Logically Collective on ksp
+   Logically Collective
 
    Input Parameters:
 +  ksp - the Krylov space context
@@ -720,7 +720,7 @@ PetscErrorCode KSPGMRESGetCGSRefinementType(KSP ksp, KSPGMRESCGSRefinementType *
 /*@
    KSPGMRESSetRestart - Sets number of iterations at which `KSPGMRES`, `KSPFGMRES` and `KSPLGMRES` restarts.
 
-   Logically Collective on ksp
+   Logically Collective
 
    Input Parameters:
 +  ksp - the Krylov space context
@@ -770,7 +770,7 @@ PetscErrorCode KSPGMRESGetRestart(KSP ksp, PetscInt *restart)
 /*@
    KSPGMRESSetHapTol - Sets tolerance for determining happy breakdown in `KSPGMRES`, `KSPFGMRES` and `KSPLGMRES`
 
-   Logically Collective on ksp
+   Logically Collective
 
    Input Parameters:
 +  ksp - the Krylov space context
@@ -799,7 +799,7 @@ PetscErrorCode KSPGMRESSetHapTol(KSP ksp, PetscReal tol)
 /*@
    KSPGMRESSetBreakdownTolerance - Sets tolerance for determining divergence breakdown in `KSPGMRES`.
 
-   Logically Collective on ksp
+   Logically Collective
 
    Input Parameters:
 +  ksp - the Krylov space context

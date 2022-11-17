@@ -274,7 +274,7 @@ PetscErrorCode MatNormalGetMat_NormalHermitian(Mat A, Mat *M)
 /*@
       MatNormalHermitianGetMat - Gets the `Mat` object stored inside a `MATNORMALHERMITIAN`
 
-   Logically collective on A
+   Logically collective
 
    Input Parameter:
 .   A  - the `MATNORMALHERMITIAN` matrix
@@ -332,7 +332,7 @@ PetscErrorCode MatConvert_NormalHermitian_AIJ(Mat A, MatType newtype, MatReuse r
 /*@
       MatCreateNormalHermitian - Creates a new matrix object `MATNORMALHERMITIAN` that behaves like (A*)'*A.
 
-   Collective on A
+   Collective
 
    Input Parameter:
 .   A  - the (possibly rectangular complex) matrix

@@ -720,7 +720,7 @@ PetscErrorCode SNESMultiblockSetType_Default(SNES snes, PCCompositeType type)
 /*@
   SNESMultiblockSetFields - Sets the fields for one particular block in a `SNESMULTBLOCK` solver
 
-  Logically Collective on snes
+  Logically Collective
 
   Input Parameters:
 + snes   - the solver
@@ -758,7 +758,7 @@ PetscErrorCode SNESMultiblockSetFields(SNES snes, const char name[], PetscInt n,
 /*@
   SNESMultiblockSetIS - Sets the global row indices for one particular block in a `SNESMULTBLOCK` solver
 
-  Logically Collective on snes
+  Logically Collective
 
   Input Parameters:
 + snes - the solver context
@@ -788,7 +788,7 @@ PetscErrorCode SNESMultiblockSetIS(SNES snes, const char name[], IS is)
 /*@
   SNESMultiblockSetType - Sets the type of block combination used for a `SNESMULTBLOCK` solver
 
-  Logically Collective on snes
+  Logically Collective
 
   Input Parameters:
 + snes - the solver context
@@ -812,7 +812,7 @@ PetscErrorCode SNESMultiblockSetType(SNES snes, PCCompositeType type)
 /*@
   SNESMultiblockSetBlockSize - Sets the block size for structured block division in a `SNESMULTBLOCK` solver. If not set the matrix block size is used.
 
-  Logically Collective on snes
+  Logically Collective
 
   Input Parameters:
 + snes - the solver context

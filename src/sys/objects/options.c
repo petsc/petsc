@@ -931,7 +931,7 @@ static PetscBool PetscCIOption(const char *name)
    PetscOptionsView - Prints the options that have been loaded. This is
    useful for debugging purposes.
 
-   Logically Collective on viewer
+   Logically Collective
 
    Input Parameters:
 +  options - options database, use NULL for default global database
@@ -1994,7 +1994,7 @@ PetscErrorCode PetscOptionsLeftRestore(PetscOptions options, PetscInt *N, char *
 /*@C
    PetscOptionsMonitorDefault - Print all options set value events using the supplied `PetscViewer`.
 
-   Logically Collective on ctx
+   Logically Collective
 
    Input Parameters:
 +  name  - option name string

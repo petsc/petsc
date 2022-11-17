@@ -155,7 +155,7 @@ static PetscErrorCode PCKSPSetKSP_KSP(PC pc, KSP ksp)
 /*@
    PCKSPSetKSP - Sets the `KSP` context for a `PCKSP`.
 
-   Collective on pc
+   Collective
 
    Input Parameters:
 +  pc - the preconditioner context

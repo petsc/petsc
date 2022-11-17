@@ -765,7 +765,7 @@ PETSC_EXTERN PetscErrorCode TaoCreate_ADMM(Tao tao)
 /*@
   TaoADMMSetMisfitHessianChangeStatus - Set boolean that determines  whether Hessian matrix of misfit subsolver changes with respect to input vector.
 
-  Collective on Tao
+  Collective
 
   Input Parameters:
 +  tao - the Tao solver context.
@@ -788,7 +788,7 @@ PetscErrorCode TaoADMMSetMisfitHessianChangeStatus(Tao tao, PetscBool b)
 /*@
   TaoADMMSetRegHessianChangeStatus - Set boolean that determines whether Hessian matrix of regularization subsolver changes with respect to input vector.
 
-  Collective on Tao
+  Collective
 
   Input Parameters:
 +  tao - the Tao solver context
@@ -811,7 +811,7 @@ PetscErrorCode TaoADMMSetRegHessianChangeStatus(Tao tao, PetscBool b)
 /*@
   TaoADMMSetSpectralPenalty - Set the spectral penalty (mu) value
 
-  Collective on Tao
+  Collective
 
   Input Parameters:
 +  tao - the Tao solver context
@@ -833,7 +833,7 @@ PetscErrorCode TaoADMMSetSpectralPenalty(Tao tao, PetscReal mu)
 /*@
   TaoADMMGetSpectralPenalty - Get the spectral penalty (mu) value
 
-  Collective on Tao
+  Collective
 
   Input Parameter:
 .  tao - the Tao solver context
@@ -859,7 +859,7 @@ PetscErrorCode TaoADMMGetSpectralPenalty(Tao tao, PetscReal *mu)
 /*@
   TaoADMMGetMisfitSubsolver - Get the pointer to the misfit subsolver inside ADMM
 
-  Collective on Tao
+  Collective
 
   Input Parameter:
 .  tao - the Tao solver context
@@ -884,7 +884,7 @@ PetscErrorCode TaoADMMGetMisfitSubsolver(Tao tao, Tao *misfit)
 /*@
   TaoADMMGetRegularizationSubsolver - Get the pointer to the regularization subsolver inside ADMM
 
-  Collective on Tao
+  Collective
 
   Input Parameter:
 .  tao - the Tao solver context
@@ -909,7 +909,7 @@ PetscErrorCode TaoADMMGetRegularizationSubsolver(Tao tao, Tao *reg)
 /*@
   TaoADMMSetConstraintVectorRHS - Set the RHS constraint vector for ADMM
 
-  Collective on Tao
+  Collective
 
   Input Parameters:
 + tao - the Tao solver context
@@ -932,7 +932,7 @@ PetscErrorCode TaoADMMSetConstraintVectorRHS(Tao tao, Vec c)
 /*@
   TaoADMMSetMinimumSpectralPenalty - Set the minimum value for the spectral penalty
 
-  Collective on Tao
+  Collective
 
   Input Parameters:
 +  tao - the Tao solver context
@@ -954,7 +954,7 @@ PetscErrorCode TaoADMMSetMinimumSpectralPenalty(Tao tao, PetscReal mu)
 /*@
   TaoADMMSetRegularizerCoefficient - Set the regularization coefficient lambda for L1 norm regularization case
 
-  Collective on Tao
+  Collective
 
   Input Parameters:
 +  tao - the Tao solver context
@@ -977,7 +977,7 @@ PetscErrorCode TaoADMMSetRegularizerCoefficient(Tao tao, PetscReal lambda)
 /*@C
   TaoADMMSetMisfitConstraintJacobian - Set the constraint matrix B for the ADMM algorithm. Matrix B constrains the z variable.
 
-  Collective on Tao
+  Collective
 
   Input Parameters:
 + tao - the Tao solver context
@@ -1024,7 +1024,7 @@ PetscErrorCode TaoADMMSetMisfitConstraintJacobian(Tao tao, Mat J, Mat Jpre, Pets
 /*@C
   TaoADMMSetRegularizerConstraintJacobian - Set the constraint matrix B for ADMM algorithm. Matrix B constraints z variable.
 
-  Collective on Tao
+  Collective
 
   Input Parameters:
 + tao - the Tao solver context
@@ -1071,7 +1071,7 @@ PetscErrorCode TaoADMMSetRegularizerConstraintJacobian(Tao tao, Mat J, Mat Jpre,
 /*@C
    TaoADMMSetMisfitObjectiveAndGradientRoutine - Sets the user-defined misfit call-back function
 
-   Collective on tao
+   Collective
 
    Input Parameters:
 +    tao - the Tao context
@@ -1098,7 +1098,7 @@ PetscErrorCode TaoADMMSetMisfitObjectiveAndGradientRoutine(Tao tao, PetscErrorCo
    TaoADMMSetMisfitHessianRoutine - Sets the user-defined misfit Hessian call-back
    function into the algorithm, to be used for subsolverX.
 
-   Collective on tao
+   Collective
 
    Input Parameters:
 + tao - the Tao context
@@ -1144,7 +1144,7 @@ PetscErrorCode TaoADMMSetMisfitHessianRoutine(Tao tao, Mat H, Mat Hpre, PetscErr
 /*@C
    TaoADMMSetRegularizerObjectiveAndGradientRoutine - Sets the user-defined regularizer call-back function
 
-   Collective on tao
+   Collective
 
    Input Parameters:
 + tao - the Tao context
@@ -1171,7 +1171,7 @@ PetscErrorCode TaoADMMSetRegularizerObjectiveAndGradientRoutine(Tao tao, PetscEr
    TaoADMMSetRegularizerHessianRoutine - Sets the user-defined regularizer Hessian call-back
    function, to be used for subsolverZ.
 
-   Collective on tao
+   Collective
 
    Input Parameters:
 + tao - the Tao context
@@ -1217,7 +1217,7 @@ PetscErrorCode TaoADMMSetRegularizerHessianRoutine(Tao tao, Mat H, Mat Hpre, Pet
 /*@
    TaoGetADMMParentTao - Gets pointer to parent ADMM tao, used by inner subsolver.
 
-   Collective on tao
+   Collective
 
    Input Parameter:
 . tao - the Tao context

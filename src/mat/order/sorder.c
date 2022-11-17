@@ -116,7 +116,7 @@ PetscErrorCode MatOrderingRegister(const char sname[], PetscErrorCode (*function
    MatGetOrdering - Gets a reordering for a matrix to reduce fill or to
    improve numerical stability of LU factorization.
 
-   Collective on Mat
+   Collective
 
    Input Parameters:
 +  mat - the matrix
