@@ -389,9 +389,6 @@ PetscErrorCode TaoSetFromOptions(Tao tao)
 
   if (((PetscObject)tao)->type_name) default_type = ((PetscObject)tao)->type_name;
 
-  /* So no warnings are given about unused options */
-  PetscCall(PetscOptionsHasName(((PetscObject)tao)->options, ((PetscObject)tao)->prefix, "-tao_ls_type", &flg));
-
   PetscObjectOptionsBegin((PetscObject)tao);
   /* Check for type from options */
   PetscCall(PetscOptionsFList("-tao_type", "Tao Solver type", "TaoSetType", TaoList, default_type, type, 256, &flg));
