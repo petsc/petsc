@@ -3050,7 +3050,7 @@ PetscErrorCode PetscOptionsGetScalarArray(PetscOptions options, const char pre[]
   PetscOptionsGetStringArray - Gets an array of string values for a particular
   option in the database. The values must be separated with commas with no intervening spaces.
 
-  Not Collective
+  Not Collective; No Fortran Support
 
   Input Parameters:
 + options - options database, use NULL for default global database
@@ -3071,7 +3071,7 @@ PetscErrorCode PetscOptionsGetScalarArray(PetscOptions options, const char pre[]
   strings returned by this function.
 
   The user is responsible for deallocating the strings that are
-  returned. The Fortran interface for this routine is not supported.
+  returned.
 
 .seealso: `PetscOptionsGetInt()`, `PetscOptionsGetReal()`,
           `PetscOptionsHasName()`, `PetscOptionsGetIntArray()`, `PetscOptionsGetRealArray()`, `PetscOptionsBool()`,

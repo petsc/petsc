@@ -844,7 +844,7 @@ set:
 /*@C
     MatShellSetMatProductOperation - Allows user to set a matrix matrix operation for a `MATSHELL` shell matrix.
 
-   Logically Collective on A
+   Logically Collective on A; No Fortran Support
 
     Input Parameters:
 +   A - the `MATSHELL` shell matrix
@@ -858,21 +858,23 @@ set:
    Level: advanced
 
     Usage:
-$      extern PetscErrorCode usersymbolic(Mat,Mat,Mat,void**);
-$      extern PetscErrorCode usernumeric(Mat,Mat,Mat,void*);
-$      extern PetscErrorCode userdestroy(void*);
-$      MatCreateShell(comm,m,n,M,N,ctx,&A);
-$      MatShellSetMatProductOperation(A,MATPRODUCT_AB,usersymbolic,usernumeric,userdestroy,MATSEQAIJ,MATDENSE);
-$      [ create B of type SEQAIJ etc..]
-$      MatProductCreate(A,B,NULL,&C);
-$      MatProductSetType(C,MATPRODUCT_AB);
-$      MatProductSetFromOptions(C);
-$      MatProductSymbolic(C); -> actually runs the user defined symbolic operation
-$      MatProductNumeric(C); -> actually runs the user defined numeric operation
-$      [ use C = A*B ]
+.vb
+      extern PetscErrorCode usersymbolic(Mat,Mat,Mat,void**);
+      extern PetscErrorCode usernumeric(Mat,Mat,Mat,void*);
+      extern PetscErrorCode userdestroy(void*);
+      MatCreateShell(comm,m,n,M,N,ctx,&A);
+      MatShellSetMatProductOperation(A,MATPRODUCT_AB,usersymbolic,usernumeric,userdestroy,MATSEQAIJ,MATDENSE);
+      [ create B of type SEQAIJ etc..]
+      MatProductCreate(A,B,NULL,&C);
+      MatProductSetType(C,MATPRODUCT_AB);
+      MatProductSetFromOptions(C);
+      MatProductSymbolic(C); -> actually runs the user defined symbolic operation
+      MatProductNumeric(C); -> actually runs the user defined numeric operation
+      [ use C = A*B ]
+.ve
 
     Notes:
-    `MATPRODUCT_ABC` is not supported yet. Not supported in Fortran.
+    `MATPRODUCT_ABC` is not supported yet.
 
     If the symbolic phase is not specified, `MatSetUp()` is called on the result matrix that must have its type set if Ctype is NULL.
 
@@ -1842,7 +1844,7 @@ PetscErrorCode MatShellSetManageScalingShifts(Mat A)
 /*@C
     MatShellTestMult - Compares the multiply routine provided to the `MATSHELL` with differencing on a given function.
 
-   Logically Collective
+   Logically Collective; No Fortran Support
 
     Input Parameters:
 +   mat - the `MATSHELL` shell matrix
@@ -1857,9 +1859,6 @@ PetscErrorCode MatShellSetManageScalingShifts(Mat A)
 .   -mat_shell_test_mult_view - print if any differences are detected between the products and print the difference
 
    Level: advanced
-
-   Fortran Note:
-    Not supported from Fortran
 
 .seealso: `MATSHELL`, `MatCreateShell()`, `MatShellGetContext()`, `MatShellGetOperation()`, `MatShellTestMultTranspose()`
 @*/
@@ -1907,7 +1906,7 @@ PetscErrorCode MatShellTestMult(Mat mat, PetscErrorCode (*f)(void *, Vec, Vec), 
 /*@C
     MatShellTestMultTranspose - Compares the multiply transpose routine provided to the `MATSHELL` with differencing on a given function.
 
-   Logically Collective
+   Logically Collective; No Fortran Support
 
     Input Parameters:
 +   mat - the `MATSHELL` shell matrix
@@ -1922,9 +1921,6 @@ PetscErrorCode MatShellTestMult(Mat mat, PetscErrorCode (*f)(void *, Vec, Vec), 
 .   -mat_shell_test_mult_view - print if any differences are detected between the products and print the difference
 
    Level: advanced
-
-   Fortran Note:
-    Not supported from Fortran
 
 .seealso: `MATSHELL`, `MatCreateShell()`, `MatShellGetContext()`, `MatShellGetOperation()`, `MatShellTestMult()`
 @*/

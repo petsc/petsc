@@ -161,16 +161,13 @@ PetscErrorCode MatNullSpaceCreateRigidBody(Vec coords, MatNullSpace *sp)
 /*@C
    MatNullSpaceView - Visualizes a null space object.
 
-   Collective
+   Collective; No Fortran Support
 
    Input Parameters:
 +  matnull - the null space
 -  viewer - visualization context
 
    Level: advanced
-
-   Fortran Note:
-   This routine is not supported in Fortran.
 
 .seealso: `MatNullSpace`, `MatNullSpaceCreate()`, `PetscViewerASCIIOpen()`
 @*/

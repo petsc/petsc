@@ -167,7 +167,7 @@ static PetscErrorCode PetscViewerRestoreSubViewer_Binary(PetscViewer viewer, MPI
 /*@C
     PetscViewerBinaryGetMPIIOOffset - Gets the current global offset that should be passed to `MPI_File_set_view()` or `MPI_File_{write|read}_at[_all]()`
 
-    Not Collective
+    Not Collective; No Fortran Support
 
     Input Parameter:
 .   viewer - PetscViewer context, obtained from `PetscViewerBinaryOpen()`
@@ -179,9 +179,6 @@ static PetscErrorCode PetscViewerRestoreSubViewer_Binary(PetscViewer viewer, MPI
 
     Note:
     Use `PetscViewerBinaryAddMPIIOOffset()` to increase this value after you have written a view.
-
-    Fortran Note:
-    This routine is not supported in Fortran.
 
 .seealso: `PETSCVIEWERBINARY`, `PetscViewerBinaryOpen()`, `PetscViewerBinaryGetInfoPointer()`, `PetscViewerBinaryGetUseMPIIO()`, `PetscViewerBinarySetUseMPIIO()`, `PetscViewerBinaryAddMPIIOOffset()`
 @*/
@@ -200,7 +197,7 @@ PetscErrorCode PetscViewerBinaryGetMPIIOOffset(PetscViewer viewer, MPI_Offset *o
 /*@C
     PetscViewerBinaryAddMPIIOOffset - Adds to the current global offset
 
-    Logically Collective
+    Logically Collective; No Fortran Support
 
     Input Parameters:
 +   viewer - `PetscViewer` context, obtained from `PetscViewerBinaryOpen()`
@@ -210,9 +207,6 @@ PetscErrorCode PetscViewerBinaryGetMPIIOOffset(PetscViewer viewer, MPI_Offset *o
 
     Note:
     Use `PetscViewerBinaryGetMPIIOOffset()` to get the value that you should pass to `MPI_File_set_view()` or `MPI_File_{write|read}_at[_all]()`
-
-    Fortran Note:
-    This routine is not supported in Fortran.
 
 .seealso: `PETSCVIEWERBINARY`, `PetscViewerBinaryOpen()`, `PetscViewerBinaryGetInfoPointer()`, `PetscViewerBinaryGetUseMPIIO()`, `PetscViewerBinarySetUseMPIIO()`, `PetscViewerBinaryGetMPIIOOffset()`
 @*/
@@ -231,7 +225,7 @@ PetscErrorCode PetscViewerBinaryAddMPIIOOffset(PetscViewer viewer, MPI_Offset of
 /*@C
     PetscViewerBinaryGetMPIIODescriptor - Extracts the MPI IO file descriptor from a `PetscViewer`.
 
-    Not Collective
+    Not Collective; No Fortran Support
 
     Input Parameter:
 .   viewer - `PetscViewer` context, obtained from `PetscViewerBinaryOpen()`
@@ -240,9 +234,6 @@ PetscErrorCode PetscViewerBinaryAddMPIIOOffset(PetscViewer viewer, MPI_Offset of
 .   fdes - file descriptor
 
     Level: advanced
-
-    Fortran Note:
-    This routine is not supported in Fortran.
 
 .seealso: `PETSCVIEWERBINARY`, `PetscViewerBinaryOpen()`, `PetscViewerBinaryGetInfoPointer()`, `PetscViewerBinaryGetUseMPIIO()`, `PetscViewerBinarySetUseMPIIO()`, `PetscViewerBinaryGetMPIIOOffset()`
 @*/
@@ -405,7 +396,7 @@ PETSC_INTERN PetscErrorCode PetscViewerBinaryGetFlowControl_Binary(PetscViewer v
 /*@C
     PetscViewerBinaryGetDescriptor - Extracts the file descriptor from a `PetscViewer` of `PetscViewerType` `PETSCVIEWERBINARY`.
 
-    Collective on viewer because it may trigger a `PetscViewerSetUp()` call
+    Collective on viewer because it may trigger a `PetscViewerSetUp()` call;; No Fortran Support
 
     Input Parameter:
 .   viewer - `PetscViewer` context, obtained from `PetscViewerBinaryOpen()`
@@ -420,9 +411,6 @@ PETSC_INTERN PetscErrorCode PetscViewerBinaryGetFlowControl_Binary(PetscViewer v
     first processor in the communicator that shares the `PetscViewer`. For readable
     files it will only be valid on nodes that have the file. If node 0 does not
     have the file it generates an error even if another node does have the file.
-
-    Fortran Note:
-    This routine is not supported in Fortran.
 
 .seealso: `PETSCVIEWERBINARY`, `PetscViewerBinaryOpen()`, `PetscViewerBinaryGetInfoPointer()`
 @*/
@@ -702,7 +690,7 @@ static PetscErrorCode PetscViewerBinaryGetSkipHeader_Binary(PetscViewer viewer, 
     PetscViewerBinaryGetInfoPointer - Extracts the file pointer for the ASCII
           info file associated with a binary file.
 
-    Not Collective
+    Not Collective; No Fortran Support
 
     Input Parameter:
 .   viewer - `PetscViewer` context, obtained from `PetscViewerBinaryOpen()`
@@ -715,9 +703,6 @@ static PetscErrorCode PetscViewerBinaryGetSkipHeader_Binary(PetscViewer viewer, 
     Note:
       For writable binary `PetscViewer`s, the file pointer will only be valid for the
     first processor in the communicator that shares the `PetscViewer`.
-
-    Fortran Note:
-    This routine is not supported in Fortran.
 
 .seealso: `PETSCVIEWERBINARY`, `PetscViewerBinaryOpen()`, `PetscViewerBinaryGetDescriptor()`
 @*/
@@ -1233,9 +1218,11 @@ PetscErrorCode PetscViewerBinaryReadStringArray(PetscViewer viewer, char ***data
   Input Parameters:
 +  viewer - the `PetscViewer`; must be a a `PETSCVIEWERBINARY`, `PETSCVIEWERMATLAB`, `PETSCVIEWERHDF5`, or `PETSCVIEWERASCII`  `PetscViewer`
 -  mode - open mode of file
-$    FILE_MODE_WRITE - create new file for output
-$    FILE_MODE_READ - open existing file for input
-$    FILE_MODE_APPEND - open existing file for output
+.vb
+    FILE_MODE_WRITE - create new file for output
+    FILE_MODE_READ - open existing file for input
+    FILE_MODE_APPEND - open existing file for output
+.ve
 
   Level: advanced
 
@@ -1272,9 +1259,11 @@ static PetscErrorCode PetscViewerFileSetMode_Binary(PetscViewer viewer, PetscFil
 
   Output Parameter:
 .  mode - open mode of file
-$    FILE_MODE_WRITE - create new file for binary output
-$    FILE_MODE_READ - open existing file for binary input
-$    FILE_MODE_APPEND - open existing file for binary output
+.vb
+    FILE_MODE_WRITE - create new file for binary output
+    FILE_MODE_READ - open existing file for binary input
+    FILE_MODE_APPEND - open existing file for binary output
+.ve
 
   Level: advanced
 

@@ -216,7 +216,6 @@ PetscErrorCode VecDotRealPart(Vec x, Vec y, PetscReal *val)
 
 .seealso: `VecDot()`, `VecTDot()`, `VecNorm()`, `VecDotBegin()`, `VecDotEnd()`, `VecNormAvailable()`,
           `VecNormBegin()`, `VecNormEnd()`, `NormType()`
-
 @*/
 PetscErrorCode VecNorm(Vec x, NormType type, PetscReal *val)
 {
@@ -277,7 +276,6 @@ $    work load imbalance that causes certain processes to arrive much earlier th
 
 .seealso: `VecDot()`, `VecTDot()`, `VecNorm()`, `VecDotBegin()`, `VecDotEnd()`, `VecNorm()`
           `VecNormBegin()`, `VecNormEnd()`
-
 @*/
 PetscErrorCode VecNormAvailable(Vec x, NormType type, PetscBool *available, PetscReal *val)
 {
@@ -571,13 +569,14 @@ PetscErrorCode VecSet(Vec x, PetscScalar alpha)
    Notes:
     x and y MUST be different vectors
     This routine is optimized for alpha of 0.0, otherwise it calls the BLAS routine
-
-$    VecAXPY(y,alpha,x)                   y = alpha x           +      y
-$    VecAYPX(y,beta,x)                    y =       x           + beta y
-$    VecAXPBY(y,alpha,beta,x)             y = alpha x           + beta y
-$    VecWAXPY(w,alpha,x,y)                w = alpha x           +      y
-$    VecAXPBYPCZ(w,alpha,beta,gamma,x,y)  z = alpha x           + beta y + gamma z
-$    VecMAXPY(y,nv,alpha[],x[])           y = sum alpha[i] x[i] +      y
+.vb
+    VecAXPY(y,alpha,x)                   y = alpha x           +      y
+    VecAYPX(y,beta,x)                    y =       x           + beta y
+    VecAXPBY(y,alpha,beta,x)             y = alpha x           + beta y
+    VecWAXPY(w,alpha,x,y)                w = alpha x           +      y
+    VecAXPBYPCZ(w,alpha,beta,gamma,x,y)  z = alpha x           + beta y + gamma z
+    VecMAXPY(y,nv,alpha[],x[])           y = sum alpha[i] x[i] +      y
+.ve
 
 .seealso: `VecAYPX()`, `VecMAXPY()`, `VecWAXPY()`, `VecAXPBYPCZ()`, `VecAXPBY()`
 @*/
@@ -2031,7 +2030,7 @@ PetscErrorCode VecRestoreArrayWrite(Vec x, PetscScalar **a)
    that were created by a call to VecDuplicateVecs().  You MUST call
    VecRestoreArrays() when you no longer need access to the array.
 
-   Logically Collective
+   Logically Collective; No Fortran Support
 
    Input Parameters:
 +  x - the vectors
@@ -2039,9 +2038,6 @@ PetscErrorCode VecRestoreArrayWrite(Vec x, PetscScalar **a)
 
    Output Parameter:
 .  a - location to put pointer to the array
-
-   Fortran Note:
-   This routine is not supported in Fortran.
 
    Level: intermediate
 
@@ -2067,7 +2063,7 @@ PetscErrorCode VecGetArrays(const Vec x[], PetscInt n, PetscScalar **a[])
    VecRestoreArrays - Restores a group of vectors after VecGetArrays()
    has been called.
 
-   Logically Collective
+   Logically Collective; No Fortran Support
 
    Input Parameters:
 +  x - the vector
@@ -2079,9 +2075,6 @@ PetscErrorCode VecGetArrays(const Vec x[], PetscInt n, PetscScalar **a[])
    any special vectors that do not store local vector data in a contiguous
    array, this routine will copy the data back into the underlying
    vector data structure from the arrays obtained with VecGetArrays().
-
-   Fortran Note:
-   This routine is not supported in Fortran.
 
    Level: intermediate
 
@@ -2356,11 +2349,13 @@ PetscErrorCode VecPlaceArray(Vec vec, const PetscScalar array[])
    array provided by the user. This is useful to avoid copying an array
    into a vector.
 
-   Not Collective
+   Not Collective; No Fortran Support
 
    Input Parameters:
 +  vec - the vector
 -  array - the array
+
+   Level: developer
 
    Notes:
    This permanently replaces the array and frees the memory associated
@@ -2368,10 +2363,6 @@ PetscErrorCode VecPlaceArray(Vec vec, const PetscScalar array[])
 
    The memory passed in MUST be obtained with PetscMalloc() and CANNOT be
    freed by the user. It will be freed when the vector is destroyed.
-
-   Not supported from Fortran
-
-   Level: developer
 
 .seealso: `VecGetArray()`, `VecRestoreArray()`, `VecPlaceArray()`, `VecResetArray()`
 
@@ -2644,11 +2635,13 @@ PetscErrorCode VecCUDAPlaceArray(Vec vin, const PetscScalar a[])
    with a GPU array provided by the user. This is useful to avoid copying
    a GPU array into a vector.
 
-   Not Collective
+   Not Collective; No Fortran Support
 
    Input Parameters:
 +  vec - the vector
 -  array - the GPU array
+
+   Level: developer
 
    Notes:
    This permanently replaces the GPU array and frees the memory associated
@@ -2656,10 +2649,6 @@ PetscErrorCode VecCUDAPlaceArray(Vec vin, const PetscScalar a[])
 
    The memory passed in CANNOT be freed by the user. It will be freed
    when the vector is destroyed.
-
-   Not supported from Fortran
-
-   Level: developer
 
 .seealso: `VecGetArray()`, `VecRestoreArray()`, `VecPlaceArray()`, `VecResetArray()`, `VecCUDAResetArray()`, `VecCUDAPlaceArray()`, `VecReplaceArray()`
 
@@ -2970,11 +2959,13 @@ PetscErrorCode VecHIPPlaceArray(Vec vin, const PetscScalar a[])
    with a GPU array provided by the user. This is useful to avoid copying
    a GPU array into a vector.
 
-   Not Collective
+   Not Collective; No Fortran Support
 
    Input Parameters:
 +  vec - the vector
 -  array - the GPU array
+
+   Level: developer
 
    Notes:
    This permanently replaces the GPU array and frees the memory associated
@@ -2983,12 +2974,7 @@ PetscErrorCode VecHIPPlaceArray(Vec vin, const PetscScalar a[])
    The memory passed in CANNOT be freed by the user. It will be freed
    when the vector is destroyed.
 
-   Not supported from Fortran
-
-   Level: developer
-
 .seealso: `VecGetArray()`, `VecRestoreArray()`, `VecPlaceArray()`, `VecResetArray()`, `VecHIPResetArray()`, `VecHIPPlaceArray()`, `VecReplaceArray()`
-
 @*/
 PetscErrorCode VecHIPReplaceArray(Vec vin, const PetscScalar a[])
 {

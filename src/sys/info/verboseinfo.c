@@ -127,7 +127,7 @@ PetscErrorCode PetscInfoSetFile(const char filename[], const char mode[])
 /*@C
     PetscInfoGetFile - Gets the name and FILE pointer of the file where `PetscInfo()` prints to
 
-    Not Collective
+    Not Collective; No Fortran Support
 
     Output Parameters:
 +   filename - The name of the output file
@@ -138,9 +138,6 @@ PetscErrorCode PetscInfoSetFile(const char filename[], const char mode[])
     Note:
     This routine allocates and copies the filename so that the filename survives `PetscInfoDestroy()`. The user is
     therefore responsible for freeing the allocated filename pointer afterwards.
-
-    Fortran Note:
-    This routine is not supported in Fortran.
 
 .seealso: `PetscInfo()`, `PetscInfoSetFile()`, `PetscInfoSetFromOptions()`, `PetscInfoDestroy()`
 @*/

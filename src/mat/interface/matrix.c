@@ -852,11 +852,11 @@ PetscErrorCode MatAppendOptionsPrefix(Mat A, const char prefix[])
    Output Parameter:
 .  prefix - pointer to the prefix string used
 
+   Level: advanced
+
    Fortran Note:
     On the fortran side, the user should pass in a string 'prefix' of
    sufficient length to hold the prefix.
-
-   Level: advanced
 
 .seealso: `MatAppendOptionsPrefix()`, `MatSetOptionsPrefix()`, `MatAppendOptionsPrefixFactor()`, `MatSetOptionsPrefixFactor()`
 @*/
@@ -1490,6 +1490,8 @@ PetscErrorCode MatSetValues(Mat mat, PetscInt m, const PetscInt idxm[], PetscInt
 .  isn - the columns to provide
 -  addv - either `ADD_VALUES` to add values to any existing entries, or `INSERT_VALUES` to replace existing entries with new values
 
+   Level: beginner
+
    Notes:
    If you create the matrix yourself (that is not with a call to `DMCreateMatrix()`) then you MUST call MatXXXXSetPreallocation() or
       `MatSetUp()` before using this routine
@@ -1500,7 +1502,7 @@ PetscErrorCode MatSetValues(Mat mat, PetscInt m, const PetscInt idxm[], PetscInt
    options cannot be mixed without intervening calls to the assembly
    routines.
 
-   MatSetValues() uses 0-based row and column numbers in Fortran
+   `MatSetValues()` uses 0-based row and column numbers in Fortran
    as well as in C.
 
    Negative indices may be passed in ism and isn, these rows and columns are
@@ -1512,13 +1514,11 @@ PetscErrorCode MatSetValues(Mat mat, PetscInt m, const PetscInt idxm[], PetscInt
    The routine `MatSetValuesBlocked()` may offer much better efficiency
    for users of block sparse formats (`MATSEQBAIJ` and `MATMPIBAIJ`).
 
-   Level: beginner
+    This is currently not optimized for any particular `ISType`
 
    Developer Notes:
     This is labeled with C so does not automatically generate Fortran stubs and interfaces
                     because it requires multiple Fortran interfaces depending on which arguments are scalar or arrays.
-
-    This is currently not optimized for any particular `ISType`
 
 .seealso: `MatSetOption()`, `MatSetValues()`, `MatAssemblyBegin()`, `MatAssemblyEnd()`, `MatSetValuesBlocked()`, `MatSetValuesLocal()`,
           `InsertMode`, `INSERT_VALUES`, `ADD_VALUES`, `MatSetValues()`
@@ -1639,6 +1639,8 @@ PetscErrorCode MatSetValuesRow(Mat mat, PetscInt row, const PetscScalar v[])
 .  v - a logically two-dimensional array of values
 -  addv - either `ADD_VALUES` to add to existing entries at that location or `INSERT_VALUES` to replace existing entries with new values
 
+   Level: beginner
+
    Notes:
    By default the values, v, are row-oriented.  See `MatSetOption()` for other options.
 
@@ -1662,15 +1664,6 @@ PetscErrorCode MatSetValuesRow(Mat mat, PetscInt row, const PetscScalar v[])
    local nonghost x logical coordinate is 6 (so its first ghost x logical coordinate is 5) the
    first i index you can use in your column and row indices in `MatSetStencil()` is 5.
 
-   In Fortran idxm and idxn should be declared as
-$     MatStencil idxm(4,m),idxn(4,n)
-   and the values inserted using
-$    idxm(MatStencil_i,1) = i
-$    idxm(MatStencil_j,1) = j
-$    idxm(MatStencil_k,1) = k
-$    idxm(MatStencil_c,1) = c
-   etc
-
    For periodic boundary conditions use negative indices for values to the left (below 0; that are to be
    obtained by wrapping values from right edge). For values to the right of the last entry using that index plus one
    etc to obtain values that obtained by wrapping the values from the left edge. This does not work for anything but the
@@ -1686,7 +1679,17 @@ $    idxm(MatStencil_c,1) = c
    The routine `MatSetValuesBlockedStencil()` may offer much better efficiency
    for users of block sparse formats (`MATSEQBAIJ` and `MATMPIBAIJ`).
 
-   Level: beginner
+   Fortran Note:
+   In Fortran idxm and idxn should be declared as
+$     MatStencil idxm(4,m),idxn(4,n)
+   and the values inserted using
+.vb
+    idxm(MatStencil_i,1) = i
+    idxm(MatStencil_j,1) = j
+    idxm(MatStencil_k,1) = k
+    idxm(MatStencil_c,1) = c
+    etc
+.ve
 
 .seealso: `Mat`, `DMDA`, `MatSetOption()`, `MatAssemblyBegin()`, `MatAssemblyEnd()`, `MatSetValuesBlocked()`, `MatSetValuesLocal()`
           `MatSetValues()`, `MatSetValuesBlockedStencil()`, `MatSetStencil()`, `DMCreateMatrix()`, `DMDAVecGetArray()`, `MatStencil`
@@ -1752,6 +1755,8 @@ PetscErrorCode MatSetValuesStencil(Mat mat, PetscInt m, const MatStencil idxm[],
 .  v - a logically two-dimensional array of values
 -  addv - either `ADD_VALUES` to add to existing entries or `INSERT_VALUES` to replace existing entries with new values
 
+   Level: beginner
+
    Notes:
    By default the values, v, are row-oriented and unsorted.
    See `MatSetOption()` for other options.
@@ -1776,14 +1781,6 @@ PetscErrorCode MatSetValuesStencil(Mat mat, PetscInt m, const MatStencil idxm[],
    local nonghost x logical coordinate is 6 (so its first ghost x logical coordinate is 5) the
    first i index you can use in your column and row indices in `MatSetStencil()` is 5.
 
-   In Fortran idxm and idxn should be declared as
-$     MatStencil idxm(4,m),idxn(4,n)
-   and the values inserted using
-$    idxm(MatStencil_i,1) = i
-$    idxm(MatStencil_j,1) = j
-$    idxm(MatStencil_k,1) = k
-   etc
-
    Negative indices may be passed in idxm and idxn, these rows and columns are
    simply ignored. This allows easily inserting element stiffness matrices
    with homogeneous Dirchlet boundary conditions that you don't want represented
@@ -1792,7 +1789,16 @@ $    idxm(MatStencil_k,1) = k
    Inspired by the structured grid interface to the HYPRE package
    (https://computation.llnl.gov/projects/hypre-scalable-linear-solvers-multigrid-methods)
 
-   Level: beginner
+   Fortran Note:
+   In Fortran idxm and idxn should be declared as
+$     MatStencil idxm(4,m),idxn(4,n)
+   and the values inserted using
+.vb
+    idxm(MatStencil_i,1) = i
+    idxm(MatStencil_j,1) = j
+    idxm(MatStencil_k,1) = k
+   etc
+.ve
 
 .seealso: `Mat`, `DMDA`, `MatSetOption()`, `MatAssemblyBegin()`, `MatAssemblyEnd()`, `MatSetValuesBlocked()`, `MatSetValuesLocal()`
           `MatSetValues()`, `MatSetValuesStencil()`, `MatSetStencil()`, `DMCreateMatrix()`, `DMDAVecGetArray()`, `MatStencil`,
@@ -1900,6 +1906,8 @@ PetscErrorCode MatSetStencil(Mat mat, PetscInt dim, const PetscInt dims[], const
 .  n, idxn - the number of block columns and their global block indices
 -  addv - either `ADD_VALUES` to add values to any existing entries, or `INSERT_VALUES` replaces existing entries with new values
 
+   Level: intermediate
+
    Notes:
    If you create the matrix yourself (that is not with a call to `DMCreateMatrix()`) then you MUST call
    MatXXXXSetPreallocation() or `MatSetUp()` before using this routine.
@@ -1935,21 +1943,21 @@ PetscErrorCode MatSetStencil(Mat mat, PetscInt dim, const PetscInt dims[], const
    reduced.
 
    Example:
-$   Suppose m=n=2 and block size(bs) = 2 The array is
-$
-$   1  2  | 3  4
-$   5  6  | 7  8
-$   - - - | - - -
-$   9  10 | 11 12
-$   13 14 | 15 16
-$
-$   v[] should be passed in like
-$   v[] = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]
-$
-$  If you are not using row oriented storage of v (that is you called MatSetOption(mat,MAT_ROW_ORIENTED,PETSC_FALSE)) then
-$   v[] = [1,5,9,13,2,6,10,14,3,7,11,15,4,8,12,16]
+.vb
+   Suppose m=n=2 and block size(bs) = 2 The array is
 
-   Level: intermediate
+   1  2  | 3  4
+   5  6  | 7  8
+   - - - | - - -
+   9  10 | 11 12
+   13 14 | 15 16
+
+   v[] should be passed in like
+   v[] = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]
+
+  If you are not using row oriented storage of v (that is you called MatSetOption(mat,MAT_ROW_ORIENTED,PETSC_FALSE)) then
+   v[] = [1,5,9,13,2,6,10,14,3,7,11,15,4,8,12,16]
+.ve
 
 .seealso: `Mat`, `MatSetBlockSize()`, `MatSetOption()`, `MatAssemblyBegin()`, `MatAssemblyEnd()`, `MatSetValues()`, `MatSetValuesBlockedLocal()`
 @*/
@@ -2078,6 +2086,8 @@ PetscErrorCode MatGetValues(Mat mat, PetscInt m, const PetscInt idxm[], PetscInt
    Output Parameter:
 .  y -  a logically two-dimensional array of values
 
+   Level: advanced
+
    Notes:
      If you create the matrix yourself (that is not with a call to `DMCreateMatrix()`) then you MUST call `MatSetLocalToGlobalMapping()` before using this routine.
 
@@ -2089,8 +2099,6 @@ PetscErrorCode MatGetValues(Mat mat, PetscInt m, const PetscInt idxm[], PetscInt
    Developer Note:
       This is labelled with C so does not automatically generate Fortran stubs and interfaces
       because it requires multiple Fortran interfaces depending on which arguments are scalar or arrays.
-
-   Level: advanced
 
 .seealso: `Mat`, `MatAssemblyBegin()`, `MatAssemblyEnd()`, `MatSetValues()`, `MatSetLocalToGlobalMapping()`,
           `MatSetValuesLocal()`, `MatGetValues()`
@@ -2952,7 +2960,8 @@ $       -info -mat_view ::ascii_info
 
     Level: intermediate
 
-    Developer Note: fortran interface is not autogenerated as the f90
+    Developer Note:
+    Fortran interface is not autogenerated as the
     interface definition cannot be generated correctly [due to MatInfo]
 
 .seealso: `MatInfo`, `MatStashGetInfo()`
@@ -3009,7 +3018,7 @@ $                   Run with the option -info to determine an optimal value to u
    Level: developer
 
    Developer Note:
-   The Fortran interface is not autogenerated as the f90
+   The Fortran interface is not autogenerated as the
    interface definition cannot be generated correctly [due to `MatFactorInfo`]
 
 .seealso: [Matrix Factorization](sec_matfactor), `Mat`, `MatFactorType`, `MatLUFactorSymbolic()`, `MatLUFactorNumeric()`, `MatCholeskyFactor()`,
@@ -3055,6 +3064,8 @@ $      expected fill - as ratio of original fill.
 $      1 or 0 - indicating force fill on diagonal (improves robustness for matrices
                 missing diagonal entries)
 
+   Level: developer
+
    Notes:
    Most users should employ the `KSP` interface for linear solvers
    instead of working directly with matrix algebra routines such as this.
@@ -3064,10 +3075,8 @@ $      1 or 0 - indicating force fill on diagonal (improves robustness for matri
    new space to store factored matrix and deletes previous memory. The prefered approach is to use `MatGetFactor()`, `MatILUFactorSymbolic()`, and `MatILUFactorNumeric()`
    when not using `KSP`.
 
-   Level: developer
-
    Developer Note:
-   The Fortran interface is not autogenerated as the f90
+   The Fortran interface is not autogenerated as the
    interface definition cannot be generated correctly [due to MatFactorInfo]
 
 .seealso: [Matrix Factorization](sec_matfactor), `MatILUFactorSymbolic()`, `MatLUFactorNumeric()`, `MatCholeskyFactor()`, `MatFactorInfo`
@@ -3108,6 +3117,8 @@ PetscErrorCode MatILUFactor(Mat mat, IS row, IS col, const MatFactorInfo *info)
           dtcol - pivot tolerance (0 no pivot, 1 full column pivoting)
 .ve
 
+   Level: developer
+
    Notes:
     See [Matrix Factorization](sec_matfactor) for additional information about factorizations
 
@@ -3115,10 +3126,8 @@ PetscErrorCode MatILUFactor(Mat mat, IS row, IS col, const MatFactorInfo *info)
    instead of working directly with matrix algebra routines such as this.
    See, e.g., `KSPCreate()`.
 
-   Level: developer
-
    Developer Note:
-   The Fortran interface is not autogenerated as the f90
+   The Fortran interface is not autogenerated as the
    interface definition cannot be generated correctly [due to `MatFactorInfo`]
 
 .seealso: [Matrix Factorization](sec_matfactor), `MatGetFactor()`, `MatLUFactor()`, `MatLUFactorNumeric()`, `MatCholeskyFactor()`, `MatFactorInfo`, `MatFactorInfoInitialize()`
@@ -3165,6 +3174,8 @@ PetscErrorCode MatLUFactorSymbolic(Mat fact, Mat mat, IS row, IS col, const MatF
 .  mat - the matrix
 -  info - options for factorization
 
+   Level: developer
+
    Notes:
    See `MatLUFactor()` for in-place factorization.  See
    `MatCholeskyFactorNumeric()` for the symmetric, positive definite case.
@@ -3173,10 +3184,8 @@ PetscErrorCode MatLUFactorSymbolic(Mat fact, Mat mat, IS row, IS col, const MatF
    instead of working directly with matrix algebra routines such as this.
    See, e.g., `KSPCreate()`.
 
-   Level: developer
-
     Developer Note:
-    The Fortran interface is not autogenerated as the f90
+    The Fortran interface is not autogenerated as the
     interface definition cannot be generated correctly [due to `MatFactorInfo`]
 
 .seealso: [Matrix Factorization](sec_matfactor), `MatGetFactor()`, `MatFactorInfo`, `MatLUFactorSymbolic()`, `MatLUFactor()`, `MatCholeskyFactor()`
@@ -3222,6 +3231,8 @@ PetscErrorCode MatLUFactorNumeric(Mat fact, Mat mat, const MatFactorInfo *info)
 .  perm - row and column permutations
 -  f - expected fill as ratio of original fill
 
+   Level: developer
+
    Notes:
    See `MatLUFactor()` for the nonsymmetric case.  See also `MatGetFactor()`,
    `MatCholeskyFactorSymbolic()`, and `MatCholeskyFactorNumeric()`.
@@ -3230,10 +3241,8 @@ PetscErrorCode MatLUFactorNumeric(Mat fact, Mat mat, const MatFactorInfo *info)
    instead of working directly with matrix algebra routines such as this.
    See, e.g., `KSPCreate()`.
 
-   Level: developer
-
    Developer Note:
-   The Fortran interface is not autogenerated as the f90
+   The Fortran interface is not autogenerated as the
    interface definition cannot be generated correctly [due to `MatFactorInfo`]
 
 .seealso: [Matrix Factorization](sec_matfactor), `MatGetFactor()`, `MatFactorInfo`, `MatLUFactor()`, `MatCholeskyFactorSymbolic()`, `MatCholeskyFactorNumeric()`
@@ -3275,9 +3284,13 @@ PetscErrorCode MatCholeskyFactor(Mat mat, IS perm, const MatFactorInfo *info)
 .  mat - the matrix
 .  perm - row and column permutations
 -  info - options for factorization, includes
-$          fill - expected fill as ratio of original fill.
-$          dtcol - pivot tolerance (0 no pivot, 1 full column pivoting)
-$                   Run with the option -info to determine an optimal value to use
+.vb
+          fill - expected fill as ratio of original fill.
+          dtcol - pivot tolerance (0 no pivot, 1 full column pivoting)
+                   Run with the option -info to determine an optimal value to use
+.ve
+
+   Level: developer
 
    Notes:
    See `MatLUFactorSymbolic()` for the nonsymmetric case.  See also
@@ -3287,10 +3300,8 @@ $                   Run with the option -info to determine an optimal value to u
    instead of working directly with matrix algebra routines such as this.
    See, e.g., `KSPCreate()`.
 
-   Level: developer
-
    Developer Note:
-   The Fortran interface is not autogenerated as the f90
+   The Fortran interface is not autogenerated as the
    interface definition cannot be generated correctly [due to `MatFactorInfo`]
 
 .seealso: [Matrix Factorization](sec_matfactor), `MatFactorInfo`, `MatGetFactor()`, `MatLUFactorSymbolic()`, `MatCholeskyFactor()`, `MatCholeskyFactorNumeric()`
@@ -3340,15 +3351,15 @@ PetscErrorCode MatCholeskyFactorSymbolic(Mat fact, Mat mat, IS perm, const MatFa
 .  info - options for factorization
 -  fact - the symbolic factor of mat
 
+   Level: developer
+
    Note:
    Most users should employ the `KSP` interface for linear solvers
    instead of working directly with matrix algebra routines such as this.
    See, e.g., `KSPCreate()`.
 
-   Level: developer
-
    Developer Note:
-   The Fortran interface is not autogenerated as the f90
+   The Fortran interface is not autogenerated as the
    interface definition cannot be generated correctly [due to `MatFactorInfo`]
 
 .seealso: [Matrix Factorization](sec_matfactor), `MatFactorInfo`, `MatGetFactor()`, `MatCholeskyFactorSymbolic()`, `MatCholeskyFactor()`, `MatLUFactorNumeric()`
@@ -3391,9 +3402,13 @@ PetscErrorCode MatCholeskyFactorNumeric(Mat fact, Mat mat, const MatFactorInfo *
 +  mat - the matrix
 .  col - column permutation
 -  info - options for factorization, includes
-$          fill - expected fill as ratio of original fill.
-$          dtcol - pivot tolerance (0 no pivot, 1 full column pivoting)
-$                   Run with the option -info to determine an optimal value to use
+.vb
+          fill - expected fill as ratio of original fill.
+          dtcol - pivot tolerance (0 no pivot, 1 full column pivoting)
+                   Run with the option -info to determine an optimal value to use
+.ve
+
+   Level: developer
 
    Notes:
    Most users should employ the `KSP` interface for linear solvers
@@ -3403,10 +3418,8 @@ $                   Run with the option -info to determine an optimal value to u
    This changes the state of the matrix to a factored matrix; it cannot be used
    for example with `MatSetValues()` unless one first calls `MatSetUnfactored()`.
 
-   Level: developer
-
    Developer Note:
-   The Fortran interface is not autogenerated as the f90
+   The Fortran interface is not autogenerated as the
    interface definition cannot be generated correctly [due to MatFactorInfo]
 
 .seealso: [Matrix Factorization](sec_matfactor), `MatFactorInfo`, `MatGetFactor()`, `MatQRFactorSymbolic()`, `MatQRFactorNumeric()`, `MatLUFactor()`,
@@ -3440,18 +3453,21 @@ PetscErrorCode MatQRFactor(Mat mat, IS col, const MatFactorInfo *info)
 .  mat - the matrix
 .  col - column permutation
 -  info - options for factorization, includes
-$          fill - expected fill as ratio of original fill.
-$          dtcol - pivot tolerance (0 no pivot, 1 full column pivoting)
-$                   Run with the option -info to determine an optimal value to use
+.vb
+          fill - expected fill as ratio of original fill.
+          dtcol - pivot tolerance (0 no pivot, 1 full column pivoting)
+                   Run with the option -info to determine an optimal value to use
+.ve
 
+   Level: developer
+
+   Note:
    Most users should employ the `KSP` interface for linear solvers
    instead of working directly with matrix algebra routines such as this.
    See, e.g., `KSPCreate()`.
 
-   Level: developer
-
    Developer Note:
-   The Fortran interface is not autogenerated as the f90
+   The Fortran interface is not autogenerated as the
    interface definition cannot be generated correctly [due to `MatFactorInfo`]
 
 .seealso: [Matrix Factorization](sec_matfactor), `MatGetFactor()`, `MatFactorInfo`, `MatQRFactor()`, `MatQRFactorNumeric()`, `MatLUFactor()`, `MatFactorInfo`, `MatFactorInfoInitialize()`
@@ -3492,6 +3508,8 @@ PetscErrorCode MatQRFactorSymbolic(Mat fact, Mat mat, IS col, const MatFactorInf
 .  mat - the matrix
 -  info - options for factorization
 
+   Level: developer
+
    Notes:
    See `MatQRFactor()` for in-place factorization.
 
@@ -3499,10 +3517,8 @@ PetscErrorCode MatQRFactorSymbolic(Mat fact, Mat mat, IS col, const MatFactorInf
    instead of working directly with matrix algebra routines such as this.
    See, e.g., `KSPCreate()`.
 
-   Level: developer
-
    Developer Note:
-   The Fortran interface is not autogenerated as the f90
+   The Fortran interface is not autogenerated as the
    interface definition cannot be generated correctly [due to `MatFactorInfo`]
 
 .seealso: [Matrix Factorization](sec_matfactor), `MatFactorInfo`, `MatGetFactor()`, `MatQRFactor()`, `MatQRFactorSymbolic()`, `MatLUFactor()`
@@ -4420,11 +4436,11 @@ PetscErrorCode MatConvert(Mat mat, MatType newtype, MatReuse reuse, Mat *M)
    Output Parameter:
 .   type - the string name of the package (do not free this string)
 
+   Level: intermediate
+
    Note:
       In Fortran you pass in a empty string and the package name will be copied into it.
     (Make sure the string is long enough)
-
-   Level: intermediate
 
 .seealso: [Matrix Factorization](sec_matfactor), `MatGetFactor()`, `MatSolverType`, `MatCopy()`, `MatDuplicate()`, `MatGetFactorAvailable()`, `MatGetFactor()`
 @*/
@@ -5793,7 +5809,7 @@ PetscErrorCode MatAssemblyEnd(Mat mat, MatAssemblyType type)
    are thus ignored by others.  Other options are not supported by
    certain matrix types and will generate an error message if set.
 
-   If using a Fortran 77 module to compute a matrix, one may need to
+   If using Fortran to compute a matrix, one may need to
    use the column-oriented option (or convert to the row-oriented
    format).
 
@@ -6254,19 +6270,12 @@ PetscErrorCode MatZeroRowsIS(Mat mat, IS is, PetscScalar diag, Vec x, Vec b)
 .  x - optional vector of solutions for zeroed rows (other entries in vector are not used)
 -  b - optional vector of right hand side, that will be adjusted by provided solution
 
+   Level: intermediate
+
    Notes:
    See `MatZeroRows()` for details on how this routine operates.
 
    The grid coordinates are across the entire grid, not just the local portion
-
-   In Fortran idxm and idxn should be declared as
-$     MatStencil idxm(4,m)
-   and the values inserted using
-$    idxm(MatStencil_i,1) = i
-$    idxm(MatStencil_j,1) = j
-$    idxm(MatStencil_k,1) = k
-$    idxm(MatStencil_c,1) = c
-   etc
 
    For periodic boundary conditions use negative indices for values to the left (below 0; that are to be
    obtained by wrapping values from right edge). For values to the right of the last entry using that index plus one
@@ -6276,7 +6285,17 @@ $    idxm(MatStencil_c,1) = c
    For indices that don't mean anything for your case (like the k index when working in 2d) or the c index when you have
    a single value per point) you can skip filling those indices.
 
-   Level: intermediate
+   Fortran Note:
+   idxm and idxn should be declared as
+$     MatStencil idxm(4,m)
+   and the values inserted using
+.vb
+    idxm(MatStencil_i,1) = i
+    idxm(MatStencil_j,1) = j
+    idxm(MatStencil_k,1) = k
+    idxm(MatStencil_c,1) = c
+   etc
+.ve
 
 .seealso: `MatZeroRowsIS()`, `MatZeroRowsColumns()`, `MatZeroRowsLocalIS()`, `MatZeroRowsl()`, `MatZeroEntries()`, `MatZeroRowsLocal()`, `MatSetOption()`,
           `MatZeroRowsColumnsLocal()`, `MatZeroRowsColumnsLocalIS()`, `MatZeroRowsColumnsIS()`, `MatZeroRowsColumnsStencil()`
@@ -6332,19 +6351,12 @@ PetscErrorCode MatZeroRowsStencil(Mat mat, PetscInt numRows, const MatStencil ro
 .  x - optional vector of solutions for zeroed rows (other entries in vector are not used)
 -  b - optional vector of right hand side, that will be adjusted by provided solution
 
+   Level: intermediate
+
    Notes:
    See `MatZeroRowsColumns()` for details on how this routine operates.
 
    The grid coordinates are across the entire grid, not just the local portion
-
-   In Fortran idxm and idxn should be declared as
-$     MatStencil idxm(4,m)
-   and the values inserted using
-$    idxm(MatStencil_i,1) = i
-$    idxm(MatStencil_j,1) = j
-$    idxm(MatStencil_k,1) = k
-$    idxm(MatStencil_c,1) = c
-   etc
 
    For periodic boundary conditions use negative indices for values to the left (below 0; that are to be
    obtained by wrapping values from right edge). For values to the right of the last entry using that index plus one
@@ -6354,7 +6366,17 @@ $    idxm(MatStencil_c,1) = c
    For indices that don't mean anything for your case (like the k index when working in 2d) or the c index when you have
    a single value per point) you can skip filling those indices.
 
-   Level: intermediate
+   Fortran Note:
+   In Fortran idxm and idxn should be declared as
+$     MatStencil idxm(4,m)
+   and the values inserted using
+.vb
+    idxm(MatStencil_i,1) = i
+    idxm(MatStencil_j,1) = j
+    idxm(MatStencil_k,1) = k
+    idxm(MatStencil_c,1) = c
+    etc
+.ve
 
 .seealso: `MatZeroRowsIS()`, `MatZeroRowsColumns()`, `MatZeroRowsLocalIS()`, `MatZeroRowsStencil()`, `MatZeroEntries()`, `MatZeroRowsLocal()`, `MatSetOption()`,
           `MatZeroRowsColumnsLocal()`, `MatZeroRowsColumnsLocalIS()`, `MatZeroRowsColumnsIS()`, `MatZeroRows()`
@@ -6830,7 +6852,7 @@ $      1 or 0 - indicating force fill on diagonal (improves robustness for matri
    Uses the definition of level of fill as in Y. Saad, 2003
 
    Developer Note:
-   The Fortran interface is not autogenerated as the f90
+   The Fortran interface is not autogenerated as the
    interface definition cannot be generated correctly [due to `MatFactorInfo`]
 
    References:
@@ -6893,7 +6915,7 @@ $      expected fill - as ratio of original fill.
    This uses the definition of level of fill as in Y. Saad, 2003
 
    Developer Note:
-   The Fortran interface is not autogenerated as the f90
+   The Fortran interface is not autogenerated as the
    interface definition cannot be generated correctly [due to `MatFactorInfo`]
 
    References:
@@ -7650,7 +7672,7 @@ PetscErrorCode MatSetVariableBlockSizes(Mat mat, PetscInt nblocks, PetscInt *bsi
 /*@C
    MatGetVariableBlockSizes - Gets a diagonal blocks of the matrix that need not be of the same size
 
-   Logically Collective
+   Logically Collective; No Fortran Support
 
    Input Parameter:
 .  mat - the matrix
@@ -7658,9 +7680,6 @@ PetscErrorCode MatSetVariableBlockSizes(Mat mat, PetscInt nblocks, PetscInt *bsi
    Output Parameters:
 +  nblocks - the number of blocks on this process
 -  bsizes - the block sizes
-
-   Fortran Note:
-   Currently not supported from Fortran
 
    Level: intermediate
 
@@ -7822,17 +7841,18 @@ PetscErrorCode MatResidual(Mat mat, Vec b, Vec x, Vec r)
 
     Fortran Notes:
     In Fortran use
-$
-$      PetscInt ia(1), ja(1)
-$      PetscOffset iia, jja
-$      call MatGetRowIJ(mat,shift,symmetric,inodecompressed,n,ia,iia,ja,jja,done,ierr)
-$      ! Access the ith and jth entries via ia(iia + i) and ja(jja + j)
-
+.vb
+      PetscInt ia(1), ja(1)
+      PetscOffset iia, jja
+      call MatGetRowIJ(mat,shift,symmetric,inodecompressed,n,ia,iia,ja,jja,done,ierr)
+      ! Access the ith and jth entries via ia(iia + i) and ja(jja + j)
+.ve
      or
-$
-$    PetscInt, pointer :: ia(:),ja(:)
-$    call MatGetRowIJF90(mat,shift,symmetric,inodecompressed,n,ia,ja,done,ierr)
-$    ! Access the ith and jth entries via ia(i) and ja(j)
+.vb
+    PetscInt, pointer :: ia(:),ja(:)
+    call MatGetRowIJF90(mat,shift,symmetric,inodecompressed,n,ia,ja,done,ierr)
+    ! Access the ith and jth entries via ia(i) and ja(j)
+.ve
 
 .seealso: `Mat`, `MATAIJ`, `MatGetColumnIJ()`, `MatRestoreRowIJ()`, `MatSeqAIJGetArray()`
 @*/
@@ -8870,7 +8890,7 @@ PetscErrorCode MatGetNearNullSpace(Mat mat, MatNullSpace *nullsp)
    Level: developer
 
    Developer Note:
-   The Fortran interface is not autogenerated as the f90
+   The Fortran interface is not autogenerated as the
    interface definition cannot be generated correctly [due to `MatFactorInfo`]
 
 .seealso: `MatGetFactor()`, `MatICCFactorSymbolic()`, `MatLUFactorNumeric()`, `MatCholeskyFactor()`
@@ -9389,7 +9409,7 @@ PetscErrorCode MatCreateVecs(Mat mat, Vec *right, Vec *left)
    Level: developer
 
    Developer Note:
-   The Fortran interface is not autogenerated as the f90
+   The Fortran interface is not autogenerated as the
    interface definition cannot be generated correctly [due to `MatFactorInfo`]
 
 .seealso: `MatGetFactor()`, `MatFactorInfo`
@@ -10383,13 +10403,15 @@ PetscErrorCode MatFindOffBlockDiagonalEntries(Mat mat, IS *is)
 /*@C
   MatInvertBlockDiagonal - Inverts the block diagonal entries.
 
-  Collective
+  Collective; No Fortran Support
 
   Input Parameters:
 . mat - the matrix
 
   Output Parameters:
 . values - the block inverses in column major order (FORTRAN-like)
+
+  Level: advanced
 
    Notes:
    The size of the blocks is determined by the block size of the matrix.
@@ -10398,12 +10420,7 @@ PetscErrorCode MatFindOffBlockDiagonalEntries(Mat mat, IS *is)
 
    The blocks all have the same size, use `MatInvertVariableBlockDiagonal()` for variable block size
 
-   Fortran Note:
-     This routine is not available from Fortran.
-
-  Level: advanced
-
-.seealso: `MatInvertVariableBlockEnvelope()`, `MatInvertBlockDiagonalMat()`
+.seealso: `Mat`, `MatInvertVariableBlockEnvelope()`, `MatInvertBlockDiagonalMat()`
 @*/
 PetscErrorCode MatInvertBlockDiagonal(Mat mat, const PetscScalar **values)
 {
@@ -10418,7 +10435,7 @@ PetscErrorCode MatInvertBlockDiagonal(Mat mat, const PetscScalar **values)
 /*@C
   MatInvertVariableBlockDiagonal - Inverts the point block diagonal entries.
 
-  Collective
+  Collective; No Fortran Support
 
   Input Parameters:
 + mat - the matrix
@@ -10428,15 +10445,12 @@ PetscErrorCode MatInvertBlockDiagonal(Mat mat, const PetscScalar **values)
   Output Parameters:
 . values - the block inverses in column major order (FORTRAN-like)
 
+  Level: advanced
+
   Notes:
   Use `MatInvertBlockDiagonal()` if all blocks have the same size
 
   The blocks never overlap between two MPI ranks, use `MatInvertVariableBlockEnvelope()` for that case
-
-  Fortran Note:
-  This routine is not available from Fortran.
-
-  Level: advanced
 
 .seealso: `MatInvertBlockDiagonal()`, `MatSetVariableBlockSizes()`, `MatInvertVariableBlockEnvelope()`
 @*/
