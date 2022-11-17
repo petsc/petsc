@@ -85,16 +85,25 @@ class Configure(config.base.Configure):
     self.log.write('Checking C compiler works with __float128\n')
     self.have__float128 = 0
     if self.libraries.check('quadmath','logq',prototype='#include <quadmath.h>',call='__float128 f = 0.0; logq(f)'):
-      self.log.write('C compiler with quadmath library\n')
+      self.log.write('C compiler works with quadmath library\n')
       self.have__float128 = 1
       if hasattr(self.compilers, 'FC'):
         self.libraries.pushLanguage('FC')
-        self.log.write('Checking Fortran works with quadmath library\n')
+        self.log.write('Checking Fortran compiler works with quadmath library\n')
         if self.libraries.check('quadmath','     ',call = '      real*16 s,w; w = 2.0; s = cos(w)'):
-          self.log.write('Fortran works with quadmath library\n')
+          self.log.write('Fortran compiler works with quadmath library\n')
         else:
           self.have__float128 = 0
-          self.log.write('Fortran fails with quadmath library\n')
+          self.log.write('Fortran compiler fails with quadmath library\n')
+        self.libraries.popLanguage()
+      if hasattr(self.compilers, 'CXX'):
+        self.libraries.pushLanguage('Cxx')
+        self.log.write('Checking C++ compiler works with quadmath library\n')
+        if self.libraries.check('quadmath','logq',prototype='#include <quadmath.h>',call='__float128 f = FLT128_EPSILON; logq(f)'):
+          self.log.write('C++ compiler works with quadmath library\n')
+        else:
+          self.have__float128 = 0
+          self.log.write('C++ compiler fails with quadmath library\n')
         self.libraries.popLanguage()
       if self.have__float128:
           self.libraries.add('quadmath','logq',prototype='#include <quadmath.h>',call='__float128 f = 0.0; logq(f)')
