@@ -40,7 +40,7 @@ static PetscErrorCode DMForestPackageInitialize(void)
 }
 
 /*@C
-  DMForestRegisterType - Registers a DMType as a subtype of DMFOREST (so that DMIsForest() will be correct)
+  DMForestRegisterType - Registers a `DMType` as a subtype of `DMFOREST` (so that `DMIsForest()` will be correct)
 
   Not Collective
 

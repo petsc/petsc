@@ -243,12 +243,12 @@ static PetscErrorCode PetscSpaceEvaluate_Ptrimmed(PetscSpace sp, PetscInt npoint
 + sp         - the function space object
 - formDegree - the form degree
 
-  Options Database:
+  Options Database Key:
 . -petscspace_ptrimmed_form_degree <int> - The trimmed polynomial form degree
 
   Level: intermediate
 
-.seealso: `PetscDTAltV`, `PetscDTPTrimmedEvalJet()`, `PetscSpacePTrimmedGetFormDegree()`
+.seealso: `PetscSpace`, `PetscDTAltV`, `PetscDTPTrimmedEvalJet()`, `PetscSpacePTrimmedGetFormDegree()`
 @*/
 PetscErrorCode PetscSpacePTrimmedSetFormDegree(PetscSpace sp, PetscInt formDegree)
 {
@@ -269,7 +269,7 @@ PetscErrorCode PetscSpacePTrimmedSetFormDegree(PetscSpace sp, PetscInt formDegre
 
   Level: intermediate
 
-.seealso: `PetscDTAltV`, `PetscDTPTrimmedEvalJet()`, `PetscSpacePTrimmedSetFormDegree()`
+.seealso: `PetscSpace`, `PetscDTAltV`, `PetscDTPTrimmedEvalJet()`, `PetscSpacePTrimmedSetFormDegree()`
 @*/
 PetscErrorCode PetscSpacePTrimmedGetFormDegree(PetscSpace sp, PetscInt *formDegree)
 {
@@ -355,11 +355,11 @@ static PetscErrorCode PetscSpaceInitialize_Ptrimmed(PetscSpace sp)
 }
 
 /*MC
-  PETSCSPACEPTRIMMED = "ptrimmed" - A PetscSpace object that encapsulates a trimmed polynomial space.
+  PETSCSPACEPTRIMMED = "ptrimmed" - A `PetscSpace` object that encapsulates a trimmed polynomial space.
 
   Level: intermediate
 
-.seealso: `PetscSpaceType`, `PetscSpaceCreate()`, `PetscSpaceSetType()`, `PetscDTPTrimmedEvalJet()`
+.seealso: `PetscSpace`, `PetscSpaceType`, `PetscSpaceCreate()`, `PetscSpaceSetType()`, `PetscDTPTrimmedEvalJet()`
 M*/
 
 PETSC_EXTERN PetscErrorCode PetscSpaceCreate_Ptrimmed(PetscSpace sp)

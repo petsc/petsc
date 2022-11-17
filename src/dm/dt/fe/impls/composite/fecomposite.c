@@ -209,7 +209,7 @@ static PetscErrorCode PetscFEInitialize_Composite(PetscFE fem)
 }
 
 /*MC
-  PETSCFECOMPOSITE = "composite" - A PetscFE object that represents a composite element
+  PETSCFECOMPOSITE = "composite" - A `PetscFEType` that represents a composite element
 
   Level: intermediate
 
@@ -238,7 +238,7 @@ PETSC_EXTERN PetscErrorCode PetscFECreate_Composite(PetscFE fem)
   Not collective
 
   Input Parameter:
-. fem - The PetscFE object
+. fem - The `PetscFE` object
 
   Output Parameters:
 + blockSize - The number of elements in a block
@@ -248,7 +248,7 @@ PETSC_EXTERN PetscErrorCode PetscFECreate_Composite(PetscFE fem)
 
   Level: intermediate
 
-.seealso: `PetscFECreate()`
+.seealso: `PetscFE`, `PetscFECreate()`
 @*/
 PetscErrorCode PetscFECompositeGetMapping(PetscFE fem, PetscInt *numSubelements, const PetscReal *v0[], const PetscReal *jac[], const PetscReal *invjac[])
 {

@@ -22,6 +22,7 @@ int main(int argc, char **args)
     PetscCall(VecLoad(b, fd));
   }
   PetscCall(VecDestroy(&b));
+  PetscCall(PetscViewerDestroy(&fd));
   PetscCall(PetscFinalize());
   return 0;
 }

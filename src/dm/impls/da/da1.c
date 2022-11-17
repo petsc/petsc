@@ -323,7 +323,7 @@ PetscErrorCode DMSetUp_DA_1D(DM da)
    Input Parameters:
 +  comm - MPI communicator
 .  bx - type of ghost cells at the boundary the array should have, if any. Use
-          DM_BOUNDARY_NONE, DM_BOUNDARY_GHOSTED, or DM_BOUNDARY_PERIODIC.
+          `DM_BOUNDARY_NONE`, `DM_BOUNDARY_GHOSTED`, or `DM_BOUNDARY_PERIODIC`.
 .  M - global dimension of the array (that is the number of grid points)
             from the command line with -da_grid_x <M>)
 .  dof - number of degrees of freedom per node
@@ -335,29 +335,28 @@ PetscErrorCode DMSetUp_DA_1D(DM da)
    Output Parameter:
 .  da - the resulting distributed array object
 
-   Options Database Key:
-+  -dm_view - Calls DMView() at the conclusion of DMDACreate1d()
+   Options Database Keys:
++  -dm_view - Calls `DMView()` at the conclusion of `DMDACreate1d()`
 .  -da_grid_x <nx> - number of grid points in x direction
 .  -da_refine_x <rx> - refinement factor
--  -da_refine <n> - refine the DMDA n times before creating it
+-  -da_refine <n> - refine the `DMDA` n times before creating it
 
    Level: beginner
 
    Notes:
-   The array data itself is NOT stored in the DMDA, it is stored in Vec objects;
-   The appropriate vector objects can be obtained with calls to DMCreateGlobalVector()
-   and DMCreateLocalVector() and calls to VecDuplicate() if more are needed.
+   The array data itself is NOT stored in the `DMDA`, it is stored in `Vec` objects;
+   The appropriate vector objects can be obtained with calls to `DMCreateGlobalVector()`
+   and `DMCreateLocalVector()` and calls to `VecDuplicate()` if more are needed.
 
-   You must call DMSetUp() after this call before using this DM.
+   You must call `DMSetUp()` after this call before using this `DM`.
 
-   If you wish to use the options database to change values in the DMDA call DMSetFromOptions() after this call
-   but before DMSetUp().
+   If you wish to use the options database to change values in the `DMDA` call `DMSetFromOptions()` after this call
+   but before `DMSetUp()`.
 
-.seealso: `DMDestroy()`, `DMView()`, `DMDACreate2d()`, `DMDACreate3d()`, `DMGlobalToLocalBegin()`, `DMDASetRefinementFactor()`,
+.seealso: `DMDA`, `DM`, `DMDestroy()`, `DMView()`, `DMDACreate2d()`, `DMDACreate3d()`, `DMGlobalToLocalBegin()`, `DMDASetRefinementFactor()`,
           `DMGlobalToLocalEnd()`, `DMLocalToGlobalBegin()`, `DMLocalToLocalBegin()`, `DMLocalToLocalEnd()`, `DMDAGetRefinementFactor()`,
           `DMDAGetInfo()`, `DMCreateGlobalVector()`, `DMCreateLocalVector()`, `DMDACreateNaturalVector()`, `DMLoad()`, `DMDAGetOwnershipRanges()`,
           `DMStagCreate1d()`
-
 @*/
 PetscErrorCode DMDACreate1d(MPI_Comm comm, DMBoundaryType bx, PetscInt M, PetscInt dof, PetscInt s, const PetscInt lx[], DM *da)
 {

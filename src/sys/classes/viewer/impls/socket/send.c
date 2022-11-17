@@ -355,12 +355,7 @@ static PetscErrorCode PetscViewerBinarySetSkipHeader_Socket(PetscViewer viewer, 
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscViewerBinaryGetFlowControl_Socket(PetscViewer viewer, PetscInt *fc)
-{
-  PetscFunctionBegin;
-  *fc = 0;
-  PetscFunctionReturn(0);
-}
+PETSC_INTERN PetscErrorCode PetscViewerBinaryGetFlowControl_Binary(PetscViewer, PetscInt *);
 
 /*MC
    PETSCVIEWERSOCKET - A viewer that writes to a Unix socket
@@ -380,6 +375,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_Socket(PetscViewer v)
   PetscFunctionBegin;
   PetscCall(PetscNew(&vmatlab));
   vmatlab->port          = 0;
+  vmatlab->flowcontrol   = 256; /* same default as in PetscViewerCreate_Binary() */
   v->data                = (void *)vmatlab;
   v->ops->destroy        = PetscViewerDestroy_Socket;
   v->ops->flush          = NULL;
@@ -389,7 +385,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_Socket(PetscViewer v)
   PetscCall(PetscObjectChangeTypeName((PetscObject)v, PETSCVIEWERBINARY));
   PetscCall(PetscObjectComposeFunction((PetscObject)v, "PetscViewerBinarySetSkipHeader_C", PetscViewerBinarySetSkipHeader_Socket));
   PetscCall(PetscObjectComposeFunction((PetscObject)v, "PetscViewerBinaryGetSkipHeader_C", PetscViewerBinaryGetSkipHeader_Socket));
-  PetscCall(PetscObjectComposeFunction((PetscObject)v, "PetscViewerBinaryGetFlowControl_C", PetscViewerBinaryGetFlowControl_Socket));
+  PetscCall(PetscObjectComposeFunction((PetscObject)v, "PetscViewerBinaryGetFlowControl_C", PetscViewerBinaryGetFlowControl_Binary));
 
   PetscFunctionReturn(0);
 }

@@ -6,7 +6,7 @@
 
 /*@C
     DMCompositeSetCoupling - Sets user provided routines that compute the coupling between the
-      separate components (DMs) in a DMto build the correct matrix nonzero structure.
+      separate components `DM` in a `DMCOMPOSITE` to build the correct matrix nonzero structure.
 
     Logically Collective
 
@@ -16,12 +16,14 @@
 
     Level: advanced
 
+    Note:
+    See `DMSetApplicationContext()` and `DMGetApplicationContext()` for how to get user information into
+    this routine
+
+    Fortran Note:
     Not available from Fortran
 
-    Notes:
-    See DMSetApplicationContext() and DMGetApplicationContext() for how to get user information into
-        this routine
-
+.seealso: `DMCOMPOSITE`, `DM`
 @*/
 PetscErrorCode DMCompositeSetCoupling(DM dm, PetscErrorCode (*FormCoupleLocations)(DM, Mat, PetscInt *, PetscInt *, PetscInt, PetscInt, PetscInt, PetscInt))
 {
@@ -118,19 +120,20 @@ PetscErrorCode DMSetUp_Composite(DM dm)
 /* ----------------------------------------------------------------------------------*/
 
 /*@
-    DMCompositeGetNumberDM - Get's the number of DM objects in the DMComposite
+    DMCompositeGetNumberDM - Get's the number of `DM` objects in the `DMCOMPOSITE`
        representation.
 
     Not Collective
 
     Input Parameter:
-.    dm - the packer object
+.    dm - the `DMCOMPOSITE` object
 
     Output Parameter:
-.     nDM - the number of DMs
+.     nDM - the number of `DM`
 
     Level: beginner
 
+.seealso: `DMCOMPOSITE`, `DM`
 @*/
 PetscErrorCode DMCompositeGetNumberDM(DM dm, PetscInt *nDM)
 {
@@ -152,23 +155,22 @@ PetscErrorCode DMCompositeGetNumberDM(DM dm, PetscInt *nDM)
     Collective on dm
 
     Input Parameters:
-+    dm - the packer object
++    dm - the `DMCOMPOSITE` object
 -    gvec - the global vector
 
     Output Parameters:
 .    Vec* ... - the packed parallel vectors, NULL for those that are not needed
 
-    Notes:
-    Use DMCompositeRestoreAccess() to return the vectors when you no longer need them
-
-    Fortran Notes:
-
-    Fortran callers must use numbered versions of this routine, e.g., DMCompositeGetAccess4(dm,gvec,vec1,vec2,vec3,vec4)
-    or use the alternative interface DMCompositeGetAccessArray().
-
     Level: advanced
 
-.seealso: `DMCompositeGetEntries()`, `DMCompositeScatter()`
+    Note:
+    Use `DMCompositeRestoreAccess()` to return the vectors when you no longer need them
+
+    Fortran Note:
+    Fortran callers must use numbered versions of this routine, e.g., DMCompositeGetAccess4(dm,gvec,vec1,vec2,vec3,vec4)
+    or use the alternative interface `DMCompositeGetAccessArray()`.
+
+.seealso: `DMCOMPOSITE`, `DM`, `DMCompositeGetEntries()`, `DMCompositeScatter()`
 @*/
 PetscErrorCode DMCompositeGetAccess(DM dm, Vec gvec, ...)
 {
@@ -220,7 +222,7 @@ PetscErrorCode DMCompositeGetAccess(DM dm, Vec gvec, ...)
     Collective on dm
 
     Input Parameters:
-+    dm - the packer object
++    dm - the `DMCOMPOSITE`
 .    pvec - packed vector
 .    nwanted - number of vectors wanted
 -    wanted - sorted array of vectors wanted, or NULL to get all vectors
@@ -228,12 +230,12 @@ PetscErrorCode DMCompositeGetAccess(DM dm, Vec gvec, ...)
     Output Parameters:
 .    vecs - array of requested global vectors (must be allocated)
 
-    Notes:
-    Use DMCompositeRestoreAccessArray() to return the vectors when you no longer need them
-
     Level: advanced
 
-.seealso: `DMCompositeGetAccess()`, `DMCompositeGetEntries()`, `DMCompositeScatter()`, `DMCompositeGather()`
+    Note:
+    Use `DMCompositeRestoreAccessArray()` to return the vectors when you no longer need them
+
+.seealso: `DMCOMPOSITE`, `DM`, `DMCompositeGetAccess()`, `DMCompositeGetEntries()`, `DMCompositeScatter()`, `DMCompositeGather()`
 @*/
 PetscErrorCode DMCompositeGetAccessArray(DM dm, Vec pvec, PetscInt nwanted, const PetscInt *wanted, Vec *vecs)
 {
@@ -280,7 +282,7 @@ PetscErrorCode DMCompositeGetAccessArray(DM dm, Vec pvec, PetscInt nwanted, cons
     Collective on dm.
 
     Input Parameters:
-+    dm - the packer object
++    dm - the `DMCOMPOSITE`
 .    pvec - packed vector
 .    nwanted - number of vectors wanted
 -    wanted - sorted array of vectors wanted, or NULL to get all vectors
@@ -288,13 +290,13 @@ PetscErrorCode DMCompositeGetAccessArray(DM dm, Vec pvec, PetscInt nwanted, cons
     Output Parameters:
 .    vecs - array of requested local vectors (must be allocated)
 
-    Notes:
-    Use DMCompositeRestoreLocalAccessArray() to return the vectors
-    when you no longer need them.
-
     Level: advanced
 
-.seealso: `DMCompositeRestoreLocalAccessArray()`, `DMCompositeGetAccess()`,
+    Note:
+    Use `DMCompositeRestoreLocalAccessArray()` to return the vectors
+    when you no longer need them.
+
+.seealso: `DMCOMPOSITE`, `DM`, `DMCompositeRestoreLocalAccessArray()`, `DMCompositeGetAccess()`,
           `DMCompositeGetEntries()`, `DMCompositeScatter()`, `DMCompositeGather()`
 @*/
 PetscErrorCode DMCompositeGetLocalAccessArray(DM dm, Vec pvec, PetscInt nwanted, const PetscInt *wanted, Vec *vecs)
@@ -341,22 +343,21 @@ PetscErrorCode DMCompositeGetLocalAccessArray(DM dm, Vec pvec, PetscInt nwanted,
 }
 
 /*@C
-    DMCompositeRestoreAccess - Returns the vectors obtained with DMCompositeGetAccess()
+    DMCompositeRestoreAccess - Returns the vectors obtained with `DMCompositeGetAccess()`
        representation.
 
     Collective on dm
 
     Input Parameters:
-+    dm - the packer object
++    dm - the `DMCOMPOSITE` object
 .    gvec - the global vector
 -    Vec* ... - the individual parallel vectors, NULL for those that are not needed
 
     Level: advanced
 
-.seealso `DMCompositeAddDM()`, `DMCreateGlobalVector()`,
+.seealso: `DMCOMPOSITE`, `DM`, `DMCompositeAddDM()`, `DMCreateGlobalVector()`,
          `DMCompositeGather()`, `DMCompositeCreate()`, `DMCompositeGetISLocalToGlobalMappings()`, `DMCompositeScatter()`,
          `DMCompositeRestoreAccess()`, `DMCompositeGetAccess()`
-
 @*/
 PetscErrorCode DMCompositeRestoreAccess(DM dm, Vec gvec, ...)
 {
@@ -392,12 +393,12 @@ PetscErrorCode DMCompositeRestoreAccess(DM dm, Vec gvec, ...)
 }
 
 /*@C
-    DMCompositeRestoreAccessArray - Returns the vectors obtained with DMCompositeGetAccessArray()
+    DMCompositeRestoreAccessArray - Returns the vectors obtained with `DMCompositeGetAccessArray()`
 
     Collective on dm
 
     Input Parameters:
-+    dm - the packer object
++    dm - the `DMCOMPOSITE` object
 .    pvec - packed vector
 .    nwanted - number of vectors wanted
 .    wanted - sorted array of vectors wanted, or NULL to get all vectors
@@ -405,7 +406,7 @@ PetscErrorCode DMCompositeRestoreAccess(DM dm, Vec gvec, ...)
 
     Level: advanced
 
-.seealso: `DMCompositeRestoreAccess()`, `DMCompositeRestoreEntries()`, `DMCompositeScatter()`, `DMCompositeGather()`
+.seealso: `DMCOMPOSITE`, `DM`, `DMCompositeRestoreAccess()`, `DMCompositeRestoreEntries()`, `DMCompositeScatter()`, `DMCompositeGather()`
 @*/
 PetscErrorCode DMCompositeRestoreAccessArray(DM dm, Vec pvec, PetscInt nwanted, const PetscInt *wanted, Vec *vecs)
 {
@@ -435,12 +436,12 @@ PetscErrorCode DMCompositeRestoreAccessArray(DM dm, Vec pvec, PetscInt nwanted, 
 }
 
 /*@C
-    DMCompositeRestoreLocalAccessArray - Returns the vectors obtained with DMCompositeGetLocalAccessArray().
+    DMCompositeRestoreLocalAccessArray - Returns the vectors obtained with `DMCompositeGetLocalAccessArray()`.
 
     Collective on dm.
 
     Input Parameters:
-+    dm - the packer object
++    dm - the `DMCOMPOSITE` object
 .    pvec - packed vector
 .    nwanted - number of vectors wanted
 .    wanted - sorted array of vectors wanted, or NULL to restore all vectors
@@ -448,11 +449,11 @@ PetscErrorCode DMCompositeRestoreAccessArray(DM dm, Vec pvec, PetscInt nwanted, 
 
     Level: advanced
 
-    Notes:
-    nwanted and wanted must match the values given to DMCompositeGetLocalAccessArray()
+    Note:
+    nwanted and wanted must match the values given to `DMCompositeGetLocalAccessArray()`
     otherwise the call will fail.
 
-.seealso: `DMCompositeGetLocalAccessArray()`, `DMCompositeRestoreAccessArray()`,
+.seealso: `DMCOMPOSITE`, `DM`, `DMCompositeGetLocalAccessArray()`, `DMCompositeRestoreAccessArray()`,
           `DMCompositeRestoreAccess()`, `DMCompositeRestoreEntries()`,
           `DMCompositeScatter()`, `DMCompositeGather()`
 @*/
@@ -489,21 +490,20 @@ PetscErrorCode DMCompositeRestoreLocalAccessArray(DM dm, Vec pvec, PetscInt nwan
     Collective on dm
 
     Input Parameters:
-+    dm - the packer object
++    dm - the `DMCOMPOSITE` object
 .    gvec - the global vector
 -    Vec ... - the individual sequential vectors, NULL for those that are not needed
 
     Level: advanced
 
-    Notes:
-    DMCompositeScatterArray() is a non-variadic alternative that is often more convenient for library callers and is
+    Note:
+    `DMCompositeScatterArray()` is a non-variadic alternative that is often more convenient for library callers and is
     accessible from Fortran.
 
-.seealso `DMDestroy()`, `DMCompositeAddDM()`, `DMCreateGlobalVector()`,
+.seealso: `DMCOMPOSITE`, `DM`, `DMDestroy()`, `DMCompositeAddDM()`, `DMCreateGlobalVector()`,
          `DMCompositeGather()`, `DMCompositeCreate()`, `DMCompositeGetISLocalToGlobalMappings()`, `DMCompositeGetAccess()`,
          `DMCompositeGetLocalVectors()`, `DMCompositeRestoreLocalVectors()`, `DMCompositeGetEntries()`
          `DMCompositeScatterArray()`
-
 @*/
 PetscErrorCode DMCompositeScatter(DM dm, Vec gvec, ...)
 {
@@ -549,19 +549,18 @@ PetscErrorCode DMCompositeScatter(DM dm, Vec gvec, ...)
     Collective on dm
 
     Input Parameters:
-+    dm - the packer object
++    dm - the `DMCOMPOSITE` object
 .    gvec - the global vector
 -    lvecs - array of local vectors, NULL for any that are not needed
 
     Level: advanced
 
     Note:
-    This is a non-variadic alternative to DMCompositeScatter()
+    This is a non-variadic alternative to `DMCompositeScatter()`
 
-.seealso `DMDestroy()`, `DMCompositeAddDM()`, `DMCreateGlobalVector()`
+.seealso: `DMCOMPOSITE`, `DM`, `DMDestroy()`, `DMCompositeAddDM()`, `DMCreateGlobalVector()`
          `DMCompositeGather()`, `DMCompositeCreate()`, `DMCompositeGetISLocalToGlobalMappings()`, `DMCompositeGetAccess()`,
          `DMCompositeGetLocalVectors()`, `DMCompositeRestoreLocalVectors()`, `DMCompositeGetEntries()`
-
 @*/
 PetscErrorCode DMCompositeScatterArray(DM dm, Vec gvec, Vec *lvecs)
 {
@@ -602,19 +601,19 @@ PetscErrorCode DMCompositeScatterArray(DM dm, Vec gvec, Vec *lvecs)
     Collective on dm
 
     Input Parameters:
-+    dm - the packer object
++    dm - the `DMCOMPOSITE` object
 .    gvec - the global vector
-.    imode - INSERT_VALUES or ADD_VALUES
+.    imode - `INSERT_VALUES` or `ADD_VALUES`
 -    Vec ... - the individual sequential vectors, NULL for any that are not needed
 
     Level: advanced
 
-    Not available from Fortran, Fortran users can use DMCompositeGatherArray()
+    Fortran Note:
+    Fortran users should use `DMCompositeGatherArray()`
 
-.seealso `DMDestroy()`, `DMCompositeAddDM()`, `DMCreateGlobalVector()`,
+.seealso: `DMCOMPOSITE`, `DM`, `DMDestroy()`, `DMCompositeAddDM()`, `DMCreateGlobalVector()`,
          `DMCompositeScatter()`, `DMCompositeCreate()`, `DMCompositeGetISLocalToGlobalMappings()`, `DMCompositeGetAccess()`,
          `DMCompositeGetLocalVectors()`, `DMCompositeRestoreLocalVectors()`, `DMCompositeGetEntries()`
-
 @*/
 PetscErrorCode DMCompositeGather(DM dm, InsertMode imode, Vec gvec, ...)
 {
@@ -660,17 +659,17 @@ PetscErrorCode DMCompositeGather(DM dm, InsertMode imode, Vec gvec, ...)
     Collective on dm
 
     Input Parameters:
-+    dm - the packer object
++    dm - the `DMCOMPOSITE` object
 .    gvec - the global vector
-.    imode - INSERT_VALUES or ADD_VALUES
+.    imode - `INSERT_VALUES` or `ADD_VALUES`
 -    lvecs - the individual sequential vectors, NULL for any that are not needed
 
     Level: advanced
 
-    Notes:
-    This is a non-variadic alternative to DMCompositeGather().
+    Note:
+    This is a non-variadic alternative to `DMCompositeGather()`.
 
-.seealso `DMDestroy()`, `DMCompositeAddDM()`, `DMCreateGlobalVector()`,
+.seealso: `DMCOMPOSITE`, `DM`, `DMDestroy()`, `DMCompositeAddDM()`, `DMCreateGlobalVector()`,
          `DMCompositeScatter()`, `DMCompositeCreate()`, `DMCompositeGetISLocalToGlobalMappings()`, `DMCompositeGetAccess()`,
          `DMCompositeGetLocalVectors()`, `DMCompositeRestoreLocalVectors()`, `DMCompositeGetEntries()`,
 @*/
@@ -708,20 +707,19 @@ PetscErrorCode DMCompositeGatherArray(DM dm, InsertMode imode, Vec gvec, Vec *lv
 }
 
 /*@
-    DMCompositeAddDM - adds a DM vector to a DMComposite
+    DMCompositeAddDM - adds a `DM` vector to a `DMCOMPOSITE`
 
     Collective on dm
 
     Input Parameters:
-+    dmc - the DMComposite (packer) object
--    dm - the DM object
++    dmc - the  `DMCOMPOSITE` object
+-    dm - the `DM` object
 
     Level: advanced
 
-.seealso `DMDestroy()`, `DMCompositeGather()`, `DMCompositeAddDM()`, `DMCreateGlobalVector()`,
+.seealso: `DMCOMPOSITE`, `DM`, `DMDestroy()`, `DMCompositeGather()`, `DMCompositeAddDM()`, `DMCreateGlobalVector()`,
          `DMCompositeScatter()`, `DMCompositeCreate()`, `DMCompositeGetISLocalToGlobalMappings()`, `DMCompositeGetAccess()`,
          `DMCompositeGetLocalVectors()`, `DMCompositeRestoreLocalVectors()`, `DMCompositeGetEntries()`
-
 @*/
 PetscErrorCode DMCompositeAddDM(DM dmc, DM dm)
 {
@@ -847,28 +845,28 @@ PetscErrorCode DMCreateLocalVector_Composite(DM dm, Vec *lvec)
 }
 
 /*@C
-    DMCompositeGetISLocalToGlobalMappings - gets an ISLocalToGlobalMapping for each DM in the DMComposite, maps to the composite global space
+    DMCompositeGetISLocalToGlobalMappings - gets an `ISLocalToGlobalMapping` for each `DM` in the `DMCOMPOSITE`, maps to the composite global space
 
-    Collective on DM
+    Collective on dm
 
     Input Parameter:
-.    dm - the packer object
+.    dm - the `DMCOMPOSITE` object
 
     Output Parameters:
 .    ltogs - the individual mappings for each packed vector. Note that this includes
-           all the ghost points that individual ghosted DMDA's may have.
+           all the ghost points that individual ghosted `DMDA` may have.
 
     Level: advanced
 
-    Notes:
-       Each entry of ltogs should be destroyed with ISLocalToGlobalMappingDestroy(), the ltogs array should be freed with PetscFree().
+    Note:
+    Each entry of ltogs should be destroyed with `ISLocalToGlobalMappingDestroy()`, the ltogs array should be freed with `PetscFree()`.
 
+    Fortran Note:
     Not available from Fortran
 
-.seealso `DMDestroy()`, `DMCompositeAddDM()`, `DMCreateGlobalVector()`,
+.seealso: `DMCOMPOSITE`, `DM`, `DMDestroy()`, `DMCompositeAddDM()`, `DMCreateGlobalVector()`,
          `DMCompositeGather()`, `DMCompositeCreate()`, `DMCompositeGetAccess()`, `DMCompositeScatter()`,
          `DMCompositeGetLocalVectors()`, `DMCompositeRestoreLocalVectors()`, `DMCompositeGetEntries()`
-
 @*/
 PetscErrorCode DMCompositeGetISLocalToGlobalMappings(DM dm, ISLocalToGlobalMapping **ltogs)
 {
@@ -938,27 +936,28 @@ PetscErrorCode DMCompositeGetISLocalToGlobalMappings(DM dm, ISLocalToGlobalMappi
    Not Collective
 
    Input Parameter:
-. dm - composite DM
+. dm - the `DMCOMPOSITE`
 
    Output Parameter:
-. is - array of serial index sets for each each component of the DMComposite
+. is - array of serial index sets for each each component of the `DMCOMPOSITE`
 
    Level: intermediate
 
    Notes:
    At present, a composite local vector does not normally exist.  This function is used to provide index sets for
-   MatGetLocalSubMatrix().  In the future, the scatters for each entry in the DMComposite may be be merged into a single
+   `MatGetLocalSubMatrix()`.  In the future, the scatters for each entry in the `DMCOMPOSITE` may be be merged into a single
    scatter to a composite local vector.  The user should not typically need to know which is being done.
 
-   To get the composite global indices at all local points (including ghosts), use DMCompositeGetISLocalToGlobalMappings().
+   To get the composite global indices at all local points (including ghosts), use `DMCompositeGetISLocalToGlobalMappings()`.
 
-   To get index sets for pieces of the composite global vector, use DMCompositeGetGlobalISs().
+   To get index sets for pieces of the composite global vector, use `DMCompositeGetGlobalISs()`.
 
-   Each returned IS should be destroyed with ISDestroy(), the array should be freed with PetscFree().
+   Each returned `IS` should be destroyed with `ISDestroy()`, the array should be freed with `PetscFree()`.
 
+   Fortran Note:
    Not available from Fortran
 
-.seealso: `DMCompositeGetGlobalISs()`, `DMCompositeGetISLocalToGlobalMappings()`, `MatGetLocalSubMatrix()`, `MatCreateLocalRef()`
+.seealso: `DMCOMPOSITE`, `DM`, `DMCompositeGetGlobalISs()`, `DMCompositeGetISLocalToGlobalMappings()`, `MatGetLocalSubMatrix()`, `MatCreateLocalRef()`
 @*/
 PetscErrorCode DMCompositeGetLocalISs(DM dm, IS **is)
 {
@@ -983,12 +982,12 @@ PetscErrorCode DMCompositeGetLocalISs(DM dm, IS **is)
 }
 
 /*@C
-    DMCompositeGetGlobalISs - Gets the index sets for each composed object
+    DMCompositeGetGlobalISs - Gets the index sets for each composed object in a `DMCOMPOSITE`
 
     Collective on dm
 
     Input Parameter:
-.    dm - the packer object
+.    dm - the `DMCOMPOSITE` object
 
     Output Parameters:
 .    is - the array of index sets
@@ -996,22 +995,20 @@ PetscErrorCode DMCompositeGetLocalISs(DM dm, IS **is)
     Level: advanced
 
     Notes:
-       The is entries should be destroyed with ISDestroy(), the is array should be freed with PetscFree()
+       The is entries should be destroyed with `ISDestroy()`, the is array should be freed with `PetscFree()`
 
        These could be used to extract a subset of vector entries for a "multi-physics" preconditioner
 
-       Use DMCompositeGetLocalISs() for index sets in the packed local numbering, and
-       DMCompositeGetISLocalToGlobalMappings() for to map local sub-DM (including ghost) indices to packed global
+       Use `DMCompositeGetLocalISs()` for index sets in the packed local numbering, and
+       `DMCompositeGetISLocalToGlobalMappings()` for to map local sub-`DM` (including ghost) indices to packed global
        indices.
 
-    Fortran Notes:
+    Fortran Note:
+    The output argument 'is' must be an allocated array of sufficient length, which can be learned using `DMCompositeGetNumberDM()`.
 
-       The output argument 'is' must be an allocated array of sufficient length, which can be learned using DMCompositeGetNumberDM().
-
-.seealso `DMDestroy()`, `DMCompositeAddDM()`, `DMCreateGlobalVector()`,
+.seealso: `DMCOMPOSITE`, `DM`, `DMDestroy()`, `DMCompositeAddDM()`, `DMCreateGlobalVector()`,
          `DMCompositeGather()`, `DMCompositeCreate()`, `DMCompositeGetAccess()`, `DMCompositeScatter()`,
          `DMCompositeGetLocalVectors()`, `DMCompositeRestoreLocalVectors()`, `DMCompositeGetEntries()`
-
 @*/
 PetscErrorCode DMCompositeGetGlobalISs(DM dm, IS *is[])
 {
@@ -1124,25 +1121,25 @@ PetscErrorCode DMCreateFieldDecomposition_Composite(DM dm, PetscInt *len, char *
 
 /* -------------------------------------------------------------------------------------*/
 /*@C
-    DMCompositeGetLocalVectors - Gets local vectors for each part of a DMComposite.
-       Use DMCompositeRestoreLocalVectors() to return them.
+    DMCompositeGetLocalVectors - Gets local vectors for each part of a `DMCOMPOSITE`
+       Use `DMCompositeRestoreLocalVectors()` to return them.
 
     Not Collective
 
     Input Parameter:
-.    dm - the packer object
+.    dm - the `DMCOMPOSITE` object
 
     Output Parameter:
 .   Vec ... - the individual sequential Vecs
 
     Level: advanced
 
+    Fortran Note:
     Not available from Fortran
 
-.seealso `DMDestroy()`, `DMCompositeAddDM()`, `DMCreateGlobalVector()`,
+.seealso: `DMCOMPOSITE`, `DM`, `DMDestroy()`, `DMCompositeAddDM()`, `DMCreateGlobalVector()`,
          `DMCompositeGather()`, `DMCompositeCreate()`, `DMCompositeGetISLocalToGlobalMappings()`, `DMCompositeGetAccess()`,
          `DMCompositeRestoreLocalVectors()`, `DMCompositeScatter()`, `DMCompositeGetEntries()`
-
 @*/
 PetscErrorCode DMCompositeGetLocalVectors(DM dm, ...)
 {
@@ -1169,24 +1166,24 @@ PetscErrorCode DMCompositeGetLocalVectors(DM dm, ...)
 }
 
 /*@C
-    DMCompositeRestoreLocalVectors - Restores local vectors for each part of a DMComposite.
+    DMCompositeRestoreLocalVectors - Restores local vectors for each part of a `DMCOMPOSITE`
 
     Not Collective
 
     Input Parameter:
-.    dm - the packer object
+.    dm - the `DMCOMPOSITE` object
 
     Output Parameter:
-.   Vec ... - the individual sequential Vecs
+.   Vec ... - the individual sequential `Vec`
 
     Level: advanced
 
+    Fortran Note:
     Not available from Fortran
 
-.seealso `DMDestroy()`, `DMCompositeAddDM()`, `DMCreateGlobalVector()`,
+.seealso: `DMCOMPOSITE`, `DM`, `DMDestroy()`, `DMCompositeAddDM()`, `DMCreateGlobalVector()`,
          `DMCompositeGather()`, `DMCompositeCreate()`, `DMCompositeGetISLocalToGlobalMappings()`, `DMCompositeGetAccess()`,
          `DMCompositeGetLocalVectors()`, `DMCompositeScatter()`, `DMCompositeGetEntries()`
-
 @*/
 PetscErrorCode DMCompositeRestoreLocalVectors(DM dm, ...)
 {
@@ -1214,26 +1211,25 @@ PetscErrorCode DMCompositeRestoreLocalVectors(DM dm, ...)
 
 /* -------------------------------------------------------------------------------------*/
 /*@C
-    DMCompositeGetEntries - Gets the DM for each entry in a DMComposite.
+    DMCompositeGetEntries - Gets the `DM` for each entry in a `DMCOMPOSITE`.
 
     Not Collective
 
     Input Parameter:
-.    dm - the packer object
+.    dm - the `DMCOMPOSITE` object
 
     Output Parameter:
-.   DM ... - the individual entries (DMs)
+.   DM ... - the individual entries `DM`
 
     Level: advanced
 
-    Fortran Notes:
-    Available as DMCompositeGetEntries() for one output DM, DMCompositeGetEntries2() for 2, etc
+    Fortran Note:
+    Available as `DMCompositeGetEntries()` for one output `DM`, DMCompositeGetEntries2() for 2, etc
 
-.seealso `DMDestroy()`, `DMCompositeAddDM()`, `DMCreateGlobalVector()`, `DMCompositeGetEntriesArray()`
+.seealso: `DMCOMPOSITE`, `DM`, `DMDestroy()`, `DMCompositeAddDM()`, `DMCreateGlobalVector()`, `DMCompositeGetEntriesArray()`
          `DMCompositeGather()`, `DMCompositeCreate()`, `DMCompositeGetISLocalToGlobalMappings()`, `DMCompositeGetAccess()`,
          `DMCompositeRestoreLocalVectors()`, `DMCompositeGetLocalVectors()`, `DMCompositeScatter()`,
          `DMCompositeGetLocalVectors()`, `DMCompositeRestoreLocalVectors()`
-
 @*/
 PetscErrorCode DMCompositeGetEntries(DM dm, ...)
 {
@@ -1260,23 +1256,22 @@ PetscErrorCode DMCompositeGetEntries(DM dm, ...)
 }
 
 /*@C
-    DMCompositeGetEntriesArray - Gets the DM for each entry in a DMComposite.
+    DMCompositeGetEntriesArray - Gets the DM for each entry in a `DMCOMPOSITE`
 
     Not Collective
 
     Input Parameter:
-.    dm - the packer object
+.    dm - the `DMCOMPOSITE` object
 
     Output Parameter:
-.    dms - array of sufficient length (see DMCompositeGetNumberDM()) to hold the individual DMs
+.    dms - array of sufficient length (see `DMCompositeGetNumberDM()`) to hold the individual `DM`
 
     Level: advanced
 
-.seealso `DMDestroy()`, `DMCompositeAddDM()`, `DMCreateGlobalVector()`, `DMCompositeGetEntries()`
+.seealso: `DMCOMPOSITE`, `DM`, `DMDestroy()`, `DMCompositeAddDM()`, `DMCreateGlobalVector()`, `DMCompositeGetEntries()`
          `DMCompositeGather()`, `DMCompositeCreate()`, `DMCompositeGetISLocalToGlobalMappings()`, `DMCompositeGetAccess()`,
          `DMCompositeRestoreLocalVectors()`, `DMCompositeGetLocalVectors()`, `DMCompositeScatter()`,
          `DMCompositeGetLocalVectors()`, `DMCompositeRestoreLocalVectors()`
-
 @*/
 PetscErrorCode DMCompositeGetEntriesArray(DM dm, DM dms[])
 {
@@ -1688,7 +1683,7 @@ PetscErrorCode DMLocalToLocalEnd_Composite(DM dm, Vec lvec, InsertMode mode, Vec
 }
 
 /*MC
-   DMCOMPOSITE = "composite" - A DM object that is used to manage data for a collection of DMs
+   DMCOMPOSITE = "composite" - A `DM` object that is used to manage data for a collection of `DM`
 
   Level: intermediate
 
@@ -1732,7 +1727,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_Composite(DM p)
 }
 
 /*@
-    DMCompositeCreate - Creates a vector packer, used to generate "composite"
+    DMCompositeCreate - Creates a `DMCOMPOSITE`, used to generate "composite"
       vectors made up of several subvectors.
 
     Collective
@@ -1741,14 +1736,13 @@ PETSC_EXTERN PetscErrorCode DMCreate_Composite(DM p)
 .   comm - the processors that will share the global vector
 
     Output Parameters:
-.   packer - the packer object
+.   packer - the `DMCOMPOSITE` object
 
     Level: advanced
 
-.seealso `DMDestroy()`, `DMCompositeAddDM()`, `DMCompositeScatter()`, `DMCOMPOSITE`, `DMCreate()`
-         `DMCompositeGather()`, `DMCreateGlobalVector()`, `DMCompositeGetISLocalToGlobalMappings()`, `DMCompositeGetAccess()`
-         `DMCompositeGetLocalVectors()`, `DMCompositeRestoreLocalVectors()`, `DMCompositeGetEntries()`
-
+.seealso: `DMCOMPOSITE`, `DM`, `DMDestroy()`, `DMCompositeAddDM()`, `DMCompositeScatter()`, `DMCOMPOSITE`, `DMCreate()`
+          `DMCompositeGather()`, `DMCreateGlobalVector()`, `DMCompositeGetISLocalToGlobalMappings()`, `DMCompositeGetAccess()`
+          `DMCompositeGetLocalVectors()`, `DMCompositeRestoreLocalVectors()`, `DMCompositeGetEntries()`
 @*/
 PetscErrorCode DMCompositeCreate(MPI_Comm comm, DM *packer)
 {

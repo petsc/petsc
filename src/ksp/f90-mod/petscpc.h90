@@ -37,6 +37,17 @@
       end Interface
 
       Interface
+      subroutine PCFieldSplitSetFields(a,b,c,d,e,z)
+      import tPC,tIS
+       PC a
+       character(*)  b
+       PetscInt c
+       PetscInt d(*),e(*)
+       PetscErrorCode z
+       end subroutine
+      end Interface
+
+      Interface
         subroutine PCDestroy(a,z)
           import tPC
           PC a

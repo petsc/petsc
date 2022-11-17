@@ -2,7 +2,7 @@
 #include <petsc/private/dmdaimpl.h> /*I   "petscdmda.h"   I*/
 
 /*@C
-   DMDACreatePF - Creates an appropriately dimensioned PF mathematical function object
+   DMDACreatePF - Creates an appropriately dimensioned `PF` mathematical function object
       from a DMDA.
 
    Collective on da
@@ -15,9 +15,10 @@
 
    Level: advanced
 
+   Fortran Note:
    Not supported from Fortran
 
-.seealso: `DMDACreate1d()`, `DMDACreate2d()`, `DMDACreate3d()`, `DMDestroy()`, `DMCreateGlobalVector()`
+.seealso: `DM`, `PF`, `DMDA`, `DMDACreate1d()`, `DMDACreate2d()`, `DMDACreate3d()`, `DMDestroy()`, `DMCreateGlobalVector()`
 @*/
 PetscErrorCode DMDACreatePF(DM da, PF *pf)
 {

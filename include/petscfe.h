@@ -10,6 +10,14 @@
 
 /* SUBMANSEC = FE */
 
+/*MC
+      PetscFEGeom - Structure for geometric information for `PetscFE`
+
+    Level: intermediate
+
+.seealso: `PetscFEGeomCreate()`, `PetscFEGeomDestroy()`, `PetscFEGeomGetChunk()`, `PetscFEGeomRestoreChunk()`, `PetscFEGeomGetPoint()`, `PetscFEGeomGetCellPoint()`,
+          `PetscFEGeomComplete()`
+M*/
 typedef struct _n_PetscFEGeom {
   const PetscReal *xi;
   PetscReal       *v;     /* v[Nc*Np*dE]:           The first point in each each in real coordinates */

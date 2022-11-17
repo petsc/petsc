@@ -598,6 +598,16 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
     if (jac->defaultsplit || !ilink->is) {
       if (jac->bs <= 0) jac->bs = nsplit;
     }
+
+    /*  MatCreateSubMatrix() for [S]BAIJ matrices can only work if the indices include entire blocks of the matrix */
+    PetscCall(MatGetBlockSize(pc->pmat, &bs));
+    if (bs > 1 && (jac->bs <= bs || jac->bs % bs)) {
+      PetscBool blk;
+
+      PetscCall(PetscObjectTypeCompareAny((PetscObject)pc->pmat, &blk, MATBAIJ, MATSBAIJ, MATSEQBAIJ, MATSEQSBAIJ, MATMPIBAIJ, MATMPISBAIJ, NULL));
+      PetscCheck(!blk, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_WRONG, "Cannot use MATBAIJ with PCFIELDSPLIT and currently set matrix and PC blocksizes");
+    }
+
     bs = jac->bs;
     PetscCall(MatGetOwnershipRange(pc->pmat, &rstart, &rend));
     nslots = (rend - rstart) / bs;
@@ -1873,7 +1883,9 @@ static PetscErrorCode PCFieldSplitSetIS_FieldSplit(PC pc, const char splitname[]
 +   pc  - the preconditioner context
 .   splitname - name of this split, if NULL the number of the split is used
 .   n - the number of fields in this split
--   fields - the fields in this split
+.   fields - the fields in this split
+-   fields_col - generally the same as fields, if it does not match fields then the matrix block that is solved for this set of fields comes from an off-diagonal block
+                 of the matrix and fields_col provides the column indices for that block
 
     Level: intermediate
 
@@ -1887,6 +1899,8 @@ static PetscErrorCode PCFieldSplitSetIS_FieldSplit(PC pc, const char splitname[]
 
      This function is called once per split (it creates a new split each time).  Solve options
      for this split will be available under the prefix -fieldsplit_SPLITNAME_.
+
+   `PCFieldSplitSetIS()` does not support having a fields_col different from fields
 
    Developer Note:
    This routine does not actually create the `IS` representing the split, that is delayed

@@ -84,7 +84,7 @@ static PetscErrorCode DMDASetBlockFills_Private2(DM_DA *dd)
 
 /*@
     DMDASetBlockFills - Sets the fill pattern in each block for a multi-component problem
-    of the matrix returned by DMCreateMatrix().
+    of the matrix returned by `DMCreateMatrix()`.
 
     Logically Collective on da
 
@@ -97,24 +97,25 @@ static PetscErrorCode DMDASetBlockFills_Private2(DM_DA *dd)
 
     Notes:
     This only makes sense when you are doing multicomponent problems but using the
-       MPIAIJ matrix format
+       `MATMPIAIJ` matrix format
 
            The format for dfill and ofill is a 2 dimensional dof by dof matrix with 1 entries
        representing coupling and 0 entries for missing coupling. For example
-$             dfill[9] = {1, 0, 0,
-$                         1, 1, 0,
-$                         0, 1, 1}
+.vb
+            dfill[9] = {1, 0, 0,
+                        1, 1, 0,
+                        0, 1, 1}
+.ve
        means that row 0 is coupled with only itself in the diagonal block, row 1 is coupled with
        itself and row 0 (in the diagonal block) and row 2 is coupled with itself and row 1 (in the
        diagonal block).
 
-     DMDASetGetMatrix() allows you to provide general code for those more complicated nonzero patterns then
+     `DMDASetGetMatrix()` allows you to provide general code for those more complicated nonzero patterns then
      can be represented in the dfill, ofill format
 
    Contributed by Glenn Hammond
 
-.seealso `DMCreateMatrix()`, `DMDASetGetMatrix()`, `DMSetMatrixPreallocateOnly()`
-
+.seealso: `DM`, `DMDA`, `DMCreateMatrix()`, `DMDASetGetMatrix()`, `DMSetMatrixPreallocateOnly()`
 @*/
 PetscErrorCode DMDASetBlockFills(DM da, const PetscInt *dfill, const PetscInt *ofill)
 {
@@ -132,7 +133,7 @@ PetscErrorCode DMDASetBlockFills(DM da, const PetscInt *dfill, const PetscInt *o
 
 /*@
     DMDASetBlockFillsSparse - Sets the fill pattern in each block for a multi-component problem
-    of the matrix returned by DMCreateMatrix(), using sparse representations
+    of the matrix returned by `DMCreateMatrix()`, using sparse representations
     of fill patterns.
 
     Logically Collective on da
@@ -144,8 +145,9 @@ PetscErrorCode DMDASetBlockFills(DM da, const PetscInt *dfill, const PetscInt *o
 
     Level: developer
 
-    Notes: This only makes sense when you are doing multicomponent problems but using the
-       MPIAIJ matrix format
+    Notes:
+    This only makes sense when you are doing multicomponent problems but using the
+       `MATMPIAIJ` matrix format
 
            The format for dfill and ofill is a sparse representation of a
            dof-by-dof matrix with 1 entries representing coupling and 0 entries
@@ -158,16 +160,15 @@ PetscErrorCode DMDASetBlockFills(DM da, const PetscInt *dfill, const PetscInt *o
            the 1s within the logical 2D matrix.  Each row's items within
            the array are the column indices of the 1s within that row
            of the 2D matrix.  PETSc developers may recognize that this is the
-           same format as that computed by the DMDASetBlockFills_Private()
+           same format as that computed by the `DMDASetBlockFills_Private()`
            function from a dense 2D matrix representation.
 
-     DMDASetGetMatrix() allows you to provide general code for those more complicated nonzero patterns then
+     `DMDASetGetMatrix()` allows you to provide general code for those more complicated nonzero patterns then
      can be represented in the dfill, ofill format
 
    Contributed by Philip C. Roth
 
-.seealso `DMDASetBlockFills()`, `DMCreateMatrix()`, `DMDASetGetMatrix()`, `DMSetMatrixPreallocateOnly()`
-
+.seealso: `DM`, `DMDA`, `DMDASetBlockFills()`, `DMCreateMatrix()`, `DMDASetGetMatrix()`, `DMSetMatrixPreallocateOnly()`
 @*/
 PetscErrorCode DMDASetBlockFillsSparse(DM da, const PetscInt *dfillsparse, const PetscInt *ofillsparse)
 {
@@ -530,7 +531,7 @@ extern PetscErrorCode DMCreateMatrix_DA_3d_MPISELL(DM, Mat);
 extern PetscErrorCode DMCreateMatrix_DA_IS(DM, Mat);
 
 /*@C
-   MatSetupDM - Sets the DMDA that is to be used by the HYPRE_StructMatrix PETSc matrix
+   MatSetupDM - Sets the `DMDA` that is to be used by the HYPRE_StructMatrix PETSc matrix
 
    Logically Collective on mat
 
@@ -540,6 +541,7 @@ extern PetscErrorCode DMCreateMatrix_DA_IS(DM, Mat);
 
    Level: intermediate
 
+.seealso: `Mat`, `MatSetUp()`
 @*/
 PetscErrorCode MatSetupDM(Mat mat, DM da)
 {

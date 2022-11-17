@@ -103,11 +103,11 @@ static PetscErrorCode PetscSpaceInitialize_Point(PetscSpace sp)
 }
 
 /*MC
-  PETSCSPACEPOINT = "point" - A PetscSpace object that encapsulates functions defined on a set of quadrature points.
+  PETSCSPACEPOINT = "point" - A `PetscSpace` object that encapsulates functions defined on a set of quadrature points.
 
   Level: intermediate
 
-.seealso: `PetscSpaceType`, `PetscSpaceCreate()`, `PetscSpaceSetType()`
+.seealso: `PetscSpace`, `PetscSpaceType`, `PetscSpaceCreate()`, `PetscSpaceSetType()`
 M*/
 
 PETSC_EXTERN PetscErrorCode PetscSpaceCreate_Point(PetscSpace sp)
@@ -134,12 +134,12 @@ PETSC_EXTERN PetscErrorCode PetscSpaceCreate_Point(PetscSpace sp)
   Logically collective
 
   Input Parameters:
-+ sp - The PetscSpace
-- q  - The PetscQuadrature defining the points
++ sp - The `PetscSpace`
+- q  - The `PetscQuadrature` defining the points
 
   Level: intermediate
 
-.seealso: `PetscSpaceCreate()`, `PetscSpaceSetType()`
+.seealso: `PetscSpace`, `PetscQuadrature`, `PetscSpaceCreate()`, `PetscSpaceSetType()`
 @*/
 PetscErrorCode PetscSpacePointSetPoints(PetscSpace sp, PetscQuadrature q)
 {
@@ -159,14 +159,14 @@ PetscErrorCode PetscSpacePointSetPoints(PetscSpace sp, PetscQuadrature q)
   Logically collective
 
   Input Parameter:
-. sp - The PetscSpace
+. sp - The `PetscSpace`
 
   Output Parameter:
-. q  - The PetscQuadrature defining the points
+. q  - The `PetscQuadrature` defining the points
 
   Level: intermediate
 
-.seealso: `PetscSpaceCreate()`, `PetscSpaceSetType()`
+.seealso: `PetscSpace`, `PetscQuadrature`, `PetscSpaceCreate()`, `PetscSpaceSetType()`
 @*/
 PetscErrorCode PetscSpacePointGetPoints(PetscSpace sp, PetscQuadrature *q)
 {
