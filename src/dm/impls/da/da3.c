@@ -1443,11 +1443,11 @@ PetscErrorCode DMSetUp_DA_3D(DM da)
    Input Parameters:
 +  comm - MPI communicator
 .  bx,by,bz - type of ghost nodes the array have.
-         Use one of DM_BOUNDARY_NONE, DM_BOUNDARY_GHOSTED, DM_BOUNDARY_PERIODIC.
-.  stencil_type - Type of stencil (DMDA_STENCIL_STAR or DMDA_STENCIL_BOX)
+         Use one of `DM_BOUNDARY_NONE`, `DM_BOUNDARY_GHOSTED`, `DM_BOUNDARY_PERIODIC`.
+.  stencil_type - Type of stencil (`DMDA_STENCIL_STAR` or `DMDA_STENCIL_BOX`)
 .  M,N,P - global dimension in each direction of the array
 .  m,n,p - corresponding number of processors in each dimension
-           (or PETSC_DECIDE to have calculated)
+           (or `PETSC_DECIDE` to have calculated)
 .  dof - number of degrees of freedom per node
 .  s - stencil width
 -  lx, ly, lz - arrays containing the number of nodes in each cell along
@@ -1459,8 +1459,8 @@ PetscErrorCode DMSetUp_DA_3D(DM da)
    Output Parameter:
 .  da - the resulting distributed array object
 
-   Options Database Key:
-+  -dm_view - Calls DMView() at the conclusion of DMDACreate3d()
+   Options Database Keys:
++  -dm_view - Calls `DMView()` at the conclusion of `DMDACreate3d()`
 .  -da_grid_x <nx> - number of grid points in x direction
 .  -da_grid_y <ny> - number of grid points in y direction
 .  -da_grid_z <nz> - number of grid points in z direction
@@ -1475,24 +1475,23 @@ PetscErrorCode DMSetUp_DA_3D(DM da)
    Level: beginner
 
    Notes:
-   The stencil type DMDA_STENCIL_STAR with width 1 corresponds to the
-   standard 7-pt stencil, while DMDA_STENCIL_BOX with width 1 denotes
+   The stencil type `DMDA_STENCIL_STAR` with width 1 corresponds to the
+   standard 7-pt stencil, while `DMDA_STENCIL_BOX` with width 1 denotes
    the standard 27-pt stencil.
 
-   The array data itself is NOT stored in the DMDA, it is stored in Vec objects;
-   The appropriate vector objects can be obtained with calls to DMCreateGlobalVector()
-   and DMCreateLocalVector() and calls to VecDuplicate() if more are needed.
+   The array data itself is NOT stored in the `DMDA`, it is stored in `Vec` objects;
+   The appropriate vector objects can be obtained with calls to `DMCreateGlobalVector()`
+   and `DMCreateLocalVector()` and calls to `VecDuplicate()` if more are needed.
 
-   You must call DMSetUp() after this call before using this DM.
+   You must call `DMSetUp()` after this call before using this `DM`.
 
-   If you wish to use the options database to change values in the DMDA call DMSetFromOptions() after this call
-   but before DMSetUp().
+   If you wish to use the options database to change values in the `DMDA` call `DMSetFromOptions()` after this call
+   but before `DMSetUp()`.
 
-.seealso: `DMDestroy()`, `DMView()`, `DMDACreate1d()`, `DMDACreate2d()`, `DMGlobalToLocalBegin()`, `DMDAGetRefinementFactor()`,
+.seealso: `DM`, `DMDA`, `DMDestroy()`, `DMView()`, `DMDACreate1d()`, `DMDACreate2d()`, `DMGlobalToLocalBegin()`, `DMDAGetRefinementFactor()`,
           `DMGlobalToLocalEnd()`, `DMLocalToGlobalBegin()`, `DMLocalToLocalBegin()`, `DMLocalToLocalEnd()`, `DMDASetRefinementFactor()`,
           `DMDAGetInfo()`, `DMCreateGlobalVector()`, `DMCreateLocalVector()`, `DMDACreateNaturalVector()`, `DMLoad()`, `DMDAGetOwnershipRanges()`,
           `DMStagCreate3d()`
-
 @*/
 PetscErrorCode DMDACreate3d(MPI_Comm comm, DMBoundaryType bx, DMBoundaryType by, DMBoundaryType bz, DMDAStencilType stencil_type, PetscInt M, PetscInt N, PetscInt P, PetscInt m, PetscInt n, PetscInt p, PetscInt dof, PetscInt s, const PetscInt lx[], const PetscInt ly[], const PetscInt lz[], DM *da)
 {

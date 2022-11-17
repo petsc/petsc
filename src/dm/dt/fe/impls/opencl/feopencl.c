@@ -751,7 +751,7 @@ static PetscErrorCode PetscFEInitialize_OpenCL(PetscFE fem)
 }
 
 /*MC
-  PETSCFEOPENCL = "opencl" - A PetscFE object that integrates using a vectorized OpenCL implementation
+  PETSCFEOPENCL = "opencl" - A `PetscFEType` that integrates using a vectorized OpenCL implementation
 
   Level: intermediate
 
@@ -797,15 +797,15 @@ PETSC_EXTERN PetscErrorCode PetscFECreate_OpenCL(PetscFE fem)
 }
 
 /*@
-  PetscFEOpenCLSetRealType - Set the scalar type for running on the accelerator
+  PetscFEOpenCLSetRealType - Set the scalar type for running on the OpenCL accelerator
 
   Input Parameters:
-+ fem      - The PetscFE
++ fem      - The `PetscFE`
 - realType - The scalar type
 
   Level: developer
 
-.seealso: `PetscFEOpenCLGetRealType()`
+.seealso: `PetscFE`, `PetscFEOpenCLGetRealType()`
 @*/
 PetscErrorCode PetscFEOpenCLSetRealType(PetscFE fem, PetscDataType realType)
 {
@@ -818,17 +818,17 @@ PetscErrorCode PetscFEOpenCLSetRealType(PetscFE fem, PetscDataType realType)
 }
 
 /*@
-  PetscFEOpenCLGetRealType - Get the scalar type for running on the accelerator
+  PetscFEOpenCLGetRealType - Get the scalar type for running on the OpenCL accelerator
 
   Input Parameter:
-. fem      - The PetscFE
+. fem - The `PetscFE`
 
   Output Parameter:
 . realType - The scalar type
 
   Level: developer
 
-.seealso: `PetscFEOpenCLSetRealType()`
+.seealso: `PetscFE`, `PetscFEOpenCLSetRealType()`
 @*/
 PetscErrorCode PetscFEOpenCLGetRealType(PetscFE fem, PetscDataType *realType)
 {

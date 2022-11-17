@@ -7,7 +7,7 @@ static PetscBool DMFieldPackageInitialized = PETSC_FALSE;
 PetscBool DMFieldRegisterAllCalled;
 
 /*@C
-   DMFieldInitializePackage - Initialize DMField package
+   DMFieldInitializePackage - Initialize `DMField` package
 
    Logically Collective
 
@@ -28,7 +28,7 @@ PetscErrorCode DMFieldInitializePackage(void)
 }
 
 /*@C
-   DMFieldFinalizePackage - Finalize DMField package, it is called from PetscFinalize()
+   DMFieldFinalizePackage - Finalize `DMField` package, it is called from `PetscFinalize()`
 
    Logically Collective
 

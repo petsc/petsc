@@ -18,9 +18,9 @@
 
    Notes:
     Unlike the more general support for blocks in hypre this allows only one block per process and requires the block
-          be defined by a DMDA.
+          be defined by a `DMDA`.
 
-          The matrix needs a DMDA associated with it by either a call to MatSetDM() or if the matrix is obtained from DMCreateMatrix()
+          The matrix needs a `DMDA` associated with it by either a call to `MatSetDM()` or if the matrix is obtained from `DMCreateMatrix()`
 
 .seealso: `MatCreate()`, `PCPFMG`, `MatSetDM()`, `DMCreateMatrix()`
 M*/
@@ -333,10 +333,11 @@ PETSC_EXTERN PetscErrorCode MatCreate_HYPREStruct(Mat B)
           grid objects, we restrict the semi-struct objects to consist of only structured-grid components.
 
           Unlike the more general support for parts and blocks in hypre this allows only one part, and one block per process and requires the block
-          be defined by a DMDA.
+          be defined by a `DMDA`.
 
           The matrix needs a DMDA associated with it by either a call to MatSetDM() or if the matrix is obtained from DMCreateMatrix()
 
+.seealso: `Mat`
 M*/
 
 PetscErrorCode MatSetValuesLocal_HYPRESStruct_3d(Mat mat, PetscInt nrow, const PetscInt irow[], PetscInt ncol, const PetscInt icol[], const PetscScalar y[], InsertMode addv)

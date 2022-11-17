@@ -2860,14 +2860,14 @@ static PetscErrorCode PetscDualSpaceLagrangeSetContinuity_Lagrange(PetscDualSpac
   Not Collective
 
   Input Parameter:
-. sp         - the PetscDualSpace
+. sp         - the `PetscDualSpace`
 
   Output Parameter:
 . continuous - flag for element continuity
 
   Level: intermediate
 
-.seealso: `PetscDualSpaceLagrangeSetContinuity()`
+.seealso: `PetscDualSpace`, `PetscDualSpaceLagrangeSetContinuity()`
 @*/
 PetscErrorCode PetscDualSpaceLagrangeGetContinuity(PetscDualSpace sp, PetscBool *continuous)
 {
@@ -2884,7 +2884,7 @@ PetscErrorCode PetscDualSpaceLagrangeGetContinuity(PetscDualSpace sp, PetscBool 
   Logically Collective on sp
 
   Input Parameters:
-+ sp         - the PetscDualSpace
++ sp         - the `PetscDualSpace`
 - continuous - flag for element continuity
 
   Options Database:
@@ -2892,7 +2892,7 @@ PetscErrorCode PetscDualSpaceLagrangeGetContinuity(PetscDualSpace sp, PetscBool 
 
   Level: intermediate
 
-.seealso: `PetscDualSpaceLagrangeGetContinuity()`
+.seealso: `PetscDualSpace`, `PetscDualSpaceLagrangeGetContinuity()`
 @*/
 PetscErrorCode PetscDualSpaceLagrangeSetContinuity(PetscDualSpace sp, PetscBool continuous)
 {
@@ -3004,14 +3004,14 @@ static PetscErrorCode PetscDualSpaceLagrangeSetMomentOrder_Lagrange(PetscDualSpa
   Not collective
 
   Input Parameter:
-. sp - The PetscDualSpace
+. sp - The `PetscDualSpace`
 
   Output Parameter:
 . tensor - Whether the dual space has tensor layout (vs. simplicial)
 
   Level: intermediate
 
-.seealso: `PetscDualSpaceLagrangeSetTensor()`, `PetscDualSpaceCreate()`
+.seealso: `PetscDualSpace`, `PetscDualSpaceLagrangeSetTensor()`, `PetscDualSpaceCreate()`
 @*/
 PetscErrorCode PetscDualSpaceLagrangeGetTensor(PetscDualSpace sp, PetscBool *tensor)
 {
@@ -3028,12 +3028,12 @@ PetscErrorCode PetscDualSpaceLagrangeGetTensor(PetscDualSpace sp, PetscBool *ten
   Not collective
 
   Input Parameters:
-+ sp - The PetscDualSpace
++ sp - The `PetscDualSpace`
 - tensor - Whether the dual space has tensor layout (vs. simplicial)
 
   Level: intermediate
 
-.seealso: `PetscDualSpaceLagrangeGetTensor()`, `PetscDualSpaceCreate()`
+.seealso: `PetscDualSpace`, `PetscDualSpaceLagrangeGetTensor()`, `PetscDualSpaceCreate()`
 @*/
 PetscErrorCode PetscDualSpaceLagrangeSetTensor(PetscDualSpace sp, PetscBool tensor)
 {
@@ -3049,14 +3049,14 @@ PetscErrorCode PetscDualSpaceLagrangeSetTensor(PetscDualSpace sp, PetscBool tens
   Not collective
 
   Input Parameter:
-. sp - The PetscDualSpace
+. sp - The `PetscDualSpace`
 
   Output Parameter:
 . trimmed - Whether the dual space represents to dual basis of a trimmed polynomial space (e.g. Raviart-Thomas and higher order / other form degree variants)
 
   Level: intermediate
 
-.seealso: `PetscDualSpaceLagrangeSetTrimmed()`, `PetscDualSpaceCreate()`
+.seealso: `PetscDualSpace`, `PetscDualSpaceLagrangeSetTrimmed()`, `PetscDualSpaceCreate()`
 @*/
 PetscErrorCode PetscDualSpaceLagrangeGetTrimmed(PetscDualSpace sp, PetscBool *trimmed)
 {
@@ -3073,12 +3073,12 @@ PetscErrorCode PetscDualSpaceLagrangeGetTrimmed(PetscDualSpace sp, PetscBool *tr
   Not collective
 
   Input Parameters:
-+ sp - The PetscDualSpace
++ sp - The `PetscDualSpace`
 - trimmed - Whether the dual space represents to dual basis of a trimmed polynomial space (e.g. Raviart-Thomas and higher order / other form degree variants)
 
   Level: intermediate
 
-.seealso: `PetscDualSpaceLagrangeGetTrimmed()`, `PetscDualSpaceCreate()`
+.seealso: `PetscDualSpace`, `PetscDualSpaceLagrangeGetTrimmed()`, `PetscDualSpaceCreate()`
 @*/
 PetscErrorCode PetscDualSpaceLagrangeSetTrimmed(PetscDualSpace sp, PetscBool trimmed)
 {
@@ -3095,18 +3095,18 @@ PetscErrorCode PetscDualSpaceLagrangeSetTrimmed(PetscDualSpace sp, PetscBool tri
   Not collective
 
   Input Parameter:
-. sp - The PetscDualSpace
+. sp - The `PetscDualSpace`
 
   Output Parameters:
 + nodeType - The type of nodes
-. boundary - Whether the node type is one that includes endpoints (if nodeType is PETSCDTNODES_GAUSSJACOBI, nodes that
+. boundary - Whether the node type is one that includes endpoints (if nodeType is `PETSCDTNODES_GAUSSJACOBI`, nodes that
              include the boundary are Gauss-Lobatto-Jacobi nodes)
-- exponent - If nodeType is PETSCDTNODES_GAUSJACOBI, indicates the exponent used for both ends of the 1D Jacobi weight function
+- exponent - If nodeType is `PETSCDTNODES_GAUSJACOBI`, indicates the exponent used for both ends of the 1D Jacobi weight function
              '0' is Gauss-Legendre, '-0.5' is Gauss-Chebyshev of the first type, '0.5' is Gauss-Chebyshev of the second type
 
   Level: advanced
 
-.seealso: `PetscDTNodeType`, `PetscDualSpaceLagrangeSetNodeType()`
+.seealso: `PetscDualSpace`, `PetscDTNodeType`, `PetscDualSpaceLagrangeSetNodeType()`
 @*/
 PetscErrorCode PetscDualSpaceLagrangeGetNodeType(PetscDualSpace sp, PetscDTNodeType *nodeType, PetscBool *boundary, PetscReal *exponent)
 {
@@ -3126,16 +3126,16 @@ PetscErrorCode PetscDualSpaceLagrangeGetNodeType(PetscDualSpace sp, PetscDTNodeT
   Logically collective
 
   Input Parameters:
-+ sp - The PetscDualSpace
++ sp - The `PetscDualSpace`
 . nodeType - The type of nodes
-. boundary - Whether the node type is one that includes endpoints (if nodeType is PETSCDTNODES_GAUSSJACOBI, nodes that
+. boundary - Whether the node type is one that includes endpoints (if nodeType is `PETSCDTNODES_GAUSSJACOBI`, nodes that
              include the boundary are Gauss-Lobatto-Jacobi nodes)
-- exponent - If nodeType is PETSCDTNODES_GAUSJACOBI, indicates the exponent used for both ends of the 1D Jacobi weight function
+- exponent - If nodeType is `PETSCDTNODES_GAUSJACOBI`, indicates the exponent used for both ends of the 1D Jacobi weight function
              '0' is Gauss-Legendre, '-0.5' is Gauss-Chebyshev of the first type, '0.5' is Gauss-Chebyshev of the second type
 
   Level: advanced
 
-.seealso: `PetscDTNodeType`, `PetscDualSpaceLagrangeGetNodeType()`
+.seealso: `PetscDualSpace`, `PetscDTNodeType`, `PetscDualSpaceLagrangeGetNodeType()`
 @*/
 PetscErrorCode PetscDualSpaceLagrangeSetNodeType(PetscDualSpace sp, PetscDTNodeType nodeType, PetscBool boundary, PetscReal exponent)
 {
@@ -3151,14 +3151,14 @@ PetscErrorCode PetscDualSpaceLagrangeSetNodeType(PetscDualSpace sp, PetscDTNodeT
   Not collective
 
   Input Parameter:
-. sp - The PetscDualSpace
+. sp - The `PetscDualSpace`
 
   Output Parameter:
 . useMoments - Moment flag
 
   Level: advanced
 
-.seealso: `PetscDualSpaceLagrangeSetUseMoments()`
+.seealso: `PetscDualSpace`, `PetscDualSpaceLagrangeSetUseMoments()`
 @*/
 PetscErrorCode PetscDualSpaceLagrangeGetUseMoments(PetscDualSpace sp, PetscBool *useMoments)
 {
@@ -3175,12 +3175,12 @@ PetscErrorCode PetscDualSpaceLagrangeGetUseMoments(PetscDualSpace sp, PetscBool 
   Logically collective
 
   Input Parameters:
-+ sp - The PetscDualSpace
++ sp - The `PetscDualSpace`
 - useMoments - The flag for moment functionals
 
   Level: advanced
 
-.seealso: `PetscDualSpaceLagrangeGetUseMoments()`
+.seealso: `PetscDualSpace`, `PetscDualSpaceLagrangeGetUseMoments()`
 @*/
 PetscErrorCode PetscDualSpaceLagrangeSetUseMoments(PetscDualSpace sp, PetscBool useMoments)
 {
@@ -3196,14 +3196,14 @@ PetscErrorCode PetscDualSpaceLagrangeSetUseMoments(PetscDualSpace sp, PetscBool 
   Not collective
 
   Input Parameter:
-. sp - The PetscDualSpace
+. sp - The `PetscDualSpace`
 
   Output Parameter:
 . order - Moment integration order
 
   Level: advanced
 
-.seealso: `PetscDualSpaceLagrangeSetMomentOrder()`
+.seealso: `PetscDualSpace`, `PetscDualSpaceLagrangeSetMomentOrder()`
 @*/
 PetscErrorCode PetscDualSpaceLagrangeGetMomentOrder(PetscDualSpace sp, PetscInt *order)
 {
@@ -3220,12 +3220,12 @@ PetscErrorCode PetscDualSpaceLagrangeGetMomentOrder(PetscDualSpace sp, PetscInt 
   Logically collective
 
   Input Parameters:
-+ sp - The PetscDualSpace
++ sp - The `PetscDualSpace`
 - order - The order for moment integration
 
   Level: advanced
 
-.seealso: `PetscDualSpaceLagrangeGetMomentOrder()`
+.seealso: `PetscDualSpace`, `PetscDualSpaceLagrangeGetMomentOrder()`
 @*/
 PetscErrorCode PetscDualSpaceLagrangeSetMomentOrder(PetscDualSpace sp, PetscInt order)
 {
@@ -3255,11 +3255,11 @@ static PetscErrorCode PetscDualSpaceInitialize_Lagrange(PetscDualSpace sp)
 }
 
 /*MC
-  PETSCDUALSPACELAGRANGE = "lagrange" - A PetscDualSpace object that encapsulates a dual space of pointwise evaluation functionals
+  PETSCDUALSPACELAGRANGE = "lagrange" - A `PetscDualSpaceType` that encapsulates a dual space of pointwise evaluation functionals
 
   Level: intermediate
 
-.seealso: `PetscDualSpaceType`, `PetscDualSpaceCreate()`, `PetscDualSpaceSetType()`
+.seealso: `PetscDualSpace`, `PetscDualSpaceType`, `PetscDualSpaceCreate()`, `PetscDualSpaceSetType()`
 M*/
 PETSC_EXTERN PetscErrorCode PetscDualSpaceCreate_Lagrange(PetscDualSpace sp)
 {

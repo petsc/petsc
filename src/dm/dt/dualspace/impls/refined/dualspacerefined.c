@@ -7,18 +7,18 @@ typedef struct {
 
 /*@
    PetscDualSpaceRefinedSetCellSpaces - Set the dual spaces for the closures of each of the cells
-   in the multicell DM of a PetscDualSpace
+   in the multicell `DM` of a `PetscDualSpace`
 
-   Collective on PetscDualSpace
+   Collective on sp
 
    Input Parameters:
-+  sp - a PetscDualSpace
--  cellSpaces - one PetscDualSpace for each of the cells.  The reference count of each cell space will be incremented,
++  sp - a `PetscDualSpace`
+-  cellSpaces - one `PetscDualSpace` for each of the cells.  The reference count of each cell space will be incremented,
                 so the user is still responsible for these spaces afterwards
 
    Level: intermediate
 
-.seealso: `PetscFERefine()`
+.seealso: `PetscDualSpace`, `PetscFERefine()`
 @*/
 PetscErrorCode PetscDualSpaceRefinedSetCellSpaces(PetscDualSpace sp, const PetscDualSpace cellSpaces[])
 {
@@ -184,11 +184,11 @@ static PetscErrorCode PetscDualSpaceInitialize_Refined(PetscDualSpace sp)
 }
 
 /*MC
-  PETSCDUALSPACEREFINED = "refined" - A PetscDualSpace object that defines the joint dual space of a group of cells, usually refined from one larger cell
+  PETSCDUALSPACEREFINED = "refined" - A `PetscDualSpaceType` that defines the joint dual space of a group of cells, usually refined from one larger cell
 
   Level: intermediate
 
-.seealso: `PetscDualSpaceType`, `PetscDualSpaceCreate()`, `PetscDualSpaceSetType()`
+.seealso: `PetscDualSpace`, `PetscDualSpaceType`, `PetscDualSpaceCreate()`, `PetscDualSpaceSetType()`
 M*/
 PETSC_EXTERN PetscErrorCode PetscDualSpaceCreate_Refined(PetscDualSpace sp)
 {

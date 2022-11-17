@@ -8,12 +8,14 @@
 
   Input Parameters:
 + da - the distributed array
-- s - A MatStencil giving (i,j,k)
+- s - A `MatStencil` giving (i,j,k)
 
   Output Parameter:
 . cell - the local cell number
 
   Level: developer
+
+.seealso:  `DM`, `DMDA`
 @*/
 PetscErrorCode DMDAConvertToCell(DM dm, MatStencil s, PetscInt *cell)
 {

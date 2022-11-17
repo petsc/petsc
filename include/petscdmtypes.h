@@ -8,7 +8,7 @@
 
    Level: intermediate
 
-.seealso: `DMType`, `DMDGetType()`, `DMCompositeCreate()`, `DMDACreate()`, `DMSetType()`, `DMType`, `DMDA`, `DMPLEX`
+.seealso: `DMType`, `DMGetType()`, `DMCompositeCreate()`, `DMDACreate()`, `DMSetType()`, `DMType`, `DMDA`, `DMPLEX`
 S*/
 typedef struct _p_DM *DM;
 

@@ -1339,20 +1339,21 @@ PetscErrorCode DMCreateAggregates(DM dac, DM daf, Mat *mat)
 
 /*@
    DMDACreateAggregates - Gets the aggregates that map between
-   grids associated with two DMDAs.
+   grids associated with two `DMDA`
 
    Collective on dmc
 
    Input Parameters:
-+  dmc - the coarse grid DMDA
--  dmf - the fine grid DMDA
++  dmc - the coarse grid `DMDA`
+-  dmf - the fine grid `DMDA`
 
    Output Parameters:
 .  rest - the restriction matrix (transpose of the projection matrix)
 
    Level: intermediate
 
-   Note: This routine is not used by PETSc.
+   Note:
+   This routine is not used by PETSc.
    It is not clear what its use case is and it may be removed in a future release.
    Users should contact petsc-maint@mcs.anl.gov if they plan to use it.
 

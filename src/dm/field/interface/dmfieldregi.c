@@ -7,13 +7,13 @@ PETSC_EXTERN PetscErrorCode DMFieldCreate_Shell(DMField);
 PetscFunctionList DMFieldList;
 
 /*@C
-   DMFieldRegisterAll - Registers all the DMField implementations
+   DMFieldRegisterAll - Registers all the `DMField` implementations
 
    Not Collective
 
    Level: advanced
 
-.seealso: `DMFieldRegisterDestroy()`
+.seealso: `DMField`, `DMFieldRegisterDestroy()`
 @*/
 PetscErrorCode DMFieldRegisterAll(void)
 {
@@ -27,16 +27,13 @@ PetscErrorCode DMFieldRegisterAll(void)
 }
 
 /*@C
-  DMFieldRegister  - Adds an implementation of the DMField object.
+  DMFieldRegister  - Adds an implementation of the `DMField` object.
 
    Not collective
 
    Input Parameters:
 +  name_impl - name of a new user-defined implementation
 -  routine_create - routine to create method context
-
-   Notes:
-   DMFieldRegister() may be called multiple times to add several user-defined implementations.
 
    Sample usage:
 .vb
@@ -48,7 +45,10 @@ $     DMFieldSetType(tagger,"my_impl")
 
    Level: advanced
 
-.seealso: `DMFieldRegisterAll()`, `DMFieldRegisterDestroy()`
+   Note:
+   `DMFieldRegister()` may be called multiple times to add several user-defined implementations.
+
+.seealso: `DMField`, `DMFieldRegisterAll()`, `DMFieldRegisterDestroy()`
 @*/
 PetscErrorCode DMFieldRegister(const char sname[], PetscErrorCode (*function)(DMField))
 {

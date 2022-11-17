@@ -66,10 +66,10 @@ PetscErrorCode DMCreateLocalVector_DA(DM da, Vec *g)
 }
 
 /*@
-  DMDAGetNumCells - Get the number of cells in the local piece of the DMDA. This includes ghost cells.
+  DMDAGetNumCells - Get the number of cells in the local piece of the `DMDA`. This includes ghost cells.
 
   Input Parameter:
-. dm - The DM object
+. dm - The `DMDA` object
 
   Output Parameters:
 + numCellsX - The number of local cells in the x-direction
@@ -79,7 +79,7 @@ PetscErrorCode DMCreateLocalVector_DA(DM da, Vec *g)
 
   Level: developer
 
-.seealso: `DMDAGetCellPoint()`
+.seealso: `DM`, `DMDA`, `DMDAGetCellPoint()`
 @*/
 PetscErrorCode DMDAGetNumCells(DM dm, PetscInt *numCellsX, PetscInt *numCellsY, PetscInt *numCellsZ, PetscInt *numCells)
 {
@@ -110,18 +110,18 @@ PetscErrorCode DMDAGetNumCells(DM dm, PetscInt *numCellsX, PetscInt *numCellsY, 
 }
 
 /*@
-  DMDAGetCellPoint - Get the DM point corresponding to the tuple (i, j, k) in the DMDA
+  DMDAGetCellPoint - Get the DM point corresponding to the tuple (i, j, k) in the `DMDA`
 
   Input Parameters:
-+ dm - The DM object
++ dm - The `DMDA` object
 - i,j,k - The global indices for the cell
 
   Output Parameters:
-. point - The local DM point
+. point - The local `DM` point
 
   Level: developer
 
-.seealso: `DMDAGetNumCells()`
+.seealso: `DM`, `DMDA`, `DMDAGetNumCells()`
 @*/
 PetscErrorCode DMDAGetCellPoint(DM dm, PetscInt i, PetscInt j, PetscInt k, PetscInt *point)
 {
@@ -406,7 +406,7 @@ PetscErrorCode DMDASetVertexCoordinates(DM dm, PetscReal xl, PetscReal xu, Petsc
 /* ------------------------------------------------------------------- */
 
 /*@C
-     DMDAGetArray - Gets a work array for a DMDA
+     DMDAGetArray - Gets a work array for a `DMDA`
 
     Input Parameters:
 +    da - information about my local patch
@@ -415,13 +415,13 @@ PetscErrorCode DMDASetVertexCoordinates(DM dm, PetscReal xl, PetscReal xu, Petsc
     Output Parameters:
 .    vptr - array data structured
 
-    Note:  The vector values are NOT initialized and may have garbage in them, so you may need
-           to zero them.
-
   Level: advanced
 
-.seealso: `DMDARestoreArray()`
+  Note:
+   The vector values are NOT initialized and may have garbage in them, so you may need
+   to zero them.
 
+.seealso: `DM`, `DMDA`, `DMDARestoreArray()`
 @*/
 PetscErrorCode DMDAGetArray(DM da, PetscBool ghosted, void *vptr)
 {
@@ -529,7 +529,7 @@ done:
 }
 
 /*@C
-     DMDARestoreArray - Restores an array of derivative types for a DMDA
+     DMDARestoreArray - Restores an array of derivative types for a `DMDA`
 
     Input Parameters:
 +    da - information about my local patch
@@ -538,8 +538,7 @@ done:
 
      Level: advanced
 
-.seealso: `DMDAGetArray()`
-
+.seealso: `DM`, `DMDA`, `DMDAGetArray()`
 @*/
 PetscErrorCode DMDARestoreArray(DM da, PetscBool ghosted, void *vptr)
 {

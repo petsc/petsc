@@ -23,7 +23,7 @@
 
    Level: advanced
 
-.seealso: `DMDAGlobalToNaturalEnd()`, `DMLocalToGlobalBegin()`, `DMDACreate2d()`,
+.seealso: `DM`, `DMDA`, `DMDAGlobalToNaturalEnd()`, `DMLocalToGlobalBegin()`, `DMDACreate2d()`,
           `DMGlobalToLocalBegin()`, `DMGlobalToLocalEnd()`, `DMDACreateNaturalVector()`
 @*/
 PetscErrorCode DMDAGlobalToNaturalAllCreate(DM da, VecScatter *scatter)
@@ -68,7 +68,7 @@ PetscErrorCode DMDAGlobalToNaturalAllCreate(DM da, VecScatter *scatter)
 
    Level: advanced
 
-.seealso: `DMDAGlobalToNaturalEnd()`, `DMLocalToGlobalBegin()`, `DMDACreate2d()`,
+.seealso: `DM`, `DMDA`, `DMDAGlobalToNaturalEnd()`, `DMLocalToGlobalBegin()`, `DMDACreate2d()`,
           `DMGlobalToLocalBegin()`, `DMGlobalToLocalEnd()`, `DMDACreateNaturalVector()`
 @*/
 PetscErrorCode DMDANaturalAllToGlobalCreate(DM da, VecScatter *scatter)

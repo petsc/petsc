@@ -77,7 +77,7 @@ static PetscErrorCode PetscChunkBufferEnlargeChunk(PetscChunkBuffer *buffer, Pet
 }
 
 /*@C
-  PetscFormKeySort - Sorts an array of PetscFormKey in place in increasing order.
+  PetscFormKeySort - Sorts an array of `PetscFormKey` in place in increasing order.
 
   Not Collective
 
@@ -87,7 +87,7 @@ static PetscErrorCode PetscChunkBufferEnlargeChunk(PetscChunkBuffer *buffer, Pet
 
   Level: intermediate
 
-.seealso: `PetscIntSortSemiOrdered()`, `PetscSortInt()`
+.seealso: `PetscFormKey`, `PetscIntSortSemiOrdered()`, `PetscSortInt()`
 @*/
 PetscErrorCode PetscFormKeySort(PetscInt n, PetscFormKey arr[])
 {
@@ -238,19 +238,19 @@ PetscErrorCode PetscWeakFormClearIndexFunction_Private(PetscWeakForm wf, PetscHM
 }
 
 /*@
-  PetscWeakFormCopy - Copy the pointwise functions to another PetscWeakForm
+  PetscWeakFormCopy - Copy the pointwise functions to another `PetscWeakForm`
 
   Not Collective
 
   Input Parameter:
-. wf - The original PetscWeakForm
+. wf - The original `PetscWeakForm`
 
   Output Parameter:
-. wfNew - The copy PetscWeakForm
+. wfNew - The copy of the `PetscWeakForm`
 
   Level: intermediate
 
-.seealso: `PetscWeakFormCreate()`, `PetscWeakFormDestroy()`
+.seealso: `PetscWeakForm`, `PetscWeakFormCreate()`, `PetscWeakFormDestroy()`
 @*/
 PetscErrorCode PetscWeakFormCopy(PetscWeakForm wf, PetscWeakForm wfNew)
 {
@@ -268,16 +268,16 @@ PetscErrorCode PetscWeakFormCopy(PetscWeakForm wf, PetscWeakForm wfNew)
 }
 
 /*@
-  PetscWeakFormClear - Clear all functions from the PetscWeakForm
+  PetscWeakFormClear - Clear all functions from the `PetscWeakForm`
 
   Not Collective
 
   Input Parameter:
-. wf - The original PetscWeakForm
+. wf - The original `PetscWeakForm`
 
   Level: intermediate
 
-.seealso: `PetscWeakFormCopy()`, `PetscWeakFormCreate()`, `PetscWeakFormDestroy()`
+.seealso: `PetscWeakForm`, `PetscWeakFormCopy()`, `PetscWeakFormCreate()`, `PetscWeakFormDestroy()`
 @*/
 PetscErrorCode PetscWeakFormClear(PetscWeakForm wf)
 {
@@ -321,16 +321,17 @@ static PetscErrorCode PetscWeakFormRewriteKeys_Internal(PetscWeakForm wf, PetscH
   Not Collective
 
   Input Parameters:
-+ wf     - The original PetscWeakForm
++ wf     - The original `PetscWeakForm`
 . label  - The label to change keys for
 . Nv     - The number of new label values
 - values - The set of new values to relabel keys with
 
-  Note: This is used internally when boundary label values are specified from the command line.
-
   Level: intermediate
 
-.seealso: `PetscWeakFormReplaceLabel()`, `PetscWeakFormCreate()`, `PetscWeakFormDestroy()`
+  Note:
+  This is used internally when boundary label values are specified from the command line.
+
+.seealso: `PetscWeakForm`, `DMLabel`, `PetscWeakFormReplaceLabel()`, `PetscWeakFormCreate()`, `PetscWeakFormDestroy()`
 @*/
 PetscErrorCode PetscWeakFormRewriteKeys(PetscWeakForm wf, DMLabel label, PetscInt Nv, const PetscInt values[])
 {
@@ -398,14 +399,15 @@ static PetscErrorCode PetscWeakFormReplaceLabel_Internal(PetscWeakForm wf, Petsc
   Not Collective
 
   Input Parameters:
-+ wf    - The original PetscWeakForm
++ wf    - The original `PetscWeakForm`
 - label - The label to change keys for
-
-  Note: This is used internally when meshes are modified
 
   Level: intermediate
 
-.seealso: `PetscWeakFormRewriteKeys()`, `PetscWeakFormCreate()`, `PetscWeakFormDestroy()`
+  Note:
+  This is used internally when meshes are modified
+
+.seealso: `PetscWeakForm`, `DMLabel`, `PetscWeakFormRewriteKeys()`, `PetscWeakFormCreate()`, `PetscWeakFormDestroy()`
 @*/
 PetscErrorCode PetscWeakFormReplaceLabel(PetscWeakForm wf, DMLabel label)
 {
@@ -859,19 +861,19 @@ PetscErrorCode PetscWeakFormSetIndexRiemannSolver(PetscWeakForm wf, DMLabel labe
 }
 
 /*@
-  PetscWeakFormGetNumFields - Returns the number of fields
+  PetscWeakFormGetNumFields - Returns the number of fields in a `PetscWeakForm`
 
   Not collective
 
   Input Parameter:
-. wf - The PetscWeakForm object
+. wf - The `PetscWeakForm` object
 
   Output Parameter:
 . Nf - The number of fields
 
   Level: beginner
 
-.seealso: `PetscWeakFormSetNumFields()`, `PetscWeakFormCreate()`
+.seealso: `PetscWeakForm`, `PetscWeakFormSetNumFields()`, `PetscWeakFormCreate()`
 @*/
 PetscErrorCode PetscWeakFormGetNumFields(PetscWeakForm wf, PetscInt *Nf)
 {
@@ -888,12 +890,12 @@ PetscErrorCode PetscWeakFormGetNumFields(PetscWeakForm wf, PetscInt *Nf)
   Not collective
 
   Input Parameters:
-+ wf - The PetscWeakForm object
++ wf - The `PetscWeakForm` object
 - Nf - The number of fields
 
   Level: beginner
 
-.seealso: `PetscWeakFormGetNumFields()`, `PetscWeakFormCreate()`
+.seealso: `PetscWeakForm`, `PetscWeakFormGetNumFields()`, `PetscWeakFormCreate()`
 @*/
 PetscErrorCode PetscWeakFormSetNumFields(PetscWeakForm wf, PetscInt Nf)
 {
@@ -904,16 +906,16 @@ PetscErrorCode PetscWeakFormSetNumFields(PetscWeakForm wf, PetscInt Nf)
 }
 
 /*@
-  PetscWeakFormDestroy - Destroys a PetscWeakForm object
+  PetscWeakFormDestroy - Destroys a `PetscWeakForm` object
 
   Collective on wf
 
   Input Parameter:
-. wf - the PetscWeakForm object to destroy
+. wf - the `PetscWeakForm` object to destroy
 
   Level: developer
 
-.seealso `PetscWeakFormCreate()`, `PetscWeakFormView()`
+.seealso: `PetscWeakForm`, `PetscWeakFormCreate()`, `PetscWeakFormView()`
 @*/
 PetscErrorCode PetscWeakFormDestroy(PetscWeakForm *wf)
 {
@@ -1034,17 +1036,17 @@ static PetscErrorCode PetscWeakFormView_Ascii(PetscWeakForm wf, PetscViewer view
 }
 
 /*@C
-  PetscWeakFormView - Views a PetscWeakForm
+  PetscWeakFormView - Views a `PetscWeakForm`
 
   Collective on wf
 
   Input Parameters:
-+ wf - the PetscWeakForm object to view
++ wf - the `PetscWeakForm` object to view
 - v  - the viewer
 
   Level: developer
 
-.seealso `PetscWeakFormDestroy()`, `PetscWeakFormCreate()`
+.seealso: `PetscViewer`, `PetscWeakForm`, `PetscWeakFormDestroy()`, `PetscWeakFormCreate()`
 @*/
 PetscErrorCode PetscWeakFormView(PetscWeakForm wf, PetscViewer v)
 {
@@ -1061,19 +1063,19 @@ PetscErrorCode PetscWeakFormView(PetscWeakForm wf, PetscViewer v)
 }
 
 /*@
-  PetscWeakFormCreate - Creates an empty PetscWeakForm object.
+  PetscWeakFormCreate - Creates an empty `PetscWeakForm` object.
 
   Collective
 
   Input Parameter:
-. comm - The communicator for the PetscWeakForm object
+. comm - The communicator for the `PetscWeakForm` object
 
   Output Parameter:
-. wf - The PetscWeakForm object
+. wf - The `PetscWeakForm` object
 
   Level: beginner
 
-.seealso: `PetscDS`, `PetscWeakFormDestroy()`
+.seealso: `PetscWeakForm`, `PetscDS`, `PetscWeakFormDestroy()`
 @*/
 PetscErrorCode PetscWeakFormCreate(MPI_Comm comm, PetscWeakForm *wf)
 {

@@ -231,14 +231,14 @@ static PetscErrorCode PetscSpaceEvaluate_Polynomial(PetscSpace sp, PetscInt npoi
 
   Input Parameters:
 + sp     - the function space object
-- tensor - PETSC_TRUE for a tensor polynomial space, PETSC_FALSE for a polynomial space
+- tensor - `PETSC_TRUE` for a tensor polynomial space, `PETSC_FALSE` for a polynomial space
 
-  Options Database:
+  Options Database Key:
 . -petscspace_poly_tensor <bool> - Whether to use tensor product polynomials in higher dimension
 
   Level: intermediate
 
-.seealso: `PetscSpacePolynomialGetTensor()`, `PetscSpaceSetDegree()`, `PetscSpaceSetNumVariables()`
+.seealso: `PetscSpace`, `PetscSpacePolynomialGetTensor()`, `PetscSpaceSetDegree()`, `PetscSpaceSetNumVariables()`
 @*/
 PetscErrorCode PetscSpacePolynomialSetTensor(PetscSpace sp, PetscBool tensor)
 {
@@ -257,11 +257,11 @@ PetscErrorCode PetscSpacePolynomialSetTensor(PetscSpace sp, PetscBool tensor)
 . sp     - the function space object
 
   Output Parameters:
-. tensor - PETSC_TRUE for a tensor polynomial space, PETSC_FALSE for a polynomial space
+. tensor - `PETSC_TRUE` for a tensor polynomial space, `PETSC_FALSE` for a polynomial space
 
   Level: intermediate
 
-.seealso: `PetscSpacePolynomialSetTensor()`, `PetscSpaceSetDegree()`, `PetscSpaceSetNumVariables()`
+.seealso: `PetscSpace`, `PetscSpacePolynomialSetTensor()`, `PetscSpaceSetDegree()`, `PetscSpaceSetNumVariables()`
 @*/
 PetscErrorCode PetscSpacePolynomialGetTensor(PetscSpace sp, PetscBool *tensor)
 {
@@ -344,12 +344,12 @@ static PetscErrorCode PetscSpaceInitialize_Polynomial(PetscSpace sp)
 }
 
 /*MC
-  PETSCSPACEPOLYNOMIAL = "poly" - A PetscSpace object that encapsulates a polynomial space, e.g. P1 is the space of
+  PETSCSPACEPOLYNOMIAL = "poly" - A `PetscSpace` object that encapsulates a polynomial space, e.g. P1 is the space of
   linear polynomials. The space is replicated for each component.
 
   Level: intermediate
 
-.seealso: `PetscSpaceType`, `PetscSpaceCreate()`, `PetscSpaceSetType()`
+.seealso: `PetscSpace`, `PetscSpaceType`, `PetscSpaceCreate()`, `PetscSpaceSetType()`
 M*/
 
 PETSC_EXTERN PetscErrorCode PetscSpaceCreate_Polynomial(PetscSpace sp)
