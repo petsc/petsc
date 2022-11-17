@@ -1,6 +1,8 @@
 
 /* Contributed by - Mark Adams */
 
+#define PETSC_SKIP_PETSCTABLE_DEPRECATION_WARNING
+
 #include <petsc/private/petscimpl.h>
 #include <petscctable.h>
 
