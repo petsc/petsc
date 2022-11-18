@@ -667,7 +667,7 @@ template <typename V, typename H, typename KE>
 inline PetscErrorCode KHashTable<V, H, KE>::khash_erase_(khash_int it) noexcept
 {
   PetscFunctionBegin;
-  PetscAssert((it >= 0) && (it < bucket_count()), PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Attempting to erase iterator (index %d) which did not exist in the map", it);
+  PetscAssert(it < bucket_count(), PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Attempting to erase iterator (index %d) which did not exist in the map", it);
   PetscAssert(count_ > 0, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Attempting to erase iterator (index %d) which did not exist in the map, have element count %zu", it, count_);
   PetscAssert(occupied(it), PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Attempting to erase iterator (index %d) which exists in the map but is not occupied", it);
   --count_;
