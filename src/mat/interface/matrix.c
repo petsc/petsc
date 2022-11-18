@@ -10967,7 +10967,7 @@ PetscErrorCode MatSetInf(Mat A)
   PetscFunctionReturn(0);
 }
 
-/*C
+/*@C
    MatCreateGraph - create a scalar matrix (that is a matrix with one vertex for each block vertex in the original matrix), for use in graph algorithms
    and possibly removes small values from the graph structure.
 
@@ -10985,8 +10985,8 @@ PetscErrorCode MatSetInf(Mat A)
    Level: advanced
 
 .seealso: `MatCreate()`, `PCGAMG`
-*/
-PETSC_EXTERN PetscErrorCode MatCreateGraph(Mat A, PetscBool sym, PetscBool scale, PetscReal filter, Mat *graph)
+@*/
+PetscErrorCode MatCreateGraph(Mat A, PetscBool sym, PetscBool scale, PetscReal filter, Mat *graph)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
@@ -10996,7 +10996,7 @@ PETSC_EXTERN PetscErrorCode MatCreateGraph(Mat A, PetscBool sym, PetscBool scale
   PetscFunctionReturn(0);
 }
 
-/*C
+/*@
   MatEliminateZeros - eliminate the nondiagonal zero entries in place from the nonzero structure of a sparse `Mat` in place,
   meaning the same memory is used for the matrix, and no new memory is allocated.
 
@@ -11008,10 +11008,10 @@ PETSC_EXTERN PetscErrorCode MatCreateGraph(Mat A, PetscBool sym, PetscBool scale
   Output Parameter:
 . A - the matrix
 
-  Level: intermeidiate
+  Level: intermediate
 
 .seealso: `Mat`, `MatCreate()`, `MatCreateGraph()`, `MatChop()`
-*/
+@*/
 PetscErrorCode MatEliminateZeros(Mat A)
 {
   PetscFunctionBegin;
