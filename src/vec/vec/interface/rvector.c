@@ -214,7 +214,7 @@ PetscErrorCode VecDotRealPart(Vec x, Vec y, PetscReal *val)
 .    number of ranks - the time for the result will grow with the log base 2 of the number of ranks sharing the vector
 -    work load imbalance - the rank with the largest number of vector entries will limit the speed up
 
-.seealso: `VecDot()`, `VecTDot()`, `VecNorm()`, `VecDotBegin()`, `VecDotEnd()`, `VecNormAvailable()`,
+.seealso: `VecDot()`, `VecTDot()`, `VecDotBegin()`, `VecDotEnd()`, `VecNormAvailable()`,
           `VecNormBegin()`, `VecNormEnd()`, `NormType()`
 @*/
 PetscErrorCode VecNorm(Vec x, NormType type, PetscReal *val)
@@ -274,7 +274,7 @@ $    work load imbalance that causes certain processes to arrive much earlier th
  than the BLAS. This should probably only be used when one is using the FORTRAN BLAS routines
  (as opposed to vendor provided) because the FORTRAN BLAS NRM2() routine is very slow.
 
-.seealso: `VecDot()`, `VecTDot()`, `VecNorm()`, `VecDotBegin()`, `VecDotEnd()`, `VecNorm()`
+.seealso: `VecDot()`, `VecTDot()`, `VecNorm()`, `VecDotBegin()`, `VecDotEnd()`,
           `VecNormBegin()`, `VecNormEnd()`
 @*/
 PetscErrorCode VecNormAvailable(Vec x, NormType type, PetscBool *available, PetscReal *val)
@@ -553,7 +553,7 @@ PetscErrorCode VecSet(Vec x, PetscScalar alpha)
 }
 
 /*@
-   VecAXPY - Computes y = alpha x + y.
+   VecAXPY - Computes `y = alpha x + y`.
 
    Logically Collective
 
@@ -567,7 +567,7 @@ PetscErrorCode VecSet(Vec x, PetscScalar alpha)
    Level: intermediate
 
    Notes:
-    x and y MUST be different vectors
+    `x` and `y` MUST be different vectors
     This routine is optimized for alpha of 0.0, otherwise it calls the BLAS routine
 .vb
     VecAXPY(y,alpha,x)                   y = alpha x           +      y
@@ -604,7 +604,7 @@ PetscErrorCode VecAXPY(Vec y, PetscScalar alpha, Vec x)
 }
 
 /*@
-   VecAYPX - Computes y = x + beta y.
+   VecAYPX - Computes `y = x + beta y`.
 
    Logically Collective
 
@@ -649,7 +649,7 @@ PetscErrorCode VecAYPX(Vec y, PetscScalar beta, Vec x)
 }
 
 /*@
-   VecAXPBY - Computes y = alpha x + beta y.
+   VecAXPBY - Computes `y = alpha x + beta y`.
 
    Logically Collective
 
@@ -693,7 +693,7 @@ PetscErrorCode VecAXPBY(Vec y, PetscScalar alpha, PetscScalar beta, Vec x)
 }
 
 /*@
-   VecAXPBYPCZ - Computes z = alpha x + beta y + gamma z
+   VecAXPBYPCZ - Computes `z = alpha x + beta y + gamma z`
 
    Logically Collective
 
@@ -745,7 +745,7 @@ PetscErrorCode VecAXPBYPCZ(Vec z, PetscScalar alpha, PetscScalar beta, PetscScal
 }
 
 /*@
-   VecWAXPY - Computes w = alpha x + y.
+   VecWAXPY - Computes `w = alpha x + y`.
 
    Logically Collective
 
@@ -1166,7 +1166,7 @@ PetscErrorCode VecMDot(Vec x, PetscInt nv, const Vec y[], PetscScalar val[])
 }
 
 /*@
-   VecMAXPY - Computes y = y + sum alpha[i] x[i]
+   VecMAXPY - Computes `y = y + sum alpha[i] x[i]`
 
    Logically Collective
 
@@ -1499,7 +1499,7 @@ PetscErrorCode VecGetSubVector(Vec X, IS is, Vec *Y)
 }
 
 /*@
-   VecRestoreSubVector - Restores a subvector extracted using VecGetSubVector()
+   VecRestoreSubVector - Restores a subvector extracted using `VecGetSubVector()`
 
    Collective
 
@@ -1816,7 +1816,7 @@ PetscErrorCode VecRestoreLocalVector(Vec v, Vec w)
    vectors, VecGetArray() returns a pointer to the local data array and
    does not use any copies. If the underlying vector data is not stored
    in a contiguous array this routine will copy the data to a contiguous
-   array and return a pointer to that. You MUST call VecRestoreArray()
+   array and return a pointer to that. You MUST call `VecRestoreArray()`
    when you no longer need access to the array.
 
    Logically Collective
@@ -1866,7 +1866,7 @@ PetscErrorCode VecGetArray(Vec x, PetscScalar **a)
 }
 
 /*@C
-   VecRestoreArray - Restores a vector after VecGetArray() has been called.
+   VecRestoreArray - Restores a vector after `VecGetArray()` has been called.
 
    Logically Collective
 
@@ -1997,7 +1997,7 @@ PetscErrorCode VecGetArrayWrite(Vec x, PetscScalar **a)
 }
 
 /*@C
-   VecRestoreArrayWrite - Restores a vector after VecGetArrayWrite() has been called.
+   VecRestoreArrayWrite - Restores a vector after `VecGetArrayWrite()` has been called.
 
    Logically Collective
 
@@ -2027,8 +2027,8 @@ PetscErrorCode VecRestoreArrayWrite(Vec x, PetscScalar **a)
 
 /*@C
    VecGetArrays - Returns a pointer to the arrays in a set of vectors
-   that were created by a call to VecDuplicateVecs().  You MUST call
-   VecRestoreArrays() when you no longer need access to the array.
+   that were created by a call to `VecDuplicateVecs()`.  You MUST call
+   `VecRestoreArrays()` when you no longer need access to the array.
 
    Logically Collective; No Fortran Support
 
@@ -2060,7 +2060,7 @@ PetscErrorCode VecGetArrays(const Vec x[], PetscInt n, PetscScalar **a[])
 }
 
 /*@C
-   VecRestoreArrays - Restores a group of vectors after VecGetArrays()
+   VecRestoreArrays - Restores a group of vectors after `VecGetArrays()`
    has been called.
 
    Logically Collective; No Fortran Support
@@ -2074,7 +2074,7 @@ PetscErrorCode VecGetArrays(const Vec x[], PetscInt n, PetscScalar **a[])
    For regular PETSc vectors this routine does not involve any copies. For
    any special vectors that do not store local vector data in a contiguous
    array, this routine will copy the data back into the underlying
-   vector data structure from the arrays obtained with VecGetArrays().
+   vector data structure from the arrays obtained with `VecGetArrays()`.
 
    Level: intermediate
 
@@ -2100,8 +2100,8 @@ PetscErrorCode VecRestoreArrays(const Vec x[], PetscInt n, PetscScalar **a[])
    pointer to the device memory that contains this processor's portion of the vector data. Device data is guaranteed to have the latest value.
    Otherwise, when this is a host vector (e.g., VECMPI), this routine functions the same as VecGetArray() and returns a host pointer.
 
-   For VECKOKKOS, if Kokkos is configured without device (e.g., use serial or openmp), per this function, the vector works like VECSEQ/VECMPI;
-   otherwise, it works like VECCUDA or VECHIP etc.
+   For `VECKOKKOS`, if Kokkos is configured without device (e.g., use serial or openmp), per this function, the vector works like `VECSEQ`/`VECMPI`;
+   otherwise, it works like `VECCUDA` or `VECHIP` etc.
 
    Logically Collective
 
@@ -2137,7 +2137,7 @@ PetscErrorCode VecGetArrayAndMemType(Vec x, PetscScalar **a, PetscMemType *mtype
 }
 
 /*@C
-   VecRestoreArrayAndMemType - Restores a vector after VecGetArrayAndMemType() has been called.
+   VecRestoreArrayAndMemType - Restores a vector after `VecGetArrayAndMemType()` has been called.
 
    Logically Collective
 
@@ -2361,7 +2361,7 @@ PetscErrorCode VecPlaceArray(Vec vec, const PetscScalar array[])
    This permanently replaces the array and frees the memory associated
    with the old array.
 
-   The memory passed in MUST be obtained with PetscMalloc() and CANNOT be
+   The memory passed in MUST be obtained with `PetscMalloc()` and CANNOT be
    freed by the user. It will be freed when the vector is destroyed.
 
 .seealso: `VecGetArray()`, `VecRestoreArray()`, `VecPlaceArray()`, `VecResetArray()`

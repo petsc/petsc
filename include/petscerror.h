@@ -978,7 +978,7 @@ PETSC_DEPRECATED_FUNCTION("Use PetscSignalSegvCheckPointerOrMpi() (since version
      PetscErrorCode (*PetscErrorPrintf)(const char format[],...);
 
     Input Parameter:
-.   format - the usual printf() format string
+.   format - the usual `printf()` format string
 
    Options Database Keys:
 +    -error_output_stdout - cause error messages to be printed to stdout instead of the (default) stderr

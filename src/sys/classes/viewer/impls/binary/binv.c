@@ -396,7 +396,7 @@ PETSC_INTERN PetscErrorCode PetscViewerBinaryGetFlowControl_Binary(PetscViewer v
 /*@C
     PetscViewerBinaryGetDescriptor - Extracts the file descriptor from a `PetscViewer` of `PetscViewerType` `PETSCVIEWERBINARY`.
 
-    Collective on viewer because it may trigger a `PetscViewerSetUp()` call;; No Fortran Support
+    Collective because it may trigger a `PetscViewerSetUp()` call; No Fortran Support
 
     Input Parameter:
 .   viewer - `PetscViewer` context, obtained from `PetscViewerBinaryOpen()`

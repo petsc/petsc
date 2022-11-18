@@ -520,7 +520,7 @@ PETSC_INTERN FILE *petsc_history;
     Collective
 
     Input Parameters:
-+   obj - object most closely associated with the logging statement or NULL
++   obj - object most closely associated with the logging statement or `NULL`
 .   message - logging message
 .   formatmessage - logging message using standard "printf" format
 -   arg1, arg2, ... - arguments of the format

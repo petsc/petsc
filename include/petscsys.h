@@ -1406,7 +1406,7 @@ M*/
 /*MC
     PetscHelpPrintf - Prints help messages.
 
-    Note Collective, only applies on rank 0; No Fortran Support
+    Not Collective, only applies on rank 0; No Fortran Support
 
    Synopsis:
     #include <petscsys.h>

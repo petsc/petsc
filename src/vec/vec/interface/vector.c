@@ -49,7 +49,7 @@ PetscErrorCode VecStashGetInfo(Vec vec, PetscInt *nstash, PetscInt *reallocs, Pe
 
 /*@
    VecSetLocalToGlobalMapping - Sets a local numbering to global numbering used
-   by the routine VecSetValuesLocal() to allow users to insert vector entries
+   by the routine `VecSetValuesLocal()` to allow users to insert vector entries
    using a local (per-processor) numbering.
 
    Logically Collective
@@ -103,7 +103,7 @@ PetscErrorCode VecGetLocalToGlobalMapping(Vec X, ISLocalToGlobalMapping *mapping
 
 /*@
    VecAssemblyBegin - Begins assembling the vector.  This routine should
-   be called after completing all calls to VecSetValues().
+   be called after completing all calls to `VecSetValues()`.
 
    Collective
 
@@ -129,7 +129,7 @@ PetscErrorCode VecAssemblyBegin(Vec vec)
 
 /*@
    VecAssemblyEnd - Completes assembling the vector.  This routine should
-   be called after VecAssemblyBegin().
+   be called after `VecAssemblyBegin()`.
 
    Collective
 
@@ -245,7 +245,7 @@ PetscErrorCode VecSetPreallocationCOOLocal(Vec x, PetscCount ncoo, PetscInt coo_
 }
 
 /*@
-   VecSetValuesCOO - set values at once in a vector preallocated using VecSetPreallocationCOO()
+   VecSetValuesCOO - set values at once in a vector preallocated using `VecSetPreallocationCOO()`
 
    Collective
 
@@ -319,7 +319,7 @@ static PetscErrorCode VecPointwiseApply_Private(Vec w, Vec x, Vec y, PetscLogEve
 }
 
 /*@
-   VecPointwiseMax - Computes the componentwise maximum w_i = max(x_i, y_i).
+   VecPointwiseMax - Computes the component-wise maximum `w[i] = max(x[i], y[i])`.
 
    Logically Collective
 
@@ -347,7 +347,7 @@ PetscErrorCode VecPointwiseMax(Vec w, Vec x, Vec y)
 }
 
 /*@
-   VecPointwiseMin - Computes the componentwise minimum w_i = min(x_i, y_i).
+   VecPointwiseMin - Computes the component-wise minimum `w[i] = min(x[i], y[i])`.
 
    Logically Collective
 
@@ -375,7 +375,7 @@ PetscErrorCode VecPointwiseMin(Vec w, Vec x, Vec y)
 }
 
 /*@
-   VecPointwiseMaxAbs - Computes the componentwise maximum of the absolute values w_i = max(abs(x_i), abs(y_i)).
+   VecPointwiseMaxAbs - Computes the component-wise maximum of the absolute values `w[i] = max(abs(x[i]), abs(y[i]))`.
 
    Logically Collective
 
@@ -402,7 +402,7 @@ PetscErrorCode VecPointwiseMaxAbs(Vec w, Vec x, Vec y)
 }
 
 /*@
-   VecPointwiseDivide - Computes the componentwise division w = x/y.
+   VecPointwiseDivide - Computes the component-wise division `w[i] = x[i] / y[i]`.
 
    Logically Collective
 
@@ -429,7 +429,7 @@ PetscErrorCode VecPointwiseDivide(Vec w, Vec x, Vec y)
 }
 
 /*@
-   VecPointwiseMult - Computes the componentwise multiplication w = x*y.
+   VecPointwiseMult - Computes the component-wise multiplication `w[i] = x[i] * y[i]`.
 
    Logically Collective
 
@@ -576,12 +576,12 @@ PetscErrorCode VecDuplicateVecs(Vec v, PetscInt m, Vec *V[])
 }
 
 /*@C
-   VecDestroyVecs - Frees a block of vectors obtained with VecDuplicateVecs().
+   VecDestroyVecs - Frees a block of vectors obtained with `VecDuplicateVecs()`.
 
    Collective
 
    Input Parameters:
-+  vv - pointer to pointer to array of vector pointers, if NULL no vectors are destroyed
++  vv - pointer to pointer to array of vector pointers, if `NULL` no vectors are destroyed
 -  m - the number of vectors previously obtained, if zero no vectors are destroyed
 
    Fortran Note:
@@ -1005,12 +1005,12 @@ PetscErrorCode VecResetArray(Vec vec)
 
 /*@C
   VecLoad - Loads a vector that has been stored in binary or HDF5 format
-  with VecView().
+  with `VecView()`.
 
   Collective
 
   Input Parameters:
-+ vec - the newly loaded vector, this needs to have been created with VecCreate() or
++ vec - the newly loaded vector, this needs to have been created with `VecCreate()` or
            some related function before a call to VecLoad().
 - viewer - binary file viewer, obtained from PetscViewerBinaryOpen() or
            HDF5 file viewer, obtained from PetscViewerHDF5Open()
@@ -1275,7 +1275,7 @@ PetscErrorCode VecSetRandom(Vec x, PetscRandom rctx)
 }
 
 /*@
-  VecZeroEntries - puts a 0.0 in each element of a vector
+  VecZeroEntries - puts a `0.0` in each element of a vector
 
   Logically Collective
 
@@ -1410,8 +1410,8 @@ PetscErrorCode VecSetSizes(Vec v, PetscInt n, PetscInt N)
 }
 
 /*@
-   VecSetBlockSize - Sets the blocksize for future calls to VecSetValuesBlocked()
-   and VecSetValuesBlockedLocal().
+   VecSetBlockSize - Sets the block size for future calls to `VecSetValuesBlocked()`
+   and `VecSetValuesBlockedLocal()`.
 
    Logically Collective
 
@@ -1468,7 +1468,7 @@ PetscErrorCode VecGetBlockSize(Vec v, PetscInt *bs)
 
 /*@C
    VecSetOptionsPrefix - Sets the prefix used for searching for all
-   Vec options in the database.
+   `Vec` options in the database.
 
    Logically Collective
 
@@ -1494,7 +1494,7 @@ PetscErrorCode VecSetOptionsPrefix(Vec v, const char prefix[])
 
 /*@C
    VecAppendOptionsPrefix - Appends to the prefix used for searching for all
-   Vec options in the database.
+   `Vec` options in the database.
 
    Logically Collective
 
@@ -1587,7 +1587,7 @@ PetscErrorCode VecSetUp(Vec v)
 */
 
 /*@
-   VecCopy - Copies a vector. y <- x
+   VecCopy - Copies a vector `y = x`
 
    Logically Collective
 
@@ -1676,7 +1676,7 @@ PetscErrorCode VecCopy(Vec x, Vec y)
 }
 
 /*@
-   VecSwap - Swaps the vectors x and y.
+   VecSwap - Swaps the vectors `x` and `y`.
 
    Logically Collective
 
@@ -1722,7 +1722,7 @@ PetscErrorCode VecSwap(Vec x, Vec y)
 }
 
 /*
-  VecStashViewFromOptions - Processes command line options to determine if/how an VecStash object is to be viewed.
+  VecStashViewFromOptions - Processes command line options to determine if/how a `VecStash` object is to be viewed.
 
   Collective
 

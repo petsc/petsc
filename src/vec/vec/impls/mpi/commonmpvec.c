@@ -163,7 +163,7 @@ PetscErrorCode VecGhostRestoreLocalForm(Vec g, Vec *l)
    Neighbor-wise Collective
 
    Input Parameters:
-+  g - the vector (obtained with VecCreateGhost() or VecDuplicate())
++  g - the vector (obtained with `VecCreateGhost()` or `VecDuplicate()`)
 .  insertmode - one of ADD_VALUES, MAX_VALUES, MIN_VALUES or INSERT_VALUES
 -  scattermode - one of SCATTER_FORWARD or SCATTER_REVERSE
 
@@ -226,7 +226,7 @@ PetscErrorCode VecGhostUpdateBegin(Vec g, InsertMode insertmode, ScatterMode sca
    Neighbor-wise Collective
 
    Input Parameters:
-+  g - the vector (obtained with VecCreateGhost() or VecDuplicate())
++  g - the vector (obtained with `VecCreateGhost()` or `VecDuplicate()`)
 .  insertmode - one of ADD_VALUES, MAX_VALUES, MIN_VALUES or INSERT_VALUES
 -  scattermode - one of SCATTER_FORWARD or SCATTER_REVERSE
 

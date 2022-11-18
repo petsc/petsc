@@ -575,7 +575,7 @@ where noted, add a newline after the section headings.
 #. If documenting a function, a description of the function’s
    “collectivity”.
 
-   -  ``Not Collective`` if the function need not be called on multiple MPI
+   -  ``Not Collective`` if the function need not be called on multiple (or possibly all) MPI
       ranks
 
    -  ``Collective [on xxx]`` if the function is a collective operation.

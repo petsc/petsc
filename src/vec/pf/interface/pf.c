@@ -37,7 +37,7 @@ PetscErrorCode PFSet(PF pf, PetscErrorCode (*apply)(void *, PetscInt, const Pets
 }
 
 /*@C
-   PFDestroy - Destroys PF context that was created with PFCreate().
+   PFDestroy - Destroys `PF` context that was created with `PFCreate()`.
 
    Collective
 

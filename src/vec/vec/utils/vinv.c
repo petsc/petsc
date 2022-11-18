@@ -1467,7 +1467,7 @@ PetscErrorCode VecRealPart(Vec v)
 
 /*@
    VecShift - Shifts all of the components of a vector by computing
-   x[i] = x[i] + shift.
+   `x[i] = x[i] + shift`.
 
    Logically Collective
 
