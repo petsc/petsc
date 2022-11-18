@@ -121,6 +121,15 @@ class PCHPDDMCoarseCorrectionType(object):
     ADDITIVE                 = PC_HPDDM_COARSE_CORRECTION_ADDITIVE
     BALANCED                 = PC_HPDDM_COARSE_CORRECTION_BALANCED
 
+class PCFailedReason(object):
+    SETUP_ERROR              = PC_SETUP_ERROR
+    NOERROR                  = PC_NOERROR
+    FACTOR_STRUCT_ZEROPIVOT  = PC_FACTOR_STRUCT_ZEROPIVOT
+    FACTOR_NUMERIC_ZEROPIVOT = PC_FACTOR_NUMERIC_ZEROPIVOT
+    FACTOR_OUTMEMORY         = PC_FACTOR_OUTMEMORY
+    FACTOR_OTHER             = PC_FACTOR_OTHER
+    SUBPC_ERROR              = PC_SUBPC_ERROR
+
 # --------------------------------------------------------------------
 
 cdef class PC(Object):
@@ -138,6 +147,7 @@ cdef class PC(Object):
     SchurPreType              = PCFieldSplitSchurPreType
     PatchConstructType        = PCPatchConstructType
     HPDDMCoarseCorrectionType = PCHPDDMCoarseCorrectionType
+    FailedReason              = PCFailedReason
 
     # --- xxx ---
 
@@ -228,6 +238,20 @@ cdef class PC(Object):
         if flag:
             cflag = PETSC_TRUE
         CHKERR( PCSetReusePreconditioner(self.pc, cflag) )
+
+    def setFailedReason(self, reason):
+        cdef PetscPCFailedReason val = reason
+        CHKERR( PCSetFailedReason(self.pc, val) )
+
+    def getFailedReason(self):
+        cdef PetscPCFailedReason reason = PC_NOERROR
+        CHKERR( PCGetFailedReason(self.pc, &reason) )
+        return reason
+
+    def getFailedReasonRank(self):
+        cdef PetscPCFailedReason reason = PC_NOERROR
+        CHKERR( PCGetFailedReasonRank(self.pc, &reason) )
+        return reason
 
     def setUp(self):
         CHKERR( PCSetUp(self.pc) )
