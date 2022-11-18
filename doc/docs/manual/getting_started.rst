@@ -865,7 +865,7 @@ To develop an application program that uses PETSc, we suggest the following:
       * Using make. Update the application makefile to add the appropriate PETSc include
         directories and libraries.
 
-        *  Recommended approach. Examine the comments in $PETSC_DIR/shared/petsc/Makefile.user and transfer selected portions of
+        *  Recommended approach. Examine the comments in $PETSC_DIR/share/petsc/Makefile.user and transfer selected portions of
            that file to your makefile.
 
         *  Minimalist. Add the line
@@ -875,7 +875,7 @@ To develop an application program that uses PETSc, we suggest the following:
               include ${PETSC_DIR}/lib/petsc/conf/variables
 
            to the bottom of your makefile. This will provide a set of PETSc specific make variables you may use in your makefile. See
-           the comments in the file $PETSC_DIR/shared/petsc/Makefile.basic.user for details on the usage.
+           the comments in the file $PETSC_DIR/share/petsc/Makefile.basic.user for details on the usage.
 
         *  Simple, but hands the build process over to PETSc's control. Add the lines
 
@@ -885,7 +885,7 @@ To develop an application program that uses PETSc, we suggest the following:
               include ${PETSC_DIR}/lib/petsc/conf/rules
               include ${PETSC_DIR}/lib/petsc/conf/tests
 
-           to the bottom of your makefile. See the comments in the file $PETSC_DIR/shared/petsc/Makefile.basic.user for details on the usage.
+           to the bottom of your makefile. See the comments in the file $PETSC_DIR/share/petsc/Makefile.basic.user for details on the usage.
            Since PETSc's rules now control the build process you will likely need to simplify and remove much of your makefile.
 
         *  Not recommended since you must change your makefile for each new configuration/computing system. This approach does not require
