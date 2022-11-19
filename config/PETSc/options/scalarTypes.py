@@ -98,12 +98,23 @@ class Configure(config.base.Configure):
         self.libraries.popLanguage()
       if hasattr(self.compilers, 'CXX'):
         self.libraries.pushLanguage('Cxx')
+        isGNU = self.setCompilers.isGNU(self.getCompiler(lang='Cxx'), self.log)
+        # need to bypass g++ error: non-standard suffix on floating constant [-Werror=pedantic]
+        # this warning can't be disabled but is actually never triggered by PETSc
+        if isGNU:
+          self.setCompilers.pushLanguage('Cxx')
+          preprocessorFlagsArg = self.setCompilers.getPreprocessorFlagsArg()
+          oldPreprocessorFlags = getattr(self.setCompilers, preprocessorFlagsArg)
+          setattr(self.setCompilers, preprocessorFlagsArg, oldPreprocessorFlags+' -Wno-error')
         self.log.write('Checking C++ compiler works with quadmath library\n')
         if self.libraries.check('quadmath','logq',prototype='#include <quadmath.h>',call='__float128 f = FLT128_EPSILON; logq(f)'):
           self.log.write('C++ compiler works with quadmath library\n')
         else:
           self.have__float128 = 0
           self.log.write('C++ compiler fails with quadmath library\n')
+        if isGNU:
+          setattr(self.setCompilers, preprocessorFlagsArg, oldPreprocessorFlags)
+          self.setCompilers.popLanguage()
         self.libraries.popLanguage()
       if self.have__float128:
           self.libraries.add('quadmath','logq',prototype='#include <quadmath.h>',call='__float128 f = 0.0; logq(f)')
