@@ -10991,7 +10991,8 @@ PetscErrorCode MatCreateGraph(Mat A, PetscBool sym, PetscBool scale, PetscReal f
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
   PetscValidType(A, 1);
-  PetscValidPointer(graph, 3);
+  PetscValidLogicalCollectiveBool(A, scale, 3);
+  PetscValidPointer(graph, 5);
   PetscUseTypeMethod(A, creategraph, sym, scale, filter, graph);
   PetscFunctionReturn(0);
 }
