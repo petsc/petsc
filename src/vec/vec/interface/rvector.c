@@ -1808,18 +1808,20 @@ PetscErrorCode VecRestoreLocalVector(Vec v, Vec w)
 
    Fortran Note:
    This routine is used differently from Fortran 77
-$    Vec         x
-$    PetscScalar x_array(1)
-$    PetscOffset i_x
-$    PetscErrorCode ierr
-$       call VecGetArray(x,x_array,i_x,ierr)
-$
-$   Access first local entry in vector with
-$      value = x_array(i_x + 1)
-$
-$      ...... other code
-$       call VecRestoreArray(x,x_array,i_x,ierr)
-   For Fortran 90 see VecGetArrayF90()
+.vb
+    Vec         x
+    PetscScalar x_array(1)
+    PetscOffset i_x
+    PetscErrorCode ierr
+    call VecGetArray(x,x_array,i_x,ierr)
+
+    Access first local entry in vector with
+    value = x_array(i_x + 1)
+
+    ...... other code
+    call VecRestoreArray(x,x_array,i_x,ierr)
+.ve
+   For Fortran 90 see `VecGetArrayF90()`
 
    See the Fortran chapter of the users manual and
    petsc/src/snes/tutorials/ex5f.F for details.
