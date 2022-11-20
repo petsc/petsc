@@ -32,6 +32,16 @@
       ptr => array
       end subroutine
 
+      subroutine F90Array1dCreateMPIInt(array,start,len1,ptr)
+      implicit none
+      PetscInt start,len1
+      PetscMPIInt, target ::                                                      &
+      &     array(start:start+len1-1)
+      PetscMPIInt, pointer :: ptr(:)
+
+      ptr => array
+      end subroutine
+
       subroutine F90Array1dCreateFortranAddr(array,start,len1,ptr)
       implicit none
       PetscInt start,len1
@@ -85,6 +95,20 @@
       endif
       end subroutine
 
+      subroutine F90Array1dAccessMPIInt(ptr,address)
+        implicit none
+        PetscMPIInt, pointer :: ptr(:)
+        PetscFortranAddr address
+        PetscInt start
+
+        if (associated(ptr) .eqv. .false.) then
+          address = 0
+        else
+          start = lbound(ptr,1)
+          call F90Array1dGetAddrMPIInt(ptr(start),address)
+        endif
+        end subroutine
+
       subroutine F90Array1dAccessFortranAddr(ptr,address)
       implicit none
       PetscFortranAddr, pointer :: ptr(:)
@@ -117,6 +141,13 @@
       subroutine F90Array1dDestroyInt(ptr)
       implicit none
       PetscInt, pointer :: ptr(:)
+
+      nullify(ptr)
+      end subroutine
+
+      subroutine F90Array1dDestroyMPIInt(ptr)
+      implicit none
+      PetscMPIInt, pointer :: ptr(:)
 
       nullify(ptr)
       end subroutine
