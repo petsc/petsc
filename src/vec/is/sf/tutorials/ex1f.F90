@@ -23,6 +23,10 @@
       PetscInt, pointer ::          gmine(:)
       PetscInt                      gnroots,gnleaves;
 
+      PetscInt                      niranks,nranks
+      PetscMPIInt, pointer ::       iranks(:), ranks(:)
+      PetscInt, pointer ::          ioffset(:),irootloc(:),roffset(:),rmine(:),rremote(:)
+
       PetscCallA(PetscInitialize(ierr))
       stride = 2
       PetscCallMPIA(MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr))
@@ -101,6 +105,11 @@
       enddo
 
       deallocate(gremote)
+
+! Test PetscSFGet{Leaf,Root}Ranks
+      PetscCallA(PetscSFGetLeafRanks(sf,niranks,iranks,ioffset,irootloc,ierr))
+      PetscCallA(PetscSFGetRootRanks(sf,nranks,ranks,roffset,rmine,rremote,ierr))
+
 !    Clean storage for star forest.
       PetscCallA(PetscSFDestroy(sf,ierr))
 

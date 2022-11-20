@@ -29,6 +29,24 @@
           type(PetscSFNode), pointer :: iremote(:)
           PetscErrorCode :: ierr
       end Subroutine PetscSFGetGraph
+
+      subroutine PetscSFGetLeafRanks(sf,niranks,iranks,ioffset,irootloc,ierr)
+          import tPetscSF
+          PetscSF :: sf
+          PetscInt :: niranks
+          PetscMPIInt, pointer :: iranks(:)
+          PetscInt, pointer :: ioffset(:),irootloc(:)
+          PetscErrorCode :: ierr
+      end Subroutine PetscSFGetLeafRanks
+
+      subroutine PetscSFGetRootRanks(sf,nranks,ranks,roffset,rmine,rremote,ierr)
+          import tPetscSF
+          PetscSF :: sf
+          PetscInt :: nranks
+          PetscMPIInt, pointer :: ranks(:)
+          PetscInt, pointer :: roffset(:),rmine(:),rremote(:)
+          PetscErrorCode :: ierr
+      end Subroutine PetscSFGetRootRanks
       end Interface
 
       Interface VecGetOwnershipRange
