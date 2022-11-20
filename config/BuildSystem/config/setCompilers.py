@@ -1339,6 +1339,7 @@ class Configure(config.base.Configure):
     self.logPrint(' MPI compiler wrapper '+compiler+' is likely incorrect.\n  Use --with-mpi-dir to indicate an alternate MPI.')
 
   def checkCCompiler(self):
+    import re
     '''Locate a functional C compiler'''
     if 'with-cc' in self.argDB and self.argDB['with-cc'] == '0':
       raise RuntimeError('A functional C compiler is necessary for configure, cannot use --with-cc=0')
@@ -1362,7 +1363,7 @@ class Configure(config.base.Configure):
       pass
     (output, error, status) = config.base.Configure.executeShellCommand(compiler+' -v | head -n 20', log = self.log)
     output = output + error
-    if '(gcc version 4.8.5 compatibility)' in output:
+    if '(gcc version 4.8.5 compatibility)' in output or re.match('^Selected GCC installation:.*4.8.5$', output):
        self.logPrintWarning('Intel compiler being used with gcc 4.8.5 compatibility, failures may occur. Recommend having a newer gcc version in your path.')
     if os.path.basename(self.CC).startswith('mpi'):
        self.logPrint('Since MPI c compiler starts with mpi, force searches for other compilers to only look for MPI compilers\n')
