@@ -913,10 +913,10 @@ PetscErrorCode PetscSFView(PetscSF sf, PetscViewer viewer)
 
    Output Parameters:
 +  nranks - number of ranks referenced by local part
-.  ranks - array of ranks
-.  roffset - offset in rmine/rremote for each rank (length nranks+1)
-.  rmine - concatenated array holding local indices referencing each remote rank
--  rremote - concatenated array holding remote indices referenced for each remote rank
+.  ranks - [nranks] array of ranks
+.  roffset - [nranks+1] offset in rmine/rremote for each rank
+.  rmine - [roffset[nranks]] concatenated array holding local indices referencing each remote rank
+-  rremote - [roffset[nranks]] concatenated array holding remote indices referenced for each remote rank
 
    Level: developer
 
@@ -950,9 +950,9 @@ PetscErrorCode PetscSFGetRootRanks(PetscSF sf, PetscInt *nranks, const PetscMPII
 
    Output Parameters:
 +  niranks - number of leaf ranks referencing roots on this process
-.  iranks - array of ranks
-.  ioffset - offset in irootloc for each rank (length niranks+1)
--  irootloc - concatenated array holding local indices of roots referenced by each leaf rank
+.  iranks - [niranks] array of ranks
+.  ioffset - [niranks+1] offset in irootloc for each rank
+-  irootloc - [ioffset[niranks]] concatenated array holding local indices of roots referenced by each leaf rank
 
    Level: developer
 
