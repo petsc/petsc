@@ -1,4 +1,9 @@
 alias -option_in_file_2 -alias_opt
+alias -opt1 -opt2
+alias -opt1 -opt2
+alias -opt1 -opt4
+alias -opt2 -opt5
+alias -opt2 -opt6
 -option_in_file_1
 -option_in_file_2 option_in_file_2_val
 -alias_opt alias_val

@@ -19,9 +19,9 @@
 [0]PETSC ERROR: #7 PetscDeviceContextSetDefaultDeviceForType_Internal() at dcontext.cxx:0
 [0]PETSC ERROR: #8 PetscDeviceContextSetupGlobalContext_Private() at global_dcontext.cxx:0
 [0]PETSC ERROR: #9 PetscDeviceContextGetCurrentContext() at global_dcontext.cxx:0
-[0]PETSC ERROR: #10 main() at ex10.c:0
+[0]PETSC ERROR: #10 main() at ex12.c:0
 [0]PETSC ERROR: PETSc Option Table entries:
-[0]PETSC ERROR: -device_enable eager
-[0]PETSC ERROR: -device_enable_cuda none
-[0]PETSC ERROR: -info
+[0]PETSC ERROR: -device_enable eager (source: command line)
+[0]PETSC ERROR: -device_enable_cuda none (source: command line)
+[0]PETSC ERROR: -info (source: command line)
 [0]PETSC ERROR: ----------------End of Error Message -------send entire error message to petsc-maint@mcs.anl.gov----------

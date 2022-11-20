@@ -539,6 +539,6 @@ int main(int argc, char **argv)
 /*TEST
 
    test:
-     output_file: output/ex62.out
+     suffix: 0
 
 TEST*/

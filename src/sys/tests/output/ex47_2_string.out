@@ -1,0 +1,15 @@
+#PETSc Option Table entries:
+-cs0001_force 0. # (source: code)
+-cs0010_force 0. # (source: code)
+-cs0010_hookeslaw 1,2,3,4,5,6 # (source: code)
+-cs0020_force 0. # (source: code)
+-temp_KSP_monitor_true_residual # (source: code)
+-temp_KSP_type cg # (source: code)
+-temp_snes_type ksponly # (source: code)
+-vs0010_temp 0. # (source: code)
+-vs0010_tempBC 1 # (source: code)
+-vs0020_temp 1. # (source: code)
+-vs0020_tempBC 12 # (source: code)
+-vs0030_temp 1. # (source: code)
+-vs0030_tempBC 1 # (source: code)
+#End of PETSc Option Table entries

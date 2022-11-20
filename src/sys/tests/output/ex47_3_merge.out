@@ -1,30 +1,30 @@
-Setting option: map1_r = 10
-Setting option: map1_x = 1
-Setting option: map1_y = 2
-Setting option: map2_r = 10
-Setting option: map2_x = 1
-Setting option: map2_y = 2
-Setting option: map3_r = 100
-Setting option: map3_x = 1
-Setting option: map3_y = 2
-Setting option: map4_r = 100
-Setting option: map4_x = -1
-Setting option: map4_y = -2
-Setting option: map4_r = 1
-Setting option: map4_x = 1
-Setting option: map4_y = 2
-Setting option: map4_x = 0
+Setting option: map1_r = 10 (source: file)
+Setting option: map1_x = 1 (source: file)
+Setting option: map1_y = 2 (source: file)
+Setting option: map2_r = 10 (source: file)
+Setting option: map2_x = 1 (source: file)
+Setting option: map2_y = 2 (source: file)
+Setting option: map3_r = 100 (source: file)
+Setting option: map3_x = 1 (source: file)
+Setting option: map3_y = 2 (source: file)
+Setting option: map4_r = 100 (source: file)
+Setting option: map4_x = -1 (source: file)
+Setting option: map4_y = -2 (source: file)
+Setting option: map4_r = 1 (source: file)
+Setting option: map4_x = 1 (source: file)
+Setting option: map4_y = 2 (source: file)
+Setting option: map4_x = 0 (source: file)
 #PETSc Option Table entries:
--map1_r 10
--map1_x 1
--map1_y 2
--map2_r 10
--map2_x 1
--map2_y 2
--map3_r 100
--map3_x 1
--map3_y 2
--map4_r 1
--map4_x 0
--map4_y 2
+-map1_r 10 # (source: file)
+-map1_x 1 # (source: file)
+-map1_y 2 # (source: file)
+-map2_r 10 # (source: file)
+-map2_x 1 # (source: file)
+-map2_y 2 # (source: file)
+-map3_r 100 # (source: file)
+-map3_x 1 # (source: file)
+-map3_y 2 # (source: file)
+-map4_r 1 # (source: file)
+-map4_x 0 # (source: file)
+-map4_y 2 # (source: file)
 #End of PETSc Option Table entries
