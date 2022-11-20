@@ -776,7 +776,7 @@ linux-xsdk-dbg:
 
 linux-analyzer:
   extends:
-    - .stage-2
+    - .stage-3
     - .linux_test
   tags:
     - gce-u22-stage2
@@ -798,6 +798,9 @@ linux-analyzer:
     - ${TEST_ARCH}/lib/petsc/conf/*.log
     - ./petscLintPatches/*.patch
     expire_in: 4 days
+  except:
+    variables:
+      - $PETSC_CI_SCHEDULED =~ /yes/
 
 linux-intel:
   extends:
