@@ -1373,7 +1373,7 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable(Mat P, Mat 
 
   for (k = 0; k < nrecv; k++) { /* k-th received message */
     Jptr = buf_rj[k];
-    for (j = 0; j < len_r[k]; j++) PetscCall(PetscHMapISetWithMode(ta, *(Jptr + j) + 1, 1, INSERT_VALUES));
+    for (j = 0; j < len_r[k]; j++) PetscCall(PetscHMapISet(ta, *(Jptr + j) + 1, 1));
   }
   PetscCall(PetscHMapIGetSize(ta, &Crmax));
   PetscCall(PetscHMapIDestroy(&ta));
@@ -1918,7 +1918,7 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ(Mat P, Mat A, PetscReal
   /* Armax can be as large as aN if a P[row,:] is dense, see src/ksp/ksp/tutorials/ex56.c! */
   for (k = 0; k < merge->nrecv; k++) { /* k-th received message */
     Jptr = buf_rj[k];
-    for (j = 0; j < merge->len_r[k]; j++) PetscCall(PetscHMapISetWithMode(ta, *(Jptr + j) + 1, 1, INSERT_VALUES));
+    for (j = 0; j < merge->len_r[k]; j++) PetscCall(PetscHMapISet(ta, *(Jptr + j) + 1, 1));
   }
   PetscCall(PetscHMapIGetSize(ta, &Armax));
 

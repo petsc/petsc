@@ -86,7 +86,7 @@ PetscErrorCode MatCreateColmap_MPIBAIJ_Private(Mat mat)
   PetscFunctionBegin;
 #if defined(PETSC_USE_CTABLE)
   PetscCall(PetscHMapICreateWithSize(baij->nbs, &baij->colmap));
-  for (i = 0; i < nbs; i++) PetscCall(PetscHMapISetWithMode(baij->colmap, baij->garray[i] + 1, i * bs + 1, INSERT_VALUES));
+  for (i = 0; i < nbs; i++) PetscCall(PetscHMapISet(baij->colmap, baij->garray[i] + 1, i * bs + 1));
 #else
   PetscCall(PetscCalloc1(baij->Nbs + 1, &baij->colmap));
   for (i = 0; i < nbs; i++) baij->colmap[baij->garray[i]] = i * bs + 1;

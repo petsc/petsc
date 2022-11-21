@@ -369,7 +369,7 @@ static inline PetscErrorCode TableAddSVtx(DM_Network *network, PetscInt *sedgeli
   net  = sedgelist[k];
   idx  = sedgelist[k + 1];
   gidx = network->cloneshared->subnet[net].vStart + idx;
-  PetscCall(PetscHMapISetWithMode(svta, gidx + 1, *tdata + 1, INSERT_VALUES));
+  PetscCall(PetscHMapISet(svta, gidx + 1, *tdata + 1));
 
   ta2sv[*tdata] = k; /* maps tdata to index of sedgelist */
   (*tdata)++;
@@ -490,7 +490,7 @@ static PetscErrorCode SharedVtxCreate(DM dm, PetscInt Nsedgelist, PetscInt *sedg
     PetscCall(PetscFree3(gidx_tmp, net_tmp, idx_tmp));
 
     /* Setup svtable for query shared vertices */
-    PetscCall(PetscHMapISetWithMode(network->cloneshared->svtable, svtx[nsv].gidx + 1, nsv + 1, INSERT_VALUES));
+    PetscCall(PetscHMapISet(network->cloneshared->svtable, svtx[nsv].gidx + 1, nsv + 1));
   }
 
   for (j = 0; j < nta; j++) {

@@ -3620,7 +3620,7 @@ PetscErrorCode MatSeqAIJCompactOutExtraColumns_SeqAIJ(Mat mat, ISLocalToGlobalMa
     PetscCall(PetscHMapIGetWithDefault(gid1_lid1, gid1, 0, &data));
     if (!data) {
       /* one based table */
-      PetscCall(PetscHMapISetWithMode(gid1_lid1, gid1, ++ec, INSERT_VALUES));
+      PetscCall(PetscHMapISet(gid1_lid1, gid1, ++ec));
     }
   }
   /* form array of columns we need */
@@ -3636,7 +3636,7 @@ PetscErrorCode MatSeqAIJCompactOutExtraColumns_SeqAIJ(Mat mat, ISLocalToGlobalMa
   }
   PetscCall(PetscSortInt(ec, garray)); /* sort, and rebuild */
   PetscCall(PetscHMapIClear(gid1_lid1));
-  for (i = 0; i < ec; i++) PetscCall(PetscHMapISetWithMode(gid1_lid1, garray[i] + 1, i + 1, INSERT_VALUES));
+  for (i = 0; i < ec; i++) PetscCall(PetscHMapISet(gid1_lid1, garray[i] + 1, i + 1));
   /* compact out the extra columns in B */
   for (i = 0; i < nz; i++) {
     PetscInt gid1 = jj[i] + 1;

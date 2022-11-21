@@ -603,7 +603,7 @@ static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Once(Mat C, PetscInt imax, IS is
           ptr[proc]++;
         } else if (!PetscBTLookupSet(table_i, row)) {
 #if defined(PETSC_USE_CTABLE)
-          PetscCall(PetscHMapISetWithMode(table_data_i, row + 1, isz_i + 1, INSERT_VALUES));
+          PetscCall(PetscHMapISet(table_data_i, row + 1, isz_i + 1));
 #else
           data_i[isz_i] = row; /* Update the local table */
 #endif
@@ -718,7 +718,7 @@ static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Once(Mat C, PetscInt imax, IS is
           row = rbuf2_i[ct1];
           if (!PetscBTLookupSet(table_i, row)) {
 #if defined(PETSC_USE_CTABLE)
-            PetscCall(PetscHMapISetWithMode(table_data_i, row + 1, isz_i + 1, INSERT_VALUES));
+            PetscCall(PetscHMapISet(table_data_i, row + 1, isz_i + 1));
 #else
             data_i[isz_i] = row;
 #endif
@@ -863,7 +863,7 @@ static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Local(Mat C, PetscInt imax, Pets
         val = aj[k] + cstart;
         if (!PetscBTLookupSet(table_i, val)) {
 #if defined(PETSC_USE_CTABLE)
-          PetscCall(PetscHMapISetWithMode(table_data_i, val + 1, isz_i + 1, INSERT_VALUES));
+          PetscCall(PetscHMapISet(table_data_i, val + 1, isz_i + 1));
 #else
           data_i[isz_i] = val;
 #endif
@@ -876,7 +876,7 @@ static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Local(Mat C, PetscInt imax, Pets
         val = garray[bj[k]];
         if (!PetscBTLookupSet(table_i, val)) {
 #if defined(PETSC_USE_CTABLE)
-          PetscCall(PetscHMapISetWithMode(table_data_i, val + 1, isz_i + 1, INSERT_VALUES));
+          PetscCall(PetscHMapISet(table_data_i, val + 1, isz_i + 1));
 #else
           data_i[isz_i] = val;
 #endif
@@ -1524,7 +1524,7 @@ PetscErrorCode MatCreateSubMatrices_MPIAIJ_SingleIS_Local(Mat C, PetscInt ismax,
       if (proc == rank) { /* a local row */
         rmap_loc[row - rstart] = j;
       } else {
-        PetscCall(PetscHMapISetWithMode(rmap, irow[j] + 1, j + 1, INSERT_VALUES));
+        PetscCall(PetscHMapISet(rmap, irow[j] + 1, j + 1));
       }
     }
 #else
@@ -2375,7 +2375,7 @@ PetscErrorCode MatCreateSubMatrices_MPIAIJ_Local(Mat C, PetscInt ismax, const IS
           jmax   = ncol[i];
           icol_i = icol[i];
           cmap_i = cmap[i];
-          for (j = 0; j < jmax; j++) PetscCall(PetscHMapISetWithMode(cmap[i], icol_i[j] + 1, j + 1, INSERT_VALUES));
+          for (j = 0; j < jmax; j++) PetscCall(PetscHMapISet(cmap[i], icol_i[j] + 1, j + 1));
         } else cmap[i] = NULL;
       }
 #else
@@ -2433,7 +2433,7 @@ PetscErrorCode MatCreateSubMatrices_MPIAIJ_Local(Mat C, PetscInt ismax, const IS
       PetscCall(PetscHMapICreateWithSize(nrow[i], rmap + i));
       irow_i = irow[i];
       jmax   = nrow[i];
-      for (j = 0; j < jmax; j++) PetscCall(PetscHMapISetWithMode(rmap[i], irow_i[j] + 1, j + 1, INSERT_VALUES));
+      for (j = 0; j < jmax; j++) PetscCall(PetscHMapISet(rmap[i], irow_i[j] + 1, j + 1));
     }
 #else
     for (i = 0; i < ismax; i++) {

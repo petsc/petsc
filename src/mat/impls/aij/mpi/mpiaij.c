@@ -290,7 +290,7 @@ PetscErrorCode MatCreateColmap_MPIAIJ_Private(Mat mat)
   PetscCheck(!n || aij->garray, PETSC_COMM_SELF, PETSC_ERR_PLIB, "MPIAIJ Matrix was assembled but is missing garray");
 #if defined(PETSC_USE_CTABLE)
   PetscCall(PetscHMapICreateWithSize(n, &aij->colmap));
-  for (i = 0; i < n; i++) PetscCall(PetscHMapISetWithMode(aij->colmap, aij->garray[i] + 1, i + 1, INSERT_VALUES));
+  for (i = 0; i < n; i++) PetscCall(PetscHMapISet(aij->colmap, aij->garray[i] + 1, i + 1));
 #else
   PetscCall(PetscCalloc1(mat->cmap->N + 1, &aij->colmap));
   for (i = 0; i < n; i++) aij->colmap[aij->garray[i]] = i + 1;

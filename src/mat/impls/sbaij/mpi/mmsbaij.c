@@ -32,7 +32,7 @@ PetscErrorCode MatSetUpMultiply_MPISBAIJ(Mat mat)
     for (j = 0; j < B->ilen[i]; j++) {
       PetscInt data, gid1 = aj[B->i[i] + j] + 1;
       PetscCall(PetscHMapIGetWithDefault(gid1_lid1, gid1, 0, &data));
-      if (!data) PetscCall(PetscHMapISetWithMode(gid1_lid1, gid1, ++ec, INSERT_VALUES));
+      if (!data) PetscCall(PetscHMapISet(gid1_lid1, gid1, ++ec));
     }
   }
   /* form array of columns we need */
@@ -48,7 +48,7 @@ PetscErrorCode MatSetUpMultiply_MPISBAIJ(Mat mat)
   }
   PetscCall(PetscSortInt(ec, garray));
   PetscCall(PetscHMapIClear(gid1_lid1));
-  for (i = 0; i < ec; i++) PetscCall(PetscHMapISetWithMode(gid1_lid1, garray[i] + 1, i + 1, INSERT_VALUES));
+  for (i = 0; i < ec; i++) PetscCall(PetscHMapISet(gid1_lid1, garray[i] + 1, i + 1));
   /* compact out the extra columns in B */
   for (i = 0; i < B->mbs; i++) {
     for (j = 0; j < B->ilen[i]; j++) {

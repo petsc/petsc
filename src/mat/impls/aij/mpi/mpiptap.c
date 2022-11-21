@@ -461,7 +461,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_scalable(Mat A, Mat P, PetscReal fi
   /* add received column indices into ta to update Crmax */
   for (k = 0; k < nrecv; k++) { /* k-th received message */
     Jptr = buf_rj[k];
-    for (j = 0; j < len_r[k]; j++) PetscCall(PetscHMapISetWithMode(ta, *(Jptr + j) + 1, 1, INSERT_VALUES));
+    for (j = 0; j < len_r[k]; j++) PetscCall(PetscHMapISet(ta, *(Jptr + j) + 1, 1));
   }
   PetscCall(PetscHMapIGetSize(ta, &Crmax));
   PetscCall(PetscHMapIDestroy(&ta));
@@ -1763,7 +1763,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A, Mat P, PetscReal fill, Mat C
   /* add received column indices into ta to update Crmax */
   for (k = 0; k < nrecv; k++) { /* k-th received message */
     Jptr = buf_rj[k];
-    for (j = 0; j < len_r[k]; j++) PetscCall(PetscHMapISetWithMode(ta, *(Jptr + j) + 1, 1, INSERT_VALUES));
+    for (j = 0; j < len_r[k]; j++) PetscCall(PetscHMapISet(ta, *(Jptr + j) + 1, 1));
   }
   PetscCall(PetscHMapIGetSize(ta, &Crmax));
   PetscCall(PetscHMapIDestroy(&ta));

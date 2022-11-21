@@ -56,7 +56,7 @@ PetscErrorCode ISCompressIndicesGeneral(PetscInt n, PetscInt nkeys, PetscInt bs,
 #if defined(PETSC_USE_CTABLE)
       PetscCall(PetscHMapIGetWithDefault(gid1_lid1, ival + 1, 0, &tt));
       if (!tt) {
-        PetscCall(PetscHMapISetWithMode(gid1_lid1, ival + 1, isz + 1, INSERT_VALUES));
+        PetscCall(PetscHMapISet(gid1_lid1, ival + 1, isz + 1));
         isz++;
       }
 #else

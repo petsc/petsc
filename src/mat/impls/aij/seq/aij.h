@@ -616,7 +616,7 @@ static inline void PetscSparseDensePlusDot_AVX512_Private(PetscScalar *sum, cons
         const PetscInt _nz = (mat)->i[_row + 1] - (mat)->i[_row]; \
         for (PetscInt _j = 0; _j < _nz; _j++) { \
           PetscInt *_col = _j + (mat)->j + (mat)->i[_row]; \
-          PetscCall(PetscHMapISetWithMode((ta), *_col + 1, 1, INSERT_VALUES)); \
+          PetscCall(PetscHMapISet((ta), *_col + 1, 1)); \
         } \
       } \
     } \

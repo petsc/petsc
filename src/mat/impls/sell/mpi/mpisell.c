@@ -51,7 +51,7 @@ PetscErrorCode MatCreateColmap_MPISELL_Private(Mat mat)
   PetscCheck(sell->garray, PETSC_COMM_SELF, PETSC_ERR_PLIB, "MPISELL Matrix was assembled but is missing garray");
 #if defined(PETSC_USE_CTABLE)
   PetscCall(PetscHMapICreateWithSize(n, &sell->colmap));
-  for (i = 0; i < n; i++) PetscCall(PetscHMapISetWithMode(sell->colmap, sell->garray[i] + 1, i + 1, INSERT_VALUES));
+  for (i = 0; i < n; i++) PetscCall(PetscHMapISet(sell->colmap, sell->garray[i] + 1, i + 1));
 #else
   PetscCall(PetscCalloc1(mat->cmap->N + 1, &sell->colmap));
   for (i = 0; i < n; i++) sell->colmap[sell->garray[i]] = i + 1;
