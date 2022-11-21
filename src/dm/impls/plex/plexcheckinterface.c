@@ -145,22 +145,22 @@ static PetscErrorCode PetscSFComputeMultiRootOriginalNumberingByRank_Private(Pet
   DMPlexCheckInterfaceCones - Check that points on inter-partition interfaces have conforming order of cone points.
 
   Input Parameters:
-. dm - The DMPlex object
+. dm - The `DMPLEX` object
+
+  Level: developer
 
   Notes:
   For example, if there is an edge (rank,index)=(0,2) connecting points cone(0,2)=[(0,0),(0,1)] in this order, and the point SF containts connections 0 <- (1,0), 1 <- (1,1) and 2 <- (1,2),
   then this check would pass if the edge (1,2) has cone(1,2)=[(1,0),(1,1)]. By contrast, if cone(1,2)=[(1,1),(1,0)], then this check would fail.
 
-  This is mainly intended for debugging/testing purposes. Does not check cone orientation, for this purpose use DMPlexCheckFaces().
+  This is mainly intended for debugging/testing purposes. Does not check cone orientation, for this purpose use `DMPlexCheckFaces()`.
 
-  For the complete list of DMPlexCheck* functions, see DMSetFromOptions().
+  For the complete list of DMPlexCheck* functions, see `DMSetFromOptions()`.
 
   Developer Note:
   Interface cones are expanded into vertices and then their coordinates are compared.
 
-  Level: developer
-
-.seealso: `DMPlexGetCone()`, `DMPlexGetConeSize()`, `DMGetPointSF()`, `DMGetCoordinates()`, `DMSetFromOptions()`
+.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPlexGetCone()`, `DMPlexGetConeSize()`, `DMGetPointSF()`, `DMGetCoordinates()`, `DMSetFromOptions()`
 @*/
 PetscErrorCode DMPlexCheckInterfaceCones(DM dm)
 {

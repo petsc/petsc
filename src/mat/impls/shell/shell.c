@@ -1853,7 +1853,7 @@ PetscErrorCode MatShellSetManageScalingShifts(Mat A)
    Output Parameter:
 .   flg - `PETSC_TRUE` if the multiply is likely correct
 
-   Options Database:
+   Options Database Key:
 .   -mat_shell_test_mult_view - print if any differences are detected between the products and print the difference
 
    Level: advanced
@@ -1918,7 +1918,7 @@ PetscErrorCode MatShellTestMult(Mat mat, PetscErrorCode (*f)(void *, Vec, Vec), 
    Output Parameter:
 .   flg - `PETSC_TRUE` if the multiply is likely correct
 
-   Options Database:
+   Options Database Key:
 .   -mat_shell_test_mult_view - print if any differences are detected between the products and print the difference
 
    Level: advanced

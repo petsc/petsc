@@ -9,26 +9,26 @@
 #include <petsc/private/viewerimpl.h>
 #include <petsc/private/viewerexodusiiimpl.h>
 #if defined(PETSC_HAVE_EXODUSII)
-/*
-  PETSC_VIEWER_EXODUSII_ - Creates an ExodusII PetscViewer shared by all processors in a communicator.
+/*@C
+  PETSC_VIEWER_EXODUSII_ - Creates an `PETSCVIEWEREXODUSII` `PetscViewer` shared by all processors in a communicator.
 
   Collective
 
   Input Parameter:
-. comm - the MPI communicator to share the ExodusII PetscViewer
+. comm - the MPI communicator to share the `PETSCVIEWEREXODUSII` `PetscViewer`
 
   Level: intermediate
 
-  Notes:
-    misses Fortran bindings
-
-  Notes:
+  Note:
   Unlike almost all other PETSc routines, PETSC_VIEWER_EXODUSII_ does not return
   an error code.  The GLVIS PetscViewer is usually used in the form
 $       XXXView(XXX object, PETSC_VIEWER_EXODUSII_(comm));
 
-.seealso: `PetscViewerExodusIIOpen()`, `PetscViewerType`, `PetscViewerCreate()`, `PetscViewerDestroy()`
-*/
+  Fortran Note:
+  No support in Fortran
+
+.seealso: `PETSCVIEWEREXODUSII`, `PetscViewer`, `PetscViewer`, `PetscViewerExodusIIOpen()`, `PetscViewerType`, `PetscViewerCreate()`, `PetscViewerDestroy()`
+@*/
 PetscViewer PETSC_VIEWER_EXODUSII_(MPI_Comm comm)
 {
   PetscViewer    viewer;
@@ -1228,19 +1228,19 @@ PetscErrorCode VecLoadPlex_ExodusII_Zonal_Internal(Vec v, int exoid, int step, i
 #endif
 
 /*@
-  PetscViewerExodusIIGetId - Get the file id of the ExodusII file
+  PetscViewerExodusIIGetId - Get the file id of the `PETSCVIEWEREXODUSII` file
 
-  Logically Collective on PetscViewer
+  Logically Collective on viewer
 
   Input Parameter:
-.  viewer - the PetscViewer
+.  viewer - the `PetscViewer`
 
   Output Parameter:
 .  exoid - The ExodusII file id
 
   Level: intermediate
 
-.seealso: `PetscViewerFileSetMode()`, `PetscViewerCreate()`, `PetscViewerSetType()`, `PetscViewerBinaryOpen()`
+.seealso: `PETSCVIEWEREXODUSII`, `PetscViewer`, `PetscViewerFileSetMode()`, `PetscViewerCreate()`, `PetscViewerSetType()`, `PetscViewerBinaryOpen()`
 @*/
 PetscErrorCode PetscViewerExodusIIGetId(PetscViewer viewer, int *exoid)
 {
@@ -1256,16 +1256,14 @@ PetscErrorCode PetscViewerExodusIIGetId(PetscViewer viewer, int *exoid)
    Collective
 
    Input Parameters:
-+  viewer - the viewer
++  viewer - the `PETSCVIEWEREXODUSII` viewer
 -  order - elements order
 
    Output Parameter:
 
    Level: beginner
 
-   Note:
-
-.seealso: `PetscViewerExodusIIGetId()`, `PetscViewerExodusIIGetOrder()`, `PetscViewerExodusIISetOrder()`
+.seealso: `PETSCVIEWEREXODUSII`, `PetscViewer`, `PetscViewerExodusIIGetId()`, `PetscViewerExodusIIGetOrder()`, `PetscViewerExodusIISetOrder()`
 @*/
 PetscErrorCode PetscViewerExodusIISetOrder(PetscViewer viewer, PetscInt order)
 {
@@ -1281,16 +1279,14 @@ PetscErrorCode PetscViewerExodusIISetOrder(PetscViewer viewer, PetscInt order)
    Collective
 
    Input Parameters:
-+  viewer - the viewer
++  viewer - the `PETSCVIEWEREXODUSII` viewer
 -  order - elements order
 
    Output Parameter:
 
    Level: beginner
 
-   Note:
-
-.seealso: `PetscViewerExodusIIGetId()`, `PetscViewerExodusIIGetOrder()`, `PetscViewerExodusIISetOrder()`
+.seealso: `PETSCVIEWEREXODUSII`, `PetscViewer`, `PetscViewerExodusIIGetId()`, `PetscViewerExodusIIGetOrder()`, `PetscViewerExodusIISetOrder()`
 @*/
 PetscErrorCode PetscViewerExodusIIGetOrder(PetscViewer viewer, PetscInt *order)
 {
@@ -1309,19 +1305,18 @@ PetscErrorCode PetscViewerExodusIIGetOrder(PetscViewer viewer, PetscInt *order)
 +  comm - MPI communicator
 .  name - name of file
 -  type - type of file
-$    FILE_MODE_WRITE - create new file for binary output
-$    FILE_MODE_READ - open existing file for binary input
-$    FILE_MODE_APPEND - open existing file for binary output
+.vb
+    FILE_MODE_WRITE - create new file for binary output
+    FILE_MODE_READ - open existing file for binary input
+    FILE_MODE_APPEND - open existing file for binary output
+.ve
 
    Output Parameter:
-.  exo - PetscViewer for Exodus II input/output to use with the specified file
+.  exo - `PETSCVIEWEREXODUSII` `PetscViewer` for Exodus II input/output to use with the specified file
 
    Level: beginner
 
-   Note:
-   This PetscViewer should be destroyed with PetscViewerDestroy().
-
-.seealso: `PetscViewerPushFormat()`, `PetscViewerDestroy()`,
+.seealso: `PETSCVIEWEREXODUSII`, `PetscViewer`, `PetscViewerPushFormat()`, `PetscViewerDestroy()`,
           `DMLoad()`, `PetscFileMode`, `PetscViewer`, `PetscViewerSetType()`, `PetscViewerFileSetMode()`, `PetscViewerFileSetName()`
 @*/
 PetscErrorCode PetscViewerExodusIIOpen(MPI_Comm comm, const char name[], PetscFileMode type, PetscViewer *exo)
@@ -1336,7 +1331,7 @@ PetscErrorCode PetscViewerExodusIIOpen(MPI_Comm comm, const char name[], PetscFi
 }
 
 /*@C
-  DMPlexCreateExodusFromFile - Create a DMPlex mesh from an ExodusII file.
+  DMPlexCreateExodusFromFile - Create a `DMPLEX` mesh from an ExodusII file.
 
   Collective
 
@@ -1346,11 +1341,11 @@ PetscErrorCode PetscViewerExodusIIOpen(MPI_Comm comm, const char name[], PetscFi
 - interpolate - Create faces and edges in the mesh
 
   Output Parameter:
-. dm  - The DM object representing the mesh
+. dm  - The `DM` object representing the mesh
 
   Level: beginner
 
-.seealso: `DMPLEX`, `DMCreate()`, `DMPlexCreateExodus()`
+.seealso: [](chapter_unstructured), `DM`, `PETSCVIEWEREXODUSII`, `DMPLEX`, `DMCreate()`, `DMPlexCreateExodus()`
 @*/
 PetscErrorCode DMPlexCreateExodusFromFile(MPI_Comm comm, const char filename[], PetscBool interpolate, DM *dm)
 {
@@ -1445,7 +1440,7 @@ done:
 #endif
 
 /*@
-  DMPlexCreateExodus - Create a DMPlex mesh from an ExodusII file ID.
+  DMPlexCreateExodus - Create a `DMPLEX` mesh from an ExodusII file ID.
 
   Collective
 
@@ -1455,11 +1450,11 @@ done:
 - interpolate - Create faces and edges in the mesh
 
   Output Parameter:
-. dm  - The DM object representing the mesh
+. dm  - The `DM` object representing the mesh
 
   Level: beginner
 
-.seealso: `DMPLEX`, `DMCreate()`
+.seealso: [](chapter_unstructured), `DM`, `PETSCVIEWEREXODUSII`, `DMPLEX`, `DMPLEX`, `DMCreate()`
 @*/
 PetscErrorCode DMPlexCreateExodus(MPI_Comm comm, PetscInt exoid, PetscBool interpolate, DM *dm)
 {

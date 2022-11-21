@@ -1,17 +1,20 @@
 #include <petsc/private/dmpleximpl.h> /*I      "petscdmplex.h"   I*/
 
 /*@
-  DMPlexSetMigrationSF - Sets the SF for migrating from a parent DM into this DM
+  DMPlexSetMigrationSF - Sets the `PetscSF` for migrating from a parent `DM` into this `DM`
+
+  Logically Collective on dm
 
   Input Parameters:
-+ dm        - The DM
-- naturalSF - The PetscSF
-
-  Note: It is necessary to call this in order to have DMCreateSubDM() or DMCreateSuperDM() build the Global-To-Natural map
++ dm        - The `DM`
+- naturalSF - The `PetscSF`
 
   Level: intermediate
 
-.seealso: `DMPlexDistribute()`, `DMPlexDistributeField()`, `DMPlexCreateMigrationSF()`, `DMPlexGetMigrationSF()`
+  Note:
+  It is necessary to call this in order to have `DMCreateSubDM()` or `DMCreateSuperDM()` build the Global-To-Natural map
+
+.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `PetscSF`, `DMPlexDistribute()`, `DMPlexDistributeField()`, `DMPlexCreateMigrationSF()`, `DMPlexGetMigrationSF()`
 @*/
 PetscErrorCode DMPlexSetMigrationSF(DM dm, PetscSF migrationSF)
 {
@@ -22,17 +25,19 @@ PetscErrorCode DMPlexSetMigrationSF(DM dm, PetscSF migrationSF)
 }
 
 /*@
-  DMPlexGetMigrationSF - Gets the SF for migrating from a parent DM into this DM
+  DMPlexGetMigrationSF - Gets the `PetscSF` for migrating from a parent `DM` into this `DM`
+
+  Note Collective
 
   Input Parameter:
-. dm          - The DM
+. dm          - The `DM`
 
   Output Parameter:
-. migrationSF - The PetscSF
+. migrationSF - The `PetscSF`
 
   Level: intermediate
 
-.seealso: `DMPlexDistribute()`, `DMPlexDistributeField()`, `DMPlexCreateMigrationSF()`, `DMPlexSetMigrationSF`
+.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `PetscSF`, `DMPlexDistribute()`, `DMPlexDistributeField()`, `DMPlexCreateMigrationSF()`, `DMPlexSetMigrationSF`
 @*/
 PetscErrorCode DMPlexGetMigrationSF(DM dm, PetscSF *migrationSF)
 {
@@ -42,15 +47,15 @@ PetscErrorCode DMPlexGetMigrationSF(DM dm, PetscSF *migrationSF)
 }
 
 /*@
-  DMPlexSetGlobalToNaturalSF - Sets the SF for mapping Global Vec to the Natural Vec
+  DMPlexSetGlobalToNaturalSF - Sets the `PetscSF` for mapping Global `Vec` to the Natural `Vec`
 
   Input Parameters:
-+ dm          - The DM
-- naturalSF   - The PetscSF
++ dm          - The `DM`
+- naturalSF   - The `PetscSF`
 
   Level: intermediate
 
-.seealso: `DMPlexDistribute()`, `DMPlexDistributeField()`, `DMPlexCreateGlobalToNaturalSF()`, `DMPlexGetGlobaltoNaturalSF()`
+.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `PetscSF`, `DMPlexDistribute()`, `DMPlexDistributeField()`, `DMPlexCreateGlobalToNaturalSF()`, `DMPlexGetGlobaltoNaturalSF()`
 @*/
 PetscErrorCode DMPlexSetGlobalToNaturalSF(DM dm, PetscSF naturalSF)
 {
@@ -62,17 +67,17 @@ PetscErrorCode DMPlexSetGlobalToNaturalSF(DM dm, PetscSF naturalSF)
 }
 
 /*@
-  DMPlexGetGlobalToNaturalSF - Gets the SF for mapping Global Vec to the Natural Vec
+  DMPlexGetGlobalToNaturalSF - Gets the `PetscSF` for mapping Global `Vec` to the Natural `Vec`
 
   Input Parameter:
-. dm          - The DM
+. dm          - The `DM`
 
   Output Parameter:
-. naturalSF   - The PetscSF
+. naturalSF   - The `PetscSF`
 
   Level: intermediate
 
-.seealso: `DMPlexDistribute()`, `DMPlexDistributeField()`, `DMPlexCreateGlobalToNaturalSF()`, `DMPlexSetGlobaltoNaturalSF`
+.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `PetscSF`, `DMPlexDistribute()`, `DMPlexDistributeField()`, `DMPlexCreateGlobalToNaturalSF()`, `DMPlexSetGlobaltoNaturalSF`
 @*/
 PetscErrorCode DMPlexGetGlobalToNaturalSF(DM dm, PetscSF *naturalSF)
 {
@@ -82,21 +87,22 @@ PetscErrorCode DMPlexGetGlobalToNaturalSF(DM dm, PetscSF *naturalSF)
 }
 
 /*@
-  DMPlexCreateGlobalToNaturalSF - Creates the SF for mapping Global Vec to the Natural Vec
+  DMPlexCreateGlobalToNaturalSF - Creates the `PetscSF` for mapping Global `Vec` to the Natural `Vec`
 
   Input Parameters:
-+ dm          - The redistributed DM
-. section     - The local PetscSection describing the Vec before the mesh was distributed, or NULL if not available
-- sfMigration - The PetscSF used to distribute the mesh, or NULL if it cannot be computed
++ dm          - The redistributed `DM`
+. section     - The local `PetscSection` describing the `Vec` before the mesh was distributed, or NULL if not available
+- sfMigration - The `PetscSF` used to distribute the mesh, or NULL if it cannot be computed
 
   Output Parameter:
-. sfNatural   - PetscSF for mapping the Vec in PETSc ordering to the canonical ordering
-
-  Note: This is not typically called by the user.
+. sfNatural   - `PetscSF` for mapping the `Vec` in PETSc ordering to the canonical ordering
 
   Level: intermediate
 
-.seealso: `DMPlexDistribute()`, `DMPlexDistributeField()`
+  Note:
+  This is not typically called by the user.
+
+.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `PetscSF`, `PetscSection`, `DMPlexDistribute()`, `DMPlexDistributeField()`
  @*/
 PetscErrorCode DMPlexCreateGlobalToNaturalSF(DM dm, PetscSection section, PetscSF sfMigration, PetscSF *sfNatural)
 {
@@ -199,22 +205,23 @@ PetscErrorCode DMPlexCreateGlobalToNaturalSF(DM dm, PetscSection section, PetscS
 }
 
 /*@
-  DMPlexGlobalToNaturalBegin - Rearranges a global Vector in the natural order.
+  DMPlexGlobalToNaturalBegin - Rearranges a global `Vec` in the natural order.
 
   Collective on dm
 
   Input Parameters:
-+ dm - The distributed DMPlex
-- gv - The global Vec
++ dm - The distributed `DMPLEX`
+- gv - The global `Vec`
 
   Output Parameters:
-. nv - Vec in the canonical ordering distributed over all processors associated with gv
-
-  Note: The user must call DMSetUseNatural(dm, PETSC_TRUE) before DMPlexDistribute().
+. nv - `Vec` in the canonical ordering distributed over all processors associated with gv
 
   Level: intermediate
 
-.seealso: `DMPlexDistribute()`, `DMPlexDistributeField()`, `DMPlexNaturalToGlobalBegin()`, `DMPlexGlobalToNaturalEnd()`
+  Note:
+  The user must call `DMSetUseNatural`(dm, `PETSC_TRUE`) before `DMPlexDistribute()`.
+
+.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `Vec`, `DMPlexDistribute()`, `DMPlexDistributeField()`, `DMPlexNaturalToGlobalBegin()`, `DMPlexGlobalToNaturalEnd()`
 @*/
 PetscErrorCode DMPlexGlobalToNaturalBegin(DM dm, Vec gv, Vec nv)
 {
@@ -242,22 +249,23 @@ PetscErrorCode DMPlexGlobalToNaturalBegin(DM dm, Vec gv, Vec nv)
 }
 
 /*@
-  DMPlexGlobalToNaturalEnd - Rearranges a global Vector in the natural order.
+  DMPlexGlobalToNaturalEnd - Rearranges a global `Vec` in the natural order.
 
   Collective on dm
 
   Input Parameters:
-+ dm - The distributed DMPlex
-- gv - The global Vec
++ dm - The distributed `DMPLEX`
+- gv - The global `Vec`
 
   Output Parameter:
-. nv - The natural Vec
-
-  Note: The user must call DMSetUseNatural(dm, PETSC_TRUE) before DMPlexDistribute().
+. nv - The natural `Vec`
 
   Level: intermediate
 
- .seealso: `DMPlexDistribute()`, `DMPlexDistributeField()`, `DMPlexNaturalToGlobalBegin()`, `DMPlexGlobalToNaturalBegin()`
+  Note:
+  The user must call `DMSetUseNatural`(dm, `PETSC_TRUE`) before `DMPlexDistribute()`.
+
+ .seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `Vec`, `DMPlexDistribute()`, `DMPlexDistributeField()`, `DMPlexNaturalToGlobalBegin()`, `DMPlexGlobalToNaturalBegin()`
  @*/
 PetscErrorCode DMPlexGlobalToNaturalEnd(DM dm, Vec gv, Vec nv)
 {
@@ -284,22 +292,23 @@ PetscErrorCode DMPlexGlobalToNaturalEnd(DM dm, Vec gv, Vec nv)
 }
 
 /*@
-  DMPlexNaturalToGlobalBegin - Rearranges a Vector in the natural order to the Global order.
+  DMPlexNaturalToGlobalBegin - Rearranges a `Vec` in the natural order to the Global order.
 
   Collective on dm
 
   Input Parameters:
-+ dm - The distributed DMPlex
-- nv - The natural Vec
++ dm - The distributed `DMPLEX`
+- nv - The natural `Vec`
 
   Output Parameters:
-. gv - The global Vec
-
-  Note: The user must call DMSetUseNatural(dm, PETSC_TRUE) before DMPlexDistribute().
+. gv - The global `Vec`
 
   Level: intermediate
 
-.seealso: `DMPlexDistribute()`, `DMPlexDistributeField()`, `DMPlexNaturalToGlobalBegin()`, `DMPlexGlobalToNaturalEnd()`
+  Note:
+  The user must call `DMSetUseNatural`(dm, `PETSC_TRUE`) before `DMPlexDistribute()`.
+
+.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `Vec`, `DMPlexDistribute()`, `DMPlexDistributeField()`, `DMPlexNaturalToGlobalBegin()`, `DMPlexGlobalToNaturalEnd()`
 @*/
 PetscErrorCode DMPlexNaturalToGlobalBegin(DM dm, Vec nv, Vec gv)
 {
@@ -331,22 +340,23 @@ PetscErrorCode DMPlexNaturalToGlobalBegin(DM dm, Vec nv, Vec gv)
 }
 
 /*@
-  DMPlexNaturalToGlobalEnd - Rearranges a Vector in the natural order to the Global order.
+  DMPlexNaturalToGlobalEnd - Rearranges a `Vec` in the natural order to the Global order.
 
   Collective on dm
 
   Input Parameters:
-+ dm - The distributed DMPlex
-- nv - The natural Vec
++ dm - The distributed `DMPLEX`
+- nv - The natural `Vec`
 
   Output Parameters:
-. gv - The global Vec
-
-  Note: The user must call DMSetUseNatural(dm, PETSC_TRUE) before DMPlexDistribute().
+. gv - The global `Vec`
 
   Level: intermediate
 
-.seealso: `DMPlexDistribute()`, `DMPlexDistributeField()`, `DMPlexNaturalToGlobalBegin()`, `DMPlexGlobalToNaturalBegin()`
+  Note:
+  The user must call `DMSetUseNatural`(dm, `PETSC_TRUE`) before `DMPlexDistribute()`.
+
+.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `Vec`, `DMPlexDistribute()`, `DMPlexDistributeField()`, `DMPlexNaturalToGlobalBegin()`, `DMPlexGlobalToNaturalBegin()`
  @*/
 PetscErrorCode DMPlexNaturalToGlobalEnd(DM dm, Vec nv, Vec gv)
 {
@@ -378,16 +388,17 @@ PetscErrorCode DMPlexNaturalToGlobalEnd(DM dm, Vec nv, Vec gv)
   Collective on dm
 
   Input Parameter:
-. dm - The distributed `DMPlex`
+. dm - The distributed `DMPLEX`
 
   Output Parameter:
 . nv - The natural `Vec`
 
-  Note: The user must call `DMSetUseNatural`(dm, PETSC_TRUE) before `DMPlexDistribute()`.
-
   Level: intermediate
 
-.seealso: `DMPlexDistribute()`, `DMPlexNaturalToGlobalBegin()`, `DMPlexGlobalToNaturalBegin()`
+  Note:
+  The user must call `DMSetUseNatural`(dm, `PETSC_TRUE`) before `DMPlexDistribute()`.
+
+.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `Vec`, `DMPlexDistribute()`, `DMPlexNaturalToGlobalBegin()`, `DMPlexGlobalToNaturalBegin()`
  @*/
 PetscErrorCode DMPlexCreateNaturalVector(DM dm, Vec *nv)
 {

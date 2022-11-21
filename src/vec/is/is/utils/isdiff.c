@@ -542,7 +542,7 @@ PetscErrorCode ISConcatenate(MPI_Comm comm, PetscInt len, const IS islist[], IS 
   Equivalently, the local numbers of the subcomms on each local list are drawn from some global
   numbering. This is ensured, for example, by `ISPairToList()`.
 
-.seealso `IS`, `ISPairToList()`
+.seealso: `IS`, `ISPairToList()`
 @*/
 PetscErrorCode ISListToPair(MPI_Comm comm, PetscInt listlen, IS islist[], IS *xis, IS *yis)
 {
@@ -600,7 +600,7 @@ PetscErrorCode ISListToPair(MPI_Comm comm, PetscInt listlen, IS islist[], IS *xi
 
   The resulting `IS` have subcommunicators in a "deadlock-free" order (see `ISListToPair()`).
 
-.seealso `IS`, `ISListToPair()`
+.seealso: `IS`, `ISListToPair()`
  @*/
 PetscErrorCode ISPairToList(IS xis, IS yis, PetscInt *listlen, IS **islist)
 {
@@ -727,7 +727,7 @@ PetscErrorCode ISPairToList(IS xis, IS yis, PetscInt *listlen, IS **islist)
 
   The resulting `IS` is sequential, since the index substition it encodes is purely local.
 
-.seealso `IS`, `ISLocalToGlobalMapping`
+.seealso: `IS`, `ISLocalToGlobalMapping`
  @*/
 PetscErrorCode ISEmbed(IS a, IS b, PetscBool drop, IS *c)
 {
@@ -779,7 +779,7 @@ PetscErrorCode ISEmbed(IS a, IS b, PetscBool drop, IS *c)
   the f indices are nondecreasing. h is built on `PETSC_COMM_SELF`, since
   the permutation has a local meaning only.
 
-.seealso `IS`, `ISLocalToGlobalMapping`, `ISSort()`
+.seealso: `IS`, `ISLocalToGlobalMapping`, `ISSort()`
  @*/
 PetscErrorCode ISSortPermutation(IS f, PetscBool always, IS *h)
 {

@@ -6,20 +6,23 @@
 #endif
 
 /*@C
-  DMPlexCreateMedFromFile - Create a DMPlex mesh from a (Salome-)Med file.
+  DMPlexCreateMedFromFile - Create a `DMPLEX` mesh from a (Salome-)Med file.
+
+  Collective
 
 + comm        - The MPI communicator
 . filename    - Name of the .med file
 - interpolate - Create faces and edges in the mesh
 
   Output Parameter:
-. dm  - The DM object representing the mesh
-
-  Note: https://www.salome-platform.org/user-section/about/med, http://docs.salome-platform.org/latest/MED_index.html
+. dm  - The `DM` object representing the mesh
 
   Level: beginner
 
-.seealso: `DMPlexCreateFromFile()`, `DMPlexCreateGmsh()`, `DMPlexCreate()`
+  Reference:
+. * -  https://www.salome-platform.org/user-section/about/med, http://docs.salome-platform.org/latest/MED_index.html
+
+.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPlexCreateFromFile()`, `DMPlexCreateGmsh()`, `DMPlexCreate()`
 @*/
 PetscErrorCode DMPlexCreateMedFromFile(MPI_Comm comm, const char filename[], PetscBool interpolate, DM *dm)
 {

@@ -407,7 +407,7 @@ static PetscErrorCode MatCoarsenSetFromOptions_MISK(MatCoarsen coarse, PetscOpti
 
    Level: beginner
 
-   Options Database:
+   Options Database Key:
 .   -mat_coarsen_misk_distance <k> - distance for MIS
 
 .seealso: `MatCoarsen`, `MatCoarsenMISKSetDistance()`, `MatCoarsenApply()`, `MatCoarsenSetType()`, `MatCoarsenType`, `MatCoarsenCreate()`

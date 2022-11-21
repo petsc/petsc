@@ -12,12 +12,12 @@
   Not collective
 
   Input Parameters:
-+ dm - The DMPlex object
-- ref - The reference tree DMPlex object
++ dm - The `DMPLEX` object
+- ref - The reference tree `DMPLEX` object
 
   Level: intermediate
 
-.seealso: `DMPlexGetReferenceTree()`, `DMPlexCreateDefaultReferenceTree()`
+.seealso: [](chapter_unstructured), `DM`, `DMPLEX`,`DMPlexGetReferenceTree()`, `DMPlexCreateDefaultReferenceTree()`
 @*/
 PetscErrorCode DMPlexSetReferenceTree(DM dm, DM ref)
 {
@@ -38,14 +38,14 @@ PetscErrorCode DMPlexSetReferenceTree(DM dm, DM ref)
   Not collective
 
   Input Parameters:
-. dm - The DMPlex object
+. dm - The `DMPLEX` object
 
   Output Parameters:
-. ref - The reference tree DMPlex object
+. ref - The reference tree `DMPLEX` object
 
   Level: intermediate
 
-.seealso: `DMPlexSetReferenceTree()`, `DMPlexCreateDefaultReferenceTree()`
+.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPlexSetReferenceTree()`, `DMPlexCreateDefaultReferenceTree()`
 @*/
 PetscErrorCode DMPlexGetReferenceTree(DM dm, DM *ref)
 {
@@ -175,7 +175,7 @@ static PetscErrorCode DMPlexReferenceTreeGetChildSymmetry_Default(DM dm, PetscIn
   DMPlexReferenceTreeGetChildSymmetry - Given a reference tree, transform a childid and orientation from one parent frame to another
 
   Input Parameters:
-+ dm - the reference tree DMPlex object
++ dm - the reference tree `DMPLEX` object
 . parent - the parent point
 . parentOrientA - the reference orientation for describing the parent
 . childOrientA - the reference orientation for describing the child
@@ -188,7 +188,7 @@ static PetscErrorCode DMPlexReferenceTreeGetChildSymmetry_Default(DM dm, PetscIn
 
   Level: developer
 
-.seealso: `DMPlexGetReferenceTree()`, `DMPlexSetReferenceTree()`, `DMPlexSetTree()`
+.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPlexGetReferenceTree()`, `DMPlexSetReferenceTree()`, `DMPlexSetTree()`
 @*/
 PetscErrorCode DMPlexReferenceTreeGetChildSymmetry(DM dm, PetscInt parent, PetscInt parentOrientA, PetscInt childOrientA, PetscInt childA, PetscInt parentOrientB, PetscInt *childOrientB, PetscInt *childB)
 {
@@ -427,7 +427,7 @@ PetscErrorCode DMPlexCreateReferenceTree_Union(DM K, DM Kref, const char *labelN
 - simplex - Flag for simplex, otherwise use a tensor-product cell
 
   Output Parameters:
-. ref     - the reference tree DMPlex object
+. ref     - the reference tree `DMPLEX` object
 
   Level: intermediate
 
@@ -980,7 +980,7 @@ static PetscErrorCode DMPlexSetTree_Internal(DM dm, PetscSection parentSection, 
   Collective on dm
 
   Input Parameters:
-+ dm - the DMPlex object
++ dm - the `DMPLEX` object
 . parentSection - a section describing the tree: a point has a parent if it has 1 dof in the section; the section
                   offset indexes the parent and childID list; the reference count of parentSection is incremented
 . parents - a list of the point parents; copied, can be destroyed
@@ -989,7 +989,7 @@ static PetscErrorCode DMPlexSetTree_Internal(DM dm, PetscSection parentSection, 
 
   Level: intermediate
 
-.seealso: `DMPlexGetTree()`, `DMPlexSetReferenceTree()`, `DMPlexSetAnchors()`, `DMPlexGetTreeParent()`, `DMPlexGetTreeChildren()`
+.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPlexGetTree()`, `DMPlexSetReferenceTree()`, `DMPlexSetAnchors()`, `DMPlexGetTreeParent()`, `DMPlexGetTreeChildren()`
 @*/
 PetscErrorCode DMPlexSetTree(DM dm, PetscSection parentSection, PetscInt parents[], PetscInt childIDs[])
 {
@@ -1003,7 +1003,7 @@ PetscErrorCode DMPlexSetTree(DM dm, PetscSection parentSection, PetscInt parents
   Collective on dm
 
   Input Parameter:
-. dm - the DMPlex object
+. dm - the `DMPLEX` object
 
   Output Parameters:
 + parentSection - a section describing the tree: a point has a parent if it has 1 dof in the section; the section
@@ -1016,7 +1016,7 @@ PetscErrorCode DMPlexSetTree(DM dm, PetscSection parentSection, PetscInt parents
 
   Level: intermediate
 
-.seealso: `DMPlexSetTree()`, `DMPlexSetReferenceTree()`, `DMPlexSetAnchors()`, `DMPlexGetTreeParent()`, `DMPlexGetTreeChildren()`
+.seealso: [](chapter_unstructured), `DM`, `DMPLEX`,`DMPlexSetTree()`, `DMPlexSetReferenceTree()`, `DMPlexSetAnchors()`, `DMPlexGetTreeParent()`, `DMPlexGetTreeChildren()`
 @*/
 PetscErrorCode DMPlexGetTree(DM dm, PetscSection *parentSection, PetscInt *parents[], PetscInt *childIDs[], PetscSection *childSection, PetscInt *children[])
 {
@@ -1036,7 +1036,7 @@ PetscErrorCode DMPlexGetTree(DM dm, PetscSection *parentSection, PetscInt *paren
   DMPlexGetTreeParent - get the parent of a point in the tree describing the point hierarchy (not the DAG)
 
   Input Parameters:
-+ dm - the DMPlex object
++ dm - the `DMPLEX` object
 - point - the query point
 
   Output Parameters:
@@ -1046,7 +1046,7 @@ PetscErrorCode DMPlexGetTree(DM dm, PetscSection *parentSection, PetscInt *paren
 
   Level: intermediate
 
-.seealso: `DMPlexSetTree()`, `DMPlexGetTree()`, `DMPlexGetTreeChildren()`
+.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPlexSetTree()`, `DMPlexGetTree()`, `DMPlexGetTreeChildren()`
 @*/
 PetscErrorCode DMPlexGetTreeParent(DM dm, PetscInt point, PetscInt *parent, PetscInt *childID)
 {
@@ -1078,7 +1078,7 @@ PetscErrorCode DMPlexGetTreeParent(DM dm, PetscInt point, PetscInt *parent, Pets
   DMPlexGetTreeChildren - get the children of a point in the tree describing the point hierarchy (not the DAG)
 
   Input Parameters:
-+ dm - the DMPlex object
++ dm - the `DMPLEX` object
 - point - the query point
 
   Output Parameters:
@@ -1087,11 +1087,7 @@ PetscErrorCode DMPlexGetTreeParent(DM dm, PetscInt point, PetscInt *parent, Pets
 
   Level: intermediate
 
-  Fortran Notes:
-  Since it returns an array, this routine is only available in Fortran 90, and you must
-  include petsc.h90 in your code.
-
-.seealso: `DMPlexSetTree()`, `DMPlexGetTree()`, `DMPlexGetTreeParent()`
+.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPlexSetTree()`, `DMPlexGetTree()`, `DMPlexGetTreeParent()`
 @*/
 PetscErrorCode DMPlexGetTreeChildren(DM dm, PetscInt point, PetscInt *numChildren, const PetscInt *children[])
 {
@@ -4197,10 +4193,10 @@ static PetscErrorCode DMPlexTransferVecTree_Inject(DM fine, Vec vecFine, DM coar
   that can be represented by a common reference tree used by both.  This routine can be used for a combination of
   coarsening and refinement at the same time.
 
-  collective
+  Collective on dmIn
 
   Input Parameters:
-+ dmIn        - The DMPlex mesh for the input vector
++ dmIn        - The `DMPLEX` mesh for the input vector
 . vecIn       - The input vector
 . sfRefine    - A star forest indicating points in the mesh dmIn (roots in the star forest) that are parents to points in
                 the mesh dmOut (leaves in the star forest), i.e. where dmOut is more refined than dmIn
@@ -4219,13 +4215,13 @@ static PetscErrorCode DMPlexTransferVecTree_Inject(DM fine, Vec vecFine, DM coar
 
   Output Parameters:
 . vecOut      - Using interpolation and injection operators calculated on the reference tree, the transferred
-                projection of vecIn from dmIn to dmOut.  Note that any field discretized with a PetscFV finite volume
+                projection of vecIn from dmIn to dmOut.  Note that any field discretized with a `PetscFV` finite volume
                 method that uses gradient reconstruction will use reconstructed gradients when interpolating from
                 coarse points to fine points.
 
   Level: developer
 
-.seealso: `DMPlexSetReferenceTree()`, `DMPlexGetReferenceTree()`, `PetscFVGetComputeGradients()`
+.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `PetscSF`, `Vec`, `PetscFV`, `DMPlexSetReferenceTree()`, `DMPlexGetReferenceTree()`, `PetscFVGetComputeGradients()`
 @*/
 PetscErrorCode DMPlexTransferVecTree(DM dmIn, Vec vecIn, DM dmOut, Vec vecOut, PetscSF sfRefine, PetscSF sfCoarsen, PetscInt *cidsRefine, PetscInt *cidsCoarsen, PetscBool useBCs, PetscReal time)
 {

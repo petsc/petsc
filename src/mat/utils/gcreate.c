@@ -59,7 +59,7 @@ PETSC_INTERN PetscErrorCode MatShift_Basic(Mat Y, PetscScalar a)
 
    Level: beginner
 
-`.seealso: `MatCreateSeqAIJ()`, `MatCreateAIJ()`,
+.seealso: `MatCreateSeqAIJ()`, `MatCreateAIJ()`,
           `MatCreateSeqDense()`, `MatCreateDense()`,
           `MatCreateSeqBAIJ()`, `MatCreateBAIJ()`,
           `MatCreateSeqSBAIJ()`, `MatCreateSBAIJ()`,

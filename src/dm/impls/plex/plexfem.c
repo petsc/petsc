@@ -91,7 +91,7 @@ static PetscErrorCode DMPlexRestoreFEGeom(DMField coordField, IS pointIS, PetscQ
   Not collective
 
   Input Parameters:
-+ dm   - the DM
++ dm   - the `DM`
 - unit - The SI unit
 
   Output Parameter:
@@ -99,7 +99,7 @@ static PetscErrorCode DMPlexRestoreFEGeom(DMField coordField, IS pointIS, PetscQ
 
   Level: advanced
 
-.seealso: `DMPlexSetScale()`, `PetscUnit`
+.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPlexSetScale()`, `PetscUnit`
 @*/
 PetscErrorCode DMPlexGetScale(DM dm, PetscUnit unit, PetscReal *scale)
 {
@@ -118,13 +118,13 @@ PetscErrorCode DMPlexGetScale(DM dm, PetscUnit unit, PetscReal *scale)
   Not collective
 
   Input Parameters:
-+ dm   - the DM
++ dm   - the `DM`
 . unit - The SI unit
 - scale - The value used to scale all quantities with this unit
 
   Level: advanced
 
-.seealso: `DMPlexGetScale()`, `PetscUnit`
+.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPlexGetScale()`, `PetscUnit`
 @*/
 PetscErrorCode DMPlexSetScale(DM dm, PetscUnit unit, PetscReal scale)
 {
@@ -167,17 +167,18 @@ static PetscErrorCode DMPlexProjectRigidBody_Private(PetscInt dim, PetscReal t, 
   Collective on dm
 
   Input Parameters:
-+ dm - the DM
++ dm - the `DM`
 - field - The field number for the rigid body space, or 0 for the default
 
   Output Parameter:
 . sp - the null space
 
-  Note: This is necessary to provide a suitable coarse space for algebraic multigrid
-
   Level: advanced
 
-.seealso: `MatNullSpaceCreate()`, `PCGAMG`
+  Note:
+  This is necessary to provide a suitable coarse space for algebraic multigrid
+
+.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `MatNullSpaceCreate()`, `PCGAMG`
 @*/
 PetscErrorCode DMPlexCreateRigidBody(DM dm, PetscInt field, MatNullSpace *sp)
 {
@@ -241,20 +242,21 @@ PetscErrorCode DMPlexCreateRigidBody(DM dm, PetscInt field, MatNullSpace *sp)
   Collective on dm
 
   Input Parameters:
-+ dm    - the DM
++ dm    - the `DM`
 . nb    - The number of bodies
-. label - The DMLabel marking each domain
+. label - The `DMLabel` marking each domain
 . nids  - The number of ids per body
 - ids   - An array of the label ids in sequence for each domain
 
   Output Parameter:
 . sp - the null space
 
-  Note: This is necessary to provide a suitable coarse space for algebraic multigrid
-
   Level: advanced
 
-.seealso: `MatNullSpaceCreate()`
+  Note:
+  This is necessary to provide a suitable coarse space for algebraic multigrid
+
+.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `MatNullSpaceCreate()`
 @*/
 PetscErrorCode DMPlexCreateRigidBodies(DM dm, PetscInt nb, DMLabel label, const PetscInt nids[], const PetscInt ids[], MatNullSpace *sp)
 {
@@ -316,12 +318,12 @@ PetscErrorCode DMPlexCreateRigidBodies(DM dm, PetscInt nb, DMLabel label, const 
   basis functions using its cells dual space basis, but all other basis functions with the dual space basis of a face.
 
   Input Parameters:
-+ dm - the DMPlex object
++ dm - the `DMPLEX` object
 - height - the maximum projection height >= 0
 
   Level: advanced
 
-.seealso: `DMPlexGetMaxProjectionHeight()`, `DMProjectFunctionLocal()`, `DMProjectFunctionLabelLocal()`
+.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPlexGetMaxProjectionHeight()`, `DMProjectFunctionLocal()`, `DMProjectFunctionLabelLocal()`
 @*/
 PetscErrorCode DMPlexSetMaxProjectionHeight(DM dm, PetscInt height)
 {
@@ -338,14 +340,14 @@ PetscErrorCode DMPlexSetMaxProjectionHeight(DM dm, PetscInt height)
   DMPlexProjectXXXLocal() functions.
 
   Input Parameters:
-. dm - the DMPlex object
+. dm - the `DMPLEX` object
 
   Output Parameters:
 . height - the maximum projection height
 
   Level: intermediate
 
-.seealso: `DMPlexSetMaxProjectionHeight()`, `DMProjectFunctionLocal()`, `DMProjectFunctionLabelLocal()`
+.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPlexSetMaxProjectionHeight()`, `DMProjectFunctionLocal()`, `DMProjectFunctionLabelLocal()`
 @*/
 PetscErrorCode DMPlexGetMaxProjectionHeight(DM dm, PetscInt *height)
 {
@@ -664,17 +666,18 @@ static PetscErrorCode DMPlexBasisTransform_Internal(DM dm, Vec lv, PetscBool l2g
   DMPlexGlobalToLocalBasis - Transform the values in the given local vector from the global basis to the local basis
 
   Input Parameters:
-+ dm - The DM
++ dm - The `DM`
 - lv - A local vector with values in the global basis
 
   Output Parameters:
 . lv - A local vector with values in the local basis
 
-  Note: This method is only intended to be called inside DMGlobalToLocal(). It is unlikely that a user will have a local vector full of coefficients for the global basis unless they are reimplementing GlobalToLocal.
-
   Level: developer
 
-.seealso: `DMPlexLocalToGlobalBasis()`, `DMGetLocalSection()`, `DMPlexCreateBasisRotation()`
+  Note:
+  This method is only intended to be called inside `DMGlobalToLocal()`. It is unlikely that a user will have a local vector full of coefficients for the global basis unless they are reimplementing GlobalToLocal.
+
+.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPlexLocalToGlobalBasis()`, `DMGetLocalSection()`, `DMPlexCreateBasisRotation()`
 @*/
 PetscErrorCode DMPlexGlobalToLocalBasis(DM dm, Vec lv)
 {
@@ -689,17 +692,18 @@ PetscErrorCode DMPlexGlobalToLocalBasis(DM dm, Vec lv)
   DMPlexLocalToGlobalBasis - Transform the values in the given local vector from the local basis to the global basis
 
   Input Parameters:
-+ dm - The DM
++ dm - The `DM`
 - lv - A local vector with values in the local basis
 
   Output Parameters:
 . lv - A local vector with values in the global basis
 
-  Note: This method is only intended to be called inside DMGlobalToLocal(). It is unlikely that a user would want a local vector full of coefficients for the global basis unless they are reimplementing GlobalToLocal.
-
   Level: developer
 
-.seealso: `DMPlexGlobalToLocalBasis()`, `DMGetLocalSection()`, `DMPlexCreateBasisRotation()`
+  Note:
+  This method is only intended to be called inside `DMGlobalToLocal()`. It is unlikely that a user would want a local vector full of coefficients for the global basis unless they are reimplementing GlobalToLocal.
+
+.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPlexGlobalToLocalBasis()`, `DMGetLocalSection()`, `DMPlexCreateBasisRotation()`
 @*/
 PetscErrorCode DMPlexLocalToGlobalBasis(DM dm, Vec lv)
 {
@@ -715,20 +719,23 @@ PetscErrorCode DMPlexLocalToGlobalBasis(DM dm, Vec lv)
     and global solutions, to a local basis, appropriate for discretization integrals and assembly.
 
   Input Parameters:
-+ dm    - The DM
++ dm    - The `DM`
 . alpha - The first Euler angle, and in 2D the only one
 . beta  - The second Euler angle
 - gamma - The third Euler angle
 
-  Note: Following https://en.wikipedia.org/wiki/Euler_angles, we will specify Euler angles by extrinsic rotations, meaning that
-  we rotate with respect to a fixed initial coordinate system, the local basis (x-y-z). The global basis (X-Y-Z) is reached as follows:
-  $ The XYZ system rotates about the z axis by alpha. The X axis is now at angle alpha with respect to the x axis.
-  $ The XYZ system rotates again about the x axis by beta. The Z axis is now at angle beta with respect to the z axis.
-  $ The XYZ system rotates a third time about the z axis by gamma.
-
   Level: developer
 
-.seealso: `DMPlexGlobalToLocalBasis()`, `DMPlexLocalToGlobalBasis()`
+  Note:
+  Following https://en.wikipedia.org/wiki/Euler_angles, we will specify Euler angles by extrinsic rotations, meaning that
+  we rotate with respect to a fixed initial coordinate system, the local basis (x-y-z). The global basis (X-Y-Z) is reached as follows
+.vb
+   The XYZ system rotates about the z axis by alpha. The X axis is now at angle alpha with respect to the x axis.
+   The XYZ system rotates again about the x axis by beta. The Z axis is now at angle beta with respect to the z axis.
+   The XYZ system rotates a third time about the z axis by gamma.
+.ve
+
+.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPlexGlobalToLocalBasis()`, `DMPlexLocalToGlobalBasis()`
 @*/
 PetscErrorCode DMPlexCreateBasisRotation(DM dm, PetscReal alpha, PetscReal beta, PetscReal gamma)
 {
@@ -755,13 +762,13 @@ PetscErrorCode DMPlexCreateBasisRotation(DM dm, PetscReal alpha, PetscReal beta,
   DMPlexInsertBoundaryValuesEssential - Insert boundary values into a local vector using a function of the coordinates
 
   Input Parameters:
-+ dm     - The DM, with a PetscDS that matches the problem being constrained
++ dm     - The `DM`, with a `PetscDS` that matches the problem being constrained
 . time   - The time
 . field  - The field to constrain
 . Nc     - The number of constrained field components, or 0 for all components
 . comps  - An array of constrained component numbers, or NULL for all components
-. label  - The DMLabel defining constrained points
-. numids - The number of DMLabel ids for constrained points
+. label  - The `DMLabel` defining constrained points
+. numids - The number of `DMLabel` ids for constrained points
 . ids    - An array of ids for constrained points
 . func   - A pointwise function giving boundary values
 - ctx    - An optional user context for bcFunc
@@ -771,7 +778,7 @@ PetscErrorCode DMPlexCreateBasisRotation(DM dm, PetscReal alpha, PetscReal beta,
 
   Level: developer
 
-.seealso: `DMPlexInsertBoundaryValuesEssentialField()`, `DMPlexInsertBoundaryValuesEssentialBdField()`, `DMAddBoundary()`
+.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMLabel`, `DMPlexInsertBoundaryValuesEssentialField()`, `DMPlexInsertBoundaryValuesEssentialBdField()`, `DMAddBoundary()`
 @*/
 PetscErrorCode DMPlexInsertBoundaryValuesEssential(DM dm, PetscReal time, PetscInt field, PetscInt Nc, const PetscInt comps[], DMLabel label, PetscInt numids, const PetscInt ids[], PetscErrorCode (*func)(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar *, void *), void *ctx, Vec locX)
 {
@@ -793,14 +800,14 @@ PetscErrorCode DMPlexInsertBoundaryValuesEssential(DM dm, PetscReal time, PetscI
   DMPlexInsertBoundaryValuesEssentialField - Insert boundary values into a local vector using a function of the coordinates and field data
 
   Input Parameters:
-+ dm     - The DM, with a PetscDS that matches the problem being constrained
++ dm     - The `DM`, with a `PetscDS` that matches the problem being constrained
 . time   - The time
 . locU   - A local vector with the input solution values
 . field  - The field to constrain
 . Nc     - The number of constrained field components, or 0 for all components
 . comps  - An array of constrained component numbers, or NULL for all components
-. label  - The DMLabel defining constrained points
-. numids - The number of DMLabel ids for constrained points
+. label  - The `DMLabel` defining constrained points
+. numids - The number of `DMLabel` ids for constrained points
 . ids    - An array of ids for constrained points
 . func   - A pointwise function giving boundary values
 - ctx    - An optional user context for bcFunc
@@ -810,7 +817,7 @@ PetscErrorCode DMPlexInsertBoundaryValuesEssential(DM dm, PetscReal time, PetscI
 
   Level: developer
 
-.seealso: `DMPlexInsertBoundaryValuesEssential()`, `DMPlexInsertBoundaryValuesEssentialBdField()`, `DMAddBoundary()`
+.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPlexInsertBoundaryValuesEssential()`, `DMPlexInsertBoundaryValuesEssentialBdField()`, `DMAddBoundary()`
 @*/
 PetscErrorCode DMPlexInsertBoundaryValuesEssentialField(DM dm, PetscReal time, Vec locU, PetscInt field, PetscInt Nc, const PetscInt comps[], DMLabel label, PetscInt numids, const PetscInt ids[], void (*func)(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]), void *ctx, Vec locX)
 {
@@ -834,14 +841,14 @@ PetscErrorCode DMPlexInsertBoundaryValuesEssentialField(DM dm, PetscReal time, V
   Collective on dm
 
   Input Parameters:
-+ dm     - The DM, with a PetscDS that matches the problem being constrained
++ dm     - The `DM`, with a `PetscDS` that matches the problem being constrained
 . time   - The time
 . locU   - A local vector with the input solution values
 . field  - The field to constrain
 . Nc     - The number of constrained field components, or 0 for all components
 . comps  - An array of constrained component numbers, or NULL for all components
-. label  - The DMLabel defining constrained points
-. numids - The number of DMLabel ids for constrained points
+. label  - The `DMLabel` defining constrained points
+. numids - The number of `DMLabel` ids for constrained points
 . ids    - An array of ids for constrained points
 . func   - A pointwise function giving boundary values, the calling sequence is given in DMProjectBdFieldLabelLocal()
 - ctx    - An optional user context for bcFunc
@@ -851,7 +858,7 @@ PetscErrorCode DMPlexInsertBoundaryValuesEssentialField(DM dm, PetscReal time, V
 
   Level: developer
 
-.seealso: `DMProjectBdFieldLabelLocal()`, `DMPlexInsertBoundaryValuesEssential()`, `DMPlexInsertBoundaryValuesEssentialField()`, `DMAddBoundary()`
+.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMProjectBdFieldLabelLocal()`, `DMPlexInsertBoundaryValuesEssential()`, `DMPlexInsertBoundaryValuesEssentialField()`, `DMAddBoundary()`
 @*/
 PetscErrorCode DMPlexInsertBoundaryValuesEssentialBdField(DM dm, PetscReal time, Vec locU, PetscInt field, PetscInt Nc, const PetscInt comps[], DMLabel label, PetscInt numids, const PetscInt ids[], void (*func)(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, const PetscReal[], const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]), void *ctx, Vec locX)
 {
@@ -873,7 +880,7 @@ PetscErrorCode DMPlexInsertBoundaryValuesEssentialBdField(DM dm, PetscReal time,
   DMPlexInsertBoundaryValuesRiemann - Insert boundary values into a local vector
 
   Input Parameters:
-+ dm     - The DM, with a PetscDS that matches the problem being constrained
++ dm     - The `DM`, with a `PetscDS` that matches the problem being constrained
 . time   - The time
 . faceGeometry - A vector with the FVM face geometry information
 . cellGeometry - A vector with the FVM cell geometry information
@@ -881,8 +888,8 @@ PetscErrorCode DMPlexInsertBoundaryValuesEssentialBdField(DM dm, PetscReal time,
 . field  - The field to constrain
 . Nc     - The number of constrained field components, or 0 for all components
 . comps  - An array of constrained component numbers, or NULL for all components
-. label  - The DMLabel defining constrained points
-. numids - The number of DMLabel ids for constrained points
+. label  - The `DMLabel` defining constrained points
+. numids - The number of `DMLabel` ids for constrained points
 . ids    - An array of ids for constrained points
 . func   - A pointwise function giving boundary values
 - ctx    - An optional user context for bcFunc
@@ -890,11 +897,12 @@ PetscErrorCode DMPlexInsertBoundaryValuesEssentialBdField(DM dm, PetscReal time,
   Output Parameter:
 . locX   - A local vector to receives the boundary values
 
-  Note: This implementation currently ignores the numcomps/comps argument from DMAddBoundary()
-
   Level: developer
 
-.seealso: `DMPlexInsertBoundaryValuesEssential()`, `DMPlexInsertBoundaryValuesEssentialField()`, `DMAddBoundary()`
+  Note:
+  This implementation currently ignores the numcomps/comps argument from `DMAddBoundary()`
+
+.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPlexInsertBoundaryValuesEssential()`, `DMPlexInsertBoundaryValuesEssentialField()`, `DMAddBoundary()`
 @*/
 PetscErrorCode DMPlexInsertBoundaryValuesRiemann(DM dm, PetscReal time, Vec faceGeometry, Vec cellGeometry, Vec Grad, PetscInt field, PetscInt Nc, const PetscInt comps[], DMLabel label, PetscInt numids, const PetscInt ids[], PetscErrorCode (*func)(PetscReal, const PetscReal *, const PetscReal *, const PetscScalar *, PetscScalar *, void *), void *ctx, Vec locX)
 {
@@ -1120,7 +1128,7 @@ PetscErrorCode DMPlexInsertTimeDerivativeBoundaryValues_Plex(DM dm, PetscBool in
   Not Collective
 
   Input Parameters:
-+ dm - The DM
++ dm - The `DM`
 . insertEssential - Should I insert essential (e.g. Dirichlet) or inessential (e.g. Neumann) boundary conditions
 . time - The time
 . faceGeomFVM - Face geometry data for FV discretizations
@@ -1132,7 +1140,7 @@ PetscErrorCode DMPlexInsertTimeDerivativeBoundaryValues_Plex(DM dm, PetscBool in
 
   Level: intermediate
 
-.seealso: `DMProjectFunctionLabelLocal()`, `DMAddBoundary()`
+.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMProjectFunctionLabelLocal()`, `DMAddBoundary()`
 @*/
 PetscErrorCode DMPlexInsertBoundaryValues(DM dm, PetscBool insertEssential, Vec locX, PetscReal time, Vec faceGeomFVM, Vec cellGeomFVM, Vec gradFVM)
 {
@@ -1150,7 +1158,7 @@ PetscErrorCode DMPlexInsertBoundaryValues(DM dm, PetscBool insertEssential, Vec 
   DMPlexInsertTimeDerivativeBoundaryValues - Puts coefficients which represent boundary values of the time derivative into the local solution vector
 
   Input Parameters:
-+ dm - The DM
++ dm - The `DM`
 . insertEssential - Should I insert essential (e.g. Dirichlet) or inessential (e.g. Neumann) boundary conditions
 . time - The time
 . faceGeomFVM - Face geometry data for FV discretizations
@@ -1162,7 +1170,7 @@ PetscErrorCode DMPlexInsertBoundaryValues(DM dm, PetscBool insertEssential, Vec 
 
   Level: developer
 
-.seealso: `DMProjectFunctionLabelLocal()`
+.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMProjectFunctionLabelLocal()`
 @*/
 PetscErrorCode DMPlexInsertTimeDerivativeBoundaryValues(DM dm, PetscBool insertEssential, Vec locX_t, PetscReal time, Vec faceGeomFVM, Vec cellGeomFVM, Vec gradFVM)
 {
@@ -1196,7 +1204,7 @@ PetscErrorCode DMComputeL2Diff_Plex(DM dm, PetscReal time, PetscErrorCode (**fun
   Collective on dm
 
   Input Parameters:
-+ dm     - The DM
++ dm     - The `DM`
 . time   - The time
 . funcs  - The functions to evaluate for each field component
 . ctxs   - Optional array of contexts to pass to each function, or NULL.
@@ -1207,7 +1215,7 @@ PetscErrorCode DMComputeL2Diff_Plex(DM dm, PetscReal time, PetscErrorCode (**fun
 
   Level: developer
 
-.seealso: `DMProjectFunction()`, `DMComputeL2FieldDiff()`, `DMComputeL2GradientDiff()`
+.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMProjectFunction()`, `DMComputeL2FieldDiff()`, `DMComputeL2GradientDiff()`
 @*/
 PetscErrorCode DMPlexComputeL2DiffLocal(DM dm, PetscReal time, PetscErrorCode (**funcs)(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar *, void *), void **ctxs, Vec localX, PetscReal *diff)
 {
@@ -1607,7 +1615,7 @@ PetscErrorCode DMComputeL2FieldDiff_Plex(DM dm, PetscReal time, PetscErrorCode (
   Collective on dm
 
   Input Parameters:
-+ dm    - The DM
++ dm    - The `DM`
 . time  - The time
 . funcs - The functions to evaluate for each field component: NULL means that component does not contribute to error calculation
 . ctxs  - Optional array of contexts to pass to each function, or NULL.
@@ -1618,7 +1626,7 @@ PetscErrorCode DMComputeL2FieldDiff_Plex(DM dm, PetscReal time, PetscErrorCode (
 
   Level: developer
 
-.seealso: `DMProjectFunction()`, `DMComputeL2Diff()`, `DMPlexComputeL2FieldDiff()`, `DMComputeL2GradientDiff()`
+.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMProjectFunction()`, `DMComputeL2Diff()`, `DMPlexComputeL2FieldDiff()`, `DMComputeL2GradientDiff()`
 @*/
 PetscErrorCode DMPlexComputeL2DiffVec(DM dm, PetscReal time, PetscErrorCode (**funcs)(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar *, void *), void **ctxs, Vec X, Vec D)
 {
@@ -1732,18 +1740,18 @@ PetscErrorCode DMPlexComputeL2DiffVec(DM dm, PetscReal time, PetscErrorCode (**f
   Collective on dm
 
   Input Parameters:
-+ dm - The DM
++ dm - The `DM`
 - locX  - The coefficient vector u_h
 
   Output Parameter:
-. locC - A Vec which holds the Clement interpolant of the function
-
-  Notes:
-  u_h(v_i) = \sum_{T_i \in support(v_i)} |T_i| u_h(T_i) / \sum_{T_i \in support(v_i)} |T_i| where |T_i| is the cell volume
+. locC - A `Vec` which holds the Clement interpolant of the function
 
   Level: developer
 
-.seealso: `DMProjectFunction()`, `DMComputeL2Diff()`, `DMPlexComputeL2FieldDiff()`, `DMComputeL2GradientDiff()`
+  Note:
+  $ u_h(v_i) = \sum_{T_i \in support(v_i)} |T_i| u_h(T_i) / \sum_{T_i \in support(v_i)} |T_i| $ where $ |T_i| $ is the cell volume
+
+.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMProjectFunction()`, `DMComputeL2Diff()`, `DMPlexComputeL2FieldDiff()`, `DMComputeL2GradientDiff()`
 @*/
 PetscErrorCode DMPlexComputeClementInterpolant(DM dm, Vec locX, Vec locC)
 {
@@ -1864,18 +1872,18 @@ PetscErrorCode DMPlexComputeClementInterpolant(DM dm, Vec locX, Vec locC)
   Collective on dm
 
   Input Parameters:
-+ dm - The DM
++ dm - The `DM`
 - locX  - The coefficient vector u_h
 
   Output Parameter:
-. locC - A Vec which holds the Clement interpolant of the gradient
-
-  Notes:
-  \nabla u_h(v_i) = \sum_{T_i \in support(v_i)} |T_i| \nabla u_h(T_i) / \sum_{T_i \in support(v_i)} |T_i| where |T_i| is the cell volume
+. locC - A `Vec` which holds the Clement interpolant of the gradient
 
   Level: developer
 
-.seealso: `DMProjectFunction()`, `DMComputeL2Diff()`, `DMPlexComputeL2FieldDiff()`, `DMComputeL2GradientDiff()`
+  Note:
+  $\nabla u_h(v_i) = \sum_{T_i \in support(v_i)} |T_i| \nabla u_h(T_i) / \sum_{T_i \in support(v_i)} |T_i| $ where $ |T_i| $ is the cell volume
+
+.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMProjectFunction()`, `DMComputeL2Diff()`, `DMPlexComputeL2FieldDiff()`, `DMComputeL2GradientDiff()`
 @*/
 PetscErrorCode DMPlexComputeGradientClementInterpolant(DM dm, Vec locX, Vec locC)
 {
@@ -2201,7 +2209,7 @@ static PetscErrorCode DMPlexComputeIntegral_Internal(DM dm, Vec X, PetscInt cSta
 
   Level: developer
 
-.seealso: `DMPlexSNESComputeResidualFEM()`
+.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPlexSNESComputeResidualFEM()`
 @*/
 PetscErrorCode DMPlexComputeIntegralFEM(DM dm, Vec X, PetscScalar *integral, void *user)
 {
@@ -2251,7 +2259,7 @@ PetscErrorCode DMPlexComputeIntegralFEM(DM dm, Vec X, PetscScalar *integral, voi
 
   Level: developer
 
-.seealso: `DMPlexSNESComputeResidualFEM()`
+.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPlexSNESComputeResidualFEM()`
 @*/
 PetscErrorCode DMPlexComputeCellwiseIntegralFEM(DM dm, Vec X, Vec F, void *user)
 {
@@ -2426,9 +2434,9 @@ static PetscErrorCode DMPlexComputeBdIntegral_Internal(DM dm, Vec locX, IS point
   Input Parameters:
 + dm      - The mesh
 . X       - Global input vector
-. label   - The boundary DMLabel
-. numVals - The number of label values to use, or PETSC_DETERMINE for all values
-. vals    - The label values to use, or PETSC_NULL for all values
+. label   - The boundary `DMLabel`
+. numVals - The number of label values to use, or `PETSC_DETERMINE` for all values
+. vals    - The label values to use, or NULL for all values
 . func    - The function to integrate along the boundary
 - user    - The user context
 
@@ -2437,7 +2445,7 @@ static PetscErrorCode DMPlexComputeBdIntegral_Internal(DM dm, Vec locX, IS point
 
   Level: developer
 
-.seealso: `DMPlexComputeIntegralFEM()`, `DMPlexComputeBdResidualFEM()`
+.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPlexComputeIntegralFEM()`, `DMPlexComputeBdResidualFEM()`
 @*/
 PetscErrorCode DMPlexComputeBdIntegral(DM dm, Vec X, DMLabel label, PetscInt numVals, const PetscInt vals[], void (*func)(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, const PetscReal[], const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]), PetscScalar *integral, void *user)
 {
@@ -2497,7 +2505,7 @@ PetscErrorCode DMPlexComputeBdIntegral(DM dm, Vec X, DMLabel label, PetscInt num
 }
 
 /*@
-  DMPlexComputeInterpolatorNested - Form the local portion of the interpolation matrix I from the coarse DM to a uniformly refined DM.
+  DMPlexComputeInterpolatorNested - Form the local portion of the interpolation matrix I from the coarse `DM` to a uniformly refined `DM`.
 
   Input Parameters:
 + dmc  - The coarse mesh
@@ -2510,7 +2518,7 @@ PetscErrorCode DMPlexComputeBdIntegral(DM dm, Vec X, DMLabel label, PetscInt num
 
   Level: developer
 
-.seealso: `DMPlexComputeInterpolatorGeneral()`, `DMPlexComputeJacobianFEM()`
+.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPlexComputeInterpolatorGeneral()`, `DMPlexComputeJacobianFEM()`
 @*/
 PetscErrorCode DMPlexComputeInterpolatorNested(DM dmc, DM dmf, PetscBool isRefined, Mat In, void *user)
 {
@@ -2735,7 +2743,7 @@ PetscErrorCode DMPlexComputeMassMatrixNested(DM dmc, DM dmf, Mat mass, void *use
 }
 
 /*@
-  DMPlexComputeInterpolatorGeneral - Form the local portion of the interpolation matrix I from the coarse DM to a non-nested fine DM.
+  DMPlexComputeInterpolatorGeneral - Form the local portion of the interpolation matrix I from the coarse `DM` to a non-nested fine `DM`.
 
   Input Parameters:
 + dmf  - The fine mesh
@@ -2747,7 +2755,7 @@ PetscErrorCode DMPlexComputeMassMatrixNested(DM dmc, DM dmf, Mat mass, void *use
 
   Level: developer
 
-.seealso: `DMPlexComputeInterpolatorNested()`, `DMPlexComputeJacobianFEM()`
+.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPlexComputeInterpolatorNested()`, `DMPlexComputeJacobianFEM()`
 @*/
 PetscErrorCode DMPlexComputeInterpolatorGeneral(DM dmc, DM dmf, Mat In, void *user)
 {
@@ -2907,7 +2915,7 @@ PetscErrorCode DMPlexComputeInterpolatorGeneral(DM dmc, DM dmf, Mat In, void *us
 }
 
 /*@
-  DMPlexComputeMassMatrixGeneral - Form the local portion of the mass matrix M from the coarse DM to a non-nested fine DM.
+  DMPlexComputeMassMatrixGeneral - Form the local portion of the mass matrix M from the coarse `DM` to a non-nested fine `DM`.
 
   Input Parameters:
 + dmf  - The fine mesh
@@ -2919,7 +2927,7 @@ PetscErrorCode DMPlexComputeInterpolatorGeneral(DM dmc, DM dmf, Mat In, void *us
 
   Level: developer
 
-.seealso: `DMPlexComputeMassMatrixNested()`, `DMPlexComputeInterpolatorNested()`, `DMPlexComputeInterpolatorGeneral()`, `DMPlexComputeJacobianFEM()`
+.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPlexComputeMassMatrixNested()`, `DMPlexComputeInterpolatorNested()`, `DMPlexComputeInterpolatorGeneral()`, `DMPlexComputeJacobianFEM()`
 @*/
 PetscErrorCode DMPlexComputeMassMatrixGeneral(DM dmc, DM dmf, Mat mass, void *user)
 {
@@ -3154,7 +3162,7 @@ PetscErrorCode DMPlexComputeMassMatrixGeneral(DM dmc, DM dmf, Mat mass, void *us
 
   Level: developer
 
-.seealso: `DMPlexComputeInterpolatorNested()`, `DMPlexComputeJacobianFEM()`
+.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPlexComputeInterpolatorNested()`, `DMPlexComputeJacobianFEM()`
 @*/
 PetscErrorCode DMPlexComputeInjectorFEM(DM dmc, DM dmf, VecScatter *sc, void *user)
 {
@@ -3315,7 +3323,7 @@ PetscErrorCode DMPlexComputeInjectorFEM(DM dmc, DM dmf, VecScatter *sc, void *us
   DMPlexGetCellFields - Retrieve the field values values for a chunk of cells
 
   Input Parameters:
-+ dm     - The DM
++ dm     - The `DM`
 . cellIS - The cells to include
 . locX   - A local vector with the solution fields
 . locX_t - A local vector with solution field time derivatives, or NULL
@@ -3328,7 +3336,7 @@ PetscErrorCode DMPlexComputeInjectorFEM(DM dmc, DM dmf, VecScatter *sc, void *us
 
   Level: developer
 
-.seealso: `DMPlexGetFaceFields()`
+.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPlexGetFaceFields()`
 @*/
 PetscErrorCode DMPlexGetCellFields(DM dm, IS cellIS, Vec locX, Vec locX_t, Vec locA, PetscScalar **u, PetscScalar **u_t, PetscScalar **a)
 {
@@ -3401,7 +3409,7 @@ PetscErrorCode DMPlexGetCellFields(DM dm, IS cellIS, Vec locX, Vec locX_t, Vec l
   DMPlexRestoreCellFields - Restore the field values values for a chunk of cells
 
   Input Parameters:
-+ dm     - The DM
++ dm     - The `DM`
 . cellIS - The cells to include
 . locX   - A local vector with the solution fields
 . locX_t - A local vector with solution field time derivatives, or NULL
@@ -3414,7 +3422,7 @@ PetscErrorCode DMPlexGetCellFields(DM dm, IS cellIS, Vec locX, Vec locX_t, Vec l
 
   Level: developer
 
-.seealso: `DMPlexGetFaceFields()`
+.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPlexGetFaceFields()`
 @*/
 PetscErrorCode DMPlexRestoreCellFields(DM dm, IS cellIS, Vec locX, Vec locX_t, Vec locA, PetscScalar **u, PetscScalar **u_t, PetscScalar **a)
 {
@@ -3499,7 +3507,7 @@ static PetscErrorCode DMPlexRestoreHybridAuxFields(DM dmAux[], PetscDS dsAux[], 
   DMPlexGetFaceFields - Retrieve the field values values for a chunk of faces
 
   Input Parameters:
-+ dm     - The DM
++ dm     - The `DM`
 . fStart - The first face to include
 . fEnd   - The first face to exclude
 . locX   - A local vector with the solution fields
@@ -3515,7 +3523,7 @@ static PetscErrorCode DMPlexRestoreHybridAuxFields(DM dmAux[], PetscDS dsAux[], 
 
   Level: developer
 
-.seealso: `DMPlexGetCellFields()`
+.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPlexGetCellFields()`
 @*/
 PetscErrorCode DMPlexGetFaceFields(DM dm, PetscInt fStart, PetscInt fEnd, Vec locX, Vec locX_t, Vec faceGeometry, Vec cellGeometry, Vec locGrad, PetscInt *Nface, PetscScalar **uL, PetscScalar **uR)
 {
@@ -3663,7 +3671,7 @@ PetscErrorCode DMPlexGetFaceFields(DM dm, PetscInt fStart, PetscInt fEnd, Vec lo
   DMPlexRestoreFaceFields - Restore the field values values for a chunk of faces
 
   Input Parameters:
-+ dm     - The DM
++ dm     - The `DM`
 . fStart - The first face to include
 . fEnd   - The first face to exclude
 . locX   - A local vector with the solution fields
@@ -3679,7 +3687,7 @@ PetscErrorCode DMPlexGetFaceFields(DM dm, PetscInt fStart, PetscInt fEnd, Vec lo
 
   Level: developer
 
-.seealso: `DMPlexGetFaceFields()`
+.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPlexGetFaceFields()`
 @*/
 PetscErrorCode DMPlexRestoreFaceFields(DM dm, PetscInt fStart, PetscInt fEnd, Vec locX, Vec locX_t, Vec faceGeometry, Vec cellGeometry, Vec locGrad, PetscInt *Nface, PetscScalar **uL, PetscScalar **uR)
 {
@@ -3693,7 +3701,7 @@ PetscErrorCode DMPlexRestoreFaceFields(DM dm, PetscInt fStart, PetscInt fEnd, Ve
   DMPlexGetFaceGeometry - Retrieve the geometric values for a chunk of faces
 
   Input Parameters:
-+ dm     - The DM
++ dm     - The `DM`
 . fStart - The first face to include
 . fEnd   - The first face to exclude
 . faceGeometry - A local vector with face geometry
@@ -3706,7 +3714,7 @@ PetscErrorCode DMPlexRestoreFaceFields(DM dm, PetscInt fStart, PetscInt fEnd, Ve
 
   Level: developer
 
-.seealso: `DMPlexGetCellFields()`
+.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPlexGetCellFields()`
 @*/
 PetscErrorCode DMPlexGetFaceGeometry(DM dm, PetscInt fStart, PetscInt fEnd, Vec faceGeometry, Vec cellGeometry, PetscInt *Nface, PetscFVFaceGeom **fgeom, PetscReal **vol)
 {
@@ -3763,7 +3771,7 @@ PetscErrorCode DMPlexGetFaceGeometry(DM dm, PetscInt fStart, PetscInt fEnd, Vec 
   DMPlexRestoreFaceGeometry - Restore the field values values for a chunk of faces
 
   Input Parameters:
-+ dm     - The DM
++ dm     - The `DM`
 . fStart - The first face to include
 . fEnd   - The first face to exclude
 . faceGeometry - A local vector with face geometry
@@ -3776,7 +3784,7 @@ PetscErrorCode DMPlexGetFaceGeometry(DM dm, PetscInt fStart, PetscInt fEnd, Vec 
 
   Level: developer
 
-.seealso: `DMPlexGetFaceFields()`
+.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPlexGetFaceFields()`
 @*/
 PetscErrorCode DMPlexRestoreFaceGeometry(DM dm, PetscInt fStart, PetscInt fEnd, Vec faceGeometry, Vec cellGeometry, PetscInt *Nface, PetscFVFaceGeom **fgeom, PetscReal **vol)
 {
@@ -4260,10 +4268,10 @@ static PetscErrorCode DMConvertPlex_Internal(DM dm, DM *plex, PetscBool copy)
 /*@
   DMPlexGetGeometryFVM - Return precomputed geometric data
 
-  Collective on DM
+  Collective on dm
 
   Input Parameter:
-. dm - The DM
+. dm - The `DM`
 
   Output Parameters:
 + facegeom - The values precomputed from face geometry
@@ -4272,7 +4280,7 @@ static PetscErrorCode DMConvertPlex_Internal(DM dm, DM *plex, PetscBool copy)
 
   Level: developer
 
-.seealso: `DMTSSetRHSFunctionLocal()`
+.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMTSSetRHSFunctionLocal()`
 @*/
 PetscErrorCode DMPlexGetGeometryFVM(DM dm, Vec *facegeom, Vec *cellgeom, PetscReal *minRadius)
 {
@@ -4290,10 +4298,10 @@ PetscErrorCode DMPlexGetGeometryFVM(DM dm, Vec *facegeom, Vec *cellgeom, PetscRe
 /*@
   DMPlexGetGradientDM - Return gradient data layout
 
-  Collective on DM
+  Collective on dm
 
   Input Parameters:
-+ dm - The DM
++ dm - The `DM`
 - fv - The PetscFV
 
   Output Parameter:
@@ -4301,7 +4309,7 @@ PetscErrorCode DMPlexGetGeometryFVM(DM dm, Vec *facegeom, Vec *cellgeom, PetscRe
 
   Level: developer
 
-.seealso: `DMPlexGetGeometryFVM()`
+.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPlexGetGeometryFVM()`
 @*/
 PetscErrorCode DMPlexGetGradientDM(DM dm, PetscFV fv, DM *dmGrad)
 {

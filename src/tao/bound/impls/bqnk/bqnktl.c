@@ -18,10 +18,11 @@ static PetscErrorCode TaoSetUp_BQNKTL(Tao tao)
               minimization with bound constraints. This method approximates the Hessian-vector
               product using a limited-memory quasi-Newton formula, and iteratively inverts the
               Hessian with a Krylov solver. The quasi-Newton matrix and its settings can be
-              accessed via the prefix `-tao_bqnk_`. For options database, see TAOBNK
+              accessed via the prefix `-tao_bqnk_`. For options database, see `TAOBNK`
 
   Level: beginner
-.seealso `TAOBNK`, `TAOBQNKTR`, `TAOBQNKLS`
+
+.seealso: `Tao`, `TaoType`, `TAOBNK`, `TAOBQNKTR`, `TAOBQNKLS`
 M*/
 PETSC_EXTERN PetscErrorCode TaoCreate_BQNKTL(Tao tao)
 {

@@ -342,7 +342,7 @@ static PetscErrorCode SNESSetFromOptions_NEWTONLS(SNES snes, PetscOptionItems *P
 /*MC
       SNESNEWTONLS - Newton based nonlinear solver that uses a line search
 
-   Options Database:
+   Options Database Keys:
 +   -snes_linesearch_type <bt> - bt,basic.  Select line search type
 .   -snes_linesearch_order <3> - 2, 3. Selects the order of the line search for bt
 .   -snes_linesearch_norms <true> - Turns on/off computation of the norms for basic linesearch (`SNESLineSearchSetComputeNorms()`)
@@ -359,7 +359,6 @@ static PetscErrorCode SNESSetFromOptions_NEWTONLS(SNES snes, PetscOptionItems *P
 
 .seealso: `SNESCreate()`, `SNES`, `SNESSetType()`, `SNESNEWTONTR`, `SNESQN`, `SNESLineSearchSetType()`, `SNESLineSearchSetOrder()`
           `SNESLineSearchSetPostCheck()`, `SNESLineSearchSetPreCheck()` `SNESLineSearchSetComputeNorms()`, `SNESGetLineSearch()`
-
 M*/
 PETSC_EXTERN PetscErrorCode SNESCreate_NEWTONLS(SNES snes)
 {

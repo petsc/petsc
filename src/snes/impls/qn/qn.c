@@ -413,7 +413,7 @@ PetscErrorCode SNESQNSetRestartType(SNES snes, SNESQNRestartType rtype)
 +   snes - the nonlinear solver context
 -   stype - scale type
 
-    Options Database:
+    Options Database Key:
 .   -snes_qn_scale_type <diagonal,none,scalar,jacobian> - Scaling type
 
     Level: intermediate
@@ -464,7 +464,7 @@ PetscErrorCode SNESQNSetRestartType_QN(SNES snes, SNESQNRestartType rtype)
 +   snes - the iterative context
 -   qtype - variant type
 
-    Options Database:
+    Options Database Key:
 .   -snes_qn_type <lbfgs,broyden,badbroyden> - quasi-Newton type
 
     Level: beginner

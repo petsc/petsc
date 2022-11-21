@@ -3,18 +3,21 @@
 #include <petsc/private/dmpleximpl.h> /*I   "petscdmplex.h"   I*/
 
 /*@C
-  DMPlexCreateFluentFromFile - Create a DMPlex mesh from a Fluent mesh file
+  DMPlexCreateFluentFromFile - Create a `DMPLEX` mesh from a Fluent mesh file
 
+  Collective
+
+  Input Parameters:
 + comm        - The MPI communicator
 . filename    - Name of the Fluent mesh file
 - interpolate - Create faces and edges in the mesh
 
   Output Parameter:
-. dm  - The DM object representing the mesh
+. dm  - The `DM` object representing the mesh
 
   Level: beginner
 
-.seealso: `DMPlexCreateFromFile()`, `DMPlexCreateFluent()`, `DMPlexCreate()`
+.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPlexCreateFromFile()`, `DMPlexCreateFluent()`, `DMPlexCreate()`
 @*/
 PetscErrorCode DMPlexCreateFluentFromFile(MPI_Comm comm, const char filename[], PetscBool interpolate, DM *dm)
 {
@@ -217,23 +220,24 @@ static PetscErrorCode DMPlexCreateFluent_ReadSection(PetscViewer viewer, FluentS
 }
 
 /*@C
-  DMPlexCreateFluent - Create a DMPlex mesh from a Fluent mesh file.
+  DMPlexCreateFluent - Create a `DMPLEX` mesh from a Fluent mesh file.
 
   Collective
 
   Input Parameters:
 + comm  - The MPI communicator
-. viewer - The Viewer associated with a Fluent mesh file
+. viewer - The `PetscViewer` associated with a Fluent mesh file
 - interpolate - Create faces and edges in the mesh
 
   Output Parameter:
-. dm  - The DM object representing the mesh
+. dm  - The `DM` object representing the mesh
 
-  Note: http://aerojet.engr.ucdavis.edu/fluenthelp/html/ug/node1490.htm
+  Note:
+  http://aerojet.engr.ucdavis.edu/fluenthelp/html/ug/node1490.htm
 
   Level: beginner
 
-.seealso: `DMPLEX`, `DMCreate()`
+.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMCreate()`
 @*/
 PetscErrorCode DMPlexCreateFluent(MPI_Comm comm, PetscViewer viewer, PetscBool interpolate, DM *dm)
 {

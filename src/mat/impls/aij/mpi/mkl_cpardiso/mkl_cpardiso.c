@@ -759,7 +759,7 @@ PetscErrorCode MatMkl_CPardisoSetCntl_MKL_CPARDISO(Mat F, PetscInt icntl, PetscI
 .  icntl - index of Mkl_Pardiso parameter
 -  ival - value of Mkl_Pardiso parameter
 
-  Options Database:
+  Options Database Key:
 .   -mat_mkl_cpardiso_<icntl> <ival> - set the option numbered icntl to ival
 
    Level: Intermediate
