@@ -1752,10 +1752,11 @@ PetscErrorCode HPDDMLoadDL_Private(PetscBool *found)
       -pc_hpddm_levels_%d_ksp_
       -pc_hpddm_levels_%d_eps_
       -pc_hpddm_levels_%d_p
-      -pc_hpddm_levels_%d_mat_type_
+      -pc_hpddm_levels_%d_mat_type
       -pc_hpddm_coarse_
       -pc_hpddm_coarse_p
-      -pc_hpddm_coarse_mat_type_
+      -pc_hpddm_coarse_mat_type
+      -pc_hpddm_coarse_mat_chop
 .ve
 
    e.g., -pc_hpddm_levels_1_sub_pc_type lu -pc_hpddm_levels_1_eps_nev 10 -pc_hpddm_levels_2_p 4 -pc_hpddm_levels_2_sub_pc_type lu -pc_hpddm_levels_2_eps_nev 10
