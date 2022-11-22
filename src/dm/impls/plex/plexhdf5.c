@@ -4,6 +4,9 @@
 #include <petsc/private/viewerhdf5impl.h>
 #include <petsclayouthdf5.h>
 
+/* Logging support */
+PetscLogEvent DMPLEX_DistributionView, DMPLEX_DistributionLoad;
+
 #if defined(PETSC_HAVE_HDF5)
 static PetscErrorCode PetscViewerParseVersion_Private(PetscViewer, const char[], DMPlexStorageVersion *);
 static PetscErrorCode PetscViewerCheckVersion_Private(PetscViewer, DMPlexStorageVersion);
@@ -550,6 +553,7 @@ static PetscErrorCode DMPlexDistributionView_HDF5_Private(DM dm, IS globalPointN
   PetscCall(DMPlexGetHDF5Name_Private(dm, &topologydm_name));
   PetscCall(DMPlexDistributionGetName(dm, &distribution_name));
   if (!distribution_name) PetscFunctionReturn(0);
+  PetscCall(PetscLogEventBegin(DMPLEX_DistributionView, viewer, 0, 0, 0));
   size_petsc_int = (PetscInt)size;
   PetscCall(PetscViewerHDF5WriteAttribute(viewer, NULL, "comm_size", PETSC_INT, (void *)&size_petsc_int));
   PetscCall(ISGetIndices(globalPointNumbers, &gpoint));
@@ -584,6 +588,7 @@ static PetscErrorCode DMPlexDistributionView_HDF5_Private(DM dm, IS globalPointN
   PetscCall(ISDestroy(&ownersIS));
   PetscCall(ISDestroy(&gpointsIS));
   PetscCall(ISRestoreIndices(globalPointNumbers, &gpoint));
+  PetscCall(PetscLogEventEnd(DMPLEX_DistributionView, viewer, 0, 0, 0));
   PetscFunctionReturn(0);
 }
 
@@ -1681,6 +1686,7 @@ static PetscErrorCode DMPlexDistributionLoad_HDF5_Private(DM dm, PetscViewer vie
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
   PetscCall(DMPlexDistributionGetName(dm, &distribution_name));
   if (!distribution_name) PetscFunctionReturn(0);
+  PetscCall(PetscLogEventBegin(DMPLEX_DistributionLoad, viewer, 0, 0, 0));
   PetscCall(PetscViewerHDF5HasGroup(viewer, NULL, &has));
   if (!has) {
     char *full_group;
@@ -1828,6 +1834,7 @@ static PetscErrorCode DMPlexDistributionLoad_HDF5_Private(DM dm, PetscViewer vie
   PetscCall(DMPlexSetOverlap_Plex(*distdm, NULL, DMPLEX_OVERLAP_MANUAL));
   PetscCall(DMPlexDistributeSetDefault(*distdm, PETSC_FALSE));
   PetscCall(DMPlexReorderSetDefault(*distdm, DMPLEX_REORDER_DEFAULT_FALSE));
+  PetscCall(PetscLogEventEnd(DMPLEX_DistributionLoad, viewer, 0, 0, 0));
   PetscFunctionReturn(0);
 }
 
