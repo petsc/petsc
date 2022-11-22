@@ -22,6 +22,7 @@ if __name__ == '__main__':
     '--with-blaslapack-dir='+os.environ['MKLROOT'],
     '--with-mkl_pardiso-dir='+os.environ['MKLROOT'],
     '--download-mpich',
+    '--download-bamg',
     '--download-chaco',
     '--download-codipack',
     '--download-ctetgen',
