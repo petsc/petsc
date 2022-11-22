@@ -259,12 +259,12 @@ If we require that proc A will receive from proc B, then the RECV tag index will
   N * rank(B) + rank(A) + offset
 
 */
-static void _get_tags(PetscInt counter, PetscMPIInt N, PetscMPIInt r0, PetscMPIInt r1, PetscMPIInt *_st, PetscMPIInt *_rt)
+static void _get_tags(PetscInt counter, PetscMPIInt N, PetscMPIInt r0, PetscMPIInt r1, PetscMPIInt maxtag, PetscMPIInt *_st, PetscMPIInt *_rt)
 {
   PetscMPIInt st, rt;
 
-  st   = N * r0 + r1 + N * N * counter;
-  rt   = N * r1 + r0 + N * N * counter;
+  st   = (N * r0 + r1 + N * N * counter) % maxtag;
+  rt   = (N * r1 + r0 + N * N * counter) % maxtag;
   *_st = st;
   *_rt = rt;
 }
@@ -333,7 +333,7 @@ PetscErrorCode _DMSwarmDataExCompleteCommunicationMap(MPI_Comm comm, PetscMPIInt
 
 PetscErrorCode DMSwarmDataExTopologyFinalize(DMSwarmDataEx d)
 {
-  PetscMPIInt symm_nn, *symm_procs, r0, n, st, rt, size;
+  PetscMPIInt symm_nn, *symm_procs, r0, n, st, rt, size, *maxtag, flg;
 
   PetscFunctionBegin;
   PetscCheck(d->topology_status == DEOBJECT_INITIALIZED, d->comm, PETSC_ERR_ARG_WRONGSTATE, "Topology must be initialised. Call DMSwarmDataExTopologyInitialize() first");
@@ -356,11 +356,13 @@ PetscErrorCode DMSwarmDataExTopologyFinalize(DMSwarmDataEx d)
   if (!d->recv_tags) PetscCall(PetscMalloc(sizeof(int) * d->n_neighbour_procs, &d->recv_tags));
   /* compute message tags */
   PetscCallMPI(MPI_Comm_size(d->comm, &size));
+  PetscCallMPI(MPI_Comm_get_attr(MPI_COMM_WORLD, MPI_TAG_UB, &maxtag, &flg));
+  PetscCheck(flg, d->comm, PETSC_ERR_LIB, "MPI error: MPI_Comm_get_attr() is not returning a MPI_TAG_UB");
   r0 = d->rank;
   for (n = 0; n < d->n_neighbour_procs; ++n) {
     PetscMPIInt r1 = d->neighbour_procs[n];
 
-    _get_tags(d->instance, size, r0, r1, &st, &rt);
+    _get_tags(d->instance, size, r0, r1, *maxtag, &st, &rt);
     d->send_tags[n] = (int)st;
     d->recv_tags[n] = (int)rt;
   }
