@@ -24,7 +24,7 @@ typedef struct {
 +  part - the partitioning context
 -  imb  - the load imbalance ratio
 
-   Options Database:
+   Options Database Key:
 .  -mat_partitioning_ptscotch_imbalance <imb> - set load imbalance ratio
 
    Note:
@@ -107,7 +107,7 @@ PetscErrorCode MatPartitioningPTScotchGetImbalance_PTScotch(MatPartitioning part
      MP_PTSCOTCH_SCALABILITY - Favor scalability as much as possible
 .ve
 
-   Options Database:
+   Options Database Key:
 .  -mat_partitioning_ptscotch_strategy [quality,speed,balance,safety,scalability] - strategy
 
    Level: advanced

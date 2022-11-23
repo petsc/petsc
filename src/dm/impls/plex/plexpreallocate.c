@@ -663,26 +663,26 @@ static PetscErrorCode DMPlexFillMatrix_Static(DM dm, PetscLayout rLayout, PetscI
 }
 
 /*@C
-  DMPlexPreallocateOperator - Calculate the matrix nonzero pattern based upon the information in the DM,
-  the PetscDS it contains, and the default PetscSection.
+  DMPlexPreallocateOperator - Calculate the matrix nonzero pattern based upon the information in the `DM`,
+  the `PetscDS` it contains, and the default `PetscSection`.
 
   Collective
 
   Input Parameters:
-+ dm   - The DMPlex
++ dm   - The `DMPLEX`
 . bs   - The matrix blocksize
 . dnz  - An array to hold the number of nonzeros in the diagonal block
 . onz  - An array to hold the number of nonzeros in the off-diagonal block
 . dnzu - An array to hold the number of nonzeros in the upper triangle of the diagonal block
 . onzu - An array to hold the number of nonzeros in the upper triangle of the off-diagonal block
-- fillMatrix - If PETSC_TRUE, fill the matrix with zeros
+- fillMatrix - If `PETSC_TRUE`, fill the matrix with zeros
 
   Output Parameter:
 . A - The preallocated matrix
 
   Level: advanced
 
-.seealso: `DMCreateMatrix()`
+.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMCreateMatrix()`
 @*/
 PetscErrorCode DMPlexPreallocateOperator(DM dm, PetscInt bs, PetscInt dnz[], PetscInt onz[], PetscInt dnzu[], PetscInt onzu[], Mat A, PetscBool fillMatrix)
 {

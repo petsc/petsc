@@ -107,7 +107,7 @@ PetscErrorCode DMPlexSnapToGeomModel_EGADS_Internal(DM dm, PetscInt p, ego model
   Not collective
 
   Input Parameters:
-+ dm      - The DMPlex object
++ dm      - The `DMPLEX` object
 . p       - The mesh point
 . dE      - The coordinate dimension
 - mcoords - A coordinate point lying on the mesh point
@@ -115,11 +115,12 @@ PetscErrorCode DMPlexSnapToGeomModel_EGADS_Internal(DM dm, PetscInt p, ego model
   Output Parameter:
 . gcoords - The closest coordinate point on the geometry model associated with 'p' to the given point
 
-  Note: Returns the original coordinates if no geometry model is found. Right now the only supported geometry model is EGADS. The coordinate dimension may be different from the coordinate dimension of the dm, for example if the transformation is extrusion.
-
   Level: intermediate
 
-.seealso: `DMRefine()`, `DMPlexCreate()`, `DMPlexSetRefinementUniform()`
+  Note:
+  Returns the original coordinates if no geometry model is found. Right now the only supported geometry model is EGADS. The coordinate dimension may be different from the coordinate dimension of the dm, for example if the transformation is extrusion.
+
+.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMRefine()`, `DMPlexCreate()`, `DMPlexSetRefinementUniform()`
 @*/
 PetscErrorCode DMPlexSnapToGeomModel(DM dm, PetscInt p, PetscInt dE, const PetscScalar mcoords[], PetscScalar gcoords[])
 {
@@ -1425,19 +1426,19 @@ static PetscErrorCode DMPlexCreateEGADS_Tess_Internal(MPI_Comm comm, ego context
 #endif
 
 /*@
-  DMPlexInflateToGeomModel - Snaps the vertex coordinates of a DMPlex object representing the mesh to its geometry if some vertices depart from the model. This usually happens with non-conforming refinement.
+  DMPlexInflateToGeomModel - Snaps the vertex coordinates of a `DMPLEX` object representing the mesh to its geometry if some vertices depart from the model. This usually happens with non-conforming refinement.
 
   Collective on dm
 
   Input Parameter:
-. dm - The uninflated DM object representing the mesh
+. dm - The uninflated `DM` object representing the mesh
 
   Output Parameter:
-. dm - The inflated DM object representing the mesh
+. dm - The inflated `DM` object representing the mesh
 
   Level: intermediate
 
-.seealso: `DMPLEX`, `DMCreate()`, `DMPlexCreateEGADS()`
+.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMCreate()`, `DMPlexCreateEGADS()`
 @*/
 PetscErrorCode DMPlexInflateToGeomModel(DM dm)
 {
@@ -1508,7 +1509,7 @@ PetscErrorCode DMPlexInflateToGeomModel(DM dm)
 }
 
 /*@C
-  DMPlexCreateEGADSFromFile - Create a DMPlex mesh from an EGADS, IGES, or STEP file.
+  DMPlexCreateEGADSFromFile - Create a `DMPLEX` mesh from an EGADS, IGES, or STEP file.
 
   Collective
 
@@ -1517,11 +1518,11 @@ PetscErrorCode DMPlexInflateToGeomModel(DM dm)
 - filename - The name of the EGADS, IGES, or STEP file
 
   Output Parameter:
-. dm       - The DM object representing the mesh
+. dm       - The `DM` object representing the mesh
 
   Level: beginner
 
-.seealso: `DMPLEX`, `DMCreate()`, `DMPlexCreateEGADS()`, `DMPlexCreateEGADSLiteFromFile()`
+.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMCreate()`, `DMPlexCreateEGADS()`, `DMPlexCreateEGADSLiteFromFile()`
 @*/
 PetscErrorCode DMPlexCreateEGADSFromFile(MPI_Comm comm, const char filename[], DM *dm)
 {

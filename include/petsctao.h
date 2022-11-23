@@ -36,7 +36,7 @@ PETSC_EXTERN const char *const TaoSubsetTypes[];
 
    Level: advanced
 
-.seealso `TaoCreate()`, `TaoDestroy()`, `TaoSetType()`, `TaoType`
+.seealso: `TaoCreate()`, `TaoDestroy()`, `TaoSetType()`, `TaoType`
 S*/
 typedef struct _p_Tao *Tao;
 
@@ -45,7 +45,7 @@ typedef struct _p_Tao *Tao;
 
   Level: advanced
 
-.seealso `TaoADMMSetUpdateType()`
+.seealso: `Tao`, `TAOADMM`, `TaoADMMSetUpdateType()`
 E*/
 typedef enum {
   TAO_ADMM_UPDATE_BASIC,
@@ -92,7 +92,7 @@ M*/
 
   Level: advanced
 
-.seealso `TaoADMMSetRegularizerType()`
+.seealso: `Tao`, `TAOADMM`, `TaoADMMSetRegularizerType()`
 E*/
 typedef enum {
   TAO_ADMM_REGULARIZER_USER,
@@ -126,12 +126,13 @@ M*/
 /*E
      TaoALMMType - Determine the augmented Lagrangian formulation used in the `TAOALMM` subproblem.
 
-$  `TAO_ALMM_CLASSIC` - classic augmented Lagrangian definition including slack variables for inequality constraints
-$  `TAO_ALMM_PHR`     - Powell-Hestenes-Rockafellar formulation without slack variables, uses pointwise min() for inequalities
+   Values:
++  `TAO_ALMM_CLASSIC` - classic augmented Lagrangian definition including slack variables for inequality constraints
+-  `TAO_ALMM_PHR`     - Powell-Hestenes-Rockafellar formulation without slack variables, uses pointwise min() for inequalities
 
   Level: advanced
 
-.seealso `TAOALMM`, `TaoALMMSetType()`, `TaoALMMGetType()`
+.seealso: `Tao`, `TAOALMM`, `TaoALMMSetType()`, `TaoALMMGetType()`
 E*/
 typedef enum {
   TAO_ALMM_CLASSIC,
@@ -144,7 +145,7 @@ PETSC_EXTERN const char *const TaoALMMTypes[];
 
        Level: beginner
 
-.seealso `Tao`, `TaoCreate()`, `TaoSetType()`
+.seealso: `Tao`, `TaoCreate()`, `TaoSetType()`
 J*/
 typedef const char *TaoType;
 #define TAOLMVM     "lmvm"

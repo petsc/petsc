@@ -952,7 +952,7 @@ PetscErrorCode MatSetUp(Mat A)
 .  obj - optional additional object that provides the options prefix to use
 -  name - command line option
 
-  Options Database:
+  Options Database Key:
 .  -mat_view [viewertype]:... - the viewer and its options
 
   Notes:
@@ -7203,7 +7203,7 @@ PetscErrorCode MatDestroySeqNonzeroStructure(Mat *mat)
 .  is  - the array of index sets (these index sets will changed during the call)
 -  ov  - the additional overlap requested
 
-   Options Database:
+   Options Database Key:
 .  -mat_increase_overlap_scalable - use a scalable algorithm to compute the overlap (supported by MPIAIJ matrix)
 
    Level: developer
@@ -7256,7 +7256,7 @@ PetscErrorCode MatIncreaseOverlapSplit_Single(Mat, IS *, PetscInt);
 .  is  - the array of index sets (these index sets will changed during the call)
 -  ov  - the additional overlap requested
 
-`   Options Database:
+`   Options Database Key:
 .  -mat_increase_overlap_scalable - use a scalable algorithm to compute the overlap (supported by MPIAIJ matrix)
 
    Level: developer

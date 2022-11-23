@@ -198,7 +198,7 @@ PetscErrorCode SNESNCGComputeYtJtF_Private(SNES snes, Vec X, Vec F, Vec Y, Vec W
 +   snes - the iterative context
 -   btype - update type
 
-    Options Database:
+    Options Database Key:
 .   -snes_ncg_type <prp,fr,hs,dy,cd> -strategy for selecting algorithm for computing beta
 
     Level: intermediate

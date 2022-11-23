@@ -1389,15 +1389,17 @@ PETSC_EXTERN PetscErrorCode PetscGlobalMinMaxReal(MPI_Comm, const PetscReal[2], 
 /*MC
     PetscNot - negates a logical type value and returns result as a `PetscBool`
 
-    Notes:
-    This is useful in cases like
-$     int        *a;
-$     PetscBool  flag = PetscNot(a)
-     where !a would not return a PetscBool because we cannot provide a cast from int to PetscBool in C.
-
     Level: beginner
 
-    .seealso `:` `PetscBool`, `PETSC_TRUE`, `PETSC_FALSE`
+    Note:
+    This is useful in cases like
+.vb
+     int        *a;
+     PetscBool  flag = PetscNot(a)
+.ve
+     where !a would not return a `PetscBool` because we cannot provide a cast from int to `PetscBool` in C.
+
+.seealso: `PetscBool`, `PETSC_TRUE`, `PETSC_FALSE`
 M*/
 #define PetscNot(a) ((a) ? PETSC_FALSE : PETSC_TRUE)
 
@@ -2614,12 +2616,14 @@ PETSC_EXTERN PetscSegBuffer PetscCitationsList;
 +      cite - the bibtex item, formated to displayed on multiple lines nicely
 -      set - a boolean variable initially set to `PETSC_FALSE`; this is used to insure only a single registration of the citation
 
-   Level: intermediate
-
-   Not available from Fortran
-
-     Options Database:
+     Options Database: Key
 .     -citations [filename]   - print out the bibtex entries for the given computation
+
+     Level: intermediate
+
+     Fortran Note:
+     Not available from Fortran
+
 @*/
 static inline PetscErrorCode PetscCitationsRegister(const char cit[], PetscBool *set)
 {

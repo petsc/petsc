@@ -7,13 +7,13 @@
   Not Collective
 
   Input Parameters:
-+ dm - The DM
++ dm - The `DM`
 . p  - The mesh point
 - o  - The orientation
 
   Level: intermediate
 
-.seealso: `DMPlexOrient()`, `DMPlexGetCone()`, `DMPlexGetConeOrientation()`, `DMPlexInterpolate()`, `DMPlexGetChart()`
+.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPlexOrient()`, `DMPlexGetCone()`, `DMPlexGetConeOrientation()`, `DMPlexInterpolate()`, `DMPlexGetChart()`
 @*/
 PetscErrorCode DMPlexOrientPoint(DM dm, PetscInt p, PetscInt o)
 {
@@ -135,14 +135,16 @@ static PetscErrorCode DMPlexCheckFace_Internal(DM dm, PetscInt *faceFIFO, PetscI
   DMPlexOrient - Give a consistent orientation to the input mesh
 
   Input Parameters:
-. dm - The DM
+. dm - The `DM`
 
-  Note: The orientation data for the DM are change in-place.
-$ This routine will fail for non-orientable surfaces, such as the Moebius strip.
+  Note:
+  The orientation data for the `DM` are change in-place.
+
+  This routine will fail for non-orientable surfaces, such as the Moebius strip.
 
   Level: advanced
 
-.seealso: `DMCreate()`, `DMPLEX`
+.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMCreate()`, `DMPLEX`
 @*/
 PetscErrorCode DMPlexOrient(DM dm)
 {

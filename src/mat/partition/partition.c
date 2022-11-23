@@ -712,10 +712,8 @@ PetscErrorCode MatPartitioningView(MatPartitioning part, PetscViewer viewer)
 +  part - the partitioning context.
 -  type - a known method
 
-   Options Database Command:
-$  -mat_partitioning_type  <type>
-$      Use -help for a list of available methods
-$      (for instance, parmetis)
+   Options Database Key:
+.  -mat_partitioning_type  <type> - (for instance, parmetis), use -help for a list of available methods
 
    Level: intermediate
 
@@ -759,17 +757,15 @@ PetscErrorCode MatPartitioningSetType(MatPartitioning part, MatPartitioningType 
    Input Parameter:
 .  part - the partitioning context.
 
-   Options Database Command:
-$  -mat_partitioning_type  <type>
-$      Use -help for a list of available methods
-$      (for instance, parmetis)
-$  -mat_partitioning_nparts - number of subgraphs
+   Options Database Keys:
++  -mat_partitioning_type  <type> - (for instance, parmetis), use -help for a list of available methods
+-  -mat_partitioning_nparts - number of subgraphs
+
+   Level: beginner
 
    Note:
     If the partitioner has not been set by the user it uses one of the installed partitioner such as ParMetis. If there are
    no installed partitioners it uses current which means no repartioning.
-
-   Level: beginner
 
 .seealso: `MatPartitioning`
 @*/

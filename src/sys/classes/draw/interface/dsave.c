@@ -18,7 +18,7 @@ static PetscErrorCode PetscDrawSave_SAWs(PetscDraw);
 +  draw      - the graphics context
 -  filename  - name of the file, if .ext then uses name of draw object plus .ext using .ext to determine the image type
 
-   Options Database Command:
+   Options Database Keys:
 +  -draw_save <filename>  - filename could be name.ext or .ext (where .ext determines the type of graphics file to save, for example .png)
 .  -draw_save_final_image [optional filename] - saves the final image displayed in a window
 -  -draw_save_single_file - saves each new image in the same file, normally each new image is saved in a new file with filename/filename_%d.ext
@@ -84,7 +84,7 @@ PetscErrorCode PetscDrawSetSave(PetscDraw draw, const char filename[])
 +  draw      - the graphics context
 -  movieext  - optional extension defining the movie format
 
-   Options Database Command:
+   Options Database Key:
 .  -draw_save_movie <.ext> - saves a movie with extension .ext
 
    Level: intermediate
@@ -119,7 +119,7 @@ PetscErrorCode PetscDrawSetSaveMovie(PetscDraw draw, const char movieext[])
 +  draw      - the graphics context
 -  filename  - name of the file, if NULL or empty uses name set with `PetscDrawSetSave()` or the name of the draw object
 
-   Options Database Command:
+   Options Database Key:
 .  -draw_save_final_image  <filename> - filename could be name.ext or .ext (where .ext determines the type of graphics file to save, for example .png)
 
    Level: intermediate

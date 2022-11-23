@@ -636,8 +636,8 @@ static PetscErrorCode DMPlexVTKWriteAll_ASCII(DM dm, PetscViewer viewer)
   Collective
 
   Input Parameters:
-+ odm - The DMPlex specifying the mesh, passed as a PetscObject
-- viewer - viewer of type VTK
++ odm - The `DMPLEX` specifying the mesh, passed as a `PetscObject`
+- viewer - viewer of type `PETSCVIEWERVTK`
 
   Level: developer
 
@@ -646,18 +646,15 @@ static PetscErrorCode DMPlexVTKWriteAll_ASCII(DM dm, PetscViewer viewer)
   The reason for this odd model is that the VTK file format does not provide any way to write one field at a time.
   Instead, metadata for the entire file needs to be available up-front before you can start writing the file.
 
-.seealso: `PETSCVIEWERVTK`
+.seealso: [](chapter_unstructured), `DM`, `PETSCVIEWEREXODUSII`, `DMPLEX`, `PETSCVIEWERVTK`
 @*/
 PetscErrorCode DMPlexVTKWriteAll(PetscObject odm, PetscViewer viewer)
 {
-  DM        dm = (DM)odm;
-  PetscBool isvtk;
+  DM dm = (DM)odm;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERVTK, &isvtk));
-  PetscCheck(isvtk, PetscObjectComm((PetscObject)viewer), PETSC_ERR_ARG_INCOMP, "Cannot use viewer type %s", ((PetscObject)viewer)->type_name);
+  PetscValidHeaderSpecificType(viewer, PETSC_VIEWER_CLASSID, 2, PETSCVIEWERVTK);
   switch (viewer->format) {
   case PETSC_VIEWER_ASCII_VTK_DEPRECATED:
     PetscCall(DMPlexVTKWriteAll_ASCII(dm, viewer));

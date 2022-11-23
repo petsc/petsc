@@ -1207,11 +1207,12 @@ PetscErrorCode TaoGetCurrentTrustRegionRadius(Tao tao, PetscReal *radius)
 . grtol - stop if relative norm of gradient is less than this
 - gttol - stop if norm of gradient is reduced by a this factor
 
-  Note: NULL can be used as an argument if not all tolerances values are needed
-
-.seealso `TaoSetTolerances()`
-
   Level: intermediate
+
+  Note:
+  NULL can be used as an argument if not all tolerances values are needed
+
+.seealso: `Tao`, `TaoSetTolerances()`
 @*/
 PetscErrorCode TaoGetTolerances(Tao tao, PetscReal *gatol, PetscReal *grtol, PetscReal *gttol)
 {
@@ -1415,7 +1416,7 @@ $ func (Tao tao, PetscInt step);
 
   Level: advanced
 
-.seealso `Tao`, `TaoSolve()`
+.seealso: `Tao`, `TaoSolve()`
 @*/
 PetscErrorCode TaoSetUpdate(Tao tao, PetscErrorCode (*func)(Tao, PetscInt, void *), void *ctx)
 {
@@ -1532,7 +1533,7 @@ PetscErrorCode TaoSetMonitor(Tao tao, PetscErrorCode (*func)(Tao, void *), void 
    Input Parameters:
 .  tao - the Tao solver context
 
-   Options Database:
+   Options Database Key:
 .  -tao_cancelmonitors - cancels all monitors that have been hardwired
     into a code by calls to `TaoSetMonitor()`, but does not cancel those
     set via the options database
@@ -2536,7 +2537,7 @@ PetscErrorCode TaoGetType(Tao tao, TaoType *type)
 
    Level: developer
 
-.seealso `Tao`, `TaoGetConvergedReason()`, `TaoMonitorDefault()`, `TaoSetMonitor()`
+.seealso: `Tao`, `TaoGetConvergedReason()`, `TaoMonitorDefault()`, `TaoSetMonitor()`
 @*/
 PetscErrorCode TaoMonitor(Tao tao, PetscInt its, PetscReal f, PetscReal res, PetscReal cnorm, PetscReal steplength)
 {
@@ -2800,7 +2801,7 @@ PetscErrorCode TaoGradientNorm(Tao tao, Vec gradient, NormType type, PetscReal *
    Output Parameter:
 .    ctx - the monitor context
 
-   Options Database:
+   Options Database Key:
 .   -tao_draw_solution_initial - show initial guess as well as current solution
 
    Level: intermediate

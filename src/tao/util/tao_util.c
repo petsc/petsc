@@ -13,7 +13,7 @@ static inline PetscReal Fischer(PetscReal a, PetscReal b)
    VecFischer - Evaluates the Fischer-Burmeister function for complementarity
    problems.
 
-   Logically Collective on vectors
+   Logically Collective on X
 
    Input Parameters:
 +  X - current point
@@ -39,6 +39,7 @@ $        phi(a,b) := sqrt(a*a + b*b) - a - b
 
    Level: developer
 
+.seealso: `Vec`, `VecSFischer()`, `MatDFischer()`, `MatDSFischer()`
 @*/
 PetscErrorCode VecFischer(Vec X, Vec F, Vec L, Vec U, Vec FB)
 {
@@ -114,7 +115,7 @@ static inline PetscReal SFischer(PetscReal a, PetscReal b, PetscReal c)
    VecSFischer - Evaluates the Smoothed Fischer-Burmeister function for
    complementarity problems.
 
-   Logically Collective on vectors
+   Logically Collective on X
 
    Input Parameters:
 +  X - current point
@@ -141,7 +142,7 @@ $        phi(a,b) := sqrt(a*a + b*b + 2*mu*mu) - a - b
 
    Level: developer
 
-.seealso `VecFischer()`
+.seealso: `Vec`, `VecFischer()`, `MatDFischer()`, `MatDSFischer()`
 @*/
 PetscErrorCode VecSFischer(Vec X, Vec F, Vec L, Vec U, PetscReal mu, Vec FB)
 {
@@ -237,7 +238,7 @@ static inline PetscReal fischsnorm(PetscReal a, PetscReal b, PetscReal c)
 
    Level: developer
 
-.seealso: `VecFischer()`
+.seealso: `Mat`, `VecFischer()`, `VecSFischer()`, `MatDSFischer()`
 @*/
 PetscErrorCode MatDFischer(Mat jac, Vec X, Vec Con, Vec XL, Vec XU, Vec T1, Vec T2, Vec Da, Vec Db)
 {
@@ -383,7 +384,7 @@ PetscErrorCode MatDFischer(Mat jac, Vec X, Vec Con, Vec XL, Vec XU, Vec T1, Vec 
 
    Level: developer
 
-.seealso `MatDFischer()`
+.seealso: `Mat`, `VecFischer()`, `VecDFischer()`, `MatDFischer()`
 @*/
 PetscErrorCode MatDSFischer(Mat jac, Vec X, Vec Con, Vec XL, Vec XU, PetscReal mu, Vec T1, Vec T2, Vec Da, Vec Db, Vec Dm)
 {
@@ -503,6 +504,7 @@ static inline PetscReal ST_InternalPP(PetscScalar in, PetscReal lb, PetscReal ub
 
    Level: developer
 
+.seealso: `Tao`, `Vec`
 @*/
 PetscErrorCode TaoSoftThreshold(Vec in, PetscReal lb, PetscReal ub, Vec out)
 {

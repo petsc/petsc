@@ -38,7 +38,7 @@ PetscErrorCode VecValidValues_Internal(Vec vec, PetscInt argnum, PetscBool begin
 /*@
    VecMaxPointwiseDivide - Computes the maximum of the componentwise division max = max_i abs(x_i/y_i).
 
-   Logically Collective on Vec
+   Logically Collective on x
 
    Input Parameters:
 .  x, y  - the vectors
@@ -49,10 +49,11 @@ PetscErrorCode VecValidValues_Internal(Vec vec, PetscInt argnum, PetscBool begin
    Level: advanced
 
    Notes:
-    x and y may be the same vector
-          if a particular y_i is zero, it is treated as 1 in the above formula
+   x and y may be the same vector
 
-.seealso: `VecPointwiseDivide()`, `VecPointwiseMult()`, `VecPointwiseMax()`, `VecPointwiseMin()`, `VecPointwiseMaxAbs()`
+  if a particular y_i is zero, it is treated as 1 in the above formula
+
+.seealso: `Vec`, `VecPointwiseDivide()`, `VecPointwiseMult()`, `VecPointwiseMax()`, `VecPointwiseMin()`, `VecPointwiseMaxAbs()`
 @*/
 PetscErrorCode VecMaxPointwiseDivide(Vec x, Vec y, PetscReal *max)
 {
@@ -75,7 +76,7 @@ PetscErrorCode VecMaxPointwiseDivide(Vec x, Vec y, PetscReal *max)
 /*@
    VecDot - Computes the vector dot product.
 
-   Collective on Vec
+   Collective on x
 
    Input Parameters:
 .  x, y - the vectors
@@ -84,24 +85,26 @@ PetscErrorCode VecMaxPointwiseDivide(Vec x, Vec y, PetscReal *max)
 .  val - the dot product
 
    Performance Issues:
-$    per-processor memory bandwidth
-$    interprocessor latency
-$    work load imbalance that causes certain processes to arrive much earlier than others
+.vb
+    per-processor memory bandwidth
+    interprocessor latency
+    work load imbalance that causes certain processes to arrive much earlier than others
+.ve
 
    Notes for Users of Complex Numbers:
-   For complex vectors, VecDot() computes
+   For complex vectors, `VecDot()` computes
 $     val = (x,y) = y^H x,
    where y^H denotes the conjugate transpose of y. Note that this corresponds to the usual "mathematicians" complex
-   inner product where the SECOND argument gets the complex conjugate. Since the BLASdot() complex conjugates the first
-   first argument we call the BLASdot() with the arguments reversed.
+   inner product where the SECOND argument gets the complex conjugate. Since the `BLASdot()` complex conjugates the first
+   first argument we call the `BLASdot()` with the arguments reversed.
 
-   Use VecTDot() for the indefinite form
+   Use `VecTDot()` for the indefinite form
 $     val = (x,y) = y^T x,
    where y^T denotes the transpose of y.
 
    Level: intermediate
 
-.seealso: `VecMDot()`, `VecTDot()`, `VecNorm()`, `VecDotBegin()`, `VecDotEnd()`, `VecDotRealPart()`
+.seealso: `Vec`, `VecMDot()`, `VecTDot()`, `VecNorm()`, `VecDotBegin()`, `VecDotEnd()`, `VecDotRealPart()`
 @*/
 PetscErrorCode VecDot(Vec x, Vec y, PetscScalar *val)
 {
@@ -127,7 +130,7 @@ PetscErrorCode VecDot(Vec x, Vec y, PetscScalar *val)
 /*@
    VecDotRealPart - Computes the real part of the vector dot product.
 
-   Collective on Vec
+   Collective on x
 
    Input Parameters:
 .  x, y - the vectors
@@ -135,24 +138,27 @@ PetscErrorCode VecDot(Vec x, Vec y, PetscScalar *val)
    Output Parameter:
 .  val - the real part of the dot product;
 
+   Level: intermediate
+
    Performance Issues:
-$    per-processor memory bandwidth
-$    interprocessor latency
-$    work load imbalance that causes certain processes to arrive much earlier than others
+.vb
+    per-processor memory bandwidth
+    interprocessor latency
+    work load imbalance that causes certain processes to arrive much earlier than others
+.ve
 
    Notes for Users of Complex Numbers:
-     See VecDot() for more details on the definition of the dot product for complex numbers
+     See `VecDot()` for more details on the definition of the dot product for complex numbers
 
-     For real numbers this returns the same value as VecDot()
+     For real numbers this returns the same value as `VecDot()`
 
      For complex numbers in C^n (that is a vector of n components with a complex number for each component) this is equal to the usual real dot product on the
      the space R^{2n} (that is a vector of 2n components with the real or imaginary part of the complex numbers for components)
 
-   Developer Note: This is not currently optimized to compute only the real part of the dot product.
+   Developer Note:
+    This is not currently optimized to compute only the real part of the dot product.
 
-   Level: intermediate
-
-.seealso: `VecMDot()`, `VecTDot()`, `VecNorm()`, `VecDotBegin()`, `VecDotEnd()`, `VecDot()`, `VecDotNorm2()`
+.seealso: `Vec`, `VecMDot()`, `VecTDot()`, `VecNorm()`, `VecDotBegin()`, `VecDotEnd()`, `VecDot()`, `VecDotNorm2()`
 @*/
 PetscErrorCode VecDotRealPart(Vec x, Vec y, PetscReal *val)
 {
@@ -479,7 +485,7 @@ PetscErrorCode VecScale(Vec x, PetscScalar alpha)
 /*@
    VecSet - Sets all components of a vector to a single scalar value.
 
-   Logically Collective on Vec
+   Logically Collective on x
 
    Input Parameters:
 +  x  - the vector
@@ -488,20 +494,19 @@ PetscErrorCode VecScale(Vec x, PetscScalar alpha)
    Output Parameter:
 .  x  - the vector
 
+   Level: beginner
+
    Note:
-   For a vector of dimension n, VecSet() computes
+   For a vector of dimension n, `VecSet()` computes
 $     x[i] = alpha, for i=1,...,n,
    so that all vector entries then equal the identical
    scalar value, alpha.  Use the more general routine
-   VecSetValues() to set different vector entries.
+   `VecSetValues()` to set different vector entries.
 
-   You CANNOT call this after you have called VecSetValues() but before you call
-   VecAssemblyBegin/End().
+   You CANNOT call this after you have called `VecSetValues()` but before you call
+   `VecAssemblyBegin()`
 
-   Level: beginner
-
-.seealso `VecSetValues()`, `VecSetValuesBlocked()`, `VecSetRandom()`
-
+.seealso: `VecSetValues()`, `VecSetValuesBlocked()`, `VecSetRandom()`
 @*/
 PetscErrorCode VecSet(Vec x, PetscScalar alpha)
 {

@@ -167,7 +167,7 @@ M*/
 
    Level: beginner
 
-   Options Database:
+   Options Database Key:
 .   -ts_pseudo_frtol <rtol> - use specified rtol
 
 .seealso: `TSSolve()`, `TSGetConvergedReason()`, `TSSetConvergedReason()`, `TS_CONVERGED_PSEUDO_FATOL`
@@ -178,7 +178,7 @@ M*/
 
    Level: beginner
 
-   Options Database:
+   Options Database Key:
 .   -ts_pseudo_fatol <atol> - use specified atol
 
 .seealso: `TSSolve()`, `TSGetConvergedReason()`, `TSSetConvergedReason()`, `TS_CONVERGED_PSEUDO_FRTOL`

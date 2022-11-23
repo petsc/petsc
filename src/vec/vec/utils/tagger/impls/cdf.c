@@ -419,15 +419,15 @@ static PetscErrorCode VecTaggerSetFromOptions_CDF(VecTagger tagger, PetscOptionI
 /*@C
   VecTaggerCDFSetMethod - Set the method used to compute absolute boxes from CDF boxes
 
-  Logically Collective on VecTagger
+  Logically Collective on tagger
 
   Level: advanced
 
   Input Parameters:
-+ tagger - the VecTagger context
++ tagger - the `VecTagger` context
 - method - the method
 
-.seealso `VecTaggerCDFMethod`
+.seealso: `Vec`, `VecTagger`, `VecTaggerCDFMethod`
 @*/
 PetscErrorCode VecTaggerCDFSetMethod(VecTagger tagger, VecTaggerCDFMethod method)
 {
@@ -443,17 +443,17 @@ PetscErrorCode VecTaggerCDFSetMethod(VecTagger tagger, VecTaggerCDFMethod method
 /*@C
   VecTaggerCDFGetMethod - Get the method used to compute absolute boxes from CDF boxes
 
-  Logically Collective on VecTagger
+  Logically Collective on tagger
 
   Level: advanced
 
   Input Parameters:
-. tagger - the VecTagger context
+. tagger - the `VecTagger` context
 
   Output Parameters:
 . method - the method
 
-.seealso `VecTaggerCDFMethod`
+.seealso: `Vec`, `VecTagger`, `VecTaggerCDFMethod`
 @*/
 PetscErrorCode VecTaggerCDFGetMethod(VecTagger tagger, VecTaggerCDFMethod *method)
 {

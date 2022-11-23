@@ -394,7 +394,7 @@ static PetscErrorCode SharedVtxCreate(DM dm, PetscInt Nsedgelist, PetscInt *sedg
   SVtx              *svtx = NULL;
   PetscInt          *sv, k, j, nsv, *tdata, **ta2sv;
   PetscTable        *svtas;
-  PetscInt           gidx, net, idx, i, nta, ita, idx_from, idx_to, n;
+  PetscInt           gidx, net, idx, i, nta, ita, idx_from, idx_to, n, *net_tmp, *idx_tmp, *gidx_tmp;
   DM_Network        *network = (DM_Network *)dm->data;
   PetscTablePosition ppos;
 
@@ -403,7 +403,7 @@ static PetscErrorCode SharedVtxCreate(DM dm, PetscInt Nsedgelist, PetscInt *sedg
   PetscCall(PetscCalloc3(Nsedgelist, &svtas, Nsedgelist, &tdata, 2 * Nsedgelist, &ta2sv));
 
   k   = 0; /* sedgelist vertex counter j = 4*k */
-  nta = 0; /* num of svta tables created */
+  nta = 0; /* num of svta tables created = num of groups of shared vertices */
 
   /* for j=0 */
   PetscCall(PetscTableCreate(2 * Nsedgelist, network->cloneshared->NVertices + 1, &svtas[nta]));
@@ -456,13 +456,13 @@ static PetscErrorCode SharedVtxCreate(DM dm, PetscInt Nsedgelist, PetscInt *sedg
   PetscCall(PetscTableCreate(nta, network->cloneshared->NVertices + 1, &network->cloneshared->svtable));
 
   /* (3) Construct svtx from svtas
-     svtx: array of SVtx: sv[0]=(net[0],idx[0]) to vertices sv[k], k=1,...,n-1;
-     net[k], k=0, ...,n-1, are in ascending order */
+   svtx: array of SVtx: sv[0]=(net[0],idx[0]) to vertices sv[k], k=1,...,n-1. */
   PetscCall(PetscMalloc1(nta, &svtx));
   for (nsv = 0; nsv < nta; nsv++) {
     /* for a single svtx, put shared vertices in ascending order of gidx */
     PetscCall(PetscTableGetCount(svtas[nsv], &n));
     PetscCall(PetscCalloc1(2 * n, &sv));
+    PetscCall(PetscMalloc3(n, &gidx_tmp, n, &net_tmp, n, &idx_tmp));
     svtx[nsv].sv   = sv;
     svtx[nsv].n    = n;
     svtx[nsv].gidx = network->cloneshared->NVertices; /* initialization */
@@ -472,13 +472,20 @@ static PetscErrorCode SharedVtxCreate(DM dm, PetscInt Nsedgelist, PetscInt *sedg
       PetscCall(PetscTableGetNext(svtas[nsv], &ppos, &gidx, &i));
       gidx--;
       i--;
-
-      if (svtx[nsv].gidx > gidx) svtx[nsv].gidx = gidx; /*svtx[nsv].gidx = min(gidx) */
-
-      j             = ta2sv[nsv][i];    /* maps i to index of sedgelist */
-      sv[2 * k]     = sedgelist[j];     /* subnet number */
-      sv[2 * k + 1] = sedgelist[j + 1]; /* index on the subnet */
+      j           = ta2sv[nsv][i];    /* maps i to index of sedgelist */
+      net_tmp[k]  = sedgelist[j];     /* subnet number */
+      idx_tmp[k]  = sedgelist[j + 1]; /* index on the subnet */
+      gidx_tmp[k] = gidx;             /* gidx in un-merged dmnetwork */
     }
+
+    /* current implementation requires sv[]=[net,idx] in ascending order of its gidx in un-merged dmnetwork */
+    PetscCall(PetscSortIntWithArrayPair(n, gidx_tmp, net_tmp, idx_tmp));
+    svtx[nsv].gidx = gidx_tmp[0]; /* = min(gidx) */
+    for (k = 0; k < n; k++) {
+      sv[2 * k]     = net_tmp[k];
+      sv[2 * k + 1] = idx_tmp[k];
+    }
+    PetscCall(PetscFree3(gidx_tmp, net_tmp, idx_tmp));
 
     /* Setup svtable for query shared vertices */
     PetscCall(PetscTableAdd(network->cloneshared->svtable, svtx[nsv].gidx + 1, nsv + 1, INSERT_VALUES));

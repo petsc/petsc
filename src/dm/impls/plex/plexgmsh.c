@@ -1374,18 +1374,18 @@ static PetscErrorCode GmshCreateFE(MPI_Comm comm, const char prefix[], PetscBool
 }
 
 /*@C
-  DMPlexCreateGmshFromFile - Create a DMPlex mesh from a Gmsh file
+  DMPlexCreateGmshFromFile - Create a `DMPLEX` mesh from a Gmsh file
 
 + comm        - The MPI communicator
 . filename    - Name of the Gmsh file
 - interpolate - Create faces and edges in the mesh
 
   Output Parameter:
-. dm  - The DM object representing the mesh
+. dm  - The `DM` object representing the mesh
 
   Level: beginner
 
-.seealso: `DMPlexCreateFromFile()`, `DMPlexCreateGmsh()`, `DMPlexCreate()`
+.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPlexCreateFromFile()`, `DMPlexCreateGmsh()`, `DMPlexCreate()`
 @*/
 PetscErrorCode DMPlexCreateGmshFromFile(MPI_Comm comm, const char filename[], PetscBool interpolate, DM *dm)
 {
@@ -1436,19 +1436,19 @@ PetscErrorCode DMPlexCreateGmshFromFile(MPI_Comm comm, const char filename[], Pe
 }
 
 /*@
-  DMPlexCreateGmsh - Create a DMPlex mesh from a Gmsh file viewer
+  DMPlexCreateGmsh - Create a `DMPLEX` mesh from a Gmsh file viewer
 
   Collective
 
   Input Parameters:
 + comm  - The MPI communicator
-. viewer - The Viewer associated with a Gmsh file
+. viewer - The `PetscViewer` associated with a Gmsh file
 - interpolate - Create faces and edges in the mesh
 
   Output Parameter:
-. dm  - The DM object representing the mesh
+. dm  - The `DM` object representing the mesh
 
-  Options Database:
+  Options Database Keys:
 + -dm_plex_gmsh_hybrid        - Force triangular prisms to use tensor order
 . -dm_plex_gmsh_periodic      - Read Gmsh periodic section and construct a periodic Plex
 . -dm_plex_gmsh_highorder     - Generate high-order coordinates
@@ -1465,7 +1465,7 @@ PetscErrorCode DMPlexCreateGmshFromFile(MPI_Comm comm, const char filename[], Pe
 
   Level: beginner
 
-.seealso: `DMPLEX`, `DMCreate()`
+.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMCreate()`
 @*/
 PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool interpolate, DM *dm)
 {

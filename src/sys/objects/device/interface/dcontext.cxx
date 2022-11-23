@@ -927,7 +927,7 @@ PetscErrorCode PetscDeviceContextGetNullContext_Internal(PetscDeviceContext *dct
   Output Parameter:
 . dctx - The `PetscDeviceContext`
 
-  Options Database:
+  Options Database Keys:
 + -device_context_stream_type - type of stream to create inside the `PetscDeviceContext` -
    `PetscDeviceContextSetStreamType()`
 - -device_context_device_type - the type of `PetscDevice` to attach by default - `PetscDeviceType`

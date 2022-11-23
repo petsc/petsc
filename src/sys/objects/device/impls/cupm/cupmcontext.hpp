@@ -304,12 +304,15 @@ inline PetscErrorCode DeviceContext<T>::query(PetscDeviceContext dctx, PetscBool
 {
   PetscFunctionBegin;
   PetscCall(check_current_device_(dctx));
-  switch (const auto cerr = cupmStreamQuery(impls_cast_(dctx)->stream.get_stream())) {
+  switch (auto cerr = cupmStreamQuery(impls_cast_(dctx)->stream.get_stream())) {
   case cupmSuccess:
     *idle = PETSC_TRUE;
     break;
   case cupmErrorNotReady:
     *idle = PETSC_FALSE;
+    // reset the error
+    cerr = cupmGetLastError();
+    static_cast<void>(cerr);
     break;
   default:
     PetscCallCUPM(cerr);

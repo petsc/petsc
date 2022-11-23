@@ -281,7 +281,7 @@ PetscErrorCode SNESMonitorDefaultSetUp(SNES snes, PetscViewerAndFormat *vf)
 .  fgnorm - 2-norm of residual
 -  vf - viewer and format structure
 
-   Options Database:
+   Options Database Key:
 .  -snes_monitor - use this function to monitor the convergence of the nonlinear solver
 
    Notes:
