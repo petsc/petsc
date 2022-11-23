@@ -8,7 +8,7 @@ PetscErrorCode MatSetUpMultiply_MPISBAIJ(Mat mat)
 {
   Mat_MPISBAIJ   *sbaij = (Mat_MPISBAIJ *)mat->data;
   Mat_SeqBAIJ    *B     = (Mat_SeqBAIJ *)(sbaij->B->data);
-  PetscInt        Nbs = sbaij->Nbs, i, j, *aj = B->j, ec = 0, *garray, *sgarray;
+  PetscInt        i, j, *aj = B->j, ec = 0, *garray, *sgarray;
   PetscInt        bs = mat->rmap->bs, *stmp, mbs = sbaij->mbs, vec_size, nt;
   IS              from, to;
   Vec             gvec;
@@ -17,45 +17,48 @@ PetscErrorCode MatSetUpMultiply_MPISBAIJ(Mat mat)
   const PetscInt *sowners;
   PetscScalar    *ptr;
 #if defined(PETSC_USE_CTABLE)
-  PetscTable         gid1_lid1; /* one-based gid to lid table */
-  PetscTablePosition tpos;
-  PetscInt           gid, lid;
+  PetscHMapI    gid1_lid1 = NULL; /* one-based gid to lid table */
+  PetscHashIter tpos;
+  PetscInt      gid, lid;
 #else
+  PetscInt  Nbs = sbaij->Nbs;
   PetscInt *indices;
 #endif
 
   PetscFunctionBegin;
 #if defined(PETSC_USE_CTABLE)
-  PetscCall(PetscTableCreate(mbs, Nbs + 1, &gid1_lid1));
+  PetscCall(PetscHMapICreateWithSize(mbs, &gid1_lid1));
   for (i = 0; i < B->mbs; i++) {
     for (j = 0; j < B->ilen[i]; j++) {
       PetscInt data, gid1 = aj[B->i[i] + j] + 1;
-      PetscCall(PetscTableFind(gid1_lid1, gid1, &data));
-      if (!data) PetscCall(PetscTableAdd(gid1_lid1, gid1, ++ec, INSERT_VALUES));
+      PetscCall(PetscHMapIGetWithDefault(gid1_lid1, gid1, 0, &data));
+      if (!data) PetscCall(PetscHMapISet(gid1_lid1, gid1, ++ec));
     }
   }
   /* form array of columns we need */
   PetscCall(PetscMalloc1(ec, &garray));
-  PetscCall(PetscTableGetHeadPosition(gid1_lid1, &tpos));
-  while (tpos) {
-    PetscCall(PetscTableGetNext(gid1_lid1, &tpos, &gid, &lid));
+  PetscHashIterBegin(gid1_lid1, tpos);
+  while (!PetscHashIterAtEnd(gid1_lid1, tpos)) {
+    PetscHashIterGetKey(gid1_lid1, tpos, gid);
+    PetscHashIterGetVal(gid1_lid1, tpos, lid);
+    PetscHashIterNext(gid1_lid1, tpos);
     gid--;
     lid--;
     garray[lid] = gid;
   }
   PetscCall(PetscSortInt(ec, garray));
-  PetscCall(PetscTableRemoveAll(gid1_lid1));
-  for (i = 0; i < ec; i++) PetscCall(PetscTableAdd(gid1_lid1, garray[i] + 1, i + 1, INSERT_VALUES));
+  PetscCall(PetscHMapIClear(gid1_lid1));
+  for (i = 0; i < ec; i++) PetscCall(PetscHMapISet(gid1_lid1, garray[i] + 1, i + 1));
   /* compact out the extra columns in B */
   for (i = 0; i < B->mbs; i++) {
     for (j = 0; j < B->ilen[i]; j++) {
       PetscInt gid1 = aj[B->i[i] + j] + 1;
-      PetscCall(PetscTableFind(gid1_lid1, gid1, &lid));
+      PetscCall(PetscHMapIGetWithDefault(gid1_lid1, gid1, 0, &lid));
       lid--;
       aj[B->i[i] + j] = lid;
     }
   }
-  PetscCall(PetscTableDestroy(&gid1_lid1));
+  PetscCall(PetscHMapIDestroy(&gid1_lid1));
   PetscCall(PetscMalloc2(2 * ec, &sgarray, ec, &ec_owner));
   for (i = j = 0; i < ec; i++) {
     while (garray[i] >= owners[j + 1]) j++;
@@ -206,7 +209,7 @@ PetscErrorCode MatDisAssemble_MPISBAIJ(Mat A)
 
   if (baij->colmap) {
 #if defined(PETSC_USE_CTABLE)
-    PetscCall(PetscTableDestroy(&baij->colmap));
+    PetscCall(PetscHMapIDestroy(&baij->colmap));
 #else
     PetscCall(PetscFree(baij->colmap));
 #endif

@@ -833,7 +833,7 @@ PetscErrorCode PetscDeviceContextSynchronize(PetscDeviceContext dctx)
   PetscCall(PetscLogEventBegin(DCONTEXT_Sync, dctx, nullptr, nullptr, nullptr));
   /* if it isn't setup there is nothing to sync on */
   if (dctx->setup) {
-    PetscCall((*dctx->ops->synchronize)(dctx));
+    PetscUseTypeMethod(dctx, synchronize);
     PetscCall(PetscDeviceContextSyncClearMap_Internal(dctx));
   }
   PetscCall(PetscLogEventEnd(DCONTEXT_Sync, dctx, nullptr, nullptr, nullptr));

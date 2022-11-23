@@ -4,7 +4,7 @@
 #include <petscmat.h>                 /*I      "petscmat.h"          I*/
 #include <petscdmnetwork.h>           /*I      "petscdmnetwork.h"    I*/
 #include <petsc/private/dmpleximpl.h> /*I  "petscdmplex.h"  I*/
-#include <petscctable.h>
+#include <petsc/private/hashmapi.h>
 
 PETSC_EXTERN PetscLogEvent DMNetwork_LayoutSetUp;
 PETSC_EXTERN PetscLogEvent DMNetwork_SetUpNetwork;
@@ -115,7 +115,7 @@ struct _p_DMNetworkCloneShared {
   PetscInt      nsvtx, Nsvtx;           /* Local and global num of entries in svtx */
   PetscInt     *svertices;              /* Array of local subnetwork vertices that are merged/shared */
   PetscInt     *sedgelist;              /* Edge list of shared vertices */
-  PetscTable    svtable;                /* hash table for finding shared vertex info */
+  PetscHMapI    svtable;                /* hash table for finding shared vertex info */
 } PETSC_ATTRIBUTEALIGNED(PetscMax(sizeof(double), sizeof(PetscScalar)));
 
 typedef struct {

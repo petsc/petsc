@@ -22,6 +22,29 @@ Changes: Development
 .. rubric:: Sys:
 
 - Change ``PetscOptionsMonitorDefault()`` to also take in the option source, and ``PetscOptionsMonitorSet()`` to take the new monitor function.
+- Deprecate ``PetscTable`` and related functions. Previous users of ``PetscTable`` are encouraged to use the more performant ``PetscHMapI`` instead, though they should note that this requires additional steps and limitations:
+
+  #. ``#include <petscctable.h>`` must be swapped for ``#include <petsc/private/hashmapi.h>``. This of course requires that you have access to the private PETSc headers.
+  #. While most of the old ``PetscTable`` routines have direct analogues in ``PetscHMapI``, ``PetscAddCount()`` does not. All uses of this routine should be replaced with the following snippet:
+
+     ::
+
+        // PetscHMapI hash_table;
+        // PetscInt   key;
+
+        PetscHashIter it;
+        PetscBool     missing;
+
+        PetscCall(PetscHMapIPut(hash_table, key, &it, &missing));
+        if (missing) {
+          PetscInt size;
+
+          PetscCall(PetscHMapIGetSize(hash_table, &size));
+          PetscCall(PetscHMapIIterSet(hash_table, it, size));
+        }
+
+
+  Furthermore, users should note that ``PetscHMapI`` is based on -- and directly ``#include`` s -- ``${PETSC_DIR}/include/petsc/private/khash/khash.h``. This file contains external source code that is licensed under the MIT license, which is separate from the PETSc license.
 
 .. rubric:: Event Logging:
 

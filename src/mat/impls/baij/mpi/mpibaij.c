@@ -85,8 +85,8 @@ PetscErrorCode MatCreateColmap_MPIBAIJ_Private(Mat mat)
 
   PetscFunctionBegin;
 #if defined(PETSC_USE_CTABLE)
-  PetscCall(PetscTableCreate(baij->nbs, baij->Nbs + 1, &baij->colmap));
-  for (i = 0; i < nbs; i++) PetscCall(PetscTableAdd(baij->colmap, baij->garray[i] + 1, i * bs + 1, INSERT_VALUES));
+  PetscCall(PetscHMapICreateWithSize(baij->nbs, &baij->colmap));
+  for (i = 0; i < nbs; i++) PetscCall(PetscHMapISet(baij->colmap, baij->garray[i] + 1, i * bs + 1));
 #else
   PetscCall(PetscCalloc1(baij->Nbs + 1, &baij->colmap));
   for (i = 0; i < nbs; i++) baij->colmap[baij->garray[i]] = i * bs + 1;
@@ -218,7 +218,7 @@ PetscErrorCode MatSetValues_MPIBAIJ(Mat mat, PetscInt m, const PetscInt im[], Pe
           if (mat->was_assembled) {
             if (!baij->colmap) PetscCall(MatCreateColmap_MPIBAIJ_Private(mat));
 #if defined(PETSC_USE_CTABLE)
-            PetscCall(PetscTableFind(baij->colmap, in[j] / bs + 1, &col));
+            PetscCall(PetscHMapIGetWithDefault(baij->colmap, in[j] / bs + 1, 0, &col));
             col = col - 1;
 #else
             col = baij->colmap[in[j] / bs] - 1;
@@ -398,7 +398,7 @@ PetscErrorCode MatSetValuesBlocked_MPIBAIJ(Mat mat, PetscInt m, const PetscInt i
   #if defined(PETSC_USE_CTABLE)
             {
               PetscInt data;
-              PetscCall(PetscTableFind(baij->colmap, in[j] + 1, &data));
+              PetscCall(PetscHMapIGetWithDefault(baij->colmap, in[j] + 1, 0, &data));
               PetscCheck((data - 1) % bs == 0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Incorrect colmap");
             }
   #else
@@ -406,7 +406,7 @@ PetscErrorCode MatSetValuesBlocked_MPIBAIJ(Mat mat, PetscInt m, const PetscInt i
   #endif
 #endif
 #if defined(PETSC_USE_CTABLE)
-            PetscCall(PetscTableFind(baij->colmap, in[j] + 1, &col));
+            PetscCall(PetscHMapIGetWithDefault(baij->colmap, in[j] + 1, 0, &col));
             col = (col - 1) / bs;
 #else
             col = (baij->colmap[in[j]] - 1) / bs;
@@ -626,7 +626,7 @@ PetscErrorCode MatGetValues_MPIBAIJ(Mat mat, PetscInt m, const PetscInt idxm[], 
         } else {
           if (!baij->colmap) PetscCall(MatCreateColmap_MPIBAIJ_Private(mat));
 #if defined(PETSC_USE_CTABLE)
-          PetscCall(PetscTableFind(baij->colmap, idxn[j] / bs + 1, &data));
+          PetscCall(PetscHMapIGetWithDefault(baij->colmap, idxn[j] / bs + 1, 0, &data));
           data--;
 #else
           data = baij->colmap[idxn[j] / bs] - 1;
@@ -1189,7 +1189,7 @@ PetscErrorCode MatDestroy_MPIBAIJ(Mat mat)
   PetscCall(MatDestroy(&baij->A));
   PetscCall(MatDestroy(&baij->B));
 #if defined(PETSC_USE_CTABLE)
-  PetscCall(PetscTableDestroy(&baij->colmap));
+  PetscCall(PetscHMapIDestroy(&baij->colmap));
 #else
   PetscCall(PetscFree(baij->colmap));
 #endif
@@ -2717,7 +2717,7 @@ PetscErrorCode MatMPIBAIJSetPreallocation_MPIBAIJ(Mat B, PetscInt bs, PetscInt d
   b->cendbs   = B->cmap->rend / bs;
 
 #if defined(PETSC_USE_CTABLE)
-  PetscCall(PetscTableDestroy(&b->colmap));
+  PetscCall(PetscHMapIDestroy(&b->colmap));
 #else
   PetscCall(PetscFree(b->colmap));
 #endif
@@ -3206,7 +3206,7 @@ static PetscErrorCode MatDuplicate_MPIBAIJ(Mat matin, MatDuplicateOption cpvalue
   PetscCall(PetscArraycpy(a->rangebs, oldmat->rangebs, a->size + 1));
   if (oldmat->colmap) {
 #if defined(PETSC_USE_CTABLE)
-    PetscCall(PetscTableCreateCopy(oldmat->colmap, &a->colmap));
+    PetscCall(PetscHMapIDuplicate(oldmat->colmap, &a->colmap));
 #else
     PetscCall(PetscMalloc1(a->Nbs, &a->colmap));
     PetscCall(PetscArraycpy(a->colmap, oldmat->colmap, a->Nbs));
@@ -3488,7 +3488,7 @@ PetscErrorCode matmpibaijsetvaluesblocked_(Mat *matin, PetscInt *min, const Pets
   #if defined(PETSC_USE_CTABLE)
             {
               PetscInt data;
-              PetscCall(PetscTableFind(baij->colmap, in[j] + 1, &data));
+              PetscCall(PetscHMapIGetWithDefault(baij->colmap, in[j] + 1, 0, &data));
               PetscCheck((data - 1) % bs == 0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Incorrect colmap");
             }
   #else
@@ -3496,7 +3496,7 @@ PetscErrorCode matmpibaijsetvaluesblocked_(Mat *matin, PetscInt *min, const Pets
   #endif
 #endif
 #if defined(PETSC_USE_CTABLE)
-            PetscCall(PetscTableFind(baij->colmap, in[j] + 1, &col));
+            PetscCall(PetscHMapIGetWithDefault(baij->colmap, in[j] + 1, 0, &col));
             col = (col - 1) / bs;
 #else
             col = (baij->colmap[in[j]] - 1) / bs;

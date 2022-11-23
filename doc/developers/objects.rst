@@ -422,7 +422,7 @@ Simple PETSc Objects
 
 Some simple PETSc objects do not need ``PETSCHEADER`` and the associated
 functionality. These objects are internally named as ``_n_<class>`` as
-opposed to ``_p_<class>``, for example, ``_n_PetscTable`` vs ``_p_Vec``.
+opposed to ``_p_<class>``, for example, ``_n_PetscFunctionList`` vs ``_p_Vec``.
 
 PETSc Packages
 --------------

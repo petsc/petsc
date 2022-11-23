@@ -1,5 +1,5 @@
 #include <petscdm.h>
-#include <petscctable.h>
+#include <petsc/private/hashmapi.h>
 #include <petsc/private/matimpl.h>
 #include <petsc/private/pcmgimpl.h>
 #include <petsc/private/pcimpl.h> /*I "petscpc.h" I*/

@@ -2727,7 +2727,7 @@ PetscErrorCode MatDestroySubMatrix_Private(Mat_SubSppt *submatj)
   }
 
 #if defined(PETSC_USE_CTABLE)
-  PetscCall(PetscTableDestroy((PetscTable *)&submatj->rmap));
+  PetscCall(PetscHMapIDestroy(&submatj->rmap));
   if (submatj->cmap_loc) PetscCall(PetscFree(submatj->cmap_loc));
   PetscCall(PetscFree(submatj->rmap_loc));
 #else
@@ -2736,7 +2736,7 @@ PetscErrorCode MatDestroySubMatrix_Private(Mat_SubSppt *submatj)
 
   if (!submatj->allcolumns) {
 #if defined(PETSC_USE_CTABLE)
-    PetscCall(PetscTableDestroy((PetscTable *)&submatj->cmap));
+    PetscCall(PetscHMapIDestroy((PetscHMapI *)&submatj->cmap));
 #else
     PetscCall(PetscFree(submatj->cmap));
 #endif
@@ -3603,47 +3603,49 @@ PetscErrorCode MatSeqAIJSetColumnIndices_SeqAIJ(Mat mat, PetscInt *indices)
  */
 PetscErrorCode MatSeqAIJCompactOutExtraColumns_SeqAIJ(Mat mat, ISLocalToGlobalMapping *mapping)
 {
-  Mat_SeqAIJ        *aij = (Mat_SeqAIJ *)mat->data;
-  PetscTable         gid1_lid1;
-  PetscTablePosition tpos;
-  PetscInt           gid, lid, i, ec, nz = aij->nz;
-  PetscInt          *garray, *jj = aij->j;
+  Mat_SeqAIJ   *aij = (Mat_SeqAIJ *)mat->data;
+  PetscHMapI    gid1_lid1;
+  PetscHashIter tpos;
+  PetscInt      gid, lid, i, ec, nz = aij->nz;
+  PetscInt     *garray, *jj = aij->j;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat, MAT_CLASSID, 1);
   PetscValidPointer(mapping, 2);
   /* use a table */
-  PetscCall(PetscTableCreate(mat->rmap->n, mat->cmap->N + 1, &gid1_lid1));
+  PetscCall(PetscHMapICreateWithSize(mat->rmap->n, &gid1_lid1));
   ec = 0;
   for (i = 0; i < nz; i++) {
     PetscInt data, gid1 = jj[i] + 1;
-    PetscCall(PetscTableFind(gid1_lid1, gid1, &data));
+    PetscCall(PetscHMapIGetWithDefault(gid1_lid1, gid1, 0, &data));
     if (!data) {
       /* one based table */
-      PetscCall(PetscTableAdd(gid1_lid1, gid1, ++ec, INSERT_VALUES));
+      PetscCall(PetscHMapISet(gid1_lid1, gid1, ++ec));
     }
   }
   /* form array of columns we need */
   PetscCall(PetscMalloc1(ec, &garray));
-  PetscCall(PetscTableGetHeadPosition(gid1_lid1, &tpos));
-  while (tpos) {
-    PetscCall(PetscTableGetNext(gid1_lid1, &tpos, &gid, &lid));
+  PetscHashIterBegin(gid1_lid1, tpos);
+  while (!PetscHashIterAtEnd(gid1_lid1, tpos)) {
+    PetscHashIterGetKey(gid1_lid1, tpos, gid);
+    PetscHashIterGetVal(gid1_lid1, tpos, lid);
+    PetscHashIterNext(gid1_lid1, tpos);
     gid--;
     lid--;
     garray[lid] = gid;
   }
   PetscCall(PetscSortInt(ec, garray)); /* sort, and rebuild */
-  PetscCall(PetscTableRemoveAll(gid1_lid1));
-  for (i = 0; i < ec; i++) PetscCall(PetscTableAdd(gid1_lid1, garray[i] + 1, i + 1, INSERT_VALUES));
+  PetscCall(PetscHMapIClear(gid1_lid1));
+  for (i = 0; i < ec; i++) PetscCall(PetscHMapISet(gid1_lid1, garray[i] + 1, i + 1));
   /* compact out the extra columns in B */
   for (i = 0; i < nz; i++) {
     PetscInt gid1 = jj[i] + 1;
-    PetscCall(PetscTableFind(gid1_lid1, gid1, &lid));
+    PetscCall(PetscHMapIGetWithDefault(gid1_lid1, gid1, 0, &lid));
     lid--;
     jj[i] = lid;
   }
   PetscCall(PetscLayoutDestroy(&mat->cmap));
-  PetscCall(PetscTableDestroy(&gid1_lid1));
+  PetscCall(PetscHMapIDestroy(&gid1_lid1));
   PetscCall(PetscLayoutCreateFromSizes(PetscObjectComm((PetscObject)mat), ec, ec, 1, &mat->cmap));
   PetscCall(ISLocalToGlobalMappingCreate(PETSC_COMM_SELF, mat->cmap->bs, mat->cmap->n, garray, PETSC_OWN_POINTER, mapping));
   PetscCall(ISLocalToGlobalMappingSetType(*mapping, ISLOCALTOGLOBALMAPPINGHASH));

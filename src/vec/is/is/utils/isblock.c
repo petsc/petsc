@@ -1,7 +1,7 @@
 /* Routines to be used by MatIncreaseOverlap() for BAIJ and SBAIJ matrices */
 #include <petscis.h> /*I "petscis.h"  I*/
 #include <petscbt.h>
-#include <petscctable.h>
+#include <petsc/private/hashmapi.h>
 
 /*@
    ISCompressIndicesGeneral - convert the indices of an array of `IS` into an array of `ISGENERAL` of block indices
@@ -22,30 +22,30 @@
 @*/
 PetscErrorCode ISCompressIndicesGeneral(PetscInt n, PetscInt nkeys, PetscInt bs, PetscInt imax, const IS is_in[], IS is_out[])
 {
-  PetscInt        isz, len, i, j, ival, Nbs;
+  PetscInt        isz, len, i, j, ival;
   const PetscInt *idx;
 #if defined(PETSC_USE_CTABLE)
-  PetscTable         gid1_lid1;
-  PetscInt           tt, gid1, *nidx, Nkbs;
-  PetscTablePosition tpos;
+  PetscHMapI    gid1_lid1 = NULL;
+  PetscInt      tt, gid1, *nidx;
+  PetscHashIter tpos;
 #else
   PetscInt *nidx;
+  PetscInt  Nbs;
   PetscBT   table;
 #endif
 
   PetscFunctionBegin;
-  Nbs = n / bs;
 #if defined(PETSC_USE_CTABLE)
-  Nkbs = nkeys / bs;
-  PetscCall(PetscTableCreate(Nkbs, Nbs, &gid1_lid1));
+  PetscCall(PetscHMapICreateWithSize(nkeys / bs, &gid1_lid1));
 #else
+  Nbs = n / bs;
   PetscCall(PetscMalloc1(Nbs, &nidx));
   PetscCall(PetscBTCreate(Nbs, &table));
 #endif
   for (i = 0; i < imax; i++) {
     isz = 0;
 #if defined(PETSC_USE_CTABLE)
-    PetscCall(PetscTableRemoveAll(gid1_lid1));
+    PetscCall(PetscHMapIClear(gid1_lid1));
 #else
     PetscCall(PetscBTMemzero(Nbs, table));
 #endif
@@ -54,9 +54,9 @@ PetscErrorCode ISCompressIndicesGeneral(PetscInt n, PetscInt nkeys, PetscInt bs,
     for (j = 0; j < len; j++) {
       ival = idx[j] / bs; /* convert the indices into block indices */
 #if defined(PETSC_USE_CTABLE)
-      PetscCall(PetscTableFind(gid1_lid1, ival + 1, &tt));
+      PetscCall(PetscHMapIGetWithDefault(gid1_lid1, ival + 1, 0, &tt));
       if (!tt) {
-        PetscCall(PetscTableAdd(gid1_lid1, ival + 1, isz + 1, INSERT_VALUES));
+        PetscCall(PetscHMapISet(gid1_lid1, ival + 1, isz + 1));
         isz++;
       }
 #else
@@ -68,13 +68,15 @@ PetscErrorCode ISCompressIndicesGeneral(PetscInt n, PetscInt nkeys, PetscInt bs,
 
 #if defined(PETSC_USE_CTABLE)
     PetscCall(PetscMalloc1(isz, &nidx));
-    PetscCall(PetscTableGetHeadPosition(gid1_lid1, &tpos));
+    PetscHashIterBegin(gid1_lid1, tpos);
     j = 0;
-    while (tpos) {
-      PetscCall(PetscTableGetNext(gid1_lid1, &tpos, &gid1, &tt));
+    while (!PetscHashIterAtEnd(gid1_lid1, tpos)) {
+      PetscHashIterGetKey(gid1_lid1, tpos, gid1);
+      PetscHashIterGetVal(gid1_lid1, tpos, tt);
       PetscCheck(tt-- <= isz, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "index greater than array-dim");
       nidx[tt] = gid1 - 1;
       j++;
+      PetscHashIterNext(gid1_lid1, tpos);
     }
     PetscCheck(j == isz, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "table error: jj != isz");
     PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject)is_in[i]), isz, nidx, PETSC_OWN_POINTER, (is_out + i)));
@@ -83,7 +85,7 @@ PetscErrorCode ISCompressIndicesGeneral(PetscInt n, PetscInt nkeys, PetscInt bs,
 #endif
   }
 #if defined(PETSC_USE_CTABLE)
-  PetscCall(PetscTableDestroy(&gid1_lid1));
+  PetscCall(PetscHMapIDestroy(&gid1_lid1));
 #else
   PetscCall(PetscBTDestroy(&table));
   PetscCall(PetscFree(nidx));

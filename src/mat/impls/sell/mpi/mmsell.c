@@ -27,7 +27,7 @@ PetscErrorCode MatDisAssemble_MPISELL(Mat A)
   PetscCall(VecScatterDestroy(&sell->Mvctx));
   if (sell->colmap) {
 #if defined(PETSC_USE_CTABLE)
-    PetscCall(PetscTableDestroy(&sell->colmap));
+    PetscCall(PetscHMapIDestroy(&sell->colmap));
 #else
     PetscCall(PetscFree(sell->colmap));
 #endif
@@ -79,9 +79,9 @@ PetscErrorCode MatSetUpMultiply_MPISELL(Mat mat)
   Vec          gvec;
   PetscBool    isnonzero;
 #if defined(PETSC_USE_CTABLE)
-  PetscTable         gid1_lid1;
-  PetscTablePosition tpos;
-  PetscInt           gid, lid;
+  PetscHMapI    gid1_lid1 = NULL;
+  PetscHashIter tpos;
+  PetscInt      gid, lid;
 #else
   PetscInt N = mat->cmap->N, *indices;
 #endif
@@ -92,33 +92,34 @@ PetscErrorCode MatSetUpMultiply_MPISELL(Mat mat)
   /* ec counts the number of columns that contain nonzeros */
 #if defined(PETSC_USE_CTABLE)
   /* use a table */
-  PetscCall(PetscTableCreate(sell->B->rmap->n, mat->cmap->N + 1, &gid1_lid1));
+  PetscCall(PetscHMapICreateWithSize(sell->B->rmap->n, &gid1_lid1));
   for (i = 0; i < totalslices; i++) { /* loop over slices */
     for (j = B->sliidx[i]; j < B->sliidx[i + 1]; j++) {
       isnonzero = (PetscBool)((j - B->sliidx[i]) / 8 < B->rlen[(i << 3) + (j & 0x07)]);
       if (isnonzero) { /* check the mask bit */
         PetscInt data, gid1 = bcolidx[j] + 1;
-        PetscCall(PetscTableFind(gid1_lid1, gid1, &data));
-        if (!data) {
-          /* one based table */
-          PetscCall(PetscTableAdd(gid1_lid1, gid1, ++ec, INSERT_VALUES));
-        }
+
+        PetscCall(PetscHMapIGetWithDefault(gid1_lid1, gid1, 0, &data));
+        /* one based table */
+        if (!data) PetscCall(PetscHMapISet(gid1_lid1, gid1, ++ec));
       }
     }
   }
 
   /* form array of columns we need */
   PetscCall(PetscMalloc1(ec, &garray));
-  PetscCall(PetscTableGetHeadPosition(gid1_lid1, &tpos));
-  while (tpos) {
-    PetscCall(PetscTableGetNext(gid1_lid1, &tpos, &gid, &lid));
+  PetscHashIterBegin(gid1_lid1, tpos);
+  while (!PetscHashIterAtEnd(gid1_lid1, tpos)) {
+    PetscHashIterGetKey(gid1_lid1, tpos, gid);
+    PetscHashIterGetVal(gid1_lid1, tpos, lid);
+    PetscHashIterNext(gid1_lid1, tpos);
     gid--;
     lid--;
     garray[lid] = gid;
   }
   PetscCall(PetscSortInt(ec, garray)); /* sort, and rebuild */
-  PetscCall(PetscTableRemoveAll(gid1_lid1));
-  for (i = 0; i < ec; i++) PetscCall(PetscTableAdd(gid1_lid1, garray[i] + 1, i + 1, INSERT_VALUES));
+  PetscCall(PetscHMapIClear(gid1_lid1));
+  for (i = 0; i < ec; i++) PetscCall(PetscHMapISet(gid1_lid1, garray[i] + 1, i + 1));
 
   /* compact out the extra columns in B */
   for (i = 0; i < totalslices; i++) { /* loop over slices */
@@ -126,7 +127,7 @@ PetscErrorCode MatSetUpMultiply_MPISELL(Mat mat)
       isnonzero = (PetscBool)((j - B->sliidx[i]) / 8 < B->rlen[(i << 3) + (j & 0x07)]);
       if (isnonzero) {
         PetscInt gid1 = bcolidx[j] + 1;
-        PetscCall(PetscTableFind(gid1_lid1, gid1, &lid));
+        PetscCall(PetscHMapIGetWithDefault(gid1_lid1, gid1, 0, &lid));
         lid--;
         bcolidx[j] = lid;
       }
@@ -134,7 +135,7 @@ PetscErrorCode MatSetUpMultiply_MPISELL(Mat mat)
   }
   PetscCall(PetscLayoutDestroy(&sell->B->cmap));
   PetscCall(PetscLayoutCreateFromSizes(PetscObjectComm((PetscObject)sell->B), ec, ec, 1, &sell->B->cmap));
-  PetscCall(PetscTableDestroy(&gid1_lid1));
+  PetscCall(PetscHMapIDestroy(&gid1_lid1));
 #else
   /* Make an array as long as the number of columns */
   PetscCall(PetscCalloc1(N, &indices));

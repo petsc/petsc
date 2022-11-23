@@ -1264,7 +1264,7 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable(Mat P, Mat 
   PetscMPIInt             *len_r, *id_r;          /* array of length of comm->size, store send/recv matrix values */
   PetscInt                *Jptr, *prmap = p->garray, con, j, Crmax;
   Mat_SeqAIJ              *a_loc, *c_loc, *c_oth;
-  PetscTable               ta;
+  PetscHMapI               ta;
   MatType                  mtype;
   const char              *prefix;
 
@@ -1368,15 +1368,15 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable(Mat P, Mat 
   a_loc = (Mat_SeqAIJ *)(ptap->A_loc)->data;
 
   /* create and initialize a linked list */
-  PetscCall(PetscTableCreate(an, aN, &ta)); /* for compute Crmax */
+  PetscCall(PetscHMapICreateWithSize(an, &ta)); /* for compute Crmax */
   MatRowMergeMax_SeqAIJ(a_loc, ptap->A_loc->rmap->N, ta);
 
   for (k = 0; k < nrecv; k++) { /* k-th received message */
     Jptr = buf_rj[k];
-    for (j = 0; j < len_r[k]; j++) PetscCall(PetscTableAdd(ta, *(Jptr + j) + 1, 1, INSERT_VALUES));
+    for (j = 0; j < len_r[k]; j++) PetscCall(PetscHMapISet(ta, *(Jptr + j) + 1, 1));
   }
-  PetscCall(PetscTableGetCount(ta, &Crmax));
-  PetscCall(PetscTableDestroy(&ta));
+  PetscCall(PetscHMapIGetSize(ta, &Crmax));
+  PetscCall(PetscHMapIDestroy(&ta));
 
   /* (4) send and recv coi */
   /*-----------------------*/
@@ -1770,9 +1770,9 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ(Mat P, Mat A, PetscReal
   Mat_Merge_SeqsToMPI *merge;
   PetscInt            *ai, *aj, *Jptr, anz, *prmap = p->garray, pon, nspacedouble = 0, j;
   PetscReal            afill  = 1.0, afill_tmp;
-  PetscInt             rstart = P->cmap->rstart, rmax, aN = A->cmap->N, Armax;
+  PetscInt             rstart = P->cmap->rstart, rmax, Armax;
   Mat_SeqAIJ          *a_loc;
-  PetscTable           ta;
+  PetscHMapI           ta;
   MatType              mtype;
 
   PetscFunctionBegin;
@@ -1810,9 +1810,9 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ(Mat P, Mat A, PetscReal
   current_space = free_space;
 
   /* create and initialize a linked list */
-  PetscCall(PetscTableCreate(A->cmap->n + a->B->cmap->N, aN, &ta));
+  PetscCall(PetscHMapICreateWithSize(A->cmap->n + a->B->cmap->N, &ta));
   MatRowMergeMax_SeqAIJ(a_loc, am, ta);
-  PetscCall(PetscTableGetCount(ta, &Armax));
+  PetscCall(PetscHMapIGetSize(ta, &Armax));
 
   PetscCall(PetscLLCondensedCreate_Scalable(Armax, &lnk));
 
@@ -1918,9 +1918,9 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ(Mat P, Mat A, PetscReal
   /* Armax can be as large as aN if a P[row,:] is dense, see src/ksp/ksp/tutorials/ex56.c! */
   for (k = 0; k < merge->nrecv; k++) { /* k-th received message */
     Jptr = buf_rj[k];
-    for (j = 0; j < merge->len_r[k]; j++) PetscCall(PetscTableAdd(ta, *(Jptr + j) + 1, 1, INSERT_VALUES));
+    for (j = 0; j < merge->len_r[k]; j++) PetscCall(PetscHMapISet(ta, *(Jptr + j) + 1, 1));
   }
-  PetscCall(PetscTableGetCount(ta, &Armax));
+  PetscCall(PetscHMapIGetSize(ta, &Armax));
 
   /* send and recv coi */
   /*-------------------*/
@@ -2040,7 +2040,7 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ(Mat P, Mat A, PetscReal
   afill_tmp = (PetscReal)bi[pn] / (pdti[pn] + poti[pon] + ai[am] + 1);
   if (afill_tmp > afill) afill = afill_tmp;
   PetscCall(PetscLLCondensedDestroy_Scalable(lnk));
-  PetscCall(PetscTableDestroy(&ta));
+  PetscCall(PetscHMapIDestroy(&ta));
   PetscCall(MatRestoreSymbolicTranspose_SeqAIJ(p->A, &pdti, &pdtj));
   PetscCall(MatRestoreSymbolicTranspose_SeqAIJ(p->B, &poti, &potj));
 

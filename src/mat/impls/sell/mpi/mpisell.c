@@ -50,8 +50,8 @@ PetscErrorCode MatCreateColmap_MPISELL_Private(Mat mat)
   PetscFunctionBegin;
   PetscCheck(sell->garray, PETSC_COMM_SELF, PETSC_ERR_PLIB, "MPISELL Matrix was assembled but is missing garray");
 #if defined(PETSC_USE_CTABLE)
-  PetscCall(PetscTableCreate(n, mat->cmap->N + 1, &sell->colmap));
-  for (i = 0; i < n; i++) PetscCall(PetscTableAdd(sell->colmap, sell->garray[i] + 1, i + 1, INSERT_VALUES));
+  PetscCall(PetscHMapICreateWithSize(n, &sell->colmap));
+  for (i = 0; i < n; i++) PetscCall(PetscHMapISet(sell->colmap, sell->garray[i] + 1, i + 1));
 #else
   PetscCall(PetscCalloc1(mat->cmap->N + 1, &sell->colmap));
   for (i = 0; i < n; i++) sell->colmap[sell->garray[i]] = i + 1;
@@ -199,7 +199,7 @@ PetscErrorCode MatSetValues_MPISELL(Mat mat, PetscInt m, const PetscInt im[], Pe
           if (mat->was_assembled) {
             if (!sell->colmap) PetscCall(MatCreateColmap_MPISELL_Private(mat));
 #if defined(PETSC_USE_CTABLE)
-            PetscCall(PetscTableFind(sell->colmap, in[j] + 1, &col));
+            PetscCall(PetscHMapIGetWithDefault(sell->colmap, in[j] + 1, 0, &col));
             col--;
 #else
             col = sell->colmap[in[j]] - 1;
@@ -259,7 +259,7 @@ PetscErrorCode MatGetValues_MPISELL(Mat mat, PetscInt m, const PetscInt idxm[], 
         } else {
           if (!sell->colmap) PetscCall(MatCreateColmap_MPISELL_Private(mat));
 #if defined(PETSC_USE_CTABLE)
-          PetscCall(PetscTableFind(sell->colmap, idxn[j] + 1, &col));
+          PetscCall(PetscHMapIGetWithDefault(sell->colmap, idxn[j] + 1, 0, &col));
           col--;
 #else
           col = sell->colmap[idxn[j]] - 1;
@@ -497,7 +497,7 @@ PetscErrorCode MatDestroy_MPISELL(Mat mat)
   PetscCall(MatDestroy(&sell->A));
   PetscCall(MatDestroy(&sell->B));
 #if defined(PETSC_USE_CTABLE)
-  PetscCall(PetscTableDestroy(&sell->colmap));
+  PetscCall(PetscHMapIDestroy(&sell->colmap));
 #else
   PetscCall(PetscFree(sell->colmap));
 #endif
@@ -1220,7 +1220,7 @@ PetscErrorCode MatDuplicate_MPISELL(Mat matin, MatDuplicateOption cpvalues, Mat 
 
   if (oldmat->colmap) {
 #if defined(PETSC_USE_CTABLE)
-    PetscCall(PetscTableCreateCopy(oldmat->colmap, &a->colmap));
+    PetscCall(PetscHMapIDuplicate(oldmat->colmap, &a->colmap));
 #else
     PetscCall(PetscMalloc1(mat->cmap->N, &a->colmap));
     PetscCall(PetscArraycpy(a->colmap, oldmat->colmap, mat->cmap->N));
