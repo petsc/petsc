@@ -3,7 +3,7 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.gitcommit              = '4762d466bf1c1179a691b4b06acc47808db8d742' # main nov-06-2022
+    self.gitcommit              = 'bf375fba8758fa4186e71b1dfc048df90eddfef5' # branch jose/configure-hash
     self.download               = ['git://https://gitlab.com/slepc/slepc.git','https://gitlab.com/slepc/slepc/-/archive/'+self.gitcommit+'/slepc-'+self.gitcommit+'.tar.gz']
     self.functions              = []
     self.includes               = []
@@ -64,7 +64,7 @@ class Configure(config.package.Package):
                        ['@echo "*** Building SLEPc ***"',\
                           '@${RM} ${PETSC_ARCH}/lib/petsc/conf/slepc.errorflg',\
                           '@(cd '+self.packageDir+' && \\\n\
-           '+carg+self.python.pyexe+' ./configure --with-clean --prefix='+prefix+' '+configargs+' && \\\n\
+           '+carg+self.python.pyexe+' ./configure --prefix='+prefix+' '+configargs+' && \\\n\
            '+barg+'${OMAKE} '+barg+') || \\\n\
              (echo "**************************ERROR*************************************" && \\\n\
              echo "Error building SLEPc." && \\\n\
