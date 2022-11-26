@@ -185,7 +185,7 @@ static PetscErrorCode SNESSolve_QN(SNES snes)
     if (qn->restart_type == SNES_QN_RESTART_POWELL && i_r > 1) {
       /* check restart by Powell's Criterion: |F^T H_0 Fold| > powell_gamma * |Fold^T H_0 Fold| */
       if (qn->scale_type == SNES_QN_SCALE_JACOBIAN) {
-        PetscCall(MatMult(snes->jacobian_pre, Dold, W));
+        PetscCall(MatMult(snes->jacobian, Dold, W));
       } else {
         PetscCall(VecCopy(Dold, W));
       }
