@@ -214,6 +214,50 @@ PetscErrorCode PetscEventPerfInfoCopy(PetscEventPerfInfo *eventInfo, PetscEventP
 }
 
 /*@C
+  PetscEventPerfInfoAdd - Add data in eventInfo to outInfo
+
+  Not collective
+
+  Input Parameter:
+. eventInfo - The input `PetscEventPerfInfo`
+
+  Output Parameter:
+. outInfo   - The output `PetscEventPerfInfo`
+
+  Level: developer
+
+  Note:
+  This is a low level routine used by the logging functions in PETSc
+
+.seealso: `PetscEventPerfInfoClear()`
+@*/
+PetscErrorCode PetscEventPerfInfoAdd(PetscEventPerfInfo *eventInfo, PetscEventPerfInfo *outInfo)
+{
+  PetscFunctionBegin;
+  outInfo->count += eventInfo->count;
+  outInfo->time += eventInfo->time;
+  outInfo->time2 += eventInfo->time2;
+  outInfo->flops += eventInfo->flops;
+  outInfo->flops2 += eventInfo->flops2;
+  outInfo->numMessages += eventInfo->numMessages;
+  outInfo->messageLength += eventInfo->messageLength;
+  outInfo->numReductions += eventInfo->numReductions;
+#if defined(PETSC_HAVE_DEVICE)
+  outInfo->CpuToGpuCount += eventInfo->CpuToGpuCount;
+  outInfo->GpuToCpuCount += eventInfo->GpuToCpuCount;
+  outInfo->CpuToGpuSize += eventInfo->CpuToGpuSize;
+  outInfo->GpuToCpuSize += eventInfo->GpuToCpuSize;
+  outInfo->GpuFlops += eventInfo->GpuFlops;
+  outInfo->GpuTime += eventInfo->GpuTime;
+#endif
+  outInfo->memIncrease += eventInfo->memIncrease;
+  outInfo->mallocSpace += eventInfo->mallocSpace;
+  outInfo->mallocIncreaseEvent += eventInfo->mallocIncreaseEvent;
+  outInfo->mallocIncrease += eventInfo->mallocIncrease;
+  PetscFunctionReturn(0);
+}
+
+/*@C
   PetscEventPerfLogEnsureSize - This ensures that a `PetscEventPerfLog` is at least of a certain size.
 
   Not collective
@@ -734,22 +778,53 @@ PetscErrorCode PetscLogEventSynchronize(PetscLogEvent event, MPI_Comm comm)
 #if defined(PETSC_HAVE_CUDA)
   #include <nvToolsExt.h>
 #endif
+#if defined(PETSC_HAVE_THREADSAFETY)
+static PetscErrorCode PetscLogGetStageEventPerfInfo_threaded(PetscLogEvent event, PetscLogStage stage, PetscEventPerfInfo **eventInfo)
+{
+  PetscHashIJKKey     key;
+  PetscEventPerfInfo *leventInfo;
+
+  PetscFunctionBegin;
+  key.i = PetscLogGetTid();
+  key.j = stage;
+  key.k = event;
+  PetscCall(PetscHMapEventGet(eventInfoMap_th, key, &leventInfo));
+  if (!leventInfo) {
+    PetscCall(PetscSpinlockLock(&PetscLogSpinLock));
+    PetscCall(PetscNew(&leventInfo));
+    PetscCall(PetscHMapEventSet(eventInfoMap_th, key, leventInfo));
+    PetscCall(PetscSpinlockUnlock(&PetscLogSpinLock));
+  }
+  *eventInfo = leventInfo;
+  PetscFunctionReturn(0);
+}
+#endif
 
 PetscErrorCode PetscLogEventBeginDefault(PetscLogEvent event, int t, PetscObject o1, PetscObject o2, PetscObject o3, PetscObject o4)
 {
-  PetscStageLog     stageLog;
-  PetscEventPerfLog eventLog = NULL;
-  int               stage;
+  PetscStageLog       stageLog;
+  PetscEventPerfLog   eventLog  = NULL;
+  PetscEventPerfInfo *eventInfo = NULL;
+  int                 stage;
 
   PetscFunctionBegin;
+  /* Synchronization */
+  PetscCall(PetscLogEventSynchronize(event, PetscObjectComm(o1)));
   PetscCall(PetscLogGetStageLog(&stageLog));
   PetscCall(PetscStageLogGetCurrent(stageLog, &stage));
   PetscCall(PetscStageLogGetEventPerfLog(stageLog, stage, &eventLog));
-  /* Synchronization */
-  PetscCall(PetscLogEventSynchronize(event, PetscObjectComm(o1)));
+#if defined(PETSC_HAVE_THREADSAFETY)
+  PetscCall(PetscLogGetStageEventPerfInfo_threaded(stage, event, &eventInfo));
+  if (eventInfo->depth == 0) {
+    PetscCall(PetscEventPerfInfoClear(eventInfo));
+    PetscCall(PetscEventPerfInfoCopy(eventLog->eventInfo + event, eventInfo));
+  }
+#else
+  eventInfo = eventLog->eventInfo + event;
+#endif
   /* Check for double counting */
-  eventLog->eventInfo[event].depth++;
-  if (eventLog->eventInfo[event].depth > 1) PetscFunctionReturn(0);
+  eventInfo->depth++;
+  if (eventInfo->depth > 1) PetscFunctionReturn(0);
 #if defined(PETSC_HAVE_CUDA)
   if (PetscDeviceInitialized(PETSC_DEVICE_CUDA)) {
     PetscEventRegLog eventRegLog;
@@ -765,48 +840,54 @@ PetscErrorCode PetscLogEventBeginDefault(PetscLogEvent event, int t, PetscObject
     if (regLog->eventInfo[event].timer != NULL) PetscStackCallExternalVoid("ps_timer_start_", ps_timer_start_(regLog->eventInfo[event].timer));
   }
 #endif
-  eventLog->eventInfo[event].count++;
-  eventLog->eventInfo[event].timeTmp = 0.0;
-  PetscTimeSubtract(&eventLog->eventInfo[event].timeTmp);
-  eventLog->eventInfo[event].flopsTmp = -petsc_TotalFlops;
-  eventLog->eventInfo[event].numMessages -= petsc_irecv_ct + petsc_isend_ct + petsc_recv_ct + petsc_send_ct;
-  eventLog->eventInfo[event].messageLength -= petsc_irecv_len + petsc_isend_len + petsc_recv_len + petsc_send_len;
-  eventLog->eventInfo[event].numReductions -= petsc_allreduce_ct + petsc_gather_ct + petsc_scatter_ct;
+  eventInfo->count++;
+  eventInfo->timeTmp = 0.0;
+  PetscTimeSubtract(&eventInfo->timeTmp);
+  eventInfo->flopsTmp = -petsc_TotalFlops_th;
+  eventInfo->numMessages -= petsc_irecv_ct_th + petsc_isend_ct_th + petsc_recv_ct_th + petsc_send_ct_th;
+  eventInfo->messageLength -= petsc_irecv_len_th + petsc_isend_len_th + petsc_recv_len_th + petsc_send_len_th;
+  eventInfo->numReductions -= petsc_allreduce_ct_th + petsc_gather_ct_th + petsc_scatter_ct_th;
+#if defined(PETSC_HAVE_DEVICE)
+  eventInfo->CpuToGpuCount -= petsc_ctog_ct_th;
+  eventInfo->GpuToCpuCount -= petsc_gtoc_ct_th;
+  eventInfo->CpuToGpuSize -= petsc_ctog_sz_th;
+  eventInfo->GpuToCpuSize -= petsc_gtoc_sz_th;
+  eventInfo->GpuFlops -= petsc_gflops_th;
+  eventInfo->GpuTime -= petsc_gtime_th;
+#endif
   if (PetscLogMemory) {
     PetscLogDouble usage;
     PetscCall(PetscMemoryGetCurrentUsage(&usage));
-    eventLog->eventInfo[event].memIncrease -= usage;
+    eventInfo->memIncrease -= usage;
     PetscCall(PetscMallocGetCurrentUsage(&usage));
-    eventLog->eventInfo[event].mallocSpace -= usage;
+    eventInfo->mallocSpace -= usage;
     PetscCall(PetscMallocGetMaximumUsage(&usage));
-    eventLog->eventInfo[event].mallocIncrease -= usage;
+    eventInfo->mallocIncrease -= usage;
     PetscCall(PetscMallocPushMaximumUsage((int)event));
   }
-#if defined(PETSC_HAVE_DEVICE)
-  eventLog->eventInfo[event].CpuToGpuCount -= petsc_ctog_ct;
-  eventLog->eventInfo[event].GpuToCpuCount -= petsc_gtoc_ct;
-  eventLog->eventInfo[event].CpuToGpuSize -= petsc_ctog_sz;
-  eventLog->eventInfo[event].GpuToCpuSize -= petsc_gtoc_sz;
-  eventLog->eventInfo[event].GpuFlops -= petsc_gflops;
-  eventLog->eventInfo[event].GpuTime -= petsc_gtime;
-#endif
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode PetscLogEventEndDefault(PetscLogEvent event, int t, PetscObject o1, PetscObject o2, PetscObject o3, PetscObject o4)
 {
-  PetscStageLog     stageLog;
-  PetscEventPerfLog eventLog = NULL;
-  int               stage;
+  PetscStageLog       stageLog;
+  PetscEventPerfLog   eventLog  = NULL;
+  PetscEventPerfInfo *eventInfo = NULL;
+  int                 stage;
 
   PetscFunctionBegin;
   PetscCall(PetscLogGetStageLog(&stageLog));
   PetscCall(PetscStageLogGetCurrent(stageLog, &stage));
   PetscCall(PetscStageLogGetEventPerfLog(stageLog, stage, &eventLog));
+#if defined(PETSC_HAVE_THREADSAFETY)
+  PetscCall(PetscLogGetStageEventPerfInfo_threaded(stage, event, &eventInfo));
+#else
+  eventInfo = eventLog->eventInfo + event;
+#endif
   /* Check for double counting */
-  eventLog->eventInfo[event].depth--;
-  if (eventLog->eventInfo[event].depth > 0) PetscFunctionReturn(0);
-  else PetscCheck(eventLog->eventInfo[event].depth >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Logging event had unbalanced begin/end pairs");
+  eventInfo->depth--;
+  if (eventInfo->depth > 0) PetscFunctionReturn(0);
+  else PetscCheck(eventInfo->depth == 0, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Logging event had unbalanced begin/end pairs");
 
     /* Log performance info */
 #if defined(PETSC_HAVE_TAU_PERFSTUBS)
@@ -816,33 +897,38 @@ PetscErrorCode PetscLogEventEndDefault(PetscLogEvent event, int t, PetscObject o
     if (regLog->eventInfo[event].timer != NULL) PetscStackCallExternalVoid("ps_timer_stop_", ps_timer_stop_(regLog->eventInfo[event].timer));
   }
 #endif
-  PetscTimeAdd(&eventLog->eventInfo[event].timeTmp);
-  eventLog->eventInfo[event].time += eventLog->eventInfo[event].timeTmp;
-  eventLog->eventInfo[event].time2 += eventLog->eventInfo[event].timeTmp * eventLog->eventInfo[event].timeTmp;
-  eventLog->eventInfo[event].flopsTmp += petsc_TotalFlops;
-  eventLog->eventInfo[event].flops += eventLog->eventInfo[event].flopsTmp;
-  eventLog->eventInfo[event].flops2 += eventLog->eventInfo[event].flopsTmp * eventLog->eventInfo[event].flopsTmp;
-  eventLog->eventInfo[event].numMessages += petsc_irecv_ct + petsc_isend_ct + petsc_recv_ct + petsc_send_ct;
-  eventLog->eventInfo[event].messageLength += petsc_irecv_len + petsc_isend_len + petsc_recv_len + petsc_send_len;
-  eventLog->eventInfo[event].numReductions += petsc_allreduce_ct + petsc_gather_ct + petsc_scatter_ct;
+  PetscTimeAdd(&eventInfo->timeTmp);
+  eventInfo->flopsTmp += petsc_TotalFlops_th;
+  eventInfo->time += eventInfo->timeTmp;
+  eventInfo->time2 += eventInfo->timeTmp * eventInfo->timeTmp;
+  eventInfo->flops += eventInfo->flopsTmp;
+  eventInfo->flops2 += eventInfo->flopsTmp * eventInfo->flopsTmp;
+  eventInfo->numMessages += petsc_irecv_ct_th + petsc_isend_ct_th + petsc_recv_ct_th + petsc_send_ct_th;
+  eventInfo->messageLength += petsc_irecv_len_th + petsc_isend_len_th + petsc_recv_len + petsc_send_len_th;
+  eventInfo->numReductions += petsc_allreduce_ct_th + petsc_gather_ct_th + petsc_scatter_ct_th;
+#if defined(PETSC_HAVE_DEVICE)
+  eventInfo->CpuToGpuCount += petsc_ctog_ct_th;
+  eventInfo->GpuToCpuCount += petsc_gtoc_ct_th;
+  eventInfo->CpuToGpuSize += petsc_ctog_sz_th;
+  eventInfo->GpuToCpuSize += petsc_gtoc_sz_th;
+  eventInfo->GpuFlops += petsc_gflops_th;
+  eventInfo->GpuTime += petsc_gtime_th;
+#endif
   if (PetscLogMemory) {
     PetscLogDouble usage, musage;
-    PetscCall(PetscMemoryGetCurrentUsage(&usage));   /* the comments below match the column labels printed in PetscLogView_Default() */
-    eventLog->eventInfo[event].memIncrease += usage; /* RMI */
+    PetscCall(PetscMemoryGetCurrentUsage(&usage)); /* the comments below match the column labels printed in PetscLogView_Default() */
+    eventInfo->memIncrease += usage;               /* RMI */
     PetscCall(PetscMallocGetCurrentUsage(&usage));
-    eventLog->eventInfo[event].mallocSpace += usage; /* Malloc */
+    eventInfo->mallocSpace += usage; /* Malloc */
     PetscCall(PetscMallocPopMaximumUsage((int)event, &musage));
-    eventLog->eventInfo[event].mallocIncreaseEvent = PetscMax(musage - usage, eventLog->eventInfo[event].mallocIncreaseEvent); /* EMalloc */
+    eventInfo->mallocIncreaseEvent = PetscMax(musage - usage, eventInfo->mallocIncreaseEvent); /* EMalloc */
     PetscCall(PetscMallocGetMaximumUsage(&usage));
-    eventLog->eventInfo[event].mallocIncrease += usage; /* MMalloc */
+    eventInfo->mallocIncrease += usage; /* MMalloc */
   }
-#if defined(PETSC_HAVE_DEVICE)
-  eventLog->eventInfo[event].CpuToGpuCount += petsc_ctog_ct;
-  eventLog->eventInfo[event].GpuToCpuCount += petsc_gtoc_ct;
-  eventLog->eventInfo[event].CpuToGpuSize += petsc_ctog_sz;
-  eventLog->eventInfo[event].GpuToCpuSize += petsc_gtoc_sz;
-  eventLog->eventInfo[event].GpuFlops += petsc_gflops;
-  eventLog->eventInfo[event].GpuTime += petsc_gtime;
+#if defined(PETSC_HAVE_THREADSAFETY)
+  PetscCall(PetscSpinlockLock(&PetscLogSpinLock));
+  PetscCall(PetscEventPerfInfoAdd(eventInfo, eventLog->eventInfo + event));
+  PetscCall(PetscSpinlockUnlock(&PetscLogSpinLock));
 #endif
 #if defined(PETSC_HAVE_CUDA)
   if (PetscDeviceInitialized(PETSC_DEVICE_CUDA)) nvtxRangePop();

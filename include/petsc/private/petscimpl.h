@@ -1209,7 +1209,8 @@ extern "C" {
     #if defined(__cplusplus)
 }
     #endif
-typedef ck_spinlock_t        PetscSpinlock;
+typedef ck_spinlock_t PetscSpinlock;
+
 static inline PetscErrorCode PetscSpinlockCreate(PetscSpinlock *ck_spinlock)
 {
   ck_spinlock_init(ck_spinlock);
@@ -1229,10 +1230,50 @@ static inline PetscErrorCode PetscSpinlockDestroy(PetscSpinlock *ck_spinlock)
 {
   return 0;
 }
+  #elif (defined(__cplusplus) && defined(PETSC_HAVE_CXX_ATOMIC)) || (!defined(__cplusplus) && defined(PETSC_HAVE_STDATOMIC_H))
+    #if defined(__cplusplus)
+      #include <atomic>
+      #define petsc_atomic_flag                 std::atomic_flag
+      #define petsc_atomic_flag_test_and_set(p) std::atomic_flag_test_and_set_explicit(p, std::memory_order_relaxed)
+      #define petsc_atomic_flag_clear(p)        std::atomic_flag_clear_explicit(p, std::memory_order_relaxed)
+    #else
+      #include <stdatomic.h>
+      #define petsc_atomic_flag                 atomic_flag
+      #define petsc_atomic_flag_test_and_set(p) atomic_flag_test_and_set_explicit(p, memory_order_relaxed)
+      #define petsc_atomic_flag_clear(p)        atomic_flag_clear_explicit(p, memory_order_relaxed)
+    #endif
+
+typedef petsc_atomic_flag PetscSpinlock;
+
+static inline PetscErrorCode PetscSpinlockCreate(PetscSpinlock *spinlock)
+{
+  petsc_atomic_flag_clear(spinlock);
+  return 0;
+}
+static inline PetscErrorCode PetscSpinlockLock(PetscSpinlock *spinlock)
+{
+  do {
+  } while (petsc_atomic_flag_test_and_set(spinlock));
+  return 0;
+}
+static inline PetscErrorCode PetscSpinlockUnlock(PetscSpinlock *spinlock)
+{
+  petsc_atomic_flag_clear(spinlock);
+  return 0;
+}
+static inline PetscErrorCode PetscSpinlockDestroy(PetscSpinlock *spinlock)
+{
+  return 0;
+}
+    #undef petsc_atomic_flag_test_and_set
+    #undef petsc_atomic_flag_clear
+    #undef petsc_atomic_flag
+
   #elif defined(PETSC_HAVE_OPENMP)
 
     #include <omp.h>
 typedef omp_lock_t PetscSpinlock;
+
 static inline PetscErrorCode PetscSpinlockCreate(PetscSpinlock *omp_lock)
 {
   omp_init_lock(omp_lock);
@@ -1254,7 +1295,11 @@ static inline PetscErrorCode PetscSpinlockDestroy(PetscSpinlock *omp_lock)
   return 0;
 }
   #else
-    #error "Thread safety requires either --with-openmp or --download-concurrencykit"
+    #if defined(__cplusplus)
+      #error "Thread safety requires either --download-concurrencykit, std::atomic, or --with-openmp"
+    #else
+      #error "Thread safety requires either --download-concurrencykit, stdatomic.h, or --with-openmp"
+    #endif
   #endif
 
 #else

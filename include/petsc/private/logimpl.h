@@ -53,6 +53,41 @@ PETSC_EXTERN const char    *petsc_traceblanks;
 PETSC_EXTERN char           petsc_tracespace[128];
 PETSC_EXTERN PetscLogDouble petsc_tracetime;
 
+/* Thread-safety internals */
+
+/* SpinLock for shared Log variables */
+PETSC_INTERN PetscSpinlock PetscLogSpinLock;
+
+#if defined(PETSC_HAVE_THREADSAFETY)
+  #if defined(__cplusplus)
+    #define PETSC_TLS thread_local
+  #else
+    #define PETSC_TLS _Thread_local
+  #endif
+  #define PETSC_INTERN_TLS extern PETSC_TLS PETSC_VISIBILITY_INTERNAL
+
+/* Access PETSc internal thread id */
+PETSC_INTERN PetscInt PetscLogGetTid(void);
+
+  /* Map from (threadid,stage,event) to perfInfo data struct */
+  #include <petsc/private/hashmap.h>
+
+typedef struct _PetscHashIJKKey {
+  PetscInt i, j, k;
+} PetscHashIJKKey;
+
+  #define PetscHashIJKKeyHash(key)     PetscHashCombine(PetscHashInt((key).i), PetscHashCombine(PetscHashInt((key).j), PetscHashInt((key).k)))
+  #define PetscHashIJKKeyEqual(k1, k2) (((k1).i == (k2).i) ? (((k1).j == (k2).j) ? ((k1).k == (k2).k) : 0) : 0)
+
+PETSC_HASH_MAP(HMapEvent, PetscHashIJKKey, PetscEventPerfInfo *, PetscHashIJKKeyHash, PetscHashIJKKeyEqual, NULL)
+
+PETSC_INTERN PetscHMapEvent eventInfoMap_th;
+
+#else
+  #define PETSC_TLS
+  #define PETSC_INTERN_TLS
+#endif
+
 #ifdef PETSC_USE_LOG
 
 PETSC_EXTERN PetscErrorCode PetscIntStackCreate(PetscIntStack *);
