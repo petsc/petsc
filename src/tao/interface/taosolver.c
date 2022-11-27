@@ -180,15 +180,18 @@ PetscErrorCode TaoSolve(Tao tao)
   PetscCall(VecViewFromOptions(tao->solution, (PetscObject)tao, "-tao_view_solution"));
 
   tao->ntotalits += tao->niter;
-  PetscCall(TaoViewFromOptions(tao, NULL, "-tao_view"));
 
   if (tao->printreason) {
+    PetscViewer viewer = PETSC_VIEWER_STDOUT_(((PetscObject)tao)->comm);
+    PetscCall(PetscViewerASCIIAddTab(viewer, ((PetscObject)tao)->tablevel));
     if (tao->reason > 0) {
-      PetscCall(PetscPrintf(((PetscObject)tao)->comm, "TAO solve converged due to %s iterations %" PetscInt_FMT "\n", TaoConvergedReasons[tao->reason], tao->niter));
+      PetscCall(PetscViewerASCIIPrintf(viewer, "  TAO %s solve converged due to %s iterations %" PetscInt_FMT "\n", ((PetscObject)tao)->prefix ? ((PetscObject)tao)->prefix : "", TaoConvergedReasons[tao->reason], tao->niter));
     } else {
-      PetscCall(PetscPrintf(((PetscObject)tao)->comm, "TAO solve did not converge due to %s iteration %" PetscInt_FMT "\n", TaoConvergedReasons[tao->reason], tao->niter));
+      PetscCall(PetscViewerASCIIPrintf(viewer, "  TAO %s solve did not converge due to %s iteration %" PetscInt_FMT "\n", ((PetscObject)tao)->prefix ? ((PetscObject)tao)->prefix : "", TaoConvergedReasons[tao->reason], tao->niter));
     }
+    PetscCall(PetscViewerASCIISubtractTab(viewer, ((PetscObject)tao)->tablevel));
   }
+  PetscCall(TaoViewFromOptions(tao, NULL, "-tao_view"));
   PetscFunctionReturn(0);
 }
 
@@ -388,9 +391,6 @@ PetscErrorCode TaoSetFromOptions(Tao tao)
   PetscCall(PetscObjectGetComm((PetscObject)tao, &comm));
 
   if (((PetscObject)tao)->type_name) default_type = ((PetscObject)tao)->type_name;
-
-  /* So no warnings are given about unused options */
-  PetscCall(PetscOptionsHasName(((PetscObject)tao)->options, ((PetscObject)tao)->prefix, "-tao_ls_type", &flg));
 
   PetscObjectOptionsBegin((PetscObject)tao);
   /* Check for type from options */
