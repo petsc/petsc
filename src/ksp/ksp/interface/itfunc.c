@@ -1030,16 +1030,16 @@ static PetscErrorCode KSPSolve_Private(KSP ksp, Vec b, Vec x)
 
    If you provide a matrix that has a `MatSetNullSpace()` and `MatSetTransposeNullSpace()` this will use that information to solve singular systems
    in the least squares sense with a norm minimizing solution.
-$
-$                   A x = b   where b = b_p + b_t where b_t is not in the range of A (and hence by the fundamental theorem of linear algebra is in the nullspace(A') see `MatSetNullSpace()`
-$
-$    `KSP` first removes b_t producing the linear system  A x = b_p (which has multiple solutions) and solves this to find the ||x|| minimizing solution (and hence
-$    it finds the solution x orthogonal to the nullspace(A). The algorithm is simply in each iteration of the Krylov method we remove the nullspace(A) from the search
-$    direction thus the solution which is a linear combination of the search directions has no component in the nullspace(A).
-$
-$    We recommend always using GMRES for such singular systems.
-$    If nullspace(A) = nullspace(A') (note symmetric matrices always satisfy this property) then both left and right preconditioning will work
-$    If nullspace(A) != nullspace(A') then left preconditioning will work but right preconditioning may not work (or it may).
+
+                   A x = b   where b = b_p + b_t where b_t is not in the range of A (and hence by the fundamental theorem of linear algebra is in the nullspace(A') see `MatSetNullSpace()`
+
+    `KSP` first removes b_t producing the linear system  A x = b_p (which has multiple solutions) and solves this to find the ||x|| minimizing solution (and hence
+    it finds the solution x orthogonal to the nullspace(A). The algorithm is simply in each iteration of the Krylov method we remove the nullspace(A) from the search
+    direction thus the solution which is a linear combination of the search directions has no component in the nullspace(A).
+
+    We recommend always using `KSPGMRES` for such singular systems.
+    If nullspace(A) = nullspace(A') (note symmetric matrices always satisfy this property) then both left and right preconditioning will work
+    If nullspace(A) != nullspace(A') then left preconditioning will work but right preconditioning may not work (or it may).
 
    Developer Note: The reason we cannot always solve  nullspace(A) != nullspace(A') systems with right preconditioning is because we need to remove at each iteration
        the nullspace(AB) from the search direction. While we know the nullspace(A) the nullspace(AB) equals B^-1 times the nullspace(A) but except for trivial preconditioners
