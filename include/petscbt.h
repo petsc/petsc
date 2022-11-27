@@ -41,7 +41,7 @@ static inline size_t PetscBTIndex_Internal(PetscInt index)
 
 static inline char PetscBTMask_Internal(PetscInt index)
 {
-  return (char) (1 << index % PETSC_BITS_PER_BYTE);
+  return (char)(1 << index % PETSC_BITS_PER_BYTE);
 }
 
 static inline size_t PetscBTLength(PetscInt m)
