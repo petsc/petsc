@@ -1181,6 +1181,7 @@ PetscErrorCode TaoView_BNK(Tao tao, PetscViewer viewer)
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
   if (isascii) {
     PetscCall(PetscViewerASCIIPushTab(viewer));
+    PetscCall(TaoView(bnk->bncg, viewer));
     if (bnk->M) {
       PetscCall(MatLMVMGetRejectCount(bnk->M, &nrejects));
       PetscCall(PetscViewerASCIIPrintf(viewer, "Rejected BFGS updates: %" PetscInt_FMT "\n", nrejects));

@@ -339,7 +339,7 @@ PetscErrorCode PetscFEDestroy(PetscFE *fem)
 
   Level: beginner
 
-.seealso: `PetscFE`, `PetscFEType`, `PetscFESetType()`, `PETSCFEGALERKIN`
+.seealso: `PetscFE`, `PetscFEType`, `PetscFESetType()`, `PetscFECreateDefault()`, `PETSCFEGALERKIN`
 @*/
 PetscErrorCode PetscFECreate(MPI_Comm comm, PetscFE *fem)
 {

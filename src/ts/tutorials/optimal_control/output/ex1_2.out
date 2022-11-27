@@ -4,11 +4,34 @@
   2 TAO,  Function value: 0.853749,  Residual: 0.0215901 
   3 TAO,  Function value: 0.852106,  Residual: 0.0319342 
   4 TAO,  Function value: 0.849969,  Residual: 0.00138967 
-  5 TAO,  Function value: 0.849937,  Residual: 9.77976e-05 
-  6 TAO,  Function value: 0.849937,  Residual: 3.47442e-08 
-  7 TAO,  Function value: 0.849937,  Residual: 4.51941e-14 
+  5 TAO,  Function value: 0.849937,  Residual: 9.77977e-05 
+  6 TAO,  Function value: 0.849937,  Residual: 3.47414e-08 
+  7 TAO,  Function value: 0.849937,  Residual: 4.34207e-14 
 Tao Object: 1 MPI process
   type: bntr
+    Tao Object: (tao_bnk_cg_) 1 MPI process
+      type: bncg
+        CG Type: ssml_bfgs
+        Skipped Stepdirection Updates: 0
+        Scaled gradient steps: 0
+        Pure gradient steps: 0
+        Not a descent direction: 0
+        Line search fails: 0
+        Matrix has not been preallocated yet
+      TaoLineSearch Object: (tao_bnk_cg_) 1 MPI process
+        type: more-thuente
+        maximum function evaluations=30
+        tolerances: ftol=0.0001, rtol=1e-10, gtol=0.9
+        total number of function evaluations=0
+        total number of gradient evaluations=0
+        total number of function/gradient evaluations=0
+        Termination reason: 0
+      Active Set subset type: subvec
+      convergence tolerances: gatol=1e-08,       steptol=0.,       gttol=0.
+      Residual in Function/Gradient:=0.
+      Objective value=0.
+      total number of iterations=0,                              (max: 2000)
+      Solver terminated: 0      
     CG steps: 0
     Newton steps: 7
     Scaled gradient steps: 0
@@ -47,7 +70,7 @@ Tao Object: 1 MPI process
   total KSP iterations: 48
   Active Set subset type: subvec
   convergence tolerances: gatol=1e-08,   steptol=0.,   gttol=0.
-  Residual in Function/Gradient:=4.51941e-14
+  Residual in Function/Gradient:=4.34207e-14
   Objective value=0.849937
   total number of iterations=7,                          (max: 50)
   total number of function/gradient evaluations=21,      (max: -1)

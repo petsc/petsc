@@ -366,7 +366,7 @@ static PetscErrorCode TaoSetFromOptions_ALMM(Tao tao, PetscOptionItems *PetscOpt
 /* -------------------------------------------------------- */
 
 /*MC
-  TaoALMM - Augmented Lagrangian multiplier method for solving nonlinear optimization problems with general constraints.
+  TAOALMM - Augmented Lagrangian multiplier method for solving nonlinear optimization problems with general constraints.
 
   Options Database Keys:
 + -tao_almm_mu_init <real>       - initial penalty parameter (default: 10.)
@@ -393,10 +393,10 @@ static PetscErrorCode TaoSetFromOptions_ALMM(Tao tao, PetscOptionItems *PetscOpt
   of inequality constraints because it avoids inflating the size of the subproblem with slack variables.
 
   The subproblem is solved using a nested first-order TAO solver. The user can retrieve a pointer to
-  the subsolver via TaoALMMGetSubsolver() or pass command line arguments to it using the
-  "-tao_almm_subsolver_" prefix. Currently, TaoALMM does not support second-order methods for the
+  the subsolver via `TaoALMMGetSubsolver()` or pass command line arguments to it using the
+  "-tao_almm_subsolver_" prefix. Currently, `TAOALMM` does not support second-order methods for the
   subproblem. It is also highly recommended that the subsolver chosen by the user utilize a trust-region
-  strategy for globalization (default: TAOBQNKTR) especially if the outer problem features bound constraints.
+  strategy for globalization (default: `TAOBQNKTR`) especially if the outer problem features bound constraints.
 
 .vb
   while unconverged
@@ -415,7 +415,7 @@ static PetscErrorCode TaoSetFromOptions_ALMM(Tao tao, PetscOptionItems *PetscOpt
   endwhile
 .ve
 
-.seealso: `TaoALMMGetType()`, `TaoALMMSetType()`, `TaoALMMSetSubsolver()`, `TaoALMMGetSubsolver()`,
+.seealso: `TAOALMM`, `Tao`, `TaoALMMGetType()`, `TaoALMMSetType()`, `TaoALMMSetSubsolver()`, `TaoALMMGetSubsolver()`,
           `TaoALMMGetMultipliers()`, `TaoALMMSetMultipliers()`, `TaoALMMGetPrimalIS()`, `TaoALMMGetDualIS()`
 M*/
 PETSC_EXTERN PetscErrorCode TaoCreate_ALMM(Tao tao)

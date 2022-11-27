@@ -5,10 +5,33 @@
   3 TAO,  Function value: 0.852475,  Residual: 0.0287703 
   4 TAO,  Function value: 0.850011,  Residual: 0.00385325 
   5 TAO,  Function value: 0.849937,  Residual: 0.000146559 
-  6 TAO,  Function value: 0.849937,  Residual: 3.75599e-07 
-  7 TAO,  Function value: 0.849937,  Residual: 1.60656e-12 
+  6 TAO,  Function value: 0.849937,  Residual: 3.75591e-07 
+  7 TAO,  Function value: 0.849937,  Residual: 1.60304e-12 
 Tao Object: 1 MPI process
   type: bntr
+    Tao Object: (tao_bnk_cg_) 1 MPI process
+      type: bncg
+        CG Type: ssml_bfgs
+        Skipped Stepdirection Updates: 0
+        Scaled gradient steps: 0
+        Pure gradient steps: 0
+        Not a descent direction: 0
+        Line search fails: 0
+        Matrix has not been preallocated yet
+      TaoLineSearch Object: (tao_bnk_cg_) 1 MPI process
+        type: more-thuente
+        maximum function evaluations=30
+        tolerances: ftol=0.0001, rtol=1e-10, gtol=0.9
+        total number of function evaluations=0
+        total number of gradient evaluations=0
+        total number of function/gradient evaluations=0
+        Termination reason: 0
+      Active Set subset type: subvec
+      convergence tolerances: gatol=1e-08,       steptol=0.,       gttol=0.
+      Residual in Function/Gradient:=0.
+      Objective value=0.
+      total number of iterations=0,                              (max: 2000)
+      Solver terminated: 0      
     CG steps: 0
     Newton steps: 7
     Scaled gradient steps: 0
@@ -45,7 +68,7 @@ Tao Object: 1 MPI process
   total KSP iterations: 45
   Active Set subset type: subvec
   convergence tolerances: gatol=1e-08,   steptol=0.,   gttol=0.
-  Residual in Function/Gradient:=1.60656e-12
+  Residual in Function/Gradient:=1.60304e-12
   Objective value=0.849937
   total number of iterations=7,                          (max: 50)
   total number of function/gradient evaluations=21,      (max: -1)

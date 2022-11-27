@@ -104,11 +104,6 @@ PETSC_EXTERN PetscErrorCode PetscViennaCLInit()
     }
   }
 
-  if (PetscDefined(HAVE_CUDA)) {
-    /* For CUDA event timers */
-    PetscCall(PetscDeviceInitialize(PETSC_DEVICE_CUDA));
-  }
-
 #if defined(PETSC_HAVE_OPENCL)
   /* ViennaCL OpenCL device type configuration */
   PetscCall(PetscOptionsGetString(NULL, NULL, "-viennacl_opencl_device_type", string, sizeof(string), &flg));

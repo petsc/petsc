@@ -21,6 +21,29 @@ iter =  15, Function value -0.183437, Residual: 0.00015265
 iter =  16, Function value -0.183437, Residual: 9.77511e-05 
 Tao Object: 1 MPI process
   type: bqnls
+    Tao Object: (tao_bnk_) 1 MPI process
+      type: bncg
+        CG Type: ssml_bfgs
+        Skipped Stepdirection Updates: 0
+        Scaled gradient steps: 0
+        Pure gradient steps: 0
+        Not a descent direction: 0
+        Line search fails: 0
+        Matrix has not been preallocated yet
+      TaoLineSearch Object: (tao_bnk_) 1 MPI process
+        type: more-thuente
+        maximum function evaluations=30
+        tolerances: ftol=0.0001, rtol=1e-10, gtol=0.9
+        total number of function evaluations=0
+        total number of gradient evaluations=0
+        total number of function/gradient evaluations=0
+        Termination reason: 0
+      Active Set subset type: subvec
+      convergence tolerances: gatol=1e-08,       steptol=0.,       gttol=0.
+      Residual in Function/Gradient:=0.
+      Objective value=0.
+      total number of iterations=0,                              (max: 2000)
+      Solver terminated: 0      
     Rejected BFGS updates: 0
     CG steps: 0
     Newton steps: 0
