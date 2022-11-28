@@ -111,6 +111,7 @@ Changes: Development
 - Remove ``DMPlexAddConeSize()``
 - Add ``DMPlexCreateEphemeral()``
 - Both ``DMView()`` and ``DMLoad()`` now support parallel I/O with a new HDF5 format (see the manual for details)
+- Remove ``DMPlexComputeGeometryFEM()`` since it was broken
 
 .. rubric:: FE/FV:
 

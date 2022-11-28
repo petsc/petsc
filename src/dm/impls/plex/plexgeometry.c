@@ -2486,55 +2486,6 @@ PetscErrorCode DMPlexComputeCellGeometryFVM(DM dm, PetscInt cell, PetscReal *vol
 }
 
 /*@
-  DMPlexComputeGeometryFEM - Precompute cell geometry for the entire mesh
-
-  Collective on dm
-
-  Input Parameter:
-. dm - The DMPlex
-
-  Output Parameter:
-. cellgeom - A vector with the cell geometry data for each cell
-
-  Level: beginner
-
-@*/
-PetscErrorCode DMPlexComputeGeometryFEM(DM dm, Vec *cellgeom)
-{
-  DM           dmCell;
-  Vec          coordinates;
-  PetscSection coordSection, sectionCell;
-  PetscScalar *cgeom;
-  PetscInt     cStart, cEnd, c;
-
-  PetscFunctionBegin;
-  PetscCall(DMClone(dm, &dmCell));
-  PetscCall(DMGetCoordinateSection(dm, &coordSection));
-  PetscCall(DMGetCoordinatesLocal(dm, &coordinates));
-  PetscCall(DMSetCoordinateSection(dmCell, PETSC_DETERMINE, coordSection));
-  PetscCall(DMSetCoordinatesLocal(dmCell, coordinates));
-  PetscCall(PetscSectionCreate(PetscObjectComm((PetscObject)dm), &sectionCell));
-  PetscCall(DMPlexGetSimplexOrBoxCells(dm, 0, &cStart, &cEnd));
-  PetscCall(PetscSectionSetChart(sectionCell, cStart, cEnd));
-  /* TODO This needs to be multiplied by Nq for non-affine */
-  for (c = cStart; c < cEnd; ++c) PetscCall(PetscSectionSetDof(sectionCell, c, (PetscInt)PetscCeilReal(((PetscReal)sizeof(PetscFEGeom)) / sizeof(PetscScalar))));
-  PetscCall(PetscSectionSetUp(sectionCell));
-  PetscCall(DMSetLocalSection(dmCell, sectionCell));
-  PetscCall(PetscSectionDestroy(&sectionCell));
-  PetscCall(DMCreateLocalVector(dmCell, cellgeom));
-  PetscCall(VecGetArray(*cellgeom, &cgeom));
-  for (c = cStart; c < cEnd; ++c) {
-    PetscFEGeom *cg;
-
-    PetscCall(DMPlexPointLocalRef(dmCell, c, cgeom, &cg));
-    PetscCall(PetscArrayzero(cg, 1));
-    PetscCall(DMPlexComputeCellGeometryFEM(dmCell, c, NULL, cg->v, cg->J, cg->invJ, cg->detJ));
-    PetscCheck(*cg->detJ > 0.0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %" PetscInt_FMT, (double)*cg->detJ, c);
-  }
-  PetscFunctionReturn(0);
-}
-
-/*@
   DMPlexComputeGeometryFVM - Computes the cell and face geometry for a finite volume method
 
   Input Parameter:
@@ -2546,7 +2497,7 @@ PetscErrorCode DMPlexComputeGeometryFEM(DM dm, Vec *cellgeom)
 
   Level: developer
 
-.seealso: `PetscFVFaceGeom`, `PetscFVCellGeom`, `DMPlexComputeGeometryFEM()`
+.seealso: `PetscFVFaceGeom`, `PetscFVCellGeom`
 @*/
 PetscErrorCode DMPlexComputeGeometryFVM(DM dm, Vec *cellgeom, Vec *facegeom)
 {
