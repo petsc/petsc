@@ -2655,6 +2655,7 @@ PetscErrorCode TaoGetConvergenceHistory(Tao tao, PetscReal **obj, PetscReal **re
   if (obj) *obj = tao->hist_obj;
   if (cnorm) *cnorm = tao->hist_cnorm;
   if (resid) *resid = tao->hist_resid;
+  if (lits) *lits = tao->hist_lits;
   if (nhist) *nhist = tao->hist_len;
   PetscFunctionReturn(0);
 }

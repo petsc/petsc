@@ -205,8 +205,10 @@ static inline PetscErrorCode TaoLogConvergenceHistory(Tao tao, PetscReal obj, Pe
     if (tao->hist_resid) tao->hist_resid[tao->hist_len] = resid;
     if (tao->hist_cnorm) tao->hist_cnorm[tao->hist_len] = cnorm;
     if (tao->hist_lits) {
-      if (tao->hist_len <= 0) tao->hist_lits[0] = totits;
-      else tao->hist_lits[tao->hist_len] = totits - tao->hist_lits[tao->hist_len - 1];
+      PetscInt sits = totits;
+      PetscCheck(tao->hist_len >= 0, PetscObjectComm((PetscObject)tao), PETSC_ERR_ARG_WRONGSTATE, "History length cannot be negative");
+      for (PetscInt i = 0; i < tao->hist_len; i++) sits -= tao->hist_lits[i];
+      tao->hist_lits[tao->hist_len] = sits;
     }
     tao->hist_len++;
   }
