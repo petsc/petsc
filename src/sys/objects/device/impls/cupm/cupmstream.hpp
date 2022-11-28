@@ -97,7 +97,8 @@ inline PetscErrorCode CUPMStream<T>::change_type(PetscStreamType newtype) noexce
       flag_type flag;
 
       PetscCallCUPM(cupmStreamGetFlags(stream_, &flag));
-      if ((flag != preferred) || (cupmStreamQuery(stream_) != cupmSuccess)) PetscCall(destroy());
+      if (flag == preferred) PetscFunctionReturn(0);
+      PetscCall(destroy());
     }
     PetscCall(create(preferred));
   }
