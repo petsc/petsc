@@ -2,7 +2,7 @@ masses:        e= 9.109e-31; ions in proton mass units:    2.000e+00  1.800e+02 
 charges:       e=-1.602e-19; charges in elementary units:  1.000e+00  1.800e+01
 n:             e:  1.000e+00                           i:  1.000e+00  1.000e-06
 thermal T (K): e= 2.321e+07 i= 1.160e+07  1.160e+07. v_0= 1.876e+07 ( 6.256e-02c) n_0= 1.000e+20 t_0= 1.637e-05, classical, Intuitive, 1 batched
-Domain radius (AMR levels) grid 0:  5.000e+00 (0) , 1:  5.835e-02 (0) , 2:  6.151e-03 (0) 
+Domain radius (AMR levels) grid 0: par= 5.000e+00, perp= 5.000e+00 (0) , 1: par= 5.835e-02, perp= 5.835e-02 (0) , 2: par= 6.151e-03, perp= 6.151e-03 (0) 
 Using default Plex order for all matrices
 0) FormLandau 648 IPs, 24 cells total, Nb=27, Nq=27, dim=3, Tab: Nb=27 Nf=3 Np=27 cdim=3 N=375
 Linear ptof_ solve converged due to CONVERGED_RTOL iterations 4
