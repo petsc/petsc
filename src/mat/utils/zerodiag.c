@@ -19,7 +19,7 @@
     zeros from diagonal. This may help in the `PCLU` factorization to
     prevent a zero pivot.
 
-    Collective on mat
+    Collective
 
     Input Parameters:
 +   mat  - matrix to reorder

@@ -432,7 +432,7 @@ PetscErrorCode PCMGSetLevels_MG(PC pc, PetscInt levels, MPI_Comm *comms)
    PCMGSetLevels - Sets the number of levels to use with `PCMG`.
    Must be called before any other `PCMG` routine.
 
-   Logically Collective on pc
+   Logically Collective
 
    Input Parameters:
 +  pc - the preconditioner context
@@ -1314,7 +1314,7 @@ PetscErrorCode PCMGGetGridComplexity(PC pc, PetscReal *gc, PetscReal *oc)
    PCMGSetType - Determines the form of multigrid to use:
    multiplicative, additive, full, or the Kaskade algorithm.
 
-   Logically Collective on pc
+   Logically Collective
 
    Input Parameters:
 +  pc - the preconditioner context
@@ -1344,7 +1344,7 @@ PetscErrorCode PCMGSetType(PC pc, PCMGType form)
 /*@
    PCMGGetType - Finds the form of multigrid the `PCMG` is using  multiplicative, additive, full, or the Kaskade algorithm.
 
-   Logically Collective on pc
+   Logically Collective
 
    Input Parameter:
 .  pc - the preconditioner context
@@ -1370,7 +1370,7 @@ PetscErrorCode PCMGGetType(PC pc, PCMGType *type)
    PCMGSetCycleType - Sets the type cycles to use.  Use `PCMGSetCycleTypeOnLevel()` for more
    complicated cycling.
 
-   Logically Collective on pc
+   Logically Collective
 
    Input Parameters:
 +  pc - the multigrid context
@@ -1402,7 +1402,7 @@ PetscErrorCode PCMGSetCycleType(PC pc, PCMGCycleType n)
    PCMGMultiplicativeSetCycles - Sets the number of cycles to use for each preconditioner step
          of multigrid when `PCMGType` is `PC_MG_MULTIPLICATIVE`
 
-   Logically Collective on pc
+   Logically Collective
 
    Input Parameters:
 +  pc - the multigrid context
@@ -1442,7 +1442,7 @@ PetscErrorCode PCMGSetGalerkin_MG(PC pc, PCMGGalerkinType use)
    PCMGSetGalerkin - Causes the coarser grid matrices to be computed from the
       finest grid via the Galerkin process: A_i-1 = r_i * A_i * p_i
 
-   Logically Collective on pc
+   Logically Collective
 
    Input Parameters:
 +  pc - the multigrid context
@@ -1552,7 +1552,7 @@ PetscErrorCode PCMGGetAdaptCR_MG(PC pc, PetscBool *cr)
 
   Adapts or creates the interpolator based upon a vector space which should be accurately captured by the next coarser mesh, and thus accurately interpolated.
 
-  Logically Collective on pc
+  Logically Collective
 
   Input Parameters:
 + pc    - the multigrid context
@@ -1603,7 +1603,7 @@ PetscErrorCode PCMGGetAdaptCoarseSpaceType(PC pc, PCMGCoarseSpaceType *ctype)
 /*@
    PCMGSetAdaptInterpolation - Adapt the interpolator based upon a vector space which should be accurately captured by the next coarser mesh, and thus accurately interpolated.
 
-   Logically Collective on pc
+   Logically Collective
 
    Input Parameters:
 +  pc    - the multigrid context
@@ -1654,7 +1654,7 @@ PetscErrorCode PCMGGetAdaptInterpolation(PC pc, PetscBool *adapt)
 /*@
    PCMGSetAdaptCR - Monitor the coarse space quality using an auxiliary solve with compatible relaxation.
 
-   Logically Collective on pc
+   Logically Collective
 
    Input Parameters:
 +  pc - the multigrid context
@@ -1704,7 +1704,7 @@ PetscErrorCode PCMGGetAdaptCR(PC pc, PetscBool *cr)
    on all levels.  Use `PCMGDistinctSmoothUp()` to create separate up and down smoothers if you want different numbers of
    pre- and post-smoothing steps.
 
-   Logically Collective on pc
+   Logically Collective
 
    Input Parameters:
 +  mg - the multigrid context
@@ -1745,7 +1745,7 @@ PetscErrorCode PCMGSetNumberSmooth(PC pc, PetscInt n)
    PCMGSetDistinctSmoothUp - sets the up (post) smoother to be a separate `KSP` from the down (pre) smoother on all levels
        and adds the suffix _up to the options name
 
-   Logically Collective on pc
+   Logically Collective
 
    Input Parameter:
 .  pc - the preconditioner context

@@ -1341,7 +1341,7 @@ static PetscErrorCode PCBJKOKKOSSetKSP_BJKOKKOS(PC pc, KSP ksp)
 /*@C
    PCBJKOKKOSSetKSP - Sets the `KSP` context for `PCBJKOKKOS`
 
-   Collective on pc
+   Collective
 
    Input Parameters:
 +  pc - the `PCBJKOKKOS` preconditioner context

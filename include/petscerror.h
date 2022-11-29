@@ -578,7 +578,7 @@ M*/
   #include <petscerror.h>
   void PetscCallAbort(MPI_Comm comm, PetscErrorCode ierr)
 
-  Collective on comm
+  Collective
 
   Input Parameters:
 + comm - the MPI communicator on which to abort
@@ -1068,18 +1068,20 @@ PETSC_DEPRECATED_FUNCTION("Use PetscSignalSegvCheckPointerOrMpi() (since version
 /*MC
     PetscErrorPrintf - Prints error messages.
 
+    Not Collective; No Fortran Support
+
    Synopsis:
     #include <petscsys.h>
      PetscErrorCode (*PetscErrorPrintf)(const char format[],...);
 
-    Not Collective
-
     Input Parameter:
-.   format - the usual printf() format string
+.   format - the usual `printf()` format string
 
    Options Database Keys:
 +    -error_output_stdout - cause error messages to be printed to stdout instead of the (default) stderr
 -    -error_output_none - to turn off all printing of error messages (does not change the way the error is handled.)
+
+   Level: developer
 
    Notes:
     Use
@@ -1093,11 +1095,6 @@ $     PetscErrorPrintf = PetscErrorPrintfDefault; to turn it back on or you can 
 
           Use
       `PetscPushErrorHandler()` to provide your own error handler that determines what kind of messages to print
-
-   Level: developer
-
-    Fortran Note:
-    This routine is not supported in Fortran.
 
 .seealso: `PetscFPrintf()`, `PetscSynchronizedPrintf()`, `PetscHelpPrintf()`, `PetscPrintf()`, `PetscPushErrorHandler()`, `PetscVFPrintf()`, `PetscHelpPrintf()`
 M*/

@@ -84,7 +84,7 @@ PetscErrorCode PipeSetUp(Pipe pipe)
 /*
     PipeCreateJacobian - Create Jacobian matrix structures for a Pipe.
 
-    Collective on Pipe
+    Collective
 
     Input Parameter:
 +   pipe - the Pipe object
@@ -173,7 +173,7 @@ PetscErrorCode PipeDestroyJacobian(Pipe pipe)
 /*
     JunctionCreateJacobian - Create Jacobian matrices for a vertex.
 
-    Collective on Pipe
+    Collective
 
     Input Parameter:
 +   dm - the DMNetwork object

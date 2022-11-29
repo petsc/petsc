@@ -1643,7 +1643,7 @@ static PetscErrorCode MatScaLAPACKSetBlockSizes_ScaLAPACK(Mat A, PetscInt mb, Pe
    MatScaLAPACKSetBlockSizes - Sets the block sizes to be used for the distribution of
    the `MATSCALAPACK` matrix
 
-   Logically Collective on A
+   Logically Collective
 
    Input Parameters:
 +  A  - a `MATSCALAPACK` matrix

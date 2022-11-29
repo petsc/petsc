@@ -7,7 +7,7 @@
    PetscDrawPause - Waits n seconds or until user input, depending on input
                to `PetscDrawSetPause()`.
 
-   Collective on draw
+   Collective
 
    Input Parameter:
 .  draw - the drawing context
@@ -28,7 +28,7 @@ PetscErrorCode PetscDrawPause(PetscDraw draw)
    PetscDrawSetPause - Sets the amount of time that program pauses after
    a `PetscDrawPause()` is called.
 
-   Logically Collective on draw
+   Logically Collective
 
    Input Parameters:
 +  draw   - the drawing object

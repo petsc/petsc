@@ -5,7 +5,7 @@
    PetscViewerFlush - Flushes a `PetscViewer` (i.e. tries to dump all the
    data that has been printed through a `PetscViewer`).
 
-   Collective on viewer
+   Collective
 
    Input Parameter:
 .  viewer - the `PetscViewer` to be flushed

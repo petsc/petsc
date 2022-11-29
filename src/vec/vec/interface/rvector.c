@@ -38,7 +38,7 @@ PetscErrorCode VecValidValues_Internal(Vec vec, PetscInt argnum, PetscBool begin
 /*@
    VecMaxPointwiseDivide - Computes the maximum of the componentwise division max = max_i abs(x_i/y_i).
 
-   Logically Collective on x
+   Logically Collective
 
    Input Parameters:
 .  x, y  - the vectors
@@ -76,7 +76,7 @@ PetscErrorCode VecMaxPointwiseDivide(Vec x, Vec y, PetscReal *max)
 /*@
    VecDot - Computes the vector dot product.
 
-   Collective on x
+   Collective
 
    Input Parameters:
 .  x, y - the vectors
@@ -130,7 +130,7 @@ PetscErrorCode VecDot(Vec x, Vec y, PetscScalar *val)
 /*@
    VecDotRealPart - Computes the real part of the vector dot product.
 
-   Collective on x
+   Collective
 
    Input Parameters:
 .  x, y - the vectors
@@ -173,7 +173,7 @@ PetscErrorCode VecDotRealPart(Vec x, Vec y, PetscReal *val)
 /*@
    VecNorm  - Computes the vector norm.
 
-   Collective on Vec
+   Collective
 
    Input Parameters:
 +  x - the vector
@@ -207,9 +207,8 @@ PetscErrorCode VecDotRealPart(Vec x, Vec y, PetscReal *val)
 .    number of ranks - the time for the result will grow with the log base 2 of the number of ranks sharing the vector
 -    work load imbalance - the rank with the largest number of vector entries will limit the speed up
 
-.seealso: `VecDot()`, `VecTDot()`, `VecNorm()`, `VecDotBegin()`, `VecDotEnd()`, `VecNormAvailable()`,
+.seealso: `VecDot()`, `VecTDot()`, `VecDotBegin()`, `VecDotEnd()`, `VecNormAvailable()`,
           `VecNormBegin()`, `VecNormEnd()`, `NormType()`
-
 @*/
 PetscErrorCode VecNorm(Vec x, NormType type, PetscReal *val)
 {
@@ -267,9 +266,8 @@ $    work load imbalance that causes certain processes to arrive much earlier th
  than the BLAS. This should probably only be used when one is using the FORTRAN BLAS routines
  (as opposed to vendor provided) because the FORTRAN BLAS NRM2() routine is very slow.
 
-.seealso: `VecDot()`, `VecTDot()`, `VecNorm()`, `VecDotBegin()`, `VecDotEnd()`, `VecNorm()`
+.seealso: `VecDot()`, `VecTDot()`, `VecNorm()`, `VecDotBegin()`, `VecDotEnd()`,
           `VecNormBegin()`, `VecNormEnd()`
-
 @*/
 PetscErrorCode VecNormAvailable(Vec x, NormType type, PetscBool *available, PetscReal *val)
 {
@@ -290,7 +288,7 @@ PetscErrorCode VecNormAvailable(Vec x, NormType type, PetscBool *available, Pets
 /*@
    VecNormalize - Normalizes a vector by 2-norm.
 
-   Collective on Vec
+   Collective
 
    Input Parameter:
 .  x - the vector
@@ -325,7 +323,7 @@ PetscErrorCode VecNormalize(Vec x, PetscReal *val)
 /*@C
    VecMax - Determines the vector component with maximum real part and its location.
 
-   Collective on Vec
+   Collective
 
    Input Parameter:
 .  x - the vector
@@ -360,7 +358,7 @@ PetscErrorCode VecMax(Vec x, PetscInt *p, PetscReal *val)
 /*@C
    VecMin - Determines the vector component with minimum real part and its location.
 
-   Collective on Vec
+   Collective
 
    Input Parameter:
 .  x - the vector
@@ -397,7 +395,7 @@ PetscErrorCode VecMin(Vec x, PetscInt *p, PetscReal *val)
    VecTDot - Computes an indefinite vector dot product. That is, this
    routine does NOT use the complex conjugate.
 
-   Collective on Vec
+   Collective
 
    Input Parameters:
 .  x, y - the vectors
@@ -442,7 +440,7 @@ PetscErrorCode VecTDot(Vec x, Vec y, PetscScalar *val)
 /*@
    VecScale - Scales a vector.
 
-   Not collective on Vec
+   Not collective
 
    Input Parameters:
 +  x - the vector
@@ -485,7 +483,7 @@ PetscErrorCode VecScale(Vec x, PetscScalar alpha)
 /*@
    VecSet - Sets all components of a vector to a single scalar value.
 
-   Logically Collective on x
+   Logically Collective
 
    Input Parameters:
 +  x  - the vector
@@ -547,9 +545,9 @@ PetscErrorCode VecSet(Vec x, PetscScalar alpha)
 }
 
 /*@
-   VecAXPY - Computes y = alpha x + y.
+   VecAXPY - Computes `y = alpha x + y`.
 
-   Logically Collective on Vec
+   Logically Collective
 
    Input Parameters:
 +  alpha - the scalar
@@ -561,15 +559,16 @@ PetscErrorCode VecSet(Vec x, PetscScalar alpha)
    Level: intermediate
 
    Notes:
-    x and y MUST be different vectors
+    `x` and `y` MUST be different vectors
     This routine is optimized for alpha of 0.0, otherwise it calls the BLAS routine
-
-$    VecAXPY(y,alpha,x)                   y = alpha x           +      y
-$    VecAYPX(y,beta,x)                    y =       x           + beta y
-$    VecAXPBY(y,alpha,beta,x)             y = alpha x           + beta y
-$    VecWAXPY(w,alpha,x,y)                w = alpha x           +      y
-$    VecAXPBYPCZ(w,alpha,beta,gamma,x,y)  z = alpha x           + beta y + gamma z
-$    VecMAXPY(y,nv,alpha[],x[])           y = sum alpha[i] x[i] +      y
+.vb
+    VecAXPY(y,alpha,x)                   y = alpha x           +      y
+    VecAYPX(y,beta,x)                    y =       x           + beta y
+    VecAXPBY(y,alpha,beta,x)             y = alpha x           + beta y
+    VecWAXPY(w,alpha,x,y)                w = alpha x           +      y
+    VecAXPBYPCZ(w,alpha,beta,gamma,x,y)  z = alpha x           + beta y + gamma z
+    VecMAXPY(y,nv,alpha[],x[])           y = sum alpha[i] x[i] +      y
+.ve
 
 .seealso: `VecAYPX()`, `VecMAXPY()`, `VecWAXPY()`, `VecAXPBYPCZ()`, `VecAXPBY()`
 @*/
@@ -597,9 +596,9 @@ PetscErrorCode VecAXPY(Vec y, PetscScalar alpha, Vec x)
 }
 
 /*@
-   VecAYPX - Computes y = x + beta y.
+   VecAYPX - Computes `y = x + beta y`.
 
-   Logically Collective on Vec
+   Logically Collective
 
    Input Parameters:
 +  beta - the scalar
@@ -642,9 +641,9 @@ PetscErrorCode VecAYPX(Vec y, PetscScalar beta, Vec x)
 }
 
 /*@
-   VecAXPBY - Computes y = alpha x + beta y.
+   VecAXPBY - Computes `y = alpha x + beta y`.
 
-   Logically Collective on Vec
+   Logically Collective
 
    Input Parameters:
 +  alpha,beta - the scalars
@@ -686,9 +685,9 @@ PetscErrorCode VecAXPBY(Vec y, PetscScalar alpha, PetscScalar beta, Vec x)
 }
 
 /*@
-   VecAXPBYPCZ - Computes z = alpha x + beta y + gamma z
+   VecAXPBYPCZ - Computes `z = alpha x + beta y + gamma z`
 
-   Logically Collective on Vec
+   Logically Collective
 
    Input Parameters:
 +  alpha,beta, gamma - the scalars
@@ -738,9 +737,9 @@ PetscErrorCode VecAXPBYPCZ(Vec z, PetscScalar alpha, PetscScalar beta, PetscScal
 }
 
 /*@
-   VecWAXPY - Computes w = alpha x + y.
+   VecWAXPY - Computes `w = alpha x + y`.
 
-   Logically Collective on Vec
+   Logically Collective
 
    Input Parameters:
 +  alpha - the scalar
@@ -1084,7 +1083,7 @@ static PetscErrorCode VecMXDot_Priate(Vec x, PetscInt nv, const Vec y[], PetscSc
    VecMTDot - Computes indefinite vector multiple dot products.
    That is, it does NOT use the complex conjugate.
 
-   Collective on Vec
+   Collective
 
    Input Parameters:
 +  x - one vector
@@ -1118,7 +1117,7 @@ PetscErrorCode VecMTDot(Vec x, PetscInt nv, const Vec y[], PetscScalar val[])
 /*@
    VecMDot - Computes vector multiple dot products.
 
-   Collective on Vec
+   Collective
 
    Input Parameters:
 +  x - one vector
@@ -1150,9 +1149,9 @@ PetscErrorCode VecMDot(Vec x, PetscInt nv, const Vec y[], PetscScalar val[])
 }
 
 /*@
-   VecMAXPY - Computes y = y + sum alpha[i] x[i]
+   VecMAXPY - Computes `y = y + sum alpha[i] x[i]`
 
-   Logically Collective on Vec
+   Logically Collective
 
    Input Parameters:
 +  nv - number of scalars and x-vectors
@@ -1207,7 +1206,7 @@ PetscErrorCode VecMAXPY(Vec y, PetscInt nv, const PetscScalar alpha[], Vec x[])
                     in the order they appear in the array. The concatenated vector resides on the same
                     communicator and is the same type as the source vectors.
 
-   Collective on X
+   Collective
 
    Input Parameters:
 +  nx   - number of vectors to be concatenated
@@ -1483,9 +1482,9 @@ PetscErrorCode VecGetSubVector(Vec X, IS is, Vec *Y)
 }
 
 /*@
-   VecRestoreSubVector - Restores a subvector extracted using VecGetSubVector()
+   VecRestoreSubVector - Restores a subvector extracted using `VecGetSubVector()`
 
-   Collective on IS
+   Collective
 
    Input Parameters:
 + X - vector from which subvector was obtained
@@ -1800,10 +1799,10 @@ PetscErrorCode VecRestoreLocalVector(Vec v, Vec w)
    vectors, VecGetArray() returns a pointer to the local data array and
    does not use any copies. If the underlying vector data is not stored
    in a contiguous array this routine will copy the data to a contiguous
-   array and return a pointer to that. You MUST call VecRestoreArray()
+   array and return a pointer to that. You MUST call `VecRestoreArray()`
    when you no longer need access to the array.
 
-   Logically Collective on Vec
+   Logically Collective
 
    Input Parameter:
 .  x - the vector
@@ -1850,9 +1849,9 @@ PetscErrorCode VecGetArray(Vec x, PetscScalar **a)
 }
 
 /*@C
-   VecRestoreArray - Restores a vector after VecGetArray() has been called.
+   VecRestoreArray - Restores a vector after `VecGetArray()` has been called.
 
-   Logically Collective on Vec
+   Logically Collective
 
    Input Parameters:
 +  x - the vector
@@ -1962,7 +1961,7 @@ PetscErrorCode VecRestoreArrayRead(Vec x, const PetscScalar **a)
    processor's portion of the vector data. The values in this array are NOT valid, the routine calling this
    routine is responsible for putting values into the array; any values it does not set will be invalid
 
-   Logically Collective on Vec
+   Logically Collective
 
    Input Parameter:
 .  x - the vector
@@ -1993,9 +1992,9 @@ PetscErrorCode VecGetArrayWrite(Vec x, PetscScalar **a)
 }
 
 /*@C
-   VecRestoreArrayWrite - Restores a vector after VecGetArrayWrite() has been called.
+   VecRestoreArrayWrite - Restores a vector after `VecGetArrayWrite()` has been called.
 
-   Logically Collective on Vec
+   Logically Collective
 
    Input Parameters:
 +  x - the vector
@@ -2023,10 +2022,10 @@ PetscErrorCode VecRestoreArrayWrite(Vec x, PetscScalar **a)
 
 /*@C
    VecGetArrays - Returns a pointer to the arrays in a set of vectors
-   that were created by a call to VecDuplicateVecs().  You MUST call
-   VecRestoreArrays() when you no longer need access to the array.
+   that were created by a call to `VecDuplicateVecs()`.  You MUST call
+   `VecRestoreArrays()` when you no longer need access to the array.
 
-   Logically Collective on Vec
+   Logically Collective; No Fortran Support
 
    Input Parameters:
 +  x - the vectors
@@ -2034,9 +2033,6 @@ PetscErrorCode VecRestoreArrayWrite(Vec x, PetscScalar **a)
 
    Output Parameter:
 .  a - location to put pointer to the array
-
-   Fortran Note:
-   This routine is not supported in Fortran.
 
    Level: intermediate
 
@@ -2059,10 +2055,10 @@ PetscErrorCode VecGetArrays(const Vec x[], PetscInt n, PetscScalar **a[])
 }
 
 /*@C
-   VecRestoreArrays - Restores a group of vectors after VecGetArrays()
+   VecRestoreArrays - Restores a group of vectors after `VecGetArrays()`
    has been called.
 
-   Logically Collective on Vec
+   Logically Collective; No Fortran Support
 
    Input Parameters:
 +  x - the vector
@@ -2073,10 +2069,7 @@ PetscErrorCode VecGetArrays(const Vec x[], PetscInt n, PetscScalar **a[])
    For regular PETSc vectors this routine does not involve any copies. For
    any special vectors that do not store local vector data in a contiguous
    array, this routine will copy the data back into the underlying
-   vector data structure from the arrays obtained with VecGetArrays().
-
-   Fortran Note:
-   This routine is not supported in Fortran.
+   vector data structure from the arrays obtained with `VecGetArrays()`.
 
    Level: intermediate
 
@@ -2102,10 +2095,10 @@ PetscErrorCode VecRestoreArrays(const Vec x[], PetscInt n, PetscScalar **a[])
    pointer to the device memory that contains this processor's portion of the vector data. Device data is guaranteed to have the latest value.
    Otherwise, when this is a host vector (e.g., VECMPI), this routine functions the same as VecGetArray() and returns a host pointer.
 
-   For VECKOKKOS, if Kokkos is configured without device (e.g., use serial or openmp), per this function, the vector works like VECSEQ/VECMPI;
-   otherwise, it works like VECCUDA or VECHIP etc.
+   For `VECKOKKOS`, if Kokkos is configured without device (e.g., use serial or openmp), per this function, the vector works like `VECSEQ`/`VECMPI`;
+   otherwise, it works like `VECCUDA` or `VECHIP` etc.
 
-   Logically Collective on Vec
+   Logically Collective
 
    Input Parameter:
 .  x - the vector
@@ -2139,9 +2132,9 @@ PetscErrorCode VecGetArrayAndMemType(Vec x, PetscScalar **a, PetscMemType *mtype
 }
 
 /*@C
-   VecRestoreArrayAndMemType - Restores a vector after VecGetArrayAndMemType() has been called.
+   VecRestoreArrayAndMemType - Restores a vector after `VecGetArrayAndMemType()` has been called.
 
-   Logically Collective on Vec
+   Logically Collective
 
    Input Parameters:
 +  x - the vector
@@ -2356,22 +2349,20 @@ PetscErrorCode VecPlaceArray(Vec vec, const PetscScalar array[])
    array provided by the user. This is useful to avoid copying an array
    into a vector.
 
-   Not Collective
+   Not Collective; No Fortran Support
 
    Input Parameters:
 +  vec - the vector
 -  array - the array
 
+   Level: developer
+
    Notes:
    This permanently replaces the array and frees the memory associated
    with the old array.
 
-   The memory passed in MUST be obtained with PetscMalloc() and CANNOT be
+   The memory passed in MUST be obtained with `PetscMalloc()` and CANNOT be
    freed by the user. It will be freed when the vector is destroyed.
-
-   Not supported from Fortran
-
-   Level: developer
 
 .seealso: `VecGetArray()`, `VecRestoreArray()`, `VecPlaceArray()`, `VecResetArray()`
 
@@ -2393,7 +2384,7 @@ PetscErrorCode VecReplaceArray(Vec vec, const PetscScalar array[])
     Synopsis:
     VecDuplicateVecsF90(Vec x,PetscInt n,{Vec, pointer :: y(:)},integer ierr)
 
-    Collective on Vec
+    Collective
 
     Input Parameters:
 +   x - a vector to mimic
@@ -2436,7 +2427,7 @@ M*/
     Synopsis:
     VecRestoreArrayF90(Vec x,{Scalar, pointer :: xx_v(:)},integer ierr)
 
-    Logically Collective on Vec
+    Logically Collective
 
     Input Parameters:
 +   x - vector
@@ -2469,7 +2460,7 @@ M*/
     Synopsis:
     VecDestroyVecsF90(PetscInt n,{Vec, pointer :: x(:)},PetscErrorCode ierr)
 
-    Collective on Vec
+    Collective
 
     Input Parameters:
 +   n - the number of vectors previously obtained
@@ -2496,7 +2487,7 @@ M*/
     Synopsis:
     VecGetArrayF90(Vec x,{Scalar, pointer :: xx_v(:)},integer ierr)
 
-    Logically Collective on Vec
+    Logically Collective
 
     Input Parameter:
 .   x - vector
@@ -2534,7 +2525,7 @@ M*/
     Synopsis:
     VecGetArrayReadF90(Vec x,{Scalar, pointer :: xx_v(:)},integer ierr)
 
-    Logically Collective on Vec
+    Logically Collective
 
     Input Parameter:
 .   x - vector
@@ -2570,7 +2561,7 @@ M*/
     Synopsis:
     VecRestoreArrayReadF90(Vec x,{Scalar, pointer :: xx_v(:)},integer ierr)
 
-    Logically Collective on Vec
+    Logically Collective
 
     Input Parameters:
 +   x - vector
@@ -3721,7 +3712,7 @@ PetscErrorCode VecRestoreArray4dRead(Vec x, PetscInt m, PetscInt n, PetscInt p, 
 /*@
    VecLockGet  - Gets the current lock status of a vector
 
-   Logically Collective on Vec
+   Logically Collective
 
    Input Parameter:
 .  x - the vector
@@ -3763,7 +3754,7 @@ PetscErrorCode VecLockGetLocation(Vec x, const char *file[], const char *func[],
 /*@
    VecLockReadPush  - Pushes a read-only lock on a vector to prevent it from writing
 
-   Logically Collective on Vec
+   Logically Collective
 
    Input Parameter:
 .  x - the vector
@@ -3805,7 +3796,7 @@ PetscErrorCode VecLockReadPush(Vec x)
 /*@
    VecLockReadPop  - Pops a read-only lock from a vector
 
-   Logically Collective on Vec
+   Logically Collective
 
    Input Parameter:
 .  x - the vector
@@ -3830,7 +3821,7 @@ PetscErrorCode VecLockReadPop(Vec x)
 /*@C
    VecLockWriteSet  - Lock or unlock a vector for exclusive read/write access
 
-   Logically Collective on Vec
+   Logically Collective
 
    Input Parameters:
 +  x   - the vector

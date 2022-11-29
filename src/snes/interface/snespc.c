@@ -4,7 +4,7 @@
 /*@
    SNESApplyNPC - Calls SNESSolve() on preconditioner for the SNES
 
-   Collective on snes
+   Collective
 
    Input Parameters:
 +  snes - the SNES context
@@ -61,7 +61,7 @@ PetscErrorCode SNESComputeFunctionDefaultNPC(SNES snes, Vec X, Vec F)
 /*@
    SNESGetNPCFunction - Gets the current function value and its norm from a nonlinear preconditioner after `SNESSolve()` has been called on that `SNES`
 
-   Collective on snes
+   Collective
 
    Input Parameter:
 .  snes - the `SNES` context

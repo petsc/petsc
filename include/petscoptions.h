@@ -203,7 +203,7 @@ M*/
     #include <petscoptions.h>
     PetscErrorCode PetscObjectOptionsBegin(PetscObject obj)
 
-    Collective on obj
+    Collective
 
   Input Parameters:
 .   obj - object to set options for

@@ -297,7 +297,7 @@ static struct _ISOps myops = {PetscDesignatedInitializer(getindices, ISGetIndice
 /*@
    ISStrideSetStride - Sets the stride information for a stride index set.
 
-   Logically Collective on is
+   Logically Collective
 
    Input Parameters:
 +  is - the index set

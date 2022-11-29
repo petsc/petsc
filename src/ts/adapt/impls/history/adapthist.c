@@ -59,7 +59,7 @@ PetscErrorCode TSAdaptHistorySetTSHistory(TSAdapt adapt, TSHistory hist, PetscBo
 /*@
    TSAdaptHistoryGetStep - Gets time and time step for a given step number in the history
 
-   Logically Collective on adapt
+   Logically Collective
 
    Input Parameters:
 +  adapt    - the TSAdapt context
@@ -95,7 +95,7 @@ PetscErrorCode TSAdaptHistoryGetStep(TSAdapt adapt, PetscInt step, PetscReal *t,
 /*@
    TSAdaptHistorySetHistory - Sets the time history in the adaptor
 
-   Logically Collective on adapt
+   Logically Collective
 
    Input Parameters:
 +  adapt    - the `TSAdapt` context
@@ -133,7 +133,7 @@ PetscErrorCode TSAdaptHistorySetHistory(TSAdapt adapt, PetscInt n, PetscReal his
 /*@
    TSAdaptHistorySetTrajectory - Sets a time history in the adaptor from a given `TSTrajectory`
 
-   Logically Collective on adapt
+   Logically Collective
 
    Input Parameters:
 +  adapt    - the `TSAdapt` context

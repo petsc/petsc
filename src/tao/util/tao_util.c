@@ -13,7 +13,7 @@ static inline PetscReal Fischer(PetscReal a, PetscReal b)
    VecFischer - Evaluates the Fischer-Burmeister function for complementarity
    problems.
 
-   Logically Collective on X
+   Logically Collective
 
    Input Parameters:
 +  X - current point
@@ -115,7 +115,7 @@ static inline PetscReal SFischer(PetscReal a, PetscReal b, PetscReal c)
    VecSFischer - Evaluates the Smoothed Fischer-Burmeister function for
    complementarity problems.
 
-   Logically Collective on X
+   Logically Collective
 
    Input Parameters:
 +  X - current point
@@ -221,7 +221,7 @@ static inline PetscReal fischsnorm(PetscReal a, PetscReal b, PetscReal c)
    MatDFischer - Calculates an element of the B-subdifferential of the
    Fischer-Burmeister function for complementarity problems.
 
-   Collective on jac
+   Collective
 
    Input Parameters:
 +  jac - the jacobian of f at X
@@ -365,7 +365,7 @@ PetscErrorCode MatDFischer(Mat jac, Vec X, Vec Con, Vec XL, Vec XU, Vec T1, Vec 
    MatDSFischer - Calculates an element of the B-subdifferential of the
    smoothed Fischer-Burmeister function for complementarity problems.
 
-   Collective on jac
+   Collective
 
    Input Parameters:
 +  jac - the jacobian of f at X

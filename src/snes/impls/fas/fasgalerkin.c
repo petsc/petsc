@@ -29,7 +29,7 @@ PetscErrorCode SNESFASGetGalerkin(SNES snes, PetscBool *flg)
 /*@
    SNESFASSetGalerkin - Sets coarse problems as formed by projection to the fine problem
 
-   Collective on snes
+   Collective
 
    Input Parameters:
 +  snes - the `SNESFAS` nonlinear solver context
@@ -54,7 +54,7 @@ PetscErrorCode SNESFASSetGalerkin(SNES snes, PetscBool flg)
 /*@C
    SNESFASGalerkinFunctionDefault - Computes the Galerkin FAS function
 
-   Collective on snes
+   Collective
 
    Input Parameters:
 +  snes - the `SNESFAS` nonlinear solver context

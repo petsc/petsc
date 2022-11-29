@@ -2928,7 +2928,7 @@ static PetscErrorCode MatISSetLocalMat_IS(Mat mat, Mat local)
 /*@
     MatISSetLocalMat - Replace the local matrix stored inside a `MATIS` object.
 
-  Collective on Mat
+  Collective
 
   Input Parameters:
 +  mat - the matrix

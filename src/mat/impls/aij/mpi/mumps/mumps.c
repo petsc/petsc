@@ -2454,7 +2454,7 @@ PetscErrorCode MatMumpsGetIcntl_MUMPS(Mat F, PetscInt icntl, PetscInt *ival)
 /*@
   MatMumpsSetIcntl - Set MUMPS parameter ICNTL()
 
-   Logically Collective on F
+   Logically Collective
 
    Input Parameters:
 +  F - the factored matrix obtained by calling `MatGetFactor()` from PETSc-MUMPS interface
@@ -2486,7 +2486,7 @@ PetscErrorCode MatMumpsSetIcntl(Mat F, PetscInt icntl, PetscInt ival)
 /*@
   MatMumpsGetIcntl - Get MUMPS parameter ICNTL()
 
-   Logically Collective on F
+   Logically Collective
 
    Input Parameters:
 +  F - the factored matrix obtained by calling `MatGetFactor()` from PETSc-MUMPS interface
@@ -2547,7 +2547,7 @@ PetscErrorCode MatMumpsGetCntl_MUMPS(Mat F, PetscInt icntl, PetscReal *val)
 /*@
   MatMumpsSetCntl - Set MUMPS parameter CNTL()
 
-   Logically Collective on F
+   Logically Collective
 
    Input Parameters:
 +  F - the factored matrix obtained by calling `MatGetFactor()` from PETSc-MUMPS interface
@@ -2579,7 +2579,7 @@ PetscErrorCode MatMumpsSetCntl(Mat F, PetscInt icntl, PetscReal val)
 /*@
   MatMumpsGetCntl - Get MUMPS parameter CNTL()
 
-   Logically Collective on F
+   Logically Collective
 
    Input Parameters:
 +  F - the factored matrix obtained by calling `MatGetFactor()` from PETSc-MUMPS interface
@@ -2704,7 +2704,7 @@ PetscErrorCode MatMumpsGetInverse_MUMPS(Mat F, Mat spRHS)
 /*@
   MatMumpsGetInverse - Get user-specified set of entries in inverse of A
 
-   Logically Collective on F
+   Logically Collective
 
    Input Parameters:
 +  F - the factored matrix obtained by calling `MatGetFactor()` from PETSc-MUMPS interface
@@ -2743,7 +2743,7 @@ PetscErrorCode MatMumpsGetInverseTranspose_MUMPS(Mat F, Mat spRHST)
 /*@
   MatMumpsGetInverseTranspose - Get user-specified set of entries in inverse of matrix A^T
 
-   Logically Collective on F
+   Logically Collective
 
    Input Parameters:
 +  F - the factored matrix of A obtained by calling `MatGetFactor()` from PETSc-MUMPS interface
@@ -2776,7 +2776,7 @@ PetscErrorCode MatMumpsGetInverseTranspose(Mat F, Mat spRHST)
 /*@
   MatMumpsGetInfo - Get MUMPS parameter INFO()
 
-   Logically Collective on F
+   Logically Collective
 
    Input Parameters:
 +  F - the factored matrix obtained by calling `MatGetFactor()` from PETSc-MUMPS interface
@@ -2805,7 +2805,7 @@ PetscErrorCode MatMumpsGetInfo(Mat F, PetscInt icntl, PetscInt *ival)
 /*@
   MatMumpsGetInfog - Get MUMPS parameter INFOG()
 
-   Logically Collective on F
+   Logically Collective
 
    Input Parameters:
 +  F - the factored matrix obtained by calling `MatGetFactor()` from PETSc-MUMPS interface
@@ -2834,7 +2834,7 @@ PetscErrorCode MatMumpsGetInfog(Mat F, PetscInt icntl, PetscInt *ival)
 /*@
   MatMumpsGetRinfo - Get MUMPS parameter RINFO()
 
-   Logically Collective on F
+   Logically Collective
 
    Input Parameters:
 +  F - the factored matrix obtained by calling `MatGetFactor()` from PETSc-MUMPS interface
@@ -2863,7 +2863,7 @@ PetscErrorCode MatMumpsGetRinfo(Mat F, PetscInt icntl, PetscReal *val)
 /*@
   MatMumpsGetRinfog - Get MUMPS parameter RINFOG()
 
-   Logically Collective on F
+   Logically Collective
 
    Input Parameters:
 +  F - the factored matrix obtained by calling `MatGetFactor()` from PETSc-MUMPS interface

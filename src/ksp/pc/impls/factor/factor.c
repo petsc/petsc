@@ -103,7 +103,7 @@ PetscErrorCode PCFactorSetUpMatSolverType(PC pc)
 /*@
    PCFactorSetZeroPivot - Sets the size at which smaller pivots are declared to be zero
 
-   Logically Collective on pc
+   Logically Collective
 
    Input Parameters:
 +  pc - the preconditioner context
@@ -129,7 +129,7 @@ PetscErrorCode PCFactorSetZeroPivot(PC pc, PetscReal zero)
    PCFactorSetShiftType - adds a particular type of quantity to the diagonal of the matrix during
      numerical factorization, thus the matrix has nonzero pivots
 
-   Logically Collective on pc
+   Logically Collective
 
    Input Parameters:
 +  pc - the preconditioner context
@@ -155,7 +155,7 @@ PetscErrorCode PCFactorSetShiftType(PC pc, MatFactorShiftType shifttype)
    PCFactorSetShiftAmount - adds a quantity to the diagonal of the matrix during
      numerical factorization, thus the matrix has nonzero pivots
 
-   Logically Collective on pc
+   Logically Collective
 
    Input Parameters:
 +  pc - the preconditioner context
@@ -181,7 +181,7 @@ PetscErrorCode PCFactorSetShiftAmount(PC pc, PetscReal shiftamount)
    PCFactorSetDropTolerance - The preconditioner will use an `PCILU`
    based on a drop tolerance.
 
-   Logically Collective on pc
+   Logically Collective
 
    Input Parameters:
 +  pc - the preconditioner context
@@ -283,7 +283,7 @@ PetscErrorCode PCFactorGetShiftType(PC pc, MatFactorShiftType *type)
 /*@
    PCFactorGetLevels - Gets the number of levels of fill to use.
 
-   Logically Collective on pc
+   Logically Collective
 
    Input Parameters:
 .  pc - the preconditioner context
@@ -306,7 +306,7 @@ PetscErrorCode PCFactorGetLevels(PC pc, PetscInt *levels)
 /*@
    PCFactorSetLevels - Sets the number of levels of fill to use.
 
-   Logically Collective on pc
+   Logically Collective
 
    Input Parameters:
 +  pc - the preconditioner context
@@ -333,7 +333,7 @@ PetscErrorCode PCFactorSetLevels(PC pc, PetscInt levels)
    PCFactorSetAllowDiagonalFill - Causes all diagonal matrix entries to be
    treated as level 0 fill even if there is no non-zero location.
 
-   Logically Collective on pc
+   Logically Collective
 
    Input Parameters:
 +  pc - the preconditioner context
@@ -361,7 +361,7 @@ PetscErrorCode PCFactorSetAllowDiagonalFill(PC pc, PetscBool flg)
    PCFactorGetAllowDiagonalFill - Determines if all diagonal matrix entries are
        treated as level 0 fill even if there is no non-zero location.
 
-   Logically Collective on pc
+   Logically Collective
 
    Input Parameter:
 .  pc - the preconditioner context
@@ -387,7 +387,7 @@ PetscErrorCode PCFactorGetAllowDiagonalFill(PC pc, PetscBool *flg)
 /*@
    PCFactorReorderForNonzeroDiagonal - reorders rows/columns of matrix to remove zeros from diagonal
 
-   Logically Collective on pc
+   Logically Collective
 
    Input Parameters:
 +  pc - the preconditioner context
@@ -412,7 +412,7 @@ PetscErrorCode PCFactorReorderForNonzeroDiagonal(PC pc, PetscReal rtol)
 /*@C
    PCFactorSetMatSolverType - sets the solver package that is used to perform the factorization
 
-   Logically Collective on pc
+   Logically Collective
 
    Input Parameters:
 +  pc - the preconditioner context
@@ -510,7 +510,7 @@ PetscErrorCode PCFactorSetFill(PC pc, PetscReal fill)
    is factored, the original unfactored matrix is freed, thus recovering that
    space. For ICC(0) and ILU(0) with the default natural ordering the factorization is done efficiently in-place.
 
-   Logically Collective on pc
+   Logically Collective
 
    Input Parameters:
 +  pc - the preconditioner context
@@ -542,7 +542,7 @@ PetscErrorCode PCFactorSetUseInPlace(PC pc, PetscBool flg)
 /*@
    PCFactorGetUseInPlace - Determines if an in-place factorization is being used.
 
-   Logically Collective on pc
+   Logically Collective
 
    Input Parameter:
 .  pc - the preconditioner context
@@ -566,7 +566,7 @@ PetscErrorCode PCFactorGetUseInPlace(PC pc, PetscBool *flg)
     PCFactorSetMatOrderingType - Sets the ordering routine (to reduce fill) to
     be used in the `PCLU`, `PCCHOLESKY`, `PCILU`,  or `PCICC` preconditioners
 
-    Logically Collective on pc
+    Logically Collective
 
     Input Parameters:
 +   pc - the preconditioner context
@@ -602,7 +602,7 @@ PetscErrorCode PCFactorSetMatOrderingType(PC pc, MatOrderingType ordering)
       For PETSc dense matrices column pivoting is always done, for PETSc sparse matrices
       it is never done. For the MATLAB and `MATSOLVERSUPERLU` factorization this is used.
 
-    Logically Collective on pc
+    Logically Collective
 
     Input Parameters:
 +   pc - the preconditioner context
@@ -628,7 +628,7 @@ PetscErrorCode PCFactorSetColumnPivot(PC pc, PetscReal dtcol)
     PCFactorSetPivotInBlocks - Determines if pivoting is done while factoring each block
       with `MATBAIJ` or `MATSBAIJ` matrices
 
-    Logically Collective on pc
+    Logically Collective
 
     Input Parameters:
 +   pc - the preconditioner context
@@ -654,7 +654,7 @@ PetscErrorCode PCFactorSetPivotInBlocks(PC pc, PetscBool pivot)
    PCFactorSetReuseFill - When matrices with different nonzero structure are factored,
    this causes later ones to use the fill ratio computed in the initial factorization.
 
-   Logically Collective on pc
+   Logically Collective
 
    Input Parameters:
 +  pc - the preconditioner context

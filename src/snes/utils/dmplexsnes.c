@@ -12,7 +12,7 @@ static void pressure_Private(PetscInt dim, PetscInt Nf, PetscInt NfAux, const Pe
 /*
   SNESCorrectDiscretePressure_Private - Add a vector in the nullspace to make the continuum integral of the pressure field equal to zero. This is normally used only to evaluate convergence rates for the pressure accurately.
 
-  Collective on snes
+  Collective
 
   Input Parameters:
 + snes      - The SNES
@@ -68,7 +68,7 @@ static PetscErrorCode SNESCorrectDiscretePressure_Private(SNES snes, PetscInt pf
    SNESConvergedCorrectPressure - Convergence test that adds a vector in the nullspace to make the continuum integral of the pressure field equal to zero.
    This is normally used only to evaluate convergence rates for the pressure accurately. The convergence test itself just mimics `SNESConvergedDefault()`.
 
-   Logically Collective on snes
+   Logically Collective
 
    Input Parameters:
 +  snes - the `SNES` context
@@ -306,7 +306,7 @@ PetscErrorCode DMInterpolationAddPoints(DMInterpolationInfo ctx, PetscInt n, Pet
 /*@C
   DMInterpolationSetUp - Compute spatial indices for point location during interpolation
 
-  Collective on ctx
+  Collective
 
   Input Parameters:
 + ctx - the context
@@ -433,7 +433,7 @@ PetscErrorCode DMInterpolationSetUp(DMInterpolationInfo ctx, DM dm, PetscBool re
 /*@C
   DMInterpolationGetCoordinates - Gets a `Vec` with the coordinates of each interpolation point
 
-  Collective on ctx
+  Collective
 
   Input Parameter:
 . ctx - the context
@@ -461,7 +461,7 @@ PetscErrorCode DMInterpolationGetCoordinates(DMInterpolationInfo ctx, Vec *coord
 /*@C
   DMInterpolationGetVector - Gets a `Vec` which can hold all the interpolated field values
 
-  Collective on ctx
+  Collective
 
   Input Parameter:
 . ctx - the context
@@ -491,7 +491,7 @@ PetscErrorCode DMInterpolationGetVector(DMInterpolationInfo ctx, Vec *v)
 /*@C
   DMInterpolationRestoreVector - Returns a `Vec` which can hold all the interpolated field values
 
-  Collective on ctx
+  Collective
 
   Input Parameters:
 + ctx - the context
@@ -1130,7 +1130,7 @@ PetscErrorCode DMInterpolationEvaluate(DMInterpolationInfo ctx, DM dm, Vec x, Ve
 /*@C
   DMInterpolationDestroy - Destroys a `DMInterpolationInfo` context
 
-  Collective on ctx
+  Collective
 
   Input Parameter:
 . ctx - the context
@@ -1154,7 +1154,7 @@ PetscErrorCode DMInterpolationDestroy(DMInterpolationInfo *ctx)
 /*@C
   SNESMonitorFields - Monitors the residual for each field separately
 
-  Collective on snes
+  Collective
 
   Input Parameters:
 + snes   - the `SNES` context
@@ -1554,7 +1554,7 @@ static PetscErrorCode DMSNESJacobianMF_Mult_Private(Mat A, Vec Y, Vec Z)
 /*@
   DMSNESCreateJacobianMF - Create a `Mat` which computes the action of the Jacobian matrix-free
 
-  Collective on dm
+  Collective
 
   Input Parameters:
 + dm   - The `DM`

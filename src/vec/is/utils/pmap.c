@@ -265,7 +265,7 @@ PetscErrorCode PetscLayoutSetUp(PetscLayout map)
 /*@
   PetscLayoutDuplicate - creates a new `PetscLayout` with the same information as a given one. If the `PetscLayout` already exists it is destroyed first.
 
-  Collective on in
+  Collective
 
   Input Parameter:
 . in - input `PetscLayout` to be duplicated
@@ -299,7 +299,7 @@ PetscErrorCode PetscLayoutDuplicate(PetscLayout in, PetscLayout *out)
 /*@
   PetscLayoutReference - Causes a PETSc `Vec` or `Mat` to share a `PetscLayout` with one that already exists.
 
-  Collective on in
+  Collective
 
   Input Parameter:
 . in - input `PetscLayout` to be copied
@@ -328,7 +328,7 @@ PetscErrorCode PetscLayoutReference(PetscLayout in, PetscLayout *out)
 /*@
   PetscLayoutSetISLocalToGlobalMapping - sets a `ISLocalGlobalMapping` into a `PetscLayout`
 
-  Collective on in
+  Collective
 
   Input Parameters:
 + in - input `PetscLayout`
@@ -361,7 +361,7 @@ PetscErrorCode PetscLayoutSetISLocalToGlobalMapping(PetscLayout in, ISLocalToGlo
 /*@
   PetscLayoutSetLocalSize - Sets the local size for a `PetscLayout` object.
 
-  Collective on map
+  Collective
 
   Input Parameters:
 + map - pointer to the map
@@ -409,7 +409,7 @@ PetscErrorCode PetscLayoutGetLocalSize(PetscLayout map, PetscInt *n)
 /*@
   PetscLayoutSetSize - Sets the global size for a `PetscLayout` object.
 
-  Logically Collective on map
+  Logically Collective
 
   Input Parameters:
 + map - pointer to the map
@@ -456,7 +456,7 @@ PetscErrorCode PetscLayoutGetSize(PetscLayout map, PetscInt *n)
 /*@
   PetscLayoutSetBlockSize - Sets the block size for a `PetscLayout` object.
 
-  Logically Collective on map
+  Logically Collective
 
   Input Parameters:
 + map - pointer to the map

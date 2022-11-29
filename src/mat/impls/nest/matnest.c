@@ -1418,7 +1418,7 @@ PetscErrorCode MatNestSetSubMats_Nest(Mat A, PetscInt nr, const IS is_row[], Pet
 /*@
    MatNestSetSubMats - Sets the nested submatrices in a `MATNEST`
 
-   Collective on A
+   Collective
 
    Input Parameters:
 +  A - `MATNEST` matrix

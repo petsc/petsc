@@ -57,7 +57,7 @@ PetscErrorCode PCGetDefaultType_Private(PC pc, const char *type[])
 /*@
    PCReset - Resets a PC context to the pcsetupcalled = 0 state and removes any allocated `Vec`s and `Mat`s
 
-   Collective on pc
+   Collective
 
    Input Parameter:
 .  pc - the preconditioner context
@@ -86,7 +86,7 @@ PetscErrorCode PCReset(PC pc)
 /*@C
    PCDestroy - Destroys `PC` context that was created with `PCCreate()`.
 
-   Collective on pc
+   Collective
 
    Input Parameter:
 .  pc - the preconditioner context
@@ -119,7 +119,7 @@ PetscErrorCode PCDestroy(PC *pc)
    PCGetDiagonalScale - Indicates if the preconditioner applies an additional left and right
       scaling as needed by certain time-stepping codes.
 
-   Logically Collective on pc
+   Logically Collective
 
    Input Parameter:
 .  pc - the preconditioner context
@@ -151,7 +151,7 @@ PetscErrorCode PCGetDiagonalScale(PC pc, PetscBool *flag)
    PCSetDiagonalScale - Indicates the left scaling to use to apply an additional left and right
       scaling as needed by certain time-stepping codes.
 
-   Logically Collective on pc
+   Logically Collective
 
    Input Parameters:
 +  pc - the preconditioner context
@@ -191,7 +191,7 @@ PetscErrorCode PCSetDiagonalScale(PC pc, Vec s)
 /*@
    PCDiagonalScaleLeft - Scales a vector by the left scaling as needed by certain time-stepping codes.
 
-   Logically Collective on pc
+   Logically Collective
 
    Input Parameters:
 +  pc - the preconditioner context
@@ -230,7 +230,7 @@ PetscErrorCode PCDiagonalScaleLeft(PC pc, Vec in, Vec out)
 /*@
    PCDiagonalScaleRight - Scales a vector by the right scaling as needed by certain time-stepping codes.
 
-   Logically Collective on pc
+   Logically Collective
 
    Input Parameters:
 +  pc - the preconditioner context
@@ -271,7 +271,7 @@ PetscErrorCode PCDiagonalScaleRight(PC pc, Vec in, Vec out)
    operator during the preconditioning process it applies the Amat provided to `TSSetRHSJacobian()`,
    `TSSetIJacobian()`, `SNESSetJacobian()`, `KSPSetOperators()` or `PCSetOperators()` not the Pmat.
 
-   Logically Collective on pc
+   Logically Collective
 
    Input Parameters:
 +  pc - the preconditioner context
@@ -299,7 +299,7 @@ PetscErrorCode PCSetUseAmat(PC pc, PetscBool flg)
 /*@
    PCSetErrorIfFailure - Causes `PC` to generate an error if a FPE, for example a zero pivot, is detected.
 
-   Logically Collective on pc
+   Logically Collective
 
    Input Parameters:
 +  pc - iterative context obtained from PCCreate()
@@ -330,7 +330,7 @@ PetscErrorCode PCSetErrorIfFailure(PC pc, PetscBool flg)
    operator during the preconditioning process it applies the Amat provided to `TSSetRHSJacobian()`,
    `TSSetIJacobian()`, `SNESSetJacobian()`, `KSPSetOperators()` or `PCSetOperators()` not the Pmat.
 
-   Logically Collective on pc
+   Logically Collective
 
    Input Parameter:
 .  pc - the preconditioner context
@@ -403,7 +403,7 @@ PetscErrorCode PCCreate(MPI_Comm comm, PC *newpc)
 /*@
    PCApply - Applies the preconditioner to a vector.
 
-   Collective on pc
+   Collective
 
    Input Parameters:
 +  pc - the preconditioner context
@@ -448,7 +448,7 @@ PetscErrorCode PCApply(PC pc, Vec x, Vec y)
 /*@
    PCMatApply - Applies the preconditioner to multiple vectors stored as a `MATDENSE`. Like `PCApply()`, Y and X must be different matrices.
 
-   Collective on pc
+   Collective
 
    Input Parameters:
 +  pc - the preconditioner context
@@ -510,7 +510,7 @@ PetscErrorCode PCMatApply(PC pc, Mat X, Mat Y)
 /*@
    PCApplySymmetricLeft - Applies the left part of a symmetric preconditioner to a vector.
 
-   Collective on pc
+   Collective
 
    Input Parameters:
 +  pc - the preconditioner context
@@ -547,7 +547,7 @@ PetscErrorCode PCApplySymmetricLeft(PC pc, Vec x, Vec y)
 /*@
    PCApplySymmetricRight - Applies the right part of a symmetric preconditioner to a vector.
 
-   Collective on pc
+   Collective
 
    Input Parameters:
 +  pc - the preconditioner context
@@ -584,7 +584,7 @@ PetscErrorCode PCApplySymmetricRight(PC pc, Vec x, Vec y)
 /*@
    PCApplyTranspose - Applies the transpose of preconditioner to a vector.
 
-   Collective on pc
+   Collective
 
    Input Parameters:
 +  pc - the preconditioner context
@@ -624,7 +624,7 @@ PetscErrorCode PCApplyTranspose(PC pc, Vec x, Vec y)
 /*@
    PCApplyTransposeExists - Test whether the preconditioner has a transpose apply operation
 
-   Collective on pc
+   Collective
 
    Input Parameter:
 .  pc - the preconditioner context
@@ -649,7 +649,7 @@ PetscErrorCode PCApplyTransposeExists(PC pc, PetscBool *flg)
 /*@
    PCApplyBAorAB - Applies the preconditioner and operator to a vector. y = B*A*x or y = A*B*x.
 
-   Collective on pc
+   Collective
 
    Input Parameters:
 +  pc - the preconditioner context
@@ -730,7 +730,7 @@ PetscErrorCode PCApplyBAorAB(PC pc, PCSide side, Vec x, Vec y, Vec work)
    and operator to a vector. That is, applies tr(B) * tr(A) with left preconditioning,
    NOT tr(B*A) = tr(A)*tr(B).
 
-   Collective on pc
+   Collective
 
    Input Parameters:
 +  pc - the preconditioner context
@@ -809,7 +809,7 @@ PetscErrorCode PCApplyRichardsonExists(PC pc, PetscBool *exists)
    the particular preconditioner. This routine is usually used by the
    Krylov solvers and not the application code directly.
 
-   Collective on pc
+   Collective
 
    Input Parameters:
 +  pc  - the preconditioner context
@@ -853,7 +853,7 @@ PetscErrorCode PCApplyRichardson(PC pc, Vec b, Vec y, Vec w, PetscReal rtol, Pet
 /*@
    PCSetFailedReason - Sets the reason a `PCSetUp()` failed or `PC_NOERROR` if it did not fail
 
-   Logically Collective on pc
+   Logically Collective
 
    Input Parameters:
 +  pc - the preconditioner context
@@ -873,7 +873,7 @@ PetscErrorCode PCSetFailedReason(PC pc, PCFailedReason reason)
 /*@
    PCGetFailedReason - Gets the reason a `PCSetUp()` failed or `PC_NOERROR` if it did not fail
 
-   Logically Collective on pc
+   Logically Collective
 
    Input Parameter:
 .  pc - the preconditioner context
@@ -935,7 +935,7 @@ PetscErrorCode PCGetFailedReasonRank(PC pc, PCFailedReason *reason)
 /*@
    PCSetUp - Prepares for the use of a preconditioner.
 
-   Collective on pc
+   Collective
 
    Input Parameter:
 .  pc - the preconditioner context
@@ -1005,7 +1005,7 @@ PetscErrorCode PCSetUp(PC pc)
    the block Jacobi, block Gauss-Seidel, and overlapping Schwarz
    methods.
 
-   Collective on pc
+   Collective
 
    Input Parameter:
 .  pc - the preconditioner context
@@ -1036,7 +1036,7 @@ PetscErrorCode PCSetUpOnBlocks(PC pc)
    usual; the user can then alter these (for example, to set different boundary
    conditions for each submatrix) before they are used for the local solves.
 
-   Logically Collective on pc
+   Logically Collective
 
    Input Parameters:
 +  pc - the preconditioner context
@@ -1079,7 +1079,7 @@ PetscErrorCode PCSetModifySubMatrices(PC pc, PetscErrorCode (*func)(PC, PetscInt
    PCModifySubMatrices - Calls an optional user-defined routine within
    certain preconditioners if one has been set with `PCSetModifySubMatrices()`.
 
-   Collective on pc
+   Collective
 
    Input Parameters:
 +  pc - the preconditioner context
@@ -1125,7 +1125,7 @@ PetscErrorCode PCModifySubMatrices(PC pc, PetscInt nsub, const IS row[], const I
    PCSetOperators - Sets the matrix associated with the linear system and
    a (possibly) different one associated with the preconditioner.
 
-   Logically Collective on pc
+   Logically Collective
 
    Input Parameters:
 +  pc - the preconditioner context
@@ -1187,7 +1187,7 @@ PetscErrorCode PCSetOperators(PC pc, Mat Amat, Mat Pmat)
 /*@
    PCSetReusePreconditioner - reuse the current preconditioner even if the operator in the preconditioner has changed.
 
-   Logically Collective on pc
+   Logically Collective
 
    Input Parameters:
 +  pc - the preconditioner context
@@ -1363,7 +1363,7 @@ PetscErrorCode PCGetOperatorsSet(PC pc, PetscBool *mat, PetscBool *pmat)
    preconditioner context.  This routine is valid only for the `PCLU`,
    `PCILU`, `PCCHOLESKY`, and `PCICC` methods.
 
-   Not Collective on pc though mat is parallel if pc is parallel
+   Not Collective though mat is parallel if pc is parallel
 
    Input Parameter:
 .  pc - the preconditioner context
@@ -1391,7 +1391,7 @@ PetscErrorCode PCFactorGetMatrix(PC pc, Mat *mat)
    PCSetOptionsPrefix - Sets the prefix used for searching for all
    `PC` options in the database.
 
-   Logically Collective on pc
+   Logically Collective
 
    Input Parameters:
 +  pc - the preconditioner context
@@ -1418,7 +1418,7 @@ PetscErrorCode PCSetOptionsPrefix(PC pc, const char prefix[])
    PCAppendOptionsPrefix - Appends to the prefix used for searching for all
    `PC` options in the database.
 
-   Logically Collective on pc
+   Logically Collective
 
    Input Parameters:
 +  pc - the preconditioner context
@@ -1490,7 +1490,7 @@ PETSC_INTERN PetscErrorCode PCPreSolveChangeRHS(PC pc, PetscBool *change)
    preconditioner-specific actions that must be performed before
    the iterative solve itself.
 
-   Collective on pc
+   Collective
 
    Input Parameters:
 +  pc - the preconditioner context
@@ -1534,7 +1534,7 @@ PetscErrorCode PCPreSolve(PC pc, KSP ksp)
    preconditioner-specific actions that must be performed before
    the iterative solve itself.
 
-   Logically Collective on pc
+   Logically Collective
 
    Input Parameters:
 +   pc - the preconditioner object
@@ -1563,7 +1563,7 @@ PetscErrorCode PCSetPreSolve(PC pc, PetscErrorCode (*presolve)(PC, KSP))
    preconditioner-specific actions that must be performed after
    the iterative solve itself.
 
-   Collective on pc
+   Collective
 
    Input Parameters:
 +  pc - the preconditioner context
@@ -1600,7 +1600,7 @@ PetscErrorCode PCPostSolve(PC pc, KSP ksp)
 /*@C
   PCLoad - Loads a `PC` that has been stored in binary  with `PCView()`.
 
-  Collective on newdm
+  Collective
 
   Input Parameters:
 + newdm - the newly loaded `PC`, this needs to have been created with `PCCreate()` or
@@ -1642,7 +1642,7 @@ PetscErrorCode PCLoad(PC newdm, PetscViewer viewer)
 /*@C
    PCViewFromOptions - View from the `PC` based on options in the database
 
-   Collective on pc
+   Collective
 
    Input Parameters:
 +  A - the PC context
@@ -1664,7 +1664,7 @@ PetscErrorCode PCViewFromOptions(PC A, PetscObject obj, const char name[])
 /*@C
    PCView - Prints information about the `PC`
 
-   Collective on pc
+   Collective
 
    Input Parameters:
 +  PC - the `PC` context
@@ -1833,7 +1833,7 @@ static PetscErrorCode MatMult_PC(Mat A, Vec X, Vec Y)
 /*@
     PCComputeOperator - Computes the explicit preconditioned operator.
 
-    Collective on pc
+    Collective
 
     Input Parameters:
 +   pc - the preconditioner object
@@ -1873,7 +1873,7 @@ PetscErrorCode PCComputeOperator(PC pc, MatType mattype, Mat *mat)
 /*@
    PCSetCoordinates - sets the coordinates of all the nodes on the local process
 
-   Collective on pc
+   Collective
 
    Input Parameters:
 +  pc - the solver context
@@ -1907,7 +1907,7 @@ PetscErrorCode PCSetCoordinates(PC pc, PetscInt dim, PetscInt nloc, PetscReal co
 /*@
    PCGetInterpolations - Gets interpolation matrices for all levels (except level 0)
 
-   Logically Collective on pc
+   Logically Collective
 
    Input Parameter:
 .  pc - the precondition context
@@ -1936,7 +1936,7 @@ PetscErrorCode PCGetInterpolations(PC pc, PetscInt *num_levels, Mat *interpolati
 /*@
    PCGetCoarseOperators - Gets coarse operator matrices for all levels (except the finest level)
 
-   Logically Collective on pc
+   Logically Collective
 
    Input Parameter:
 .  pc - the precondition context

@@ -95,7 +95,7 @@ PetscErrorCode SNESNewtonTRDCGetRhoFlag(SNES snes, PetscBool *rho_flag)
    SNESNewtonTRDCSetPreCheck - Sets a user function that is called before the search step has been determined.
        Allows the user a chance to change or override the trust region decision.
 
-   Logically Collective on snes
+   Logically Collective
 
    Input Parameters:
 +  snes - the nonlinear solver object
@@ -152,7 +152,7 @@ PetscErrorCode SNESNewtonTRDCGetPreCheck(SNES snes, PetscErrorCode (**func)(SNES
    SNESNewtonTRDCSetPostCheck - Sets a user function that is called after the search step has been determined but before the next
        function evaluation. Allows the user a chance to change or override the decision of the line search routine
 
-   Logically Collective on snes
+   Logically Collective
 
    Input Parameters:
 +  snes - the nonlinear solver object
@@ -208,7 +208,7 @@ PetscErrorCode SNESNewtonTRDCGetPostCheck(SNES snes, PetscErrorCode (**func)(SNE
 /*@C
    SNESNewtonTRDCPreCheck - Called before the step has been determined in `SNESNEWTONTRDC`
 
-   Logically Collective on snes
+   Logically Collective
 
    Input Parameters:
 +  snes - the solver
@@ -238,7 +238,7 @@ static PetscErrorCode SNESNewtonTRDCPreCheck(SNES snes, Vec X, Vec Y, PetscBool 
 /*@C
    SNESNewtonTRDCPostCheck - Called after the step has been determined in `SNESNEWTONTRDC` but before the function evaluation at that step
 
-   Logically Collective on snes
+   Logically Collective
 
    Input Parameters:
 +  snes - the solver

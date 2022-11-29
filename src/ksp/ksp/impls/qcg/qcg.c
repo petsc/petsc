@@ -6,7 +6,7 @@ static PetscErrorCode KSPQCGQuadraticRoots(Vec, Vec, PetscReal, PetscReal *, Pet
 /*@
     KSPQCGSetTrustRegionRadius - Sets the radius of the trust region for `KSPQCG`
 
-    Logically Collective on ksp
+    Logically Collective
 
     Input Parameters:
 +   ksp   - the iterative context
@@ -65,7 +65,7 @@ PetscErrorCode KSPQCGGetTrialStepNorm(KSP ksp, PetscReal *tsnorm)
      H is Hessian matrix,
      D is a scaling matrix.
 
-    Collective on ksp
+    Collective
 
     Input Parameter:
 .   ksp - the iterative context

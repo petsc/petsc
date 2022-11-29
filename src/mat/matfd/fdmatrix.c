@@ -143,7 +143,7 @@ PetscErrorCode MatFDColoringView(MatFDColoring c, PetscViewer viewer)
    MatFDColoringSetParameters - Sets the parameters for the sparse approximation of
    a Jacobian matrix using finite differences.
 
-   Logically Collective on matfd
+   Logically Collective
 
    The Jacobian is estimated with the differencing approximation
 .vb
@@ -180,7 +180,7 @@ PetscErrorCode MatFDColoringSetParameters(MatFDColoring matfd, PetscReal error, 
 /*@
    MatFDColoringSetBlockSize - Sets block size for efficient inserting entries of Jacobian matrix.
 
-   Logically Collective on matfd
+   Logically Collective
 
    Input Parameters:
 +  coloring - the coloring context
@@ -205,7 +205,7 @@ PetscErrorCode MatFDColoringSetBlockSize(MatFDColoring matfd, PetscInt brows, Pe
 /*@
    MatFDColoringSetUp - Sets up the internal data structures of matrix coloring context for the later use.
 
-   Collective on mat
+   Collective
 
    Input Parameters:
 +  mat - the matrix containing the nonzero structure of the Jacobian
@@ -266,7 +266,7 @@ PetscErrorCode MatFDColoringGetFunction(MatFDColoring matfd, PetscErrorCode (**f
 /*@C
    MatFDColoringSetFunction - Sets the function to use for computing the Jacobian.
 
-   Logically Collective on matfd
+   Logically Collective
 
    Input Parameters:
 +  coloring - the coloring context
@@ -303,7 +303,7 @@ PetscErrorCode MatFDColoringSetFunction(MatFDColoring matfd, PetscErrorCode (*f)
    MatFDColoringSetFromOptions - Sets coloring finite difference parameters from
    the options database.
 
-   Collective on matfd
+   Collective
 
    The Jacobian, F'(u), is estimated with the differencing approximation
 .vb
@@ -361,7 +361,7 @@ PetscErrorCode MatFDColoringSetFromOptions(MatFDColoring matfd)
 /*@C
    MatFDColoringSetType - Sets the approach for computing the finite difference parameter
 
-   Collective on matfd
+   Collective
 
    Input Parameters:
 +  coloring - the coloring context
@@ -418,7 +418,7 @@ PetscErrorCode MatFDColoringViewFromOptions(MatFDColoring fd, const char prefix[
    MatFDColoringCreate - Creates a matrix coloring context for finite difference
    computation of Jacobians.
 
-   Collective on mat
+   Collective
 
    Input Parameters:
 +  mat - the matrix containing the nonzero structure of the Jacobian
@@ -477,7 +477,7 @@ PetscErrorCode MatFDColoringCreate(Mat mat, ISColoring iscoloring, MatFDColoring
     MatFDColoringDestroy - Destroys a matrix coloring context that was created
     via `MatFDColoringCreate()`.
 
-    Collective on c
+    Collective
 
     Input Parameter:
 .   c - coloring context
@@ -564,7 +564,7 @@ PetscErrorCode MatFDColoringGetPerturbedColumns(MatFDColoring coloring, PetscInt
     MatFDColoringApply - Given a matrix for which a `MatFDColoring` context
     has been created, computes the Jacobian for a function via finite differences.
 
-    Collective on J
+    Collective
 
     Input Parameters:
 +   mat - location to store Jacobian

@@ -3,7 +3,7 @@
 /*@
   MatComputeBandwidth - Calculate the full bandwidth of the matrix, meaning the width 2k+1 where k diagonals on either side are sufficient to contain all the matrix nonzeros.
 
-  Collective on Mat
+  Collective
 
   Input Parameters:
 + A - The Mat

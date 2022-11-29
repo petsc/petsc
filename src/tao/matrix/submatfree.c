@@ -5,7 +5,7 @@
   MatCreateSubMatrixFree - Creates a reduced matrix by masking a
   full matrix.
 
-   Collective on matrix
+   Collective
 
    Input Parameters:
 +  mat - matrix of arbitrary type
@@ -15,10 +15,10 @@
    Output Parameters:
 .  J - New matrix
 
-   Notes:
-   The caller is responsible for destroying the input objects after matrix J has been destroyed.
-
    Level: developer
+
+   Note:
+   The caller is responsible for destroying the input objects after matrix J has been destroyed.
 
 .seealso: `MatCreate()`
 @*/

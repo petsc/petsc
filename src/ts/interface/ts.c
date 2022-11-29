@@ -26,7 +26,7 @@ static PetscErrorCode TSAdaptSetDefaultType(TSAdapt adapt, TSAdaptType default_t
 /*@
    TSSetFromOptions - Sets various `TS` parameters from user options.
 
-   Collective on ts
+   Collective
 
    Input Parameter:
 .  ts - the `TS` context obtained from `TSCreate()`
@@ -412,7 +412,7 @@ PetscErrorCode TSSetFromOptions(TS ts)
 /*@
    TSGetTrajectory - Gets the trajectory from a `TS` if it exists
 
-   Collective on ts
+   Collective
 
    Input Parameters:
 .  ts - the `TS` context obtained from `TSCreate()`
@@ -438,7 +438,7 @@ PetscErrorCode TSGetTrajectory(TS ts, TSTrajectory *tr)
 /*@
    TSSetSaveTrajectory - Causes the `TS` to save its solutions as it iterates forward in time in a `TSTrajectory` object
 
-   Collective on ts
+   Collective
 
    Input Parameter:
 .  ts - the `TS` context obtained from `TSCreate()`
@@ -468,7 +468,7 @@ PetscErrorCode TSSetSaveTrajectory(TS ts)
 /*@
    TSResetTrajectory - Destroys and recreates the internal `TSTrajectory` object
 
-   Collective on ts
+   Collective
 
    Input Parameters:
 .  ts - the `TS` context obtained from `TSCreate()`
@@ -491,7 +491,7 @@ PetscErrorCode TSResetTrajectory(TS ts)
 /*@
    TSRemoveTrajectory - Destroys and removes the internal `TSTrajectory` object from TS
 
-   Collective on ts
+   Collective
 
    Input Parameters:
 .  ts - the `TS` context obtained from `TSCreate()`
@@ -512,7 +512,7 @@ PetscErrorCode TSRemoveTrajectory(TS ts)
    TSComputeRHSJacobian - Computes the Jacobian matrix that has been
       set with `TSSetRHSJacobian()`.
 
-   Collective on ts
+   Collective
 
    Input Parameters:
 +  ts - the `TS` context
@@ -575,7 +575,7 @@ PetscErrorCode TSComputeRHSJacobian(TS ts, PetscReal t, Vec U, Mat A, Mat B)
 /*@
    TSComputeRHSFunction - Evaluates the right-hand-side function for a `TS`
 
-   Collective on ts
+   Collective
 
    Input Parameters:
 +  ts - the `TS` context
@@ -624,7 +624,7 @@ PetscErrorCode TSComputeRHSFunction(TS ts, PetscReal t, Vec U, Vec y)
 /*@
    TSComputeSolutionFunction - Evaluates the solution function.
 
-   Collective on ts
+   Collective
 
    Input Parameters:
 +  ts - the `TS` context
@@ -654,7 +654,7 @@ PetscErrorCode TSComputeSolutionFunction(TS ts, PetscReal t, Vec U)
 /*@
    TSComputeForcingFunction - Evaluates the forcing function.
 
-   Collective on ts
+   Collective
 
    Input Parameters:
 +  ts - the `TS` context
@@ -747,7 +747,7 @@ PetscErrorCode TSGetRHSMats_Private(TS ts, Mat *Arhs, Mat *Brhs)
 /*@
    TSComputeIFunction - Evaluates the DAE residual written in implicit form F(t,U,Udot)=0
 
-   Collective on ts
+   Collective
 
    Input Parameters:
 +  ts - the `TS` context
@@ -839,7 +839,7 @@ static PetscErrorCode TSRecoverRHSJacobian(TS ts, Mat A, Mat B)
 /*@
    TSComputeIJacobian - Evaluates the Jacobian of the DAE
 
-   Collective on ts
+   Collective
 
    Input
       Input Parameters:
@@ -983,7 +983,7 @@ PetscErrorCode TSComputeIJacobian(TS ts, PetscReal t, Vec U, Vec Udot, PetscReal
     TSSetRHSFunction - Sets the routine for evaluating the function,
     where U_t = G(t,u).
 
-    Logically Collective on ts
+    Logically Collective
 
     Input Parameters:
 +   ts - the `TS` context obtained from `TSCreate()`
@@ -1033,7 +1033,7 @@ PetscErrorCode TSSetRHSFunction(TS ts, Vec r, PetscErrorCode (*f)(TS, PetscReal,
 /*@C
     TSSetSolutionFunction - Provide a function that computes the solution of the ODE or DAE
 
-    Logically Collective on ts
+    Logically Collective
 
     Input Parameters:
 +   ts - the `TS` context obtained from `TSCreate()`
@@ -1077,7 +1077,7 @@ PetscErrorCode TSSetSolutionFunction(TS ts, PetscErrorCode (*f)(TS, PetscReal, V
 /*@C
     TSSetForcingFunction - Provide a function that computes a forcing term for a ODE or PDE
 
-    Logically Collective on ts
+    Logically Collective
 
     Input Parameters:
 +   ts - the `TS` context obtained from `TSCreate()`
@@ -1123,7 +1123,7 @@ PetscErrorCode TSSetForcingFunction(TS ts, TSForcingFunction func, void *ctx)
    TSSetRHSJacobian - Sets the function to compute the Jacobian of G,
    where U_t = G(U,t), as well as the location to store the matrix.
 
-   Logically Collective on ts
+   Logically Collective
 
    Input Parameters:
 +  ts  - the `TS` context obtained from `TSCreate()`
@@ -1186,7 +1186,7 @@ PetscErrorCode TSSetRHSJacobian(TS ts, Mat Amat, Mat Pmat, TSRHSJacobian f, void
 /*@C
    TSSetIFunction - Set the function to compute F(t,U,U_t) where F() = 0 is the DAE to be solved.
 
-   Logically Collective on ts
+   Logically Collective
 
    Input Parameters:
 +  ts  - the `TS` context obtained from `TSCreate()`
@@ -1299,7 +1299,7 @@ PetscErrorCode TSGetRHSFunction(TS ts, Vec *r, TSRHSFunction *func, void **ctx)
    TSSetIJacobian - Set the function to compute the matrix dF/dU + a*dF/dU_t where F(t,U,U_t) is the function
         provided with `TSSetIFunction()`.
 
-   Logically Collective on ts
+   Logically Collective
 
    Input Parameters:
 +  ts  - the `TS` context obtained from `TSCreate()`
@@ -1387,7 +1387,7 @@ PetscErrorCode TSRHSJacobianSetReuse(TS ts, PetscBool reuse)
 /*@C
    TSSetI2Function - Set the function to compute F(t,U,U_t,U_tt) where F = 0 is the DAE to be solved.
 
-   Logically Collective on ts
+   Logically Collective
 
    Input Parameters:
 +  ts  - the `TS` context obtained from `TSCreate()`
@@ -1457,7 +1457,7 @@ PetscErrorCode TSGetI2Function(TS ts, Vec *r, TSI2Function *fun, void **ctx)
    TSSetI2Jacobian - Set the function to compute the matrix dF/dU + v*dF/dU_t  + a*dF/dU_tt
         where F(t,U,U_t,U_tt) is the function you provided with `TSSetI2Function()`.
 
-   Logically Collective on ts
+   Logically Collective
 
    Input Parameters:
 +  ts  - the `TS` context obtained from `TSCreate()`
@@ -1543,7 +1543,7 @@ PetscErrorCode TSGetI2Jacobian(TS ts, Mat *J, Mat *P, TSI2Jacobian *jac, void **
 /*@
   TSComputeI2Function - Evaluates the DAE residual written in implicit form F(t,U,U_t,U_tt) = 0
 
-  Collective on ts
+  Collective
 
   Input Parameters:
 + ts - the `TS` context
@@ -1604,7 +1604,7 @@ PetscErrorCode TSComputeI2Function(TS ts, PetscReal t, Vec U, Vec V, Vec A, Vec 
 /*@
   TSComputeI2Jacobian - Evaluates the Jacobian of the DAE
 
-  Collective on ts
+  Collective
 
   Input Parameters:
 + ts - the `TS` context
@@ -1781,7 +1781,7 @@ PetscErrorCode TSHasTransientVariable(TS ts, PetscBool *has)
    TS2SetSolution - Sets the initial solution and time derivative vectors
    for use by the `TS` routines handling second order equations.
 
-   Logically Collective on ts
+   Logically Collective
 
    Input Parameters:
 +  ts - the `TS` context obtained from `TSCreate()`
@@ -1838,7 +1838,7 @@ PetscErrorCode TS2GetSolution(TS ts, Vec *u, Vec *v)
 /*@C
   TSLoad - Loads a `TS` that has been stored in binary  with `TSView()`.
 
-  Collective on PetscViewer
+  Collective
 
   Input Parameters:
 + newdm - the newly loaded `TS`, this needs to have been created with `TSCreate()` or
@@ -1889,7 +1889,7 @@ PetscErrorCode TSLoad(TS ts, PetscViewer viewer)
 /*@C
    TSViewFromOptions - View a `TS` based on values in the options database
 
-   Collective on ts
+   Collective
 
    Input Parameters:
 +  ts - the `TS` context
@@ -1911,7 +1911,7 @@ PetscErrorCode TSViewFromOptions(TS ts, PetscObject obj, const char name[])
 /*@C
     TSView - Prints the `TS` data structure.
 
-    Collective on ts
+    Collective
 
     Input Parameters:
 +   ts - the `TS` context obtained from `TSCreate()`
@@ -2063,7 +2063,7 @@ PetscErrorCode TSView(TS ts, PetscViewer viewer)
    TSSetApplicationContext - Sets an optional user-defined context for
    the timesteppers.
 
-   Logically Collective on ts
+   Logically Collective
 
    Input Parameters:
 +  ts - the `TS` context obtained from `TSCreate()`
@@ -2140,7 +2140,7 @@ PetscErrorCode TSGetStepNumber(TS ts, PetscInt *steps)
 /*@
    TSSetStepNumber - Sets the number of steps completed.
 
-   Logically Collective on ts
+   Logically Collective
 
    Input Parameters:
 +  ts - the `TS` context
@@ -2174,7 +2174,7 @@ PetscErrorCode TSSetStepNumber(TS ts, PetscInt steps)
    TSSetTimeStep - Allows one to reset the timestep at any time,
    useful for simple pseudo-timestepping codes.
 
-   Logically Collective on ts
+   Logically Collective
 
    Input Parameters:
 +  ts - the `TS` context obtained from `TSCreate()`
@@ -2198,7 +2198,7 @@ PetscErrorCode TSSetTimeStep(TS ts, PetscReal time_step)
      match the exact final time, interpolate solution to the exact final time,
      or just return at the final time `TS` computed.
 
-  Logically Collective on ts
+  Logically Collective
 
    Input Parameters:
 +   ts - the time-step context
@@ -2493,7 +2493,7 @@ static PetscErrorCode TSSetExactFinalTimeDefault(TS ts)
 /*@
    TSSetUp - Sets up the internal data structures for the later use of a timestepper.
 
-   Collective on ts
+   Collective
 
    Input Parameter:
 .  ts - the `TS` context obtained from `TSCreate()`
@@ -2601,7 +2601,7 @@ PetscErrorCode TSSetUp(TS ts)
 /*@
    TSReset - Resets a `TS` context and removes any allocated `Vec`s and `Mat`s.
 
-   Collective on ts
+   Collective
 
    Input Parameter:
 .  ts - the `TS` context obtained from `TSCreate()`
@@ -2660,7 +2660,7 @@ PetscErrorCode TSReset(TS ts)
    TSDestroy - Destroys the timestepper context that was created
    with `TSCreate()`.
 
-   Collective on ts
+   Collective
 
    Input Parameter:
 .  ts - the `TS` context obtained from `TSCreate()`
@@ -2820,7 +2820,7 @@ PetscErrorCode TSGetKSP(TS ts, KSP *ksp)
 /*@
    TSSetMaxSteps - Sets the maximum number of steps to use.
 
-   Logically Collective on ts
+   Logically Collective
 
    Input Parameters:
 +  ts - the `TS` context obtained from `TSCreate()`
@@ -2873,7 +2873,7 @@ PetscErrorCode TSGetMaxSteps(TS ts, PetscInt *maxsteps)
 /*@
    TSSetMaxTime - Sets the maximum (or final) time for timestepping.
 
-   Logically Collective on ts
+   Logically Collective
 
    Input Parameters:
 +  ts - the `TS` context obtained from `TSCreate()`
@@ -3001,7 +3001,7 @@ PetscErrorCode TSGetTotalSteps(TS ts, PetscInt *steps)
    TSSetSolution - Sets the initial solution vector
    for use by the `TS` routines.
 
-   Logically Collective on ts
+   Logically Collective
 
    Input Parameters:
 +  ts - the `TS` context obtained from `TSCreate()`
@@ -3031,7 +3031,7 @@ PetscErrorCode TSSetSolution(TS ts, Vec u)
   TSSetPreStep - Sets the general-purpose function
   called once at the beginning of each time step.
 
-  Logically Collective on ts
+  Logically Collective
 
   Input Parameters:
 + ts   - The `TS` context obtained from `TSCreate()`
@@ -3057,7 +3057,7 @@ PetscErrorCode TSSetPreStep(TS ts, PetscErrorCode (*func)(TS))
 /*@
   TSPreStep - Runs the user-defined pre-step function provided with `TSSetPreStep()`
 
-  Collective on ts
+  Collective
 
   Input Parameters:
 . ts   - The `TS` context obtained from `TSCreate()`
@@ -3096,7 +3096,7 @@ PetscErrorCode TSPreStep(TS ts)
   TSSetPreStage - Sets the general-purpose function
   called once at the beginning of each stage.
 
-  Logically Collective on ts
+  Logically Collective
 
   Input Parameters:
 + ts   - The `TS` context obtained from `TSCreate()`
@@ -3128,7 +3128,7 @@ PetscErrorCode TSSetPreStage(TS ts, PetscErrorCode (*func)(TS, PetscReal))
   TSSetPostStage - Sets the general-purpose function, provided with `TSSetPostStep()`,
   called once at the end of each stage.
 
-  Logically Collective on ts
+  Logically Collective
 
   Input Parameters:
 + ts   - The `TS` context obtained from `TSCreate()`
@@ -3160,7 +3160,7 @@ PetscErrorCode TSSetPostStage(TS ts, PetscErrorCode (*func)(TS, PetscReal, Petsc
   TSSetPostEvaluate - Sets the general-purpose function
   called once at the end of each step evaluation.
 
-  Logically Collective on ts
+  Logically Collective
 
   Input Parameters:
 + ts   - The `TS` context obtained from `TSCreate()`
@@ -3193,7 +3193,7 @@ PetscErrorCode TSSetPostEvaluate(TS ts, PetscErrorCode (*func)(TS))
 /*@
   TSPreStage - Runs the user-defined pre-stage function set using `TSSetPreStage()`
 
-  Collective on ts
+  Collective
 
   Input Parameters:
 . ts          - The `TS` context obtained from `TSCreate()`
@@ -3218,7 +3218,7 @@ PetscErrorCode TSPreStage(TS ts, PetscReal stagetime)
 /*@
   TSPostStage - Runs the user-defined post-stage function set using `TSSetPostStage()`
 
-  Collective on ts
+  Collective
 
   Input Parameters:
 . ts          - The `TS` context obtained from `TSCreate()`
@@ -3246,7 +3246,7 @@ PetscErrorCode TSPostStage(TS ts, PetscReal stagetime, PetscInt stageindex, Vec 
 /*@
   TSPostEvaluate - Runs the user-defined post-evaluate function set using `TSSetPostEvaluate()`
 
-  Collective on ts
+  Collective
 
   Input Parameters:
 . ts - The `TS` context obtained from `TSCreate()`
@@ -3280,7 +3280,7 @@ PetscErrorCode TSPostEvaluate(TS ts)
   TSSetPostStep - Sets the general-purpose function
   called once at the end of each time step.
 
-  Logically Collective on ts
+  Logically Collective
 
   Input Parameters:
 + ts   - The `TS` context obtained from `TSCreate()`
@@ -3309,7 +3309,7 @@ PetscErrorCode TSSetPostStep(TS ts, PetscErrorCode (*func)(TS))
 /*@
   TSPostStep - Runs the user-defined post-step function that was set with `TSSetPotsStep()`
 
-  Collective on ts
+  Collective
 
   Input Parameters:
 . ts   - The `TS` context obtained from `TSCreate()`
@@ -3347,7 +3347,7 @@ PetscErrorCode TSPostStep(TS ts)
 /*@
    TSInterpolate - Interpolate the solution computed during the previous step to an arbitrary location in the interval
 
-   Collective on ts
+   Collective
 
    Input Parameters:
 +  ts - time stepping context
@@ -3376,7 +3376,7 @@ PetscErrorCode TSInterpolate(TS ts, PetscReal t, Vec U)
 /*@
    TSStep - Steps one time step
 
-   Collective on ts
+   Collective
 
    Input Parameter:
 .  ts - the `TS` context obtained from `TSCreate()`
@@ -3447,7 +3447,7 @@ PetscErrorCode TSStep(TS ts)
    TSEvaluateWLTE - Evaluate the weighted local truncation error norm
    at the end of a time step with a given order of accuracy.
 
-   Collective on ts
+   Collective
 
    Input Parameters:
 +  ts - time stepping context
@@ -3486,7 +3486,7 @@ PetscErrorCode TSEvaluateWLTE(TS ts, NormType wnormtype, PetscInt *order, PetscR
 /*@
    TSEvaluateStep - Evaluate the solution at the end of a time step with a given order of accuracy.
 
-   Collective on ts
+   Collective
 
    Input Parameters:
 +  ts - time stepping context
@@ -3549,7 +3549,7 @@ PetscErrorCode TSGetComputeInitialCondition(TS ts, PetscErrorCode (**initConditi
 /*@C
   TSSetComputeInitialCondition - Set the function used to automatically compute an initial condition for the timestepping.
 
-  Logically collective on ts
+  Logically collective
 
   Input Parameters:
 + ts  - time stepping context
@@ -3576,7 +3576,7 @@ PetscErrorCode TSSetComputeInitialCondition(TS ts, PetscErrorCode (*initConditio
 /*@
   TSComputeInitialCondition - Compute an initial condition for the timestepping using the function previously set with `TSSetComputeInitialCondition()`
 
-  Collective on ts
+  Collective
 
   Input Parameters:
 + ts - time stepping context
@@ -3628,7 +3628,7 @@ PetscErrorCode TSGetComputeExactError(TS ts, PetscErrorCode (**exactError)(TS, V
 /*@C
   TSSetComputeExactError - Set the function used to automatically compute the exact error for the timestepping.
 
-  Logically collective on ts
+  Logically collective
 
   Input Parameters:
 + ts - time stepping context
@@ -3656,7 +3656,7 @@ PetscErrorCode TSSetComputeExactError(TS ts, PetscErrorCode (*exactError)(TS, Ve
 /*@
   TSComputeExactError - Compute the solution error for the timestepping using the function previously set with `TSSetComputeExactError()`
 
-  Collective on ts
+  Collective
 
   Input Parameters:
 + ts - time stepping context
@@ -3680,7 +3680,7 @@ PetscErrorCode TSComputeExactError(TS ts, Vec u, Vec e)
 /*@
    TSSolve - Steps the requested number of timesteps.
 
-   Collective on ts
+   Collective
 
    Input Parameters:
 +  ts - the `TS` context obtained from `TSCreate()`
@@ -3909,7 +3909,7 @@ PetscErrorCode TSGetPrevTime(TS ts, PetscReal *t)
 /*@
    TSSetTime - Allows one to reset the time.
 
-   Logically Collective on ts
+   Logically Collective
 
    Input Parameters:
 +  ts - the `TS` context obtained from `TSCreate()`
@@ -3932,7 +3932,7 @@ PetscErrorCode TSSetTime(TS ts, PetscReal t)
    TSSetOptionsPrefix - Sets the prefix used for searching for all
    TS options in the database.
 
-   Logically Collective on ts
+   Logically Collective
 
    Input Parameters:
 +  ts     - The `TS` context
@@ -3963,7 +3963,7 @@ PetscErrorCode TSSetOptionsPrefix(TS ts, const char prefix[])
    TSAppendOptionsPrefix - Appends to the prefix used for searching for all
    TS options in the database.
 
-   Logically Collective on ts
+   Logically Collective
 
    Input Parameters:
 +  ts     - The `TS` context
@@ -4099,7 +4099,7 @@ PetscErrorCode TSGetIJacobian(TS ts, Mat *Amat, Mat *Pmat, TSIJacobian *f, void 
 /*@
    TSSetDM - Sets the `DM` that may be used by some nonlinear solvers or preconditioners under the `TS`
 
-   Logically Collective on ts
+   Logically Collective
 
    Input Parameters:
 +  ts - the `TS` integrator object
@@ -4169,7 +4169,7 @@ PetscErrorCode TSGetDM(TS ts, DM *dm)
 /*@
    SNESTSFormFunction - Function to evaluate nonlinear residual
 
-   Logically Collective on snes
+   Logically Collective
 
    Input Parameters:
 + snes - nonlinear solver
@@ -4203,7 +4203,7 @@ PetscErrorCode SNESTSFormFunction(SNES snes, Vec U, Vec F, void *ctx)
 /*@
    SNESTSFormJacobian - Function to evaluate the Jacobian
 
-   Collective on snes
+   Collective
 
    Input Parameters:
 + snes - nonlinear solver
@@ -4240,7 +4240,7 @@ PetscErrorCode SNESTSFormJacobian(SNES snes, Vec U, Mat A, Mat B, void *ctx)
 /*@C
    TSComputeRHSFunctionLinear - Evaluate the right hand side via the user-provided Jacobian, for linear problems Udot = A U only
 
-   Collective on ts
+   Collective
 
    Input Parameters:
 +  ts - time stepping context
@@ -4275,7 +4275,7 @@ PetscErrorCode TSComputeRHSFunctionLinear(TS ts, PetscReal t, Vec U, Vec F, void
 /*@C
    TSComputeRHSJacobianConstant - Reuses a Jacobian that is time-independent.
 
-   Collective on ts
+   Collective
 
    Input Parameters:
 +  ts - time stepping context
@@ -4303,7 +4303,7 @@ PetscErrorCode TSComputeRHSJacobianConstant(TS ts, PetscReal t, Vec U, Mat A, Ma
 /*@C
    TSComputeIFunctionLinear - Evaluate the left hand side via the user-provided Jacobian, for linear problems only
 
-   Collective on ts
+   Collective
 
    Input Parameters:
 +  ts - time stepping context
@@ -4341,7 +4341,7 @@ PetscErrorCode TSComputeIFunctionLinear(TS ts, PetscReal t, Vec U, Vec Udot, Vec
 /*@C
    TSComputeIJacobianConstant - Reuses a time-independent for a semi-implicit DAE or ODE
 
-   Collective on ts
+   Collective
 
    Input Parameters:
 +  ts - time stepping context
@@ -4795,7 +4795,7 @@ PetscErrorCode TSGetTolerances(TS ts, PetscReal *atol, Vec *vatol, PetscReal *rt
 /*@
    TSErrorWeightedNorm2 - compute a weighted 2-norm of the difference between two state vectors
 
-   Collective on ts
+   Collective
 
    Input Parameters:
 +  ts - time stepping context
@@ -4971,7 +4971,7 @@ PetscErrorCode TSErrorWeightedNorm2(TS ts, Vec U, Vec Y, PetscReal *norm, PetscR
 /*@
    TSErrorWeightedNormInfinity - compute a weighted infinity-norm of the difference between two state vectors
 
-   Collective on ts
+   Collective
 
    Input Parameters:
 +  ts - time stepping context
@@ -5098,7 +5098,7 @@ PetscErrorCode TSErrorWeightedNormInfinity(TS ts, Vec U, Vec Y, PetscReal *norm,
 /*@
    TSErrorWeightedNorm - compute a weighted norm of the difference between two state vectors based on supplied absolute and relative tolerances
 
-   Collective on ts
+   Collective
 
    Input Parameters:
 +  ts - time stepping context
@@ -5130,7 +5130,7 @@ PetscErrorCode TSErrorWeightedNorm(TS ts, Vec U, Vec Y, NormType wnormtype, Pets
 /*@
    TSErrorWeightedENorm2 - compute a weighted 2 error norm based on supplied absolute and relative tolerances
 
-   Collective on ts
+   Collective
 
    Input Parameters:
 +  ts - time stepping context
@@ -5311,7 +5311,7 @@ PetscErrorCode TSErrorWeightedENorm2(TS ts, Vec E, Vec U, Vec Y, PetscReal *norm
 /*@
    TSErrorWeightedENormInfinity - compute a weighted infinity error norm based on supplied absolute and relative tolerances
 
-   Collective on ts
+   Collective
 
    Input Parameters:
 +  ts - time stepping context
@@ -5443,7 +5443,7 @@ PetscErrorCode TSErrorWeightedENormInfinity(TS ts, Vec E, Vec U, Vec Y, PetscRea
 /*@
    TSErrorWeightedENorm - compute a weighted error norm based on supplied absolute and relative tolerances
 
-   Collective on ts
+   Collective
 
    Input Parameters:
 +  ts - time stepping context
@@ -5476,7 +5476,7 @@ PetscErrorCode TSErrorWeightedENorm(TS ts, Vec E, Vec U, Vec Y, NormType wnormty
 /*@
    TSSetCFLTimeLocal - Set the local CFL constraint relative to forward Euler
 
-   Logically Collective on ts
+   Logically Collective
 
    Input Parameters:
 +  ts - time stepping context
@@ -5501,7 +5501,7 @@ PetscErrorCode TSSetCFLTimeLocal(TS ts, PetscReal cfltime)
 /*@
    TSGetCFLTime - Get the maximum stable time step according to CFL criteria applied to forward Euler
 
-   Collective on ts
+   Collective
 
    Input Parameter:
 .  ts - time stepping context
@@ -5550,7 +5550,7 @@ PetscErrorCode TSVISetVariableBounds(TS ts, Vec xl, Vec xu)
 /*@
    TSComputeLinearStability - computes the linear stability function at a point
 
-   Collective on ts
+   Collective
 
    Input Parameters:
 +  ts - the `TS` context
@@ -5574,7 +5574,7 @@ PetscErrorCode TSComputeLinearStability(TS ts, PetscReal xr, PetscReal xi, Petsc
 /*@
    TSRestartStep - Flags the solver to restart the next step
 
-   Collective on ts
+   Collective
 
    Input Parameter:
 .  ts - the `TS` context obtained from `TSCreate()`
@@ -5602,7 +5602,7 @@ PetscErrorCode TSRestartStep(TS ts)
 /*@
    TSRollBack - Rolls back one time step
 
-   Collective on ts
+   Collective
 
    Input Parameter:
 .  ts - the `TS` context obtained from `TSCreate()`
@@ -5658,7 +5658,7 @@ PetscErrorCode TSGetStages(TS ts, PetscInt *ns, Vec **Y)
 /*@C
   TSComputeIJacobianDefaultColor - Computes the Jacobian using finite differences and coloring to exploit matrix sparsity.
 
-  Collective on ts
+  Collective
 
   Input Parameters:
 + ts - the `TS` context
@@ -5909,7 +5909,7 @@ static PetscErrorCode RHSWrapperFunction_TSRHSJacobianTest(void *ctx, Vec x, Vec
 /*@
     TSRHSJacobianTest - Compares the multiply routine provided to the `MATSHELL` with differencing on the `TS` given RHS function.
 
-   Logically Collective on ts
+   Logically Collective
 
     Input Parameters:
     TS - the time stepping routine
@@ -5943,7 +5943,7 @@ PetscErrorCode TSRHSJacobianTest(TS ts, PetscBool *flg)
 /*@C
     TSRHSJacobianTestTranspose - Compares the multiply transpose routine provided to the `MATSHELL` with differencing on the `TS` given RHS function.
 
-   Logically Collective on ts
+   Logically Collective
 
     Input Parameters:
     TS - the time stepping routine
@@ -6027,7 +6027,7 @@ PetscErrorCode TSGetUseSplitRHSFunction(TS ts, PetscBool *use_splitrhsfunction)
 /*@
     TSSetMatStructure - sets the relationship between the nonzero structure of the RHS Jacobian matrix to the IJacobian matrix.
 
-   Logically  Collective on ts
+   Logically  Collective
 
    Input Parameters:
 +  ts - the time-stepper
@@ -6051,7 +6051,7 @@ PetscErrorCode TSSetMatStructure(TS ts, MatStructure str)
 /*@
   TSSetTimeSpan - sets the time span. The solution will be computed and stored for each time requested in the span
 
-  Collective on ts
+  Collective
 
   Input Parameters:
 + ts - the time-stepper

@@ -192,7 +192,7 @@ PetscErrorCode MatPartitioningView_Chaco(MatPartitioning part, PetscViewer viewe
 /*@
    MatPartitioningChacoSetGlobal - Set the global method for Chaco partitioner.
 
-   Collective on MatPartitioning
+   Collective
 
    Input Parameters:
 +  part - the partitioning context
@@ -274,7 +274,7 @@ PetscErrorCode MatPartitioningChacoGetGlobal_Chaco(MatPartitioning part, MPChaco
 /*@
    MatPartitioningChacoSetLocal - Set the local method for the Chaco partitioner.
 
-   Collective on MatPartitioning
+   Collective
 
    Input Parameters:
 +  part - the partitioning context
@@ -353,7 +353,7 @@ PetscErrorCode MatPartitioningChacoGetLocal_Chaco(MatPartitioning part, MPChacoL
    MatPartitioningChacoSetCoarseLevel - Set the coarse level parameter for the
    Chaco partitioner.
 
-   Collective on part
+   Collective
 
    Input Parameters:
 +  part - the partitioning context
@@ -389,7 +389,7 @@ PetscErrorCode MatPartitioningChacoSetCoarseLevel_Chaco(MatPartitioning part, Pe
 /*@
    MatPartitioningChacoSetEigenSolver - Set the eigensolver method for Chaco partitioner.
 
-   Collective on part
+   Collective
 
    Input Parameters:
 +  part - the partitioning context
@@ -467,7 +467,7 @@ PetscErrorCode MatPartitioningChacoGetEigenSolver_Chaco(MatPartitioning part, MP
 /*@
    MatPartitioningChacoSetEigenTol - Sets the tolerance for the eigensolver used by Chaco
 
-   Collective on MatPartitioning
+   Collective
 
    Input Parameters:
 +  part - the partitioning context
@@ -542,7 +542,7 @@ PetscErrorCode MatPartitioningChacoGetEigenTol_Chaco(MatPartitioning part, Petsc
    MatPartitioningChacoSetEigenNumber - Sets the number of eigenvectors to compute by Chaco during partioning
    during partitioning.
 
-   Collective on part
+   Collective
 
    Input Parameters:
 +  part - the partitioning context

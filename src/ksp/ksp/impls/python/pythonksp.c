@@ -3,7 +3,7 @@
 /*@C
    KSPPythonSetType - Initialize a `KSP` object to a type implemented in Python.
 
-   Collective on ksp
+   Collective
 
    Input Parameters:
 +  ksp - the linear solver `KSP` context.

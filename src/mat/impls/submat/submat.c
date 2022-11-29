@@ -166,7 +166,7 @@ static PetscErrorCode MatDestroy_SubMatrix(Mat N)
 /*@
    MatCreateSubMatrixVirtual - Creates a virtual matrix `MATSUBMATRIX` that acts as a submatrix
 
-   Collective on A
+   Collective
 
    Input Parameters:
 +  A - matrix that we will extract a submatrix of
@@ -262,7 +262,7 @@ M*/
 /*@
    MatSubMatrixVirtualUpdate - Updates a `MATSUBMATRIX` virtual submatrix
 
-   Collective on N
+   Collective
 
    Input Parameters:
 +  N - submatrix to update

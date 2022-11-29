@@ -528,7 +528,7 @@ PETSC_EXTERN PetscErrorCode TSCreate_BDF(TS ts)
 /*@
   TSBDFSetOrder - Set the order of the `TSBDF` method
 
-  Logically Collective on ts
+  Logically Collective
 
   Input Parameters:
 +  ts - timestepping context

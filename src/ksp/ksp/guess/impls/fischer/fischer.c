@@ -373,7 +373,7 @@ static PetscErrorCode KSPGuessView_Fischer(KSPGuess guess, PetscViewer viewer)
 /*@
    KSPGuessFischerSetModel - Use the Paul Fischer algorithm or its variants to compute the initial guess
 
-   Logically Collective on guess
+   Logically Collective
 
    Input Parameters:
 +  guess - the initial guess context

@@ -253,7 +253,7 @@ PetscErrorCode MatTransposeGetMat_Transpose(Mat A, Mat *M)
 /*@
       MatTransposeGetMat - Gets the `Mat` object stored inside a `MATTRANSPOSEVIRTUAL`
 
-   Logically collective on A
+   Logically collective
 
    Input Parameter:
 .   A  - the `MATTRANSPOSEVIRTUAL` matrix
@@ -286,7 +286,7 @@ M*/
 /*@
       MatCreateTranspose - Creates a new matrix `MATTRANSPOSEVIRTUAL` object that behaves like A'
 
-   Collective on A
+   Collective
 
    Input Parameter:
 .   A  - the (possibly rectangular) matrix

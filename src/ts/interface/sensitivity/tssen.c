@@ -10,7 +10,7 @@ PetscLogEvent TS_AdjointStep, TS_ForwardStep, TS_JacobianPEval;
 /*@C
   TSSetRHSJacobianP - Sets the function that computes the Jacobian of G w.r.t. the parameters P where U_t = G(U,P,t), as well as the location to store the matrix.
 
-  Logically Collective on ts
+  Logically Collective
 
   Input Parameters:
 + ts - `TS` context obtained from `TSCreate()`
@@ -51,7 +51,7 @@ PetscErrorCode TSSetRHSJacobianP(TS ts, Mat Amat, PetscErrorCode (*func)(TS, Pet
 /*@C
   TSGetRHSJacobianP - Gets the function that computes the Jacobian of G w.r.t. the parameters P where U_t = G(U,P,t), as well as the location to store the matrix.
 
-  Logically Collective on ts
+  Logically Collective
 
   Input Parameter:
 . ts - `TS` context obtained from `TSCreate()`
@@ -87,7 +87,7 @@ PetscErrorCode TSGetRHSJacobianP(TS ts, Mat *Amat, PetscErrorCode (**func)(TS, P
 /*@C
   TSComputeRHSJacobianP - Runs the user-defined JacobianP function.
 
-  Collective on ts
+  Collective
 
   Input Parameters:
 . ts   - The `TS` context obtained from `TSCreate()`
@@ -110,7 +110,7 @@ PetscErrorCode TSComputeRHSJacobianP(TS ts, PetscReal t, Vec U, Mat Amat)
 /*@C
   TSSetIJacobianP - Sets the function that computes the Jacobian of F w.r.t. the parameters P where F(Udot,U,t) = G(U,P,t), as well as the location to store the matrix.
 
-  Logically Collective on ts
+  Logically Collective
 
   Input Parameters:
 + ts - `TS` context obtained from `TSCreate()`
@@ -153,7 +153,7 @@ PetscErrorCode TSSetIJacobianP(TS ts, Mat Amat, PetscErrorCode (*func)(TS, Petsc
 /*@C
   TSComputeIJacobianP - Runs the user-defined IJacobianP function.
 
-  Collective on ts
+  Collective
 
   Input Parameters:
 + ts - the `TS` context
@@ -209,7 +209,7 @@ PetscErrorCode TSComputeIJacobianP(TS ts, PetscReal t, Vec U, Vec Udot, PetscRea
 /*@C
     TSSetCostIntegrand - Sets the routine for evaluating the integral term in one or more cost functions
 
-    Logically Collective on ts
+    Logically Collective
 
     Input Parameters:
 +   ts - the `TS` context obtained from `TSCreate()`
@@ -367,7 +367,7 @@ PetscErrorCode TSComputeDRDPFunction(TS ts, PetscReal t, Vec U, Vec *DRDP)
 /*@C
   TSSetIHessianProduct - Sets the function that computes the vector-Hessian-vector product. The Hessian is the second-order derivative of F (IFunction) w.r.t. the state variable.
 
-  Logically Collective on ts
+  Logically Collective
 
   Input Parameters:
 + ts - `TS` context obtained from `TSCreate()`
@@ -425,7 +425,7 @@ PetscErrorCode TSSetIHessianProduct(TS ts, Vec *ihp1, PetscErrorCode (*ihessianp
 /*@C
   TSComputeIHessianProductFunctionUU - Runs the user-defined vector-Hessian-vector product function for Fuu.
 
-  Collective on ts
+  Collective
 
   Input Parameters:
 . ts   - The `TS` context obtained from `TSCreate()`
@@ -459,7 +459,7 @@ PetscErrorCode TSComputeIHessianProductFunctionUU(TS ts, PetscReal t, Vec U, Vec
 /*@C
   TSComputeIHessianProductFunctionUP - Runs the user-defined vector-Hessian-vector product function for Fup.
 
-  Collective on ts
+  Collective
 
   Input Parameters:
 . ts   - The `TS` context obtained from `TSCreate()`
@@ -493,7 +493,7 @@ PetscErrorCode TSComputeIHessianProductFunctionUP(TS ts, PetscReal t, Vec U, Vec
 /*@C
   TSComputeIHessianProductFunctionPU - Runs the user-defined vector-Hessian-vector product function for Fpu.
 
-  Collective on ts
+  Collective
 
   Input Parameters:
 . ts   - The `TS` context obtained from `TSCreate()`
@@ -527,7 +527,7 @@ PetscErrorCode TSComputeIHessianProductFunctionPU(TS ts, PetscReal t, Vec U, Vec
 /*@C
   TSComputeIHessianProductFunctionPP - Runs the user-defined vector-Hessian-vector product function for Fpp.
 
-  Collective on ts
+  Collective
 
   Input Parameters:
 . ts   - The `TS` context obtained from `TSCreate()`
@@ -561,7 +561,7 @@ PetscErrorCode TSComputeIHessianProductFunctionPP(TS ts, PetscReal t, Vec U, Vec
 /*@C
   TSSetRHSHessianProduct - Sets the function that computes the vector-Hessian-vector product. The Hessian is the second-order derivative of G (RHSFunction) w.r.t. the state variable.
 
-  Logically Collective on ts
+  Logically Collective
 
   Input Parameters:
 + ts - `TS` context obtained from `TSCreate()`
@@ -619,7 +619,7 @@ PetscErrorCode TSSetRHSHessianProduct(TS ts, Vec *rhshp1, PetscErrorCode (*rhshe
 /*@C
   TSComputeRHSHessianProductFunctionUU - Runs the user-defined vector-Hessian-vector product function for Guu.
 
-  Collective on ts
+  Collective
 
   Input Parameters:
 . ts   - The `TS` context obtained from `TSCreate()`
@@ -646,7 +646,7 @@ PetscErrorCode TSComputeRHSHessianProductFunctionUU(TS ts, PetscReal t, Vec U, V
 /*@C
   TSComputeRHSHessianProductFunctionUP - Runs the user-defined vector-Hessian-vector product function for Gup.
 
-  Collective on ts
+  Collective
 
   Input Parameters:
 . ts   - The `TS` context obtained from `TSCreate()`
@@ -673,7 +673,7 @@ PetscErrorCode TSComputeRHSHessianProductFunctionUP(TS ts, PetscReal t, Vec U, V
 /*@C
   TSComputeRHSHessianProductFunctionPU - Runs the user-defined vector-Hessian-vector product function for Gpu.
 
-  Collective on ts
+  Collective
 
   Input Parameters:
 . ts   - The `TS` context obtained from `TSCreate()`
@@ -700,7 +700,7 @@ PetscErrorCode TSComputeRHSHessianProductFunctionPU(TS ts, PetscReal t, Vec U, V
 /*@C
   TSComputeRHSHessianProductFunctionPP - Runs the user-defined vector-Hessian-vector product function for Gpp.
 
-  Collective on ts
+  Collective
 
   Input Parameters:
 . ts   - The `TS` context obtained from `TSCreate()`
@@ -730,7 +730,7 @@ PetscErrorCode TSComputeRHSHessianProductFunctionPP(TS ts, PetscReal t, Vec U, V
    TSSetCostGradients - Sets the initial value of the gradients of the cost function w.r.t. initial values and w.r.t. the problem parameters
       for use by the `TS` adjoint routines.
 
-   Logically Collective on ts
+   Logically Collective
 
    Input Parameters:
 +  ts - the `TS` context obtained from `TSCreate()`
@@ -790,7 +790,7 @@ PetscErrorCode TSGetCostGradients(TS ts, PetscInt *numcost, Vec **lambda, Vec **
    TSSetCostHessianProducts - Sets the initial value of the Hessian-vector products of the cost function w.r.t. initial values and w.r.t. the problem parameters
    for use by the `TS` adjoint routines.
 
-   Logically Collective on ts
+   Logically Collective
 
    Input Parameters:
 +  ts - the `TS` context obtained from `TSCreate()`
@@ -856,7 +856,7 @@ PetscErrorCode TSGetCostHessianProducts(TS ts, PetscInt *numcost, Vec **lambda2,
 /*@
   TSAdjointSetForward - Trigger the tangent linear solver and initialize the forward sensitivities
 
-  Logically Collective on ts
+  Logically Collective
 
   Input Parameters:
 +  ts - the `TS` context obtained from `TSCreate()`
@@ -911,7 +911,7 @@ PetscErrorCode TSAdjointSetForward(TS ts, Mat didp)
 /*@
   TSAdjointResetForward - Reset the tangent linear solver and destroy the tangent linear context
 
-  Logically Collective on ts
+  Logically Collective
 
   Input Parameters:
 .  ts - the `TS` context obtained from `TSCreate()`
@@ -932,7 +932,7 @@ PetscErrorCode TSAdjointResetForward(TS ts)
    TSAdjointSetUp - Sets up the internal data structures for the later use
    of an adjoint solver
 
-   Collective on ts
+   Collective
 
    Input Parameter:
 .  ts - the `TS` context obtained from `TSCreate()`
@@ -973,7 +973,7 @@ PetscErrorCode TSAdjointSetUp(TS ts)
 /*@
   TSAdjointReset - Resets a `TS` adjoint context and removes any allocated `Vec`s and `Mat`s.
 
-   Collective on ts
+   Collective
 
    Input Parameter:
 .  ts - the `TS` context obtained from `TSCreate()`
@@ -1003,7 +1003,7 @@ PetscErrorCode TSAdjointReset(TS ts)
 /*@
    TSAdjointSetSteps - Sets the number of steps the adjoint solver should take backward in time
 
-   Logically Collective on ts
+   Logically Collective
 
    Input Parameters:
 +  ts - the `TS` context obtained from `TSCreate()`
@@ -1121,7 +1121,7 @@ PetscErrorCode TSAdjointMonitorSensi(TS ts, PetscInt step, PetscReal ptime, Vec 
 /*@C
    TSAdjointMonitorSetFromOptions - Sets a monitor function and viewer appropriate for the type indicated by the user
 
-   Collective on ts
+   Collective
 
    Input Parameters:
 +  ts - `TS` object you wish to monitor
@@ -1163,7 +1163,7 @@ PetscErrorCode TSAdjointMonitorSetFromOptions(TS ts, const char name[], const ch
    TSAdjointMonitorSet - Sets an ADDITIONAL function that is to be used at every
    timestep to display the iteration's  progress.
 
-   Logically Collective on ts
+   Logically Collective
 
    Input Parameters:
 +  ts - the `TS` context obtained from `TSCreate()`
@@ -1218,7 +1218,7 @@ PetscErrorCode TSAdjointMonitorSet(TS ts, PetscErrorCode (*adjointmonitor)(TS, P
 /*@C
    TSAdjointMonitorCancel - Clears all the adjoint monitors that have been set on a time-step object.
 
-   Logically Collective on ts
+   Logically Collective
 
    Input Parameters:
 .  ts - the `TS` context obtained from `TSCreate()`
@@ -1268,7 +1268,7 @@ PetscErrorCode TSAdjointMonitorDefault(TS ts, PetscInt step, PetscReal ptime, Ve
    TSAdjointMonitorDrawSensi - Monitors progress of the adjoint `TS` solvers by calling
    `VecView()` for the sensitivities to initial states at each timestep
 
-   Collective on ts
+   Collective
 
    Input Parameters:
 +  ts - the `TS` context
@@ -1307,7 +1307,7 @@ PetscErrorCode TSAdjointMonitorDrawSensi(TS ts, PetscInt step, PetscReal ptime, 
 /*
    TSAdjointSetFromOptions - Sets various `TS` adjoint parameters from user options.
 
-   Collective on ts
+   Collective
 
    Input Parameter:
 .  ts - the `TS` context
@@ -1355,7 +1355,7 @@ PetscErrorCode TSAdjointSetFromOptions(TS ts, PetscOptionItems *PetscOptionsObje
 /*@
    TSAdjointStep - Steps one time step backward in the adjoint run
 
-   Collective on ts
+   Collective
 
    Input Parameter:
 .  ts - the `TS` context obtained from `TSCreate()`
@@ -1392,7 +1392,7 @@ PetscErrorCode TSAdjointStep(TS ts)
 /*@
    TSAdjointSolve - Solves the discrete ajoint problem for an ODE/DAE
 
-   Collective on ts
+   Collective
 `
    Input Parameter:
 .  ts - the `TS` context obtained from `TSCreate()`
@@ -1469,7 +1469,7 @@ PetscErrorCode TSAdjointSolve(TS ts)
 /*@C
    TSAdjointMonitor - Runs all user-provided adjoint monitor routines set using `TSAdjointMonitorSet()`
 
-   Collective on ts
+   Collective
 
    Input Parameters:
 +  ts - time stepping context obtained from `TSCreate()`
@@ -1504,7 +1504,7 @@ PetscErrorCode TSAdjointMonitor(TS ts, PetscInt step, PetscReal ptime, Vec u, Pe
 /*@
  TSAdjointCostIntegral - Evaluate the cost integral in the adjoint run.
 
- Collective on ts
+ Collective
 
  Input Parameter:
  .  ts - time stepping context
@@ -1530,7 +1530,7 @@ PetscErrorCode TSAdjointCostIntegral(TS ts)
   TSForwardSetUp - Sets up the internal data structures for the later use
   of forward sensitivity analysis
 
-  Collective on ts
+  Collective
 
   Input Parameter:
 . ts - the `TS` context obtained from `TSCreate()`
@@ -1553,7 +1553,7 @@ PetscErrorCode TSForwardSetUp(TS ts)
 /*@
   TSForwardReset - Reset the internal data structures used by forward sensitivity analysis
 
-  Collective on ts
+  Collective
 
   Input Parameter:
 . ts - the `TS` context obtained from `TSCreate()`
@@ -1626,7 +1626,7 @@ PetscErrorCode TSForwardGetIntegralGradients(TS ts, PetscInt *numfwdint, Vec **v
 /*@
   TSForwardStep - Compute the forward sensitivity for one time step.
 
-  Collective on ts
+  Collective
 
   Input Parameter:
 . ts - time stepping context
@@ -1652,7 +1652,7 @@ PetscErrorCode TSForwardStep(TS ts)
 /*@
   TSForwardSetSensitivities - Sets the initial value of the trajectory sensitivities of solution  w.r.t. the problem parameters and initial values.
 
-  Logically Collective on ts
+  Logically Collective
 
   Input Parameters:
 + ts - the `TS` context obtained from `TSCreate()`
@@ -1710,7 +1710,7 @@ PetscErrorCode TSForwardGetSensitivities(TS ts, PetscInt *nump, Mat *Smat)
 /*@
    TSForwardCostIntegral - Evaluate the cost integral in the forward run.
 
-   Collective on ts
+   Collective
 
    Input Parameter:
 .  ts - time stepping context
@@ -1733,7 +1733,7 @@ PetscErrorCode TSForwardCostIntegral(TS ts)
 /*@
   TSForwardSetInitialSensitivities - Set initial values for tangent linear sensitivities
 
-  Collective on ts
+  Collective
 
   Input Parameters:
 + ts - the `TS` context obtained from `TSCreate()`
@@ -1843,7 +1843,7 @@ PetscErrorCode TSGetQuadratureTS(TS ts, PetscBool *fwd, TS *quadts)
 /*@
    TSComputeSNESJacobian - Compute the Jacobian needed for the `SNESSolve()` in `TS`
 
-   Collective on ts
+   Collective
 
    Input Parameters:
 +  ts - the `TS` context obtained from `TSCreate()`

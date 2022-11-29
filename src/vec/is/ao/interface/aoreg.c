@@ -7,7 +7,7 @@ PetscBool         AORegisterAllCalled = PETSC_FALSE;
 /*@C
   AOSetType - Builds an application ordering for a particular `AOType`
 
-  Collective on ao
+  Collective
 
   Input Parameters:
 + ao    - The `AO` object

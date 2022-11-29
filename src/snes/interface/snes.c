@@ -15,7 +15,7 @@ PetscLogEvent SNES_Solve, SNES_Setup, SNES_FunctionEval, SNES_JacobianEval, SNES
 /*@
    SNESSetErrorIfNotConverged - Causes `SNESSolve()` to generate an error if the solver has not converged.
 
-   Logically Collective on snes
+   Logically Collective
 
    Input Parameters:
 +  snes - iterative context obtained from `SNESCreate()`
@@ -68,7 +68,7 @@ PetscErrorCode SNESGetErrorIfNotConverged(SNES snes, PetscBool *flag)
 /*@
     SNESSetAlwaysComputesFinalResidual - tells the `SNES` to always compute the residual at the final solution
 
-   Logically Collective on snes
+   Logically Collective
 
     Input Parameters:
 +   snes - the shell `SNES`
@@ -93,7 +93,7 @@ PetscErrorCode SNESSetAlwaysComputesFinalResidual(SNES snes, PetscBool flg)
 /*@
     SNESGetAlwaysComputesFinalResidual - checks if the `SNES` always computes the residual at the final solution
 
-   Logically Collective on snes
+   Logically Collective
 
     Input Parameter:
 .   snes - the `SNES` context
@@ -117,7 +117,7 @@ PetscErrorCode SNESGetAlwaysComputesFinalResidual(SNES snes, PetscBool *flg)
    SNESSetFunctionDomainError - tells `SNES` that the input vector, a proposed new solution, to your function you provided to `SNESSetFunction()` is not
      in the functions domain. For example, a step with negative pressure.
 
-   Logically Collective on snes
+   Logically Collective
 
    Input Parameters:
 .  snes - the `SNES` context
@@ -143,7 +143,7 @@ PetscErrorCode SNESSetFunctionDomainError(SNES snes)
 /*@
    SNESSetJacobianDomainError - tells `SNES` that the function you provided to `SNESSetJacobian()` at the proposed step. For example there is a negative element transformation.
 
-   Logically Collective on snes
+   Logically Collective
 
    Input Parameters:
 .  snes - the `SNES` context
@@ -170,7 +170,7 @@ PetscErrorCode SNESSetJacobianDomainError(SNES snes)
    SNESSetCheckJacobianDomainError - tells `SNESSolve()` whether to check if the user called `SNESSetJacobianDomainError()` Jacobian domain error after
    each Jacobian evaluation. By default, we check Jacobian domain error in the debug mode, and do not check it in the optimized mode.
 
-   Logically Collective on snes
+   Logically Collective
 
    Input Parameters:
 +  snes - the SNES context
@@ -194,7 +194,7 @@ PetscErrorCode SNESSetCheckJacobianDomainError(SNES snes, PetscBool flg)
 /*@
    SNESGetCheckJacobianDomainError - Get an indicator whether or not we are checking Jacobian domain errors after each Jacobian evaluation.
 
-   Logically Collective on snes
+   Logically Collective
 
    Input Parameters:
 .  snes - the `SNES` context
@@ -242,7 +242,7 @@ PetscErrorCode SNESGetFunctionDomainError(SNES snes, PetscBool *domainerror)
 /*@
    SNESGetJacobianDomainError - Gets the status of the Jacobian domain error after a call to `SNESComputeJacobian()`;
 
-   Logically Collective on snes
+   Logically Collective
 
    Input Parameters:
 .  snes - the `SNES` context
@@ -266,7 +266,7 @@ PetscErrorCode SNESGetJacobianDomainError(SNES snes, PetscBool *domainerror)
 /*@C
   SNESLoad - Loads a `SNES` that has been stored in `PETSCVIEWERBINARY` with `SNESView()`.
 
-  Collective on snes
+  Collective
 
   Input Parameters:
 + newdm - the newly loaded `SNES`, this needs to have been created with `SNESCreate()` or
@@ -316,7 +316,7 @@ PetscErrorCode SNESLoad(SNES snes, PetscViewer viewer)
 /*@C
    SNESViewFromOptions - View a `SNES` based on the options database
 
-   Collective on snes
+   Collective
 
    Input Parameters:
 +  A - the `SNES` context
@@ -340,7 +340,7 @@ PETSC_EXTERN PetscErrorCode SNESComputeJacobian_DMDA(SNES, Vec, Mat, Mat, void *
 /*@C
    SNESView - Prints the `SNES` data structure.
 
-   Collective on snes
+   Collective
 
    Input Parameters:
 +  snes - the `SNES` context
@@ -805,7 +805,7 @@ static PetscErrorCode SNESMonitorPauseFinal_Internal(SNES snes)
 /*@C
    SNESMonitorSetFromOptions - Sets a monitor function and viewer appropriate for the type indicated by the user
 
-   Collective on snes
+   Collective
 
    Input Parameters:
 +  snes - SNES object you wish to monitor
@@ -871,7 +871,7 @@ PetscErrorCode SNESEWSetFromOptions_Private(SNESKSPEW *kctx, MPI_Comm comm, cons
 /*@
    SNESSetFromOptions - Sets various `SNES` and `KSP` parameters from user options.
 
-   Collective on snes
+   Collective
 
    Input Parameter:
 .  snes - the `SNES` context
@@ -1148,7 +1148,7 @@ PetscErrorCode SNESSetFromOptions(SNES snes)
 /*@
    SNESResetFromOptions - Sets various `SNES` and `KSP` parameters from user options ONLY if the `SNESSetFromOptions()` was previously set from options
 
-   Collective on snes
+   Collective
 
    Input Parameter:
 .  snes - the `SNES` context
@@ -1168,7 +1168,7 @@ PetscErrorCode SNESResetFromOptions(SNES snes)
    SNESSetComputeApplicationContext - Sets an optional function to compute a user-defined context for
    the nonlinear solvers.
 
-   Logically Collective on snes
+   Logically Collective
 
    Input Parameters:
 +  snes - the `SNES` context
@@ -1199,7 +1199,7 @@ PetscErrorCode SNESSetComputeApplicationContext(SNES snes, PetscErrorCode (*comp
 /*@
    SNESSetApplicationContext - Sets the optional user-defined context for the nonlinear solvers.
 
-   Logically Collective on snes
+   Logically Collective
 
    Input Parameters:
 +  snes - the `SNES` context
@@ -1525,7 +1525,7 @@ PetscErrorCode SNESGetLinearSolveFailures(SNES snes, PetscInt *nfails)
    SNESSetMaxLinearSolveFailures - the number of failed linear solve attempts
    allowed before `SNES` returns with a diverged reason of `SNES_DIVERGED_LINEAR_SOLVE`
 
-   Logically Collective on snes
+   Logically Collective
 
    Input Parameters:
 +  snes     - `SNES` context
@@ -1613,7 +1613,7 @@ PetscErrorCode SNESGetLinearSolveIterations(SNES snes, PetscInt *lits)
    SNESSetCountersReset - Sets whether or not the counters for linear iterations and function evaluations
    are reset every time `SNESSolve()` is called.
 
-   Logically Collective on snes
+   Logically Collective
 
    Input Parameters:
 +  snes - `SNES` context
@@ -1825,7 +1825,7 @@ PetscErrorCode SNESCreate(MPI_Comm comm, SNES *outsnes)
      #include "petscsnes.h"
      PetscErrorCode SNESFunction(SNES snes,Vec x,Vec f,void *ctx);
 
-     Collective on snes
+     Collective
 
      Input Parameters:
 +     snes - the `SNES` context
@@ -1845,7 +1845,7 @@ M*/
    vector for use by the `SNES` routines in solving systems of nonlinear
    equations.
 
-   Logically Collective on snes
+   Logically Collective
 
    Input Parameters:
 +  snes - the `SNES` context
@@ -1884,7 +1884,7 @@ PetscErrorCode SNESSetFunction(SNES snes, Vec r, PetscErrorCode (*f)(SNES, Vec, 
    `SNESSolve()`.  This function allows one to avoid a redundant call
    to `SNESComputeFunction()` in that case.
 
-   Logically Collective on snes
+   Logically Collective
 
    Input Parameters:
 +  snes - the `SNES` context
@@ -1922,7 +1922,7 @@ PetscErrorCode SNESSetInitialFunction(SNES snes, Vec f)
    SNESSetNormSchedule - Sets the `SNESNormSchedule` used in convergence and monitoring
    of the `SNES` method, when norms are computed in the solving process
 
-   Logically Collective on snes
+   Logically Collective
 
    Input Parameters:
 +  snes - the `SNES` context
@@ -1956,7 +1956,7 @@ PetscErrorCode SNESSetNormSchedule(SNES snes, SNESNormSchedule normschedule)
    SNESGetNormSchedule - Gets the `SNESNormSchedule` used in convergence and monitoring
    of the `SNES` method.
 
-   Logically Collective on snes
+   Logically Collective
 
    Input Parameters:
 +  snes - the `SNES` context
@@ -1977,7 +1977,7 @@ PetscErrorCode SNESGetNormSchedule(SNES snes, SNESNormSchedule *normschedule)
 /*@
   SNESSetFunctionNorm - Sets the last computed residual norm.
 
-  Logically Collective on snes
+  Logically Collective
 
   Input Parameters:
 +  snes - the `SNES` context
@@ -2074,7 +2074,7 @@ PetscErrorCode SNESGetSolutionNorm(SNES snes, PetscReal *xnorm)
    SNESSetFunctionType - Sets the `SNESFunctionType`
    of the `SNES` method.
 
-   Logically Collective on snes
+   Logically Collective
 
    Input Parameters:
 +  snes - the `SNES` context
@@ -2104,7 +2104,7 @@ PetscErrorCode SNESSetFunctionType(SNES snes, SNESFunctionType type)
    SNESGetFunctionType - Gets the `SNESFunctionType` used in convergence and monitoring set with `SNESSetFunctionType()`
    of the SNES method.
 
-   Logically Collective on snes
+   Logically Collective
 
    Input Parameters:
 +  snes - the `SNES` context
@@ -2129,7 +2129,7 @@ PetscErrorCode SNESGetFunctionType(SNES snes, SNESFunctionType *type)
      #include <petscsnes.h>
 $    SNESNGSFunction(SNES snes,Vec x,Vec b,void *ctx);
 
-     Collective on snes
+     Collective
 
      Input Parameters:
 +  X   - solution vector
@@ -2243,7 +2243,7 @@ PetscErrorCode SNESPicardComputeJacobian(SNES snes, Vec x1, Mat J, Mat B, void *
 /*@C
    SNESSetPicard - Use `SNES` to solve the system A(x) x = bp(x) + b via a Picard type iteration (Picard linearization)
 
-   Logically Collective on snes
+   Logically Collective
 
    Input Parameters:
 +  snes - the `SNES` context
@@ -2336,7 +2336,7 @@ PetscErrorCode SNESGetPicard(SNES snes, Vec *r, PetscErrorCode (**f)(SNES, Vec, 
 /*@C
    SNESSetComputeInitialGuess - Sets a routine used to compute an initial guess for the problem
 
-   Logically Collective on snes
+   Logically Collective
 
    Input Parameters:
 +  snes - the `SNES` context
@@ -2367,7 +2367,7 @@ PetscErrorCode SNESSetComputeInitialGuess(SNES snes, PetscErrorCode (*func)(SNES
    SNESGetRhs - Gets the vector for solving F(x) = rhs. If rhs is not set
    it assumes a zero right hand side.
 
-   Logically Collective on snes
+   Logically Collective
 
    Input Parameter:
 .  snes - the `SNES` context
@@ -2391,7 +2391,7 @@ PetscErrorCode SNESGetRhs(SNES snes, Vec *rhs)
 /*@
    SNESComputeFunction - Calls the function that has been set with `SNESSetFunction()`.
 
-   Collective on snes
+   Collective
 
    Input Parameters:
 +  snes - the `SNES` context
@@ -2453,7 +2453,7 @@ PetscErrorCode SNESComputeFunction(SNES snes, Vec x, Vec y)
 /*@
    SNESComputeMFFunction - Calls the function that has been set with `SNESSetMFFunction()`.
 
-   Collective on snes
+   Collective
 
    Input Parameters:
 +  snes - the `SNES` context
@@ -2508,7 +2508,7 @@ PetscErrorCode SNESComputeMFFunction(SNES snes, Vec x, Vec y)
 /*@
    SNESComputeNGS - Calls the Gauss-Seidel function that has been set with  `SNESSetNGS()`.
 
-   Collective on snes
+   Collective
 
    Input Parameters:
 +  snes - the `SNES` context
@@ -2714,7 +2714,7 @@ PetscErrorCode SNESTestJacobian(SNES snes)
 /*@
    SNESComputeJacobian - Computes the Jacobian matrix that has been set with `SNESSetJacobian()`.
 
-   Collective on snes
+   Collective
 
    Input Parameters:
 +  snes - the `SNES` context
@@ -3001,7 +3001,7 @@ PetscErrorCode SNESComputeJacobian(SNES snes, Vec X, Mat A, Mat B)
      #include "petscsnes.h"
      PetscErrorCode SNESJacobianFunction(SNES snes,Vec x,Mat Amat,Mat Pmat,void *ctx);
 
-     Collective on snes
+     Collective
 
     Input Parameters:
 +  x - input vector, the Jacobian is to be computed at this value
@@ -3020,7 +3020,7 @@ M*/
    SNESSetJacobian - Sets the function to compute Jacobian as well as the
    location to store the matrix.
 
-   Logically Collective on snes
+   Logically Collective
 
    Input Parameters:
 +  snes - the `SNES` context
@@ -3135,7 +3135,7 @@ static PetscErrorCode SNESSetDefaultComputeJacobian(SNES snes)
    SNESSetUp - Sets up the internal data structures for the later use
    of a nonlinear solver.
 
-   Collective on snes
+   Collective
 
    Input Parameters:
 .  snes - the `SNES` context
@@ -3256,7 +3256,7 @@ PetscErrorCode SNESSetUp(SNES snes)
 /*@
    SNESReset - Resets a `SNES` context to the snessetupcalled = 0 state and removes any allocated `Vec`s and `Mat`s
 
-   Collective on snes
+   Collective
 
    Input Parameter:
 .  snes - iterative context obtained from `SNESCreate()`
@@ -3305,7 +3305,7 @@ PetscErrorCode SNESReset(SNES snes)
 /*@
    SNESConvergedReasonViewCancel - Clears all the reason view functions for a `SNES` object.
 
-   Collective on snes
+   Collective
 
    Input Parameter:
 .  snes - iterative context obtained from `SNESCreate()`
@@ -3331,7 +3331,7 @@ PetscErrorCode SNESConvergedReasonViewCancel(SNES snes)
    SNESDestroy - Destroys the nonlinear solver context that was created
    with `SNESCreate()`.
 
-   Collective on snes
+   Collective
 
    Input Parameter:
 .  snes - the `SNES` context
@@ -3376,7 +3376,7 @@ PetscErrorCode SNESDestroy(SNES *snes)
 /*@
    SNESSetLagPreconditioner - Determines when the preconditioner is rebuilt in the nonlinear solve.
 
-   Logically Collective on snes
+   Logically Collective
 
    Input Parameters:
 +  snes - the `SNES` context
@@ -3414,7 +3414,7 @@ PetscErrorCode SNESSetLagPreconditioner(SNES snes, PetscInt lag)
 /*@
    SNESSetGridSequence - sets the number of steps of grid sequencing that `SNES` will do
 
-   Logically Collective on snes
+   Logically Collective
 
    Input Parameters:
 +  snes - the `SNES` context
@@ -3442,7 +3442,7 @@ PetscErrorCode SNESSetGridSequence(SNES snes, PetscInt steps)
 /*@
    SNESGetGridSequence - gets the number of steps of grid sequencing that `SNES` will do
 
-   Logically Collective on snes
+   Logically Collective
 
    Input Parameter:
 .  snes - the `SNES` context
@@ -3507,7 +3507,7 @@ PetscErrorCode SNESGetLagPreconditioner(SNES snes, PetscInt *lag)
    SNESSetLagJacobian - Set when the Jacobian is rebuilt in the nonlinear solve. See `SNESSetLagPreconditioner()` for determining how
      often the preconditioner is rebuilt.
 
-   Logically Collective on snes
+   Logically Collective
 
    Input Parameters:
 +  snes - the `SNES` context
@@ -3576,7 +3576,7 @@ PetscErrorCode SNESGetLagJacobian(SNES snes, PetscInt *lag)
 /*@
    SNESSetLagJacobianPersists - Set whether or not the Jacobian lagging persists through multiple nonlinear solves
 
-   Logically collective on snes
+   Logically collective
 
    Input Parameters:
 +  snes - the `SNES` context
@@ -3611,7 +3611,7 @@ PetscErrorCode SNESSetLagJacobianPersists(SNES snes, PetscBool flg)
 /*@
    SNESSetLagPreconditionerPersists - Set whether or not the preconditioner lagging persists through multiple nonlinear solves
 
-   Logically Collective on snes
+   Logically Collective
 
    Input Parameters:
 +  snes - the `SNES` context
@@ -3646,7 +3646,7 @@ PetscErrorCode SNESSetLagPreconditionerPersists(SNES snes, PetscBool flg)
 /*@
    SNESSetForceIteration - force `SNESSolve()` to take at least one iteration regardless of the initial residual norm
 
-   Logically Collective on snes
+   Logically Collective
 
    Input Parameters:
 +  snes - the `SNES` context
@@ -3673,7 +3673,7 @@ PetscErrorCode SNESSetForceIteration(SNES snes, PetscBool force)
 /*@
    SNESGetForceIteration - Check whether or not `SNESSolve()` take at least one iteration regardless of the initial residual norm
 
-   Logically Collective on snes
+   Logically Collective
 
    Input Parameters:
 .  snes - the `SNES` context
@@ -3696,7 +3696,7 @@ PetscErrorCode SNESGetForceIteration(SNES snes, PetscBool *force)
 /*@
    SNESSetTolerances - Sets `SNES` various parameters used in convergence tests.
 
-   Logically Collective on snes
+   Logically Collective
 
    Input Parameters:
 +  snes - the `SNES` context
@@ -3754,7 +3754,7 @@ PetscErrorCode SNESSetTolerances(SNES snes, PetscReal abstol, PetscReal rtol, Pe
 /*@
    SNESSetDivergenceTolerance - Sets the divergence tolerance used for the `SNES` divergence test.
 
-   Logically Collective on snes
+   Logically Collective
 
    Input Parameters:
 +  snes - the `SNES` context
@@ -3838,7 +3838,7 @@ PetscErrorCode SNESGetDivergenceTolerance(SNES snes, PetscReal *divtol)
 /*@
    SNESSetTrustRegionTolerance - Sets the trust region parameter tolerance.
 
-   Logically Collective on snes
+   Logically Collective
 
    Input Parameters:
 +  snes - the `SNES` context
@@ -3933,7 +3933,7 @@ PetscErrorCode SNESMonitorLGRange(SNES snes, PetscInt n, PetscReal rnorm, void *
 /*@
    SNESMonitor - runs the user provided monitor routines, if they exist
 
-   Collective on snes
+   Collective
 
    Input Parameters:
 +  snes - nonlinear solver context obtained from `SNESCreate()`
@@ -3968,7 +3968,7 @@ PetscErrorCode SNESMonitor(SNES snes, PetscInt iter, PetscReal rnorm)
      #include <petscsnes.h>
 $    PetscErrorCode SNESMonitorFunction(SNES snes,PetscInt its, PetscReal norm,void *mctx)
 
-     Collective on snes
+     Collective
 
     Input Parameters:
 +    snes - the `SNES` context
@@ -3986,7 +3986,7 @@ M*/
    iteration of the nonlinear solver to display the iteration's
    progress.
 
-   Logically Collective on snes
+   Logically Collective
 
    Input Parameters:
 +  snes - the `SNES` context
@@ -4038,7 +4038,7 @@ PetscErrorCode SNESMonitorSet(SNES snes, PetscErrorCode (*f)(SNES, PetscInt, Pet
 /*@
    SNESMonitorCancel - Clears all the monitor functions for a `SNES` object.
 
-   Logically Collective on snes
+   Logically Collective
 
    Input Parameters:
 .  snes - the `SNES` context
@@ -4075,7 +4075,7 @@ PetscErrorCode SNESMonitorCancel(SNES snes)
      #include <petscsnes.h>
 $     PetscErrorCode SNESConvergenceTest(SNES snes,PetscInt it,PetscReal xnorm,PetscReal gnorm,PetscReal f,SNESConvergedReason *reason,void *cctx)
 
-     Collective on snes
+     Collective
 
     Input Parameters:
 +    snes - the `SNES` context
@@ -4097,7 +4097,7 @@ M*/
    SNESSetConvergenceTest - Sets the function that is to be used
    to test for convergence of the nonlinear iterative solution.
 
-   Logically Collective on snes
+   Logically Collective
 
    Input Parameters:
 +  snes - the `SNES` context
@@ -4203,7 +4203,7 @@ PetscErrorCode SNESSetConvergedReason(SNES snes, SNESConvergedReason reason)
 /*@
    SNESSetConvergenceHistory - Sets the array used to hold the convergence history.
 
-   Logically Collective on snes
+   Logically Collective
 
    Input Parameters:
 +  snes - iterative context obtained from `SNESCreate()`
@@ -4302,7 +4302,7 @@ PetscErrorCode SNESGetConvergenceHistory(SNES snes, PetscReal *a[], PetscInt *it
   at the beginning of every iteration of the nonlinear solve. Specifically
   it is called just before the Jacobian is "evaluated".
 
-  Logically Collective on snes
+  Logically Collective
 
   Input Parameters:
 + snes - The nonlinear solver context
@@ -4382,7 +4382,7 @@ PetscErrorCode SNESScaleStep_Private(SNES snes, Vec y, PetscReal *fnorm, PetscRe
 /*@C
    SNESConvergedReasonView - Displays the reason a `SNES` solve converged or diverged to a viewer
 
-   Collective on snes
+   Collective
 
    Parameter:
 +  snes - iterative context obtained from `SNESCreate()`
@@ -4456,7 +4456,7 @@ PetscErrorCode SNESConvergedReasonView(SNES snes, PetscViewer viewer)
    SNESConvergedReasonViewSet - Sets an ADDITIONAL function that is to be used at the
     end of the nonlinear solver to display the conver reason of the nonlinear solver.
 
-   Logically Collective on snes
+   Logically Collective
 
    Input Parameters:
 +  snes - the `SNES` context
@@ -4505,7 +4505,7 @@ PetscErrorCode SNESConvergedReasonViewSet(SNES snes, PetscErrorCode (*f)(SNES, v
   SNESConvergedReasonViewFromOptions - Processes command line options to determine if/how a `SNESConvergedReason` is to be viewed.
                                        All the user-provided convergedReasonView routines will be involved as well, if they exist.
 
-  Collective on snes
+  Collective
 
   Input Parameters:
 . snes   - the `SNES` object
@@ -4546,7 +4546,7 @@ PetscErrorCode SNESConvergedReasonViewFromOptions(SNES snes)
    SNESSolve - Solves a nonlinear system F(x) = b.
    Call `SNESSolve()` after calling `SNESCreate()` and optional routines of the form `SNESSetXXX()`.
 
-   Collective on snes
+   Collective
 
    Input Parameters:
 +  snes - the `SNES` context
@@ -4738,7 +4738,7 @@ PetscErrorCode SNESSolve(SNES snes, Vec b, Vec x)
 /*@C
    SNESSetType - Sets the method for the nonlinear solver.
 
-   Collective on snes
+   Collective
 
    Input Parameters:
 +  snes - the `SNES` context
@@ -4835,7 +4835,7 @@ PetscErrorCode SNESGetType(SNES snes, SNESType *type)
 /*@
   SNESSetSolution - Sets the solution vector for use by the `SNES` routines.
 
-  Logically Collective on snes
+  Logically Collective
 
   Input Parameters:
 + snes - the `SNES` context obtained from `SNESCreate()`
@@ -4985,7 +4985,7 @@ PetscErrorCode SNESGetNGS(SNES snes, PetscErrorCode (**f)(SNES, Vec, Vec, void *
    SNESSetOptionsPrefix - Sets the prefix used for searching for all
    `SNES` options in the database.
 
-   Logically Collective on snes
+   Logically Collective
 
    Input Parameters:
 +  snes - the `SNES` context
@@ -5017,7 +5017,7 @@ PetscErrorCode SNESSetOptionsPrefix(SNES snes, const char prefix[])
    SNESAppendOptionsPrefix - Appends to the prefix used for searching for all
    `SNES` options in the database.
 
-   Logically Collective on snes
+   Logically Collective
 
    Input Parameters:
 +  snes - the `SNES` context
@@ -5145,7 +5145,7 @@ PetscErrorCode SNESTestLocalMin(SNES snes)
    computing relative tolerance for linear solvers within an inexact
    Newton method.
 
-   Logically Collective on snes
+   Logically Collective
 
    Input Parameters:
 +  snes - `SNES` context
@@ -5215,7 +5215,7 @@ PetscErrorCode SNESKSPGetUseEW(SNES snes, PetscBool *flag)
    convergence criteria for the linear solvers within an inexact
    Newton method.
 
-   Logically Collective on snes
+   Logically Collective
 
    Input Parameters:
 +    snes - `SNES` context
@@ -5455,7 +5455,7 @@ PetscErrorCode SNESGetKSP(SNES snes, KSP *ksp)
 /*@
    SNESSetDM - Sets the `DM` that may be used by some nonlinear solvers or their underlying preconditioners
 
-   Logically Collective on snes
+   Logically Collective
 
    Input Parameters:
 +  snes - the nonlinear solver context
@@ -5531,7 +5531,7 @@ PetscErrorCode SNESGetDM(SNES snes, DM *dm)
 /*@
   SNESSetNPC - Sets the nonlinear preconditioner to be used.
 
-  Collective on snes
+  Collective
 
   Input Parameters:
 + snes - iterative context obtained from `SNESCreate()`
@@ -5628,7 +5628,7 @@ PetscErrorCode SNESHasNPC(SNES snes, PetscBool *has_npc)
 /*@
     SNESSetNPCSide - Sets the preconditioning side.
 
-    Logically Collective on snes
+    Logically Collective
 
     Input Parameter:
 .   snes - iterative context obtained from `SNESCreate()`
@@ -5692,7 +5692,7 @@ PetscErrorCode SNESGetNPCSide(SNES snes, PCSide *side)
 /*@
   SNESSetLineSearch - Sets the linesearch on the `SNES` instance.
 
-  Collective on snes
+  Collective
 
   Input Parameters:
 + snes - iterative context obtained from `SNESCreate()`

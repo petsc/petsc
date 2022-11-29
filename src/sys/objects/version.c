@@ -2,6 +2,8 @@
 /*@C
     PetscGetVersion - Gets the PETSc version information in a string.
 
+    Not Collective; No Fortran Support
+
     Input Parameter:
 .   len - length of the string
 
@@ -12,9 +14,6 @@
 
     Note:
     For doing runtime checking of supported versions we recommend using `PetscGetVersionNumber()` instead of this routine.
-
-    Fortran Note:
-    This routine is not supported in Fortran.
 
 .seealso: `PetscGetProgramName()`, `PetscGetVersionNumber()`
 @*/

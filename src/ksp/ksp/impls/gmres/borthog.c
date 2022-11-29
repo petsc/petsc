@@ -12,7 +12,7 @@
      KSPGMRESModifiedGramSchmidtOrthogonalization -  This is the basic orthogonalization routine
                 using modified Gram-Schmidt.
 
-     Collective on ksp
+     Collective
 
   Input Parameters:
 +   ksp - KSP object, must be associated with `KSPGMRES`, `KSPFGMRES`, or `KSPLGMRES` Krylov method

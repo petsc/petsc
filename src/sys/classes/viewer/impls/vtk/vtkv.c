@@ -267,7 +267,7 @@ PetscErrorCode PetscViewerVTKOpen(MPI_Comm comm, const char name[], PetscFileMod
 /*@C
    PetscViewerVTKFWrite - write binary data preceded by 32-bit int length (in bytes), does not do byte swapping.
 
-   Logically collective on viewer
+   Logically collective
 
    Input Parameters:
 +  viewer - logically collective viewer, data written from rank 0

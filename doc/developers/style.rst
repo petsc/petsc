@@ -573,23 +573,23 @@ where noted, add a newline after the section headings.
    noting the required header and the function signature.
 
 #. If documenting a function, a description of the function’s
-   “collectivity” (whether all ranks in an MPI communicator need to
-   participate). Unless otherwise noted, it’s assumed that this
-   collectivity is with respect to the MPI communicator associated with
-   the first argument.
+   “collectivity”.
 
-   -  ``Not Collective`` if the function need not be called on all MPI
+   -  ``Not Collective`` if the function need not be called on multiple (or possibly all) MPI
       ranks
 
-   -  ``Collective [on xxx]`` if the function is a collective operation
-      (with respect to the MPI communicator associated with the argument
-      with the variable name xxx. Note that xxx is the variable name, not the variable type.)
+   -  ``Collective [on xxx]`` if the function is a collective operation.
+      If it is not with respect to the first argument then it is with respect
+      to the argument with the variable name xxx. Note that xxx is the variable name, not the variable type.
 
-   -  ``Logically Collective [on xxx][; YYY must contain common value]``
+   -  ``Logically Collective [on xxx][; yyy must contain common value]``
       if the function is collective but does not require any actual
       synchronization (e.g. setting class parameters uniformly). Any
-      argument YYY which must have the same value on all ranks of the
+      argument yyy which must have the same value on all ranks of the
       MPI communicator should be noted here.
+
+#. If the function is not supported in Fortran then after the collective information, on the same line,
+   one should provide ``; No Fortran support``.
 
 #. If documenting a function with input parameters, a list of input
    parameter descriptions in an ``Input Parameter(s):`` section.

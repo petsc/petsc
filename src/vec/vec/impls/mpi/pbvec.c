@@ -707,7 +707,7 @@ PetscErrorCode VecCreateGhost(MPI_Comm comm, PetscInt n, PetscInt N, PetscInt ng
 /*@
    VecMPISetGhost - Sets the ghost points for an MPI ghost vector
 
-   Collective on Vec
+   Collective
 
    Input Parameters:
 +  vv - the MPI vector

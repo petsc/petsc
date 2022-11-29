@@ -4,7 +4,7 @@
 /*@C
    KSPGMRESSetOrthogonalization - Sets the orthogonalization routine used by `KSPGMRES` and `KSPFGMRES`.
 
-   Logically Collective on ksp
+   Logically Collective
 
    Input Parameters:
 +  ksp - iterative context obtained from `KSPCreate()`

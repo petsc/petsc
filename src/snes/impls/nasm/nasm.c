@@ -257,7 +257,7 @@ static PetscErrorCode SNESView_NASM(SNES snes, PetscViewer viewer)
 /*@
    SNESNASMSetType - Set the type of subdomain update used for the nonlinear additive Schwarz solver
 
-   Logically Collective on snes
+   Logically Collective
 
    Input Parameters:
 +  snes - the `SNES` context
@@ -290,7 +290,7 @@ static PetscErrorCode SNESNASMSetType_NASM(SNES snes, PCASMType type)
 /*@
    SNESNASMGetType - Get the type of subdomain update used for the nonlinear additive Schwarz solver
 
-   Logically Collective on snes
+   Logically Collective
 
    Input Parameters:
 .  snes - the `SNES` context
@@ -478,7 +478,7 @@ static PetscErrorCode SNESNASMGetSubdomainVecs_NASM(SNES snes, PetscInt *n, Vec 
    SNESNASMSetComputeFinalJacobian - Schedules the computation of the global and subdomain Jacobians upon convergence for the
    nonlinear additive Schwarz solver
 
-   Collective on snes
+   Collective
 
    Input Parameters:
 +  snes - the SNES context
@@ -514,7 +514,7 @@ static PetscErrorCode SNESNASMSetComputeFinalJacobian_NASM(SNES snes, PetscBool 
 /*@
    SNESNASMSetDamping - Sets the update damping for `SNESNASM` the nonlinear additive Schwarz solver
 
-   Logically collective on snes
+   Logically collective
 
    Input Parameters:
 +  snes - the `SNES` context

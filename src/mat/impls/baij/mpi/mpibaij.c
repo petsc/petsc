@@ -2957,7 +2957,7 @@ M*/
    d_nz (or d_nnz) and o_nz (or o_nnz).  By setting these parameters accurately,
    performance can be increased by more than a factor of 50.
 
-   Collective on Mat
+   Collective
 
    Input Parameters:
 +  B - the matrix
@@ -3399,7 +3399,7 @@ PetscErrorCode MatMPIBAIJGetSeqBAIJ(Mat A, Mat *Ad, Mat *Ao, const PetscInt *col
 /*@C
   MatMPIBAIJSetValuesBlocked - Direct Fortran call to replace call to `MatSetValuesBlocked()`
 
-  Collective on Mat
+  Collective
 
   Input Parameters:
 + mat - the matrix

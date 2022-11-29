@@ -96,7 +96,7 @@ PetscErrorCode KSPGetTotalIterations(KSP ksp, PetscInt *its)
 /*@C
   KSPMonitorResidual - Print the (possibly preconditioned) residual norm at each iteration of an iterative solver.
 
-  Collective on ksp
+  Collective
 
   Input Parameters:
 + ksp   - iterative context
@@ -145,7 +145,7 @@ PetscErrorCode KSPMonitorResidual(KSP ksp, PetscInt n, PetscReal rnorm, PetscVie
 /*@C
   KSPMonitorResidualDraw - Plots the (possibly preconditioned) residual at each iteration of an iterative solver.
 
-  Collective on ksp
+  Collective
 
   Input Parameters:
 + ksp   - iterative context
@@ -186,7 +186,7 @@ PetscErrorCode KSPMonitorResidualDraw(KSP ksp, PetscInt n, PetscReal rnorm, Pets
 /*@C
   KSPMonitorResidualDrawLG - Plots the (possibly preconditioned) residual norm at each iteration of an iterative solver.
 
-  Collective on ksp
+  Collective
 
   Input Parameters:
 + ksp   - iterative context
@@ -236,7 +236,7 @@ PetscErrorCode KSPMonitorResidualDrawLG(KSP ksp, PetscInt n, PetscReal rnorm, Pe
 /*@C
   KSPMonitorResidualDrawLGCreate - Creates the context for the (possibly preconditioned) residual norm monitor `KSPMonitorResidualDrawLG()`
 
-  Collective on ksp
+  Collective
 
   Input Parameters:
 + viewer - The `PetscViewer` of type `PETSCVIEWERDRAW`
@@ -313,7 +313,7 @@ PetscErrorCode KSPMonitorRange_Private(KSP ksp, PetscInt it, PetscReal *per)
 /*@C
   KSPMonitorResidualRange - Prints the percentage of residual elements that are more then 10 percent of the maximum value.
 
-  Collective on ksp
+  Collective
 
   Input Parameters:
 + ksp   - iterative context
@@ -361,7 +361,7 @@ PetscErrorCode KSPMonitorResidualRange(KSP ksp, PetscInt it, PetscReal rnorm, Pe
 /*@C
   KSPMonitorTrueResidual - Prints the true residual norm, as well as the (possibly preconditioned) approximate residual norm, at each iteration of an iterative solver.
 
-  Collective on ksp
+  Collective
 
   Input Parameters:
 + ksp   - iterative context
@@ -415,7 +415,7 @@ PetscErrorCode KSPMonitorTrueResidual(KSP ksp, PetscInt n, PetscReal rnorm, Pets
 /*@C
   KSPMonitorTrueResidualDraw - Plots the true residual at each iteration of an iterative solver.
 
-  Collective on ksp
+  Collective
 
   Input Parameters:
 + ksp   - iterative context
@@ -456,7 +456,7 @@ PetscErrorCode KSPMonitorTrueResidualDraw(KSP ksp, PetscInt n, PetscReal rnorm, 
 /*@C
   KSPMonitorTrueResidualDrawLG - Plots the true residual norm at each iteration of an iterative solver.
 
-  Collective on ksp
+  Collective
 
   Input Parameters:
 + ksp   - iterative context
@@ -514,7 +514,7 @@ PetscErrorCode KSPMonitorTrueResidualDrawLG(KSP ksp, PetscInt n, PetscReal rnorm
 /*@C
   KSPMonitorTrueResidualDrawLGCreate - Creates the context for the true residual monitor `KSPMonitorTrueResidualDrawLG()`
 
-  Collective on ksp
+  Collective
 
   Input Parameters:
 + viewer - The `PetscViewer` of type `PETSCVIEWERDRAW`
@@ -542,7 +542,7 @@ PetscErrorCode KSPMonitorTrueResidualDrawLGCreate(PetscViewer viewer, PetscViewe
 /*@C
   KSPMonitorTrueResidualMax - Prints the true residual max norm at each iteration of an iterative solver.
 
-  Collective on ksp
+  Collective
 
   Input Parameters:
 + ksp   - iterative context
@@ -594,7 +594,7 @@ PetscErrorCode KSPMonitorTrueResidualMax(KSP ksp, PetscInt n, PetscReal rnorm, P
 /*@C
   KSPMonitorError - Prints the error norm, as well as the (possibly preconditioned) residual norm, at each iteration of an iterative solver.
 
-  Collective on ksp
+  Collective
 
   Input Parameters:
 + ksp   - iterative context
@@ -657,7 +657,7 @@ PetscErrorCode KSPMonitorError(KSP ksp, PetscInt n, PetscReal rnorm, PetscViewer
 /*@C
   KSPMonitorErrorDraw - Plots the error at each iteration of an iterative solver.
 
-  Collective on ksp
+  Collective
 
   Input Parameters:
 + ksp   - iterative context
@@ -703,7 +703,7 @@ PetscErrorCode KSPMonitorErrorDraw(KSP ksp, PetscInt n, PetscReal rnorm, PetscVi
 /*@C
   KSPMonitorErrorDrawLG - Plots the error and residual norm at each iteration of an iterative solver.
 
-  Collective on ksp
+  Collective
 
   Input Parameters:
 + ksp   - iterative context
@@ -768,7 +768,7 @@ PetscErrorCode KSPMonitorErrorDrawLG(KSP ksp, PetscInt n, PetscReal rnorm, Petsc
 /*@C
   KSPMonitorErrorDrawLGCreate - Creates the context for the error and preconditioned residual plotter `KSPMonitorErrorDrawLG()`
 
-  Collective on ksp
+  Collective
 
   Input Parameters:
 + viewer - The `PetscViewer`
@@ -816,7 +816,7 @@ PetscErrorCode KSPMonitorErrorDrawLGCreate(PetscViewer viewer, PetscViewerFormat
 /*@C
   KSPMonitorSolution - Print the solution norm at each iteration of an iterative solver.
 
-  Collective on ksp
+  Collective
 
   Input Parameters:
 + ksp   - iterative context
@@ -862,7 +862,7 @@ PetscErrorCode KSPMonitorSolution(KSP ksp, PetscInt n, PetscReal rnorm, PetscVie
 /*@C
   KSPMonitorSolutionDraw - Plots the solution at each iteration of an iterative solver.
 
-  Collective on ksp
+  Collective
 
   Input Parameters:
 + ksp   - iterative context
@@ -902,7 +902,7 @@ PetscErrorCode KSPMonitorSolutionDraw(KSP ksp, PetscInt n, PetscReal rnorm, Pets
 /*@C
   KSPMonitorSolutionDrawLG - Plots the solution norm at each iteration of an iterative solver.
 
-  Collective on ksp
+  Collective
 
   Input Parameters:
 + ksp   - iterative context
@@ -955,7 +955,7 @@ PetscErrorCode KSPMonitorSolutionDrawLG(KSP ksp, PetscInt n, PetscReal rnorm, Pe
 /*@C
   KSPMonitorSolutionDrawLGCreate - Creates the context for the `KSP` monitor `KSPMonitorSolutionDrawLG()`
 
-  Collective on ksp
+  Collective
 
   Input Parameters:
 + viewer - The `PetscViewer`
@@ -985,7 +985,7 @@ PetscErrorCode KSPMonitorSolutionDrawLGCreate(PetscViewer viewer, PetscViewerFor
 /*@C
   KSPMonitorSingularValue - Prints the two norm of the true residual and estimation of the extreme singular values of the preconditioned problem at each iteration.
 
-  Logically Collective on ksp
+  Logically Collective
 
   Input Parameters:
 + ksp   - the iterative context
@@ -1040,7 +1040,7 @@ PetscErrorCode KSPMonitorSingularValue(KSP ksp, PetscInt n, PetscReal rnorm, Pet
 /*@C
   KSPMonitorSingularValueCreate - Creates the singular value monitor context needed by `KSPMonitorSingularValue()`
 
-  Collective on ksp
+  Collective
 
   Input Parameters:
 + viewer - The PetscViewer
@@ -1128,7 +1128,7 @@ PetscErrorCode KSPMonitorDynamicToleranceSetCoefficient(void *ctx, PetscReal coe
 /*@C
    KSPMonitorDynamicTolerance - A monitor that changes the inner tolerance of nested preconditioners in every outer iteration in an adaptive way.
 
-   Collective on ksp
+   Collective
 
    Input Parameters:
 +  ksp   - iterative context
@@ -1233,7 +1233,7 @@ PetscErrorCode KSPMonitorDynamicToleranceDestroy(void **ctx)
    KSPConvergedSkip - Convergence test that do not return as converged
    until the maximum number of iterations is reached.
 
-   Collective on ksp
+   Collective
 
    Input Parameters:
 +  ksp   - iterative context
@@ -1293,7 +1293,7 @@ PetscErrorCode KSPConvergedDefaultCreate(void **ctx)
       instead of || B*b ||. In the case of right preconditioner or if `KSPSetNormType`(ksp,`KSP_NORM_UNPRECONDITIONED`)
       is used there is no B in the above formula. UIRNorm is short for Use Initial Residual Norm.
 
-   Collective on ksp
+   Collective
 
    Input Parameters:
 .  ksp   - iterative context
@@ -1332,7 +1332,7 @@ PetscErrorCode KSPConvergedDefaultSetUIRNorm(KSP ksp)
       In the case of right preconditioner or if `KSPSetNormType`(ksp,`KSP_NORM_UNPRECONDITIONED`)
       is used there is no B in the above formula. UMIRNorm is short for Use Minimum Initial Residual Norm.
 
-   Collective on ksp
+   Collective
 
    Input Parameters:
 .  ksp   - iterative context
@@ -1364,7 +1364,7 @@ PetscErrorCode KSPConvergedDefaultSetUMIRNorm(KSP ksp)
 /*@
    KSPConvergedDefaultSetConvergedMaxits - allows the default convergence test to declare convergence and return `KSP_CONVERGED_ITS` if the maximum number of iterations is reached
 
-   Collective on ksp
+   Collective
 
    Input Parameters:
 +  ksp - iterative context
@@ -1395,7 +1395,7 @@ PetscErrorCode KSPConvergedDefaultSetConvergedMaxits(KSP ksp, PetscBool flg)
 /*@C
    KSPConvergedDefault - Default code to determine convergence of the linear iterative solvers
 
-   Collective on ksp
+   Collective
 
    Input Parameters:
 +  ksp   - iterative context
@@ -1569,7 +1569,7 @@ PetscErrorCode KSPConvergedDefaultDestroy(void *ctx)
 /*
    KSPBuildSolutionDefault - Default code to create/move the solution.
 
-   Collective on ksp
+   Collective
 
    Input Parameters:
 +  ksp - iterative context
@@ -1657,7 +1657,7 @@ PetscErrorCode KSPBuildResidualDefault(KSP ksp, Vec t, Vec v, Vec *V)
 /*@C
   KSPCreateVecs - Gets a number of work vectors suitably sized for the operator in the `KSP`
 
-  Collective on ksp
+  Collective
 
   Input Parameters:
 + ksp  - iterative context
@@ -1761,7 +1761,7 @@ PetscErrorCode KSPCreateVecs(KSP ksp, PetscInt rightn, Vec **right, PetscInt lef
 /*@C
   KSPSetWorkVecs - Sets a number of work vectors into a `KSP` object
 
-  Collective on ksp
+  Collective
 
   Input Parameters:
 + ksp  - iterative context
@@ -1879,7 +1879,7 @@ PetscErrorCode KSPGetConvergedReasonString(KSP ksp, const char **strreason)
 /*@
    KSPSetDM - Sets the `DM` that may be used by some preconditioners
 
-   Logically Collective on ksp
+   Logically Collective
 
    Input Parameters:
 +  ksp - the preconditioner context
@@ -1926,7 +1926,7 @@ PetscErrorCode KSPSetDM(KSP ksp, DM dm)
 /*@
    KSPSetDMActive - Indicates the `DM` should be used to generate the linear system matrix and right hand side vector
 
-   Logically Collective on ksp
+   Logically Collective
 
    Input Parameters:
 +  ksp - the preconditioner context
@@ -1978,7 +1978,7 @@ PetscErrorCode KSPGetDM(KSP ksp, DM *dm)
 /*@
    KSPSetApplicationContext - Sets the optional user-defined context for the linear solver.
 
-   Logically Collective on ksp
+   Logically Collective
 
    Input Parameters:
 +  ksp - the `KSP` context
@@ -2042,7 +2042,7 @@ PetscErrorCode KSPGetApplicationContext(KSP ksp, void *usrP)
    KSPCheckSolve - Checks if the `PCSetUp()` or `KSPSolve()` failed and set the error flag for the outer `PC`. A `KSP_DIVERGED_ITS` is
          not considered a failure in this context
 
-   Collective on ksp
+   Collective
 
    Input Parameters:
 +  ksp - the linear solver `KSP` context.

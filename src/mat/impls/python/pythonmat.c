@@ -3,7 +3,7 @@
 /*@C
    MatPythonSetType - Initialize a `Mat` object implemented in Python.
 
-   Collective on Mat
+   Collective
 
    Input Parameters:
 +  mat - the matrix object.
@@ -52,7 +52,7 @@ PetscErrorCode MatPythonGetType(Mat mat, const char *pyname[])
 /*@C
    MatPythonCreate - Create a `Mat` object implemented in Python.
 
-   Collective on Mat
+   Collective
 
    Input Parameters:
 +  comm - MPI communicator

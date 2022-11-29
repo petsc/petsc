@@ -308,7 +308,7 @@ PetscErrorCode ISLocalToGlobalMappingGetSize(ISLocalToGlobalMapping mapping, Pet
 /*@C
    ISLocalToGlobalMappingViewFromOptions - View an `ISLocalToGlobalMapping` based on values in the options database
 
-   Collective on A
+   Collective
 
    Input Parameters:
 +  A - the local to global mapping object
@@ -687,7 +687,7 @@ PetscErrorCode ISLocalToGlobalMappingDestroy(ISLocalToGlobalMapping *mapping)
     a new index set using the global numbering defined in an `ISLocalToGlobalMapping`
     context.
 
-    Collective on mapping
+    Collective
 
     Input Parameters:
 +   mapping - mapping between local and global numbering
@@ -968,7 +968,7 @@ PetscErrorCode ISGlobalToLocalMappingApplyBlock(ISLocalToGlobalMapping mapping, 
     ISLocalToGlobalMappingGetBlockInfo - Gets the neighbor information for each processor and
      each index shared by more than one processor
 
-    Collective on mapping
+    Collective
 
     Input Parameter:
 .   mapping - the mapping from local to global indexing
@@ -1407,7 +1407,7 @@ static PetscErrorCode ISLocalToGlobalMappingGetBlockInfo_Private(ISLocalToGlobal
 /*@C
     ISLocalToGlobalMappingRestoreBlockInfo - Frees the memory allocated by `ISLocalToGlobalMappingGetBlockInfo()`
 
-    Collective on mapping
+    Collective
 
     Input Parameter:
 .   mapping - the mapping from local to global indexing
@@ -1448,7 +1448,7 @@ PetscErrorCode ISLocalToGlobalMappingRestoreBlockInfo(ISLocalToGlobalMapping map
     ISLocalToGlobalMappingGetInfo - Gets the neighbor information for each processor and
      each index shared by more than one processor
 
-    Collective on mapping
+    Collective
 
     Input Parameter:
 .   mapping - the mapping from local to global indexing
@@ -1507,7 +1507,7 @@ PetscErrorCode ISLocalToGlobalMappingGetInfo(ISLocalToGlobalMapping mapping, Pet
 /*@C
     ISLocalToGlobalMappingRestoreInfo - Frees the memory allocated by `ISLocalToGlobalMappingGetInfo()`
 
-    Collective on mapping
+    Collective
 
     Input Parameter:
 .   mapping - the mapping from local to global indexing
@@ -1533,7 +1533,7 @@ PetscErrorCode ISLocalToGlobalMappingRestoreInfo(ISLocalToGlobalMapping mapping,
 /*@C
     ISLocalToGlobalMappingGetNodeInfo - Gets the neighbor information for each MPI rank
 
-    Collective on mapping
+    Collective
 
     Input Parameter:
 .   mapping - the mapping from local to global indexing
@@ -1601,7 +1601,7 @@ PetscErrorCode ISLocalToGlobalMappingGetNodeInfo(ISLocalToGlobalMapping mapping,
 /*@C
     ISLocalToGlobalMappingRestoreNodeInfo - Frees the memory allocated by `ISLocalToGlobalMappingGetNodeInfo()`
 
-    Collective on mapping
+    Collective
 
     Input Parameter:
 .   mapping - the mapping from local to global indexing
@@ -1871,7 +1871,7 @@ PetscErrorCode ISLocalToGlobalMappingRegister(const char sname[], PetscErrorCode
 /*@C
    ISLocalToGlobalMappingSetType - Sets the implementation type `ISLocalToGlobalMapping` will use
 
-   Logically Collective on ltogf
+   Logically Collective
 
    Input Parameters:
 +  ltog - the `ISLocalToGlobalMapping` object

@@ -1510,7 +1510,7 @@ static PetscErrorCode MatHYPRESetPreallocation_HYPRE(Mat A, PetscInt dnz, const 
 /*@C
    MatHYPRESetPreallocation - Preallocates memory for a sparse parallel matrix in HYPRE IJ format
 
-   Collective on A
+   Collective
 
    Input Parameters:
 +  A - the matrix

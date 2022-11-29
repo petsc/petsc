@@ -47,10 +47,10 @@ PetscErrorCode VecStashGetInfo(Vec vec, PetscInt *nstash, PetscInt *reallocs, Pe
 
 /*@
    VecSetLocalToGlobalMapping - Sets a local numbering to global numbering used
-   by the routine VecSetValuesLocal() to allow users to insert vector entries
+   by the routine `VecSetValuesLocal()` to allow users to insert vector entries
    using a local (per-processor) numbering.
 
-   Logically Collective on Vec
+   Logically Collective
 
    Input Parameters:
 +  x - vector
@@ -101,9 +101,9 @@ PetscErrorCode VecGetLocalToGlobalMapping(Vec X, ISLocalToGlobalMapping *mapping
 
 /*@
    VecAssemblyBegin - Begins assembling the vector.  This routine should
-   be called after completing all calls to VecSetValues().
+   be called after completing all calls to `VecSetValues()`.
 
-   Collective on Vec
+   Collective
 
    Input Parameter:
 .  vec - the vector
@@ -127,9 +127,9 @@ PetscErrorCode VecAssemblyBegin(Vec vec)
 
 /*@
    VecAssemblyEnd - Completes assembling the vector.  This routine should
-   be called after VecAssemblyBegin().
+   be called after `VecAssemblyBegin()`.
 
-   Collective on Vec
+   Collective
 
    Input Parameter:
 .  vec - the vector
@@ -162,7 +162,7 @@ PetscErrorCode VecAssemblyEnd(Vec vec)
 /*@
    VecSetPreallocationCOO - set preallocation for a vector using a coordinate format of the entries with global indices
 
-   Collective on Vec
+   Collective
 
    Input Parameters:
 +  x - vector being preallocated
@@ -205,7 +205,7 @@ PetscErrorCode VecSetPreallocationCOO(Vec x, PetscCount ncoo, const PetscInt coo
 /*@
    VecSetPreallocationCOOLocal - set preallocation for vectors using a coordinate format of the entries with local indices
 
-   Collective on Mat
+   Collective
 
    Input Parameters:
 +  x - vector being preallocated
@@ -243,9 +243,9 @@ PetscErrorCode VecSetPreallocationCOOLocal(Vec x, PetscCount ncoo, PetscInt coo_
 }
 
 /*@
-   VecSetValuesCOO - set values at once in a vector preallocated using VecSetPreallocationCOO()
+   VecSetValuesCOO - set values at once in a vector preallocated using `VecSetPreallocationCOO()`
 
-   Collective on Vec
+   Collective
 
    Input Parameters:
 +  x - vector being set
@@ -317,9 +317,9 @@ static PetscErrorCode VecPointwiseApply_Private(Vec w, Vec x, Vec y, PetscLogEve
 }
 
 /*@
-   VecPointwiseMax - Computes the componentwise maximum w_i = max(x_i, y_i).
+   VecPointwiseMax - Computes the component-wise maximum `w[i] = max(x[i], y[i])`.
 
-   Logically Collective on Vec
+   Logically Collective
 
    Input Parameters:
 .  x, y  - the vectors
@@ -345,9 +345,9 @@ PetscErrorCode VecPointwiseMax(Vec w, Vec x, Vec y)
 }
 
 /*@
-   VecPointwiseMin - Computes the componentwise minimum w_i = min(x_i, y_i).
+   VecPointwiseMin - Computes the component-wise minimum `w[i] = min(x[i], y[i])`.
 
-   Logically Collective on Vec
+   Logically Collective
 
    Input Parameters:
 .  x, y  - the vectors
@@ -373,9 +373,9 @@ PetscErrorCode VecPointwiseMin(Vec w, Vec x, Vec y)
 }
 
 /*@
-   VecPointwiseMaxAbs - Computes the componentwise maximum of the absolute values w_i = max(abs(x_i), abs(y_i)).
+   VecPointwiseMaxAbs - Computes the component-wise maximum of the absolute values `w[i] = max(abs(x[i]), abs(y[i]))`.
 
-   Logically Collective on Vec
+   Logically Collective
 
    Input Parameters:
 .  x, y  - the vectors
@@ -400,9 +400,9 @@ PetscErrorCode VecPointwiseMaxAbs(Vec w, Vec x, Vec y)
 }
 
 /*@
-   VecPointwiseDivide - Computes the componentwise division w = x/y.
+   VecPointwiseDivide - Computes the component-wise division `w[i] = x[i] / y[i]`.
 
-   Logically Collective on Vec
+   Logically Collective
 
    Input Parameters:
 .  x, y  - the vectors
@@ -427,9 +427,9 @@ PetscErrorCode VecPointwiseDivide(Vec w, Vec x, Vec y)
 }
 
 /*@
-   VecPointwiseMult - Computes the componentwise multiplication w = x*y.
+   VecPointwiseMult - Computes the component-wise multiplication `w[i] = x[i] * y[i]`.
 
-   Logically Collective on Vec
+   Logically Collective
 
    Input Parameters:
 .  x, y  - the vectors
@@ -455,7 +455,7 @@ PetscErrorCode VecPointwiseMult(Vec w, Vec x, Vec y)
 /*@
    VecDuplicate - Creates a new vector of the same type as an existing vector.
 
-   Collective on Vec
+   Collective
 
    Input Parameters:
 .  v - a vector to mimic
@@ -494,7 +494,7 @@ PetscErrorCode VecDuplicate(Vec v, Vec *newv)
 /*@C
    VecDestroy - Destroys a vector.
 
-   Collective on Vec
+   Collective
 
    Input Parameters:
 .  v  - the vector
@@ -527,7 +527,7 @@ PetscErrorCode VecDestroy(Vec *v)
 /*@C
    VecDuplicateVecs - Creates several vectors of the same type as an existing vector.
 
-   Collective on Vec
+   Collective
 
    Input Parameters:
 +  m - the number of vectors to obtain
@@ -574,12 +574,12 @@ PetscErrorCode VecDuplicateVecs(Vec v, PetscInt m, Vec *V[])
 }
 
 /*@C
-   VecDestroyVecs - Frees a block of vectors obtained with VecDuplicateVecs().
+   VecDestroyVecs - Frees a block of vectors obtained with `VecDuplicateVecs()`.
 
-   Collective on Vec
+   Collective
 
    Input Parameters:
-+  vv - pointer to pointer to array of vector pointers, if NULL no vectors are destroyed
++  vv - pointer to pointer to array of vector pointers, if `NULL` no vectors are destroyed
 -  m - the number of vectors previously obtained, if zero no vectors are destroyed
 
    Fortran Note:
@@ -609,7 +609,7 @@ PetscErrorCode VecDestroyVecs(PetscInt m, Vec *vv[])
 /*@C
    VecViewFromOptions - View from Options
 
-   Collective on Vec
+   Collective
 
    Input Parameters:
 +  A - the vector
@@ -630,7 +630,7 @@ PetscErrorCode VecViewFromOptions(Vec A, PetscObject obj, const char name[])
 /*@C
    VecView - Views a vector object.
 
-   Collective on Vec
+   Collective
 
    Input Parameters:
 +  vec - the vector
@@ -766,7 +766,7 @@ PETSC_UNUSED static int TV_display_type(const struct _p_Vec *v)
 /*@C
    VecViewNative - Views a vector object with the original type specific viewer
 
-   Collective on Vec
+   Collective
 
    Input Parameters:
 +  vec - the vector
@@ -915,7 +915,7 @@ PetscErrorCode VecGetOwnershipRanges(Vec x, const PetscInt *ranges[])
 /*@
    VecSetOption - Sets an option for controling a vector's behavior.
 
-   Collective on Vec
+   Collective
 
    Input Parameters:
 +  x - the vector
@@ -1003,12 +1003,12 @@ PetscErrorCode VecResetArray(Vec vec)
 
 /*@C
   VecLoad - Loads a vector that has been stored in binary or HDF5 format
-  with VecView().
+  with `VecView()`.
 
-  Collective on PetscViewer
+  Collective
 
   Input Parameters:
-+ vec - the newly loaded vector, this needs to have been created with VecCreate() or
++ vec - the newly loaded vector, this needs to have been created with `VecCreate()` or
            some related function before a call to VecLoad().
 - viewer - binary file viewer, obtained from PetscViewerBinaryOpen() or
            HDF5 file viewer, obtained from PetscViewerHDF5Open()
@@ -1090,7 +1090,7 @@ PetscErrorCode VecLoad(Vec vec, PetscViewer viewer)
 /*@
    VecReciprocal - Replaces each component of a vector by its reciprocal.
 
-   Logically Collective on Vec
+   Logically Collective
 
    Input Parameter:
 .  vec - the vector
@@ -1118,7 +1118,7 @@ PetscErrorCode VecReciprocal(Vec vec)
 /*@C
   VecSetOperation - Allows the user to override a particular vector operation.
 
-  Logically Collective on `vec`
+   Logically Collective
 
   Input Parameters:
 + vec - The vector to modify
@@ -1222,7 +1222,7 @@ PetscErrorCode VecStashSetInitialSize(Vec vec, PetscInt size, PetscInt bsize)
 /*@
    VecConjugate - Conjugates a vector.
 
-   Logically Collective on Vec
+   Logically Collective
 
    Input Parameters:
 .  x - the vector
@@ -1248,7 +1248,7 @@ PetscErrorCode VecConjugate(Vec x)
 /*@
    VecSetRandom - Sets all components of a vector to random numbers.
 
-   Logically Collective on Vec
+   Logically Collective
 
    Input Parameters:
 +  x  - the vector
@@ -1297,9 +1297,9 @@ PetscErrorCode VecSetRandom(Vec x, PetscRandom rctx)
 }
 
 /*@
-  VecZeroEntries - puts a 0.0 in each element of a vector
+  VecZeroEntries - puts a `0.0` in each element of a vector
 
-  Logically Collective on Vec
+  Logically Collective
 
   Input Parameter:
 . vec - The vector
@@ -1319,7 +1319,7 @@ PetscErrorCode VecZeroEntries(Vec vec)
   VecSetTypeFromOptions_Private - Sets the type of vector from user options. Defaults to a PETSc sequential vector on one
   processor and a PETSc MPI vector on more than one processor.
 
-  Collective on Vec
+  Collective
 
   Input Parameter:
 . vec - The vector
@@ -1356,7 +1356,7 @@ static PetscErrorCode VecSetTypeFromOptions_Private(Vec vec, PetscOptionItems *P
 /*@
   VecSetFromOptions - Configures the vector from the options database.
 
-  Collective on Vec
+  Collective
 
   Input Parameter:
 . vec - The vector
@@ -1399,7 +1399,7 @@ PetscErrorCode VecSetFromOptions(Vec vec)
 /*@
   VecSetSizes - Sets the local and global sizes, and checks to determine compatibility
 
-  Collective on Vec
+  Collective
 
   Input Parameters:
 + v - the vector
@@ -1432,10 +1432,10 @@ PetscErrorCode VecSetSizes(Vec v, PetscInt n, PetscInt N)
 }
 
 /*@
-   VecSetBlockSize - Sets the blocksize for future calls to VecSetValuesBlocked()
-   and VecSetValuesBlockedLocal().
+   VecSetBlockSize - Sets the block size for future calls to `VecSetValuesBlocked()`
+   and `VecSetValuesBlockedLocal()`.
 
-   Logically Collective on Vec
+   Logically Collective
 
    Input Parameters:
 +  v - the vector
@@ -1490,9 +1490,9 @@ PetscErrorCode VecGetBlockSize(Vec v, PetscInt *bs)
 
 /*@C
    VecSetOptionsPrefix - Sets the prefix used for searching for all
-   Vec options in the database.
+   `Vec` options in the database.
 
-   Logically Collective on Vec
+   Logically Collective
 
    Input Parameters:
 +  v - the Vec context
@@ -1516,9 +1516,9 @@ PetscErrorCode VecSetOptionsPrefix(Vec v, const char prefix[])
 
 /*@C
    VecAppendOptionsPrefix - Appends to the prefix used for searching for all
-   Vec options in the database.
+   `Vec` options in the database.
 
-   Logically Collective on Vec
+   Logically Collective
 
    Input Parameters:
 +  v - the Vec context
@@ -1571,7 +1571,7 @@ PetscErrorCode VecGetOptionsPrefix(Vec v, const char *prefix[])
 /*@
    VecSetUp - Sets up the internal vector data structures for the later use.
 
-   Collective on Vec
+   Collective
 
    Input Parameters:
 .  v - the Vec context
@@ -1609,9 +1609,9 @@ PetscErrorCode VecSetUp(Vec v)
 */
 
 /*@
-   VecCopy - Copies a vector. y <- x
+   VecCopy - Copies a vector `y = x`
 
-   Logically Collective on Vec
+   Logically Collective
 
    Input Parameter:
 .  x - the vector
@@ -1698,9 +1698,9 @@ PetscErrorCode VecCopy(Vec x, Vec y)
 }
 
 /*@
-   VecSwap - Swaps the vectors x and y.
+   VecSwap - Swaps the vectors `x` and `y`.
 
-   Logically Collective on Vec
+   Logically Collective
 
    Input Parameters:
 .  x, y  - the vectors
@@ -1744,9 +1744,9 @@ PetscErrorCode VecSwap(Vec x, Vec y)
 }
 
 /*
-  VecStashViewFromOptions - Processes command line options to determine if/how an VecStash object is to be viewed.
+  VecStashViewFromOptions - Processes command line options to determine if/how a `VecStash` object is to be viewed.
 
-  Collective on VecStash
+  Collective
 
   Input Parameters:
 + obj   - the VecStash object
@@ -1780,7 +1780,7 @@ PetscErrorCode VecStashViewFromOptions(Vec obj, PetscObject bobj, const char opt
 /*@
    VecStashView - Prints the entries in the vector stash and block stash.
 
-   Collective on Vec
+   Collective
 
    Input Parameters:
 +  v - the vector
@@ -1940,7 +1940,7 @@ PetscErrorCode VecSetInf(Vec xin)
 /*@
      VecBindToCPU - marks a vector to temporarily stay on the CPU and perform computations on the CPU
 
-  Logically collective on Vec
+  Logically collective
 
    Input Parameters:
 +   v - the vector
@@ -2047,7 +2047,7 @@ PetscErrorCode VecGetBindingPropagates(Vec v, PetscBool *flg)
 /*@C
   VecSetPinnedMemoryMin - Set the minimum data size for which pinned memory will be used for host (CPU) allocations.
 
-  Logically Collective on Vec
+  Logically Collective
 
   Input Parameters:
 +  v    - the vector
@@ -2076,7 +2076,7 @@ PetscErrorCode VecSetPinnedMemoryMin(Vec v, size_t mbytes)
 /*@C
   VecGetPinnedMemoryMin - Get the minimum data size for which pinned memory will be used for host (CPU) allocations.
 
-  Logically Collective on Vec
+  Logically Collective
 
   Input Parameters:
 .  v    - the vector

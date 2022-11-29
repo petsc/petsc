@@ -7,7 +7,7 @@
    PetscObjectSAWsTakeAccess - Take access of the data fields that have been published to SAWs by a `PetscObject` so their values may
    be changed in the computation
 
-   Collective on obj
+   Collective
 
    Input Parameters:
 .  obj - the `PetscObject` variable. This must be cast with a (`PetscObject`), for example, `PetscObjectSAWSTakeAccess`((`PetscObject`)mat);
@@ -32,7 +32,7 @@ PetscErrorCode PetscObjectSAWsTakeAccess(PetscObject obj)
    PetscObjectSAWsGrantAccess - Grants access of the data fields that have been published to SAWs called when the changes made during
    `PetscObjectSAWsTakeAccess()` are complete. This allows the webserve to change the published values.
 
-   Collective on obj
+   Collective
 
    Input Parameters:
 .  obj - the `PetscObject` variable. This must be cast with a (`PetscObject`), for example, `PetscObjectSAWSRestoreAccess`((`PetscObject`)mat);
@@ -81,7 +81,7 @@ PetscErrorCode PetscSAWsBlock(void)
 /*@C
    PetscObjectSAWsBlock - Blocks the object if `PetscObjectSAWsSetBlock()` has been called
 
-   Collective on obj
+   Collective
 
    Input Parameters:
 .  obj - the PETSc variable
@@ -103,7 +103,7 @@ PetscErrorCode PetscObjectSAWsBlock(PetscObject obj)
 /*@C
    PetscObjectSAWsSetBlock - Sets whether an object will block at `PetscObjectSAWsBlock()`
 
-   Collective on obj
+   Collective
 
    Input Parameters:
 +  obj - the PETSc variable

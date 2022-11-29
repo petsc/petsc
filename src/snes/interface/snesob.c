@@ -21,7 +21,7 @@ M*/
 /*@C
    SNESSetObjective - Sets the objective function minimized by some of the `SNES` linesearch methods.
 
-   Logically Collective on snes
+   Logically Collective
 
    Input Parameters:
 +  snes - the `SNES` context
@@ -81,7 +81,7 @@ PetscErrorCode SNESGetObjective(SNES snes, PetscErrorCode (**obj)(SNES, Vec, Pet
 /*@C
    SNESComputeObjective - Computes the objective function that has been provided by `SNESSetObjective()`
 
-   Collective on snes
+   Collective
 
    Input Parameters:
 +  snes - the `SNES` context
@@ -115,7 +115,7 @@ PetscErrorCode SNESComputeObjective(SNES snes, Vec X, PetscReal *ob)
 /*@C
    SNESObjectiveComputeFunctionDefaultFD - Computes the gradient of a user provided objective function
 
-   Collective on snes
+   Collective
 
    Input Parameters:
 +  snes - the `SNES` context

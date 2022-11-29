@@ -1576,7 +1576,7 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
 /*@
      PCHPDDMSetCoarseCorrectionType - Sets the coarse correction type.
 
-   Collective on pc
+   Collective
 
    Input Parameters:
 +     pc - preconditioner context

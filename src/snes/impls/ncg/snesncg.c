@@ -192,7 +192,7 @@ PetscErrorCode SNESNCGComputeYtJtF_Private(SNES snes, Vec X, Vec F, Vec Y, Vec W
 /*@
     SNESNCGSetType - Sets the conjugate update type for nonlinear CG `SNESNCG`.
 
-    Logically Collective on snes
+    Logically Collective
 
     Input Parameters:
 +   snes - the iterative context

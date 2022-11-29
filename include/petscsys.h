@@ -1406,11 +1406,11 @@ M*/
 /*MC
     PetscHelpPrintf - Prints help messages.
 
+    Not Collective, only applies on rank 0; No Fortran Support
+
    Synopsis:
     #include <petscsys.h>
      PetscErrorCode (*PetscHelpPrintf)(MPI_Comm comm, const char format[],args);
-
-    Collective on comm
 
     Input Parameters:
 +  comm - the MPI communicator over which the help message is printed
@@ -1418,9 +1418,6 @@ M*/
 -  args - arguments to be printed
 
    Level: developer
-
-   Fortran Note:
-     This routine is not supported in Fortran.
 
    Note:
      You can change how help messages are printed by replacing the function pointer with a function that does not simply write to stdout.

@@ -940,7 +940,7 @@ static PetscBool PetscCIOption(const char *name)
    PetscOptionsView - Prints the options that have been loaded. This is
    useful for debugging purposes.
 
-   Logically Collective on viewer
+   Logically Collective
 
    Input Parameters:
 +  options - options database, use NULL for default global database
@@ -2056,7 +2056,7 @@ PetscErrorCode PetscOptionsLeftRestore(PetscOptions options, PetscInt *N, char *
 /*@C
    PetscOptionsMonitorDefault - Print all options set value events using the supplied `PetscViewer`.
 
-   Logically Collective on ctx
+   Logically Collective
 
    Input Parameters:
 +  name  - option name string
@@ -3114,7 +3114,7 @@ PetscErrorCode PetscOptionsGetScalarArray(PetscOptions options, const char pre[]
   PetscOptionsGetStringArray - Gets an array of string values for a particular
   option in the database. The values must be separated with commas with no intervening spaces.
 
-  Not Collective
+  Not Collective; No Fortran Support
 
   Input Parameters:
 + options - options database, use NULL for default global database
@@ -3135,7 +3135,7 @@ PetscErrorCode PetscOptionsGetScalarArray(PetscOptions options, const char pre[]
   strings returned by this function.
 
   The user is responsible for deallocating the strings that are
-  returned. The Fortran interface for this routine is not supported.
+  returned.
 
 .seealso: `PetscOptionsGetInt()`, `PetscOptionsGetReal()`,
           `PetscOptionsHasName()`, `PetscOptionsGetIntArray()`, `PetscOptionsGetRealArray()`, `PetscOptionsBool()`,

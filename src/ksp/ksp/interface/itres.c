@@ -6,7 +6,7 @@
      preconditioning or C*(b - A*x) with left preconditioning; the latter
      residual is often called the "preconditioned residual".
 
-   Collective on ksp
+   Collective
 
    Input Parameters:
 +  vsoln    - solution to use in computing residual
@@ -77,7 +77,7 @@ PetscErrorCode KSPInitialResidual(KSP ksp, Vec vsoln, Vec vt1, Vec vt2, Vec vres
      takes solution to the preconditioned problem and gets the solution to the
      original problem from it.
 
-   Collective on ksp
+   Collective
 
    Input Parameters:
 +  ksp  - iterative context

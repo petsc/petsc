@@ -68,7 +68,7 @@ PetscErrorCode MatCoarsenGetType(MatCoarsen coarsen, MatCoarsenType *type)
 /*@
    MatCoarsenApply - Gets a coarsen for a matrix.
 
-   Collective on coarser
+   Collective
 
    Input Parameter:
 .   coarsen - the coarsen
@@ -107,7 +107,7 @@ PetscErrorCode MatCoarsenApply(MatCoarsen coarser)
 /*@
    MatCoarsenSetAdjacency - Sets the adjacency graph (matrix) of the thing to be coarsened.
 
-   Collective on agg
+   Collective
 
    Input Parameters:
 +  agg - the coarsen context
@@ -129,7 +129,7 @@ PetscErrorCode MatCoarsenSetAdjacency(MatCoarsen agg, Mat adj)
 /*@
    MatCoarsenSetStrictAggs - Set whether to keep strict (non overlapping) aggregates in the linked list of aggregates for a coarsen context
 
-   Logically Collective on agg
+   Logically Collective
 
    Input Parameters:
 +  agg - the coarsen context
@@ -149,7 +149,7 @@ PetscErrorCode MatCoarsenSetStrictAggs(MatCoarsen agg, PetscBool str)
 /*@
    MatCoarsenDestroy - Destroys the coarsen context.
 
-   Collective on agg
+   Collective
 
    Input Parameters:
 .  agg - the coarsen context
@@ -210,7 +210,7 @@ PetscErrorCode MatCoarsenCreate(MPI_Comm comm, MatCoarsen *newcrs)
 /*@C
    MatCoarsenViewFromOptions - View the coarsener from the options database
 
-   Collective on A
+   Collective
 
    Input Parameters:
 +  A - the coarsen context
@@ -247,7 +247,7 @@ PetscErrorCode MatCoarsenViewFromOptions(MatCoarsen A, PetscObject obj, const ch
 /*@C
    MatCoarsenView - Prints the coarsen data structure.
 
-   Collective on agg
+   Collective
 
    Input Parameters:
 +  agg - the coarsen context
@@ -282,7 +282,7 @@ PetscErrorCode MatCoarsenView(MatCoarsen agg, PetscViewer viewer)
 /*@C
    MatCoarsenSetType - Sets the type of aggregator to use
 
-   Collective on coarser
+   Collective
 
    Input Parameters:
 +  coarser - the coarsen context.
@@ -323,7 +323,7 @@ PetscErrorCode MatCoarsenSetType(MatCoarsen coarser, MatCoarsenType type)
 /*@C
    MatCoarsenSetGreedyOrdering - Sets the ordering of the vertices to use with a greedy coarsening method
 
-   Logically Collective on coarser
+   Logically Collective
 
    Input Parameters:
 +  coarser - the coarsen context
@@ -347,7 +347,7 @@ PetscErrorCode MatCoarsenSetGreedyOrdering(MatCoarsen coarser, const IS perm)
 /*@C
    MatCoarsenGetData - Gets the weights for vertices for a coarsener.
 
-   Logically Collective on coarser
+   Logically Collective
 
    Input Parameter:
 .  coarser - the coarsen context
@@ -372,7 +372,7 @@ PetscErrorCode MatCoarsenGetData(MatCoarsen coarser, PetscCoarsenData **llist)
 /*@
    MatCoarsenSetFromOptions - Sets various coarsen options from the options database.
 
-   Collective on coarser
+   Collective
 
    Input Parameter:
 .  coarser - the coarsen context.

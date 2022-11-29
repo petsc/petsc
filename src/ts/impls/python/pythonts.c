@@ -3,7 +3,7 @@
 /*@C
    TSPythonSetType - Initialize a `TS` object implemented in Python.
 
-   Collective on ts
+   Collective
 
    Input Parameters:
 +  ts - the `TS` context

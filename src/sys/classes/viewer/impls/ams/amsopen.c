@@ -5,7 +5,7 @@
 /*@C
     PetscViewerSAWsOpen - Opens an SAWs `PetscViewer`.
 
-    Collective
+    Collective; No Fortran Support
 
     Input Parameters:
 .   comm - the MPI communicator
@@ -20,9 +20,6 @@
                     the user unblocks the problem with an external tool that access the object with SAWS
 
     Level: advanced
-
-    Fortran Note:
-    This routine is not supported in Fortran.
 
     Note:
     Unlike other viewers that only access the object being viewed on the call to XXXView(object,viewer) the SAWs viewer allows
@@ -45,7 +42,7 @@ PetscErrorCode PetscViewerSAWsOpen(MPI_Comm comm, PetscViewer *lab)
 /*@C
    PetscObjectViewSAWs - View the base portion of any object with an SAWs viewer
 
-   Collective on obj
+   Collective
 
    Input Parameters:
 +  obj - the `PetscObject` variable. Thus must be cast with a (`PetscObject`), for example, `PetscObjectSetName`((`PetscObject`)mat,name);
