@@ -57,7 +57,7 @@ PetscErrorCode PetscDrawLGGetDraw(PetscDrawLG lg, PetscDraw *draw)
 /*@
   PetscDrawLGSPDraw - Redraws a line graph and a scatter plot on the same `PetscDraw` they must share
 
-   Collective on lg
+   Collective
 
    Input Parameters:
 +  lg - the line graph context
@@ -123,7 +123,7 @@ PetscErrorCode PetscDrawLGSPDraw(PetscDrawLG lg, PetscDrawSP spin)
 /*@
     PetscDrawLGCreate - Creates a line graph data structure.
 
-    Collective on draw
+    Collective
 
     Input Parameters:
 +   draw - the window where the graph will be made.
@@ -183,7 +183,7 @@ PetscErrorCode PetscDrawLGCreate(PetscDraw draw, PetscInt dim, PetscDrawLG *outl
 /*@
    PetscDrawLGSetColors - Sets the color of each line graph drawn
 
-   Logically Collective on lg
+   Logically Collective
 
    Input Parameters:
 +  lg - the line graph context.
@@ -208,7 +208,7 @@ PetscErrorCode PetscDrawLGSetColors(PetscDrawLG lg, const int colors[])
 /*@C
    PetscDrawLGSetLegend - sets the names of each curve plotted
 
-   Logically Collective on lg
+   Logically Collective
 
    Input Parameters:
 +  lg - the line graph context.
@@ -267,7 +267,7 @@ PetscErrorCode PetscDrawLGGetDimension(PetscDrawLG lg, PetscInt *dim)
 /*@
    PetscDrawLGSetDimension - Change the number of curves that are to be drawn.
 
-   Logically Collective on lg
+   Logically Collective
 
    Input Parameters:
 +  lg - the line graph context.
@@ -303,7 +303,7 @@ PetscErrorCode PetscDrawLGSetDimension(PetscDrawLG lg, PetscInt dim)
    points are added after this call, the limits will be adjusted to
    include those additional points.
 
-   Logically Collective on lg
+   Logically Collective
 
    Input Parameters:
 +  xlg - the line graph context
@@ -328,7 +328,7 @@ PetscErrorCode PetscDrawLGSetLimits(PetscDrawLG lg, PetscReal x_min, PetscReal x
 /*@
    PetscDrawLGReset - Clears line graph to allow for reuse with new data.
 
-   Logically Collective on lg
+   Logically Collective
 
    Input Parameter:
 .  lg - the line graph context.
@@ -353,7 +353,7 @@ PetscErrorCode PetscDrawLGReset(PetscDrawLG lg)
 /*@
    PetscDrawLGDestroy - Frees all space taken up by line graph data structure.
 
-   Collective on lg
+   Collective
 
    Input Parameter:
 .  lg - the line graph context
@@ -388,7 +388,7 @@ PetscErrorCode PetscDrawLGDestroy(PetscDrawLG *lg)
 /*@
    PetscDrawLGSetUseMarkers - Causes the line graph object to draw a marker for each data-point.
 
-   Logically Collective on lg
+   Logically Collective
 
    Input Parameters:
 +  lg - the linegraph context
@@ -413,7 +413,7 @@ PetscErrorCode PetscDrawLGSetUseMarkers(PetscDrawLG lg, PetscBool flg)
 /*@
    PetscDrawLGDraw - Redraws a line graph.
 
-   Collective on lg
+   Collective
 
    Input Parameter:
 .  lg - the line graph context
@@ -497,7 +497,7 @@ PetscErrorCode PetscDrawLGDraw(PetscDrawLG lg)
 /*@
   PetscDrawLGSave - Saves a drawn image
 
-  Collective on lg
+  Collective
 
   Input Parameter:
 . lg - The line graph context
@@ -517,7 +517,7 @@ PetscErrorCode PetscDrawLGSave(PetscDrawLG lg)
 /*@
   PetscDrawLGView - Prints a line graph.
 
-  Collective on lg
+  Collective
 
   Input Parameter:
 . lg - the line graph context
@@ -550,7 +550,7 @@ PetscErrorCode PetscDrawLGView(PetscDrawLG lg, PetscViewer viewer)
    PetscDrawLGSetOptionsPrefix - Sets the prefix used for searching for all
    `PetscDrawLG` options in the database.
 
-   Logically Collective on lg
+   Logically Collective
 
    Input Parameters:
 +  lg - the line graph context
@@ -571,7 +571,7 @@ PetscErrorCode PetscDrawLGSetOptionsPrefix(PetscDrawLG lg, const char prefix[])
 /*@
     PetscDrawLGSetFromOptions - Sets options related to the line graph object
 
-    Collective on lg
+    Collective
 
     Input Parameters:
 .   lg - the line graph context

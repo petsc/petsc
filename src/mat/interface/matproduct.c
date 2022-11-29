@@ -536,7 +536,7 @@ PetscErrorCode MatProductSetFromOptions(Mat mat)
 /*@C
    MatProductView - View the private `Mat_Product` algorithm object within a matrix
 
-   Logically Collective on mat
+   Logically Collective
 
    Input Parameter:
 .  mat - the matrix obtained with `MatProductCreate()` or `MatProductCreateWithMat()`
@@ -625,7 +625,7 @@ PetscErrorCode MatProductNumeric_ABC(Mat mat)
 /*@
    MatProductNumeric - Compute a matrix product with numerical values.
 
-   Collective on mat
+   Collective
 
    Input/Output Parameter:
 .  mat - the matrix holding the product
@@ -744,7 +744,7 @@ PetscErrorCode MatProductSymbolic_ABC(Mat mat)
    MatProductSymbolic - Perform the symbolic portion of a matrix product, this creates a data structure for use with the numerical product done with
   `MatProductNumeric()`
 
-   Collective on mat
+   Collective
 
    Input/Output Parameter:
 .  mat - the matrix to hold a product
@@ -834,7 +834,7 @@ PetscErrorCode MatProductSetFill(Mat mat, PetscReal fill)
 /*@
    MatProductSetAlgorithm - Requests a particular algorithm for a matrix product computation that will perform to compute the given matrix
 
-   Collective on mat
+   Collective
 
    Input Parameters:
 +  mat - the matrix product
@@ -861,7 +861,7 @@ PetscErrorCode MatProductSetAlgorithm(Mat mat, MatProductAlgorithm alg)
 /*@
    MatProductSetType - Sets a particular matrix product type to be used to compute the given matrix
 
-   Collective on mat
+   Collective
 
    Input Parameters:
 +  mat - the matrix
@@ -895,7 +895,7 @@ PetscErrorCode MatProductSetType(Mat mat, MatProductType productype)
 /*@
    MatProductClear - Clears matrix product internal datastructures.
 
-   Collective on mat
+   Collective
 
    Input Parameters:
 .  mat - the product matrix

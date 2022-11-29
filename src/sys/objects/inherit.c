@@ -209,7 +209,7 @@ PetscErrorCode PetscHeaderReset_Internal(PetscObject obj)
 /*@C
    PetscObjectCopyFortranFunctionPointers - Copy function pointers to another object
 
-   Logically Collective on src
+   Logically Collective
 
    Input Parameters:
 +  src - source object
@@ -398,7 +398,7 @@ PetscErrorCode PetscObjectsDump(FILE *fd, PetscBool all)
 /*@C
    PetscObjectsView - Prints the currently existing objects.
 
-   Logically Collective on viewer
+   Logically Collective
 
    Input Parameter:
 .  viewer - must be an `PETSCVIEWERASCII` viewer
@@ -587,7 +587,7 @@ PetscErrorCode PetscObjectDestroyOptionsHandlers(PetscObject obj)
    referenced by another `PetscObject`. This increases the reference
    count for that object by one.
 
-   Logically Collective on obj
+   Logically Collective
 
    Input Parameter:
 .  obj - the PETSc object. This must be cast with (`PetscObject`), for example,
@@ -792,7 +792,7 @@ PetscErrorCode PetscObjectQuery(PetscObject obj, const char name[], PetscObject 
     #include <petscsys.h>
     PetscErrorCode PetscObjectComposeFunction(PetscObject obj,const char name[],void (*fptr)(void))
 
-   Logically Collective on obj
+   Logically Collective
 
    Input Parameters:
 +  obj - the PETSc object; this must be cast with a (`PetscObject`), for example,
@@ -834,7 +834,7 @@ PetscErrorCode PetscObjectComposeFunction_Private(PetscObject obj, const char na
     #include <petscsys.h>
     PetscErrorCode PetscObjectQueryFunction(PetscObject obj,const char name[],void (**fptr)(void))
 
-   Logically Collective on obj
+   Logically Collective
 
    Input Parameters:
 +  obj - the PETSc object; this must be cast with (`PetscObject`), for example,
@@ -911,7 +911,7 @@ PetscErrorCode PetscContainerGetPointer(PetscContainer obj, void **ptr)
 /*@C
    PetscContainerSetPointer - Sets the pointer value contained in the container.
 
-   Logically Collective on obj
+   Logically Collective
 
    Input Parameters:
 +  obj - the object created with `PetscContainerCreate()`
@@ -934,7 +934,7 @@ PetscErrorCode PetscContainerSetPointer(PetscContainer obj, void *ptr)
 /*@C
    PetscContainerDestroy - Destroys a PETSc container object.
 
-   Collective on obj
+   Collective
 
    Input Parameter:
 .  obj - an object that was created with `PetscContainerCreate()`
@@ -964,7 +964,7 @@ PetscErrorCode PetscContainerDestroy(PetscContainer *obj)
 /*@C
    PetscContainerSetUserDestroy - Sets name of the user destroy function for the data provided to the `PetscContainer` with `PetscContainerSetPointer()`
 
-   Logically Collective on obj
+   Logically Collective
 
    Input Parameters:
 +  obj - an object that was created with `PetscContainerCreate()`
@@ -1018,7 +1018,7 @@ PetscErrorCode PetscContainerCreate(MPI_Comm comm, PetscContainer *container)
 /*@
    PetscObjectSetFromOptions - Sets generic parameters from user options.
 
-   Collective on obj
+   Collective
 
    Input Parameter:
 .  obj - the `PetscObject`
@@ -1040,7 +1040,7 @@ PetscErrorCode PetscObjectSetFromOptions(PetscObject obj)
 /*@
    PetscObjectSetUp - Sets up the internal data structures for the later use.
 
-   Collective on obj
+   Collective
 
    Input Parameters:
 .  obj - the `PetscObject`

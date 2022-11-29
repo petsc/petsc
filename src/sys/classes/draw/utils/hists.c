@@ -32,7 +32,7 @@ struct _p_PetscDrawHG {
 /*@C
    PetscDrawHGCreate - Creates a histogram data structure.
 
-   Collective on draw
+   Collective
 
    Input Parameters:
 +  draw  - The window where the graph will be made
@@ -96,7 +96,7 @@ PetscErrorCode PetscDrawHGCreate(PetscDraw draw, int bins, PetscDrawHG *hist)
 /*@
    PetscDrawHGSetNumberBins - Change the number of bins that are to be drawn in the histogram
 
-   Logically Collective on hist
+   Logically Collective
 
    Input Parameters:
 +  hist - The histogram context.
@@ -124,7 +124,7 @@ PetscErrorCode PetscDrawHGSetNumberBins(PetscDrawHG hist, int bins)
 /*@
   PetscDrawHGReset - Clears histogram to allow for reuse with new data.
 
-  Logically Collective on hist
+  Logically Collective
 
   Input Parameter:
 . hist - The histogram context.
@@ -149,7 +149,7 @@ PetscErrorCode PetscDrawHGReset(PetscDrawHG hist)
 /*@C
   PetscDrawHGDestroy - Frees all space taken up by histogram data structure.
 
-  Collective on hist
+  Collective
 
   Input Parameter:
 . hist - The histogram context
@@ -179,7 +179,7 @@ PetscErrorCode PetscDrawHGDestroy(PetscDrawHG *hist)
 /*@
   PetscDrawHGAddValue - Adds another value to the histogram.
 
-  Logically Collective on hist
+  Logically Collective
 
   Input Parameters:
 + hist  - The histogram
@@ -237,7 +237,7 @@ PetscErrorCode PetscDrawHGAddValue(PetscDrawHG hist, PetscReal value)
 /*@
   PetscDrawHGDraw - Redraws a histogram.
 
-  Collective on hist
+  Collective
 
   Input Parameter:
 . hist - The histogram context
@@ -382,7 +382,7 @@ PetscErrorCode PetscDrawHGDraw(PetscDrawHG hist)
 /*@
   PetscDrawHGSave - Saves a drawn image
 
-  Collective on hg
+  Collective
 
   Input Parameter:
 . hist - The histogram context
@@ -492,7 +492,7 @@ PetscErrorCode PetscDrawHGView(PetscDrawHG hist, PetscViewer viewer)
 /*@
   PetscDrawHGSetColor - Sets the color the bars will be drawn with.
 
-  Logically Collective on hist
+  Logically Collective
 
   Input Parameters:
 + hist - The histogram context
@@ -517,7 +517,7 @@ PetscErrorCode PetscDrawHGSetColor(PetscDrawHG hist, int color)
   points are added after this call, the limits will be adjusted to
   include those additional points.
 
-  Logically Collective on hist
+  Logically Collective
 
   Input Parameters:
 + hist - The histogram context

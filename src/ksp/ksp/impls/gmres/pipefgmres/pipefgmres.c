@@ -734,7 +734,7 @@ static PetscErrorCode KSPPIPEFGMRESGetNewVectors(KSP ksp, PetscInt it)
 /*@
   KSPPIPEFGMRESSetShift - Set the shift parameter for the flexible, pipelined `KSPPIPEFGMRES` solver.
 
-  Logically Collective on ksp
+  Logically Collective
 
   Input Parameters:
 +  ksp - the Krylov space context

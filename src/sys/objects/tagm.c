@@ -16,7 +16,7 @@
     number of times.  This tag should only be used with the current objects
     communicator; do NOT use it with any other MPI communicator.
 
-    Collective on obj
+    Collective
 
     Input Parameter:
 .   obj - the PETSc object; this must be cast with a (`PetscObject`), for example,

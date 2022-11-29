@@ -4,7 +4,7 @@
 /*@C
    PCMGResidualDefault - Default routine to calculate the residual.
 
-   Collective on mat
+   Collective
 
    Input Parameters:
 +  mat - the matrix
@@ -28,7 +28,7 @@ PetscErrorCode PCMGResidualDefault(Mat mat, Vec b, Vec x, Vec r)
 /*@C
    PCMGResidualTransposeDefault - Default routine to calculate the residual of the transposed linear system
 
-   Collective on mat
+   Collective
 
    Input Parameters:
 +  mat - the matrix
@@ -53,7 +53,7 @@ PetscErrorCode PCMGResidualTransposeDefault(Mat mat, Vec b, Vec x, Vec r)
 /*@C
    PCMGMatResidualDefault - Default routine to calculate the residual.
 
-   Collective on mat
+   Collective
 
    Input Parameters:
 +  mat - the matrix
@@ -78,7 +78,7 @@ PetscErrorCode PCMGMatResidualDefault(Mat mat, Mat b, Mat x, Mat r)
 /*@C
    PCMGMatResidualTransposeDefault - Default routine to calculate the residual of the transposed linear system
 
-   Collective on mat
+   Collective
 
    Input Parameters:
 +  mat - the matrix
@@ -128,7 +128,7 @@ PetscErrorCode PCMGGetCoarseSolve(PC pc, KSP *ksp)
 /*@C
    PCMGSetResidual - Sets the function to be used to calculate the residual on the lth level.
 
-   Logically Collective on pc
+   Logically Collective
 
    Input Parameters:
 +  pc       - the multigrid context
@@ -162,7 +162,7 @@ PetscErrorCode PCMGSetResidual(PC pc, PetscInt l, PetscErrorCode (*residual)(Mat
    PCMGSetResidualTranspose - Sets the function to be used to calculate the residual of the transposed linear system
    on the lth level.
 
-   Logically Collective on pc
+   Logically Collective
 
    Input Parameters:
 +  pc        - the multigrid context
@@ -196,7 +196,7 @@ PetscErrorCode PCMGSetResidualTranspose(PC pc, PetscInt l, PetscErrorCode (*resi
    PCMGSetInterpolation - Sets the function to be used to calculate the
    interpolation from l-1 to the lth level
 
-   Logically Collective on pc
+   Logically Collective
 
    Input Parameters:
 +  pc  - the multigrid context
@@ -233,7 +233,7 @@ PetscErrorCode PCMGSetInterpolation(PC pc, PetscInt l, Mat mat)
 /*@
    PCMGSetOperators - Sets operator and preconditioning matrix for lth level
 
-   Logically Collective on pc
+   Logically Collective
 
    Input Parameters:
 +  pc  - the multigrid context
@@ -265,7 +265,7 @@ PetscErrorCode PCMGSetOperators(PC pc, PetscInt l, Mat Amat, Mat Pmat)
    PCMGGetInterpolation - Gets the function to be used to calculate the
    interpolation from l-1 to the lth level
 
-   Logically Collective on pc
+   Logically Collective
 
    Input Parameters:
 +  pc - the multigrid context
@@ -297,7 +297,7 @@ PetscErrorCode PCMGGetInterpolation(PC pc, PetscInt l, Mat *mat)
    PCMGSetRestriction - Sets the function to be used to restrict dual vectors
    from level l to l-1.
 
-   Logically Collective on pc
+   Logically Collective
 
    Input Parameters:
 +  pc - the multigrid context
@@ -339,7 +339,7 @@ PetscErrorCode PCMGSetRestriction(PC pc, PetscInt l, Mat mat)
    PCMGGetRestriction - Gets the function to be used to restrict dual vectors
    from level l to l-1.
 
-   Logically Collective on pc
+   Logically Collective
 
    Input Parameters:
 +  pc - the multigrid context
@@ -370,7 +370,7 @@ PetscErrorCode PCMGGetRestriction(PC pc, PetscInt l, Mat *mat)
 /*@
    PCMGSetRScale - Sets the pointwise scaling for the restriction operator from level l to l-1.
 
-   Logically Collective on pc
+   Logically Collective
 
    Input Parameters:
 +  pc - the multigrid context
@@ -404,7 +404,7 @@ PetscErrorCode PCMGSetRScale(PC pc, PetscInt l, Vec rscale)
 /*@
    PCMGGetRScale - Gets the pointwise scaling for the restriction operator from level l to l-1.
 
-   Collective on pc
+   Collective
 
    Input Parameters:
 +  pc - the multigrid context
@@ -456,7 +456,7 @@ PetscErrorCode PCMGGetRScale(PC pc, PetscInt l, Vec *rscale)
    PCMGSetInjection - Sets the function to be used to inject primal vectors
    from level l to l-1.
 
-   Logically Collective on pc
+   Logically Collective
 
    Input Parameters:
 +  pc - the multigrid context
@@ -488,7 +488,7 @@ PetscErrorCode PCMGSetInjection(PC pc, PetscInt l, Mat mat)
    PCMGGetInjection - Gets the function to be used to inject primal vectors
    from level l to l-1.
 
-   Logically Collective on pc
+   Logically Collective
 
    Input Parameters:
 +  pc - the multigrid context
@@ -653,7 +653,7 @@ PetscErrorCode PCMGGetSmootherDown(PC pc, PetscInt l, KSP *ksp)
 /*@
    PCMGSetCycleTypeOnLevel - Sets the type of cycle (aka cycle index) to run on the specified level.
 
-   Logically Collective on pc
+   Logically Collective
 
    Input Parameters:
 +  pc - the multigrid context
@@ -681,7 +681,7 @@ PetscErrorCode PCMGSetCycleTypeOnLevel(PC pc, PetscInt l, PCMGCycleType c)
 /*@
   PCMGSetRhs - Sets the vector to be used to store the right-hand side on a particular level.
 
-   Logically Collective on pc
+   Logically Collective
 
   Input Parameters:
 + pc - the multigrid context
@@ -714,7 +714,7 @@ PetscErrorCode PCMGSetRhs(PC pc, PetscInt l, Vec c)
 /*@
   PCMGSetX - Sets the vector to be used to store the solution on a particular level.
 
-  Logically Collective on pc
+  Logically Collective
 
   Input Parameters:
 + pc - the multigrid context
@@ -747,7 +747,7 @@ PetscErrorCode PCMGSetX(PC pc, PetscInt l, Vec c)
 /*@
   PCMGSetR - Sets the vector to be used to store the residual on a particular level.
 
-  Logically Collective on pc
+  Logically Collective
 
   Input Parameters:
 + pc - the multigrid context

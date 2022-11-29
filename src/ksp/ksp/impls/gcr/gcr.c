@@ -208,7 +208,7 @@ static PetscErrorCode KSPGCRSetModifyPC_GCR(KSP ksp, KSPGCRModifyPCFunction func
 /*@C
  KSPGCRSetModifyPC - Sets the routine used by `KSPGCR` to modify the preconditioner for each iteration
 
- Logically Collective on ksp
+ Logically Collective
 
  Input Parameters:
  +  ksp      - iterative context obtained from KSPCreate()

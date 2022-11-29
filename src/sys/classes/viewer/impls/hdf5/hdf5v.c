@@ -175,7 +175,7 @@ static PetscErrorCode PetscViewerHDF5SetBaseDimension2_HDF5(PetscViewer viewer, 
      PetscViewerHDF5SetBaseDimension2 - Vectors of 1 dimension (i.e. bs/dof is 1) will be saved in the HDF5 file with a
        dimension of 2.
 
-    Logically Collective on viewer
+    Logically Collective
 
   Input Parameters:
 +  viewer - the `PetscViewer`; if it is a `PETSCVIEWERHDF5` then this command is ignored
@@ -204,7 +204,7 @@ PetscErrorCode PetscViewerHDF5SetBaseDimension2(PetscViewer viewer, PetscBool fl
      PetscViewerHDF5GetBaseDimension2 - Vectors of 1 dimension (i.e. bs/dof is 1) will be saved in the HDF5 file with a
        dimension of 2.
 
-    Logically Collective on viewer
+    Logically Collective
 
   Input Parameter:
 .  viewer - the `PetscViewer`, must be `PETSCVIEWERHDF5`
@@ -243,7 +243,7 @@ static PetscErrorCode PetscViewerHDF5SetSPOutput_HDF5(PetscViewer viewer, PetscB
      PetscViewerHDF5SetSPOutput - Data is written to disk in single precision even if PETSc is
        compiled with double precision `PetscReal`.
 
-    Logically Collective on viewer
+    Logically Collective
 
   Input Parameters:
 +  viewer - the PetscViewer; if it is a `PETSCVIEWERHDF5` then this command is ignored
@@ -273,7 +273,7 @@ PetscErrorCode PetscViewerHDF5SetSPOutput(PetscViewer viewer, PetscBool flg)
      PetscViewerHDF5GetSPOutput - Data is written to disk in single precision even if PETSc is
        compiled with double precision `PetscReal`.
 
-    Logically Collective on viewer
+    Logically Collective
 
   Input Parameter:
 .  viewer - the PetscViewer, must be of type `PETSCVIEWERHDF5`
@@ -484,7 +484,7 @@ static PetscErrorCode PetscViewerHDF5GetDefaultTimestepping_HDF5(PetscViewer vie
 /*@
   PetscViewerHDF5SetDefaultTimestepping - Set the flag for default timestepping
 
-  Logically Collective on viewer
+  Logically Collective
 
   Input Parameters:
 + viewer - the `PetscViewer`; if it is not `PETSCVIEWERHDF5` then this command is ignored

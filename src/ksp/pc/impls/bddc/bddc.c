@@ -297,7 +297,7 @@ static PetscErrorCode PCBDDCSetDiscreteGradient_BDDC(PC pc, Mat G, PetscInt orde
 /*@
   PCBDDCSetDiscreteGradient - Sets the discrete gradient
 
-   Collective on pc
+   Collective
 
    Input Parameters:
 +  pc         - the preconditioning context
@@ -354,7 +354,7 @@ static PetscErrorCode PCBDDCSetDivergenceMat_BDDC(PC pc, Mat divudotp, PetscBool
 /*@
   PCBDDCSetDivergenceMat - Sets the linear operator representing \int_\Omega \div {\bf u} \cdot p dx
 
-   Collective on pc
+   Collective
 
    Input Parameters:
 +  pc - the preconditioning context
@@ -403,7 +403,7 @@ static PetscErrorCode PCBDDCSetChangeOfBasisMat_BDDC(PC pc, Mat change, PetscBoo
 /*@
  PCBDDCSetChangeOfBasisMat - Set user defined change of basis for dofs
 
-   Collective on pc
+   Collective
 
    Input Parameters:
 +  pc - the preconditioning context
@@ -592,7 +592,7 @@ static PetscErrorCode PCBDDCSetCoarseningRatio_BDDC(PC pc, PetscInt k)
 /*@
   PCBDDCSetCoarseningRatio - Set coarsening ratio used in multilevel version
 
-   Logically collective on pc
+   Logically collective
 
    Input Parameters:
 +  pc - the preconditioning context
@@ -667,7 +667,7 @@ static PetscErrorCode PCBDDCSetLevels_BDDC(PC pc, PetscInt levels)
 /*@
  PCBDDCSetLevels - Sets the maximum number of additional levels allowed for multilevel `PCBDDC`
 
-   Logically collective on pc
+   Logically collective
 
    Input Parameters:
 +  pc - the preconditioning context
@@ -792,7 +792,7 @@ static PetscErrorCode PCBDDCSetNeumannBoundaries_BDDC(PC pc, IS NeumannBoundarie
 /*@
    PCBDDCSetNeumannBoundaries - Set `IS` defining Neumann boundaries for the global problem.
 
-   Collective on pc
+   Collective
 
    Input Parameters:
 +  pc - the preconditioning context

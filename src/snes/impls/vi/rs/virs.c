@@ -185,7 +185,7 @@ PetscErrorCode DMDestroy_SNESVI(DM_SNESVI *dmsnesvi)
      DMSetVI - Marks a DM as associated with a VI problem. This causes the interpolation/restriction operators to
                be restricted to only those variables NOT associated with active constraints.
 
-    Logically Collective on dm
+    Logically Collective
 
     Input Parameters:
 +   dm - the `DM` object
@@ -594,7 +594,7 @@ PetscErrorCode SNESSolve_VINEWTONRSLS(SNES snes)
 /*@C
    SNESVISetRedundancyCheck - Provide a function to check for any redundancy in the VI active set
 
-   Logically Collective on snes
+   Logically Collective
 
    Input Parameters:
 +  snes - the `SNESVINEWTONRSLS` context

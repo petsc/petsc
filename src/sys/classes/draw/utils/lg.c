@@ -5,7 +5,7 @@
    PetscDrawLGAddCommonPoint - Adds another point to each of the line graphs. All the points share
       the same new X coordinate.  The new point must have an X coordinate larger than the old points.
 
-   Logically Collective on lg
+   Logically Collective
 
    Input Parameters:
 +  lg - the line graph context
@@ -55,7 +55,7 @@ PetscErrorCode PetscDrawLGAddCommonPoint(PetscDrawLG lg, const PetscReal x, cons
    PetscDrawLGAddPoint - Adds another point to each of the line graphs.
    The new point must have an X coordinate larger than the old points.
 
-   Logically Collective on lg
+   Logically Collective
 
    Input Parameters:
 +  lg - the line graph context
@@ -111,7 +111,7 @@ PetscErrorCode PetscDrawLGAddPoint(PetscDrawLG lg, const PetscReal *x, const Pet
    PetscDrawLGAddPoints - Adds several points to each of the line graphs.
    The new points must have an X coordinate larger than the old points.
 
-   Logically Collective on lg
+   Logically Collective
 
    Input Parameters:
 +  lg - the line graph context

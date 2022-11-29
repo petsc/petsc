@@ -491,7 +491,7 @@ PetscErrorCode AOCreateMemoryScalable(MPI_Comm comm, PetscInt napp, const PetscI
 /*@C
    AOCreateMemoryScalableIS - Creates a memory scalable application ordering using two index sets.
 
-   Collective on isapp
+   Collective
 
    Input Parameters:
 +  isapp - index set that defines an ordering

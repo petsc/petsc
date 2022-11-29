@@ -1998,7 +1998,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_SeqSBAIJ(Mat B)
    (or the array nnz).  By setting these parameters accurately, performance
    during matrix assembly can be increased by more than a factor of 50.
 
-   Collective on Mat
+   Collective
 
    Input Parameters:
 +  B - the symmetric matrix

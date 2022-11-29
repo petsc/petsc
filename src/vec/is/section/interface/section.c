@@ -2078,7 +2078,7 @@ PetscErrorCode PetscSectionCreateSubplexSection_Internal(PetscSection s, IS subp
 /*@
   PetscSectionCreateSubmeshSection - Create a new, smaller section with support on the submesh
 
-  Collective on s
+  Collective
 
   Input Parameters:
 + s           - the `PetscSection`
@@ -2107,7 +2107,7 @@ PetscErrorCode PetscSectionCreateSubmeshSection(PetscSection s, IS subpointMap, 
 /*@
   PetscSectionCreateSubdomainSection - Create a new, smaller section with support on a subdomain of the mesh
 
-  Collective on s
+  Collective
 
   Input Parameters:
 + s           - the `PetscSection`

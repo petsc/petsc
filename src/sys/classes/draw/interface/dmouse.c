@@ -8,7 +8,7 @@
     PetscDrawGetMouseButton - Returns location of mouse and which button was
     pressed. Waits for button to be pressed.
 
-    Collective on draw
+    Collective
 
     Input Parameter:
 .   draw - the window to be used

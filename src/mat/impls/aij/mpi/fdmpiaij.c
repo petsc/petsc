@@ -703,7 +703,7 @@ PetscErrorCode MatFDColoringCreate_MPIXAIJ(Mat mat, ISColoring iscoloring, MatFD
 
     MatFDColoringSetValues - takes a matrix in compressed color format and enters the matrix into a PETSc `Mat`
 
-   Collective on J
+   Collective
 
    Input Parameters:
 +    J - the sparse matrix

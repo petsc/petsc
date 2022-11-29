@@ -11,7 +11,7 @@ struct _n_PetscViewers {
 /*@C
    PetscViewersDestroy - Destroys a set of `PetscViewer`s created with `PetscViewersCreate()`.
 
-   Collective on v
+   Collective
 
    Input Parameters:
 .  v - the `PetscViewer`s to be destroyed.

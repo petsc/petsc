@@ -2194,7 +2194,7 @@ PetscErrorCode MatDenseSetLDA(Mat A, PetscInt lda)
 /*@C
    MatDenseGetArray - gives read-write access to the array where the data for a `MATDENSE` matrix is stored
 
-   Logically Collective on A
+   Logically Collective
 
    Input Parameter:
 .  mat - a dense matrix
@@ -2218,7 +2218,7 @@ PetscErrorCode MatDenseGetArray(Mat A, PetscScalar **array)
 /*@C
    MatDenseRestoreArray - returns access to the array where the data for a `MATDENSE` matrix is stored obtained by `MatDenseGetArray()`
 
-   Logically Collective on A
+   Logically Collective
 
    Input Parameters:
 +  mat - a dense matrix

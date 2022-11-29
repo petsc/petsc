@@ -467,7 +467,7 @@ static PetscErrorCode MatMFFDSetCheckh_MFFD(Mat J, FCN3 fun, void *ectx)
    MatMFFDSetOptionsPrefix - Sets the prefix used for searching for all
    MATMFFD` options in the database.
 
-   Collective on mat
+   Collective
 
    Input Parameters:
 +  A - the `MATMFFD` context
@@ -730,7 +730,7 @@ PetscErrorCode MatMFFDGetH(Mat mat, PetscScalar *h)
 /*@C
    MatMFFDSetFunction - Sets the function used in applying the matrix free `MATMFFD` matrix.
 
-   Logically Collective on mat
+   Logically Collective
 
    Input Parameters:
 +  mat - the matrix free matrix `MATMFFD` created via `MatCreateSNESMF()` or `MatCreateMFFD()`
@@ -766,7 +766,7 @@ PetscErrorCode MatMFFDSetFunction(Mat mat, PetscErrorCode (*func)(void *, Vec, V
 /*@C
    MatMFFDSetFunctioni - Sets the function for a single component for a `MATMFFD` matrix
 
-   Logically Collective on mat
+   Logically Collective
 
    Input Parameters:
 +  mat - the matrix free matrix `MATMFFD`
@@ -794,7 +794,7 @@ PetscErrorCode MatMFFDSetFunctioni(Mat mat, PetscErrorCode (*funci)(void *, Pets
 /*@C
    MatMFFDSetFunctioniBase - Sets the base vector for a single component function evaluation for a `MATMFFD` matrix
 
-   Logically Collective on mat
+   Logically Collective
 
    Input Parameters:
 +  mat - the `MATMFFD` matrix free matrix
@@ -822,7 +822,7 @@ PetscErrorCode MatMFFDSetFunctioniBase(Mat mat, PetscErrorCode (*func)(void *, V
 /*@
    MatMFFDSetPeriod - Sets how often h is recomputed for a `MATMFFD` matrix, by default it is every time
 
-   Logically Collective on mat
+   Logically Collective
 
    Input Parameters:
 +  mat - the `MATMFFD` matrix free matrix
@@ -848,7 +848,7 @@ PetscErrorCode MatMFFDSetPeriod(Mat mat, PetscInt period)
 /*@
    MatMFFDSetFunctionError - Sets the error_rel for the approximation of matrix-vector products using finite differences with the `MATMFFD` matrix
 
-   Logically Collective on mat
+   Logically Collective
 
    Input Parameters:
 +  mat - the `MATMFFD` matrix free matrix
@@ -883,7 +883,7 @@ PetscErrorCode MatMFFDSetFunctionError(Mat mat, PetscReal error)
    MatMFFDSetHHistory - Sets an array to collect a history of the
    differencing values (h) computed for the matrix-free product `MATMFFD` matrix
 
-   Logically Collective on mat
+   Logically Collective
 
    Input Parameters:
 +  J - the `MATMFFD` matrix-free matrix
@@ -914,7 +914,7 @@ PetscErrorCode MatMFFDSetHHistory(Mat J, PetscScalar history[], PetscInt nhistor
    MatMFFDResetHHistory - Resets the counter to zero to begin
    collecting a new set of differencing histories for the `MATMFFD` matrix
 
-   Logically Collective on mat
+   Logically Collective
 
    Input Parameters:
 .  J - the matrix-free matrix context
@@ -939,7 +939,7 @@ PetscErrorCode MatMFFDResetHHistory(Mat J)
     MatMFFDSetBase - Sets the vector U at which matrix vector products of the
         Jacobian are computed for the `MATMFFD` matrix
 
-    Logically Collective on mat
+    Logically Collective
 
     Input Parameters:
 +   J - the `MATMFFD` matrix
@@ -970,7 +970,7 @@ PetscErrorCode MatMFFDSetBase(Mat J, Vec U, Vec F)
     MatMFFDSetCheckh - Sets a function that checks the computed h and adjusts
         it to satisfy some criteria for the `MATMFFD` matrix
 
-    Logically Collective on mat
+    Logically Collective
 
     Input Parameters:
 +   J - the `MATMFFD` matrix
@@ -1003,7 +1003,7 @@ PetscErrorCode MatMFFDSetCheckh(Mat J, PetscErrorCode (*fun)(void *, Vec, Vec, P
     MatMFFDCheckPositivity - Checks that all entries in U + h*a are positive or
         zero, decreases h until this is satisfied for a `MATMFFD` matrix
 
-    Logically Collective on U
+    Logically Collective
 
     Input Parameters:
 +   U - base vector that is added to

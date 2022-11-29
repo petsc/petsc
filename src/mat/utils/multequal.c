@@ -188,7 +188,7 @@ static PetscErrorCode MatMatMultEqual_Private(Mat A, Mat B, Mat C, PetscInt n, P
 /*@
    MatMultEqual - Compares matrix-vector products of two matrices.
 
-   Collective on Mat
+   Collective
 
    Input Parameters:
 +  A - the first matrix
@@ -211,7 +211,7 @@ PetscErrorCode MatMultEqual(Mat A, Mat B, PetscInt n, PetscBool *flg)
 /*@
    MatMultAddEqual - Compares matrix-vector products of two matrices.
 
-   Collective on Mat
+   Collective
 
    Input Parameters:
 +  A - the first matrix
@@ -234,7 +234,7 @@ PetscErrorCode MatMultAddEqual(Mat A, Mat B, PetscInt n, PetscBool *flg)
 /*@
    MatMultTransposeEqual - Compares matrix-vector products of two matrices.
 
-   Collective on Mat
+   Collective
 
    Input Parameters:
 +  A - the first matrix
@@ -257,7 +257,7 @@ PetscErrorCode MatMultTransposeEqual(Mat A, Mat B, PetscInt n, PetscBool *flg)
 /*@
    MatMultTransposeAddEqual - Compares matrix-vector products of two matrices.
 
-   Collective on Mat
+   Collective
 
    Input Parameters:
 +  A - the first matrix
@@ -280,7 +280,7 @@ PetscErrorCode MatMultTransposeAddEqual(Mat A, Mat B, PetscInt n, PetscBool *flg
 /*@
    MatMultHermitianTransposeEqual - Compares matrix-vector products of two matrices.
 
-   Collective on Mat
+   Collective
 
    Input Parameters:
 +  A - the first matrix
@@ -303,7 +303,7 @@ PetscErrorCode MatMultHermitianTransposeEqual(Mat A, Mat B, PetscInt n, PetscBoo
 /*@
    MatMultHermitianTransposeAddEqual - Compares matrix-vector products of two matrices.
 
-   Collective on Mat
+   Collective
 
    Input Parameters:
 +  A - the first matrix
@@ -326,7 +326,7 @@ PetscErrorCode MatMultHermitianTransposeAddEqual(Mat A, Mat B, PetscInt n, Petsc
 /*@
    MatMatMultEqual - Test A*B*x = C*x for n random vector x
 
-   Collective on Mat
+   Collective
 
    Input Parameters:
 +  A - the first matrix
@@ -350,7 +350,7 @@ PetscErrorCode MatMatMultEqual(Mat A, Mat B, Mat C, PetscInt n, PetscBool *flg)
 /*@
    MatTransposeMatMultEqual - Test A^T*B*x = C*x for n random vector x
 
-   Collective on Mat
+   Collective
 
    Input Parameters:
 +  A - the first matrix
@@ -374,7 +374,7 @@ PetscErrorCode MatTransposeMatMultEqual(Mat A, Mat B, Mat C, PetscInt n, PetscBo
 /*@
    MatMatTransposeMultEqual - Test A*B^T*x = C*x for n random vector x
 
-   Collective on Mat
+   Collective
 
    Input Parameters:
 +  A - the first matrix
@@ -473,7 +473,7 @@ static PetscErrorCode MatProjMultEqual_Private(Mat A, Mat B, Mat C, PetscInt n, 
 /*@
    MatPtAPMultEqual - Compares matrix-vector products of C = Bt*A*B
 
-   Collective on Mat
+   Collective
 
    Input Parameters:
 +  A - the first matrix
@@ -497,7 +497,7 @@ PetscErrorCode MatPtAPMultEqual(Mat A, Mat B, Mat C, PetscInt n, PetscBool *flg)
 /*@
    MatRARtMultEqual - Compares matrix-vector products of C = B*A*B^t
 
-   Collective on Mat
+   Collective
 
    Input Parameters:
 +  A - the first matrix
@@ -521,7 +521,7 @@ PetscErrorCode MatRARtMultEqual(Mat A, Mat B, Mat C, PetscInt n, PetscBool *flg)
 /*@
    MatIsLinear - Check if a shell matrix A is a linear operator.
 
-   Collective on Mat
+   Collective
 
    Input Parameters:
 +  A - the shell matrix

@@ -389,7 +389,7 @@ static struct _ISOps myops = {ISGetIndices_Block, ISRestoreIndices_Block, ISInve
 /*@
    ISBlockSetIndices - Set integers representing blocks of indices in an index set of `ISType` `ISBLOCK`
 
-   Collective on is
+   Collective
 
    Input Parameters:
 +  is - the index set

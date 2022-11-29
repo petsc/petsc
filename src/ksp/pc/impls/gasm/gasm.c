@@ -888,7 +888,8 @@ static PetscErrorCode PCSetFromOptions_GASM(PC pc, PetscOptionItems *PetscOption
 
 /*@
     PCGASMSetTotalSubdomains - sets the total number of subdomains to use across the communicator for `PCGASM`
-    Logically collective on pc
+
+    Logically Collective
 
     Input Parameters:
 +   pc  - the preconditioner
@@ -1043,7 +1044,7 @@ static PetscErrorCode PCGASMGetSubKSP_GASM(PC pc, PetscInt *n, PetscInt *first, 
     PCGASMSetSubdomains - Sets the subdomains for this MPI rank
     for the additive Schwarz preconditioner with multiple MPI ranks per subdomain, `PCGASM`
 
-    Collective on pc
+    Collective
 
     Input Parameters:
 +   pc  - the preconditioner object
@@ -1087,7 +1088,7 @@ PetscErrorCode PCGASMSetSubdomains(PC pc, PetscInt n, IS iis[], IS ois[])
     additive Schwarz preconditioner `PCGASM`.  Either all or no MPI ranks in the
     pc communicator must call this routine.
 
-    Logically Collective on pc
+    Logically Collective
 
     Input Parameters:
 +   pc  - the preconditioner context
@@ -1133,7 +1134,7 @@ PetscErrorCode PCGASMSetOverlap(PC pc, PetscInt ovl)
     PCGASMSetType - Sets the type of restriction and interpolation used
     for local problems in the `PCGASM` additive Schwarz method.
 
-    Logically Collective on pc
+    Logically Collective
 
     Input Parameters:
 +   pc  - the preconditioner context
@@ -1165,7 +1166,7 @@ PetscErrorCode PCGASMSetType(PC pc, PCGASMType type)
 /*@
     PCGASMSetSortIndices - Determines whether subdomain indices are sorted.
 
-    Logically Collective on pc
+    Logically Collective
 
     Input Parameters:
 +   pc  - the preconditioner context
@@ -1189,7 +1190,7 @@ PetscErrorCode PCGASMSetSortIndices(PC pc, PetscBool doSort)
    PCGASMGetSubKSP - Gets the local `KSP` contexts for all subdomains on
    this MPI rank.
 
-   Collective on pc iff first_local is requested
+   Collective iff first_local is requested
 
    Input Parameter:
 .  pc - the preconditioner context

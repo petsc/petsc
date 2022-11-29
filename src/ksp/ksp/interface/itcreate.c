@@ -26,7 +26,7 @@ PetscBool         KSPMonitorRegisterAllCalled = PETSC_FALSE;
 /*@C
   KSPLoad - Loads a `KSP` that has been stored in a `PETSCVIEWERBINARY`  with `KSPView()`.
 
-  Collective on viewer
+  Collective
 
   Input Parameters:
 + newdm - the newly loaded `KSP`, this needs to have been created with `KSPCreate()` or
@@ -70,7 +70,7 @@ PetscErrorCode KSPLoad(KSP newdm, PetscViewer viewer)
 /*@C
    KSPView - Prints the `KSP` data structure.
 
-   Collective on ksp
+   Collective
 
    Input Parameters:
 +  ksp - the Krylov space context
@@ -214,7 +214,7 @@ PetscErrorCode KSPView(KSP ksp, PetscViewer viewer)
 /*@C
    KSPViewFromOptions - View a `KSP` object based on values in the options database
 
-   Collective on A
+   Collective
 
    Input Parameters:
 +  A - Krylov solver context
@@ -236,7 +236,7 @@ PetscErrorCode KSPViewFromOptions(KSP A, PetscObject obj, const char name[])
 /*@
    KSPSetNormType - Sets the norm that is used for convergence testing.
 
-   Logically Collective on ksp
+   Logically Collective
 
    Input Parameters:
 +  ksp - Krylov solver context
@@ -282,7 +282,7 @@ PetscErrorCode KSPSetNormType(KSP ksp, KSPNormType normtype)
    KSPSetCheckNormIteration - Sets the first iteration at which the norm of the residual will be
      computed and used in the convergence test.
 
-   Logically Collective on ksp
+   Logically Collective
 
    Input Parameters:
 +  ksp - Krylov solver context
@@ -313,7 +313,7 @@ PetscErrorCode KSPSetCheckNormIteration(KSP ksp, PetscInt it)
    computing the inner products for the next iteration.  This can reduce communication costs at the expense of doing
    one additional iteration.
 
-   Logically Collective on ksp
+   Logically Collective
 
    Input Parameters:
 +  ksp - Krylov solver context
@@ -438,7 +438,7 @@ PetscErrorCode KSPGetNormType(KSP ksp, KSPNormType *normtype)
    KSPSetOperators - Sets the matrix associated with the linear system
    and a (possibly) different one from which the preconditioner will be built
 
-   Collective on ksp
+   Collective
 
    Input Parameters:
 +  ksp - the `KSP` context
@@ -519,7 +519,7 @@ PetscErrorCode KSPSetOperators(KSP ksp, Mat Amat, Mat Pmat)
    KSPGetOperators - Gets the matrix associated with the linear system
    and a (possibly) different one used to construct the preconditioner.
 
-   Collective on ksp
+   Collective
 
    Input Parameter:
 .  ksp - the `KSP` context
@@ -577,7 +577,7 @@ PetscErrorCode KSPGetOperatorsSet(KSP ksp, PetscBool *mat, PetscBool *pmat)
 /*@C
    KSPSetPreSolve - Sets a function that is called at the beginning of each `KSPSolve()`
 
-   Logically Collective on ksp
+   Logically Collective
 
    Input Parameters:
 +   ksp - the solver object
@@ -608,7 +608,7 @@ PetscErrorCode KSPSetPreSolve(KSP ksp, PetscErrorCode (*presolve)(KSP, Vec, Vec,
 /*@C
    KSPSetPostSolve - Sets a function that is called at the end of each `KSPSolve()` (whether it converges or not)
 
-   Logically Collective on ksp
+   Logically Collective
 
    Input Parameters:
 +   ksp - the solver object
@@ -720,7 +720,7 @@ PetscErrorCode KSPCreate(MPI_Comm comm, KSP *inksp)
 /*@C
    KSPSetType - Builds the `KSP` datastructure for a particular `KSPType`
 
-   Logically Collective on ksp
+   Logically Collective
 
    Input Parameters:
 +  ksp  - the Krylov space context

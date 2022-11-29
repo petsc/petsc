@@ -3,7 +3,7 @@
 /*@
   TaoSetSolution - Sets the vector holding the initial guess for the solve
 
-  Logically collective on tao
+  Logically collective
 
   Input Parameters:
 + tao - the Tao context
@@ -102,7 +102,7 @@ PetscErrorCode TaoTestGradient(Tao tao, Vec x, Vec g1)
 /*@
   TaoComputeGradient - Computes the gradient of the objective function
 
-  Collective on tao
+  Collective
 
   Input Parameters:
 + tao - the Tao context
@@ -154,7 +154,7 @@ PetscErrorCode TaoComputeGradient(Tao tao, Vec X, Vec G)
 /*@
   TaoComputeObjective - Computes the objective function value at a given point
 
-  Collective on tao
+  Collective
 
   Input Parameters:
 + tao - the Tao context
@@ -202,7 +202,7 @@ PetscErrorCode TaoComputeObjective(Tao tao, Vec X, PetscReal *f)
 /*@
   TaoComputeObjectiveAndGradient - Computes the objective function value at a given point
 
-  Collective on tao
+  Collective
 
   Input Parameters:
 + tao - the Tao context
@@ -257,7 +257,7 @@ PetscErrorCode TaoComputeObjectiveAndGradient(Tao tao, Vec X, PetscReal *f, Vec 
 /*@C
   TaoSetObjective - Sets the function evaluation routine for minimization
 
-  Logically collective on tao
+  Logically collective
 
   Input Parameters:
 + tao - the Tao context
@@ -320,7 +320,7 @@ PetscErrorCode TaoGetObjective(Tao tao, PetscErrorCode (**func)(Tao, Vec, PetscR
 /*@C
   TaoSetResidualRoutine - Sets the residual evaluation routine for least-square applications
 
-  Logically collective on tao
+  Logically collective
 
   Input Parameters:
 + tao - the Tao context
@@ -357,7 +357,7 @@ PetscErrorCode TaoSetResidualRoutine(Tao tao, Vec res, PetscErrorCode (*func)(Ta
   TaoSetResidualWeights - Give weights for the residual values. A vector can be used if only diagonal terms are used, otherwise a matrix can be give.
    If this function is not provided, or if sigma_v and sigma_w are both NULL, then the identity matrix will be used for weights.
 
-  Collective on tao
+  Collective
 
   Input Parameters:
 + tao - the Tao context
@@ -407,7 +407,7 @@ PetscErrorCode TaoSetResidualWeights(Tao tao, Vec sigma_v, PetscInt n, PetscInt 
 /*@
   TaoComputeResidual - Computes a least-squares residual vector at a given point
 
-  Collective on tao
+  Collective
 
   Input Parameters:
 + tao - the Tao context
@@ -445,7 +445,7 @@ PetscErrorCode TaoComputeResidual(Tao tao, Vec X, Vec F)
 /*@C
   TaoSetGradient - Sets the gradient evaluation routine for the function to be optimized
 
-  Logically collective on tao
+  Logically collective
 
   Input Parameters:
 + tao - the Tao context
@@ -518,7 +518,7 @@ PetscErrorCode TaoGetGradient(Tao tao, Vec *g, PetscErrorCode (**func)(Tao, Vec,
 /*@C
   TaoSetObjectiveAndGradient - Sets a combined objective function and gradient evaluation routine for the function to be optimized
 
-  Logically collective on tao
+  Logically collective
 
   Input Parameters:
 + tao - the Tao context

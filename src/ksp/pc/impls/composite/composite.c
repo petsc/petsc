@@ -391,7 +391,7 @@ static PetscErrorCode PCCompositeGetPC_Composite(PC pc, PetscInt n, PC *subpc)
 /*@
    PCCompositeSetType - Sets the type of composite preconditioner.
 
-   Logically Collective on pc
+   Logically Collective
 
    Input Parameters:
 +  pc - the preconditioner context
@@ -417,7 +417,7 @@ PetscErrorCode PCCompositeSetType(PC pc, PCCompositeType type)
 /*@
    PCCompositeGetType - Gets the type of composite preconditioner.
 
-   Logically Collective on pc
+   Logically Collective
 
    Input Parameter:
 .  pc - the preconditioner context
@@ -442,7 +442,7 @@ PetscErrorCode PCCompositeGetType(PC pc, PCCompositeType *type)
    PCCompositeSpecialSetAlpha - Sets alpha for the special composite preconditioner, `PC_COMPOSITE_SPECIAL`,
      for alphaI + R + S
 
-   Logically Collective on pc
+   Logically Collective
 
    Input Parameters:
 +  pc - the preconditioner context
@@ -465,7 +465,7 @@ PetscErrorCode PCCompositeSpecialSetAlpha(PC pc, PetscScalar alpha)
 /*@C
   PCCompositeAddPCType - Adds another `PC` of the given type to the composite `PC`.
 
-  Collective on pc
+  Collective
 
   Input Parameters:
 + pc - the preconditioner context
@@ -486,7 +486,7 @@ PetscErrorCode PCCompositeAddPCType(PC pc, PCType type)
 /*@
   PCCompositeAddPC - Adds another `PC` to the composite `PC`.
 
-  Collective on pc
+  Collective
 
   Input Parameters:
 + pc    - the preconditioner context

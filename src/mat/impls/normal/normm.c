@@ -456,7 +456,7 @@ PetscErrorCode MatProductSetFromOptions_Normal_Dense(Mat C)
 /*@
       MatCreateNormal - Creates a new `MATNORMAL` matrix object that behaves like A'*A.
 
-   Collective on mat
+   Collective
 
    Input Parameter:
 .   A  - the (possibly rectangular) matrix

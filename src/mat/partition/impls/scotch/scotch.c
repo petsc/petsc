@@ -18,7 +18,7 @@ typedef struct {
    MatPartitioningPTScotchSetImbalance - Sets the value of the load imbalance
    ratio to be used during strategy selection.
 
-   Collective on part
+   Collective
 
    Input Parameters:
 +  part - the partitioning context
@@ -93,7 +93,7 @@ PetscErrorCode MatPartitioningPTScotchGetImbalance_PTScotch(MatPartitioning part
 /*@
    MatPartitioningPTScotchSetStrategy - Sets the strategy to be used in PTScotch.
 
-   Collective on part
+   Collective
 
    Input Parameters:
 +  part - the partitioning context

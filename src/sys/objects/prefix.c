@@ -7,7 +7,7 @@
 /*@C
    PetscObjectGetOptions - Gets the options database used by the object that has been set with `PetscObjectSetOptions()`
 
-   Collective on obj
+   Collective
 
    Input Parameter:
 .  obj - any PETSc object, for example a `Vec`, `Mat` or `KSP`.
@@ -37,7 +37,7 @@ PetscErrorCode PetscObjectGetOptions(PetscObject obj, PetscOptions *options)
 /*@C
    PetscObjectSetOptions - Sets the options database used by the object. Call immediately after creating the object.
 
-   Collective on obj
+   Collective
 
    Input Parameters:
 +  obj - any PETSc object, for example a `Vec`, `Mat` or `KSP`.
@@ -66,7 +66,7 @@ PetscErrorCode PetscObjectSetOptions(PetscObject obj, PetscOptions options)
    PetscObjectSetOptionsPrefix - Sets the prefix used for searching for all
    options for the given object in the database.
 
-   Collective on obj
+   Collective
 
    Input Parameters:
 +  obj - any PETSc object, for example a `Vec`, `Mat` or `KSP`.

@@ -5,7 +5,7 @@
 /*
    TSMonitorLGCtxDestroy - Destroys  line graph contexts that where created with TSMonitorLGCtxNetworkCreate().
 
-   Collective on ctx
+   Collective
 
    Input Parameter:
 .  ctx - the monitor context
@@ -84,7 +84,7 @@ PetscErrorCode TSMonitorLGCtxNetworkCreate(TS ts, const char host[], const char 
 /*
    TSMonitorLGCtxNetworkSolution - Monitors progress of the `TS` solvers for a `DMNETWORK` solution with one window for each vertex and each edge
 
-   Collective on ts
+   Collective
 
    Input Parameters:
 +  ts - the `TS` context

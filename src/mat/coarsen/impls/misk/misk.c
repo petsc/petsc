@@ -426,7 +426,7 @@ PETSC_EXTERN PetscErrorCode MatCoarsenCreate_MISK(MatCoarsen coarse)
 /*@
    MatCoarsenMISKSetDistance - the distance to be used by MISK
 
-   Collective on coarser
+   Collective
 
    Input Parameters:
 +   coarsen - the coarsen
@@ -451,7 +451,7 @@ PetscErrorCode MatCoarsenMISKSetDistance(MatCoarsen crs, PetscInt k)
 /*@
    MatCoarsenMISKGetDistance - gets the distance to be used by MISK
 
-   Collective on coarser
+   Collective
 
    Input Parameter:
 .   coarsen - the coarsen

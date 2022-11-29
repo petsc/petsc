@@ -65,7 +65,7 @@ static PetscErrorCode SNESTR_Converged_Private(SNES snes, PetscInt it, PetscReal
 
    Deprecated use `SNESNEWTONDCTRDC`
 
-   Logically Collective on snes
+   Logically Collective
 
    Input Parameters:
 +  snes - the nonlinear solver object
@@ -125,7 +125,7 @@ PetscErrorCode SNESNewtonTRGetPreCheck(SNES snes, PetscErrorCode (**func)(SNES, 
 
    Deprecated use `SNESNEWTONDCTRDC`
 
-   Logically Collective on snes
+   Logically Collective
 
    Input Parameters:
 +  snes - the nonlinear solver object
@@ -185,7 +185,7 @@ PetscErrorCode SNESNewtonTRGetPostCheck(SNES snes, PetscErrorCode (**func)(SNES,
 
    Deprecated use `SNESNEWTONDCTRDC`
 
-   Logically Collective on snes
+   Logically Collective
 
    Input Parameters:
 +  snes - the solver
@@ -217,7 +217,7 @@ static PetscErrorCode SNESNewtonTRPreCheck(SNES snes, Vec X, Vec Y, PetscBool *c
 
    Deprecated use `SNESNEWTONDCTRDC`
 
-   Logically Collective on snes
+   Logically Collective
 
    Input Parameters:
 +  snes - the solver

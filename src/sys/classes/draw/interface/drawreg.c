@@ -16,7 +16,7 @@ PetscFunctionList PetscDrawList = NULL;
 /*@C
    PetscDrawView - Prints the `PetscDraw` data structure.
 
-   Collective on indraw
+   Collective
 
    Input Parameters:
 +  indraw - the `PetscDraw` context
@@ -84,7 +84,7 @@ PetscErrorCode PetscDrawView(PetscDraw indraw, PetscViewer viewer)
 /*@C
    PetscDrawViewFromOptions - View a `PetscDraw` from the option database
 
-   Collective on A
+   Collective
 
    Input Parameters:
 +  A - the `PetscDraw` context
@@ -184,7 +184,7 @@ PetscErrorCode PetscDrawCreate(MPI_Comm comm, const char display[], const char t
 /*@C
    PetscDrawSetType - Builds graphics object for a particular implementation
 
-   Collective on draw
+   Collective
 
    Input Parameters:
 +  draw      - the graphics context
@@ -320,7 +320,7 @@ PetscErrorCode PetscDrawRegister(const char *sname, PetscErrorCode (*function)(P
    PetscDrawSetOptionsPrefix - Sets the prefix used for searching for all
    `PetscDraw` options in the database.
 
-   Logically Collective on draw
+   Logically Collective
 
    Input Parameters:
 +  draw - the draw context
@@ -342,7 +342,7 @@ PetscErrorCode PetscDrawSetOptionsPrefix(PetscDraw draw, const char prefix[])
    PetscDrawSetFromOptions - Sets the graphics type from the options database.
       Defaults to a PETSc X Windows graphics.
 
-   Collective on draw
+   Collective
 
    Input Parameter:
 .     draw - the graphics context

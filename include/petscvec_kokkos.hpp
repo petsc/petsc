@@ -26,7 +26,7 @@
    PetscErrorCode VecGetKokkosView  (Vec v,Kokkos::View<const PetscScalar*,MemorySpace>* kv);
    PetscErrorCode VecGetKokkosView  (Vec v,Kokkos::View<PetscScalar*,MemorySpace>* kv);
 
-   Logically Collective on Vec
+   Logically Collective
 
    Input Parameter:
 .  v - the vector in type of `VECKOKKOS`
@@ -63,7 +63,7 @@ PetscErrorCode VecGetKokkosView(Vec, Kokkos::View<PetscScalar *, MemorySpace> *)
    PetscErrorCode VecRestoreKokkosView  (Vec v,Kokkos::View<const PetscScalar*,MemorySpace>* kv);
    PetscErrorCode VecRestoreKokkosView  (Vec v,Kokkos::View<PetscScalar*,MemorySpace>* kv);
 
-   Logically Collective on Vec
+   Logically Collective
 
    Input Parameters:
 +  v  - the vector in type of `VECKOKKOS`
@@ -93,7 +93,7 @@ PetscErrorCode VecRestoreKokkosView(Vec, Kokkos::View<PetscScalar *, MemorySpace
    #include <petscvec_kokkos.hpp>
    PetscErrorCode VecGetKokkosViewWrite  (Vec v,Kokkos::View<PetscScalar*,MemorySpace>* kv);
 
-   Logically Collective on Vec
+   Logically Collective
 
    Input Parameter:
 .  v - the vector in type of `VECKOKKOS`
@@ -125,7 +125,7 @@ PetscErrorCode VecGetKokkosViewWrite(Vec, Kokkos::View<PetscScalar *, MemorySpac
    #include <petscvec_kokkos.hpp>
    PetscErrorCode VecRestoreKokkosViewWrite  (Vec v,Kokkos::View<PetscScalar*,MemorySpace>* kv);
 
-   Logically Collective on Vec
+   Logically Collective
 
    Input Parameters:
 +  v  - the vector in type of `VECKOKKOS`

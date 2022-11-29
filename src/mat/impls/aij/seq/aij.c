@@ -3705,7 +3705,7 @@ PetscErrorCode MatStoreValues_SeqAIJ(Mat mat)
        example, reuse of the linear part of a Jacobian, while recomputing the
        nonlinear portion.
 
-   Collect on mat
+   Logically Collect
 
   Input Parameters:
 .  mat - the matrix (currently only `MATAIJ` matrices support this option)
@@ -3774,7 +3774,7 @@ PetscErrorCode MatRetrieveValues_SeqAIJ(Mat mat)
        example, reuse of the linear part of a Jacobian, while recomputing the
        nonlinear portion.
 
-   Collect on mat
+   Logically Collect
 
   Input Parameters:
 .  mat - the matrix (currently only `MATAIJ` matrices support this option)
@@ -5270,7 +5270,7 @@ PetscFunctionList MatSeqAIJList = NULL;
 /*@C
    MatSeqAIJSetType - Converts a `MATSEQAIJ` matrix to a subtype
 
-   Collective on mat
+   Collective
 
    Input Parameters:
 +  mat      - the matrix object

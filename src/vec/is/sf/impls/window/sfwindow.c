@@ -349,7 +349,7 @@ static PetscErrorCode PetscSFWindowGetInfo_Window(PetscSF sf, MPI_Info *info)
 /*
    PetscSFGetWindow - Get a window for use with a given data type
 
-   Collective on sf
+   Collective
 
    Input Parameters:
 +  sf - star forest

@@ -987,7 +987,7 @@ static PetscErrorCode maxwellian(PetscInt dim, PetscReal time, const PetscReal x
 /*@
  DMPlexLandauAddMaxwellians - Add a Maxwellian distribution to a state
 
- Collective on X
+ Collective
 
  Input Parameters:
  .   dm - The mesh (local)
@@ -1034,7 +1034,7 @@ PetscErrorCode DMPlexLandauAddMaxwellians(DM dm, Vec X, PetscReal time, PetscRea
 /*
  LandauSetInitialCondition - Addes Maxwellians with context
 
- Collective on X
+ Collective
 
  Input Parameters:
  .   dm - The mesh
@@ -2039,7 +2039,7 @@ PetscErrorCode DMPlexLandauCreateMassMatrix(DM pack, Mat *Amat);
 /*@C
  DMPlexLandauCreateVelocitySpace - Create a DMPlex velocity space mesh
 
- Collective on comm
+ Collective
 
  Input Parameters:
  +   comm  - The MPI communicator
@@ -2208,7 +2208,7 @@ PetscErrorCode DMPlexLandauCreateVelocitySpace(MPI_Comm comm, PetscInt dim, cons
 /*@
  DMPlexLandauAccess - Access to the distribution function with user callback
 
- Collective on dm
+ Collective
 
  Input Parameters:
  .   pack - the DMComposite
@@ -2265,7 +2265,7 @@ PetscErrorCode DMPlexLandauAccess(DM pack, Vec X, PetscErrorCode (*func)(DM, Vec
 /*@
  DMPlexLandauDestroyVelocitySpace - Destroy a DMPlex velocity space mesh
 
- Collective on dm
+ Collective
 
  Input/Output Parameters:
  .   dm - the dm to destroy
@@ -2394,7 +2394,7 @@ static void f0_s_rv2(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt u
 /*@
  DMPlexLandauPrintNorms - collects moments and prints them
 
- Collective on dm
+ Collective
 
  Input Parameters:
  +   X  - the state
@@ -2558,7 +2558,7 @@ PetscErrorCode DMPlexLandauPrintNorms(Vec X, PetscInt stepi)
  DMPlexLandauCreateMassMatrix - Create mass matrix for Landau in Plex space (not field major order of Jacobian)
   - puts mass matrix into ctx->M
 
- Collective on pack
+ Collective
 
  Input/Output Parameters:
 . pack     - the DM object. Puts matrix in Landau context M field
@@ -2673,7 +2673,7 @@ PetscErrorCode DMPlexLandauCreateMassMatrix(DM pack, Mat *Amat)
 /*@
  DMPlexLandauIFunction - TS residual calculation, confusingly this computes the Jacobian w/o mass
 
- Collective on ts
+ Collective
 
  Input Parameters:
 +   TS  - The time stepping context
@@ -2748,7 +2748,7 @@ PetscErrorCode DMPlexLandauIFunction(TS ts, PetscReal time_dummy, Vec X, Vec X_t
 /*@
  DMPlexLandauIJacobian - TS Jacobian construction, confusingly this adds mass
 
- Collective on ts
+ Collective
 
  Input Parameters:
 +   TS  - The time stepping context

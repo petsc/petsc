@@ -7,7 +7,7 @@ PetscBool         PetscRandomRegisterAllCalled = PETSC_FALSE;
 /*@C
   PetscRandomSetType - Builds a context for generating a particular type of random numbers.
 
-  Collective on rnd
+  Collective
 
   Input Parameters:
 + rnd   - The random number generator context

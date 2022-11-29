@@ -31,7 +31,7 @@ typedef struct {
     TSPseudoComputeTimeStep - Computes the next timestep for a currently running
     pseudo-timestepping process.
 
-    Collective on ts
+    Collective
 
     Input Parameter:
 .   ts - timestep context
@@ -62,7 +62,7 @@ PetscErrorCode TSPseudoComputeTimeStep(TS ts, PetscReal *dt)
 /*@C
    TSPseudoVerifyTimeStepDefault - Default code to verify the quality of the last timestep.
 
-   Collective on ts
+   Collective
 
    Input Parameters:
 +  ts - the timestep context
@@ -91,7 +91,7 @@ PetscErrorCode TSPseudoVerifyTimeStepDefault(TS ts, Vec update, void *dtctx, Pet
 /*@
     TSPseudoVerifyTimeStep - Verifies whether the last timestep was acceptable.
 
-    Collective on ts
+    Collective
 
     Input Parameters:
 +   ts - timestep context
@@ -350,7 +350,7 @@ static PetscErrorCode TSView_Pseudo(TS ts, PetscViewer viewer)
    TSPseudoSetVerifyTimeStep - Sets a user-defined routine to verify the quality of the
    last timestep.
 
-   Logically Collective on ts
+   Logically Collective
 
    Input Parameters:
 +  ts - timestep context
@@ -386,7 +386,7 @@ PetscErrorCode TSPseudoSetVerifyTimeStep(TS ts, PetscErrorCode (*dt)(TS, Vec, vo
     TSPseudoSetTimeStepIncrement - Sets the scaling increment applied to
     dt when using the TSPseudoTimeStepDefault() routine.
 
-   Logically Collective on ts
+   Logically Collective
 
     Input Parameters:
 +   ts - the timestep context
@@ -412,7 +412,7 @@ PetscErrorCode TSPseudoSetTimeStepIncrement(TS ts, PetscReal inc)
     TSPseudoSetMaxTimeStep - Sets the maximum time step
     when using the TSPseudoTimeStepDefault() routine.
 
-   Logically Collective on ts
+   Logically Collective
 
     Input Parameters:
 +   ts - the timestep context
@@ -441,7 +441,7 @@ $         dt = initial_dt*initial_fnorm/current_fnorm
       rather than the default update,
 $         dt = current_dt*previous_fnorm/current_fnorm.
 
-   Logically Collective on ts
+   Logically Collective
 
     Input Parameter:
 .   ts - the timestep context
@@ -465,7 +465,7 @@ PetscErrorCode TSPseudoIncrementDtFromInitialDt(TS ts)
    TSPseudoSetTimeStep - Sets the user-defined routine to be
    called at each pseudo-timestep to update the timestep.
 
-   Logically Collective on ts
+   Logically Collective
 
    Input Parameters:
 +  ts - timestep context
@@ -643,7 +643,7 @@ PETSC_EXTERN PetscErrorCode TSCreate_Pseudo(TS ts)
 /*@C
    TSPseudoTimeStepDefault - Default code to compute pseudo-timestepping.  Use with `TSPseudoSetTimeStep()`.
 
-   Collective on ts
+   Collective
 
    Input Parameters:
 +  ts - the timestep context

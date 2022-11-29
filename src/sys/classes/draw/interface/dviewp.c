@@ -8,7 +8,7 @@
    PetscDrawSetViewPort - Sets the portion of the window (page) to which draw
    routines will write.
 
-   Collective on draw
+   Collective
 
    Input Parameters:
 +  xl - the horizontal coordinate of the lower left corner of the subwindow.
@@ -43,7 +43,7 @@ PetscErrorCode PetscDrawSetViewPort(PetscDraw draw, PetscReal xl, PetscReal yl, 
    PetscDrawGetViewPort - Gets the portion of the window (page) to which draw
    routines will write.
 
-   Collective on draw
+   Collective
 
    Input Parameter:
 .  draw - the drawing context
@@ -82,7 +82,7 @@ PetscErrorCode PetscDrawGetViewPort(PetscDraw draw, PetscReal *xl, PetscReal *yl
    PetscDrawSplitViewPort - Splits a window shared by several processes into smaller
    view ports. One for each process.
 
-   Collective on draw
+   Collective
 
    Input Parameter:
 .  draw - the drawing context
@@ -134,7 +134,7 @@ PetscErrorCode PetscDrawSplitViewPort(PetscDraw draw)
 /*@C
    PetscDrawViewPortsCreate - Splits a window into smaller view ports. Each processor shares all the viewports.
 
-   Collective on draw
+   Collective
 
    Input Parameters:
 +  draw - the drawing context
@@ -217,7 +217,7 @@ PetscErrorCode PetscDrawViewPortsCreate(PetscDraw draw, PetscInt nports, PetscDr
        view ports. Each processor shares all the viewports. The number
        of views in the x- and y-directions is specified.
 
-   Collective on draw
+   Collective
 
    Input Parameters:
 +  draw - the drawing context

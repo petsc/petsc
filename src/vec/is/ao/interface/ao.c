@@ -11,7 +11,7 @@ PetscLogEvent AO_PetscToApplication, AO_ApplicationToPetsc;
 /*@C
    AOView - Displays an application ordering.
 
-   Collective on ao
+   Collective
 
    Input Parameters:
 +  ao - the application ordering context
@@ -50,7 +50,7 @@ PetscErrorCode AOView(AO ao, PetscViewer viewer)
 /*@C
    AOViewFromOptions - View an `AO` based on values in the options database
 
-   Collective on ao
+   Collective
 
    Input Parameters:
 +  ao - the application ordering context
@@ -72,7 +72,7 @@ PetscErrorCode AOViewFromOptions(AO ao, PetscObject obj, const char name[])
 /*@
    AODestroy - Destroys an application ordering.
 
-   Collective on ao
+   Collective
 
    Input Parameters:
 .  ao - the application ordering context
@@ -109,7 +109,7 @@ PETSC_INTERN PetscErrorCode ISSetUp_General(IS);
    AOPetscToApplicationIS - Maps an index set in the PETSc ordering to
    the application-defined ordering.
 
-   Collective on ao
+   Collective
 
    Input Parameters:
 +  ao - the application ordering context
@@ -153,7 +153,7 @@ PetscErrorCode AOPetscToApplicationIS(AO ao, IS is)
    AOApplicationToPetscIS - Maps an index set in the application-defined
    ordering to the PETSc ordering.
 
-   Collective on ao
+   Collective
 
    Input Parameters:
 +  ao - the application ordering context
@@ -196,7 +196,7 @@ PetscErrorCode AOApplicationToPetscIS(AO ao, IS is)
    AOPetscToApplication - Maps a set of integers in the PETSc ordering to
    the application-defined ordering.
 
-   Collective on ao
+   Collective
 
    Input Parameters:
 +  ao - the application ordering context
@@ -231,7 +231,7 @@ PetscErrorCode AOPetscToApplication(AO ao, PetscInt n, PetscInt ia[])
    AOApplicationToPetsc - Maps a set of integers in the application-defined
    ordering to the PETSc ordering.
 
-   Collective on ao
+   Collective
 
    Input Parameters:
 +  ao - the application ordering context
@@ -266,7 +266,7 @@ PetscErrorCode AOApplicationToPetsc(AO ao, PetscInt n, PetscInt ia[])
   AOPetscToApplicationPermuteInt - Permutes an array of blocks of integers
   in the PETSc ordering to the application-defined ordering.
 
-  Collective on ao
+  Collective
 
   Input Parameters:
 + ao    - The application ordering context
@@ -301,7 +301,7 @@ PetscErrorCode AOPetscToApplicationPermuteInt(AO ao, PetscInt block, PetscInt ar
   AOApplicationToPetscPermuteInt - Permutes an array of blocks of integers
   in the application-defined ordering to the PETSc ordering.
 
-  Collective on ao
+  Collective
 
   Input Parameters:
 + ao    - The application ordering context
@@ -336,7 +336,7 @@ PetscErrorCode AOApplicationToPetscPermuteInt(AO ao, PetscInt block, PetscInt ar
   AOPetscToApplicationPermuteReal - Permutes an array of blocks of reals
   in the PETSc ordering to the application-defined ordering.
 
-  Collective on ao
+  Collective
 
   Input Parameters:
 + ao    - The application ordering context
@@ -371,7 +371,7 @@ PetscErrorCode AOPetscToApplicationPermuteReal(AO ao, PetscInt block, PetscReal 
   AOApplicationToPetscPermuteReal - Permutes an array of blocks of reals
   in the application-defined ordering to the PETSc ordering.
 
-  Collective on ao
+  Collective
 
   Input Parameters:
 + ao    - The application ordering context
@@ -405,7 +405,7 @@ PetscErrorCode AOApplicationToPetscPermuteReal(AO ao, PetscInt block, PetscReal 
 /*@
     AOSetFromOptions - Sets `AO` options from the options database.
 
-   Collective on ao
+   Collective
 
    Input Parameter:
 .  ao - the application ordering

@@ -13,7 +13,7 @@ static PetscErrorCode PetscSubcommCreate_interlaced(PetscSubcomm);
 /*@
    PetscSubcommSetFromOptions - Allows setting options for a `PetscSubcomm`
 
-   Collective on psubcomm
+   Collective
 
    Input Parameter:
 .  psubcomm - `PetscSubcomm` context
@@ -60,7 +60,7 @@ PetscErrorCode PetscSubcommSetFromOptions(PetscSubcomm psubcomm)
 /*@C
   PetscSubcommSetOptionsPrefix - Sets the prefix used for searching for options in the options database for this object
 
-  Logically collective on psubcomm
+  Logically collective
 
   Level: Intermediate
 
@@ -86,7 +86,7 @@ PetscErrorCode PetscSubcommSetOptionsPrefix(PetscSubcomm psubcomm, const char pr
 /*@C
    PetscSubcommView - Views a `PetscSubcomm`
 
-   Collective on psubcomm
+   Collective
 
    Input Parameters:
 +  psubcomm - `PetscSubcomm` context
@@ -247,7 +247,7 @@ PetscErrorCode PetscSubcommSetTypeGeneral(PetscSubcomm psubcomm, PetscMPIInt col
 /*@
   PetscSubcommDestroy - Destroys a `PetscSubcomm` object
 
-   Collective on psubcomm
+   Collective
 
    Input Parameter:
    .  psubcomm - the `PetscSubcomm` context

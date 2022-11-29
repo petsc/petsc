@@ -378,7 +378,7 @@ PetscErrorCode SNESNGMRESGetRestartFmRise_NGMRES(SNES snes, PetscBool *flg)
 /*@
     SNESNGMRESSetRestartType - Sets the restart type for `SNESNGMRES`.
 
-    Logically Collective on snes
+    Logically Collective
 
     Input Parameters:
 +   snes - the iterative context
@@ -409,7 +409,7 @@ PetscErrorCode SNESNGMRESSetRestartType(SNES snes, SNESNGMRESRestartType rtype)
     SNESNGMRESSetSelectType - Sets the selection type for `SNESNGMRES`.  This determines how the candidate solution and
     combined solution are used to create the next iterate.
 
-    Logically Collective on snes
+    Logically Collective
 
     Input Parameters:
 +   snes - the iterative context

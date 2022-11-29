@@ -5,7 +5,7 @@
     KSPRichardsonSetScale - Set the damping factor; if this routine is not called, the factor
     defaults to 1.0.
 
-    Logically Collective on ksp
+    Logically Collective
 
     Input Parameters:
 +   ksp - the iterative context
@@ -31,7 +31,7 @@ PetscErrorCode KSPRichardsonSetScale(KSP ksp, PetscReal scale)
     KSPRichardsonSetSelfScale - Sets Richardson to automatically determine optimal scaling at each iteration to minimize the 2-norm of the
        preconditioned residual
 
-    Logically Collective on ksp
+    Logically Collective
 
     Input Parameters:
 +   ksp - the iterative context

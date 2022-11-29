@@ -1878,7 +1878,7 @@ static PetscErrorCode PCFieldSplitSetIS_FieldSplit(PC pc, const char splitname[]
 /*@C
     PCFieldSplitSetFields - Sets the fields that define one particular split in the field split preconditioner
 
-    Logically Collective on pc
+    Logically Collective
 
     Input Parameters:
 +   pc  - the preconditioner context
@@ -1925,7 +1925,7 @@ PetscErrorCode PCFieldSplitSetFields(PC pc, const char splitname[], PetscInt n, 
     PCFieldSplitSetDiagUseAmat - set flag indicating whether to extract diagonal blocks from Amat (rather than Pmat) to build
     the sub-matrices associated with each split. Where `KSPSetOperators`(ksp,Amat,Pmat)) was used to supply the operators.
 
-    Logically Collective on pc
+    Logically Collective
 
     Input Parameters:
 +   pc  - the preconditioner object
@@ -1955,7 +1955,7 @@ PetscErrorCode PCFieldSplitSetDiagUseAmat(PC pc, PetscBool flg)
     PCFieldSplitGetDiagUseAmat - get the flag indicating whether to extract diagonal blocks from Amat (rather than Pmat) to build
     the sub-matrices associated with each split.  Where `KSPSetOperators`(ksp,Amat,Pmat)) was used to supply the operators.
 
-    Logically Collective on pc
+    Logically Collective
 
     Input Parameters:
 .   pc  - the preconditioner object
@@ -1985,7 +1985,7 @@ PetscErrorCode PCFieldSplitGetDiagUseAmat(PC pc, PetscBool *flg)
     PCFieldSplitSetOffDiagUseAmat - set flag indicating whether to extract off-diagonal blocks from Amat (rather than Pmat) to build
     the sub-matrices associated with each split.  Where `KSPSetOperators`(ksp,Amat,Pmat)) was used to supply the operators.
 
-    Logically Collective on pc
+    Logically Collective
 
     Input Parameters:
 +   pc  - the preconditioner object
@@ -2015,7 +2015,7 @@ PetscErrorCode PCFieldSplitSetOffDiagUseAmat(PC pc, PetscBool flg)
     PCFieldSplitGetOffDiagUseAmat - get the flag indicating whether to extract off-diagonal blocks from Amat (rather than Pmat) to build
     the sub-matrices associated with each split.  Where `KSPSetOperators`(ksp,Amat,Pmat)) was used to supply the operators.
 
-    Logically Collective on pc
+    Logically Collective
 
     Input Parameters:
 .   pc  - the preconditioner object
@@ -2044,7 +2044,7 @@ PetscErrorCode PCFieldSplitGetOffDiagUseAmat(PC pc, PetscBool *flg)
 /*@C
     PCFieldSplitSetIS - Sets the exact elements for a split in a `PCFIELDSPLIT`
 
-    Logically Collective on pc
+    Logically Collective
 
     Input Parameters:
 +   pc  - the preconditioner context
@@ -2074,7 +2074,7 @@ PetscErrorCode PCFieldSplitSetIS(PC pc, const char splitname[], IS is)
 /*@C
     PCFieldSplitGetIS - Retrieves the elements for a split as an `IS`
 
-    Logically Collective on pc
+    Logically Collective
 
     Input Parameters:
 +   pc  - the preconditioner context
@@ -2114,7 +2114,7 @@ PetscErrorCode PCFieldSplitGetIS(PC pc, const char splitname[], IS *is)
 /*@C
     PCFieldSplitGetISByIndex - Retrieves the elements for a given split as an `IS`
 
-    Logically Collective on pc
+    Logically Collective
 
     Input Parameters:
 +   pc  - the preconditioner context
@@ -2152,7 +2152,7 @@ PetscErrorCode PCFieldSplitGetISByIndex(PC pc, PetscInt index, IS *is)
     PCFieldSplitSetBlockSize - Sets the block size for defining where fields start in the
       fieldsplit preconditioner when calling `PCFieldSplitSetIS()`. If not set the matrix block size is used.
 
-    Logically Collective on pc
+    Logically Collective
 
     Input Parameters:
 +   pc  - the preconditioner context
@@ -2174,7 +2174,7 @@ PetscErrorCode PCFieldSplitSetBlockSize(PC pc, PetscInt bs)
 /*@C
    PCFieldSplitGetSubKSP - Gets the `KSP` contexts for all splits
 
-   Collective on pc
+   Collective
 
    Input Parameter:
 .  pc - the preconditioner context
@@ -2273,7 +2273,7 @@ PetscErrorCode PCFieldSplitSchurGetSubKSP(PC pc, PetscInt *n, KSP *subksp[])
     PCFieldSplitSetSchurPre -  Indicates from what operator the preconditioner is constructucted for the Schur complement.
       The default is the A11 matrix.
 
-    Collective on pc
+    Collective
 
     Input Parameters:
 +   pc      - the preconditioner context
@@ -2329,7 +2329,7 @@ PetscErrorCode PCFieldSplitSchurPrecondition(PC pc, PCFieldSplitSchurPreType pty
     PCFieldSplitGetSchurPre - For Schur complement fieldsplit, determine how the Schur complement will be
     preconditioned.  See `PCFieldSplitSetSchurPre()` for details.
 
-    Logically Collective on pc
+    Logically Collective
 
     Input Parameter:
 .   pc      - the preconditioner context
@@ -2444,7 +2444,7 @@ static PetscErrorCode PCFieldSplitGetSchurPre_FieldSplit(PC pc, PCFieldSplitSchu
 /*@
     PCFieldSplitSetSchurFactType -  sets which blocks of the approximate block factorization to retain in the preconditioner
 
-    Collective on pc
+    Collective
 
     Input Parameters:
 +   pc  - the preconditioner context
@@ -2505,7 +2505,7 @@ static PetscErrorCode PCFieldSplitSetSchurFactType_FieldSplit(PC pc, PCFieldSpli
 /*@
     PCFieldSplitSetSchurScale -  Controls the sign flip of S for `PC_FIELDSPLIT_SCHUR_FACT_DIAG`.
 
-    Collective on pc
+    Collective
 
     Input Parameters:
 +   pc    - the preconditioner context
@@ -2539,7 +2539,7 @@ static PetscErrorCode PCFieldSplitSetSchurScale_FieldSplit(PC pc, PetscScalar sc
 /*@C
    PCFieldSplitGetSchurBlocks - Gets all matrix blocks for the Schur complement
 
-   Collective on pc
+   Collective
 
    Input Parameter:
 .  pc - the preconditioner context
@@ -2571,7 +2571,7 @@ PetscErrorCode PCFieldSplitGetSchurBlocks(PC pc, Mat *A00, Mat *A01, Mat *A10, M
 /*@
     PCFieldSplitSetGKBTol -  Sets the solver tolerance for the generalized Golub-Kahan bidiagonalization preconditioner in `PCFIELDSPLIT`
 
-    Collective on pc
+    Collective
 
     Input Parameters:
 +   pc        - the preconditioner context
@@ -2612,7 +2612,7 @@ static PetscErrorCode PCFieldSplitSetGKBTol_FieldSplit(PC pc, PetscReal toleranc
 /*@
     PCFieldSplitSetGKBMaxit -  Sets the maximum number of iterations for the generalized Golub-Kahan bidiagonalization preconditioner in `PCFIELDSPLIT`
 
-    Collective on pc
+    Collective
 
     Input Parameters:
 +   pc     - the preconditioner context
@@ -2647,7 +2647,7 @@ static PetscErrorCode PCFieldSplitSetGKBMaxit_FieldSplit(PC pc, PetscInt maxit)
     PCFieldSplitSetGKBDelay -  Sets the delay in the lower bound error estimate in the generalized Golub-Kahan bidiagonalization in `PCFIELDSPLIT`
     preconditioner.
 
-    Collective on pc
+    Collective
 
     Input Parameters:
 +   pc     - the preconditioner context
@@ -2689,7 +2689,7 @@ static PetscErrorCode PCFieldSplitSetGKBDelay_FieldSplit(PC pc, PetscInt delay)
     PCFieldSplitSetGKBNu -  Sets the scalar value nu >= 0 in the transformation H = A00 + nu*A01*A01' of the (1,1) block in the Golub-Kahan bidiagonalization preconditioner
     in `PCFIELDSPLIT`
 
-    Collective on pc
+    Collective
 
     Input Parameters:
 +   pc     - the preconditioner context
@@ -2822,7 +2822,7 @@ static PetscErrorCode PCSetCoordinates_FieldSplit(PC pc, PetscInt dim, PetscInt 
 /*@
    PCFieldSplitSetType - Sets the type, `PCCompositeType`, of a `PCFIELDSPLIT`
 
-   Collective on pc
+   Collective
 
    Input Parameters:
 +  pc - the preconditioner context
@@ -2874,7 +2874,7 @@ PetscErrorCode PCFieldSplitGetType(PC pc, PCCompositeType *type)
 /*@
    PCFieldSplitSetDMSplits - Flags whether `DMCreateFieldDecomposition()` should be used to define the splits in a `PCFIELDSPLIT`, whenever possible.
 
-   Logically Collective on pc
+   Logically Collective
 
    Input Parameters:
 +  pc   - the preconditioner context

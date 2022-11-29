@@ -14,7 +14,7 @@ PetscLogEvent IS_Load;
 /*@
    ISRenumber - Renumbers the non-negative entries of an index set in a contiguous way, starting from 0.
 
-   Collective on IS
+   Collective
 
    Input Parameters:
 +  subset - the index set
@@ -207,7 +207,7 @@ PetscErrorCode ISRenumber(IS subset, IS subset_mult, PetscInt *N, IS *subset_n)
 /*@
    ISCreateSubIS - Create a sub index set from a global index set selecting some components.
 
-   Collective on IS
+   Collective
 
    Input Parameters:
 +  is - the index set
@@ -839,7 +839,7 @@ static PetscErrorCode ISCopyInfo(IS source, IS dest)
 /*@
    ISIdentity - Determines whether index set is the identity mapping.
 
-   Collective on IS
+   Collective
 
    Input Parameters:
 .  is - the index set
@@ -869,7 +869,7 @@ PetscErrorCode ISIdentity(IS is, PetscBool *ident)
 /*@
    ISSetIdentity - Informs the index set that it is an identity.
 
-   Logically Collective on IS
+   Logically Collective
 
    Input Parameter:
 .  is - the index set
@@ -924,7 +924,7 @@ PetscErrorCode ISContiguousLocal(IS is, PetscInt gstart, PetscInt gend, PetscInt
    ISPermutation - PETSC_TRUE or PETSC_FALSE depending on whether the
    index set has been declared to be a permutation.
 
-   Logically Collective on IS
+   Logically Collective
 
    Input Parameter:
 .  is - the index set
@@ -954,7 +954,7 @@ PetscErrorCode ISPermutation(IS is, PetscBool *perm)
 /*@
    ISSetPermutation - Informs the index set that it is a permutation.
 
-   Logically Collective on IS
+   Logically Collective
 
    Input Parameter:
 .  is - the index set
@@ -999,7 +999,7 @@ PetscErrorCode ISSetPermutation(IS is)
 /*@C
    ISDestroy - Destroys an index set.
 
-   Collective on IS
+   Collective
 
    Input Parameters:
 .  is - the index set
@@ -1036,7 +1036,7 @@ PetscErrorCode ISDestroy(IS *is)
    ISInvertPermutation - Creates a new permutation that is the inverse of
                          a given permutation.
 
-   Collective on IS
+   Collective
 
    Input Parameters:
 +  is - the index set
@@ -1380,7 +1380,7 @@ static PetscErrorCode ISGatherTotal_Private(IS is)
 /*@C
    ISGetTotalIndices - Retrieve an array containing all indices across the communicator.
 
-   Collective on IS
+   Collective
 
    Input Parameter:
 .  is - the index set
@@ -1451,7 +1451,7 @@ PetscErrorCode ISRestoreTotalIndices(IS is, const PetscInt *indices[])
    ISGetNonlocalIndices - Retrieve an array of indices from remote processors
                        in this communicator.
 
-   Collective on IS
+   Collective
 
    Input Parameter:
 .  is - the index set
@@ -1519,7 +1519,7 @@ PetscErrorCode ISRestoreNonlocalIndices(IS is, const PetscInt *indices[])
    ISGetNonlocalIS - Gather all nonlocal indices for this IS and present
                      them as another sequential index set.
 
-   Collective on IS
+   Collective
 
    Input Parameter:
 .  is - the index set
@@ -1589,7 +1589,7 @@ PetscErrorCode ISRestoreNonlocalIS(IS is, IS *complement)
 /*@C
    ISViewFromOptions - View from Options
 
-   Collective on IS
+   Collective
 
    Input Parameters:
 +  A - the index set
@@ -1610,7 +1610,7 @@ PetscErrorCode ISViewFromOptions(IS A, PetscObject obj, const char name[])
 /*@C
    ISView - Displays an index set.
 
-   Collective on IS
+   Collective
 
    Input Parameters:
 +  is - the index set
@@ -1638,7 +1638,7 @@ PetscErrorCode ISView(IS is, PetscViewer viewer)
 /*@
   ISLoad - Loads a vector that has been stored in binary or HDF5 format with ISView().
 
-  Collective on PetscViewer
+  Collective
 
   Input Parameters:
 + is - the newly loaded vector, this needs to have been created with ISCreate() or some related function before a call to ISLoad().
@@ -1674,7 +1674,7 @@ PetscErrorCode ISLoad(IS is, PetscViewer viewer)
 /*@
    ISSort - Sorts the indices of an index set.
 
-   Collective on IS
+   Collective
 
    Input Parameters:
 .  is - the index set
@@ -1695,7 +1695,7 @@ PetscErrorCode ISSort(IS is)
 /*@
   ISSortRemoveDups - Sorts the indices of an index set, removing duplicates.
 
-  Collective on IS
+  Collective
 
   Input Parameters:
 . is - the index set
@@ -1718,7 +1718,7 @@ PetscErrorCode ISSortRemoveDups(IS is)
 /*@
    ISToGeneral - Converts an IS object of any type to ISGENERAL type
 
-   Collective on IS
+   Collective
 
    Input Parameters:
 .  is - the index set
@@ -1738,7 +1738,7 @@ PetscErrorCode ISToGeneral(IS is)
 /*@
    ISSorted - Checks the indices to determine whether they have been sorted.
 
-   Collective on IS
+   Collective
 
    Input Parameter:
 .  is - the index set
@@ -1768,7 +1768,7 @@ PetscErrorCode ISSorted(IS is, PetscBool *flg)
 /*@
    ISDuplicate - Creates a duplicate copy of an index set.
 
-   Collective on IS
+   Collective
 
    Input Parameter:
 .  is - the index set
@@ -1793,7 +1793,7 @@ PetscErrorCode ISDuplicate(IS is, IS *newIS)
 /*@
    ISCopy - Copies an index set.
 
-   Collective on IS
+   Collective
 
    Input Parameter:
 .  is - the index set
@@ -1829,7 +1829,7 @@ PetscErrorCode ISCopy(IS is, IS isy)
 /*@
    ISShift - Shift all indices by given offset
 
-   Collective on IS
+   Collective
 
    Input Parameters:
 +  is - the index set
@@ -1869,7 +1869,7 @@ PetscErrorCode ISShift(IS is, PetscInt offset, IS isy)
 /*@
    ISOnComm - Split a parallel IS on subcomms (usually self) or concatenate index sets on subcomms into a parallel index set
 
-   Collective on IS
+   Collective
 
    Input Parameters:
 + is - index set
@@ -1907,7 +1907,7 @@ PetscErrorCode ISOnComm(IS is, MPI_Comm comm, PetscCopyMode mode, IS *newis)
 /*@
    ISSetBlockSize - informs an index set that it has a given block size
 
-   Logicall Collective on IS
+   Logicall Collective
 
    Input Parameters:
 + is - index set

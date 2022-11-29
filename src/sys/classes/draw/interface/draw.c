@@ -84,7 +84,7 @@ PetscErrorCode PetscDrawInitializePackage(void)
 /*@
    PetscDrawResizeWindow - Allows one to resize a window from a program.
 
-   Collective on draw
+   Collective
 
    Input Parameters:
 +  draw - the window
@@ -133,7 +133,7 @@ PetscErrorCode PetscDrawGetWindowSize(PetscDraw draw, int *w, int *h)
 /*@
    PetscDrawCheckResizedWindow - Checks if the user has resized the window.
 
-   Collective on draw
+   Collective
 
    Input Parameter:
 .  draw - the window
@@ -177,7 +177,7 @@ PetscErrorCode PetscDrawGetTitle(PetscDraw draw, const char *title[])
 /*@C
    PetscDrawSetTitle - Sets the title of a `PetscDraw` context.
 
-   Collective on draw
+   Collective
 
    Input Parameters:
 +  draw - the graphics context
@@ -210,7 +210,7 @@ PetscErrorCode PetscDrawSetTitle(PetscDraw draw, const char title[])
 /*@C
    PetscDrawAppendTitle - Appends to the title of a `PetscDraw` context.
 
-   Collective on draw
+   Collective
 
    Input Parameters:
 +  draw - the graphics context
@@ -265,7 +265,7 @@ static PetscErrorCode PetscDrawDestroy_Private(PetscDraw draw)
 /*@
    PetscDrawDestroy - Deletes a draw context.
 
-   Collective on draw
+   Collective
 
    Input Parameters:
 .  draw - the drawing context
@@ -306,7 +306,7 @@ PetscErrorCode PetscDrawDestroy(PetscDraw *draw)
 /*@
    PetscDrawGetPopup - Creates a popup window associated with a `PetscDraw` window.
 
-   Collective on draw
+   Collective
 
    Input Parameter:
 .  draw - the original window
@@ -358,7 +358,7 @@ PetscErrorCode PetscDrawSetDisplay(PetscDraw draw, const char display[])
 /*@
    PetscDrawSetDoubleBuffer - Sets a window to be double buffered.
 
-   Logically Collective on draw
+   Logically Collective
 
    Input Parameter:
 .  draw - the drawing context
@@ -379,7 +379,7 @@ PetscErrorCode PetscDrawSetDoubleBuffer(PetscDraw draw)
    PetscDrawGetSingleton - Gain access to a `PetscDraw` object as if it were owned
         by the one process.
 
-   Collective on draw
+   Collective
 
    Input Parameter:
 .  draw - the original window
@@ -415,7 +415,7 @@ PetscErrorCode PetscDrawGetSingleton(PetscDraw draw, PetscDraw *sdraw)
    PetscDrawRestoreSingleton - Remove access to a `PetscDraw` object obtained with `PetscDrawGetSingleton()`
         by the one process.
 
-   Collective on draw
+   Collective
 
    Input Parameters:
 +  draw - the original window

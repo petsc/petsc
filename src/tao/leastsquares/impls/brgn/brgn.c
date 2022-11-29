@@ -445,7 +445,7 @@ PETSC_EXTERN PetscErrorCode TaoCreate_BRGN(Tao tao)
 /*@
   TaoBRGNGetSubsolver - Get the pointer to the subsolver inside BRGN
 
-  Collective on Tao
+  Collective
 
   Level: advanced
 
@@ -465,7 +465,7 @@ PetscErrorCode TaoBRGNGetSubsolver(Tao tao, Tao *subsolver)
 /*@
   TaoBRGNSetRegularizerWeight - Set the regularizer weight for the Gauss-Newton least-squares algorithm
 
-  Collective on Tao
+  Collective
 
   Input Parameters:
 +  tao - the Tao solver context
@@ -487,7 +487,7 @@ PetscErrorCode TaoBRGNSetRegularizerWeight(Tao tao, PetscReal lambda)
 /*@
   TaoBRGNSetL1SmoothEpsilon - Set the L1-norm smooth approximation parameter for L1-regularized least-squares algorithm
 
-  Collective on Tao
+  Collective
 
   Input Parameters:
 +  tao - the Tao solver context

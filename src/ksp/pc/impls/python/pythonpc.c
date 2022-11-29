@@ -3,7 +3,7 @@
 /*@C
    PCPythonSetType - Initialize a `PC` object implemented in Python, a `PCPYTHON`.
 
-   Collective on pc
+   Collective
 
    Input Parameters:
 +  pc - the preconditioner (`PC`) context.

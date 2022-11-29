@@ -8,7 +8,7 @@ typedef struct {
 /*@C
    SNESShellSetSolve - Sets routine to apply as solver
 
-   Logically Collective on snes
+   Logically Collective
 
    Input Parameters:
 +  snes - the `SNES` nonlinear solver context
@@ -98,7 +98,7 @@ PetscErrorCode SNESShellGetContext(SNES snes, void *ctx)
 /*@
     SNESShellSetContext - sets the context for a `SNESSHELL`
 
-   Logically Collective on snes
+   Logically Collective
 
     Input Parameters:
 +   snes - the `SNESSHELL`

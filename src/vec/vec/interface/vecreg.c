@@ -7,7 +7,7 @@ PetscBool         VecRegisterAllCalled = PETSC_FALSE;
 /*@C
   VecSetType - Builds a vector, for a particular vector implementation.
 
-  Collective on Vec
+  Collective
 
   Input Parameters:
 + vec    - The vector object

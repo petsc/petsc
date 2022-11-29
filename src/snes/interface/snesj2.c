@@ -19,7 +19,7 @@ static PetscErrorCode SNESComputeMFFunctionCtx(SNES snes, Vec x, Vec f, void *ct
     SNESComputeJacobianDefaultColor - Computes the Jacobian using
     finite differences and coloring to exploit matrix sparsity.
 
-    Collective on snes
+    Collective
 
     Input Parameters:
 +   snes - nonlinear solver object

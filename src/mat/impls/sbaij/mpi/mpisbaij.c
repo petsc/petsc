@@ -2198,7 +2198,7 @@ M*/
    d_nz (or d_nnz) and o_nz (or o_nnz).  By setting these parameters accurately,
    performance can be increased by more than a factor of 50.
 
-   Collective on B
+   Collective
 
    Input Parameters:
 +  B - the matrix

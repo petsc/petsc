@@ -100,7 +100,7 @@ PetscErrorCode MatCreate(MPI_Comm comm, Mat *A)
 /*@
    MatSetErrorIfFailure - Causes `Mat` to generate an immediate error, for example a zero pivot, is detected.
 
-   Logically Collective on mat
+   Logically Collective
 
    Input Parameters:
 +  mat -  matrix obtained from `MatCreate()`
@@ -126,7 +126,7 @@ PetscErrorCode MatSetErrorIfFailure(Mat mat, PetscBool flg)
 /*@
   MatSetSizes - Sets the local and global sizes, and checks to determine compatibility
 
-  Collective on Mat
+  Collective
 
   Input Parameters:
 +  A - the matrix
@@ -181,7 +181,7 @@ PetscErrorCode MatSetSizes(Mat A, PetscInt m, PetscInt n, PetscInt M, PetscInt N
    `MATAIJ`, using the routines `MatCreateSeqAIJ()` and `MatCreateAIJ()` if
    you do not select a type in the options database.
 
-   Collective on B
+   Collective
 
    Input Parameter:
 .  A - the matrix
@@ -270,7 +270,7 @@ PetscErrorCode MatSetFromOptions(Mat B)
 /*@C
    MatXAIJSetPreallocation - set preallocation for serial and parallel `MATAIJ`, `MATBAIJ`, and `MATSBAIJ` matrices and their unassembled versions.
 
-   Collective on A
+   Collective
 
    Input Parameters:
 +  A - matrix being preallocated
@@ -457,7 +457,7 @@ PETSC_EXTERN PetscErrorCode MatHeaderReplace(Mat A, Mat *C)
 /*@
      MatBindToCPU - marks a matrix to temporarily stay on the CPU and perform computations on the CPU
 
-   Logically collective on A
+   Logically collective
 
    Input Parameters:
 +   A - the matrix
@@ -562,7 +562,7 @@ PetscErrorCode MatSetPreallocationCOO_Basic(Mat A, PetscCount ncoo, const PetscI
 /*@C
    MatSetPreallocationCOO - set preallocation for matrices using a coordinate format of the entries with global indices
 
-   Collective on A
+   Collective
 
    Input Parameters:
 +  A - matrix being preallocated
@@ -615,7 +615,7 @@ PetscErrorCode MatSetPreallocationCOO(Mat A, PetscCount ncoo, PetscInt coo_i[], 
 /*@C
    MatSetPreallocationCOOLocal - set preallocation for matrices using a coordinate format of the entries with local indices
 
-   Collective on A
+   Collective
 
    Input Parameters:
 +  A - matrix being preallocated
@@ -670,7 +670,7 @@ PetscErrorCode MatSetPreallocationCOOLocal(Mat A, PetscCount ncoo, PetscInt coo_
 /*@
    MatSetValuesCOO - set values at once in a matrix preallocated using `MatSetPreallocationCOO()`
 
-   Collective on A
+   Collective
 
    Input Parameters:
 +  A - matrix being preallocated

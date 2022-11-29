@@ -31,7 +31,7 @@ PetscErrorCode PetscComposedQuantitiesDestroy(PetscObject obj)
 /*@
    PetscObjectDestroy - Destroys any `PetscObject`, regardless of the type.
 
-   Collective on obj
+   Collective
 
    Input Parameter:
 .  obj - any PETSc object, for example a `Vec`, `Mat` or `KSP`.
@@ -55,7 +55,7 @@ PetscErrorCode PetscObjectDestroy(PetscObject *obj)
 /*@C
    PetscObjectView - Views any `PetscObject`, regardless of the type.
 
-   Collective on obj
+   Collective
 
    Input Parameters:
 +  obj - any PETSc object, for example a `Vec`, `Mat` or `KSP`.
@@ -82,7 +82,7 @@ PetscErrorCode PetscObjectView(PetscObject obj, PetscViewer viewer)
 /*@C
   PetscObjectViewFromOptions - Processes command line options to determine if/how a `PetscObject` is to be viewed.
 
-  Collective on obj
+  Collective
 
   Input Parameters:
 + obj   - the object
@@ -310,7 +310,7 @@ static PetscObject PetscObjectRegisterDestroy_Objects[MAXREGDESOBJS];
    PetscObjectRegisterDestroy - Registers a PETSc object to be destroyed when
      `PetscFinalize()` is called.
 
-   Logically Collective on obj
+   Logically Collective
 
    Input Parameter:
 .  obj - any PETSc object, for example a `Vec`, `Mat` or `KSP`.

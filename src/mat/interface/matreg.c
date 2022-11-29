@@ -89,7 +89,7 @@ PetscErrorCode MatGetMPIMatType_Private(Mat mat, MatType *MPIType)
 /*@C
    MatSetType - Builds matrix object for a particular matrix type
 
-   Collective on mat
+   Collective
 
    Input Parameters:
 +  mat      - the matrix object
@@ -222,7 +222,7 @@ PetscErrorCode MatGetVecType(Mat mat, VecType *vtype)
 /*@C
    MatSetVecType - Set the vector type the matrix will return with `MatCreateVecs()`
 
-   Collective on mat
+   Collective
 
    Input Parameters:
 +  mat   - the matrix object

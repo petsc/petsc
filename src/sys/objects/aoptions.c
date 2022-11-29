@@ -1663,7 +1663,7 @@ PetscErrorCode PetscOptionsIntArray_Private(PetscOptionItems *PetscOptionsObject
    option in the database. The values must be separated with commas with
    no intervening spaces.
 
-   Logically Collective on the communicator passed in `PetscOptionsBegin()`
+   Logically Collective on the communicator passed in `PetscOptionsBegin()`; No Fortran Support
 
    Synopsis:
    #include "petscsys.h"
@@ -1687,7 +1687,7 @@ PetscErrorCode PetscOptionsIntArray_Private(PetscOptionItems *PetscOptionsObject
    strings returned by this function.
 
    The user is responsible for deallocating the strings that are
-   returned. The Fortran interface for this routine is not supported.
+   returned.
 
    Must be between a `PetscOptionsBegin()` and a `PetscOptionsEnd()`
 

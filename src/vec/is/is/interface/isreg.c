@@ -39,7 +39,7 @@ PetscErrorCode ISCreate(MPI_Comm comm, IS *is)
 /*@C
   ISSetType - Builds a index set, for a particular `ISType`
 
-  Collective on is
+  Collective
 
   Input Parameters:
 + is    - The index set object

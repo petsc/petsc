@@ -448,7 +448,7 @@ PETSC_INTERN PetscErrorCode PCPreSolveChangeRHS(PC, PetscBool *);
    KSPCheckDot - Checks if the result of a dot product used by the corresponding `KSP` contains Inf or NaN. These indicate that the previous
       application of the preconditioner generated an error. Sets a `KSPConvergedReason` and returns if the `PC` set a `PCFailedReason`.
 
-   Collective on ksp
+   Collective
 
    Input Parameter:
 .  ksp - the linear solver `KSP` context.
@@ -488,13 +488,13 @@ M*/
     } while (0)
 
   /*MC
-   KSPCheckNorm - Checks if the result of a norm used by the corresponding KSP contains Inf or NaN. These indicate that the previous
+   KSPCheckNorm - Checks if the result of a norm used by the corresponding `KSP` contains `inf` or `NaN`. These indicate that the previous
       application of the preconditioner generated an error. Sets a `KSPConvergedReason` and returns if the `PC` set a `PCFailedReason`.
 
-   Collective on ksp
+   Collective
 
    Input Parameter:
-.  ksp - the linear solver (KSP) context.
+.  ksp - the linear solver `KSP` context.
 
    Output Parameter:
 .  beta - the result of the norm

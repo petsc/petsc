@@ -314,7 +314,7 @@ static PetscErrorCode PCRedundantSetNumber_Redundant(PC pc, PetscInt nreds)
 /*@
    PCRedundantSetNumber - Sets the number of redundant preconditioner contexts.
 
-   Logically Collective on pc
+   Logically Collective
 
    Input Parameters:
 +  pc - the preconditioner context
@@ -355,7 +355,7 @@ static PetscErrorCode PCRedundantSetScatter_Redundant(PC pc, VecScatter in, VecS
      redundant local solve and the scatter to move them back into the global
      vector.
 
-   Logically Collective on pc
+   Logically Collective
 
    Input Parameters:
 +  pc - the preconditioner context

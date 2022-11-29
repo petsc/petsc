@@ -398,7 +398,7 @@ PetscErrorCode PetscError(MPI_Comm comm, int line, const char *func, const char 
 /*@C
     PetscIntView - Prints an array of integers; useful for debugging.
 
-    Collective on viewer
+    Collective
 
     Input Parameters:
 +   N - number of integers in array
@@ -495,7 +495,7 @@ PetscErrorCode PetscIntView(PetscInt N, const PetscInt idx[], PetscViewer viewer
 /*@C
     PetscRealView - Prints an array of doubles; useful for debugging.
 
-    Collective on viewer
+    Collective
 
     Input Parameters:
 +   N - number of `PetscReal` in array
@@ -600,7 +600,7 @@ PetscErrorCode PetscRealView(PetscInt N, const PetscReal idx[], PetscViewer view
 /*@C
     PetscScalarView - Prints an array of `PetscScalar`; useful for debugging.
 
-    Collective on viewer
+    Collective
 
     Input Parameters:
 +   N - number of scalars in array

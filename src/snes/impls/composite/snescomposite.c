@@ -550,7 +550,7 @@ static PetscErrorCode SNESCompositeGetSNES_Composite(SNES snes, PetscInt n, SNES
 /*@C
    SNESCompositeSetType - Sets the type of composite preconditioner.
 
-   Logically Collective on snes
+   Logically Collective
 
    Input Parameters:
 +  snes - the preconditioner context
@@ -575,7 +575,7 @@ PetscErrorCode SNESCompositeSetType(SNES snes, SNESCompositeType type)
 /*@C
    SNESCompositeAddSNES - Adds another `SNES` to the `SNESCOMPOSITE`
 
-   Collective on snes
+   Collective
 
    Input Parameters:
 +  snes - the snes context of type `SNESCOMPOSITE`
@@ -621,7 +621,7 @@ PetscErrorCode SNESCompositeGetSNES(SNES snes, PetscInt n, SNES *subsnes)
 /*@
    SNESCompositeGetNumber - Get the number of subsolvers in the `SNESCOMPOSITE`
 
-   Logically Collective on snes
+   Logically Collective
 
    Input Parameter:
    snes - the snes context

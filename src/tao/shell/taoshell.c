@@ -10,7 +10,7 @@ struct _n_TaoShell {
 /*@C
    TaoShellSetSolve - Sets routine to apply as solver
 
-   Logically Collective on Tao
+   Logically Collective
 
    Input Parameters:
 +  tao - the nonlinear solver context
@@ -74,7 +74,7 @@ PetscErrorCode TaoShellGetContext(Tao tao, void *ctx)
 /*@
     TaoShellSetContext - sets the context for a shell Tao
 
-   Logically Collective on Tao
+   Logically Collective
 
     Input Parameters:
 +   tao - the shell Tao

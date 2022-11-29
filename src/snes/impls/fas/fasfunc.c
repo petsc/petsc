@@ -188,7 +188,7 @@ PetscErrorCode SNESFASGetCycleSNES(SNES snes, PetscInt level, SNES *lsnes)
    SNESFASSetNumberSmoothUp - Sets the number of post-smoothing steps to
    use on all levels.
 
-   Logically Collective on snes
+   Logically Collective
 
    Input Parameters:
 +  snes - the `SNES` nonlinear multigrid context
@@ -219,7 +219,7 @@ PetscErrorCode SNESFASSetNumberSmoothUp(SNES snes, PetscInt n)
    SNESFASSetNumberSmoothDown - Sets the number of pre-smoothing steps to
    use on all levels.
 
-   Logically Collective on snes
+   Logically Collective
 
    Input Parameters:
 +  snes - the `SNESFAS` nonlinear multigrid context
@@ -250,7 +250,7 @@ PetscErrorCode SNESFASSetNumberSmoothDown(SNES snes, PetscInt n)
 /*@
    SNESFASSetContinuation - Sets the `SNESFAS` cycle to default to exact Newton solves on the upsweep
 
-   Logically Collective on snes
+   Logically Collective
 
    Input Parameters:
 +  snes - the `SNESFAS` nonlinear multigrid context
@@ -291,7 +291,7 @@ PetscErrorCode SNESFASSetContinuation(SNES snes, PetscBool continuation)
    SNESFASSetCycles - Sets the number of FAS multigrid cycles to use each time a grid is visited.  Use `SNESFASSetCyclesOnLevel()` for more
    complicated cycling.
 
-   Logically Collective on snes
+   Logically Collective
 
    Input Parameters:
 +  snes   - the `SNESFAS` nonlinear multigrid context
@@ -322,7 +322,7 @@ PetscErrorCode SNESFASSetCycles(SNES snes, PetscInt cycles)
 /*@
    SNESFASSetMonitor - Sets the method-specific cycle monitoring
 
-   Logically Collective on snes
+   Logically Collective
 
    Input Parameters:
 +  snes   - the `SNESFAS` context
@@ -366,7 +366,7 @@ PetscErrorCode SNESFASSetMonitor(SNES snes, PetscViewerAndFormat *vf, PetscBool 
 /*@
    SNESFASSetLog - Sets or unsets time logging for various `SNESFAS` stages on all levels
 
-   Logically Collective on snes
+   Logically Collective
 
    Input Parameters:
 +  snes   - the `SNESFAS` context
@@ -458,7 +458,7 @@ PetscErrorCode SNESFASCycleCreateSmoother_Private(SNES snes, SNES *smooth)
 /*@
    SNESFASCycleSetCycles - Sets the number of cycles on a particular level.
 
-   Logically Collective on snes
+   Logically Collective
 
    Input Parameters:
 +  snes   - the `SNESFAS` nonlinear multigrid context
@@ -484,7 +484,7 @@ PetscErrorCode SNESFASCycleSetCycles(SNES snes, PetscInt cycles)
 /*@
    SNESFASCycleGetSmoother - Gets the smoother on a particular cycle level.
 
-   Logically Collective on snes
+   Logically Collective
 
    Input Parameter:
 .  snes   - the `SNESFAS` nonlinear multigrid context
@@ -510,7 +510,7 @@ PetscErrorCode SNESFASCycleGetSmoother(SNES snes, SNES *smooth)
 /*@
    SNESFASCycleGetSmootherUp - Gets the up smoother on a particular cycle level.
 
-   Logically Collective on snes
+   Logically Collective
 
    Input Parameter:
 .  snes   - the `SNESFAS` nonlinear multigrid context
@@ -542,7 +542,7 @@ PetscErrorCode SNESFASCycleGetSmootherUp(SNES snes, SNES *smoothu)
 /*@
    SNESFASCycleGetSmootherDown - Gets the down smoother on a particular cycle level.
 
-   Logically Collective on snes
+   Logically Collective
 
    Input Parameter:
 .  snes   - `SNESFAS`, the nonlinear multigrid context
@@ -569,7 +569,7 @@ PetscErrorCode SNESFASCycleGetSmootherDown(SNES snes, SNES *smoothd)
 /*@
    SNESFASCycleGetCorrection - Gets the coarse correction FAS context for this level
 
-   Logically Collective on snes
+   Logically Collective
 
    Input Parameter:
 .  snes   - the `SNESFAS` nonlinear multigrid context
@@ -599,7 +599,7 @@ PetscErrorCode SNESFASCycleGetCorrection(SNES snes, SNES *correction)
 /*@
    SNESFASCycleGetInterpolation - Gets the interpolation on this level
 
-   Logically Collective on snes
+   Logically Collective
 
    Input Parameter:
 .  snes   - the `SNESFAS` nonlinear multigrid context
@@ -626,7 +626,7 @@ PetscErrorCode SNESFASCycleGetInterpolation(SNES snes, Mat *mat)
 /*@
    SNESFASCycleGetRestriction - Gets the restriction on this level
 
-   Logically Collective on snes
+   Logically Collective
 
    Input Parameter:
 .  snes   - the `SNESFAS` nonlinear multigrid context
@@ -653,7 +653,7 @@ PetscErrorCode SNESFASCycleGetRestriction(SNES snes, Mat *mat)
 /*@
    SNESFASCycleGetInjection - Gets the injection on this level
 
-   Logically Collective on snes
+   Logically Collective
 
    Input Parameter:
 .  snes   - the `SNESFAS` nonlinear multigrid context
@@ -680,7 +680,7 @@ PetscErrorCode SNESFASCycleGetInjection(SNES snes, Mat *mat)
 /*@
    SNESFASCycleGetRScale - Gets the injection on this level
 
-   Logically Collective on snes
+   Logically Collective
 
    Input Parameter:
 .  snes   - the  `SNESFAS` nonlinear multigrid context
@@ -707,7 +707,7 @@ PetscErrorCode SNESFASCycleGetRScale(SNES snes, Vec *vec)
 /*@
    SNESFASCycleIsFine - Determines if a given cycle is the fine level.
 
-   Logically Collective on snes
+   Logically Collective
 
    Input Parameter:
 .  snes   - the `SNESFAS` `SNES` context
@@ -1085,7 +1085,7 @@ PetscErrorCode SNESFASGetCoarseSolve(SNES snes, SNES *coarse)
 /*@
    SNESFASFullSetDownSweep - Smooth during the initial downsweep for `SNESFAS`
 
-   Logically Collective on snes
+   Logically Collective
 
    Input Parameters:
 +  snes - the `SNESFAS` nonlinear multigrid context
@@ -1113,7 +1113,7 @@ PetscErrorCode SNESFASFullSetDownSweep(SNES snes, PetscBool swp)
 /*@
    SNESFASFullSetTotal - Use total residual restriction and total interpolation on the initial down and up sweep of full FAS cycles
 
-   Logically Collective on snes
+   Logically Collective
 
    Input Parameters:
 +  snes - the `SNESFAS`  nonlinear multigrid context
@@ -1145,7 +1145,7 @@ PetscErrorCode SNESFASFullSetTotal(SNES snes, PetscBool total)
 /*@
    SNESFASFullGetTotal - Use total residual restriction and total interpolation on the initial down and up sweep of full FAS cycles
 
-   Logically Collective on snes
+   Logically Collective
 
    Input Parameter:
 .  snes - the `SNESFAS` nonlinear multigrid context

@@ -63,7 +63,7 @@ PetscErrorCode PCShellGetContext(PC pc, void *ctx)
 /*@
     PCShellSetContext - sets the context for a shell `PC`
 
-   Logically Collective on pc
+   Logically Collective
 
     Input Parameters:
 +   pc - the `PC` of type `PCSHELL`
@@ -416,7 +416,7 @@ static PetscErrorCode PCShellGetName_Shell(PC pc, const char *name[])
    PCShellSetDestroy - Sets routine to use to destroy the user-provided
    application context.
 
-   Logically Collective on pc
+   Logically Collective
 
    Input Parameters:
 +  pc - the preconditioner context
@@ -448,7 +448,7 @@ PetscErrorCode PCShellSetDestroy(PC pc, PetscErrorCode (*destroy)(PC))
    PCShellSetSetUp - Sets routine to use to "setup" the preconditioner whenever the
    matrix operator is changed.
 
-   Logically Collective on pc
+   Logically Collective
 
    Input Parameters:
 +  pc - the preconditioner context
@@ -479,7 +479,7 @@ PetscErrorCode PCShellSetSetUp(PC pc, PetscErrorCode (*setup)(PC))
 /*@C
    PCShellSetView - Sets routine to use as viewer of shell preconditioner
 
-   Logically Collective on pc
+   Logically Collective
 
    Input Parameters:
 +  pc - the preconditioner context
@@ -511,7 +511,7 @@ PetscErrorCode PCShellSetView(PC pc, PetscErrorCode (*view)(PC, PetscViewer))
 /*@C
    PCShellSetApply - Sets routine to use as preconditioner.
 
-   Logically Collective on pc
+   Logically Collective
 
    Input Parameters:
 +  pc - the preconditioner context
@@ -544,7 +544,7 @@ PetscErrorCode PCShellSetApply(PC pc, PetscErrorCode (*apply)(PC, Vec, Vec))
 /*@C
    PCShellSetMatApply - Sets routine to use as preconditioner on a block of vectors.
 
-   Logically Collective on pc
+   Logically Collective
 
    Input Parameters:
 +  pc - the preconditioner context
@@ -577,7 +577,7 @@ PetscErrorCode PCShellSetMatApply(PC pc, PetscErrorCode (*matapply)(PC, Mat, Mat
 /*@C
    PCShellSetApplySymmetricLeft - Sets routine to use as left preconditioner (when the `PC_SYMMETRIC` is used).
 
-   Logically Collective on pc
+   Logically Collective
 
    Input Parameters:
 +  pc - the preconditioner context
@@ -610,7 +610,7 @@ PetscErrorCode PCShellSetApplySymmetricLeft(PC pc, PetscErrorCode (*apply)(PC, V
 /*@C
    PCShellSetApplySymmetricRight - Sets routine to use as right preconditioner (when the `PC_SYMMETRIC` is used).
 
-   Logically Collective on pc
+   Logically Collective
 
    Input Parameters:
 +  pc - the preconditioner context
@@ -643,7 +643,7 @@ PetscErrorCode PCShellSetApplySymmetricRight(PC pc, PetscErrorCode (*apply)(PC, 
 /*@C
    PCShellSetApplyBA - Sets routine to use as preconditioner times operator.
 
-   Logically Collective on pc
+   Logically Collective
 
    Input Parameters:
 +  pc - the preconditioner context
@@ -676,7 +676,7 @@ PetscErrorCode PCShellSetApplyBA(PC pc, PetscErrorCode (*applyBA)(PC, PCSide, Ve
 /*@C
    PCShellSetApplyTranspose - Sets routine to use as preconditioner transpose.
 
-   Logically Collective on pc
+   Logically Collective
 
    Input Parameters:
 +  pc - the preconditioner context
@@ -714,7 +714,7 @@ PetscErrorCode PCShellSetApplyTranspose(PC pc, PetscErrorCode (*applytranspose)(
       applied. This usually does something like scale the linear system in some application
       specific way.
 
-   Logically Collective on pc
+   Logically Collective
 
    Input Parameters:
 +  pc - the preconditioner context
@@ -749,7 +749,7 @@ PetscErrorCode PCShellSetPreSolve(PC pc, PetscErrorCode (*presolve)(PC, KSP, Vec
       applied. This usually does something like scale the linear system in some application
       specific way.
 
-   Logically Collective on pc
+   Logically Collective
 
    Input Parameters:
 +  pc - the preconditioner context
@@ -830,7 +830,7 @@ PetscErrorCode PCShellGetName(PC pc, const char *name[])
    PCShellSetApplyRichardson - Sets routine to use as preconditioner
    in Richardson iteration.
 
-   Logically Collective on pc
+   Logically Collective
 
    Input Parameters:
 +  pc - the preconditioner context

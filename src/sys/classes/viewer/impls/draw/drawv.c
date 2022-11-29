@@ -40,7 +40,7 @@ static PetscErrorCode PetscViewerFlush_Draw(PetscViewer v)
     This `PetscDraw` object may then be used to perform graphics using
     `PetscDraw` commands.
 
-    Collective on viewer
+    Collective
 
     Input Parameters:
 +   viewer - the `PetscViewer` (created with `PetscViewerDrawOpen()` of type `PETSCVIEWERDRAW`)
@@ -104,7 +104,7 @@ PetscErrorCode PetscViewerDrawGetDraw(PetscViewer viewer, PetscInt windownumber,
 /*@C
     PetscViewerDrawBaseAdd - add to the base integer that is added to the windownumber passed to `PetscViewerDrawGetDraw()`
 
-    Logically Collective on viewer
+    Logically Collective
 
     Input Parameters:
 +  viewer - the `PetscViewer` (created with `PetscViewerDrawOpen()`)
@@ -137,7 +137,7 @@ PetscErrorCode PetscViewerDrawBaseAdd(PetscViewer viewer, PetscInt windownumber)
 /*@C
     PetscViewerDrawBaseSet - sets the base integer that is added to the windownumber passed to `PetscViewerDrawGetDraw()`
 
-    Logically Collective on viewer
+    Logically Collective
 
     Input Parameters:
 +   viewer - the `PetscViewer` (created with `PetscViewerDrawOpen()`)
@@ -171,7 +171,7 @@ PetscErrorCode PetscViewerDrawBaseSet(PetscViewer viewer, PetscInt windownumber)
     PetscViewerDrawGetDrawLG - Returns a `PetscDrawLG` object from `PetscViewer` object of type `PETSCVIEWERDRAW`.
     This `PetscDrawLG` object may then be used to perform graphics using `PetscDrawLG` commands.
 
-    Collective on viewer
+    Collective
 
     Input Parameters:
 +   PetscViewer - the `PetscViewer` (created with `PetscViewerDrawOpen()`)
@@ -214,7 +214,7 @@ PetscErrorCode PetscViewerDrawGetDrawLG(PetscViewer viewer, PetscInt windownumbe
     PetscViewerDrawGetDrawAxis - Returns a `PetscDrawAxis` object from a `PetscViewer` object of type `PETSCVIEWERDRAW`.
     This `PetscDrawAxis` object may then be used to perform graphics using `PetscDrawAxis` commands.
 
-    Collective on viewer
+    Collective
 
     Input Parameters:
 +   viewer - the `PetscViewer` (created with `PetscViewerDrawOpen()`)
@@ -790,7 +790,7 @@ PetscViewer PETSC_VIEWER_DRAW_(MPI_Comm comm)
 /*@
     PetscViewerDrawSetBounds - sets the upper and lower bounds to be used in plotting
 
-    Collective on viewer
+    Collective
 
     Input Parameters:
 +   viewer - the Petsc`Viewer` (created with `PetscViewerDrawOpen()`)
@@ -830,7 +830,7 @@ PetscErrorCode PetscViewerDrawSetBounds(PetscViewer viewer, PetscInt nbounds, co
 /*@C
     PetscViewerDrawGetBounds - gets the upper and lower bounds to be used in plotting set with `PetscViewerDrawSetBounds()`
 
-    Collective on viewer
+    Collective
 
     Input Parameter:
 .   viewer - the `PetscViewer` (created with `PetscViewerDrawOpen()`)

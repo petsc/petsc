@@ -29,7 +29,7 @@ PetscErrorCode PetscDrawTriangle(PetscDraw draw, PetscReal x1, PetscReal y_1, Pe
 /*@
    PetscDrawScalePopup - draws a contour scale window.
 
-   Collective on popop
+   Collective
 
    Input Parameters:
 +  popup - the window (often a window obtained via `PetscDrawGetPopup()`

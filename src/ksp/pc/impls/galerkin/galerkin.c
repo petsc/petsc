@@ -150,7 +150,7 @@ static PetscErrorCode PCGalerkinSetComputeSubmatrix_Galerkin(PC pc, PetscErrorCo
 /*@
    PCGalerkinSetRestriction - Sets the restriction operator for the `PCGALERKIN` preconditioner
 
-   Logically Collective on pc
+   Logically Collective
 
    Input Parameters:
 +  pc - the preconditioner context
@@ -175,7 +175,7 @@ PetscErrorCode PCGalerkinSetRestriction(PC pc, Mat R)
 /*@
    PCGalerkinSetInterpolation - Sets the interpolation operator for the `PCGALERKIN` preconditioner
 
-   Logically Collective on pc
+   Logically Collective
 
    Input Parameters:
 +  pc - the preconditioner context
