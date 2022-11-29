@@ -186,6 +186,7 @@ PetscErrorCode MatDisAssemble_MPIAIJ(Mat A)
 
   aij->B           = Bnew;
   A->was_assembled = PETSC_FALSE;
+  A->assembled     = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
