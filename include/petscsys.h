@@ -1146,7 +1146,7 @@ PETSC_EXTERN MPI_Op MPIU_MIN;
 PETSC_EXTERN MPI_Op         Petsc_Garbage_SetIntersectOp;
 PETSC_EXTERN PetscErrorCode PetscMaxSum(MPI_Comm, const PetscInt[], PetscInt *, PetscInt *);
 
-#if defined(PETSC_HAVE_REAL___FLOAT128) || defined(PETSC_HAVE_REAL___FP16)
+#if (defined(PETSC_HAVE_REAL___FLOAT128) && !defined(PETSC_SKIP_REAL___FLOAT128)) || (defined(PETSC_HAVE_REAL___FP16) && !defined(PETSC_SKIP_REAL___FP16))
 /*MC
     MPIU_SUM___FP16___FLOAT128 - MPI_Op that acts as a replacement for MPI_SUM with
     custom MPI_Datatype `MPIU___FLOAT128`, `MPIU___COMPLEX128`, and `MPIU___FP16`.
