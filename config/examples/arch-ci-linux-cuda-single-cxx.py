@@ -14,6 +14,8 @@ if __name__ == '__main__':
     'COPTFLAGS=-g -O',
     'FOPTFLAGS=-g -O',
     'CXXOPTFLAGS=-g -O',
+    '--with-log=0',
+    '--with-info=0',
     '--with-cuda=1',
     '--with-precision=single',
     '--with-clanguage=cxx',

@@ -5,21 +5,17 @@ petsc_hash_pkgs=os.path.join(os.getenv('HOME'),'petsc-hash-pkgs')
 
 configure_options = [
   '--package-prefix-hash='+petsc_hash_pkgs,
-  '--with-cc=clang',
+  '--with-cc=gcc',
   '--with-fc=gfortran',
-  '--with-cxx=clang++',
+  '--with-cxx=g++',
 
   'COPTFLAGS=-g -O',
   'FOPTFLAGS=-g -O',
   'CXXOPTFLAGS=-g -O',
 
   '--with-clanguage=cxx',
-  'CXXFLAGS=-Wall -Wwrite-strings -Wno-strict-aliasing -Wno-unknown-pragmas -fstack-protector -fvisibility=hidden -Wno-deprecated',
   '--with-scalar-type=complex',
   '--with-64-bit-indices=1',
-
-  '--with-log=0',
-  '--with-info=0',  
 
   '--download-hypre=1',
   '--download-mpich=1',
@@ -33,7 +29,11 @@ configure_options = [
   '--download-superlu_dist=1',
   '--download-elemental=1',
   '--download-p4est=1',
+  '--download-ptscotch',
+  '--download-scalapack',
+  '--download-strumpack',
   '--with-zlib=1',
+  '--with-coverage=1',
   ]
 
 if __name__ == '__main__':
