@@ -38,7 +38,8 @@ PETSC_EXTERN PetscErrorCode DMAdaptLabel_Forest(DM, Vec, DMLabel, DMLabel, DM *)
 
 .seealso: `DMGenerateRegisterDestroy()`
 @*/
-PetscErrorCode DMGenerateRegisterAll(void) {
+PetscErrorCode DMGenerateRegisterAll(void)
+{
   PetscFunctionBegin;
   if (DMGenerateRegisterAllCalled) PetscFunctionReturn(0);
   DMGenerateRegisterAllCalled = PETSC_TRUE;
@@ -95,7 +96,8 @@ $     -dm_generator my_generator
 .seealso: `DMGenerateRegisterAll()`, `DMPlexGenerate()`, `DMGenerateRegisterDestroy()`
 
 @*/
-PetscErrorCode DMGenerateRegister(const char sname[], PetscErrorCode (*fnc)(DM, PetscBool, DM *), PetscErrorCode (*rfnc)(DM, PetscReal *, DM *), PetscErrorCode (*alfnc)(DM, Vec, DMLabel, DMLabel, DM *), PetscInt dim) {
+PetscErrorCode DMGenerateRegister(const char sname[], PetscErrorCode (*fnc)(DM, PetscBool, DM *), PetscErrorCode (*rfnc)(DM, PetscReal *, DM *), PetscErrorCode (*alfnc)(DM, Vec, DMLabel, DMLabel, DM *), PetscInt dim)
+{
   DMGeneratorFunctionList entry;
 
   PetscFunctionBegin;
@@ -117,7 +119,8 @@ PetscErrorCode DMGenerateRegister(const char sname[], PetscErrorCode (*fnc)(DM, 
 
 extern PetscBool DMGenerateRegisterAllCalled;
 
-PetscErrorCode DMGenerateRegisterDestroy(void) {
+PetscErrorCode DMGenerateRegisterDestroy(void)
+{
   DMGeneratorFunctionList next, fl;
 
   PetscFunctionBegin;
@@ -150,7 +153,8 @@ PetscErrorCode DMGenerateRegisterDestroy(void) {
 
 .seealso: `DMAdaptMetric()`, `DMCoarsen()`, `DMRefine()`
 @*/
-PetscErrorCode DMAdaptLabel(DM dm, DMLabel label, DM *dmAdapt) {
+PetscErrorCode DMAdaptLabel(DM dm, DMLabel label, DM *dmAdapt)
+{
   DMGeneratorFunctionList fl;
   char                    adaptname[PETSC_MAX_PATH_LEN];
   const char             *name;
@@ -206,7 +210,8 @@ PetscErrorCode DMAdaptLabel(DM dm, DMLabel label, DM *dmAdapt) {
 
 .seealso: `DMAdaptLabel()`, `DMCoarsen()`, `DMRefine()`
 @*/
-PetscErrorCode DMAdaptMetric(DM dm, Vec metric, DMLabel bdLabel, DMLabel rgLabel, DM *dmAdapt) {
+PetscErrorCode DMAdaptMetric(DM dm, Vec metric, DMLabel bdLabel, DMLabel rgLabel, DM *dmAdapt)
+{
   DMGeneratorFunctionList fl;
   char                    adaptname[PETSC_MAX_PATH_LEN];
   const char             *name;

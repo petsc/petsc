@@ -50,7 +50,8 @@ struct _n_User {
 
 /* ----------------------- Explicit form of the ODE  -------------------- */
 
-static PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec U, Vec F, void *ctx) {
+static PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec U, Vec F, void *ctx)
+{
   User               user = (User)ctx;
   PetscScalar       *f;
   const PetscScalar *u;
@@ -65,7 +66,8 @@ static PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec U, Vec F, void *ctx) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec U, Mat A, Mat B, void *ctx) {
+static PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec U, Mat A, Mat B, void *ctx)
+{
   User               user     = (User)ctx;
   PetscReal          mu       = user->mu;
   PetscInt           rowcol[] = {0, 1};
@@ -91,7 +93,8 @@ static PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec U, Mat A, Mat B, void 
 
 /* ----------------------- Implicit form of the ODE  -------------------- */
 
-static PetscErrorCode IFunction(TS ts, PetscReal t, Vec U, Vec Udot, Vec F, void *ctx) {
+static PetscErrorCode IFunction(TS ts, PetscReal t, Vec U, Vec Udot, Vec F, void *ctx)
+{
   User               user = (User)ctx;
   const PetscScalar *u, *udot;
   PetscScalar       *f;
@@ -108,7 +111,8 @@ static PetscErrorCode IFunction(TS ts, PetscReal t, Vec U, Vec Udot, Vec F, void
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode IJacobian(TS ts, PetscReal t, Vec U, Vec Udot, PetscReal a, Mat A, Mat B, void *ctx) {
+static PetscErrorCode IJacobian(TS ts, PetscReal t, Vec U, Vec Udot, PetscReal a, Mat A, Mat B, void *ctx)
+{
   User               user     = (User)ctx;
   PetscInt           rowcol[] = {0, 1};
   PetscScalar        J[2][2];
@@ -134,7 +138,8 @@ static PetscErrorCode IJacobian(TS ts, PetscReal t, Vec U, Vec Udot, PetscReal a
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode RHSJacobianP(TS ts, PetscReal t, Vec U, Mat A, void *ctx) {
+static PetscErrorCode RHSJacobianP(TS ts, PetscReal t, Vec U, Mat A, void *ctx)
+{
   PetscInt           row[] = {0, 1}, col[] = {0};
   PetscScalar        J[2][1];
   const PetscScalar *u;
@@ -151,7 +156,8 @@ static PetscErrorCode RHSJacobianP(TS ts, PetscReal t, Vec U, Mat A, void *ctx) 
 }
 
 /* Monitor timesteps and use interpolation to output at integer multiples of 0.1 */
-static PetscErrorCode Monitor(TS ts, PetscInt step, PetscReal t, Vec U, void *ctx) {
+static PetscErrorCode Monitor(TS ts, PetscInt step, PetscReal t, Vec U, void *ctx)
+{
   const PetscScalar *u;
   PetscReal          tfinal, dt;
   User               user = (User)ctx;
@@ -173,7 +179,8 @@ static PetscErrorCode Monitor(TS ts, PetscInt step, PetscReal t, Vec U, void *ct
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   TS             ts;
   PetscBool      monitor = PETSC_FALSE, implicitform = PETSC_TRUE;
   PetscScalar   *x_ptr, *y_ptr, derp;

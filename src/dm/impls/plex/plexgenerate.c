@@ -1,7 +1,7 @@
 #include <petsc/private/dmpleximpl.h> /*I      "petscdmplex.h"   I*/
 
 /*@C
-  DMPlexInvertCell - Flips cell orientations since Plex stores some of them internally with outward normals.
+  DMPlexInvertCell - Flips cell orientations since `DMPLEX` stores some of them internally with outward normals.
 
   Input Parameters:
 + cellType - The cell type
@@ -12,9 +12,10 @@
 
   Level: developer
 
-.seealso: `DMPlexGenerate()`
+.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPolytopeType`, `DMPlexGenerate()`
 @*/
-PetscErrorCode DMPlexInvertCell(DMPolytopeType cellType, PetscInt cone[]) {
+PetscErrorCode DMPlexInvertCell(DMPolytopeType cellType, PetscInt cone[])
+{
 #define SWAPCONE(cone, i, j) \
   do { \
     PetscInt _cone_tmp; \
@@ -25,29 +26,47 @@ PetscErrorCode DMPlexInvertCell(DMPolytopeType cellType, PetscInt cone[]) {
 
   PetscFunctionBegin;
   switch (cellType) {
-  case DM_POLYTOPE_POINT: break;
-  case DM_POLYTOPE_SEGMENT: break;
-  case DM_POLYTOPE_POINT_PRISM_TENSOR: break;
-  case DM_POLYTOPE_TRIANGLE: break;
-  case DM_POLYTOPE_QUADRILATERAL: break;
-  case DM_POLYTOPE_SEG_PRISM_TENSOR: SWAPCONE(cone, 2, 3); break;
-  case DM_POLYTOPE_TETRAHEDRON: SWAPCONE(cone, 0, 1); break;
-  case DM_POLYTOPE_HEXAHEDRON: SWAPCONE(cone, 1, 3); break;
-  case DM_POLYTOPE_TRI_PRISM: SWAPCONE(cone, 1, 2); break;
-  case DM_POLYTOPE_TRI_PRISM_TENSOR: break;
-  case DM_POLYTOPE_QUAD_PRISM_TENSOR: break;
-  case DM_POLYTOPE_PYRAMID: SWAPCONE(cone, 1, 3); break;
-  default: break;
+  case DM_POLYTOPE_POINT:
+    break;
+  case DM_POLYTOPE_SEGMENT:
+    break;
+  case DM_POLYTOPE_POINT_PRISM_TENSOR:
+    break;
+  case DM_POLYTOPE_TRIANGLE:
+    break;
+  case DM_POLYTOPE_QUADRILATERAL:
+    break;
+  case DM_POLYTOPE_SEG_PRISM_TENSOR:
+    SWAPCONE(cone, 2, 3);
+    break;
+  case DM_POLYTOPE_TETRAHEDRON:
+    SWAPCONE(cone, 0, 1);
+    break;
+  case DM_POLYTOPE_HEXAHEDRON:
+    SWAPCONE(cone, 1, 3);
+    break;
+  case DM_POLYTOPE_TRI_PRISM:
+    SWAPCONE(cone, 1, 2);
+    break;
+  case DM_POLYTOPE_TRI_PRISM_TENSOR:
+    break;
+  case DM_POLYTOPE_QUAD_PRISM_TENSOR:
+    break;
+  case DM_POLYTOPE_PYRAMID:
+    SWAPCONE(cone, 1, 3);
+    break;
+  default:
+    break;
   }
   PetscFunctionReturn(0);
 #undef SWAPCONE
 }
 
 /*@C
-  DMPlexReorderCell - Flips cell orientations since Plex stores some of them internally with outward normals.
+  DMPlexReorderCell - Flips cell orientations since `DMPLEX` stores some of them internally with outward normals.
 
   Input Parameters:
-+ dm - The DMPlex object
++ dm - The `DMPLEX` object
 . cell - The cell
 - cone - The incoming cone
 
@@ -56,9 +75,10 @@ PetscErrorCode DMPlexInvertCell(DMPolytopeType cellType, PetscInt cone[]) {
 
   Level: developer
 
-.seealso: `DMPlexGenerate()`
+.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPolytopeType`, `DMPlexGenerate()`
 @*/
-PetscErrorCode DMPlexReorderCell(DM dm, PetscInt cell, PetscInt cone[]) {
+PetscErrorCode DMPlexReorderCell(DM dm, PetscInt cell, PetscInt cone[])
+{
   DMPolytopeType cellType;
 
   PetscFunctionBegin;
@@ -73,14 +93,15 @@ PetscErrorCode DMPlexReorderCell(DM dm, PetscInt cell, PetscInt cone[]) {
   Not Collective
 
   Inputs Parameters:
-+ dm - The DMPlex object
++ dm - The `DMPLEX` object
 - opts - The command line options
 
   Level: developer
 
-.seealso: `DMPlexTetgenSetOptions()`, `DMPlexGenerate()`
+.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPlexTetgenSetOptions()`, `DMPlexGenerate()`
 @*/
-PetscErrorCode DMPlexTriangleSetOptions(DM dm, const char *opts) {
+PetscErrorCode DMPlexTriangleSetOptions(DM dm, const char *opts)
+{
   DM_Plex *mesh = (DM_Plex *)dm->data;
 
   PetscFunctionBegin;
@@ -97,14 +118,15 @@ PetscErrorCode DMPlexTriangleSetOptions(DM dm, const char *opts) {
   Not Collective
 
   Inputs Parameters:
-+ dm - The DMPlex object
++ dm - The `DMPLEX` object
 - opts - The command line options
 
   Level: developer
 
-.seealso: `DMPlexTriangleSetOptions()`, `DMPlexGenerate()`
+.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPlexTriangleSetOptions()`, `DMPlexGenerate()`
 @*/
-PetscErrorCode DMPlexTetgenSetOptions(DM dm, const char *opts) {
+PetscErrorCode DMPlexTetgenSetOptions(DM dm, const char *opts)
+{
   DM_Plex *mesh = (DM_Plex *)dm->data;
 
   PetscFunctionBegin;
@@ -121,22 +143,23 @@ PetscErrorCode DMPlexTetgenSetOptions(DM dm, const char *opts) {
   Not Collective
 
   Input Parameters:
-+ boundary - The DMPlex boundary object
++ boundary - The `DMPLEX` boundary object
 . name - The mesh generation package name
 - interpolate - Flag to create intermediate mesh elements
 
   Output Parameter:
-. mesh - The DMPlex object
+. mesh - The `DMPLEX` object
 
-  Options Database:
+  Options Database Keys:
 +  -dm_plex_generate <name> - package to generate mesh, for example, triangle, ctetgen or tetgen
 -  -dm_generator <name> - package to generate mesh, for example, triangle, ctetgen or tetgen
 
   Level: intermediate
 
-.seealso: `DMPlexCreate()`, `DMRefine()`
+.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPlexCreate()`, `DMRefine()`
 @*/
-PetscErrorCode DMPlexGenerate(DM boundary, const char name[], PetscBool interpolate, DM *mesh) {
+PetscErrorCode DMPlexGenerate(DM boundary, const char name[], PetscBool interpolate, DM *mesh)
+{
   DMGeneratorFunctionList fl;
   char                    genname[PETSC_MAX_PATH_LEN];
   const char             *suggestions;

@@ -21,7 +21,8 @@
 
 .seealso: `PetscDrawLG`, `PetscDrawLGCreate()`, `PetscDrawLGAddPoints()`, `PetscDrawLGAddPoint()`, `PetscDrawLGReset()`, `PetscDrawLGDraw()`
 @*/
-PetscErrorCode PetscDrawLGAddCommonPoint(PetscDrawLG lg, const PetscReal x, const PetscReal *y) {
+PetscErrorCode PetscDrawLGAddCommonPoint(PetscDrawLG lg, const PetscReal x, const PetscReal *y)
+{
   PetscInt i;
 
   PetscFunctionBegin;
@@ -30,7 +31,6 @@ PetscErrorCode PetscDrawLGAddCommonPoint(PetscDrawLG lg, const PetscReal x, cons
   if (lg->loc + lg->dim >= lg->len) { /* allocate more space */
     PetscReal *tmpx, *tmpy;
     PetscCall(PetscMalloc2(lg->len + lg->dim * PETSC_DRAW_LG_CHUNK_SIZE, &tmpx, lg->len + lg->dim * PETSC_DRAW_LG_CHUNK_SIZE, &tmpy));
-    PetscCall(PetscLogObjectMemory((PetscObject)lg, 2 * lg->dim * PETSC_DRAW_LG_CHUNK_SIZE * sizeof(PetscReal)));
     PetscCall(PetscArraycpy(tmpx, lg->x, lg->len));
     PetscCall(PetscArraycpy(tmpy, lg->y, lg->len));
     PetscCall(PetscFree2(lg->x, lg->y));
@@ -71,7 +71,8 @@ PetscErrorCode PetscDrawLGAddCommonPoint(PetscDrawLG lg, const PetscReal x, cons
 
 .seealso: `PetscDrawLG`, `PetscDrawLGCreate()`, `PetscDrawLGAddPoints()`, `PetscDrawLGAddCommonPoint()`, `PetscDrawLGReset()`, `PetscDrawLGDraw()`
 @*/
-PetscErrorCode PetscDrawLGAddPoint(PetscDrawLG lg, const PetscReal *x, const PetscReal *y) {
+PetscErrorCode PetscDrawLGAddPoint(PetscDrawLG lg, const PetscReal *x, const PetscReal *y)
+{
   PetscInt  i;
   PetscReal xx;
 
@@ -81,7 +82,6 @@ PetscErrorCode PetscDrawLGAddPoint(PetscDrawLG lg, const PetscReal *x, const Pet
   if (lg->loc + lg->dim >= lg->len) { /* allocate more space */
     PetscReal *tmpx, *tmpy;
     PetscCall(PetscMalloc2(lg->len + lg->dim * PETSC_DRAW_LG_CHUNK_SIZE, &tmpx, lg->len + lg->dim * PETSC_DRAW_LG_CHUNK_SIZE, &tmpy));
-    PetscCall(PetscLogObjectMemory((PetscObject)lg, 2 * lg->dim * PETSC_DRAW_LG_CHUNK_SIZE * sizeof(PetscReal)));
     PetscCall(PetscArraycpy(tmpx, lg->x, lg->len));
     PetscCall(PetscArraycpy(tmpy, lg->y, lg->len));
     PetscCall(PetscFree2(lg->x, lg->y));
@@ -128,7 +128,8 @@ PetscErrorCode PetscDrawLGAddPoint(PetscDrawLG lg, const PetscReal *x, const Pet
 
 .seealso: `PetscDrawLG`, `PetscDrawLGCreate()`, `PetscDrawLGAddPoint()`, `PetscDrawLGAddCommonPoint()`, `PetscDrawLGReset()`, `PetscDrawLGDraw()`
 @*/
-PetscErrorCode PetscDrawLGAddPoints(PetscDrawLG lg, PetscInt n, PetscReal **xx, PetscReal **yy) {
+PetscErrorCode PetscDrawLGAddPoints(PetscDrawLG lg, PetscInt n, PetscReal **xx, PetscReal **yy)
+{
   PetscInt   i, j, k;
   PetscReal *x, *y;
 
@@ -141,7 +142,6 @@ PetscErrorCode PetscDrawLGAddPoints(PetscDrawLG lg, PetscInt n, PetscReal **xx, 
 
     if (n > chunk) chunk = n;
     PetscCall(PetscMalloc2(lg->len + lg->dim * chunk, &tmpx, lg->len + lg->dim * chunk, &tmpy));
-    PetscCall(PetscLogObjectMemory((PetscObject)lg, 2 * lg->dim * chunk * sizeof(PetscReal)));
     PetscCall(PetscArraycpy(tmpx, lg->x, lg->len));
     PetscCall(PetscArraycpy(tmpy, lg->y, lg->len));
     PetscCall(PetscFree2(lg->x, lg->y));

@@ -13,13 +13,15 @@
  */
 static PetscReal Gamma = 2.0;
 
-PetscErrorCode PetscDrawUtilitySetGamma(PetscReal g) {
+PetscErrorCode PetscDrawUtilitySetGamma(PetscReal g)
+{
   PetscFunctionBegin;
   Gamma = g;
   PetscFunctionReturn(0);
 }
 
-static inline double PetscHlsHelper(double m1, double m2, double h) {
+static inline double PetscHlsHelper(double m1, double m2, double h)
+{
   while (h > 1.0) h -= 1.0;
   while (h < 0.0) h += 1.0;
   if (h < 1 / 6.0) return m1 + (m2 - m1) * h * 6;
@@ -28,7 +30,8 @@ static inline double PetscHlsHelper(double m1, double m2, double h) {
   return m1;
 }
 
-static inline void PetscHlsToRgb(double h, double l, double s, double *r, double *g, double *b) {
+static inline void PetscHlsToRgb(double h, double l, double s, double *r, double *g, double *b)
+{
   if (s > 0.0) {
     double m2 = l <= 0.5 ? l * (1.0 + s) : l + s - (l * s);
     double m1 = 2 * l - m2;
@@ -41,14 +44,16 @@ static inline void PetscHlsToRgb(double h, double l, double s, double *r, double
   }
 }
 
-static inline void PetscGammaCorrect(double *r, double *g, double *b) {
+static inline void PetscGammaCorrect(double *r, double *g, double *b)
+{
   PetscReal igamma = 1 / Gamma;
   *r               = (double)PetscPowReal((PetscReal)*r, igamma);
   *g               = (double)PetscPowReal((PetscReal)*g, igamma);
   *b               = (double)PetscPowReal((PetscReal)*b, igamma);
 }
 
-static PetscErrorCode PetscDrawCmap_Hue(int mapsize, unsigned char R[], unsigned char G[], unsigned char B[]) {
+static PetscErrorCode PetscDrawCmap_Hue(int mapsize, unsigned char R[], unsigned char G[], unsigned char B[])
+{
   int    i;
   double maxhue = 212.0 / 360, lightness = 0.5, saturation = 1.0;
 
@@ -64,14 +69,16 @@ static PetscErrorCode PetscDrawCmap_Hue(int mapsize, unsigned char R[], unsigned
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscDrawCmap_Gray(int mapsize, unsigned char R[], unsigned char G[], unsigned char B[]) {
+static PetscErrorCode PetscDrawCmap_Gray(int mapsize, unsigned char R[], unsigned char G[], unsigned char B[])
+{
   int i;
   PetscFunctionBegin;
   for (i = 0; i < mapsize; i++) R[i] = G[i] = B[i] = (unsigned char)((255.0 * i) / (mapsize - 1));
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscDrawCmap_Jet(int mapsize, unsigned char R[], unsigned char G[], unsigned char B[]) {
+static PetscErrorCode PetscDrawCmap_Jet(int mapsize, unsigned char R[], unsigned char G[], unsigned char B[])
+{
   int          i;
   const double knots[] = {0, 1 / 8., 3 / 8., 5 / 8., 7 / 8., 1};
 
@@ -116,7 +123,8 @@ static PetscErrorCode PetscDrawCmap_Jet(int mapsize, unsigned char R[], unsigned
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscDrawCmap_Hot(int mapsize, unsigned char R[], unsigned char G[], unsigned char B[]) {
+static PetscErrorCode PetscDrawCmap_Hot(int mapsize, unsigned char R[], unsigned char G[], unsigned char B[])
+{
   int          i;
   const double knots[] = {0, 3 / 8., 3 / 4., 1};
 
@@ -151,7 +159,8 @@ static PetscErrorCode PetscDrawCmap_Hot(int mapsize, unsigned char R[], unsigned
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscDrawCmap_Bone(int mapsize, unsigned char R[], unsigned char G[], unsigned char B[]) {
+static PetscErrorCode PetscDrawCmap_Bone(int mapsize, unsigned char R[], unsigned char G[], unsigned char B[])
+{
   int i;
   PetscFunctionBegin;
   (void)PetscDrawCmap_Hot(mapsize, R, G, B);
@@ -192,7 +201,8 @@ static struct {
   {"magma",    PetscDrawCmap_magma,    NULL              }, /* matplotlib 1.5 */
 };
 
-PetscErrorCode PetscDrawUtilitySetCmap(const char colormap[], int mapsize, unsigned char R[], unsigned char G[], unsigned char B[]) {
+PetscErrorCode PetscDrawUtilitySetCmap(const char colormap[], int mapsize, unsigned char R[], unsigned char G[], unsigned char B[])
+{
   int         i, j;
   const char *cmap_name_list[PETSC_STATIC_ARRAY_LENGTH(PetscDrawCmapTable)];
   PetscInt    id = 0, count = (PetscInt)(sizeof(cmap_name_list) / sizeof(char *));

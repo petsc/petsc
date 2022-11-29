@@ -5,7 +5,8 @@ Input parameters include\n\
 
 #include <petscmat.h>
 
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   Mat         A, B, C, D, BC, ABC;
   PetscViewer fd;
   char        file[3][PETSC_MAX_PATH_LEN];

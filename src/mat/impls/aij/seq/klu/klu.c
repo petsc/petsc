@@ -11,69 +11,69 @@
 #include <../src/mat/impls/aij/seq/aij.h>
 
 #if defined(PETSC_USE_64BIT_INDICES)
-#define klu_K_defaults                        klu_l_defaults
-#define klu_K_analyze(a, b, c, d)             klu_l_analyze((SuiteSparse_long)a, (SuiteSparse_long *)b, (SuiteSparse_long *)c, d)
-#define klu_K_analyze_given(a, b, c, d, e, f) klu_l_analyze_given((SuiteSparse_long)a, (SuiteSparse_long *)b, (SuiteSparse_long *)c, (SuiteSparse_long *)d, (SuiteSparse_long *)e, f)
-#define klu_K_free_symbolic                   klu_l_free_symbolic
-#define klu_K_free_numeric                    klu_l_free_numeric
-#define klu_K_common                          klu_l_common
-#define klu_K_symbolic                        klu_l_symbolic
-#define klu_K_numeric                         klu_l_numeric
-#if defined(PETSC_USE_COMPLEX)
-#define klu_K_factor(a, b, c, d, e) klu_zl_factor((SuiteSparse_long *)a, (SuiteSparse_long *)b, c, d, e);
-#define klu_K_solve                 klu_zl_solve
-#define klu_K_tsolve                klu_zl_tsolve
-#define klu_K_refactor              klu_zl_refactor
-#define klu_K_sort                  klu_zl_sort
-#define klu_K_flops                 klu_zl_flops
-#define klu_K_rgrowth               klu_zl_rgrowth
-#define klu_K_condest               klu_zl_condest
-#define klu_K_rcond                 klu_zl_rcond
-#define klu_K_scale                 klu_zl_scale
+  #define klu_K_defaults                        klu_l_defaults
+  #define klu_K_analyze(a, b, c, d)             klu_l_analyze((SuiteSparse_long)a, (SuiteSparse_long *)b, (SuiteSparse_long *)c, d)
+  #define klu_K_analyze_given(a, b, c, d, e, f) klu_l_analyze_given((SuiteSparse_long)a, (SuiteSparse_long *)b, (SuiteSparse_long *)c, (SuiteSparse_long *)d, (SuiteSparse_long *)e, f)
+  #define klu_K_free_symbolic                   klu_l_free_symbolic
+  #define klu_K_free_numeric                    klu_l_free_numeric
+  #define klu_K_common                          klu_l_common
+  #define klu_K_symbolic                        klu_l_symbolic
+  #define klu_K_numeric                         klu_l_numeric
+  #if defined(PETSC_USE_COMPLEX)
+    #define klu_K_factor(a, b, c, d, e) klu_zl_factor((SuiteSparse_long *)a, (SuiteSparse_long *)b, c, d, e);
+    #define klu_K_solve                 klu_zl_solve
+    #define klu_K_tsolve                klu_zl_tsolve
+    #define klu_K_refactor              klu_zl_refactor
+    #define klu_K_sort                  klu_zl_sort
+    #define klu_K_flops                 klu_zl_flops
+    #define klu_K_rgrowth               klu_zl_rgrowth
+    #define klu_K_condest               klu_zl_condest
+    #define klu_K_rcond                 klu_zl_rcond
+    #define klu_K_scale                 klu_zl_scale
+  #else
+    #define klu_K_factor(a, b, c, d, e) klu_l_factor((SuiteSparse_long *)a, (SuiteSparse_long *)b, c, d, e);
+    #define klu_K_solve                 klu_l_solve
+    #define klu_K_tsolve                klu_l_tsolve
+    #define klu_K_refactor              klu_l_refactor
+    #define klu_K_sort                  klu_l_sort
+    #define klu_K_flops                 klu_l_flops
+    #define klu_K_rgrowth               klu_l_rgrowth
+    #define klu_K_condest               klu_l_condest
+    #define klu_K_rcond                 klu_l_rcond
+    #define klu_K_scale                 klu_l_scale
+  #endif
 #else
-#define klu_K_factor(a, b, c, d, e) klu_l_factor((SuiteSparse_long *)a, (SuiteSparse_long *)b, c, d, e);
-#define klu_K_solve                 klu_l_solve
-#define klu_K_tsolve                klu_l_tsolve
-#define klu_K_refactor              klu_l_refactor
-#define klu_K_sort                  klu_l_sort
-#define klu_K_flops                 klu_l_flops
-#define klu_K_rgrowth               klu_l_rgrowth
-#define klu_K_condest               klu_l_condest
-#define klu_K_rcond                 klu_l_rcond
-#define klu_K_scale                 klu_l_scale
-#endif
-#else
-#define klu_K_defaults      klu_defaults
-#define klu_K_analyze       klu_analyze
-#define klu_K_analyze_given klu_analyze_given
-#define klu_K_free_symbolic klu_free_symbolic
-#define klu_K_free_numeric  klu_free_numeric
-#define klu_K_common        klu_common
-#define klu_K_symbolic      klu_symbolic
-#define klu_K_numeric       klu_numeric
-#if defined(PETSC_USE_COMPLEX)
-#define klu_K_factor   klu_z_factor
-#define klu_K_solve    klu_z_solve
-#define klu_K_tsolve   klu_z_tsolve
-#define klu_K_refactor klu_z_refactor
-#define klu_K_sort     klu_z_sort
-#define klu_K_flops    klu_z_flops
-#define klu_K_rgrowth  klu_z_rgrowth
-#define klu_K_condest  klu_z_condest
-#define klu_K_rcond    klu_z_rcond
-#define klu_K_scale    klu_z_scale
-#else
-#define klu_K_factor   klu_factor
-#define klu_K_solve    klu_solve
-#define klu_K_tsolve   klu_tsolve
-#define klu_K_refactor klu_refactor
-#define klu_K_sort     klu_sort
-#define klu_K_flops    klu_flops
-#define klu_K_rgrowth  klu_rgrowth
-#define klu_K_condest  klu_condest
-#define klu_K_rcond    klu_rcond
-#define klu_K_scale    klu_scale
-#endif
+  #define klu_K_defaults      klu_defaults
+  #define klu_K_analyze       klu_analyze
+  #define klu_K_analyze_given klu_analyze_given
+  #define klu_K_free_symbolic klu_free_symbolic
+  #define klu_K_free_numeric  klu_free_numeric
+  #define klu_K_common        klu_common
+  #define klu_K_symbolic      klu_symbolic
+  #define klu_K_numeric       klu_numeric
+  #if defined(PETSC_USE_COMPLEX)
+    #define klu_K_factor   klu_z_factor
+    #define klu_K_solve    klu_z_solve
+    #define klu_K_tsolve   klu_z_tsolve
+    #define klu_K_refactor klu_z_refactor
+    #define klu_K_sort     klu_z_sort
+    #define klu_K_flops    klu_z_flops
+    #define klu_K_rgrowth  klu_z_rgrowth
+    #define klu_K_condest  klu_z_condest
+    #define klu_K_rcond    klu_z_rcond
+    #define klu_K_scale    klu_z_scale
+  #else
+    #define klu_K_factor   klu_factor
+    #define klu_K_solve    klu_solve
+    #define klu_K_tsolve   klu_tsolve
+    #define klu_K_refactor klu_refactor
+    #define klu_K_sort     klu_sort
+    #define klu_K_flops    klu_flops
+    #define klu_K_rgrowth  klu_rgrowth
+    #define klu_K_condest  klu_condest
+    #define klu_K_rcond    klu_rcond
+    #define klu_K_scale    klu_scale
+  #endif
 #endif
 
 EXTERN_C_BEGIN
@@ -93,7 +93,8 @@ typedef struct {
   PetscBool       CleanUpKLU;
 } Mat_KLU;
 
-static PetscErrorCode MatDestroy_KLU(Mat A) {
+static PetscErrorCode MatDestroy_KLU(Mat A)
+{
   Mat_KLU *lu = (Mat_KLU *)A->data;
 
   PetscFunctionBegin;
@@ -107,7 +108,8 @@ static PetscErrorCode MatDestroy_KLU(Mat A) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatSolveTranspose_KLU(Mat A, Vec b, Vec x) {
+static PetscErrorCode MatSolveTranspose_KLU(Mat A, Vec b, Vec x)
+{
   Mat_KLU     *lu = (Mat_KLU *)A->data;
   PetscScalar *xa;
   PetscInt     status;
@@ -123,7 +125,8 @@ static PetscErrorCode MatSolveTranspose_KLU(Mat A, Vec b, Vec x) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatSolve_KLU(Mat A, Vec b, Vec x) {
+static PetscErrorCode MatSolve_KLU(Mat A, Vec b, Vec x)
+{
   Mat_KLU     *lu = (Mat_KLU *)A->data;
   PetscScalar *xa;
   PetscInt     status;
@@ -144,7 +147,8 @@ static PetscErrorCode MatSolve_KLU(Mat A, Vec b, Vec x) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatLUFactorNumeric_KLU(Mat F, Mat A, const MatFactorInfo *info) {
+static PetscErrorCode MatLUFactorNumeric_KLU(Mat F, Mat A, const MatFactorInfo *info)
+{
   Mat_KLU     *lu = (Mat_KLU *)(F)->data;
   Mat_SeqAIJ  *a  = (Mat_SeqAIJ *)A->data;
   PetscInt    *ai = a->i, *aj = a->j;
@@ -165,7 +169,8 @@ static PetscErrorCode MatLUFactorNumeric_KLU(Mat F, Mat A, const MatFactorInfo *
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatLUFactorSymbolic_KLU(Mat F, Mat A, IS r, IS c, const MatFactorInfo *info) {
+static PetscErrorCode MatLUFactorSymbolic_KLU(Mat F, Mat A, IS r, IS c, const MatFactorInfo *info)
+{
   Mat_SeqAIJ     *a  = (Mat_SeqAIJ *)A->data;
   Mat_KLU        *lu = (Mat_KLU *)(F->data);
   PetscInt        i, *ai = a->i, *aj = a->j, m = A->rmap->n, n = A->cmap->n;
@@ -199,7 +204,8 @@ static PetscErrorCode MatLUFactorSymbolic_KLU(Mat F, Mat A, IS r, IS c, const Ma
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatView_Info_KLU(Mat A, PetscViewer viewer) {
+static PetscErrorCode MatView_Info_KLU(Mat A, PetscViewer viewer)
+{
   Mat_KLU       *lu      = (Mat_KLU *)A->data;
   klu_K_numeric *Numeric = (klu_K_numeric *)lu->Numeric;
 
@@ -219,7 +225,8 @@ static PetscErrorCode MatView_Info_KLU(Mat A, PetscViewer viewer) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatView_KLU(Mat A, PetscViewer viewer) {
+static PetscErrorCode MatView_KLU(Mat A, PetscViewer viewer)
+{
   PetscBool         iascii;
   PetscViewerFormat format;
 
@@ -232,7 +239,8 @@ static PetscErrorCode MatView_KLU(Mat A, PetscViewer viewer) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatFactorGetSolverType_seqaij_klu(Mat A, MatSolverType *type) {
+PetscErrorCode MatFactorGetSolverType_seqaij_klu(Mat A, MatSolverType *type)
+{
   PetscFunctionBegin;
   *type = MATSOLVERKLU;
   PetscFunctionReturn(0);
@@ -261,7 +269,8 @@ PetscErrorCode MatFactorGetSolverType_seqaij_klu(Mat A, MatSolverType *type) {
 .seealso: `PCLU`, `MATSOLVERUMFPACK`, `MATSOLVERCHOLMOD`, `PCFactorSetMatSolverType()`, `MatSolverType`
 M*/
 
-PETSC_INTERN PetscErrorCode MatGetFactor_seqaij_klu(Mat A, MatFactorType ftype, Mat *F) {
+PETSC_INTERN PetscErrorCode MatGetFactor_seqaij_klu(Mat A, MatFactorType ftype, Mat *F)
+{
   Mat       B;
   Mat_KLU  *lu;
   PetscInt  m = A->rmap->n, n = A->cmap->n, idx = 0, status;
@@ -274,7 +283,7 @@ PETSC_INTERN PetscErrorCode MatGetFactor_seqaij_klu(Mat A, MatFactorType ftype, 
   PetscCall(PetscStrallocpy("klu", &((PetscObject)B)->type_name));
   PetscCall(MatSetUp(B));
 
-  PetscCall(PetscNewLog(B, &lu));
+  PetscCall(PetscNew(&lu));
 
   B->data                  = lu;
   B->ops->getinfo          = MatGetInfo_External;

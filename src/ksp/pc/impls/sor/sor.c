@@ -11,7 +11,8 @@ typedef struct {
   PetscReal  fshift;
 } PC_SOR;
 
-static PetscErrorCode PCDestroy_SOR(PC pc) {
+static PetscErrorCode PCDestroy_SOR(PC pc)
+{
   PetscFunctionBegin;
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCSORSetSymmetric_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCSORSetOmega_C", NULL));
@@ -23,7 +24,8 @@ static PetscErrorCode PCDestroy_SOR(PC pc) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCApply_SOR(PC pc, Vec x, Vec y) {
+static PetscErrorCode PCApply_SOR(PC pc, Vec x, Vec y)
+{
   PC_SOR  *jac  = (PC_SOR *)pc->data;
   PetscInt flag = jac->sym | SOR_ZERO_INITIAL_GUESS;
 
@@ -33,7 +35,8 @@ static PetscErrorCode PCApply_SOR(PC pc, Vec x, Vec y) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCApplyTranspose_SOR(PC pc, Vec x, Vec y) {
+static PetscErrorCode PCApplyTranspose_SOR(PC pc, Vec x, Vec y)
+{
   PC_SOR   *jac  = (PC_SOR *)pc->data;
   PetscInt  flag = jac->sym | SOR_ZERO_INITIAL_GUESS;
   PetscBool set, sym;
@@ -46,7 +49,8 @@ static PetscErrorCode PCApplyTranspose_SOR(PC pc, Vec x, Vec y) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCApplyRichardson_SOR(PC pc, Vec b, Vec y, Vec w, PetscReal rtol, PetscReal abstol, PetscReal dtol, PetscInt its, PetscBool guesszero, PetscInt *outits, PCRichardsonConvergedReason *reason) {
+static PetscErrorCode PCApplyRichardson_SOR(PC pc, Vec b, Vec y, Vec w, PetscReal rtol, PetscReal abstol, PetscReal dtol, PetscInt its, PetscBool guesszero, PetscInt *outits, PCRichardsonConvergedReason *reason)
+{
   PC_SOR    *jac   = (PC_SOR *)pc->data;
   MatSORType stype = jac->sym;
 
@@ -60,7 +64,8 @@ static PetscErrorCode PCApplyRichardson_SOR(PC pc, Vec b, Vec y, Vec w, PetscRea
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PCSetFromOptions_SOR(PC pc, PetscOptionItems *PetscOptionsObject) {
+PetscErrorCode PCSetFromOptions_SOR(PC pc, PetscOptionItems *PetscOptionsObject)
+{
   PC_SOR   *jac = (PC_SOR *)pc->data;
   PetscBool flg;
 
@@ -86,7 +91,8 @@ PetscErrorCode PCSetFromOptions_SOR(PC pc, PetscOptionItems *PetscOptionsObject)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PCView_SOR(PC pc, PetscViewer viewer) {
+PetscErrorCode PCView_SOR(PC pc, PetscViewer viewer)
+{
   PC_SOR     *jac = (PC_SOR *)pc->data;
   MatSORType  sym = jac->sym;
   const char *sortype;
@@ -111,8 +117,8 @@ PetscErrorCode PCView_SOR(PC pc, PetscViewer viewer) {
   PetscFunctionReturn(0);
 }
 
-/* ------------------------------------------------------------------------------*/
-static PetscErrorCode PCSORSetSymmetric_SOR(PC pc, MatSORType flag) {
+static PetscErrorCode PCSORSetSymmetric_SOR(PC pc, MatSORType flag)
+{
   PC_SOR *jac = (PC_SOR *)pc->data;
 
   PetscFunctionBegin;
@@ -120,7 +126,8 @@ static PetscErrorCode PCSORSetSymmetric_SOR(PC pc, MatSORType flag) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCSORSetOmega_SOR(PC pc, PetscReal omega) {
+static PetscErrorCode PCSORSetOmega_SOR(PC pc, PetscReal omega)
+{
   PC_SOR *jac = (PC_SOR *)pc->data;
 
   PetscFunctionBegin;
@@ -129,7 +136,8 @@ static PetscErrorCode PCSORSetOmega_SOR(PC pc, PetscReal omega) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCSORSetIterations_SOR(PC pc, PetscInt its, PetscInt lits) {
+static PetscErrorCode PCSORSetIterations_SOR(PC pc, PetscInt its, PetscInt lits)
+{
   PC_SOR *jac = (PC_SOR *)pc->data;
 
   PetscFunctionBegin;
@@ -138,7 +146,8 @@ static PetscErrorCode PCSORSetIterations_SOR(PC pc, PetscInt its, PetscInt lits)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCSORGetSymmetric_SOR(PC pc, MatSORType *flag) {
+static PetscErrorCode PCSORGetSymmetric_SOR(PC pc, MatSORType *flag)
+{
   PC_SOR *jac = (PC_SOR *)pc->data;
 
   PetscFunctionBegin;
@@ -146,7 +155,8 @@ static PetscErrorCode PCSORGetSymmetric_SOR(PC pc, MatSORType *flag) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCSORGetOmega_SOR(PC pc, PetscReal *omega) {
+static PetscErrorCode PCSORGetOmega_SOR(PC pc, PetscReal *omega)
+{
   PC_SOR *jac = (PC_SOR *)pc->data;
 
   PetscFunctionBegin;
@@ -154,7 +164,8 @@ static PetscErrorCode PCSORGetOmega_SOR(PC pc, PetscReal *omega) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCSORGetIterations_SOR(PC pc, PetscInt *its, PetscInt *lits) {
+static PetscErrorCode PCSORGetIterations_SOR(PC pc, PetscInt *its, PetscInt *lits)
+{
   PC_SOR *jac = (PC_SOR *)pc->data;
 
   PetscFunctionBegin;
@@ -163,12 +174,11 @@ static PetscErrorCode PCSORGetIterations_SOR(PC pc, PetscInt *its, PetscInt *lit
   PetscFunctionReturn(0);
 }
 
-/* ------------------------------------------------------------------------------*/
 /*@
    PCSORGetSymmetric - Gets the form the SOR preconditioner is using;   backward, or forward relaxation.  The local variants perform SOR on
    each processor.  By default forward relaxation is used.
 
-   Logically Collective on PC
+   Logically Collective on pc
 
    Input Parameter:
 .  pc - the preconditioner context
@@ -191,16 +201,17 @@ static PetscErrorCode PCSORGetIterations_SOR(PC pc, PetscInt *its, PetscInt *lit
 .  -pc_sor_local_symmetric - Activates local symmetric version
 -  -pc_sor_local_backward - Activates local backward version
 
-   Notes:
-   To use the Eisenstat trick with SSOR, employ the PCEISENSTAT preconditioner,
+   Note:
+   To use the Eisenstat trick with SSOR, employ the `PCEISENSTAT` preconditioner,
    which can be chosen with the option
 .  -pc_type eisenstat - Activates Eisenstat trick
 
    Level: intermediate
 
-.seealso: `PCEisenstatSetOmega()`, `PCSORSetIterations()`, `PCSORSetOmega()`, `PCSORSetSymmetric()`
+.seealso: `PCSOR`, `PCEisenstatSetOmega()`, `PCSORSetIterations()`, `PCSORSetOmega()`, `PCSORSetSymmetric()`
 @*/
-PetscErrorCode PCSORGetSymmetric(PC pc, MatSORType *flag) {
+PetscErrorCode PCSORGetSymmetric(PC pc, MatSORType *flag)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscUseMethod(pc, "PCSORGetSymmetric_C", (PC, MatSORType *), (pc, flag));
@@ -211,7 +222,7 @@ PetscErrorCode PCSORGetSymmetric(PC pc, MatSORType *flag) {
    PCSORGetOmega - Gets the SOR relaxation coefficient, omega
    (where omega = 1.0 by default).
 
-   Logically Collective on PC
+   Logically Collective on pc
 
    Input Parameter:
 .  pc - the preconditioner context
@@ -224,9 +235,10 @@ PetscErrorCode PCSORGetSymmetric(PC pc, MatSORType *flag) {
 
    Level: intermediate
 
-.seealso: `PCSORSetSymmetric()`, `PCSORSetIterations()`, `PCEisenstatSetOmega()`, `PCSORSetOmega()`
+.seealso: `PCSOR`, `PCSORSetSymmetric()`, `PCSORSetIterations()`, `PCEisenstatSetOmega()`, `PCSORSetOmega()`
 @*/
-PetscErrorCode PCSORGetOmega(PC pc, PetscReal *omega) {
+PetscErrorCode PCSORGetOmega(PC pc, PetscReal *omega)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscUseMethod(pc, "PCSORGetOmega_C", (PC, PetscReal *), (pc, omega));
@@ -237,7 +249,7 @@ PetscErrorCode PCSORGetOmega(PC pc, PetscReal *omega) {
    PCSORGetIterations - Gets the number of inner iterations to
    be used by the SOR preconditioner. The default is 1.
 
-   Logically Collective on PC
+   Logically Collective on pc
 
    Input Parameter:
 .  pc - the preconditioner context
@@ -246,18 +258,19 @@ PetscErrorCode PCSORGetOmega(PC pc, PetscReal *omega) {
 +  lits - number of local iterations, smoothings over just variables on processor
 -  its - number of parallel iterations to use; each parallel iteration has lits local iterations
 
-   Options Database Key:
+   Options Database Keys:
 +  -pc_sor_its <its> - Sets number of iterations
 -  -pc_sor_lits <lits> - Sets number of local iterations
 
    Level: intermediate
 
-   Notes:
+   Note:
     When run on one processor the number of smoothings is lits*its
 
-.seealso: `PCSORSetOmega()`, `PCSORSetSymmetric()`, `PCSORSetIterations()`
+.seealso: `PCSOR`, `PCSORSetOmega()`, `PCSORSetSymmetric()`, `PCSORSetIterations()`
 @*/
-PetscErrorCode PCSORGetIterations(PC pc, PetscInt *its, PetscInt *lits) {
+PetscErrorCode PCSORGetIterations(PC pc, PetscInt *its, PetscInt *lits)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscUseMethod(pc, "PCSORGetIterations_C", (PC, PetscInt *, PetscInt *), (pc, its, lits));
@@ -269,7 +282,7 @@ PetscErrorCode PCSORGetIterations(PC pc, PetscInt *its, PetscInt *lits) {
    backward, or forward relaxation.  The local variants perform SOR on
    each processor.  By default forward relaxation is used.
 
-   Logically Collective on PC
+   Logically Collective on pc
 
    Input Parameters:
 +  pc - the preconditioner context
@@ -290,16 +303,17 @@ PetscErrorCode PCSORGetIterations(PC pc, PetscInt *its, PetscInt *lits) {
 .  -pc_sor_local_symmetric - Activates local symmetric version
 -  -pc_sor_local_backward - Activates local backward version
 
-   Notes:
+   Note:
    To use the Eisenstat trick with SSOR, employ the PCEISENSTAT preconditioner,
    which can be chosen with the option
 .  -pc_type eisenstat - Activates Eisenstat trick
 
    Level: intermediate
 
-.seealso: `PCEisenstatSetOmega()`, `PCSORSetIterations()`, `PCSORSetOmega()`
+.seealso: `PCSOR`, `PCEisenstatSetOmega()`, `PCSORSetIterations()`, `PCSORSetOmega()`
 @*/
-PetscErrorCode PCSORSetSymmetric(PC pc, MatSORType flag) {
+PetscErrorCode PCSORSetSymmetric(PC pc, MatSORType flag)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscValidLogicalCollectiveEnum(pc, flag, 2);
@@ -311,7 +325,7 @@ PetscErrorCode PCSORSetSymmetric(PC pc, MatSORType flag) {
    PCSORSetOmega - Sets the SOR relaxation coefficient, omega
    (where omega = 1.0 by default).
 
-   Logically Collective on PC
+   Logically Collective on pc
 
    Input Parameters:
 +  pc - the preconditioner context
@@ -323,11 +337,12 @@ PetscErrorCode PCSORSetSymmetric(PC pc, MatSORType flag) {
    Level: intermediate
 
    Note:
-   If omega != 1, you will need to set the MAT_USE_INODES option to PETSC_FALSE on the matrix.
+   If omega != 1, you will need to set the `MAT_USE_INODE`S option to `PETSC_FALSE` on the matrix.
 
-.seealso: `PCSORSetSymmetric()`, `PCSORSetIterations()`, `PCEisenstatSetOmega()`, `MatSetOption()`
+.seealso: `PCSOR`, `PCSORSetSymmetric()`, `PCSORSetIterations()`, `PCEisenstatSetOmega()`, `MatSetOption()`
 @*/
-PetscErrorCode PCSORSetOmega(PC pc, PetscReal omega) {
+PetscErrorCode PCSORSetOmega(PC pc, PetscReal omega)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscValidLogicalCollectiveReal(pc, omega, 2);
@@ -339,25 +354,26 @@ PetscErrorCode PCSORSetOmega(PC pc, PetscReal omega) {
    PCSORSetIterations - Sets the number of inner iterations to
    be used by the SOR preconditioner. The default is 1.
 
-   Logically Collective on PC
+   Logically Collective on pc
 
    Input Parameters:
 +  pc - the preconditioner context
 .  lits - number of local iterations, smoothings over just variables on processor
 -  its - number of parallel iterations to use; each parallel iteration has lits local iterations
 
-   Options Database Key:
+   Options Database Keys:
 +  -pc_sor_its <its> - Sets number of iterations
 -  -pc_sor_lits <lits> - Sets number of local iterations
 
    Level: intermediate
 
-   Notes:
+   Note:
     When run on one processor the number of smoothings is lits*its
 
-.seealso: `PCSORSetOmega()`, `PCSORSetSymmetric()`
+.seealso: `PCSOR`, `PCSORSetOmega()`, `PCSORSetSymmetric()`
 @*/
-PetscErrorCode PCSORSetIterations(PC pc, PetscInt its, PetscInt lits) {
+PetscErrorCode PCSORSetIterations(PC pc, PetscInt its, PetscInt lits)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscValidLogicalCollectiveInt(pc, its, 2);
@@ -383,34 +399,36 @@ PetscErrorCode PCSORSetIterations(PC pc, PetscInt its, PetscInt lits) {
    Level: beginner
 
    Notes:
-    Only implemented for the AIJ  and SeqBAIJ matrix formats.
-          Not a true parallel SOR, in parallel this implementation corresponds to block
-          Jacobi with SOR on each block.
+   Only implemented for the `MATAIJ`  and `MATSEQBAIJ` matrix formats.
 
-          For AIJ matrix if a diagonal entry is zero (and the diagonal shift is zero) then by default the inverse of that
-          zero will be used and hence the KSPSolve() will terminate with KSP_DIVERGED_NANORIF. If the option
-          KSPSetErrorIfNotConverged() or -ksp_error_if_not_converged the code will terminate as soon as it detects the
+   Not a true parallel SOR, in parallel this implementation corresponds to block
+   Jacobi with SOR on each block.
+
+          For `MATAIJ` matrices if a diagonal entry is zero (and the diagonal shift is zero) then by default the inverse of that
+          zero will be used and hence the `KSPSolve()` will terminate with `KSP_DIVERGED_NANORIF`. If the option
+          `KSPSetErrorIfNotConverged()` or -ksp_error_if_not_converged the code will terminate as soon as it detects the
           zero pivot.
 
-          For SeqBAIJ matrices this implements point-block SOR, but the omega, its, lits options are not supported.
+          For `MATSEQBAIJ` matrices this implements point-block SOR, but the omega, its, lits options are not supported.
 
-          For SeqBAIJ the diagonal blocks are inverted using dense LU with partial pivoting. If a zero pivot is detected
+          For `MATSEQBAIJ` the diagonal blocks are inverted using dense LU with partial pivoting. If a zero pivot is detected
           the computation is stopped with an error
 
-          If used with KSPRICHARDSON and no monitors the convergence test is skipped to improve speed, thus it always iterates
-          the maximum number of iterations you've selected for KSP. It is usually used in this mode as a smoother for multigrid.
+          If used with `KSPRICHARDSON` and no monitors the convergence test is skipped to improve speed, thus it always iterates
+          the maximum number of iterations you've selected for `KSP`. It is usually used in this mode as a smoother for multigrid.
 
-          If omega != 1, you will need to set the MAT_USE_INODES option to PETSC_FALSE on the matrix.
+          If omega != 1, you will need to set the `MAT_USE_INODES` option to `PETSC_FALSE` on the matrix.
 
-.seealso: `PCCreate()`, `PCSetType()`, `PCType`, `PC`,
+.seealso: `PCCreate()`, `PCSetType()`, `PCType`, `PC`, `PCJACOBI`,
           `PCSORSetIterations()`, `PCSORSetSymmetric()`, `PCSORSetOmega()`, `PCEISENSTAT`, `MatSetOption()`
 M*/
 
-PETSC_EXTERN PetscErrorCode PCCreate_SOR(PC pc) {
+PETSC_EXTERN PetscErrorCode PCCreate_SOR(PC pc)
+{
   PC_SOR *jac;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(pc, &jac));
+  PetscCall(PetscNew(&jac));
 
   pc->ops->apply           = PCApply_SOR;
   pc->ops->applytranspose  = PCApplyTranspose_SOR;

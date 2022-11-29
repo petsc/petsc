@@ -52,23 +52,12 @@
 #define iargc_  ipxfargc_
 #define getarg_ pxfgetarg_
 #endif
-#if defined(PETSC_HAVE_FORTRAN_IARGC_UNDERSCORE) /* HPUX + no underscore */
-#undef iargc_
-#undef getarg_
-#define iargc_   iargc_
-#define getarg_  getarg_
-#endif
 
 #if defined(PETSC_HAVE_FORTRAN_GET_COMMAND_ARGUMENT) /* Fortran 2003 */
 #undef iargc_
 #undef getarg_
 #define iargc_ petsccommandargumentcount_
 #define getarg_ petscgetcommandargument_
-#elif defined(PETSC_HAVE__GFORTRAN_IARGC) /* gfortran from gcc4 */
-#undef iargc_
-#undef getarg_
-#define iargc_  _gfortran_iargc
-#define getarg_ _gfortran_getarg_i4
 #elif defined(PETSC_HAVE_BGL_IARGC) /* bgl g77 has different external & internal name mangling */
 #undef iargc_
 #undef getarg_
@@ -110,15 +99,15 @@ PETSC_EXTERN void petscgetcomm_(PetscMPIInt*);
 PETSC_EXTERN int iargc_(void);
 PETSC_EXTERN void getarg_(int*,char*,int);
 #elif defined(PETSC_USE_NARGS)
-PETSC_EXTERN short __stdcall NARGS();
+PETSC_EXTERN short __stdcall NARGS(void);
 PETSC_EXTERN void __stdcall GETARG(short*,char*,int,short *);
 
 #elif defined(PETSC_HAVE_PXFGETARG_NEW)
-PETSC_EXTERN int iargc_();
+PETSC_EXTERN int iargc_(void);
 PETSC_EXTERN void getarg_(int*,char*,int*,int*,int);
 
 #else
-PETSC_EXTERN int iargc_();
+PETSC_EXTERN int iargc_(void);
 PETSC_EXTERN void getarg_(int*,char*,int);
 /*
       The Cray T3D/T3E use the PXFGETARG() function
@@ -178,13 +167,6 @@ PetscErrorCode PETScParseFortranArgs_Private(int *argc,char ***argv)
 #elif defined(PETSC_USE_NARGS)
       GETARG(&i,(*argv)[i],warg,&flg);
 #else
-      /*
-      Because the stupid #defines above define all kinds of things to getarg_ we cannot do this test
-      #elif defined(PETSC_HAVE_GETARG)
-      getarg_(&i,(*argv)[i],warg);
-      #else
-         SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot get Fortran command line arguments");
-      */
       getarg_(&i,(*argv)[i],warg);
 #endif
       /* zero out garbage at end of each argument */
@@ -204,7 +186,7 @@ PetscErrorCode PETScParseFortranArgs_Private(int *argc,char ***argv)
 
 /* -----------------------------------------------------------------------------------------------*/
 
-PETSC_INTERN PetscErrorCode PetscPreMPIInit_Private();
+PETSC_INTERN PetscErrorCode PetscPreMPIInit_Private(void);
 
 PETSC_INTERN PetscErrorCode PetscInitFortran_Private(PetscBool readarguments,const char *filename,PetscInt len)
 {
@@ -292,10 +274,6 @@ PETSC_EXTERN void petscinitializef_(char* filename,char* help,PetscBool *readarg
 
 PETSC_EXTERN void petscfinalize_(PetscErrorCode *ierr)
 {
-#if defined(PETSC_HAVE_SUNMATHPRO)
-  extern void standard_arithmetic();
-  standard_arithmetic();
-#endif
   /* was malloced with PetscMallocAlign() so free the same way */
   *ierr = PetscFreeAlign(PetscGlobalArgs,0,0,0);if (*ierr) {(*PetscErrorPrintf)("PetscFinalize:Freeing args\n");return;}
 
@@ -304,10 +282,5 @@ PETSC_EXTERN void petscfinalize_(PetscErrorCode *ierr)
 
 PETSC_EXTERN void petscend_(PetscErrorCode *ierr)
 {
-#if defined(PETSC_HAVE_SUNMATHPRO)
-  extern void standard_arithmetic();
-  standard_arithmetic();
-#endif
-
   *ierr = PetscEnd();
 }

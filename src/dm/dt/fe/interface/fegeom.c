@@ -1,22 +1,23 @@
 #include <petsc/private/petscfeimpl.h> /*I "petscfe.h" I*/
 
 /*@C
-  PetscFEGeomCreate - Create a PetscFEGeom object to manage geometry for a group of cells
+  PetscFEGeomCreate - Create a `PetscFEGeom` object to manage geometry for a group of cells
 
   Input Parameters:
-+ quad     - A PetscQuadrature determining the tabulation
++ quad     - A `PetscQuadrature` determining the tabulation
 . numCells - The number of cells in the group
 . dimEmbed - The coordinate dimension
 - faceData - Flag to construct geometry data for the faces
 
   Output Parameter:
-. geom     - The PetscFEGeom object
+. geom     - The `PetscFEGeom` object
 
   Level: beginner
 
-.seealso: `PetscFEGeomDestroy()`, `PetscFEGeomComplete()`
+.seealso: `PetscFEGeom`, `PetscQuadrature`, `PetscFEGeom`, `PetscFEGeomDestroy()`, `PetscFEGeomComplete()`
 @*/
-PetscErrorCode PetscFEGeomCreate(PetscQuadrature quad, PetscInt numCells, PetscInt dimEmbed, PetscBool faceData, PetscFEGeom **geom) {
+PetscErrorCode PetscFEGeomCreate(PetscQuadrature quad, PetscInt numCells, PetscInt dimEmbed, PetscBool faceData, PetscFEGeom **geom)
+{
   PetscFEGeom     *g;
   PetscInt         dim, Nq, N;
   const PetscReal *p;
@@ -42,16 +43,17 @@ PetscErrorCode PetscFEGeomCreate(PetscQuadrature quad, PetscInt numCells, PetscI
 }
 
 /*@C
-  PetscFEGeomDestroy - Destroy a PetscFEGeom object
+  PetscFEGeomDestroy - Destroy a `PetscFEGeom` object
 
   Input Parameter:
-. geom - PetscFEGeom object
+. geom - `PetscFEGeom` object
 
   Level: beginner
 
-.seealso: `PetscFEGeomCreate()`
+.seealso: `PetscFEGeom`, `PetscFEGeomCreate()`
 @*/
-PetscErrorCode PetscFEGeomDestroy(PetscFEGeom **geom) {
+PetscErrorCode PetscFEGeomDestroy(PetscFEGeom **geom)
+{
   PetscFunctionBegin;
   if (!*geom) PetscFunctionReturn(0);
   PetscCall(PetscFree3((*geom)->v, (*geom)->J, (*geom)->detJ));
@@ -63,10 +65,10 @@ PetscErrorCode PetscFEGeomDestroy(PetscFEGeom **geom) {
 }
 
 /*@C
-  PetscFEGeomGetChunk - Get a chunk of cells in the group as a PetscFEGeom
+  PetscFEGeomGetChunk - Get a chunk of cells in the group as a `PetscFEGeom`
 
   Input Parameters:
-+ geom   - PetscFEGeom object
++ geom   - `PetscFEGeom` object
 . cStart - The first cell in the chunk
 - cEnd   - The first cell not in the chunk
 
@@ -75,9 +77,13 @@ PetscErrorCode PetscFEGeomDestroy(PetscFEGeom **geom) {
 
   Level: intermediate
 
-.seealso: `PetscFEGeomRestoreChunk()`, `PetscFEGeomCreate()`
+  Note:
+  Use `PetscFEGeomRestoreChunk()` to return the result
+
+.seealso: `PetscFEGeom`, `PetscFEGeomRestoreChunk()`, `PetscFEGeomCreate()`
 @*/
-PetscErrorCode PetscFEGeomGetChunk(PetscFEGeom *geom, PetscInt cStart, PetscInt cEnd, PetscFEGeom **chunkGeom) {
+PetscErrorCode PetscFEGeomGetChunk(PetscFEGeom *geom, PetscInt cStart, PetscInt cEnd, PetscFEGeom **chunkGeom)
+{
   PetscInt Nq;
   PetscInt dE;
 
@@ -109,29 +115,30 @@ PetscErrorCode PetscFEGeomGetChunk(PetscFEGeom *geom, PetscInt cStart, PetscInt 
 }
 
 /*@C
-  PetscFEGeomRestoreChunk - Restore the chunk
+  PetscFEGeomRestoreChunk - Restore the chunk obtained with `PetscFEGeomCreateChunk()`
 
   Input Parameters:
-+ geom      - PetscFEGeom object
++ geom      - `PetscFEGeom` object
 . cStart    - The first cell in the chunk
 . cEnd      - The first cell not in the chunk
 - chunkGeom - The chunk of cells
 
   Level: intermediate
 
-.seealso: `PetscFEGeomGetChunk()`, `PetscFEGeomCreate()`
+.seealso: `PetscFEGeom`, `PetscFEGeomGetChunk()`, `PetscFEGeomCreate()`
 @*/
-PetscErrorCode PetscFEGeomRestoreChunk(PetscFEGeom *geom, PetscInt cStart, PetscInt cEnd, PetscFEGeom **chunkGeom) {
+PetscErrorCode PetscFEGeomRestoreChunk(PetscFEGeom *geom, PetscInt cStart, PetscInt cEnd, PetscFEGeom **chunkGeom)
+{
   PetscFunctionBegin;
   PetscCall(PetscFree(*chunkGeom));
   PetscFunctionReturn(0);
 }
 
 /*@C
-  PetscFEGeomGetPoint - Get the geometry for cell c at point p as a PetscFEGeom
+  PetscFEGeomGetPoint - Get the geometry for cell c at point p as a `PetscFEGeom`
 
   Input Parameters:
-+ geom    - PetscFEGeom object
++ geom    - `PetscFEGeom` object
 . c       - The cell
 . p       - The point
 - pcoords - The reference coordinates of point p, or NULL
@@ -139,16 +146,18 @@ PetscErrorCode PetscFEGeomRestoreChunk(PetscFEGeom *geom, PetscInt cStart, Petsc
   Output Parameter:
 . pgeom - The geometry of cell c at point p
 
-  Note: For affine geometries, this only copies to pgeom at point 0. Since we copy pointers into pgeom,
+  Level: intermediate
+
+  Notes:
+  For affine geometries, this only copies to pgeom at point 0. Since we copy pointers into pgeom,
   nothing needs to be done with it afterwards.
 
   In the affine case, pgeom must have storage for the integration point coordinates in pgeom->v if pcoords is passed in.
 
-  Level: intermediate
-
-.seealso: `PetscFEGeomRestoreChunk()`, `PetscFEGeomCreate()`
+.seealso: `PetscFEGeom`, `PetscFEGeomRestoreChunk()`, `PetscFEGeomCreate()`
 @*/
-PetscErrorCode PetscFEGeomGetPoint(PetscFEGeom *geom, PetscInt c, PetscInt p, const PetscReal pcoords[], PetscFEGeom *pgeom) {
+PetscErrorCode PetscFEGeomGetPoint(PetscFEGeom *geom, PetscInt c, PetscInt p, const PetscReal pcoords[], PetscFEGeom *pgeom)
+{
   const PetscInt dim = geom->dim;
   const PetscInt dE  = geom->dimEmbed;
   const PetscInt Np  = geom->numPoints;
@@ -177,24 +186,26 @@ PetscErrorCode PetscFEGeomGetPoint(PetscFEGeom *geom, PetscInt c, PetscInt p, co
 }
 
 /*@C
-  PetscFEGeomGetCellPoint - Get the cell geometry for face f at point p as a PetscFEGeom
+  PetscFEGeomGetCellPoint - Get the cell geometry for face f at point p as a `PetscFEGeom`
 
   Input Parameters:
-+ geom    - PetscFEGeom object
++ geom    - `PetscFEGeom` object
 . f       - The face
 - p       - The point
 
   Output Parameter:
 . pgeom - The cell geometry of face f at point p
 
-  Note: For affine geometries, this only copies to pgeom at point 0. Since we copy pointers into pgeom,
-  nothing needs to be done with it afterwards.
-
   Level: intermediate
 
-.seealso: `PetscFEGeomRestoreChunk()`, `PetscFEGeomCreate()`
+  Note:
+  For affine geometries, this only copies to pgeom at point 0. Since we copy pointers into pgeom,
+  nothing needs to be done with it afterwards.
+
+.seealso: `PetscFEGeom()`, `PetscFEGeomRestoreChunk()`, `PetscFEGeomCreate()`
 @*/
-PetscErrorCode PetscFEGeomGetCellPoint(PetscFEGeom *geom, PetscInt c, PetscInt p, PetscFEGeom *pgeom) {
+PetscErrorCode PetscFEGeomGetCellPoint(PetscFEGeom *geom, PetscInt c, PetscInt p, PetscFEGeom *pgeom)
+{
   const PetscBool bd  = geom->dimEmbed > geom->dim && !geom->isCohesive ? PETSC_TRUE : PETSC_FALSE;
   const PetscInt  dim = bd ? geom->dimEmbed : geom->dim;
   const PetscInt  dE  = geom->dimEmbed;
@@ -231,16 +242,17 @@ PetscErrorCode PetscFEGeomGetCellPoint(PetscFEGeom *geom, PetscInt c, PetscInt p
 }
 
 /*@
-  PetscFEGeomComplete - Calculate derived quntites from base geometry specification
+  PetscFEGeomComplete - Calculate derived quantities from base geometry specification
 
   Input Parameter:
-. geom - PetscFEGeom object
+. geom - `PetscFEGeom` object
 
   Level: intermediate
 
-.seealso: `PetscFEGeomCreate()`
+.seealso: `PetscFEGeom`, `PetscFEGeomCreate()`
 @*/
-PetscErrorCode PetscFEGeomComplete(PetscFEGeom *geom) {
+PetscErrorCode PetscFEGeomComplete(PetscFEGeom *geom)
+{
   PetscInt i, j, N, dE;
 
   PetscFunctionBeginHot;

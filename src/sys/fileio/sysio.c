@@ -8,13 +8,13 @@
 #include <errno.h>
 #include <fcntl.h>
 #if defined(PETSC_HAVE_UNISTD_H)
-#include <unistd.h>
+  #include <unistd.h>
 #endif
 #if defined(PETSC_HAVE_IO_H)
-#include <io.h>
+  #include <io.h>
 #endif
 #if !defined(PETSC_HAVE_O_BINARY)
-#define O_BINARY 0
+  #define O_BINARY 0
 #endif
 
 const char *const PetscFileModes[] = {"READ", "WRITE", "APPEND", "UPDATE", "APPEND_UPDATE", "PetscFileMode", "PETSC_FILE_", NULL};
@@ -24,7 +24,8 @@ const char *const PetscFileModes[] = {"READ", "WRITE", "APPEND", "UPDATE", "APPE
   PetscByteSwapEnum - Swap bytes in a  PETSc Enum
 
 */
-PetscErrorCode PetscByteSwapEnum(PetscEnum *buff, PetscInt n) {
+PetscErrorCode PetscByteSwapEnum(PetscEnum *buff, PetscInt n)
+{
   PetscInt  i, j;
   PetscEnum tmp = ENUM_DUMMY;
   char     *ptr1, *ptr2 = (char *)&tmp;
@@ -42,7 +43,8 @@ PetscErrorCode PetscByteSwapEnum(PetscEnum *buff, PetscInt n) {
   PetscByteSwapBool - Swap bytes in a  PETSc Bool
 
 */
-PetscErrorCode PetscByteSwapBool(PetscBool *buff, PetscInt n) {
+PetscErrorCode PetscByteSwapBool(PetscBool *buff, PetscInt n)
+{
   PetscInt  i, j;
   PetscBool tmp = PETSC_FALSE;
   char     *ptr1, *ptr2 = (char *)&tmp;
@@ -60,7 +62,8 @@ PetscErrorCode PetscByteSwapBool(PetscBool *buff, PetscInt n) {
   PetscByteSwapInt - Swap bytes in a  PETSc integer (which may be 32 or 64 bits)
 
 */
-PetscErrorCode PetscByteSwapInt(PetscInt *buff, PetscInt n) {
+PetscErrorCode PetscByteSwapInt(PetscInt *buff, PetscInt n)
+{
   PetscInt i, j, tmp = 0;
   char    *ptr1, *ptr2 = (char *)&tmp;
 
@@ -77,7 +80,8 @@ PetscErrorCode PetscByteSwapInt(PetscInt *buff, PetscInt n) {
   PetscByteSwapInt64 - Swap bytes in a  PETSc integer (64 bits)
 
 */
-PetscErrorCode PetscByteSwapInt64(PetscInt64 *buff, PetscInt n) {
+PetscErrorCode PetscByteSwapInt64(PetscInt64 *buff, PetscInt n)
+{
   PetscInt   i, j;
   PetscInt64 tmp = 0;
   char      *ptr1, *ptr2 = (char *)&tmp;
@@ -95,7 +99,8 @@ PetscErrorCode PetscByteSwapInt64(PetscInt64 *buff, PetscInt n) {
 /*
   PetscByteSwapShort - Swap bytes in a short
 */
-PetscErrorCode PetscByteSwapShort(short *buff, PetscInt n) {
+PetscErrorCode PetscByteSwapShort(short *buff, PetscInt n)
+{
   PetscInt i, j;
   short    tmp;
   char    *ptr1, *ptr2 = (char *)&tmp;
@@ -111,7 +116,8 @@ PetscErrorCode PetscByteSwapShort(short *buff, PetscInt n) {
 /*
   PetscByteSwapLong - Swap bytes in a long
 */
-PetscErrorCode PetscByteSwapLong(long *buff, PetscInt n) {
+PetscErrorCode PetscByteSwapLong(long *buff, PetscInt n)
+{
   PetscInt i, j;
   long     tmp;
   char    *ptr1, *ptr2 = (char *)&tmp;
@@ -128,7 +134,8 @@ PetscErrorCode PetscByteSwapLong(long *buff, PetscInt n) {
 /*
   PetscByteSwapReal - Swap bytes in a PetscReal
 */
-PetscErrorCode PetscByteSwapReal(PetscReal *buff, PetscInt n) {
+PetscErrorCode PetscByteSwapReal(PetscReal *buff, PetscInt n)
+{
   PetscInt  i, j;
   PetscReal tmp, *buff1 = (PetscReal *)buff;
   char     *ptr1, *ptr2 = (char *)&tmp;
@@ -146,7 +153,8 @@ PetscErrorCode PetscByteSwapReal(PetscReal *buff, PetscInt n) {
   PetscByteSwapScalar - Swap bytes in a PetscScalar
   The complex case is dealt with with an array of PetscReal, twice as long.
 */
-PetscErrorCode PetscByteSwapScalar(PetscScalar *buff, PetscInt n) {
+PetscErrorCode PetscByteSwapScalar(PetscScalar *buff, PetscInt n)
+{
   PetscInt  i, j;
   PetscReal tmp, *buff1 = (PetscReal *)buff;
   char     *ptr1, *ptr2 = (char *)&tmp;
@@ -166,7 +174,8 @@ PetscErrorCode PetscByteSwapScalar(PetscScalar *buff, PetscInt n) {
 /*
   PetscByteSwapDouble - Swap bytes in a double
 */
-PetscErrorCode PetscByteSwapDouble(double *buff, PetscInt n) {
+PetscErrorCode PetscByteSwapDouble(double *buff, PetscInt n)
+{
   PetscInt i, j;
   double   tmp, *buff1 = (double *)buff;
   char    *ptr1, *ptr2 = (char *)&tmp;
@@ -183,7 +192,8 @@ PetscErrorCode PetscByteSwapDouble(double *buff, PetscInt n) {
 /*
   PetscByteSwapFloat - Swap bytes in a float
 */
-PetscErrorCode PetscByteSwapFloat(float *buff, PetscInt n) {
+PetscErrorCode PetscByteSwapFloat(float *buff, PetscInt n)
+{
   PetscInt i, j;
   float    tmp, *buff1 = (float *)buff;
   char    *ptr1, *ptr2 = (char *)&tmp;
@@ -197,7 +207,8 @@ PetscErrorCode PetscByteSwapFloat(float *buff, PetscInt n) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscByteSwap(void *data, PetscDataType pdtype, PetscInt count) {
+PetscErrorCode PetscByteSwap(void *data, PetscDataType pdtype, PetscInt count)
+{
   PetscFunctionBegin;
   if (pdtype == PETSC_INT) PetscCall(PetscByteSwapInt((PetscInt *)data, count));
   else if (pdtype == PETSC_ENUM) PetscCall(PetscByteSwapEnum((PetscEnum *)data, count));
@@ -243,7 +254,8 @@ PetscErrorCode PetscByteSwap(void *data, PetscDataType pdtype, PetscInt count) {
 .seealso: `PetscBinaryWrite()`, `PetscBinaryOpen()`, `PetscBinaryClose()`, `PetscViewerBinaryGetDescriptor()`, `PetscBinarySynchronizedWrite()`,
           `PetscBinarySynchronizedRead()`, `PetscBinarySynchronizedSeek()`
 @*/
-PetscErrorCode PetscBinaryRead(int fd, void *data, PetscInt num, PetscInt *count, PetscDataType type) {
+PetscErrorCode PetscBinaryRead(int fd, void *data, PetscInt num, PetscInt *count, PetscDataType type)
+{
   size_t typesize, m = (size_t)num, n = 0, maxblock = 65536;
   char  *p = (char *)data;
 #if defined(PETSC_USE_REAL___FLOAT128)
@@ -358,7 +370,8 @@ PetscErrorCode PetscBinaryRead(int fd, void *data, PetscInt num, PetscInt *count
 .seealso: `PetscBinaryRead()`, `PetscBinaryOpen()`, `PetscBinaryClose()`, `PetscViewerBinaryGetDescriptor()`, `PetscBinarySynchronizedWrite()`,
           `PetscBinarySynchronizedRead()`, `PetscBinarySynchronizedSeek()`
 @*/
-PetscErrorCode PetscBinaryWrite(int fd, const void *p, PetscInt n, PetscDataType type) {
+PetscErrorCode PetscBinaryWrite(int fd, const void *p, PetscInt n, PetscDataType type)
+{
   const char *pp = (char *)p;
   int         err, wsize;
   size_t      m = (size_t)n, maxblock = 65536;
@@ -467,13 +480,21 @@ PetscErrorCode PetscBinaryWrite(int fd, const void *p, PetscInt n, PetscDataType
 .seealso: `PetscBinaryRead()`, `PetscBinaryWrite()`, `PetscFileMode`, `PetscViewerFileSetMode()`, `PetscViewerBinaryGetDescriptor()`,
           `PetscBinarySynchronizedWrite()`, `PetscBinarySynchronizedRead()`, `PetscBinarySynchronizedSeek()`
 @*/
-PetscErrorCode PetscBinaryOpen(const char name[], PetscFileMode mode, int *fd) {
+PetscErrorCode PetscBinaryOpen(const char name[], PetscFileMode mode, int *fd)
+{
   PetscFunctionBegin;
   switch (mode) {
-  case FILE_MODE_READ: *fd = open(name, O_BINARY | O_RDONLY, 0); break;
-  case FILE_MODE_WRITE: *fd = open(name, O_BINARY | O_WRONLY | O_CREAT | O_TRUNC, 0666); break;
-  case FILE_MODE_APPEND: *fd = open(name, O_BINARY | O_WRONLY | O_APPEND, 0); break;
-  default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Unsupported file mode %s", PetscFileModes[mode]);
+  case FILE_MODE_READ:
+    *fd = open(name, O_BINARY | O_RDONLY, 0);
+    break;
+  case FILE_MODE_WRITE:
+    *fd = open(name, O_BINARY | O_WRONLY | O_CREAT | O_TRUNC, 0666);
+    break;
+  case FILE_MODE_APPEND:
+    *fd = open(name, O_BINARY | O_WRONLY | O_APPEND, 0);
+    break;
+  default:
+    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Unsupported file mode %s", PetscFileModes[mode]);
   }
   PetscCheck(*fd != -1, PETSC_COMM_SELF, PETSC_ERR_FILE_OPEN, "Cannot open file %s for %s", name, PetscFileModes[mode]);
   PetscFunctionReturn(0);
@@ -492,7 +513,8 @@ PetscErrorCode PetscBinaryOpen(const char name[], PetscFileMode mode, int *fd) {
 .seealso: `PetscBinaryRead()`, `PetscBinaryWrite()`, `PetscBinaryOpen()`, `PetscBinarySynchronizedWrite()`, `PetscBinarySynchronizedRead()`,
           `PetscBinarySynchronizedSeek()`
 @*/
-PetscErrorCode PetscBinaryClose(int fd) {
+PetscErrorCode PetscBinaryClose(int fd)
+{
   PetscFunctionBegin;
   PetscCheck(!close(fd), PETSC_COMM_SELF, PETSC_ERR_SYS, "close() failed on file descriptor");
   PetscFunctionReturn(0);
@@ -525,7 +547,8 @@ PetscErrorCode PetscBinaryClose(int fd) {
 .seealso: `PetscBinaryRead()`, `PetscBinaryWrite()`, `PetscBinaryOpen()`, `PetscBinarySynchronizedWrite()`, `PetscBinarySynchronizedRead()`,
           `PetscBinarySynchronizedSeek()`
 @*/
-PetscErrorCode PetscBinarySeek(int fd, off_t off, PetscBinarySeekType whence, off_t *offset) {
+PetscErrorCode PetscBinarySeek(int fd, off_t off, PetscBinarySeekType whence, off_t *offset)
+{
   int iwhence = 0;
 
   PetscFunctionBegin;
@@ -574,7 +597,8 @@ PetscErrorCode PetscBinarySeek(int fd, off_t off, PetscBinarySeekType whence, of
 .seealso: `PetscBinaryWrite()`, `PetscBinaryOpen()`, `PetscBinaryClose()`, `PetscBinaryRead()`, `PetscBinarySynchronizedWrite()`,
           `PetscBinarySynchronizedSeek()`
 @*/
-PetscErrorCode PetscBinarySynchronizedRead(MPI_Comm comm, int fd, void *data, PetscInt num, PetscInt *count, PetscDataType type) {
+PetscErrorCode PetscBinarySynchronizedRead(MPI_Comm comm, int fd, void *data, PetscInt num, PetscInt *count, PetscDataType type)
+{
   PetscMPIInt  rank, size;
   MPI_Datatype mtype;
   PetscInt     ibuf[2] = {0, 0};
@@ -646,7 +670,8 @@ PetscErrorCode PetscBinarySynchronizedRead(MPI_Comm comm, int fd, void *data, Pe
 .seealso: `PetscBinaryWrite()`, `PetscBinaryOpen()`, `PetscBinaryClose()`, `PetscBinaryRead()`, `PetscBinarySynchronizedRead()`,
           `PetscBinarySynchronizedSeek()`
 @*/
-PetscErrorCode PetscBinarySynchronizedWrite(MPI_Comm comm, int fd, const void *p, PetscInt n, PetscDataType type) {
+PetscErrorCode PetscBinarySynchronizedWrite(MPI_Comm comm, int fd, const void *p, PetscInt n, PetscDataType type)
+{
   PetscMPIInt rank;
 
   PetscFunctionBegin;
@@ -680,7 +705,8 @@ PetscErrorCode PetscBinarySynchronizedWrite(MPI_Comm comm, int fd, const void *p
 .seealso: `PetscBinaryRead()`, `PetscBinaryWrite()`, `PetscBinaryOpen()`, `PetscBinarySynchronizedWrite()`, `PetscBinarySynchronizedRead()`,
           `PetscBinarySynchronizedSeek()`
 @*/
-PetscErrorCode PetscBinarySynchronizedSeek(MPI_Comm comm, int fd, off_t off, PetscBinarySeekType whence, off_t *offset) {
+PetscErrorCode PetscBinarySynchronizedSeek(MPI_Comm comm, int fd, off_t off, PetscBinarySeekType whence, off_t *offset)
+{
   PetscMPIInt rank;
 
   PetscFunctionBegin;
@@ -691,7 +717,7 @@ PetscErrorCode PetscBinarySynchronizedSeek(MPI_Comm comm, int fd, off_t off, Pet
 
 #if defined(PETSC_HAVE_MPIIO)
 
-#if defined(PETSC_USE_PETSC_MPI_EXTERNAL32)
+  #if defined(PETSC_USE_PETSC_MPI_EXTERNAL32)
 /*
       MPICH does not provide the external32 representation for MPI_File_set_view() so we need to provide the functions.
     These are set into MPI in PetscInitialize() via MPI_Register_datarep()
@@ -701,7 +727,8 @@ PetscErrorCode PetscBinarySynchronizedSeek(MPI_Comm comm, int fd, off_t off, Pet
     The next three routines are not used because MPICH does not support their use
 
 */
-PETSC_EXTERN PetscMPIInt PetscDataRep_extent_fn(MPI_Datatype datatype, MPI_Aint *file_extent, void *extra_state) {
+PETSC_EXTERN PetscMPIInt PetscDataRep_extent_fn(MPI_Datatype datatype, MPI_Aint *file_extent, void *extra_state)
+{
   MPI_Aint    ub;
   PetscMPIInt ierr;
 
@@ -709,7 +736,8 @@ PETSC_EXTERN PetscMPIInt PetscDataRep_extent_fn(MPI_Datatype datatype, MPI_Aint 
   return ierr;
 }
 
-PETSC_EXTERN PetscMPIInt PetscDataRep_read_conv_fn(void *userbuf, MPI_Datatype datatype, PetscMPIInt count, void *filebuf, MPI_Offset position, void *extra_state) {
+PETSC_EXTERN PetscMPIInt PetscDataRep_read_conv_fn(void *userbuf, MPI_Datatype datatype, PetscMPIInt count, void *filebuf, MPI_Offset position, void *extra_state)
+{
   PetscDataType pdtype;
   PetscMPIInt   ierr;
   size_t        dsize;
@@ -725,7 +753,8 @@ PETSC_EXTERN PetscMPIInt PetscDataRep_read_conv_fn(void *userbuf, MPI_Datatype d
   return ierr;
 }
 
-PetscMPIInt PetscDataRep_write_conv_fn(void *userbuf, MPI_Datatype datatype, PetscMPIInt count, void *filebuf, MPI_Offset position, void *extra_state) {
+PetscMPIInt PetscDataRep_write_conv_fn(void *userbuf, MPI_Datatype datatype, PetscMPIInt count, void *filebuf, MPI_Offset position, void *extra_state)
+{
   PetscDataType pdtype;
   PetscMPIInt   ierr;
   size_t        dsize;
@@ -740,9 +769,10 @@ PetscMPIInt PetscDataRep_write_conv_fn(void *userbuf, MPI_Datatype datatype, Pet
   if (!PetscBinaryBigEndian()) PetscCall(PetscByteSwap(filebuf, pdtype, count));
   return ierr;
 }
-#endif
+  #endif
 
-PetscErrorCode MPIU_File_write_all(MPI_File fd, void *data, PetscMPIInt cnt, MPI_Datatype dtype, MPI_Status *status) {
+PetscErrorCode MPIU_File_write_all(MPI_File fd, void *data, PetscMPIInt cnt, MPI_Datatype dtype, MPI_Status *status)
+{
   PetscDataType pdtype;
 
   PetscFunctionBegin;
@@ -753,7 +783,8 @@ PetscErrorCode MPIU_File_write_all(MPI_File fd, void *data, PetscMPIInt cnt, MPI
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MPIU_File_read_all(MPI_File fd, void *data, PetscMPIInt cnt, MPI_Datatype dtype, MPI_Status *status) {
+PetscErrorCode MPIU_File_read_all(MPI_File fd, void *data, PetscMPIInt cnt, MPI_Datatype dtype, MPI_Status *status)
+{
   PetscDataType pdtype;
 
   PetscFunctionBegin;
@@ -763,7 +794,8 @@ PetscErrorCode MPIU_File_read_all(MPI_File fd, void *data, PetscMPIInt cnt, MPI_
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MPIU_File_write_at(MPI_File fd, MPI_Offset off, void *data, PetscMPIInt cnt, MPI_Datatype dtype, MPI_Status *status) {
+PetscErrorCode MPIU_File_write_at(MPI_File fd, MPI_Offset off, void *data, PetscMPIInt cnt, MPI_Datatype dtype, MPI_Status *status)
+{
   PetscDataType pdtype;
 
   PetscFunctionBegin;
@@ -774,7 +806,8 @@ PetscErrorCode MPIU_File_write_at(MPI_File fd, MPI_Offset off, void *data, Petsc
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MPIU_File_read_at(MPI_File fd, MPI_Offset off, void *data, PetscMPIInt cnt, MPI_Datatype dtype, MPI_Status *status) {
+PetscErrorCode MPIU_File_read_at(MPI_File fd, MPI_Offset off, void *data, PetscMPIInt cnt, MPI_Datatype dtype, MPI_Status *status)
+{
   PetscDataType pdtype;
 
   PetscFunctionBegin;
@@ -784,7 +817,8 @@ PetscErrorCode MPIU_File_read_at(MPI_File fd, MPI_Offset off, void *data, PetscM
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MPIU_File_write_at_all(MPI_File fd, MPI_Offset off, void *data, PetscMPIInt cnt, MPI_Datatype dtype, MPI_Status *status) {
+PetscErrorCode MPIU_File_write_at_all(MPI_File fd, MPI_Offset off, void *data, PetscMPIInt cnt, MPI_Datatype dtype, MPI_Status *status)
+{
   PetscDataType pdtype;
 
   PetscFunctionBegin;
@@ -795,7 +829,8 @@ PetscErrorCode MPIU_File_write_at_all(MPI_File fd, MPI_Offset off, void *data, P
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MPIU_File_read_at_all(MPI_File fd, MPI_Offset off, void *data, PetscMPIInt cnt, MPI_Datatype dtype, MPI_Status *status) {
+PetscErrorCode MPIU_File_read_at_all(MPI_File fd, MPI_Offset off, void *data, PetscMPIInt cnt, MPI_Datatype dtype, MPI_Status *status)
+{
   PetscDataType pdtype;
 
   PetscFunctionBegin;

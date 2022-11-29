@@ -6,7 +6,8 @@ typedef struct {
   PetscBool uninterpolate; /* Uninterpolate the mesh at the end */
 } AppCtx;
 
-PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options) {
+PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
+{
   PetscFunctionBegin;
   options->uninterpolate = PETSC_FALSE;
 
@@ -16,7 +17,8 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm) {
+PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
+{
   PetscFunctionBegin;
   PetscCall(DMCreate(comm, dm));
   PetscCall(DMSetType(*dm, DMPLEX));
@@ -34,7 +36,8 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm) {
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   DM     dm;
   AppCtx user;
 

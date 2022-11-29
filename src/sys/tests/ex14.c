@@ -3,7 +3,8 @@ static char help[] = "Tests PetscOptionsGetScalar(), PetscOptionsScalarArray() f
 
 #include <petscsys.h>
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscInt    n, i;
   PetscScalar a, array[10];
   PetscReal   rarray[10];

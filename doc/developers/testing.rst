@@ -331,31 +331,43 @@ Examples of argument searching:
    $ ptmake print-test query='args' queryval='pc_type ml'
 
 
-Multiple simultaneous queries can be performed with union (``,``), and intesection (``|``)  operators in the ``query`` field.  Examples:
+Multiple simultaneous queries can be performed with union (``,``), and intersection
+(``|``) operators in the ``query`` field. One may also use their alternate spellings
+(``%AND%`` and ``%OR%`` respectively). The alternate spellings are useful in cases where
+one cannot avoid (possibly multiple) shell expansions that might otherwise interpret the
+``|`` operator as a shell pipe.  Examples:
 
 -  All examples using ``cuda`` and all examples using ``hip``:
 
    .. code-block:: console
 
       $ ptmake print-test query='requires,requires' queryval='cuda,hip'
+      # equivalently
+      $ ptmake print-test query='requires%AND%requires' queryval='cuda%AND%hip'
 
 -  Examples that require both triangle and ctetgen (intersection of tests)
 
    .. code-block:: console
 
       $ ptmake print-test query='requires|requires' queryval='ctetgen,triangle'
+      # equivalently
+      $ ptmake print-test query='requires%OR%requires' queryval='ctetgen%AND%triangle'
 
 -  Tests that require either ``ctetgen`` or ``triangle``
 
    .. code-block:: console
 
       $ ptmake print-test query='requires,requires' queryval='ctetgen,triangle'
+      # equivalently
+      $ ptmake print-test query='requires%AND%requires' queryval='ctetgen%AND%triangle'
 
 -  Find ``cuda`` examples in the ``dm`` package.
 
    .. code-block:: console
 
       $ ptmake print-test query='requires|name' queryval='cuda,dm*'
+      # equivalently
+      $ ptmake print-test query='requires%OR%name' queryval='cuda%AND%dm*'
 
 
 Here is a way of getting a feel for how the union and intersect operators work:
@@ -379,6 +391,8 @@ The union and intersection have fixed grouping.  So this string argument
 .. code-block:: none
 
     query='requires,requires|args' queryval='cuda,hip,*log*'
+    # equivalently
+    query='requires%AND%requires%OR%args' queryval='cuda%AND%hip%AND%*log*'
 
 will can be read as
 
@@ -389,13 +403,15 @@ will can be read as
 which is probably not what is intended.
 
 
-``query/queryval`` also support negation (``!``), but is limited.
-The negation only applies to tests that have a related field in it.  So for
-example, the arguments of
+``query/queryval`` also support negation (``!``, alternate ```%NEG%``), but is limited.
+The negation only applies to tests that have a related field in it. So for example, the
+arguments of
 
-.. code-block:: none
+.. code-block:: console
 
   query=requires queryval='!cuda'
+  # equivalently
+  query=requires queryval='%NEG%cuda'
 
 will only match if they explicitly have::
 
@@ -572,9 +588,10 @@ With this background, these keywords are as follows.
    -  The value of this is the command to be run, for example,
       ``grep foo`` or ``sort -nr``.
 
-   -  If the filter begins with ``Error:``, then the test is assumed to
-      be testing the ``stderr`` output, and the error code and output
-      are set up to be tested.
+   -  **NOTE: this method of testing error output is NOT recommended. See section on**
+      :ref:`testing errors <sec_testing_error_testing>` **instead.** If the filter begins
+      with ``Error:``, then the test is assumed to be testing the ``stderr`` output, and the
+      error code and output are set up to be tested.
 
 -  **filter_output**: (*Optional*; *Default:* ``""``)
 
@@ -631,6 +648,71 @@ With this background, these keywords are as follows.
       the ``TIMEOUT`` argument to ``gmakefile`` (see
       ``ptmake help``.
 
+-  **env**: (*Optional*; *Default:* ``env=""``)
+
+   -  Allows you to set environment variables for the test. Values are copied verbatim to
+      the runscript and defined and exported prior to all other variables.
+
+   -  Variables defined within ``env:`` blocks are expanded and processed by the shell that
+      runs the runscript. No prior preprocessing (other than splitting the lines into
+      separate declarations) is done. This means that any escaping of special characters
+      must be done in the text of the ``TEST`` block.
+
+   -  Defining the ``env:`` keyword more than once is allowed. Subsequent declarations are
+      then appended to prior list of declarations . Multiple environment variables may also
+      be defined in the same ``env:`` block, i.e. given a test ``ex1.c`` with the following
+      spec:
+
+      .. code-block:: yaml
+
+         test:
+           env: FOO=1 BAR=1
+           # equivalently
+           env: FOO=1
+           env: BAR=1
+
+      results in
+
+      .. code-block:: console
+
+         $ export FOO=1; export BAR=1; ./ex1
+
+   -  Variables defined in an ``env:`` block are evaluated by the runscript in the order in
+      which they are defined in the ``TEST`` block. Thus it is possible for later variables
+      to refer to previously defined ones:
+
+      .. code-block:: yaml
+
+         test:
+           env: FOO='hello' BAR=${FOO}
+           # equivalently
+           env: FOO='hello'
+           env: BAR=${FOO}
+
+      results in
+
+      .. code-block:: console
+
+         $ export FOO='hello'; export BAR=${FOO}; ./ex1
+         # expanded by shell to
+         $ export FOO='hello'; export BAR='hello'; ./ex1
+
+      Note this also implies that
+
+      .. code-block:: yaml
+
+         test:
+           env: FOO=1 FOO=0
+           # equivalently
+           env: FOO=1
+           env: FOO=0
+
+      results in
+
+      .. code-block:: console
+
+         $ export FOO=1; export FOO=0; ./ex1
+
 Additional Specifications
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -659,6 +741,49 @@ supported.
    Note that ``{{...}shared output}`` is equivalent to ``{{...}}``.
 
    See examples below for how it works in practice.
+
+.. _sec_testing_error_testing:
+
+Testing Errors And Exceptional Code
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+It is possible (and encouraged!) to test error conditions within the test harness. Since
+error messages produced by ``SETERRQ()`` and friends are not portable between systems,
+additional arguments must be passed to tests to modify error handling, specifically:
+
+.. code-block:: yaml
+
+   args: -petsc_ci_portable_error_output -error_output_stdout
+
+These arguments have the following effect:
+
+-  ``-petsc_ci_portable_error_output``: Strips system or configuration-specific information
+   from error messages. Specifically this:
+
+   -  Removes all path components except the file name from the traceback
+   -  Removes line and column numbers from the traceback
+   -  Removes PETSc version information
+   -  Removes ``configure`` options used
+   -  Removes system name
+   -  Removes hostname
+   -  Removes date
+
+   With this option error messages will be identical across systems, runs, and PETSc
+   configurations (barring of course configurations in which the error is not raised).
+
+   Furthermore, this option also changes the default behavior of the error handler to
+   **gracefully** exit where possible. For single-ranked runs this means returning with
+   exit-code ``0`` and calling ``MPI_Finalize()`` instead of ``MPI_Abort()``. Multi-rank
+   tests will call ``MPI_Abort()`` on errors raised on ``PETSC_COMM_SELF``, but will call
+   ``MPI_Finalize()`` otherwise.
+
+-  ``-error_output_stdout``: Forces ``SETERRQ()`` and friends to dump error messages to
+   ``stdout`` instead of ``stderr``. While using ``stderr`` (alongside the ``Error:``
+   sub-directive under ``filter:``) also works it appears to be unstable under heavy
+   load, especially in CI.
+
+Using both options in tandem allows one to use the normal ``output:`` mechanism to compare
+expected and actual error outputs.
 
 Test Block Examples
 ~~~~~~~~~~~~~~~~~~~

@@ -9,7 +9,8 @@
 static PetscErrorCode MatIncreaseOverlap_MPISBAIJ_Once(Mat, PetscInt, IS *);
 static PetscErrorCode MatIncreaseOverlap_MPISBAIJ_Local(Mat, PetscInt *, PetscInt, PetscInt *, PetscBT *);
 
-PetscErrorCode MatIncreaseOverlap_MPISBAIJ(Mat C, PetscInt is_max, IS is[], PetscInt ov) {
+PetscErrorCode MatIncreaseOverlap_MPISBAIJ(Mat C, PetscInt is_max, IS is[], PetscInt ov)
+{
   PetscInt        i, N = C->cmap->N, bs = C->rmap->bs, M = C->rmap->N, Mbs = M / bs, *nidx, isz, iov;
   IS             *is_new, *is_row;
   Mat            *submats;
@@ -143,7 +144,8 @@ typedef enum {
        data[is_max + 1 + Mbs*i) = data(is[i])
         ...
 */
-static PetscErrorCode MatIncreaseOverlap_MPISBAIJ_Once(Mat C, PetscInt is_max, IS is[]) {
+static PetscErrorCode MatIncreaseOverlap_MPISBAIJ_Once(Mat C, PetscInt is_max, IS is[])
+{
   Mat_MPISBAIJ   *c = (Mat_MPISBAIJ *)C->data;
   PetscMPIInt     size, rank, tag1, tag2, *len_s, nrqr, nrqs, *id_r1, *len_r1, flag, len, *iwork;
   const PetscInt *idx_i;
@@ -451,7 +453,8 @@ static PetscErrorCode MatIncreaseOverlap_MPISBAIJ_Once(Mat C, PetscInt is_max, I
        table - table[i]: mark the indices of is[i], i=0,...,is_max. Used only in the case 'whose=MINE'.
 */
 /* Would computation be reduced by swapping the loop 'for each is' and 'for each row'? */
-static PetscErrorCode MatIncreaseOverlap_MPISBAIJ_Local(Mat C, PetscInt *data, PetscInt whose, PetscInt *nidx, PetscBT *table) {
+static PetscErrorCode MatIncreaseOverlap_MPISBAIJ_Local(Mat C, PetscInt *data, PetscInt whose, PetscInt *nidx, PetscBT *table)
+{
   Mat_MPISBAIJ *c = (Mat_MPISBAIJ *)C->data;
   Mat_SeqSBAIJ *a = (Mat_SeqSBAIJ *)(c->A)->data;
   Mat_SeqBAIJ  *b = (Mat_SeqBAIJ *)(c->B)->data;

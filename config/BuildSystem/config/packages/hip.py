@@ -1,3 +1,6 @@
+# Portions of this code are under:
+# Copyright (c) 2022 Advanced Micro Devices, Inc. All rights reserved.
+
 import config.package
 import os
 
@@ -12,8 +15,8 @@ class Configure(config.package.Package):
     self.functionsCxx     = [1,'', 'rocblas_create']
     self.includes         = ['hip/hip_runtime.h']
     # PETSc does not use hipsparse or hipblas, but dependencies can (e.g., magma)
-    self.liblist          = [['libhipsparse.a','libhipblas.a','librocsparse.a','librocsolver.a','librocblas.a','librocrand.a','libamdhip64.a'],
-                             ['hipsparse.lib','hipblas.lib','rocsparse.lib','rocsolver.lib','rocblas.lib','rocrand.lib','amdhip64.lib'],]
+    self.liblist          = [['libhipsparse.a','libhipblas.a','libhipsolver.a','librocsparse.a','librocsolver.a','librocblas.a','librocrand.a','libamdhip64.a'],
+                             ['hipsparse.lib','hipblas.lib','hipsolver.lib','rocsparse.lib','rocsolver.lib','rocblas.lib','rocrand.lib','amdhip64.lib'],]
     self.precisions       = ['single','double']
     self.buildLanguages   = ['HIP']
     self.devicePackage    = 1
@@ -146,7 +149,7 @@ class Configure(config.package.Package):
       else:
         raise RuntimeError('You must set --with-hip-arch=gfx900, gfx906, gfx908, gfx90a etc or make ROCM utility "rocminfo" available on your PATH')
 
-      # Record rocBlas and rocSparse directories as they are needed by Kokkos-Kernels HIP TPL, so that we can hanle
+      # Record rocBlas and rocSparse directories as they are needed by Kokkos-Kernels HIP TPL, so that we can handle
       # a weird (but valid) case --with-hipcc=/opt/rocm-4.5.2/hip/bin/hipcc --with-hip-dir=/opt/rocm-4.5.2 (which
       # should be better written as --with-hipcc=/opt/rocm-4.5.2/bin/hipcc --with-hip-dir=/opt/rocm-4.5.2 or simply
       # --with-hip-dir=/opt/rocm-4.5.2)

@@ -9,16 +9,17 @@ typedef struct {
   PetscInt    beta;
   PetscReal   tf, tcl;
   /* Solver context */
-  TS          ts, quadts;
-  Vec         U;    /* solution will be stored here */
-  Mat         Jac;  /* Jacobian matrix */
-  Mat         Jacp; /* Jacobianp matrix */
-  Mat         DRDU, DRDP;
-  SAMethod    sa;
+  TS       ts, quadts;
+  Vec      U;    /* solution will be stored here */
+  Mat      Jac;  /* Jacobian matrix */
+  Mat      Jacp; /* Jacobianp matrix */
+  Mat      DRDU, DRDP;
+  SAMethod sa;
 } AppCtx;
 
 /* Event check */
-PetscErrorCode EventFunction(TS ts, PetscReal t, Vec X, PetscScalar *fvalue, void *ctx) {
+PetscErrorCode EventFunction(TS ts, PetscReal t, Vec X, PetscScalar *fvalue, void *ctx)
+{
   AppCtx *user = (AppCtx *)ctx;
 
   PetscFunctionBegin;
@@ -30,7 +31,8 @@ PetscErrorCode EventFunction(TS ts, PetscReal t, Vec X, PetscScalar *fvalue, voi
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PostEventFunction(TS ts, PetscInt nevents, PetscInt event_list[], PetscReal t, Vec X, PetscBool forwardsolve, void *ctx) {
+PetscErrorCode PostEventFunction(TS ts, PetscInt nevents, PetscInt event_list[], PetscReal t, Vec X, PetscBool forwardsolve, void *ctx)
+{
   AppCtx *user = (AppCtx *)ctx;
 
   PetscFunctionBegin;
@@ -48,7 +50,8 @@ PetscErrorCode PostEventFunction(TS ts, PetscInt nevents, PetscInt event_list[],
 /*
      Defines the ODE passed to the ODE solver
 */
-PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec U, Vec F, AppCtx *ctx) {
+PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec U, Vec F, AppCtx *ctx)
+{
   PetscScalar       *f, Pmax;
   const PetscScalar *u;
 
@@ -68,7 +71,8 @@ PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec U, Vec F, AppCtx *ctx) {
 /*
      Defines the Jacobian of the ODE passed to the ODE solver. See TSSetRHSJacobian() for the meaning of a and the Jacobian.
 */
-PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec U, Mat A, Mat B, AppCtx *ctx) {
+PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec U, Mat A, Mat B, AppCtx *ctx)
+{
   PetscInt           rowcol[] = {0, 1};
   PetscScalar        J[2][2], Pmax;
   const PetscScalar *u;
@@ -95,7 +99,8 @@ PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec U, Mat A, Mat B, AppCtx *ctx)
 /*
      Defines the ODE passed to the ODE solver
 */
-PetscErrorCode IFunction(TS ts, PetscReal t, Vec U, Vec Udot, Vec F, AppCtx *ctx) {
+PetscErrorCode IFunction(TS ts, PetscReal t, Vec U, Vec Udot, Vec F, AppCtx *ctx)
+{
   PetscScalar       *f, Pmax;
   const PetscScalar *u, *udot;
 
@@ -117,7 +122,8 @@ PetscErrorCode IFunction(TS ts, PetscReal t, Vec U, Vec Udot, Vec F, AppCtx *ctx
 /*
      Defines the Jacobian of the ODE passed to the ODE solver. See TSSetIJacobian() for the meaning of a and the Jacobian.
 */
-PetscErrorCode IJacobian(TS ts, PetscReal t, Vec U, Vec Udot, PetscReal a, Mat A, Mat B, AppCtx *ctx) {
+PetscErrorCode IJacobian(TS ts, PetscReal t, Vec U, Vec Udot, PetscReal a, Mat A, Mat B, AppCtx *ctx)
+{
   PetscInt           rowcol[] = {0, 1};
   PetscScalar        J[2][2], Pmax;
   const PetscScalar *u, *udot;
@@ -144,7 +150,8 @@ PetscErrorCode IJacobian(TS ts, PetscReal t, Vec U, Vec Udot, PetscReal a, Mat A
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode RHSJacobianP(TS ts, PetscReal t, Vec X, Mat A, void *ctx0) {
+PetscErrorCode RHSJacobianP(TS ts, PetscReal t, Vec X, Mat A, void *ctx0)
+{
   PetscInt     row[] = {0, 1}, col[] = {0};
   PetscScalar *x, J[2][1];
   AppCtx      *ctx = (AppCtx *)ctx0;
@@ -160,7 +167,8 @@ PetscErrorCode RHSJacobianP(TS ts, PetscReal t, Vec X, Mat A, void *ctx0) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode CostIntegrand(TS ts, PetscReal t, Vec U, Vec R, AppCtx *ctx) {
+PetscErrorCode CostIntegrand(TS ts, PetscReal t, Vec U, Vec R, AppCtx *ctx)
+{
   PetscScalar       *r;
   const PetscScalar *u;
 
@@ -174,7 +182,8 @@ PetscErrorCode CostIntegrand(TS ts, PetscReal t, Vec U, Vec R, AppCtx *ctx) {
 }
 
 /* Transpose of DRDU */
-PetscErrorCode DRDUJacobianTranspose(TS ts, PetscReal t, Vec U, Mat DRDU, Mat B, AppCtx *ctx) {
+PetscErrorCode DRDUJacobianTranspose(TS ts, PetscReal t, Vec U, Mat DRDU, Mat B, AppCtx *ctx)
+{
   PetscScalar        ru[2];
   PetscInt           row[] = {0, 1}, col[] = {0};
   const PetscScalar *u;
@@ -190,7 +199,8 @@ PetscErrorCode DRDUJacobianTranspose(TS ts, PetscReal t, Vec U, Mat DRDU, Mat B,
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DRDPJacobianTranspose(TS ts, PetscReal t, Vec U, Mat DRDP, void *ctx) {
+PetscErrorCode DRDPJacobianTranspose(TS ts, PetscReal t, Vec U, Mat DRDP, void *ctx)
+{
   PetscFunctionBegin;
   PetscCall(MatZeroEntries(DRDP));
   PetscCall(MatAssemblyBegin(DRDP, MAT_FINAL_ASSEMBLY));
@@ -198,7 +208,8 @@ PetscErrorCode DRDPJacobianTranspose(TS ts, PetscReal t, Vec U, Mat DRDP, void *
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode ComputeSensiP(Vec lambda, Vec mu, AppCtx *ctx) {
+PetscErrorCode ComputeSensiP(Vec lambda, Vec mu, AppCtx *ctx)
+{
   PetscScalar       *y, sensip;
   const PetscScalar *x;
 

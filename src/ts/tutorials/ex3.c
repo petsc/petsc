@@ -77,7 +77,8 @@ extern PetscErrorCode IJacobianHeat(TS, PetscReal, Vec, Vec, PetscReal, Mat, Mat
 extern PetscErrorCode Monitor(TS, PetscInt, PetscReal, Vec, void *);
 extern PetscErrorCode ExactSolution(PetscReal, Vec, AppCtx *);
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   AppCtx      appctx;                 /* user-defined application context */
   TS          ts;                     /* timestepping context */
   Mat         A;                      /* matrix data structure */
@@ -283,7 +284,8 @@ int main(int argc, char **argv) {
    Output Parameter:
    u - vector with solution at initial time (global)
 */
-PetscErrorCode InitialConditions(Vec u, AppCtx *appctx) {
+PetscErrorCode InitialConditions(Vec u, AppCtx *appctx)
+{
   PetscScalar *u_localptr, h = appctx->h;
   PetscInt     i;
 
@@ -332,7 +334,8 @@ PetscErrorCode InitialConditions(Vec u, AppCtx *appctx) {
    Output Parameter:
    solution - vector with the newly computed exact solution
 */
-PetscErrorCode ExactSolution(PetscReal t, Vec solution, AppCtx *appctx) {
+PetscErrorCode ExactSolution(PetscReal t, Vec solution, AppCtx *appctx)
+{
   PetscScalar *s_localptr, h = appctx->h, ex1, ex2, sc1, sc2, tc = t;
   PetscInt     i;
 
@@ -376,7 +379,8 @@ PetscErrorCode ExactSolution(PetscReal t, Vec solution, AppCtx *appctx) {
             information about the problem size, workspace and the exact
             solution.
 */
-PetscErrorCode Monitor(TS ts, PetscInt step, PetscReal time, Vec u, void *ctx) {
+PetscErrorCode Monitor(TS ts, PetscInt step, PetscReal time, Vec u, void *ctx)
+{
   AppCtx   *appctx = (AppCtx *)ctx; /* user-defined application context */
   PetscReal norm_2, norm_max, dt, dttol;
 
@@ -456,7 +460,8 @@ PetscErrorCode Monitor(TS ts, PetscInt step, PetscReal time, Vec u, void *ctx) {
    Recall that MatSetValues() uses 0-based row and column numbers
    in Fortran as well as in C.
 */
-PetscErrorCode RHSMatrixHeat(TS ts, PetscReal t, Vec X, Mat AA, Mat BB, void *ctx) {
+PetscErrorCode RHSMatrixHeat(TS ts, PetscReal t, Vec X, Mat AA, Mat BB, void *ctx)
+{
   Mat         A      = AA;            /* Jacobian matrix */
   AppCtx     *appctx = (AppCtx *)ctx; /* user-defined application context */
   PetscInt    mstart = 0;
@@ -515,7 +520,8 @@ PetscErrorCode RHSMatrixHeat(TS ts, PetscReal t, Vec X, Mat AA, Mat BB, void *ct
   return 0;
 }
 
-PetscErrorCode IFunctionHeat(TS ts, PetscReal t, Vec X, Vec Xdot, Vec r, void *ctx) {
+PetscErrorCode IFunctionHeat(TS ts, PetscReal t, Vec X, Vec Xdot, Vec r, void *ctx)
+{
   AppCtx *appctx = (AppCtx *)ctx; /* user-defined application context */
 
   PetscCall(MatMult(appctx->A, X, r));
@@ -523,7 +529,8 @@ PetscErrorCode IFunctionHeat(TS ts, PetscReal t, Vec X, Vec Xdot, Vec r, void *c
   return 0;
 }
 
-PetscErrorCode IJacobianHeat(TS ts, PetscReal t, Vec X, Vec Xdot, PetscReal s, Mat A, Mat B, void *ctx) {
+PetscErrorCode IJacobianHeat(TS ts, PetscReal t, Vec X, Vec Xdot, PetscReal s, Mat A, Mat B, void *ctx)
+{
   AppCtx *appctx = (AppCtx *)ctx; /* user-defined application context */
 
   if (appctx->oshift == s) return 0;

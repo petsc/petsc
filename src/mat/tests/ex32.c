@@ -3,7 +3,8 @@ static char help[] = "Tests MATSEQDENSECUDA\n\n";
 
 #include <petscmat.h>
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   Mat       A, AC, B;
   PetscInt  m = 10, n = 10;
   PetscReal r, tol    = 10 * PETSC_SMALL;

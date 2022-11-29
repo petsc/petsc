@@ -13,6 +13,88 @@ LineWidth = -1
 RemoveDirectory = os.path.join(os.getcwd(),'')
 backupRemoveDirectory = ''
 
+__global_divider_length = 93
+
+def get_global_divider_length():
+  """
+  Get the divider length for each banner in the form
+
+  ==============================... (or ********************...)
+     FOO BAR
+  ==============================...
+  """
+  return __global_divider_length
+
+def set_global_divider_length(new_len):
+  """
+  Set the divider length for each banner in the form
+
+  ==============================... (or ********************...)
+     FOO BAR
+  ==============================...
+  """
+  global __global_divider_length
+  old_len = __global_divider_length
+  __global_divider_length = new_len
+  return old_len
+
+def build_multiline_message(sup_title, text, divider_char = None, length = None, prefix = None, **kwargs):
+  def center_line(line):
+    return line.center(length).rstrip()
+
+  if length is None:
+    length = get_global_divider_length()
+  if prefix is None:
+    prefix = ' '*2
+
+  kwargs.setdefault('break_on_hyphens',False)
+  kwargs.setdefault('break_long_words',False)
+  kwargs.setdefault('width',length-2)
+  kwargs.setdefault('initial_indent',prefix)
+  kwargs.setdefault('subsequent_indent',prefix)
+
+  wrapped = [
+    line for para in text.splitlines() for line in textwrap.wrap(textwrap.dedent(para),**kwargs)
+  ]
+  if len(wrapped) == 1:
+    # center-justify single lines, and remove the bogus prefix
+    wrapped[0] = center_line(wrapped[0].lstrip())
+  if divider_char:
+    # add the divider if we are making a message like
+    #
+    # =====================
+    #   BIG SCARY TITLE
+    # --------------------- <- divider_char is '-'
+    #   foo bar
+    divider_char = str(divider_char)
+    assert len(divider_char) == 1
+    wrapped.insert(0, divider_char * length)
+  if sup_title:
+    # add the super title if we are making a message like
+    #
+    # =====================
+    #   BIG SCARY TITLE     <- sup_title is 'BIG SCARY TITLE'
+    # ---------------------
+    #   foo bar
+    # add the banner
+    wrapped.insert(0, center_line(str(sup_title)))
+  return '\n'.join(wrapped)
+
+def build_multiline_error_message(sup_title, text, **kwargs):
+  kwargs.setdefault('divider_char', '-')
+  kwargs.setdefault('length', get_global_divider_length())
+
+  if not text.endswith('\n'):
+    text += '\n'
+
+  banner_line = kwargs['length']*'*'
+  return '\n'.join([
+    banner_line,
+    build_multiline_message(sup_title, text, **kwargs),
+    banner_line,
+    '' # to add an additional newline at the end
+  ])
+
 class Logger(args.ArgumentProcessor):
   '''This class creates a shared log and provides methods for writing to it'''
   defaultLog = None
@@ -26,7 +108,6 @@ class Logger(args.ArgumentProcessor):
     self.debugLevel    = debugLevel
     self.debugSections = debugSections
     self.debugIndent   = debugIndent
-    self.dividerLength = 93
     self.getRoot()
     return
 
@@ -247,7 +328,7 @@ class Logger(args.ArgumentProcessor):
 
   def logPrintDivider(self, single = False, length = None, **kwargs):
     if length is None:
-      length = self.dividerLength
+      length = get_global_divider_length()
     kwargs.setdefault('rmDir',False)
     kwargs.setdefault('indent',False)
     kwargs.setdefault('forceScroll',False)
@@ -261,35 +342,9 @@ class Logger(args.ArgumentProcessor):
     return self.logPrintBox(msg,title='***** {} *****'.format(title),**kwargs)
 
   def logPrintBox(self, msg, debugLevel = -1, debugSection = 'screen', indent = 1, comm = None, rmDir = 1, prefix = None, title = None):
-    def center_wrap(banner,text,length = None,**kwargs):
-      def center_line(line):
-        return line.center(length).rstrip()
-
-      if length is None:
-        length = self.dividerLength
-      kwargs.setdefault('break_on_hyphens',False)
-      kwargs.setdefault('break_long_words',False)
-      kwargs.setdefault('width',length-2)
-      kwargs.setdefault('initial_indent',prefix)
-      kwargs.setdefault('subsequent_indent',prefix)
-      wrapped = [
-        line for para in text.splitlines() for line in textwrap.wrap(textwrap.dedent(para),**kwargs)
-      ]
-      if len(wrapped) == 1:
-        # center-justify single lines, and remove the bogus prefix
-        wrapped[0] = center_line(wrapped[0].lstrip())
-      if banner:
-        # add the banner
-        wrapped.insert(0,center_line(banner))
-      return '\n'.join(wrapped)
-
-
-    if prefix is None:
-      prefix = ' '*2
-
     if rmDir:
-      rmDir = center_wrap(title,self.logStripDirectory(msg))
-    msg = center_wrap(title,msg)
+      rmDir = build_multiline_message(title, self.logStripDirectory(msg), prefix=prefix)
+    msg = build_multiline_message(title, msg, prefix=prefix)
     self.logClear()
     self.logPrintDivider(debugLevel = debugLevel, debugSection = debugSection)
     self.logPrint(msg, debugLevel = debugLevel, debugSection = debugSection, rmDir = rmDir, forceNewLine = True, forceScroll = True, indent = 0)

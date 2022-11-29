@@ -9,7 +9,8 @@
   code, rather then through the PETSc interface.
 
 */
-PetscErrorCode MatDumpSPAI(Mat A, FILE *file) {
+PetscErrorCode MatDumpSPAI(Mat A, FILE *file)
+{
   const PetscScalar *vals;
   int                i, j, n, size, nz;
   const int         *cols;
@@ -30,7 +31,8 @@ PetscErrorCode MatDumpSPAI(Mat A, FILE *file) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode VecDumpSPAI(Vec b, FILE *file) {
+PetscErrorCode VecDumpSPAI(Vec b, FILE *file)
+{
   int          n, i;
   PetscScalar *array;
 

@@ -2,7 +2,8 @@ static const char help[] = "Tests MatCreateSubMatrix with MatSubMatrix versus Ma
 
 #include <petscmat.h>
 
-static PetscErrorCode AssembleMatrix(MPI_Comm comm, Mat *A) {
+static PetscErrorCode AssembleMatrix(MPI_Comm comm, Mat *A)
+{
   Mat      B;
   PetscInt i, ms, me;
 
@@ -20,7 +21,8 @@ static PetscErrorCode AssembleMatrix(MPI_Comm comm, Mat *A) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode Compare2(Vec *X, const char *test) {
+static PetscErrorCode Compare2(Vec *X, const char *test)
+{
   PetscReal norm;
   Vec       Y;
   PetscInt  verbose = 0;
@@ -46,7 +48,8 @@ static PetscErrorCode Compare2(Vec *X, const char *test) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode CheckMatrices(Mat A, Mat B, Vec left, Vec right, Vec X, Vec Y, Vec X1, Vec Y1) {
+static PetscErrorCode CheckMatrices(Mat A, Mat B, Vec left, Vec right, Vec X, Vec Y, Vec X1, Vec Y1)
+{
   Vec *ltmp, *rtmp;
 
   PetscFunctionBegin;
@@ -90,7 +93,8 @@ static PetscErrorCode CheckMatrices(Mat A, Mat B, Vec left, Vec right, Vec X, Ve
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[])
+{
   Mat       A, B, Asub, Bsub;
   PetscInt  ms, idxrow[3], idxcol[4];
   Vec       left, right, X, Y, X1, Y1;

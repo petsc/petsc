@@ -6,7 +6,7 @@
 #include <petscsf.h>
 
 /* Logging support */
-PetscClassId  IS_CLASSID;
+PetscClassId IS_CLASSID;
 /* TODO: Much more events are missing! */
 PetscLogEvent IS_View;
 PetscLogEvent IS_Load;
@@ -30,7 +30,8 @@ PetscLogEvent IS_Load;
 
 .seealso:
 @*/
-PetscErrorCode ISRenumber(IS subset, IS subset_mult, PetscInt *N, IS *subset_n) {
+PetscErrorCode ISRenumber(IS subset, IS subset_mult, PetscInt *N, IS *subset_n)
+{
   PetscSF         sf;
   PetscLayout     map;
   const PetscInt *idxs, *idxs_mult = NULL;
@@ -227,7 +228,8 @@ PetscErrorCode ISRenumber(IS subset, IS subset_mult, PetscInt *N, IS *subset_n) 
 
 .seealso: `VecGetSubVector()`, `MatCreateSubMatrix()`
 @*/
-PetscErrorCode ISCreateSubIS(IS is, IS comps, IS *subis) {
+PetscErrorCode ISCreateSubIS(IS is, IS comps, IS *subis)
+{
   PetscSF         sf;
   const PetscInt *is_indices, *comps_indices;
   PetscInt       *subis_indices, nroots, nleaves, *mine, i, lidx;
@@ -255,8 +257,8 @@ PetscErrorCode ISCreateSubIS(IS is, IS comps, IS *subis) {
     /* Connect a remote root with the current leaf. The value on the remote root
      * will be received by the current local leaf.
      * */
-    owner   = -1;
-    lidx    = -1;
+    owner = -1;
+    lidx  = -1;
     PetscCall(PetscLayoutFindOwnerIndex(is->map, comps_indices[i], &owner, &lidx));
     remote[i].rank  = owner;
     remote[i].index = lidx;
@@ -293,7 +295,8 @@ PetscErrorCode ISCreateSubIS(IS is, IS comps, IS *subis) {
 .seealso: `ISInfo`, `ISInfoType`, `ISSetInfo()`, `ISClearInfoCache()`
 
 @*/
-PetscErrorCode ISClearInfoCache(IS is, PetscBool clear_permanent_local) {
+PetscErrorCode ISClearInfoCache(IS is, PetscBool clear_permanent_local)
+{
   PetscInt i, j;
 
   PetscFunctionBegin;
@@ -308,7 +311,8 @@ PetscErrorCode ISClearInfoCache(IS is, PetscBool clear_permanent_local) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode ISSetInfo_Internal(IS is, ISInfo info, ISInfoType type, ISInfoBool ipermanent, PetscBool flg) {
+static PetscErrorCode ISSetInfo_Internal(IS is, ISInfo info, ISInfoType type, ISInfoBool ipermanent, PetscBool flg)
+{
   ISInfoBool iflg          = flg ? IS_INFO_TRUE : IS_INFO_FALSE;
   PetscInt   itype         = (type == IS_LOCAL) ? 0 : 1;
   PetscBool  permanent_set = (ipermanent == IS_INFO_UNKNOWN) ? PETSC_FALSE : PETSC_TRUE;
@@ -402,7 +406,9 @@ static PetscErrorCode ISSetInfo_Internal(IS is, ISInfo info, ISInfoType type, IS
       }
     }
     break;
-  default: PetscCheck(type != IS_LOCAL, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Unknown IS property"); SETERRQ(PetscObjectComm((PetscObject)is), PETSC_ERR_ARG_OUTOFRANGE, "Unknown IS property");
+  default:
+    PetscCheck(type != IS_LOCAL, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Unknown IS property");
+    SETERRQ(PetscObjectComm((PetscObject)is), PETSC_ERR_ARG_OUTOFRANGE, "Unknown IS property");
   }
   PetscFunctionReturn(0);
 }
@@ -438,7 +444,8 @@ static PetscErrorCode ISSetInfo_Internal(IS is, ISInfo info, ISInfoType type, IS
 .seealso: `ISInfo`, `ISInfoType`, `IS`
 
 @*/
-PetscErrorCode ISSetInfo(IS is, ISInfo info, ISInfoType type, PetscBool permanent, PetscBool flg) {
+PetscErrorCode ISSetInfo(IS is, ISInfo info, ISInfoType type, PetscBool permanent, PetscBool flg)
+{
   MPI_Comm    comm, errcomm;
   PetscMPIInt size;
 
@@ -464,7 +471,8 @@ PetscErrorCode ISSetInfo(IS is, ISInfo info, ISInfoType type, PetscBool permanen
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode ISGetInfo_Sorted(IS is, ISInfoType type, PetscBool *flg) {
+static PetscErrorCode ISGetInfo_Sorted(IS is, ISInfoType type, PetscBool *flg)
+{
   MPI_Comm    comm;
   PetscMPIInt size, rank;
 
@@ -516,7 +524,8 @@ static PetscErrorCode ISGetInfo_Sorted(IS is, ISInfoType type, PetscBool *flg) {
 
 PetscErrorCode ISGetIndicesCopy(IS is, PetscInt idx[]);
 
-static PetscErrorCode ISGetInfo_Unique(IS is, ISInfoType type, PetscBool *flg) {
+static PetscErrorCode ISGetInfo_Unique(IS is, ISInfoType type, PetscBool *flg)
+{
   MPI_Comm    comm;
   PetscMPIInt size, rank;
   PetscInt    i;
@@ -582,7 +591,8 @@ static PetscErrorCode ISGetInfo_Unique(IS is, ISInfoType type, PetscBool *flg) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode ISGetInfo_Permutation(IS is, ISInfoType type, PetscBool *flg) {
+static PetscErrorCode ISGetInfo_Permutation(IS is, ISInfoType type, PetscBool *flg)
+{
   MPI_Comm    comm;
   PetscMPIInt size, rank;
 
@@ -624,7 +634,8 @@ static PetscErrorCode ISGetInfo_Permutation(IS is, ISInfoType type, PetscBool *f
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode ISGetInfo_Interval(IS is, ISInfoType type, PetscBool *flg) {
+static PetscErrorCode ISGetInfo_Interval(IS is, ISInfoType type, PetscBool *flg)
+{
   MPI_Comm    comm;
   PetscMPIInt size, rank;
   PetscInt    i;
@@ -677,7 +688,8 @@ static PetscErrorCode ISGetInfo_Interval(IS is, ISInfoType type, PetscBool *flg)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode ISGetInfo_Identity(IS is, ISInfoType type, PetscBool *flg) {
+static PetscErrorCode ISGetInfo_Identity(IS is, ISInfoType type, PetscBool *flg)
+{
   MPI_Comm    comm;
   PetscMPIInt size, rank;
 
@@ -752,7 +764,8 @@ static PetscErrorCode ISGetInfo_Identity(IS is, ISInfoType type, PetscBool *flg)
 .seealso: `ISInfo`, `ISInfoType`, `ISSetInfo()`, `ISClearInfoCache()`
 
 @*/
-PetscErrorCode ISGetInfo(IS is, ISInfo info, ISInfoType type, PetscBool compute, PetscBool *flg) {
+PetscErrorCode ISGetInfo(IS is, ISInfo info, ISInfoType type, PetscBool compute, PetscBool *flg)
+{
   MPI_Comm    comm, errcomm;
   PetscMPIInt rank, size;
   PetscInt    itype;
@@ -789,12 +802,23 @@ PetscErrorCode ISGetInfo(IS is, ISInfo info, ISInfoType type, PetscBool compute,
     infer   = PETSC_TRUE;
   } else if (compute) {
     switch (info) {
-    case IS_SORTED: PetscCall(ISGetInfo_Sorted(is, type, &hasprop)); break;
-    case IS_UNIQUE: PetscCall(ISGetInfo_Unique(is, type, &hasprop)); break;
-    case IS_PERMUTATION: PetscCall(ISGetInfo_Permutation(is, type, &hasprop)); break;
-    case IS_INTERVAL: PetscCall(ISGetInfo_Interval(is, type, &hasprop)); break;
-    case IS_IDENTITY: PetscCall(ISGetInfo_Identity(is, type, &hasprop)); break;
-    default: SETERRQ(errcomm, PETSC_ERR_ARG_OUTOFRANGE, "Unknown IS property");
+    case IS_SORTED:
+      PetscCall(ISGetInfo_Sorted(is, type, &hasprop));
+      break;
+    case IS_UNIQUE:
+      PetscCall(ISGetInfo_Unique(is, type, &hasprop));
+      break;
+    case IS_PERMUTATION:
+      PetscCall(ISGetInfo_Permutation(is, type, &hasprop));
+      break;
+    case IS_INTERVAL:
+      PetscCall(ISGetInfo_Interval(is, type, &hasprop));
+      break;
+    case IS_IDENTITY:
+      PetscCall(ISGetInfo_Identity(is, type, &hasprop));
+      break;
+    default:
+      SETERRQ(errcomm, PETSC_ERR_ARG_OUTOFRANGE, "Unknown IS property");
     }
     infer = PETSC_TRUE;
   }
@@ -804,7 +828,8 @@ PetscErrorCode ISGetInfo(IS is, ISInfo info, ISInfoType type, PetscBool compute,
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode ISCopyInfo(IS source, IS dest) {
+static PetscErrorCode ISCopyInfo(IS source, IS dest)
+{
   PetscFunctionBegin;
   PetscCall(PetscArraycpy(&dest->info[0], &source->info[0], 2));
   PetscCall(PetscArraycpy(&dest->info_permanent[0], &source->info_permanent[0], 2));
@@ -832,7 +857,8 @@ static PetscErrorCode ISCopyInfo(IS source, IS dest) {
 
 .seealso: `ISSetIdentity()`, `ISGetInfo()`
 @*/
-PetscErrorCode ISIdentity(IS is, PetscBool *ident) {
+PetscErrorCode ISIdentity(IS is, PetscBool *ident)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is, IS_CLASSID, 1);
   PetscValidBoolPointer(ident, 2);
@@ -856,7 +882,8 @@ PetscErrorCode ISIdentity(IS is, PetscBool *ident) {
 
 .seealso: `ISIdentity()`, `ISSetInfo()`, `ISClearInfoCache()`
 @*/
-PetscErrorCode ISSetIdentity(IS is) {
+PetscErrorCode ISSetIdentity(IS is)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is, IS_CLASSID, 1);
   PetscCall(ISSetInfo(is, IS_IDENTITY, IS_GLOBAL, PETSC_TRUE, PETSC_TRUE));
@@ -881,7 +908,8 @@ PetscErrorCode ISSetIdentity(IS is) {
 
 .seealso: `ISGetLocalSize()`, `VecGetOwnershipRange()`
 @*/
-PetscErrorCode ISContiguousLocal(IS is, PetscInt gstart, PetscInt gend, PetscInt *start, PetscBool *contig) {
+PetscErrorCode ISContiguousLocal(IS is, PetscInt gstart, PetscInt gend, PetscInt *start, PetscBool *contig)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is, IS_CLASSID, 1);
   PetscValidIntPointer(start, 4);
@@ -906,7 +934,7 @@ PetscErrorCode ISContiguousLocal(IS is, PetscInt gstart, PetscInt gend, PetscInt
 
    Level: intermediate
 
-   Note: If it is not alread known that the IS is a permutation (if ISSetPermutation()
+   Note: If it is not already known that the IS is a permutation (if ISSetPermutation()
    or ISSetInfo() has not been called), this routine will not attempt to compute
    whether the index set is a permutation and will assume perm is PETSC_FALSE.
    To compute the value when it is not already known, use ISGetInfo() with
@@ -914,7 +942,8 @@ PetscErrorCode ISContiguousLocal(IS is, PetscInt gstart, PetscInt gend, PetscInt
 
 .seealso: `ISSetPermutation()`, `ISGetInfo()`
 @*/
-PetscErrorCode ISPermutation(IS is, PetscBool *perm) {
+PetscErrorCode ISPermutation(IS is, PetscBool *perm)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is, IS_CLASSID, 1);
   PetscValidBoolPointer(perm, 2);
@@ -941,7 +970,8 @@ PetscErrorCode ISPermutation(IS is, PetscBool *perm) {
 
 .seealso: `ISPermutation()`, `ISSetInfo()`, `ISClearInfoCache().`
 @*/
-PetscErrorCode ISSetPermutation(IS is) {
+PetscErrorCode ISSetPermutation(IS is)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is, IS_CLASSID, 1);
   if (PetscDefined(USE_DEBUG)) {
@@ -978,7 +1008,8 @@ PetscErrorCode ISSetPermutation(IS is) {
 
 .seealso: `ISCreateGeneral()`, `ISCreateStride()`, `ISCreateBlocked()`
 @*/
-PetscErrorCode ISDestroy(IS *is) {
+PetscErrorCode ISDestroy(IS *is)
+{
   PetscFunctionBegin;
   if (!*is) PetscFunctionReturn(0);
   PetscValidHeaderSpecific((*is), IS_CLASSID, 1);
@@ -1022,7 +1053,8 @@ PetscErrorCode ISDestroy(IS *is) {
     code is not efficient for huge index sets (10,000,000 indices).
 
 @*/
-PetscErrorCode ISInvertPermutation(IS is, PetscInt nlocal, IS *isout) {
+PetscErrorCode ISInvertPermutation(IS is, PetscInt nlocal, IS *isout)
+{
   PetscBool isperm, isidentity, issame;
 
   PetscFunctionBegin;
@@ -1064,7 +1096,8 @@ PetscErrorCode ISInvertPermutation(IS is, PetscInt nlocal, IS *isout) {
    Level: beginner
 
 @*/
-PetscErrorCode ISGetSize(IS is, PetscInt *size) {
+PetscErrorCode ISGetSize(IS is, PetscInt *size)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is, IS_CLASSID, 1);
   PetscValidIntPointer(size, 2);
@@ -1086,7 +1119,8 @@ PetscErrorCode ISGetSize(IS is, PetscInt *size) {
    Level: beginner
 
 @*/
-PetscErrorCode ISGetLocalSize(IS is, PetscInt *size) {
+PetscErrorCode ISGetLocalSize(IS is, PetscInt *size)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is, IS_CLASSID, 1);
   PetscValidIntPointer(size, 2);
@@ -1109,7 +1143,8 @@ PetscErrorCode ISGetLocalSize(IS is, PetscInt *size) {
 
 .seealso: `ISSetLayout()`, `ISGetSize()`, `ISGetLocalSize()`
 @*/
-PetscErrorCode ISGetLayout(IS is, PetscLayout *map) {
+PetscErrorCode ISGetLayout(IS is, PetscLayout *map)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is, IS_CLASSID, 1);
   PetscValidPointer(map, 2);
@@ -1136,7 +1171,8 @@ PetscErrorCode ISGetLayout(IS is, PetscLayout *map) {
 
 .seealso: `ISCreate()`, `ISGetLayout()`, `ISGetSize()`, `ISGetLocalSize()`
 @*/
-PetscErrorCode ISSetLayout(IS is, PetscLayout map) {
+PetscErrorCode ISSetLayout(IS is, PetscLayout map)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is, IS_CLASSID, 1);
   PetscValidPointer(map, 2);
@@ -1184,7 +1220,8 @@ $          call ISGetIndicesF90(i,array,ierr)
 
 .seealso: `ISRestoreIndices()`, `ISGetIndicesF90()`
 @*/
-PetscErrorCode ISGetIndices(IS is, const PetscInt *ptr[]) {
+PetscErrorCode ISGetIndices(IS is, const PetscInt *ptr[])
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is, IS_CLASSID, 1);
   PetscValidPointer(ptr, 2);
@@ -1212,7 +1249,8 @@ PetscErrorCode ISGetIndices(IS is, const PetscInt *ptr[]) {
 
 .seealso: `ISGetIndices()`, `ISRestoreIndices()`, `ISGetIndicesF90()`
 @*/
-PetscErrorCode ISGetMinMax(IS is, PetscInt *min, PetscInt *max) {
+PetscErrorCode ISGetMinMax(IS is, PetscInt *min, PetscInt *max)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is, IS_CLASSID, 1);
   if (min) *min = is->min;
@@ -1234,7 +1272,8 @@ PetscErrorCode ISGetMinMax(IS is, PetscInt *min, PetscInt *max) {
 
   Level: intermediate
 @*/
-PetscErrorCode ISLocate(IS is, PetscInt key, PetscInt *location) {
+PetscErrorCode ISLocate(IS is, PetscInt key, PetscInt *location)
+{
   PetscFunctionBegin;
   if (is->ops->locate) {
     PetscUseTypeMethod(is, locate, key, location);
@@ -1298,7 +1337,8 @@ $       call ISRestoreIndices(is,is_array,i_is,ierr)
 
 .seealso: `ISGetIndices()`, `ISRestoreIndicesF90()`
 @*/
-PetscErrorCode ISRestoreIndices(IS is, const PetscInt *ptr[]) {
+PetscErrorCode ISRestoreIndices(IS is, const PetscInt *ptr[])
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is, IS_CLASSID, 1);
   PetscValidPointer(ptr, 2);
@@ -1306,7 +1346,8 @@ PetscErrorCode ISRestoreIndices(IS is, const PetscInt *ptr[]) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode ISGatherTotal_Private(IS is) {
+static PetscErrorCode ISGatherTotal_Private(IS is)
+{
   PetscInt        i, n, N;
   const PetscInt *lindices;
   MPI_Comm        comm;
@@ -1360,7 +1401,8 @@ static PetscErrorCode ISGatherTotal_Private(IS is) {
 
 .seealso: `ISRestoreTotalIndices()`, `ISGetNonlocalIndices()`, `ISGetSize()`
 @*/
-PetscErrorCode ISGetTotalIndices(IS is, const PetscInt *indices[]) {
+PetscErrorCode ISGetTotalIndices(IS is, const PetscInt *indices[])
+{
   PetscMPIInt size;
 
   PetscFunctionBegin;
@@ -1389,7 +1431,8 @@ PetscErrorCode ISGetTotalIndices(IS is, const PetscInt *indices[]) {
 
 .seealso: `ISRestoreTotalIndices()`, `ISGetNonlocalIndices()`
 @*/
-PetscErrorCode ISRestoreTotalIndices(IS is, const PetscInt *indices[]) {
+PetscErrorCode ISRestoreTotalIndices(IS is, const PetscInt *indices[])
+{
   PetscMPIInt size;
 
   PetscFunctionBegin;
@@ -1428,7 +1471,8 @@ PetscErrorCode ISRestoreTotalIndices(IS is, const PetscInt *indices[]) {
 
 .seealso: `ISGetTotalIndices()`, `ISRestoreNonlocalIndices()`, `ISGetSize()`, `ISGetLocalSize().`
 @*/
-PetscErrorCode ISGetNonlocalIndices(IS is, const PetscInt *indices[]) {
+PetscErrorCode ISGetNonlocalIndices(IS is, const PetscInt *indices[])
+{
   PetscMPIInt size;
   PetscInt    n, N;
 
@@ -1462,7 +1506,8 @@ PetscErrorCode ISGetNonlocalIndices(IS is, const PetscInt *indices[]) {
 
 .seealso: `ISGetTotalIndices()`, `ISGetNonlocalIndices()`, `ISRestoreTotalIndices()`
 @*/
-PetscErrorCode ISRestoreNonlocalIndices(IS is, const PetscInt *indices[]) {
+PetscErrorCode ISRestoreNonlocalIndices(IS is, const PetscInt *indices[])
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is, IS_CLASSID, 1);
   PetscValidPointer(indices, 2);
@@ -1492,7 +1537,8 @@ PetscErrorCode ISRestoreNonlocalIndices(IS is, const PetscInt *indices[]) {
 
 .seealso: `ISGetNonlocalIndices()`, `ISRestoreNonlocalIndices()`, `ISAllGather()`, `ISGetSize()`
 @*/
-PetscErrorCode ISGetNonlocalIS(IS is, IS *complement) {
+PetscErrorCode ISGetNonlocalIS(IS is, IS *complement)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is, IS_CLASSID, 1);
   PetscValidPointer(complement, 2);
@@ -1526,7 +1572,8 @@ PetscErrorCode ISGetNonlocalIS(IS is, IS *complement) {
 
 .seealso: `ISGetNonlocalIS()`, `ISGetNonlocalIndices()`, `ISRestoreNonlocalIndices()`
 @*/
-PetscErrorCode ISRestoreNonlocalIS(IS is, IS *complement) {
+PetscErrorCode ISRestoreNonlocalIS(IS is, IS *complement)
+{
   PetscInt refcnt;
 
   PetscFunctionBegin;
@@ -1552,7 +1599,8 @@ PetscErrorCode ISRestoreNonlocalIS(IS is, IS *complement) {
    Level: intermediate
 .seealso: `IS`, `ISView`, `PetscObjectViewFromOptions()`, `ISCreate()`
 @*/
-PetscErrorCode ISViewFromOptions(IS A, PetscObject obj, const char name[]) {
+PetscErrorCode ISViewFromOptions(IS A, PetscObject obj, const char name[])
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, IS_CLASSID, 1);
   PetscCall(PetscObjectViewFromOptions((PetscObject)A, obj, name));
@@ -1572,7 +1620,8 @@ PetscErrorCode ISViewFromOptions(IS A, PetscObject obj, const char name[]) {
 
 .seealso: `PetscViewerASCIIOpen()`
 @*/
-PetscErrorCode ISView(IS is, PetscViewer viewer) {
+PetscErrorCode ISView(IS is, PetscViewer viewer)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is, IS_CLASSID, 1);
   if (!viewer) PetscCall(PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)is), &viewer));
@@ -1604,7 +1653,8 @@ PetscErrorCode ISView(IS is, PetscViewer viewer) {
 
 .seealso: `PetscViewerBinaryOpen()`, `ISView()`, `MatLoad()`, `VecLoad()`
 @*/
-PetscErrorCode ISLoad(IS is, PetscViewer viewer) {
+PetscErrorCode ISLoad(IS is, PetscViewer viewer)
+{
   PetscBool isbinary, ishdf5;
 
   PetscFunctionBegin;
@@ -1633,7 +1683,8 @@ PetscErrorCode ISLoad(IS is, PetscViewer viewer) {
 
 .seealso: `ISSortRemoveDups()`, `ISSorted()`
 @*/
-PetscErrorCode ISSort(IS is) {
+PetscErrorCode ISSort(IS is)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is, IS_CLASSID, 1);
   PetscUseTypeMethod(is, sort);
@@ -1653,7 +1704,8 @@ PetscErrorCode ISSort(IS is) {
 
 .seealso: `ISSort()`, `ISSorted()`
 @*/
-PetscErrorCode ISSortRemoveDups(IS is) {
+PetscErrorCode ISSortRemoveDups(IS is)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is, IS_CLASSID, 1);
   PetscCall(ISClearInfoCache(is, PETSC_FALSE));
@@ -1675,7 +1727,8 @@ PetscErrorCode ISSortRemoveDups(IS is) {
 
 .seealso: `ISSorted()`
 @*/
-PetscErrorCode ISToGeneral(IS is) {
+PetscErrorCode ISToGeneral(IS is)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is, IS_CLASSID, 1);
   PetscUseTypeMethod(is, togeneral);
@@ -1703,7 +1756,8 @@ PetscErrorCode ISToGeneral(IS is) {
 
 .seealso: `ISSort()`, `ISSortRemoveDups()`
 @*/
-PetscErrorCode ISSorted(IS is, PetscBool *flg) {
+PetscErrorCode ISSorted(IS is, PetscBool *flg)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is, IS_CLASSID, 1);
   PetscValidBoolPointer(flg, 2);
@@ -1726,7 +1780,8 @@ PetscErrorCode ISSorted(IS is, PetscBool *flg) {
 
 .seealso: `ISCreateGeneral()`, `ISCopy()`
 @*/
-PetscErrorCode ISDuplicate(IS is, IS *newIS) {
+PetscErrorCode ISDuplicate(IS is, IS *newIS)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is, IS_CLASSID, 1);
   PetscValidPointer(newIS, 2);
@@ -1750,7 +1805,8 @@ PetscErrorCode ISDuplicate(IS is, IS *newIS) {
 
 .seealso: `ISDuplicate()`, `ISShift()`
 @*/
-PetscErrorCode ISCopy(IS is, IS isy) {
+PetscErrorCode ISCopy(IS is, IS isy)
+{
   PetscInt bs, bsy;
 
   PetscFunctionBegin;
@@ -1790,7 +1846,8 @@ PetscErrorCode ISCopy(IS is, IS isy) {
 
 .seealso: `ISDuplicate()`, `ISCopy()`
 @*/
-PetscErrorCode ISShift(IS is, PetscInt offset, IS isy) {
+PetscErrorCode ISShift(IS is, PetscInt offset, IS isy)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is, IS_CLASSID, 1);
   PetscValidHeaderSpecific(isy, IS_CLASSID, 3);
@@ -1832,7 +1889,8 @@ PetscErrorCode ISShift(IS is, PetscInt offset, IS isy) {
 
    The input IS must have the same type on every process.
 @*/
-PetscErrorCode ISOnComm(IS is, MPI_Comm comm, PetscCopyMode mode, IS *newis) {
+PetscErrorCode ISOnComm(IS is, MPI_Comm comm, PetscCopyMode mode, IS *newis)
+{
   PetscMPIInt match;
 
   PetscFunctionBegin;
@@ -1865,7 +1923,8 @@ PetscErrorCode ISOnComm(IS is, MPI_Comm comm, PetscCopyMode mode, IS *newis) {
 
 .seealso: `ISGetBlockSize()`, `ISCreateBlock()`, `ISBlockGetIndices()`,
 @*/
-PetscErrorCode ISSetBlockSize(IS is, PetscInt bs) {
+PetscErrorCode ISSetBlockSize(IS is, PetscInt bs)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is, IS_CLASSID, 1);
   PetscValidLogicalCollectiveInt(is, bs, 2);
@@ -1910,13 +1969,15 @@ Notes:
 
 .seealso: `ISBlockGetSize()`, `ISGetSize()`, `ISCreateBlock()`, `ISSetBlockSize()`
 @*/
-PetscErrorCode ISGetBlockSize(IS is, PetscInt *size) {
+PetscErrorCode ISGetBlockSize(IS is, PetscInt *size)
+{
   PetscFunctionBegin;
   PetscCall(PetscLayoutGetBlockSize(is->map, size));
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode ISGetIndicesCopy(IS is, PetscInt idx[]) {
+PetscErrorCode ISGetIndicesCopy(IS is, PetscInt idx[])
+{
   PetscInt        len, i;
   const PetscInt *ptr;
 

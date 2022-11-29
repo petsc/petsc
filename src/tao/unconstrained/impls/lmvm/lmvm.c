@@ -4,7 +4,8 @@
 #define LMVM_STEP_BFGS 0
 #define LMVM_STEP_GRAD 1
 
-static PetscErrorCode TaoSolve_LMVM(Tao tao) {
+static PetscErrorCode TaoSolve_LMVM(Tao tao)
+{
   TAO_LMVM                    *lmP = (TAO_LMVM *)tao->data;
   PetscReal                    f, fold, gdx, gnorm;
   PetscReal                    step      = 1.0;
@@ -113,9 +114,14 @@ static PetscErrorCode TaoSolve_LMVM(Tao tao) {
     } else {
       /* LS found valid step, so tally up step type */
       switch (stepType) {
-      case LMVM_STEP_BFGS: ++lmP->bfgs; break;
-      case LMVM_STEP_GRAD: ++lmP->grad; break;
-      default: break;
+      case LMVM_STEP_BFGS:
+        ++lmP->bfgs;
+        break;
+      case LMVM_STEP_GRAD:
+        ++lmP->grad;
+        break;
+      default:
+        break;
       }
       /*  Compute new gradient norm */
       PetscCall(TaoGradientNorm(tao, tao->gradient, NORM_2, &gnorm));
@@ -130,7 +136,8 @@ static PetscErrorCode TaoSolve_LMVM(Tao tao) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TaoSetUp_LMVM(Tao tao) {
+static PetscErrorCode TaoSetUp_LMVM(Tao tao)
+{
   TAO_LMVM *lmP = (TAO_LMVM *)tao->data;
   PetscInt  n, N;
   PetscBool is_set, is_spd;
@@ -157,7 +164,8 @@ static PetscErrorCode TaoSetUp_LMVM(Tao tao) {
 }
 
 /* ---------------------------------------------------------- */
-static PetscErrorCode TaoDestroy_LMVM(Tao tao) {
+static PetscErrorCode TaoDestroy_LMVM(Tao tao)
+{
   TAO_LMVM *lmP = (TAO_LMVM *)tao->data;
 
   PetscFunctionBegin;
@@ -173,7 +181,8 @@ static PetscErrorCode TaoDestroy_LMVM(Tao tao) {
 }
 
 /*------------------------------------------------------------*/
-static PetscErrorCode TaoSetFromOptions_LMVM(Tao tao, PetscOptionItems *PetscOptionsObject) {
+static PetscErrorCode TaoSetFromOptions_LMVM(Tao tao, PetscOptionItems *PetscOptionsObject)
+{
   TAO_LMVM *lm = (TAO_LMVM *)tao->data;
 
   PetscFunctionBegin;
@@ -186,7 +195,8 @@ static PetscErrorCode TaoSetFromOptions_LMVM(Tao tao, PetscOptionItems *PetscOpt
 }
 
 /*------------------------------------------------------------*/
-static PetscErrorCode TaoView_LMVM(Tao tao, PetscViewer viewer) {
+static PetscErrorCode TaoView_LMVM(Tao tao, PetscViewer viewer)
+{
   TAO_LMVM *lm = (TAO_LMVM *)tao->data;
   PetscBool isascii;
   PetscInt  recycled_its;
@@ -223,7 +233,8 @@ static PetscErrorCode TaoView_LMVM(Tao tao, PetscViewer viewer) {
   Level: beginner
 M*/
 
-PETSC_EXTERN PetscErrorCode TaoCreate_LMVM(Tao tao) {
+PETSC_EXTERN PetscErrorCode TaoCreate_LMVM(Tao tao)
+{
   TAO_LMVM   *lmP;
   const char *morethuente_type = TAOLINESEARCHMT;
 
@@ -234,7 +245,7 @@ PETSC_EXTERN PetscErrorCode TaoCreate_LMVM(Tao tao) {
   tao->ops->setfromoptions = TaoSetFromOptions_LMVM;
   tao->ops->destroy        = TaoDestroy_LMVM;
 
-  PetscCall(PetscNewLog(tao, &lmP));
+  PetscCall(PetscNew(&lmP));
   lmP->D       = NULL;
   lmP->M       = NULL;
   lmP->Xold    = NULL;

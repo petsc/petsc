@@ -1,4 +1,4 @@
-#if !defined(__TAODEF_H)
+#ifndef __TAODEF_H
 #define __TAODEF_H
 
 #include "petsc/finclude/petscts.h"

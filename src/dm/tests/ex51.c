@@ -5,7 +5,8 @@ static char help[] = "Tests DMDAGlobalToNaturalAllCreate() using contour plottin
 #include <petscdmda.h>
 #include <petscdraw.h>
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscInt        i, j, M = 10, N = 8, m = PETSC_DECIDE, n = PETSC_DECIDE;
   PetscMPIInt     rank;
   PetscBool       flg = PETSC_FALSE;

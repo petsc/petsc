@@ -13,9 +13,11 @@ typedef struct {
   PetscInt     dcnt, *drows; /* these are the local rows that have only diagonal entry */
   PetscScalar *diag;
   Vec          work;
+  PetscBool    zerodiag;
 } PC_Redistribute;
 
-static PetscErrorCode PCView_Redistribute(PC pc, PetscViewer viewer) {
+static PetscErrorCode PCView_Redistribute(PC pc, PetscViewer viewer)
+{
   PC_Redistribute *red = (PC_Redistribute *)pc->data;
   PetscBool        iascii, isstring;
   PetscInt         ncnt, N;
@@ -36,7 +38,8 @@ static PetscErrorCode PCView_Redistribute(PC pc, PetscViewer viewer) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCSetUp_Redistribute(PC pc) {
+static PetscErrorCode PCSetUp_Redistribute(PC pc)
+{
   PC_Redistribute         *red = (PC_Redistribute *)pc->data;
   MPI_Comm                 comm;
   PetscInt                 rstart, rend, i, nz, cnt, *rows, ncnt, dcnt, *drows;
@@ -225,14 +228,21 @@ static PetscErrorCode PCSetUp_Redistribute(PC pc) {
   PetscCall(MatCreateVecs(pc->pmat, &diag, NULL));
   PetscCall(MatGetDiagonal(pc->pmat, diag));
   PetscCall(VecGetArrayRead(diag, &d));
-  for (i = 0; i < red->dcnt; i++) red->diag[i] = 1.0 / d[red->drows[i]];
+  for (i = 0; i < red->dcnt; i++) {
+    if (d[red->drows[i]] != 0) red->diag[i] = 1.0 / d[red->drows[i]];
+    else {
+      red->zerodiag = PETSC_TRUE;
+      red->diag[i]  = 0.0;
+    }
+  }
   PetscCall(VecRestoreArrayRead(diag, &d));
   PetscCall(VecDestroy(&diag));
   PetscCall(KSPSetUp(red->ksp));
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCApply_Redistribute(PC pc, Vec b, Vec x) {
+static PetscErrorCode PCApply_Redistribute(PC pc, Vec b, Vec x)
+{
   PC_Redistribute   *red   = (PC_Redistribute *)pc->data;
   PetscInt           dcnt  = red->dcnt, i;
   const PetscInt    *drows = red->drows;
@@ -245,6 +255,16 @@ static PetscErrorCode PCApply_Redistribute(PC pc, Vec b, Vec x) {
   PetscCall(VecSet(x, 0.0)); /* x = diag(A)^{-1} b */
   PetscCall(VecGetArray(x, &xwork));
   PetscCall(VecGetArrayRead(b, &bwork));
+  if (red->zerodiag) {
+    for (i = 0; i < dcnt; i++) {
+      if (diag[i] == 0.0 && bwork[drows[i]] != 0.0) {
+        PetscCheck(!pc->erroriffailure, PETSC_COMM_SELF, PETSC_ERR_CONV_FAILED, "Linear system is inconsistent, zero matrix row but nonzero right hand side");
+        PetscCall(PetscInfo(pc, "Linear system is inconsistent, zero matrix row but nonzero right hand side"));
+        PetscCall(VecSetInf(x));
+        pc->failedreasonrank = PC_INCONSISTENT_RHS;
+      }
+    }
+  }
   for (i = 0; i < dcnt; i++) xwork[drows[i]] = diag[i] * bwork[drows[i]];
   PetscCall(PetscLogFlops(dcnt));
   PetscCall(VecRestoreArray(red->work, &xwork));
@@ -262,7 +282,8 @@ static PetscErrorCode PCApply_Redistribute(PC pc, Vec b, Vec x) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCDestroy_Redistribute(PC pc) {
+static PetscErrorCode PCDestroy_Redistribute(PC pc)
+{
   PC_Redistribute *red = (PC_Redistribute *)pc->data;
 
   PetscFunctionBegin;
@@ -278,7 +299,8 @@ static PetscErrorCode PCDestroy_Redistribute(PC pc) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCSetFromOptions_Redistribute(PC pc, PetscOptionItems *PetscOptionsObject) {
+static PetscErrorCode PCSetFromOptions_Redistribute(PC pc, PetscOptionItems *PetscOptionsObject)
+{
   PC_Redistribute *red = (PC_Redistribute *)pc->data;
 
   PetscFunctionBegin;
@@ -287,7 +309,7 @@ static PetscErrorCode PCSetFromOptions_Redistribute(PC pc, PetscOptionItems *Pet
 }
 
 /*@
-   PCRedistributeGetKSP - Gets the KSP created by the PCREDISTRIBUTE
+   PCRedistributeGetKSP - Gets the `KSP` created by the `PCREDISTRIBUTE`
 
    Not Collective
 
@@ -295,12 +317,14 @@ static PetscErrorCode PCSetFromOptions_Redistribute(PC pc, PetscOptionItems *Pet
 .  pc - the preconditioner context
 
    Output Parameter:
-.  innerksp - the inner KSP
+.  innerksp - the inner `KSP`
 
    Level: advanced
 
+.seealso: `KSP`, `PCREDISTRIBUTE`
 @*/
-PetscErrorCode PCRedistributeGetKSP(PC pc, KSP *innerksp) {
+PetscErrorCode PCRedistributeGetKSP(PC pc, KSP *innerksp)
+{
   PC_Redistribute *red = (PC_Redistribute *)pc->data;
 
   PetscFunctionBegin;
@@ -310,35 +334,35 @@ PetscErrorCode PCRedistributeGetKSP(PC pc, KSP *innerksp) {
   PetscFunctionReturn(0);
 }
 
-/* -------------------------------------------------------------------------------------*/
 /*MC
      PCREDISTRIBUTE - Redistributes a matrix for load balancing, removing the rows (and the corresponding columns) that only have a diagonal entry and then
-     applys a KSP to that new smaller matrix
-
-     Options for the redistribute preconditioners can be set with -redistribute_ksp_xxx <values> and -redistribute_pc_xxx <values>
+     applies a `KSP` to that new smaller matrix
 
      Notes:
-    Usually run this with -ksp_type preonly
+     Options for the redistribute `KSP` and `PC` with the options database prefix -redistribute_
+
+     Usually run this with -ksp_type preonly
 
      If you have used `MatZeroRows()` to eliminate (for example, Dirichlet) boundary conditions for a symmetric problem then you can use, for example, -ksp_type preonly
      -pc_type redistribute -redistribute_ksp_type cg -redistribute_pc_type bjacobi -redistribute_sub_pc_type icc to take advantage of the symmetry.
 
      This does NOT call a partitioner to reorder rows to lower communication; the ordering of the rows in the original matrix and redistributed matrix is the same.
 
-     Developer Notes:
-    Should add an option to this preconditioner to use a partitioner to redistribute the rows to lower communication.
+     Developer Note:
+     Should add an option to this preconditioner to use a partitioner to redistribute the rows to lower communication.
 
    Level: intermediate
 
 .seealso: `PCCreate()`, `PCSetType()`, `PCType`, `PCRedistributeGetKSP()`, `MatZeroRows()`
 M*/
 
-PETSC_EXTERN PetscErrorCode PCCreate_Redistribute(PC pc) {
+PETSC_EXTERN PetscErrorCode PCCreate_Redistribute(PC pc)
+{
   PC_Redistribute *red;
   const char      *prefix;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(pc, &red));
+  PetscCall(PetscNew(&red));
   pc->data = (void *)red;
 
   pc->ops->apply          = PCApply_Redistribute;
@@ -351,7 +375,6 @@ PETSC_EXTERN PetscErrorCode PCCreate_Redistribute(PC pc) {
   PetscCall(KSPCreate(PetscObjectComm((PetscObject)pc), &red->ksp));
   PetscCall(KSPSetErrorIfNotConverged(red->ksp, pc->erroriffailure));
   PetscCall(PetscObjectIncrementTabLevel((PetscObject)red->ksp, (PetscObject)pc, 1));
-  PetscCall(PetscLogObjectParent((PetscObject)pc, (PetscObject)red->ksp));
   PetscCall(PCGetOptionsPrefix(pc, &prefix));
   PetscCall(KSPSetOptionsPrefix(red->ksp, prefix));
   PetscCall(KSPAppendOptionsPrefix(red->ksp, "redistribute_"));

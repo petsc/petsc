@@ -987,8 +987,11 @@ Monitoring and visualizing solutions
    if ``TSSetSolutionFunction()`` is provided,
    ``TSMonitorDrawSolution()``.
 
--  ``-ts_monitor_solution binary[:filename]`` - saves the solution at
-   each iteration to a binary file, ``TSMonitorSolution()``.
+-  ``-ts_monitor_solution binary[:filename]`` - saves the solution at each
+   iteration to a binary file, ``TSMonitorSolution()``. Solution viewers work
+   with other time-aware formats, e.g., ``-ts_monitor_solution cgns:sol.cgns``,
+   and can output one solution every 10 time steps by adding
+   ``-ts_monitor_solution_interval 10``.
 
 -  ``-ts_monitor_solution_vtk <filename-%03D.vts>`` - saves the solution
    at each iteration to a file in vtk format,
@@ -1189,6 +1192,7 @@ respectively. Then one calls
 
    TSSetCostGradients(TS ts,PetscInt numcost, Vec *lambda,Vec *mu);
 
+where ``numcost`` denotes :math:`n_\text{cost}`.
 If :math:`F()` is a function of :math:`p` one needs to also provide the
 Jacobian :math:`-F_p` with
 
@@ -1250,7 +1254,7 @@ without having to use the adjoint solvers.
 
 To provide a better understanding of the use of the adjoint solvers, we
 introduce a simple example, corresponding to
-`TS Power Grid Tutorial ex3adj <../../src/ts/tutorials/power_grid/ex3adj.c.html>`__.
+`TS Power Grid Tutorial ex3sa <PETSC_DOC_OUT_ROOT_PLACEHOLDER/src/ts/tutorials/power_grid/ex3sa.c.html>`__.
 The problem is to study dynamic security of power system when there are
 credible contingencies such as short-circuits or loss of generators,
 transmission lines, or loads. The dynamic security constraints are
@@ -1319,39 +1323,28 @@ backward solve and thus must call
 
 Examples include:
 
--  a discrete adjoint sensitivity using explicit time stepping methods
-   `TS Tutorial ex16adj <../../src/ts/tutorials/ex16adj.c.html>`__,
+-  discrete adjoint sensitivity using explicit and implicit time stepping methods for an ODE problem
+   `TS Tutorial ex20adj <PETSC_DOC_OUT_ROOT_PLACEHOLDER/src/ts/tutorials/ex20adj.c.html>`__,
 
--  a discrete adjoint sensitivity using implicit time stepping methods
-   `TS Tutorial ex20adj <../../src/ts/tutorials/ex20adj.c.html>`__,
-
--  an optimization using the discrete adjoint models of ERK
-   `TS Tutorial ex16opt_ic <../../src/ts/tutorials/ex16opt_ic.c.html>`__
+-  an optimization problem using the discrete adjoint models of the ERK (for nonstiff ODEs)
+   and the Theta methods (for stiff DAEs)
+   `TS Tutorial ex20opt_ic <PETSC_DOC_OUT_ROOT_PLACEHOLDER/src/ts/tutorials/ex20opt_ic.c.html>`__
    and
-   `TS Tutorial ex16opt_p` <../../src/ts/tutorials/ex16opt_p.c.html>`__,
+   `TS Tutorial ex20opt_p <PETSC_DOC_OUT_ROOT_PLACEHOLDER/src/ts/tutorials/ex20opt_p.c.html>`__,
 
--  an optimization using the discrete adjoint models of Theta methods
-   for stiff DAEs
-   `TS Tutorial ex20opt_ic <../../src/ts/tutorials/ex20opt_ic.c.html>`__
-   and
-   `TS Tutorial ex20opt_p <../../src/ts/tutorials/ex20opt_p.c.html>`__,
-
--  an ODE-constrained optimization using the discrete adjoint models of
+-  an ODE-constrained optimization using the discrete adjoint models of the
    Theta methods for cost function with an integral term
-   `TS Power Grid Tutorial ex3opt <../../src/ts/tutorials/power_grid/ex3opt.c.html>`__,
+   `TS Power Grid Tutorial ex3opt <PETSC_DOC_OUT_ROOT_PLACEHOLDER/src/ts/tutorials/power_grid/ex3opt.c.html>`__,
 
--  a discrete adjoint sensitivity using ``TSCN`` (Crank-Nicolson)
-   methods for DAEs with discontinuities
-   `TS Power Grid Stability Tutorial ex9busadj.c <../../src/ts/tutorials/power_grid/stability_9bus/ex9busadj.c.html>`__,
+-  discrete adjoint sensitivity using the Crank-Nicolson methods for DAEs with discontinuities
+   `TS Power Grid Stability Tutorial ex9busadj <PETSC_DOC_OUT_ROOT_PLACEHOLDER/src/ts/tutorials/power_grid/stability_9bus/ex9busadj.c.html>`__,
 
--  a DAE-constrained optimization using the discrete adjoint models of
-   ``TSCN`` (Crank-Nicolson) methods for cost function with an integral
-   term
-   `TS Power Grid Tutorial ex9busopt.c <../../src/ts/tutorials/power_grid/stability_9bus/ex9busopt.c.html>`__,
+-  a DAE-constrained optimization problem using the discrete adjoint models of the Crank-Nicolson
+   methods for cost function with an integral term
+   `TS Power Grid Tutorial ex9busopt <PETSC_DOC_OUT_ROOT_PLACEHOLDER/src/ts/tutorials/power_grid/stability_9bus/ex9busopt.c.html>`__,
 
--  a discrete adjoint sensitivity using ``TSCN`` methods for a PDE
-   problem
-   `TS Advection-Diffusion-Reaction Tutorial ex5adj <../../src/ts/tutorials/advection-diffusion-reaction/ex5adj.c.html>`__.
+-  discrete adjoint sensitivity using the Crank-Nicolson methods for a PDE problem
+   `TS Advection-Diffusion-Reaction Tutorial ex5adj <PETSC_DOC_OUT_ROOT_PLACEHOLDER/src/ts/tutorials/advection-diffusion-reaction/ex5adj.c.html>`__.
 
 Checkpointing
 `````````````
@@ -1477,9 +1470,9 @@ provide two examples of its use; one for single cell reaction and one
 for an “artificial” one dimensional problem with periodic boundary
 conditions and diffusion of all species. The self-explanatory examples
 are the
-`The TS tutorial extchem <../../src/ts/tutorials/extchem.c.html>`__
+`The TS tutorial extchem <PETSC_DOC_OUT_ROOT_PLACEHOLDER/src/ts/tutorials/extchem.c.html>`__
 and
-`The TS tutorial extchemfield <../../src/ts/tutorials/extchemfield.c.html>`__.
+`The TS tutorial extchemfield <PETSC_DOC_OUT_ROOT_PLACEHOLDER/src/ts/tutorials/extchemfield.c.html>`__.
 
 .. [4]
    If the matrix :math:`F_{\dot{u}}(t) = \partial F

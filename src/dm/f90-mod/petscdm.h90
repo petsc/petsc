@@ -20,4 +20,16 @@
           DM a
           PetscErrorCode ierr
        end subroutine
+       subroutine DMView(a,b,z)
+       import tDM,tPetscViewer
+         DM a
+         PetscViewer b
+         PetscErrorCode z
+       end subroutine
+       subroutine DMLoad(a,b,z)
+       import tDM,tPetscViewer
+         DM a
+         PetscViewer b
+         PetscErrorCode z
+       end subroutine
       end Interface

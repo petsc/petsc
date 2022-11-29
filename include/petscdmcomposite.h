@@ -1,5 +1,5 @@
 /* "Unintrusive" multi-physics DM */
-#if !defined(PETSCDMCOMPOSITE_H)
+#ifndef PETSCDMCOMPOSITE_H
 #define PETSCDMCOMPOSITE_H
 
 #include <petscdm.h>

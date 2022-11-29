@@ -11,7 +11,8 @@ Options: \n\
 #include <petscdmda.h>
 #include <petscdmswarm.h>
 
-PetscErrorCode pic_advect(PetscInt ppcell, PetscInt meshtype) {
+PetscErrorCode pic_advect(PetscInt ppcell, PetscInt meshtype)
+{
   const PetscInt dim = 2;
   DM             celldm, swarm;
   PetscInt       tk, nt = 200;
@@ -238,7 +239,8 @@ PetscErrorCode pic_advect(PetscInt ppcell, PetscInt meshtype) {
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   PetscInt ppcell   = 1;
   PetscInt meshtype = 0;
 

@@ -5,28 +5,30 @@
 #include <petscblaslapack.h>
 
 /*@C
-   SNESMonitorSolution - Monitors progress of the SNES solvers by calling
-   VecView() for the approximate solution at each iteration.
+   SNESMonitorSolution - Monitors progress of the `SNES` solvers by calling
+   `VecView()` for the approximate solution at each iteration.
 
-   Collective on SNES
+   Collective on snes
 
    Input Parameters:
-+  snes - the SNES context
++  snes - the `SNES` context
 .  its - iteration number
 .  fgnorm - 2-norm of residual
 -  dummy -  a viewer
 
-   Options Database Keys:
+   Options Database Key:
 .  -snes_monitor_solution [ascii binary draw][:filename][:viewer format] - plots solution at each iteration
 
+   Note:
    This is not called directly by users, rather one calls `SNESMonitorSet()`, with this function as an argument, to cause the monitor
-   to be used during the SNES solve.
+   to be used during the `SNESSolve()`
 
    Level: intermediate
 
-.seealso: `SNESMonitorSet()`, `SNESMonitorDefault()`, `VecView()`
+.seealso: `SNES`, `SNESMonitorSet()`, `SNESMonitorDefault()`, `VecView()`
 @*/
-PetscErrorCode SNESMonitorSolution(SNES snes, PetscInt its, PetscReal fgnorm, PetscViewerAndFormat *vf) {
+PetscErrorCode SNESMonitorSolution(SNES snes, PetscInt its, PetscReal fgnorm, PetscViewerAndFormat *vf)
+{
   Vec         x;
   PetscViewer viewer = vf->viewer;
 
@@ -40,65 +42,66 @@ PetscErrorCode SNESMonitorSolution(SNES snes, PetscInt its, PetscReal fgnorm, Pe
 }
 
 /*@C
-   SNESMonitorResidual - Monitors progress of the SNES solvers by calling
-   VecView() for the residual at each iteration.
+   SNESMonitorResidual - Monitors progress of the `SNES` solvers by calling
+   `VecView()` for the residual at each iteration.
 
-   Collective on SNES
+   Collective on snes
 
    Input Parameters:
-+  snes - the SNES context
++  snes - the `SNES` context
 .  its - iteration number
 .  fgnorm - 2-norm of residual
 -  dummy -  a viewer
 
-   Options Database Keys:
+   Options Database Key:
 .  -snes_monitor_residual [ascii binary draw][:filename][:viewer format] - plots residual (not its norm) at each iteration
 
-   Notes:
+   Note:
    This is not called directly by users, rather one calls `SNESMonitorSet()`, with this function as an argument, to cause the monitor
    to be used during the SNES solve.
 
    Level: intermediate
 
-.seealso: `SNESMonitorSet()`, `SNESMonitorDefault()`, `VecView()`
+.seealso: `SNESMonitorSet()`, `SNESMonitorDefault()`, `VecView()`, `SNESMonitor()`
 @*/
-PetscErrorCode SNESMonitorResidual(SNES snes, PetscInt its, PetscReal fgnorm, PetscViewerAndFormat *vf) {
-  Vec         x;
-  PetscViewer viewer = vf->viewer;
+PetscErrorCode SNESMonitorResidual(SNES snes, PetscInt its, PetscReal fgnorm, PetscViewerAndFormat *vf)
+{
+  Vec x;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 4);
+  PetscValidHeaderSpecific(vf->viewer, PETSC_VIEWER_CLASSID, 4);
   PetscCall(SNESGetFunction(snes, &x, NULL, NULL));
-  PetscCall(PetscViewerPushFormat(viewer, vf->format));
-  PetscCall(VecView(x, viewer));
-  PetscCall(PetscViewerPopFormat(viewer));
+  PetscCall(PetscViewerPushFormat(vf->viewer, vf->format));
+  PetscCall(VecView(x, vf->viewer));
+  PetscCall(PetscViewerPopFormat(vf->viewer));
   PetscFunctionReturn(0);
 }
 
 /*@C
-   SNESMonitorSolutionUpdate - Monitors progress of the SNES solvers by calling
-   VecView() for the UPDATE to the solution at each iteration.
+   SNESMonitorSolutionUpdate - Monitors progress of the `SNES` solvers by calling
+   `VecView()` for the UPDATE to the solution at each iteration.
 
-   Collective on SNES
+   Collective on snes
 
    Input Parameters:
-+  snes - the SNES context
++  snes - the `SNES` context
 .  its - iteration number
 .  fgnorm - 2-norm of residual
 -  dummy - a viewer
 
-   Options Database Keys:
+   Options Database Key:
 .  -snes_monitor_solution_update [ascii binary draw][:filename][:viewer format] - plots update to solution at each iteration
 
-   Notes:
+   Note:
    This is not called directly by users, rather one calls `SNESMonitorSet()`, with this function as an argument, to cause the monitor
    to be used during the SNES solve.
 
    Level: intermediate
 
-.seealso: `SNESMonitorSet()`, `SNESMonitorDefault()`, `VecView()`
+.seealso: `SNESMonitorSet()`, `SNESMonitorDefault()`, `VecView()`, `SNESMonitor()`, `SNESMonitor()`
 @*/
-PetscErrorCode SNESMonitorSolutionUpdate(SNES snes, PetscInt its, PetscReal fgnorm, PetscViewerAndFormat *vf) {
+PetscErrorCode SNESMonitorSolutionUpdate(SNES snes, PetscInt its, PetscReal fgnorm, PetscViewerAndFormat *vf)
+{
   Vec         x;
   PetscViewer viewer = vf->viewer;
 
@@ -114,7 +117,7 @@ PetscErrorCode SNESMonitorSolutionUpdate(SNES snes, PetscInt its, PetscReal fgno
 #include <petscdraw.h>
 
 /*@C
-  KSPMonitorSNESResidual - Prints the SNES residual norm, as well as the linear residual norm, at each iteration of an iterative solver.
+  KSPMonitorSNESResidual - Prints the `SNES` residual norm, as well as the `KSP` residual norm, at each iteration of an iterative solver.
 
   Collective on ksp
 
@@ -125,17 +128,18 @@ PetscErrorCode SNESMonitorSolutionUpdate(SNES snes, PetscInt its, PetscReal fgno
 - vf    - The viewer context
 
   Options Database Key:
-. -snes_monitor_ksp - Activates KSPMonitorSNESResidual()
+. -snes_monitor_ksp - Activates `KSPMonitorSNESResidual()`
 
-   Notes:
+   Note:
    This is not called directly by users, rather one calls `KSPMonitorSet()`, with this function as an argument, to cause the monitor
    to be used during the KSP solve.
 
   Level: intermediate
 
-.seealso: `KSPMonitorSet()`, `KSPMonitorResidual()`, `KSPMonitorTrueResidualMaxNorm()`
+.seealso: `KSPMonitorSet()`, `KSPMonitorResidual()`, `KSPMonitorTrueResidualMaxNorm()`, `KSPMonitor()`, `SNESMonitor()`
 @*/
-PetscErrorCode KSPMonitorSNESResidual(KSP ksp, PetscInt n, PetscReal rnorm, PetscViewerAndFormat *vf) {
+PetscErrorCode KSPMonitorSNESResidual(KSP ksp, PetscInt n, PetscReal rnorm, PetscViewerAndFormat *vf)
+{
   PetscViewer       viewer = vf->viewer;
   PetscViewerFormat format = vf->format;
   SNES              snes   = (SNES)vf->data;
@@ -168,7 +172,7 @@ PetscErrorCode KSPMonitorSNESResidual(KSP ksp, PetscInt n, PetscReal rnorm, Pets
 }
 
 /*@C
-  KSPMonitorSNESResidualDrawLG - Plots the linear SNES residual norm at each iteration of an iterative solver.
+  KSPMonitorSNESResidualDrawLG - Plots the linear `KSP` residual norm and the `SNES` residual norm at each iteration of an iterative solver.
 
   Collective on ksp
 
@@ -176,20 +180,21 @@ PetscErrorCode KSPMonitorSNESResidual(KSP ksp, PetscInt n, PetscReal rnorm, Pets
 + ksp   - iterative context
 . n     - iteration number
 . rnorm - 2-norm (preconditioned) residual value (may be estimated).
-- vf    - The viewer context
+- vf    - The viewer context, created with `KSPMonitorSNESResidualDrawLGCreate()`
 
   Options Database Key:
-. -snes_monitor_ksp draw::draw_lg - Activates KSPMonitorSNESResidualDrawLG()
+. -snes_monitor_ksp draw::draw_lg - Activates `KSPMonitorSNESResidualDrawLG()`
 
-   Notes:
+   Note:
    This is not called directly by users, rather one calls `SNESMonitorSet()`, with this function as an argument, to cause the monitor
-   to be used during the SNES solve.
+   to be used during the `SNESSolve()`
 
   Level: intermediate
 
-.seealso: `KSPMonitorSet()`, `KSPMonitorTrueResidual()`
+.seealso: `KSPMonitorSet()`, `KSPMonitorTrueResidual()`, `SNESMonitor()`, `KSPMonitor()`, `KSPMonitorSNESResidualDrawLGCreate()`
 @*/
-PetscErrorCode KSPMonitorSNESResidualDrawLG(KSP ksp, PetscInt n, PetscReal rnorm, PetscViewerAndFormat *vf) {
+PetscErrorCode KSPMonitorSNESResidualDrawLG(KSP ksp, PetscInt n, PetscReal rnorm, PetscViewerAndFormat *vf)
+{
   PetscViewer        viewer = vf->viewer;
   PetscViewerFormat  format = vf->format;
   PetscDrawLG        lg     = vf->lg;
@@ -231,7 +236,7 @@ PetscErrorCode KSPMonitorSNESResidualDrawLG(KSP ksp, PetscInt n, PetscReal rnorm
 }
 
 /*@C
-  KSPMonitorSNESResidualDrawLGCreate - Creates the plotter for the linear SNES residual.
+  KSPMonitorSNESResidualDrawLGCreate - Creates the `PetscViewer` used by `KSPMonitorSNESResidualDrawLG()`
 
   Collective on ksp
 
@@ -245,9 +250,10 @@ PetscErrorCode KSPMonitorSNESResidualDrawLG(KSP ksp, PetscInt n, PetscReal rnorm
 
   Level: intermediate
 
-.seealso: `KSPMonitorSet()`, `KSPMonitorTrueResidual()`
+.seealso: `KSP`, `SNES`, `KSPMonitorSet()`, `KSPMonitorTrueResidual()`
 @*/
-PetscErrorCode KSPMonitorSNESResidualDrawLGCreate(PetscViewer viewer, PetscViewerFormat format, void *ctx, PetscViewerAndFormat **vf) {
+PetscErrorCode KSPMonitorSNESResidualDrawLGCreate(PetscViewer viewer, PetscViewerFormat format, void *ctx, PetscViewerAndFormat **vf)
+{
   const char *names[] = {"linear", "nonlinear"};
 
   PetscFunctionBegin;
@@ -257,31 +263,32 @@ PetscErrorCode KSPMonitorSNESResidualDrawLGCreate(PetscViewer viewer, PetscViewe
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode SNESMonitorDefaultSetUp(SNES snes, PetscViewerAndFormat *vf) {
+PetscErrorCode SNESMonitorDefaultSetUp(SNES snes, PetscViewerAndFormat *vf)
+{
   PetscFunctionBegin;
   if (vf->format == PETSC_VIEWER_DRAW_LG) PetscCall(KSPMonitorLGCreate(PetscObjectComm((PetscObject)vf->viewer), NULL, NULL, "Log Residual Norm", 1, NULL, PETSC_DECIDE, PETSC_DECIDE, 400, 300, &vf->lg));
   PetscFunctionReturn(0);
 }
 
 /*@C
-   SNESMonitorDefault - Monitors progress of the SNES solvers (default).
+   SNESMonitorDefault - Monitors progress of the `SNES` solvers (default).
 
-   Collective on SNES
+   Collective on snes
 
    Input Parameters:
-+  snes - the SNES context
++  snes - the `SNES` context
 .  its - iteration number
 .  fgnorm - 2-norm of residual
 -  vf - viewer and format structure
 
-   Options Database:
+   Options Database Key:
 .  -snes_monitor - use this function to monitor the convergence of the nonlinear solver
 
    Notes:
    This routine prints the residual norm at each iteration.
 
    This is not called directly by users, rather one calls `SNESMonitorSet()`, with this function as an argument, to cause the monitor
-   to be used during the SNES solve.
+   to be used during the `SNES` solve.
 
    Level: intermediate
 
@@ -289,7 +296,8 @@ PetscErrorCode SNESMonitorDefaultSetUp(SNES snes, PetscViewerAndFormat *vf) {
           `SNESMonitorSolutionUpdate()`, `SNESMonitorDefault()`, `SNESMonitorScaling()`, `SNESMonitorRange()`, `SNESMonitorRatio()`,
           `SNESMonitorDefaultField()`
 @*/
-PetscErrorCode SNESMonitorDefault(SNES snes, PetscInt its, PetscReal fgnorm, PetscViewerAndFormat *vf) {
+PetscErrorCode SNESMonitorDefault(SNES snes, PetscInt its, PetscReal fgnorm, PetscViewerAndFormat *vf)
+{
   PetscViewer       viewer = vf->viewer;
   PetscViewerFormat format = vf->format;
   PetscBool         isascii, isdraw;
@@ -327,10 +335,10 @@ PetscErrorCode SNESMonitorDefault(SNES snes, PetscInt its, PetscReal fgnorm, Pet
 /*@C
    SNESMonitorScaling - Monitors the largest value in each row of the Jacobian.
 
-   Collective on SNES
+   Collective on snes
 
    Input Parameters:
-+  snes - the SNES context
++  snes - the `SNES` context
 .  its - iteration number
 .  fgnorm - 2-norm of residual
 -  vf - viewer and format structure
@@ -339,13 +347,14 @@ PetscErrorCode SNESMonitorDefault(SNES snes, PetscInt its, PetscReal fgnorm, Pet
    This routine prints the largest value in each row of the Jacobian
 
    This is not called directly by users, rather one calls `SNESMonitorSet()`, with this function as an argument, to cause the monitor
-   to be used during the SNES solve.
+   to be used during the `SNES` solve.
 
    Level: intermediate
 
-.seealso: `SNESMonitorSet()`, `SNESMonitorSolution()`
+.seealso: `SNESMonitorSet()`, `SNESMonitorSolution()`, `SNESMonitorRange()`, `SNESMonitorJacUpdateSpectrum()`
 @*/
-PetscErrorCode SNESMonitorScaling(SNES snes, PetscInt its, PetscReal fgnorm, PetscViewerAndFormat *vf) {
+PetscErrorCode SNESMonitorScaling(SNES snes, PetscInt its, PetscReal fgnorm, PetscViewerAndFormat *vf)
+{
   PetscViewer viewer = vf->viewer;
   KSP         ksp;
   Mat         J;
@@ -367,7 +376,32 @@ PetscErrorCode SNESMonitorScaling(SNES snes, PetscInt its, PetscReal fgnorm, Pet
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode SNESMonitorJacUpdateSpectrum(SNES snes, PetscInt it, PetscReal fnorm, PetscViewerAndFormat *vf) {
+/*@C
+   SNESMonitorJacUpdateSpectrum - Monitors the spectrun of the change in the Jacobian from the last Jacobian evaluation
+
+   Collective on snes
+
+   Input Parameters:
++  snes - the `SNES` context
+.  its - iteration number
+.  fgnorm - 2-norm of residual
+-  vf - viewer and format structure
+
+   Option Database Key:
+.  -snes_monitor_jacupdate_spectrum - activates this monitor
+
+   Notes:
+   This routine prints the eigenvalues of the difference in the Jacobians
+
+   This is not called directly by users, rather one calls `SNESMonitorSet()`, with this function as an argument, to cause the monitor
+   to be used during the `SNES` solve.
+
+   Level: intermediate
+
+.seealso: `SNESMonitorSet()`, `SNESMonitorSolution()`, `SNESMonitorRange()`
+@*/
+PetscErrorCode SNESMonitorJacUpdateSpectrum(SNES snes, PetscInt it, PetscReal fnorm, PetscViewerAndFormat *vf)
+{
   Vec X;
   Mat J, dJ, dJdense;
   PetscErrorCode (*func)(SNES, Vec, Mat, Mat, void *);
@@ -379,7 +413,7 @@ PetscErrorCode SNESMonitorJacUpdateSpectrum(SNES snes, PetscInt it, PetscReal fn
 
   PetscFunctionBegin;
   if (it == 0) PetscFunctionReturn(0);
-  /* create the difference between the current update and the current jacobian */
+  /* create the difference between the current update and the current Jacobian */
   PetscCall(SNESGetSolution(snes, &X));
   PetscCall(SNESGetJacobian(snes, NULL, &J, &func, NULL));
   PetscCall(MatDuplicate(J, MAT_COPY_VALUES, &dJ));
@@ -420,7 +454,8 @@ PetscErrorCode SNESMonitorJacUpdateSpectrum(SNES snes, PetscInt it, PetscReal fn
 
 PETSC_INTERN PetscErrorCode SNESMonitorRange_Private(SNES, PetscInt, PetscReal *);
 
-PetscErrorCode SNESMonitorRange_Private(SNES snes, PetscInt it, PetscReal *per) {
+PetscErrorCode SNESMonitorRange_Private(SNES snes, PetscInt it, PetscReal *per)
+{
   Vec          resid;
   PetscReal    rmax, pwork;
   PetscInt     i, n, N;
@@ -441,9 +476,9 @@ PetscErrorCode SNESMonitorRange_Private(SNES snes, PetscInt it, PetscReal *per) 
 }
 
 /*@C
-   SNESMonitorRange - Prints the percentage of residual elements that are more then 10 percent of the maximum value.
+   SNESMonitorRange - Prints the percentage of residual elements that are more then 10 percent of the maximum entry in the residual
 
-   Collective on SNES
+   Collective on snes
 
    Input Parameters:
 +  snes   - iterative context
@@ -452,19 +487,20 @@ PetscErrorCode SNESMonitorRange_Private(SNES snes, PetscInt it, PetscReal *per) 
 -  dummy - unused monitor context
 
    Options Database Key:
-.  -snes_monitor_range - Activates SNESMonitorRange()
+.  -snes_monitor_range - Activates `SNESMonitorRange()`
 
-   Notes:
+   Note:
    This is not called directly by users, rather one calls `SNESMonitorSet()`, with this function as an argument, to cause the monitor
-   to be used during the SNES solve.
+   to be used during the `SNES` solve.
 
    Level: intermediate
 
-.seealso: `SNESMonitorSet()`, `SNESMonitorDefault()`, `SNESMonitorLGCreate()`
+.seealso: `SNESMonitorSet()`, `SNESMonitorDefault()`, `SNESMonitorLGCreate()`, `SNESMonitorScaling()`
 @*/
-PetscErrorCode SNESMonitorRange(SNES snes, PetscInt it, PetscReal rnorm, PetscViewerAndFormat *vf) {
-  PetscReal        perc, rel;
-  PetscViewer      viewer = vf->viewer;
+PetscErrorCode SNESMonitorRange(SNES snes, PetscInt it, PetscReal rnorm, PetscViewerAndFormat *vf)
+{
+  PetscReal   perc, rel;
+  PetscViewer viewer = vf->viewer;
   /* should be in a MonitorRangeContext */
   static PetscReal prev;
 
@@ -484,28 +520,32 @@ PetscErrorCode SNESMonitorRange(SNES snes, PetscInt it, PetscReal rnorm, PetscVi
 }
 
 /*@C
-   SNESMonitorRatio - Monitors progress of the SNES solvers by printing the ratio
+   SNESMonitorRatio - Monitors progress of the `SNES` solvers by printing the ratio
    of residual norm at each iteration to the previous.
 
-   Collective on SNES
+   Collective on snes
 
    Input Parameters:
-+  snes - the SNES context
++  snes - the `SNES` context
 .  its - iteration number
 .  fgnorm - 2-norm of residual (or gradient)
 -  dummy -  context of monitor
+
+   Option Database Key:
+.  -snes_monitor_ratio - activate this monitor
 
    Level: intermediate
 
    Notes:
    This is not called directly by users, rather one calls `SNESMonitorSet()`, with this function as an argument, to cause the monitor
-   to be used during the SNES solve.
+   to be used during the `SNES` solve.
 
-   Be sure to call SNESMonitorRationSetUp() before using this monitor.
+   Be sure to call `SNESMonitorRationSetUp()` before using this monitor.
 
-.seealso: `SNESMonitorSet()`, `SNESMonitorSolution()`, `SNESMonitorDefault()`
+.seealso: `SNESMonitorRationSetUp()`, `SNESMonitorSet()`, `SNESMonitorSolution()`, `SNESMonitorDefault()`
 @*/
-PetscErrorCode SNESMonitorRatio(SNES snes, PetscInt its, PetscReal fgnorm, PetscViewerAndFormat *vf) {
+PetscErrorCode SNESMonitorRatio(SNES snes, PetscInt its, PetscReal fgnorm, PetscViewerAndFormat *vf)
+{
   PetscInt    len;
   PetscReal  *history;
   PetscViewer viewer = vf->viewer;
@@ -526,19 +566,20 @@ PetscErrorCode SNESMonitorRatio(SNES snes, PetscInt its, PetscReal fgnorm, Petsc
 }
 
 /*@C
-   SNESMonitorRatioSetUp - Insures the SNES object is saving its history since this monitor needs access to it
+   SNESMonitorRatioSetUp - Insures the `SNES` object is saving its history since this monitor needs access to it
 
-   Collective on SNES
+   Collective on snes
 
    Input Parameters:
-+   snes - the SNES context
--   viewer - the PetscViewer object (ignored)
++   snes - the `SNES` context
+-   viewer - the `PetscViewer` object (ignored)
 
    Level: intermediate
 
 .seealso: `SNESMonitorSet()`, `SNESMonitorSolution()`, `SNESMonitorDefault()`, `SNESMonitorRatio()`
 @*/
-PetscErrorCode SNESMonitorRatioSetUp(SNES snes, PetscViewerAndFormat *vf) {
+PetscErrorCode SNESMonitorRatioSetUp(SNES snes, PetscViewerAndFormat *vf)
+{
   PetscReal *history;
 
   PetscFunctionBegin;
@@ -547,7 +588,6 @@ PetscErrorCode SNESMonitorRatioSetUp(SNES snes, PetscViewerAndFormat *vf) {
   PetscFunctionReturn(0);
 }
 
-/* ---------------------------------------------------------------- */
 /*
      Default (short) SNES Monitor, same as SNESMonitorDefault() except
   it prints fewer digits of the residual as the residual gets smaller.
@@ -557,7 +597,8 @@ PetscErrorCode SNESMonitorRatioSetUp(SNES snes, PetscViewerAndFormat *vf) {
 
   Deprecated: Intentionally has no manual page
 */
-PetscErrorCode SNESMonitorDefaultShort(SNES snes, PetscInt its, PetscReal fgnorm, PetscViewerAndFormat *vf) {
+PetscErrorCode SNESMonitorDefaultShort(SNES snes, PetscInt its, PetscReal fgnorm, PetscViewerAndFormat *vf)
+{
   PetscViewer viewer = vf->viewer;
 
   PetscFunctionBegin;
@@ -577,27 +618,31 @@ PetscErrorCode SNESMonitorDefaultShort(SNES snes, PetscInt its, PetscReal fgnorm
 }
 
 /*@C
-  SNESMonitorDefaultField - Monitors progress of the SNES solvers, separated into fields.
+  SNESMonitorDefaultField - Monitors progress of the `SNES` solvers, separated into fields.
 
-  Collective on SNES
+  Collective on snes
 
   Input Parameters:
-+ snes   - the SNES context
++ snes   - the `SNES` context
 . its    - iteration number
 . fgnorm - 2-norm of residual
 - ctx    - the PetscViewer
 
+   Option Database Key:
+.  -snes_monitor_field - activate this monitor
+
   Notes:
-  This routine uses the DM attached to the residual vector to define the fields.
+  This routine uses the `DM` attached to the residual vector to define the fields.
 
   This is not called directly by users, rather one calls `SNESMonitorSet()`, with this function as an argument, to cause the monitor
-  to be used during the SNES solve.
+  to be used during the `SNES` solve.
 
   Level: intermediate
 
 .seealso: `SNESMonitorSet()`, `SNESMonitorSolution()`, `SNESMonitorDefault()`
 @*/
-PetscErrorCode SNESMonitorDefaultField(SNES snes, PetscInt its, PetscReal fgnorm, PetscViewerAndFormat *vf) {
+PetscErrorCode SNESMonitorDefaultField(SNES snes, PetscInt its, PetscReal fgnorm, PetscViewerAndFormat *vf)
+{
   PetscViewer viewer = vf->viewer;
   Vec         r;
   DM          dm;
@@ -633,15 +678,15 @@ PetscErrorCode SNESMonitorDefaultField(SNES snes, PetscInt its, PetscReal fgnorm
   }
   PetscFunctionReturn(0);
 }
-/* ---------------------------------------------------------------- */
+
 /*@C
    SNESConvergedDefault - Default onvergence test of the solvers for
    systems of nonlinear equations.
 
-   Collective on SNES
+   Collective on snes
 
    Input Parameters:
-+  snes - the SNES context
++  snes - the `SNES` context
 .  it - the iteration (0 indicates before any Newton steps)
 .  xnorm - 2-norm of current iterate
 .  snorm - 2-norm of current step
@@ -650,43 +695,45 @@ PetscErrorCode SNESMonitorDefaultField(SNES snes, PetscInt its, PetscReal fgnorm
 
    Output Parameter:
 .   reason  - one of
-$  SNES_CONVERGED_FNORM_ABS       - (fnorm < abstol),
-$  SNES_CONVERGED_SNORM_RELATIVE  - (snorm < stol*xnorm),
-$  SNES_CONVERGED_FNORM_RELATIVE  - (fnorm < rtol*fnorm0),
-$  SNES_DIVERGED_FUNCTION_COUNT   - (nfct > maxf),
-$  SNES_DIVERGED_FNORM_NAN        - (fnorm == NaN),
-$  SNES_CONVERGED_ITERATING       - (otherwise),
-$  SNES_DIVERGED_DTOL             - (fnorm > divtol*snes->fnorm0)
+.vb
+   SNES_CONVERGED_FNORM_ABS       - (fnorm < abstol),
+   SNES_CONVERGED_SNORM_RELATIVE  - (snorm < stol*xnorm),
+   SNES_CONVERGED_FNORM_RELATIVE  - (fnorm < rtol*fnorm0),
+   SNES_DIVERGED_FUNCTION_COUNT   - (nfct > maxf),
+   SNES_DIVERGED_FNORM_NAN        - (fnorm == NaN),
+   SNES_CONVERGED_ITERATING       - (otherwise),
+   SNES_DIVERGED_DTOL             - (fnorm > divtol*snes->fnorm0)
+.ve
 
    where
-+    maxf - maximum number of function evaluations,  set with SNESSetTolerances()
++    maxf - maximum number of function evaluations,  set with `SNESSetTolerances()`
 .    nfct - number of function evaluations,
-.    abstol - absolute function norm tolerance, set with SNESSetTolerances()
-.    rtol - relative function norm tolerance, set with SNESSetTolerances()
-.    divtol - divergence tolerance, set with SNESSetDivergenceTolerance()
+.    abstol - absolute function norm tolerance, set with `SNESSetTolerances()`
+.    rtol - relative function norm tolerance, set with `SNESSetTolerances()`
+.    divtol - divergence tolerance, set with `SNESSetDivergenceTolerance()`
 -    fnorm0 - 2-norm of the function at the initial solution (initial guess; zeroth iteration)
 
   Options Database Keys:
-+  -snes_convergence_test default - see SNESSetFromOptions()
++  -snes_convergence_test default - see `SNESSetFromOptions()`
 .  -snes_stol - convergence tolerance in terms of the norm  of the change in the solution between steps
 .  -snes_atol <abstol> - absolute tolerance of residual norm
 .  -snes_rtol <rtol> - relative decrease in tolerance norm from the initial 2-norm of the solution
 .  -snes_divergence_tolerance <divtol> - if the residual goes above divtol*rnorm0, exit with divergence
 .  -snes_max_funcs <max_funcs> - maximum number of function evaluations
 .  -snes_max_fail <max_fail> - maximum number of line search failures allowed before stopping, default is none
--  -snes_max_linear_solve_fail - number of linear solver failures before SNESSolve() stops
+-  -snes_max_linear_solve_fail - number of linear solver failures before `SNESSolve()` stops
 
    Level: intermediate
 
-.seealso: `SNESSetConvergenceTest()`, `SNESConvergedSkip()`, `SNESSetTolerances()`, `SNESSetDivergenceTolerance()`
+.seealso: `SNES`, `SNESSolve()`, `SNESSetConvergenceTest()`, `SNESConvergedSkip()`, `SNESSetTolerances()`, `SNESSetDivergenceTolerance()`
 @*/
-PetscErrorCode SNESConvergedDefault(SNES snes, PetscInt it, PetscReal xnorm, PetscReal snorm, PetscReal fnorm, SNESConvergedReason *reason, void *dummy) {
+PetscErrorCode SNESConvergedDefault(SNES snes, PetscInt it, PetscReal xnorm, PetscReal snorm, PetscReal fnorm, SNESConvergedReason *reason, void *dummy)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
   PetscValidPointer(reason, 6);
 
   *reason = SNES_CONVERGED_ITERATING;
-
   if (!it) {
     /* set parameter for default relative tolerance convergence test */
     snes->ttol   = fnorm * snes->rtol;
@@ -719,13 +766,13 @@ PetscErrorCode SNESConvergedDefault(SNES snes, PetscInt it, PetscReal xnorm, Pet
 }
 
 /*@C
-   SNESConvergedSkip - Convergence test for SNES that NEVER returns as
+   SNESConvergedSkip - Convergence test for `SNES` that NEVER returns as
    converged, UNLESS the maximum number of iteration have been reached.
 
-   Logically Collective on SNES
+   Logically Collective on snes
 
    Input Parameters:
-+  snes - the SNES context
++  snes - the `SNES` context
 .  it - the iteration (0 indicates before any Newton steps)
 .  xnorm - 2-norm of current iterate
 .  snorm - 2-norm of current step
@@ -733,19 +780,17 @@ PetscErrorCode SNESConvergedDefault(SNES snes, PetscInt it, PetscReal xnorm, Pet
 -  dummy - unused context
 
    Output Parameter:
-.   reason  - SNES_CONVERGED_ITERATING, SNES_CONVERGED_ITS, or SNES_DIVERGED_FNORM_NAN
+.   reason  - `SNES_CONVERGED_ITERATING`, `SNES_CONVERGED_ITS`, or `SNES_DIVERGED_FNORM_NAN`
 
-   Notes:
-   Convergence is then declared after a fixed number of iterations have been used.
-
-   Options Database Keys:
-.  -snes_convergence_test default - see SNESSetFromOptions()
+   Options Database Key:
+.  -snes_convergence_test skip - see `SNESSetFromOptions()`
 
    Level: advanced
 
-.seealso: `SNESConvergedDefault()`, `SNESSetConvergenceTest()`
+.seealso: `SNES`, `SNESSolve()`, `SNESConvergedDefault()`, `SNESSetConvergenceTest()`
 @*/
-PetscErrorCode SNESConvergedSkip(SNES snes, PetscInt it, PetscReal xnorm, PetscReal snorm, PetscReal fnorm, SNESConvergedReason *reason, void *dummy) {
+PetscErrorCode SNESConvergedSkip(SNES snes, PetscInt it, PetscReal xnorm, PetscReal snorm, PetscReal fnorm, SNESConvergedReason *reason, void *dummy)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
   PetscValidPointer(reason, 6);
@@ -762,16 +807,17 @@ PetscErrorCode SNESConvergedSkip(SNES snes, PetscInt it, PetscReal xnorm, PetscR
 }
 
 /*@C
-  SNESSetWorkVecs - Gets a number of work vectors.
+  SNESSetWorkVecs - Gets a number of work vectors to be used internally by `SNES` solvers
 
   Input Parameters:
-+ snes  - the SNES context
++ snes  - the `SNES` context
 - nw - number of work vectors to allocate
 
   Level: developer
 
 @*/
-PetscErrorCode SNESSetWorkVecs(SNES snes, PetscInt nw) {
+PetscErrorCode SNESSetWorkVecs(SNES snes, PetscInt nw)
+{
   DM  dm;
   Vec v;
 
@@ -783,6 +829,5 @@ PetscErrorCode SNESSetWorkVecs(SNES snes, PetscInt nw) {
   PetscCall(DMGetGlobalVector(dm, &v));
   PetscCall(VecDuplicateVecs(v, snes->nwork, &snes->work));
   PetscCall(DMRestoreGlobalVector(dm, &v));
-  PetscCall(PetscLogObjectParents(snes, nw, snes->work));
   PetscFunctionReturn(0);
 }

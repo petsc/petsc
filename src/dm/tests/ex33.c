@@ -5,7 +5,8 @@ static char help[] = "Tests VecView()/VecLoad() for DMDA vectors (this tests DMD
 #include <petscdmda.h>
 #include <petscviewerhdf5.h>
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscMPIInt     rank, size;
   PetscInt        N = 6, M = 8, P = 5, dof = 1;
   PetscInt        stencil_width = 1, pt = 0, st = 0;

@@ -2,7 +2,8 @@ static char help[] = "Tests MatLoad() for dense matrix with uneven dimensions se
 
 #include <petscmat.h>
 
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   Mat          A;
   PetscViewer  fd;
   PetscMPIInt  rank;

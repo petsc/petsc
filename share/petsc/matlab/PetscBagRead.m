@@ -1,7 +1,7 @@
 function bag = PetscBagRead(fd)
 %
 %  Reads in PETSc binary file bag object
-%  emits as Matlab struct.  Called from
+%  emits as MATLAB struct.  Called from
 %  PetscBinaryRead.m.
 %
 

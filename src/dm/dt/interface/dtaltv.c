@@ -12,7 +12,7 @@
    vectors from a vector space V and producing a real number:
    - alternating: swapping any two vectors in a tuple reverses the sign of the result, e.g. w(v_1, v_2, ..., v_k) = -w(v_2, v_1, ..., v_k)
    - k-linear: w acts linear in each vector separately, e.g. w(a*v + b*y, v_2, ..., v_k) = a*w(v,v_2,...,v_k) + b*w(y,v_2,...,v_k)
-   This action is implemented as PetscDTAltVApply.
+   This action is implemented as `PetscDTAltVApply()`.
 
    The k-forms on a vector space form a vector space themselves, Alt^k V.  The dimension of Alt^k V, if V is N dimensional, is N choose k.  (This
    shows that for an N dimensional space, only 0 <= k <= N are valid form degrees.)
@@ -30,19 +30,19 @@
    - If there is any coordinate in both sets, then (f wedge g) = 0.
    - Otherwise, (f wedge g) is a multiple of the basis (j+k)-form h associated with (f_1,...,f_j,g_1,...,g_k).
    - In fact it is equal to either h or -h depending on how (f_1,...,f_j,g_1,...,g_k) compares to the same list of coordinates given in ascending order: if it is an even permutation of that list, then (f wedge g) = h, otherwise (f wedge g) = -h.
-   The wedge product is implemented for either two inputs (f and g) in PetscDTAltVWedge, or for one (just f, giving a
-   matrix to multiply against multiple choices of g) in PetscDTAltVWedgeMatrix.
+   The wedge product is implemented for either two inputs (f and g) in `PetscDTAltVWedge()`, or for one (just f, giving a
+   matrix to multiply against multiple choices of g) in `PetscDTAltVWedgeMatrix()`.
 
    If k > 0, a k-form w and a vector v can combine to make a (k-1)-formm through the interior product, (w int v),
    defined by (w int v)(v_1,...,v_{k-1}) = w(v,v_1,...,v_{k-1}).
 
    The interior product is implemented for either two inputs (w and v) in PetscDTAltVInterior, for one (just v, giving a
-   matrix to multiply against multiple choices of w) in PetscDTAltVInteriorMatrix,
-   or for no inputs (giving the sparsity pattern of PetscDTAltVInteriorMatrix) in PetscDTAltVInteriorPattern.
+   matrix to multiply against multiple choices of w) in `PetscDTAltVInteriorMatrix()`,
+   or for no inputs (giving the sparsity pattern of `PetscDTAltVInteriorMatrix()`) in `PetscDTAltVInteriorPattern()`.
 
    When there is a linear map L: V -> W from an N dimensional vector space to an M dimensional vector space,
    it induces the linear pullback map L^* : Alt^k W -> Alt^k V, defined by L^* w(v_1,...,v_k) = w(L v_1, ..., L v_k).
-   The pullback is implemented as PetscDTAltVPullback (acting on a known w) and PetscDTAltVPullbackMatrix (creating a matrix that computes the actin of L^*).
+   The pullback is implemented as `PetscDTAltVPullback()` (acting on a known w) and `PetscDTAltVPullbackMatrix()` (creating a matrix that computes the actin of L^*).
 
    Alt^k V and Alt^(N-k) V have the same dimension, and the Hodge star operator maps between them.  We note that Alt^N V is a one dimensional space, and its
    basis vector is sometime called vol.  The Hodge star operator has the property that (f wedge (star g)) = (f,g) vol, where (f,g) is the simple inner product
@@ -60,17 +60,20 @@ M*/
    Input Parameters:
 +  N - the dimension of the vector space, N >= 0
 .  k - the degree k of the k-form w, 0 <= k <= N
-.  w - a k-form, size [N choose k] (each degree of freedom of a k-form is associated with a subset of k coordinates of the N-dimensional vectors: the degrees of freedom are ordered lexicographically by their associated subsets)
+.  w - a k-form, size [N choose k] (each degree of freedom of a k-form is associated with a subset of k coordinates of the N-dimensional vectors.
+       The degrees of freedom are ordered lexicographically by their associated subsets)
 -  v - a set of k vectors of size N, size [k x N], each vector stored contiguously
 
    Output Parameter:
-.  wv - w(v_1,...,v_k) = \sum_i w_i * det(V_i): the degree of freedom w_i is associated with coordinates [s_{i,1},...,s_{i,k}], and the square matrix V_i has entry (j,k) given by the s_{i,k}'th coordinate of v_j
+.  wv - w(v_1,...,v_k) = \sum_i w_i * det(V_i): the degree of freedom w_i is associated with coordinates [s_{i,1},...,s_{i,k}], and the square matrix V_i has
+   entry (j,k) given by the s_{i,k}'th coordinate of v_j
 
    Level: intermediate
 
 .seealso: `PetscDTAltV`, `PetscDTAltVPullback()`, `PetscDTAltVPullbackMatrix()`
 @*/
-PetscErrorCode PetscDTAltVApply(PetscInt N, PetscInt k, const PetscReal *w, const PetscReal *v, PetscReal *wv) {
+PetscErrorCode PetscDTAltVApply(PetscInt N, PetscInt k, const PetscReal *w, const PetscReal *v, PetscReal *wv)
+{
   PetscFunctionBegin;
   PetscCheck(N >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "invalid dimension");
   PetscCheck(k >= 0 && k <= N, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "invalid form degree");
@@ -144,7 +147,8 @@ PetscErrorCode PetscDTAltVApply(PetscInt N, PetscInt k, const PetscReal *w, cons
 
 .seealso: `PetscDTAltV`, `PetscDTAltVWedgeMatrix()`, `PetscDTAltVPullback()`, `PetscDTAltVPullbackMatrix()`
 @*/
-PetscErrorCode PetscDTAltVWedge(PetscInt N, PetscInt j, PetscInt k, const PetscReal *a, const PetscReal *b, PetscReal *awedgeb) {
+PetscErrorCode PetscDTAltVWedge(PetscInt N, PetscInt j, PetscInt k, const PetscReal *a, const PetscReal *b, PetscReal *awedgeb)
+{
   PetscInt i;
 
   PetscFunctionBegin;
@@ -220,7 +224,8 @@ PetscErrorCode PetscDTAltVWedge(PetscInt N, PetscInt j, PetscInt k, const PetscR
 
 .seealso: `PetscDTAltV`, `PetscDTAltVPullback()`, `PetscDTAltVPullbackMatrix()`
 @*/
-PetscErrorCode PetscDTAltVWedgeMatrix(PetscInt N, PetscInt j, PetscInt k, const PetscReal *a, PetscReal *awedgeMat) {
+PetscErrorCode PetscDTAltVWedgeMatrix(PetscInt N, PetscInt j, PetscInt k, const PetscReal *a, PetscReal *awedgeMat)
+{
   PetscInt i;
 
   PetscFunctionBegin;
@@ -297,7 +302,8 @@ PetscErrorCode PetscDTAltVWedgeMatrix(PetscInt N, PetscInt j, PetscInt k, const 
 +  N - the dimension of the origin vector space of the linear transformation, M >= 0
 .  M - the dimension of the image vector space of the linear transformation, N >= 0
 .  L - a linear transformation, an [M x N] matrix in row-major format
-.  k - the *signed* degree k of the |k|-form w, -(min(M,N)) <= k <= min(M,N).  A negative form degree indicates that the pullback should be conjugated by the Hodge star operator (see note).
+.  k - the *signed* degree k of the |k|-form w, -(min(M,N)) <= k <= min(M,N).  A negative form degree indicates that the pullback should be conjugated by
+       the Hodge star operator (see note).
 -  w - a |k|-form in the image space, size [M choose |k|]
 
    Output Parameter:
@@ -311,7 +317,8 @@ PetscErrorCode PetscDTAltVWedgeMatrix(PetscInt N, PetscInt j, PetscInt k, const 
 
 .seealso: `PetscDTAltV`, `PetscDTAltVPullbackMatrix()`, `PetscDTAltVStar()`
 @*/
-PetscErrorCode PetscDTAltVPullback(PetscInt N, PetscInt M, const PetscReal *L, PetscInt k, const PetscReal *w, PetscReal *Lstarw) {
+PetscErrorCode PetscDTAltVPullback(PetscInt N, PetscInt M, const PetscReal *L, PetscInt k, const PetscReal *w, PetscReal *Lstarw)
+{
   PetscInt i, j, Nk, Mk;
 
   PetscFunctionBegin;
@@ -429,7 +436,8 @@ PetscErrorCode PetscDTAltVPullback(PetscInt N, PetscInt M, const PetscReal *L, P
 +  N - the dimension of the origin vector space of the linear transformation, N >= 0
 .  M - the dimension of the image vector space of the linear transformation, M >= 0
 .  L - a linear transformation, an [M x N] matrix in row-major format
--  k - the *signed* degree k of the |k|-forms on which Lstar acts, -(min(M,N)) <= k <= min(M,N).  A negative form degree indicates that the pullback should be conjugated by the Hodge star operator (see note in PetscDTAltvPullback())
+-  k - the *signed* degree k of the |k|-forms on which Lstar acts, -(min(M,N)) <= k <= min(M,N).
+       A negative form degree indicates that the pullback should be conjugated by the Hodge star operator (see note in `PetscDTAltvPullback()`)
 
    Output Parameter:
 .  Lstar - the pullback matrix, an [(N choose |k|) x (M choose |k|)] matrix in row-major format such that Lstar * w = L^* w
@@ -438,7 +446,8 @@ PetscErrorCode PetscDTAltVPullback(PetscInt N, PetscInt M, const PetscReal *L, P
 
 .seealso: `PetscDTAltV`, `PetscDTAltVPullback()`, `PetscDTAltVStar()`
 @*/
-PetscErrorCode PetscDTAltVPullbackMatrix(PetscInt N, PetscInt M, const PetscReal *L, PetscInt k, PetscReal *Lstar) {
+PetscErrorCode PetscDTAltVPullbackMatrix(PetscInt N, PetscInt M, const PetscReal *L, PetscInt k, PetscReal *Lstar)
+{
   PetscInt   Nk, Mk, Nf, i, j, l, p;
   PetscReal *Lw, *Lwv;
   PetscInt  *subsetw, *subsetv;
@@ -548,7 +557,8 @@ PetscErrorCode PetscDTAltVPullbackMatrix(PetscInt N, PetscInt M, const PetscReal
 
 .seealso: `PetscDTAltV`, `PetscDTAltVInteriorMatrix()`, `PetscDTAltVInteriorPattern()`, `PetscDTAltVPullback()`, `PetscDTAltVPullbackMatrix()`
 @*/
-PetscErrorCode PetscDTAltVInterior(PetscInt N, PetscInt k, const PetscReal *w, const PetscReal *v, PetscReal *wIntv) {
+PetscErrorCode PetscDTAltVInterior(PetscInt N, PetscInt k, const PetscReal *w, const PetscReal *v, PetscReal *wIntv)
+{
   PetscInt i, Nk, Nkm;
 
   PetscFunctionBegin;
@@ -610,7 +620,8 @@ PetscErrorCode PetscDTAltVInterior(PetscInt N, PetscInt k, const PetscReal *w, c
 
 .seealso: `PetscDTAltV`, `PetscDTAltVInterior()`, `PetscDTAltVInteriorPattern()`, `PetscDTAltVPullback()`, `PetscDTAltVPullbackMatrix()`
 @*/
-PetscErrorCode PetscDTAltVInteriorMatrix(PetscInt N, PetscInt k, const PetscReal *v, PetscReal *intvMat) {
+PetscErrorCode PetscDTAltVInteriorMatrix(PetscInt N, PetscInt k, const PetscReal *v, PetscReal *intvMat)
+{
   PetscInt i, Nk, Nkm;
 
   PetscFunctionBegin;
@@ -661,11 +672,11 @@ PetscErrorCode PetscDTAltVInteriorMatrix(PetscInt N, PetscInt k, const PetscReal
 }
 
 /*@
-   PetscDTAltVInteriorPattern - compute the sparsity and sign pattern of the interior product matrix computed in PetscDTAltVInteriorMatrix()
+   PetscDTAltVInteriorPattern - compute the sparsity and sign pattern of the interior product matrix computed in `PetscDTAltVInteriorMatrix()`
 
    Input Parameters:
 +  N - the dimension of the vector space, N >= 0
--  k - the degree of the k-forms on which intvMat from PetscDTAltVInteriorMatrix() acts, 0 <= k <= N.
+-  k - the degree of the k-forms on which intvMat from `PetscDTAltVInteriorMatrix()` acts, 0 <= k <= N.
 
    Output Parameter:
 .  indices - The interior product matrix intvMat has size [(N choose (k-1)) x (N choose k)] and has (N choose k) * k
@@ -674,11 +685,13 @@ PetscErrorCode PetscDTAltVInteriorMatrix(PetscInt N, PetscInt k, const PetscReal
 
    Level: intermediate
 
-   Note: this function is useful when the interior product needs to be computed at multiple locations, as when computing the Koszul differential
+   Note:
+   This function is useful when the interior product needs to be computed at multiple locations, as when computing the Koszul differential
 
 .seealso: `PetscDTAltV`, `PetscDTAltVInterior()`, `PetscDTAltVInteriorMatrix()`, `PetscDTAltVPullback()`, `PetscDTAltVPullbackMatrix()`
 @*/
-PetscErrorCode PetscDTAltVInteriorPattern(PetscInt N, PetscInt k, PetscInt (*indices)[3]) {
+PetscErrorCode PetscDTAltVInteriorPattern(PetscInt N, PetscInt k, PetscInt (*indices)[3])
+{
   PetscInt i, Nk, Nkm;
 
   PetscFunctionBegin;
@@ -762,7 +775,8 @@ PetscErrorCode PetscDTAltVInteriorPattern(PetscInt N, PetscInt k, PetscInt (*ind
 
 .seealso: `PetscDTAltV`, `PetscDTAltVPullback()`, `PetscDTAltVPullbackMatrix()`
 @*/
-PetscErrorCode PetscDTAltVStar(PetscInt N, PetscInt k, PetscInt pow, const PetscReal *w, PetscReal *starw) {
+PetscErrorCode PetscDTAltVStar(PetscInt N, PetscInt k, PetscInt pow, const PetscReal *w, PetscReal *starw)
+{
   PetscInt Nk, i;
 
   PetscFunctionBegin;

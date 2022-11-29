@@ -9,7 +9,8 @@ MatOperation optenum[] = {MATOP_MULT, MATOP_MULT_ADD, MATOP_MULT_TRANSPOSE, MATO
 /* Name of the methods in the user's Python class */
 const char *const optstr[] = {"mult", "multAdd", "multTranspose", "multTransposeAdd", "solve", "solveAdd", "solveTranspose", "solveTransposeAdd", "SOR", "getDiagonal", "diagonalScale", "norm", "zeroEntries", "getDiagonalBlock", "duplicate", "copy", "scale", "shift", "setDiagonal", "zeroRowsColumns", "createSubMatrix", "getVecs", "conjugate", "realPart", "imagPart", "missingDiagonal", "multDiagonalBlock", "multHermitian", "multHermitianAdd"};
 
-PetscErrorCode RunHasOperationTest() {
+PetscErrorCode RunHasOperationTest()
+{
   Mat      A;
   PetscInt matop, nop = PETSC_STATIC_ARRAY_LENGTH(optenum);
 
@@ -53,7 +54,8 @@ PetscErrorCode RunHasOperationTest() {
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
   PetscCall(PetscPythonInitialize(NULL, NULL));

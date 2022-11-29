@@ -8,7 +8,8 @@ typedef struct {
   Vec work, workf;
 } TS_Radau5;
 
-void FVPOL(int *N, double *X, double *Y, double *F, double *RPAR, void *IPAR) {
+void FVPOL(int *N, double *X, double *Y, double *F, double *RPAR, void *IPAR)
+{
   TS          ts    = (TS)IPAR;
   TS_Radau5  *cvode = (TS_Radau5 *)ts->data;
   DM          dm;
@@ -38,7 +39,8 @@ void FVPOL(int *N, double *X, double *Y, double *F, double *RPAR, void *IPAR) {
   PetscCallAbort(PETSC_COMM_SELF, VecResetArray(cvode->workf));
 }
 
-void JVPOL(PetscInt *N, PetscScalar *X, PetscScalar *Y, PetscScalar *DFY, int *LDFY, PetscScalar *RPAR, void *IPAR) {
+void JVPOL(PetscInt *N, PetscScalar *X, PetscScalar *Y, PetscScalar *DFY, int *LDFY, PetscScalar *RPAR, void *IPAR)
+{
   TS         ts    = (TS)IPAR;
   TS_Radau5 *cvode = (TS_Radau5 *)ts->data;
   Vec        yydot;
@@ -57,7 +59,8 @@ void JVPOL(PetscInt *N, PetscScalar *X, PetscScalar *Y, PetscScalar *DFY, int *L
   PetscCallAbort(PETSC_COMM_SELF, VecResetArray(cvode->work));
 }
 
-void SOLOUT(int *NR, double *XOLD, double *X, double *Y, double *CONT, double *LRC, int *N, double *RPAR, void *IPAR, int *IRTRN) {
+void SOLOUT(int *NR, double *XOLD, double *X, double *Y, double *CONT, double *LRC, int *N, double *RPAR, void *IPAR, int *IRTRN)
+{
   TS         ts    = (TS)IPAR;
   TS_Radau5 *cvode = (TS_Radau5 *)ts->data;
 
@@ -69,7 +72,8 @@ void SOLOUT(int *NR, double *XOLD, double *X, double *Y, double *CONT, double *L
 
 void radau5_(int *, void *, double *, double *, double *, double *, double *, double *, int *, void *, int *, int *, int *, void *, int *, int *, int *, void *, int *, double *, int *, int *, int *, double *, void *, int *);
 
-PetscErrorCode TSSolve_Radau5(TS ts) {
+PetscErrorCode TSSolve_Radau5(TS ts)
+{
   TS_Radau5   *cvode = (TS_Radau5 *)ts->data;
   PetscScalar *Y, *WORK, X, XEND, RTOL, ATOL, H, RPAR;
   PetscInt     ND, *IWORK, LWORK, LIWORK, MUJAC, MLMAS, MUMAS, IDID, ITOL;
@@ -87,25 +91,25 @@ PetscErrorCode TSSolve_Radau5(TS ts) {
   PetscCall(PetscCalloc2(LWORK, &WORK, LIWORK, &IWORK));
 
   /* C --- PARAMETER IN THE DIFFERENTIAL EQUATION */
-  RPAR  = 1.0e-6;
+  RPAR = 1.0e-6;
   /* C --- COMPUTE THE JACOBIAN ANALYTICALLY */
-  IJAC  = 1;
+  IJAC = 1;
   /* C --- JACOBIAN IS A FULL MATRIX */
   MLJAC = ND;
   /* C --- DIFFERENTIAL EQUATION IS IN EXPLICIT FORM*/
-  IMAS  = 0;
+  IMAS = 0;
   /* C --- OUTPUT ROUTINE IS USED DURING INTEGRATION*/
-  IOUT  = 1;
+  IOUT = 1;
   /* C --- INITIAL VALUES*/
-  X     = ts->ptime;
+  X = ts->ptime;
   /* C --- ENDPOINT OF INTEGRATION */
-  XEND  = ts->max_time;
+  XEND = ts->max_time;
   /* C --- REQUIRED TOLERANCE */
-  RTOL  = ts->rtol;
-  ATOL  = ts->atol;
-  ITOL  = 0;
+  RTOL = ts->rtol;
+  ATOL = ts->atol;
+  ITOL = 0;
   /* C --- INITIAL STEP SIZE */
-  H     = ts->time_step;
+  H = ts->time_step;
 
   /* output MUJAC MLMAS IDID; currently all ignored */
 
@@ -115,7 +119,8 @@ PetscErrorCode TSSolve_Radau5(TS ts) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode TSDestroy_Radau5(TS ts) {
+PetscErrorCode TSDestroy_Radau5(TS ts)
+{
   TS_Radau5 *cvode = (TS_Radau5 *)ts->data;
 
   PetscFunctionBegin;
@@ -126,20 +131,23 @@ PetscErrorCode TSDestroy_Radau5(TS ts) {
 }
 
 /*MC
-      TSRADAU5 - ODE solver using the RADAU5 package
-
-    Notes:
-    This uses its own nonlinear solver and dense matrix direct solver so PETSc SNES and KSP options do not apply.
-           Uses its own time-step adaptivity (but uses the TS rtol and atol, and initial timestep)
-           Uses its own memory for the dense matrix storage and factorization
-           Can only handle ODEs of the form \cdot{u} = -F(t,u) + G(t,u)
+      TSRADAU5 - ODE solver using the external RADAU5 package, requires ./configure --download-radau5
 
     Level: beginner
 
-.seealso: `TSCreate()`, `TS`, `TSSetType()`
+    Notes:
+    This uses its own nonlinear solver and dense matrix direct solver so PETSc `SNES` and `KSP` options do not apply.
 
+    Uses its own time-step adaptivity (but uses the TS rtol and atol, and initial timestep)
+
+    Uses its own memory for the dense matrix storage and factorization
+
+    Can only handle ODEs of the form \cdot{u} = -F(t,u) + G(t,u)
+
+.seealso: [](chapter_ts), `TSCreate()`, `TS`, `TSSetType()`, `TSType`
 M*/
-PETSC_EXTERN PetscErrorCode TSCreate_Radau5(TS ts) {
+PETSC_EXTERN PetscErrorCode TSCreate_Radau5(TS ts)
+{
   TS_Radau5 *cvode;
 
   PetscFunctionBegin;
@@ -147,7 +155,7 @@ PETSC_EXTERN PetscErrorCode TSCreate_Radau5(TS ts) {
   ts->ops->solve         = TSSolve_Radau5;
   ts->default_adapt_type = TSADAPTNONE;
 
-  PetscCall(PetscNewLog(ts, &cvode));
+  PetscCall(PetscNew(&cvode));
   ts->data = (void *)cvode;
   PetscFunctionReturn(0);
 }

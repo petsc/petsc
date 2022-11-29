@@ -62,7 +62,8 @@ PetscErrorCode HessianProduct(void *, Vec, Vec);
 PetscErrorCode MatrixFreeHessian(Tao, Vec, Mat, Mat, void *);
 PetscErrorCode FormFunctionGradient(Tao, Vec, PetscReal *, Vec, void *);
 
-PetscErrorCode main(int argc, char **argv) {
+PetscErrorCode main(int argc, char **argv)
+{
   PetscInt    mx = 10; /* discretization in x-direction */
   PetscInt    my = 10; /* discretization in y-direction */
   Vec         x;       /* solution, gradient vectors */
@@ -183,7 +184,8 @@ PetscErrorCode main(int argc, char **argv) {
     Output Parameters:
 .   X    - vector
 */
-PetscErrorCode FormInitialGuess(AppCtx *user, Vec X) {
+PetscErrorCode FormInitialGuess(AppCtx *user, Vec X)
+{
   PetscReal hx = user->hx, hy = user->hy, temp;
   PetscReal val;
   PetscInt  i, j, k, nx = user->mx, ny = user->my;
@@ -216,7 +218,8 @@ PetscErrorCode FormInitialGuess(AppCtx *user, Vec X) {
    f   - the newly evaluated function
    G   - the newly evaluated gradient
 */
-PetscErrorCode FormFunctionGradient(Tao tao, Vec X, PetscReal *f, Vec G, void *ptr) {
+PetscErrorCode FormFunctionGradient(Tao tao, Vec X, PetscReal *f, Vec G, void *ptr)
+{
   PetscFunctionBeginUser;
   PetscCall(FormFunction(tao, X, f, ptr));
   PetscCall(FormGradient(tao, X, G, ptr));
@@ -235,7 +238,8 @@ PetscErrorCode FormFunctionGradient(Tao tao, Vec X, PetscReal *f, Vec G, void *p
    Output Parameters:
 .  f    - the newly evaluated function
 */
-PetscErrorCode FormFunction(Tao tao, Vec X, PetscReal *f, void *ptr) {
+PetscErrorCode FormFunction(Tao tao, Vec X, PetscReal *f, void *ptr)
+{
   AppCtx            *user = (AppCtx *)ptr;
   PetscReal          hx = user->hx, hy = user->hy, area, three = 3.0, p5 = 0.5;
   PetscReal          zero = 0.0, vb, vl, vr, vt, dvdx, dvdy, flin = 0.0, fquad = 0.0;
@@ -304,7 +308,8 @@ PetscErrorCode FormFunction(Tao tao, Vec X, PetscReal *f, void *ptr) {
     Output Parameters:
 .   G - vector containing the newly evaluated gradient
 */
-PetscErrorCode FormGradient(Tao tao, Vec X, Vec G, void *ptr) {
+PetscErrorCode FormGradient(Tao tao, Vec X, Vec G, void *ptr)
+{
   AppCtx            *user = (AppCtx *)ptr;
   PetscReal          zero = 0.0, p5 = 0.5, three = 3.0, area, val;
   PetscInt           nx = user->mx, ny = user->my, ind, i, j, k;
@@ -412,7 +417,8 @@ PetscErrorCode FormGradient(Tao tao, Vec X, Vec G, void *ptr) {
    Hessian a column at a time, it is not particularly efficient and
    is not recommended.
 */
-PetscErrorCode FormHessian(Tao tao, Vec X, Mat H, Mat Hpre, void *ptr) {
+PetscErrorCode FormHessian(Tao tao, Vec X, Mat H, Mat Hpre, void *ptr)
+{
   AppCtx    *user = (AppCtx *)ptr;
   PetscInt   i, j, ndim = user->ndim;
   PetscReal *y, zero = 0.0, one = 1.0;
@@ -465,7 +471,8 @@ PetscErrorCode FormHessian(Tao tao, Vec X, Mat H, Mat Hpre, void *ptr) {
 .  PrecH - optionally different preconditioning Hessian
 .  flag  - flag indicating matrix structure
 */
-PetscErrorCode MatrixFreeHessian(Tao tao, Vec X, Mat H, Mat PrecH, void *ptr) {
+PetscErrorCode MatrixFreeHessian(Tao tao, Vec X, Mat H, Mat PrecH, void *ptr)
+{
   AppCtx *user = (AppCtx *)ptr;
 
   /* Sets location of vector for use in computing matrix-vector products  of the form H(X)*y  */
@@ -486,7 +493,8 @@ PetscErrorCode MatrixFreeHessian(Tao tao, Vec X, Mat H, Mat PrecH, void *ptr) {
    Output Parameters:
 .  y    - solution vector
 */
-PetscErrorCode HessianProductMat(Mat mat, Vec svec, Vec y) {
+PetscErrorCode HessianProductMat(Mat mat, Vec svec, Vec y)
+{
   void *ptr;
 
   PetscFunctionBeginUser;
@@ -507,7 +515,8 @@ PetscErrorCode HessianProductMat(Mat mat, Vec svec, Vec y) {
    Output Parameters:
 .  y    - product vector
 */
-PetscErrorCode HessianProduct(void *ptr, Vec svec, Vec y) {
+PetscErrorCode HessianProduct(void *ptr, Vec svec, Vec y)
+{
   AppCtx            *user = (AppCtx *)ptr;
   PetscReal          p5 = 0.5, zero = 0.0, one = 1.0, hx, hy, val, area;
   const PetscScalar *x, *s;

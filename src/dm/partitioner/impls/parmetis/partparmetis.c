@@ -1,7 +1,7 @@
 #include <petsc/private/partitionerimpl.h> /*I "petscpartitioner.h" I*/
 
 #if defined(PETSC_HAVE_PARMETIS)
-#include <parmetis.h>
+  #include <parmetis.h>
 #endif
 
 PetscBool  ParMetisPartitionerCite       = PETSC_FALSE;
@@ -25,7 +25,8 @@ typedef struct {
 
 static const char *ptypes[] = {"kway", "rb"};
 
-static PetscErrorCode PetscPartitionerDestroy_ParMetis(PetscPartitioner part) {
+static PetscErrorCode PetscPartitionerDestroy_ParMetis(PetscPartitioner part)
+{
   PetscPartitioner_ParMetis *p = (PetscPartitioner_ParMetis *)part->data;
 
   PetscFunctionBegin;
@@ -34,7 +35,8 @@ static PetscErrorCode PetscPartitionerDestroy_ParMetis(PetscPartitioner part) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscPartitionerView_ParMetis_ASCII(PetscPartitioner part, PetscViewer viewer) {
+static PetscErrorCode PetscPartitionerView_ParMetis_ASCII(PetscPartitioner part, PetscViewer viewer)
+{
   PetscPartitioner_ParMetis *p = (PetscPartitioner_ParMetis *)part->data;
 
   PetscFunctionBegin;
@@ -47,7 +49,8 @@ static PetscErrorCode PetscPartitionerView_ParMetis_ASCII(PetscPartitioner part,
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscPartitionerView_ParMetis(PetscPartitioner part, PetscViewer viewer) {
+static PetscErrorCode PetscPartitionerView_ParMetis(PetscPartitioner part, PetscViewer viewer)
+{
   PetscBool iascii;
 
   PetscFunctionBegin;
@@ -58,7 +61,8 @@ static PetscErrorCode PetscPartitionerView_ParMetis(PetscPartitioner part, Petsc
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscPartitionerSetFromOptions_ParMetis(PetscPartitioner part, PetscOptionItems *PetscOptionsObject) {
+static PetscErrorCode PetscPartitionerSetFromOptions_ParMetis(PetscPartitioner part, PetscOptionItems *PetscOptionsObject)
+{
   PetscPartitioner_ParMetis *p = (PetscPartitioner_ParMetis *)part->data;
 
   PetscFunctionBegin;
@@ -71,7 +75,8 @@ static PetscErrorCode PetscPartitionerSetFromOptions_ParMetis(PetscPartitioner p
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscPartitionerPartition_ParMetis(PetscPartitioner part, PetscInt nparts, PetscInt numVertices, PetscInt start[], PetscInt adjacency[], PetscSection vertSection, PetscSection targetSection, PetscSection partSection, IS *partition) {
+static PetscErrorCode PetscPartitionerPartition_ParMetis(PetscPartitioner part, PetscInt nparts, PetscInt numVertices, PetscInt start[], PetscInt adjacency[], PetscSection vertSection, PetscSection targetSection, PetscSection partSection, IS *partition)
+{
 #if defined(PETSC_HAVE_PARMETIS)
   PetscPartitioner_ParMetis *pm = (PetscPartitioner_ParMetis *)part->data;
   MPI_Comm                   comm;
@@ -217,7 +222,8 @@ static PetscErrorCode PetscPartitionerPartition_ParMetis(PetscPartitioner part, 
 #endif
 }
 
-static PetscErrorCode PetscPartitionerInitialize_ParMetis(PetscPartitioner part) {
+static PetscErrorCode PetscPartitionerInitialize_ParMetis(PetscPartitioner part)
+{
   PetscFunctionBegin;
   part->noGraph             = PETSC_FALSE;
   part->ops->view           = PetscPartitionerView_ParMetis;
@@ -243,12 +249,13 @@ static PetscErrorCode PetscPartitionerInitialize_ParMetis(PetscPartitioner part)
 .seealso: `PetscPartitionerType`, `PetscPartitionerCreate()`, `PetscPartitionerSetType()`
 M*/
 
-PETSC_EXTERN PetscErrorCode PetscPartitionerCreate_ParMetis(PetscPartitioner part) {
+PETSC_EXTERN PetscErrorCode PetscPartitionerCreate_ParMetis(PetscPartitioner part)
+{
   PetscPartitioner_ParMetis *p;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part, PETSCPARTITIONER_CLASSID, 1);
-  PetscCall(PetscNewLog(part, &p));
+  PetscCall(PetscNew(&p));
   part->data = p;
 
   PetscCallMPI(MPI_Comm_dup(PetscObjectComm((PetscObject)part), &p->pcomm));

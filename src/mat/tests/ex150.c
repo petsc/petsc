@@ -4,19 +4,20 @@ static char help[] = "This program illustrates the use of PETSc-fftw interface f
 
 extern PetscErrorCode InputTransformFFT(Mat, Vec, Vec);
 extern PetscErrorCode OutputTransformFFT(Mat, Vec, Vec);
-int                   main(int argc, char **args) {
-                    PetscMPIInt rank, size;
-                    PetscInt    N0 = 3, N1 = 3, N2 = 3, N3 = 3, N4 = 3, N = N0 * N1 * N2 * N3;
-                    PetscRandom rdm;
-                    PetscReal   enorm;
-                    Vec         x, y, z, input, output;
-                    Mat         A;
-                    PetscInt    DIM, dim[5], vsize;
-                    PetscReal   fac;
-                    PetscScalar one = 1;
+int                   main(int argc, char **args)
+{
+  PetscMPIInt rank, size;
+  PetscInt    N0 = 3, N1 = 3, N2 = 3, N3 = 3, N4 = 3, N = N0 * N1 * N2 * N3;
+  PetscRandom rdm;
+  PetscReal   enorm;
+  Vec         x, y, z, input, output;
+  Mat         A;
+  PetscInt    DIM, dim[5], vsize;
+  PetscReal   fac;
+  PetscScalar one = 1;
 
-                    PetscFunctionBeginUser;
-                    PetscCall(PetscInitialize(&argc, &args, (char *)0, help));
+  PetscFunctionBeginUser;
+  PetscCall(PetscInitialize(&argc, &args, (char *)0, help));
 #if defined(PETSC_USE_COMPLEX)
   SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP, "This example requires real numbers");
 #endif

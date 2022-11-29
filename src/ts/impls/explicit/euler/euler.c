@@ -7,7 +7,8 @@ typedef struct {
   Vec update; /* work vector where new solution is formed  */
 } TS_Euler;
 
-static PetscErrorCode TSStep_Euler(TS ts) {
+static PetscErrorCode TSStep_Euler(TS ts)
+{
   TS_Euler *euler    = (TS_Euler *)ts->data;
   Vec       solution = ts->vec_sol, update = euler->update;
   PetscBool stageok, accept                = PETSC_TRUE;
@@ -42,7 +43,8 @@ static PetscErrorCode TSStep_Euler(TS ts) {
 }
 /*------------------------------------------------------------*/
 
-static PetscErrorCode TSSetUp_Euler(TS ts) {
+static PetscErrorCode TSSetUp_Euler(TS ts)
+{
   TS_Euler *euler = (TS_Euler *)ts->data;
 
   PetscFunctionBegin;
@@ -53,7 +55,8 @@ static PetscErrorCode TSSetUp_Euler(TS ts) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSReset_Euler(TS ts) {
+static PetscErrorCode TSReset_Euler(TS ts)
+{
   TS_Euler *euler = (TS_Euler *)ts->data;
 
   PetscFunctionBegin;
@@ -61,7 +64,8 @@ static PetscErrorCode TSReset_Euler(TS ts) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSDestroy_Euler(TS ts) {
+static PetscErrorCode TSDestroy_Euler(TS ts)
+{
   PetscFunctionBegin;
   PetscCall(TSReset_Euler(ts));
   PetscCall(PetscFree(ts->data));
@@ -69,17 +73,20 @@ static PetscErrorCode TSDestroy_Euler(TS ts) {
 }
 /*------------------------------------------------------------*/
 
-static PetscErrorCode TSSetFromOptions_Euler(TS ts, PetscOptionItems *PetscOptionsObject) {
+static PetscErrorCode TSSetFromOptions_Euler(TS ts, PetscOptionItems *PetscOptionsObject)
+{
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSView_Euler(TS ts, PetscViewer viewer) {
+static PetscErrorCode TSView_Euler(TS ts, PetscViewer viewer)
+{
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSInterpolate_Euler(TS ts, PetscReal t, Vec X) {
+static PetscErrorCode TSInterpolate_Euler(TS ts, PetscReal t, Vec X)
+{
   TS_Euler *euler  = (TS_Euler *)ts->data;
   Vec       update = euler->update;
   PetscReal alpha  = (ts->ptime - t) / ts->time_step;
@@ -90,7 +97,8 @@ static PetscErrorCode TSInterpolate_Euler(TS ts, PetscReal t, Vec X) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSComputeLinearStability_Euler(TS ts, PetscReal xr, PetscReal xi, PetscReal *yr, PetscReal *yi) {
+static PetscErrorCode TSComputeLinearStability_Euler(TS ts, PetscReal xr, PetscReal xi, PetscReal *yr, PetscReal *yi)
+{
   PetscFunctionBegin;
   *yr = 1.0 + xr;
   *yi = xi;
@@ -103,14 +111,14 @@ static PetscErrorCode TSComputeLinearStability_Euler(TS ts, PetscReal xr, PetscR
 
   Level: beginner
 
-.seealso: `TSCreate()`, `TS`, `TSSetType()`, `TSBEULER`
-
+.seealso: [](chapter_ts), `TSCreate()`, `TS`, `TSSetType()`, `TSBEULER`, `TSType`
 M*/
-PETSC_EXTERN PetscErrorCode TSCreate_Euler(TS ts) {
+PETSC_EXTERN PetscErrorCode TSCreate_Euler(TS ts)
+{
   TS_Euler *euler;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(ts, &euler));
+  PetscCall(PetscNew(&euler));
   ts->data = (void *)euler;
 
   ts->ops->setup           = TSSetUp_Euler;

@@ -1,7 +1,7 @@
 /*
   DMNetwork, for parallel unstructured network problems.
 */
-#if !defined(PETSCDMNETWORK_H)
+#ifndef PETSCDMNETWORK_H
 #define PETSCDMNETWORK_H
 
 #include <petscdmplex.h>
@@ -23,6 +23,8 @@ PETSC_EXTERN PetscErrorCode DMNetworkLayoutSetUp(DM);
 PETSC_EXTERN PetscErrorCode DMNetworkRegisterComponent(DM, const char *, size_t, PetscInt *);
 PETSC_EXTERN PetscErrorCode DMNetworkGetVertexRange(DM, PetscInt *, PetscInt *);
 PETSC_EXTERN PetscErrorCode DMNetworkGetEdgeRange(DM, PetscInt *, PetscInt *);
+PETSC_EXTERN PetscErrorCode DMNetworkGetNumEdges(DM, PetscInt *, PetscInt *);
+PETSC_EXTERN PetscErrorCode DMNetworkGetNumVertices(DM, PetscInt *, PetscInt *);
 
 PETSC_EXTERN PetscErrorCode DMNetworkAddComponent(DM, PetscInt, PetscInt, void *, PetscInt);
 PETSC_EXTERN PetscErrorCode DMNetworkGetComponent(DM, PetscInt, PetscInt, PetscInt *, void **, PetscInt *);

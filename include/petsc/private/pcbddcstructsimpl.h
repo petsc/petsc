@@ -1,5 +1,5 @@
-#if !defined(__pcbddc_structs_h)
-#define __pcbddc_structs_h
+#ifndef PETSC_PCBDDCSTRUCTSIMPL_H
+#define PETSC_PCBDDCSTRUCTSIMPL_H
 
 #include <petscksp.h>
 #include <petscbt.h>
@@ -13,7 +13,7 @@
 
 /* Structure for local graph partitioning */
 struct _PCBDDCGraph {
-  PetscBool              setupcalled;
+  PetscBool setupcalled;
   /* graph information */
   ISLocalToGlobalMapping l2gmap;
   PetscInt               nvtxs;
@@ -33,33 +33,33 @@ struct _PCBDDCGraph {
   PetscInt               commsizelimit;
   PetscInt               maxcount;
   /* data for connected components */
-  PetscInt               ncc;
-  PetscInt              *cptr;
-  PetscInt              *queue;
-  PetscBool              queue_sorted;
+  PetscInt  ncc;
+  PetscInt *cptr;
+  PetscInt *queue;
+  PetscBool queue_sorted;
   /* data for interface subsets */
-  PetscInt               n_subsets;
-  PetscInt              *subset_size;
-  PetscInt             **subset_idxs;
-  PetscInt              *subset_ncc;
-  PetscInt              *subset_ref_node;
+  PetscInt   n_subsets;
+  PetscInt  *subset_size;
+  PetscInt **subset_idxs;
+  PetscInt  *subset_ncc;
+  PetscInt  *subset_ref_node;
   /* data for periodic dofs */
-  PetscInt              *mirrors;
-  PetscInt             **mirrors_set;
+  PetscInt  *mirrors;
+  PetscInt **mirrors_set;
   /* placeholders for connectivity relation between dofs */
-  PetscInt               nvtxs_csr;
-  PetscInt              *xadj;
-  PetscInt              *adjncy;
-  PetscBool              freecsr;
+  PetscInt  nvtxs_csr;
+  PetscInt *xadj;
+  PetscInt *adjncy;
+  PetscBool freecsr;
   /* data for local subdomains (if any have been detected)
      these are not intended to be exposed */
-  PetscInt               n_local_subs;
-  PetscInt              *local_subs;
+  PetscInt  n_local_subs;
+  PetscInt *local_subs;
   /* coordinates (for corner detection) */
-  PetscBool              active_coords;
-  PetscBool              cloc;
-  PetscInt               cdim, cnloc;
-  PetscReal             *coords;
+  PetscBool  active_coords;
+  PetscBool  cloc;
+  PetscInt   cdim, cnloc;
+  PetscReal *coords;
 };
 typedef struct _PCBDDCGraph *PCBDDCGraph;
 
@@ -76,21 +76,21 @@ typedef struct _PCBDDCGraphCandidates *PCBDDCGraphCandidates;
 /* It assumes that interior variables are a contiguous set starting from 0 */
 struct _PCBDDCReuseSolvers {
   /* the factored matrix obtained from MatGetFactor(...,solver_package,...) */
-  Mat          F;
+  Mat F;
   /* placeholders for the solution and rhs on the whole set of dofs of A (size local_dofs - local_vertices)*/
-  Vec          sol;
-  Vec          rhs;
+  Vec sol;
+  Vec rhs;
   /* */
-  PetscBool    has_vertices;
+  PetscBool has_vertices;
   /* shell PCs to handle interior/correction solvers */
-  PC           interior_solver;
-  PC           correction_solver;
-  IS           is_R;
+  PC interior_solver;
+  PC correction_solver;
+  IS is_R;
   /* objects to handle Schur complement solution */
-  Vec          rhs_B;
-  Vec          sol_B;
-  IS           is_B;
-  VecScatter   correction_scatter_B;
+  Vec        rhs_B;
+  Vec        sol_B;
+  IS         is_B;
+  VecScatter correction_scatter_B;
   /* handle benign trick without change of basis on pressures */
   PetscInt     benign_n;
   IS          *benign_zerodiag_subs;
@@ -105,58 +105,58 @@ typedef struct _PCBDDCReuseSolvers *PCBDDCReuseSolvers;
 /* structure to handle Schur complements on subsets */
 struct _PCBDDCSubSchurs {
   /* local Neumann matrix */
-  Mat                    A;
+  Mat A;
   /* local Schur complement */
-  Mat                    S;
+  Mat S;
   /* index sets */
-  IS                     is_I;
-  IS                     is_B;
+  IS is_I;
+  IS is_B;
   /* whether Schur complements are explicitly computed with or not */
-  char                   mat_solver_type[64];
-  PetscBool              schur_explicit;
+  char      mat_solver_type[64];
+  PetscBool schur_explicit;
   /* BDDC or GDSW */
-  PetscBool              gdsw;
+  PetscBool gdsw;
   /* matrices cointained explicit schur complements cat together */
   /* note that AIJ format is used but the values are inserted as in column major ordering */
-  Mat                    S_Ej_all;
-  Mat                    sum_S_Ej_all;
-  Mat                    sum_S_Ej_inv_all;
-  Mat                    sum_S_Ej_tilda_all;
-  IS                     is_Ej_all;
-  IS                     is_vertices;
-  IS                     is_dir;
+  Mat S_Ej_all;
+  Mat sum_S_Ej_all;
+  Mat sum_S_Ej_inv_all;
+  Mat sum_S_Ej_tilda_all;
+  IS  is_Ej_all;
+  IS  is_vertices;
+  IS  is_dir;
   /* l2g maps */
   ISLocalToGlobalMapping l2gmap;
   ISLocalToGlobalMapping BtoNmap;
   /* number of local subproblems */
-  PetscInt               n_subs;
+  PetscInt n_subs;
   /* connected components */
-  IS                    *is_subs;
-  PetscBT                is_edge;
+  IS     *is_subs;
+  PetscBT is_edge;
   /* mat flags */
-  PetscBool              is_symmetric;
-  PetscBool              is_hermitian;
-  PetscBool              is_posdef;
+  PetscBool is_symmetric;
+  PetscBool is_hermitian;
+  PetscBool is_posdef;
   /* data structure to reuse MatFactor with Schur solver */
-  PCBDDCReuseSolvers     reuse_solver;
+  PCBDDCReuseSolvers reuse_solver;
   /* change of variables */
-  KSP                   *change;
-  IS                    *change_primal_sub;
-  PetscBool              change_with_qr;
+  KSP      *change;
+  IS       *change_primal_sub;
+  PetscBool change_with_qr;
   /* prefix */
-  char                  *prefix;
+  char *prefix;
   /* */
-  PetscBool              restrict_comm;
+  PetscBool restrict_comm;
   /* debug */
-  PetscBool              debug;
+  PetscBool debug;
 };
 typedef struct _PCBDDCSubSchurs *PCBDDCSubSchurs;
 
 /* Structure for deluxe scaling */
 struct _PCBDDCDeluxeScaling {
   /* simple scaling on selected dofs (i.e. primal vertices and nodes on interface dirichlet boundaries) */
-  PetscInt     n_simple;
-  PetscInt    *idx_simple_B;
+  PetscInt  n_simple;
+  PetscInt *idx_simple_B;
   /* handle deluxe problems  */
   PetscInt     seq_n;
   PetscScalar *workspace;
@@ -236,8 +236,8 @@ struct _FETIDPPC_ctx {
   VecScatter l2g_lambda;
   PC         pc;
   /* saddle point */
-  Vec        xPg;
-  Vec        yPg;
+  Vec xPg;
+  Vec yPg;
 };
 typedef struct _FETIDPPC_ctx *FETIDPPC_ctx;
 
@@ -255,4 +255,4 @@ struct _BDDCIPC_ctx {
 };
 typedef struct _BDDCIPC_ctx *BDDCIPC_ctx;
 
-#endif
+#endif // PETSC_PCBDDCSTRUCTSIMPL_H

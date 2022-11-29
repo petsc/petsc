@@ -40,7 +40,8 @@ typedef struct {
   PetscLogStage stages[4];
 } AppCtx;
 
-PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options) {
+PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
+{
   PetscFunctionBegin;
   options->overlap          = 0;
   options->testPartition    = PETSC_FALSE;
@@ -63,7 +64,8 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm) {
+PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
+{
   DM          pdm             = NULL;
   PetscInt    triSizes_n2[2]  = {4, 4};
   PetscInt    triPoints_n2[8] = {0, 1, 4, 6, 2, 3, 5, 7};
@@ -180,7 +182,8 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm) {
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   DM     dm;
   AppCtx user; /* user-defined work context */
 

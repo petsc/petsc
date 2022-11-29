@@ -3,8 +3,6 @@
 import os
 petsc_hash_pkgs=os.path.join(os.getenv('HOME'),'petsc-hash-pkgs')
 
-# moab appears to break with -with-visibility=1 - so disable it
-
 configure_options = [
   '--package-prefix-hash='+petsc_hash_pkgs,
   '--with-cc=clang',
@@ -14,7 +12,6 @@ configure_options = [
   'CXXFLAGS=-Wall -Wwrite-strings -Wno-strict-aliasing -Wno-unknown-pragmas -fstack-protector -Wno-deprecated -fno-stack-check',
   '--with-clanguage=cxx',
   '--with-debugging=0',
-  '--with-visibility=0', # CXXFLAGS disables this option
   '--debugLevel=4',
 
   #'--prefix=petsc-install', temporarily disable for gitlab-ci

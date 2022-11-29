@@ -651,7 +651,7 @@ Make:
   -defaultRoot                  : Directory root for all packages                                   current: ../..
   -prefix                       : Root for installation of libraries and binaries
 SIDLMake:
-  -bootstrap                    : Generate the boostrap client                                      current: 0
+  -bootstrap                    : Generate the bootstrap client                                     current: 0
   -outputSIDLFiles              : Write generated files to disk                                     current: 1
   -excludeLanguages=&lt;languages&gt; : Do not load configurations from RDict for the given languages     current: []
   -excludeBasenames=&lt;names&gt;     : Do not load configurations from RDict for these SIDL base names   current: []

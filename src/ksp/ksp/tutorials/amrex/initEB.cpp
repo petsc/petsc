@@ -12,7 +12,8 @@
 
 using namespace amrex;
 
-void MyTest::initializeEB() {
+void MyTest::initializeEB()
+{
   ParmParse   pp("eb2");
   std::string geom_type;
   pp.get("geom_type", geom_type);

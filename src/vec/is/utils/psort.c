@@ -3,7 +3,8 @@
 #include <petscis.h> /*I "petscis.h" I*/
 
 /* This is the bitonic merge that works on non-power-of-2 sizes found at http://www.iti.fh-flensburg.de/lang/algorithmen/sortieren/bitonic/oddn.htm */
-static PetscErrorCode PetscParallelSortInt_Bitonic_Merge(MPI_Comm comm, PetscMPIInt tag, PetscMPIInt rankStart, PetscMPIInt rankEnd, PetscMPIInt rank, PetscMPIInt n, PetscInt keys[], PetscInt buffer[], PetscBool forward) {
+static PetscErrorCode PetscParallelSortInt_Bitonic_Merge(MPI_Comm comm, PetscMPIInt tag, PetscMPIInt rankStart, PetscMPIInt rankEnd, PetscMPIInt rank, PetscMPIInt n, PetscInt keys[], PetscInt buffer[], PetscBool forward)
+{
   PetscInt diff;
   PetscInt split, mid, partner;
 
@@ -46,7 +47,8 @@ static PetscErrorCode PetscParallelSortInt_Bitonic_Merge(MPI_Comm comm, PetscMPI
 }
 
 /* This is the bitonic sort that works on non-power-of-2 sizes found at http://www.iti.fh-flensburg.de/lang/algorithmen/sortieren/bitonic/oddn.htm */
-static PetscErrorCode PetscParallelSortInt_Bitonic_Recursive(MPI_Comm comm, PetscMPIInt tag, PetscMPIInt rankStart, PetscMPIInt rankEnd, PetscMPIInt rank, PetscMPIInt n, PetscInt keys[], PetscInt buffer[], PetscBool forward) {
+static PetscErrorCode PetscParallelSortInt_Bitonic_Recursive(MPI_Comm comm, PetscMPIInt tag, PetscMPIInt rankStart, PetscMPIInt rankEnd, PetscMPIInt rank, PetscMPIInt n, PetscInt keys[], PetscInt buffer[], PetscBool forward)
+{
   PetscInt diff;
   PetscInt mid;
 
@@ -73,7 +75,8 @@ static PetscErrorCode PetscParallelSortInt_Bitonic_Recursive(MPI_Comm comm, Pets
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscParallelSortInt_Bitonic(MPI_Comm comm, PetscInt n, PetscInt keys[]) {
+static PetscErrorCode PetscParallelSortInt_Bitonic(MPI_Comm comm, PetscInt n, PetscInt keys[])
+{
   PetscMPIInt size, rank, tag, mpin;
   PetscInt   *buffer;
 
@@ -89,7 +92,8 @@ static PetscErrorCode PetscParallelSortInt_Bitonic(MPI_Comm comm, PetscInt n, Pe
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscParallelSampleSelect(PetscLayout mapin, PetscLayout mapout, PetscInt keysin[], PetscInt *outpivots[]) {
+static PetscErrorCode PetscParallelSampleSelect(PetscLayout mapin, PetscLayout mapout, PetscInt keysin[], PetscInt *outpivots[])
+{
   PetscMPIInt  size, rank;
   PetscInt    *pivots, *finalpivots, i;
   PetscInt     non_empty, my_first, count;
@@ -163,7 +167,8 @@ static PetscErrorCode PetscParallelSampleSelect(PetscLayout mapin, PetscLayout m
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscParallelRedistribute(PetscLayout map, PetscInt n, PetscInt arrayin[], PetscInt arrayout[]) {
+static PetscErrorCode PetscParallelRedistribute(PetscLayout map, PetscInt n, PetscInt arrayin[], PetscInt arrayout[])
+{
   PetscMPIInt  size, rank;
   PetscInt     myOffset, nextOffset;
   PetscInt     i;
@@ -228,7 +233,8 @@ static PetscErrorCode PetscParallelRedistribute(PetscLayout map, PetscInt n, Pet
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscParallelSortInt_Samplesort(PetscLayout mapin, PetscLayout mapout, PetscInt keysin[], PetscInt keysout[]) {
+static PetscErrorCode PetscParallelSortInt_Samplesort(PetscLayout mapin, PetscLayout mapout, PetscInt keysin[], PetscInt keysout[])
+{
   PetscMPIInt  size, rank;
   PetscInt    *pivots = NULL, *buffer;
   PetscInt     i, j;
@@ -287,8 +293,8 @@ static PetscErrorCode PetscParallelSortInt_Samplesort(PetscLayout mapin, PetscLa
   Collective
 
   Input Parameters:
-+ mapin - PetscLayout describing the distribution of the input keys
-. mapout - PetscLayout describing the distribution of the output keys
++ mapin - `PetscLayout` describing the distribution of the input keys
+. mapout - `PetscLayout` describing the desired distribution of the output keys
 - keysin - the pre-sorted array of integers
 
   Output Parameter:
@@ -296,19 +302,22 @@ static PetscErrorCode PetscParallelSortInt_Samplesort(PetscLayout mapin, PetscLa
 
   Level: developer
 
-  Notes: This implements a distributed samplesort, which, with local array sizes n_in and n_out, global size N, and global number of processes P, does:
-
+  Notes:
+  This implements a distributed samplesort, which, with local array sizes n_in and n_out, global size N, and global number of processes P, does:
+.vb
   - sorts locally
   - chooses pivots by sorting (in parallel) (P-1) pivot suggestions from each process using bitonic sort and allgathering a subset of (P-1) of those
   - using to the pivots to repartition the keys by all-to-all exchange
   - sorting the repartitioned keys locally (the array is now globally sorted, but does not match the mapout layout)
   - redistributing to match the mapout layout
+.ve
 
-  If keysin != keysout, then keysin will not be changed during PetscParallelSortInt.
+  If keysin != keysout, then keysin will not be changed during `PetscParallelSortInt()`.
 
-.seealso: `PetscParallelSortedInt()`
+.seealso: `PetscSortInt()`, `PetscParallelSortedInt()`
 @*/
-PetscErrorCode PetscParallelSortInt(PetscLayout mapin, PetscLayout mapout, PetscInt keysin[], PetscInt keysout[]) {
+PetscErrorCode PetscParallelSortInt(PetscLayout mapin, PetscLayout mapout, PetscInt keysin[], PetscInt keysout[])
+{
   PetscMPIInt size;
   PetscMPIInt result;
   PetscInt   *keysincopy = NULL;

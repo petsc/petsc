@@ -1,7 +1,8 @@
 
 #include <petsc/private/matimpl.h> /*I   "petscmat.h"  I*/
 
-static PetscErrorCode MatTransposeAXPY_Private(Mat Y, PetscScalar a, Mat X, MatStructure str, Mat T) {
+static PetscErrorCode MatTransposeAXPY_Private(Mat Y, PetscScalar a, Mat X, MatStructure str, Mat T)
+{
   Mat A, F;
   PetscErrorCode (*f)(Mat, Mat *);
 
@@ -51,7 +52,8 @@ static PetscErrorCode MatTransposeAXPY_Private(Mat Y, PetscScalar a, Mat X, MatS
 
 .seealso: `MatAYPX()`
  @*/
-PetscErrorCode MatAXPY(Mat Y, PetscScalar a, Mat X, MatStructure str) {
+PetscErrorCode MatAXPY(Mat Y, PetscScalar a, Mat X, MatStructure str)
+{
   PetscInt  M1, M2, N1, N2;
   PetscInt  m1, m2, n1, n2;
   PetscBool sametype, transpose;
@@ -95,7 +97,8 @@ PetscErrorCode MatAXPY(Mat Y, PetscScalar a, Mat X, MatStructure str) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatAXPY_Basic_Preallocate(Mat Y, Mat X, Mat *B) {
+PetscErrorCode MatAXPY_Basic_Preallocate(Mat Y, Mat X, Mat *B)
+{
   PetscErrorCode (*preall)(Mat, Mat, Mat *) = NULL;
 
   PetscFunctionBegin;
@@ -144,7 +147,8 @@ PetscErrorCode MatAXPY_Basic_Preallocate(Mat Y, Mat X, Mat *B) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatAXPY_Basic(Mat Y, PetscScalar a, Mat X, MatStructure str) {
+PetscErrorCode MatAXPY_Basic(Mat Y, PetscScalar a, Mat X, MatStructure str)
+{
   PetscBool isshell, isdense, isnest;
 
   PetscFunctionBegin;
@@ -212,7 +216,8 @@ PetscErrorCode MatAXPY_Basic(Mat Y, PetscScalar a, Mat X, MatStructure str) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatAXPY_BasicWithPreallocation(Mat B, Mat Y, PetscScalar a, Mat X, MatStructure str) {
+PetscErrorCode MatAXPY_BasicWithPreallocation(Mat B, Mat Y, PetscScalar a, Mat X, MatStructure str)
+{
   PetscInt           i, start, end, j, ncols, m, n;
   const PetscInt    *row;
   PetscScalar       *val;
@@ -282,7 +287,8 @@ PetscErrorCode MatAXPY_BasicWithPreallocation(Mat B, Mat Y, PetscScalar a, Mat X
 
 .seealso: `MatDiagonalSet()`, `MatScale()`, `MatDiagonalScale()`
  @*/
-PetscErrorCode MatShift(Mat Y, PetscScalar a) {
+PetscErrorCode MatShift(Mat Y, PetscScalar a)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(Y, MAT_CLASSID, 1);
   PetscCheck(Y->assembled, PetscObjectComm((PetscObject)Y), PETSC_ERR_ARG_WRONGSTATE, "Not for unassembled matrix");
@@ -297,7 +303,8 @@ PetscErrorCode MatShift(Mat Y, PetscScalar a) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatDiagonalSet_Default(Mat Y, Vec D, InsertMode is) {
+PetscErrorCode MatDiagonalSet_Default(Mat Y, Vec D, InsertMode is)
+{
   PetscInt           i, start, end;
   const PetscScalar *v;
 
@@ -332,7 +339,8 @@ PetscErrorCode MatDiagonalSet_Default(Mat Y, Vec D, InsertMode is) {
 
 .seealso: `MatShift()`, `MatScale()`, `MatDiagonalScale()`
 @*/
-PetscErrorCode MatDiagonalSet(Mat Y, Vec D, InsertMode is) {
+PetscErrorCode MatDiagonalSet(Mat Y, Vec D, InsertMode is)
+{
   PetscInt matlocal, veclocal;
 
   PetscFunctionBegin;
@@ -362,7 +370,8 @@ PetscErrorCode MatDiagonalSet(Mat Y, Vec D, InsertMode is) {
 
 .seealso: `MatAXPY()`
  @*/
-PetscErrorCode MatAYPX(Mat Y, PetscScalar a, Mat X, MatStructure str) {
+PetscErrorCode MatAYPX(Mat Y, PetscScalar a, Mat X, MatStructure str)
+{
   PetscFunctionBegin;
   PetscCall(MatScale(Y, a));
   PetscCall(MatAXPY(Y, 1.0, X, str));
@@ -389,7 +398,8 @@ PetscErrorCode MatAYPX(Mat Y, PetscScalar a, Mat X, MatStructure str) {
     Level: advanced
 
 @*/
-PetscErrorCode MatComputeOperator(Mat inmat, MatType mattype, Mat *mat) {
+PetscErrorCode MatComputeOperator(Mat inmat, MatType mattype, Mat *mat)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(inmat, MAT_CLASSID, 1);
   PetscValidPointer(mat, 3);
@@ -418,7 +428,8 @@ PetscErrorCode MatComputeOperator(Mat inmat, MatType mattype, Mat *mat) {
     Level: advanced
 
 @*/
-PetscErrorCode MatComputeOperatorTranspose(Mat inmat, MatType mattype, Mat *mat) {
+PetscErrorCode MatComputeOperatorTranspose(Mat inmat, MatType mattype, Mat *mat)
+{
   Mat A;
 
   PetscFunctionBegin;
@@ -444,7 +455,8 @@ PetscErrorCode MatComputeOperatorTranspose(Mat inmat, MatType mattype, Mat *mat)
 
 .seealso: `MatCreate()`, `MatZeroEntries()`
  @*/
-PetscErrorCode MatChop(Mat A, PetscReal tol) {
+PetscErrorCode MatChop(Mat A, PetscReal tol)
+{
   Mat          a;
   PetscScalar *newVals;
   PetscInt    *newCols, rStart, rEnd, numRows, maxRows, r, colMax = 0;

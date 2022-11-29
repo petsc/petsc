@@ -4,7 +4,8 @@ static char help[] = "Tests various routines in MatKAIJ format.\n";
 #include <petscmat.h>
 #define IMAX 15
 
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   Mat          A, B, TA;
   PetscScalar *S, *T;
   PetscViewer  fd;

@@ -41,27 +41,6 @@ cdef extern from * nogil:
         PETSC_OWN_POINTER
         PETSC_USE_POINTER
 
-    ctypedef enum PetscOffloadMask:
-        PETSC_OFFLOAD_UNALLOCATED
-        PETSC_OFFLOAD_CPU
-        PETSC_OFFLOAD_GPU
-        PETSC_OFFLOAD_BOTH
-        PETSC_OFFLOAD_KOKKOS
-
-    ctypedef enum PetscMemType:
-        PETSC_MEMTYPE_HOST
-        PETSC_MEMTYPE_CUDA
-        PETSC_MEMTYPE_HIP
-        PETSC_MEMTYPE_SYCL
-
-    ctypedef enum PetscDeviceType:
-        PETSC_DEVICE_INVALID
-        PETSC_DEVICE_CUDA
-        PETSC_DEVICE_HIP
-        PETSC_DEVICE_SYCL
-        PETSC_DEVICE_MAX
-
-
 cdef extern from * nogil:
 
     enum: PETSC_ERR_MEM

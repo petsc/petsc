@@ -10,6 +10,7 @@ typedef struct {
   VecScatter ltog;
   VecScatter ltol;
   void      *ctx;
+  PetscErrorCode (*destroyctx)(void *);
 } DM_Shell;
 
 /*@
@@ -28,7 +29,8 @@ typedef struct {
 
 .seealso: `DMGlobalToLocalEndDefaultShell()`
 @*/
-PetscErrorCode DMGlobalToLocalBeginDefaultShell(DM dm, Vec g, InsertMode mode, Vec l) {
+PetscErrorCode DMGlobalToLocalBeginDefaultShell(DM dm, Vec g, InsertMode mode, Vec l)
+{
   DM_Shell *shell = (DM_Shell *)dm->data;
 
   PetscFunctionBegin;
@@ -51,7 +53,8 @@ PetscErrorCode DMGlobalToLocalBeginDefaultShell(DM dm, Vec g, InsertMode mode, V
 
 .seealso: `DMGlobalToLocalBeginDefaultShell()`
 @*/
-PetscErrorCode DMGlobalToLocalEndDefaultShell(DM dm, Vec g, InsertMode mode, Vec l) {
+PetscErrorCode DMGlobalToLocalEndDefaultShell(DM dm, Vec g, InsertMode mode, Vec l)
+{
   DM_Shell *shell = (DM_Shell *)dm->data;
 
   PetscFunctionBegin;
@@ -76,7 +79,8 @@ PetscErrorCode DMGlobalToLocalEndDefaultShell(DM dm, Vec g, InsertMode mode, Vec
 
 .seealso: `DMLocalToGlobalEndDefaultShell()`
 @*/
-PetscErrorCode DMLocalToGlobalBeginDefaultShell(DM dm, Vec l, InsertMode mode, Vec g) {
+PetscErrorCode DMLocalToGlobalBeginDefaultShell(DM dm, Vec l, InsertMode mode, Vec g)
+{
   DM_Shell *shell = (DM_Shell *)dm->data;
 
   PetscFunctionBegin;
@@ -99,7 +103,8 @@ PetscErrorCode DMLocalToGlobalBeginDefaultShell(DM dm, Vec l, InsertMode mode, V
 
 .seealso: `DMLocalToGlobalBeginDefaultShell()`
 @*/
-PetscErrorCode DMLocalToGlobalEndDefaultShell(DM dm, Vec l, InsertMode mode, Vec g) {
+PetscErrorCode DMLocalToGlobalEndDefaultShell(DM dm, Vec l, InsertMode mode, Vec g)
+{
   DM_Shell *shell = (DM_Shell *)dm->data;
 
   PetscFunctionBegin;
@@ -126,7 +131,8 @@ PetscErrorCode DMLocalToGlobalEndDefaultShell(DM dm, Vec l, InsertMode mode, Vec
 
 .seealso: `DMLocalToLocalEndDefaultShell()`
 @*/
-PetscErrorCode DMLocalToLocalBeginDefaultShell(DM dm, Vec g, InsertMode mode, Vec l) {
+PetscErrorCode DMLocalToLocalBeginDefaultShell(DM dm, Vec g, InsertMode mode, Vec l)
+{
   DM_Shell *shell = (DM_Shell *)dm->data;
 
   PetscFunctionBegin;
@@ -151,7 +157,8 @@ PetscErrorCode DMLocalToLocalBeginDefaultShell(DM dm, Vec g, InsertMode mode, Ve
 
 .seealso: `DMLocalToLocalBeginDefaultShell()`
 @*/
-PetscErrorCode DMLocalToLocalEndDefaultShell(DM dm, Vec g, InsertMode mode, Vec l) {
+PetscErrorCode DMLocalToLocalEndDefaultShell(DM dm, Vec g, InsertMode mode, Vec l)
+{
   DM_Shell *shell = (DM_Shell *)dm->data;
 
   PetscFunctionBegin;
@@ -160,7 +167,8 @@ PetscErrorCode DMLocalToLocalEndDefaultShell(DM dm, Vec g, InsertMode mode, Vec 
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMCreateMatrix_Shell(DM dm, Mat *J) {
+static PetscErrorCode DMCreateMatrix_Shell(DM dm, Mat *J)
+{
   DM_Shell *shell = (DM_Shell *)dm->data;
   Mat       A;
 
@@ -185,7 +193,8 @@ static PetscErrorCode DMCreateMatrix_Shell(DM dm, Mat *J) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMCreateGlobalVector_Shell(DM dm, Vec *gvec) {
+PetscErrorCode DMCreateGlobalVector_Shell(DM dm, Vec *gvec)
+{
   DM_Shell *shell = (DM_Shell *)dm->data;
   Vec       X;
 
@@ -202,7 +211,8 @@ PetscErrorCode DMCreateGlobalVector_Shell(DM dm, Vec *gvec) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMCreateLocalVector_Shell(DM dm, Vec *gvec) {
+PetscErrorCode DMCreateLocalVector_Shell(DM dm, Vec *gvec)
+{
   DM_Shell *shell = (DM_Shell *)dm->data;
   Vec       X;
 
@@ -220,6 +230,31 @@ PetscErrorCode DMCreateLocalVector_Shell(DM dm, Vec *gvec) {
 }
 
 /*@
+   DMShellSetDestroyContext - set a function that destroys the context provided with `DMShellSetContext()`
+
+   Collective
+
+   Input Parameters:
+.  ctx - the context
+
+   Level: advanced
+
+.seealso: `DMShellSetContext()`, `DMShellGetContext()`
+@*/
+PetscErrorCode DMShellSetDestroyContext(DM dm, PetscErrorCode (*destroyctx)(void *))
+{
+  DM_Shell *shell = (DM_Shell *)dm->data;
+  PetscBool isshell;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscCall(PetscObjectTypeCompare((PetscObject)dm, DMSHELL, &isshell));
+  if (!isshell) PetscFunctionReturn(0);
+  shell->destroyctx = destroyctx;
+  PetscFunctionReturn(0);
+}
+
+/*@
    DMShellSetContext - set some data to be usable by this DM
 
    Collective
@@ -232,7 +267,8 @@ PetscErrorCode DMCreateLocalVector_Shell(DM dm, Vec *gvec) {
 
 .seealso: `DMCreateMatrix()`, `DMShellGetContext()`
 @*/
-PetscErrorCode DMShellSetContext(DM dm, void *ctx) {
+PetscErrorCode DMShellSetContext(DM dm, void *ctx)
+{
   DM_Shell *shell = (DM_Shell *)dm->data;
   PetscBool isshell;
 
@@ -259,7 +295,8 @@ PetscErrorCode DMShellSetContext(DM dm, void *ctx) {
 
 .seealso: `DMCreateMatrix()`, `DMShellSetContext()`
 @*/
-PetscErrorCode DMShellGetContext(DM dm, void *ctx) {
+PetscErrorCode DMShellGetContext(DM dm, void *ctx)
+{
   DM_Shell *shell = (DM_Shell *)dm->data;
   PetscBool isshell;
 
@@ -287,7 +324,8 @@ PetscErrorCode DMShellGetContext(DM dm, void *ctx) {
 
 .seealso: `DMCreateMatrix()`, `DMShellSetCreateMatrix()`, `DMShellSetContext()`, `DMShellGetContext()`
 @*/
-PetscErrorCode DMShellSetMatrix(DM dm, Mat J) {
+PetscErrorCode DMShellSetMatrix(DM dm, Mat J)
+{
   DM_Shell *shell = (DM_Shell *)dm->data;
   PetscBool isshell;
   DM        mdm;
@@ -321,7 +359,8 @@ PetscErrorCode DMShellSetMatrix(DM dm, Mat J) {
 
 .seealso: `DMCreateMatrix()`, `DMShellSetMatrix()`, `DMShellSetContext()`, `DMShellGetContext()`
 @*/
-PetscErrorCode DMShellSetCreateMatrix(DM dm, PetscErrorCode (*func)(DM, Mat *)) {
+PetscErrorCode DMShellSetCreateMatrix(DM dm, PetscErrorCode (*func)(DM, Mat *))
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   dm->ops->creatematrix = func;
@@ -341,7 +380,8 @@ PetscErrorCode DMShellSetCreateMatrix(DM dm, PetscErrorCode (*func)(DM, Mat *)) 
 
 .seealso: `DMCreateGlobalVector()`, `DMShellSetMatrix()`, `DMShellSetCreateGlobalVector()`
 @*/
-PetscErrorCode DMShellSetGlobalVector(DM dm, Vec X) {
+PetscErrorCode DMShellSetGlobalVector(DM dm, Vec X)
+{
   DM_Shell *shell = (DM_Shell *)dm->data;
   PetscBool isshell;
   DM        vdm;
@@ -382,7 +422,8 @@ PetscErrorCode DMShellSetGlobalVector(DM dm, Vec X) {
 
 .seealso: `DMShellSetGlobalVector()`, `DMShellSetCreateGlobalVector()`, `DMCreateGlobalVector()`
 @*/
-PetscErrorCode DMShellGetGlobalVector(DM dm, Vec *X) {
+PetscErrorCode DMShellGetGlobalVector(DM dm, Vec *X)
+{
   DM_Shell *shell = (DM_Shell *)dm->data;
   PetscBool isshell;
 
@@ -408,7 +449,8 @@ PetscErrorCode DMShellGetGlobalVector(DM dm, Vec *X) {
 
 .seealso: `DMShellSetGlobalVector()`, `DMShellSetCreateMatrix()`, `DMShellSetContext()`, `DMShellGetContext()`
 @*/
-PetscErrorCode DMShellSetCreateGlobalVector(DM dm, PetscErrorCode (*func)(DM, Vec *)) {
+PetscErrorCode DMShellSetCreateGlobalVector(DM dm, PetscErrorCode (*func)(DM, Vec *))
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   dm->ops->createglobalvector = func;
@@ -428,7 +470,8 @@ PetscErrorCode DMShellSetCreateGlobalVector(DM dm, PetscErrorCode (*func)(DM, Ve
 
 .seealso: `DMCreateLocalVector()`, `DMShellSetMatrix()`, `DMShellSetCreateLocalVector()`
 @*/
-PetscErrorCode DMShellSetLocalVector(DM dm, Vec X) {
+PetscErrorCode DMShellSetLocalVector(DM dm, Vec X)
+{
   DM_Shell *shell = (DM_Shell *)dm->data;
   PetscBool isshell;
   DM        vdm;
@@ -469,7 +512,8 @@ PetscErrorCode DMShellSetLocalVector(DM dm, Vec X) {
 
 .seealso: `DMShellSetLocalVector()`, `DMShellSetCreateMatrix()`, `DMShellSetContext()`, `DMShellGetContext()`
 @*/
-PetscErrorCode DMShellSetCreateLocalVector(DM dm, PetscErrorCode (*func)(DM, Vec *)) {
+PetscErrorCode DMShellSetCreateLocalVector(DM dm, PetscErrorCode (*func)(DM, Vec *))
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   dm->ops->createlocalvector = func;
@@ -494,7 +538,8 @@ PetscErrorCode DMShellSetCreateLocalVector(DM dm, PetscErrorCode (*func)(DM, Vec
 
 .seealso: `DMShellSetLocalToGlobal()`, `DMGlobalToLocalBeginDefaultShell()`, `DMGlobalToLocalEndDefaultShell()`
 @*/
-PetscErrorCode DMShellSetGlobalToLocal(DM dm, PetscErrorCode (*begin)(DM, Vec, InsertMode, Vec), PetscErrorCode (*end)(DM, Vec, InsertMode, Vec)) {
+PetscErrorCode DMShellSetGlobalToLocal(DM dm, PetscErrorCode (*begin)(DM, Vec, InsertMode, Vec), PetscErrorCode (*end)(DM, Vec, InsertMode, Vec))
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   dm->ops->globaltolocalbegin = begin;
@@ -520,7 +565,8 @@ PetscErrorCode DMShellSetGlobalToLocal(DM dm, PetscErrorCode (*begin)(DM, Vec, I
 
 .seealso: `DMShellSetGlobalToLocal()`
 @*/
-PetscErrorCode DMShellSetLocalToGlobal(DM dm, PetscErrorCode (*begin)(DM, Vec, InsertMode, Vec), PetscErrorCode (*end)(DM, Vec, InsertMode, Vec)) {
+PetscErrorCode DMShellSetLocalToGlobal(DM dm, PetscErrorCode (*begin)(DM, Vec, InsertMode, Vec), PetscErrorCode (*end)(DM, Vec, InsertMode, Vec))
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   dm->ops->localtoglobalbegin = begin;
@@ -546,7 +592,8 @@ PetscErrorCode DMShellSetLocalToGlobal(DM dm, PetscErrorCode (*begin)(DM, Vec, I
 
 .seealso: `DMShellSetGlobalToLocal()`, `DMLocalToLocalBeginDefaultShell()`, `DMLocalToLocalEndDefaultShell()`
 @*/
-PetscErrorCode DMShellSetLocalToLocal(DM dm, PetscErrorCode (*begin)(DM, Vec, InsertMode, Vec), PetscErrorCode (*end)(DM, Vec, InsertMode, Vec)) {
+PetscErrorCode DMShellSetLocalToLocal(DM dm, PetscErrorCode (*begin)(DM, Vec, InsertMode, Vec), PetscErrorCode (*end)(DM, Vec, InsertMode, Vec))
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   dm->ops->localtolocalbegin = begin;
@@ -567,7 +614,8 @@ PetscErrorCode DMShellSetLocalToLocal(DM dm, PetscErrorCode (*begin)(DM, Vec, In
 
 .seealso: `DMShellSetGlobalToLocal()`, `DMGlobalToLocalBeginDefaultShell()`, `DMGlobalToLocalEndDefaultShell()`
 @*/
-PetscErrorCode DMShellSetGlobalToLocalVecScatter(DM dm, VecScatter gtol) {
+PetscErrorCode DMShellSetGlobalToLocalVecScatter(DM dm, VecScatter gtol)
+{
   DM_Shell *shell = (DM_Shell *)dm->data;
 
   PetscFunctionBegin;
@@ -592,7 +640,8 @@ PetscErrorCode DMShellSetGlobalToLocalVecScatter(DM dm, VecScatter gtol) {
 
 .seealso: `DMShellSetLocalToGlobal()`, `DMLocalToGlobalBeginDefaultShell()`, `DMLocalToGlobalEndDefaultShell()`
 @*/
-PetscErrorCode DMShellSetLocalToGlobalVecScatter(DM dm, VecScatter ltog) {
+PetscErrorCode DMShellSetLocalToGlobalVecScatter(DM dm, VecScatter ltog)
+{
   DM_Shell *shell = (DM_Shell *)dm->data;
 
   PetscFunctionBegin;
@@ -617,7 +666,8 @@ PetscErrorCode DMShellSetLocalToGlobalVecScatter(DM dm, VecScatter ltog) {
 
 .seealso: `DMShellSetLocalToLocal()`, `DMLocalToLocalBeginDefaultShell()`, `DMLocalToLocalEndDefaultShell()`
 @*/
-PetscErrorCode DMShellSetLocalToLocalVecScatter(DM dm, VecScatter ltol) {
+PetscErrorCode DMShellSetLocalToLocalVecScatter(DM dm, VecScatter ltol)
+{
   DM_Shell *shell = (DM_Shell *)dm->data;
 
   PetscFunctionBegin;
@@ -642,7 +692,8 @@ PetscErrorCode DMShellSetLocalToLocalVecScatter(DM dm, VecScatter ltol) {
 
 .seealso: `DMShellSetRefine()`, `DMCoarsen()`, `DMShellGetCoarsen()`, `DMShellSetContext()`, `DMShellGetContext()`
 @*/
-PetscErrorCode DMShellSetCoarsen(DM dm, PetscErrorCode (*coarsen)(DM, MPI_Comm, DM *)) {
+PetscErrorCode DMShellSetCoarsen(DM dm, PetscErrorCode (*coarsen)(DM, MPI_Comm, DM *))
+{
   PetscBool isshell;
 
   PetscFunctionBegin;
@@ -668,7 +719,8 @@ PetscErrorCode DMShellSetCoarsen(DM dm, PetscErrorCode (*coarsen)(DM, MPI_Comm, 
 
 .seealso: `DMShellSetCoarsen()`, `DMCoarsen()`, `DMShellSetRefine()`, `DMRefine()`
 @*/
-PetscErrorCode DMShellGetCoarsen(DM dm, PetscErrorCode (**coarsen)(DM, MPI_Comm, DM *)) {
+PetscErrorCode DMShellGetCoarsen(DM dm, PetscErrorCode (**coarsen)(DM, MPI_Comm, DM *))
+{
   PetscBool isshell;
 
   PetscFunctionBegin;
@@ -692,7 +744,8 @@ PetscErrorCode DMShellGetCoarsen(DM dm, PetscErrorCode (**coarsen)(DM, MPI_Comm,
 
 .seealso: `DMShellSetCoarsen()`, `DMRefine()`, `DMShellGetRefine()`, `DMShellSetContext()`, `DMShellGetContext()`
 @*/
-PetscErrorCode DMShellSetRefine(DM dm, PetscErrorCode (*refine)(DM, MPI_Comm, DM *)) {
+PetscErrorCode DMShellSetRefine(DM dm, PetscErrorCode (*refine)(DM, MPI_Comm, DM *))
+{
   PetscBool isshell;
 
   PetscFunctionBegin;
@@ -718,7 +771,8 @@ PetscErrorCode DMShellSetRefine(DM dm, PetscErrorCode (*refine)(DM, MPI_Comm, DM
 
 .seealso: `DMShellSetCoarsen()`, `DMCoarsen()`, `DMShellSetRefine()`, `DMRefine()`
 @*/
-PetscErrorCode DMShellGetRefine(DM dm, PetscErrorCode (**refine)(DM, MPI_Comm, DM *)) {
+PetscErrorCode DMShellGetRefine(DM dm, PetscErrorCode (**refine)(DM, MPI_Comm, DM *))
+{
   PetscBool isshell;
 
   PetscFunctionBegin;
@@ -742,7 +796,8 @@ PetscErrorCode DMShellGetRefine(DM dm, PetscErrorCode (**refine)(DM, MPI_Comm, D
 
 .seealso: `DMShellSetCreateInjection()`, `DMCreateInterpolation()`, `DMShellGetCreateInterpolation()`, `DMShellSetCreateRestriction()`, `DMShellSetContext()`, `DMShellGetContext()`
 @*/
-PetscErrorCode DMShellSetCreateInterpolation(DM dm, PetscErrorCode (*interp)(DM, DM, Mat *, Vec *)) {
+PetscErrorCode DMShellSetCreateInterpolation(DM dm, PetscErrorCode (*interp)(DM, DM, Mat *, Vec *))
+{
   PetscBool isshell;
 
   PetscFunctionBegin;
@@ -768,7 +823,8 @@ PetscErrorCode DMShellSetCreateInterpolation(DM dm, PetscErrorCode (*interp)(DM,
 
 .seealso: `DMShellGetCreateInjection()`, `DMCreateInterpolation()`, `DMShellGetCreateRestriction()`, `DMShellSetContext()`, `DMShellGetContext()`
 @*/
-PetscErrorCode DMShellGetCreateInterpolation(DM dm, PetscErrorCode (**interp)(DM, DM, Mat *, Vec *)) {
+PetscErrorCode DMShellGetCreateInterpolation(DM dm, PetscErrorCode (**interp)(DM, DM, Mat *, Vec *))
+{
   PetscBool isshell;
 
   PetscFunctionBegin;
@@ -792,7 +848,8 @@ PetscErrorCode DMShellGetCreateInterpolation(DM dm, PetscErrorCode (**interp)(DM
 
 .seealso: `DMShellSetCreateInjection()`, `DMCreateInterpolation()`, `DMShellGetCreateRestriction()`, `DMShellSetContext()`, `DMShellGetContext()`
 @*/
-PetscErrorCode DMShellSetCreateRestriction(DM dm, PetscErrorCode (*restriction)(DM, DM, Mat *)) {
+PetscErrorCode DMShellSetCreateRestriction(DM dm, PetscErrorCode (*restriction)(DM, DM, Mat *))
+{
   PetscBool isshell;
 
   PetscFunctionBegin;
@@ -818,7 +875,8 @@ PetscErrorCode DMShellSetCreateRestriction(DM dm, PetscErrorCode (*restriction)(
 
 .seealso: `DMShellSetCreateInjection()`, `DMCreateInterpolation()`, `DMShellSetContext()`, `DMShellGetContext()`
 @*/
-PetscErrorCode DMShellGetCreateRestriction(DM dm, PetscErrorCode (**restriction)(DM, DM, Mat *)) {
+PetscErrorCode DMShellGetCreateRestriction(DM dm, PetscErrorCode (**restriction)(DM, DM, Mat *))
+{
   PetscBool isshell;
 
   PetscFunctionBegin;
@@ -842,7 +900,8 @@ PetscErrorCode DMShellGetCreateRestriction(DM dm, PetscErrorCode (**restriction)
 
 .seealso: `DMShellSetCreateInterpolation()`, `DMCreateInjection()`, `DMShellGetCreateInjection()`, `DMShellSetContext()`, `DMShellGetContext()`
 @*/
-PetscErrorCode DMShellSetCreateInjection(DM dm, PetscErrorCode (*inject)(DM, DM, Mat *)) {
+PetscErrorCode DMShellSetCreateInjection(DM dm, PetscErrorCode (*inject)(DM, DM, Mat *))
+{
   PetscBool isshell;
 
   PetscFunctionBegin;
@@ -868,7 +927,8 @@ PetscErrorCode DMShellSetCreateInjection(DM dm, PetscErrorCode (*inject)(DM, DM,
 
 .seealso: `DMShellGetCreateInterpolation()`, `DMCreateInjection()`, `DMShellSetContext()`, `DMShellGetContext()`
 @*/
-PetscErrorCode DMShellGetCreateInjection(DM dm, PetscErrorCode (**inject)(DM, DM, Mat *)) {
+PetscErrorCode DMShellGetCreateInjection(DM dm, PetscErrorCode (**inject)(DM, DM, Mat *))
+{
   PetscBool isshell;
 
   PetscFunctionBegin;
@@ -892,7 +952,8 @@ PetscErrorCode DMShellGetCreateInjection(DM dm, PetscErrorCode (**inject)(DM, DM
 
 .seealso: `DMCreateFieldDecomposition()`, `DMShellSetContext()`, `DMShellGetContext()`
 @*/
-PetscErrorCode DMShellSetCreateFieldDecomposition(DM dm, PetscErrorCode (*decomp)(DM, PetscInt *, char ***, IS **, DM **)) {
+PetscErrorCode DMShellSetCreateFieldDecomposition(DM dm, PetscErrorCode (*decomp)(DM, PetscInt *, char ***, IS **, DM **))
+{
   PetscBool isshell;
 
   PetscFunctionBegin;
@@ -916,7 +977,8 @@ PetscErrorCode DMShellSetCreateFieldDecomposition(DM dm, PetscErrorCode (*decomp
 
 .seealso: `DMCreateDomainDecomposition()`, `DMShellSetContext()`, `DMShellGetContext()`
 @*/
-PetscErrorCode DMShellSetCreateDomainDecomposition(DM dm, PetscErrorCode (*decomp)(DM, PetscInt *, char ***, IS **, IS **, DM **)) {
+PetscErrorCode DMShellSetCreateDomainDecomposition(DM dm, PetscErrorCode (*decomp)(DM, PetscInt *, char ***, IS **, IS **, DM **))
+{
   PetscBool isshell;
 
   PetscFunctionBegin;
@@ -940,7 +1002,8 @@ PetscErrorCode DMShellSetCreateDomainDecomposition(DM dm, PetscErrorCode (*decom
 
 .seealso: `DMCreateDomainDecompositionScatters()`, `DMShellSetContext()`, `DMShellGetContext()`
 @*/
-PetscErrorCode DMShellSetCreateDomainDecompositionScatters(DM dm, PetscErrorCode (*scatter)(DM, PetscInt, DM *, VecScatter **, VecScatter **, VecScatter **)) {
+PetscErrorCode DMShellSetCreateDomainDecompositionScatters(DM dm, PetscErrorCode (*scatter)(DM, PetscInt, DM *, VecScatter **, VecScatter **, VecScatter **))
+{
   PetscBool isshell;
 
   PetscFunctionBegin;
@@ -964,7 +1027,8 @@ PetscErrorCode DMShellSetCreateDomainDecompositionScatters(DM dm, PetscErrorCode
 
 .seealso: `DMCreateSubDM()`, `DMShellGetCreateSubDM()`, `DMShellSetContext()`, `DMShellGetContext()`
 @*/
-PetscErrorCode DMShellSetCreateSubDM(DM dm, PetscErrorCode (*subdm)(DM, PetscInt, const PetscInt[], IS *, DM *)) {
+PetscErrorCode DMShellSetCreateSubDM(DM dm, PetscErrorCode (*subdm)(DM, PetscInt, const PetscInt[], IS *, DM *))
+{
   PetscBool isshell;
 
   PetscFunctionBegin;
@@ -990,7 +1054,8 @@ PetscErrorCode DMShellSetCreateSubDM(DM dm, PetscErrorCode (*subdm)(DM, PetscInt
 
 .seealso: `DMCreateSubDM()`, `DMShellSetCreateSubDM()`, `DMShellSetContext()`, `DMShellGetContext()`
 @*/
-PetscErrorCode DMShellGetCreateSubDM(DM dm, PetscErrorCode (**subdm)(DM, PetscInt, const PetscInt[], IS *, DM *)) {
+PetscErrorCode DMShellGetCreateSubDM(DM dm, PetscErrorCode (**subdm)(DM, PetscInt, const PetscInt[], IS *, DM *))
+{
   PetscBool isshell;
 
   PetscFunctionBegin;
@@ -1001,10 +1066,12 @@ PetscErrorCode DMShellGetCreateSubDM(DM dm, PetscErrorCode (**subdm)(DM, PetscIn
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMDestroy_Shell(DM dm) {
+static PetscErrorCode DMDestroy_Shell(DM dm)
+{
   DM_Shell *shell = (DM_Shell *)dm->data;
 
   PetscFunctionBegin;
+  if (shell->destroyctx) PetscCallBack("Destroy Context", (*shell->destroyctx)(shell->ctx));
   PetscCall(MatDestroy(&shell->A));
   PetscCall(VecDestroy(&shell->Xglobal));
   PetscCall(VecDestroy(&shell->Xlocal));
@@ -1016,7 +1083,8 @@ static PetscErrorCode DMDestroy_Shell(DM dm) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMView_Shell(DM dm, PetscViewer v) {
+static PetscErrorCode DMView_Shell(DM dm, PetscViewer v)
+{
   DM_Shell *shell = (DM_Shell *)dm->data;
 
   PetscFunctionBegin;
@@ -1024,7 +1092,8 @@ static PetscErrorCode DMView_Shell(DM dm, PetscViewer v) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMLoad_Shell(DM dm, PetscViewer v) {
+static PetscErrorCode DMLoad_Shell(DM dm, PetscViewer v)
+{
   DM_Shell *shell = (DM_Shell *)dm->data;
 
   PetscFunctionBegin;
@@ -1033,18 +1102,20 @@ static PetscErrorCode DMLoad_Shell(DM dm, PetscViewer v) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMCreateSubDM_Shell(DM dm, PetscInt numFields, const PetscInt fields[], IS *is, DM *subdm) {
+PetscErrorCode DMCreateSubDM_Shell(DM dm, PetscInt numFields, const PetscInt fields[], IS *is, DM *subdm)
+{
   PetscFunctionBegin;
   if (subdm) PetscCall(DMShellCreate(PetscObjectComm((PetscObject)dm), subdm));
   PetscCall(DMCreateSectionSubDM(dm, numFields, fields, is, subdm));
   PetscFunctionReturn(0);
 }
 
-PETSC_EXTERN PetscErrorCode DMCreate_Shell(DM dm) {
+PETSC_EXTERN PetscErrorCode DMCreate_Shell(DM dm)
+{
   DM_Shell *shell;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(dm, &shell));
+  PetscCall(PetscNew(&shell));
   dm->data = shell;
 
   dm->ops->destroy            = DMDestroy_Shell;
@@ -1079,7 +1150,8 @@ PETSC_EXTERN PetscErrorCode DMCreate_Shell(DM dm) {
 
 .seealso `DMDestroy()`, `DMCreateGlobalVector()`, `DMCreateLocalVector()`, `DMShellSetContext()`, `DMShellGetContext()`
 @*/
-PetscErrorCode DMShellCreate(MPI_Comm comm, DM *dm) {
+PetscErrorCode DMShellCreate(MPI_Comm comm, DM *dm)
+{
   PetscFunctionBegin;
   PetscValidPointer(dm, 2);
   PetscCall(DMCreate(comm, dm));

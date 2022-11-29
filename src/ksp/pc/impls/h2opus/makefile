@@ -6,7 +6,8 @@ SOURCEF   =
 SOURCEH   =
 LIBBASE   = libpetscksp
 DIRS      =
-MANSEC    = PC
+MANSEC    = KSP
+SUBMANSEC = PC
 LOCDIR    = src/ksp/pc/impls/h2opus/
 
 include ${PETSC_DIR}/lib/petsc/conf/variables

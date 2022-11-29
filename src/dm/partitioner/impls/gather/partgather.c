@@ -4,18 +4,21 @@ typedef struct {
   PetscInt dummy;
 } PetscPartitioner_Gather;
 
-static PetscErrorCode PetscPartitionerDestroy_Gather(PetscPartitioner part) {
+static PetscErrorCode PetscPartitionerDestroy_Gather(PetscPartitioner part)
+{
   PetscFunctionBegin;
   PetscCall(PetscFree(part->data));
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscPartitionerView_Gather_ASCII(PetscPartitioner part, PetscViewer viewer) {
+static PetscErrorCode PetscPartitionerView_Gather_ASCII(PetscPartitioner part, PetscViewer viewer)
+{
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscPartitionerView_Gather(PetscPartitioner part, PetscViewer viewer) {
+static PetscErrorCode PetscPartitionerView_Gather(PetscPartitioner part, PetscViewer viewer)
+{
   PetscBool iascii;
 
   PetscFunctionBegin;
@@ -26,7 +29,8 @@ static PetscErrorCode PetscPartitionerView_Gather(PetscPartitioner part, PetscVi
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscPartitionerPartition_Gather(PetscPartitioner part, PetscInt nparts, PetscInt numVertices, PetscInt start[], PetscInt adjacency[], PetscSection vertSection, PetscSection targetSection, PetscSection partSection, IS *partition) {
+static PetscErrorCode PetscPartitionerPartition_Gather(PetscPartitioner part, PetscInt nparts, PetscInt numVertices, PetscInt start[], PetscInt adjacency[], PetscSection vertSection, PetscSection targetSection, PetscSection partSection, IS *partition)
+{
   PetscInt np;
 
   PetscFunctionBegin;
@@ -36,7 +40,8 @@ static PetscErrorCode PetscPartitionerPartition_Gather(PetscPartitioner part, Pe
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscPartitionerInitialize_Gather(PetscPartitioner part) {
+static PetscErrorCode PetscPartitionerInitialize_Gather(PetscPartitioner part)
+{
   PetscFunctionBegin;
   part->noGraph        = PETSC_TRUE;
   part->ops->view      = PetscPartitionerView_Gather;
@@ -53,12 +58,13 @@ static PetscErrorCode PetscPartitionerInitialize_Gather(PetscPartitioner part) {
 .seealso: `PetscPartitionerType`, `PetscPartitionerCreate()`, `PetscPartitionerSetType()`
 M*/
 
-PETSC_EXTERN PetscErrorCode PetscPartitionerCreate_Gather(PetscPartitioner part) {
+PETSC_EXTERN PetscErrorCode PetscPartitionerCreate_Gather(PetscPartitioner part)
+{
   PetscPartitioner_Gather *p;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part, PETSCPARTITIONER_CLASSID, 1);
-  PetscCall(PetscNewLog(part, &p));
+  PetscCall(PetscNew(&p));
   part->data = p;
 
   PetscCall(PetscPartitionerInitialize_Gather(part));

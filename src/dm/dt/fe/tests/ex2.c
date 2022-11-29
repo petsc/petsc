@@ -8,7 +8,8 @@ typedef struct {
   PetscInt its; /* Number of replications for timing */
 } AppCtx;
 
-static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options) {
+static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
+{
   PetscFunctionBeginUser;
   options->its = 1;
 
@@ -18,29 +19,34 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode trig_u(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx) {
+static PetscErrorCode trig_u(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
+{
   PetscInt d;
   *u = 0.0;
   for (d = 0; d < dim; ++d) *u += PetscSinReal(2.0 * PETSC_PI * x[d]);
   return 0;
 }
 
-static void f0_trig_u(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[]) {
+static void f0_trig_u(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
+{
   PetscInt d;
   for (d = 0; d < dim; ++d) f0[0] += -4.0 * PetscSqr(PETSC_PI) * PetscSinReal(2.0 * PETSC_PI * x[d]);
 }
 
-static void f1_u(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f1[]) {
+static void f1_u(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f1[])
+{
   PetscInt d;
   for (d = 0; d < dim; ++d) f1[d] = u_x[d];
 }
 
-static void g3_uu(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g3[]) {
+static void g3_uu(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g3[])
+{
   PetscInt d;
   for (d = 0; d < dim; ++d) g3[d * dim + d] = 1.0;
 }
 
-static PetscErrorCode SetupPrimalProblem(DM dm, AppCtx *user) {
+static PetscErrorCode SetupPrimalProblem(DM dm, AppCtx *user)
+{
   PetscDS        ds;
   DMLabel        label;
   const PetscInt id = 1;
@@ -55,7 +61,8 @@ static PetscErrorCode SetupPrimalProblem(DM dm, AppCtx *user) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode SetupDiscretization(DM dm, const char name[], PetscErrorCode (*setup)(DM, AppCtx *), AppCtx *user) {
+static PetscErrorCode SetupDiscretization(DM dm, const char name[], PetscErrorCode (*setup)(DM, AppCtx *), AppCtx *user)
+{
   DM       cdm = dm;
   PetscFE  fe;
   char     prefix[PETSC_MAX_PATH_LEN];
@@ -78,7 +85,8 @@ static PetscErrorCode SetupDiscretization(DM dm, const char name[], PetscErrorCo
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscContainerUserDestroy_PetscFEGeom(void *ctx) {
+static PetscErrorCode PetscContainerUserDestroy_PetscFEGeom(void *ctx)
+{
   PetscFEGeom *geom = (PetscFEGeom *)ctx;
 
   PetscFunctionBegin;
@@ -86,7 +94,8 @@ static PetscErrorCode PetscContainerUserDestroy_PetscFEGeom(void *ctx) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode CellRangeGetFEGeom(IS cellIS, DMField coordField, PetscQuadrature quad, PetscBool faceData, PetscFEGeom **geom) {
+PetscErrorCode CellRangeGetFEGeom(IS cellIS, DMField coordField, PetscQuadrature quad, PetscBool faceData, PetscFEGeom **geom)
+{
   char           composeStr[33] = {0};
   PetscObjectId  id;
   PetscContainer container;
@@ -108,13 +117,15 @@ PetscErrorCode CellRangeGetFEGeom(IS cellIS, DMField coordField, PetscQuadrature
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode CellRangeRestoreFEGeom(IS cellIS, DMField coordField, PetscQuadrature quad, PetscBool faceData, PetscFEGeom **geom) {
+PetscErrorCode CellRangeRestoreFEGeom(IS cellIS, DMField coordField, PetscQuadrature quad, PetscBool faceData, PetscFEGeom **geom)
+{
   PetscFunctionBegin;
   *geom = NULL;
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode CreateFEGeometry(DM dm, PetscDS ds, IS cellIS, PetscQuadrature *affineQuad, PetscFEGeom **affineGeom, PetscQuadrature **quads, PetscFEGeom ***geoms) {
+static PetscErrorCode CreateFEGeometry(DM dm, PetscDS ds, IS cellIS, PetscQuadrature *affineQuad, PetscFEGeom **affineGeom, PetscQuadrature **quads, PetscFEGeom ***geoms)
+{
   DMField  coordField;
   PetscInt Nf, f, maxDegree;
 
@@ -143,7 +154,8 @@ static PetscErrorCode CreateFEGeometry(DM dm, PetscDS ds, IS cellIS, PetscQuadra
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DestroyFEGeometry(DM dm, PetscDS ds, IS cellIS, PetscQuadrature *affineQuad, PetscFEGeom **affineGeom, PetscQuadrature **quads, PetscFEGeom ***geoms) {
+static PetscErrorCode DestroyFEGeometry(DM dm, PetscDS ds, IS cellIS, PetscQuadrature *affineQuad, PetscFEGeom **affineGeom, PetscQuadrature **quads, PetscFEGeom ***geoms)
+{
   DMField  coordField;
   PetscInt Nf, f;
 
@@ -163,7 +175,8 @@ static PetscErrorCode DestroyFEGeometry(DM dm, PetscDS ds, IS cellIS, PetscQuadr
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TestEvaluation(DM dm) {
+static PetscErrorCode TestEvaluation(DM dm)
+{
   PetscFE    fe;
   PetscSpace sp;
   PetscReal *points;
@@ -224,7 +237,8 @@ static PetscErrorCode TestEvaluation(DM dm) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TestIntegration(DM dm, PetscInt cbs, PetscInt its) {
+static PetscErrorCode TestIntegration(DM dm, PetscInt cbs, PetscInt its)
+{
   PetscDS         ds;
   PetscFEGeom    *chunkGeom = NULL;
   PetscQuadrature affineQuad, *quads  = NULL;
@@ -276,7 +290,8 @@ static PetscErrorCode TestIntegration(DM dm, PetscInt cbs, PetscInt its) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TestUnisolvence(DM dm) {
+static PetscErrorCode TestUnisolvence(DM dm)
+{
   Mat M;
   Vec v;
 
@@ -289,7 +304,8 @@ static PetscErrorCode TestUnisolvence(DM dm) {
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   DM          dm;
   AppCtx      ctx;
   PetscMPIInt size;

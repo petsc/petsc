@@ -13,6 +13,7 @@ typedef struct {
   int             base, zone;
   PetscInt        num_local_nodes, nStart, nEnd;
   PetscScalar    *nodal_field;
+  PetscSegBuffer  output_steps;
   PetscSegBuffer  output_times;
 } PetscViewer_CGNS;
 

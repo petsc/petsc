@@ -181,7 +181,7 @@ class Configure(config.package.Package):
     self.addMakeMacro('MFEM','yes')
     self.addMakeRule('mfembuild',makedepend, \
                        ['@echo "*** Building MFEM ***"',\
-                          '@${RM} -f ${PETSC_ARCH}/lib/petsc/conf/mfem.errorflg',\
+                          '@${RM} ${PETSC_ARCH}/lib/petsc/conf/mfem.errorflg',\
                           '@(cd '+buildDir+' && \\\n\
            ${OMAKE} -f '+self.packageDir+'/makefile config MFEM_DIR='+self.packageDir+' && \\\n\
            ${OMAKE} clean && \\\n\

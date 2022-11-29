@@ -5,7 +5,8 @@ static char help[] = "Creates a matrix from quadrilateral finite elements in 2D,
 
 #include <petscksp.h>
 
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   Mat         Amat, Pmat;
   PetscInt    i, m, M, its, Istart, Iend, j, Ii, ix, ne = 4;
   PetscReal   x, y, h;
@@ -94,15 +95,15 @@ int main(int argc, char **args) {
     m = Iend - Istart;
     PetscCall(PetscMalloc1(2 * m, &coords));
     for (Ii = Istart, ix = 0; Ii < Iend; Ii++, ix++) {
-      j                  = Ii / (ne + 1);
-      i                  = Ii % (ne + 1);
+      j = Ii / (ne + 1);
+      i = Ii % (ne + 1);
       /* coords */
       x                  = h * (Ii % (ne + 1));
       y                  = h * (Ii / (ne + 1));
       coords[2 * ix]     = x;
       coords[2 * ix + 1] = y;
       if (i < ne && j < ne) {
-        PetscInt  jj, ii, idx[4];
+        PetscInt jj, ii, idx[4];
         /* radius */
         PetscReal radius = PetscSqrtReal((x - .5 + h / 2) * (x - .5 + h / 2) + (y - .5 + h / 2) * (y - .5 + h / 2));
         PetscReal alpha  = 1.0;

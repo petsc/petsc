@@ -39,7 +39,8 @@ Run with a critical point line search; solve succeeds:
 extern PetscErrorCode FormJacobian(SNES, Vec, Mat, Mat, void *);
 extern PetscErrorCode FormFunction(SNES, Vec, Vec, void *);
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   SNES        snes; /* nonlinear solver context */
   KSP         ksp;  /* linear solver context */
   PC          pc;   /* preconditioner context */
@@ -127,7 +128,8 @@ int main(int argc, char **argv) {
   return 0;
 }
 
-PetscErrorCode FormFunction(SNES snes, Vec x, Vec f, void *ctx) {
+PetscErrorCode FormFunction(SNES snes, Vec x, Vec f, void *ctx)
+{
   const PetscScalar *xx;
   PetscScalar       *ff;
 
@@ -150,7 +152,8 @@ PetscErrorCode FormFunction(SNES snes, Vec x, Vec f, void *ctx) {
   return 0;
 }
 
-PetscErrorCode FormJacobian(SNES snes, Vec x, Mat jac, Mat B, void *dummy) {
+PetscErrorCode FormJacobian(SNES snes, Vec x, Mat jac, Mat B, void *dummy)
+{
   const PetscScalar *xx;
   PetscScalar        A[1];
   PetscInt           idx[1] = {0};

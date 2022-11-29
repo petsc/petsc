@@ -2,13 +2,15 @@
 #include <../src/mat/impls/aij/mpi/mpiaij.h>
 #include <StrumpackSparseSolver.h>
 
-static PetscErrorCode MatGetDiagonal_STRUMPACK(Mat A, Vec v) {
+static PetscErrorCode MatGetDiagonal_STRUMPACK(Mat A, Vec v)
+{
   PetscFunctionBegin;
   SETERRQ(PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "Mat type: STRUMPACK factor");
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatDestroy_STRUMPACK(Mat A) {
+static PetscErrorCode MatDestroy_STRUMPACK(Mat A)
+{
   STRUMPACK_SparseSolver *S = (STRUMPACK_SparseSolver *)A->spptr;
   PetscBool               flg;
 
@@ -36,7 +38,8 @@ static PetscErrorCode MatDestroy_STRUMPACK(Mat A) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatSTRUMPACKSetReordering_STRUMPACK(Mat F, MatSTRUMPACKReordering reordering) {
+static PetscErrorCode MatSTRUMPACKSetReordering_STRUMPACK(Mat F, MatSTRUMPACKReordering reordering)
+{
   STRUMPACK_SparseSolver *S = (STRUMPACK_SparseSolver *)F->spptr;
 
   PetscFunctionBegin;
@@ -62,7 +65,8 @@ static PetscErrorCode MatSTRUMPACKSetReordering_STRUMPACK(Mat F, MatSTRUMPACKReo
 
 .seealso: `MatGetFactor()`
 @*/
-PetscErrorCode MatSTRUMPACKSetReordering(Mat F, MatSTRUMPACKReordering reordering) {
+PetscErrorCode MatSTRUMPACKSetReordering(Mat F, MatSTRUMPACKReordering reordering)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(F, MAT_CLASSID, 1);
   PetscValidLogicalCollectiveEnum(F, reordering, 2);
@@ -70,7 +74,8 @@ PetscErrorCode MatSTRUMPACKSetReordering(Mat F, MatSTRUMPACKReordering reorderin
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatSTRUMPACKSetColPerm_STRUMPACK(Mat F, PetscBool cperm) {
+static PetscErrorCode MatSTRUMPACKSetColPerm_STRUMPACK(Mat F, PetscBool cperm)
+{
   STRUMPACK_SparseSolver *S = (STRUMPACK_SparseSolver *)F->spptr;
 
   PetscFunctionBegin;
@@ -97,7 +102,8 @@ static PetscErrorCode MatSTRUMPACKSetColPerm_STRUMPACK(Mat F, PetscBool cperm) {
 
 .seealso: `MatGetFactor()`
 @*/
-PetscErrorCode MatSTRUMPACKSetColPerm(Mat F, PetscBool cperm) {
+PetscErrorCode MatSTRUMPACKSetColPerm(Mat F, PetscBool cperm)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(F, MAT_CLASSID, 1);
   PetscValidLogicalCollectiveBool(F, cperm, 2);
@@ -105,7 +111,8 @@ PetscErrorCode MatSTRUMPACKSetColPerm(Mat F, PetscBool cperm) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatSTRUMPACKSetHSSRelTol_STRUMPACK(Mat F, PetscReal rtol) {
+static PetscErrorCode MatSTRUMPACKSetHSSRelTol_STRUMPACK(Mat F, PetscReal rtol)
+{
   STRUMPACK_SparseSolver *S = (STRUMPACK_SparseSolver *)F->spptr;
 
   PetscFunctionBegin;
@@ -132,7 +139,8 @@ static PetscErrorCode MatSTRUMPACKSetHSSRelTol_STRUMPACK(Mat F, PetscReal rtol) 
 
 .seealso: `MatGetFactor()`
 @*/
-PetscErrorCode MatSTRUMPACKSetHSSRelTol(Mat F, PetscReal rtol) {
+PetscErrorCode MatSTRUMPACKSetHSSRelTol(Mat F, PetscReal rtol)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(F, MAT_CLASSID, 1);
   PetscValidLogicalCollectiveReal(F, rtol, 2);
@@ -140,7 +148,8 @@ PetscErrorCode MatSTRUMPACKSetHSSRelTol(Mat F, PetscReal rtol) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatSTRUMPACKSetHSSAbsTol_STRUMPACK(Mat F, PetscReal atol) {
+static PetscErrorCode MatSTRUMPACKSetHSSAbsTol_STRUMPACK(Mat F, PetscReal atol)
+{
   STRUMPACK_SparseSolver *S = (STRUMPACK_SparseSolver *)F->spptr;
 
   PetscFunctionBegin;
@@ -167,7 +176,8 @@ static PetscErrorCode MatSTRUMPACKSetHSSAbsTol_STRUMPACK(Mat F, PetscReal atol) 
 
 .seealso: `MatGetFactor()`
 @*/
-PetscErrorCode MatSTRUMPACKSetHSSAbsTol(Mat F, PetscReal atol) {
+PetscErrorCode MatSTRUMPACKSetHSSAbsTol(Mat F, PetscReal atol)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(F, MAT_CLASSID, 1);
   PetscValidLogicalCollectiveReal(F, atol, 2);
@@ -175,7 +185,8 @@ PetscErrorCode MatSTRUMPACKSetHSSAbsTol(Mat F, PetscReal atol) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatSTRUMPACKSetHSSMaxRank_STRUMPACK(Mat F, PetscInt hssmaxrank) {
+static PetscErrorCode MatSTRUMPACKSetHSSMaxRank_STRUMPACK(Mat F, PetscInt hssmaxrank)
+{
   STRUMPACK_SparseSolver *S = (STRUMPACK_SparseSolver *)F->spptr;
 
   PetscFunctionBegin;
@@ -202,7 +213,8 @@ static PetscErrorCode MatSTRUMPACKSetHSSMaxRank_STRUMPACK(Mat F, PetscInt hssmax
 
 .seealso: `MatGetFactor()`
 @*/
-PetscErrorCode MatSTRUMPACKSetHSSMaxRank(Mat F, PetscInt hssmaxrank) {
+PetscErrorCode MatSTRUMPACKSetHSSMaxRank(Mat F, PetscInt hssmaxrank)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(F, MAT_CLASSID, 1);
   PetscValidLogicalCollectiveInt(F, hssmaxrank, 2);
@@ -210,7 +222,8 @@ PetscErrorCode MatSTRUMPACKSetHSSMaxRank(Mat F, PetscInt hssmaxrank) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatSTRUMPACKSetHSSLeafSize_STRUMPACK(Mat F, PetscInt leaf_size) {
+static PetscErrorCode MatSTRUMPACKSetHSSLeafSize_STRUMPACK(Mat F, PetscInt leaf_size)
+{
   STRUMPACK_SparseSolver *S = (STRUMPACK_SparseSolver *)F->spptr;
 
   PetscFunctionBegin;
@@ -237,7 +250,8 @@ static PetscErrorCode MatSTRUMPACKSetHSSLeafSize_STRUMPACK(Mat F, PetscInt leaf_
 
 .seealso: `MatGetFactor()`
 @*/
-PetscErrorCode MatSTRUMPACKSetHSSLeafSize(Mat F, PetscInt leaf_size) {
+PetscErrorCode MatSTRUMPACKSetHSSLeafSize(Mat F, PetscInt leaf_size)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(F, MAT_CLASSID, 1);
   PetscValidLogicalCollectiveInt(F, leaf_size, 2);
@@ -245,7 +259,8 @@ PetscErrorCode MatSTRUMPACKSetHSSLeafSize(Mat F, PetscInt leaf_size) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatSTRUMPACKSetHSSMinSepSize_STRUMPACK(Mat F, PetscInt hssminsize) {
+static PetscErrorCode MatSTRUMPACKSetHSSMinSepSize_STRUMPACK(Mat F, PetscInt hssminsize)
+{
   STRUMPACK_SparseSolver *S = (STRUMPACK_SparseSolver *)F->spptr;
 
   PetscFunctionBegin;
@@ -272,7 +287,8 @@ static PetscErrorCode MatSTRUMPACKSetHSSMinSepSize_STRUMPACK(Mat F, PetscInt hss
 
 .seealso: `MatGetFactor()`
 @*/
-PetscErrorCode MatSTRUMPACKSetHSSMinSepSize(Mat F, PetscInt hssminsize) {
+PetscErrorCode MatSTRUMPACKSetHSSMinSepSize(Mat F, PetscInt hssminsize)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(F, MAT_CLASSID, 1);
   PetscValidLogicalCollectiveInt(F, hssminsize, 2);
@@ -280,7 +296,8 @@ PetscErrorCode MatSTRUMPACKSetHSSMinSepSize(Mat F, PetscInt hssminsize) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatSolve_STRUMPACK(Mat A, Vec b_mpi, Vec x) {
+static PetscErrorCode MatSolve_STRUMPACK(Mat A, Vec b_mpi, Vec x)
+{
   STRUMPACK_SparseSolver *S = (STRUMPACK_SparseSolver *)A->spptr;
   STRUMPACK_RETURN_CODE   sp_err;
   const PetscScalar      *bptr;
@@ -292,7 +309,8 @@ static PetscErrorCode MatSolve_STRUMPACK(Mat A, Vec b_mpi, Vec x) {
 
   PetscStackCallExternalVoid("STRUMPACK_solve", sp_err = STRUMPACK_solve(*S, (PetscScalar *)bptr, xptr, 0));
   switch (sp_err) {
-  case STRUMPACK_SUCCESS: break;
+  case STRUMPACK_SUCCESS:
+    break;
   case STRUMPACK_MATRIX_NOT_SET: {
     SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "STRUMPACK error: matrix was not set");
     break;
@@ -301,14 +319,16 @@ static PetscErrorCode MatSolve_STRUMPACK(Mat A, Vec b_mpi, Vec x) {
     SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "STRUMPACK error: matrix reordering failed");
     break;
   }
-  default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "STRUMPACK error: solve failed");
+  default:
+    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "STRUMPACK error: solve failed");
   }
   PetscCall(VecRestoreArray(x, &xptr));
   PetscCall(VecRestoreArrayRead(b_mpi, &bptr));
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatMatSolve_STRUMPACK(Mat A, Mat B_mpi, Mat X) {
+static PetscErrorCode MatMatSolve_STRUMPACK(Mat A, Mat B_mpi, Mat X)
+{
   PetscBool flg;
 
   PetscFunctionBegin;
@@ -320,7 +340,8 @@ static PetscErrorCode MatMatSolve_STRUMPACK(Mat A, Mat B_mpi, Mat X) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatView_Info_STRUMPACK(Mat A, PetscViewer viewer) {
+static PetscErrorCode MatView_Info_STRUMPACK(Mat A, PetscViewer viewer)
+{
   PetscFunctionBegin;
   /* check if matrix is strumpack type */
   if (A->ops->solve != MatSolve_STRUMPACK) PetscFunctionReturn(0);
@@ -328,7 +349,8 @@ static PetscErrorCode MatView_Info_STRUMPACK(Mat A, PetscViewer viewer) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatView_STRUMPACK(Mat A, PetscViewer viewer) {
+static PetscErrorCode MatView_STRUMPACK(Mat A, PetscViewer viewer)
+{
   PetscBool         iascii;
   PetscViewerFormat format;
 
@@ -341,7 +363,8 @@ static PetscErrorCode MatView_STRUMPACK(Mat A, PetscViewer viewer) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatLUFactorNumeric_STRUMPACK(Mat F, Mat A, const MatFactorInfo *info) {
+static PetscErrorCode MatLUFactorNumeric_STRUMPACK(Mat F, Mat A, const MatFactorInfo *info)
+{
   STRUMPACK_SparseSolver *S = (STRUMPACK_SparseSolver *)F->spptr;
   STRUMPACK_RETURN_CODE   sp_err;
   Mat_SeqAIJ             *A_d, *A_o;
@@ -366,7 +389,8 @@ static PetscErrorCode MatLUFactorNumeric_STRUMPACK(Mat F, Mat A, const MatFactor
   PetscStackCallExternalVoid("STRUMPACK_reorder", sp_err = STRUMPACK_reorder(*S));
   PetscStackCallExternalVoid("STRUMPACK_factor", sp_err = STRUMPACK_factor(*S));
   switch (sp_err) {
-  case STRUMPACK_SUCCESS: break;
+  case STRUMPACK_SUCCESS:
+    break;
   case STRUMPACK_MATRIX_NOT_SET: {
     SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "STRUMPACK error: matrix was not set");
     break;
@@ -375,14 +399,16 @@ static PetscErrorCode MatLUFactorNumeric_STRUMPACK(Mat F, Mat A, const MatFactor
     SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "STRUMPACK error: matrix reordering failed");
     break;
   }
-  default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "STRUMPACK error: factorization failed");
+  default:
+    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "STRUMPACK error: factorization failed");
   }
   F->assembled    = PETSC_TRUE;
   F->preallocated = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatLUFactorSymbolic_STRUMPACK(Mat F, Mat A, IS r, IS c, const MatFactorInfo *info) {
+static PetscErrorCode MatLUFactorSymbolic_STRUMPACK(Mat F, Mat A, IS r, IS c, const MatFactorInfo *info)
+{
   STRUMPACK_SparseSolver       *S = (STRUMPACK_SparseSolver *)F->spptr;
   PetscBool                     flg, set;
   PetscReal                     ctol;
@@ -441,7 +467,8 @@ static PetscErrorCode MatLUFactorSymbolic_STRUMPACK(Mat F, Mat A, IS r, IS c, co
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatFactorGetSolverType_aij_strumpack(Mat A, MatSolverType *type) {
+static PetscErrorCode MatFactorGetSolverType_aij_strumpack(Mat A, MatSolverType *type)
+{
   PetscFunctionBegin;
   *type = MATSOLVERSTRUMPACK;
   PetscFunctionReturn(0);
@@ -480,7 +507,8 @@ static PetscErrorCode MatFactorGetSolverType_aij_strumpack(Mat A, MatSolverType 
 
 .seealso: `PCLU`, `PCILU`, `MATSOLVERSUPERLU_DIST`, `MATSOLVERMUMPS`, `PCFactorSetMatSolverType()`, `MatSolverType`, `MatGetFactor()`
 M*/
-static PetscErrorCode MatGetFactor_aij_strumpack(Mat A, MatFactorType ftype, Mat *F) {
+static PetscErrorCode MatGetFactor_aij_strumpack(Mat A, MatFactorType ftype, Mat *F)
+{
   Mat                       B;
   PetscInt                  M = A->rmap->N, N = A->cmap->N;
   PetscBool                 verb, flg;
@@ -516,7 +544,7 @@ static PetscErrorCode MatGetFactor_aij_strumpack(Mat A, MatFactorType ftype, Mat
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatSTRUMPACKSetHSSLeafSize_C", MatSTRUMPACKSetHSSLeafSize_STRUMPACK));
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatSTRUMPACKSetHSSMinSepSize_C", MatSTRUMPACKSetHSSMinSepSize_STRUMPACK));
   B->factortype = ftype;
-  PetscCall(PetscNewLog(B, &S));
+  PetscCall(PetscNew(&S));
   B->spptr = S;
 
   PetscCall(PetscObjectTypeCompare((PetscObject)A, MATSEQAIJ, &flg));
@@ -543,7 +571,8 @@ static PetscErrorCode MatGetFactor_aij_strumpack(Mat A, MatFactorType ftype, Mat
   PetscFunctionReturn(0);
 }
 
-PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_STRUMPACK(void) {
+PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_STRUMPACK(void)
+{
   PetscFunctionBegin;
   PetscCall(MatSolverTypeRegister(MATSOLVERSTRUMPACK, MATMPIAIJ, MAT_FACTOR_LU, MatGetFactor_aij_strumpack));
   PetscCall(MatSolverTypeRegister(MATSOLVERSTRUMPACK, MATSEQAIJ, MAT_FACTOR_LU, MatGetFactor_aij_strumpack));

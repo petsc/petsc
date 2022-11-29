@@ -7,6 +7,7 @@ static PetscErrorCode PetscInitializePackageAll(void)
   PetscCall(PetscDrawInitializePackage());
   PetscCall(PetscViewerInitializePackage());
   PetscCall(PetscRandomInitializePackage());
+  PetscCall(PetscDeviceInitializePackage());
   PetscCall(ISInitializePackage());
   PetscCall(AOInitializePackage());
   PetscCall(PFInitializePackage());

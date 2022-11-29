@@ -25,9 +25,10 @@
     Note:
     By default, the matrix is assumed to be complex, Hermitian.
 
-.seealso: `KSP`, `KSPCG`
+.seealso: [](chapter_ksp), `KSP`, `KSPCG`
 @*/
-PetscErrorCode KSPCGSetType(KSP ksp, KSPCGType type) {
+PetscErrorCode KSPCGSetType(KSP ksp, KSPCGType type)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
   PetscTryMethod(ksp, "KSPCGSetType_C", (KSP, KSPCGType), (ksp, type));
@@ -35,7 +36,7 @@ PetscErrorCode KSPCGSetType(KSP ksp, KSPCGType type) {
 }
 
 /*@
-    KSPCGUseSingleReduction - Merge the two inner products needed in CG into a single MPI_Allreduce() call.
+    KSPCGUseSingleReduction - Merge the two inner products needed in `KSPCG` into a single `MPI_Allreduce()` call.
 
     Logically Collective on ksp
 
@@ -43,22 +44,26 @@ PetscErrorCode KSPCGSetType(KSP ksp, KSPCGType type) {
 +   ksp - the iterative context
 -   flg - turn on or off the single reduction
 
-    Options Database:
-.   -ksp_cg_single_reduction <bool> - Merge inner products into single MPI_Allreduce
+    Options Database Key:
+.   -ksp_cg_single_reduction <bool> - Merge inner products into single `MPI_Allreduce()`
 
     Level: intermediate
 
-     The algorithm used in this case is described as Method 1 in Lapack Working Note 56, "Conjugate Gradient Algorithms with Reduced Synchronization Overhead
-     Distributed Memory Multiprocessors", by E. F. D'Azevedo, V. L. Eijkhout, and C. H. Romine, December 3, 1999. V. Eijkhout credits the algorithm
-     initially to Chronopoulos and Gear.
+    Notes:
+     The algorithm used in this case is described as Method 1 in [1]. V. Eijkhout credits the algorithm initially to Chronopoulos and Gear.
 
      It requires two extra work vectors than the conventional implementation in PETSc.
 
-     See also KSPPIPECG, KSPPIPECR, and KSPGROPPCG that use non-blocking reductions.
+     See also `KSPPIPECG`, `KSPPIPECR`, and `KSPGROPPCG` that use non-blocking reductions. [](sec_pipelineksp),
 
-.seealso: `KSP`, `KSPCG`, `KSPGMRES`
+    References:
+.   [1] - Lapack Working Note 56, "Conjugate Gradient Algorithms with Reduced Synchronization Overhead
+     Distributed Memory Multiprocessors", by E. F. D'Azevedo, V. L. Eijkhout, and C. H. Romine, December 3, 1999.
+
+.seealso: [](chapter_ksp), [](sec_pipelineksp), `KSP`, `KSPCG`, `KSPGMRES`, `KSPPIPECG`, `KSPPIPECR`, and `KSPGROPPCG`
 @*/
-PetscErrorCode KSPCGUseSingleReduction(KSP ksp, PetscBool flg) {
+PetscErrorCode KSPCGUseSingleReduction(KSP ksp, PetscBool flg)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
   PetscValidLogicalCollectiveBool(ksp, flg, 2);
@@ -67,7 +72,7 @@ PetscErrorCode KSPCGUseSingleReduction(KSP ksp, PetscBool flg) {
 }
 
 /*@
-    KSPCGSetRadius - Sets the radius of the trust region.
+    KSPCGSetRadius - Sets the radius of the trust region when the solver is used inside `SNESNEWTONTR`
 
     Logically Collective on ksp
 
@@ -77,9 +82,10 @@ PetscErrorCode KSPCGUseSingleReduction(KSP ksp, PetscBool flg) {
 
     Level: advanced
 
-.seealso: `KSP`, `KSPCG`, `KSPNASH`, `KSPSTCG`, `KSPGLTR`
+.seealso: [](chapter_ksp), `KSP`, `KSPCG`, `KSPNASH`, `KSPSTCG`, `KSPGLTR`
 @*/
-PetscErrorCode KSPCGSetRadius(KSP ksp, PetscReal radius) {
+PetscErrorCode KSPCGSetRadius(KSP ksp, PetscReal radius)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
   PetscValidLogicalCollectiveReal(ksp, radius, 2);
@@ -88,7 +94,7 @@ PetscErrorCode KSPCGSetRadius(KSP ksp, PetscReal radius) {
 }
 
 /*@
-    KSPCGGetNormD - Got norm of the direction.
+    KSPCGGetNormD - Got norm of the direction when the solver is used inside `SNESNEWTONTR`
 
     Collective on ksp
 
@@ -98,9 +104,10 @@ PetscErrorCode KSPCGSetRadius(KSP ksp, PetscReal radius) {
 
     Level: advanced
 
-.seealso: `KSP`, `KSPCG`, `KSPNASH`, `KSPSTCG`, `KSPGLTR`
+.seealso: [](chapter_ksp), `KSP`, `KSPCG`, `KSPNASH`, `KSPSTCG`, `KSPGLTR`
 @*/
-PetscErrorCode KSPCGGetNormD(KSP ksp, PetscReal *norm_d) {
+PetscErrorCode KSPCGGetNormD(KSP ksp, PetscReal *norm_d)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
   PetscUseMethod(ksp, "KSPCGGetNormD_C", (KSP, PetscReal *), (ksp, norm_d));
@@ -108,7 +115,7 @@ PetscErrorCode KSPCGGetNormD(KSP ksp, PetscReal *norm_d) {
 }
 
 /*@
-    KSPCGGetObjFcn - Get objective function value.
+    KSPCGGetObjFcn - Get objective function value when the solver is used inside `SNESNEWTONTR`
 
     Collective on ksp
 
@@ -118,9 +125,10 @@ PetscErrorCode KSPCGGetNormD(KSP ksp, PetscReal *norm_d) {
 
     Level: advanced
 
-.seealso: `KSP`, `KSPCG`, `KSPNASH`, `KSPSTCG`, `KSPGLTR`
+.seealso: [](chapter_ksp), `KSP`, `KSPCG`, `KSPNASH`, `KSPSTCG`, `KSPGLTR`
 @*/
-PetscErrorCode KSPCGGetObjFcn(KSP ksp, PetscReal *o_fcn) {
+PetscErrorCode KSPCGGetObjFcn(KSP ksp, PetscReal *o_fcn)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
   PetscUseMethod(ksp, "KSPCGGetObjFcn_C", (KSP, PetscReal *), (ksp, o_fcn));

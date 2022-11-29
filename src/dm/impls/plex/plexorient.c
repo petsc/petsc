@@ -7,15 +7,16 @@
   Not Collective
 
   Input Parameters:
-+ dm - The DM
++ dm - The `DM`
 . p  - The mesh point
 - o  - The orientation
 
   Level: intermediate
 
-.seealso: `DMPlexOrient()`, `DMPlexGetCone()`, `DMPlexGetConeOrientation()`, `DMPlexInterpolate()`, `DMPlexGetChart()`
+.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPlexOrient()`, `DMPlexGetCone()`, `DMPlexGetConeOrientation()`, `DMPlexInterpolate()`, `DMPlexGetChart()`
 @*/
-PetscErrorCode DMPlexOrientPoint(DM dm, PetscInt p, PetscInt o) {
+PetscErrorCode DMPlexOrientPoint(DM dm, PetscInt p, PetscInt o)
+{
   DMPolytopeType  ct;
   const PetscInt *arr, *cone, *ornt, *support;
   PetscInt       *newcone, *newornt;
@@ -68,7 +69,8 @@ PetscErrorCode DMPlexOrientPoint(DM dm, PetscInt p, PetscInt o) {
     - Flips non-matching
   - Inserts faces of support cells in FIFO
 */
-static PetscErrorCode DMPlexCheckFace_Internal(DM dm, PetscInt *faceFIFO, PetscInt *fTop, PetscInt *fBottom, PetscInt cStart, PetscInt fStart, PetscInt fEnd, PetscBT seenCells, PetscBT flippedCells, PetscBT seenFaces) {
+static PetscErrorCode DMPlexCheckFace_Internal(DM dm, PetscInt *faceFIFO, PetscInt *fTop, PetscInt *fBottom, PetscInt cStart, PetscInt fStart, PetscInt fEnd, PetscBT seenCells, PetscBT flippedCells, PetscBT seenFaces)
+{
   const PetscInt *support, *coneA, *coneB, *coneOA, *coneOB;
   PetscInt        supportSize, coneSizeA, coneSizeB, posA = -1, posB = -1;
   PetscInt        face, dim, seenA, flippedA, seenB, flippedB, mismatch, c;
@@ -133,16 +135,19 @@ static PetscErrorCode DMPlexCheckFace_Internal(DM dm, PetscInt *faceFIFO, PetscI
   DMPlexOrient - Give a consistent orientation to the input mesh
 
   Input Parameters:
-. dm - The DM
+. dm - The `DM`
 
-  Note: The orientation data for the DM are change in-place.
-$ This routine will fail for non-orientable surfaces, such as the Moebius strip.
+  Note:
+  The orientation data for the `DM` are change in-place.
+
+  This routine will fail for non-orientable surfaces, such as the Moebius strip.
 
   Level: advanced
 
-.seealso: `DMCreate()`, `DMPLEX`
+.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMCreate()`, `DMPLEX`
 @*/
-PetscErrorCode DMPlexOrient(DM dm) {
+PetscErrorCode DMPlexOrient(DM dm)
+{
   MPI_Comm           comm;
   PetscSF            sf;
   const PetscInt    *lpoints;

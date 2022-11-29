@@ -25,7 +25,8 @@ typedef struct {
   PetscInt  ostep; /* print the energy at each ostep time steps */
 } AppCtx;
 
-static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options) {
+static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
+{
   PetscFunctionBeginUser;
   options->error = PETSC_FALSE;
   options->ostep = 100;
@@ -37,7 +38,8 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm) {
+static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
+{
   PetscFunctionBeginUser;
   PetscCall(DMCreate(comm, dm));
   PetscCall(DMSetType(*dm, DMPLEX));
@@ -46,7 +48,8 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode CreateSwarm(DM dm, AppCtx *user, DM *sw) {
+static PetscErrorCode CreateSwarm(DM dm, AppCtx *user, DM *sw)
+{
   PetscReal v0[1] = {1.};
   PetscInt  dim;
 
@@ -87,7 +90,8 @@ static PetscErrorCode CreateSwarm(DM dm, AppCtx *user, DM *sw) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec U, Vec G, void *ctx) {
+static PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec U, Vec G, void *ctx)
+{
   DM                 sw;
   const PetscReal   *coords, *vel;
   const PetscScalar *u;
@@ -124,7 +128,8 @@ static PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec U, Vec G, void *ctx) {
    J_p = (  0   1)
          (-w^2  0)
 */
-static PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec U, Mat J, Mat P, void *ctx) {
+static PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec U, Mat J, Mat P, void *ctx)
+{
   DM               sw;
   const PetscReal *coords, *vel;
   PetscInt         dim, d, Np, p, rStart;
@@ -155,7 +160,8 @@ static PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec U, Mat J, Mat P, void 
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode RHSFunctionX(TS ts, PetscReal t, Vec V, Vec Xres, void *ctx) {
+static PetscErrorCode RHSFunctionX(TS ts, PetscReal t, Vec V, Vec Xres, void *ctx)
+{
   const PetscScalar *v;
   PetscScalar       *xres;
   PetscInt           Np, p;
@@ -170,7 +176,8 @@ static PetscErrorCode RHSFunctionX(TS ts, PetscReal t, Vec V, Vec Xres, void *ct
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode RHSFunctionV(TS ts, PetscReal t, Vec X, Vec Vres, void *ctx) {
+static PetscErrorCode RHSFunctionV(TS ts, PetscReal t, Vec X, Vec Vres, void *ctx)
+{
   DM                 sw;
   const PetscScalar *x;
   const PetscReal   *coords, *vel;
@@ -201,7 +208,8 @@ static PetscErrorCode RHSFunctionV(TS ts, PetscReal t, Vec X, Vec Vres, void *ct
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode CreateSolution(TS ts) {
+static PetscErrorCode CreateSolution(TS ts)
+{
   DM       sw;
   Vec      u;
   PetscInt dim, Np;
@@ -219,7 +227,8 @@ static PetscErrorCode CreateSolution(TS ts) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode SetProblem(TS ts) {
+static PetscErrorCode SetProblem(TS ts)
+{
   AppCtx *user;
   DM      sw;
 
@@ -277,7 +286,8 @@ static PetscErrorCode SetProblem(TS ts) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMSwarmTSRedistribute(TS ts) {
+static PetscErrorCode DMSwarmTSRedistribute(TS ts)
+{
   DM        sw;
   Vec       u;
   PetscReal t, maxt, dt;
@@ -307,20 +317,23 @@ static PetscErrorCode DMSwarmTSRedistribute(TS ts) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode circleSingleX(PetscInt dim, PetscReal time, const PetscReal dummy[], PetscInt p, PetscScalar x[], void *ctx) {
+PetscErrorCode circleSingleX(PetscInt dim, PetscReal time, const PetscReal dummy[], PetscInt p, PetscScalar x[], void *ctx)
+{
   x[0] = p + 1.;
   x[1] = 0.;
   return 0;
 }
 
-PetscErrorCode circleSingleV(PetscInt dim, PetscReal time, const PetscReal dummy[], PetscInt p, PetscScalar v[], void *ctx) {
+PetscErrorCode circleSingleV(PetscInt dim, PetscReal time, const PetscReal dummy[], PetscInt p, PetscScalar v[], void *ctx)
+{
   v[0] = 0.;
   v[1] = PetscSqrtReal(1000. / (p + 1.));
   return 0;
 }
 
 /* Put 5 particles into each circle */
-PetscErrorCode circleMultipleX(PetscInt dim, PetscReal time, const PetscReal dummy[], PetscInt p, PetscScalar x[], void *ctx) {
+PetscErrorCode circleMultipleX(PetscInt dim, PetscReal time, const PetscReal dummy[], PetscInt p, PetscScalar x[], void *ctx)
+{
   const PetscInt  n   = 5;
   const PetscReal r0  = (p / n) + 1.;
   const PetscReal th0 = (2. * PETSC_PI * (p % n)) / n;
@@ -331,7 +344,8 @@ PetscErrorCode circleMultipleX(PetscInt dim, PetscReal time, const PetscReal dum
 }
 
 /* Put 5 particles into each circle */
-PetscErrorCode circleMultipleV(PetscInt dim, PetscReal time, const PetscReal dummy[], PetscInt p, PetscScalar v[], void *ctx) {
+PetscErrorCode circleMultipleV(PetscInt dim, PetscReal time, const PetscReal dummy[], PetscInt p, PetscScalar v[], void *ctx)
+{
   const PetscInt  n     = 5;
   const PetscReal r0    = (p / n) + 1.;
   const PetscReal th0   = (2. * PETSC_PI * (p % n)) / n;
@@ -347,7 +361,7 @@ PetscErrorCode circleMultipleV(PetscInt dim, PetscReal time, const PetscReal dum
 
   Input Parameters:
 + ts         - The TS
-- useInitial - Flag to also set the initial conditions to the current coodinates and velocities and setup the problem
+- useInitial - Flag to also set the initial conditions to the current coordinates and velocities and setup the problem
 
   Output Parameters:
 . u - The initialized solution vector
@@ -356,7 +370,8 @@ PetscErrorCode circleMultipleV(PetscInt dim, PetscReal time, const PetscReal dum
 
 .seealso: InitializeSolve()
 */
-static PetscErrorCode InitializeSolveAndSwarm(TS ts, PetscBool useInitial) {
+static PetscErrorCode InitializeSolveAndSwarm(TS ts, PetscBool useInitial)
+{
   DM      sw;
   Vec     u, gc, gv, gc0, gv0;
   IS      isx, isv;
@@ -391,14 +406,16 @@ static PetscErrorCode InitializeSolveAndSwarm(TS ts, PetscBool useInitial) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode InitializeSolve(TS ts, Vec u) {
+static PetscErrorCode InitializeSolve(TS ts, Vec u)
+{
   PetscFunctionBegin;
   PetscCall(TSSetSolution(ts, u));
   PetscCall(InitializeSolveAndSwarm(ts, PETSC_TRUE));
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode ComputeError(TS ts, Vec U, Vec E) {
+static PetscErrorCode ComputeError(TS ts, Vec U, Vec E)
+{
   MPI_Comm           comm;
   DM                 sw;
   AppCtx            *user;
@@ -451,7 +468,8 @@ static PetscErrorCode ComputeError(TS ts, Vec U, Vec E) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode EnergyMonitor(TS ts, PetscInt step, PetscReal t, Vec U, void *ctx) {
+static PetscErrorCode EnergyMonitor(TS ts, PetscInt step, PetscReal t, Vec U, void *ctx)
+{
   const PetscInt     ostep = ((AppCtx *)ctx)->ostep;
   DM                 sw;
   const PetscScalar *u;
@@ -476,7 +494,8 @@ static PetscErrorCode EnergyMonitor(TS ts, PetscInt step, PetscReal t, Vec U, vo
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MigrateParticles(TS ts) {
+static PetscErrorCode MigrateParticles(TS ts)
+{
   DM sw;
 
   PetscFunctionBeginUser;
@@ -503,7 +522,8 @@ static PetscErrorCode MigrateParticles(TS ts) {
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   DM     dm, sw;
   TS     ts;
   Vec    u;

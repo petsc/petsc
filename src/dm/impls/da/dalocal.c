@@ -12,10 +12,11 @@
 /*
    This allows the DMDA vectors to properly tell MATLAB their dimensions
 */
-#if defined(PETSC_HAVE_MATLAB_ENGINE)
-#include <engine.h> /* MATLAB include file */
-#include <mex.h>    /* MATLAB include file */
-static PetscErrorCode VecMatlabEnginePut_DA2d(PetscObject obj, void *mengine) {
+#if defined(PETSC_HAVE_MATLAB)
+  #include <engine.h> /* MATLAB include file */
+  #include <mex.h>    /* MATLAB include file */
+static PetscErrorCode VecMatlabEnginePut_DA2d(PetscObject obj, void *mengine)
+{
   PetscInt     n, m;
   Vec          vec = (Vec)obj;
   PetscScalar *array;
@@ -28,11 +29,11 @@ static PetscErrorCode VecMatlabEnginePut_DA2d(PetscObject obj, void *mengine) {
   PetscCall(DMDAGetGhostCorners(da, 0, 0, 0, &m, &n, 0));
 
   PetscCall(VecGetArray(vec, &array));
-#if !defined(PETSC_USE_COMPLEX)
+  #if !defined(PETSC_USE_COMPLEX)
   mat = mxCreateDoubleMatrix(m, n, mxREAL);
-#else
+  #else
   mat = mxCreateDoubleMatrix(m, n, mxCOMPLEX);
-#endif
+  #endif
   PetscCall(PetscArraycpy(mxGetPr(mat), array, n * m));
   PetscCall(PetscObjectName(obj));
   engPutVariable((Engine *)mengine, obj->name, mat);
@@ -42,7 +43,8 @@ static PetscErrorCode VecMatlabEnginePut_DA2d(PetscObject obj, void *mengine) {
 }
 #endif
 
-PetscErrorCode DMCreateLocalVector_DA(DM da, Vec *g) {
+PetscErrorCode DMCreateLocalVector_DA(DM da, Vec *g)
+{
   DM_DA *dd = (DM_DA *)da->data;
 
   PetscFunctionBegin;
@@ -57,17 +59,17 @@ PetscErrorCode DMCreateLocalVector_DA(DM da, Vec *g) {
     PetscCall(VecBindToCPU(*g, PETSC_TRUE));
   }
   PetscCall(VecSetDM(*g, da));
-#if defined(PETSC_HAVE_MATLAB_ENGINE)
+#if defined(PETSC_HAVE_MATLAB)
   if (dd->w == 1 && da->dim == 2) PetscCall(PetscObjectComposeFunction((PetscObject)*g, "PetscMatlabEnginePut_C", VecMatlabEnginePut_DA2d));
 #endif
   PetscFunctionReturn(0);
 }
 
 /*@
-  DMDAGetNumCells - Get the number of cells in the local piece of the DMDA. This includes ghost cells.
+  DMDAGetNumCells - Get the number of cells in the local piece of the `DMDA`. This includes ghost cells.
 
   Input Parameter:
-. dm - The DM object
+. dm - The `DMDA` object
 
   Output Parameters:
 + numCellsX - The number of local cells in the x-direction
@@ -77,9 +79,10 @@ PetscErrorCode DMCreateLocalVector_DA(DM da, Vec *g) {
 
   Level: developer
 
-.seealso: `DMDAGetCellPoint()`
+.seealso: `DM`, `DMDA`, `DMDAGetCellPoint()`
 @*/
-PetscErrorCode DMDAGetNumCells(DM dm, PetscInt *numCellsX, PetscInt *numCellsY, PetscInt *numCellsZ, PetscInt *numCells) {
+PetscErrorCode DMDAGetNumCells(DM dm, PetscInt *numCellsX, PetscInt *numCellsY, PetscInt *numCellsZ, PetscInt *numCells)
+{
   DM_DA         *da  = (DM_DA *)dm->data;
   const PetscInt dim = dm->dim;
   const PetscInt mx = (da->Xe - da->Xs) / da->w, my = da->Ye - da->Ys, mz = da->Ze - da->Zs;
@@ -107,20 +110,21 @@ PetscErrorCode DMDAGetNumCells(DM dm, PetscInt *numCellsX, PetscInt *numCellsY, 
 }
 
 /*@
-  DMDAGetCellPoint - Get the DM point corresponding to the tuple (i, j, k) in the DMDA
+  DMDAGetCellPoint - Get the DM point corresponding to the tuple (i, j, k) in the `DMDA`
 
   Input Parameters:
-+ dm - The DM object
++ dm - The `DMDA` object
 - i,j,k - The global indices for the cell
 
   Output Parameters:
-. point - The local DM point
+. point - The local `DM` point
 
   Level: developer
 
-.seealso: `DMDAGetNumCells()`
+.seealso: `DM`, `DMDA`, `DMDAGetNumCells()`
 @*/
-PetscErrorCode DMDAGetCellPoint(DM dm, PetscInt i, PetscInt j, PetscInt k, PetscInt *point) {
+PetscErrorCode DMDAGetCellPoint(DM dm, PetscInt i, PetscInt j, PetscInt k, PetscInt *point)
+{
   const PetscInt dim = dm->dim;
   DMDALocalInfo  info;
 
@@ -135,7 +139,8 @@ PetscErrorCode DMDAGetCellPoint(DM dm, PetscInt i, PetscInt j, PetscInt k, Petsc
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMDAGetNumVertices(DM dm, PetscInt *numVerticesX, PetscInt *numVerticesY, PetscInt *numVerticesZ, PetscInt *numVertices) {
+PetscErrorCode DMDAGetNumVertices(DM dm, PetscInt *numVerticesX, PetscInt *numVerticesY, PetscInt *numVerticesZ, PetscInt *numVertices)
+{
   DM_DA         *da  = (DM_DA *)dm->data;
   const PetscInt dim = dm->dim;
   const PetscInt mx = (da->Xe - da->Xs) / da->w, my = da->Ye - da->Ys, mz = da->Ze - da->Zs;
@@ -164,7 +169,8 @@ PetscErrorCode DMDAGetNumVertices(DM dm, PetscInt *numVerticesX, PetscInt *numVe
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMDAGetNumFaces(DM dm, PetscInt *numXFacesX, PetscInt *numXFaces, PetscInt *numYFacesY, PetscInt *numYFaces, PetscInt *numZFacesZ, PetscInt *numZFaces) {
+PetscErrorCode DMDAGetNumFaces(DM dm, PetscInt *numXFacesX, PetscInt *numXFaces, PetscInt *numYFacesY, PetscInt *numYFaces, PetscInt *numZFacesZ, PetscInt *numZFaces)
+{
   DM_DA         *da  = (DM_DA *)dm->data;
   const PetscInt dim = dm->dim;
   const PetscInt mx = (da->Xe - da->Xs) / da->w, my = da->Ye - da->Ys, mz = da->Ze - da->Zs;
@@ -203,7 +209,8 @@ PetscErrorCode DMDAGetNumFaces(DM dm, PetscInt *numXFacesX, PetscInt *numXFaces,
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMDAGetHeightStratum(DM dm, PetscInt height, PetscInt *pStart, PetscInt *pEnd) {
+PetscErrorCode DMDAGetHeightStratum(DM dm, PetscInt height, PetscInt *pStart, PetscInt *pEnd)
+{
   const PetscInt dim = dm->dim;
   PetscInt       nC, nV, nXF, nYF, nZF;
 
@@ -233,7 +240,8 @@ PetscErrorCode DMDAGetHeightStratum(DM dm, PetscInt height, PetscInt *pStart, Pe
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMDAGetDepthStratum(DM dm, PetscInt depth, PetscInt *pStart, PetscInt *pEnd) {
+PetscErrorCode DMDAGetDepthStratum(DM dm, PetscInt depth, PetscInt *pStart, PetscInt *pEnd)
+{
   const PetscInt dim = dm->dim;
   PetscInt       nC, nV, nXF, nYF, nZF;
 
@@ -263,7 +271,8 @@ PetscErrorCode DMDAGetDepthStratum(DM dm, PetscInt depth, PetscInt *pStart, Pets
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMDAGetConeSize(DM dm, PetscInt p, PetscInt *coneSize) {
+PetscErrorCode DMDAGetConeSize(DM dm, PetscInt p, PetscInt *coneSize)
+{
   const PetscInt dim = dm->dim;
   PetscInt       nC, nV, nXF, nYF, nZF;
 
@@ -284,12 +293,14 @@ PetscErrorCode DMDAGetConeSize(DM dm, PetscInt p, PetscInt *coneSize) {
       } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Point %" PetscInt_FMT " should be in [0, %" PetscInt_FMT ")", p, nC + nV + nXF + nYF + nZF);
     } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Negative point %" PetscInt_FMT " is invalid", p);
     break;
-  case 3: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Too lazy to do 3D");
+  case 3:
+    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Too lazy to do 3D");
   }
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMDAGetCone(DM dm, PetscInt p, PetscInt *cone[]) {
+PetscErrorCode DMDAGetCone(DM dm, PetscInt p, PetscInt *cone[])
+{
   const PetscInt dim = dm->dim;
   PetscInt       nCx, nCy, nCz, nC, nVx, nVy, nVz, nV, nxF, nyF, nzF, nXF, nYF, nZF;
 
@@ -326,18 +337,21 @@ PetscErrorCode DMDAGetCone(DM dm, PetscInt p, PetscInt *cone[]) {
       } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Point %" PetscInt_FMT " should be in [0, %" PetscInt_FMT ")", p, nC + nV + nXF + nYF + nZF);
     } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Negative point %" PetscInt_FMT " is invalid", p);
     break;
-  case 3: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Too lazy to do 3D");
+  case 3:
+    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Too lazy to do 3D");
   }
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMDARestoreCone(DM dm, PetscInt p, PetscInt *cone[]) {
+PetscErrorCode DMDARestoreCone(DM dm, PetscInt p, PetscInt *cone[])
+{
   PetscFunctionBegin;
   PetscCall(DMGetWorkArray(dm, 6, MPIU_INT, cone));
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMDASetVertexCoordinates(DM dm, PetscReal xl, PetscReal xu, PetscReal yl, PetscReal yu, PetscReal zl, PetscReal zu) {
+PetscErrorCode DMDASetVertexCoordinates(DM dm, PetscReal xl, PetscReal xu, PetscReal yl, PetscReal yu, PetscReal zl, PetscReal zu)
+{
   DM_DA       *da = (DM_DA *)dm->data;
   Vec          coordinates;
   PetscSection section;
@@ -392,7 +406,7 @@ PetscErrorCode DMDASetVertexCoordinates(DM dm, PetscReal xl, PetscReal xu, Petsc
 /* ------------------------------------------------------------------- */
 
 /*@C
-     DMDAGetArray - Gets a work array for a DMDA
+     DMDAGetArray - Gets a work array for a `DMDA`
 
     Input Parameters:
 +    da - information about my local patch
@@ -401,15 +415,16 @@ PetscErrorCode DMDASetVertexCoordinates(DM dm, PetscReal xl, PetscReal xu, Petsc
     Output Parameters:
 .    vptr - array data structured
 
-    Note:  The vector values are NOT initialized and may have garbage in them, so you may need
-           to zero them.
-
   Level: advanced
 
-.seealso: `DMDARestoreArray()`
+  Note:
+   The vector values are NOT initialized and may have garbage in them, so you may need
+   to zero them.
 
+.seealso: `DM`, `DMDA`, `DMDARestoreArray()`
 @*/
-PetscErrorCode DMDAGetArray(DM da, PetscBool ghosted, void *vptr) {
+PetscErrorCode DMDAGetArray(DM da, PetscBool ghosted, void *vptr)
+{
   PetscInt j, i, xs, ys, xm, ym, zs, zm;
   char    *iarray_start;
   void   **iptr = (void **)vptr;
@@ -487,7 +502,8 @@ PetscErrorCode DMDAGetArray(DM da, PetscBool ghosted, void *vptr) {
     *iptr = (void *)ptr;
     break;
   }
-  default: SETERRQ(PetscObjectComm((PetscObject)da), PETSC_ERR_SUP, "Dimension %" PetscInt_FMT " not supported", da->dim);
+  default:
+    SETERRQ(PetscObjectComm((PetscObject)da), PETSC_ERR_SUP, "Dimension %" PetscInt_FMT " not supported", da->dim);
   }
 
 done:
@@ -513,7 +529,7 @@ done:
 }
 
 /*@C
-     DMDARestoreArray - Restores an array of derivative types for a DMDA
+     DMDARestoreArray - Restores an array of derivative types for a `DMDA`
 
     Input Parameters:
 +    da - information about my local patch
@@ -522,10 +538,10 @@ done:
 
      Level: advanced
 
-.seealso: `DMDAGetArray()`
-
+.seealso: `DM`, `DMDA`, `DMDAGetArray()`
 @*/
-PetscErrorCode DMDARestoreArray(DM da, PetscBool ghosted, void *vptr) {
+PetscErrorCode DMDARestoreArray(DM da, PetscBool ghosted, void *vptr)
+{
   PetscInt i;
   void   **iptr = (void **)vptr, *iarray_start = NULL;
   DM_DA   *dd = (DM_DA *)da->data;

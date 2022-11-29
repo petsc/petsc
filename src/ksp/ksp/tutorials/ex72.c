@@ -32,7 +32,8 @@ users manual for a discussion of preloading.  Input parameters include\n\
 */
 #include <petscksp.h>
 
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   KSP         ksp;                         /* linear solver context */
   Mat         A;                           /* matrix */
   Vec         x, b, u;                     /* approx solution, RHS, exact solution */
@@ -552,12 +553,12 @@ int main(int argc, char **args) {
 
    testset:
       suffix: 12
-      requires: matlab
+      requires: datafilespath matlab
       args: -pc_type lu -pc_factor_mat_solver_type matlab -f0 ${DATAFILESPATH}/matrices/arco1
 
    testset:
       suffix: 13
-      requires: lusol
+      requires: datafilespath lusol
       args: -f0 ${DATAFILESPATH}/matrices/arco1
       args: -mat_type lusol -pc_type lu
 

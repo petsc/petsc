@@ -19,12 +19,13 @@ static PetscBool DMPackageInitialized = PETSC_FALSE;
 
 .seealso: `PetscInitialize()`
 @*/
-PetscErrorCode   DMFinalizePackage(void) {
-    PetscFunctionBegin;
-    PetscCall(PetscFunctionListDestroy(&DMList));
-    DMPackageInitialized = PETSC_FALSE;
-    DMRegisterAllCalled  = PETSC_FALSE;
-    PetscFunctionReturn(0);
+PetscErrorCode DMFinalizePackage(void)
+{
+  PetscFunctionBegin;
+  PetscCall(PetscFunctionListDestroy(&DMList));
+  DMPackageInitialized = PETSC_FALSE;
+  DMRegisterAllCalled  = PETSC_FALSE;
+  PetscFunctionReturn(0);
 }
 
 #if defined(PETSC_HAVE_HYPRE)
@@ -41,7 +42,8 @@ PETSC_EXTERN PetscErrorCode MatCreate_HYPRESStruct(Mat);
 
 .seealso: `PetscInitialize()`
 @*/
-PetscErrorCode DMInitializePackage(void) {
+PetscErrorCode DMInitializePackage(void)
+{
   char      logList[256];
   PetscBool opt, pkg;
 
@@ -168,6 +170,8 @@ PetscErrorCode DMInitializePackage(void) {
   PetscCall(PetscRegisterFinalize(DMGenerateRegisterDestroy));
   PetscCall(DMPlexTransformRegisterAll());
   PetscCall(PetscRegisterFinalize(DMPlexTransformRegisterDestroy));
+  PetscCall(DMLabelRegisterAll());
+  PetscCall(PetscRegisterFinalize(DMLabelRegisterDestroy));
   PetscCall(PetscRegisterFinalize(DMFinalizePackage));
   PetscFunctionReturn(0);
 }
@@ -182,16 +186,17 @@ static PetscBool PetscFEPackageInitialized = PETSC_FALSE;
 
 .seealso: `PetscInitialize()`
 @*/
-PetscErrorCode   PetscFEFinalizePackage(void) {
-    PetscFunctionBegin;
-    PetscCall(PetscFunctionListDestroy(&PetscSpaceList));
-    PetscCall(PetscFunctionListDestroy(&PetscDualSpaceList));
-    PetscCall(PetscFunctionListDestroy(&PetscFEList));
-    PetscFEPackageInitialized       = PETSC_FALSE;
-    PetscSpaceRegisterAllCalled     = PETSC_FALSE;
-    PetscDualSpaceRegisterAllCalled = PETSC_FALSE;
-    PetscFERegisterAllCalled        = PETSC_FALSE;
-    PetscFunctionReturn(0);
+PetscErrorCode PetscFEFinalizePackage(void)
+{
+  PetscFunctionBegin;
+  PetscCall(PetscFunctionListDestroy(&PetscSpaceList));
+  PetscCall(PetscFunctionListDestroy(&PetscDualSpaceList));
+  PetscCall(PetscFunctionListDestroy(&PetscFEList));
+  PetscFEPackageInitialized       = PETSC_FALSE;
+  PetscSpaceRegisterAllCalled     = PETSC_FALSE;
+  PetscDualSpaceRegisterAllCalled = PETSC_FALSE;
+  PetscFERegisterAllCalled        = PETSC_FALSE;
+  PetscFunctionReturn(0);
 }
 
 /*@C
@@ -203,7 +208,8 @@ PetscErrorCode   PetscFEFinalizePackage(void) {
 
 .seealso: `PetscInitialize()`
 @*/
-PetscErrorCode PetscFEInitializePackage(void) {
+PetscErrorCode PetscFEInitializePackage(void)
+{
   char      logList[256];
   PetscBool opt, pkg;
 
@@ -254,14 +260,15 @@ static PetscBool PetscFVPackageInitialized = PETSC_FALSE;
 
 .seealso: `PetscInitialize()`
 @*/
-PetscErrorCode   PetscFVFinalizePackage(void) {
-    PetscFunctionBegin;
-    PetscCall(PetscFunctionListDestroy(&PetscLimiterList));
-    PetscCall(PetscFunctionListDestroy(&PetscFVList));
-    PetscFVPackageInitialized     = PETSC_FALSE;
-    PetscFVRegisterAllCalled      = PETSC_FALSE;
-    PetscLimiterRegisterAllCalled = PETSC_FALSE;
-    PetscFunctionReturn(0);
+PetscErrorCode PetscFVFinalizePackage(void)
+{
+  PetscFunctionBegin;
+  PetscCall(PetscFunctionListDestroy(&PetscLimiterList));
+  PetscCall(PetscFunctionListDestroy(&PetscFVList));
+  PetscFVPackageInitialized     = PETSC_FALSE;
+  PetscFVRegisterAllCalled      = PETSC_FALSE;
+  PetscLimiterRegisterAllCalled = PETSC_FALSE;
+  PetscFunctionReturn(0);
 }
 
 /*@C
@@ -273,7 +280,8 @@ PetscErrorCode   PetscFVFinalizePackage(void) {
 
 .seealso: `PetscInitialize()`
 @*/
-PetscErrorCode PetscFVInitializePackage(void) {
+PetscErrorCode PetscFVInitializePackage(void)
+{
   char      logList[256];
   PetscBool opt, pkg;
 
@@ -319,12 +327,13 @@ static PetscBool PetscDSPackageInitialized = PETSC_FALSE;
 
 .seealso: `PetscInitialize()`
 @*/
-PetscErrorCode   PetscDSFinalizePackage(void) {
-    PetscFunctionBegin;
-    PetscCall(PetscFunctionListDestroy(&PetscDSList));
-    PetscDSPackageInitialized = PETSC_FALSE;
-    PetscDSRegisterAllCalled  = PETSC_FALSE;
-    PetscFunctionReturn(0);
+PetscErrorCode PetscDSFinalizePackage(void)
+{
+  PetscFunctionBegin;
+  PetscCall(PetscFunctionListDestroy(&PetscDSList));
+  PetscDSPackageInitialized = PETSC_FALSE;
+  PetscDSRegisterAllCalled  = PETSC_FALSE;
+  PetscFunctionReturn(0);
 }
 
 /*@C
@@ -336,7 +345,8 @@ PetscErrorCode   PetscDSFinalizePackage(void) {
 
 .seealso: `PetscInitialize()`
 @*/
-PetscErrorCode PetscDSInitializePackage(void) {
+PetscErrorCode PetscDSInitializePackage(void)
+{
   char      logList[256];
   PetscBool opt, pkg;
 
@@ -376,7 +386,8 @@ PetscErrorCode PetscDSInitializePackage(void) {
   the basic DM library.
 
 */
-PETSC_EXTERN PetscErrorCode PetscDLLibraryRegister_petscdm(void) {
+PETSC_EXTERN PetscErrorCode PetscDLLibraryRegister_petscdm(void)
+{
   PetscFunctionBegin;
   PetscCall(AOInitializePackage());
   PetscCall(PetscPartitionerInitializePackage());

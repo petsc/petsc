@@ -10,28 +10,28 @@
 #include <errno.h>
 #include <ctype.h>
 #if defined(PETSC_HAVE_MACHINE_ENDIAN_H)
-#include <machine/endian.h>
+  #include <machine/endian.h>
 #endif
 #if defined(PETSC_HAVE_UNISTD_H)
-#include <unistd.h>
+  #include <unistd.h>
 #endif
 #if defined(PETSC_HAVE_SYS_SOCKET_H)
-#include <sys/socket.h>
+  #include <sys/socket.h>
 #endif
 #if defined(PETSC_HAVE_SYS_WAIT_H)
-#include <sys/wait.h>
+  #include <sys/wait.h>
 #endif
 #if defined(PETSC_HAVE_NETINET_IN_H)
-#include <netinet/in.h>
+  #include <netinet/in.h>
 #endif
 #if defined(PETSC_HAVE_NETDB_H)
-#include <netdb.h>
+  #include <netdb.h>
 #endif
 #if defined(PETSC_HAVE_FCNTL_H)
-#include <fcntl.h>
+  #include <fcntl.h>
 #endif
 #if defined(PETSC_HAVE_IO_H)
-#include <io.h>
+  #include <io.h>
 #endif
 
 #if defined(PETSC_NEED_CLOSE_PROTO)
@@ -51,7 +51,8 @@ typedef struct {
 /*-----------------------------------------------------------------*/
 /*                                                                 */
 /*-----------------------------------------------------------------*/
-PETSC_EXTERN void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
+PETSC_EXTERN void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
+{
   int    t = 0;
   Linger linger;
 
@@ -66,6 +67,7 @@ PETSC_EXTERN void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray
   return;
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   return 0;
 }

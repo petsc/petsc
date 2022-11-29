@@ -21,7 +21,6 @@ PC Object: 1 MPI process
         Threshold for dropping small values in graph on each level =   0.   0.  
         Threshold scaling factor for each level not specified = 1.
         AGG specific options
-          Symmetric graph false
           Number of levels to square graph 1
           Number smoothing steps 1
         Complexity:    grid = 1.16667    operator = 1.16

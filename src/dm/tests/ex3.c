@@ -5,7 +5,8 @@ static char help[] = "Solves the 1-dimensional wave equation.\n\n";
 #include <petscdmda.h>
 #include <petscdraw.h>
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscMPIInt  rank, size;
   PetscInt     M = 60, time_steps = 100, localsize, j, i, mybase, myend, width, xbase, *localnodes = NULL;
   DM           da;

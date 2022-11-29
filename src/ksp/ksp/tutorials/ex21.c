@@ -9,7 +9,8 @@ typedef struct {
   PetscReal  lambda;
 } RBFCtx;
 
-static PetscScalar RBF(PetscInt sdim, PetscReal x[], PetscReal y[], void *ctx) {
+static PetscScalar RBF(PetscInt sdim, PetscReal x[], PetscReal y[], void *ctx)
+{
   RBFCtx    *rbfctx = (RBFCtx *)ctx;
   PetscInt   d;
   PetscReal  diff   = 0.0;
@@ -21,7 +22,8 @@ static PetscScalar RBF(PetscInt sdim, PetscReal x[], PetscReal y[], void *ctx) {
   return s * s * PetscExpReal(-0.5 * diff) + (diff != 0.0 ? 0.0 : lambda);
 }
 
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   Vec         x, b, u, d;
   Mat         A, Ae = NULL, Ad = NULL;
   KSP         ksp;

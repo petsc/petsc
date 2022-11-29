@@ -7,12 +7,13 @@
 #include <petsc/private/dmdaimpl.h> /*I   "petscdmda.h"    I*/
 
 #include <petscdraw.h>
-static PetscErrorCode DMView_DA_3d(DM da, PetscViewer viewer) {
+static PetscErrorCode DMView_DA_3d(DM da, PetscViewer viewer)
+{
   PetscMPIInt rank;
   PetscBool   iascii, isdraw, isglvis, isbinary;
   DM_DA      *dd = (DM_DA *)da->data;
   Vec         coordinates;
-#if defined(PETSC_HAVE_MATLAB_ENGINE)
+#if defined(PETSC_HAVE_MATLAB)
   PetscBool ismatlab;
 #endif
 
@@ -23,7 +24,7 @@ static PetscErrorCode DMView_DA_3d(DM da, PetscViewer viewer) {
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERDRAW, &isdraw));
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERGLVIS, &isglvis));
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERBINARY, &isbinary));
-#if defined(PETSC_HAVE_MATLAB_ENGINE)
+#if defined(PETSC_HAVE_MATLAB)
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERMATLAB, &ismatlab));
 #endif
   if (iascii) {
@@ -157,7 +158,7 @@ static PetscErrorCode DMView_DA_3d(DM da, PetscViewer viewer) {
         xmax = (dd->M + 1) * plane * dd->w + dd->M * dd->w;
         for (y = ymin; y < ymax; y++) {
           for (x = xmin + dd->Xs; x < xmin + dd->Xe; x += dd->w) {
-            sprintf(node, "%d", (int)(idx[base]));
+            PetscCall(PetscSNPrintf(node, PETSC_STATIC_ARRAY_LENGTH(node), "%" PetscInt_FMT, idx[base]));
             ycoord = y;
             /*Keep y wrap around points on drawing */
             if (y < 0) ycoord = dd->N + y;
@@ -180,7 +181,7 @@ static PetscErrorCode DMView_DA_3d(DM da, PetscViewer viewer) {
     PetscCall(DMView_DA_GLVis(da, viewer));
   } else if (isbinary) {
     PetscCall(DMView_DA_Binary(da, viewer));
-#if defined(PETSC_HAVE_MATLAB_ENGINE)
+#if defined(PETSC_HAVE_MATLAB)
   } else if (ismatlab) {
     PetscCall(DMView_DA_Matlab(da, viewer));
 #endif
@@ -188,7 +189,8 @@ static PetscErrorCode DMView_DA_3d(DM da, PetscViewer viewer) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMSetUp_DA_3D(DM da) {
+PetscErrorCode DMSetUp_DA_3D(DM da)
+{
   DM_DA          *dd           = (DM_DA *)da->data;
   const PetscInt  M            = dd->M;
   const PetscInt  N            = dd->N;
@@ -1062,7 +1064,6 @@ PetscErrorCode DMSetUp_DA_3D(DM da) {
 
   PetscCall(ISCreateBlock(comm, dof, nn, idx, PETSC_USE_POINTER, &from));
   PetscCall(VecScatterCreate(global, from, local, to, &gtol));
-  PetscCall(PetscLogObjectParent((PetscObject)da, (PetscObject)gtol));
   PetscCall(ISDestroy(&to));
   PetscCall(ISDestroy(&from));
 
@@ -1403,12 +1404,11 @@ PetscErrorCode DMSetUp_DA_3D(DM da) {
      of VecSetValuesLocal().
   */
   PetscCall(ISLocalToGlobalMappingCreate(comm, dof, nn, idx, PETSC_OWN_POINTER, &da->ltogmap));
-  PetscCall(PetscLogObjectParent((PetscObject)da, (PetscObject)da->ltogmap));
 
   PetscCall(PetscFree2(bases, ldims));
-  dd->m  = m;
-  dd->n  = n;
-  dd->p  = p;
+  dd->m = m;
+  dd->n = n;
+  dd->p = p;
   /* note petsc expects xs/xe/Xs/Xe to be multiplied by #dofs in many places */
   dd->xs = xs * dof;
   dd->xe = xe * dof;
@@ -1443,11 +1443,11 @@ PetscErrorCode DMSetUp_DA_3D(DM da) {
    Input Parameters:
 +  comm - MPI communicator
 .  bx,by,bz - type of ghost nodes the array have.
-         Use one of DM_BOUNDARY_NONE, DM_BOUNDARY_GHOSTED, DM_BOUNDARY_PERIODIC.
-.  stencil_type - Type of stencil (DMDA_STENCIL_STAR or DMDA_STENCIL_BOX)
+         Use one of `DM_BOUNDARY_NONE`, `DM_BOUNDARY_GHOSTED`, `DM_BOUNDARY_PERIODIC`.
+.  stencil_type - Type of stencil (`DMDA_STENCIL_STAR` or `DMDA_STENCIL_BOX`)
 .  M,N,P - global dimension in each direction of the array
 .  m,n,p - corresponding number of processors in each dimension
-           (or PETSC_DECIDE to have calculated)
+           (or `PETSC_DECIDE` to have calculated)
 .  dof - number of degrees of freedom per node
 .  s - stencil width
 -  lx, ly, lz - arrays containing the number of nodes in each cell along
@@ -1459,8 +1459,8 @@ PetscErrorCode DMSetUp_DA_3D(DM da) {
    Output Parameter:
 .  da - the resulting distributed array object
 
-   Options Database Key:
-+  -dm_view - Calls DMView() at the conclusion of DMDACreate3d()
+   Options Database Keys:
++  -dm_view - Calls `DMView()` at the conclusion of `DMDACreate3d()`
 .  -da_grid_x <nx> - number of grid points in x direction
 .  -da_grid_y <ny> - number of grid points in y direction
 .  -da_grid_z <nz> - number of grid points in z direction
@@ -1475,26 +1475,26 @@ PetscErrorCode DMSetUp_DA_3D(DM da) {
    Level: beginner
 
    Notes:
-   The stencil type DMDA_STENCIL_STAR with width 1 corresponds to the
-   standard 7-pt stencil, while DMDA_STENCIL_BOX with width 1 denotes
+   The stencil type `DMDA_STENCIL_STAR` with width 1 corresponds to the
+   standard 7-pt stencil, while `DMDA_STENCIL_BOX` with width 1 denotes
    the standard 27-pt stencil.
 
-   The array data itself is NOT stored in the DMDA, it is stored in Vec objects;
-   The appropriate vector objects can be obtained with calls to DMCreateGlobalVector()
-   and DMCreateLocalVector() and calls to VecDuplicate() if more are needed.
+   The array data itself is NOT stored in the `DMDA`, it is stored in `Vec` objects;
+   The appropriate vector objects can be obtained with calls to `DMCreateGlobalVector()`
+   and `DMCreateLocalVector()` and calls to `VecDuplicate()` if more are needed.
 
-   You must call DMSetUp() after this call before using this DM.
+   You must call `DMSetUp()` after this call before using this `DM`.
 
-   If you wish to use the options database to change values in the DMDA call DMSetFromOptions() after this call
-   but before DMSetUp().
+   If you wish to use the options database to change values in the `DMDA` call `DMSetFromOptions()` after this call
+   but before `DMSetUp()`.
 
-.seealso: `DMDestroy()`, `DMView()`, `DMDACreate1d()`, `DMDACreate2d()`, `DMGlobalToLocalBegin()`, `DMDAGetRefinementFactor()`,
+.seealso: `DM`, `DMDA`, `DMDestroy()`, `DMView()`, `DMDACreate1d()`, `DMDACreate2d()`, `DMGlobalToLocalBegin()`, `DMDAGetRefinementFactor()`,
           `DMGlobalToLocalEnd()`, `DMLocalToGlobalBegin()`, `DMLocalToLocalBegin()`, `DMLocalToLocalEnd()`, `DMDASetRefinementFactor()`,
           `DMDAGetInfo()`, `DMCreateGlobalVector()`, `DMCreateLocalVector()`, `DMDACreateNaturalVector()`, `DMLoad()`, `DMDAGetOwnershipRanges()`,
           `DMStagCreate3d()`
-
 @*/
-PetscErrorCode DMDACreate3d(MPI_Comm comm, DMBoundaryType bx, DMBoundaryType by, DMBoundaryType bz, DMDAStencilType stencil_type, PetscInt M, PetscInt N, PetscInt P, PetscInt m, PetscInt n, PetscInt p, PetscInt dof, PetscInt s, const PetscInt lx[], const PetscInt ly[], const PetscInt lz[], DM *da) {
+PetscErrorCode DMDACreate3d(MPI_Comm comm, DMBoundaryType bx, DMBoundaryType by, DMBoundaryType bz, DMDAStencilType stencil_type, PetscInt M, PetscInt N, PetscInt P, PetscInt m, PetscInt n, PetscInt p, PetscInt dof, PetscInt s, const PetscInt lx[], const PetscInt ly[], const PetscInt lz[], DM *da)
+{
   PetscFunctionBegin;
   PetscCall(DMDACreate(comm, da));
   PetscCall(DMSetDimension(*da, 3));

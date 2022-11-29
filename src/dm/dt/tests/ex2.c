@@ -3,7 +3,8 @@ static char help[] = "Tests 1D cell-based discretization tools.\n\n";
 #include <petscdt.h>
 #include <petscviewer.h>
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscInt  i, j, degrees[1000], ndegrees, nsrc_points, ntarget_points;
   PetscReal src_points[1000], target_points[1000], *R;
   PetscBool flg;

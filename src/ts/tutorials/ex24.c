@@ -11,7 +11,8 @@ typedef struct {
   PetscBool monitor_short;
 } Ctx;
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   TS           ts; /* time integration context */
   Vec          X;  /* solution, residual vectors */
   Mat          J;  /* Jacobian matrix */
@@ -93,7 +94,8 @@ int main(int argc, char **argv) {
   return 0;
 }
 
-static PetscErrorCode MonitorObjective(TS ts, PetscInt step, PetscReal t, Vec X, void *ictx) {
+static PetscErrorCode MonitorObjective(TS ts, PetscInt step, PetscReal t, Vec X, void *ictx)
+{
   Ctx               *ctx = (Ctx *)ictx;
   const PetscScalar *x;
   PetscScalar        f;
@@ -140,7 +142,8 @@ static PetscErrorCode MonitorObjective(TS ts, PetscInt step, PetscReal t, Vec X,
    Output Parameter:
 .  F - function vector
  */
-static PetscErrorCode FormIFunction(TS ts, PetscReal t, Vec X, Vec Xdot, Vec F, void *ictx) {
+static PetscErrorCode FormIFunction(TS ts, PetscReal t, Vec X, Vec Xdot, Vec F, void *ictx)
+{
   const PetscScalar *x;
   PetscScalar       *f;
   PetscInt           i;
@@ -190,7 +193,8 @@ static PetscErrorCode FormIFunction(TS ts, PetscReal t, Vec X, Vec Xdot, Vec F, 
 .  B - optionally different preconditioning matrix
 .  flag - flag indicating matrix structure
 */
-static PetscErrorCode FormIJacobian(TS ts, PetscReal t, Vec X, Vec Xdot, PetscReal shift, Mat J, Mat B, void *ictx) {
+static PetscErrorCode FormIJacobian(TS ts, PetscReal t, Vec X, Vec Xdot, PetscReal shift, Mat J, Mat B, void *ictx)
+{
   const PetscScalar *x;
   PetscInt           i;
   Ctx               *ctx = (Ctx *)ictx;

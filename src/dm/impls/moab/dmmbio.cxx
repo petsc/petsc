@@ -1,7 +1,8 @@
 #include <petsc/private/dmmbimpl.h> /*I  "petscdmmoab.h"   I*/
 #include <petscdmmoab.h>
 
-static PetscErrorCode DMMoab_GetWriteOptions_Private(PetscInt fsetid, PetscInt numproc, PetscInt dim, MoabWriteMode mode, PetscInt dbglevel, const char *dm_opts, const char *extra_opts, const char **write_opts) {
+static PetscErrorCode DMMoab_GetWriteOptions_Private(PetscInt fsetid, PetscInt numproc, PetscInt dim, MoabWriteMode mode, PetscInt dbglevel, const char *dm_opts, const char *extra_opts, const char **write_opts)
+{
   char *wopts;
   char  wopts_par[PETSC_MAX_PATH_LEN];
   char  wopts_parid[PETSC_MAX_PATH_LEN];
@@ -47,7 +48,8 @@ static PetscErrorCode DMMoab_GetWriteOptions_Private(PetscInt fsetid, PetscInt n
 
 .seealso: `DMMoabLoadFromFile()`, `DMMoabSetGlobalFieldVector()`
 @*/
-PetscErrorCode DMMoabOutput(DM dm, const char *filename, const char *usrwriteopts) {
+PetscErrorCode DMMoabOutput(DM dm, const char *filename, const char *usrwriteopts)
+{
   DM_Moab        *dmmoab;
   const char     *writeopts;
   PetscBool       isftype;

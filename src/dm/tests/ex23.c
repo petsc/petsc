@@ -4,7 +4,8 @@ static char help[] = "Tests VecView()/VecLoad() for DMDA vectors (this tests DMD
 #include <petscdm.h>
 #include <petscdmda.h>
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscMPIInt     size;
   PetscInt        N = 6, m = PETSC_DECIDE, n = PETSC_DECIDE, p = PETSC_DECIDE, M = 8, dof = 1, stencil_width = 1, P = 5, pt = 0, st = 0;
   PetscBool       flg2, flg3, native = PETSC_FALSE;

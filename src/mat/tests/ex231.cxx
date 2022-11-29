@@ -22,7 +22,8 @@ static char help[] = "A test for MatAssembly that heavily relies on PetscSortInt
 #include <string>
 #include <set>
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscMPIInt        size, rank;
   char               file[2][PETSC_MAX_PATH_LEN];
   PetscBool          flg;
@@ -136,7 +137,7 @@ int main(int argc, char **argv) {
 
   // Local "element" loop
   for (unsigned int k = 0; k < elem_dof_indices[rank].size(); k++) {
-    std::vector<PetscInt>   &dof_indices = elem_dof_indices[rank][k];
+    std::vector<PetscInt> &dof_indices = elem_dof_indices[rank][k];
     // DenseMatrix< Number >  zero_mat( dof_indices.size(), dof_indices.size());
     // B.add_matrix( zero_mat, dof_indices);
     std::vector<PetscScalar> ones(dof_indices.size() * dof_indices.size(), 1.);

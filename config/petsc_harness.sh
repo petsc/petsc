@@ -203,13 +203,13 @@ function petsc_testrun() {
     cmd_res=$?
   fi
   touch "$2" "$3"
-  # It appears current MPICH and OpenMPI just shut down the job executation and do not return an error code to the executable
+  # It appears current MPICH and OpenMPI just shut down the job execution and do not return an error code to the executable
   # ETIMEDOUT=110 was used by OpenMPI 3.0.  MPICH used 255
   # Earlier OpenMPI versions returned 1 and the error string
   if [ $cmd_res -eq 110 -o $cmd_res -eq 255 ] || \
-        fgrep -q -s 'APPLICATION TIMED OUT' "$2" "$3" || \
-        fgrep -q -s MPIEXEC_TIMEOUT "$2" "$3" || \
-        fgrep -q -s 'APPLICATION TERMINATED WITH THE EXIT STRING: job ending due to timeout' "$2" "$3" || \
+        grep -F -q -s 'APPLICATION TIMED OUT' "$2" "$3" || \
+        grep -F -q -s MPIEXEC_TIMEOUT "$2" "$3" || \
+        grep -F -q -s 'APPLICATION TERMINATED WITH THE EXIT STRING: job ending due to timeout' "$2" "$3" || \
         grep -q -s "Timeout after [0-9]* seconds. Terminating job" "$2" "$3"; then
     timed_out=1
     # If timed out, then ensure non-zero error code
@@ -272,7 +272,7 @@ function petsc_testend() {
     printf "skip $skip\n" >> $logfile
   fi
   ENDTIME=`date +%s`
-  timing=`touch timing.out && egrep '(user|sys)' timing.out | awk '{if( sum1 == "" || $2 > sum1 ) { sum1=sprintf("%.2f",$2) } ; sum2 += sprintf("%.2f",$2)} END {printf "%.2f %.2f\n",sum1,sum2}'`
+  timing=`touch timing.out && grep -E '(user|sys)' timing.out | awk '{if( sum1 == "" || $2 > sum1 ) { sum1=sprintf("%.2f",$2) } ; sum2 += sprintf("%.2f",$2)} END {printf "%.2f %.2f\n",sum1,sum2}'`
   printf "time $timing\n" >> $logfile
   if $cleanup; then
     echo "Cleaning up"

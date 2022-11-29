@@ -5,14 +5,16 @@
 #include <../src/dm/impls/plex/gmshlex.h>
 
 #define GMSH_LEXORDER_ITEM(T, p) \
-  static int *GmshLexOrder_##T##_##p(void) { \
+  static int *GmshLexOrder_##T##_##p(void) \
+  { \
     static int Gmsh_LexOrder_##T##_##p[GmshNumNodes_##T(p)] = {-1}; \
     int       *lex                                          = Gmsh_LexOrder_##T##_##p; \
     if (lex[0] == -1) (void)GmshLexOrder_##T(p, lex, 0); \
     return lex; \
   }
 
-static int *GmshLexOrder_QUA_2_Serendipity(void) {
+static int *GmshLexOrder_QUA_2_Serendipity(void)
+{
   static int Gmsh_LexOrder_QUA_2_Serendipity[9] = {-1};
   int       *lex                                = Gmsh_LexOrder_QUA_2_Serendipity;
   if (lex[0] == -1) {
@@ -32,7 +34,8 @@ static int *GmshLexOrder_QUA_2_Serendipity(void) {
   return lex;
 }
 
-static int *GmshLexOrder_HEX_2_Serendipity(void) {
+static int *GmshLexOrder_HEX_2_Serendipity(void)
+{
   static int Gmsh_LexOrder_HEX_2_Serendipity[27] = {-1};
   int       *lex                                 = Gmsh_LexOrder_HEX_2_Serendipity;
   if (lex[0] == -1) {
@@ -115,7 +118,9 @@ typedef struct {
 } GmshCellInfo;
 
 #define GmshCellEntry(cellType, polytope, dim, order) \
-  { cellType, GMSH_##polytope, dim, order, GmshNumNodes_##polytope(1), GmshNumNodes_##polytope(order), GmshLexOrder_##polytope##_##order }
+  { \
+    cellType, GMSH_##polytope, dim, order, GmshNumNodes_##polytope(1), GmshNumNodes_##polytope(order), GmshLexOrder_##polytope##_##order \
+  }
 
 static const GmshCellInfo GmshCellTable[] = {
   GmshCellEntry(15, VTX, 0, 0),
@@ -164,7 +169,8 @@ static const GmshCellInfo GmshCellTable[] = {
 
 static GmshCellInfo GmshCellMap[150];
 
-static PetscErrorCode GmshCellInfoSetUp(void) {
+static PetscErrorCode GmshCellInfoSetUp(void)
+{
   size_t           i, n;
   static PetscBool called = PETSC_FALSE;
 
@@ -204,7 +210,8 @@ typedef struct {
   PetscInt   *nodeMap;
 } GmshFile;
 
-static PetscErrorCode GmshBufferGet(GmshFile *gmsh, size_t count, size_t eltsize, void *buf) {
+static PetscErrorCode GmshBufferGet(GmshFile *gmsh, size_t count, size_t eltsize, void *buf)
+{
   size_t size = count * eltsize;
 
   PetscFunctionBegin;
@@ -217,7 +224,8 @@ static PetscErrorCode GmshBufferGet(GmshFile *gmsh, size_t count, size_t eltsize
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode GmshBufferSizeGet(GmshFile *gmsh, size_t count, void *buf) {
+static PetscErrorCode GmshBufferSizeGet(GmshFile *gmsh, size_t count, void *buf)
+{
   size_t dataSize = (size_t)gmsh->dataSize;
   size_t size     = count * dataSize;
 
@@ -231,26 +239,30 @@ static PetscErrorCode GmshBufferSizeGet(GmshFile *gmsh, size_t count, void *buf)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode GmshRead(GmshFile *gmsh, void *buf, PetscInt count, PetscDataType dtype) {
+static PetscErrorCode GmshRead(GmshFile *gmsh, void *buf, PetscInt count, PetscDataType dtype)
+{
   PetscFunctionBegin;
   PetscCall(PetscViewerRead(gmsh->viewer, buf, count, NULL, dtype));
   if (gmsh->byteSwap) PetscCall(PetscByteSwap(buf, dtype, count));
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode GmshReadString(GmshFile *gmsh, char *buf, PetscInt count) {
+static PetscErrorCode GmshReadString(GmshFile *gmsh, char *buf, PetscInt count)
+{
   PetscFunctionBegin;
   PetscCall(PetscViewerRead(gmsh->viewer, buf, count, NULL, PETSC_STRING));
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode GmshMatch(PETSC_UNUSED GmshFile *gmsh, const char Section[], char line[PETSC_MAX_PATH_LEN], PetscBool *match) {
+static PetscErrorCode GmshMatch(PETSC_UNUSED GmshFile *gmsh, const char Section[], char line[PETSC_MAX_PATH_LEN], PetscBool *match)
+{
   PetscFunctionBegin;
   PetscCall(PetscStrcmp(line, Section, match));
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode GmshExpect(GmshFile *gmsh, const char Section[], char line[PETSC_MAX_PATH_LEN]) {
+static PetscErrorCode GmshExpect(GmshFile *gmsh, const char Section[], char line[PETSC_MAX_PATH_LEN])
+{
   PetscBool match;
 
   PetscFunctionBegin;
@@ -259,7 +271,8 @@ static PetscErrorCode GmshExpect(GmshFile *gmsh, const char Section[], char line
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode GmshReadSection(GmshFile *gmsh, char line[PETSC_MAX_PATH_LEN]) {
+static PetscErrorCode GmshReadSection(GmshFile *gmsh, char line[PETSC_MAX_PATH_LEN])
+{
   PetscBool match;
 
   PetscFunctionBegin;
@@ -276,14 +289,16 @@ static PetscErrorCode GmshReadSection(GmshFile *gmsh, char line[PETSC_MAX_PATH_L
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode GmshReadEndSection(GmshFile *gmsh, const char EndSection[], char line[PETSC_MAX_PATH_LEN]) {
+static PetscErrorCode GmshReadEndSection(GmshFile *gmsh, const char EndSection[], char line[PETSC_MAX_PATH_LEN])
+{
   PetscFunctionBegin;
   PetscCall(GmshReadString(gmsh, line, 1));
   PetscCall(GmshExpect(gmsh, EndSection, line));
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode GmshReadSize(GmshFile *gmsh, PetscInt *buf, PetscInt count) {
+static PetscErrorCode GmshReadSize(GmshFile *gmsh, PetscInt *buf, PetscInt count)
+{
   PetscInt i;
   size_t   dataSize = (size_t)gmsh->dataSize;
 
@@ -309,13 +324,15 @@ static PetscErrorCode GmshReadSize(GmshFile *gmsh, PetscInt *buf, PetscInt count
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode GmshReadInt(GmshFile *gmsh, int *buf, PetscInt count) {
+static PetscErrorCode GmshReadInt(GmshFile *gmsh, int *buf, PetscInt count)
+{
   PetscFunctionBegin;
   PetscCall(GmshRead(gmsh, buf, count, PETSC_ENUM));
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode GmshReadDouble(GmshFile *gmsh, double *buf, PetscInt count) {
+static PetscErrorCode GmshReadDouble(GmshFile *gmsh, double *buf, PetscInt count)
+{
   PetscFunctionBegin;
   PetscCall(GmshRead(gmsh, buf, count, PETSC_DOUBLE));
   PetscFunctionReturn(0);
@@ -336,7 +353,8 @@ typedef struct {
   PetscHMapI  entityMap[4];
 } GmshEntities;
 
-static PetscErrorCode GmshEntitiesCreate(PetscInt count[4], GmshEntities **entities) {
+static PetscErrorCode GmshEntitiesCreate(PetscInt count[4], GmshEntities **entities)
+{
   PetscInt dim;
 
   PetscFunctionBegin;
@@ -348,7 +366,8 @@ static PetscErrorCode GmshEntitiesCreate(PetscInt count[4], GmshEntities **entit
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode GmshEntitiesDestroy(GmshEntities **entities) {
+static PetscErrorCode GmshEntitiesDestroy(GmshEntities **entities)
+{
   PetscInt dim;
 
   PetscFunctionBegin;
@@ -361,7 +380,8 @@ static PetscErrorCode GmshEntitiesDestroy(GmshEntities **entities) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode GmshEntitiesAdd(GmshEntities *entities, PetscInt index, PetscInt dim, PetscInt eid, GmshEntity **entity) {
+static PetscErrorCode GmshEntitiesAdd(GmshEntities *entities, PetscInt index, PetscInt dim, PetscInt eid, GmshEntity **entity)
+{
   PetscFunctionBegin;
   PetscCall(PetscHMapISet(entities->entityMap[dim], eid, index));
   entities->entity[dim][index].dim = dim;
@@ -370,7 +390,8 @@ static PetscErrorCode GmshEntitiesAdd(GmshEntities *entities, PetscInt index, Pe
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode GmshEntitiesGet(GmshEntities *entities, PetscInt dim, PetscInt eid, GmshEntity **entity) {
+static PetscErrorCode GmshEntitiesGet(GmshEntities *entities, PetscInt dim, PetscInt eid, GmshEntity **entity)
+{
   PetscInt index;
 
   PetscFunctionBegin;
@@ -385,7 +406,8 @@ typedef struct {
   PetscInt *tag; /* Physical tag */
 } GmshNodes;
 
-static PetscErrorCode GmshNodesCreate(PetscInt count, GmshNodes **nodes) {
+static PetscErrorCode GmshNodesCreate(PetscInt count, GmshNodes **nodes)
+{
   PetscFunctionBegin;
   PetscCall(PetscNew(nodes));
   PetscCall(PetscMalloc1(count * 1, &(*nodes)->id));
@@ -394,7 +416,8 @@ static PetscErrorCode GmshNodesCreate(PetscInt count, GmshNodes **nodes) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode GmshNodesDestroy(GmshNodes **nodes) {
+static PetscErrorCode GmshNodesDestroy(GmshNodes **nodes)
+{
   PetscFunctionBegin;
   if (!*nodes) PetscFunctionReturn(0);
   PetscCall(PetscFree((*nodes)->id));
@@ -415,13 +438,15 @@ typedef struct {
   int       tags[GMSH_MAX_TAGS]; /* Physical tag array */
 } GmshElement;
 
-static PetscErrorCode GmshElementsCreate(PetscInt count, GmshElement **elements) {
+static PetscErrorCode GmshElementsCreate(PetscInt count, GmshElement **elements)
+{
   PetscFunctionBegin;
   PetscCall(PetscCalloc1(count, elements));
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode GmshElementsDestroy(GmshElement **elements) {
+static PetscErrorCode GmshElementsDestroy(GmshElement **elements)
+{
   PetscFunctionBegin;
   if (!*elements) PetscFunctionReturn(0);
   PetscCall(PetscFree(*elements));
@@ -447,14 +472,16 @@ typedef struct {
   char         **regionNames;
 } GmshMesh;
 
-static PetscErrorCode GmshMeshCreate(GmshMesh **mesh) {
+static PetscErrorCode GmshMeshCreate(GmshMesh **mesh)
+{
   PetscFunctionBegin;
   PetscCall(PetscNew(mesh));
   PetscCall(PetscSegBufferCreate(sizeof(PetscInt), 0, &(*mesh)->segbuf));
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode GmshMeshDestroy(GmshMesh **mesh) {
+static PetscErrorCode GmshMeshDestroy(GmshMesh **mesh)
+{
   PetscInt r;
 
   PetscFunctionBegin;
@@ -471,7 +498,8 @@ static PetscErrorCode GmshMeshDestroy(GmshMesh **mesh) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode GmshReadNodes_v22(GmshFile *gmsh, GmshMesh *mesh) {
+static PetscErrorCode GmshReadNodes_v22(GmshFile *gmsh, GmshMesh *mesh)
+{
   PetscViewer viewer   = gmsh->viewer;
   PetscBool   byteSwap = gmsh->byteSwap;
   char        line[PETSC_MAX_PATH_LEN];
@@ -501,7 +529,8 @@ static PetscErrorCode GmshReadNodes_v22(GmshFile *gmsh, GmshMesh *mesh) {
    file contents multiple times to figure out the true number of cells and facets
    in the given mesh. To make this more efficient we read the file contents only
    once and store them in memory, while determining the true number of cells. */
-static PetscErrorCode GmshReadElements_v22(GmshFile *gmsh, GmshMesh *mesh) {
+static PetscErrorCode GmshReadElements_v22(GmshFile *gmsh, GmshMesh *mesh)
+{
   PetscViewer  viewer   = gmsh->viewer;
   PetscBool    binary   = gmsh->binary;
   PetscBool    byteSwap = gmsh->byteSwap;
@@ -579,7 +608,8 @@ $Entities
   ...
 $EndEntities
 */
-static PetscErrorCode GmshReadEntities_v40(GmshFile *gmsh, GmshMesh *mesh) {
+static PetscErrorCode GmshReadEntities_v40(GmshFile *gmsh, GmshMesh *mesh)
+{
   PetscViewer viewer   = gmsh->viewer;
   PetscBool   byteSwap = gmsh->byteSwap;
   long        index, num, lbuf[4];
@@ -626,7 +656,8 @@ $Nodes
   ...
 $EndNodes
 */
-static PetscErrorCode GmshReadNodes_v40(GmshFile *gmsh, GmshMesh *mesh) {
+static PetscErrorCode GmshReadNodes_v40(GmshFile *gmsh, GmshMesh *mesh)
+{
   PetscViewer viewer   = gmsh->viewer;
   PetscBool   byteSwap = gmsh->byteSwap;
   long        block, node, n, t, numEntityBlocks, numTotalNodes, numNodes;
@@ -686,7 +717,8 @@ $Elements
   ...
 $EndElements
 */
-static PetscErrorCode GmshReadElements_v40(GmshFile *gmsh, GmshMesh *mesh) {
+static PetscErrorCode GmshReadElements_v40(GmshFile *gmsh, GmshMesh *mesh)
+{
   PetscViewer  viewer   = gmsh->viewer;
   PetscBool    byteSwap = gmsh->byteSwap;
   long         c, block, numEntityBlocks, numTotalElements, elem, numElements;
@@ -737,7 +769,8 @@ static PetscErrorCode GmshReadElements_v40(GmshFile *gmsh, GmshMesh *mesh) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode GmshReadPeriodic_v40(GmshFile *gmsh, PetscInt periodicMap[]) {
+static PetscErrorCode GmshReadPeriodic_v40(GmshFile *gmsh, PetscInt periodicMap[])
+{
   PetscViewer viewer     = gmsh->viewer;
   int         fileFormat = gmsh->fileFormat;
   PetscBool   binary     = gmsh->binary;
@@ -837,7 +870,8 @@ $Entities
   ...
 $EndEntities
 */
-static PetscErrorCode GmshReadEntities_v41(GmshFile *gmsh, GmshMesh *mesh) {
+static PetscErrorCode GmshReadEntities_v41(GmshFile *gmsh, GmshMesh *mesh)
+{
   PetscInt    count[4], index, numTags, i;
   int         dim, eid, *tags = NULL;
   GmshEntity *entity = NULL;
@@ -880,7 +914,8 @@ $Nodes
   ...
 $EndNodes
 */
-static PetscErrorCode GmshReadNodes_v41(GmshFile *gmsh, GmshMesh *mesh) {
+static PetscErrorCode GmshReadNodes_v41(GmshFile *gmsh, GmshMesh *mesh)
+{
   int         info[3], dim, eid, parametric;
   PetscInt    sizes[4], numEntityBlocks, numTags, t, numNodes, numNodesBlock = 0, block, node, n;
   GmshEntity *entity = NULL;
@@ -926,7 +961,8 @@ $Elements
   ...
 $EndElements
 */
-static PetscErrorCode GmshReadElements_v41(GmshFile *gmsh, GmshMesh *mesh) {
+static PetscErrorCode GmshReadElements_v41(GmshFile *gmsh, GmshMesh *mesh)
+{
   int          info[3], eid, dim, cellType;
   PetscInt     sizes[4], *ibuf = NULL, numEntityBlocks, numElements, numBlockElements, numVerts, numNodes, numTags, block, elem, c, p;
   GmshEntity  *entity = NULL;
@@ -981,7 +1017,8 @@ $Periodic
   ...
 $EndPeriodic
 */
-static PetscErrorCode GmshReadPeriodic_v41(GmshFile *gmsh, PetscInt periodicMap[]) {
+static PetscErrorCode GmshReadPeriodic_v41(GmshFile *gmsh, PetscInt periodicMap[])
+{
   int       info[3];
   double    dbuf[16];
   PetscInt  numPeriodicLinks, numAffine, numCorrespondingNodes, *nodeTags = NULL, link, node;
@@ -1013,7 +1050,8 @@ $MeshFormat // same as MSH version 2
   < int with value one; only in binary mode, to detect endianness >
 $EndMeshFormat
 */
-static PetscErrorCode GmshReadMeshFormat(GmshFile *gmsh) {
+static PetscErrorCode GmshReadMeshFormat(GmshFile *gmsh)
+{
   char  line[PETSC_MAX_PATH_LEN];
   int   snum, fileType, fileFormat, dataSize, checkEndian;
   float version;
@@ -1051,7 +1089,8 @@ PhysicalNames
   ...
 $EndPhysicalNames
 */
-static PetscErrorCode GmshReadPhysicalNames(GmshFile *gmsh, GmshMesh *mesh) {
+static PetscErrorCode GmshReadPhysicalNames(GmshFile *gmsh, GmshMesh *mesh)
+{
   char line[PETSC_MAX_PATH_LEN], name[128 + 2], *p, *q, *r;
   int  snum, region, dim, tag;
 
@@ -1080,21 +1119,33 @@ static PetscErrorCode GmshReadPhysicalNames(GmshFile *gmsh, GmshMesh *mesh) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode GmshReadEntities(GmshFile *gmsh, GmshMesh *mesh) {
+static PetscErrorCode GmshReadEntities(GmshFile *gmsh, GmshMesh *mesh)
+{
   PetscFunctionBegin;
   switch (gmsh->fileFormat) {
-  case 41: PetscCall(GmshReadEntities_v41(gmsh, mesh)); break;
-  default: PetscCall(GmshReadEntities_v40(gmsh, mesh)); break;
+  case 41:
+    PetscCall(GmshReadEntities_v41(gmsh, mesh));
+    break;
+  default:
+    PetscCall(GmshReadEntities_v40(gmsh, mesh));
+    break;
   }
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode GmshReadNodes(GmshFile *gmsh, GmshMesh *mesh) {
+static PetscErrorCode GmshReadNodes(GmshFile *gmsh, GmshMesh *mesh)
+{
   PetscFunctionBegin;
   switch (gmsh->fileFormat) {
-  case 41: PetscCall(GmshReadNodes_v41(gmsh, mesh)); break;
-  case 40: PetscCall(GmshReadNodes_v40(gmsh, mesh)); break;
-  default: PetscCall(GmshReadNodes_v22(gmsh, mesh)); break;
+  case 41:
+    PetscCall(GmshReadNodes_v41(gmsh, mesh));
+    break;
+  case 40:
+    PetscCall(GmshReadNodes_v40(gmsh, mesh));
+    break;
+  default:
+    PetscCall(GmshReadNodes_v22(gmsh, mesh));
+    break;
   }
 
   { /* Gmsh v2.2/v4.0 does not provide min/max node tags */
@@ -1126,12 +1177,19 @@ static PetscErrorCode GmshReadNodes(GmshFile *gmsh, GmshMesh *mesh) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode GmshReadElements(GmshFile *gmsh, GmshMesh *mesh) {
+static PetscErrorCode GmshReadElements(GmshFile *gmsh, GmshMesh *mesh)
+{
   PetscFunctionBegin;
   switch (gmsh->fileFormat) {
-  case 41: PetscCall(GmshReadElements_v41(gmsh, mesh)); break;
-  case 40: PetscCall(GmshReadElements_v40(gmsh, mesh)); break;
-  default: PetscCall(GmshReadElements_v22(gmsh, mesh)); break;
+  case 41:
+    PetscCall(GmshReadElements_v41(gmsh, mesh));
+    break;
+  case 40:
+    PetscCall(GmshReadElements_v40(gmsh, mesh));
+    break;
+  default:
+    PetscCall(GmshReadElements_v22(gmsh, mesh));
+    break;
   }
 
   { /* Reorder elements by codimension and polytope type */
@@ -1191,15 +1249,20 @@ static PetscErrorCode GmshReadElements(GmshFile *gmsh, GmshMesh *mesh) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode GmshReadPeriodic(GmshFile *gmsh, GmshMesh *mesh) {
+static PetscErrorCode GmshReadPeriodic(GmshFile *gmsh, GmshMesh *mesh)
+{
   PetscInt n;
 
   PetscFunctionBegin;
   PetscCall(PetscMalloc1(mesh->numNodes, &mesh->periodMap));
   for (n = 0; n < mesh->numNodes; ++n) mesh->periodMap[n] = n;
   switch (gmsh->fileFormat) {
-  case 41: PetscCall(GmshReadPeriodic_v41(gmsh, mesh->periodMap)); break;
-  default: PetscCall(GmshReadPeriodic_v40(gmsh, mesh->periodMap)); break;
+  case 41:
+    PetscCall(GmshReadPeriodic_v41(gmsh, mesh->periodMap));
+    break;
+  default:
+    PetscCall(GmshReadPeriodic_v40(gmsh, mesh->periodMap));
+    break;
   }
 
   /* Find canonical primary nodes */
@@ -1230,11 +1293,13 @@ static const DMPolytopeType DMPolytopeMap[] = {
   /* GMSH_PRI */ DM_POLYTOPE_TRI_PRISM,
   /* GMSH_PYR */ DM_POLYTOPE_PYRAMID,       DM_POLYTOPE_UNKNOWN};
 
-static inline DMPolytopeType DMPolytopeTypeFromGmsh(PetscInt cellType) {
+static inline DMPolytopeType DMPolytopeTypeFromGmsh(PetscInt cellType)
+{
   return DMPolytopeMap[GmshCellMap[cellType].polytope];
 }
 
-static PetscErrorCode GmshCreateFE(MPI_Comm comm, const char prefix[], PetscBool isSimplex, PetscBool continuity, PetscDTNodeType nodeType, PetscInt dim, PetscInt Nc, PetscInt k, PetscFE *fem) {
+static PetscErrorCode GmshCreateFE(MPI_Comm comm, const char prefix[], PetscBool isSimplex, PetscBool continuity, PetscDTNodeType nodeType, PetscInt dim, PetscInt Nc, PetscInt k, PetscFE *fem)
+{
   DM              K;
   PetscSpace      P;
   PetscDualSpace  Q;
@@ -1309,20 +1374,21 @@ static PetscErrorCode GmshCreateFE(MPI_Comm comm, const char prefix[], PetscBool
 }
 
 /*@C
-  DMPlexCreateGmshFromFile - Create a DMPlex mesh from a Gmsh file
+  DMPlexCreateGmshFromFile - Create a `DMPLEX` mesh from a Gmsh file
 
 + comm        - The MPI communicator
 . filename    - Name of the Gmsh file
 - interpolate - Create faces and edges in the mesh
 
   Output Parameter:
-. dm  - The DM object representing the mesh
+. dm  - The `DM` object representing the mesh
 
   Level: beginner
 
-.seealso: `DMPlexCreateFromFile()`, `DMPlexCreateGmsh()`, `DMPlexCreate()`
+.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPlexCreateFromFile()`, `DMPlexCreateGmsh()`, `DMPlexCreate()`
 @*/
-PetscErrorCode DMPlexCreateGmshFromFile(MPI_Comm comm, const char filename[], PetscBool interpolate, DM *dm) {
+PetscErrorCode DMPlexCreateGmshFromFile(MPI_Comm comm, const char filename[], PetscBool interpolate, DM *dm)
+{
   PetscViewer     viewer;
   PetscMPIInt     rank;
   int             fileType;
@@ -1370,19 +1436,19 @@ PetscErrorCode DMPlexCreateGmshFromFile(MPI_Comm comm, const char filename[], Pe
 }
 
 /*@
-  DMPlexCreateGmsh - Create a DMPlex mesh from a Gmsh file viewer
+  DMPlexCreateGmsh - Create a `DMPLEX` mesh from a Gmsh file viewer
 
   Collective
 
   Input Parameters:
 + comm  - The MPI communicator
-. viewer - The Viewer associated with a Gmsh file
+. viewer - The `PetscViewer` associated with a Gmsh file
 - interpolate - Create faces and edges in the mesh
 
   Output Parameter:
-. dm  - The DM object representing the mesh
+. dm  - The `DM` object representing the mesh
 
-  Options Database:
+  Options Database Keys:
 + -dm_plex_gmsh_hybrid        - Force triangular prisms to use tensor order
 . -dm_plex_gmsh_periodic      - Read Gmsh periodic section and construct a periodic Plex
 . -dm_plex_gmsh_highorder     - Generate high-order coordinates
@@ -1399,9 +1465,10 @@ PetscErrorCode DMPlexCreateGmshFromFile(MPI_Comm comm, const char filename[], Pe
 
   Level: beginner
 
-.seealso: `DMPLEX`, `DMCreate()`
+.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMCreate()`
 @*/
-PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool interpolate, DM *dm) {
+PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool interpolate, DM *dm)
+{
   GmshMesh    *mesh          = NULL;
   PetscViewer  parentviewer  = NULL;
   PetscBT      periodicVerts = NULL;
@@ -1773,7 +1840,7 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
       }
       if (s) {
         /* For the coordinate mapping we weight vertices by -1/4 and edges by 1/2, which we get from Q_2 interpolation */
-        PetscReal   quaCenterWeights[9]  = {-0.25, 0.5, -0.25, 0.5, 0.0, 0.5, -0.25, 0.5, -0.25};
+        PetscReal quaCenterWeights[9] = {-0.25, 0.5, -0.25, 0.5, 0.0, 0.5, -0.25, 0.5, -0.25};
         /* For the coordinate mapping we weight vertices by -1/4 and edges by 1/2, which we get from Q_2 interpolation */
         PetscReal   hexBottomWeights[27] = {-0.25, 0.5, -0.25, 0.5, 0.0, 0.5, -0.25, 0.5, -0.25, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
         PetscReal   hexFrontWeights[27]  = {-0.25, 0.5, -0.25, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.5, 0.0, 0.5, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -0.25, 0.5, -0.25, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};

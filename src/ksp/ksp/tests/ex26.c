@@ -42,7 +42,8 @@ typedef struct {
 
 static PetscErrorCode FormJacobian_Grid(GridCtx *, Mat);
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscInt    i, its, Nx = PETSC_DECIDE, Ny = PETSC_DECIDE, nlocal, nrhs = 1;
   PetscScalar one = 1.0;
   Mat         A, B, X;
@@ -144,7 +145,8 @@ int main(int argc, char **argv) {
   return 0;
 }
 
-PetscErrorCode FormJacobian_Grid(GridCtx *grid, Mat jac) {
+PetscErrorCode FormJacobian_Grid(GridCtx *grid, Mat jac)
+{
   PetscInt               i, j, row, mx, my, xs, ys, xm, ym, Xs, Ys, Xm, Ym, col[5];
   PetscInt               grow;
   const PetscInt        *ltog;
@@ -262,7 +264,7 @@ PetscErrorCode FormJacobian_Grid(GridCtx *grid, Mat jac) {
         output_file: output/ex26_matcycles_hpddm_mg_pc_mg_type-multiplicative_ksp_matsolve_batch_size-4.out
         args: -ksp_matsolve_batch_size 4 -ksp_hpddm_precision {{double quadruple}shared output}
       test:
-        requires: double defined(PETSC_HAVE_F2CBLASLAPACK___FP128_BINDINGS)
+        requires: double defined(PETSC_HAVE_F2CBLASLAPACK___FLOAT128_BINDINGS)
         suffix: hpddm_mg_mixed_precision_double
         nsize: 2
         output_file: output/ex26_matcycles_hpddm_mg_pc_mg_type-multiplicative_ksp_matsolve_batch_size-4.out

@@ -13,7 +13,8 @@
 
 .seealso: `TaoPDIPMUpdateConstraints()`, `TaoPDIPMSetUpBounds()`
 */
-static PetscErrorCode TaoPDIPMEvaluateFunctionsAndJacobians(Tao tao, Vec x) {
+static PetscErrorCode TaoPDIPMEvaluateFunctionsAndJacobians(Tao tao, Vec x)
+{
   TAO_PDIPM *pdipm = (TAO_PDIPM *)tao->data;
 
   PetscFunctionBegin;
@@ -47,7 +48,8 @@ static PetscErrorCode TaoPDIPMEvaluateFunctionsAndJacobians(Tao tao, Vec x) {
 
 .seealso: `TaoPDIPMEvaluateFunctionsAndJacobians()`
 */
-static PetscErrorCode TaoPDIPMUpdateConstraints(Tao tao, Vec x) {
+static PetscErrorCode TaoPDIPMUpdateConstraints(Tao tao, Vec x)
+{
   TAO_PDIPM         *pdipm = (TAO_PDIPM *)tao->data;
   PetscInt           i, offset, offset1, k, xstart;
   PetscScalar       *carr;
@@ -144,7 +146,8 @@ static PetscErrorCode TaoPDIPMUpdateConstraints(Tao tao, Vec x) {
 
 .seealso: `TaoPDIPMUpdateConstraints`
 */
-static PetscErrorCode TaoPDIPMSetUpBounds(Tao tao) {
+static PetscErrorCode TaoPDIPMSetUpBounds(Tao tao)
+{
   TAO_PDIPM         *pdipm = (TAO_PDIPM *)tao->data;
   const PetscScalar *xl, *xu;
   PetscInt           n, *ixlb, *ixub, *ixfixed, *ixfree, *ixbox, i, low, high, idx;
@@ -215,7 +218,8 @@ static PetscErrorCode TaoPDIPMSetUpBounds(Tao tao) {
 
    Level: beginner
 */
-static PetscErrorCode TaoPDIPMInitializeSolution(Tao tao) {
+static PetscErrorCode TaoPDIPMInitializeSolution(Tao tao)
+{
   TAO_PDIPM         *pdipm = (TAO_PDIPM *)tao->data;
   PetscScalar       *Xarr, *z, *lambdai;
   PetscInt           i;
@@ -268,7 +272,8 @@ static PetscErrorCode TaoPDIPMInitializeSolution(Tao tao) {
    J - Hessian matrix
    Jpre - Preconditioner
 */
-static PetscErrorCode TaoSNESJacobian_PDIPM(SNES snes, Vec X, Mat J, Mat Jpre, void *ctx) {
+static PetscErrorCode TaoSNESJacobian_PDIPM(SNES snes, Vec X, Mat J, Mat Jpre, void *ctx)
+{
   Tao                tao   = (Tao)ctx;
   TAO_PDIPM         *pdipm = (TAO_PDIPM *)tao->data;
   PetscInt           i, row, cols[2], Jrstart, rjstart, nc, j;
@@ -438,7 +443,8 @@ static PetscErrorCode TaoSNESJacobian_PDIPM(SNES snes, Vec X, Mat J, Mat Jpre, v
    Output Parameter:
    F - Updated Lagrangian vector
 */
-static PetscErrorCode TaoSNESFunction_PDIPM(SNES snes, Vec X, Vec F, void *ctx) {
+static PetscErrorCode TaoSNESFunction_PDIPM(SNES snes, Vec X, Vec F, void *ctx)
+{
   Tao                tao   = (Tao)ctx;
   TAO_PDIPM         *pdipm = (TAO_PDIPM *)tao->data;
   PetscScalar       *Farr;
@@ -542,7 +548,8 @@ static PetscErrorCode TaoSNESFunction_PDIPM(SNES snes, Vec X, Vec F, void *ctx) 
   Evaluate F(X); then update update tao->gnorm0, tao->step = mu,
   tao->residual = norm2(F_x,F_z) and tao->cnorm = norm2(F_ce,F_ci).
 */
-static PetscErrorCode TaoSNESFunction_PDIPM_residual(SNES snes, Vec X, Vec F, void *ctx) {
+static PetscErrorCode TaoSNESFunction_PDIPM_residual(SNES snes, Vec X, Vec F, void *ctx)
+{
   Tao                tao   = (Tao)ctx;
   TAO_PDIPM         *pdipm = (TAO_PDIPM *)tao->data;
   PetscScalar       *Farr, *tmparr;
@@ -615,7 +622,8 @@ static PetscErrorCode TaoSNESFunction_PDIPM_residual(SNES snes, Vec X, Vec F, vo
   KKTAddShifts - Check the inertia of Cholesky factor of KKT matrix.
   If it does not match the numbers of prime and dual variables, add shifts to the KKT matrix.
 */
-static PetscErrorCode KKTAddShifts(Tao tao, SNES snes, Vec X) {
+static PetscErrorCode KKTAddShifts(Tao tao, SNES snes, Vec X)
+{
   TAO_PDIPM *pdipm = (TAO_PDIPM *)tao->data;
   KSP        ksp;
   PC         pc;
@@ -675,7 +683,8 @@ static PetscErrorCode KKTAddShifts(Tao tao, SNES snes, Vec X) {
 /*
   PCPreSolve_PDIPM -- called betwee MatFactorNumeric() and MatSolve()
 */
-PetscErrorCode PCPreSolve_PDIPM(PC pc, KSP ksp) {
+PetscErrorCode PCPreSolve_PDIPM(PC pc, KSP ksp)
+{
   Tao        tao;
   TAO_PDIPM *pdipm;
 
@@ -700,7 +709,8 @@ PetscErrorCode PCPreSolve_PDIPM(PC pc, KSP ksp) {
    are updated as Lambdai = Lambdai + alpha_p*dLambdai. The barrier parameter mu
    is also updated as mu = mu + z'lambdai/Nci
 */
-static PetscErrorCode SNESLineSearch_PDIPM(SNESLineSearch linesearch, void *ctx) {
+static PetscErrorCode SNESLineSearch_PDIPM(SNESLineSearch linesearch, void *ctx)
+{
   Tao                tao   = (Tao)ctx;
   TAO_PDIPM         *pdipm = (TAO_PDIPM *)tao->data;
   SNES               snes;
@@ -789,7 +799,8 @@ static PetscErrorCode SNESLineSearch_PDIPM(SNESLineSearch linesearch, void *ctx)
    Output Parameter:
    tao - TAO context
 */
-PetscErrorCode TaoSolve_PDIPM(Tao tao) {
+PetscErrorCode TaoSolve_PDIPM(Tao tao)
+{
   TAO_PDIPM     *pdipm = (TAO_PDIPM *)tao->data;
   SNESLineSearch linesearch; /* SNESLineSearch context */
   Vec            dummy;
@@ -841,7 +852,8 @@ PetscErrorCode TaoSolve_PDIPM(Tao tao) {
 
    Output:
 */
-PetscErrorCode TaoView_PDIPM(Tao tao, PetscViewer viewer) {
+PetscErrorCode TaoView_PDIPM(Tao tao, PetscViewer viewer)
+{
   TAO_PDIPM *pdipm = (TAO_PDIPM *)tao->data;
 
   PetscFunctionBegin;
@@ -861,7 +873,8 @@ PetscErrorCode TaoView_PDIPM(Tao tao, PetscViewer viewer) {
 
    Output:   pdipm - initialized object
 */
-PetscErrorCode TaoSetup_PDIPM(Tao tao) {
+PetscErrorCode TaoSetup_PDIPM(Tao tao)
+{
   TAO_PDIPM         *pdipm = (TAO_PDIPM *)tao->data;
   MPI_Comm           comm;
   PetscMPIInt        size;
@@ -1376,7 +1389,8 @@ PetscErrorCode TaoSetup_PDIPM(Tao tao) {
    Output:
    Destroyed pdipm
 */
-PetscErrorCode TaoDestroy_PDIPM(Tao tao) {
+PetscErrorCode TaoDestroy_PDIPM(Tao tao)
+{
   TAO_PDIPM *pdipm = (TAO_PDIPM *)tao->data;
 
   PetscFunctionBegin;
@@ -1431,7 +1445,8 @@ PetscErrorCode TaoDestroy_PDIPM(Tao tao) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode TaoSetFromOptions_PDIPM(Tao tao, PetscOptionItems *PetscOptionsObject) {
+PetscErrorCode TaoSetFromOptions_PDIPM(Tao tao, PetscOptionItems *PetscOptionsObject)
+{
   TAO_PDIPM *pdipm = (TAO_PDIPM *)tao->data;
 
   PetscFunctionBegin;
@@ -1458,7 +1473,8 @@ PetscErrorCode TaoSetFromOptions_PDIPM(Tao tao, PetscOptionItems *PetscOptionsOb
 
   Level: beginner
 M*/
-PETSC_EXTERN PetscErrorCode TaoCreate_PDIPM(Tao tao) {
+PETSC_EXTERN PetscErrorCode TaoCreate_PDIPM(Tao tao)
+{
   TAO_PDIPM *pdipm;
 
   PetscFunctionBegin;
@@ -1468,7 +1484,7 @@ PETSC_EXTERN PetscErrorCode TaoCreate_PDIPM(Tao tao) {
   tao->ops->view           = TaoView_PDIPM;
   tao->ops->destroy        = TaoDestroy_PDIPM;
 
-  PetscCall(PetscNewLog(tao, &pdipm));
+  PetscCall(PetscNew(&pdipm));
   tao->data = (void *)pdipm;
 
   pdipm->nx = pdipm->Nx = 0;

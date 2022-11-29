@@ -2,11 +2,11 @@
 #include <petsc/private/drawimpl.h>                        /*I  "petscdraw.h" I*/
 
 #if defined(PETSC_USE_DEBUG)
-#define PetscDrawValidColor(color) PetscCheck((color) >= 0 && (color) < 256, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Color value %" PetscInt_FMT " out of range [0..255]", (PetscInt)(color))
+  #define PetscDrawValidColor(color) PetscCheck((color) >= 0 && (color) < 256, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Color value %" PetscInt_FMT " out of range [0..255]", (PetscInt)(color))
 #else
-#define PetscDrawValidColor(color) \
-  do { \
-  } while (0)
+  #define PetscDrawValidColor(color) \
+    do { \
+    } while (0)
 #endif
 
 #define XTRANS(draw, img, x) ((int)(((img)->w - 1) * ((draw)->port_xl + ((((x) - (draw)->coor_xl) * ((draw)->port_xr - (draw)->port_xl)) / ((draw)->coor_xr - (draw)->coor_xl)))))
@@ -15,7 +15,8 @@
 #define ITRANS(draw, img, i) ((draw)->coor_xl + (((PetscReal)(i)) * ((draw)->coor_xr - (draw)->coor_xl) / ((img)->w - 1) - (draw)->port_xl) / ((draw)->port_xr - (draw)->port_xl))
 #define JTRANS(draw, img, j) ((draw)->coor_yl + (((PetscReal)(j)) / ((img)->h - 1) + (draw)->port_yl - 1) * ((draw)->coor_yr - (draw)->coor_yl) / ((draw)->port_yl - (draw)->port_yr))
 
-static PetscErrorCode PetscDrawSetViewport_Image(PetscDraw draw, PetscReal xl, PetscReal yl, PetscReal xr, PetscReal yr) {
+static PetscErrorCode PetscDrawSetViewport_Image(PetscDraw draw, PetscReal xl, PetscReal yl, PetscReal xr, PetscReal yr)
+{
   PetscImage img = (PetscImage)draw->data;
   PetscFunctionBegin;
   {
@@ -35,7 +36,8 @@ static PetscErrorCode PetscDrawSetCoordinates_Image(PetscDraw draw,PetscReal xl,
 }*/
 #define PetscDrawSetCoordinates_Image NULL
 
-static PetscErrorCode PetscDrawCoordinateToPixel_Image(PetscDraw draw, PetscReal x, PetscReal y, int *i, int *j) {
+static PetscErrorCode PetscDrawCoordinateToPixel_Image(PetscDraw draw, PetscReal x, PetscReal y, int *i, int *j)
+{
   PetscImage img = (PetscImage)draw->data;
   PetscFunctionBegin;
   if (i) *i = XTRANS(draw, img, x);
@@ -43,7 +45,8 @@ static PetscErrorCode PetscDrawCoordinateToPixel_Image(PetscDraw draw, PetscReal
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscDrawPixelToCoordinate_Image(PetscDraw draw, int i, int j, PetscReal *x, PetscReal *y) {
+static PetscErrorCode PetscDrawPixelToCoordinate_Image(PetscDraw draw, int i, int j, PetscReal *x, PetscReal *y)
+{
   PetscImage img = (PetscImage)draw->data;
   PetscFunctionBegin;
   if (x) *x = ITRANS(draw, img, i);
@@ -59,7 +62,8 @@ static PetscErrorCode PetscDrawPointSetSize_Image(PetscDraw draw,PetscReal width
 }*/
 #define PetscDrawPointSetSize_Image NULL
 
-static PetscErrorCode PetscDrawPoint_Image(PetscDraw draw, PetscReal x, PetscReal y, int c) {
+static PetscErrorCode PetscDrawPoint_Image(PetscDraw draw, PetscReal x, PetscReal y, int c)
+{
   PetscImage img = (PetscImage)draw->data;
   PetscFunctionBegin;
   PetscDrawValidColor(c);
@@ -72,11 +76,14 @@ static PetscErrorCode PetscDrawPoint_Image(PetscDraw draw, PetscReal x, PetscRea
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscDrawPointPixel_Image(PetscDraw draw, int x, int y, int c) {
+static PetscErrorCode PetscDrawPointPixel_Image(PetscDraw draw, int x, int y, int c)
+{
   PetscImage img = (PetscImage)draw->data;
   PetscFunctionBegin;
   PetscDrawValidColor(c);
-  { PetscImageDrawPixel(img, x, y, c); }
+  {
+    PetscImageDrawPixel(img, x, y, c);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -88,7 +95,8 @@ static PetscErrorCode PetscDrawLineSetWidth_Image(PetscDraw draw,PetscReal width
 }*/
 #define PetscDrawLineSetWidth_Image NULL
 
-static PetscErrorCode PetscDrawLineGetWidth_Image(PetscDraw draw, PetscReal *width) {
+static PetscErrorCode PetscDrawLineGetWidth_Image(PetscDraw draw, PetscReal *width)
+{
   PetscImage img = (PetscImage)draw->data;
   PetscFunctionBegin;
   {
@@ -98,7 +106,8 @@ static PetscErrorCode PetscDrawLineGetWidth_Image(PetscDraw draw, PetscReal *wid
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscDrawLine_Image(PetscDraw draw, PetscReal xl, PetscReal yl, PetscReal xr, PetscReal yr, int c) {
+static PetscErrorCode PetscDrawLine_Image(PetscDraw draw, PetscReal xl, PetscReal yl, PetscReal xr, PetscReal yr, int c)
+{
   PetscImage img = (PetscImage)draw->data;
   PetscFunctionBegin;
   {
@@ -109,7 +118,8 @@ static PetscErrorCode PetscDrawLine_Image(PetscDraw draw, PetscReal xl, PetscRea
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscDrawArrow_Image(PetscDraw draw, PetscReal xl, PetscReal yl, PetscReal xr, PetscReal yr, int c) {
+static PetscErrorCode PetscDrawArrow_Image(PetscDraw draw, PetscReal xl, PetscReal yl, PetscReal xr, PetscReal yr, int c)
+{
   PetscImage img = (PetscImage)draw->data;
   PetscFunctionBegin;
   PetscDrawValidColor(c);
@@ -140,7 +150,8 @@ static PetscErrorCode PetscDrawArrow_Image(PetscDraw draw, PetscReal xl, PetscRe
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscDrawRectangle_Image(PetscDraw draw, PetscReal xl, PetscReal yl, PetscReal xr, PetscReal yr, int c1, int c2, int c3, int c4) {
+static PetscErrorCode PetscDrawRectangle_Image(PetscDraw draw, PetscReal xl, PetscReal yl, PetscReal xr, PetscReal yr, int c1, int c2, int c3, int c4)
+{
   PetscImage img = (PetscImage)draw->data;
   PetscFunctionBegin;
   PetscDrawValidColor(c1);
@@ -156,7 +167,8 @@ static PetscErrorCode PetscDrawRectangle_Image(PetscDraw draw, PetscReal xl, Pet
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscDrawEllipse_Image(PetscDraw draw, PetscReal x, PetscReal y, PetscReal a, PetscReal b, int c) {
+static PetscErrorCode PetscDrawEllipse_Image(PetscDraw draw, PetscReal x, PetscReal y, PetscReal a, PetscReal b, int c)
+{
   PetscImage img = (PetscImage)draw->data;
   PetscFunctionBegin;
   PetscDrawValidColor(c);
@@ -171,7 +183,8 @@ static PetscErrorCode PetscDrawEllipse_Image(PetscDraw draw, PetscReal x, PetscR
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscDrawTriangle_Image(PetscDraw draw, PetscReal X_1, PetscReal Y_1, PetscReal X_2, PetscReal Y_2, PetscReal X_3, PetscReal Y_3, int c1, int c2, int c3) {
+static PetscErrorCode PetscDrawTriangle_Image(PetscDraw draw, PetscReal X_1, PetscReal Y_1, PetscReal X_2, PetscReal Y_2, PetscReal X_3, PetscReal Y_3, int c1, int c2, int c3)
+{
   PetscImage img = (PetscImage)draw->data;
   PetscFunctionBegin;
   PetscDrawValidColor(c1);
@@ -193,7 +206,8 @@ static PetscErrorCode PetscDrawStringSetSize_Image(PetscDraw draw,PetscReal w,Pe
 }*/
 #define PetscDrawStringSetSize_Image NULL
 
-static PetscErrorCode PetscDrawStringGetSize_Image(PetscDraw draw, PetscReal *w, PetscReal *h) {
+static PetscErrorCode PetscDrawStringGetSize_Image(PetscDraw draw, PetscReal *w, PetscReal *h)
+{
   PetscImage img = (PetscImage)draw->data;
   PetscFunctionBegin;
   {
@@ -205,7 +219,8 @@ static PetscErrorCode PetscDrawStringGetSize_Image(PetscDraw draw, PetscReal *w,
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscDrawString_Image(PetscDraw draw, PetscReal x, PetscReal y, int c, const char text[]) {
+static PetscErrorCode PetscDrawString_Image(PetscDraw draw, PetscReal x, PetscReal y, int c, const char text[])
+{
   PetscImage img = (PetscImage)draw->data;
   PetscToken token;
   char      *subtext;
@@ -226,7 +241,8 @@ static PetscErrorCode PetscDrawString_Image(PetscDraw draw, PetscReal x, PetscRe
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscDrawStringVertical_Image(PetscDraw draw, PetscReal x, PetscReal y, int c, const char text[]) {
+static PetscErrorCode PetscDrawStringVertical_Image(PetscDraw draw, PetscReal x, PetscReal y, int c, const char text[])
+{
   PetscImage img = (PetscImage)draw->data;
   PetscFunctionBegin;
   PetscDrawValidColor(c);
@@ -261,10 +277,13 @@ static PetscErrorCode PetscDrawFlush_Image(PetscDraw draw)
 }*/
 #define PetscDrawFlush_Image NULL
 
-static PetscErrorCode PetscDrawClear_Image(PetscDraw draw) {
+static PetscErrorCode PetscDrawClear_Image(PetscDraw draw)
+{
   PetscImage img = (PetscImage)draw->data;
   PetscFunctionBegin;
-  { PetscImageClear(img); }
+  {
+    PetscImageClear(img);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -276,7 +295,8 @@ static PetscErrorCode PetscDrawSetDoubleBuffer_Image(PetscDraw draw)
 }*/
 #define PetscDrawSetDoubleBuffer_Image NULL
 
-static PetscErrorCode PetscDrawGetPopup_Image(PetscDraw draw, PetscDraw *popup) {
+static PetscErrorCode PetscDrawGetPopup_Image(PetscDraw draw, PetscDraw *popup)
+{
   PetscBool flg = PETSC_FALSE;
 
   PetscFunctionBegin;
@@ -309,7 +329,8 @@ static PetscErrorCode PetscDrawCheckResizedWindow_Image(PetscDraw draw)
 }*/
 #define PetscDrawCheckResizedWindow_Image NULL
 
-static PetscErrorCode PetscDrawResizeWindow_Image(PetscDraw draw, int w, int h) {
+static PetscErrorCode PetscDrawResizeWindow_Image(PetscDraw draw, int w, int h)
+{
   PetscImage img = (PetscImage)draw->data;
 
   PetscFunctionBegin;
@@ -323,7 +344,8 @@ static PetscErrorCode PetscDrawResizeWindow_Image(PetscDraw draw, int w, int h) 
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscDrawDestroy_Image(PetscDraw draw) {
+static PetscErrorCode PetscDrawDestroy_Image(PetscDraw draw)
+{
   PetscImage img = (PetscImage)draw->data;
 
   PetscFunctionBegin;
@@ -378,7 +400,8 @@ static PetscErrorCode PetscDrawEndPage_Image(PetscDraw draw)
 }*/
 #define PetscDrawEndPage_Image NULL
 
-static PetscErrorCode PetscDrawGetSingleton_Image(PetscDraw draw, PetscDraw *sdraw) {
+static PetscErrorCode PetscDrawGetSingleton_Image(PetscDraw draw, PetscDraw *sdraw)
+{
   PetscImage pimg = (PetscImage)draw->data;
   PetscImage simg;
 
@@ -391,7 +414,8 @@ static PetscErrorCode PetscDrawGetSingleton_Image(PetscDraw draw, PetscDraw *sdr
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscDrawRestoreSingleton_Image(PetscDraw draw, PetscDraw *sdraw) {
+static PetscErrorCode PetscDrawRestoreSingleton_Image(PetscDraw draw, PetscDraw *sdraw)
+{
   PetscImage pimg = (PetscImage)draw->data;
   PetscImage simg = (PetscImage)(*sdraw)->data;
 
@@ -409,7 +433,8 @@ static PetscErrorCode PetscDrawSave_Image(PetscDraw draw)
 }*/
 #define PetscDrawSave_Image NULL
 
-static PetscErrorCode PetscDrawGetImage_Image(PetscDraw draw, unsigned char palette[256][3], unsigned int *w, unsigned int *h, unsigned char *pixels[]) {
+static PetscErrorCode PetscDrawGetImage_Image(PetscDraw draw, unsigned char palette[256][3], unsigned int *w, unsigned int *h, unsigned char *pixels[])
+{
   PetscImage     img    = (PetscImage)draw->data;
   unsigned char *buffer = NULL;
   PetscMPIInt    rank, size;
@@ -483,7 +508,8 @@ static const unsigned char BasicColors[PETSC_DRAW_BASIC_COLORS][3] = {
 M*/
 PETSC_EXTERN PetscErrorCode PetscDrawCreate_Image(PetscDraw);
 
-PETSC_EXTERN PetscErrorCode PetscDrawCreate_Image(PetscDraw draw) {
+PETSC_EXTERN PetscErrorCode PetscDrawCreate_Image(PetscDraw draw)
+{
   PetscImage img;
   int        w = draw->w, h = draw->h;
   PetscInt   size[2], nsize = 2;
@@ -513,7 +539,7 @@ PETSC_EXTERN PetscErrorCode PetscDrawCreate_Image(PetscDraw draw) {
   draw->h = h = size[1];
   draw->x     = 0;
 
-  PetscCall(PetscNewLog(draw, &img));
+  PetscCall(PetscNew(&img));
   PetscCall(PetscMemcpy(draw->ops, &DvOps, sizeof(DvOps)));
   draw->data = (void *)img;
 
@@ -560,7 +586,8 @@ PETSC_EXTERN PetscErrorCode PetscDrawCreate_Image(PetscDraw draw) {
 
 .seealso: `PetscDraw`, `PETSC_DRAW_IMAGE`, `PETSC_DRAW_X`, `PetscDrawSetSave()`, `PetscDrawSetFromOptions()`, `PetscDrawCreate()`, `PetscDrawDestroy()`
 @*/
-PetscErrorCode PetscDrawOpenImage(MPI_Comm comm, const char filename[], int w, int h, PetscDraw *draw) {
+PetscErrorCode PetscDrawOpenImage(MPI_Comm comm, const char filename[], int w, int h, PetscDraw *draw)
+{
   PetscFunctionBegin;
   PetscCall(PetscDrawCreate(comm, NULL, NULL, 0, 0, w, h, draw));
   PetscCall(PetscDrawSetType(*draw, PETSC_DRAW_IMAGE));

@@ -26,15 +26,15 @@
 
    Note:
    The corner information is independent of the number of degrees of
-   freedom per node set with the DMDACreateXX() routine. Thus the x, y, z, and
+   freedom per node set with the `DMDACreateXX()` routine. Thus the x, y, z, and
    m, n, p can be thought of as coordinates on a logical grid, where each
    grid point has (potentially) several degrees of freedom.
    Any of y, z, n, and p can be passed in as NULL if not needed.
 
-.seealso: `DMDAGetCorners()`, `DMDACreate1d()`, `DMDACreate2d()`, `DMDACreate3d()`, `DMDAGetOwnershipRanges()`, `DMStagGetGhostCorners()`
-
+.seealso: `DM`, `DMDA`, `DMDAGetCorners()`, `DMDACreate1d()`, `DMDACreate2d()`, `DMDACreate3d()`, `DMDAGetOwnershipRanges()`, `DMStagGetGhostCorners()`
 @*/
-PetscErrorCode DMDAGetGhostCorners(DM da, PetscInt *x, PetscInt *y, PetscInt *z, PetscInt *m, PetscInt *n, PetscInt *p) {
+PetscErrorCode DMDAGetGhostCorners(DM da, PetscInt *x, PetscInt *y, PetscInt *z, PetscInt *m, PetscInt *n, PetscInt *p)
+{
   PetscInt w;
   DM_DA   *dd = (DM_DA *)da->data;
 

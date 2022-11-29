@@ -3,7 +3,8 @@ static char help[] = "Tests copying and ordering uniprocessor row-based sparse m
 
 #include <petscmat.h>
 
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   Mat         C, A;
   PetscInt    i, j, m = 5, n = 5, Ii, J;
   PetscScalar v;

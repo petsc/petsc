@@ -17,7 +17,8 @@ static char help[] = "Demonstrates use of VecCreateGhost().\n\n";
 */
 #include <petscvec.h>
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscMPIInt rank, size;
   PetscInt    nlocal = 6, nghost = 2, ifrom[2], i, rstart, rend;
   PetscBool   flg, flg2, flg3;

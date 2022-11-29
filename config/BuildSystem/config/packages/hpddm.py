@@ -3,7 +3,7 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self,framework):
     config.package.Package.__init__(self,framework)
-    self.gitcommit              = '88dcbbb43d6361a8bf9c2f28229c9e5983cd8bd2' # main aug-25-2022
+    self.gitcommit              = 'c7bd69b96a45db77c81cb409ffc32707e27ffa9c' # main nov-20-2022
     self.download               = ['git://https://github.com/hpddm/hpddm','https://github.com/hpddm/hpddm/archive/'+self.gitcommit+'.tar.gz']
     self.minversion             = '2.2.1'
     self.versionname            = 'HPDDM_VERSION'
@@ -66,8 +66,8 @@ class Configure(config.package.Package):
       if self.checkSharedLibrariesEnabled():
         slepcbuilddep = ''
         ldflags = ' '.join(self.setCompilers.sharedLibraryFlags)
-        cxxflags += ' '+self.headers.toStringNoDupes(self.dinclude+[os.path.join(PETSC_DIR,'include'),os.path.join(PETSC_DIR,PETSC_ARCH,'include')])
-        ldflags += ' '+self.libraries.toStringNoDupes(self.dlib)
+        cxxflags += ' '+self.headers.toStringNoDupes(self.dinclude+[os.path.join(PETSC_DIR,'include'),incDir])
+        ldflags += ' '+self.libraries.toStringNoDupes(self.dlib+[os.path.join(libDir,'libpetsc.'+self.setCompilers.sharedLibraryExt)])
         slepcbuilddep = 'slepc-install slepc-build'
         oldFlags = self.compilers.CXXPPFLAGS
         self.compilers.CXXPPFLAGS += ' -I'+incDir
@@ -76,11 +76,9 @@ class Configure(config.package.Package):
         # check for Windows-specific define
         if self.sharedLibraries.getMakeMacro('PETSC_DLL_EXPORTS'):
           cxxflags += ' -Dpetsc_EXPORTS'
-          # need to explicitly link to PETSc and BLAS on Windows
-          ldflags += ' '+self.libraries.toStringNoDupes([os.path.join(libDir,'libpetsc.'+self.setCompilers.sharedLibraryExt),self.libraries.toStringNoDupes(self.blasLapack.lib)])
         self.addMakeRule('hpddmbuild',slepcbuilddep,\
                            ['@echo "*** Building and installing HPDDM ***"',\
-                            '@${RM} -f ${PETSC_ARCH}/lib/petsc/conf/hpddm.errorflg',\
+                            '@${RM} ${PETSC_ARCH}/lib/petsc/conf/hpddm.errorflg',\
                             '@'+cxx+' '+cxxflags+' '+os.path.join(self.packageDir,'interface','hpddm_petsc.cpp')+' '+ldflags+' -o '+os.path.join(libDir,'libhpddm_petsc.'+self.setCompilers.sharedLibraryExt)+' > ${PETSC_ARCH}/lib/petsc/conf/hpddm.log 2>&1 || \\\n\
                  (echo "**************************ERROR*************************************" && \\\n\
                  echo "Error building HPDDM. Check ${PETSC_ARCH}/lib/petsc/conf/hpddm.log" && \\\n\

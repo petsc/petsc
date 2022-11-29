@@ -12,7 +12,8 @@ using the aijcusparse class. Input parameters are:\n\
 
 #include <petscksp.h>
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   KSP         ksp;
   Mat         A;
   Vec         X, B;

@@ -1,8 +1,8 @@
-#if !defined(__MPICUSPARSEMATIMPL)
-#define __MPICUSPARSEMATIMPL
+#ifndef PETSC_MPICUSPARSEMATIMPL_H
+#define PETSC_MPICUSPARSEMATIMPL_H
 
 #include <cusparse_v2.h>
-#include <petsc/private/cudavecimpl.h>
+#include <petsc/private/veccupmimpl.h>
 
 struct Mat_MPIAIJCUSPARSE {
   /* The following are used by GPU capabilities to store matrix storage formats on the device */
@@ -22,7 +22,8 @@ struct Mat_MPIAIJCUSPARSE {
   PetscScalar *sendbuf_d, *recvbuf_d;          /* Buffers for remote values in MatSetValuesCOO() */
   PetscBool    use_extended_coo;
 
-  Mat_MPIAIJCUSPARSE() {
+  Mat_MPIAIJCUSPARSE()
+  {
     diagGPUMatFormat    = MAT_CUSPARSE_CSR;
     offdiagGPUMatFormat = MAT_CUSPARSE_CSR;
     coo_p               = NULL;
@@ -31,4 +32,4 @@ struct Mat_MPIAIJCUSPARSE {
     use_extended_coo    = PETSC_FALSE;
   }
 };
-#endif
+#endif // PETSC_MPICUSPARSEMATIMPL_H

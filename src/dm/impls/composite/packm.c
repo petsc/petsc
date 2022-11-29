@@ -1,7 +1,8 @@
 
 #include <../src/dm/impls/composite/packimpl.h> /*I  "petscdmcomposite.h"  I*/
 
-static PetscErrorCode DMCreateMatrix_Composite_Nest(DM dm, Mat *J) {
+static PetscErrorCode DMCreateMatrix_Composite_Nest(DM dm, Mat *J)
+{
   const DM_Composite           *com = (DM_Composite *)dm->data;
   const struct DMCompositeLink *rlink, *clink;
   IS                           *isg;
@@ -40,7 +41,8 @@ static PetscErrorCode DMCreateMatrix_Composite_Nest(DM dm, Mat *J) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMCreateMatrix_Composite_AIJ(DM dm, Mat *J) {
+static PetscErrorCode DMCreateMatrix_Composite_AIJ(DM dm, Mat *J)
+{
   DM_Composite           *com = (DM_Composite *)dm->data;
   struct DMCompositeLink *next;
   PetscInt                m, *dnz, *onz, i, j, mA;
@@ -165,7 +167,8 @@ static PetscErrorCode DMCreateMatrix_Composite_AIJ(DM dm, Mat *J) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMCreateMatrix_Composite(DM dm, Mat *J) {
+PetscErrorCode DMCreateMatrix_Composite(DM dm, Mat *J)
+{
   PetscBool              usenest;
   ISLocalToGlobalMapping ltogmap;
 

@@ -3,7 +3,7 @@
 SOURCEC  = dmlabel.c
 SOURCEF  =
 SOURCEH  =
-DIRS     = tutorials
+DIRS     = impls tutorials
 LIBBASE  = libpetscdm
 MANSEC   = DM
 SUBMANSEC= DMLabel

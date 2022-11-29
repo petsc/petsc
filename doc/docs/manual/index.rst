@@ -1,12 +1,16 @@
-PETSc/TAO Users Manual
-======================
+User-Guide
+==========
 
 .. raw:: latex
 
-  \thispagestyle{plain}
+  \thispagestyle{empty}
+  \vspace*{-0.5in}
+  \hfill  {\large {\bf ANL-21/39 Rev \techreportversion{}}}
+  \break
+  \break
+  \break
+  \break
   {\Huge\textbf{PETSc/TAO Users Manual}}
-
-`PETSc/TAO Users Manual in PDF <manual/manual.pdf>`__
 
 **Argonne National Laboratory**
 
@@ -27,17 +31,17 @@ Prepared by
 **L. Dalcin** :sup:`4`,
 **A. Dener** :sup:`1`,
 **V. Eijkhout** :sup:`6`,
+**J. Faibussowitsch** :sup:`1,18`,
 **W. D. Gropp** :sup:`1,18`,
 **V. Hapla** :sup:`8`,
 **T. Isaac** :sup:`1,14`,
-**J. Faibussowitsch** :sup:`1,18`,
 **P. Jolivet** :sup:`12`,
 **D. Karpeev** :sup:`1`,
 **D. Kaushik** :sup:`1`,
 **M. G. Knepley** :sup:`1,9`,
 **F. Kong** :sup:`1,11`,
 **S. Kruger** :sup:`15`,
-**D. A. May** :sup:`7`,
+**D. A. May** :sup:`7,21`,
 **L. Curfman McInnes** :sup:`1`,
 **R. Tran Mills** :sup:`1`,
 **L. Mitchell** :sup:`13,20`,
@@ -63,7 +67,7 @@ Prepared by
 | :sup:`9`\ Department of Computer Science and Engineering, University at Buffalo
 | :sup:`10`\ Department of Computer Science, University of Colorado, Boulder
 | :sup:`11`\ Computational Frameworks, Idaho National Laboratory
-| :sup:`12`\ Toulouse Institute of Compute Science Research
+| :sup:`12`\ Toulouse Institute of Computer Science Research
 | :sup:`13`\ NVIDIA Corporation
 | :sup:`14`\ College of Computing, Georgia Tech
 | :sup:`15`\ Tech-X Corporation
@@ -72,6 +76,11 @@ Prepared by
 | :sup:`18`\ University of Illinois, Urbana-Champaign
 | :sup:`19`\ Institute for Microelectronics, TU Wien
 | :sup:`20`\ Department of Computer Science, Durham University
+| :sup:`21`\ Scripps Institution of Oceanography, University of California, San Diego
+
+.. raw:: latex
+
+  {\bf \today}
 
 --------------
 

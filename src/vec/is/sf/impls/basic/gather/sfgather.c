@@ -4,7 +4,8 @@
 /* Reuse the type. The difference is some fields (i.e., displs, recvcounts) are not used in Gather, which is not a big deal */
 typedef PetscSF_Allgatherv PetscSF_Gather;
 
-PETSC_INTERN PetscErrorCode PetscSFBcastBegin_Gather(PetscSF sf, MPI_Datatype unit, PetscMemType rootmtype, const void *rootdata, PetscMemType leafmtype, void *leafdata, MPI_Op op) {
+PETSC_INTERN PetscErrorCode PetscSFBcastBegin_Gather(PetscSF sf, MPI_Datatype unit, PetscMemType rootmtype, const void *rootdata, PetscMemType leafmtype, void *leafdata, MPI_Op op)
+{
   PetscSFLink  link;
   PetscMPIInt  sendcount;
   MPI_Comm     comm;
@@ -23,7 +24,8 @@ PETSC_INTERN PetscErrorCode PetscSFBcastBegin_Gather(PetscSF sf, MPI_Datatype un
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscSFReduceBegin_Gather(PetscSF sf, MPI_Datatype unit, PetscMemType leafmtype, const void *leafdata, PetscMemType rootmtype, void *rootdata, MPI_Op op) {
+static PetscErrorCode PetscSFReduceBegin_Gather(PetscSF sf, MPI_Datatype unit, PetscMemType leafmtype, const void *leafdata, PetscMemType rootmtype, void *rootdata, MPI_Op op)
+{
   PetscSFLink  link;
   PetscMPIInt  recvcount;
   MPI_Comm     comm;
@@ -42,7 +44,8 @@ static PetscErrorCode PetscSFReduceBegin_Gather(PetscSF sf, MPI_Datatype unit, P
   PetscFunctionReturn(0);
 }
 
-PETSC_INTERN PetscErrorCode PetscSFCreate_Gather(PetscSF sf) {
+PETSC_INTERN PetscErrorCode PetscSFCreate_Gather(PetscSF sf)
+{
   PetscSF_Gather *dat = (PetscSF_Gather *)sf->data;
 
   PetscFunctionBegin;
@@ -68,7 +71,7 @@ PETSC_INTERN PetscErrorCode PetscSFCreate_Gather(PetscSF sf) {
   sf->ops->BcastBegin  = PetscSFBcastBegin_Gather;
   sf->ops->ReduceBegin = PetscSFReduceBegin_Gather;
 
-  PetscCall(PetscNewLog(sf, &dat));
+  PetscCall(PetscNew(&dat));
   sf->data = (void *)dat;
   PetscFunctionReturn(0);
 }

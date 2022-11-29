@@ -9,7 +9,8 @@ typedef struct {
   PetscInt test;
 } AppCtx;
 
-static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options) {
+static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
+{
   PetscFunctionBegin;
   options->test = 0;
   PetscOptionsBegin(comm, "", "Zero-sized DMPlexGetCellFields Test Options", "DMPLEX");
@@ -18,7 +19,8 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *options, DM *dm) {
+static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *options, DM *dm)
+{
   PetscFunctionBegin;
   PetscCall(DMCreate(comm, dm));
   PetscCall(DMSetType(*dm, DMPLEX));
@@ -28,7 +30,8 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *options, DM *dm) {
 }
 
 /* no discretization is given so DMGetNumFields yields 0 */
-static PetscErrorCode test0(DM dm, AppCtx *options) {
+static PetscErrorCode test0(DM dm, AppCtx *options)
+{
   Vec locX;
 
   PetscFunctionBegin;
@@ -38,7 +41,8 @@ static PetscErrorCode test0(DM dm, AppCtx *options) {
 }
 
 /* no discretization is given so DMGetNumFields and PetscDSGetTotalDimension yield 0 */
-static PetscErrorCode test1(DM dm, AppCtx *options) {
+static PetscErrorCode test1(DM dm, AppCtx *options)
+{
   IS           cells;
   Vec          locX, locX_t, locA;
   PetscScalar *u, *u_t, *a;
@@ -58,7 +62,8 @@ static PetscErrorCode test1(DM dm, AppCtx *options) {
 }
 
 /* no discretization is given so DMGetNumFields and PetscDSGetTotalDimension yield 0 */
-static PetscErrorCode test2(DM dm, AppCtx *options) {
+static PetscErrorCode test2(DM dm, AppCtx *options)
+{
   IS           cells;
   Vec          locX, locX_t, locA;
   PetscScalar *u, *u_t, *a;
@@ -79,7 +84,8 @@ static PetscErrorCode test2(DM dm, AppCtx *options) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode test3(DM dm, AppCtx *options) {
+static PetscErrorCode test3(DM dm, AppCtx *options)
+{
   PetscDS   ds;
   PetscFE   fe;
   PetscInt  dim;
@@ -96,7 +102,8 @@ static PetscErrorCode test3(DM dm, AppCtx *options) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode test4(DM dm, AppCtx *options) {
+static PetscErrorCode test4(DM dm, AppCtx *options)
+{
   PetscFE   fe;
   PetscInt  dim;
   PetscBool simplex;
@@ -112,7 +119,8 @@ static PetscErrorCode test4(DM dm, AppCtx *options) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode test5(DM dm, AppCtx *options) {
+static PetscErrorCode test5(DM dm, AppCtx *options)
+{
   IS           cells;
   Vec          locX, locX_t, locA;
   PetscScalar *u, *u_t, *a;
@@ -129,7 +137,8 @@ static PetscErrorCode test5(DM dm, AppCtx *options) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode test6(DM dm, AppCtx *options) {
+static PetscErrorCode test6(DM dm, AppCtx *options)
+{
   IS           cells;
   Vec          locX, locX_t, locA;
   PetscScalar *u, *u_t, *a;
@@ -148,7 +157,8 @@ static PetscErrorCode test6(DM dm, AppCtx *options) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode test7(DM dm, AppCtx *options) {
+static PetscErrorCode test7(DM dm, AppCtx *options)
+{
   PetscFE   fe;
   PetscInt  dim;
   PetscBool simplex;
@@ -164,7 +174,8 @@ static PetscErrorCode test7(DM dm, AppCtx *options) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode test8(DM dm, AppCtx *options) {
+static PetscErrorCode test8(DM dm, AppCtx *options)
+{
   PetscFE   fe;
   PetscInt  dim;
   PetscBool simplex;
@@ -180,7 +191,8 @@ static PetscErrorCode test8(DM dm, AppCtx *options) {
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   MPI_Comm comm;
   DM       dm;
   AppCtx   options;
@@ -192,16 +204,35 @@ int main(int argc, char **argv) {
   PetscCall(CreateMesh(comm, &options, &dm));
 
   switch (options.test) {
-  case 0: PetscCall(test0(dm, &options)); break;
-  case 1: PetscCall(test1(dm, &options)); break;
-  case 2: PetscCall(test2(dm, &options)); break;
-  case 3: PetscCall(test3(dm, &options)); break;
-  case 4: PetscCall(test4(dm, &options)); break;
-  case 5: PetscCall(test5(dm, &options)); break;
-  case 6: PetscCall(test6(dm, &options)); break;
-  case 7: PetscCall(test7(dm, &options)); break;
-  case 8: PetscCall(test8(dm, &options)); break;
-  default: SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "No such test: %" PetscInt_FMT, options.test);
+  case 0:
+    PetscCall(test0(dm, &options));
+    break;
+  case 1:
+    PetscCall(test1(dm, &options));
+    break;
+  case 2:
+    PetscCall(test2(dm, &options));
+    break;
+  case 3:
+    PetscCall(test3(dm, &options));
+    break;
+  case 4:
+    PetscCall(test4(dm, &options));
+    break;
+  case 5:
+    PetscCall(test5(dm, &options));
+    break;
+  case 6:
+    PetscCall(test6(dm, &options));
+    break;
+  case 7:
+    PetscCall(test7(dm, &options));
+    break;
+  case 8:
+    PetscCall(test8(dm, &options));
+    break;
+  default:
+    SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "No such test: %" PetscInt_FMT, options.test);
   }
 
   PetscCall(DMDestroy(&dm));

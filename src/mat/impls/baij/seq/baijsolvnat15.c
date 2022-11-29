@@ -3,7 +3,8 @@
 
 /* bs = 15 for PFLOTRAN. Block operations are done by accessing all the columns   of the block at once */
 
-PetscErrorCode MatSolve_SeqBAIJ_15_NaturalOrdering_ver2(Mat A, Vec bb, Vec xx) {
+PetscErrorCode MatSolve_SeqBAIJ_15_NaturalOrdering_ver2(Mat A, Vec bb, Vec xx)
+{
   Mat_SeqBAIJ       *a = (Mat_SeqBAIJ *)A->data;
   const PetscInt     n = a->mbs, *ai = a->i, *aj = a->j, *adiag = a->diag, *vi, bs = A->rmap->bs, bs2 = a->bs2;
   PetscInt           i, nz, idx, idt, m;
@@ -192,7 +193,8 @@ PetscErrorCode MatSolve_SeqBAIJ_15_NaturalOrdering_ver2(Mat A, Vec bb, Vec xx) {
 /* bs = 15 for PFLOTRAN. Block operations are done by accessing one column at at time */
 /* Default MatSolve for block size 15 */
 
-PetscErrorCode MatSolve_SeqBAIJ_15_NaturalOrdering_ver1(Mat A, Vec bb, Vec xx) {
+PetscErrorCode MatSolve_SeqBAIJ_15_NaturalOrdering_ver1(Mat A, Vec bb, Vec xx)
+{
   Mat_SeqBAIJ       *a = (Mat_SeqBAIJ *)A->data;
   const PetscInt     n = a->mbs, *ai = a->i, *aj = a->j, *adiag = a->diag, *vi, bs = A->rmap->bs, bs2 = a->bs2;
   PetscInt           i, k, nz, idx, idt, m;

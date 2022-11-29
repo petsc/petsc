@@ -10,7 +10,8 @@ static char help[] = "Tests MatSeq(B)AIJSetColumnIndices().\n\n";
          1 2 3
          0 0 3
 */
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   Mat         A;
   PetscScalar v;
   PetscInt    i, j, rowlens[] = {2, 3, 1}, cols[] = {0, 2, 0, 1, 2, 2};

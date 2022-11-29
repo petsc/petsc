@@ -22,7 +22,8 @@ typedef struct {
   CeedVector    qdata, uceed, vceed;
 } CeedData;
 
-static PetscErrorCode CeedDataDestroy(CeedData *data) {
+static PetscErrorCode CeedDataDestroy(CeedData *data)
+{
   PetscFunctionBeginUser;
   PetscCall(CeedVectorDestroy(&data->qdata));
   PetscCall(CeedVectorDestroy(&data->uceed));
@@ -32,7 +33,8 @@ static PetscErrorCode CeedDataDestroy(CeedData *data) {
   PetscFunctionReturn(0);
 }
 
-CEED_QFUNCTION(Mass)(void *ctx, const CeedInt Q, const CeedScalar *const *in, CeedScalar *const *out) {
+CEED_QFUNCTION(Mass)(void *ctx, const CeedInt Q, const CeedScalar *const *in, CeedScalar *const *out)
+{
   const CeedScalar *u = in[0], *qdata = in[1];
   CeedScalar       *v = out[0];
 
@@ -65,11 +67,13 @@ CEED_QFUNCTION(Mass)(void *ctx, const CeedInt Q, const CeedScalar *const *in, Ce
 //
 // Qdata: w * det(dx_i/dX_j)
 */
-CEED_QFUNCTION(SetupMassGeoCube)(void *ctx, const CeedInt Q, const CeedScalar *const *in, CeedScalar *const *out) {
+CEED_QFUNCTION(SetupMassGeoCube)(void *ctx, const CeedInt Q, const CeedScalar *const *in, CeedScalar *const *out)
+{
   const CeedScalar *J = in[1], *w = in[2];
   CeedScalar       *qdata = out[0];
 
-  CeedPragmaSIMD for (CeedInt i = 0; i < Q; ++i) {
+  CeedPragmaSIMD for (CeedInt i = 0; i < Q; ++i)
+  {
     // Read dxxdX Jacobian entries, stored as [[0 3], [1 4], [2 5]]
     const CeedScalar dxxdX[3][2] = {
       {J[i + Q * 0], J[i + Q * 3]},
@@ -77,8 +81,8 @@ CEED_QFUNCTION(SetupMassGeoCube)(void *ctx, const CeedInt Q, const CeedScalar *c
       {J[i + Q * 2], J[i + Q * 5]}
     };
     // Modulus of dxxdX column vectors
-    const CeedScalar modg1       = PetscSqrtReal(dxxdX[0][0] * dxxdX[0][0] + dxxdX[1][0] * dxxdX[1][0] + dxxdX[2][0] * dxxdX[2][0]);
-    const CeedScalar modg2       = PetscSqrtReal(dxxdX[0][1] * dxxdX[0][1] + dxxdX[1][1] * dxxdX[1][1] + dxxdX[2][1] * dxxdX[2][1]);
+    const CeedScalar modg1 = PetscSqrtReal(dxxdX[0][0] * dxxdX[0][0] + dxxdX[1][0] * dxxdX[1][0] + dxxdX[2][0] * dxxdX[2][0]);
+    const CeedScalar modg2 = PetscSqrtReal(dxxdX[0][1] * dxxdX[0][1] + dxxdX[1][1] * dxxdX[1][1] + dxxdX[2][1] * dxxdX[2][1]);
     // Use normalized column vectors of dxxdX as rows of dxdxx
     const CeedScalar dxdxx[2][3] = {
       {dxxdX[0][0] / modg1, dxxdX[1][0] / modg1, dxxdX[2][0] / modg1},
@@ -125,12 +129,14 @@ CEED_QFUNCTION(SetupMassGeoCube)(void *ctx, const CeedInt Q, const CeedScalar *c
 //
 // Qdata: modJ * w
 */
-CEED_QFUNCTION(SetupMassGeoSphere)(void *ctx, const CeedInt Q, const CeedScalar *const *in, CeedScalar *const *out) {
+CEED_QFUNCTION(SetupMassGeoSphere)(void *ctx, const CeedInt Q, const CeedScalar *const *in, CeedScalar *const *out)
+{
   const CeedScalar *X = in[0], *J = in[1], *w = in[2];
   CeedScalar       *qdata = out[0];
 
-  CeedPragmaSIMD for (CeedInt i = 0; i < Q; ++i) {
-    const CeedScalar xx[3][1]    = {{X[i + 0 * Q]}, {X[i + 1 * Q]}, {X[i + 2 * Q]}};
+  CeedPragmaSIMD for (CeedInt i = 0; i < Q; ++i)
+  {
+    const CeedScalar xx[3][1] = {{X[i + 0 * Q]}, {X[i + 1 * Q]}, {X[i + 2 * Q]}};
     // Read dxxdX Jacobian entries, stored as [[0 3], [1 4], [2 5]]
     const CeedScalar dxxdX[3][2] = {
       {J[i + Q * 0], J[i + Q * 3]},
@@ -161,13 +167,14 @@ CEED_QFUNCTION(SetupMassGeoSphere)(void *ctx, const CeedInt Q, const CeedScalar 
     // J is given by the cross product of the columns of dxdX
     const CeedScalar J[3][1] = {{dxdX[1][0] * dxdX[2][1] - dxdX[2][0] * dxdX[1][1]}, {dxdX[2][0] * dxdX[0][1] - dxdX[0][0] * dxdX[2][1]}, {dxdX[0][0] * dxdX[1][1] - dxdX[1][0] * dxdX[0][1]}};
     // Use the magnitude of J as our detJ (volume scaling factor)
-    const CeedScalar modJ    = sqrt(J[0][0] * J[0][0] + J[1][0] * J[1][0] + J[2][0] * J[2][0]);
-    qdata[i + Q * 0]         = modJ * w[i];
+    const CeedScalar modJ = sqrt(J[0][0] * J[0][0] + J[1][0] * J[1][0] + J[2][0] * J[2][0]);
+    qdata[i + Q * 0]      = modJ * w[i];
   }
   return 0;
 }
 
-static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *ctx) {
+static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *ctx)
+{
   DMPlexShape shape = DM_SHAPE_UNKNOWN;
 
   PetscFunctionBeginUser;
@@ -190,12 +197,14 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *ctx) {
     ctx->setupgeofname = SetupMassGeoSphere_loc;
     ctx->areaExact     = 4.0 * M_PI;
     break;
-  default: break;
+  default:
+    break;
   }
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *ctx, DM *dm) {
+static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *ctx, DM *dm)
+{
   PetscFunctionBegin;
   PetscCall(DMCreate(comm, dm));
   PetscCall(DMSetType(*dm, DMPLEX));
@@ -214,7 +223,8 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *ctx, DM *dm) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode SetupDiscretization(DM dm) {
+static PetscErrorCode SetupDiscretization(DM dm)
+{
   DM        cdm;
   PetscFE   fe, cfe;
   PetscInt  dim, cnc;
@@ -238,7 +248,8 @@ static PetscErrorCode SetupDiscretization(DM dm) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode LibCeedSetupByDegree(DM dm, AppCtx *ctx, CeedData *data) {
+static PetscErrorCode LibCeedSetupByDegree(DM dm, AppCtx *ctx, CeedData *data)
+{
   PetscDS             ds;
   PetscFE             fe, cfe;
   Ceed                ceed;
@@ -323,7 +334,8 @@ static PetscErrorCode LibCeedSetupByDegree(DM dm, AppCtx *ctx, CeedData *data) {
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   MPI_Comm     comm;
   DM           dm;
   AppCtx       ctx;
@@ -389,7 +401,7 @@ int main(int argc, char **argv) {
 
   testset:
     args: -dm_plex_simplex 0 -petscspace_degree 3 -dm_view -dm_petscds_view \
-          -petscfe_default_quadrature_order 4 -coord_dm_default_quadrature_order 4
+          -petscfe_default_quadrature_order 4 -cdm_default_quadrature_order 4
 
     test:
       suffix: cube_3

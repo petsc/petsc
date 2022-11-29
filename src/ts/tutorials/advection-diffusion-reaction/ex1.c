@@ -75,13 +75,15 @@ typedef struct {
   Vec         initialsolution;
 } AppCtx;
 
-PetscErrorCode IFunctionView(AppCtx *ctx, PetscViewer v) {
+PetscErrorCode IFunctionView(AppCtx *ctx, PetscViewer v)
+{
   PetscFunctionBegin;
   PetscCall(PetscViewerBinaryWrite(v, &ctx->k, 1, PETSC_SCALAR));
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode IFunctionLoad(AppCtx **ctx, PetscViewer v) {
+PetscErrorCode IFunctionLoad(AppCtx **ctx, PetscViewer v)
+{
   PetscFunctionBegin;
   PetscCall(PetscNew(ctx));
   PetscCall(PetscViewerBinaryRead(v, &(*ctx)->k, 1, NULL, PETSC_SCALAR));
@@ -91,7 +93,8 @@ PetscErrorCode IFunctionLoad(AppCtx **ctx, PetscViewer v) {
 /*
      Defines the ODE passed to the ODE solver
 */
-PetscErrorCode IFunction(TS ts, PetscReal t, Vec U, Vec Udot, Vec F, AppCtx *ctx) {
+PetscErrorCode IFunction(TS ts, PetscReal t, Vec U, Vec Udot, Vec F, AppCtx *ctx)
+{
   PetscScalar       *f;
   const PetscScalar *u, *udot;
 
@@ -112,7 +115,8 @@ PetscErrorCode IFunction(TS ts, PetscReal t, Vec U, Vec Udot, Vec F, AppCtx *ctx
 /*
      Defines the Jacobian of the ODE passed to the ODE solver. See TSSetIJacobian() for the meaning of a and the Jacobian.
 */
-PetscErrorCode IJacobian(TS ts, PetscReal t, Vec U, Vec Udot, PetscReal a, Mat A, Mat B, AppCtx *ctx) {
+PetscErrorCode IJacobian(TS ts, PetscReal t, Vec U, Vec Udot, PetscReal a, Mat A, Mat B, AppCtx *ctx)
+{
   PetscInt           rowcol[] = {0, 1, 2};
   PetscScalar        J[3][3];
   const PetscScalar *u, *udot;
@@ -145,7 +149,8 @@ PetscErrorCode IJacobian(TS ts, PetscReal t, Vec U, Vec Udot, PetscReal a, Mat A
 /*
      Defines the exact (analytic) solution to the ODE
 */
-static PetscErrorCode Solution(TS ts, PetscReal t, Vec U, AppCtx *ctx) {
+static PetscErrorCode Solution(TS ts, PetscReal t, Vec U, AppCtx *ctx)
+{
   const PetscScalar *uinit;
   PetscScalar       *u, d0, q;
 
@@ -163,7 +168,8 @@ static PetscErrorCode Solution(TS ts, PetscReal t, Vec U, AppCtx *ctx) {
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   TS                ts; /* ODE integrator */
   Vec               U;  /* solution will be stored here */
   Mat               A;  /* Jacobian matrix */

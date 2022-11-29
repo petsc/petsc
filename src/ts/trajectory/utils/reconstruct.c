@@ -2,7 +2,8 @@
 #include <petscts.h>
 
 /* these two functions have been stolen from bdf.c */
-static inline void LagrangeBasisVals(PetscInt n, PetscReal t, const PetscReal T[], PetscScalar L[]) {
+static inline void LagrangeBasisVals(PetscInt n, PetscReal t, const PetscReal T[], PetscScalar L[])
+{
   PetscInt k, j;
   for (k = 0; k < n; k++) {
     for (L[k] = 1, j = 0; j < n; j++) {
@@ -11,7 +12,8 @@ static inline void LagrangeBasisVals(PetscInt n, PetscReal t, const PetscReal T[
   }
 }
 
-static inline void LagrangeBasisDers(PetscInt n, PetscReal t, const PetscReal T[], PetscScalar dL[]) {
+static inline void LagrangeBasisDers(PetscInt n, PetscReal t, const PetscReal T[], PetscScalar dL[])
+{
   PetscInt k, j, i;
   for (k = 0; k < n; k++) {
     for (dL[k] = 0, j = 0; j < n; j++) {
@@ -26,7 +28,8 @@ static inline void LagrangeBasisDers(PetscInt n, PetscReal t, const PetscReal T[
   }
 }
 
-static inline PetscInt LagrangeGetId(PetscReal t, PetscInt n, const PetscReal T[], const PetscBool Taken[]) {
+static inline PetscInt LagrangeGetId(PetscReal t, PetscInt n, const PetscReal T[], const PetscBool Taken[])
+{
   PetscInt _tid = 0;
   while (_tid < n && PetscAbsReal(t - T[_tid]) > PETSC_SMALL) _tid++;
   if (_tid < n && !Taken[_tid]) {
@@ -43,7 +46,8 @@ static inline PetscInt LagrangeGetId(PetscReal t, PetscInt n, const PetscReal T[
   }
 }
 
-PetscErrorCode TSTrajectoryReconstruct_Private(TSTrajectory tj, TS ts, PetscReal t, Vec U, Vec Udot) {
+PetscErrorCode TSTrajectoryReconstruct_Private(TSTrajectory tj, TS ts, PetscReal t, Vec U, Vec Udot)
+{
   TSHistory        tsh = tj->tsh;
   const PetscReal *tshhist;
   const PetscInt  *tshhist_id;

@@ -3,7 +3,8 @@ static char help[] = "Test modifying DMStag coordinates, when represented as a p
 #include <petscdm.h>
 #include <petscdmstag.h>
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   DM            dm, cdm;
   PetscInt      ex, ey, ez, n[3], start[3], nExtra[3], iNext, iPrev, iCenter, d, round;
   PetscScalar **cArrX, **cArrY, **cArrZ;

@@ -4,7 +4,8 @@ static char help[] = "Test MatSetRandom on MATMPIAIJ matrices\n\n";
    Adapted from an example Contributed-by: Jakub Kruzik <jakub.kruzik@vsb.cz>
 */
 #include <petscmat.h>
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   Mat         A[2];
   PetscReal   nrm, tol = 10 * PETSC_SMALL;
   PetscRandom rctx;

@@ -1,4 +1,4 @@
--include ../../../../../petsckdir.mk
+-include ../../../../../petscdir.mk
 
 SOURCEC   = axis.c lg.c dscatter.c hists.c zoom.c cmap.c lgc.c axisc.c bars.c image.c
 SOURCEF   =

@@ -41,7 +41,8 @@ typedef struct {
 } GridCtx;
 extern int FormJacobian_Grid(GridCtx *, Mat *);
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscInt    its, n, Nx = PETSC_DECIDE, Ny = PETSC_DECIDE, nlocal, i;
   PetscMPIInt size;
   PC          pc;
@@ -115,7 +116,8 @@ int main(int argc, char **argv) {
   return 0;
 }
 
-int FormJacobian_Grid(GridCtx *grid, Mat *J) {
+int FormJacobian_Grid(GridCtx *grid, Mat *J)
+{
   Mat                    jac = *J;
   PetscInt               i, j, row, mx, my, xs, ys, xm, ym, Xs, Ys, Xm, Ym, col[5];
   PetscInt               grow;

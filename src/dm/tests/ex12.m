@@ -2,7 +2,7 @@ function ex12(np,opt)
 %
 % From Matlab run  ex12(np)
 %
-% ex12.c creates a series of vectors in PETSc and displays them in Matlab
+% ex12.c creates a series of vectors in PETSc and displays them in MATLAB
 %
 % Run with option -on_error_attach_debugger to debug
 %

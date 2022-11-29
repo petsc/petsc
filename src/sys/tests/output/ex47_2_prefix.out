@@ -1,24 +1,24 @@
-Setting option: p1_name = value
-Setting option: p1_name = value
-Setting option: p2_name = value
-Setting option: p3_name = value
-Setting option: p3_name = value
-Setting option: p4_name = value
-Setting option: p5_name = value
-Setting option: p5_name = value
-Setting option: p6_name = value
-Setting option: p7_name = value
-Setting option: p7_name = value
-Setting option: p8_name = value
-Setting option: p9_name = value
+Setting option: p1_name = value (souce: file)
+Setting option: p1_name = value (souce: file)
+Setting option: p2_name = value (souce: file)
+Setting option: p3_name = value (souce: file)
+Setting option: p3_name = value (souce: file)
+Setting option: p4_name = value (souce: file)
+Setting option: p5_name = value (souce: file)
+Setting option: p5_name = value (souce: file)
+Setting option: p6_name = value (souce: file)
+Setting option: p7_name = value (souce: code)
+Setting option: p7_name = value (souce: code)
+Setting option: p8_name = value (souce: code)
+Setting option: p9_name = value (souce: file)
 #PETSc Option Table entries:
--p1_name value
--p2_name value
--p3_name value
--p4_name value
--p5_name value
--p6_name value
--p7_name value
--p8_name value
--p9_name value
+-p1_name value # (source: file)
+-p2_name value # (source: file)
+-p3_name value # (source: file)
+-p4_name value # (source: file)
+-p5_name value # (source: file)
+-p6_name value # (source: file)
+-p7_name value # (source: code)
+-p8_name value # (source: code)
+-p9_name value # (source: file)
 #End of PETSc Option Table entries

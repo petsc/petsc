@@ -1,5 +1,5 @@
-#if !defined(_packimpl_h)
-#define _packimpl_h
+#ifndef PETSC_PACKIMPL_H
+#define PETSC_PACKIMPL_H
 
 #include <petscdmcomposite.h>     /*I "petscdmcomposite.h" I*/
 #include <petsc/private/dmimpl.h> /*I      "petscdm.h"     I*/
@@ -33,4 +33,4 @@ typedef struct {
 
 PETSC_INTERN PetscErrorCode DMCreateMatrix_Composite(DM, Mat *);
 
-#endif
+#endif // PETSC_PACKIMPL_H

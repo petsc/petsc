@@ -1,4 +1,4 @@
-#if !defined(PETSCDMSWARM_H)
+#ifndef PETSCDMSWARM_H
 #define PETSCDMSWARM_H
 
 #include <petscdm.h>
@@ -53,7 +53,7 @@ typedef enum {
 
    Level: beginner
 
-.seealso `DMSwarmInsertPointsUsingCellDM()`
+.seealso: `DMSWARM`, `DM`, `DMSwarmInsertPointsUsingCellDM()`
 E*/
 typedef enum {
   DMSWARMPIC_LAYOUT_REGULAR = 0,

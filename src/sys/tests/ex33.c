@@ -3,34 +3,40 @@ static char help[] = "Tests PetscStack.\n\n";
 #include <petscsys.h>
 
 #if !defined(PETSCSTACKSIZE)
-#define PETSCSTACKSIZE 64
+  #define PETSCSTACKSIZE 64
 #endif
 
-PetscErrorCode correct() {
+PetscErrorCode correct()
+{
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode correctu() {
+PetscErrorCode correctu()
+{
   PetscFunctionBeginUser;
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode foo() {
+PetscErrorCode foo()
+{
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode bar() {
+PetscErrorCode bar()
+{
   PetscFunctionBegin;
   return 0;
 }
 
-PetscErrorCode baru() {
+PetscErrorCode baru()
+{
   PetscFunctionBeginUser;
   return 0;
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
   for (PetscInt i = 0; i < PETSCSTACKSIZE + 1; i++) PetscCall(correct());

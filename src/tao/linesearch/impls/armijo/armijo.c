@@ -8,7 +8,8 @@
 #define REFERENCE_AVE  2
 #define REFERENCE_MEAN 3
 
-static PetscErrorCode TaoLineSearchDestroy_Armijo(TaoLineSearch ls) {
+static PetscErrorCode TaoLineSearchDestroy_Armijo(TaoLineSearch ls)
+{
   TaoLineSearch_ARMIJO *armP = (TaoLineSearch_ARMIJO *)ls->data;
 
   PetscFunctionBegin;
@@ -19,7 +20,8 @@ static PetscErrorCode TaoLineSearchDestroy_Armijo(TaoLineSearch ls) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TaoLineSearchReset_Armijo(TaoLineSearch ls) {
+static PetscErrorCode TaoLineSearchReset_Armijo(TaoLineSearch ls)
+{
   TaoLineSearch_ARMIJO *armP = (TaoLineSearch_ARMIJO *)ls->data;
 
   PetscFunctionBegin;
@@ -28,7 +30,8 @@ static PetscErrorCode TaoLineSearchReset_Armijo(TaoLineSearch ls) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TaoLineSearchSetFromOptions_Armijo(TaoLineSearch ls, PetscOptionItems *PetscOptionsObject) {
+static PetscErrorCode TaoLineSearchSetFromOptions_Armijo(TaoLineSearch ls, PetscOptionItems *PetscOptionsObject)
+{
   TaoLineSearch_ARMIJO *armP = (TaoLineSearch_ARMIJO *)ls->data;
 
   PetscFunctionBegin;
@@ -45,7 +48,8 @@ static PetscErrorCode TaoLineSearchSetFromOptions_Armijo(TaoLineSearch ls, Petsc
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TaoLineSearchView_Armijo(TaoLineSearch ls, PetscViewer pv) {
+static PetscErrorCode TaoLineSearchView_Armijo(TaoLineSearch ls, PetscViewer pv)
+{
   TaoLineSearch_ARMIJO *armP = (TaoLineSearch_ARMIJO *)ls->data;
   PetscBool             isascii;
 
@@ -81,7 +85,8 @@ static PetscErrorCode TaoLineSearchView_Armijo(TaoLineSearch ls, PetscViewer pv)
 -  step - final step length
 
 @ */
-static PetscErrorCode TaoLineSearchApply_Armijo(TaoLineSearch ls, Vec x, PetscReal *f, Vec g, Vec s) {
+static PetscErrorCode TaoLineSearchApply_Armijo(TaoLineSearch ls, Vec x, PetscReal *f, Vec g, Vec s)
+{
   TaoLineSearch_ARMIJO *armP = (TaoLineSearch_ARMIJO *)ls->data;
   PetscInt              i, its = 0;
   PetscReal             fact, ref, gdx;
@@ -260,12 +265,13 @@ static PetscErrorCode TaoLineSearchApply_Armijo(TaoLineSearch ls, Vec x, PetscRe
 
 .keywords: Tao, linesearch
 M*/
-PETSC_EXTERN PetscErrorCode TaoLineSearchCreate_Armijo(TaoLineSearch ls) {
+PETSC_EXTERN PetscErrorCode TaoLineSearchCreate_Armijo(TaoLineSearch ls)
+{
   TaoLineSearch_ARMIJO *armP;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ls, TAOLINESEARCH_CLASSID, 1);
-  PetscCall(PetscNewLog(ls, &armP));
+  PetscCall(PetscNew(&armP));
 
   armP->memory            = NULL;
   armP->alpha             = 1.0;

@@ -8,7 +8,8 @@ Example:
 
 #include <petsc.h>
 
-PetscErrorCode Print_memory(PetscLogDouble mem) {
+PetscErrorCode Print_memory(PetscLogDouble mem)
+{
   double max_mem, min_mem;
 
   PetscFunctionBeginUser;
@@ -24,7 +25,8 @@ PetscErrorCode Print_memory(PetscLogDouble mem) {
    Illustrate how to use MPI derived data types.
    It would save memory significantly. See MatMPIDenseScatter()
 */
-PetscErrorCode TestMPIDerivedDataType() {
+PetscErrorCode TestMPIDerivedDataType()
+{
   MPI_Datatype type1, type2, rtype1, rtype2;
   PetscInt     i, j;
   PetscScalar  buffer[24]; /* An array of 4 rows, 6 cols */
@@ -76,8 +78,9 @@ PetscErrorCode TestMPIDerivedDataType() {
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **args) {
-  PetscInt       mA = 2700, nX = 80, nz = 40;
+int main(int argc, char **args)
+{
+  PetscInt mA = 2700, nX = 80, nz = 40;
   /* PetscInt        mA=6,nX=5,nz=2; //small test */
   PetscLogDouble mem;
   Mat            A, X, Y;

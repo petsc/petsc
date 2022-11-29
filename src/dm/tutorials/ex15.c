@@ -13,7 +13,8 @@ const PetscReal dmda_i_val[] = {1.10, 2.3006, 2.32444, 3.44006, 66.9009};
 const PetscReal dmda_j_val[] = {0.0, 0.25, 0.5, 0.75};
 const PetscReal dmda_k_val[] = {0.0, 1.1, 2.2, 3.3, 4.4, 5.5};
 
-PetscErrorCode MyVecDump(const char fname[], PetscBool skippheader, PetscBool usempiio, Vec x) {
+PetscErrorCode MyVecDump(const char fname[], PetscBool skippheader, PetscBool usempiio, Vec x)
+{
   MPI_Comm    comm;
   PetscViewer viewer;
   PetscBool   ismpiio, isskip;
@@ -39,7 +40,8 @@ PetscErrorCode MyVecDump(const char fname[], PetscBool skippheader, PetscBool us
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MyVecLoad(const char fname[], PetscBool skippheader, PetscBool usempiio, Vec x) {
+PetscErrorCode MyVecLoad(const char fname[], PetscBool skippheader, PetscBool usempiio, Vec x)
+{
   MPI_Comm    comm;
   PetscViewer viewer;
   PetscBool   ismpiio, isskip;
@@ -65,7 +67,8 @@ PetscErrorCode MyVecLoad(const char fname[], PetscBool skippheader, PetscBool us
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMDAVecGenerateEntries(DM dm, Vec a) {
+PetscErrorCode DMDAVecGenerateEntries(DM dm, Vec a)
+{
   PetscScalar ****LA_v;
   PetscInt        i, j, k, l, si, sj, sk, ni, nj, nk, M, N, dof;
 
@@ -87,7 +90,8 @@ PetscErrorCode DMDAVecGenerateEntries(DM dm, Vec a) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode HeaderlessBinaryReadCheck(DM dm, const char name[]) {
+PetscErrorCode HeaderlessBinaryReadCheck(DM dm, const char name[])
+{
   int         fdes;
   PetscScalar buffer[DMDA_I * DMDA_J * DMDA_K * 10];
   PetscInt    len, d, i, j, k, M, N, dof;
@@ -135,7 +139,8 @@ PetscErrorCode HeaderlessBinaryReadCheck(DM dm, const char name[]) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode VecCompare(Vec a, Vec b) {
+PetscErrorCode VecCompare(Vec a, Vec b)
+{
   PetscInt  locmin[2], locmax[2];
   PetscReal min[2], max[2];
   Vec       ref;
@@ -168,7 +173,8 @@ PetscErrorCode VecCompare(Vec a, Vec b) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode TestDMDAVec(PetscBool usempiio) {
+PetscErrorCode TestDMDAVec(PetscBool usempiio)
+{
   DM        dm;
   Vec       x_ref, x_test;
   PetscBool skipheader = PETSC_TRUE;
@@ -210,7 +216,8 @@ PetscErrorCode TestDMDAVec(PetscBool usempiio) {
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   PetscBool usempiio = PETSC_FALSE;
 
   PetscFunctionBeginUser;

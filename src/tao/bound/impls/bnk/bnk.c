@@ -10,7 +10,8 @@ static const char *BNK_AS[64]     = {"none", "bertsekas"};
 
 /* Routine for initializing the KSP solver, the BFGS preconditioner, and the initial trust radius estimation */
 
-PetscErrorCode TaoBNKInitialize(Tao tao, PetscInt initType, PetscBool *needH) {
+PetscErrorCode TaoBNKInitialize(Tao tao, PetscInt initType, PetscBool *needH)
+{
   TAO_BNK          *bnk = (TAO_BNK *)tao->data;
   PC                pc;
   PetscReal         f_min, ftrial, prered, actred, kappa, sigma, resnorm;
@@ -257,7 +258,8 @@ PetscErrorCode TaoBNKInitialize(Tao tao, PetscInt initType, PetscBool *needH) {
 
 /* Routine for computing the exact Hessian and preparing the preconditioner at the new iterate */
 
-PetscErrorCode TaoBNKComputeHessian(Tao tao) {
+PetscErrorCode TaoBNKComputeHessian(Tao tao)
+{
   TAO_BNK *bnk = (TAO_BNK *)tao->data;
 
   PetscFunctionBegin;
@@ -296,7 +298,8 @@ PetscErrorCode TaoBNKComputeHessian(Tao tao) {
 
 /* Routine for estimating the active set */
 
-PetscErrorCode TaoBNKEstimateActiveSet(Tao tao, PetscInt asType) {
+PetscErrorCode TaoBNKEstimateActiveSet(Tao tao, PetscInt asType)
+{
   TAO_BNK  *bnk = (TAO_BNK *)tao->data;
   PetscBool hessComputed, diagExists, hadactive;
 
@@ -335,7 +338,8 @@ PetscErrorCode TaoBNKEstimateActiveSet(Tao tao, PetscInt asType) {
     PetscCall(TaoEstimateActiveBounds(tao->solution, tao->XL, tao->XU, bnk->unprojected_gradient, bnk->W, bnk->Xwork, bnk->as_step, &bnk->as_tol, &bnk->active_lower, &bnk->active_upper, &bnk->active_fixed, &bnk->active_idx, &bnk->inactive_idx));
     break;
 
-  default: break;
+  default:
+    break;
   }
   bnk->resetksp = (PetscBool)(bnk->active_idx || hadactive); /* inactive Hessian size may have changed, need to reset operators */
   PetscFunctionReturn(0);
@@ -345,16 +349,22 @@ PetscErrorCode TaoBNKEstimateActiveSet(Tao tao, PetscInt asType) {
 
 /* Routine for bounding the step direction */
 
-PetscErrorCode TaoBNKBoundStep(Tao tao, PetscInt asType, Vec step) {
+PetscErrorCode TaoBNKBoundStep(Tao tao, PetscInt asType, Vec step)
+{
   TAO_BNK *bnk = (TAO_BNK *)tao->data;
 
   PetscFunctionBegin;
   switch (asType) {
-  case BNK_AS_NONE: PetscCall(VecISSet(step, bnk->active_idx, 0.0)); break;
+  case BNK_AS_NONE:
+    PetscCall(VecISSet(step, bnk->active_idx, 0.0));
+    break;
 
-  case BNK_AS_BERTSEKAS: PetscCall(TaoBoundStep(tao->solution, tao->XL, tao->XU, bnk->active_lower, bnk->active_upper, bnk->active_fixed, 1.0, step)); break;
+  case BNK_AS_BERTSEKAS:
+    PetscCall(TaoBoundStep(tao->solution, tao->XL, tao->XU, bnk->active_lower, bnk->active_upper, bnk->active_fixed, 1.0, step));
+    break;
 
-  default: break;
+  default:
+    break;
   }
   PetscFunctionReturn(0);
 }
@@ -368,7 +378,8 @@ PetscErrorCode TaoBNKBoundStep(Tao tao, PetscInt asType, Vec step) {
    for more gradient evaluations.
 */
 
-PetscErrorCode TaoBNKTakeCGSteps(Tao tao, PetscBool *terminate) {
+PetscErrorCode TaoBNKTakeCGSteps(Tao tao, PetscBool *terminate)
+{
   TAO_BNK *bnk = (TAO_BNK *)tao->data;
 
   PetscFunctionBegin;
@@ -399,7 +410,8 @@ PetscErrorCode TaoBNKTakeCGSteps(Tao tao, PetscBool *terminate) {
 
 /* Routine for computing the Newton step. */
 
-PetscErrorCode TaoBNKComputeStep(Tao tao, PetscBool shift, KSPConvergedReason *ksp_reason, PetscInt *step_type) {
+PetscErrorCode TaoBNKComputeStep(Tao tao, PetscBool shift, KSPConvergedReason *ksp_reason, PetscInt *step_type)
+{
   TAO_BNK          *bnk         = (TAO_BNK *)tao->data;
   PetscInt          bfgsUpdates = 0;
   PetscInt          kspits;
@@ -524,7 +536,8 @@ PetscErrorCode TaoBNKComputeStep(Tao tao, PetscBool shift, KSPConvergedReason *k
 
 /* Routine for recomputing the predicted reduction for a given step vector */
 
-PetscErrorCode TaoBNKRecomputePred(Tao tao, Vec S, PetscReal *prered) {
+PetscErrorCode TaoBNKRecomputePred(Tao tao, Vec S, PetscReal *prered)
+{
   TAO_BNK *bnk = (TAO_BNK *)tao->data;
 
   PetscFunctionBegin;
@@ -559,7 +572,8 @@ PetscErrorCode TaoBNKRecomputePred(Tao tao, Vec S, PetscReal *prered) {
    in the event that the Newton step fails the test.
 */
 
-PetscErrorCode TaoBNKSafeguardStep(Tao tao, KSPConvergedReason ksp_reason, PetscInt *stepType) {
+PetscErrorCode TaoBNKSafeguardStep(Tao tao, KSPConvergedReason ksp_reason, PetscInt *stepType)
+{
   TAO_BNK  *bnk = (TAO_BNK *)tao->data;
   PetscReal gdx, e_min;
   PetscInt  bfgsUpdates;
@@ -676,9 +690,11 @@ PetscErrorCode TaoBNKSafeguardStep(Tao tao, KSPConvergedReason ksp_reason, Petsc
     }
     break;
 
-  case BNK_SCALED_GRADIENT: break;
+  case BNK_SCALED_GRADIENT:
+    break;
 
-  default: break;
+  default:
+    break;
   }
 
   PetscFunctionReturn(0);
@@ -692,7 +708,8 @@ PetscErrorCode TaoBNKSafeguardStep(Tao tao, KSPConvergedReason ksp_reason, Petsc
   Newton step does not produce a valid step length.
 */
 
-PetscErrorCode TaoBNKPerformLineSearch(Tao tao, PetscInt *stepType, PetscReal *steplen, TaoLineSearchConvergedReason *reason) {
+PetscErrorCode TaoBNKPerformLineSearch(Tao tao, PetscInt *stepType, PetscReal *steplen, TaoLineSearchConvergedReason *reason)
+{
   TAO_BNK                     *bnk = (TAO_BNK *)tao->data;
   TaoLineSearchConvergedReason ls_reason;
   PetscReal                    e_min, gdx;
@@ -795,7 +812,8 @@ PetscErrorCode TaoBNKPerformLineSearch(Tao tao, PetscInt *stepType, PetscReal *s
   3) Interpolation
 */
 
-PetscErrorCode TaoBNKUpdateTrustRadius(Tao tao, PetscReal prered, PetscReal actred, PetscInt updateType, PetscInt stepType, PetscBool *accept) {
+PetscErrorCode TaoBNKUpdateTrustRadius(Tao tao, PetscReal prered, PetscReal actred, PetscInt updateType, PetscInt stepType, PetscBool *accept)
+{
   TAO_BNK *bnk = (TAO_BNK *)tao->data;
 
   PetscReal step, kappa;
@@ -960,23 +978,34 @@ PetscErrorCode TaoBNKUpdateTrustRadius(Tao tao, PetscReal prered, PetscReal actr
 
 /* ---------------------------------------------------------- */
 
-PetscErrorCode TaoBNKAddStepCounts(Tao tao, PetscInt stepType) {
+PetscErrorCode TaoBNKAddStepCounts(Tao tao, PetscInt stepType)
+{
   TAO_BNK *bnk = (TAO_BNK *)tao->data;
 
   PetscFunctionBegin;
   switch (stepType) {
-  case BNK_NEWTON: ++bnk->newt; break;
-  case BNK_BFGS: ++bnk->bfgs; break;
-  case BNK_SCALED_GRADIENT: ++bnk->sgrad; break;
-  case BNK_GRADIENT: ++bnk->grad; break;
-  default: break;
+  case BNK_NEWTON:
+    ++bnk->newt;
+    break;
+  case BNK_BFGS:
+    ++bnk->bfgs;
+    break;
+  case BNK_SCALED_GRADIENT:
+    ++bnk->sgrad;
+    break;
+  case BNK_GRADIENT:
+    ++bnk->grad;
+    break;
+  default:
+    break;
   }
   PetscFunctionReturn(0);
 }
 
 /* ---------------------------------------------------------- */
 
-PetscErrorCode TaoSetUp_BNK(Tao tao) {
+PetscErrorCode TaoSetUp_BNK(Tao tao)
+{
   TAO_BNK *bnk = (TAO_BNK *)tao->data;
   PetscInt i;
 
@@ -1042,7 +1071,8 @@ PetscErrorCode TaoSetUp_BNK(Tao tao) {
 
 /*------------------------------------------------------------*/
 
-PetscErrorCode TaoDestroy_BNK(Tao tao) {
+PetscErrorCode TaoDestroy_BNK(Tao tao)
+{
   TAO_BNK *bnk = (TAO_BNK *)tao->data;
 
   PetscFunctionBegin;
@@ -1070,7 +1100,8 @@ PetscErrorCode TaoDestroy_BNK(Tao tao) {
 
 /*------------------------------------------------------------*/
 
-PetscErrorCode TaoSetFromOptions_BNK(Tao tao, PetscOptionItems *PetscOptionsObject) {
+PetscErrorCode TaoSetFromOptions_BNK(Tao tao, PetscOptionItems *PetscOptionsObject)
+{
   TAO_BNK *bnk = (TAO_BNK *)tao->data;
 
   PetscFunctionBegin;
@@ -1140,7 +1171,8 @@ PetscErrorCode TaoSetFromOptions_BNK(Tao tao, PetscOptionItems *PetscOptionsObje
 
 /*------------------------------------------------------------*/
 
-PetscErrorCode TaoView_BNK(Tao tao, PetscViewer viewer) {
+PetscErrorCode TaoView_BNK(Tao tao, PetscViewer viewer)
+{
   TAO_BNK  *bnk = (TAO_BNK *)tao->data;
   PetscInt  nrejects;
   PetscBool isascii;
@@ -1149,6 +1181,7 @@ PetscErrorCode TaoView_BNK(Tao tao, PetscViewer viewer) {
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
   if (isascii) {
     PetscCall(PetscViewerASCIIPushTab(viewer));
+    PetscCall(TaoView(bnk->bncg, viewer));
     if (bnk->M) {
       PetscCall(MatLMVMGetRejectCount(bnk->M, &nrejects));
       PetscCall(PetscViewerASCIIPrintf(viewer, "Rejected BFGS updates: %" PetscInt_FMT "\n", nrejects));
@@ -1235,12 +1268,13 @@ PetscErrorCode TaoView_BNK(Tao tao, PetscViewer viewer) {
   Level: beginner
 M*/
 
-PetscErrorCode TaoCreate_BNK(Tao tao) {
+PetscErrorCode TaoCreate_BNK(Tao tao)
+{
   TAO_BNK *bnk;
   PC       pc;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(tao, &bnk));
+  PetscCall(PetscNew(&bnk));
 
   tao->ops->setup          = TaoSetUp_BNK;
   tao->ops->view           = TaoView_BNK;

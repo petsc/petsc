@@ -1,6 +1,5 @@
-
-#if !defined(MatNest_impl_h)
-#define MatNest_impl_h
+#ifndef PETSC_MATNESTIMPL_H
+#define PETSC_MATNESTIMPL_H
 
 #include <petsc/private/matimpl.h>
 
@@ -19,4 +18,4 @@ typedef struct {
   PetscBool            splitassembly;
 } Mat_Nest;
 
-#endif
+#endif // PETSC_MATNESTIMPL_H

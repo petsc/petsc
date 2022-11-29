@@ -9,7 +9,8 @@
 #include <petsclayouthdf5.h>
 
 #if defined(PETSC_HAVE_HDF5)
-PetscErrorCode MatLoad_Dense_HDF5(Mat mat, PetscViewer viewer) {
+PetscErrorCode MatLoad_Dense_HDF5(Mat mat, PetscViewer viewer)
+{
   PetscViewer_HDF5 *hdf5;
   hid_t             scalartype; /* scalar type (H5T_NATIVE_FLOAT or H5T_NATIVE_DOUBLE) */
   PetscLayout       vmap;
@@ -25,23 +26,25 @@ PetscErrorCode MatLoad_Dense_HDF5(Mat mat, PetscViewer viewer) {
   case PETSC_VIEWER_HDF5_PETSC:
   case PETSC_VIEWER_DEFAULT:
   case PETSC_VIEWER_NATIVE:
-  case PETSC_VIEWER_HDF5_MAT: break;
-  default: SETERRQ(PetscObjectComm((PetscObject)mat), PETSC_ERR_SUP, "PetscViewerFormat %s not supported for HDF5 input.", PetscViewerFormats[format]);
+  case PETSC_VIEWER_HDF5_MAT:
+    break;
+  default:
+    SETERRQ(PetscObjectComm((PetscObject)mat), PETSC_ERR_SUP, "PetscViewerFormat %s not supported for HDF5 input.", PetscViewerFormats[format]);
   }
-  hdf5             = (PetscViewer_HDF5 *)viewer->data;
+  hdf5 = (PetscViewer_HDF5 *)viewer->data;
   /* we store dense matrix columns as blocks, like MATLAB save(filename,variables,'-v7.3') does */
   hdf5->horizontal = PETSC_TRUE;
 
   PetscCheck(((PetscObject)mat)->name, PetscObjectComm((PetscObject)mat), PETSC_ERR_SUP, "Mat name must be set with PetscObjectSetName() before MatLoad()");
-#if defined(PETSC_USE_REAL_SINGLE)
+  #if defined(PETSC_USE_REAL_SINGLE)
   scalartype = H5T_NATIVE_FLOAT;
-#elif defined(PETSC_USE_REAL___FLOAT128)
-#error "HDF5 output with 128 bit floats not supported."
-#elif defined(PETSC_USE_REAL___FP16)
-#error "HDF5 output with 16 bit floats not supported."
-#else
+  #elif defined(PETSC_USE_REAL___FLOAT128)
+    #error "HDF5 output with 128 bit floats not supported."
+  #elif defined(PETSC_USE_REAL___FP16)
+    #error "HDF5 output with 16 bit floats not supported."
+  #else
   scalartype = H5T_NATIVE_DOUBLE;
-#endif
+  #endif
 
   PetscCall(PetscObjectGetComm((PetscObject)mat, &comm));
   PetscCallMPI(MPI_Comm_rank(comm, &rank));

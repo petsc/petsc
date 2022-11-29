@@ -42,7 +42,8 @@
 /******************************************************************/
 /*                                                                */
 /*                                                                */
-PetscErrorCode SPARSEPACKgenqmd(const PetscInt *neqns, const PetscInt *xadj, const PetscInt *adjncy, PetscInt *perm, PetscInt *invp, PetscInt *deg, PetscInt *marker, PetscInt *rchset, PetscInt *nbrhd, PetscInt *qsize, PetscInt *qlink, PetscInt *nofsub) {
+PetscErrorCode SPARSEPACKgenqmd(const PetscInt *neqns, const PetscInt *xadj, const PetscInt *adjncy, PetscInt *perm, PetscInt *invp, PetscInt *deg, PetscInt *marker, PetscInt *rchset, PetscInt *nbrhd, PetscInt *qsize, PetscInt *qlink, PetscInt *nofsub)
+{
   /* System generated locals */
   PetscInt i__1;
 

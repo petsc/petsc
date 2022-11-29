@@ -1,4 +1,4 @@
--include ../../../../../../../petsckdir.mk
+-include ../../../../../../../petscdir.mk
 #requirespackage  'PETSC_USE_MATLAB_SOCKET'
 #requiresscalar real
 #requiresprecision  double

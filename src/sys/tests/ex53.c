@@ -7,7 +7,8 @@ static char help[] = "Test resource recycling and MPI_Comm and keyval creation i
     if (ierr) MPI_Abort(MPI_COMM_WORLD, ierr); \
   } while (0)
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   int         err;
   PetscInt    i;
   PetscMPIInt key1, key2, attr1 = 100, attr2 = 200, *attr, flag;

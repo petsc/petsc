@@ -14,7 +14,8 @@ typedef struct {
   PetscBool usediag; /* indicates preconditioner should include diagonal scaling*/
 } PC_Eisenstat;
 
-static PetscErrorCode PCMult_Eisenstat(Mat mat, Vec b, Vec x) {
+static PetscErrorCode PCMult_Eisenstat(Mat mat, Vec b, Vec x)
+{
   PC            pc;
   PC_Eisenstat *eis;
 
@@ -22,10 +23,24 @@ static PetscErrorCode PCMult_Eisenstat(Mat mat, Vec b, Vec x) {
   PetscCall(MatShellGetContext(mat, &pc));
   eis = (PC_Eisenstat *)pc->data;
   PetscCall(MatSOR(eis->A, b, eis->omega, SOR_EISENSTAT, 0.0, 1, 1, x));
+  PetscCall(MatFactorGetError(eis->A, (MatFactorError *)&pc->failedreason));
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCApply_Eisenstat(PC pc, Vec x, Vec y) {
+static PetscErrorCode PCNorm_Eisenstat(Mat mat, NormType type, PetscReal *nrm)
+{
+  PC            pc;
+  PC_Eisenstat *eis;
+
+  PetscFunctionBegin;
+  PetscCall(MatShellGetContext(mat, &pc));
+  eis = (PC_Eisenstat *)pc->data;
+  PetscCall(MatNorm(eis->A, type, nrm));
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode PCApply_Eisenstat(PC pc, Vec x, Vec y)
+{
   PC_Eisenstat *eis = (PC_Eisenstat *)pc->data;
   PetscBool     hasop;
 
@@ -41,7 +56,27 @@ static PetscErrorCode PCApply_Eisenstat(PC pc, Vec x, Vec y) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCPreSolve_Eisenstat(PC pc, KSP ksp, Vec b, Vec x) {
+static PetscErrorCode PCApplyTranspose_Eisenstat(PC pc, Vec x, Vec y)
+{
+  PC_Eisenstat *eis = (PC_Eisenstat *)pc->data;
+  PetscBool     hasop, set, sym;
+
+  PetscFunctionBegin;
+  PetscCall(MatIsSymmetricKnown(eis->A, &set, &sym));
+  PetscCheck(set && sym, PetscObjectComm((PetscObject)pc), PETSC_ERR_SUP, "Can only apply transpose of Eisenstat if matrix is symmetric");
+  if (eis->usediag) {
+    PetscCall(MatHasOperation(pc->pmat, MATOP_MULT_DIAGONAL_BLOCK, &hasop));
+    if (hasop) {
+      PetscCall(MatMultDiagonalBlock(pc->pmat, x, y));
+    } else {
+      PetscCall(VecPointwiseMult(y, x, eis->diag));
+    }
+  } else PetscCall(VecCopy(x, y));
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode PCPreSolve_Eisenstat(PC pc, KSP ksp, Vec b, Vec x)
+{
   PC_Eisenstat *eis = (PC_Eisenstat *)pc->data;
   PetscBool     nonzero;
 
@@ -53,16 +88,14 @@ static PetscErrorCode PCPreSolve_Eisenstat(PC pc, KSP ksp, Vec b, Vec x) {
     pc->mat = eis->shell;
   }
 
-  if (!eis->b[pc->presolvedone - 1]) {
-    PetscCall(VecDuplicate(b, &eis->b[pc->presolvedone - 1]));
-    PetscCall(PetscLogObjectParent((PetscObject)pc, (PetscObject)eis->b[pc->presolvedone - 1]));
-  }
+  if (!eis->b[pc->presolvedone - 1]) { PetscCall(VecDuplicate(b, &eis->b[pc->presolvedone - 1])); }
 
   /* if nonzero initial guess, modify x */
   PetscCall(KSPGetInitialGuessNonzero(ksp, &nonzero));
   if (nonzero) {
     PetscCall(VecCopy(x, eis->b[pc->presolvedone - 1]));
     PetscCall(MatSOR(eis->A, eis->b[pc->presolvedone - 1], eis->omega, SOR_APPLY_UPPER, 0.0, 1, 1, x));
+    PetscCall(MatFactorGetError(eis->A, (MatFactorError *)&pc->failedreason));
   }
 
   /* save true b, other option is to swap pointers */
@@ -70,10 +103,12 @@ static PetscErrorCode PCPreSolve_Eisenstat(PC pc, KSP ksp, Vec b, Vec x) {
 
   /* modify b by (L + D/omega)^{-1} */
   PetscCall(MatSOR(eis->A, eis->b[pc->presolvedone - 1], eis->omega, (MatSORType)(SOR_ZERO_INITIAL_GUESS | SOR_LOCAL_FORWARD_SWEEP), 0.0, 1, 1, b));
+  PetscCall(MatFactorGetError(eis->A, (MatFactorError *)&pc->failedreason));
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCPostSolve_Eisenstat(PC pc, KSP ksp, Vec b, Vec x) {
+static PetscErrorCode PCPostSolve_Eisenstat(PC pc, KSP ksp, Vec b, Vec x)
+{
   PC_Eisenstat *eis = (PC_Eisenstat *)pc->data;
 
   PetscFunctionBegin;
@@ -83,11 +118,13 @@ static PetscErrorCode PCPostSolve_Eisenstat(PC pc, KSP ksp, Vec b, Vec x) {
   /* modify x by (U + D/omega)^{-1} */
   PetscCall(VecCopy(x, eis->b[pc->presolvedone]));
   PetscCall(MatSOR(eis->A, eis->b[pc->presolvedone], eis->omega, (MatSORType)(SOR_ZERO_INITIAL_GUESS | SOR_LOCAL_BACKWARD_SWEEP), 0.0, 1, 1, x));
+  PetscCall(MatFactorGetError(eis->A, (MatFactorError *)&pc->failedreason));
   if (!pc->presolvedone) pc->mat = eis->A;
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCReset_Eisenstat(PC pc) {
+static PetscErrorCode PCReset_Eisenstat(PC pc)
+{
   PC_Eisenstat *eis = (PC_Eisenstat *)pc->data;
 
   PetscFunctionBegin;
@@ -98,7 +135,8 @@ static PetscErrorCode PCReset_Eisenstat(PC pc) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCDestroy_Eisenstat(PC pc) {
+static PetscErrorCode PCDestroy_Eisenstat(PC pc)
+{
   PetscFunctionBegin;
   PetscCall(PCReset_Eisenstat(pc));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCEisenstatSetOmega_C", NULL));
@@ -110,7 +148,8 @@ static PetscErrorCode PCDestroy_Eisenstat(PC pc) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCSetFromOptions_Eisenstat(PC pc, PetscOptionItems *PetscOptionsObject) {
+static PetscErrorCode PCSetFromOptions_Eisenstat(PC pc, PetscOptionItems *PetscOptionsObject)
+{
   PC_Eisenstat *eis = (PC_Eisenstat *)pc->data;
   PetscBool     set, flg;
 
@@ -123,7 +162,8 @@ static PetscErrorCode PCSetFromOptions_Eisenstat(PC pc, PetscOptionItems *PetscO
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCView_Eisenstat(PC pc, PetscViewer viewer) {
+static PetscErrorCode PCView_Eisenstat(PC pc, PetscViewer viewer)
+{
   PC_Eisenstat *eis = (PC_Eisenstat *)pc->data;
   PetscBool     iascii;
 
@@ -140,34 +180,36 @@ static PetscErrorCode PCView_Eisenstat(PC pc, PetscViewer viewer) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCSetUp_Eisenstat(PC pc) {
+static PetscErrorCode PCSetUp_Eisenstat(PC pc)
+{
   PetscInt      M, N, m, n;
+  PetscBool     set, sym;
   PC_Eisenstat *eis = (PC_Eisenstat *)pc->data;
 
   PetscFunctionBegin;
   if (!pc->setupcalled) {
     PetscCall(MatGetSize(pc->mat, &M, &N));
     PetscCall(MatGetLocalSize(pc->mat, &m, &n));
+    PetscCall(MatIsSymmetricKnown(pc->mat, &set, &sym));
     PetscCall(MatCreate(PetscObjectComm((PetscObject)pc), &eis->shell));
     PetscCall(MatSetSizes(eis->shell, m, n, M, N));
     PetscCall(MatSetType(eis->shell, MATSHELL));
     PetscCall(MatSetUp(eis->shell));
     PetscCall(MatShellSetContext(eis->shell, pc));
-    PetscCall(PetscLogObjectParent((PetscObject)pc, (PetscObject)eis->shell));
     PetscCall(MatShellSetOperation(eis->shell, MATOP_MULT, (void (*)(void))PCMult_Eisenstat));
+    if (set && sym) PetscCall(MatShellSetOperation(eis->shell, MATOP_MULT_TRANSPOSE, (void (*)(void))PCMult_Eisenstat));
+    PetscCall(MatShellSetOperation(eis->shell, MATOP_NORM, (void (*)(void))PCNorm_Eisenstat));
   }
   if (!eis->usediag) PetscFunctionReturn(0);
-  if (!pc->setupcalled) {
-    PetscCall(MatCreateVecs(pc->pmat, &eis->diag, NULL));
-    PetscCall(PetscLogObjectParent((PetscObject)pc, (PetscObject)eis->diag));
-  }
+  if (!pc->setupcalled) { PetscCall(MatCreateVecs(pc->pmat, &eis->diag, NULL)); }
   PetscCall(MatGetDiagonal(pc->pmat, eis->diag));
   PetscFunctionReturn(0);
 }
 
 /* --------------------------------------------------------------------*/
 
-static PetscErrorCode PCEisenstatSetOmega_Eisenstat(PC pc, PetscReal omega) {
+static PetscErrorCode PCEisenstatSetOmega_Eisenstat(PC pc, PetscReal omega)
+{
   PC_Eisenstat *eis = (PC_Eisenstat *)pc->data;
 
   PetscFunctionBegin;
@@ -176,7 +218,8 @@ static PetscErrorCode PCEisenstatSetOmega_Eisenstat(PC pc, PetscReal omega) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCEisenstatSetNoDiagonalScaling_Eisenstat(PC pc, PetscBool flg) {
+static PetscErrorCode PCEisenstatSetNoDiagonalScaling_Eisenstat(PC pc, PetscBool flg)
+{
   PC_Eisenstat *eis = (PC_Eisenstat *)pc->data;
 
   PetscFunctionBegin;
@@ -184,7 +227,8 @@ static PetscErrorCode PCEisenstatSetNoDiagonalScaling_Eisenstat(PC pc, PetscBool
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCEisenstatGetOmega_Eisenstat(PC pc, PetscReal *omega) {
+static PetscErrorCode PCEisenstatGetOmega_Eisenstat(PC pc, PetscReal *omega)
+{
   PC_Eisenstat *eis = (PC_Eisenstat *)pc->data;
 
   PetscFunctionBegin;
@@ -192,7 +236,8 @@ static PetscErrorCode PCEisenstatGetOmega_Eisenstat(PC pc, PetscReal *omega) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCEisenstatGetNoDiagonalScaling_Eisenstat(PC pc, PetscBool *flg) {
+static PetscErrorCode PCEisenstatGetNoDiagonalScaling_Eisenstat(PC pc, PetscBool *flg)
+{
   PC_Eisenstat *eis = (PC_Eisenstat *)pc->data;
 
   PetscFunctionBegin;
@@ -202,9 +247,9 @@ static PetscErrorCode PCEisenstatGetNoDiagonalScaling_Eisenstat(PC pc, PetscBool
 
 /*@
    PCEisenstatSetOmega - Sets the SSOR relaxation coefficient, omega,
-   to use with Eisenstat's trick (where omega = 1.0 by default).
+   to use with Eisenstat's trick (where omega = 1.0 by default)
 
-   Logically Collective on PC
+   Logically Collective on pc
 
    Input Parameters:
 +  pc - the preconditioner context
@@ -219,15 +264,16 @@ static PetscErrorCode PCEisenstatGetNoDiagonalScaling_Eisenstat(PC pc, PetscBool
    however, the preconditioned problem must be solved with both left
    and right preconditioning.
 
-   To use SSOR without the Eisenstat trick, employ the PCSOR preconditioner,
+   To use SSOR without the Eisenstat trick, employ the `PCSOR` preconditioner,
    which can be chosen with the database options
 $    -pc_type  sor  -pc_sor_symmetric
 
    Level: intermediate
 
-.seealso: `PCSORSetOmega()`
+.seealso: `PCSORSetOmega()`, `PCEISENSTAT`
 @*/
-PetscErrorCode PCEisenstatSetOmega(PC pc, PetscReal omega) {
+PetscErrorCode PCEisenstatSetOmega(PC pc, PetscReal omega)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscValidLogicalCollectiveReal(pc, omega, 2);
@@ -236,28 +282,29 @@ PetscErrorCode PCEisenstatSetOmega(PC pc, PetscReal omega) {
 }
 
 /*@
-   PCEisenstatSetNoDiagonalScaling - Causes the Eisenstat preconditioner
+   PCEisenstatSetNoDiagonalScaling - Causes the Eisenstat preconditioner, `PCEISENSTAT`
    not to do additional diagonal preconditioning. For matrices with a constant
    along the diagonal, this may save a small amount of work.
 
-   Logically Collective on PC
+   Logically Collective on pc
 
    Input Parameters:
 +  pc - the preconditioner context
--  flg - PETSC_TRUE turns off diagonal scaling inside the algorithm
+-  flg - `PETSC_TRUE` turns off diagonal scaling inside the algorithm
 
    Options Database Key:
-.  -pc_eisenstat_no_diagonal_scaling - Activates PCEisenstatSetNoDiagonalScaling()
+.  -pc_eisenstat_no_diagonal_scaling - Activates `PCEisenstatSetNoDiagonalScaling()`
 
    Level: intermediate
 
    Note:
-     If you use the KSPSetDiagonalScaling() or -ksp_diagonal_scale option then you will
+     If you use the `KSPSetDiagonalScaling()` or -ksp_diagonal_scale option then you will
    likely want to use this routine since it will save you some unneeded flops.
 
-.seealso: `PCEisenstatSetOmega()`
+.seealso: `PCEisenstatSetOmega()`, `PCEISENSTAT`
 @*/
-PetscErrorCode PCEisenstatSetNoDiagonalScaling(PC pc, PetscBool flg) {
+PetscErrorCode PCEisenstatSetNoDiagonalScaling(PC pc, PetscBool flg)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscTryMethod(pc, "PCEisenstatSetNoDiagonalScaling_C", (PC, PetscBool), (pc, flg));
@@ -268,7 +315,7 @@ PetscErrorCode PCEisenstatSetNoDiagonalScaling(PC pc, PetscBool flg) {
    PCEisenstatGetOmega - Gets the SSOR relaxation coefficient, omega,
    to use with Eisenstat's trick (where omega = 1.0 by default).
 
-   Logically Collective on PC
+   Logically Collective on pc
 
    Input Parameter:
 .  pc - the preconditioner context
@@ -291,9 +338,10 @@ $    -pc_type  sor  -pc_sor_symmetric
 
    Level: intermediate
 
-.seealso: `PCSORGetOmega()`, `PCEisenstatSetOmega()`
+.seealso: `PCEISENSTAT`, `PCSORGetOmega()`, `PCEisenstatSetOmega()`
 @*/
-PetscErrorCode PCEisenstatGetOmega(PC pc, PetscReal *omega) {
+PetscErrorCode PCEisenstatGetOmega(PC pc, PetscReal *omega)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscUseMethod(pc, "PCEisenstatGetOmega_C", (PC, PetscReal *), (pc, omega));
@@ -305,16 +353,16 @@ PetscErrorCode PCEisenstatGetOmega(PC pc, PetscReal *omega) {
    not to do additional diagonal preconditioning. For matrices with a constant
    along the diagonal, this may save a small amount of work.
 
-   Logically Collective on PC
+   Logically Collective on pc
 
    Input Parameter:
 .  pc - the preconditioner context
 
    Output Parameter:
-.  flg - PETSC_TRUE means there is no diagonal scaling applied
+.  flg - `PETSC_TRUE` means there is no diagonal scaling applied
 
    Options Database Key:
-.  -pc_eisenstat_no_diagonal_scaling - Activates PCEisenstatSetNoDiagonalScaling()
+.  -pc_eisenstat_no_diagonal_scaling - Activates `PCEisenstatSetNoDiagonalScaling()`
 
    Level: intermediate
 
@@ -322,22 +370,22 @@ PetscErrorCode PCEisenstatGetOmega(PC pc, PetscReal *omega) {
      If you use the KSPSetDiagonalScaling() or -ksp_diagonal_scale option then you will
    likely want to use this routine since it will save you some unneeded flops.
 
-.seealso: `PCEisenstatGetOmega()`
+.seealso: , `PCEISENSTAT`, `PCEisenstatGetOmega()`
 @*/
-PetscErrorCode PCEisenstatGetNoDiagonalScaling(PC pc, PetscBool *flg) {
+PetscErrorCode PCEisenstatGetNoDiagonalScaling(PC pc, PetscBool *flg)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscUseMethod(pc, "PCEisenstatGetNoDiagonalScaling_C", (PC, PetscBool *), (pc, flg));
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCPreSolveChangeRHS_Eisenstat(PC pc, PetscBool *change) {
+static PetscErrorCode PCPreSolveChangeRHS_Eisenstat(PC pc, PetscBool *change)
+{
   PetscFunctionBegin;
   *change = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
-
-/* --------------------------------------------------------------------*/
 
 /*MC
      PCEISENSTAT - An implementation of SSOR (symmetric successive over relaxation, symmetric Gauss-Seidel)
@@ -345,26 +393,32 @@ static PetscErrorCode PCPreSolveChangeRHS_Eisenstat(PC pc, PetscBool *change) {
 
    Options Database Keys:
 +  -pc_eisenstat_omega <omega> - Sets omega
--  -pc_eisenstat_no_diagonal_scaling - Activates PCEisenstatSetNoDiagonalScaling()
+-  -pc_eisenstat_no_diagonal_scaling - Activates `PCEisenstatSetNoDiagonalScaling()`
 
    Level: beginner
 
    Notes:
-    Only implemented for the SeqAIJ matrix format.
-          Not a true parallel SOR, in parallel this implementation corresponds to block
-          Jacobi with SOR on each block.
+   Only implemented for the `MATAIJ` matrix format.
 
-.seealso: `PCCreate()`, `PCSetType()`, `PCType`, `PC`,
+   Not a true parallel SOR, in parallel this implementation corresponds to block Jacobi with SOR on each block.
+
+   Developer Note:
+   Since this algorithm runs the Krylov method on a transformed linear system the implementation provides `PCPreSolve()` and `PCPostSolve()`
+   routines that `KSP` uses to set up the transformed linear system.
+
+.seealso: `PCCreate()`, `PCSetType()`, `PCType`, `PC`, `PCEisenstatGetOmega()`,
           `PCEisenstatSetNoDiagonalScaling()`, `PCEisenstatSetOmega()`, `PCSOR`
 M*/
 
-PETSC_EXTERN PetscErrorCode PCCreate_Eisenstat(PC pc) {
+PETSC_EXTERN PetscErrorCode PCCreate_Eisenstat(PC pc)
+{
   PC_Eisenstat *eis;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(pc, &eis));
+  PetscCall(PetscNew(&eis));
 
   pc->ops->apply           = PCApply_Eisenstat;
+  pc->ops->applytranspose  = PCApplyTranspose_Eisenstat;
   pc->ops->presolve        = PCPreSolve_Eisenstat;
   pc->ops->postsolve       = PCPostSolve_Eisenstat;
   pc->ops->applyrichardson = NULL;

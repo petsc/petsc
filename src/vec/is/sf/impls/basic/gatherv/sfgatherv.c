@@ -6,7 +6,8 @@
  */
 typedef PetscSF_Allgatherv PetscSF_Gatherv;
 
-PETSC_INTERN PetscErrorCode PetscSFBcastBegin_Gatherv(PetscSF sf, MPI_Datatype unit, PetscMemType rootmtype, const void *rootdata, PetscMemType leafmtype, void *leafdata, MPI_Op op) {
+PETSC_INTERN PetscErrorCode PetscSFBcastBegin_Gatherv(PetscSF sf, MPI_Datatype unit, PetscMemType rootmtype, const void *rootdata, PetscMemType leafmtype, void *leafdata, MPI_Op op)
+{
   PetscSFLink      link;
   PetscMPIInt      sendcount;
   MPI_Comm         comm;
@@ -26,7 +27,8 @@ PETSC_INTERN PetscErrorCode PetscSFBcastBegin_Gatherv(PetscSF sf, MPI_Datatype u
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscSFReduceBegin_Gatherv(PetscSF sf, MPI_Datatype unit, PetscMemType leafmtype, const void *leafdata, PetscMemType rootmtype, void *rootdata, MPI_Op op) {
+static PetscErrorCode PetscSFReduceBegin_Gatherv(PetscSF sf, MPI_Datatype unit, PetscMemType leafmtype, const void *leafdata, PetscMemType rootmtype, void *rootdata, MPI_Op op)
+{
   PetscSFLink      link;
   PetscMPIInt      recvcount;
   MPI_Comm         comm;
@@ -46,7 +48,8 @@ static PetscErrorCode PetscSFReduceBegin_Gatherv(PetscSF sf, MPI_Datatype unit, 
   PetscFunctionReturn(0);
 }
 
-PETSC_INTERN PetscErrorCode PetscSFFetchAndOpBegin_Gatherv(PetscSF sf, MPI_Datatype unit, PetscMemType rootmtype, void *rootdata, PetscMemType leafmtype, const void *leafdata, void *leafupdate, MPI_Op op) {
+PETSC_INTERN PetscErrorCode PetscSFFetchAndOpBegin_Gatherv(PetscSF sf, MPI_Datatype unit, PetscMemType rootmtype, void *rootdata, PetscMemType leafmtype, const void *leafdata, void *leafupdate, MPI_Op op)
+{
   PetscFunctionBegin;
   /* In Gatherv, each root only has one leaf. So we just need to bcast rootdata to leafupdate and then reduce leafdata to rootdata */
   PetscCall(PetscSFBcastBegin(sf, unit, rootdata, leafupdate, MPI_REPLACE));
@@ -55,7 +58,8 @@ PETSC_INTERN PetscErrorCode PetscSFFetchAndOpBegin_Gatherv(PetscSF sf, MPI_Datat
   PetscFunctionReturn(0);
 }
 
-PETSC_INTERN PetscErrorCode PetscSFCreate_Gatherv(PetscSF sf) {
+PETSC_INTERN PetscErrorCode PetscSFCreate_Gatherv(PetscSF sf)
+{
   PetscSF_Gatherv *dat = (PetscSF_Gatherv *)sf->data;
 
   PetscFunctionBegin;
@@ -77,7 +81,7 @@ PETSC_INTERN PetscErrorCode PetscSFCreate_Gatherv(PetscSF sf) {
   sf->ops->ReduceBegin     = PetscSFReduceBegin_Gatherv;
   sf->ops->FetchAndOpBegin = PetscSFFetchAndOpBegin_Gatherv;
 
-  PetscCall(PetscNewLog(sf, &dat));
+  PetscCall(PetscNew(&dat));
   sf->data = (void *)dat;
   PetscFunctionReturn(0);
 }

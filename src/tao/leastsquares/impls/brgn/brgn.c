@@ -9,7 +9,8 @@
 
 static const char *BRGN_REGULARIZATION_TABLE[64] = {"user", "l2prox", "l2pure", "l1dict", "lm"};
 
-static PetscErrorCode GNHessianProd(Mat H, Vec in, Vec out) {
+static PetscErrorCode GNHessianProd(Mat H, Vec in, Vec out)
+{
   TAO_BRGN *gn;
 
   PetscFunctionBegin;
@@ -21,8 +22,12 @@ static PetscErrorCode GNHessianProd(Mat H, Vec in, Vec out) {
     PetscCall(MatMult(gn->Hreg, in, gn->x_work));
     PetscCall(VecAXPY(out, gn->lambda, gn->x_work));
     break;
-  case BRGN_REGULARIZATION_L2PURE: PetscCall(VecAXPY(out, gn->lambda, in)); break;
-  case BRGN_REGULARIZATION_L2PROX: PetscCall(VecAXPY(out, gn->lambda, in)); break;
+  case BRGN_REGULARIZATION_L2PURE:
+    PetscCall(VecAXPY(out, gn->lambda, in));
+    break;
+  case BRGN_REGULARIZATION_L2PROX:
+    PetscCall(VecAXPY(out, gn->lambda, in));
+    break;
   case BRGN_REGULARIZATION_L1DICT:
     /* out = out + lambda*D'*(diag.*(D*in)) */
     if (gn->D) {
@@ -45,7 +50,8 @@ static PetscErrorCode GNHessianProd(Mat H, Vec in, Vec out) {
   }
   PetscFunctionReturn(0);
 }
-static PetscErrorCode ComputeDamping(TAO_BRGN *gn) {
+static PetscErrorCode ComputeDamping(TAO_BRGN *gn)
+{
   const PetscScalar *diag_ary;
   PetscScalar       *damping_ary;
   PetscInt           i, n;
@@ -62,7 +68,8 @@ static PetscErrorCode ComputeDamping(TAO_BRGN *gn) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode TaoBRGNGetDampingVector(Tao tao, Vec *d) {
+PetscErrorCode TaoBRGNGetDampingVector(Tao tao, Vec *d)
+{
   TAO_BRGN *gn = (TAO_BRGN *)tao->data;
 
   PetscFunctionBegin;
@@ -71,7 +78,8 @@ PetscErrorCode TaoBRGNGetDampingVector(Tao tao, Vec *d) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode GNObjectiveGradientEval(Tao tao, Vec X, PetscReal *fcn, Vec G, void *ptr) {
+static PetscErrorCode GNObjectiveGradientEval(Tao tao, Vec X, PetscReal *fcn, Vec G, void *ptr)
+{
   TAO_BRGN   *gn = (TAO_BRGN *)ptr;
   PetscInt    K; /* dimension of D*X */
   PetscScalar yESum;
@@ -134,7 +142,8 @@ static PetscErrorCode GNObjectiveGradientEval(Tao tao, Vec X, PetscReal *fcn, Ve
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode GNComputeHessian(Tao tao, Vec X, Mat H, Mat Hpre, void *ptr) {
+static PetscErrorCode GNComputeHessian(Tao tao, Vec X, Mat H, Mat Hpre, void *ptr)
+{
   TAO_BRGN    *gn = (TAO_BRGN *)ptr;
   PetscInt     i, n, cstart, cend;
   PetscScalar *cnorms, *diag_ary;
@@ -187,7 +196,8 @@ static PetscErrorCode GNComputeHessian(Tao tao, Vec X, Mat H, Mat Hpre, void *pt
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode GNHookFunction(Tao tao, PetscInt iter, void *ctx) {
+static PetscErrorCode GNHookFunction(Tao tao, PetscInt iter, void *ctx)
+{
   TAO_BRGN *gn = (TAO_BRGN *)ctx;
 
   PetscFunctionBegin;
@@ -229,7 +239,8 @@ static PetscErrorCode GNHookFunction(Tao tao, PetscInt iter, void *ctx) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TaoSolve_BRGN(Tao tao) {
+static PetscErrorCode TaoSolve_BRGN(Tao tao)
+{
   TAO_BRGN *gn = (TAO_BRGN *)tao->data;
 
   PetscFunctionBegin;
@@ -249,7 +260,8 @@ static PetscErrorCode TaoSolve_BRGN(Tao tao) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TaoSetFromOptions_BRGN(Tao tao, PetscOptionItems *PetscOptionsObject) {
+static PetscErrorCode TaoSetFromOptions_BRGN(Tao tao, PetscOptionItems *PetscOptionsObject)
+{
   TAO_BRGN     *gn = (TAO_BRGN *)tao->data;
   TaoLineSearch ls;
 
@@ -271,7 +283,8 @@ static PetscErrorCode TaoSetFromOptions_BRGN(Tao tao, PetscOptionItems *PetscOpt
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TaoView_BRGN(Tao tao, PetscViewer viewer) {
+static PetscErrorCode TaoView_BRGN(Tao tao, PetscViewer viewer)
+{
   TAO_BRGN *gn = (TAO_BRGN *)tao->data;
 
   PetscFunctionBegin;
@@ -281,7 +294,8 @@ static PetscErrorCode TaoView_BRGN(Tao tao, PetscViewer viewer) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TaoSetUp_BRGN(Tao tao) {
+static PetscErrorCode TaoSetUp_BRGN(Tao tao)
+{
   TAO_BRGN *gn = (TAO_BRGN *)tao->data;
   PetscBool is_bnls, is_bntr, is_bntl;
   PetscInt  i, n, N, K; /* dict has size K*N*/
@@ -358,7 +372,8 @@ static PetscErrorCode TaoSetUp_BRGN(Tao tao) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TaoDestroy_BRGN(Tao tao) {
+static PetscErrorCode TaoDestroy_BRGN(Tao tao)
+{
   TAO_BRGN *gn = (TAO_BRGN *)tao->data;
 
   PetscFunctionBegin;
@@ -400,11 +415,12 @@ static PetscErrorCode TaoDestroy_BRGN(Tao tao) {
 
   Level: beginner
 M*/
-PETSC_EXTERN PetscErrorCode TaoCreate_BRGN(Tao tao) {
+PETSC_EXTERN PetscErrorCode TaoCreate_BRGN(Tao tao)
+{
   TAO_BRGN *gn;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(tao, &gn));
+  PetscCall(PetscNew(&gn));
 
   tao->ops->destroy        = TaoDestroy_BRGN;
   tao->ops->setup          = TaoSetUp_BRGN;
@@ -437,7 +453,8 @@ PETSC_EXTERN PetscErrorCode TaoCreate_BRGN(Tao tao) {
 +  tao - the Tao solver context
 -  subsolver - the Tao sub-solver context
 @*/
-PetscErrorCode TaoBRGNGetSubsolver(Tao tao, Tao *subsolver) {
+PetscErrorCode TaoBRGNGetSubsolver(Tao tao, Tao *subsolver)
+{
   TAO_BRGN *gn = (TAO_BRGN *)tao->data;
 
   PetscFunctionBegin;
@@ -456,7 +473,8 @@ PetscErrorCode TaoBRGNGetSubsolver(Tao tao, Tao *subsolver) {
 
   Level: beginner
 @*/
-PetscErrorCode TaoBRGNSetRegularizerWeight(Tao tao, PetscReal lambda) {
+PetscErrorCode TaoBRGNSetRegularizerWeight(Tao tao, PetscReal lambda)
+{
   TAO_BRGN *gn = (TAO_BRGN *)tao->data;
 
   /* Initialize lambda here */
@@ -477,7 +495,8 @@ PetscErrorCode TaoBRGNSetRegularizerWeight(Tao tao, PetscReal lambda) {
 
   Level: advanced
 @*/
-PetscErrorCode TaoBRGNSetL1SmoothEpsilon(Tao tao, PetscReal epsilon) {
+PetscErrorCode TaoBRGNSetL1SmoothEpsilon(Tao tao, PetscReal epsilon)
+{
   TAO_BRGN *gn = (TAO_BRGN *)tao->data;
 
   /* Initialize epsilon here */
@@ -496,7 +515,8 @@ PetscErrorCode TaoBRGNSetL1SmoothEpsilon(Tao tao, PetscReal epsilon) {
 
     Level: advanced
 @*/
-PetscErrorCode TaoBRGNSetDictionaryMatrix(Tao tao, Mat dict) {
+PetscErrorCode TaoBRGNSetDictionaryMatrix(Tao tao, Mat dict)
+{
   TAO_BRGN *gn = (TAO_BRGN *)tao->data;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao, TAO_CLASSID, 1);
@@ -521,7 +541,8 @@ PetscErrorCode TaoBRGNSetDictionaryMatrix(Tao tao, Mat dict) {
 
    Level: advanced
 @*/
-PetscErrorCode TaoBRGNSetRegularizerObjectiveAndGradientRoutine(Tao tao, PetscErrorCode (*func)(Tao, Vec, PetscReal *, Vec, void *), void *ctx) {
+PetscErrorCode TaoBRGNSetRegularizerObjectiveAndGradientRoutine(Tao tao, PetscErrorCode (*func)(Tao, Vec, PetscReal *, Vec, void *), void *ctx)
+{
   TAO_BRGN *gn = (TAO_BRGN *)tao->data;
 
   PetscFunctionBegin;
@@ -543,7 +564,8 @@ PetscErrorCode TaoBRGNSetRegularizerObjectiveAndGradientRoutine(Tao tao, PetscEr
 
    Level: advanced
 @*/
-PetscErrorCode TaoBRGNSetRegularizerHessianRoutine(Tao tao, Mat Hreg, PetscErrorCode (*func)(Tao, Vec, Mat, void *), void *ctx) {
+PetscErrorCode TaoBRGNSetRegularizerHessianRoutine(Tao tao, Mat Hreg, PetscErrorCode (*func)(Tao, Vec, Mat, void *), void *ctx)
+{
   TAO_BRGN *gn = (TAO_BRGN *)tao->data;
 
   PetscFunctionBegin;

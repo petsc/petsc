@@ -6,7 +6,8 @@ static const char help[] = "Test VecScatterCopy() on an SF with duplicated leave
 /*
   Contributed-by: "Hammond, Glenn E" <glenn.hammond@pnnl.gov>
 */
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[])
+{
   PetscMPIInt size;
   PetscInt    n;
   PetscInt   *indices;

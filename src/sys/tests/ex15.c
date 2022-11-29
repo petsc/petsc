@@ -4,35 +4,36 @@ static char help[] = "Tests inclusion of petscsystypes.h.\n\n";
 #include <stddef.h> /* for NULL */
 
 #if defined(PETSC_HAVE_COMPLEX)
-#define TestComplexOperators(type, value) \
-  do { \
-    type         x = value; \
-    PetscComplex z = value; \
-    (void)z; \
-    z = x; \
-    z += x; \
-    z = z + x; \
-    z = x + z; \
-    z = x; \
-    z -= x; \
-    z = z - x; \
-    z = x - z; \
-    z = x; \
-    z *= x; \
-    z = z * x; \
-    z = x * z; \
-    z = x; \
-    z /= x; \
-    z = z / x; \
-    z = x / z; \
-    (void)(z == x); \
-    (void)(x == z); \
-    (void)(z != x); \
-    (void)(x != z); \
-  } while (0)
+  #define TestComplexOperators(type, value) \
+    do { \
+      type         x = value; \
+      PetscComplex z = value; \
+      (void)z; \
+      z = x; \
+      z += x; \
+      z = z + x; \
+      z = x + z; \
+      z = x; \
+      z -= x; \
+      z = z - x; \
+      z = x - z; \
+      z = x; \
+      z *= x; \
+      z = z * x; \
+      z = x * z; \
+      z = x; \
+      z /= x; \
+      z = z / x; \
+      z = x / z; \
+      (void)(z == x); \
+      (void)(x == z); \
+      (void)(z != x); \
+      (void)(x != z); \
+    } while (0)
 #endif
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   /* numeric types */
   PetscScalar svalue;
   PetscReal   rvalue;

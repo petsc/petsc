@@ -26,7 +26,8 @@ extern PetscErrorCode FormFunctionAndGradient(Tao, Vec, PetscReal *, Vec, void *
 /*
    Set terminal condition for the adjoint variable
  */
-PetscErrorCode InitializeLambda(DM da, Vec lambda, Vec U, AppCtx *appctx) {
+PetscErrorCode InitializeLambda(DM da, Vec lambda, Vec U, AppCtx *appctx)
+{
   char        filename[PETSC_MAX_PATH_LEN] = "";
   PetscViewer viewer;
   Vec         Uob;
@@ -47,7 +48,8 @@ PetscErrorCode InitializeLambda(DM da, Vec lambda, Vec U, AppCtx *appctx) {
 /*
    Set up a viewer that dumps data into a binary file
  */
-PetscErrorCode OutputBIN(DM da, const char *filename, PetscViewer *viewer) {
+PetscErrorCode OutputBIN(DM da, const char *filename, PetscViewer *viewer)
+{
   PetscFunctionBegin;
   PetscCall(PetscViewerCreate(PetscObjectComm((PetscObject)da), viewer));
   PetscCall(PetscViewerSetType(*viewer, PETSCVIEWERBINARY));
@@ -59,7 +61,8 @@ PetscErrorCode OutputBIN(DM da, const char *filename, PetscViewer *viewer) {
 /*
    Generate a reference solution and save it to a binary file
  */
-PetscErrorCode GenerateOBs(TS ts, Vec U, AppCtx *appctx) {
+PetscErrorCode GenerateOBs(TS ts, Vec U, AppCtx *appctx)
+{
   char        filename[PETSC_MAX_PATH_LEN] = "";
   PetscViewer viewer;
   DM          da;
@@ -74,7 +77,8 @@ PetscErrorCode GenerateOBs(TS ts, Vec U, AppCtx *appctx) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode InitialConditions(DM da, Vec U) {
+PetscErrorCode InitialConditions(DM da, Vec U)
+{
   PetscInt  i, j, xs, ys, xm, ym, Mx, My;
   Field   **u;
   PetscReal hx, hy, x, y;
@@ -105,7 +109,8 @@ PetscErrorCode InitialConditions(DM da, Vec U) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PerturbedInitialConditions(DM da, Vec U) {
+PetscErrorCode PerturbedInitialConditions(DM da, Vec U)
+{
   PetscInt  i, j, xs, ys, xm, ym, Mx, My;
   Field   **u;
   PetscReal hx, hy, x, y;
@@ -136,7 +141,8 @@ PetscErrorCode PerturbedInitialConditions(DM da, Vec U) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PerturbedInitialConditions2(DM da, Vec U) {
+PetscErrorCode PerturbedInitialConditions2(DM da, Vec U)
+{
   PetscInt  i, j, xs, ys, xm, ym, Mx, My;
   Field   **u;
   PetscReal hx, hy, x, y;
@@ -168,7 +174,8 @@ PetscErrorCode PerturbedInitialConditions2(DM da, Vec U) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PerturbedInitialConditions3(DM da, Vec U) {
+PetscErrorCode PerturbedInitialConditions3(DM da, Vec U)
+{
   PetscInt  i, j, xs, ys, xm, ym, Mx, My;
   Field   **u;
   PetscReal hx, hy, x, y;
@@ -199,7 +206,8 @@ PetscErrorCode PerturbedInitialConditions3(DM da, Vec U) {
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   DM        da;
   AppCtx    appctx;
   PetscBool forwardonly = PETSC_FALSE, implicitform = PETSC_FALSE;
@@ -323,7 +331,8 @@ int main(int argc, char **argv) {
    f   - the newly evaluated function
    G   - the newly evaluated gradient
 */
-PetscErrorCode FormFunctionAndGradient(Tao tao, Vec P, PetscReal *f, Vec G, void *ctx) {
+PetscErrorCode FormFunctionAndGradient(Tao tao, Vec P, PetscReal *f, Vec G, void *ctx)
+{
   AppCtx     *appctx = (AppCtx *)ctx;
   PetscReal   soberr, timestep;
   Vec        *lambda;

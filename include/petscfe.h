@@ -1,7 +1,7 @@
 /*
       Objects which encapsulate finite element spaces and operations
 */
-#if !defined(PETSCFE_H)
+#ifndef PETSCFE_H
 #define PETSCFE_H
 #include <petscdm.h>
 #include <petscdt.h>
@@ -10,6 +10,14 @@
 
 /* SUBMANSEC = FE */
 
+/*MC
+      PetscFEGeom - Structure for geometric information for `PetscFE`
+
+    Level: intermediate
+
+.seealso: `PetscFEGeomCreate()`, `PetscFEGeomDestroy()`, `PetscFEGeomGetChunk()`, `PetscFEGeomRestoreChunk()`, `PetscFEGeomGetPoint()`, `PetscFEGeomGetCellPoint()`,
+          `PetscFEGeomComplete()`
+M*/
 typedef struct _n_PetscFEGeom {
   const PetscReal *xi;
   PetscReal       *v;     /* v[Nc*Np*dE]:           The first point in each each in real coordinates */
@@ -72,11 +80,13 @@ PETSC_EXTERN PetscErrorCode PetscSpaceGetDegree(PetscSpace, PetscInt *, PetscInt
 PETSC_EXTERN PetscErrorCode PetscSpaceEvaluate(PetscSpace, PetscInt, const PetscReal[], PetscReal[], PetscReal[], PetscReal[]);
 PETSC_EXTERN PetscErrorCode PetscSpaceGetHeightSubspace(PetscSpace, PetscInt, PetscSpace *);
 
-static inline PETSC_DEPRECATED_FUNCTION("Property not used (since v3.17)") PetscErrorCode PetscSpacePolynomialSetSymmetric(PetscSpace sp, PetscBool s) {
+static inline PETSC_DEPRECATED_FUNCTION("Property not used (since v3.17)") PetscErrorCode PetscSpacePolynomialSetSymmetric(PetscSpace sp, PetscBool s)
+{
   PetscCheck(!s, PetscObjectComm((PetscObject)sp), PETSC_ERR_SUP, "PETSCSPACEPOLYNOMIAL does not support symmetric polynomials");
   return 0;
 }
-static inline PETSC_DEPRECATED_FUNCTION("Property not used (since v3.17)") PetscErrorCode PetscSpacePolynomialGetSymmetric(PETSC_UNUSED PetscSpace sp, PetscBool *s) {
+static inline PETSC_DEPRECATED_FUNCTION("Property not used (since v3.17)") PetscErrorCode PetscSpacePolynomialGetSymmetric(PETSC_UNUSED PetscSpace sp, PetscBool *s)
+{
   *s = PETSC_FALSE;
   return 0;
 }

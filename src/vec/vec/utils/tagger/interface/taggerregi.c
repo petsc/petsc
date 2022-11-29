@@ -17,7 +17,8 @@ PetscFunctionList VecTaggerList;
 
 .seealso: `VecTaggerRegisterDestroy()`
 @*/
-PetscErrorCode VecTaggerRegisterAll(void) {
+PetscErrorCode VecTaggerRegisterAll(void)
+{
   PetscFunctionBegin;
   if (VecTaggerRegisterAllCalled) PetscFunctionReturn(0);
   VecTaggerRegisterAllCalled = PETSC_TRUE;
@@ -55,7 +56,8 @@ $     -snes_type my_solver
 
 .seealso: `VecTaggerRegisterAll()`, `VecTaggerRegisterDestroy()`
 @*/
-PetscErrorCode VecTaggerRegister(const char sname[], PetscErrorCode (*function)(VecTagger)) {
+PetscErrorCode VecTaggerRegister(const char sname[], PetscErrorCode (*function)(VecTagger))
+{
   PetscFunctionBegin;
   PetscCall(PetscFunctionListAdd(&VecTaggerList, sname, function));
   PetscFunctionReturn(0);

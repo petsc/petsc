@@ -3,7 +3,8 @@ static char help[] = "Tests cholesky, icc factorization and solve on sequential 
 
 #include <petscmat.h>
 
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   Vec           x, y, b;
   Mat           A;      /* linear system matrix */
   Mat           sA, sC; /* symmetric part of the matrices */

@@ -1,4 +1,4 @@
-#if !defined(_PLEXTRANSFORMIMPL_H)
+#ifndef _PLEXTRANSFORMIMPL_H
 #define _PLEXTRANSFORMIMPL_H
 
 #include <petsc/private/dmpleximpl.h>
@@ -31,6 +31,9 @@ struct _p_DMPlexTransform {
   PetscInt     *ctOrderInvNew; /* [ct] = i: An array with the ordinal numbers for each produced cell type */
   PetscInt     *ctStartNew;    /* [ctNew]: The number for the first cell of each polytope type in the new mesh */
   PetscInt     *offset;        /* [ct/rt][ctNew]: The offset from ctStartNew[ctNew] in the new point numbering of a point of type ctNew produced from an old point of type ct or refine type rt */
+  PetscInt      depth;         /* The depth of the transformed mesh */
+  PetscInt     *depthStart;    /* The starting point for each depth stratum */
+  PetscInt     *depthEnd;      /* The starting point for the next depth stratum */
   PetscInt     *trNv;          /* The number of transformed vertices in the closure of a cell of each type */
   PetscScalar **trVerts;       /* The transformed vertex coordinates in the closure of a cell of each type */
   PetscInt  ****trSubVerts;    /* The indices for vertices of subcell (rct, r) in a cell of each type */
@@ -39,7 +42,7 @@ struct _p_DMPlexTransform {
 };
 
 typedef struct {
-  DMLabel label; /* This marks the points to be deleted/ignored */
+  PetscInt dummy;
 } DMPlexTransform_Filter;
 
 typedef struct {
@@ -57,12 +60,12 @@ typedef struct {
   PetscSimplePointFunc normalFunc;  /* A function returning the normal at a given point */
   PetscBool            symmetric;   /* Extrude layers symmetrically about the surface */
   /* Calculated quantities */
-  PetscReal           *layerPos; /* The position of each layer relative to the original surface, along the local normal direction */
-  PetscInt            *Nt;       /* The array of the number of target types */
-  DMPolytopeType     **target;   /* The array of target types */
-  PetscInt           **size;     /* The array of the number of each target type */
-  PetscInt           **cone;     /* The array of cones for each target cell */
-  PetscInt           **ornt;     /* The array of orientation for each target cell */
+  PetscReal       *layerPos; /* The position of each layer relative to the original surface, along the local normal direction */
+  PetscInt        *Nt;       /* The array of the number of target types */
+  DMPolytopeType **target;   /* The array of target types */
+  PetscInt       **size;     /* The array of the number of each target type */
+  PetscInt       **cone;     /* The array of cones for each target cell */
+  PetscInt       **ornt;     /* The array of orientation for each target cell */
 } DMPlexTransform_Extrude;
 
 typedef struct {
@@ -98,6 +101,7 @@ typedef struct {
   PetscInt       **ornt;   /* The array of orientation for each target cell */
 } DMPlexRefine_BL;
 
+PetscErrorCode DMPlexTransformSetDimensions_Internal(DMPlexTransform, DM, DM);
 PetscErrorCode DMPlexTransformMapCoordinatesBarycenter_Internal(DMPlexTransform, DMPolytopeType, DMPolytopeType, PetscInt, PetscInt, PetscInt, PetscInt, const PetscScalar[], PetscScalar[]);
 PetscErrorCode DMPlexTransformGetSubcellOrientation_Regular(DMPlexTransform, DMPolytopeType, PetscInt, PetscInt, DMPolytopeType, PetscInt, PetscInt, PetscInt *, PetscInt *);
 PetscErrorCode DMPlexTransformCellRefine_Regular(DMPlexTransform, DMPolytopeType, PetscInt, PetscInt *, PetscInt *, DMPolytopeType *[], PetscInt *[], PetscInt *[], PetscInt *[]);

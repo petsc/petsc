@@ -1,22 +1,23 @@
 #include <petsc/private/petscfeimpl.h> /*I "petscfe.h" I*/
 
 #ifdef PETSC_HAVE_LIBCEED
-#include <petscfeceed.h>
+  #include <petscfeceed.h>
 
 /*@C
-  PetscFESetCeed - Set the Ceed object
+  PetscFESetCeed - Set the `Ceed` object to a `PetscFE`
 
   Not Collective
 
   Input Parameters:
-+ fe   - The PetscFE
-- ceed - The Ceed object
++ fe   - The `PetscFE`
+- ceed - The `Ceed` object
 
   Level: intermediate
 
-.seealso: `PetscFEGetCeedBasis()`, `DMGetCeed()`
+.seealso: `PetscFE`, `PetscFEGetCeedBasis()`, `DMGetCeed()`
 @*/
-PetscErrorCode PetscFESetCeed(PetscFE fe, Ceed ceed) {
+PetscErrorCode PetscFESetCeed(PetscFE fe, Ceed ceed)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fe, PETSCFE_CLASSID, 1);
   if (fe->ceed == ceed) PetscFunctionReturn(0);
@@ -25,23 +26,25 @@ PetscErrorCode PetscFESetCeed(PetscFE fe, Ceed ceed) {
 }
 
 /*@C
-  PetscFEGetCeedBasis - Get the Ceed object mirroring this FE
+  PetscFEGetCeedBasis - Get the `Ceed` object mirroring this `PetscFE`
 
   Not Collective
 
   Input Parameter:
-. fe - The PetscFE
+. fe - The `PetscFE`
 
   Output Parameter:
-. basis - The CeedBasis
-
-  Note: This is a borrowed reference, so it is not freed.
+. basis - The `CeedBasis`
 
   Level: intermediate
 
-.seealso: `PetscFESetCeed()`, `DMGetCeed()`
+  Note:
+  This is a borrowed reference, so it is not freed.
+
+.seealso: `PetscFE`, `PetscFESetCeed()`, `DMGetCeed()`
 @*/
-PetscErrorCode PetscFEGetCeedBasis(PetscFE fe, CeedBasis *basis) {
+PetscErrorCode PetscFEGetCeedBasis(PetscFE fe, CeedBasis *basis)
+{
   PetscSpace      sp;
   PetscQuadrature q;
   PetscInt        dim, Nc, deg, ord;

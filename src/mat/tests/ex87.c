@@ -3,7 +3,8 @@ static char help[] = "Tests MatCreateSubMatrices() for SBAIJ matrices\n\n";
 
 #include <petscmat.h>
 
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   Mat         BAIJ, SBAIJ, *subBAIJ, *subSBAIJ;
   PetscViewer viewer;
   char        file[PETSC_MAX_PATH_LEN];

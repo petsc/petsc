@@ -29,6 +29,7 @@
 #define dmcreatesuperdm_             DMCREATESUPERDM
 #define dmcreatesubdm_               DMCREATESUBDM
 #define dmdestroy_                   DMDESTROY
+#define dmload_                      DMLOAD
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define dmcreateinterpolation_       dmcreateinterpolation
 #define dmview_                      dmview
@@ -56,7 +57,15 @@
 #define dmcreatesuperdm_             dmreatesuperdm
 #define dmcreatesubdm_               dmreatesubdm
 #define dmdestroy_                   dmdestroy
+#define dmload_                      dmload
 #endif
+
+PETSC_EXTERN void dmload_(DM *dm,PetscViewer *vin,PetscErrorCode *ierr)
+{
+  PetscViewer v;
+  PetscPatchDefaultViewers_Fortran(vin,v);
+  *ierr = DMLoad(*dm,v);
+}
 
 PETSC_EXTERN void dmgetmattype_(DM *mm,char* name,PetscErrorCode *ierr,PETSC_FORTRAN_CHARLEN_T len)
 {

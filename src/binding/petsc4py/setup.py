@@ -16,8 +16,12 @@ except ImportError:
     setuptools = None
 
 pyver = sys.version_info[:2]
-if pyver < (3, 4):
-    raise RuntimeError("Python version >= 3.4 required")
+if pyver < (2, 6) or (3, 0) <= pyver < (3, 2):
+    raise RuntimeError("Python version 2.6, 2.7 or >= 3.2 required")
+if pyver == (2, 6) or pyver == (3, 2):
+    sys.stderr.write(
+        "WARNING: Python %d.%d is not supported.\n" % pyver)
+
 # --------------------------------------------------------------------
 # Metadata
 # --------------------------------------------------------------------
@@ -105,7 +109,11 @@ from conf.petscconf import setup, Extension
 from conf.petscconf import config, build, build_src, build_ext, install
 from conf.petscconf import clean, test, sdist
 
-CYTHON = '0.24'
+# python-3.11+ requires cython 0.29.32+
+if pyver >= (3, 11):
+  CYTHON = '0.29.32'
+else:
+  CYTHON = '0.24'
 
 def get_release():
     release = 1

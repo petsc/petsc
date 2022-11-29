@@ -33,7 +33,8 @@ Use the options
 #include <petscdm.h>
 #include <petscdmda.h>
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscMPIInt     rank;
   PetscInt        M = 10, N = 8;
   PetscBool       flg = PETSC_FALSE;
@@ -43,7 +44,7 @@ int main(int argc, char **argv) {
   PetscScalar     value;
   DMBoundaryType  bx = DM_BOUNDARY_NONE, by = DM_BOUNDARY_NONE;
   DMDAStencilType stype = DMDA_STENCIL_BOX;
-#if defined(PETSC_HAVE_MATLAB_ENGINE)
+#if defined(PETSC_HAVE_MATLAB)
   PetscViewer mviewer;
   PetscMPIInt size;
 #endif
@@ -51,7 +52,7 @@ int main(int argc, char **argv) {
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
   PetscCall(PetscViewerDrawOpen(PETSC_COMM_WORLD, 0, "", 300, 0, 300, 300, &viewer));
-#if defined(PETSC_HAVE_MATLAB_ENGINE)
+#if defined(PETSC_HAVE_MATLAB)
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
   if (size == 1) PetscCall(PetscViewerMatlabOpen(PETSC_COMM_WORLD, "tmp.mat", FILE_MODE_WRITE, &mviewer));
 #endif
@@ -84,7 +85,7 @@ int main(int argc, char **argv) {
   }
   PetscCall(DMView(da, viewer));
   PetscCall(VecView(global, viewer));
-#if defined(PETSC_HAVE_MATLAB_ENGINE)
+#if defined(PETSC_HAVE_MATLAB)
   if (size == 1) {
     PetscCall(DMView(da, mviewer));
     PetscCall(VecView(global, mviewer));
@@ -92,7 +93,7 @@ int main(int argc, char **argv) {
 #endif
 
   /* Free memory */
-#if defined(PETSC_HAVE_MATLAB_ENGINE)
+#if defined(PETSC_HAVE_MATLAB)
   if (size == 1) PetscCall(PetscViewerDestroy(&mviewer));
 #endif
   PetscCall(PetscViewerDestroy(&viewer));

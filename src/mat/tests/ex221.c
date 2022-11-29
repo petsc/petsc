@@ -7,7 +7,8 @@ struct _n_User {
   Mat B;
 };
 
-static PetscErrorCode MatGetDiagonal_User(Mat A, Vec X) {
+static PetscErrorCode MatGetDiagonal_User(Mat A, Vec X)
+{
   User user;
 
   PetscFunctionBegin;
@@ -16,7 +17,8 @@ static PetscErrorCode MatGetDiagonal_User(Mat A, Vec X) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatMult_User(Mat A, Vec X, Vec Y) {
+static PetscErrorCode MatMult_User(Mat A, Vec X, Vec Y)
+{
   User user;
 
   PetscFunctionBegin;
@@ -25,7 +27,8 @@ static PetscErrorCode MatMult_User(Mat A, Vec X, Vec Y) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatMultTranspose_User(Mat A, Vec X, Vec Y) {
+static PetscErrorCode MatMultTranspose_User(Mat A, Vec X, Vec Y)
+{
   User user;
 
   PetscFunctionBegin;
@@ -34,7 +37,8 @@ static PetscErrorCode MatMultTranspose_User(Mat A, Vec X, Vec Y) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatCopy_User(Mat A, Mat X, MatStructure str) {
+static PetscErrorCode MatCopy_User(Mat A, Mat X, MatStructure str)
+{
   User user, userX;
 
   PetscFunctionBegin;
@@ -45,7 +49,8 @@ static PetscErrorCode MatCopy_User(Mat A, Mat X, MatStructure str) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatDestroy_User(Mat A) {
+static PetscErrorCode MatDestroy_User(Mat A)
+{
   User user;
 
   PetscFunctionBegin;
@@ -54,7 +59,8 @@ static PetscErrorCode MatDestroy_User(Mat A) {
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   User         user;
   Mat          A, S;
   PetscScalar *data, diag = 1.3;

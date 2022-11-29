@@ -1,5 +1,5 @@
-#if !defined(__VIENNACLVECIMPL)
-#define __VIENNACLVECIMPL
+#ifndef PETSC_VIENNACLVECIMPL_H
+#define PETSC_VIENNACLVECIMPL_H
 
 #include <petscviennacl.h>
 #include <petsc/private/vecimpl.h>
@@ -17,7 +17,7 @@
 
 typedef viennacl::vector<PetscScalar> ViennaCLVector;
 
-PETSC_EXTERN PetscErrorCode PetscViennaCLInit();
+PETSC_EXTERN PetscErrorCode PetscViennaCLInit(void);
 
 PETSC_INTERN PetscErrorCode VecDotNorm2_SeqViennaCL(Vec, Vec, PetscScalar *, PetscScalar *);
 PETSC_INTERN PetscErrorCode VecPointwiseDivide_SeqViennaCL(Vec, Vec, Vec);
@@ -62,4 +62,4 @@ struct Vec_ViennaCL {
   viennacl::vector<PetscScalar> *GPUarray_allocated; // if the array was allocated by PETSc this is its pointer
 };
 
-#endif
+#endif // PETSC_VIENNACLVECIMPL_H

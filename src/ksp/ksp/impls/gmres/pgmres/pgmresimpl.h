@@ -1,5 +1,5 @@
-#if !defined(__PGMRES)
-#define __PGMRES
+#ifndef PETSC_PGMRESIMPL_H
+#define PETSC_PGMRESIMPL_H
 
 #define KSPGMRES_NO_MACROS
 #include <../src/ksp/ksp/impls/gmres/gmresimpl.h>
@@ -20,9 +20,8 @@ typedef struct {
 
 /* vector names */
 #define VEC_OFFSET     2
-#define VEC_TEMP       pgmres->vecs[0] /* work space */
-#define VEC_TEMP_MATOP pgmres->vecs[1] /* work space */
-#define VEC_VV(i) \
-  pgmres->vecs[VEC_OFFSET + i] /* use to access
-                                                        othog basis vectors */
-#endif
+#define VEC_TEMP       pgmres->vecs[0]              /* work space */
+#define VEC_TEMP_MATOP pgmres->vecs[1]              /* work space */
+#define VEC_VV(i)      pgmres->vecs[VEC_OFFSET + i] /* use to access othog basis vectors */
+
+#endif // PETSC_PGMRESIMPL_H

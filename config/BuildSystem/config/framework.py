@@ -5,10 +5,10 @@ track dependencies between them. It initiates the run, compiles the results, and
 handles the final output. It maintains the help list for all options available
 in the run.
 
-  The setup() method preforms generic Script setup and then is called recursively
+  The setup() method performs generic Script setup and then is called recursively
 on all the child modules. The cleanup() method performs the final output and
 logging actions
-    - Subtitute files
+    - Substitute files
     - Output configure header
     - Log filesystem actions
 
@@ -225,7 +225,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
 
   def dumpConfFiles(self):
     '''Performs:
-       - Subtitute files
+       - Substitute files
        - Output configure header
        - Log actions'''
     self.substitute()
@@ -338,18 +338,38 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       self.getChild(moduleName)
     return
 
-  def require(self, moduleName, depChild = None, keywordArgs = {}):
-    '''Return a child from moduleName, creating it if necessary and making sure it runs before depChild'''
-    config = self.getChild(moduleName, keywordArgs)
-    if not config is depChild:
-      self.childGraph.addEdges(depChild, [config])
-    return config
-
   def requireModule(self, mod, depChild):
     '''Return the input module, making sure it runs before depChild'''
     if not mod is depChild:
       self.childGraph.addEdges(depChild, [mod])
     return mod
+
+  def require(self, moduleName, depChild = None, keywordArgs = {}):
+    '''Return a child from moduleName, creating it if necessary and making sure it runs before depChild'''
+    return self.requireModule(self.getChild(moduleName, keywordArgs), depChild)
+
+  @staticmethod
+  def findModule(obj, module):
+    """
+    Search OBJ's attributes for an attribute of type MODULE_TYPE.
+
+    Return the module if found, otherwise return None.
+    """
+    import inspect
+
+    if not inspect.ismodule(module):
+      raise NotImplementedError
+
+    if isinstance(module, str):
+      module_name = module
+    else:
+      module_name = module.__name__
+
+    for attr in dir(obj):
+      obj_attr = getattr(obj, attr)
+      if inspect.ismodule(obj_attr) and obj_attr.__name__ == module_name:
+        return module
+    return
 
   ###############################################
   # Dependency Mechanisms
@@ -430,6 +450,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     # Intel
     lines = [s for s in lines if s.find("icc: command line remark #10148: option '-i-dynamic' not supported") < 0]
     lines = [s for s in lines if s.find("[: unexpected operator") < 0]  # Deals with error in mpiicc and mpiicpc wrappers from some versions of Intel MPI.
+    lines = [s for s in lines if s.find(': remark #10441:') < 0]
     # IBM:
     lines = [s for s in lines if not s.startswith('cc_r:')]
     # PGI: Ignore warning about temporary license
@@ -487,6 +508,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       lines = [s for s in lines if s.find('warning: unused variable') < 0]
       # Intel
       lines = [s for s in lines if s.find("icc: command line remark #10148: option '-i-dynamic' not supported") < 0]
+      lines = [s for s in lines if s.find(': remark #10441:') < 0]
       # PGI: Ignore warning about temporary license
       lines = [s for s in lines if s.find('license.dat') < 0]
       # Cray XT3
@@ -521,6 +543,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
         lines = [s for s in lines if not self.warningRE.search(s)]
       #Intel
       lines = [s for s in lines if s.find(": command line warning #10121: overriding") < 0]
+      lines = [s for s in lines if s.find(': remark #10441:') < 0]
       # PGI: Ignore warning about temporary license
       lines = [s for s in lines if s.find('license.dat') < 0]
       # Cray XT3
@@ -556,6 +579,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       lines = [s for s in lines if s.find(' was built for newer OSX version') < 0]
       lines = [s for s in lines if s.find(' stack subq instruction is too different from dwarf stack size') < 0]
       lines = [s for s in lines if s.find('could not create compact unwind') < 0]
+      lines = [s for s in lines if s.find('ld: warning: -undefined dynamic_lookup may not work with chained fixups') < 0]
       # Nvidia linker
       lines = [s for s in lines if s.find('nvhpc.ld contains output sections') < 0]
       # Intel dpcpp linker
@@ -563,6 +587,9 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       lines = [s for s in lines if s.find('clang-offload-bundler: error:') < 0]
       lines = [s for s in lines if s.find('Compilation from IR - skipping loading of FCL') < 0]
       lines = [s for s in lines if s.find('Build succeeded') < 0]
+      # emcc complaints incompatable linking
+      lines = [s for s in lines if s.find('wasm-ld: warning: function signature mismatch') < 0]
+      lines = [s for s in lines if s.find('>>> defined as') < 0]
 
       lines = [s for s in lines if len(s)]
       # a line with a single : can be created on macOS when the linker jumbles the output from warning messages with was "built for newer" warnings
@@ -1241,7 +1268,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
             out += tb.getvalue()
             tb.close()
           except: pass
-        # Udpate queue
+        # Update queue
         #self.logPrint('PUSH  %s to DONE ' % child.__class__.__module__)
         done.put((ret, out, emsg, child))
         q.task_done() # novermin
@@ -1281,7 +1308,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
   def serialEvaluation(self, depGraph):
     import graph
 
-    def findModule(dependencyGraph,moduleType):
+    def findGraphModule(dependencyGraph,moduleType):
       moduleList = [c for c in dependencyGraph if isinstance(c,moduleType)]
       if len(moduleList) != 1:
         if len(moduleList) < 1:
@@ -1309,7 +1336,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       return minCxx,maxCxx
 
     ndepGraph     = list(graph.DirectedGraph.topologicalSort(depGraph))
-    setCompilers  = findModule(ndepGraph,config.setCompilers.Configure)
+    setCompilers  = findGraphModule(ndepGraph,config.setCompilers.Configure)
     minCxx,maxCxx = setCompilers.cxxDialectRange['Cxx']
     self.logPrint('serialEvaluation: initial cxxDialectRanges {rng}'.format(rng=setCompilers.cxxDialectRange['Cxx']))
     minCxxVersionBlameList = {}

@@ -1,4 +1,4 @@
-#if !defined(PETSCAIJDEVICE_H)
+#ifndef PETSCAIJDEVICE_H
 #define PETSCAIJDEVICE_H
 
 #include <petscmat.h>
@@ -29,7 +29,8 @@ struct _n_SplitCSRMat {
    CUDA devices of compute capability 6.x and higher. See also sfcuda.cu
 */
 #if defined(PETSC_USE_REAL_DOUBLE) && defined(__CUDA_ARCH__) && (__CUDA_ARCH__ < 600)
-__device__ double atomicAdd(double *x, double y) {
+__device__ double atomicAdd(double *x, double y)
+{
   typedef unsigned long long int ullint;
   double                        *address = x, val = y;
   ullint                        *address_as_ull = (ullint *)address;
@@ -43,22 +44,22 @@ __device__ double atomicAdd(double *x, double y) {
 #endif
 
 #if defined(KOKKOS_INLINE_FUNCTION)
-#define PetscAtomicAdd(a, b) Kokkos::atomic_fetch_add(a, b)
+  #define PetscAtomicAdd(a, b) Kokkos::atomic_fetch_add(a, b)
 #elif defined(__CUDA_ARCH__)
-#if defined(PETSC_USE_COMPLEX)
-#define PetscAtomicAdd(a, b) \
-  { \
-    PetscReal *_a = (PetscReal *)(a); \
-    PetscReal *_b = (PetscReal *)&(b); \
-    atomicAdd(&_a[0], _b[0]); \
-    atomicAdd(&_a[1], _b[1]); \
-  }
+  #if defined(PETSC_USE_COMPLEX)
+    #define PetscAtomicAdd(a, b) \
+      { \
+        PetscReal *_a = (PetscReal *)(a); \
+        PetscReal *_b = (PetscReal *)&(b); \
+        atomicAdd(&_a[0], _b[0]); \
+        atomicAdd(&_a[1], _b[1]); \
+      }
+  #else
+    #define PetscAtomicAdd(a, b) atomicAdd(a, b)
+  #endif
 #else
-#define PetscAtomicAdd(a, b) atomicAdd(a, b)
-#endif
-#else
-/* TODO: support devices other than CUDA and Kokkos */
-#define PetscAtomicAdd(a, b) *(a) += b
+  /* TODO: support devices other than CUDA and Kokkos */
+  #define PetscAtomicAdd(a, b) *(a) += b
 #endif
 
 #define MatSetValues_SeqAIJ_A_Private(row, col, value, addv) \
@@ -108,9 +109,9 @@ __device__ double atomicAdd(double *x, double y) {
   }
 
 #if defined(PETSC_USE_DEBUG) && !defined(PETSC_HAVE_SYCL)
-#define SETERR return (printf("[%d] ERROR in %s() at %s:%d: Location (%ld,%ld) not found! v=%g\n", d_mat->rank, __func__, __FILE__, __LINE__, (long int)im[i], (long int)in[j], PetscRealPart(value)), PETSC_ERR_ARG_OUTOFRANGE)
+  #define SETERR return (printf("[%d] ERROR in %s() at %s:%d: Location (%ld,%ld) not found! v=%g\n", d_mat->rank, __func__, __FILE__, __LINE__, (long int)im[i], (long int)in[j], PetscRealPart(value)), PETSC_ERR_ARG_OUTOFRANGE)
 #else
-#define SETERR return PETSC_ERR_ARG_OUTOFRANGE
+  #define SETERR return PETSC_ERR_ARG_OUTOFRANGE
 #endif
 
 #if defined(__CUDA_ARCH__)
@@ -141,10 +142,11 @@ static
    Level: advanced
 
 .seealso: `MatSetValues()`, `MatCreate()`, `MatCreateDenseCUDA()`, `MatCreateAIJCUSPARSE()`, `MatKokkosGetDeviceMatWrite()`,
-          `MatCUSPARSEGetDeviceMatWrite()`,  `MatSetValuesCOO()`
+          `MatCUSPARSEGetDeviceMatWrite()`, `MatSetValuesCOO()`
 @*/
   PetscErrorCode
-  MatSetValuesDevice(PetscSplitCSRDataStructure d_mat, PetscInt m, const PetscInt im[], PetscInt n, const PetscInt in[], const PetscScalar v[], InsertMode is) {
+  MatSetValuesDevice(PetscSplitCSRDataStructure d_mat, PetscInt m, const PetscInt im[], PetscInt n, const PetscInt in[], const PetscScalar v[], InsertMode is)
+{
   MatScalar       value;
   const PetscInt *rp1, *rp2 = NULL, *ai = d_mat->diag.i, *aj = d_mat->diag.j;
   const PetscInt *bi = d_mat->offdiag.i, *bj = d_mat->offdiag.j;

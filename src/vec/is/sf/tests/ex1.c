@@ -3,7 +3,8 @@ static const char help[] = "Test star forest communication (PetscSF)\n\n";
 #include <petscsf.h>
 #include <petsc/private/sfimpl.h>
 
-static PetscErrorCode CheckGraphNotSet(PetscSF sf) {
+static PetscErrorCode CheckGraphNotSet(PetscSF sf)
+{
   PetscInt           nroots, nleaves;
   const PetscInt    *ilocal;
   const PetscSFNode *iremote;
@@ -20,7 +21,8 @@ static PetscErrorCode CheckGraphNotSet(PetscSF sf) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode CheckGraphEmpty(PetscSF sf) {
+static PetscErrorCode CheckGraphEmpty(PetscSF sf)
+{
   PetscInt           nroots, nleaves;
   const PetscInt    *ilocal;
   const PetscSFNode *iremote;
@@ -38,20 +40,23 @@ static PetscErrorCode CheckGraphEmpty(PetscSF sf) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode CheckRanksNotSet(PetscSF sf) {
+static PetscErrorCode CheckRanksNotSet(PetscSF sf)
+{
   PetscFunctionBegin;
   PetscCheck(sf->nranks == -1, PETSC_COMM_SELF, PETSC_ERR_PLIB, "SF ranks are set");
   PetscCheck(sf->ranks == NULL, PETSC_COMM_SELF, PETSC_ERR_PLIB, "SF ranks are set");
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode CheckRanksEmpty(PetscSF sf) {
+static PetscErrorCode CheckRanksEmpty(PetscSF sf)
+{
   PetscFunctionBegin;
   PetscCheck(sf->nranks == 0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "SF ranks not empty");
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscSF         sf, sfDup, sfInv, sfEmbed, sfA, sfB, sfBA;
   const PetscInt *degree;
   char            sftype[64] = PETSCSFBASIC;

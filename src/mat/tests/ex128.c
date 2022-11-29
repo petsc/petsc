@@ -10,7 +10,8 @@ directly.\n\n";
 
 #include <petscmat.h>
 
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   Mat           C, sC, sA;
   PetscInt      i, j, m = 5, n = 5, Ii, J, lf = 0;
   PetscBool     CHOLESKY = PETSC_FALSE, TRIANGULAR = PETSC_FALSE, flg;

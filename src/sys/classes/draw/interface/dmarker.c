@@ -19,7 +19,8 @@ const char *const PetscDrawMarkerTypes[] = {"CROSS", "POINT", "PLUS", "CIRCLE", 
 
 .seealso: `PetscDraw`, `PetscDrawPoint()`, `PetscDrawString()`, `PetscDrawSetMarkerType()`, `PetscDrawGetMarkerType()`
 @*/
-PetscErrorCode PetscDrawMarker(PetscDraw draw, PetscReal xl, PetscReal yl, int cl) {
+PetscErrorCode PetscDrawMarker(PetscDraw draw, PetscReal xl, PetscReal yl, int cl)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw, PETSC_DRAW_CLASSID, 1);
   if (draw->markertype == PETSC_DRAW_MARKER_CROSS) {
@@ -71,7 +72,8 @@ PetscErrorCode PetscDrawMarker(PetscDraw draw, PetscReal xl, PetscReal yl, int c
 
 .seealso: `PetscDraw`, `PetscDrawPoint()`, `PetscDrawMarker()`, `PetscDrawGetMarkerType()`, `PetscDrawMarkerType`
 @*/
-PetscErrorCode PetscDrawSetMarkerType(PetscDraw draw, PetscDrawMarkerType mtype) {
+PetscErrorCode PetscDrawSetMarkerType(PetscDraw draw, PetscDrawMarkerType mtype)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw, PETSC_DRAW_CLASSID, 1);
   draw->markertype = mtype;
@@ -91,7 +93,8 @@ PetscErrorCode PetscDrawSetMarkerType(PetscDraw draw, PetscDrawMarkerType mtype)
 
 .seealso: `PetscDraw`, `PetscDrawPoint()`, `PetscDrawMarker()`, `PetscDrawSetMarkerType()`, `PetscDrawMarkerType`
 @*/
-PetscErrorCode PetscDrawGetMarkerType(PetscDraw draw, PetscDrawMarkerType *mtype) {
+PetscErrorCode PetscDrawGetMarkerType(PetscDraw draw, PetscDrawMarkerType *mtype)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw, PETSC_DRAW_CLASSID, 1);
   *mtype = draw->markertype;

@@ -25,7 +25,8 @@ PetscBool         PetscRandomRegisterAllCalled = PETSC_FALSE;
 .seealso: `PetscRandom`, `PetscRandomGetType()`, `PetscRandomCreate()`
 @*/
 
-PetscErrorCode PetscRandomSetType(PetscRandom rnd, PetscRandomType type) {
+PetscErrorCode PetscRandomSetType(PetscRandom rnd, PetscRandomType type)
+{
   PetscErrorCode (*r)(PetscRandom);
   PetscBool match;
 
@@ -62,7 +63,8 @@ PetscErrorCode PetscRandomSetType(PetscRandom rnd, PetscRandomType type) {
 
 .seealso: `PetscRandom`, `PetscRandomSetType()`, `PetscRandomCreate()`
 @*/
-PetscErrorCode PetscRandomGetType(PetscRandom rnd, PetscRandomType *type) {
+PetscErrorCode PetscRandomGetType(PetscRandom rnd, PetscRandomType *type)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(rnd, PETSC_RANDOM_CLASSID, 1);
   PetscValidPointer(type, 2);
@@ -103,7 +105,8 @@ PetscErrorCode PetscRandomGetType(PetscRandom rnd, PetscRandomType *type) {
 
 .seealso: `PetscRandom`, `PetscRandomRegisterAll()`, `PetscRandomRegisterDestroy()`, `PetscRandomRegister()`
 @*/
-PetscErrorCode PetscRandomRegister(const char sname[], PetscErrorCode (*function)(PetscRandom)) {
+PetscErrorCode PetscRandomRegister(const char sname[], PetscErrorCode (*function)(PetscRandom))
+{
   PetscFunctionBegin;
   PetscCall(PetscRandomInitializePackage());
   PetscCall(PetscFunctionListAdd(&PetscRandomList, sname, function));
@@ -136,7 +139,8 @@ PETSC_EXTERN PetscErrorCode PetscRandomCreate_CURAND(PetscRandom);
 
 .seealso: `PetscRandom`, `PetscRandomRegister()`, `PetscRandomRegisterDestroy()`
 @*/
-PetscErrorCode PetscRandomRegisterAll(void) {
+PetscErrorCode PetscRandomRegisterAll(void)
+{
   PetscFunctionBegin;
   if (PetscRandomRegisterAllCalled) PetscFunctionReturn(0);
   PetscRandomRegisterAllCalled = PETSC_TRUE;

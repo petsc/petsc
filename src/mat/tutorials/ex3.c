@@ -20,7 +20,8 @@ static char help[] = "Illustration of MatIS using a 1D Laplacian assembly\n\n";
 
 #include <petscmat.h>
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   MPI_Comm               comm;
   Mat                    A;
   Vec                    x, y;

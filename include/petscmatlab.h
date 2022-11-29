@@ -1,7 +1,7 @@
 /*
     Defines an interface to the MATLAB Engine from PETSc
 */
-#if !defined(PETSCMATLAB_H)
+#ifndef PETSCMATLAB_H
 #define PETSCMATLAB_H
 
 /* SUBMANSEC = Sys */
@@ -13,8 +13,12 @@ PETSC_EXTERN PetscClassId MATLABENGINE_CLASSID;
 
    Level: intermediate
 
-   Note: Mats transfered between PETSc and MATLAB and vis versa are transposed in the other space
-         (this is because MATLAB uses compressed column format and PETSc uses compressed row format)
+   Notes:
+   `Mat`s transferred between PETSc and MATLAB and vis versa are transposed in the other space
+   (this is because MATLAB uses compressed column format and PETSc uses compressed row format)
+
+   One must `./configure` PETSc with  `--with-matlab [-with-matlab-dir=matlab_root_directory]` to
+   use this capability
 
 .seealso: `PetscMatlabEngineCreate()`, `PetscMatlabEngineDestroy()`, `PetscMatlabEngineEvaluate()`,
           `PetscMatlabEngineGetOutput()`, `PetscMatlabEnginePut()`, `PetscMatlabEngineGet()`,

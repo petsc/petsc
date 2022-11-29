@@ -10,7 +10,8 @@ typedef struct {
   PetscScalar x, y;
 } Field;
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   Vec         xy, sxy;
   DM          da, sda = NULL;
   PetscSF     sf;

@@ -3,7 +3,8 @@ static char help[] = "Tests MatHYPRE\n";
 
 #include <petscmathypre.h>
 
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   Mat                 A, B, C, D;
   Mat                 pAB, CD, CAB;
   hypre_ParCSRMatrix *parcsr;

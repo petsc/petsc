@@ -1,7 +1,8 @@
 #include <../src/tao/bound/impls/bqnk/bqnk.h> /*I "petsctao.h" I*/ /*I "petscmat.h" I*/
 #include <petscksp.h>
 
-static PetscErrorCode TaoBQNKComputeHessian(Tao tao) {
+static PetscErrorCode TaoBQNKComputeHessian(Tao tao)
+{
   TAO_BNK  *bnk  = (TAO_BNK *)tao->data;
   TAO_BQNK *bqnk = (TAO_BQNK *)bnk->ctx;
   PetscReal gnorm2, delta;
@@ -43,7 +44,8 @@ static PetscErrorCode TaoBQNKComputeHessian(Tao tao) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TaoBQNKComputeStep(Tao tao, PetscBool shift, KSPConvergedReason *ksp_reason, PetscInt *step_type) {
+static PetscErrorCode TaoBQNKComputeStep(Tao tao, PetscBool shift, KSPConvergedReason *ksp_reason, PetscInt *step_type)
+{
   TAO_BNK  *bnk  = (TAO_BNK *)tao->data;
   TAO_BQNK *bqnk = (TAO_BQNK *)bnk->ctx;
 
@@ -57,7 +59,8 @@ static PetscErrorCode TaoBQNKComputeStep(Tao tao, PetscBool shift, KSPConvergedR
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode TaoSolve_BQNK(Tao tao) {
+PetscErrorCode TaoSolve_BQNK(Tao tao)
+{
   TAO_BNK     *bnk  = (TAO_BNK *)tao->data;
   TAO_BQNK    *bqnk = (TAO_BQNK *)bnk->ctx;
   Mat_LMVM    *lmvm = (Mat_LMVM *)bqnk->B->data;
@@ -88,7 +91,8 @@ PetscErrorCode TaoSolve_BQNK(Tao tao) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode TaoSetUp_BQNK(Tao tao) {
+PetscErrorCode TaoSetUp_BQNK(Tao tao)
+{
   TAO_BNK  *bnk  = (TAO_BNK *)tao->data;
   TAO_BQNK *bqnk = (TAO_BQNK *)bnk->ctx;
   PetscInt  n, N;
@@ -110,7 +114,8 @@ PetscErrorCode TaoSetUp_BQNK(Tao tao) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TaoSetFromOptions_BQNK(Tao tao, PetscOptionItems *PetscOptionsObject) {
+static PetscErrorCode TaoSetFromOptions_BQNK(Tao tao, PetscOptionItems *PetscOptionsObject)
+{
   TAO_BNK  *bnk  = (TAO_BNK *)tao->data;
   TAO_BQNK *bqnk = (TAO_BQNK *)bnk->ctx;
   PetscBool is_set;
@@ -126,7 +131,8 @@ static PetscErrorCode TaoSetFromOptions_BQNK(Tao tao, PetscOptionItems *PetscOpt
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TaoView_BQNK(Tao tao, PetscViewer viewer) {
+static PetscErrorCode TaoView_BQNK(Tao tao, PetscViewer viewer)
+{
   TAO_BNK  *bnk  = (TAO_BNK *)tao->data;
   TAO_BQNK *bqnk = (TAO_BQNK *)bnk->ctx;
   PetscBool isascii;
@@ -142,7 +148,8 @@ static PetscErrorCode TaoView_BQNK(Tao tao, PetscViewer viewer) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TaoDestroy_BQNK(Tao tao) {
+static PetscErrorCode TaoDestroy_BQNK(Tao tao)
+{
   TAO_BNK  *bnk  = (TAO_BNK *)tao->data;
   TAO_BQNK *bqnk = (TAO_BQNK *)bnk->ctx;
 
@@ -155,7 +162,8 @@ static PetscErrorCode TaoDestroy_BQNK(Tao tao) {
   PetscFunctionReturn(0);
 }
 
-PETSC_INTERN PetscErrorCode TaoCreate_BQNK(Tao tao) {
+PETSC_INTERN PetscErrorCode TaoCreate_BQNK(Tao tao)
+{
   TAO_BNK  *bnk;
   TAO_BQNK *bqnk;
 
@@ -172,7 +180,7 @@ PETSC_INTERN PetscErrorCode TaoCreate_BQNK(Tao tao) {
   bnk->computestep    = TaoBQNKComputeStep;
   bnk->init_type      = BNK_INIT_DIRECTION;
 
-  PetscCall(PetscNewLog(tao, &bqnk));
+  PetscCall(PetscNew(&bqnk));
   bnk->ctx     = (void *)bqnk;
   bqnk->is_spd = PETSC_TRUE;
 
@@ -196,7 +204,8 @@ PETSC_INTERN PetscErrorCode TaoCreate_BQNK(Tao tao) {
 
 .seealso: `TAOBQNLS`, `TAOBQNKLS`, `TAOBQNKTL`, `TAOBQNKTR`, `MATLMVM`, `TaoSetLMVMMatrix()`
 @*/
-PetscErrorCode TaoGetLMVMMatrix(Tao tao, Mat *B) {
+PetscErrorCode TaoGetLMVMMatrix(Tao tao, Mat *B)
+{
   TAO_BNK  *bnk  = (TAO_BNK *)tao->data;
   TAO_BQNK *bqnk = (TAO_BQNK *)bnk->ctx;
   PetscBool flg  = PETSC_FALSE;
@@ -223,7 +232,8 @@ PetscErrorCode TaoGetLMVMMatrix(Tao tao, Mat *B) {
 
 .seealso: `TAOBQNLS`, `TAOBQNKLS`, `TAOBQNKTL`, `TAOBQNKTR`, `MATLMVM`, `TaoGetLMVMMatrix()`
 @*/
-PetscErrorCode TaoSetLMVMMatrix(Tao tao, Mat B) {
+PetscErrorCode TaoSetLMVMMatrix(Tao tao, Mat B)
+{
   TAO_BNK  *bnk  = (TAO_BNK *)tao->data;
   TAO_BQNK *bqnk = (TAO_BQNK *)bnk->ctx;
   PetscBool flg  = PETSC_FALSE;

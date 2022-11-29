@@ -1,7 +1,7 @@
 /*
   DMPlex, for parallel unstructured distributed mesh problems.
 */
-#if !defined(PETSCDMPLEX_H)
+#ifndef PETSCDMPLEX_H
 #define PETSCDMPLEX_H
 
 #include <petscsection.h>
@@ -35,12 +35,13 @@ PETSC_EXTERN PetscErrorCode DMPlexGetChart(DM, PetscInt *, PetscInt *);
 PETSC_EXTERN PetscErrorCode DMPlexSetChart(DM, PetscInt, PetscInt);
 PETSC_EXTERN PetscErrorCode DMPlexGetConeSize(DM, PetscInt, PetscInt *);
 PETSC_EXTERN PetscErrorCode DMPlexSetConeSize(DM, PetscInt, PetscInt);
-PETSC_EXTERN PetscErrorCode DMPlexAddConeSize(DM, PetscInt, PetscInt);
 PETSC_EXTERN PetscErrorCode DMPlexGetCone(DM, PetscInt, const PetscInt *[]);
 PETSC_EXTERN PetscErrorCode DMPlexGetConeTuple(DM, IS, PetscSection *, IS *);
 PETSC_EXTERN PetscErrorCode DMPlexGetConeRecursive(DM, IS, PetscInt *, IS *[], PetscSection *[]);
 PETSC_EXTERN PetscErrorCode DMPlexRestoreConeRecursive(DM, IS, PetscInt *, IS *[], PetscSection *[]);
 PETSC_EXTERN PetscErrorCode DMPlexGetConeRecursiveVertices(DM, IS, IS *);
+PETSC_EXTERN PetscErrorCode DMPlexGetOrientedCone(DM, PetscInt, const PetscInt *[], const PetscInt *[]);
+PETSC_EXTERN PetscErrorCode DMPlexRestoreOrientedCone(DM, PetscInt, const PetscInt *[], const PetscInt *[]);
 PETSC_EXTERN PetscErrorCode DMPlexSetCone(DM, PetscInt, const PetscInt[]);
 PETSC_EXTERN PetscErrorCode DMPlexInsertCone(DM, PetscInt, PetscInt, PetscInt);
 PETSC_EXTERN PetscErrorCode DMPlexInsertConeOrientation(DM, PetscInt, PetscInt, PetscInt);
@@ -186,7 +187,7 @@ PETSC_EXTERN PetscErrorCode DMPlexCheckSymmetry(DM);
 PETSC_EXTERN PetscErrorCode DMPlexCheckSkeleton(DM, PetscInt);
 PETSC_EXTERN PetscErrorCode DMPlexCheckFaces(DM, PetscInt);
 PETSC_EXTERN PetscErrorCode DMPlexCheckGeometry(DM);
-PETSC_EXTERN PetscErrorCode DMPlexCheckPointSF(DM, PetscSF);
+PETSC_EXTERN PetscErrorCode DMPlexCheckPointSF(DM, PetscSF, PetscBool);
 PETSC_EXTERN PetscErrorCode DMPlexCheckInterfaceCones(DM);
 PETSC_EXTERN PetscErrorCode DMPlexCheckCellShape(DM, PetscBool, PetscReal);
 PETSC_EXTERN PetscErrorCode DMPlexComputeOrthogonalQuality(DM, PetscFV, PetscReal, Vec *, DMLabel *);
@@ -236,7 +237,7 @@ PETSC_EXTERN PetscErrorCode DMPlexDistributeGetDefault(DM, PetscBool *);
 PETSC_EXTERN PetscErrorCode DMPlexDistributeSetDefault(DM, PetscBool);
 PETSC_EXTERN PetscErrorCode DMPlexDistributeField(DM, PetscSF, PetscSection, Vec, PetscSection, Vec);
 PETSC_EXTERN PetscErrorCode DMPlexDistributeFieldIS(DM, PetscSF, PetscSection, IS, PetscSection, IS *);
-PETSC_EXTERN PetscErrorCode DMPlexDistributeData(DM, PetscSF, PetscSection, MPI_Datatype, void *, PetscSection, void **);
+PETSC_EXTERN PetscErrorCode DMPlexDistributeData(DM, PetscSF, PetscSection, MPI_Datatype, void *, PetscSection, void **) PETSC_ATTRIBUTE_MPI_POINTER_WITH_TYPE(5, 4) PETSC_ATTRIBUTE_MPI_POINTER_WITH_TYPE(7, 4);
 PETSC_EXTERN PetscErrorCode DMPlexRebalanceSharedPoints(DM, PetscInt, PetscBool, PetscBool, PetscBool *);
 PETSC_EXTERN PetscErrorCode DMPlexMigrate(DM, PetscSF, DM);
 PETSC_EXTERN PetscErrorCode DMPlexGetGatherDM(DM, PetscSF *, DM *);
@@ -340,7 +341,6 @@ PETSC_EXTERN PetscErrorCode DMPlexComputeGradientFVM(DM, PetscFV, Vec, Vec, DM *
 PETSC_EXTERN PetscErrorCode DMPlexGetDataFVM(DM, PetscFV, Vec *, Vec *, DM *);
 
 /* FEM Support */
-PETSC_EXTERN PetscErrorCode DMPlexComputeGeometryFEM(DM, Vec *);
 PETSC_EXTERN PetscErrorCode DMPlexGetGeometryFVM(DM, Vec *, Vec *, PetscReal *);
 PETSC_EXTERN PetscErrorCode DMPlexGetGradientDM(DM, PetscFV, DM *);
 PETSC_EXTERN PetscErrorCode DMPlexInsertBoundaryValues(DM, PetscBool, Vec, PetscReal, Vec, Vec, Vec);
@@ -522,8 +522,9 @@ PETSC_EXTERN PetscErrorCode DMPlexLocalToGlobalBasis(DM, Vec);
 PETSC_EXTERN PetscErrorCode DMPlexCreateBasisRotation(DM, PetscReal, PetscReal, PetscReal);
 
 /* storage version */
+#define DMPLEX_STORAGE_VERSION_FIRST  "1.0.0"
 #define DMPLEX_STORAGE_VERSION_STABLE "1.0.0"
-#define DMPLEX_STORAGE_VERSION_LATEST "2.0.0"
+#define DMPLEX_STORAGE_VERSION_LATEST "3.0.0"
 
 PETSC_EXTERN PetscErrorCode DMPlexTopologyView(DM, PetscViewer);
 PETSC_EXTERN PetscErrorCode DMPlexCoordinatesView(DM, PetscViewer);

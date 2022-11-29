@@ -2,7 +2,8 @@ static char help[] = "Tests PetscPartitioner.\n\n";
 
 #include <petscpartitioner.h>
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscPartitioner p;
   PetscSection     partSection, vertexSection = NULL, targetSection = NULL;
   IS               partition, is;

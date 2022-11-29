@@ -2,7 +2,8 @@ static char help[] = "Test DMStag 2d periodic and ghosted boundary conditions\n\
 #include <petscdm.h>
 #include <petscdmstag.h>
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   DM             dm;
   Vec            vec, vecLocal1, vecLocal2;
   PetscScalar   *a, ***a1, ***a2, expected;

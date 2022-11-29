@@ -1,6 +1,7 @@
 #include <petsc/private/dmplextransformimpl.h> /*I "petscdmplextransform.h" I*/
 
-static PetscErrorCode DMPlexTransformView_Alfeld(DMPlexTransform tr, PetscViewer viewer) {
+static PetscErrorCode DMPlexTransformView_Alfeld(DMPlexTransform tr, PetscViewer viewer)
+{
   PetscBool isascii;
 
   PetscFunctionBegin;
@@ -18,12 +19,14 @@ static PetscErrorCode DMPlexTransformView_Alfeld(DMPlexTransform tr, PetscViewer
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMPlexTransformSetUp_Alfeld(DMPlexTransform tr) {
+static PetscErrorCode DMPlexTransformSetUp_Alfeld(DMPlexTransform tr)
+{
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMPlexTransformDestroy_Alfeld(DMPlexTransform tr) {
+static PetscErrorCode DMPlexTransformDestroy_Alfeld(DMPlexTransform tr)
+{
   DMPlexRefine_Alfeld *f = (DMPlexRefine_Alfeld *)tr->data;
 
   PetscFunctionBegin;
@@ -31,7 +34,8 @@ static PetscErrorCode DMPlexTransformDestroy_Alfeld(DMPlexTransform tr) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMPlexTransformGetSubcellOrientation_Alfeld(DMPlexTransform tr, DMPolytopeType sct, PetscInt sp, PetscInt so, DMPolytopeType tct, PetscInt r, PetscInt o, PetscInt *rnew, PetscInt *onew) {
+static PetscErrorCode DMPlexTransformGetSubcellOrientation_Alfeld(DMPlexTransform tr, DMPolytopeType sct, PetscInt sp, PetscInt so, DMPolytopeType tct, PetscInt r, PetscInt o, PetscInt *rnew, PetscInt *onew)
+{
   DM              dm;
   PetscInt        dim;
   static PetscInt tri_seg[] = {1, 0, 0, 0, 2, 0, 0, 0, 2, 0, 1, 0, 2, 0, 1, 0, 0, 0, 0, 0, 1, 0, 2, 0, 1, 0, 2, 0, 0, 0, 2, 0, 0, 0, 1, 0};
@@ -57,7 +61,8 @@ static PetscErrorCode DMPlexTransformGetSubcellOrientation_Alfeld(DMPlexTransfor
   PetscCall(DMGetDimension(dm, &dim));
   if (dim == 2 && sct == DM_POLYTOPE_TRIANGLE) {
     switch (tct) {
-    case DM_POLYTOPE_POINT: break;
+    case DM_POLYTOPE_POINT:
+      break;
     case DM_POLYTOPE_SEGMENT:
       *rnew = tri_seg[(so + 3) * 6 + r * 2];
       *onew = DMPolytopeTypeComposeOrientation(tct, o, tri_seg[(so + 3) * 6 + r * 2 + 1]);
@@ -66,11 +71,13 @@ static PetscErrorCode DMPlexTransformGetSubcellOrientation_Alfeld(DMPlexTransfor
       *rnew = tri_tri[(so + 3) * 6 + r * 2];
       *onew = DMPolytopeTypeComposeOrientation(tct, o, tri_tri[(so + 3) * 6 + r * 2 + 1]);
       break;
-    default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cell type %s is not produced by %s", DMPolytopeTypes[tct], DMPolytopeTypes[sct]);
+    default:
+      SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cell type %s is not produced by %s", DMPolytopeTypes[tct], DMPolytopeTypes[sct]);
     }
   } else if (dim == 3 && sct == DM_POLYTOPE_TETRAHEDRON) {
     switch (tct) {
-    case DM_POLYTOPE_POINT: break;
+    case DM_POLYTOPE_POINT:
+      break;
     case DM_POLYTOPE_SEGMENT:
       *rnew = tet_seg[(so + 12) * 8 + r * 2];
       *onew = DMPolytopeTypeComposeOrientation(tct, o, tet_seg[(so + 12) * 8 + r * 2 + 1]);
@@ -83,7 +90,8 @@ static PetscErrorCode DMPlexTransformGetSubcellOrientation_Alfeld(DMPlexTransfor
       *rnew = tet_tet[(so + 12) * 8 + r * 2];
       *onew = DMPolytopeTypeComposeOrientation(tct, o, tet_tet[(so + 12) * 8 + r * 2 + 1]);
       break;
-    default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cell type %s is not produced by %s", DMPolytopeTypes[tct], DMPolytopeTypes[sct]);
+    default:
+      SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cell type %s is not produced by %s", DMPolytopeTypes[tct], DMPolytopeTypes[sct]);
     }
   } else {
     PetscCall(DMPlexTransformGetSubcellOrientationIdentity(tr, sct, sp, so, tct, r, o, rnew, onew));
@@ -91,9 +99,10 @@ static PetscErrorCode DMPlexTransformGetSubcellOrientation_Alfeld(DMPlexTransfor
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMPlexTransformCellRefine_Alfeld(DMPlexTransform tr, DMPolytopeType source, PetscInt p, PetscInt *rt, PetscInt *Nt, DMPolytopeType *target[], PetscInt *size[], PetscInt *cone[], PetscInt *ornt[]) {
-  DM                    dm;
-  PetscInt              dim;
+static PetscErrorCode DMPlexTransformCellRefine_Alfeld(DMPlexTransform tr, DMPolytopeType source, PetscInt p, PetscInt *rt, PetscInt *Nt, DMPolytopeType *target[], PetscInt *size[], PetscInt *cone[], PetscInt *ornt[])
+{
+  DM       dm;
+  PetscInt dim;
   /* Add 1 vertex, 3 edges inside every triangle, making 3 new triangles.
    2
    |\
@@ -115,8 +124,8 @@ static PetscErrorCode DMPlexTransformCellRefine_Alfeld(DMPlexTransform tr, DMPol
   */
   static DMPolytopeType triT[] = {DM_POLYTOPE_POINT, DM_POLYTOPE_SEGMENT, DM_POLYTOPE_TRIANGLE};
   static PetscInt       triS[] = {1, 3, 3};
-  static PetscInt       triC[] = {DM_POLYTOPE_POINT, 2, 0, 0, 0, DM_POLYTOPE_POINT, 0, 0, DM_POLYTOPE_POINT, 2, 1, 0, 0, DM_POLYTOPE_POINT, 0, 0, DM_POLYTOPE_POINT, 2, 2, 0, 0, DM_POLYTOPE_POINT, 0, 0, DM_POLYTOPE_SEGMENT, 1, 0, 0, DM_POLYTOPE_SEGMENT, 0, 1, DM_POLYTOPE_SEGMENT, 0, 0, DM_POLYTOPE_SEGMENT, 1, 1, 0, DM_POLYTOPE_SEGMENT, 0, 2, DM_POLYTOPE_SEGMENT, 0, 1, DM_POLYTOPE_SEGMENT, 1, 2, 0, DM_POLYTOPE_SEGMENT, 0, 0, DM_POLYTOPE_SEGMENT, 0, 2};
-  static PetscInt       triO[] = {0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, -1, 0, 0, -1};
+  static PetscInt triC[] = {DM_POLYTOPE_POINT, 2, 0, 0, 0, DM_POLYTOPE_POINT, 0, 0, DM_POLYTOPE_POINT, 2, 1, 0, 0, DM_POLYTOPE_POINT, 0, 0, DM_POLYTOPE_POINT, 2, 2, 0, 0, DM_POLYTOPE_POINT, 0, 0, DM_POLYTOPE_SEGMENT, 1, 0, 0, DM_POLYTOPE_SEGMENT, 0, 1, DM_POLYTOPE_SEGMENT, 0, 0, DM_POLYTOPE_SEGMENT, 1, 1, 0, DM_POLYTOPE_SEGMENT, 0, 2, DM_POLYTOPE_SEGMENT, 0, 1, DM_POLYTOPE_SEGMENT, 1, 2, 0, DM_POLYTOPE_SEGMENT, 0, 0, DM_POLYTOPE_SEGMENT, 0, 2};
+  static PetscInt triO[] = {0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, -1, 0, 0, -1};
   /* Add 6 triangles inside every cell, making 4 new tets
      The vertices of our reference tet are [(-1, -1, -1), (-1, 1, -1), (1, -1, -1), (-1, -1, 1)], which we call [v0, v1, v2, v3]. The first
      three edges are [v0, v1], [v1, v2], [v2, v0] called e0, e1, and e2, and then three edges to the top point [v0, v3], [v1, v3], [v2, v3]
@@ -137,8 +146,8 @@ static PetscErrorCode DMPlexTransformCellRefine_Alfeld(DMPlexTransform tr, DMPol
    */
   static DMPolytopeType tetT[] = {DM_POLYTOPE_POINT, DM_POLYTOPE_SEGMENT, DM_POLYTOPE_TRIANGLE, DM_POLYTOPE_TETRAHEDRON};
   static PetscInt       tetS[] = {1, 4, 6, 4};
-  static PetscInt       tetC[] = {DM_POLYTOPE_POINT, 3, 0, 0, 0, 0, DM_POLYTOPE_POINT, 0, 0, DM_POLYTOPE_POINT, 3, 0, 1, 0, 0, DM_POLYTOPE_POINT, 0, 0, DM_POLYTOPE_POINT, 3, 0, 2, 0, 0, DM_POLYTOPE_POINT, 0, 0, DM_POLYTOPE_POINT, 3, 1, 0, 1, 0, DM_POLYTOPE_POINT, 0, 0, DM_POLYTOPE_SEGMENT, 0, 0, DM_POLYTOPE_SEGMENT, 0, 1, DM_POLYTOPE_SEGMENT, 2, 0, 0, 0, DM_POLYTOPE_SEGMENT, 2, 0, 2, 0, DM_POLYTOPE_SEGMENT, 0, 2, DM_POLYTOPE_SEGMENT, 0, 0, DM_POLYTOPE_SEGMENT, 2, 0, 1, 0, DM_POLYTOPE_SEGMENT, 0, 1, DM_POLYTOPE_SEGMENT, 0, 2, DM_POLYTOPE_SEGMENT, 0, 0, DM_POLYTOPE_SEGMENT, 0, 3, DM_POLYTOPE_SEGMENT, 2, 1, 0, 0, DM_POLYTOPE_SEGMENT, 2, 1, 1, 0, DM_POLYTOPE_SEGMENT, 0, 3, DM_POLYTOPE_SEGMENT, 0, 1, DM_POLYTOPE_SEGMENT, 2, 2, 1, 0, DM_POLYTOPE_SEGMENT, 0, 2, DM_POLYTOPE_SEGMENT, 0, 3, DM_POLYTOPE_TRIANGLE, 1, 0, 0, DM_POLYTOPE_TRIANGLE, 0, 0, DM_POLYTOPE_TRIANGLE, 0, 1, DM_POLYTOPE_TRIANGLE, 0, 2, DM_POLYTOPE_TRIANGLE, 1, 1, 0, DM_POLYTOPE_TRIANGLE, 0, 3, DM_POLYTOPE_TRIANGLE, 0, 0, DM_POLYTOPE_TRIANGLE, 0, 4, DM_POLYTOPE_TRIANGLE, 1, 2, 0, DM_POLYTOPE_TRIANGLE, 0, 1, DM_POLYTOPE_TRIANGLE, 0, 3, DM_POLYTOPE_TRIANGLE, 0, 5, DM_POLYTOPE_TRIANGLE, 1, 3, 0, DM_POLYTOPE_TRIANGLE, 0, 2, DM_POLYTOPE_TRIANGLE, 0, 5, DM_POLYTOPE_TRIANGLE, 0, 4};
-  static PetscInt       tetO[] = {0, 0, 0, 0, 0, 0, 0, 0, 0, -1, -1, -1, 0, -1, -1, 0, -1, 0, -1, -1, -1, 0, -1, -1, 0, -1, 0, 0, 0, 0, 0, 0, -2, 0, 0, -2, -2, 0, 0, -2, -3, -3};
+  static PetscInt tetC[] = {DM_POLYTOPE_POINT, 3, 0, 0, 0, 0, DM_POLYTOPE_POINT, 0, 0, DM_POLYTOPE_POINT, 3, 0, 1, 0, 0, DM_POLYTOPE_POINT, 0, 0, DM_POLYTOPE_POINT, 3, 0, 2, 0, 0, DM_POLYTOPE_POINT, 0, 0, DM_POLYTOPE_POINT, 3, 1, 0, 1, 0, DM_POLYTOPE_POINT, 0, 0, DM_POLYTOPE_SEGMENT, 0, 0, DM_POLYTOPE_SEGMENT, 0, 1, DM_POLYTOPE_SEGMENT, 2, 0, 0, 0, DM_POLYTOPE_SEGMENT, 2, 0, 2, 0, DM_POLYTOPE_SEGMENT, 0, 2, DM_POLYTOPE_SEGMENT, 0, 0, DM_POLYTOPE_SEGMENT, 2, 0, 1, 0, DM_POLYTOPE_SEGMENT, 0, 1, DM_POLYTOPE_SEGMENT, 0, 2, DM_POLYTOPE_SEGMENT, 0, 0, DM_POLYTOPE_SEGMENT, 0, 3, DM_POLYTOPE_SEGMENT, 2, 1, 0, 0, DM_POLYTOPE_SEGMENT, 2, 1, 1, 0, DM_POLYTOPE_SEGMENT, 0, 3, DM_POLYTOPE_SEGMENT, 0, 1, DM_POLYTOPE_SEGMENT, 2, 2, 1, 0, DM_POLYTOPE_SEGMENT, 0, 2, DM_POLYTOPE_SEGMENT, 0, 3, DM_POLYTOPE_TRIANGLE, 1, 0, 0, DM_POLYTOPE_TRIANGLE, 0, 0, DM_POLYTOPE_TRIANGLE, 0, 1, DM_POLYTOPE_TRIANGLE, 0, 2, DM_POLYTOPE_TRIANGLE, 1, 1, 0, DM_POLYTOPE_TRIANGLE, 0, 3, DM_POLYTOPE_TRIANGLE, 0, 0, DM_POLYTOPE_TRIANGLE, 0, 4, DM_POLYTOPE_TRIANGLE, 1, 2, 0, DM_POLYTOPE_TRIANGLE, 0, 1, DM_POLYTOPE_TRIANGLE, 0, 3, DM_POLYTOPE_TRIANGLE, 0, 5, DM_POLYTOPE_TRIANGLE, 1, 3, 0, DM_POLYTOPE_TRIANGLE, 0, 2, DM_POLYTOPE_TRIANGLE, 0, 5, DM_POLYTOPE_TRIANGLE, 0, 4};
+  static PetscInt tetO[] = {0, 0, 0, 0, 0, 0, 0, 0, 0, -1, -1, -1, 0, -1, -1, 0, -1, 0, -1, -1, -1, 0, -1, -1, 0, -1, 0, 0, 0, 0, 0, 0, -2, 0, 0, -2, -2, 0, 0, -2, -3, -3};
 
   PetscFunctionBeginHot;
   if (rt) *rt = 0;
@@ -162,23 +171,26 @@ static PetscErrorCode DMPlexTransformCellRefine_Alfeld(DMPlexTransform tr, DMPol
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMPlexTransformInitialize_Alfeld(DMPlexTransform tr) {
+static PetscErrorCode DMPlexTransformInitialize_Alfeld(DMPlexTransform tr)
+{
   PetscFunctionBegin;
   tr->ops->view                  = DMPlexTransformView_Alfeld;
   tr->ops->setup                 = DMPlexTransformSetUp_Alfeld;
   tr->ops->destroy               = DMPlexTransformDestroy_Alfeld;
+  tr->ops->setdimensions         = DMPlexTransformSetDimensions_Internal;
   tr->ops->celltransform         = DMPlexTransformCellRefine_Alfeld;
   tr->ops->getsubcellorientation = DMPlexTransformGetSubcellOrientation_Alfeld;
   tr->ops->mapcoordinates        = DMPlexTransformMapCoordinatesBarycenter_Internal;
   PetscFunctionReturn(0);
 }
 
-PETSC_EXTERN PetscErrorCode DMPlexTransformCreate_Alfeld(DMPlexTransform tr) {
+PETSC_EXTERN PetscErrorCode DMPlexTransformCreate_Alfeld(DMPlexTransform tr)
+{
   DMPlexRefine_Alfeld *f;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tr, DMPLEXTRANSFORM_CLASSID, 1);
-  PetscCall(PetscNewLog(tr, &f));
+  PetscCall(PetscNew(&f));
   tr->data = f;
 
   PetscCall(DMPlexTransformInitialize_Alfeld(tr));

@@ -6345,14 +6345,20 @@ url    = "http://lyre.mit.edu/\~{ }powell/rheoplast.html",
 % LiteralHTML:
 % LiteralHTML:  <a name="software"><H3><center>Software Engineering</center></H3>
 % LiteralHTML:
-@article{PETScCommunity2021,
-  title   = {The Community is the Infrastructure: A Short Discussion of the {PETSc} User Community},
-  author  = {Mark Adams and Satish Balay and Jed Brown and Victor Eijkhout and Jacob Faibussowitsch and Fande Kong and Matthew Knepley and Scott Kruger and Oana Marin and Richard Mills and Todd Munson and Patrick Sanan and Barry Smith and Hong Zhang and Hong Zhang and Junchao Zhang},
-  journal = {Computing in Science and Engineering},
-  url     = {https://figshare.com/articles/conference_contribution/The_Community_is_the_Infrastructure_A_Short_Discussion_of_the_PETSc_User_Community/16523043},
-  doi     = {10.6084/m9.figshare.16523043.v1},
-  note    = {Accepted},
-  year    = {2021},
+@article{PETScCommunity2022,
+  title     = {The Community is the Infrastructure: A Short Discussion of the {PETSc} User Community},
+  author    = {Mark Adams and Satish Balay and Jed Brown and Victor Eijkhout and Jacob Faibussowitsch and Fande Kong and Matthew Knepley and Scott Kruger and Oana Marin and Richard Mills and Todd Munson and Patrick Sanan and Barry Smith and Hong Zhang and Hong Zhang and Junchao Zhang},
+  journal   = {Computing in Science and Engineering},
+  volume    = {24},
+  number    = {03},
+  pages     = {6--15},
+  issn      = {1558-366X},
+  doi       = {10.1109/MCSE.2022.3169974},
+  publisher = {IEEE Computer Society},
+  address   = {Los Alamitos, CA, USA},
+  month     = {may},
+  year      = {2022},
+  url       = {https://figshare.com/articles/conference_contribution/The_Community_is_the_Infrastructure_A_Short_Discussion_of_the_PETSc_User_Community/16523043},
   petsc_uses={KSP},
 }
 
@@ -6691,7 +6697,7 @@ url    = "http://lyre.mit.edu/\~{ }powell/rheoplast.html",
     and Stefano Zampini and Hong Zhang and Hong Zhang and Junchao Zhang},
   title       = {{PETSc/TAO} Users Manual},
   institution = {Argonne National Laboratory},
-  number      = {ANL-21/39 - Revision 3.17},
+  number      = {ANL-21/39 - Revision 3.18},
   year        = {2022},
 }
 %  url    = {https://petsc.org/release}
@@ -13058,13 +13064,13 @@ note  = "\url{https://ice.txcorp.com/trac/2011_FspDefinitionWorkshop}"
 @misc{petsc:driven-cavity-example,
   title =    {{PETSc Driven Cavity Example Code}},
   author =	 {B. F. {Smith et al.}},
-  howpublished = {\url{http://www.mcs.anl.gov/petsc/petsc-current/src/snes/tutorials/ex19.c.html}}
+  howpublished = {\url{https://petsc.org/release/src/snes/tutorials/ex19.c.html}}
 }
 
 @misc{petsc-dm:webpage,
    author =	 {B. F. {Smith et al.}},
    title = "{PETSc DM Webpage}",
-   howpublished  = "\url{http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/DM}",
+   howpublished  = "\url{https://petsc.org/release/docs/manualpages/DM/}",
    year = 2018
 }
 
@@ -16889,6 +16895,15 @@ part I: Theory},
   pages   = {1444--1460}
 }
 
+@article{Bereux1996,
+  title   = {Zero-relaxation limit versus operator splitting for two-phase fluid flow computations},
+  author  = {Fran{\c{c}}ois B{\'e}reux},
+  journal = {Computer Methods in Applied Mechanics and Engineering},
+  volume  = {133},
+  number  = {1-2},
+  pages   = {93--124},
+  year    = {1996}
+}
 @article{pawlowski2006globalization,
   title={Globalization techniques for {N}ewton-{K}rylov methods and applications to the fully coupled solution of the {N}avier-{S}tokes equations},
   author={Pawlowski, Roger P and Shadid, John N and Simonis, Joseph P and Walker, Homer F},
@@ -16898,6 +16913,15 @@ part I: Theory},
   pages={700--721},
   year={2006},
   publisher={SIAM}
+}
+@article{RoppShadid2009,
+  title   = {Stability of operator splitting methods for systems with indefinite operators: Advection--diffusion--reaction systems},
+  author  = {David L Ropp and John N Shadid},
+  journal = {Journal of Computational Physics},
+  volume  = {228},
+  number  = {9},
+  pages   = {3508--3516},
+  year    = {2009}
 }
 @article{brown1985experiments,
   title={Experiments with quasi-{N}ewton methods in solving stiff {ODE} systems},
@@ -36644,9 +36668,19 @@ inproceedings{SuhIsaac2020,
   title   = {Droplet formation simulation using mixed finite elements},
   author  = {Darsh K. Nathawani and Matthew G. Knepley},
   journal = {Physics of Fluids},
-  note    = {in press},
+  volume  = {34},
+  pages   = {064105},
   doi     = {10.1063/5.0089752},
   year    = {2022}
+}
+
+@inproceedings{NathawaniKnepley2022b,
+  title        = {Simulating Paraffin Wax Droplets Using Mixed Finite Element Method},
+  author       = {Darsh K. Nathawani and Matthew G. Knepley},
+  booktitle    = {Proceeedings of the International Conference on Computational Fluid Dynamics 11 (ICCFD11)},
+  editor       = {Christoph Brehm and Shishir Pandya},
+  number       = {4103},
+  year         = {2022}
 }
 
 @article{TimalsinaKnepley2022,
@@ -36655,5 +36689,14 @@ inproceedings{SuhIsaac2020,
   journal = {Computational Geometry: Theory and Applications},
   note    = {Submitted},
   year    = {2022}
+}
+
+@misc{BrownBarraBeamsGhaffariKnepleyMosesShakeriStengelThompsonZhang2022,
+  title     = {Performance Portable Solid Mechanics via Matrix-Free $p$-Multigrid},
+  author    = {Jed Brown and Valeria Barra and Natalie Beams and Leila Ghaffari and Matthew Knepley and William Moses and Rezgar Shakeri and Karen Stengel and Jeremy L. Thompson and Junchao Zhang},
+  doi       = {10.48550/ARXIV.2204.01722},
+  url       = {https://arxiv.org/abs/2204.01722},
+  publisher = {arXiv},
+  year      = {2022}
 }
 

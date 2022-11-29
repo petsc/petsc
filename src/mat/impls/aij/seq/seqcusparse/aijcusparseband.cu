@@ -10,10 +10,10 @@
 #undef VecType
 #include <../src/mat/impls/aij/seq/seqcusparse/cusparsematimpl.h>
 #if defined(__CUDA_ARCH__) && __CUDA_ARCH__ > 600 && PETSC_PKG_CUDA_VERSION_GE(11, 0, 0)
-#define AIJBANDUSEGROUPS 1
+  #define AIJBANDUSEGROUPS 1
 #endif
 #if defined(AIJBANDUSEGROUPS)
-#include <cooperative_groups.h>
+  #include <cooperative_groups.h>
 #endif
 
 /*
@@ -29,7 +29,8 @@ static PetscErrorCode MatLUFactorNumeric_SeqAIJCUSPARSEBAND(Mat, Mat, const MatF
 /*
   The GPU LU factor kernel
 */
-__global__ void __launch_bounds__(1024, 1) mat_lu_factor_band_init_set_i(const PetscInt n, const int bw, int bi_csr[]) {
+__global__ void __launch_bounds__(1024, 1) mat_lu_factor_band_init_set_i(const PetscInt n, const int bw, int bi_csr[])
+{
   const PetscInt Nf = gridDim.x, Nblk = gridDim.y, nloc = n / Nf;
   const PetscInt field = blockIdx.x, blkIdx = blockIdx.y;
   const PetscInt nloc_i = (nloc / Nblk + !!(nloc % Nblk)), start_i = field * nloc + blkIdx * nloc_i, end_i = (start_i + nloc_i) > (field + 1) * nloc ? (field + 1) * nloc : (start_i + nloc_i);
@@ -44,7 +45,8 @@ __global__ void __launch_bounds__(1024, 1) mat_lu_factor_band_init_set_i(const P
   }
 }
 // copy AIJ to AIJ_BAND
-__global__ void __launch_bounds__(1024, 1) mat_lu_factor_band_copy_aij_aij(const PetscInt n, const int bw, const PetscInt r[], const PetscInt ic[], const int ai_d[], const int aj_d[], const PetscScalar aa_d[], const int bi_csr[], PetscScalar ba_csr[]) {
+__global__ void __launch_bounds__(1024, 1) mat_lu_factor_band_copy_aij_aij(const PetscInt n, const int bw, const PetscInt r[], const PetscInt ic[], const int ai_d[], const int aj_d[], const PetscScalar aa_d[], const int bi_csr[], PetscScalar ba_csr[])
+{
   const PetscInt Nf = gridDim.x, Nblk = gridDim.y, nloc = n / Nf;
   const PetscInt field = blockIdx.x, blkIdx = blockIdx.y;
   const PetscInt nloc_i = (nloc / Nblk + !!(nloc % Nblk)), start_i = field * nloc + blkIdx * nloc_i, end_i = (start_i + nloc_i) > (field + 1) * nloc ? (field + 1) * nloc : (start_i + nloc_i);
@@ -80,7 +82,8 @@ __global__ void __launch_bounds__(1024, 1) mat_lu_factor_band_copy_aij_aij(const
   }
 }
 // print AIJ_BAND
-__global__ void print_mat_aij_band(const PetscInt n, const int bi_csr[], const PetscScalar ba_csr[]) {
+__global__ void print_mat_aij_band(const PetscInt n, const int bi_csr[], const PetscScalar ba_csr[])
+{
   // debug
   if (threadIdx.x + threadIdx.y + blockIdx.x + blockIdx.y == 0) {
     printf("B (AIJ) n=%d:\n", (int)n);
@@ -93,7 +96,8 @@ __global__ void print_mat_aij_band(const PetscInt n, const int bi_csr[], const P
   }
 }
 // Band LU kernel ---  ba_csr bi_csr
-__global__ void __launch_bounds__(1024, 1) mat_lu_factor_band(const PetscInt n, const PetscInt bw, const int bi_csr[], PetscScalar ba_csr[], int *use_group_sync) {
+__global__ void __launch_bounds__(1024, 1) mat_lu_factor_band(const PetscInt n, const PetscInt bw, const int bi_csr[], PetscScalar ba_csr[], int *use_group_sync)
+{
   const PetscInt Nf = gridDim.x, Nblk = gridDim.y, nloc = n / Nf;
   const PetscInt field = blockIdx.x, blkIdx = blockIdx.y;
   const PetscInt start = field * nloc, end = start + nloc;
@@ -136,7 +140,8 @@ __global__ void __launch_bounds__(1024, 1) mat_lu_factor_band(const PetscInt n, 
 }
 
 static PetscErrorCode MatSolve_SeqAIJCUSPARSEBAND(Mat, Vec, Vec);
-static PetscErrorCode MatLUFactorNumeric_SeqAIJCUSPARSEBAND(Mat B, Mat A, const MatFactorInfo *info) {
+static PetscErrorCode MatLUFactorNumeric_SeqAIJCUSPARSEBAND(Mat B, Mat A, const MatFactorInfo *info)
+{
   Mat_SeqAIJ                   *b                  = (Mat_SeqAIJ *)B->data;
   Mat_SeqAIJCUSPARSETriFactors *cusparseTriFactors = (Mat_SeqAIJCUSPARSETriFactors *)B->spptr;
   PetscCheck(cusparseTriFactors, PETSC_COMM_SELF, PETSC_ERR_COR, "Missing cusparseTriFactors");
@@ -216,7 +221,8 @@ static PetscErrorCode MatLUFactorNumeric_SeqAIJCUSPARSEBAND(Mat B, Mat A, const 
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatLUFactorSymbolic_SeqAIJCUSPARSEBAND(Mat B, Mat A, IS isrow, IS iscol, const MatFactorInfo *info) {
+PetscErrorCode MatLUFactorSymbolic_SeqAIJCUSPARSEBAND(Mat B, Mat A, IS isrow, IS iscol, const MatFactorInfo *info)
+{
   Mat_SeqAIJ                   *a = (Mat_SeqAIJ *)A->data, *b;
   IS                            isicol;
   const PetscInt               *ic, *ai = a->i, *aj = a->j;
@@ -239,7 +245,6 @@ PetscErrorCode MatLUFactorSymbolic_SeqAIJCUSPARSEBAND(Mat B, Mat A, IS isrow, IS
   PetscCall(ISGetIndices(isicol, &ic));
 
   PetscCall(MatSeqAIJSetPreallocation_SeqAIJ(B, MAT_SKIP_ALLOCATION, NULL));
-  PetscCall(PetscLogObjectParent((PetscObject)B, (PetscObject)isicol));
   b = (Mat_SeqAIJ *)(B)->data;
 
   /* get band widths, MatComputeBandwidth should take a reordering ic and do this */
@@ -269,7 +274,6 @@ PetscErrorCode MatLUFactorSymbolic_SeqAIJCUSPARSEBAND(Mat B, Mat A, IS isrow, IS
   cusparseTriFactors->a_band_d = ba_t;
   cusparseTriFactors->i_band_d = bi_t;
   /* In b structure:  Free imax, ilen, old a, old j.  Allocate solve_work, new a, new j */
-  PetscCall(PetscLogObjectMemory((PetscObject)B, (nzBcsr + 1) * (sizeof(PetscInt) + sizeof(PetscScalar))));
   {
     dim3 dimBlockTeam(1, 128);
     dim3 dimBlockLeague(Nf, 1);
@@ -337,13 +341,15 @@ PetscErrorCode MatLUFactorSymbolic_SeqAIJCUSPARSEBAND(Mat B, Mat A, IS isrow, IS
 }
 
 /* Use -pc_factor_mat_solver_type cusparseband */
-PetscErrorCode MatFactorGetSolverType_seqaij_cusparse_band(Mat A, MatSolverType *type) {
+PetscErrorCode MatFactorGetSolverType_seqaij_cusparse_band(Mat A, MatSolverType *type)
+{
   PetscFunctionBegin;
   *type = MATSOLVERCUSPARSEBAND;
   PetscFunctionReturn(0);
 }
 
-PETSC_EXTERN PetscErrorCode MatGetFactor_seqaijcusparse_cusparse_band(Mat A, MatFactorType ftype, Mat *B) {
+PETSC_EXTERN PetscErrorCode MatGetFactor_seqaijcusparse_cusparse_band(Mat A, MatFactorType ftype, Mat *B)
+{
   PetscInt n = A->rmap->n;
 
   PetscFunctionBegin;
@@ -367,7 +373,8 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_seqaijcusparse_cusparse_band(Mat A, Mat
 
 #define WARP_SIZE 32
 template <typename T>
-__forceinline__ __device__ T wreduce(T a) {
+__forceinline__ __device__ T wreduce(T a)
+{
   T b;
 #pragma unroll
   for (int i = WARP_SIZE / 2; i >= 1; i = i >> 1) {
@@ -378,7 +385,8 @@ __forceinline__ __device__ T wreduce(T a) {
 }
 // reduce in a block, returns result in thread 0
 template <typename T, int BLOCK_SIZE>
-__device__ T breduce(T a) {
+__device__ T breduce(T a)
+{
   constexpr int     NWARP = BLOCK_SIZE / WARP_SIZE;
   __shared__ double buf[NWARP];
   int               wid    = threadIdx.x / WARP_SIZE;
@@ -396,7 +404,8 @@ __device__ T breduce(T a) {
 
 // Band LU kernel ---  ba_csr bi_csr
 template <int BLOCK_SIZE>
-__global__ void __launch_bounds__(256, 1) mat_solve_band(const PetscInt n, const PetscInt bw, const PetscScalar ba_csr[], PetscScalar x[]) {
+__global__ void __launch_bounds__(256, 1) mat_solve_band(const PetscInt n, const PetscInt bw, const PetscScalar ba_csr[], PetscScalar x[])
+{
   const PetscInt     Nf = gridDim.x, nloc = n / Nf, field = blockIdx.x, start = field * nloc, end = start + nloc, chopnz = bw * (bw + 1) / 2, blocknz = (2 * bw + 1) * nloc, blocknz_0 = blocknz - chopnz;
   const PetscScalar *pLi;
   const int          tid = threadIdx.x;
@@ -451,7 +460,8 @@ __global__ void __launch_bounds__(256, 1) mat_solve_band(const PetscInt n, const
   }
 }
 
-static PetscErrorCode MatSolve_SeqAIJCUSPARSEBAND(Mat A, Vec bb, Vec xx) {
+static PetscErrorCode MatSolve_SeqAIJCUSPARSEBAND(Mat A, Vec bb, Vec xx)
+{
   const PetscScalar                    *barray;
   PetscScalar                          *xarray;
   thrust::device_ptr<const PetscScalar> bGPU;

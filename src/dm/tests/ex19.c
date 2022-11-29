@@ -8,14 +8,15 @@ static char help[] = "Tests DMDA with variable multiple degrees of freedom per n
 #include <petscdm.h>
 #include <petscdmda.h>
 
-PetscErrorCode doit(DM da, Vec global) {
+PetscErrorCode doit(DM da, Vec global)
+{
   PetscInt i, j, k, M, N, dof;
 
   PetscCall(DMDAGetInfo(da, 0, &M, &N, 0, 0, 0, 0, &dof, 0, 0, 0, 0, 0));
   {
     struct {
       PetscScalar inside[dof];
-    } * *mystruct;
+    } **mystruct;
     PetscCall(DMDAVecGetArrayRead(da, global, (void *)&mystruct));
     for (i = 0; i < N; i++) {
       for (j = 0; j < M; j++) {
@@ -31,7 +32,8 @@ PetscErrorCode doit(DM da, Vec global) {
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscInt dof = 2, M = 3, N = 3, m = PETSC_DECIDE, n = PETSC_DECIDE;
   DM       da;
   Vec      global, local;

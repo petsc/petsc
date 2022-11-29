@@ -42,7 +42,8 @@ typedef struct {
 
 #define TikZ_END_DOCUMENT "\\end{document}\n"
 
-static PetscErrorCode PetscDrawDestroy_TikZ(PetscDraw draw) {
+static PetscErrorCode PetscDrawDestroy_TikZ(PetscDraw draw)
+{
   PetscDraw_TikZ *win = (PetscDraw_TikZ *)draw->data;
 
   PetscFunctionBegin;
@@ -56,7 +57,8 @@ static PetscErrorCode PetscDrawDestroy_TikZ(PetscDraw draw) {
 
 static const char *TikZColors[] = {"white", "black", "red", "green", "cyan", "blue", "magenta", NULL, NULL, "orange", "violet", "brown", "pink", NULL, "yellow", NULL};
 
-static inline const char *TikZColorMap(int cl) {
+static inline const char *TikZColorMap(int cl)
+{
   return ((cl < 16) ? (TikZColors[cl] ? TikZColors[cl] : "black") : "black");
 }
 
@@ -66,7 +68,8 @@ static inline const char *TikZColorMap(int cl) {
 #define XTRANS(draw, x) (double)(((draw)->port_xl + (((x - (draw)->coor_xl) * ((draw)->port_xr - (draw)->port_xl)) / ((draw)->coor_xr - (draw)->coor_xl))))
 #define YTRANS(draw, y) (double)(((draw)->port_yl + (((y - (draw)->coor_yl) * ((draw)->port_yr - (draw)->port_yl)) / ((draw)->coor_yr - (draw)->coor_yl))))
 
-static PetscErrorCode PetscDrawClear_TikZ(PetscDraw draw) {
+static PetscErrorCode PetscDrawClear_TikZ(PetscDraw draw)
+{
   PetscDraw_TikZ *win = (PetscDraw_TikZ *)draw->data;
   PetscBool       written;
 
@@ -80,7 +83,8 @@ static PetscErrorCode PetscDrawClear_TikZ(PetscDraw draw) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscDrawLine_TikZ(PetscDraw draw, PetscReal xl, PetscReal yl, PetscReal xr, PetscReal yr, int cl) {
+static PetscErrorCode PetscDrawLine_TikZ(PetscDraw draw, PetscReal xl, PetscReal yl, PetscReal xr, PetscReal yr, int cl)
+{
   PetscDraw_TikZ *win = (PetscDraw_TikZ *)draw->data;
 
   PetscFunctionBegin;
@@ -89,7 +93,8 @@ static PetscErrorCode PetscDrawLine_TikZ(PetscDraw draw, PetscReal xl, PetscReal
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscDrawRectangle_TikZ(PetscDraw draw, PetscReal xl, PetscReal yl, PetscReal xr, PetscReal yr, int c1, int c2, int c3, int c4) {
+static PetscErrorCode PetscDrawRectangle_TikZ(PetscDraw draw, PetscReal xl, PetscReal yl, PetscReal xr, PetscReal yr, int c1, int c2, int c3, int c4)
+{
   PetscDraw_TikZ *win = (PetscDraw_TikZ *)draw->data;
 
   PetscFunctionBegin;
@@ -98,7 +103,8 @@ static PetscErrorCode PetscDrawRectangle_TikZ(PetscDraw draw, PetscReal xl, Pets
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscDrawTriangle_TikZ(PetscDraw draw, PetscReal x1, PetscReal y1, PetscReal x2, PetscReal y2, PetscReal x3, PetscReal y3, int c1, int c2, int c3) {
+static PetscErrorCode PetscDrawTriangle_TikZ(PetscDraw draw, PetscReal x1, PetscReal y1, PetscReal x2, PetscReal y2, PetscReal x3, PetscReal y3, int c1, int c2, int c3)
+{
   PetscDraw_TikZ *win = (PetscDraw_TikZ *)draw->data;
 
   PetscFunctionBegin;
@@ -107,7 +113,8 @@ static PetscErrorCode PetscDrawTriangle_TikZ(PetscDraw draw, PetscReal x1, Petsc
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscDrawEllipse_TikZ(PetscDraw draw, PetscReal x, PetscReal y, PetscReal a, PetscReal b, int c) {
+static PetscErrorCode PetscDrawEllipse_TikZ(PetscDraw draw, PetscReal x, PetscReal y, PetscReal a, PetscReal b, int c)
+{
   PetscDraw_TikZ *win = (PetscDraw_TikZ *)draw->data;
   PetscReal       rx, ry;
 
@@ -119,7 +126,8 @@ static PetscErrorCode PetscDrawEllipse_TikZ(PetscDraw draw, PetscReal x, PetscRe
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscDrawString_TikZ(PetscDraw draw, PetscReal xl, PetscReal yl, int cl, const char text[]) {
+static PetscErrorCode PetscDrawString_TikZ(PetscDraw draw, PetscReal xl, PetscReal yl, int cl, const char text[])
+{
   PetscDraw_TikZ *win = (PetscDraw_TikZ *)draw->data;
 
   PetscFunctionBegin;
@@ -128,7 +136,8 @@ static PetscErrorCode PetscDrawString_TikZ(PetscDraw draw, PetscReal xl, PetscRe
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscDrawStringVertical_TikZ(PetscDraw draw, PetscReal xl, PetscReal yl, int cl, const char text[]) {
+static PetscErrorCode PetscDrawStringVertical_TikZ(PetscDraw draw, PetscReal xl, PetscReal yl, int cl, const char text[])
+{
   PetscDraw_TikZ *win = (PetscDraw_TikZ *)draw->data;
   size_t          len;
   PetscReal       width;
@@ -145,7 +154,8 @@ static PetscErrorCode PetscDrawStringVertical_TikZ(PetscDraw draw, PetscReal xl,
 /*
     Does not handle multiline strings correctly
 */
-static PetscErrorCode PetscDrawStringBoxed_TikZ(PetscDraw draw, PetscReal xl, PetscReal yl, int cl, int ct, const char text[], PetscReal *w, PetscReal *h) {
+static PetscErrorCode PetscDrawStringBoxed_TikZ(PetscDraw draw, PetscReal xl, PetscReal yl, int cl, int ct, const char text[], PetscReal *w, PetscReal *h)
+{
   PetscDraw_TikZ *win = (PetscDraw_TikZ *)draw->data;
   size_t          len;
 
@@ -160,7 +170,8 @@ static PetscErrorCode PetscDrawStringBoxed_TikZ(PetscDraw draw, PetscReal xl, Pe
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscDrawStringGetSize_TikZ(PetscDraw draw, PetscReal *x, PetscReal *y) {
+static PetscErrorCode PetscDrawStringGetSize_TikZ(PetscDraw draw, PetscReal *x, PetscReal *y)
+{
   PetscFunctionBegin;
   if (x) *x = .014 * (draw->coor_xr - draw->coor_xl) / ((draw->port_xr - draw->port_xl));
   if (y) *y = .05 * (draw->coor_yr - draw->coor_yl) / ((draw->port_yr - draw->port_yl));
@@ -169,13 +180,13 @@ static PetscErrorCode PetscDrawStringGetSize_TikZ(PetscDraw draw, PetscReal *x, 
 
 static struct _PetscDrawOps DvOps = {NULL, NULL, PetscDrawLine_TikZ, NULL, NULL, NULL, NULL, PetscDrawString_TikZ, PetscDrawStringVertical_TikZ, NULL, PetscDrawStringGetSize_TikZ, NULL, PetscDrawClear_TikZ, PetscDrawRectangle_TikZ, PetscDrawTriangle_TikZ, PetscDrawEllipse_TikZ, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, PetscDrawDestroy_TikZ, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, PetscDrawStringBoxed_TikZ};
 
-PETSC_EXTERN PetscErrorCode PetscDrawCreate_TikZ(PetscDraw draw) {
+PETSC_EXTERN PetscErrorCode PetscDrawCreate_TikZ(PetscDraw draw)
+{
   PetscDraw_TikZ *win;
 
   PetscFunctionBegin;
   PetscCall(PetscMemcpy(draw->ops, &DvOps, sizeof(DvOps)));
   PetscCall(PetscNew(&win));
-  PetscCall(PetscLogObjectMemory((PetscObject)draw, sizeof(PetscDraw_TikZ)));
 
   draw->data = (void *)win;
 

@@ -3,7 +3,8 @@
 #include <petsc/private/kernels/blockinvert.h>
 
 /* Version for when blocks are 7 by 7 */
-PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_7(Mat C, Mat A, const MatFactorInfo *info) {
+PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_7(Mat C, Mat A, const MatFactorInfo *info)
+{
   Mat_SeqSBAIJ   *a = (Mat_SeqSBAIJ *)A->data, *b = (Mat_SeqSBAIJ *)C->data;
   IS              perm = b->row;
   const PetscInt *ai, *aj, *perm_ptr, *bi = b->i, *bj = b->j;

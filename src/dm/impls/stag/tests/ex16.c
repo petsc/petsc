@@ -3,7 +3,8 @@ static char help[] = "Test DMStag refinement and coarsening\n\n";
 #include <petscdm.h>
 #include <petscdmstag.h>
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   DM        dm, dmCoarsened, dmRefined;
   PetscInt  dim;
   PetscBool flg;

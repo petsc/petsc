@@ -1,7 +1,8 @@
 
 #include <../src/ksp/ksp/impls/lcd/lcdimpl.h>
 
-PetscErrorCode KSPSetUp_LCD(KSP ksp) {
+PetscErrorCode KSPSetUp_LCD(KSP ksp)
+{
   KSP_LCD *lcd     = (KSP_LCD *)ksp->data;
   PetscInt restart = lcd->restart;
 
@@ -11,7 +12,6 @@ PetscErrorCode KSPSetUp_LCD(KSP ksp) {
 
   PetscCall(VecDuplicateVecs(ksp->work[0], restart + 1, &lcd->P));
   PetscCall(VecDuplicateVecs(ksp->work[0], restart + 1, &lcd->Q));
-  PetscCall(PetscLogObjectMemory((PetscObject)ksp, 2 * (restart + 2) * sizeof(Vec)));
   PetscFunctionReturn(0);
 }
 
@@ -26,7 +26,8 @@ PetscErrorCode KSPSetUp_LCD(KSP ksp) {
 .     its - number of iterations used
 
 */
-PetscErrorCode KSPSolve_LCD(KSP ksp) {
+PetscErrorCode KSPSolve_LCD(KSP ksp)
+{
   PetscInt    it, j, max_k;
   PetscScalar alfa, beta, num, den, mone;
   PetscReal   rnorm = 0.0;
@@ -121,7 +122,8 @@ PetscErrorCode KSPSolve_LCD(KSP ksp) {
        KSPDestroy_LCD - Frees all memory space used by the Krylov method
 
 */
-PetscErrorCode KSPReset_LCD(KSP ksp) {
+PetscErrorCode KSPReset_LCD(KSP ksp)
+{
   KSP_LCD *lcd = (KSP_LCD *)ksp->data;
 
   PetscFunctionBegin;
@@ -130,7 +132,8 @@ PetscErrorCode KSPReset_LCD(KSP ksp) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode KSPDestroy_LCD(KSP ksp) {
+PetscErrorCode KSPDestroy_LCD(KSP ksp)
+{
   PetscFunctionBegin;
   PetscCall(KSPReset_LCD(ksp));
   PetscCall(PetscFree(ksp->data));
@@ -145,7 +148,8 @@ PetscErrorCode KSPDestroy_LCD(KSP ksp) {
       flags that information should be printed here.
 
 */
-PetscErrorCode KSPView_LCD(KSP ksp, PetscViewer viewer) {
+PetscErrorCode KSPView_LCD(KSP ksp, PetscViewer viewer)
+{
   KSP_LCD  *lcd = (KSP_LCD *)ksp->data;
   PetscBool iascii;
 
@@ -162,7 +166,8 @@ PetscErrorCode KSPView_LCD(KSP ksp, PetscViewer viewer) {
     KSPSetFromOptions_LCD - Checks the options database for options related to the
                             LCD method.
 */
-PetscErrorCode KSPSetFromOptions_LCD(KSP ksp, PetscOptionItems *PetscOptionsObject) {
+PetscErrorCode KSPSetFromOptions_LCD(KSP ksp, PetscOptionItems *PetscOptionsObject)
+{
   PetscBool flg;
   KSP_LCD  *lcd = (KSP_LCD *)ksp->data;
 
@@ -176,15 +181,15 @@ PetscErrorCode KSPSetFromOptions_LCD(KSP ksp, PetscOptionItems *PetscOptionsObje
 }
 
 /*MC
-     KSPLCD -  Implements the LCD (left conjugate direction) method in PETSc.
+     KSPLCD -  Implements the LCD (left conjugate direction) method
 
    Options Database Keys:
-+   -ksp_lcd_restart - number of vectors conjudate
++   -ksp_lcd_restart - number of vectors conjugate
 -   -ksp_lcd_haptol - tolerance for exact convergence (happing ending)
 
    Level: beginner
 
-    Notes:
+    Note:
     Support only for left preconditioning
 
     References:
@@ -204,18 +209,19 @@ PetscErrorCode KSPSetFromOptions_LCD(KSP ksp, PetscOptionItems *PetscOptionsObje
      equations,  Communications in Numerical Methods in Engineering, (Early
      View).
 
-  Contributed by: Lucia Catabriga <luciac@ices.utexas.edu>
+  Contributed by:
+  Lucia Catabriga <luciac@ices.utexas.edu>
 
-.seealso: `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`,
+.seealso: [](chapter_ksp), `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`,
           `KSPCGSetType()`, `KSPLCDSetRestart()`, `KSPLCDSetHapTol()`
-
 M*/
 
-PETSC_EXTERN PetscErrorCode KSPCreate_LCD(KSP ksp) {
+PETSC_EXTERN PetscErrorCode KSPCreate_LCD(KSP ksp)
+{
   KSP_LCD *lcd;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(ksp, &lcd));
+  PetscCall(PetscNew(&lcd));
   ksp->data = (void *)lcd;
   PetscCall(KSPSetSupportedNorm(ksp, KSP_NORM_NONE, PC_LEFT, 1));
   PetscCall(KSPSetSupportedNorm(ksp, KSP_NORM_PRECONDITIONED, PC_LEFT, 3));

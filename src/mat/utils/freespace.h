@@ -1,5 +1,5 @@
-#if !defined(_FreeSpace_h_)
-#define _FreeSpace_h_
+#ifndef PETSC_FREESPACE_H
+#define PETSC_FREESPACE_H
 
 #include <petscsys.h>
 
@@ -20,4 +20,4 @@ PetscErrorCode PetscFreeSpaceContiguous_LU(PetscFreeSpaceList *, PetscInt *, Pet
 PetscErrorCode PetscFreeSpaceContiguous_Cholesky(PetscFreeSpaceList *, PetscInt *, PetscInt, PetscInt *, PetscInt *);
 PetscErrorCode PetscFreeSpaceDestroy(PetscFreeSpaceList);
 
-#endif
+#endif // PETSC_FREESPACE_H

@@ -4,7 +4,8 @@ static char help[] = "Tests matrix ordering routines.\n\n";
 #include <petscmat.h>
 extern PetscErrorCode MatGetOrdering_myordering(Mat, MatOrderingType, IS *, IS *);
 
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   Mat                C, Cperm;
   PetscInt           i, j, m = 5, n = 5, Ii, J, ncols;
   PetscScalar        v;
@@ -99,7 +100,8 @@ int main(int argc, char **args) {
 
 #include <petsc/private/matimpl.h>
 /* This is modified from MatGetOrdering_Natural() */
-PetscErrorCode MatGetOrdering_myordering(Mat mat, MatOrderingType type, IS *irow, IS *icol) {
+PetscErrorCode MatGetOrdering_myordering(Mat mat, MatOrderingType type, IS *irow, IS *icol)
+{
   PetscInt  n, i, *ii;
   PetscBool done;
   MPI_Comm  comm;

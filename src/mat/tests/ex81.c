@@ -3,7 +3,8 @@ static char help[] = "Tests MatOption MAT_FORCE_DIAGONAL_ENTRIES.\n\n";
 
 #include <petscmat.h>
 
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   Mat         A, B;
   Vec         diag;
   PetscInt    i, n = 10, col[3], test;

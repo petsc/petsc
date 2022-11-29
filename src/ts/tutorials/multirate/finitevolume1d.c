@@ -6,59 +6,74 @@
 #include <petsc/private/kernels/blockinvert.h> /* For the Kernel_*_gets_* stuff for BAIJ */
 const char *FVBCTypes[] = {"PERIODIC", "OUTFLOW", "INFLOW", "FVBCType", "FVBC_", 0};
 
-static inline PetscReal Sgn(PetscReal a) {
+static inline PetscReal Sgn(PetscReal a)
+{
   return (a < 0) ? -1 : 1;
 }
-static inline PetscReal Abs(PetscReal a) {
+static inline PetscReal Abs(PetscReal a)
+{
   return (a < 0) ? 0 : a;
 }
-static inline PetscReal Sqr(PetscReal a) {
+static inline PetscReal Sqr(PetscReal a)
+{
   return a * a;
 }
 
-PETSC_UNUSED static inline PetscReal MinAbs(PetscReal a, PetscReal b) {
+PETSC_UNUSED static inline PetscReal MinAbs(PetscReal a, PetscReal b)
+{
   return (PetscAbs(a) < PetscAbs(b)) ? a : b;
 }
-static inline PetscReal MinMod2(PetscReal a, PetscReal b) {
+static inline PetscReal MinMod2(PetscReal a, PetscReal b)
+{
   return (a * b < 0) ? 0 : Sgn(a) * PetscMin(PetscAbs(a), PetscAbs(b));
 }
-static inline PetscReal MaxMod2(PetscReal a, PetscReal b) {
+static inline PetscReal MaxMod2(PetscReal a, PetscReal b)
+{
   return (a * b < 0) ? 0 : Sgn(a) * PetscMax(PetscAbs(a), PetscAbs(b));
 }
-static inline PetscReal MinMod3(PetscReal a, PetscReal b, PetscReal c) {
+static inline PetscReal MinMod3(PetscReal a, PetscReal b, PetscReal c)
+{
   return (a * b < 0 || a * c < 0) ? 0 : Sgn(a) * PetscMin(PetscAbs(a), PetscMin(PetscAbs(b), PetscAbs(c)));
 }
 
 /* ----------------------- Lots of limiters, these could go in a separate library ------------------------- */
-void Limit_Upwind(LimitInfo info, const PetscScalar *jL, const PetscScalar *jR, PetscScalar *lmt) {
+void Limit_Upwind(LimitInfo info, const PetscScalar *jL, const PetscScalar *jR, PetscScalar *lmt)
+{
   PetscInt i;
   for (i = 0; i < info->m; i++) lmt[i] = 0;
 }
-void Limit_LaxWendroff(LimitInfo info, const PetscScalar *jL, const PetscScalar *jR, PetscScalar *lmt) {
+void Limit_LaxWendroff(LimitInfo info, const PetscScalar *jL, const PetscScalar *jR, PetscScalar *lmt)
+{
   PetscInt i;
   for (i = 0; i < info->m; i++) lmt[i] = jR[i];
 }
-void Limit_BeamWarming(LimitInfo info, const PetscScalar *jL, const PetscScalar *jR, PetscScalar *lmt) {
+void Limit_BeamWarming(LimitInfo info, const PetscScalar *jL, const PetscScalar *jR, PetscScalar *lmt)
+{
   PetscInt i;
   for (i = 0; i < info->m; i++) lmt[i] = jL[i];
 }
-void Limit_Fromm(LimitInfo info, const PetscScalar *jL, const PetscScalar *jR, PetscScalar *lmt) {
+void Limit_Fromm(LimitInfo info, const PetscScalar *jL, const PetscScalar *jR, PetscScalar *lmt)
+{
   PetscInt i;
   for (i = 0; i < info->m; i++) lmt[i] = 0.5 * (jL[i] + jR[i]);
 }
-void Limit_Minmod(LimitInfo info, const PetscScalar *jL, const PetscScalar *jR, PetscScalar *lmt) {
+void Limit_Minmod(LimitInfo info, const PetscScalar *jL, const PetscScalar *jR, PetscScalar *lmt)
+{
   PetscInt i;
   for (i = 0; i < info->m; i++) lmt[i] = MinMod2(jL[i], jR[i]);
 }
-void Limit_Superbee(LimitInfo info, const PetscScalar *jL, const PetscScalar *jR, PetscScalar *lmt) {
+void Limit_Superbee(LimitInfo info, const PetscScalar *jL, const PetscScalar *jR, PetscScalar *lmt)
+{
   PetscInt i;
   for (i = 0; i < info->m; i++) lmt[i] = MaxMod2(MinMod2(jL[i], 2 * jR[i]), MinMod2(2 * jL[i], jR[i]));
 }
-void Limit_MC(LimitInfo info, const PetscScalar *jL, const PetscScalar *jR, PetscScalar *lmt) {
+void Limit_MC(LimitInfo info, const PetscScalar *jL, const PetscScalar *jR, PetscScalar *lmt)
+{
   PetscInt i;
   for (i = 0; i < info->m; i++) lmt[i] = MinMod3(2 * jL[i], 0.5 * (jL[i] + jR[i]), 2 * jR[i]);
 }
-void Limit_VanLeer(LimitInfo info, const PetscScalar *jL, const PetscScalar *jR, PetscScalar *lmt) { /* phi = (t + abs(t)) / (1 + abs(t)) */
+void Limit_VanLeer(LimitInfo info, const PetscScalar *jL, const PetscScalar *jR, PetscScalar *lmt)
+{ /* phi = (t + abs(t)) / (1 + abs(t)) */
   PetscInt i;
   for (i = 0; i < info->m; i++) lmt[i] = (jL[i] * Abs(jR[i]) + Abs(jL[i]) * jR[i]) / (Abs(jL[i]) + Abs(jR[i]) + 1e-15);
 }
@@ -67,7 +82,8 @@ void Limit_VanAlbada(LimitInfo info, const PetscScalar *jL, const PetscScalar *j
   PetscInt i;
   for (i = 0; i < info->m; i++) lmt[i] = (jL[i] * Sqr(jR[i]) + Sqr(jL[i]) * jR[i]) / (Sqr(jL[i]) + Sqr(jR[i]) + 1e-15);
 }
-void Limit_VanAlbadaTVD(LimitInfo info, const PetscScalar *jL, const PetscScalar *jR, PetscScalar *lmt) { /* phi = (t + t^2) / (1 + t^2) */
+void Limit_VanAlbadaTVD(LimitInfo info, const PetscScalar *jL, const PetscScalar *jR, PetscScalar *lmt)
+{ /* phi = (t + t^2) / (1 + t^2) */
   PetscInt i;
   for (i = 0; i < info->m; i++) lmt[i] = (jL[i] * jR[i] < 0) ? 0 : (jL[i] * Sqr(jR[i]) + Sqr(jL[i]) * jR[i]) / (Sqr(jL[i]) + Sqr(jR[i]) + 1e-15);
 }
@@ -81,18 +97,22 @@ void Limit_KorenSym(LimitInfo info, const PetscScalar *jL, const PetscScalar *jR
   PetscInt i;
   for (i = 0; i < info->m; i++) lmt[i] = (1.5 * (jL[i] * Sqr(jR[i]) + Sqr(jL[i]) * jR[i]) / (2 * Sqr(jL[i]) - jL[i] * jR[i] + 2 * Sqr(jR[i]) + 1e-15));
 }
-void Limit_Koren3(LimitInfo info, const PetscScalar *jL, const PetscScalar *jR, PetscScalar *lmt) { /* Eq 11 of Cada-Torrilhon 2009 */
+void Limit_Koren3(LimitInfo info, const PetscScalar *jL, const PetscScalar *jR, PetscScalar *lmt)
+{ /* Eq 11 of Cada-Torrilhon 2009 */
   PetscInt i;
   for (i = 0; i < info->m; i++) lmt[i] = MinMod3(2 * jL[i], (jL[i] + 2 * jR[i]) / 3, 2 * jR[i]);
 }
-static PetscReal CadaTorrilhonPhiHatR_Eq13(PetscReal L, PetscReal R) {
+static PetscReal CadaTorrilhonPhiHatR_Eq13(PetscReal L, PetscReal R)
+{
   return PetscMax(0, PetscMin((L + 2 * R) / 3, PetscMax(-0.5 * L, PetscMin(2 * L, PetscMin((L + 2 * R) / 3, 1.6 * R)))));
 }
-void Limit_CadaTorrilhon2(LimitInfo info, const PetscScalar *jL, const PetscScalar *jR, PetscScalar *lmt) { /* Cada-Torrilhon 2009, Eq 13 */
+void Limit_CadaTorrilhon2(LimitInfo info, const PetscScalar *jL, const PetscScalar *jR, PetscScalar *lmt)
+{ /* Cada-Torrilhon 2009, Eq 13 */
   PetscInt i;
   for (i = 0; i < info->m; i++) lmt[i] = CadaTorrilhonPhiHatR_Eq13(jL[i], jR[i]);
 }
-void Limit_CadaTorrilhon3R(PetscReal r, LimitInfo info, const PetscScalar *jL, const PetscScalar *jR, PetscScalar *lmt) { /* Cada-Torrilhon 2009, Eq 22 */
+void Limit_CadaTorrilhon3R(PetscReal r, LimitInfo info, const PetscScalar *jL, const PetscScalar *jR, PetscScalar *lmt)
+{ /* Cada-Torrilhon 2009, Eq 22 */
   /* They recommend 0.001 < r < 1, but larger values are more accurate in smooth regions */
   const PetscReal eps = 1e-7, hx = info->hx;
   PetscInt        i;
@@ -101,26 +121,32 @@ void Limit_CadaTorrilhon3R(PetscReal r, LimitInfo info, const PetscScalar *jL, c
     lmt[i] = ((eta < 1 - eps) ? (jL[i] + 2 * jR[i]) / 3 : ((eta > 1 + eps) ? CadaTorrilhonPhiHatR_Eq13(jL[i], jR[i]) : 0.5 * ((1 - (eta - 1) / eps) * (jL[i] + 2 * jR[i]) / 3 + (1 + (eta + 1) / eps) * CadaTorrilhonPhiHatR_Eq13(jL[i], jR[i]))));
   }
 }
-void Limit_CadaTorrilhon3R0p1(LimitInfo info, const PetscScalar *jL, const PetscScalar *jR, PetscScalar *lmt) {
+void Limit_CadaTorrilhon3R0p1(LimitInfo info, const PetscScalar *jL, const PetscScalar *jR, PetscScalar *lmt)
+{
   Limit_CadaTorrilhon3R(0.1, info, jL, jR, lmt);
 }
-void Limit_CadaTorrilhon3R1(LimitInfo info, const PetscScalar *jL, const PetscScalar *jR, PetscScalar *lmt) {
+void Limit_CadaTorrilhon3R1(LimitInfo info, const PetscScalar *jL, const PetscScalar *jR, PetscScalar *lmt)
+{
   Limit_CadaTorrilhon3R(1, info, jL, jR, lmt);
 }
-void Limit_CadaTorrilhon3R10(LimitInfo info, const PetscScalar *jL, const PetscScalar *jR, PetscScalar *lmt) {
+void Limit_CadaTorrilhon3R10(LimitInfo info, const PetscScalar *jL, const PetscScalar *jR, PetscScalar *lmt)
+{
   Limit_CadaTorrilhon3R(10, info, jL, jR, lmt);
 }
-void Limit_CadaTorrilhon3R100(LimitInfo info, const PetscScalar *jL, const PetscScalar *jR, PetscScalar *lmt) {
+void Limit_CadaTorrilhon3R100(LimitInfo info, const PetscScalar *jL, const PetscScalar *jR, PetscScalar *lmt)
+{
   Limit_CadaTorrilhon3R(100, info, jL, jR, lmt);
 }
 
 /* ----------------------- Limiters for split systems ------------------------- */
 
-void Limit2_Upwind(LimitInfo info, const PetscScalar *jL, const PetscScalar *jR, const PetscInt sf, const PetscInt fs, PetscInt n, PetscScalar *lmt) {
+void Limit2_Upwind(LimitInfo info, const PetscScalar *jL, const PetscScalar *jR, const PetscInt sf, const PetscInt fs, PetscInt n, PetscScalar *lmt)
+{
   PetscInt i;
   for (i = 0; i < info->m; i++) lmt[i] = 0;
 }
-void Limit2_LaxWendroff(LimitInfo info, const PetscScalar *jL, const PetscScalar *jR, const PetscInt sf, const PetscInt fs, PetscInt n, PetscScalar *lmt) {
+void Limit2_LaxWendroff(LimitInfo info, const PetscScalar *jL, const PetscScalar *jR, const PetscInt sf, const PetscInt fs, PetscInt n, PetscScalar *lmt)
+{
   PetscInt i;
   if (n < sf - 1) { /* slow components */
     for (i = 0; i < info->m; i++) lmt[i] = jR[i] / info->hxs;
@@ -138,7 +164,8 @@ void Limit2_LaxWendroff(LimitInfo info, const PetscScalar *jL, const PetscScalar
     for (i = 0; i < info->m; i++) lmt[i] = jR[i] / info->hxs;
   }
 }
-void Limit2_BeamWarming(LimitInfo info, const PetscScalar *jL, const PetscScalar *jR, const PetscInt sf, const PetscInt fs, PetscInt n, PetscScalar *lmt) {
+void Limit2_BeamWarming(LimitInfo info, const PetscScalar *jL, const PetscScalar *jR, const PetscInt sf, const PetscInt fs, PetscInt n, PetscScalar *lmt)
+{
   PetscInt i;
   if (n < sf - 1) {
     for (i = 0; i < info->m; i++) lmt[i] = jL[i] / info->hxs;
@@ -156,7 +183,8 @@ void Limit2_BeamWarming(LimitInfo info, const PetscScalar *jL, const PetscScalar
     for (i = 0; i < info->m; i++) lmt[i] = jL[i] / info->hxs;
   }
 }
-void Limit2_Fromm(LimitInfo info, const PetscScalar *jL, const PetscScalar *jR, const PetscInt sf, const PetscInt fs, PetscInt n, PetscScalar *lmt) {
+void Limit2_Fromm(LimitInfo info, const PetscScalar *jL, const PetscScalar *jR, const PetscInt sf, const PetscInt fs, PetscInt n, PetscScalar *lmt)
+{
   PetscInt i;
   if (n < sf - 1) {
     for (i = 0; i < info->m; i++) lmt[i] = 0.5 * (jL[i] + jR[i]) / info->hxs;
@@ -174,7 +202,8 @@ void Limit2_Fromm(LimitInfo info, const PetscScalar *jL, const PetscScalar *jR, 
     for (i = 0; i < info->m; i++) lmt[i] = 0.5 * (jL[i] + jR[i]) / info->hxs;
   }
 }
-void Limit2_Minmod(LimitInfo info, const PetscScalar *jL, const PetscScalar *jR, const PetscInt sf, const PetscInt fs, PetscInt n, PetscScalar *lmt) {
+void Limit2_Minmod(LimitInfo info, const PetscScalar *jL, const PetscScalar *jR, const PetscInt sf, const PetscInt fs, PetscInt n, PetscScalar *lmt)
+{
   PetscInt i;
   if (n < sf - 1) {
     for (i = 0; i < info->m; i++) lmt[i] = MinMod2(jL[i], jR[i]) / info->hxs;
@@ -192,7 +221,8 @@ void Limit2_Minmod(LimitInfo info, const PetscScalar *jL, const PetscScalar *jR,
     for (i = 0; i < info->m; i++) lmt[i] = MinMod2(jL[i], jR[i]) / info->hxs;
   }
 }
-void Limit2_Superbee(LimitInfo info, const PetscScalar *jL, const PetscScalar *jR, const PetscInt sf, const PetscInt fs, PetscInt n, PetscScalar *lmt) {
+void Limit2_Superbee(LimitInfo info, const PetscScalar *jL, const PetscScalar *jR, const PetscInt sf, const PetscInt fs, PetscInt n, PetscScalar *lmt)
+{
   PetscInt i;
   if (n < sf - 1) {
     for (i = 0; i < info->m; i++) lmt[i] = MaxMod2(MinMod2(jL[i], 2 * jR[i]), MinMod2(2 * jL[i], jR[i])) / info->hxs;
@@ -210,7 +240,8 @@ void Limit2_Superbee(LimitInfo info, const PetscScalar *jL, const PetscScalar *j
     for (i = 0; i < info->m; i++) lmt[i] = MinMod2(MinMod2(jL[i], 2 * jR[i]), MinMod2(2 * jL[i], jR[i])) / info->hxs;
   }
 }
-void Limit2_MC(LimitInfo info, const PetscScalar *jL, const PetscScalar *jR, const PetscInt sf, const PetscInt fs, PetscInt n, PetscScalar *lmt) {
+void Limit2_MC(LimitInfo info, const PetscScalar *jL, const PetscScalar *jR, const PetscInt sf, const PetscInt fs, PetscInt n, PetscScalar *lmt)
+{
   PetscInt i;
   if (n < sf - 1) {
     for (i = 0; i < info->m; i++) lmt[i] = MinMod3(2 * jL[i], 0.5 * (jL[i] + jR[i]), 2 * jR[i]) / info->hxs;
@@ -228,7 +259,8 @@ void Limit2_MC(LimitInfo info, const PetscScalar *jL, const PetscScalar *jR, con
     for (i = 0; i < info->m; i++) lmt[i] = MinMod3(2 * jL[i], 0.5 * (jL[i] + jR[i]), 2 * jR[i]) / info->hxs;
   }
 }
-void Limit2_Koren3(LimitInfo info, const PetscScalar *jL, const PetscScalar *jR, const PetscInt sf, const PetscInt fs, PetscInt n, PetscScalar *lmt) { /* Eq 11 of Cada-Torrilhon 2009 */
+void Limit2_Koren3(LimitInfo info, const PetscScalar *jL, const PetscScalar *jR, const PetscInt sf, const PetscInt fs, PetscInt n, PetscScalar *lmt)
+{ /* Eq 11 of Cada-Torrilhon 2009 */
   PetscInt i;
   if (n < sf - 1) {
     for (i = 0; i < info->m; i++) lmt[i] = MinMod3(2 * jL[i], (jL[i] + 2 * jR[i]) / 3, 2 * jR[i]) / info->hxs;
@@ -248,11 +280,13 @@ void Limit2_Koren3(LimitInfo info, const PetscScalar *jL, const PetscScalar *jR,
 }
 
 /* ---- Three-way splitting ---- */
-void Limit3_Upwind(LimitInfo info, const PetscScalar *jL, const PetscScalar *jR, const PetscInt sm, const PetscInt mf, const PetscInt fm, const PetscInt ms, PetscInt n, PetscScalar *lmt) {
+void Limit3_Upwind(LimitInfo info, const PetscScalar *jL, const PetscScalar *jR, const PetscInt sm, const PetscInt mf, const PetscInt fm, const PetscInt ms, PetscInt n, PetscScalar *lmt)
+{
   PetscInt i;
   for (i = 0; i < info->m; i++) lmt[i] = 0;
 }
-void Limit3_LaxWendroff(LimitInfo info, const PetscScalar *jL, const PetscScalar *jR, const PetscInt sm, const PetscInt mf, const PetscInt fm, const PetscInt ms, PetscInt n, PetscScalar *lmt) {
+void Limit3_LaxWendroff(LimitInfo info, const PetscScalar *jL, const PetscScalar *jR, const PetscInt sm, const PetscInt mf, const PetscInt fm, const PetscInt ms, PetscInt n, PetscScalar *lmt)
+{
   PetscInt i;
   if (n < sm - 1 || n > ms) { /* slow components */
     for (i = 0; i < info->m; i++) lmt[i] = jR[i] / info->hxs;
@@ -266,7 +300,8 @@ void Limit3_LaxWendroff(LimitInfo info, const PetscScalar *jL, const PetscScalar
     for (i = 0; i < info->m; i++) lmt[i] = jR[i] / info->hxf;
   }
 }
-void Limit3_BeamWarming(LimitInfo info, const PetscScalar *jL, const PetscScalar *jR, const PetscInt sm, const PetscInt mf, const PetscInt fm, const PetscInt ms, PetscInt n, PetscScalar *lmt) {
+void Limit3_BeamWarming(LimitInfo info, const PetscScalar *jL, const PetscScalar *jR, const PetscInt sm, const PetscInt mf, const PetscInt fm, const PetscInt ms, PetscInt n, PetscScalar *lmt)
+{
   PetscInt i;
   if (n < sm || n > ms) {
     for (i = 0; i < info->m; i++) lmt[i] = jL[i] / info->hxs;
@@ -280,7 +315,8 @@ void Limit3_BeamWarming(LimitInfo info, const PetscScalar *jL, const PetscScalar
     for (i = 0; i < info->m; i++) lmt[i] = jL[i] / info->hxf;
   }
 }
-void Limit3_Fromm(LimitInfo info, const PetscScalar *jL, const PetscScalar *jR, const PetscInt sm, const PetscInt mf, const PetscInt fm, const PetscInt ms, PetscInt n, PetscScalar *lmt) {
+void Limit3_Fromm(LimitInfo info, const PetscScalar *jL, const PetscScalar *jR, const PetscInt sm, const PetscInt mf, const PetscInt fm, const PetscInt ms, PetscInt n, PetscScalar *lmt)
+{
   PetscInt i;
   if (n < sm - 1 || n > ms) {
     for (i = 0; i < info->m; i++) lmt[i] = 0.5 * (jL[i] + jR[i]) / info->hxs;
@@ -306,7 +342,8 @@ void Limit3_Fromm(LimitInfo info, const PetscScalar *jL, const PetscScalar *jR, 
     for (i = 0; i < info->m; i++) lmt[i] = 0.5 * (jL[i] + jR[i]) / info->hxf;
   }
 }
-void Limit3_Minmod(LimitInfo info, const PetscScalar *jL, const PetscScalar *jR, const PetscInt sm, const PetscInt mf, const PetscInt fm, const PetscInt ms, PetscInt n, PetscScalar *lmt) {
+void Limit3_Minmod(LimitInfo info, const PetscScalar *jL, const PetscScalar *jR, const PetscInt sm, const PetscInt mf, const PetscInt fm, const PetscInt ms, PetscInt n, PetscScalar *lmt)
+{
   PetscInt i;
   if (n < sm - 1 || n > ms) {
     for (i = 0; i < info->m; i++) lmt[i] = MinMod2(jL[i], jR[i]) / info->hxs;
@@ -332,7 +369,8 @@ void Limit3_Minmod(LimitInfo info, const PetscScalar *jL, const PetscScalar *jR,
     for (i = 0; i < info->m; i++) lmt[i] = 0.5 * (jL[i] + jR[i]) / info->hxf;
   }
 }
-void Limit3_Superbee(LimitInfo info, const PetscScalar *jL, const PetscScalar *jR, const PetscInt sm, const PetscInt mf, const PetscInt fm, const PetscInt ms, PetscInt n, PetscScalar *lmt) {
+void Limit3_Superbee(LimitInfo info, const PetscScalar *jL, const PetscScalar *jR, const PetscInt sm, const PetscInt mf, const PetscInt fm, const PetscInt ms, PetscInt n, PetscScalar *lmt)
+{
   PetscInt i;
   if (n < sm - 1 || n > ms) {
     for (i = 0; i < info->m; i++) lmt[i] = MaxMod2(MinMod2(jL[i], 2 * jR[i]), MinMod2(2 * jL[i], jR[i])) / info->hxs;
@@ -358,7 +396,8 @@ void Limit3_Superbee(LimitInfo info, const PetscScalar *jL, const PetscScalar *j
     for (i = 0; i < info->m; i++) lmt[i] = MaxMod2(MinMod2(jL[i], 2 * jR[i]), MinMod2(2 * jL[i], jR[i])) / info->hxf;
   }
 }
-void Limit3_MC(LimitInfo info, const PetscScalar *jL, const PetscScalar *jR, const PetscInt sm, const PetscInt mf, const PetscInt fm, const PetscInt ms, PetscInt n, PetscScalar *lmt) {
+void Limit3_MC(LimitInfo info, const PetscScalar *jL, const PetscScalar *jR, const PetscInt sm, const PetscInt mf, const PetscInt fm, const PetscInt ms, PetscInt n, PetscScalar *lmt)
+{
   PetscInt i;
   if (n < sm - 1 || n > ms) {
     for (i = 0; i < info->m; i++) lmt[i] = MinMod3(2 * jL[i], 0.5 * (jL[i] + jR[i]), 2 * jR[i]) / info->hxs;
@@ -384,7 +423,8 @@ void Limit3_MC(LimitInfo info, const PetscScalar *jL, const PetscScalar *jR, con
     for (i = 0; i < info->m; i++) lmt[i] = MinMod3(2 * jL[i], 0.5 * (jL[i] + jR[i]), 2 * jR[i]) / info->hxf;
   }
 }
-void Limit3_Koren3(LimitInfo info, const PetscScalar *jL, const PetscScalar *jR, const PetscInt sm, const PetscInt mf, const PetscInt fm, const PetscInt ms, PetscInt n, PetscScalar *lmt) { /* Eq 11 of Cada-Torrilhon 2009 */
+void Limit3_Koren3(LimitInfo info, const PetscScalar *jL, const PetscScalar *jR, const PetscInt sm, const PetscInt mf, const PetscInt fm, const PetscInt ms, PetscInt n, PetscScalar *lmt)
+{ /* Eq 11 of Cada-Torrilhon 2009 */
   PetscInt i;
   if (n < sm - 1 || n > ms) {
     for (i = 0; i < info->m; i++) lmt[i] = MinMod3(2 * jL[i], (jL[i] + 2 * jR[i]) / 3, 2 * jR[i]) / info->hxs;
@@ -411,52 +451,60 @@ void Limit3_Koren3(LimitInfo info, const PetscScalar *jL, const PetscScalar *jR,
   }
 }
 
-PetscErrorCode RiemannListAdd(PetscFunctionList *flist, const char *name, RiemannFunction rsolve) {
+PetscErrorCode RiemannListAdd(PetscFunctionList *flist, const char *name, RiemannFunction rsolve)
+{
   PetscFunctionBeginUser;
   PetscCall(PetscFunctionListAdd(flist, name, rsolve));
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode RiemannListFind(PetscFunctionList flist, const char *name, RiemannFunction *rsolve) {
+PetscErrorCode RiemannListFind(PetscFunctionList flist, const char *name, RiemannFunction *rsolve)
+{
   PetscFunctionBeginUser;
   PetscCall(PetscFunctionListFind(flist, name, rsolve));
   PetscCheck(*rsolve, PETSC_COMM_SELF, PETSC_ERR_ARG_UNKNOWN_TYPE, "Riemann solver \"%s\" could not be found", name);
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode ReconstructListAdd(PetscFunctionList *flist, const char *name, ReconstructFunction r) {
+PetscErrorCode ReconstructListAdd(PetscFunctionList *flist, const char *name, ReconstructFunction r)
+{
   PetscFunctionBeginUser;
   PetscCall(PetscFunctionListAdd(flist, name, r));
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode ReconstructListFind(PetscFunctionList flist, const char *name, ReconstructFunction *r) {
+PetscErrorCode ReconstructListFind(PetscFunctionList flist, const char *name, ReconstructFunction *r)
+{
   PetscFunctionBeginUser;
   PetscCall(PetscFunctionListFind(flist, name, r));
   PetscCheck(*r, PETSC_COMM_SELF, PETSC_ERR_ARG_UNKNOWN_TYPE, "Reconstruction \"%s\" could not be found", name);
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode RiemannListAdd_2WaySplit(PetscFunctionList *flist, const char *name, RiemannFunction_2WaySplit rsolve) {
+PetscErrorCode RiemannListAdd_2WaySplit(PetscFunctionList *flist, const char *name, RiemannFunction_2WaySplit rsolve)
+{
   PetscFunctionBeginUser;
   PetscCall(PetscFunctionListAdd(flist, name, rsolve));
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode RiemannListFind_2WaySplit(PetscFunctionList flist, const char *name, RiemannFunction_2WaySplit *rsolve) {
+PetscErrorCode RiemannListFind_2WaySplit(PetscFunctionList flist, const char *name, RiemannFunction_2WaySplit *rsolve)
+{
   PetscFunctionBeginUser;
   PetscCall(PetscFunctionListFind(flist, name, rsolve));
   PetscCheck(*rsolve, PETSC_COMM_SELF, PETSC_ERR_ARG_UNKNOWN_TYPE, "Riemann solver \"%s\" could not be found", name);
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode ReconstructListAdd_2WaySplit(PetscFunctionList *flist, const char *name, ReconstructFunction_2WaySplit r) {
+PetscErrorCode ReconstructListAdd_2WaySplit(PetscFunctionList *flist, const char *name, ReconstructFunction_2WaySplit r)
+{
   PetscFunctionBeginUser;
   PetscCall(PetscFunctionListAdd(flist, name, r));
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode ReconstructListFind_2WaySplit(PetscFunctionList flist, const char *name, ReconstructFunction_2WaySplit *r) {
+PetscErrorCode ReconstructListFind_2WaySplit(PetscFunctionList flist, const char *name, ReconstructFunction_2WaySplit *r)
+{
   PetscFunctionBeginUser;
   PetscCall(PetscFunctionListFind(flist, name, r));
   PetscCheck(*r, PETSC_COMM_SELF, PETSC_ERR_ARG_UNKNOWN_TYPE, "Reconstruction \"%s\" could not be found", name);
@@ -464,14 +512,16 @@ PetscErrorCode ReconstructListFind_2WaySplit(PetscFunctionList flist, const char
 }
 
 /* --------------------------------- Physics ------- */
-PetscErrorCode PhysicsDestroy_SimpleFree(void *vctx) {
+PetscErrorCode PhysicsDestroy_SimpleFree(void *vctx)
+{
   PetscFunctionBeginUser;
   PetscCall(PetscFree(vctx));
   PetscFunctionReturn(0);
 }
 
 /* --------------------------------- Finite Volume Solver --------------- */
-PetscErrorCode FVRHSFunction(TS ts, PetscReal time, Vec X, Vec F, void *vctx) {
+PetscErrorCode FVRHSFunction(TS ts, PetscReal time, Vec X, Vec F, void *vctx)
+{
   FVCtx       *ctx = (FVCtx *)vctx;
   PetscInt     i, j, k, Mx, dof, xs, xm;
   PetscReal    hx, cfl_idt = 0;
@@ -568,7 +618,8 @@ PetscErrorCode FVRHSFunction(TS ts, PetscReal time, Vec X, Vec F, void *vctx) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode FVSample(FVCtx *ctx, DM da, PetscReal time, Vec U) {
+PetscErrorCode FVSample(FVCtx *ctx, DM da, PetscReal time, Vec U)
+{
   PetscScalar *u, *uj;
   PetscInt     i, j, k, dof, xs, xm, Mx;
 
@@ -594,7 +645,8 @@ PetscErrorCode FVSample(FVCtx *ctx, DM da, PetscReal time, Vec U) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode SolutionStatsView(DM da, Vec X, PetscViewer viewer) {
+PetscErrorCode SolutionStatsView(DM da, Vec X, PetscViewer viewer)
+{
   PetscReal          xmin, xmax;
   PetscScalar        sum, tvsum, tvgsum;
   const PetscScalar *x;

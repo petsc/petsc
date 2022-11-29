@@ -94,7 +94,7 @@
     reason to avoid these packages for sequential use.
 */
 
-#if !defined(MPIUNI_H)
+#ifndef MPIUNI_H
 #define MPIUNI_H
 
 /* Required by abort() in mpi.c & for win64 */
@@ -106,29 +106,29 @@
     Note that it does require <petscconf.h> to be included to obtain some properties of the system being built for
 */
 #if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
-#define MPIUni_PETSC_DLLEXPORT __declspec(dllexport)
-#define MPIUni_PETSC_DLLIMPORT __declspec(dllimport)
+  #define MPIUni_PETSC_DLLEXPORT __declspec(dllexport)
+  #define MPIUni_PETSC_DLLIMPORT __declspec(dllimport)
 #elif defined(PETSC_USE_VISIBILITY_CXX) && defined(__cplusplus)
-#define MPIUni_PETSC_DLLEXPORT __attribute__((visibility("default")))
-#define MPIUni_PETSC_DLLIMPORT __attribute__((visibility("default")))
+  #define MPIUni_PETSC_DLLEXPORT __attribute__((visibility("default")))
+  #define MPIUni_PETSC_DLLIMPORT __attribute__((visibility("default")))
 #elif defined(PETSC_USE_VISIBILITY_C) && !defined(__cplusplus)
-#define MPIUni_PETSC_DLLEXPORT __attribute__((visibility("default")))
-#define MPIUni_PETSC_DLLIMPORT __attribute__((visibility("default")))
+  #define MPIUni_PETSC_DLLEXPORT __attribute__((visibility("default")))
+  #define MPIUni_PETSC_DLLIMPORT __attribute__((visibility("default")))
 #else
-#define MPIUni_PETSC_DLLEXPORT
-#define MPIUni_PETSC_DLLIMPORT
+  #define MPIUni_PETSC_DLLEXPORT
+  #define MPIUni_PETSC_DLLIMPORT
 #endif
 
 #if defined(petsc_EXPORTS)
-#define MPIUni_PETSC_VISIBILITY_PUBLIC MPIUni_PETSC_DLLEXPORT
+  #define MPIUni_PETSC_VISIBILITY_PUBLIC MPIUni_PETSC_DLLEXPORT
 #else /* Win32 users need this to import symbols from petsc.dll */
-#define MPIUni_PETSC_VISIBILITY_PUBLIC MPIUni_PETSC_DLLIMPORT
+  #define MPIUni_PETSC_VISIBILITY_PUBLIC MPIUni_PETSC_DLLIMPORT
 #endif
 
 #if defined(__cplusplus)
-#define MPIUni_PETSC_EXTERN extern "C" MPIUni_PETSC_VISIBILITY_PUBLIC
+  #define MPIUni_PETSC_EXTERN extern "C" MPIUni_PETSC_VISIBILITY_PUBLIC
 #else
-#define MPIUni_PETSC_EXTERN extern MPIUni_PETSC_VISIBILITY_PUBLIC
+  #define MPIUni_PETSC_EXTERN extern MPIUni_PETSC_VISIBILITY_PUBLIC
 #endif
 
 #if defined(__cplusplus)
@@ -146,7 +146,7 @@ typedef unsigned long long MPIUNI_UINT64;
 typedef _int64                   MPIUNI_INT64;
 typedef unsigned _int64          MPIUNI_UINT64;
 #else
-#error "Cannot determine MPIUNI_INT64, MPIUNI_UINT64 types"
+  #error "Cannot determine MPIUNI_INT64, MPIUNI_UINT64 types"
 #endif
 
 /*
@@ -254,12 +254,12 @@ typedef int MPI_Datatype;
 #define MPI_sizeof_default(datatype) ((((datatype) >> 8) & 0xfff) * ((datatype)&0xff))
 #if defined(PETSC_USE_REAL___FP16)
 MPIUni_PETSC_EXTERN MPI_Datatype MPIU___FP16;
-#define MPI_sizeof(datatype) ((datatype == MPIU___FP16) ? (int)(2 * sizeof(char)) : MPI_sizeof_default(datatype))
+  #define MPI_sizeof(datatype) ((datatype == MPIU___FP16) ? (int)(2 * sizeof(char)) : MPI_sizeof_default(datatype))
 #elif defined(PETSC_USE_REAL___FLOAT128)
 MPIUni_PETSC_EXTERN MPI_Datatype MPIU___FLOAT128;
-#define MPI_sizeof(datatype) ((datatype == MPIU___FLOAT128) ? (int)(2 * sizeof(double)) : MPI_sizeof_default(datatype))
+  #define MPI_sizeof(datatype) ((datatype == MPIU___FLOAT128) ? (int)(2 * sizeof(double)) : MPI_sizeof_default(datatype))
 #else
-#define MPI_sizeof(datatype) (MPI_sizeof_default(datatype))
+  #define MPI_sizeof(datatype) (MPI_sizeof_default(datatype))
 #endif
 
 MPIUni_PETSC_EXTERN int MPIUNI_Memcpy(void *, const void *, int);

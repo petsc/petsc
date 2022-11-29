@@ -9,7 +9,8 @@ static char help[] = "Parallel vector layout.\n\n";
 */
 #include <petscvec.h>
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscMPIInt rank;
   PetscInt    i, istart, iend, n = 6, nlocal;
   PetscScalar v, *array;

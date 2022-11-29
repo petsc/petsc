@@ -4,7 +4,7 @@ import os
 class Configure(config.package.CMakePackage):
   def __init__(self, framework):
     config.package.CMakePackage.__init__(self, framework)
-    self.gitcommit        = 'e01905479683d27866306312424bb41fdc817f5e' # jolivet/feature-mmg-install-3.18.0 apr-10-2022
+    self.gitcommit        = 'befc9a39b14ea564d5ae8f34e3804e99b9df2be7' # jolivet/feature-mmg-install-3.19.0-alpha oct-06-2022
     self.download         = ['git://https://github.com/prj-/mmg.git','https://github.com/prj-/mmg/archive/'+self.gitcommit+'.tar.gz']
     self.versionname      = 'MMG_VERSION_RELEASE'
     self.includes         = ['mmg/libmmg.h']
@@ -28,4 +28,15 @@ class Configure(config.package.CMakePackage):
     args.append('-DUSE_VTK=OFF')
     args.append('-DUSE_POINTMAP=ON')
     args.append('-DSCOTCH_DIR:STRING="'+self.ptscotch.directory+'"')
+    if self.getDefaultIndexSize() == 64:
+      int64_t = '''
+#if !(defined(PETSC_HAVE_STDINT_H) && defined(PETSC_HAVE_INTTYPES_H) && defined(PETSC_HAVE_MPI_INT64_T))
+#error PetscInt64 != int64_t
+#endif
+'''
+      same_int64 = self.checkCompile(int64_t)
+      if same_int64:
+        args.append('-DMMG5_INT=int64_t')
+      else:
+        raise RuntimeError('Cannot use --download-mmg with a PetscInt64 type different than int64_t')
     return args

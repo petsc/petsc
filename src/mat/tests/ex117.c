@@ -6,7 +6,8 @@ static char help[] = "Tests Cholesky factorization for a SBAIJ matrix, (bs=2).\n
 
 #include <petscmat.h>
 
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   Mat           mat, fact, B;
   PetscInt      ind1[2], ind2[2];
   PetscScalar   temp[4];

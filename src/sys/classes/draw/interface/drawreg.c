@@ -5,7 +5,7 @@
 #include <petsc/private/drawimpl.h> /*I "petscdraw.h" I*/
 #include <petscviewer.h>            /*I "petscviewer.h" I*/
 #if defined(PETSC_HAVE_SAWS)
-#include <petscviewersaws.h>
+  #include <petscviewersaws.h>
 #endif
 
 /*
@@ -39,7 +39,8 @@ PetscFunctionList PetscDrawList = NULL;
 
 .seealso: `PetscDraw`, `PetscViewerASCIIOpen()`, `PetscViewer`
 @*/
-PetscErrorCode PetscDrawView(PetscDraw indraw, PetscViewer viewer) {
+PetscErrorCode PetscDrawView(PetscDraw indraw, PetscViewer viewer)
+{
   PetscBool isdraw;
 #if defined(PETSC_HAVE_SAWS)
   PetscBool issaws;
@@ -93,7 +94,8 @@ PetscErrorCode PetscDrawView(PetscDraw indraw, PetscViewer viewer) {
    Level: intermediate
 .seealso: `PetscDraw`, `PetscDrawView`, `PetscObjectViewFromOptions()`, `PetscDrawCreate()`
 @*/
-PetscErrorCode PetscDrawViewFromOptions(PetscDraw A, PetscObject obj, const char name[]) {
+PetscErrorCode PetscDrawViewFromOptions(PetscDraw A, PetscObject obj, const char name[])
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, PETSC_DRAW_CLASSID, 1);
   PetscCall(PetscObjectViewFromOptions((PetscObject)A, obj, name));
@@ -129,7 +131,8 @@ PetscErrorCode PetscDrawViewFromOptions(PetscDraw A, PetscObject obj, const char
           `PetscDrawPause()`, `PetscDrawSetDoubleBuffer()`, `PetscDrawClear()`, `PetscDrawFlush()`, `PetscDrawGetSingleton()`, `PetscDrawGetMouseButton()`,
           `PetscDrawZoom()`, `PetscDrawGetBoundingBox()`
 @*/
-PetscErrorCode PetscDrawCreate(MPI_Comm comm, const char display[], const char title[], int x, int y, int w, int h, PetscDraw *indraw) {
+PetscErrorCode PetscDrawCreate(MPI_Comm comm, const char display[], const char title[], int x, int y, int w, int h, PetscDraw *indraw)
+{
   PetscDraw draw;
   PetscReal dpause = 0.0;
   PetscBool flag;
@@ -187,20 +190,21 @@ PetscErrorCode PetscDrawCreate(MPI_Comm comm, const char display[], const char t
 +  draw      - the graphics context
 -  type      - for example, `PETSC_DRAW_X`
 
-   Options Database Command:
+   Options Database Key:
 .  -draw_type  <type> - Sets the type; use -help for a list of available methods (for instance, x)
-
-   See PetscDrawSetFromOptions() for additional options database keys
 
    Level: intermediate
 
    Note:
+   See `PetscDrawSetFromOptions()` for additional options database keys
+
    See "petsc/include/petscdraw.h" for available methods (for instance,
    `PETSC_DRAW_X`, `PETSC_DRAW_TIKZ` or `PETSC_DRAW_IMAGE`)
 
 .seealso: `PetscDraw`, `PETSC_DRAW_X`, `PETSC_DRAW_TIKZ`, `PETSC_DRAW_IMAGE`, `PetscDrawSetFromOptions()`, `PetscDrawCreate()`, `PetscDrawDestroy()`, `PetscDrawType`
 @*/
-PetscErrorCode PetscDrawSetType(PetscDraw draw, PetscDrawType type) {
+PetscErrorCode PetscDrawSetType(PetscDraw draw, PetscDrawType type)
+{
   PetscBool match;
   PetscBool flg = PETSC_FALSE;
   PetscErrorCode (*r)(PetscDraw);
@@ -269,7 +273,8 @@ PetscErrorCode PetscDrawSetType(PetscDraw draw, PetscDrawType type) {
 
 .seealso: `PetscDraw`, `PetscDrawType`, `PetscDrawSetType()`, `PetscDrawCreate()
 @*/
-PetscErrorCode PetscDrawGetType(PetscDraw draw, PetscDrawType *type) {
+PetscErrorCode PetscDrawGetType(PetscDraw draw, PetscDrawType *type)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw, PETSC_DRAW_CLASSID, 1);
   PetscValidPointer(type, 2);
@@ -303,7 +308,8 @@ $     -draw_type my_draw_type
 
 .seealso: `PetscDraw`, `PetscDrawRegisterAll()`, `PetscDrawRegisterDestroy()`, `PetscDrawType`, `PetscDrawSetType()`
 @*/
-PetscErrorCode PetscDrawRegister(const char *sname, PetscErrorCode (*function)(PetscDraw)) {
+PetscErrorCode PetscDrawRegister(const char *sname, PetscErrorCode (*function)(PetscDraw))
+{
   PetscFunctionBegin;
   PetscCall(PetscDrawInitializePackage());
   PetscCall(PetscFunctionListAdd(&PetscDrawList, sname, function));
@@ -324,7 +330,8 @@ PetscErrorCode PetscDrawRegister(const char *sname, PetscErrorCode (*function)(P
 
 .seealso: `PetscDraw`, `PetscDrawSetFromOptions()`, `PetscDrawCreate()`
 @*/
-PetscErrorCode PetscDrawSetOptionsPrefix(PetscDraw draw, const char prefix[]) {
+PetscErrorCode PetscDrawSetOptionsPrefix(PetscDraw draw, const char prefix[])
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw, PETSC_DRAW_CLASSID, 1);
   PetscCall(PetscObjectSetOptionsPrefix((PetscObject)draw, prefix));
@@ -359,7 +366,8 @@ PetscErrorCode PetscDrawSetOptionsPrefix(PetscDraw draw, const char prefix[]) {
 
 .seealso: `PetscDraw`, `PetscDrawCreate()`, `PetscDrawSetType()`, `PetscDrawSetSave()`, `PetscDrawSetSaveFinalImage()`, `PetscDrawPause()`, `PetscDrawSetPause()`
 @*/
-PetscErrorCode PetscDrawSetFromOptions(PetscDraw draw) {
+PetscErrorCode PetscDrawSetFromOptions(PetscDraw draw)
+{
   PetscBool   flg, nox;
   char        vtype[256];
   const char *def;

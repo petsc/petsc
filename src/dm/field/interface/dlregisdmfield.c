@@ -7,7 +7,7 @@ static PetscBool DMFieldPackageInitialized = PETSC_FALSE;
 PetscBool DMFieldRegisterAllCalled;
 
 /*@C
-   DMFieldInitializePackage - Initialize DMField package
+   DMFieldInitializePackage - Initialize `DMField` package
 
    Logically Collective
 
@@ -15,7 +15,8 @@ PetscBool DMFieldRegisterAllCalled;
 
 .seealso: `DMFieldFinalizePackage()`
 @*/
-PetscErrorCode DMFieldInitializePackage(void) {
+PetscErrorCode DMFieldInitializePackage(void)
+{
   PetscFunctionBegin;
   if (DMFieldPackageInitialized) PetscFunctionReturn(0);
   DMFieldPackageInitialized = PETSC_TRUE;
@@ -27,7 +28,7 @@ PetscErrorCode DMFieldInitializePackage(void) {
 }
 
 /*@C
-   DMFieldFinalizePackage - Finalize DMField package, it is called from PetscFinalize()
+   DMFieldFinalizePackage - Finalize `DMField` package, it is called from `PetscFinalize()`
 
    Logically Collective
 
@@ -35,7 +36,8 @@ PetscErrorCode DMFieldInitializePackage(void) {
 
 .seealso: `DMFieldInitializePackage()`
 @*/
-PetscErrorCode DMFieldFinalizePackage(void) {
+PetscErrorCode DMFieldFinalizePackage(void)
+{
   PetscFunctionBegin;
   PetscCall(PetscFunctionListDestroy(&DMFieldList));
   DMFieldPackageInitialized = PETSC_FALSE;

@@ -6,7 +6,8 @@ static char help[] = "Test DMStag default MG components, on a Stokes-like system
 
 PetscErrorCode CreateSystem(DM dm, Mat *A, Vec *b);
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   DM        dm;
   PetscInt  dim;
   PetscBool flg;
@@ -72,7 +73,8 @@ int main(int argc, char **argv) {
 }
 
 /* Note: unlike in the 2D case, this does not include reasonable scaling and so will not work well */
-PetscErrorCode CreateSystem1d(DM dm, Mat *A, Vec *b) {
+PetscErrorCode CreateSystem1d(DM dm, Mat *A, Vec *b)
+{
   PetscInt dim;
 
   PetscFunctionBeginUser;
@@ -235,7 +237,8 @@ PetscErrorCode CreateSystem1d(DM dm, Mat *A, Vec *b) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode CreateSystem2d(DM dm, Mat *A, Vec *b) {
+PetscErrorCode CreateSystem2d(DM dm, Mat *A, Vec *b)
+{
   PetscInt  N[2];
   PetscBool isLastRankx, isLastRanky, isFirstRankx, isFirstRanky;
   PetscInt  ex, ey, startx, starty, nx, ny;
@@ -607,7 +610,8 @@ PetscErrorCode CreateSystem2d(DM dm, Mat *A, Vec *b) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode CreateSystem(DM dm, Mat *A, Vec *b) {
+PetscErrorCode CreateSystem(DM dm, Mat *A, Vec *b)
+{
   PetscInt dim;
 
   PetscFunctionBeginUser;

@@ -2,7 +2,8 @@
 #include <../src/ksp/ksp/impls/gmres/gmresimpl.h>
 #include <petscblaslapack.h>
 
-PetscErrorCode KSPComputeExtremeSingularValues_GMRES(KSP ksp, PetscReal *emax, PetscReal *emin) {
+PetscErrorCode KSPComputeExtremeSingularValues_GMRES(KSP ksp, PetscReal *emax, PetscReal *emin)
+{
   KSP_GMRES   *gmres = (KSP_GMRES *)ksp->data;
   PetscInt     n = gmres->it + 1, i, N = gmres->max_k + 2;
   PetscBLASInt bn, bN, lwork, idummy, lierr;
@@ -39,7 +40,8 @@ PetscErrorCode KSPComputeExtremeSingularValues_GMRES(KSP ksp, PetscReal *emax, P
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode KSPComputeEigenvalues_GMRES(KSP ksp, PetscInt nmax, PetscReal *r, PetscReal *c, PetscInt *neig) {
+PetscErrorCode KSPComputeEigenvalues_GMRES(KSP ksp, PetscInt nmax, PetscReal *r, PetscReal *c, PetscInt *neig)
+{
 #if !defined(PETSC_USE_COMPLEX)
   KSP_GMRES   *gmres = (KSP_GMRES *)ksp->data;
   PetscInt     n = gmres->it + 1, N = gmres->max_k + 1, i, *perm;
@@ -110,7 +112,8 @@ PetscErrorCode KSPComputeEigenvalues_GMRES(KSP ksp, PetscInt nmax, PetscReal *r,
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode KSPComputeRitz_GMRES(KSP ksp, PetscBool ritz, PetscBool small, PetscInt *nrit, Vec S[], PetscReal *tetar, PetscReal *tetai) {
+PetscErrorCode KSPComputeRitz_GMRES(KSP ksp, PetscBool ritz, PetscBool small, PetscInt *nrit, Vec S[], PetscReal *tetar, PetscReal *tetai)
+{
   KSP_GMRES   *gmres = (KSP_GMRES *)ksp->data;
   PetscInt     NbrRitz, nb = 0, n;
   PetscInt     i, j, *perm;

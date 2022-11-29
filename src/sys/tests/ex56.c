@@ -3,7 +3,8 @@ static char help[] = "Tests PetscHasExternalPackage().\n\n";
 
 #include <petscsys.h>
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   char      pkg[128] = "hdf5";
   PetscBool has, flg;
 

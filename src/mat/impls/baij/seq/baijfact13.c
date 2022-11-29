@@ -8,7 +8,8 @@
 /*
       Version for when blocks are 3 by 3
 */
-PetscErrorCode MatLUFactorNumeric_SeqBAIJ_3_inplace(Mat C, Mat A, const MatFactorInfo *info) {
+PetscErrorCode MatLUFactorNumeric_SeqBAIJ_3_inplace(Mat C, Mat A, const MatFactorInfo *info)
+{
   Mat_SeqBAIJ    *a = (Mat_SeqBAIJ *)A->data, *b = (Mat_SeqBAIJ *)C->data;
   IS              isrow = b->row, isicol = b->icol;
   const PetscInt *r, *ic;
@@ -159,7 +160,8 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_3_inplace(Mat C, Mat A, const MatFacto
        PetscKernel_A_gets_A_minus_B_times_C()
        PetscKernel_A_gets_inverse_A()
 */
-PetscErrorCode MatLUFactorNumeric_SeqBAIJ_3(Mat B, Mat A, const MatFactorInfo *info) {
+PetscErrorCode MatLUFactorNumeric_SeqBAIJ_3(Mat B, Mat A, const MatFactorInfo *info)
+{
   Mat             C = B;
   Mat_SeqBAIJ    *a = (Mat_SeqBAIJ *)A->data, *b = (Mat_SeqBAIJ *)C->data;
   IS              isrow = b->row, isicol = b->icol;
@@ -263,7 +265,8 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_3(Mat B, Mat A, const MatFactorInfo *i
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatLUFactorNumeric_SeqBAIJ_3_NaturalOrdering_inplace(Mat C, Mat A, const MatFactorInfo *info) {
+PetscErrorCode MatLUFactorNumeric_SeqBAIJ_3_NaturalOrdering_inplace(Mat C, Mat A, const MatFactorInfo *info)
+{
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ *)A->data, *b = (Mat_SeqBAIJ *)C->data;
   PetscInt     i, j, n = a->mbs, *bi = b->i, *bj = b->j;
   PetscInt    *ajtmpold, *ajtmp, nz, row;
@@ -406,7 +409,8 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_3_NaturalOrdering_inplace(Mat C, Mat A
   MatLUFactorNumeric_SeqBAIJ_3_NaturalOrdering -
     copied from MatLUFactorNumeric_SeqBAIJ_2_NaturalOrdering_inplace()
 */
-PetscErrorCode MatLUFactorNumeric_SeqBAIJ_3_NaturalOrdering(Mat B, Mat A, const MatFactorInfo *info) {
+PetscErrorCode MatLUFactorNumeric_SeqBAIJ_3_NaturalOrdering(Mat B, Mat A, const MatFactorInfo *info)
+{
   Mat             C = B;
   Mat_SeqBAIJ    *a = (Mat_SeqBAIJ *)A->data, *b = (Mat_SeqBAIJ *)C->data;
   PetscInt        i, j, k, nz, nzL, row;

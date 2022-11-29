@@ -60,7 +60,8 @@ would build the following SF:
 
 */
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscSF     sf;
   PetscLayout layout;
   PetscInt    N, n;
@@ -99,7 +100,8 @@ int main(int argc, char **argv) {
       nB      = 2;
       offsetB = 600;
       break;
-    default: SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_WRONG_MPI_SIZE, "Must run with 3 MPI processes");
+    default:
+      SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_WRONG_MPI_SIZE, "Must run with 3 MPI processes");
     }
     PetscCall(PetscMalloc1(nA, &A));
     PetscCall(PetscMalloc1(nB, &B));
@@ -119,7 +121,8 @@ int main(int argc, char **argv) {
       B[0] = 0;
       B[1] = 3;
       break;
-    default: SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_WRONG_MPI_SIZE, "Must run with 3 MPI processes");
+    default:
+      SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_WRONG_MPI_SIZE, "Must run with 3 MPI processes");
     }
     break;
   case 1:
@@ -138,7 +141,8 @@ int main(int argc, char **argv) {
       nA      = 1;
       offsetA = 300;
       break;
-    default: SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_WRONG_MPI_SIZE, "Must run with 3 MPI processes");
+    default:
+      SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_WRONG_MPI_SIZE, "Must run with 3 MPI processes");
     }
     PetscCall(PetscMalloc1(nA, &A));
     switch (rank) {
@@ -147,9 +151,14 @@ int main(int argc, char **argv) {
       A[1] = 0;
       A[2] = 2;
       break;
-    case 1: A[0] = 3; break;
-    case 2: A[0] = 3; break;
-    default: SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_WRONG_MPI_SIZE, "Must run with 3 MPI processes");
+    case 1:
+      A[0] = 3;
+      break;
+    case 2:
+      A[0] = 3;
+      break;
+    default:
+      SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_WRONG_MPI_SIZE, "Must run with 3 MPI processes");
     }
     nB      = nA;
     B       = A;
@@ -177,7 +186,8 @@ int main(int argc, char **argv) {
       nB      = 2;
       offsetB = 600;
       break;
-    default: SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_WRONG_MPI_SIZE, "Must run with 3 MPI processes");
+    default:
+      SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_WRONG_MPI_SIZE, "Must run with 3 MPI processes");
     }
     PetscCall(PetscMalloc1(nA, &A));
     PetscCall(PetscMalloc1(nB, &B));
@@ -196,7 +206,8 @@ int main(int argc, char **argv) {
       B[0] = 0;
       B[1] = 3;
       break;
-    default: SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_WRONG_MPI_SIZE, "Must run with 3 MPI processes");
+    default:
+      SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_WRONG_MPI_SIZE, "Must run with 3 MPI processes");
     }
     break;
   }

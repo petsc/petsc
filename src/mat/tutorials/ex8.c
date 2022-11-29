@@ -4,7 +4,8 @@ static char help[] = "Shows how to add a new MatOperation to AIJ MatType\n\n";
 #include <petscmat.h>
 #include <petscblaslapack.h>
 
-static PetscErrorCode MatScaleUserImpl_SeqAIJ(Mat inA, PetscScalar alpha) {
+static PetscErrorCode MatScaleUserImpl_SeqAIJ(Mat inA, PetscScalar alpha)
+{
   PetscFunctionBegin;
   PetscCall(MatScale(inA, alpha));
   PetscFunctionReturn(0);
@@ -12,7 +13,8 @@ static PetscErrorCode MatScaleUserImpl_SeqAIJ(Mat inA, PetscScalar alpha) {
 
 extern PetscErrorCode MatScaleUserImpl(Mat, PetscScalar);
 
-static PetscErrorCode MatScaleUserImpl_MPIAIJ(Mat A, PetscScalar aa) {
+static PetscErrorCode MatScaleUserImpl_MPIAIJ(Mat A, PetscScalar aa)
+{
   Mat AA, AB;
 
   PetscFunctionBegin;
@@ -25,7 +27,8 @@ static PetscErrorCode MatScaleUserImpl_MPIAIJ(Mat A, PetscScalar aa) {
 /* This routine registers MatScaleUserImpl_SeqAIJ() and
    MatScaleUserImpl_MPIAIJ() as methods providing MatScaleUserImpl()
    functionality for SeqAIJ and MPIAIJ matrix-types */
-PetscErrorCode RegisterMatScaleUserImpl(Mat mat) {
+PetscErrorCode RegisterMatScaleUserImpl(Mat mat)
+{
   PetscMPIInt size;
 
   PetscFunctionBegin;
@@ -45,7 +48,8 @@ PetscErrorCode RegisterMatScaleUserImpl(Mat mat) {
 /* This routine deregisters MatScaleUserImpl_SeqAIJ() and
    MatScaleUserImpl_MPIAIJ() as methods providing MatScaleUserImpl()
    functionality for SeqAIJ and MPIAIJ matrix-types */
-PetscErrorCode DeRegisterMatScaleUserImpl(Mat mat) {
+PetscErrorCode DeRegisterMatScaleUserImpl(Mat mat)
+{
   PetscMPIInt size;
 
   PetscFunctionBegin;
@@ -67,7 +71,8 @@ PetscErrorCode DeRegisterMatScaleUserImpl(Mat mat) {
    routine. i.e if MatType is SeqAIJ, MatScaleUserImpl_SeqAIJ() gets
    called, and if MatType is MPIAIJ, MatScaleUserImpl_MPIAIJ() gets
    called */
-PetscErrorCode MatScaleUserImpl(Mat mat, PetscScalar a) {
+PetscErrorCode MatScaleUserImpl(Mat mat, PetscScalar a)
+{
   PetscErrorCode (*f)(Mat, PetscScalar);
 
   PetscFunctionBegin;
@@ -78,7 +83,8 @@ PetscErrorCode MatScaleUserImpl(Mat mat, PetscScalar a) {
 
 /* Main user code that uses MatScaleUserImpl() */
 
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   Mat         mat;
   PetscInt    i, j, m = 2, n, Ii, J;
   PetscScalar v, none = -1.0;

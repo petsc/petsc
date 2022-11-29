@@ -3,7 +3,7 @@
    system of mixed complementarity equations
  */
 
-#if !defined(__SNES_VISS_H)
+#ifndef __SNES_VISS_H
 #define __SNES_VISS_H
 
 #include <petsc/private/snesimpl.h>

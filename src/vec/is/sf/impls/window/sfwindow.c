@@ -36,7 +36,8 @@ const char *const PetscSFWindowSyncTypes[]   = {"FENCE", "LOCK", "ACTIVE", "Pets
 const char *const PetscSFWindowFlavorTypes[] = {"CREATE", "DYNAMIC", "ALLOCATE", "SHARED", "PetscSFWindowFlavorType", "PETSCSF_WINDOW_FLAVOR_", NULL};
 
 /* Built-in MPI_Ops act elementwise inside MPI_Accumulate, but cannot be used with composite types inside collectives (MPI_Allreduce) */
-static PetscErrorCode PetscSFWindowOpTranslate(MPI_Op *op) {
+static PetscErrorCode PetscSFWindowOpTranslate(MPI_Op *op)
+{
   PetscFunctionBegin;
   if (*op == MPIU_SUM) *op = MPI_SUM;
   else if (*op == MPIU_MAX) *op = MPI_MAX;
@@ -50,7 +51,7 @@ static PetscErrorCode PetscSFWindowOpTranslate(MPI_Op *op) {
    Not Collective
 
    Input Parameters:
-+  sf - star forest
++  sf - star forest of type `PETSCSFWINDOW`
 -  unit - data type for each node
 
    Output Parameters:
@@ -59,9 +60,10 @@ static PetscErrorCode PetscSFWindowOpTranslate(MPI_Op *op) {
 
    Level: developer
 
-.seealso: `PetscSFSetGraph()`, `PetscSFView()`
+.seealso: `PetscSF`, `PETSCSFWINDOW`, `PetscSFSetGraph()`, `PetscSFView()`
 @*/
-static PetscErrorCode PetscSFWindowGetDataTypes(PetscSF sf, MPI_Datatype unit, const MPI_Datatype **localtypes, const MPI_Datatype **remotetypes) {
+static PetscErrorCode PetscSFWindowGetDataTypes(PetscSF sf, MPI_Datatype unit, const MPI_Datatype **localtypes, const MPI_Datatype **remotetypes)
+{
   PetscSF_Window    *w = (PetscSF_Window *)sf->data;
   PetscSFDataLink    link;
   PetscInt           i, nranks;
@@ -117,21 +119,22 @@ static PetscErrorCode PetscSFWindowGetDataTypes(PetscSF sf, MPI_Datatype unit, c
 }
 
 /*@C
-   PetscSFWindowSetFlavorType - Set flavor type for MPI_Win creation
+   PetscSFWindowSetFlavorType - Set flavor type for `MPI_Win` creation
 
    Logically Collective
 
    Input Parameters:
-+  sf - star forest for communication
++  sf - star forest for communication of type `PETSCSFWINDOW`
 -  flavor - flavor type
 
    Options Database Key:
-.  -sf_window_flavor <flavor> - sets the flavor type CREATE, DYNAMIC, ALLOCATE or SHARED (see PetscSFWindowFlavorType)
+.  -sf_window_flavor <flavor> - sets the flavor type CREATE, DYNAMIC, ALLOCATE or SHARED (see `PetscSFWindowFlavorType`)
 
    Level: advanced
 
-   Notes: Windows reusage follow this rules:
-
+   Notes:
+   Windows reuse follows these rules:
+.vb
      PETSCSF_WINDOW_FLAVOR_CREATE: creates a new window every time, uses MPI_Win_create
 
      PETSCSF_WINDOW_FLAVOR_DYNAMIC: uses MPI_Win_create_dynamic/MPI_Win_attach and tries to reuse windows by comparing the root array. Intended to be used on repeated applications of the same SF, e.g.
@@ -151,10 +154,12 @@ static PetscErrorCode PetscSFWindowGetDataTypes(PetscSF sf, MPI_Datatype unit, c
      PETSCSF_WINDOW_FLAVOR_ALLOCATE: uses MPI_Win_allocate, reuses any pre-existing window which fits the data and it is not in use
 
      PETSCSF_WINDOW_FLAVOR_SHARED: uses MPI_Win_allocate_shared, reusage policy as for PETSCSF_WINDOW_FLAVOR_ALLOCATE
+.ve
 
-.seealso: `PetscSFSetFromOptions()`, `PetscSFWindowGetFlavorType()`
+.seealso:  `PetscSF`, `PETSCSFWINDOW`, `PetscSFSetFromOptions()`, `PetscSFWindowGetFlavorType()`
 @*/
-PetscErrorCode PetscSFWindowSetFlavorType(PetscSF sf, PetscSFWindowFlavorType flavor) {
+PetscErrorCode PetscSFWindowSetFlavorType(PetscSF sf, PetscSFWindowFlavorType flavor)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sf, PETSCSF_CLASSID, 1);
   PetscValidLogicalCollectiveEnum(sf, flavor, 2);
@@ -162,7 +167,8 @@ PetscErrorCode PetscSFWindowSetFlavorType(PetscSF sf, PetscSFWindowFlavorType fl
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscSFWindowSetFlavorType_Window(PetscSF sf, PetscSFWindowFlavorType flavor) {
+static PetscErrorCode PetscSFWindowSetFlavorType_Window(PetscSF sf, PetscSFWindowFlavorType flavor)
+{
   PetscSF_Window *w = (PetscSF_Window *)sf->data;
 
   PetscFunctionBegin;
@@ -171,21 +177,22 @@ static PetscErrorCode PetscSFWindowSetFlavorType_Window(PetscSF sf, PetscSFWindo
 }
 
 /*@C
-   PetscSFWindowGetFlavorType - Get flavor type for PetscSF communication
+   PetscSFWindowGetFlavorType - Get  `PETSCSFWINDOW` flavor type for `PetscSF` communication
 
    Logically Collective
 
    Input Parameter:
-.  sf - star forest for communication
+.  sf - star forest for communication of type `PETSCSFWINDOW`
 
    Output Parameter:
 .  flavor - flavor type
 
    Level: advanced
 
-.seealso: `PetscSFSetFromOptions()`, `PetscSFWindowSetFlavorType()`
+.seealso:  `PetscSF`, `PETSCSFWINDOW`, `PetscSFSetFromOptions()`, `PetscSFWindowSetFlavorType()`
 @*/
-PetscErrorCode PetscSFWindowGetFlavorType(PetscSF sf, PetscSFWindowFlavorType *flavor) {
+PetscErrorCode PetscSFWindowGetFlavorType(PetscSF sf, PetscSFWindowFlavorType *flavor)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sf, PETSCSF_CLASSID, 1);
   PetscValidPointer(flavor, 2);
@@ -193,7 +200,8 @@ PetscErrorCode PetscSFWindowGetFlavorType(PetscSF sf, PetscSFWindowFlavorType *f
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscSFWindowGetFlavorType_Window(PetscSF sf, PetscSFWindowFlavorType *flavor) {
+static PetscErrorCode PetscSFWindowGetFlavorType_Window(PetscSF sf, PetscSFWindowFlavorType *flavor)
+{
   PetscSF_Window *w = (PetscSF_Window *)sf->data;
 
   PetscFunctionBegin;
@@ -202,7 +210,7 @@ static PetscErrorCode PetscSFWindowGetFlavorType_Window(PetscSF sf, PetscSFWindo
 }
 
 /*@C
-   PetscSFWindowSetSyncType - Set synchronization type for PetscSF communication
+   PetscSFWindowSetSyncType - Set synchronization type for `PetscSF` communication of type  `PETSCSFWINDOW`
 
    Logically Collective
 
@@ -211,13 +219,14 @@ static PetscErrorCode PetscSFWindowGetFlavorType_Window(PetscSF sf, PetscSFWindo
 -  sync - synchronization type
 
    Options Database Key:
-.  -sf_window_sync <sync> - sets the synchronization type FENCE, LOCK, or ACTIVE (see PetscSFWindowSyncType)
+.  -sf_window_sync <sync> - sets the synchronization type FENCE, LOCK, or ACTIVE (see `PetscSFWindowSyncType`)
 
    Level: advanced
 
-.seealso: `PetscSFSetFromOptions()`, `PetscSFWindowGetSyncType()`
+.seealso:  `PetscSF`, `PETSCSFWINDOW`, `PetscSFSetFromOptions()`, `PetscSFWindowGetSyncType()`, `PetscSFWindowSyncType`
 @*/
-PetscErrorCode PetscSFWindowSetSyncType(PetscSF sf, PetscSFWindowSyncType sync) {
+PetscErrorCode PetscSFWindowSetSyncType(PetscSF sf, PetscSFWindowSyncType sync)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sf, PETSCSF_CLASSID, 1);
   PetscValidLogicalCollectiveEnum(sf, sync, 2);
@@ -225,7 +234,8 @@ PetscErrorCode PetscSFWindowSetSyncType(PetscSF sf, PetscSFWindowSyncType sync) 
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscSFWindowSetSyncType_Window(PetscSF sf, PetscSFWindowSyncType sync) {
+static PetscErrorCode PetscSFWindowSetSyncType_Window(PetscSF sf, PetscSFWindowSyncType sync)
+{
   PetscSF_Window *w = (PetscSF_Window *)sf->data;
 
   PetscFunctionBegin;
@@ -234,7 +244,7 @@ static PetscErrorCode PetscSFWindowSetSyncType_Window(PetscSF sf, PetscSFWindowS
 }
 
 /*@C
-   PetscSFWindowGetSyncType - Get synchronization type for PetscSF communication
+   PetscSFWindowGetSyncType - Get synchronization type for `PetscSF` communication of type `PETSCSFWINDOW`
 
    Logically Collective
 
@@ -246,9 +256,10 @@ static PetscErrorCode PetscSFWindowSetSyncType_Window(PetscSF sf, PetscSFWindowS
 
    Level: advanced
 
-.seealso: `PetscSFSetFromOptions()`, `PetscSFWindowSetSyncType()`
+.seealso: `PetscSF`, `PETSCSFWINDOW`, `PetscSFSetFromOptions()`, `PetscSFWindowSetSyncType()`, `PetscSFWindowSyncType`
 @*/
-PetscErrorCode PetscSFWindowGetSyncType(PetscSF sf, PetscSFWindowSyncType *sync) {
+PetscErrorCode PetscSFWindowGetSyncType(PetscSF sf, PetscSFWindowSyncType *sync)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sf, PETSCSF_CLASSID, 1);
   PetscValidPointer(sync, 2);
@@ -256,7 +267,8 @@ PetscErrorCode PetscSFWindowGetSyncType(PetscSF sf, PetscSFWindowSyncType *sync)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscSFWindowGetSyncType_Window(PetscSF sf, PetscSFWindowSyncType *sync) {
+static PetscErrorCode PetscSFWindowGetSyncType_Window(PetscSF sf, PetscSFWindowSyncType *sync)
+{
   PetscSF_Window *w = (PetscSF_Window *)sf->data;
 
   PetscFunctionBegin;
@@ -265,28 +277,31 @@ static PetscErrorCode PetscSFWindowGetSyncType_Window(PetscSF sf, PetscSFWindowS
 }
 
 /*@C
-   PetscSFWindowSetInfo - Set the MPI_Info handle that will be used for subsequent windows allocation
+   PetscSFWindowSetInfo - Set the `MPI_Info` handle that will be used for subsequent windows allocation
 
    Logically Collective
 
    Input Parameters:
 +  sf - star forest for communication
--  info - MPI_Info handle
+-  info - `MPI_Info` handle
 
    Level: advanced
 
-   Notes: the info handle is duplicated with a call to MPI_Info_dup unless info = MPI_INFO_NULL.
+   Note:
+   The info handle is duplicated with a call to `MPI_Info_dup()` unless info = `MPI_INFO_NULL`.
 
-.seealso: `PetscSFSetFromOptions()`, `PetscSFWindowGetInfo()`
+.seealso: `PetscSF`, `PETSCSFWINDOW`, `PetscSFSetFromOptions()`, `PetscSFWindowGetInfo()`
 @*/
-PetscErrorCode PetscSFWindowSetInfo(PetscSF sf, MPI_Info info) {
+PetscErrorCode PetscSFWindowSetInfo(PetscSF sf, MPI_Info info)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sf, PETSCSF_CLASSID, 1);
   PetscTryMethod(sf, "PetscSFWindowSetInfo_C", (PetscSF, MPI_Info), (sf, info));
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscSFWindowSetInfo_Window(PetscSF sf, MPI_Info info) {
+static PetscErrorCode PetscSFWindowSetInfo_Window(PetscSF sf, MPI_Info info)
+{
   PetscSF_Window *w = (PetscSF_Window *)sf->data;
 
   PetscFunctionBegin;
@@ -296,7 +311,7 @@ static PetscErrorCode PetscSFWindowSetInfo_Window(PetscSF sf, MPI_Info info) {
 }
 
 /*@C
-   PetscSFWindowGetInfo - Get the MPI_Info handle used for windows allocation
+   PetscSFWindowGetInfo - Get the `MPI_Info` handle used for windows allocation
 
    Logically Collective
 
@@ -304,15 +319,17 @@ static PetscErrorCode PetscSFWindowSetInfo_Window(PetscSF sf, MPI_Info info) {
 .  sf - star forest for communication
 
    Output Parameter:
-.  info - MPI_Info handle
+.  info - `MPI_Info` handle
 
    Level: advanced
 
-   Notes: if PetscSFWindowSetInfo() has not be called, this returns MPI_INFO_NULL
+   Note:
+   If `PetscSFWindowSetInfo()` has not be called, this returns `MPI_INFO_NULL`
 
-.seealso: `PetscSFSetFromOptions()`, `PetscSFWindowSetInfo()`
+.seealso: `PetscSF`, `PETSCSFWINDOW`, `PetscSFSetFromOptions()`, `PetscSFWindowSetInfo()`
 @*/
-PetscErrorCode PetscSFWindowGetInfo(PetscSF sf, MPI_Info *info) {
+PetscErrorCode PetscSFWindowGetInfo(PetscSF sf, MPI_Info *info)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sf, PETSCSF_CLASSID, 1);
   PetscValidPointer(info, 2);
@@ -320,7 +337,8 @@ PetscErrorCode PetscSFWindowGetInfo(PetscSF sf, MPI_Info *info) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscSFWindowGetInfo_Window(PetscSF sf, MPI_Info *info) {
+static PetscErrorCode PetscSFWindowGetInfo_Window(PetscSF sf, MPI_Info *info)
+{
   PetscSF_Window *w = (PetscSF_Window *)sf->data;
 
   PetscFunctionBegin;
@@ -331,27 +349,29 @@ static PetscErrorCode PetscSFWindowGetInfo_Window(PetscSF sf, MPI_Info *info) {
 /*
    PetscSFGetWindow - Get a window for use with a given data type
 
-   Collective on PetscSF
+   Collective on sf
 
    Input Parameters:
 +  sf - star forest
 .  unit - data type
 .  array - array to be sent
-.  sync - type of synchronization PetscSFWindowSyncType
-.  epoch - PETSC_TRUE to acquire the window and start an epoch, PETSC_FALSE to just acquire the window
-.  fenceassert - assert parameter for call to MPI_Win_fence(), if sync == PETSCSF_WINDOW_SYNC_FENCE
-.  postassert - assert parameter for call to MPI_Win_post(), if sync == PETSCSF_WINDOW_SYNC_ACTIVE
--  startassert - assert parameter for call to MPI_Win_start(), if sync == PETSCSF_WINDOW_SYNC_ACTIVE
+.  sync - type of synchronization `PetscSFWindowSyncType`
+.  epoch - `PETSC_TRUE` to acquire the window and start an epoch, `PETSC_FALSE` to just acquire the window
+.  fenceassert - assert parameter for call to `MPI_Win_fence()`, if sync == `PETSCSF_WINDOW_SYNC_FENCE`
+.  postassert - assert parameter for call to `MPI_Win_post()`, if sync == `PETSCSF_WINDOW_SYNC_ACTIVE`
+-  startassert - assert parameter for call to `MPI_Win_start()`, if sync == `PETSCSF_WINDOW_SYNC_ACTIVE`
 
    Output Parameters:
-+  target_disp - target_disp argument for RMA calls (significative for PETSCSF_WINDOW_FLAVOR_DYNAMIC only)
-+  reqs - array of requests (significative for sync == PETSCSF_WINDOW_SYNC_LOCK only)
++  target_disp - target_disp argument for RMA calls (significative for `PETSCSF_WINDOW_FLAVOR_DYNAMIC` only)
++  reqs - array of requests (significative for sync == `PETSCSF_WINDOW_SYNC_LOCK` only)
 -  win - window
 
    Level: developer
-.seealso: `PetscSFGetRootRanks()`, `PetscSFWindowGetDataTypes()`
+
+.seealso: `PetscSF`, `PETSCSFWINDOW`, `PetscSFGetRootRanks()`, `PetscSFWindowGetDataTypes()`
 */
-static PetscErrorCode PetscSFGetWindow(PetscSF sf, MPI_Datatype unit, void *array, PetscSFWindowSyncType sync, PetscBool epoch, PetscMPIInt fenceassert, PetscMPIInt postassert, PetscMPIInt startassert, const MPI_Aint **target_disp, MPI_Request **reqs, MPI_Win *win) {
+static PetscErrorCode PetscSFGetWindow(PetscSF sf, MPI_Datatype unit, void *array, PetscSFWindowSyncType sync, PetscBool epoch, PetscMPIInt fenceassert, PetscMPIInt postassert, PetscMPIInt startassert, const MPI_Aint **target_disp, MPI_Request **reqs, MPI_Win *win)
+{
   PetscSF_Window *w = (PetscSF_Window *)sf->data;
   MPI_Aint        lb, lb_true, bytes, bytes_true;
   PetscSFWinLink  link;
@@ -402,7 +422,8 @@ static PetscErrorCode PetscSFGetWindow(PetscSF sf, MPI_Datatype unit, void *arra
         winok       = PETSC_TRUE;
       }
       break;
-    default: SETERRQ(PetscObjectComm((PetscObject)sf), PETSC_ERR_SUP, "No support for flavor %s", PetscSFWindowFlavorTypes[w->flavor]);
+    default:
+      SETERRQ(PetscObjectComm((PetscObject)sf), PETSC_ERR_SUP, "No support for flavor %s", PetscSFWindowFlavorTypes[w->flavor]);
     }
     if (winok) {
       *win = link->win;
@@ -432,12 +453,13 @@ static PetscErrorCode PetscSFGetWindow(PetscSF sf, MPI_Datatype unit, void *arra
     link->paddr = array;
     break;
 #if defined(PETSC_HAVE_MPI_FEATURE_DYNAMIC_WINDOW)
-  case PETSCSF_WINDOW_FLAVOR_DYNAMIC: PetscCallMPI(MPI_Win_create_dynamic(w->info, PetscObjectComm((PetscObject)sf), &link->win));
-#if defined(PETSC_HAVE_OMPI_MAJOR_VERSION) /* some OpenMPI versions do not support MPI_Win_attach(win,NULL,0); */
+  case PETSCSF_WINDOW_FLAVOR_DYNAMIC:
+    PetscCallMPI(MPI_Win_create_dynamic(w->info, PetscObjectComm((PetscObject)sf), &link->win));
+  #if defined(PETSC_HAVE_OMPI_MAJOR_VERSION) /* some OpenMPI versions do not support MPI_Win_attach(win,NULL,0); */
     PetscCallMPI(MPI_Win_attach(link->win, wsize ? array : (void *)dummy, wsize));
-#else
+  #else
     PetscCallMPI(MPI_Win_attach(link->win, array, wsize));
-#endif
+  #endif
     link->addr  = array;
     link->paddr = array;
     PetscCheck(w->dynsf, PetscObjectComm((PetscObject)sf), PETSC_ERR_ORDER, "Must call PetscSFSetUp()");
@@ -461,7 +483,8 @@ static PetscErrorCode PetscSFGetWindow(PetscSF sf, MPI_Datatype unit, void *arra
     link->paddr = array;
     break;
 #endif
-  default: SETERRQ(PetscObjectComm((PetscObject)sf), PETSC_ERR_SUP, "No support for flavor %s", PetscSFWindowFlavorTypes[w->flavor]);
+  default:
+    SETERRQ(PetscObjectComm((PetscObject)sf), PETSC_ERR_SUP, "No support for flavor %s", PetscSFWindowFlavorTypes[w->flavor]);
   }
   PetscCall(PetscInfo(sf, "New window %" PETSC_MPI_WIN_FMT " of flavor %d for comm %" PETSC_MPI_COMM_FMT "\n", link->win, link->flavor, PetscObjectComm((PetscObject)sf)));
   *win = link->win;
@@ -485,8 +508,11 @@ found:
   link->epoch = epoch;
   if (epoch) {
     switch (sync) {
-    case PETSCSF_WINDOW_SYNC_FENCE: PetscCallMPI(MPI_Win_fence(fenceassert, *win)); break;
-    case PETSCSF_WINDOW_SYNC_LOCK: /* Handled outside */ break;
+    case PETSCSF_WINDOW_SYNC_FENCE:
+      PetscCallMPI(MPI_Win_fence(fenceassert, *win));
+      break;
+    case PETSCSF_WINDOW_SYNC_LOCK: /* Handled outside */
+      break;
     case PETSCSF_WINDOW_SYNC_ACTIVE: {
       MPI_Group   ingroup, outgroup;
       PetscMPIInt isize, osize;
@@ -505,7 +531,8 @@ found:
       if (isize) PetscCallMPI(MPI_Win_post(ingroup, postassert, *win));
       if (osize) PetscCallMPI(MPI_Win_start(outgroup, startassert, *win));
     } break;
-    default: SETERRQ(PetscObjectComm((PetscObject)sf), PETSC_ERR_PLIB, "Unknown synchronization type");
+    default:
+      SETERRQ(PetscObjectComm((PetscObject)sf), PETSC_ERR_PLIB, "Unknown synchronization type");
     }
   }
   PetscFunctionReturn(0);
@@ -527,9 +554,10 @@ found:
 
    Level: developer
 
-.seealso: `PetscSFGetWindow()`, `PetscSFRestoreWindow()`
+.seealso: `PetscSF`, `PETSCSFWINDOW`, `PetscSFGetWindow()`, `PetscSFRestoreWindow()`
 */
-static PetscErrorCode PetscSFFindWindow(PetscSF sf, MPI_Datatype unit, const void *array, MPI_Win *win, MPI_Request **reqs) {
+static PetscErrorCode PetscSFFindWindow(PetscSF sf, MPI_Datatype unit, const void *array, MPI_Win *win, MPI_Request **reqs)
+{
   PetscSF_Window *w = (PetscSF_Window *)sf->data;
   PetscSFWinLink  link;
 
@@ -547,7 +575,7 @@ static PetscErrorCode PetscSFFindWindow(PetscSF sf, MPI_Datatype unit, const voi
 }
 
 /*
-   PetscSFRestoreWindow - Restores a window obtained with PetscSFGetWindow()
+   PetscSFRestoreWindow - Restores a window obtained with `PetscSFGetWindow()`
 
    Collective
 
@@ -555,16 +583,17 @@ static PetscErrorCode PetscSFFindWindow(PetscSF sf, MPI_Datatype unit, const voi
 +  sf - star forest
 .  unit - data type
 .  array - array associated with window
-.  sync - type of synchronization PetscSFWindowSyncType
-.  epoch - close an epoch, must match argument to PetscSFGetWindow()
+.  sync - type of synchronization `PetscSFWindowSyncType`
+.  epoch - close an epoch, must match argument to `PetscSFGetWindow()`
 .  update - if we have to update the local window array
 -  win - window
 
    Level: developer
 
-.seealso: `PetscSFFindWindow()`
+.seealso: `PetscSF`, `PETSCSFWINDOW`, `PetscSFFindWindow()`
 */
-static PetscErrorCode PetscSFRestoreWindow(PetscSF sf, MPI_Datatype unit, void *array, PetscSFWindowSyncType sync, PetscBool epoch, PetscMPIInt fenceassert, PetscBool update, MPI_Win *win) {
+static PetscErrorCode PetscSFRestoreWindow(PetscSF sf, MPI_Datatype unit, void *array, PetscSFWindowSyncType sync, PetscBool epoch, PetscMPIInt fenceassert, PetscBool update, MPI_Win *win)
+{
   PetscSF_Window         *w = (PetscSF_Window *)sf->data;
   PetscSFWinLink         *p, link;
   PetscBool               reuse = PETSC_FALSE;
@@ -598,8 +627,11 @@ found:
   PetscCall(PetscInfo(sf, "Window %" PETSC_MPI_WIN_FMT " of flavor %d for comm %" PETSC_MPI_COMM_FMT "\n", link->win, link->flavor, PetscObjectComm((PetscObject)sf)));
   if (epoch) {
     switch (sync) {
-    case PETSCSF_WINDOW_SYNC_FENCE: PetscCallMPI(MPI_Win_fence(fenceassert, *win)); break;
-    case PETSCSF_WINDOW_SYNC_LOCK: /* Handled outside */ break;
+    case PETSCSF_WINDOW_SYNC_FENCE:
+      PetscCallMPI(MPI_Win_fence(fenceassert, *win));
+      break;
+    case PETSCSF_WINDOW_SYNC_LOCK: /* Handled outside */
+      break;
     case PETSCSF_WINDOW_SYNC_ACTIVE: {
       MPI_Group   ingroup, outgroup;
       PetscMPIInt isize, osize;
@@ -617,7 +649,8 @@ found:
       if (osize) PetscCallMPI(MPI_Win_complete(*win));
       if (isize) PetscCallMPI(MPI_Win_wait(*win));
     } break;
-    default: SETERRQ(PetscObjectComm((PetscObject)sf), PETSC_ERR_PLIB, "Unknown synchronization type");
+    default:
+      SETERRQ(PetscObjectComm((PetscObject)sf), PETSC_ERR_PLIB, "Unknown synchronization type");
     }
   }
   if (update) {
@@ -637,7 +670,8 @@ found:
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscSFSetUp_Window(PetscSF sf) {
+static PetscErrorCode PetscSFSetUp_Window(PetscSF sf)
+{
   PetscSF_Window *w = (PetscSF_Window *)sf->data;
   MPI_Group       ingroup, outgroup;
 
@@ -655,16 +689,18 @@ static PetscErrorCode PetscSFSetUp_Window(PetscSF sf) {
     PetscCall(PetscSFDuplicate(sf, PETSCSF_DUPLICATE_RANKS, &w->dynsf));
     PetscCall(PetscSFWindowSetFlavorType(w->dynsf, PETSCSF_WINDOW_FLAVOR_CREATE)); /* break recursion */
     PetscCall(PetscSFSetGraph(w->dynsf, 1, sf->nranks, NULL, PETSC_OWN_POINTER, remotes, PETSC_OWN_POINTER));
-    PetscCall(PetscLogObjectParent((PetscObject)sf, (PetscObject)w->dynsf));
   }
   switch (w->sync) {
-  case PETSCSF_WINDOW_SYNC_ACTIVE: PetscCall(PetscSFGetGroups(sf, &ingroup, &outgroup));
-  default: break;
+  case PETSCSF_WINDOW_SYNC_ACTIVE:
+    PetscCall(PetscSFGetGroups(sf, &ingroup, &outgroup));
+  default:
+    break;
   }
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscSFSetFromOptions_Window(PetscSF sf, PetscOptionItems *PetscOptionsObject) {
+static PetscErrorCode PetscSFSetFromOptions_Window(PetscSF sf, PetscOptionItems *PetscOptionsObject)
+{
   PetscSF_Window         *w      = (PetscSF_Window *)sf->data;
   PetscSFWindowFlavorType flavor = w->flavor;
 
@@ -677,7 +713,8 @@ static PetscErrorCode PetscSFSetFromOptions_Window(PetscSF sf, PetscOptionItems 
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscSFReset_Window(PetscSF sf) {
+static PetscErrorCode PetscSFReset_Window(PetscSF sf)
+{
   PetscSF_Window *w = (PetscSF_Window *)sf->data;
   PetscSFDataLink link, next;
   PetscSFWinLink  wlink, wnext;
@@ -709,7 +746,8 @@ static PetscErrorCode PetscSFReset_Window(PetscSF sf) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscSFDestroy_Window(PetscSF sf) {
+static PetscErrorCode PetscSFDestroy_Window(PetscSF sf)
+{
   PetscFunctionBegin;
   PetscCall(PetscSFReset_Window(sf));
   PetscCall(PetscFree(sf->data));
@@ -722,7 +760,8 @@ static PetscErrorCode PetscSFDestroy_Window(PetscSF sf) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscSFView_Window(PetscSF sf, PetscViewer viewer) {
+static PetscErrorCode PetscSFView_Window(PetscSF sf, PetscViewer viewer)
+{
   PetscSF_Window   *w = (PetscSF_Window *)sf->data;
   PetscBool         iascii;
   PetscViewerFormat format;
@@ -755,7 +794,8 @@ static PetscErrorCode PetscSFView_Window(PetscSF sf, PetscViewer viewer) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscSFDuplicate_Window(PetscSF sf, PetscSFDuplicateOption opt, PetscSF newsf) {
+static PetscErrorCode PetscSFDuplicate_Window(PetscSF sf, PetscSFDuplicateOption opt, PetscSF newsf)
+{
   PetscSF_Window       *w = (PetscSF_Window *)sf->data;
   PetscSFWindowSyncType synctype;
 
@@ -769,7 +809,8 @@ static PetscErrorCode PetscSFDuplicate_Window(PetscSF sf, PetscSFDuplicateOption
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscSFBcastBegin_Window(PetscSF sf, MPI_Datatype unit, PetscMemType rootmtype, const void *rootdata, PetscMemType leafmtype, void *leafdata, MPI_Op op) {
+static PetscErrorCode PetscSFBcastBegin_Window(PetscSF sf, MPI_Datatype unit, PetscMemType rootmtype, const void *rootdata, PetscMemType leafmtype, void *leafdata, MPI_Op op)
+{
   PetscSF_Window     *w = (PetscSF_Window *)sf->data;
   PetscInt            i, nranks;
   const PetscMPIInt  *ranks;
@@ -800,7 +841,8 @@ static PetscErrorCode PetscSFBcastBegin_Window(PetscSF sf, MPI_Datatype unit, Pe
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscSFBcastEnd_Window(PetscSF sf, MPI_Datatype unit, const void *rootdata, void *leafdata, MPI_Op op) {
+PetscErrorCode PetscSFBcastEnd_Window(PetscSF sf, MPI_Datatype unit, const void *rootdata, void *leafdata, MPI_Op op)
+{
   PetscSF_Window *w = (PetscSF_Window *)sf->data;
   MPI_Win         win;
   MPI_Request    *reqs = NULL;
@@ -819,7 +861,8 @@ PetscErrorCode PetscSFBcastEnd_Window(PetscSF sf, MPI_Datatype unit, const void 
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscSFReduceBegin_Window(PetscSF sf, MPI_Datatype unit, PetscMemType leafmtype, const void *leafdata, PetscMemType rootmtype, void *rootdata, MPI_Op op) {
+PetscErrorCode PetscSFReduceBegin_Window(PetscSF sf, MPI_Datatype unit, PetscMemType leafmtype, const void *leafdata, PetscMemType rootmtype, void *rootdata, MPI_Op op)
+{
   PetscSF_Window     *w = (PetscSF_Window *)sf->data;
   PetscInt            i, nranks;
   const PetscMPIInt  *ranks;
@@ -842,7 +885,8 @@ PetscErrorCode PetscSFReduceBegin_Window(PetscSF sf, MPI_Datatype unit, PetscMem
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscSFReduceEnd_Window(PetscSF sf, MPI_Datatype unit, const void *leafdata, void *rootdata, MPI_Op op) {
+static PetscErrorCode PetscSFReduceEnd_Window(PetscSF sf, MPI_Datatype unit, const void *leafdata, void *rootdata, MPI_Op op)
+{
   PetscSF_Window *w = (PetscSF_Window *)sf->data;
   MPI_Win         win;
   MPI_Request    *reqs = NULL;
@@ -854,7 +898,8 @@ static PetscErrorCode PetscSFReduceEnd_Window(PetscSF sf, MPI_Datatype unit, con
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscSFFetchAndOpBegin_Window(PetscSF sf, MPI_Datatype unit, PetscMemType rootmtype, void *rootdata, PetscMemType leafmtype, const void *leafdata, void *leafupdate, MPI_Op op) {
+static PetscErrorCode PetscSFFetchAndOpBegin_Window(PetscSF sf, MPI_Datatype unit, PetscMemType rootmtype, void *rootdata, PetscMemType leafmtype, const void *leafdata, void *leafupdate, MPI_Op op)
+{
   PetscInt            i, nranks;
   const PetscMPIInt  *ranks;
   const MPI_Datatype *mine, *remote;
@@ -898,7 +943,8 @@ static PetscErrorCode PetscSFFetchAndOpBegin_Window(PetscSF sf, MPI_Datatype uni
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscSFFetchAndOpEnd_Window(PetscSF sf, MPI_Datatype unit, void *rootdata, const void *leafdata, void *leafupdate, MPI_Op op) {
+static PetscErrorCode PetscSFFetchAndOpEnd_Window(PetscSF sf, MPI_Datatype unit, void *rootdata, const void *leafdata, void *leafupdate, MPI_Op op)
+{
   MPI_Win win;
 #if defined(PETSC_HAVE_MPI_GET_ACCUMULATE)
   PetscSF_Window *w = (PetscSF_Window *)sf->data;
@@ -916,7 +962,8 @@ static PetscErrorCode PetscSFFetchAndOpEnd_Window(PetscSF sf, MPI_Datatype unit,
   PetscFunctionReturn(0);
 }
 
-PETSC_INTERN PetscErrorCode PetscSFCreate_Window(PetscSF sf) {
+PETSC_INTERN PetscErrorCode PetscSFCreate_Window(PetscSF sf)
+{
   PetscSF_Window *w = (PetscSF_Window *)sf->data;
 
   PetscFunctionBegin;
@@ -933,7 +980,7 @@ PETSC_INTERN PetscErrorCode PetscSFCreate_Window(PetscSF sf) {
   sf->ops->FetchAndOpBegin = PetscSFFetchAndOpBegin_Window;
   sf->ops->FetchAndOpEnd   = PetscSFFetchAndOpEnd_Window;
 
-  PetscCall(PetscNewLog(sf, &w));
+  PetscCall(PetscNew(&w));
   sf->data  = (void *)w;
   w->sync   = PETSCSF_WINDOW_SYNC_FENCE;
   w->flavor = PETSCSF_WINDOW_FLAVOR_CREATE;

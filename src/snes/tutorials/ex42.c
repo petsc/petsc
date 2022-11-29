@@ -15,7 +15,8 @@ static char help[] = "Newton's method to solve a two-variable system that comes 
 extern PetscErrorCode FormJacobian1(SNES, Vec, Mat, Mat, void *);
 extern PetscErrorCode FormFunction1(SNES, Vec, Vec, void *);
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   SNES                snes; /* nonlinear solver context */
   Vec                 x, r; /* solution, residual vectors */
   Mat                 J;    /* Jacobian matrix */
@@ -116,7 +117,8 @@ int main(int argc, char **argv) {
    Output Parameter:
 .  f - function vector
  */
-PetscErrorCode FormFunction1(SNES snes, Vec x, Vec f, void *ctx) {
+PetscErrorCode FormFunction1(SNES snes, Vec x, Vec f, void *ctx)
+{
   PetscScalar       *ff;
   const PetscScalar *xx;
 
@@ -153,7 +155,8 @@ PetscErrorCode FormFunction1(SNES snes, Vec x, Vec f, void *ctx) {
 .  B - optionally different preconditioning matrix
 .  flag - flag indicating matrix structure
 */
-PetscErrorCode FormJacobian1(SNES snes, Vec x, Mat jac, Mat B, void *dummy) {
+PetscErrorCode FormJacobian1(SNES snes, Vec x, Mat jac, Mat B, void *dummy)
+{
   const PetscScalar *xx;
   PetscScalar        A[4];
   PetscInt           idx[2] = {0, 1};

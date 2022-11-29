@@ -3,7 +3,26 @@ static char help[] = "Tests for point location\n\n";
 #include <petscsf.h>
 #include <petscdmplex.h>
 
-static PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm) {
+typedef struct {
+  PetscBool centroids;
+  PetscBool custom;
+} AppCtx;
+
+static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
+{
+  PetscFunctionBeginUser;
+  options->centroids = PETSC_TRUE;
+  options->custom    = PETSC_FALSE;
+
+  PetscOptionsBegin(comm, "", "Point Location Options", "DMPLEX");
+  PetscCall(PetscOptionsBool("-centroids", "Locate cell centroids", "ex17.c", options->centroids, &options->centroids, NULL));
+  PetscCall(PetscOptionsBool("-custom", "Locate user-defined points", "ex17.c", options->custom, &options->custom, NULL));
+  PetscOptionsEnd();
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm)
+{
   PetscFunctionBeginUser;
   PetscCall(DMCreate(comm, dm));
   PetscCall(DMSetType(*dm, DMPLEX));
@@ -12,7 +31,8 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TestLocation(DM dm) {
+static PetscErrorCode TestCentroidLocation(DM dm, AppCtx *user)
+{
   Vec                points;
   PetscSF            cellSF = NULL;
   const PetscSFNode *cells;
@@ -21,6 +41,7 @@ static PetscErrorCode TestLocation(DM dm) {
   PetscInt           cStart, cEnd, c;
 
   PetscFunctionBeginUser;
+  if (!user->centroids) PetscFunctionReturn(0);
   PetscCall(DMGetCoordinateDim(dm, &cdim));
   PetscCall(DMGetCoordinatesLocalSetUp(dm));
   PetscCall(DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd));
@@ -50,13 +71,74 @@ static PetscErrorCode TestLocation(DM dm) {
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **argv) {
-  DM dm;
+static PetscErrorCode TestCustomLocation(DM dm, AppCtx *user)
+{
+  PetscSF            cellSF = NULL;
+  const PetscSFNode *cells;
+  const PetscInt    *found;
+  Vec                points;
+  PetscScalar        coords[2] = {0.5, 0.5};
+  PetscInt           cdim, Np = 1, Nfd;
+  PetscMPIInt        rank;
+  MPI_Comm           comm;
+
+  PetscFunctionBeginUser;
+  if (!user->custom) PetscFunctionReturn(0);
+  PetscCall(DMGetCoordinateDim(dm, &cdim));
+
+  // Locate serially on each process
+  PetscCall(VecCreate(PETSC_COMM_SELF, &points));
+  PetscCall(VecSetBlockSize(points, cdim));
+  PetscCall(VecSetSizes(points, Np * cdim, PETSC_DETERMINE));
+  PetscCall(VecSetFromOptions(points));
+  for (PetscInt p = 0; p < Np; ++p) {
+    const PetscInt idx[2] = {p * cdim, p * cdim + 1};
+    PetscCall(VecSetValues(points, cdim, idx, coords, INSERT_VALUES));
+  }
+  PetscCall(VecAssemblyBegin(points));
+  PetscCall(VecAssemblyEnd(points));
+
+  PetscCall(DMLocatePoints(dm, points, DM_POINTLOCATION_NONE, &cellSF));
+
+  PetscCall(PetscSFGetGraph(cellSF, NULL, &Nfd, &found, &cells));
+  PetscCall(PetscObjectGetComm((PetscObject)dm, &comm));
+  PetscCallMPI(MPI_Comm_rank(comm, &rank));
+  PetscCall(PetscSynchronizedPrintf(comm, "[%d] Found %" PetscInt_FMT " particles\n", rank, Nfd));
+  for (PetscInt p = 0; p < Nfd; ++p) {
+    const PetscInt     point = found ? found[p] : p;
+    const PetscScalar *array;
+    PetscScalar       *ccoords = NULL;
+    PetscInt           numCoords;
+    PetscBool          isDG;
+
+    // Since the v comm is SELF, rank is always 0
+    PetscCall(PetscSynchronizedPrintf(comm, "  point %" PetscInt_FMT " cell %" PetscInt_FMT "\n", point, cells[p].index));
+    PetscCall(DMPlexGetCellCoordinates(dm, cells[p].index, &isDG, &numCoords, &array, &ccoords));
+    for (PetscInt c = 0; c < numCoords / cdim; ++c) {
+      PetscCall(PetscSynchronizedPrintf(comm, "  "));
+      for (PetscInt d = 0; d < cdim; ++d) PetscCall(PetscSynchronizedPrintf(comm, " %g", (double)PetscRealPart(ccoords[c * cdim + d])));
+      PetscCall(PetscSynchronizedPrintf(comm, "\n"));
+    }
+    PetscCall(DMPlexRestoreCellCoordinates(dm, cells[p].index, &isDG, &numCoords, &array, &ccoords));
+  }
+  PetscCall(PetscSynchronizedFlush(comm, PETSC_STDOUT));
+
+  PetscCall(PetscSFDestroy(&cellSF));
+  PetscCall(VecDestroy(&points));
+  PetscFunctionReturn(0);
+}
+
+int main(int argc, char **argv)
+{
+  DM     dm;
+  AppCtx user;
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
+  PetscCall(ProcessOptions(PETSC_COMM_WORLD, &user));
   PetscCall(CreateMesh(PETSC_COMM_WORLD, &dm));
-  PetscCall(TestLocation(dm));
+  PetscCall(TestCentroidLocation(dm, &user));
+  PetscCall(TestCustomLocation(dm, &user));
   PetscCall(DMDestroy(&dm));
   PetscCall(PetscFinalize());
   return 0;
@@ -113,5 +195,14 @@ int main(int argc, char **argv) {
     test:
       suffix: hex_hash
       args: -dm_plex_simplex 0 -dm_refine 1 -dm_plex_hash_location
+
+  testset:
+    args: -centroids 0 -custom \
+          -dm_plex_simplex 0 -dm_plex_box_faces 21,21 -dm_distribute_overlap 4 -petscpartitioner_type simple
+    nsize: 2
+
+    test:
+      suffix: quad_overlap
+      args: -dm_plex_hash_location {{0 1}}
 
 TEST*/

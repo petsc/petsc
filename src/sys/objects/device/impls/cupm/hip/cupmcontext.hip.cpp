@@ -1,16 +1,15 @@
 #include "../cupmcontext.hpp" /*I "petscdevice.h" I*/
 
-using namespace Petsc::Device::CUPM;
+using namespace Petsc::device::cupm;
 
-PetscErrorCode PetscDeviceContextCreate_HIP(PetscDeviceContext dctx) {
-  static constexpr auto contextHip = CUPMContextHip();
-  PetscDeviceContext_(HIP) * dci;
+PetscErrorCode PetscDeviceContextCreate_HIP(PetscDeviceContext dctx)
+{
+  static constexpr auto hip_context = CUPMContextHip();
 
   PetscFunctionBegin;
-  PetscCall(contextHip.initialize());
-  PetscCall(PetscNew(&dci));
-  dctx->data = static_cast<decltype(dctx->data)>(dci);
-  PetscCall(PetscMemcpy(dctx->ops, &contextHip.ops, sizeof(contextHip.ops)));
+  PetscCall(hip_context.initialize(dctx->device));
+  dctx->data = new PetscDeviceContext_(HIP);
+  PetscCall(PetscMemcpy(dctx->ops, &hip_context.ops, sizeof(hip_context.ops)));
   PetscFunctionReturn(0);
 }
 
@@ -23,7 +22,8 @@ PetscErrorCode PetscDeviceContextCreate_HIP(PetscDeviceContext dctx) {
  cuda manually.
  */
 
-PetscErrorCode PetscHIPBLASGetHandle(hipblasHandle_t *handle) {
+PetscErrorCode PetscHIPBLASGetHandle(hipblasHandle_t *handle)
+{
   PetscDeviceContext dctx;
 
   PetscFunctionBegin;
@@ -33,7 +33,8 @@ PetscErrorCode PetscHIPBLASGetHandle(hipblasHandle_t *handle) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscHIPSOLVERGetHandle(hipsolverHandle_t *handle) {
+PetscErrorCode PetscHIPSOLVERGetHandle(hipsolverHandle_t *handle)
+{
   PetscDeviceContext dctx;
 
   PetscFunctionBegin;

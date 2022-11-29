@@ -7,20 +7,21 @@ typedef struct {
 
 /*@
    PetscDualSpaceRefinedSetCellSpaces - Set the dual spaces for the closures of each of the cells
-   in the multicell DM of a PetscDualSpace
+   in the multicell `DM` of a `PetscDualSpace`
 
-   Collective on PetscDualSpace
+   Collective on sp
 
    Input Parameters:
-+  sp - a PetscDualSpace
--  cellSpaces - one PetscDualSpace for each of the cells.  The reference count of each cell space will be incremented,
++  sp - a `PetscDualSpace`
+-  cellSpaces - one `PetscDualSpace` for each of the cells.  The reference count of each cell space will be incremented,
                 so the user is still responsible for these spaces afterwards
 
    Level: intermediate
 
-.seealso: `PetscFERefine()`
+.seealso: `PetscDualSpace`, `PetscFERefine()`
 @*/
-PetscErrorCode PetscDualSpaceRefinedSetCellSpaces(PetscDualSpace sp, const PetscDualSpace cellSpaces[]) {
+PetscErrorCode PetscDualSpaceRefinedSetCellSpaces(PetscDualSpace sp, const PetscDualSpace cellSpaces[])
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCDUALSPACE_CLASSID, 1);
   PetscValidPointer(cellSpaces, 2);
@@ -29,7 +30,8 @@ PetscErrorCode PetscDualSpaceRefinedSetCellSpaces(PetscDualSpace sp, const Petsc
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscDualSpaceRefinedSetCellSpaces_Refined(PetscDualSpace sp, const PetscDualSpace cellSpaces[]) {
+static PetscErrorCode PetscDualSpaceRefinedSetCellSpaces_Refined(PetscDualSpace sp, const PetscDualSpace cellSpaces[])
+{
   DM       dm;
   PetscInt pStart, pEnd;
   PetscInt cStart, cEnd, c;
@@ -48,7 +50,8 @@ static PetscErrorCode PetscDualSpaceRefinedSetCellSpaces_Refined(PetscDualSpace 
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscDualSpaceDestroy_Refined(PetscDualSpace sp) {
+static PetscErrorCode PetscDualSpaceDestroy_Refined(PetscDualSpace sp)
+{
   PetscDualSpace_Refined *ref = (PetscDualSpace_Refined *)sp->data;
 
   PetscFunctionBegin;
@@ -57,7 +60,8 @@ static PetscErrorCode PetscDualSpaceDestroy_Refined(PetscDualSpace sp) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscDualSpaceSetUp_Refined(PetscDualSpace sp) {
+static PetscErrorCode PetscDualSpaceSetUp_Refined(PetscDualSpace sp)
+{
   PetscInt     pStart, pEnd, depth;
   PetscInt     cStart, cEnd, c, spdim;
   PetscInt     h;
@@ -122,7 +126,8 @@ static PetscErrorCode PetscDualSpaceSetUp_Refined(PetscDualSpace sp) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscDualSpaceRefinedView_Ascii(PetscDualSpace sp, PetscViewer viewer) {
+static PetscErrorCode PetscDualSpaceRefinedView_Ascii(PetscDualSpace sp, PetscViewer viewer)
+{
   PetscFunctionBegin;
   if (sp->dm && sp->pointSpaces) {
     PetscInt pStart, pEnd;
@@ -147,7 +152,8 @@ static PetscErrorCode PetscDualSpaceRefinedView_Ascii(PetscDualSpace sp, PetscVi
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscDualSpaceView_Refined(PetscDualSpace sp, PetscViewer viewer) {
+static PetscErrorCode PetscDualSpaceView_Refined(PetscDualSpace sp, PetscViewer viewer)
+{
   PetscBool iascii;
 
   PetscFunctionBegin;
@@ -158,7 +164,8 @@ static PetscErrorCode PetscDualSpaceView_Refined(PetscDualSpace sp, PetscViewer 
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscDualSpaceInitialize_Refined(PetscDualSpace sp) {
+static PetscErrorCode PetscDualSpaceInitialize_Refined(PetscDualSpace sp)
+{
   PetscFunctionBegin;
   sp->ops->destroy              = PetscDualSpaceDestroy_Refined;
   sp->ops->view                 = PetscDualSpaceView_Refined;
@@ -177,18 +184,19 @@ static PetscErrorCode PetscDualSpaceInitialize_Refined(PetscDualSpace sp) {
 }
 
 /*MC
-  PETSCDUALSPACEREFINED = "refined" - A PetscDualSpace object that defines the joint dual space of a group of cells, usually refined from one larger cell
+  PETSCDUALSPACEREFINED = "refined" - A `PetscDualSpaceType` that defines the joint dual space of a group of cells, usually refined from one larger cell
 
   Level: intermediate
 
-.seealso: `PetscDualSpaceType`, `PetscDualSpaceCreate()`, `PetscDualSpaceSetType()`
+.seealso: `PetscDualSpace`, `PetscDualSpaceType`, `PetscDualSpaceCreate()`, `PetscDualSpaceSetType()`
 M*/
-PETSC_EXTERN PetscErrorCode PetscDualSpaceCreate_Refined(PetscDualSpace sp) {
+PETSC_EXTERN PetscErrorCode PetscDualSpaceCreate_Refined(PetscDualSpace sp)
+{
   PetscDualSpace_Refined *ref;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCDUALSPACE_CLASSID, 1);
-  PetscCall(PetscNewLog(sp, &ref));
+  PetscCall(PetscNew(&ref));
   sp->data = ref;
 
   PetscCall(PetscDualSpaceInitialize_Refined(sp));

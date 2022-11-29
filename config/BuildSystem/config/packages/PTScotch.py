@@ -28,8 +28,8 @@ class Configure(config.package.Package):
     self.zlib           = framework.require('config.packages.zlib',self)
     self.regex          = framework.require('config.packages.regex',self)
     self.bison          = framework.require('config.packages.bison',self)
-    self.deps           = [self.mpi,self.mathlib,self.regex,self.bison]
-    self.odeps          = [self.pthread,self.zlib]
+    self.deps           = [self.mpi,self.mathlib,self.regex]
+    self.odeps          = [self.pthread,self.zlib,self.bison]
     return
 
   def Install(self):
@@ -37,7 +37,7 @@ class Configure(config.package.Package):
 
     self.programs.getExecutable('flex', getFullPath = 1)
     if not hasattr(self.programs, 'flex'): raise RuntimeError('PTScotch needs flex installed')
-    if not self.bison.haveBison3plus: raise RuntimeError('PTScotch needs Bison version 3.0 or above, use --download-bison')
+    if not self.bison.found or not self.bison.haveBison3plus: raise RuntimeError('PTScotch needs Bison version 3.0 or above, use --download-bison')
 
     self.log.write('Creating PTScotch '+os.path.join(os.path.join(self.packageDir,'src'),'Makefile.inc')+'\n')
 

@@ -4,7 +4,8 @@ static char help[] = "Demonstrates use of color map\n";
 #include <petscsys.h>
 #include <petscdraw.h>
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscDraw   draw;
   PetscMPIInt size, rank;
   int         x = 0, y = 0, width = 256, height = 256, i;

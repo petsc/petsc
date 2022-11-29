@@ -3,11 +3,12 @@ static char help[] = "Test SF cuda stream synchronization in device to host comm
   SF uses asynchronous operations internally. When destination data is on GPU, it does asynchronous
   operations in the default stream and does not sync these operations since it assumes routines consume
   the destination data are also on the default stream. However, when destination data in on CPU,
-  SF must guarentee the data is ready to use on CPU after PetscSFXxxEnd().
+  SF must guarantee the data is ready to use on CPU after PetscSFXxxEnd().
  */
 
 #include <petscvec.h>
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscInt           i, n = 100000; /* Big enough to make the asynchronous copy meaningful */
   PetscScalar       *val;
   const PetscScalar *yval;
@@ -48,7 +49,7 @@ int main(int argc, char **argv) {
   PetscCall(VecScatterCreate(x, ix, y, iy, &vscat));
 
   /* Do device to host vecscatter and then immediately use y on host. VecScat/SF may use asynchronous
-     cudaMemcpy or kernels, but it must guarentee y is ready to use on host. Otherwise, wrong data will be displayed.
+     cudaMemcpy or kernels, but it must guarantee y is ready to use on host. Otherwise, wrong data will be displayed.
    */
   PetscCall(VecScatterBegin(vscat, x, y, INSERT_VALUES, SCATTER_FORWARD));
   PetscCall(VecScatterEnd(vscat, x, y, INSERT_VALUES, SCATTER_FORWARD));

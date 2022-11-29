@@ -30,7 +30,7 @@ all:
 	@ln -sf ${PETSC_ARCH}/lib/petsc/conf/make.log make.log
 	+@(${OMAKE_SELF_PRINTDIR} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} all-local; echo "$$?" > ${PETSC_ARCH}/lib/petsc/conf/error.log) 2>&1 | tee -a ${PETSC_ARCH}/lib/petsc/conf/make.log
 	+@if [ "`cat ${PETSC_ARCH}/lib/petsc/conf/error.log 2> /dev/null`" != "0" ]; then \
-           egrep '(out of memory allocating.*after a total of|gfortran: fatal error: Killed signal terminated program f951|f95: fatal error: Killed signal terminated program f951)' ${PETSC_ARCH}/lib/petsc/conf/make.log | tee ${PETSC_ARCH}/lib/petsc/conf/memoryerror.log > /dev/null; \
+           grep -E '(out of memory allocating.*after a total of|gfortran: fatal error: Killed signal terminated program f951|f95: fatal error: Killed signal terminated program f951)' ${PETSC_ARCH}/lib/petsc/conf/make.log | tee ${PETSC_ARCH}/lib/petsc/conf/memoryerror.log > /dev/null; \
            if test -s ${PETSC_ARCH}/lib/petsc/conf/memoryerror.log; then \
              printf ${PETSC_TEXT_HILIGHT}"**************************ERROR*************************************\n" 2>&1 | tee -a ${PETSC_ARCH}/lib/petsc/conf/make.log; \
              echo "  Error during compile, you need to increase the memory allocated to the VM and rerun " 2>&1 | tee -a ${PETSC_ARCH}/lib/petsc/conf/make.log; \
@@ -193,7 +193,7 @@ check_build:
           fi; \
 	  ${RUN_TEST} clean-legacy; \
           cd - > /dev/null; \
-          if [ "${AMREX_LIB}" != "" ]; then \
+          if ( [ "${AMREX_LIB}" != "" ] && [ "${CUDA_LIB}" = "" ] ); then \
             echo "Running amrex test example to verify correct installation";\
             echo "Using PETSC_DIR=${PETSC_DIR} and PETSC_ARCH=${PETSC_ARCH}";\
             cd src/ksp/ksp/tutorials/amrex >/dev/null;\
@@ -221,14 +221,14 @@ check_build:
            ${RUN_TEST} testex100; \
            ${RUN_TEST} clean-legacy; \
          fi;
-	+@egrep "^#define PETSC_HAVE_FORTRAN 1" ${PETSCCONF_H} | tee .ftn.log > /dev/null; \
+	+@grep -E "^#define PETSC_HAVE_FORTRAN 1" ${PETSCCONF_H} | tee .ftn.log > /dev/null; \
          if test -s .ftn.log; then \
            cd src/snes/tutorials >/dev/null; \
            ${RUN_TEST} clean-legacy; \
            ${RUN_TEST} testex5f; \
            ${RUN_TEST} clean-legacy; \
          fi; ${RM} .ftn.log;
-	+@egrep "^#define PETSC_HAVE_MATLAB_ENGINE 1" ${PETSCCONF_H} | tee .ftn.log > /dev/null; \
+	+@grep -E "^#define PETSC_HAVE_MATLAB 1" ${PETSCCONF_H} | tee .ftn.log > /dev/null; \
          if test -s .ftn.log; then \
            cd src/vec/vec/tutorials >/dev/null; \
            ${RUN_TEST} clean-legacy; \
@@ -242,7 +242,7 @@ check_usermakefile:
 	-@echo "Using PETSC_DIR=${PETSC_DIR} and PETSC_ARCH=${PETSC_ARCH}"
 	@cd src/snes/tutorials; ${RUN_TEST} clean-legacy
 	@cd src/snes/tutorials; ${OMAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} -f ${PETSC_DIR}/share/petsc/Makefile.user ex19
-	@egrep "^#define PETSC_HAVE_FORTRAN 1" ${PETSCCONF_H} | tee .ftn.log > /dev/null; \
+	@grep -E "^#define PETSC_HAVE_FORTRAN 1" ${PETSCCONF_H} | tee .ftn.log > /dev/null; \
          if test -s .ftn.log; then \
           cd src/snes/tutorials; ${OMAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} -f ${PETSC_DIR}/share/petsc/Makefile.user ex5f; \
          fi; ${RM} .ftn.log;
@@ -251,7 +251,7 @@ check_usermakefile:
 
 checkgitclean:
 	@if ! git diff --quiet; then \
-           echo "The repository has uncommited files, cannot run checkclangformat" ;\
+           echo "The repository has uncommitted files, cannot run checkclangformat" ;\
            git status -s --untracked-files=no ;\
            false;\
         fi;
@@ -259,7 +259,7 @@ checkgitclean:
 checkclangformatversion:
 	@version=`clang-format --version | cut -d" " -f3 | cut -d"." -f 1` ;\
          if [ "$$version" == "version" ]; then version=`clang-format --version | cut -d" " -f4 | cut -d"." -f 1`; fi;\
-         if [ $$version != 14 ]; then echo "Require clang-format version 14! Currently used clang-format version is $$version" ;false ; fi
+         if [ $$version != 15 ]; then echo "Require clang-format version 15! Currently used clang-format version is $$version" ;false ; fi
 
 # Check that all the source code in the repository satisfies the .clang_format
 checkclangformat: checkclangformatversion checkgitclean clangformat
@@ -395,8 +395,13 @@ deletefortranstubs:
 # Also builds citations
 hloc=include/petsc/private
 allmanpages: chk_loc deletemanualpages
-	-sed -e 's?<T>?I?g' -e 's?<t>?i?g' -e 's?<Type>?PetscInt?g' ${hloc}/hashset.txt > ${hloc}/generated_hashset.txt
-	-sed -e 's?<T>?IJ?g' -e 's?<t>?ij?g' -e 's?<Type>?struct {PetscInt i,j;}?g' ${hloc}/hashset.txt >> ${hloc}/generated_hashset.txt
+	-echo " /* SUBMANSEC = PetscH */ " > ${hloc}/generated_khash.h
+	-sed -e 's?<T>?I?g' -e 's?<t>?i?g' -e 's?<KeyType>?PetscInt?g' ${hloc}/hashset.txt >> ${hloc}/generated_khash.h
+	-sed -e 's?<T>?IJ?g' -e 's?<t>?ij?g' -e 's?<KeyType>?struct {PetscInt i, j;}?g' ${hloc}/hashset.txt >> ${hloc}/generated_khash.h
+	-sed -e 's?<T>?I?g' -e 's?<t>?i?g' -e 's?<KeyType>?PetscInt?g'  -e 's?<ValType>?PetscInt?g' ${hloc}/hashmap.txt >> ${hloc}/generated_khash.h
+	-sed -e 's?<T>?IJ?g' -e 's?<t>?ij?g' -e 's?<KeyType>?struct {PetscInt i, j;}?g' -e 's?<ValType>?PetscInt?g' ${hloc}/hashmap.txt >> ${hloc}/generated_khash.h
+	-sed -e 's?<T>?IV?g' -e 's?<t>?iv?g' -e 's?<KeyType>?PetscInt?g'  -e 's?<ValType>?PetscScalar?g' ${hloc}/hashmap.txt >> ${hloc}/generated_khash.h
+	-sed -e 's?<T>?Obj?g' -e 's?<t>?obj?g' -e 's?<KeyType>?PetscInt64?g'  -e 's?<ValType>?PetscObject?g' ${hloc}/hashmap.txt >> ${hloc}/generated_khash.h
 	-${RM} ${PETSC_DIR}/${PETSC_ARCH}/manualpages.err
 	-${OMAKE_SELF} ACTION=manualpages tree_src LOC=${LOC}
 	-@sed -e s%man+../%man+manualpages/% ${LOC}/docs/manualpages/manualpages.cit > ${LOC}/docs/manualpages/htmlmap
@@ -451,10 +456,17 @@ dist:
 #  See script for details
 #
 gcov:
-	@$(PYTHON) ${PETSC_DIR}/lib/petsc/bin/maint/gcov.py --run_gcov --petsc_arch ${PETSC_ARCH}
+	-output_file_base_name=${PETSC_ARCH}-gcovr-report.json; \
+	petsc_arch_dir=${PETSC_DIR}/${PETSC_ARCH}; \
+	pushd $${petsc_arch_dir}/obj && \
+	gcovr --json --output $${petsc_arch_dir}/$${output_file_base_name} --exclude-throw-branches --exclude-unreachable-branches -j 4 --gcov-executable ${PETSC_COVERAGE_EXEC} --root ${PETSC_DIR} . ${PETSC_GCOV_OPTIONS} && \
+	${RM} -f $${petsc_arch_dir}/$${output_file_base_name}.tar.gz && \
+	tar -czf $${petsc_arch_dir}/$${output_file_base_name}.tar.gz -C $${petsc_arch_dir} ./$${output_file_base_name} && \
+	${RM} $${petsc_arch_dir}/$${output_file_base_name}; \
+	popd
 
 mergegcov:
-	@$(PYTHON) ${PETSC_DIR}/lib/petsc/bin/maint/gcov.py --merge_gcov  --petsc_arch ${PETSC_ARCH} --merge_branch `lib/petsc/bin/maint/check-merge-branch.sh`
+	$(PYTHON) ${PETSC_DIR}/lib/petsc/bin/maint/gcov.py --merge-branch `lib/petsc/bin/maint/check-merge-branch.sh` --html --xml ${PETSC_GCOV_OPTIONS}
 
 #
 # -------------------------------------------------------------------------------
@@ -462,8 +474,8 @@ mergegcov:
 # Some macros to check if the fortran interface is up-to-date.
 #
 countfortranfunctions:
-	-@cd ${PETSC_DIR}/src/fortran; egrep '^void' custom/*.c auto/*.c | \
-	cut -d'(' -f1 | tr -s  ' ' | cut -d' ' -f2 | uniq | egrep -v "(^$$|Petsc)" | \
+	-@cd ${PETSC_DIR}/src/fortran; grep -E '^void' custom/*.c auto/*.c | \
+	cut -d'(' -f1 | tr -s  ' ' | cut -d' ' -f2 | uniq | grep -E -v "(^$$|Petsc)" | \
 	sed "s/_$$//" | sort > /tmp/countfortranfunctions
 
 countcfunctions:
@@ -503,9 +515,9 @@ checkbadfortranstubs:
 
 checkpackagetests:
 	-@echo "Missing package tests"
-	-@cat config/examples/*.py > configexamples; pushd config/BuildSystem/config/packages/; packages=`ls *.py | sed "s/\\.py//g"`;popd; for i in $${packages}; do j=`echo $${i} | tr '[:upper:]' '[:lower:]'`; printf $${j} ; egrep "(with-$${j}|download-$${j})" configexamples | grep -v "=0" | wc -l ; done
+	-@cat config/examples/*.py > configexamples; pushd config/BuildSystem/config/packages/; packages=`ls *.py | sed "s/\\.py//g"`;popd; for i in $${packages}; do j=`echo $${i} | tr '[:upper:]' '[:lower:]'`; printf $${j} ; grep -E "(with-$${j}|download-$${j})" configexamples | grep -v "=0" | wc -l ; done
 	-@echo "Missing download package tests"
-	-@cat config/examples/*.py > configexamples; pushd config/BuildSystem/config/packages/; packages=`grep -l "download " *.py  | sed "s/\\.py//g"`;popd; for i in $${packages}; do j=`echo $${i} | tr '[:upper:]' '[:lower:]'`; printf $${j} ; egrep "(download-$${j})" configexamples | grep -v "=0" | wc -l ; done
+	-@cat config/examples/*.py > configexamples; pushd config/BuildSystem/config/packages/; packages=`grep -l "download " *.py  | sed "s/\\.py//g"`;popd; for i in $${packages}; do j=`echo $${i} | tr '[:upper:]' '[:lower:]'`; printf $${j} ; grep -E "(download-$${j})" configexamples | grep -v "=0" | wc -l ; done
 
 .PHONY: info info_h all deletelibs allclean update \
         alletags etags etags_complete etags_noexamples etags_makefiles etags_examples etags_fexamples alldoc allmanpages \

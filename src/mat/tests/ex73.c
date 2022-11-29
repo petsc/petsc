@@ -14,7 +14,8 @@ static char help[] = "Reads a PETSc matrix from a file partitions it\n\n";
 */
 #include <petscmat.h>
 
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   MatType         mtype = MATMPIAIJ;        /* matrix format */
   Mat             A, B;                     /* matrix */
   PetscViewer     fd;                       /* viewer */

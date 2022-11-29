@@ -2,7 +2,8 @@ static char help[] = "Test MatCreateRedundantMatrix for a BAIJ matrix.\n\
                       Contributed by Lawrence Mitchell, Feb. 21, 2017\n\n";
 
 #include <petscmat.h>
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   Mat         A, B;
   Vec         diag;
   PetscMPIInt size, rank;

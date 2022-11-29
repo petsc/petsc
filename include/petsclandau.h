@@ -1,4 +1,4 @@
-#if !defined(PETSCLANDAU_H)
+#ifndef PETSCLANDAU_H
 #define PETSCLANDAU_H
 
 #include <petscdmplex.h> /*I      "petscdmplex.h"    I*/
@@ -7,7 +7,7 @@
 PETSC_EXTERN PetscErrorCode DMPlexLandauPrintNorms(Vec, PetscInt);
 PETSC_EXTERN PetscErrorCode DMPlexLandauCreateVelocitySpace(MPI_Comm, PetscInt, const char[], Vec *, Mat *, DM *);
 PETSC_EXTERN PetscErrorCode DMPlexLandauDestroyVelocitySpace(DM *);
-PETSC_EXTERN PetscErrorCode DMPlexLandauAddToFunction(DM, Vec, PetscErrorCode (*)(DM, Vec, PetscInt, PetscInt, PetscInt, void *), void *);
+PETSC_EXTERN PetscErrorCode DMPlexLandauAccess(DM, Vec, PetscErrorCode (*)(DM, Vec, PetscInt, PetscInt, PetscInt, void *), void *);
 PETSC_EXTERN PetscErrorCode DMPlexLandauAddMaxwellians(DM, Vec, PetscReal, PetscReal[], PetscReal[], PetscInt, PetscInt, PetscInt, void *);
 PETSC_EXTERN PetscErrorCode DMPlexLandauCreateMassMatrix(DM dm, Mat *Amat);
 PETSC_EXTERN PetscErrorCode DMPlexLandauIFunction(TS, PetscReal, Vec, Vec, Vec, void *);
@@ -17,41 +17,41 @@ typedef int LandauIdx;
 
 /* the Fokker-Planck-Landau context */
 #if !defined(LANDAU_MAX_SPECIES)
-#if defined(PETSC_USE_DMLANDAU_2D)
-#define LANDAU_MAX_SPECIES 10
-#define LANDAU_MAX_GRIDS   3
+  #if defined(PETSC_USE_DMLANDAU_2D)
+    #define LANDAU_MAX_SPECIES 10
+    #define LANDAU_MAX_GRIDS   3
+  #else
+    #define LANDAU_MAX_SPECIES 10
+    #define LANDAU_MAX_GRIDS   3
+  #endif
 #else
-#define LANDAU_MAX_SPECIES 10
-#define LANDAU_MAX_GRIDS   3
-#endif
-#else
-#define LANDAU_MAX_GRIDS 3
+  #define LANDAU_MAX_GRIDS 3
 #endif
 
 #if !defined(LANDAU_MAX_Q)
-#if defined(LANDAU_MAX_NQ)
-#error "LANDAU_MAX_NQ but not LANDAU_MAX_Q. Use -DLANDAU_MAX_Q=4 for Q3 elements"
-#endif
-#if defined(PETSC_USE_DMLANDAU_2D)
-#define LANDAU_MAX_Q 5
+  #if defined(LANDAU_MAX_NQ)
+    #error "LANDAU_MAX_NQ but not LANDAU_MAX_Q. Use -DLANDAU_MAX_Q=4 for Q3 elements"
+  #endif
+  #if defined(PETSC_USE_DMLANDAU_2D)
+    #define LANDAU_MAX_Q 5
+  #else
+    // 3D CUDA fails with > 3 (KK-CUDA is OK)
+    #define LANDAU_MAX_Q 3
+  #endif
 #else
-// 3D CUDA fails with > 3 (KK-CUDA is OK)
-#define LANDAU_MAX_Q 3
-#endif
-#else
-#undef LANDAU_MAX_NQ
+  #undef LANDAU_MAX_NQ
 #endif
 
 #if defined(PETSC_USE_DMLANDAU_2D)
-#define LANDAU_MAX_Q_FACE   LANDAU_MAX_Q
-#define LANDAU_MAX_NQ       (LANDAU_MAX_Q * LANDAU_MAX_Q)
-#define LANDAU_MAX_BATCH_SZ 1024
-#define LANDAU_DIM          2
+  #define LANDAU_MAX_Q_FACE   LANDAU_MAX_Q
+  #define LANDAU_MAX_NQ       (LANDAU_MAX_Q * LANDAU_MAX_Q)
+  #define LANDAU_MAX_BATCH_SZ 1024
+  #define LANDAU_DIM          2
 #else
-#define LANDAU_MAX_Q_FACE   (LANDAU_MAX_Q * LANDAU_MAX_Q)
-#define LANDAU_MAX_NQ       (LANDAU_MAX_Q * LANDAU_MAX_Q * LANDAU_MAX_Q)
-#define LANDAU_MAX_BATCH_SZ 64
-#define LANDAU_DIM          3
+  #define LANDAU_MAX_Q_FACE   (LANDAU_MAX_Q * LANDAU_MAX_Q)
+  #define LANDAU_MAX_NQ       (LANDAU_MAX_Q * LANDAU_MAX_Q * LANDAU_MAX_Q)
+  #define LANDAU_MAX_BATCH_SZ 64
+  #define LANDAU_DIM          3
 #endif
 
 typedef enum {
@@ -62,30 +62,30 @@ typedef enum {
 
 // static data - will be "device" data
 typedef struct {
-  void     *invJ;    // nip*dim*dim
-  void     *D;       // nq*nb*dim
-  void     *B;       // nq*nb
-  void     *alpha;   // ns
-  void     *beta;    // ns
-  void     *invMass; // ns
-  void     *w;       // nip
-  void     *x;       // nip
-  void     *y;       // nip
-  void     *z;       // nip
-  void     *Eq_m;    // ns - dynamic
-  void     *f;       //  nip*Nf - dynamic (IP)
-  void     *dfdx;    // nip*Nf - dynamic (IP)
-  void     *dfdy;    // nip*Nf - dynamic (IP)
-  void     *dfdz;    // nip*Nf - dynamic (IP)
-  int       dim_, ns_, nip_, nq_, nb_;
-  void     *NCells;         // remove and ise elem_offset - TODO
-  void     *species_offset; // for each grid, but same for all batched vertices
-  void     *mat_offset;     // for each grid, but same for all batched vertices
-  void     *elem_offset;    // for each grid, but same for all batched vertices
-  void     *ip_offset;      // for each grid, but same for all batched vertices
-  void     *ipf_offset;     // for each grid, but same for all batched vertices
-  void     *ipfdf_data;     // for each grid, but same for all batched vertices
-  void     *maps;           // for each grid, but same for all batched vertices
+  void *invJ;    // nip*dim*dim
+  void *D;       // nq*nb*dim
+  void *B;       // nq*nb
+  void *alpha;   // ns
+  void *beta;    // ns
+  void *invMass; // ns
+  void *w;       // nip
+  void *x;       // nip
+  void *y;       // nip
+  void *z;       // nip
+  void *Eq_m;    // ns - dynamic
+  void *f;       //  nip*Nf - dynamic (IP)
+  void *dfdx;    // nip*Nf - dynamic (IP)
+  void *dfdy;    // nip*Nf - dynamic (IP)
+  void *dfdz;    // nip*Nf - dynamic (IP)
+  int   dim_, ns_, nip_, nq_, nb_;
+  void *NCells;         // remove and use elem_offset - TODO
+  void *species_offset; // for each grid, but same for all batched vertices
+  void *mat_offset;     // for each grid, but same for all batched vertices
+  void *elem_offset;    // for each grid, but same for all batched vertices
+  void *ip_offset;      // for each grid, but same for all batched vertices
+  void *ipf_offset;     // for each grid, but same for all batched vertices
+  void *ipfdf_data;     // for each grid, but same for all batched vertices
+  void *maps;           // for each grid, but same for all batched vertices
   // COO
   void     *coo_elem_offsets;
   void     *coo_elem_point_offsets;
@@ -111,51 +111,52 @@ typedef enum {
 } LandauOMPTimers;
 
 typedef struct {
-  PetscBool  interpolate; /* Generate intermediate mesh elements */
-  PetscBool  gpu_assembly;
-  MPI_Comm   comm; /* global communicator to use for errors and diagnostics */
-  double     times[LANDAU_NUM_TIMERS];
-  PetscBool  use_matrix_mass;
+  PetscBool interpolate; /* Generate intermediate mesh elements */
+  PetscBool gpu_assembly;
+  MPI_Comm  comm; /* global communicator to use for errors and diagnostics */
+  double    times[LANDAU_NUM_TIMERS];
+  PetscBool use_matrix_mass;
   /* FE */
-  PetscFE    fe[LANDAU_MAX_SPECIES];
+  PetscFE fe[LANDAU_MAX_SPECIES];
   /* geometry  */
-  PetscReal  radius[LANDAU_MAX_GRIDS];
-  PetscReal  re_radius;                  /* RE: radius of refinement along v_perp=0, z>0 */
-  PetscReal  vperp0_radius1;             /* RE: radius of refinement along v_perp=0 */
-  PetscReal  vperp0_radius2;             /* RE: radius of refinement along v_perp=0 after origin AMR refinement */
-  PetscBool  sphere;                     // not used
-  PetscBool  inflate;                    // not used
-  PetscReal  i_radius[LANDAU_MAX_GRIDS]; // not used
-  PetscReal  e_radius;                   // not used
-  PetscInt   num_sections;               // not used
+  PetscReal radius[LANDAU_MAX_GRIDS];
+  PetscReal re_radius;                  /* RE: radius of refinement along v_perp=0, z>0 */
+  PetscReal vperp0_radius1;             /* RE: radius of refinement along v_perp=0 */
+  PetscReal vperp0_radius2;             /* RE: radius of refinement along v_perp=0 after origin AMR refinement */
+  PetscBool sphere;                     // not used
+  PetscBool inflate;                    // not used
+  PetscReal i_radius[LANDAU_MAX_GRIDS]; // not used
+  PetscReal e_radius;                   // not used
+  PetscInt  num_sections;               // not used
+  PetscInt  cells0[3];
   /* AMR */
-  PetscBool  use_p4est;
-  PetscInt   numRERefine;                     /* RE: refinement along v_perp=0, z > 0 */
-  PetscInt   nZRefine1;                       /* RE: origin refinement after v_perp=0 refinement */
-  PetscInt   nZRefine2;                       /* RE: origin refinement after origin AMR refinement */
-  PetscInt   numAMRRefine[LANDAU_MAX_GRIDS];  /* normal AMR - refine from origin */
-  PetscInt   postAMRRefine[LANDAU_MAX_GRIDS]; /* uniform refinement of AMR */
+  PetscBool use_p4est;
+  PetscInt  numRERefine;                     /* RE: refinement along v_perp=0, z > 0 */
+  PetscInt  nZRefine1;                       /* RE: origin refinement after v_perp=0 refinement */
+  PetscInt  nZRefine2;                       /* RE: origin refinement after origin AMR refinement */
+  PetscInt  numAMRRefine[LANDAU_MAX_GRIDS];  /* normal AMR - refine from origin */
+  PetscInt  postAMRRefine[LANDAU_MAX_GRIDS]; /* uniform refinement of AMR */
   /* relativistic */
-  PetscBool  use_energy_tensor_trick;
-  PetscBool  use_relativistic_corrections;
+  PetscBool use_energy_tensor_trick;
+  PetscBool use_relativistic_corrections;
   /* physics */
-  PetscReal  thermal_temps[LANDAU_MAX_SPECIES];
-  PetscReal  masses[LANDAU_MAX_SPECIES];  /* mass of each species  */
-  PetscReal  charges[LANDAU_MAX_SPECIES]; /* charge of each species  */
-  PetscReal  n[LANDAU_MAX_SPECIES];       /* number density of each species  */
-  PetscReal  m_0;                         /* reference mass */
-  PetscReal  v_0;                         /* reference velocity */
-  PetscReal  n_0;                         /* reference number density */
-  PetscReal  t_0;                         /* reference time */
-  PetscReal  Ez;
-  PetscReal  epsilon0;
-  PetscReal  k;
-  PetscReal  lnLam;
-  PetscReal  electronShift;
-  PetscInt   num_species;
-  PetscInt   num_grids;
-  PetscInt   species_offset[LANDAU_MAX_GRIDS + 1]; // for each grid, but same for all batched vertices
-  PetscInt   mat_offset[LANDAU_MAX_GRIDS + 1];     // for each grid, but same for all batched vertices
+  PetscReal thermal_temps[LANDAU_MAX_SPECIES];
+  PetscReal masses[LANDAU_MAX_SPECIES];  /* mass of each species  */
+  PetscReal charges[LANDAU_MAX_SPECIES]; /* charge of each species  */
+  PetscReal n[LANDAU_MAX_SPECIES];       /* number density of each species  */
+  PetscReal m_0;                         /* reference mass */
+  PetscReal v_0;                         /* reference velocity */
+  PetscReal n_0;                         /* reference number density */
+  PetscReal t_0;                         /* reference time */
+  PetscReal Ez;
+  PetscReal epsilon0;
+  PetscReal k;
+  PetscReal lnLam;
+  PetscReal electronShift;
+  PetscInt  num_species;
+  PetscInt  num_grids;
+  PetscInt  species_offset[LANDAU_MAX_GRIDS + 1]; // for each grid, but same for all batched vertices
+  PetscInt  mat_offset[LANDAU_MAX_GRIDS + 1];     // for each grid, but same for all batched vertices
   // batching
   PetscBool  jacobian_field_major_order; // this could be a type but lets not get pedantic
   VecScatter plex_batch;
@@ -166,13 +167,13 @@ typedef struct {
   PetscErrorCode (*seqaij_solve)(Mat, Vec, Vec);
   PetscErrorCode (*seqaij_getdiagonal)(Mat, Vec);
   /* COO */
-  PetscBool        coo_assembly;
+  PetscBool coo_assembly;
   /* cache */
-  Mat              J;
-  Mat              M;
-  Vec              X;
+  Mat J;
+  Mat M;
+  Vec X;
   /* derived type */
-  void            *data;
+  void *data;
   /* computing */
   LandauDeviceType deviceType;
   DM               pack;
@@ -189,11 +190,11 @@ typedef struct {
 
 #define LANDAU_SPECIES_MAJOR
 #if !defined(LANDAU_SPECIES_MAJOR)
-#define LAND_PACK_IDX(_b, _g)                         (_b * ctx->num_grids + _g)
-#define LAND_MOFFSET(_b, _g, _nbch, _ngrid, _mat_off) (_b * _mat_off[_ngrid] + _mat_off[_g])
+  #define LAND_PACK_IDX(_b, _g)                         (_b * ctx->num_grids + _g)
+  #define LAND_MOFFSET(_b, _g, _nbch, _ngrid, _mat_off) (_b * _mat_off[_ngrid] + _mat_off[_g])
 #else
-#define LAND_PACK_IDX(_b, _g)                         (_g * ctx->batch_sz + _b)
-#define LAND_MOFFSET(_b, _g, _nbch, _ngrid, _mat_off) (_nbch * _mat_off[_g] + _b * (_mat_off[_g + 1] - _mat_off[_g]))
+  #define LAND_PACK_IDX(_b, _g)                         (_g * ctx->batch_sz + _b)
+  #define LAND_MOFFSET(_b, _g, _nbch, _ngrid, _mat_off) (_nbch * _mat_off[_g] + _b * (_mat_off[_g + 1] - _mat_off[_g]))
 #endif
 
 typedef struct {

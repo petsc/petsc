@@ -3,7 +3,8 @@ static char help[] = "Tests various routines in MatMAIJ format.\n";
 
 #include <petscmat.h>
 #define IMAX 15
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   Mat         A, B, MA;
   PetscViewer fd;
   char        file[PETSC_MAX_PATH_LEN];

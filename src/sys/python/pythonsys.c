@@ -3,10 +3,11 @@
 /* ---------------------------------------------------------------- */
 
 #if !defined(PETSC_PYTHON_EXE)
-#define PETSC_PYTHON_EXE "python"
+  #define PETSC_PYTHON_EXE "python"
 #endif
 
-static PetscErrorCode PetscPythonFindExecutable(char pythonexe[], size_t len) {
+static PetscErrorCode PetscPythonFindExecutable(char pythonexe[], size_t len)
+{
   PetscBool flag;
 
   PetscFunctionBegin;
@@ -20,7 +21,8 @@ static PetscErrorCode PetscPythonFindExecutable(char pythonexe[], size_t len) {
 /*
     Python does not appear to have a universal way to indicate the location of Python dynamic library so try several possibilities
 */
-static PetscErrorCode PetscPythonFindLibraryName(const char pythonexe[], const char attempt[], char pythonlib[], size_t pl, PetscBool *found) {
+static PetscErrorCode PetscPythonFindLibraryName(const char pythonexe[], const char attempt[], char pythonlib[], size_t pl, PetscBool *found)
+{
   char  command[2 * PETSC_MAX_PATH_LEN];
   FILE *fp = NULL;
   char *eol;
@@ -44,7 +46,8 @@ static PetscErrorCode PetscPythonFindLibraryName(const char pythonexe[], const c
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscPythonFindLibrary(const char pythonexe[], char pythonlib[], size_t pl) {
+static PetscErrorCode PetscPythonFindLibrary(const char pythonexe[], char pythonlib[], size_t pl)
+{
   const char cmdline1[] = "-c 'import os, sysconfig; print(os.path.join(sysconfig.get_config_var(\"LIBDIR\"),sysconfig.get_config_var(\"LDLIBRARY\")))'";
   const char cmdline2[] = "-c 'import os, sysconfig; print(os.path.join(sysconfig.get_path(\"stdlib\"),os.path.pardir,\"libpython\"+sysconfig.get_python_version()+\".dylib\"))'";
   const char cmdline3[] = "-c 'import os, sysconfig; print(os.path.join(sysconfig.get_config_var(\"LIBPL\"),sysconfig.get_config_var(\"LDLIBRARY\")))'";
@@ -101,7 +104,8 @@ static void (*PyErr_Restore)(PyObject *, PyObject *, PyObject *);
   do { \
   } while (0)
 
-static PetscErrorCode PetscPythonLoadLibrary(const char pythonlib[]) {
+static PetscErrorCode PetscPythonLoadLibrary(const char pythonlib[])
+{
   PetscFunctionBegin;
   /* open the Python dynamic library */
   PetscCall(PetscDLPyLibOpen(pythonlib));
@@ -147,7 +151,8 @@ static PetscBool PetscBeganPython                   = PETSC_FALSE;
 
 .seealso: `PetscPythonInitialize()`, `PetscPythonPrintError()`
 @*/
-PetscErrorCode PetscPythonFinalize(void) {
+PetscErrorCode PetscPythonFinalize(void)
+{
   PetscFunctionBegin;
   if (PetscBeganPython) {
     if (Py_IsInitialized()) Py_Finalize();
@@ -167,7 +172,8 @@ PetscErrorCode PetscPythonFinalize(void) {
 
 .seealso: `PetscPythonFinalize()`, `PetscPythonPrintError()`
 @*/
-PetscErrorCode PetscPythonInitialize(const char pyexe[], const char pylib[]) {
+PetscErrorCode PetscPythonInitialize(const char pyexe[], const char pylib[])
+{
   PyObject *module = NULL;
 
   PetscFunctionBegin;
@@ -253,7 +259,8 @@ PetscErrorCode PetscPythonInitialize(const char pyexe[], const char pylib[]) {
 
 .seealso: `PetscPythonInitialize()`, `PetscPythonFinalize()`
 @*/
-PetscErrorCode PetscPythonPrintError(void) {
+PetscErrorCode PetscPythonPrintError(void)
+{
   PyObject *exc = NULL, *val = NULL, *tb = NULL;
 
   PetscFunctionBegin;
@@ -278,7 +285,8 @@ PetscErrorCode (*PetscPythonMonitorSet_C)(PetscObject, const char[]) = NULL;
 
 .seealso: `PetscPythonInitialize()`, `PetscPythonFinalize()`, `PetscPythonPrintError()`
 @*/
-PetscErrorCode PetscPythonMonitorSet(PetscObject obj, const char url[]) {
+PetscErrorCode PetscPythonMonitorSet(PetscObject obj, const char url[])
+{
   PetscFunctionBegin;
   PetscValidHeader(obj, 1);
   PetscValidCharPointer(url, 2);

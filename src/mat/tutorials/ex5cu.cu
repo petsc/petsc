@@ -11,11 +11,12 @@ static char help[] = "Test of CUDA matrix assemble with simple matrix.\n\n";
 
 #include <petscconf.h>
 #include <petscmat.h>
-#include <petscdevice.h>
+#include <petscdevice_cuda.h>
 #include <assert.h>
 
 #include <petscaijdevice.h>
-__global__ void assemble_on_gpu(PetscSplitCSRDataStructure d_mat, PetscInt start, PetscInt end, PetscInt N, PetscMPIInt rank) {
+__global__ void assemble_on_gpu(PetscSplitCSRDataStructure d_mat, PetscInt start, PetscInt end, PetscInt N, PetscMPIInt rank)
+{
   const PetscInt inc = blockDim.x, my0 = threadIdx.x;
   PetscInt       i;
   PetscErrorCode ierr;
@@ -28,7 +29,8 @@ __global__ void assemble_on_gpu(PetscSplitCSRDataStructure d_mat, PetscInt start
   }
 }
 
-PetscErrorCode assemble_on_cpu(Mat A, PetscInt start, PetscInt end, PetscInt N, PetscMPIInt rank) {
+PetscErrorCode assemble_on_cpu(Mat A, PetscInt start, PetscInt end, PetscInt N, PetscMPIInt rank)
+{
   PetscFunctionBeginUser;
   for (PetscInt i = start; i < end + 1; i++) {
     PetscInt    js[] = {i - 1, i}, nn = (i == N) ? 1 : 2;
@@ -38,7 +40,8 @@ PetscErrorCode assemble_on_cpu(Mat A, PetscInt start, PetscInt end, PetscInt N, 
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   Mat                        A;
   PetscInt                   N = 11, nz = 3, Istart, Iend, num_threads = 128;
   PetscSplitCSRDataStructure d_mat;

@@ -3,7 +3,8 @@ static char help[] = "Tests MatFDColoringSetValues()\n\n";
 #include <petscdm.h>
 #include <petscdmda.h>
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   DM                     da;
   PetscInt               N, mx = 5, my = 4, i, j, nc, nrow, n, ncols, rstart, *colors, *map;
   const PetscInt        *cols;

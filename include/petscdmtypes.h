@@ -1,4 +1,4 @@
-#if !defined(PETSCDMTYPES_H)
+#ifndef PETSCDMTYPES_H
 #define PETSCDMTYPES_H
 
 /* SUBMANSEC = DM */
@@ -8,7 +8,7 @@
 
    Level: intermediate
 
-.seealso: `DMType`, `DMDGetType()`, `DMCompositeCreate()`, `DMDACreate()`, `DMSetType()`, `DMType`, `DMDA`, `DMPLEX`
+.seealso: `DMType`, `DMGetType()`, `DMCompositeCreate()`, `DMDACreate()`, `DMSetType()`, `DMType`, `DMDA`, `DMPLEX`
 S*/
 typedef struct _p_DM *DM;
 

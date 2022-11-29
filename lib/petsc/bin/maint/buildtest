@@ -113,7 +113,7 @@ else
 endif
 #
 #check gcov
-set GCOV=`grep PETSC_USE_GCOV $nPETSC_DIR/$PETSC_ARCH/include/petscconf.h`
+set GCOV=`grep PETSC_USE_COVERAGE $nPETSC_DIR/$PETSC_ARCH/include/petscconf.h`
 #
 # check for prefix install
 set  PREFIXDIR=`grep PREFIXDIR $nPETSC_DIR/$PETSC_ARCH/lib/petsc/conf/petscvariables | cut -d ' ' -f 3`

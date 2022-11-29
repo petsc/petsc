@@ -1,4 +1,4 @@
-#include <petscdevice.h>
+#include <petscdevice_cuda.h>
 #include <../src/ksp/pc/impls/vpbjacobi/vpbjacobi.h>
 
 /* A class that manages helper arrays assisting parallel PCApply() with CUDA */
@@ -18,7 +18,8 @@ struct PC_VPBJacobi_CUDA {
 
   MatScalar *diag_d; /* [nsize], store inverse of the point blocks on device */
 
-  PC_VPBJacobi_CUDA(PetscInt n, PetscInt nblocks, PetscInt nsize, const PetscInt *bsizes, MatScalar *diag_h) : n(n), nblocks(nblocks), nsize(nsize) {
+  PC_VPBJacobi_CUDA(PetscInt n, PetscInt nblocks, PetscInt nsize, const PetscInt *bsizes, MatScalar *diag_h) : n(n), nblocks(nblocks), nsize(nsize)
+  {
     /* malloc memory on host and device, and then update */
     PetscCallVoid(PetscMalloc3(nblocks + 1, &bs_h, nblocks + 1, &bs2_h, n, &matIdx_h));
     PetscCallCUDAVoid(cudaMalloc(&bs_d, sizeof(PetscInt) * (nblocks + 1)));
@@ -28,7 +29,8 @@ struct PC_VPBJacobi_CUDA {
     PetscCallVoid(UpdateOffsetsOnDevice(bsizes, diag_h));
   }
 
-  PetscErrorCode UpdateOffsetsOnDevice(const PetscInt *bsizes, MatScalar *diag_h) {
+  PetscErrorCode UpdateOffsetsOnDevice(const PetscInt *bsizes, MatScalar *diag_h)
+  {
     PetscFunctionBegin;
     PetscCall(ComputeOffsetsOnHost(bsizes));
     PetscCallCUDA(cudaMemcpy(bs_d, bs_h, sizeof(PetscInt) * (nblocks + 1), cudaMemcpyHostToDevice));
@@ -39,7 +41,8 @@ struct PC_VPBJacobi_CUDA {
     PetscFunctionReturn(0);
   }
 
-  ~PC_VPBJacobi_CUDA() {
+  ~PC_VPBJacobi_CUDA()
+  {
     PetscCallVoid(PetscFree3(bs_h, bs2_h, matIdx_h));
     PetscCallCUDAVoid(cudaFree(bs_d));
     PetscCallCUDAVoid(cudaFree(bs2_d));
@@ -48,7 +51,8 @@ struct PC_VPBJacobi_CUDA {
   }
 
 private:
-  PetscErrorCode ComputeOffsetsOnHost(const PetscInt *bsizes) {
+  PetscErrorCode ComputeOffsetsOnHost(const PetscInt *bsizes)
+  {
     PetscFunctionBegin;
     bs_h[0] = bs2_h[0] = 0;
     for (PetscInt i = 0; i < nblocks; i++) {
@@ -73,7 +77,8 @@ private:
   Output Parameter:
 . y - the output vector
 */
-__global__ static void MatMultBatched(PetscInt n, const PetscInt *bs, const PetscInt *bs2, const PetscInt *matIdx, const MatScalar *A, const PetscScalar *x, PetscScalar *y) {
+__global__ static void MatMultBatched(PetscInt n, const PetscInt *bs, const PetscInt *bs2, const PetscInt *matIdx, const MatScalar *A, const PetscScalar *x, PetscScalar *y)
+{
   const PetscInt gridSize = gridDim.x * blockDim.x;
   PetscInt       tid      = blockIdx.x * blockDim.x + threadIdx.x;
   PetscInt       i, j, k, m;
@@ -95,7 +100,8 @@ __global__ static void MatMultBatched(PetscInt n, const PetscInt *bs, const Pets
   }
 }
 
-static PetscErrorCode PCApply_VPBJacobi_CUDA(PC pc, Vec x, Vec y) {
+static PetscErrorCode PCApply_VPBJacobi_CUDA(PC pc, Vec x, Vec y)
+{
   PC_VPBJacobi      *jac   = (PC_VPBJacobi *)pc->data;
   PC_VPBJacobi_CUDA *pcuda = static_cast<PC_VPBJacobi_CUDA *>(jac->spptr);
   const PetscScalar *xx;
@@ -126,7 +132,8 @@ static PetscErrorCode PCApply_VPBJacobi_CUDA(PC pc, Vec x, Vec y) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCDestroy_VPBJacobi_CUDA(PC pc) {
+static PetscErrorCode PCDestroy_VPBJacobi_CUDA(PC pc)
+{
   PC_VPBJacobi *jac = (PC_VPBJacobi *)pc->data;
 
   PetscFunctionBegin;
@@ -135,7 +142,8 @@ static PetscErrorCode PCDestroy_VPBJacobi_CUDA(PC pc) {
   PetscFunctionReturn(0);
 }
 
-PETSC_INTERN PetscErrorCode PCSetUp_VPBJacobi_CUDA(PC pc) {
+PETSC_INTERN PetscErrorCode PCSetUp_VPBJacobi_CUDA(PC pc)
+{
   PC_VPBJacobi      *jac   = (PC_VPBJacobi *)pc->data;
   PC_VPBJacobi_CUDA *pcuda = static_cast<PC_VPBJacobi_CUDA *>(jac->spptr);
   PetscInt           i, n, nblocks, nsize = 0;

@@ -40,7 +40,8 @@
 
 .seealso: `DMSwarmSetType()`, `DMSwarmSetCellDM()`, `DMSwarmType`
 @*/
-PETSC_EXTERN PetscErrorCode DMSwarmSetPointsUniformCoordinates(DM dm, PetscReal min[], PetscReal max[], PetscInt npoints[], InsertMode mode) {
+PETSC_EXTERN PetscErrorCode DMSwarmSetPointsUniformCoordinates(DM dm, PetscReal min[], PetscReal max[], PetscInt npoints[], InsertMode mode)
+{
   PetscReal          gmin[] = {PETSC_MAX_REAL, PETSC_MAX_REAL, PETSC_MAX_REAL};
   PetscReal          gmax[] = {PETSC_MIN_REAL, PETSC_MIN_REAL, PETSC_MIN_REAL};
   PetscInt           i, j, k, N, bs, b, n_estimate, n_curr, n_new_est, p, n_found;
@@ -197,7 +198,8 @@ PETSC_EXTERN PetscErrorCode DMSwarmSetPointsUniformCoordinates(DM dm, PetscReal 
 
 .seealso: `DMSwarmSetType()`, `DMSwarmSetCellDM()`, `DMSwarmType`, `DMSwarmSetPointsUniformCoordinates()`
 @*/
-PETSC_EXTERN PetscErrorCode DMSwarmSetPointCoordinates(DM dm, PetscInt npoints, PetscReal coor[], PetscBool redundant, InsertMode mode) {
+PETSC_EXTERN PetscErrorCode DMSwarmSetPointCoordinates(DM dm, PetscInt npoints, PetscReal coor[], PetscBool redundant, InsertMode mode)
+{
   PetscReal          gmin[] = {PETSC_MAX_REAL, PETSC_MAX_REAL, PETSC_MAX_REAL};
   PetscReal          gmax[] = {PETSC_MIN_REAL, PETSC_MIN_REAL, PETSC_MIN_REAL};
   PetscInt           i, N, bs, b, n_estimate, n_curr, n_new_est, p, n_found;
@@ -357,7 +359,8 @@ extern PetscErrorCode private_DMSwarmInsertPointsUsingCellDM_PLEX(DM, DM, DMSwar
 
 .seealso: `DMSwarmPICLayoutType`, `DMSwarmSetType()`, `DMSwarmSetCellDM()`, `DMSwarmType`
 @*/
-PETSC_EXTERN PetscErrorCode DMSwarmInsertPointsUsingCellDM(DM dm, DMSwarmPICLayoutType layout_type, PetscInt fill_param) {
+PETSC_EXTERN PetscErrorCode DMSwarmInsertPointsUsingCellDM(DM dm, DMSwarmPICLayoutType layout_type, PetscInt fill_param)
+{
   DM        celldm;
   PetscBool isDA, isPLEX;
 
@@ -401,7 +404,8 @@ $    DMSwarmRestoreField(dm,DMSwarmPICField_coor,NULL,NULL,(void**)&coor);
 
 .seealso: `DMSwarmSetCellDM()`, `DMSwarmInsertPointsUsingCellDM()`
 @*/
-PETSC_EXTERN PetscErrorCode DMSwarmSetPointCoordinatesCellwise(DM dm, PetscInt npoints, PetscReal xi[]) {
+PETSC_EXTERN PetscErrorCode DMSwarmSetPointCoordinatesCellwise(DM dm, PetscInt npoints, PetscReal xi[])
+{
   DM        celldm;
   PetscBool isDA, isPLEX;
 
@@ -455,7 +459,8 @@ extern PetscErrorCode private_DMSwarmProjectFields_PLEX(DM swarm, DM celldm, Pet
 
 .seealso: `DMSwarmSetType()`, `DMSwarmSetCellDM()`, `DMSwarmType`
 @*/
-PETSC_EXTERN PetscErrorCode DMSwarmProjectFields(DM dm, PetscInt nfields, const char *fieldnames[], Vec **fields, PetscBool reuse) {
+PETSC_EXTERN PetscErrorCode DMSwarmProjectFields(DM dm, PetscInt nfields, const char *fieldnames[], Vec **fields, PetscBool reuse)
+{
   DM_Swarm         *swarm = (DM_Swarm *)dm->data;
   DMSwarmDataField *gfield;
   DM                celldm;
@@ -517,7 +522,8 @@ PETSC_EXTERN PetscErrorCode DMSwarmProjectFields(DM dm, PetscInt nfields, const 
 
 .seealso: `DMSwarmSetType()`, `DMSwarmSetCellDM()`, `DMSwarmType`
 @*/
-PETSC_EXTERN PetscErrorCode DMSwarmCreatePointPerCellCount(DM dm, PetscInt *ncells, PetscInt **count) {
+PETSC_EXTERN PetscErrorCode DMSwarmCreatePointPerCellCount(DM dm, PetscInt *ncells, PetscInt **count)
+{
   PetscBool isvalid;
   PetscInt  nel;
   PetscInt *sum;
@@ -594,7 +600,8 @@ PETSC_EXTERN PetscErrorCode DMSwarmCreatePointPerCellCount(DM dm, PetscInt *ncel
 
 .seealso: `DMSwarmSetNumSpecies()`, `DMSwarmSetType()`, `DMSwarmType`
 @*/
-PetscErrorCode DMSwarmGetNumSpecies(DM sw, PetscInt *Ns) {
+PetscErrorCode DMSwarmGetNumSpecies(DM sw, PetscInt *Ns)
+{
   DM_Swarm *swarm = (DM_Swarm *)sw->data;
 
   PetscFunctionBegin;
@@ -615,7 +622,8 @@ PetscErrorCode DMSwarmGetNumSpecies(DM sw, PetscInt *Ns) {
 
 .seealso: `DMSwarmGetNumSpecies()`, `DMSwarmSetType()`, `DMSwarmType`
 @*/
-PetscErrorCode DMSwarmSetNumSpecies(DM sw, PetscInt Ns) {
+PetscErrorCode DMSwarmSetNumSpecies(DM sw, PetscInt Ns)
+{
   DM_Swarm *swarm = (DM_Swarm *)sw->data;
 
   PetscFunctionBegin;
@@ -638,7 +646,8 @@ PetscErrorCode DMSwarmSetNumSpecies(DM sw, PetscInt Ns) {
 
 .seealso: `DMSwarmSetCoordinateFunction()`, `DMSwarmGetVelocityFunction()`, `DMSwarmInitializeCoordinates()`
 @*/
-PetscErrorCode DMSwarmGetCoordinateFunction(DM sw, PetscSimplePointFunc *coordFunc) {
+PetscErrorCode DMSwarmGetCoordinateFunction(DM sw, PetscSimplePointFunc *coordFunc)
+{
   DM_Swarm *swarm = (DM_Swarm *)sw->data;
 
   PetscFunctionBegin;
@@ -661,7 +670,8 @@ PetscErrorCode DMSwarmGetCoordinateFunction(DM sw, PetscSimplePointFunc *coordFu
 
 .seealso: `DMSwarmGetCoordinateFunction()`, `DMSwarmSetVelocityFunction()`, `DMSwarmInitializeCoordinates()`
 @*/
-PetscErrorCode DMSwarmSetCoordinateFunction(DM sw, PetscSimplePointFunc coordFunc) {
+PetscErrorCode DMSwarmSetCoordinateFunction(DM sw, PetscSimplePointFunc coordFunc)
+{
   DM_Swarm *swarm = (DM_Swarm *)sw->data;
 
   PetscFunctionBegin;
@@ -686,7 +696,8 @@ PetscErrorCode DMSwarmSetCoordinateFunction(DM sw, PetscSimplePointFunc coordFun
 
 .seealso: `DMSwarmSetVelocityFunction()`, `DMSwarmGetCoordinateFunction()`, `DMSwarmInitializeVelocities()`
 @*/
-PetscErrorCode DMSwarmGetVelocityFunction(DM sw, PetscSimplePointFunc *velFunc) {
+PetscErrorCode DMSwarmGetVelocityFunction(DM sw, PetscSimplePointFunc *velFunc)
+{
   DM_Swarm *swarm = (DM_Swarm *)sw->data;
 
   PetscFunctionBegin;
@@ -709,7 +720,8 @@ PetscErrorCode DMSwarmGetVelocityFunction(DM sw, PetscSimplePointFunc *velFunc) 
 
 .seealso: `DMSwarmGetVelocityFunction()`, `DMSwarmSetCoordinateFunction()`, `DMSwarmInitializeVelocities()`
 @*/
-PetscErrorCode DMSwarmSetVelocityFunction(DM sw, PetscSimplePointFunc velFunc) {
+PetscErrorCode DMSwarmSetVelocityFunction(DM sw, PetscSimplePointFunc velFunc)
+{
   DM_Swarm *swarm = (DM_Swarm *)sw->data;
 
   PetscFunctionBegin;
@@ -735,7 +747,8 @@ PetscErrorCode DMSwarmSetVelocityFunction(DM sw, PetscSimplePointFunc velFunc) {
 
 .seealso: `DMSwarmComputeLocalSizeFromOptions()`
 @*/
-PetscErrorCode DMSwarmComputeLocalSize(DM sw, PetscInt N, PetscProbFunc density) {
+PetscErrorCode DMSwarmComputeLocalSize(DM sw, PetscInt N, PetscProbFunc density)
+{
   DM               dm;
   PetscQuadrature  quad;
   const PetscReal *xq, *wq;
@@ -798,7 +811,8 @@ PetscErrorCode DMSwarmComputeLocalSize(DM sw, PetscInt N, PetscProbFunc density)
 
 .seealso: `DMSwarmComputeLocalSize()`
 @*/
-PetscErrorCode DMSwarmComputeLocalSizeFromOptions(DM sw) {
+PetscErrorCode DMSwarmComputeLocalSizeFromOptions(DM sw)
+{
   PetscProbFunc pdf;
   const char   *prefix;
   char          funcname[PETSC_MAX_PATH_LEN];
@@ -851,7 +865,8 @@ PetscErrorCode DMSwarmComputeLocalSizeFromOptions(DM sw) {
 
 .seealso: `DMSwarmComputeLocalSize()`, `DMSwarmInitializeVelocities()`
 @*/
-PetscErrorCode DMSwarmInitializeCoordinates(DM sw) {
+PetscErrorCode DMSwarmInitializeCoordinates(DM sw)
+{
   PetscSimplePointFunc coordFunc;
   PetscScalar         *weight;
   PetscReal           *x;
@@ -941,7 +956,8 @@ PetscErrorCode DMSwarmInitializeCoordinates(DM sw) {
 
 .seealso: `DMSwarmComputeLocalSize()`, `DMSwarmInitializeCoordinates()`, `DMSwarmInitializeVelocitiesFromOptions()`
 @*/
-PetscErrorCode DMSwarmInitializeVelocities(DM sw, PetscProbFunc sampler, const PetscReal v0[]) {
+PetscErrorCode DMSwarmInitializeVelocities(DM sw, PetscProbFunc sampler, const PetscReal v0[])
+{
   PetscSimplePointFunc velFunc;
   PetscReal           *v;
   PetscInt            *species;
@@ -1001,7 +1017,8 @@ PetscErrorCode DMSwarmInitializeVelocities(DM sw, PetscProbFunc sampler, const P
 
 .seealso: `DMSwarmComputeLocalSize()`, `DMSwarmInitializeCoordinates()`, `DMSwarmInitializeVelocities()`
 @*/
-PetscErrorCode DMSwarmInitializeVelocitiesFromOptions(DM sw, const PetscReal v0[]) {
+PetscErrorCode DMSwarmInitializeVelocitiesFromOptions(DM sw, const PetscReal v0[])
+{
   PetscProbFunc sampler;
   PetscInt      dim;
   const char   *prefix;

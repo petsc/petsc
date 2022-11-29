@@ -5,7 +5,8 @@ static char help[] = "Tests various 1-dimensional DMDA routines.\n\n";
 #include <petscdmda.h>
 #include <petscdraw.h>
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscMPIInt            rank;
   PetscInt               M = 13, s = 1, dof = 1;
   DMBoundaryType         bx = DM_BOUNDARY_PERIODIC;

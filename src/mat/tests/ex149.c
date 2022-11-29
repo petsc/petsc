@@ -4,23 +4,22 @@ static char help[] = "This program illustrates the use of PETSc-fftw interface f
 
 extern PetscErrorCode InputTransformFFT(Mat, Vec, Vec);
 extern PetscErrorCode OutputTransformFFT(Mat, Vec, Vec);
-int                   main(int argc, char **args) {
-                    PetscMPIInt rank, size;
-                    PetscInt    N0 = 3, N1 = 3, N2 = 3, N = N0 * N1 * N2;
-                    PetscRandom rdm;
-                    PetscScalar a;
-                    PetscReal   enorm;
-                    Vec         x, y, z, input, output;
-                    PetscBool   view = PETSC_FALSE, use_interface = PETSC_TRUE;
-                    Mat         A;
-                    PetscInt    DIM, dim[3], vsize;
-                    PetscReal   fac;
+int                   main(int argc, char **args)
+{
+  PetscMPIInt rank, size;
+  PetscInt    N0 = 3, N1 = 3, N2 = 3, N = N0 * N1 * N2;
+  PetscRandom rdm;
+  PetscScalar a;
+  PetscReal   enorm;
+  Vec         x, y, z, input, output;
+  PetscBool   view = PETSC_FALSE, use_interface = PETSC_TRUE;
+  Mat         A;
+  PetscInt    DIM, dim[3], vsize;
+  PetscReal   fac;
 
-                    PetscFunctionBeginUser;
-                    PetscCall(PetscInitialize(&argc, &args, (char *)0, help));
-#if defined(PETSC_USE_COMPLEX)
-  SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP, "This example requires real numbers");
-#endif
+  PetscFunctionBeginUser;
+  PetscCall(PetscInitialize(&argc, &args, (char *)0, help));
+  PetscCheck(!PetscDefined(USE_COMPLEX), PETSC_COMM_WORLD, PETSC_ERR_SUP, "This example requires real numbers");
 
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));

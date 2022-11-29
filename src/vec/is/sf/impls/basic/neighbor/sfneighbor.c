@@ -24,7 +24,8 @@ typedef struct {
 /*              Internal utility routines                                            */
 /*===================================================================================*/
 
-static inline PetscErrorCode PetscLogMPIMessages(PetscInt nsend, PetscSFCount *sendcnts, MPI_Datatype sendtype, PetscInt nrecv, PetscSFCount *recvcnts, MPI_Datatype recvtype) {
+static inline PetscErrorCode PetscLogMPIMessages(PetscInt nsend, PetscSFCount *sendcnts, MPI_Datatype sendtype, PetscInt nrecv, PetscSFCount *recvcnts, MPI_Datatype recvtype)
+{
   PetscFunctionBegin;
 #if defined(PETSC_USE_LOG)
   petsc_isend_ct += (PetscLogDouble)nsend;
@@ -46,7 +47,8 @@ static inline PetscErrorCode PetscLogMPIMessages(PetscInt nsend, PetscSFCount *s
 }
 
 /* Get the communicator with distributed graph topology, which is not cheap to build so we do it on demand (instead of at PetscSFSetUp time) */
-static PetscErrorCode PetscSFGetDistComm_Neighbor(PetscSF sf, PetscSFDirection direction, MPI_Comm *distcomm) {
+static PetscErrorCode PetscSFGetDistComm_Neighbor(PetscSF sf, PetscSFDirection direction, MPI_Comm *distcomm)
+{
   PetscSF_Neighbor  *dat = (PetscSF_Neighbor *)sf->data;
   PetscInt           nrootranks, ndrootranks, nleafranks, ndleafranks;
   const PetscMPIInt *rootranks, *leafranks;
@@ -75,7 +77,8 @@ static PetscErrorCode PetscSFGetDistComm_Neighbor(PetscSF sf, PetscSFDirection d
 /*===================================================================================*/
 /*              Implementations of SF public APIs                                    */
 /*===================================================================================*/
-static PetscErrorCode PetscSFSetUp_Neighbor(PetscSF sf) {
+static PetscErrorCode PetscSFSetUp_Neighbor(PetscSF sf)
+{
   PetscSF_Neighbor *dat = (PetscSF_Neighbor *)sf->data;
   PetscInt          i, j, nrootranks, ndrootranks, nleafranks, ndleafranks;
   const PetscInt   *rootoffset, *leafoffset;
@@ -128,7 +131,8 @@ static PetscErrorCode PetscSFSetUp_Neighbor(PetscSF sf) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscSFReset_Neighbor(PetscSF sf) {
+static PetscErrorCode PetscSFReset_Neighbor(PetscSF sf)
+{
   PetscInt          i;
   PetscSF_Neighbor *dat = (PetscSF_Neighbor *)sf->data;
 
@@ -145,14 +149,16 @@ static PetscErrorCode PetscSFReset_Neighbor(PetscSF sf) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscSFDestroy_Neighbor(PetscSF sf) {
+static PetscErrorCode PetscSFDestroy_Neighbor(PetscSF sf)
+{
   PetscFunctionBegin;
   PetscCall(PetscSFReset_Neighbor(sf));
   PetscCall(PetscFree(sf->data));
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscSFBcastBegin_Neighbor(PetscSF sf, MPI_Datatype unit, PetscMemType rootmtype, const void *rootdata, PetscMemType leafmtype, void *leafdata, MPI_Op op) {
+static PetscErrorCode PetscSFBcastBegin_Neighbor(PetscSF sf, MPI_Datatype unit, PetscMemType rootmtype, const void *rootdata, PetscMemType leafmtype, void *leafdata, MPI_Op op)
+{
   PetscSFLink       link;
   PetscSF_Neighbor *dat      = (PetscSF_Neighbor *)sf->data;
   MPI_Comm          distcomm = MPI_COMM_NULL;
@@ -174,7 +180,8 @@ static PetscErrorCode PetscSFBcastBegin_Neighbor(PetscSF sf, MPI_Datatype unit, 
   PetscFunctionReturn(0);
 }
 
-static inline PetscErrorCode PetscSFLeafToRootBegin_Neighbor(PetscSF sf, MPI_Datatype unit, PetscMemType leafmtype, const void *leafdata, PetscMemType rootmtype, void *rootdata, MPI_Op op, PetscSFOperation sfop, PetscSFLink *out) {
+static inline PetscErrorCode PetscSFLeafToRootBegin_Neighbor(PetscSF sf, MPI_Datatype unit, PetscMemType leafmtype, const void *leafdata, PetscMemType rootmtype, void *rootdata, MPI_Op op, PetscSFOperation sfop, PetscSFLink *out)
+{
   PetscSFLink       link;
   PetscSF_Neighbor *dat      = (PetscSF_Neighbor *)sf->data;
   MPI_Comm          distcomm = MPI_COMM_NULL;
@@ -195,7 +202,8 @@ static inline PetscErrorCode PetscSFLeafToRootBegin_Neighbor(PetscSF sf, MPI_Dat
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscSFReduceBegin_Neighbor(PetscSF sf, MPI_Datatype unit, PetscMemType leafmtype, const void *leafdata, PetscMemType rootmtype, void *rootdata, MPI_Op op) {
+static PetscErrorCode PetscSFReduceBegin_Neighbor(PetscSF sf, MPI_Datatype unit, PetscMemType leafmtype, const void *leafdata, PetscMemType rootmtype, void *rootdata, MPI_Op op)
+{
   PetscSFLink link = NULL;
 
   PetscFunctionBegin;
@@ -204,7 +212,8 @@ static PetscErrorCode PetscSFReduceBegin_Neighbor(PetscSF sf, MPI_Datatype unit,
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscSFFetchAndOpBegin_Neighbor(PetscSF sf, MPI_Datatype unit, PetscMemType rootmtype, void *rootdata, PetscMemType leafmtype, const void *leafdata, void *leafupdate, MPI_Op op) {
+static PetscErrorCode PetscSFFetchAndOpBegin_Neighbor(PetscSF sf, MPI_Datatype unit, PetscMemType rootmtype, void *rootdata, PetscMemType leafmtype, const void *leafdata, void *leafupdate, MPI_Op op)
+{
   PetscSFLink link = NULL;
 
   PetscFunctionBegin;
@@ -213,7 +222,8 @@ static PetscErrorCode PetscSFFetchAndOpBegin_Neighbor(PetscSF sf, MPI_Datatype u
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscSFFetchAndOpEnd_Neighbor(PetscSF sf, MPI_Datatype unit, void *rootdata, const void *leafdata, void *leafupdate, MPI_Op op) {
+static PetscErrorCode PetscSFFetchAndOpEnd_Neighbor(PetscSF sf, MPI_Datatype unit, void *rootdata, const void *leafdata, void *leafupdate, MPI_Op op)
+{
   PetscSFLink       link    = NULL;
   MPI_Comm          comm    = MPI_COMM_NULL;
   PetscSF_Neighbor *dat     = (PetscSF_Neighbor *)sf->data;
@@ -237,7 +247,8 @@ static PetscErrorCode PetscSFFetchAndOpEnd_Neighbor(PetscSF sf, MPI_Datatype uni
   PetscFunctionReturn(0);
 }
 
-PETSC_INTERN PetscErrorCode PetscSFCreate_Neighbor(PetscSF sf) {
+PETSC_INTERN PetscErrorCode PetscSFCreate_Neighbor(PetscSF sf)
+{
   PetscSF_Neighbor *dat;
 
   PetscFunctionBegin;
@@ -255,7 +266,7 @@ PETSC_INTERN PetscErrorCode PetscSFCreate_Neighbor(PetscSF sf) {
   sf->ops->FetchAndOpBegin = PetscSFFetchAndOpBegin_Neighbor;
   sf->ops->FetchAndOpEnd   = PetscSFFetchAndOpEnd_Neighbor;
 
-  PetscCall(PetscNewLog(sf, &dat));
+  PetscCall(PetscNew(&dat));
   sf->data = (void *)dat;
   PetscFunctionReturn(0);
 }

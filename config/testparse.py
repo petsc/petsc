@@ -50,8 +50,8 @@ sys.path.insert(0,maintdir)
 # These are special keys describing build
 buildkeys="requires TODO SKIP depends".split()
 
-acceptedkeys="test nsize requires command suffix diff_args args filter filter_output localrunfiles comments TODO SKIP output_file timeoutfactor".split()
-appendlist="args diff_args requires comments".split()
+acceptedkeys=set("test nsize requires command suffix diff_args args filter filter_output localrunfiles comments TODO SKIP output_file timeoutfactor env".split())
+appendlist="args diff_args requires comments env".split()
 
 import re
 
@@ -395,7 +395,7 @@ def parseTest(testStr,srcfile,verbosity):
   but in practice we only support two levels of test:
   """
   basename=os.path.basename(srcfile)
-  # Handle the new at the begininng
+  # Handle the new at the beginning
   bn=re.sub("new_","",basename)
   # This is the default
   testname="run"+getlangsplit(bn)
@@ -452,6 +452,9 @@ def parseTest(testStr,srcfile,verbosity):
       if var=="suffix":
         if len(val)>0:
           testname+="_"+val
+      if var == "env" and len(val) == 0:
+        mess = "value for {}: directive cannot be empty!".format(var)
+        raise Exception(mess)
 
   if len(comments): subdict['comments']="\n".join(comments).lstrip("\n")
 

@@ -1,19 +1,21 @@
-#if !defined(__VECKOKKOSIMPL_HPP)
+#ifndef __VECKOKKOSIMPL_HPP
 #define __VECKOKKOSIMPL_HPP
 
 #include <../src/vec/vec/impls/mpi/pvecimpl.h>
 #include <petsc/private/vecimpl_kokkos.hpp>
 
 #if defined(PETSC_USE_DEBUG)
-#define VecErrorIfNotKokkos(v) \
-  do { \
-    PetscBool isKokkos = PETSC_FALSE; \
-    PetscCall(PetscObjectTypeCompareAny((PetscObject)(v), &isKokkos, VECSEQKOKKOS, VECMPIKOKKOS, VECKOKKOS, "")); \
-    PetscCheck(isKokkos, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Calling VECKOKKOS methods on a non-VECKOKKOS object"); \
-  } while (0)
+  #define VecErrorIfNotKokkos(v) \
+    do { \
+      PetscBool isKokkos = PETSC_FALSE; \
+      PetscCall(PetscObjectTypeCompareAny((PetscObject)(v), &isKokkos, VECSEQKOKKOS, VECMPIKOKKOS, VECKOKKOS, "")); \
+      PetscCheck(isKokkos, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Calling VECKOKKOS methods on a non-VECKOKKOS object"); \
+    } while (0)
 #else
-#define VecErrorIfNotKokkos(v) \
-  do { (void)(v); } while (0)
+  #define VecErrorIfNotKokkos(v) \
+    do { \
+      (void)(v); \
+    } while (0)
 #endif
 
 /* Stuff related to Vec_Kokkos */
@@ -36,7 +38,8 @@ struct Vec_Kokkos {
     If device array (array_d) is NULL, then a proper device mirror will be allocated.
     Otherwise, the mirror will be created using the given array_d.
   */
-  Vec_Kokkos(PetscInt n, PetscScalar *array_h, PetscScalar *array_d = NULL) {
+  Vec_Kokkos(PetscInt n, PetscScalar *array_h, PetscScalar *array_d = NULL)
+  {
     PetscScalarKokkosViewHost v_h(array_h, n);
     PetscScalarKokkosView     v_d;
 
@@ -53,32 +56,37 @@ struct Vec_Kokkos {
      assuming the given array contains the latest value for this vector.
    */
   template <typename MemorySpace, std::enable_if_t<std::is_same<MemorySpace, Kokkos::HostSpace>::value, bool> = true, std::enable_if_t<std::is_same<MemorySpace, DefaultMemorySpace>::value, bool> = true>
-  void UpdateArray(PetscScalar *array) {
+  void UpdateArray(PetscScalar *array)
+  {
     PetscScalarKokkosViewHost v_h(array, v_dual.extent(0));
     /* Kokkos said they would add error-checking so that users won't accidentally pass two different Views in this case */
     v_dual = PetscScalarKokkosDualView(v_h, v_h);
   }
 
   template <typename MemorySpace, std::enable_if_t<std::is_same<MemorySpace, Kokkos::HostSpace>::value, bool> = true, std::enable_if_t<!std::is_same<MemorySpace, DefaultMemorySpace>::value, bool> = true>
-  void UpdateArray(PetscScalar *array) {
+  void UpdateArray(PetscScalar *array)
+  {
     PetscScalarKokkosViewHost v_h(array, v_dual.extent(0));
     v_dual = PetscScalarKokkosDualView(v_dual.view<DefaultMemorySpace>(), v_h);
     v_dual.modify_host();
   }
 
   template <typename MemorySpace, std::enable_if_t<!std::is_same<MemorySpace, Kokkos::HostSpace>::value, bool> = true, std::enable_if_t<std::is_same<MemorySpace, DefaultMemorySpace>::value, bool> = true>
-  void UpdateArray(PetscScalar *array) {
+  void UpdateArray(PetscScalar *array)
+  {
     PetscScalarKokkosView v_d(array, v_dual.extent(0));
     v_dual = PetscScalarKokkosDualView(v_d, v_dual.view<Kokkos::HostSpace>());
     v_dual.modify_device();
   }
 
-  void SetUpCOO(const Vec_Seq *vecseq, PetscInt m) {
+  void SetUpCOO(const Vec_Seq *vecseq, PetscInt m)
+  {
     jmap1_d = Kokkos::create_mirror_view_and_copy(DefaultMemorySpace(), PetscCountKokkosViewHost(vecseq->jmap1, m + 1));
     perm1_d = Kokkos::create_mirror_view_and_copy(DefaultMemorySpace(), PetscCountKokkosViewHost(vecseq->perm1, vecseq->tot1));
   }
 
-  void SetUpCOO(const Vec_MPI *vecmpi, PetscInt m) {
+  void SetUpCOO(const Vec_MPI *vecmpi, PetscInt m)
+  {
     jmap1_d   = Kokkos::create_mirror_view_and_copy(DefaultMemorySpace(), PetscCountKokkosViewHost(vecmpi->jmap1, m + 1));
     perm1_d   = Kokkos::create_mirror_view_and_copy(DefaultMemorySpace(), PetscCountKokkosViewHost(vecmpi->perm1, vecmpi->tot1));
     imap2_d   = Kokkos::create_mirror_view_and_copy(DefaultMemorySpace(), PetscCountKokkosViewHost(vecmpi->imap2, vecmpi->nnz2));
@@ -120,7 +128,6 @@ PETSC_INTERN PetscErrorCode VecCreate_MPIKokkos(Vec);
 PETSC_INTERN PetscErrorCode VecCreate_MPIKokkos_Private(Vec, PetscBool, PetscInt, const PetscScalar *);
 PETSC_INTERN PetscErrorCode VecCreate_Kokkos(Vec);
 PETSC_INTERN PetscErrorCode VecDestroy_SeqKokkos(Vec);
-PETSC_INTERN PetscErrorCode VecDestroy_MPIKokkos(Vec);
 PETSC_INTERN PetscErrorCode VecAYPX_SeqKokkos(Vec, PetscScalar, Vec);
 PETSC_INTERN PetscErrorCode VecSetRandom_SeqKokkos(Vec, PetscRandom);
 PETSC_INTERN PetscErrorCode VecGetLocalVector_SeqKokkos(Vec, Vec);

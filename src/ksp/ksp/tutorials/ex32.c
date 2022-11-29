@@ -17,7 +17,7 @@ This uses multigrid to solve the linear system
        Contributed by Andrei Draganescu <aidraga@sandia.gov>
 
 Note the nice multigrid convergence despite the fact it is only using
-peicewise constant interpolation/restriction. This is because cell-centered multigrid
+piecewise constant interpolation/restriction. This is because cell-centered multigrid
 does not need the same rule:
 
     polynomial degree(interpolation) + polynomial degree(restriction) + 2 > degree of PDE
@@ -44,7 +44,8 @@ typedef struct {
   BCType      bcType;
 } UserContext;
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   KSP         ksp;
   DM          da;
   UserContext user;
@@ -79,7 +80,8 @@ int main(int argc, char **argv) {
   return 0;
 }
 
-PetscErrorCode ComputeRHS(KSP ksp, Vec b, void *ctx) {
+PetscErrorCode ComputeRHS(KSP ksp, Vec b, void *ctx)
+{
   UserContext  *user = (UserContext *)ctx;
   PetscInt      i, j, mx, my, xm, ym, xs, ys;
   PetscScalar   Hx, Hy;
@@ -112,7 +114,8 @@ PetscErrorCode ComputeRHS(KSP ksp, Vec b, void *ctx) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode ComputeMatrix(KSP ksp, Mat J, Mat jac, void *ctx) {
+PetscErrorCode ComputeMatrix(KSP ksp, Mat J, Mat jac, void *ctx)
+{
   UserContext *user = (UserContext *)ctx;
   PetscInt     i, j, mx, my, xm, ym, xs, ys, num, numi, numj;
   PetscScalar  v[5], Hx, Hy, HydHx, HxdHy;

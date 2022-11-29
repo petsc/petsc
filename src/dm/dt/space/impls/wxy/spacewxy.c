@@ -1,19 +1,22 @@
 #include <petsc/private/petscfeimpl.h> /*I "petscfe.h" I*/
 
-static PetscErrorCode PetscSpaceSetFromOptions_WXY(PetscSpace sp, PetscOptionItems *PetscOptionsObject) {
+static PetscErrorCode PetscSpaceSetFromOptions_WXY(PetscSpace sp, PetscOptionItems *PetscOptionsObject)
+{
   PetscFunctionBegin;
   PetscOptionsHeadBegin(PetscOptionsObject, "PetscSpace WXY options");
   PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscSpacePolynomialView_Ascii(PetscSpace sp, PetscViewer v) {
+static PetscErrorCode PetscSpacePolynomialView_Ascii(PetscSpace sp, PetscViewer v)
+{
   PetscFunctionBegin;
   PetscCall(PetscViewerASCIIPrintf(v, "WXY space of degree %" PetscInt_FMT "\n", sp->degree));
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscSpaceView_WXY(PetscSpace sp, PetscViewer viewer) {
+static PetscErrorCode PetscSpaceView_WXY(PetscSpace sp, PetscViewer viewer)
+{
   PetscBool iascii;
 
   PetscFunctionBegin;
@@ -24,7 +27,8 @@ static PetscErrorCode PetscSpaceView_WXY(PetscSpace sp, PetscViewer viewer) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscSpaceDestroy_WXY(PetscSpace sp) {
+static PetscErrorCode PetscSpaceDestroy_WXY(PetscSpace sp)
+{
   PetscSpace_WXY *wxy = (PetscSpace_WXY *)sp->data;
 
   PetscFunctionBegin;
@@ -32,7 +36,8 @@ static PetscErrorCode PetscSpaceDestroy_WXY(PetscSpace sp) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscSpaceSetUp_WXY(PetscSpace sp) {
+static PetscErrorCode PetscSpaceSetUp_WXY(PetscSpace sp)
+{
   PetscSpace_WXY *wxy = (PetscSpace_WXY *)sp->data;
 
   PetscFunctionBegin;
@@ -43,13 +48,15 @@ static PetscErrorCode PetscSpaceSetUp_WXY(PetscSpace sp) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscSpaceGetDimension_WXY(PetscSpace sp, PetscInt *dim) {
+static PetscErrorCode PetscSpaceGetDimension_WXY(PetscSpace sp, PetscInt *dim)
+{
   PetscFunctionBegin;
   *dim = 6;
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscSpaceEvaluate_WXY(PetscSpace sp, PetscInt npoints, const PetscReal points[], PetscReal B[], PetscReal D[], PetscReal H[]) {
+static PetscErrorCode PetscSpaceEvaluate_WXY(PetscSpace sp, PetscInt npoints, const PetscReal points[], PetscReal B[], PetscReal D[], PetscReal H[])
+{
   PetscSpace_WXY *wxy = (PetscSpace_WXY *)sp->data;
   PetscInt        dim = sp->Nv;
   PetscInt        Nb  = 6;
@@ -349,11 +356,13 @@ static PetscErrorCode PetscSpaceEvaluate_WXY(PetscSpace sp, PetscInt npoints, co
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscSpaceGetHeightSubspace_WXY(PetscSpace sp, PetscInt height, PetscSpace *subsp) {
+static PetscErrorCode PetscSpaceGetHeightSubspace_WXY(PetscSpace sp, PetscInt height, PetscSpace *subsp)
+{
   SETERRQ(PetscObjectComm((PetscObject)sp), PETSC_ERR_SUP, "Do not know how to do this");
 }
 
-static PetscErrorCode PetscSpaceInitialize_WXY(PetscSpace sp) {
+static PetscErrorCode PetscSpaceInitialize_WXY(PetscSpace sp)
+{
   PetscFunctionBegin;
   sp->ops->setfromoptions    = PetscSpaceSetFromOptions_WXY;
   sp->ops->setup             = PetscSpaceSetUp_WXY;
@@ -366,21 +375,22 @@ static PetscErrorCode PetscSpaceInitialize_WXY(PetscSpace sp) {
 }
 
 /*MC
-  PETSCSPACEWXY = "wxy" - A PetscSpace object that encapsulates the Wheeler-Xu-Yotov enrichments.
+  PETSCSPACEWXY = "wxy" - A `PetscSpace` object that encapsulates the Wheeler-Xu-Yotov enrichments.
 $ curl {{0, 0, y^2 z}, {x z^2, 0, 0}, {y z^2, 0, 0}, {0, -x z^2, 0}, {0, -3/2 x^2 z, -1/2 x^2 y}, {3/2 y^2 z, 0, 1/2 y^2 x}}
 $ = {{2 y z, 0, 0}, {0, 2 x z, 0}, {0, 2 y z, -z^2}, {2 x z, 0, -z^2}, {x^2, x y, -3 x z}, {x y, y^2, -3 y z}}
 
   Level: intermediate
 
-.seealso: `PetscSpaceType`, `PetscSpaceCreate()`, `PetscSpaceSetType()`
+.seealso: `PetscSpace`, `PetscSpaceType`, `PetscSpaceCreate()`, `PetscSpaceSetType()`
 M*/
 
-PETSC_EXTERN PetscErrorCode PetscSpaceCreate_WXY(PetscSpace sp) {
+PETSC_EXTERN PetscErrorCode PetscSpaceCreate_WXY(PetscSpace sp)
+{
   PetscSpace_WXY *wxy;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCSPACE_CLASSID, 1);
-  PetscCall(PetscNewLog(sp, &wxy));
+  PetscCall(PetscNew(&wxy));
   sp->data   = wxy;
   sp->degree = 2;
 

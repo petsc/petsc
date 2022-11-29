@@ -1,12 +1,12 @@
 #PETSc Option Table entries:
--alias2 value2
--num_option_1 1
--num_option_2 2.2
--num_option_3 .3
--num_option_4 -4
--num_option_5 -5.5
--num_option_6 -.6
--option1
--options_left 0
--options_view
+-alias2 value2 # (source: file)
+-num_option_1 1 # (source: file)
+-num_option_2 2.2 # (source: file)
+-num_option_3 .3 # (source: file)
+-num_option_4 -4 # (source: file)
+-num_option_5 -5.5 # (source: file)
+-num_option_6 -.6 # (source: file)
+-option1 # (source: file)
+-options_left 0 # (source: command line)
+-options_view # (source: command line)
 #End of PETSc Option Table entries

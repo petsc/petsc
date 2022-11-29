@@ -6,7 +6,8 @@ static char help[] = "Test MatTransposeMatMult() \n\n";
 
 #include <petscmat.h>
 
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   Mat         A, C, AtA, B;
   PetscViewer fd;
   char        file[PETSC_MAX_PATH_LEN];

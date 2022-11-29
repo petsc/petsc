@@ -5,7 +5,8 @@
    only apply to sequential vectors.
 */
 /*   VecMergedDot_Private function merges the dot products for gamma, delta and dp */
-static PetscErrorCode VecMergedDot_Private(Vec U, Vec W, Vec R, PetscInt normtype, PetscScalar *ru, PetscScalar *wu, PetscScalar *uu) {
+static PetscErrorCode VecMergedDot_Private(Vec U, Vec W, Vec R, PetscInt normtype, PetscScalar *ru, PetscScalar *wu, PetscScalar *uu)
+{
   const PetscScalar *PETSC_RESTRICT PU, *PETSC_RESTRICT PW, *PETSC_RESTRICT PR;
   PetscScalar sumru = 0.0, sumwu = 0.0, sumuu = 0.0;
   PetscInt    j, n;
@@ -17,19 +18,22 @@ static PetscErrorCode VecMergedDot_Private(Vec U, Vec W, Vec R, PetscInt normtyp
   PetscCall(VecGetLocalSize(U, &n));
 
   if (normtype == KSP_NORM_PRECONDITIONED) {
-    PetscPragmaSIMD for (j = 0; j < n; j++) {
+    PetscPragmaSIMD for (j = 0; j < n; j++)
+    {
       sumwu += PW[j] * PetscConj(PU[j]);
       sumru += PR[j] * PetscConj(PU[j]);
       sumuu += PU[j] * PetscConj(PU[j]);
     }
   } else if (normtype == KSP_NORM_UNPRECONDITIONED) {
-    PetscPragmaSIMD for (j = 0; j < n; j++) {
+    PetscPragmaSIMD for (j = 0; j < n; j++)
+    {
       sumwu += PW[j] * PetscConj(PU[j]);
       sumru += PR[j] * PetscConj(PU[j]);
       sumuu += PR[j] * PetscConj(PR[j]);
     }
   } else if (normtype == KSP_NORM_NATURAL) {
-    PetscPragmaSIMD for (j = 0; j < n; j++) {
+    PetscPragmaSIMD for (j = 0; j < n; j++)
+    {
       sumwu += PW[j] * PetscConj(PU[j]);
       sumru += PR[j] * PetscConj(PU[j]);
     }
@@ -47,7 +51,8 @@ static PetscErrorCode VecMergedDot_Private(Vec U, Vec W, Vec R, PetscInt normtyp
 }
 
 /*   VecMergedDot2_Private function merges the dot products for lambda_1 and lambda_4 */
-static PetscErrorCode VecMergedDot2_Private(Vec N, Vec M, Vec W, PetscScalar *wm, PetscScalar *nm) {
+static PetscErrorCode VecMergedDot2_Private(Vec N, Vec M, Vec W, PetscScalar *wm, PetscScalar *nm)
+{
   const PetscScalar *PETSC_RESTRICT PN, *PETSC_RESTRICT PM, *PETSC_RESTRICT PW;
   PetscScalar sumwm = 0.0, sumnm = 0.0;
   PetscInt    j, n;
@@ -58,7 +63,8 @@ static PetscErrorCode VecMergedDot2_Private(Vec N, Vec M, Vec W, PetscScalar *wm
   PetscCall(VecGetArrayRead(M, (const PetscScalar **)&PM));
   PetscCall(VecGetLocalSize(N, &n));
 
-  PetscPragmaSIMD for (j = 0; j < n; j++) {
+  PetscPragmaSIMD for (j = 0; j < n; j++)
+  {
     sumwm += PW[j] * PetscConj(PM[j]);
     sumnm += PN[j] * PetscConj(PM[j]);
   }
@@ -73,7 +79,8 @@ static PetscErrorCode VecMergedDot2_Private(Vec N, Vec M, Vec W, PetscScalar *wm
 }
 
 /*   VecMergedOpsShort_Private function merges the dot products, AXPY and SAXPY operations for all vectors for iteration 0  */
-static PetscErrorCode VecMergedOpsShort_Private(Vec vx, Vec vr, Vec vz, Vec vw, Vec vp, Vec vq, Vec vc, Vec vd, Vec vg0, Vec vh0, Vec vg1, Vec vh1, Vec vs, Vec va1, Vec vb1, Vec ve, Vec vf, Vec vm, Vec vn, Vec vu, PetscInt normtype, PetscScalar beta0, PetscScalar alpha0, PetscScalar beta1, PetscScalar alpha1, PetscScalar *lambda) {
+static PetscErrorCode VecMergedOpsShort_Private(Vec vx, Vec vr, Vec vz, Vec vw, Vec vp, Vec vq, Vec vc, Vec vd, Vec vg0, Vec vh0, Vec vg1, Vec vh1, Vec vs, Vec va1, Vec vb1, Vec ve, Vec vf, Vec vm, Vec vn, Vec vu, PetscInt normtype, PetscScalar beta0, PetscScalar alpha0, PetscScalar beta1, PetscScalar alpha1, PetscScalar *lambda)
+{
   PetscScalar *PETSC_RESTRICT px, *PETSC_RESTRICT pr, *PETSC_RESTRICT pz, *PETSC_RESTRICT pw;
   PetscScalar *PETSC_RESTRICT pp, *PETSC_RESTRICT pq;
   PetscScalar *PETSC_RESTRICT pc, *PETSC_RESTRICT pd, *PETSC_RESTRICT pg0, *PETSC_RESTRICT ph0, *PETSC_RESTRICT pg1, *PETSC_RESTRICT ph1, *PETSC_RESTRICT ps, *PETSC_RESTRICT pa1, *PETSC_RESTRICT pb1, *PETSC_RESTRICT pe, *PETSC_RESTRICT pf, *PETSC_RESTRICT pm, *PETSC_RESTRICT pn, *PETSC_RESTRICT pu;
@@ -105,7 +112,8 @@ static PetscErrorCode VecMergedOpsShort_Private(Vec vx, Vec vr, Vec vz, Vec vw, 
   for (j = 0; j < 15; j++) lambda[j] = 0.0;
 
   if (normtype == KSP_NORM_PRECONDITIONED) {
-    PetscPragmaSIMD for (j = 0; j < n; j++) {
+    PetscPragmaSIMD for (j = 0; j < n; j++)
+    {
       pz[j]  = pn[j];
       pq[j]  = pm[j];
       ps[j]  = pw[j];
@@ -159,7 +167,8 @@ static PetscErrorCode VecMergedOpsShort_Private(Vec vx, Vec vr, Vec vz, Vec vw, 
     lambda[14] = PetscConj(lambda[0]);
 
   } else if (normtype == KSP_NORM_UNPRECONDITIONED) {
-    PetscPragmaSIMD for (j = 0; j < n; j++) {
+    PetscPragmaSIMD for (j = 0; j < n; j++)
+    {
       pz[j]  = pn[j];
       pq[j]  = pm[j];
       ps[j]  = pw[j];
@@ -213,7 +222,8 @@ static PetscErrorCode VecMergedOpsShort_Private(Vec vx, Vec vr, Vec vz, Vec vw, 
     lambda[14] = PetscConj(lambda[0]);
 
   } else if (normtype == KSP_NORM_NATURAL) {
-    PetscPragmaSIMD for (j = 0; j < n; j++) {
+    PetscPragmaSIMD for (j = 0; j < n; j++)
+    {
       pz[j]  = pn[j];
       pq[j]  = pm[j];
       ps[j]  = pw[j];
@@ -291,7 +301,8 @@ static PetscErrorCode VecMergedOpsShort_Private(Vec vx, Vec vr, Vec vz, Vec vw, 
 }
 
 /*   VecMergedOps_Private function merges the dot products, AXPY and SAXPY operations for all vectors for iteration > 0  */
-static PetscErrorCode VecMergedOps_Private(Vec vx, Vec vr, Vec vz, Vec vw, Vec vp, Vec vq, Vec vc, Vec vd, Vec vg0, Vec vh0, Vec vg1, Vec vh1, Vec vs, Vec va1, Vec vb1, Vec ve, Vec vf, Vec vm, Vec vn, Vec vu, PetscInt normtype, PetscScalar beta0, PetscScalar alpha0, PetscScalar beta1, PetscScalar alpha1, PetscScalar *lambda, PetscScalar alphaold) {
+static PetscErrorCode VecMergedOps_Private(Vec vx, Vec vr, Vec vz, Vec vw, Vec vp, Vec vq, Vec vc, Vec vd, Vec vg0, Vec vh0, Vec vg1, Vec vh1, Vec vs, Vec va1, Vec vb1, Vec ve, Vec vf, Vec vm, Vec vn, Vec vu, PetscInt normtype, PetscScalar beta0, PetscScalar alpha0, PetscScalar beta1, PetscScalar alpha1, PetscScalar *lambda, PetscScalar alphaold)
+{
   PetscScalar *PETSC_RESTRICT px, *PETSC_RESTRICT pr, *PETSC_RESTRICT pz, *PETSC_RESTRICT pw;
   PetscScalar *PETSC_RESTRICT pp, *PETSC_RESTRICT pq;
   PetscScalar *PETSC_RESTRICT pc, *PETSC_RESTRICT pd, *PETSC_RESTRICT pg0, *PETSC_RESTRICT ph0, *PETSC_RESTRICT pg1, *PETSC_RESTRICT ph1, *PETSC_RESTRICT ps, *PETSC_RESTRICT pa1, *PETSC_RESTRICT pb1, *PETSC_RESTRICT pe, *PETSC_RESTRICT pf, *PETSC_RESTRICT pm, *PETSC_RESTRICT pn, *PETSC_RESTRICT pu;
@@ -323,7 +334,8 @@ static PetscErrorCode VecMergedOps_Private(Vec vx, Vec vr, Vec vz, Vec vw, Vec v
   for (j = 0; j < 15; j++) lambda[j] = 0.0;
 
   if (normtype == KSP_NORM_PRECONDITIONED) {
-    PetscPragmaSIMD for (j = 0; j < n; j++) {
+    PetscPragmaSIMD for (j = 0; j < n; j++)
+    {
       pa1[j] = (pg1[j] - pg0[j]) / alphaold;
       pb1[j] = (ph1[j] - ph0[j]) / alphaold;
 
@@ -379,7 +391,8 @@ static PetscErrorCode VecMergedOps_Private(Vec vx, Vec vr, Vec vz, Vec vw, Vec v
     lambda[13] = PetscConj(lambda[11]);
     lambda[14] = PetscConj(lambda[0]);
   } else if (normtype == KSP_NORM_UNPRECONDITIONED) {
-    PetscPragmaSIMD for (j = 0; j < n; j++) {
+    PetscPragmaSIMD for (j = 0; j < n; j++)
+    {
       pa1[j] = (pg1[j] - pg0[j]) / alphaold;
       pb1[j] = (ph1[j] - ph0[j]) / alphaold;
 
@@ -435,7 +448,8 @@ static PetscErrorCode VecMergedOps_Private(Vec vx, Vec vr, Vec vz, Vec vw, Vec v
     lambda[13] = PetscConj(lambda[11]);
     lambda[14] = PetscConj(lambda[0]);
   } else if (normtype == KSP_NORM_NATURAL) {
-    PetscPragmaSIMD for (j = 0; j < n; j++) {
+    PetscPragmaSIMD for (j = 0; j < n; j++)
+    {
       pa1[j] = (pg1[j] - pg0[j]) / alphaold;
       pb1[j] = (ph1[j] - ph0[j]) / alphaold;
 
@@ -521,7 +535,8 @@ static PetscErrorCode VecMergedOps_Private(Vec vx, Vec vr, Vec vz, Vec vw, Vec v
       This is called once, usually automatically by KSPSolve() or KSPSetUp()
      but can be called directly by KSPSetUp()
 */
-static PetscErrorCode KSPSetUp_PIPECG2(KSP ksp) {
+static PetscErrorCode KSPSetUp_PIPECG2(KSP ksp)
+{
   PetscFunctionBegin;
   /* get work vectors needed by PIPECG2 */
   PetscCall(KSPSetWorkVecs(ksp, 20));
@@ -531,7 +546,8 @@ static PetscErrorCode KSPSetUp_PIPECG2(KSP ksp) {
 /*
  KSPSolve_PIPECG2 - This routine actually applies the PIPECG2 method
 */
-static PetscErrorCode KSPSolve_PIPECG2(KSP ksp) {
+static PetscErrorCode KSPSolve_PIPECG2(KSP ksp)
+{
   PetscInt    i, n;
   PetscScalar alpha[2], beta[2], gamma[2], delta[2], lambda[15];
   PetscScalar dps = 0.0, alphaold = 0.0;
@@ -700,16 +716,16 @@ static PetscErrorCode KSPSolve_PIPECG2(KSP ksp) {
 }
 
 /*MC
-   KSPPIPECG2 - Pipelined conjugate gradient method with a single non-blocking allreduce per two iterations.
-
-   This method has only a single non-blocking reduction per two iterations, compared to 2 blocking for standard CG.  The
-   non-blocking reduction is overlapped by two matrix-vector products and two preconditioner applications.
+   KSPPIPECG2 - Pipelined conjugate gradient method with a single non-blocking reduction per two iterations. [](sec_pipelineksp)
 
    Level: intermediate
 
    Notes:
+   This method has only a single non-blocking reduction per two iterations, compared to 2 blocking for standard CG.  The
+   non-blocking reduction is overlapped by two matrix-vector products and two preconditioner applications.
+
    MPI configuration may be necessary for reductions to make asynchronous progress, which is important for performance of pipelined methods.
-   See the FAQ on the PETSc website for details.
+   See [](doc_faq_pipelined)
 
    Contributed by:
    Manasi Tiwari, Computational and Data Sciences, Indian Institute of Science, Bangalore
@@ -718,9 +734,13 @@ static PetscErrorCode KSPSolve_PIPECG2(KSP ksp) {
    Manasi Tiwari and Sathish Vadhiyar, "Pipelined Conjugate Gradient Methods for Distributed Memory Systems",
    Submitted to International Conference on High Performance Computing, Data and Analytics 2020.
 
-.seealso: `KSPCreate()`, `KSPSetType()`, `KSPCG`, `KSPPIPECG`
+   Developer Note:
+   The implementation code contains a good amount of hand tuned fusion of multiple inner products and similar computations on multiple vectors
+
+.seealso: [](chapter_ksp), [](doc_faq_pipelined), [](sec_pipelineksp), `KSPCreate()`, `KSPSetType()`, `KSPCG`, `KSPPIPECG`, `KSPGROPPCG`
 M*/
-PETSC_EXTERN PetscErrorCode KSPCreate_PIPECG2(KSP ksp) {
+PETSC_EXTERN PetscErrorCode KSPCreate_PIPECG2(KSP ksp)
+{
   PetscFunctionBegin;
   PetscCall(KSPSetSupportedNorm(ksp, KSP_NORM_UNPRECONDITIONED, PC_LEFT, 2));
   PetscCall(KSPSetSupportedNorm(ksp, KSP_NORM_PRECONDITIONED, PC_LEFT, 2));

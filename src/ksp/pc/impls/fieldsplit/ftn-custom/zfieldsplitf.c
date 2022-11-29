@@ -6,11 +6,13 @@
 #define pcfieldsplitschurgetsubksp_   PCFIELDSPLITSCHURGETSUBKSP
 #define pcfieldsplitsetis_            PCFIELDSPLITSETIS
 #define pcfieldsplitgetis_            PCFIELDSPLITGETIS
+#define pcfieldsplitsetfields_        PCFIELDSPLITSETFIELDS
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define pcfieldsplitgetsubksp_        pcfieldsplitgetsubksp
 #define pcfieldsplitschurgetsubksp_   pcfieldsplitschurgetsubksp
 #define pcfieldsplitsetis_            pcfieldsplitsetis
 #define pcfieldsplitgetis_            pcfieldsplitgetis
+#define pcfieldsplitsetfields_        pcfieldsplitsetfields
 #endif
 
 PETSC_EXTERN void pcfieldsplitschurgetsubksp_(PC *pc,PetscInt *n_local,KSP *ksp,PetscErrorCode *ierr)
@@ -57,3 +59,10 @@ PETSC_EXTERN void  pcfieldsplitgetis_(PC *pc, char* splitname,IS *is, PetscError
   FREECHAR(splitname,t);
 }
 
+PETSC_EXTERN void pcfieldsplitsetfields_(PC *pc, char *splitname, PetscInt *n, const PetscInt *fields, const PetscInt *fields_col, PetscErrorCode *ierr,PETSC_FORTRAN_CHARLEN_T len)
+{
+  char *t;
+  FIXCHAR(splitname,len,t);
+  *ierr = PCFieldSplitSetFields(*pc, t, *n, fields, fields_col);if (*ierr) return;
+  FREECHAR(splitname,t);
+}

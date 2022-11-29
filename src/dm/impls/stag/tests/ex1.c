@@ -5,7 +5,8 @@ static char help[] = "Demonstrate standard DMStag operations.\n\n";
 
 static PetscErrorCode TestFields(DM dmstag);
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   DM        dmstag;
   PetscInt  dim;
   PetscBool setSizes;
@@ -21,10 +22,17 @@ int main(int argc, char **argv) {
   /* Creation (normal) */
   if (!setSizes) {
     switch (dim) {
-    case 1: PetscCall(DMStagCreate1d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, 3, 1, 1, DMSTAG_STENCIL_BOX, 1, NULL, &dmstag)); break;
-    case 2: PetscCall(DMStagCreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, 3, 2, PETSC_DECIDE, PETSC_DECIDE, 1, 1, 1, DMSTAG_STENCIL_BOX, 1, NULL, NULL, &dmstag)); break;
-    case 3: PetscCall(DMStagCreate3d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, 3, 2, 4, PETSC_DECIDE, PETSC_DECIDE, PETSC_DECIDE, 1, 1, 1, 1, DMSTAG_STENCIL_BOX, 1, NULL, NULL, NULL, &dmstag)); break;
-    default: SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP, "No support for dimension %" PetscInt_FMT, dim);
+    case 1:
+      PetscCall(DMStagCreate1d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, 3, 1, 1, DMSTAG_STENCIL_BOX, 1, NULL, &dmstag));
+      break;
+    case 2:
+      PetscCall(DMStagCreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, 3, 2, PETSC_DECIDE, PETSC_DECIDE, 1, 1, 1, DMSTAG_STENCIL_BOX, 1, NULL, NULL, &dmstag));
+      break;
+    case 3:
+      PetscCall(DMStagCreate3d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, 3, 2, 4, PETSC_DECIDE, PETSC_DECIDE, PETSC_DECIDE, 1, 1, 1, 1, DMSTAG_STENCIL_BOX, 1, NULL, NULL, NULL, &dmstag));
+      break;
+    default:
+      SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP, "No support for dimension %" PetscInt_FMT, dim);
     }
   } else {
     /* Creation (test providing decomp exactly)*/
@@ -47,7 +55,8 @@ int main(int argc, char **argv) {
       PetscCheck(size == ranksx * ranksy * ranksz, PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Must run on %" PetscInt_FMT " ranks with -dim 3 -setSizes", ranksx * ranksy * ranksz);
       PetscCall(DMStagCreate3d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, mx, my, mz, ranksx, ranksy, ranksz, 1, 1, 1, 1, DMSTAG_STENCIL_BOX, 1, lx, ly, lz, &dmstag));
       break;
-    default: SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP, "No support for dimension %" PetscInt_FMT, dim);
+    default:
+      SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP, "No support for dimension %" PetscInt_FMT, dim);
     }
   }
 
@@ -64,7 +73,8 @@ int main(int argc, char **argv) {
   return 0;
 }
 
-static PetscErrorCode TestFields(DM dmstag) {
+static PetscErrorCode TestFields(DM dmstag)
+{
   Vec       vecLocal, vecGlobal;
   PetscReal norm2;
 

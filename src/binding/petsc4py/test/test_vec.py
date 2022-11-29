@@ -18,6 +18,7 @@ class BaseTestVec(object):
     def tearDown(self):
         self.vec.destroy()
         self.vec = None
+        PETSc.garbage_cleanup()
 
     def testDuplicate(self):
         self.vec.set(1)

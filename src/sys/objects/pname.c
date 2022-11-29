@@ -20,7 +20,8 @@
 
 .seealso: `PetscObjectGetName()`, `PetscObjectName()`
 @*/
-PetscErrorCode PetscObjectSetName(PetscObject obj, const char name[]) {
+PetscErrorCode PetscObjectSetName(PetscObject obj, const char name[])
+{
   PetscFunctionBegin;
   PetscValidHeader(obj, 1);
   PetscCall(PetscFree(obj->name));
@@ -50,7 +51,8 @@ PetscErrorCode PetscObjectSetName(PetscObject obj, const char name[]) {
 
 .seealso: `PetscObjectSetName()`, `PetscObjectName()`
 @*/
-PetscErrorCode PetscObjectPrintClassNamePrefixType(PetscObject obj, PetscViewer viewer) {
+PetscErrorCode PetscObjectPrintClassNamePrefixType(PetscObject obj, PetscViewer viewer)
+{
   PetscMPIInt       size;
   PetscViewerFormat format;
   PetscBool         flg;
@@ -99,7 +101,8 @@ PetscErrorCode PetscObjectPrintClassNamePrefixType(PetscObject obj, PetscViewer 
 
 .seealso: `PetscObjectGetName()`, `PetscObjectSetName()`
 @*/
-PetscErrorCode PetscObjectName(PetscObject obj) {
+PetscErrorCode PetscObjectName(PetscObject obj)
+{
   PetscCommCounter *counter;
   PetscMPIInt       flg;
   char              name[64];
@@ -127,7 +130,8 @@ PetscErrorCode PetscObjectName(PetscObject obj) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscObjectChangeTypeName(PetscObject obj, const char type_name[]) {
+PetscErrorCode PetscObjectChangeTypeName(PetscObject obj, const char type_name[])
+{
   PetscFunctionBegin;
   PetscValidHeader(obj, 1);
   PetscCall(PetscFree(obj->type_name));

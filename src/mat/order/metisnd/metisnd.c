@@ -6,7 +6,8 @@
 /*
     MatGetOrdering_METISND - Find the nested dissection ordering of a given matrix.
 */
-PETSC_INTERN PetscErrorCode MatGetOrdering_METISND(Mat mat, MatOrderingType type, IS *row, IS *col) {
+PETSC_INTERN PetscErrorCode MatGetOrdering_METISND(Mat mat, MatOrderingType type, IS *row, IS *col)
+{
   PetscInt        i, j, iptr, ival, nrow, *xadj, *adjncy, *perm, *iperm;
   const PetscInt *ia, *ja;
   int             status;
@@ -56,11 +57,16 @@ PETSC_INTERN PetscErrorCode MatGetOrdering_METISND(Mat mat, MatOrderingType type
 
   status = METIS_NodeND(&nrow, (idx_t *)xadj, (idx_t *)adjncy, NULL, options, (idx_t *)perm, (idx_t *)iperm);
   switch (status) {
-  case METIS_OK: break;
-  case METIS_ERROR: SETERRQ(PetscObjectComm((PetscObject)mat), PETSC_ERR_LIB, "METIS returned with an unspecified error");
-  case METIS_ERROR_INPUT: SETERRQ(PetscObjectComm((PetscObject)mat), PETSC_ERR_LIB, "METIS received an invalid input");
-  case METIS_ERROR_MEMORY: SETERRQ(PetscObjectComm((PetscObject)mat), PETSC_ERR_MEM, "METIS could not compute ordering");
-  default: SETERRQ(PetscObjectComm((PetscObject)mat), PETSC_ERR_LIB, "Unexpected return value");
+  case METIS_OK:
+    break;
+  case METIS_ERROR:
+    SETERRQ(PetscObjectComm((PetscObject)mat), PETSC_ERR_LIB, "METIS returned with an unspecified error");
+  case METIS_ERROR_INPUT:
+    SETERRQ(PetscObjectComm((PetscObject)mat), PETSC_ERR_LIB, "METIS received an invalid input");
+  case METIS_ERROR_MEMORY:
+    SETERRQ(PetscObjectComm((PetscObject)mat), PETSC_ERR_MEM, "METIS could not compute ordering");
+  default:
+    SETERRQ(PetscObjectComm((PetscObject)mat), PETSC_ERR_LIB, "Unexpected return value");
   }
 
   if (B) {

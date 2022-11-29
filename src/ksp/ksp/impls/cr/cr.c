@@ -1,15 +1,15 @@
 
 #include <petsc/private/kspimpl.h>
 
-static PetscErrorCode KSPSetUp_CR(KSP ksp) {
+static PetscErrorCode KSPSetUp_CR(KSP ksp)
+{
   PetscFunctionBegin;
-  PetscCheck(ksp->pc_side != PC_RIGHT, PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "no right preconditioning for KSPCR");
-  PetscCheck(ksp->pc_side != PC_SYMMETRIC, PETSC_COMM_SELF, PETSC_ERR_SUP, "no symmetric preconditioning for KSPCR");
   PetscCall(KSPSetWorkVecs(ksp, 6));
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode KSPSolve_CR(KSP ksp) {
+static PetscErrorCode KSPSolve_CR(KSP ksp)
+{
   PetscInt    i = 0;
   PetscReal   dp;
   PetscScalar ai, bi;
@@ -140,23 +140,23 @@ static PetscErrorCode KSPSolve_CR(KSP ksp) {
 /*MC
      KSPCR - This code implements the (preconditioned) conjugate residuals method
 
-   Options Database Keys:
-    see KSPSolve()
-
    Level: beginner
 
    Notes:
-    The operator and the preconditioner must be symmetric for this method. The
-          preconditioner must be POSITIVE-DEFINITE and the operator POSITIVE-SEMIDEFINITE.
-          Support only for left preconditioning.
+   The operator and the preconditioner must be symmetric for this method.
+
+   The preconditioner must be POSITIVE-DEFINITE and the operator POSITIVE-SEMIDEFINITE.
+
+   Support only for left preconditioning.
 
    References:
 .  * - Magnus R. Hestenes and Eduard Stiefel, Methods of Conjugate Gradients for Solving Linear Systems,
    Journal of Research of the National Bureau of Standards Vol. 49, No. 6, December 1952 Research Paper 2379
 
-.seealso: `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPCG`
+.seealso: [](chapter_ksp), `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPCG`
 M*/
-PETSC_EXTERN PetscErrorCode KSPCreate_CR(KSP ksp) {
+PETSC_EXTERN PetscErrorCode KSPCreate_CR(KSP ksp)
+{
   PetscFunctionBegin;
   PetscCall(KSPSetSupportedNorm(ksp, KSP_NORM_PRECONDITIONED, PC_LEFT, 3));
   PetscCall(KSPSetSupportedNorm(ksp, KSP_NORM_UNPRECONDITIONED, PC_LEFT, 2));

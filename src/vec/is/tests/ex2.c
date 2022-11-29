@@ -3,7 +3,8 @@ static char help[] = "Tests ISView() and ISLoad() \n\n";
 #include <petscis.h>
 #include <petscviewer.h>
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscInt n           = 3, *izero, j, i;
   PetscInt ix[3][3][3] = {
     {{3, 5, 4}, {1, 7, 9}, {0, 2, 8}},

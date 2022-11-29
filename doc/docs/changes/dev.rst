@@ -2,22 +2,6 @@
 Changes: Development
 ====================
 
-Changes you should make for main and version 3.18 so that it is portable to previous versions of PETSc
-
-- Remove the error handling from uses of  ``PetscOptionsBegin()``, ``PetscOptionsEnd()``, ``PetscObjectOptionsBegin()``, ``PetscOptionsHead()``,  and ``PetscOptionsTail()``
-- Remove the error handling from uses of ``PetscDrawCollectiveBegin()`` and ``PetscDrawCollectiveEnd()``
-- Remove the error handling from uses of ``MatPreallocateInitialize()`` and ``MatPreallocateFinalize()``
-- Replace ``MatUpdateMPIAIJWithArrays()`` with ``MatUpdateMPIAIJWithArray()``
-
-Changes you can make for main and version 3.18 so that is not portable to previous versions of PETSc. This will remove all deprecation warnings when you build.
-In addition to the changes above
-
-- Change  ``PetscOptionsHead()`` and ``PetscOptionsTail()`` to  ``PetscOptionsHeadBegin()`` and ``PetscOptionsHeadEnd()``
-- Change ``MatPreallocateInitialize()`` and ``MatPreallocateFinalize()`` to ``MatPreallocateBegin()`` and ``MatPreallocateEnd()``
-- Change uses of `MatGetOption()` with `MAT_SYMMETRIC`, `MAT_STRUCTURALLY_SYMMETRIC`, `MAT_HERMITIAN`,  `MAT_SPD` to calls to `MatIsSymmetric()`, `MatIsSymmetricKnown()` etc.
-- Whenever you call `MatSetOption()` with one of the above options and it is intended to stay with the matrix through calls to `MatSetValues()` etc add a call
-  to `MatSetOption()` with `MAT_SYMMETRY_ETERNAL` etc
-
 ..
    STYLE GUIDELINES:
    * Capitalize sentences
@@ -27,200 +11,116 @@ In addition to the changes above
 
 .. rubric:: General:
 
-- Change ``PetscOptionsBegin()``, ``PetscOptionsEnd()``, and ``PetscObjectOptionsBegin()`` to not return an error code
-- Change ``PetscOptionsHead()``, ``PetscOptionsTail()``, to ``PetscOptionsHeadBegin()`` and ``PetscOptionsHeadEnd()`` and to not return an error code
-- Add ``PETSC_ATTRIBUTE_FORMAT()`` to enable compile-time ``printf()``-style format specifier checking and apply it any PETSc functions taking a format string
-- Deprecate the use of ``%D`` for printing ``PetscInt`` in favor of ``%" PetscInt_FMT "``. Compilers may now emit warnings when using ``%D`` as a result of applying ``PETSC_ATTRIBUTE_FORMAT``. Users that need to support older versions of PETSc may do one of two things:
-
-  #. **Recommended** Insert the following code block *after* all PETSc header-file inclusions
-
-     ::
-
-        #if !defined(PetscInt_FMT)
-        #  if defined(PETSC_USE_64BIT_INDICES)
-        #    if !defined(PetscInt64_FMT)
-        #      if defined(PETSC_HAVE_STDINT_H) && defined(PETSC_HAVE_INTTYPES_H) && defined(PETSC_HAVE_MPI_INT64_T)
-        #        include <inttypes.h>
-        #        define PetscInt64_FMT PRId64
-        #      elif (PETSC_SIZEOF_LONG_LONG == 8)
-        #        define PetscInt64_FMT "lld"
-        #      elif defined(PETSC_HAVE___INT64)
-        #        define PetscInt64_FMT "ld"
-        #      else
-        #        error "cannot determine PetscInt64 type"
-        #      endif
-        #    endif
-        #    define PetscInt_FMT PetscInt64_FMT
-        #  else
-        #    define PetscInt_FMT "d"
-        #  endif
-        #endif
-
-
-     This will ensure that the appropriate format specifiers are defined regardless of PETSc version.
-
-  #. **Not Recommended** Compilers warnings can be permanently suppressed by defining ``PETSC_SKIP_ATTRIBUTE_FORMAT`` prior to all PETSc header-file inclusions
+- Add perfstubs package, see https://petsc.org/release/docs/manual/profiling/#using-tau for more information on usage
 
 .. rubric:: Configure/Build:
 
-- Remove python2 support, python-3.4+ is now required
+- Remove unused preprocessor variables ``PETSC_HAVE_VPRINTF_CHAR``, ``PETSC_HAVE_VFPRINTF_CHAR``, ``PETSC_STAT_MACROS_BROKEN``, ``PETSC_HAVE_FORTRAN_GETARG``, ``PETSC_uid_t``, ``PETSC_gid_t``, ``PETSC_HAVE_PTHREAD_BARRIER_T``, ``PETSC_HAVE_SCHED_CPU_SET_T``, and ``PETSC_HAVE_SYS_SYSCTL_H``
+- Deprecate ``--with-gcov`` configure option. Users should use ``--with-coverage`` instead
+- Add ``--with-coverage-exec`` configure option to specify the coverage-collection tool to be used e.g. ``gcov`` or ``/path/to/llvm-cov-15``
 
 .. rubric:: Sys:
 
--  Change calling sequence of ``PetscObjectProcessOptionsHandler()`` to flip the role of the first two arguments
--  Change -log_view to no longer print out the amount of memory associated with different types of objects. That data was often incorrect
--  Change ``PetscCall()`` from Fortran so that ``call PetscFunction(args,ierr);CHKERRQ(ierr);`` can be replaced with ``PetscCall(PetscFunction(args,ierr))``
--  Add ``PetscCallA()`` from Fortran so that ``call PetscFunction(args,ierr);CHKERRA(ierr);`` can be replaced with ``PetscCallA(PetscFunction(args,ierr))``
--  Add ``PetscCallMPI()`` and ``PetscCallMPIA()`` that may be used to call MPI functions from Fortran
--  Change the ``PetscCheck()`` and ``PetscAssert()`` macros to behave like function calls by wrapping in ``do { } while (0)``. Previously these macros expanded to ``if (...) SETERRQ(...)``, which meant they could be chained with subsequent conditionals.
--  Change ``PetscStackCallStandard()`` to ``PetscCallExternal()``
--  Change ``PetscStackCall()`` to ``PetscStackCallExternalVoid()``
--  Change ``PetscStackCallXXX()`` to ``PetscCallXXX()``
--  Add ``PetscCallBack()' for calling all PETSc callbacks (usually to user code) to replace the use of ``PetscStackPush()`` and ``PetscStackPop``
--  Add ``PetscTryTypeMethod()`` and ``PetscUseTypeMethod()`` to replace direct calls of the form ``(\*obj->ops->op)(obj,...)``.
+- Change ``PetscOptionsMonitorDefault()`` to also take in the option source, and ``PetscOptionsMonitorSet()`` to take the new monitor function.
+- Deprecate ``PetscTable`` and related functions. Previous users of ``PetscTable`` are encouraged to use the more performant ``PetscHMapI`` instead, though they should note that this requires additional steps and limitations:
+
+  #. ``#include <petscctable.h>`` must be swapped for ``#include <petsc/private/hashmapi.h>``. This of course requires that you have access to the private PETSc headers.
+  #. While most of the old ``PetscTable`` routines have direct analogues in ``PetscHMapI``, ``PetscAddCount()`` does not. All uses of this routine should be replaced with the following snippet:
+
+     ::
+
+        // PetscHMapI hash_table;
+        // PetscInt   key;
+
+        PetscHashIter it;
+        PetscBool     missing;
+
+        PetscCall(PetscHMapIPut(hash_table, key, &it, &missing));
+        if (missing) {
+          PetscInt size;
+
+          PetscCall(PetscHMapIGetSize(hash_table, &size));
+          PetscCall(PetscHMapIIterSet(hash_table, it, size));
+        }
+
+
+  Furthermore, users should note that ``PetscHMapI`` is based on -- and directly ``#include`` s -- ``${PETSC_DIR}/include/petsc/private/khash/khash.h``. This file contains external source code that is licensed under the MIT license, which is separate from the PETSc license.
 
 .. rubric:: Event Logging:
 
-Add NVIDIA NVTX sections to ``Default`` event logging. This tags code
-sections, like stages, with nvtxRangePushA(char name[]) and
-nvtxRangePop(), which can be visualized after the run with the NVIDIA Nsight GUI tool. To
-generate a data file, run code with ``nsys profile -f true -o file-name
-exec-name``.
-
 .. rubric:: PetscViewer:
 
-- Add ``PetscViewerHDF5PushGroupRelative()``
-
 .. rubric:: PetscDraw:
-
-- Add ``PetscDrawSPGetDimension()``
--  Change ``PetscDrawCollectiveBegin()`` and ``PetscDrawCollectiveEnd()`` to not return an error code. Users can remove the error code checking for
-   these functions and it will work correctly for all versions of PETSc
 
 .. rubric:: AO:
 
 .. rubric:: IS:
 
-- Add ``ISShift()``
-
 .. rubric:: VecScatter / PetscSF:
+
+- Change ``PetscSFConcatenate()`` to accept ``PetscSFConcatenateRootMode`` parameter; add option to concatenate root spaces globally
 
 .. rubric:: PF:
 
 .. rubric:: Vec:
 
-- Add ``VecSetPreallocationCOO()``, ``VecSetValuesCOO()`` and ``VecSetPreallocationCOOLocal()`` to support vector assembly with coordinates
-- Add ``VecStrideSum()`` and ``VecStrideSumAll()`` for summing subvectors of strided vectors
-- Add ``VecCreateLocalVector()`` to be used for calls involving ``Vec{Get|Restore}LocalVector()``
+- Document ``VecOperation``
+- Add ``VECOP_SET``
+- Significantly improve performance of ``VecMDot()``, ``VecMAXPY()`` and ``VecDotNorm2()`` for CUDA and HIP vector types. These routines should be between 2x and 4x faster.
 
 .. rubric:: PetscSection:
-
-- Add ``PetscSectionCreateSubdomainSection()``
 
 .. rubric:: PetscPartitioner:
 
 .. rubric:: Mat:
 
-- Change ``MatPreallocateInitialize()`` and ``MatPreallocateFinalize()`` to ``MatPreallocateBegin()`` and ``MatPreallocateEnd()`` and to not return an error code
-- Change ``MatDenseGetSubMatrix()`` to be able to retrieve only selected contiguous rows instead of all rows
-- Add ``MatSetOptionsPrefixFactor()`` and ``MatAppendOptionsPrefixFactor()`` to allow controlling the options prefix used by factors created from this matrix
-- Change ``MatSetOptionsPrefix()`` to no longer affect the options prefix used by factors created from this matrix
-- Change matrix factor options called from within `KSP`/`PC` to always inherit the options prefix from the `KSP`/`PC`, not the options prefix in the originating matrix
-- Add ``MatIsStructurallySymmetricKnown()`` and ``MatIsSPDKnown()``
-- Change ``MatGetOption()`` to no longer produce results for ``MAT_STRUCTURALLY_SYMMETRIC``, ``MAT_SYMMETRIC``, ``MAT_SPD``, and ``MAT_HERMITIAN``
-- Add ``MatCreateGraph()`` to create a scalar matrix for use in graph algorithms
-- Add ``MatFilter()`` to remove values with an absolute value equal to or below a give threshold
-- Add an option -mat_factor_bind_factorization <host, device> to control where to do matrix factorization. Currently only supported with SEQAIJCUSPARSE matrices.
-- Add ``MatUpdateMPIAIJWithArray()`` and deprecate ``MatUpdateMPIAIJWithArrays()``
-- Change the coordinate array parameters in ``MatSetPreallocationCOO`` from const to non-const
-- Add enforcement of the previously unenforced rule that ``MAT_REUSE_MATRIX`` with ``MatTranspose()`` can only be used after a call to ``MatTranspose()`` with ``MAT_INITIAL_MATRIX``. Add ``MatTransposeSetPrecursor()`` to allow using ``MAT_REUSE_MATRIX`` with ``MatTranspose()`` without the initial call to ``MatTranspose()``.
-- Add ``MatTransposeSymbolic()``
-- Add ``MatShellSetContextDestroy()`` and add internal refrence counting for user defined ``MatShell`` context data
-- Add ``MatShellSetContextDestroy()`` and add internal reference counting for user defined ``MatShell`` context data
-- Change ``MATTRANPOSEMAT`` to ``MATTRANPOSEVIRTUAL``
-- Add ``MATHERMITIANTRANSPOSEVIRTUAL``
+- Add ``MatEliminateZeros()``
 
 .. rubric:: MatCoarsen:
 
-- Add ``MISK`` coarsening type. Distance-k maximal independent set (MIS) C-F coarsening with a greedy, MIS based aggregation algorithm
-
 .. rubric:: PC:
-
-- Add PC type of mpi which can be used in conjunction with -mpi_linear_solver_server to use MPI parallelism to solve a system created on a single MPI rank
-- Add ``PCHYPREAMSSetInteriorNodes()`` to set interior nodes for HYPRE AMS
-- Add ``PCAMGX``, a PC interface for NVIDIA's AMGx AMG solver
 
 .. rubric:: KSP:
 
-- Deprecate ``KSPHPDDMGetDeflationSpace()`` (resp. ``KSPHPDDMSetDeflationSpace()``) in favor of ``KSPHPDDMGetDeflationMat()`` (resp. ``KSPHPDDMSetDeflationMat()``)
-- Add ``KSPNONE`` as alias for ``KSPPREONLY``
+- Add ``KSPMonitorDynamicToleranceCreate()`` and ``KSPMonitorDynamicToleranceSetCoefficient()``
+- Change ``-sub_ksp_dynamic_tolerance_param`` to ``-sub_ksp_dynamic_tolerance``
 
 .. rubric:: SNES:
 
-- Add ``DMDASNESSetFunctionLocalVec()``, ``DMDASNESSetJacobianLocalVec()`` and ``DMDASNESSetObjectiveLocalVec()``, and associate types ``DMDASNESFunctionVec``, ``DMDASNESJacobianVec`` and ``DMDASNESObjectiveVec``,
-  which accept Vec parameters instead of void pointers in contrast to versions without the Vec suffix
-- Add ``SNESLINESEARCHNONE`` as alias for ``SNESLINESEARCHBASIC``
-- Add ``DMSNESSetFunctionContextDestroy()`` and ``DMSNESSetJacobianContextDestroy()`` and use ``PetscContainter`` for user context to facilitate automatic destruction of user set context
+- Add ``SNESPruneJacobianColor()`` to improve the MFFD coloring
 
 .. rubric:: SNESLineSearch:
 
 .. rubric:: TS:
 
-- Add ``TSSetTimeSpan()``, ``TSGetTimeSpan()`` and ``TSGetTimeSpanSolutions()`` to support time span
-- Add ``DMTSGetIFunctionLocal()``, ``DMTSGetIJacobianLocal()``, and ``DMTSGetRHSFunctionLocal()``
-- Add ``DMTSSetIFunctionContextDestroy()``, ``DMTSSetIJacobianContextDestroy()``, ``DMTSSetRHSFunctionContextDestroy()``,  ``DMTSSetRHSJacobianContextDestroy()``, ``DMTSSetI2FunctionContextDestroy()``, and ``DMTSSetI2JacobianContextDestroy()`` and use ``PetscContainter`` for user context to facilitate automatic destruction of user set context
+- Add ``TSPruneIJacobianColor()`` to improve the MFFD coloring
 
 .. rubric:: TAO:
 
 .. rubric:: DM/DA:
 
-- Add ``DMDAMapMatStencilToGlobal()`` to map MatStencils to global indices
-- Add ``DMGetCellCoordinateDM()``, ``DMSetCellCoordinateDM()``, ``DMGetCellCoordinateSection()``, ``DMSetCellCoordinateSection()``, ``DMGetCellCoordinates()``, ``DMSetCellCoordinates()``, ``DMGetCellCoordinatesLocalSetup()``, ``DMGetCellCoordinatesLocal()``, ``DMGetCellCoordinatesLocalNoncollective()``, ``DMSetCellCoordinatesLocal()``
-- Add ``DMFieldCreateDSWithDG()`` to allow multiple representations of a given field
-- Add ``DMProjectFieldLabel()``
+- Add ``DMLabelGetType()``, ``DMLabelSetType()``, ``DMLabelSetUp()``, ``DMLabelRegister()``, ``DMLabelRegisterAll()``, ``DMLabelRegisterDestroy()``
+- Add ``DMLabelEphemeralGetLabel()``, ``DMLabelEphemeralSetLabel()``, ``DMLabelEphemeralGetTransform()``, ``DMLabelEphemeralSetTransform()``
 
 .. rubric:: DMSwarm:
 
-- Add ``DMSwarmGetCoordinateFunction()``, ``DMSwarmSetCoordinateFunction()``, ``DMSwarmGetVelocityFunction()``, ``DMSwarmSetVelocityFunction()`` to allow flexible layout of particles
-
 .. rubric:: DMPlex:
 
-- Add ``DMLabelPropagateBegin()``, ``DMLabelPropagatePush()``, and ``DMLabelPropagateEnd()``
-- Add ``DMPlexPointQueue`` and API
-- Add label value argument to ``DMPlexLabelCohesiveComplete()`` and ``DMPlexCreateHybridMesh()``
-- Change ``DMPlexCheckPointSF()`` to take optional ``PetscSF`` parameter
-- Add ``DMPlexCheck()``
-- Add ``DMPlexMetricDeterminantCreate()`` for creating determinant fields for Riemannian metrics
-- Change ``DMPlexMetricEnforceSPD()``:
-    - pass determinant Vec, rather than its address
-    - pass output metric, rather than its address
-- Change ``DMPlexMetricNormalize()``:
-    - pass output metric, rather than its address
-    - pass determinant Vec, rather than its address
-- Change ``DMPlexMetricAverage()``, ``DMPlexMetricAverage2()`` and ``DMPlexMetricAverage3()`` to pass output metric, rather than its address
-- Change ``DMPlexMetricIntersection()``, ``DMPlexMetricIntersection2()`` and ``DMPlexMetricIntersection3()`` to pass output metric, rather than its address
-- Add capability to specify whether the DMPlex should be reordered by default:
-    - add ``DMPlexReorderDefaultFlag``
-    - add ``DMPlexReorderGetDefault()`` and ``DMPlexReorderSetDefault()`` to get and set this flag
-- Add ``DMPlexCreateOverlapLabelFromLabels()`` for more customized overlap
-- Add ``DMPlexSetOverlap()`` to promote an internal interface
-- Add ``DMGetCellCoordinateDM()``, ``DMSetCellCoordinateDM()``, ``DMGetCellCoordinateSection()``, ``DMSetCellCoordinateSection()``, ``DMGetCellCoordinates()``, ``DMSetCellCoordinates()``, ``DMGetCellCoordinatesLocalSetUp()``, ``DMGetCellCoordinatesLocal()``, ``DMGetCellCoordinatesLocalNoncollective()``, and ``DMSetCellCoordinatesLocal()`` to provide an independent discontinuous representation of coordinates
-- Change ``DMGetPeriodicity()`` and ``DMSetPeriodicity()`` to get rid of the flag and boundary type. Since we have an independent representation, we can tell if periodicity was imposed, and boundary types were never used, so they can be inferred from the given L. We also add Lstart to allow tori that do not start at 0.
-- Add ``DMPlexGetCellCoordinates()`` and ``DMPlexRestoreCellCoordinates()`` for clean interface for periodicity
-- Add ``DMPlexDistributionSetName()`` and ``DMPlexDistributionGetName()`` to set/get the name of the specific parallel distribution of the DMPlex
+- Add ``DMPlexGetOrientedCone()`` and ``DMPlexRestoreOrientedCone()`` to return both cone and orientation together
+- Add ``DMPlexTransformGetChart()``, ``DMPlexTransformGetCellType()``, ``DMPlexTransformGetDepth()``, ``DMPlexTransformGetDepthStratum()``, ``DMPlexTransformGetConeSize()`` to enable ephemeral meshes
+- Remove ``DMPlexAddConeSize()``
+- Add ``DMPlexCreateEphemeral()``
+- Both ``DMView()`` and ``DMLoad()`` now support parallel I/O with a new HDF5 format (see the manual for details)
+- Remove ``DMPlexComputeGeometryFEM()`` since it was broken
 
 .. rubric:: FE/FV:
 
-- Add ``PetscFECreateFromSpaces()`` to build similar space from pieces
-
 .. rubric:: DMNetwork:
-
-- Add ``DMNetworkFinalizeComponents()`` to setup the internal data structures for components on a network. Previously this could only be done by calling DMSetUp. 
+  - Add DMNetworkGetNumVertices to retrieve the local and global number of vertices in DMNetwork 
+  - Add DMNetworkGetNumEdges to retrieve the local and global number of edges in DMNetwork 
 
 .. rubric:: DMStag:
 
 .. rubric:: DT:
-
-- Add probability distributions ``PetscPDFGaussian3D()``, ``PetscPDFSampleGaussian3D()``, ``PetscPDFConstant2D()``, ``PetscCDFConstant2D()``, ``PetscPDFSampleConstant2D()``, ``PetscPDFConstant3D()``, ``PetscCDFConstant3D()``, ``PetscPDFSampleConstant3D()``
 
 .. rubric:: Fortran:

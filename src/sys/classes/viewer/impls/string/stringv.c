@@ -8,7 +8,8 @@ typedef struct {
   PetscBool ownstring; /* string viewer is responsable for freeing the string */
 } PetscViewer_String;
 
-static PetscErrorCode PetscViewerDestroy_String(PetscViewer viewer) {
+static PetscErrorCode PetscViewerDestroy_String(PetscViewer viewer)
+{
   PetscViewer_String *vstr = (PetscViewer_String *)viewer->data;
 
   PetscFunctionBegin;
@@ -36,7 +37,8 @@ static PetscErrorCode PetscViewerDestroy_String(PetscViewer viewer) {
 
 .seealso: `PETSCVIEWERSTRING`, `PetscViewerStringOpen()`, `PetscViewerStringGetStringRead()`, `PetscViewerStringSetString()`
 @*/
-PetscErrorCode PetscViewerStringSPrintf(PetscViewer viewer, const char format[], ...) {
+PetscErrorCode PetscViewerStringSPrintf(PetscViewer viewer, const char format[], ...)
+{
   va_list             Argp;
   size_t              fullLength;
   size_t              shift, cshift;
@@ -85,7 +87,8 @@ PetscErrorCode PetscViewerStringSPrintf(PetscViewer viewer, const char format[],
 
 .seealso: `PETSCVIEWERSTRING`, `PetscViewerDestroy()`, `PetscViewerStringSPrintf()`, `PetscViewerStringGetStringRead()`, `PetscViewerStringSetString()`
 @*/
-PetscErrorCode PetscViewerStringOpen(MPI_Comm comm, char string[], size_t len, PetscViewer *lab) {
+PetscErrorCode PetscViewerStringOpen(MPI_Comm comm, char string[], size_t len, PetscViewer *lab)
+{
   PetscFunctionBegin;
   PetscCall(PetscViewerCreate(comm, lab));
   PetscCall(PetscViewerSetType(*lab, PETSCVIEWERSTRING));
@@ -93,7 +96,8 @@ PetscErrorCode PetscViewerStringOpen(MPI_Comm comm, char string[], size_t len, P
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscViewerGetSubViewer_String(PetscViewer viewer, MPI_Comm comm, PetscViewer *sviewer) {
+PetscErrorCode PetscViewerGetSubViewer_String(PetscViewer viewer, MPI_Comm comm, PetscViewer *sviewer)
+{
   PetscViewer_String *vstr = (PetscViewer_String *)viewer->data;
 
   PetscFunctionBegin;
@@ -101,7 +105,8 @@ PetscErrorCode PetscViewerGetSubViewer_String(PetscViewer viewer, MPI_Comm comm,
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscViewerRestoreSubViewer_String(PetscViewer viewer, MPI_Comm comm, PetscViewer *sviewer) {
+PetscErrorCode PetscViewerRestoreSubViewer_String(PetscViewer viewer, MPI_Comm comm, PetscViewer *sviewer)
+{
   PetscViewer_String *iviewer = (PetscViewer_String *)(*sviewer)->data;
   PetscViewer_String *vstr    = (PetscViewer_String *)viewer->data;
 
@@ -123,7 +128,8 @@ PetscErrorCode PetscViewerRestoreSubViewer_String(PetscViewer viewer, MPI_Comm c
           `PetscViewerFileSetName()`, `PetscViewerFileSetMode()`, `PetscViewerFormat`, `PetscViewerType`, `PetscViewerSetType()`
 M*/
 
-PETSC_EXTERN PetscErrorCode PetscViewerCreate_String(PetscViewer v) {
+PETSC_EXTERN PetscErrorCode PetscViewerCreate_String(PetscViewer v)
+{
   PetscViewer_String *vstr;
 
   PetscFunctionBegin;
@@ -132,7 +138,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_String(PetscViewer v) {
   v->ops->flush            = NULL;
   v->ops->getsubviewer     = PetscViewerGetSubViewer_String;
   v->ops->restoresubviewer = PetscViewerRestoreSubViewer_String;
-  PetscCall(PetscNewLog(v, &vstr));
+  PetscCall(PetscNew(&vstr));
   v->data      = (void *)vstr;
   vstr->string = NULL;
   PetscFunctionReturn(0);
@@ -159,7 +165,8 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_String(PetscViewer v) {
 .seealso: `PetscViewerStringOpen()`, `PETSCVIEWERSTRING`, `PetscViewerStringSetString()`, `PetscViewerStringSPrintf()`,
           `PetscViewerStringSetOwnString()`
 @*/
-PetscErrorCode PetscViewerStringGetStringRead(PetscViewer viewer, const char *string[], size_t *len) {
+PetscErrorCode PetscViewerStringGetStringRead(PetscViewer viewer, const char *string[], size_t *len)
+{
   PetscViewer_String *vstr = (PetscViewer_String *)viewer->data;
   PetscBool           isstring;
 
@@ -193,7 +200,8 @@ PetscErrorCode PetscViewerStringGetStringRead(PetscViewer viewer, const char *st
 .seealso: `PetscViewerStringOpen()`, `PETSCVIEWERSTRING`, `PetscViewerStringGetStringRead()`, `PetscViewerStringSPrintf()`,
           `PetscViewerStringSetOwnString()`
 @*/
-PetscErrorCode PetscViewerStringSetString(PetscViewer viewer, char string[], size_t len) {
+PetscErrorCode PetscViewerStringSetString(PetscViewer viewer, char string[], size_t len)
+{
   PetscViewer_String *vstr = (PetscViewer_String *)viewer->data;
   PetscBool           isstring;
 
@@ -229,7 +237,8 @@ PetscErrorCode PetscViewerStringSetString(PetscViewer viewer, char string[], siz
 .seealso: `PetscViewerStringOpen()`, `PETSCVIEWERSTRING`, `PetscViewerStringGetStringRead()`, `PetscViewerStringSPrintf()`,
           `PetscViewerStringSetString()`
 @*/
-PetscErrorCode PetscViewerStringSetOwnString(PetscViewer viewer) {
+PetscErrorCode PetscViewerStringSetOwnString(PetscViewer viewer)
+{
   PetscViewer_String *vstr = (PetscViewer_String *)viewer->data;
   PetscBool           isstring;
 

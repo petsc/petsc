@@ -1,4 +1,4 @@
--include ../../../../petsckdir.mk
+-include ../../../../petscdir.mk
 #requiresscalar    real
 
 DIRS     = unit morethuente  gpcglinesearch armijo owarmijo

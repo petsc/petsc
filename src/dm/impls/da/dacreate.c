@@ -1,7 +1,8 @@
 
 #include <petsc/private/dmdaimpl.h> /*I   "petscdmda.h"   I*/
 
-PetscErrorCode DMSetFromOptions_DA(DM da, PetscOptionItems *PetscOptionsObject) {
+PetscErrorCode DMSetFromOptions_DA(DM da, PetscOptionItems *PetscOptionsObject)
+{
   DM_DA    *dd     = (DM_DA *)da->data;
   PetscInt  refine = 0, dim = da->dim, maxnlevels = 100, refx[100], refy[100], refz[100], n, i;
   PetscBool flg;
@@ -134,7 +135,8 @@ extern PetscErrorCode       DMCreateDomainDecomposition_DA(DM, PetscInt *, char 
 extern PetscErrorCode       DMCreateDomainDecompositionScatters_DA(DM, PetscInt, DM *, VecScatter **, VecScatter **, VecScatter **);
 PETSC_INTERN PetscErrorCode DMGetCompatibility_DA(DM, DM, PetscBool *, PetscBool *);
 
-PetscErrorCode DMLoad_DA(DM da, PetscViewer viewer) {
+PetscErrorCode DMLoad_DA(DM da, PetscViewer viewer)
+{
   PetscInt        dim, m, n, p, dof, swidth;
   DMDAStencilType stencil;
   DMBoundaryType  bx, by, bz;
@@ -172,7 +174,8 @@ PetscErrorCode DMLoad_DA(DM da, PetscViewer viewer) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMCreateSubDM_DA(DM dm, PetscInt numFields, const PetscInt fields[], IS *is, DM *subdm) {
+PetscErrorCode DMCreateSubDM_DA(DM dm, PetscInt numFields, const PetscInt fields[], IS *is, DM *subdm)
+{
   DM_DA *da = (DM_DA *)dm->data;
 
   PetscFunctionBegin;
@@ -218,7 +221,8 @@ PetscErrorCode DMCreateSubDM_DA(DM dm, PetscInt numFields, const PetscInt fields
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMCreateFieldDecomposition_DA(DM dm, PetscInt *len, char ***namelist, IS **islist, DM **dmlist) {
+PetscErrorCode DMCreateFieldDecomposition_DA(DM dm, PetscInt *len, char ***namelist, IS **islist, DM **dmlist)
+{
   PetscInt i;
   DM_DA   *dd  = (DM_DA *)dm->data;
   PetscInt dof = dd->w;
@@ -261,7 +265,8 @@ PetscErrorCode DMCreateFieldDecomposition_DA(DM dm, PetscInt *len, char ***namel
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMClone_DA(DM dm, DM *newdm) {
+PetscErrorCode DMClone_DA(DM dm, DM *newdm)
+{
   DM_DA *da = (DM_DA *)dm->data;
 
   PetscFunctionBegin;
@@ -278,7 +283,8 @@ PetscErrorCode DMClone_DA(DM dm, DM *newdm) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMHasCreateInjection_DA(DM dm, PetscBool *flg) {
+static PetscErrorCode DMHasCreateInjection_DA(DM dm, PetscBool *flg)
+{
   DM_DA *da = (DM_DA *)dm->data;
 
   PetscFunctionBegin;
@@ -288,13 +294,15 @@ static PetscErrorCode DMHasCreateInjection_DA(DM dm, PetscBool *flg) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMGetDimPoints_DA(DM dm, PetscInt dim, PetscInt *pStart, PetscInt *pEnd) {
+static PetscErrorCode DMGetDimPoints_DA(DM dm, PetscInt dim, PetscInt *pStart, PetscInt *pEnd)
+{
   PetscFunctionBegin;
   PetscCall(DMDAGetDepthStratum(dm, dim, pStart, pEnd));
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMGetNeighbors_DA(DM dm, PetscInt *nranks, const PetscMPIInt *ranks[]) {
+static PetscErrorCode DMGetNeighbors_DA(DM dm, PetscInt *nranks, const PetscMPIInt *ranks[])
+{
   PetscInt        dim;
   DMDAStencilType st;
 
@@ -315,18 +323,19 @@ static PetscErrorCode DMGetNeighbors_DA(DM dm, PetscInt *nranks, const PetscMPII
     *nranks = 27;
     /* if (st == DMDA_STENCIL_STAR) *nranks = 7; */
     break;
-  default: break;
+  default:
+    break;
   }
   PetscFunctionReturn(0);
 }
 
 /*MC
-   DMDA = "da" - A DM object that is used to manage data for a structured grid in 1, 2, or 3 dimensions.
+   DMDA = "da" - A `DM` object that is used to manage data for a structured grid in 1, 2, or 3 dimensions.
          In the global representation of the vector each process stores a non-overlapping rectangular (or slab in 3d) portion of the grid points.
          In the local representation these rectangular regions (slabs) are extended in all directions by a stencil width.
 
          The vectors can be thought of as either cell centered or vertex centered on the mesh. But some variables cannot be cell centered and others
-         vertex centered; see the documentation for DMSTAG, a similar DM implementation which supports these staggered grids.
+         vertex centered; see the documentation for `DMSTAG`, a similar DM implementation which supports these staggered grids.
 
   Level: intermediate
 
@@ -336,12 +345,13 @@ M*/
 extern PetscErrorCode       DMLocatePoints_DA_Regular(DM, Vec, DMPointLocationType, PetscSF);
 PETSC_INTERN PetscErrorCode DMSetUpGLVisViewer_DMDA(PetscObject, PetscViewer);
 
-PETSC_EXTERN PetscErrorCode DMCreate_DA(DM da) {
+PETSC_EXTERN PetscErrorCode DMCreate_DA(DM da)
+{
   DM_DA *dd;
 
   PetscFunctionBegin;
   PetscValidPointer(da, 1);
-  PetscCall(PetscNewLog(da, &dd));
+  PetscCall(PetscNew(&dd));
   da->data = dd;
 
   da->dim        = -1;
@@ -458,7 +468,8 @@ PETSC_EXTERN PetscErrorCode DMCreate_DA(DM da) {
 
 .seealso: `DMDASetSizes()`, `DMClone()`, `DMDACreate1d()`, `DMDACreate2d()`, `DMDACreate3d()`
 @*/
-PetscErrorCode DMDACreate(MPI_Comm comm, DM *da) {
+PetscErrorCode DMDACreate(MPI_Comm comm, DM *da)
+{
   PetscFunctionBegin;
   PetscValidPointer(da, 2);
   PetscCall(DMCreate(comm, da));

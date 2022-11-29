@@ -10,7 +10,8 @@ static PetscErrorCode TaoALMMComputeOptimalityNorms_Private(Tao);
 static PetscErrorCode TaoALMMComputeAugLagAndGradient_Private(Tao);
 static PetscErrorCode TaoALMMComputePHRLagAndGradient_Private(Tao);
 
-static PetscErrorCode TaoSolve_ALMM(Tao tao) {
+static PetscErrorCode TaoSolve_ALMM(Tao tao)
+{
   TAO_ALMM          *auglag = (TAO_ALMM *)tao->data;
   TaoConvergedReason reason;
   PetscReal          updated;
@@ -36,7 +37,9 @@ static PetscErrorCode TaoSolve_ALMM(Tao tao) {
   PetscUseTypeMethod(tao, convergencetest, tao->cnvP);
   /* set initial penalty factor and inner solver tolerance */
   switch (auglag->type) {
-  case TAO_ALMM_CLASSIC: auglag->mu = auglag->mu0; break;
+  case TAO_ALMM_CLASSIC:
+    auglag->mu = auglag->mu0;
+    break;
   case TAO_ALMM_PHR:
     auglag->cenorm = 0.0;
     if (tao->eq_constrained) PetscCall(VecDot(auglag->Ce, auglag->Ce, &auglag->cenorm));
@@ -50,7 +53,8 @@ static PetscErrorCode TaoSolve_ALMM(Tao tao) {
     /* determine initial penalty factor based on the balance of constraint violation and objective function value */
     auglag->mu = PetscMax(1.e-6, PetscMin(10.0, 2.0 * PetscAbsReal(auglag->fval) / (auglag->cenorm + auglag->cinorm)));
     break;
-  default: break;
+  default:
+    break;
   }
   auglag->gtol = auglag->gtol0;
   PetscCall(PetscInfo(tao, "Initial penalty: %.2g\n", (double)auglag->mu));
@@ -112,7 +116,8 @@ static PetscErrorCode TaoSolve_ALMM(Tao tao) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TaoView_ALMM(Tao tao, PetscViewer viewer) {
+static PetscErrorCode TaoView_ALMM(Tao tao, PetscViewer viewer)
+{
   TAO_ALMM *auglag = (TAO_ALMM *)tao->data;
   PetscBool isascii;
 
@@ -129,7 +134,8 @@ static PetscErrorCode TaoView_ALMM(Tao tao, PetscViewer viewer) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TaoSetUp_ALMM(Tao tao) {
+static PetscErrorCode TaoSetUp_ALMM(Tao tao)
+{
   TAO_ALMM *auglag = (TAO_ALMM *)tao->data;
   VecType   vec_type;
   Vec       SL, SU;
@@ -219,9 +225,14 @@ static PetscErrorCode TaoSetUp_ALMM(Tao tao) {
   }
   /* set the Lagrangian formulation type for the subsolver */
   switch (auglag->type) {
-  case TAO_ALMM_CLASSIC: auglag->sub_obj = TaoALMMComputeAugLagAndGradient_Private; break;
-  case TAO_ALMM_PHR: auglag->sub_obj = TaoALMMComputePHRLagAndGradient_Private; break;
-  default: break;
+  case TAO_ALMM_CLASSIC:
+    auglag->sub_obj = TaoALMMComputeAugLagAndGradient_Private;
+    break;
+  case TAO_ALMM_PHR:
+    auglag->sub_obj = TaoALMMComputePHRLagAndGradient_Private;
+    break;
+  default:
+    break;
   }
   /* set up the subsolver */
   PetscCall(TaoSetSolution(auglag->subsolver, auglag->P));
@@ -267,7 +278,8 @@ static PetscErrorCode TaoSetUp_ALMM(Tao tao) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TaoDestroy_ALMM(Tao tao) {
+static PetscErrorCode TaoDestroy_ALMM(Tao tao)
+{
   TAO_ALMM *auglag = (TAO_ALMM *)tao->data;
 
   PetscFunctionBegin;
@@ -322,7 +334,8 @@ static PetscErrorCode TaoDestroy_ALMM(Tao tao) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TaoSetFromOptions_ALMM(Tao tao, PetscOptionItems *PetscOptionsObject) {
+static PetscErrorCode TaoSetFromOptions_ALMM(Tao tao, PetscOptionItems *PetscOptionsObject)
+{
   TAO_ALMM *auglag = (TAO_ALMM *)tao->data;
   PetscInt  i;
 
@@ -353,7 +366,7 @@ static PetscErrorCode TaoSetFromOptions_ALMM(Tao tao, PetscOptionItems *PetscOpt
 /* -------------------------------------------------------- */
 
 /*MC
-  TaoALMM - Augmented Lagrangian multiplier method for solving nonlinear optimization problems with general constraints.
+  TAOALMM - Augmented Lagrangian multiplier method for solving nonlinear optimization problems with general constraints.
 
   Options Database Keys:
 + -tao_almm_mu_init <real>       - initial penalty parameter (default: 10.)
@@ -380,10 +393,10 @@ static PetscErrorCode TaoSetFromOptions_ALMM(Tao tao, PetscOptionItems *PetscOpt
   of inequality constraints because it avoids inflating the size of the subproblem with slack variables.
 
   The subproblem is solved using a nested first-order TAO solver. The user can retrieve a pointer to
-  the subsolver via TaoALMMGetSubsolver() or pass command line arguments to it using the
-  "-tao_almm_subsolver_" prefix. Currently, TaoALMM does not support second-order methods for the
+  the subsolver via `TaoALMMGetSubsolver()` or pass command line arguments to it using the
+  "-tao_almm_subsolver_" prefix. Currently, `TAOALMM` does not support second-order methods for the
   subproblem. It is also highly recommended that the subsolver chosen by the user utilize a trust-region
-  strategy for globalization (default: TAOBQNKTR) especially if the outer problem features bound constraints.
+  strategy for globalization (default: `TAOBQNKTR`) especially if the outer problem features bound constraints.
 
 .vb
   while unconverged
@@ -402,14 +415,15 @@ static PetscErrorCode TaoSetFromOptions_ALMM(Tao tao, PetscOptionItems *PetscOpt
   endwhile
 .ve
 
-.seealso: `TaoALMMGetType()`, `TaoALMMSetType()`, `TaoALMMSetSubsolver()`, `TaoALMMGetSubsolver()`,
+.seealso: `TAOALMM`, `Tao`, `TaoALMMGetType()`, `TaoALMMSetType()`, `TaoALMMSetSubsolver()`, `TaoALMMGetSubsolver()`,
           `TaoALMMGetMultipliers()`, `TaoALMMSetMultipliers()`, `TaoALMMGetPrimalIS()`, `TaoALMMGetDualIS()`
 M*/
-PETSC_EXTERN PetscErrorCode TaoCreate_ALMM(Tao tao) {
+PETSC_EXTERN PetscErrorCode TaoCreate_ALMM(Tao tao)
+{
   TAO_ALMM *auglag;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(tao, &auglag));
+  PetscCall(PetscNew(&auglag));
 
   tao->ops->destroy        = TaoDestroy_ALMM;
   tao->ops->setup          = TaoSetUp_ALMM;
@@ -463,7 +477,8 @@ PETSC_EXTERN PetscErrorCode TaoCreate_ALMM(Tao tao) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TaoALMMCombinePrimal_Private(Tao tao, Vec X, Vec S, Vec P) {
+static PetscErrorCode TaoALMMCombinePrimal_Private(Tao tao, Vec X, Vec S, Vec P)
+{
   TAO_ALMM *auglag = (TAO_ALMM *)tao->data;
 
   PetscFunctionBegin;
@@ -478,7 +493,8 @@ static PetscErrorCode TaoALMMCombinePrimal_Private(Tao tao, Vec X, Vec S, Vec P)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TaoALMMCombineDual_Private(Tao tao, Vec EQ, Vec IN, Vec Y) {
+static PetscErrorCode TaoALMMCombineDual_Private(Tao tao, Vec EQ, Vec IN, Vec Y)
+{
   TAO_ALMM *auglag = (TAO_ALMM *)tao->data;
 
   PetscFunctionBegin;
@@ -497,7 +513,8 @@ static PetscErrorCode TaoALMMCombineDual_Private(Tao tao, Vec EQ, Vec IN, Vec Y)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TaoALMMSplitPrimal_Private(Tao tao, Vec P, Vec X, Vec S) {
+static PetscErrorCode TaoALMMSplitPrimal_Private(Tao tao, Vec P, Vec X, Vec S)
+{
   TAO_ALMM *auglag = (TAO_ALMM *)tao->data;
 
   PetscFunctionBegin;
@@ -513,7 +530,8 @@ static PetscErrorCode TaoALMMSplitPrimal_Private(Tao tao, Vec P, Vec X, Vec S) {
 }
 
 /* this assumes that the latest constraints are stored in Ce and Ci, and also combined in C */
-static PetscErrorCode TaoALMMComputeOptimalityNorms_Private(Tao tao) {
+static PetscErrorCode TaoALMMComputeOptimalityNorms_Private(Tao tao)
+{
   TAO_ALMM *auglag = (TAO_ALMM *)tao->data;
 
   PetscFunctionBegin;
@@ -540,7 +558,8 @@ static PetscErrorCode TaoALMMComputeOptimalityNorms_Private(Tao tao) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TaoALMMEvaluateIterate_Private(Tao tao, Vec P) {
+static PetscErrorCode TaoALMMEvaluateIterate_Private(Tao tao, Vec P)
+{
   TAO_ALMM *auglag = (TAO_ALMM *)tao->data;
 
   PetscFunctionBegin;
@@ -566,7 +585,8 @@ static PetscErrorCode TaoALMMEvaluateIterate_Private(Tao tao, Vec P) {
       PetscCall(VecScale(auglag->Ci, -1.0));
       PetscCall(MatScale(auglag->Ai, -1.0));
       break;
-    default: break;
+    default:
+      break;
     }
   }
   /* combine constraints into one vector */
@@ -581,7 +601,8 @@ dLphr/dX = dF/dX + mu*[ (Ce + Ye/mu)^T Ae + pmin(0, Ci + Yi/mu)^T Ai]
 
 dLphr/dS = 0
 */
-static PetscErrorCode TaoALMMComputePHRLagAndGradient_Private(Tao tao) {
+static PetscErrorCode TaoALMMComputePHRLagAndGradient_Private(Tao tao)
+{
   TAO_ALMM *auglag  = (TAO_ALMM *)tao->data;
   PetscReal eq_norm = 0.0, ineq_norm = 0.0;
 
@@ -620,7 +641,8 @@ dLc/dX = dF/dX + Ye^TAe + Yi^TAi + 0.5*mu*[Ce^TAe + (Ci - S)^TAi]
 
 dLc/dS = -[Yi + mu*(Ci - S)]
 */
-static PetscErrorCode TaoALMMComputeAugLagAndGradient_Private(Tao tao) {
+static PetscErrorCode TaoALMMComputeAugLagAndGradient_Private(Tao tao)
+{
   TAO_ALMM *auglag = (TAO_ALMM *)tao->data;
   PetscReal yeTce = 0.0, yiTcims = 0.0, ceTce = 0.0, cimsTcims = 0.0;
 
@@ -656,7 +678,8 @@ static PetscErrorCode TaoALMMComputeAugLagAndGradient_Private(Tao tao) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode TaoALMMSubsolverObjective_Private(Tao tao, Vec P, PetscReal *Lval, void *ctx) {
+PetscErrorCode TaoALMMSubsolverObjective_Private(Tao tao, Vec P, PetscReal *Lval, void *ctx)
+{
   TAO_ALMM *auglag = (TAO_ALMM *)ctx;
 
   PetscFunctionBegin;
@@ -666,7 +689,8 @@ PetscErrorCode TaoALMMSubsolverObjective_Private(Tao tao, Vec P, PetscReal *Lval
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode TaoALMMSubsolverObjectiveAndGradient_Private(Tao tao, Vec P, PetscReal *Lval, Vec G, void *ctx) {
+PetscErrorCode TaoALMMSubsolverObjectiveAndGradient_Private(Tao tao, Vec P, PetscReal *Lval, Vec G, void *ctx)
+{
   TAO_ALMM *auglag = (TAO_ALMM *)ctx;
 
   PetscFunctionBegin;

@@ -3,7 +3,8 @@ static char help[] = "Tests the different MatColoring implementatons and ISColor
                       Modifed from the code contributed by Ali Berk Kahraman. \n\n";
 #include <petscmat.h>
 
-PetscErrorCode FormJacobian(Mat A) {
+PetscErrorCode FormJacobian(Mat A)
+{
   PetscInt    M, ownbegin, ownend, i, j;
   PetscScalar dummy = 0.0;
 
@@ -21,7 +22,8 @@ PetscErrorCode FormJacobian(Mat A) {
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[])
+{
   Mat         J;
   PetscMPIInt size;
   PetscInt    M = 8;

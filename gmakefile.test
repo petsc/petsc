@@ -96,7 +96,7 @@ endif
 $(generatedtest) : $(petscconf) $(petscvariables) $(CONFIGDIR)/gmakegentest.py $(TESTDIR)/.DIR | $$(@D)/.DIR
 	$(PYTHON) $(CONFIGDIR)/gmakegentest.py --petsc-dir=$(PETSC_DIR) --petsc-arch=$(PETSC_ARCH) --testdir=$(TESTDIR)
 
-ifneq ($(filter-out clean check info libs all checkbadSource checkbadFileChange allfortranstubs alletags clangformat checkclangformat,$(MAKECMDGOALS:clean%=clean)),)
+ifneq ($(filter-out clean check info libs all checkbadSource checkbadFileChange allfortranstubs alletags clangformat checkclangformat get%,$(MAKECMDGOALS:clean%=clean)),)
 include $(generatedtest)
 endif
 
@@ -108,26 +108,38 @@ endif
 
 PETSC_COMPILE.c = $(call quiet,$(cc_name)) -c $(PCC_FLAGS) $($(CLANGUAGE)FLAGS) $(CCPPFLAGS) $(C_DEPFLAGS)
 PETSC_COMPILE.cxx = $(call quiet,CXX) -c $(CXX_FLAGS) $(CXXFLAGS) $(CXXCPPFLAGS) $(CXX_DEPFLAGS)
-PETSC_COMPILE.cu = $(call quiet,CUDAC) -c $(MPICXX_INCLUDES) $(CUDAC_FLAGS) $(CUFLAGS) --compiler-options="${PETSC_CXXCPPFLAGS} $(CUDACPPFLAGS) $(CUDA_CXXFLAGS)"
+PETSC_COMPILE.cu = $(call quiet,CUDAC) -c $(MPICXX_INCLUDES) $(CUDAC_FLAGS) --compiler-options="${PETSC_CXXCPPFLAGS} $(CUDACPPFLAGS) $(CUDA_CXXFLAGS)"
 PETSC_COMPILE.hip.cpp = $(call quiet,HIPC)   -c $(MPICXX_INCLUDES) $(HIPC_FLAGS) $(HIPPP_FLAGS) $(HIPFLAGS) $(HIPPPFLAGS) $(HIPOPTFLAGS) $(HIPC_DEPFLAGS) $(CXXFLAGS) $(CXXCPPFLAGS) $(HIP_DEPFLAGS)
 PETSC_COMPILE.sycl.cxx = $(call quiet,SYCLC) -c $(MPICXX_INCLUDES) $(SYCLC_FLAGS) $(SYCLPP_FLAGS) $(SYCLFLAGS) $(SYCLPPFLAGS) $(SYCLOPTFLAGS) $(CXXFLAGS) $(CXXCPPFLAGS) $(SYCL_DEPFLAGS)
-PETSC_GENDEPS.cu = $(call quiet,CUDAC,.dep) --generate-dependencies --output-directory=$(@D) $(MPICXX_INCLUDES) $(CUDAC_FLAGS) $(CUFLAGS)  --compiler-options="${PETSC_CXXCPPFLAGS} $(CUDA_CXXFLAGS)"
+PETSC_GENDEPS.cu = $(call quiet,CUDAC,.dep) --generate-dependencies --output-directory=$(@D) $(MPICXX_INCLUDES) $(CUDAC_FLAGS) --compiler-options="${PETSC_CXXCPPFLAGS} $(CUDA_CXXFLAGS)"
 PETSC_COMPILE.F = $(call quiet,FC) -c $(FC_FLAGS) $(FFLAGS) $(FCPPFLAGS) $(FC_DEPFLAGS)
 
 ifneq ($(KOKKOS_USE_CUDA_COMPILER),)
   # Kokkos requires nvcc to be in PATH and the C++ compiler to be given in an environmental variable
   KOKC = PATH=`dirname $(CUDAC)`:$(PATH) NVCC_WRAPPER_DEFAULT_COMPILER="$(CUDA_CXX)" $(KOKKOS_BIN)/nvcc_wrapper --expt-extended-lambda
-  PETSC_COMPILE.kokkos.cxx = $(call quiet,KOKC) -c $(CUDAC_FLAGS) ${PETSC_CXXCPPFLAGS} $(CUDACPPFLAGS) $(CUDA_CXXFLAGS) $(MPICXX_INCLUDES)
+  KOKKOS_COMPILE = $(call quiet,KOKC) -c $(CUDAC_FLAGS) ${PETSC_CXXCPPFLAGS} $(CUDACPPFLAGS) $(CUDA_CXXFLAGS) $(MPICXX_INCLUDES)
 else ifneq ($(KOKKOS_USE_HIP_COMPILER),)
-  PETSC_COMPILE.kokkos.cxx = $(PETSC_COMPILE.hip.cpp)
+  KOKKOS_COMPILE = $(PETSC_COMPILE.hip.cpp)
 else ifneq ($(KOKKOS_USE_SYCL_COMPILER),)
-  PETSC_COMPILE.kokkos.cxx = $(PETSC_COMPILE.sycl.cxx)
+  KOKKOS_COMPILE = $(PETSC_COMPILE.sycl.cxx)
 else
-  PETSC_COMPILE.kokkos.cxx = $(PETSC_COMPILE.cxx)
+  KOKKOS_COMPILE = $(PETSC_COMPILE.cxx)
 endif
+# https://github.com/kokkos/kokkos/pull/5473 used a C++17 feature, inline static variables.
+# We found -fvisibility=hidden could hide these variables such that the supposed globally unique
+# variables become local to each file including them and thus have multiple copies (see an example
+# at the end of PR5473). It might be a gcc bug thus we also filed at https://gcc.gnu.org/bugzilla/show_bug.cgi?id=107535
+# See also an older bug report related to visibility, https://gcc.gnu.org/bugzilla/show_bug.cgi?id=59693
+#
+# Our workaround here is to git rid of -fvisibility=hidden from Kokkos compiler options, so that petsc
+# files including Kokkos headers won't be affected by this flag.
+#
+# The solution is not ideal in the sense we have to duplicate the same workaround to any external libraries
+# using C++17 inline static variables. We have to wait for GNU to clarify this issue.
+PETSC_COMPILE.kokkos.cxx = $(filter-out -fvisibility=hidden,$(KOKKOS_COMPILE))
 
 ifneq ($(RAJA_USE_CUDA_COMPILER),)
-  PETSC_COMPILE.raja.cxx  = ${CUDAC} $(MPICXX_INCLUDES) ${CUDAC_FLAGS} ${CUFLAGS} -x cu -Xcudafe "--display_error_number" -c --compiler-options="${PETSC_CXXCPPFLAGS} ${PETSC_CC_INCLUDES} ${CUDA_CXXFLAGS}" --expt-extended-lambda --expt-relaxed-constexpr
+  PETSC_COMPILE.raja.cxx  = ${CUDAC} $(MPICXX_INCLUDES) ${CUDAC_FLAGS} -x cu -Xcudafe "--display_error_number" -c --compiler-options="${PETSC_CXXCPPFLAGS} ${PETSC_CC_INCLUDES} ${CUDA_CXXFLAGS}" --expt-extended-lambda --expt-relaxed-constexpr
 else
   PETSC_COMPILE.raja.cxx = ${CXX} -o $*.o -c ${CXX_FLAGS} ${CXXFLAGS} ${CXXCPPFLAGS}
 endif
@@ -193,7 +205,7 @@ endif
 
 #   This is a hack to fix a broken gfortran.
 define GFORTRAN_DEP_CLEANUP
-  if test -e "$(@:%.o=%.d)" && head -1 "$(@:%.o=%.d)" | fgrep -q -v : ; then\
+  if test -e "$(@:%.o=%.d)" && head -1 "$(@:%.o=%.d)" | grep -F -q -v : ; then\
     echo "$(@): \\" > $(@:%.o=%.dtemp) ; \
     tr '\n' '@' < $(@:%.o=%.d) | cut -d: -f2- | tr '@' '\n' >> $(@:%.o=%.dtemp) ; \
     mv $(@:%.o=%.dtemp) $(@:%.o=%.d); \
@@ -243,9 +255,17 @@ $(testexe.F) $(testexe.F90) : $(TESTDIR)/% : $(TESTDIR)/%.o $$^ $(libpetscall)
 	$(call quiet,FLINKER) -o $@ $^ $(PETSC_TEST_LIB)
 	-$(call macos-firewall-register,$@)
 
+ifneq (,$(findstring emcc,$(CC)))
+$(testexe.c) : $(TESTDIR)/% : $(TESTDIR)/%.o $$^ $(libpetscall)
+	-@$(call quiet,CLINKER) -s MAIN_MODULE -s ASSERTIONS=2 -s SAFE_HEAP=1 -s STACK_OVERFLOW_CHECK=1 -s ALLOW_MEMORY_GROWTH $(EXEFLAGS) -o $@.js $@.o $(PETSC_LIB)
+	-@printf '#!/usr/bin/env sh\nnode --redirect-warnings=/dev/null  $$0.js $$*  | grep -v "Heap resize call from"'  > $@
+	-@chmod u+x $@
+else
 $(testexe.c) $(testexe.cu) : $(TESTDIR)/% : $(TESTDIR)/%.o $$^ $(libpetscall)
 	$(call quiet,CLINKER) $(EXEFLAGS) -o $@ $^ $(PETSC_TEST_LIB)
 	-$(call macos-firewall-register,$@)
+
+endif
 
 $(testexe.hip.cpp) : $(TESTDIR)/% : $(TESTDIR)/%.o $$^ $(libpetscall)
 	$(call quiet,CLINKER) -o $@ $^ $(PETSC_TEST_LIB)

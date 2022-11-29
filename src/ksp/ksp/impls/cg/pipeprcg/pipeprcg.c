@@ -2,7 +2,7 @@
 
 typedef struct KSP_CG_PIPE_PR_s KSP_CG_PIPE_PR;
 struct KSP_CG_PIPE_PR_s {
-  PetscBool rc_w_q; /* flag to determine whether w_k should be recomputer with A r_k */
+  PetscBool rc_w_q; /* flag to determine whether w_k should be recomputed with A r_k */
 };
 
 /*
@@ -11,7 +11,8 @@ struct KSP_CG_PIPE_PR_s {
       This is called once, usually automatically by KSPSolve() or KSPSetUp()
      but can be called directly by KSPSetUp()
 */
-static PetscErrorCode KSPSetUp_PIPEPRCG(KSP ksp) {
+static PetscErrorCode KSPSetUp_PIPEPRCG(KSP ksp)
+{
   PetscFunctionBegin;
   /* get work vectors needed by PIPEPRCG */
   PetscCall(KSPSetWorkVecs(ksp, 9));
@@ -19,7 +20,8 @@ static PetscErrorCode KSPSetUp_PIPEPRCG(KSP ksp) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode KSPSetFromOptions_PIPEPRCG(KSP ksp, PetscOptionItems *PetscOptionsObject) {
+static PetscErrorCode KSPSetFromOptions_PIPEPRCG(KSP ksp, PetscOptionItems *PetscOptionsObject)
+{
   KSP_CG_PIPE_PR *prcg = (KSP_CG_PIPE_PR *)ksp->data;
   PetscBool       flag = PETSC_FALSE;
 
@@ -34,7 +36,8 @@ static PetscErrorCode KSPSetFromOptions_PIPEPRCG(KSP ksp, PetscOptionItems *Pets
 /*
  KSPSolve_PIPEPRCG - This routine actually applies the pipelined predict and recompute conjugate gradient method
 */
-static PetscErrorCode KSPSolve_PIPEPRCG(KSP ksp) {
+static PetscErrorCode KSPSolve_PIPEPRCG(KSP ksp)
+{
   PetscInt        i;
   KSP_CG_PIPE_PR *prcg  = (KSP_CG_PIPE_PR *)ksp->data;
   PetscScalar     alpha = 0.0, beta = 0.0, nu = 0.0, nu_old = 0.0, mudelgam[3], *mu_p, *delta_p, *gamma_p;
@@ -110,9 +113,14 @@ static PetscErrorCode KSPSolve_PIPEPRCG(KSP ksp) {
       PetscCall(PetscCommSplitReductionBegin(PetscObjectComm((PetscObject)R)));
       PetscCall(VecNormEnd(R, NORM_2, &dp));
       break;
-    case KSP_NORM_NATURAL: dp = PetscSqrtReal(PetscAbsScalar(nu)); break;
-    case KSP_NORM_NONE: dp = 0.0; break;
-    default: SETERRQ(PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "%s", KSPNormTypes[ksp->normtype]);
+    case KSP_NORM_NATURAL:
+      dp = PetscSqrtReal(PetscAbsScalar(nu));
+      break;
+    case KSP_NORM_NONE:
+      dp = 0.0;
+      break;
+    default:
+      SETERRQ(PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "%s", KSPNormTypes[ksp->normtype]);
     }
 
     ksp->rnorm = dp;
@@ -169,16 +177,19 @@ static PetscErrorCode KSPSolve_PIPEPRCG(KSP ksp) {
 }
 
 /*MC
-   KSPPIPEPRCG - Pipelined predict-and-recompute conjugate gradient method.
+   KSPPIPEPRCG - Pipelined predict-and-recompute conjugate gradient method. [](sec_pipelineksp)
 
-   This method has only a single non-blocking reduction per iteration, compared to 2 blocking for standard CG.
-   The non-blocking reduction is overlapped by the matrix-vector product and preconditioner application.
+   Options Database Key:
+.  -ksp_pipeprcg_recompute_w - recompute the w_k with Ar_k, default is true
 
    Level: intermediate
 
    Notes:
+   This method has only a single non-blocking reduction per iteration, compared to 2 blocking for standard `KSPCG`.
+   The non-blocking reduction is overlapped by the matrix-vector product and preconditioner application.
+
    MPI configuration may be necessary for reductions to make asynchronous progress, which is important for performance of pipelined methods.
-   See the FAQ on the PETSc website for details.
+   See [](doc_faq_pipelined)
 
    Contributed by:
    Tyler Chen, University of Washington, Applied Mathematics Department
@@ -187,11 +198,14 @@ static PetscErrorCode KSPSolve_PIPEPRCG(KSP ksp) {
    Tyler Chen and Erin Carson. "Predict-and-recompute conjugate gradient variants." SIAM Journal on Scientific Computing 42.5 (2020): A3084-A3108.
 
    Acknowledgments:
-   This material is based upon work supported by the National Science Foundation Graduate Research Fellowship Program under Grant No. DGE-1762114. Any opinions, findings, and conclusions or recommendations expressed in this material are those of the author and do not necessarily reflect the views of the National Science Foundation.
+   This material is based upon work supported by the National Science Foundation Graduate Research Fellowship Program under Grant No. DGE-1762114.
+   Any opinions, findings, and conclusions or recommendations expressed in this material are those of the author and do not necessarily
+   reflect the views of the National Science Foundation.
 
-.seealso: `KSPCreate()`, `KSPSetType()`, `KSPPIPECG`, `KSPPIPECR`, `KSPGROPPCG`, `KSPPGMRES`, `KSPCG`, `KSPCGUseSingleReduction()`
+.seealso: [](chapter_ksp), [](doc_faq_pipelined), [](sec_pipelineksp), `KSPCreate()`, `KSPSetType()`, `KSPCG`, `KSPPIPECG`, `KSPPIPECR`, `KSPGROPPCG`, `KSPPGMRES`, `KSPCG`, `KSPCGUseSingleReduction()`
 M*/
-PETSC_EXTERN PetscErrorCode KSPCreate_PIPEPRCG(KSP ksp) {
+PETSC_EXTERN PetscErrorCode KSPCreate_PIPEPRCG(KSP ksp)
+{
   KSP_CG_PIPE_PR *prcg = NULL;
   PetscBool       cite = PETSC_FALSE;
 
@@ -201,7 +215,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_PIPEPRCG(KSP ksp) {
                                    "archivePrefix = {arXiv},\n  primaryClass = {cs.NA}\n}",
                                    &cite));
 
-  PetscCall(PetscNewLog(ksp, &prcg));
+  PetscCall(PetscNew(&prcg));
   ksp->data = (void *)prcg;
 
   PetscCall(KSPSetSupportedNorm(ksp, KSP_NORM_UNPRECONDITIONED, PC_LEFT, 2));

@@ -31,7 +31,6 @@ PC Object: 8 MPI processes
         Threshold scaling factor for each level not specified = 1.
         Using parallel coarse grid solver (all coarse grid equations not put on one process)
         AGG specific options
-          Symmetric graph false
           Number of levels to square graph 1
           Number smoothing steps 1
         Complexity:    grid = 1.036    operator = 1.03899
@@ -114,7 +113,6 @@ PC Object: 8 MPI processes
         Threshold scaling factor for each level not specified = 1.
         Using parallel coarse grid solver (all coarse grid equations not put on one process)
         AGG specific options
-          Symmetric graph false
           Number of levels to square graph 1
           Number smoothing steps 1
         Complexity:    grid = 1.036    operator = 1.03899
@@ -198,7 +196,6 @@ PC Object: 8 MPI processes
         Threshold scaling factor for each level not specified = 1.
         Using parallel coarse grid solver (all coarse grid equations not put on one process)
         AGG specific options
-          Symmetric graph false
           Number of levels to square graph 1
           Number smoothing steps 1
         Complexity:    grid = 1.036    operator = 1.03899

@@ -9,7 +9,8 @@ extern PetscErrorCode ComputeMatrix(KSP, Mat, Mat, void *);
 extern PetscErrorCode ComputeRHS(KSP, Vec, void *);
 extern PetscErrorCode ComputeInitialSolution(DM, Vec);
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscInt i;
   KSP      ksp;
   DM       da;
@@ -42,7 +43,8 @@ int main(int argc, char **argv) {
   return 0;
 }
 
-PetscErrorCode ComputeInitialSolution(DM da, Vec x) {
+PetscErrorCode ComputeInitialSolution(DM da, Vec x)
+{
   PetscInt    mx, col[2], xs, xm, i;
   PetscScalar Hx, val[2];
 
@@ -62,7 +64,8 @@ PetscErrorCode ComputeInitialSolution(DM da, Vec x) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode ComputeRHS(KSP ksp, Vec b, void *ctx) {
+PetscErrorCode ComputeRHS(KSP ksp, Vec b, void *ctx)
+{
   PetscInt    mx;
   PetscScalar h;
   Vec         x;
@@ -78,7 +81,8 @@ PetscErrorCode ComputeRHS(KSP ksp, Vec b, void *ctx) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode ComputeMatrix(KSP ksp, Mat J, Mat jac, void *ctx) {
+PetscErrorCode ComputeMatrix(KSP ksp, Mat J, Mat jac, void *ctx)
+{
   PetscInt    i, mx, xm, xs;
   PetscScalar v[7], Hx;
   MatStencil  row, col[7];

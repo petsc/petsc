@@ -5,7 +5,7 @@ class Configure(config.package.CMakePackage):
   def __init__(self, framework):
     config.package.CMakePackage.__init__(self, framework)
     self.minversion       = '6.3.0'
-    self.version          = '8.1.0'
+    self.version          = '8.1.2'
     self.versionname      = 'SUPERLU_DIST_MAJOR_VERSION.SUPERLU_DIST_MINOR_VERSION.SUPERLU_DIST_PATCH_VERSION'
     self.gitcommit        = 'v'+self.version
     self.download         = ['git://https://github.com/xiaoyeli/superlu_dist','https://github.com/xiaoyeli/superlu_dist/archive/'+self.gitcommit+'.tar.gz']
@@ -40,7 +40,7 @@ class Configure(config.package.CMakePackage):
     else:
       args.append('-DCMAKE_DISABLE_FIND_PACKAGE_OpenMP=TRUE')
     if self.cuda.found:
-      # SuperLU_DIST C/C++ sources also inlcude CUDA includes so add cuda.include to CFLAGS/CXXFLAGS
+      # SuperLU_DIST C/C++ sources also include CUDA includes so add cuda.include to CFLAGS/CXXFLAGS
       for place,item in enumerate(args):
         if item.find('CMAKE_C_FLAGS') >= 0 or item.find('CMAKE_CXX_FLAGS') >= 0:
           args[place]=item[:-1]+' '+self.headers.toString(self.cuda.include)+' -DDEBUGlevel=0 -DPRNTlevel=0"'
@@ -58,7 +58,6 @@ class Configure(config.package.CMakePackage):
       args.append('-DTPL_PARMETIS_INCLUDE_DIRS="'+';'.join(self.parmetis.dinclude)+'"')
       args.append('-DTPL_PARMETIS_LIBRARIES="'+self.libraries.toString(self.parmetis.dlib)+'"')
     else:
-      args.append('-Denable_parmetislib=FALSE')
       args.append('-DTPL_ENABLE_PARMETISLIB=FALSE')
 
     if self.getDefaultIndexSize() == 64:
@@ -71,8 +70,8 @@ class Configure(config.package.CMakePackage):
 
     args.append('-Denable_tests=0')
     args.append('-Denable_examples=0')
-    empty = True
-    if 'download-superlu_dist-cmake-arguments' in self.argDB and self.argDB['download-superlu_dist-cmake-arguments']:
+    empty = not ('MSYSTEM' in os.environ and 'HAVE_MSMPI' in self.mpi.defines)
+    if empty and 'download-superlu_dist-cmake-arguments' in self.argDB and self.argDB['download-superlu_dist-cmake-arguments']:
       empty = (not '-DMPI_GUESS_LIBRARY_NAME=' in self.argDB['download-superlu_dist-cmake-arguments'])
     if empty:
       args.append('-DMPI_C_COMPILE_FLAGS:STRING=""')

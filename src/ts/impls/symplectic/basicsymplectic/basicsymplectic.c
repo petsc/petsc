@@ -31,26 +31,31 @@ typedef struct {
 
 /*MC
   TSBASICSYMPLECTICSIEULER - first order semi-implicit Euler method
+
   Level: intermediate
-.seealso: `TSBASICSYMPLECTIC`
+
+.seealso: [](chapter_ts), `TSBASICSYMPLECTIC`
 M*/
 
 /*MC
   TSBASICSYMPLECTICVELVERLET - second order Velocity Verlet method (leapfrog method with starting process and determing velocity and position at the same time)
+
 Level: intermediate
-.seealso: `TSBASICSYMPLECTIC`
+
+.seealso: [](chapter_ts), `TSBASICSYMPLECTIC`
 M*/
 
 /*@C
-  TSBasicSymplecticRegisterAll - Registers all of the basic symplectic integration methods in TSBasicSymplectic
+  TSBasicSymplecticRegisterAll - Registers all of the basic symplectic integration methods in `TSBASICSYMPLECTIC`
 
   Not Collective, but should be called by all processes which will need the schemes to be registered
 
   Level: advanced
 
-.seealso: `TSBasicSymplecticRegisterDestroy()`
+.seealso: [](chapter_ts), `TSBASICSYMPLECTIC`, `TSBasicSymplecticRegisterDestroy()`
 @*/
-PetscErrorCode TSBasicSymplecticRegisterAll(void) {
+PetscErrorCode TSBasicSymplecticRegisterAll(void)
+{
   PetscFunctionBegin;
   if (TSBasicSymplecticRegisterAllCalled) PetscFunctionReturn(0);
   TSBasicSymplecticRegisterAllCalled = PETSC_TRUE;
@@ -75,15 +80,16 @@ PetscErrorCode TSBasicSymplecticRegisterAll(void) {
 }
 
 /*@C
-   TSBasicSymplecticRegisterDestroy - Frees the list of schemes that were registered by TSBasicSymplecticRegister().
+   TSBasicSymplecticRegisterDestroy - Frees the list of schemes that were registered by `TSBasicSymplecticRegister()`.
 
    Not Collective
 
    Level: advanced
 
-.seealso: `TSBasicSymplecticRegister()`, `TSBasicSymplecticRegisterAll()`
+.seealso: [](chapter_ts), `TSBasicSymplecticRegister()`, `TSBasicSymplecticRegisterAll()`, `TSBASICSYMPLECTIC`
 @*/
-PetscErrorCode TSBasicSymplecticRegisterDestroy(void) {
+PetscErrorCode TSBasicSymplecticRegisterDestroy(void)
+{
   BasicSymplecticSchemeLink link;
 
   PetscFunctionBegin;
@@ -99,14 +105,15 @@ PetscErrorCode TSBasicSymplecticRegisterDestroy(void) {
 }
 
 /*@C
-  TSBasicSymplecticInitializePackage - This function initializes everything in the TSBasicSymplectic package. It is called
-  from TSInitializePackage().
+  TSBasicSymplecticInitializePackage - This function initializes everything in the `TSBASICSYMPLECTIC` package. It is called
+  from `TSInitializePackage()`.
 
   Level: developer
 
-.seealso: `PetscInitialize()`
+.seealso: [](chapter_ts), `PetscInitialize()`, `TSBASICSYMPLECTIC`
 @*/
-PetscErrorCode TSBasicSymplecticInitializePackage(void) {
+PetscErrorCode TSBasicSymplecticInitializePackage(void)
+{
   PetscFunctionBegin;
   if (TSBasicSymplecticPackageInitialized) PetscFunctionReturn(0);
   TSBasicSymplecticPackageInitialized = PETSC_TRUE;
@@ -116,14 +123,15 @@ PetscErrorCode TSBasicSymplecticInitializePackage(void) {
 }
 
 /*@C
-  TSBasicSymplecticFinalizePackage - This function destroys everything in the TSBasicSymplectic package. It is
-  called from PetscFinalize().
+  TSBasicSymplecticFinalizePackage - This function destroys everything in the `TSBASICSYMPLECTIC` package. It is
+  called from `PetscFinalize()`.
 
   Level: developer
 
-.seealso: `PetscFinalize()`
+.seealso: [](chapter_ts), `PetscFinalize()`, `TSBASICSYMPLECTIC`
 @*/
-PetscErrorCode TSBasicSymplecticFinalizePackage(void) {
+PetscErrorCode TSBasicSymplecticFinalizePackage(void)
+{
   PetscFunctionBegin;
   TSBasicSymplecticPackageInitialized = PETSC_FALSE;
   PetscCall(TSBasicSymplecticRegisterDestroy());
@@ -142,14 +150,15 @@ PetscErrorCode TSBasicSymplecticFinalizePackage(void) {
 .  c - coefficients for updating generalized position (dimension s)
 -  d - coefficients for updating generalized momentum (dimension s)
 
+   Level: advanced
+
    Notes:
    Several symplectic methods are provided, this function is only needed to create new methods.
 
-   Level: advanced
-
-.seealso: `TSBasicSymplectic`
+.seealso: [](chapter_ts), `TSBASICSYMPLECTIC`
 @*/
-PetscErrorCode TSBasicSymplecticRegister(TSRosWType name, PetscInt order, PetscInt s, PetscReal c[], PetscReal d[]) {
+PetscErrorCode TSBasicSymplecticRegister(TSRosWType name, PetscInt order, PetscInt s, PetscReal c[], PetscReal d[])
+{
   BasicSymplecticSchemeLink link;
   BasicSymplecticScheme     scheme;
 
@@ -188,7 +197,8 @@ To apply a timestep with values c_{1,2},d_{1,2} to the particle, carry out the f
 - Update the position of the particle by adding to it its (double-updated) velocity multiplied by d_2
 
 */
-static PetscErrorCode TSStep_BasicSymplectic(TS ts) {
+static PetscErrorCode TSStep_BasicSymplectic(TS ts)
+{
   TS_BasicSymplectic   *bsymp    = (TS_BasicSymplectic *)ts->data;
   BasicSymplecticScheme scheme   = bsymp->scheme;
   Vec                   solution = ts->vec_sol, update = bsymp->update, q, p, q_update, p_update;
@@ -238,27 +248,32 @@ static PetscErrorCode TSStep_BasicSymplectic(TS ts) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMCoarsenHook_BasicSymplectic(DM fine, DM coarse, void *ctx) {
+static PetscErrorCode DMCoarsenHook_BasicSymplectic(DM fine, DM coarse, void *ctx)
+{
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMRestrictHook_BasicSymplectic(DM fine, Mat restrct, Vec rscale, Mat inject, DM coarse, void *ctx) {
+static PetscErrorCode DMRestrictHook_BasicSymplectic(DM fine, Mat restrct, Vec rscale, Mat inject, DM coarse, void *ctx)
+{
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMSubDomainHook_BasicSymplectic(DM dm, DM subdm, void *ctx) {
+static PetscErrorCode DMSubDomainHook_BasicSymplectic(DM dm, DM subdm, void *ctx)
+{
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMSubDomainRestrictHook_BasicSymplectic(DM dm, VecScatter gscat, VecScatter lscat, DM subdm, void *ctx) {
+static PetscErrorCode DMSubDomainRestrictHook_BasicSymplectic(DM dm, VecScatter gscat, VecScatter lscat, DM subdm, void *ctx)
+{
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSSetUp_BasicSymplectic(TS ts) {
+static PetscErrorCode TSSetUp_BasicSymplectic(TS ts)
+{
   TS_BasicSymplectic *bsymp = (TS_BasicSymplectic *)ts->data;
   DM                  dm;
 
@@ -282,7 +297,8 @@ static PetscErrorCode TSSetUp_BasicSymplectic(TS ts) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSReset_BasicSymplectic(TS ts) {
+static PetscErrorCode TSReset_BasicSymplectic(TS ts)
+{
   TS_BasicSymplectic *bsymp = (TS_BasicSymplectic *)ts->data;
 
   PetscFunctionBegin;
@@ -290,7 +306,8 @@ static PetscErrorCode TSReset_BasicSymplectic(TS ts) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSDestroy_BasicSymplectic(TS ts) {
+static PetscErrorCode TSDestroy_BasicSymplectic(TS ts)
+{
   PetscFunctionBegin;
   PetscCall(TSReset_BasicSymplectic(ts));
   PetscCall(PetscObjectComposeFunction((PetscObject)ts, "TSBasicSymplecticSetType_C", NULL));
@@ -299,7 +316,8 @@ static PetscErrorCode TSDestroy_BasicSymplectic(TS ts) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSSetFromOptions_BasicSymplectic(TS ts, PetscOptionItems *PetscOptionsObject) {
+static PetscErrorCode TSSetFromOptions_BasicSymplectic(TS ts, PetscOptionItems *PetscOptionsObject)
+{
   TS_BasicSymplectic *bsymp = (TS_BasicSymplectic *)ts->data;
 
   PetscFunctionBegin;
@@ -322,12 +340,14 @@ static PetscErrorCode TSSetFromOptions_BasicSymplectic(TS ts, PetscOptionItems *
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSView_BasicSymplectic(TS ts, PetscViewer viewer) {
+static PetscErrorCode TSView_BasicSymplectic(TS ts, PetscViewer viewer)
+{
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSInterpolate_BasicSymplectic(TS ts, PetscReal t, Vec X) {
+static PetscErrorCode TSInterpolate_BasicSymplectic(TS ts, PetscReal t, Vec X)
+{
   TS_BasicSymplectic *bsymp  = (TS_BasicSymplectic *)ts->data;
   Vec                 update = bsymp->update;
   PetscReal           alpha  = (ts->ptime - t) / ts->time_step;
@@ -338,7 +358,8 @@ static PetscErrorCode TSInterpolate_BasicSymplectic(TS ts, PetscReal t, Vec X) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSComputeLinearStability_BasicSymplectic(TS ts, PetscReal xr, PetscReal xi, PetscReal *yr, PetscReal *yi) {
+static PetscErrorCode TSComputeLinearStability_BasicSymplectic(TS ts, PetscReal xr, PetscReal xi, PetscReal *yr, PetscReal *yi)
+{
   PetscFunctionBegin;
   *yr = 1.0 + xr;
   *yi = xi;
@@ -348,22 +369,25 @@ static PetscErrorCode TSComputeLinearStability_BasicSymplectic(TS ts, PetscReal 
 /*@C
   TSBasicSymplecticSetType - Set the type of the basic symplectic method
 
-  Logically Collective on TS
+  Logically Collective on ts
 
   Input Parameters:
 +  ts - timestepping context
 -  bsymptype - type of the symplectic scheme
 
-  Options Database:
+  Options Database Key:
 .  -ts_basicsymplectic_type <scheme> - select the scheme
 
-  Notes:
-    The symplectic solver always expects a two-way splitting with the split names being "position" and "momentum". Each split is associated with an IS object and a sub-TS
+  Level: intermediate
+
+  Note:
+    The symplectic solver always expects a two-way splitting with the split names being "position" and "momentum". Each split is associated with an `IS` object and a sub-`TS`
     that is intended to store the user-provided RHS function.
 
-  Level: intermediate
+.seealso: [](chapter_ts), `TSBASICSYMPLECTIC`, `TSBasicSymplecticType`, `TSBasicSymplecticSetType()`
 @*/
-PetscErrorCode TSBasicSymplecticSetType(TS ts, TSBasicSymplecticType bsymptype) {
+PetscErrorCode TSBasicSymplecticSetType(TS ts, TSBasicSymplecticType bsymptype)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscTryMethod(ts, "TSBasicSymplecticSetType_C", (TS, TSBasicSymplecticType), (ts, bsymptype));
@@ -373,22 +397,26 @@ PetscErrorCode TSBasicSymplecticSetType(TS ts, TSBasicSymplecticType bsymptype) 
 /*@C
   TSBasicSymplecticGetType - Get the type of the basic symplectic method
 
-  Logically Collective on TS
+  Logically Collective on ts
 
   Input Parameters:
 +  ts - timestepping context
 -  bsymptype - type of the basic symplectic scheme
 
   Level: intermediate
+
+.seealso: [](chapter_ts), `TSBASICSYMPLECTIC`, `TSBasicSymplecticType`, `TSBasicSymplecticSetType()`
 @*/
-PetscErrorCode TSBasicSymplecticGetType(TS ts, TSBasicSymplecticType *bsymptype) {
+PetscErrorCode TSBasicSymplecticGetType(TS ts, TSBasicSymplecticType *bsymptype)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscUseMethod(ts, "TSBasicSymplecticGetType_C", (TS, TSBasicSymplecticType *), (ts, bsymptype));
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSBasicSymplecticSetType_BasicSymplectic(TS ts, TSBasicSymplecticType bsymptype) {
+static PetscErrorCode TSBasicSymplecticSetType_BasicSymplectic(TS ts, TSBasicSymplecticType bsymptype)
+{
   TS_BasicSymplectic       *bsymp = (TS_BasicSymplectic *)ts->data;
   BasicSymplecticSchemeLink link;
   PetscBool                 match;
@@ -408,7 +436,8 @@ static PetscErrorCode TSBasicSymplecticSetType_BasicSymplectic(TS ts, TSBasicSym
   SETERRQ(PetscObjectComm((PetscObject)ts), PETSC_ERR_ARG_UNKNOWN_TYPE, "Could not find '%s'", bsymptype);
 }
 
-static PetscErrorCode TSBasicSymplecticGetType_BasicSymplectic(TS ts, TSBasicSymplecticType *bsymptype) {
+static PetscErrorCode TSBasicSymplecticGetType_BasicSymplectic(TS ts, TSBasicSymplecticType *bsymptype)
+{
   TS_BasicSymplectic *bsymp = (TS_BasicSymplectic *)ts->data;
 
   PetscFunctionBegin;
@@ -417,45 +446,51 @@ static PetscErrorCode TSBasicSymplecticGetType_BasicSymplectic(TS ts, TSBasicSym
 }
 
 /*MC
-  TSBasicSymplectic - ODE solver using basic symplectic integration schemes
+  TSBASICSYMPLECTIC - ODE solver using basic symplectic integration schemes
 
-  These methods are intened for separable Hamiltonian systems
-
-$  qdot = dH(q,p,t)/dp
-$  pdot = -dH(q,p,t)/dq
+  These methods are intended for separable Hamiltonian systems
+.vb
+  qdot = dH(q,p,t)/dp
+  pdot = -dH(q,p,t)/dq
+.ve
 
   where the Hamiltonian can be split into the sum of kinetic energy and potential energy
-
-$  H(q,p,t) = T(p,t) + V(q,t).
+.vb
+  H(q,p,t) = T(p,t) + V(q,t).
+.ve
 
   As a result, the system can be genearlly represented by
-
-$  qdot = f(p,t) = dT(p,t)/dp
-$  pdot = g(q,t) = -dV(q,t)/dq
+.vb
+  qdot = f(p,t) = dT(p,t)/dp
+  pdot = g(q,t) = -dV(q,t)/dq
+.ve
 
   and solved iteratively with
+.vb
+  q_new = q_old + d_i*h*f(p_old,t_old)
+  t_new = t_old + d_i*h
+  p_new = p_old + c_i*h*g(p_new,t_new)
+  i=0,1,...,n.
+.ve
 
-$  q_new = q_old + d_i*h*f(p_old,t_old)
-$  t_new = t_old + d_i*h
-$  p_new = p_old + c_i*h*g(p_new,t_new)
-$  i=0,1,...,n.
-
-  The solution vector should contain both q and p, which correspond to (generalized) position and momentum respectively. Note that the momentum component could simply be velocity in some representations.
-  The symplectic solver always expects a two-way splitting with the split names being "position" and "momentum". Each split is associated with an IS object and a sub-TS that is intended to store the user-provided RHS function.
-
-  Reference: wikipedia (https://en.wikipedia.org/wiki/Symplectic_integrator)
+  The solution vector should contain both q and p, which correspond to (generalized) position and momentum respectively. Note that the momentum component
+  could simply be velocity in some representations. The symplectic solver always expects a two-way splitting with the split names being "position" and "momentum".
+  Each split is associated with an `IS` object and a sub-`TS` that is intended to store the user-provided RHS function.
 
   Level: beginner
 
-.seealso: `TSCreate()`, `TSSetType()`, `TSRHSSplitSetIS()`, `TSRHSSplitSetRHSFunction()`
+  Reference:
+. * -  wikipedia (https://en.wikipedia.org/wiki/Symplectic_integrator)
 
+.seealso: [](chapter_ts), `TSCreate()`, `TSSetType()`, `TSRHSSplitSetIS()`, `TSRHSSplitSetRHSFunction()`, `TSType`
 M*/
-PETSC_EXTERN PetscErrorCode TSCreate_BasicSymplectic(TS ts) {
+PETSC_EXTERN PetscErrorCode TSCreate_BasicSymplectic(TS ts)
+{
   TS_BasicSymplectic *bsymp;
 
   PetscFunctionBegin;
   PetscCall(TSBasicSymplecticInitializePackage());
-  PetscCall(PetscNewLog(ts, &bsymp));
+  PetscCall(PetscNew(&bsymp));
   ts->data = (void *)bsymp;
 
   ts->ops->setup           = TSSetUp_BasicSymplectic;

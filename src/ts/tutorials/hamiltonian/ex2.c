@@ -29,7 +29,8 @@ typedef struct {
   PetscErrorCode (*func)(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar *, void *);
 } AppCtx;
 
-static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options) {
+static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
+{
   PetscFunctionBeginUser;
   options->dim              = 2;
   options->simplex          = PETSC_TRUE;
@@ -64,7 +65,8 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, AppCtx *user) {
+static PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, AppCtx *user)
+{
   PetscFunctionBeginUser;
   PetscCall(DMCreate(comm, dm));
   PetscCall(DMSetType(*dm, DMPLEX));
@@ -73,17 +75,20 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, AppCtx *user) {
   PetscFunctionReturn(0);
 }
 
-static void laplacian_f1(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f1[]) {
+static void laplacian_f1(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f1[])
+{
   PetscInt d;
   for (d = 0; d < dim; ++d) f1[d] = u_x[d];
 }
 
-static void laplacian(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g3[]) {
+static void laplacian(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g3[])
+{
   PetscInt d;
   for (d = 0; d < dim; ++d) g3[d * dim + d] = 1.0;
 }
 
-static PetscErrorCode CreateFEM(DM dm, AppCtx *user) {
+static PetscErrorCode CreateFEM(DM dm, AppCtx *user)
+{
   PetscFE        fe;
   PetscDS        ds;
   DMPolytopeType ct;
@@ -109,7 +114,8 @@ static PetscErrorCode CreateFEM(DM dm, AppCtx *user) {
 /*
   Initialize particle coordinates uniformly and with opposing velocities
 */
-static PetscErrorCode CreateParticles(DM dm, DM *sw, AppCtx *user) {
+static PetscErrorCode CreateParticles(DM dm, DM *sw, AppCtx *user)
+{
   PetscRandom rnd, rndp;
   PetscReal   interval = user->particleRelDx;
   PetscScalar value, *vals;
@@ -194,7 +200,8 @@ static PetscErrorCode CreateParticles(DM dm, DM *sw, AppCtx *user) {
 }
 
 /* Solve for particle position updates */
-static PetscErrorCode RHSFunction1(TS ts, PetscReal t, Vec V, Vec Posres, void *ctx) {
+static PetscErrorCode RHSFunction1(TS ts, PetscReal t, Vec V, Vec Posres, void *ctx)
+{
   const PetscScalar *v;
   PetscScalar       *posres;
   PetscInt           Np, p, dim, d;
@@ -218,7 +225,8 @@ static PetscErrorCode RHSFunction1(TS ts, PetscReal t, Vec V, Vec Posres, void *
 /*
   Solve for the gradient of the electric field and apply force to particles.
  */
-static PetscErrorCode RHSFunction2(TS ts, PetscReal t, Vec X, Vec Vres, void *ctx) {
+static PetscErrorCode RHSFunction2(TS ts, PetscReal t, Vec X, Vec Vres, void *ctx)
+{
   AppCtx            *user = (AppCtx *)ctx;
   DM                 dm, plex;
   PetscDS            prob;
@@ -323,7 +331,8 @@ static PetscErrorCode RHSFunction2(TS ts, PetscReal t, Vec X, Vec Vres, void *ct
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscInt           i, par;
   PetscInt           locSize, p, d, dim, Np, step, *idx1, *idx2;
   TS                 ts;
@@ -395,7 +404,7 @@ int main(int argc, char **argv) {
 
     PetscCall(ISCreateGeneral(comm, locSize, idx1, PETSC_OWN_POINTER, &is1));
     PetscCall(ISCreateGeneral(comm, locSize, idx2, PETSC_OWN_POINTER, &is2));
-    /* DM needs to be set before splits so it propogates to sub TSs */
+    /* DM needs to be set before splits so it propagates to sub TSs */
     PetscCall(TSSetDM(ts, sw));
     PetscCall(TSSetType(ts, TSBASICSYMPLECTIC));
     PetscCall(TSRHSSplitSetIS(ts, "position", is1));

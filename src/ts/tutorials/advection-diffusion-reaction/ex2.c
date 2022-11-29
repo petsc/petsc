@@ -32,14 +32,16 @@ typedef struct {
   Vec         initialsolution;
 } AppCtx;
 
-PetscScalar k1(AppCtx *ctx, PetscReal t) {
+PetscScalar k1(AppCtx *ctx, PetscReal t)
+{
   PetscReal th    = t / 3600.0;
   PetscReal barth = th - 24.0 * PetscFloorReal(th / 24.0);
   if (((((PetscInt)th) % 24) < 4) || ((((PetscInt)th) % 24) >= 20)) return (1.0e-40);
   else return (ctx->k1 * PetscExpReal(7.0 * PetscPowReal(PetscSinReal(.0625 * PETSC_PI * (barth - 4.0)), .2)));
 }
 
-static PetscErrorCode IFunction(TS ts, PetscReal t, Vec U, Vec Udot, Vec F, AppCtx *ctx) {
+static PetscErrorCode IFunction(TS ts, PetscReal t, Vec U, Vec Udot, Vec F, AppCtx *ctx)
+{
   PetscScalar       *f;
   const PetscScalar *u, *udot;
 
@@ -57,7 +59,8 @@ static PetscErrorCode IFunction(TS ts, PetscReal t, Vec U, Vec Udot, Vec F, AppC
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode IJacobian(TS ts, PetscReal t, Vec U, Vec Udot, PetscReal a, Mat A, Mat B, AppCtx *ctx) {
+static PetscErrorCode IJacobian(TS ts, PetscReal t, Vec U, Vec Udot, PetscReal a, Mat A, Mat B, AppCtx *ctx)
+{
   PetscInt           rowcol[] = {0, 1, 2, 3};
   PetscScalar        J[4][4];
   const PetscScalar *u, *udot;
@@ -94,14 +97,16 @@ static PetscErrorCode IJacobian(TS ts, PetscReal t, Vec U, Vec Udot, PetscReal a
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode Solution(TS ts, PetscReal t, Vec U, AppCtx *ctx) {
+static PetscErrorCode Solution(TS ts, PetscReal t, Vec U, AppCtx *ctx)
+{
   PetscFunctionBegin;
   PetscCall(VecCopy(ctx->initialsolution, U));
   PetscCheck(t <= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Solution not given");
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   TS           ts; /* ODE integrator */
   Vec          U;  /* solution */
   Mat          A;  /* Jacobian matrix */

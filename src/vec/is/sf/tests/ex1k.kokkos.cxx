@@ -24,18 +24,18 @@ static const char help[] = "Benchmarking PetscSF Ping-pong latency (similar to o
 #include <petscsf.h>
 #include <petscdevice.h>
 #if defined(PETSC_HAVE_UNISTD_H)
-#include <unistd.h>
+  #include <unistd.h>
 #endif
 
 #if defined(PETSC_HAVE_CUDA)
-#define SyncDevice() PetscCallCUDA(cudaDeviceSynchronize())
+  #define SyncDevice() PetscCallCUDA(cudaDeviceSynchronize())
 #elif defined(PETSC_HAVE_HIP)
-#define SyncDevice() PetscCallHIP(hipDeviceSynchronize())
+  #define SyncDevice() PetscCallHIP(hipDeviceSynchronize())
 #elif defined(PETSC_HAVE_KOKKOS)
-#include <Kokkos_Core.hpp>
-#define SyncDevice() Kokkos::fence()
+  #include <Kokkos_Core.hpp>
+  #define SyncDevice() Kokkos::fence()
 #else
-#define SyncDevice()
+  #define SyncDevice()
 #endif
 
 /* Same values as OSU microbenchmarks */
@@ -45,7 +45,8 @@ static const char help[] = "Benchmarking PetscSF Ping-pong latency (similar to o
 #define LAT_SKIP_LARGE     10
 #define LARGE_MESSAGE_SIZE 8192
 
-static inline PetscErrorCode PetscMallocWithMemType(PetscMemType mtype, size_t size, void **ptr) {
+static inline PetscErrorCode PetscMallocWithMemType(PetscMemType mtype, size_t size, void **ptr)
+{
   PetscFunctionBegin;
   if (PetscMemTypeHost(mtype)) {
 #if defined(PETSC_HAVE_GETPAGESIZE)
@@ -67,7 +68,8 @@ static inline PetscErrorCode PetscMallocWithMemType(PetscMemType mtype, size_t s
   PetscFunctionReturn(0);
 }
 
-static inline PetscErrorCode PetscFreeWithMemType_Private(PetscMemType mtype, void *ptr) {
+static inline PetscErrorCode PetscFreeWithMemType_Private(PetscMemType mtype, void *ptr)
+{
   PetscFunctionBegin;
   if (PetscMemTypeHost(mtype)) {
     free(ptr);
@@ -88,7 +90,8 @@ static inline PetscErrorCode PetscFreeWithMemType_Private(PetscMemType mtype, vo
 /* Free memory and set ptr to NULL when succeeded */
 #define PetscFreeWithMemType(t, p) ((p) && (PetscFreeWithMemType_Private((t), (p)) || ((p) = NULL, 0)))
 
-static inline PetscErrorCode PetscMemcpyFromHostWithMemType(PetscMemType mtype, void *dst, const void *src, size_t n) {
+static inline PetscErrorCode PetscMemcpyFromHostWithMemType(PetscMemType mtype, void *dst, const void *src, size_t n)
+{
   PetscFunctionBegin;
   if (PetscMemTypeHost(mtype)) PetscCall(PetscMemcpy(dst, src, n));
 #if defined(PETSC_HAVE_CUDA)
@@ -105,7 +108,8 @@ static inline PetscErrorCode PetscMemcpyFromHostWithMemType(PetscMemType mtype, 
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscSF        sf[64];
   PetscLogDouble t_start = 0, t_end = 0, time[64];
   PetscInt       i, j, n, nroots, nleaves, niter = 100, nskip = 10;

@@ -2,7 +2,7 @@
    User interface for the timestepping package. This package
    is for use in solving time-dependent PDEs.
 */
-#if !defined(PETSCTS_H)
+#ifndef PETSCTS_H
 #define PETSCTS_H
 
 #include <petscsnes.h>
@@ -167,8 +167,8 @@ M*/
 
    Level: beginner
 
-   Options Database:
-.   -ts_pseudo_frtol <rtol> - use sepcified rtol
+   Options Database Key:
+.   -ts_pseudo_frtol <rtol> - use specified rtol
 
 .seealso: `TSSolve()`, `TSGetConvergedReason()`, `TSSetConvergedReason()`, `TS_CONVERGED_PSEUDO_FATOL`
 M*/
@@ -178,7 +178,7 @@ M*/
 
    Level: beginner
 
-   Options Database:
+   Options Database Key:
 .   -ts_pseudo_fatol <atol> - use specified atol
 
 .seealso: `TSSolve()`, `TSGetConvergedReason()`, `TSSetConvergedReason()`, `TS_CONVERGED_PSEUDO_FRTOL`
@@ -346,7 +346,7 @@ PETSC_EXTERN PetscErrorCode TSGetTrajectory(TS, TSTrajectory *);
 
 PETSC_EXTERN PetscErrorCode TSSetCostGradients(TS, PetscInt, Vec *, Vec *);
 PETSC_EXTERN PetscErrorCode TSGetCostGradients(TS, PetscInt *, Vec **, Vec **);
-PETSC_EXTERN                PETSC_DEPRECATED_FUNCTION("Use TSCreateQuadratureTS() then set up the sub-TS (since version 3.12)") PetscErrorCode TSSetCostIntegrand(TS, PetscInt, Vec, PetscErrorCode (*)(TS, PetscReal, Vec, Vec, void *), PetscErrorCode (*)(TS, PetscReal, Vec, Vec *, void *), PetscErrorCode (*)(TS, PetscReal, Vec, Vec *, void *), PetscBool, void *);
+PETSC_EXTERN PETSC_DEPRECATED_FUNCTION("Use TSCreateQuadratureTS() then set up the sub-TS (since version 3.12)") PetscErrorCode TSSetCostIntegrand(TS, PetscInt, Vec, PetscErrorCode (*)(TS, PetscReal, Vec, Vec, void *), PetscErrorCode (*)(TS, PetscReal, Vec, Vec *, void *), PetscErrorCode (*)(TS, PetscReal, Vec, Vec *, void *), PetscBool, void *);
 PETSC_EXTERN PetscErrorCode TSGetCostIntegral(TS, Vec *);
 PETSC_EXTERN PetscErrorCode TSComputeCostIntegrand(TS, PetscReal, Vec, Vec);
 PETSC_EXTERN PetscErrorCode TSCreateQuadratureTS(TS, PetscBool, TS *);
@@ -489,6 +489,7 @@ PETSC_EXTERN PetscErrorCode TSComputeIJacobianConstant(TS, PetscReal, Vec, Vec, 
 PETSC_EXTERN PetscErrorCode TSComputeSolutionFunction(TS, PetscReal, Vec);
 PETSC_EXTERN PetscErrorCode TSComputeForcingFunction(TS, PetscReal, Vec);
 PETSC_EXTERN PetscErrorCode TSComputeIJacobianDefaultColor(TS, PetscReal, Vec, Vec, PetscReal, Mat, Mat, void *);
+PETSC_EXTERN PetscErrorCode TSPruneIJacobianColor(TS, Mat, Mat);
 
 PETSC_EXTERN PetscErrorCode TSSetPreStep(TS, PetscErrorCode (*)(TS));
 PETSC_EXTERN PetscErrorCode TSSetPreStage(TS, PetscErrorCode (*)(TS, PetscReal));

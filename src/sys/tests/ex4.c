@@ -2,7 +2,8 @@
 
 static char help[] = "Test PetscComplex binary operators.\n";
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   {

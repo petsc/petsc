@@ -3,7 +3,8 @@ static char help[] = "Parallel HDF5 Vec Viewing.\n\n";
 #include <petscvec.h>
 #include <petscviewerhdf5.h>
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   Vec         x1, x2, *x3ts, *x4ts;
   Vec         x1r, x2r, x3r, x4r;
   PetscViewer viewer;

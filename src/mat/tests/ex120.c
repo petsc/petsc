@@ -6,7 +6,8 @@ ZHEEV computes all eigenvalues and, optionally, eigenvectors of a complex Hermit
 
 extern PetscErrorCode CkEigenSolutions(PetscInt, Mat, PetscInt, PetscInt, PetscReal *, Vec *, PetscReal *);
 
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   Mat          A, A_dense, B;
   Vec         *evecs;
   PetscBool    flg, TestZHEEV = PETSC_TRUE, TestZHEEVX = PETSC_FALSE, TestZHEGV = PETSC_FALSE, TestZHEGVX = PETSC_FALSE;
@@ -242,7 +243,8 @@ int main(int argc, char **args) {
      tols[0]    - reporting tol_res: || A * evec[i] - eval[i]*evec[i] ||
      tols[1]    - reporting tol_orth: evec[i]^T*evec[j] - delta_ij
 */
-PetscErrorCode CkEigenSolutions(PetscInt cklvl, Mat A, PetscInt il, PetscInt iu, PetscReal *eval, Vec *evec, PetscReal *tols) {
+PetscErrorCode CkEigenSolutions(PetscInt cklvl, Mat A, PetscInt il, PetscInt iu, PetscReal *eval, Vec *evec, PetscReal *tols)
+{
   PetscInt    i, j, nev;
   Vec         vt1, vt2; /* tmp vectors */
   PetscReal   norm, tmp, norm_max, dot_max, rdot;
@@ -287,11 +289,12 @@ PetscErrorCode CkEigenSolutions(PetscInt cklvl, Mat A, PetscInt il, PetscInt iu,
       norm = PetscAbs(norm);
       if (norm > norm_max) norm_max = norm;
       /* sniff, and bark if necessary */
-      if (norm > tols[0]) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "  residual violation: %" PetscInt_FMT ", resi: %g\n", i, norm));
+      if (norm > tols[0]) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "  residual violation: %" PetscInt_FMT ", resi: %g\n", i, (double)norm));
     }
     PetscCall(PetscPrintf(PETSC_COMM_SELF, "    max_resi:                    %g\n", (double)norm_max));
     break;
-  default: PetscCall(PetscPrintf(PETSC_COMM_SELF, "Error: cklvl=%" PetscInt_FMT " is not supported \n", cklvl));
+  default:
+    PetscCall(PetscPrintf(PETSC_COMM_SELF, "Error: cklvl=%" PetscInt_FMT " is not supported \n", cklvl));
   }
   PetscCall(VecDestroy(&vt2));
   PetscCall(VecDestroy(&vt1));

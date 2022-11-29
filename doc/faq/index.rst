@@ -1,8 +1,8 @@
 .. _doc_faq:
 
-==================================
- Frequently Asked Questions (FAQ)
-==================================
+===
+FAQ
+===
 
 .. contents:: Table Of Contents
    :local:
@@ -463,10 +463,8 @@ What Fortran compiler do you recommend on macOS?
 ------------------------------------------------
 
 We recommend using `homebrew <https://brew.sh/>`__ to install `gfortran
-<https://gcc.gnu.org/wiki/GFortran>`__
+<https://gcc.gnu.org/wiki/GFortran>`__, see :any:`doc_macos_install`
 
-Please contact Apple at https://www.apple.com/feedback/ and urge them to bundle gfortran
-with future versions of Xcode.
 
 How can I find the URL locations of the packages you install using ``--download-PACKAGE``?
 ------------------------------------------------------------------------------------------
@@ -1198,13 +1196,8 @@ load.
 How can I get PETSc vectors and matrices to MATLAB or vice versa?
 -----------------------------------------------------------------
 
-There are numerous  ways to work with PETSc and MATLAB:
-
-#. Using the `MATLAB Engine
-   <https://www.mathworks.com/help/matlab/calling-matlab-engine-from-c-programs-1.html>`__,
-   allowing PETSc to automatically call MATLAB to perform some specific computations. This
-   does not allow MATLAB to be used interactively by the user. See the
-   ``PetscMatlabEngine``.
+There are numerous  ways to work with PETSc and MATLAB. All but the first approach
+require PETSc to be configured with --with-matlab.
 
 #. To save PETSc ``Mat`` and ``Vec`` to files that can be read from MATLAB use
    ``PetscViewerBinaryOpen()`` viewer and ``VecView()`` or ``MatView()`` to save objects
@@ -1212,13 +1205,19 @@ There are numerous  ways to work with PETSc and MATLAB:
    saved. See ``share/petsc/matlab/PetscBinaryRead.m`` and
    ``share/petsc/matlab/PetscBinaryWrite.m`` for loading and saving the objects in MATLAB.
 
+#. Using the `MATLAB Engine
+   <https://www.mathworks.com/help/matlab/calling-matlab-engine-from-c-programs-1.html>`__,
+   allows PETSc to automatically call MATLAB to perform some specific computations. This
+   does not allow MATLAB to be used interactively by the user. See the
+   ``PetscMatlabEngine``.
+
 #. You can open a socket connection between MATLAB and PETSc to allow sending objects back
    and forth between an interactive MATLAB session and a running PETSc program. See
    ``PetscViewerSocketOpen()`` for access from the PETSc side and
    ``share/petsc/matlab/PetscReadBinary.m`` for access from the MATLAB side.
 
 #. You can save PETSc ``Vec`` (**not** ``Mat``) with the ``PetscViewerMatlabOpen()``
-   viewer that saves ``.mat`` files can then be loaded into MATLAB.
+   viewer that saves ``.mat`` files can then be loaded into MATLAB using the ``load()`` command
 
 How do I get started with Cython so that I can extend petsc4py?
 ---------------------------------------------------------------
@@ -1436,14 +1435,15 @@ the solvers have converged.
 Assembling large sparse matrices takes a long time. What can I do to make this process faster? Or MatSetValues() is so slow; what can I do to speed it up?
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-See the :ref:`performance chapter <ch_performance>` of the users manual.
+You probably need to do preallocation, as explained in :any:`sec_matsparse`.
+See also the :ref:`performance chapter <ch_performance>` of the users manual.
 
 How can I generate performance summaries with PETSc?
 ----------------------------------------------------
 
 Use these options at runtime:
 
--log_view  Outputs a comprehensive timing, memory consumption, and comunications digest
+-log_view  Outputs a comprehensive timing, memory consumption, and communications digest
            for your program. See the :ref:`profiling chapter <ch_profiling>` of the users
            manual for information on interpreting the summary data.
 
@@ -1503,6 +1503,8 @@ This can happen for many reasons:
    processes. You may also consider multigrid preconditioners like ``PCMG`` or BoomerAMG
    in ``PCHYPRE``.
 
+.. _doc_faq_pipelined:
+
 What steps are necessary to make the pipelined solvers execute efficiently?
 ---------------------------------------------------------------------------
 
@@ -1510,7 +1512,7 @@ Pipelined solvers like ``KSPPGMRES``, ``KSPPIPECG``, ``KSPPIPECR``, and ``KSPGRO
 require special MPI configuration to effectively overlap reductions with computation. In
 general, this requires an MPI-3 implementation, an implementation that supports multiple
 threads, and use of a "progress thread". Consult the documentation from your vendor or
-computing facility for more.
+computing facility for more details.
 
 .. glossary::
    :sorted:

@@ -45,14 +45,16 @@ typedef struct {
   ModType  modType; /* Model type */
 } AppCtx;
 
-static PetscErrorCode trig_homogeneous_u(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx) {
+static PetscErrorCode trig_homogeneous_u(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
+{
   PetscInt d;
   *u = 1.0;
   for (d = 0; d < dim; ++d) *u *= PetscSinReal(2.0 * PETSC_PI * x[d]);
   return 0;
 }
 
-static PetscErrorCode oscillatory_u(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx) {
+static PetscErrorCode oscillatory_u(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
+{
   Parameter      *param = (Parameter *)ctx;
   const PetscReal eps   = param->epsilon;
 
@@ -60,7 +62,8 @@ static PetscErrorCode oscillatory_u(PetscInt dim, PetscReal time, const PetscRea
   return 0;
 }
 
-static void f0_trig_homogeneous_u(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[]) {
+static void f0_trig_homogeneous_u(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
+{
   PetscInt d;
   for (d = 0; d < dim; ++d) {
     PetscScalar v = 1.;
@@ -75,33 +78,39 @@ static void f0_trig_homogeneous_u(PetscInt dim, PetscInt Nf, PetscInt NfAux, con
   }
 }
 
-static void f1_u(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f1[]) {
+static void f1_u(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f1[])
+{
   PetscInt d;
   for (d = 0; d < dim; ++d) f1[d] = u_x[d];
 }
 
-static void g3_uu(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g3[]) {
+static void g3_uu(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g3[])
+{
   PetscInt d;
   for (d = 0; d < dim; ++d) g3[d * dim + d] = 1.0;
 }
 
-static void f0_oscillatory_u(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[]) {
+static void f0_oscillatory_u(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
+{
   f0[0] = -1.;
 }
 
-static void f1_oscillatory_u(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f1[]) {
+static void f1_oscillatory_u(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f1[])
+{
   const PetscReal eps = PetscRealPart(constants[EPSILON]);
 
   f1[0] = u_x[0] / (2. + PetscCosReal(2. * PETSC_PI * x[0] / eps));
 }
 
-static void g3_oscillatory_uu(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g3[]) {
+static void g3_oscillatory_uu(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g3[])
+{
   const PetscReal eps = PetscRealPart(constants[EPSILON]);
 
   g3[0] = 1. / (2. + PetscCosReal(2. * PETSC_PI * x[0] / eps));
 }
 
-static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options) {
+static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
+{
   PetscInt mod;
 
   PetscFunctionBeginUser;
@@ -114,7 +123,8 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode SetupParameters(MPI_Comm comm, AppCtx *user) {
+static PetscErrorCode SetupParameters(MPI_Comm comm, AppCtx *user)
+{
   PetscBag   bag;
   Parameter *p;
 
@@ -127,7 +137,8 @@ static PetscErrorCode SetupParameters(MPI_Comm comm, AppCtx *user) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm) {
+static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
+{
   PetscFunctionBeginUser;
   PetscCall(DMCreate(comm, dm));
   PetscCall(DMSetType(*dm, DMPLEX));
@@ -137,7 +148,8 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode SetupPrimalProblem(DM dm, AppCtx *user) {
+static PetscErrorCode SetupPrimalProblem(DM dm, AppCtx *user)
+{
   PetscDS              ds;
   DMLabel              label;
   PetscSimplePointFunc ex;
@@ -162,7 +174,8 @@ static PetscErrorCode SetupPrimalProblem(DM dm, AppCtx *user) {
     ex = oscillatory_u;
     PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", label, 1, &id, 0, 0, NULL, (void (*)(void))ex, NULL, ctx, NULL));
     break;
-  default: SETERRQ(PetscObjectComm((PetscObject)ds), PETSC_ERR_ARG_WRONG, "Unsupported model type: %s (%d)", modTypes[PetscMin(user->modType, NUM_MOD_TYPES)], user->modType);
+  default:
+    SETERRQ(PetscObjectComm((PetscObject)ds), PETSC_ERR_ARG_WRONG, "Unsupported model type: %s (%d)", modTypes[PetscMin(user->modType, NUM_MOD_TYPES)], user->modType);
   }
   PetscCall(PetscDSSetExactSolution(ds, 0, ex, ctx));
   /* Setup constants */
@@ -178,7 +191,8 @@ static PetscErrorCode SetupPrimalProblem(DM dm, AppCtx *user) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode SetupDiscretization(DM dm, const char name[], PetscErrorCode (*setup)(DM, AppCtx *), AppCtx *user) {
+static PetscErrorCode SetupDiscretization(DM dm, const char name[], PetscErrorCode (*setup)(DM, AppCtx *), AppCtx *user)
+{
   DM        cdm = dm;
   PetscFE   fe;
   PetscBool simplex;
@@ -204,7 +218,8 @@ static PetscErrorCode SetupDiscretization(DM dm, const char name[], PetscErrorCo
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode CompareView(Vec u) {
+static PetscErrorCode CompareView(Vec u)
+{
   DM                dm;
   Vec               v[2], lv[2], exact;
   PetscOptions      options;
@@ -250,7 +265,8 @@ typedef struct {
   Vec tmpcoarse; /* Temporary vector in the coarse space */
 } ProjStruct;
 
-static PetscErrorCode DestroyCoarseProjection(Mat Pi) {
+static PetscErrorCode DestroyCoarseProjection(Mat Pi)
+{
   ProjStruct *ctx;
 
   PetscFunctionBegin;
@@ -267,7 +283,8 @@ static PetscErrorCode DestroyCoarseProjection(Mat Pi) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode CoarseProjection(Mat Pi, Vec x, Vec y) {
+static PetscErrorCode CoarseProjection(Mat Pi, Vec x, Vec y)
+{
   ProjStruct *ctx;
 
   PetscFunctionBegin;
@@ -286,7 +303,8 @@ static PetscErrorCode CoarseProjection(Mat Pi, Vec x, Vec y) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode CreateCoarseProjection(DM dmc, DM dmf, Mat *Pi) {
+static PetscErrorCode CreateCoarseProjection(DM dmc, DM dmf, Mat *Pi)
+{
   ProjStruct *ctx;
   PetscInt    m, n, M, N;
 
@@ -318,7 +336,8 @@ typedef struct {
   Vec tmpf; /* A temporary vector in the DG fine space */
 } QuasiInterp;
 
-static PetscErrorCode DestroyQuasiInterpolator(Mat P) {
+static PetscErrorCode DestroyQuasiInterpolator(Mat P)
+{
   QuasiInterp *ctx;
 
   PetscFunctionBegin;
@@ -332,7 +351,8 @@ static PetscErrorCode DestroyQuasiInterpolator(Mat P) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode QuasiInterpolate(Mat P, Vec x, Vec y) {
+static PetscErrorCode QuasiInterpolate(Mat P, Vec x, Vec y)
+{
   QuasiInterp *ctx;
   DM           dmcdg, dmc;
   Vec          ly;
@@ -360,7 +380,8 @@ static PetscErrorCode QuasiInterpolate(Mat P, Vec x, Vec y) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode CreateQuasiInterpolator(DM dmc, DM dmf, Mat *P) {
+static PetscErrorCode CreateQuasiInterpolator(DM dmc, DM dmf, Mat *P)
+{
   QuasiInterp   *ctx;
   DM             dmcdg, dmfdg;
   PetscFE        fe;
@@ -410,7 +431,8 @@ static PetscErrorCode CreateQuasiInterpolator(DM dmc, DM dmf, Mat *P) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode CoarseTest(DM dm, Vec u, AppCtx *user) {
+static PetscErrorCode CoarseTest(DM dm, Vec u, AppCtx *user)
+{
   DM  dmc;
   Mat P; /* The quasi-interpolator to the coarse space */
   Vec uc;
@@ -452,7 +474,8 @@ static PetscErrorCode CoarseTest(DM dm, Vec u, AppCtx *user) {
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   DM     dm;   /* Problem specification */
   SNES   snes; /* Nonlinear solver */
   Vec    u;    /* Solutions */

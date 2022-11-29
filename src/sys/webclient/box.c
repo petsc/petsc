@@ -14,11 +14,12 @@
 #define PETSC_BOX_CLIENT_ST "A0Dy4KgOYLB2JIYZqpbze4EzjeIiX5k4"
 
 #if defined(PETSC_HAVE_SAWS)
-#include <mongoose.h>
+  #include <mongoose.h>
 
 static volatile char *result = NULL;
 
-static int PetscBoxWebServer_Private(struct mg_connection *conn) {
+static int PetscBoxWebServer_Private(struct mg_connection *conn)
+{
   const struct mg_request_info *request_info = mg_get_request_info(conn);
   result                                     = (char *)request_info->query_string;
   return 1; /* Mongoose will now not handle the request */
@@ -28,7 +29,8 @@ static int PetscBoxWebServer_Private(struct mg_connection *conn) {
     Box can only return an authorization code to a Webserver, hence we need to start one up and wait for
     the authorization code to arrive from Box
 */
-static PetscErrorCode PetscBoxStartWebServer_Private(void) {
+static PetscErrorCode PetscBoxStartWebServer_Private(void)
+{
   int                 optionsLen = 5;
   const char         *options[optionsLen];
   struct mg_callbacks callbacks;
@@ -63,9 +65,9 @@ static PetscErrorCode PetscBoxStartWebServer_Private(void) {
   PetscFunctionReturn(0);
 }
 
-#if defined(PETSC_HAVE_UNISTD_H)
-#include <unistd.h>
-#endif
+  #if defined(PETSC_HAVE_UNISTD_H)
+    #include <unistd.h>
+  #endif
 
 /*@C
      PetscBoxAuthorize - Get authorization and refresh token for accessing Box drive from PETSc
@@ -101,7 +103,8 @@ $    cat newkey.pem newcert.pem > sslclient.pem
 
 .seealso: `PetscBoxRefresh()`, `PetscBoxUpload()`, `PetscURLShorten()`
 @*/
-PetscErrorCode PetscBoxAuthorize(MPI_Comm comm, char access_token[], char refresh_token[], size_t tokensize) {
+PetscErrorCode PetscBoxAuthorize(MPI_Comm comm, char access_token[], char refresh_token[], size_t tokensize)
+{
   SSL_CTX    *ctx;
   SSL        *ssl;
   int         sock;
@@ -169,7 +172,8 @@ PetscErrorCode PetscBoxAuthorize(MPI_Comm comm, char access_token[], char refres
 
 .seealso: `PetscURLShorten()`, `PetscBoxAuthorize()`, `PetscBoxUpload()`
 @*/
-PetscErrorCode PetscBoxRefresh(MPI_Comm comm, const char refresh_token[], char access_token[], char new_refresh_token[], size_t tokensize) {
+PetscErrorCode PetscBoxRefresh(MPI_Comm comm, const char refresh_token[], char access_token[], char new_refresh_token[], size_t tokensize)
+{
   SSL_CTX    *ctx;
   SSL        *ssl;
   int         sock;
@@ -263,7 +267,8 @@ PetscErrorCode PetscBoxRefresh(MPI_Comm comm, const char refresh_token[], char a
 
 .seealso: `PetscURLShorten()`, `PetscBoxAuthorize()`, `PetscBoxRefresh()`
 @*/
-PetscErrorCode PetscBoxUpload(MPI_Comm comm, const char access_token[], const char filename[]) {
+PetscErrorCode PetscBoxUpload(MPI_Comm comm, const char access_token[], const char filename[])
+{
   SSL_CTX    *ctx;
   SSL        *ssl;
   int         sock;

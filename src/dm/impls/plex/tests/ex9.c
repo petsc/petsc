@@ -21,7 +21,8 @@ typedef struct {
   PetscBool printTimes;        /* Print total times, do not check limits */
 } AppCtx;
 
-static PetscErrorCode ProcessOptions(AppCtx *options) {
+static PetscErrorCode ProcessOptions(AppCtx *options)
+{
   PetscInt  len;
   PetscBool flg;
 
@@ -80,7 +81,8 @@ static PetscErrorCode ProcessOptions(AppCtx *options) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode CreateSimplex_2D(MPI_Comm comm, DM *newdm) {
+static PetscErrorCode CreateSimplex_2D(MPI_Comm comm, DM *newdm)
+{
   DM          dm;
   PetscInt    numPoints[2]        = {4, 2};
   PetscInt    coneSize[6]         = {3, 3, 0, 0, 0, 0};
@@ -101,7 +103,8 @@ static PetscErrorCode CreateSimplex_2D(MPI_Comm comm, DM *newdm) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode CreateSimplex_3D(MPI_Comm comm, DM *newdm) {
+static PetscErrorCode CreateSimplex_3D(MPI_Comm comm, DM *newdm)
+{
   DM          dm;
   PetscInt    numPoints[2]        = {5, 2};
   PetscInt    coneSize[23]        = {4, 4, 0, 0, 0, 0, 0};
@@ -122,7 +125,8 @@ static PetscErrorCode CreateSimplex_3D(MPI_Comm comm, DM *newdm) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode CreateQuad_2D(MPI_Comm comm, DM *newdm) {
+static PetscErrorCode CreateQuad_2D(MPI_Comm comm, DM *newdm)
+{
   DM          dm;
   PetscInt    numPoints[2]        = {6, 2};
   PetscInt    coneSize[8]         = {4, 4, 0, 0, 0, 0, 0, 0};
@@ -143,7 +147,8 @@ static PetscErrorCode CreateQuad_2D(MPI_Comm comm, DM *newdm) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode CreateHex_3D(MPI_Comm comm, DM *newdm) {
+static PetscErrorCode CreateHex_3D(MPI_Comm comm, DM *newdm)
+{
   DM          dm;
   PetscInt    numPoints[2]         = {12, 2};
   PetscInt    coneSize[14]         = {8, 8, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
@@ -164,7 +169,8 @@ static PetscErrorCode CreateHex_3D(MPI_Comm comm, DM *newdm) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *newdm) {
+static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *newdm)
+{
   PetscInt  dim         = user->dim;
   PetscBool cellSimplex = user->cellSimplex;
 
@@ -184,7 +190,8 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *newdm) {
       PetscCall(CreateHex_3D(comm, newdm));
     }
     break;
-  default: SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "Cannot make meshes for dimension %" PetscInt_FMT, dim);
+  default:
+    SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "Cannot make meshes for dimension %" PetscInt_FMT, dim);
   }
   if (user->refinementLimit > 0.0) {
     DM          rdm;
@@ -209,7 +216,8 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *newdm) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TestCone(DM dm, AppCtx *user) {
+static PetscErrorCode TestCone(DM dm, AppCtx *user)
+{
   PetscInt           numRuns, cStart, cEnd, c, i;
   PetscReal          maxTimePerRun = user->maxConeTime;
   PetscLogStage      stage;
@@ -251,7 +259,8 @@ static PetscErrorCode TestCone(DM dm, AppCtx *user) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TestTransitiveClosure(DM dm, AppCtx *user) {
+static PetscErrorCode TestTransitiveClosure(DM dm, AppCtx *user)
+{
   PetscInt           numRuns, cStart, cEnd, c, i;
   PetscReal          maxTimePerRun = user->maxClosureTime;
   PetscLogStage      stage;
@@ -295,7 +304,8 @@ static PetscErrorCode TestTransitiveClosure(DM dm, AppCtx *user) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TestVecClosure(DM dm, PetscBool useIndex, PetscBool useSpectral, AppCtx *user) {
+static PetscErrorCode TestVecClosure(DM dm, PetscBool useIndex, PetscBool useSpectral, AppCtx *user)
+{
   PetscSection       s;
   Vec                v;
   PetscInt           numRuns, cStart, cEnd, c, i;
@@ -375,14 +385,16 @@ static PetscErrorCode TestVecClosure(DM dm, PetscBool useIndex, PetscBool useSpe
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode CleanupContext(AppCtx *user) {
+static PetscErrorCode CleanupContext(AppCtx *user)
+{
   PetscFunctionBegin;
   PetscCall(PetscFree(user->numComponents));
   PetscCall(PetscFree(user->numDof));
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   DM     dm;
   AppCtx user;
 

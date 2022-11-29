@@ -18,7 +18,8 @@ const char              *ISInfos[] = {"SORTED", "UNIQUE", "PERMUTATION", "INTERV
 
 .seealso: `PetscFinalize()`
 @*/
-PetscErrorCode ISFinalizePackage(void) {
+PetscErrorCode ISFinalizePackage(void)
+{
   PetscFunctionBegin;
   PetscCall(PetscFunctionListDestroy(&ISList));
   PetscCall(PetscFunctionListDestroy(&ISLocalToGlobalMappingList));
@@ -38,7 +39,8 @@ PetscErrorCode ISFinalizePackage(void) {
 
 .seealso: `PetscInitialize()`
 @*/
-PetscErrorCode ISInitializePackage(void) {
+PetscErrorCode ISInitializePackage(void)
+{
   char      logList[256];
   PetscBool opt, pkg;
 
@@ -92,7 +94,8 @@ extern MPI_Op PetscSplitReduction_Op;
 MPI_Op MPIU_MAXLOC = 0;
 MPI_Op MPIU_MINLOC = 0;
 
-static void MPIAPI MPIU_MaxIndex_Local(void *in, void *out, PetscMPIInt *cnt, MPI_Datatype *datatype) {
+static void MPIAPI MPIU_MaxIndex_Local(void *in, void *out, PetscMPIInt *cnt, MPI_Datatype *datatype)
+{
   struct PetscRealInt {
     PetscReal v;
     PetscInt  i;
@@ -117,7 +120,8 @@ static void MPIAPI MPIU_MaxIndex_Local(void *in, void *out, PetscMPIInt *cnt, MP
   PetscFunctionReturnVoid(); /* cannot return a value */
 }
 
-static void MPIAPI MPIU_MinIndex_Local(void *in, void *out, PetscMPIInt *cnt, MPI_Datatype *datatype) {
+static void MPIAPI MPIU_MinIndex_Local(void *in, void *out, PetscMPIInt *cnt, MPI_Datatype *datatype)
+{
   struct PetscRealInt {
     PetscReal v;
     PetscInt  i;
@@ -158,7 +162,8 @@ static PetscBool VecPackageInitialized = PETSC_FALSE;
 
 .seealso: `PetscInitialize()`
 @*/
-PetscErrorCode VecInitializePackage(void) {
+PetscErrorCode VecInitializePackage(void)
+{
   char      logList[256];
   PetscBool opt, pkg;
   PetscInt  i;
@@ -212,14 +217,10 @@ PetscErrorCode VecInitializePackage(void) {
 #if defined(PETSC_HAVE_CUDA)
   PetscCall(PetscLogEventRegister("VecCUDACopyTo", VEC_CLASSID, &VEC_CUDACopyToGPU));
   PetscCall(PetscLogEventRegister("VecCUDACopyFrom", VEC_CLASSID, &VEC_CUDACopyFromGPU));
-  PetscCall(PetscLogEventRegister("VecCopyToSome", VEC_CLASSID, &VEC_CUDACopyToGPUSome));
-  PetscCall(PetscLogEventRegister("VecCopyFromSome", VEC_CLASSID, &VEC_CUDACopyFromGPUSome));
 #endif
 #if defined(PETSC_HAVE_HIP)
   PetscCall(PetscLogEventRegister("VecHIPCopyTo", VEC_CLASSID, &VEC_HIPCopyToGPU));
   PetscCall(PetscLogEventRegister("VecHIPCopyFrom", VEC_CLASSID, &VEC_HIPCopyFromGPU));
-  PetscCall(PetscLogEventRegister("VecCopyToSome", VEC_CLASSID, &VEC_HIPCopyToGPUSome));
-  PetscCall(PetscLogEventRegister("VecCopyFromSome", VEC_CLASSID, &VEC_HIPCopyFromGPUSome));
 #endif
 
   /* Mark non-collective events */
@@ -231,14 +232,10 @@ PetscErrorCode VecInitializePackage(void) {
 #if defined(PETSC_HAVE_CUDA)
   PetscCall(PetscLogEventSetCollective(VEC_CUDACopyToGPU, PETSC_FALSE));
   PetscCall(PetscLogEventSetCollective(VEC_CUDACopyFromGPU, PETSC_FALSE));
-  PetscCall(PetscLogEventSetCollective(VEC_CUDACopyToGPUSome, PETSC_FALSE));
-  PetscCall(PetscLogEventSetCollective(VEC_CUDACopyFromGPUSome, PETSC_FALSE));
 #endif
 #if defined(PETSC_HAVE_HIP)
   PetscCall(PetscLogEventSetCollective(VEC_HIPCopyToGPU, PETSC_FALSE));
   PetscCall(PetscLogEventSetCollective(VEC_HIPCopyFromGPU, PETSC_FALSE));
-  PetscCall(PetscLogEventSetCollective(VEC_HIPCopyToGPUSome, PETSC_FALSE));
-  PetscCall(PetscLogEventSetCollective(VEC_HIPCopyFromGPUSome, PETSC_FALSE));
 #endif
   /* Turn off high traffic events by default */
   PetscCall(PetscLogEventSetActiveAll(VEC_SetValues, PETSC_FALSE));
@@ -280,7 +277,8 @@ PetscErrorCode VecInitializePackage(void) {
 
 .seealso: `PetscInitialize()`
 @*/
-PetscErrorCode VecFinalizePackage(void) {
+PetscErrorCode VecFinalizePackage(void)
+{
   PetscFunctionBegin;
   PetscCall(PetscFunctionListDestroy(&VecList));
   PetscCallMPI(MPI_Op_free(&PetscSplitReduction_Op));
@@ -299,7 +297,8 @@ PetscErrorCode VecFinalizePackage(void) {
   This one registers all the methods that are in the basic PETSc Vec library.
 
  */
-PETSC_EXTERN PetscErrorCode PetscDLLibraryRegister_petscvec(void) {
+PETSC_EXTERN PetscErrorCode PetscDLLibraryRegister_petscvec(void)
+{
   PetscFunctionBegin;
   PetscCall(PetscSFInitializePackage());
   PetscCall(ISInitializePackage());

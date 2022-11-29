@@ -1,9 +1,9 @@
 
-#if !defined(__SELL_H)
+#ifndef __SELL_H
 #define __SELL_H
 
 #include <petsc/private/matimpl.h>
-#include <petscctable.h>
+#include <petsc/private/hashmapi.h>
 
 /*
  Struct header for SeqSELL matrix format
@@ -52,7 +52,8 @@ typedef struct {
 /*
  Frees the arrays from the XSELLPACK matrix type
  */
-static inline PetscErrorCode MatSeqXSELLFreeSELL(Mat AA, MatScalar **val, PetscInt **colidx) {
+static inline PetscErrorCode MatSeqXSELLFreeSELL(Mat AA, MatScalar **val, PetscInt **colidx)
+{
   Mat_SeqSELL *A = (Mat_SeqSELL *)AA->data;
   if (A->singlemalloc) {
     PetscCall(PetscFree2(*val, *colidx));
@@ -65,10 +66,10 @@ static inline PetscErrorCode MatSeqXSELLFreeSELL(Mat AA, MatScalar **val, PetscI
 
 #define MatSeqXSELLReallocateSELL(Amat, AM, BS2, WIDTH, SIDX, SID, ROW, COL, COLIDX, VAL, CP, VP, NONEW, datatype) \
   if (WIDTH >= (SIDX[SID + 1] - SIDX[SID]) / 8) { \
-    Mat_SeqSELL *Ain      = (Mat_SeqSELL *)Amat->data; \
+    Mat_SeqSELL *Ain = (Mat_SeqSELL *)Amat->data; \
     /* there is no extra room in row, therefore enlarge 8 elements (1 slice column) */ \
-    PetscInt     new_size = Ain->maxallocmat + 8, *new_colidx; \
-    datatype    *new_val; \
+    PetscInt  new_size = Ain->maxallocmat + 8, *new_colidx; \
+    datatype *new_val; \
 \
     PetscCheck(NONEW != -2, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "New nonzero at (%" PetscInt_FMT ",%" PetscInt_FMT ") caused a malloc\nUse MatSetOption(A, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_FALSE) to turn off this check", ROW, COL); \
     /* malloc new storage space */ \

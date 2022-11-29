@@ -18,7 +18,8 @@ extern PetscErrorCode AddElement(Mat, PetscInt, PetscInt, PetscReal **, PetscInt
 extern PetscErrorCode paulsetup20(void);
 extern PetscErrorCode paulintegrate20(PetscReal K[60][60]);
 
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   Mat         mat;
   PetscInt    i, its, m = 3, rdim, cdim, rstart, rend;
   PetscMPIInt rank, size;
@@ -80,7 +81,8 @@ int main(int argc, char **args) {
 /*
   GetElasticityMatrix - Forms 3D linear elasticity matrix.
  */
-PetscErrorCode GetElasticityMatrix(PetscInt m, Mat *newmat) {
+PetscErrorCode GetElasticityMatrix(PetscInt m, Mat *newmat)
+{
   PetscInt    i, j, k, i1, i2, j_1, j2, k1, k2, h1, h2, shiftx, shifty, shiftz;
   PetscInt    ict, nz, base, r1, r2, N, *rowkeep, nstart;
   IS          iskeep;
@@ -164,7 +166,8 @@ PetscErrorCode GetElasticityMatrix(PetscInt m, Mat *newmat) {
   return 0;
 }
 /* -------------------------------------------------------------------- */
-PetscErrorCode AddElement(Mat mat, PetscInt r1, PetscInt r2, PetscReal **K, PetscInt h1, PetscInt h2) {
+PetscErrorCode AddElement(Mat mat, PetscInt r1, PetscInt r2, PetscReal **K, PetscInt h1, PetscInt h2)
+{
   PetscScalar val;
   PetscInt    l1, l2, row, col;
 
@@ -188,23 +191,24 @@ PetscErrorCode AddElement(Mat mat, PetscInt r1, PetscInt r2, PetscReal **K, Pets
   return 0;
 }
 /* -------------------------------------------------------------------- */
-PetscReal      N[20][64];         /* Interpolation function. */
-PetscReal      part_N[3][20][64]; /* Partials of interpolation function. */
-PetscReal      rst[3][64];        /* Location of integration pts in (r,s,t) */
-PetscReal      weight[64];        /* Gaussian quadrature weights. */
-PetscReal      xyz[20][3];        /* (x,y,z) coordinates of nodes  */
-PetscReal      E, nu;             /* Physcial constants. */
-PetscInt       n_int, N_int;      /* N_int = n_int^3, number of int. pts. */
+PetscReal N[20][64];         /* Interpolation function. */
+PetscReal part_N[3][20][64]; /* Partials of interpolation function. */
+PetscReal rst[3][64];        /* Location of integration pts in (r,s,t) */
+PetscReal weight[64];        /* Gaussian quadrature weights. */
+PetscReal xyz[20][3];        /* (x,y,z) coordinates of nodes  */
+PetscReal E, nu;             /* Physical constants. */
+PetscInt  n_int, N_int;      /* N_int = n_int^3, number of int. pts. */
 /* Ordering of the vertices, (r,s,t) coordinates, of the canonical cell. */
-PetscReal      r2[20]   = {-1.0, 0.0, 1.0, -1.0, 1.0, -1.0, 0.0, 1.0, -1.0, 1.0, -1.0, 1.0, -1.0, 0.0, 1.0, -1.0, 1.0, -1.0, 0.0, 1.0};
-PetscReal      s2[20]   = {-1.0, -1.0, -1.0, 0.0, 0.0, 1.0, 1.0, 1.0, -1.0, -1.0, 1.0, 1.0, -1.0, -1.0, -1.0, 0.0, 0.0, 1.0, 1.0, 1.0};
-PetscReal      t2[20]   = {-1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0};
-PetscInt       rmap[20] = {0, 1, 2, 3, 5, 6, 7, 8, 9, 11, 15, 17, 18, 19, 20, 21, 23, 24, 25, 26};
+PetscReal r2[20]   = {-1.0, 0.0, 1.0, -1.0, 1.0, -1.0, 0.0, 1.0, -1.0, 1.0, -1.0, 1.0, -1.0, 0.0, 1.0, -1.0, 1.0, -1.0, 0.0, 1.0};
+PetscReal s2[20]   = {-1.0, -1.0, -1.0, 0.0, 0.0, 1.0, 1.0, 1.0, -1.0, -1.0, 1.0, 1.0, -1.0, -1.0, -1.0, 0.0, 0.0, 1.0, 1.0, 1.0};
+PetscReal t2[20]   = {-1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0};
+PetscInt  rmap[20] = {0, 1, 2, 3, 5, 6, 7, 8, 9, 11, 15, 17, 18, 19, 20, 21, 23, 24, 25, 26};
 /* -------------------------------------------------------------------- */
 /*
   Elastic20Stiff - Forms 20 node elastic stiffness for element.
  */
-PetscErrorCode Elastic20Stiff(PetscReal **Ke) {
+PetscErrorCode Elastic20Stiff(PetscReal **Ke)
+{
   PetscReal K[60][60], x, y, z, dx, dy, dz;
   PetscInt  i, j, k, l, Ii, J;
 
@@ -304,7 +308,8 @@ PetscErrorCode Elastic20Stiff(PetscReal **Ke) {
 /*
   paulsetup20 - Sets up data structure for forming local elastic stiffness.
  */
-PetscErrorCode paulsetup20(void) {
+PetscErrorCode paulsetup20(void)
+{
   PetscInt  i, j, k, cnt;
   PetscReal x[4], w[4];
   PetscReal c;
@@ -393,7 +398,8 @@ PetscErrorCode paulsetup20(void) {
 /*
    paulintegrate20 - Does actual numerical integration on 20 node element.
  */
-PetscErrorCode paulintegrate20(PetscReal K[60][60]) {
+PetscErrorCode paulintegrate20(PetscReal K[60][60])
+{
   PetscReal det_jac, jac[3][3], inv_jac[3][3];
   PetscReal B[6][60], B_temp[6][60], C[6][6];
   PetscReal temp;

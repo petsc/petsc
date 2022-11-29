@@ -3,7 +3,8 @@ static char help[] = "Tests periodic boundary conditions for DMDA1d with periodi
 
 #include <petscdmda.h>
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   DM             da;
   Mat            A;
   const PetscInt dfill[4] = {0, 1, 0, 1}, ofill[4] = {0, 1, 1, 0};

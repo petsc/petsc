@@ -3,7 +3,8 @@ static char help[] = "Tests SeqBAIJ point block Jacobi for different block sizes
 
 #include <petscksp.h>
 
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   Vec         x, b, u;
   Mat         A;    /* linear system matrix */
   KSP         ksp;  /* linear solver context */

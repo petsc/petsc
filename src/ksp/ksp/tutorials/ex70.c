@@ -41,7 +41,8 @@ static PetscErrorCode DMDAApplyBoundaryConditions(DM, Mat, Vec);
 #define P_DOFS       1 /* degrees of freedom per pressure node */
 #define GAUSS_POINTS 4
 
-static void EvaluateBasis_Q1(PetscScalar _xi[], PetscScalar N[]) {
+static void EvaluateBasis_Q1(PetscScalar _xi[], PetscScalar N[])
+{
   PetscScalar xi  = _xi[0];
   PetscScalar eta = _xi[1];
 
@@ -51,7 +52,8 @@ static void EvaluateBasis_Q1(PetscScalar _xi[], PetscScalar N[]) {
   N[3] = 0.25 * (1.0 - xi) * (1.0 + eta);
 }
 
-static void EvaluateBasisDerivatives_Q1(PetscScalar _xi[], PetscScalar dN[][NODES_PER_EL]) {
+static void EvaluateBasisDerivatives_Q1(PetscScalar _xi[], PetscScalar dN[][NODES_PER_EL])
+{
   PetscScalar xi  = _xi[0];
   PetscScalar eta = _xi[1];
 
@@ -66,7 +68,8 @@ static void EvaluateBasisDerivatives_Q1(PetscScalar _xi[], PetscScalar dN[][NODE
   dN[1][3] = 0.25 * (1.0 - xi);
 }
 
-static void EvaluateDerivatives(PetscScalar dN[][NODES_PER_EL], PetscScalar dNx[][NODES_PER_EL], PetscScalar coords[], PetscScalar *det_J) {
+static void EvaluateDerivatives(PetscScalar dN[][NODES_PER_EL], PetscScalar dNx[][NODES_PER_EL], PetscScalar coords[], PetscScalar *det_J)
+{
   PetscScalar J00, J01, J10, J11, J;
   PetscScalar iJ00, iJ01, iJ10, iJ11;
   PetscInt    i;
@@ -96,7 +99,8 @@ static void EvaluateDerivatives(PetscScalar dN[][NODES_PER_EL], PetscScalar dNx[
   if (det_J) *det_J = J;
 }
 
-static void CreateGaussQuadrature(PetscInt *ngp, PetscScalar gp_xi[][2], PetscScalar gp_weight[]) {
+static void CreateGaussQuadrature(PetscInt *ngp, PetscScalar gp_xi[][2], PetscScalar gp_weight[])
+{
   *ngp         = 4;
   gp_xi[0][0]  = -0.57735026919;
   gp_xi[0][1]  = -0.57735026919;
@@ -112,7 +116,8 @@ static void CreateGaussQuadrature(PetscInt *ngp, PetscScalar gp_xi[][2], PetscSc
   gp_weight[3] = 1.0;
 }
 
-static PetscErrorCode DMDAGetElementEqnums_up(const PetscInt element[], PetscInt s_u[], PetscInt s_p[]) {
+static PetscErrorCode DMDAGetElementEqnums_up(const PetscInt element[], PetscInt s_u[], PetscInt s_p[])
+{
   PetscInt i;
   PetscFunctionBeginUser;
   for (i = 0; i < NODES_PER_EL; i++) {
@@ -120,12 +125,13 @@ static PetscErrorCode DMDAGetElementEqnums_up(const PetscInt element[], PetscInt
     s_u[NSD * i + 0] = 3 * element[i];
     s_u[NSD * i + 1] = 3 * element[i] + 1;
     /* pressure */
-    s_p[i]           = 3 * element[i] + 2;
+    s_p[i] = 3 * element[i] + 2;
   }
   PetscFunctionReturn(0);
 }
 
-static PetscInt map_wIwDI_uJuDJ(PetscInt wi, PetscInt wd, PetscInt w_NPE, PetscInt w_dof, PetscInt ui, PetscInt ud, PetscInt u_NPE, PetscInt u_dof) {
+static PetscInt map_wIwDI_uJuDJ(PetscInt wi, PetscInt wd, PetscInt w_NPE, PetscInt w_dof, PetscInt ui, PetscInt ud, PetscInt u_NPE, PetscInt u_dof)
+{
   PetscInt ij, r, c, nc;
 
   nc = u_NPE * u_dof;
@@ -135,7 +141,8 @@ static PetscInt map_wIwDI_uJuDJ(PetscInt wi, PetscInt wd, PetscInt w_NPE, PetscI
   return (ij);
 }
 
-static void BForm_DivT(PetscScalar Ke[], PetscScalar coords[], PetscScalar eta[]) {
+static void BForm_DivT(PetscScalar Ke[], PetscScalar coords[], PetscScalar eta[])
+{
   PetscScalar gp_xi[GAUSS_POINTS][NSD], gp_weight[GAUSS_POINTS];
   PetscScalar GNi_p[NSD][NODES_PER_EL], GNx_p[NSD][NODES_PER_EL];
   PetscScalar J_p, tildeD[3];
@@ -182,7 +189,8 @@ static void BForm_DivT(PetscScalar Ke[], PetscScalar coords[], PetscScalar eta[]
   }
 }
 
-static void BForm_Grad(PetscScalar Ke[], PetscScalar coords[]) {
+static void BForm_Grad(PetscScalar Ke[], PetscScalar coords[])
+{
   PetscScalar gp_xi[GAUSS_POINTS][NSD], gp_weight[GAUSS_POINTS];
   PetscScalar Ni_p[NODES_PER_EL], GNi_p[NSD][NODES_PER_EL], GNx_p[NSD][NODES_PER_EL];
   PetscScalar J_p, fac;
@@ -211,7 +219,8 @@ static void BForm_Grad(PetscScalar Ke[], PetscScalar coords[]) {
   }
 }
 
-static void BForm_Div(PetscScalar De[], PetscScalar coords[]) {
+static void BForm_Div(PetscScalar De[], PetscScalar coords[])
+{
   PetscScalar Ge[U_DOFS * NODES_PER_EL * P_DOFS * NODES_PER_EL];
   PetscInt    i, j, nr_g, nc_g;
 
@@ -226,7 +235,8 @@ static void BForm_Div(PetscScalar De[], PetscScalar coords[]) {
   }
 }
 
-static void BForm_Stabilisation(PetscScalar Ke[], PetscScalar coords[], PetscScalar eta[]) {
+static void BForm_Stabilisation(PetscScalar Ke[], PetscScalar coords[], PetscScalar eta[])
+{
   PetscScalar gp_xi[GAUSS_POINTS][NSD], gp_weight[GAUSS_POINTS];
   PetscScalar Ni_p[NODES_PER_EL], GNi_p[NSD][NODES_PER_EL], GNx_p[NSD][NODES_PER_EL];
   PetscScalar J_p, fac, eta_avg;
@@ -257,7 +267,8 @@ static void BForm_Stabilisation(PetscScalar Ke[], PetscScalar coords[], PetscSca
   }
 }
 
-static void BForm_ScaledMassMatrix(PetscScalar Ke[], PetscScalar coords[], PetscScalar eta[]) {
+static void BForm_ScaledMassMatrix(PetscScalar Ke[], PetscScalar coords[], PetscScalar eta[])
+{
   PetscScalar gp_xi[GAUSS_POINTS][NSD], gp_weight[GAUSS_POINTS];
   PetscScalar Ni_p[NODES_PER_EL], GNi_p[NSD][NODES_PER_EL], GNx_p[NSD][NODES_PER_EL];
   PetscScalar J_p, fac, eta_avg;
@@ -288,7 +299,8 @@ static void BForm_ScaledMassMatrix(PetscScalar Ke[], PetscScalar coords[], Petsc
   }
 }
 
-static void LForm_MomentumRHS(PetscScalar Fe[], PetscScalar coords[], PetscScalar fx[], PetscScalar fy[]) {
+static void LForm_MomentumRHS(PetscScalar Fe[], PetscScalar coords[], PetscScalar fx[], PetscScalar fy[])
+{
   PetscScalar gp_xi[GAUSS_POINTS][NSD], gp_weight[GAUSS_POINTS];
   PetscScalar Ni_p[NODES_PER_EL], GNi_p[NSD][NODES_PER_EL], GNx_p[NSD][NODES_PER_EL];
   PetscScalar J_p, fac;
@@ -311,7 +323,8 @@ static void LForm_MomentumRHS(PetscScalar Fe[], PetscScalar coords[], PetscScala
   }
 }
 
-static PetscErrorCode GetElementCoords(const PetscScalar _coords[], const PetscInt e2n[], PetscScalar el_coords[]) {
+static PetscErrorCode GetElementCoords(const PetscScalar _coords[], const PetscInt e2n[], PetscScalar el_coords[])
+{
   PetscInt i, d;
   PetscFunctionBeginUser;
   /* get coords for the element */
@@ -321,7 +334,8 @@ static PetscErrorCode GetElementCoords(const PetscScalar _coords[], const PetscI
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode AssembleStokes_A(Mat A, DM stokes_da, DM quadrature) {
+static PetscErrorCode AssembleStokes_A(Mat A, DM stokes_da, DM quadrature)
+{
   DM                 cda;
   Vec                coords;
   const PetscScalar *_coords;
@@ -383,7 +397,8 @@ static PetscErrorCode AssembleStokes_A(Mat A, DM stokes_da, DM quadrature) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode AssembleStokes_PC(Mat A, DM stokes_da, DM quadrature) {
+static PetscErrorCode AssembleStokes_PC(Mat A, DM stokes_da, DM quadrature)
+{
   DM                 cda;
   Vec                coords;
   const PetscScalar *_coords;
@@ -445,7 +460,8 @@ static PetscErrorCode AssembleStokes_PC(Mat A, DM stokes_da, DM quadrature) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode AssembleStokes_RHS(Vec F, DM stokes_da, DM quadrature) {
+static PetscErrorCode AssembleStokes_RHS(Vec F, DM stokes_da, DM quadrature)
+{
   DM                 cda;
   Vec                coords;
   const PetscScalar *_coords;
@@ -508,7 +524,8 @@ static PetscErrorCode AssembleStokes_RHS(Vec F, DM stokes_da, DM quadrature) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMSwarmPICInsertPointsCellwise(DM dm, DM dmc, PetscInt e, PetscInt npoints, PetscReal xi[], PetscBool proximity_initialization) {
+PetscErrorCode DMSwarmPICInsertPointsCellwise(DM dm, DM dmc, PetscInt e, PetscInt npoints, PetscReal xi[], PetscBool proximity_initialization)
+{
   PetscInt           dim, nel, npe, q, k, d, ncurr;
   const PetscInt    *element_list;
   Vec                coor;
@@ -640,7 +657,8 @@ PetscErrorCode DMSwarmPICInsertPointsCellwise(DM dm, DM dmc, PetscInt e, PetscIn
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MaterialPoint_PopulateCell(DM dm_vp, DM dm_mpoint) {
+PetscErrorCode MaterialPoint_PopulateCell(DM dm_vp, DM dm_mpoint)
+{
   PetscInt         _npe, _nel, e, nel;
   const PetscInt  *element;
   DM               dmc;
@@ -678,7 +696,8 @@ PetscErrorCode MaterialPoint_PopulateCell(DM dm_vp, DM dm_mpoint) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MaterialPoint_AdvectRK1(DM dm_vp, Vec vp, PetscReal dt, DM dm_mpoint) {
+PetscErrorCode MaterialPoint_AdvectRK1(DM dm_vp, Vec vp, PetscReal dt, DM dm_mpoint)
+{
   Vec                vp_l, coor_l;
   const PetscScalar *LA_vp;
   PetscInt           i, p, e, npoints, nel, npe;
@@ -759,7 +778,8 @@ PetscErrorCode MaterialPoint_AdvectRK1(DM dm_vp, Vec vp, PetscReal dt, DM dm_mpo
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MaterialPoint_Interpolate(DM dm, Vec eta_v, Vec rho_v, DM dm_quadrature) {
+PetscErrorCode MaterialPoint_Interpolate(DM dm, Vec eta_v, Vec rho_v, DM dm_quadrature)
+{
   Vec             eta_l, rho_l;
   PetscScalar    *_eta_l, *_rho_l;
   PetscInt        nqp, npe, nel;
@@ -825,7 +845,8 @@ PetscErrorCode MaterialPoint_Interpolate(DM dm, Vec eta_v, Vec rho_v, DM dm_quad
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode SolveTimeDepStokes(PetscInt mx, PetscInt my) {
+static PetscErrorCode SolveTimeDepStokes(PetscInt mx, PetscInt my)
+{
   DM              dm_stokes, dm_coeff;
   PetscInt        u_dof, p_dof, dof, stencil_width;
   Mat             A, B;
@@ -1234,7 +1255,8 @@ static PetscErrorCode SolveTimeDepStokes(PetscInt mx, PetscInt my) {
  <sequential run>
  ./ex70 -stokes_ksp_type fgmres -stokes_pc_type fieldsplit -stokes_pc_fieldsplit_block_size 3 -stokes_pc_fieldsplit_type SYMMETRIC_MULTIPLICATIVE -stokes_pc_fieldsplit_0_fields 0,1 -stokes_pc_fieldsplit_1_fields 2 -stokes_fieldsplit_0_ksp_type preonly -stokes_fieldsplit_0_pc_type lu -stokes_fieldsplit_1_ksp_type preonly -stokes_fieldsplit_1_pc_type lu  -mx 80 -my 80  -stokes_ksp_converged_reason  -dump_freq 25  -stokes_ksp_rtol 1.0e-8 -build_twosided allreduce  -ppcell 2 -nt 4000 -delta_eta 1.0 -randomize_coords
 */
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   PetscInt  mx, my;
   PetscBool set = PETSC_FALSE;
 
@@ -1251,7 +1273,8 @@ int main(int argc, char **args) {
 }
 
 /* -------------------------- helpers for boundary conditions -------------------------------- */
-static PetscErrorCode BCApplyZero_EAST(DM da, PetscInt d_idx, Mat A, Vec b) {
+static PetscErrorCode BCApplyZero_EAST(DM da, PetscInt d_idx, Mat A, Vec b)
+{
   DM                     cda;
   Vec                    coords;
   PetscInt               si, sj, nx, ny, i, j;
@@ -1308,7 +1331,8 @@ static PetscErrorCode BCApplyZero_EAST(DM da, PetscInt d_idx, Mat A, Vec b) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode BCApplyZero_WEST(DM da, PetscInt d_idx, Mat A, Vec b) {
+static PetscErrorCode BCApplyZero_WEST(DM da, PetscInt d_idx, Mat A, Vec b)
+{
   DM                     cda;
   Vec                    coords;
   PetscInt               si, sj, nx, ny, i, j;
@@ -1366,7 +1390,8 @@ static PetscErrorCode BCApplyZero_WEST(DM da, PetscInt d_idx, Mat A, Vec b) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode BCApplyZero_NORTH(DM da, PetscInt d_idx, Mat A, Vec b) {
+static PetscErrorCode BCApplyZero_NORTH(DM da, PetscInt d_idx, Mat A, Vec b)
+{
   DM                     cda;
   Vec                    coords;
   PetscInt               si, sj, nx, ny, i, j;
@@ -1423,7 +1448,8 @@ static PetscErrorCode BCApplyZero_NORTH(DM da, PetscInt d_idx, Mat A, Vec b) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode BCApplyZero_SOUTH(DM da, PetscInt d_idx, Mat A, Vec b) {
+static PetscErrorCode BCApplyZero_SOUTH(DM da, PetscInt d_idx, Mat A, Vec b)
+{
   DM                     cda;
   Vec                    coords;
   PetscInt               si, sj, nx, ny, i, j;
@@ -1484,7 +1510,8 @@ static PetscErrorCode BCApplyZero_SOUTH(DM da, PetscInt d_idx, Mat A, Vec b) {
  Impose free slip boundary conditions on the left/right faces: u_i n_i = 0, tau_{ij} t_j = 0
  Impose no slip boundray conditions on the top/bottom faces:   u_i n_i = 0, u_i t_i = 0
 */
-static PetscErrorCode DMDAApplyBoundaryConditions(DM dm_stokes, Mat A, Vec f) {
+static PetscErrorCode DMDAApplyBoundaryConditions(DM dm_stokes, Mat A, Vec f)
+{
   PetscFunctionBeginUser;
   PetscCall(BCApplyZero_NORTH(dm_stokes, 0, A, f));
   PetscCall(BCApplyZero_NORTH(dm_stokes, 1, A, f));

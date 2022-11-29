@@ -10,7 +10,8 @@ static char help[] = "Basic vector routines.\n\n";
 
 #include <petscvec.h>
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   Vec         x, y, w; /* vectors */
   Vec        *z;       /* array of vectors */
   PetscReal   norm, v, v1, v2, maxval;

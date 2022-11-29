@@ -69,7 +69,8 @@ PetscErrorCode FormJacobian(SNES, Vec, Mat, Mat, void *);
 PetscErrorCode FormFunction(SNES, Vec, Vec, void *);
 PetscErrorCode FormInitialGuess(AppCtx *, Vec);
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   SNES                   snes;                /* SNES context */
   SNESType               type = SNESNEWTONLS; /* default nonlinear solution method */
   Vec                    x, r;                /* solution, residual vectors */
@@ -117,8 +118,8 @@ int main(int argc, char **argv) {
   /*
      Initialize problem parameters
   */
-  user.Nvglobal = 16; /*Global # of vertices  */
-  user.Neglobal = 18; /*Global # of elements  */
+  user.Nvglobal = 16; /* Global # of vertices  */
+  user.Neglobal = 18; /* Global # of elements  */
 
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-vert", &user.Nvglobal, NULL));
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-elem", &user.Neglobal, NULL));
@@ -493,7 +494,8 @@ int main(int argc, char **argv) {
    Output Parameter:
    X - vector
  */
-PetscErrorCode FormInitialGuess(AppCtx *user, Vec X) {
+PetscErrorCode FormInitialGuess(AppCtx *user, Vec X)
+{
   PetscInt     i, Nvlocal;
   PetscInt    *gloInd;
   PetscScalar *x;
@@ -543,7 +545,8 @@ PetscErrorCode FormInitialGuess(AppCtx *user, Vec X) {
    Output Parameter:
 .  F - function vector
  */
-PetscErrorCode FormFunction(SNES snes, Vec X, Vec F, void *ptr) {
+PetscErrorCode FormFunction(SNES snes, Vec X, Vec F, void *ptr)
+{
   AppCtx      *user = (AppCtx *)ptr;
   PetscInt     i, j, Nvlocal;
   PetscReal    alpha, lambda;
@@ -601,7 +604,7 @@ PetscErrorCode FormFunction(SNES snes, Vec X, Vec F, void *ptr) {
   */
   PetscCall(VecRestoreArray(localX, &x));
   PetscCall(VecRestoreArray(F, &f));
-  /*PetscCall(VecView(F,PETSC_VIEWER_STDOUT_WORLD));*/
+  /* PetscCall(VecView(F,PETSC_VIEWER_STDOUT_WORLD)); */
 
   return 0;
 }
@@ -621,7 +624,8 @@ PetscErrorCode FormFunction(SNES snes, Vec X, Vec F, void *ptr) {
 .  flag - flag indicating matrix structure
 
 */
-PetscErrorCode FormJacobian(SNES snes, Vec X, Mat J, Mat jac, void *ptr) {
+PetscErrorCode FormJacobian(SNES snes, Vec X, Mat J, Mat jac, void *ptr)
+{
   AppCtx      *user = (AppCtx *)ptr;
   PetscInt     i, j, Nvlocal, col[50];
   PetscScalar  alpha, lambda, value[50];

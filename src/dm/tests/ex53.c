@@ -12,7 +12,8 @@ sliceid - set the location where the slice will be extraced from the parent vect
 
 #include <petscdmda.h>
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscMPIInt    rank, size;                    /* MPI rank and size */
   PetscInt       mx = 4, my = 4, mz = 4;        /* Dimensions of parent vector */
   PetscInt       sliceid   = 2;                 /* k (z) index to pick the slice */

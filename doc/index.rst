@@ -12,6 +12,10 @@ PETSc is developed as :ref:`open-source <doc_license>`, requests and contributio
 
 News
 ====
+.. admonition:: News: PETSc 2023 Annual Meeting
+
+  Mark your calendars **The PETSc 2023 Annual Meeting** will take place June 5-7 on the campus of IIT in Chicago. More details will follow
+
 .. admonition:: News: New Book on PETSc
 
   **PETSc for Partial Differential Equations: Numerical Solutions in C and Python**, by Ed Bueler, is available.
@@ -23,34 +27,28 @@ News
 
   `The Community is the Infrastructure  <https://arxiv.org/abs/2201.00967>`__
 
-.. admonition:: News: Paper on PETSc communication System
-
-  `The PetscSF Scalable Communication Layer <https://ieeexplore.ieee.org/document/9442258>`__
-
-.. admonition:: News: Paper on PETSc usage with GPUs
-
-  `Toward Performance-Portable PETSc for GPU-based Exascale Systems <https://www.sciencedirect.com/science/article/pii/S016781912100079X>`__
-
-
 Main Topics
 ===========
 
 .. toctree::
    :maxdepth: 1
 
-   Overview <overview/index>
-   Download <download/index>
-   Install <install/index>
-   User-Guide <docs/manual/index>
-   API-Docs <docs/manualpages/index>
-   Tutorials <tutorials/index>
-   FAQ <faq/index>
-   Community <community/index>
-   Developers <developers/index>
-   Misc. <miscellaneous/index>
+   overview/index
+   install/index
+   docs/manual/index
+   docs/manualpages/index
+   tutorials/index
+   faq/index
+   community/index
+   developers/index
+   miscellaneous/index
+
+* `PETSc/TAO Users Manual in PDF <docs/manual/manual.pdf>`__
+
+.. _doc_toolkits_use_petsc:
 
 Toolkits/libraries that use PETSc
-==========================================
+=================================
 
 -  `ADflow <https://github.com/mdolab/adflow>`__ An Open-Source
    Computational Fluid Dynamics Solver for Aerodynamic and
@@ -69,7 +67,7 @@ Toolkits/libraries that use PETSc
    optimization
 -  `DEAL.II <https://www.dealii.org/>`__ C++ based finite element
    simulation package
--  `DUNE-FEM <https://dune-project.org/sphinx/content/sphinx/dune-fem/>`__ Python and C++ based finite element simulation package      
+-  `DUNE-FEM <https://dune-project.org/sphinx/content/sphinx/dune-fem/>`__ Python and C++ based finite element simulation package
 -  `FEniCS <https://fenicsproject.org/>`__ Python based finite
    element simulation package
 -  `Firedrake <https://www.firedrakeproject.org/>`__ Python based

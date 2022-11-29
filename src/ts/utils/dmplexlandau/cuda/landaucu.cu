@@ -7,12 +7,13 @@
 #define PETSC_SKIP_IMMINTRIN_H_CUDAWORKAROUND 1
 #include <../src/mat/impls/aij/seq/aij.h>
 #include <petscmat.h>
-#include <petscdevice.h>
+#include <petscdevice_cuda.h>
 
 #include "../land_tensors.h"
 #include <petscaijdevice.h>
 
-PETSC_EXTERN PetscErrorCode LandauCUDACreateMatMaps(P4estVertexMaps maps[], pointInterpolationP4est (*pointMaps)[LANDAU_MAX_Q_FACE], PetscInt Nf[], PetscInt Nq, PetscInt grid) {
+PETSC_EXTERN PetscErrorCode LandauCUDACreateMatMaps(P4estVertexMaps maps[], pointInterpolationP4est (*pointMaps)[LANDAU_MAX_Q_FACE], PetscInt Nf[], PetscInt Nq, PetscInt grid)
+{
   P4estVertexMaps h_maps;
   PetscFunctionBegin;
   h_maps.num_elements = maps[grid].num_elements;
@@ -30,7 +31,8 @@ PETSC_EXTERN PetscErrorCode LandauCUDACreateMatMaps(P4estVertexMaps maps[], poin
   PetscFunctionReturn(0);
 }
 
-PETSC_EXTERN PetscErrorCode LandauCUDADestroyMatMaps(P4estVertexMaps maps[], PetscInt num_grids) {
+PETSC_EXTERN PetscErrorCode LandauCUDADestroyMatMaps(P4estVertexMaps maps[], PetscInt num_grids)
+{
   PetscFunctionBegin;
   for (PetscInt grid = 0; grid < num_grids; grid++) {
     P4estVertexMaps *d_maps = maps[grid].d_self, h_maps;
@@ -42,7 +44,8 @@ PETSC_EXTERN PetscErrorCode LandauCUDADestroyMatMaps(P4estVertexMaps maps[], Pet
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode LandauCUDAStaticDataSet(DM plex, const PetscInt Nq, const PetscInt batch_sz, const PetscInt num_grids, PetscInt a_numCells[], PetscInt a_species_offset[], PetscInt a_mat_offset[], PetscReal nu_alpha[], PetscReal nu_beta[], PetscReal a_invMass[], PetscReal a_invJ[], PetscReal a_x[], PetscReal a_y[], PetscReal a_z[], PetscReal a_w[], LandauStaticData *SData_d) {
+PetscErrorCode LandauCUDAStaticDataSet(DM plex, const PetscInt Nq, const PetscInt batch_sz, const PetscInt num_grids, PetscInt a_numCells[], PetscInt a_species_offset[], PetscInt a_mat_offset[], PetscReal nu_alpha[], PetscReal nu_beta[], PetscReal a_invMass[], PetscReal a_invJ[], PetscReal a_x[], PetscReal a_y[], PetscReal a_z[], PetscReal a_w[], LandauStaticData *SData_d)
+{
   PetscTabulation *Tf;
   PetscReal       *BB, *DD;
   PetscInt         dim, Nb = Nq, szf = sizeof(PetscReal), szs = sizeof(PetscScalar), szi = sizeof(PetscInt);
@@ -121,7 +124,8 @@ PetscErrorCode LandauCUDAStaticDataSet(DM plex, const PetscInt Nq, const PetscIn
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode LandauCUDAStaticDataClear(LandauStaticData *SData_d) {
+PetscErrorCode LandauCUDAStaticDataClear(LandauStaticData *SData_d)
+{
   PetscFunctionBegin;
   if (SData_d->alpha) {
     PetscCallCUDA(cudaFree(SData_d->alpha));
@@ -228,7 +232,8 @@ __device__ void landau_jac_kernel(const PetscInt num_grids, const PetscInt jpidx
 #if LANDAU_DIM == 3
                                   const PetscReal zz[], PetscReal s_dfz[], PetscReal d_dfdz[],
 #endif
-                                  const PetscInt d_numCells[], const PetscInt d_species_offset[], const PetscInt d_mat_offset[], const PetscInt d_ip_offset[], const PetscInt d_ipf_offset[], const PetscInt d_elem_offset[]) {
+                                  const PetscInt d_numCells[], const PetscInt d_species_offset[], const PetscInt d_mat_offset[], const PetscInt d_ip_offset[], const PetscInt d_ipf_offset[], const PetscInt d_elem_offset[])
+{
   const PetscInt Nq = blockDim.y, myQi = threadIdx.y;
   const PetscInt b_elem_idx = blockIdx.y, b_id = blockIdx.x, IPf_sz_glb = d_ipf_offset[num_grids];
   const PetscInt loc_Nf = d_species_offset[grid + 1] - d_species_offset[grid], loc_elem = b_elem_idx - d_elem_offset[grid];
@@ -314,9 +319,9 @@ __device__ void landau_jac_kernel(const PetscInt num_grids, const PetscInt jpidx
 #endif
       temp2 *= wi;
 #if LANDAU_DIM == 2
-#pragma unroll
+  #pragma unroll
       for (d2 = 0; d2 < 2; d2++) {
-#pragma unroll
+  #pragma unroll
         for (d3 = 0; d3 < 2; ++d3) {
           /* K = U * grad(f): g2=e: i,A */
           gg2_temp[d2] += Uk[d2][d3] * temp1[d3];
@@ -325,11 +330,11 @@ __device__ void landau_jac_kernel(const PetscInt num_grids, const PetscInt jpidx
         }
       }
 #else
-#pragma unroll
+  #pragma unroll
       for (d2 = 0; d2 < 3; ++d2) {
-#pragma unroll
-            for (d3 = 0; d3 < 3; ++d3) {
-              /* K = U * grad(f): g2 = e: i,A */
+  #pragma unroll
+        for (d3 = 0; d3 < 3; ++d3) {
+          /* K = U * grad(f): g2 = e: i,A */
           gg2_temp[d2] += U[d2][d3] * temp1[d3];
           /* D = -U * (I \kron (fx)): g3 = f: i,j,A */
           gg3_temp[d2][d3] += U[d2][d3] * temp2;
@@ -454,7 +459,8 @@ __global__ void __launch_bounds__(256, 2) landau_jacobian(const PetscInt nip_glo
 #if LANDAU_DIM == 3
                                                           const PetscReal zz[], PetscReal d_dfdz[],
 #endif
-                                                          const PetscInt d_numCells[], const PetscInt d_species_offset[], const PetscInt d_mat_offset[], const PetscInt d_ip_offset[], const PetscInt d_ipf_offset[], const PetscInt d_elem_offset[]) {
+                                                          const PetscInt d_numCells[], const PetscInt d_species_offset[], const PetscInt d_mat_offset[], const PetscInt d_ip_offset[], const PetscInt d_ipf_offset[], const PetscInt d_elem_offset[])
+{
   extern __shared__ PetscReal smem[];
   int                         size                                = 0;
   PetscReal(*s_g2)[LANDAU_DIM][LANDAU_MAX_NQ][LANDAU_MAX_SPECIES] = (PetscReal(*)[LANDAU_DIM][LANDAU_MAX_NQ][LANDAU_MAX_SPECIES]) & smem[size];
@@ -530,7 +536,8 @@ __global__ void __launch_bounds__(256, 2) landau_jacobian(const PetscInt nip_glo
   }
 }
 
-__global__ void __launch_bounds__(256, 4) landau_mass(const PetscInt dim, const PetscInt Nb, const PetscInt num_grids, const PetscReal d_w[], const PetscReal *const BB, const PetscReal *const DD, PetscScalar d_elem_mats[], P4estVertexMaps *d_maps[], PetscSplitCSRDataStructure d_mat, PetscReal shift, const PetscInt d_numCells[], const PetscInt d_species_offset[], const PetscInt d_mat_offset[], const PetscInt d_ip_offset[], const PetscInt d_elem_offset[]) {
+__global__ void __launch_bounds__(256, 4) landau_mass(const PetscInt dim, const PetscInt Nb, const PetscInt num_grids, const PetscReal d_w[], const PetscReal *const BB, const PetscReal *const DD, PetscScalar d_elem_mats[], P4estVertexMaps *d_maps[], PetscSplitCSRDataStructure d_mat, PetscReal shift, const PetscInt d_numCells[], const PetscInt d_species_offset[], const PetscInt d_mat_offset[], const PetscInt d_ip_offset[], const PetscInt d_elem_offset[])
+{
   extern __shared__ PetscReal smem[];
   const PetscInt              Nq = blockDim.y, b_elem_idx = blockIdx.y, b_id = blockIdx.x;
   PetscScalar                *elemMat = NULL; /* my output */
@@ -637,7 +644,8 @@ __global__ void __launch_bounds__(256, 4) landau_mass(const PetscInt dim, const 
   }
 }
 
-PetscErrorCode LandauCUDAJacobian(DM plex[], const PetscInt Nq, const PetscInt batch_sz, const PetscInt num_grids, const PetscInt a_numCells[], PetscReal a_Eq_m[], PetscScalar a_elem_closure[], const PetscScalar a_xarray[], const LandauStaticData *SData_d, const PetscReal shift, const PetscLogEvent events[], const PetscInt a_mat_offset[], const PetscInt a_species_offset[], Mat subJ[], Mat JacP) {
+PetscErrorCode LandauCUDAJacobian(DM plex[], const PetscInt Nq, const PetscInt batch_sz, const PetscInt num_grids, const PetscInt a_numCells[], PetscReal a_Eq_m[], PetscScalar a_elem_closure[], const PetscScalar a_xarray[], const LandauStaticData *SData_d, const PetscReal shift, const PetscLogEvent events[], const PetscInt a_mat_offset[], const PetscInt a_species_offset[], Mat subJ[], Mat JacP)
+{
   cudaError_t  cerr;
   PetscInt     Nb = Nq, dim, nip_global, num_cells_batch, elem_mat_size_tot;
   PetscInt    *d_numCells, *d_species_offset, *d_mat_offset, *d_ip_offset, *d_ipf_offset, *d_elem_offset;

@@ -6,7 +6,7 @@ static char FILENAME[] = "ex24.c";
 
 #if defined(PETSC_HAVE_PTSCOTCH)
 EXTERN_C_BEGIN
-#include <ptscotch.h>
+  #include <ptscotch.h>
 EXTERN_C_END
 #endif
 
@@ -18,7 +18,8 @@ typedef struct {
   char      repartitioning[64];
 } AppCtx;
 
-static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options) {
+static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
+{
   PetscBool repartition = PETSC_TRUE;
 
   PetscFunctionBegin;
@@ -42,7 +43,8 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode ScotchResetRandomSeed() {
+static PetscErrorCode ScotchResetRandomSeed()
+{
   PetscFunctionBegin;
 #if defined(PETSC_HAVE_PTSCOTCH)
   SCOTCH_randomReset();
@@ -50,7 +52,8 @@ static PetscErrorCode ScotchResetRandomSeed() {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm) {
+static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
+{
   PetscFunctionBegin;
   PetscCall(DMCreate(comm, dm));
   PetscCall(DMSetType(*dm, DMPLEX));
@@ -60,7 +63,8 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm) {
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   MPI_Comm               comm;
   DM                     dm1, dm2, dmdist1, dmdist2;
   DMPlexInterpolatedFlag interp;

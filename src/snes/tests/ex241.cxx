@@ -16,7 +16,8 @@ typedef struct {
 PetscErrorCode UserFunction(SNES, Vec, Vec, void *);
 PetscErrorCode UserJacobian(SNES, Vec, Mat, Mat, void *);
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   SNES        snes;
   Vec         x, r;
   Mat         J;
@@ -66,7 +67,8 @@ int main(int argc, char **argv) {
 /*
     UserFunction - for nonlinear function x^2 - value = 0
 */
-PetscErrorCode UserFunction(SNES snes, Vec X, Vec F, void *ptr) {
+PetscErrorCode UserFunction(SNES snes, Vec X, Vec F, void *ptr)
+{
   AppCtx            *user = (AppCtx *)ptr;
   PetscInt           N, i;
   PetscScalar       *f;
@@ -83,7 +85,7 @@ PetscErrorCode UserFunction(SNES snes, Vec X, Vec F, void *ptr) {
   for (i = 0; i < N; ++i) {
     /*
        Test for domain error.
-       Artifical test is applied.  With starting value 1.0, first iterate will be 0.5 + user->value/2.
+       Artificial test is applied.  With starting value 1.0, first iterate will be 0.5 + user->value/2.
        Declare (0.5-value,0.5+value) to be infeasible.
        In later iterations, snes->domainerror should be cleared, allowing iterations in the feasible region to be accepted.
     */
@@ -101,7 +103,8 @@ PetscErrorCode UserFunction(SNES snes, Vec X, Vec F, void *ptr) {
 /*
     UserJacobian - for nonlinear function x^2 - value = 0
 */
-PetscErrorCode UserJacobian(SNES snes, Vec X, Mat J, Mat jac, void *ptr) {
+PetscErrorCode UserJacobian(SNES snes, Vec X, Mat J, Mat jac, void *ptr)
+{
   PetscInt           N, i, row, col;
   const PetscScalar *x;
   PetscScalar        v;

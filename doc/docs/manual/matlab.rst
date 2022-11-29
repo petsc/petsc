@@ -17,6 +17,8 @@ There are three basic ways to use MATLAB with PETSc:
    not interactively but from a script or the PETSc program (this uses
    the MATLAB Engine).
 
+For the latter two approaches one must ``./configure`` PETSc with the argument ``--with-matlab [-with-matlab-dir=matlab_root_directory]``.
+
 .. _sec_matlabdump:
 
 Dumping Data for MATLAB
@@ -69,7 +71,7 @@ recommended for all but the smallest data sizes. One can also use
 to dump both a PETSc binary file and a corresponding ``.info`` file
 which ``PetscReadBinaryMatlab.m`` will use to format the binary file in
 more complex cases, such as using a ``DMDA``. For an example, see
-`DM Tutorial ex7 <../../src/dm/tutorials/ex7.c.html>`__.
+`DM Tutorial ex7 <PETSC_DOC_OUT_ROOT_PLACEHOLDER/src/dm/tutorials/ex7.c.html>`__.
 In MATLAB (R2015b), one may then generate a useful structure. For
 example:
 
@@ -119,7 +121,7 @@ side, one should destroy the viewer object with
 ``PetscViewerDestroy()``.
 
 For an example, which includes sending data back to PETSc, see
-`Vec Tutorial ex42 <../../src/vec/vec/tutorials/ex42.c.html>`__
+`Vec Tutorial ex42 <PETSC_DOC_OUT_ROOT_PLACEHOLDER/src/vec/vec/tutorials/ex42.c.html>`__
 and the associated ``.m`` file.
 
 .. _sec_matlabengine:

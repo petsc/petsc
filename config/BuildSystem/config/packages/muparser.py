@@ -1,20 +1,28 @@
-# MuParser is found at https://github.com/beltoforion/muparser/
 import config.package
+import os
 
-class Configure(config.package.GNUPackage):
+class Configure(config.package.CMakePackage):
   def __init__(self, framework):
-    config.package.GNUPackage.__init__(self, framework)
-    self.download  = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/muparser_v2_2_4.tar.gz']
-    self.functions = []
-    self.includes  = ['muParser.h']
-    self.liblist   = [['libmuparser.a']]
-    self.pkgname   = 'muparser-2.2.4'
-    self.buildLanguages= ['Cxx']
+    config.package.CMakePackage.__init__(self, framework)
+    self.gitcommit  = 'v2.3.3-1'
+    self.download   = ['git://https://github.com/beltoforion/muparser/','https://github.com/beltoforion/muparser/archive/'+self.gitcommit+'.tar.gz']
+    self.includes   = ['muParser.h']
+    self.liblist    = [['libmuparser.a']]
+    self.functions  = ['mupCreate']
+    self.precisions = ['double']
+    self.buildLanguages = ['Cxx']
     return
 
-  def formGNUConfigureArgs(self):
-    args = config.package.GNUPackage.formGNUConfigureArgs(self)
-    args.append('--enable-shared=no')
-    args.append('--enable-samples=no')
-    args.append('--enable-debug=no')
+  def setupDependencies(self, framework):
+    config.package.CMakePackage.setupDependencies(self, framework)
+    self.compilerFlags = framework.require('config.compilerFlags',self)
+    self.mathlib       = framework.require('config.packages.mathlib',self)
+    self.deps          = [self.mathlib]
+    return
+
+  def formCMakeConfigureArgs(self):
+    args = config.package.CMakePackage.formCMakeConfigureArgs(self)
+    args.append('-DENABLE_SAMPLES=OFF')
+    args.append('-DENABLE_OPENMP=OFF')
+    args.append('-DENABLE_WIDE_CHAR=OFF')
     return args

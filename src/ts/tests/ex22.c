@@ -35,7 +35,8 @@ typedef struct {
   PetscInt *sw;
 } AppCtx;
 
-PetscErrorCode InitialConditions(Vec U, DM da, AppCtx *app) {
+PetscErrorCode InitialConditions(Vec U, DM da, AppCtx *app)
+{
   Vec          xcoord;
   PetscScalar *x, *u;
   PetscInt     lsize, M, xs, xm, i;
@@ -64,7 +65,8 @@ PetscErrorCode InitialConditions(Vec U, DM da, AppCtx *app) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode EventFunction(TS ts, PetscReal t, Vec U, PetscScalar *fvalue, void *ctx) {
+PetscErrorCode EventFunction(TS ts, PetscReal t, Vec U, PetscScalar *fvalue, void *ctx)
+{
   AppCtx            *app = (AppCtx *)ctx;
   const PetscScalar *u;
   PetscInt           i, lsize;
@@ -77,7 +79,8 @@ PetscErrorCode EventFunction(TS ts, PetscReal t, Vec U, PetscScalar *fvalue, voi
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PostEventFunction(TS ts, PetscInt nevents_zero, PetscInt events_zero[], PetscReal t, Vec U, PetscBool forwardsolve, void *ctx) {
+PetscErrorCode PostEventFunction(TS ts, PetscInt nevents_zero, PetscInt events_zero[], PetscReal t, Vec U, PetscBool forwardsolve, void *ctx)
+{
   AppCtx  *app = (AppCtx *)ctx;
   PetscInt i, idx;
 
@@ -92,7 +95,8 @@ PetscErrorCode PostEventFunction(TS ts, PetscInt nevents_zero, PetscInt events_z
 /*
      Defines the ODE passed to the ODE solver
 */
-static PetscErrorCode IFunction(TS ts, PetscReal t, Vec U, Vec Udot, Vec F, void *ctx) {
+static PetscErrorCode IFunction(TS ts, PetscReal t, Vec U, Vec Udot, Vec F, void *ctx)
+{
   AppCtx            *app = (AppCtx *)ctx;
   PetscScalar       *f;
   const PetscScalar *u, *udot;
@@ -138,7 +142,8 @@ static PetscErrorCode IFunction(TS ts, PetscReal t, Vec U, Vec Udot, Vec F, void
 /*
      Defines the Jacobian of the ODE passed to the ODE solver. See TSSetIJacobian() for the meaning of a and the Jacobian.
 */
-static PetscErrorCode IJacobian(TS ts, PetscReal t, Vec U, Vec Udot, PetscReal a, Mat A, Mat B, void *ctx) {
+static PetscErrorCode IJacobian(TS ts, PetscReal t, Vec U, Vec Udot, PetscReal a, Mat A, Mat B, void *ctx)
+{
   AppCtx     *app = (AppCtx *)ctx;
   DM          da;
   MatStencil  row, col[3];
@@ -180,7 +185,8 @@ static PetscErrorCode IJacobian(TS ts, PetscReal t, Vec U, Vec Udot, PetscReal a
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   TS       ts; /* ODE integrator */
   Vec      U;  /* solution will be stored here */
   Mat      J;  /* Jacobian matrix */

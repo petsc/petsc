@@ -3,7 +3,8 @@ static char help[] = "Tests MAIJ matrix for large DOF\n\n";
 #include <petscdm.h>
 #include <petscdmda.h>
 
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[])
+{
   Mat M;
   Vec x, y;
   DM  da, daf;

@@ -26,16 +26,16 @@ PetscBag Object:  ParameterBag (pbag_) contains parameters for simulations of to
   choose = THE_OTHER; (EnumeratedChoices) Express yourself by choosing among enumerated things
 The value of rho after loading is: 1.000000
 #PETSc Option Table entries:
--pbag_bool_array yes,0,false
--pbag_choose THE_OTHER
--pbag_do_output no
--pbag_dt LONG
--pbag_filename secretfile.txt
--pbag_int_array 1,2,3
--pbag_modes_x 2
--pbag_real_array 1.0,-1.0
--pbag_rho 1.0
--pbag_W 3.
--pbag_x1 1.
--pbag_x2 .9
+-pbag_bool_array yes,0,false # (source: file)
+-pbag_choose THE_OTHER # (source: file)
+-pbag_do_output no # (source: file)
+-pbag_dt LONG # (source: file)
+-pbag_filename secretfile.txt # (source: file)
+-pbag_int_array 1,2,3 # (source: file)
+-pbag_modes_x 2 # (source: file)
+-pbag_real_array 1.0,-1.0 # (source: file)
+-pbag_rho 1.0 # (source: file)
+-pbag_W 3. # (source: file)
+-pbag_x1 1. # (source: file)
+-pbag_x2 .9 # (source: file)
 #End of PETSc Option Table entries

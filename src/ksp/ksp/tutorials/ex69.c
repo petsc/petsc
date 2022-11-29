@@ -20,7 +20,8 @@ typedef struct {
   PetscReal *weights; /* GLL weights */
 } PetscGLL;
 
-PetscErrorCode ComputeSolution(DM da, PetscGLL *gll, Vec u) {
+PetscErrorCode ComputeSolution(DM da, PetscGLL *gll, Vec u)
+{
   PetscInt     j, xs, xn;
   PetscScalar *uu, *xx;
   PetscReal    xd;
@@ -45,7 +46,8 @@ PetscErrorCode ComputeSolution(DM da, PetscGLL *gll, Vec u) {
       Evaluates \integral_{-1}^{1} f*v_i  where v_i is the ith basis polynomial via the GLL nodes and weights, since the v_i
       basis function is zero at all nodes except the ith one the integral is simply the weight_i * f(node_i)
 */
-PetscErrorCode ComputeRhs(DM da, PetscGLL *gll, Vec b) {
+PetscErrorCode ComputeRhs(DM da, PetscGLL *gll, Vec b)
+{
   PetscInt     i, j, xs, xn, n = gll->n;
   PetscScalar *bb, *xx;
   PetscReal    xd;
@@ -84,7 +86,8 @@ PetscErrorCode ComputeRhs(DM da, PetscGLL *gll, Vec b) {
      -N <N> maximum number of GLL points per element
 
 */
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   PetscGLL      gll;
   PetscInt      N = 80, n, q = 8, xs, xn, j, l;
   PetscReal   **A;

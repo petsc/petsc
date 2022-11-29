@@ -32,9 +32,10 @@ typedef struct _UserCtx {
   PetscRandom rctx;
   PetscBool   taylor;   /* Flag to determine whether to run Taylor test or not */
   PetscBool   use_admm; /* Flag to determine whether to run Taylor test or not */
-} * UserCtx;
+} *UserCtx;
 
-static PetscErrorCode CreateRHS(UserCtx ctx) {
+static PetscErrorCode CreateRHS(UserCtx ctx)
+{
   PetscFunctionBegin;
   /* build the rhs d in ctx */
   PetscCall(VecCreate(PETSC_COMM_WORLD, &(ctx->d)));
@@ -44,7 +45,8 @@ static PetscErrorCode CreateRHS(UserCtx ctx) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode CreateMatrix(UserCtx ctx) {
+static PetscErrorCode CreateMatrix(UserCtx ctx)
+{
   PetscInt Istart, Iend, i, j, Ii, gridN, I_n, I_s, I_e, I_w;
 #if defined(PETSC_USE_LOG)
   PetscLogStage stage;
@@ -97,7 +99,8 @@ static PetscErrorCode CreateMatrix(UserCtx ctx) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode SetupWorkspace(UserCtx ctx) {
+static PetscErrorCode SetupWorkspace(UserCtx ctx)
+{
   PetscInt i;
 
   PetscFunctionBegin;
@@ -107,7 +110,8 @@ static PetscErrorCode SetupWorkspace(UserCtx ctx) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode ConfigureContext(UserCtx ctx) {
+static PetscErrorCode ConfigureContext(UserCtx ctx)
+{
   PetscFunctionBegin;
   ctx->m        = 16;
   ctx->n        = 16;
@@ -150,7 +154,8 @@ static PetscErrorCode ConfigureContext(UserCtx ctx) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DestroyContext(UserCtx *ctx) {
+static PetscErrorCode DestroyContext(UserCtx *ctx)
+{
   PetscInt i;
 
   PetscFunctionBegin;
@@ -167,7 +172,8 @@ static PetscErrorCode DestroyContext(UserCtx *ctx) {
 }
 
 /* compute (1/2) * ||F x - d||^2 */
-static PetscErrorCode ObjectiveMisfit(Tao tao, Vec x, PetscReal *J, void *_ctx) {
+static PetscErrorCode ObjectiveMisfit(Tao tao, Vec x, PetscReal *J, void *_ctx)
+{
   UserCtx ctx = (UserCtx)_ctx;
   Vec     y;
 
@@ -181,7 +187,8 @@ static PetscErrorCode ObjectiveMisfit(Tao tao, Vec x, PetscReal *J, void *_ctx) 
 }
 
 /* compute V = FTFx - FTd */
-static PetscErrorCode GradientMisfit(Tao tao, Vec x, Vec V, void *_ctx) {
+static PetscErrorCode GradientMisfit(Tao tao, Vec x, Vec V, void *_ctx)
+{
   UserCtx ctx = (UserCtx)_ctx;
   Vec     FTFx, FTd;
 
@@ -196,7 +203,8 @@ static PetscErrorCode GradientMisfit(Tao tao, Vec x, Vec V, void *_ctx) {
 }
 
 /* returns FTF */
-static PetscErrorCode HessianMisfit(Tao tao, Vec x, Mat H, Mat Hpre, void *_ctx) {
+static PetscErrorCode HessianMisfit(Tao tao, Vec x, Mat H, Mat Hpre, void *_ctx)
+{
   UserCtx ctx = (UserCtx)_ctx;
 
   PetscFunctionBegin;
@@ -207,7 +215,8 @@ static PetscErrorCode HessianMisfit(Tao tao, Vec x, Mat H, Mat Hpre, void *_ctx)
 
 /* computes augment Lagrangian objective (with scaled dual):
  * 0.5 * ||F x - d||^2  + 0.5 * mu ||x - z + u||^2 */
-static PetscErrorCode ObjectiveMisfitADMM(Tao tao, Vec x, PetscReal *J, void *_ctx) {
+static PetscErrorCode ObjectiveMisfitADMM(Tao tao, Vec x, PetscReal *J, void *_ctx)
+{
   UserCtx   ctx = (UserCtx)_ctx;
   PetscReal mu, workNorm, misfit;
   Vec       z, u, temp;
@@ -230,7 +239,8 @@ static PetscErrorCode ObjectiveMisfitADMM(Tao tao, Vec x, PetscReal *J, void *_c
 }
 
 /* computes FTFx - FTd  mu*(x - z + u) */
-static PetscErrorCode GradientMisfitADMM(Tao tao, Vec x, Vec V, void *_ctx) {
+static PetscErrorCode GradientMisfitADMM(Tao tao, Vec x, Vec V, void *_ctx)
+{
   UserCtx   ctx = (UserCtx)_ctx;
   PetscReal mu;
   Vec       z, u, temp;
@@ -250,7 +260,8 @@ static PetscErrorCode GradientMisfitADMM(Tao tao, Vec x, Vec V, void *_ctx) {
 }
 
 /* returns FTF + diag(mu) */
-static PetscErrorCode HessianMisfitADMM(Tao tao, Vec x, Mat H, Mat Hpre, void *_ctx) {
+static PetscErrorCode HessianMisfitADMM(Tao tao, Vec x, Mat H, Mat Hpre, void *_ctx)
+{
   UserCtx ctx = (UserCtx)_ctx;
 
   PetscFunctionBegin;
@@ -261,7 +272,8 @@ static PetscErrorCode HessianMisfitADMM(Tao tao, Vec x, Mat H, Mat Hpre, void *_
 }
 
 /* computes || x ||_p (mult by 0.5 in case of NORM_2) */
-static PetscErrorCode ObjectiveRegularization(Tao tao, Vec x, PetscReal *J, void *_ctx) {
+static PetscErrorCode ObjectiveRegularization(Tao tao, Vec x, PetscReal *J, void *_ctx)
+{
   UserCtx   ctx = (UserCtx)_ctx;
   PetscReal norm;
 
@@ -276,7 +288,8 @@ static PetscErrorCode ObjectiveRegularization(Tao tao, Vec x, PetscReal *J, void
 /* NORM_2 Case: return x
  * NORM_1 Case: x/(|x| + eps)
  * Else: TODO */
-static PetscErrorCode GradientRegularization(Tao tao, Vec x, Vec V, void *_ctx) {
+static PetscErrorCode GradientRegularization(Tao tao, Vec x, Vec V, void *_ctx)
+{
   UserCtx   ctx = (UserCtx)_ctx;
   PetscReal eps = ctx->eps;
 
@@ -294,7 +307,8 @@ static PetscErrorCode GradientRegularization(Tao tao, Vec x, Vec V, void *_ctx) 
 
 /* NORM_2 Case: returns diag(mu)
  * NORM_1 Case: diag(mu* 1/sqrt(x_i^2 + eps) * (1 - x_i^2/ABS(x_i^2+eps)))  */
-static PetscErrorCode HessianRegularization(Tao tao, Vec x, Mat H, Mat Hpre, void *_ctx) {
+static PetscErrorCode HessianRegularization(Tao tao, Vec x, Mat H, Mat Hpre, void *_ctx)
+{
   UserCtx   ctx = (UserCtx)_ctx;
   PetscReal eps = ctx->eps;
   Vec       copy1, copy2, copy3;
@@ -345,7 +359,8 @@ static PetscErrorCode HessianRegularization(Tao tao, Vec x, Mat H, Mat Hpre, voi
 
 /* NORM_2 Case: 0.5 || x ||_2 + 0.5 * mu * ||x + u - z||^2
  * Else : || x ||_2 + 0.5 * mu * ||x + u - z||^2 */
-static PetscErrorCode ObjectiveRegularizationADMM(Tao tao, Vec z, PetscReal *J, void *_ctx) {
+static PetscErrorCode ObjectiveRegularizationADMM(Tao tao, Vec z, PetscReal *J, void *_ctx)
+{
   UserCtx   ctx = (UserCtx)_ctx;
   PetscReal mu, workNorm, reg;
   Vec       x, u, temp;
@@ -368,7 +383,8 @@ static PetscErrorCode ObjectiveRegularizationADMM(Tao tao, Vec z, PetscReal *J, 
 /* NORM_2 Case: x - mu*(x + u - z)
  * NORM_1 Case: x/(|x| + eps) - mu*(x + u - z)
  * Else: TODO */
-static PetscErrorCode GradientRegularizationADMM(Tao tao, Vec z, Vec V, void *_ctx) {
+static PetscErrorCode GradientRegularizationADMM(Tao tao, Vec z, Vec V, void *_ctx)
+{
   UserCtx   ctx = (UserCtx)_ctx;
   PetscReal mu;
   Vec       x, u, temp;
@@ -388,7 +404,8 @@ static PetscErrorCode GradientRegularizationADMM(Tao tao, Vec z, Vec V, void *_c
 
 /* NORM_2 Case: returns diag(mu)
  * NORM_1 Case: FTF + diag(mu) */
-static PetscErrorCode HessianRegularizationADMM(Tao tao, Vec x, Mat H, Mat Hpre, void *_ctx) {
+static PetscErrorCode HessianRegularizationADMM(Tao tao, Vec x, Mat H, Mat Hpre, void *_ctx)
+{
   UserCtx ctx = (UserCtx)_ctx;
 
   PetscFunctionBegin;
@@ -410,7 +427,8 @@ static PetscErrorCode HessianRegularizationADMM(Tao tao, Vec x, Mat H, Mat Hpre,
 
 /* NORM_2 Case : (1/2) * ||F x - d||^2 + 0.5 * || x ||_p
 *  NORM_1 Case : (1/2) * ||F x - d||^2 + || x ||_p */
-static PetscErrorCode ObjectiveComplete(Tao tao, Vec x, PetscReal *J, void *ctx) {
+static PetscErrorCode ObjectiveComplete(Tao tao, Vec x, PetscReal *J, void *ctx)
+{
   PetscReal Jm, Jr;
 
   PetscFunctionBegin;
@@ -422,7 +440,8 @@ static PetscErrorCode ObjectiveComplete(Tao tao, Vec x, PetscReal *J, void *ctx)
 
 /* NORM_2 Case: FTFx - FTd + x
  * NORM_1 Case: FTFx - FTd + x/(|x| + eps) */
-static PetscErrorCode GradientComplete(Tao tao, Vec x, Vec V, void *ctx) {
+static PetscErrorCode GradientComplete(Tao tao, Vec x, Vec V, void *ctx)
+{
   UserCtx cntx = (UserCtx)ctx;
 
   PetscFunctionBegin;
@@ -434,7 +453,8 @@ static PetscErrorCode GradientComplete(Tao tao, Vec x, Vec V, void *ctx) {
 
 /* NORM_2 Case: diag(mu) + FTF
  * NORM_1 Case: diag(mu* 1/sqrt(x_i^2 + eps) * (1 - x_i^2/ABS(x_i^2+eps))) + FTF  */
-static PetscErrorCode HessianComplete(Tao tao, Vec x, Mat H, Mat Hpre, void *ctx) {
+static PetscErrorCode HessianComplete(Tao tao, Vec x, Mat H, Mat Hpre, void *ctx)
+{
   Mat tempH;
 
   PetscFunctionBegin;
@@ -447,7 +467,8 @@ static PetscErrorCode HessianComplete(Tao tao, Vec x, Mat H, Mat Hpre, void *ctx
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TaoSolveADMM(UserCtx ctx, Vec x) {
+static PetscErrorCode TaoSolveADMM(UserCtx ctx, Vec x)
+{
   PetscInt  i;
   PetscReal u_norm, r_norm, s_norm, primal, dual, x_norm, z_norm;
   Tao       tao1, tao2;
@@ -520,7 +541,8 @@ static PetscErrorCode TaoSolveADMM(UserCtx ctx, Vec x) {
 }
 
 /* Second order Taylor remainder convergence test */
-static PetscErrorCode TaylorTest(UserCtx ctx, Tao tao, Vec x, PetscReal *C) {
+static PetscErrorCode TaylorTest(UserCtx ctx, Tao tao, Vec x, PetscReal *C)
+{
   PetscReal  h, J, temp;
   PetscInt   i, j;
   PetscInt   numValues;
@@ -551,7 +573,7 @@ static PetscErrorCode TaylorTest(UserCtx ctx, Tao tao, Vec x, PetscReal *C) {
     /* J(\hat(x)) \approx J(x) + g^T (xhat - x) = J(x) + h * g^T dx */
     Jxhat_pred = Jx + h * gdotdx;
     /* Vector to dJdm scalar? Dot?*/
-    J          = PetscAbsReal(Jxhat_comp - Jxhat_pred);
+    J = PetscAbsReal(Jxhat_comp - Jxhat_pred);
     PetscCall(PetscPrintf(comm, "J(xhat): %g, predicted: %g, diff %g\n", (double)Jxhat_comp, (double)Jxhat_pred, (double)J));
     Js[i] = J;
     hs[i] = h;
@@ -570,7 +592,8 @@ static PetscErrorCode TaylorTest(UserCtx ctx, Tao tao, Vec x, PetscReal *C) {
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   UserCtx ctx;
   Tao     tao;
   Vec     x;

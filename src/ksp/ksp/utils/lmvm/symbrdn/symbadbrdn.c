@@ -3,7 +3,8 @@
 
 /*------------------------------------------------------------*/
 
-static PetscErrorCode MatSolve_LMVMSymBadBrdn(Mat B, Vec F, Vec dX) {
+static PetscErrorCode MatSolve_LMVMSymBadBrdn(Mat B, Vec F, Vec dX)
+{
   Mat_LMVM    *lmvm = (Mat_LMVM *)B->data;
   Mat_SymBrdn *lsb  = (Mat_SymBrdn *)lmvm->ctx;
   PetscInt     i, j;
@@ -69,7 +70,8 @@ static PetscErrorCode MatSolve_LMVMSymBadBrdn(Mat B, Vec F, Vec dX) {
 
 /*------------------------------------------------------------*/
 
-static PetscErrorCode MatMult_LMVMSymBadBrdn(Mat B, Vec X, Vec Z) {
+static PetscErrorCode MatMult_LMVMSymBadBrdn(Mat B, Vec X, Vec Z)
+{
   Mat_LMVM    *lmvm = (Mat_LMVM *)B->data;
   Mat_SymBrdn *lsb  = (Mat_SymBrdn *)lmvm->ctx;
   PetscInt     i, j;
@@ -167,7 +169,8 @@ static PetscErrorCode MatMult_LMVMSymBadBrdn(Mat B, Vec X, Vec Z) {
 
 /*------------------------------------------------------------*/
 
-static PetscErrorCode MatSetFromOptions_LMVMSymBadBrdn(Mat B, PetscOptionItems *PetscOptionsObject) {
+static PetscErrorCode MatSetFromOptions_LMVMSymBadBrdn(Mat B, PetscOptionItems *PetscOptionsObject)
+{
   Mat_LMVM     *lmvm = (Mat_LMVM *)B->data;
   Mat_SymBrdn  *lsb  = (Mat_SymBrdn *)lmvm->ctx;
   Mat_LMVM     *dbase;
@@ -185,7 +188,8 @@ static PetscErrorCode MatSetFromOptions_LMVMSymBadBrdn(Mat B, PetscOptionItems *
 
 /*------------------------------------------------------------*/
 
-PetscErrorCode MatCreate_LMVMSymBadBrdn(Mat B) {
+PetscErrorCode MatCreate_LMVMSymBadBrdn(Mat B)
+{
   Mat_LMVM *lmvm;
 
   PetscFunctionBegin;
@@ -210,25 +214,22 @@ PetscErrorCode MatCreate_LMVMSymBadBrdn(Mat B) {
    on the forwards. For forward convex combinations, use the L-SymBrdn matrix.
 
    The provided local and global sizes must match the solution and function vectors
-   used with MatLMVMUpdate() and MatSolve(). The resulting L-SymBrdn matrix will have
-   storage vectors allocated with VecCreateSeq() in serial and VecCreateMPI() in
+   used with `MatLMVMUpdate()` and `MatSolve()`. The resulting L-SymBrdn matrix will have
+   storage vectors allocated with `VecCreateSeq()` in serial and `VecCreateMPI()` in
    parallel. To use the L-SymBrdn matrix with other vector types, the matrix must be
-   created using MatCreate() and MatSetType(), followed by MatLMVMAllocate().
+   created using MatCreate() and MatSetType(), followed by `MatLMVMAllocate()`.
    This ensures that the internal storage and work vectors are duplicated from the
    correct type of vector.
 
    Collective
 
    Input Parameters:
-+  comm - MPI communicator, set to PETSC_COMM_SELF
++  comm - MPI communicator
 .  n - number of local rows for storage vectors
 -  N - global size of the storage vectors
 
    Output Parameter:
 .  B - the matrix
-
-   It is recommended that one use the MatCreate(), MatSetType() and/or MatSetFromOptions()
-   paradigm instead of this routine directly.
 
    Options Database Keys:
 +   -mat_lmvm_phi - (developer) convex ratio between BFGS and DFP components of the update
@@ -241,10 +242,15 @@ PetscErrorCode MatCreate_LMVMSymBadBrdn(Mat B) {
 
    Level: intermediate
 
-.seealso: `MatCreate()`, `MATLMVM`, `MATLMVMSYMBROYDEN`, `MatCreateLMVMDFP()`, `MatCreateLMVMSR1()`,
+   Note:
+   It is recommended that one use the `MatCreate()`, `MatSetType()` and/or `MatSetFromOptions()`
+   paradigm instead of this routine directly.
+
+.seealso: [](chapter_ksp), [LMVM Matrices](sec_matlmvm), `MatCreate()`, `MATLMVM`, `MATLMVMSYMBROYDEN`, `MatCreateLMVMDFP()`, `MatCreateLMVMSR1()`,
           `MatCreateLMVMBFGS()`, `MatCreateLMVMBrdn()`, `MatCreateLMVMBadBrdn()`
 @*/
-PetscErrorCode MatCreateLMVMSymBadBroyden(MPI_Comm comm, PetscInt n, PetscInt N, Mat *B) {
+PetscErrorCode MatCreateLMVMSymBadBroyden(MPI_Comm comm, PetscInt n, PetscInt N, Mat *B)
+{
   PetscFunctionBegin;
   PetscCall(MatCreate(comm, B));
   PetscCall(MatSetSizes(*B, n, n, N, N));

@@ -1,12 +1,14 @@
 #include <petsc/private/deviceimpl.h>
 #include <petsc/private/randomimpl.h>
+#include <petscdevice_cuda.h>
 #include <curand.h>
 
 typedef struct {
   curandGenerator_t gen;
 } PetscRandom_CURAND;
 
-PetscErrorCode PetscRandomSeed_CURAND(PetscRandom r) {
+PetscErrorCode PetscRandomSeed_CURAND(PetscRandom r)
+{
   PetscRandom_CURAND *curand = (PetscRandom_CURAND *)r->data;
 
   PetscFunctionBegin;
@@ -16,7 +18,8 @@ PetscErrorCode PetscRandomSeed_CURAND(PetscRandom r) {
 
 PETSC_INTERN PetscErrorCode PetscRandomCurandScale_Private(PetscRandom, size_t, PetscReal *, PetscBool);
 
-PetscErrorCode PetscRandomGetValuesReal_CURAND(PetscRandom r, PetscInt n, PetscReal *val) {
+PetscErrorCode PetscRandomGetValuesReal_CURAND(PetscRandom r, PetscInt n, PetscReal *val)
+{
   PetscRandom_CURAND *curand = (PetscRandom_CURAND *)r->data;
   size_t              nn     = n < 0 ? (size_t)(-2 * n) : n; /* handle complex case */
 
@@ -30,7 +33,8 @@ PetscErrorCode PetscRandomGetValuesReal_CURAND(PetscRandom r, PetscInt n, PetscR
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscRandomGetValues_CURAND(PetscRandom r, PetscInt n, PetscScalar *val) {
+PetscErrorCode PetscRandomGetValues_CURAND(PetscRandom r, PetscInt n, PetscScalar *val)
+{
   PetscFunctionBegin;
 #if defined(PETSC_USE_COMPLEX)
   /* pass negative size to flag complex scaling (if needed) */
@@ -41,7 +45,8 @@ PetscErrorCode PetscRandomGetValues_CURAND(PetscRandom r, PetscInt n, PetscScala
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscRandomDestroy_CURAND(PetscRandom r) {
+PetscErrorCode PetscRandomDestroy_CURAND(PetscRandom r)
+{
   PetscRandom_CURAND *curand = (PetscRandom_CURAND *)r->data;
 
   PetscFunctionBegin;
@@ -69,12 +74,13 @@ static struct _PetscRandomOps PetscRandomOps_Values = {
 .seealso: `PetscRandomCreate()`, `PetscRandomSetType()`, `PetscRandomType`
 M*/
 
-PETSC_EXTERN PetscErrorCode PetscRandomCreate_CURAND(PetscRandom r) {
+PETSC_EXTERN PetscErrorCode PetscRandomCreate_CURAND(PetscRandom r)
+{
   PetscRandom_CURAND *curand;
 
   PetscFunctionBegin;
   PetscCall(PetscDeviceInitialize(PETSC_DEVICE_CUDA));
-  PetscCall(PetscNewLog(r, &curand));
+  PetscCall(PetscNew(&curand));
   PetscCallCURAND(curandCreateGenerator(&curand->gen, CURAND_RNG_PSEUDO_DEFAULT));
   /* https://docs.nvidia.com/cuda/curand/host-api-overview.html#performance-notes2 */
   PetscCallCURAND(curandSetGeneratorOrdering(curand->gen, CURAND_ORDERING_PSEUDO_SEEDED));

@@ -13,9 +13,10 @@ static PetscBool PetscViewerPackageInitialized = PETSC_FALSE;
 
 .seealso: `PetscFinalize()`
 @*/
-PetscErrorCode   PetscViewerFinalizePackage(void) {
-    PetscFunctionBegin;
-    if (Petsc_Viewer_keyval != MPI_KEYVAL_INVALID) PetscCallMPI(MPI_Comm_free_keyval(&Petsc_Viewer_keyval));
+PetscErrorCode PetscViewerFinalizePackage(void)
+{
+  PetscFunctionBegin;
+  if (Petsc_Viewer_keyval != MPI_KEYVAL_INVALID) PetscCallMPI(MPI_Comm_free_keyval(&Petsc_Viewer_keyval));
   if (Petsc_Viewer_Stdout_keyval != MPI_KEYVAL_INVALID) PetscCallMPI(MPI_Comm_free_keyval(&Petsc_Viewer_Stdout_keyval));
   if (Petsc_Viewer_Stderr_keyval != MPI_KEYVAL_INVALID) PetscCallMPI(MPI_Comm_free_keyval(&Petsc_Viewer_Stderr_keyval));
   if (Petsc_Viewer_Binary_keyval != MPI_KEYVAL_INVALID) PetscCallMPI(MPI_Comm_free_keyval(&Petsc_Viewer_Binary_keyval));
@@ -39,7 +40,8 @@ PetscErrorCode   PetscViewerFinalizePackage(void) {
 
 .seealso: `PetscInitialize()`
 @*/
-PetscErrorCode PetscViewerInitializePackage(void) {
+PetscErrorCode PetscViewerInitializePackage(void)
+{
   char      logList[256];
   PetscBool opt, pkg;
 
@@ -83,7 +85,8 @@ PetscErrorCode PetscViewerInitializePackage(void) {
 
 .seealso: `PetscViewer`, `PetscViewerSocketOpen()`, `PetscViewerASCIIOpen()`, `PetscViewerCreate()`, `PetscViewerDrawOpen()`
 @*/
-PetscErrorCode PetscViewerDestroy(PetscViewer *viewer) {
+PetscErrorCode PetscViewerDestroy(PetscViewer *viewer)
+{
   PetscFunctionBegin;
   if (!*viewer) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(*viewer, PETSC_VIEWER_CLASSID, 1);
@@ -121,7 +124,8 @@ PetscErrorCode PetscViewerDestroy(PetscViewer *viewer) {
 
 .seealso: `PetscViewerSocketOpen()`, `PetscViewerASCIIOpen()`, `PetscViewerCreate()`, `PetscViewerDrawOpen()`, `PetscViewerAndFormatDestroy()`
 @*/
-PetscErrorCode PetscViewerAndFormatCreate(PetscViewer viewer, PetscViewerFormat format, PetscViewerAndFormat **vf) {
+PetscErrorCode PetscViewerAndFormatCreate(PetscViewer viewer, PetscViewerFormat format, PetscViewerAndFormat **vf)
+{
   PetscFunctionBegin;
   PetscCall(PetscObjectReference((PetscObject)viewer));
   PetscCall(PetscNew(vf));
@@ -144,7 +148,8 @@ PetscErrorCode PetscViewerAndFormatCreate(PetscViewer viewer, PetscViewerFormat 
 
 .seealso: `PetscViewerSocketOpen()`, `PetscViewerASCIIOpen()`, `PetscViewerCreate()`, `PetscViewerDrawOpen()`, `PetscViewerAndFormatCreate()`
 @*/
-PetscErrorCode PetscViewerAndFormatDestroy(PetscViewerAndFormat **vf) {
+PetscErrorCode PetscViewerAndFormatDestroy(PetscViewerAndFormat **vf)
+{
   PetscFunctionBegin;
   PetscCall(PetscViewerDestroy(&(*vf)->viewer));
   PetscCall(PetscDrawLGDestroy(&(*vf)->lg));
@@ -179,7 +184,8 @@ PetscErrorCode PetscViewerAndFormatDestroy(PetscViewerAndFormat **vf) {
 
 .seealso: `PetscViewerType`, `PetscViewer`, `PetscViewerCreate()`, `PetscViewerSetType()`, `PetscViewerType`
 @*/
-PetscErrorCode PetscViewerGetType(PetscViewer viewer, PetscViewerType *type) {
+PetscErrorCode PetscViewerGetType(PetscViewer viewer, PetscViewerType *type)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 1);
   PetscValidPointer(type, 2);
@@ -205,7 +211,8 @@ PetscErrorCode PetscViewerGetType(PetscViewer viewer, PetscViewerType *type) {
 
 .seealso: `PetscViewer`, `PetscViewerSetFromOptions()`
 @*/
-PetscErrorCode PetscViewerSetOptionsPrefix(PetscViewer viewer, const char prefix[]) {
+PetscErrorCode PetscViewerSetOptionsPrefix(PetscViewer viewer, const char prefix[])
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 1);
   PetscCall(PetscObjectSetOptionsPrefix((PetscObject)viewer, prefix));
@@ -230,7 +237,8 @@ PetscErrorCode PetscViewerSetOptionsPrefix(PetscViewer viewer, const char prefix
 
 .seealso: `PetscViewer`, `PetscViewerGetOptionsPrefix()`
 @*/
-PetscErrorCode PetscViewerAppendOptionsPrefix(PetscViewer viewer, const char prefix[]) {
+PetscErrorCode PetscViewerAppendOptionsPrefix(PetscViewer viewer, const char prefix[])
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 1);
   PetscCall(PetscObjectAppendOptionsPrefix((PetscObject)viewer, prefix));
@@ -256,7 +264,8 @@ PetscErrorCode PetscViewerAppendOptionsPrefix(PetscViewer viewer, const char pre
 
 .seealso: `PetscViewer`, `PetscViewerAppendOptionsPrefix()`
 @*/
-PetscErrorCode PetscViewerGetOptionsPrefix(PetscViewer viewer, const char *prefix[]) {
+PetscErrorCode PetscViewerGetOptionsPrefix(PetscViewer viewer, const char *prefix[])
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 1);
   PetscCall(PetscObjectGetOptionsPrefix((PetscObject)viewer, prefix));
@@ -279,7 +288,8 @@ PetscErrorCode PetscViewerGetOptionsPrefix(PetscViewer viewer, const char *prefi
 
 .seealso: `PetscViewer`, `PetscViewerCreate()`, `PetscViewerDestroy()`
 @*/
-PetscErrorCode PetscViewerSetUp(PetscViewer viewer) {
+PetscErrorCode PetscViewerSetUp(PetscViewer viewer)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 1);
   if (viewer->setupcalled) PetscFunctionReturn(0);
@@ -302,7 +312,8 @@ PetscErrorCode PetscViewerSetUp(PetscViewer viewer) {
 
 .seealso: `PetscViewer`, `PetscViewerView`, `PetscObjectViewFromOptions()`, `PetscViewerCreate()`
 @*/
-PetscErrorCode PetscViewerViewFromOptions(PetscViewer A, PetscObject obj, const char name[]) {
+PetscErrorCode PetscViewerViewFromOptions(PetscViewer A, PetscObject obj, const char name[])
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, PETSC_VIEWER_CLASSID, 1);
   PetscCall(PetscObjectViewFromOptions((PetscObject)A, obj, name));
@@ -331,7 +342,8 @@ PetscErrorCode PetscViewerViewFromOptions(PetscViewer A, PetscObject obj, const 
 .seealso: `PetscViewer`, `PetscViewerPushFormat()`, `PetscViewerASCIIOpen()`, `PetscViewerDrawOpen()`,
           `PetscViewerSocketOpen()`, `PetscViewerBinaryOpen()`, `PetscViewerLoad()`
 @*/
-PetscErrorCode PetscViewerView(PetscViewer v, PetscViewer viewer) {
+PetscErrorCode PetscViewerView(PetscViewer v, PetscViewer viewer)
+{
   PetscBool         iascii;
   PetscViewerFormat format;
 #if defined(PETSC_HAVE_SAWS)
@@ -393,7 +405,8 @@ PetscErrorCode PetscViewerView(PetscViewer v, PetscViewer viewer) {
           `VecView()`, `MatView()`, `VecLoad()`, `MatLoad()`, `PetscViewerBinaryGetDescriptor()`,
           `PetscViewerBinaryGetInfoPointer()`, `PetscFileMode`, `PetscViewer`
 @*/
-PetscErrorCode PetscViewerRead(PetscViewer viewer, void *data, PetscInt num, PetscInt *count, PetscDataType dtype) {
+PetscErrorCode PetscViewerRead(PetscViewer viewer, void *data, PetscInt num, PetscInt *count, PetscDataType dtype)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 1);
   if (dtype == PETSC_STRING) {
@@ -451,7 +464,8 @@ PetscErrorCode PetscViewerRead(PetscViewer viewer, void *data, PetscInt num, Pet
 
 .seealso: `PetscViewer`, `PetscViewerWritable()`, `PetscViewerCheckReadable()`, `PetscViewerCreate()`, `PetscViewerFileSetMode()`, `PetscViewerFileSetType()`
 @*/
-PetscErrorCode PetscViewerReadable(PetscViewer viewer, PetscBool *flg) {
+PetscErrorCode PetscViewerReadable(PetscViewer viewer, PetscBool *flg)
+{
   PetscFileMode mode;
   PetscErrorCode (*f)(PetscViewer, PetscFileMode *) = NULL;
 
@@ -465,8 +479,10 @@ PetscErrorCode PetscViewerReadable(PetscViewer viewer, PetscBool *flg) {
   switch (mode) {
   case FILE_MODE_READ:
   case FILE_MODE_UPDATE:
-  case FILE_MODE_APPEND_UPDATE: *flg = PETSC_TRUE;
-  default: break;
+  case FILE_MODE_APPEND_UPDATE:
+    *flg = PETSC_TRUE;
+  default:
+    break;
   }
   PetscFunctionReturn(0);
 }
@@ -490,7 +506,8 @@ PetscErrorCode PetscViewerReadable(PetscViewer viewer, PetscBool *flg) {
 
 .seealso: `PetscViewer`, `PetscViewerReadable()`, `PetscViewerCheckWritable()`, `PetscViewerCreate()`, `PetscViewerFileSetMode()`, `PetscViewerFileSetType()`
 @*/
-PetscErrorCode PetscViewerWritable(PetscViewer viewer, PetscBool *flg) {
+PetscErrorCode PetscViewerWritable(PetscViewer viewer, PetscBool *flg)
+{
   PetscFileMode mode;
   PetscErrorCode (*f)(PetscViewer, PetscFileMode *) = NULL;
 
@@ -517,7 +534,8 @@ PetscErrorCode PetscViewerWritable(PetscViewer viewer, PetscBool *flg) {
 
 .seealso: `PetscViewer`, `PetscViewerReadable()`, `PetscViewerCheckWritable()`, `PetscViewerCreate()`, `PetscViewerFileSetMode()`, `PetscViewerFileSetType()`
 @*/
-PetscErrorCode PetscViewerCheckReadable(PetscViewer viewer) {
+PetscErrorCode PetscViewerCheckReadable(PetscViewer viewer)
+{
   PetscBool flg;
 
   PetscFunctionBegin;
@@ -539,7 +557,8 @@ PetscErrorCode PetscViewerCheckReadable(PetscViewer viewer) {
 
 .seealso: `PetscViewer`, `PetscViewerWritable()`, `PetscViewerCheckReadable()`, `PetscViewerCreate()`, `PetscViewerFileSetMode()`, `PetscViewerFileSetType()`
 @*/
-PetscErrorCode PetscViewerCheckWritable(PetscViewer viewer) {
+PetscErrorCode PetscViewerCheckWritable(PetscViewer viewer)
+{
   PetscBool flg;
 
   PetscFunctionBegin;

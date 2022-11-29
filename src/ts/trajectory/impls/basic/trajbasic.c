@@ -9,7 +9,8 @@ typedef struct {
   and optionally saves the stage values Y[] between t_{n-1} and t_n, the previous time t_{n-1}, and
   forward stage sensitivities S[] = dY[]/dp.
 */
-static PetscErrorCode TSTrajectorySet_Basic(TSTrajectory tj, TS ts, PetscInt stepnum, PetscReal time, Vec X) {
+static PetscErrorCode TSTrajectorySet_Basic(TSTrajectory tj, TS ts, PetscInt stepnum, PetscReal time, Vec X)
+{
   TSTrajectory_Basic *tjbasic = (TSTrajectory_Basic *)tj->data;
   char                filename[PETSC_MAX_PATH_LEN];
   PetscInt            ns, i;
@@ -46,14 +47,16 @@ static PetscErrorCode TSTrajectorySet_Basic(TSTrajectory tj, TS ts, PetscInt ste
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSTrajectorySetFromOptions_Basic(TSTrajectory tj, PetscOptionItems *PetscOptionsObject) {
+static PetscErrorCode TSTrajectorySetFromOptions_Basic(TSTrajectory tj, PetscOptionItems *PetscOptionsObject)
+{
   PetscFunctionBegin;
   PetscOptionsHeadBegin(PetscOptionsObject, "TS trajectory options for Basic type");
   PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSTrajectoryGet_Basic(TSTrajectory tj, TS ts, PetscInt stepnum, PetscReal *t) {
+static PetscErrorCode TSTrajectoryGet_Basic(TSTrajectory tj, TS ts, PetscInt stepnum, PetscReal *t)
+{
   PetscViewer viewer;
   char        filename[PETSC_MAX_PATH_LEN];
   Vec         Sol;
@@ -95,7 +98,8 @@ static PetscErrorCode TSTrajectoryGet_Basic(TSTrajectory tj, TS ts, PetscInt ste
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode TSTrajectorySetUp_Basic(TSTrajectory tj, TS ts) {
+PetscErrorCode TSTrajectorySetUp_Basic(TSTrajectory tj, TS ts)
+{
   MPI_Comm    comm;
   PetscMPIInt rank;
 
@@ -123,7 +127,8 @@ PetscErrorCode TSTrajectorySetUp_Basic(TSTrajectory tj, TS ts) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSTrajectoryDestroy_Basic(TSTrajectory tj) {
+static PetscErrorCode TSTrajectoryDestroy_Basic(TSTrajectory tj)
+{
   TSTrajectory_Basic *tjbasic = (TSTrajectory_Basic *)tj->data;
 
   PetscFunctionBegin;
@@ -143,10 +148,11 @@ static PetscErrorCode TSTrajectoryDestroy_Basic(TSTrajectory tj) {
 
   Level: intermediate
 
-.seealso: `TSTrajectoryCreate()`, `TS`, `TSTrajectorySetType()`, `TSTrajectorySetDirname()`, `TSTrajectorySetFile()`
-
+.seealso: [](chapter_ts), `TSTrajectoryCreate()`, `TS`, `TSTrajectory`, `TSTrajectorySetType()`, `TSTrajectorySetDirname()`, `TSTrajectorySetFile()`,
+          `TSTrajectoryType`
 M*/
-PETSC_EXTERN PetscErrorCode TSTrajectoryCreate_Basic(TSTrajectory tj, TS ts) {
+PETSC_EXTERN PetscErrorCode TSTrajectoryCreate_Basic(TSTrajectory tj, TS ts)
+{
   TSTrajectory_Basic *tjbasic;
 
   PetscFunctionBegin;

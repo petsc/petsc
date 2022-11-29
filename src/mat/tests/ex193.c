@@ -12,7 +12,8 @@
 
 static char help[] = "Illustrates use of hierarchical partitioning.\n";
 
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   Mat             A;    /* matrix */
   PetscInt        m, n; /* mesh dimensions in x- and y- directions */
   PetscInt        i, j, Ii, J, Istart, Iend;

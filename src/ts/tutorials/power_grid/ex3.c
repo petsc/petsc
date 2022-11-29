@@ -32,7 +32,8 @@ F*/
 #include <petscts.h>
 #include "ex3.h"
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   TS           ts; /* ODE integrator */
   Vec          U;  /* solution will be stored here */
   Mat          A;  /* Jacobian matrix */

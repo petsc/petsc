@@ -2,7 +2,7 @@
   Context for a Newton trust region method (unconstrained minimization)
 */
 
-#if !defined(__TAO_NTR_H)
+#ifndef __TAO_NTR_H
 #define __TAO_NTR_H
 #include <petsc/private/taoimpl.h>
 

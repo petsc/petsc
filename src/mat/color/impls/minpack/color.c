@@ -11,7 +11,8 @@
     MatFDColoringDegreeSequence_Minpack - Calls the MINPACK routine seqr() that
       computes the degree sequence required by MINPACK coloring routines.
 */
-PETSC_INTERN PetscErrorCode MatFDColoringDegreeSequence_Minpack(PetscInt m, const PetscInt *cja, const PetscInt *cia, const PetscInt *rja, const PetscInt *ria, PetscInt **seq) {
+PETSC_INTERN PetscErrorCode MatFDColoringDegreeSequence_Minpack(PetscInt m, const PetscInt *cja, const PetscInt *cia, const PetscInt *rja, const PetscInt *ria, PetscInt **seq)
+{
   PetscInt *work;
 
   PetscFunctionBegin;
@@ -29,7 +30,8 @@ PETSC_INTERN PetscErrorCode MatFDColoringDegreeSequence_Minpack(PetscInt m, cons
         matrix computes the minimum number of colors needed.
 
 */
-PetscErrorCode MatFDColoringMinimumNumberofColors_Private(PetscInt m, PetscInt *ia, PetscInt *minc) {
+PetscErrorCode MatFDColoringMinimumNumberofColors_Private(PetscInt m, PetscInt *ia, PetscInt *minc)
+{
   PetscInt i, c = 0;
 
   PetscFunctionBegin;
@@ -38,7 +40,8 @@ PetscErrorCode MatFDColoringMinimumNumberofColors_Private(PetscInt m, PetscInt *
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatColoringApply_SL(MatColoring mc, ISColoring *iscoloring) {
+static PetscErrorCode MatColoringApply_SL(MatColoring mc, ISColoring *iscoloring)
+{
   PetscInt        *list, *work, clique, *seq, *coloring, n;
   const PetscInt  *ria, *rja, *cia, *cja;
   PetscInt         ncolors, i;
@@ -129,7 +132,8 @@ static PetscErrorCode MatColoringApply_SL(MatColoring mc, ISColoring *iscoloring
 .seealso: `MatColoringCreate()`, `MatColoring`, `MatColoringSetType()`, `MATCOLORINGGREEDY`, `MatColoringType`
 M*/
 
-PETSC_EXTERN PetscErrorCode MatColoringCreate_SL(MatColoring mc) {
+PETSC_EXTERN PetscErrorCode MatColoringCreate_SL(MatColoring mc)
+{
   PetscFunctionBegin;
   mc->dist                = 2;
   mc->data                = NULL;
@@ -140,7 +144,8 @@ PETSC_EXTERN PetscErrorCode MatColoringCreate_SL(MatColoring mc) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatColoringApply_LF(MatColoring mc, ISColoring *iscoloring) {
+static PetscErrorCode MatColoringApply_LF(MatColoring mc, ISColoring *iscoloring)
+{
   PetscInt        *list, *work, *seq, *coloring, n;
   const PetscInt  *ria, *rja, *cia, *cja;
   PetscInt         n1, none, ncolors, i;
@@ -234,7 +239,8 @@ static PetscErrorCode MatColoringApply_LF(MatColoring mc, ISColoring *iscoloring
 .seealso: `MatColoringTpe`, `MatColoringCreate()`, `MatColoring`, `MatColoringSetType()`, `MATCOLORINGGREEDY`, `MatColoringType`
 M*/
 
-PETSC_EXTERN PetscErrorCode MatColoringCreate_LF(MatColoring mc) {
+PETSC_EXTERN PetscErrorCode MatColoringCreate_LF(MatColoring mc)
+{
   PetscFunctionBegin;
   mc->dist                = 2;
   mc->data                = NULL;
@@ -245,7 +251,8 @@ PETSC_EXTERN PetscErrorCode MatColoringCreate_LF(MatColoring mc) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatColoringApply_ID(MatColoring mc, ISColoring *iscoloring) {
+static PetscErrorCode MatColoringApply_ID(MatColoring mc, ISColoring *iscoloring)
+{
   PetscInt        *list, *work, clique, *seq, *coloring, n;
   const PetscInt  *ria, *rja, *cia, *cja;
   PetscInt         ncolors, i;
@@ -337,7 +344,8 @@ static PetscErrorCode MatColoringApply_ID(MatColoring mc, ISColoring *iscoloring
 .seealso: `MatColoringCreate()`, `MatColoring`, `MatColoringSetType()`, `MATCOLORINGGREEDY`, `MatColoringType`
 M*/
 
-PETSC_EXTERN PetscErrorCode MatColoringCreate_ID(MatColoring mc) {
+PETSC_EXTERN PetscErrorCode MatColoringCreate_ID(MatColoring mc)
+{
   PetscFunctionBegin;
   mc->dist                = 2;
   mc->data                = NULL;

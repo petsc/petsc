@@ -1,5 +1,5 @@
-#if !defined(__is_h)
-#define __is_h
+#ifndef PETSC_MATISIMPL_H
+#define PETSC_MATISIMPL_H
 
 #include <petscsf.h>
 #include <petsc/private/matimpl.h>
@@ -47,4 +47,4 @@ struct _MatISPtAP {
 typedef struct _MatISPtAP *MatISPtAP;
 
 PETSC_EXTERN PetscErrorCode MatISSetMPIXAIJPreallocation_Private(Mat, Mat, PetscBool);
-#endif
+#endif // PETSC_MATISIMPL_H

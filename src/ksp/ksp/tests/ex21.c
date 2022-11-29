@@ -2,7 +2,8 @@ static const char help[] = "Tests MatGetSchurComplement\n";
 
 #include <petscksp.h>
 
-PetscErrorCode Create(MPI_Comm comm, Mat *inA, IS *is0, IS *is1) {
+PetscErrorCode Create(MPI_Comm comm, Mat *inA, IS *is0, IS *is1)
+{
   Mat         A;
   PetscInt    r, rend, M;
   PetscMPIInt rank;
@@ -78,7 +79,8 @@ PetscErrorCode Create(MPI_Comm comm, Mat *inA, IS *is0, IS *is1) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode Destroy(Mat *A, IS *is0, IS *is1) {
+PetscErrorCode Destroy(Mat *A, IS *is0, IS *is1)
+{
   PetscFunctionBeginUser;
   PetscCall(MatDestroy(A));
   PetscCall(ISDestroy(is0));
@@ -86,7 +88,8 @@ PetscErrorCode Destroy(Mat *A, IS *is0, IS *is1) {
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[])
+{
   Mat                        A, S = NULL, Sexplicit = NULL, Sp, B, C;
   MatSchurComplementAinvType ainv_type = MAT_SCHUR_COMPLEMENT_AINV_DIAG;
   IS                         is0, is1;

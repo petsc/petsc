@@ -607,6 +607,43 @@ options data base commands ``-ksp_view_eigenvalues draw`` and
 screen in ASCII text via ``-ksp_view_eigenvalues`` and
 ``-ksp_view_eigenvalues_explicit``.
 
+.. _sec_flexibleksp:
+
+Flexible Krylov Methods
+^^^^^^^^^^^^^^^^^^^^^^^
+
+Standard Krylov methods require that the preconditioner be a linear operator, thus, for example, a standard ``KSP`` method
+cannot use a ``KSP`` in its preconditioner, as is common in the Block-Jacobi method ``PCBJACOBI``, for example.
+Flexible Krylov methods are a subset of methods that allow (with modest additional requirements
+on memory) the preconditioner to be nonlinear. For example, they can be used with the ``PCKSP`` preconditioner.
+The flexible ``KSP`` methods have the label "Flexible" in :any:`tab-kspdefaults`.
+
+One can use ``KSPMonitorDynamicTolerance()`` to control the tolerances used by inner ``KSP`` solvers in ``PCKSP``, ``PCBJACOBI``, and ``PCDEFLATION``.
+
+In addition to supporting ``PCKSP``, the flexible methods support ``KSP*SetModifyPC()``, for example, ``KSPFGMRESSetModifyPC()``, these functions
+allow the user to provide a callback function that changes the preconditioner at each Krylov iteration. Its calling sequence is as follows.
+
+.. code-block::
+
+   PetscErrorCode f(KSP ksp,PetscInt total_its,PetscInt its_since_restart,PetscReal res_norm,void *ctx);
+
+.. _sec_pipelineksp:
+
+Pipelined Krylov Methods
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+Standard Krylov methods have one or more global reductions resulting from the computations of inner products or norms in each iteration.
+These reductions need to block until all MPI ranks have received the results. For a large number of MPI ranks (this number is machine dependent
+but can be above 10,000 ranks) this synchronization is very time consuming and can significantly slow the computation. Pipelined Krylov
+methods overlap the reduction operations with local computations (generally the application of the matrix-vector products and precondtiioners)
+thus effectively "hiding" the time of the reductions. In addition, they may reduce the number of global synchronizations by rearranging the
+computations in a way that some of them can be collapsed, e.g., two or more calls to ``MPI_Allreduce()`` may be combined into one call.
+The pipeline ``KSP`` methods have the label "Pipeline" in :any:`tab-kspdefaults`.
+
+Special configuration of MPI may be necessary for reductions to make asynchronous progress, which is important for
+performance of pipelined methods. See :any:`doc_faq_pipelined` for details.
+
+
 Other KSP Options
 ^^^^^^^^^^^^^^^^^
 
@@ -904,9 +941,9 @@ the various blocks. To set the appropriate data structures, the user
 *must* explicitly call ``KSPSetUp()`` before calling
 ``PCBJacobiGetSubKSP()`` or ``PCASMGetSubKSP(``). For further details,
 see
-`KSP Tutorial ex7 <../../../src/ksp/ksp/tutorials/ex7.c.html>`__
+`KSP Tutorial ex7 <PETSC_DOC_OUT_ROOT_PLACEHOLDER/src/ksp/ksp/tutorials/ex7.c.html>`__
 or
-`KSP Tutorial ex8 <../../../src/ksp/ksp/tutorials/ex8.c.html>`__.
+`KSP Tutorial ex8 <PETSC_DOC_OUT_ROOT_PLACEHOLDER/src/ksp/ksp/tutorials/ex8.c.html>`__.
 
 The block Jacobi, block Gauss-Seidel, and additive Schwarz
 preconditioners allow the user to set the number of blocks into which
@@ -1027,7 +1064,7 @@ for subdomains that fit within a single MPI rank, exactly as in
 ``PCASM``.
 
 Examples of the described ``PCGASM`` usage can be found in
-`KSP Tutorial ex62 <../../../src/ksp/ksp/tutorials/ex62.c.html>`__.
+`KSP Tutorial ex62 <PETSC_DOC_OUT_ROOT_PLACEHOLDER/src/ksp/ksp/tutorials/ex62.c.html>`__.
 In particular, ``runex62_superlu_dist`` illustrates the use of
 ``SuperLU_DIST`` as the subdomain solver on coalesced multi-rank
 subdomains. The ``runex62_2D_*`` examples illustrate the use of
@@ -1128,7 +1165,7 @@ number of equation on a grid falls below at threshold give by
 
 **Coarse grid parameters:** There are several options to provide
 parameters to the coarsening algorithm and parallel data layout. Run a
-code that uses GAMG with ``-help`` to get full listing of GAMG
+code that uses ``PCGAMG`` with ``-help`` to get full listing of GAMG
 parameters with short parameter descriptions. The rate of coarsening is
 critical in AMG performance – too slow coarsening will result in an
 overly expensive solver per iteration and too fast coarsening will
@@ -1144,9 +1181,20 @@ coarsening slower. Zero will keep all non-zero edges, a negative number
 will keep zero edges, a positive number will drop small edges. Typical
 finite threshold values are in the range of :math:`0.01 - 0.05`. There
 are additional parameters for changing the weights on coarse grids.
-Note, the parallel algorithm requires symmetric weights/matrix. You must
-use ``-pc_gamg_symmetrize_graph <true>`` to symmetrize the graph if your
-problem is not symmetric.
+
+The parallel MIS algorithms requires symmetric weights/matrix. Thus ``PCGAMG``
+will automatically make the graph symmetric if it is not symmetric. Since this
+has additional cost users should indicate the symmetry of the matrices they
+provide by calling
+``MatSetOption``(mat,``MAT_SYMMETRIC``,``PETSC_TRUE`` (or ``PETSC_FALSE``))
+or
+``MatSetOption``(mat,``MAT_STRUCTURALLY_SYMMETRIC``,``PETSC_TRUE`` (or ``PETSC_FALSE``))
+. If they know that the matrix will always have symmetry, despite future changes
+to the matrix (with, for example, ``MatSetValues()``) then they should also call
+``MatSetOption``(mat,``MAT_SYMMETRY_ETERNAL``,``PETSC_TRUE`` (or ``PETSC_FALSE``))
+or
+``MatSetOption``(mat,``MAT_STRUCTURAL_SYMMETRY_ETERNAL``,``PETSC_TRUE`` (or ``PETSC_FALSE``)).
+Using this information allows the algorithm to skip the unnecessary computations.
 
 **Trouble shooting algebraic multigrid methods:** If *GAMG*, *ML*, *AMGx* or
 *hypre* does not perform well the first thing to try is one of the other
@@ -1462,7 +1510,7 @@ the number of subdomains that will be generated at the next level; the
 larger the coarsening ratio, the lower the number of coarser subdomains.
 
 For further details, see the example
-`KSP Tutorial ex59 <../../../src/ksp/ksp/tutorials/ex59.c>`__
+`KSP Tutorial ex59 <PETSC_DOC_OUT_ROOT_PLACEHOLDER/src/ksp/ksp/tutorials/ex59.c>`__
 and the online documentation for ``PCBDDC``.
 
 Shell Preconditioners

@@ -1,18 +1,18 @@
 #define PETSC_DESIRE_FEATURE_TEST_MACROS /* for realpath() */
 #include <petscsys.h>
 #if defined(PETSC_HAVE_PWD_H)
-#include <pwd.h>
+  #include <pwd.h>
 #endif
 #include <ctype.h>
 #include <sys/stat.h>
 #if defined(PETSC_HAVE_UNISTD_H)
-#include <unistd.h>
+  #include <unistd.h>
 #endif
 #if defined(PETSC_HAVE_SYS_UTSNAME_H)
-#include <sys/utsname.h>
+  #include <sys/utsname.h>
 #endif
 #if defined(PETSC_HAVE_SYS_SYSTEMINFO_H)
-#include <sys/systeminfo.h>
+  #include <sys/systeminfo.h>
 #endif
 
 /*@C
@@ -39,7 +39,8 @@
 
 .seealso: `PetscGetFullPath()`
 @*/
-PetscErrorCode PetscGetRealPath(const char path[], char rpath[]) {
+PetscErrorCode PetscGetRealPath(const char path[], char rpath[])
+{
   char      tmp3[PETSC_MAX_PATH_LEN];
   PetscBool flg;
 #if !defined(PETSC_HAVE_REALPATH) && defined(PETSC_HAVE_READLINK)

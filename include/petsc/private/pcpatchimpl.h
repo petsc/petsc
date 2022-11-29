@@ -1,8 +1,8 @@
 /*
       Data structure used for Patch preconditioner.
 */
-#if !defined(__PATCH_IMPL)
-#define __PATCH_IMPL
+#ifndef PETSC_PCPATCHIMPL_H
+#define PETSC_PCPATCHIMPL_H
 #include <petsc/private/pcimpl.h>
 #include <petsc/private/hashseti.h>
 #include <petsc/private/hashmapi.h>
@@ -13,21 +13,21 @@ typedef struct {
   PCPatchConstructType ctype;                                           /* Algorithm for patch construction */
   PetscErrorCode (*patchconstructop)(void *, DM, PetscInt, PetscHSetI); /* patch construction */
   PetscErrorCode (*userpatchconstructionop)(PC, PetscInt *, IS **, IS *, void *ctx);
-  void         *userpatchconstructctx;
-  IS           *userIS;
-  PetscInt      npatch;       /* Number of patches */
-  PetscBool     user_patches; /* Flag for user construction of patches */
-  PetscInt      dim, codim;   /* Dimension or codimension of mesh points to loop over; only one of them can be set */
-  PetscSection  cellCounts;   /* Maps patch -> # cells in patch */
-  IS            cells;        /* [patch][cell in patch]: Cell number */
-  IS            extFacets;
-  IS            intFacets;
-  IS            intFacetsToPatchCell; /* Support of interior facet in local patch point numbering: AKA which two cells touch the facet (in patch local numbering of cells) */
-  PetscSection  intFacetCounts;
-  PetscSection  extFacetCounts;
-  PetscSection  cellNumbering; /* Plex: NULL Firedrake: Numbering of cells in DM */
-  PetscSection  pointCounts;   /* Maps patch -> # points with dofs in patch */
-  IS            points;        /* [patch][point in patch]: Point number */
+  void        *userpatchconstructctx;
+  IS          *userIS;
+  PetscInt     npatch;       /* Number of patches */
+  PetscBool    user_patches; /* Flag for user construction of patches */
+  PetscInt     dim, codim;   /* Dimension or codimension of mesh points to loop over; only one of them can be set */
+  PetscSection cellCounts;   /* Maps patch -> # cells in patch */
+  IS           cells;        /* [patch][cell in patch]: Cell number */
+  IS           extFacets;
+  IS           intFacets;
+  IS           intFacetsToPatchCell; /* Support of interior facet in local patch point numbering: AKA which two cells touch the facet (in patch local numbering of cells) */
+  PetscSection intFacetCounts;
+  PetscSection extFacetCounts;
+  PetscSection cellNumbering; /* Plex: NULL Firedrake: Numbering of cells in DM */
+  PetscSection pointCounts;   /* Maps patch -> # points with dofs in patch */
+  IS           points;        /* [patch][point in patch]: Point number */
   /* Dof layout */
   PetscBool     combined;        /* Use a combined space with all fields */
   PetscInt      nsubspaces;      /* Number of fields */
@@ -79,26 +79,26 @@ typedef struct {
   PetscBool       multiplicative;           /* Gauss-Seidel instead of Jacobi?  */
   PCCompositeType local_composition_type;   /* locally additive or multiplicative? */
   /* Patch solves */
-  Vec             cellMats;                           /* Cell element tensors */
-  PetscInt       *precomputedTensorLocations;         /* Locations of the precomputed tensors for each cell. */
-  Vec             intFacetMats;                       /* interior facet element tensors */
-  PetscInt       *precomputedIntFacetTensorLocations; /* Locations of the precomputed tensors for each interior facet. */
-  Mat            *mat;                                /* System matrix for each patch */
-  Mat            *matWithArtificial;                  /* System matrix including dofs with artificial bcs for each patch */
-  MatType         sub_mat_type;                       /* Matrix type for patch systems */
-  Vec             patchRHS, patchUpdate;              /* Work vectors for RHS and solution on each patch */
-  IS             *dofMappingWithoutToWithArtificial;
-  IS             *dofMappingWithoutToWithAll;
-  Vec             patchRHSWithArtificial;      /* like patchRHS but extra entries to include dofs with artificial bcs*/
-  Vec            *patch_dof_weights;           /* Weighting for dof in each patch */
-  Vec             localRHS, localUpdate;       /* ??? */
-  Vec             dof_weights;                 /* In how many patches does each dof lie? */
-  PetscBool       symmetrise_sweep;            /* Should we sweep forwards->backwards, backwards->forwards? */
-  PetscBool       optionsSet;                  /* SetFromOptions was called on this PC */
-  IS              iterationSet;                /* Index set specifying how we iterate over patches */
-  PetscInt        currentPatch;                /* The current patch number when iterating */
-  PetscObject    *solver;                      /* Solvers for each patch TODO Do we need a new KSP for each patch? */
-  PetscBool       denseinverse;                /* Should the patch inverse by applied by computing the inverse and a matmult? (Skips KSP/PC etc...) */
+  Vec          cellMats;                           /* Cell element tensors */
+  PetscInt    *precomputedTensorLocations;         /* Locations of the precomputed tensors for each cell. */
+  Vec          intFacetMats;                       /* interior facet element tensors */
+  PetscInt    *precomputedIntFacetTensorLocations; /* Locations of the precomputed tensors for each interior facet. */
+  Mat         *mat;                                /* System matrix for each patch */
+  Mat         *matWithArtificial;                  /* System matrix including dofs with artificial bcs for each patch */
+  MatType      sub_mat_type;                       /* Matrix type for patch systems */
+  Vec          patchRHS, patchUpdate;              /* Work vectors for RHS and solution on each patch */
+  IS          *dofMappingWithoutToWithArtificial;
+  IS          *dofMappingWithoutToWithAll;
+  Vec          patchRHSWithArtificial;         /* like patchRHS but extra entries to include dofs with artificial bcs*/
+  Vec         *patch_dof_weights;              /* Weighting for dof in each patch */
+  Vec          localRHS, localUpdate;          /* ??? */
+  Vec          dof_weights;                    /* In how many patches does each dof lie? */
+  PetscBool    symmetrise_sweep;               /* Should we sweep forwards->backwards, backwards->forwards? */
+  PetscBool    optionsSet;                     /* SetFromOptions was called on this PC */
+  IS           iterationSet;                   /* Index set specifying how we iterate over patches */
+  PetscInt     currentPatch;                   /* The current patch number when iterating */
+  PetscObject *solver;                         /* Solvers for each patch TODO Do we need a new KSP for each patch? */
+  PetscBool    denseinverse;                   /* Should the patch inverse by applied by computing the inverse and a matmult? (Skips KSP/PC etc...) */
   PetscErrorCode (*densesolve)(Mat, Vec, Vec); /* Matmult for dense solve (used with denseinverse) */
   PetscErrorCode (*setupsolver)(PC);
   PetscErrorCode (*applysolver)(PC, PetscInt, Vec, Vec);
@@ -126,12 +126,12 @@ typedef struct {
   PetscViewer       viewerMatrix;    /*   Viewer for patch matrix */
   PetscViewerFormat formatMatrix;    /*   Format for patch matrix */
   /* Extra variables for SNESPATCH */
-  Vec               patchState;        /* State vectors for patch solvers */
-  Vec               patchStateWithAll; /* State vectors for patch solvers with all boundary data */
-  Vec               localState;        /* Scatter vector for state */
-  Vec               patchResidual;     /* Work vectors for patch residual evaluation*/
-  const char       *classname;         /* "snes" or "pc" for options */
-  PetscBool         isNonlinear;       /* we need to do some things differently in nonlinear mode */
+  Vec         patchState;        /* State vectors for patch solvers */
+  Vec         patchStateWithAll; /* State vectors for patch solvers with all boundary data */
+  Vec         localState;        /* Scatter vector for state */
+  Vec         patchResidual;     /* Work vectors for patch residual evaluation*/
+  const char *classname;         /* "snes" or "pc" for options */
+  PetscBool   isNonlinear;       /* we need to do some things differently in nonlinear mode */
 } PC_PATCH;
 
 PETSC_EXTERN PetscLogEvent PC_Patch_CreatePatches;
@@ -149,4 +149,4 @@ typedef enum {
 } PatchScatterType;
 PETSC_EXTERN PetscErrorCode PCPatch_ScatterLocal_Private(PC, PetscInt, Vec, Vec, InsertMode, ScatterMode, PatchScatterType);
 
-#endif
+#endif // PETSC_PCPATCHIMPL_H

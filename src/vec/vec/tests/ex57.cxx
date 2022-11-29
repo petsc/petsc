@@ -3,7 +3,8 @@
 #include <viennacl/vector.hpp>
 typedef viennacl::vector<PetscScalar> ViennaclVector;
 
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[])
+{
   Vec             x, y;
   PetscInt        n = 5;
   ViennaclVector *x_vcl;

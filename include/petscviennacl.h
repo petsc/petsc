@@ -1,18 +1,18 @@
-#if !defined(PETSCVIENNACL_H)
+#ifndef PETSCVIENNACL_H
 #define PETSCVIENNACL_H
 
 #include <petscvec.h>
 
 #if defined(PETSC_HAVE_CUDA)
-#define VIENNACL_WITH_CUDA
+  #define VIENNACL_WITH_CUDA
 #endif
 
 #if defined(PETSC_HAVE_OPENCL)
-#define VIENNACL_WITH_OPENCL
+  #define VIENNACL_WITH_OPENCL
 #endif
 
 #if defined(PETSC_HAVE_OPENMP)
-#define VIENNACL_WITH_OPENMP
+  #define VIENNACL_WITH_OPENMP
 #endif
 
 #include <viennacl/forwards.h>

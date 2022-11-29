@@ -15,7 +15,7 @@
      Collective on ksp
 
   Input Parameters:
-+   ksp - KSP object, must be associated with GMRES, FGMRES, or LGMRES Krylov method
++   ksp - KSP object, must be associated with `KSPGMRES`, `KSPFGMRES`, or `KSPLGMRES` Krylov method
 -   its - one less then the current GMRES restart iteration, i.e. the size of the Krylov space
 
    Options Database Keys:
@@ -23,18 +23,18 @@
 -   -ksp_gmres_cgs_refinement_type <refine_never,refine_ifneeded,refine_always> - determine if iterative refinement is
                                    used to increase the stability of the classical Gram-Schmidt  orthogonalization.
 
+    Level: intermediate
+
     Notes:
     Use `KSPGMRESSetCGSRefinementType()` to determine if iterative refinement is to be used.
     This is much faster than `KSPGMRESModifiedGramSchmidtOrthogonalization()` but has the small possibility of stability issues
     that can usually be handled by using a a single step of iterative refinement with `KSPGMRESSetCGSRefinementType()`
 
-   Level: intermediate
-
-.seealso:  `KSPGMRESSetOrthogonalization()`, `KSPGMRESSetCGSRefinementType()`,
+.seealso: [](chapter_ksp), `KSPGMRESSetOrthogonalization()`, `KSPGMRESSetCGSRefinementType()`,
            `KSPGMRESGetCGSRefinementType()`, `KSPGMRESGetOrthogonalization()`, `KSPGMRESModifiedGramSchmidtOrthogonalization()`
-
 @*/
-PetscErrorCode KSPGMRESClassicalGramSchmidtOrthogonalization(KSP ksp, PetscInt it) {
+PetscErrorCode KSPGMRESClassicalGramSchmidtOrthogonalization(KSP ksp, PetscInt it)
+{
   KSP_GMRES   *gmres = (KSP_GMRES *)(ksp->data);
   PetscInt     j;
   PetscScalar *hh, *hes, *lhh;

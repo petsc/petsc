@@ -2,10 +2,11 @@
 #include <petscsys.h>
 
 #if defined(PETSC_HAVE_CXXABI_H)
-#include <cxxabi.h>
+  #include <cxxabi.h>
 #endif
 
-PetscErrorCode PetscDemangleSymbol(const char mangledName[], char **name) {
+PetscErrorCode PetscDemangleSymbol(const char mangledName[], char **name)
+{
   PetscFunctionBegin;
 #if defined(PETSC_HAVE_CXXABI_H)
   char *newname;

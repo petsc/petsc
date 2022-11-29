@@ -10,7 +10,8 @@ typedef struct {
   PetscInt dim_inp;
 } AppCtx;
 
-static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options) {
+static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
+{
   PetscFunctionBeginUser;
   options->dim     = 2;
   options->dim_inp = 2;
@@ -25,7 +26,8 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options) {
 /*
   ref: http://www.mimirgames.com/articles/programming/approximations-of-the-inverse-error-function/
 */
-PetscReal erfinv(PetscReal x) {
+PetscReal erfinv(PetscReal x)
+{
   PetscReal *ck, r = 0.;
   PetscInt   maxIter = 100;
 
@@ -44,7 +46,8 @@ PetscReal erfinv(PetscReal x) {
   return r;
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscInt      p, dim, Np;
   PetscScalar  *randVecNums;
   PetscReal     speed, value, *x, *v;

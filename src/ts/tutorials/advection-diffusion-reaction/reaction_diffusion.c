@@ -24,7 +24,8 @@ F*/
    Output Parameter:
 .  F - function vector
  */
-PetscErrorCode RHSFunction(TS ts, PetscReal ftime, Vec U, Vec F, void *ptr) {
+PetscErrorCode RHSFunction(TS ts, PetscReal ftime, Vec U, Vec F, void *ptr)
+{
   AppCtx     *appctx = (AppCtx *)ptr;
   DM          da;
   PetscInt    i, j, Mx, My, xs, ys, xm, ym;
@@ -88,7 +89,8 @@ PetscErrorCode RHSFunction(TS ts, PetscReal ftime, Vec U, Vec F, void *ptr) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec U, Mat A, Mat BB, void *ctx) {
+PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec U, Mat A, Mat BB, void *ctx)
+{
   AppCtx     *appctx = (AppCtx *)ctx; /* user-defined application context */
   DM          da;
   PetscInt    i, j, Mx, My, xs, ys, xm, ym;
@@ -230,7 +232,8 @@ PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec U, Mat A, Mat BB, void *ctx) 
    Output Parameter:
 .  F - function vector
  */
-PetscErrorCode IFunction(TS ts, PetscReal ftime, Vec U, Vec Udot, Vec F, void *ptr) {
+PetscErrorCode IFunction(TS ts, PetscReal ftime, Vec U, Vec Udot, Vec F, void *ptr)
+{
   AppCtx     *appctx = (AppCtx *)ptr;
   DM          da;
   PetscInt    i, j, Mx, My, xs, ys, xm, ym;
@@ -296,7 +299,8 @@ PetscErrorCode IFunction(TS ts, PetscReal ftime, Vec U, Vec Udot, Vec F, void *p
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode IJacobian(TS ts, PetscReal t, Vec U, Vec Udot, PetscReal a, Mat A, Mat BB, void *ctx) {
+PetscErrorCode IJacobian(TS ts, PetscReal t, Vec U, Vec Udot, PetscReal a, Mat A, Mat BB, void *ctx)
+{
   AppCtx     *appctx = (AppCtx *)ctx; /* user-defined application context */
   DM          da;
   PetscInt    i, j, Mx, My, xs, ys, xm, ym;

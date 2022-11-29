@@ -34,7 +34,8 @@ typedef struct {
   PetscRandom random;
 } PCNoise_Ctx;
 
-PetscErrorCode PCApply_Noise(PC pc, Vec xin, Vec xout) {
+PetscErrorCode PCApply_Noise(PC pc, Vec xin, Vec xout)
+{
   PCNoise_Ctx *ctx;
   PetscReal    nrmin, nrmnoise;
 
@@ -50,7 +51,8 @@ PetscErrorCode PCApply_Noise(PC pc, Vec xin, Vec xout) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PCSetup_Noise(PC pc) {
+PetscErrorCode PCSetup_Noise(PC pc)
+{
   PCNoise_Ctx *ctx;
 
   PetscFunctionBeginUser;
@@ -60,7 +62,8 @@ PetscErrorCode PCSetup_Noise(PC pc) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PCDestroy_Noise(PC pc) {
+PetscErrorCode PCDestroy_Noise(PC pc)
+{
   PCNoise_Ctx *ctx;
 
   PetscFunctionBeginUser;
@@ -69,17 +72,20 @@ PetscErrorCode PCDestroy_Noise(PC pc) {
   PetscFunctionReturn(0);
 }
 
-PetscScalar diagFunc1(PetscInt i, PetscInt n) {
+PetscScalar diagFunc1(PetscInt i, PetscInt n)
+{
   const PetscScalar kappa = 5.0;
   return 1.0 + (kappa * (PetscScalar)i) / (PetscScalar)(n - 1);
 }
 
-PetscScalar diagFunc2(PetscInt i, PetscInt n) {
+PetscScalar diagFunc2(PetscInt i, PetscInt n)
+{
   const PetscScalar kappa = 50.0;
   return 1.0 + (kappa * (PetscScalar)i) / (PetscScalar)(n - 1);
 }
 
-PetscScalar diagFunc3(PetscInt i, PetscInt n) {
+PetscScalar diagFunc3(PetscInt i, PetscInt n)
+{
   const PetscScalar kappa = 10.0;
   if (!i) {
     return 1e-2;
@@ -88,7 +94,8 @@ PetscScalar diagFunc3(PetscInt i, PetscInt n) {
   }
 }
 
-static PetscErrorCode AssembleDiagonalMatrix(Mat A, PetscScalar (*diagfunc)(PetscInt, PetscInt)) {
+static PetscErrorCode AssembleDiagonalMatrix(Mat A, PetscScalar (*diagfunc)(PetscInt, PetscInt))
+{
   PetscInt    i, rstart, rend, n;
   PetscScalar val;
 
@@ -104,7 +111,8 @@ static PetscErrorCode AssembleDiagonalMatrix(Mat A, PetscScalar (*diagfunc)(Pets
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscInt    n = 10000, its, dfid = 1;
   Vec         x, b, u;
   Mat         A;
@@ -121,10 +129,17 @@ int main(int argc, char **argv) {
   PetscCall(PetscOptionsGetReal(NULL, NULL, "-eta", &eta, NULL));
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-diagfunc", &dfid, NULL));
   switch (dfid) {
-  case 1: diagfunc = diagFunc1; break;
-  case 2: diagfunc = diagFunc2; break;
-  case 3: diagfunc = diagFunc3; break;
-  default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Unrecognized diagfunc option");
+  case 1:
+    diagfunc = diagFunc1;
+    break;
+  case 2:
+    diagfunc = diagFunc2;
+    break;
+  case 3:
+    diagfunc = diagFunc3;
+    break;
+  default:
+    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Unrecognized diagfunc option");
   }
 
   /* Create a diagonal matrix with a given distribution of diagonal elements */

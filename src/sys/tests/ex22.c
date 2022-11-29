@@ -2,7 +2,8 @@ static char help[] = "Tests the PetscByteSwap()\n";
 
 #include <petscsys.h>
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscInt    oint[2], sint[2];
   PetscBool   obool[2], sbool[2];
   PetscScalar oscalar[2], sscalar[2];

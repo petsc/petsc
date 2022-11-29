@@ -5,15 +5,15 @@ typedef struct {
   PetscReal haptol;
 } KSP_MINRES;
 
-static PetscErrorCode KSPSetUp_MINRES(KSP ksp) {
+static PetscErrorCode KSPSetUp_MINRES(KSP ksp)
+{
   PetscFunctionBegin;
-  PetscCheck(ksp->pc_side != PC_RIGHT, PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "No right preconditioning for KSPMINRES");
-  PetscCheck(ksp->pc_side != PC_SYMMETRIC, PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "No symmetric preconditioning for KSPMINRES");
   PetscCall(KSPSetWorkVecs(ksp, 9));
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode KSPSolve_MINRES(KSP ksp) {
+static PetscErrorCode KSPSolve_MINRES(KSP ksp)
+{
   PetscInt          i;
   PetscScalar       alpha, beta, ibeta, betaold, eta, c = 1.0, ceta, cold = 1.0, coold, s = 0.0, sold = 0.0, soold;
   PetscScalar       rho0, rho1, irho1, rho2, rho3, dp = 0.0;
@@ -185,29 +185,29 @@ static PetscErrorCode KSPSolve_MINRES(KSP ksp) {
 /*MC
      KSPMINRES - This code implements the MINRES (Minimum Residual) method.
 
-   Options Database Keys:
-    see KSPSolve()
-
    Level: beginner
 
    Notes:
-    The operator and the preconditioner must be symmetric and the preconditioner must
-          be positive definite for this method.
-          Supports only left preconditioning.
+   The operator and the preconditioner must be symmetric and the preconditioner must be positive definite for this method.
 
-   Reference: Paige & Saunders, 1975.
+   Supports only left preconditioning.
 
-   Contributed by: Robert Scheichl: maprs@maths.bath.ac.uk
+   Reference:
+. * - Paige & Saunders, Solution of sparse indefinite systems of linear equations, SIAM J. Numer. Anal. 12, 1975.
 
-.seealso: `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPCG`, `KSPCR`
+   Contributed by:
+   Robert Scheichl: maprs@maths.bath.ac.uk
+
+.seealso: [](chapter_ksp), `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPCG`, `KSPCR`
 M*/
-PETSC_EXTERN PetscErrorCode KSPCreate_MINRES(KSP ksp) {
+PETSC_EXTERN PetscErrorCode KSPCreate_MINRES(KSP ksp)
+{
   KSP_MINRES *minres;
 
   PetscFunctionBegin;
   PetscCall(KSPSetSupportedNorm(ksp, KSP_NORM_PRECONDITIONED, PC_LEFT, 3));
   PetscCall(KSPSetSupportedNorm(ksp, KSP_NORM_NONE, PC_LEFT, 1));
-  PetscCall(PetscNewLog(ksp, &minres));
+  PetscCall(PetscNew(&minres));
 
   /* this parameter is arbitrary; but e-50 didn't work for __float128 in one example */
 #if defined(PETSC_USE_REAL___FLOAT128)

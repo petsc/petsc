@@ -1,7 +1,8 @@
 #include <petsc/private/linesearchimpl.h>
 #include <petscsnes.h>
 
-static PetscErrorCode SNESLineSearchApply_CP(SNESLineSearch linesearch) {
+static PetscErrorCode SNESLineSearchApply_CP(SNESLineSearch linesearch)
+{
   PetscBool   changed_y, changed_w;
   Vec         X, Y, F, W;
   SNES        snes;
@@ -121,7 +122,7 @@ static PetscErrorCode SNESLineSearchApply_CP(SNESLineSearch linesearch) {
 
 /*MC
    SNESLINESEARCHCP - Critical point line search. This line search assumes that there exists some
-   artificial G(x) for which the SNESFunction F(x) = grad G(x).  Therefore, this line search seeks
+   artificial G(x) for which the `SNESFunction` F(x) = grad G(x).  Therefore, this line search seeks
    to find roots of dot(F, Y) via a secant method.
 
    Options Database Keys:
@@ -131,15 +132,16 @@ static PetscErrorCode SNESLineSearchApply_CP(SNESLineSearch linesearch) {
 -  -snes_linesearch_max_it <max_it> - the maximum number of secant steps performed.
 
    Notes:
-   This method does NOT use the objective function if it is provided with SNESSetObjective().
+   This method does NOT use the objective function if it is provided with `SNESSetObjective()`.
 
-   This method is the preferred line search for SNESQN and SNESNCG.
+   This method is the preferred line search for `SNESQN` and `SNESNCG`.
 
    Level: advanced
 
-.seealso: `SNESLineSearchCreate()`, `SNESLineSearchSetType()`
+.seealso: `SNESLineSearch`, `SNESLineSearchType`, `SNESLineSearchCreate()`, `SNESLineSearchSetType()`
 M*/
-PETSC_EXTERN PetscErrorCode SNESLineSearchCreate_CP(SNESLineSearch linesearch) {
+PETSC_EXTERN PetscErrorCode SNESLineSearchCreate_CP(SNESLineSearch linesearch)
+{
   PetscFunctionBegin;
   linesearch->ops->apply          = SNESLineSearchApply_CP;
   linesearch->ops->destroy        = NULL;

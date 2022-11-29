@@ -1,17 +1,20 @@
 #include <petscsys.h> /*I  "petscsys.h"  I*/
 #include <petsc/private/petscimpl.h>
 
-static inline int Compare_PetscMPIInt_Private(const void *left, const void *right, PETSC_UNUSED void *ctx) {
+static inline int Compare_PetscMPIInt_Private(const void *left, const void *right, PETSC_UNUSED void *ctx)
+{
   PetscMPIInt l = *(PetscMPIInt *)left, r = *(PetscMPIInt *)right;
   return (l < r) ? -1 : (l > r);
 }
 
-static inline int Compare_PetscInt_Private(const void *left, const void *right, PETSC_UNUSED void *ctx) {
+static inline int Compare_PetscInt_Private(const void *left, const void *right, PETSC_UNUSED void *ctx)
+{
   PetscInt l = *(PetscInt *)left, r = *(PetscInt *)right;
   return (l < r) ? -1 : (l > r);
 }
 
-static inline int Compare_PetscReal_Private(const void *left, const void *right, PETSC_UNUSED void *ctx) {
+static inline int Compare_PetscReal_Private(const void *left, const void *right, PETSC_UNUSED void *ctx)
+{
   PetscReal l = *(PetscReal *)left, r = *(PetscReal *)right;
   return (l < r) ? -1 : (l > r);
 }
@@ -22,14 +25,16 @@ typedef int (*CompFunc)(const void *, const void *, void *);
 
 /* Mostly to force clang uses the builtins, but can't hurt to have gcc compilers also do the same */
 #if !defined(PETSC_USE_DEBUG) && defined(__GNUC__)
-static inline void COPYSWAPPY(char *a, char *b, char *t, size_t size) {
+static inline void COPYSWAPPY(char *a, char *b, char *t, size_t size)
+{
   __builtin_memcpy(t, b, size);
   __builtin_memmove(b, a, size);
   __builtin_memcpy(a, t, size);
   return;
 }
 
-static inline void COPYSWAPPY2(char *al, char *ar, size_t asize, char *bl, char *br, size_t bsize, char *t) {
+static inline void COPYSWAPPY2(char *al, char *ar, size_t asize, char *bl, char *br, size_t bsize, char *t)
+{
   __builtin_memcpy(t, ar, asize);
   __builtin_memmove(ar, al, asize);
   __builtin_memcpy(al, t, asize);
@@ -39,29 +44,34 @@ static inline void COPYSWAPPY2(char *al, char *ar, size_t asize, char *bl, char 
   return;
 }
 
-static inline void Petsc_memcpy(char *dest, const char *src, size_t size) {
+static inline void Petsc_memcpy(char *dest, const char *src, size_t size)
+{
   __builtin_memcpy(dest, src, size);
   return;
 }
 
-static inline void Petsc_memcpy2(char *adest, const char *asrc, size_t asize, char *bdest, const char *bsrc, size_t bsize) {
+static inline void Petsc_memcpy2(char *adest, const char *asrc, size_t asize, char *bdest, const char *bsrc, size_t bsize)
+{
   __builtin_memcpy(adest, asrc, asize);
   __builtin_memcpy(bdest, bsrc, bsize);
   return;
 }
 
-static inline void Petsc_memmove(char *dest, const char *src, size_t size) {
+static inline void Petsc_memmove(char *dest, const char *src, size_t size)
+{
   __builtin_memmove(dest, src, size);
   return;
 }
 
-static inline void Petsc_memmove2(char *adest, const char *asrc, size_t asize, char *bdest, const char *bsrc, size_t bsize) {
+static inline void Petsc_memmove2(char *adest, const char *asrc, size_t asize, char *bdest, const char *bsrc, size_t bsize)
+{
   __builtin_memmove(adest, asrc, asize);
   __builtin_memmove(bdest, bsrc, bsize);
   return;
 }
 #else
-static inline void COPYSWAPPY(char *a, char *b, char *t, size_t size) {
+static inline void COPYSWAPPY(char *a, char *b, char *t, size_t size)
+{
   PetscFunctionBegin;
   PetscCallAbort(PETSC_COMM_SELF, PetscMemcpy(t, b, size));
   PetscCallAbort(PETSC_COMM_SELF, PetscMemmove(b, a, size));
@@ -69,7 +79,8 @@ static inline void COPYSWAPPY(char *a, char *b, char *t, size_t size) {
   PetscFunctionReturnVoid();
 }
 
-static inline void COPYSWAPPY2(char *al, char *ar, size_t asize, char *bl, char *br, size_t bsize, char *t) {
+static inline void COPYSWAPPY2(char *al, char *ar, size_t asize, char *bl, char *br, size_t bsize, char *t)
+{
   PetscFunctionBegin;
   PetscCallAbort(PETSC_COMM_SELF, PetscMemcpy(t, ar, asize));
   PetscCallAbort(PETSC_COMM_SELF, PetscMemmove(ar, al, asize));
@@ -80,26 +91,30 @@ static inline void COPYSWAPPY2(char *al, char *ar, size_t asize, char *bl, char 
   PetscFunctionReturnVoid();
 }
 
-static inline void Petsc_memcpy(char *dest, const char *src, size_t size) {
+static inline void Petsc_memcpy(char *dest, const char *src, size_t size)
+{
   PetscFunctionBegin;
   PetscCallAbort(PETSC_COMM_SELF, PetscMemcpy(dest, src, size));
   PetscFunctionReturnVoid();
 }
 
-static inline void Petsc_memcpy2(char *adest, const char *asrc, size_t asize, char *bdest, const char *bsrc, size_t bsize) {
+static inline void Petsc_memcpy2(char *adest, const char *asrc, size_t asize, char *bdest, const char *bsrc, size_t bsize)
+{
   PetscFunctionBegin;
   PetscCallAbort(PETSC_COMM_SELF, PetscMemcpy(adest, asrc, asize));
   PetscCallAbort(PETSC_COMM_SELF, PetscMemcpy(bdest, bsrc, bsize));
   PetscFunctionReturnVoid();
 }
 
-static inline void Petsc_memmove(char *dest, const char *src, size_t size) {
+static inline void Petsc_memmove(char *dest, const char *src, size_t size)
+{
   PetscFunctionBegin;
   PetscCallAbort(PETSC_COMM_SELF, PetscMemmove(dest, src, size));
   PetscFunctionReturnVoid();
 }
 
-static inline void Petsc_memmove2(char *adest, const char *asrc, size_t asize, char *bdest, const char *bsrc, size_t bsize) {
+static inline void Petsc_memmove2(char *adest, const char *asrc, size_t asize, char *bdest, const char *bsrc, size_t bsize)
+{
   PetscFunctionBegin;
   PetscCallAbort(PETSC_COMM_SELF, PetscMemmove(adest, asrc, asize));
   PetscCallAbort(PETSC_COMM_SELF, PetscMemmove(bdest, bsrc, bsize));
@@ -116,7 +131,8 @@ static inline void Petsc_memmove2(char *adest, const char *asrc, size_t asize, c
 
    when looking to insert "5" this routine will return *m = 6, but when looking to insert "6" it will ALSO return *m = 6.
   */
-static inline PetscErrorCode PetscGallopSearchLeft_Private(const char *arr, size_t size, CompFunc cmp, void *ctx, PetscInt l, PetscInt r, const char *x, PetscInt *m) {
+static inline PetscErrorCode PetscGallopSearchLeft_Private(const char *arr, size_t size, CompFunc cmp, void *ctx, PetscInt l, PetscInt r, const char *x, PetscInt *m)
+{
   PetscInt last = l, k = 1, mid, cur = l + 1;
 
   PetscFunctionBegin;
@@ -152,7 +168,8 @@ static inline PetscErrorCode PetscGallopSearchLeft_Private(const char *arr, size
 
 /* Start right look left. Looking for e.g. A[-1] in B or mergehi. l inclusive, r inclusive. Returns last m such that arr[m]
  < x. Output also inclusive */
-static inline PetscErrorCode PetscGallopSearchRight_Private(const char *arr, size_t size, CompFunc cmp, void *ctx, PetscInt l, PetscInt r, const char *x, PetscInt *m) {
+static inline PetscErrorCode PetscGallopSearchRight_Private(const char *arr, size_t size, CompFunc cmp, void *ctx, PetscInt l, PetscInt r, const char *x, PetscInt *m)
+{
   PetscInt last = r, k = 1, mid, cur = r - 1;
 
   PetscFunctionBegin;
@@ -189,7 +206,8 @@ static inline PetscErrorCode PetscGallopSearchRight_Private(const char *arr, siz
 /* Mergesort where size of left half <= size of right half, so mergesort is done left to right. Arr should be pointer to
  complete array, left is first index of left array, mid is first index of right array, right is last index of right
  array */
-static inline PetscErrorCode PetscTimSortMergeLo_Private(char *arr, char *tarr, size_t size, CompFunc cmp, void *ctx, PetscInt left, PetscInt mid, PetscInt right) {
+static inline PetscErrorCode PetscTimSortMergeLo_Private(char *arr, char *tarr, size_t size, CompFunc cmp, void *ctx, PetscInt left, PetscInt mid, PetscInt right)
+{
   PetscInt       i = 0, j = mid, k = left, gallopleft = 0, gallopright = 0;
   const PetscInt llen = mid - left;
 
@@ -250,7 +268,8 @@ static inline PetscErrorCode PetscTimSortMergeLo_Private(char *arr, char *tarr, 
   PetscFunctionReturn(0);
 }
 
-static inline PetscErrorCode PetscTimSortMergeLoWithArray_Private(char *arr, char *atarr, size_t asize, char *barr, char *btarr, size_t bsize, CompFunc cmp, void *ctx, PetscInt left, PetscInt mid, PetscInt right) {
+static inline PetscErrorCode PetscTimSortMergeLoWithArray_Private(char *arr, char *atarr, size_t asize, char *barr, char *btarr, size_t bsize, CompFunc cmp, void *ctx, PetscInt left, PetscInt mid, PetscInt right)
+{
   PetscInt       i = 0, j = mid, k = left, gallopleft = 0, gallopright = 0;
   const PetscInt llen = mid - left;
 
@@ -314,7 +333,8 @@ static inline PetscErrorCode PetscTimSortMergeLoWithArray_Private(char *arr, cha
 /* Mergesort where size of right half < size of left half, so mergesort is done right to left. Arr should be pointer to
  complete array, left is first index of left array, mid is first index of right array, right is last index of right
  array */
-static inline PetscErrorCode PetscTimSortMergeHi_Private(char *arr, char *tarr, size_t size, CompFunc cmp, void *ctx, PetscInt left, PetscInt mid, PetscInt right) {
+static inline PetscErrorCode PetscTimSortMergeHi_Private(char *arr, char *tarr, size_t size, CompFunc cmp, void *ctx, PetscInt left, PetscInt mid, PetscInt right)
+{
   PetscInt       i = right - mid, j = mid - 1, k = right, gallopleft = 0, gallopright = 0;
   const PetscInt rlen = right - mid + 1;
 
@@ -375,7 +395,8 @@ static inline PetscErrorCode PetscTimSortMergeHi_Private(char *arr, char *tarr, 
   PetscFunctionReturn(0);
 }
 
-static inline PetscErrorCode PetscTimSortMergeHiWithArray_Private(char *arr, char *atarr, size_t asize, char *barr, char *btarr, size_t bsize, CompFunc cmp, void *ctx, PetscInt left, PetscInt mid, PetscInt right) {
+static inline PetscErrorCode PetscTimSortMergeHiWithArray_Private(char *arr, char *atarr, size_t asize, char *barr, char *btarr, size_t bsize, CompFunc cmp, void *ctx, PetscInt left, PetscInt mid, PetscInt right)
+{
   PetscInt       i = right - mid, j = mid - 1, k = right, gallopleft = 0, gallopright = 0;
   const PetscInt rlen = right - mid + 1;
 
@@ -438,7 +459,8 @@ static inline PetscErrorCode PetscTimSortMergeHiWithArray_Private(char *arr, cha
 
 /* Left is inclusive lower bound of array slice, start is start location of unsorted section, right is inclusive upper
  bound of array slice. If unsure of where unsorted section starts or if entire length is unsorted pass start = left */
-static inline PetscErrorCode PetscInsertionSort_Private(char *arr, char *tarr, size_t size, CompFunc cmp, void *ctx, PetscInt left, PetscInt start, PetscInt right) {
+static inline PetscErrorCode PetscInsertionSort_Private(char *arr, char *tarr, size_t size, CompFunc cmp, void *ctx, PetscInt left, PetscInt start, PetscInt right)
+{
   PetscInt i = start == left ? start + 1 : start;
 
   PetscFunctionBegin;
@@ -454,7 +476,8 @@ static inline PetscErrorCode PetscInsertionSort_Private(char *arr, char *tarr, s
   PetscFunctionReturn(0);
 }
 
-static inline PetscErrorCode PetscInsertionSortWithArray_Private(char *arr, char *atarr, size_t asize, char *barr, char *btarr, size_t bsize, CompFunc cmp, void *ctx, PetscInt left, PetscInt start, PetscInt right) {
+static inline PetscErrorCode PetscInsertionSortWithArray_Private(char *arr, char *atarr, size_t asize, char *barr, char *btarr, size_t bsize, CompFunc cmp, void *ctx, PetscInt left, PetscInt start, PetscInt right)
+{
   PetscInt i = start == left ? start + 1 : start;
 
   PetscFunctionBegin;
@@ -471,7 +494,8 @@ static inline PetscErrorCode PetscInsertionSortWithArray_Private(char *arr, char
 }
 
 /* See PetscInsertionSort_Private */
-static inline PetscErrorCode PetscBinaryInsertionSort_Private(char *arr, char *tarr, size_t size, CompFunc cmp, void *ctx, PetscInt left, PetscInt start, PetscInt right) {
+static inline PetscErrorCode PetscBinaryInsertionSort_Private(char *arr, char *tarr, size_t size, CompFunc cmp, void *ctx, PetscInt left, PetscInt start, PetscInt right)
+{
   PetscInt i = start == left ? start + 1 : start;
 
   PetscFunctionBegin;
@@ -492,7 +516,8 @@ static inline PetscErrorCode PetscBinaryInsertionSort_Private(char *arr, char *t
   PetscFunctionReturn(0);
 }
 
-static inline PetscErrorCode PetscBinaryInsertionSortWithArray_Private(char *arr, char *atarr, size_t asize, char *barr, char *btarr, size_t bsize, CompFunc cmp, void *ctx, PetscInt left, PetscInt start, PetscInt right) {
+static inline PetscErrorCode PetscBinaryInsertionSortWithArray_Private(char *arr, char *atarr, size_t asize, char *barr, char *btarr, size_t bsize, CompFunc cmp, void *ctx, PetscInt left, PetscInt start, PetscInt right)
+{
   PetscInt i = start == left ? start + 1 : start;
 
   PetscFunctionBegin;
@@ -528,7 +553,8 @@ typedef struct {
   size_t    maxsize;
 } PetscTimSortBuffer;
 
-static inline PetscErrorCode PetscTimSortResizeBuffer_Private(PetscTimSortBuffer *buff, size_t newSize) {
+static inline PetscErrorCode PetscTimSortResizeBuffer_Private(PetscTimSortBuffer *buff, size_t newSize)
+{
   PetscFunctionBegin;
   if (PetscLikely(newSize <= buff->size)) PetscFunctionReturn(0);
   {
@@ -541,7 +567,8 @@ static inline PetscErrorCode PetscTimSortResizeBuffer_Private(PetscTimSortBuffer
   PetscFunctionReturn(0);
 }
 
-static inline PetscErrorCode PetscTimSortForceCollapse_Private(char *arr, size_t size, CompFunc cmp, void *ctx, PetscTimSortBuffer *buff, PetscTimSortStack *stack, PetscInt stacksize) {
+static inline PetscErrorCode PetscTimSortForceCollapse_Private(char *arr, size_t size, CompFunc cmp, void *ctx, PetscTimSortBuffer *buff, PetscTimSortStack *stack, PetscInt stacksize)
+{
   PetscFunctionBegin;
   for (; stacksize; --stacksize) {
     /* A = stack[i-1], B = stack[i], if A[-1] <= B[0] means sorted */
@@ -565,7 +592,8 @@ static inline PetscErrorCode PetscTimSortForceCollapse_Private(char *arr, size_t
   PetscFunctionReturn(0);
 }
 
-static inline PetscErrorCode PetscTimSortForceCollapseWithArray_Private(char *arr, size_t asize, char *barr, size_t bsize, CompFunc cmp, void *ctx, PetscTimSortBuffer *abuff, PetscTimSortBuffer *bbuff, PetscTimSortStack *stack, PetscInt stacksize) {
+static inline PetscErrorCode PetscTimSortForceCollapseWithArray_Private(char *arr, size_t asize, char *barr, size_t bsize, CompFunc cmp, void *ctx, PetscTimSortBuffer *abuff, PetscTimSortBuffer *bbuff, PetscTimSortStack *stack, PetscInt stacksize)
+{
   PetscFunctionBegin;
   for (; stacksize; --stacksize) {
     /* A = stack[i-1], B = stack[i], if A[-1] <= B[0] means sorted */
@@ -591,7 +619,8 @@ static inline PetscErrorCode PetscTimSortForceCollapseWithArray_Private(char *ar
   PetscFunctionReturn(0);
 }
 
-static inline PetscErrorCode PetscTimSortMergeCollapse_Private(char *arr, size_t size, CompFunc cmp, void *ctx, PetscTimSortBuffer *buff, PetscTimSortStack *stack, PetscInt *stacksize) {
+static inline PetscErrorCode PetscTimSortMergeCollapse_Private(char *arr, size_t size, CompFunc cmp, void *ctx, PetscTimSortBuffer *buff, PetscTimSortStack *stack, PetscInt *stacksize)
+{
   PetscInt i = *stacksize;
 
   PetscFunctionBegin;
@@ -678,7 +707,8 @@ static inline PetscErrorCode PetscTimSortMergeCollapse_Private(char *arr, size_t
   PetscFunctionReturn(0);
 }
 
-static inline PetscErrorCode PetscTimSortMergeCollapseWithArray_Private(char *arr, size_t asize, char *barr, size_t bsize, CompFunc cmp, void *ctx, PetscTimSortBuffer *abuff, PetscTimSortBuffer *bbuff, PetscTimSortStack *stack, PetscInt *stacksize) {
+static inline PetscErrorCode PetscTimSortMergeCollapseWithArray_Private(char *arr, size_t asize, char *barr, size_t bsize, CompFunc cmp, void *ctx, PetscTimSortBuffer *abuff, PetscTimSortBuffer *bbuff, PetscTimSortStack *stack, PetscInt *stacksize)
+{
   PetscInt i = *stacksize;
 
   PetscFunctionBegin;
@@ -774,7 +804,8 @@ static inline PetscErrorCode PetscTimSortMergeCollapseWithArray_Private(char *ar
 /* March sequentially through the array building up a "run" of weakly increasing or strictly decreasing contiguous
  elements. Decreasing runs are reversed by swapping. If the run is less than minrun, artificially extend it via either
  binary insertion sort or regulat insertion sort */
-static inline PetscErrorCode PetscTimSortBuildRun_Private(char *arr, char *tarr, size_t size, CompFunc cmp, void *ctx, PetscInt n, PetscInt minrun, PetscInt runstart, PetscInt *runend) {
+static inline PetscErrorCode PetscTimSortBuildRun_Private(char *arr, char *tarr, size_t size, CompFunc cmp, void *ctx, PetscInt n, PetscInt minrun, PetscInt runstart, PetscInt *runend)
+{
   const PetscInt re = PetscMin(runstart + minrun, n - 1);
   PetscInt       ri = runstart;
 
@@ -815,7 +846,8 @@ static inline PetscErrorCode PetscTimSortBuildRun_Private(char *arr, char *tarr,
   PetscFunctionReturn(0);
 }
 
-static inline PetscErrorCode PetscTimSortBuildRunWithArray_Private(char *arr, char *atarr, size_t asize, char *barr, char *btarr, size_t bsize, CompFunc cmp, void *ctx, PetscInt n, PetscInt minrun, PetscInt runstart, PetscInt *runend) {
+static inline PetscErrorCode PetscTimSortBuildRunWithArray_Private(char *arr, char *atarr, size_t asize, char *barr, char *btarr, size_t bsize, CompFunc cmp, void *ctx, PetscInt n, PetscInt minrun, PetscInt runstart, PetscInt *runend)
+{
   const PetscInt re = PetscMin(runstart + minrun, n - 1);
   PetscInt       ri = runstart;
 
@@ -933,7 +965,8 @@ static inline PetscErrorCode PetscTimSortBuildRunWithArray_Private(char *arr, ch
 
 .seealso: `PetscTimSortWithArray()`, `PetscIntSortSemiOrdered()`, `PetscRealSortSemiOrdered()`, `PetscMPIIntSortSemiOrdered()`
 @*/
-PetscErrorCode PetscTimSort(PetscInt n, void *arr, size_t size, int (*cmp)(const void *, const void *, void *), void *ctx) {
+PetscErrorCode PetscTimSort(PetscInt n, void *arr, size_t size, int (*cmp)(const void *, const void *, void *), void *ctx)
+{
   PetscInt           stacksize = 0, minrun, runstart = 0, runend = 0;
   PetscTimSortStack  runstack[128];
   PetscTimSortBuffer buff;
@@ -1060,7 +1093,8 @@ PetscErrorCode PetscTimSort(PetscInt n, void *arr, size_t size, int (*cmp)(const
 
 .seealso: `PetscTimSort()`, `PetscIntSortSemiOrderedWithArray()`, `PetscRealSortSemiOrderedWithArrayInt()`, `PetscMPIIntSortSemiOrderedWithArray()`
 @*/
-PetscErrorCode PetscTimSortWithArray(PetscInt n, void *arr, size_t asize, void *barr, size_t bsize, int (*cmp)(const void *, const void *, void *), void *ctx) {
+PetscErrorCode PetscTimSortWithArray(PetscInt n, void *arr, size_t asize, void *barr, size_t bsize, int (*cmp)(const void *, const void *, void *), void *ctx)
+{
   PetscInt           stacksize = 0, minrun, runstart = 0, runend = 0;
   PetscTimSortStack  runstack[128];
   PetscTimSortBuffer abuff, bbuff;
@@ -1131,7 +1165,8 @@ PetscErrorCode PetscTimSortWithArray(PetscInt n, void *arr, size_t asize, void *
 
 .seealso: `PetscTimSort()`, `PetscSortInt()`, `PetscSortIntWithPermutation()`
 @*/
-PetscErrorCode PetscIntSortSemiOrdered(PetscInt n, PetscInt arr[]) {
+PetscErrorCode PetscIntSortSemiOrdered(PetscInt n, PetscInt arr[])
+{
   PetscFunctionBegin;
   if (n <= 1) PetscFunctionReturn(0);
   PetscValidIntPointer(arr, 2);
@@ -1167,7 +1202,8 @@ PetscErrorCode PetscIntSortSemiOrdered(PetscInt n, PetscInt arr[]) {
 
 .seealso: `PetscTimSortWithArray()`, `PetscSortIntWithArray()`, `PetscSortIntWithPermutation()`
 @*/
-PetscErrorCode PetscIntSortSemiOrderedWithArray(PetscInt n, PetscInt arr1[], PetscInt arr2[]) {
+PetscErrorCode PetscIntSortSemiOrderedWithArray(PetscInt n, PetscInt arr1[], PetscInt arr2[])
+{
   PetscFunctionBegin;
   if (n <= 1) PetscFunctionReturn(0);
   PetscValidIntPointer(arr1, 2);
@@ -1200,7 +1236,8 @@ PetscErrorCode PetscIntSortSemiOrderedWithArray(PetscInt n, PetscInt arr1[], Pet
 
 .seealso: `PetscTimSort()`, `PetscSortMPIInt()`
 @*/
-PetscErrorCode PetscMPIIntSortSemiOrdered(PetscInt n, PetscMPIInt arr[]) {
+PetscErrorCode PetscMPIIntSortSemiOrdered(PetscInt n, PetscMPIInt arr[])
+{
   PetscFunctionBegin;
   if (n <= 1) PetscFunctionReturn(0);
   PetscValidIntPointer(arr, 2);
@@ -1236,7 +1273,8 @@ PetscErrorCode PetscMPIIntSortSemiOrdered(PetscInt n, PetscMPIInt arr[]) {
 
 .seealso: `PetscTimSortWithArray()`, `PetscSortMPIIntWithArray()`, `PetscSortMPIIntWithPermutation()`
 @*/
-PetscErrorCode PetscMPIIntSortSemiOrderedWithArray(PetscInt n, PetscMPIInt arr1[], PetscMPIInt arr2[]) {
+PetscErrorCode PetscMPIIntSortSemiOrderedWithArray(PetscInt n, PetscMPIInt arr1[], PetscMPIInt arr2[])
+{
   PetscFunctionBegin;
   if (n <= 1) PetscFunctionReturn(0);
   PetscValidIntPointer(arr1, 2);
@@ -1269,7 +1307,8 @@ PetscErrorCode PetscMPIIntSortSemiOrderedWithArray(PetscInt n, PetscMPIInt arr1[
 
 .seealso: `PetscTimSort()`, `PetscSortReal()`, `PetscSortRealWithPermutation()`
 @*/
-PetscErrorCode PetscRealSortSemiOrdered(PetscInt n, PetscReal arr[]) {
+PetscErrorCode PetscRealSortSemiOrdered(PetscInt n, PetscReal arr[])
+{
   PetscFunctionBegin;
   if (n <= 1) PetscFunctionReturn(0);
   PetscValidRealPointer(arr, 2);
@@ -1303,7 +1342,8 @@ PetscErrorCode PetscRealSortSemiOrdered(PetscInt n, PetscReal arr[]) {
 
 .seealso: `PetscTimSortWithArray()`, `PetscSortRealWithArrayInt()`, `PetscSortRealWithPermutation()`
 @*/
-PetscErrorCode PetscRealSortSemiOrderedWithArrayInt(PetscInt n, PetscReal arr1[], PetscInt arr2[]) {
+PetscErrorCode PetscRealSortSemiOrderedWithArrayInt(PetscInt n, PetscReal arr1[], PetscInt arr2[])
+{
   PetscFunctionBegin;
   if (n <= 1) PetscFunctionReturn(0);
   PetscValidRealPointer(arr1, 2);

@@ -1,7 +1,7 @@
 /*
    Private data structure for ILU/ICC/LU/Cholesky preconditioners.
 */
-#if !defined(__FACTOR_H)
+#ifndef __FACTOR_H
 #define __FACTOR_H
 
 #include <petsc/private/pcimpl.h>

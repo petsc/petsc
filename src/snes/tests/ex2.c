@@ -15,7 +15,8 @@ typedef struct {
   PointType pointType; /* Point generation mechanism */
 } AppCtx;
 
-static PetscErrorCode linear(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx) {
+static PetscErrorCode linear(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
+{
   PetscInt d, c;
 
   PetscCheck(Nc == 3, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Something is wrong: %" PetscInt_FMT, Nc);
@@ -26,7 +27,8 @@ static PetscErrorCode linear(PetscInt dim, PetscReal time, const PetscReal x[], 
   return 0;
 }
 
-static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options) {
+static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
+{
   const char *pointTypes[3] = {"centroid", "grid", "grid_replicated"};
   PetscInt    pt;
 
@@ -40,7 +42,8 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *ctx, DM *dm) {
+static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *ctx, DM *dm)
+{
   PetscFunctionBegin;
   PetscCall(DMCreate(comm, dm));
   PetscCall(DMSetType(*dm, DMPLEX));
@@ -49,7 +52,8 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *ctx, DM *dm) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode CreatePoints_Centroid(DM dm, PetscInt *Np, PetscReal **pcoords, PetscBool *pointsAllProcs, AppCtx *ctx) {
+static PetscErrorCode CreatePoints_Centroid(DM dm, PetscInt *Np, PetscReal **pcoords, PetscBool *pointsAllProcs, AppCtx *ctx)
+{
   PetscSection coordSection;
   Vec          coordsLocal;
   PetscInt     spaceDim, p;
@@ -84,7 +88,8 @@ static PetscErrorCode CreatePoints_Centroid(DM dm, PetscInt *Np, PetscReal **pco
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode CreatePoints_Grid(DM dm, PetscInt *Np, PetscReal **pcoords, PetscBool *pointsAllProcs, AppCtx *ctx) {
+static PetscErrorCode CreatePoints_Grid(DM dm, PetscInt *Np, PetscReal **pcoords, PetscBool *pointsAllProcs, AppCtx *ctx)
+{
   DM            da;
   DMDALocalInfo info;
   PetscInt      N = 3, n = 0, dim, spaceDim, i, j, k, *ind, d;
@@ -135,7 +140,8 @@ static PetscErrorCode CreatePoints_Grid(DM dm, PetscInt *Np, PetscReal **pcoords
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode CreatePoints_GridReplicated(DM dm, PetscInt *Np, PetscReal **pcoords, PetscBool *pointsAllProcs, AppCtx *ctx) {
+static PetscErrorCode CreatePoints_GridReplicated(DM dm, PetscInt *Np, PetscReal **pcoords, PetscBool *pointsAllProcs, AppCtx *ctx)
+{
   PetscInt    N = 3, n = 0, dim, spaceDim, i, j, k, *ind, d;
   PetscReal  *h;
   PetscMPIInt rank;
@@ -175,19 +181,28 @@ static PetscErrorCode CreatePoints_GridReplicated(DM dm, PetscInt *Np, PetscReal
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode CreatePoints(DM dm, PetscInt *Np, PetscReal **pcoords, PetscBool *pointsAllProcs, AppCtx *ctx) {
+static PetscErrorCode CreatePoints(DM dm, PetscInt *Np, PetscReal **pcoords, PetscBool *pointsAllProcs, AppCtx *ctx)
+{
   PetscFunctionBegin;
   *pointsAllProcs = PETSC_FALSE;
   switch (ctx->pointType) {
-  case CENTROID: PetscCall(CreatePoints_Centroid(dm, Np, pcoords, pointsAllProcs, ctx)); break;
-  case GRID: PetscCall(CreatePoints_Grid(dm, Np, pcoords, pointsAllProcs, ctx)); break;
-  case GRID_REPLICATED: PetscCall(CreatePoints_GridReplicated(dm, Np, pcoords, pointsAllProcs, ctx)); break;
-  default: SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Invalid point generation type %d", (int)ctx->pointType);
+  case CENTROID:
+    PetscCall(CreatePoints_Centroid(dm, Np, pcoords, pointsAllProcs, ctx));
+    break;
+  case GRID:
+    PetscCall(CreatePoints_Grid(dm, Np, pcoords, pointsAllProcs, ctx));
+    break;
+  case GRID_REPLICATED:
+    PetscCall(CreatePoints_GridReplicated(dm, Np, pcoords, pointsAllProcs, ctx));
+    break;
+  default:
+    SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Invalid point generation type %d", (int)ctx->pointType);
   }
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   AppCtx ctx;
   PetscErrorCode (**funcs)(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx);
   DM                  dm;

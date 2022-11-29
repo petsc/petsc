@@ -1,7 +1,8 @@
 #include <petsc/private/dmpleximpl.h> /*I      "petscdmplex.h"   I*/
 
 /* Set the number of dof on each point and separate by fields */
-static PetscErrorCode DMPlexCreateSectionFields(DM dm, const PetscInt numComp[], PetscSection *section) {
+static PetscErrorCode DMPlexCreateSectionFields(DM dm, const PetscInt numComp[], PetscSection *section)
+{
   DMLabel    depthLabel;
   PetscInt   depth, Nf, f, pStart, pEnd;
   PetscBool *isFE;
@@ -85,7 +86,8 @@ static PetscErrorCode DMPlexCreateSectionFields(DM dm, const PetscInt numComp[],
 }
 
 /* Set the number of dof on each point and separate by fields */
-static PetscErrorCode DMPlexCreateSectionDof(DM dm, DMLabel label[], const PetscInt numDof[], PetscSection section) {
+static PetscErrorCode DMPlexCreateSectionDof(DM dm, DMLabel label[], const PetscInt numDof[], PetscSection section)
+{
   DMLabel        depthLabel;
   DMPolytopeType ct;
   PetscInt       depth, cellHeight, pStart = 0, pEnd = 0;
@@ -149,7 +151,8 @@ static PetscErrorCode DMPlexCreateSectionDof(DM dm, DMLabel label[], const Petsc
         case DM_POLYTOPE_QUAD_PRISM_TENSOR:
           if (hasCohesive) --d;
           break;
-        default: break;
+        default:
+          break;
         }
         dof = d < 0 ? 0 : numDof[f * (dim + 1) + d];
         PetscCall(PetscSectionSetFieldDof(section, point, f, dof));
@@ -172,7 +175,8 @@ static PetscErrorCode DMPlexCreateSectionDof(DM dm, DMLabel label[], const Petsc
           case DM_POLYTOPE_TRI_PRISM_TENSOR:
           case DM_POLYTOPE_QUAD_PRISM_TENSOR:
             if (avoidTensor && isFE[f]) continue;
-          default: break;
+          default:
+            break;
           }
           PetscCall(PetscSectionSetFieldDof(section, p, f, dof));
           PetscCall(PetscSectionAddDof(section, p, dof));
@@ -187,7 +191,8 @@ static PetscErrorCode DMPlexCreateSectionDof(DM dm, DMLabel label[], const Petsc
 /* Set the number of dof on each point and separate by fields
    If bcComps is NULL or the IS is NULL, constrain every dof on the point
 */
-static PetscErrorCode DMPlexCreateSectionBCDof(DM dm, PetscInt numBC, const PetscInt bcField[], const IS bcComps[], const IS bcPoints[], PetscSection section) {
+static PetscErrorCode DMPlexCreateSectionBCDof(DM dm, PetscInt numBC, const PetscInt bcField[], const IS bcComps[], const IS bcPoints[], PetscSection section)
+{
   PetscInt     Nf;
   PetscInt     bc;
   PetscSection aSec;
@@ -262,7 +267,8 @@ static PetscErrorCode DMPlexCreateSectionBCDof(DM dm, PetscInt numBC, const Pets
 /* Set the constrained field indices on each point
    If bcComps is NULL or the IS is NULL, constrain every dof on the point
 */
-static PetscErrorCode DMPlexCreateSectionBCIndicesField(DM dm, PetscInt numBC, const PetscInt bcField[], const IS bcComps[], const IS bcPoints[], PetscSection section) {
+static PetscErrorCode DMPlexCreateSectionBCIndicesField(DM dm, PetscInt numBC, const PetscInt bcField[], const IS bcComps[], const IS bcPoints[], PetscSection section)
+{
   PetscSection aSec;
   PetscInt    *indices;
   PetscInt     Nf, cdof, maxDof = 0, pStart, pEnd, p, bc, f, d;
@@ -347,7 +353,8 @@ static PetscErrorCode DMPlexCreateSectionBCIndicesField(DM dm, PetscInt numBC, c
 }
 
 /* Set the constrained indices on each point */
-static PetscErrorCode DMPlexCreateSectionBCIndices(DM dm, PetscSection section) {
+static PetscErrorCode DMPlexCreateSectionBCIndices(DM dm, PetscSection section)
+{
   PetscInt *indices;
   PetscInt  Nf, maxDof, pStart, pEnd, p, f, d;
 
@@ -389,37 +396,39 @@ static PetscErrorCode DMPlexCreateSectionBCIndices(DM dm, PetscSection section) 
 }
 
 /*@C
-  DMPlexCreateSection - Create a PetscSection based upon the dof layout specification provided.
+  DMPlexCreateSection - Create a `PetscSection` based upon the dof layout specification provided.
 
   Not Collective
 
   Input Parameters:
-+ dm        - The DMPlex object
++ dm        - The `DMPLEX` object
 . label     - The label indicating the mesh support of each field, or NULL for the whole mesh
 . numComp   - An array of size numFields that holds the number of components for each field
 . numDof    - An array of size numFields*(dim+1) which holds the number of dof for each field on a mesh piece of dimension d
 . numBC     - The number of boundary conditions
 . bcField   - An array of size numBC giving the field number for each boundry condition
-. bcComps   - [Optional] An array of size numBC giving an IS holding the field components to which each boundary condition applies
-. bcPoints  - An array of size numBC giving an IS holding the Plex points to which each boundary condition applies
+. bcComps   - [Optional] An array of size numBC giving an `IS` holding the field components to which each boundary condition applies
+. bcPoints  - An array of size numBC giving an `IS` holding the `DMPLEX` points to which each boundary condition applies
 - perm      - Optional permutation of the chart, or NULL
 
   Output Parameter:
-. section - The PetscSection object
-
-  Notes:
-    numDof[f*(dim+1)+d] gives the number of dof for field f on points of dimension d. For instance, numDof[1] is the
-  number of dof for field 0 on each edge.
-
-  The chart permutation is the same one set using PetscSectionSetPermutation()
+. section - The `PetscSection` object
 
   Level: developer
 
-  TODO: How is this related to DMCreateLocalSection()
+  Notes:
+  numDof[f*(dim+1)+d] gives the number of dof for field f on points of dimension d. For instance, numDof[1] is the
+  number of dof for field 0 on each edge.
 
-.seealso: `DMPlexCreate()`, `PetscSectionCreate()`, `PetscSectionSetPermutation()`
+  The chart permutation is the same one set using `PetscSectionSetPermutation()`
+
+  Developer Note:
+  This is used by `DMCreateLocalSection()`?
+
+.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPlexCreate()`, `PetscSectionCreate()`, `PetscSectionSetPermutation()`
 @*/
-PetscErrorCode DMPlexCreateSection(DM dm, DMLabel label[], const PetscInt numComp[], const PetscInt numDof[], PetscInt numBC, const PetscInt bcField[], const IS bcComps[], const IS bcPoints[], IS perm, PetscSection *section) {
+PetscErrorCode DMPlexCreateSection(DM dm, DMLabel label[], const PetscInt numComp[], const PetscInt numDof[], PetscInt numBC, const PetscInt bcField[], const IS bcComps[], const IS bcPoints[], IS perm, PetscSection *section)
+{
   PetscSection aSec;
 
   PetscFunctionBegin;
@@ -438,7 +447,8 @@ PetscErrorCode DMPlexCreateSection(DM dm, DMLabel label[], const PetscInt numCom
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMCreateLocalSection_Plex(DM dm) {
+PetscErrorCode DMCreateLocalSection_Plex(DM dm)
+{
   PetscSection section;
   DMLabel     *labels;
   IS          *bcPoints, *bcComps;

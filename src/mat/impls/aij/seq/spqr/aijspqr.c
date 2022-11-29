@@ -7,7 +7,8 @@ EXTERN_C_BEGIN
 #include <SuiteSparseQR_C.h>
 EXTERN_C_END
 
-static PetscErrorCode MatWrapCholmod_SPQR_seqaij(Mat A, PetscBool values, cholmod_sparse *C, PetscBool *aijalloc, PetscBool *valloc) {
+static PetscErrorCode MatWrapCholmod_SPQR_seqaij(Mat A, PetscBool values, cholmod_sparse *C, PetscBool *aijalloc, PetscBool *valloc)
+{
   Mat_SeqAIJ        *aij;
   Mat                AT;
   const PetscScalar *aa;
@@ -74,7 +75,8 @@ static PetscErrorCode MatWrapCholmod_SPQR_seqaij(Mat A, PetscBool values, cholmo
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatFactorGetSolverType_seqaij_SPQR(Mat A, MatSolverType *type) {
+static PetscErrorCode MatFactorGetSolverType_seqaij_SPQR(Mat A, MatSolverType *type)
+{
   PetscFunctionBegin;
   *type = MATSOLVERSPQR;
   PetscFunctionReturn(0);
@@ -83,7 +85,8 @@ static PetscErrorCode MatFactorGetSolverType_seqaij_SPQR(Mat A, MatSolverType *t
 #define GET_ARRAY_READ  0
 #define GET_ARRAY_WRITE 1
 
-static PetscErrorCode MatSolve_SPQR_Internal(Mat F, cholmod_dense *cholB, cholmod_dense **_Y_handle) {
+static PetscErrorCode MatSolve_SPQR_Internal(Mat F, cholmod_dense *cholB, cholmod_dense **_Y_handle)
+{
   Mat_CHOLMOD   *chol     = (Mat_CHOLMOD *)F->data;
   cholmod_dense *Y_handle = NULL, *QTB_handle = NULL, *Z_handle = NULL;
 
@@ -105,7 +108,8 @@ static PetscErrorCode MatSolve_SPQR_Internal(Mat F, cholmod_dense *cholB, cholmo
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatSolve_SPQR(Mat F, Vec B, Vec X) {
+static PetscErrorCode MatSolve_SPQR(Mat F, Vec B, Vec X)
+{
   Mat_CHOLMOD  *chol = (Mat_CHOLMOD *)F->data;
   cholmod_dense cholB, *Y_handle = NULL;
   PetscInt      n;
@@ -123,7 +127,8 @@ static PetscErrorCode MatSolve_SPQR(Mat F, Vec B, Vec X) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatMatSolve_SPQR(Mat F, Mat B, Mat X) {
+static PetscErrorCode MatMatSolve_SPQR(Mat F, Mat B, Mat X)
+{
   Mat_CHOLMOD  *chol = (Mat_CHOLMOD *)F->data;
   cholmod_dense cholB, *Y_handle = NULL;
   PetscScalar  *v;
@@ -145,7 +150,8 @@ static PetscErrorCode MatMatSolve_SPQR(Mat F, Mat B, Mat X) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatSolveTranspose_SPQR_Internal(Mat F, cholmod_dense *cholB, cholmod_dense **_Y_handle) {
+static PetscErrorCode MatSolveTranspose_SPQR_Internal(Mat F, cholmod_dense *cholB, cholmod_dense **_Y_handle)
+{
   Mat_CHOLMOD   *chol     = (Mat_CHOLMOD *)F->data;
   cholmod_dense *Y_handle = NULL, *RTB_handle = NULL;
 
@@ -159,7 +165,8 @@ static PetscErrorCode MatSolveTranspose_SPQR_Internal(Mat F, cholmod_dense *chol
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatSolveTranspose_SPQR(Mat F, Vec B, Vec X) {
+static PetscErrorCode MatSolveTranspose_SPQR(Mat F, Vec B, Vec X)
+{
   Mat_CHOLMOD  *chol = (Mat_CHOLMOD *)F->data;
   cholmod_dense cholB, *Y_handle = NULL;
   PetscInt      n;
@@ -177,7 +184,8 @@ static PetscErrorCode MatSolveTranspose_SPQR(Mat F, Vec B, Vec X) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatMatSolveTranspose_SPQR(Mat F, Mat B, Mat X) {
+static PetscErrorCode MatMatSolveTranspose_SPQR(Mat F, Mat B, Mat X)
+{
   Mat_CHOLMOD  *chol = (Mat_CHOLMOD *)F->data;
   cholmod_dense cholB, *Y_handle = NULL;
   PetscScalar  *v;
@@ -199,7 +207,8 @@ static PetscErrorCode MatMatSolveTranspose_SPQR(Mat F, Mat B, Mat X) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatQRFactorNumeric_SPQR(Mat F, Mat A, const MatFactorInfo *info) {
+static PetscErrorCode MatQRFactorNumeric_SPQR(Mat F, Mat A, const MatFactorInfo *info)
+{
   Mat_CHOLMOD   *chol = (Mat_CHOLMOD *)F->data;
   cholmod_sparse cholA;
   PetscBool      aijalloc, valloc;
@@ -227,7 +236,8 @@ static PetscErrorCode MatQRFactorNumeric_SPQR(Mat F, Mat A, const MatFactorInfo 
   PetscFunctionReturn(0);
 }
 
-PETSC_INTERN PetscErrorCode MatQRFactorSymbolic_SPQR(Mat F, Mat A, IS perm, const MatFactorInfo *info) {
+PETSC_INTERN PetscErrorCode MatQRFactorSymbolic_SPQR(Mat F, Mat A, IS perm, const MatFactorInfo *info)
+{
   Mat_CHOLMOD   *chol = (Mat_CHOLMOD *)F->data;
   cholmod_sparse cholA;
   PetscBool      aijalloc, valloc;
@@ -267,7 +277,8 @@ PETSC_INTERN PetscErrorCode MatQRFactorSymbolic_SPQR(Mat F, Mat A, IS perm, cons
 .seealso: `PCQR`, `PCFactorSetMatSolverType()`, `MatSolverType`
 M*/
 
-PETSC_INTERN PetscErrorCode MatGetFactor_seqaij_spqr(Mat A, MatFactorType ftype, Mat *F) {
+PETSC_INTERN PetscErrorCode MatGetFactor_seqaij_spqr(Mat A, MatFactorType ftype, Mat *F)
+{
   Mat          B;
   Mat_CHOLMOD *chol;
   PetscInt     m = A->rmap->n, n = A->cmap->n;
@@ -281,7 +292,7 @@ PETSC_INTERN PetscErrorCode MatGetFactor_seqaij_spqr(Mat A, MatFactorType ftype,
   PetscCall(MatGetOptionsPrefix(A, &prefix));
   PetscCall(MatSetOptionsPrefix(B, prefix));
   PetscCall(MatSetUp(B));
-  PetscCall(PetscNewLog(B, &chol));
+  PetscCall(PetscNew(&chol));
 
   chol->Wrap = MatWrapCholmod_SPQR_seqaij;
   B->data    = chol;

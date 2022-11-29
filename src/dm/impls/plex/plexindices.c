@@ -1,22 +1,23 @@
 #include <petsc/private/dmpleximpl.h> /*I      "petscdmplex.h"   I*/
 
 /*@
-  DMPlexCreateClosureIndex - Calculate an index for the given PetscSection for the closure operation on the DM
+  DMPlexCreateClosureIndex - Calculate an index for the given `PetscSection` for the closure operation on the `DM`
 
-  Not collective
+  Not Collective
 
   Input Parameters:
-+ dm - The DM
++ dm - The `DM`
 - section - The section describing the layout in the local vector, or NULL to use the default section
+
+  Level: intermediate
 
   Note:
   This should greatly improve the performance of the closure operations, at the cost of additional memory.
 
-  Level: intermediate
-
-.seealso `DMPlexVecGetClosure()`, `DMPlexVecRestoreClosure()`, `DMPlexVecSetClosure()`, `DMPlexMatSetClosure()`
+.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `PetscSection`, `DMPlexVecGetClosure()`, `DMPlexVecRestoreClosure()`, `DMPlexVecSetClosure()`, `DMPlexMatSetClosure()`
 @*/
-PetscErrorCode DMPlexCreateClosureIndex(DM dm, PetscSection section) {
+PetscErrorCode DMPlexCreateClosureIndex(DM dm, PetscSection section)
+{
   PetscSection closureSection;
   IS           closureIS;
   PetscInt    *clPoints;

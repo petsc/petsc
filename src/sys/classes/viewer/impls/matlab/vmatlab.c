@@ -26,7 +26,8 @@ typedef struct {
 
 .seealso: `PETSCVIEWERMATLAB`, `PetscViewerMatlabGetArray()`
 @*/
-PetscErrorCode PetscViewerMatlabPutArray(PetscViewer mfile, int m, int n, const PetscScalar *array, const char *name) {
+PetscErrorCode PetscViewerMatlabPutArray(PetscViewer mfile, int m, int n, const PetscScalar *array, const char *name)
+{
   PetscViewer_Matlab *ml;
   mxArray            *mat;
 
@@ -48,7 +49,8 @@ PetscErrorCode PetscViewerMatlabPutArray(PetscViewer mfile, int m, int n, const 
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscViewerMatlabPutVariable(PetscViewer viewer, const char *name, void *mat) {
+PetscErrorCode PetscViewerMatlabPutVariable(PetscViewer viewer, const char *name, void *mat)
+{
   PetscViewer_Matlab *ml = (PetscViewer_Matlab *)viewer->data;
 
   PetscFunctionBegin;
@@ -74,7 +76,8 @@ PetscErrorCode PetscViewerMatlabPutVariable(PetscViewer viewer, const char *name
 
 .seealso: `PETSCVIEWERMATLAB`, `PetscViewerMatlabPutArray()`
 @*/
-PetscErrorCode PetscViewerMatlabGetArray(PetscViewer mfile, int m, int n, PetscScalar *array, const char *name) {
+PetscErrorCode PetscViewerMatlabGetArray(PetscViewer mfile, int m, int n, PetscScalar *array, const char *name)
+{
   PetscViewer_Matlab *ml;
   mxArray            *mat;
 
@@ -91,7 +94,8 @@ PetscErrorCode PetscViewerMatlabGetArray(PetscViewer mfile, int m, int n, PetscS
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscViewerFileSetMode_Matlab(PetscViewer viewer, PetscFileMode type) {
+PetscErrorCode PetscViewerFileSetMode_Matlab(PetscViewer viewer, PetscFileMode type)
+{
   PetscViewer_Matlab *vmatlab = (PetscViewer_Matlab *)viewer->data;
 
   PetscFunctionBegin;
@@ -102,7 +106,8 @@ PetscErrorCode PetscViewerFileSetMode_Matlab(PetscViewer viewer, PetscFileMode t
 /*
         Actually opens the file
 */
-PetscErrorCode PetscViewerFileSetName_Matlab(PetscViewer viewer, const char name[]) {
+PetscErrorCode PetscViewerFileSetName_Matlab(PetscViewer viewer, const char name[])
+{
   PetscViewer_Matlab *vmatlab = (PetscViewer_Matlab *)viewer->data;
   PetscFileMode       type    = vmatlab->btype;
 
@@ -122,7 +127,8 @@ PetscErrorCode PetscViewerFileSetName_Matlab(PetscViewer viewer, const char name
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscViewerDestroy_Matlab(PetscViewer v) {
+PetscErrorCode PetscViewerDestroy_Matlab(PetscViewer v)
+{
   PetscViewer_Matlab *vf = (PetscViewer_Matlab *)v->data;
 
   PetscFunctionBegin;
@@ -139,23 +145,28 @@ PetscErrorCode PetscViewerDestroy_Matlab(PetscViewer v) {
 
    Level: intermediate
 
-       Note: Currently can only save PETSc vectors to .mat files, not matrices (use the `PETSCVIEWERBINARY` and
+       Notes:
+             Currently can only save PETSc vectors to .mat files, not matrices (use the `PETSCVIEWERBINARY` and
              ${PETSC_DIR}/share/petsc/matlab/PetscBinaryRead.m to read matrices into MATLAB).
 
              For parallel vectors obtained with `DMCreateGlobalVector()` or `DMGetGlobalVector()` the vectors are saved to
              the .mat file in natural ordering. You can use DMView() to save the `DMDA` information to the .mat file
-             the fields in the MATLAB loaded da variable give the array dimensions so you can reshape the `MATLAB`
+             the fields in the MATLAB loaded da variable give the array dimensions so you can reshape the MATLAB
              vector to the same multidimensional shape as it had in PETSc for plotting etc. For example,
 
-$             In your PETSc C/C++ code (assuming a two dimensional DMDA with one degree of freedom per node)
-$                PetscObjectSetName((PetscObject)x,"x");
-$                VecView(x,PETSC_VIEWER_MATLAB_WORLD);
-$                PetscObjectSetName((PetscObject)da,"da");
-$                DMView(x,PETSC_VIEWER_MATLAB_WORLD);
-$             Then from MATLAB
-$                load('matlaboutput.mat')   % matlaboutput.mat is the default filename
-$                xnew = zeros(da.n,da.m);
-$                xnew(:) = x;    % reshape one dimensional vector back to two dimensions
+             In your PETSc C/C++ code (assuming a two dimensional `DMDA` with one degree of freedom per node)
+.vb
+                PetscObjectSetName((PetscObject)x,"x");
+                VecView(x,PETSC_VIEWER_MATLAB_WORLD);
+                PetscObjectSetName((PetscObject)da,"da");
+                DMView(x,PETSC_VIEWER_MATLAB_WORLD);
+.ve
+             Then from MATLAB
+.vb
+                load('matlaboutput.mat')   % matlaboutput.mat is the default filename
+                xnew = zeros(da.n,da.m);
+                xnew(:) = x;    % reshape one dimensional vector back to two dimensions
+.ve
 
               If you wish to put the same variable into the .mat file several times you need to give it a new
               name before each call to view.
@@ -166,11 +177,12 @@ $                xnew(:) = x;    % reshape one dimensional vector back to two di
           `PetscViewerMatlabOpen()`, `VecView()`, `DMView()`, `PetscViewerMatlabPutArray()`, `PETSCVIEWERBINARY`, `PETSCVIEWERASCII`, `PETSCVIEWERDRAW`,
           `PETSC_VIEWER_STDOUT_()`, `PetscViewerFileSetName()`, `PetscViewerFileSetMode()`, `PetscViewerFormat`, `PetscMatlabEngine`
 M*/
-PETSC_EXTERN PetscErrorCode PetscViewerCreate_Matlab(PetscViewer viewer) {
+PETSC_EXTERN PetscErrorCode PetscViewerCreate_Matlab(PetscViewer viewer)
+{
   PetscViewer_Matlab *e;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(viewer, &e));
+  PetscCall(PetscNew(&e));
   PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)viewer), &e->rank));
   e->btype     = FILE_MODE_UNDEFINED;
   viewer->data = (void *)e;
@@ -193,7 +205,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_Matlab(PetscViewer viewer) {
 -  type - type of file
 $    `FILE_MODE_WRITE` - create new file for MATLAB output
 $    `FILE_MODE_READ` - open existing file for MATLAB input
-$    ``FILE_MODE_WRITE - open existing file for MATLAB output
+$    `FILE_MODE_WRITE` - open existing file for MATLAB output
 
    Output Parameter:
 .  binv - PetscViewer for MATLAB output to use with the specified file
@@ -208,10 +220,13 @@ $    ``FILE_MODE_WRITE - open existing file for MATLAB output
    This only saves `Vec`s it cannot be used to save `Mat`s. We recommend using the `PETSCVIEWERBINARY` to save objects to be loaded into MATLAB
    instead of this routine.
 
+   PETSc must be configured with the option -with-matlab for this functionality
+
 .seealso: `PETSCVIEWERMATLAB`, `PetscViewerASCIIOpen()`, `PetscViewerPushFormat()`, `PetscViewerDestroy()`, `PETSCVIEWERBINARY`, `PetscViewerBinaryOpen()`
           `VecView()`, `MatView()`, `VecLoad()`, `MatLoad()`
 @*/
-PetscErrorCode PetscViewerMatlabOpen(MPI_Comm comm, const char name[], PetscFileMode type, PetscViewer *binv) {
+PetscErrorCode PetscViewerMatlabOpen(MPI_Comm comm, const char name[], PetscFileMode type, PetscViewer *binv)
+{
   PetscFunctionBegin;
   PetscCall(PetscViewerCreate(comm, binv));
   PetscCall(PetscViewerSetType(*binv, PETSCVIEWERMATLAB));
@@ -249,7 +264,8 @@ $       XXXView(XXX object,PETSC_VIEWER_MATLAB_(comm));
 .seealso: `PETSC_VIEWER_MATLAB_WORLD`, `PETSC_VIEWER_MATLAB_SELF`, `PetscViewerMatlabOpen()`, `PetscViewerCreate()`,
           `PetscViewerDestroy()`
 @*/
-PetscViewer PETSC_VIEWER_MATLAB_(MPI_Comm comm) {
+PetscViewer PETSC_VIEWER_MATLAB_(MPI_Comm comm)
+{
   PetscErrorCode ierr;
   PetscBool      flg;
   PetscViewer    viewer;

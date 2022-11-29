@@ -21,7 +21,8 @@
    . a_selected - IS of selected vertices, includes 'ghost' nodes at end with natural local indices
    . a_locals_llist - array of list of nodes rooted at selected nodes
 */
-PetscErrorCode MatCoarsenApply_MIS_private(IS perm, Mat Gmat, PetscBool strict_aggs, PetscCoarsenData **a_locals_llist) {
+PetscErrorCode MatCoarsenApply_MIS_private(IS perm, Mat Gmat, PetscBool strict_aggs, PetscCoarsenData **a_locals_llist)
+{
   Mat_SeqAIJ       *matA, *matB = NULL;
   Mat_MPIAIJ       *mpimat = NULL;
   MPI_Comm          comm;
@@ -247,7 +248,8 @@ PetscErrorCode MatCoarsenApply_MIS_private(IS perm, Mat Gmat, PetscBool strict_a
 /*
    MIS coarsen, simple greedy.
 */
-static PetscErrorCode MatCoarsenApply_MIS(MatCoarsen coarse) {
+static PetscErrorCode MatCoarsenApply_MIS(MatCoarsen coarse)
+{
   Mat mat = coarse->graph;
 
   PetscFunctionBegin;
@@ -267,7 +269,8 @@ static PetscErrorCode MatCoarsenApply_MIS(MatCoarsen coarse) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatCoarsenView_MIS(MatCoarsen coarse, PetscViewer viewer) {
+PetscErrorCode MatCoarsenView_MIS(MatCoarsen coarse, PetscViewer viewer)
+{
   PetscMPIInt rank;
   PetscBool   iascii;
 
@@ -307,10 +310,11 @@ PetscErrorCode MatCoarsenView_MIS(MatCoarsen coarse, PetscViewer viewer) {
 
    Level: beginner
 
-.seealso: `MatCoarsen`, `MatCoarsenApply()`, `MatCoarsenGetData()`,`MatCoarsenSetType()`, `MatCoarsenType`
+.seealso: `MatCoarsen`, `MatCoarsenApply()`, `MatCoarsenGetData()`, `MatCoarsenSetType()`, `MatCoarsenType`
 M*/
 
-PETSC_EXTERN PetscErrorCode MatCoarsenCreate_MIS(MatCoarsen coarse) {
+PETSC_EXTERN PetscErrorCode MatCoarsenCreate_MIS(MatCoarsen coarse)
+{
   PetscFunctionBegin;
   coarse->ops->apply = MatCoarsenApply_MIS;
   coarse->ops->view  = MatCoarsenView_MIS;

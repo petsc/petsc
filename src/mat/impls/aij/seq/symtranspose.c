@@ -8,7 +8,8 @@
 /*
    The symbolic and full transpose versions share several similar code blocks but the macros to reuse the code would be confusing and ugly
 */
-PetscErrorCode MatTransposeSymbolic_SeqAIJ(Mat A, Mat *B) {
+PetscErrorCode MatTransposeSymbolic_SeqAIJ(Mat A, Mat *B)
+{
   PetscInt    i, j, anzj;
   Mat         At;
   Mat_SeqAIJ *a  = (Mat_SeqAIJ *)A->data, *at;
@@ -52,7 +53,8 @@ PetscErrorCode MatTransposeSymbolic_SeqAIJ(Mat A, Mat *B) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatTranspose_SeqAIJ(Mat A, MatReuse reuse, Mat *B) {
+PetscErrorCode MatTranspose_SeqAIJ(Mat A, MatReuse reuse, Mat *B)
+{
   PetscInt         i, j, anzj;
   Mat              At;
   Mat_SeqAIJ      *a  = (Mat_SeqAIJ *)A->data, *at;
@@ -134,7 +136,8 @@ PetscErrorCode MatTranspose_SeqAIJ(Mat A, MatReuse reuse, Mat *B) {
 /*
    Get symbolic matrix structure of a submatrix of A, A[rstart:rend,:],
 */
-PetscErrorCode MatGetSymbolicTransposeReduced_SeqAIJ(Mat A, PetscInt rstart, PetscInt rend, PetscInt *Ati[], PetscInt *Atj[]) {
+PetscErrorCode MatGetSymbolicTransposeReduced_SeqAIJ(Mat A, PetscInt rstart, PetscInt rend, PetscInt *Ati[], PetscInt *Atj[])
+{
   PetscInt    i, j, anzj;
   Mat_SeqAIJ *a  = (Mat_SeqAIJ *)A->data;
   PetscInt    an = A->cmap->N;
@@ -178,13 +181,15 @@ PetscErrorCode MatGetSymbolicTransposeReduced_SeqAIJ(Mat A, PetscInt rstart, Pet
     Returns the i and j arrays for a symbolic transpose, this is used internally within SeqAIJ code when the full
     symbolic matrix (which can be obtained with MatTransposeSymbolic() is not needed. MatRestoreSymbolicTranspose_SeqAIJ() should be used to free the arrays.
 */
-PetscErrorCode MatGetSymbolicTranspose_SeqAIJ(Mat A, PetscInt *Ati[], PetscInt *Atj[]) {
+PetscErrorCode MatGetSymbolicTranspose_SeqAIJ(Mat A, PetscInt *Ati[], PetscInt *Atj[])
+{
   PetscFunctionBegin;
   PetscCall(MatGetSymbolicTransposeReduced_SeqAIJ(A, 0, A->rmap->N, Ati, Atj));
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatRestoreSymbolicTranspose_SeqAIJ(Mat A, PetscInt *ati[], PetscInt *atj[]) {
+PetscErrorCode MatRestoreSymbolicTranspose_SeqAIJ(Mat A, PetscInt *ati[], PetscInt *atj[])
+{
   PetscFunctionBegin;
   PetscCall(PetscFree(*ati));
   PetscCall(PetscFree(*atj));

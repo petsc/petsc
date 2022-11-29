@@ -6,7 +6,8 @@ typedef struct {
   PetscBool    random;    /* Flag for a random partition */
 } PetscPartitioner_Shell;
 
-static PetscErrorCode PetscPartitionerReset_Shell(PetscPartitioner part) {
+static PetscErrorCode PetscPartitionerReset_Shell(PetscPartitioner part)
+{
   PetscPartitioner_Shell *p = (PetscPartitioner_Shell *)part->data;
 
   PetscFunctionBegin;
@@ -15,14 +16,16 @@ static PetscErrorCode PetscPartitionerReset_Shell(PetscPartitioner part) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscPartitionerDestroy_Shell(PetscPartitioner part) {
+static PetscErrorCode PetscPartitionerDestroy_Shell(PetscPartitioner part)
+{
   PetscFunctionBegin;
   PetscCall(PetscPartitionerReset_Shell(part));
   PetscCall(PetscFree(part->data));
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscPartitionerView_Shell_ASCII(PetscPartitioner part, PetscViewer viewer) {
+static PetscErrorCode PetscPartitionerView_Shell_ASCII(PetscPartitioner part, PetscViewer viewer)
+{
   PetscPartitioner_Shell *p = (PetscPartitioner_Shell *)part->data;
 
   PetscFunctionBegin;
@@ -34,7 +37,8 @@ static PetscErrorCode PetscPartitionerView_Shell_ASCII(PetscPartitioner part, Pe
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscPartitionerView_Shell(PetscPartitioner part, PetscViewer viewer) {
+static PetscErrorCode PetscPartitionerView_Shell(PetscPartitioner part, PetscViewer viewer)
+{
   PetscBool iascii;
 
   PetscFunctionBegin;
@@ -45,7 +49,8 @@ static PetscErrorCode PetscPartitionerView_Shell(PetscPartitioner part, PetscVie
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscPartitionerSetFromOptions_Shell(PetscPartitioner part, PetscOptionItems *PetscOptionsObject) {
+static PetscErrorCode PetscPartitionerSetFromOptions_Shell(PetscPartitioner part, PetscOptionItems *PetscOptionsObject)
+{
   PetscBool random = PETSC_FALSE, set;
 
   PetscFunctionBegin;
@@ -57,7 +62,8 @@ static PetscErrorCode PetscPartitionerSetFromOptions_Shell(PetscPartitioner part
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscPartitionerPartition_Shell(PetscPartitioner part, PetscInt nparts, PetscInt numVertices, PetscInt start[], PetscInt adjacency[], PetscSection vertSection, PetscSection targetSection, PetscSection partSection, IS *partition) {
+static PetscErrorCode PetscPartitionerPartition_Shell(PetscPartitioner part, PetscInt nparts, PetscInt numVertices, PetscInt start[], PetscInt adjacency[], PetscSection vertSection, PetscSection targetSection, PetscSection partSection, IS *partition)
+{
   PetscPartitioner_Shell *p = (PetscPartitioner_Shell *)part->data;
   PetscInt                np;
 
@@ -100,7 +106,8 @@ static PetscErrorCode PetscPartitionerPartition_Shell(PetscPartitioner part, Pet
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscPartitionerInitialize_Shell(PetscPartitioner part) {
+static PetscErrorCode PetscPartitionerInitialize_Shell(PetscPartitioner part)
+{
   PetscFunctionBegin;
   part->noGraph             = PETSC_TRUE; /* PetscPartitionerShell cannot overload the partition call, so it is safe for now */
   part->ops->view           = PetscPartitionerView_Shell;
@@ -122,12 +129,13 @@ static PetscErrorCode PetscPartitionerInitialize_Shell(PetscPartitioner part) {
 .seealso: `PetscPartitionerType`, `PetscPartitionerCreate()`, `PetscPartitionerSetType()`
 M*/
 
-PETSC_EXTERN PetscErrorCode PetscPartitionerCreate_Shell(PetscPartitioner part) {
+PETSC_EXTERN PetscErrorCode PetscPartitionerCreate_Shell(PetscPartitioner part)
+{
   PetscPartitioner_Shell *p;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part, PETSCPARTITIONER_CLASSID, 1);
-  PetscCall(PetscNewLog(part, &p));
+  PetscCall(PetscNew(&p));
   part->data = p;
 
   PetscCall(PetscPartitionerInitialize_Shell(part));
@@ -153,7 +161,8 @@ PETSC_EXTERN PetscErrorCode PetscPartitionerCreate_Shell(PetscPartitioner part) 
 
 .seealso `DMPlexDistribute()`, `PetscPartitionerCreate()`
 @*/
-PetscErrorCode PetscPartitionerShellSetPartition(PetscPartitioner part, PetscInt size, const PetscInt sizes[], const PetscInt points[]) {
+PetscErrorCode PetscPartitionerShellSetPartition(PetscPartitioner part, PetscInt size, const PetscInt sizes[], const PetscInt points[])
+{
   PetscPartitioner_Shell *p = (PetscPartitioner_Shell *)part->data;
   PetscInt                proc, numPoints;
 
@@ -187,7 +196,8 @@ PetscErrorCode PetscPartitionerShellSetPartition(PetscPartitioner part, PetscInt
 
 .seealso `PetscPartitionerShellGetRandom()`, `PetscPartitionerCreate()`
 @*/
-PetscErrorCode PetscPartitionerShellSetRandom(PetscPartitioner part, PetscBool random) {
+PetscErrorCode PetscPartitionerShellSetRandom(PetscPartitioner part, PetscBool random)
+{
   PetscPartitioner_Shell *p = (PetscPartitioner_Shell *)part->data;
 
   PetscFunctionBegin;
@@ -211,7 +221,8 @@ PetscErrorCode PetscPartitionerShellSetRandom(PetscPartitioner part, PetscBool r
 
 .seealso `PetscPartitionerShellSetRandom()`, `PetscPartitionerCreate()`
 @*/
-PetscErrorCode PetscPartitionerShellGetRandom(PetscPartitioner part, PetscBool *random) {
+PetscErrorCode PetscPartitionerShellGetRandom(PetscPartitioner part, PetscBool *random)
+{
   PetscPartitioner_Shell *p = (PetscPartitioner_Shell *)part->data;
 
   PetscFunctionBegin;

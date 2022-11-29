@@ -1,12 +1,12 @@
 /*
   This file defines an "generalized" additive Schwarz preconditioner for any Mat implementation.
-  In this version each processor may intersect multiple subdomains and any subdomain may
-  intersect multiple processors.  Intersections of subdomains with processors are called *local
+  In this version each MPI rank may intersect multiple subdomains and any subdomain may
+  intersect multiple MPI ranks.  Intersections of subdomains with MPI ranks are called *local
   subdomains*.
 
        N    - total number of distinct global subdomains          (set explicitly in PCGASMSetTotalSubdomains() or implicitly PCGASMSetSubdomains() and then calculated in PCSetUp_GASM())
-       n    - actual number of local subdomains on this processor (set in PCGASMSetSubdomains() or calculated in PCGASMSetTotalSubdomains())
-       nmax - maximum number of local subdomains per processor    (calculated in PCSetUp_GASM())
+       n    - actual number of local subdomains on this rank (set in PCGASMSetSubdomains() or calculated in PCGASMSetTotalSubdomains())
+       nmax - maximum number of local subdomains per rank    (calculated in PCSetUp_GASM())
 */
 #include <petsc/private/pcimpl.h> /*I "petscpc.h" I*/
 #include <petscdm.h>
@@ -36,7 +36,8 @@ typedef struct {
   Vec        pcx, pcy;
 } PC_GASM;
 
-static PetscErrorCode PCGASMComputeGlobalSubdomainNumbering_Private(PC pc, PetscInt **numbering, PetscInt **permutation) {
+static PetscErrorCode PCGASMComputeGlobalSubdomainNumbering_Private(PC pc, PetscInt **numbering, PetscInt **permutation)
+{
   PC_GASM *osm = (PC_GASM *)pc->data;
   PetscInt i;
 
@@ -49,7 +50,8 @@ static PetscErrorCode PCGASMComputeGlobalSubdomainNumbering_Private(PC pc, Petsc
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCGASMSubdomainView_Private(PC pc, PetscInt i, PetscViewer viewer) {
+static PetscErrorCode PCGASMSubdomainView_Private(PC pc, PetscInt i, PetscViewer viewer)
+{
   PC_GASM        *osm = (PC_GASM *)pc->data;
   PetscInt        j, nidx;
   const PetscInt *idx;
@@ -111,7 +113,8 @@ static PetscErrorCode PCGASMSubdomainView_Private(PC pc, PetscInt i, PetscViewer
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCGASMPrintSubdomains(PC pc) {
+static PetscErrorCode PCGASMPrintSubdomains(PC pc)
+{
   PC_GASM    *osm = (PC_GASM *)pc->data;
   const char *prefix;
   char        fname[PETSC_MAX_PATH_LEN + 1];
@@ -152,7 +155,8 @@ static PetscErrorCode PCGASMPrintSubdomains(PC pc) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCView_GASM(PC pc, PetscViewer viewer) {
+static PetscErrorCode PCView_GASM(PC pc, PetscViewer viewer)
+{
   PC_GASM    *osm = (PC_GASM *)pc->data;
   const char *prefix;
   PetscMPIInt rank, size;
@@ -237,7 +241,8 @@ static PetscErrorCode PCView_GASM(PC pc, PetscViewer viewer) {
 
 PETSC_INTERN PetscErrorCode PCGASMCreateLocalSubdomains(Mat A, PetscInt nloc, IS *iis[]);
 
-PetscErrorCode PCGASMSetHierarchicalPartitioning(PC pc) {
+PetscErrorCode PCGASMSetHierarchicalPartitioning(PC pc)
+{
   PC_GASM        *osm = (PC_GASM *)pc->data;
   MatPartitioning part;
   MPI_Comm        comm;
@@ -255,7 +260,7 @@ PetscErrorCode PCGASMSetHierarchicalPartitioning(PC pc) {
     * For the following cases, we do not need to use HP
     * */
   if (osm->N == PETSC_DETERMINE || osm->N >= size || osm->N == 1) PetscFunctionReturn(0);
-  PetscCheck(size % osm->N == 0, PETSC_COMM_WORLD, PETSC_ERR_ARG_INCOMP, "have to specify the total number of subdomains %" PetscInt_FMT " to be a factor of the number of processors %d ", osm->N, size);
+  PetscCheck(size % osm->N == 0, PETSC_COMM_WORLD, PETSC_ERR_ARG_INCOMP, "have to specify the total number of subdomains %" PetscInt_FMT " to be a factor of the number of ranks %d ", osm->N, size);
   nlocalsubdomains = size / osm->N;
   osm->n           = 1;
   PetscCall(MatPartitioningCreate(comm, &part));
@@ -264,7 +269,7 @@ PetscErrorCode PCGASMSetHierarchicalPartitioning(PC pc) {
   PetscCall(MatPartitioningHierarchicalSetNcoarseparts(part, osm->N));
   PetscCall(MatPartitioningHierarchicalSetNfineparts(part, nlocalsubdomains));
   PetscCall(MatPartitioningSetFromOptions(part));
-  /* get new processor owner number of each vertex */
+  /* get new rank owner number of each vertex */
   PetscCall(MatPartitioningApply(part, &partitioning));
   PetscCall(ISBuildTwoSided(partitioning, NULL, &fromrows));
   PetscCall(ISPartitioningToNumbering(partitioning, &isn));
@@ -288,7 +293,8 @@ PetscErrorCode PCGASMSetHierarchicalPartitioning(PC pc) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCSetUp_GASM(PC pc) {
+static PetscErrorCode PCSetUp_GASM(PC pc)
+{
   PC_GASM        *osm = (PC_GASM *)pc->data;
   PetscInt        i, nInnerIndices, nTotalInnerIndices;
   PetscMPIInt     rank, size;
@@ -333,7 +339,7 @@ static PetscErrorCode PCSetUp_GASM(PC pc) {
         PetscCall(PetscFree(inner_subdomain_is));
         PetscCall(PetscFree(outer_subdomain_is));
       } else {
-        /* still no subdomains; use one per processor */
+        /* still no subdomains; use one per rank */
         osm->nmax = osm->n = 1;
         PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)pc), &size));
         osm->N = size;
@@ -507,7 +513,6 @@ static PetscErrorCode PCSetUp_GASM(PC pc) {
       char subprefix[PETSC_MAX_PATH_LEN + 1];
       PetscCall(KSPCreate(((PetscObject)(osm->ois[i]))->comm, &ksp));
       PetscCall(KSPSetErrorIfNotConverged(ksp, pc->erroriffailure));
-      PetscCall(PetscLogObjectParent((PetscObject)pc, (PetscObject)ksp));
       PetscCall(PetscObjectIncrementTabLevel((PetscObject)ksp, (PetscObject)pc, 1));
       PetscCall(KSPSetType(ksp, KSPPREONLY));
       PetscCall(KSPGetPC(ksp, &subpc)); /* Why do we need this here? */
@@ -554,10 +559,7 @@ static PetscErrorCode PCSetUp_GASM(PC pc) {
   }
   if (scall == MAT_INITIAL_MATRIX) {
     PetscCall(PetscObjectGetOptionsPrefix((PetscObject)pc->pmat, &pprefix));
-    for (i = 0; i < osm->n; i++) {
-      PetscCall(PetscLogObjectParent((PetscObject)pc, (PetscObject)osm->pmat[i]));
-      PetscCall(PetscObjectSetOptionsPrefix((PetscObject)osm->pmat[i], pprefix));
-    }
+    for (i = 0; i < osm->n; i++) { PetscCall(PetscObjectSetOptionsPrefix((PetscObject)osm->pmat[i], pprefix)); }
   }
 
   /* Return control to the user so that the submatrices can be modified (e.g., to apply
@@ -581,7 +583,8 @@ static PetscErrorCode PCSetUp_GASM(PC pc) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCSetUpOnBlocks_GASM(PC pc) {
+static PetscErrorCode PCSetUpOnBlocks_GASM(PC pc)
+{
   PC_GASM *osm = (PC_GASM *)pc->data;
   PetscInt i;
 
@@ -590,7 +593,8 @@ static PetscErrorCode PCSetUpOnBlocks_GASM(PC pc) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCApply_GASM(PC pc, Vec xin, Vec yout) {
+static PetscErrorCode PCApply_GASM(PC pc, Vec xin, Vec yout)
+{
   PC_GASM    *osm = (PC_GASM *)pc->data;
   PetscInt    i;
   Vec         x, y;
@@ -644,7 +648,8 @@ static PetscErrorCode PCApply_GASM(PC pc, Vec xin, Vec yout) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCMatApply_GASM(PC pc, Mat Xin, Mat Yout) {
+static PetscErrorCode PCMatApply_GASM(PC pc, Mat Xin, Mat Yout)
+{
   PC_GASM    *osm = (PC_GASM *)pc->data;
   Mat         X, Y, O = NULL, Z, W;
   Vec         x, y;
@@ -727,7 +732,8 @@ static PetscErrorCode PCMatApply_GASM(PC pc, Mat Xin, Mat Yout) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCApplyTranspose_GASM(PC pc, Vec xin, Vec yout) {
+static PetscErrorCode PCApplyTranspose_GASM(PC pc, Vec xin, Vec yout)
+{
   PC_GASM    *osm = (PC_GASM *)pc->data;
   PetscInt    i;
   Vec         x, y;
@@ -783,7 +789,8 @@ static PetscErrorCode PCApplyTranspose_GASM(PC pc, Vec xin, Vec yout) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCReset_GASM(PC pc) {
+static PetscErrorCode PCReset_GASM(PC pc)
+{
   PC_GASM *osm = (PC_GASM *)pc->data;
   PetscInt i;
 
@@ -828,7 +835,8 @@ static PetscErrorCode PCReset_GASM(PC pc) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCDestroy_GASM(PC pc) {
+static PetscErrorCode PCDestroy_GASM(PC pc)
+{
   PC_GASM *osm = (PC_GASM *)pc->data;
   PetscInt i;
 
@@ -851,7 +859,8 @@ static PetscErrorCode PCDestroy_GASM(PC pc) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCSetFromOptions_GASM(PC pc, PetscOptionItems *PetscOptionsObject) {
+static PetscErrorCode PCSetFromOptions_GASM(PC pc, PetscOptionItems *PetscOptionsObject)
+{
   PC_GASM   *osm = (PC_GASM *)pc->data;
   PetscInt   blocks, ovl;
   PetscBool  flg;
@@ -878,8 +887,7 @@ static PetscErrorCode PCSetFromOptions_GASM(PC pc, PetscOptionItems *PetscOption
 /*------------------------------------------------------------------------------------*/
 
 /*@
-    PCGASMSetTotalSubdomains - sets the total number of subdomains to use across the
-                               communicator.
+    PCGASMSetTotalSubdomains - sets the total number of subdomains to use across the communicator for `PCGASM`
     Logically collective on pc
 
     Input Parameters:
@@ -888,10 +896,11 @@ static PetscErrorCode PCSetFromOptions_GASM(PC pc, PetscOptionItems *PetscOption
 
     Level: beginner
 
-.seealso: `PCGASMSetSubdomains()`, `PCGASMSetOverlap()`
+.seealso: `PCGASM`, `PCGASMSetSubdomains()`, `PCGASMSetOverlap()`
           `PCGASMCreateSubdomains2D()`
 @*/
-PetscErrorCode PCGASMSetTotalSubdomains(PC pc, PetscInt N) {
+PetscErrorCode PCGASMSetTotalSubdomains(PC pc, PetscInt N)
+{
   PC_GASM    *osm = (PC_GASM *)pc->data;
   PetscMPIInt size, rank;
 
@@ -911,12 +920,13 @@ PetscErrorCode PCGASMSetTotalSubdomains(PC pc, PetscInt N) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCGASMSetSubdomains_GASM(PC pc, PetscInt n, IS iis[], IS ois[]) {
+static PetscErrorCode PCGASMSetSubdomains_GASM(PC pc, PetscInt n, IS iis[], IS ois[])
+{
   PC_GASM *osm = (PC_GASM *)pc->data;
   PetscInt i;
 
   PetscFunctionBegin;
-  PetscCheck(n >= 1, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Each process must have 1 or more subdomains, got n = %" PetscInt_FMT, n);
+  PetscCheck(n >= 1, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Each MPI rank must have 1 or more subdomains, got n = %" PetscInt_FMT, n);
   PetscCheck(!pc->setupcalled, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_WRONGSTATE, "PCGASMSetSubdomains() should be called before calling PCSetUp().");
 
   PetscCall(PCGASMDestroySubdomains(osm->n, &osm->iis, &osm->ois));
@@ -955,12 +965,12 @@ static PetscErrorCode PCGASMSetSubdomains_GASM(PC pc, PetscInt n, IS iis[], IS o
     /* check if the inner indices cover and only cover the local portion of the preconditioning matrix */
     PetscCall(MatGetOwnershipRange(pc->pmat, &rstart, &rend));
     PetscCall(PetscCalloc1(rend - rstart, &covered));
-    /* check if the current processor owns indices from others */
+    /* check if the current MPI rank owns indices from others */
     for (i = 0; i < n; i++) {
       PetscCall(ISGetIndices(osm->iis[i], &indices));
       PetscCall(ISGetLocalSize(osm->iis[i], &lsize));
       for (j = 0; j < lsize; j++) {
-        PetscCheck(indices[j] >= rstart && indices[j] < rend, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "inner subdomains can not own an index %" PetscInt_FMT " from other processors", indices[j]);
+        PetscCheck(indices[j] >= rstart && indices[j] < rend, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "inner subdomains can not own an index %" PetscInt_FMT " from other ranks", indices[j]);
         PetscCheck(covered[indices[j] - rstart] != 1, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "inner subdomains can not have an overlapping index %" PetscInt_FMT " ", indices[j]);
         covered[indices[j] - rstart] = 1;
       }
@@ -974,7 +984,8 @@ static PetscErrorCode PCGASMSetSubdomains_GASM(PC pc, PetscInt n, IS iis[], IS o
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCGASMSetOverlap_GASM(PC pc, PetscInt ovl) {
+static PetscErrorCode PCGASMSetOverlap_GASM(PC pc, PetscInt ovl)
+{
   PC_GASM *osm = (PC_GASM *)pc->data;
 
   PetscFunctionBegin;
@@ -984,7 +995,8 @@ static PetscErrorCode PCGASMSetOverlap_GASM(PC pc, PetscInt ovl) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCGASMSetType_GASM(PC pc, PCGASMType type) {
+static PetscErrorCode PCGASMSetType_GASM(PC pc, PCGASMType type)
+{
   PC_GASM *osm = (PC_GASM *)pc->data;
 
   PetscFunctionBegin;
@@ -993,7 +1005,8 @@ static PetscErrorCode PCGASMSetType_GASM(PC pc, PCGASMType type) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCGASMSetSortIndices_GASM(PC pc, PetscBool doSort) {
+static PetscErrorCode PCGASMSetSortIndices_GASM(PC pc, PetscBool doSort)
+{
   PC_GASM *osm = (PC_GASM *)pc->data;
 
   PetscFunctionBegin;
@@ -1005,7 +1018,8 @@ static PetscErrorCode PCGASMSetSortIndices_GASM(PC pc, PetscBool doSort) {
    FIXME: This routine might need to be modified now that multiple ranks per subdomain are allowed.
         In particular, it would upset the global subdomain number calculation.
 */
-static PetscErrorCode PCGASMGetSubKSP_GASM(PC pc, PetscInt *n, PetscInt *first, KSP **ksp) {
+static PetscErrorCode PCGASMGetSubKSP_GASM(PC pc, PetscInt *n, PetscInt *first, KSP **ksp)
+{
   PC_GASM *osm = (PC_GASM *)pc->data;
 
   PetscFunctionBegin;
@@ -1026,38 +1040,39 @@ static PetscErrorCode PCGASMGetSubKSP_GASM(PC pc, PetscInt *n, PetscInt *first, 
 } /* PCGASMGetSubKSP_GASM() */
 
 /*@C
-    PCGASMSetSubdomains - Sets the subdomains for this processor
-    for the additive Schwarz preconditioner.
+    PCGASMSetSubdomains - Sets the subdomains for this MPI rank
+    for the additive Schwarz preconditioner with multiple MPI ranks per subdomain, `PCGASM`
 
     Collective on pc
 
     Input Parameters:
 +   pc  - the preconditioner object
-.   n   - the number of subdomains for this processor
+.   n   - the number of subdomains for this MPI rank
 .   iis - the index sets that define the inner subdomains (or NULL for PETSc to determine subdomains)
 -   ois - the index sets that define the outer subdomains (or NULL to use the same as iis, or to construct by expanding iis by the requested overlap)
 
     Notes:
-    The IS indices use the parallel, global numbering of the vector entries.
+    The `IS` indices use the parallel, global numbering of the vector entries.
     Inner subdomains are those where the correction is applied.
     Outer subdomains are those where the residual necessary to obtain the
-    corrections is obtained (see PCGASMType for the use of inner/outer subdomains).
-    Both inner and outer subdomains can extend over several processors.
-    This processor's portion of a subdomain is known as a local subdomain.
+    corrections is obtained (see `PCGASMType` for the use of inner/outer subdomains).
+    Both inner and outer subdomains can extend over several MPI ranks.
+    This rank's portion of a subdomain is known as a local subdomain.
 
-    Inner subdomains can not overlap with each other, do not have any entities from remote processors,
-    and  have to cover the entire local subdomain owned by the current processor. The index sets on each
-    process should be ordered such that the ith local subdomain is connected to the ith remote subdomain
-    on another MPI process.
+    Inner subdomains can not overlap with each other, do not have any entities from remote ranks,
+    and  have to cover the entire local subdomain owned by the current rank. The index sets on each
+    rank should be ordered such that the ith local subdomain is connected to the ith remote subdomain
+    on another MPI rank.
 
-    By default the GASM preconditioner uses 1 (local) subdomain per processor.
+    By default the `PGASM` preconditioner uses 1 (local) subdomain per MPI rank.
 
     Level: advanced
 
-.seealso: `PCGASMSetOverlap()`, `PCGASMGetSubKSP()`,
+.seealso: `PCGASM`, `PCGASMSetOverlap()`, `PCGASMGetSubKSP()`,
           `PCGASMCreateSubdomains2D()`, `PCGASMGetSubdomains()`
 @*/
-PetscErrorCode PCGASMSetSubdomains(PC pc, PetscInt n, IS iis[], IS ois[]) {
+PetscErrorCode PCGASMSetSubdomains(PC pc, PetscInt n, IS iis[], IS ois[])
+{
   PC_GASM *osm = (PC_GASM *)pc->data;
 
   PetscFunctionBegin;
@@ -1069,7 +1084,7 @@ PetscErrorCode PCGASMSetSubdomains(PC pc, PetscInt n, IS iis[], IS ois[]) {
 
 /*@
     PCGASMSetOverlap - Sets the overlap between a pair of subdomains for the
-    additive Schwarz preconditioner.  Either all or no processors in the
+    additive Schwarz preconditioner `PCGASM`.  Either all or no MPI ranks in the
     pc communicator must call this routine.
 
     Logically Collective on pc
@@ -1082,27 +1097,28 @@ PetscErrorCode PCGASMSetSubdomains(PC pc, PetscInt n, IS iis[], IS ois[]) {
 .   -pc_gasm_overlap <overlap> - Sets overlap
 
     Notes:
-    By default the GASM preconditioner uses 1 subdomain per processor.  To use
+    By default the `PCGASM` preconditioner uses 1 subdomain per rank.  To use
     multiple subdomain per perocessor or "straddling" subdomains that intersect
-    multiple processors use PCGASMSetSubdomains() (or option -pc_gasm_total_subdomains <n>).
+    multiple ranks use `PCGASMSetSubdomains()` (or option -pc_gasm_total_subdomains <n>).
 
     The overlap defaults to 0, so if one desires that no additional
     overlap be computed beyond what may have been set with a call to
-    PCGASMSetSubdomains(), then ovl must be set to be 0.  In particular, if one does
+    `PCGASMSetSubdomains()`, then ovl must be set to be 0.  In particular, if one does
     not explicitly set the subdomains in application code, then all overlap would be computed
-    internally by PETSc, and using an overlap of 0 would result in an GASM
+    internally by PETSc, and using an overlap of 0 would result in an `PCGASM`
     variant that is equivalent to the block Jacobi preconditioner.
 
-    Note that one can define initial index sets with any overlap via
-    PCGASMSetSubdomains(); the routine PCGASMSetOverlap() merely allows
+    One can define initial index sets with any overlap via
+    `PCGASMSetSubdomains()`; the routine `PCGASMSetOverlap()` merely allows
     PETSc to extend that overlap further, if desired.
 
     Level: intermediate
 
-.seealso: `PCGASMSetSubdomains()`, `PCGASMGetSubKSP()`,
+.seealso: `PCGASM`, `PCGASMSetSubdomains()`, `PCGASMGetSubKSP()`,
           `PCGASMCreateSubdomains2D()`, `PCGASMGetSubdomains()`
 @*/
-PetscErrorCode PCGASMSetOverlap(PC pc, PetscInt ovl) {
+PetscErrorCode PCGASMSetOverlap(PC pc, PetscInt ovl)
+{
   PC_GASM *osm = (PC_GASM *)pc->data;
 
   PetscFunctionBegin;
@@ -1115,18 +1131,18 @@ PetscErrorCode PCGASMSetOverlap(PC pc, PetscInt ovl) {
 
 /*@
     PCGASMSetType - Sets the type of restriction and interpolation used
-    for local problems in the additive Schwarz method.
+    for local problems in the `PCGASM` additive Schwarz method.
 
-    Logically Collective on PC
+    Logically Collective on pc
 
     Input Parameters:
 +   pc  - the preconditioner context
--   type - variant of GASM, one of
+-   type - variant of `PCGASM`, one of
 .vb
-      PC_GASM_BASIC       - full interpolation and restriction
-      PC_GASM_RESTRICT    - full restriction, local processor interpolation
-      PC_GASM_INTERPOLATE - full interpolation, local processor restriction
-      PC_GASM_NONE        - local processor restriction and interpolation
+      `PC_GASM_BASIC`       - full interpolation and restriction
+      `PC_GASM_RESTRICT`    - full restriction, local MPI rank interpolation
+      `PC_GASM_INTERPOLATE` - full interpolation, local MPI rank restriction
+      `PC_GASM_NONE`        - local MPI rank restriction and interpolation
 .ve
 
     Options Database Key:
@@ -1134,10 +1150,11 @@ PetscErrorCode PCGASMSetOverlap(PC pc, PetscInt ovl) {
 
     Level: intermediate
 
-.seealso: `PCGASMSetSubdomains()`, `PCGASMGetSubKSP()`,
-          `PCGASMCreateSubdomains2D()`
+.seealso: `PCGASM`, `PCGASMSetSubdomains()`, `PCGASMGetSubKSP()`,
+          `PCGASMCreateSubdomains2D()`, `PCASM`, `PCASMSetType()`
 @*/
-PetscErrorCode PCGASMSetType(PC pc, PCGASMType type) {
+PetscErrorCode PCGASMSetType(PC pc, PCGASMType type)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscValidLogicalCollectiveEnum(pc, type, 2);
@@ -1148,7 +1165,7 @@ PetscErrorCode PCGASMSetType(PC pc, PCGASMType type) {
 /*@
     PCGASMSetSortIndices - Determines whether subdomain indices are sorted.
 
-    Logically Collective on PC
+    Logically Collective on pc
 
     Input Parameters:
 +   pc  - the preconditioner context
@@ -1156,10 +1173,11 @@ PetscErrorCode PCGASMSetType(PC pc, PCGASMType type) {
 
     Level: intermediate
 
-.seealso: `PCGASMSetSubdomains()`, `PCGASMGetSubKSP()`,
+.seealso: `PCGASM`, `PCGASMSetSubdomains()`, `PCGASMGetSubKSP()`,
           `PCGASMCreateSubdomains2D()`
 @*/
-PetscErrorCode PCGASMSetSortIndices(PC pc, PetscBool doSort) {
+PetscErrorCode PCGASMSetSortIndices(PC pc, PetscBool doSort)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscValidLogicalCollectiveBool(pc, doSort, 2);
@@ -1168,65 +1186,59 @@ PetscErrorCode PCGASMSetSortIndices(PC pc, PetscBool doSort) {
 }
 
 /*@C
-   PCGASMGetSubKSP - Gets the local KSP contexts for all blocks on
-   this processor.
+   PCGASMGetSubKSP - Gets the local `KSP` contexts for all subdomains on
+   this MPI rank.
 
-   Collective on PC iff first_local is requested
+   Collective on pc iff first_local is requested
 
    Input Parameter:
 .  pc - the preconditioner context
 
    Output Parameters:
-+  n_local - the number of blocks on this processor or NULL
-.  first_local - the global number of the first block on this processor or NULL,
-                 all processors must request or all must pass NULL
--  ksp - the array of KSP contexts
++  n_local - the number of blocks on this MPI rank or NULL
+.  first_local - the global number of the first block on this rank or NULL,
+                 all ranks must request or all must pass NULL
+-  ksp - the array of `KSP` contexts
 
    Note:
-   After PCGASMGetSubKSP() the array of KSPes is not to be freed
+   After `PCGASMGetSubKSP()` the array of `KSP`es is not to be freed
 
-   Currently for some matrix implementations only 1 block per processor
+   Currently for some matrix implementations only 1 block per MPI rank
    is supported.
 
-   You must call KSPSetUp() before calling PCGASMGetSubKSP().
+   You must call `KSPSetUp()` before calling `PCGASMGetSubKSP()`.
 
    Level: advanced
 
-.seealso: `PCGASMSetSubdomains()`, `PCGASMSetOverlap()`,
+.seealso: `PCGASM`, `PCGASMSetSubdomains()`, `PCGASMSetOverlap()`,
           `PCGASMCreateSubdomains2D()`,
 @*/
-PetscErrorCode PCGASMGetSubKSP(PC pc, PetscInt *n_local, PetscInt *first_local, KSP *ksp[]) {
+PetscErrorCode PCGASMGetSubKSP(PC pc, PetscInt *n_local, PetscInt *first_local, KSP *ksp[])
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscUseMethod(pc, "PCGASMGetSubKSP_C", (PC, PetscInt *, PetscInt *, KSP **), (pc, n_local, first_local, ksp));
   PetscFunctionReturn(0);
 }
 
-/* -------------------------------------------------------------------------------------*/
 /*MC
    PCGASM - Use the (restricted) additive Schwarz method, each block is (approximately) solved with
-           its own KSP object.
+           its own `KSP` object on a subset of MPI ranks
 
    Options Database Keys:
-+  -pc_gasm_total_subdomains <n>  - Sets total number of local subdomains to be distributed among processors
-.  -pc_gasm_view_subdomains       - activates the printing of subdomain indices in PCView(), -ksp_view or -snes_view
-.  -pc_gasm_print_subdomains      - activates the printing of subdomain indices in PCSetUp()
++  -pc_gasm_total_subdomains <n>  - Sets total number of local subdomains to be distributed among MPI ranks
+.  -pc_gasm_view_subdomains       - activates the printing of subdomain indices in `PCView()`, -ksp_view or -snes_view
+.  -pc_gasm_print_subdomains      - activates the printing of subdomain indices in `PCSetUp()`
 .  -pc_gasm_overlap <ovl>         - Sets overlap by which to (automatically) extend local subdomains
--  -pc_gasm_type [basic,restrict,interpolate,none] - Sets GASM type
-
-     IMPORTANT: If you run with, for example, 3 blocks on 1 processor or 3 blocks on 3 processors you
-      will get a different convergence rate due to the default option of -pc_gasm_type restrict. Use
-      -pc_gasm_type basic to use the standard GASM.
+-  -pc_gasm_type [basic,restrict,interpolate,none] - Sets `PCGASMType`
 
    Notes:
-    Blocks can be shared by multiple processes.
+   To set options on the solvers for each block append -sub_ to all the `KSP`, and `PC`
+   options database keys. For example, -sub_pc_type ilu -sub_pc_factor_levels 1 -sub_ksp_type preonly
 
-     To set options on the solvers for each block append -sub_ to all the KSP, and PC
-        options database keys. For example, -sub_pc_type ilu -sub_pc_factor_levels 1 -sub_ksp_type preonly
-
-     To set the options on the solvers separate for each block call PCGASMGetSubKSP()
-         and set the options directly on the resulting KSP object (you can access its PC
-         with KSPGetPC())
+   To set the options on the solvers separate for each block call `PCGASMGetSubKSP()`
+   and set the options directly on the resulting `KSP` object (you can access its `PC`
+   with `KSPGetPC())`
 
    Level: beginner
 
@@ -1236,17 +1248,17 @@ PetscErrorCode PCGASMGetSubKSP(PC pc, PetscInt *n_local, PetscInt *first_local, 
 -   * - Barry Smith, Petter Bjorstad, and William Gropp, Domain Decompositions: Parallel Multilevel Methods for Elliptic Partial Differential Equations,
     Cambridge University Press.
 
-.seealso: `PCCreate()`, `PCSetType()`, `PCType`, `PC`,
+.seealso: `PCCreate()`, `PCSetType()`, `PCType`, `PC`, `PCASM`, `PCGASMType`, `PCGASMSetType()`,
           `PCBJACOBI`, `PCGASMGetSubKSP()`, `PCGASMSetSubdomains()`,
           `PCSetModifySubMatrices()`, `PCGASMSetOverlap()`, `PCGASMSetType()`
-
 M*/
 
-PETSC_EXTERN PetscErrorCode PCCreate_GASM(PC pc) {
+PETSC_EXTERN PetscErrorCode PCCreate_GASM(PC pc)
+{
   PC_GASM *osm;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(pc, &osm));
+  PetscCall(PetscNew(&osm));
 
   osm->N                        = PETSC_DETERMINE;
   osm->n                        = PETSC_DECIDE;
@@ -1294,7 +1306,8 @@ PETSC_EXTERN PetscErrorCode PCCreate_GASM(PC pc) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PCGASMCreateLocalSubdomains(Mat A, PetscInt nloc, IS *iis[]) {
+PetscErrorCode PCGASMCreateLocalSubdomains(Mat A, PetscInt nloc, IS *iis[])
+{
   MatPartitioning mpart;
   const char     *prefix;
   PetscInt        i, j, rstart, rend, bs;
@@ -1434,14 +1447,15 @@ PetscErrorCode PCGASMCreateLocalSubdomains(Mat A, PetscInt nloc, IS *iis[]) {
   PetscFunctionReturn(0);
 }
 
-PETSC_INTERN PetscErrorCode PCGASMCreateStraddlingSubdomains(Mat A, PetscInt N, PetscInt *n, IS *iis[]) {
+PETSC_INTERN PetscErrorCode PCGASMCreateStraddlingSubdomains(Mat A, PetscInt N, PetscInt *n, IS *iis[])
+{
   PetscFunctionBegin;
   PetscCall(MatSubdomainsCreateCoalesce(A, N, n, iis));
   PetscFunctionReturn(0);
 }
 
 /*@C
-   PCGASMCreateSubdomains - Creates n index sets defining n nonoverlapping subdomains for the additive
+   PCGASMCreateSubdomains - Creates n index sets defining n nonoverlapping subdomains for the `PCGASM` additive
    Schwarz preconditioner for a any problem based on its matrix.
 
    Collective
@@ -1451,20 +1465,22 @@ PETSC_INTERN PetscErrorCode PCGASMCreateStraddlingSubdomains(Mat A, PetscInt N, 
 -  N       - the number of global subdomains requested
 
    Output Parameters:
-+  n   - the number of subdomains created on this processor
++  n   - the number of subdomains created on this MPI rank
 -  iis - the array of index sets defining the local inner subdomains (on which the correction is applied)
 
    Level: advanced
 
-   Note: When N >= A's communicator size, each subdomain is local -- contained within a single processor.
-         When N < size, the subdomains are 'straddling' (processor boundaries) and are no longer local.
-         The resulting subdomains can be use in PCGASMSetSubdomains(pc,n,iss,NULL).  The overlapping
+   Note:
+   When N >= A's communicator size, each subdomain is local -- contained within a single MPI rank.
+         When N < size, the subdomains are 'straddling' (rank boundaries) and are no longer local.
+         The resulting subdomains can be use in `PCGASMSetSubdomains`(pc,n,iss,NULL).  The overlapping
          outer subdomains will be automatically generated from these according to the requested amount of
          overlap; this is currently supported only with local subdomains.
 
-.seealso: `PCGASMSetSubdomains()`, `PCGASMDestroySubdomains()`
+.seealso: `PCGASM`, `PCGASMSetSubdomains()`, `PCGASMDestroySubdomains()`
 @*/
-PetscErrorCode PCGASMCreateSubdomains(Mat A, PetscInt N, PetscInt *n, IS *iis[]) {
+PetscErrorCode PCGASMCreateSubdomains(Mat A, PetscInt N, PetscInt *n, IS *iis[])
+{
   PetscMPIInt size;
 
   PetscFunctionBegin;
@@ -1484,8 +1500,8 @@ PetscErrorCode PCGASMCreateSubdomains(Mat A, PetscInt N, PetscInt *n, IS *iis[])
 
 /*@C
    PCGASMDestroySubdomains - Destroys the index sets created with
-   PCGASMCreateSubdomains() or PCGASMCreateSubdomains2D. Should be
-   called after setting subdomains with PCGASMSetSubdomains().
+   `PCGASMCreateSubdomains()` or `PCGASMCreateSubdomains2D()`. Should be
+   called after setting subdomains with `PCGASMSetSubdomains()`.
 
    Collective
 
@@ -1496,14 +1512,15 @@ PetscErrorCode PCGASMCreateSubdomains(Mat A, PetscInt N, PetscInt *n, IS *iis[])
 
    Level: intermediate
 
-   Notes:
-    this is merely a convenience subroutine that walks each list,
-   destroys each IS on the list, and then frees the list. At the end the
+   Note:
+   This is a convenience subroutine that walks each list,
+   destroys each `IS` on the list, and then frees the list. At the end the
    list pointers are set to NULL.
 
-.seealso: `PCGASMCreateSubdomains()`, `PCGASMSetSubdomains()`
+.seealso: `PCGASM`, `PCGASMCreateSubdomains()`, `PCGASMSetSubdomains()`
 @*/
-PetscErrorCode PCGASMDestroySubdomains(PetscInt n, IS **iis, IS **ois) {
+PetscErrorCode PCGASMDestroySubdomains(PetscInt n, IS **iis, IS **ois)
+{
   PetscInt i;
 
   PetscFunctionBegin;
@@ -1538,15 +1555,15 @@ PetscErrorCode PCGASMDestroySubdomains(PetscInt n, IS **iis, IS **ois) {
      of the intersection.                                                                                 \
     */ \
     /* ylow_loc is the grid row containing the first element of the local sumbdomain */ \
-    *ylow_loc   = PetscMax(first_row, ylow); \
+    *ylow_loc = PetscMax(first_row, ylow); \
     /* xleft_loc is the offset of first element of the local subdomain within its grid row (might actually be outside the local subdomain) */ \
-    *xleft_loc  = *ylow_loc == first_row ? PetscMax(first % M, xleft) : xleft; \
+    *xleft_loc = *ylow_loc == first_row ? PetscMax(first % M, xleft) : xleft; \
     /* yhigh_loc is the grid row above the last local subdomain element */ \
-    *yhigh_loc  = PetscMin(last_row, yhigh); \
+    *yhigh_loc = PetscMin(last_row, yhigh); \
     /* xright is the offset of the end of the  local subdomain within its grid row (might actually be outside the local subdomain) */ \
     *xright_loc = *yhigh_loc == last_row ? PetscMin(xright, last % M) : xright; \
     /* Now compute the size of the local subdomain n. */ \
-    *n          = 0; \
+    *n = 0; \
     if (*ylow_loc < *yhigh_loc) { \
       PetscInt width = xright - xleft; \
       *n += width * (*yhigh_loc - *ylow_loc - 1); \
@@ -1556,7 +1573,7 @@ PetscErrorCode PCGASMDestroySubdomains(PetscInt n, IS **iis, IS **ois) {
   }
 
 /*@
-   PCGASMCreateSubdomains2D - Creates the index sets for the overlapping Schwarz
+   PCGASMCreateSubdomains2D - Creates the index sets for the `PCGASM` overlapping Schwarz
    preconditioner for a two-dimensional problem on a regular grid.
 
    Collective
@@ -1577,9 +1594,10 @@ PetscErrorCode PCGASMDestroySubdomains(PetscInt n, IS **iis, IS **ois) {
 
    Level: advanced
 
-.seealso: `PCGASMSetSubdomains()`, `PCGASMGetSubKSP()`, `PCGASMSetOverlap()`
+.seealso: `PCGASM`, `PCGASMSetSubdomains()`, `PCGASMGetSubKSP()`, `PCGASMSetOverlap()`
 @*/
-PetscErrorCode PCGASMCreateSubdomains2D(PC pc, PetscInt M, PetscInt N, PetscInt Mdomains, PetscInt Ndomains, PetscInt dof, PetscInt overlap, PetscInt *nsub, IS **iis, IS **ois) {
+PetscErrorCode PCGASMCreateSubdomains2D(PC pc, PetscInt M, PetscInt N, PetscInt Mdomains, PetscInt Ndomains, PetscInt dof, PetscInt overlap, PetscInt *nsub, IS **iis, IS **ois)
+{
   PetscMPIInt size, rank;
   PetscInt    i, j;
   PetscInt    maxheight, maxwidth;
@@ -1621,7 +1639,7 @@ PetscErrorCode PCGASMCreateSubdomains2D(PC pc, PetscInt M, PetscInt N, PetscInt 
       xleft  = PetscMax(xstart - overlap, 0);
       xright = PetscMin(xstart + maxwidth + overlap, M);
       /*
-         Determine whether this subdomain intersects this processor's ownership range of pc->pmat.
+         Determine whether this subdomain intersects this rank's ownership range of pc->pmat.
       */
       PCGASMLocalSubdomainBounds2D(M, N, xleft, ylow, xright, yhigh, first, last, (&xleft_loc), (&ylow_loc), (&xright_loc), (&yhigh_loc), (&nidx));
       if (nidx) ++s;
@@ -1656,7 +1674,7 @@ PetscErrorCode PCGASMCreateSubdomains2D(PC pc, PetscInt M, PetscInt N, PetscInt 
       x[1][0] = xstart;
       x[1][1] = PetscMin(xstart + maxwidth, M);
       /*
-         Determine whether this domain intersects this processor's ownership range of pc->pmat.
+         Determine whether this domain intersects this rank's ownership range of pc->pmat.
          Do this twice: first for the domains with overlaps, and once without.
          During the first pass create the subcommunicators, and use them on the second pass as well.
       */
@@ -1666,16 +1684,16 @@ PetscErrorCode PCGASMCreateSubdomains2D(PC pc, PetscInt M, PetscInt N, PetscInt 
           domain limits, (xleft, xright) and (ylow, yheigh) are adjusted
           according to whether the domain with an overlap or without is considered.
         */
-        xleft           = x[q][0];
-        xright          = x[q][1];
-        ylow            = y[q][0];
-        yhigh           = y[q][1];
+        xleft  = x[q][0];
+        xright = x[q][1];
+        ylow   = y[q][0];
+        yhigh  = y[q][1];
         PCGASMLocalSubdomainBounds2D(M, N, xleft, ylow, xright, yhigh, first, last, (&xleft_loc), (&ylow_loc), (&xright_loc), (&yhigh_loc), (&nidx));
         nidx *= dof;
         n[q] = nidx;
         /*
          Based on the counted number of indices in the local domain *with an overlap*,
-         construct a subcommunicator of all the processors supporting this domain.
+         construct a subcommunicator of all the MPI ranks supporting this domain.
          Observe that a domain with an overlap might have nontrivial local support,
          while the domain without an overlap might not.  Hence, the decision to participate
          in the subcommunicator must be based on the domain with an overlap.
@@ -1731,8 +1749,8 @@ PetscErrorCode PCGASMCreateSubdomains2D(PC pc, PetscInt M, PetscInt N, PetscInt 
 }
 
 /*@C
-    PCGASMGetSubdomains - Gets the subdomains supported on this processor
-    for the additive Schwarz preconditioner.
+    PCGASMGetSubdomains - Gets the subdomains supported on this MPI rank
+    for the `PCGASM` additive Schwarz preconditioner.
 
     Not Collective
 
@@ -1740,20 +1758,21 @@ PetscErrorCode PCGASMCreateSubdomains2D(PC pc, PetscInt M, PetscInt N, PetscInt 
 .   pc - the preconditioner context
 
     Output Parameters:
-+   n   - the number of subdomains for this processor (default value = 1)
-.   iis - the index sets that define the inner subdomains (without overlap) supported on this processor (can be NULL)
--   ois - the index sets that define the outer subdomains (with overlap) supported on this processor (can be NULL)
++   n   - the number of subdomains for this MPI rank (default value = 1)
+.   iis - the index sets that define the inner subdomains (without overlap) supported on this rank (can be NULL)
+-   ois - the index sets that define the outer subdomains (with overlap) supported on this rank (can be NULL)
 
-    Notes:
-    The user is responsible for destroying the ISs and freeing the returned arrays.
-    The IS numbering is in the parallel, global numbering of the vector.
+    Note:
+    The user is responsible for destroying the `IS`s and freeing the returned arrays.
+    The `IS` numbering is in the parallel, global numbering of the vector.
 
     Level: advanced
 
-.seealso: `PCGASMSetOverlap()`, `PCGASMGetSubKSP()`, `PCGASMCreateSubdomains2D()`,
+.seealso: `PCGASM`, `PCGASMSetOverlap()`, `PCGASMGetSubKSP()`, `PCGASMCreateSubdomains2D()`,
           `PCGASMSetSubdomains()`, `PCGASMGetSubmatrices()`
 @*/
-PetscErrorCode PCGASMGetSubdomains(PC pc, PetscInt *n, IS *iis[], IS *ois[]) {
+PetscErrorCode PCGASMGetSubdomains(PC pc, PetscInt *n, IS *iis[], IS *ois[])
+{
   PC_GASM  *osm;
   PetscBool match;
   PetscInt  i;
@@ -1776,8 +1795,8 @@ PetscErrorCode PCGASMGetSubdomains(PC pc, PetscInt *n, IS *iis[], IS *ois[]) {
 }
 
 /*@C
-    PCGASMGetSubmatrices - Gets the local submatrices (for this processor
-    only) for the additive Schwarz preconditioner.
+    PCGASMGetSubmatrices - Gets the local submatrices (for this MPI rank
+    only) for the `PCGASM` additive Schwarz preconditioner.
 
     Not Collective
 
@@ -1785,18 +1804,20 @@ PetscErrorCode PCGASMGetSubdomains(PC pc, PetscInt *n, IS *iis[], IS *ois[]) {
 .   pc - the preconditioner context
 
     Output Parameters:
-+   n   - the number of matrices for this processor (default value = 1)
++   n   - the number of matrices for this MPI rank (default value = 1)
 -   mat - the matrices
 
-    Notes:
-    matrices returned by this routine have the same communicators as the index sets (IS)
-           used to define subdomains in PCGASMSetSubdomains()
+    Note:
+    Matrices returned by this routine have the same communicators as the index sets (IS)
+           used to define subdomains in `PCGASMSetSubdomains()`
+
     Level: advanced
 
-.seealso: `PCGASMSetOverlap()`, `PCGASMGetSubKSP()`,
+.seealso: `PCGASM`, `PCGASMSetOverlap()`, `PCGASMGetSubKSP()`,
           `PCGASMCreateSubdomains2D()`, `PCGASMSetSubdomains()`, `PCGASMGetSubdomains()`
 @*/
-PetscErrorCode PCGASMGetSubmatrices(PC pc, PetscInt *n, Mat *mat[]) {
+PetscErrorCode PCGASMGetSubmatrices(PC pc, PetscInt *n, Mat *mat[])
+{
   PC_GASM  *osm;
   PetscBool match;
 
@@ -1814,27 +1835,29 @@ PetscErrorCode PCGASMGetSubmatrices(PC pc, PetscInt *n, Mat *mat[]) {
 }
 
 /*@
-    PCGASMSetUseDMSubdomains - Indicates whether to use DMCreateDomainDecomposition() to define the subdomains, whenever possible.
+    PCGASMSetUseDMSubdomains - Indicates whether to use `DMCreateDomainDecomposition()` to define the subdomains, whenever possible for `PCGASM`
+
     Logically Collective
 
     Input Parameters:
 +   pc  - the preconditioner
--   flg - boolean indicating whether to use subdomains defined by the DM
+-   flg - boolean indicating whether to use subdomains defined by the `DM`
 
     Options Database Key:
 .   -pc_gasm_dm_subdomains -pc_gasm_overlap -pc_gasm_total_subdomains
 
     Level: intermediate
 
-    Notes:
-    PCGASMSetSubdomains(), PCGASMSetTotalSubdomains() or PCGASMSetOverlap() take precedence over PCGASMSetUseDMSubdomains(),
-    so setting PCGASMSetSubdomains() with nontrivial subdomain ISs or any of PCGASMSetTotalSubdomains() and PCGASMSetOverlap()
+    Note:
+    `PCGASMSetSubdomains()`, `PCGASMSetTotalSubdomains()` or `PCGASMSetOverlap()` take precedence over `PCGASMSetUseDMSubdomains()`,
+    so setting `PCGASMSetSubdomains()` with nontrivial subdomain ISs or any of `PCGASMSetTotalSubdomains()` and `PCGASMSetOverlap()`
     automatically turns the latter off.
 
-.seealso: `PCGASMGetUseDMSubdomains()`, `PCGASMSetSubdomains()`, `PCGASMSetOverlap()`
+.seealso: `PCGASM`, `PCGASMGetUseDMSubdomains()`, `PCGASMSetSubdomains()`, `PCGASMSetOverlap()`
           `PCGASMCreateSubdomains2D()`
 @*/
-PetscErrorCode PCGASMSetUseDMSubdomains(PC pc, PetscBool flg) {
+PetscErrorCode PCGASMSetUseDMSubdomains(PC pc, PetscBool flg)
+{
   PC_GASM  *osm = (PC_GASM *)pc->data;
   PetscBool match;
 
@@ -1850,21 +1873,23 @@ PetscErrorCode PCGASMSetUseDMSubdomains(PC pc, PetscBool flg) {
 }
 
 /*@
-    PCGASMGetUseDMSubdomains - Returns flag indicating whether to use DMCreateDomainDecomposition() to define the subdomains, whenever possible.
+    PCGASMGetUseDMSubdomains - Returns flag indicating whether to use `DMCreateDomainDecomposition()` to define the subdomains, whenever possible with `PCGASM`
+
     Not Collective
 
     Input Parameter:
 .   pc  - the preconditioner
 
     Output Parameter:
-.   flg - boolean indicating whether to use subdomains defined by the DM
+.   flg - boolean indicating whether to use subdomains defined by the `DM`
 
     Level: intermediate
 
-.seealso: `PCGASMSetUseDMSubdomains()`, `PCGASMSetOverlap()`
+.seealso: `PCGASM`, `PCGASMSetUseDMSubdomains()`, `PCGASMSetOverlap()`
           `PCGASMCreateSubdomains2D()`
 @*/
-PetscErrorCode PCGASMGetUseDMSubdomains(PC pc, PetscBool *flg) {
+PetscErrorCode PCGASMGetUseDMSubdomains(PC pc, PetscBool *flg)
+{
   PC_GASM  *osm = (PC_GASM *)pc->data;
   PetscBool match;
 

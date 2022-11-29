@@ -17,7 +17,8 @@ CreateStarGraphEdgeList - Create a k-Star Graph Edgelist on current processor
 
               User is responsible for deallocating this memory.
 */
-PetscErrorCode CreateStarGraphEdgeList(PetscInt k, PetscBool directin, PetscInt *ne, PetscInt *edgelist[]) {
+PetscErrorCode CreateStarGraphEdgeList(PetscInt k, PetscBool directin, PetscInt *ne, PetscInt *edgelist[])
+{
   PetscInt i;
 
   PetscFunctionBegin;
@@ -52,7 +53,8 @@ all edges and vertices, aselectable number of dofs on vertices and edges. Intend
   Output Parameters:
 . newdm       - The created and distributed simple Star Graph
 */
-PetscErrorCode CreateSimpleStarGraph(MPI_Comm comm, PetscInt numdofvert, PetscInt numdofedge, PetscInt k, PetscBool directin, DM *newdm) {
+PetscErrorCode CreateSimpleStarGraph(MPI_Comm comm, PetscInt numdofvert, PetscInt numdofedge, PetscInt k, PetscBool directin, DM *newdm)
+{
   DM          dm;
   PetscMPIInt rank;
   PetscInt    ne       = 0, compkey, eStart, eEnd, vStart, vEnd, e, v;
@@ -87,7 +89,8 @@ PetscErrorCode CreateSimpleStarGraph(MPI_Comm comm, PetscInt numdofvert, PetscIn
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   DM           dm, dmclone, plex;
   PetscInt     e, eStart, eEnd, ndofs, ndofsprev;
   PetscInt    *compprev, *comp, compkey;

@@ -19,7 +19,8 @@ extern PetscErrorCode ComputeMatrix(DM, Mat);
 extern PetscErrorCode ComputeRHS(DM, Vec);
 extern PetscErrorCode ComputeRHSMatrix(PetscInt, PetscInt, Mat *);
 
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   PetscMPIInt   size;
   Vec           x, b, y, b1;
   DM            da;
@@ -135,7 +136,8 @@ int main(int argc, char **args) {
   return 0;
 }
 
-PetscErrorCode ComputeRHS(DM da, Vec b) {
+PetscErrorCode ComputeRHS(DM da, Vec b)
+{
   PetscInt    mx, my, mz;
   PetscScalar h;
 
@@ -146,7 +148,8 @@ PetscErrorCode ComputeRHS(DM da, Vec b) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode ComputeRHSMatrix(PetscInt m, PetscInt nrhs, Mat *C) {
+PetscErrorCode ComputeRHSMatrix(PetscInt m, PetscInt nrhs, Mat *C)
+{
   PetscRandom  rand;
   Mat          RHS;
   PetscScalar *array, rval;
@@ -178,7 +181,8 @@ PetscErrorCode ComputeRHSMatrix(PetscInt m, PetscInt nrhs, Mat *C) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode ComputeMatrix(DM da, Mat B) {
+PetscErrorCode ComputeMatrix(DM da, Mat B)
+{
   PetscInt     i, j, k, mx, my, mz, xm, ym, zm, xs, ys, zs, dof, k1, k2, k3;
   PetscScalar *v, *v_neighbor, Hx, Hy, Hz, HxHydHz, HyHzdHx, HxHzdHy, r1, r2;
   MatStencil   row, col;

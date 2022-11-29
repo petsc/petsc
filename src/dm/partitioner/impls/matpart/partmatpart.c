@@ -5,7 +5,8 @@ typedef struct {
   MatPartitioning mp;
 } PetscPartitioner_MatPartitioning;
 
-static PetscErrorCode PetscPartitionerMatPartitioningGetMatPartitioning_MatPartitioning(PetscPartitioner part, MatPartitioning *mp) {
+static PetscErrorCode PetscPartitionerMatPartitioningGetMatPartitioning_MatPartitioning(PetscPartitioner part, MatPartitioning *mp)
+{
   PetscPartitioner_MatPartitioning *p = (PetscPartitioner_MatPartitioning *)part->data;
 
   PetscFunctionBegin;
@@ -28,7 +29,8 @@ static PetscErrorCode PetscPartitionerMatPartitioningGetMatPartitioning_MatParti
 
 .seealso `DMPlexDistribute()`, `PetscPartitionerCreate()`
 @*/
-PetscErrorCode PetscPartitionerMatPartitioningGetMatPartitioning(PetscPartitioner part, MatPartitioning *mp) {
+PetscErrorCode PetscPartitionerMatPartitioningGetMatPartitioning(PetscPartitioner part, MatPartitioning *mp)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part, PETSCPARTITIONER_CLASSID, 1);
   PetscValidPointer(mp, 2);
@@ -36,7 +38,8 @@ PetscErrorCode PetscPartitionerMatPartitioningGetMatPartitioning(PetscPartitione
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscPartitionerDestroy_MatPartitioning(PetscPartitioner part) {
+static PetscErrorCode PetscPartitionerDestroy_MatPartitioning(PetscPartitioner part)
+{
   PetscPartitioner_MatPartitioning *p = (PetscPartitioner_MatPartitioning *)part->data;
 
   PetscFunctionBegin;
@@ -46,7 +49,8 @@ static PetscErrorCode PetscPartitionerDestroy_MatPartitioning(PetscPartitioner p
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscPartitionerView_MatPartitioning_ASCII(PetscPartitioner part, PetscViewer viewer) {
+static PetscErrorCode PetscPartitionerView_MatPartitioning_ASCII(PetscPartitioner part, PetscViewer viewer)
+{
   PetscPartitioner_MatPartitioning *p = (PetscPartitioner_MatPartitioning *)part->data;
   PetscViewerFormat                 format;
 
@@ -59,7 +63,8 @@ static PetscErrorCode PetscPartitionerView_MatPartitioning_ASCII(PetscPartitione
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscPartitionerView_MatPartitioning(PetscPartitioner part, PetscViewer viewer) {
+static PetscErrorCode PetscPartitionerView_MatPartitioning(PetscPartitioner part, PetscViewer viewer)
+{
   PetscBool iascii;
 
   PetscFunctionBegin;
@@ -70,7 +75,8 @@ static PetscErrorCode PetscPartitionerView_MatPartitioning(PetscPartitioner part
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscPartitionerSetFromOptions_MatPartitioning(PetscPartitioner part, PetscOptionItems *PetscOptionsObject) {
+static PetscErrorCode PetscPartitionerSetFromOptions_MatPartitioning(PetscPartitioner part, PetscOptionItems *PetscOptionsObject)
+{
   PetscPartitioner_MatPartitioning *p = (PetscPartitioner_MatPartitioning *)part->data;
 
   PetscFunctionBegin;
@@ -79,7 +85,8 @@ static PetscErrorCode PetscPartitionerSetFromOptions_MatPartitioning(PetscPartit
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscPartitionerPartition_MatPartitioning(PetscPartitioner part, PetscInt nparts, PetscInt numVertices, PetscInt start[], PetscInt adjacency[], PetscSection vertSection, PetscSection targetSection, PetscSection partSection, IS *is) {
+static PetscErrorCode PetscPartitionerPartition_MatPartitioning(PetscPartitioner part, PetscInt nparts, PetscInt numVertices, PetscInt start[], PetscInt adjacency[], PetscSection vertSection, PetscSection targetSection, PetscSection partSection, IS *is)
+{
   PetscPartitioner_MatPartitioning *p = (PetscPartitioner_MatPartitioning *)part->data;
   Mat                               matadj;
   IS                                is1, is2, is3;
@@ -178,7 +185,8 @@ static PetscErrorCode PetscPartitionerPartition_MatPartitioning(PetscPartitioner
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscPartitionerInitialize_MatPartitioning(PetscPartitioner part) {
+static PetscErrorCode PetscPartitionerInitialize_MatPartitioning(PetscPartitioner part)
+{
   PetscFunctionBegin;
   part->ops->view           = PetscPartitionerView_MatPartitioning;
   part->ops->setfromoptions = PetscPartitionerSetFromOptions_MatPartitioning;
@@ -196,12 +204,13 @@ static PetscErrorCode PetscPartitionerInitialize_MatPartitioning(PetscPartitione
 .seealso: `PetscPartitionerType`, `PetscPartitionerCreate()`, `PetscPartitionerSetType()`
 M*/
 
-PETSC_EXTERN PetscErrorCode PetscPartitionerCreate_MatPartitioning(PetscPartitioner part) {
+PETSC_EXTERN PetscErrorCode PetscPartitionerCreate_MatPartitioning(PetscPartitioner part)
+{
   PetscPartitioner_MatPartitioning *p;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part, PETSCPARTITIONER_CLASSID, 1);
-  PetscCall(PetscNewLog(part, &p));
+  PetscCall(PetscNew(&p));
   part->data = p;
   PetscCall(PetscPartitionerInitialize_MatPartitioning(part));
   PetscCall(MatPartitioningCreate(PetscObjectComm((PetscObject)part), &p->mp));

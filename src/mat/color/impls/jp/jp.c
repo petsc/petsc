@@ -9,13 +9,15 @@ typedef struct {
   PetscBool  local;
 } MC_JP;
 
-static PetscErrorCode MatColoringDestroy_JP(MatColoring mc) {
+static PetscErrorCode MatColoringDestroy_JP(MatColoring mc)
+{
   PetscFunctionBegin;
   PetscCall(PetscFree(mc->data));
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatColoringSetFromOptions_JP(MatColoring mc, PetscOptionItems *PetscOptionsObject) {
+static PetscErrorCode MatColoringSetFromOptions_JP(MatColoring mc, PetscOptionItems *PetscOptionsObject)
+{
   MC_JP *jp = (MC_JP *)mc->data;
 
   PetscFunctionBegin;
@@ -25,7 +27,8 @@ static PetscErrorCode MatColoringSetFromOptions_JP(MatColoring mc, PetscOptionIt
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MCJPGreatestWeight_Private(MatColoring mc, const PetscReal *weights, PetscReal *maxweights) {
+static PetscErrorCode MCJPGreatestWeight_Private(MatColoring mc, const PetscReal *weights, PetscReal *maxweights)
+{
   MC_JP          *jp = (MC_JP *)mc->data;
   Mat             G  = mc->mat, dG, oG;
   PetscBool       isSeq, isMPI;
@@ -124,7 +127,8 @@ static PetscErrorCode MCJPGreatestWeight_Private(MatColoring mc, const PetscReal
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MCJPInitialLocalColor_Private(MatColoring mc, PetscInt *lperm, ISColoringValue *colors) {
+static PetscErrorCode MCJPInitialLocalColor_Private(MatColoring mc, PetscInt *lperm, ISColoringValue *colors)
+{
   PetscInt        j, i, s, e, n, bidx, cidx, idx, dist, distance = mc->dist;
   Mat             G = mc->mat, dG, oG;
   PetscInt       *seen;
@@ -261,7 +265,8 @@ static PetscErrorCode MCJPInitialLocalColor_Private(MatColoring mc, PetscInt *lp
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MCJPMinColor_Private(MatColoring mc, ISColoringValue maxcolor, const ISColoringValue *colors, ISColoringValue *mincolors) {
+static PetscErrorCode MCJPMinColor_Private(MatColoring mc, ISColoringValue maxcolor, const ISColoringValue *colors, ISColoringValue *mincolors)
+{
   MC_JP          *jp = (MC_JP *)mc->data;
   Mat             G  = mc->mat, dG, oG;
   PetscBool       isSeq, isMPI;
@@ -383,7 +388,8 @@ static PetscErrorCode MCJPMinColor_Private(MatColoring mc, ISColoringValue maxco
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatColoringApply_JP(MatColoring mc, ISColoring *iscoloring) {
+static PetscErrorCode MatColoringApply_JP(MatColoring mc, ISColoring *iscoloring)
+{
   MC_JP           *jp = (MC_JP *)mc->data;
   PetscInt         i, nadded, nadded_total, nadded_total_old, ntotal, n;
   PetscInt         maxcolor_local = 0, maxcolor_global = 0, *lperm;
@@ -479,11 +485,12 @@ static PetscErrorCode MatColoringApply_JP(MatColoring mc, ISColoring *iscoloring
 
 .seealso: `MatColoring`, `MatColoringType`, `MatColoringCreate()`, `MatColoring`, `MatColoringSetType()`
 M*/
-PETSC_EXTERN PetscErrorCode MatColoringCreate_JP(MatColoring mc) {
+PETSC_EXTERN PetscErrorCode MatColoringCreate_JP(MatColoring mc)
+{
   MC_JP *jp;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(mc, &jp));
+  PetscCall(PetscNew(&jp));
   jp->sf                  = NULL;
   jp->dmask               = NULL;
   jp->omask               = NULL;

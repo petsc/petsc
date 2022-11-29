@@ -6,7 +6,8 @@
 */
 #include "petscksp.h"
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   Mat         A;
   Mat         subA[9];
   IS          isg[3];

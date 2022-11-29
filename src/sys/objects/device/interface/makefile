@@ -1,10 +1,8 @@
--include ../../../../../petsckdir.mk
+-include ../../../../../petscdir.mk
 #requiresdefine 'PETSC_HAVE_CXX'
 
-SOURCEC	  =
-SOURCECXX = dcontext.cxx device.cxx devicereg.cxx
-SOURCEF	  =
-SOURCEH   = objpool.hpp cupmdevice.hpp sycldevice.hpp
+SOURCEH   = petscdevice_interface_internal.hpp
+SOURCECXX = dcontext.cxx device.cxx memory.cxx global_dcontext.cxx mark_dcontext.cxx
 MANSEC	  = Sys
 LIBBASE	  = libpetscsys
 DIRS	  =

@@ -4,7 +4,8 @@ const char help[] = "Test PetscDTSimplexQuadrature()";
 
 // if we trust the PKD polynomials (tested in ex9), then we can see how well the quadrature integrates
 // the mass matrix, which should be the identity
-static PetscErrorCode testQuadrature(PetscInt dim, PetscInt degree, PetscDTSimplexQuadratureType type) {
+static PetscErrorCode testQuadrature(PetscInt dim, PetscInt degree, PetscDTSimplexQuadratureType type)
+{
   PetscInt         num_points;
   const PetscReal *points;
   const PetscReal *weights;
@@ -38,7 +39,8 @@ static PetscErrorCode testQuadrature(PetscInt dim, PetscInt degree, PetscDTSimpl
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   const PetscInt dimdeg[] = {0, 20, 20, 20};
 
   PetscFunctionBeginUser;

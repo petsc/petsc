@@ -1,6 +1,7 @@
 #include <../src/snes/impls/ngmres/snesngmres.h> /*I "petscsnes.h" I*/
 
-static PetscErrorCode SNESSetFromOptions_Anderson(SNES snes, PetscOptionItems *PetscOptionsObject) {
+static PetscErrorCode SNESSetFromOptions_Anderson(SNES snes, PetscOptionItems *PetscOptionsObject)
+{
   SNES_NGMRES *ngmres  = (SNES_NGMRES *)snes->data;
   PetscBool    monitor = PETSC_FALSE;
 
@@ -17,12 +18,13 @@ static PetscErrorCode SNESSetFromOptions_Anderson(SNES snes, PetscOptionItems *P
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode SNESSolve_Anderson(SNES snes) {
+static PetscErrorCode SNESSolve_Anderson(SNES snes)
+{
   SNES_NGMRES *ngmres = (SNES_NGMRES *)snes->data;
   /* present solution, residual, and preconditioned residual */
-  Vec          X, F, B, D;
+  Vec X, F, B, D;
   /* candidate linear combination answers */
-  Vec          XA, FA, XM, FM;
+  Vec XA, FA, XM, FM;
 
   /* coefficients and RHS to the minimization problem */
   PetscReal           fnorm, fMnorm, fAnorm;
@@ -164,11 +166,11 @@ static PetscErrorCode SNESSolve_Anderson(SNES snes) {
 }
 
 /*MC
-  SNESANDERSON - Anderson Mixing method.
+  SNESANDERSON - Anderson Mixing nonlinear solver
 
    Level: beginner
 
-   Options Database:
+   Options Database Keys:
 +  -snes_anderson_m                - Number of stored previous solutions and residuals
 .  -snes_anderson_beta             - Anderson mixing parameter
 .  -snes_anderson_restart_type     - Type of restart (see SNESNGMRES)
@@ -177,11 +179,10 @@ static PetscErrorCode SNESSolve_Anderson(SNES snes) {
 -  -snes_anderson_monitor          - Prints relevant information about the ngmres iteration
 
    Notes:
-
    The Anderson Mixing method combines m previous solutions into a minimum-residual solution by solving a small linearized
    optimization problem at each iteration.
 
-   Very similar to the SNESNGMRES algorithm.
+   Very similar to the `SNESNGMRES` algorithm.
 
    References:
 +  * -  D. G. Anderson. Iterative procedures for nonlinear integral equations.
@@ -192,7 +193,8 @@ static PetscErrorCode SNESSolve_Anderson(SNES snes) {
 .seealso: `SNESNGMRES`, `SNESCreate()`, `SNES`, `SNESSetType()`, `SNESType`
 M*/
 
-PETSC_EXTERN PetscErrorCode SNESCreate_Anderson(SNES snes) {
+PETSC_EXTERN PetscErrorCode SNESCreate_Anderson(SNES snes)
+{
   SNES_NGMRES   *ngmres;
   SNESLineSearch linesearch;
 
@@ -210,7 +212,7 @@ PETSC_EXTERN PetscErrorCode SNESCreate_Anderson(SNES snes) {
 
   snes->alwayscomputesfinalresidual = PETSC_TRUE;
 
-  PetscCall(PetscNewLog(snes, &ngmres));
+  PetscCall(PetscNew(&ngmres));
   snes->data    = (void *)ngmres;
   ngmres->msize = 30;
 

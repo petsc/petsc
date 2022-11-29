@@ -2,7 +2,8 @@ static char help[] = "Tests repeated PetscInitialize/PetscFinalize calls.\n\n";
 
 #include <petscsys.h>
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   int i, imax;
 #if defined(PETSC_HAVE_ELEMENTAL)
   PetscBool initialized;

@@ -3,7 +3,8 @@ static const char help[] = "Example demonstrating PCCOMPOSITE where one of the i
 
 #include <petscksp.h>
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscInt    n = 10, i, col[3];
   Vec         x, b;
   Mat         A, B;

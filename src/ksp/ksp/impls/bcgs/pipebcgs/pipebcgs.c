@@ -1,11 +1,11 @@
 
 /*
     This file implements pipelined BiCGStab (pipe-BiCGStab).
-    Only allow right preconditioning.
 */
 #include <../src/ksp/ksp/impls/bcgs/bcgsimpl.h> /*I  "petscksp.h"  I*/
 
-static PetscErrorCode KSPSetUp_PIPEBCGS(KSP ksp) {
+static PetscErrorCode KSPSetUp_PIPEBCGS(KSP ksp)
+{
   PetscFunctionBegin;
   PetscCall(KSPSetWorkVecs(ksp, 15));
   PetscFunctionReturn(0);
@@ -13,7 +13,8 @@ static PetscErrorCode KSPSetUp_PIPEBCGS(KSP ksp) {
 
 /* Only need a few hacks from KSPSolve_BCGS */
 #include <petsc/private/pcimpl.h> /*I "petscksp.h" I*/
-static PetscErrorCode KSPSolve_PIPEBCGS(KSP ksp) {
+static PetscErrorCode KSPSolve_PIPEBCGS(KSP ksp)
+{
   PetscInt    i;
   PetscScalar rho, rhoold, alpha, beta, omega = 0.0, d1, d2, d3;
   Vec         X, B, S, R, RP, Y, Q, P2, Q2, R2, S2, W, Z, W2, Z2, T, V;
@@ -40,8 +41,6 @@ static PetscErrorCode KSPSolve_PIPEBCGS(KSP ksp) {
   T  = ksp->work[13];
   V  = ksp->work[14];
 
-  /* Only supports right preconditioning */
-  PetscCheck(ksp->pc_side == PC_RIGHT, PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "KSP pipebcgs does not support %s", PCSides[ksp->pc_side]);
   if (!ksp->guess_zero) {
     if (!bcgs->guess) PetscCall(VecDuplicate(X, &bcgs->guess));
     PetscCall(VecCopy(X, bcgs->guess));
@@ -202,39 +201,39 @@ static PetscErrorCode KSPSolve_PIPEBCGS(KSP ksp) {
 }
 
 /*MC
-    KSPPIPEBCGS - Implements the pipelined BiCGStab method.
+    KSPPIPEBCGS - Implements a pipelined BiCGStab method. [](sec_pipelineksp)
 
+    Level: intermediate
+
+    Notes:
     This method has only two non-blocking reductions per iteration, compared to 3 blocking for standard FBCGS.  The
     non-blocking reductions are overlapped by matrix-vector products and preconditioner applications.
 
     Periodic residual replacement may be used to increase robustness and maximal attainable accuracy.
 
-    Options Database Keys:
-    see KSPSolve()
+    Like `KSPFBCGS`, the `KSPPIPEBCGS` implementation only allows for right preconditioning.
 
-    Level: intermediate
-
-    Notes:
-    Like KSPFBCGS, the KSPPIPEBCGS implementation only allows for right preconditioning.
     MPI configuration may be necessary for reductions to make asynchronous progress, which is important for
-    performance of pipelined methods. See the FAQ on the PETSc website for details.
+    performance of pipelined methods. See [](doc_faq_pipelined)
 
     Contributed by:
     Siegfried Cools, Universiteit Antwerpen,
     EXA2CT European Project on EXascale Algorithms and Advanced Computational Techniques, 2016.
 
     Reference:
-    S. Cools and W. Vanroose,
+.   * - S. Cools and W. Vanroose,
     "The communication-hiding pipelined BiCGStab method for the parallel solution of large unsymmetric linear systems",
     Parallel Computing, 65:1-20, 2017.
 
-.seealso: `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPBICG`, `KSPFBCGS`, `KSPFBCGSL`, `KSPSetPCSide()`
+.seealso: [](chapter_ksp), `KSPFBCGS`, `KSPFBCGSR`, `KSPBCGS`, `KSPBCGSL`, `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPBICG`, `KSPFBCGS`, `KSPFBCGSL`, `KSPSetPCSide()`,
+           [](sec_pipelineksp), [](doc_faq_pipelined)
 M*/
-PETSC_EXTERN PetscErrorCode KSPCreate_PIPEBCGS(KSP ksp) {
+PETSC_EXTERN PetscErrorCode KSPCreate_PIPEBCGS(KSP ksp)
+{
   KSP_BCGS *bcgs;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(ksp, &bcgs));
+  PetscCall(PetscNew(&bcgs));
 
   ksp->data                = bcgs;
   ksp->ops->setup          = KSPSetUp_PIPEBCGS;

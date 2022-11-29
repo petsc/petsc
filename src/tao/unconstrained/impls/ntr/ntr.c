@@ -40,7 +40,8 @@ static const char *NTR_UPDATE[64] = {"reduction", "interpolation"};
           or KSPGLTR.  Thus, we set KSPNASH, KSPSTCG, or KSPGLTR in this
           routine regardless of what the user may have previously specified.
 */
-static PetscErrorCode TaoSolve_NTR(Tao tao) {
+static PetscErrorCode TaoSolve_NTR(Tao tao)
+{
   TAO_NTR           *tr = (TAO_NTR *)tao->data;
   KSPType            ksp_type;
   PetscBool          is_nash, is_stcg, is_gltr, is_bfgs, is_jacobi, is_symmetric, sym_set;
@@ -427,7 +428,8 @@ static PetscErrorCode TaoSolve_NTR(Tao tao) {
 }
 
 /*------------------------------------------------------------*/
-static PetscErrorCode TaoSetUp_NTR(Tao tao) {
+static PetscErrorCode TaoSetUp_NTR(Tao tao)
+{
   TAO_NTR *tr = (TAO_NTR *)tao->data;
 
   PetscFunctionBegin;
@@ -441,7 +443,8 @@ static PetscErrorCode TaoSetUp_NTR(Tao tao) {
 }
 
 /*------------------------------------------------------------*/
-static PetscErrorCode TaoDestroy_NTR(Tao tao) {
+static PetscErrorCode TaoDestroy_NTR(Tao tao)
+{
   TAO_NTR *tr = (TAO_NTR *)tao->data;
 
   PetscFunctionBegin;
@@ -452,7 +455,8 @@ static PetscErrorCode TaoDestroy_NTR(Tao tao) {
 }
 
 /*------------------------------------------------------------*/
-static PetscErrorCode TaoSetFromOptions_NTR(Tao tao, PetscOptionItems *PetscOptionsObject) {
+static PetscErrorCode TaoSetFromOptions_NTR(Tao tao, PetscOptionItems *PetscOptionsObject)
+{
   TAO_NTR *tr = (TAO_NTR *)tao->data;
 
   PetscFunctionBegin;
@@ -530,12 +534,13 @@ static PetscErrorCode TaoSetFromOptions_NTR(Tao tao, PetscOptionItems *PetscOpti
   Level: beginner
 M*/
 
-PETSC_EXTERN PetscErrorCode TaoCreate_NTR(Tao tao) {
+PETSC_EXTERN PetscErrorCode TaoCreate_NTR(Tao tao)
+{
   TAO_NTR *tr;
 
   PetscFunctionBegin;
 
-  PetscCall(PetscNewLog(tao, &tr));
+  PetscCall(PetscNew(&tr));
 
   tao->ops->setup          = TaoSetUp_NTR;
   tao->ops->solve          = TaoSolve_NTR;

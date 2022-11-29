@@ -18,7 +18,7 @@ static PetscErrorCode PetscDrawSave_SAWs(PetscDraw);
 +  draw      - the graphics context
 -  filename  - name of the file, if .ext then uses name of draw object plus .ext using .ext to determine the image type
 
-   Options Database Command:
+   Options Database Keys:
 +  -draw_save <filename>  - filename could be name.ext or .ext (where .ext determines the type of graphics file to save, for example .png)
 .  -draw_save_final_image [optional filename] - saves the final image displayed in a window
 -  -draw_save_single_file - saves each new image in the same file, normally each new image is saved in a new file with filename/filename_%d.ext
@@ -35,7 +35,8 @@ static PetscErrorCode PetscDrawSave_SAWs(PetscDraw);
 
 .seealso: `PetscDraw`, `PetscDrawOpenX()`, `PetscDrawOpenImage()`, `PetscDrawSetFromOptions()`, `PetscDrawCreate()`, `PetscDrawDestroy()`, `PetscDrawSetSaveFinalImage()`
 @*/
-PetscErrorCode PetscDrawSetSave(PetscDraw draw, const char filename[]) {
+PetscErrorCode PetscDrawSetSave(PetscDraw draw, const char filename[])
+{
   const char *savename = NULL;
   const char *imageext = NULL;
   char        buf[PETSC_MAX_PATH_LEN];
@@ -83,7 +84,7 @@ PetscErrorCode PetscDrawSetSave(PetscDraw draw, const char filename[]) {
 +  draw      - the graphics context
 -  movieext  - optional extension defining the movie format
 
-   Options Database Command:
+   Options Database Key:
 .  -draw_save_movie <.ext> - saves a movie with extension .ext
 
    Level: intermediate
@@ -94,7 +95,8 @@ PetscErrorCode PetscDrawSetSave(PetscDraw draw, const char filename[]) {
 
 .seealso: `PetscDraw`, `PetscDrawSetSave()`, `PetscDrawSetFromOptions()`, `PetscDrawCreate()`, `PetscDrawDestroy()`
 @*/
-PetscErrorCode PetscDrawSetSaveMovie(PetscDraw draw, const char movieext[]) {
+PetscErrorCode PetscDrawSetSaveMovie(PetscDraw draw, const char movieext[])
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw, PETSC_DRAW_CLASSID, 1);
   if (movieext) PetscValidCharPointer(movieext, 2);
@@ -117,7 +119,7 @@ PetscErrorCode PetscDrawSetSaveMovie(PetscDraw draw, const char movieext[]) {
 +  draw      - the graphics context
 -  filename  - name of the file, if NULL or empty uses name set with `PetscDrawSetSave()` or the name of the draw object
 
-   Options Database Command:
+   Options Database Key:
 .  -draw_save_final_image  <filename> - filename could be name.ext or .ext (where .ext determines the type of graphics file to save, for example .png)
 
    Level: intermediate
@@ -135,7 +137,8 @@ PetscErrorCode PetscDrawSetSaveMovie(PetscDraw draw, const char movieext[]) {
 
 .seealso: `PetscDraw`, `PetscDrawSetSave()`, `PetscDrawSetFromOptions()`, `PetscDrawCreate()`, `PetscDrawDestroy()`
 @*/
-PetscErrorCode PetscDrawSetSaveFinalImage(PetscDraw draw, const char filename[]) {
+PetscErrorCode PetscDrawSetSaveFinalImage(PetscDraw draw, const char filename[])
+{
   char buf[PETSC_MAX_PATH_LEN];
 
   PetscFunctionBegin;
@@ -168,7 +171,8 @@ PetscErrorCode PetscDrawSetSaveFinalImage(PetscDraw draw, const char filename[])
 
 .seealso: `PetscDraw`, `PetscDrawSetSave()`
 @*/
-PetscErrorCode PetscDrawSave(PetscDraw draw) {
+PetscErrorCode PetscDrawSave(PetscDraw draw)
+{
   PetscInt       saveindex;
   char           basename[PETSC_MAX_PATH_LEN];
   unsigned char  palette[256][3];
@@ -247,7 +251,8 @@ finally:
 
 .seealso: `PetscDraw`, `PetscDrawSetSave()`, `PetscDrawSetSaveMovie()`
 @*/
-PetscErrorCode PetscDrawSaveMovie(PetscDraw draw) {
+PetscErrorCode PetscDrawSaveMovie(PetscDraw draw)
+{
   PetscMPIInt rank;
 
   PetscFunctionBegin;
@@ -266,7 +271,7 @@ PetscErrorCode PetscDrawSaveMovie(PetscDraw draw) {
 }
 
 #if defined(PETSC_HAVE_SAWS)
-#include <petscviewersaws.h>
+  #include <petscviewersaws.h>
 /*
   The PetscImageList object and functions are used to maintain a list of file images
   that can be displayed by the SAWs webserver.
@@ -281,7 +286,8 @@ struct _P_PetscImageList {
 
 static PetscImageList SAWs_images = NULL;
 
-static PetscErrorCode PetscImageListDestroy(void) {
+static PetscErrorCode PetscImageListDestroy(void)
+{
   PetscImageList image = SAWs_images;
 
   PetscFunctionBegin;
@@ -295,7 +301,8 @@ static PetscErrorCode PetscImageListDestroy(void) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscImageListAdd(const char filename[], const char ext[], PetscInt count) {
+static PetscErrorCode PetscImageListAdd(const char filename[], const char ext[], PetscInt count)
+{
   PetscImageList image, oimage = SAWs_images;
   PetscBool      flg;
 
@@ -327,7 +334,8 @@ static PetscErrorCode PetscImageListAdd(const char filename[], const char ext[],
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscDrawSave_SAWs(PetscDraw draw) {
+static PetscErrorCode PetscDrawSave_SAWs(PetscDraw draw)
+{
   PetscImageList image;
   char           body[4096];
   size_t         len = 0;

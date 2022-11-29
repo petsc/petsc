@@ -286,7 +286,7 @@ class Configure(config.package.CMakePackage):
       os.unlink('simplemake')
     except RuntimeError as e:
       raise RuntimeError('Unable to generate list of Trilinos Libraries')
-    # generateLibList() wants this ridiculus format
+    # generateLibList() wants this ridiculous format
     l = output1.split(' ')
     ll = [os.path.join(dir,'lib'+l[0][2:]+'.a')]
     for i in l[1:]:

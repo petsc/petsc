@@ -3,7 +3,7 @@ Discrete system: 1D, 2D or 3D laplacian, discretized with spectral elements.\n\
 Spectral degree can be specified by passing values to -p option.\n\
 Global problem either with dirichlet boundary conditions on one side or in the pure neumann case (depending on runtime parameters).\n\
 Domain is [-nex,nex]x[-ney,ney]x[-nez,nez]: ne_ number of elements in _ direction.\n\
-Exaple usage: \n\
+Example usage: \n\
 1D: mpiexec -n 4 ex59 -nex 7\n\
 2D: mpiexec -n 4 ex59 -npx 2 -npy 2 -nex 2 -ney 2\n\
 3D: mpiexec -n 4 ex59 -npx 2 -npy 2 -npz 1 -nex 2 -ney 2 -nez 1\n\
@@ -23,29 +23,29 @@ In the latter case, in order to avoid runtime errors during factorization, pleas
 /* structure holding domain data */
 typedef struct {
   /* communicator */
-  MPI_Comm    gcomm;
+  MPI_Comm gcomm;
   /* space dimension */
-  PetscInt    dim;
+  PetscInt dim;
   /* spectral degree */
-  PetscInt    p;
+  PetscInt p;
   /* subdomains per dimension */
-  PetscInt    npx, npy, npz;
+  PetscInt npx, npy, npz;
   /* subdomain index in cartesian dimensions */
-  PetscInt    ipx, ipy, ipz;
+  PetscInt ipx, ipy, ipz;
   /* elements per dimension */
-  PetscInt    nex, ney, nez;
+  PetscInt nex, ney, nez;
   /* local elements per dimension */
-  PetscInt    nex_l, ney_l, nez_l;
+  PetscInt nex_l, ney_l, nez_l;
   /* global number of dofs per dimension */
-  PetscInt    xm, ym, zm;
+  PetscInt xm, ym, zm;
   /* local number of dofs per dimension */
-  PetscInt    xm_l, ym_l, zm_l;
+  PetscInt xm_l, ym_l, zm_l;
   /* starting global indexes for subdomain in lexicographic ordering */
-  PetscInt    startx, starty, startz;
+  PetscInt startx, starty, startz;
   /* pure Neumann problem */
-  PetscBool   pure_neumann;
+  PetscBool pure_neumann;
   /* Dirichlet BC implementation */
-  PetscBool   DBC_zerorows;
+  PetscBool DBC_zerorows;
   /* Scaling factor for subdomain */
   PetscScalar scalingfactor;
   PetscBool   testkspfetidp;
@@ -54,16 +54,17 @@ typedef struct {
 /* structure holding GLL data */
 typedef struct {
   /* GLL nodes */
-  PetscReal    *zGL;
+  PetscReal *zGL;
   /* GLL weights */
-  PetscScalar  *rhoGL;
+  PetscScalar *rhoGL;
   /* aux_mat */
   PetscScalar **A;
   /* Element matrix */
-  Mat           elem_mat;
+  Mat elem_mat;
 } GLLData;
 
-static PetscErrorCode BuildCSRGraph(DomainData dd, PetscInt **xadj, PetscInt **adjncy) {
+static PetscErrorCode BuildCSRGraph(DomainData dd, PetscInt **xadj, PetscInt **adjncy)
+{
   PetscInt *xadj_temp, *adjncy_temp;
   PetscInt  i, j, k, ii, jj, kk, iindex, count_adj;
   PetscInt  istart_csr, iend_csr, jstart_csr, jend_csr, kstart_csr, kend_csr;
@@ -173,7 +174,8 @@ static PetscErrorCode BuildCSRGraph(DomainData dd, PetscInt **xadj, PetscInt **a
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode ComputeSpecialBoundaryIndices(DomainData dd, IS *dirichlet, IS *neumann) {
+static PetscErrorCode ComputeSpecialBoundaryIndices(DomainData dd, IS *dirichlet, IS *neumann)
+{
   IS         temp_dirichlet = 0, temp_neumann = 0;
   PetscInt   localsize, i, j, k, *indices;
   PetscBool *touched;
@@ -282,7 +284,8 @@ static PetscErrorCode ComputeSpecialBoundaryIndices(DomainData dd, IS *dirichlet
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode ComputeMapping(DomainData dd, ISLocalToGlobalMapping *isg2lmap) {
+static PetscErrorCode ComputeMapping(DomainData dd, ISLocalToGlobalMapping *isg2lmap)
+{
   DM                     da;
   AO                     ao;
   DMBoundaryType         bx = DM_BOUNDARY_NONE, by = DM_BOUNDARY_NONE, bz = DM_BOUNDARY_NONE;
@@ -325,7 +328,8 @@ static PetscErrorCode ComputeMapping(DomainData dd, ISLocalToGlobalMapping *isg2
   *isg2lmap = temp_isg2lmap;
   PetscFunctionReturn(0);
 }
-static PetscErrorCode ComputeSubdomainMatrix(DomainData dd, GLLData glldata, Mat *local_mat) {
+static PetscErrorCode ComputeSubdomainMatrix(DomainData dd, GLLData glldata, Mat *local_mat)
+{
   PetscInt     localsize, zloc, yloc, xloc, auxnex, auxney, auxnez;
   PetscInt     ie, je, ke, i, j, k, ig, jg, kg, ii, ming;
   PetscInt    *indexg, *cols, *colsg;
@@ -449,7 +453,8 @@ static PetscErrorCode ComputeSubdomainMatrix(DomainData dd, GLLData glldata, Mat
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode GLLStuffs(DomainData dd, GLLData *glldata) {
+static PetscErrorCode GLLStuffs(DomainData dd, GLLData *glldata)
+{
   PetscReal   *M, si;
   PetscScalar  x, z0, z1, z2, Lpj, Lpr, rhoGLj, rhoGLk;
   PetscBLASInt pm1, lierr;
@@ -627,7 +632,8 @@ static PetscErrorCode GLLStuffs(DomainData dd, GLLData *glldata) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DomainDecomposition(DomainData *dd) {
+static PetscErrorCode DomainDecomposition(DomainData *dd)
+{
   PetscMPIInt rank;
   PetscInt    i, j, k;
 
@@ -638,7 +644,7 @@ static PetscErrorCode DomainDecomposition(DomainData *dd) {
   if (dd->dim > 1) dd->ipz = rank / (dd->npx * dd->npy);
   else dd->ipz = 0;
 
-  dd->ipy   = rank / dd->npx - dd->ipz * dd->npy;
+  dd->ipy = rank / dd->npx - dd->ipz * dd->npy;
   /* number of local elements */
   dd->nex_l = dd->nex / dd->npx;
   if (dd->ipx < dd->nex % dd->npx) dd->nex_l++;
@@ -696,7 +702,8 @@ static PetscErrorCode DomainDecomposition(DomainData *dd) {
   }
   PetscFunctionReturn(0);
 }
-static PetscErrorCode ComputeMatrix(DomainData dd, Mat *A) {
+static PetscErrorCode ComputeMatrix(DomainData dd, Mat *A)
+{
   GLLData                gll;
   Mat                    local_mat = 0, temp_A = 0;
   ISLocalToGlobalMapping matis_map   = 0;
@@ -756,7 +763,8 @@ static PetscErrorCode ComputeMatrix(DomainData dd, Mat *A) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode ComputeKSPFETIDP(DomainData dd, KSP ksp_bddc, KSP *ksp_fetidp) {
+static PetscErrorCode ComputeKSPFETIDP(DomainData dd, KSP ksp_bddc, KSP *ksp_fetidp)
+{
   KSP temp_ksp;
   PC  pc;
 
@@ -794,7 +802,8 @@ static PetscErrorCode ComputeKSPFETIDP(DomainData dd, KSP ksp_bddc, KSP *ksp_fet
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode ComputeKSPBDDC(DomainData dd, Mat A, KSP *ksp) {
+static PetscErrorCode ComputeKSPBDDC(DomainData dd, Mat A, KSP *ksp)
+{
   KSP          temp_ksp;
   PC           pc;
   IS           primals, dirichletIS = 0, neumannIS = 0, *bddc_dofs_splitting;
@@ -910,7 +919,8 @@ static PetscErrorCode ComputeKSPBDDC(DomainData dd, Mat A, KSP *ksp) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode InitializeDomainData(DomainData *dd) {
+static PetscErrorCode InitializeDomainData(DomainData *dd)
+{
   PetscMPIInt sizes, rank;
   PetscInt    factor;
 
@@ -975,7 +985,8 @@ static PetscErrorCode InitializeDomainData(DomainData *dd) {
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   DomainData         dd;
   PetscReal          norm, maxeig, mineig;
   PetscScalar        scalar_value;

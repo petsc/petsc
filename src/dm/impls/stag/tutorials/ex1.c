@@ -79,7 +79,8 @@ static char help[] = "Solve a toy 1D problem on a staggered grid.\n\
 #define RIGHT   DMSTAG_RIGHT
 #define ELEMENT DMSTAG_ELEMENT
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   DM             dmSol, dmForcing;
   DM             dmCoordSol;
   Vec            sol, solRef, solRefLocal, f, fLocal, rhs, coordSolLocal;

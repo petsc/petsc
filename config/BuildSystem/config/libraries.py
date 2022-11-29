@@ -317,7 +317,7 @@ extern "C" {
 
   def checkMathErf(self):
     '''Check for erf() in libm, the math library'''
-    if not self.math is None and self.check(self.math, ['erf'], prototype = ['#include <math.h>'], call = ['double (*checkErf)(double) = erf;double x = 0,y; y = (*checkErf)(x)']):
+    if not self.math is None and self.check(self.math, ['erf'], prototype = ['#include <math.h>'], call = ['double (*checkErf)(double) = erf;double x = 0,y; y = (*checkErf)(x); (void)y']):
       self.logPrint('erf() found')
       self.addDefine('HAVE_ERF', 1)
     else:
@@ -326,7 +326,7 @@ extern "C" {
 
   def checkMathTgamma(self):
     '''Check for tgamma() in libm, the math library'''
-    if not self.math is None and self.check(self.math, ['tgamma'], prototype = ['#include <math.h>'], call = ['double (*checkTgamma)(double) = tgamma;double x = 0,y; y = (*checkTgamma)(x)']):
+    if not self.math is None and self.check(self.math, ['tgamma'], prototype = ['#include <math.h>'], call = ['double (*checkTgamma)(double) = tgamma;double x = 0,y; y = (*checkTgamma)(x); (void)y']):
       self.logPrint('tgamma() found')
       self.addDefine('HAVE_TGAMMA', 1)
     else:
@@ -352,11 +352,15 @@ extern "C" {
       self.addDefine('HAVE_FENV_H', 1)
     else:
       self.logPrint('<fenv.h> with FE_DFL_ENV not found')
+    if not self.math is None and self.check(self.math, ['feclearexcept'], prototype = ['#include <fenv.h>'], call = ['feclearexcept(FE_INEXACT);']):
+      self.addDefine('HAVE_FE_VALUES', 1)
+    else:
+      self.logPrint('<fenv.h> with FE_INEXACT not found')
     return
 
   def checkMathLog2(self):
     '''Check for log2() in libm, the math library'''
-    if not self.math is None and self.check(self.math, ['log2'], prototype = ['#include <math.h>'], call = ['double (*checkLog2)(double) = log2; double x = 2.5, y = (*checkLog2)(x)']):
+    if not self.math is None and self.check(self.math, ['log2'], prototype = ['#include <math.h>'], call = ['double (*checkLog2)(double) = log2; double x = 2.5, y = (*checkLog2)(x); (void)y']):
       self.logPrint('log2() found')
       self.addDefine('HAVE_LOG2', 1)
     else:

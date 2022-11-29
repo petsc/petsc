@@ -1,7 +1,7 @@
 /*
       Objects to manage the interactions between the mesh data structures and the algebraic objects
 */
-#if !defined(PETSCDM_H)
+#ifndef PETSCDM_H
 #define PETSCDM_H
 #include <petscmat.h>
 #include <petscdmtypes.h>
@@ -14,7 +14,6 @@
 PETSC_EXTERN PetscErrorCode DMInitializePackage(void);
 
 PETSC_EXTERN PetscClassId DM_CLASSID;
-PETSC_EXTERN PetscClassId DMLABEL_CLASSID;
 
 #define DMLOCATEPOINT_POINT_NOT_FOUND -367
 
@@ -237,29 +236,36 @@ PETSC_EXTERN PetscErrorCode DMGetLocalSection(DM, PetscSection *);
 PETSC_EXTERN PetscErrorCode DMSetLocalSection(DM, PetscSection);
 PETSC_EXTERN PetscErrorCode DMGetGlobalSection(DM, PetscSection *);
 PETSC_EXTERN PetscErrorCode DMSetGlobalSection(DM, PetscSection);
-static inline PETSC_DEPRECATED_FUNCTION("Use DMGetSection() (since v3.9)") PetscErrorCode DMGetDefaultSection(DM dm, PetscSection *s) {
+static inline PETSC_DEPRECATED_FUNCTION("Use DMGetSection() (since v3.9)") PetscErrorCode DMGetDefaultSection(DM dm, PetscSection *s)
+{
   return DMGetSection(dm, s);
 }
-static inline PETSC_DEPRECATED_FUNCTION("Use DMSetSection() (since v3.9)") PetscErrorCode DMSetDefaultSection(DM dm, PetscSection s) {
+static inline PETSC_DEPRECATED_FUNCTION("Use DMSetSection() (since v3.9)") PetscErrorCode DMSetDefaultSection(DM dm, PetscSection s)
+{
   return DMSetSection(dm, s);
 }
-static inline PETSC_DEPRECATED_FUNCTION("Use DMGetGlobalSection() (since v3.9)") PetscErrorCode DMGetDefaultGlobalSection(DM dm, PetscSection *s) {
+static inline PETSC_DEPRECATED_FUNCTION("Use DMGetGlobalSection() (since v3.9)") PetscErrorCode DMGetDefaultGlobalSection(DM dm, PetscSection *s)
+{
   return DMGetGlobalSection(dm, s);
 }
-static inline PETSC_DEPRECATED_FUNCTION("Use DMSetGlobalSection() (since v3.9)") PetscErrorCode DMSetDefaultGlobalSection(DM dm, PetscSection s) {
+static inline PETSC_DEPRECATED_FUNCTION("Use DMSetGlobalSection() (since v3.9)") PetscErrorCode DMSetDefaultGlobalSection(DM dm, PetscSection s)
+{
   return DMSetGlobalSection(dm, s);
 }
 
 PETSC_EXTERN PetscErrorCode DMGetSectionSF(DM, PetscSF *);
 PETSC_EXTERN PetscErrorCode DMSetSectionSF(DM, PetscSF);
 PETSC_EXTERN PetscErrorCode DMCreateSectionSF(DM, PetscSection, PetscSection);
-static inline PETSC_DEPRECATED_FUNCTION("Use DMGetSectionSF() (since v3.12)") PetscErrorCode DMGetDefaultSF(DM dm, PetscSF *s) {
+static inline PETSC_DEPRECATED_FUNCTION("Use DMGetSectionSF() (since v3.12)") PetscErrorCode DMGetDefaultSF(DM dm, PetscSF *s)
+{
   return DMGetSectionSF(dm, s);
 }
-static inline PETSC_DEPRECATED_FUNCTION("Use DMSetSectionSF() (since v3.12)") PetscErrorCode DMSetDefaultSF(DM dm, PetscSF s) {
+static inline PETSC_DEPRECATED_FUNCTION("Use DMSetSectionSF() (since v3.12)") PetscErrorCode DMSetDefaultSF(DM dm, PetscSF s)
+{
   return DMSetSectionSF(dm, s);
 }
-static inline PETSC_DEPRECATED_FUNCTION("Use DMCreateSectionSF() (since v3.12)") PetscErrorCode DMCreateDefaultSF(DM dm, PetscSection l, PetscSection g) {
+static inline PETSC_DEPRECATED_FUNCTION("Use DMCreateSectionSF() (since v3.12)") PetscErrorCode DMCreateDefaultSF(DM dm, PetscSection l, PetscSection g)
+{
   return DMCreateSectionSF(dm, l, g);
 }
 PETSC_EXTERN PetscErrorCode DMGetPointSF(DM, PetscSF *);
@@ -419,98 +425,148 @@ PETSC_EXTERN PetscErrorCode DMMonitorCancel(DM);
 PETSC_EXTERN PetscErrorCode DMMonitorSetFromOptions(DM, const char[], const char[], const char[], PetscErrorCode (*)(DM, void *), PetscErrorCode (*)(DM, PetscViewerAndFormat *), PetscBool *);
 PETSC_EXTERN PetscErrorCode DMMonitor(DM);
 
-static inline PetscInt DMPolytopeTypeGetDim(DMPolytopeType ct) {
+static inline PetscInt DMPolytopeTypeGetDim(DMPolytopeType ct)
+{
   switch (ct) {
-  case DM_POLYTOPE_POINT: return 0;
+  case DM_POLYTOPE_POINT:
+    return 0;
   case DM_POLYTOPE_SEGMENT:
-  case DM_POLYTOPE_POINT_PRISM_TENSOR: return 1;
+  case DM_POLYTOPE_POINT_PRISM_TENSOR:
+    return 1;
   case DM_POLYTOPE_TRIANGLE:
   case DM_POLYTOPE_QUADRILATERAL:
-  case DM_POLYTOPE_SEG_PRISM_TENSOR: return 2;
+  case DM_POLYTOPE_SEG_PRISM_TENSOR:
+    return 2;
   case DM_POLYTOPE_TETRAHEDRON:
   case DM_POLYTOPE_HEXAHEDRON:
   case DM_POLYTOPE_TRI_PRISM:
   case DM_POLYTOPE_TRI_PRISM_TENSOR:
   case DM_POLYTOPE_QUAD_PRISM_TENSOR:
-  case DM_POLYTOPE_PYRAMID: return 3;
-  default: return -1;
+  case DM_POLYTOPE_PYRAMID:
+    return 3;
+  default:
+    return -1;
   }
 }
 
-static inline PetscInt DMPolytopeTypeGetConeSize(DMPolytopeType ct) {
+static inline PetscInt DMPolytopeTypeGetConeSize(DMPolytopeType ct)
+{
   switch (ct) {
-  case DM_POLYTOPE_POINT: return 0;
-  case DM_POLYTOPE_SEGMENT: return 2;
-  case DM_POLYTOPE_POINT_PRISM_TENSOR: return 2;
-  case DM_POLYTOPE_TRIANGLE: return 3;
-  case DM_POLYTOPE_QUADRILATERAL: return 4;
-  case DM_POLYTOPE_SEG_PRISM_TENSOR: return 4;
-  case DM_POLYTOPE_TETRAHEDRON: return 4;
-  case DM_POLYTOPE_HEXAHEDRON: return 6;
-  case DM_POLYTOPE_TRI_PRISM: return 5;
-  case DM_POLYTOPE_TRI_PRISM_TENSOR: return 5;
-  case DM_POLYTOPE_QUAD_PRISM_TENSOR: return 6;
-  case DM_POLYTOPE_PYRAMID: return 5;
-  default: return -1;
+  case DM_POLYTOPE_POINT:
+    return 0;
+  case DM_POLYTOPE_SEGMENT:
+    return 2;
+  case DM_POLYTOPE_POINT_PRISM_TENSOR:
+    return 2;
+  case DM_POLYTOPE_TRIANGLE:
+    return 3;
+  case DM_POLYTOPE_QUADRILATERAL:
+    return 4;
+  case DM_POLYTOPE_SEG_PRISM_TENSOR:
+    return 4;
+  case DM_POLYTOPE_TETRAHEDRON:
+    return 4;
+  case DM_POLYTOPE_HEXAHEDRON:
+    return 6;
+  case DM_POLYTOPE_TRI_PRISM:
+    return 5;
+  case DM_POLYTOPE_TRI_PRISM_TENSOR:
+    return 5;
+  case DM_POLYTOPE_QUAD_PRISM_TENSOR:
+    return 6;
+  case DM_POLYTOPE_PYRAMID:
+    return 5;
+  default:
+    return -1;
   }
 }
 
-static inline PetscInt DMPolytopeTypeGetNumVertices(DMPolytopeType ct) {
+static inline PetscInt DMPolytopeTypeGetNumVertices(DMPolytopeType ct)
+{
   switch (ct) {
-  case DM_POLYTOPE_POINT: return 1;
-  case DM_POLYTOPE_SEGMENT: return 2;
-  case DM_POLYTOPE_POINT_PRISM_TENSOR: return 2;
-  case DM_POLYTOPE_TRIANGLE: return 3;
-  case DM_POLYTOPE_QUADRILATERAL: return 4;
-  case DM_POLYTOPE_SEG_PRISM_TENSOR: return 4;
-  case DM_POLYTOPE_TETRAHEDRON: return 4;
-  case DM_POLYTOPE_HEXAHEDRON: return 8;
-  case DM_POLYTOPE_TRI_PRISM: return 6;
-  case DM_POLYTOPE_TRI_PRISM_TENSOR: return 6;
-  case DM_POLYTOPE_QUAD_PRISM_TENSOR: return 8;
-  case DM_POLYTOPE_PYRAMID: return 5;
-  default: return -1;
+  case DM_POLYTOPE_POINT:
+    return 1;
+  case DM_POLYTOPE_SEGMENT:
+    return 2;
+  case DM_POLYTOPE_POINT_PRISM_TENSOR:
+    return 2;
+  case DM_POLYTOPE_TRIANGLE:
+    return 3;
+  case DM_POLYTOPE_QUADRILATERAL:
+    return 4;
+  case DM_POLYTOPE_SEG_PRISM_TENSOR:
+    return 4;
+  case DM_POLYTOPE_TETRAHEDRON:
+    return 4;
+  case DM_POLYTOPE_HEXAHEDRON:
+    return 8;
+  case DM_POLYTOPE_TRI_PRISM:
+    return 6;
+  case DM_POLYTOPE_TRI_PRISM_TENSOR:
+    return 6;
+  case DM_POLYTOPE_QUAD_PRISM_TENSOR:
+    return 8;
+  case DM_POLYTOPE_PYRAMID:
+    return 5;
+  default:
+    return -1;
   }
 }
 
-static inline DMPolytopeType DMPolytopeTypeSimpleShape(PetscInt dim, PetscBool simplex) {
+static inline DMPolytopeType DMPolytopeTypeSimpleShape(PetscInt dim, PetscBool simplex)
+{
   return dim == 0 ? DM_POLYTOPE_POINT : (dim == 1 ? DM_POLYTOPE_SEGMENT : (dim == 2 ? (simplex ? DM_POLYTOPE_TRIANGLE : DM_POLYTOPE_QUADRILATERAL) : (dim == 3 ? (simplex ? DM_POLYTOPE_TETRAHEDRON : DM_POLYTOPE_HEXAHEDRON) : DM_POLYTOPE_UNKNOWN)));
 }
 
-static inline PetscInt DMPolytopeTypeGetNumArrangments(DMPolytopeType ct) {
+static inline PetscInt DMPolytopeTypeGetNumArrangments(DMPolytopeType ct)
+{
   switch (ct) {
-  case DM_POLYTOPE_POINT: return 1;
-  case DM_POLYTOPE_SEGMENT: return 2;
-  case DM_POLYTOPE_POINT_PRISM_TENSOR: return 2;
-  case DM_POLYTOPE_TRIANGLE: return 6;
-  case DM_POLYTOPE_QUADRILATERAL: return 8;
-  case DM_POLYTOPE_SEG_PRISM_TENSOR: return 4;
-  case DM_POLYTOPE_TETRAHEDRON: return 24;
-  case DM_POLYTOPE_HEXAHEDRON: return 48;
-  case DM_POLYTOPE_TRI_PRISM: return 12;
-  case DM_POLYTOPE_TRI_PRISM_TENSOR: return 12;
-  case DM_POLYTOPE_QUAD_PRISM_TENSOR: return 16;
-  case DM_POLYTOPE_PYRAMID: return 8;
-  default: return -1;
+  case DM_POLYTOPE_POINT:
+    return 1;
+  case DM_POLYTOPE_SEGMENT:
+    return 2;
+  case DM_POLYTOPE_POINT_PRISM_TENSOR:
+    return 2;
+  case DM_POLYTOPE_TRIANGLE:
+    return 6;
+  case DM_POLYTOPE_QUADRILATERAL:
+    return 8;
+  case DM_POLYTOPE_SEG_PRISM_TENSOR:
+    return 4;
+  case DM_POLYTOPE_TETRAHEDRON:
+    return 24;
+  case DM_POLYTOPE_HEXAHEDRON:
+    return 48;
+  case DM_POLYTOPE_TRI_PRISM:
+    return 12;
+  case DM_POLYTOPE_TRI_PRISM_TENSOR:
+    return 12;
+  case DM_POLYTOPE_QUAD_PRISM_TENSOR:
+    return 16;
+  case DM_POLYTOPE_PYRAMID:
+    return 8;
+  default:
+    return -1;
   }
 }
 
 /* An arrangement is a face order combined with an orientation for each face */
-static inline const PetscInt *DMPolytopeTypeGetArrangment(DMPolytopeType ct, PetscInt o) {
-  static const PetscInt pntArr[1 * 2]      = {0, 0};
+static inline const PetscInt *DMPolytopeTypeGetArrangment(DMPolytopeType ct, PetscInt o)
+{
+  static const PetscInt pntArr[1 * 2] = {0, 0};
   /* a: swap */
-  static const PetscInt segArr[2 * 2 * 2]  = {1, 0, 0, 0, /* -1: a */
-                                              0, 0, 1, 0,
-                                              /*  0: e */};
+  static const PetscInt segArr[2 * 2 * 2] = {1, 0, 0, 0, /* -1: a */
+                                             0, 0, 1, 0,
+                                             /*  0: e */};
   /* a: swap first two
      b: swap last two */
-  static const PetscInt triArr[6 * 3 * 2]  = {0, -1, 2, -1, 1, -1, /* -3: b */
-                                              2, -1, 1, -1, 0, -1, /* -2: aba */
-                                              1, -1, 0, -1, 2, -1, /* -1: a */
-                                              0, 0,  1, 0,  2, 0,  /*  0: identity */
-                                              1, 0,  2, 0,  0, 0,  /*  1: ba */
-                                              2, 0,  0, 0,  1, 0,
-                                              /*  2: ab */};
+  static const PetscInt triArr[6 * 3 * 2] = {0, -1, 2, -1, 1, -1, /* -3: b */
+                                             2, -1, 1, -1, 0, -1, /* -2: aba */
+                                             1, -1, 0, -1, 2, -1, /* -1: a */
+                                             0, 0,  1, 0,  2, 0,  /*  0: identity */
+                                             1, 0,  2, 0,  0, 0,  /*  1: ba */
+                                             2, 0,  0, 0,  1, 0,
+                                             /*  2: ab */};
   /* a: forward cyclic permutation
      b: swap first and last pairs */
   static const PetscInt quadArr[8 * 4 * 2] = {1, -1, 0, -1, 3, -1, 2, -1, /* -4: b */
@@ -668,24 +724,38 @@ static inline const PetscInt *DMPolytopeTypeGetArrangment(DMPolytopeType ct, Pet
     0, 3,  2, 0,  3, 0,  4, 0,  1, 0,  /*  3: 270 rotation about z */
   };
   switch (ct) {
-  case DM_POLYTOPE_POINT: return pntArr;
-  case DM_POLYTOPE_SEGMENT: return &segArr[(o + 1) * 2 * 2];
-  case DM_POLYTOPE_POINT_PRISM_TENSOR: return &segArr[(o + 1) * 2 * 2];
-  case DM_POLYTOPE_TRIANGLE: return &triArr[(o + 3) * 3 * 2];
-  case DM_POLYTOPE_QUADRILATERAL: return &quadArr[(o + 4) * 4 * 2];
-  case DM_POLYTOPE_SEG_PRISM_TENSOR: return &tsegArr[(o + 2) * 4 * 2];
-  case DM_POLYTOPE_TETRAHEDRON: return &tetArr[(o + 12) * 4 * 2];
-  case DM_POLYTOPE_HEXAHEDRON: return &hexArr[(o + 24) * 6 * 2];
-  case DM_POLYTOPE_TRI_PRISM: return &tripArr[(o + 6) * 5 * 2];
-  case DM_POLYTOPE_TRI_PRISM_TENSOR: return &ttriArr[(o + 6) * 5 * 2];
-  case DM_POLYTOPE_QUAD_PRISM_TENSOR: return &tquadArr[(o + 8) * 6 * 2];
-  case DM_POLYTOPE_PYRAMID: return &pyrArr[(o + 4) * 5 * 2];
-  default: return NULL;
+  case DM_POLYTOPE_POINT:
+    return pntArr;
+  case DM_POLYTOPE_SEGMENT:
+    return &segArr[(o + 1) * 2 * 2];
+  case DM_POLYTOPE_POINT_PRISM_TENSOR:
+    return &segArr[(o + 1) * 2 * 2];
+  case DM_POLYTOPE_TRIANGLE:
+    return &triArr[(o + 3) * 3 * 2];
+  case DM_POLYTOPE_QUADRILATERAL:
+    return &quadArr[(o + 4) * 4 * 2];
+  case DM_POLYTOPE_SEG_PRISM_TENSOR:
+    return &tsegArr[(o + 2) * 4 * 2];
+  case DM_POLYTOPE_TETRAHEDRON:
+    return &tetArr[(o + 12) * 4 * 2];
+  case DM_POLYTOPE_HEXAHEDRON:
+    return &hexArr[(o + 24) * 6 * 2];
+  case DM_POLYTOPE_TRI_PRISM:
+    return &tripArr[(o + 6) * 5 * 2];
+  case DM_POLYTOPE_TRI_PRISM_TENSOR:
+    return &ttriArr[(o + 6) * 5 * 2];
+  case DM_POLYTOPE_QUAD_PRISM_TENSOR:
+    return &tquadArr[(o + 8) * 6 * 2];
+  case DM_POLYTOPE_PYRAMID:
+    return &pyrArr[(o + 4) * 5 * 2];
+  default:
+    return NULL;
   }
 }
 
-/* A vertex arrangment is a vertex order */
-static inline const PetscInt *DMPolytopeTypeGetVertexArrangment(DMPolytopeType ct, PetscInt o) {
+/* A vertex arrangement is a vertex order */
+static inline const PetscInt *DMPolytopeTypeGetVertexArrangment(DMPolytopeType ct, PetscInt o)
+{
   static const PetscInt pntVerts[1]      = {0};
   static const PetscInt segVerts[2 * 2]  = {1, 0, 0, 1};
   static const PetscInt triVerts[6 * 3]  = {1, 0, 2, 0, 2, 1, 2, 1, 0, 0, 1, 2, 1, 2, 0, 2, 0, 1};
@@ -825,24 +895,38 @@ static inline const PetscInt *DMPolytopeTypeGetVertexArrangment(DMPolytopeType c
     3, 0, 1, 2, 4, /*  3: 270 rotation about z */
   };
   switch (ct) {
-  case DM_POLYTOPE_POINT: return pntVerts;
-  case DM_POLYTOPE_SEGMENT: return &segVerts[(o + 1) * 2];
-  case DM_POLYTOPE_POINT_PRISM_TENSOR: return &segVerts[(o + 1) * 2];
-  case DM_POLYTOPE_TRIANGLE: return &triVerts[(o + 3) * 3];
-  case DM_POLYTOPE_QUADRILATERAL: return &quadVerts[(o + 4) * 4];
-  case DM_POLYTOPE_SEG_PRISM_TENSOR: return &tsegVerts[(o + 2) * 4];
-  case DM_POLYTOPE_TETRAHEDRON: return &tetVerts[(o + 12) * 4];
-  case DM_POLYTOPE_HEXAHEDRON: return &hexVerts[(o + 24) * 8];
-  case DM_POLYTOPE_TRI_PRISM: return &tripVerts[(o + 6) * 6];
-  case DM_POLYTOPE_TRI_PRISM_TENSOR: return &ttriVerts[(o + 6) * 6];
-  case DM_POLYTOPE_QUAD_PRISM_TENSOR: return &tquadVerts[(o + 8) * 8];
-  case DM_POLYTOPE_PYRAMID: return &pyrVerts[(o + 4) * 5];
-  default: return NULL;
+  case DM_POLYTOPE_POINT:
+    return pntVerts;
+  case DM_POLYTOPE_SEGMENT:
+    return &segVerts[(o + 1) * 2];
+  case DM_POLYTOPE_POINT_PRISM_TENSOR:
+    return &segVerts[(o + 1) * 2];
+  case DM_POLYTOPE_TRIANGLE:
+    return &triVerts[(o + 3) * 3];
+  case DM_POLYTOPE_QUADRILATERAL:
+    return &quadVerts[(o + 4) * 4];
+  case DM_POLYTOPE_SEG_PRISM_TENSOR:
+    return &tsegVerts[(o + 2) * 4];
+  case DM_POLYTOPE_TETRAHEDRON:
+    return &tetVerts[(o + 12) * 4];
+  case DM_POLYTOPE_HEXAHEDRON:
+    return &hexVerts[(o + 24) * 8];
+  case DM_POLYTOPE_TRI_PRISM:
+    return &tripVerts[(o + 6) * 6];
+  case DM_POLYTOPE_TRI_PRISM_TENSOR:
+    return &ttriVerts[(o + 6) * 6];
+  case DM_POLYTOPE_QUAD_PRISM_TENSOR:
+    return &tquadVerts[(o + 8) * 8];
+  case DM_POLYTOPE_PYRAMID:
+    return &pyrVerts[(o + 4) * 5];
+  default:
+    return NULL;
   }
 }
 
 /* This is orientation o1 acting on orientation o2 */
-static inline PetscInt DMPolytopeTypeComposeOrientation(DMPolytopeType ct, PetscInt o1, PetscInt o2) {
+static inline PetscInt DMPolytopeTypeComposeOrientation(DMPolytopeType ct, PetscInt o1, PetscInt o2)
+{
   static const PetscInt segMult[2 * 2]   = {0, -1, -1, 0};
   static const PetscInt triMult[6 * 6]   = {0, 2, 1, -3, -1, -2, 1, 0, 2, -2, -3, -1, 2, 1, 0, -1, -2, -3, -3, -2, -1, 0, 1, 2, -2, -1, -3, 1, 2, 0, -1, -3, -2, 2, 0, 1};
   static const PetscInt quadMult[8 * 8]  = {0,  3,  2,  1,  -4, -1, -2, -3, 1,  0,  3,  2,  -3, -4, -1, -2, 2,  1,  0,  3,  -2, -3, -4, -1, 3,  2,  1,  0,  -1, -2, -3, -4,
@@ -933,24 +1017,37 @@ static inline PetscInt DMPolytopeTypeComposeOrientation(DMPolytopeType ct, Petsc
     0, 3, 2, 1, -4, -1, -2, -3, 1, 0, 3, 2, -3, -4, -1, -2, 2, 1, 0, 3, -2, -3, -4, -1, 3, 2, 1, 0, -1, -2, -3, -4, -4, -3, -2, -1, 0, 1, 2, 3, -3, -2, -1, -4, 1, 2, 3, 0, -2, -1, -4, -3, 2, 3, 0, 1, -1, -4, -3, -2, 3, 0, 1, 2,
   };
   switch (ct) {
-  case DM_POLYTOPE_POINT: return 0;
+  case DM_POLYTOPE_POINT:
+    return 0;
   case DM_POLYTOPE_SEGMENT:
-  case DM_POLYTOPE_POINT_PRISM_TENSOR: return segMult[(o1 + 1) * 2 + o2 + 1];
-  case DM_POLYTOPE_TRIANGLE: return triMult[(o1 + 3) * 6 + o2 + 3];
-  case DM_POLYTOPE_QUADRILATERAL: return quadMult[(o1 + 4) * 8 + o2 + 4];
-  case DM_POLYTOPE_SEG_PRISM_TENSOR: return tsegMult[(o1 + 2) * 4 + o2 + 2];
-  case DM_POLYTOPE_TETRAHEDRON: return tetMult[(o1 + 12) * 24 + o2 + 12];
-  case DM_POLYTOPE_HEXAHEDRON: return hexMult[(o1 + 24) * 48 + o2 + 24];
-  case DM_POLYTOPE_TRI_PRISM: return tripMult[(o1 + 6) * 12 + o2 + 6];
-  case DM_POLYTOPE_TRI_PRISM_TENSOR: return ttriMult[(o1 + 6) * 12 + o2 + 6];
-  case DM_POLYTOPE_QUAD_PRISM_TENSOR: return tquadMult[(o1 + 8) * 16 + o2 + 8];
-  case DM_POLYTOPE_PYRAMID: return pyrMult[(o1 + 4) * 8 + o2 + 4];
-  default: return 0;
+  case DM_POLYTOPE_POINT_PRISM_TENSOR:
+    return segMult[(o1 + 1) * 2 + o2 + 1];
+  case DM_POLYTOPE_TRIANGLE:
+    return triMult[(o1 + 3) * 6 + o2 + 3];
+  case DM_POLYTOPE_QUADRILATERAL:
+    return quadMult[(o1 + 4) * 8 + o2 + 4];
+  case DM_POLYTOPE_SEG_PRISM_TENSOR:
+    return tsegMult[(o1 + 2) * 4 + o2 + 2];
+  case DM_POLYTOPE_TETRAHEDRON:
+    return tetMult[(o1 + 12) * 24 + o2 + 12];
+  case DM_POLYTOPE_HEXAHEDRON:
+    return hexMult[(o1 + 24) * 48 + o2 + 24];
+  case DM_POLYTOPE_TRI_PRISM:
+    return tripMult[(o1 + 6) * 12 + o2 + 6];
+  case DM_POLYTOPE_TRI_PRISM_TENSOR:
+    return ttriMult[(o1 + 6) * 12 + o2 + 6];
+  case DM_POLYTOPE_QUAD_PRISM_TENSOR:
+    return tquadMult[(o1 + 8) * 16 + o2 + 8];
+  case DM_POLYTOPE_PYRAMID:
+    return pyrMult[(o1 + 4) * 8 + o2 + 4];
+  default:
+    return 0;
   }
 }
 
 /* This is orientation o1 acting on orientation o2^{-1} */
-static inline PetscInt DMPolytopeTypeComposeOrientationInv(DMPolytopeType ct, PetscInt o1, PetscInt o2) {
+static inline PetscInt DMPolytopeTypeComposeOrientationInv(DMPolytopeType ct, PetscInt o1, PetscInt o2)
+{
   static const PetscInt triInv[6]    = {-3, -2, -1, 0, 2, 1};
   static const PetscInt quadInv[8]   = {-4, -3, -2, -1, 0, 3, 2, 1};
   static const PetscInt tetInv[24]   = {-9, -11, -4, -12, -5, -7, -6, -8, -10, -3, -2, -1, 0, 2, 1, 3, 8, 10, 6, 11, 4, 9, 5, 7};
@@ -960,19 +1057,31 @@ static inline PetscInt DMPolytopeTypeComposeOrientationInv(DMPolytopeType ct, Pe
   static const PetscInt tquadInv[16] = {-8, -7, -6, -5, -4, -3, -2, -1, 0, 3, 2, 1, 4, 7, 6, 5};
   static const PetscInt pyrInv[8]    = {-4, -3, -2, -1, 0, 3, 2, 1};
   switch (ct) {
-  case DM_POLYTOPE_POINT: return 0;
+  case DM_POLYTOPE_POINT:
+    return 0;
   case DM_POLYTOPE_SEGMENT:
-  case DM_POLYTOPE_POINT_PRISM_TENSOR: return DMPolytopeTypeComposeOrientation(ct, o1, o2);
-  case DM_POLYTOPE_TRIANGLE: return DMPolytopeTypeComposeOrientation(ct, o1, triInv[o2 + 3]);
-  case DM_POLYTOPE_QUADRILATERAL: return DMPolytopeTypeComposeOrientation(ct, o1, quadInv[o2 + 4]);
-  case DM_POLYTOPE_SEG_PRISM_TENSOR: return DMPolytopeTypeComposeOrientation(ct, o1, o2);
-  case DM_POLYTOPE_TETRAHEDRON: return DMPolytopeTypeComposeOrientation(ct, o1, tetInv[o2 + 12]);
-  case DM_POLYTOPE_HEXAHEDRON: return DMPolytopeTypeComposeOrientation(ct, o1, hexInv[o2 + 24]);
-  case DM_POLYTOPE_TRI_PRISM: return DMPolytopeTypeComposeOrientation(ct, o1, tripInv[o2 + 6]);
-  case DM_POLYTOPE_TRI_PRISM_TENSOR: return DMPolytopeTypeComposeOrientation(ct, o1, ttriInv[o2 + 6]);
-  case DM_POLYTOPE_QUAD_PRISM_TENSOR: return DMPolytopeTypeComposeOrientation(ct, o1, tquadInv[o2 + 8]);
-  case DM_POLYTOPE_PYRAMID: return DMPolytopeTypeComposeOrientation(ct, o1, pyrInv[o2 + 4]);
-  default: return 0;
+  case DM_POLYTOPE_POINT_PRISM_TENSOR:
+    return DMPolytopeTypeComposeOrientation(ct, o1, o2);
+  case DM_POLYTOPE_TRIANGLE:
+    return DMPolytopeTypeComposeOrientation(ct, o1, triInv[o2 + 3]);
+  case DM_POLYTOPE_QUADRILATERAL:
+    return DMPolytopeTypeComposeOrientation(ct, o1, quadInv[o2 + 4]);
+  case DM_POLYTOPE_SEG_PRISM_TENSOR:
+    return DMPolytopeTypeComposeOrientation(ct, o1, o2);
+  case DM_POLYTOPE_TETRAHEDRON:
+    return DMPolytopeTypeComposeOrientation(ct, o1, tetInv[o2 + 12]);
+  case DM_POLYTOPE_HEXAHEDRON:
+    return DMPolytopeTypeComposeOrientation(ct, o1, hexInv[o2 + 24]);
+  case DM_POLYTOPE_TRI_PRISM:
+    return DMPolytopeTypeComposeOrientation(ct, o1, tripInv[o2 + 6]);
+  case DM_POLYTOPE_TRI_PRISM_TENSOR:
+    return DMPolytopeTypeComposeOrientation(ct, o1, ttriInv[o2 + 6]);
+  case DM_POLYTOPE_QUAD_PRISM_TENSOR:
+    return DMPolytopeTypeComposeOrientation(ct, o1, tquadInv[o2 + 8]);
+  case DM_POLYTOPE_PYRAMID:
+    return DMPolytopeTypeComposeOrientation(ct, o1, pyrInv[o2 + 4]);
+  default:
+    return 0;
   }
 }
 

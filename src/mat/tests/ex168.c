@@ -4,7 +4,8 @@ Example: mpiexec -n <np> ./ex168 -f <matrix binary file> \n\n";
 
 #include <petscmat.h>
 
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   Mat           A, F;
   Vec           u, x, b;
   PetscMPIInt   rank, size;

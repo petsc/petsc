@@ -6,7 +6,8 @@ and run with -f underworld32.gz\n\n";
 #include <petscksp.h>
 #include <petscdmda.h>
 
-static PetscErrorCode replace_submats(Mat A, IS isu, IS isp) {
+static PetscErrorCode replace_submats(Mat A, IS isu, IS isp)
+{
   Mat         A11, A22, A12, A21;
   Mat         nA11, nA22, nA12, nA21;
   const char *prefix;
@@ -39,7 +40,8 @@ static PetscErrorCode replace_submats(Mat A, IS isu, IS isp) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode LSCLoadTestOperators(Mat *A11, Mat *A12, Mat *A21, Mat *A22, Vec *b1, Vec *b2) {
+PetscErrorCode LSCLoadTestOperators(Mat *A11, Mat *A12, Mat *A21, Mat *A22, Vec *b1, Vec *b2)
+{
   PetscViewer viewer;
   char        filename[PETSC_MAX_PATH_LEN];
   PetscBool   flg;
@@ -69,7 +71,8 @@ PetscErrorCode LSCLoadTestOperators(Mat *A11, Mat *A12, Mat *A21, Mat *A22, Vec 
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode LoadTestMatrices(Mat *_A, Vec *_x, Vec *_b, IS *_isu, IS *_isp) {
+PetscErrorCode LoadTestMatrices(Mat *_A, Vec *_x, Vec *_b, IS *_isu, IS *_isp)
+{
   Vec         f, h, x, b, bX[2];
   Mat         A, Auu, Aup, Apu, App, bA[2][2];
   IS          is_u, is_p, bis[2];
@@ -140,7 +143,8 @@ PetscErrorCode LoadTestMatrices(Mat *_A, Vec *_x, Vec *_b, IS *_isu, IS *_isp) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode port_lsd_bfbt(void) {
+PetscErrorCode port_lsd_bfbt(void)
+{
   Mat       A, P;
   Vec       x, b;
   KSP       ksp_A;
@@ -257,7 +261,8 @@ PetscErrorCode port_lsd_bfbt(void) {
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, 0, help));
   PetscCall(port_lsd_bfbt());

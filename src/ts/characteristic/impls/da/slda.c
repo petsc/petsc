@@ -2,7 +2,8 @@
 #include <petscdmda.h>
 #include <petscviewer.h>
 
-PetscErrorCode CharacteristicView_DA(Characteristic c, PetscViewer viewer) {
+PetscErrorCode CharacteristicView_DA(Characteristic c, PetscViewer viewer)
+{
   Characteristic_DA *da = (Characteristic_DA *)c->data;
   PetscBool          iascii, isstring;
 
@@ -18,7 +19,8 @@ PetscErrorCode CharacteristicView_DA(Characteristic c, PetscViewer viewer) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode CharacteristicDestroy_DA(Characteristic c) {
+PetscErrorCode CharacteristicDestroy_DA(Characteristic c)
+{
   Characteristic_DA *da = (Characteristic_DA *)c->data;
 
   PetscFunctionBegin;
@@ -26,7 +28,8 @@ PetscErrorCode CharacteristicDestroy_DA(Characteristic c) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode CharacteristicSetUp_DA(Characteristic c) {
+PetscErrorCode CharacteristicSetUp_DA(Characteristic c)
+{
   PetscMPIInt  blockLen[2];
   MPI_Aint     indices[2];
   MPI_Datatype oldtypes[2];
@@ -64,13 +67,13 @@ PetscErrorCode CharacteristicSetUp_DA(Characteristic c) {
   PetscFunctionReturn(0);
 }
 
-PETSC_EXTERN PetscErrorCode CharacteristicCreate_DA(Characteristic c) {
+PETSC_EXTERN PetscErrorCode CharacteristicCreate_DA(Characteristic c)
+{
   Characteristic_DA *da;
 
   PetscFunctionBegin;
   PetscCall(PetscNew(&da));
   PetscCall(PetscMemzero(da, sizeof(Characteristic_DA)));
-  PetscCall(PetscLogObjectMemory((PetscObject)c, sizeof(Characteristic_DA)));
   c->data = (void *)da;
 
   c->ops->setup   = CharacteristicSetUp_DA;
@@ -85,7 +88,8 @@ PETSC_EXTERN PetscErrorCode CharacteristicCreate_DA(Characteristic c) {
    Checks for periodicity of a DM and Maps points outside of a domain back onto the domain
    using appropriate periodicity. At the moment assumes only a 2-D DMDA.
    ----------------------------------------------------------------------------------------*/
-PetscErrorCode DMDAMapCoordsToPeriodicDomain(DM da, PetscScalar *x, PetscScalar *y) {
+PetscErrorCode DMDAMapCoordsToPeriodicDomain(DM da, PetscScalar *x, PetscScalar *y)
+{
   DMBoundaryType bx, by;
   PetscInt       dim, gx, gy;
 

@@ -1,8 +1,7 @@
 #include <../src/ksp/ksp/utils/lmvm/lmvm.h> /*I "petscksp.h" I*/
 
-/*------------------------------------------------------------*/
-
-PetscErrorCode MatReset_LMVM(Mat B, PetscBool destructive) {
+PetscErrorCode MatReset_LMVM(Mat B, PetscBool destructive)
+{
   Mat_LMVM *lmvm = (Mat_LMVM *)B->data;
 
   PetscFunctionBegin;
@@ -27,9 +26,8 @@ PetscErrorCode MatReset_LMVM(Mat B, PetscBool destructive) {
   PetscFunctionReturn(0);
 }
 
-/*------------------------------------------------------------*/
-
-PetscErrorCode MatAllocate_LMVM(Mat B, Vec X, Vec F) {
+PetscErrorCode MatAllocate_LMVM(Mat B, Vec X, Vec F)
+{
   Mat_LMVM *lmvm = (Mat_LMVM *)B->data;
   PetscBool same, allocate = PETSC_FALSE;
   PetscInt  m, n, M, N;
@@ -72,9 +70,8 @@ PetscErrorCode MatAllocate_LMVM(Mat B, Vec X, Vec F) {
   PetscFunctionReturn(0);
 }
 
-/*------------------------------------------------------------*/
-
-PetscErrorCode MatUpdateKernel_LMVM(Mat B, Vec S, Vec Y) {
+PetscErrorCode MatUpdateKernel_LMVM(Mat B, Vec S, Vec Y)
+{
   Mat_LMVM *lmvm = (Mat_LMVM *)B->data;
   PetscInt  i;
   Vec       Stmp, Ytmp;
@@ -101,9 +98,8 @@ PetscErrorCode MatUpdateKernel_LMVM(Mat B, Vec S, Vec Y) {
   PetscFunctionReturn(0);
 }
 
-/*------------------------------------------------------------*/
-
-PetscErrorCode MatUpdate_LMVM(Mat B, Vec X, Vec F) {
+PetscErrorCode MatUpdate_LMVM(Mat B, Vec X, Vec F)
+{
   Mat_LMVM *lmvm = (Mat_LMVM *)B->data;
 
   PetscFunctionBegin;
@@ -123,18 +119,16 @@ PetscErrorCode MatUpdate_LMVM(Mat B, Vec X, Vec F) {
   PetscFunctionReturn(0);
 }
 
-/*------------------------------------------------------------*/
-
-static PetscErrorCode MatMultAdd_LMVM(Mat B, Vec X, Vec Y, Vec Z) {
+static PetscErrorCode MatMultAdd_LMVM(Mat B, Vec X, Vec Y, Vec Z)
+{
   PetscFunctionBegin;
   PetscCall(MatMult(B, X, Z));
   PetscCall(VecAXPY(Z, 1.0, Y));
   PetscFunctionReturn(0);
 }
 
-/*------------------------------------------------------------*/
-
-static PetscErrorCode MatMult_LMVM(Mat B, Vec X, Vec Y) {
+static PetscErrorCode MatMult_LMVM(Mat B, Vec X, Vec Y)
+{
   Mat_LMVM *lmvm = (Mat_LMVM *)B->data;
 
   PetscFunctionBegin;
@@ -146,9 +140,8 @@ static PetscErrorCode MatMult_LMVM(Mat B, Vec X, Vec Y) {
   PetscFunctionReturn(0);
 }
 
-/*------------------------------------------------------------*/
-
-static PetscErrorCode MatCopy_LMVM(Mat B, Mat M, MatStructure str) {
+static PetscErrorCode MatCopy_LMVM(Mat B, Mat M, MatStructure str)
+{
   Mat_LMVM *bctx = (Mat_LMVM *)B->data;
   Mat_LMVM *mctx;
   PetscInt  i;
@@ -191,9 +184,8 @@ static PetscErrorCode MatCopy_LMVM(Mat B, Mat M, MatStructure str) {
   PetscFunctionReturn(0);
 }
 
-/*------------------------------------------------------------*/
-
-static PetscErrorCode MatDuplicate_LMVM(Mat B, MatDuplicateOption op, Mat *mat) {
+static PetscErrorCode MatDuplicate_LMVM(Mat B, MatDuplicateOption op, Mat *mat)
+{
   Mat_LMVM *bctx = (Mat_LMVM *)B->data;
   Mat_LMVM *mctx;
   MatType   lmvmType;
@@ -218,9 +210,8 @@ static PetscErrorCode MatDuplicate_LMVM(Mat B, MatDuplicateOption op, Mat *mat) 
   PetscFunctionReturn(0);
 }
 
-/*------------------------------------------------------------*/
-
-static PetscErrorCode MatShift_LMVM(Mat B, PetscScalar a) {
+static PetscErrorCode MatShift_LMVM(Mat B, PetscScalar a)
+{
   Mat_LMVM *lmvm = (Mat_LMVM *)B->data;
 
   PetscFunctionBegin;
@@ -229,21 +220,19 @@ static PetscErrorCode MatShift_LMVM(Mat B, PetscScalar a) {
   PetscFunctionReturn(0);
 }
 
-/*------------------------------------------------------------*/
-
-static PetscErrorCode MatGetVecs_LMVM(Mat B, Vec *L, Vec *R) {
+static PetscErrorCode MatCreateVecs_LMVM(Mat B, Vec *L, Vec *R)
+{
   Mat_LMVM *lmvm = (Mat_LMVM *)B->data;
 
   PetscFunctionBegin;
   PetscCheck(lmvm->allocated, PetscObjectComm((PetscObject)B), PETSC_ERR_ORDER, "LMVM matrix must be allocated first");
-  PetscCall(VecDuplicate(lmvm->Xprev, L));
-  PetscCall(VecDuplicate(lmvm->Fprev, R));
+  if (L) PetscCall(VecDuplicate(lmvm->Xprev, L));
+  if (R) PetscCall(VecDuplicate(lmvm->Fprev, R));
   PetscFunctionReturn(0);
 }
 
-/*------------------------------------------------------------*/
-
-PetscErrorCode MatView_LMVM(Mat B, PetscViewer pv) {
+PetscErrorCode MatView_LMVM(Mat B, PetscViewer pv)
+{
   Mat_LMVM *lmvm = (Mat_LMVM *)B->data;
   PetscBool isascii;
   MatType   type;
@@ -267,9 +256,8 @@ PetscErrorCode MatView_LMVM(Mat B, PetscViewer pv) {
   PetscFunctionReturn(0);
 }
 
-/*------------------------------------------------------------*/
-
-PetscErrorCode MatSetFromOptions_LMVM(Mat B, PetscOptionItems *PetscOptionsObject) {
+PetscErrorCode MatSetFromOptions_LMVM(Mat B, PetscOptionItems *PetscOptionsObject)
+{
   Mat_LMVM *lmvm = (Mat_LMVM *)B->data;
 
   PetscFunctionBegin;
@@ -282,9 +270,8 @@ PetscErrorCode MatSetFromOptions_LMVM(Mat B, PetscOptionItems *PetscOptionsObjec
   PetscFunctionReturn(0);
 }
 
-/*------------------------------------------------------------*/
-
-PetscErrorCode MatSetUp_LMVM(Mat B) {
+PetscErrorCode MatSetUp_LMVM(Mat B)
+{
   Mat_LMVM   *lmvm = (Mat_LMVM *)B->data;
   PetscInt    m, n, M, N;
   PetscMPIInt size;
@@ -315,9 +302,8 @@ PetscErrorCode MatSetUp_LMVM(Mat B) {
   PetscFunctionReturn(0);
 }
 
-/*------------------------------------------------------------*/
-
-PetscErrorCode MatDestroy_LMVM(Mat B) {
+PetscErrorCode MatDestroy_LMVM(Mat B)
+{
   Mat_LMVM *lmvm = (Mat_LMVM *)B->data;
 
   PetscFunctionBegin;
@@ -333,13 +319,12 @@ PetscErrorCode MatDestroy_LMVM(Mat B) {
   PetscFunctionReturn(0);
 }
 
-/*------------------------------------------------------------*/
-
-PetscErrorCode MatCreate_LMVM(Mat B) {
+PetscErrorCode MatCreate_LMVM(Mat B)
+{
   Mat_LMVM *lmvm;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(B, &lmvm));
+  PetscCall(PetscNew(&lmvm));
   B->data = (void *)lmvm;
 
   lmvm->m_old    = 0;
@@ -367,7 +352,7 @@ PetscErrorCode MatCreate_LMVM(Mat B) {
   B->ops->setfromoptions = MatSetFromOptions_LMVM;
   B->ops->view           = MatView_LMVM;
   B->ops->setup          = MatSetUp_LMVM;
-  B->ops->getvecs        = MatGetVecs_LMVM;
+  B->ops->getvecs        = MatCreateVecs_LMVM;
   B->ops->shift          = MatShift_LMVM;
   B->ops->duplicate      = MatDuplicate_LMVM;
   B->ops->mult           = MatMult_LMVM;

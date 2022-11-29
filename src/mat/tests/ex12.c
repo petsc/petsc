@@ -7,7 +7,8 @@ This example also tests the use of MatDuplicate() for both MPIAIJ and MPIBAIJ ma
 extern PetscErrorCode TestMatZeroRows_Basic(Mat, IS, PetscScalar);
 extern PetscErrorCode TestMatZeroRows_with_no_allocation(Mat, IS, PetscScalar);
 
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   Mat         A;
   PetscInt    i, j, m = 3, n, Ii, J, Imax;
   PetscMPIInt rank, size;
@@ -108,7 +109,8 @@ int main(int argc, char **args) {
   return 0;
 }
 
-PetscErrorCode TestMatZeroRows_Basic(Mat A, IS is, PetscScalar diag) {
+PetscErrorCode TestMatZeroRows_Basic(Mat A, IS is, PetscScalar diag)
+{
   Mat       B;
   PetscBool keepnonzeropattern;
 
@@ -124,7 +126,8 @@ PetscErrorCode TestMatZeroRows_Basic(Mat A, IS is, PetscScalar diag) {
   return 0;
 }
 
-PetscErrorCode TestMatZeroRows_with_no_allocation(Mat A, IS is, PetscScalar diag) {
+PetscErrorCode TestMatZeroRows_with_no_allocation(Mat A, IS is, PetscScalar diag)
+{
   Mat B;
 
   /* Now copy A into B, and test it with MatZeroRows() */

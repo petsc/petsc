@@ -4,14 +4,15 @@
 static PetscBool AOPackageInitialized = PETSC_FALSE;
 
 /*@C
-  AOFinalizePackage - This function finalizes everything in the AO package. It is called
-  from PetscFinalize().
+  AOFinalizePackage - This function finalizes everything in the `AO` package. It is called
+  from `PetscFinalize()`.
 
   Level: developer
 
-.seealso: `PetscInitialize()`
+.seealso: `AOInitializePackage()`, `PetscInitialize()`
 @*/
-PetscErrorCode AOFinalizePackage(void) {
+PetscErrorCode AOFinalizePackage(void)
+{
   PetscFunctionBegin;
   PetscCall(PetscFunctionListDestroy(&AOList));
   AOPackageInitialized = PETSC_FALSE;
@@ -20,15 +21,16 @@ PetscErrorCode AOFinalizePackage(void) {
 }
 
 /*@C
-  AOInitializePackage - This function initializes everything in the AO package. It is called
-  from PetscDLLibraryRegister_petscvec() when using dynamic libraries, and on the first call to AOCreate()
+  AOInitializePackage - This function initializes everything in the `AO` package. It is called
+  from `PetscDLLibraryRegister_petscvec()` when using dynamic libraries, and on the first call to `AOCreate()`
   when using static or shared libraries.
 
   Level: developer
 
-.seealso: `PetscInitialize()`
+.seealso: `AOFinalizePackage()`, `PetscInitialize()`
 @*/
-PetscErrorCode AOInitializePackage(void) {
+PetscErrorCode AOInitializePackage(void)
+{
   char      logList[256];
   PetscBool opt, pkg;
 

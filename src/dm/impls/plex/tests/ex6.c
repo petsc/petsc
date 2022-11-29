@@ -10,7 +10,8 @@ typedef struct {
   PetscInt  size;         /* The number of set values */
 } AppCtx;
 
-PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options) {
+PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
+{
   PetscFunctionBegin;
   options->debug     = 0;
   options->pStart    = 0;
@@ -27,7 +28,8 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode TestSetup(DMLabel label, AppCtx *user) {
+PetscErrorCode TestSetup(DMLabel label, AppCtx *user)
+{
   PetscRandom r;
   PetscInt    n = (PetscInt)(user->fill * (user->pEnd - user->pStart)), i;
 
@@ -55,7 +57,8 @@ PetscErrorCode TestSetup(DMLabel label, AppCtx *user) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode TestLookup(DMLabel label, AppCtx *user) {
+PetscErrorCode TestLookup(DMLabel label, AppCtx *user)
+{
   const PetscInt pStart = user->pStart;
   const PetscInt pEnd   = user->pEnd;
   PetscInt       p, n = 0;
@@ -75,7 +78,8 @@ PetscErrorCode TestLookup(DMLabel label, AppCtx *user) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode TestClear(DMLabel label, AppCtx *user) {
+PetscErrorCode TestClear(DMLabel label, AppCtx *user)
+{
   PetscInt pStart = user->pStart, pEnd = user->pEnd, p;
   PetscInt defaultValue;
 
@@ -95,7 +99,8 @@ PetscErrorCode TestClear(DMLabel label, AppCtx *user) {
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   DMLabel label;
   AppCtx  user; /* user-defined work context */
 

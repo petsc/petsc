@@ -9,7 +9,8 @@ static char help[] = " Demonstrate the use of MatConvert_Nest_AIJ\n";
 
 #include <petscmat.h>
 
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   Mat         A1, A2, A3, A4, A5, B, C, C1, nest;
   Mat         mata[4];
   Mat         aij;

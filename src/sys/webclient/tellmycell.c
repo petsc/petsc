@@ -33,7 +33,8 @@
 
 .seealso: `PetscTextBelt()`, `PetscHTTPSRequest()`, `PetscHTTPSConnect()`, `PetscSSLInitializeContext()`
 @*/
-PetscErrorCode PetscTellMyCell(MPI_Comm comm, const char number[], const char message[], PetscBool *flg) {
+PetscErrorCode PetscTellMyCell(MPI_Comm comm, const char number[], const char message[], PetscBool *flg)
+{
   size_t      nlen, mlen, blen;
   PetscMPIInt rank;
   char        Username[64], Password[64];

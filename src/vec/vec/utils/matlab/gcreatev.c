@@ -5,7 +5,8 @@
 #include <engine.h> /* MATLAB include file */
 #include <mex.h>    /* MATLAB include file */
 
-PETSC_EXTERN PetscErrorCode VecMatlabEnginePut_Default(PetscObject obj, void *mengine) {
+PETSC_EXTERN PetscErrorCode VecMatlabEnginePut_Default(PetscObject obj, void *mengine)
+{
   PetscInt           n;
   Vec                vec = (Vec)obj;
   const PetscScalar *array;
@@ -27,7 +28,8 @@ PETSC_EXTERN PetscErrorCode VecMatlabEnginePut_Default(PetscObject obj, void *me
   PetscFunctionReturn(0);
 }
 
-PETSC_EXTERN PetscErrorCode VecMatlabEngineGet_Default(PetscObject obj, void *mengine) {
+PETSC_EXTERN PetscErrorCode VecMatlabEngineGet_Default(PetscObject obj, void *mengine)
+{
   PetscInt     n;
   Vec          vec = (Vec)obj;
   PetscScalar *array;

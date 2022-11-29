@@ -10,146 +10,71 @@
 #include <../src/vec/vec/impls/seq/kokkos/veckokkosimpl.hpp>
 #include <petscsf.h>
 
-PetscErrorCode VecDestroy_MPIKokkos(Vec v) {
-  Vec_Kokkos *veckok = static_cast<Vec_Kokkos *>(v->spptr);
-
+static PetscErrorCode VecDestroy_MPIKokkos(Vec v)
+{
   PetscFunctionBegin;
-  delete veckok;
+  delete static_cast<Vec_Kokkos *>(v->spptr);
   PetscCall(VecDestroy_MPI(v));
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode VecNorm_MPIKokkos(Vec xin, NormType type, PetscReal *z) {
-  PetscReal sum, work = 0.0;
-
+static PetscErrorCode VecNorm_MPIKokkos(Vec xin, NormType type, PetscReal *z)
+{
   PetscFunctionBegin;
-  if (type == NORM_2 || type == NORM_FROBENIUS) {
-    PetscCall(VecNorm_SeqKokkos(xin, NORM_2, &work));
-    work *= work;
-    PetscCall(MPIU_Allreduce(&work, &sum, 1, MPIU_REAL, MPIU_SUM, PetscObjectComm((PetscObject)xin)));
-    *z = PetscSqrtReal(sum);
-  } else if (type == NORM_1) {
-    /* Find the local part */
-    PetscCall(VecNorm_SeqKokkos(xin, NORM_1, &work));
-    /* Find the global max */
-    PetscCall(MPIU_Allreduce(&work, z, 1, MPIU_REAL, MPIU_SUM, PetscObjectComm((PetscObject)xin)));
-  } else if (type == NORM_INFINITY) {
-    /* Find the local max */
-    PetscCall(VecNorm_SeqKokkos(xin, NORM_INFINITY, &work));
-    /* Find the global max */
-    PetscCall(MPIU_Allreduce(&work, z, 1, MPIU_REAL, MPIU_MAX, PetscObjectComm((PetscObject)xin)));
-  } else if (type == NORM_1_AND_2) {
-    PetscReal temp[2];
-    PetscCall(VecNorm_SeqKokkos(xin, NORM_1, temp));
-    PetscCall(VecNorm_SeqKokkos(xin, NORM_2, temp + 1));
-    temp[1] = temp[1] * temp[1];
-    PetscCall(MPIU_Allreduce(temp, z, 2, MPIU_REAL, MPIU_SUM, PetscObjectComm((PetscObject)xin)));
-    z[1] = PetscSqrtReal(z[1]);
-  }
+  PetscCall(VecNorm_MPI_Default(xin, type, z, VecNorm_SeqKokkos));
   PetscFunctionReturn(0);
 }
 
 /* z = y^H x */
-PetscErrorCode VecDot_MPIKokkos(Vec xin, Vec yin, PetscScalar *z) {
-  PetscScalar sum, work;
-
+static PetscErrorCode VecDot_MPIKokkos(Vec xin, Vec yin, PetscScalar *z)
+{
   PetscFunctionBegin;
-  PetscCall(VecDot_SeqKokkos(xin, yin, &work));
-  PetscCall(MPIU_Allreduce(&work, &sum, 1, MPIU_SCALAR, MPIU_SUM, PetscObjectComm((PetscObject)xin)));
-  *z = sum;
-  PetscFunctionReturn(0);
-}
-
-PetscErrorCode VecMDot_MPIKokkos(Vec xin, PetscInt nv, const Vec y[], PetscScalar *z) {
-  PetscScalar awork[128], *work = awork;
-
-  PetscFunctionBegin;
-  if (nv > 128) PetscCall(PetscMalloc1(nv, &work));
-  PetscCall(VecMDot_SeqKokkos(xin, nv, y, work));
-  PetscCall(MPIU_Allreduce(work, z, nv, MPIU_SCALAR, MPIU_SUM, PetscObjectComm((PetscObject)xin)));
-  if (nv > 128) PetscCall(PetscFree(work));
+  PetscCall(VecXDot_MPI_Default(xin, yin, z, VecDot_SeqKokkos));
   PetscFunctionReturn(0);
 }
 
 /* z = y^T x */
-PetscErrorCode VecTDot_MPIKokkos(Vec xin, Vec yin, PetscScalar *z) {
-  PetscScalar sum, work;
-
+static PetscErrorCode VecTDot_MPIKokkos(Vec xin, Vec yin, PetscScalar *z)
+{
   PetscFunctionBegin;
-  PetscCall(VecTDot_SeqKokkos(xin, yin, &work));
-  PetscCall(MPIU_Allreduce(&work, &sum, 1, MPIU_SCALAR, MPIU_SUM, PetscObjectComm((PetscObject)xin)));
-  *z = sum;
+  PetscCall(VecXDot_MPI_Default(xin, yin, z, VecTDot_SeqKokkos));
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode VecMTDot_MPIKokkos(Vec xin, PetscInt nv, const Vec y[], PetscScalar *z) {
-  PetscScalar awork[128], *work = awork;
-
+static PetscErrorCode VecMDot_MPIKokkos(Vec xin, PetscInt nv, const Vec y[], PetscScalar *z)
+{
   PetscFunctionBegin;
-  if (nv > 128) PetscCall(PetscMalloc1(nv, &work));
-  PetscCall(VecMTDot_SeqKokkos(xin, nv, y, work));
-  PetscCall(MPIU_Allreduce(work, z, nv, MPIU_SCALAR, MPIU_SUM, PetscObjectComm((PetscObject)xin)));
-  if (nv > 128) PetscCall(PetscFree(work));
+  PetscCall(VecMXDot_MPI_Default(xin, nv, y, z, VecMDot_SeqKokkos));
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode VecMax_MPIKokkos(Vec xin, PetscInt *idx, PetscReal *z) {
-  PetscReal work;
-
+static PetscErrorCode VecMTDot_MPIKokkos(Vec xin, PetscInt nv, const Vec y[], PetscScalar *z)
+{
   PetscFunctionBegin;
-  /* Find the local max */
-  PetscCall(VecMax_SeqKokkos(xin, idx, &work));
-#if defined(PETSC_HAVE_MPIUNI)
-  *z = work;
-#else
-  /* Find the global max */
-  if (!idx) { /* User does not need idx */
-    PetscCall(MPIU_Allreduce(&work, z, 1, MPIU_REAL, MPIU_MAX, PetscObjectComm((PetscObject)xin)));
-  } else {
-    struct {
-      PetscReal v;
-      PetscInt  i;
-    } in, out;
-
-    in.v = work;
-    in.i = *idx + xin->map->rstart;
-    PetscCall(MPIU_Allreduce(&in, &out, 1, MPIU_REAL_INT, MPIU_MAXLOC, PetscObjectComm((PetscObject)xin)));
-    *z   = out.v;
-    *idx = out.i;
-  }
-#endif
+  PetscCall(VecMXDot_MPI_Default(xin, nv, y, z, VecMTDot_SeqKokkos));
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode VecMin_MPIKokkos(Vec xin, PetscInt *idx, PetscReal *z) {
-  PetscReal work;
+PetscErrorCode VecMax_MPIKokkos(Vec xin, PetscInt *idx, PetscReal *z)
+{
+  const MPI_Op ops[] = {MPIU_MAXLOC, MPIU_MAX};
 
   PetscFunctionBegin;
-  /* Find the local Min */
-  PetscCall(VecMin_SeqKokkos(xin, idx, &work));
-#if defined(PETSC_HAVE_MPIUNI)
-  *z = work;
-#else
-  /* Find the global Min */
-  if (!idx) {
-    PetscCall(MPIU_Allreduce(&work, z, 1, MPIU_REAL, MPIU_MIN, PetscObjectComm((PetscObject)xin)));
-  } else {
-    struct {
-      PetscReal v;
-      PetscInt  i;
-    } in, out;
-
-    in.v = work;
-    in.i = *idx + xin->map->rstart;
-    PetscCall(MPIU_Allreduce(&in, &out, 1, MPIU_REAL_INT, MPIU_MINLOC, PetscObjectComm((PetscObject)xin)));
-    *z   = out.v;
-    *idx = out.i;
-  }
-#endif
+  PetscCall(VecMinMax_MPI_Default(xin, idx, z, VecMax_SeqKokkos, ops));
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode VecDuplicate_MPIKokkos(Vec win, Vec *vv) {
+PetscErrorCode VecMin_MPIKokkos(Vec xin, PetscInt *idx, PetscReal *z)
+{
+  const MPI_Op ops[] = {MPIU_MINLOC, MPIU_MIN};
+
+  PetscFunctionBegin;
+  PetscCall(VecMinMax_MPI_Default(xin, idx, z, VecMin_SeqKokkos, ops));
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode VecDuplicate_MPIKokkos(Vec win, Vec *vv)
+{
   Vec         v;
   Vec_MPI    *vecmpi;
   Vec_Kokkos *veckok;
@@ -158,7 +83,7 @@ PetscErrorCode VecDuplicate_MPIKokkos(Vec win, Vec *vv) {
   /* Reuse VecDuplicate_MPI, which contains a lot of stuff */
   PetscCall(VecDuplicate_MPI(win, &v)); /* after the call, v is a VECMPI, with data zero'ed */
   PetscCall(PetscObjectChangeTypeName((PetscObject)v, VECMPIKOKKOS));
-  PetscCall(PetscMemcpy(v->ops, win->ops, sizeof(struct _VecOps)));
+  PetscCall(PetscMemcpy(v->ops, win->ops, sizeof(*win->ops)));
 
   /* Build the Vec_Kokkos struct */
   vecmpi = static_cast<Vec_MPI *>(v->data);
@@ -170,27 +95,25 @@ PetscErrorCode VecDuplicate_MPIKokkos(Vec win, Vec *vv) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode VecDotNorm2_MPIKokkos(Vec s, Vec t, PetscScalar *dp, PetscScalar *nm) {
-  PetscScalar work[2], sum[2];
-
+PetscErrorCode VecDotNorm2_MPIKokkos(Vec s, Vec t, PetscScalar *dp, PetscScalar *nm)
+{
   PetscFunctionBegin;
-  PetscCall(VecDotNorm2_SeqKokkos(s, t, work, work + 1));
-  PetscCall(MPIU_Allreduce(&work, &sum, 2, MPIU_SCALAR, MPIU_SUM, PetscObjectComm((PetscObject)s)));
-  *dp = sum[0];
-  *nm = sum[1];
+  PetscCall(VecDotNorm2_MPI_Default(s, t, dp, nm, VecDotNorm2_SeqKokkos));
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode VecGetSubVector_MPIKokkos(Vec x, IS is, Vec *y) {
+static PetscErrorCode VecGetSubVector_MPIKokkos(Vec x, IS is, Vec *y)
+{
   PetscFunctionBegin;
   PetscCall(VecGetSubVector_Kokkos_Private(x, PETSC_TRUE, is, y));
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode VecSetPreallocationCOO_MPIKokkos(Vec x, PetscCount ncoo, const PetscInt coo_i[]) {
-  Vec_MPI    *vecmpi = static_cast<Vec_MPI *>(x->data);
-  Vec_Kokkos *veckok = static_cast<Vec_Kokkos *>(x->spptr);
-  PetscInt    m;
+static PetscErrorCode VecSetPreallocationCOO_MPIKokkos(Vec x, PetscCount ncoo, const PetscInt coo_i[])
+{
+  const auto vecmpi = static_cast<Vec_MPI *>(x->data);
+  const auto veckok = static_cast<Vec_Kokkos *>(x->spptr);
+  PetscInt   m;
 
   PetscFunctionBegin;
   PetscCall(VecGetLocalSize(x, &m));
@@ -199,9 +122,10 @@ static PetscErrorCode VecSetPreallocationCOO_MPIKokkos(Vec x, PetscCount ncoo, c
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode VecSetValuesCOO_MPIKokkos(Vec x, const PetscScalar v[], InsertMode imode) {
-  Vec_MPI                    *vecmpi  = static_cast<Vec_MPI *>(x->data);
-  Vec_Kokkos                 *veckok  = static_cast<Vec_Kokkos *>(x->spptr);
+static PetscErrorCode VecSetValuesCOO_MPIKokkos(Vec x, const PetscScalar v[], InsertMode imode)
+{
+  const auto                  vecmpi  = static_cast<Vec_MPI *>(x->data);
+  const auto                  veckok  = static_cast<Vec_Kokkos *>(x->spptr);
   const PetscCountKokkosView &jmap1   = veckok->jmap1_d;
   const PetscCountKokkosView &perm1   = veckok->perm1_d;
   const PetscCountKokkosView &imap2   = veckok->imap2_d;
@@ -252,7 +176,8 @@ static PetscErrorCode VecSetValuesCOO_MPIKokkos(Vec x, const PetscScalar v[], In
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode VecSetOps_MPIKokkos(Vec v) {
+static PetscErrorCode VecSetOps_MPIKokkos(Vec v)
+{
   PetscFunctionBegin;
   v->ops->abs             = VecAbs_SeqKokkos;
   v->ops->reciprocal      = VecReciprocal_SeqKokkos;
@@ -320,7 +245,8 @@ static PetscErrorCode VecSetOps_MPIKokkos(Vec v) {
 
 .seealso: `VecCreate()`, `VecSetType()`, `VecSetFromOptions()`, `VecCreateMPIKokkosWithArray()`, `VECMPI`, `VecType`, `VecCreateMPI()`
 M*/
-PetscErrorCode VecCreate_MPIKokkos(Vec v) {
+PetscErrorCode VecCreate_MPIKokkos(Vec v)
+{
   Vec_MPI    *vecmpi;
   Vec_Kokkos *veckok;
 
@@ -371,7 +297,8 @@ PetscErrorCode VecCreate_MPIKokkos(Vec v) {
           `VecCreateMPI()`, `VecCreateGhostWithArray()`, `VecPlaceArray()`
 
 @*/
-PetscErrorCode VecCreateMPIKokkosWithArray(MPI_Comm comm, PetscInt bs, PetscInt n, PetscInt N, const PetscScalar darray[], Vec *v) {
+PetscErrorCode VecCreateMPIKokkosWithArray(MPI_Comm comm, PetscInt bs, PetscInt n, PetscInt N, const PetscScalar darray[], Vec *v)
+{
   Vec          w;
   Vec_Kokkos  *veckok;
   Vec_MPI     *vecmpi;
@@ -431,7 +358,8 @@ PetscErrorCode VecCreateMPIKokkosWithArray(MPI_Comm comm, PetscInt bs, PetscInt 
    PETSc does NOT free the array when the vector is destroyed via VecDestroy().
    The user should not free the array until the vector is destroyed.
 */
-PetscErrorCode VecCreateMPIKokkosWithArrays_Private(MPI_Comm comm, PetscInt bs, PetscInt n, PetscInt N, const PetscScalar harray[], const PetscScalar darray[], Vec *v) {
+PetscErrorCode VecCreateMPIKokkosWithArrays_Private(MPI_Comm comm, PetscInt bs, PetscInt n, PetscInt N, const PetscScalar harray[], const PetscScalar darray[], Vec *v)
+{
   Vec w;
 
   PetscFunctionBegin;
@@ -460,7 +388,8 @@ PetscErrorCode VecCreateMPIKokkosWithArrays_Private(MPI_Comm comm, PetscInt bs, 
 
 .seealso: `VecCreate()`, `VecSetType()`, `VecSetFromOptions()`, `VecCreateMPIKokkosWithArray()`, `VECMPI`, `VecType`, `VecCreateMPI()`
 M*/
-PetscErrorCode VecCreate_Kokkos(Vec v) {
+PetscErrorCode VecCreate_Kokkos(Vec v)
+{
   PetscMPIInt size;
 
   PetscFunctionBegin;

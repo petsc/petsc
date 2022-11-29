@@ -7,7 +7,8 @@
  *
  *  PetscCDCreate
  */
-PetscErrorCode PetscCDCreate(PetscInt a_size, PetscCoarsenData **a_out) {
+PetscErrorCode PetscCDCreate(PetscInt a_size, PetscCoarsenData **a_out)
+{
   PetscCoarsenData *ail;
 
   PetscFunctionBegin;
@@ -18,7 +19,7 @@ PetscErrorCode PetscCDCreate(PetscInt a_size, PetscCoarsenData **a_out) {
   ail->pool_list.array = NULL;
   ail->chk_sz          = 0;
   /* allocate array */
-  ail->size            = a_size;
+  ail->size = a_size;
   PetscCall(PetscCalloc1(a_size, &ail->array));
   ail->extra_nodes = NULL;
   ail->mat         = NULL;
@@ -27,7 +28,8 @@ PetscErrorCode PetscCDCreate(PetscInt a_size, PetscCoarsenData **a_out) {
 
 /* NPDestroy
  */
-PetscErrorCode PetscCDDestroy(PetscCoarsenData *ail) {
+PetscErrorCode PetscCDDestroy(PetscCoarsenData *ail)
+{
   PetscCDArrNd *n = &ail->pool_list;
 
   PetscFunctionBegin;
@@ -47,7 +49,8 @@ PetscErrorCode PetscCDDestroy(PetscCoarsenData *ail) {
 
 /* PetscCDSetChuckSize
  */
-PetscErrorCode PetscCDSetChuckSize(PetscCoarsenData *ail, PetscInt a_sz) {
+PetscErrorCode PetscCDSetChuckSize(PetscCoarsenData *ail, PetscInt a_sz)
+{
   PetscFunctionBegin;
   ail->chk_sz = a_sz;
   PetscFunctionReturn(0);
@@ -55,7 +58,8 @@ PetscErrorCode PetscCDSetChuckSize(PetscCoarsenData *ail, PetscInt a_sz) {
 
 /*  PetscCDGetNewNode
  */
-PetscErrorCode PetscCDGetNewNode(PetscCoarsenData *ail, PetscCDIntNd **a_out, PetscInt a_id) {
+PetscErrorCode PetscCDGetNewNode(PetscCoarsenData *ail, PetscCDIntNd **a_out, PetscInt a_id)
+{
   PetscFunctionBegin;
   *a_out = NULL; /* squelch -Wmaybe-uninitialized */
   if (ail->extra_nodes) {
@@ -90,7 +94,8 @@ PetscErrorCode PetscCDGetNewNode(PetscCoarsenData *ail, PetscCDIntNd **a_out, Pe
 
 /* PetscCDIntNdSetID
  */
-PetscErrorCode PetscCDIntNdSetID(PetscCDIntNd *a_this, PetscInt a_id) {
+PetscErrorCode PetscCDIntNdSetID(PetscCDIntNd *a_this, PetscInt a_id)
+{
   PetscFunctionBegin;
   a_this->gid = a_id;
   PetscFunctionReturn(0);
@@ -98,7 +103,8 @@ PetscErrorCode PetscCDIntNdSetID(PetscCDIntNd *a_this, PetscInt a_id) {
 
 /* PetscCDIntNdGetID
  */
-PetscErrorCode PetscCDIntNdGetID(const PetscCDIntNd *a_this, PetscInt *a_gid) {
+PetscErrorCode PetscCDIntNdGetID(const PetscCDIntNd *a_this, PetscInt *a_gid)
+{
   PetscFunctionBegin;
   *a_gid = a_this->gid;
   PetscFunctionReturn(0);
@@ -106,7 +112,8 @@ PetscErrorCode PetscCDIntNdGetID(const PetscCDIntNd *a_this, PetscInt *a_gid) {
 
 /* PetscCDGetHeadPos
  */
-PetscErrorCode PetscCDGetHeadPos(const PetscCoarsenData *ail, PetscInt a_idx, PetscCDIntNd **pos) {
+PetscErrorCode PetscCDGetHeadPos(const PetscCoarsenData *ail, PetscInt a_idx, PetscCDIntNd **pos)
+{
   PetscFunctionBegin;
   PetscCheck(a_idx < ail->size, PETSC_COMM_SELF, PETSC_ERR_PLIB, "a_idx >= ail->size: a_idx=%" PetscInt_FMT ".", a_idx);
   *pos = ail->array[a_idx];
@@ -115,7 +122,8 @@ PetscErrorCode PetscCDGetHeadPos(const PetscCoarsenData *ail, PetscInt a_idx, Pe
 
 /* PetscCDGetNextPos
  */
-PetscErrorCode PetscCDGetNextPos(const PetscCoarsenData *ail, PetscInt l_idx, PetscCDIntNd **pos) {
+PetscErrorCode PetscCDGetNextPos(const PetscCoarsenData *ail, PetscInt l_idx, PetscCDIntNd **pos)
+{
   PetscFunctionBegin;
   PetscCheck((*pos), PETSC_COMM_SELF, PETSC_ERR_PLIB, "NULL input position.");
   *pos = (*pos)->next;
@@ -124,7 +132,8 @@ PetscErrorCode PetscCDGetNextPos(const PetscCoarsenData *ail, PetscInt l_idx, Pe
 
 /* PetscCDAppendID
  */
-PetscErrorCode PetscCDAppendID(PetscCoarsenData *ail, PetscInt a_idx, PetscInt a_id) {
+PetscErrorCode PetscCDAppendID(PetscCoarsenData *ail, PetscInt a_idx, PetscInt a_id)
+{
   PetscCDIntNd *n, *n2;
 
   PetscFunctionBegin;
@@ -147,7 +156,8 @@ PetscErrorCode PetscCDAppendID(PetscCoarsenData *ail, PetscInt a_idx, PetscInt a
 
 /* PetscCDAppendNode
  */
-PetscErrorCode PetscCDAppendNode(PetscCoarsenData *ail, PetscInt a_idx, PetscCDIntNd *a_n) {
+PetscErrorCode PetscCDAppendNode(PetscCoarsenData *ail, PetscInt a_idx, PetscCDIntNd *a_n)
+{
   PetscCDIntNd *n2;
 
   PetscFunctionBegin;
@@ -169,7 +179,8 @@ PetscErrorCode PetscCDAppendNode(PetscCoarsenData *ail, PetscInt a_idx, PetscCDI
 
 /* PetscCDRemoveNextNode: a_last->next, this exposes single linked list structure to API
  */
-PetscErrorCode PetscCDRemoveNextNode(PetscCoarsenData *ail, PetscInt a_idx, PetscCDIntNd *a_last) {
+PetscErrorCode PetscCDRemoveNextNode(PetscCoarsenData *ail, PetscInt a_idx, PetscCDIntNd *a_last)
+{
   PetscCDIntNd *del;
 
   PetscFunctionBegin;
@@ -184,7 +195,8 @@ PetscErrorCode PetscCDRemoveNextNode(PetscCoarsenData *ail, PetscInt a_idx, Pets
 
 /* PetscCDPrint
  */
-PetscErrorCode PetscCDPrint(const PetscCoarsenData *ail, MPI_Comm comm) {
+PetscErrorCode PetscCDPrint(const PetscCoarsenData *ail, MPI_Comm comm)
+{
   PetscCDIntNd *n;
   PetscInt      ii, kk;
   PetscMPIInt   rank;
@@ -205,7 +217,8 @@ PetscErrorCode PetscCDPrint(const PetscCoarsenData *ail, MPI_Comm comm) {
 
 /* PetscCDAppendRemove
  */
-PetscErrorCode PetscCDAppendRemove(PetscCoarsenData *ail, PetscInt a_destidx, PetscInt a_srcidx) {
+PetscErrorCode PetscCDAppendRemove(PetscCoarsenData *ail, PetscInt a_destidx, PetscInt a_srcidx)
+{
   PetscCDIntNd *n;
 
   PetscFunctionBegin;
@@ -229,7 +242,8 @@ PetscErrorCode PetscCDAppendRemove(PetscCoarsenData *ail, PetscInt a_destidx, Pe
 
 /* PetscCDRemoveAll
  */
-PetscErrorCode PetscCDRemoveAll(PetscCoarsenData *ail, PetscInt a_idx) {
+PetscErrorCode PetscCDRemoveAll(PetscCoarsenData *ail, PetscInt a_idx)
+{
   PetscCDIntNd *rem, *n1;
 
   PetscFunctionBegin;
@@ -246,7 +260,8 @@ PetscErrorCode PetscCDRemoveAll(PetscCoarsenData *ail, PetscInt a_idx) {
 
 /* PetscCDSizeAt
  */
-PetscErrorCode PetscCDSizeAt(const PetscCoarsenData *ail, PetscInt a_idx, PetscInt *a_sz) {
+PetscErrorCode PetscCDSizeAt(const PetscCoarsenData *ail, PetscInt a_idx, PetscInt *a_sz)
+{
   PetscCDIntNd *n1;
   PetscInt      sz = 0;
 
@@ -263,7 +278,8 @@ PetscErrorCode PetscCDSizeAt(const PetscCoarsenData *ail, PetscInt a_idx, PetscI
 
 /* PetscCDEmptyAt
  */
-PetscErrorCode PetscCDEmptyAt(const PetscCoarsenData *ail, PetscInt a_idx, PetscBool *a_e) {
+PetscErrorCode PetscCDEmptyAt(const PetscCoarsenData *ail, PetscInt a_idx, PetscBool *a_e)
+{
   PetscFunctionBegin;
   PetscCheck(a_idx < ail->size, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Index %" PetscInt_FMT " out of range.", a_idx);
   *a_e = (PetscBool)(ail->array[a_idx] == NULL);
@@ -272,7 +288,8 @@ PetscErrorCode PetscCDEmptyAt(const PetscCoarsenData *ail, PetscInt a_idx, Petsc
 
 /* PetscCDGetMIS - used for C-F methods
  */
-PetscErrorCode PetscCDGetMIS(PetscCoarsenData *ail, IS *a_mis) {
+PetscErrorCode PetscCDGetMIS(PetscCoarsenData *ail, IS *a_mis)
+{
   PetscCDIntNd *n;
   PetscInt      ii, kk;
   PetscInt     *permute;
@@ -293,7 +310,8 @@ PetscErrorCode PetscCDGetMIS(PetscCoarsenData *ail, IS *a_mis) {
 
 /* PetscCDGetMat
  */
-PetscErrorCode PetscCDGetMat(PetscCoarsenData *ail, Mat *a_mat) {
+PetscErrorCode PetscCDGetMat(PetscCoarsenData *ail, Mat *a_mat)
+{
   PetscFunctionBegin;
   *a_mat   = ail->mat;
   ail->mat = NULL; // give it up
@@ -302,7 +320,8 @@ PetscErrorCode PetscCDGetMat(PetscCoarsenData *ail, Mat *a_mat) {
 
 /* PetscCDSetMat
  */
-PetscErrorCode PetscCDSetMat(PetscCoarsenData *ail, Mat a_mat) {
+PetscErrorCode PetscCDSetMat(PetscCoarsenData *ail, Mat a_mat)
+{
   PetscFunctionBegin;
   if (ail->mat) {
     PetscCall(MatDestroy(&ail->mat)); //should not happen
@@ -313,7 +332,8 @@ PetscErrorCode PetscCDSetMat(PetscCoarsenData *ail, Mat a_mat) {
 
 /* PetscCDGetASMBlocks - get IS of aggregates for ASM smoothers
  */
-PetscErrorCode PetscCDGetASMBlocks(const PetscCoarsenData *ail, const PetscInt a_bs, Mat mat, PetscInt *a_sz, IS **a_local_is) {
+PetscErrorCode PetscCDGetASMBlocks(const PetscCoarsenData *ail, const PetscInt a_bs, Mat mat, PetscInt *a_sz, IS **a_local_is)
+{
   PetscCDIntNd *n;
   PetscInt      lsz, ii, kk, *idxs, jj, s, e, gid;
   IS           *is_loc, is_bcs;
@@ -372,7 +392,8 @@ typedef struct edge_tag {
   PetscInt  lid0, gid1, cpid1;
 } Edge;
 
-static int gamg_hem_compare(const void *a, const void *b) {
+static int gamg_hem_compare(const void *a, const void *b)
+{
   PetscReal va = ((Edge *)a)->weight, vb = ((Edge *)b)->weight;
   return (va < vb) ? 1 : (va == vb) ? 0 : -1; /* 0 for equal */
 }
@@ -388,7 +409,8 @@ static int gamg_hem_compare(const void *a, const void *b) {
   Output Parameter:
    . a_locals_llist - array of list of local nodes rooted at local node
 */
-static PetscErrorCode MatCoarsenApply_HEM_private(IS perm, Mat a_Gmat, PetscCoarsenData **a_locals_llist) {
+static PetscErrorCode MatCoarsenApply_HEM_private(IS perm, Mat a_Gmat, PetscCoarsenData **a_locals_llist)
+{
   PetscBool         isMPI;
   MPI_Comm          comm;
   PetscInt          sub_it, kk, n, ix, *idx, *ii, iter, Iend, my0;
@@ -772,7 +794,7 @@ static PetscErrorCode MatCoarsenApply_HEM_private(IS perm, Mat a_Gmat, PetscCoar
           while (n--) {
             PetscInt gid1 = *pt++, lid1 = gid1 - my0;
             kk = *pt++;
-            PetscCheck(!lid_matched[lid1], PETSC_COMM_SELF, PETSC_ERR_PLIB, "Recieved deleted gid %" PetscInt_FMT ", deleted by (lid) %" PetscInt_FMT " from proc %" PetscInt_FMT, sub_it, gid1, kk);
+            PetscCheck(!lid_matched[lid1], PETSC_COMM_SELF, PETSC_ERR_PLIB, "Received deleted gid %" PetscInt_FMT ", deleted by (lid) %" PetscInt_FMT " from proc %" PetscInt_FMT, sub_it, gid1, kk);
             lid_matched[lid1] = PETSC_TRUE; /* keep track of what we've done this round */
             PetscCall(PetscCDSizeAt(agg_llists, lid1, &kk));
             count2 += kk + 2;
@@ -1031,7 +1053,8 @@ static PetscErrorCode MatCoarsenApply_HEM_private(IS perm, Mat a_Gmat, PetscCoar
 /*
    HEM coarsen, simple greedy.
 */
-static PetscErrorCode MatCoarsenApply_HEM(MatCoarsen coarse) {
+static PetscErrorCode MatCoarsenApply_HEM(MatCoarsen coarse)
+{
   Mat mat = coarse->graph;
 
   PetscFunctionBegin;
@@ -1049,7 +1072,8 @@ static PetscErrorCode MatCoarsenApply_HEM(MatCoarsen coarse) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatCoarsenView_HEM(MatCoarsen coarse, PetscViewer viewer) {
+static PetscErrorCode MatCoarsenView_HEM(MatCoarsen coarse, PetscViewer viewer)
+{
   PetscMPIInt rank;
   PetscBool   iascii;
 
@@ -1073,7 +1097,8 @@ static PetscErrorCode MatCoarsenView_HEM(MatCoarsen coarse, PetscViewer viewer) 
 .seealso: `MatCoarsen`, `MatCoarsenSetType()`, `MatCoarsenGetData()`, `MatCoarsenType`, `MatCoarsenCreate()`
 M*/
 
-PETSC_EXTERN PetscErrorCode MatCoarsenCreate_HEM(MatCoarsen coarse) {
+PETSC_EXTERN PetscErrorCode MatCoarsenCreate_HEM(MatCoarsen coarse)
+{
   PetscFunctionBegin;
   coarse->ops->apply = MatCoarsenApply_HEM;
   coarse->ops->view  = MatCoarsenView_HEM;

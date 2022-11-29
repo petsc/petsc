@@ -2,7 +2,8 @@
 #include <petsc/private/matorderimpl.h> /*I      "petscmat.h"      I*/
 #include <petsc/private/dmlabelimpl.h>
 
-static PetscErrorCode DMPlexCreateOrderingClosure_Static(DM dm, PetscInt numPoints, const PetscInt pperm[], PetscInt **clperm, PetscInt **invclperm) {
+static PetscErrorCode DMPlexCreateOrderingClosure_Static(DM dm, PetscInt numPoints, const PetscInt pperm[], PetscInt **clperm, PetscInt **invclperm)
+{
   PetscInt *perm, *iperm;
   PetscInt  depth, d, pStart, pEnd, fStart, fMax, fEnd, p;
 
@@ -69,7 +70,8 @@ $     MATORDERINGQMD - Quotient Minimum Degree
 
 .seealso: `DMPlexPermute()`, `MatGetOrdering()`
 @*/
-PetscErrorCode DMPlexGetOrdering(DM dm, MatOrderingType otype, DMLabel label, IS *perm) {
+PetscErrorCode DMPlexGetOrdering(DM dm, MatOrderingType otype, DMLabel label, IS *perm)
+{
   PetscInt  numCells = 0;
   PetscInt *start = NULL, *adjacency = NULL, *cperm, *clperm = NULL, *invclperm = NULL, *mask, *xls, pStart, pEnd, c, i;
 
@@ -150,7 +152,8 @@ PetscErrorCode DMPlexGetOrdering(DM dm, MatOrderingType otype, DMLabel label, IS
 
 .seealso: `DMPlexGetOrdering()`, `DMPlexPermute()`, `MatGetOrdering()`
 @*/
-PetscErrorCode DMPlexGetOrdering1D(DM dm, IS *perm) {
+PetscErrorCode DMPlexGetOrdering1D(DM dm, IS *perm)
+{
   PetscInt       *points;
   const PetscInt *support, *cone;
   PetscInt        dim, pStart, pEnd, cStart, cEnd, c, vStart, vEnd, v, suppSize, lastCell = 0;
@@ -196,7 +199,8 @@ PetscErrorCode DMPlexGetOrdering1D(DM dm, IS *perm) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMPlexRemapCoordinates_Private(IS perm, PetscSection cs, Vec coordinates, PetscSection *csNew, Vec *coordinatesNew) {
+static PetscErrorCode DMPlexRemapCoordinates_Private(IS perm, PetscSection cs, Vec coordinates, PetscSection *csNew, Vec *coordinatesNew)
+{
   PetscScalar    *coords, *coordsNew;
   const PetscInt *pperm;
   PetscInt        pStart, pEnd, p;
@@ -241,7 +245,8 @@ static PetscErrorCode DMPlexRemapCoordinates_Private(IS perm, PetscSection cs, V
 
 .seealso: `MatPermute()`
 @*/
-PetscErrorCode DMPlexPermute(DM dm, IS perm, DM *pdm) {
+PetscErrorCode DMPlexPermute(DM dm, IS perm, DM *pdm)
+{
   DM_Plex    *plex = (DM_Plex *)dm->data, *plexNew;
   PetscInt    dim, cdim;
   const char *name;
@@ -365,7 +370,8 @@ PetscErrorCode DMPlexPermute(DM dm, IS perm, DM *pdm) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMPlexReorderSetDefault_Plex(DM dm, DMPlexReorderDefaultFlag reorder) {
+PetscErrorCode DMPlexReorderSetDefault_Plex(DM dm, DMPlexReorderDefaultFlag reorder)
+{
   DM_Plex *mesh = (DM_Plex *)dm->data;
 
   PetscFunctionBegin;
@@ -386,14 +392,16 @@ PetscErrorCode DMPlexReorderSetDefault_Plex(DM dm, DMPlexReorderDefaultFlag reor
 
 .seealso: `DMPlexReorderGetDefault()`
 @*/
-PetscErrorCode DMPlexReorderSetDefault(DM dm, DMPlexReorderDefaultFlag reorder) {
+PetscErrorCode DMPlexReorderSetDefault(DM dm, DMPlexReorderDefaultFlag reorder)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscTryMethod(dm, "DMPlexReorderSetDefault_C", (DM, DMPlexReorderDefaultFlag), (dm, reorder));
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMPlexReorderGetDefault_Plex(DM dm, DMPlexReorderDefaultFlag *reorder) {
+PetscErrorCode DMPlexReorderGetDefault_Plex(DM dm, DMPlexReorderDefaultFlag *reorder)
+{
   DM_Plex *mesh = (DM_Plex *)dm->data;
 
   PetscFunctionBegin;
@@ -416,7 +424,8 @@ PetscErrorCode DMPlexReorderGetDefault_Plex(DM dm, DMPlexReorderDefaultFlag *reo
 
 .seealso: `DMPlexReorderSetDefault()`
 @*/
-PetscErrorCode DMPlexReorderGetDefault(DM dm, DMPlexReorderDefaultFlag *reorder) {
+PetscErrorCode DMPlexReorderGetDefault(DM dm, DMPlexReorderDefaultFlag *reorder)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidPointer(reorder, 2);

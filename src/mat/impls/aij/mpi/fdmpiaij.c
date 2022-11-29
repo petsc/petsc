@@ -3,7 +3,8 @@
 #include <../src/mat/impls/baij/mpi/mpibaij.h>
 #include <petsc/private/isimpl.h>
 
-PetscErrorCode MatFDColoringApply_BAIJ(Mat J, MatFDColoring coloring, Vec x1, void *sctx) {
+PetscErrorCode MatFDColoringApply_BAIJ(Mat J, MatFDColoring coloring, Vec x1, void *sctx)
+{
   PetscErrorCode (*f)(void *, Vec, Vec, void *) = (PetscErrorCode(*)(void *, Vec, Vec, void *))coloring->f;
   PetscInt           k, cstart, cend, l, row, col, nz, spidx, i, j;
   PetscScalar        dx = 0.0, *w3_array, *dy_i, *dy = coloring->dy;
@@ -61,7 +62,6 @@ PetscErrorCode MatFDColoringApply_BAIJ(Mat J, MatFDColoring coloring, Vec x1, vo
     PetscCall(VecDuplicate(x1, &coloring->w3));
     /* Vec is used intensively in particular piece of scalar CPU code; won't benefit from bouncing back and forth to the GPU */
     PetscCall(VecBindToCPU(coloring->w3, PETSC_TRUE));
-    PetscCall(PetscLogObjectParent((PetscObject)coloring, (PetscObject)coloring->w3));
   }
   w3 = coloring->w3;
 
@@ -154,7 +154,8 @@ PetscErrorCode MatFDColoringApply_BAIJ(Mat J, MatFDColoring coloring, Vec x1, vo
 }
 
 /* this is declared PETSC_EXTERN because it is used by MatFDColoringUseDM() which is in the DM library */
-PetscErrorCode MatFDColoringApply_AIJ(Mat J, MatFDColoring coloring, Vec x1, void *sctx) {
+PetscErrorCode MatFDColoringApply_AIJ(Mat J, MatFDColoring coloring, Vec x1, void *sctx)
+{
   PetscErrorCode (*f)(void *, Vec, Vec, void *) = (PetscErrorCode(*)(void *, Vec, Vec, void *))coloring->f;
   PetscInt           k, cstart, cend, l, row, col, nz;
   PetscScalar        dx = 0.0, *y, *w3_array;
@@ -210,10 +211,7 @@ PetscErrorCode MatFDColoringApply_AIJ(Mat J, MatFDColoring coloring, Vec x1, voi
   }
 
   /* (3) Loop over each color */
-  if (!coloring->w3) {
-    PetscCall(VecDuplicate(x1, &coloring->w3));
-    PetscCall(PetscLogObjectParent((PetscObject)coloring, (PetscObject)coloring->w3));
-  }
+  if (!coloring->w3) { PetscCall(VecDuplicate(x1, &coloring->w3)); }
   w3 = coloring->w3;
 
   PetscCall(VecGetOwnershipRange(x1, &cstart, &cend)); /* used by ghosted vscale */
@@ -379,7 +377,8 @@ PetscErrorCode MatFDColoringApply_AIJ(Mat J, MatFDColoring coloring, Vec x1, voi
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatFDColoringSetUp_MPIXAIJ(Mat mat, ISColoring iscoloring, MatFDColoring c) {
+PetscErrorCode MatFDColoringSetUp_MPIXAIJ(Mat mat, ISColoring iscoloring, MatFDColoring c)
+{
   PetscMPIInt            size, *ncolsonproc, *disp, nn;
   PetscInt               i, n, nrows, nrows_i, j, k, m, ncols, col, *rowhit, cstart, cend, colb;
   const PetscInt        *is, *A_ci, *A_cj, *B_ci, *B_cj, *row = NULL, *ltog = NULL;
@@ -393,7 +392,7 @@ PetscErrorCode MatFDColoringSetUp_MPIXAIJ(Mat mat, ISColoring iscoloring, MatFDC
   PetscBool              isBAIJ, isSELL;
   PetscInt               bcols = c->bcols;
 #if defined(PETSC_USE_CTABLE)
-  PetscTable colmap = NULL;
+  PetscHMapI colmap = NULL;
 #else
   PetscInt *colmap = NULL;      /* local col number of off-diag col */
 #endif
@@ -490,15 +489,12 @@ PetscErrorCode MatFDColoringSetUp_MPIXAIJ(Mat mat, ISColoring iscoloring, MatFDC
 
   PetscCall(PetscMalloc2(nis, &c->ncolumns, nis, &c->columns));
   PetscCall(PetscMalloc1(nis, &c->nrows));
-  PetscCall(PetscLogObjectMemory((PetscObject)c, 3 * nis * sizeof(PetscInt)));
 
   if (c->htype[0] == 'd') {
     PetscCall(PetscMalloc1(nz, &Jentry));
-    PetscCall(PetscLogObjectMemory((PetscObject)c, nz * sizeof(MatEntry)));
     c->matentry = Jentry;
   } else if (c->htype[0] == 'w') {
     PetscCall(PetscMalloc1(nz, &Jentry2));
-    PetscCall(PetscLogObjectMemory((PetscObject)c, nz * sizeof(MatEntry2)));
     c->matentry2 = Jentry2;
   } else SETERRQ(PetscObjectComm((PetscObject)mat), PETSC_ERR_SUP, "htype is not supported");
 
@@ -564,7 +560,7 @@ PetscErrorCode MatFDColoringSetUp_MPIXAIJ(Mat mat, ISColoring iscoloring, MatFDC
         }
       } else { /* column is in B, off-diagonal block of mat */
 #if defined(PETSC_USE_CTABLE)
-        PetscCall(PetscTableFind(colmap, col + 1, &colb));
+        PetscCall(PetscHMapIGetWithDefault(colmap, col + 1, 0, &colb));
         colb--;
 #else
         colb = colmap[col] - 1; /* local column index */
@@ -635,7 +631,8 @@ PetscErrorCode MatFDColoringSetUp_MPIXAIJ(Mat mat, ISColoring iscoloring, MatFDC
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatFDColoringCreate_MPIXAIJ(Mat mat, ISColoring iscoloring, MatFDColoring c) {
+PetscErrorCode MatFDColoringCreate_MPIXAIJ(Mat mat, ISColoring iscoloring, MatFDColoring c)
+{
   PetscInt  bs, nis = iscoloring->n, m = mat->rmap->n;
   PetscBool isBAIJ, isSELL;
 
@@ -722,7 +719,8 @@ PetscErrorCode MatFDColoringCreate_MPIXAIJ(Mat mat, ISColoring iscoloring, MatFD
 
 .seealso: `MatFDColoringCreate()`, `ISColoring`, `ISColoringCreate()`, `ISColoringSetType()`, `IS_COLORING_LOCAL`, `MatFDColoringSetBlockSize()`
 @*/
-PetscErrorCode MatFDColoringSetValues(Mat J, MatFDColoring coloring, const PetscScalar *y) {
+PetscErrorCode MatFDColoringSetValues(Mat J, MatFDColoring coloring, const PetscScalar *y)
+{
   MatEntry2      *Jentry2;
   PetscInt        row, i, nrows_k, l, ncolors, nz = 0, bcols, nbcols = 0;
   const PetscInt *nrows;

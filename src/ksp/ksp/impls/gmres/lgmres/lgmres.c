@@ -8,13 +8,15 @@ static PetscErrorCode KSPLGMRESGetNewVectors(KSP, PetscInt);
 static PetscErrorCode KSPLGMRESUpdateHessenberg(KSP, PetscInt, PetscBool, PetscReal *);
 static PetscErrorCode KSPLGMRESBuildSoln(PetscScalar *, Vec, Vec, KSP, PetscInt);
 
-PetscErrorCode KSPLGMRESSetAugDim(KSP ksp, PetscInt dim) {
+PetscErrorCode KSPLGMRESSetAugDim(KSP ksp, PetscInt dim)
+{
   PetscFunctionBegin;
   PetscTryMethod((ksp), "KSPLGMRESSetAugDim_C", (KSP, PetscInt), (ksp, dim));
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode KSPLGMRESSetConstant(KSP ksp) {
+PetscErrorCode KSPLGMRESSetConstant(KSP ksp)
+{
   PetscFunctionBegin;
   PetscTryMethod((ksp), "KSPLGMRESSetConstant_C", (KSP), (ksp));
   PetscFunctionReturn(0);
@@ -27,7 +29,8 @@ PetscErrorCode KSPLGMRESSetConstant(KSP ksp) {
     but can be called directly by KSPSetUp().
 
 */
-PetscErrorCode KSPSetUp_LGMRES(KSP ksp) {
+PetscErrorCode KSPSetUp_LGMRES(KSP ksp)
+{
   PetscInt    max_k, k, aug_dim;
   KSP_LGMRES *lgmres = (KSP_LGMRES *)ksp->data;
 
@@ -43,7 +46,6 @@ PetscErrorCode KSPSetUp_LGMRES(KSP ksp) {
 
   PetscCall(PetscMalloc1(2 * aug_dim + AUG_OFFSET, &lgmres->augvecs_user_work));
   PetscCall(PetscMalloc1(aug_dim, &lgmres->aug_order));
-  PetscCall(PetscLogObjectMemory((PetscObject)ksp, (aug_dim) * (4 * sizeof(void *) + sizeof(PetscInt)) + AUG_OFFSET * 2 * sizeof(void *)));
 
   /*  for now we will preallocate the augvecs - because aug_dim << restart
      ... also keep in mind that we need to keep augvecs from cycle to cycle*/
@@ -52,13 +54,11 @@ PetscErrorCode KSPSetUp_LGMRES(KSP ksp) {
 
   PetscCall(KSPCreateVecs(ksp, lgmres->aug_vv_allocated, &lgmres->augvecs_user_work[0], 0, NULL));
   PetscCall(PetscMalloc1(max_k + 1, &lgmres->hwork));
-  PetscCall(PetscLogObjectParents(ksp, lgmres->aug_vv_allocated, lgmres->augvecs_user_work[0]));
   for (k = 0; k < lgmres->aug_vv_allocated; k++) lgmres->augvecs[k] = lgmres->augvecs_user_work[0][k];
   PetscFunctionReturn(0);
 }
 
 /*
-
     KSPLGMRESCycle - Run lgmres, possibly with restart.  Return residual
                   history if requested.
 
@@ -76,9 +76,9 @@ PetscErrorCode KSPSetUp_LGMRES(KSP ksp) {
     Notes:
     On entry, the value in vector VEC_VV(0) should be
     the initial residual.
-
  */
-PetscErrorCode KSPLGMRESCycle(PetscInt *itcount, KSP ksp) {
+PetscErrorCode KSPLGMRESCycle(PetscInt *itcount, KSP ksp)
+{
   KSP_LGMRES *lgmres = (KSP_LGMRES *)(ksp->data);
   PetscReal   res_norm, res;
   PetscReal   hapbnd, tt;
@@ -303,8 +303,8 @@ PetscErrorCode KSPLGMRESCycle(PetscInt *itcount, KSP ksp) {
 .     outits - number of iterations used
 
 */
-
-PetscErrorCode KSPSolve_LGMRES(KSP ksp) {
+PetscErrorCode KSPSolve_LGMRES(KSP ksp)
+{
   PetscInt    cycle_its; /* iterations done in a call to KSPLGMRESCycle */
   PetscInt    itcount;   /* running total of iterations, incl. those in restarts */
   KSP_LGMRES *lgmres     = (KSP_LGMRES *)ksp->data;
@@ -343,11 +343,10 @@ PetscErrorCode KSPSolve_LGMRES(KSP ksp) {
 }
 
 /*
-
    KSPDestroy_LGMRES - Frees all memory space used by the Krylov method.
-
 */
-PetscErrorCode KSPDestroy_LGMRES(KSP ksp) {
+PetscErrorCode KSPDestroy_LGMRES(KSP ksp)
+{
   KSP_LGMRES *lgmres = (KSP_LGMRES *)ksp->data;
 
   PetscFunctionBegin;
@@ -375,13 +374,14 @@ PetscErrorCode KSPDestroy_LGMRES(KSP ksp) {
 
      This is an internal routine that knows about the LGMRES internals.
  */
-static PetscErrorCode KSPLGMRESBuildSoln(PetscScalar *nrs, Vec vguess, Vec vdest, KSP ksp, PetscInt it) {
+static PetscErrorCode KSPLGMRESBuildSoln(PetscScalar *nrs, Vec vguess, Vec vdest, KSP ksp, PetscInt it)
+{
   PetscScalar tt;
   PetscInt    ii, k, j;
   KSP_LGMRES *lgmres = (KSP_LGMRES *)(ksp->data);
   /*LGMRES_MOD */
-  PetscInt    it_arnoldi, it_aug;
-  PetscInt    jj, spot = 0;
+  PetscInt it_arnoldi, it_aug;
+  PetscInt jj, spot = 0;
 
   PetscFunctionBegin;
   /* Solve for solution vector that minimizes the residual */
@@ -463,7 +463,6 @@ static PetscErrorCode KSPLGMRESBuildSoln(PetscScalar *nrs, Vec vguess, Vec vdest
 }
 
 /*
-
     KSPLGMRESUpdateHessenberg - Do the scalar work for the orthogonalization.
                             Return new residual.
 
@@ -478,7 +477,8 @@ static PetscErrorCode KSPLGMRESBuildSoln(PetscScalar *nrs, Vec vguess, Vec vdest
 .        res - the new residual
 
  */
-static PetscErrorCode KSPLGMRESUpdateHessenberg(KSP ksp, PetscInt it, PetscBool hapend, PetscReal *res) {
+static PetscErrorCode KSPLGMRESUpdateHessenberg(KSP ksp, PetscInt it, PetscBool hapend, PetscReal *res)
+{
   PetscScalar *hh, *cc, *ss, tt;
   PetscInt     j;
   KSP_LGMRES  *lgmres = (KSP_LGMRES *)(ksp->data);
@@ -548,7 +548,8 @@ static PetscErrorCode KSPLGMRESUpdateHessenberg(KSP ksp, PetscInt it, PetscBool 
                          VEC_VV(it)
 
 */
-static PetscErrorCode KSPLGMRESGetNewVectors(KSP ksp, PetscInt it) {
+static PetscErrorCode KSPLGMRESGetNewVectors(KSP ksp, PetscInt it)
+{
   KSP_LGMRES *lgmres = (KSP_LGMRES *)ksp->data;
   PetscInt    nwork  = lgmres->nwork_alloc; /* number of work vector chunks allocated */
   PetscInt    nalloc;                       /* number to allocate */
@@ -567,7 +568,6 @@ static PetscErrorCode KSPLGMRESGetNewVectors(KSP ksp, PetscInt it) {
 
   /* work vectors */
   PetscCall(KSPCreateVecs(ksp, nalloc, &lgmres->user_work[nwork], 0, NULL));
-  PetscCall(PetscLogObjectParents(ksp, nalloc, lgmres->user_work[nwork]));
   /* specify size of chunk allocated */
   lgmres->mwork_alloc[nwork] = nalloc;
 
@@ -581,7 +581,6 @@ static PetscErrorCode KSPLGMRESGetNewVectors(KSP ksp, PetscInt it) {
 }
 
 /*
-
    KSPBuildSolution_LGMRES
 
      Input Parameter:
@@ -595,21 +594,18 @@ static PetscErrorCode KSPLGMRESGetNewVectors(KSP ksp, PetscInt it) {
    calls directly.
 
 */
-PetscErrorCode KSPBuildSolution_LGMRES(KSP ksp, Vec ptr, Vec *result) {
+PetscErrorCode KSPBuildSolution_LGMRES(KSP ksp, Vec ptr, Vec *result)
+{
   KSP_LGMRES *lgmres = (KSP_LGMRES *)ksp->data;
 
   PetscFunctionBegin;
   if (!ptr) {
-    if (!lgmres->sol_temp) {
-      PetscCall(VecDuplicate(ksp->vec_sol, &lgmres->sol_temp));
-      PetscCall(PetscLogObjectParent((PetscObject)ksp, (PetscObject)lgmres->sol_temp));
-    }
+    if (!lgmres->sol_temp) { PetscCall(VecDuplicate(ksp->vec_sol, &lgmres->sol_temp)); }
     ptr = lgmres->sol_temp;
   }
   if (!lgmres->nrs) {
     /* allocate the work area */
     PetscCall(PetscMalloc1(lgmres->max_k, &lgmres->nrs));
-    PetscCall(PetscLogObjectMemory((PetscObject)ksp, lgmres->max_k * sizeof(PetscScalar)));
   }
 
   PetscCall(KSPLGMRESBuildSoln(lgmres->nrs, ksp->vec_sol, ptr, ksp, lgmres->it));
@@ -617,7 +613,8 @@ PetscErrorCode KSPBuildSolution_LGMRES(KSP ksp, Vec ptr, Vec *result) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode KSPView_LGMRES(KSP ksp, PetscViewer viewer) {
+PetscErrorCode KSPView_LGMRES(KSP ksp, PetscViewer viewer)
+{
   KSP_LGMRES *lgmres = (KSP_LGMRES *)ksp->data;
   PetscBool   iascii;
 
@@ -633,7 +630,8 @@ PetscErrorCode KSPView_LGMRES(KSP ksp, PetscViewer viewer) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode KSPSetFromOptions_LGMRES(KSP ksp, PetscOptionItems *PetscOptionsObject) {
+PetscErrorCode KSPSetFromOptions_LGMRES(KSP ksp, PetscOptionItems *PetscOptionsObject)
+{
   PetscInt    aug;
   KSP_LGMRES *lgmres = (KSP_LGMRES *)ksp->data;
   PetscBool   flg    = PETSC_FALSE;
@@ -649,7 +647,8 @@ PetscErrorCode KSPSetFromOptions_LGMRES(KSP ksp, PetscOptionItems *PetscOptionsO
 }
 
 /*functions for extra lgmres options here*/
-static PetscErrorCode KSPLGMRESSetConstant_LGMRES(KSP ksp) {
+static PetscErrorCode KSPLGMRESSetConstant_LGMRES(KSP ksp)
+{
   KSP_LGMRES *lgmres = (KSP_LGMRES *)ksp->data;
 
   PetscFunctionBegin;
@@ -657,7 +656,8 @@ static PetscErrorCode KSPLGMRESSetConstant_LGMRES(KSP ksp) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode KSPLGMRESSetAugDim_LGMRES(KSP ksp, PetscInt aug_dim) {
+static PetscErrorCode KSPLGMRESSetAugDim_LGMRES(KSP ksp, PetscInt aug_dim)
+{
   KSP_LGMRES *lgmres = (KSP_LGMRES *)ksp->data;
 
   PetscFunctionBegin;
@@ -666,8 +666,6 @@ static PetscErrorCode KSPLGMRESSetAugDim_LGMRES(KSP ksp, PetscInt aug_dim) {
   lgmres->aug_dim = aug_dim;
   PetscFunctionReturn(0);
 }
-
-/* end new lgmres functions */
 
 /*MC
     KSPLGMRES - Augments the standard GMRES approximation space with approximations to
@@ -686,36 +684,37 @@ static PetscErrorCode KSPLGMRESSetAugDim_LGMRES(KSP ksp, PetscInt aug_dim) {
 .   -ksp_lgmres_augment <k> - number of error approximations to augment the Krylov space with
 -   -ksp_lgmres_constant - use a constant approx. space size (only affects restart cycles < num. error approx.(k), i.e. the first k restarts)
 
-    To run LGMRES(m, k) as described in the above paper, use:
+    To run LGMRES(m, k) as described in [1], use:
        -ksp_gmres_restart <m+k>
        -ksp_lgmres_augment <k>
 
   Level: beginner
 
-   Notes:
+   Note:
     Supports both left and right preconditioning, but not symmetric.
 
+  Developer Note:
+    This object is subclassed off of `KSPGMRES`
+
+  Contributed by:
+  Allison Baker
+
    References:
-.  * - A. H. Baker, E.R. Jessup, and T.A. Manteuffel. A technique for accelerating the convergence of restarted GMRES. SIAM Journal on Matrix Analysis and Applications, 26 (2005).
+.  [1] - A. H. Baker, E.R. Jessup, and T.A. Manteuffel. A technique for accelerating the convergence of restarted GMRES. SIAM Journal on Matrix Analysis and Applications, 26 (2005).
 
-  Developer Notes:
-    This object is subclassed off of KSPGMRES
-
-  Contributed by: Allison Baker
-
-.seealso: `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPFGMRES`, `KSPGMRES`,
+.seealso: [](chapter_ksp), `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPFGMRES`, `KSPGMRES`,
           `KSPGMRESSetRestart()`, `KSPGMRESSetHapTol()`, `KSPGMRESSetPreAllocateVectors()`, `KSPGMRESSetOrthogonalization()`, `KSPGMRESGetOrthogonalization()`,
           `KSPGMRESClassicalGramSchmidtOrthogonalization()`, `KSPGMRESModifiedGramSchmidtOrthogonalization()`,
           `KSPGMRESCGSRefinementType`, `KSPGMRESSetCGSRefinementType()`, `KSPGMRESGetCGSRefinementType()`, `KSPGMRESMonitorKrylov()`, `KSPLGMRESSetAugDim()`,
           `KSPGMRESSetConstant()`
-
 M*/
 
-PETSC_EXTERN PetscErrorCode KSPCreate_LGMRES(KSP ksp) {
+PETSC_EXTERN PetscErrorCode KSPCreate_LGMRES(KSP ksp)
+{
   KSP_LGMRES *lgmres;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(ksp, &lgmres));
+  PetscCall(PetscNew(&lgmres));
 
   ksp->data               = (void *)lgmres;
   ksp->ops->buildsolution = KSPBuildSolution_LGMRES;

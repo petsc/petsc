@@ -20,7 +20,8 @@ F*/
 
 PetscErrorCode FormFunction(Tao, Vec, PetscReal *, void *);
 
-PetscErrorCode monitor(Tao tao, AppCtx *ctx) {
+PetscErrorCode monitor(Tao tao, AppCtx *ctx)
+{
   FILE              *fp;
   PetscInt           iterate;
   PetscReal          f, gnorm, cnorm, xdiff;
@@ -42,7 +43,8 @@ PetscErrorCode monitor(Tao tao, AppCtx *ctx) {
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   Vec          p;
   PetscScalar *x_ptr;
   PetscMPIInt  size;
@@ -156,7 +158,8 @@ int main(int argc, char **argv) {
    Output Parameters:
    f   - the newly evaluated function
 */
-PetscErrorCode FormFunction(Tao tao, Vec P, PetscReal *f, void *ctx0) {
+PetscErrorCode FormFunction(Tao tao, Vec P, PetscReal *f, void *ctx0)
+{
   AppCtx            *ctx = (AppCtx *)ctx0;
   TS                 ts, quadts;
   Vec                U; /* solution will be stored here */

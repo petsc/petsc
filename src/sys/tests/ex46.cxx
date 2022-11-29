@@ -13,14 +13,16 @@ static char help[] = "Demonstrates calling Trilinos and then PETSc in the same p
 // Do something with the given communicator.  In this case, we just
 // print Tpetra's version to stdout on Process 0 in the given
 // communicator.
-void exampleRoutine(const Teuchos::RCP<const Teuchos::Comm<int>> &comm) {
+void exampleRoutine(const Teuchos::RCP<const Teuchos::Comm<int>> &comm)
+{
   if (comm->getRank() == 0) {
     // On (MPI) Process 0, print out the Tpetra software version.
     std::cout << Tpetra::version() << std::endl << std::endl;
   }
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   // These "using" declarations make the code more concise, in that
   // you don't have to write the namespace along with the class or
   // object name.  This is especially helpful with commonly used
@@ -37,7 +39,7 @@ int main(int argc, char **argv) {
   // undesirable if running with a large number of MPI ranks.
   // You can avoid printing anything here by passing in either
   // NULL or the address of a Teuchos::oblackholestream.
-  Teuchos::GlobalMPISession              mpiSession(&argc, &argv, NULL);
+  Teuchos::GlobalMPISession mpiSession(&argc, &argv, NULL);
   // Get a pointer to the communicator object representing
   // MPI_COMM_WORLD.  getDefaultPlatform.getComm() doesn't create a
   // new object every time you call it; it just returns the same

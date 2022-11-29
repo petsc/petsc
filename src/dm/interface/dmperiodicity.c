@@ -17,7 +17,8 @@
 
 .seealso: `DMGetPeriodicity()`
 @*/
-PetscErrorCode DMGetPeriodicity(DM dm, const PetscReal **maxCell, const PetscReal **Lstart, const PetscReal **L) {
+PetscErrorCode DMGetPeriodicity(DM dm, const PetscReal **maxCell, const PetscReal **Lstart, const PetscReal **L)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   if (maxCell) *maxCell = dm->maxCell;
@@ -39,7 +40,8 @@ PetscErrorCode DMGetPeriodicity(DM dm, const PetscReal **maxCell, const PetscRea
 
 .seealso: `DMGetPeriodicity()`
 @*/
-PetscErrorCode DMSetPeriodicity(DM dm, const PetscReal maxCell[], const PetscReal Lstart[], const PetscReal L[]) {
+PetscErrorCode DMSetPeriodicity(DM dm, const PetscReal maxCell[], const PetscReal Lstart[], const PetscReal L[])
+{
   PetscInt dim, d;
 
   PetscFunctionBegin;
@@ -88,7 +90,8 @@ PetscErrorCode DMSetPeriodicity(DM dm, const PetscReal maxCell[], const PetscRea
 
 .seealso: `DMLocalizeCoordinates()`, `DMLocalizeAddCoordinate()`
 @*/
-PetscErrorCode DMLocalizeCoordinate(DM dm, const PetscScalar in[], PetscBool endpoint, PetscScalar out[]) {
+PetscErrorCode DMLocalizeCoordinate(DM dm, const PetscScalar in[], PetscBool endpoint, PetscScalar out[])
+{
   PetscInt dim, d;
 
   PetscFunctionBegin;
@@ -129,7 +132,8 @@ PetscErrorCode DMLocalizeCoordinate(DM dm, const PetscScalar in[], PetscBool end
 
 .seealso: `DMLocalizeCoordinates()`, `DMLocalizeAddCoordinate()`
 */
-PetscErrorCode DMLocalizeCoordinate_Internal(DM dm, PetscInt dim, const PetscScalar anchor[], const PetscScalar in[], PetscScalar out[]) {
+PetscErrorCode DMLocalizeCoordinate_Internal(DM dm, PetscInt dim, const PetscScalar anchor[], const PetscScalar in[], PetscScalar out[])
+{
   PetscInt d;
 
   PetscFunctionBegin;
@@ -147,7 +151,8 @@ PetscErrorCode DMLocalizeCoordinate_Internal(DM dm, PetscInt dim, const PetscSca
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMLocalizeCoordinateReal_Internal(DM dm, PetscInt dim, const PetscReal anchor[], const PetscReal in[], PetscReal out[]) {
+PetscErrorCode DMLocalizeCoordinateReal_Internal(DM dm, PetscInt dim, const PetscReal anchor[], const PetscReal in[], PetscReal out[])
+{
   PetscInt d;
 
   PetscFunctionBegin;
@@ -184,7 +189,8 @@ PetscErrorCode DMLocalizeCoordinateReal_Internal(DM dm, PetscInt dim, const Pets
 
 .seealso: `DMLocalizeCoordinates()`, `DMLocalizeCoordinate()`
 */
-PetscErrorCode DMLocalizeAddCoordinate_Internal(DM dm, PetscInt dim, const PetscScalar anchor[], const PetscScalar in[], PetscScalar out[]) {
+PetscErrorCode DMLocalizeAddCoordinate_Internal(DM dm, PetscInt dim, const PetscScalar anchor[], const PetscScalar in[], PetscScalar out[])
+{
   PetscInt d;
 
   PetscFunctionBegin;
@@ -223,7 +229,8 @@ PetscErrorCode DMLocalizeAddCoordinate_Internal(DM dm, PetscInt dim, const Petsc
 
 .seealso: `DMLocalizeCoordinates()`, `DMGetCoordinatesLocalized()`, `DMSetPeriodicity()`
 @*/
-PetscErrorCode DMGetCoordinatesLocalizedLocal(DM dm, PetscBool *areLocalized) {
+PetscErrorCode DMGetCoordinatesLocalizedLocal(DM dm, PetscBool *areLocalized)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidBoolPointer(areLocalized, 2);
@@ -246,7 +253,8 @@ PetscErrorCode DMGetCoordinatesLocalizedLocal(DM dm, PetscBool *areLocalized) {
 
 .seealso: `DMLocalizeCoordinates()`, `DMSetPeriodicity()`, `DMGetCoordinatesLocalizedLocal()`
 @*/
-PetscErrorCode DMGetCoordinatesLocalized(DM dm, PetscBool *areLocalized) {
+PetscErrorCode DMGetCoordinatesLocalized(DM dm, PetscBool *areLocalized)
+{
   PetscBool localized;
 
   PetscFunctionBegin;
@@ -269,7 +277,8 @@ PetscErrorCode DMGetCoordinatesLocalized(DM dm, PetscBool *areLocalized) {
 
 .seealso: `DMSetPeriodicity()`, `DMLocalizeCoordinate()`, `DMLocalizeAddCoordinate()`
 @*/
-PetscErrorCode DMLocalizeCoordinates(DM dm) {
+PetscErrorCode DMLocalizeCoordinates(DM dm)
+{
   DM               cdm, cdgdm, cplex, plex;
   PetscSection     cs, csDG;
   Vec              coordinates, cVec;

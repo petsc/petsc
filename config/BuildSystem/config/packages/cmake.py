@@ -4,7 +4,7 @@ import os
 class Configure(config.package.GNUPackage):
   def __init__(self, framework):
     config.package.GNUPackage.__init__(self, framework)
-    self.version            = '3.23.2'
+    self.version            = '3.25.0'
     self.download           = ['https://github.com/Kitware/CMake/releases/download/v'+self.version+'/cmake-'+self.version+'.tar.gz',
                               'https://gitlab.kitware.com/cmake/cmake/-/archive/v'+self.version+'/cmake-v'+self.version+'.tar.gz']
     self.download_solaris   = ['https://cmake.org/files/v3.11/cmake-3.11.4.tar.gz',
@@ -82,7 +82,6 @@ class Configure(config.package.GNUPackage):
       self.log.write('Not checking for CMake\n')
     if hasattr(self, 'cmake'):
       import re
-      self.found = 1
       try:
         (output, error, status) = config.base.Configure.executeShellCommand(self.cmake+' --version', log = self.log)
         if status:
@@ -91,6 +90,7 @@ class Configure(config.package.GNUPackage):
       except RuntimeError as e:
         self.log.write('cmake --version failed: '+str(e)+'\n')
         return
+      self.found = 1
       output = output.replace('stdout: ','')
       gver = None
       try:

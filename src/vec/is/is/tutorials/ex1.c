@@ -8,7 +8,8 @@ static char help[] = "Creating a general index set.\n\n";
 #include <petscis.h>
 #include <petscviewer.h>
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscInt       *indices, n;
   const PetscInt *nindices;
   PetscMPIInt     rank;

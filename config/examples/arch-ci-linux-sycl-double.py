@@ -17,7 +17,7 @@ if __name__ == '__main__':
     '--CXXOPTFLAGS=-g -O2',
     '--CXXPPFLAGS=-std=c++17',
     '--SYCLOPTFLAGS=-g -O2',
-    # To surpress warnings in checking Kokkos-Kernels headers like:
+    # To supress warnings in checking Kokkos-Kernels headers like:
     # Kokkos_MathematicalFunctions.hpp:299:34: warning: comparison with infinity always evaluates
     # to false in fast floating point modes [-Wtautological-constant-compare]
     # KOKKOS_IMPL_MATH_UNARY_PREDICATE(isinf)

@@ -39,7 +39,8 @@ extern PetscErrorCode IFunctionLocalPassive(DMDALocalInfo *info, PetscReal t, Fi
 extern PetscErrorCode IFunctionActive(TS ts, PetscReal ftime, Vec U, Vec Udot, Vec F, void *ptr);
 extern PetscErrorCode IJacobianMatFree(TS ts, PetscReal t, Vec X, Vec Xdot, PetscReal a, Mat A_shell, Mat B, void *ctx);
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   TS          ts;   /* ODE integrator */
   Vec         x, r; /* solution, residual */
   DM          da;
@@ -179,7 +180,8 @@ int main(int argc, char **argv) {
   return 0;
 }
 
-PetscErrorCode InitialConditions(DM da, Vec U) {
+PetscErrorCode InitialConditions(DM da, Vec U)
+{
   PetscInt  i, j, xs, ys, xm, ym, Mx, My;
   Field   **u;
   PetscReal hx, hy, x, y;
@@ -222,7 +224,8 @@ PetscErrorCode InitialConditions(DM da, Vec U) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode InitializeLambda(DM da, Vec lambda, PetscReal x, PetscReal y) {
+PetscErrorCode InitializeLambda(DM da, Vec lambda, PetscReal x, PetscReal y)
+{
   PetscInt i, j, Mx, My, xs, ys, xm, ym;
   Field  **l;
 
@@ -243,7 +246,8 @@ PetscErrorCode InitializeLambda(DM da, Vec lambda, PetscReal x, PetscReal y) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode IFunctionLocalPassive(DMDALocalInfo *info, PetscReal t, Field **u, Field **udot, Field **f, void *ptr) {
+PetscErrorCode IFunctionLocalPassive(DMDALocalInfo *info, PetscReal t, Field **u, Field **udot, Field **f, void *ptr)
+{
   AppCtx     *appctx = (AppCtx *)ptr;
   PetscInt    i, j, xs, ys, xm, ym;
   PetscReal   hx, hy, sx, sy;
@@ -278,7 +282,8 @@ PetscErrorCode IFunctionLocalPassive(DMDALocalInfo *info, PetscReal t, Field **u
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode IFunctionActive(TS ts, PetscReal ftime, Vec U, Vec Udot, Vec F, void *ptr) {
+PetscErrorCode IFunctionActive(TS ts, PetscReal ftime, Vec U, Vec Udot, Vec F, void *ptr)
+{
   AppCtx       *appctx = (AppCtx *)ptr;
   DM            da;
   DMDALocalInfo info;
@@ -410,7 +415,8 @@ PetscErrorCode IFunctionActive(TS ts, PetscReal ftime, Vec U, Vec Udot, Vec F, v
 /*
   Simply acts to pass TS information to the AdolcMatCtx
 */
-PetscErrorCode IJacobianMatFree(TS ts, PetscReal t, Vec X, Vec Xdot, PetscReal a, Mat A_shell, Mat B, void *ctx) {
+PetscErrorCode IJacobianMatFree(TS ts, PetscReal t, Vec X, Vec Xdot, PetscReal a, Mat A_shell, Mat B, void *ctx)
+{
   AdolcMatCtx *mctx;
   DM           da;
 

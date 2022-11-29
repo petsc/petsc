@@ -1,10 +1,12 @@
-#if !defined(_petsc_blockmatmult_h)
-#define _petsc_blockmatmult_h
+#ifndef PETSC_KERNELS_BLOCKMATMULT_H
+#define PETSC_KERNELS_BLOCKMATMULT_H
 
 #include <petscsys.h>
 
 #define PetscKernel_v_gets_A_times_w_1_exp(v, A, w, exp) \
-  do { v[0] exp A[0] * w[0]; } while (0)
+  do { \
+    v[0] exp A[0] * w[0]; \
+  } while (0)
 
 #define PetscKernel_v_gets_A_times_w_2_exp(v, A, w, exp) \
   do { \
@@ -87,4 +89,4 @@
 #define PetscKernel_v_gets_v_minus_A_times_w_6(v, A, w) PetscKernel_v_gets_A_times_w_6_exp(v, A, w, -=)
 #define PetscKernel_v_gets_v_minus_A_times_w_7(v, A, w) PetscKernel_v_gets_A_times_w_7_exp(v, A, w, -=)
 
-#endif
+#endif // PETSC_KERNELS_BLOCKMATMULT_H

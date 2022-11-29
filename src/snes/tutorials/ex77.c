@@ -59,7 +59,8 @@ static inline void Det2D(PetscReal *detJ, const PetscReal J[])
 }
 #endif
 
-static inline void Det3D(PetscReal *detJ, const PetscScalar J[]) {
+static inline void Det3D(PetscReal *detJ, const PetscScalar J[])
+{
   *detJ = PetscRealPart(J[0 * 3 + 0] * (J[1 * 3 + 1] * J[2 * 3 + 2] - J[1 * 3 + 2] * J[2 * 3 + 1]) + J[0 * 3 + 1] * (J[1 * 3 + 2] * J[2 * 3 + 0] - J[1 * 3 + 0] * J[2 * 3 + 2]) + J[0 * 3 + 2] * (J[1 * 3 + 0] * J[2 * 3 + 1] - J[1 * 3 + 1] * J[2 * 3 + 0]));
 }
 
@@ -73,7 +74,8 @@ static inline void Cof2D(PetscReal C[], const PetscReal A[])
 }
 #endif
 
-static inline void Cof3D(PetscReal C[], const PetscScalar A[]) {
+static inline void Cof3D(PetscReal C[], const PetscScalar A[])
+{
   C[0 * 3 + 0] = PetscRealPart(A[1 * 3 + 1] * A[2 * 3 + 2] - A[1 * 3 + 2] * A[2 * 3 + 1]);
   C[0 * 3 + 1] = PetscRealPart(A[1 * 3 + 2] * A[2 * 3 + 0] - A[1 * 3 + 0] * A[2 * 3 + 2]);
   C[0 * 3 + 2] = PetscRealPart(A[1 * 3 + 0] * A[2 * 3 + 1] - A[1 * 3 + 1] * A[2 * 3 + 0]);
@@ -85,12 +87,14 @@ static inline void Cof3D(PetscReal C[], const PetscScalar A[]) {
   C[2 * 3 + 2] = PetscRealPart(A[0 * 3 + 0] * A[1 * 3 + 1] - A[0 * 3 + 1] * A[1 * 3 + 0]);
 }
 
-PetscErrorCode zero_scalar(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx) {
+PetscErrorCode zero_scalar(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx)
+{
   u[0] = 0.0;
   return 0;
 }
 
-PetscErrorCode zero_vector(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx) {
+PetscErrorCode zero_vector(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx)
+{
   const PetscInt Ncomp = dim;
 
   PetscInt comp;
@@ -98,7 +102,8 @@ PetscErrorCode zero_vector(PetscInt dim, PetscReal time, const PetscReal x[], Pe
   return 0;
 }
 
-PetscErrorCode coordinates(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx) {
+PetscErrorCode coordinates(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx)
+{
   const PetscInt Ncomp = dim;
 
   PetscInt comp;
@@ -106,22 +111,25 @@ PetscErrorCode coordinates(PetscInt dim, PetscReal time, const PetscReal x[], Pe
   return 0;
 }
 
-PetscErrorCode elasticityMaterial(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx) {
+PetscErrorCode elasticityMaterial(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx)
+{
   AppCtx *user = (AppCtx *)ctx;
   u[0]         = user->mu;
   return 0;
 }
 
-PetscErrorCode wallPressure(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx) {
+PetscErrorCode wallPressure(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx)
+{
   AppCtx *user = (AppCtx *)ctx;
   u[0]         = user->p_wall;
   return 0;
 }
 
-void f1_u_3d(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f1[]) {
+void f1_u_3d(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f1[])
+{
   const PetscInt  Ncomp = dim;
   const PetscReal mu = PetscRealPart(a[0]), kappa = 3.0;
-  PetscReal       cofu_x[9 /*Ncomp*dim*/], detu_x, p = PetscRealPart(u[Ncomp]);
+  PetscReal       cofu_x[9 /* Ncomp*dim */], detu_x, p = PetscRealPart(u[Ncomp]);
   PetscInt        comp, d;
 
   Cof3D(cofu_x, u_x);
@@ -134,10 +142,11 @@ void f1_u_3d(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], c
   }
 }
 
-void g3_uu_3d(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g3[]) {
+void g3_uu_3d(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g3[])
+{
   const PetscInt  Ncomp = dim;
   const PetscReal mu = PetscRealPart(a[0]), kappa = 3.0;
-  PetscReal       cofu_x[9 /*Ncomp*dim*/], detu_x, pp, pm, p = PetscRealPart(u[Ncomp]);
+  PetscReal       cofu_x[9 /* Ncomp*dim */], detu_x, pp, pm, p = PetscRealPart(u[Ncomp]);
   PetscInt        compI, compJ, d1, d2;
 
   Cof3D(cofu_x, u_x);
@@ -162,10 +171,11 @@ void g3_uu_3d(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], 
   }
 }
 
-void f0_bd_u_3d(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], const PetscReal n[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[]) {
+void f0_bd_u_3d(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], const PetscReal n[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
+{
   const PetscInt    Ncomp = dim;
   const PetscScalar p     = a[aOff[1]];
-  PetscReal         cofu_x[9 /*Ncomp*dim*/];
+  PetscReal         cofu_x[9 /* Ncomp*dim */];
   PetscInt          comp, d;
 
   Cof3D(cofu_x, u_x);
@@ -175,10 +185,11 @@ void f0_bd_u_3d(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[]
   }
 }
 
-void g1_bd_uu_3d(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], const PetscReal n[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g1[]) {
+void g1_bd_uu_3d(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], const PetscReal n[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g1[])
+{
   const PetscInt Ncomp = dim;
   PetscScalar    p     = a[aOff[1]];
-  PetscReal      cofu_x[9 /*Ncomp*dim*/], m[3 /*Ncomp*/], detu_x;
+  PetscReal      cofu_x[9 /* Ncomp*dim */], m[3 /* Ncomp */], detu_x;
   PetscInt       comp, compI, compJ, d;
 
   Cof3D(cofu_x, u_x);
@@ -194,14 +205,16 @@ void g1_bd_uu_3d(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[
   }
 }
 
-void f0_p_3d(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[]) {
+void f0_p_3d(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
+{
   PetscReal detu_x;
   Det3D(&detu_x, u_x);
   f0[0] = detu_x - 1.0;
 }
 
-void g1_pu_3d(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g1[]) {
-  PetscReal cofu_x[9 /*Ncomp*dim*/];
+void g1_pu_3d(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g1[])
+{
+  PetscReal cofu_x[9 /* Ncomp*dim */];
   PetscInt  compI, d;
 
   Cof3D(cofu_x, u_x);
@@ -209,8 +222,9 @@ void g1_pu_3d(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], 
     for (d = 0; d < dim; ++d) g1[compI * dim + d] = cofu_x[compI * dim + d];
 }
 
-void g2_up_3d(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g2[]) {
-  PetscReal cofu_x[9 /*Ncomp*dim*/];
+void g2_up_3d(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g2[])
+{
+  PetscReal cofu_x[9 /* Ncomp*dim */];
   PetscInt  compI, d;
 
   Cof3D(cofu_x, u_x);
@@ -218,7 +232,8 @@ void g2_up_3d(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], 
     for (d = 0; d < dim; ++d) g2[compI * dim + d] = cofu_x[compI * dim + d];
 }
 
-PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options) {
+PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
+{
   const char *runTypes[2] = {"full", "test"};
   PetscInt    run;
 
@@ -236,7 +251,8 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm) {
+PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
+{
   PetscFunctionBeginUser;
   /* TODO The P1 coordinate space gives wrong results when compared to the affine version. Track this down */
   if (0) {
@@ -298,7 +314,8 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode SetupProblem(DM dm, PetscInt dim, AppCtx *user) {
+PetscErrorCode SetupProblem(DM dm, PetscInt dim, AppCtx *user)
+{
   PetscDS       ds;
   PetscWeakForm wf;
   DMLabel       label;
@@ -322,7 +339,8 @@ PetscErrorCode SetupProblem(DM dm, PetscInt dim, AppCtx *user) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode SetupMaterial(DM dm, DM dmAux, AppCtx *user) {
+PetscErrorCode SetupMaterial(DM dm, DM dmAux, AppCtx *user)
+{
   PetscErrorCode (*matFuncs[2])(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar u[], void *ctx) = {elasticityMaterial, wallPressure};
   Vec   A;
   void *ctxs[2];
@@ -337,7 +355,8 @@ PetscErrorCode SetupMaterial(DM dm, DM dmAux, AppCtx *user) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode SetupNearNullSpace(DM dm, AppCtx *user) {
+PetscErrorCode SetupNearNullSpace(DM dm, AppCtx *user)
+{
   /* Set up the near null space (a.k.a. rigid body modes) that will be used by the multigrid preconditioner */
   DM           subdm;
   MatNullSpace nearNullSpace;
@@ -354,7 +373,8 @@ PetscErrorCode SetupNearNullSpace(DM dm, AppCtx *user) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode SetupAuxDM(DM dm, PetscInt NfAux, PetscFE feAux[], AppCtx *user) {
+static PetscErrorCode SetupAuxDM(DM dm, PetscInt NfAux, PetscFE feAux[], AppCtx *user)
+{
   DM       dmAux, coordDM;
   PetscInt f;
 
@@ -371,7 +391,8 @@ static PetscErrorCode SetupAuxDM(DM dm, PetscInt NfAux, PetscFE feAux[], AppCtx 
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode SetupDiscretization(DM dm, AppCtx *user) {
+PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
+{
   DM        cdm = dm;
   PetscFE   fe[2], feAux[2];
   PetscBool simplex;
@@ -415,7 +436,8 @@ PetscErrorCode SetupDiscretization(DM dm, AppCtx *user) {
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   SNES     snes; /* nonlinear solver */
   DM       dm;   /* problem definition */
   Vec      u, r; /* solution, residual vectors */

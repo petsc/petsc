@@ -2,7 +2,8 @@
 static char help[] = "Tests repeated setups and solves of PCFIELDSPLIT.\n\n";
 #include <petscksp.h>
 
-static PetscErrorCode replace_submats(Mat A) {
+static PetscErrorCode replace_submats(Mat A)
+{
   IS      *r, *c;
   PetscInt i, j, nr, nc;
 
@@ -30,7 +31,8 @@ static PetscErrorCode replace_submats(Mat A) {
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[])
+{
   KSP       ksp;
   PC        pc;
   Mat       M, A, P, sA[2][2], sP[2][2];

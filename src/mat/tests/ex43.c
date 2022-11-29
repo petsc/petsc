@@ -3,7 +3,8 @@ static char help[] = "Saves a dense matrix in a dense format (binary).\n\n";
 
 #include <petscmat.h>
 
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   Mat         C;
   PetscScalar v;
   PetscInt    i, j, m = 4, n = 4;

@@ -1,0 +1,4 @@
+#PETSc Option Table entries:
+-monitor # (source: command line)
+-name value # (source: environment)
+#End of PETSc Option Table entries

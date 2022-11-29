@@ -17,7 +17,8 @@
 
 .seealso: `PetscEqualReal()`, `PetscEqualScalar()`
 @*/
-PetscBool PetscIsCloseAtTol(PetscReal a, PetscReal b, PetscReal rtol, PetscReal atol) {
+PetscBool PetscIsCloseAtTol(PetscReal a, PetscReal b, PetscReal rtol, PetscReal atol)
+{
   PetscReal diff;
   /* NaN is not considered close to any other value, including NaN */
   if (PetscIsNanReal(a) || PetscIsNanReal(b)) return PETSC_FALSE;

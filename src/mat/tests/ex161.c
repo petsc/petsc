@@ -3,7 +3,8 @@ static char help[] = "Test MatTransposeColoring for SeqAIJ matrices. Used for '-
 #include <petscmat.h>
 #include <petsc/private/matimpl.h> /* Need struct _p_MatTransposeColoring for this test. */
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   Mat                  A, R, C, C_dense, C_sparse, Rt_dense, P, PtAP;
   PetscInt             row, col, m, n;
   MatScalar            one = 1.0, val;

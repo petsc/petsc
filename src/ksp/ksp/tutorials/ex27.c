@@ -12,7 +12,8 @@ static char help[] = "Reads a PETSc matrix and vector from a file and solves the
 #include <petscksp.h>
 #include <petscviewerhdf5.h>
 
-static PetscErrorCode VecLoadIfExists_Private(Vec b, PetscViewer fd, PetscBool *has) {
+static PetscErrorCode VecLoadIfExists_Private(Vec b, PetscViewer fd, PetscBool *has)
+{
   PetscBool hdf5 = PETSC_FALSE;
 
   PetscFunctionBeginUser;
@@ -34,7 +35,8 @@ static PetscErrorCode VecLoadIfExists_Private(Vec b, PetscViewer fd, PetscBool *
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   KSP         ksp;                                                       /* linear solver context */
   Mat         A, N;                                                      /* matrix */
   Vec         x, b, r, Ab, v[2];                                         /* approx solution, RHS, residual */

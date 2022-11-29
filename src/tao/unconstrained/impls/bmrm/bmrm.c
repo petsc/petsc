@@ -16,7 +16,8 @@ static PetscErrorCode solve(TAO_DF *);
    Regularizer assumed to be L2 norm = lambda*0.5*W'W ()
 */
 
-static PetscErrorCode make_grad_node(Vec X, Vec_Chain **p) {
+static PetscErrorCode make_grad_node(Vec X, Vec_Chain **p)
+{
   PetscFunctionBegin;
   PetscCall(PetscNew(p));
   PetscCall(VecDuplicate(X, &(*p)->V));
@@ -25,7 +26,8 @@ static PetscErrorCode make_grad_node(Vec X, Vec_Chain **p) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode destroy_grad_list(Vec_Chain *head) {
+static PetscErrorCode destroy_grad_list(Vec_Chain *head)
+{
   Vec_Chain *p = head->next, *q;
 
   PetscFunctionBegin;
@@ -39,7 +41,8 @@ static PetscErrorCode destroy_grad_list(Vec_Chain *head) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TaoSolve_BMRM(Tao tao) {
+static PetscErrorCode TaoSolve_BMRM(Tao tao)
+{
   TAO_DF    df;
   TAO_BMRM *bmrm = (TAO_BMRM *)tao->data;
 
@@ -190,7 +193,8 @@ static PetscErrorCode TaoSolve_BMRM(Tao tao) {
 
 /* ---------------------------------------------------------- */
 
-static PetscErrorCode TaoSetup_BMRM(Tao tao) {
+static PetscErrorCode TaoSetup_BMRM(Tao tao)
+{
   PetscFunctionBegin;
   /* Allocate some arrays */
   if (!tao->gradient) PetscCall(VecDuplicate(tao->solution, &tao->gradient));
@@ -198,13 +202,15 @@ static PetscErrorCode TaoSetup_BMRM(Tao tao) {
 }
 
 /*------------------------------------------------------------*/
-static PetscErrorCode TaoDestroy_BMRM(Tao tao) {
+static PetscErrorCode TaoDestroy_BMRM(Tao tao)
+{
   PetscFunctionBegin;
   PetscCall(PetscFree(tao->data));
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TaoSetFromOptions_BMRM(Tao tao, PetscOptionItems *PetscOptionsObject) {
+static PetscErrorCode TaoSetFromOptions_BMRM(Tao tao, PetscOptionItems *PetscOptionsObject)
+{
   TAO_BMRM *bmrm = (TAO_BMRM *)tao->data;
 
   PetscFunctionBegin;
@@ -215,7 +221,8 @@ static PetscErrorCode TaoSetFromOptions_BMRM(Tao tao, PetscOptionItems *PetscOpt
 }
 
 /*------------------------------------------------------------*/
-static PetscErrorCode TaoView_BMRM(Tao tao, PetscViewer viewer) {
+static PetscErrorCode TaoView_BMRM(Tao tao, PetscViewer viewer)
+{
   PetscBool isascii;
 
   PetscFunctionBegin;
@@ -237,7 +244,8 @@ static PetscErrorCode TaoView_BMRM(Tao tao, PetscViewer viewer) {
   Level: beginner
 M*/
 
-PETSC_EXTERN PetscErrorCode TaoCreate_BMRM(Tao tao) {
+PETSC_EXTERN PetscErrorCode TaoCreate_BMRM(Tao tao)
+{
   TAO_BMRM *bmrm;
 
   PetscFunctionBegin;
@@ -247,7 +255,7 @@ PETSC_EXTERN PetscErrorCode TaoCreate_BMRM(Tao tao) {
   tao->ops->setfromoptions = TaoSetFromOptions_BMRM;
   tao->ops->destroy        = TaoDestroy_BMRM;
 
-  PetscCall(PetscNewLog(tao, &bmrm));
+  PetscCall(PetscNew(&bmrm));
   bmrm->lambda = 1.0;
   tao->data    = (void *)bmrm;
 
@@ -260,7 +268,8 @@ PETSC_EXTERN PetscErrorCode TaoCreate_BMRM(Tao tao) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode init_df_solver(TAO_DF *df) {
+PetscErrorCode init_df_solver(TAO_DF *df)
+{
   PetscInt i, n = INCRE_DIM;
 
   PetscFunctionBegin;
@@ -297,7 +306,8 @@ PetscErrorCode init_df_solver(TAO_DF *df) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode ensure_df_space(PetscInt dim, TAO_DF *df) {
+PetscErrorCode ensure_df_space(PetscInt dim, TAO_DF *df)
+{
   PetscReal *tmp, **tmp_Q;
   PetscInt   i, n, old_n;
 
@@ -388,7 +398,8 @@ PetscErrorCode ensure_df_space(PetscInt dim, TAO_DF *df) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode destroy_df_solver(TAO_DF *df) {
+PetscErrorCode destroy_df_solver(TAO_DF *df)
+{
   PetscInt i;
 
   PetscFunctionBegin;
@@ -417,7 +428,8 @@ PetscErrorCode destroy_df_solver(TAO_DF *df) {
 }
 
 /* Piecewise linear monotone target function for the Dai-Fletcher projector */
-PetscReal phi(PetscReal *x, PetscInt n, PetscReal lambda, PetscReal *a, PetscReal b, PetscReal *c, PetscReal *l, PetscReal *u) {
+PetscReal phi(PetscReal *x, PetscInt n, PetscReal lambda, PetscReal *a, PetscReal b, PetscReal *c, PetscReal *l, PetscReal *u)
+{
   PetscReal r = 0.0;
   PetscInt  i;
 
@@ -438,7 +450,8 @@ PetscReal phi(PetscReal *x, PetscInt n, PetscReal lambda, PetscReal *a, PetscRea
  *
  *  \param c The point to be projected onto feasible set
  */
-PetscInt project(PetscInt n, PetscReal *a, PetscReal b, PetscReal *c, PetscReal *l, PetscReal *u, PetscReal *x, PetscReal *lam_ext, TAO_DF *df) {
+PetscInt project(PetscInt n, PetscReal *a, PetscReal b, PetscReal *c, PetscReal *l, PetscReal *u, PetscReal *x, PetscReal *lam_ext, TAO_DF *df)
+{
   PetscReal lambda, lambdal, lambdau, dlambda, lambda_new;
   PetscReal r, rl, ru, s;
   PetscInt  innerIter;
@@ -560,7 +573,8 @@ PetscInt project(PetscInt n, PetscReal *a, PetscReal b, PetscReal *c, PetscReal 
   return innerIter;
 }
 
-PetscErrorCode solve(TAO_DF *df) {
+PetscErrorCode solve(TAO_DF *df)
+{
   PetscInt    i, j, innerIter, it, it2, luv, info;
   PetscReal   gd, max, ak, bk, akold, bkold, lamnew, alpha, kktlam = 0.0, lam_ext;
   PetscReal   DELTAsv, ProdDELTAsv;

@@ -41,7 +41,8 @@ extern PetscErrorCode FormIFunction(TS, PetscReal, Vec, Vec, Vec, void *);
 extern PetscErrorCode FormIJacobian(TS, PetscReal, Vec, Vec, PetscReal, Mat, Mat, void *);
 extern PetscErrorCode FormInitialSolution(Vec, void *);
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   TS        ts;            /* nonlinear solver */
   Vec       u, r;          /* solution, residual vectors */
   Mat       J, Jmf = NULL; /* Jacobian matrices */
@@ -152,7 +153,8 @@ int main(int argc, char **argv) {
 /*
   FormIFunction = Udot - RHSFunction
 */
-PetscErrorCode FormIFunction(TS ts, PetscReal t, Vec U, Vec Udot, Vec F, void *ctx) {
+PetscErrorCode FormIFunction(TS ts, PetscReal t, Vec U, Vec Udot, Vec F, void *ctx)
+{
   AppCtx     *user = (AppCtx *)ctx;
   DM          da   = (DM)user->da;
   PetscInt    i, j, Mx, My, xs, ys, xm, ym;
@@ -214,7 +216,7 @@ PetscErrorCode FormIFunction(TS ts, PetscReal t, Vec U, Vec Udot, Vec F, void *c
           }
         }
       } else { /* Interior */
-        u   = uarray[j][i];
+        u = uarray[j][i];
         /* 5-point stencil */
         uxx = (-2.0 * u + uarray[j][i - 1] + uarray[j][i + 1]);
         uyy = (-2.0 * u + uarray[j - 1][i] + uarray[j + 1][i]);
@@ -242,7 +244,8 @@ PetscErrorCode FormIFunction(TS ts, PetscReal t, Vec U, Vec Udot, Vec F, void *c
   FormIJacobian() - Compute IJacobian = dF/dU + a dF/dUdot
   This routine is not used with option '-use_coloring'
 */
-PetscErrorCode FormIJacobian(TS ts, PetscReal t, Vec U, Vec Udot, PetscReal a, Mat J, Mat Jpre, void *ctx) {
+PetscErrorCode FormIJacobian(TS ts, PetscReal t, Vec U, Vec Udot, PetscReal a, Mat J, Mat Jpre, void *ctx)
+{
   PetscInt    i, j, Mx, My, xs, ys, xm, ym, nc;
   AppCtx     *user = (AppCtx *)ctx;
   DM          da   = (DM)user->da;
@@ -331,7 +334,8 @@ PetscErrorCode FormIJacobian(TS ts, PetscReal t, Vec U, Vec Udot, PetscReal a, M
 }
 
 /* ------------------------------------------------------------------- */
-PetscErrorCode FormInitialSolution(Vec U, void *ptr) {
+PetscErrorCode FormInitialSolution(Vec U, void *ptr)
+{
   AppCtx       *user = (AppCtx *)ptr;
   DM            da   = user->da;
   PetscReal     c    = user->c;

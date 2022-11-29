@@ -30,7 +30,8 @@
 /*      ROOTLS.                                                 */
 /*                                                              */
 /****************************************************************/
-PetscErrorCode SPARSEPACKfnroot(PetscInt *root, const PetscInt *xadj, const PetscInt *adjncy, PetscInt *mask, PetscInt *nlvl, PetscInt *xls, PetscInt *ls) {
+PetscErrorCode SPARSEPACKfnroot(PetscInt *root, const PetscInt *xadj, const PetscInt *adjncy, PetscInt *mask, PetscInt *nlvl, PetscInt *xls, PetscInt *ls)
+{
   /* System generated locals */
   PetscInt i__1, i__2;
 

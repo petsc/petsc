@@ -35,7 +35,8 @@
 
 .seealso: `PetscURLShorten()`, `PetscGoogleDriveAuthorize()`, `PetscGoogleDriveUpload()`
 @*/
-PetscErrorCode PetscGoogleDriveRefresh(MPI_Comm comm, const char refresh_token[], char access_token[], size_t tokensize) {
+PetscErrorCode PetscGoogleDriveRefresh(MPI_Comm comm, const char refresh_token[], char access_token[], size_t tokensize)
+{
   SSL_CTX    *ctx;
   SSL        *ssl;
   int         sock;
@@ -117,7 +118,8 @@ PetscErrorCode PetscGoogleDriveRefresh(MPI_Comm comm, const char refresh_token[]
 
 .seealso: `PetscURLShorten()`, `PetscGoogleDriveAuthorize()`, `PetscGoogleDriveRefresh()`
 @*/
-PetscErrorCode PetscGoogleDriveUpload(MPI_Comm comm, const char access_token[], const char filename[]) {
+PetscErrorCode PetscGoogleDriveUpload(MPI_Comm comm, const char access_token[], const char filename[])
+{
   SSL_CTX    *ctx;
   SSL        *ssl;
   int         sock;
@@ -173,7 +175,7 @@ PetscErrorCode PetscGoogleDriveUpload(MPI_Comm comm, const char access_token[], 
 }
 
 #if defined(PETSC_HAVE_UNISTD_H)
-#include <unistd.h>
+  #include <unistd.h>
 #endif
 
 /*@C
@@ -200,7 +202,8 @@ PetscErrorCode PetscGoogleDriveUpload(MPI_Comm comm, const char access_token[], 
 
 .seealso: `PetscGoogleDriveRefresh()`, `PetscGoogleDriveUpload()`, `PetscURLShorten()`
 @*/
-PetscErrorCode PetscGoogleDriveAuthorize(MPI_Comm comm, char access_token[], char refresh_token[], size_t tokensize) {
+PetscErrorCode PetscGoogleDriveAuthorize(MPI_Comm comm, char access_token[], char refresh_token[], size_t tokensize)
+{
   SSL_CTX    *ctx;
   SSL        *ssl;
   int         sock;
@@ -269,7 +272,8 @@ PetscErrorCode PetscGoogleDriveAuthorize(MPI_Comm comm, char access_token[], cha
 
 .seealso: `PetscGoogleDriveRefresh()`, `PetscGoogleDriveUpload()`, `PetscGoogleDriveAuthorize()`
 @*/
-PetscErrorCode PetscURLShorten(const char url[], char shorturl[], size_t lenshorturl) {
+PetscErrorCode PetscURLShorten(const char url[], char shorturl[], size_t lenshorturl)
+{
   SSL_CTX  *ctx;
   SSL      *ssl;
   int       sock;

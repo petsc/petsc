@@ -3,7 +3,8 @@ static char help[] = "Test MatCreate() with MAT_STRUCTURE_ONLY .\n\n";
 
 #include <petscmat.h>
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   Mat         mat;
   PetscInt    m = 7, n, i, j, rstart, rend;
   PetscMPIInt size;

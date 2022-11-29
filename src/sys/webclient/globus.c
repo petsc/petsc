@@ -8,7 +8,8 @@
 static char encoding_table[] = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'a', 'b', 'c', 'd', 'e', 'f',
                                 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '+', '/'};
 
-static PetscErrorCode base64_encode(const unsigned char *data, unsigned char *encoded_data, size_t len) {
+static PetscErrorCode base64_encode(const unsigned char *data, unsigned char *encoded_data, size_t len)
+{
   static size_t mod_table[] = {0, 2, 1};
   size_t        i, j;
   size_t        input_length, output_length;
@@ -34,7 +35,8 @@ static PetscErrorCode base64_encode(const unsigned char *data, unsigned char *en
   PetscFunctionReturn(0);
 }
 
-PETSC_UNUSED static PetscErrorCode base64_decode(const unsigned char *data, unsigned char *decoded_data, size_t length) {
+PETSC_UNUSED static PetscErrorCode base64_decode(const unsigned char *data, unsigned char *decoded_data, size_t length)
+{
   static char decoding_table[257];
   static int  decode_table_built = 0;
   size_t      i, j;
@@ -70,7 +72,7 @@ PETSC_UNUSED static PetscErrorCode base64_decode(const unsigned char *data, unsi
 }
 
 #if defined(PETSC_HAVE_UNISTD_H)
-#include <unistd.h>
+  #include <unistd.h>
 #endif
 
 /*@C
@@ -94,7 +96,8 @@ PETSC_UNUSED static PetscErrorCode base64_decode(const unsigned char *data, unsi
 
 .seealso: `PetscGoogleDriveRefresh()`, `PetscGoogleDriveUpload()`, `PetscURLShorten()`, `PetscGlobusUpload()`
 @*/
-PetscErrorCode PetscGlobusAuthorize(MPI_Comm comm, char access_token[], size_t tokensize) {
+PetscErrorCode PetscGlobusAuthorize(MPI_Comm comm, char access_token[], size_t tokensize)
+{
   SSL_CTX    *ctx;
   SSL        *ssl;
   int         sock;
@@ -156,7 +159,8 @@ PetscErrorCode PetscGlobusAuthorize(MPI_Comm comm, char access_token[], size_t t
 
 .seealso: `PetscGoogleDriveRefresh()`, `PetscGoogleDriveUpload()`, `PetscURLShorten()`, `PetscGlobusUpload()`, `PetscGlobusAuthorize()`
 @*/
-PetscErrorCode PetscGlobusGetTransfers(MPI_Comm comm, const char access_token[], char buff[], size_t buffsize) {
+PetscErrorCode PetscGlobusGetTransfers(MPI_Comm comm, const char access_token[], char buff[], size_t buffsize)
+{
   SSL_CTX    *ctx;
   SSL        *ssl;
   int         sock;
@@ -204,7 +208,8 @@ PetscErrorCode PetscGlobusGetTransfers(MPI_Comm comm, const char access_token[],
 
 .seealso: `PetscURLShorten()`, `PetscGoogleDriveAuthorize()`, `PetscGoogleDriveRefresh()`, `PetscGlobusAuthorize()`
 @*/
-PetscErrorCode PetscGlobusUpload(MPI_Comm comm, const char access_token[], const char filename[]) {
+PetscErrorCode PetscGlobusUpload(MPI_Comm comm, const char access_token[], const char filename[])
+{
   SSL_CTX    *ctx;
   SSL        *ssl;
   int         sock;

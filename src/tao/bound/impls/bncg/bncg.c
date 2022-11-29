@@ -25,7 +25,8 @@ static const char *CG_Table[64] = {"gd", "hs", "fr", "pr", "prp", "dy", "hz", "d
 
 static const char *CG_AS_TYPE[64] = {"none", "bertsekas"};
 
-PetscErrorCode TaoBNCGEstimateActiveSet(Tao tao, PetscInt asType) {
+PetscErrorCode TaoBNCGEstimateActiveSet(Tao tao, PetscInt asType)
+{
   TAO_BNCG *cg = (TAO_BNCG *)tao->data;
 
   PetscFunctionBegin;
@@ -48,26 +49,34 @@ PetscErrorCode TaoBNCGEstimateActiveSet(Tao tao, PetscInt asType) {
     PetscCall(VecScale(cg->W, -1.0));
     PetscCall(TaoEstimateActiveBounds(tao->solution, tao->XL, tao->XU, cg->unprojected_gradient, cg->W, cg->work, cg->as_step, &cg->as_tol, &cg->active_lower, &cg->active_upper, &cg->active_fixed, &cg->active_idx, &cg->inactive_idx));
     break;
-  default: break;
+  default:
+    break;
   }
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode TaoBNCGBoundStep(Tao tao, PetscInt asType, Vec step) {
+PetscErrorCode TaoBNCGBoundStep(Tao tao, PetscInt asType, Vec step)
+{
   TAO_BNCG *cg = (TAO_BNCG *)tao->data;
 
   PetscFunctionBegin;
   switch (asType) {
-  case CG_AS_NONE: PetscCall(VecISSet(step, cg->active_idx, 0.0)); break;
+  case CG_AS_NONE:
+    PetscCall(VecISSet(step, cg->active_idx, 0.0));
+    break;
 
-  case CG_AS_BERTSEKAS: PetscCall(TaoBoundStep(tao->solution, tao->XL, tao->XU, cg->active_lower, cg->active_upper, cg->active_fixed, 1.0, step)); break;
+  case CG_AS_BERTSEKAS:
+    PetscCall(TaoBoundStep(tao->solution, tao->XL, tao->XU, cg->active_lower, cg->active_upper, cg->active_fixed, 1.0, step));
+    break;
 
-  default: break;
+  default:
+    break;
   }
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TaoSolve_BNCG(Tao tao) {
+static PetscErrorCode TaoSolve_BNCG(Tao tao)
+{
   TAO_BNCG *cg   = (TAO_BNCG *)tao->data;
   PetscReal step = 1.0, gnorm, gnorm2, resnorm;
   PetscInt  nDiff;
@@ -127,7 +136,8 @@ static PetscErrorCode TaoSolve_BNCG(Tao tao) {
   }
 }
 
-static PetscErrorCode TaoSetUp_BNCG(Tao tao) {
+static PetscErrorCode TaoSetUp_BNCG(Tao tao)
+{
   TAO_BNCG *cg = (TAO_BNCG *)tao->data;
 
   PetscFunctionBegin;
@@ -151,7 +161,8 @@ static PetscErrorCode TaoSetUp_BNCG(Tao tao) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TaoDestroy_BNCG(Tao tao) {
+static PetscErrorCode TaoDestroy_BNCG(Tao tao)
+{
   TAO_BNCG *cg = (TAO_BNCG *)tao->data;
 
   PetscFunctionBegin;
@@ -181,7 +192,8 @@ static PetscErrorCode TaoDestroy_BNCG(Tao tao) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TaoSetFromOptions_BNCG(Tao tao, PetscOptionItems *PetscOptionsObject) {
+static PetscErrorCode TaoSetFromOptions_BNCG(Tao tao, PetscOptionItems *PetscOptionsObject)
+{
   TAO_BNCG *cg = (TAO_BNCG *)tao->data;
 
   PetscFunctionBegin;
@@ -189,7 +201,7 @@ static PetscErrorCode TaoSetFromOptions_BNCG(Tao tao, PetscOptionItems *PetscOpt
   PetscCall(PetscOptionsEList("-tao_bncg_type", "cg formula", "", CG_Table, CGTypes, CG_Table[cg->cg_type], &cg->cg_type, NULL));
   if (cg->cg_type != CG_SSML_BFGS) cg->alpha = -1.0; /* Setting defaults for non-BFGS methods. User can change it below. */
   if (CG_GradientDescent == cg->cg_type) {
-    cg->cg_type          = CG_PCGradientDescent;
+    cg->cg_type = CG_PCGradientDescent;
     /* Set scaling equal to none or, at best, scalar scaling. */
     cg->unscaled_restart = PETSC_TRUE;
     cg->diag_scaling     = PETSC_FALSE;
@@ -232,7 +244,8 @@ static PetscErrorCode TaoSetFromOptions_BNCG(Tao tao, PetscOptionItems *PetscOpt
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TaoView_BNCG(Tao tao, PetscViewer viewer) {
+static PetscErrorCode TaoView_BNCG(Tao tao, PetscViewer viewer)
+{
   PetscBool isascii;
   TAO_BNCG *cg = (TAO_BNCG *)tao->data;
 
@@ -259,7 +272,8 @@ static PetscErrorCode TaoView_BNCG(Tao tao, PetscViewer viewer) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode TaoBNCGComputeScalarScaling(PetscReal yty, PetscReal yts, PetscReal sts, PetscReal *scale, PetscReal alpha) {
+PetscErrorCode TaoBNCGComputeScalarScaling(PetscReal yty, PetscReal yts, PetscReal sts, PetscReal *scale, PetscReal alpha)
+{
   PetscReal a, b, c, sig1, sig2;
 
   PetscFunctionBegin;
@@ -332,7 +346,8 @@ PetscErrorCode TaoBNCGComputeScalarScaling(PetscReal yty, PetscReal yts, PetscRe
   Level: beginner
 M*/
 
-PETSC_EXTERN PetscErrorCode TaoCreate_BNCG(Tao tao) {
+PETSC_EXTERN PetscErrorCode TaoCreate_BNCG(Tao tao)
+{
   TAO_BNCG   *cg;
   const char *morethuente_type = TAOLINESEARCHMT;
 
@@ -356,7 +371,7 @@ PETSC_EXTERN PetscErrorCode TaoCreate_BNCG(Tao tao) {
   PetscCall(TaoLineSearchSetType(tao->linesearch, morethuente_type));
   PetscCall(TaoLineSearchUseTaoRoutines(tao->linesearch, tao));
 
-  PetscCall(PetscNewLog(tao, &cg));
+  PetscCall(PetscNew(&cg));
   tao->data = (void *)cg;
   PetscCall(KSPInitializePackage());
   PetscCall(MatCreate(PetscObjectComm((PetscObject)tao), &cg->B));
@@ -393,7 +408,8 @@ PETSC_EXTERN PetscErrorCode TaoCreate_BNCG(Tao tao) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode TaoBNCGResetUpdate(Tao tao, PetscReal gnormsq) {
+PetscErrorCode TaoBNCGResetUpdate(Tao tao, PetscReal gnormsq)
+{
   TAO_BNCG *cg = (TAO_BNCG *)tao->data;
   PetscReal scaling;
 
@@ -411,7 +427,8 @@ PetscErrorCode TaoBNCGResetUpdate(Tao tao, PetscReal gnormsq) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode TaoBNCGCheckDynamicRestart(Tao tao, PetscReal stepsize, PetscReal gd, PetscReal gd_old, PetscBool *dynrestart, PetscReal fold) {
+PetscErrorCode TaoBNCGCheckDynamicRestart(Tao tao, PetscReal stepsize, PetscReal gd, PetscReal gd_old, PetscBool *dynrestart, PetscReal fold)
+{
   TAO_BNCG *cg = (TAO_BNCG *)tao->data;
   PetscReal quadinterp;
 
@@ -433,7 +450,8 @@ PetscErrorCode TaoBNCGCheckDynamicRestart(Tao tao, PetscReal stepsize, PetscReal
   PetscFunctionReturn(0);
 }
 
-PETSC_INTERN PetscErrorCode TaoBNCGStepDirectionUpdate(Tao tao, PetscReal gnorm2, PetscReal step, PetscReal fold, PetscReal gnorm2_old, PetscReal dnorm, PetscBool pcgd_fallback) {
+PETSC_INTERN PetscErrorCode TaoBNCGStepDirectionUpdate(Tao tao, PetscReal gnorm2, PetscReal step, PetscReal fold, PetscReal gnorm2_old, PetscReal dnorm, PetscBool pcgd_fallback)
+{
   TAO_BNCG *cg    = (TAO_BNCG *)tao->data;
   PetscReal gamma = 1.0, tau_k, beta;
   PetscReal tmp = 1.0, ynorm, ynorm2 = 1.0, snorm = 1.0, dk_yk = 1.0, gd;
@@ -643,7 +661,7 @@ PETSC_INTERN PetscErrorCode TaoBNCGStepDirectionUpdate(Tao tao, PetscReal gnorm2
           PetscCall(VecDot(cg->yk, cg->y_work, &tau_k));
           tau_k = -tau_k * gd / (dk_yk * dk_yk);
           /* beta is the constant which adds the dk contribution */
-          beta  = gkp1_yk / dk_yk + cg->hz_theta * tau_k; /* HZ; (1.15) from DK 2013 */
+          beta = gkp1_yk / dk_yk + cg->hz_theta * tau_k; /* HZ; (1.15) from DK 2013 */
           /* From HZ2013, modified to account for diagonal scaling*/
           PetscCall(VecDot(cg->G_old, cg->d_work, &gd_old));
           PetscCall(VecDot(tao->stepdirection, cg->g_work, &gd));
@@ -684,7 +702,7 @@ PETSC_INTERN PetscErrorCode TaoBNCGStepDirectionUpdate(Tao tao, PetscReal gnorm2
         tau_k = tau_k * gd / (dk_yk * dk_yk);
         tmp   = gd / dk_yk;
         /* beta is the constant which adds the dk contribution */
-        beta  = gkp1_yk / dk_yk - step * tmp - tau_k;
+        beta = gkp1_yk / dk_yk - step * tmp - tau_k;
         /* Update this for the last term in beta */
         PetscCall(VecDot(cg->y_work, tao->stepdirection, &dk_yk));
         beta += tmp * dk_yk / (dnorm * dnorm); /* projection of y_work onto dk */
@@ -738,7 +756,7 @@ PETSC_INTERN PetscErrorCode TaoBNCGStepDirectionUpdate(Tao tao, PetscReal gnorm2
           PetscCall(VecDot(cg->yk, cg->y_work, &tau_k));
           tau_k = tau_k * gd / (dk_yk * dk_yk);
           /* beta is the constant which adds the d_k contribution */
-          beta  = gkp1D_yk / dk_yk - step * gamma - tau_k;
+          beta = gkp1D_yk / dk_yk - step * gamma - tau_k;
           /* Here is the requisite check */
           PetscCall(VecDot(tao->stepdirection, cg->g_work, &tmp));
           if (cg->neg_xi) {
@@ -787,7 +805,7 @@ PETSC_INTERN PetscErrorCode TaoBNCGStepDirectionUpdate(Tao tao, PetscReal gnorm2
         PetscCall(VecDot(cg->y_work, cg->yk, &tmp));
         gamma = gd / dk_yk;
         /* Compute scalar beta */
-        beta  = (gkp1_yk / dk_yk - gd * tmp / (dk_yk * dk_yk)) - step * gd / dk_yk;
+        beta = (gkp1_yk / dk_yk - gd * tmp / (dk_yk * dk_yk)) - step * gd / dk_yk;
         /* Compute stepdirection d_kp1 = gamma*Dkyk + beta*dk - Dkgkp1 */
         PetscCall(VecAXPBYPCZ(tao->stepdirection, -1.0, gamma, beta, cg->g_work, cg->y_work));
       }
@@ -818,7 +836,7 @@ PETSC_INTERN PetscErrorCode TaoBNCGStepDirectionUpdate(Tao tao, PetscReal gnorm2
         PetscCall(VecDot(cg->y_work, cg->yk, &tmp));
         gamma = (gkp1_yk / tmp);
         /* Compute scalar beta */
-        beta  = -step * gd / dk_yk;
+        beta = -step * gd / dk_yk;
         /* Compute stepdirection d_kp1 = gamma*Dkyk + beta*dk - Dkgkp1 */
         PetscCall(VecAXPBYPCZ(tao->stepdirection, -1.0, gamma, beta, cg->g_work, cg->y_work));
       }
@@ -839,8 +857,8 @@ PETSC_INTERN PetscErrorCode TaoBNCGStepDirectionUpdate(Tao tao, PetscReal gnorm2
         tau_k = cg->theta * tau_bfgs + (1.0 - cg->theta) * tau_dfp;
         /* If bfgs_scale = 1.0, it should reproduce the bfgs tau_bfgs. If bfgs_scale = 0.0,
            it should reproduce the tau_dfp scaling. Same with dfp_scale.   */
-        tmp   = cg->theta * tau_bfgs * gd / dk_yk + (1 - cg->theta) * tau_dfp * gkp1_yk / cg->yty;
-        beta  = cg->theta * tau_bfgs * (gkp1_yk / dk_yk - cg->yty * gd / (dk_yk * dk_yk)) - step * gd / dk_yk;
+        tmp  = cg->theta * tau_bfgs * gd / dk_yk + (1 - cg->theta) * tau_dfp * gkp1_yk / cg->yty;
+        beta = cg->theta * tau_bfgs * (gkp1_yk / dk_yk - cg->yty * gd / (dk_yk * dk_yk)) - step * gd / dk_yk;
         /* d <- -t*g + beta*d + tmp*yk */
         PetscCall(VecAXPBYPCZ(tao->stepdirection, -tau_k, tmp, beta, tao->gradient, cg->yk));
       } else {
@@ -852,19 +870,21 @@ PETSC_INTERN PetscErrorCode TaoBNCGStepDirectionUpdate(Tao tao, PetscReal gnorm2
         PetscCall(VecDot(cg->y_work, cg->yk, &tmp));
         gamma = cg->theta * gd / dk_yk + (1 - cg->theta) * (gkp1_yk / tmp);
         /* Compute scalar beta */
-        beta  = cg->theta * (gkp1_yk / dk_yk - gd * tmp / (dk_yk * dk_yk)) - step * gd / dk_yk;
+        beta = cg->theta * (gkp1_yk / dk_yk - gd * tmp / (dk_yk * dk_yk)) - step * gd / dk_yk;
         /* Compute stepdirection dkp1 = gamma*Dkyk + beta*dk - Dkgkp1 */
         PetscCall(VecAXPBYPCZ(tao->stepdirection, -1.0, gamma, beta, cg->g_work, cg->y_work));
       }
       break;
 
-    default: break;
+    default:
+      break;
     }
   }
   PetscFunctionReturn(0);
 }
 
-PETSC_INTERN PetscErrorCode TaoBNCGConductIteration(Tao tao, PetscReal gnorm) {
+PETSC_INTERN PetscErrorCode TaoBNCGConductIteration(Tao tao, PetscReal gnorm)
+{
   TAO_BNCG                    *cg        = (TAO_BNCG *)tao->data;
   TaoLineSearchConvergedReason ls_status = TAOLINESEARCH_CONTINUE_ITERATING;
   PetscReal                    step = 1.0, gnorm2, gd, dnorm = 0.0;
@@ -1001,7 +1021,8 @@ PETSC_INTERN PetscErrorCode TaoBNCGConductIteration(Tao tao, PetscReal gnorm) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode TaoBNCGSetH0(Tao tao, Mat H0) {
+PetscErrorCode TaoBNCGSetH0(Tao tao, Mat H0)
+{
   TAO_BNCG *cg = (TAO_BNCG *)tao->data;
 
   PetscFunctionBegin;

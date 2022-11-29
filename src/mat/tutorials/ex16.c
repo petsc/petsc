@@ -7,7 +7,8 @@ static char help[] = "Reads a matrix from PETSc binary file. Use for view or inv
  */
 
 #include <petscmat.h>
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   Mat                A, Asp;
   PetscViewer        fd;                       /* viewer */
   char               file[PETSC_MAX_PATH_LEN]; /* input file name */

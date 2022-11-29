@@ -1,6 +1,12 @@
-#if !defined(PETSCDMLABEL_H)
+#ifndef PETSCDMLABEL_H
 #define PETSCDMLABEL_H
 #include <petscis.h>
+
+PETSC_EXTERN PetscClassId DMLABEL_CLASSID;
+
+typedef const char *DMLabelType;
+#define DMLABELCONCRETE  "concrete"
+#define DMLABELEPHEMERAL "ephemeral"
 
 /* SUBMANSEC = DMLabel */
 
@@ -19,14 +25,22 @@
 S*/
 typedef struct _p_DMLabel *DMLabel;
 
-PETSC_EXTERN PetscErrorCode DMLabelCreate(MPI_Comm, const char[], DMLabel *);
-PETSC_EXTERN PetscErrorCode DMLabelView(DMLabel, PetscViewer);
-PETSC_EXTERN PetscErrorCode DMLabelReset(DMLabel);
-PETSC_EXTERN PetscErrorCode DMLabelDestroy(DMLabel *);
+PETSC_EXTERN PetscFunctionList DMLabelList;
+PETSC_EXTERN PetscErrorCode    DMLabelCreate(MPI_Comm, const char[], DMLabel *);
+PETSC_EXTERN PetscErrorCode    DMLabelSetType(DMLabel, DMLabelType);
+PETSC_EXTERN PetscErrorCode    DMLabelGetType(DMLabel, DMLabelType *);
+PETSC_EXTERN PetscErrorCode    DMLabelRegister(const char[], PetscErrorCode (*)(DMLabel));
+PETSC_EXTERN PetscErrorCode    DMLabelRegisterAll(void);
+PETSC_EXTERN PetscErrorCode    DMLabelRegisterDestroy(void);
+PETSC_EXTERN PetscErrorCode    DMLabelSetUp(DMLabel);
+PETSC_EXTERN PetscErrorCode    DMLabelSetFromOptions(DMLabel);
+PETSC_EXTERN PetscErrorCode    DMLabelView(DMLabel, PetscViewer);
+PETSC_EXTERN PetscErrorCode    DMLabelDuplicate(DMLabel, DMLabel *);
+PETSC_EXTERN PetscErrorCode    DMLabelReset(DMLabel);
+PETSC_EXTERN PetscErrorCode    DMLabelDestroy(DMLabel *);
+
 PETSC_EXTERN PetscErrorCode DMLabelGetDefaultValue(DMLabel, PetscInt *);
 PETSC_EXTERN PetscErrorCode DMLabelSetDefaultValue(DMLabel, PetscInt);
-PETSC_EXTERN PetscErrorCode DMLabelDuplicate(DMLabel, DMLabel *);
-PETSC_EXTERN PetscErrorCode DMLabelCompare(MPI_Comm, DMLabel, DMLabel, PetscBool *, char **message);
 PETSC_EXTERN PetscErrorCode DMLabelGetValue(DMLabel, PetscInt, PetscInt *);
 PETSC_EXTERN PetscErrorCode DMLabelSetValue(DMLabel, PetscInt, PetscInt);
 PETSC_EXTERN PetscErrorCode DMLabelClearValue(DMLabel, PetscInt, PetscInt);
@@ -48,6 +62,7 @@ PETSC_EXTERN PetscErrorCode DMLabelSetStratumBounds(DMLabel, PetscInt, PetscInt,
 PETSC_EXTERN PetscErrorCode DMLabelClearStratum(DMLabel, PetscInt);
 PETSC_EXTERN PetscErrorCode DMLabelGetStratumPointIndex(DMLabel, PetscInt, PetscInt, PetscInt *);
 
+PETSC_EXTERN PetscErrorCode DMLabelCompare(MPI_Comm, DMLabel, DMLabel, PetscBool *, char **message);
 PETSC_EXTERN PetscErrorCode DMLabelComputeIndex(DMLabel);
 PETSC_EXTERN PetscErrorCode DMLabelCreateIndex(DMLabel, PetscInt, PetscInt);
 PETSC_EXTERN PetscErrorCode DMLabelDestroyIndex(DMLabel);

@@ -14,7 +14,8 @@ typedef struct {
   PetscInt         bs, mbs;
 } PC_PBJacobi;
 
-static PetscErrorCode PCApply_PBJacobi_1(PC pc, Vec x, Vec y) {
+static PetscErrorCode PCApply_PBJacobi_1(PC pc, Vec x, Vec y)
+{
   PC_PBJacobi       *jac = (PC_PBJacobi *)pc->data;
   PetscInt           i, m = jac->mbs;
   const MatScalar   *diag = jac->diag;
@@ -31,7 +32,8 @@ static PetscErrorCode PCApply_PBJacobi_1(PC pc, Vec x, Vec y) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCApply_PBJacobi_2(PC pc, Vec x, Vec y) {
+static PetscErrorCode PCApply_PBJacobi_2(PC pc, Vec x, Vec y)
+{
   PC_PBJacobi       *jac = (PC_PBJacobi *)pc->data;
   PetscInt           i, m = jac->mbs;
   const MatScalar   *diag = jac->diag;
@@ -53,7 +55,8 @@ static PetscErrorCode PCApply_PBJacobi_2(PC pc, Vec x, Vec y) {
   PetscCall(PetscLogFlops(6.0 * m));
   PetscFunctionReturn(0);
 }
-static PetscErrorCode PCApply_PBJacobi_3(PC pc, Vec x, Vec y) {
+static PetscErrorCode PCApply_PBJacobi_3(PC pc, Vec x, Vec y)
+{
   PC_PBJacobi       *jac = (PC_PBJacobi *)pc->data;
   PetscInt           i, m = jac->mbs;
   const MatScalar   *diag = jac->diag;
@@ -78,7 +81,8 @@ static PetscErrorCode PCApply_PBJacobi_3(PC pc, Vec x, Vec y) {
   PetscCall(PetscLogFlops(15.0 * m));
   PetscFunctionReturn(0);
 }
-static PetscErrorCode PCApply_PBJacobi_4(PC pc, Vec x, Vec y) {
+static PetscErrorCode PCApply_PBJacobi_4(PC pc, Vec x, Vec y)
+{
   PC_PBJacobi       *jac = (PC_PBJacobi *)pc->data;
   PetscInt           i, m = jac->mbs;
   const MatScalar   *diag = jac->diag;
@@ -105,7 +109,8 @@ static PetscErrorCode PCApply_PBJacobi_4(PC pc, Vec x, Vec y) {
   PetscCall(PetscLogFlops(28.0 * m));
   PetscFunctionReturn(0);
 }
-static PetscErrorCode PCApply_PBJacobi_5(PC pc, Vec x, Vec y) {
+static PetscErrorCode PCApply_PBJacobi_5(PC pc, Vec x, Vec y)
+{
   PC_PBJacobi       *jac = (PC_PBJacobi *)pc->data;
   PetscInt           i, m = jac->mbs;
   const MatScalar   *diag = jac->diag;
@@ -134,7 +139,8 @@ static PetscErrorCode PCApply_PBJacobi_5(PC pc, Vec x, Vec y) {
   PetscCall(PetscLogFlops(45.0 * m));
   PetscFunctionReturn(0);
 }
-static PetscErrorCode PCApply_PBJacobi_6(PC pc, Vec x, Vec y) {
+static PetscErrorCode PCApply_PBJacobi_6(PC pc, Vec x, Vec y)
+{
   PC_PBJacobi       *jac = (PC_PBJacobi *)pc->data;
   PetscInt           i, m = jac->mbs;
   const MatScalar   *diag = jac->diag;
@@ -165,7 +171,8 @@ static PetscErrorCode PCApply_PBJacobi_6(PC pc, Vec x, Vec y) {
   PetscCall(PetscLogFlops(66.0 * m));
   PetscFunctionReturn(0);
 }
-static PetscErrorCode PCApply_PBJacobi_7(PC pc, Vec x, Vec y) {
+static PetscErrorCode PCApply_PBJacobi_7(PC pc, Vec x, Vec y)
+{
   PC_PBJacobi       *jac = (PC_PBJacobi *)pc->data;
   PetscInt           i, m = jac->mbs;
   const MatScalar   *diag = jac->diag;
@@ -198,7 +205,8 @@ static PetscErrorCode PCApply_PBJacobi_7(PC pc, Vec x, Vec y) {
   PetscCall(PetscLogFlops(91.0 * m)); /* 2*bs2 - bs */
   PetscFunctionReturn(0);
 }
-static PetscErrorCode PCApply_PBJacobi_N(PC pc, Vec x, Vec y) {
+static PetscErrorCode PCApply_PBJacobi_N(PC pc, Vec x, Vec y)
+{
   PC_PBJacobi       *jac = (PC_PBJacobi *)pc->data;
   PetscInt           i, ib, jb;
   const PetscInt     m    = jac->mbs;
@@ -224,7 +232,8 @@ static PetscErrorCode PCApply_PBJacobi_N(PC pc, Vec x, Vec y) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCApplyTranspose_PBJacobi_N(PC pc, Vec x, Vec y) {
+static PetscErrorCode PCApplyTranspose_PBJacobi_N(PC pc, Vec x, Vec y)
+{
   PC_PBJacobi       *jac = (PC_PBJacobi *)pc->data;
   PetscInt           i, j, k, m = jac->mbs, bs = jac->bs;
   const MatScalar   *diag = jac->diag;
@@ -247,8 +256,8 @@ static PetscErrorCode PCApplyTranspose_PBJacobi_N(PC pc, Vec x, Vec y) {
   PetscFunctionReturn(0);
 }
 
-/* -------------------------------------------------------------------------- */
-static PetscErrorCode PCSetUp_PBJacobi(PC pc) {
+static PetscErrorCode PCSetUp_PBJacobi(PC pc)
+{
   PC_PBJacobi   *jac = (PC_PBJacobi *)pc->data;
   Mat            A   = pc->pmat;
   MatFactorError err;
@@ -263,20 +272,37 @@ static PetscErrorCode PCSetUp_PBJacobi(PC pc) {
   PetscCall(MatGetLocalSize(A, &nlocal, NULL));
   jac->mbs = nlocal / jac->bs;
   switch (jac->bs) {
-  case 1: pc->ops->apply = PCApply_PBJacobi_1; break;
-  case 2: pc->ops->apply = PCApply_PBJacobi_2; break;
-  case 3: pc->ops->apply = PCApply_PBJacobi_3; break;
-  case 4: pc->ops->apply = PCApply_PBJacobi_4; break;
-  case 5: pc->ops->apply = PCApply_PBJacobi_5; break;
-  case 6: pc->ops->apply = PCApply_PBJacobi_6; break;
-  case 7: pc->ops->apply = PCApply_PBJacobi_7; break;
-  default: pc->ops->apply = PCApply_PBJacobi_N; break;
+  case 1:
+    pc->ops->apply = PCApply_PBJacobi_1;
+    break;
+  case 2:
+    pc->ops->apply = PCApply_PBJacobi_2;
+    break;
+  case 3:
+    pc->ops->apply = PCApply_PBJacobi_3;
+    break;
+  case 4:
+    pc->ops->apply = PCApply_PBJacobi_4;
+    break;
+  case 5:
+    pc->ops->apply = PCApply_PBJacobi_5;
+    break;
+  case 6:
+    pc->ops->apply = PCApply_PBJacobi_6;
+    break;
+  case 7:
+    pc->ops->apply = PCApply_PBJacobi_7;
+    break;
+  default:
+    pc->ops->apply = PCApply_PBJacobi_N;
+    break;
   }
   pc->ops->applytranspose = PCApplyTranspose_PBJacobi_N;
   PetscFunctionReturn(0);
 }
-/* -------------------------------------------------------------------------- */
-static PetscErrorCode PCDestroy_PBJacobi(PC pc) {
+
+static PetscErrorCode PCDestroy_PBJacobi(PC pc)
+{
   PetscFunctionBegin;
   /*
       Free the private data structure that was hanging off the PC
@@ -285,7 +311,8 @@ static PetscErrorCode PCDestroy_PBJacobi(PC pc) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCView_PBJacobi(PC pc, PetscViewer viewer) {
+static PetscErrorCode PCView_PBJacobi(PC pc, PetscViewer viewer)
+{
   PC_PBJacobi *jac = (PC_PBJacobi *)pc->data;
   PetscBool    iascii;
 
@@ -295,34 +322,33 @@ static PetscErrorCode PCView_PBJacobi(PC pc, PetscViewer viewer) {
   PetscFunctionReturn(0);
 }
 
-/* -------------------------------------------------------------------------- */
 /*MC
      PCPBJACOBI - Point block Jacobi preconditioner
 
    Notes:
-    See PCJACOBI for diagonal Jacobi, PCVPBJACOBI for variable-size point block, and PCBJACOBI for large size blocks
+    See `PCJACOBI` for diagonal Jacobi, `PCVPBJACOBI` for variable-size point block, and `PCBJACOBI` for large size blocks
 
-   This works for AIJ and BAIJ matrices and uses the blocksize provided to the matrix
+   This works for `MATAIJ` and `MATBAIJ` matrices and uses the blocksize provided to the matrix
 
    Uses dense LU factorization with partial pivoting to invert the blocks; if a zero pivot
    is detected a PETSc error is generated.
 
    Developer Notes:
-     This should support the PCSetErrorIfFailure() flag set to PETSC_TRUE to allow
+     This should support the `PCSetErrorIfFailure()` flag set to `PETSC_TRUE` to allow
      the factorization to continue even after a zero pivot is found resulting in a Nan and hence
-     terminating KSP with a KSP_DIVERGED_NANORIF allowing
+     terminating `KSP` with a `KSP_DIVERGED_NANORIF` allowing
      a nonlinear solver/ODE integrator to recover without stopping the program as currently happens.
 
      Perhaps should provide an option that allows generation of a valid preconditioner
-     even if a block is singular as the PCJACOBI does.
+     even if a block is singular as the `PCJACOBI` does.
 
    Level: beginner
 
 .seealso: `PCCreate()`, `PCSetType()`, `PCType`, `PC`, `PCJACOBI`, `PCVPBJACOBI`, `PCBJACOBI`
-
 M*/
 
-PETSC_EXTERN PetscErrorCode PCCreate_PBJacobi(PC pc) {
+PETSC_EXTERN PetscErrorCode PCCreate_PBJacobi(PC pc)
+{
   PC_PBJacobi *jac;
 
   PetscFunctionBegin;
@@ -330,7 +356,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_PBJacobi(PC pc) {
      Creates the private data structure for this preconditioner and
      attach it to the PC object.
   */
-  PetscCall(PetscNewLog(pc, &jac));
+  PetscCall(PetscNew(&jac));
   pc->data = (void *)jac;
 
   /*

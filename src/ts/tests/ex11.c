@@ -8,129 +8,154 @@ static char help[] = "Demonstrates previous memory leak for XXXRegister()\n\n";
 #include <petscsf.h>
 #include <petscao.h>
 
-static PetscErrorCode TSGLLEAdaptCreate_Dummy(TSGLLEAdapt ts) {
+static PetscErrorCode TSGLLEAdaptCreate_Dummy(TSGLLEAdapt ts)
+{
   PetscFunctionBeginUser;
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSGLLECreate_Dummy(TS ts) {
+static PetscErrorCode TSGLLECreate_Dummy(TS ts)
+{
   PetscFunctionBeginUser;
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSAdaptCreate_Dummy(TSAdapt ts) {
+static PetscErrorCode TSAdaptCreate_Dummy(TSAdapt ts)
+{
   PetscFunctionBeginUser;
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSCreate_Dummy(TS ts) {
+static PetscErrorCode TSCreate_Dummy(TS ts)
+{
   PetscFunctionBeginUser;
   PetscFunctionReturn(0);
 }
 
 #if !defined(PETSC_USE_COMPLEX)
-static PetscErrorCode CharacteristicCreate_Dummy(Characteristic chr) {
+static PetscErrorCode CharacteristicCreate_Dummy(Characteristic chr)
+{
   PetscFunctionBeginUser;
   PetscFunctionReturn(0);
 }
 #endif
 
-static PetscErrorCode SNESLineSearchCreate_Dummy(SNESLineSearch sneslinesearch) {
+static PetscErrorCode SNESLineSearchCreate_Dummy(SNESLineSearch sneslinesearch)
+{
   PetscFunctionBeginUser;
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode SNESCreate_Dummy(SNES snes) {
+static PetscErrorCode SNESCreate_Dummy(SNES snes)
+{
   PetscFunctionBeginUser;
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode KSPCreate_Dummy(KSP ksp) {
+static PetscErrorCode KSPCreate_Dummy(KSP ksp)
+{
   PetscFunctionBeginUser;
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode KSPGuessCreate_Dummy(KSPGuess ksp) {
+static PetscErrorCode KSPGuessCreate_Dummy(KSPGuess ksp)
+{
   PetscFunctionBeginUser;
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCCreate_Dummy(PC pc) {
+static PetscErrorCode PCCreate_Dummy(PC pc)
+{
   PetscFunctionBeginUser;
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMCreate_Dummy(DM dm) {
+static PetscErrorCode DMCreate_Dummy(DM dm)
+{
   PetscFunctionBeginUser;
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatOrderingCreate_Dummy(Mat mat, MatOrderingType mtype, IS *isr, IS *isc) {
+static PetscErrorCode MatOrderingCreate_Dummy(Mat mat, MatOrderingType mtype, IS *isr, IS *isc)
+{
   PetscFunctionBeginUser;
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatPartitioningCreate_Dummy(MatPartitioning mat) {
+static PetscErrorCode MatPartitioningCreate_Dummy(MatPartitioning mat)
+{
   PetscFunctionBeginUser;
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatCreate_Dummy(Mat mat) {
+static PetscErrorCode MatCreate_Dummy(Mat mat)
+{
   PetscFunctionBeginUser;
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PFCreate_Dummy(PF pf, void *ctx) {
+static PetscErrorCode PFCreate_Dummy(PF pf, void *ctx)
+{
   PetscFunctionBeginUser;
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode VecCreate_Dummy(Vec vec) {
+static PetscErrorCode VecCreate_Dummy(Vec vec)
+{
   PetscFunctionBeginUser;
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode VecScatterCreate_Dummy(VecScatter vec) {
+static PetscErrorCode VecScatterCreate_Dummy(VecScatter vec)
+{
   PetscFunctionBeginUser;
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscSFCreate_Dummy(PetscSF sf) {
+static PetscErrorCode PetscSFCreate_Dummy(PetscSF sf)
+{
   PetscFunctionBeginUser;
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode ISLocalToGlobalMappingCreate_Dummy(ISLocalToGlobalMapping is) {
+static PetscErrorCode ISLocalToGlobalMappingCreate_Dummy(ISLocalToGlobalMapping is)
+{
   PetscFunctionBeginUser;
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode ISCreate_Dummy(IS is) {
+static PetscErrorCode ISCreate_Dummy(IS is)
+{
   PetscFunctionBeginUser;
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode AOCreate_Dummy(AO ao) {
+static PetscErrorCode AOCreate_Dummy(AO ao)
+{
   PetscFunctionBeginUser;
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscDrawCreate_Dummy(PetscDraw draw) {
+static PetscErrorCode PetscDrawCreate_Dummy(PetscDraw draw)
+{
   PetscFunctionBeginUser;
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscViewerCreate_Dummy(PetscViewer viewer) {
+static PetscErrorCode PetscViewerCreate_Dummy(PetscViewer viewer)
+{
   PetscFunctionBeginUser;
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscRandomCreate_Dummy(PetscRandom arand) {
+static PetscErrorCode PetscRandomCreate_Dummy(PetscRandom arand)
+{
   PetscFunctionBeginUser;
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscReal A[1], Gamma[1] = {1.0}, b[1], c[1], d[1];
 
   PetscFunctionBeginUser;

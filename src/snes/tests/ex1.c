@@ -6,7 +6,7 @@ This example also illustrates the use of matrix coloring.  Runtime options inclu
   -mx <xg>, where <xg> = number of grid points in the x-direction\n\
   -my <yg>, where <yg> = number of grid points in the y-direction\n\n";
 
-/* ------------------------------------------------------------------------
+/*
 
     Solid Fuel Ignition (SFI) problem.  This problem is modeled by
     the partial differential equation
@@ -23,7 +23,7 @@ This example also illustrates the use of matrix coloring.  Runtime options inclu
 
     The parallel version of this code is snes/tutorials/ex5.c
 
-  ------------------------------------------------------------------------- */
+*/
 
 /*
    Include "petscsnes.h" so that we can use SNES solvers.  Note that
@@ -58,7 +58,8 @@ extern PetscErrorCode ConvergenceTest(KSP, PetscInt, PetscReal, KSPConvergedReas
 extern PetscErrorCode ConvergenceDestroy(void *);
 extern PetscErrorCode postcheck(SNES, Vec, Vec, Vec, PetscBool *, PetscBool *, void *);
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   SNES          snes; /* nonlinear solver context */
   Vec           x, r; /* solution, residual vectors */
   Mat           J;    /* Jacobian matrix */
@@ -67,7 +68,7 @@ int main(int argc, char **argv) {
   PetscMPIInt   size;
   PetscReal     bratu_lambda_max = 6.81, bratu_lambda_min = 0., history[50];
   MatFDColoring fdcoloring;
-  PetscBool     matrix_free = PETSC_FALSE, flg, fd_coloring = PETSC_FALSE, use_convergence_test = PETSC_FALSE, pc = PETSC_FALSE;
+  PetscBool     matrix_free = PETSC_FALSE, flg, fd_coloring = PETSC_FALSE, use_convergence_test = PETSC_FALSE, pc = PETSC_FALSE, prunejacobian = PETSC_FALSE;
   KSP           ksp;
   PetscInt     *testarray;
 
@@ -89,6 +90,7 @@ int main(int argc, char **argv) {
   PetscCheck(user.param < bratu_lambda_max && user.param > bratu_lambda_min, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Lambda is out of range");
   N = user.mx * user.my;
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-use_convergence_test", &use_convergence_test, NULL));
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-prune_jacobian", &prunejacobian, NULL));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create nonlinear solver context
@@ -147,6 +149,15 @@ int main(int argc, char **argv) {
   if (fd_coloring) {
     ISColoring  iscoloring;
     MatColoring mc;
+    if (prunejacobian) {
+      /* Initialize x with random nonzero values so that the nonzeros in the Jacobian
+         can better reflect the sparsity structure of the Jacobian. */
+      PetscRandom rctx;
+      PetscCall(PetscRandomCreate(PETSC_COMM_WORLD, &rctx));
+      PetscCall(PetscRandomSetInterval(rctx, 1.0, 2.0));
+      PetscCall(VecSetRandom(x, rctx));
+      PetscCall(PetscRandomDestroy(&rctx));
+    }
 
     /*
       This initializes the nonzero structure of the Jacobian. This is artificial
@@ -178,6 +189,7 @@ int main(int argc, char **argv) {
     */
     PetscCall(SNESSetJacobian(snes, J, J, SNESComputeJacobianDefaultColor, fdcoloring));
     PetscCall(ISColoringDestroy(&iscoloring));
+    if (prunejacobian) PetscCall(SNESPruneJacobianColor(snes, J, J));
   }
   /*
      Set Jacobian matrix data structure and default Jacobian evaluation
@@ -261,7 +273,7 @@ int main(int argc, char **argv) {
   PetscCall(PetscFinalize());
   return 0;
 }
-/* ------------------------------------------------------------------- */
+
 /*
    FormInitialGuess - Forms initial approximation.
 
@@ -272,7 +284,8 @@ int main(int argc, char **argv) {
    Output Parameter:
    X - vector
  */
-PetscErrorCode FormInitialGuess(AppCtx *user, Vec X) {
+PetscErrorCode FormInitialGuess(AppCtx *user, Vec X)
+{
   PetscInt     i, j, row, mx, my;
   PetscReal    lambda, temp1, temp, hx, hy;
   PetscScalar *x;
@@ -311,7 +324,7 @@ PetscErrorCode FormInitialGuess(AppCtx *user, Vec X) {
   PetscCall(VecRestoreArray(X, &x));
   return 0;
 }
-/* ------------------------------------------------------------------- */
+
 /*
    FormFunction - Evaluates nonlinear function, F(x).
 
@@ -323,7 +336,8 @@ PetscErrorCode FormInitialGuess(AppCtx *user, Vec X) {
    Output Parameter:
 .  F - function vector
  */
-PetscErrorCode FormFunction(SNES snes, Vec X, Vec F, void *ptr) {
+PetscErrorCode FormFunction(SNES snes, Vec X, Vec F, void *ptr)
+{
   AppCtx            *user = (AppCtx *)ptr;
   PetscInt           i, j, row, mx, my;
   PetscReal          two = 2.0, one = 1.0, lambda, hx, hy, hxdhy, hydhx;
@@ -373,7 +387,7 @@ PetscErrorCode FormFunction(SNES snes, Vec X, Vec F, void *ptr) {
   PetscCall(VecRestoreArray(F, &f));
   return 0;
 }
-/* ------------------------------------------------------------------- */
+
 /*
    FormJacobian - Evaluates Jacobian matrix.
 
@@ -387,7 +401,8 @@ PetscErrorCode FormFunction(SNES snes, Vec X, Vec F, void *ptr) {
 .  B - optionally different preconditioning matrix
 .  flag - flag indicating matrix structure
 */
-PetscErrorCode FormJacobian(SNES snes, Vec X, Mat J, Mat jac, void *ptr) {
+PetscErrorCode FormJacobian(SNES snes, Vec X, Mat J, Mat jac, void *ptr)
+{
   AppCtx            *user = (AppCtx *)ptr; /* user-defined applicatin context */
   PetscInt           i, j, row, mx, my, col[5];
   PetscScalar        two = 2.0, one = 1.0, lambda, v[5], sc;
@@ -451,7 +466,8 @@ PetscErrorCode FormJacobian(SNES snes, Vec X, Mat J, Mat jac, void *ptr) {
   return 0;
 }
 
-PetscErrorCode ConvergenceTest(KSP ksp, PetscInt it, PetscReal nrm, KSPConvergedReason *reason, void *ctx) {
+PetscErrorCode ConvergenceTest(KSP ksp, PetscInt it, PetscReal nrm, KSPConvergedReason *reason, void *ctx)
+{
   PetscFunctionBegin;
   *reason = KSP_CONVERGED_ITERATING;
   if (it > 1) {
@@ -461,14 +477,16 @@ PetscErrorCode ConvergenceTest(KSP ksp, PetscInt it, PetscReal nrm, KSPConverged
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode ConvergenceDestroy(void *ctx) {
+PetscErrorCode ConvergenceDestroy(void *ctx)
+{
   PetscFunctionBegin;
   PetscCall(PetscInfo(NULL, "User provided convergence destroy called\n"));
   PetscCall(PetscFree(ctx));
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode postcheck(SNES snes, Vec x, Vec y, Vec w, PetscBool *changed_y, PetscBool *changed_w, void *ctx) {
+PetscErrorCode postcheck(SNES snes, Vec x, Vec y, Vec w, PetscBool *changed_y, PetscBool *changed_w, void *ctx)
+{
   PetscReal norm;
   Vec       tmp;
 
@@ -513,4 +531,8 @@ PetscErrorCode postcheck(SNES snes, Vec x, Vec y, Vec w, PetscBool *changed_y, P
       suffix: 4
       args: -pc -par 6.807 -snes_monitor -snes_converged_reason
 
+   test:
+      suffix: 5
+      args: -snes_monitor_short -mat_coloring_type sl -snes_fd_coloring -mx 8 -my 11 -ksp_gmres_cgs_refinement_type refine_always -prune_jacobian
+      output_file: output/ex1_3.out
 TEST*/

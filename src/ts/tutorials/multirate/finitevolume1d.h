@@ -7,7 +7,7 @@ typedef struct _LimitInfo {
 
   /* context for partitioned system */
   PetscReal hxs, hxm, hxf;
-} * LimitInfo;
+}   *LimitInfo;
 void Limit_Upwind(LimitInfo, const PetscScalar *, const PetscScalar *, PetscScalar *);
 void Limit_LaxWendroff(LimitInfo, const PetscScalar *, const PetscScalar *, PetscScalar *);
 void Limit_BeamWarming(LimitInfo, const PetscScalar *, const PetscScalar *, PetscScalar *);

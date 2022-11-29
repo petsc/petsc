@@ -3,7 +3,8 @@ static char help[] = "Illustrates creating an options database.\n\n";
 
 #include <petscsys.h>
 #include <petscviewer.h>
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscOptions options;
 
   PetscFunctionBeginUser;
@@ -21,6 +22,6 @@ int main(int argc, char **argv) {
 
    test:
      localrunfiles: optionsfile
-     filter: egrep -v "(options_left)"
+     filter: grep -E -v "(options_left)"
 
 TEST*/

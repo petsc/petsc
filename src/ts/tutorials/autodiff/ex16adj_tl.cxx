@@ -37,7 +37,8 @@ struct _n_User {
   arguments.
 */
 template <class T>
-PetscErrorCode EvaluateResidual(const T *x, T mu, T *f) {
+PetscErrorCode EvaluateResidual(const T *x, T mu, T *f)
+{
   PetscFunctionBegin;
   f[0] = x[1];
   f[1] = mu * (1. - x[0] * x[0]) * x[1] - x[0];
@@ -47,7 +48,8 @@ PetscErrorCode EvaluateResidual(const T *x, T mu, T *f) {
 /*
   'Passive' RHS function, used in residual evaluations during the time integration.
 */
-static PetscErrorCode RHSFunctionPassive(TS ts, PetscReal t, Vec X, Vec F, void *ctx) {
+static PetscErrorCode RHSFunctionPassive(TS ts, PetscReal t, Vec X, Vec F, void *ctx)
+{
   User               user = (User)ctx;
   PetscScalar       *f;
   const PetscScalar *x;
@@ -64,7 +66,8 @@ static PetscErrorCode RHSFunctionPassive(TS ts, PetscReal t, Vec X, Vec F, void 
 /*
   Compute the Jacobian w.r.t. x using tapeless mode of ADOL-C.
 */
-static PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec X, Mat A, Mat B, void *ctx) {
+static PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec X, Mat A, Mat B, void *ctx)
+{
   User               user = (User)ctx;
   PetscScalar      **J;
   const PetscScalar *x;
@@ -116,7 +119,8 @@ static PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec X, Mat A, Mat B, void 
 /*
   Compute the Jacobian w.r.t. mu using tapeless mode of ADOL-C.
 */
-static PetscErrorCode RHSJacobianP(TS ts, PetscReal t, Vec X, Mat A, void *ctx) {
+static PetscErrorCode RHSJacobianP(TS ts, PetscReal t, Vec X, Mat A, void *ctx)
+{
   User          user = (User)ctx;
   PetscScalar **J;
   PetscScalar  *x;
@@ -163,7 +167,8 @@ static PetscErrorCode RHSJacobianP(TS ts, PetscReal t, Vec X, Mat A, void *ctx) 
 /*
   Monitor timesteps and use interpolation to output at integer multiples of 0.1
 */
-static PetscErrorCode Monitor(TS ts, PetscInt step, PetscReal t, Vec X, void *ctx) {
+static PetscErrorCode Monitor(TS ts, PetscInt step, PetscReal t, Vec X, void *ctx)
+{
   const PetscScalar *x;
   PetscReal          tfinal, dt, tprev;
   User               user = (User)ctx;
@@ -179,7 +184,8 @@ static PetscErrorCode Monitor(TS ts, PetscInt step, PetscReal t, Vec X, void *ct
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   TS             ts;   /* nonlinear solver */
   Vec            x;    /* solution, residual vectors */
   Mat            A;    /* Jacobian matrix */

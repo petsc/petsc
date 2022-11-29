@@ -9,7 +9,8 @@
 /*
       Version for when blocks are 4 by 4
 */
-PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_inplace(Mat C, Mat A, const MatFactorInfo *info) {
+PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_inplace(Mat C, Mat A, const MatFactorInfo *info)
+{
   Mat_SeqBAIJ    *a = (Mat_SeqBAIJ *)A->data, *b = (Mat_SeqBAIJ *)C->data;
   IS              isrow = b->row, isicol = b->icol;
   const PetscInt *r, *ic;
@@ -222,7 +223,8 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_inplace(Mat C, Mat A, const MatFacto
        PetscKernel_A_gets_inverse_A()
 */
 
-PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4(Mat B, Mat A, const MatFactorInfo *info) {
+PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4(Mat B, Mat A, const MatFactorInfo *info)
+{
   Mat             C = B;
   Mat_SeqBAIJ    *a = (Mat_SeqBAIJ *)A->data, *b = (Mat_SeqBAIJ *)C->data;
   IS              isrow = b->row, isicol = b->icol;
@@ -332,7 +334,8 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4(Mat B, Mat A, const MatFactorInfo *i
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_inplace(Mat C, Mat A, const MatFactorInfo *info) {
+PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_inplace(Mat C, Mat A, const MatFactorInfo *info)
+{
   /*
     Default Version for when blocks are 4 by 4 Using natural ordering
 */
@@ -537,7 +540,8 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_inplace(Mat C, Mat A
   MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering -
     copied from MatLUFactorNumeric_SeqBAIJ_3_NaturalOrdering_inplace()
 */
-PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering(Mat B, Mat A, const MatFactorInfo *info) {
+PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering(Mat B, Mat A, const MatFactorInfo *info)
+{
   Mat             C = B;
   Mat_SeqBAIJ    *a = (Mat_SeqBAIJ *)A->data, *b = (Mat_SeqBAIJ *)C->data;
   PetscInt        i, j, k, nz, nzL, row;
@@ -642,10 +646,11 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering(Mat B, Mat A, const 
 
 #if defined(PETSC_HAVE_SSE)
 
-#include PETSC_HAVE_SSE
+  #include PETSC_HAVE_SSE
 
 /* SSE Version for when blocks are 4 by 4 Using natural ordering */
-PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE(Mat B, Mat A, const MatFactorInfo *info) {
+PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE(Mat B, Mat A, const MatFactorInfo *info)
+{
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ *)A->data, *b = (Mat_SeqBAIJ *)C->data;
   int          i, j, n = a->mbs;
   int         *bj = b->j, *bjtmp, *pj;
@@ -1084,7 +1089,8 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE(Mat B, Mat A, co
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE_usj_Inplace(Mat C) {
+PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE_usj_Inplace(Mat C)
+{
   Mat             A = C;
   Mat_SeqBAIJ    *a = (Mat_SeqBAIJ *)A->data, *b = (Mat_SeqBAIJ *)C->data;
   int             i, j, n = a->mbs;
@@ -1526,7 +1532,8 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE_usj_Inplace(Mat 
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE_usj(Mat C, Mat A, const MatFactorInfo *info) {
+PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE_usj(Mat C, Mat A, const MatFactorInfo *info)
+{
   Mat_SeqBAIJ    *a = (Mat_SeqBAIJ *)A->data, *b = (Mat_SeqBAIJ *)C->data;
   int             i, j, n = a->mbs;
   unsigned short *bj = (unsigned short *)(b->j), *bjtmp, *pj;

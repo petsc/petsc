@@ -6,7 +6,7 @@
 /*@
    ISDifference - Computes the difference between two index sets.
 
-   Collective on IS
+   Collective on is1
 
    Input Parameters:
 +  is1 - first index, to have items removed from it
@@ -15,6 +15,8 @@
    Output Parameters:
 .  isout - is1 - is2
 
+   Level: intermediate
+
    Notes:
    Negative values are removed from the lists. is2 may have values
    that are not in is1. This requires O(imax-imin) memory and O(imax-imin)
@@ -22,11 +24,12 @@
 
    If is2 is NULL, the result is the same as for an empty IS, i.e., a duplicate of is1.
 
-   Level: intermediate
+   The difference is computed separately on each MPI rank
 
-.seealso: `ISDestroy()`, `ISView()`, `ISSum()`, `ISExpand()`
+.seealso: [](sec_scatter), `IS`, `ISDestroy()`, `ISView()`, `ISSum()`, `ISExpand()`
 @*/
-PetscErrorCode ISDifference(IS is1, IS is2, IS *isout) {
+PetscErrorCode ISDifference(IS is1, IS is2, IS *isout)
+{
   PetscInt        i, n1, n2, imin, imax, nout, *iout;
   const PetscInt *i1, *i2;
   PetscBT         mask;
@@ -102,17 +105,19 @@ PetscErrorCode ISDifference(IS is1, IS is2, IS *isout) {
    Output Parameter:
 .   is3 - the sum; this can not be is1 or is2
 
+   Level: intermediate
+
    Notes:
    If n1 and n2 are the sizes of the sets, this takes O(n1+n2) time;
 
    Both index sets need to be sorted on input.
 
-   Level: intermediate
+   The sum is computed separately on each MPI rank
 
-.seealso: `ISDestroy()`, `ISView()`, `ISDifference()`, `ISExpand()`
-
+.seealso: [](sec_scatter), `IS`, `ISDestroy()`, `ISView()`, `ISDifference()`, `ISExpand()`
 @*/
-PetscErrorCode ISSum(IS is1, IS is2, IS *is3) {
+PetscErrorCode ISSum(IS is1, IS is2, IS *is3)
+{
   MPI_Comm        comm;
   PetscBool       f;
   PetscMPIInt     size;
@@ -241,7 +246,7 @@ PetscErrorCode ISSum(IS is1, IS is2, IS *is3) {
    ISExpand - Computes the union of two index sets, by concatenating 2 lists and
    removing duplicates.
 
-   Collective on IS
+   Collective on is1
 
    Input Parameters:
 +  is1 - first index set
@@ -250,6 +255,8 @@ PetscErrorCode ISSum(IS is1, IS is2, IS *is3) {
    Output Parameters:
 .  isout - is1 + is2 The index set is2 is appended to is1 removing duplicates
 
+   Level: intermediate
+
    Notes:
    Negative values are removed from the lists. This requires O(imax-imin)
    memory and O(imax-imin) work, where imin and imax are the bounds on the
@@ -257,12 +264,12 @@ PetscErrorCode ISSum(IS is1, IS is2, IS *is3) {
 
    The IS's do not need to be sorted.
 
-   Level: intermediate
+   The operations are performed separately on each MPI rank
 
-.seealso: `ISDestroy()`, `ISView()`, `ISDifference()`, `ISSum()`
-
+.seealso: [](sec_scatter), `IS`, `ISDestroy()`, `ISView()`, `ISDifference()`, `ISSum()`, `ISIntersect()`
 @*/
-PetscErrorCode ISExpand(IS is1, IS is2, IS *isout) {
+PetscErrorCode ISExpand(IS is1, IS is2, IS *isout)
+{
   PetscInt        i, n1, n2, imin, imax, nout, *iout;
   const PetscInt *i1, *i2;
   PetscBT         mask;
@@ -330,7 +337,7 @@ PetscErrorCode ISExpand(IS is1, IS is2, IS *isout) {
 /*@
    ISIntersect - Computes the intersection of two index sets, by sorting and comparing.
 
-   Collective on IS
+   Collective on is1
 
    Input Parameters:
 +  is1 - first index set
@@ -339,17 +346,20 @@ PetscErrorCode ISExpand(IS is1, IS is2, IS *isout) {
    Output Parameters:
 .  isout - the sorted intersection of is1 and is2
 
+   Level: intermediate
+
    Notes:
    Negative values are removed from the lists. This requires O(min(is1,is2))
    memory and O(max(is1,is2)log(max(is1,is2))) work
 
    The IS's do not need to be sorted.
 
-   Level: intermediate
+   The operations are performed separately on each MPI rank
 
-.seealso: `ISDestroy()`, `ISView()`, `ISDifference()`, `ISSum()`, `ISExpand()`
+.seealso: [](sec_scatter), `IS`, `ISDestroy()`, `ISView()`, `ISDifference()`, `ISSum()`, `ISExpand()`, `ISConcatenate()`
 @*/
-PetscErrorCode ISIntersect(IS is1, IS is2, IS *isout) {
+PetscErrorCode ISIntersect(IS is1, IS is2, IS *isout)
+{
   PetscInt        i, n1, n2, nout, *iout;
   const PetscInt *i1, *i2;
   IS              is1sorted = NULL, is2sorted = NULL;
@@ -420,7 +430,8 @@ PetscErrorCode ISIntersect(IS is1, IS is2, IS *isout) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode ISIntersect_Caching_Internal(IS is1, IS is2, IS *isect) {
+PetscErrorCode ISIntersect_Caching_Internal(IS is1, IS is2, IS *isect)
+{
   PetscFunctionBegin;
   *isect = NULL;
   if (is2 && is1) {
@@ -441,7 +452,7 @@ PetscErrorCode ISIntersect_Caching_Internal(IS is1, IS is2, IS *isect) {
 }
 
 /*@
-   ISConcatenate - Forms a new IS by locally concatenating the indices from an IS list without reordering.
+   ISConcatenate - Forms a new `IS` by locally concatenating the indices from an `IS` list without reordering.
 
    Collective.
 
@@ -453,15 +464,15 @@ PetscErrorCode ISIntersect_Caching_Internal(IS is1, IS is2, IS *isect) {
    Output Parameters:
 .  isout   - The concatenated index set; empty, if len == 0.
 
-   Notes:
-    The semantics of calling this on comm imply that the comms of the members if islist also contain this rank.
-
    Level: intermediate
 
-.seealso: `ISDifference()`, `ISSum()`, `ISExpand()`
+   Notes:
+    The semantics of calling this on comm imply that the comms of the members of islist also contain this rank.
 
+.seealso: [](sec_scatter), `IS`, `ISDifference()`, `ISSum()`, `ISExpand()`, `ISIntersect()`
 @*/
-PetscErrorCode ISConcatenate(MPI_Comm comm, PetscInt len, const IS islist[], IS *isout) {
+PetscErrorCode ISConcatenate(MPI_Comm comm, PetscInt len, const IS islist[], IS *isout)
+{
   PetscInt        i, n, N;
   const PetscInt *iidx;
   PetscInt       *idx;
@@ -501,39 +512,40 @@ PetscErrorCode ISConcatenate(MPI_Comm comm, PetscInt len, const IS islist[], IS 
 }
 
 /*@
-   ISListToPair     -    convert an IS list to a pair of ISs of equal length defining an equivalent integer multimap.
-                        Each IS on the input list is assigned an integer j so that all of the indices of that IS are
-                        mapped to j.
+   ISListToPair  - Convert an `IS` list to a pair of `IS` of equal length defining an equivalent integer multimap.
+                   Each `IS` on the input list is assigned an integer j so that all of the indices of that `IS` are
+                   mapped to j.
 
-  Collective.
+   Collective.
 
-  Input arguments:
-+ comm    -  MPI_Comm
-. listlen -  IS list length
-- islist  -  IS list
+   Input Parameters:
++  comm    -  `MPI_Comm`
+.  listlen -  `IS` list length
+-  islist  -  `IS` list
 
-  Output arguments:
-+ xis -  domain IS
-- yis -  range  IS
+   Output Parameters:
++  xis -  domain `IS`
+-  yis -  range  `I`S
 
-  Level: advanced
+  Level: developer
 
   Notes:
-  The global integers assigned to the ISs of the local input list might not correspond to the
-  local numbers of the ISs on that list, but the two *orderings* are the same: the global
-  integers assigned to the ISs on the local list form a strictly increasing sequence.
+  The global integers assigned to the `IS` of the local input list might not correspond to the
+  local numbers of the `IS` on that list, but the two *orderings* are the same: the global
+  integers assigned to the `IS` on the local list form a strictly increasing sequence.
 
-  The ISs on the input list can belong to subcommunicators of comm, and the subcommunicators
-  on the input IS list are assumed to be in a "deadlock-free" order.
+  The `IS` on the input list can belong to subcommunicators of comm, and the subcommunicators
+  on the input `IS` list are assumed to be in a "deadlock-free" order.
 
-  Local lists of PetscObjects (or their subcommes) on a comm are "deadlock-free" if subcomm1
+  Local lists of `PetscObject`s (or their subcomms) on a comm are "deadlock-free" if subcomm1
   preceeds subcomm2 on any local list, then it preceeds subcomm2 on all ranks.
   Equivalently, the local numbers of the subcomms on each local list are drawn from some global
-  numbering. This is ensured, for example, by ISPairToList().
+  numbering. This is ensured, for example, by `ISPairToList()`.
 
-.seealso `ISPairToList()`
+.seealso: `IS`, `ISPairToList()`
 @*/
-PetscErrorCode ISListToPair(MPI_Comm comm, PetscInt listlen, IS islist[], IS *xis, IS *yis) {
+PetscErrorCode ISListToPair(MPI_Comm comm, PetscInt listlen, IS islist[], IS *xis, IS *yis)
+{
   PetscInt        ncolors, *colors, i, leni, len, *xinds, *yinds, k, j;
   const PetscInt *indsi;
 
@@ -564,33 +576,34 @@ PetscErrorCode ISListToPair(MPI_Comm comm, PetscInt listlen, IS islist[], IS *xi
 }
 
 /*@
-   ISPairToList   -   convert an IS pair encoding an integer map to a list of ISs.
-                     Each IS on the output list contains the preimage for each index on the second input IS.
-                     The ISs on the output list are constructed on the subcommunicators of the input IS pair.
-                     Each subcommunicator corresponds to the preimage of some index j -- this subcomm contains
-                     exactly the ranks that assign some indices i to j.  This is essentially the inverse of
-                     ISListToPair().
+   ISPairToList - Convert an `IS` pair encoding an integer map to a list of `IS`.
+                  Each `IS` on the output list contains the preimage for each index on the second input `IS`.
+                  The `IS` on the output list are constructed on the subcommunicators of the input `IS` pair.
+                  Each subcommunicator corresponds to the preimage of some index j -- this subcomm contains
+                  exactly the ranks that assign some indices i to j.  This is essentially the inverse of
+                  `ISListToPair()`.
 
-  Collective on indis.
+  Collective on xis.
 
-  Input arguments:
+  Input Parameters:
 + xis -  domain IS
 - yis -  range IS
 
-  Output arguments:
+  Output Parameters:
 + listlen -  length of islist
 - islist  -  list of ISs breaking up indis by color
 
-  Note:
-    xis and yis must be of the same length and have congruent communicators.
+  Level: developer
 
-    The resulting ISs have subcommunicators in a "deadlock-free" order (see ISListToPair()).
+  Notes:
+  xis and yis must be of the same length and have congruent communicators.
 
-  Level: advanced
+  The resulting `IS` have subcommunicators in a "deadlock-free" order (see `ISListToPair()`).
 
-.seealso `ISListToPair()`
+.seealso: `IS`, `ISListToPair()`
  @*/
-PetscErrorCode ISPairToList(IS xis, IS yis, PetscInt *listlen, IS **islist) {
+PetscErrorCode ISPairToList(IS xis, IS yis, PetscInt *listlen, IS **islist)
+{
   IS              indis = xis, coloris = yis;
   PetscInt       *inds, *colors, llen, ilen, lstart, lend, lcount, l;
   PetscMPIInt     rank, size, llow, lhigh, low, high, color, subsize;
@@ -691,32 +704,33 @@ PetscErrorCode ISPairToList(IS xis, IS yis, PetscInt *listlen, IS **islist) {
 }
 
 /*@
-   ISEmbed   -   embed IS a into IS b by finding the locations in b that have the same indices as in a.
-                 If c is the IS of these locations, we have a = b*c, regarded as a composition of the
-                 corresponding ISLocalToGlobalMaps.
+   ISEmbed - Embed `IS` a into `IS` b by finding the locations in b that have the same indices as in a.
+             If c is the `IS` of these locations, we have a = b*c, regarded as a composition of the
+             corresponding `ISLocalToGlobalMap`s.
 
   Not collective.
 
-  Input arguments:
-+ a    -  IS to embed
-. b    -  IS to embed into
+  Input Parameters:
++ a    -  `IS` to embed
+. b    -  `IS` to embed into
 - drop -  flag indicating whether to drop a's indices that are not in b.
 
-  Output arguments:
+  Output Parameters:
 . c    -  local embedding indices
 
-  Note:
+  Level: developer
+
+  Notes:
   If some of a's global indices are not among b's indices the embedding is impossible.  The local indices of a
   corresponding to these global indices are either mapped to -1 (if !drop) or are omitted (if drop).  In the former
   case the size of c is that same as that of a, in the latter case c's size may be smaller.
 
-  The resulting IS is sequential, since the index substition it encodes is purely local.
+  The resulting `IS` is sequential, since the index substition it encodes is purely local.
 
-  Level: advanced
-
-.seealso `ISLocalToGlobalMapping`
+.seealso: `IS`, `ISLocalToGlobalMapping`
  @*/
-PetscErrorCode ISEmbed(IS a, IS b, PetscBool drop, IS *c) {
+PetscErrorCode ISEmbed(IS a, IS b, PetscBool drop, IS *c)
+{
   ISLocalToGlobalMapping     ltog;
   ISGlobalToLocalMappingMode gtoltype = IS_GTOLM_DROP;
   PetscInt                   alen, clen, *cindices, *cindices2;
@@ -749,23 +763,26 @@ PetscErrorCode ISEmbed(IS a, IS b, PetscBool drop, IS *c) {
 
   Not collective.
 
-  Input arguments:
-+ f      -  IS to sort
+  Input Parameters:
++ f      -  `IS` to sort
 - always -  build the permutation even when f's indices are nondecreasing.
 
-  Output argument:
-. h    -  permutation or NULL, if f is nondecreasing and always == PETSC_FALSE.
-
-  Note: Indices in f are unchanged. f[h[i]] is the i-th smallest f index.
-        If always == PETSC_FALSE, an extra check is peformed to see whether
-        the f indices are nondecreasing. h is built on PETSC_COMM_SELF, since
-        the permutation has a local meaning only.
+  Output Parameter:
+. h    -  permutation or NULL, if f is nondecreasing and always == `PETSC_FALSE`.
 
   Level: advanced
 
-.seealso `ISLocalToGlobalMapping`, `ISSort()`
+  Notes:
+  Indices in f are unchanged. f[h[i]] is the i-th smallest f index.
+
+  If always == `PETSC_FALSE`, an extra check is peformed to see whether
+  the f indices are nondecreasing. h is built on `PETSC_COMM_SELF`, since
+  the permutation has a local meaning only.
+
+.seealso: `IS`, `ISLocalToGlobalMapping`, `ISSort()`
  @*/
-PetscErrorCode ISSortPermutation(IS f, PetscBool always, IS *h) {
+PetscErrorCode ISSortPermutation(IS f, PetscBool always, IS *h)
+{
   const PetscInt *findices;
   PetscInt        fsize, *hindices, i;
   PetscBool       isincreasing;

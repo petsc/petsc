@@ -8,17 +8,32 @@
 /*
    This is used to set the numeric factorization for both LU and ILU symbolic factorization
 */
-PetscErrorCode MatSeqBAIJSetNumericFactorization(Mat fact, PetscBool natural) {
+PetscErrorCode MatSeqBAIJSetNumericFactorization(Mat fact, PetscBool natural)
+{
   PetscFunctionBegin;
   if (natural) {
     switch (fact->rmap->bs) {
-    case 1: fact->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_1; break;
-    case 2: fact->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_2_NaturalOrdering; break;
-    case 3: fact->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_3_NaturalOrdering; break;
-    case 4: fact->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering; break;
-    case 5: fact->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_5_NaturalOrdering; break;
-    case 6: fact->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_6_NaturalOrdering; break;
-    case 7: fact->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_7_NaturalOrdering; break;
+    case 1:
+      fact->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_1;
+      break;
+    case 2:
+      fact->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_2_NaturalOrdering;
+      break;
+    case 3:
+      fact->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_3_NaturalOrdering;
+      break;
+    case 4:
+      fact->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering;
+      break;
+    case 5:
+      fact->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_5_NaturalOrdering;
+      break;
+    case 6:
+      fact->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_6_NaturalOrdering;
+      break;
+    case 7:
+      fact->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_7_NaturalOrdering;
+      break;
     case 9:
 #if defined(PETSC_HAVE_IMMINTRIN_H) && defined(__AVX2__) && defined(__FMA__) && defined(PETSC_USE_REAL_DOUBLE) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_64BIT_INDICES)
       fact->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_9_NaturalOrdering;
@@ -26,38 +41,65 @@ PetscErrorCode MatSeqBAIJSetNumericFactorization(Mat fact, PetscBool natural) {
       fact->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_N;
 #endif
       break;
-    case 15: fact->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_15_NaturalOrdering; break;
-    default: fact->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_N; break;
+    case 15:
+      fact->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_15_NaturalOrdering;
+      break;
+    default:
+      fact->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_N;
+      break;
     }
   } else {
     switch (fact->rmap->bs) {
-    case 1: fact->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_1; break;
-    case 2: fact->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_2; break;
-    case 3: fact->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_3; break;
-    case 4: fact->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_4; break;
-    case 5: fact->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_5; break;
-    case 6: fact->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_6; break;
-    case 7: fact->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_7; break;
-    default: fact->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_N; break;
+    case 1:
+      fact->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_1;
+      break;
+    case 2:
+      fact->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_2;
+      break;
+    case 3:
+      fact->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_3;
+      break;
+    case 4:
+      fact->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_4;
+      break;
+    case 5:
+      fact->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_5;
+      break;
+    case 6:
+      fact->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_6;
+      break;
+    case 7:
+      fact->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_7;
+      break;
+    default:
+      fact->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_N;
+      break;
     }
   }
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatSeqBAIJSetNumericFactorization_inplace(Mat inA, PetscBool natural) {
+PetscErrorCode MatSeqBAIJSetNumericFactorization_inplace(Mat inA, PetscBool natural)
+{
   PetscFunctionBegin;
   if (natural) {
     switch (inA->rmap->bs) {
-    case 1: inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_1_inplace; break;
-    case 2: inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_2_NaturalOrdering_inplace; break;
-    case 3: inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_3_NaturalOrdering_inplace; break;
+    case 1:
+      inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_1_inplace;
+      break;
+    case 2:
+      inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_2_NaturalOrdering_inplace;
+      break;
+    case 3:
+      inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_3_NaturalOrdering_inplace;
+      break;
     case 4:
 #if defined(PETSC_USE_REAL_MAT_SINGLE)
     {
       PetscBool sse_enabled_local;
       PetscCall(PetscSSEIsEnabled(inA->comm, &sse_enabled_local, NULL));
       if (sse_enabled_local) {
-#if defined(PETSC_HAVE_SSE)
+  #if defined(PETSC_HAVE_SSE)
         int i, *AJ = a->j, nz = a->nz, n = a->mbs;
         if (n == (unsigned short)n) {
           unsigned short *aj = (unsigned short *)AJ;
@@ -77,10 +119,10 @@ PetscErrorCode MatSeqBAIJSetNumericFactorization_inplace(Mat inA, PetscBool natu
 
           PetscCall(PetscInfo(inA, "Using special SSE, in-place natural ordering, int j index factor BS=4\n"));
         }
-#else
+  #else
         /* This should never be reached.  If so, problem in PetscSSEIsEnabled. */
         SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "SSE Hardware unavailable");
-#endif
+  #endif
       } else {
         inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_inplace;
       }
@@ -89,21 +131,45 @@ PetscErrorCode MatSeqBAIJSetNumericFactorization_inplace(Mat inA, PetscBool natu
       inA->ops->lufactornumeric  = MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_inplace;
 #endif
     break;
-    case 5: inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_5_NaturalOrdering_inplace; break;
-    case 6: inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_6_NaturalOrdering_inplace; break;
-    case 7: inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_7_NaturalOrdering_inplace; break;
-    default: inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_N_inplace; break;
+    case 5:
+      inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_5_NaturalOrdering_inplace;
+      break;
+    case 6:
+      inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_6_NaturalOrdering_inplace;
+      break;
+    case 7:
+      inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_7_NaturalOrdering_inplace;
+      break;
+    default:
+      inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_N_inplace;
+      break;
     }
   } else {
     switch (inA->rmap->bs) {
-    case 1: inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_1_inplace; break;
-    case 2: inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_2_inplace; break;
-    case 3: inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_3_inplace; break;
-    case 4: inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_4_inplace; break;
-    case 5: inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_5_inplace; break;
-    case 6: inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_6_inplace; break;
-    case 7: inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_7_inplace; break;
-    default: inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_N_inplace; break;
+    case 1:
+      inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_1_inplace;
+      break;
+    case 2:
+      inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_2_inplace;
+      break;
+    case 3:
+      inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_3_inplace;
+      break;
+    case 4:
+      inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_4_inplace;
+      break;
+    case 5:
+      inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_5_inplace;
+      break;
+    case 6:
+      inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_6_inplace;
+      break;
+    case 7:
+      inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_7_inplace;
+      break;
+    default:
+      inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_N_inplace;
+      break;
     }
   }
   PetscFunctionReturn(0);
@@ -117,7 +183,8 @@ PetscErrorCode MatSeqBAIJSetNumericFactorization_inplace(Mat inA, PetscBool natu
 #include <petscbt.h>
 #include <../src/mat/utils/freespace.h>
 
-PetscErrorCode MatLUFactorSymbolic_SeqBAIJ(Mat B, Mat A, IS isrow, IS iscol, const MatFactorInfo *info) {
+PetscErrorCode MatLUFactorSymbolic_SeqBAIJ(Mat B, Mat A, IS isrow, IS iscol, const MatFactorInfo *info)
+{
   Mat_SeqBAIJ       *a = (Mat_SeqBAIJ *)A->data, *b;
   PetscInt           n = a->mbs, bs = A->rmap->bs, bs2 = a->bs2;
   PetscBool          row_identity, col_identity, both_identity;
@@ -219,7 +286,6 @@ PetscErrorCode MatLUFactorSymbolic_SeqBAIJ(Mat B, Mat A, IS isrow, IS iscol, con
 
   /* put together the new matrix */
   PetscCall(MatSeqBAIJSetPreallocation(B, bs, MAT_SKIP_ALLOCATION, NULL));
-  PetscCall(PetscLogObjectParent((PetscObject)B, (PetscObject)isicol));
   b = (Mat_SeqBAIJ *)(B)->data;
 
   b->free_a       = PETSC_TRUE;
@@ -241,7 +307,6 @@ PetscErrorCode MatLUFactorSymbolic_SeqBAIJ(Mat B, Mat A, IS isrow, IS iscol, con
   PetscCall(PetscObjectReference((PetscObject)iscol));
   b->icol = isicol;
   PetscCall(PetscMalloc1(bs * n + bs, &b->solve_work));
-  PetscCall(PetscLogObjectMemory((PetscObject)B, (bdiag[0] + 1) * (sizeof(PetscInt) + sizeof(PetscScalar) * bs2)));
 
   b->maxnz = b->nz = bdiag[0] + 1;
 
@@ -275,7 +340,8 @@ PetscErrorCode MatLUFactorSymbolic_SeqBAIJ(Mat B, Mat A, IS isrow, IS iscol, con
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatLUFactorSymbolic_SeqBAIJ_inplace(Mat B, Mat A, IS isrow, IS iscol, const MatFactorInfo *info) {
+PetscErrorCode MatLUFactorSymbolic_SeqBAIJ_inplace(Mat B, Mat A, IS isrow, IS iscol, const MatFactorInfo *info)
+{
   Mat_SeqBAIJ       *a = (Mat_SeqBAIJ *)A->data, *b;
   PetscInt           n = a->mbs, bs = A->rmap->bs, bs2 = a->bs2;
   PetscBool          row_identity, col_identity, both_identity;
@@ -384,7 +450,6 @@ PetscErrorCode MatLUFactorSymbolic_SeqBAIJ_inplace(Mat B, Mat A, IS isrow, IS is
 
   /* put together the new matrix */
   PetscCall(MatSeqBAIJSetPreallocation(B, bs, MAT_SKIP_ALLOCATION, NULL));
-  PetscCall(PetscLogObjectParent((PetscObject)B, (PetscObject)isicol));
   b = (Mat_SeqBAIJ *)(B)->data;
 
   b->free_a       = PETSC_TRUE;
@@ -407,7 +472,6 @@ PetscErrorCode MatLUFactorSymbolic_SeqBAIJ_inplace(Mat B, Mat A, IS isrow, IS is
   b->icol = isicol;
 
   PetscCall(PetscMalloc1(bs * n + bs, &b->solve_work));
-  PetscCall(PetscLogObjectMemory((PetscObject)B, (bi[n] - n) * (sizeof(PetscInt) + sizeof(PetscScalar) * bs2)));
 
   b->maxnz = b->nz = bi[n];
 

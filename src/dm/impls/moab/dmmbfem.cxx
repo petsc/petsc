@@ -4,11 +4,13 @@
 #include <petsc/private/dmmbimpl.h> /*I  "petscdmmoab.h"   I*/
 
 /* Utility functions */
-static inline PetscReal DMatrix_Determinant_2x2_Internal(const PetscReal inmat[2 * 2]) {
+static inline PetscReal DMatrix_Determinant_2x2_Internal(const PetscReal inmat[2 * 2])
+{
   return inmat[0] * inmat[3] - inmat[1] * inmat[2];
 }
 
-static inline PetscErrorCode DMatrix_Invert_2x2_Internal(const PetscReal *inmat, PetscReal *outmat, PetscReal *determinant) {
+static inline PetscErrorCode DMatrix_Invert_2x2_Internal(const PetscReal *inmat, PetscReal *outmat, PetscReal *determinant)
+{
   PetscReal det = DMatrix_Determinant_2x2_Internal(inmat);
   if (outmat) {
     outmat[0] = inmat[3] / det;
@@ -20,11 +22,13 @@ static inline PetscErrorCode DMatrix_Invert_2x2_Internal(const PetscReal *inmat,
   return 0;
 }
 
-static inline PetscReal DMatrix_Determinant_3x3_Internal(const PetscReal inmat[3 * 3]) {
+static inline PetscReal DMatrix_Determinant_3x3_Internal(const PetscReal inmat[3 * 3])
+{
   return inmat[0] * (inmat[8] * inmat[4] - inmat[7] * inmat[5]) - inmat[3] * (inmat[8] * inmat[1] - inmat[7] * inmat[2]) + inmat[6] * (inmat[5] * inmat[1] - inmat[4] * inmat[2]);
 }
 
-static inline PetscErrorCode DMatrix_Invert_3x3_Internal(const PetscReal *inmat, PetscReal *outmat, PetscScalar *determinant) {
+static inline PetscErrorCode DMatrix_Invert_3x3_Internal(const PetscReal *inmat, PetscReal *outmat, PetscScalar *determinant)
+{
   PetscReal det = DMatrix_Determinant_3x3_Internal(inmat);
   if (outmat) {
     outmat[0] = (inmat[8] * inmat[4] - inmat[7] * inmat[5]) / det;
@@ -41,11 +45,13 @@ static inline PetscErrorCode DMatrix_Invert_3x3_Internal(const PetscReal *inmat,
   return 0;
 }
 
-inline PetscReal DMatrix_Determinant_4x4_Internal(PetscReal inmat[4 * 4]) {
+inline PetscReal DMatrix_Determinant_4x4_Internal(PetscReal inmat[4 * 4])
+{
   return inmat[0 + 0 * 4] * (inmat[1 + 1 * 4] * (inmat[2 + 2 * 4] * inmat[3 + 3 * 4] - inmat[2 + 3 * 4] * inmat[3 + 2 * 4]) - inmat[1 + 2 * 4] * (inmat[2 + 1 * 4] * inmat[3 + 3 * 4] - inmat[2 + 3 * 4] * inmat[3 + 1 * 4]) + inmat[1 + 3 * 4] * (inmat[2 + 1 * 4] * inmat[3 + 2 * 4] - inmat[2 + 2 * 4] * inmat[3 + 1 * 4])) - inmat[0 + 1 * 4] * (inmat[1 + 0 * 4] * (inmat[2 + 2 * 4] * inmat[3 + 3 * 4] - inmat[2 + 3 * 4] * inmat[3 + 2 * 4]) - inmat[1 + 2 * 4] * (inmat[2 + 0 * 4] * inmat[3 + 3 * 4] - inmat[2 + 3 * 4] * inmat[3 + 0 * 4]) + inmat[1 + 3 * 4] * (inmat[2 + 0 * 4] * inmat[3 + 2 * 4] - inmat[2 + 2 * 4] * inmat[3 + 0 * 4])) + inmat[0 + 2 * 4] * (inmat[1 + 0 * 4] * (inmat[2 + 1 * 4] * inmat[3 + 3 * 4] - inmat[2 + 3 * 4] * inmat[3 + 1 * 4]) - inmat[1 + 1 * 4] * (inmat[2 + 0 * 4] * inmat[3 + 3 * 4] - inmat[2 + 3 * 4] * inmat[3 + 0 * 4]) + inmat[1 + 3 * 4] * (inmat[2 + 0 * 4] * inmat[3 + 1 * 4] - inmat[2 + 1 * 4] * inmat[3 + 0 * 4])) - inmat[0 + 3 * 4] * (inmat[1 + 0 * 4] * (inmat[2 + 1 * 4] * inmat[3 + 2 * 4] - inmat[2 + 2 * 4] * inmat[3 + 1 * 4]) - inmat[1 + 1 * 4] * (inmat[2 + 0 * 4] * inmat[3 + 2 * 4] - inmat[2 + 2 * 4] * inmat[3 + 0 * 4]) + inmat[1 + 2 * 4] * (inmat[2 + 0 * 4] * inmat[3 + 1 * 4] - inmat[2 + 1 * 4] * inmat[3 + 0 * 4]));
 }
 
-inline PetscErrorCode DMatrix_Invert_4x4_Internal(PetscReal *inmat, PetscReal *outmat, PetscScalar *determinant) {
+inline PetscErrorCode DMatrix_Invert_4x4_Internal(PetscReal *inmat, PetscReal *outmat, PetscScalar *determinant)
+{
   PetscReal det = DMatrix_Determinant_4x4_Internal(inmat);
   if (outmat) {
     outmat[0]  = (inmat[5] * inmat[10] * inmat[15] + inmat[6] * inmat[11] * inmat[13] + inmat[7] * inmat[9] * inmat[14] - inmat[5] * inmat[11] * inmat[14] - inmat[6] * inmat[9] * inmat[15] - inmat[7] * inmat[10] * inmat[13]) / det;
@@ -103,7 +109,8 @@ inline PetscErrorCode DMatrix_Invert_4x4_Internal(PetscReal *inmat, PetscReal *o
   Level: advanced
 
 @*/
-PetscErrorCode Compute_Lagrange_Basis_1D_Internal(const PetscInt nverts, const PetscReal *coords, const PetscInt npts, const PetscReal *quad, PetscReal *phypts, PetscReal *jxw, PetscReal *phi, PetscReal *dphidx, PetscReal *jacobian, PetscReal *ijacobian, PetscReal *volume) {
+PetscErrorCode Compute_Lagrange_Basis_1D_Internal(const PetscInt nverts, const PetscReal *coords, const PetscInt npts, const PetscReal *quad, PetscReal *phypts, PetscReal *jxw, PetscReal *phi, PetscReal *dphidx, PetscReal *jacobian, PetscReal *ijacobian, PetscReal *volume)
+{
   int i, j;
 
   PetscFunctionBegin;
@@ -213,7 +220,8 @@ PetscErrorCode Compute_Lagrange_Basis_1D_Internal(const PetscInt nverts, const P
   Level: advanced
 
 @*/
-PetscErrorCode Compute_Lagrange_Basis_2D_Internal(const PetscInt nverts, const PetscReal *coords, const PetscInt npts, const PetscReal *quad, PetscReal *phypts, PetscReal *jxw, PetscReal *phi, PetscReal *dphidx, PetscReal *dphidy, PetscReal *jacobian, PetscReal *ijacobian, PetscReal *volume) {
+PetscErrorCode Compute_Lagrange_Basis_2D_Internal(const PetscInt nverts, const PetscReal *coords, const PetscInt npts, const PetscReal *quad, PetscReal *phypts, PetscReal *jxw, PetscReal *phi, PetscReal *dphidx, PetscReal *dphidy, PetscReal *jacobian, PetscReal *ijacobian, PetscReal *volume)
+{
   PetscInt i, j, k;
 
   PetscFunctionBegin;
@@ -369,7 +377,8 @@ PetscErrorCode Compute_Lagrange_Basis_2D_Internal(const PetscInt nverts, const P
   Level: advanced
 
 @*/
-PetscErrorCode Compute_Lagrange_Basis_3D_Internal(const PetscInt nverts, const PetscReal *coords, const PetscInt npts, const PetscReal *quad, PetscReal *phypts, PetscReal *jxw, PetscReal *phi, PetscReal *dphidx, PetscReal *dphidy, PetscReal *dphidz, PetscReal *jacobian, PetscReal *ijacobian, PetscReal *volume) {
+PetscErrorCode Compute_Lagrange_Basis_3D_Internal(const PetscInt nverts, const PetscReal *coords, const PetscInt npts, const PetscReal *quad, PetscReal *phypts, PetscReal *jxw, PetscReal *phi, PetscReal *dphidx, PetscReal *dphidy, PetscReal *dphidz, PetscReal *jacobian, PetscReal *ijacobian, PetscReal *volume)
+{
   PetscInt i, j, k;
 
   PetscFunctionBegin;
@@ -546,7 +555,8 @@ PetscErrorCode Compute_Lagrange_Basis_3D_Internal(const PetscInt nverts, const P
   Level: advanced
 
 @*/
-PetscErrorCode DMMoabFEMComputeBasis(const PetscInt dim, const PetscInt nverts, const PetscReal *coordinates, const PetscQuadrature quadrature, PetscReal *phypts, PetscReal *jacobian_quadrature_weight_product, PetscReal *fe_basis, PetscReal **fe_basis_derivatives) {
+PetscErrorCode DMMoabFEMComputeBasis(const PetscInt dim, const PetscInt nverts, const PetscReal *coordinates, const PetscQuadrature quadrature, PetscReal *phypts, PetscReal *jacobian_quadrature_weight_product, PetscReal *fe_basis, PetscReal **fe_basis_derivatives)
+{
   PetscInt         npoints, idim;
   bool             compute_der;
   const PetscReal *quadpts, *quadwts;
@@ -564,14 +574,17 @@ PetscErrorCode DMMoabFEMComputeBasis(const PetscInt dim, const PetscInt nverts, 
   if (jacobian_quadrature_weight_product) PetscCall(PetscArraycpy(jacobian_quadrature_weight_product, quadwts, npoints));
 
   switch (dim) {
-  case 1: PetscCall(Compute_Lagrange_Basis_1D_Internal(nverts, coordinates, npoints, quadpts, phypts, jacobian_quadrature_weight_product, fe_basis, (compute_der ? fe_basis_derivatives[0] : NULL), jacobian, ijacobian, &volume)); break;
+  case 1:
+    PetscCall(Compute_Lagrange_Basis_1D_Internal(nverts, coordinates, npoints, quadpts, phypts, jacobian_quadrature_weight_product, fe_basis, (compute_der ? fe_basis_derivatives[0] : NULL), jacobian, ijacobian, &volume));
+    break;
   case 2:
     PetscCall(Compute_Lagrange_Basis_2D_Internal(nverts, coordinates, npoints, quadpts, phypts, jacobian_quadrature_weight_product, fe_basis, (compute_der ? fe_basis_derivatives[0] : NULL), (compute_der ? fe_basis_derivatives[1] : NULL), jacobian, ijacobian, &volume));
     break;
   case 3:
     PetscCall(Compute_Lagrange_Basis_3D_Internal(nverts, coordinates, npoints, quadpts, phypts, jacobian_quadrature_weight_product, fe_basis, (compute_der ? fe_basis_derivatives[0] : NULL), (compute_der ? fe_basis_derivatives[1] : NULL), (compute_der ? fe_basis_derivatives[2] : NULL), jacobian, ijacobian, &volume));
     break;
-  default: SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid dimension; should be in [1,3] : %" PetscInt_FMT, dim);
+  default:
+    SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid dimension; should be in [1,3] : %" PetscInt_FMT, dim);
   }
   PetscFunctionReturn(0);
 }
@@ -591,7 +604,8 @@ PetscErrorCode DMMoabFEMComputeBasis(const PetscInt dim, const PetscInt nverts, 
   Level: advanced
 
 @*/
-PetscErrorCode DMMoabFEMCreateQuadratureDefault(const PetscInt dim, const PetscInt nverts, PetscQuadrature *quadrature) {
+PetscErrorCode DMMoabFEMCreateQuadratureDefault(const PetscInt dim, const PetscInt nverts, PetscQuadrature *quadrature)
+{
   PetscReal *w, *x;
   PetscInt   nc = 1;
 
@@ -657,13 +671,15 @@ PetscErrorCode DMMoabFEMCreateQuadratureDefault(const PetscInt dim, const PetscI
       /* PetscCall(PetscDTStroudConicalQuadrature(dim, nc, nverts, 0.0, 1.0, quadrature)); */
     } else PetscCall(PetscDTGaussTensorQuadrature(dim, nc, nverts, 0.0, 1.0, quadrature));
     break;
-  default: SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid dimension; should be in [1,3] : %" PetscInt_FMT, dim);
+  default:
+    SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid dimension; should be in [1,3] : %" PetscInt_FMT, dim);
   }
   PetscFunctionReturn(0);
 }
 
 /* Compute Jacobians */
-PetscErrorCode ComputeJacobian_Internal(const PetscInt dim, const PetscInt nverts, const PetscReal *coordinates, const PetscReal *quad, PetscReal *phypts, PetscReal *jacobian, PetscReal *ijacobian, PetscReal *dvolume) {
+PetscErrorCode ComputeJacobian_Internal(const PetscInt dim, const PetscInt nverts, const PetscReal *coordinates, const PetscReal *quad, PetscReal *phypts, PetscReal *jacobian, PetscReal *ijacobian, PetscReal *dvolume)
+{
   PetscInt  i;
   PetscReal volume = 1.0;
 
@@ -772,13 +788,21 @@ PetscErrorCode ComputeJacobian_Internal(const PetscInt dim, const PetscInt nvert
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode FEMComputeBasis_JandF(const PetscInt dim, const PetscInt nverts, const PetscReal *coordinates, const PetscReal *quadrature, PetscReal *phypts, PetscReal *phibasis, PetscReal *jacobian, PetscReal *ijacobian, PetscReal *volume) {
+PetscErrorCode FEMComputeBasis_JandF(const PetscInt dim, const PetscInt nverts, const PetscReal *coordinates, const PetscReal *quadrature, PetscReal *phypts, PetscReal *phibasis, PetscReal *jacobian, PetscReal *ijacobian, PetscReal *volume)
+{
   PetscFunctionBegin;
   switch (dim) {
-  case 1: PetscCall(Compute_Lagrange_Basis_1D_Internal(nverts, coordinates, 1, quadrature, phypts, NULL, phibasis, NULL, jacobian, ijacobian, volume)); break;
-  case 2: PetscCall(Compute_Lagrange_Basis_2D_Internal(nverts, coordinates, 1, quadrature, phypts, NULL, phibasis, NULL, NULL, jacobian, ijacobian, volume)); break;
-  case 3: PetscCall(Compute_Lagrange_Basis_3D_Internal(nverts, coordinates, 1, quadrature, phypts, NULL, phibasis, NULL, NULL, NULL, jacobian, ijacobian, volume)); break;
-  default: SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid dimension; should be in [1,3] : %" PetscInt_FMT, dim);
+  case 1:
+    PetscCall(Compute_Lagrange_Basis_1D_Internal(nverts, coordinates, 1, quadrature, phypts, NULL, phibasis, NULL, jacobian, ijacobian, volume));
+    break;
+  case 2:
+    PetscCall(Compute_Lagrange_Basis_2D_Internal(nverts, coordinates, 1, quadrature, phypts, NULL, phibasis, NULL, NULL, jacobian, ijacobian, volume));
+    break;
+  case 3:
+    PetscCall(Compute_Lagrange_Basis_3D_Internal(nverts, coordinates, 1, quadrature, phypts, NULL, phibasis, NULL, NULL, NULL, jacobian, ijacobian, volume));
+    break;
+  default:
+    SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid dimension; should be in [1,3] : %" PetscInt_FMT, dim);
   }
   PetscFunctionReturn(0);
 }
@@ -801,7 +825,8 @@ PetscErrorCode FEMComputeBasis_JandF(const PetscInt dim, const PetscInt nverts, 
   Level: advanced
 
 @*/
-PetscErrorCode DMMoabPToRMapping(const PetscInt dim, const PetscInt nverts, const PetscReal *coordinates, const PetscReal *xphy, PetscReal *natparam, PetscReal *phi) {
+PetscErrorCode DMMoabPToRMapping(const PetscInt dim, const PetscInt nverts, const PetscReal *coordinates, const PetscReal *xphy, PetscReal *natparam, PetscReal *phi)
+{
   /* Perform inverse evaluation for the mapping with use of Newton Raphson iteration */
   const PetscReal tol            = 1.0e-10;
   const PetscInt  max_iterations = 10;
@@ -829,8 +854,12 @@ PetscErrorCode DMMoabPToRMapping(const PetscInt dim, const PetscInt nverts, cons
 
   error = 0.0;
   switch (dim) {
-  case 3: delta[2] = phypts[2] - xphy[2]; error += (delta[2] * delta[2]);
-  case 2: delta[1] = phypts[1] - xphy[1]; error += (delta[1] * delta[1]);
+  case 3:
+    delta[2] = phypts[2] - xphy[2];
+    error += (delta[2] * delta[2]);
+  case 2:
+    delta[1] = phypts[1] - xphy[1];
+    error += (delta[1] * delta[1]);
   case 1:
     delta[0] = phypts[0] - xphy[0];
     error += (delta[0] * delta[0]);
@@ -842,7 +871,9 @@ PetscErrorCode DMMoabPToRMapping(const PetscInt dim, const PetscInt nverts, cons
 
     /* Compute natparam -= J.inverse() * delta */
     switch (dim) {
-    case 1: natparam[0] -= ijacobian[0] * delta[0]; break;
+    case 1:
+      natparam[0] -= ijacobian[0] * delta[0];
+      break;
     case 2:
       natparam[0] -= ijacobian[0] * delta[0] + ijacobian[1] * delta[1];
       natparam[1] -= ijacobian[2] * delta[0] + ijacobian[3] * delta[1];
@@ -859,8 +890,12 @@ PetscErrorCode DMMoabPToRMapping(const PetscInt dim, const PetscInt nverts, cons
 
     error = 0.0;
     switch (dim) {
-    case 3: delta[2] = phypts[2] - xphy[2]; error += (delta[2] * delta[2]);
-    case 2: delta[1] = phypts[1] - xphy[1]; error += (delta[1] * delta[1]);
+    case 3:
+      delta[2] = phypts[2] - xphy[2];
+      error += (delta[2] * delta[2]);
+    case 2:
+      delta[1] = phypts[1] - xphy[1];
+      error += (delta[1] * delta[1]);
     case 1:
       delta[0] = phypts[0] - xphy[0];
       error += (delta[0] * delta[0]);

@@ -12,37 +12,39 @@ const char *const        PCPARMSGlobalTypes[]    = {"RAS", "SCHUR", "BJ", "PCPAR
 const char *const        PCPARMSLocalTypes[]     = {"ILU0", "ILUK", "ILUT", "ARMS", "PCPARMSLocalType", "PC_PARMS_", NULL};
 const char *const        PCPatchConstructTypes[] = {"star", "vanka", "pardecomp", "user", "python", "PCPatchSetConstructType", "PC_PATCH_", NULL};
 
-const char *const        PCFailedReasons_Shifted[] = {"SETUP_ERROR", "FACTOR_NOERROR", "FACTOR_STRUCT_ZEROPIVOT", "FACTOR_NUMERIC_ZEROPIVOT", "FACTOR_OUTMEMORY", "FACTOR_OTHER", "SUBPC_ERROR", NULL};
+const char *const        PCFailedReasons_Shifted[] = {"SETUP_ERROR", "FACTOR_NOERROR", "FACTOR_STRUCT_ZEROPIVOT", "FACTOR_NUMERIC_ZEROPIVOT", "FACTOR_OUTMEMORY", "FACTOR_OTHER", "PC_INCONSISTENT_RHS", "SUBPC_ERROR", NULL};
 const char *const *const PCFailedReasons           = PCFailedReasons_Shifted + 1;
 
 static PetscBool PCPackageInitialized = PETSC_FALSE;
 /*@C
-  PCFinalizePackage - This function destroys everything in the Petsc interface to the characteristics package. It is
-  called from PetscFinalize().
+  PCFinalizePackage - This function destroys everything in the `PC` package. It is
+  called from `PetscFinalize()`.
 
   Level: developer
 
-.seealso: `PetscFinalize()`
+.seealso: [](chapter_ksp), `PetscFinalize()`, `PCInitializePackage()`
 @*/
-PetscErrorCode   PCFinalizePackage(void) {
-    PetscFunctionBegin;
-    PetscCall(PetscFunctionListDestroy(&PCList));
-    PetscCall(PetscFunctionListDestroy(&PCMGCoarseList));
-    PCPackageInitialized = PETSC_FALSE;
-    PCRegisterAllCalled  = PETSC_FALSE;
-    PetscFunctionReturn(0);
+PetscErrorCode PCFinalizePackage(void)
+{
+  PetscFunctionBegin;
+  PetscCall(PetscFunctionListDestroy(&PCList));
+  PetscCall(PetscFunctionListDestroy(&PCMGCoarseList));
+  PCPackageInitialized = PETSC_FALSE;
+  PCRegisterAllCalled  = PETSC_FALSE;
+  PetscFunctionReturn(0);
 }
 
 /*@C
-  PCInitializePackage - This function initializes everything in the PC package. It is called
-  from PetscDLLibraryRegister_petscksp() when using dynamic libraries, and on the first call to PCCreate()
+  PCInitializePackage - This function initializes everything in the `PC` package. It is called
+  from `PetscDLLibraryRegister_petscksp()` when using dynamic libraries, and on the first call to `PCCreate()`
   when using shared static libraries.
 
   Level: developer
 
-.seealso: `PetscInitialize()`
+.seealso: [](chapter_ksp), `PetscInitialize()`, `PCFinalizePackage()`
 @*/
-PetscErrorCode PCInitializePackage(void) {
+PetscErrorCode PCInitializePackage(void)
+{
   char      logList[256];
   PetscBool opt, pkg;
 
@@ -85,6 +87,9 @@ PetscErrorCode PCInitializePackage(void) {
   PetscCall(PetscLogEventRegister("KSPSolve_FS_Schu", KSP_CLASSID, &KSP_Solve_FS_S));
   PetscCall(PetscLogEventRegister("KSPSolve_FS_Up", KSP_CLASSID, &KSP_Solve_FS_U));
   PetscCall(PetscLogEventRegister("KSPSolve_FS_Low", KSP_CLASSID, &KSP_Solve_FS_L));
+
+  PetscCall(PetscLogStageRegister("PCMPI", &PCMPIStage));
+
   /* Process Info */
   {
     PetscClassId classids[1];
@@ -105,13 +110,13 @@ PetscErrorCode PCInitializePackage(void) {
   PetscFunctionReturn(0);
 }
 
-const char *const        KSPCGTypes[]                  = {"SYMMETRIC", "HERMITIAN", "KSPCGType", "KSP_CG_", NULL};
-const char *const        KSPGMRESCGSRefinementTypes[]  = {"REFINE_NEVER", "REFINE_IFNEEDED", "REFINE_ALWAYS", "KSPGMRESRefinementType", "KSP_GMRES_CGS_", NULL};
-const char *const        KSPNormTypes_Shifted[]        = {"DEFAULT", "NONE", "PRECONDITIONED", "UNPRECONDITIONED", "NATURAL", "KSPNormType", "KSP_NORM_", NULL};
-const char *const *const KSPNormTypes                  = KSPNormTypes_Shifted + 1;
-const char *const        KSPConvergedReasons_Shifted[] = {"DIVERGED_PC_FAILED", "DIVERGED_INDEFINITE_MAT", "DIVERGED_NANORINF", "DIVERGED_INDEFINITE_PC", "DIVERGED_NONSYMMETRIC", "DIVERGED_BREAKDOWN_BICG", "DIVERGED_BREAKDOWN", "DIVERGED_DTOL", "DIVERGED_ITS", "DIVERGED_NULL", "", "CONVERGED_ITERATING", "CONVERGED_RTOL_NORMAL", "CONVERGED_RTOL", "CONVERGED_ATOL", "CONVERGED_ITS", "CONVERGED_CG_NEG_CURVE", "CONVERGED_CG_CONSTRAINED", "CONVERGED_STEP_LENGTH", "CONVERGED_HAPPY_BREAKDOWN", "CONVERGED_ATOL_NORMAL", "KSPConvergedReason", "KSP_", NULL};
-const char *const       *KSPConvergedReasons           = KSPConvergedReasons_Shifted + 11;
-const char *const        KSPFCDTruncationTypes[]       = {"STANDARD", "NOTAY", "KSPFCDTruncationTypes", "KSP_FCD_TRUNC_TYPE_", NULL};
+const char *const        KSPCGTypes[]                 = {"SYMMETRIC", "HERMITIAN", "KSPCGType", "KSP_CG_", NULL};
+const char *const        KSPGMRESCGSRefinementTypes[] = {"REFINE_NEVER", "REFINE_IFNEEDED", "REFINE_ALWAYS", "KSPGMRESRefinementType", "KSP_GMRES_CGS_", NULL};
+const char *const        KSPNormTypes_Shifted[]       = {"DEFAULT", "NONE", "PRECONDITIONED", "UNPRECONDITIONED", "NATURAL", "KSPNormType", "KSP_NORM_", NULL};
+const char *const *const KSPNormTypes                 = KSPNormTypes_Shifted + 1;
+const char *const KSPConvergedReasons_Shifted[] = {"DIVERGED_PC_FAILED", "DIVERGED_INDEFINITE_MAT", "DIVERGED_NANORINF", "DIVERGED_INDEFINITE_PC", "DIVERGED_NONSYMMETRIC", "DIVERGED_BREAKDOWN_BICG", "DIVERGED_BREAKDOWN", "DIVERGED_DTOL", "DIVERGED_ITS", "DIVERGED_NULL", "", "CONVERGED_ITERATING", "CONVERGED_RTOL_NORMAL", "CONVERGED_RTOL", "CONVERGED_ATOL", "CONVERGED_ITS", "CONVERGED_CG_NEG_CURVE", "CONVERGED_CG_CONSTRAINED", "CONVERGED_STEP_LENGTH", "CONVERGED_HAPPY_BREAKDOWN", "CONVERGED_ATOL_NORMAL", "KSPConvergedReason", "KSP_", NULL};
+const char *const *KSPConvergedReasons     = KSPConvergedReasons_Shifted + 11;
+const char *const  KSPFCDTruncationTypes[] = {"STANDARD", "NOTAY", "KSPFCDTruncationTypes", "KSP_FCD_TRUNC_TYPE_", NULL};
 
 static PetscBool KSPPackageInitialized = PETSC_FALSE;
 /*@C
@@ -120,31 +125,33 @@ static PetscBool KSPPackageInitialized = PETSC_FALSE;
 
   Level: developer
 
-.seealso: `PetscFinalize()`
+.seealso: [](chapter_ksp), `PetscFinalize()`, `KSPInitializePackage()`
 @*/
-PetscErrorCode   KSPFinalizePackage(void) {
-    PetscFunctionBegin;
-    PetscCall(PetscFunctionListDestroy(&KSPList));
-    PetscCall(PetscFunctionListDestroy(&KSPGuessList));
-    PetscCall(PetscFunctionListDestroy(&KSPMonitorList));
-    PetscCall(PetscFunctionListDestroy(&KSPMonitorCreateList));
-    PetscCall(PetscFunctionListDestroy(&KSPMonitorDestroyList));
-    KSPPackageInitialized       = PETSC_FALSE;
-    KSPRegisterAllCalled        = PETSC_FALSE;
-    KSPMonitorRegisterAllCalled = PETSC_FALSE;
-    PetscFunctionReturn(0);
+PetscErrorCode KSPFinalizePackage(void)
+{
+  PetscFunctionBegin;
+  PetscCall(PetscFunctionListDestroy(&KSPList));
+  PetscCall(PetscFunctionListDestroy(&KSPGuessList));
+  PetscCall(PetscFunctionListDestroy(&KSPMonitorList));
+  PetscCall(PetscFunctionListDestroy(&KSPMonitorCreateList));
+  PetscCall(PetscFunctionListDestroy(&KSPMonitorDestroyList));
+  KSPPackageInitialized       = PETSC_FALSE;
+  KSPRegisterAllCalled        = PETSC_FALSE;
+  KSPMonitorRegisterAllCalled = PETSC_FALSE;
+  PetscFunctionReturn(0);
 }
 
 /*@C
-  KSPInitializePackage - This function initializes everything in the KSP package. It is called
-  from PetscDLLibraryRegister_petscksp() when using dynamic libraries, and on the first call to KSPCreate()
+  KSPInitializePackage - This function initializes everything in the `KSP` package. It is called
+  from `PetscDLLibraryRegister_petscksp()` when using dynamic libraries, and on the first call to `KSPCreate()`
   when using shared or static libraries.
 
   Level: developer
 
-.seealso: `PetscInitialize()`
+.seealso: [](chapter_ksp), `PetscInitialize()`, `KSPFinalizePackage()`
 @*/
-PetscErrorCode KSPInitializePackage(void) {
+PetscErrorCode KSPInitializePackage(void)
+{
   char      logList[256];
   PetscBool opt, pkg, cls;
 
@@ -200,11 +207,10 @@ PetscErrorCode KSPInitializePackage(void) {
 /*
   PetscDLLibraryRegister - This function is called when the dynamic library it is in is opened.
 
-  This one registers all the KSP and PC methods that are in the basic PETSc libpetscksp
-  library.
-
+  This one registers all the `KSP` and `PC` methods that are in the basic PETSc libpetscksp library.
  */
-PETSC_EXTERN PetscErrorCode PetscDLLibraryRegister_petscksp(void) {
+PETSC_EXTERN PetscErrorCode PetscDLLibraryRegister_petscksp(void)
+{
   PetscFunctionBegin;
   PetscCall(PCInitializePackage());
   PetscCall(KSPInitializePackage());

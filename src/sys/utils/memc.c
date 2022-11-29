@@ -33,7 +33,8 @@
 .seealso: `PetscMemcpy()`, `PetscMemcmp()`, `PetscArrayzero()`, `PetscMemzero()`, `PetscArraycmp()`, `PetscArraycpy()`, `PetscStrallocpy()`,
           `PetscArraymove()`
 @*/
-PetscErrorCode PetscMemcmp(const void *str1, const void *str2, size_t len, PetscBool *e) {
+PetscErrorCode PetscMemcmp(const void *str1, const void *str2, size_t len, PetscBool *e)
+{
   if (!len) {
     // if e is a bad ptr I guess we just die here then?
     *e = PETSC_TRUE;
@@ -49,8 +50,8 @@ PetscErrorCode PetscMemcmp(const void *str1, const void *str2, size_t len, Petsc
 }
 
 #if defined(PETSC_HAVE_HWLOC)
-#include <petsc/private/petscimpl.h>
-#include <hwloc.h>
+  #include <petsc/private/petscimpl.h>
+  #include <hwloc.h>
 
 /*@C
      PetscProcessPlacementView - display the MPI rank placement by core
@@ -63,7 +64,8 @@ PetscErrorCode PetscMemcmp(const void *str1, const void *str2, size_t len, Petsc
   Note:
     Requires that PETSc be installed with hwloc, for example using --download-hwloc
 @*/
-PetscErrorCode PetscProcessPlacementView(PetscViewer viewer) {
+PetscErrorCode PetscProcessPlacementView(PetscViewer viewer)
+{
   PetscBool        isascii;
   PetscMPIInt      rank;
   hwloc_bitmap_t   set;

@@ -50,7 +50,8 @@ extern PetscErrorCode FormJacobian_Grid(AppCtx *, GridCtx *, Mat *);
 /*
       Mm_ratio - ration of grid lines between fine and coarse grids.
 */
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   AppCtx      user;
   PetscInt    its, N, n, Nx = PETSC_DECIDE, Ny = PETSC_DECIDE, nlocal, Nlocal;
   PetscMPIInt size;
@@ -169,7 +170,8 @@ int main(int argc, char **argv) {
   return 0;
 }
 
-PetscErrorCode FormJacobian_Grid(AppCtx *user, GridCtx *grid, Mat *J) {
+PetscErrorCode FormJacobian_Grid(AppCtx *user, GridCtx *grid, Mat *J)
+{
   Mat                    jac = *J;
   PetscInt               i, j, row, mx, my, xs, ys, xm, ym, Xs, Ys, Xm, Ym, col[5];
   PetscInt               grow;

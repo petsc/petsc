@@ -62,7 +62,8 @@ static PetscErrorCode xyt_generate(xyt_ADT xyt_handle);
 static PetscErrorCode do_xyt_factor(xyt_ADT xyt_handle);
 static mv_info       *set_mvi(PetscInt *local2global, PetscInt n, PetscInt m, PetscErrorCode (*matvec)(mv_info *, PetscScalar *, PetscScalar *), void *grid_data);
 
-xyt_ADT XYT_new(void) {
+xyt_ADT XYT_new(void)
+{
   xyt_ADT xyt_handle;
 
   /* rolling count on n_xyt ... pot. problem here */
@@ -104,7 +105,8 @@ PetscErrorCode XYT_factor(xyt_ADT   xyt_handle,                                 
   return (do_xyt_factor(xyt_handle));
 }
 
-PetscErrorCode XYT_solve(xyt_ADT xyt_handle, PetscScalar *x, PetscScalar *b) {
+PetscErrorCode XYT_solve(xyt_ADT xyt_handle, PetscScalar *x, PetscScalar *b)
+{
   PCTFS_comm_init();
   check_handle(xyt_handle);
 
@@ -113,7 +115,8 @@ PetscErrorCode XYT_solve(xyt_ADT xyt_handle, PetscScalar *x, PetscScalar *b) {
   return do_xyt_solve(xyt_handle, x);
 }
 
-PetscErrorCode XYT_free(xyt_ADT xyt_handle) {
+PetscErrorCode XYT_free(xyt_ADT xyt_handle)
+{
   PCTFS_comm_init();
   check_handle(xyt_handle);
   n_xyt_handles--;
@@ -145,7 +148,8 @@ PetscErrorCode XYT_free(xyt_ADT xyt_handle) {
 }
 
 /* This function is currently not used */
-PetscErrorCode XYT_stats(xyt_ADT xyt_handle) {
+PetscErrorCode XYT_stats(xyt_ADT xyt_handle)
+{
   PetscInt    op[]  = {NON_UNIFORM, GL_MIN, GL_MAX, GL_ADD, GL_MIN, GL_MAX, GL_ADD, GL_MIN, GL_MAX, GL_ADD};
   PetscInt    fop[] = {NON_UNIFORM, GL_MIN, GL_MAX, GL_ADD};
   PetscInt    vals[9], work[9];
@@ -203,11 +207,13 @@ is a row dist. nxm matrix w/ n<m.
 mylocmatvec = my_ml->Amat[grid_tag].matvec->external;
 mylocmatvec (void :: void *data, double *in, double *out)
 */
-static PetscErrorCode do_xyt_factor(xyt_ADT xyt_handle) {
+static PetscErrorCode do_xyt_factor(xyt_ADT xyt_handle)
+{
   return xyt_generate(xyt_handle);
 }
 
-static PetscErrorCode xyt_generate(xyt_ADT xyt_handle) {
+static PetscErrorCode xyt_generate(xyt_ADT xyt_handle)
+{
   PetscInt      i, j, k, idx;
   PetscInt      dim, col;
   PetscScalar  *u, *uu, *v, *z, *w, alpha, alpha_w;
@@ -504,7 +510,8 @@ static PetscErrorCode xyt_generate(xyt_ADT xyt_handle) {
   return (0);
 }
 
-static PetscErrorCode do_xyt_solve(xyt_ADT xyt_handle, PetscScalar *uc) {
+static PetscErrorCode do_xyt_solve(xyt_ADT xyt_handle, PetscScalar *uc)
+{
   PetscInt     off, len, *iptr;
   PetscInt     level        = xyt_handle->level;
   PetscInt     n            = xyt_handle->info->n;
@@ -532,7 +539,7 @@ static PetscErrorCode do_xyt_solve(xyt_ADT xyt_handle, PetscScalar *uc) {
     PetscCallBLAS("BLASdot", *uu_ptr++ = BLASdot_(&dlen, uc + off, &i1, y_ptr, &i1));
   }
 
-  /* comunication of beta */
+  /* communication of beta */
   uu_ptr = solve_uu;
   if (level) PetscCall(PCTFS_ssgl_radd(uu_ptr, solve_w, level, stages));
   PCTFS_rvec_zero(uc, n);
@@ -547,11 +554,12 @@ static PetscErrorCode do_xyt_solve(xyt_ADT xyt_handle, PetscScalar *uc) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode check_handle(xyt_ADT xyt_handle) {
+static PetscErrorCode check_handle(xyt_ADT xyt_handle)
+{
   PetscInt vals[2], work[2], op[] = {NON_UNIFORM, GL_MIN, GL_MAX};
 
   PetscFunctionBegin;
-  PetscCheck(xyt_handle, PETSC_COMM_SELF, PETSC_ERR_PLIB, "check_handle() :: bad handle :: NULL %p", xyt_handle);
+  PetscCheck(xyt_handle, PETSC_COMM_SELF, PETSC_ERR_PLIB, "check_handle() :: bad handle :: NULL %p", (void *)xyt_handle);
 
   vals[0] = vals[1] = xyt_handle->id;
   PCTFS_giop(vals, work, PETSC_STATIC_ARRAY_LENGTH(op) - 1, op);
@@ -559,7 +567,8 @@ static PetscErrorCode check_handle(xyt_ADT xyt_handle) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode det_separators(xyt_ADT xyt_handle) {
+static PetscErrorCode det_separators(xyt_ADT xyt_handle)
+{
   PetscInt     i, ct, id;
   PetscInt     mask, edge, *iptr;
   PetscInt    *dir, *used;
@@ -613,76 +622,73 @@ static PetscErrorCode det_separators(xyt_ADT xyt_handle) {
   xyt_handle->mvi->n_global = xyt_handle->mvi->m_global = (PetscInt)rsum[0];
 
   /* determine separator sets top down */
-  if (shared) {
-    /* solution is to do as in the symmetric shared case but then */
-    /* pick the sub-hc with the most free dofs and do a mat-vec   */
-    /* and pick up the responses on the other sub-hc from the     */
-    /* initial separator set obtained from the symm. shared case  */
-    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "shared dof separator determination not ready ... see hmt!!!");
-    /* [dead code deleted since it is unlikely to be completed] */
-  } else {
-    for (iptr = fo + n, id = PCTFS_my_id, mask = PCTFS_num_nodes >> 1, edge = level; edge > 0; edge--, mask >>= 1) {
-      /* set rsh of hc, fire, and collect lhs responses */
-      (id < mask) ? PCTFS_rvec_zero(lhs, m) : PCTFS_rvec_set(lhs, 1.0, m);
-      PCTFS_gs_gop_hc(PCTFS_gs_handle, lhs, "+\0", edge);
+  PetscCheck(!shared, PETSC_COMM_SELF, PETSC_ERR_PLIB, "shared dof separator determination not ready ... see hmt!!!");
+  /* solution is to do as in the symmetric shared case but then */
+  /* pick the sub-hc with the most free dofs and do a mat-vec   */
+  /* and pick up the responses on the other sub-hc from the     */
+  /* initial separator set obtained from the symm. shared case  */
+  /* [dead code deleted since it is unlikely to be completed] */
+  for (iptr = fo + n, id = PCTFS_my_id, mask = PCTFS_num_nodes >> 1, edge = level; edge > 0; edge--, mask >>= 1) {
+    /* set rsh of hc, fire, and collect lhs responses */
+    (id < mask) ? PCTFS_rvec_zero(lhs, m) : PCTFS_rvec_set(lhs, 1.0, m);
+    PCTFS_gs_gop_hc(PCTFS_gs_handle, lhs, "+\0", edge);
 
-      /* set lsh of hc, fire, and collect rhs responses */
-      (id < mask) ? PCTFS_rvec_set(rhs, 1.0, m) : PCTFS_rvec_zero(rhs, m);
-      PCTFS_gs_gop_hc(PCTFS_gs_handle, rhs, "+\0", edge);
+    /* set lsh of hc, fire, and collect rhs responses */
+    (id < mask) ? PCTFS_rvec_set(rhs, 1.0, m) : PCTFS_rvec_zero(rhs, m);
+    PCTFS_gs_gop_hc(PCTFS_gs_handle, rhs, "+\0", edge);
 
-      /* count number of dofs I own that have signal and not in sep set */
-      for (PCTFS_ivec_zero(sum, 4), ct = i = 0; i < n; i++) {
-        if (!used[i]) {
-          /* number of unmarked dofs on node */
-          ct++;
-          /* number of dofs to be marked on lhs hc */
-          if ((id < mask) && (lhs[i] != 0.0)) sum[0]++;
-          /* number of dofs to be marked on rhs hc */
-          if ((id >= mask) && (rhs[i] != 0.0)) sum[1]++;
-        }
+    /* count number of dofs I own that have signal and not in sep set */
+    for (PCTFS_ivec_zero(sum, 4), ct = i = 0; i < n; i++) {
+      if (!used[i]) {
+        /* number of unmarked dofs on node */
+        ct++;
+        /* number of dofs to be marked on lhs hc */
+        if ((id < mask) && (lhs[i] != 0.0)) sum[0]++;
+        /* number of dofs to be marked on rhs hc */
+        if ((id >= mask) && (rhs[i] != 0.0)) sum[1]++;
       }
-
-      /* for the non-symmetric case we need separators of width 2 */
-      /* so take both sides */
-      (id < mask) ? (sum[2] = ct) : (sum[3] = ct);
-      PCTFS_giop_hc(sum, w, 4, op, edge);
-
-      ct = 0;
-      if (id < mask) {
-        /* mark dofs I own that have signal and not in sep set */
-        for (i = 0; i < n; i++) {
-          if ((!used[i]) && (lhs[i] != 0.0)) {
-            ct++;
-            nfo++;
-            *--iptr = local2global[i];
-            used[i] = edge;
-          }
-        }
-        /* LSH hc summation of ct should be sum[0] */
-      } else {
-        /* mark dofs I own that have signal and not in sep set */
-        for (i = 0; i < n; i++) {
-          if ((!used[i]) && (rhs[i] != 0.0)) {
-            ct++;
-            nfo++;
-            *--iptr = local2global[i];
-            used[i] = edge;
-          }
-        }
-        /* RSH hc summation of ct should be sum[1] */
-      }
-
-      if (ct > 1) PCTFS_ivec_sort(iptr, ct);
-      lnsep[edge] = ct;
-      nsep[edge]  = sum[0] + sum[1];
-      dir[edge]   = BOTH;
-
-      /* LATER or we can recur on these to order seps at this level */
-      /* do we need full set of separators for this?                */
-
-      /* fold rhs hc into lower */
-      if (id >= mask) id -= mask;
     }
+
+    /* for the non-symmetric case we need separators of width 2 */
+    /* so take both sides */
+    (id < mask) ? (sum[2] = ct) : (sum[3] = ct);
+    PCTFS_giop_hc(sum, w, 4, op, edge);
+
+    ct = 0;
+    if (id < mask) {
+      /* mark dofs I own that have signal and not in sep set */
+      for (i = 0; i < n; i++) {
+        if ((!used[i]) && (lhs[i] != 0.0)) {
+          ct++;
+          nfo++;
+          *--iptr = local2global[i];
+          used[i] = edge;
+        }
+      }
+      /* LSH hc summation of ct should be sum[0] */
+    } else {
+      /* mark dofs I own that have signal and not in sep set */
+      for (i = 0; i < n; i++) {
+        if ((!used[i]) && (rhs[i] != 0.0)) {
+          ct++;
+          nfo++;
+          *--iptr = local2global[i];
+          used[i] = edge;
+        }
+      }
+      /* RSH hc summation of ct should be sum[1] */
+    }
+
+    if (ct > 1) PCTFS_ivec_sort(iptr, ct);
+    lnsep[edge] = ct;
+    nsep[edge]  = sum[0] + sum[1];
+    dir[edge]   = BOTH;
+
+    /* LATER or we can recur on these to order seps at this level */
+    /* do we need full set of separators for this?                */
+
+    /* fold rhs hc into lower */
+    if (id >= mask) id -= mask;
   }
 
   /* level 0 is on processor case - so mark the remainder */
@@ -711,7 +717,8 @@ static PetscErrorCode det_separators(xyt_ADT xyt_handle) {
   PetscFunctionReturn(0);
 }
 
-static mv_info *set_mvi(PetscInt *local2global, PetscInt n, PetscInt m, PetscErrorCode (*matvec)(mv_info *, PetscScalar *, PetscScalar *), void *grid_data) {
+static mv_info *set_mvi(PetscInt *local2global, PetscInt n, PetscInt m, PetscErrorCode (*matvec)(mv_info *, PetscScalar *, PetscScalar *), void *grid_data)
+{
   mv_info *mvi;
 
   mvi               = (mv_info *)malloc(sizeof(mv_info));
@@ -732,7 +739,8 @@ static mv_info *set_mvi(PetscInt *local2global, PetscInt n, PetscInt m, PetscErr
   return (mvi);
 }
 
-static PetscErrorCode do_matvec(mv_info *A, PetscScalar *v, PetscScalar *u) {
+static PetscErrorCode do_matvec(mv_info *A, PetscScalar *v, PetscScalar *u)
+{
   PetscFunctionBegin;
   A->matvec((mv_info *)A->grid_data, v, u);
   PetscFunctionReturn(0);

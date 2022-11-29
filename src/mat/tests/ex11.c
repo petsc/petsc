@@ -3,7 +3,8 @@ static char help[] = "Tests the use of MatZeroRows() for uniprocessor matrices.\
 
 #include <petscmat.h>
 
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   Mat         C;
   PetscInt    i, j, m = 5, n = 5, Ii, J;
   PetscScalar v, five = 5.0;

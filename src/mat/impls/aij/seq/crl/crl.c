@@ -11,7 +11,8 @@
 */
 #include <../src/mat/impls/aij/seq/crl/crl.h>
 
-PetscErrorCode MatDestroy_SeqAIJCRL(Mat A) {
+PetscErrorCode MatDestroy_SeqAIJCRL(Mat A)
+{
   Mat_AIJCRL *aijcrl = (Mat_AIJCRL *)A->spptr;
 
   PetscFunctionBegin;
@@ -23,11 +24,13 @@ PetscErrorCode MatDestroy_SeqAIJCRL(Mat A) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatDuplicate_AIJCRL(Mat A, MatDuplicateOption op, Mat *M) {
+PetscErrorCode MatDuplicate_AIJCRL(Mat A, MatDuplicateOption op, Mat *M)
+{
   SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Cannot duplicate AIJCRL matrices yet");
 }
 
-PetscErrorCode MatSeqAIJCRL_create_aijcrl(Mat A) {
+PetscErrorCode MatSeqAIJCRL_create_aijcrl(Mat A)
+{
   Mat_SeqAIJ  *a      = (Mat_SeqAIJ *)(A)->data;
   Mat_AIJCRL  *aijcrl = (Mat_AIJCRL *)A->spptr;
   PetscInt     m      = A->rmap->n; /* Number of rows in the matrix. */
@@ -59,7 +62,8 @@ PetscErrorCode MatSeqAIJCRL_create_aijcrl(Mat A) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatAssemblyEnd_SeqAIJCRL(Mat A, MatAssemblyType mode) {
+PetscErrorCode MatAssemblyEnd_SeqAIJCRL(Mat A, MatAssemblyType mode)
+{
   Mat_SeqAIJ *a = (Mat_SeqAIJ *)A->data;
 
   PetscFunctionBegin;
@@ -80,7 +84,8 @@ PetscErrorCode MatAssemblyEnd_SeqAIJCRL(Mat A, MatAssemblyType mode) {
     - the scatter is used only in the parallel version
 
 */
-PetscErrorCode MatMult_AIJCRL(Mat A, Vec xx, Vec yy) {
+PetscErrorCode MatMult_AIJCRL(Mat A, Vec xx, Vec yy)
+{
   Mat_AIJCRL        *aijcrl = (Mat_AIJCRL *)A->spptr;
   PetscInt           m      = aijcrl->m; /* Number of rows in the matrix. */
   PetscInt           rmax = aijcrl->rmax, *icols = aijcrl->icols;
@@ -92,7 +97,7 @@ PetscErrorCode MatMult_AIJCRL(Mat A, Vec xx, Vec yy) {
 #endif
 
 #if defined(PETSC_HAVE_PRAGMA_DISJOINT)
-#pragma disjoint(*x, *y, *aa)
+  #pragma disjoint(*x, *y, *aa)
 #endif
 
   PetscFunctionBegin;
@@ -115,19 +120,19 @@ PetscErrorCode MatMult_AIJCRL(Mat A, Vec xx, Vec yy) {
   for (j = 0; j < m; j++) y[j] = acols[j] * x[icols[j]];
 
     /* other columns */
-#if defined(PETSC_HAVE_CRAY_VECTOR)
-#pragma _CRI preferstream
-#endif
+  #if defined(PETSC_HAVE_CRAY_VECTOR)
+    #pragma _CRI preferstream
+  #endif
   for (i = 1; i < rmax; i++) {
     ii = i * m;
-#if defined(PETSC_HAVE_CRAY_VECTOR)
-#pragma _CRI prefervector
-#endif
+  #if defined(PETSC_HAVE_CRAY_VECTOR)
+    #pragma _CRI prefervector
+  #endif
     for (j = 0; j < m; j++) y[j] = y[j] + acols[ii + j] * x[icols[ii + j]];
   }
-#if defined(PETSC_HAVE_CRAY_VECTOR)
-#pragma _CRI ivdep
-#endif
+  #if defined(PETSC_HAVE_CRAY_VECTOR)
+    #pragma _CRI ivdep
+  #endif
 
 #endif
   PetscCall(PetscLogFlops(2.0 * aijcrl->nz - m));
@@ -140,7 +145,8 @@ PetscErrorCode MatMult_AIJCRL(Mat A, Vec xx, Vec yy) {
  * SeqAIJCRL matrix.  This routine is called by the MatCreate_SeqAIJCRL()
  * routine, but can also be used to convert an assembled SeqAIJ matrix
  * into a SeqAIJCRL one. */
-PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJCRL(Mat A, MatType type, MatReuse reuse, Mat *newmat) {
+PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJCRL(Mat A, MatType type, MatReuse reuse, Mat *newmat)
+{
   Mat         B = *newmat;
   Mat_AIJCRL *aijcrl;
   PetscBool   sametype;
@@ -150,7 +156,7 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJCRL(Mat A, MatType type, Mat
   PetscCall(PetscObjectTypeCompare((PetscObject)A, type, &sametype));
   if (sametype) PetscFunctionReturn(0);
 
-  PetscCall(PetscNewLog(B, &aijcrl));
+  PetscCall(PetscNew(&aijcrl));
   B->spptr = (void *)aijcrl;
 
   /* Set function pointers for methods that we inherit from AIJ but override. */
@@ -197,7 +203,8 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJCRL(Mat A, MatType type, Mat
 
 .seealso: `MatCreate()`, `MatCreateMPIAIJPERM()`, `MatSetValues()`
 @*/
-PetscErrorCode MatCreateSeqAIJCRL(MPI_Comm comm, PetscInt m, PetscInt n, PetscInt nz, const PetscInt nnz[], Mat *A) {
+PetscErrorCode MatCreateSeqAIJCRL(MPI_Comm comm, PetscInt m, PetscInt n, PetscInt nz, const PetscInt nnz[], Mat *A)
+{
   PetscFunctionBegin;
   PetscCall(MatCreate(comm, A));
   PetscCall(MatSetSizes(*A, m, n, m, n));
@@ -206,7 +213,8 @@ PetscErrorCode MatCreateSeqAIJCRL(MPI_Comm comm, PetscInt m, PetscInt n, PetscIn
   PetscFunctionReturn(0);
 }
 
-PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJCRL(Mat A) {
+PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJCRL(Mat A)
+{
   PetscFunctionBegin;
   PetscCall(MatSetType(A, MATSEQAIJ));
   PetscCall(MatConvert_SeqAIJ_SeqAIJCRL(A, MATSEQAIJCRL, MAT_INPLACE_MATRIX, &A));

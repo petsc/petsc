@@ -1,4 +1,4 @@
-#if !defined(PETSCSECTIONTYPES_H)
+#ifndef PETSCSECTIONTYPES_H
 #define PETSCSECTIONTYPES_H
 
 /* SUBMANSEC = PetscSection */
@@ -13,9 +13,11 @@
   count, which are set using `PetscSectionSetOffset()` and `PetscSectionSetDof()` respectively. Lookup is typically using
   accessors or routines like `VecGetValuesSection()`.
 
+  The `PetscSection` object and methods are intended to be used in the PETSc `Vec` and `Mat` implementations. The indices returned by the `PetscSection` are appropriate for the kind of `Vec` it is asociated with. For example, if the vector being indexed is a local vector, we call the section a local section. If the section indexes a global vector, we call it a global section. For parallel vectors, like global vectors, we use negative indices to indicate dofs owned by other processes.
+
   Level: beginner
 
-.seealso: `PetscSectionCreate()`, `PetscSectionDestroy()`, `PetscSectionSym`
+.seealso: [PetscSection](sec_petscsection), `PetscSectionCreate()`, `PetscSectionDestroy()`, `PetscSectionSym`
 S*/
 typedef struct _p_PetscSection *PetscSection;
 

@@ -2,7 +2,8 @@
 
 static char help[] = "Solves a linear system using PCHPDDM.\n\n";
 
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   Vec             b;            /* computed solution and RHS */
   Mat             A, aux, X, B; /* linear system matrix */
   KSP             ksp;          /* linear solver context */
@@ -77,11 +78,15 @@ int main(int argc, char **args) {
   PetscCall(PCSetType(pc, PCHPDDM));
 #if defined(PETSC_HAVE_HPDDM) && defined(PETSC_HAVE_DYNAMIC_LIBRARIES) && defined(PETSC_USE_SHARED_LIBRARIES)
   flg = PETSC_FALSE;
-  PetscCall(PetscOptionsGetBool(NULL, NULL, "-pc_hpddm_block_splitting", &flg, NULL));
-  if (!flg) {
-    PetscCall(PCHPDDMSetAuxiliaryMat(pc, is, aux, NULL, NULL));
-    PetscCall(PCHPDDMHasNeumannMat(pc, PETSC_FALSE)); /* PETSC_TRUE is fine as well, just testing */
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-reset", &flg, NULL));
+  if (flg) {
+    PetscCall(PetscOptionsSetValue(NULL, "-pc_hpddm_block_splitting", "true"));
+    PetscCall(PCSetFromOptions(pc));
+    PetscCall(PCSetUp(pc));
+    PetscCall(PetscOptionsClearValue(NULL, "-pc_hpddm_block_splitting"));
   }
+  PetscCall(PCHPDDMSetAuxiliaryMat(pc, is, aux, NULL, NULL));
+  PetscCall(PCHPDDMHasNeumannMat(pc, PETSC_FALSE)); /* PETSC_TRUE is fine as well, just testing */
   flg = PETSC_FALSE;
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-set_rhs", &flg, NULL));
   if (flg) {          /* user-provided RHS for concurrent generalized eigenvalue problems                                 */
@@ -215,7 +220,7 @@ int main(int argc, char **args) {
       test:
         suffix: geneo_share
         output_file: output/ex76_geneo_pc_hpddm_levels_1_eps_nev-5.out
-        args: -pc_hpddm_levels_1_st_pc_type cholesky -pc_hpddm_levels_1_eps_nev 5 -pc_hpddm_levels_1_st_share_sub_ksp
+        args: -pc_hpddm_levels_1_st_pc_type cholesky -pc_hpddm_levels_1_eps_nev 5 -pc_hpddm_levels_1_st_share_sub_ksp -reset {{false true}shared output}
 
    testset:
       requires: hpddm slepc datafilespath double !complex !defined(PETSC_USE_64BIT_INDICES) defined(PETSC_HAVE_DYNAMIC_LIBRARIES) defined(PETSC_USE_SHARED_LIBRARIES)
@@ -278,7 +283,7 @@ int main(int argc, char **args) {
 
    testset:
       requires: hpddm slepc datafilespath double !complex !defined(PETSC_USE_64BIT_INDICES) defined(PETSC_HAVE_DYNAMIC_LIBRARIES) defined(PETSC_USE_SHARED_LIBRARIES) mumps defined(PETSC_HAVE_OPENMP_SUPPORT)
-      filter: egrep -e "Linear solve" -e "      executing" | sed -e "s/MPI =      1/MPI =      2/g" -e "s/OMP =      1/OMP =      2/g"
+      filter: grep -E -e "Linear solve" -e "      executing" | sed -e "s/MPI =      1/MPI =      2/g" -e "s/OMP =      1/OMP =      2/g"
       nsize: 4
       args: -ksp_converged_reason -pc_type hpddm -pc_hpddm_levels_1_sub_pc_type cholesky -pc_hpddm_levels_1_eps_nev 15 -pc_hpddm_levels_1_st_pc_type cholesky -pc_hpddm_coarse_p {{1 2}shared output} -load_dir ${DATAFILESPATH}/matrices/hpddm/GENEO -pc_hpddm_coarse_pc_factor_mat_solver_type mumps -pc_hpddm_coarse_mat_mumps_icntl_4 2 -pc_hpddm_coarse_mat_mumps_use_omp_threads {{1 2}shared output}
       test:
@@ -288,7 +293,7 @@ int main(int argc, char **args) {
       test:
         suffix: geneo_mumps_use_omp_threads_2
         output_file: output/ex76_geneo_mumps_use_omp_threads.out
-        args: -pc_hpddm_coarse_mat_type aij -pc_hpddm_levels_1_eps_threshold 0.3 -pc_hpddm_coarse_pc_type cholesky
+        args: -pc_hpddm_coarse_mat_type aij -pc_hpddm_levels_1_eps_threshold 0.3 -pc_hpddm_coarse_pc_type cholesky -pc_hpddm_coarse_mat_chop 1e-12
 
    test:
       requires: hpddm slepc datafilespath double !complex !defined(PETSC_USE_64BIT_INDICES) defined(PETSC_HAVE_DYNAMIC_LIBRARIES) defined(PETSC_USE_SHARED_LIBRARIES)

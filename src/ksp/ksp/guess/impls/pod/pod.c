@@ -37,7 +37,8 @@ typedef struct {
   PetscBool    monitor;
 } KSPGuessPOD;
 
-static PetscErrorCode KSPGuessReset_POD(KSPGuess guess) {
+static PetscErrorCode KSPGuessReset_POD(KSPGuess guess)
+{
   KSPGuessPOD *pod  = (KSPGuessPOD *)guess->data;
   PetscLayout  Alay = NULL, vlay = NULL;
   PetscBool    cong;
@@ -62,7 +63,8 @@ static PetscErrorCode KSPGuessReset_POD(KSPGuess guess) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode KSPGuessSetUp_POD(KSPGuess guess) {
+static PetscErrorCode KSPGuessSetUp_POD(KSPGuess guess)
+{
   KSPGuessPOD *pod = (KSPGuessPOD *)guess->data;
 
   PetscFunctionBegin;
@@ -98,7 +100,6 @@ static PetscErrorCode KSPGuessSetUp_POD(KSPGuess guess) {
     PetscCall(VecDestroyVecs(1, &v));
     PetscCall(VecDuplicateVecs(vseq, pod->maxn, &pod->xsnap));
     PetscCall(VecDestroy(&vseq));
-    PetscCall(PetscLogObjectParents(guess, pod->maxn, pod->xsnap));
   }
   if (!pod->bsnap) {
     Vec *v, vseq;
@@ -108,13 +109,13 @@ static PetscErrorCode KSPGuessSetUp_POD(KSPGuess guess) {
     PetscCall(VecDestroyVecs(1, &v));
     PetscCall(VecDuplicateVecs(vseq, pod->maxn, &pod->bsnap));
     PetscCall(VecDestroy(&vseq));
-    PetscCall(PetscLogObjectParents(guess, pod->maxn, pod->bsnap));
   }
   if (!pod->work) PetscCall(KSPCreateVecs(guess->ksp, 1, &pod->work, 0, NULL));
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode KSPGuessDestroy_POD(KSPGuess guess) {
+static PetscErrorCode KSPGuessDestroy_POD(KSPGuess guess)
+{
   KSPGuessPOD *pod = (KSPGuessPOD *)guess->data;
 
   PetscFunctionBegin;
@@ -135,7 +136,8 @@ static PetscErrorCode KSPGuessDestroy_POD(KSPGuess guess) {
 
 static PetscErrorCode KSPGuessUpdate_POD(KSPGuess, Vec, Vec);
 
-static PetscErrorCode KSPGuessFormGuess_POD(KSPGuess guess, Vec b, Vec x) {
+static PetscErrorCode KSPGuessFormGuess_POD(KSPGuess guess, Vec b, Vec x)
+{
   KSPGuessPOD *pod = (KSPGuessPOD *)guess->data;
   PetscScalar  one = 1, zero = 0;
   PetscBLASInt bN, ione      = 1, bNen, lierr;
@@ -210,7 +212,8 @@ static PetscErrorCode KSPGuessFormGuess_POD(KSPGuess guess, Vec b, Vec x) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode KSPGuessUpdate_POD(KSPGuess guess, Vec b, Vec x) {
+static PetscErrorCode KSPGuessUpdate_POD(KSPGuess guess, Vec b, Vec x)
+{
   KSPGuessPOD *pod = (KSPGuessPOD *)guess->data;
   PetscScalar  one = 1, zero = 0;
   PetscReal    toten, parten, reps = 0; /* dlamch? */
@@ -283,7 +286,8 @@ complete_request:
     case 1:
       for (i = 0; i < pod->n; i++) pod->swork[3 * pod->n + i] = pod->dots_iallreduce[i];
       break;
-    default: SETERRQ(PetscObjectComm((PetscObject)guess), PETSC_ERR_PLIB, "Invalid number of outstanding dots operations: %" PetscInt_FMT, pod->ndots_iallreduce);
+    default:
+      SETERRQ(PetscObjectComm((PetscObject)guess), PETSC_ERR_PLIB, "Invalid number of outstanding dots operations: %" PetscInt_FMT, pod->ndots_iallreduce);
     }
   }
   pod->ndots_iallreduce = 0;
@@ -390,7 +394,8 @@ complete_request:
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode KSPGuessSetFromOptions_POD(KSPGuess guess) {
+static PetscErrorCode KSPGuessSetFromOptions_POD(KSPGuess guess)
+{
   KSPGuessPOD *pod = (KSPGuessPOD *)guess->data;
 
   PetscFunctionBegin;
@@ -403,7 +408,8 @@ static PetscErrorCode KSPGuessSetFromOptions_POD(KSPGuess guess) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode KSPGuessSetTolerance_POD(KSPGuess guess, PetscReal tol) {
+static PetscErrorCode KSPGuessSetTolerance_POD(KSPGuess guess, PetscReal tol)
+{
   KSPGuessPOD *pod = (KSPGuessPOD *)guess->data;
 
   PetscFunctionBegin;
@@ -411,7 +417,8 @@ static PetscErrorCode KSPGuessSetTolerance_POD(KSPGuess guess, PetscReal tol) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode KSPGuessView_POD(KSPGuess guess, PetscViewer viewer) {
+static PetscErrorCode KSPGuessView_POD(KSPGuess guess, PetscViewer viewer)
+{
   KSPGuessPOD *pod = (KSPGuessPOD *)guess->data;
   PetscBool    isascii;
 
@@ -432,13 +439,14 @@ static PetscErrorCode KSPGuessView_POD(KSPGuess guess, PetscViewer viewer) {
 
     Level: intermediate
 
-.seealso: `KSPGuess`, `KSPGuessType`, `KSPGuessCreate()`, `KSPSetGuess()`, `KSPGetGuess()`
+.seealso: [](chapter_ksp), `KSPGuess`, `KSPGuessType`, `KSPGuessCreate()`, `KSPSetGuess()`, `KSPGetGuess()`
 @*/
-PetscErrorCode KSPGuessCreate_POD(KSPGuess guess) {
+PetscErrorCode KSPGuessCreate_POD(KSPGuess guess)
+{
   KSPGuessPOD *pod;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(guess, &pod));
+  PetscCall(PetscNew(&pod));
   pod->maxn   = 10;
   pod->tol    = PETSC_MACHINE_EPSILON;
   guess->data = pod;

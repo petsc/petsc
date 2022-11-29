@@ -30,6 +30,6 @@ end program main
 !      requires: defined(PETSC_USE_LOG)
 !      nsize: 2
 !      args: -options_view -get_total_flops
-!      filter: egrep -v "(Total flops|options_left)"
+!      filter: grep -E -v "(Total flops|options_left)"
 !
 !TEST*/

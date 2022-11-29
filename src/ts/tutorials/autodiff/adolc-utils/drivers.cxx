@@ -28,7 +28,8 @@
   Output parameter:
   A     - Mat object corresponding to Jacobian
 */
-PetscErrorCode PetscAdolcComputeRHSJacobian(PetscInt tag, Mat A, const PetscScalar *u_vec, void *ctx) {
+PetscErrorCode PetscAdolcComputeRHSJacobian(PetscInt tag, Mat A, const PetscScalar *u_vec, void *ctx)
+{
   AdolcCtx     *adctx = (AdolcCtx *)ctx;
   PetscInt      i, j, m = adctx->m, n = adctx->n, p = adctx->p;
   PetscScalar **J;
@@ -65,7 +66,8 @@ PetscErrorCode PetscAdolcComputeRHSJacobian(PetscInt tag, Mat A, const PetscScal
   Output parameter:
   A     - Mat object corresponding to Jacobian
 */
-PetscErrorCode PetscAdolcComputeRHSJacobianLocal(PetscInt tag, Mat A, const PetscScalar *u_vec, void *ctx) {
+PetscErrorCode PetscAdolcComputeRHSJacobianLocal(PetscInt tag, Mat A, const PetscScalar *u_vec, void *ctx)
+{
   AdolcCtx     *adctx = (AdolcCtx *)ctx;
   PetscInt      i, j, m = adctx->m, n = adctx->n, p = adctx->p;
   PetscScalar **J;
@@ -103,7 +105,8 @@ PetscErrorCode PetscAdolcComputeRHSJacobianLocal(PetscInt tag, Mat A, const Pets
   Output parameter:
   A     - Mat object corresponding to Jacobian
 */
-PetscErrorCode PetscAdolcComputeIJacobian(PetscInt tag1, PetscInt tag2, Mat A, const PetscScalar *u_vec, PetscReal a, void *ctx) {
+PetscErrorCode PetscAdolcComputeIJacobian(PetscInt tag1, PetscInt tag2, Mat A, const PetscScalar *u_vec, PetscReal a, void *ctx)
+{
   AdolcCtx     *adctx = (AdolcCtx *)ctx;
   PetscInt      i, j, m = adctx->m, n = adctx->n, p = adctx->p;
   PetscScalar **J;
@@ -162,7 +165,8 @@ PetscErrorCode PetscAdolcComputeIJacobian(PetscInt tag1, PetscInt tag2, Mat A, c
   Output parameter:
   A     - Mat object corresponding to Jacobian
 */
-PetscErrorCode PetscAdolcComputeIJacobianIDMass(PetscInt tag, Mat A, PetscScalar *u_vec, PetscReal a, void *ctx) {
+PetscErrorCode PetscAdolcComputeIJacobianIDMass(PetscInt tag, Mat A, PetscScalar *u_vec, PetscReal a, void *ctx)
+{
   AdolcCtx     *adctx = (AdolcCtx *)ctx;
   PetscInt      i, j, m = adctx->m, n = adctx->n, p = adctx->p;
   PetscScalar **J;
@@ -206,7 +210,8 @@ PetscErrorCode PetscAdolcComputeIJacobianIDMass(PetscInt tag, Mat A, PetscScalar
   Output parameter:
   A     - Mat object corresponding to Jacobian
 */
-PetscErrorCode PetscAdolcComputeIJacobianLocal(PetscInt tag1, PetscInt tag2, Mat A, PetscScalar *u_vec, PetscReal a, void *ctx) {
+PetscErrorCode PetscAdolcComputeIJacobianLocal(PetscInt tag1, PetscInt tag2, Mat A, PetscScalar *u_vec, PetscReal a, void *ctx)
+{
   AdolcCtx     *adctx = (AdolcCtx *)ctx;
   PetscInt      i, j, m = adctx->m, n = adctx->n, p = adctx->p;
   PetscScalar **J;
@@ -264,7 +269,8 @@ PetscErrorCode PetscAdolcComputeIJacobianLocal(PetscInt tag1, PetscInt tag2, Mat
   Output parameter:
   A     - Mat object corresponding to Jacobian
 */
-PetscErrorCode PetscAdolcComputeIJacobianLocalIDMass(PetscInt tag, Mat A, const PetscScalar *u_vec, PetscReal a, void *ctx) {
+PetscErrorCode PetscAdolcComputeIJacobianLocalIDMass(PetscInt tag, Mat A, const PetscScalar *u_vec, PetscReal a, void *ctx)
+{
   AdolcCtx     *adctx = (AdolcCtx *)ctx;
   PetscInt      i, j, m = adctx->m, n = adctx->n, p = adctx->p;
   PetscScalar **J;
@@ -309,7 +315,8 @@ PetscErrorCode PetscAdolcComputeIJacobianLocalIDMass(PetscInt tag, Mat A, const 
   Output parameter:
   A      - Mat object corresponding to Jacobian
 */
-PetscErrorCode PetscAdolcComputeRHSJacobianP(PetscInt tag, Mat A, const PetscScalar *u_vec, PetscScalar *params, void *ctx) {
+PetscErrorCode PetscAdolcComputeRHSJacobianP(PetscInt tag, Mat A, const PetscScalar *u_vec, PetscScalar *params, void *ctx)
+{
   AdolcCtx     *adctx = (AdolcCtx *)ctx;
   PetscInt      i, j = 0, m = adctx->m, n = adctx->n, p = adctx->num_params;
   PetscScalar **J, *concat, **S;
@@ -353,7 +360,8 @@ PetscErrorCode PetscAdolcComputeRHSJacobianP(PetscInt tag, Mat A, const PetscSca
   Output parameter:
   A      - Mat object corresponding to Jacobian
 */
-PetscErrorCode PetscAdolcComputeRHSJacobianPLocal(PetscInt tag, Mat A, const PetscScalar *u_vec, PetscScalar *params, void *ctx) {
+PetscErrorCode PetscAdolcComputeRHSJacobianPLocal(PetscInt tag, Mat A, const PetscScalar *u_vec, PetscScalar *params, void *ctx)
+{
   AdolcCtx     *adctx = (AdolcCtx *)ctx;
   PetscInt      i, j = 0, m = adctx->m, n = adctx->n, p = adctx->num_params;
   PetscScalar **J, *concat, **S;
@@ -402,7 +410,8 @@ PetscErrorCode PetscAdolcComputeRHSJacobianPLocal(PetscInt tag, Mat A, const Pet
   Output parameter:
   diag  - Vec object corresponding to Jacobian diagonal
 */
-PetscErrorCode PetscAdolcComputeIJacobianAndDiagonalLocal(PetscInt tag1, PetscInt tag2, Vec diag, PetscScalar *u_vec, PetscReal a, void *ctx) {
+PetscErrorCode PetscAdolcComputeIJacobianAndDiagonalLocal(PetscInt tag1, PetscInt tag2, Vec diag, PetscScalar *u_vec, PetscReal a, void *ctx)
+{
   AdolcCtx     *adctx = (AdolcCtx *)ctx;
   PetscInt      i, m = adctx->m, n = adctx->n, p = adctx->p;
   PetscScalar **J;

@@ -20,9 +20,9 @@ except NameError:
 def _picTestIncludes(export=''):
   return '\n'.join(['#include <stdio.h>',
                     'int (*fprintf_ptr)(FILE*,const char*,...) = fprintf;',
-                    'void '+export+' foo(void){',
+                    'int '+export+' foo(void){',
                     '  fprintf_ptr(stdout,"hello");',
-                    '  return;',
+                    '  return 0;',
                     '}',
                     'void bar(void){foo();}\n'])
 
@@ -237,6 +237,9 @@ class Configure(config.base.Configure):
                                                  'Unrecognised option --help passed to ld', # NAG f95 compiler
                                                  'IBM XL', # XL compiler
                                                  ]]))
+      if not found and Configure.isCrayPEWrapper(compiler,log):
+        (output, error, status) = config.base.Configure.executeShellCommand(compiler+' --version', log = log)
+        found = any([s in output for s in ['(GCC)']])
       if found:
         if log: log.write('Detected GNU compiler\n')
         return 1
@@ -547,17 +550,40 @@ class Configure(config.base.Configure):
       pass
 
   @staticmethod
-  def isWindows(compiler, log):
+  def isWindows(compiler, log, disambiguate_win32fe = False):
     '''Returns true if the compiler is a Windows compiler'''
-    if compiler in ['icl', 'cl', 'bcc32', 'ifl', 'df']:
-      if log: log.write('Detected Windows OS\n')
+    if disambiguate_win32fe:
+      compiler_or_path = str(compiler).split()
+      if len(compiler_or_path) == 1:
+        # compiler was just the bare unqualified name, i.e. 'cl' or 'ifort'
+        compiler = compiler_or_path[0]
+      else:
+        # compiler may be /path/to/petsc/win32fe cl, we need to extract only 'cl' from it
+        last = ''
+        for sub_elem in compiler_or_path:
+          # last entry is the win32fe path, so current must be compiler name
+          if last.casefold().endswith('win32fe'):
+            compiler = sub_elem
+            break
+          last = sub_elem
+    if compiler in {'icl', 'cl', 'bcc32', 'ifl', 'df', 'lib', 'tlib'}:
+      if log: log.write('Detected Windows compiler\n')
       return 1
-    if compiler in ['ifort','f90'] and Configure.isCygwin(log):
-      if log: log.write('Detected Windows OS\n')
+    if compiler in {'ifort','f90'} and Configure.isCygwin(log):
+      if log: log.write('Detected Windows compiler\n')
       return 1
-    if compiler in ['lib', 'tlib']:
-      if log: log.write('Detected Windows OS\n')
-      return 1
+
+  @classmethod
+  def isMSVC(cls, compiler, log):
+    """Returns true if the compiler is MSVC"""
+    if cls.isWindows(compiler,log,disambiguate_win32fe=True):
+      output, error, _ = cls.executeShellCommand(compiler+' --version',checkCommand=noCheck,log=log)
+      output = '\n'.join((output,error)).casefold()
+      if all(sub.casefold() in output for sub in ('microsoft','c/c++ optimizing compiler')):
+        if log:
+          log.write('Detected MSVC\n')
+        return 1
+    return 0
 
   @staticmethod
   def isSolarisAR(ar, log):
@@ -741,7 +767,7 @@ class Configure(config.base.Configure):
     return
 
   def checkCxxDialect(self, language, isGNUish=False):
-    """Determine the CXX dialect supported by the compiler (language) [and correspoding compiler
+    """Determine the CXX dialect supported by the compiler (language) [and corresponding compiler
     option - if any].
 
     isGNUish indicates if the compiler is gnu compliant (i.e. clang).
@@ -763,7 +789,7 @@ class Configure(config.base.Configure):
     Raises a config.base.ConfigureSetupError if:
     - The user has set both the --with-dialect=[...] configure options and -std=[...] in their
       compiler flags
-    - The combination of specifically requested packages cannnot all be compiled with the same flag
+    - The combination of specifically requested packages cannot all be compiled with the same flag
     - An unknown C++ dialect is provided
 
     The config.base.ConfigureSetupErrors are NOT meant to be caught, as they are fatal errors
@@ -904,11 +930,12 @@ class Configure(config.base.Configure):
         """
       )))
 
-    DialectFlags = namedtuple('DialectFlags',['standard','gnu'])
-    BaseFlags    = DialectFlags(standard='-std=c++',gnu='-std=gnu++')
     isGNUish     = bool(isGNUish)
     lang,LANG    = language.lower(),language.upper()
     compiler     = self.getCompiler(lang=language)
+    stdflag_base = '-std:' if self.isMSVC(compiler, self.log) else '-std='
+    DialectFlags = namedtuple('DialectFlags',['standard','gnu'])
+    BaseFlags    = DialectFlags(standard=stdflag_base+'c++',gnu=stdflag_base+'gnu++')
     self.logPrint('checkCxxDialect: checking C++ dialect version for language "{lang}" using compiler "{compiler}"'.format(lang=LANG,compiler=compiler))
     self.logPrint('checkCxxDialect: PETSc believes compiler ({compiler}) {isgnuish} gnu-ish'.format(compiler=compiler,isgnuish='IS' if isGNUish else 'is NOT'))
 
@@ -958,7 +985,7 @@ class Configure(config.base.Configure):
       allFlags = tuple(self.getCompilerFlags().strip().split())
     langDialectFromFlags = tuple(f for f in allFlags for flg in BaseFlags if f.startswith(flg))
     if len(langDialectFromFlags):
-      sanitized = langDialectFromFlags[-1].lower().replace('-std=','')
+      sanitized = langDialectFromFlags[-1].lower().replace(stdflag_base,'')
       if not processedBefore:
         # check that we didn't set the compiler flag ourselves before we yell at the user
         if withLangDialect != 'AUTO':
@@ -1088,9 +1115,12 @@ class Configure(config.base.Configure):
           # failure, flag is discarded, but first check we haven't run out of flags
           if index == len(flagPool)-1:
             # compiler does not support the minimum required c++ dialect
-            mess = '\n'.join((
+            base_mess = '\n'.join((
               '{lang} compiler ({compiler}) appears non-compliant with C++{ver} or didn\'t accept:',
-              '\n'.join('- '+(flag[:-2] if flag.startswith('(NO FLAG)') else flag) for flg,_ in flagPool[:index+1])+'\n'
+              '\n'.join(
+                '- '+(f[:-2] if f.startswith('(NO FLAG)') else f) for f,_ in flagPool[:index+1]
+              ),
+              '' # for extra newline at the end
             ))
             if flag.endswith(dialects[0].num):
               # it's the compilers fault we can't try the next dialect
@@ -1099,16 +1129,16 @@ class Configure(config.base.Configure):
               # it's a packages fault we can't try the next dialect
               packDialects   = self.cxxDialectPackageRanges[0]
               minPackDialect = max(packDialects.keys())
-              mess = '\n'.join((
+              base_mess = '\n'.join((
                 'Using {lang} dialect C++{ver} as lower bound due to package(s):',
                 '\n'.join('- '+s for s in packDialects[minPackDialect]),
-                ' '.join(('But',mess))
+                ' '.join(('But',base_mess))
               ))
               dialectNum = minPackDiaect[-2:]
             else:
               # if nothing else then it's because the user requested a particular version
               dialectNum = dialectNumStr
-            mess = mess.format(lang=language.replace('x','+'),compiler=compiler,ver=dialectNum)
+            mess = base_mess.format(lang=language.replace('x','+'),compiler=compiler,ver=dialectNum)
             raise RuntimeError(mess)
         else:
           # success
@@ -1309,6 +1339,7 @@ class Configure(config.base.Configure):
     self.logPrint(' MPI compiler wrapper '+compiler+' is likely incorrect.\n  Use --with-mpi-dir to indicate an alternate MPI.')
 
   def checkCCompiler(self):
+    import re
     '''Locate a functional C compiler'''
     if 'with-cc' in self.argDB and self.argDB['with-cc'] == '0':
       raise RuntimeError('A functional C compiler is necessary for configure, cannot use --with-cc=0')
@@ -1332,7 +1363,7 @@ class Configure(config.base.Configure):
       pass
     (output, error, status) = config.base.Configure.executeShellCommand(compiler+' -v | head -n 20', log = self.log)
     output = output + error
-    if '(gcc version 4.8.5 compatibility)' in output:
+    if '(gcc version 4.8.5 compatibility)' in output or re.match('^Selected GCC installation:.*4.8.5$', output):
        self.logPrintWarning('Intel compiler being used with gcc 4.8.5 compatibility, failures may occur. Recommend having a newer gcc version in your path.')
     if os.path.basename(self.CC).startswith('mpi'):
        self.logPrint('Since MPI c compiler starts with mpi, force searches for other compilers to only look for MPI compilers\n')
@@ -1861,7 +1892,7 @@ class Configure(config.base.Configure):
 
   def containsInvalidFlag(self, output):
     '''If the output contains evidence that an invalid flag was used, return True'''
-    substrings = ('unrecognized command line option','unrecognised command line option',
+    substrings = ('unknown argument', 'ignoring unsupported linker flag', 'unrecognized command line option','unrecognised command line option',
                   'unrecognized option','unrecognised option','not recognized',
                   'not recognised','unknown option','unknown warning option',
                   'unknown flag','unknown switch','ignoring option','ignored','argument unused',
@@ -2080,16 +2111,16 @@ class Configure(config.base.Configure):
       envRanlib = self.argDB['RANLIB']
     if defaultAr and defaultRanlib:
       yield(defaultAr,self.getArchiverFlags(defaultAr),defaultRanlib)
-      raise RuntimeError('The archiver set --with-ar="'+defaultAr+'" is incompatible with the ranlib set --with-ranlib="'+defaultRanlib+'".')
+      raise RuntimeError('The archiver set --with-ar="'+defaultAr+'" is broken or incompatible with the ranlib set --with-ranlib="'+defaultRanlib+'".')
     if defaultAr and envRanlib:
       yield(defaultAr,self.getArchiverFlags(defaultAr),envRanlib)
-      raise RuntimeError('The archiver set --with-ar="'+defaultAr+'" is incompatible with the ranlib set (perhaps in your environment) -RANLIB="'+envRanlib+'".')
+      raise RuntimeError('The archiver set --with-ar="'+defaultAr+'" is broken or incompatible with the ranlib set (perhaps in your environment) -RANLIB="'+envRanlib+'".')
     if envAr and defaultRanlib:
       yield(envAr,self.getArchiverFlags(envAr),defaultRanlib)
-      raise RuntimeError('The archiver set --AR="'+envAr+'" is incompatible with the ranlib set --with-ranlib="'+defaultRanlib+'".')
+      raise RuntimeError('The archiver set --AR="'+envAr+'" is broken or incompatible with the ranlib set --with-ranlib="'+defaultRanlib+'".')
     if envAr and envRanlib:
       yield(envAr,self.getArchiverFlags(envAr),envRanlib)
-      raise RuntimeError('The archiver set --AR="'+envAr+'" is incompatible with the ranlib set (perhaps in your environment) -RANLIB="'+envRanlib+'".')
+      raise RuntimeError('The archiver set --AR="'+envAr+'" is broken or incompatible with the ranlib set (perhaps in your environment) -RANLIB="'+envRanlib+'".')
     if defaultAr:
       yield (defaultAr,self.getArchiverFlags(defaultAr),'ranlib')
       yield (defaultAr,self.getArchiverFlags(defaultAr),'true')
@@ -2162,23 +2193,26 @@ class Configure(config.base.Configure):
             self.logPrint(str(e))
             continue
           self.LIBS = '-L'+self.tmpDir+' -lconf1 ' + oldLibs
-          success =  self.checkLink('extern int foo(int);', '  int b = foo(1);  if (b);\n')
+          success =  self.checkLink('extern int foo(int);', '  int b = foo(1);  (void)b')
           os.rename(arcUnix, arcWindows)
           if not success:
             arext = 'lib'
-            success = self.checkLink('extern int foo(int);', '  int b = foo(1);  if (b);\n')
+            success = self.checkLink('extern int foo(int);', '  int b = foo(1);  (void)b')
             os.remove(arcWindows)
             if success:
               break
           else:
             os.remove(arcWindows)
             break
-    else:
-      if os.path.isfile(objName):
-        os.remove(objName)
-      self.LIBS = oldLibs
-      self.popLanguage()
-      raise RuntimeError('Could not find a suitable archiver.  Use --with-ar to specify an archiver.')
+      else:
+        if os.path.isfile(objName):
+          os.remove(objName)
+        self.LIBS = oldLibs
+        self.popLanguage()
+        if 'with-ar' in self.argDB:
+          raise RuntimeError('Archiver set with --with-ar='+self.argDB['with-ar']+' does not exist')
+        else:
+          raise RuntimeError('Could not find a suitable archiver.  Use --with-ar to specify an archiver.')
     self.AR_FLAGS      = arflags
     self.AR_LIB_SUFFIX = arext
     self.framework.addMakeMacro('AR_FLAGS', self.AR_FLAGS)
@@ -2470,14 +2504,14 @@ class Configure(config.base.Configure):
     self.logPrint('Unable to find working dynamic linker')
 
   def checkDynamicLinker(self):
-    '''Check that the linker can dynamicaly load shared libraries'''
+    '''Check that the linker can dynamically load shared libraries'''
     self.dynamicLibraries = 0
     if not self.headers.check('dlfcn.h'):
       self.logPrint('Dynamic loading disabled since dlfcn.h was missing')
       return
     self.libraries.saveLog()
-    if not self.libraries.add('dl', ['dlopen', 'dlsym', 'dlclose']):
-      if not self.libraries.check('', ['dlopen', 'dlsym', 'dlclose']):
+    if not self.libraries.check('', ['dlopen', 'dlsym', 'dlclose']):
+      if not self.libraries.add('dl', ['dlopen', 'dlsym', 'dlclose']):
         self.logWrite(self.libraries.restoreLog())
         self.logPrint('Dynamic linking disabled since functions dlopen(), dlsym(), and dlclose() were not found')
         return
@@ -2620,7 +2654,7 @@ if (dlclose(handle)) {
     return
 
   def resetEnvCompilers(self):
-    '''Remove compilers from the shell environment so they do not interfer with testing'''
+    '''Remove compilers from the shell environment so they do not interfere with testing'''
     ignoreEnvCompilers = ['CC','CXX','FC','F77','F90']
     ignoreEnv = ['CFLAGS','CXXFLAGS','FCFLAGS','FFLAGS','F90FLAGS','CPP','CPPFLAGS','CXXPP','CXXPPFLAGS','LDFLAGS','LIBS','MPI_DIR','RM','MAKEFLAGS','AR','RANLIB']
     for envVal in ignoreEnvCompilers + ignoreEnv:

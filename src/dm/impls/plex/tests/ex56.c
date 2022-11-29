@@ -15,11 +15,12 @@ typedef struct {
   char        outfile[PETSC_MAX_PATH_LEN]; /* Output file */
   PetscBool   use_low_level_functions;     /* Use low level functions for viewing and loading */
   //TODO This is meant as temporary option; can be removed once we have full parallel loading in place
-  PetscBool   distribute_after_topo_load; /* Distribute topology right after DMPlexTopologyLoad(), if use_low_level_functions=true */
-  PetscInt    verbose;
+  PetscBool distribute_after_topo_load; /* Distribute topology right after DMPlexTopologyLoad(), if use_low_level_functions=true */
+  PetscInt  verbose;
 } AppCtx;
 
-static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options) {
+static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
+{
   PetscFunctionBeginUser;
   options->comm                       = comm;
   options->num_labels                 = -1;
@@ -46,7 +47,8 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options) {
   PetscFunctionReturn(0);
 };
 
-static PetscErrorCode CreateMesh(AppCtx *options, DM *newdm) {
+static PetscErrorCode CreateMesh(AppCtx *options, DM *newdm)
+{
   DM dm;
 
   PetscFunctionBeginUser;
@@ -59,7 +61,8 @@ static PetscErrorCode CreateMesh(AppCtx *options, DM *newdm) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode SaveMesh(AppCtx *options, DM dm) {
+static PetscErrorCode SaveMesh(AppCtx *options, DM dm)
+{
   PetscViewer v;
 
   PetscFunctionBeginUser;
@@ -81,7 +84,8 @@ typedef enum {
   POST_DIST = 2
 } AuxObjLoadMode;
 
-static PetscErrorCode LoadMeshLowLevel(AppCtx *options, PetscViewer v, PetscBool explicitDistribute, AuxObjLoadMode mode, DM *newdm) {
+static PetscErrorCode LoadMeshLowLevel(AppCtx *options, PetscViewer v, PetscBool explicitDistribute, AuxObjLoadMode mode, DM *newdm)
+{
   DM      dm;
   PetscSF sfXC;
 
@@ -120,7 +124,8 @@ static PetscErrorCode LoadMeshLowLevel(AppCtx *options, PetscViewer v, PetscBool
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode LoadMesh(AppCtx *options, DM *dmnew) {
+static PetscErrorCode LoadMesh(AppCtx *options, DM *dmnew)
+{
   DM          dm;
   PetscViewer v;
 
@@ -152,7 +157,8 @@ static PetscErrorCode LoadMesh(AppCtx *options, DM *dmnew) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode CompareMeshes(AppCtx *options, DM dm0, DM dm1) {
+static PetscErrorCode CompareMeshes(AppCtx *options, DM dm0, DM dm1)
+{
   PetscBool flg;
 
   PetscFunctionBeginUser;
@@ -168,7 +174,8 @@ static PetscErrorCode CompareMeshes(AppCtx *options, DM dm0, DM dm1) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MarkBoundary(DM dm, const char name[], PetscInt value, PetscBool verticesOnly, DMLabel *label) {
+static PetscErrorCode MarkBoundary(DM dm, const char name[], PetscInt value, PetscBool verticesOnly, DMLabel *label)
+{
   DMLabel l;
 
   PetscFunctionBeginUser;
@@ -199,7 +206,8 @@ static PetscErrorCode MarkBoundary(DM dm, const char name[], PetscInt value, Pet
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode VertexCoordinatesToAll(DM dm, IS vertices, Vec *allCoords) {
+static PetscErrorCode VertexCoordinatesToAll(DM dm, IS vertices, Vec *allCoords)
+{
   Vec        coords, allCoords_;
   VecScatter sc;
   MPI_Comm   comm;
@@ -232,7 +240,8 @@ static PetscErrorCode VertexCoordinatesToAll(DM dm, IS vertices, Vec *allCoords)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMLabelGetCoordinateRepresentation(DM dm, DMLabel label, PetscInt value, Vec *allCoords) {
+static PetscErrorCode DMLabelGetCoordinateRepresentation(DM dm, DMLabel label, PetscInt value, Vec *allCoords)
+{
   IS vertices;
 
   PetscFunctionBeginUser;
@@ -242,7 +251,8 @@ static PetscErrorCode DMLabelGetCoordinateRepresentation(DM dm, DMLabel label, P
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMLabelCompareWithCoordinateRepresentation(DM dm, DMLabel label, PetscInt value, Vec allCoords, PetscInt verbose) {
+static PetscErrorCode DMLabelCompareWithCoordinateRepresentation(DM dm, DMLabel label, PetscInt value, Vec allCoords, PetscInt verbose)
+{
   const char     *labelName;
   IS              pointsIS;
   const PetscInt *points;
@@ -295,7 +305,8 @@ static PetscErrorCode DMLabelCompareWithCoordinateRepresentation(DM dm, DMLabel 
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode CheckNumLabels(DM dm, AppCtx *ctx) {
+static PetscErrorCode CheckNumLabels(DM dm, AppCtx *ctx)
+{
   PetscInt    actualNum;
   PetscBool   fail = PETSC_FALSE;
   MPI_Comm    comm;
@@ -328,13 +339,15 @@ static PetscErrorCode CheckNumLabels(DM dm, AppCtx *ctx) {
   PetscFunctionReturn(0);
 }
 
-static inline PetscErrorCode IncrementNumLabels(AppCtx *ctx) {
+static inline PetscErrorCode IncrementNumLabels(AppCtx *ctx)
+{
   PetscFunctionBeginUser;
   if (ctx->num_labels >= 0) ctx->num_labels++;
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   const char     BOUNDARY_NAME[]          = "Boundary";
   const char     BOUNDARY_VERTICES_NAME[] = "BoundaryVertices";
   const PetscInt BOUNDARY_VALUE           = 12345;

@@ -2,7 +2,8 @@
 
 #if defined(PETSC_HAVE_OPENCL)
 
-static PetscErrorCode PetscFEDestroy_OpenCL(PetscFE fem) {
+static PetscErrorCode PetscFEDestroy_OpenCL(PetscFE fem)
+{
   PetscFE_OpenCL *ocl = (PetscFE_OpenCL *)fem->data;
 
   PetscFunctionBegin;
@@ -14,12 +15,12 @@ static PetscErrorCode PetscFEDestroy_OpenCL(PetscFE fem) {
   PetscFunctionReturn(0);
 }
 
-#define PetscCallSTR(err) \
-  do { \
-    PetscCall(err); \
-    string_tail += count; \
-    PetscCheck(string_tail != end_of_buffer, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Buffer overflow"); \
-  } while (0)
+  #define PetscCallSTR(err) \
+    do { \
+      PetscCall(err); \
+      string_tail += count; \
+      PetscCheck(string_tail != end_of_buffer, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Buffer overflow"); \
+    } while (0)
 enum {
   LAPLACIAN  = 0,
   ELASTICITY = 1
@@ -40,7 +41,8 @@ enum {
 /* N_{sqc} Number of serial     quadrature cells: N_{bs} / N_b        */
 /* N_{cb}  Number of serial cell batches:         input               */
 /* N_c     Number of total cells:                 N_{cb}*N_{t}/N_{comp} */
-static PetscErrorCode PetscFEOpenCLGenerateIntegrationCode(PetscFE fem, char **string_buffer, PetscInt buffer_length, PetscBool useAux, PetscInt N_bl) {
+static PetscErrorCode PetscFEOpenCLGenerateIntegrationCode(PetscFE fem, char **string_buffer, PetscInt buffer_length, PetscBool useAux, PetscInt N_bl)
+{
   PetscFE_OpenCL  *ocl = (PetscFE_OpenCL *)fem->data;
   PetscQuadrature  q;
   char            *string_tail   = *string_buffer;
@@ -246,18 +248,30 @@ static PetscErrorCode PetscFEOpenCLGenerateIntegrationCode(PetscFE fem, char **s
   if (useField) PetscCallSTR(PetscSNPrintfCount(string_tail, end_of_buffer - string_tail, "        u[comp] = 0.0;\n", &count));
   if (useFieldDer) {
     switch (dim) {
-    case 1: PetscCallSTR(PetscSNPrintfCount(string_tail, end_of_buffer - string_tail, "        gradU[comp].x = 0.0;\n", &count)); break;
-    case 2: PetscCallSTR(PetscSNPrintfCount(string_tail, end_of_buffer - string_tail, "        gradU[comp].x = 0.0; gradU[comp].y = 0.0;\n", &count)); break;
-    case 3: PetscCallSTR(PetscSNPrintfCount(string_tail, end_of_buffer - string_tail, "        gradU[comp].x = 0.0; gradU[comp].y = 0.0; gradU[comp].z = 0.0;\n", &count)); break;
+    case 1:
+      PetscCallSTR(PetscSNPrintfCount(string_tail, end_of_buffer - string_tail, "        gradU[comp].x = 0.0;\n", &count));
+      break;
+    case 2:
+      PetscCallSTR(PetscSNPrintfCount(string_tail, end_of_buffer - string_tail, "        gradU[comp].x = 0.0; gradU[comp].y = 0.0;\n", &count));
+      break;
+    case 3:
+      PetscCallSTR(PetscSNPrintfCount(string_tail, end_of_buffer - string_tail, "        gradU[comp].x = 0.0; gradU[comp].y = 0.0; gradU[comp].z = 0.0;\n", &count));
+      break;
     }
   }
   PetscCallSTR(PetscSNPrintfCount(string_tail, end_of_buffer - string_tail, "      }\n", &count));
   if (useFieldAux) PetscCallSTR(PetscSNPrintfCount(string_tail, end_of_buffer - string_tail, "      a[0] = 0.0;\n", &count));
   if (useFieldDerAux) {
     switch (dim) {
-    case 1: PetscCallSTR(PetscSNPrintfCount(string_tail, end_of_buffer - string_tail, "      gradA[0].x = 0.0;\n", &count)); break;
-    case 2: PetscCallSTR(PetscSNPrintfCount(string_tail, end_of_buffer - string_tail, "      gradA[0].x = 0.0; gradA[0].y = 0.0;\n", &count)); break;
-    case 3: PetscCallSTR(PetscSNPrintfCount(string_tail, end_of_buffer - string_tail, "      gradA[0].x = 0.0; gradA[0].y = 0.0; gradA[0].z = 0.0;\n", &count)); break;
+    case 1:
+      PetscCallSTR(PetscSNPrintfCount(string_tail, end_of_buffer - string_tail, "      gradA[0].x = 0.0;\n", &count));
+      break;
+    case 2:
+      PetscCallSTR(PetscSNPrintfCount(string_tail, end_of_buffer - string_tail, "      gradA[0].x = 0.0; gradA[0].y = 0.0;\n", &count));
+      break;
+    case 3:
+      PetscCallSTR(PetscSNPrintfCount(string_tail, end_of_buffer - string_tail, "      gradA[0].x = 0.0; gradA[0].y = 0.0; gradA[0].z = 0.0;\n", &count));
+      break;
     }
   }
   PetscCallSTR(PetscSNPrintfCount(string_tail, end_of_buffer - string_tail,
@@ -347,14 +361,21 @@ static PetscErrorCode PetscFEOpenCLGenerateIntegrationCode(PetscFE fem, char **s
       }
     }
     break;
-  default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "PDE operator %d is not supported", op);
+  default:
+    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "PDE operator %d is not supported", op);
   }
   if (useF0) PetscCallSTR(PetscSNPrintfCount(string_tail, end_of_buffer - string_tail, "      f_0[fidx] *= detJ[cell]*w;\n", &count));
   if (useF1) {
     switch (dim) {
-    case 1: PetscCallSTR(PetscSNPrintfCount(string_tail, end_of_buffer - string_tail, "      f_1[fidx].x *= detJ[cell]*w;\n", &count)); break;
-    case 2: PetscCallSTR(PetscSNPrintfCount(string_tail, end_of_buffer - string_tail, "      f_1[fidx].x *= detJ[cell]*w; f_1[fidx].y *= detJ[cell]*w;\n", &count)); break;
-    case 3: PetscCallSTR(PetscSNPrintfCount(string_tail, end_of_buffer - string_tail, "      f_1[fidx].x *= detJ[cell]*w; f_1[fidx].y *= detJ[cell]*w; f_1[fidx].z *= detJ[cell]*w;\n", &count)); break;
+    case 1:
+      PetscCallSTR(PetscSNPrintfCount(string_tail, end_of_buffer - string_tail, "      f_1[fidx].x *= detJ[cell]*w;\n", &count));
+      break;
+    case 2:
+      PetscCallSTR(PetscSNPrintfCount(string_tail, end_of_buffer - string_tail, "      f_1[fidx].x *= detJ[cell]*w; f_1[fidx].y *= detJ[cell]*w;\n", &count));
+      break;
+    case 3:
+      PetscCallSTR(PetscSNPrintfCount(string_tail, end_of_buffer - string_tail, "      f_1[fidx].x *= detJ[cell]*w; f_1[fidx].y *= detJ[cell]*w; f_1[fidx].z *= detJ[cell]*w;\n", &count));
+      break;
     }
   }
   /* Thread transpose */
@@ -412,7 +433,8 @@ static PetscErrorCode PetscFEOpenCLGenerateIntegrationCode(PetscFE fem, char **s
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscFEOpenCLGetIntegrationKernel(PetscFE fem, PetscBool useAux, cl_program *ocl_prog, cl_kernel *ocl_kernel) {
+static PetscErrorCode PetscFEOpenCLGetIntegrationKernel(PetscFE fem, PetscBool useAux, cl_program *ocl_prog, cl_kernel *ocl_kernel)
+{
   PetscFE_OpenCL *ocl = (PetscFE_OpenCL *)fem->data;
   PetscInt        dim, N_bl;
   PetscBool       flg;
@@ -441,7 +463,8 @@ static PetscErrorCode PetscFEOpenCLGetIntegrationKernel(PetscFE fem, PetscBool u
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscFEOpenCLCalculateGrid(PetscFE fem, PetscInt N, PetscInt blockSize, size_t *x, size_t *y, size_t *z) {
+static PetscErrorCode PetscFEOpenCLCalculateGrid(PetscFE fem, PetscInt N, PetscInt blockSize, size_t *x, size_t *y, size_t *z)
+{
   const PetscInt Nblocks = N / blockSize;
 
   PetscFunctionBegin;
@@ -456,7 +479,8 @@ static PetscErrorCode PetscFEOpenCLCalculateGrid(PetscFE fem, PetscInt N, PetscI
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscFEOpenCLLogResidual(PetscFE fem, PetscLogDouble time, PetscLogDouble flops) {
+static PetscErrorCode PetscFEOpenCLLogResidual(PetscFE fem, PetscLogDouble time, PetscLogDouble flops)
+{
   PetscFE_OpenCL   *ocl = (PetscFE_OpenCL *)fem->data;
   PetscStageLog     stageLog;
   PetscEventPerfLog eventLog = NULL;
@@ -473,30 +497,31 @@ static PetscErrorCode PetscFEOpenCLLogResidual(PetscFE fem, PetscLogDouble time,
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscFEIntegrateResidual_OpenCL(PetscDS prob, PetscFormKey key, PetscInt Ne, PetscFEGeom *cgeom, const PetscScalar coefficients[], const PetscScalar coefficients_t[], PetscDS probAux, const PetscScalar coefficientsAux[], PetscReal t, PetscScalar elemVec[]) {
+static PetscErrorCode PetscFEIntegrateResidual_OpenCL(PetscDS prob, PetscFormKey key, PetscInt Ne, PetscFEGeom *cgeom, const PetscScalar coefficients[], const PetscScalar coefficients_t[], PetscDS probAux, const PetscScalar coefficientsAux[], PetscReal t, PetscScalar elemVec[])
+{
   /* Nbc = batchSize */
-  PetscFE          fem;
-  PetscFE_OpenCL  *ocl;
-  PetscPointFunc   f0_func;
-  PetscPointFunc   f1_func;
-  PetscQuadrature  q;
-  PetscInt         dim, qNc;
-  PetscInt         N_b;    /* The number of basis functions */
-  PetscInt         N_comp; /* The number of basis function components */
-  PetscInt         N_bt;   /* The total number of scalar basis functions */
-  PetscInt         N_q;    /* The number of quadrature points */
-  PetscInt         N_bst;  /* The block size, LCM(N_bt, N_q), Notice that a block is not process simultaneously */
-  PetscInt         N_t;    /* The number of threads, N_bst * N_bl */
-  PetscInt         N_bl;   /* The number of blocks */
-  PetscInt         N_bc;   /* The batch size, N_bl*N_q*N_b */
-  PetscInt         N_cb;   /* The number of batches */
-  const PetscInt   field = key.field;
-  PetscInt         numFlops, f0Flops = 0, f1Flops = 0;
-  PetscBool        useAux      = probAux ? PETSC_TRUE : PETSC_FALSE;
-  PetscBool        useField    = PETSC_FALSE;
-  PetscBool        useFieldDer = PETSC_TRUE;
-  PetscBool        useF0       = PETSC_TRUE;
-  PetscBool        useF1       = PETSC_TRUE;
+  PetscFE         fem;
+  PetscFE_OpenCL *ocl;
+  PetscPointFunc  f0_func;
+  PetscPointFunc  f1_func;
+  PetscQuadrature q;
+  PetscInt        dim, qNc;
+  PetscInt        N_b;    /* The number of basis functions */
+  PetscInt        N_comp; /* The number of basis function components */
+  PetscInt        N_bt;   /* The total number of scalar basis functions */
+  PetscInt        N_q;    /* The number of quadrature points */
+  PetscInt        N_bst;  /* The block size, LCM(N_bt, N_q), Notice that a block is not process simultaneously */
+  PetscInt        N_t;    /* The number of threads, N_bst * N_bl */
+  PetscInt        N_bl;   /* The number of blocks */
+  PetscInt        N_bc;   /* The batch size, N_bl*N_q*N_b */
+  PetscInt        N_cb;   /* The number of batches */
+  const PetscInt  field = key.field;
+  PetscInt        numFlops, f0Flops = 0, f1Flops = 0;
+  PetscBool       useAux      = probAux ? PETSC_TRUE : PETSC_FALSE;
+  PetscBool       useField    = PETSC_FALSE;
+  PetscBool       useFieldDer = PETSC_TRUE;
+  PetscBool       useF0       = PETSC_TRUE;
+  PetscBool       useF1       = PETSC_TRUE;
   /* OpenCL variables */
   cl_program       ocl_prog;
   cl_kernel        ocl_kernel;
@@ -610,7 +635,8 @@ static PetscErrorCode PetscFEIntegrateResidual_OpenCL(PetscDS prob, PetscFormKey
       oclInvJ = (void *)d_invJ;
       oclDetJ = (void *)d_detJ;
     } break;
-    default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unsupported PETSc type %d", ocl->realType);
+    default:
+      SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unsupported PETSc type %d", ocl->realType);
     }
   } else {
     PetscInt c, d;
@@ -669,7 +695,8 @@ static PetscErrorCode PetscFEIntegrateResidual_OpenCL(PetscDS prob, PetscFormKey
       }
       PetscCall(PetscFree(elem));
     } break;
-    default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unsupported PETSc type %d", ocl->realType);
+    default:
+      SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unsupported PETSc type %d", ocl->realType);
     }
   } else {
     PetscCall(PetscFree2(r_invJ, r_detJ));
@@ -680,8 +707,12 @@ static PetscErrorCode PetscFEIntegrateResidual_OpenCL(PetscDS prob, PetscFormKey
   PetscCall(clGetEventProfilingInfo(ocl_ev, CL_PROFILING_COMMAND_END, sizeof(cl_ulong), &ns_end, NULL));
   f0Flops = 0;
   switch (ocl->op) {
-  case LAPLACIAN: f1Flops = useAux ? dim : 0; break;
-  case ELASTICITY: f1Flops = 2 * dim * dim; break;
+  case LAPLACIAN:
+    f1Flops = useAux ? dim : 0;
+    break;
+  case ELASTICITY:
+    f1Flops = 2 * dim * dim;
+    break;
   }
   numFlops = Ne * (N_q * (N_b * N_comp * ((useField ? 2 : 0) + (useFieldDer ? 2 * dim * (dim + 1) : 0))
                           /*+
@@ -703,7 +734,8 @@ static PetscErrorCode PetscFEIntegrateResidual_OpenCL(PetscDS prob, PetscFormKey
 PETSC_INTERN PetscErrorCode PetscFESetUp_Basic(PetscFE);
 PETSC_INTERN PetscErrorCode PetscFECreateTabulation_Basic(PetscFE, PetscInt, const PetscReal[], PetscInt, PetscTabulation);
 
-static PetscErrorCode PetscFEInitialize_OpenCL(PetscFE fem) {
+static PetscErrorCode PetscFEInitialize_OpenCL(PetscFE fem)
+{
   PetscFunctionBegin;
   fem->ops->setfromoptions          = NULL;
   fem->ops->setup                   = PetscFESetUp_Basic;
@@ -719,14 +751,15 @@ static PetscErrorCode PetscFEInitialize_OpenCL(PetscFE fem) {
 }
 
 /*MC
-  PETSCFEOPENCL = "opencl" - A PetscFE object that integrates using a vectorized OpenCL implementation
+  PETSCFEOPENCL = "opencl" - A `PetscFEType` that integrates using a vectorized OpenCL implementation
 
   Level: intermediate
 
 .seealso: `PetscFEType`, `PetscFECreate()`, `PetscFESetType()`
 M*/
 
-PETSC_EXTERN PetscErrorCode PetscFECreate_OpenCL(PetscFE fem) {
+PETSC_EXTERN PetscErrorCode PetscFECreate_OpenCL(PetscFE fem)
+{
   PetscFE_OpenCL *ocl;
   cl_uint         num_platforms;
   cl_platform_id  platform_ids[42];
@@ -736,7 +769,7 @@ PETSC_EXTERN PetscErrorCode PetscFECreate_OpenCL(PetscFE fem) {
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fem, PETSCFE_CLASSID, 1);
-  PetscCall(PetscNewLog(fem, &ocl));
+  PetscCall(PetscNew(&ocl));
   fem->data = ocl;
 
   /* Init Platform */
@@ -764,17 +797,18 @@ PETSC_EXTERN PetscErrorCode PetscFECreate_OpenCL(PetscFE fem) {
 }
 
 /*@
-  PetscFEOpenCLSetRealType - Set the scalar type for running on the accelerator
+  PetscFEOpenCLSetRealType - Set the scalar type for running on the OpenCL accelerator
 
   Input Parameters:
-+ fem      - The PetscFE
++ fem      - The `PetscFE`
 - realType - The scalar type
 
   Level: developer
 
-.seealso: `PetscFEOpenCLGetRealType()`
+.seealso: `PetscFE`, `PetscFEOpenCLGetRealType()`
 @*/
-PetscErrorCode PetscFEOpenCLSetRealType(PetscFE fem, PetscDataType realType) {
+PetscErrorCode PetscFEOpenCLSetRealType(PetscFE fem, PetscDataType realType)
+{
   PetscFE_OpenCL *ocl = (PetscFE_OpenCL *)fem->data;
 
   PetscFunctionBegin;
@@ -784,19 +818,20 @@ PetscErrorCode PetscFEOpenCLSetRealType(PetscFE fem, PetscDataType realType) {
 }
 
 /*@
-  PetscFEOpenCLGetRealType - Get the scalar type for running on the accelerator
+  PetscFEOpenCLGetRealType - Get the scalar type for running on the OpenCL accelerator
 
   Input Parameter:
-. fem      - The PetscFE
+. fem - The `PetscFE`
 
   Output Parameter:
 . realType - The scalar type
 
   Level: developer
 
-.seealso: `PetscFEOpenCLSetRealType()`
+.seealso: `PetscFE`, `PetscFEOpenCLSetRealType()`
 @*/
-PetscErrorCode PetscFEOpenCLGetRealType(PetscFE fem, PetscDataType *realType) {
+PetscErrorCode PetscFEOpenCLGetRealType(PetscFE fem, PetscDataType *realType)
+{
   PetscFE_OpenCL *ocl = (PetscFE_OpenCL *)fem->data;
 
   PetscFunctionBegin;

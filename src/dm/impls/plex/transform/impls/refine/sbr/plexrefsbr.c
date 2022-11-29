@@ -12,7 +12,8 @@ const char SBRCitation[] = "@article{PlazaCarey2000,\n"
                            "  doi     = {10.1016/S0168-9274(99)00022-7},\n"
                            "  year    = {2000}\n}\n";
 
-static PetscErrorCode SBRGetEdgeLen_Private(DMPlexTransform tr, PetscInt edge, PetscReal *len) {
+static PetscErrorCode SBRGetEdgeLen_Private(DMPlexTransform tr, PetscInt edge, PetscReal *len)
+{
   DMPlexRefine_SBR *sbr = (DMPlexRefine_SBR *)tr->data;
   DM                dm;
   PetscInt          off;
@@ -46,7 +47,8 @@ static PetscErrorCode SBRGetEdgeLen_Private(DMPlexTransform tr, PetscInt edge, P
 
 /* Mark local edges that should be split */
 /* TODO This will not work in 3D */
-static PetscErrorCode SBRSplitLocalEdges_Private(DMPlexTransform tr, DMPlexPointQueue queue) {
+static PetscErrorCode SBRSplitLocalEdges_Private(DMPlexTransform tr, DMPlexPointQueue queue)
+{
   DMPlexRefine_SBR *sbr = (DMPlexRefine_SBR *)tr->data;
   DM                dm;
 
@@ -91,7 +93,8 @@ static PetscErrorCode SBRSplitLocalEdges_Private(DMPlexTransform tr, DMPlexPoint
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode splitPoint(PETSC_UNUSED DMLabel label, PetscInt p, PETSC_UNUSED PetscInt val, void *ctx) {
+static PetscErrorCode splitPoint(PETSC_UNUSED DMLabel label, PetscInt p, PETSC_UNUSED PetscInt val, void *ctx)
+{
   DMPlexPointQueue queue = (DMPlexPointQueue)ctx;
 
   PetscFunctionBegin;
@@ -135,7 +138,8 @@ typedef enum {
   RT_TRIANGLE_SPLIT_2
 } RefinementType;
 
-static PetscErrorCode DMPlexTransformSetUp_SBR(DMPlexTransform tr) {
+static PetscErrorCode DMPlexTransformSetUp_SBR(DMPlexTransform tr)
+{
   DMPlexRefine_SBR *sbr = (DMPlexRefine_SBR *)tr->data;
   DM                dm;
   DMLabel           active;
@@ -224,7 +228,9 @@ static PetscErrorCode DMPlexTransformSetUp_SBR(DMPlexTransform tr) {
 
     PetscCall(DMPlexGetCellType(dm, p, &ct));
     switch (ct) {
-    case DM_POLYTOPE_POINT: PetscCall(DMLabelSetValue(trType, p, RT_VERTEX)); break;
+    case DM_POLYTOPE_POINT:
+      PetscCall(DMLabelSetValue(trType, p, RT_VERTEX));
+      break;
     case DM_POLYTOPE_SEGMENT:
       PetscCall(DMLabelGetValue(sbr->splitPoints, p, &val));
       if (val == 1) PetscCall(DMLabelSetValue(trType, p, RT_EDGE_SPLIT));
@@ -253,7 +259,8 @@ static PetscErrorCode DMPlexTransformSetUp_SBR(DMPlexTransform tr) {
         else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Cell %" PetscInt_FMT " does not fit any refinement type (%" PetscInt_FMT ", %" PetscInt_FMT ", %" PetscInt_FMT ")", p, vals[0], vals[1], vals[2]);
       } else PetscCall(DMLabelSetValue(trType, p, RT_TRIANGLE));
       break;
-    default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Cannot handle points of type %s", DMPolytopeTypes[ct]);
+    default:
+      SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Cannot handle points of type %s", DMPolytopeTypes[ct]);
     }
     PetscCall(DMLabelGetValue(sbr->splitPoints, p, &val));
   }
@@ -262,7 +269,8 @@ static PetscErrorCode DMPlexTransformSetUp_SBR(DMPlexTransform tr) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMPlexTransformGetSubcellOrientation_SBR(DMPlexTransform tr, DMPolytopeType sct, PetscInt sp, PetscInt so, DMPolytopeType tct, PetscInt r, PetscInt o, PetscInt *rnew, PetscInt *onew) {
+static PetscErrorCode DMPlexTransformGetSubcellOrientation_SBR(DMPlexTransform tr, DMPolytopeType sct, PetscInt sp, PetscInt so, DMPolytopeType tct, PetscInt r, PetscInt o, PetscInt *rnew, PetscInt *onew)
+{
   PetscInt rt;
 
   PetscFunctionBeginHot;
@@ -277,26 +285,34 @@ static PetscErrorCode DMPlexTransformGetSubcellOrientation_SBR(DMPlexTransform t
   case RT_TRIANGLE_SPLIT_20:
   case RT_TRIANGLE_SPLIT_02:
     switch (tct) {
-    case DM_POLYTOPE_SEGMENT: break;
-    case DM_POLYTOPE_TRIANGLE: break;
-    default: break;
+    case DM_POLYTOPE_SEGMENT:
+      break;
+    case DM_POLYTOPE_TRIANGLE:
+      break;
+    default:
+      break;
     }
     break;
   case RT_TRIANGLE_SPLIT_0:
   case RT_TRIANGLE_SPLIT_1:
   case RT_TRIANGLE_SPLIT_2:
     switch (tct) {
-    case DM_POLYTOPE_SEGMENT: break;
+    case DM_POLYTOPE_SEGMENT:
+      break;
     case DM_POLYTOPE_TRIANGLE:
       *onew = so < 0 ? -(o + 1) : o;
       *rnew = so < 0 ? (r + 1) % 2 : r;
       break;
-    default: break;
+    default:
+      break;
     }
     break;
   case RT_EDGE_SPLIT:
-  case RT_TRIANGLE_SPLIT: PetscCall(DMPlexTransformGetSubcellOrientation_Regular(tr, sct, sp, so, tct, r, o, rnew, onew)); break;
-  default: PetscCall(DMPlexTransformGetSubcellOrientationIdentity(tr, sct, sp, so, tct, r, o, rnew, onew));
+  case RT_TRIANGLE_SPLIT:
+    PetscCall(DMPlexTransformGetSubcellOrientation_Regular(tr, sct, sp, so, tct, r, o, rnew, onew));
+    break;
+  default:
+    PetscCall(DMPlexTransformGetSubcellOrientationIdentity(tr, sct, sp, so, tct, r, o, rnew, onew));
   }
   PetscFunctionReturn(0);
 }
@@ -316,7 +332,8 @@ static PetscErrorCode DMPlexTransformGetSubcellOrientation_SBR(DMPlexTransform t
  |/    A    \
  0-----0-----1
 */
-static PetscErrorCode SBRGetTriangleSplitSingle(PetscInt o, PetscInt *Nt, DMPolytopeType *target[], PetscInt *size[], PetscInt *cone[], PetscInt *ornt[]) {
+static PetscErrorCode SBRGetTriangleSplitSingle(PetscInt o, PetscInt *Nt, DMPolytopeType *target[], PetscInt *size[], PetscInt *cone[], PetscInt *ornt[])
+{
   const PetscInt       *arr     = DMPolytopeTypeGetArrangment(DM_POLYTOPE_TRIANGLE, o);
   static DMPolytopeType triT1[] = {DM_POLYTOPE_SEGMENT, DM_POLYTOPE_TRIANGLE};
   static PetscInt       triS1[] = {1, 2};
@@ -426,21 +443,22 @@ static PetscErrorCode SBRGetTriangleSplitSingle(PetscInt o, PetscInt *Nt, DMPoly
  | B  \\    \
  0-----0-----1
 */
-static PetscErrorCode SBRGetTriangleSplitDouble(PetscInt o, PetscInt *Nt, DMPolytopeType *target[], PetscInt *size[], PetscInt *cone[], PetscInt *ornt[]) {
+static PetscErrorCode SBRGetTriangleSplitDouble(PetscInt o, PetscInt *Nt, DMPolytopeType *target[], PetscInt *size[], PetscInt *cone[], PetscInt *ornt[])
+{
   PetscInt              e0, e1;
   const PetscInt       *arr     = DMPolytopeTypeGetArrangment(DM_POLYTOPE_TRIANGLE, o);
   static DMPolytopeType triT2[] = {DM_POLYTOPE_SEGMENT, DM_POLYTOPE_TRIANGLE};
   static PetscInt       triS2[] = {2, 3};
-  static PetscInt       triC2[] = {DM_POLYTOPE_POINT, 2, 0, 0, 0, DM_POLYTOPE_POINT, 1, 1, 0, DM_POLYTOPE_POINT, 1, 1, 0, DM_POLYTOPE_POINT, 1, 2, 0, DM_POLYTOPE_SEGMENT, 1, 0, 0, DM_POLYTOPE_SEGMENT, 1, 1, 0, DM_POLYTOPE_SEGMENT, 0, 0, DM_POLYTOPE_SEGMENT, 1, 1, 1, DM_POLYTOPE_SEGMENT, 1, 2, 0, DM_POLYTOPE_SEGMENT, 0, 1, DM_POLYTOPE_SEGMENT, 1, 2, 1, DM_POLYTOPE_SEGMENT, 0, 0, DM_POLYTOPE_SEGMENT, 0, 1};
-  static PetscInt       triO2[] = {0, 0, 0, 0, 0, 0, -1, 0, 0, -1, 0, 0, 0};
+  static PetscInt triC2[] = {DM_POLYTOPE_POINT, 2, 0, 0, 0, DM_POLYTOPE_POINT, 1, 1, 0, DM_POLYTOPE_POINT, 1, 1, 0, DM_POLYTOPE_POINT, 1, 2, 0, DM_POLYTOPE_SEGMENT, 1, 0, 0, DM_POLYTOPE_SEGMENT, 1, 1, 0, DM_POLYTOPE_SEGMENT, 0, 0, DM_POLYTOPE_SEGMENT, 1, 1, 1, DM_POLYTOPE_SEGMENT, 1, 2, 0, DM_POLYTOPE_SEGMENT, 0, 1, DM_POLYTOPE_SEGMENT, 1, 2, 1, DM_POLYTOPE_SEGMENT, 0, 0, DM_POLYTOPE_SEGMENT, 0, 1};
+  static PetscInt triO2[] = {0, 0, 0, 0, 0, 0, -1, 0, 0, -1, 0, 0, 0};
 
   PetscFunctionBeginHot;
   /* To get the other divisions, we reorient the triangle */
-  triC2[2]      = arr[0 * 2];
-  triC2[3]      = arr[0 * 2 + 1] ? 1 : 0;
-  triC2[7]      = arr[1 * 2];
-  triC2[11]     = arr[1 * 2];
-  triC2[15]     = arr[2 * 2];
+  triC2[2]  = arr[0 * 2];
+  triC2[3]  = arr[0 * 2 + 1] ? 1 : 0;
+  triC2[7]  = arr[1 * 2];
+  triC2[11] = arr[1 * 2];
+  triC2[15] = arr[2 * 2];
   /* Swap the first two edges if the triangle is reversed */
   e0            = o < 0 ? 23 : 19;
   e1            = o < 0 ? 19 : 23;
@@ -458,21 +476,22 @@ static PetscErrorCode SBRGetTriangleSplitDouble(PetscInt o, PetscInt *Nt, DMPoly
   triC2[e1 + 1] = o < 0 ? 1 : 0;
   triO2[9]      = DMPolytopeTypeComposeOrientation(DM_POLYTOPE_SEGMENT, -1, arr[2 * 2 + 1]);
   /* Swap the last two edges if the triangle is reversed */
-  triC2[41]     = arr[2 * 2];
-  triC2[42]     = o < 0 ? 0 : 1;
-  triC2[45]     = o < 0 ? 1 : 0;
-  triC2[48]     = o < 0 ? 0 : 1;
-  triO2[11]     = DMPolytopeTypeComposeOrientation(DM_POLYTOPE_SEGMENT, 0, arr[1 * 2 + 1]);
-  triO2[12]     = DMPolytopeTypeComposeOrientation(DM_POLYTOPE_SEGMENT, 0, arr[2 * 2 + 1]);
-  *Nt           = 2;
-  *target       = triT2;
-  *size         = triS2;
-  *cone         = triC2;
-  *ornt         = triO2;
+  triC2[41] = arr[2 * 2];
+  triC2[42] = o < 0 ? 0 : 1;
+  triC2[45] = o < 0 ? 1 : 0;
+  triC2[48] = o < 0 ? 0 : 1;
+  triO2[11] = DMPolytopeTypeComposeOrientation(DM_POLYTOPE_SEGMENT, 0, arr[1 * 2 + 1]);
+  triO2[12] = DMPolytopeTypeComposeOrientation(DM_POLYTOPE_SEGMENT, 0, arr[2 * 2 + 1]);
+  *Nt       = 2;
+  *target   = triT2;
+  *size     = triS2;
+  *cone     = triC2;
+  *ornt     = triO2;
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMPlexTransformCellTransform_SBR(DMPlexTransform tr, DMPolytopeType source, PetscInt p, PetscInt *rt, PetscInt *Nt, DMPolytopeType *target[], PetscInt *size[], PetscInt *cone[], PetscInt *ornt[]) {
+static PetscErrorCode DMPlexTransformCellTransform_SBR(DMPlexTransform tr, DMPolytopeType source, PetscInt p, PetscInt *rt, PetscInt *Nt, DMPolytopeType *target[], PetscInt *size[], PetscInt *cone[], PetscInt *ornt[])
+{
   DMLabel  trType = tr->trType;
   PetscInt val;
 
@@ -490,32 +509,57 @@ static PetscErrorCode DMPlexTransformCellTransform_SBR(DMPlexTransform tr, DMPol
   case DM_POLYTOPE_TRI_PRISM:
   case DM_POLYTOPE_TRI_PRISM_TENSOR:
   case DM_POLYTOPE_QUAD_PRISM_TENSOR:
-  case DM_POLYTOPE_PYRAMID: PetscCall(DMPlexTransformCellTransformIdentity(tr, source, p, NULL, Nt, target, size, cone, ornt)); break;
+  case DM_POLYTOPE_PYRAMID:
+    PetscCall(DMPlexTransformCellTransformIdentity(tr, source, p, NULL, Nt, target, size, cone, ornt));
+    break;
   case DM_POLYTOPE_SEGMENT:
     if (val == RT_EDGE) PetscCall(DMPlexTransformCellTransformIdentity(tr, source, p, NULL, Nt, target, size, cone, ornt));
     else PetscCall(DMPlexTransformCellRefine_Regular(tr, source, p, NULL, Nt, target, size, cone, ornt));
     break;
   case DM_POLYTOPE_TRIANGLE:
     switch (val) {
-    case RT_TRIANGLE_SPLIT_0: PetscCall(SBRGetTriangleSplitSingle(2, Nt, target, size, cone, ornt)); break;
-    case RT_TRIANGLE_SPLIT_1: PetscCall(SBRGetTriangleSplitSingle(0, Nt, target, size, cone, ornt)); break;
-    case RT_TRIANGLE_SPLIT_2: PetscCall(SBRGetTriangleSplitSingle(1, Nt, target, size, cone, ornt)); break;
-    case RT_TRIANGLE_SPLIT_21: PetscCall(SBRGetTriangleSplitDouble(-3, Nt, target, size, cone, ornt)); break;
-    case RT_TRIANGLE_SPLIT_10: PetscCall(SBRGetTriangleSplitDouble(-2, Nt, target, size, cone, ornt)); break;
-    case RT_TRIANGLE_SPLIT_02: PetscCall(SBRGetTriangleSplitDouble(-1, Nt, target, size, cone, ornt)); break;
-    case RT_TRIANGLE_SPLIT_12: PetscCall(SBRGetTriangleSplitDouble(0, Nt, target, size, cone, ornt)); break;
-    case RT_TRIANGLE_SPLIT_20: PetscCall(SBRGetTriangleSplitDouble(1, Nt, target, size, cone, ornt)); break;
-    case RT_TRIANGLE_SPLIT_01: PetscCall(SBRGetTriangleSplitDouble(2, Nt, target, size, cone, ornt)); break;
-    case RT_TRIANGLE_SPLIT: PetscCall(DMPlexTransformCellRefine_Regular(tr, source, p, NULL, Nt, target, size, cone, ornt)); break;
-    default: PetscCall(DMPlexTransformCellTransformIdentity(tr, source, p, NULL, Nt, target, size, cone, ornt));
+    case RT_TRIANGLE_SPLIT_0:
+      PetscCall(SBRGetTriangleSplitSingle(2, Nt, target, size, cone, ornt));
+      break;
+    case RT_TRIANGLE_SPLIT_1:
+      PetscCall(SBRGetTriangleSplitSingle(0, Nt, target, size, cone, ornt));
+      break;
+    case RT_TRIANGLE_SPLIT_2:
+      PetscCall(SBRGetTriangleSplitSingle(1, Nt, target, size, cone, ornt));
+      break;
+    case RT_TRIANGLE_SPLIT_21:
+      PetscCall(SBRGetTriangleSplitDouble(-3, Nt, target, size, cone, ornt));
+      break;
+    case RT_TRIANGLE_SPLIT_10:
+      PetscCall(SBRGetTriangleSplitDouble(-2, Nt, target, size, cone, ornt));
+      break;
+    case RT_TRIANGLE_SPLIT_02:
+      PetscCall(SBRGetTriangleSplitDouble(-1, Nt, target, size, cone, ornt));
+      break;
+    case RT_TRIANGLE_SPLIT_12:
+      PetscCall(SBRGetTriangleSplitDouble(0, Nt, target, size, cone, ornt));
+      break;
+    case RT_TRIANGLE_SPLIT_20:
+      PetscCall(SBRGetTriangleSplitDouble(1, Nt, target, size, cone, ornt));
+      break;
+    case RT_TRIANGLE_SPLIT_01:
+      PetscCall(SBRGetTriangleSplitDouble(2, Nt, target, size, cone, ornt));
+      break;
+    case RT_TRIANGLE_SPLIT:
+      PetscCall(DMPlexTransformCellRefine_Regular(tr, source, p, NULL, Nt, target, size, cone, ornt));
+      break;
+    default:
+      PetscCall(DMPlexTransformCellTransformIdentity(tr, source, p, NULL, Nt, target, size, cone, ornt));
     }
     break;
-  default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "No refinement strategy for %s", DMPolytopeTypes[source]);
+  default:
+    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "No refinement strategy for %s", DMPolytopeTypes[source]);
   }
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMPlexTransformSetFromOptions_SBR(DMPlexTransform tr, PetscOptionItems *PetscOptionsObject) {
+static PetscErrorCode DMPlexTransformSetFromOptions_SBR(DMPlexTransform tr, PetscOptionItems *PetscOptionsObject)
+{
   PetscInt  cells[256], n = 256, i;
   PetscBool flg;
 
@@ -534,7 +578,8 @@ static PetscErrorCode DMPlexTransformSetFromOptions_SBR(DMPlexTransform tr, Pets
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMPlexTransformView_SBR(DMPlexTransform tr, PetscViewer viewer) {
+static PetscErrorCode DMPlexTransformView_SBR(DMPlexTransform tr, PetscViewer viewer)
+{
   PetscBool isascii;
 
   PetscFunctionBegin;
@@ -555,7 +600,8 @@ static PetscErrorCode DMPlexTransformView_SBR(DMPlexTransform tr, PetscViewer vi
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMPlexTransformDestroy_SBR(DMPlexTransform tr) {
+static PetscErrorCode DMPlexTransformDestroy_SBR(DMPlexTransform tr)
+{
   DMPlexRefine_SBR *sbr = (DMPlexRefine_SBR *)tr->data;
 
   PetscFunctionBegin;
@@ -566,24 +612,27 @@ static PetscErrorCode DMPlexTransformDestroy_SBR(DMPlexTransform tr) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMPlexTransformInitialize_SBR(DMPlexTransform tr) {
+static PetscErrorCode DMPlexTransformInitialize_SBR(DMPlexTransform tr)
+{
   PetscFunctionBegin;
   tr->ops->view                  = DMPlexTransformView_SBR;
   tr->ops->setfromoptions        = DMPlexTransformSetFromOptions_SBR;
   tr->ops->setup                 = DMPlexTransformSetUp_SBR;
   tr->ops->destroy               = DMPlexTransformDestroy_SBR;
+  tr->ops->setdimensions         = DMPlexTransformSetDimensions_Internal;
   tr->ops->celltransform         = DMPlexTransformCellTransform_SBR;
   tr->ops->getsubcellorientation = DMPlexTransformGetSubcellOrientation_SBR;
   tr->ops->mapcoordinates        = DMPlexTransformMapCoordinatesBarycenter_Internal;
   PetscFunctionReturn(0);
 }
 
-PETSC_EXTERN PetscErrorCode DMPlexTransformCreate_SBR(DMPlexTransform tr) {
+PETSC_EXTERN PetscErrorCode DMPlexTransformCreate_SBR(DMPlexTransform tr)
+{
   DMPlexRefine_SBR *f;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tr, DMPLEXTRANSFORM_CLASSID, 1);
-  PetscCall(PetscNewLog(tr, &f));
+  PetscCall(PetscNew(&f));
   tr->data = f;
 
   PetscCall(DMPlexTransformInitialize_SBR(tr));

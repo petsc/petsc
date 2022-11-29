@@ -3,7 +3,21 @@ import config.base
 
 import os
 import re
+import itertools
 from hashlib import md5 as new_md5
+
+def sliding_window(seq, n=2):
+  """
+  Returns a sliding window (of width n) over data from the iterable
+  s -> (s0,s1,...s[n-1]), (s1,s2,...,sn), ...
+  """
+  it     = iter(seq)
+  result = tuple(itertools.islice(it, n))
+  if len(result) == n:
+    yield result
+  for elem in it:
+    result = result[1:] + (elem,)
+    yield result
 
 class FakePETScDir:
   def __init__(self):
@@ -258,14 +272,68 @@ class Package(config.base.Configure):
         outflags.append(flag)
     return ' '.join(outflags)
 
+  def rmArgs(self,args,rejects):
+    self.logPrint('Removing configure arguments '+str(rejects))
+    return [arg for arg in args if not arg in rejects]
+
+  def rmArgsPair(self,args,rejects,remove_ahead=True):
+    '''Remove an argument and the next argument from a list of arguments'''
+    '''For example: --ccbin compiler'''
+    '''If remove_ahead is true, arguments rejects specifies the first entry in the pair and the following argument is removed, otherwise rejects specifies the second entry in the pair and the previous argument is removed as well.'''
+    self.logPrint('Removing paired configure arguments '+str(rejects))
+    rejects = set(rejects)
+    nargs   = []
+    skip    = 0
+    for flag, next_flag in sliding_window(args):
+      if skip:
+        skip = 0
+        continue
+
+      flag_to_check = flag if remove_ahead else next_flag
+      if flag_to_check in rejects:
+        skip = 1
+      else:
+        nargs.append(flag)
+    return nargs
+
+  def rmArgsStartsWith(self,args,rejectstarts):
+    rejects = []
+    if not isinstance(rejectstarts, list): rejectstarts = [rejectstarts]
+    for i in rejectstarts:
+      rejects.extend([arg for arg in args if arg.startswith(i)])
+    return self.rmArgs(args,rejects)
+
+  def addArgStartsWith(self,args,sw,value):
+    keep = []
+    found = 0
+    for i in args:
+      if i.startswith(sw+'="'):
+        i = i[:-1] + ' ' + value + '"'
+        found = 1
+      keep.append(i)
+    if not found:
+      keep.append(sw+'="' + value + '"')
+    return keep
+
   def removeWarningFlags(self,flags):
     outflags = []
     for flag in flags:
       if not flag in ['-Werror','-Wall','-Wwrite-strings','-Wno-strict-aliasing','-Wno-unknown-pragmas',
                       '-Wno-unused-variable','-Wno-unused-dummy-argument','-fvisibility=hidden','-std=c89',
-                      '-pedantic','--coverage','-Mfree','-fdefault-integer-8','-fsanitize=address']:
-        outflags.append(flag)
+                      '-pedantic','--coverage','-Mfree','-fdefault-integer-8','-fsanitize=address',
+                      '-fstack-protector']:
+        if flag == '-g3':
+          outflags.append('-g')
+        else:
+          outflags.append(flag)
     return outflags
+
+  def removeCoverageFlag(self, flags, is_pair = False, **kwargs):
+    if isinstance(flags, str):
+      flags = flags.split()
+
+    rm_func = self.rmArgsPair if is_pair else self.rmArgs
+    return rm_func(flags, {'--coverage'}, **kwargs)
 
   def removeStdCxxFlag(self,flags):
     '''Remove the -std=[CXX_VERSION] flag from the list of flags, but only for CMake packages'''
@@ -299,6 +367,7 @@ class Package(config.base.Configure):
   def updatePackageCFlags(self,flags):
     '''To turn off various warnings or errors the compilers may produce with external packages, remove or add appropriate compiler flags'''
     outflags = self.removeWarningFlags(flags.split())
+    outflags = self.removeCoverageFlag(outflags)
     with self.Language('C'):
       if config.setCompilers.Configure.isClang(self.getCompiler(), self.log):
         if config.setCompilers.Configure.isDarwin(self.log):
@@ -309,6 +378,7 @@ class Package(config.base.Configure):
 
   def updatePackageFFlags(self,flags):
     outflags = self.removeWarningFlags(flags.split())
+    outflags = self.removeCoverageFlag(outflags)
     with self.Language('FC'):
       if config.setCompilers.Configure.isNAG(self.getLinker(), self.log):
          outflags.extend(['-mismatch','-dusty','-dcfuns'])
@@ -318,7 +388,12 @@ class Package(config.base.Configure):
 
   def updatePackageCxxFlags(self,flags):
     outflags = self.removeWarningFlags(flags.split())
+    outflags = self.removeCoverageFlag(outflags)
     outflags = self.removeStdCxxFlag(outflags)
+    return ' '.join(outflags)
+
+  def updatePackageCUDAFlags(self, flags):
+    outflags = self.removeCoverageFlag(flags, is_pair=True, remove_ahead=False)
     return ' '.join(outflags)
 
   def getDefaultLanguage(self):
@@ -353,7 +428,7 @@ class Package(config.base.Configure):
 
   # This construct should be removed and just have getInstallDir() handle the process
   def getDefaultInstallDir(self):
-    '''The installation directroy of the library'''
+    '''The installation directory of the library'''
     if hasattr(self, 'installDirProvider'):
       if hasattr(self.installDirProvider, 'dir'):
         return self.installDirProvider.dir
@@ -909,7 +984,7 @@ To use currently downloaded (local) git snapshot - use: --download-'+self.packag
       if not hasattr(package, 'found'):
         raise RuntimeError('Package '+package.name+' does not have found attribute!')
       if not package.found:
-        if self.argDB['with-'+package.package] == 1:
+        if 'with-'+package.package in self.framework.clArgDB and self.framework.clArgDB['with-'+package.package] == 1:
           raise RuntimeError('Package '+package.PACKAGE+' needed by '+self.name+' failed to configure.\nMail configure.log to petsc-maint@mcs.anl.gov.')
 
     dpkgs = Package.sortPackageDependencies(self)
@@ -1225,7 +1300,7 @@ char     *ver = "petscpkgver(" PetscXstr_({y}) ")";
 
   def updateCompilers(self, installDir, mpiccName, mpicxxName, mpif77Name, mpif90Name):
     '''Check if mpicc, mpicxx etc binaries exist - and update setCompilers() database.
-    The input arguments are the names of the binaries specified by the respective pacakges
+    The input arguments are the names of the binaries specified by the respective packages
     This should really be part of compilers.py but it also uses compilerFlags.configure() so
     I am putting it here and Matt can fix it'''
 
@@ -1278,44 +1353,6 @@ char     *ver = "petscpkgver(" PetscXstr_({y}) ")";
     if self.cuda.found:
       self.cuda.configureLibrary()
     return
-
-  def rmArgs(self,args,rejects):
-    self.logPrint('Removing configure arguments '+str(rejects))
-    return [arg for arg in args if not arg in rejects]
-
-  def rmArgsPair(self,args,rejects):
-    '''Remove an argument and the next argument from a list of arguments'''
-    '''For example: --ccbin compiler'''
-    self.logPrint('Removing paired configure arguments '+str(rejects))
-    nargs = []
-    rmnext = 0
-    for arg in args:
-      if rmnext:
-        rmnext = 0
-      elif arg in rejects:
-        rmnext = 1
-      else:
-        nargs.append(arg)
-    return nargs
-
-  def rmArgsStartsWith(self,args,rejectstarts):
-    rejects = []
-    if not isinstance(rejectstarts, list): rejectstarts = [rejectstarts]
-    for i in rejectstarts:
-      rejects.extend([arg for arg in args if arg.startswith(i)])
-    return self.rmArgs(args,rejects)
-
-  def addArgStartsWith(self,args,sw,value):
-    keep = []
-    found = 0
-    for i in args:
-      if i.startswith(sw+'="'):
-        i = i[:-1] + ' ' + value + '"'
-        found = 1
-      keep.append(i)
-    if not found:
-      keep.append(sw+'="' + value + '"')
-    return keep
 
   def checkSharedLibrariesEnabled(self):
     if self.havePETSc:
@@ -1371,13 +1408,13 @@ Brief overview of how BuildSystem\'s configuration of packages works.
 
     Packages essentially encapsulate libraries, that either
     (A) are already (prefix-)installed already somewhere on the system or
-    (B) need to be dowloaded, built and installed first
+    (B) need to be downloaded, built and installed first
   If (A), the parent class provides a generic mechanism for locating the installation, by looking in user-specified and standard locations.
   If (B), the parent class provides a generic mechanism for determining whether a download is necessary, downloading and unpacking
   the source (if the download is, indeed, required), determining whether the package needs to be built, providing the build and
   installation directories, and a few other helper tasks.  The package subclass is responsible for implementing the "Install" hook,
   which is called by the parent class when the actual installation (building the source code, etc.) is done.  As an aside, BuildSystem-
-  controled build and install of a package at configuration time has a much better chance of guaranteeing language, compiler and library
+  controlled build and install of a package at configuration time has a much better chance of guaranteeing language, compiler and library
   (shared or not) consistency among packages.
     No matter whether (A) or (B) is realized, the parent class control flow demands that the located or installed package
   be checked to ensure it is functional.  Since a package is conceptualized as a library, the check consists in testing whether
@@ -1707,6 +1744,11 @@ class GNUPackage(Package):
     else:
       args.append('--disable-shared')
 
+    cuda_module = self.framework.findModule(self, config.packages.cuda)
+    if cuda_module and cuda_module.found:
+      with self.Language('CUDA'):
+        args.append('CUDAC='+self.getCompiler())
+        args.append('CUDAFLAGS="'+self.updatePackageCUDAFlags(self.getCompilerFlags())+'"')
     return args
 
   def preInstall(self):
@@ -1800,7 +1842,7 @@ class GNUPackage(Package):
       try:
         self.executeShellCommand(command,cwd=self.packageDir,log=self.log)
       except RuntimeError as e:
-        raise RuntimeError('Could not boostrap '+self.PACKAGE+': maybe autotools (or recent enough autotools) could not be found?\nError: '+str(e))
+        raise RuntimeError('Could not bootstrap '+self.PACKAGE+': maybe autotools (or recent enough autotools) could not be found?\nError: '+str(e))
 
 class CMakePackage(Package):
   def __init__(self, framework):
@@ -1841,7 +1883,7 @@ class CMakePackage(Package):
     self.framework.pushLanguage('C')
     args.append('-DCMAKE_C_COMPILER="'+self.framework.getCompiler()+'"')
     # bypass CMake findMPI() bug that can find compilers later in the PATH before the first one in the PATH.
-    # relevent lines of findMPI() begins with if(_MPI_BASE_DIR)
+    # relevant lines of findMPI() begins with if(_MPI_BASE_DIR)
     self.getExecutable(self.framework.getCompiler(), getFullPath=1, resultName='mpi_C',setMakeMacro=0)
     args.append('-DMPI_C_COMPILER="'+self.mpi_C+'"')
     args.append('-DCMAKE_AR='+self.setCompilers.AR)
@@ -1856,7 +1898,7 @@ class CMakePackage(Package):
       lang = self.framework.pushLanguage('Cxx')
       args.append('-DCMAKE_CXX_COMPILER="'+self.framework.getCompiler()+'"')
       # bypass CMake findMPI() bug that can find compilers later in the PATH before the first one in the PATH.
-      # relevent lines of findMPI() begins with if(_MPI_BASE_DIR)
+      # relevant lines of findMPI() begins with if(_MPI_BASE_DIR)
       self.getExecutable(self.framework.getCompiler(), getFullPath=1, resultName='mpi_CC',setMakeMacro=0)
       args.append('-DMPI_CXX_COMPILER="'+self.mpi_CC+'"')
       cxxFlags = self.updatePackageCxxFlags(self.framework.getCompilerFlags())
@@ -1874,7 +1916,7 @@ class CMakePackage(Package):
       self.framework.pushLanguage('FC')
       args.append('-DCMAKE_Fortran_COMPILER="'+self.framework.getCompiler()+'"')
       # bypass CMake findMPI() bug that can find compilers later in the PATH before the first one in the PATH.
-      # relevent lines of findMPI() begins with if(_MPI_BASE_DIR)
+      # relevant lines of findMPI() begins with if(_MPI_BASE_DIR)
       self.getExecutable(self.framework.getCompiler(), getFullPath=1, resultName='mpi_FC',setMakeMacro=0)
       args.append('-DMPI_Fortran_COMPILER="'+self.mpi_FC+'"')
       args.append('-DCMAKE_Fortran_FLAGS:STRING="'+self.updatePackageFFlags(self.framework.getCompilerFlags())+'"')
@@ -1890,6 +1932,17 @@ class CMakePackage(Package):
       args.append('-DBUILD_SHARED_LIBS:BOOL=ON')
     else:
       args.append('-DBUILD_SHARED_LIBS:BOOL=OFF')
+
+    if 'MSYSTEM' in os.environ:
+      args.append('-G "MSYS Makefiles"')
+    cuda_module = self.framework.findModule(self, config.packages.cuda)
+    if cuda_module and cuda_module.found:
+      with self.Language('CUDA'):
+        args.append('-DCMAKE_CUDA_COMPILER='+self.getCompiler())
+        cuda_flags = self.updatePackageCUDAFlags(self.getCompilerFlags())
+        args.append('-DCMAKE_CUDA_FLAGS:STRING="{}"'.format(cuda_flags))
+        args.append('-DCMAKE_CUDA_FLAGS_DEBUG:STRING="{}"'.format(cuda_flags))
+        args.append('-DCMAKE_CUDA_FLAGS_RELEASE:STRING="{}"'.format(cuda_flags))
     return args
 
   def updateControlFiles(self):

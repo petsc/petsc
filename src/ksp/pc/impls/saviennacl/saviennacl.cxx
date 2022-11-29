@@ -1,6 +1,4 @@
 
-/*  -------------------------------------------------------------------- */
-
 /*
    Include files needed for the ViennaCL Smoothed Aggregation preconditioner:
      pcimpl.h - private include file intended for use by all preconditioners
@@ -21,7 +19,6 @@ typedef struct {
   viennacl::linalg::amg_precond<viennacl::compressed_matrix<PetscScalar>> *SAVIENNACL;
 } PC_SAVIENNACL;
 
-/* -------------------------------------------------------------------------- */
 /*
    PCSetUp_SAVIENNACL - Prepares for the use of the SAVIENNACL preconditioner
                         by setting data structures and options.
@@ -31,11 +28,12 @@ typedef struct {
 
    Application Interface Routine: PCSetUp()
 
-   Notes:
+   Note:
    The interface routine PCSetUp() is not usually called directly by
    the user, but instead is called by PCApply() if necessary.
 */
-static PetscErrorCode PCSetUp_SAVIENNACL(PC pc) {
+static PetscErrorCode PCSetUp_SAVIENNACL(PC pc)
+{
   PC_SAVIENNACL      *sa  = (PC_SAVIENNACL *)pc->data;
   PetscBool           flg = PETSC_FALSE;
   Mat_SeqAIJViennaCL *gpustruct;
@@ -46,7 +44,9 @@ static PetscErrorCode PCSetUp_SAVIENNACL(PC pc) {
   if (pc->setupcalled != 0) {
     try {
       delete sa->SAVIENNACL;
-    } catch (char *ex) { SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "ViennaCL error: %s", ex); }
+    } catch (char *ex) {
+      SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "ViennaCL error: %s", ex);
+    }
   }
   try {
 #if defined(PETSC_USE_COMPLEX)
@@ -63,11 +63,12 @@ static PetscErrorCode PCSetUp_SAVIENNACL(PC pc) {
     sa->SAVIENNACL         = new viennacl::linalg::amg_precond<viennacl::compressed_matrix<PetscScalar>>(*mat, amg_tag_sa_pmis);
     sa->SAVIENNACL->setup();
 #endif
-  } catch (char *ex) { SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "ViennaCL error: %s", ex); }
+  } catch (char *ex) {
+    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "ViennaCL error: %s", ex);
+  }
   PetscFunctionReturn(0);
 }
 
-/* -------------------------------------------------------------------------- */
 /*
    PCApply_SAVIENNACL - Applies the SAVIENNACL preconditioner to a vector.
 
@@ -80,7 +81,8 @@ static PetscErrorCode PCSetUp_SAVIENNACL(PC pc) {
 
    Application Interface Routine: PCApply()
  */
-static PetscErrorCode PCApply_SAVIENNACL(PC pc, Vec x, Vec y) {
+static PetscErrorCode PCApply_SAVIENNACL(PC pc, Vec x, Vec y)
+{
   PC_SAVIENNACL                       *sac = (PC_SAVIENNACL *)pc->data;
   PetscBool                            flg1, flg2;
   viennacl::vector<PetscScalar> const *xarray = NULL;
@@ -99,13 +101,15 @@ static PetscErrorCode PCApply_SAVIENNACL(PC pc, Vec x, Vec y) {
     *yarray = *xarray;
     sac->SAVIENNACL->apply(*yarray);
 #endif
-  } catch (char *ex) { SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "ViennaCL error: %s", ex); }
+  } catch (char *ex) {
+    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "ViennaCL error: %s", ex);
+  }
   PetscCall(VecViennaCLRestoreArrayRead(x, &xarray));
   PetscCall(VecViennaCLRestoreArrayWrite(y, &yarray));
   PetscCall(PetscObjectStateIncrease((PetscObject)y));
   PetscFunctionReturn(0);
 }
-/* -------------------------------------------------------------------------- */
+
 /*
    PCDestroy_SAVIENNACL - Destroys the private context for the SAVIENNACL preconditioner
    that was created with PCCreate_SAVIENNACL().
@@ -115,14 +119,17 @@ static PetscErrorCode PCApply_SAVIENNACL(PC pc, Vec x, Vec y) {
 
    Application Interface Routine: PCDestroy()
 */
-static PetscErrorCode PCDestroy_SAVIENNACL(PC pc) {
+static PetscErrorCode PCDestroy_SAVIENNACL(PC pc)
+{
   PC_SAVIENNACL *sac = (PC_SAVIENNACL *)pc->data;
 
   PetscFunctionBegin;
   if (sac->SAVIENNACL) {
     try {
       delete sac->SAVIENNACL;
-    } catch (char *ex) { SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "ViennaCL error: %s", ex); }
+    } catch (char *ex) {
+      SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "ViennaCL error: %s", ex);
+    }
   }
 
   /*
@@ -132,25 +139,27 @@ static PetscErrorCode PCDestroy_SAVIENNACL(PC pc) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCSetFromOptions_SAVIENNACL(PC pc, PetscOptionItems *PetscOptionsObject) {
+static PetscErrorCode PCSetFromOptions_SAVIENNACL(PC pc, PetscOptionItems *PetscOptionsObject)
+{
   PetscFunctionBegin;
   PetscOptionsHeadBegin(PetscOptionsObject, "SAVIENNACL options");
   PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }
 
-/* -------------------------------------------------------------------------- */
-
 /*MC
      PCSAViennaCL  - A smoothed agglomeration algorithm that can be used via the CUDA, OpenCL, and OpenMP backends of ViennaCL
 
    Level: advanced
 
-.seealso: `PCCreate()`, `PCSetType()`, `PCType`, `PC`
+   Developer Note:
+   This `PCType` does not appear to be registered
 
+.seealso: `PCCreate()`, `PCSetType()`, `PCType`, `PC`
 M*/
 
-PETSC_EXTERN PetscErrorCode PCCreate_SAVIENNACL(PC pc) {
+PETSC_EXTERN PetscErrorCode PCCreate_SAVIENNACL(PC pc)
+{
   PC_SAVIENNACL *sac;
 
   PetscFunctionBegin;
@@ -158,7 +167,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_SAVIENNACL(PC pc) {
      Creates the private data structure for this preconditioner and
      attach it to the PC object.
   */
-  PetscCall(PetscNewLog(pc, &sac));
+  PetscCall(PetscNew(&sac));
   pc->data = (void *)sac;
 
   /*

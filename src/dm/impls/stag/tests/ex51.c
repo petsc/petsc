@@ -2,7 +2,8 @@ static char help[] = "DMStag slot test (to excerpt for manual)\n\n";
 
 #include <petscdmstag.h>
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   DM              dm;
   Vec             x;
   PetscInt        start_x, start_y, start_z, n_x, n_y, n_z, n_extra_x, n_extra_y, n_extra_z, slot_vertex_2;

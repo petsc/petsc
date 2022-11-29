@@ -6,7 +6,8 @@ static char help[] = "Tests the parallel case for MatIncreaseOverlap(). Input ar
 
 #include <petscmat.h>
 
-PetscErrorCode ISAllGatherDisjoint(IS iis, IS **ois) {
+PetscErrorCode ISAllGatherDisjoint(IS iis, IS **ois)
+{
   IS             *is2, is;
   const PetscInt *idxs;
   PetscInt        i, ls, *sizes;
@@ -32,7 +33,8 @@ PetscErrorCode ISAllGatherDisjoint(IS iis, IS **ois) {
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   PetscInt    nd = 2, ov = 1, ndpar, i, start, m, n, end, lsize;
   PetscMPIInt rank;
   PetscBool   flg, useND = PETSC_FALSE;

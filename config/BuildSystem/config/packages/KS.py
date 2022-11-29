@@ -87,7 +87,7 @@ ks_shared:
 	        fi; \\
 	        if [ "$$flag" != "" ]; then \\
                 echo "building $$LIBNAME.${SL_LINKER_SUFFIX}"; \\
-                  ${RM} -f ${INSTALL_LIB_DIR}/tmp-ks-shlib/*; \\
+                  ${RM} ${INSTALL_LIB_DIR}/tmp-ks-shlib/*; \\
 	          cd  ${INSTALL_LIB_DIR}/tmp-ks-shlib; \\
 	          ${AR} x ${INSTALL_LIB_DIR}/$$LIBNAME.${AR_LIB_SUFFIX}; \\
 	          ${RANLIB} ${INSTALL_LIB_DIR}/$$LIBNAME.${AR_LIB_SUFFIX}; \\

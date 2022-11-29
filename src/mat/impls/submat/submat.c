@@ -9,7 +9,8 @@ typedef struct {
   Mat        A;
 } Mat_SubVirtual;
 
-static PetscErrorCode MatScale_SubMatrix(Mat N, PetscScalar a) {
+static PetscErrorCode MatScale_SubMatrix(Mat N, PetscScalar a)
+{
   Mat_SubVirtual *Na = (Mat_SubVirtual *)N->data;
 
   PetscFunctionBegin;
@@ -17,7 +18,8 @@ static PetscErrorCode MatScale_SubMatrix(Mat N, PetscScalar a) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatShift_SubMatrix(Mat N, PetscScalar a) {
+static PetscErrorCode MatShift_SubMatrix(Mat N, PetscScalar a)
+{
   Mat_SubVirtual *Na = (Mat_SubVirtual *)N->data;
 
   PetscFunctionBegin;
@@ -25,7 +27,8 @@ static PetscErrorCode MatShift_SubMatrix(Mat N, PetscScalar a) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatDiagonalScale_SubMatrix(Mat N, Vec left, Vec right) {
+static PetscErrorCode MatDiagonalScale_SubMatrix(Mat N, Vec left, Vec right)
+{
   Mat_SubVirtual *Na = (Mat_SubVirtual *)N->data;
 
   PetscFunctionBegin;
@@ -43,7 +46,8 @@ static PetscErrorCode MatDiagonalScale_SubMatrix(Mat N, Vec left, Vec right) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatGetDiagonal_SubMatrix(Mat N, Vec d) {
+static PetscErrorCode MatGetDiagonal_SubMatrix(Mat N, Vec d)
+{
   Mat_SubVirtual *Na = (Mat_SubVirtual *)N->data;
 
   PetscFunctionBegin;
@@ -53,7 +57,8 @@ static PetscErrorCode MatGetDiagonal_SubMatrix(Mat N, Vec d) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatMult_SubMatrix(Mat N, Vec x, Vec y) {
+static PetscErrorCode MatMult_SubMatrix(Mat N, Vec x, Vec y)
+{
   Mat_SubVirtual *Na = (Mat_SubVirtual *)N->data;
 
   PetscFunctionBegin;
@@ -66,7 +71,8 @@ static PetscErrorCode MatMult_SubMatrix(Mat N, Vec x, Vec y) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatMultAdd_SubMatrix(Mat N, Vec v1, Vec v2, Vec v3) {
+static PetscErrorCode MatMultAdd_SubMatrix(Mat N, Vec v1, Vec v2, Vec v3)
+{
   Mat_SubVirtual *Na = (Mat_SubVirtual *)N->data;
 
   PetscFunctionBegin;
@@ -95,7 +101,8 @@ static PetscErrorCode MatMultAdd_SubMatrix(Mat N, Vec v1, Vec v2, Vec v3) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatMultTranspose_SubMatrix(Mat N, Vec x, Vec y) {
+static PetscErrorCode MatMultTranspose_SubMatrix(Mat N, Vec x, Vec y)
+{
   Mat_SubVirtual *Na = (Mat_SubVirtual *)N->data;
 
   PetscFunctionBegin;
@@ -108,7 +115,8 @@ static PetscErrorCode MatMultTranspose_SubMatrix(Mat N, Vec x, Vec y) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatMultTransposeAdd_SubMatrix(Mat N, Vec v1, Vec v2, Vec v3) {
+static PetscErrorCode MatMultTransposeAdd_SubMatrix(Mat N, Vec v1, Vec v2, Vec v3)
+{
   Mat_SubVirtual *Na = (Mat_SubVirtual *)N->data;
 
   PetscFunctionBegin;
@@ -137,7 +145,8 @@ static PetscErrorCode MatMultTransposeAdd_SubMatrix(Mat N, Vec v1, Vec v2, Vec v
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatDestroy_SubMatrix(Mat N) {
+static PetscErrorCode MatDestroy_SubMatrix(Mat N)
+{
   Mat_SubVirtual *Na = (Mat_SubVirtual *)N->data;
 
   PetscFunctionBegin;
@@ -177,7 +186,8 @@ static PetscErrorCode MatDestroy_SubMatrix(Mat N) {
 
 .seealso: `MATSUBMATRIX`, `MATLOCALREF`, `MatCreateLocalRef()`, `MatCreateSubMatrix()`, `MatSubMatrixVirtualUpdate()`
 @*/
-PetscErrorCode MatCreateSubMatrixVirtual(Mat A, IS isrow, IS iscol, Mat *newmat) {
+PetscErrorCode MatCreateSubMatrixVirtual(Mat A, IS isrow, IS iscol, Mat *newmat)
+{
   Vec             left, right;
   PetscInt        m, n;
   Mat             N;
@@ -196,7 +206,7 @@ PetscErrorCode MatCreateSubMatrixVirtual(Mat A, IS isrow, IS iscol, Mat *newmat)
   PetscCall(MatSetSizes(N, m, n, PETSC_DETERMINE, PETSC_DETERMINE));
   PetscCall(PetscObjectChangeTypeName((PetscObject)N, MATSUBMATRIX));
 
-  PetscCall(PetscNewLog(N, &Na));
+  PetscCall(PetscNew(&Na));
   N->data = (void *)Na;
 
   PetscCall(PetscObjectReference((PetscObject)isrow));
@@ -267,7 +277,8 @@ M*/
 
 .seealso: MATSUBMATRIX`, `MatCreateSubMatrixVirtual()`
 @*/
-PetscErrorCode MatSubMatrixVirtualUpdate(Mat N, Mat A, IS isrow, IS iscol) {
+PetscErrorCode MatSubMatrixVirtualUpdate(Mat N, Mat A, IS isrow, IS iscol)
+{
   PetscBool       flg;
   Mat_SubVirtual *Na;
 

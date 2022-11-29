@@ -23,7 +23,7 @@
 #define petsc_null_function_  petsc_null_function__
 #endif
 
-PETSC_EXTERN void petscsetmoduleblock_();
+PETSC_EXTERN void petscsetmoduleblock_(void);
 PETSC_EXTERN void petscsetmoduleblockmpi_(MPI_Fint*,MPI_Fint*,MPI_Fint*,MPI_Fint*);
 PETSC_EXTERN void petscsetmoduleblocknumeric_(PetscReal*,PetscReal*,PetscReal*,PetscReal*,PetscReal*,PetscReal*,PetscReal*,PetscReal*);
 PETSC_EXTERN void petscsetcomm_(MPI_Fint*,MPI_Fint*);

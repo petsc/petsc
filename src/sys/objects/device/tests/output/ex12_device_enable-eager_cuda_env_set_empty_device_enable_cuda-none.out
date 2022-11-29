@@ -1,0 +1,27 @@
+[0] <sys> PetscDeviceInitializeTypeFromOptions_Private(): PetscDeviceType host available, initializing
+[0] <sys> PetscDeviceInitializeTypeFromOptions_Private(): PetscDevice host initialized, default device id 0, view FALSE, init type lazy
+[0] <sys> PetscDeviceInitializeTypeFromOptions_Private(): PetscDeviceType cuda available, initializing
+[0] <sys> PetscDeviceInitializeTypeFromOptions_Private(): PetscDevice cuda initialized, default device id -3, view FALSE, init type none
+[0] <sys> PetscDeviceInitializeTypeFromOptions_Private(): PetscDeviceType hip not available
+[0] <sys> PetscDeviceInitializeTypeFromOptions_Private(): PetscDeviceType sycl not available
+[0] <sys> PetscInitialize_Common(): PETSc successfully started: number of processors = 1
+[0] <device> PetscDeviceContextSetupGlobalContext_Private(): Initializing global PetscDeviceContext with device type cuda
+[0]PETSC ERROR: --------------------- Error Message --------------------------------------------------------------
+[0]PETSC ERROR: Object is in wrong state
+[0]PETSC ERROR: Trying to retrieve a cuda PetscDevice when it has been disabled
+[0]PETSC ERROR: See https://petsc.org/release/faq/ for trouble shooting.
+[0]PETSC ERROR: #1 init_device_id_() at cupmdevice.cxx:0
+[0]PETSC ERROR: #2 getDevice() at impldevicebase.hpp:0
+[0]PETSC ERROR: #3 PetscDeviceCreate() at device.cxx:0
+[0]PETSC ERROR: #4 PetscDeviceInitializeDefaultDevice_Internal() at device.cxx:0
+[0]PETSC ERROR: #5 PetscDeviceInitialize() at device.cxx:0
+[0]PETSC ERROR: #6 PetscDeviceGetDefaultForType_Internal() at device.cxx:0
+[0]PETSC ERROR: #7 PetscDeviceContextSetDefaultDeviceForType_Internal() at dcontext.cxx:0
+[0]PETSC ERROR: #8 PetscDeviceContextSetupGlobalContext_Private() at global_dcontext.cxx:0
+[0]PETSC ERROR: #9 PetscDeviceContextGetCurrentContext() at global_dcontext.cxx:0
+[0]PETSC ERROR: #10 main() at ex12.c:0
+[0]PETSC ERROR: PETSc Option Table entries:
+[0]PETSC ERROR: -device_enable eager (source: command line)
+[0]PETSC ERROR: -device_enable_cuda none (source: command line)
+[0]PETSC ERROR: -info (source: command line)
+[0]PETSC ERROR: ----------------End of Error Message -------send entire error message to petsc-maint@mcs.anl.gov----------

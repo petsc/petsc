@@ -2,7 +2,8 @@ static char help[] = "Test CPU/GPU memory leaks, MatMult and MatMultTransposeAdd
 
 #include <petscmat.h>
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscMPIInt rank, size;
   Mat         A;
   PetscInt    i, j, k, n = 3, vstart, rstart, rend, margin;

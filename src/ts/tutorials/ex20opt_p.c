@@ -41,7 +41,8 @@ PetscErrorCode Adjoint2(Vec, PetscScalar[], User);
 
 /* ----------------------- Explicit form of the ODE  -------------------- */
 
-static PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec U, Vec F, void *ctx) {
+static PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec U, Vec F, void *ctx)
+{
   User               user = (User)ctx;
   PetscScalar       *f;
   const PetscScalar *u;
@@ -56,7 +57,8 @@ static PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec U, Vec F, void *ctx) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec U, Mat A, Mat B, void *ctx) {
+static PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec U, Mat A, Mat B, void *ctx)
+{
   User               user     = (User)ctx;
   PetscReal          mu       = user->mu;
   PetscInt           rowcol[] = {0, 1};
@@ -82,7 +84,8 @@ static PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec U, Mat A, Mat B, void 
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode RHSHessianProductUU(TS ts, PetscReal t, Vec U, Vec *Vl, Vec Vr, Vec *VHV, void *ctx) {
+static PetscErrorCode RHSHessianProductUU(TS ts, PetscReal t, Vec U, Vec *Vl, Vec Vr, Vec *VHV, void *ctx)
+{
   const PetscScalar *vl, *vr, *u;
   PetscScalar       *vhv;
   PetscScalar        dJdU[2][2][2] = {{{0}}};
@@ -111,7 +114,8 @@ static PetscErrorCode RHSHessianProductUU(TS ts, PetscReal t, Vec U, Vec *Vl, Ve
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode RHSHessianProductUP(TS ts, PetscReal t, Vec U, Vec *Vl, Vec Vr, Vec *VHV, void *ctx) {
+static PetscErrorCode RHSHessianProductUP(TS ts, PetscReal t, Vec U, Vec *Vl, Vec Vr, Vec *VHV, void *ctx)
+{
   const PetscScalar *vl, *vr, *u;
   PetscScalar       *vhv;
   PetscScalar        dJdP[2][2][1] = {{{0}}};
@@ -138,7 +142,8 @@ static PetscErrorCode RHSHessianProductUP(TS ts, PetscReal t, Vec U, Vec *Vl, Ve
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode RHSHessianProductPU(TS ts, PetscReal t, Vec U, Vec *Vl, Vec Vr, Vec *VHV, void *ctx) {
+static PetscErrorCode RHSHessianProductPU(TS ts, PetscReal t, Vec U, Vec *Vl, Vec Vr, Vec *VHV, void *ctx)
+{
   const PetscScalar *vl, *vr, *u;
   PetscScalar       *vhv;
   PetscScalar        dJdU[2][1][2] = {{{0}}};
@@ -165,14 +170,16 @@ static PetscErrorCode RHSHessianProductPU(TS ts, PetscReal t, Vec U, Vec *Vl, Ve
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode RHSHessianProductPP(TS ts, PetscReal t, Vec U, Vec *Vl, Vec Vr, Vec *VHV, void *ctx) {
+static PetscErrorCode RHSHessianProductPP(TS ts, PetscReal t, Vec U, Vec *Vl, Vec Vr, Vec *VHV, void *ctx)
+{
   PetscFunctionBeginUser;
   PetscFunctionReturn(0);
 }
 
 /* ----------------------- Implicit form of the ODE  -------------------- */
 
-static PetscErrorCode IFunction(TS ts, PetscReal t, Vec U, Vec Udot, Vec F, void *ctx) {
+static PetscErrorCode IFunction(TS ts, PetscReal t, Vec U, Vec Udot, Vec F, void *ctx)
+{
   User               user = (User)ctx;
   PetscScalar       *f;
   const PetscScalar *u, *udot;
@@ -191,7 +198,8 @@ static PetscErrorCode IFunction(TS ts, PetscReal t, Vec U, Vec Udot, Vec F, void
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode IJacobian(TS ts, PetscReal t, Vec U, Vec Udot, PetscReal a, Mat A, Mat B, void *ctx) {
+static PetscErrorCode IJacobian(TS ts, PetscReal t, Vec U, Vec Udot, PetscReal a, Mat A, Mat B, void *ctx)
+{
   User               user     = (User)ctx;
   PetscInt           rowcol[] = {0, 1};
   PetscScalar        J[2][2];
@@ -217,7 +225,8 @@ static PetscErrorCode IJacobian(TS ts, PetscReal t, Vec U, Vec Udot, PetscReal a
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode RHSJacobianP(TS ts, PetscReal t, Vec U, Mat A, void *ctx) {
+static PetscErrorCode RHSJacobianP(TS ts, PetscReal t, Vec U, Mat A, void *ctx)
+{
   PetscInt           row[] = {0, 1}, col[] = {0};
   PetscScalar        J[2][1];
   const PetscScalar *u;
@@ -236,7 +245,8 @@ static PetscErrorCode RHSJacobianP(TS ts, PetscReal t, Vec U, Mat A, void *ctx) 
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode IHessianProductUU(TS ts, PetscReal t, Vec U, Vec *Vl, Vec Vr, Vec *VHV, void *ctx) {
+static PetscErrorCode IHessianProductUU(TS ts, PetscReal t, Vec U, Vec *Vl, Vec Vr, Vec *VHV, void *ctx)
+{
   const PetscScalar *vl, *vr, *u;
   PetscScalar       *vhv;
   PetscScalar        dJdU[2][2][2] = {{{0}}};
@@ -265,7 +275,8 @@ static PetscErrorCode IHessianProductUU(TS ts, PetscReal t, Vec U, Vec *Vl, Vec 
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode IHessianProductUP(TS ts, PetscReal t, Vec U, Vec *Vl, Vec Vr, Vec *VHV, void *ctx) {
+static PetscErrorCode IHessianProductUP(TS ts, PetscReal t, Vec U, Vec *Vl, Vec Vr, Vec *VHV, void *ctx)
+{
   const PetscScalar *vl, *vr, *u;
   PetscScalar       *vhv;
   PetscScalar        dJdP[2][2][1] = {{{0}}};
@@ -292,7 +303,8 @@ static PetscErrorCode IHessianProductUP(TS ts, PetscReal t, Vec U, Vec *Vl, Vec 
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode IHessianProductPU(TS ts, PetscReal t, Vec U, Vec *Vl, Vec Vr, Vec *VHV, void *ctx) {
+static PetscErrorCode IHessianProductPU(TS ts, PetscReal t, Vec U, Vec *Vl, Vec Vr, Vec *VHV, void *ctx)
+{
   const PetscScalar *vl, *vr, *u;
   PetscScalar       *vhv;
   PetscScalar        dJdU[2][1][2] = {{{0}}};
@@ -319,13 +331,15 @@ static PetscErrorCode IHessianProductPU(TS ts, PetscReal t, Vec U, Vec *Vl, Vec 
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode IHessianProductPP(TS ts, PetscReal t, Vec U, Vec *Vl, Vec Vr, Vec *VHV, void *ctx) {
+static PetscErrorCode IHessianProductPP(TS ts, PetscReal t, Vec U, Vec *Vl, Vec Vr, Vec *VHV, void *ctx)
+{
   PetscFunctionBeginUser;
   PetscFunctionReturn(0);
 }
 
 /* Monitor timesteps and use interpolation to output at integer multiples of 0.1 */
-static PetscErrorCode Monitor(TS ts, PetscInt step, PetscReal t, Vec X, void *ctx) {
+static PetscErrorCode Monitor(TS ts, PetscInt step, PetscReal t, Vec X, void *ctx)
+{
   const PetscScalar *x;
   PetscReal          tfinal, dt;
   User               user = (User)ctx;
@@ -347,7 +361,8 @@ static PetscErrorCode Monitor(TS ts, PetscInt step, PetscReal t, Vec X, void *ct
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   Vec                P;
   PetscBool          monitor = PETSC_FALSE;
   PetscScalar       *x_ptr;
@@ -508,7 +523,8 @@ int main(int argc, char **argv) {
    f   - the newly evaluated function
    G   - the newly evaluated gradient
 */
-PetscErrorCode FormFunctionGradient(Tao tao, Vec P, PetscReal *f, Vec G, void *ctx) {
+PetscErrorCode FormFunctionGradient(Tao tao, Vec P, PetscReal *f, Vec G, void *ctx)
+{
   User               user_ptr = (User)ctx;
   TS                 ts       = user_ptr->ts;
   PetscScalar       *x_ptr, *g;
@@ -557,7 +573,8 @@ PetscErrorCode FormFunctionGradient(Tao tao, Vec P, PetscReal *f, Vec G, void *c
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode FormHessian(Tao tao, Vec P, Mat H, Mat Hpre, void *ctx) {
+PetscErrorCode FormHessian(Tao tao, Vec P, Mat H, Mat Hpre, void *ctx)
+{
   User           user_ptr = (User)ctx;
   PetscScalar    harr[1];
   const PetscInt rows[1] = {0};
@@ -576,7 +593,8 @@ PetscErrorCode FormHessian(Tao tao, Vec P, Mat H, Mat Hpre, void *ctx) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode Adjoint2(Vec P, PetscScalar arr[], User ctx) {
+PetscErrorCode Adjoint2(Vec P, PetscScalar arr[], User ctx)
+{
   TS                 ts = ctx->ts;
   const PetscScalar *z_ptr;
   PetscScalar       *x_ptr, *y_ptr, dzdp, dzdp2;

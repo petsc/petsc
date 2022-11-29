@@ -44,7 +44,8 @@ PetscErrorCode EvaluateFunction(Tao, Vec, Vec, void *);
 PetscErrorCode EvaluateJacobian(Tao, Vec, Mat, Mat, void *);
 
 /*--------------------------------------------------------------------*/
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscInt  wtype = 0;
   Vec       x, f; /* solution, function */
   Vec       w;    /* weights */
@@ -122,7 +123,8 @@ int main(int argc, char **argv) {
 }
 
 /*--------------------------------------------------------------------*/
-PetscErrorCode EvaluateFunction(Tao tao, Vec X, Vec F, void *ptr) {
+PetscErrorCode EvaluateFunction(Tao tao, Vec X, Vec F, void *ptr)
+{
   AppCtx          *user = (AppCtx *)ptr;
   PetscInt         i;
   PetscReal       *y = user->y, *f, *t = user->t;
@@ -141,7 +143,8 @@ PetscErrorCode EvaluateFunction(Tao tao, Vec X, Vec F, void *ptr) {
 
 /*------------------------------------------------------------*/
 /* J[i][j] = df[i]/dt[j] */
-PetscErrorCode EvaluateJacobian(Tao tao, Vec X, Mat J, Mat Jpre, void *ptr) {
+PetscErrorCode EvaluateJacobian(Tao tao, Vec X, Mat J, Mat Jpre, void *ptr)
+{
   AppCtx          *user = (AppCtx *)ptr;
   PetscInt         i;
   PetscReal       *t = user->t;
@@ -169,7 +172,8 @@ PetscErrorCode EvaluateJacobian(Tao tao, Vec X, Mat J, Mat Jpre, void *ptr) {
 }
 
 /* ------------------------------------------------------------ */
-PetscErrorCode FormStartingPoint(Vec X) {
+PetscErrorCode FormStartingPoint(Vec X)
+{
   PetscReal *x;
 
   PetscFunctionBegin;
@@ -182,7 +186,8 @@ PetscErrorCode FormStartingPoint(Vec X) {
 }
 
 /* ---------------------------------------------------------------------- */
-PetscErrorCode InitializeData(AppCtx *user) {
+PetscErrorCode InitializeData(AppCtx *user)
+{
   PetscReal *t = user->t, *y = user->y;
   PetscInt   i = 0;
 

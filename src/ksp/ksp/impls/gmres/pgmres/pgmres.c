@@ -18,7 +18,8 @@ static PetscErrorCode KSPPGMRESBuildSoln(PetscScalar *, Vec, Vec, KSP, PetscInt)
     but can be called directly by KSPSetUp().
 
 */
-static PetscErrorCode KSPSetUp_PGMRES(KSP ksp) {
+static PetscErrorCode KSPSetUp_PGMRES(KSP ksp)
+{
   PetscFunctionBegin;
   PetscCall(KSPSetUp_GMRES(ksp));
   PetscFunctionReturn(0);
@@ -41,7 +42,8 @@ static PetscErrorCode KSPSetUp_PGMRES(KSP ksp) {
     the initial residual.
 
  */
-static PetscErrorCode KSPPGMRESCycle(PetscInt *itcount, KSP ksp) {
+static PetscErrorCode KSPPGMRESCycle(PetscInt *itcount, KSP ksp)
+{
   KSP_PGMRES *pgmres = (KSP_PGMRES *)(ksp->data);
   PetscReal   res_norm, res, newnorm;
   PetscInt    it     = 0, j, k;
@@ -193,7 +195,8 @@ static PetscErrorCode KSPPGMRESCycle(PetscInt *itcount, KSP ksp) {
 .     outits - number of iterations used
 
 */
-static PetscErrorCode KSPSolve_PGMRES(KSP ksp) {
+static PetscErrorCode KSPSolve_PGMRES(KSP ksp)
+{
   PetscInt    its, itcount;
   KSP_PGMRES *pgmres     = (KSP_PGMRES *)ksp->data;
   PetscBool   guess_zero = ksp->guess_zero;
@@ -220,7 +223,8 @@ static PetscErrorCode KSPSolve_PGMRES(KSP ksp) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode KSPDestroy_PGMRES(KSP ksp) {
+static PetscErrorCode KSPDestroy_PGMRES(KSP ksp)
+{
   PetscFunctionBegin;
   PetscCall(KSPDestroy_GMRES(ksp));
   PetscFunctionReturn(0);
@@ -239,7 +243,8 @@ static PetscErrorCode KSPDestroy_PGMRES(KSP ksp) {
 
      This is an internal routine that knows about the PGMRES internals.
  */
-static PetscErrorCode KSPPGMRESBuildSoln(PetscScalar *nrs, Vec vguess, Vec vdest, KSP ksp, PetscInt it) {
+static PetscErrorCode KSPPGMRESBuildSoln(PetscScalar *nrs, Vec vguess, Vec vdest, KSP ksp, PetscInt it)
+{
   PetscScalar tt;
   PetscInt    k, j;
   KSP_PGMRES *pgmres = (KSP_PGMRES *)(ksp->data);
@@ -295,7 +300,8 @@ static PetscErrorCode KSPPGMRESBuildSoln(PetscScalar *nrs, Vec vguess, Vec vdest
 /*
 .  it - column of the Hessenberg that is complete, PGMRES is actually computing two columns ahead of this
  */
-static PetscErrorCode KSPPGMRESUpdateHessenberg(KSP ksp, PetscInt it, PetscBool *hapend, PetscReal *res) {
+static PetscErrorCode KSPPGMRESUpdateHessenberg(KSP ksp, PetscInt it, PetscBool *hapend, PetscReal *res)
+{
   PetscScalar *hh, *cc, *ss, *rs;
   PetscInt     j;
   PetscReal    hapbnd;
@@ -380,21 +386,18 @@ static PetscErrorCode KSPPGMRESUpdateHessenberg(KSP ksp, PetscInt it, PetscBool 
    calls directly.
 
 */
-PetscErrorCode KSPBuildSolution_PGMRES(KSP ksp, Vec ptr, Vec *result) {
+PetscErrorCode KSPBuildSolution_PGMRES(KSP ksp, Vec ptr, Vec *result)
+{
   KSP_PGMRES *pgmres = (KSP_PGMRES *)ksp->data;
 
   PetscFunctionBegin;
   if (!ptr) {
-    if (!pgmres->sol_temp) {
-      PetscCall(VecDuplicate(ksp->vec_sol, &pgmres->sol_temp));
-      PetscCall(PetscLogObjectParent((PetscObject)ksp, (PetscObject)pgmres->sol_temp));
-    }
+    if (!pgmres->sol_temp) { PetscCall(VecDuplicate(ksp->vec_sol, &pgmres->sol_temp)); }
     ptr = pgmres->sol_temp;
   }
   if (!pgmres->nrs) {
     /* allocate the work area */
     PetscCall(PetscMalloc1(pgmres->max_k, &pgmres->nrs));
-    PetscCall(PetscLogObjectMemory((PetscObject)ksp, pgmres->max_k * sizeof(PetscScalar)));
   }
 
   PetscCall(KSPPGMRESBuildSoln(pgmres->nrs, ksp->vec_sol, ptr, ksp, pgmres->it));
@@ -402,7 +405,8 @@ PetscErrorCode KSPBuildSolution_PGMRES(KSP ksp, Vec ptr, Vec *result) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode KSPSetFromOptions_PGMRES(KSP ksp, PetscOptionItems *PetscOptionsObject) {
+PetscErrorCode KSPSetFromOptions_PGMRES(KSP ksp, PetscOptionItems *PetscOptionsObject)
+{
   PetscFunctionBegin;
   PetscCall(KSPSetFromOptions_GMRES(ksp, PetscOptionsObject));
   PetscOptionsHeadBegin(PetscOptionsObject, "KSP pipelined GMRES Options");
@@ -410,14 +414,15 @@ PetscErrorCode KSPSetFromOptions_PGMRES(KSP ksp, PetscOptionItems *PetscOptionsO
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode KSPReset_PGMRES(KSP ksp) {
+PetscErrorCode KSPReset_PGMRES(KSP ksp)
+{
   PetscFunctionBegin;
   PetscCall(KSPReset_GMRES(ksp));
   PetscFunctionReturn(0);
 }
 
 /*MC
-     KSPPGMRES - Implements the Pipelined Generalized Minimal Residual method.
+     KSPPGMRES - Implements the Pipelined Generalized Minimal Residual method. [](sec_pipelineksp)
 
    Options Database Keys:
 +   -ksp_gmres_restart <restart> - the number of Krylov directions to orthogonalize against
@@ -432,27 +437,28 @@ PetscErrorCode KSPReset_PGMRES(KSP ksp) {
 
    Level: beginner
 
-   Notes:
+   Note:
    MPI configuration may be necessary for reductions to make asynchronous progress, which is important for performance of pipelined methods.
-   See the FAQ on the PETSc website for details.
+   See [](doc_faq_pipelined)
 
    Reference:
    Ghysels, Ashby, Meerbergen, Vanroose, Hiding global communication latencies in the GMRES algorithm on massively parallel machines, 2012.
 
-   Developer Notes:
-    This object is subclassed off of KSPGMRES
+   Developer Note:
+    This object is subclassed off of `KSPGMRES`
 
-.seealso: `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPGMRES`, `KSPLGMRES`, `KSPPIPECG`, `KSPPIPECR`,
+.seealso: [](chapter_ksp), [](sec_pipelineksp), [](doc_faq_pipelined), `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPGMRES`, `KSPLGMRES`, `KSPPIPECG`, `KSPPIPECR`,
           `KSPGMRESSetRestart()`, `KSPGMRESSetHapTol()`, `KSPGMRESSetPreAllocateVectors()`, `KSPGMRESSetOrthogonalization()`, `KSPGMRESGetOrthogonalization()`,
           `KSPGMRESClassicalGramSchmidtOrthogonalization()`, `KSPGMRESModifiedGramSchmidtOrthogonalization()`,
           `KSPGMRESCGSRefinementType`, `KSPGMRESSetCGSRefinementType()`, `KSPGMRESGetCGSRefinementType()`, `KSPGMRESMonitorKrylov()`
 M*/
 
-PETSC_EXTERN PetscErrorCode KSPCreate_PGMRES(KSP ksp) {
+PETSC_EXTERN PetscErrorCode KSPCreate_PGMRES(KSP ksp)
+{
   KSP_PGMRES *pgmres;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(ksp, &pgmres));
+  PetscCall(PetscNew(&pgmres));
 
   ksp->data                              = (void *)pgmres;
   ksp->ops->buildsolution                = KSPBuildSolution_PGMRES;

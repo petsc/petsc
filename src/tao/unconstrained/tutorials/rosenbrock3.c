@@ -25,7 +25,8 @@ typedef struct {
 PetscErrorCode FormFunctionGradient(Tao, Vec, PetscReal *, Vec, void *);
 PetscErrorCode FormHessian(Tao, Vec, Mat, Mat, void *);
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscReal          zero = 0.0;
   Vec                x; /* solution vector */
   Mat                H;
@@ -129,7 +130,8 @@ int main(int argc, char **argv) {
     at the same time.  Evaluating both at once may be more efficient than
     evaluating each separately.
 */
-PetscErrorCode FormFunctionGradient(Tao tao, Vec X, PetscReal *f, Vec G, void *ptr) {
+PetscErrorCode FormFunctionGradient(Tao tao, Vec X, PetscReal *f, Vec G, void *ptr)
+{
   AppCtx            *user = (AppCtx *)ptr;
   PetscInt           i, nn = user->n / 2;
   PetscReal          ff = 0, t1, t2, alpha = user->alpha;
@@ -184,7 +186,8 @@ PetscErrorCode FormFunctionGradient(Tao tao, Vec X, PetscReal *f, Vec G, void *p
    Note:  Providing the Hessian may not be necessary.  Only some solvers
    require this matrix.
 */
-PetscErrorCode FormHessian(Tao tao, Vec X, Mat H, Mat Hpre, void *ptr) {
+PetscErrorCode FormHessian(Tao tao, Vec X, Mat H, Mat Hpre, void *ptr)
+{
   AppCtx            *user = (AppCtx *)ptr;
   PetscInt           i, ind[2];
   PetscReal          alpha = user->alpha;

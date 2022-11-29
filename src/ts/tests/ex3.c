@@ -41,7 +41,8 @@ extern PetscErrorCode femA(AppCtx *, PetscInt, PetscScalar *);
 extern PetscErrorCode rhs(AppCtx *, PetscScalar *, PetscInt, PetscScalar *, PetscReal);
 extern PetscErrorCode RHSfunction(TS, PetscReal, Vec, Vec, void *);
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscInt    i, m, nz, steps, max_steps, k, nphase = 1;
   PetscScalar zInitial, zFinal, val, *z;
   PetscReal   stepsz[4], T, ftime;
@@ -196,7 +197,8 @@ int main(int argc, char **argv) {
   Set exact solution
   u(z,t) = sin(6*PI*z)*exp(-36.*PI*PI*t) + 3.*sin(2*PI*z)*exp(-4.*PI*PI*t)
 --------------------------------------------------------------------------*/
-PetscScalar exact(PetscScalar z, PetscReal t) {
+PetscScalar exact(PetscScalar z, PetscReal t)
+{
   PetscScalar val, ex1, ex2;
 
   ex1 = PetscExpReal(-36. * PETSC_PI * PETSC_PI * t);
@@ -221,7 +223,8 @@ PetscScalar exact(PetscScalar z, PetscReal t) {
             information about the problem size, workspace and the exact
             solution.
 */
-PetscErrorCode Monitor(TS ts, PetscInt step, PetscReal time, Vec u, void *ctx) {
+PetscErrorCode Monitor(TS ts, PetscInt step, PetscReal time, Vec u, void *ctx)
+{
   AppCtx      *appctx = (AppCtx *)ctx;
   PetscInt     i, m = appctx->m;
   PetscReal    norm_2, norm_max, h = 1.0 / (m + 1);
@@ -262,7 +265,8 @@ PetscErrorCode Monitor(TS ts, PetscInt step, PetscReal time, Vec u, void *ctx) {
       Function to solve a linear system using KSP
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*/
 
-PetscErrorCode Petsc_KSPSolve(AppCtx *obj) {
+PetscErrorCode Petsc_KSPSolve(AppCtx *obj)
+{
   KSP ksp;
   PC  pc;
 
@@ -302,7 +306,8 @@ PetscErrorCode Petsc_KSPSolve(AppCtx *obj) {
                       derivative of the basis function is returned.
  ***********************************************************************/
 
-PetscScalar bspl(PetscScalar *x, PetscScalar xx, PetscInt il, PetscInt iq, PetscInt nll[][2], PetscInt id) {
+PetscScalar bspl(PetscScalar *x, PetscScalar xx, PetscInt il, PetscInt iq, PetscInt nll[][2], PetscInt id)
+{
   PetscScalar x1, x2, bfcn;
   PetscInt    i1, i2, iq1, iq2;
 
@@ -328,7 +333,8 @@ PetscScalar bspl(PetscScalar *x, PetscScalar xx, PetscInt il, PetscInt iq, Petsc
 /*---------------------------------------------------------
   Function called by rhs function to get B and g
 ---------------------------------------------------------*/
-PetscErrorCode femBg(PetscScalar btri[][3], PetscScalar *f, PetscInt nz, PetscScalar *z, PetscReal t) {
+PetscErrorCode femBg(PetscScalar btri[][3], PetscScalar *f, PetscInt nz, PetscScalar *z, PetscReal t)
+{
   PetscInt    i, j, jj, il, ip, ipp, ipq, iq, iquad, iqq;
   PetscInt    nli[num_z][2], indx[num_z];
   PetscScalar dd, dl, zip, zipq, zz, b_z, bb_z, bij;
@@ -406,7 +412,8 @@ PetscErrorCode femBg(PetscScalar btri[][3], PetscScalar *f, PetscInt nz, PetscSc
   return 0;
 }
 
-PetscErrorCode femA(AppCtx *obj, PetscInt nz, PetscScalar *z) {
+PetscErrorCode femA(AppCtx *obj, PetscInt nz, PetscScalar *z)
+{
   PetscInt    i, j, il, ip, ipp, ipq, iq, iquad, iqq;
   PetscInt    nli[num_z][2], indx[num_z];
   PetscScalar dd, dl, zip, zipq, zz, bb, bbb, aij;
@@ -483,7 +490,8 @@ PetscErrorCode femA(AppCtx *obj, PetscInt nz, PetscScalar *z) {
         Function to fill the rhs vector with
         By + g values ****
 ---------------------------------------------------------*/
-PetscErrorCode rhs(AppCtx *obj, PetscScalar *y, PetscInt nz, PetscScalar *z, PetscReal t) {
+PetscErrorCode rhs(AppCtx *obj, PetscScalar *y, PetscInt nz, PetscScalar *z, PetscReal t)
+{
   PetscInt    i, j, js, je, jj;
   PetscScalar val, g[num_z], btri[num_z][3], add_term;
 
@@ -526,7 +534,8 @@ PetscErrorCode rhs(AppCtx *obj, PetscScalar *y, PetscInt nz, PetscScalar *z, Pet
       to the problem ydot=f(y,t)=inv(A)*(By+g)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%*/
 
-PetscErrorCode RHSfunction(TS ts, PetscReal t, Vec globalin, Vec globalout, void *ctx) {
+PetscErrorCode RHSfunction(TS ts, PetscReal t, Vec globalin, Vec globalout, void *ctx)
+{
   AppCtx            *obj = (AppCtx *)ctx;
   PetscScalar        soln[num_z];
   const PetscScalar *soln_ptr;

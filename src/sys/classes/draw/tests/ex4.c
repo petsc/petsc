@@ -3,14 +3,15 @@ static char help[] = "Demonstrates use of PetscDrawZoom()\n";
 
 #if defined(PETSC_APPLE_FRAMEWORK)
 
-#include <PETSc/petscsys.h>
-#include <PETSc/petscdraw.h>
+  #include <PETSc/petscsys.h>
+  #include <PETSc/petscdraw.h>
 #else
-#include <petscsys.h>
-#include <petscdraw.h>
+  #include <petscsys.h>
+  #include <petscdraw.h>
 #endif
 
-PetscErrorCode zoomfunction(PetscDraw draw, void *dummy) {
+PetscErrorCode zoomfunction(PetscDraw draw, void *dummy)
+{
   int         i;
   MPI_Comm    comm = PetscObjectComm((PetscObject)draw);
   PetscMPIInt size, rank;
@@ -24,7 +25,8 @@ PetscErrorCode zoomfunction(PetscDraw draw, void *dummy) {
   return 0;
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   int       x = 0, y = 0, width = 256, height = 256;
   PetscDraw draw;
 

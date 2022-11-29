@@ -8,7 +8,8 @@
 #include <../src/mat/impls/aij/seq/aij.h> /*I "petscmat.h" I*/
 #include <../src/mat/impls/dense/seq/dense.h>
 
-PetscErrorCode MatDestroy_SeqDense_MatTransMatMult(void *data) {
+PetscErrorCode MatDestroy_SeqDense_MatTransMatMult(void *data)
+{
   Mat_MatTransMatMult *atb = (Mat_MatTransMatMult *)data;
 
   PetscFunctionBegin;
@@ -21,7 +22,8 @@ PetscErrorCode MatDestroy_SeqDense_MatTransMatMult(void *data) {
 
 static PetscErrorCode MatTMatTMultNumeric_SeqAIJ_SeqDense(Mat, Mat, Mat);
 
-PETSC_INTERN PetscErrorCode MatTMatTMultSymbolic_SeqAIJ_SeqDense(Mat A, Mat B, PetscReal fill, Mat C) {
+PETSC_INTERN PetscErrorCode MatTMatTMultSymbolic_SeqAIJ_SeqDense(Mat A, Mat B, PetscReal fill, Mat C)
+{
   Mat_MatTransMatMult *atb;
   PetscBool            cisdense;
   PetscInt             dofm;
@@ -58,7 +60,8 @@ PETSC_INTERN PetscErrorCode MatTMatTMultSymbolic_SeqAIJ_SeqDense(Mat A, Mat B, P
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatTMatTMultNumeric_SeqAIJ_SeqDense(Mat A, Mat B, Mat C) {
+PetscErrorCode MatTMatTMultNumeric_SeqAIJ_SeqDense(Mat A, Mat B, Mat C)
+{
   PetscInt             i, j, m = A->rmap->n, n = A->cmap->n, blda, clda;
   PetscInt             mdof = C->cmap->N;
   const PetscScalar   *Barray;

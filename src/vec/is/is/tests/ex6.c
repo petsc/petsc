@@ -4,7 +4,8 @@ static char help[] = "Tests ISComplement().\n\n";
 #include <petscis.h>
 #include <petscviewer.h>
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscMPIInt rank, size;
   PetscInt    i, j, n, cnt = 0, rstart, rend;
   PetscBool   flg;

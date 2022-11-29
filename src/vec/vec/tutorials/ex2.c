@@ -10,7 +10,8 @@ static char help[] = "Builds a parallel vector with 1 component on the first pro
 */
 #include <petscvec.h>
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscMPIInt rank;
   PetscInt    i, N;
   PetscScalar one = 1.0;

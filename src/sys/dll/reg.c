@@ -13,7 +13,8 @@ PetscDLLibrary PetscDLLibrariesLoaded = NULL;
 
 #if defined(PETSC_HAVE_DYNAMIC_LIBRARIES) && defined(PETSC_USE_SHARED_LIBRARIES)
 
-static PetscErrorCode PetscLoadDynamicLibrary(const char *name, PetscBool *found) {
+static PetscErrorCode PetscLoadDynamicLibrary(const char *name, PetscBool *found)
+{
   char libs[PETSC_MAX_PATH_LEN], dlib[PETSC_MAX_PATH_LEN];
 
   PetscFunctionBegin;
@@ -35,9 +36,9 @@ static PetscErrorCode PetscLoadDynamicLibrary(const char *name, PetscBool *found
 #if defined(PETSC_USE_SINGLE_LIBRARY) && !(defined(PETSC_HAVE_DYNAMIC_LIBRARIES) && defined(PETSC_USE_SHARED_LIBRARIES))
 PETSC_EXTERN PetscErrorCode AOInitializePackage(void);
 PETSC_EXTERN PetscErrorCode PetscSFInitializePackage(void);
-#if !defined(PETSC_USE_COMPLEX)
+  #if !defined(PETSC_USE_COMPLEX)
 PETSC_EXTERN PetscErrorCode CharacteristicInitializePackage(void);
-#endif
+  #endif
 PETSC_EXTERN PetscErrorCode ISInitializePackage(void);
 PETSC_EXTERN PetscErrorCode VecInitializePackage(void);
 PETSC_EXTERN PetscErrorCode MatInitializePackage(void);
@@ -56,7 +57,8 @@ static MPI_Comm PETSC_COMM_WORLD_INNER = 0, PETSC_COMM_SELF_INNER = 0;
     PetscInitialize_DynamicLibraries - Adds the default dynamic link libraries to the
     search path.
 */
-PETSC_INTERN PetscErrorCode PetscInitialize_DynamicLibraries(void) {
+PETSC_INTERN PetscErrorCode PetscInitialize_DynamicLibraries(void)
+{
   char     *libname[32];
   PetscInt  nmax, i;
   PetscBool preload = PETSC_FALSE;
@@ -83,10 +85,10 @@ PETSC_INTERN PetscErrorCode PetscInitialize_DynamicLibraries(void) {
   } else {
 #if defined(PETSC_HAVE_DYNAMIC_LIBRARIES) && defined(PETSC_USE_SHARED_LIBRARIES)
     PetscBool found;
-#if defined(PETSC_USE_SINGLE_LIBRARY)
+  #if defined(PETSC_USE_SINGLE_LIBRARY)
     PetscCall(PetscLoadDynamicLibrary("", &found));
     PetscCheck(found, PETSC_COMM_SELF, PETSC_ERR_FILE_OPEN, "Unable to locate PETSc dynamic library \n You cannot move the dynamic libraries!");
-#else
+  #else
     PetscCall(PetscLoadDynamicLibrary("sys", &found));
     PetscCheck(found, PETSC_COMM_SELF, PETSC_ERR_FILE_OPEN, "Unable to locate PETSc dynamic library \n You cannot move the dynamic libraries!");
     PetscCall(PetscLoadDynamicLibrary("vec", &found));
@@ -103,14 +105,14 @@ PETSC_INTERN PetscErrorCode PetscInitialize_DynamicLibraries(void) {
     PetscCheck(found, PETSC_COMM_SELF, PETSC_ERR_FILE_OPEN, "Unable to locate PETSc TS dynamic library \n You cannot move the dynamic libraries!");
     PetscCall(PetscLoadDynamicLibrary("tao", &found));
     PetscCheck(found, PETSC_COMM_SELF, PETSC_ERR_FILE_OPEN, "Unable to locate Tao dynamic library \n You cannot move the dynamic libraries!");
-#endif
+  #endif
 #else /* defined(PETSC_HAVE_DYNAMIC_LIBRARIES) && defined(PETSC_USE_SHARED_LIBRARIES) */
-#if defined(PETSC_USE_SINGLE_LIBRARY)
+  #if defined(PETSC_USE_SINGLE_LIBRARY)
     PetscCall(AOInitializePackage());
     PetscCall(PetscSFInitializePackage());
-#if !defined(PETSC_USE_COMPLEX)
+    #if !defined(PETSC_USE_COMPLEX)
     PetscCall(CharacteristicInitializePackage());
-#endif
+    #endif
     PetscCall(ISInitializePackage());
     PetscCall(VecInitializePackage());
     PetscCall(MatInitializePackage());
@@ -120,9 +122,9 @@ PETSC_INTERN PetscErrorCode PetscInitialize_DynamicLibraries(void) {
     PetscCall(SNESInitializePackage());
     PetscCall(TSInitializePackage());
     PetscCall(TaoInitializePackage());
-#else
+  #else
     SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP, "Cannot use -library_preload with multiple static PETSc libraries");
-#endif
+  #endif
 #endif /* defined(PETSC_HAVE_DYNAMIC_LIBRARIES) && defined(PETSC_USE_SHARED_LIBRARIES) */
   }
 
@@ -158,7 +160,8 @@ PETSC_INTERN PetscErrorCode PetscInitialize_DynamicLibraries(void) {
 /*
      PetscFinalize_DynamicLibraries - Closes the opened dynamic libraries.
 */
-PETSC_INTERN PetscErrorCode PetscFinalize_DynamicLibraries(void) {
+PETSC_INTERN PetscErrorCode PetscFinalize_DynamicLibraries(void)
+{
   PetscBool flg = PETSC_FALSE;
 
   PetscFunctionBegin;
@@ -188,6 +191,16 @@ struct _n_PetscFunctionList {
 */
 static PetscFunctionList dlallhead = NULL;
 
+static PetscErrorCode PetscFunctionListCreateNode_Private(PetscFunctionList *entry, const char name[], void (*func)(void))
+{
+  PetscFunctionBegin;
+  PetscCall(PetscNew(entry));
+  PetscCall(PetscStrallocpy(name, &(*entry)->name));
+  (*entry)->routine = func;
+  (*entry)->next    = NULL;
+  PetscFunctionReturn(0);
+}
+
 /*MC
    PetscFunctionListAdd - Given a routine and a string id, saves that routine in the
    specified registry.
@@ -216,49 +229,56 @@ static PetscFunctionList dlallhead = NULL;
 .seealso: `PetscFunctionListDestroy()`, `SNESRegister()`, `KSPRegister()`,
           `PCRegister()`, `TSRegister()`, `PetscFunctionList`, `PetscObjectComposeFunction()`
 M*/
-PETSC_EXTERN PetscErrorCode PetscFunctionListAdd_Private(PetscFunctionList *fl, const char name[], void (*fnc)(void)) {
-  PetscFunctionList entry, ne;
-
+PETSC_EXTERN PetscErrorCode PetscFunctionListAdd_Private(PetscFunctionList *fl, const char name[], void (*fnc)(void))
+{
   PetscFunctionBegin;
-  if (!*fl) {
-    PetscCall(PetscNew(&entry));
-    PetscCall(PetscStrallocpy(name, &entry->name));
-    entry->routine = fnc;
-    entry->next    = NULL;
-    *fl            = entry;
-
-    if (PetscDefined(USE_DEBUG)) {
-      /* add this new list to list of all lists */
-      if (!dlallhead) {
-        dlallhead        = *fl;
-        (*fl)->next_list = NULL;
-      } else {
-        ne               = dlallhead;
-        dlallhead        = *fl;
-        (*fl)->next_list = ne;
-      }
-    }
-
-  } else {
+  PetscValidPointer(fl, 1);
+  if (name) PetscValidCharPointer(name, 2);
+  if (fnc) PetscValidFunction(fnc, 3);
+  if (*fl) {
     /* search list to see if it is already there */
-    ne = *fl;
-    while (ne) {
+    PetscFunctionList empty_node = NULL;
+    PetscFunctionList ne         = *fl;
+
+    while (1) {
       PetscBool founddup;
 
       PetscCall(PetscStrcmp(ne->name, name, &founddup));
-      if (founddup) { /* found duplicate */
+      if (founddup) {
+        /* found duplicate, clear it */
         ne->routine = fnc;
+        if (!fnc) PetscCall(PetscFree(ne->name));
         PetscFunctionReturn(0);
       }
-      if (ne->next) ne = ne->next;
-      else break;
+
+      if (!empty_node && !ne->routine && !ne->name) {
+        /* save the empty node for later */
+        empty_node = ne;
+      }
+
+      if (!ne->next) break; /* end of list */
+      ne = ne->next;
     }
-    /* create new entry and add to end of list */
-    PetscCall(PetscNew(&entry));
-    PetscCall(PetscStrallocpy(name, &entry->name));
-    entry->routine = fnc;
-    entry->next    = NULL;
-    ne->next       = entry;
+
+    /* there was an empty entry we could grab, fill it and bail */
+    if (empty_node) {
+      empty_node->routine = fnc;
+      PetscCall(PetscStrallocpy(name, &empty_node->name));
+    } else {
+      /* create new entry at the end of list */
+      PetscCall(PetscFunctionListCreateNode_Private(&ne->next, name, fnc));
+    }
+    PetscFunctionReturn(0);
+  }
+
+  /* we didn't have a list */
+  PetscCall(PetscFunctionListCreateNode_Private(fl, name, fnc));
+  if (PetscDefined(USE_DEBUG)) {
+    const PetscFunctionList head = dlallhead;
+
+    /* add this new list to list of all lists */
+    dlallhead        = *fl;
+    (*fl)->next_list = head;
   }
   PetscFunctionReturn(0);
 }
@@ -271,9 +291,10 @@ PETSC_EXTERN PetscErrorCode PetscFunctionListAdd_Private(PetscFunctionList *fl, 
 
     Level: developer
 
-.seealso: `PetscFunctionListAdd()`, `PetscFunctionList`
+.seealso: `PetscFunctionListAdd()`, `PetscFunctionList`, `PetscFunctionListClear()`
 @*/
-PetscErrorCode PetscFunctionListDestroy(PetscFunctionList *fl) {
+PetscErrorCode PetscFunctionListDestroy(PetscFunctionList *fl)
+{
   PetscFunctionList next, entry, tmp = dlallhead;
 
   PetscFunctionBegin;
@@ -305,10 +326,38 @@ PetscErrorCode PetscFunctionListDestroy(PetscFunctionList *fl) {
   PetscFunctionReturn(0);
 }
 
+/*@
+  PetscFunctionListClear - Clear a `PetscFunctionList`
+
+  Not Collective
+
+  Input Parameter:
+. fl - The `PetscFunctionList` to clear
+
+  Notes:
+  This clears the contents of `fl` but does not deallocate the entries themselves.
+
+  Level: developer
+
+.seealso: `PetscFunctionList`, `PetscFunctionListDestroy()`, `PetscFunctionListAdd()`
+@*/
+PetscErrorCode PetscFunctionListClear(PetscFunctionList fl)
+{
+  PetscFunctionBegin;
+  /* free the names and clear the routine but don't deallocate the node */
+  while (fl) {
+    PetscCall(PetscFree(fl->name));
+    fl->routine = NULL;
+    fl          = fl->next;
+  }
+  PetscFunctionReturn(0);
+}
+
 /*
    Print registered PetscFunctionLists
 */
-PetscErrorCode PetscFunctionListPrintAll(void) {
+PetscErrorCode PetscFunctionListPrintAll(void)
+{
   PetscFunctionList tmp = dlallhead;
 
   PetscFunctionBegin;
@@ -330,7 +379,8 @@ PetscErrorCode PetscFunctionListPrintAll(void) {
 
 .seealso: `PetscFunctionListAdd()`, `PetscFunctionList`, `PetscObjectQueryFunction()`
 M*/
-PetscErrorCode PetscFunctionListPrintNonEmpty(PetscFunctionList fl) {
+PetscErrorCode PetscFunctionListPrintNonEmpty(PetscFunctionList fl)
+{
   PetscFunctionBegin;
   while (fl) {
     PetscFunctionList next = fl->next;
@@ -358,15 +408,16 @@ PetscErrorCode PetscFunctionListPrintNonEmpty(PetscFunctionList fl) {
 
 .seealso: `PetscFunctionListAdd()`, `PetscFunctionList`, `PetscObjectQueryFunction()`
 M*/
-PETSC_EXTERN PetscErrorCode PetscFunctionListFind_Private(PetscFunctionList fl, const char name[], void (**r)(void)) {
+PETSC_EXTERN PetscErrorCode PetscFunctionListFind_Private(PetscFunctionList fl, const char name[], void (**r)(void))
+{
   PetscFunctionList entry = fl;
-  PetscBool         flg;
 
   PetscFunctionBegin;
-  PetscCheck(name, PETSC_COMM_SELF, PETSC_ERR_ARG_NULL, "Trying to find routine with null name");
-
-  *r = NULL;
+  PetscValidCharPointer(name, 2);
+  PetscValidPointer(r, 3);
   while (entry) {
+    PetscBool flg;
+
     PetscCall(PetscStrcmp(name, entry->name, &flg));
     if (flg) {
       *r = entry->routine;
@@ -374,6 +425,7 @@ PETSC_EXTERN PetscErrorCode PetscFunctionListFind_Private(PetscFunctionList fl, 
     }
     entry = entry->next;
   }
+  *r = NULL;
   PetscFunctionReturn(0);
 }
 
@@ -390,7 +442,8 @@ PETSC_EXTERN PetscErrorCode PetscFunctionListFind_Private(PetscFunctionList fl, 
 
 .seealso: `PetscFunctionListAdd()`, `PetscFunctionListPrintTypes()`, `PetscFunctionList`
 @*/
-PetscErrorCode PetscFunctionListView(PetscFunctionList list, PetscViewer viewer) {
+PetscErrorCode PetscFunctionListView(PetscFunctionList list, PetscViewer viewer)
+{
   PetscBool iascii;
 
   PetscFunctionBegin;
@@ -430,7 +483,8 @@ PetscErrorCode PetscFunctionListView(PetscFunctionList list, PetscViewer viewer)
 
 .seealso: `PetscFunctionListAdd()`, `PetscFunctionList`
 @*/
-PetscErrorCode PetscFunctionListGet(PetscFunctionList list, const char ***array, int *n) {
+PetscErrorCode PetscFunctionListGet(PetscFunctionList list, const char ***array, int *n)
+{
   PetscInt          count = 0;
   PetscFunctionList klist = list;
 
@@ -471,7 +525,8 @@ PetscErrorCode PetscFunctionListGet(PetscFunctionList list, const char ***array,
 
 .seealso: `PetscFunctionListAdd()`, `PetscFunctionList`
 @*/
-PetscErrorCode PetscFunctionListPrintTypes(MPI_Comm comm, FILE *fd, const char prefix[], const char name[], const char text[], const char man[], PetscFunctionList list, const char def[], const char newv[]) {
+PetscErrorCode PetscFunctionListPrintTypes(MPI_Comm comm, FILE *fd, const char prefix[], const char name[], const char text[], const char man[], PetscFunctionList list, const char def[], const char newv[])
+{
   char p[64];
 
   PetscFunctionBegin;
@@ -502,7 +557,8 @@ PetscErrorCode PetscFunctionListPrintTypes(MPI_Comm comm, FILE *fd, const char p
 
 .seealso: `PetscFunctionList`, `PetscFunctionListAdd()`, `PetscFlistDestroy()`
 @*/
-PetscErrorCode PetscFunctionListDuplicate(PetscFunctionList fl, PetscFunctionList *nl) {
+PetscErrorCode PetscFunctionListDuplicate(PetscFunctionList fl, PetscFunctionList *nl)
+{
   PetscFunctionBegin;
   while (fl) {
     PetscCall(PetscFunctionListAdd(nl, fl->name, fl->routine));

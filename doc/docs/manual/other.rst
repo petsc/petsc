@@ -430,14 +430,10 @@ Note that, in general, debugging MPI programs cannot be done in the
 usual manner of starting the programming in the debugger (because then
 it cannot set up the MPI communication and remote processes).
 
-By default the GNU debugger ``gdb`` is used when ``-start_in_debugger``
-or ``-on_error_attach_debugger`` is specified. To employ either
-``xxgdb`` or the common Unix debugger ``dbx``, one uses command line
-options as indicated above. On HP-UX machines the debugger ``xdb``
-should be used instead of ``dbx``; on RS/6000 machines the ``xldb``
-debugger is supported as well. On OS X systems with XCode tools,
-``lldb`` is available. By default, the debugger will be started in a new
-xterm (to enable running separate debuggers on each process), unless the
+By default on Linux systems the GNU debugger ``gdb`` is used, on macOS systems ``lldb`` is used
+
+By default, the debugger will be started in a new
+xterm (Apple Terminal on macOS), to enable running separate debuggers on each process, unless the
 option ``noxterm`` is used. In order to handle the MPI startup phase,
 the debugger command ``cont`` should be used to continue execution of
 the program within the debugger. Rerunning the program through the
@@ -608,10 +604,10 @@ working *only* with real numbers in a code, one should use a version of
 PETSc for real numbers for best efficiency.
 
 The program
-`KSP Tutorial ex11 <../../src/ksp/ksp/tutorials/ex11.c.html>`__
+`KSP Tutorial ex11 <PETSC_DOC_OUT_ROOT_PLACEHOLDER/src/ksp/ksp/tutorials/ex11.c.html>`__
 solves a linear system with a complex coefficient matrix. Its Fortran
 counterpart is
-`KSP Tutorial ex11f <../../src/ksp/ksp/tutorials/ex11f.F90.html>`__.
+`KSP Tutorial ex11f <PETSC_DOC_OUT_ROOT_PLACEHOLDER/src/ksp/ksp/tutorials/ex11f.F90.html>`__.
 
 Parallel Communication
 ~~~~~~~~~~~~~~~~~~~~~~
@@ -836,7 +832,7 @@ will prevent any windows from being opened or any drawing actions to be
 done. This is useful for running large jobs when the graphics overhead
 is too large, or for timing.
 
-The full example, `Draw Test ex3 <../../src/sys/classes/draw/tests/ex3.c.html>`__,
+The full example, `Draw Test ex3 <PETSC_DOC_OUT_ROOT_PLACEHOLDER/src/sys/classes/draw/tests/ex3.c.html>`__,
 follows.
 
 .. _listing_draw_test_ex3:
@@ -1268,26 +1264,29 @@ example with its corresponding makefile and then transcribe all compiler
 and linker options used in this build into a Visual Studio project file,
 in the appropriate format in Visual Studio project settings.
 
-XCode Users (The Apple GUI Development System)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Xcode IDL Users
+~~~~~~~~~~~~~~~
 
-Mac OS X
-^^^^^^^^
+See :any:`doc_macos_install` for the standard Unix command line tools approach to development on macOS. The information
+below is only if you plan to write code within the Xcode IDL.
+
+Apple Xcode IDL for macOS Applications
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Follow the instructions in ``$PETSC_DIR/systems/Apple/OSX/bin/makeall``
 to build the PETSc framework and documentation suitable for use in
-XCode.
+Xcode.
 
 You can then use the PETSc framework in
 ``$PETSC_DIR/arch-osx/PETSc.framework`` in the usual manner for Apple
 frameworks. See the examples in
-``$PETSC_DIR/systems/Apple/OSX/examples``. When working in XCode, things
+``$PETSC_DIR/systems/Apple/OSX/examples``. When working in Xcode, things
 like function name completion should work for all PETSc functions as
 well as MPI functions. You must also link against the Apple
 ``Accelerate.framework``.
 
-iPhone/iPad iOS
-^^^^^^^^^^^^^^^
+Apple Xcode IDL for iPhone/iPad iOS Applications
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Follow the instructions in
 ``$PETSC_DIR/systems/Apple/iOS/bin/iosbuilder.py`` to build the PETSc
@@ -1298,6 +1297,15 @@ You can then use the PETSc static library in
 libraries inside your iOS XCode projects; see the examples in
 ``$PETSC_DIR/systems/Apple/iOS/examples``. You must also link against
 the Apple ``Accelerate.framework``.
+
+A thorough discussion of the
+procedure is given in `Comparison of Migration Techniques for High-Performance Code to Android and iOS
+<https://www.researchgate.net/publication/308973080_Comparison_of_Migration_Techniques_for_High-Performance_Code_to_Android_and_iOS>`__.
+
+For Android, you must have your standalone bin folder in the path, so that the compilers
+are visible.
+
+The installation process has not been tested for iOS or Android since 2017.
 
 .. rubric:: Footnotes
 

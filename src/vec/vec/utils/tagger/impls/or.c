@@ -18,7 +18,8 @@
 
 .seealso: `VecTaggerOrSetSubs()`
 @*/
-PetscErrorCode VecTaggerOrGetSubs(VecTagger tagger, PetscInt *nsubs, VecTagger **subs) {
+PetscErrorCode VecTaggerOrGetSubs(VecTagger tagger, PetscInt *nsubs, VecTagger **subs)
+{
   PetscFunctionBegin;
   PetscCall(VecTaggerGetSubs_AndOr(tagger, nsubs, subs));
   PetscFunctionReturn(0);
@@ -38,13 +39,15 @@ PetscErrorCode VecTaggerOrGetSubs(VecTagger tagger, PetscInt *nsubs, VecTagger *
 
 .seealso: `VecTaggerOrSetSubs()`
 @*/
-PetscErrorCode VecTaggerOrSetSubs(VecTagger tagger, PetscInt nsubs, VecTagger *subs, PetscCopyMode mode) {
+PetscErrorCode VecTaggerOrSetSubs(VecTagger tagger, PetscInt nsubs, VecTagger *subs, PetscCopyMode mode)
+{
   PetscFunctionBegin;
   PetscCall(VecTaggerSetSubs_AndOr(tagger, nsubs, subs, mode));
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode VecTaggerComputeBoxes_Or(VecTagger tagger, Vec vec, PetscInt *numBoxes, VecTaggerBox **boxes, PetscBool *listed) {
+static PetscErrorCode VecTaggerComputeBoxes_Or(VecTagger tagger, Vec vec, PetscInt *numBoxes, VecTaggerBox **boxes, PetscBool *listed)
+{
   PetscInt       i, bs, nsubs, *numSubBoxes, nboxes, total;
   VecTaggerBox **subBoxes;
   VecTagger     *subs;
@@ -101,7 +104,8 @@ static PetscErrorCode VecTaggerComputeBoxes_Or(VecTagger tagger, Vec vec, PetscI
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode VecTaggerComputeIS_Or(VecTagger tagger, Vec vec, IS *is, PetscBool *listed) {
+static PetscErrorCode VecTaggerComputeIS_Or(VecTagger tagger, Vec vec, IS *is, PetscBool *listed)
+{
   PetscInt   nsubs, i;
   VecTagger *subs;
   IS         unionIS;
@@ -131,7 +135,8 @@ static PetscErrorCode VecTaggerComputeIS_Or(VecTagger tagger, Vec vec, IS *is, P
   PetscFunctionReturn(0);
 }
 
-PETSC_INTERN PetscErrorCode VecTaggerCreate_Or(VecTagger tagger) {
+PETSC_INTERN PetscErrorCode VecTaggerCreate_Or(VecTagger tagger)
+{
   PetscFunctionBegin;
   PetscCall(VecTaggerCreate_AndOr(tagger));
   tagger->ops->computeboxes = VecTaggerComputeBoxes_Or;

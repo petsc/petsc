@@ -1,12 +1,12 @@
 #include <petsc/private/tsimpl.h> /*I "petscts.h" I*/
 
 /*@C
-   TSPythonSetType - Initialize a TS object implemented in Python.
+   TSPythonSetType - Initialize a `TS` object implemented in Python.
 
-   Collective on TS
+   Collective on ts
 
    Input Parameters:
-+  ts - the TS context
++  ts - the `TS` context
 -  pyname - full dotted Python name [package].module[.{class|function}]
 
    Options Database Key:
@@ -14,9 +14,10 @@
 
    Level: intermediate
 
-.seealso: `TSCreate()`, `TSSetType()`, `TSPYTHON`, `PetscPythonInitialize()`
+.seealso: [](chapter_ts), `TSCreate()`, `TSSetType()`, `TSPYTHON`, `PetscPythonInitialize()`
 @*/
-PetscErrorCode TSPythonSetType(TS ts, const char pyname[]) {
+PetscErrorCode TSPythonSetType(TS ts, const char pyname[])
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscValidCharPointer(pyname, 2);
@@ -25,21 +26,22 @@ PetscErrorCode TSPythonSetType(TS ts, const char pyname[]) {
 }
 
 /*@C
-   TSPythonGetType - Get the type of a TS object implemented in Python.
+   TSPythonGetType - Get the type of a `TS` object implemented in Python.
 
-   Not collective
+   Not Collective
 
    Input Parameter:
-.  ts - the TS context
+.  ts - the `TS` context
 
    Output Parameter:
 .  pyname - full dotted Python name [package].module[.{class|function}]
 
    Level: intermediate
 
-.seealso: `TSCreate()`, `TSSetType()`, `TSPYTHON`, `PetscPythonInitialize()`, `TSPythonSetType()`
+.seealso: [](chapter_ts), `TSCreate()`, `TSSetType()`, `TSPYTHON`, `PetscPythonInitialize()`, `TSPythonSetType()`
 @*/
-PetscErrorCode TSPythonGetType(TS ts, const char *pyname[]) {
+PetscErrorCode TSPythonGetType(TS ts, const char *pyname[])
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscValidPointer(pyname, 2);

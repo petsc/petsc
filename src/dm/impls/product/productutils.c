@@ -17,7 +17,8 @@
 
 .seealso: `DMPRODUCT`, `DMProductSetDM()`
 @*/
-PETSC_EXTERN PetscErrorCode DMProductGetDM(DM dm, PetscInt slot, DM *subdm) {
+PETSC_EXTERN PetscErrorCode DMProductGetDM(DM dm, PetscInt slot, DM *subdm)
+{
   DM_Product *product = (DM_Product *)dm->data;
   PetscInt    dim;
 
@@ -46,7 +47,8 @@ PETSC_EXTERN PetscErrorCode DMProductGetDM(DM dm, PetscInt slot, DM *subdm) {
 
 .seealso: `DMPRODUCT`, `DMProductGetDM()`, `DMProductSetDimensionIndex()`
 @*/
-PETSC_EXTERN PetscErrorCode DMProductSetDM(DM dm, PetscInt slot, DM subdm) {
+PETSC_EXTERN PetscErrorCode DMProductSetDM(DM dm, PetscInt slot, DM subdm)
+{
   DM_Product *product = (DM_Product *)dm->data;
   PetscInt    dim;
 
@@ -74,7 +76,8 @@ PETSC_EXTERN PetscErrorCode DMProductSetDM(DM dm, PetscInt slot, DM subdm) {
 
 .seealso: `DMPRODUCT`
 @*/
-PETSC_EXTERN PetscErrorCode DMProductSetDimensionIndex(DM dm, PetscInt slot, PetscInt idx) {
+PETSC_EXTERN PetscErrorCode DMProductSetDimensionIndex(DM dm, PetscInt slot, PetscInt idx)
+{
   DM_Product *product = (DM_Product *)dm->data;
   PetscInt    dim;
 

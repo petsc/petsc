@@ -4,7 +4,7 @@ import os
 class Configure(config.package.CMakePackage):
   def __init__(self, framework):
     config.package.CMakePackage.__init__(self, framework)
-    self.gitcommit        = '3.6.01'
+    self.gitcommit        = '3.7.00'
     self.minversion       = '3.5.00'
     self.versionname      = 'KOKKOS_VERSION'
     self.download         = ['git://https://github.com/kokkos/kokkos.git']
@@ -15,7 +15,7 @@ class Configure(config.package.CMakePackage):
     self.functions        = ['']
     self.functionsCxx     = [1,'namespace Kokkos {void initialize(int&,char*[]);}','int one = 1;char* args[1];Kokkos::initialize(one,args);']
     self.minCxxVersion    = 'c++14'
-    self.buildLanguages   = ['Cxx'] # Depending on if cuda, hip or sycl is avaiable, it will be modified.
+    self.buildLanguages   = ['Cxx'] # Depending on if cuda, hip or sycl is available, it will be modified.
     self.hastests         = 1
     self.requiresrpath    = 1
     self.precisions       = ['single','double']
@@ -116,10 +116,15 @@ class Configure(config.package.CMakePackage):
       self.system = 'CUDA'
       self.pushLanguage('CUDA')
       petscNvcc = self.getCompiler()
-      cudaFlags = self.getCompilerFlags()
+      cudaFlags = self.updatePackageCUDAFlags(self.getCompilerFlags()).replace(' ', ';')
       self.popLanguage()
-      args.append('-DKOKKOS_CUDA_OPTIONS="'+cudaFlags.replace(' ',';')+'"')
+      args = self.rmArgsStartsWith(args, '-DCMAKE_CUDA_COMPILER')
+      args = self.rmArgsStartsWith(args, '-DCMAKE_CUDA_FLAGS')
+      args.append('-DKOKKOS_CUDA_OPTIONS="'+cudaFlags+'"')
       args = self.rmArgsStartsWith(args,'-DCMAKE_CXX_COMPILER=')
+      # Kokkos passes the C++ compiler flags to nvcc which barfs with
+      # nvcc fatal   : 'g': expected a number
+      args = [a.replace('-Og', '-O1') if a.startswith('-DCMAKE_CXX_FLAG') else a for a in args]
       args.append('-DCMAKE_CXX_COMPILER='+self.getCompiler('Cxx')) # use the host CXX compiler, let Kokkos handle the nvcc_wrapper business
       genToName = {'3': 'KEPLER','5': 'MAXWELL', '6': 'PASCAL', '7': 'VOLTA', '8': 'AMPERE', '9': 'LOVELACE', '10': 'HOPPER'}
       if hasattr(self.cuda,'cudaArch'):
@@ -137,7 +142,7 @@ class Configure(config.package.CMakePackage):
       nvccpath = os.path.dirname(petscNvcc)
       if nvccpath:
         # Put nvccpath in the beginning of PATH, as there might be other nvcc in PATH and we got this one from --with-cuda-dir.
-        # Kokkos provids Kokkos_CUDA_DIR and CUDA_ROOT. But they do not actually work (as of Jan. 2022) in the aforementioned
+        # Kokkos provides Kokkos_CUDA_DIR and CUDA_ROOT. But they do not actually work (as of Jan. 2022) in the aforementioned
         # case, since these cmake options are not passed correctly to nvcc_wrapper.
         os.environ['PATH'] = nvccpath+':'+path
     elif self.hip.found:

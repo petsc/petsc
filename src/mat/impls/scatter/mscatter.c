@@ -25,7 +25,8 @@ typedef struct {
 
 .seealso: `MATSCATTER`, `MatCreateScatter()`, `MatScatterSetVecScatter()`, `MATSCATTER`
 @*/
-PetscErrorCode MatScatterGetVecScatter(Mat mat, VecScatter *scatter) {
+PetscErrorCode MatScatterGetVecScatter(Mat mat, VecScatter *scatter)
+{
   Mat_Scatter *mscatter;
 
   PetscFunctionBegin;
@@ -36,7 +37,8 @@ PetscErrorCode MatScatterGetVecScatter(Mat mat, VecScatter *scatter) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatDestroy_Scatter(Mat mat) {
+PetscErrorCode MatDestroy_Scatter(Mat mat)
+{
   Mat_Scatter *scatter = (Mat_Scatter *)mat->data;
 
   PetscFunctionBegin;
@@ -45,7 +47,8 @@ PetscErrorCode MatDestroy_Scatter(Mat mat) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatMult_Scatter(Mat A, Vec x, Vec y) {
+PetscErrorCode MatMult_Scatter(Mat A, Vec x, Vec y)
+{
   Mat_Scatter *scatter = (Mat_Scatter *)A->data;
 
   PetscFunctionBegin;
@@ -56,7 +59,8 @@ PetscErrorCode MatMult_Scatter(Mat A, Vec x, Vec y) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatMultAdd_Scatter(Mat A, Vec x, Vec y, Vec z) {
+PetscErrorCode MatMultAdd_Scatter(Mat A, Vec x, Vec y, Vec z)
+{
   Mat_Scatter *scatter = (Mat_Scatter *)A->data;
 
   PetscFunctionBegin;
@@ -67,7 +71,8 @@ PetscErrorCode MatMultAdd_Scatter(Mat A, Vec x, Vec y, Vec z) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatMultTranspose_Scatter(Mat A, Vec x, Vec y) {
+PetscErrorCode MatMultTranspose_Scatter(Mat A, Vec x, Vec y)
+{
   Mat_Scatter *scatter = (Mat_Scatter *)A->data;
 
   PetscFunctionBegin;
@@ -78,7 +83,8 @@ PetscErrorCode MatMultTranspose_Scatter(Mat A, Vec x, Vec y) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatMultTransposeAdd_Scatter(Mat A, Vec x, Vec y, Vec z) {
+PetscErrorCode MatMultTransposeAdd_Scatter(Mat A, Vec x, Vec y, Vec z)
+{
   Mat_Scatter *scatter = (Mat_Scatter *)A->data;
 
   PetscFunctionBegin;
@@ -239,7 +245,8 @@ static struct _MatOps MatOps_Values = {NULL,
                                        NULL,
                                        NULL,
                                        NULL,
-                                       /*150*/ NULL};
+                                       /*150*/ NULL,
+                                       NULL};
 
 /*MC
    MATSCATTER - MATSCATTER = "scatter" - A matrix type that simply applies a `VecScatterBegin()` and `VecScatterEnd()`
@@ -249,12 +256,13 @@ static struct _MatOps MatOps_Values = {NULL,
 .seealso: ``MATSCATTER`, MatCreateScatter()`, `MatScatterSetVecScatter()`, `MatScatterGetVecScatter()`
 M*/
 
-PETSC_EXTERN PetscErrorCode MatCreate_Scatter(Mat A) {
+PETSC_EXTERN PetscErrorCode MatCreate_Scatter(Mat A)
+{
   Mat_Scatter *b;
 
   PetscFunctionBegin;
   PetscCall(PetscMemcpy(A->ops, &MatOps_Values, sizeof(struct _MatOps)));
-  PetscCall(PetscNewLog(A, &b));
+  PetscCall(PetscNew(&b));
 
   A->data = (void *)b;
 
@@ -298,7 +306,8 @@ PETSC_EXTERN PetscErrorCode MatCreate_Scatter(Mat A) {
 
 .seealso: `MatScatterSetVecScatter()`, `MatScatterGetVecScatter()`, `MATSCATTER`
 @*/
-PetscErrorCode MatCreateScatter(MPI_Comm comm, VecScatter scatter, Mat *A) {
+PetscErrorCode MatCreateScatter(MPI_Comm comm, VecScatter scatter, Mat *A)
+{
   PetscFunctionBegin;
   PetscCall(MatCreate(comm, A));
   PetscCall(MatSetSizes(*A, scatter->vscat.to_n, scatter->vscat.from_n, PETSC_DETERMINE, PETSC_DETERMINE));
@@ -321,7 +330,8 @@ PetscErrorCode MatCreateScatter(MPI_Comm comm, VecScatter scatter, Mat *A) {
 
 .seealso: `MATSCATTER`, `MatCreateScatter()`, `MATSCATTER`
 @*/
-PetscErrorCode MatScatterSetVecScatter(Mat mat, VecScatter scatter) {
+PetscErrorCode MatScatterSetVecScatter(Mat mat, VecScatter scatter)
+{
   Mat_Scatter *mscatter = (Mat_Scatter *)mat->data;
 
   PetscFunctionBegin;

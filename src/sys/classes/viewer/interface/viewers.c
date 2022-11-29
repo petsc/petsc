@@ -20,7 +20,8 @@ struct _n_PetscViewers {
 
 .seealso: `PetscViewer`, `PetscViewerSocketOpen()`, `PetscViewerASCIIOpen()`, `PetscViewerCreate()`, `PetscViewerDrawOpen()`, `PetscViewersCreate()`
 @*/
-PetscErrorCode PetscViewersDestroy(PetscViewers *v) {
+PetscErrorCode PetscViewersDestroy(PetscViewers *v)
+{
   int i;
 
   PetscFunctionBegin;
@@ -46,7 +47,8 @@ PetscErrorCode PetscViewersDestroy(PetscViewers *v) {
 
 .seealso: `PetscViewer`, `PetscViewerCreate()`, `PetscViewersDestroy()`
 @*/
-PetscErrorCode PetscViewersCreate(MPI_Comm comm, PetscViewers *v) {
+PetscErrorCode PetscViewersCreate(MPI_Comm comm, PetscViewers *v)
+{
   PetscFunctionBegin;
   PetscValidPointer(v, 2);
   PetscCall(PetscNew(v));
@@ -73,7 +75,8 @@ PetscErrorCode PetscViewersCreate(MPI_Comm comm, PetscViewers *v) {
 
 .seealso: `PetscViewer`, `PetscViewersCreate()`, `PetscViewersDestroy()`
 @*/
-PetscErrorCode PetscViewersGetViewer(PetscViewers viewers, PetscInt n, PetscViewer *viewer) {
+PetscErrorCode PetscViewersGetViewer(PetscViewers viewers, PetscInt n, PetscViewer *viewer)
+{
   PetscFunctionBegin;
   PetscValidPointer(viewers, 1);
   PetscValidPointer(viewer, 3);
@@ -113,7 +116,8 @@ PetscErrorCode PetscViewersGetViewer(PetscViewers viewers, PetscInt n, PetscView
 
 .seealso: `DMMonitorSetFromOptions()`, `KSPMonitorSetFromOptions()`, `SNESMonitorSetFromOptions()`
 */
-PetscErrorCode PetscMonitorCompare(PetscErrorCode (*nmon)(void), void *nmctx, PetscErrorCode (*nmdestroy)(void **), PetscErrorCode (*mon)(void), void *mctx, PetscErrorCode (*mdestroy)(void **), PetscBool *identical) {
+PetscErrorCode PetscMonitorCompare(PetscErrorCode (*nmon)(void), void *nmctx, PetscErrorCode (*nmdestroy)(void **), PetscErrorCode (*mon)(void), void *mctx, PetscErrorCode (*mdestroy)(void **), PetscBool *identical)
+{
   PetscFunctionBegin;
   PetscValidBoolPointer(identical, 7);
   *identical = PETSC_FALSE;

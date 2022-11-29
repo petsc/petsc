@@ -49,7 +49,8 @@ static PetscErrorCode FormFunction1_block(SNES, Vec, Vec, void *);
 static PetscErrorCode FormJacobian2_block(SNES, Vec, Mat, Mat, void *);
 static PetscErrorCode FormFunction2_block(SNES, Vec, Vec, void *);
 
-static PetscErrorCode assembled_system(void) {
+static PetscErrorCode assembled_system(void)
+{
   SNES        snes; /* nonlinear solver context */
   KSP         ksp;  /* linear solver context */
   PC          pc;   /* preconditioner context */
@@ -165,7 +166,6 @@ static PetscErrorCode assembled_system(void) {
   PetscFunctionReturn(0);
 }
 
-/* ------------------------------------------------------------------- */
 /*
 FormFunction1 - Evaluates nonlinear function, F(x).
 
@@ -177,7 +177,8 @@ Input Parameters:
 Output Parameter:
 .  f - function vector
 */
-static PetscErrorCode FormFunction1(SNES snes, Vec x, Vec f, void *dummy) {
+static PetscErrorCode FormFunction1(SNES snes, Vec x, Vec f, void *dummy)
+{
   const PetscScalar *xx;
   PetscScalar       *ff;
 
@@ -205,7 +206,7 @@ static PetscErrorCode FormFunction1(SNES snes, Vec x, Vec f, void *dummy) {
   PetscCall(VecRestoreArray(f, &ff));
   PetscFunctionReturn(0);
 }
-/* ------------------------------------------------------------------- */
+
 /*
 FormJacobian1 - Evaluates Jacobian matrix.
 
@@ -219,7 +220,8 @@ Output Parameters:
 .  B - optionally different preconditioning matrix
 .  flag - flag indicating matrix structure
 */
-static PetscErrorCode FormJacobian1(SNES snes, Vec x, Mat jac, Mat B, void *dummy) {
+static PetscErrorCode FormJacobian1(SNES snes, Vec x, Mat jac, Mat B, void *dummy)
+{
   const PetscScalar *xx;
   PetscScalar        A[4];
   PetscInt           idx[2] = {0, 1};
@@ -254,8 +256,8 @@ static PetscErrorCode FormJacobian1(SNES snes, Vec x, Mat jac, Mat B, void *dumm
   PetscFunctionReturn(0);
 }
 
-/* ------------------------------------------------------------------- */
-static PetscErrorCode FormFunction2(SNES snes, Vec x, Vec f, void *dummy) {
+static PetscErrorCode FormFunction2(SNES snes, Vec x, Vec f, void *dummy)
+{
   const PetscScalar *xx;
   PetscScalar       *ff;
 
@@ -284,8 +286,8 @@ static PetscErrorCode FormFunction2(SNES snes, Vec x, Vec f, void *dummy) {
   PetscFunctionReturn(0);
 }
 
-/* ------------------------------------------------------------------- */
-static PetscErrorCode FormJacobian2(SNES snes, Vec x, Mat jac, Mat B, void *dummy) {
+static PetscErrorCode FormJacobian2(SNES snes, Vec x, Mat jac, Mat B, void *dummy)
+{
   const PetscScalar *xx;
   PetscScalar        A[4];
   PetscInt           idx[2] = {0, 1};
@@ -320,7 +322,8 @@ static PetscErrorCode FormJacobian2(SNES snes, Vec x, Mat jac, Mat B, void *dumm
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode block_system(void) {
+static PetscErrorCode block_system(void)
+{
   SNES        snes; /* nonlinear solver context */
   KSP         ksp;  /* linear solver context */
   PC          pc;   /* preconditioner context */
@@ -501,8 +504,8 @@ static PetscErrorCode block_system(void) {
   PetscFunctionReturn(0);
 }
 
-/* ------------------------------------------------------------------- */
-static PetscErrorCode FormFunction1_block(SNES snes, Vec x, Vec f, void *dummy) {
+static PetscErrorCode FormFunction1_block(SNES snes, Vec x, Vec f, void *dummy)
+{
   Vec        *xx, *ff, x1, x2, f1, f2;
   PetscScalar ff_0, ff_1;
   PetscScalar xx_0, xx_1;
@@ -538,8 +541,8 @@ static PetscErrorCode FormFunction1_block(SNES snes, Vec x, Vec f, void *dummy) 
   PetscFunctionReturn(0);
 }
 
-/* ------------------------------------------------------------------- */
-static PetscErrorCode FormJacobian1_block(SNES snes, Vec x, Mat jac, Mat B, void *dummy) {
+static PetscErrorCode FormJacobian1_block(SNES snes, Vec x, Mat jac, Mat B, void *dummy)
+{
   Vec        *xx, x1, x2;
   PetscScalar xx_0, xx_1;
   PetscInt    index, nb;
@@ -583,8 +586,8 @@ static PetscErrorCode FormJacobian1_block(SNES snes, Vec x, Mat jac, Mat B, void
   PetscFunctionReturn(0);
 }
 
-/* ------------------------------------------------------------------- */
-static PetscErrorCode FormFunction2_block(SNES snes, Vec x, Vec f, void *dummy) {
+static PetscErrorCode FormFunction2_block(SNES snes, Vec x, Vec f, void *dummy)
+{
   PetscScalar       *ff;
   const PetscScalar *xx;
 
@@ -613,8 +616,8 @@ static PetscErrorCode FormFunction2_block(SNES snes, Vec x, Vec f, void *dummy) 
   PetscFunctionReturn(0);
 }
 
-/* ------------------------------------------------------------------- */
-static PetscErrorCode FormJacobian2_block(SNES snes, Vec x, Mat jac, Mat B, void *dummy) {
+static PetscErrorCode FormJacobian2_block(SNES snes, Vec x, Mat jac, Mat B, void *dummy)
+{
   const PetscScalar *xx;
   PetscScalar        A[4];
   PetscInt           idx[2] = {0, 1};
@@ -649,7 +652,8 @@ static PetscErrorCode FormJacobian2_block(SNES snes, Vec x, Mat jac, Mat B, void
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscMPIInt size;
 
   PetscFunctionBeginUser;

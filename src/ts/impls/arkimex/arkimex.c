@@ -62,90 +62,90 @@ typedef struct {
 
      This method has one explicit stage and one implicit stage.
 
-     Options Database:
+     Options Database Key:
 .      -ts_arkimex_type ars122 - set arkimex type to ars122
+
+     Level: advanced
 
      References:
 .    * -  U. Ascher, S. Ruuth, R. J. Spiteri, Implicit explicit Runge Kutta methods for time dependent Partial Differential Equations. Appl. Numer. Math. 25, (1997).
 
-     Level: advanced
-
-.seealso: `TSARKIMEX`, `TSARKIMEXType`, `TSARKIMEXSetType()`
+.seealso: [](chapter_ts), `TSARKIMEX`, `TSARKIMEXType`, `TSARKIMEXSetType()`
 M*/
 /*MC
      TSARKIMEXA2 - Second order ARK IMEX scheme with A-stable implicit part.
 
      This method has an explicit stage and one implicit stage, and has an A-stable implicit scheme. This method was provided by Emil Constantinescu.
 
-     Options Database:
+     Options Database Key:
 .      -ts_arkimex_type a2 - set arkimex type to a2
 
      Level: advanced
 
-.seealso: `TSARKIMEX`, `TSARKIMEXType`, `TSARKIMEXSetType()`
+.seealso: [](chapter_ts), `TSARKIMEX`, `TSARKIMEXType`, `TSARKIMEXSetType()`
 M*/
 /*MC
      TSARKIMEXL2 - Second order ARK IMEX scheme with L-stable implicit part.
 
      This method has two implicit stages, and L-stable implicit scheme.
 
-     Options Database:
+     Options Database Key:
 .      -ts_arkimex_type l2 - set arkimex type to l2
+
+     Level: advanced
 
     References:
 .   * -  L. Pareschi, G. Russo, Implicit Explicit Runge Kutta schemes and applications to hyperbolic systems with relaxations. Journal of Scientific Computing Volume: 25, Issue: 1, October, 2005.
 
-     Level: advanced
-
-.seealso: `TSARKIMEX`, `TSARKIMEXType`, `TSARKIMEXSetType()`
+.seealso: [](chapter_ts), `TSARKIMEX`, `TSARKIMEXType`, `TSARKIMEXSetType()`
 M*/
 /*MC
      TSARKIMEX1BEE - First order backward Euler represented as an ARK IMEX scheme with extrapolation as error estimator. This is a 3-stage method.
 
      This method is aimed at starting the integration of implicit DAEs when explicit first-stage ARK methods are used.
 
-     Options Database:
+     Options Database Key:
 .      -ts_arkimex_type 1bee - set arkimex type to 1bee
 
      Level: advanced
 
-.seealso: `TSARKIMEX`, `TSARKIMEXType`, `TSARKIMEXSetType()`
+.seealso: [](chapter_ts), `TSARKIMEX`, `TSARKIMEXType`, `TSARKIMEXSetType()`
 M*/
 /*MC
      TSARKIMEX2C - Second order ARK IMEX scheme with L-stable implicit part.
 
      This method has one explicit stage and two implicit stages. The implicit part is the same as in TSARKIMEX2D and TSARKIMEX2E, but the explicit part has a larger stability region on the negative real axis. This method was provided by Emil Constantinescu.
 
-     Options Database:
+     Options Database Key:
 .      -ts_arkimex_type 2c - set arkimex type to 2c
 
      Level: advanced
 
-.seealso: `TSARKIMEX`, `TSARKIMEXType`, `TSARKIMEXSetType()`
+.seealso: [](chapter_ts), `TSARKIMEX`, `TSARKIMEXType`, `TSARKIMEXSetType()`
 M*/
 /*MC
      TSARKIMEX2D - Second order ARK IMEX scheme with L-stable implicit part.
 
      This method has one explicit stage and two implicit stages. The stability function is independent of the explicit part in the infinity limit of the implict component. This method was provided by Emil Constantinescu.
 
-     Options Database:
+     Options Database Key:
 .      -ts_arkimex_type 2d - set arkimex type to 2d
 
      Level: advanced
 
-.seealso: `TSARKIMEX`, `TSARKIMEXType`, `TSARKIMEXSetType()`
+.seealso: [](chapter_ts), `TSARKIMEX`, `TSARKIMEXType`, `TSARKIMEXSetType()`
 M*/
 /*MC
      TSARKIMEX2E - Second order ARK IMEX scheme with L-stable implicit part.
 
      This method has one explicit stage and two implicit stages. It is is an optimal method developed by Emil Constantinescu.
 
-     Options Database:
+     Options Database Key:
 .      -ts_arkimex_type 2e - set arkimex type to 2e
 
     Level: advanced
 
-.seealso: `TSARKIMEX`, `TSARKIMEXType`, `TSARKIMEXSetType()`
+.seealso: [](chapter_ts), `TSARKIMEX`, `TSARKIMEXType`, `TSARKIMEXSetType()`
 M*/
 /*MC
      TSARKIMEXPRSSP2 - Second order SSP ARK IMEX scheme.
@@ -157,100 +157,101 @@ M*/
 
      This method is referred to as SSP2-(3,3,2) in https://arxiv.org/abs/1110.4375
 
-     Options Database:
+     Options Database Key:
 .      -ts_arkimex_type prssp2 - set arkimex type to prssp2
 
      Level: advanced
 
-.seealso: `TSARKIMEX`, `TSARKIMEXType`, `TSARKIMEXSetType()`
+.seealso: [](chapter_ts), `TSARKIMEX`, `TSARKIMEXType`, `TSARKIMEXSetType()`
 M*/
 /*MC
      TSARKIMEX3 - Third order ARK IMEX scheme with L-stable implicit part.
 
      This method has one explicit stage and three implicit stages.
 
-     Options Database:
+     Options Database Key:
 .      -ts_arkimex_type 3 - set arkimex type to 3
+
+     Level: advanced
 
      References:
 .    * -  Kennedy and Carpenter 2003.
 
-     Level: advanced
-
-.seealso: `TSARKIMEX`, `TSARKIMEXType`, `TSARKIMEXSetType()`
+.seealso: [](chapter_ts), `TSARKIMEX`, `TSARKIMEXType`, `TSARKIMEXSetType()`
 M*/
 /*MC
      TSARKIMEXARS443 - Third order ARK IMEX scheme.
 
      This method has one explicit stage and four implicit stages.
 
-     Options Database:
+     Options Database Key:
 .      -ts_arkimex_type ars443 - set arkimex type to ars443
+
+     Level: advanced
 
      References:
 +    * -  U. Ascher, S. Ruuth, R. J. Spiteri, Implicit explicit Runge Kutta methods for time dependent Partial Differential Equations. Appl. Numer. Math. 25, (1997).
 -    * -  This method is referred to as ARS(4,4,3) in https://arxiv.org/abs/1110.4375
 
-     Level: advanced
-
-.seealso: `TSARKIMEX`, `TSARKIMEXType`, `TSARKIMEXSetType()`
+.seealso: [](chapter_ts), `TSARKIMEX`, `TSARKIMEXType`, `TSARKIMEXSetType()`
 M*/
 /*MC
      TSARKIMEXBPR3 - Third order ARK IMEX scheme.
 
      This method has one explicit stage and four implicit stages.
 
-     Options Database:
+     Options Database Key:
 .      -ts_arkimex_type bpr3 - set arkimex type to bpr3
+
+     Level: advanced
 
      References:
 .    * - This method is referred to as ARK3 in https://arxiv.org/abs/1110.4375
 
-     Level: advanced
-
-.seealso: `TSARKIMEX`, `TSARKIMEXType`, `TSARKIMEXSetType()`
+.seealso: [](chapter_ts), `TSARKIMEX`, `TSARKIMEXType`, `TSARKIMEXSetType()`
 M*/
 /*MC
      TSARKIMEX4 - Fourth order ARK IMEX scheme with L-stable implicit part.
 
      This method has one explicit stage and four implicit stages.
 
-     Options Database:
+     Options Database Key:
 .      -ts_arkimex_type 4 - set arkimex type to4
+
+     Level: advanced
 
      References:
 .    * - Kennedy and Carpenter 2003.
 
-     Level: advanced
-
-.seealso: `TSARKIMEX`, `TSARKIMEXType`, `TSARKIMEXSetType()`
+.seealso: [](chapter_ts), `TSARKIMEX`, `TSARKIMEXType`, `TSARKIMEXSetType()`
 M*/
 /*MC
      TSARKIMEX5 - Fifth order ARK IMEX scheme with L-stable implicit part.
 
      This method has one explicit stage and five implicit stages.
 
-     Options Database:
+     Options Database Key:
 .      -ts_arkimex_type 5 - set arkimex type to 5
+
+     Level: advanced
 
      References:
 .    * - Kennedy and Carpenter 2003.
 
-     Level: advanced
-
-.seealso: `TSARKIMEX`, `TSARKIMEXType`, `TSARKIMEXSetType()`
+.seealso: [](chapter_ts), `TSARKIMEX`, `TSARKIMEXType`, `TSARKIMEXSetType()`
 M*/
 
 /*@C
-  TSARKIMEXRegisterAll - Registers all of the additive Runge-Kutta implicit-explicit methods in TSARKIMEX
+  TSARKIMEXRegisterAll - Registers all of the additive Runge-Kutta implicit-explicit methods in `TSARKIMEX`
 
   Not Collective, but should be called by all processes which will need the schemes to be registered
 
   Level: advanced
 
-.seealso: `TSARKIMEXRegisterDestroy()`
+.seealso: [](chapter_ts), `TS`, `TSARKIMEX`, `TSARKIMEXRegisterDestroy()`
 @*/
-PetscErrorCode TSARKIMEXRegisterAll(void) {
+PetscErrorCode TSARKIMEXRegisterAll(void)
+{
   PetscFunctionBegin;
   if (TSARKIMEXRegisterAllCalled) PetscFunctionReturn(0);
   TSARKIMEXRegisterAllCalled = PETSC_TRUE;
@@ -407,15 +408,16 @@ PetscErrorCode TSARKIMEXRegisterAll(void) {
 }
 
 /*@C
-   TSARKIMEXRegisterDestroy - Frees the list of schemes that were registered by TSARKIMEXRegister().
+   TSARKIMEXRegisterDestroy - Frees the list of schemes that were registered by `TSARKIMEXRegister()`.
 
    Not Collective
 
    Level: advanced
 
-.seealso: `TSARKIMEXRegister()`, `TSARKIMEXRegisterAll()`
+.seealso: [](chapter_ts), `TSARKIMEX`, `TSARKIMEXRegister()`, `TSARKIMEXRegisterAll()`
 @*/
-PetscErrorCode TSARKIMEXRegisterDestroy(void) {
+PetscErrorCode TSARKIMEXRegisterDestroy(void)
+{
   ARKTableauLink link;
 
   PetscFunctionBegin;
@@ -433,14 +435,15 @@ PetscErrorCode TSARKIMEXRegisterDestroy(void) {
 }
 
 /*@C
-  TSARKIMEXInitializePackage - This function initializes everything in the TSARKIMEX package. It is called
-  from TSInitializePackage().
+  TSARKIMEXInitializePackage - This function initializes everything in the `TSARKIMEX` package. It is called
+  from `TSInitializePackage()`.
 
   Level: developer
 
-.seealso: `PetscInitialize()`
+.seealso: [](chapter_ts), `PetscInitialize()`, `TSARKIMEXFinalizePackage()`
 @*/
-PetscErrorCode TSARKIMEXInitializePackage(void) {
+PetscErrorCode TSARKIMEXInitializePackage(void)
+{
   PetscFunctionBegin;
   if (TSARKIMEXPackageInitialized) PetscFunctionReturn(0);
   TSARKIMEXPackageInitialized = PETSC_TRUE;
@@ -450,14 +453,15 @@ PetscErrorCode TSARKIMEXInitializePackage(void) {
 }
 
 /*@C
-  TSARKIMEXFinalizePackage - This function destroys everything in the TSARKIMEX package. It is
-  called from PetscFinalize().
+  TSARKIMEXFinalizePackage - This function destroys everything in the `TSARKIMEX` package. It is
+  called from `PetscFinalize()`.
 
   Level: developer
 
-.seealso: `PetscFinalize()`
+.seealso: [](chapter_ts), `PetscFinalize()`, `TSARKIMEXInitializePackage()`
 @*/
-PetscErrorCode TSARKIMEXFinalizePackage(void) {
+PetscErrorCode TSARKIMEXFinalizePackage(void)
+{
   PetscFunctionBegin;
   TSARKIMEXPackageInitialized = PETSC_FALSE;
   PetscCall(TSARKIMEXRegisterDestroy());
@@ -465,7 +469,7 @@ PetscErrorCode TSARKIMEXFinalizePackage(void) {
 }
 
 /*@C
-   TSARKIMEXRegister - register an ARK IMEX scheme by providing the entries in the Butcher tableau and optionally embedded approximations and interpolation
+   TSARKIMEXRegister - register a `TSARKIMEX` scheme by providing the entries in the Butcher tableau and optionally embedded approximations and interpolation
 
    Not Collective, but the same schemes should be registered on all processes on which they will be used
 
@@ -485,14 +489,15 @@ PetscErrorCode TSARKIMEXFinalizePackage(void) {
 .  binterpt - Coefficients of the interpolation formula for the stiff part (dimension s*pinterp)
 -  binterp - Coefficients of the interpolation formula for the non-stiff part (dimension s*pinterp; NULL to reuse binterpt)
 
-   Notes:
-   Several ARK IMEX methods are provided, this function is only needed to create new methods.
-
    Level: advanced
 
-.seealso: `TSARKIMEX`
+   Note:
+   Several `TSARKIMEX` methods are provided, this function is only needed to create new methods.
+
+.seealso: [](chapter_ts), `TSARKIMEX`, `TSType`, `TS`
 @*/
-PetscErrorCode TSARKIMEXRegister(TSARKIMEXType name, PetscInt order, PetscInt s, const PetscReal At[], const PetscReal bt[], const PetscReal ct[], const PetscReal A[], const PetscReal b[], const PetscReal c[], const PetscReal bembedt[], const PetscReal bembed[], PetscInt pinterp, const PetscReal binterpt[], const PetscReal binterp[]) {
+PetscErrorCode TSARKIMEXRegister(TSARKIMEXType name, PetscInt order, PetscInt s, const PetscReal At[], const PetscReal bt[], const PetscReal ct[], const PetscReal A[], const PetscReal b[], const PetscReal c[], const PetscReal bembedt[], const PetscReal bembed[], PetscInt pinterp, const PetscReal binterpt[], const PetscReal binterp[])
+{
   ARKTableauLink link;
   ARKTableau     t;
   PetscInt       i, j;
@@ -559,7 +564,8 @@ PetscErrorCode TSARKIMEXRegister(TSARKIMEXType name, PetscInt order, PetscInt s,
 
  so we can evaluate the method with different order even after the step has been optimistically completed.
 */
-static PetscErrorCode TSEvaluateStep_ARKIMEX(TS ts, PetscInt order, Vec X, PetscBool *done) {
+static PetscErrorCode TSEvaluateStep_ARKIMEX(TS ts, PetscInt order, Vec X, PetscBool *done)
+{
   TS_ARKIMEX  *ark = (TS_ARKIMEX *)ts->data;
   ARKTableau   tab = ark->tableau;
   PetscScalar *w   = ark->work;
@@ -569,9 +575,14 @@ static PetscErrorCode TSEvaluateStep_ARKIMEX(TS ts, PetscInt order, Vec X, Petsc
   PetscFunctionBegin;
   switch (ark->status) {
   case TS_STEP_INCOMPLETE:
-  case TS_STEP_PENDING: h = ts->time_step; break;
-  case TS_STEP_COMPLETE: h = ts->ptime - ts->ptime_prev; break;
-  default: SETERRQ(PetscObjectComm((PetscObject)ts), PETSC_ERR_PLIB, "Invalid TSStepStatus");
+  case TS_STEP_PENDING:
+    h = ts->time_step;
+    break;
+  case TS_STEP_COMPLETE:
+    h = ts->ptime - ts->ptime_prev;
+    break;
+  default:
+    SETERRQ(PetscObjectComm((PetscObject)ts), PETSC_ERR_PLIB, "Invalid TSStepStatus");
   }
   if (order == tab->order) {
     if (ark->status == TS_STEP_INCOMPLETE) {
@@ -615,7 +626,8 @@ unavailable:
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSARKIMEXTestMassIdentity(TS ts, PetscBool *id) {
+static PetscErrorCode TSARKIMEXTestMassIdentity(TS ts, PetscBool *id)
+{
   Vec         Udot, Y1, Y2;
   TS_ARKIMEX *ark = (TS_ARKIMEX *)ts->data;
   PetscReal   norm;
@@ -642,7 +654,8 @@ static PetscErrorCode TSARKIMEXTestMassIdentity(TS ts, PetscBool *id) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSRollBack_ARKIMEX(TS ts) {
+static PetscErrorCode TSRollBack_ARKIMEX(TS ts)
+{
   TS_ARKIMEX      *ark = (TS_ARKIMEX *)ts->data;
   ARKTableau       tab = ark->tableau;
   const PetscInt   s   = tab->s;
@@ -655,9 +668,14 @@ static PetscErrorCode TSRollBack_ARKIMEX(TS ts) {
   PetscFunctionBegin;
   switch (ark->status) {
   case TS_STEP_INCOMPLETE:
-  case TS_STEP_PENDING: h = ts->time_step; break;
-  case TS_STEP_COMPLETE: h = ts->ptime - ts->ptime_prev; break;
-  default: SETERRQ(PetscObjectComm((PetscObject)ts), PETSC_ERR_PLIB, "Invalid TSStepStatus");
+  case TS_STEP_PENDING:
+    h = ts->time_step;
+    break;
+  case TS_STEP_COMPLETE:
+    h = ts->ptime - ts->ptime_prev;
+    break;
+  default:
+    SETERRQ(PetscObjectComm((PetscObject)ts), PETSC_ERR_PLIB, "Invalid TSStepStatus");
   }
   for (j = 0; j < s; j++) w[j] = -h * bt[j];
   PetscCall(VecMAXPY(ts->vec_sol, s, w, YdotI));
@@ -666,7 +684,8 @@ static PetscErrorCode TSRollBack_ARKIMEX(TS ts) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSStep_ARKIMEX(TS ts) {
+static PetscErrorCode TSStep_ARKIMEX(TS ts)
+{
   TS_ARKIMEX      *ark = (TS_ARKIMEX *)ts->data;
   ARKTableau       tab = ark->tableau;
   const PetscInt   s   = tab->s;
@@ -837,7 +856,8 @@ static PetscErrorCode TSStep_ARKIMEX(TS ts) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSInterpolate_ARKIMEX(TS ts, PetscReal itime, Vec X) {
+static PetscErrorCode TSInterpolate_ARKIMEX(TS ts, PetscReal itime, Vec X)
+{
   TS_ARKIMEX      *ark = (TS_ARKIMEX *)ts->data;
   PetscInt         s = ark->tableau->s, pinterp = ark->tableau->pinterp, i, j;
   PetscReal        h;
@@ -857,7 +877,8 @@ static PetscErrorCode TSInterpolate_ARKIMEX(TS ts, PetscReal itime, Vec X) {
     h = ts->ptime - ts->ptime_prev;
     t = (itime - ts->ptime) / h + 1; /* In the interval [0,1] */
     break;
-  default: SETERRQ(PetscObjectComm((PetscObject)ts), PETSC_ERR_PLIB, "Invalid TSStepStatus");
+  default:
+    SETERRQ(PetscObjectComm((PetscObject)ts), PETSC_ERR_PLIB, "Invalid TSStepStatus");
   }
   PetscCall(PetscMalloc2(s, &bt, s, &b));
   for (i = 0; i < s; i++) bt[i] = b[i] = 0;
@@ -874,7 +895,8 @@ static PetscErrorCode TSInterpolate_ARKIMEX(TS ts, PetscReal itime, Vec X) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSExtrapolate_ARKIMEX(TS ts, PetscReal c, Vec X) {
+static PetscErrorCode TSExtrapolate_ARKIMEX(TS ts, PetscReal c, Vec X)
+{
   TS_ARKIMEX      *ark = (TS_ARKIMEX *)ts->data;
   PetscInt         s = ark->tableau->s, pinterp = ark->tableau->pinterp, i, j;
   PetscReal        h, h_prev, t, tt;
@@ -903,7 +925,8 @@ static PetscErrorCode TSExtrapolate_ARKIMEX(TS ts, PetscReal c, Vec X) {
 
 /*------------------------------------------------------------*/
 
-static PetscErrorCode TSARKIMEXTableauReset(TS ts) {
+static PetscErrorCode TSARKIMEXTableauReset(TS ts)
+{
   TS_ARKIMEX *ark = (TS_ARKIMEX *)ts->data;
   ARKTableau  tab = ark->tableau;
 
@@ -919,7 +942,8 @@ static PetscErrorCode TSARKIMEXTableauReset(TS ts) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSReset_ARKIMEX(TS ts) {
+static PetscErrorCode TSReset_ARKIMEX(TS ts)
+{
   TS_ARKIMEX *ark = (TS_ARKIMEX *)ts->data;
 
   PetscFunctionBegin;
@@ -930,7 +954,8 @@ static PetscErrorCode TSReset_ARKIMEX(TS ts) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSARKIMEXGetVecs(TS ts, DM dm, Vec *Z, Vec *Ydot) {
+static PetscErrorCode TSARKIMEXGetVecs(TS ts, DM dm, Vec *Z, Vec *Ydot)
+{
   TS_ARKIMEX *ax = (TS_ARKIMEX *)ts->data;
 
   PetscFunctionBegin;
@@ -947,7 +972,8 @@ static PetscErrorCode TSARKIMEXGetVecs(TS ts, DM dm, Vec *Z, Vec *Ydot) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSARKIMEXRestoreVecs(TS ts, DM dm, Vec *Z, Vec *Ydot) {
+static PetscErrorCode TSARKIMEXRestoreVecs(TS ts, DM dm, Vec *Z, Vec *Ydot)
+{
   PetscFunctionBegin;
   if (Z) {
     if (dm && dm != ts->dm) PetscCall(DMRestoreNamedGlobalVector(dm, "TSARKIMEX_Z", Z));
@@ -962,7 +988,8 @@ static PetscErrorCode TSARKIMEXRestoreVecs(TS ts, DM dm, Vec *Z, Vec *Ydot) {
   This defines the nonlinear equation that is to be solved with SNES
   G(U) = F[t0+Theta*dt, U, (U-U0)*shift] = 0
 */
-static PetscErrorCode SNESTSFormFunction_ARKIMEX(SNES snes, Vec X, Vec F, TS ts) {
+static PetscErrorCode SNESTSFormFunction_ARKIMEX(SNES snes, Vec X, Vec F, TS ts)
+{
   TS_ARKIMEX *ark = (TS_ARKIMEX *)ts->data;
   DM          dm, dmsave;
   Vec         Z, Ydot;
@@ -982,7 +1009,8 @@ static PetscErrorCode SNESTSFormFunction_ARKIMEX(SNES snes, Vec X, Vec F, TS ts)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode SNESTSFormJacobian_ARKIMEX(SNES snes, Vec X, Mat A, Mat B, TS ts) {
+static PetscErrorCode SNESTSFormJacobian_ARKIMEX(SNES snes, Vec X, Mat A, Mat B, TS ts)
+{
   TS_ARKIMEX *ark = (TS_ARKIMEX *)ts->data;
   DM          dm, dmsave;
   Vec         Ydot;
@@ -1002,12 +1030,14 @@ static PetscErrorCode SNESTSFormJacobian_ARKIMEX(SNES snes, Vec X, Mat A, Mat B,
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMCoarsenHook_TSARKIMEX(DM fine, DM coarse, void *ctx) {
+static PetscErrorCode DMCoarsenHook_TSARKIMEX(DM fine, DM coarse, void *ctx)
+{
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMRestrictHook_TSARKIMEX(DM fine, Mat restrct, Vec rscale, Mat inject, DM coarse, void *ctx) {
+static PetscErrorCode DMRestrictHook_TSARKIMEX(DM fine, Mat restrct, Vec rscale, Mat inject, DM coarse, void *ctx)
+{
   TS  ts = (TS)ctx;
   Vec Z, Z_c;
 
@@ -1021,12 +1051,14 @@ static PetscErrorCode DMRestrictHook_TSARKIMEX(DM fine, Mat restrct, Vec rscale,
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMSubDomainHook_TSARKIMEX(DM dm, DM subdm, void *ctx) {
+static PetscErrorCode DMSubDomainHook_TSARKIMEX(DM dm, DM subdm, void *ctx)
+{
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMSubDomainRestrictHook_TSARKIMEX(DM dm, VecScatter gscat, VecScatter lscat, DM subdm, void *ctx) {
+static PetscErrorCode DMSubDomainRestrictHook_TSARKIMEX(DM dm, VecScatter gscat, VecScatter lscat, DM subdm, void *ctx)
+{
   TS  ts = (TS)ctx;
   Vec Z, Z_c;
 
@@ -1042,7 +1074,8 @@ static PetscErrorCode DMSubDomainRestrictHook_TSARKIMEX(DM dm, VecScatter gscat,
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSARKIMEXTableauSetUp(TS ts) {
+static PetscErrorCode TSARKIMEXTableauSetUp(TS ts)
+{
   TS_ARKIMEX *ark = (TS_ARKIMEX *)ts->data;
   ARKTableau  tab = ark->tableau;
 
@@ -1059,7 +1092,8 @@ static PetscErrorCode TSARKIMEXTableauSetUp(TS ts) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSSetUp_ARKIMEX(TS ts) {
+static PetscErrorCode TSSetUp_ARKIMEX(TS ts)
+{
   TS_ARKIMEX *ark = (TS_ARKIMEX *)ts->data;
   DM          dm;
   SNES        snes;
@@ -1077,7 +1111,8 @@ static PetscErrorCode TSSetUp_ARKIMEX(TS ts) {
 }
 /*------------------------------------------------------------*/
 
-static PetscErrorCode TSSetFromOptions_ARKIMEX(TS ts, PetscOptionItems *PetscOptionsObject) {
+static PetscErrorCode TSSetFromOptions_ARKIMEX(TS ts, PetscOptionItems *PetscOptionsObject)
+{
   TS_ARKIMEX *ark = (TS_ARKIMEX *)ts->data;
 
   PetscFunctionBegin;
@@ -1104,7 +1139,8 @@ static PetscErrorCode TSSetFromOptions_ARKIMEX(TS ts, PetscOptionItems *PetscOpt
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSView_ARKIMEX(TS ts, PetscViewer viewer) {
+static PetscErrorCode TSView_ARKIMEX(TS ts, PetscViewer viewer)
+{
   TS_ARKIMEX *ark = (TS_ARKIMEX *)ts->data;
   PetscBool   iascii;
 
@@ -1131,7 +1167,8 @@ static PetscErrorCode TSView_ARKIMEX(TS ts, PetscViewer viewer) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSLoad_ARKIMEX(TS ts, PetscViewer viewer) {
+static PetscErrorCode TSLoad_ARKIMEX(TS ts, PetscViewer viewer)
+{
   SNES    snes;
   TSAdapt adapt;
 
@@ -1147,23 +1184,24 @@ static PetscErrorCode TSLoad_ARKIMEX(TS ts, PetscViewer viewer) {
 }
 
 /*@C
-  TSARKIMEXSetType - Set the type of ARK IMEX scheme
+  TSARKIMEXSetType - Set the type of `TSARKIMEX` scheme
 
   Logically collective
 
   Input Parameters:
 +  ts - timestepping context
--  arktype - type of ARK-IMEX scheme
+-  arktype - type of `TSARKIMEX` scheme
 
-  Options Database:
-.  -ts_arkimex_type <1bee,a2,l2,ars122,2c,2d,2e,prssp2,3,bpr3,ars443,4,5> - set ARK IMEX scheme type
+  Options Database Key:
+.  -ts_arkimex_type <1bee,a2,l2,ars122,2c,2d,2e,prssp2,3,bpr3,ars443,4,5> - set `TSARKIMEX` scheme type
 
   Level: intermediate
 
-.seealso: `TSARKIMEXGetType()`, `TSARKIMEX`, `TSARKIMEXType`, `TSARKIMEX1BEE`, `TSARKIMEXA2`, `TSARKIMEXL2`, `TSARKIMEXARS122`, `TSARKIMEX2C`, `TSARKIMEX2D`, `TSARKIMEX2E`, `TSARKIMEXPRSSP2`,
+.seealso: [](chapter_ts), `TSARKIMEXGetType()`, `TSARKIMEX`, `TSARKIMEXType`, `TSARKIMEX1BEE`, `TSARKIMEXA2`, `TSARKIMEXL2`, `TSARKIMEXARS122`, `TSARKIMEX2C`, `TSARKIMEX2D`, `TSARKIMEX2E`, `TSARKIMEXPRSSP2`,
           `TSARKIMEX3`, `TSARKIMEXBPR3`, `TSARKIMEXARS443`, `TSARKIMEX4`, `TSARKIMEX5`
 @*/
-PetscErrorCode TSARKIMEXSetType(TS ts, TSARKIMEXType arktype) {
+PetscErrorCode TSARKIMEXSetType(TS ts, TSARKIMEXType arktype)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscValidCharPointer(arktype, 2);
@@ -1172,7 +1210,7 @@ PetscErrorCode TSARKIMEXSetType(TS ts, TSARKIMEXType arktype) {
 }
 
 /*@C
-  TSARKIMEXGetType - Get the type of ARK IMEX scheme
+  TSARKIMEXGetType - Get the type of `TSARKIMEX` scheme
 
   Logically collective
 
@@ -1180,13 +1218,14 @@ PetscErrorCode TSARKIMEXSetType(TS ts, TSARKIMEXType arktype) {
 .  ts - timestepping context
 
   Output Parameter:
-.  arktype - type of ARK-IMEX scheme
+.  arktype - type of `TSARKIMEX` scheme
 
   Level: intermediate
 
-.seealso: `TSARKIMEXGetType()`
+.seealso: [](chapter_ts), `TSARKIMEX`c, `TSARKIMEXGetType()`
 @*/
-PetscErrorCode TSARKIMEXGetType(TS ts, TSARKIMEXType *arktype) {
+PetscErrorCode TSARKIMEXGetType(TS ts, TSARKIMEXType *arktype)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscUseMethod(ts, "TSARKIMEXGetType_C", (TS, TSARKIMEXType *), (ts, arktype));
@@ -1194,19 +1233,20 @@ PetscErrorCode TSARKIMEXGetType(TS ts, TSARKIMEXType *arktype) {
 }
 
 /*@
-  TSARKIMEXSetFullyImplicit - Solve both parts of the equation implicitly
+  TSARKIMEXSetFullyImplicit - Solve both parts of the equation implicitly, including the part that is normally solved explicitly
 
   Logically collective
 
   Input Parameters:
 +  ts - timestepping context
--  flg - PETSC_TRUE for fully implicit
+-  flg - `PETSC_TRUE` for fully implicit
 
   Level: intermediate
 
-.seealso: `TSARKIMEXGetType()`, `TSARKIMEXGetFullyImplicit()`
+.seealso: [](chapter_ts), `TSARKIMEX`, `TSARKIMEXGetType()`, `TSARKIMEXGetFullyImplicit()`
 @*/
-PetscErrorCode TSARKIMEXSetFullyImplicit(TS ts, PetscBool flg) {
+PetscErrorCode TSARKIMEXSetFullyImplicit(TS ts, PetscBool flg)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscValidLogicalCollectiveBool(ts, flg, 2);
@@ -1223,13 +1263,14 @@ PetscErrorCode TSARKIMEXSetFullyImplicit(TS ts, PetscBool flg) {
 .  ts - timestepping context
 
   Output Parameter:
-.  flg - PETSC_TRUE for fully implicit
+.  flg - `PETSC_TRUE` for fully implicit
 
   Level: intermediate
 
-.seealso: `TSARKIMEXGetType()`, `TSARKIMEXSetFullyImplicit()`
+.seealso: [](chapter_ts), `TSARKIMEXGetType()`, `TSARKIMEXSetFullyImplicit()`
 @*/
-PetscErrorCode TSARKIMEXGetFullyImplicit(TS ts, PetscBool *flg) {
+PetscErrorCode TSARKIMEXGetFullyImplicit(TS ts, PetscBool *flg)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscValidBoolPointer(flg, 2);
@@ -1237,14 +1278,16 @@ PetscErrorCode TSARKIMEXGetFullyImplicit(TS ts, PetscBool *flg) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSARKIMEXGetType_ARKIMEX(TS ts, TSARKIMEXType *arktype) {
+static PetscErrorCode TSARKIMEXGetType_ARKIMEX(TS ts, TSARKIMEXType *arktype)
+{
   TS_ARKIMEX *ark = (TS_ARKIMEX *)ts->data;
 
   PetscFunctionBegin;
   *arktype = ark->tableau->name;
   PetscFunctionReturn(0);
 }
-static PetscErrorCode TSARKIMEXSetType_ARKIMEX(TS ts, TSARKIMEXType arktype) {
+static PetscErrorCode TSARKIMEXSetType_ARKIMEX(TS ts, TSARKIMEXType arktype)
+{
   TS_ARKIMEX    *ark = (TS_ARKIMEX *)ts->data;
   PetscBool      match;
   ARKTableauLink link;
@@ -1267,7 +1310,8 @@ static PetscErrorCode TSARKIMEXSetType_ARKIMEX(TS ts, TSARKIMEXType arktype) {
   SETERRQ(PetscObjectComm((PetscObject)ts), PETSC_ERR_ARG_UNKNOWN_TYPE, "Could not find '%s'", arktype);
 }
 
-static PetscErrorCode TSARKIMEXSetFullyImplicit_ARKIMEX(TS ts, PetscBool flg) {
+static PetscErrorCode TSARKIMEXSetFullyImplicit_ARKIMEX(TS ts, PetscBool flg)
+{
   TS_ARKIMEX *ark = (TS_ARKIMEX *)ts->data;
 
   PetscFunctionBegin;
@@ -1275,7 +1319,8 @@ static PetscErrorCode TSARKIMEXSetFullyImplicit_ARKIMEX(TS ts, PetscBool flg) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSARKIMEXGetFullyImplicit_ARKIMEX(TS ts, PetscBool *flg) {
+static PetscErrorCode TSARKIMEXGetFullyImplicit_ARKIMEX(TS ts, PetscBool *flg)
+{
   TS_ARKIMEX *ark = (TS_ARKIMEX *)ts->data;
 
   PetscFunctionBegin;
@@ -1283,7 +1328,8 @@ static PetscErrorCode TSARKIMEXGetFullyImplicit_ARKIMEX(TS ts, PetscBool *flg) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSDestroy_ARKIMEX(TS ts) {
+static PetscErrorCode TSDestroy_ARKIMEX(TS ts)
+{
   PetscFunctionBegin;
   PetscCall(TSReset_ARKIMEX(ts));
   if (ts->dm) {
@@ -1304,25 +1350,25 @@ static PetscErrorCode TSDestroy_ARKIMEX(TS ts) {
 
   These methods are intended for problems with well-separated time scales, especially when a slow scale is strongly
   nonlinear such that it is expensive to solve with a fully implicit method. The user should provide the stiff part
-  of the equation using TSSetIFunction() and the non-stiff part with TSSetRHSFunction().
-
-  Notes:
-  The default is TSARKIMEX3, it can be changed with TSARKIMEXSetType() or -ts_arkimex_type
-
-  If the equation is implicit or a DAE, then TSSetEquationType() needs to be set accordingly. Refer to the manual for further information.
-
-  Methods with an explicit stage can only be used with ODE in which the stiff part G(t,X,Xdot) has the form Xdot + Ghat(t,X).
-
-  Consider trying TSROSW if the stiff part is linear or weakly nonlinear.
+  of the equation using `TSSetIFunction()` and the non-stiff part with `TSSetRHSFunction()`.
 
   Level: beginner
 
-.seealso: `TSCreate()`, `TS`, `TSSetType()`, `TSARKIMEXSetType()`, `TSARKIMEXGetType()`, `TSARKIMEXSetFullyImplicit()`, `TSARKIMEXGetFullyImplicit()`,
-          `TSARKIMEX1BEE`, `TSARKIMEX2C`, `TSARKIMEX2D`, `TSARKIMEX2E`, `TSARKIMEX3`, `TSARKIMEXL2`, `TSARKIMEXA2`, `TSARKIMEXARS122`,
-          `TSARKIMEX4`, `TSARKIMEX5`, `TSARKIMEXPRSSP2`, `TSARKIMEXARS443`, `TSARKIMEXBPR3`, `TSARKIMEXType`, `TSARKIMEXRegister()`
+  Notes:
+  The default is `TSARKIMEX3`, it can be changed with `TSARKIMEXSetType()` or -ts_arkimex_type
 
+  If the equation is implicit or a DAE, then `TSSetEquationType()` needs to be set accordingly. Refer to the manual for further information.
+
+  Methods with an explicit stage can only be used with ODE in which the stiff part G(t,X,Xdot) has the form Xdot + Ghat(t,X).
+
+  Consider trying `TSROSW` if the stiff part is linear or weakly nonlinear.
+
+.seealso: [](chapter_ts), `TSCreate()`, `TS`, `TSSetType()`, `TSARKIMEXSetType()`, `TSARKIMEXGetType()`, `TSARKIMEXSetFullyImplicit()`, `TSARKIMEXGetFullyImplicit()`,
+          `TSARKIMEX1BEE`, `TSARKIMEX2C`, `TSARKIMEX2D`, `TSARKIMEX2E`, `TSARKIMEX3`, `TSARKIMEXL2`, `TSARKIMEXA2`, `TSARKIMEXARS122`,
+          `TSARKIMEX4`, `TSARKIMEX5`, `TSARKIMEXPRSSP2`, `TSARKIMEXARS443`, `TSARKIMEXBPR3`, `TSARKIMEXType`, `TSARKIMEXRegister()`, `TSType`
 M*/
-PETSC_EXTERN PetscErrorCode TSCreate_ARKIMEX(TS ts) {
+PETSC_EXTERN PetscErrorCode TSCreate_ARKIMEX(TS ts)
+{
   TS_ARKIMEX *th;
 
   PetscFunctionBegin;
@@ -1343,7 +1389,7 @@ PETSC_EXTERN PetscErrorCode TSCreate_ARKIMEX(TS ts) {
 
   ts->usessnes = PETSC_TRUE;
 
-  PetscCall(PetscNewLog(ts, &th));
+  PetscCall(PetscNew(&th));
   ts->data = (void *)th;
   th->imex = PETSC_TRUE;
 

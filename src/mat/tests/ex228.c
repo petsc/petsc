@@ -10,7 +10,8 @@ static char help[] = "Test duplication/destruction of FFTW vecs \n\n";
 */
 
 #include <petscmat.h>
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   Mat         A;             /* FFT Matrix */
   Vec         x, y, z;       /* Work vectors */
   Vec         x1, y1, z1;    /* Duplicate vectors */

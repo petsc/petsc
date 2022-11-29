@@ -1,4 +1,4 @@
-#if !defined(__ASM_H)
+#ifndef __ASM_H
 #define __ASM_H
 
 #include <petscdm.h>
@@ -23,6 +23,6 @@ typedef struct {
   PCCompositeType loctype;       /* the type of composition for local solves */
   MatType         sub_mat_type;  /* the type of Mat used for subdomain solves (can be MATSAME or NULL) */
   /* For multiplicative solve */
-  Mat            *lmats; /* submatrices for overlapping multiplicative (process) subdomain */
+  Mat *lmats; /* submatrices for overlapping multiplicative (process) subdomain */
 } PC_ASM;
 #endif
