@@ -26,7 +26,8 @@ extern PetscErrorCode ComputeMatrix(KSP, Mat, Mat, void *);
 extern PetscErrorCode ComputeRHS(KSP, Vec, void *);
 extern PetscErrorCode ComputeInitialGuess(KSP, Vec, void *);
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   KSP       ksp;
   PetscReal norm;
   DM        da;
@@ -64,7 +65,8 @@ int main(int argc, char **argv) {
   return 0;
 }
 
-PetscErrorCode ComputeRHS(KSP ksp, Vec b, void *ctx) {
+PetscErrorCode ComputeRHS(KSP ksp, Vec b, void *ctx)
+{
   PetscInt       i, j, k, mx, my, mz, xm, ym, zm, xs, ys, zs;
   DM             dm;
   PetscScalar    Hx, Hy, Hz, HxHydHz, HyHzdHx, HxHzdHy;
@@ -97,13 +99,15 @@ PetscErrorCode ComputeRHS(KSP ksp, Vec b, void *ctx) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode ComputeInitialGuess(KSP ksp, Vec b, void *ctx) {
+PetscErrorCode ComputeInitialGuess(KSP ksp, Vec b, void *ctx)
+{
   PetscFunctionBeginUser;
   PetscCall(VecSet(b, 0));
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode ComputeMatrix(KSP ksp, Mat jac, Mat B, void *ctx) {
+PetscErrorCode ComputeMatrix(KSP ksp, Mat jac, Mat B, void *ctx)
+{
   DM          da;
   PetscInt    i, j, k, mx, my, mz, xm, ym, zm, xs, ys, zs;
   PetscScalar v[7], Hx, Hy, Hz, HxHydHz, HyHzdHx, HxHzdHy;

@@ -52,7 +52,8 @@
        University of Wisconsin  Madison, 1999.
 */
 
-static PetscErrorCode TaoSetUp_ASFLS(Tao tao) {
+static PetscErrorCode TaoSetUp_ASFLS(Tao tao)
+{
   TAO_SSLS *asls = (TAO_SSLS *)tao->data;
 
   PetscFunctionBegin;
@@ -76,7 +77,8 @@ static PetscErrorCode TaoSetUp_ASFLS(Tao tao) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode Tao_ASLS_FunctionGradient(TaoLineSearch ls, Vec X, PetscReal *fcn, Vec G, void *ptr) {
+static PetscErrorCode Tao_ASLS_FunctionGradient(TaoLineSearch ls, Vec X, PetscReal *fcn, Vec G, void *ptr)
+{
   Tao       tao  = (Tao)ptr;
   TAO_SSLS *asls = (TAO_SSLS *)tao->data;
 
@@ -95,7 +97,8 @@ static PetscErrorCode Tao_ASLS_FunctionGradient(TaoLineSearch ls, Vec X, PetscRe
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TaoDestroy_ASFLS(Tao tao) {
+static PetscErrorCode TaoDestroy_ASFLS(Tao tao)
+{
   TAO_SSLS *ssls = (TAO_SSLS *)tao->data;
 
   PetscFunctionBegin;
@@ -119,7 +122,8 @@ static PetscErrorCode TaoDestroy_ASFLS(Tao tao) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TaoSolve_ASFLS(Tao tao) {
+static PetscErrorCode TaoSolve_ASFLS(Tao tao)
+{
   TAO_SSLS                    *asls = (TAO_SSLS *)tao->data;
   PetscReal                    psi, ndpsi, normd, innerd, t = 0;
   PetscInt                     nf;
@@ -283,12 +287,13 @@ static PetscErrorCode TaoSolve_ASFLS(Tao tao) {
 
    Level: beginner
 M*/
-PETSC_EXTERN PetscErrorCode TaoCreate_ASFLS(Tao tao) {
+PETSC_EXTERN PetscErrorCode TaoCreate_ASFLS(Tao tao)
+{
   TAO_SSLS   *asls;
   const char *armijo_type = TAOLINESEARCHARMIJO;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(tao, &asls));
+  PetscCall(PetscNew(&asls));
   tao->data                = (void *)asls;
   tao->ops->solve          = TaoSolve_ASFLS;
   tao->ops->setup          = TaoSetUp_ASFLS;

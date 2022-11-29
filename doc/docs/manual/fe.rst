@@ -32,7 +32,7 @@ This divides the computational domain into subdomains, called *regions* in PETSc
 
   DMGetCellDS(dm, cell, &ds);
 
-Each `PetscDS`` object has a set of fields, each with a ``PetscFE`` discretization. This allows it to calculate the size of the local discrete approximation, as well as allocate scratch space for all the associated computations. The final thing needed is specify the actual equations to be enforced on each region. The ``PetscDS`` contains a ``PetscWeakForm`` object that holds callback function pointers that define the equations. A simplified, top-level interface through ``PetscDS`` allows users to quickly define problems for a single region. For example, in `SNES Tutorial ex13 <https://www.mcs.anl.gov/petsc/petsc-current/src/snes/tutorials/ex13.c.html>`__, we define the Poisson problem using
+Each `PetscDS`` object has a set of fields, each with a ``PetscFE`` discretization. This allows it to calculate the size of the local discrete approximation, as well as allocate scratch space for all the associated computations. The final thing needed is specify the actual equations to be enforced on each region. The ``PetscDS`` contains a ``PetscWeakForm`` object that holds callback function pointers that define the equations. A simplified, top-level interface through ``PetscDS`` allows users to quickly define problems for a single region. For example, in `SNES Tutorial ex13 <PETSC_DOC_OUT_ROOT_PLACEHOLDER/src/snes/tutorials/ex13.c.html>`__, we define the Poisson problem using
 
 .. code-block::
 
@@ -96,7 +96,7 @@ For more complex cases with multiple regions, we need to use the ``PetscWeakForm
   PetscWeakFormSetIndexResidual(ds, NULL, val, f, 0, 0, f0_trig_inhomogeneous_u, 0, f1_u);
   PetscWeakFormSetIndexJacobian(ds, NULL, val, f, f, 0, 0, NULL, 0, NULL, 0, NULL, 0, g3_uu);
 
-In `SNES Tutorial ex23 <https://www.mcs.anl.gov/petsc/petsc-current/src/snes/tutorials/ex23.c.html>`__, we define the Poisson problem over the entire domain, but in the top half we also define a pressure. The entire problem can be specified as follows
+In `SNES Tutorial ex23 <PETSC_DOC_OUT_ROOT_PLACEHOLDER/src/snes/tutorials/ex23.c.html>`__, we define the Poisson problem over the entire domain, but in the top half we also define a pressure. The entire problem can be specified as follows
 
 .. code-block::
 

@@ -5,7 +5,8 @@ typedef PetscSF_Allgatherv PetscSF_Allgather;
 
 PETSC_INTERN PetscErrorCode PetscSFBcastBegin_Gather(PetscSF, MPI_Datatype, PetscMemType, const void *, PetscMemType, void *, MPI_Op);
 
-PetscErrorCode PetscSFSetUp_Allgather(PetscSF sf) {
+PetscErrorCode PetscSFSetUp_Allgather(PetscSF sf)
+{
   PetscInt           i;
   PetscSF_Allgather *dat = (PetscSF_Allgather *)sf->data;
 
@@ -29,7 +30,8 @@ PetscErrorCode PetscSFSetUp_Allgather(PetscSF sf) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscSFBcastBegin_Allgather(PetscSF sf, MPI_Datatype unit, PetscMemType rootmtype, const void *rootdata, PetscMemType leafmtype, void *leafdata, MPI_Op op) {
+static PetscErrorCode PetscSFBcastBegin_Allgather(PetscSF sf, MPI_Datatype unit, PetscMemType rootmtype, const void *rootdata, PetscMemType leafmtype, void *leafdata, MPI_Op op)
+{
   PetscSFLink  link;
   PetscMPIInt  sendcount;
   MPI_Comm     comm;
@@ -48,7 +50,8 @@ static PetscErrorCode PetscSFBcastBegin_Allgather(PetscSF sf, MPI_Datatype unit,
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscSFReduceBegin_Allgather(PetscSF sf, MPI_Datatype unit, PetscMemType leafmtype, const void *leafdata, PetscMemType rootmtype, void *rootdata, MPI_Op op) {
+static PetscErrorCode PetscSFReduceBegin_Allgather(PetscSF sf, MPI_Datatype unit, PetscMemType leafmtype, const void *leafdata, PetscMemType rootmtype, void *rootdata, MPI_Op op)
+{
   PetscSFLink        link;
   PetscInt           rstart;
   MPI_Comm           comm;
@@ -77,13 +80,14 @@ static PetscErrorCode PetscSFReduceBegin_Allgather(PetscSF sf, MPI_Datatype unit
     if (rank == 0 && link->leafbuf_alloc[PETSCSF_REMOTE][link->leafmtype_mpi] == leafbuf) leafbuf = MPI_IN_PLACE;
     PetscCall(PetscMPIIntCast(sf->nleaves * link->bs, &count));
     PetscCall(PetscSFLinkSyncStreamBeforeCallMPI(sf, link, PETSCSF_LEAF2ROOT));
-    PetscCallMPI(MPI_Reduce(leafbuf, link->leafbuf_alloc[PETSCSF_REMOTE][link->leafmtype_mpi], count, link->basicunit, op, 0, comm)); /* Must do reduce with MPI builltin datatype basicunit */
+    PetscCallMPI(MPI_Reduce(leafbuf, link->leafbuf_alloc[PETSCSF_REMOTE][link->leafmtype_mpi], count, link->basicunit, op, 0, comm)); /* Must do reduce with MPI builtin datatype basicunit */
     PetscCallMPI(MPIU_Iscatter(link->leafbuf_alloc[PETSCSF_REMOTE][link->leafmtype_mpi], recvcount, unit, rootbuf, recvcount, unit, 0 /*rank 0*/, comm, req));
   }
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscSFBcastToZero_Allgather(PetscSF sf, MPI_Datatype unit, PetscMemType rootmtype, const void *rootdata, PetscMemType leafmtype, void *leafdata) {
+static PetscErrorCode PetscSFBcastToZero_Allgather(PetscSF sf, MPI_Datatype unit, PetscMemType rootmtype, const void *rootdata, PetscMemType leafmtype, void *leafdata)
+{
   PetscSFLink link;
   PetscMPIInt rank;
 
@@ -99,7 +103,8 @@ static PetscErrorCode PetscSFBcastToZero_Allgather(PetscSF sf, MPI_Datatype unit
   PetscFunctionReturn(0);
 }
 
-PETSC_INTERN PetscErrorCode PetscSFCreate_Allgather(PetscSF sf) {
+PETSC_INTERN PetscErrorCode PetscSFCreate_Allgather(PetscSF sf)
+{
   PetscSF_Allgather *dat = (PetscSF_Allgather *)sf->data;
 
   PetscFunctionBegin;
@@ -122,7 +127,7 @@ PETSC_INTERN PetscErrorCode PetscSFCreate_Allgather(PetscSF sf) {
   sf->ops->ReduceBegin = PetscSFReduceBegin_Allgather;
   sf->ops->BcastToZero = PetscSFBcastToZero_Allgather;
 
-  PetscCall(PetscNewLog(sf, &dat));
+  PetscCall(PetscNew(&dat));
   sf->data = (void *)dat;
   PetscFunctionReturn(0);
 }

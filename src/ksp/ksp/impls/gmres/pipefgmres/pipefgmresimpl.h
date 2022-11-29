@@ -1,5 +1,5 @@
-#if !defined(PIPEFGMRES_H_)
-#define PIPEFGMRES_H_
+#ifndef PETSC_PIPEFGMRESIMPL_H
+#define PETSC_PIPEFGMRESIMPL_H
 
 #define KSPGMRES_NO_MACROS
 #include <../src/ksp/ksp/impls/gmres/gmresimpl.h>
@@ -50,4 +50,4 @@ typedef struct {
 
 #define PREVEC(i) pipefgmres->prevecs[i] /* use to access preconditioned basis */
 #define ZVEC(i)   pipefgmres->zvecs[i]
-#endif
+#endif // PETSC_PIPEFGMRESIMPL_H

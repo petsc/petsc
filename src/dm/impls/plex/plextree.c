@@ -12,14 +12,15 @@
   Not collective
 
   Input Parameters:
-+ dm - The DMPlex object
-- ref - The reference tree DMPlex object
++ dm - The `DMPLEX` object
+- ref - The reference tree `DMPLEX` object
 
   Level: intermediate
 
-.seealso: `DMPlexGetReferenceTree()`, `DMPlexCreateDefaultReferenceTree()`
+.seealso: [](chapter_unstructured), `DM`, `DMPLEX`,`DMPlexGetReferenceTree()`, `DMPlexCreateDefaultReferenceTree()`
 @*/
-PetscErrorCode DMPlexSetReferenceTree(DM dm, DM ref) {
+PetscErrorCode DMPlexSetReferenceTree(DM dm, DM ref)
+{
   DM_Plex *mesh = (DM_Plex *)dm->data;
 
   PetscFunctionBegin;
@@ -37,16 +38,17 @@ PetscErrorCode DMPlexSetReferenceTree(DM dm, DM ref) {
   Not collective
 
   Input Parameters:
-. dm - The DMPlex object
+. dm - The `DMPLEX` object
 
   Output Parameters:
-. ref - The reference tree DMPlex object
+. ref - The reference tree `DMPLEX` object
 
   Level: intermediate
 
-.seealso: `DMPlexSetReferenceTree()`, `DMPlexCreateDefaultReferenceTree()`
+.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPlexSetReferenceTree()`, `DMPlexCreateDefaultReferenceTree()`
 @*/
-PetscErrorCode DMPlexGetReferenceTree(DM dm, DM *ref) {
+PetscErrorCode DMPlexGetReferenceTree(DM dm, DM *ref)
+{
   DM_Plex *mesh = (DM_Plex *)dm->data;
 
   PetscFunctionBegin;
@@ -56,7 +58,8 @@ PetscErrorCode DMPlexGetReferenceTree(DM dm, DM *ref) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMPlexReferenceTreeGetChildSymmetry_Default(DM dm, PetscInt parent, PetscInt parentOrientA, PetscInt childOrientA, PetscInt childA, PetscInt parentOrientB, PetscInt *childOrientB, PetscInt *childB) {
+static PetscErrorCode DMPlexReferenceTreeGetChildSymmetry_Default(DM dm, PetscInt parent, PetscInt parentOrientA, PetscInt childOrientA, PetscInt childA, PetscInt parentOrientB, PetscInt *childOrientB, PetscInt *childB)
+{
   PetscInt coneSize, dStart, dEnd, dim, ABswap, oAvert, oBvert, ABswapVert;
 
   PetscFunctionBegin;
@@ -111,7 +114,7 @@ static PetscErrorCode DMPlexReferenceTreeGetChildSymmetry_Default(DM dm, PetscIn
           PetscCall(DMPlexGetConeSize(dm, childA, &coneSize));
           /* compose sOrientB and oB[j] */
           PetscCheck(coneSize == 0 || coneSize == 2, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Expected a vertex or an edge");
-          ct            = coneSize ? DM_POLYTOPE_SEGMENT : DM_POLYTOPE_POINT;
+          ct = coneSize ? DM_POLYTOPE_SEGMENT : DM_POLYTOPE_POINT;
           /* we may have to flip an edge */
           oBtrue        = (sOrientB >= 0) ? oB[j] : DMPolytopeTypeComposeOrientation(ct, -1, oB[j]);
           oBtrue        = DMPolytopeConvertNewOrientation_Internal(ct, oBtrue);
@@ -172,7 +175,7 @@ static PetscErrorCode DMPlexReferenceTreeGetChildSymmetry_Default(DM dm, PetscIn
   DMPlexReferenceTreeGetChildSymmetry - Given a reference tree, transform a childid and orientation from one parent frame to another
 
   Input Parameters:
-+ dm - the reference tree DMPlex object
++ dm - the reference tree `DMPLEX` object
 . parent - the parent point
 . parentOrientA - the reference orientation for describing the parent
 . childOrientA - the reference orientation for describing the child
@@ -185,9 +188,10 @@ static PetscErrorCode DMPlexReferenceTreeGetChildSymmetry_Default(DM dm, PetscIn
 
   Level: developer
 
-.seealso: `DMPlexGetReferenceTree()`, `DMPlexSetReferenceTree()`, `DMPlexSetTree()`
+.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPlexGetReferenceTree()`, `DMPlexSetReferenceTree()`, `DMPlexSetTree()`
 @*/
-PetscErrorCode DMPlexReferenceTreeGetChildSymmetry(DM dm, PetscInt parent, PetscInt parentOrientA, PetscInt childOrientA, PetscInt childA, PetscInt parentOrientB, PetscInt *childOrientB, PetscInt *childB) {
+PetscErrorCode DMPlexReferenceTreeGetChildSymmetry(DM dm, PetscInt parent, PetscInt parentOrientA, PetscInt childOrientA, PetscInt childA, PetscInt parentOrientB, PetscInt *childOrientB, PetscInt *childB)
+{
   DM_Plex *mesh = (DM_Plex *)dm->data;
 
   PetscFunctionBegin;
@@ -199,13 +203,15 @@ PetscErrorCode DMPlexReferenceTreeGetChildSymmetry(DM dm, PetscInt parent, Petsc
 
 static PetscErrorCode DMPlexSetTree_Internal(DM, PetscSection, PetscInt *, PetscInt *, PetscBool, PetscBool);
 
-PetscErrorCode DMPlexCreateReferenceTree_SetTree(DM dm, PetscSection parentSection, PetscInt parents[], PetscInt childIDs[]) {
+PetscErrorCode DMPlexCreateReferenceTree_SetTree(DM dm, PetscSection parentSection, PetscInt parents[], PetscInt childIDs[])
+{
   PetscFunctionBegin;
   PetscCall(DMPlexSetTree_Internal(dm, parentSection, parents, childIDs, PETSC_TRUE, PETSC_FALSE));
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMPlexCreateReferenceTree_Union(DM K, DM Kref, const char *labelName, DM *ref) {
+PetscErrorCode DMPlexCreateReferenceTree_Union(DM K, DM Kref, const char *labelName, DM *ref)
+{
   MPI_Comm     comm;
   PetscInt     dim, p, pStart, pEnd, pRefStart, pRefEnd, d, offset, parentSize, *parents, *childIDs;
   PetscInt    *permvals, *unionCones, *coneSizes, *unionOrientations, numUnionPoints, *numDimPoints, numCones, numVerts;
@@ -421,13 +427,14 @@ PetscErrorCode DMPlexCreateReferenceTree_Union(DM K, DM Kref, const char *labelN
 - simplex - Flag for simplex, otherwise use a tensor-product cell
 
   Output Parameters:
-. ref     - the reference tree DMPlex object
+. ref     - the reference tree `DMPLEX` object
 
   Level: intermediate
 
 .seealso: `DMPlexSetReferenceTree()`, `DMPlexGetReferenceTree()`
 @*/
-PetscErrorCode DMPlexCreateDefaultReferenceTree(MPI_Comm comm, PetscInt dim, PetscBool simplex, DM *ref) {
+PetscErrorCode DMPlexCreateDefaultReferenceTree(MPI_Comm comm, PetscInt dim, PetscBool simplex, DM *ref)
+{
   DM_Plex *mesh;
   DM       K, Kref;
   PetscInt p, pStart, pEnd;
@@ -456,7 +463,8 @@ PetscErrorCode DMPlexCreateDefaultReferenceTree(MPI_Comm comm, PetscInt dim, Pet
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMPlexTreeSymmetrize(DM dm) {
+static PetscErrorCode DMPlexTreeSymmetrize(DM dm)
+{
   DM_Plex     *mesh = (DM_Plex *)dm->data;
   PetscSection childSec, pSec;
   PetscInt     p, pSize, cSize, parMax = PETSC_MIN_INT, parMin = PETSC_MAX_INT;
@@ -509,7 +517,8 @@ static PetscErrorCode DMPlexTreeSymmetrize(DM dm) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode AnchorsFlatten(PetscSection section, IS is, PetscSection *sectionNew, IS *isNew) {
+static PetscErrorCode AnchorsFlatten(PetscSection section, IS is, PetscSection *sectionNew, IS *isNew)
+{
   PetscInt        pStart, pEnd, size, sizeNew, i, p, *valsNew = NULL;
   const PetscInt *vals;
   PetscSection    secNew;
@@ -638,7 +647,8 @@ static PetscErrorCode AnchorsFlatten(PetscSection section, IS is, PetscSection *
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMPlexCreateAnchors_Tree(DM dm) {
+static PetscErrorCode DMPlexCreateAnchors_Tree(DM dm)
+{
   PetscInt     p, pStart, pEnd, *anchors, size;
   PetscInt     aMin = PETSC_MAX_INT, aMax = PETSC_MIN_INT;
   PetscSection aSec;
@@ -742,7 +752,8 @@ static PetscErrorCode DMPlexCreateAnchors_Tree(DM dm) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMPlexGetTrueSupportSize(DM dm, PetscInt p, PetscInt *dof, PetscInt *numTrueSupp) {
+static PetscErrorCode DMPlexGetTrueSupportSize(DM dm, PetscInt p, PetscInt *dof, PetscInt *numTrueSupp)
+{
   PetscFunctionBegin;
   if (numTrueSupp[p] == -1) {
     PetscInt        i, alldof;
@@ -768,7 +779,8 @@ static PetscErrorCode DMPlexGetTrueSupportSize(DM dm, PetscInt p, PetscInt *dof,
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMPlexTreeExchangeSupports(DM dm) {
+static PetscErrorCode DMPlexTreeExchangeSupports(DM dm)
+{
   DM_Plex     *mesh = (DM_Plex *)dm->data;
   PetscSection newSupportSection;
   PetscInt     newSize, *newSupports, pStart, pEnd, p, d, depth;
@@ -879,7 +891,8 @@ static PetscErrorCode DMPlexTreeExchangeSupports(DM dm) {
 static PetscErrorCode DMPlexComputeAnchorMatrix_Tree_Direct(DM, PetscSection, PetscSection, Mat);
 static PetscErrorCode DMPlexComputeAnchorMatrix_Tree_FromReference(DM, PetscSection, PetscSection, Mat);
 
-static PetscErrorCode DMPlexSetTree_Internal(DM dm, PetscSection parentSection, PetscInt *parents, PetscInt *childIDs, PetscBool computeCanonical, PetscBool exchangeSupports) {
+static PetscErrorCode DMPlexSetTree_Internal(DM dm, PetscSection parentSection, PetscInt *parents, PetscInt *childIDs, PetscBool computeCanonical, PetscBool exchangeSupports)
+{
   DM_Plex *mesh = (DM_Plex *)dm->data;
   DM       refTree;
   PetscInt size;
@@ -967,7 +980,7 @@ static PetscErrorCode DMPlexSetTree_Internal(DM dm, PetscSection parentSection, 
   Collective on dm
 
   Input Parameters:
-+ dm - the DMPlex object
++ dm - the `DMPLEX` object
 . parentSection - a section describing the tree: a point has a parent if it has 1 dof in the section; the section
                   offset indexes the parent and childID list; the reference count of parentSection is incremented
 . parents - a list of the point parents; copied, can be destroyed
@@ -976,9 +989,10 @@ static PetscErrorCode DMPlexSetTree_Internal(DM dm, PetscSection parentSection, 
 
   Level: intermediate
 
-.seealso: `DMPlexGetTree()`, `DMPlexSetReferenceTree()`, `DMPlexSetAnchors()`, `DMPlexGetTreeParent()`, `DMPlexGetTreeChildren()`
+.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPlexGetTree()`, `DMPlexSetReferenceTree()`, `DMPlexSetAnchors()`, `DMPlexGetTreeParent()`, `DMPlexGetTreeChildren()`
 @*/
-PetscErrorCode DMPlexSetTree(DM dm, PetscSection parentSection, PetscInt parents[], PetscInt childIDs[]) {
+PetscErrorCode DMPlexSetTree(DM dm, PetscSection parentSection, PetscInt parents[], PetscInt childIDs[])
+{
   PetscFunctionBegin;
   PetscCall(DMPlexSetTree_Internal(dm, parentSection, parents, childIDs, PETSC_FALSE, PETSC_TRUE));
   PetscFunctionReturn(0);
@@ -989,7 +1003,7 @@ PetscErrorCode DMPlexSetTree(DM dm, PetscSection parentSection, PetscInt parents
   Collective on dm
 
   Input Parameter:
-. dm - the DMPlex object
+. dm - the `DMPLEX` object
 
   Output Parameters:
 + parentSection - a section describing the tree: a point has a parent if it has 1 dof in the section; the section
@@ -1002,9 +1016,10 @@ PetscErrorCode DMPlexSetTree(DM dm, PetscSection parentSection, PetscInt parents
 
   Level: intermediate
 
-.seealso: `DMPlexSetTree()`, `DMPlexSetReferenceTree()`, `DMPlexSetAnchors()`, `DMPlexGetTreeParent()`, `DMPlexGetTreeChildren()`
+.seealso: [](chapter_unstructured), `DM`, `DMPLEX`,`DMPlexSetTree()`, `DMPlexSetReferenceTree()`, `DMPlexSetAnchors()`, `DMPlexGetTreeParent()`, `DMPlexGetTreeChildren()`
 @*/
-PetscErrorCode DMPlexGetTree(DM dm, PetscSection *parentSection, PetscInt *parents[], PetscInt *childIDs[], PetscSection *childSection, PetscInt *children[]) {
+PetscErrorCode DMPlexGetTree(DM dm, PetscSection *parentSection, PetscInt *parents[], PetscInt *childIDs[], PetscSection *childSection, PetscInt *children[])
+{
   DM_Plex *mesh = (DM_Plex *)dm->data;
 
   PetscFunctionBegin;
@@ -1021,7 +1036,7 @@ PetscErrorCode DMPlexGetTree(DM dm, PetscSection *parentSection, PetscInt *paren
   DMPlexGetTreeParent - get the parent of a point in the tree describing the point hierarchy (not the DAG)
 
   Input Parameters:
-+ dm - the DMPlex object
++ dm - the `DMPLEX` object
 - point - the query point
 
   Output Parameters:
@@ -1031,9 +1046,10 @@ PetscErrorCode DMPlexGetTree(DM dm, PetscSection *parentSection, PetscInt *paren
 
   Level: intermediate
 
-.seealso: `DMPlexSetTree()`, `DMPlexGetTree()`, `DMPlexGetTreeChildren()`
+.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPlexSetTree()`, `DMPlexGetTree()`, `DMPlexGetTreeChildren()`
 @*/
-PetscErrorCode DMPlexGetTreeParent(DM dm, PetscInt point, PetscInt *parent, PetscInt *childID) {
+PetscErrorCode DMPlexGetTreeParent(DM dm, PetscInt point, PetscInt *parent, PetscInt *childID)
+{
   DM_Plex     *mesh = (DM_Plex *)dm->data;
   PetscSection pSec;
 
@@ -1062,7 +1078,7 @@ PetscErrorCode DMPlexGetTreeParent(DM dm, PetscInt point, PetscInt *parent, Pets
   DMPlexGetTreeChildren - get the children of a point in the tree describing the point hierarchy (not the DAG)
 
   Input Parameters:
-+ dm - the DMPlex object
++ dm - the `DMPLEX` object
 - point - the query point
 
   Output Parameters:
@@ -1071,13 +1087,10 @@ PetscErrorCode DMPlexGetTreeParent(DM dm, PetscInt point, PetscInt *parent, Pets
 
   Level: intermediate
 
-  Fortran Notes:
-  Since it returns an array, this routine is only available in Fortran 90, and you must
-  include petsc.h90 in your code.
-
-.seealso: `DMPlexSetTree()`, `DMPlexGetTree()`, `DMPlexGetTreeParent()`
+.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMPlexSetTree()`, `DMPlexGetTree()`, `DMPlexGetTreeParent()`
 @*/
-PetscErrorCode DMPlexGetTreeChildren(DM dm, PetscInt point, PetscInt *numChildren, const PetscInt *children[]) {
+PetscErrorCode DMPlexGetTreeChildren(DM dm, PetscInt point, PetscInt *numChildren, const PetscInt *children[])
+{
   DM_Plex     *mesh = (DM_Plex *)dm->data;
   PetscSection childSec;
   PetscInt     dof = 0;
@@ -1100,7 +1113,8 @@ PetscErrorCode DMPlexGetTreeChildren(DM dm, PetscInt point, PetscInt *numChildre
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode EvaluateBasis(PetscSpace space, PetscInt nBasis, PetscInt nFunctionals, PetscInt nComps, PetscInt nPoints, const PetscInt *pointsPerFn, const PetscReal *points, const PetscReal *weights, PetscReal *work, Mat basisAtPoints) {
+static PetscErrorCode EvaluateBasis(PetscSpace space, PetscInt nBasis, PetscInt nFunctionals, PetscInt nComps, PetscInt nPoints, const PetscInt *pointsPerFn, const PetscReal *points, const PetscReal *weights, PetscReal *work, Mat basisAtPoints)
+{
   PetscInt f, b, p, c, offset, qPoints;
 
   PetscFunctionBegin;
@@ -1122,7 +1136,8 @@ static PetscErrorCode EvaluateBasis(PetscSpace space, PetscInt nBasis, PetscInt 
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMPlexComputeAnchorMatrix_Tree_Direct(DM dm, PetscSection section, PetscSection cSec, Mat cMat) {
+static PetscErrorCode DMPlexComputeAnchorMatrix_Tree_Direct(DM dm, PetscSection section, PetscSection cSec, Mat cMat)
+{
   PetscDS         ds;
   PetscInt        spdim;
   PetscInt        numFields, f, c, cStart, cEnd, pStart, pEnd, conStart, conEnd;
@@ -1369,7 +1384,8 @@ static PetscErrorCode DMPlexComputeAnchorMatrix_Tree_Direct(DM dm, PetscSection 
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMPlexReferenceTreeGetChildrenMatrices(DM refTree, PetscScalar ****childrenMats, PetscInt ***childrenN) {
+static PetscErrorCode DMPlexReferenceTreeGetChildrenMatrices(DM refTree, PetscScalar ****childrenMats, PetscInt ***childrenN)
+{
   Mat                 refCmat;
   PetscDS             ds;
   PetscInt            numFields, maxFields, f, pRefStart, pRefEnd, p, *rows, *cols, maxDof, maxAnDof, **refPointFieldN;
@@ -1478,7 +1494,8 @@ static PetscErrorCode DMPlexReferenceTreeGetChildrenMatrices(DM refTree, PetscSc
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMPlexReferenceTreeRestoreChildrenMatrices(DM refTree, PetscScalar ****childrenMats, PetscInt ***childrenN) {
+static PetscErrorCode DMPlexReferenceTreeRestoreChildrenMatrices(DM refTree, PetscScalar ****childrenMats, PetscInt ***childrenN)
+{
   PetscDS        ds;
   PetscInt     **refPointFieldN;
   PetscScalar ***refPointFieldMats;
@@ -1521,7 +1538,8 @@ static PetscErrorCode DMPlexReferenceTreeRestoreChildrenMatrices(DM refTree, Pet
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMPlexComputeAnchorMatrix_Tree_FromReference(DM dm, PetscSection section, PetscSection conSec, Mat cMat) {
+static PetscErrorCode DMPlexComputeAnchorMatrix_Tree_FromReference(DM dm, PetscSection section, PetscSection conSec, Mat cMat)
+{
   DM              refTree;
   PetscDS         ds;
   Mat             refCmat;
@@ -1738,7 +1756,8 @@ static PetscErrorCode DMPlexComputeAnchorMatrix_Tree_FromReference(DM dm, PetscS
 
 /* refine a single cell on rank 0: this is not intended to provide good local refinement, only to create an example of
  * a non-conforming mesh.  Local refinement comes later */
-PetscErrorCode DMPlexTreeRefineCell(DM dm, PetscInt cell, DM *ncdm) {
+PetscErrorCode DMPlexTreeRefineCell(DM dm, PetscInt cell, DM *ncdm)
+{
   DM           K;
   PetscMPIInt  rank;
   PetscInt     dim, *pNewStart, *pNewEnd, *pNewCount, *pOldStart, *pOldEnd, offset, d, pStart, pEnd;
@@ -1769,7 +1788,7 @@ PetscErrorCode DMPlexTreeRefineCell(DM dm, PetscInt cell, DM *ncdm) {
       pNewStart[d] = offset;
       PetscCall(DMPlexGetHeightStratum(dm, d, &pOldStart[d], &pOldEnd[d]));
       PetscCall(DMPlexGetHeightStratum(K, d, &kStart, &kEnd));
-      pOldCount    = pOldEnd[d] - pOldStart[d];
+      pOldCount = pOldEnd[d] - pOldStart[d];
       /* adding the new points */
       pNewCount[d] = pOldCount + kEnd - kStart;
       if (!d) {
@@ -1831,7 +1850,7 @@ PetscErrorCode DMPlexTreeRefineCell(DM dm, PetscInt cell, DM *ncdm) {
             k = children[i];
             PetscCall(DMPlexReferenceTreeGetChildSymmetry(K, p, parentOrientA, 0, k, parentOrientB, &oPerm, &kPerm));
             /* perm = what refTree position I'm in */
-            perm[kPerm - kStart]      = k;
+            perm[kPerm - kStart] = k;
             /* iperm = who is at this position */
             iperm[k - kStart]         = kPerm - kStart;
             preOrient[kPerm - kStart] = oPerm;
@@ -2041,7 +2060,8 @@ PetscErrorCode DMPlexTreeRefineCell(DM dm, PetscInt cell, DM *ncdm) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMPlexComputeInterpolatorTree(DM coarse, DM fine, PetscSF coarseToFine, PetscInt *childIds, Mat mat) {
+PetscErrorCode DMPlexComputeInterpolatorTree(DM coarse, DM fine, PetscSF coarseToFine, PetscInt *childIds, Mat mat)
+{
   PetscSF              coarseToFineEmbedded;
   PetscSection         globalCoarse, globalFine;
   PetscSection         localCoarse, localFine;
@@ -2786,7 +2806,8 @@ PetscErrorCode DMPlexComputeInterpolatorTree(DM coarse, DM fine, PetscSF coarseT
  *         a_{i,j} += interp_{i,k} * \phi^f_k(x_l) * \phi^f_j(x_l) * w_l
  *                    [^^^ this is = \phi^c_i ^^^]
  */
-PetscErrorCode DMPlexComputeInjectorReferenceTree(DM refTree, Mat *inj) {
+PetscErrorCode DMPlexComputeInjectorReferenceTree(DM refTree, Mat *inj)
+{
   PetscDS      ds;
   PetscSection section, cSection;
   DMLabel      canonical, depth;
@@ -3118,7 +3139,8 @@ PetscErrorCode DMPlexComputeInjectorReferenceTree(DM refTree, Mat *inj) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMPlexReferenceTreeGetChildrenMatrices_Injection(DM refTree, Mat inj, PetscScalar ****childrenMats) {
+static PetscErrorCode DMPlexReferenceTreeGetChildrenMatrices_Injection(DM refTree, Mat inj, PetscScalar ****childrenMats)
+{
   PetscDS        ds;
   PetscInt       numFields, f, pRefStart, pRefEnd, p, *rows, *cols, maxDof;
   PetscScalar ***refPointFieldMats;
@@ -3180,7 +3202,8 @@ static PetscErrorCode DMPlexReferenceTreeGetChildrenMatrices_Injection(DM refTre
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMPlexReferenceTreeRestoreChildrenMatrices_Injection(DM refTree, Mat inj, PetscScalar ****childrenMats) {
+static PetscErrorCode DMPlexReferenceTreeRestoreChildrenMatrices_Injection(DM refTree, Mat inj, PetscScalar ****childrenMats)
+{
   PetscDS        ds;
   PetscScalar ***refPointFieldMats;
   PetscInt       numFields, pRefStart, pRefEnd, p, f;
@@ -3219,7 +3242,8 @@ static PetscErrorCode DMPlexReferenceTreeRestoreChildrenMatrices_Injection(DM re
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMPlexReferenceTreeGetInjector(DM refTree, Mat *injRef) {
+static PetscErrorCode DMPlexReferenceTreeGetInjector(DM refTree, Mat *injRef)
+{
   Mat         cMatRef;
   PetscObject injRefObj;
 
@@ -3236,7 +3260,8 @@ static PetscErrorCode DMPlexReferenceTreeGetInjector(DM refTree, Mat *injRef) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMPlexTransferInjectorTree(DM coarse, DM fine, PetscSF coarseToFine, const PetscInt *childIds, Vec fineVec, PetscInt numFields, PetscInt *offsets, PetscSection *rootMultiSec, PetscSection *multiLeafSec, PetscInt **gatheredIndices, PetscScalar **gatheredValues) {
+static PetscErrorCode DMPlexTransferInjectorTree(DM coarse, DM fine, PetscSF coarseToFine, const PetscInt *childIds, Vec fineVec, PetscInt numFields, PetscInt *offsets, PetscSection *rootMultiSec, PetscSection *multiLeafSec, PetscInt **gatheredIndices, PetscScalar **gatheredValues)
+{
   PetscInt        pStartF, pEndF, pStartC, pEndC, p, maxDof, numMulti;
   PetscSection    globalCoarse, globalFine;
   PetscSection    localCoarse, localFine, leafIndicesSec;
@@ -3466,7 +3491,8 @@ static PetscErrorCode DMPlexTransferInjectorTree(DM coarse, DM fine, PetscSF coa
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMPlexComputeInjectorTree(DM coarse, DM fine, PetscSF coarseToFine, PetscInt *childIds, Mat mat) {
+PetscErrorCode DMPlexComputeInjectorTree(DM coarse, DM fine, PetscSF coarseToFine, PetscInt *childIds, Mat mat)
+{
   DM             refTree;
   PetscSection   multiRootSec, rootIndicesSec;
   PetscSection   globalCoarse, globalFine;
@@ -3702,7 +3728,8 @@ PetscErrorCode DMPlexComputeInjectorTree(DM coarse, DM fine, PetscSF coarseToFin
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMPlexTransferVecTree_Interpolate(DM coarse, Vec vecCoarseLocal, DM fine, Vec vecFine, PetscSF coarseToFine, PetscInt *cids, Vec grad, Vec cellGeom) {
+static PetscErrorCode DMPlexTransferVecTree_Interpolate(DM coarse, Vec vecCoarseLocal, DM fine, Vec vecFine, PetscSF coarseToFine, PetscInt *cids, Vec grad, Vec cellGeom)
+{
   PetscSF            coarseToFineEmbedded;
   PetscSection       globalCoarse, globalFine;
   PetscSection       localCoarse, localFine;
@@ -3946,7 +3973,7 @@ static PetscErrorCode DMPlexTransferVecTree_Interpolate(DM coarse, Vec vecCoarse
           offsets[f + 1]     = offsets[f] + rowDof;
           offsetsCopy[f + 1] = offsets[f + 1];
           /* TODO: closure indices */
-          newOffsets[f + 1]  = newOffsets[f] + ((childId == -1) ? rowDof : refPointFieldN[childId - pRefStart][f]);
+          newOffsets[f + 1] = newOffsets[f] + ((childId == -1) ? rowDof : refPointFieldN[childId - pRefStart][f]);
         }
         PetscCall(DMPlexGetIndicesPointFields_Internal(localFine, PETSC_FALSE, p, gOff, offsetsCopy, PETSC_FALSE, NULL, -1, NULL, rowIndices));
       } else {
@@ -4011,7 +4038,8 @@ static PetscErrorCode DMPlexTransferVecTree_Interpolate(DM coarse, Vec vecCoarse
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMPlexTransferVecTree_Inject(DM fine, Vec vecFine, DM coarse, Vec vecCoarse, PetscSF coarseToFine, PetscInt *cids) {
+static PetscErrorCode DMPlexTransferVecTree_Inject(DM fine, Vec vecFine, DM coarse, Vec vecCoarse, PetscSF coarseToFine, PetscInt *cids)
+{
   DM             refTree;
   PetscSection   multiRootSec, rootIndicesSec;
   PetscSection   globalCoarse, globalFine;
@@ -4165,10 +4193,10 @@ static PetscErrorCode DMPlexTransferVecTree_Inject(DM fine, Vec vecFine, DM coar
   that can be represented by a common reference tree used by both.  This routine can be used for a combination of
   coarsening and refinement at the same time.
 
-  collective
+  Collective on dmIn
 
   Input Parameters:
-+ dmIn        - The DMPlex mesh for the input vector
++ dmIn        - The `DMPLEX` mesh for the input vector
 . vecIn       - The input vector
 . sfRefine    - A star forest indicating points in the mesh dmIn (roots in the star forest) that are parents to points in
                 the mesh dmOut (leaves in the star forest), i.e. where dmOut is more refined than dmIn
@@ -4187,15 +4215,16 @@ static PetscErrorCode DMPlexTransferVecTree_Inject(DM fine, Vec vecFine, DM coar
 
   Output Parameters:
 . vecOut      - Using interpolation and injection operators calculated on the reference tree, the transferred
-                projection of vecIn from dmIn to dmOut.  Note that any field discretized with a PetscFV finite volume
+                projection of vecIn from dmIn to dmOut.  Note that any field discretized with a `PetscFV` finite volume
                 method that uses gradient reconstruction will use reconstructed gradients when interpolating from
                 coarse points to fine points.
 
   Level: developer
 
-.seealso: `DMPlexSetReferenceTree()`, `DMPlexGetReferenceTree()`, `PetscFVGetComputeGradients()`
+.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `PetscSF`, `Vec`, `PetscFV`, `DMPlexSetReferenceTree()`, `DMPlexGetReferenceTree()`, `PetscFVGetComputeGradients()`
 @*/
-PetscErrorCode DMPlexTransferVecTree(DM dmIn, Vec vecIn, DM dmOut, Vec vecOut, PetscSF sfRefine, PetscSF sfCoarsen, PetscInt *cidsRefine, PetscInt *cidsCoarsen, PetscBool useBCs, PetscReal time) {
+PetscErrorCode DMPlexTransferVecTree(DM dmIn, Vec vecIn, DM dmOut, Vec vecOut, PetscSF sfRefine, PetscSF sfCoarsen, PetscInt *cidsRefine, PetscInt *cidsCoarsen, PetscBool useBCs, PetscReal time)
+{
   PetscFunctionBegin;
   PetscCall(VecSet(vecOut, 0.0));
   if (sfRefine) {

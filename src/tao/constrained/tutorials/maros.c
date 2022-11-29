@@ -47,7 +47,8 @@ PetscErrorCode FormEqualityConstraints(Tao, Vec, Vec, void *);
 PetscErrorCode FormInequalityJacobian(Tao, Vec, Mat, Mat, void *);
 PetscErrorCode FormEqualityJacobian(Tao, Vec, Mat, Mat, void *);
 
-PetscErrorCode main(int argc, char **argv) {
+PetscErrorCode main(int argc, char **argv)
+{
   PetscMPIInt        size;
   Vec                x; /* solution */
   KSP                ksp;
@@ -113,7 +114,8 @@ PetscErrorCode main(int argc, char **argv) {
   return 0;
 }
 
-PetscErrorCode InitializeProblem(AppCtx *user) {
+PetscErrorCode InitializeProblem(AppCtx *user)
+{
   PetscViewer loader;
   MPI_Comm    comm;
   PetscInt    nrows, ncols, i;
@@ -194,7 +196,8 @@ PetscErrorCode InitializeProblem(AppCtx *user) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DestroyProblem(AppCtx *user) {
+PetscErrorCode DestroyProblem(AppCtx *user)
+{
   PetscFunctionBegin;
   PetscCall(MatDestroy(&user->H));
   PetscCall(MatDestroy(&user->Aeq));
@@ -205,7 +208,8 @@ PetscErrorCode DestroyProblem(AppCtx *user) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode FormFunctionGradient(Tao tao, Vec x, PetscReal *f, Vec g, void *ctx) {
+PetscErrorCode FormFunctionGradient(Tao tao, Vec x, PetscReal *f, Vec g, void *ctx)
+{
   AppCtx     *user = (AppCtx *)ctx;
   PetscScalar xtHx;
 
@@ -218,12 +222,14 @@ PetscErrorCode FormFunctionGradient(Tao tao, Vec x, PetscReal *f, Vec g, void *c
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode FormHessian(Tao tao, Vec x, Mat H, Mat Hpre, void *ctx) {
+PetscErrorCode FormHessian(Tao tao, Vec x, Mat H, Mat Hpre, void *ctx)
+{
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode FormInequalityConstraints(Tao tao, Vec x, Vec ci, void *ctx) {
+PetscErrorCode FormInequalityConstraints(Tao tao, Vec x, Vec ci, void *ctx)
+{
   AppCtx *user = (AppCtx *)ctx;
 
   PetscFunctionBegin;
@@ -231,7 +237,8 @@ PetscErrorCode FormInequalityConstraints(Tao tao, Vec x, Vec ci, void *ctx) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode FormEqualityConstraints(Tao tao, Vec x, Vec ce, void *ctx) {
+PetscErrorCode FormEqualityConstraints(Tao tao, Vec x, Vec ce, void *ctx)
+{
   AppCtx *user = (AppCtx *)ctx;
 
   PetscFunctionBegin;
@@ -240,12 +247,14 @@ PetscErrorCode FormEqualityConstraints(Tao tao, Vec x, Vec ce, void *ctx) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode FormInequalityJacobian(Tao tao, Vec x, Mat JI, Mat JIpre, void *ctx) {
+PetscErrorCode FormInequalityJacobian(Tao tao, Vec x, Mat JI, Mat JIpre, void *ctx)
+{
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode FormEqualityJacobian(Tao tao, Vec x, Mat JE, Mat JEpre, void *ctx) {
+PetscErrorCode FormEqualityJacobian(Tao tao, Vec x, Mat JE, Mat JEpre, void *ctx)
+{
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }

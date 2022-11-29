@@ -62,7 +62,8 @@ typedef struct {
   PetscBool        check;
 } KSP_FETIDP;
 
-static PetscErrorCode KSPFETIDPSetPressureOperator_FETIDP(KSP ksp, Mat P) {
+static PetscErrorCode KSPFETIDPSetPressureOperator_FETIDP(KSP ksp, Mat P)
+{
   KSP_FETIDP *fetidp = (KSP_FETIDP *)ksp->data;
 
   PetscFunctionBegin;
@@ -72,7 +73,7 @@ static PetscErrorCode KSPFETIDPSetPressureOperator_FETIDP(KSP ksp, Mat P) {
 }
 
 /*@
- KSPFETIDPSetPressureOperator - Sets the operator used to setup the pressure preconditioner for saddle point FETI-DP.
+ KSPFETIDPSetPressureOperator - Sets the operator used to setup the pressure preconditioner for the saddle point `KSPFETIDP` solver,
 
    Collective on ksp
 
@@ -90,9 +91,10 @@ static PetscErrorCode KSPFETIDPSetPressureOperator_FETIDP(KSP ksp, Mat P) {
           where pid_1 and pid_2 are two different pressure dof numbers and gid_1 and gid_2 the corresponding
           id in the monolithic global ordering.
 
-.seealso: `MATIS`, `PCBDDC`, `KSPFETIDPGetInnerBDDC`, `KSPFETIDPGetInnerKSP`, `KSPSetOperators`
+.seealso: [](chapter_ksp), `KSPFETIDP`, `MATIS`, `PCBDDC`, `KSPFETIDPGetInnerBDDC()`, `KSPFETIDPGetInnerKSP()`, `KSPSetOperators()`
 @*/
-PetscErrorCode KSPFETIDPSetPressureOperator(KSP ksp, Mat P) {
+PetscErrorCode KSPFETIDPSetPressureOperator(KSP ksp, Mat P)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
   if (P) PetscValidHeaderSpecific(P, MAT_CLASSID, 2);
@@ -100,7 +102,8 @@ PetscErrorCode KSPFETIDPSetPressureOperator(KSP ksp, Mat P) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode KSPFETIDPGetInnerKSP_FETIDP(KSP ksp, KSP *innerksp) {
+static PetscErrorCode KSPFETIDPGetInnerKSP_FETIDP(KSP ksp, KSP *innerksp)
+{
   KSP_FETIDP *fetidp = (KSP_FETIDP *)ksp->data;
 
   PetscFunctionBegin;
@@ -109,19 +112,18 @@ static PetscErrorCode KSPFETIDPGetInnerKSP_FETIDP(KSP ksp, KSP *innerksp) {
 }
 
 /*@
- KSPFETIDPGetInnerKSP - Gets the KSP object for the Lagrange multipliers
+ KSPFETIDPGetInnerKSP - Gets the `KSP` object for the Lagrange multipliers from inside a `KSPFETIDP`
 
    Input Parameters:
-+  ksp - the FETI-DP KSP
--  innerksp - the KSP for the multipliers
++  ksp - the `KSPFETIDP`
+-  innerksp - the `KSP` for the multipliers
 
    Level: advanced
 
-   Notes:
-
-.seealso: `MATIS`, `PCBDDC`, `KSPFETIDPSetInnerBDDC`, `KSPFETIDPGetInnerBDDC`
+.seealso: [](chapter_ksp), `KSPFETIDP`, `MATIS`, `PCBDDC`, `KSPFETIDPSetInnerBDDC()`, `KSPFETIDPGetInnerBDDC()`
 @*/
-PetscErrorCode KSPFETIDPGetInnerKSP(KSP ksp, KSP *innerksp) {
+PetscErrorCode KSPFETIDPGetInnerKSP(KSP ksp, KSP *innerksp)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
   PetscValidPointer(innerksp, 2);
@@ -129,7 +131,8 @@ PetscErrorCode KSPFETIDPGetInnerKSP(KSP ksp, KSP *innerksp) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode KSPFETIDPGetInnerBDDC_FETIDP(KSP ksp, PC *pc) {
+static PetscErrorCode KSPFETIDPGetInnerBDDC_FETIDP(KSP ksp, PC *pc)
+{
   KSP_FETIDP *fetidp = (KSP_FETIDP *)ksp->data;
 
   PetscFunctionBegin;
@@ -138,19 +141,18 @@ static PetscErrorCode KSPFETIDPGetInnerBDDC_FETIDP(KSP ksp, PC *pc) {
 }
 
 /*@
- KSPFETIDPGetInnerBDDC - Gets the BDDC preconditioner used to setup the FETI-DP matrix for the Lagrange multipliers
+  KSPFETIDPGetInnerBDDC - Gets the `PCBDDC` preconditioner used to setup the `KSPFETIDP` matrix for the Lagrange multipliers
 
    Input Parameters:
-+  ksp - the FETI-DP Krylov solver
--  pc - the BDDC preconditioner
++  ksp - the `KSPFETIDP` Krylov solver
+-  pc - the `PCBDDC` preconditioner
 
    Level: advanced
 
-   Notes:
-
-.seealso: `MATIS`, `PCBDDC`, `KSPFETIDPSetInnerBDDC`, `KSPFETIDPGetInnerKSP`
+.seealso: [](chapter_ksp), `MATIS`, `PCBDDC`, `KSPFETIDPSetInnerBDDC()`, `KSPFETIDPGetInnerKSP()`
 @*/
-PetscErrorCode KSPFETIDPGetInnerBDDC(KSP ksp, PC *pc) {
+PetscErrorCode KSPFETIDPGetInnerBDDC(KSP ksp, PC *pc)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
   PetscValidPointer(pc, 2);
@@ -158,7 +160,8 @@ PetscErrorCode KSPFETIDPGetInnerBDDC(KSP ksp, PC *pc) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode KSPFETIDPSetInnerBDDC_FETIDP(KSP ksp, PC pc) {
+static PetscErrorCode KSPFETIDPSetInnerBDDC_FETIDP(KSP ksp, PC pc)
+{
   KSP_FETIDP *fetidp = (KSP_FETIDP *)ksp->data;
 
   PetscFunctionBegin;
@@ -170,21 +173,23 @@ static PetscErrorCode KSPFETIDPSetInnerBDDC_FETIDP(KSP ksp, PC pc) {
 }
 
 /*@
- KSPFETIDPSetInnerBDDC - Sets the BDDC preconditioner used to setup the FETI-DP matrix for the Lagrange multipliers
+  KSPFETIDPSetInnerBDDC - Provides the `PCBDDC` preconditioner used to setup the `KSPFETIDP` matrix for the Lagrange multipliers
 
    Collective on ksp
 
    Input Parameters:
-+  ksp - the FETI-DP Krylov solver
--  pc - the BDDC preconditioner
++  ksp - the `KSPFETIDP` Krylov solver
+-  pc - the `PCBDDC` preconditioner
 
    Level: advanced
 
-   Notes:
+   Note:
+   A `PC` is automatically created for the `KSPFETIDP` and can be accessed to change options with  `KSPFETIDPGetInnerBDDC()` hence this routine is rarely needed
 
-.seealso: `MATIS`, `PCBDDC`, `KSPFETIDPGetInnerBDDC`, `KSPFETIDPGetInnerKSP`
+.seealso: [](chapter_ksp), `MATIS`, `PCBDDC`, `KSPFETIDPGetInnerBDDC()`, `KSPFETIDPGetInnerKSP()`
 @*/
-PetscErrorCode KSPFETIDPSetInnerBDDC(KSP ksp, PC pc) {
+PetscErrorCode KSPFETIDPSetInnerBDDC(KSP ksp, PC pc)
+{
   PetscBool isbddc;
 
   PetscFunctionBegin;
@@ -196,7 +201,8 @@ PetscErrorCode KSPFETIDPSetInnerBDDC(KSP ksp, PC pc) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode KSPBuildSolution_FETIDP(KSP ksp, Vec v, Vec *V) {
+static PetscErrorCode KSPBuildSolution_FETIDP(KSP ksp, Vec v, Vec *V)
+{
   KSP_FETIDP *fetidp = (KSP_FETIDP *)ksp->data;
   Mat         F;
   Vec         Xl;
@@ -213,7 +219,8 @@ static PetscErrorCode KSPBuildSolution_FETIDP(KSP ksp, Vec v, Vec *V) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode KSPMonitor_FETIDP(KSP ksp, PetscInt it, PetscReal rnorm, void *ctx) {
+static PetscErrorCode KSPMonitor_FETIDP(KSP ksp, PetscInt it, PetscReal rnorm, void *ctx)
+{
   KSP_FETIDPMon *monctx = (KSP_FETIDPMon *)ctx;
 
   PetscFunctionBegin;
@@ -221,7 +228,8 @@ static PetscErrorCode KSPMonitor_FETIDP(KSP ksp, PetscInt it, PetscReal rnorm, v
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode KSPComputeEigenvalues_FETIDP(KSP ksp, PetscInt nmax, PetscReal *r, PetscReal *c, PetscInt *neig) {
+static PetscErrorCode KSPComputeEigenvalues_FETIDP(KSP ksp, PetscInt nmax, PetscReal *r, PetscReal *c, PetscInt *neig)
+{
   KSP_FETIDP *fetidp = (KSP_FETIDP *)ksp->data;
 
   PetscFunctionBegin;
@@ -229,7 +237,8 @@ static PetscErrorCode KSPComputeEigenvalues_FETIDP(KSP ksp, PetscInt nmax, Petsc
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode KSPComputeExtremeSingularValues_FETIDP(KSP ksp, PetscReal *emax, PetscReal *emin) {
+static PetscErrorCode KSPComputeExtremeSingularValues_FETIDP(KSP ksp, PetscReal *emax, PetscReal *emin)
+{
   KSP_FETIDP *fetidp = (KSP_FETIDP *)ksp->data;
 
   PetscFunctionBegin;
@@ -237,7 +246,8 @@ static PetscErrorCode KSPComputeExtremeSingularValues_FETIDP(KSP ksp, PetscReal 
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode KSPFETIDPCheckOperators(KSP ksp, PetscViewer viewer) {
+static PetscErrorCode KSPFETIDPCheckOperators(KSP ksp, PetscViewer viewer)
+{
   KSP_FETIDP     *fetidp = (KSP_FETIDP *)ksp->data;
   PC_BDDC        *pcbddc = (PC_BDDC *)fetidp->innerbddc->data;
   PC_IS          *pcis   = (PC_IS *)fetidp->innerbddc->data;
@@ -486,7 +496,8 @@ static PetscErrorCode KSPFETIDPCheckOperators(KSP ksp, PetscViewer viewer) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode KSPFETIDPSetUpOperators(KSP ksp) {
+static PetscErrorCode KSPFETIDPSetUpOperators(KSP ksp)
+{
   KSP_FETIDP      *fetidp = (KSP_FETIDP *)ksp->data;
   PC_BDDC         *pcbddc = (PC_BDDC *)fetidp->innerbddc->data;
   Mat              A, Ap;
@@ -1050,7 +1061,8 @@ static PetscErrorCode KSPFETIDPSetUpOperators(KSP ksp) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode KSPSetUp_FETIDP(KSP ksp) {
+static PetscErrorCode KSPSetUp_FETIDP(KSP ksp)
+{
   KSP_FETIDP *fetidp = (KSP_FETIDP *)ksp->data;
   PC_BDDC    *pcbddc = (PC_BDDC *)fetidp->innerbddc->data;
   PetscBool   flg;
@@ -1110,7 +1122,8 @@ static PetscErrorCode KSPSetUp_FETIDP(KSP ksp) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode KSPSolve_FETIDP(KSP ksp) {
+static PetscErrorCode KSPSolve_FETIDP(KSP ksp)
+{
   Mat                F, A;
   MatNullSpace       nsp;
   Vec                X, B, Xl, Bl;
@@ -1154,7 +1167,7 @@ static PetscErrorCode KSPSolve_FETIDP(KSP ksp) {
   PetscCall(KSPGetIterationNumber(fetidp->innerksp, &ksp->its));
   ksp->totalits += ksp->its;
   PetscCall(KSPGetResidualHistory(fetidp->innerksp, NULL, &hist_len));
-  ksp->res_hist_len                 = (size_t)hist_len;
+  ksp->res_hist_len = (size_t)hist_len;
   /* restore defaults for inner BDDC (Pre/PostSolve flags) */
   pcbddc->temp_solution_used        = PETSC_FALSE;
   pcbddc->rhs_change                = PETSC_FALSE;
@@ -1162,7 +1175,8 @@ static PetscErrorCode KSPSolve_FETIDP(KSP ksp) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode KSPReset_FETIDP(KSP ksp) {
+static PetscErrorCode KSPReset_FETIDP(KSP ksp)
+{
   KSP_FETIDP *fetidp = (KSP_FETIDP *)ksp->data;
   PC_BDDC    *pcbddc;
 
@@ -1175,7 +1189,6 @@ static PetscErrorCode KSPReset_FETIDP(KSP ksp) {
   PetscCall(PCSetType(fetidp->innerbddc, PCBDDC));
   pcbddc                   = (PC_BDDC *)fetidp->innerbddc->data;
   pcbddc->symmetric_primal = PETSC_FALSE;
-  PetscCall(PetscLogObjectParent((PetscObject)ksp, (PetscObject)fetidp->innerbddc));
   PetscCall(KSPDestroy(&fetidp->innerksp));
   fetidp->saddlepoint  = PETSC_FALSE;
   fetidp->matstate     = -1;
@@ -1184,7 +1197,8 @@ static PetscErrorCode KSPReset_FETIDP(KSP ksp) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode KSPDestroy_FETIDP(KSP ksp) {
+static PetscErrorCode KSPDestroy_FETIDP(KSP ksp)
+{
   KSP_FETIDP *fetidp = (KSP_FETIDP *)ksp->data;
 
   PetscFunctionBegin;
@@ -1200,7 +1214,8 @@ static PetscErrorCode KSPDestroy_FETIDP(KSP ksp) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode KSPView_FETIDP(KSP ksp, PetscViewer viewer) {
+static PetscErrorCode KSPView_FETIDP(KSP ksp, PetscViewer viewer)
+{
   KSP_FETIDP *fetidp = (KSP_FETIDP *)ksp->data;
   PetscBool   iascii;
 
@@ -1221,7 +1236,8 @@ static PetscErrorCode KSPView_FETIDP(KSP ksp, PetscViewer viewer) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode KSPSetFromOptions_FETIDP(KSP ksp, PetscOptionItems *PetscOptionsObject) {
+static PetscErrorCode KSPSetFromOptions_FETIDP(KSP ksp, PetscOptionItems *PetscOptionsObject)
+{
   KSP_FETIDP *fetidp = (KSP_FETIDP *)ksp->data;
 
   PetscFunctionBegin;
@@ -1242,11 +1258,7 @@ static PetscErrorCode KSPSetFromOptions_FETIDP(KSP ksp, PetscOptionItems *PetscO
 }
 
 /*MC
-     KSPFETIDP - The FETI-DP method
-
-   This class implements the FETI-DP method [1].
-   The matrix for the KSP must be of type MATIS.
-   The FETI-DP linear system (automatically generated constructing an internal PCBDDC object) is solved using an internal KSP object.
+     KSPFETIDP - The FETI-DP method [1]
 
    Options Database Keys:
 +   -ksp_fetidp_fullyredundant <false>   - use a fully redundant set of Lagrange multipliers
@@ -1265,40 +1277,45 @@ static PetscErrorCode KSPSetFromOptions_FETIDP(KSP ksp, PetscOptionItems *PetscO
    Level: Advanced
 
    Notes:
-    Options for the inner KSP and for the customization of the PCBDDC object can be specified at command line by using the prefixes -fetidp_ and -fetidp_bddc_. E.g.,
+   The matrix for the KSP must be of type `MATIS`.
+
+   The FETI-DP linear system (automatically generated constructing an internal `PCBDDC` object) is solved using an internal `KSP` object.
+
+    Options for the inner `KSP` and for the customization of the `PCBDDC` object can be specified at command line by using the prefixes -fetidp_ and -fetidp_bddc_. E.g.,
 .vb
       -fetidp_ksp_type gmres -fetidp_bddc_pc_bddc_symmetric false
 .ve
-   will use GMRES for the solution of the linear system on the Lagrange multipliers, generated using a non-symmetric PCBDDC.
+   will use `KSPGMRES` for the solution of the linear system on the Lagrange multipliers, generated using a non-symmetric `PCBDDC`.
 
-   For saddle point problems with continuous pressures, the preconditioned operator for the pressure solver can be specified with KSPFETIDPSetPressureOperator().
+   For saddle point problems with continuous pressures, the preconditioned operator for the pressure solver can be specified with `KSPFETIDPSetPressureOperator()`.
    Alternatively, the pressure operator is extracted from the precondioned matrix (if it is different from the linear solver matrix).
    If none of the above, an identity matrix will be created; the user then needs to scale it through a Richardson solver.
    Options for the pressure solver can be prefixed with -fetidp_fielsplit_p_, E.g.
 .vb
       -fetidp_fielsplit_p_ksp_type preonly -fetidp_fielsplit_p_pc_type lu -fetidp_fielsplit_p_pc_factor_mat_solver_type mumps
 .ve
-   In order to use the deluxe version of FETI-DP, you must customize the inner BDDC operator with -fetidp_bddc_pc_bddc_use_deluxe_scaling -fetidp_bddc_pc_bddc_deluxe_singlemat and use
+   In order to use the deluxe version of FETI-DP, you must customize the inner `PCBDDC` operator with -fetidp_bddc_pc_bddc_use_deluxe_scaling -fetidp_bddc_pc_bddc_deluxe_singlemat and use
    non-redundant multipliers, i.e. -ksp_fetidp_fullyredundant false. Options for the scaling solver are prefixed by -fetidp_bddelta_, E.g.
 .vb
       -fetidp_bddelta_pc_factor_mat_solver_type mumps -fetidp_bddelta_pc_type lu
 .ve
 
-   Some of the basic options such as the maximum number of iterations and tolerances are automatically passed from this KSP to the inner KSP that actually performs the iterations.
+   Some of the basic options such as the maximum number of iterations and tolerances are automatically passed from this `KSP` to the inner `KSP` that actually performs the iterations.
 
-   The converged reason and number of iterations computed are passed from the inner KSP to this KSP at the end of the solution.
+   The converged reason and number of iterations computed are passed from the inner `KSP` to this `KSP` at the end of the solution.
 
-   Developer Notes:
-    Even though this method does not directly use any norms, the user is allowed to set the KSPNormType to any value.
-    This is so users do not have to change KSPNormType options when they switch from other KSP methods to this one.
+   Developer Note:
+   Even though this method does not directly use any norms, the user is allowed to set the `KSPNormType` to any value.
+   This is so users do not have to change `KSPNormTyp`e options when they switch from other `KSP` methods to this one.
 
    References:
-+  * - C. Farhat, M. Lesoinne, P. LeTallec, K. Pierson, and D. Rixen, FETI-DP: a dual-primal unified FETI method. I. A faster alternative to the two-level FETI method, Internat. J. Numer. Methods Engrg., 50 (2001), pp. 1523--1544
--  * - X. Tu, J. Li, A FETI-DP type domain decomposition algorithm for three-dimensional incompressible Stokes equations, SIAM J. Numer. Anal., 53 (2015), pp. 720-742
++  [1] - C. Farhat, M. Lesoinne, P. LeTallec, K. Pierson, and D. Rixen, FETI-DP: a dual-primal unified FETI method. I. A faster alternative to the two-level FETI method, Internat. J. Numer. Methods Engrg., 50 (2001), pp. 1523--1544
+-  [2] - X. Tu, J. Li, A FETI-DP type domain decomposition algorithm for three-dimensional incompressible Stokes equations, SIAM J. Numer. Anal., 53 (2015), pp. 720-742
 
-.seealso: `MATIS`, `PCBDDC`, `KSPFETIDPSetInnerBDDC()`, `KSPFETIDPGetInnerBDDC()`, `KSPFETIDPGetInnerKSP()`
+.seealso: [](chapter_ksp), `MATIS`, `PCBDDC`, `KSPFETIDPSetInnerBDDC()`, `KSPFETIDPGetInnerBDDC()`, `KSPFETIDPGetInnerKSP()`
 M*/
-PETSC_EXTERN PetscErrorCode KSPCreate_FETIDP(KSP ksp) {
+PETSC_EXTERN PetscErrorCode KSPCreate_FETIDP(KSP ksp)
+{
   KSP_FETIDP    *fetidp;
   KSP_FETIDPMon *monctx;
   PC_BDDC       *pcbddc;
@@ -1313,7 +1330,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_FETIDP(KSP ksp) {
   PetscCall(KSPSetSupportedNorm(ksp, KSP_NORM_UNPRECONDITIONED, PC_RIGHT, 2));
   PetscCall(KSPSetSupportedNorm(ksp, KSP_NORM_NATURAL, PC_LEFT, 2));
 
-  PetscCall(PetscNewLog(ksp, &fetidp));
+  PetscCall(PetscNew(&fetidp));
   fetidp->matstate     = -1;
   fetidp->matnnzstate  = -1;
   fetidp->statechanged = PETSC_TRUE;
@@ -1334,7 +1351,6 @@ PETSC_EXTERN PetscErrorCode KSPCreate_FETIDP(KSP ksp) {
   PetscCall(KSPCreate(PetscObjectComm((PetscObject)ksp), &fetidp->innerksp));
   PetscCall(KSPGetPC(fetidp->innerksp, &pc));
   PetscCall(PCSetType(pc, PCNONE));
-  PetscCall(PetscLogObjectParent((PetscObject)ksp, (PetscObject)fetidp->innerksp));
   /* monitor */
   PetscCall(PetscNew(&monctx));
   monctx->parentksp = ksp;
@@ -1347,7 +1363,6 @@ PETSC_EXTERN PetscErrorCode KSPCreate_FETIDP(KSP ksp) {
      for symmetric problems, the user can always customize it through the command line */
   pcbddc                   = (PC_BDDC *)fetidp->innerbddc->data;
   pcbddc->symmetric_primal = PETSC_FALSE;
-  PetscCall(PetscLogObjectParent((PetscObject)ksp, (PetscObject)fetidp->innerbddc));
   /* composed functions */
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPFETIDPSetInnerBDDC_C", KSPFETIDPSetInnerBDDC_FETIDP));
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPFETIDPGetInnerBDDC_C", KSPFETIDPGetInnerBDDC_FETIDP));

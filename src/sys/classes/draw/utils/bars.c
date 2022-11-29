@@ -33,7 +33,8 @@ PetscClassId PETSC_DRAWBAR_CLASSID = 0;
           `PetscDrawBar`, `PetscDrawBarDraw()`, `PetscDrawBarSave()`, `PetscDrawBarSetColor()`, `PetscDrawBarSort()`, `PetscDrawBarSetLimits()`, `PetscDrawBarGetAxis()`, `PetscDrawAxis`,
           `PetscDrawBarGetDraw()`, `PetscDrawBarSetFromOptions()`
 @*/
-PetscErrorCode PetscDrawBarCreate(PetscDraw draw, PetscDrawBar *bar) {
+PetscErrorCode PetscDrawBarCreate(PetscDraw draw, PetscDrawBar *bar)
+{
   PetscDrawBar h;
 
   PetscFunctionBegin;
@@ -41,7 +42,6 @@ PetscErrorCode PetscDrawBarCreate(PetscDraw draw, PetscDrawBar *bar) {
   PetscValidPointer(bar, 2);
 
   PetscCall(PetscHeaderCreate(h, PETSC_DRAWBAR_CLASSID, "DrawBar", "Bar Graph", "Draw", PetscObjectComm((PetscObject)draw), PetscDrawBarDestroy, NULL));
-  PetscCall(PetscLogObjectParent((PetscObject)draw, (PetscObject)h));
 
   PetscCall(PetscObjectReference((PetscObject)draw));
   h->win = draw;
@@ -80,7 +80,8 @@ PetscErrorCode PetscDrawBarCreate(PetscDraw draw, PetscDrawBar *bar) {
 
 .seealso: `PetscDrawBar`, `PetscDrawBarCreate()`, `PetscDrawBar`, `PetscDrawBarDraw()`
 @*/
-PetscErrorCode PetscDrawBarSetData(PetscDrawBar bar, PetscInt bins, const PetscReal data[], const char *const *labels) {
+PetscErrorCode PetscDrawBarSetData(PetscDrawBar bar, PetscInt bins, const PetscReal data[], const char *const *labels)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(bar, PETSC_DRAWBAR_CLASSID, 1);
 
@@ -107,7 +108,8 @@ PetscErrorCode PetscDrawBarSetData(PetscDrawBar bar, PetscInt bins, const PetscR
 
 .seealso: `PetscDrawBar`, `PetscDrawBarCreate()`
 @*/
-PetscErrorCode PetscDrawBarDestroy(PetscDrawBar *bar) {
+PetscErrorCode PetscDrawBarDestroy(PetscDrawBar *bar)
+{
   PetscFunctionBegin;
   if (!*bar) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(*bar, PETSC_DRAWBAR_CLASSID, 1);
@@ -133,7 +135,8 @@ PetscErrorCode PetscDrawBarDestroy(PetscDrawBar *bar) {
 
 .seealso: `PetscDrawBar`, `PetscDrawBarCreate()`, `PetscDrawBarSetData()`
 @*/
-PetscErrorCode PetscDrawBarDraw(PetscDrawBar bar) {
+PetscErrorCode PetscDrawBarDraw(PetscDrawBar bar)
+{
   PetscDraw   draw;
   PetscBool   isnull;
   PetscReal   xmin, xmax, ymin, ymax, *values, binLeft, binRight;
@@ -232,7 +235,8 @@ PetscErrorCode PetscDrawBarDraw(PetscDrawBar bar) {
 
 .seealso: `PetscDrawSave()`, `PetscDrawBar`, `PetscDrawBarCreate()`, `PetscDrawBarGetDraw()`, `PetscDrawSetSave()`, `PetscDrawSave()`, `PetscDrawBarSetData()`
 @*/
-PetscErrorCode PetscDrawBarSave(PetscDrawBar bar) {
+PetscErrorCode PetscDrawBarSave(PetscDrawBar bar)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(bar, PETSC_DRAWBAR_CLASSID, 1);
   PetscCall(PetscDrawSave(bar->win));
@@ -253,7 +257,8 @@ PetscErrorCode PetscDrawBarSave(PetscDrawBar bar) {
 
 .seealso: `PetscDrawBarCreate()`, `PetscDrawBar`, `PetscDrawBarSetData()`, `PetscDrawBarDraw()`, `PetscDrawBarGetAxis()`
 @*/
-PetscErrorCode PetscDrawBarSetColor(PetscDrawBar bar, int color) {
+PetscErrorCode PetscDrawBarSetColor(PetscDrawBar bar, int color)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(bar, PETSC_DRAWBAR_CLASSID, 1);
   bar->color = color;
@@ -274,7 +279,8 @@ PetscErrorCode PetscDrawBarSetColor(PetscDrawBar bar, int color) {
 
 .seealso: `PetscDrawBar`, `PetscDrawBarCreate()`, `PetscDrawBar`, `PetscDrawBarSetData()`, `PetscDrawBarSetColor()`, `PetscDrawBarDraw()`, `PetscDrawBarGetAxis()`
 @*/
-PetscErrorCode PetscDrawBarSort(PetscDrawBar bar, PetscBool sort, PetscReal tolerance) {
+PetscErrorCode PetscDrawBarSort(PetscDrawBar bar, PetscBool sort, PetscReal tolerance)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(bar, PETSC_DRAWBAR_CLASSID, 1);
   bar->sort          = sort;
@@ -297,7 +303,8 @@ PetscErrorCode PetscDrawBarSort(PetscDrawBar bar, PetscBool sort, PetscReal tole
 
 .seealso: `PetscDrawBar`, `PetscDrawBarCreate()`, `PetscDrawBar`, `PetscDrawBarGetAxis()`, `PetscDrawBarSetData()`, `PetscDrawBarDraw()`
 @*/
-PetscErrorCode PetscDrawBarSetLimits(PetscDrawBar bar, PetscReal y_min, PetscReal y_max) {
+PetscErrorCode PetscDrawBarSetLimits(PetscDrawBar bar, PetscReal y_min, PetscReal y_max)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(bar, PETSC_DRAWBAR_CLASSID, 1);
   bar->ymin = y_min;
@@ -323,7 +330,8 @@ PetscErrorCode PetscDrawBarSetLimits(PetscDrawBar bar, PetscReal y_min, PetscRea
 
 .seealso: `PetscDrawBar`, `PetscDrawBarCreate()`, `PetscDrawBar`, `PetscDrawAxis`, `PetscDrawAxisCreate()`
 @*/
-PetscErrorCode PetscDrawBarGetAxis(PetscDrawBar bar, PetscDrawAxis *axis) {
+PetscErrorCode PetscDrawBarGetAxis(PetscDrawBar bar, PetscDrawAxis *axis)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(bar, PETSC_DRAWBAR_CLASSID, 1);
   PetscValidPointer(axis, 2);
@@ -346,7 +354,8 @@ PetscErrorCode PetscDrawBarGetAxis(PetscDrawBar bar, PetscDrawAxis *axis) {
 
 .seealso: `PetscDrawBar`, `PetscDraw`, `PetscDrawBarCreate()`, `PetscDrawBar`, `PetscDrawBarDraw()`, `PetscDraw`
 @*/
-PetscErrorCode PetscDrawBarGetDraw(PetscDrawBar bar, PetscDraw *draw) {
+PetscErrorCode PetscDrawBarGetDraw(PetscDrawBar bar, PetscDraw *draw)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(bar, PETSC_DRAWBAR_CLASSID, 1);
   PetscValidPointer(draw, 2);
@@ -369,7 +378,8 @@ PetscErrorCode PetscDrawBarGetDraw(PetscDrawBar bar, PetscDraw *draw) {
 
 .seealso: `PetscDrawBar`, `PetscDrawBarDestroy()`, `PetscDrawBarCreate()`, `PetscDrawBarSort()`
 @*/
-PetscErrorCode PetscDrawBarSetFromOptions(PetscDrawBar bar) {
+PetscErrorCode PetscDrawBarSetFromOptions(PetscDrawBar bar)
+{
   PetscBool set;
 
   PetscFunctionBegin;

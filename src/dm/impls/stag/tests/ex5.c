@@ -14,7 +14,8 @@ static char help[] = "Test DMStag ghosted boundaries in 1d\n\n";
 
 PetscErrorCode ApplyOperator(Mat, Vec, Vec);
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   DM            dmSol;
   Vec           sol, solRef, solRefLocal, rhs, rhsLocal;
   Mat           A;
@@ -104,7 +105,8 @@ int main(int argc, char **argv) {
   return 0;
 }
 
-PetscErrorCode ApplyOperator(Mat A, Vec in, Vec out) {
+PetscErrorCode ApplyOperator(Mat A, Vec in, Vec out)
+{
   DM             dm;
   Vec            inLocal, outLocal;
   PetscScalar  **arrIn;

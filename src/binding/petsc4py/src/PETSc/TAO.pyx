@@ -567,6 +567,26 @@ cdef class TAO(Object):
         CHKERR( TaoCancelMonitors(self.tao) )
         self.set_attr('__monitor__',  None)
 
+    # Tao overwrites this statistics. Copy user defined only if present
+    def monitor(self, its=None, f=None, res=None, cnorm=None, step=None):
+        cdef PetscInt cits = 0
+        cdef PetscReal cf = 0.0
+        cdef PetscReal cres = 0.0
+        cdef PetscReal ccnorm = 0.0
+        cdef PetscReal cstep = 0.0
+        CHKERR( TaoGetSolutionStatus(self.tao, &cits, &cf, &cres, &ccnorm, &cstep, NULL) )
+        if its is not None:
+            cits = asInt(its)
+        if f is not None:
+            cf = asReal(f)
+        if res is not None:
+            cres = asReal(res)
+        if cnorm is not None:
+            ccnorm = asReal(cnorm)
+        if step is not None:
+            cstep = asReal(step)
+        CHKERR( TaoMonitor(self.tao, cits, cf, cres, ccnorm, cstep) )
+
     #
 
     def solve(self, Vec x=None):

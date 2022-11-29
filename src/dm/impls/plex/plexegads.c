@@ -2,7 +2,7 @@
 #include <petsc/private/hashmapi.h>
 
 #ifdef PETSC_HAVE_EGADS
-#include <egads.h>
+  #include <egads.h>
 #endif
 
 /* We need to understand how to natively parse STEP files. There seems to be only one open source implementation of
@@ -22,10 +22,11 @@
 PETSC_INTERN PetscErrorCode DMPlexSnapToGeomModel_EGADS_Internal(DM, PetscInt, ego, PetscInt, PetscInt, PetscInt, const PetscScalar[], PetscScalar[]);
 PETSC_INTERN PetscErrorCode DMPlexSnapToGeomModel_EGADSLite_Internal(DM, PetscInt, ego, PetscInt, PetscInt, PetscInt, const PetscScalar[], PetscScalar[]);
 
-PetscErrorCode DMPlexSnapToGeomModel_EGADS_Internal(DM dm, PetscInt p, ego model, PetscInt bodyID, PetscInt faceID, PetscInt edgeID, const PetscScalar mcoords[], PetscScalar gcoords[]) {
-  DM           cdm;
-  ego         *bodies;
-  ego          geom, body, obj;
+PetscErrorCode DMPlexSnapToGeomModel_EGADS_Internal(DM dm, PetscInt p, ego model, PetscInt bodyID, PetscInt faceID, PetscInt edgeID, const PetscScalar mcoords[], PetscScalar gcoords[])
+{
+  DM   cdm;
+  ego *bodies;
+  ego  geom, body, obj;
   /* result has to hold derivatives, along with the value */
   double       params[3], result[18], paramsV[16 * 3], resultV[16 * 3], range[4];
   int          Nb, oclass, mtype, *senses, peri;
@@ -67,7 +68,7 @@ PetscErrorCode DMPlexSnapToGeomModel_EGADS_Internal(DM dm, PetscInt p, ego model
   PetscCall(EG_getRange(obj, range, &peri));
   for (v = 0; v < Nv; ++v) {
     PetscCall(EG_invEvaluate(obj, &coords[v * dE], &paramsV[v * 3], &resultV[v * 3]));
-#if 1
+  #if 1
     if (peri > 0) {
       if (paramsV[v * 3 + 0] + 1.e-4 < range[0]) {
         paramsV[v * 3 + 0] += 2. * PETSC_PI;
@@ -82,7 +83,7 @@ PetscErrorCode DMPlexSnapToGeomModel_EGADS_Internal(DM dm, PetscInt p, ego model
         paramsV[v * 3 + 1] -= 2. * PETSC_PI;
       }
     }
-#endif
+  #endif
   }
   PetscCall(DMPlexVecRestoreClosure(cdm, NULL, coordinatesLocal, p, &Nv, &coords));
   /* Calculate parameters (t or u,v) for new vertex at edge midpoint */
@@ -106,7 +107,7 @@ PetscErrorCode DMPlexSnapToGeomModel_EGADS_Internal(DM dm, PetscInt p, ego model
   Not collective
 
   Input Parameters:
-+ dm      - The DMPlex object
++ dm      - The `DMPLEX` object
 . p       - The mesh point
 . dE      - The coordinate dimension
 - mcoords - A coordinate point lying on the mesh point
@@ -114,13 +115,15 @@ PetscErrorCode DMPlexSnapToGeomModel_EGADS_Internal(DM dm, PetscInt p, ego model
   Output Parameter:
 . gcoords - The closest coordinate point on the geometry model associated with 'p' to the given point
 
-  Note: Returns the original coordinates if no geometry model is found. Right now the only supported geometry model is EGADS. The coordinate dimension may be different from the coordinate dimension of the dm, for example if the transformation is extrusion.
-
   Level: intermediate
 
-.seealso: `DMRefine()`, `DMPlexCreate()`, `DMPlexSetRefinementUniform()`
+  Note:
+  Returns the original coordinates if no geometry model is found. Right now the only supported geometry model is EGADS. The coordinate dimension may be different from the coordinate dimension of the dm, for example if the transformation is extrusion.
+
+.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMRefine()`, `DMPlexCreate()`, `DMPlexSetRefinementUniform()`
 @*/
-PetscErrorCode DMPlexSnapToGeomModel(DM dm, PetscInt p, PetscInt dE, const PetscScalar mcoords[], PetscScalar gcoords[]) {
+PetscErrorCode DMPlexSnapToGeomModel(DM dm, PetscInt p, PetscInt dE, const PetscScalar mcoords[], PetscScalar gcoords[])
+{
   PetscInt d;
 
   PetscFunctionBeginHot;
@@ -168,7 +171,8 @@ PetscErrorCode DMPlexSnapToGeomModel(DM dm, PetscInt p, PetscInt dE, const Petsc
 }
 
 #if defined(PETSC_HAVE_EGADS)
-static PetscErrorCode DMPlexEGADSPrintModel_Internal(ego model) {
+static PetscErrorCode DMPlexEGADSPrintModel_Internal(ego model)
+{
   ego geom, *bodies, *objs, *nobjs, *mobjs, *lobjs;
   int oclass, mtype, *senses;
   int Nb, b;
@@ -259,18 +263,20 @@ static PetscErrorCode DMPlexEGADSPrintModel_Internal(ego model) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMPlexEGADSDestroy_Private(void *context) {
+static PetscErrorCode DMPlexEGADSDestroy_Private(void *context)
+{
   if (context) EG_close((ego)context);
   return 0;
 }
 
-static PetscErrorCode DMPlexCreateEGADS_Internal(MPI_Comm comm, ego context, ego model, DM *newdm) {
-  DMLabel     bodyLabel, faceLabel, edgeLabel, vertexLabel;
-  PetscInt    cStart, cEnd, c;
+static PetscErrorCode DMPlexCreateEGADS_Internal(MPI_Comm comm, ego context, ego model, DM *newdm)
+{
+  DMLabel  bodyLabel, faceLabel, edgeLabel, vertexLabel;
+  PetscInt cStart, cEnd, c;
   /* EGADSLite variables */
-  ego         geom, *bodies, *objs, *nobjs, *mobjs, *lobjs;
-  int         oclass, mtype, nbodies, *senses;
-  int         b;
+  ego geom, *bodies, *objs, *nobjs, *mobjs, *lobjs;
+  int oclass, mtype, nbodies, *senses;
+  int b;
   /* PETSc variables */
   DM          dm;
   PetscHMapI  edgeMap = NULL;
@@ -334,7 +340,7 @@ static PetscErrorCode DMPlexCreateEGADS_Internal(MPI_Comm comm, ego context, ego
       for (v = 0; v < Nv; ++v) {
         ego vertex = nobjs[v];
 
-        id          = EG_indexBodyTopo(body, vertex);
+        id = EG_indexBodyTopo(body, vertex);
         /* TODO: Instead of assuming contiguous ids, we could use a hash table */
         numVertices = PetscMax(id, numVertices);
       }
@@ -564,7 +570,8 @@ static PetscErrorCode DMPlexCreateEGADS_Internal(MPI_Comm comm, ego context, ego
           cells[cOff * numCorners + 2] = cone[1];
           ++cOff;
           break;
-        default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Loop %d has %d edges, which we do not support", lid, Ner);
+        default:
+          SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Loop %d has %d edges, which we do not support", lid, Ner);
         }
         if (debug) {
           for (t = 0; t < Nt; ++t) {
@@ -661,10 +668,17 @@ static PetscErrorCode DMPlexCreateEGADS_Internal(MPI_Comm comm, ego context, ego
         PetscCall(DMPlexRestoreJoin(dm, 2, support, &numEdges, &edges));
       }
       switch (Ner) {
-      case 2: Nt = 2; break;
-      case 3: Nt = 4; break;
-      case 4: Nt = 8; break;
-      default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Loop with %d edges is unsupported", Ner);
+      case 2:
+        Nt = 2;
+        break;
+      case 3:
+        Nt = 4;
+        break;
+      case 4:
+        Nt = 8;
+        break;
+      default:
+        SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Loop with %d edges is unsupported", Ner);
       }
       for (t = 0; t < Nt; ++t) {
         PetscCall(DMLabelSetValue(bodyLabel, cOff + t, b));
@@ -693,13 +707,14 @@ static PetscErrorCode DMPlexCreateEGADS_Internal(MPI_Comm comm, ego context, ego
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMPlexCreateEGADS(MPI_Comm comm, ego context, ego model, DM *newdm) {
-  DMLabel         bodyLabel, faceLabel, edgeLabel, vertexLabel;
+static PetscErrorCode DMPlexCreateEGADS(MPI_Comm comm, ego context, ego model, DM *newdm)
+{
+  DMLabel bodyLabel, faceLabel, edgeLabel, vertexLabel;
   // EGADS/EGADSLite variables
-  ego             geom, *bodies, *mobjs, *fobjs, *lobjs, *eobjs, *nobjs;
-  ego             topRef, prev, next;
-  int             oclass, mtype, nbodies, *senses, *lSenses, *eSenses;
-  int             b;
+  ego geom, *bodies, *mobjs, *fobjs, *lobjs, *eobjs, *nobjs;
+  ego topRef, prev, next;
+  int oclass, mtype, nbodies, *senses, *lSenses, *eSenses;
+  int b;
   // PETSc variables
   DM              dm;
   PetscHMapI      edgeMap = NULL, bodyIndexMap = NULL, bodyVertexMap = NULL, bodyEdgeMap = NULL, bodyFaceMap = NULL, bodyEdgeGlobalMap = NULL;
@@ -719,7 +734,7 @@ static PetscErrorCode DMPlexCreateEGADS(MPI_Comm comm, ego context, ego model, D
     //  Cycle through bodies, cycle through loops, recorde NODE IDs in a correctly formatted array
     //  We need to uniformly refine the initial geometry to guarantee a valid mesh
 
-    // Caluculate cell and vertex sizes
+    // Calculate cell and vertex sizes
     PetscCall(EG_getTopology(model, &geom, &oclass, &mtype, NULL, &nbodies, &bodies, &senses));
 
     PetscCall(PetscHMapICreate(&edgeMap));
@@ -909,7 +924,7 @@ static PetscErrorCode DMPlexCreateEGADS(MPI_Comm comm, ego context, ego model, D
         // TODO :: Only handles single loop faces (No holes). The choices for handling multiloop faces are:
         //            1) Use the DMPlexCreateEGADSFromFile() with the -dm_plex_egads_with_tess = 1 option.
         //               This will use a default EGADS tessellation as an initial surface mesh.
-        //            2) Create the initial surface mesh via a 2D mesher :: Currently not availble (?future?)
+        //            2) Create the initial surface mesh via a 2D mesher :: Currently not available (?future?)
         //               May I suggest the XXXX as a starting point?
 
         PetscCall(EG_getTopology(face, &geom, &oclass, &mtype, NULL, &Nl, &lobjs, &lSenses));
@@ -1102,13 +1117,14 @@ static PetscErrorCode DMPlexCreateEGADS(MPI_Comm comm, ego context, ego model, D
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMPlexCreateEGADS_Tess_Internal(MPI_Comm comm, ego context, ego model, DM *newdm) {
-  DMLabel         bodyLabel, faceLabel, edgeLabel, vertexLabel;
+static PetscErrorCode DMPlexCreateEGADS_Tess_Internal(MPI_Comm comm, ego context, ego model, DM *newdm)
+{
+  DMLabel bodyLabel, faceLabel, edgeLabel, vertexLabel;
   /* EGADSLite variables */
-  ego             geom, *bodies, *fobjs;
-  int             b, oclass, mtype, nbodies, *senses;
-  int             totalNumTris = 0, totalNumPoints = 0;
-  double          boundBox[6] = {0., 0., 0., 0., 0., 0.}, tessSize;
+  ego    geom, *bodies, *fobjs;
+  int    b, oclass, mtype, nbodies, *senses;
+  int    totalNumTris = 0, totalNumPoints = 0;
+  double boundBox[6] = {0., 0., 0., 0., 0., 0.}, tessSize;
   /* PETSc variables */
   DM              dm;
   PetscHMapI      pointIndexStartMap = NULL, triIndexStartMap = NULL, pTypeLabelMap = NULL, pIndexLabelMap = NULL;
@@ -1126,7 +1142,7 @@ static PetscErrorCode DMPlexCreateEGADS_Tess_Internal(MPI_Comm comm, ego context
     // Generate Petsc Plex from EGADSlite created Tessellation of geometry
     // ---------------------------------------------------------------------------------------------------
 
-    // Caluculate cell and vertex sizes
+    // Calculate cell and vertex sizes
     PetscCall(EG_getTopology(model, &geom, &oclass, &mtype, NULL, &nbodies, &bodies, &senses));
 
     PetscCall(PetscHMapICreate(&pointIndexStartMap));
@@ -1410,27 +1426,28 @@ static PetscErrorCode DMPlexCreateEGADS_Tess_Internal(MPI_Comm comm, ego context
 #endif
 
 /*@
-  DMPlexInflateToGeomModel - Snaps the vertex coordinates of a DMPlex object representing the mesh to its geometry if some vertices depart from the model. This usually happens with non-conforming refinement.
+  DMPlexInflateToGeomModel - Snaps the vertex coordinates of a `DMPLEX` object representing the mesh to its geometry if some vertices depart from the model. This usually happens with non-conforming refinement.
 
   Collective on dm
 
   Input Parameter:
-. dm - The uninflated DM object representing the mesh
+. dm - The uninflated `DM` object representing the mesh
 
   Output Parameter:
-. dm - The inflated DM object representing the mesh
+. dm - The inflated `DM` object representing the mesh
 
   Level: intermediate
 
-.seealso: `DMPLEX`, `DMCreate()`, `DMPlexCreateEGADS()`
+.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMCreate()`, `DMPlexCreateEGADS()`
 @*/
-PetscErrorCode DMPlexInflateToGeomModel(DM dm) {
+PetscErrorCode DMPlexInflateToGeomModel(DM dm)
+{
 #if defined(PETSC_HAVE_EGADS)
   /* EGADS Variables */
-  ego            model, geom, body, face, edge;
-  ego           *bodies;
-  int            Nb, oclass, mtype, *senses;
-  double         result[3];
+  ego    model, geom, body, face, edge;
+  ego   *bodies;
+  int    Nb, oclass, mtype, *senses;
+  double result[3];
   /* PETSc Variables */
   DM             cdm;
   PetscContainer modelObj;
@@ -1492,7 +1509,7 @@ PetscErrorCode DMPlexInflateToGeomModel(DM dm) {
 }
 
 /*@C
-  DMPlexCreateEGADSFromFile - Create a DMPlex mesh from an EGADS, IGES, or STEP file.
+  DMPlexCreateEGADSFromFile - Create a `DMPLEX` mesh from an EGADS, IGES, or STEP file.
 
   Collective
 
@@ -1501,13 +1518,14 @@ PetscErrorCode DMPlexInflateToGeomModel(DM dm) {
 - filename - The name of the EGADS, IGES, or STEP file
 
   Output Parameter:
-. dm       - The DM object representing the mesh
+. dm       - The `DM` object representing the mesh
 
   Level: beginner
 
-.seealso: `DMPLEX`, `DMCreate()`, `DMPlexCreateEGADS()`, `DMPlexCreateEGADSLiteFromFile()`
+.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMCreate()`, `DMPlexCreateEGADS()`, `DMPlexCreateEGADSLiteFromFile()`
 @*/
-PetscErrorCode DMPlexCreateEGADSFromFile(MPI_Comm comm, const char filename[], DM *dm) {
+PetscErrorCode DMPlexCreateEGADSFromFile(MPI_Comm comm, const char filename[], DM *dm)
+{
   PetscMPIInt rank;
 #if defined(PETSC_HAVE_EGADS)
   ego context = NULL, model = NULL;

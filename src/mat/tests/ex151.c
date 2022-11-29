@@ -12,7 +12,8 @@ static char help[] = "Tests MatPermute() in parallel.\n\n";
 
 #include <petscmat.h>
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   const struct {
     PetscInt    i, j;
     PetscScalar v;

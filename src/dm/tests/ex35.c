@@ -8,7 +8,8 @@ static char help[] = "MatLoad test for loading matrices that are created by DMCr
 #include <petscdm.h>
 #include <petscdmda.h>
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscInt    X = 10, Y = 8, Z = 8;
   DM          da;
   PetscViewer viewer;

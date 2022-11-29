@@ -2,7 +2,8 @@
 #include <../src/mat/impls/aij/seq/aij.h>
 #include <../src/mat/impls/sbaij/seq/cholmod/cholmodimpl.h>
 
-static PetscErrorCode MatWrapCholmod_seqaij(Mat A, PetscBool values, cholmod_sparse *C, PetscBool *aijalloc, PetscBool *valloc) {
+static PetscErrorCode MatWrapCholmod_seqaij(Mat A, PetscBool values, cholmod_sparse *C, PetscBool *aijalloc, PetscBool *valloc)
+{
   Mat_SeqAIJ        *aij = (Mat_SeqAIJ *)A->data;
   const PetscScalar *aa;
   PetscScalar       *ca;
@@ -49,14 +50,16 @@ static PetscErrorCode MatWrapCholmod_seqaij(Mat A, PetscBool values, cholmod_spa
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatFactorGetSolverType_seqaij_cholmod(Mat A, MatSolverType *type) {
+static PetscErrorCode MatFactorGetSolverType_seqaij_cholmod(Mat A, MatSolverType *type)
+{
   PetscFunctionBegin;
   *type = MATSOLVERCHOLMOD;
   PetscFunctionReturn(0);
 }
 
 /* Almost a copy of MatGetFactor_seqsbaij_cholmod, yuck */
-PETSC_INTERN PetscErrorCode MatGetFactor_seqaij_cholmod(Mat A, MatFactorType ftype, Mat *F) {
+PETSC_INTERN PetscErrorCode MatGetFactor_seqaij_cholmod(Mat A, MatFactorType ftype, Mat *F)
+{
   Mat          B;
   Mat_CHOLMOD *chol;
   PetscInt     m = A->rmap->n, n = A->cmap->n;
@@ -70,7 +73,7 @@ PETSC_INTERN PetscErrorCode MatGetFactor_seqaij_cholmod(Mat A, MatFactorType fty
   PetscCall(MatSetSizes(B, PETSC_DECIDE, PETSC_DECIDE, m, n));
   PetscCall(PetscStrallocpy("cholmod", &((PetscObject)B)->type_name));
   PetscCall(MatSetUp(B));
-  PetscCall(PetscNewLog(B, &chol));
+  PetscCall(PetscNew(&chol));
 
   chol->Wrap = MatWrapCholmod_seqaij;
   B->data    = chol;

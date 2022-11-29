@@ -1,4 +1,4 @@
--include ../../../../../petsckdir.mk
+-include ../../../../../petscdir.mk
 
 LOCDIR           = src/vec/is/is/tutorials/
 

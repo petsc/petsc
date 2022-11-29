@@ -4,7 +4,8 @@
 #include <petsclayouthdf5.h>
 
 #if defined(PETSC_HAVE_HDF5)
-static PetscErrorCode SplitPath_Private(char path[], char name[]) {
+static PetscErrorCode SplitPath_Private(char path[], char name[])
+{
   char *tmp;
 
   PetscFunctionBegin;
@@ -26,7 +27,8 @@ static PetscErrorCode SplitPath_Private(char path[], char name[]) {
   - invert (involute) cells of some types according to XDMF/VTK numbering of vertices in a cells
   - cell type is identified using the number of vertices
 */
-static PetscErrorCode DMPlexInvertCells_XDMF_Private(DM dm) {
+static PetscErrorCode DMPlexInvertCells_XDMF_Private(DM dm)
+{
   PetscInt     dim, *cones, cHeight, cStart, cEnd, p;
   PetscSection cs;
 
@@ -43,15 +45,22 @@ static PetscErrorCode DMPlexInvertCells_XDMF_Private(DM dm) {
     PetscCall(PetscSectionGetDof(cs, p, &numCorners));
     PetscCall(PetscSectionGetOffset(cs, p, &o));
     switch (numCorners) {
-    case 4: PetscCall(DMPlexInvertCell(DM_POLYTOPE_TETRAHEDRON, &cones[o])); break;
-    case 6: PetscCall(DMPlexInvertCell(DM_POLYTOPE_TRI_PRISM, &cones[o])); break;
-    case 8: PetscCall(DMPlexInvertCell(DM_POLYTOPE_HEXAHEDRON, &cones[o])); break;
+    case 4:
+      PetscCall(DMPlexInvertCell(DM_POLYTOPE_TETRAHEDRON, &cones[o]));
+      break;
+    case 6:
+      PetscCall(DMPlexInvertCell(DM_POLYTOPE_TRI_PRISM, &cones[o]));
+      break;
+    case 8:
+      PetscCall(DMPlexInvertCell(DM_POLYTOPE_HEXAHEDRON, &cones[o]));
+      break;
     }
   }
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMPlexLoad_HDF5_Xdmf_Internal(DM dm, PetscViewer viewer) {
+PetscErrorCode DMPlexLoad_HDF5_Xdmf_Internal(DM dm, PetscViewer viewer)
+{
   Vec         coordinates;
   IS          cells;
   PetscInt    spatialDim, topoDim = -1, numCells, numVertices, NVertices, numCorners;

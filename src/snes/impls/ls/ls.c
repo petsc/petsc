@@ -7,7 +7,8 @@
     0 = (J^T F)^T W = F^T J W iff W not in the null space of J. Thanks for Jorge More
     for this trick. One assumes that the probability that W is in the null space of J is very, very small.
 */
-static PetscErrorCode SNESNEWTONLSCheckLocalMin_Private(SNES snes, Mat A, Vec F, PetscReal fnorm, PetscBool *ismin) {
+static PetscErrorCode SNESNEWTONLSCheckLocalMin_Private(SNES snes, Mat A, Vec F, PetscReal fnorm, PetscBool *ismin)
+{
   PetscReal a1;
   PetscBool hastranspose;
   Vec       W;
@@ -44,7 +45,8 @@ static PetscErrorCode SNESNEWTONLSCheckLocalMin_Private(SNES snes, Mat A, Vec F,
 /*
      Checks if J^T(F - J*X) = 0
 */
-static PetscErrorCode SNESNEWTONLSCheckResidual_Private(SNES snes, Mat A, Vec F, Vec X) {
+static PetscErrorCode SNESNEWTONLSCheckResidual_Private(SNES snes, Mat A, Vec F, Vec X)
+{
   PetscReal a1, a2;
   PetscBool hastranspose;
 
@@ -69,8 +71,7 @@ static PetscErrorCode SNESNEWTONLSCheckResidual_Private(SNES snes, Mat A, Vec F,
   PetscFunctionReturn(0);
 }
 
-/*  --------------------------------------------------------------------
-
+/*
      This file implements a truncated Newton method with a line search,
      for solving a system of nonlinear equations, using the KSP, Vec,
      and Mat interfaces for linear solvers, vectors, and matrices,
@@ -105,7 +106,7 @@ static PetscErrorCode SNESNEWTONLSCheckResidual_Private(SNES snes, Mat A, Vec F,
      nonlinear solvers, timesteppers) are all organized similarly, so the
      above description applies to these categories also.
 
-    -------------------------------------------------------------------- */
+*/
 /*
    SNESSolve_NEWTONLS - Solves a nonlinear system with a truncated Newton
    method with a line search.
@@ -118,14 +119,9 @@ static PetscErrorCode SNESNEWTONLSCheckResidual_Private(SNES snes, Mat A, Vec F,
 
    Application Interface Routine: SNESSolve()
 
-   Notes:
-   This implements essentially a truncated Newton method with a
-   line search.  By default a cubic backtracking line search
-   is employed, as described in the text "Numerical Methods for
-   Unconstrained Optimization and Nonlinear Equations" by Dennis
-   and Schnabel.
 */
-PetscErrorCode SNESSolve_NEWTONLS(SNES snes) {
+PetscErrorCode SNESSolve_NEWTONLS(SNES snes)
+{
   PetscInt             maxits, i, lits;
   SNESLineSearchReason lssucceed;
   PetscReal            fnorm, gnorm, xnorm, ynorm;
@@ -267,7 +263,7 @@ PetscErrorCode SNESSolve_NEWTONLS(SNES snes) {
   }
   PetscFunctionReturn(0);
 }
-/* -------------------------------------------------------------------------- */
+
 /*
    SNESSetUp_NEWTONLS - Sets up the internal data structures for the later use
    of the SNESNEWTONLS nonlinear solver.
@@ -278,20 +274,17 @@ PetscErrorCode SNESSolve_NEWTONLS(SNES snes) {
 
    Application Interface Routine: SNESSetUp()
 
-   Notes:
-   For basic use of the SNES solvers, the user need not explicitly call
-   SNESSetUp(), since these actions will automatically occur during
-   the call to SNESSolve().
  */
-PetscErrorCode SNESSetUp_NEWTONLS(SNES snes) {
+PetscErrorCode SNESSetUp_NEWTONLS(SNES snes)
+{
   PetscFunctionBegin;
   PetscCall(SNESSetUpMatrices(snes));
   if (snes->npcside == PC_LEFT && snes->functype == SNES_FUNCTION_DEFAULT) snes->functype = SNES_FUNCTION_PRECONDITIONED;
   PetscFunctionReturn(0);
 }
-/* -------------------------------------------------------------------------- */
 
-PetscErrorCode SNESReset_NEWTONLS(SNES snes) {
+PetscErrorCode SNESReset_NEWTONLS(SNES snes)
+{
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
@@ -305,13 +298,13 @@ PetscErrorCode SNESReset_NEWTONLS(SNES snes) {
 
    Application Interface Routine: SNESDestroy()
  */
-PetscErrorCode SNESDestroy_NEWTONLS(SNES snes) {
+PetscErrorCode SNESDestroy_NEWTONLS(SNES snes)
+{
   PetscFunctionBegin;
   PetscCall(SNESReset_NEWTONLS(snes));
   PetscCall(PetscFree(snes->data));
   PetscFunctionReturn(0);
 }
-/* -------------------------------------------------------------------------- */
 
 /*
    SNESView_NEWTONLS - Prints info from the SNESNEWTONLS data structure.
@@ -322,7 +315,8 @@ PetscErrorCode SNESDestroy_NEWTONLS(SNES snes) {
 
    Application Interface Routine: SNESView()
 */
-static PetscErrorCode SNESView_NEWTONLS(SNES snes, PetscViewer viewer) {
+static PetscErrorCode SNESView_NEWTONLS(SNES snes, PetscViewer viewer)
+{
   PetscBool iascii;
 
   PetscFunctionBegin;
@@ -331,7 +325,6 @@ static PetscErrorCode SNESView_NEWTONLS(SNES snes, PetscViewer viewer) {
   PetscFunctionReturn(0);
 }
 
-/* -------------------------------------------------------------------------- */
 /*
    SNESSetFromOptions_NEWTONLS - Sets various parameters for the SNESNEWTONLS method.
 
@@ -340,35 +333,35 @@ static PetscErrorCode SNESView_NEWTONLS(SNES snes, PetscViewer viewer) {
 
    Application Interface Routine: SNESSetFromOptions()
 */
-static PetscErrorCode SNESSetFromOptions_NEWTONLS(SNES snes, PetscOptionItems *PetscOptionsObject) {
+static PetscErrorCode SNESSetFromOptions_NEWTONLS(SNES snes, PetscOptionItems *PetscOptionsObject)
+{
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
 
-/* -------------------------------------------------------------------------- */
 /*MC
       SNESNEWTONLS - Newton based nonlinear solver that uses a line search
 
-   Options Database:
+   Options Database Keys:
 +   -snes_linesearch_type <bt> - bt,basic.  Select line search type
 .   -snes_linesearch_order <3> - 2, 3. Selects the order of the line search for bt
-.   -snes_linesearch_norms <true> - Turns on/off computation of the norms for basic linesearch (SNESLineSearchSetComputeNorms())
+.   -snes_linesearch_norms <true> - Turns on/off computation of the norms for basic linesearch (`SNESLineSearchSetComputeNorms()`)
 .   -snes_linesearch_alpha <alpha> - Sets alpha used in determining if reduction in function norm is sufficient
 .   -snes_linesearch_maxstep <maxstep> - Sets the maximum stepsize the line search will use (if the 2-norm(y) > maxstep then scale y to be y = (maxstep/2-norm(y)) *y)
 .   -snes_linesearch_minlambda <minlambda>  - Sets the minimum lambda the line search will tolerate
 .   -snes_linesearch_monitor - print information about progress of line searches
 -   -snes_linesearch_damping - damping factor used for basic line search
 
-    Notes:
-    This is the default nonlinear solver in SNES
+    Note:
+    This is the default nonlinear solver in `SNES`
 
    Level: beginner
 
 .seealso: `SNESCreate()`, `SNES`, `SNESSetType()`, `SNESNEWTONTR`, `SNESQN`, `SNESLineSearchSetType()`, `SNESLineSearchSetOrder()`
-          `SNESLineSearchSetPostCheck()`, `SNESLineSearchSetPreCheck()` `SNESLineSearchSetComputeNorms()`
-
+          `SNESLineSearchSetPostCheck()`, `SNESLineSearchSetPreCheck()` `SNESLineSearchSetComputeNorms()`, `SNESGetLineSearch()`
 M*/
-PETSC_EXTERN PetscErrorCode SNESCreate_NEWTONLS(SNES snes) {
+PETSC_EXTERN PetscErrorCode SNESCreate_NEWTONLS(SNES snes)
+{
   SNES_NEWTONLS *neP;
   SNESLineSearch linesearch;
 
@@ -389,7 +382,7 @@ PETSC_EXTERN PetscErrorCode SNESCreate_NEWTONLS(SNES snes) {
 
   snes->alwayscomputesfinalresidual = PETSC_TRUE;
 
-  PetscCall(PetscNewLog(snes, &neP));
+  PetscCall(PetscNew(&neP));
   snes->data = (void *)neP;
   PetscFunctionReturn(0);
 }

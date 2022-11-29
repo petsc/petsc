@@ -121,9 +121,10 @@ tests will cause ValueError.
   def __str__(self):
     if not self.isValueSet():
       return 'Empty '+str(self.__class__)
-    elif isinstance(self.value, list):
-      return str(map(str, self.value))
-    return str(self.value)
+    value = self.value
+    if isinstance(value, list):
+      return str(list(map(str, value)))
+    return str(value)
 
   def getKey(self):
     '''Returns the key. SHOULD MAKE THIS A PROPERTY'''
@@ -435,7 +436,8 @@ class ArgExecutable(Arg):
             break
       if not found:
         raise ValueError('Invalid executable: '+str(value)+' for key '+str(self.key))
-    self.value = value+options
+      value += options
+    self.value = value
     return
 
 class ArgString(Arg):

@@ -18,19 +18,22 @@ using Kokkos::Iterate;
 using Kokkos::MDRangePolicy;
 using Kokkos::Rank;
 
-KOKKOS_INLINE_FUNCTION PetscErrorCode MMSSolution1(AppCtx *user, const DMDACoor2d *c, PetscScalar *u) {
+KOKKOS_INLINE_FUNCTION PetscErrorCode MMSSolution1(AppCtx *user, const DMDACoor2d *c, PetscScalar *u)
+{
   PetscReal x = PetscRealPart(c->x), y = PetscRealPart(c->y);
   u[0] = x * (1 - x) * y * (1 - y);
   return 0;
 }
 
-KOKKOS_INLINE_FUNCTION PetscErrorCode MMSForcing1(PetscReal user_param, const DMDACoor2d *c, PetscScalar *f) {
+KOKKOS_INLINE_FUNCTION PetscErrorCode MMSForcing1(PetscReal user_param, const DMDACoor2d *c, PetscScalar *f)
+{
   PetscReal x = PetscRealPart(c->x), y = PetscRealPart(c->y);
   f[0] = 2 * x * (1 - x) + 2 * y * (1 - y) - user_param * PetscExpReal(x * (1 - x) * y * (1 - y));
   return 0;
 }
 
-PetscErrorCode FormFunctionLocalVec(DMDALocalInfo *info, Vec x, Vec f, AppCtx *user) {
+PetscErrorCode FormFunctionLocalVec(DMDALocalInfo *info, Vec x, Vec f, AppCtx *user)
+{
   PetscReal lambda, hx, hy, hxdhy, hydhx;
   PetscInt  xs = info->xs, ys = info->ys, xm = info->xm, ym = info->ym, mx = info->mx, my = info->my;
   PetscReal user_param = user->param;
@@ -106,7 +109,8 @@ PetscErrorCode FormFunctionLocalVec(DMDALocalInfo *info, Vec x, Vec f, AppCtx *u
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode FormObjectiveLocalVec(DMDALocalInfo *info, Vec x, PetscReal *obj, AppCtx *user) {
+PetscErrorCode FormObjectiveLocalVec(DMDALocalInfo *info, Vec x, PetscReal *obj, AppCtx *user)
+{
   PetscInt  xs = info->xs, ys = info->ys, xm = info->xm, ym = info->ym, mx = info->mx, my = info->my;
   PetscReal lambda, hx, hy, hxdhy, hydhx, sc, lobj = 0;
   MPI_Comm  comm;
@@ -161,7 +165,8 @@ PetscErrorCode FormObjectiveLocalVec(DMDALocalInfo *info, Vec x, PetscReal *obj,
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode FormJacobianLocalVec(DMDALocalInfo *info, Vec x, Mat jac, Mat jacpre, AppCtx *user) {
+PetscErrorCode FormJacobianLocalVec(DMDALocalInfo *info, Vec x, Mat jac, Mat jacpre, AppCtx *user)
+{
   PetscInt     i, j;
   PetscInt     xs = info->xs, ys = info->ys, xm = info->xm, ym = info->ym, mx = info->mx, my = info->my;
   MatStencil   col[5], row;
@@ -196,8 +201,8 @@ PetscErrorCode FormJacobianLocalVec(DMDALocalInfo *info, Vec x, Mat jac, Mat jac
   jp = coo_j;
   for (j = ys; j < ys + ym; j++) {
     for (i = xs; i < xs + xm; i++) {
-      row.j    = j;
-      row.i    = i;
+      row.j = j;
+      row.i = i;
       /* Initialize neighbors with negative indices */
       col[0].j = col[1].j = col[3].j = col[4].j = -1;
       /* boundary points */

@@ -1,4 +1,4 @@
-#if !defined(PETSCHPDDM_H)
+#ifndef PETSCHPDDM_H
 #define PETSCHPDDM_H
 
 #include <petsc/private/kspimpl.h>
@@ -6,12 +6,9 @@
 #define PETSC_KSPHPDDM_DEFAULT_PRECISION \
   (PetscDefined(USE_REAL_SINGLE) ? KSP_HPDDM_PRECISION_SINGLE : (PetscDefined(USE_REAL_DOUBLE) ? KSP_HPDDM_PRECISION_DOUBLE : (PetscDefined(USE_REAL___FLOAT128) ? KSP_HPDDM_PRECISION_QUADRUPLE : KSP_HPDDM_PRECISION_HALF)))
 #define PETSC_PCHPDDM_MAXLEVELS 9
-PETSC_EXTERN PetscLogEvent  PC_HPDDM_PtAP;
-PETSC_EXTERN PetscLogEvent  PC_HPDDM_PtBP;
-PETSC_EXTERN PetscLogEvent  PC_HPDDM_Next;
-PETSC_INTERN PetscErrorCode HPDDMLoadDL_Private(PetscBool *);
 
-namespace HPDDM {
+namespace HPDDM
+{
 template <class>
 class Schwarz; /* forward definitions of two needed HPDDM classes */
 class PETScOperator;
@@ -55,8 +52,12 @@ struct KSP_HPDDM {
   KSPHPDDMPrecision     precision;
 };
 
-PETSC_INTERN const char HPDDMCitation[];
-PETSC_INTERN PetscBool  HPDDMCite;
+PETSC_EXTERN PetscLogEvent  PC_HPDDM_PtAP;
+PETSC_EXTERN PetscLogEvent  PC_HPDDM_PtBP;
+PETSC_EXTERN PetscLogEvent  PC_HPDDM_Next;
+PETSC_INTERN PetscErrorCode HPDDMLoadDL_Private(PetscBool *);
+PETSC_INTERN const char     HPDDMCitation[];
+PETSC_INTERN PetscBool      HPDDMCite;
 
 #include <HPDDM.hpp>
 

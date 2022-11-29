@@ -12,7 +12,8 @@
   Level: beginner
 .seealso: `Tao`, `TaoCreate()`, `TaoSolve()`, `TaoGetSolution()`
 @*/
-PetscErrorCode TaoSetSolution(Tao tao, Vec x0) {
+PetscErrorCode TaoSetSolution(Tao tao, Vec x0)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao, TAO_CLASSID, 1);
   if (x0) PetscValidHeaderSpecific(x0, VEC_CLASSID, 2);
@@ -22,7 +23,8 @@ PetscErrorCode TaoSetSolution(Tao tao, Vec x0) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode TaoTestGradient(Tao tao, Vec x, Vec g1) {
+PetscErrorCode TaoTestGradient(Tao tao, Vec x, Vec g1)
+{
   Vec               g2, g3;
   PetscBool         complete_print = PETSC_FALSE, test = PETSC_FALSE;
   PetscReal         hcnorm, fdnorm, hcmax, fdmax, diffmax, diffnorm;
@@ -121,7 +123,8 @@ PetscErrorCode TaoTestGradient(Tao tao, Vec x, Vec g1) {
 
 .seealso: `TaoComputeObjective()`, `TaoComputeObjectiveAndGradient()`, `TaoSetGradient()`
 @*/
-PetscErrorCode TaoComputeGradient(Tao tao, Vec X, Vec G) {
+PetscErrorCode TaoComputeGradient(Tao tao, Vec X, Vec G)
+{
   PetscReal dummy;
 
   PetscFunctionBegin;
@@ -168,7 +171,8 @@ PetscErrorCode TaoComputeGradient(Tao tao, Vec X, Vec G) {
 
 .seealso: `Tao`, `TaoComputeGradient()`, `TaoComputeObjectiveAndGradient()`, `TaoSetObjective()`
 @*/
-PetscErrorCode TaoComputeObjective(Tao tao, Vec X, PetscReal *f) {
+PetscErrorCode TaoComputeObjective(Tao tao, Vec X, PetscReal *f)
+{
   Vec temp;
 
   PetscFunctionBegin;
@@ -216,7 +220,8 @@ PetscErrorCode TaoComputeObjective(Tao tao, Vec X, PetscReal *f) {
 
 .seealso: `TaoComputeGradient()`, `TaoComputeObjectiveAndGradient()`, `TaoSetObjective()`
 @*/
-PetscErrorCode TaoComputeObjectiveAndGradient(Tao tao, Vec X, PetscReal *f, Vec G) {
+PetscErrorCode TaoComputeObjectiveAndGradient(Tao tao, Vec X, PetscReal *f, Vec G)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao, TAO_CLASSID, 1);
   PetscValidHeaderSpecific(X, VEC_CLASSID, 2);
@@ -229,9 +234,7 @@ PetscErrorCode TaoComputeObjectiveAndGradient(Tao tao, Vec X, PetscReal *f, Vec 
     if (tao->ops->computegradient == TaoDefaultComputeGradient) {
       PetscCall(TaoComputeObjective(tao, X, f));
       PetscCall(TaoDefaultComputeGradient(tao, X, G, NULL));
-    } else {
-      PetscCallBack("Tao callback objective/gradient", (*tao->ops->computeobjectiveandgradient)(tao, X, f, G, tao->user_objgradP));
-    }
+    } else PetscCallBack("Tao callback objective/gradient", (*tao->ops->computeobjectiveandgradient)(tao, X, f, G, tao->user_objgradP));
     PetscCall(PetscLogEventEnd(TAO_ObjGradEval, tao, X, G, NULL));
     tao->nfuncgrads++;
   } else if (tao->ops->computeobjective && tao->ops->computegradient) {
@@ -273,7 +276,8 @@ $      func (Tao tao, Vec x, PetscReal *f, void *ctx);
 
 .seealso: `TaoSetGradient()`, `TaoSetHessian()`, `TaoSetObjectiveAndGradient()`, `TaoGetObjective()`
 @*/
-PetscErrorCode TaoSetObjective(Tao tao, PetscErrorCode (*func)(Tao, Vec, PetscReal *, void *), void *ctx) {
+PetscErrorCode TaoSetObjective(Tao tao, PetscErrorCode (*func)(Tao, Vec, PetscReal *, void *), void *ctx)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao, TAO_CLASSID, 1);
   if (ctx) tao->user_objP = ctx;
@@ -304,7 +308,8 @@ $      func (Tao tao, Vec x, PetscReal *f, void *ctx);
 
 .seealso: `Tao`, `TaoSetGradient()`, `TaoSetHessian()`, `TaoSetObjective()`
 @*/
-PetscErrorCode TaoGetObjective(Tao tao, PetscErrorCode (**func)(Tao, Vec, PetscReal *, void *), void **ctx) {
+PetscErrorCode TaoGetObjective(Tao tao, PetscErrorCode (**func)(Tao, Vec, PetscReal *, void *), void **ctx)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao, TAO_CLASSID, 1);
   if (func) *func = tao->ops->computeobjective;
@@ -334,7 +339,8 @@ $      func (Tao tao, Vec x, Vec f, void *ctx);
 
 .seealso: `Tao`, `TaoSetObjective()`, `TaoSetJacobianRoutine()`
 @*/
-PetscErrorCode TaoSetResidualRoutine(Tao tao, Vec res, PetscErrorCode (*func)(Tao, Vec, Vec, void *), void *ctx) {
+PetscErrorCode TaoSetResidualRoutine(Tao tao, Vec res, PetscErrorCode (*func)(Tao, Vec, Vec, void *), void *ctx)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao, TAO_CLASSID, 1);
   PetscValidHeaderSpecific(res, VEC_CLASSID, 2);
@@ -367,7 +373,8 @@ PetscErrorCode TaoSetResidualRoutine(Tao tao, Vec res, PetscErrorCode (*func)(Ta
 
 .seealso: `Tao`, `TaoSetResidualRoutine()`
 @*/
-PetscErrorCode TaoSetResidualWeights(Tao tao, Vec sigma_v, PetscInt n, PetscInt *rows, PetscInt *cols, PetscReal *vals) {
+PetscErrorCode TaoSetResidualWeights(Tao tao, Vec sigma_v, PetscInt n, PetscInt *rows, PetscInt *cols, PetscReal *vals)
+{
   PetscInt i;
 
   PetscFunctionBegin;
@@ -417,7 +424,8 @@ PetscErrorCode TaoSetResidualWeights(Tao tao, Vec sigma_v, PetscInt n, PetscInt 
 
 .seealso: `Tao`, `TaoSetResidualRoutine()`
 @*/
-PetscErrorCode TaoComputeResidual(Tao tao, Vec X, Vec F) {
+PetscErrorCode TaoComputeResidual(Tao tao, Vec X, Vec F)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao, TAO_CLASSID, 1);
   PetscValidHeaderSpecific(X, VEC_CLASSID, 2);
@@ -457,7 +465,8 @@ $      func (Tao tao, Vec x, Vec g, void *ctx);
 
 .seealso: `Tao`, `TaoSolve()`, `TaoSetObjective()`, `TaoSetHessian()`, `TaoSetObjectiveAndGradient()`, `TaoGetGradient()`
 @*/
-PetscErrorCode TaoSetGradient(Tao tao, Vec g, PetscErrorCode (*func)(Tao, Vec, Vec, void *), void *ctx) {
+PetscErrorCode TaoSetGradient(Tao tao, Vec g, PetscErrorCode (*func)(Tao, Vec, Vec, void *), void *ctx)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao, TAO_CLASSID, 1);
   if (g) {
@@ -496,7 +505,8 @@ $      func (Tao tao, Vec x, Vec g, void *ctx);
 
 .seealso: `Tao`, `TaoSetObjective()`, `TaoSetHessian()`, `TaoSetObjectiveAndGradient()`, `TaoSetGradient()`
 @*/
-PetscErrorCode TaoGetGradient(Tao tao, Vec *g, PetscErrorCode (**func)(Tao, Vec, Vec, void *), void **ctx) {
+PetscErrorCode TaoGetGradient(Tao tao, Vec *g, PetscErrorCode (**func)(Tao, Vec, Vec, void *), void **ctx)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao, TAO_CLASSID, 1);
   if (g) *g = tao->gradient;
@@ -532,7 +542,8 @@ $      func (Tao tao, Vec x, PetscReal *f, Vec g, void *ctx);
 
 .seealso: `Tao`, `TaoSolve()`, `TaoSetObjective()`, `TaoSetHessian()`, `TaoSetGradient()`, `TaoGetObjectiveAndGradient()`
 @*/
-PetscErrorCode TaoSetObjectiveAndGradient(Tao tao, Vec g, PetscErrorCode (*func)(Tao, Vec, PetscReal *, Vec, void *), void *ctx) {
+PetscErrorCode TaoSetObjectiveAndGradient(Tao tao, Vec g, PetscErrorCode (*func)(Tao, Vec, PetscReal *, Vec, void *), void *ctx)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao, TAO_CLASSID, 1);
   if (g) {
@@ -572,7 +583,8 @@ $      func (Tao tao, Vec x, PetscReal *f, Vec g, void *ctx);
 
 .seealso: `Tao`, `TaoSolve()`, `TaoSetObjective()`, `TaoSetGradient()`, `TaoSetHessian()`, `TaoSetObjectiveAndGradient()`
 @*/
-PetscErrorCode TaoGetObjectiveAndGradient(Tao tao, Vec *g, PetscErrorCode (**func)(Tao, Vec, PetscReal *, Vec, void *), void **ctx) {
+PetscErrorCode TaoGetObjectiveAndGradient(Tao tao, Vec *g, PetscErrorCode (**func)(Tao, Vec, PetscReal *, Vec, void *), void **ctx)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao, TAO_CLASSID, 1);
   if (g) *g = tao->gradient;
@@ -599,7 +611,8 @@ PetscErrorCode TaoGetObjectiveAndGradient(Tao tao, Vec *g, PetscErrorCode (**fun
 
 .seealso: `Tao`, `TaoSetObjective()`, `TaoIsGradientDefined()`, `TaoIsObjectiveAndGradientDefined()`
 @*/
-PetscErrorCode TaoIsObjectiveDefined(Tao tao, PetscBool *flg) {
+PetscErrorCode TaoIsObjectiveDefined(Tao tao, PetscBool *flg)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao, TAO_CLASSID, 1);
   if (tao->ops->computeobjective == NULL) *flg = PETSC_FALSE;
@@ -625,7 +638,8 @@ PetscErrorCode TaoIsObjectiveDefined(Tao tao, PetscBool *flg) {
 
 .seealso: `TaoSetGradient()`, `TaoIsObjectiveDefined()`, `TaoIsObjectiveAndGradientDefined()`
 @*/
-PetscErrorCode TaoIsGradientDefined(Tao tao, PetscBool *flg) {
+PetscErrorCode TaoIsGradientDefined(Tao tao, PetscBool *flg)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao, TAO_CLASSID, 1);
   if (tao->ops->computegradient == NULL) *flg = PETSC_FALSE;
@@ -651,7 +665,8 @@ PetscErrorCode TaoIsGradientDefined(Tao tao, PetscBool *flg) {
 
 .seealso: `TaoSetObjectiveAndGradient()`, `TaoIsObjectiveDefined()`, `TaoIsGradientDefined()`
 @*/
-PetscErrorCode TaoIsObjectiveAndGradientDefined(Tao tao, PetscBool *flg) {
+PetscErrorCode TaoIsObjectiveAndGradientDefined(Tao tao, PetscBool *flg)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao, TAO_CLASSID, 1);
   if (tao->ops->computeobjectiveandgradient == NULL) *flg = PETSC_FALSE;

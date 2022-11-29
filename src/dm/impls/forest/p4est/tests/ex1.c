@@ -2,7 +2,8 @@
 
 static char help[] = "Test interaction with p4est/libsc error and logging routines\n";
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCall(PetscP4estInitialize());

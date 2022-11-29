@@ -7,7 +7,8 @@ static char help[] = "Tests MatConvert(), MatLoad() for MATSCALAPACK interface.\
 
 #include <petscmat.h>
 
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   Mat         A, Ae, B, Be;
   PetscViewer view;
   char        file[2][PETSC_MAX_PATH_LEN];

@@ -15,7 +15,8 @@
     b = t; \
   }
 
-static PetscErrorCode PetscSortIntWithPermutation_Private(const PetscInt v[], PetscInt vdx[], PetscInt right) {
+static PetscErrorCode PetscSortIntWithPermutation_Private(const PetscInt v[], PetscInt vdx[], PetscInt right)
+{
   PetscInt tmp, i, vl, last;
 
   PetscFunctionBegin;
@@ -58,7 +59,8 @@ static PetscErrorCode PetscSortIntWithPermutation_Private(const PetscInt v[], Pe
 
 .seealso: `PetscSortInt()`, `PetscSortRealWithPermutation()`, `PetscSortIntWithArray()`
  @*/
-PetscErrorCode PetscSortIntWithPermutation(PetscInt n, const PetscInt i[], PetscInt idx[]) {
+PetscErrorCode PetscSortIntWithPermutation(PetscInt n, const PetscInt i[], PetscInt idx[])
+{
   PetscInt j, k, tmp, ik;
 
   PetscFunctionBegin;
@@ -80,7 +82,8 @@ PetscErrorCode PetscSortIntWithPermutation(PetscInt n, const PetscInt i[], Petsc
 
 /* ---------------------------------------------------------------------- */
 
-static PetscErrorCode PetscSortRealWithPermutation_Private(const PetscReal v[], PetscInt vdx[], PetscInt right) {
+static PetscErrorCode PetscSortRealWithPermutation_Private(const PetscReal v[], PetscInt vdx[], PetscInt right)
+{
   PetscReal vl;
   PetscInt  tmp, i, last;
 
@@ -124,7 +127,8 @@ static PetscErrorCode PetscSortRealWithPermutation_Private(const PetscReal v[], 
 
 .seealso: `PetscSortReal()`, `PetscSortIntWithPermutation()`
  @*/
-PetscErrorCode PetscSortRealWithPermutation(PetscInt n, const PetscReal i[], PetscInt idx[]) {
+PetscErrorCode PetscSortRealWithPermutation(PetscInt n, const PetscReal i[], PetscInt idx[])
+{
   PetscInt  j, k, tmp;
   PetscReal ik;
 
@@ -145,7 +149,8 @@ PetscErrorCode PetscSortRealWithPermutation(PetscInt n, const PetscReal i[], Pet
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscSortStrWithPermutation_Private(const char *v[], PetscInt vdx[], PetscInt right) {
+static PetscErrorCode PetscSortStrWithPermutation_Private(const char *v[], PetscInt vdx[], PetscInt right)
+{
   PetscInt    tmp, i, last;
   PetscBool   gt;
   const char *vl;
@@ -192,7 +197,8 @@ static PetscErrorCode PetscSortStrWithPermutation_Private(const char *v[], Petsc
 
 .seealso: `PetscSortInt()`, `PetscSortRealWithPermutation()`
  @*/
-PetscErrorCode PetscSortStrWithPermutation(PetscInt n, const char *i[], PetscInt idx[]) {
+PetscErrorCode PetscSortStrWithPermutation(PetscInt n, const char *i[], PetscInt idx[])
+{
   PetscInt    j, k, tmp;
   const char *ik;
   PetscBool   gt;

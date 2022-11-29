@@ -23,7 +23,6 @@ typedef enum {
   READ_WRITE = 3
 } AccessMode;
 
-/* -------------------------------------------------------------------------- */
 /*
    PCSetUp_SVD - Prepares for the use of the SVD preconditioner
                     by setting data structures and options.
@@ -33,11 +32,12 @@ typedef enum {
 
    Application Interface Routine: PCSetUp()
 
-   Notes:
+   Note:
    The interface routine PCSetUp() is not usually called directly by
    the user, but instead is called by PCApply() if necessary.
 */
-static PetscErrorCode PCSetUp_SVD(PC pc) {
+static PetscErrorCode PCSetUp_SVD(PC pc)
+{
   PC_SVD      *jac = (PC_SVD *)pc->data;
   PetscScalar *a, *u, *v, *d, *work;
   PetscBLASInt nb, lwork;
@@ -134,7 +134,8 @@ static PetscErrorCode PCSetUp_SVD(PC pc) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCSVDGetVec(PC pc, PCSide side, AccessMode amode, Vec x, Vec *xred) {
+static PetscErrorCode PCSVDGetVec(PC pc, PCSide side, AccessMode amode, Vec x, Vec *xred)
+{
   PC_SVD     *jac = (PC_SVD *)pc->data;
   PetscMPIInt size;
 
@@ -164,12 +165,14 @@ static PetscErrorCode PCSVDGetVec(PC pc, PCSide side, AccessMode amode, Vec x, V
       *xred = jac->rightred;
     }
     break;
-  default: SETERRQ(PetscObjectComm((PetscObject)pc), PETSC_ERR_PLIB, "Side must be LEFT or RIGHT");
+  default:
+    SETERRQ(PetscObjectComm((PetscObject)pc), PETSC_ERR_PLIB, "Side must be LEFT or RIGHT");
   }
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCSVDRestoreVec(PC pc, PCSide side, AccessMode amode, Vec x, Vec *xred) {
+static PetscErrorCode PCSVDRestoreVec(PC pc, PCSide side, AccessMode amode, Vec x, Vec *xred)
+{
   PC_SVD     *jac = (PC_SVD *)pc->data;
   PetscMPIInt size;
 
@@ -188,13 +191,13 @@ static PetscErrorCode PCSVDRestoreVec(PC pc, PCSide side, AccessMode amode, Vec 
       PetscCall(VecScatterEnd(jac->right2red, jac->rightred, x, INSERT_VALUES, SCATTER_REVERSE));
     }
     break;
-  default: SETERRQ(PetscObjectComm((PetscObject)pc), PETSC_ERR_PLIB, "Side must be LEFT or RIGHT");
+  default:
+    SETERRQ(PetscObjectComm((PetscObject)pc), PETSC_ERR_PLIB, "Side must be LEFT or RIGHT");
   }
   *xred = NULL;
   PetscFunctionReturn(0);
 }
 
-/* -------------------------------------------------------------------------- */
 /*
    PCApply_SVD - Applies the SVD preconditioner to a vector.
 
@@ -207,7 +210,8 @@ static PetscErrorCode PCSVDRestoreVec(PC pc, PCSide side, AccessMode amode, Vec 
 
    Application Interface Routine: PCApply()
  */
-static PetscErrorCode PCApply_SVD(PC pc, Vec x, Vec y) {
+static PetscErrorCode PCApply_SVD(PC pc, Vec x, Vec y)
+{
   PC_SVD *jac  = (PC_SVD *)pc->data;
   Vec     work = jac->work, xred, yred;
 
@@ -230,7 +234,8 @@ static PetscErrorCode PCApply_SVD(PC pc, Vec x, Vec y) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCMatApply_SVD(PC pc, Mat X, Mat Y) {
+static PetscErrorCode PCMatApply_SVD(PC pc, Mat X, Mat Y)
+{
   PC_SVD *jac = (PC_SVD *)pc->data;
   Mat     W;
 
@@ -242,7 +247,8 @@ static PetscErrorCode PCMatApply_SVD(PC pc, Mat X, Mat Y) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCApplyTranspose_SVD(PC pc, Vec x, Vec y) {
+static PetscErrorCode PCApplyTranspose_SVD(PC pc, Vec x, Vec y)
+{
   PC_SVD *jac  = (PC_SVD *)pc->data;
   Vec     work = jac->work, xred, yred;
 
@@ -257,7 +263,8 @@ static PetscErrorCode PCApplyTranspose_SVD(PC pc, Vec x, Vec y) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCReset_SVD(PC pc) {
+static PetscErrorCode PCReset_SVD(PC pc)
+{
   PC_SVD *jac = (PC_SVD *)pc->data;
 
   PetscFunctionBegin;
@@ -273,7 +280,6 @@ static PetscErrorCode PCReset_SVD(PC pc) {
   PetscFunctionReturn(0);
 }
 
-/* -------------------------------------------------------------------------- */
 /*
    PCDestroy_SVD - Destroys the private context for the SVD preconditioner
    that was created with PCCreate_SVD().
@@ -283,7 +289,8 @@ static PetscErrorCode PCReset_SVD(PC pc) {
 
    Application Interface Routine: PCDestroy()
 */
-static PetscErrorCode PCDestroy_SVD(PC pc) {
+static PetscErrorCode PCDestroy_SVD(PC pc)
+{
   PC_SVD *jac = (PC_SVD *)pc->data;
 
   PetscFunctionBegin;
@@ -293,7 +300,8 @@ static PetscErrorCode PCDestroy_SVD(PC pc) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCSetFromOptions_SVD(PC pc, PetscOptionItems *PetscOptionsObject) {
+static PetscErrorCode PCSetFromOptions_SVD(PC pc, PetscOptionItems *PetscOptionsObject)
+{
   PC_SVD   *jac = (PC_SVD *)pc->data;
   PetscBool flg;
 
@@ -306,7 +314,8 @@ static PetscErrorCode PCSetFromOptions_SVD(PC pc, PetscOptionItems *PetscOptions
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCView_SVD(PC pc, PetscViewer viewer) {
+static PetscErrorCode PCView_SVD(PC pc, PetscViewer viewer)
+{
   PC_SVD   *svd = (PC_SVD *)pc->data;
   PetscBool iascii;
 
@@ -318,7 +327,7 @@ static PetscErrorCode PCView_SVD(PC pc, PetscViewer viewer) {
   }
   PetscFunctionReturn(0);
 }
-/* -------------------------------------------------------------------------- */
+
 /*
    PCCreate_SVD - Creates a SVD preconditioner context, PC_SVD,
    and sets this as the private data within the generic preconditioning
@@ -335,19 +344,20 @@ static PetscErrorCode PCView_SVD(PC pc, PetscViewer viewer) {
 
    Level: advanced
 
-  Options Database:
+  Options Database Keys:
 +  -pc_svd_zero_sing <rtol> - Singular values smaller than this are treated as zero
 -  -pc_svd_monitor - Print information on the extreme singular values of the operator
 
   Developer Note:
   This implementation automatically creates a redundant copy of the
    matrix on each process and uses a sequential SVD solve. Why does it do this instead
-   of using the composable PCREDUNDANT object?
+   of using the composable `PCREDUNDANT` object?
 
-.seealso: `PCCreate()`, `PCSetType()`, `PCType`, `PC`
+.seealso: `PCCreate()`, `PCSetType()`, `PCType`, `PC`, `PCREDUNDANT`
 M*/
 
-PETSC_EXTERN PetscErrorCode PCCreate_SVD(PC pc) {
+PETSC_EXTERN PetscErrorCode PCCreate_SVD(PC pc)
+{
   PC_SVD     *jac;
   PetscMPIInt size = 0;
 
@@ -356,7 +366,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_SVD(PC pc) {
      Creates the private data structure for this preconditioner and
      attach it to the PC object.
   */
-  PetscCall(PetscNewLog(pc, &jac));
+  PetscCall(PetscNew(&jac));
   jac->zerosing = 1.e-12;
   pc->data      = (void *)jac;
 

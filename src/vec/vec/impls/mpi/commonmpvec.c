@@ -15,7 +15,8 @@
   Note that this function is correct and changes nothing if both arguments are the
   same, which is the case in serial.
 */
-static PetscErrorCode VecGhostStateSync_Private(Vec g, Vec l) {
+static PetscErrorCode VecGhostStateSync_Private(Vec g, Vec l)
+{
   PetscObjectState gstate, lstate;
 
   PetscFunctionBegin;
@@ -64,7 +65,8 @@ $     VecGhostRestoreLocalForm(x,&xlocal);
 .seealso: `VecCreateGhost()`, `VecGhostRestoreLocalForm()`, `VecCreateGhostWithArray()`
 
 @*/
-PetscErrorCode VecGhostGetLocalForm(Vec g, Vec *l) {
+PetscErrorCode VecGhostGetLocalForm(Vec g, Vec *l)
+{
   PetscBool isseq, ismpi;
 
   PetscFunctionBegin;
@@ -105,7 +107,8 @@ PetscErrorCode VecGhostGetLocalForm(Vec g, Vec *l) {
 .seealso: `VecCreateGhost()`, `VecGhostRestoreLocalForm()`, `VecCreateGhostWithArray()`, `VecGhostGetLocalForm()`
 
 @*/
-PetscErrorCode VecGhostIsLocalForm(Vec g, Vec l, PetscBool *flg) {
+PetscErrorCode VecGhostIsLocalForm(Vec g, Vec l, PetscBool *flg)
+{
   PetscBool isseq, ismpi;
 
   PetscFunctionBegin;
@@ -143,7 +146,8 @@ PetscErrorCode VecGhostIsLocalForm(Vec g, Vec l, PetscBool *flg) {
 
 .seealso: `VecCreateGhost()`, `VecGhostGetLocalForm()`, `VecCreateGhostWithArray()`
 @*/
-PetscErrorCode VecGhostRestoreLocalForm(Vec g, Vec *l) {
+PetscErrorCode VecGhostRestoreLocalForm(Vec g, Vec *l)
+{
   PetscFunctionBegin;
   if (*l) {
     PetscCall(VecGhostStateSync_Private(g, *l));
@@ -191,7 +195,8 @@ PetscErrorCode VecGhostRestoreLocalForm(Vec g, Vec *l) {
           `VecGhostRestoreLocalForm()`, `VecCreateGhostWithArray()`
 
 @*/
-PetscErrorCode VecGhostUpdateBegin(Vec g, InsertMode insertmode, ScatterMode scattermode) {
+PetscErrorCode VecGhostUpdateBegin(Vec g, InsertMode insertmode, ScatterMode scattermode)
+{
   Vec_MPI  *v;
   PetscBool ismpi, isseq;
 
@@ -254,7 +259,8 @@ PetscErrorCode VecGhostUpdateBegin(Vec g, InsertMode insertmode, ScatterMode sca
           `VecGhostRestoreLocalForm()`, `VecCreateGhostWithArray()`
 
 @*/
-PetscErrorCode VecGhostUpdateEnd(Vec g, InsertMode insertmode, ScatterMode scattermode) {
+PetscErrorCode VecGhostUpdateEnd(Vec g, InsertMode insertmode, ScatterMode scattermode)
+{
   Vec_MPI  *v;
   PetscBool ismpi;
 

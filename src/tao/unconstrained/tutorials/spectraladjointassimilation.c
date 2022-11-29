@@ -104,7 +104,8 @@ extern PetscErrorCode ComputeSolutionCoefficients(AppCtx *);
 extern PetscErrorCode RHSFunction(TS, PetscReal, Vec, Vec, void *);
 extern PetscErrorCode RHSJacobian(TS, PetscReal, Vec, Mat, Mat, void *);
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   AppCtx       appctx; /* user-defined application context */
   Tao          tao;
   Vec          u; /* approximate solution vector */
@@ -292,7 +293,8 @@ int main(int argc, char **argv) {
 /*
     Computes the coefficients for the analytic solution to the PDE
 */
-PetscErrorCode ComputeSolutionCoefficients(AppCtx *appctx) {
+PetscErrorCode ComputeSolutionCoefficients(AppCtx *appctx)
+{
   PetscRandom rand;
   PetscInt    i;
 
@@ -316,7 +318,8 @@ PetscErrorCode ComputeSolutionCoefficients(AppCtx *appctx) {
    Output Parameter:
    u - vector with solution at initial time (global)
 */
-PetscErrorCode InitialConditions(Vec u, AppCtx *appctx) {
+PetscErrorCode InitialConditions(Vec u, AppCtx *appctx)
+{
   PetscScalar       *s;
   const PetscScalar *xg;
   PetscInt           i, j, lenglob;
@@ -357,7 +360,8 @@ PetscErrorCode InitialConditions(Vec u, AppCtx *appctx) {
    Output Parameter:
    u - vector with solution at initial time (global)
 */
-PetscErrorCode TrueSolution(Vec u, AppCtx *appctx) {
+PetscErrorCode TrueSolution(Vec u, AppCtx *appctx)
+{
   PetscScalar       *s;
   const PetscScalar *xg;
   PetscInt           i, j, lenglob;
@@ -388,7 +392,8 @@ PetscErrorCode TrueSolution(Vec u, AppCtx *appctx) {
    appctx - user-defined application context
 
 */
-PetscErrorCode ComputeReference(TS ts, PetscReal t, Vec obj, AppCtx *appctx) {
+PetscErrorCode ComputeReference(TS ts, PetscReal t, Vec obj, AppCtx *appctx)
+{
   PetscScalar       *s, tc;
   const PetscScalar *xg;
   PetscInt           i, j, lenglob;
@@ -409,7 +414,8 @@ PetscErrorCode ComputeReference(TS ts, PetscReal t, Vec obj, AppCtx *appctx) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec globalin, Vec globalout, void *ctx) {
+PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec globalin, Vec globalout, void *ctx)
+{
   AppCtx *appctx = (AppCtx *)ctx;
 
   PetscFunctionBegin;
@@ -417,7 +423,8 @@ PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec globalin, Vec globalout, void
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec globalin, Mat A, Mat B, void *ctx) {
+PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec globalin, Mat A, Mat B, void *ctx)
+{
   AppCtx *appctx = (AppCtx *)ctx;
 
   PetscFunctionBegin;
@@ -444,7 +451,8 @@ PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec globalin, Mat A, Mat B, void 
    Scales by the inverse of the mass matrix (perhaps that should be pulled out)
 
 */
-PetscErrorCode RHSLaplacian(TS ts, PetscReal t, Vec X, Mat A, Mat BB, void *ctx) {
+PetscErrorCode RHSLaplacian(TS ts, PetscReal t, Vec X, Mat A, Mat BB, void *ctx)
+{
   PetscReal **temp;
   PetscReal   vv;
   AppCtx     *appctx = (AppCtx *)ctx; /* user-defined application context */
@@ -494,7 +502,8 @@ PetscErrorCode RHSLaplacian(TS ts, PetscReal t, Vec X, Mat A, Mat BB, void *ctx)
 
     Note that the element matrix is NOT scaled by the size of element like the Laplacian term.
  */
-PetscErrorCode RHSAdvection(TS ts, PetscReal t, Vec X, Mat A, Mat BB, void *ctx) {
+PetscErrorCode RHSAdvection(TS ts, PetscReal t, Vec X, Mat A, Mat BB, void *ctx)
+{
   PetscReal **temp;
   PetscReal   vv;
   AppCtx     *appctx = (AppCtx *)ctx; /* user-defined application context */
@@ -572,7 +581,8 @@ PetscErrorCode RHSAdvection(TS ts, PetscReal t, Vec X, Mat A, Mat BB, void *ctx)
           below (instead of -2(u(T) - u_d)
 
 */
-PetscErrorCode FormFunctionGradient(Tao tao, Vec ic, PetscReal *f, Vec G, void *ctx) {
+PetscErrorCode FormFunctionGradient(Tao tao, Vec ic, PetscReal *f, Vec G, void *ctx)
+{
   AppCtx *appctx = (AppCtx *)ctx; /* user-defined application context */
   Vec     temp;
 
@@ -604,7 +614,8 @@ PetscErrorCode FormFunctionGradient(Tao tao, Vec ic, PetscReal *f, Vec G, void *
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MonitorError(Tao tao, void *ctx) {
+PetscErrorCode MonitorError(Tao tao, void *ctx)
+{
   AppCtx   *appctx = (AppCtx *)ctx;
   Vec       temp, grad;
   PetscReal nrm;
@@ -632,7 +643,8 @@ PetscErrorCode MonitorError(Tao tao, void *ctx) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MonitorDestroy(void **ctx) {
+PetscErrorCode MonitorDestroy(void **ctx)
+{
   PetscFunctionBegin;
   PetscCall(PetscPrintf(PETSC_COMM_WORLD, "];\n"));
   PetscFunctionReturn(0);

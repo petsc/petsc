@@ -22,7 +22,8 @@ typedef struct {
   PetscDrawSP drawks;           /* Scatterplot draw context for KS test */
 } AppCtx;
 
-static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options) {
+static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
+{
   PetscFunctionBeginUser;
   options->monitorhg        = PETSC_FALSE;
   options->monitorsp        = PETSC_FALSE;
@@ -43,7 +44,8 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options) {
 }
 
 /* Create the mesh for velocity space */
-static PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, AppCtx *user) {
+static PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, AppCtx *user)
+{
   PetscFunctionBeginUser;
   PetscCall(DMCreate(comm, dm));
   PetscCall(DMSetType(*dm, DMPLEX));
@@ -53,7 +55,8 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, AppCtx *user) {
 }
 
 /* Since we are putting the same number of particles in each cell, this amounts to a uniform distribution of v */
-static PetscErrorCode SetInitialCoordinates(DM sw) {
+static PetscErrorCode SetInitialCoordinates(DM sw)
+{
   AppCtx        *user;
   PetscRandom    rnd;
   DM             dm;
@@ -71,6 +74,7 @@ static PetscErrorCode SetInitialCoordinates(DM sw) {
   Np = user->particlesPerCell;
   PetscCall(DMGetDimension(sw, &dim));
   PetscCall(DMSwarmGetCellDM(sw, &dm));
+  PetscCall(DMGetCoordinatesLocalSetUp(dm));
   PetscCall(DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd));
   PetscCall(DMPlexGetCellType(dm, cStart, &ct));
   simplex = DMPolytopeTypeGetNumVertices(ct) == DMPolytopeTypeGetDim(ct) + 1 ? PETSC_TRUE : PETSC_FALSE;
@@ -114,7 +118,8 @@ static PetscErrorCode SetInitialCoordinates(DM sw) {
 }
 
 /* The intiial conditions are just the initial particle weights */
-static PetscErrorCode SetInitialConditions(DM dmSw, Vec u) {
+static PetscErrorCode SetInitialConditions(DM dmSw, Vec u)
+{
   DM           dm;
   AppCtx      *user;
   PetscReal   *vals;
@@ -142,7 +147,8 @@ static PetscErrorCode SetInitialConditions(DM dmSw, Vec u) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode CreateParticles(DM dm, DM *sw, AppCtx *user) {
+static PetscErrorCode CreateParticles(DM dm, DM *sw, AppCtx *user)
+{
   PetscInt *cellid;
   PetscInt  dim, cStart, cEnd, c, Np = user->particlesPerCell, p;
 
@@ -185,7 +191,8 @@ static PetscErrorCode CreateParticles(DM dm, DM *sw, AppCtx *user) {
 */
 
 /* This computes the 1D Maxwellian distribution for given mass n, velocity v, and temperature T */
-static PetscReal ComputePDF(PetscReal m, PetscReal n, PetscReal T, PetscReal v[]) {
+static PetscReal ComputePDF(PetscReal m, PetscReal n, PetscReal T, PetscReal v[])
+{
   return (n / PetscSqrtReal(2.0 * PETSC_PI * T / m)) * PetscExpReal(-0.5 * m * PetscSqr(v[0]) / T);
 }
 
@@ -203,7 +210,8 @@ static PetscReal ComputePDF(PetscReal m, PetscReal n, PetscReal T, PetscReal v[]
     = 1/\sqrt{\pi} \int^{\sqrt{m/2T} w}_0 dt e^{-t^2}
     = 1/2 erf(\sqrt{m/2T} w)
 */
-static PetscReal ComputeCDF(PetscReal m, PetscReal n, PetscReal T, PetscReal va, PetscReal vb) {
+static PetscReal ComputeCDF(PetscReal m, PetscReal n, PetscReal T, PetscReal va, PetscReal vb)
+{
   PetscReal alpha = PetscSqrtReal(0.5 * m / T);
   PetscReal za    = alpha * va;
   PetscReal zb    = alpha * vb;
@@ -214,7 +222,8 @@ static PetscReal ComputeCDF(PetscReal m, PetscReal n, PetscReal T, PetscReal va,
   return 0.5 * n * sum;
 }
 
-static PetscErrorCode CheckDistribution(DM dm, PetscReal m, PetscReal n, PetscReal T, PetscReal v[]) {
+static PetscErrorCode CheckDistribution(DM dm, PetscReal m, PetscReal n, PetscReal T, PetscReal v[])
+{
   PetscSection coordSection;
   Vec          coordsLocal;
   PetscReal   *xq, *wq;
@@ -258,7 +267,8 @@ static PetscErrorCode CheckDistribution(DM dm, PetscReal m, PetscReal n, PetscRe
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode RHSFunctionParticles(TS ts, PetscReal t, Vec U, Vec R, void *ctx) {
+static PetscErrorCode RHSFunctionParticles(TS ts, PetscReal t, Vec U, Vec R, void *ctx)
+{
   const PetscScalar *u;
   PetscSection       coordSection;
   Vec                coordsLocal;
@@ -335,7 +345,8 @@ static PetscErrorCode RHSFunctionParticles(TS ts, PetscReal t, Vec U, Vec R, voi
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode HGMonitor(TS ts, PetscInt step, PetscReal t, Vec U, void *ctx) {
+static PetscErrorCode HGMonitor(TS ts, PetscInt step, PetscReal t, Vec U, void *ctx)
+{
   AppCtx            *user = (AppCtx *)ctx;
   const PetscScalar *u;
   DM                 sw, dm;
@@ -365,7 +376,8 @@ static PetscErrorCode HGMonitor(TS ts, PetscInt step, PetscReal t, Vec U, void *
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode SPMonitor(TS ts, PetscInt step, PetscReal t, Vec U, void *ctx) {
+static PetscErrorCode SPMonitor(TS ts, PetscInt step, PetscReal t, Vec U, void *ctx)
+{
   AppCtx            *user = (AppCtx *)ctx;
   const PetscScalar *u;
   PetscReal         *v, *coords;
@@ -397,7 +409,8 @@ static PetscErrorCode SPMonitor(TS ts, PetscInt step, PetscReal t, Vec U, void *
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode KSConv(TS ts, PetscInt step, PetscReal t, Vec U, void *ctx) {
+static PetscErrorCode KSConv(TS ts, PetscInt step, PetscReal t, Vec U, void *ctx)
+{
   AppCtx            *user = (AppCtx *)ctx;
   const PetscScalar *u;
   PetscScalar        sup;
@@ -446,7 +459,8 @@ static PetscErrorCode KSConv(TS ts, PetscInt step, PetscReal t, Vec U, void *ctx
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode InitializeSolve(TS ts, Vec u) {
+static PetscErrorCode InitializeSolve(TS ts, Vec u)
+{
   DM      dm;
   AppCtx *user;
 
@@ -461,7 +475,8 @@ static PetscErrorCode InitializeSolve(TS ts, Vec u) {
      A single particle is generated for each velocity space cell using the dmswarmpicfield_coor and is used to evaluate collisions in that cell.
      0 weight ghost particles are initialized outside of a small velocity domain to ensure the tails of the amxwellian are resolved.
    */
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   TS       ts;     /* nonlinear solver */
   DM       dm, sw; /* Velocity space mesh and Particle Swarm */
   Vec      u, w;   /* swarm vector */

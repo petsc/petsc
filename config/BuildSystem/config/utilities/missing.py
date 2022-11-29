@@ -53,7 +53,7 @@ class Configure(config.base.Configure):
 
   def configureMissingUtypeTypedefs(self):
     ''' Checks if u_short is undefined '''
-    if not self.checkCompile('#include <sys/types.h>\n', 'u_short foo;\n'):
+    if not self.checkCompile('#include <sys/types.h>\n', 'u_short foo;\n(void)foo'):
       self.addDefine('NEEDS_UTYPE_TYPEDEFS',1)
     return
 
@@ -81,7 +81,7 @@ class Configure(config.base.Configure):
     '''Check for missing signals, and define MISSING_<signal name> if necessary'''
     for signal in ['ABRT', 'ALRM', 'BUS',  'CHLD', 'CONT', 'FPE',  'HUP',  'ILL', 'INT',  'KILL', 'PIPE', 'QUIT', 'SEGV',
                    'STOP', 'SYS',  'TERM', 'TRAP', 'TSTP', 'URG',  'USR1', 'USR2']:
-      if not self.checkCompile('#include <signal.h>\n', 'int i=SIG'+signal+';\n\nif (i);\n'):
+      if not self.checkCompile('#include <signal.h>\n', 'int i=SIG'+signal+';\n(void)i'):
         self.addDefine('MISSING_SIG'+signal, 1)
     return
 
@@ -89,7 +89,7 @@ class Configure(config.base.Configure):
   def configureMissingErrnos(self):
     '''Check for missing errno values, and define MISSING_<errno value> if necessary'''
     for errnoval in ['EINTR']:
-      if not self.checkCompile('#include <errno.h>','int i='+errnoval+';\n\nif (i);\n'):
+      if not self.checkCompile('#include <errno.h>','int i='+errnoval+';(void)i'):
         self.addDefine('MISSING_ERRNO_'+errnoval, 1)
     return
 

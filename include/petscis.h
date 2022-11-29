@@ -2,7 +2,7 @@
    An index set is a generalization of a subset of integers.  Index sets
    are used for defining scatters and gathers.
 */
-#if !defined(PETSCIS_H)
+#ifndef PETSCIS_H
 #define PETSCIS_H
 
 #include <petscsys.h>
@@ -292,7 +292,8 @@ struct _n_PetscLayout {
 
 .seealso: `PetscLayoutFindOwnerIndex()`
 @*/
-static inline PetscErrorCode PetscLayoutFindOwner(PetscLayout map, PetscInt idx, PetscMPIInt *owner) {
+static inline PetscErrorCode PetscLayoutFindOwner(PetscLayout map, PetscInt idx, PetscMPIInt *owner)
+{
   PetscMPIInt lo = 0, hi, t;
 
   PetscFunctionBegin;
@@ -332,7 +333,8 @@ static inline PetscErrorCode PetscLayoutFindOwner(PetscLayout map, PetscInt idx,
 .seealso: `PetscLayoutFindOwner()`
 
 @*/
-static inline PetscErrorCode PetscLayoutFindOwnerIndex(PetscLayout map, PetscInt idx, PetscMPIInt *owner, PetscInt *lidx) {
+static inline PetscErrorCode PetscLayoutFindOwnerIndex(PetscLayout map, PetscInt idx, PetscMPIInt *owner, PetscInt *lidx)
+{
   PetscMPIInt lo = 0, hi, t;
 
   PetscFunctionBegin;

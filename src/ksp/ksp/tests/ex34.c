@@ -3,7 +3,8 @@ static char help[] = "Tests solving linear system with KSPFGMRES + PCSOR (omega 
 
 #include <petscksp.h>
 
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   Mat       A, Ad, B;
   PetscInt  N = 10, M = 3;
   PetscBool no_inodes = PETSC_TRUE, flg;

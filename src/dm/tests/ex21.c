@@ -5,7 +5,8 @@ static const char help[] = "Test DMCreateInjection() for mapping coordinates in 
 #include <petscdm.h>
 #include <petscdmda.h>
 
-PetscErrorCode test1_DAInjection3d(PetscInt mx, PetscInt my, PetscInt mz) {
+PetscErrorCode test1_DAInjection3d(PetscInt mx, PetscInt my, PetscInt mz)
+{
   DM             dac, daf;
   PetscViewer    vv;
   Vec            ac, af;
@@ -91,7 +92,8 @@ PetscErrorCode test1_DAInjection3d(PetscInt mx, PetscInt my, PetscInt mz) {
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscInt mx, my, mz;
 
   PetscFunctionBeginUser;

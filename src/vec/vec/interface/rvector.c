@@ -5,30 +5,24 @@
 #include "petsc/private/sfimpl.h"
 #include "petscsystypes.h"
 #include <petsc/private/vecimpl.h> /*I  "petscvec.h"   I*/
-#if defined(PETSC_HAVE_CUDA)
-#include <../src/vec/vec/impls/dvecimpl.h>
-#include <petsc/private/cudavecimpl.h>
-#endif
-#if defined(PETSC_HAVE_HIP)
-#include <../src/vec/vec/impls/dvecimpl.h>
-#include <petsc/private/hipvecimpl.h>
-#endif
+
 PetscInt VecGetSubVectorSavedStateId = -1;
 
-PETSC_EXTERN PetscErrorCode VecValidValues(Vec vec, PetscInt argnum, PetscBool begin) {
-#if defined(PETSC_USE_DEBUG)
-  PetscInt           n, i;
-  const PetscScalar *x;
-
+#if PetscDefined(USE_DEBUG)
+// this is a no-op '0' macro in optimized builds
+PetscErrorCode VecValidValues_Internal(Vec vec, PetscInt argnum, PetscBool begin)
+{
   PetscFunctionBegin;
-#if defined(PETSC_HAVE_DEVICE)
-  if ((vec->petscnative || vec->ops->getarray) && (vec->offloadmask & PETSC_OFFLOAD_CPU)) {
-#else
   if (vec->petscnative || vec->ops->getarray) {
-#endif
+    PetscInt           n;
+    const PetscScalar *x;
+    PetscOffloadMask   mask;
+
+    PetscCall(VecGetOffloadMask(vec, &mask));
+    if (!PetscOffloadHost(mask)) PetscFunctionReturn(0);
     PetscCall(VecGetLocalSize(vec, &n));
     PetscCall(VecGetArrayRead(vec, &x));
-    for (i = 0; i < n; i++) {
+    for (PetscInt i = 0; i < n; i++) {
       if (begin) {
         PetscCheck(!PetscIsInfOrNanScalar(x[i]), PETSC_COMM_SELF, PETSC_ERR_FP, "Vec entry at local location %" PetscInt_FMT " is not-a-number or infinite at beginning of function: Parameter number %" PetscInt_FMT, i, argnum);
       } else {
@@ -37,16 +31,14 @@ PETSC_EXTERN PetscErrorCode VecValidValues(Vec vec, PetscInt argnum, PetscBool b
     }
     PetscCall(VecRestoreArrayRead(vec, &x));
   }
-#else
-  PetscFunctionBegin;
-#endif
   PetscFunctionReturn(0);
 }
+#endif
 
 /*@
    VecMaxPointwiseDivide - Computes the maximum of the componentwise division max = max_i abs(x_i/y_i).
 
-   Logically Collective on Vec
+   Logically Collective on x
 
    Input Parameters:
 .  x, y  - the vectors
@@ -57,12 +49,14 @@ PETSC_EXTERN PetscErrorCode VecValidValues(Vec vec, PetscInt argnum, PetscBool b
    Level: advanced
 
    Notes:
-    x and y may be the same vector
-          if a particular y_i is zero, it is treated as 1 in the above formula
+   x and y may be the same vector
 
-.seealso: `VecPointwiseDivide()`, `VecPointwiseMult()`, `VecPointwiseMax()`, `VecPointwiseMin()`, `VecPointwiseMaxAbs()`
+  if a particular y_i is zero, it is treated as 1 in the above formula
+
+.seealso: `Vec`, `VecPointwiseDivide()`, `VecPointwiseMult()`, `VecPointwiseMax()`, `VecPointwiseMin()`, `VecPointwiseMaxAbs()`
 @*/
-PetscErrorCode VecMaxPointwiseDivide(Vec x, Vec y, PetscReal *max) {
+PetscErrorCode VecMaxPointwiseDivide(Vec x, Vec y, PetscReal *max)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x, VEC_CLASSID, 1);
   PetscValidHeaderSpecific(y, VEC_CLASSID, 2);
@@ -71,14 +65,18 @@ PetscErrorCode VecMaxPointwiseDivide(Vec x, Vec y, PetscReal *max) {
   PetscValidType(y, 2);
   PetscCheckSameTypeAndComm(x, 1, y, 2);
   VecCheckSameSize(x, 1, y, 2);
+  PetscCall(VecLockReadPush(x));
+  PetscCall(VecLockReadPush(y));
   PetscUseTypeMethod(x, maxpointwisedivide, y, max);
+  PetscCall(VecLockReadPop(x));
+  PetscCall(VecLockReadPop(y));
   PetscFunctionReturn(0);
 }
 
 /*@
    VecDot - Computes the vector dot product.
 
-   Collective on Vec
+   Collective on x
 
    Input Parameters:
 .  x, y - the vectors
@@ -87,26 +85,29 @@ PetscErrorCode VecMaxPointwiseDivide(Vec x, Vec y, PetscReal *max) {
 .  val - the dot product
 
    Performance Issues:
-$    per-processor memory bandwidth
-$    interprocessor latency
-$    work load imbalance that causes certain processes to arrive much earlier than others
+.vb
+    per-processor memory bandwidth
+    interprocessor latency
+    work load imbalance that causes certain processes to arrive much earlier than others
+.ve
 
    Notes for Users of Complex Numbers:
-   For complex vectors, VecDot() computes
+   For complex vectors, `VecDot()` computes
 $     val = (x,y) = y^H x,
    where y^H denotes the conjugate transpose of y. Note that this corresponds to the usual "mathematicians" complex
-   inner product where the SECOND argument gets the complex conjugate. Since the BLASdot() complex conjugates the first
-   first argument we call the BLASdot() with the arguments reversed.
+   inner product where the SECOND argument gets the complex conjugate. Since the `BLASdot()` complex conjugates the first
+   first argument we call the `BLASdot()` with the arguments reversed.
 
-   Use VecTDot() for the indefinite form
+   Use `VecTDot()` for the indefinite form
 $     val = (x,y) = y^T x,
    where y^T denotes the transpose of y.
 
    Level: intermediate
 
-.seealso: `VecMDot()`, `VecTDot()`, `VecNorm()`, `VecDotBegin()`, `VecDotEnd()`, `VecDotRealPart()`
+.seealso: `Vec`, `VecMDot()`, `VecTDot()`, `VecNorm()`, `VecDotBegin()`, `VecDotEnd()`, `VecDotRealPart()`
 @*/
-PetscErrorCode VecDot(Vec x, Vec y, PetscScalar *val) {
+PetscErrorCode VecDot(Vec x, Vec y, PetscScalar *val)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x, VEC_CLASSID, 1);
   PetscValidHeaderSpecific(y, VEC_CLASSID, 2);
@@ -116,16 +117,20 @@ PetscErrorCode VecDot(Vec x, Vec y, PetscScalar *val) {
   PetscCheckSameTypeAndComm(x, 1, y, 2);
   VecCheckSameSize(x, 1, y, 2);
 
+  PetscCall(VecLockReadPush(x));
+  PetscCall(VecLockReadPush(y));
   PetscCall(PetscLogEventBegin(VEC_Dot, x, y, 0, 0));
   PetscUseTypeMethod(x, dot, y, val);
   PetscCall(PetscLogEventEnd(VEC_Dot, x, y, 0, 0));
+  PetscCall(VecLockReadPop(x));
+  PetscCall(VecLockReadPop(y));
   PetscFunctionReturn(0);
 }
 
 /*@
    VecDotRealPart - Computes the real part of the vector dot product.
 
-   Collective on Vec
+   Collective on x
 
    Input Parameters:
 .  x, y - the vectors
@@ -133,26 +138,30 @@ PetscErrorCode VecDot(Vec x, Vec y, PetscScalar *val) {
    Output Parameter:
 .  val - the real part of the dot product;
 
+   Level: intermediate
+
    Performance Issues:
-$    per-processor memory bandwidth
-$    interprocessor latency
-$    work load imbalance that causes certain processes to arrive much earlier than others
+.vb
+    per-processor memory bandwidth
+    interprocessor latency
+    work load imbalance that causes certain processes to arrive much earlier than others
+.ve
 
    Notes for Users of Complex Numbers:
-     See VecDot() for more details on the definition of the dot product for complex numbers
+     See `VecDot()` for more details on the definition of the dot product for complex numbers
 
-     For real numbers this returns the same value as VecDot()
+     For real numbers this returns the same value as `VecDot()`
 
      For complex numbers in C^n (that is a vector of n components with a complex number for each component) this is equal to the usual real dot product on the
      the space R^{2n} (that is a vector of 2n components with the real or imaginary part of the complex numbers for components)
 
-   Developer Note: This is not currently optimized to compute only the real part of the dot product.
+   Developer Note:
+    This is not currently optimized to compute only the real part of the dot product.
 
-   Level: intermediate
-
-.seealso: `VecMDot()`, `VecTDot()`, `VecNorm()`, `VecDotBegin()`, `VecDotEnd()`, `VecDot()`, `VecDotNorm2()`
+.seealso: `Vec`, `VecMDot()`, `VecTDot()`, `VecNorm()`, `VecDotBegin()`, `VecDotEnd()`, `VecDot()`, `VecDotNorm2()`
 @*/
-PetscErrorCode VecDotRealPart(Vec x, Vec y, PetscReal *val) {
+PetscErrorCode VecDotRealPart(Vec x, Vec y, PetscReal *val)
+{
   PetscScalar fdot;
 
   PetscFunctionBegin;
@@ -202,24 +211,26 @@ PetscErrorCode VecDotRealPart(Vec x, Vec y, PetscReal *val) {
           `VecNormBegin()`, `VecNormEnd()`, `NormType()`
 
 @*/
-PetscErrorCode VecNorm(Vec x, NormType type, PetscReal *val) {
-  PetscBool flg;
+PetscErrorCode VecNorm(Vec x, NormType type, PetscReal *val)
+{
+  PetscBool flg = PETSC_TRUE;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x, VEC_CLASSID, 1);
-  PetscValidRealPointer(val, 3);
   PetscValidType(x, 1);
+  PetscValidLogicalCollectiveEnum(x, type, 2);
+  PetscValidRealPointer(val, 3);
 
-  /*
-   * Cached data?
-   */
-  if (type != NORM_1_AND_2) {
-    PetscCall(PetscObjectComposedDataGetReal((PetscObject)x, NormIds[type], *val, flg));
-    if (flg) PetscFunctionReturn(0);
-  }
+  /* Cached data? */
+  PetscCall(VecNormAvailable(x, type, &flg, val));
+  if (flg) PetscFunctionReturn(0);
+
+  PetscCall(VecLockReadPush(x));
   PetscCall(PetscLogEventBegin(VEC_Norm, x, 0, 0, 0));
   PetscUseTypeMethod(x, norm, type, val);
   PetscCall(PetscLogEventEnd(VEC_Norm, x, 0, 0, 0));
+  PetscCall(VecLockReadPop(x));
+
   if (type != NORM_1_AND_2) PetscCall(PetscObjectComposedDataSetReal((PetscObject)x, NormIds[type], *val));
   PetscFunctionReturn(0);
 }
@@ -260,14 +271,19 @@ $    work load imbalance that causes certain processes to arrive much earlier th
           `VecNormBegin()`, `VecNormEnd()`
 
 @*/
-PetscErrorCode VecNormAvailable(Vec x, NormType type, PetscBool *available, PetscReal *val) {
+PetscErrorCode VecNormAvailable(Vec x, NormType type, PetscBool *available, PetscReal *val)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x, VEC_CLASSID, 1);
-  PetscValidRealPointer(val, 4);
   PetscValidType(x, 1);
+  PetscValidBoolPointer(available, 3);
+  PetscValidRealPointer(val, 4);
 
-  *available = PETSC_FALSE;
-  if (type != NORM_1_AND_2) PetscCall(PetscObjectComposedDataGetReal((PetscObject)x, NormIds[type], *val, *available));
+  if (type == NORM_1_AND_2) {
+    *available = PETSC_FALSE;
+  } else {
+    PetscCall(PetscObjectComposedDataGetReal((PetscObject)x, NormIds[type], *val, *available));
+  }
   PetscFunctionReturn(0);
 }
 
@@ -285,22 +301,24 @@ PetscErrorCode VecNormAvailable(Vec x, NormType type, PetscBool *available, Pets
    Level: intermediate
 
 @*/
-PetscErrorCode VecNormalize(Vec x, PetscReal *val) {
+PetscErrorCode VecNormalize(Vec x, PetscReal *val)
+{
   PetscReal norm;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x, VEC_CLASSID, 1);
   PetscValidType(x, 1);
+  PetscCall(VecSetErrorIfLocked(x, 1));
+  if (val) PetscValidRealPointer(val, 2);
   PetscCall(PetscLogEventBegin(VEC_Normalize, x, 0, 0, 0));
   PetscCall(VecNorm(x, NORM_2, &norm));
   if (norm == 0.0) {
     PetscCall(PetscInfo(x, "Vector of zero norm can not be normalized; Returning only the zero norm\n"));
   } else if (norm != 1.0) {
-    PetscScalar tmp = 1.0 / norm;
-    PetscCall(VecScale(x, tmp));
+    PetscCall(VecScale(x, 1.0 / norm));
   }
-  if (val) *val = norm;
   PetscCall(PetscLogEventEnd(VEC_Normalize, x, 0, 0, 0));
+  if (val) *val = norm;
   PetscFunctionReturn(0);
 }
 
@@ -324,14 +342,18 @@ PetscErrorCode VecNormalize(Vec x, PetscReal *val) {
 
 .seealso: `VecNorm()`, `VecMin()`
 @*/
-PetscErrorCode VecMax(Vec x, PetscInt *p, PetscReal *val) {
+PetscErrorCode VecMax(Vec x, PetscInt *p, PetscReal *val)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x, VEC_CLASSID, 1);
-  PetscValidRealPointer(val, 3);
   PetscValidType(x, 1);
+  if (p) PetscValidIntPointer(p, 2);
+  PetscValidRealPointer(val, 3);
+  PetscCall(VecLockReadPush(x));
   PetscCall(PetscLogEventBegin(VEC_Max, x, 0, 0, 0));
   PetscUseTypeMethod(x, max, p, val);
   PetscCall(PetscLogEventEnd(VEC_Max, x, 0, 0, 0));
+  PetscCall(VecLockReadPop(x));
   PetscFunctionReturn(0);
 }
 
@@ -356,14 +378,18 @@ PetscErrorCode VecMax(Vec x, PetscInt *p, PetscReal *val) {
 
 .seealso: `VecMax()`
 @*/
-PetscErrorCode VecMin(Vec x, PetscInt *p, PetscReal *val) {
+PetscErrorCode VecMin(Vec x, PetscInt *p, PetscReal *val)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x, VEC_CLASSID, 1);
-  PetscValidRealPointer(val, 3);
   PetscValidType(x, 1);
+  if (p) PetscValidIntPointer(p, 2);
+  PetscValidRealPointer(val, 3);
+  PetscCall(VecLockReadPush(x));
   PetscCall(PetscLogEventBegin(VEC_Min, x, 0, 0, 0));
   PetscUseTypeMethod(x, min, p, val);
   PetscCall(PetscLogEventEnd(VEC_Min, x, 0, 0, 0));
+  PetscCall(VecLockReadPop(x));
   PetscFunctionReturn(0);
 }
 
@@ -392,7 +418,8 @@ $     val = (x,y) = y^H x,
 
 .seealso: `VecDot()`, `VecMTDot()`
 @*/
-PetscErrorCode VecTDot(Vec x, Vec y, PetscScalar *val) {
+PetscErrorCode VecTDot(Vec x, Vec y, PetscScalar *val)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x, VEC_CLASSID, 1);
   PetscValidHeaderSpecific(y, VEC_CLASSID, 2);
@@ -402,9 +429,13 @@ PetscErrorCode VecTDot(Vec x, Vec y, PetscScalar *val) {
   PetscCheckSameTypeAndComm(x, 1, y, 2);
   VecCheckSameSize(x, 1, y, 2);
 
+  PetscCall(VecLockReadPush(x));
+  PetscCall(VecLockReadPush(y));
   PetscCall(PetscLogEventBegin(VEC_TDot, x, y, 0, 0));
   PetscUseTypeMethod(x, tdot, y, val);
   PetscCall(PetscLogEventEnd(VEC_TDot, x, y, 0, 0));
+  PetscCall(VecLockReadPop(x));
+  PetscCall(VecLockReadPop(y));
   PetscFunctionReturn(0);
 }
 
@@ -424,35 +455,37 @@ $      x[i] = alpha * x[i], for i=1,...,n.
    Level: intermediate
 
 @*/
-PetscErrorCode VecScale(Vec x, PetscScalar alpha) {
-  PetscReal norms[4] = {0.0, 0.0, 0.0, 0.0};
+PetscErrorCode VecScale(Vec x, PetscScalar alpha)
+{
+  PetscReal norms[4];
   PetscBool flgs[4];
-  PetscInt  i;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x, VEC_CLASSID, 1);
   PetscValidType(x, 1);
   PetscCheck(x->stash.insertmode == NOT_SET_VALUES, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Not for unassembled vector");
+  PetscCall(VecSetErrorIfLocked(x, 1));
+  if (alpha == (PetscScalar)1.0) PetscFunctionReturn(0);
+
+  /* get current stashed norms */
+  for (PetscInt i = 0; i < 4; i++) PetscCall(PetscObjectComposedDataGetReal((PetscObject)x, NormIds[i], norms[i], flgs[i]));
+
   PetscCall(PetscLogEventBegin(VEC_Scale, x, 0, 0, 0));
-  if (alpha != (PetscScalar)1.0) {
-    PetscCall(VecSetErrorIfLocked(x, 1));
-    /* get current stashed norms */
-    for (i = 0; i < 4; i++) PetscCall(PetscObjectComposedDataGetReal((PetscObject)x, NormIds[i], norms[i], flgs[i]));
-    PetscUseTypeMethod(x, scale, alpha);
-    PetscCall(PetscObjectStateIncrease((PetscObject)x));
-    /* put the scaled stashed norms back into the Vec */
-    for (i = 0; i < 4; i++) {
-      if (flgs[i]) PetscCall(PetscObjectComposedDataSetReal((PetscObject)x, NormIds[i], PetscAbsScalar(alpha) * norms[i]));
-    }
-  }
+  PetscUseTypeMethod(x, scale, alpha);
   PetscCall(PetscLogEventEnd(VEC_Scale, x, 0, 0, 0));
+
+  PetscCall(PetscObjectStateIncrease((PetscObject)x));
+  /* put the scaled stashed norms back into the Vec */
+  for (PetscInt i = 0; i < 4; i++) {
+    if (flgs[i]) PetscCall(PetscObjectComposedDataSetReal((PetscObject)x, NormIds[i], PetscAbsScalar(alpha) * norms[i]));
+  }
   PetscFunctionReturn(0);
 }
 
 /*@
    VecSet - Sets all components of a vector to a single scalar value.
 
-   Logically Collective on Vec
+   Logically Collective on x
 
    Input Parameters:
 +  x  - the vector
@@ -461,24 +494,22 @@ PetscErrorCode VecScale(Vec x, PetscScalar alpha) {
    Output Parameter:
 .  x  - the vector
 
+   Level: beginner
+
    Note:
-   For a vector of dimension n, VecSet() computes
+   For a vector of dimension n, `VecSet()` computes
 $     x[i] = alpha, for i=1,...,n,
    so that all vector entries then equal the identical
    scalar value, alpha.  Use the more general routine
-   VecSetValues() to set different vector entries.
+   `VecSetValues()` to set different vector entries.
 
-   You CANNOT call this after you have called VecSetValues() but before you call
-   VecAssemblyBegin/End().
+   You CANNOT call this after you have called `VecSetValues()` but before you call
+   `VecAssemblyBegin()`
 
-   Level: beginner
-
-.seealso `VecSetValues()`, `VecSetValuesBlocked()`, `VecSetRandom()`
-
+.seealso: `VecSetValues()`, `VecSetValuesBlocked()`, `VecSetRandom()`
 @*/
-PetscErrorCode VecSet(Vec x, PetscScalar alpha) {
-  PetscReal val;
-
+PetscErrorCode VecSet(Vec x, PetscScalar alpha)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x, VEC_CLASSID, 1);
   PetscValidType(x, 1);
@@ -492,20 +523,25 @@ PetscErrorCode VecSet(Vec x, PetscScalar alpha) {
   PetscCall(PetscObjectStateIncrease((PetscObject)x));
 
   /*  norms can be simply set (if |alpha|*N not too large) */
-  val = PetscAbsScalar(alpha);
-  if (x->map->N == 0) {
-    PetscCall(PetscObjectComposedDataSetReal((PetscObject)x, NormIds[NORM_1], 0.0l));
-    PetscCall(PetscObjectComposedDataSetReal((PetscObject)x, NormIds[NORM_INFINITY], 0.0));
-    PetscCall(PetscObjectComposedDataSetReal((PetscObject)x, NormIds[NORM_2], 0.0));
-    PetscCall(PetscObjectComposedDataSetReal((PetscObject)x, NormIds[NORM_FROBENIUS], 0.0));
-  } else if (val > PETSC_MAX_REAL / x->map->N) {
-    PetscCall(PetscObjectComposedDataSetReal((PetscObject)x, NormIds[NORM_INFINITY], val));
-  } else {
-    PetscCall(PetscObjectComposedDataSetReal((PetscObject)x, NormIds[NORM_1], x->map->N * val));
-    PetscCall(PetscObjectComposedDataSetReal((PetscObject)x, NormIds[NORM_INFINITY], val));
-    val = PetscSqrtReal((PetscReal)x->map->N) * val;
-    PetscCall(PetscObjectComposedDataSetReal((PetscObject)x, NormIds[NORM_2], val));
-    PetscCall(PetscObjectComposedDataSetReal((PetscObject)x, NormIds[NORM_FROBENIUS], val));
+
+  {
+    PetscReal      val = PetscAbsScalar(alpha);
+    const PetscInt N   = x->map->N;
+
+    if (N == 0) {
+      PetscCall(PetscObjectComposedDataSetReal((PetscObject)x, NormIds[NORM_1], 0.0l));
+      PetscCall(PetscObjectComposedDataSetReal((PetscObject)x, NormIds[NORM_INFINITY], 0.0));
+      PetscCall(PetscObjectComposedDataSetReal((PetscObject)x, NormIds[NORM_2], 0.0));
+      PetscCall(PetscObjectComposedDataSetReal((PetscObject)x, NormIds[NORM_FROBENIUS], 0.0));
+    } else if (val > PETSC_MAX_REAL / N) {
+      PetscCall(PetscObjectComposedDataSetReal((PetscObject)x, NormIds[NORM_INFINITY], val));
+    } else {
+      PetscCall(PetscObjectComposedDataSetReal((PetscObject)x, NormIds[NORM_1], N * val));
+      PetscCall(PetscObjectComposedDataSetReal((PetscObject)x, NormIds[NORM_INFINITY], val));
+      val *= PetscSqrtReal((PetscReal)N);
+      PetscCall(PetscObjectComposedDataSetReal((PetscObject)x, NormIds[NORM_2], val));
+      PetscCall(PetscObjectComposedDataSetReal((PetscObject)x, NormIds[NORM_FROBENIUS], val));
+    }
   }
   PetscFunctionReturn(0);
 }
@@ -537,7 +573,8 @@ $    VecMAXPY(y,nv,alpha[],x[])           y = sum alpha[i] x[i] +      y
 
 .seealso: `VecAYPX()`, `VecMAXPY()`, `VecWAXPY()`, `VecAXPBYPCZ()`, `VecAXPBY()`
 @*/
-PetscErrorCode VecAXPY(Vec y, PetscScalar alpha, Vec x) {
+PetscErrorCode VecAXPY(Vec y, PetscScalar alpha, Vec x)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x, VEC_CLASSID, 3);
   PetscValidHeaderSpecific(y, VEC_CLASSID, 1);
@@ -548,101 +585,14 @@ PetscErrorCode VecAXPY(Vec y, PetscScalar alpha, Vec x) {
   PetscCheck(x != y, PetscObjectComm((PetscObject)x), PETSC_ERR_ARG_IDN, "x and y cannot be the same vector");
   PetscValidLogicalCollectiveScalar(y, alpha, 2);
   if (alpha == (PetscScalar)0.0) PetscFunctionReturn(0);
-  PetscCall(VecSetErrorIfLocked(y, 1));
 
+  PetscCall(VecSetErrorIfLocked(y, 1));
   PetscCall(VecLockReadPush(x));
   PetscCall(PetscLogEventBegin(VEC_AXPY, x, y, 0, 0));
   PetscUseTypeMethod(y, axpy, alpha, x);
   PetscCall(PetscLogEventEnd(VEC_AXPY, x, y, 0, 0));
   PetscCall(VecLockReadPop(x));
   PetscCall(PetscObjectStateIncrease((PetscObject)y));
-  PetscFunctionReturn(0);
-}
-
-/*@
-   VecAXPBY - Computes y = alpha x + beta y.
-
-   Logically Collective on Vec
-
-   Input Parameters:
-+  alpha,beta - the scalars
--  x, y  - the vectors
-
-   Output Parameter:
-.  y - output vector
-
-   Level: intermediate
-
-   Notes:
-    x and y MUST be different vectors
-    The implementation is optimized for alpha and/or beta values of 0.0 and 1.0
-
-.seealso: `VecAYPX()`, `VecMAXPY()`, `VecWAXPY()`, `VecAXPY()`, `VecAXPBYPCZ()`
-@*/
-PetscErrorCode VecAXPBY(Vec y, PetscScalar alpha, PetscScalar beta, Vec x) {
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(x, VEC_CLASSID, 4);
-  PetscValidHeaderSpecific(y, VEC_CLASSID, 1);
-  PetscValidType(x, 4);
-  PetscValidType(y, 1);
-  PetscCheckSameTypeAndComm(x, 4, y, 1);
-  VecCheckSameSize(y, 1, x, 4);
-  PetscCheck(x != y, PetscObjectComm((PetscObject)x), PETSC_ERR_ARG_IDN, "x and y cannot be the same vector");
-  PetscValidLogicalCollectiveScalar(y, alpha, 2);
-  PetscValidLogicalCollectiveScalar(y, beta, 3);
-  if (alpha == (PetscScalar)0.0 && beta == (PetscScalar)1.0) PetscFunctionReturn(0);
-  PetscCall(VecSetErrorIfLocked(y, 1));
-  PetscCall(PetscLogEventBegin(VEC_AXPY, x, y, 0, 0));
-  PetscUseTypeMethod(y, axpby, alpha, beta, x);
-  PetscCall(PetscLogEventEnd(VEC_AXPY, x, y, 0, 0));
-  PetscCall(PetscObjectStateIncrease((PetscObject)y));
-  PetscFunctionReturn(0);
-}
-
-/*@
-   VecAXPBYPCZ - Computes z = alpha x + beta y + gamma z
-
-   Logically Collective on Vec
-
-   Input Parameters:
-+  alpha,beta, gamma - the scalars
--  x, y, z  - the vectors
-
-   Output Parameter:
-.  z - output vector
-
-   Level: intermediate
-
-   Notes:
-    x, y and z must be different vectors
-    The implementation is optimized for alpha of 1.0 and gamma of 1.0 or 0.0
-
-.seealso: `VecAYPX()`, `VecMAXPY()`, `VecWAXPY()`, `VecAXPY()`, `VecAXPBY()`
-@*/
-PetscErrorCode VecAXPBYPCZ(Vec z, PetscScalar alpha, PetscScalar beta, PetscScalar gamma, Vec x, Vec y) {
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(x, VEC_CLASSID, 5);
-  PetscValidHeaderSpecific(y, VEC_CLASSID, 6);
-  PetscValidHeaderSpecific(z, VEC_CLASSID, 1);
-  PetscValidType(x, 5);
-  PetscValidType(y, 6);
-  PetscValidType(z, 1);
-  PetscCheckSameTypeAndComm(x, 5, y, 6);
-  PetscCheckSameTypeAndComm(x, 5, z, 1);
-  VecCheckSameSize(x, 1, y, 5);
-  VecCheckSameSize(x, 1, z, 6);
-  PetscCheck(x != y && x != z, PetscObjectComm((PetscObject)x), PETSC_ERR_ARG_IDN, "x, y, and z must be different vectors");
-  PetscCheck(y != z, PetscObjectComm((PetscObject)y), PETSC_ERR_ARG_IDN, "x, y, and z must be different vectors");
-  PetscValidLogicalCollectiveScalar(z, alpha, 2);
-  PetscValidLogicalCollectiveScalar(z, beta, 3);
-  PetscValidLogicalCollectiveScalar(z, gamma, 4);
-  if (alpha == (PetscScalar)0.0 && beta == (PetscScalar)0.0 && gamma == (PetscScalar)1.0) PetscFunctionReturn(0);
-  PetscCall(VecSetErrorIfLocked(z, 1));
-
-  PetscCall(PetscLogEventBegin(VEC_AXPBYPCZ, x, y, z, 0));
-  PetscUseTypeMethod(z, axpbypcz, alpha, beta, gamma, x, y);
-  PetscCall(PetscLogEventEnd(VEC_AXPBYPCZ, x, y, z, 0));
-  PetscCall(PetscObjectStateIncrease((PetscObject)z));
   PetscFunctionReturn(0);
 }
 
@@ -666,7 +616,8 @@ PetscErrorCode VecAXPBYPCZ(Vec z, PetscScalar alpha, PetscScalar beta, PetscScal
 
 .seealso: `VecMAXPY()`, `VecWAXPY()`, `VecAXPY()`, `VecAXPBYPCZ()`, `VecAXPBY()`
 @*/
-PetscErrorCode VecAYPX(Vec y, PetscScalar beta, Vec x) {
+PetscErrorCode VecAYPX(Vec y, PetscScalar beta, Vec x)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x, VEC_CLASSID, 3);
   PetscValidHeaderSpecific(y, VEC_CLASSID, 1);
@@ -677,11 +628,112 @@ PetscErrorCode VecAYPX(Vec y, PetscScalar beta, Vec x) {
   PetscCheck(x != y, PetscObjectComm((PetscObject)x), PETSC_ERR_ARG_IDN, "x and y must be different vectors");
   PetscValidLogicalCollectiveScalar(y, beta, 2);
   PetscCall(VecSetErrorIfLocked(y, 1));
+  PetscCall(VecLockReadPush(x));
+  if (beta == (PetscScalar)0.0) {
+    PetscCall(VecCopy(x, y));
+  } else {
+    PetscCall(PetscLogEventBegin(VEC_AYPX, x, y, 0, 0));
+    PetscUseTypeMethod(y, aypx, beta, x);
+    PetscCall(PetscLogEventEnd(VEC_AYPX, x, y, 0, 0));
+    PetscCall(PetscObjectStateIncrease((PetscObject)y));
+  }
+  PetscCall(VecLockReadPop(x));
+  PetscFunctionReturn(0);
+}
 
-  PetscCall(PetscLogEventBegin(VEC_AYPX, x, y, 0, 0));
-  PetscUseTypeMethod(y, aypx, beta, x);
-  PetscCall(PetscLogEventEnd(VEC_AYPX, x, y, 0, 0));
+/*@
+   VecAXPBY - Computes y = alpha x + beta y.
+
+   Logically Collective on Vec
+
+   Input Parameters:
++  alpha,beta - the scalars
+-  x, y  - the vectors
+
+   Output Parameter:
+.  y - output vector
+
+   Level: intermediate
+
+   Notes:
+    x and y MUST be different vectors
+    The implementation is optimized for alpha and/or beta values of 0.0 and 1.0
+
+.seealso: `VecAYPX()`, `VecMAXPY()`, `VecWAXPY()`, `VecAXPY()`, `VecAXPBYPCZ()`
+@*/
+PetscErrorCode VecAXPBY(Vec y, PetscScalar alpha, PetscScalar beta, Vec x)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(x, VEC_CLASSID, 4);
+  PetscValidHeaderSpecific(y, VEC_CLASSID, 1);
+  PetscValidType(x, 4);
+  PetscValidType(y, 1);
+  PetscCheckSameTypeAndComm(x, 4, y, 1);
+  VecCheckSameSize(y, 1, x, 4);
+  PetscCheck(x != y, PetscObjectComm((PetscObject)x), PETSC_ERR_ARG_IDN, "x and y cannot be the same vector");
+  PetscValidLogicalCollectiveScalar(y, alpha, 2);
+  PetscValidLogicalCollectiveScalar(y, beta, 3);
+  if (alpha == (PetscScalar)0.0 && beta == (PetscScalar)1.0) PetscFunctionReturn(0);
+
+  PetscCall(VecSetErrorIfLocked(y, 1));
+  PetscCall(VecLockReadPush(x));
+  PetscCall(PetscLogEventBegin(VEC_AXPY, y, x, 0, 0));
+  PetscUseTypeMethod(y, axpby, alpha, beta, x);
+  PetscCall(PetscLogEventEnd(VEC_AXPY, y, x, 0, 0));
   PetscCall(PetscObjectStateIncrease((PetscObject)y));
+  PetscCall(VecLockReadPop(x));
+  PetscFunctionReturn(0);
+}
+
+/*@
+   VecAXPBYPCZ - Computes z = alpha x + beta y + gamma z
+
+   Logically Collective on Vec
+
+   Input Parameters:
++  alpha,beta, gamma - the scalars
+-  x, y, z  - the vectors
+
+   Output Parameter:
+.  z - output vector
+
+   Level: intermediate
+
+   Notes:
+    x, y and z must be different vectors
+    The implementation is optimized for alpha of 1.0 and gamma of 1.0 or 0.0
+
+.seealso: `VecAYPX()`, `VecMAXPY()`, `VecWAXPY()`, `VecAXPY()`, `VecAXPBY()`
+@*/
+PetscErrorCode VecAXPBYPCZ(Vec z, PetscScalar alpha, PetscScalar beta, PetscScalar gamma, Vec x, Vec y)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(z, VEC_CLASSID, 1);
+  PetscValidHeaderSpecific(x, VEC_CLASSID, 5);
+  PetscValidHeaderSpecific(y, VEC_CLASSID, 6);
+  PetscValidType(z, 1);
+  PetscValidType(x, 5);
+  PetscValidType(y, 6);
+  PetscCheckSameTypeAndComm(x, 5, y, 6);
+  PetscCheckSameTypeAndComm(x, 5, z, 1);
+  VecCheckSameSize(x, 1, y, 5);
+  VecCheckSameSize(x, 1, z, 6);
+  PetscCheck(x != y && x != z, PetscObjectComm((PetscObject)x), PETSC_ERR_ARG_IDN, "x, y, and z must be different vectors");
+  PetscCheck(y != z, PetscObjectComm((PetscObject)y), PETSC_ERR_ARG_IDN, "x, y, and z must be different vectors");
+  PetscValidLogicalCollectiveScalar(z, alpha, 2);
+  PetscValidLogicalCollectiveScalar(z, beta, 3);
+  PetscValidLogicalCollectiveScalar(z, gamma, 4);
+  if (alpha == (PetscScalar)0.0 && beta == (PetscScalar)0.0 && gamma == (PetscScalar)1.0) PetscFunctionReturn(0);
+
+  PetscCall(VecSetErrorIfLocked(z, 1));
+  PetscCall(VecLockReadPush(x));
+  PetscCall(VecLockReadPush(y));
+  PetscCall(PetscLogEventBegin(VEC_AXPBYPCZ, x, y, z, 0));
+  PetscUseTypeMethod(z, axpbypcz, alpha, beta, gamma, x, y);
+  PetscCall(PetscLogEventEnd(VEC_AXPBYPCZ, x, y, z, 0));
+  PetscCall(PetscObjectStateIncrease((PetscObject)z));
+  PetscCall(VecLockReadPop(x));
+  PetscCall(VecLockReadPop(y));
   PetscFunctionReturn(0);
 }
 
@@ -705,7 +757,8 @@ PetscErrorCode VecAYPX(Vec y, PetscScalar beta, Vec x) {
 
 .seealso: `VecAXPY()`, `VecAYPX()`, `VecAXPBY()`, `VecMAXPY()`, `VecAXPBYPCZ()`
 @*/
-PetscErrorCode VecWAXPY(Vec w, PetscScalar alpha, Vec x, Vec y) {
+PetscErrorCode VecWAXPY(Vec w, PetscScalar alpha, Vec x, Vec y)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(w, VEC_CLASSID, 1);
   PetscValidHeaderSpecific(x, VEC_CLASSID, 3);
@@ -722,10 +775,18 @@ PetscErrorCode VecWAXPY(Vec w, PetscScalar alpha, Vec x, Vec y) {
   PetscValidLogicalCollectiveScalar(y, alpha, 2);
   PetscCall(VecSetErrorIfLocked(w, 1));
 
-  PetscCall(PetscLogEventBegin(VEC_WAXPY, x, y, w, 0));
-  PetscUseTypeMethod(w, waxpy, alpha, x, y);
-  PetscCall(PetscLogEventEnd(VEC_WAXPY, x, y, w, 0));
-  PetscCall(PetscObjectStateIncrease((PetscObject)w));
+  PetscCall(VecLockReadPush(x));
+  PetscCall(VecLockReadPush(y));
+  if (alpha == (PetscScalar)0.0) {
+    PetscCall(VecCopy(y, w));
+  } else {
+    PetscCall(PetscLogEventBegin(VEC_WAXPY, x, y, w, 0));
+    PetscUseTypeMethod(w, waxpy, alpha, x, y);
+    PetscCall(PetscLogEventEnd(VEC_WAXPY, x, y, w, 0));
+    PetscCall(PetscObjectStateIncrease((PetscObject)w));
+  }
+  PetscCall(VecLockReadPop(x));
+  PetscCall(VecLockReadPop(y));
   PetscFunctionReturn(0);
 }
 
@@ -766,7 +827,8 @@ PetscErrorCode VecWAXPY(Vec w, PetscScalar alpha, Vec x, Vec y) {
 .seealso: `VecAssemblyBegin()`, `VecAssemblyEnd()`, `VecSetValuesLocal()`,
           `VecSetValue()`, `VecSetValuesBlocked()`, `InsertMode`, `INSERT_VALUES`, `ADD_VALUES`, `VecGetValues()`
 @*/
-PetscErrorCode VecSetValues(Vec x, PetscInt ni, const PetscInt ix[], const PetscScalar y[], InsertMode iora) {
+PetscErrorCode VecSetValues(Vec x, PetscInt ni, const PetscInt ix[], const PetscScalar y[], InsertMode iora)
+{
   PetscFunctionBeginHot;
   PetscValidHeaderSpecific(x, VEC_CLASSID, 1);
   if (!ni) PetscFunctionReturn(0);
@@ -812,7 +874,8 @@ PetscErrorCode VecSetValues(Vec x, PetscInt ni, const PetscInt ix[], const Petsc
 
 .seealso: `VecAssemblyBegin()`, `VecAssemblyEnd()`, `VecSetValues()`
 @*/
-PetscErrorCode VecGetValues(Vec x, PetscInt ni, const PetscInt ix[], PetscScalar y[]) {
+PetscErrorCode VecGetValues(Vec x, PetscInt ni, const PetscInt ix[], PetscScalar y[])
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x, VEC_CLASSID, 1);
   if (!ni) PetscFunctionReturn(0);
@@ -860,7 +923,8 @@ PetscErrorCode VecGetValues(Vec x, PetscInt ni, const PetscInt ix[], PetscScalar
 .seealso: `VecAssemblyBegin()`, `VecAssemblyEnd()`, `VecSetValuesBlockedLocal()`,
           `VecSetValues()`
 @*/
-PetscErrorCode VecSetValuesBlocked(Vec x, PetscInt ni, const PetscInt ix[], const PetscScalar y[], InsertMode iora) {
+PetscErrorCode VecSetValuesBlocked(Vec x, PetscInt ni, const PetscInt ix[], const PetscScalar y[], InsertMode iora)
+{
   PetscFunctionBeginHot;
   PetscValidHeaderSpecific(x, VEC_CLASSID, 1);
   if (!ni) PetscFunctionReturn(0);
@@ -907,7 +971,8 @@ PetscErrorCode VecSetValuesBlocked(Vec x, PetscInt ni, const PetscInt ix[], cons
 .seealso: `VecAssemblyBegin()`, `VecAssemblyEnd()`, `VecSetValues()`, `VecSetLocalToGlobalMapping()`,
           `VecSetValuesBlockedLocal()`
 @*/
-PetscErrorCode VecSetValuesLocal(Vec x, PetscInt ni, const PetscInt ix[], const PetscScalar y[], InsertMode iora) {
+PetscErrorCode VecSetValuesLocal(Vec x, PetscInt ni, const PetscInt ix[], const PetscScalar y[], InsertMode iora)
+{
   PetscInt lixp[128], *lix = lixp;
 
   PetscFunctionBeginHot;
@@ -964,7 +1029,8 @@ PetscErrorCode VecSetValuesLocal(Vec x, PetscInt ni, const PetscInt ix[], const 
 .seealso: `VecAssemblyBegin()`, `VecAssemblyEnd()`, `VecSetValues()`, `VecSetValuesBlocked()`,
           `VecSetLocalToGlobalMapping()`
 @*/
-PetscErrorCode VecSetValuesBlockedLocal(Vec x, PetscInt ni, const PetscInt ix[], const PetscScalar y[], InsertMode iora) {
+PetscErrorCode VecSetValuesBlockedLocal(Vec x, PetscInt ni, const PetscInt ix[], const PetscScalar y[], InsertMode iora)
+{
   PetscInt lixp[128], *lix = lixp;
 
   PetscFunctionBeginHot;
@@ -984,6 +1050,33 @@ PetscErrorCode VecSetValuesBlockedLocal(Vec x, PetscInt ni, const PetscInt ix[],
   }
   PetscCall(PetscLogEventEnd(VEC_SetValues, x, 0, 0, 0));
   PetscCall(PetscObjectStateIncrease((PetscObject)x));
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode VecMXDot_Priate(Vec x, PetscInt nv, const Vec y[], PetscScalar result[], PetscErrorCode (*mxdot)(Vec, PetscInt, const Vec[], PetscScalar[]), PetscLogEvent event)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(x, VEC_CLASSID, 1);
+  PetscValidType(x, 1);
+  PetscValidLogicalCollectiveInt(x, nv, 2);
+  if (!nv) PetscFunctionReturn(0);
+  PetscValidPointer(y, 3);
+  for (PetscInt i = 0; i < nv; ++i) {
+    PetscValidHeaderSpecific(y[i], VEC_CLASSID, 3);
+    PetscValidType(y[i], 3);
+    PetscCheckSameTypeAndComm(x, 1, y[i], 3);
+    VecCheckSameSize(x, 1, y[i], 3);
+    PetscCall(VecLockReadPush(y[i]));
+  }
+  PetscValidScalarPointer(result, 4);
+  PetscValidFunction(mxdot, 5);
+
+  PetscCall(VecLockReadPush(x));
+  PetscCall(PetscLogEventBegin(event, x, *y, 0, 0));
+  PetscCall((*mxdot)(x, nv, y, result));
+  PetscCall(PetscLogEventEnd(event, x, *y, 0, 0));
+  PetscCall(VecLockReadPop(x));
+  for (PetscInt i = 0; i < nv; ++i) PetscCall(VecLockReadPop(y[i]));
   PetscFunctionReturn(0);
 }
 
@@ -1014,22 +1107,11 @@ $      val = (x,y) = y^H x,
 
 .seealso: `VecMDot()`, `VecTDot()`
 @*/
-PetscErrorCode VecMTDot(Vec x, PetscInt nv, const Vec y[], PetscScalar val[]) {
+PetscErrorCode VecMTDot(Vec x, PetscInt nv, const Vec y[], PetscScalar val[])
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x, VEC_CLASSID, 1);
-  PetscValidLogicalCollectiveInt(x, nv, 2);
-  if (!nv) PetscFunctionReturn(0);
-  PetscValidPointer(y, 3);
-  PetscValidHeaderSpecific(*y, VEC_CLASSID, 3);
-  PetscValidScalarPointer(val, 4);
-  PetscValidType(x, 1);
-  PetscValidType(*y, 3);
-  PetscCheckSameTypeAndComm(x, 1, *y, 3);
-  VecCheckSameSize(x, 1, *y, 3);
-
-  PetscCall(PetscLogEventBegin(VEC_MTDot, x, *y, 0, 0));
-  PetscUseTypeMethod(x, mtdot, nv, y, val);
-  PetscCall(PetscLogEventEnd(VEC_MTDot, x, *y, 0, 0));
+  PetscCall(VecMXDot_Priate(x, nv, y, val, x->ops->mtdot, VEC_MTDot));
   PetscFunctionReturn(0);
 }
 
@@ -1059,23 +1141,11 @@ $     val = (x,y) = y^T x,
 
 .seealso: `VecMTDot()`, `VecDot()`
 @*/
-PetscErrorCode VecMDot(Vec x, PetscInt nv, const Vec y[], PetscScalar val[]) {
+PetscErrorCode VecMDot(Vec x, PetscInt nv, const Vec y[], PetscScalar val[])
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x, VEC_CLASSID, 1);
-  PetscValidLogicalCollectiveInt(x, nv, 2);
-  if (!nv) PetscFunctionReturn(0);
-  PetscCheck(nv >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Number of vectors (given %" PetscInt_FMT ") cannot be negative", nv);
-  PetscValidPointer(y, 3);
-  PetscValidHeaderSpecific(*y, VEC_CLASSID, 3);
-  PetscValidScalarPointer(val, 4);
-  PetscValidType(x, 1);
-  PetscValidType(*y, 3);
-  PetscCheckSameTypeAndComm(x, 1, *y, 3);
-  VecCheckSameSize(x, 1, *y, 3);
-
-  PetscCall(PetscLogEventBegin(VEC_MDot, x, *y, 0, 0));
-  PetscUseTypeMethod(x, mdot, nv, y, val);
-  PetscCall(PetscLogEventEnd(VEC_MDot, x, *y, 0, 0));
+  PetscCall(VecMXDot_Priate(x, nv, y, val, x->ops->mdot, VEC_MDot));
   PetscFunctionReturn(0);
 }
 
@@ -1097,30 +1167,38 @@ PetscErrorCode VecMDot(Vec x, PetscInt nv, const Vec y[], PetscScalar val[]) {
 
 .seealso: `VecAYPX()`, `VecWAXPY()`, `VecAXPY()`, `VecAXPBYPCZ()`, `VecAXPBY()`
 @*/
-PetscErrorCode VecMAXPY(Vec y, PetscInt nv, const PetscScalar alpha[], Vec x[]) {
-  PetscInt  i;
-  PetscBool nonzero;
-
+PetscErrorCode VecMAXPY(Vec y, PetscInt nv, const PetscScalar alpha[], Vec x[])
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(y, VEC_CLASSID, 1);
   PetscValidLogicalCollectiveInt(y, nv, 2);
-  if (!nv) PetscFunctionReturn(0);
-  PetscCheck(nv >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Number of vectors (given %" PetscInt_FMT ") cannot be negative", nv);
-  PetscValidScalarPointer(alpha, 3);
-  PetscValidPointer(x, 4);
-  PetscValidHeaderSpecific(*x, VEC_CLASSID, 4);
-  PetscValidType(y, 1);
-  PetscValidType(*x, 4);
-  PetscCheckSameTypeAndComm(y, 1, *x, 4);
-  VecCheckSameSize(y, 1, *x, 4);
-  for (i = 0; i < nv; i++) PetscValidLogicalCollectiveScalar(y, alpha[i], 3);
-  for (i = 0, nonzero = PETSC_FALSE; i < nv && !nonzero; i++) nonzero = (PetscBool)(nonzero || alpha[i] != (PetscScalar)0.0);
-  if (!nonzero) PetscFunctionReturn(0);
   PetscCall(VecSetErrorIfLocked(y, 1));
-  PetscCall(PetscLogEventBegin(VEC_MAXPY, *x, y, 0, 0));
-  PetscUseTypeMethod(y, maxpy, nv, alpha, x);
-  PetscCall(PetscLogEventEnd(VEC_MAXPY, *x, y, 0, 0));
-  PetscCall(PetscObjectStateIncrease((PetscObject)y));
+  PetscCheck(nv >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Number of vectors (given %" PetscInt_FMT ") cannot be negative", nv);
+  if (nv) {
+    PetscInt zeros = 0;
+
+    PetscValidScalarPointer(alpha, 3);
+    PetscValidPointer(x, 4);
+    for (PetscInt i = 0; i < nv; ++i) {
+      PetscValidLogicalCollectiveScalar(y, alpha[i], 3);
+      PetscValidHeaderSpecific(x[i], VEC_CLASSID, 4);
+      PetscValidType(x[i], 4);
+      PetscCheckSameTypeAndComm(y, 1, x[i], 4);
+      VecCheckSameSize(y, 1, x[i], 4);
+      PetscCheck(y != x[i], PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Array of vectors 'x' cannot contain y, found x[%" PetscInt_FMT "] == y", i);
+      PetscCall(VecLockReadPush(x[i]));
+      zeros += alpha[i] == (PetscScalar)0.0;
+    }
+
+    if (zeros < nv) {
+      PetscCall(PetscLogEventBegin(VEC_MAXPY, y, *x, 0, 0));
+      PetscUseTypeMethod(y, maxpy, nv, alpha, x);
+      PetscCall(PetscLogEventEnd(VEC_MAXPY, y, *x, 0, 0));
+      PetscCall(PetscObjectStateIncrease((PetscObject)y));
+    }
+
+    for (PetscInt i = 0; i < nv; ++i) PetscCall(VecLockReadPop(x[i]));
+  }
   PetscFunctionReturn(0);
 }
 
@@ -1153,7 +1231,8 @@ PetscErrorCode VecMAXPY(Vec y, PetscInt nv, const PetscScalar alpha[], Vec x[]) 
 
 .seealso: `VECNEST`, `VECSCATTER`, `VecScatterCreate()`
 @*/
-PetscErrorCode VecConcatenate(PetscInt nx, const Vec X[], Vec *Y, IS *x_is[]) {
+PetscErrorCode VecConcatenate(PetscInt nx, const Vec X[], Vec *Y, IS *x_is[])
+{
   MPI_Comm comm;
   VecType  vec_type;
   Vec      Ytmp, Xtmp;
@@ -1216,7 +1295,8 @@ PetscErrorCode VecConcatenate(PetscInt nx, const Vec X[], Vec *Y, IS *x_is[]) {
 -   blocksize - the block size of the subvector
 
 */
-PetscErrorCode VecGetSubVectorContiguityAndBS_Private(Vec X, IS is, PetscBool *contig, PetscInt *start, PetscInt *blocksize) {
+PetscErrorCode VecGetSubVectorContiguityAndBS_Private(Vec X, IS is, PetscBool *contig, PetscInt *start, PetscInt *blocksize)
+{
   PetscInt  gstart, gend, lstart;
   PetscBool red[2] = {PETSC_TRUE /*contiguous*/, PETSC_TRUE /*validVBS*/};
   PetscInt  n, N, ibs, vbs, bs = -1;
@@ -1254,7 +1334,8 @@ PetscErrorCode VecGetSubVectorContiguityAndBS_Private(Vec X, IS is, PetscBool *c
     Output Parameters:
 .   Z  - the subvector, which will compose the VecScatter context on output
 */
-PetscErrorCode VecGetSubVectorThroughVecScatter_Private(Vec X, IS is, PetscInt bs, Vec *Z) {
+PetscErrorCode VecGetSubVectorThroughVecScatter_Private(Vec X, IS is, PetscInt bs, Vec *Z)
+{
   PetscInt   n, N;
   VecScatter vscat;
   Vec        Y;
@@ -1299,7 +1380,8 @@ PetscErrorCode VecGetSubVectorThroughVecScatter_Private(Vec X, IS is, PetscInt b
 
 .seealso: `MatCreateSubMatrix()`
 @*/
-PetscErrorCode VecGetSubVector(Vec X, IS is, Vec *Y) {
+PetscErrorCode VecGetSubVector(Vec X, IS is, Vec *Y)
+{
   Vec Z;
 
   PetscFunctionBegin;
@@ -1414,7 +1496,8 @@ PetscErrorCode VecGetSubVector(Vec X, IS is, Vec *Y) {
 
 .seealso: `VecGetSubVector()`
 @*/
-PetscErrorCode VecRestoreSubVector(Vec X, IS is, Vec *Y) {
+PetscErrorCode VecRestoreSubVector(Vec X, IS is, Vec *Y)
+{
   PETSC_UNUSED PetscObjectState dummystate = 0;
   PetscBool                     unchanged;
 
@@ -1466,7 +1549,8 @@ PetscErrorCode VecRestoreSubVector(Vec X, IS is, Vec *Y) {
             if (ymask == PETSC_OFFLOAD_GPU) PetscCall(VecResetArray(*Y));
             break;
           case PETSC_OFFLOAD_UNALLOCATED:
-          case PETSC_OFFLOAD_KOKKOS: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "This should not happen");
+          case PETSC_OFFLOAD_KOKKOS:
+            SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "This should not happen");
           }
 #endif
         } else if (iship) {
@@ -1491,7 +1575,8 @@ PetscErrorCode VecRestoreSubVector(Vec X, IS is, Vec *Y) {
             if (ymask == PETSC_OFFLOAD_GPU) PetscCall(VecResetArray(*Y));
             break;
           case PETSC_OFFLOAD_UNALLOCATED:
-          case PETSC_OFFLOAD_KOKKOS: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "This should not happen");
+          case PETSC_OFFLOAD_KOKKOS:
+            SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "This should not happen");
           }
 #endif
         } else {
@@ -1522,7 +1607,8 @@ PetscErrorCode VecRestoreSubVector(Vec X, IS is, Vec *Y) {
 
 .seealso: `VecGetLocalVectorRead()`, `VecRestoreLocalVectorRead()`, `VecGetLocalVector()`, `VecRestoreLocalVector()`
 @*/
-PetscErrorCode VecCreateLocalVector(Vec v, Vec *w) {
+PetscErrorCode VecCreateLocalVector(Vec v, Vec *w)
+{
   PetscMPIInt size;
 
   PetscFunctionBegin;
@@ -1577,9 +1663,8 @@ PetscErrorCode VecCreateLocalVector(Vec v, Vec *w) {
 
 .seealso: `VecCreateLocalVector()`, `VecRestoreLocalVectorRead()`, `VecGetLocalVector()`, `VecGetArrayRead()`, `VecGetArray()`
 @*/
-PetscErrorCode VecGetLocalVectorRead(Vec v, Vec w) {
-  PetscScalar *a;
-
+PetscErrorCode VecGetLocalVectorRead(Vec v, Vec w)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v, VEC_CLASSID, 1);
   PetscValidHeaderSpecific(w, VEC_CLASSID, 2);
@@ -1587,6 +1672,8 @@ PetscErrorCode VecGetLocalVectorRead(Vec v, Vec w) {
   if (v->ops->getlocalvectorread) {
     PetscUseTypeMethod(v, getlocalvectorread, w);
   } else {
+    PetscScalar *a;
+
     PetscCall(VecGetArrayRead(v, (const PetscScalar **)&a));
     PetscCall(VecPlaceArray(w, a));
   }
@@ -1610,16 +1697,18 @@ PetscErrorCode VecGetLocalVectorRead(Vec v, Vec w) {
 
 .seealso: `VecCreateLocalVector()`, `VecGetLocalVectorRead()`, `VecGetLocalVector()`, `VecGetArrayRead()`, `VecGetArray()`
 @*/
-PetscErrorCode VecRestoreLocalVectorRead(Vec v, Vec w) {
-  PetscScalar *a;
-
+PetscErrorCode VecRestoreLocalVectorRead(Vec v, Vec w)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v, VEC_CLASSID, 1);
   PetscValidHeaderSpecific(w, VEC_CLASSID, 2);
-  if (v->ops->restorelocalvectorread) PetscUseTypeMethod(v, restorelocalvectorread, w);
-  else {
-    PetscCall(VecGetArrayRead(w, (const PetscScalar **)&a));
-    PetscCall(VecRestoreArrayRead(v, (const PetscScalar **)&a));
+  if (v->ops->restorelocalvectorread) {
+    PetscUseTypeMethod(v, restorelocalvectorread, w);
+  } else {
+    const PetscScalar *a;
+
+    PetscCall(VecGetArrayRead(w, &a));
+    PetscCall(VecRestoreArrayRead(v, &a));
     PetscCall(VecResetArray(w));
   }
   PetscCall(VecLockReadPop(v));
@@ -1655,15 +1744,17 @@ PetscErrorCode VecRestoreLocalVectorRead(Vec v, Vec w) {
 
 .seealso: `VecCreateLocalVector()`, `VecRestoreLocalVector()`, `VecGetLocalVectorRead()`, `VecGetArrayRead()`, `VecGetArray()`
 @*/
-PetscErrorCode VecGetLocalVector(Vec v, Vec w) {
-  PetscScalar *a;
-
+PetscErrorCode VecGetLocalVector(Vec v, Vec w)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v, VEC_CLASSID, 1);
   PetscValidHeaderSpecific(w, VEC_CLASSID, 2);
   VecCheckSameLocalSize(v, 1, w, 2);
-  if (v->ops->getlocalvector) PetscUseTypeMethod(v, getlocalvector, w);
-  else {
+  if (v->ops->getlocalvector) {
+    PetscUseTypeMethod(v, getlocalvector, w);
+  } else {
+    PetscScalar *a;
+
     PetscCall(VecGetArray(v, &a));
     PetscCall(VecPlaceArray(w, a));
   }
@@ -1685,14 +1776,15 @@ PetscErrorCode VecGetLocalVector(Vec v, Vec w) {
 
 .seealso: `VecCreateLocalVector()`, `VecGetLocalVector()`, `VecGetLocalVectorRead()`, `VecRestoreLocalVectorRead()`, `LocalVectorRead()`, `VecGetArrayRead()`, `VecGetArray()`
 @*/
-PetscErrorCode VecRestoreLocalVector(Vec v, Vec w) {
-  PetscScalar *a;
-
+PetscErrorCode VecRestoreLocalVector(Vec v, Vec w)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v, VEC_CLASSID, 1);
   PetscValidHeaderSpecific(w, VEC_CLASSID, 2);
-  if (v->ops->restorelocalvector) PetscUseTypeMethod(v, restorelocalvector, w);
-  else {
+  if (v->ops->restorelocalvector) {
+    PetscUseTypeMethod(v, restorelocalvector, w);
+  } else {
+    PetscScalar *a;
     PetscCall(VecGetArray(w, &a));
     PetscCall(VecRestoreArray(v, &a));
     PetscCall(VecResetArray(w));
@@ -1721,18 +1813,20 @@ PetscErrorCode VecRestoreLocalVector(Vec v, Vec w) {
 
    Fortran Note:
    This routine is used differently from Fortran 77
-$    Vec         x
-$    PetscScalar x_array(1)
-$    PetscOffset i_x
-$    PetscErrorCode ierr
-$       call VecGetArray(x,x_array,i_x,ierr)
-$
-$   Access first local entry in vector with
-$      value = x_array(i_x + 1)
-$
-$      ...... other code
-$       call VecRestoreArray(x,x_array,i_x,ierr)
-   For Fortran 90 see VecGetArrayF90()
+.vb
+    Vec         x
+    PetscScalar x_array(1)
+    PetscOffset i_x
+    PetscErrorCode ierr
+    call VecGetArray(x,x_array,i_x,ierr)
+
+    Access first local entry in vector with
+    value = x_array(i_x + 1)
+
+    ...... other code
+    call VecRestoreArray(x,x_array,i_x,ierr)
+.ve
+   For Fortran 90 see `VecGetArrayF90()`
 
    See the Fortran chapter of the users manual and
    petsc/src/snes/tutorials/ex5f.F for details.
@@ -1742,7 +1836,8 @@ $       call VecRestoreArray(x,x_array,i_x,ierr)
 .seealso: `VecRestoreArray()`, `VecGetArrayRead()`, `VecGetArrays()`, `VecGetArrayF90()`, `VecGetArrayReadF90()`, `VecPlaceArray()`, `VecGetArray2d()`,
           `VecGetArrayPair()`, `VecRestoreArrayPair()`, `VecGetArrayWrite()`, `VecRestoreArrayWrite()`
 @*/
-PetscErrorCode VecGetArray(Vec x, PetscScalar **a) {
+PetscErrorCode VecGetArray(Vec x, PetscScalar **a)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x, VEC_CLASSID, 1);
   PetscCall(VecSetErrorIfLocked(x, 1));
@@ -1768,11 +1863,14 @@ PetscErrorCode VecGetArray(Vec x, PetscScalar **a) {
 .seealso: `VecGetArray()`, `VecRestoreArrayRead()`, `VecRestoreArrays()`, `VecRestoreArrayF90()`, `VecRestoreArrayReadF90()`, `VecPlaceArray()`, `VecRestoreArray2d()`,
           `VecGetArrayPair()`, `VecRestoreArrayPair()`
 @*/
-PetscErrorCode VecRestoreArray(Vec x, PetscScalar **a) {
+PetscErrorCode VecRestoreArray(Vec x, PetscScalar **a)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x, VEC_CLASSID, 1);
-  if (x->ops->restorearray) PetscUseTypeMethod(x, restorearray, a);
-  else PetscCheck(x->petscnative, PetscObjectComm((PetscObject)x), PETSC_ERR_SUP, "Cannot restore array for vector type \"%s\"", ((PetscObject)x)->type_name);
+  if (a) PetscValidPointer(a, 2);
+  if (x->ops->restorearray) {
+    PetscUseTypeMethod(x, restorearray, a);
+  } else PetscCheck(x->petscnative, PetscObjectComm((PetscObject)x), PETSC_ERR_SUP, "Cannot restore array for vector type \"%s\"", ((PetscObject)x)->type_name);
   if (a) *a = NULL;
   PetscCall(PetscObjectStateIncrease((PetscObject)x));
   PetscFunctionReturn(0);
@@ -1801,12 +1899,24 @@ PetscErrorCode VecRestoreArray(Vec x, PetscScalar **a) {
 
 .seealso: `VecGetArray()`, `VecRestoreArray()`, `VecGetArrayPair()`, `VecRestoreArrayPair()`
 @*/
-PetscErrorCode VecGetArrayRead(Vec x, const PetscScalar **a) {
+PetscErrorCode VecGetArrayRead(Vec x, const PetscScalar **a)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x, VEC_CLASSID, 1);
-  if (x->ops->getarray) { /* VECNEST, VECCUDA, VECKOKKOS etc */
-    PetscCall((*x->ops->getarray)(x, (PetscScalar **)a));
-  } else if (x->petscnative) { /* VECSTANDARD */
+  PetscValidPointer(a, 2);
+  if (x->ops->getarrayread) {
+    PetscUseTypeMethod(x, getarrayread, a);
+  } else if (x->ops->getarray) {
+    PetscObjectState state;
+
+    /* VECNEST, VECCUDA, VECKOKKOS etc */
+    // x->ops->getarray may bump the object state, but since we know this is a read-only get
+    // we can just undo that
+    PetscCall(PetscObjectStateGet((PetscObject)x, &state));
+    PetscUseTypeMethod(x, getarray, (PetscScalar **)a);
+    PetscCall(PetscObjectStateSet((PetscObject)x, state));
+  } else if (x->petscnative) {
+    /* VECSTANDARD */
     *a = *((PetscScalar **)x->data);
   } else SETERRQ(PetscObjectComm((PetscObject)x), PETSC_ERR_SUP, "Cannot get array read for vector type \"%s\"", ((PetscObject)x)->type_name);
   PetscFunctionReturn(0);
@@ -1825,15 +1935,23 @@ PetscErrorCode VecGetArrayRead(Vec x, const PetscScalar **a) {
 
 .seealso: `VecGetArray()`, `VecRestoreArray()`, `VecGetArrayPair()`, `VecRestoreArrayPair()`
 @*/
-PetscErrorCode VecRestoreArrayRead(Vec x, const PetscScalar **a) {
+PetscErrorCode VecRestoreArrayRead(Vec x, const PetscScalar **a)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x, VEC_CLASSID, 1);
+  if (a) PetscValidPointer(a, 2);
   if (x->petscnative) { /* VECSTANDARD, VECCUDA, VECKOKKOS etc */
     /* nothing */
   } else if (x->ops->restorearrayread) { /* VECNEST */
     PetscUseTypeMethod(x, restorearrayread, a);
   } else { /* No one? */
-    PetscCall((*x->ops->restorearray)(x, (PetscScalar **)a));
+    PetscObjectState state;
+
+    // x->ops->restorearray may bump the object state, but since we know this is a read-restore
+    // we can just undo that
+    PetscCall(PetscObjectStateGet((PetscObject)x, &state));
+    PetscUseTypeMethod(x, restorearray, (PetscScalar **)a);
+    PetscCall(PetscObjectStateSet((PetscObject)x, state));
   }
   if (a) *a = NULL;
   PetscFunctionReturn(0);
@@ -1860,12 +1978,17 @@ PetscErrorCode VecRestoreArrayRead(Vec x, const PetscScalar **a) {
 .seealso: `VecRestoreArray()`, `VecGetArrayRead()`, `VecGetArrays()`, `VecGetArrayF90()`, `VecGetArrayReadF90()`, `VecPlaceArray()`, `VecGetArray2d()`,
           `VecGetArrayPair()`, `VecRestoreArrayPair()`, `VecGetArray()`, `VecRestoreArrayWrite()`
 @*/
-PetscErrorCode VecGetArrayWrite(Vec x, PetscScalar **a) {
+PetscErrorCode VecGetArrayWrite(Vec x, PetscScalar **a)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x, VEC_CLASSID, 1);
+  PetscValidPointer(a, 2);
   PetscCall(VecSetErrorIfLocked(x, 1));
-  if (x->ops->getarraywrite) PetscUseTypeMethod(x, getarraywrite, a);
-  else PetscCall(VecGetArray(x, a));
+  if (x->ops->getarraywrite) {
+    PetscUseTypeMethod(x, getarraywrite, a);
+  } else {
+    PetscCall(VecGetArray(x, a));
+  }
   PetscFunctionReturn(0);
 }
 
@@ -1883,11 +2006,16 @@ PetscErrorCode VecGetArrayWrite(Vec x, PetscScalar **a) {
 .seealso: `VecGetArray()`, `VecRestoreArrayRead()`, `VecRestoreArrays()`, `VecRestoreArrayF90()`, `VecRestoreArrayReadF90()`, `VecPlaceArray()`, `VecRestoreArray2d()`,
           `VecGetArrayPair()`, `VecRestoreArrayPair()`, `VecGetArrayWrite()`
 @*/
-PetscErrorCode VecRestoreArrayWrite(Vec x, PetscScalar **a) {
+PetscErrorCode VecRestoreArrayWrite(Vec x, PetscScalar **a)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x, VEC_CLASSID, 1);
-  if (x->ops->restorearraywrite) PetscUseTypeMethod(x, restorearraywrite, a);
-  else PetscCall(VecRestoreArray(x, a));
+  if (a) PetscValidPointer(a, 2);
+  if (x->ops->restorearraywrite) {
+    PetscUseTypeMethod(x, restorearraywrite, a);
+  } else if (x->ops->restorearray) {
+    PetscUseTypeMethod(x, restorearray, a);
+  }
   if (a) *a = NULL;
   PetscCall(PetscObjectStateIncrease((PetscObject)x));
   PetscFunctionReturn(0);
@@ -1914,7 +2042,8 @@ PetscErrorCode VecRestoreArrayWrite(Vec x, PetscScalar **a) {
 
 .seealso: `VecGetArray()`, `VecRestoreArrays()`
 @*/
-PetscErrorCode VecGetArrays(const Vec x[], PetscInt n, PetscScalar **a[]) {
+PetscErrorCode VecGetArrays(const Vec x[], PetscInt n, PetscScalar **a[])
+{
   PetscInt      i;
   PetscScalar **q;
 
@@ -1953,7 +2082,8 @@ PetscErrorCode VecGetArrays(const Vec x[], PetscInt n, PetscScalar **a[]) {
 
 .seealso: `VecGetArrays()`, `VecRestoreArray()`
 @*/
-PetscErrorCode VecRestoreArrays(const Vec x[], PetscInt n, PetscScalar **a[]) {
+PetscErrorCode VecRestoreArrays(const Vec x[], PetscInt n, PetscScalar **a[])
+{
   PetscInt      i;
   PetscScalar **q = *a;
 
@@ -1989,20 +2119,22 @@ PetscErrorCode VecRestoreArrays(const Vec x[], PetscInt n, PetscScalar **a[]) {
 .seealso: `VecRestoreArrayAndMemType()`, `VecGetArrayReadAndMemType()`, `VecGetArrayWriteAndMemType()`, `VecRestoreArray()`, `VecGetArrayRead()`, `VecGetArrays()`, `VecGetArrayF90()`, `VecGetArrayReadF90()`,
           `VecPlaceArray()`, `VecGetArray2d()`, `VecGetArrayPair()`, `VecRestoreArrayPair()`, `VecGetArrayWrite()`, `VecRestoreArrayWrite()`
 @*/
-PetscErrorCode VecGetArrayAndMemType(Vec x, PetscScalar **a, PetscMemType *mtype) {
-  PetscMemType omtype;
-
+PetscErrorCode VecGetArrayAndMemType(Vec x, PetscScalar **a, PetscMemType *mtype)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x, VEC_CLASSID, 1);
   PetscValidType(x, 1);
+  PetscValidPointer(a, 2);
+  if (mtype) PetscValidPointer(mtype, 3);
   PetscCall(VecSetErrorIfLocked(x, 1));
-  if (x->ops->getarrayandmemtype) { /* VECCUDA, VECKOKKOS etc */
-    PetscUseTypeMethod(x, getarrayandmemtype, a, &omtype);
-  } else { /* VECSTANDARD, VECNEST, VECVIENNACL */
+  if (x->ops->getarrayandmemtype) {
+    /* VECCUDA, VECKOKKOS etc */
+    PetscUseTypeMethod(x, getarrayandmemtype, a, mtype);
+  } else {
+    /* VECSTANDARD, VECNEST, VECVIENNACL */
     PetscCall(VecGetArray(x, a));
-    omtype = PETSC_MEMTYPE_HOST;
+    if (mtype) *mtype = PETSC_MEMTYPE_HOST;
   }
-  if (mtype) *mtype = omtype;
   PetscFunctionReturn(0);
 }
 
@@ -2020,12 +2152,19 @@ PetscErrorCode VecGetArrayAndMemType(Vec x, PetscScalar **a, PetscMemType *mtype
 .seealso: `VecGetArrayAndMemType()`, `VecGetArray()`, `VecRestoreArrayRead()`, `VecRestoreArrays()`, `VecRestoreArrayF90()`, `VecRestoreArrayReadF90()`,
           `VecPlaceArray()`, `VecRestoreArray2d()`, `VecGetArrayPair()`, `VecRestoreArrayPair()`
 @*/
-PetscErrorCode VecRestoreArrayAndMemType(Vec x, PetscScalar **a) {
+PetscErrorCode VecRestoreArrayAndMemType(Vec x, PetscScalar **a)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x, VEC_CLASSID, 1);
   PetscValidType(x, 1);
-  if (x->ops->restorearrayandmemtype) PetscUseTypeMethod(x, restorearrayandmemtype, a);
-  else PetscTryTypeMethod(x, restorearray, a);
+  if (a) PetscValidPointer(a, 2);
+  if (x->ops->restorearrayandmemtype) {
+    /* VECCUDA, VECKOKKOS etc */
+    PetscUseTypeMethod(x, restorearrayandmemtype, a);
+  } else {
+    /* VECNEST, VECVIENNACL */
+    PetscCall(VecRestoreArray(x, a));
+  } /* VECSTANDARD does nothing */
   if (a) *a = NULL;
   PetscCall(PetscObjectStateIncrease((PetscObject)x));
   PetscFunctionReturn(0);
@@ -2050,26 +2189,28 @@ PetscErrorCode VecRestoreArrayAndMemType(Vec x, PetscScalar **a) {
 
 .seealso: `VecRestoreArrayReadAndMemType()`, `VecGetArrayAndMemType()`, `VecGetArrayWriteAndMemType()`, `VecGetArray()`, `VecRestoreArray()`, `VecGetArrayPair()`, `VecRestoreArrayPair()`, `VecGetArrayAndMemType()`
 @*/
-PetscErrorCode VecGetArrayReadAndMemType(Vec x, const PetscScalar **a, PetscMemType *mtype) {
-  PetscMemType omtype;
-
+PetscErrorCode VecGetArrayReadAndMemType(Vec x, const PetscScalar **a, PetscMemType *mtype)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x, VEC_CLASSID, 1);
   PetscValidType(x, 1);
-#if defined(PETSC_USE_DEBUG)
-  PetscCheck(!x->ops->getarrayreadandmemtype, PetscObjectComm((PetscObject)x), PETSC_ERR_SUP, "Not expected vector type \"%s\" has ops->getarrayreadandmemtype", ((PetscObject)x)->type_name);
-#endif
+  PetscValidPointer(a, 2);
+  if (mtype) PetscValidPointer(mtype, 3);
+  if (x->ops->getarrayreadandmemtype) {
+    /* VECCUDA/VECHIP though they are also petscnative */
+    PetscUseTypeMethod(x, getarrayreadandmemtype, a, mtype);
+  } else if (x->ops->getarrayandmemtype) {
+    /* VECKOKKOS */
+    PetscObjectState state;
 
-  if (x->ops->getarrayandmemtype) { /* VECCUDA, VECKOKKOS etc, though they are also petscnative */
-    PetscCall((*x->ops->getarrayandmemtype)(x, (PetscScalar **)a, &omtype));
-  } else if (x->ops->getarray) { /* VECNEST, VECVIENNACL */
-    PetscCall((*x->ops->getarray)(x, (PetscScalar **)a));
-    omtype = PETSC_MEMTYPE_HOST;
-  } else if (x->petscnative) { /* VECSTANDARD */
-    *a     = *((PetscScalar **)x->data);
-    omtype = PETSC_MEMTYPE_HOST;
-  } else SETERRQ(PetscObjectComm((PetscObject)x), PETSC_ERR_SUP, "Cannot get array read in place for vector type \"%s\"", ((PetscObject)x)->type_name);
-  if (mtype) *mtype = omtype;
+    // see VecGetArrayRead() for why
+    PetscCall(PetscObjectStateGet((PetscObject)x, &state));
+    PetscUseTypeMethod(x, getarrayandmemtype, (PetscScalar **)a, mtype);
+    PetscCall(PetscObjectStateSet((PetscObject)x, state));
+  } else {
+    PetscCall(VecGetArrayRead(x, a));
+    if (mtype) *mtype = PETSC_MEMTYPE_HOST;
+  }
   PetscFunctionReturn(0);
 }
 
@@ -2086,11 +2227,19 @@ PetscErrorCode VecGetArrayReadAndMemType(Vec x, const PetscScalar **a, PetscMemT
 
 .seealso: `VecGetArrayReadAndMemType()`, `VecRestoreArrayAndMemType()`, `VecRestoreArrayWriteAndMemType()`, `VecGetArray()`, `VecRestoreArray()`, `VecGetArrayPair()`, `VecRestoreArrayPair()`
 @*/
-PetscErrorCode VecRestoreArrayReadAndMemType(Vec x, const PetscScalar **a) {
+PetscErrorCode VecRestoreArrayReadAndMemType(Vec x, const PetscScalar **a)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x, VEC_CLASSID, 1);
   PetscValidType(x, 1);
-  if (!x->petscnative) PetscUseTypeMethod(x, restorearrayread, a);
+  if (a) PetscValidPointer(a, 2);
+  if (x->ops->restorearrayreadandmemtype) {
+    /* VECCUDA/VECHIP */
+    PetscUseTypeMethod(x, restorearrayreadandmemtype, a);
+  } else if (!x->petscnative) {
+    /* VECNEST */
+    PetscCall(VecRestoreArrayRead(x, a));
+  }
   if (a) *a = NULL;
   PetscFunctionReturn(0);
 }
@@ -2115,22 +2264,24 @@ PetscErrorCode VecRestoreArrayReadAndMemType(Vec x, const PetscScalar **a) {
 
 .seealso: `VecRestoreArrayWriteAndMemType()`, `VecGetArrayReadAndMemType()`, `VecGetArrayAndMemType()`, `VecGetArray()`, `VecRestoreArray()`, `VecGetArrayPair()`, `VecRestoreArrayPair()`,
 @*/
-PetscErrorCode VecGetArrayWriteAndMemType(Vec x, PetscScalar **a, PetscMemType *mtype) {
-  PetscMemType omtype;
-
+PetscErrorCode VecGetArrayWriteAndMemType(Vec x, PetscScalar **a, PetscMemType *mtype)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x, VEC_CLASSID, 1);
   PetscValidType(x, 1);
-  if (x->ops->getarraywriteandmemtype) { /* VECCUDA, VECHIP, VECKOKKOS etc, though they are also petscnative */
-    PetscUseTypeMethod(x, getarrayandmemtype, a, &omtype);
-  } else if (x->ops->getarraywrite) { /* VECNEST, VECVIENNACL */
-    PetscUseTypeMethod(x, getarraywrite, a);
-    omtype = PETSC_MEMTYPE_HOST;
-  } else if (x->petscnative) { /* VECSTANDARD */
-    *a     = *((PetscScalar **)x->data);
-    omtype = PETSC_MEMTYPE_HOST;
-  } else SETERRQ(PetscObjectComm((PetscObject)x), PETSC_ERR_SUP, "Cannot get array read in place for vector type \"%s\"", ((PetscObject)x)->type_name);
-  if (mtype) *mtype = omtype;
+  PetscCall(VecSetErrorIfLocked(x, 1));
+  PetscValidPointer(a, 2);
+  if (mtype) PetscValidPointer(mtype, 3);
+  if (x->ops->getarraywriteandmemtype) {
+    /* VECCUDA, VECHIP, VECKOKKOS etc, though they are also petscnative */
+    PetscUseTypeMethod(x, getarraywriteandmemtype, a, mtype);
+  } else if (x->ops->getarrayandmemtype) {
+    PetscCall(VecGetArrayAndMemType(x, a, mtype));
+  } else {
+    /* VECNEST, VECVIENNACL */
+    PetscCall(VecGetArrayWrite(x, a));
+    if (mtype) *mtype = PETSC_MEMTYPE_HOST;
+  }
   PetscFunctionReturn(0);
 }
 
@@ -2147,9 +2298,23 @@ PetscErrorCode VecGetArrayWriteAndMemType(Vec x, PetscScalar **a, PetscMemType *
 
 .seealso: `VecGetArrayWriteAndMemType()`, `VecRestoreArrayAndMemType()`, `VecGetArray()`, `VecRestoreArray()`, `VecGetArrayPair()`, `VecRestoreArrayPair()`
 @*/
-PetscErrorCode VecRestoreArrayWriteAndMemType(Vec x, PetscScalar **a) {
+PetscErrorCode VecRestoreArrayWriteAndMemType(Vec x, PetscScalar **a)
+{
   PetscFunctionBegin;
-  PetscCall(VecRestoreArrayAndMemType(x, a));
+  PetscValidHeaderSpecific(x, VEC_CLASSID, 1);
+  PetscValidType(x, 1);
+  PetscCall(VecSetErrorIfLocked(x, 1));
+  if (a) PetscValidPointer(a, 2);
+  if (x->ops->restorearraywriteandmemtype) {
+    /* VECCUDA/VECHIP */
+    PetscMemType PETSC_UNUSED mtype; // since this function doesn't accept a memtype?
+    PetscUseTypeMethod(x, restorearraywriteandmemtype, a, &mtype);
+  } else if (x->ops->restorearrayandmemtype) {
+    PetscCall(VecRestoreArrayAndMemType(x, a));
+  } else {
+    PetscCall(VecRestoreArray(x, a));
+  }
+  if (a) *a = NULL;
   PetscFunctionReturn(0);
 }
 
@@ -2175,7 +2340,8 @@ PetscErrorCode VecRestoreArrayWriteAndMemType(Vec x, PetscScalar **a) {
 .seealso: `VecGetArray()`, `VecRestoreArray()`, `VecReplaceArray()`, `VecResetArray()`
 
 @*/
-PetscErrorCode VecPlaceArray(Vec vec, const PetscScalar array[]) {
+PetscErrorCode VecPlaceArray(Vec vec, const PetscScalar array[])
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(vec, VEC_CLASSID, 1);
   PetscValidType(vec, 1);
@@ -2210,641 +2376,13 @@ PetscErrorCode VecPlaceArray(Vec vec, const PetscScalar array[]) {
 .seealso: `VecGetArray()`, `VecRestoreArray()`, `VecPlaceArray()`, `VecResetArray()`
 
 @*/
-PetscErrorCode VecReplaceArray(Vec vec, const PetscScalar array[]) {
+PetscErrorCode VecReplaceArray(Vec vec, const PetscScalar array[])
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(vec, VEC_CLASSID, 1);
   PetscValidType(vec, 1);
-  if (vec->ops->replacearray) {
-    PetscUseTypeMethod(vec, replacearray, array);
-  } else SETERRQ(PetscObjectComm((PetscObject)vec), PETSC_ERR_SUP, "Cannot replace array in this type of vector");
+  PetscUseTypeMethod(vec, replacearray, array);
   PetscCall(PetscObjectStateIncrease((PetscObject)vec));
-  PetscFunctionReturn(0);
-}
-
-/*@C
-   VecCUDAGetArray - Provides access to the CUDA buffer inside a vector.
-
-   This function has semantics similar to VecGetArray():  the pointer
-   returned by this function points to a consistent view of the vector
-   data.  This may involve a copy operation of data from the host to the
-   device if the data on the device is out of date.  If the device
-   memory hasn't been allocated previously it will be allocated as part
-   of this function call.  VecCUDAGetArray() assumes that
-   the user will modify the vector data.  This is similar to
-   intent(inout) in fortran.
-
-   The CUDA device pointer has to be released by calling
-   VecCUDARestoreArray().  Upon restoring the vector data
-   the data on the host will be marked as out of date.  A subsequent
-   access of the host data will thus incur a data transfer from the
-   device to the host.
-
-   Input Parameter:
-.  v - the vector
-
-   Output Parameter:
-.  a - the CUDA device pointer
-
-   Fortran note:
-   This function is not currently available from Fortran.
-
-   Level: intermediate
-
-.seealso: `VecCUDARestoreArray()`, `VecCUDAGetArrayRead()`, `VecCUDAGetArrayWrite()`, `VecGetArray()`, `VecGetArrayRead()`
-@*/
-PETSC_EXTERN PetscErrorCode VecCUDAGetArray(Vec v, PetscScalar **a) {
-  PetscFunctionBegin;
-  PetscCheckTypeNames(v, VECSEQCUDA, VECMPICUDA);
-#if defined(PETSC_HAVE_CUDA)
-  {
-    PetscCall(VecCUDACopyToGPU(v));
-    *a = ((Vec_CUDA *)v->spptr)->GPUarray;
-  }
-#endif
-  PetscFunctionReturn(0);
-}
-
-/*@C
-   VecCUDARestoreArray - Restore a CUDA device pointer previously acquired with VecCUDAGetArray().
-
-   This marks the host data as out of date.  Subsequent access to the
-   vector data on the host side with for instance VecGetArray() incurs a
-   data transfer.
-
-   Input Parameters:
-+  v - the vector
--  a - the CUDA device pointer.  This pointer is invalid after
-       VecCUDARestoreArray() returns.
-
-   Fortran note:
-   This function is not currently available from Fortran.
-
-   Level: intermediate
-
-.seealso: `VecCUDAGetArray()`, `VecCUDAGetArrayRead()`, `VecCUDAGetArrayWrite()`, `VecGetArray()`, `VecRestoreArray()`, `VecGetArrayRead()`
-@*/
-PETSC_EXTERN PetscErrorCode VecCUDARestoreArray(Vec v, PetscScalar **a) {
-  PetscFunctionBegin;
-  PetscCheckTypeNames(v, VECSEQCUDA, VECMPICUDA);
-#if defined(PETSC_HAVE_CUDA)
-  v->offloadmask = PETSC_OFFLOAD_GPU;
-#endif
-  PetscCall(PetscObjectStateIncrease((PetscObject)v));
-  PetscFunctionReturn(0);
-}
-
-/*@C
-   VecCUDAGetArrayRead - Provides read access to the CUDA buffer inside a vector.
-
-   This function is analogous to VecGetArrayRead():  The pointer
-   returned by this function points to a consistent view of the vector
-   data.  This may involve a copy operation of data from the host to the
-   device if the data on the device is out of date.  If the device
-   memory hasn't been allocated previously it will be allocated as part
-   of this function call.  VecCUDAGetArrayRead() assumes that the
-   user will not modify the vector data.  This is analgogous to
-   intent(in) in Fortran.
-
-   The CUDA device pointer has to be released by calling
-   VecCUDARestoreArrayRead().  If the data on the host side was
-   previously up to date it will remain so, i.e. data on both the device
-   and the host is up to date.  Accessing data on the host side does not
-   incur a device to host data transfer.
-
-   Input Parameter:
-.  v - the vector
-
-   Output Parameter:
-.  a - the CUDA pointer.
-
-   Fortran note:
-   This function is not currently available from Fortran.
-
-   Level: intermediate
-
-.seealso: `VecCUDARestoreArrayRead()`, `VecCUDAGetArray()`, `VecCUDAGetArrayWrite()`, `VecGetArray()`, `VecGetArrayRead()`
-@*/
-PETSC_EXTERN PetscErrorCode VecCUDAGetArrayRead(Vec v, const PetscScalar **a) {
-  PetscFunctionBegin;
-  PetscCall(VecCUDAGetArray(v, (PetscScalar **)a));
-  PetscFunctionReturn(0);
-}
-
-/*@C
-   VecCUDARestoreArrayRead - Restore a CUDA device pointer previously acquired with VecCUDAGetArrayRead().
-
-   If the data on the host side was previously up to date it will remain
-   so, i.e. data on both the device and the host is up to date.
-   Accessing data on the host side e.g. with VecGetArray() does not
-   incur a device to host data transfer.
-
-   Input Parameters:
-+  v - the vector
--  a - the CUDA device pointer.  This pointer is invalid after
-       VecCUDARestoreArrayRead() returns.
-
-   Fortran note:
-   This function is not currently available from Fortran.
-
-   Level: intermediate
-
-.seealso: `VecCUDAGetArrayRead()`, `VecCUDAGetArrayWrite()`, `VecCUDAGetArray()`, `VecGetArray()`, `VecRestoreArray()`, `VecGetArrayRead()`
-@*/
-PETSC_EXTERN PetscErrorCode VecCUDARestoreArrayRead(Vec v, const PetscScalar **a) {
-  PetscFunctionBegin;
-  PetscCheckTypeNames(v, VECSEQCUDA, VECMPICUDA);
-  *a = NULL;
-  PetscFunctionReturn(0);
-}
-
-/*@C
-   VecCUDAGetArrayWrite - Provides write access to the CUDA buffer inside a vector.
-
-   The data pointed to by the device pointer is uninitialized.  The user
-   may not read from this data.  Furthermore, the entire array needs to
-   be filled by the user to obtain well-defined behaviour.  The device
-   memory will be allocated by this function if it hasn't been allocated
-   previously.  This is analogous to intent(out) in Fortran.
-
-   The device pointer needs to be released with
-   VecCUDARestoreArrayWrite().  When the pointer is released the
-   host data of the vector is marked as out of data.  Subsequent access
-   of the host data with e.g. VecGetArray() incurs a device to host data
-   transfer.
-
-   Input Parameter:
-.  v - the vector
-
-   Output Parameter:
-.  a - the CUDA pointer
-
-   Fortran note:
-   This function is not currently available from Fortran.
-
-   Level: advanced
-
-.seealso: `VecCUDARestoreArrayWrite()`, `VecCUDAGetArray()`, `VecCUDAGetArrayRead()`, `VecCUDAGetArrayWrite()`, `VecGetArray()`, `VecGetArrayRead()`
-@*/
-PETSC_EXTERN PetscErrorCode VecCUDAGetArrayWrite(Vec v, PetscScalar **a) {
-  PetscFunctionBegin;
-  PetscCheckTypeNames(v, VECSEQCUDA, VECMPICUDA);
-#if defined(PETSC_HAVE_CUDA)
-  {
-    PetscCall(VecCUDAAllocateCheck(v));
-    *a = ((Vec_CUDA *)v->spptr)->GPUarray;
-  }
-#endif
-  PetscFunctionReturn(0);
-}
-
-/*@C
-   VecCUDARestoreArrayWrite - Restore a CUDA device pointer previously acquired with VecCUDAGetArrayWrite().
-
-   Data on the host will be marked as out of date.  Subsequent access of
-   the data on the host side e.g. with VecGetArray() will incur a device
-   to host data transfer.
-
-   Input Parameters:
-+  v - the vector
--  a - the CUDA device pointer.  This pointer is invalid after
-       VecCUDARestoreArrayWrite() returns.
-
-   Fortran note:
-   This function is not currently available from Fortran.
-
-   Level: intermediate
-
-.seealso: `VecCUDAGetArrayWrite()`, `VecCUDAGetArray()`, `VecCUDAGetArrayRead()`, `VecCUDAGetArrayWrite()`, `VecGetArray()`, `VecRestoreArray()`, `VecGetArrayRead()`
-@*/
-PETSC_EXTERN PetscErrorCode VecCUDARestoreArrayWrite(Vec v, PetscScalar **a) {
-  PetscFunctionBegin;
-  PetscCheckTypeNames(v, VECSEQCUDA, VECMPICUDA);
-#if defined(PETSC_HAVE_CUDA)
-  v->offloadmask = PETSC_OFFLOAD_GPU;
-  if (a) *a = NULL;
-#endif
-  PetscCall(PetscObjectStateIncrease((PetscObject)v));
-  PetscFunctionReturn(0);
-}
-
-/*@C
-   VecCUDAPlaceArray - Allows one to replace the GPU array in a vector with a
-   GPU array provided by the user. This is useful to avoid copying an
-   array into a vector.
-
-   Not Collective
-
-   Input Parameters:
-+  vec - the vector
--  array - the GPU array
-
-   Notes:
-   You can return to the original GPU array with a call to VecCUDAResetArray()
-   It is not possible to use VecCUDAPlaceArray() and VecPlaceArray() at the
-   same time on the same vector.
-
-   `vec` does not take ownership of `array` in any way. The user must free `array` themselves
-   but be careful not to do so before the vector has either been destroyed, had its original
-   array restored with `VecCUDAResetArray()` or permanently replaced with
-   `VecCUDAReplaceArray()`.
-
-   Level: developer
-
-.seealso: `VecPlaceArray()`, `VecGetArray()`, `VecRestoreArray()`, `VecReplaceArray()`, `VecResetArray()`, `VecCUDAResetArray()`, `VecCUDAReplaceArray()`
-
-@*/
-PetscErrorCode VecCUDAPlaceArray(Vec vin, const PetscScalar a[]) {
-  PetscFunctionBegin;
-  PetscCheckTypeNames(vin, VECSEQCUDA, VECMPICUDA);
-#if defined(PETSC_HAVE_CUDA)
-  PetscCall(VecCUDACopyToGPU(vin));
-  PetscCheck(!((Vec_Seq *)vin->data)->unplacedarray, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "VecCUDAPlaceArray()/VecPlaceArray() was already called on this vector, without a call to VecCUDAResetArray()/VecResetArray()");
-  ((Vec_Seq *)vin->data)->unplacedarray = (PetscScalar *)((Vec_CUDA *)vin->spptr)->GPUarray; /* save previous GPU array so reset can bring it back */
-  ((Vec_CUDA *)vin->spptr)->GPUarray    = (PetscScalar *)a;
-  vin->offloadmask                      = PETSC_OFFLOAD_GPU;
-#endif
-  PetscCall(PetscObjectStateIncrease((PetscObject)vin));
-  PetscFunctionReturn(0);
-}
-
-/*@C
-   VecCUDAReplaceArray - Allows one to replace the GPU array in a vector
-   with a GPU array provided by the user. This is useful to avoid copying
-   a GPU array into a vector.
-
-   Not Collective
-
-   Input Parameters:
-+  vec - the vector
--  array - the GPU array
-
-   Notes:
-   This permanently replaces the GPU array and frees the memory associated
-   with the old GPU array.
-
-   The memory passed in CANNOT be freed by the user. It will be freed
-   when the vector is destroyed.
-
-   Not supported from Fortran
-
-   Level: developer
-
-.seealso: `VecGetArray()`, `VecRestoreArray()`, `VecPlaceArray()`, `VecResetArray()`, `VecCUDAResetArray()`, `VecCUDAPlaceArray()`, `VecReplaceArray()`
-
-@*/
-PetscErrorCode VecCUDAReplaceArray(Vec vin, const PetscScalar a[]) {
-#if defined(PETSC_HAVE_CUDA)
-#endif
-
-  PetscFunctionBegin;
-  PetscCheckTypeNames(vin, VECSEQCUDA, VECMPICUDA);
-#if defined(PETSC_HAVE_CUDA)
-  if (((Vec_CUDA *)vin->spptr)->GPUarray_allocated) PetscCallCUDA(cudaFree(((Vec_CUDA *)vin->spptr)->GPUarray_allocated));
-  ((Vec_CUDA *)vin->spptr)->GPUarray_allocated = ((Vec_CUDA *)vin->spptr)->GPUarray = (PetscScalar *)a;
-  vin->offloadmask                                                                  = PETSC_OFFLOAD_GPU;
-#endif
-  PetscCall(PetscObjectStateIncrease((PetscObject)vin));
-  PetscFunctionReturn(0);
-}
-
-/*@C
-   VecCUDAResetArray - Resets a vector to use its default memory. Call this
-   after the use of VecCUDAPlaceArray().
-
-   Not Collective
-
-   Input Parameters:
-.  vec - the vector
-
-   Level: developer
-
-.seealso: `VecGetArray()`, `VecRestoreArray()`, `VecReplaceArray()`, `VecPlaceArray()`, `VecResetArray()`, `VecCUDAPlaceArray()`, `VecCUDAReplaceArray()`
-
-@*/
-PetscErrorCode VecCUDAResetArray(Vec vin) {
-  PetscFunctionBegin;
-  PetscCheckTypeNames(vin, VECSEQCUDA, VECMPICUDA);
-#if defined(PETSC_HAVE_CUDA)
-  PetscCall(VecCUDACopyToGPU(vin));
-  ((Vec_CUDA *)vin->spptr)->GPUarray    = (PetscScalar *)((Vec_Seq *)vin->data)->unplacedarray;
-  ((Vec_Seq *)vin->data)->unplacedarray = 0;
-  vin->offloadmask                      = PETSC_OFFLOAD_GPU;
-#endif
-  PetscCall(PetscObjectStateIncrease((PetscObject)vin));
-  PetscFunctionReturn(0);
-}
-
-/*@C
-   VecHIPGetArray - Provides access to the HIP buffer inside a vector.
-
-   This function has semantics similar to VecGetArray():  the pointer
-   returned by this function points to a consistent view of the vector
-   data.  This may involve a copy operation of data from the host to the
-   device if the data on the device is out of date.  If the device
-   memory hasn't been allocated previously it will be allocated as part
-   of this function call.  VecHIPGetArray() assumes that
-   the user will modify the vector data.  This is similar to
-   intent(inout) in fortran.
-
-   The HIP device pointer has to be released by calling
-   VecHIPRestoreArray().  Upon restoring the vector data
-   the data on the host will be marked as out of date.  A subsequent
-   access of the host data will thus incur a data transfer from the
-   device to the host.
-
-   Input Parameter:
-.  v - the vector
-
-   Output Parameter:
-.  a - the HIP device pointer
-
-   Fortran note:
-   This function is not currently available from Fortran.
-
-   Level: intermediate
-
-.seealso: `VecHIPRestoreArray()`, `VecHIPGetArrayRead()`, `VecHIPGetArrayWrite()`, `VecGetArray()`, `VecGetArrayRead()`
-@*/
-PETSC_EXTERN PetscErrorCode VecHIPGetArray(Vec v, PetscScalar **a) {
-  PetscFunctionBegin;
-  PetscCheckTypeNames(v, VECSEQHIP, VECMPIHIP);
-#if defined(PETSC_HAVE_HIP)
-  *a = 0;
-  PetscCall(VecHIPCopyToGPU(v));
-  *a = ((Vec_HIP *)v->spptr)->GPUarray;
-#endif
-  PetscFunctionReturn(0);
-}
-
-/*@C
-   VecHIPRestoreArray - Restore a HIP device pointer previously acquired with VecHIPGetArray().
-
-   This marks the host data as out of date.  Subsequent access to the
-   vector data on the host side with for instance VecGetArray() incurs a
-   data transfer.
-
-   Input Parameters:
-+  v - the vector
--  a - the HIP device pointer.  This pointer is invalid after
-       VecHIPRestoreArray() returns.
-
-   Fortran note:
-   This function is not currently available from Fortran.
-
-   Level: intermediate
-
-.seealso: `VecHIPGetArray()`, `VecHIPGetArrayRead()`, `VecHIPGetArrayWrite()`, `VecGetArray()`, `VecRestoreArray()`, `VecGetArrayRead()`
-@*/
-PETSC_EXTERN PetscErrorCode VecHIPRestoreArray(Vec v, PetscScalar **a) {
-  PetscFunctionBegin;
-  PetscCheckTypeNames(v, VECSEQHIP, VECMPIHIP);
-#if defined(PETSC_HAVE_HIP)
-  v->offloadmask = PETSC_OFFLOAD_GPU;
-#endif
-
-  PetscCall(PetscObjectStateIncrease((PetscObject)v));
-  PetscFunctionReturn(0);
-}
-
-/*@C
-   VecHIPGetArrayRead - Provides read access to the HIP buffer inside a vector.
-
-   This function is analogous to VecGetArrayRead():  The pointer
-   returned by this function points to a consistent view of the vector
-   data.  This may involve a copy operation of data from the host to the
-   device if the data on the device is out of date.  If the device
-   memory hasn't been allocated previously it will be allocated as part
-   of this function call.  VecHIPGetArrayRead() assumes that the
-   user will not modify the vector data.  This is analgogous to
-   intent(in) in Fortran.
-
-   The HIP device pointer has to be released by calling
-   VecHIPRestoreArrayRead().  If the data on the host side was
-   previously up to date it will remain so, i.e. data on both the device
-   and the host is up to date.  Accessing data on the host side does not
-   incur a device to host data transfer.
-
-   Input Parameter:
-.  v - the vector
-
-   Output Parameter:
-.  a - the HIP pointer.
-
-   Fortran note:
-   This function is not currently available from Fortran.
-
-   Level: intermediate
-
-.seealso: `VecHIPRestoreArrayRead()`, `VecHIPGetArray()`, `VecHIPGetArrayWrite()`, `VecGetArray()`, `VecGetArrayRead()`
-@*/
-PETSC_EXTERN PetscErrorCode VecHIPGetArrayRead(Vec v, const PetscScalar **a) {
-  PetscFunctionBegin;
-  PetscCheckTypeNames(v, VECSEQHIP, VECMPIHIP);
-#if defined(PETSC_HAVE_HIP)
-  *a = 0;
-  PetscCall(VecHIPCopyToGPU(v));
-  *a = ((Vec_HIP *)v->spptr)->GPUarray;
-#endif
-  PetscFunctionReturn(0);
-}
-
-/*@C
-   VecHIPRestoreArrayRead - Restore a HIP device pointer previously acquired with VecHIPGetArrayRead().
-
-   If the data on the host side was previously up to date it will remain
-   so, i.e. data on both the device and the host is up to date.
-   Accessing data on the host side e.g. with VecGetArray() does not
-   incur a device to host data transfer.
-
-   Input Parameters:
-+  v - the vector
--  a - the HIP device pointer.  This pointer is invalid after
-       VecHIPRestoreArrayRead() returns.
-
-   Fortran note:
-   This function is not currently available from Fortran.
-
-   Level: intermediate
-
-.seealso: `VecHIPGetArrayRead()`, `VecHIPGetArrayWrite()`, `VecHIPGetArray()`, `VecGetArray()`, `VecRestoreArray()`, `VecGetArrayRead()`
-@*/
-PETSC_EXTERN PetscErrorCode VecHIPRestoreArrayRead(Vec v, const PetscScalar **a) {
-  PetscFunctionBegin;
-  PetscCheckTypeNames(v, VECSEQHIP, VECMPIHIP);
-  *a = NULL;
-  PetscFunctionReturn(0);
-}
-
-/*@C
-   VecHIPGetArrayWrite - Provides write access to the HIP buffer inside a vector.
-
-   The data pointed to by the device pointer is uninitialized.  The user
-   may not read from this data.  Furthermore, the entire array needs to
-   be filled by the user to obtain well-defined behaviour.  The device
-   memory will be allocated by this function if it hasn't been allocated
-   previously.  This is analogous to intent(out) in Fortran.
-
-   The device pointer needs to be released with
-   VecHIPRestoreArrayWrite().  When the pointer is released the
-   host data of the vector is marked as out of data.  Subsequent access
-   of the host data with e.g. VecGetArray() incurs a device to host data
-   transfer.
-
-   Input Parameter:
-.  v - the vector
-
-   Output Parameter:
-.  a - the HIP pointer
-
-   Fortran note:
-   This function is not currently available from Fortran.
-
-   Level: advanced
-
-.seealso: `VecHIPRestoreArrayWrite()`, `VecHIPGetArray()`, `VecHIPGetArrayRead()`, `VecHIPGetArrayWrite()`, `VecGetArray()`, `VecGetArrayRead()`
-@*/
-PETSC_EXTERN PetscErrorCode VecHIPGetArrayWrite(Vec v, PetscScalar **a) {
-  PetscFunctionBegin;
-  PetscCheckTypeNames(v, VECSEQHIP, VECMPIHIP);
-#if defined(PETSC_HAVE_HIP)
-  *a = 0;
-  PetscCall(VecHIPAllocateCheck(v));
-  *a = ((Vec_HIP *)v->spptr)->GPUarray;
-#endif
-  PetscFunctionReturn(0);
-}
-
-/*@C
-   VecHIPRestoreArrayWrite - Restore a HIP device pointer previously acquired with VecHIPGetArrayWrite().
-
-   Data on the host will be marked as out of date.  Subsequent access of
-   the data on the host side e.g. with VecGetArray() will incur a device
-   to host data transfer.
-
-   Input Parameters:
-+  v - the vector
--  a - the HIP device pointer.  This pointer is invalid after
-       VecHIPRestoreArrayWrite() returns.
-
-   Fortran note:
-   This function is not currently available from Fortran.
-
-   Level: intermediate
-
-.seealso: `VecHIPGetArrayWrite()`, `VecHIPGetArray()`, `VecHIPGetArrayRead()`, `VecHIPGetArrayWrite()`, `VecGetArray()`, `VecRestoreArray()`, `VecGetArrayRead()`
-@*/
-PETSC_EXTERN PetscErrorCode VecHIPRestoreArrayWrite(Vec v, PetscScalar **a) {
-  PetscFunctionBegin;
-  PetscCheckTypeNames(v, VECSEQHIP, VECMPIHIP);
-#if defined(PETSC_HAVE_HIP)
-  v->offloadmask = PETSC_OFFLOAD_GPU;
-#endif
-
-  PetscCall(PetscObjectStateIncrease((PetscObject)v));
-  PetscFunctionReturn(0);
-}
-
-/*@C
-   VecHIPPlaceArray - Allows one to replace the GPU array in a vector with a
-   GPU array provided by the user. This is useful to avoid copying an
-   array into a vector.
-
-   Not Collective
-
-   Input Parameters:
-+  vec - the vector
--  array - the GPU array
-
-   Notes:
-   You can return to the original GPU array with a call to VecHIPResetArray()
-   It is not possible to use VecHIPPlaceArray() and VecPlaceArray() at the
-   same time on the same vector.
-
-   `vec` does not take ownership of `array` in any way. The user must free `array` themselves
-   but be careful not to do so before the vector has either been destroyed, had its original
-   array restored with `VecHIPResetArray()` or permanently replaced with
-   `VecHIPReplaceArray()`.
-
-   Level: developer
-
-.seealso: `VecPlaceArray()`, `VecGetArray()`, `VecRestoreArray()`, `VecReplaceArray()`, `VecResetArray()`, `VecHIPResetArray()`, `VecHIPReplaceArray()`
-
-@*/
-PetscErrorCode VecHIPPlaceArray(Vec vin, const PetscScalar a[]) {
-  PetscFunctionBegin;
-  PetscCheckTypeNames(vin, VECSEQHIP, VECMPIHIP);
-#if defined(PETSC_HAVE_HIP)
-  PetscCall(VecHIPCopyToGPU(vin));
-  PetscCheck(!((Vec_Seq *)vin->data)->unplacedarray, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "VecHIPPlaceArray()/VecPlaceArray() was already called on this vector, without a call to VecHIPResetArray()/VecResetArray()");
-  ((Vec_Seq *)vin->data)->unplacedarray = (PetscScalar *)((Vec_HIP *)vin->spptr)->GPUarray; /* save previous GPU array so reset can bring it back */
-  ((Vec_HIP *)vin->spptr)->GPUarray     = (PetscScalar *)a;
-  vin->offloadmask                      = PETSC_OFFLOAD_GPU;
-#endif
-  PetscCall(PetscObjectStateIncrease((PetscObject)vin));
-  PetscFunctionReturn(0);
-}
-
-/*@C
-   VecHIPReplaceArray - Allows one to replace the GPU array in a vector
-   with a GPU array provided by the user. This is useful to avoid copying
-   a GPU array into a vector.
-
-   Not Collective
-
-   Input Parameters:
-+  vec - the vector
--  array - the GPU array
-
-   Notes:
-   This permanently replaces the GPU array and frees the memory associated
-   with the old GPU array.
-
-   The memory passed in CANNOT be freed by the user. It will be freed
-   when the vector is destroyed.
-
-   Not supported from Fortran
-
-   Level: developer
-
-.seealso: `VecGetArray()`, `VecRestoreArray()`, `VecPlaceArray()`, `VecResetArray()`, `VecHIPResetArray()`, `VecHIPPlaceArray()`, `VecReplaceArray()`
-
-@*/
-PetscErrorCode VecHIPReplaceArray(Vec vin, const PetscScalar a[]) {
-  PetscFunctionBegin;
-  PetscCheckTypeNames(vin, VECSEQHIP, VECMPIHIP);
-#if defined(PETSC_HAVE_HIP)
-  PetscCallHIP(hipFree(((Vec_HIP *)vin->spptr)->GPUarray));
-  ((Vec_HIP *)vin->spptr)->GPUarray = (PetscScalar *)a;
-  vin->offloadmask                  = PETSC_OFFLOAD_GPU;
-#endif
-  PetscCall(PetscObjectStateIncrease((PetscObject)vin));
-  PetscFunctionReturn(0);
-}
-
-/*@C
-   VecHIPResetArray - Resets a vector to use its default memory. Call this
-   after the use of VecHIPPlaceArray().
-
-   Not Collective
-
-   Input Parameters:
-.  vec - the vector
-
-   Level: developer
-
-.seealso: `VecGetArray()`, `VecRestoreArray()`, `VecReplaceArray()`, `VecPlaceArray()`, `VecResetArray()`, `VecHIPPlaceArray()`, `VecHIPReplaceArray()`
-
-@*/
-PetscErrorCode VecHIPResetArray(Vec vin) {
-  PetscFunctionBegin;
-  PetscCheckTypeNames(vin, VECSEQHIP, VECMPIHIP);
-#if defined(PETSC_HAVE_HIP)
-  PetscCall(VecHIPCopyToGPU(vin));
-  ((Vec_HIP *)vin->spptr)->GPUarray     = (PetscScalar *)((Vec_Seq *)vin->data)->unplacedarray;
-  ((Vec_Seq *)vin->data)->unplacedarray = 0;
-  vin->offloadmask                      = PETSC_OFFLOAD_GPU;
-#endif
-  PetscCall(PetscObjectStateIncrease((PetscObject)vin));
   PetscFunctionReturn(0);
 }
 
@@ -3090,7 +2628,8 @@ M*/
           `VecRestoreArray2d()`, `DMDAVecGetArray()`, `DMDAVecRestoreArray()`, `VecGetArray3d()`, `VecRestoreArray3d()`,
           `VecGetArray1d()`, `VecRestoreArray1d()`, `VecGetArray4d()`, `VecRestoreArray4d()`
 @*/
-PetscErrorCode VecGetArray2d(Vec x, PetscInt m, PetscInt n, PetscInt mstart, PetscInt nstart, PetscScalar **a[]) {
+PetscErrorCode VecGetArray2d(Vec x, PetscInt m, PetscInt n, PetscInt mstart, PetscInt nstart, PetscScalar **a[])
+{
   PetscInt     i, N;
   PetscScalar *aa;
 
@@ -3139,7 +2678,8 @@ PetscErrorCode VecGetArray2d(Vec x, PetscInt m, PetscInt n, PetscInt mstart, Pet
           `VecRestoreArray2d()`, `DMDAVecGetArray()`, `DMDAVecRestoreArray()`, `VecGetArray3d()`, `VecRestoreArray3d()`,
           `VecGetArray1d()`, `VecRestoreArray1d()`, `VecGetArray4d()`, `VecRestoreArray4d()`
 @*/
-PetscErrorCode VecGetArray2dWrite(Vec x, PetscInt m, PetscInt n, PetscInt mstart, PetscInt nstart, PetscScalar **a[]) {
+PetscErrorCode VecGetArray2dWrite(Vec x, PetscInt m, PetscInt n, PetscInt mstart, PetscInt nstart, PetscScalar **a[])
+{
   PetscInt     i, N;
   PetscScalar *aa;
 
@@ -3184,7 +2724,8 @@ PetscErrorCode VecGetArray2dWrite(Vec x, PetscInt m, PetscInt n, PetscInt mstart
           `VecGetArray2d()`, `VecGetArray3d()`, `VecRestoreArray3d()`, `DMDAVecGetArray()`, `DMDAVecRestoreArray()`
           `VecGetArray1d()`, `VecRestoreArray1d()`, `VecGetArray4d()`, `VecRestoreArray4d()`
 @*/
-PetscErrorCode VecRestoreArray2d(Vec x, PetscInt m, PetscInt n, PetscInt mstart, PetscInt nstart, PetscScalar **a[]) {
+PetscErrorCode VecRestoreArray2d(Vec x, PetscInt m, PetscInt n, PetscInt mstart, PetscInt nstart, PetscScalar **a[])
+{
   void *dummy;
 
   PetscFunctionBegin;
@@ -3224,7 +2765,8 @@ PetscErrorCode VecRestoreArray2d(Vec x, PetscInt m, PetscInt n, PetscInt mstart,
           `VecGetArray2d()`, `VecGetArray3d()`, `VecRestoreArray3d()`, `DMDAVecGetArray()`, `DMDAVecRestoreArray()`
           `VecGetArray1d()`, `VecRestoreArray1d()`, `VecGetArray4d()`, `VecRestoreArray4d()`
 @*/
-PetscErrorCode VecRestoreArray2dWrite(Vec x, PetscInt m, PetscInt n, PetscInt mstart, PetscInt nstart, PetscScalar **a[]) {
+PetscErrorCode VecRestoreArray2dWrite(Vec x, PetscInt m, PetscInt n, PetscInt mstart, PetscInt nstart, PetscScalar **a[])
+{
   void *dummy;
 
   PetscFunctionBegin;
@@ -3265,7 +2807,8 @@ PetscErrorCode VecRestoreArray2dWrite(Vec x, PetscInt m, PetscInt n, PetscInt ms
           `VecRestoreArray2d()`, `DMDAVecGetArray()`, `DMDAVecRestoreArray()`, `VecGetArray3d()`, `VecRestoreArray3d()`,
           `VecGetArray2d()`, `VecRestoreArray1d()`, `VecGetArray4d()`, `VecRestoreArray4d()`
 @*/
-PetscErrorCode VecGetArray1d(Vec x, PetscInt m, PetscInt mstart, PetscScalar *a[]) {
+PetscErrorCode VecGetArray1d(Vec x, PetscInt m, PetscInt mstart, PetscScalar *a[])
+{
   PetscInt N;
 
   PetscFunctionBegin;
@@ -3307,7 +2850,8 @@ PetscErrorCode VecGetArray1d(Vec x, PetscInt m, PetscInt mstart, PetscScalar *a[
           `VecRestoreArray2d()`, `DMDAVecGetArray()`, `DMDAVecRestoreArray()`, `VecGetArray3d()`, `VecRestoreArray3d()`,
           `VecGetArray2d()`, `VecRestoreArray1d()`, `VecGetArray4d()`, `VecRestoreArray4d()`
 @*/
-PetscErrorCode VecGetArray1dWrite(Vec x, PetscInt m, PetscInt mstart, PetscScalar *a[]) {
+PetscErrorCode VecGetArray1dWrite(Vec x, PetscInt m, PetscInt mstart, PetscScalar *a[])
+{
   PetscInt N;
 
   PetscFunctionBegin;
@@ -3346,7 +2890,8 @@ PetscErrorCode VecGetArray1dWrite(Vec x, PetscInt m, PetscInt mstart, PetscScala
           `VecGetArray2d()`, `VecGetArray3d()`, `VecRestoreArray3d()`, `DMDAVecGetArray()`, `DMDAVecRestoreArray()`
           `VecGetArray1d()`, `VecRestoreArray2d()`, `VecGetArray4d()`, `VecRestoreArray4d()`
 @*/
-PetscErrorCode VecRestoreArray1d(Vec x, PetscInt m, PetscInt mstart, PetscScalar *a[]) {
+PetscErrorCode VecRestoreArray1d(Vec x, PetscInt m, PetscInt mstart, PetscScalar *a[])
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x, VEC_CLASSID, 1);
   PetscValidType(x, 1);
@@ -3379,7 +2924,8 @@ PetscErrorCode VecRestoreArray1d(Vec x, PetscInt m, PetscInt mstart, PetscScalar
           `VecGetArray2d()`, `VecGetArray3d()`, `VecRestoreArray3d()`, `DMDAVecGetArray()`, `DMDAVecRestoreArray()`
           `VecGetArray1d()`, `VecRestoreArray2d()`, `VecGetArray4d()`, `VecRestoreArray4d()`
 @*/
-PetscErrorCode VecRestoreArray1dWrite(Vec x, PetscInt m, PetscInt mstart, PetscScalar *a[]) {
+PetscErrorCode VecRestoreArray1dWrite(Vec x, PetscInt m, PetscInt mstart, PetscScalar *a[])
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x, VEC_CLASSID, 1);
   PetscValidType(x, 1);
@@ -3420,7 +2966,8 @@ PetscErrorCode VecRestoreArray1dWrite(Vec x, PetscInt m, PetscInt mstart, PetscS
           `VecRestoreArray2d()`, `DMDAVecGetarray()`, `DMDAVecRestoreArray()`, `VecGetArray3d()`, `VecRestoreArray3d()`,
           `VecGetArray1d()`, `VecRestoreArray1d()`, `VecGetArray4d()`, `VecRestoreArray4d()`
 @*/
-PetscErrorCode VecGetArray3d(Vec x, PetscInt m, PetscInt n, PetscInt p, PetscInt mstart, PetscInt nstart, PetscInt pstart, PetscScalar ***a[]) {
+PetscErrorCode VecGetArray3d(Vec x, PetscInt m, PetscInt n, PetscInt p, PetscInt mstart, PetscInt nstart, PetscInt pstart, PetscScalar ***a[])
+{
   PetscInt     i, N, j;
   PetscScalar *aa, **b;
 
@@ -3474,7 +3021,8 @@ PetscErrorCode VecGetArray3d(Vec x, PetscInt m, PetscInt n, PetscInt p, PetscInt
           `VecRestoreArray2d()`, `DMDAVecGetarray()`, `DMDAVecRestoreArray()`, `VecGetArray3d()`, `VecRestoreArray3d()`,
           `VecGetArray1d()`, `VecRestoreArray1d()`, `VecGetArray4d()`, `VecRestoreArray4d()`
 @*/
-PetscErrorCode VecGetArray3dWrite(Vec x, PetscInt m, PetscInt n, PetscInt p, PetscInt mstart, PetscInt nstart, PetscInt pstart, PetscScalar ***a[]) {
+PetscErrorCode VecGetArray3dWrite(Vec x, PetscInt m, PetscInt n, PetscInt p, PetscInt mstart, PetscInt nstart, PetscInt pstart, PetscScalar ***a[])
+{
   PetscInt     i, N, j;
   PetscScalar *aa, **b;
 
@@ -3525,7 +3073,8 @@ PetscErrorCode VecGetArray3dWrite(Vec x, PetscInt m, PetscInt n, PetscInt p, Pet
           `VecGetArray2d()`, `VecGetArray3d()`, `VecRestoreArray3d()`, `DMDAVecGetArray()`, `DMDAVecRestoreArray()`
           `VecGetArray1d()`, `VecRestoreArray1d()`, `VecGetArray4d()`, `VecRestoreArray4d()`, `VecGet`
 @*/
-PetscErrorCode VecRestoreArray3d(Vec x, PetscInt m, PetscInt n, PetscInt p, PetscInt mstart, PetscInt nstart, PetscInt pstart, PetscScalar ***a[]) {
+PetscErrorCode VecRestoreArray3d(Vec x, PetscInt m, PetscInt n, PetscInt p, PetscInt mstart, PetscInt nstart, PetscInt pstart, PetscScalar ***a[])
+{
   void *dummy;
 
   PetscFunctionBegin;
@@ -3567,7 +3116,8 @@ PetscErrorCode VecRestoreArray3d(Vec x, PetscInt m, PetscInt n, PetscInt p, Pets
           `VecGetArray2d()`, `VecGetArray3d()`, `VecRestoreArray3d()`, `DMDAVecGetArray()`, `DMDAVecRestoreArray()`
           `VecGetArray1d()`, `VecRestoreArray1d()`, `VecGetArray4d()`, `VecRestoreArray4d()`, `VecGet`
 @*/
-PetscErrorCode VecRestoreArray3dWrite(Vec x, PetscInt m, PetscInt n, PetscInt p, PetscInt mstart, PetscInt nstart, PetscInt pstart, PetscScalar ***a[]) {
+PetscErrorCode VecRestoreArray3dWrite(Vec x, PetscInt m, PetscInt n, PetscInt p, PetscInt mstart, PetscInt nstart, PetscInt pstart, PetscScalar ***a[])
+{
   void *dummy;
 
   PetscFunctionBegin;
@@ -3615,7 +3165,8 @@ PetscErrorCode VecRestoreArray3dWrite(Vec x, PetscInt m, PetscInt n, PetscInt p,
           `VecRestoreArray2d()`, `DMDAVecGetarray()`, `DMDAVecRestoreArray()`, `VecGetArray3d()`, `VecRestoreArray3d()`,
           `VecGetArray1d()`, `VecRestoreArray1d()`, `VecGetArray4d()`, `VecRestoreArray4d()`
 @*/
-PetscErrorCode VecGetArray4d(Vec x, PetscInt m, PetscInt n, PetscInt p, PetscInt q, PetscInt mstart, PetscInt nstart, PetscInt pstart, PetscInt qstart, PetscScalar ****a[]) {
+PetscErrorCode VecGetArray4d(Vec x, PetscInt m, PetscInt n, PetscInt p, PetscInt q, PetscInt mstart, PetscInt nstart, PetscInt pstart, PetscInt qstart, PetscScalar ****a[])
+{
   PetscInt     i, N, j, k;
   PetscScalar *aa, ***b, **c;
 
@@ -3675,7 +3226,8 @@ PetscErrorCode VecGetArray4d(Vec x, PetscInt m, PetscInt n, PetscInt p, PetscInt
           `VecRestoreArray2d()`, `DMDAVecGetarray()`, `DMDAVecRestoreArray()`, `VecGetArray3d()`, `VecRestoreArray3d()`,
           `VecGetArray1d()`, `VecRestoreArray1d()`, `VecGetArray4d()`, `VecRestoreArray4d()`
 @*/
-PetscErrorCode VecGetArray4dWrite(Vec x, PetscInt m, PetscInt n, PetscInt p, PetscInt q, PetscInt mstart, PetscInt nstart, PetscInt pstart, PetscInt qstart, PetscScalar ****a[]) {
+PetscErrorCode VecGetArray4dWrite(Vec x, PetscInt m, PetscInt n, PetscInt p, PetscInt q, PetscInt mstart, PetscInt nstart, PetscInt pstart, PetscInt qstart, PetscScalar ****a[])
+{
   PetscInt     i, N, j, k;
   PetscScalar *aa, ***b, **c;
 
@@ -3731,7 +3283,8 @@ PetscErrorCode VecGetArray4dWrite(Vec x, PetscInt m, PetscInt n, PetscInt p, Pet
           `VecGetArray2d()`, `VecGetArray3d()`, `VecRestoreArray3d()`, `DMDAVecGetArray()`, `DMDAVecRestoreArray()`
           `VecGetArray1d()`, `VecRestoreArray1d()`, `VecGetArray4d()`, `VecRestoreArray4d()`, `VecGet`
 @*/
-PetscErrorCode VecRestoreArray4d(Vec x, PetscInt m, PetscInt n, PetscInt p, PetscInt q, PetscInt mstart, PetscInt nstart, PetscInt pstart, PetscInt qstart, PetscScalar ****a[]) {
+PetscErrorCode VecRestoreArray4d(Vec x, PetscInt m, PetscInt n, PetscInt p, PetscInt q, PetscInt mstart, PetscInt nstart, PetscInt pstart, PetscInt qstart, PetscScalar ****a[])
+{
   void *dummy;
 
   PetscFunctionBegin;
@@ -3775,7 +3328,8 @@ PetscErrorCode VecRestoreArray4d(Vec x, PetscInt m, PetscInt n, PetscInt p, Pets
           `VecGetArray2d()`, `VecGetArray3d()`, `VecRestoreArray3d()`, `DMDAVecGetArray()`, `DMDAVecRestoreArray()`
           `VecGetArray1d()`, `VecRestoreArray1d()`, `VecGetArray4d()`, `VecRestoreArray4d()`, `VecGet`
 @*/
-PetscErrorCode VecRestoreArray4dWrite(Vec x, PetscInt m, PetscInt n, PetscInt p, PetscInt q, PetscInt mstart, PetscInt nstart, PetscInt pstart, PetscInt qstart, PetscScalar ****a[]) {
+PetscErrorCode VecRestoreArray4dWrite(Vec x, PetscInt m, PetscInt n, PetscInt p, PetscInt q, PetscInt mstart, PetscInt nstart, PetscInt pstart, PetscInt qstart, PetscScalar ****a[])
+{
   void *dummy;
 
   PetscFunctionBegin;
@@ -3819,7 +3373,8 @@ PetscErrorCode VecRestoreArray4dWrite(Vec x, PetscInt m, PetscInt n, PetscInt p,
           `VecRestoreArray2d()`, `DMDAVecGetArray()`, `DMDAVecRestoreArray()`, `VecGetArray3d()`, `VecRestoreArray3d()`,
           `VecGetArray1d()`, `VecRestoreArray1d()`, `VecGetArray4d()`, `VecRestoreArray4d()`
 @*/
-PetscErrorCode VecGetArray2dRead(Vec x, PetscInt m, PetscInt n, PetscInt mstart, PetscInt nstart, PetscScalar **a[]) {
+PetscErrorCode VecGetArray2dRead(Vec x, PetscInt m, PetscInt n, PetscInt mstart, PetscInt nstart, PetscScalar **a[])
+{
   PetscInt           i, N;
   const PetscScalar *aa;
 
@@ -3864,7 +3419,8 @@ PetscErrorCode VecGetArray2dRead(Vec x, PetscInt m, PetscInt n, PetscInt mstart,
           `VecGetArray2d()`, `VecGetArray3d()`, `VecRestoreArray3d()`, `DMDAVecGetArray()`, `DMDAVecRestoreArray()`
           `VecGetArray1d()`, `VecRestoreArray1d()`, `VecGetArray4d()`, `VecRestoreArray4d()`
 @*/
-PetscErrorCode VecRestoreArray2dRead(Vec x, PetscInt m, PetscInt n, PetscInt mstart, PetscInt nstart, PetscScalar **a[]) {
+PetscErrorCode VecRestoreArray2dRead(Vec x, PetscInt m, PetscInt n, PetscInt mstart, PetscInt nstart, PetscScalar **a[])
+{
   void *dummy;
 
   PetscFunctionBegin;
@@ -3905,7 +3461,8 @@ PetscErrorCode VecRestoreArray2dRead(Vec x, PetscInt m, PetscInt n, PetscInt mst
           `VecRestoreArray2d()`, `DMDAVecGetArray()`, `DMDAVecRestoreArray()`, `VecGetArray3d()`, `VecRestoreArray3d()`,
           `VecGetArray2d()`, `VecRestoreArray1d()`, `VecGetArray4d()`, `VecRestoreArray4d()`
 @*/
-PetscErrorCode VecGetArray1dRead(Vec x, PetscInt m, PetscInt mstart, PetscScalar *a[]) {
+PetscErrorCode VecGetArray1dRead(Vec x, PetscInt m, PetscInt mstart, PetscScalar *a[])
+{
   PetscInt N;
 
   PetscFunctionBegin;
@@ -3944,7 +3501,8 @@ PetscErrorCode VecGetArray1dRead(Vec x, PetscInt m, PetscInt mstart, PetscScalar
           `VecGetArray2d()`, `VecGetArray3d()`, `VecRestoreArray3d()`, `DMDAVecGetArray()`, `DMDAVecRestoreArray()`
           `VecGetArray1d()`, `VecRestoreArray2d()`, `VecGetArray4d()`, `VecRestoreArray4d()`
 @*/
-PetscErrorCode VecRestoreArray1dRead(Vec x, PetscInt m, PetscInt mstart, PetscScalar *a[]) {
+PetscErrorCode VecRestoreArray1dRead(Vec x, PetscInt m, PetscInt mstart, PetscScalar *a[])
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x, VEC_CLASSID, 1);
   PetscValidType(x, 1);
@@ -3985,7 +3543,8 @@ PetscErrorCode VecRestoreArray1dRead(Vec x, PetscInt m, PetscInt mstart, PetscSc
           `VecRestoreArray2d()`, `DMDAVecGetarray()`, `DMDAVecRestoreArray()`, `VecGetArray3d()`, `VecRestoreArray3d()`,
           `VecGetArray1d()`, `VecRestoreArray1d()`, `VecGetArray4d()`, `VecRestoreArray4d()`
 @*/
-PetscErrorCode VecGetArray3dRead(Vec x, PetscInt m, PetscInt n, PetscInt p, PetscInt mstart, PetscInt nstart, PetscInt pstart, PetscScalar ***a[]) {
+PetscErrorCode VecGetArray3dRead(Vec x, PetscInt m, PetscInt n, PetscInt p, PetscInt mstart, PetscInt nstart, PetscInt pstart, PetscScalar ***a[])
+{
   PetscInt           i, N, j;
   const PetscScalar *aa;
   PetscScalar      **b;
@@ -4036,7 +3595,8 @@ PetscErrorCode VecGetArray3dRead(Vec x, PetscInt m, PetscInt n, PetscInt p, Pets
           `VecGetArray2d()`, `VecGetArray3d()`, `VecRestoreArray3d()`, `DMDAVecGetArray()`, `DMDAVecRestoreArray()`
           `VecGetArray1d()`, `VecRestoreArray1d()`, `VecGetArray4d()`, `VecRestoreArray4d()`, `VecGet`
 @*/
-PetscErrorCode VecRestoreArray3dRead(Vec x, PetscInt m, PetscInt n, PetscInt p, PetscInt mstart, PetscInt nstart, PetscInt pstart, PetscScalar ***a[]) {
+PetscErrorCode VecRestoreArray3dRead(Vec x, PetscInt m, PetscInt n, PetscInt p, PetscInt mstart, PetscInt nstart, PetscInt pstart, PetscScalar ***a[])
+{
   void *dummy;
 
   PetscFunctionBegin;
@@ -4084,7 +3644,8 @@ PetscErrorCode VecRestoreArray3dRead(Vec x, PetscInt m, PetscInt n, PetscInt p, 
           `VecRestoreArray2d()`, `DMDAVecGetarray()`, `DMDAVecRestoreArray()`, `VecGetArray3d()`, `VecRestoreArray3d()`,
           `VecGetArray1d()`, `VecRestoreArray1d()`, `VecGetArray4d()`, `VecRestoreArray4d()`
 @*/
-PetscErrorCode VecGetArray4dRead(Vec x, PetscInt m, PetscInt n, PetscInt p, PetscInt q, PetscInt mstart, PetscInt nstart, PetscInt pstart, PetscInt qstart, PetscScalar ****a[]) {
+PetscErrorCode VecGetArray4dRead(Vec x, PetscInt m, PetscInt n, PetscInt p, PetscInt q, PetscInt mstart, PetscInt nstart, PetscInt pstart, PetscInt qstart, PetscScalar ****a[])
+{
   PetscInt           i, N, j, k;
   const PetscScalar *aa;
   PetscScalar     ***b, **c;
@@ -4141,7 +3702,8 @@ PetscErrorCode VecGetArray4dRead(Vec x, PetscInt m, PetscInt n, PetscInt p, Pets
           `VecGetArray2d()`, `VecGetArray3d()`, `VecRestoreArray3d()`, `DMDAVecGetArray()`, `DMDAVecRestoreArray()`
           `VecGetArray1d()`, `VecRestoreArray1d()`, `VecGetArray4d()`, `VecRestoreArray4d()`, `VecGet`
 @*/
-PetscErrorCode VecRestoreArray4dRead(Vec x, PetscInt m, PetscInt n, PetscInt p, PetscInt q, PetscInt mstart, PetscInt nstart, PetscInt pstart, PetscInt qstart, PetscScalar ****a[]) {
+PetscErrorCode VecRestoreArray4dRead(Vec x, PetscInt m, PetscInt n, PetscInt p, PetscInt q, PetscInt mstart, PetscInt nstart, PetscInt pstart, PetscInt qstart, PetscScalar ****a[])
+{
   void *dummy;
 
   PetscFunctionBegin;
@@ -4172,14 +3734,16 @@ PetscErrorCode VecRestoreArray4dRead(Vec x, PetscInt m, PetscInt n, PetscInt p, 
 
 .seealso: `VecRestoreArray()`, `VecGetArrayRead()`, `VecLockReadPush()`, `VecLockReadPop()`
 @*/
-PetscErrorCode VecLockGet(Vec x, PetscInt *state) {
+PetscErrorCode VecLockGet(Vec x, PetscInt *state)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x, VEC_CLASSID, 1);
   *state = x->lock;
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode VecLockGetLocation(Vec x, const char *file[], const char *func[], int *line) {
+PetscErrorCode VecLockGetLocation(Vec x, const char *file[], const char *func[], int *line)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x, VEC_CLASSID, 1);
   PetscValidPointer(file, 2);
@@ -4214,7 +3778,8 @@ PetscErrorCode VecLockGetLocation(Vec x, const char *file[], const char *func[],
 
 .seealso: `VecRestoreArray()`, `VecGetArrayRead()`, `VecLockReadPop()`, `VecLockGet()`
 @*/
-PetscErrorCode VecLockReadPush(Vec x) {
+PetscErrorCode VecLockReadPush(Vec x)
+{
   const char *file, *func;
   int         index, line;
 
@@ -4249,7 +3814,8 @@ PetscErrorCode VecLockReadPush(Vec x) {
 
 .seealso: `VecRestoreArray()`, `VecGetArrayRead()`, `VecLockReadPush()`, `VecLockGet()`
 @*/
-PetscErrorCode VecLockReadPop(Vec x) {
+PetscErrorCode VecLockReadPop(Vec x)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x, VEC_CLASSID, 1);
   PetscCheck(--x->lock >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Vector has been unlocked from read-only access too many times");
@@ -4279,7 +3845,7 @@ PetscErrorCode VecLockReadPop(Vec x) {
        VecGetArray(x,&xdata); // begin phase
        VecLockWriteSet(v,PETSC_TRUE);
 
-       Other operations, which can not acceess x anymore (they can access xdata, of course)
+       Other operations, which can not access x anymore (they can access xdata, of course)
 
        VecRestoreArray(x,&vdata); // end phase
        VecLockWriteSet(v,PETSC_FALSE);
@@ -4291,7 +3857,8 @@ PetscErrorCode VecLockReadPop(Vec x) {
 
 .seealso: `VecRestoreArray()`, `VecGetArrayRead()`, `VecLockReadPush()`, `VecLockReadPop()`, `VecLockGet()`
 @*/
-PetscErrorCode VecLockWriteSet(Vec x, PetscBool flg) {
+PetscErrorCode VecLockWriteSet(Vec x, PetscBool flg)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x, VEC_CLASSID, 1);
   if (flg) {
@@ -4312,7 +3879,8 @@ PetscErrorCode VecLockWriteSet(Vec x, PetscBool flg) {
 
 .seealso: `VecLockReadPush()`
 @*/
-PetscErrorCode VecLockPush(Vec x) {
+PetscErrorCode VecLockPush(Vec x)
+{
   PetscFunctionBegin;
   PetscCall(VecLockReadPush(x));
   PetscFunctionReturn(0);
@@ -4325,7 +3893,8 @@ PetscErrorCode VecLockPush(Vec x) {
 
 .seealso: `VecLockReadPop()`
 @*/
-PetscErrorCode VecLockPop(Vec x) {
+PetscErrorCode VecLockPop(Vec x)
+{
   PetscFunctionBegin;
   PetscCall(VecLockReadPop(x));
   PetscFunctionReturn(0);

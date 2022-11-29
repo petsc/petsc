@@ -50,7 +50,8 @@ volatile int TV_data_format_control = TV_FORMAT_INACTIVE;
 char         TV_data_format_buffer[DATA_FORMAT_BUFFER_SIZE];
 static char *TV_data_buffer_ptr = TV_data_format_buffer;
 
-int TV_add_row(const char *field_name, const char *type_name, const void *value) {
+int TV_add_row(const char *field_name, const char *type_name, const void *value)
+{
   size_t remaining;
   int    out;
 
@@ -73,7 +74,7 @@ int TV_add_row(const char *field_name, const char *type_name, const void *value)
   remaining = TV_data_buffer_ptr + DATA_FORMAT_BUFFER_SIZE - TV_data_format_buffer;
 
 #if defined(PETSC_HAVE__SNPRINTF) && !defined(PETSC_HAVE_SNPRINTF)
-#define snprintf _snprintf
+  #define snprintf _snprintf
 #endif
   out = snprintf(TV_data_buffer_ptr, remaining, "%s\t%s\t%p\n", field_name, type_name, value);
 
@@ -84,10 +85,12 @@ int TV_add_row(const char *field_name, const char *type_name, const void *value)
   return 0;
 }
 
-void TV_pre_display_callback(void) {
+void TV_pre_display_callback(void)
+{
   TV_data_format_control = TV_FORMAT_FIRST_CALL;
 }
 
-void TV_post_display_callback(void) {
+void TV_post_display_callback(void)
+{
   TV_data_format_control = TV_FORMAT_INACTIVE;
 }

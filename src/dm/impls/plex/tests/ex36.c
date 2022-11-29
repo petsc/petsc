@@ -6,7 +6,8 @@ static char help[] = "Tests interpolation and output of hybrid meshes\n\n";
 /* Much can be learned using
      -rd_dm_view -rd2_dm_view -rd_section_view -rd_vec_view -rd2_section_view */
 
-static PetscErrorCode redistribute_vec(DM dist_dm, PetscSF sf, Vec *v) {
+static PetscErrorCode redistribute_vec(DM dist_dm, PetscSF sf, Vec *v)
+{
   DM           dm, dist_v_dm;
   PetscSection section, dist_section;
   Vec          dist_v;
@@ -50,7 +51,8 @@ static PetscErrorCode redistribute_vec(DM dist_dm, PetscSF sf, Vec *v) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode dm_view_geometry(DM dm, Vec cell_geom, Vec face_geom) {
+static PetscErrorCode dm_view_geometry(DM dm, Vec cell_geom, Vec face_geom)
+{
   DM                 cell_dm, face_dm;
   PetscSection       cell_section, face_section;
   const PetscScalar *cell_array, *face_array;
@@ -96,7 +98,8 @@ static PetscErrorCode dm_view_geometry(DM dm, Vec cell_geom, Vec face_geom) {
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   DM               dm, redist_dm;
   PetscPartitioner part;
   PetscSF          redist_sf;

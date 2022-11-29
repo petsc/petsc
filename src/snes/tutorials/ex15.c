@@ -97,7 +97,8 @@ PetscErrorCode PreCheckDestroy(PreCheck *);
 PetscErrorCode PreCheckFunction(SNESLineSearch, Vec, Vec, PetscBool *, void *);
 PetscErrorCode PreCheckSetFromOptions(PreCheck);
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   SNES                snes;       /* nonlinear solver */
   Vec                 x, r, b;    /* solution, residual, rhs vectors */
   AppCtx              user;       /* user-defined work context */
@@ -280,7 +281,8 @@ int main(int argc, char **argv) {
    Output Parameter:
    X - vector
  */
-static PetscErrorCode FormInitialGuess(AppCtx *user, DM da, Vec X) {
+static PetscErrorCode FormInitialGuess(AppCtx *user, DM da, Vec X)
+{
   PetscInt      i, j, Mx, My, xs, ys, xm, ym;
   PetscReal     temp1, temp, hx, hy;
   PetscScalar **x;
@@ -360,7 +362,8 @@ static PetscErrorCode FormInitialGuess(AppCtx *user, DM da, Vec X) {
    Output Parameter:
    B - vector
  */
-static PetscErrorCode FormRHS(AppCtx *user, DM da, Vec B) {
+static PetscErrorCode FormRHS(AppCtx *user, DM da, Vec B)
+{
   PetscInt      i, j, Mx, My, xs, ys, xm, ym;
   PetscReal     hx, hy;
   PetscScalar **b;
@@ -385,14 +388,17 @@ static PetscErrorCode FormRHS(AppCtx *user, DM da, Vec B) {
   PetscFunctionReturn(0);
 }
 
-static inline PetscReal kappa(const AppCtx *ctx, PetscReal x, PetscReal y) {
+static inline PetscReal kappa(const AppCtx *ctx, PetscReal x, PetscReal y)
+{
   return (((PetscInt)(x * ctx->blocks[0])) + ((PetscInt)(y * ctx->blocks[1]))) % 2 ? ctx->kappa : 1.0;
 }
 /* p-Laplacian diffusivity */
-static inline PetscScalar eta(const AppCtx *ctx, PetscReal x, PetscReal y, PetscScalar ux, PetscScalar uy) {
+static inline PetscScalar eta(const AppCtx *ctx, PetscReal x, PetscReal y, PetscScalar ux, PetscScalar uy)
+{
   return kappa(ctx, x, y) * PetscPowScalar(PetscSqr(ctx->epsilon) + 0.5 * (ux * ux + uy * uy), 0.5 * (ctx->p - 2.));
 }
-static inline PetscScalar deta(const AppCtx *ctx, PetscReal x, PetscReal y, PetscScalar ux, PetscScalar uy) {
+static inline PetscScalar deta(const AppCtx *ctx, PetscReal x, PetscReal y, PetscScalar ux, PetscScalar uy)
+{
   return (ctx->p == 2) ? 0 : kappa(ctx, x, y) * PetscPowScalar(PetscSqr(ctx->epsilon) + 0.5 * (ux * ux + uy * uy), 0.5 * (ctx->p - 4)) * 0.5 * (ctx->p - 2.);
 }
 
@@ -400,7 +406,8 @@ static inline PetscScalar deta(const AppCtx *ctx, PetscReal x, PetscReal y, Pets
 /*
    FormFunctionLocal - Evaluates nonlinear function, F(x).
  */
-static PetscErrorCode FormFunctionLocal(DMDALocalInfo *info, PetscScalar **x, PetscScalar **f, AppCtx *user) {
+static PetscErrorCode FormFunctionLocal(DMDALocalInfo *info, PetscScalar **x, PetscScalar **f, AppCtx *user)
+{
   PetscReal   hx, hy, dhx, dhy, sc;
   PetscInt    i, j;
   PetscScalar eu;
@@ -440,7 +447,8 @@ static PetscErrorCode FormFunctionLocal(DMDALocalInfo *info, PetscScalar **x, Pe
     that is FormFunction applies A(x) x - b(x) while this applies b(x) because for Picard we think of it as solving A(x) x = b(x)
 
 */
-static PetscErrorCode FormFunctionPicardLocal(DMDALocalInfo *info, PetscScalar **x, PetscScalar **f, AppCtx *user) {
+static PetscErrorCode FormFunctionPicardLocal(DMDALocalInfo *info, PetscScalar **x, PetscScalar **f, AppCtx *user)
+{
   PetscReal hx, hy, sc;
   PetscInt  i, j;
 
@@ -468,7 +476,8 @@ static PetscErrorCode FormFunctionPicardLocal(DMDALocalInfo *info, PetscScalar *
 /*
    FormJacobianLocal - Evaluates Jacobian matrix.
 */
-static PetscErrorCode FormJacobianLocal(DMDALocalInfo *info, PetscScalar **x, Mat J, Mat B, AppCtx *user) {
+static PetscErrorCode FormJacobianLocal(DMDALocalInfo *info, PetscScalar **x, Mat J, Mat B, AppCtx *user)
+{
   PetscInt    i, j;
   MatStencil  col[9], row;
   PetscScalar v[9];
@@ -599,7 +608,8 @@ static PetscErrorCode FormJacobianLocal(DMDALocalInfo *info, PetscScalar **x, Ma
           v[8]     = -0.25 * (skew_N + skew_E);
           PetscCall(MatSetValuesStencil(B, 1, &row, 9, col, v, INSERT_VALUES));
           break;
-        default: SETERRQ(PetscObjectComm((PetscObject)info->da), PETSC_ERR_SUP, "Jacobian type %d not implemented", user->jtype);
+        default:
+          SETERRQ(PetscObjectComm((PetscObject)info->da), PETSC_ERR_SUP, "Jacobian type %d not implemented", user->jtype);
         }
       }
     }
@@ -628,7 +638,8 @@ static PetscErrorCode FormJacobianLocal(DMDALocalInfo *info, PetscScalar **x, Ma
 /***********************************************************
  * PreCheck implementation
  ***********************************************************/
-PetscErrorCode PreCheckSetFromOptions(PreCheck precheck) {
+PetscErrorCode PreCheckSetFromOptions(PreCheck precheck)
+{
   PetscBool flg;
 
   PetscFunctionBeginUser;
@@ -644,7 +655,8 @@ PetscErrorCode PreCheckSetFromOptions(PreCheck precheck) {
 /*
   Compare the direction of the current and previous step, modify the current step accordingly
 */
-PetscErrorCode PreCheckFunction(SNESLineSearch linesearch, Vec X, Vec Y, PetscBool *changed, void *ctx) {
+PetscErrorCode PreCheckFunction(SNESLineSearch linesearch, Vec X, Vec Y, PetscBool *changed, void *ctx)
+{
   PreCheck    precheck;
   Vec         Ylast;
   PetscScalar dot;
@@ -687,7 +699,8 @@ PetscErrorCode PreCheckFunction(SNESLineSearch linesearch, Vec X, Vec Y, PetscBo
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PreCheckDestroy(PreCheck *precheck) {
+PetscErrorCode PreCheckDestroy(PreCheck *precheck)
+{
   PetscFunctionBeginUser;
   if (!*precheck) PetscFunctionReturn(0);
   PetscCall(VecDestroy(&(*precheck)->Ylast));
@@ -696,7 +709,8 @@ PetscErrorCode PreCheckDestroy(PreCheck *precheck) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PreCheckCreate(MPI_Comm comm, PreCheck *precheck) {
+PetscErrorCode PreCheckCreate(MPI_Comm comm, PreCheck *precheck)
+{
   PetscFunctionBeginUser;
   PetscCall(PetscNew(precheck));
 
@@ -709,7 +723,8 @@ PetscErrorCode PreCheckCreate(MPI_Comm comm, PreCheck *precheck) {
       Applies some sweeps on nonlinear Gauss-Seidel on each process
 
  */
-PetscErrorCode NonlinearGS(SNES snes, Vec X, Vec B, void *ctx) {
+PetscErrorCode NonlinearGS(SNES snes, Vec X, Vec B, void *ctx)
+{
   PetscInt      i, j, k, xs, ys, xm, ym, its, tot_its, sweeps, l, m;
   PetscReal     hx, hy, hxdhy, hydhx, dhx, dhy, sc;
   PetscScalar **x, **b, bij, F, F0 = 0, J, y, u, eu;

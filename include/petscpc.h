@@ -1,7 +1,7 @@
 /*
       Preconditioner module.
 */
-#if !defined(PETSCPC_H)
+#ifndef PETSCPC_H
 #define PETSCPC_H
 
 #include <petscmat.h>
@@ -47,7 +47,8 @@ PETSC_EXTERN PetscErrorCode PCSetUp(PC);
 
 PETSC_EXTERN PetscErrorCode PCSetFailedReason(PC, PCFailedReason);
 PETSC_EXTERN PetscErrorCode PCGetFailedReason(PC, PCFailedReason *);
-PETSC_DEPRECATED_FUNCTION("Use PCGetFailedReason() (since version 3.11)") static inline PetscErrorCode PCGetSetUpFailedReason(PC pc, PCFailedReason *reason) {
+PETSC_DEPRECATED_FUNCTION("Use PCGetFailedReason() (since version 3.11)") static inline PetscErrorCode PCGetSetUpFailedReason(PC pc, PCFailedReason *reason)
+{
   return PCGetFailedReason(pc, reason);
 }
 PETSC_EXTERN PetscErrorCode PCGetFailedReasonRank(PC, PCFailedReason *);
@@ -95,7 +96,8 @@ PETSC_EXTERN PetscErrorCode PCAppendOptionsPrefix(PC, const char[]);
 PETSC_EXTERN PetscErrorCode PCGetOptionsPrefix(PC, const char *[]);
 
 PETSC_EXTERN PetscErrorCode PCComputeOperator(PC, MatType, Mat *);
-PETSC_DEPRECATED_FUNCTION("Use PCComputeOperator() (since version 3.12)") static inline PetscErrorCode PCComputeExplicitOperator(PC A, Mat *B) {
+PETSC_DEPRECATED_FUNCTION("Use PCComputeOperator() (since version 3.12)") static inline PetscErrorCode PCComputeExplicitOperator(PC A, Mat *B)
+{
   return PCComputeOperator(A, NULL, B);
 }
 
@@ -167,13 +169,16 @@ PETSC_EXTERN PetscErrorCode PCFactorSetShiftAmount(PC, PetscReal);
 PETSC_EXTERN PetscErrorCode PCFactorSetMatSolverType(PC, MatSolverType);
 PETSC_EXTERN PetscErrorCode PCFactorGetMatSolverType(PC, MatSolverType *);
 PETSC_EXTERN PetscErrorCode PCFactorSetUpMatSolverType(PC);
-PETSC_DEPRECATED_FUNCTION("Use PCFactorSetMatSolverType() (since version 3.9)") static inline PetscErrorCode PCFactorSetMatSolverPackage(PC pc, MatSolverType stype) {
+PETSC_DEPRECATED_FUNCTION("Use PCFactorSetMatSolverType() (since version 3.9)") static inline PetscErrorCode PCFactorSetMatSolverPackage(PC pc, MatSolverType stype)
+{
   return PCFactorSetMatSolverType(pc, stype);
 }
-PETSC_DEPRECATED_FUNCTION("Use PCFactorGetMatSolverType() (since version 3.9)") static inline PetscErrorCode PCFactorGetMatSolverPackage(PC pc, MatSolverType *stype) {
+PETSC_DEPRECATED_FUNCTION("Use PCFactorGetMatSolverType() (since version 3.9)") static inline PetscErrorCode PCFactorGetMatSolverPackage(PC pc, MatSolverType *stype)
+{
   return PCFactorGetMatSolverType(pc, stype);
 }
-PETSC_DEPRECATED_FUNCTION("Use PCFactorSetUpMatSolverType() (since version 3.9)") static inline PetscErrorCode PCFactorSetUpMatSolverPackage(PC pc) {
+PETSC_DEPRECATED_FUNCTION("Use PCFactorSetUpMatSolverType() (since version 3.9)") static inline PetscErrorCode PCFactorSetUpMatSolverPackage(PC pc)
+{
   return PCFactorSetUpMatSolverType(pc);
 }
 
@@ -322,13 +327,13 @@ PETSC_EXTERN PetscErrorCode PCGAMGSetThresholdScale(PC, PetscReal);
 PETSC_EXTERN PetscErrorCode PCGAMGSetCoarseEqLim(PC, PetscInt);
 PETSC_EXTERN PetscErrorCode PCGAMGSetNlevels(PC, PetscInt);
 PETSC_EXTERN PetscErrorCode PCGAMGSetNSmooths(PC, PetscInt);
-PETSC_EXTERN PetscErrorCode PCGAMGSetSymmetrizeGraph(PC, PetscBool);
 PETSC_EXTERN PetscErrorCode PCGAMGSetSquareGraph(PC, PetscInt);
 PETSC_EXTERN PetscErrorCode PCGAMGSetAggressiveLevels(PC, PetscInt);
 PETSC_EXTERN PetscErrorCode PCGAMGSetReuseInterpolation(PC, PetscBool);
 PETSC_EXTERN PetscErrorCode PCGAMGFinalizePackage(void);
 PETSC_EXTERN PetscErrorCode PCGAMGInitializePackage(void);
 PETSC_EXTERN PetscErrorCode PCGAMGRegister(PCGAMGType, PetscErrorCode (*)(PC));
+PETSC_EXTERN PetscErrorCode PCGAMGCreateGraph(PC, Mat, Mat *);
 
 PETSC_EXTERN PetscErrorCode PCGAMGClassicalSetType(PC, PCGAMGClassicalType);
 PETSC_EXTERN PetscErrorCode PCGAMGClassicalGetType(PC, PCGAMGClassicalType *);
@@ -374,7 +379,8 @@ PETSC_EXTERN PetscErrorCode PCMGSetDistinctSmoothUp(PC);
 PETSC_EXTERN PetscErrorCode PCMGSetNumberSmooth(PC, PetscInt);
 PETSC_EXTERN PetscErrorCode PCMGSetCycleType(PC, PCMGCycleType);
 PETSC_EXTERN PetscErrorCode PCMGSetCycleTypeOnLevel(PC, PetscInt, PCMGCycleType);
-PETSC_DEPRECATED_FUNCTION("Use PCMGSetCycleTypeOnLevel() (since version 3.5)") static inline PetscErrorCode PCMGSetCyclesOnLevel(PC pc, PetscInt l, PetscInt t) {
+PETSC_DEPRECATED_FUNCTION("Use PCMGSetCycleTypeOnLevel() (since version 3.5)") static inline PetscErrorCode PCMGSetCyclesOnLevel(PC pc, PetscInt l, PetscInt t)
+{
   return PCMGSetCycleTypeOnLevel(pc, l, (PCMGCycleType)t);
 }
 PETSC_EXTERN PetscErrorCode PCMGMultiplicativeSetCycles(PC, PetscInt);

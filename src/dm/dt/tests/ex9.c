@@ -3,7 +3,8 @@ const char help[] = "Tests PetscDTPKDEvalJet()";
 #include <petscdt.h>
 #include <petscblaslapack.h>
 
-static PetscErrorCode testOrthogonality(PetscInt dim, PetscInt deg) {
+static PetscErrorCode testOrthogonality(PetscInt dim, PetscInt deg)
+{
   PetscQuadrature  q;
   const PetscReal *points, *weights;
   PetscInt         Npoly, npoints, i, j, k;
@@ -29,7 +30,8 @@ static PetscErrorCode testOrthogonality(PetscInt dim, PetscInt deg) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode testDerivativesLegendre(PetscInt dim, PetscInt deg, PetscInt k) {
+static PetscErrorCode testDerivativesLegendre(PetscInt dim, PetscInt deg, PetscInt k)
+{
   PetscInt         Np, Nk, i, j, l, d, npoints;
   PetscRandom      rand;
   PetscReal       *point;
@@ -158,7 +160,8 @@ static PetscErrorCode testDerivativesLegendre(PetscInt dim, PetscInt deg, PetscI
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscInt dim, deg, k;
 
   PetscFunctionBeginUser;

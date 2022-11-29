@@ -170,11 +170,16 @@ Even with the use of ``clang-format`` there are still many decisions about code 
        if ( ) {XXXX;}
        else {YYY;}
 
-#. Do not leave sections of commented-out code in the source files.
+#. Do not leave sections of commented-out code or dead source code protected with ``ifdef foo`` in the source files.
 
 #. Use classic block comments (``/* There must be a space before the first word in the comment and a space at the end */``,
-   (``/*Do not do this*/``) for multi-line comments, and ``// Comment`` for single-line comments in source files. Use appropriate grammar and spelling
-   in the comments.
+   (``/*Do not do this*/``) for multi-line comments, and ``// Comment`` for single-line comments in source files.
+
+#. Do not put a ``*`` at the beginning or end of each line of a multi-line comment.
+
+#. Do not use ``/* ---- ... ----- */`` or similar constructs to separate parts of source code files.
+
+#. Use appropriate grammar and spelling in the comments.
 
 #. All variables must be declared at the beginning of the code block (C89
    style), never mixed in with code. When variables are only used in a limited

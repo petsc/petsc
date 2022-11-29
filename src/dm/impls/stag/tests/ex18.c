@@ -20,10 +20,10 @@ static char help[] = "Test: Solve a toy 2D problem on a staggered grid using 2-l
   call below for the prefix).
 
   This is for testing purposes, and uses some routines to make
-  sure that transfer operators are consistent with extrating submatrices.
+  sure that transfer operators are consistent with extracting submatrices.
 
   -extractTransferOperators (true by default) defines transfer operators for
-  the velocity-velocity system by extracing submatrices from the operators for
+  the velocity-velocity system by extracting submatrices from the operators for
   the full system.
 
 */
@@ -54,23 +54,29 @@ typedef struct {
 and to have a zero derivative for flow parallel to the boundaries. That is,
 d(ux)/dy = 0 at the top and bottom boundaries, and d(uy)/dx = 0 at the right
 and left boundaries. */
-static PetscScalar uxRef(PetscScalar x, PetscScalar y) {
+static PetscScalar uxRef(PetscScalar x, PetscScalar y)
+{
   return 0.0 * x + y * y - 2.0 * y * y * y + y * y * y * y;
 } /* no x-dependence  */
-static PetscScalar uyRef(PetscScalar x, PetscScalar y) {
+static PetscScalar uyRef(PetscScalar x, PetscScalar y)
+{
   return x * x - 2.0 * x * x * x + x * x * x * x + 0.0 * y;
 } /* no y-dependence  */
-static PetscScalar fx(PetscScalar x, PetscScalar y) {
+static PetscScalar fx(PetscScalar x, PetscScalar y)
+{
   return 0.0 * x + 2.0 - 12.0 * y + 12.0 * y * y + 1.0;
 } /* no x-dependence  */
-static PetscScalar fy(PetscScalar x, PetscScalar y) {
+static PetscScalar fy(PetscScalar x, PetscScalar y)
+{
   return 2.0 - 12.0 * x + 12.0 * x * x + 3.0 * y;
 }
-static PetscScalar g(PetscScalar x, PetscScalar y) {
+static PetscScalar g(PetscScalar x, PetscScalar y)
+{
   return 0.0 * x * y;
 } /* identically zero */
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   DM            dmSol, dmSolc, dmuu, dmuuc;
   KSP           ksp, kspc;
   PC            pc;
@@ -239,7 +245,8 @@ int main(int argc, char **argv) {
 Note: in this system all stencil coefficients which are not related to the Dirichlet boundary are scaled by dv = dx*dy.
 This scaling is necessary for multigrid to converge.
 */
-static PetscErrorCode CreateSystem(DM dm, Mat *pA, Vec *pRhs) {
+static PetscErrorCode CreateSystem(DM dm, Mat *pA, Vec *pRhs)
+{
   PetscInt      N[2], dof[3];
   PetscBool     isLastRankx, isLastRanky, isFirstRankx, isFirstRanky;
   PetscInt      ex, ey, startx, starty, nx, ny;
@@ -618,10 +625,10 @@ static PetscErrorCode CreateSystem(DM dm, Mat *pA, Vec *pRhs) {
         DMStagStencil row, col[5];
         PetscScalar   valA[5], valRhs;
 
-        row.i      = ex;
-        row.j      = ey;
-        row.loc    = ELEMENT;
-        row.c      = 0;
+        row.i   = ex;
+        row.j   = ey;
+        row.loc = ELEMENT;
+        row.c   = 0;
         /* Note: the scaling by dv here may not be optimal (but this test isn't concerned with these equations) */
         col[0].i   = ex;
         col[0].j   = ey;
@@ -666,7 +673,8 @@ static PetscErrorCode CreateSystem(DM dm, Mat *pA, Vec *pRhs) {
 
 /* A custom monitor function for analysis purposes. Computes and dumps
    residuals and errors for each KSP iteration */
-PetscErrorCode DMStagAnalysisKSPMonitor(KSP ksp, PetscInt it, PetscReal rnorm, void *mctx) {
+PetscErrorCode DMStagAnalysisKSPMonitor(KSP ksp, PetscInt it, PetscReal rnorm, void *mctx)
+{
   DM                               dm;
   Vec                              r, sol;
   DMStagAnalysisKSPMonitorContext *ctx = (DMStagAnalysisKSPMonitorContext *)mctx;
@@ -853,7 +861,8 @@ PetscErrorCode DMStagAnalysisKSPMonitor(KSP ksp, PetscInt it, PetscReal rnorm, v
 
 /* Use a direct solver to create an "exact" solution to the discrete system
    useful for testing solvers (in that it doesn't include discretization error) */
-static PetscErrorCode CreateNumericalReferenceSolution(Mat A, Vec rhs, Vec *px) {
+static PetscErrorCode CreateNumericalReferenceSolution(Mat A, Vec rhs, Vec *px)
+{
   KSP ksp;
   PC  pc;
   Vec x;

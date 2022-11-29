@@ -4,7 +4,8 @@ static char help[] = "Test MatMatMult() and MatPtAP() for AIJ matrices.\n\n";
 
 extern PetscErrorCode testPTAPRectangular(void);
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   Mat         A, B, C, D;
   PetscScalar a[]  = {1., 1., 0., 0., 1., 1., 0., 0., 1.};
   PetscInt    ij[] = {0, 1, 2};
@@ -96,7 +97,8 @@ int main(int argc, char **argv) {
 }
 
 /* a test contributed by Tobias Neckel <neckel@in.tum.de>, 02 Jul 2008 */
-PetscErrorCode testPTAPRectangular(void) {
+PetscErrorCode testPTAPRectangular(void)
+{
   const int rows = 3, cols = 5;
   int       i;
   Mat       A, P, C;

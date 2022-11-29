@@ -4,7 +4,8 @@ the MatSOR() routines.\n\n";
 
 #include <petscpc.h>
 
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   Mat         mat;
   Vec         b, u;
   PC          pc;

@@ -1,17 +1,17 @@
 
-#if !defined(PETSCF90_H)
+#ifndef PETSCF90_H
 #define PETSCF90_H
 #include <petsc/private/fortranimpl.h>
 
 /* PGI compilers pass in f90 pointers as 2 arguments */
 #if defined(PETSC_HAVE_F90_2PTR_ARG)
-#define PETSC_F90_2PTR_PROTO_NOVAR , void *
-#define PETSC_F90_2PTR_PROTO(ptr)  , void *ptr
-#define PETSC_F90_2PTR_PARAM(ptr)  , ptr
+  #define PETSC_F90_2PTR_PROTO_NOVAR , void *
+  #define PETSC_F90_2PTR_PROTO(ptr)  , void *ptr
+  #define PETSC_F90_2PTR_PARAM(ptr)  , ptr
 #else
-#define PETSC_F90_2PTR_PROTO_NOVAR
-#define PETSC_F90_2PTR_PROTO(ptr)
-#define PETSC_F90_2PTR_PARAM(ptr)
+  #define PETSC_F90_2PTR_PROTO_NOVAR
+  #define PETSC_F90_2PTR_PROTO(ptr)
+  #define PETSC_F90_2PTR_PARAM(ptr)
 #endif
 
 typedef struct {

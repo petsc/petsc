@@ -1,9 +1,10 @@
 
-static char help[] = "Reads a PETSc vector from a socket connection, then sends it back within a loop. Works with ex42.m or ex42a.c\n";
+static char help[] = "Reads a PETSc vector from a socket connection, then sends it back within a loop 1000 times. Works with ex42.m or ex42a.c\n";
 
 #include <petscvec.h>
 
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   Vec         b;
   PetscViewer fd; /* viewer */
   PetscInt    i;

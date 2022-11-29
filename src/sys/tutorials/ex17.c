@@ -2,7 +2,8 @@
 static char help[] = "Demonstrates PetscGetVersonNumber().\n\n";
 
 #include <petscsys.h>
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   char     version[128];
   PetscInt major, minor, subminor;
 

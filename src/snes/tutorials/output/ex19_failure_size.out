@@ -7,5 +7,5 @@
 [0]PETSC ERROR: #3 DMSetFromOptions() at dm.c:0
 [0]PETSC ERROR: #4 main() at ex19.c:0
 [0]PETSC ERROR: PETSc Option Table entries:
-[0]PETSC ERROR: -da_refine 100
+[0]PETSC ERROR: -da_refine 100 (source: command line)
 [0]PETSC ERROR: ----------------End of Error Message -------send entire error message to petsc-maint@mcs.anl.gov----------

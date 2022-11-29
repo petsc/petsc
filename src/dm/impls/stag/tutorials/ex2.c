@@ -48,26 +48,33 @@ static PetscErrorCode CheckSolution(Vec, Vec);
 and to have a zero derivative for flow parallel to the boundaries. That is,
 d(ux)/dy = 0 at the top and bottom boundaries, and d(uy)/dx = 0 at the right
 and left boundaries. */
-static PetscScalar uxRef(PetscScalar x, PetscScalar y) {
+static PetscScalar uxRef(PetscScalar x, PetscScalar y)
+{
   return 0.0 * x + y * y - 2.0 * y * y * y + y * y * y * y;
 } /* no x-dependence  */
-static PetscScalar uyRef(PetscScalar x, PetscScalar y) {
+static PetscScalar uyRef(PetscScalar x, PetscScalar y)
+{
   return x * x - 2.0 * x * x * x + x * x * x * x + 0.0 * y;
 } /* no y-dependence  */
-static PetscScalar pRef(PetscScalar x, PetscScalar y) {
+static PetscScalar pRef(PetscScalar x, PetscScalar y)
+{
   return -1.0 * (x - 0.5) + -3.0 / 2.0 * y * y + 0.5;
 } /* zero integral    */
-static PetscScalar fx(PetscScalar x, PetscScalar y) {
+static PetscScalar fx(PetscScalar x, PetscScalar y)
+{
   return 0.0 * x + 2.0 - 12.0 * y + 12.0 * y * y + 1.0;
 } /* no x-dependence  */
-static PetscScalar fy(PetscScalar x, PetscScalar y) {
+static PetscScalar fy(PetscScalar x, PetscScalar y)
+{
   return 2.0 - 12.0 * x + 12.0 * x * x + 3.0 * y;
 }
-static PetscScalar g(PetscScalar x, PetscScalar y) {
+static PetscScalar g(PetscScalar x, PetscScalar y)
+{
   return 0.0 * x * y;
 } /* identically zero */
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   DM        dmSol;
   Vec       sol, solRef, rhs;
   Mat       A;
@@ -135,7 +142,8 @@ Note: this system is not well-scaled! Generally one would adjust the equations
  to try to get matrix entries to be of comparable order, regardless of grid spacing
  or choice of coefficients.
 */
-static PetscErrorCode CreateSystem(DM dmSol, Mat *pA, Vec *pRhs, PetscBool pinPressure) {
+static PetscErrorCode CreateSystem(DM dmSol, Mat *pA, Vec *pRhs, PetscBool pinPressure)
+{
   PetscInt      N[2];
   PetscInt      ex, ey, startx, starty, nx, ny;
   PetscInt      iprev, icenter, inext;
@@ -532,7 +540,8 @@ static PetscErrorCode CreateSystem(DM dmSol, Mat *pA, Vec *pRhs, PetscBool pinPr
    that this will fill in zeros for "extra" dof)
    - Set the nullspace for the operator
    - Destroy everything (the operator keeps the references it needs) */
-static PetscErrorCode AttachNullspace(DM dmSol, Mat A) {
+static PetscErrorCode AttachNullspace(DM dmSol, Mat A)
+{
   DM           dmPressure;
   Vec          constantPressure, basis;
   PetscReal    nrm;
@@ -556,7 +565,8 @@ static PetscErrorCode AttachNullspace(DM dmSol, Mat A) {
 
 /* Create a reference solution.
    Here, we use the more direct method of iterating over arrays.  */
-static PetscErrorCode CreateReferenceSolution(DM dmSol, Vec *pSolRef) {
+static PetscErrorCode CreateReferenceSolution(DM dmSol, Vec *pSolRef)
+{
   PetscInt       startx, starty, nx, ny, nExtra[2], ex, ey;
   PetscInt       iuy, iux, ip, iprev, icenter;
   PetscScalar ***arrSol, **cArrX, **cArrY;
@@ -594,7 +604,8 @@ static PetscErrorCode CreateReferenceSolution(DM dmSol, Vec *pSolRef) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode CheckSolution(Vec sol, Vec solRef) {
+static PetscErrorCode CheckSolution(Vec sol, Vec solRef)
+{
   Vec       diff;
   PetscReal normsolRef, errAbs, errRel;
 

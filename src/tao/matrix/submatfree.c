@@ -22,7 +22,8 @@
 
 .seealso: `MatCreate()`
 @*/
-PetscErrorCode MatCreateSubMatrixFree(Mat mat, IS Rows, IS Cols, Mat *J) {
+PetscErrorCode MatCreateSubMatrixFree(Mat mat, IS Rows, IS Cols, Mat *J)
+{
   MPI_Comm         comm = PetscObjectComm((PetscObject)mat);
   MatSubMatFreeCtx ctx;
   PetscInt         mloc, nloc, m, n;
@@ -58,11 +59,11 @@ PetscErrorCode MatCreateSubMatrixFree(Mat mat, IS Rows, IS Cols, Mat *J) {
   PetscCall(MatShellSetOperation(*J, MATOP_CREATE_SUBMATRIX, (void (*)(void))MatCreateSubMatrix_SMF));
   PetscCall(MatShellSetOperation(*J, MATOP_GET_ROW_MAX, (void (*)(void))MatDuplicate_SMF));
 
-  PetscCall(PetscLogObjectParent((PetscObject)mat, (PetscObject)(*J)));
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatSMFResetRowColumn(Mat mat, IS Rows, IS Cols) {
+PetscErrorCode MatSMFResetRowColumn(Mat mat, IS Rows, IS Cols)
+{
   MatSubMatFreeCtx ctx;
 
   PetscFunctionBegin;
@@ -76,7 +77,8 @@ PetscErrorCode MatSMFResetRowColumn(Mat mat, IS Rows, IS Cols) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatMult_SMF(Mat mat, Vec a, Vec y) {
+PetscErrorCode MatMult_SMF(Mat mat, Vec a, Vec y)
+{
   MatSubMatFreeCtx ctx;
 
   PetscFunctionBegin;
@@ -88,7 +90,8 @@ PetscErrorCode MatMult_SMF(Mat mat, Vec a, Vec y) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatMultTranspose_SMF(Mat mat, Vec a, Vec y) {
+PetscErrorCode MatMultTranspose_SMF(Mat mat, Vec a, Vec y)
+{
   MatSubMatFreeCtx ctx;
 
   PetscFunctionBegin;
@@ -100,7 +103,8 @@ PetscErrorCode MatMultTranspose_SMF(Mat mat, Vec a, Vec y) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatDiagonalSet_SMF(Mat M, Vec D, InsertMode is) {
+PetscErrorCode MatDiagonalSet_SMF(Mat M, Vec D, InsertMode is)
+{
   MatSubMatFreeCtx ctx;
 
   PetscFunctionBegin;
@@ -109,7 +113,8 @@ PetscErrorCode MatDiagonalSet_SMF(Mat M, Vec D, InsertMode is) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatDestroy_SMF(Mat mat) {
+PetscErrorCode MatDestroy_SMF(Mat mat)
+{
   MatSubMatFreeCtx ctx;
 
   PetscFunctionBegin;
@@ -122,7 +127,8 @@ PetscErrorCode MatDestroy_SMF(Mat mat) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatView_SMF(Mat mat, PetscViewer viewer) {
+PetscErrorCode MatView_SMF(Mat mat, PetscViewer viewer)
+{
   MatSubMatFreeCtx ctx;
 
   PetscFunctionBegin;
@@ -131,7 +137,8 @@ PetscErrorCode MatView_SMF(Mat mat, PetscViewer viewer) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatShift_SMF(Mat Y, PetscReal a) {
+PetscErrorCode MatShift_SMF(Mat Y, PetscReal a)
+{
   MatSubMatFreeCtx ctx;
 
   PetscFunctionBegin;
@@ -140,7 +147,8 @@ PetscErrorCode MatShift_SMF(Mat Y, PetscReal a) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatDuplicate_SMF(Mat mat, MatDuplicateOption op, Mat *M) {
+PetscErrorCode MatDuplicate_SMF(Mat mat, MatDuplicateOption op, Mat *M)
+{
   MatSubMatFreeCtx ctx;
 
   PetscFunctionBegin;
@@ -149,7 +157,8 @@ PetscErrorCode MatDuplicate_SMF(Mat mat, MatDuplicateOption op, Mat *M) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatEqual_SMF(Mat A, Mat B, PetscBool *flg) {
+PetscErrorCode MatEqual_SMF(Mat A, Mat B, PetscBool *flg)
+{
   MatSubMatFreeCtx ctx1, ctx2;
   PetscBool        flg1, flg2, flg3;
 
@@ -171,7 +180,8 @@ PetscErrorCode MatEqual_SMF(Mat A, Mat B, PetscBool *flg) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatScale_SMF(Mat mat, PetscReal a) {
+PetscErrorCode MatScale_SMF(Mat mat, PetscReal a)
+{
   MatSubMatFreeCtx ctx;
 
   PetscFunctionBegin;
@@ -180,13 +190,15 @@ PetscErrorCode MatScale_SMF(Mat mat, PetscReal a) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatTranspose_SMF(Mat mat, Mat *B) {
+PetscErrorCode MatTranspose_SMF(Mat mat, Mat *B)
+{
   PetscFunctionBegin;
   SETERRQ(PetscObjectComm((PetscObject)mat), PETSC_ERR_SUP, "No support for transpose for MatCreateSubMatrixFree() matrix");
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatGetDiagonal_SMF(Mat mat, Vec v) {
+PetscErrorCode MatGetDiagonal_SMF(Mat mat, Vec v)
+{
   MatSubMatFreeCtx ctx;
 
   PetscFunctionBegin;
@@ -195,7 +207,8 @@ PetscErrorCode MatGetDiagonal_SMF(Mat mat, Vec v) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatGetRowMax_SMF(Mat M, Vec D) {
+PetscErrorCode MatGetRowMax_SMF(Mat M, Vec D)
+{
   MatSubMatFreeCtx ctx;
 
   PetscFunctionBegin;
@@ -204,7 +217,8 @@ PetscErrorCode MatGetRowMax_SMF(Mat M, Vec D) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatCreateSubMatrices_SMF(Mat A, PetscInt n, IS *irow, IS *icol, MatReuse scall, Mat **B) {
+PetscErrorCode MatCreateSubMatrices_SMF(Mat A, PetscInt n, IS *irow, IS *icol, MatReuse scall, Mat **B)
+{
   PetscInt i;
 
   PetscFunctionBegin;
@@ -214,7 +228,8 @@ PetscErrorCode MatCreateSubMatrices_SMF(Mat A, PetscInt n, IS *irow, IS *icol, M
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatCreateSubMatrix_SMF(Mat mat, IS isrow, IS iscol, MatReuse cll, Mat *newmat) {
+PetscErrorCode MatCreateSubMatrix_SMF(Mat mat, IS isrow, IS iscol, MatReuse cll, Mat *newmat)
+{
   MatSubMatFreeCtx ctx;
 
   PetscFunctionBegin;
@@ -224,7 +239,8 @@ PetscErrorCode MatCreateSubMatrix_SMF(Mat mat, IS isrow, IS iscol, MatReuse cll,
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatGetRow_SMF(Mat mat, PetscInt row, PetscInt *ncols, const PetscInt **cols, const PetscScalar **vals) {
+PetscErrorCode MatGetRow_SMF(Mat mat, PetscInt row, PetscInt *ncols, const PetscInt **cols, const PetscScalar **vals)
+{
   MatSubMatFreeCtx ctx;
 
   PetscFunctionBegin;
@@ -233,7 +249,8 @@ PetscErrorCode MatGetRow_SMF(Mat mat, PetscInt row, PetscInt *ncols, const Petsc
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatRestoreRow_SMF(Mat mat, PetscInt row, PetscInt *ncols, const PetscInt **cols, const PetscScalar **vals) {
+PetscErrorCode MatRestoreRow_SMF(Mat mat, PetscInt row, PetscInt *ncols, const PetscInt **cols, const PetscScalar **vals)
+{
   MatSubMatFreeCtx ctx;
 
   PetscFunctionBegin;
@@ -242,7 +259,8 @@ PetscErrorCode MatRestoreRow_SMF(Mat mat, PetscInt row, PetscInt *ncols, const P
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatGetColumnVector_SMF(Mat mat, Vec Y, PetscInt col) {
+PetscErrorCode MatGetColumnVector_SMF(Mat mat, Vec Y, PetscInt col)
+{
   MatSubMatFreeCtx ctx;
 
   PetscFunctionBegin;
@@ -251,7 +269,8 @@ PetscErrorCode MatGetColumnVector_SMF(Mat mat, Vec Y, PetscInt col) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatNorm_SMF(Mat mat, NormType type, PetscReal *norm) {
+PetscErrorCode MatNorm_SMF(Mat mat, NormType type, PetscReal *norm)
+{
   MatSubMatFreeCtx ctx;
 
   PetscFunctionBegin;

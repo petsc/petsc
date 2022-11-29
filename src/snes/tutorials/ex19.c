@@ -1,4 +1,6 @@
-
+/* Portions of this code are under:
+   Copyright (C) 2022 Advanced Micro Devices, Inc. All rights reserved.
+*/
 static char help[] = "Nonlinear driven cavity with multigrid in 2d.\n \
   \n\
 The 2D driven cavity problem is solved in a velocity-vorticity formulation.\n\
@@ -60,12 +62,12 @@ The flow can be driven with the lid or with bouyancy or both:\n\
      petscksp.h   - linear solvers
 */
 #if defined(PETSC_APPLE_FRAMEWORK)
-#import <PETSc/petscsnes.h>
-#import <PETSc/petscdmda.h>
+  #import <PETSc/petscsnes.h>
+  #import <PETSc/petscdmda.h>
 #else
-#include <petscsnes.h>
-#include <petscdm.h>
-#include <petscdmda.h>
+  #include <petscsnes.h>
+  #include <petscdm.h>
+  #include <petscdmda.h>
 #endif
 
 /*
@@ -85,7 +87,8 @@ typedef struct {
 extern PetscErrorCode FormInitialGuess(AppCtx *, DM, Vec);
 extern PetscErrorCode NonlinearGS(SNES, Vec, Vec, void *);
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   AppCtx   user; /* user-defined work context */
   PetscInt mx, my, its;
   MPI_Comm comm;
@@ -179,7 +182,8 @@ int main(int argc, char **argv) {
    Output Parameter:
    X - vector
 */
-PetscErrorCode FormInitialGuess(AppCtx *user, DM da, Vec X) {
+PetscErrorCode FormInitialGuess(AppCtx *user, DM da, Vec X)
+{
   PetscInt  i, j, mx, xs, ys, xm, ym;
   PetscReal grashof, dx;
   Field   **x;
@@ -226,7 +230,8 @@ PetscErrorCode FormInitialGuess(AppCtx *user, DM da, Vec X) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode FormFunctionLocal(DMDALocalInfo *info, Field **x, Field **f, void *ptr) {
+PetscErrorCode FormFunctionLocal(DMDALocalInfo *info, Field **x, Field **f, void *ptr)
+{
   AppCtx     *user = (AppCtx *)ptr;
   PetscInt    xints, xinte, yints, yinte, i, j;
   PetscReal   hx, hy, dhx, dhy, hxdhy, hydhx;
@@ -360,7 +365,8 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info, Field **x, Field **f, void
 /*
     Performs sweeps of point block nonlinear Gauss-Seidel on all the local grid points
 */
-PetscErrorCode NonlinearGS(SNES snes, Vec X, Vec B, void *ctx) {
+PetscErrorCode NonlinearGS(SNES snes, Vec X, Vec B, void *ctx)
+{
   DMDALocalInfo info;
   Field       **x, **b;
   Vec           localX, localB;
@@ -513,35 +519,35 @@ PetscErrorCode NonlinearGS(SNES snes, Vec X, Vec B, void *ctx) {
 
           if (i != 0 && i != info.mx - 1 && j != 0 && j != info.my - 1) {
             /* U velocity */
-            u      = x[j][i].u;
-            uxx    = (2.0 * u - x[j][i - 1].u - x[j][i + 1].u) * hydhx;
-            uyy    = (2.0 * u - x[j - 1][i].u - x[j + 1][i].u) * hxdhy;
-            fu     = uxx + uyy - .5 * (x[j + 1][i].omega - x[j - 1][i].omega) * hx - bjiu;
-            dfudu  = 2.0 * (hydhx + hxdhy);
+            u     = x[j][i].u;
+            uxx   = (2.0 * u - x[j][i - 1].u - x[j][i + 1].u) * hydhx;
+            uyy   = (2.0 * u - x[j - 1][i].u - x[j + 1][i].u) * hxdhy;
+            fu    = uxx + uyy - .5 * (x[j + 1][i].omega - x[j - 1][i].omega) * hx - bjiu;
+            dfudu = 2.0 * (hydhx + hxdhy);
             /* V velocity */
-            u      = x[j][i].v;
-            uxx    = (2.0 * u - x[j][i - 1].v - x[j][i + 1].v) * hydhx;
-            uyy    = (2.0 * u - x[j - 1][i].v - x[j + 1][i].v) * hxdhy;
-            fv     = uxx + uyy + .5 * (x[j][i + 1].omega - x[j][i - 1].omega) * hy - bjiv;
-            dfvdv  = 2.0 * (hydhx + hxdhy);
+            u     = x[j][i].v;
+            uxx   = (2.0 * u - x[j][i - 1].v - x[j][i + 1].v) * hydhx;
+            uyy   = (2.0 * u - x[j - 1][i].v - x[j + 1][i].v) * hxdhy;
+            fv    = uxx + uyy + .5 * (x[j][i + 1].omega - x[j][i - 1].omega) * hy - bjiv;
+            dfvdv = 2.0 * (hydhx + hxdhy);
             /*
              convective coefficients for upwinding
              */
-            vx     = x[j][i].u;
-            avx    = PetscAbsScalar(vx);
-            vxp    = .5 * (vx + avx);
-            vxm    = .5 * (vx - avx);
-            vy     = x[j][i].v;
-            avy    = PetscAbsScalar(vy);
-            vyp    = .5 * (vy + avy);
-            vym    = .5 * (vy - avy);
+            vx  = x[j][i].u;
+            avx = PetscAbsScalar(vx);
+            vxp = .5 * (vx + avx);
+            vxm = .5 * (vx - avx);
+            vy  = x[j][i].v;
+            avy = PetscAbsScalar(vy);
+            vyp = .5 * (vy + avy);
+            vym = .5 * (vy - avy);
             /* Omega */
             u      = x[j][i].omega;
             uxx    = (2.0 * u - x[j][i - 1].omega - x[j][i + 1].omega) * hydhx;
             uyy    = (2.0 * u - x[j - 1][i].omega - x[j + 1][i].omega) * hxdhy;
             fomega = uxx + uyy + (vxp * (u - x[j][i - 1].omega) + vxm * (x[j][i + 1].omega - u)) * hy + (vyp * (u - x[j - 1][i].omega) + vym * (x[j + 1][i].omega - u)) * hx - .5 * grashof * (x[j][i + 1].temp - x[j][i - 1].temp) * hy - bjiomega;
             /* convective coefficient derivatives */
-            dfodo  = 2.0 * (hydhx + hxdhy) + ((vxp - vxm) * hy + (vyp - vym) * hx);
+            dfodo = 2.0 * (hydhx + hxdhy) + ((vxp - vxm) * hy + (vyp - vym) * hx);
             if (PetscRealPart(vx) > 0.0) dfodu = (u - x[j][i - 1].omega) * hy;
             else dfodu = (x[j][i + 1].omega - u) * hy;
 
@@ -808,6 +814,11 @@ PetscErrorCode NonlinearGS(SNES snes, Vec X, Vec B, void *ctx) {
       suffix: cuda
       requires: cuda !single
       args: -dm_vec_type cuda -dm_mat_type aijcusparse -pc_type none -ksp_type fgmres -snes_monitor_short -snes_rtol 1.e-5
+
+   test:
+      suffix: hip
+      requires: hip !single
+      args: -dm_vec_type hip -dm_mat_type aijhipsparse -pc_type none -ksp_type fgmres -snes_monitor_short -snes_rtol 1.e-5
 
    test:
       suffix: draw
@@ -1116,6 +1127,25 @@ PetscErrorCode NonlinearGS(SNES snes, Vec X, Vec B, void *ctx) {
       filter: awk "/Level/ {print \$NF}"
 
    test:
+      suffix: hip_1
+      nsize: 1
+      requires: hip
+      args: -snes_monitor -dm_mat_type mpiaijhipsparse -dm_vec_type hip -pc_type gamg -pc_gamg_esteig_ksp_max_it 10 -ksp_monitor -mg_levels_ksp_max_it 3
+
+   test:
+      suffix: hip_2
+      nsize: 3
+      requires: hip !single
+      args: -snes_monitor -dm_mat_type mpiaijhipsparse -dm_vec_type mpihip -pc_type gamg -pc_gamg_esteig_ksp_max_it 10 -ksp_monitor  -mg_levels_ksp_max_it 3
+
+   test:
+      suffix: hip_dm_bind_below
+      nsize: 2
+      requires: hip
+      args: -dm_mat_type aijhipsparse -dm_vec_type hip -da_refine 3 -pc_type mg -mg_levels_ksp_type chebyshev -mg_levels_pc_type jacobi -log_view -pc_mg_log -dm_bind_below 10000
+      filter: awk "/Level/ {print \$NF}"
+
+   test:
       suffix: viennacl_dm_bind_below
       nsize: 2
       requires: viennacl
@@ -1177,6 +1207,6 @@ PetscErrorCode NonlinearGS(SNES snes, Vec X, Vec B, void *ctx) {
       nsize: 1
       requires: !defined(PETSC_USE_64BIT_INDICES) !defined(PETSCTEST_VALGRIND)
       args: -da_refine 100 -petsc_ci_portable_error_output -error_output_stdout
-      filter: egrep -v "(options_left|memory block|leaked context|is not freed before MPI_Finalize|Could be the program crashed)"
+      filter: grep -E -v "(options_left|memory block|leaked context|not freed before MPI_Finalize|Could be the program crashed)"
 
 TEST*/

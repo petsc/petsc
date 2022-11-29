@@ -14,14 +14,16 @@ static char help[] = "Tests implementation of PetscSpace_Sum by solving the Pois
    \vec{u} = \vec{x};
    p = -0.5*(\vec{x} \cdot \vec{x});
    */
-static PetscErrorCode linear_u(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx) {
+static PetscErrorCode linear_u(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
+{
   PetscInt c;
 
   for (c = 0; c < Nc; ++c) u[c] = x[c];
   return 0;
 }
 
-static PetscErrorCode linear_p(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx) {
+static PetscErrorCode linear_p(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
+{
   PetscInt d;
 
   u[0] = 0.;
@@ -29,20 +31,23 @@ static PetscErrorCode linear_p(PetscInt dim, PetscReal time, const PetscReal x[]
   return 0;
 }
 
-static PetscErrorCode linear_divu(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx) {
+static PetscErrorCode linear_divu(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
+{
   u[0] = dim;
   return 0;
 }
 
 /* fx_v are the residual functions for the equation \vec{u} = \grad{p}. f0_v is the term <v,u>.*/
-static void f0_v(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[]) {
+static void f0_v(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
+{
   PetscInt i;
 
   for (i = 0; i < dim; ++i) f0[i] = u[uOff[0] + i];
 }
 
 /* f1_v is the term <v,-\grad{p}> but we integrate by parts to get <\grad{v}, -p*I> */
-static void f1_v(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f1[]) {
+static void f1_v(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f1[])
+{
   PetscInt c;
 
   for (c = 0; c < dim; ++c) {
@@ -53,7 +58,8 @@ static void f1_v(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[
 }
 
 /* Residual function for enforcing \div{u} = f. */
-static void f0_q_linear(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[]) {
+static void f0_q_linear(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
+{
   PetscScalar rhs, divu = 0;
   PetscInt    i;
 
@@ -63,7 +69,8 @@ static void f0_q_linear(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscIn
 }
 
 /* Boundary residual. Dirichlet boundary for u means u_bdy=p*n */
-static void f0_bd_u_linear(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], const PetscReal n[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[]) {
+static void f0_bd_u_linear(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], const PetscReal n[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
+{
   PetscScalar pressure;
   PetscInt    d;
 
@@ -72,19 +79,22 @@ static void f0_bd_u_linear(PetscInt dim, PetscInt Nf, PetscInt NfAux, const Pets
 }
 
 /* gx_yz are the jacobian functions obtained by taking the derivative of the y residual w.r.t z*/
-static void g0_vu(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g0[]) {
+static void g0_vu(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g0[])
+{
   PetscInt c;
 
   for (c = 0; c < dim; ++c) g0[c * dim + c] = 1.0;
 }
 
-static void g1_qu(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g1[]) {
+static void g1_qu(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g1[])
+{
   PetscInt c;
 
   for (c = 0; c < dim; ++c) g1[c * dim + c] = 1.0;
 }
 
-static void g2_vp(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g2[]) {
+static void g2_vp(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g2[])
+{
   PetscInt c;
 
   for (c = 0; c < dim; ++c) g2[c * dim + c] = -1.0;
@@ -94,7 +104,8 @@ typedef struct {
   PetscInt dummy;
 } UserCtx;
 
-static PetscErrorCode CreateMesh(MPI_Comm comm, UserCtx *user, DM *mesh) {
+static PetscErrorCode CreateMesh(MPI_Comm comm, UserCtx *user, DM *mesh)
+{
   PetscFunctionBegin;
   PetscCall(DMCreate(comm, mesh));
   PetscCall(DMSetType(*mesh, DMPLEX));
@@ -105,7 +116,8 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, UserCtx *user, DM *mesh) {
 }
 
 /* Setup the system of equations that we wish to solve */
-static PetscErrorCode SetupProblem(DM dm, UserCtx *user) {
+static PetscErrorCode SetupProblem(DM dm, UserCtx *user)
+{
   PetscDS        ds;
   DMLabel        label;
   PetscWeakForm  wf;
@@ -132,7 +144,8 @@ static PetscErrorCode SetupProblem(DM dm, UserCtx *user) {
 }
 
 /* Create the finite element spaces we will use for this system */
-static PetscErrorCode SetupDiscretization(DM mesh, DM mesh_sum, PetscErrorCode (*setup)(DM, UserCtx *), UserCtx *user) {
+static PetscErrorCode SetupDiscretization(DM mesh, DM mesh_sum, PetscErrorCode (*setup)(DM, UserCtx *), UserCtx *user)
+{
   DM        cdm = mesh, cdm_sum = mesh_sum;
   PetscFE   u, divu, u_sum, divu_sum;
   PetscInt  dim;
@@ -187,7 +200,8 @@ static PetscErrorCode SetupDiscretization(DM mesh, DM mesh_sum, PetscErrorCode (
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   UserCtx         user;
   DM              dm, dm_sum;
   SNES            snes, snes_sum;

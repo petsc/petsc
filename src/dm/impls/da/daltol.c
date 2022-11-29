@@ -14,7 +14,8 @@
 .  da - the distributed array
 
 */
-PetscErrorCode DMLocalToLocalCreate_DA(DM da) {
+PetscErrorCode DMLocalToLocalCreate_DA(DM da)
+{
   PetscInt *idx, left, j, count, up, down, i, bottom, top, k, dim = da->dim;
   DM_DA    *dd = (DM_DA *)da->data;
 
@@ -28,7 +29,6 @@ PetscErrorCode DMLocalToLocalCreate_DA(DM da) {
      rather then from the plain array.
   */
   PetscCall(VecScatterCopy(dd->gtol, &dd->ltol));
-  PetscCall(PetscLogObjectParent((PetscObject)da, (PetscObject)dd->ltol));
   if (dim == 1) {
     left = dd->xs - dd->Xs;
     PetscCall(PetscMalloc1(dd->xe - dd->xs, &idx));
@@ -85,7 +85,8 @@ PetscErrorCode DMLocalToLocalCreate_DA(DM da) {
    obtained with VecDuplicate() from the DMDA originating vectors.
 
 */
-PetscErrorCode DMLocalToLocalBegin_DA(DM da, Vec g, InsertMode mode, Vec l) {
+PetscErrorCode DMLocalToLocalBegin_DA(DM da, Vec g, InsertMode mode, Vec l)
+{
   DM_DA *dd = (DM_DA *)da->data;
 
   PetscFunctionBegin;
@@ -118,7 +119,8 @@ PetscErrorCode DMLocalToLocalBegin_DA(DM da, Vec g, InsertMode mode, Vec l) {
    obtained with VecDuplicate() from the DMDA originating vectors.
 
 */
-PetscErrorCode DMLocalToLocalEnd_DA(DM da, Vec g, InsertMode mode, Vec l) {
+PetscErrorCode DMLocalToLocalEnd_DA(DM da, Vec g, InsertMode mode, Vec l)
+{
   DM_DA *dd = (DM_DA *)da->data;
 
   PetscFunctionBegin;

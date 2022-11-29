@@ -45,7 +45,8 @@ typedef struct {
   YourChoice    which;
 } Parameter;
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscBag    bag;
   Parameter  *params;
   PetscViewer viewer;
@@ -132,7 +133,7 @@ int main(int argc, char **argv) {
       suffix: yaml
       requires: !complex
       args: -options_file bag.yml -options_view
-      filter: egrep -v "(options_left|options_view)"
+      filter: grep -E -v "(options_left|options_view)"
       localrunfiles: bag.yml
 
 TEST*/

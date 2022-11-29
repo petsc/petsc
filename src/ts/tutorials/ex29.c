@@ -25,7 +25,8 @@ extern PetscErrorCode FormIFunctionLocal(DMDALocalInfo *, PetscReal, Field **, F
 
 /* hooks */
 
-static PetscErrorCode CoefficientCoarsenHook(DM dm, DM dmc, void *ctx) {
+static PetscErrorCode CoefficientCoarsenHook(DM dm, DM dmc, void *ctx)
+{
   Vec c, cc, ccl;
   Mat J;
   Vec vscale;
@@ -64,7 +65,8 @@ static PetscErrorCode CoefficientCoarsenHook(DM dm, DM dmc, void *ctx) {
 
 /* This could restrict auxiliary information to the coarse level.
  */
-static PetscErrorCode CoefficientSubDomainRestrictHook(DM dm, DM subdm, void *ctx) {
+static PetscErrorCode CoefficientSubDomainRestrictHook(DM dm, DM subdm, void *ctx)
+{
   Vec         c, cc;
   DM          cdm, csubdm;
   VecScatter *iscat, *oscat, *gscat;
@@ -163,7 +165,8 @@ int main(int argc, char **argv)
 
 /* ------------------------------------------------------------------- */
 
-PetscErrorCode FormInitialGuess(DM da, void *ctx, Vec X) {
+PetscErrorCode FormInitialGuess(DM da, void *ctx, Vec X)
+{
   PetscInt  i, j, Mx, My, xs, ys, xm, ym;
   Field   **x;
   PetscReal x0, x1;
@@ -186,7 +189,8 @@ PetscErrorCode FormInitialGuess(DM da, void *ctx, Vec X) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode FormDiffusionCoefficient(DM da, void *ctx, Vec X) {
+PetscErrorCode FormDiffusionCoefficient(DM da, void *ctx, Vec X)
+{
   PetscInt  i, j, Mx, My, xs, ys, xm, ym;
   Coeff   **x;
   PetscReal x1, x0;
@@ -216,7 +220,8 @@ PetscErrorCode FormDiffusionCoefficient(DM da, void *ctx, Vec X) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode FormIFunctionLocal(DMDALocalInfo *info, PetscReal ptime, Field **x, Field **xt, Field **f, void *ctx) {
+PetscErrorCode FormIFunctionLocal(DMDALocalInfo *info, PetscReal ptime, Field **x, Field **xt, Field **f, void *ctx)
+{
   PetscInt    i, j;
   PetscReal   hx, hy, dhx, dhy, hxdhy, hydhx, scale;
   PetscScalar u, uxx, uyy;

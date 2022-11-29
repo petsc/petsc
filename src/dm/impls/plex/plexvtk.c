@@ -2,7 +2,8 @@
 #include <petsc/private/dmpleximpl.h> /*I   "petscdmplex.h"   I*/
 #include <../src/sys/classes/viewer/impls/vtk/vtkvimpl.h>
 
-PetscErrorCode DMPlexVTKGetCellType_Internal(DM dm, PetscInt dim, PetscInt corners, PetscInt *cellType) {
+PetscErrorCode DMPlexVTKGetCellType_Internal(DM dm, PetscInt dim, PetscInt corners, PetscInt *cellType)
+{
   PetscFunctionBegin;
   *cellType = -1;
   switch (dim) {
@@ -11,7 +12,8 @@ PetscErrorCode DMPlexVTKGetCellType_Internal(DM dm, PetscInt dim, PetscInt corne
     case 1:
       *cellType = 1; /* VTK_VERTEX */
       break;
-    default: break;
+    default:
+      break;
     }
     break;
   case 1:
@@ -22,7 +24,8 @@ PetscErrorCode DMPlexVTKGetCellType_Internal(DM dm, PetscInt dim, PetscInt corne
     case 3:
       *cellType = 21; /* VTK_QUADRATIC_EDGE */
       break;
-    default: break;
+    default:
+      break;
     }
     break;
   case 2:
@@ -39,7 +42,8 @@ PetscErrorCode DMPlexVTKGetCellType_Internal(DM dm, PetscInt dim, PetscInt corne
     case 9:
       *cellType = 23; /* VTK_QUADRATIC_QUAD */
       break;
-    default: break;
+    default:
+      break;
     }
     break;
   case 3:
@@ -62,13 +66,15 @@ PetscErrorCode DMPlexVTKGetCellType_Internal(DM dm, PetscInt dim, PetscInt corne
     case 27:
       *cellType = 29; /* VTK_QUADRATIC_HEXAHEDRON */
       break;
-    default: break;
+    default:
+      break;
     }
   }
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMPlexVTKWriteCells_ASCII(DM dm, FILE *fp, PetscInt *totalCells) {
+static PetscErrorCode DMPlexVTKWriteCells_ASCII(DM dm, FILE *fp, PetscInt *totalCells)
+{
   MPI_Comm        comm;
   DMLabel         label;
   IS              globalVertexNumbers = NULL;
@@ -217,7 +223,8 @@ static PetscErrorCode DMPlexVTKWriteCells_ASCII(DM dm, FILE *fp, PetscInt *total
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMPlexVTKWritePartition_ASCII(DM dm, FILE *fp) {
+static PetscErrorCode DMPlexVTKWritePartition_ASCII(DM dm, FILE *fp)
+{
   MPI_Comm    comm;
   PetscInt    numCells = 0, cellHeight;
   PetscInt    numLabelCells, cStart, cEnd, c;
@@ -264,7 +271,8 @@ typedef float PetscVTKReal;
 typedef PetscReal PetscVTKReal;
 #endif
 
-static PetscErrorCode DMPlexVTKWriteSection_ASCII(DM dm, PetscSection section, PetscSection globalSection, Vec v, FILE *fp, PetscInt enforceDof, PetscInt precision, PetscReal scale, PetscInt imag) {
+static PetscErrorCode DMPlexVTKWriteSection_ASCII(DM dm, PetscSection section, PetscSection globalSection, Vec v, FILE *fp, PetscInt enforceDof, PetscInt precision, PetscReal scale, PetscInt imag)
+{
   MPI_Comm           comm;
   const MPI_Datatype mpiType = MPIU_SCALAR;
   PetscScalar       *array;
@@ -396,7 +404,8 @@ static PetscErrorCode DMPlexVTKWriteSection_ASCII(DM dm, PetscSection section, P
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMPlexVTKWriteField_ASCII(DM dm, PetscSection section, PetscSection globalSection, Vec field, const char name[], FILE *fp, PetscInt enforceDof, PetscInt precision, PetscReal scale, PetscBool nameComplex, PetscInt imag) {
+static PetscErrorCode DMPlexVTKWriteField_ASCII(DM dm, PetscSection section, PetscSection globalSection, Vec field, const char name[], FILE *fp, PetscInt enforceDof, PetscInt precision, PetscReal scale, PetscBool nameComplex, PetscInt imag)
+{
   MPI_Comm comm;
   PetscInt numDof = 0, maxDof;
   PetscInt pStart, pEnd, p;
@@ -429,7 +438,8 @@ static PetscErrorCode DMPlexVTKWriteField_ASCII(DM dm, PetscSection section, Pet
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMPlexVTKWriteAll_ASCII(DM dm, PetscViewer viewer) {
+static PetscErrorCode DMPlexVTKWriteAll_ASCII(DM dm, PetscViewer viewer)
+{
   MPI_Comm                 comm;
   PetscViewer_VTK         *vtk = (PetscViewer_VTK *)viewer->data;
   FILE                    *fp;
@@ -626,8 +636,8 @@ static PetscErrorCode DMPlexVTKWriteAll_ASCII(DM dm, PetscViewer viewer) {
   Collective
 
   Input Parameters:
-+ odm - The DMPlex specifying the mesh, passed as a PetscObject
-- viewer - viewer of type VTK
++ odm - The `DMPLEX` specifying the mesh, passed as a `PetscObject`
+- viewer - viewer of type `PETSCVIEWERVTK`
 
   Level: developer
 
@@ -636,21 +646,24 @@ static PetscErrorCode DMPlexVTKWriteAll_ASCII(DM dm, PetscViewer viewer) {
   The reason for this odd model is that the VTK file format does not provide any way to write one field at a time.
   Instead, metadata for the entire file needs to be available up-front before you can start writing the file.
 
-.seealso: `PETSCVIEWERVTK`
+.seealso: [](chapter_unstructured), `DM`, `PETSCVIEWEREXODUSII`, `DMPLEX`, `PETSCVIEWERVTK`
 @*/
-PetscErrorCode DMPlexVTKWriteAll(PetscObject odm, PetscViewer viewer) {
-  DM        dm = (DM)odm;
-  PetscBool isvtk;
+PetscErrorCode DMPlexVTKWriteAll(PetscObject odm, PetscViewer viewer)
+{
+  DM dm = (DM)odm;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERVTK, &isvtk));
-  PetscCheck(isvtk, PetscObjectComm((PetscObject)viewer), PETSC_ERR_ARG_INCOMP, "Cannot use viewer type %s", ((PetscObject)viewer)->type_name);
+  PetscValidHeaderSpecificType(viewer, PETSC_VIEWER_CLASSID, 2, PETSCVIEWERVTK);
   switch (viewer->format) {
-  case PETSC_VIEWER_ASCII_VTK_DEPRECATED: PetscCall(DMPlexVTKWriteAll_ASCII(dm, viewer)); break;
-  case PETSC_VIEWER_VTK_VTU: PetscCall(DMPlexVTKWriteAll_VTU(dm, viewer)); break;
-  default: SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "No support for format '%s'", PetscViewerFormats[viewer->format]);
+  case PETSC_VIEWER_ASCII_VTK_DEPRECATED:
+    PetscCall(DMPlexVTKWriteAll_ASCII(dm, viewer));
+    break;
+  case PETSC_VIEWER_VTK_VTU:
+    PetscCall(DMPlexVTKWriteAll_VTU(dm, viewer));
+    break;
+  default:
+    SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "No support for format '%s'", PetscViewerFormats[viewer->format]);
   }
   PetscFunctionReturn(0);
 }

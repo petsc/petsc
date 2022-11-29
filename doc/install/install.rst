@@ -405,6 +405,46 @@ or when running a code compiled with `OpenMPI`_:
 
    error while loading shared libraries: libmpi.so.0: cannot open shared object file: No such file or directory
 
+.. _doc_macos_install:
+
+Installing On macOS
+===================
+
+For development on macOS we recommend installing **both** the Apple Xcode GUI development system (install from the Apple macOS store) and the Xcode Command Line tools [#]_ install with
+
+.. code-block:: console
+
+   $ xcode-select --install
+
+The Apple compilers are ``clang`` and ``clang++`` [#]_. Apple also provides ``/usr/bin/gcc``, which is, confusingly, a wrapper to the ``clang`` compiler, not the GNU compiler.
+
+We also recommend installing the package manager `homebrew <https://brew.sh/>`__.  To install ``gfortran`` one can use
+
+.. code-block:: console
+
+   $ brew update
+   $ brew list            # Show all packages installed through brew
+   $ brew upgrade         # Update packages already installed through brew
+   $ brew install gcc
+
+This installs gfortran, gcc, and g++  with the compiler names
+``gfortran-version`` (also available as ``gfortran``), ``gcc-version`` and ``g++-version``, for example ``gfortran-12``, ``gcc-12``, and ``g++-12``.
+
+After upgrading macOS, you generally need to update the Xcode GUI development system (using the standard Apple software update system),
+and the Xcode Command Line tools (run ``xcode-select --install`` again).
+
+Its best to update ``brew`` after all macOS or Xcode upgrades (use ``brew upgrade``). Sometimes gfortran will not work correctly after an upgrade. If this happens
+it is best to reinstall all ``brew`` packages using, for example,
+
+.. code-block:: console
+
+   $ brew leaves > leaves.lst      # save packages list to re-install
+   $ emacs leaves.lst 	           # edit leaves.lst to remove any un-needed pkgs
+   $ brew uninstall `brew list`	   # delete all installed packages
+   $ brew cleanup
+   $ brew update
+   $ brew install `cat leaves.lst` # install needed packages
+
 .. _doc_config_install:
 
 Installation Location: In-place or Out-of-place
@@ -473,10 +513,10 @@ configure time. For example:
 
 .. code-block:: console
 
-   $ ./configure --prefix=/opt/petsc/petsc-3.17.0-mpich --with-mpi-dir=/opt/mpich
+   $ ./configure --prefix=/opt/petsc/petsc-3.18.0-mpich --with-mpi-dir=/opt/mpich
    $ make
    $ make install [DESTDIR=/tmp/petsc-pkg]
-   $ ./configure --prefix=/opt/petsc/petsc-3.17.0-openmpi --with-mpi-dir=/opt/openmpi
+   $ ./configure --prefix=/opt/petsc/petsc-3.18.0-openmpi --with-mpi-dir=/opt/openmpi
    $ make
    $ make install [DESTDIR=/tmp/petsc-pkg]
 
@@ -619,6 +659,26 @@ Run ``configure`` with ``--download-viennacl``; check
 
 `OpenCL`_/`ViennaCL`_ builds of PETSc currently work on Mac OS X, Linux, and Microsoft Windows.
 
+.. _doc_emcc:
+
+Installing To Run in Browser with Emscripten
+============================================
+
+PETSc can be used to run applications in the browser using https://emscripten.org, see https://emscripten.org/docs/getting_started/downloads.html,
+for instructions on installing Emscripten. Run
+
+.. code-block:: console
+
+   $  ./configure --with-cc=emcc --with-cxx=0 --with-fc=0 --with-ranlib=emranlib --with-ar=emar --with-shared-libraries=0 --download-f2cblaslapack=1 --with-mpi=0 --with-batch
+
+Applications may be compiled with, for example,
+
+.. code-block:: console
+
+   $  make ex19.html
+
+The rule for linking may be found in `lib/petsc/conf/test <PETSC_DOC_OUT_ROOT_PLACEHOLDER/lib/petsc/conf/test>`__
+
 .. _doc_config_hpc:
 
 Installing On Large Scale DOE Systems
@@ -627,19 +687,6 @@ Installing On Large Scale DOE Systems
 There are some notes on our `GitLab Wiki <https://gitlab.com/petsc/petsc/-/wikis/Installing-and-Running-on-Large-Scale-Systems>`__
 which may be helpful in installing and running PETSc on large scale
 systems.  Also note the configuration examples in ``config/examples``.
-
-Installing PETSc on an iOS or Android platform
-==============================================
-
-For iOS see ``$PETSC_DIR/systems/Apple/iOS/bin/makeall``. A thorough discussion of the
-installation procedure is given in `Comparison of Migration Techniques for High-Performance Code to Android and iOS
-<https://www.researchgate.net/publication/308973080_Comparison_of_Migration_Techniques_for_High-Performance_Code_to_Android_and_iOS>`__.
-
-For Android, you must have your standalone bin folder in the path, so that the compilers
-are visible.
-
-The installation process has not been tested for iOS or Android since 2017.
-
 
 .. _MPICH: https://www.mpich.org/
 .. _BLAS/LAPACK: https://www.netlib.org/lapack/lug/node11.html
@@ -664,3 +711,9 @@ The installation process has not been tested for iOS or Android since 2017.
 .. _OpenCL: https://www.khronos.org/opencl/
 .. _ViennaCL: http://viennacl.sourceforge.net/
 .. _Modules: https://www.alcf.anl.gov/support-center/theta/compiling-and-linking-overview-theta-thetagpu
+
+.. rubric:: Footnotes
+
+.. [#] The two packages provide slightly different (though largely overlapping) functionality which can only be fully used if both packages are installed.
+.. [#] Apple provides customized ``clang`` and ``clang++`` for its system. To use the unmodified LLVM project ``clang`` and ``clang++``
+       install them with brew.

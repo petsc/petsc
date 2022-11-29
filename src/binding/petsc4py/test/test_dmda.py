@@ -23,6 +23,7 @@ class BaseTestDA(object):
 
     def tearDown(self):
         self.da = None
+        PETSc.garbage_cleanup()
 
     def testGetInfo(self):
         dim = self.da.getDim()

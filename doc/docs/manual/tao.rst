@@ -39,7 +39,7 @@ of code as well as the (essential) code required for the routine
 ``FormFunctionGradient``, which evaluates the function and gradient, and
 the code for ``FormHessian``, which evaluates the Hessian matrix for
 Rosenbrock’s function. The complete code is available in
-`$TAO_DIR/src/unconstrained/tutorials/rosenbrock1.c <../../src/tao/unconstrained/tutorials/rosenbrock1.c.html>`__.
+`$TAO_DIR/src/unconstrained/tutorials/rosenbrock1.c <PETSC_DOC_OUT_ROOT_PLACEHOLDER/src/tao/unconstrained/tutorials/rosenbrock1.c.html>`__.
 The following sections annotate the lines of code in
 :any:`the example <tao-example1>`.
 
@@ -425,6 +425,12 @@ preconditioner matrix, or a user-provided preconditioner shell
 (``PCSHELL``). In other words, matrix-free methods cannot be used if a
 direct solver is to be employed. Details about using matrix-free methods
 are provided in the :doc:`/docs/manual/index`.
+
+.. figure:: /images/docs/manual/taofig.svg
+  :name: fig_taocallbacks
+
+  Tao use of PETSc and callbacks
+
 
 .. _sec_bounds:
 
@@ -3302,7 +3308,7 @@ conjugate gradient algorithm shown above can be implemented as follows.
 
      PetscFunctionBegin;
 
-     PetscCall(PetscNewLog(tao,&cg));
+     PetscCall(PetscNew(&cg));
      tao->data = (void*)cg;
      cg->eta = 0.1;
      cg->delta_min = 1e-7;

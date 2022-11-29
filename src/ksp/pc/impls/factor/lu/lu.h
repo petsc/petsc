@@ -1,7 +1,7 @@
 /*
    Private data structure for LU preconditioner.
 */
-#if !defined(__LU_H)
+#ifndef __LU_H
 #define __LU_H
 
 #include <../src/ksp/pc/impls/factor/factor.h>

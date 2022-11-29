@@ -22,7 +22,8 @@
 .seealso: `MATAIJ`, `MATBAIJ`, `MATSBAIJ`, `MatCreateSELL()`, `MatCreateSeqSELL()`, `MATSEQSELL`, `MATMPISELL`
 M*/
 
-PetscErrorCode MatDiagonalSet_MPISELL(Mat Y, Vec D, InsertMode is) {
+PetscErrorCode MatDiagonalSet_MPISELL(Mat Y, Vec D, InsertMode is)
+{
   Mat_MPISELL *sell = (Mat_MPISELL *)Y->data;
 
   PetscFunctionBegin;
@@ -41,18 +42,18 @@ storage of the matrix.  When PETSC_USE_CTABLE is used this is scalable at
 a slightly higher hash table cost; without it it is not scalable (each processor
 has an order N integer array but is fast to acess.
 */
-PetscErrorCode MatCreateColmap_MPISELL_Private(Mat mat) {
+PetscErrorCode MatCreateColmap_MPISELL_Private(Mat mat)
+{
   Mat_MPISELL *sell = (Mat_MPISELL *)mat->data;
   PetscInt     n    = sell->B->cmap->n, i;
 
   PetscFunctionBegin;
   PetscCheck(sell->garray, PETSC_COMM_SELF, PETSC_ERR_PLIB, "MPISELL Matrix was assembled but is missing garray");
 #if defined(PETSC_USE_CTABLE)
-  PetscCall(PetscTableCreate(n, mat->cmap->N + 1, &sell->colmap));
-  for (i = 0; i < n; i++) PetscCall(PetscTableAdd(sell->colmap, sell->garray[i] + 1, i + 1, INSERT_VALUES));
+  PetscCall(PetscHMapICreateWithSize(n, &sell->colmap));
+  for (i = 0; i < n; i++) PetscCall(PetscHMapISet(sell->colmap, sell->garray[i] + 1, i + 1));
 #else
   PetscCall(PetscCalloc1(mat->cmap->N + 1, &sell->colmap));
-  PetscCall(PetscLogObjectMemory((PetscObject)mat, (mat->cmap->N + 1) * sizeof(PetscInt)));
   for (i = 0; i < n; i++) sell->colmap[sell->garray[i]] = i + 1;
 #endif
   PetscFunctionReturn(0);
@@ -146,7 +147,8 @@ PetscErrorCode MatCreateColmap_MPISELL_Private(Mat mat) {
     b->rlen[row] = nrow2; \
   }
 
-PetscErrorCode MatSetValues_MPISELL(Mat mat, PetscInt m, const PetscInt im[], PetscInt n, const PetscInt in[], const PetscScalar v[], InsertMode addv) {
+PetscErrorCode MatSetValues_MPISELL(Mat mat, PetscInt m, const PetscInt im[], PetscInt n, const PetscInt in[], const PetscScalar v[], InsertMode addv)
+{
   Mat_MPISELL *sell = (Mat_MPISELL *)mat->data;
   PetscScalar  value;
   PetscInt     i, j, rstart = mat->rmap->rstart, rend = mat->rmap->rend, shift1, shift2;
@@ -197,14 +199,14 @@ PetscErrorCode MatSetValues_MPISELL(Mat mat, PetscInt m, const PetscInt im[], Pe
           if (mat->was_assembled) {
             if (!sell->colmap) PetscCall(MatCreateColmap_MPISELL_Private(mat));
 #if defined(PETSC_USE_CTABLE)
-            PetscCall(PetscTableFind(sell->colmap, in[j] + 1, &col));
+            PetscCall(PetscHMapIGetWithDefault(sell->colmap, in[j] + 1, 0, &col));
             col--;
 #else
             col = sell->colmap[in[j]] - 1;
 #endif
             if (col < 0 && !((Mat_SeqSELL *)(sell->B->data))->nonew) {
               PetscCall(MatDisAssemble_MPISELL(mat));
-              col    = in[j];
+              col = in[j];
               /* Reinitialize the variables required by MatSetValues_SeqSELL_B_Private() */
               B      = sell->B;
               b      = (Mat_SeqSELL *)B->data;
@@ -236,7 +238,8 @@ PetscErrorCode MatSetValues_MPISELL(Mat mat, PetscInt m, const PetscInt im[], Pe
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatGetValues_MPISELL(Mat mat, PetscInt m, const PetscInt idxm[], PetscInt n, const PetscInt idxn[], PetscScalar v[]) {
+PetscErrorCode MatGetValues_MPISELL(Mat mat, PetscInt m, const PetscInt idxm[], PetscInt n, const PetscInt idxn[], PetscScalar v[])
+{
   Mat_MPISELL *sell = (Mat_MPISELL *)mat->data;
   PetscInt     i, j, rstart = mat->rmap->rstart, rend = mat->rmap->rend;
   PetscInt     cstart = mat->cmap->rstart, cend = mat->cmap->rend, row, col;
@@ -256,7 +259,7 @@ PetscErrorCode MatGetValues_MPISELL(Mat mat, PetscInt m, const PetscInt idxm[], 
         } else {
           if (!sell->colmap) PetscCall(MatCreateColmap_MPISELL_Private(mat));
 #if defined(PETSC_USE_CTABLE)
-          PetscCall(PetscTableFind(sell->colmap, idxn[j] + 1, &col));
+          PetscCall(PetscHMapIGetWithDefault(sell->colmap, idxn[j] + 1, 0, &col));
           col--;
 #else
           col = sell->colmap[idxn[j]] - 1;
@@ -272,7 +275,8 @@ PetscErrorCode MatGetValues_MPISELL(Mat mat, PetscInt m, const PetscInt idxm[], 
 
 extern PetscErrorCode MatMultDiagonalBlock_MPISELL(Mat, Vec, Vec);
 
-PetscErrorCode MatAssemblyBegin_MPISELL(Mat mat, MatAssemblyType mode) {
+PetscErrorCode MatAssemblyBegin_MPISELL(Mat mat, MatAssemblyType mode)
+{
   Mat_MPISELL *sell = (Mat_MPISELL *)mat->data;
   PetscInt     nstash, reallocs;
 
@@ -285,7 +289,8 @@ PetscErrorCode MatAssemblyBegin_MPISELL(Mat mat, MatAssemblyType mode) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatAssemblyEnd_MPISELL(Mat mat, MatAssemblyType mode) {
+PetscErrorCode MatAssemblyEnd_MPISELL(Mat mat, MatAssemblyType mode)
+{
   Mat_MPISELL *sell = (Mat_MPISELL *)mat->data;
   PetscMPIInt  n;
   PetscInt     i, flg;
@@ -338,7 +343,8 @@ PetscErrorCode MatAssemblyEnd_MPISELL(Mat mat, MatAssemblyType mode) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatZeroEntries_MPISELL(Mat A) {
+PetscErrorCode MatZeroEntries_MPISELL(Mat A)
+{
   Mat_MPISELL *l = (Mat_MPISELL *)A->data;
 
   PetscFunctionBegin;
@@ -347,7 +353,8 @@ PetscErrorCode MatZeroEntries_MPISELL(Mat A) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatMult_MPISELL(Mat A, Vec xx, Vec yy) {
+PetscErrorCode MatMult_MPISELL(Mat A, Vec xx, Vec yy)
+{
   Mat_MPISELL *a = (Mat_MPISELL *)A->data;
   PetscInt     nt;
 
@@ -361,7 +368,8 @@ PetscErrorCode MatMult_MPISELL(Mat A, Vec xx, Vec yy) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatMultDiagonalBlock_MPISELL(Mat A, Vec bb, Vec xx) {
+PetscErrorCode MatMultDiagonalBlock_MPISELL(Mat A, Vec bb, Vec xx)
+{
   Mat_MPISELL *a = (Mat_MPISELL *)A->data;
 
   PetscFunctionBegin;
@@ -369,7 +377,8 @@ PetscErrorCode MatMultDiagonalBlock_MPISELL(Mat A, Vec bb, Vec xx) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatMultAdd_MPISELL(Mat A, Vec xx, Vec yy, Vec zz) {
+PetscErrorCode MatMultAdd_MPISELL(Mat A, Vec xx, Vec yy, Vec zz)
+{
   Mat_MPISELL *a = (Mat_MPISELL *)A->data;
 
   PetscFunctionBegin;
@@ -380,7 +389,8 @@ PetscErrorCode MatMultAdd_MPISELL(Mat A, Vec xx, Vec yy, Vec zz) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatMultTranspose_MPISELL(Mat A, Vec xx, Vec yy) {
+PetscErrorCode MatMultTranspose_MPISELL(Mat A, Vec xx, Vec yy)
+{
   Mat_MPISELL *a = (Mat_MPISELL *)A->data;
 
   PetscFunctionBegin;
@@ -394,7 +404,8 @@ PetscErrorCode MatMultTranspose_MPISELL(Mat A, Vec xx, Vec yy) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatIsTranspose_MPISELL(Mat Amat, Mat Bmat, PetscReal tol, PetscBool *f) {
+PetscErrorCode MatIsTranspose_MPISELL(Mat Amat, Mat Bmat, PetscReal tol, PetscBool *f)
+{
   MPI_Comm     comm;
   Mat_MPISELL *Asell = (Mat_MPISELL *)Amat->data, *Bsell;
   Mat          Adia  = Asell->A, Bdia, Aoff, Boff, *Aoffs, *Boffs;
@@ -433,7 +444,8 @@ PetscErrorCode MatIsTranspose_MPISELL(Mat Amat, Mat Bmat, PetscReal tol, PetscBo
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatMultTransposeAdd_MPISELL(Mat A, Vec xx, Vec yy, Vec zz) {
+PetscErrorCode MatMultTransposeAdd_MPISELL(Mat A, Vec xx, Vec yy, Vec zz)
+{
   Mat_MPISELL *a = (Mat_MPISELL *)A->data;
 
   PetscFunctionBegin;
@@ -451,7 +463,8 @@ PetscErrorCode MatMultTransposeAdd_MPISELL(Mat A, Vec xx, Vec yy, Vec zz) {
   This only works correctly for square matrices where the subblock A->A is the
    diagonal block
 */
-PetscErrorCode MatGetDiagonal_MPISELL(Mat A, Vec v) {
+PetscErrorCode MatGetDiagonal_MPISELL(Mat A, Vec v)
+{
   Mat_MPISELL *a = (Mat_MPISELL *)A->data;
 
   PetscFunctionBegin;
@@ -461,7 +474,8 @@ PetscErrorCode MatGetDiagonal_MPISELL(Mat A, Vec v) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatScale_MPISELL(Mat A, PetscScalar aa) {
+PetscErrorCode MatScale_MPISELL(Mat A, PetscScalar aa)
+{
   Mat_MPISELL *a = (Mat_MPISELL *)A->data;
 
   PetscFunctionBegin;
@@ -470,7 +484,8 @@ PetscErrorCode MatScale_MPISELL(Mat A, PetscScalar aa) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatDestroy_MPISELL(Mat mat) {
+PetscErrorCode MatDestroy_MPISELL(Mat mat)
+{
   Mat_MPISELL *sell = (Mat_MPISELL *)mat->data;
 
   PetscFunctionBegin;
@@ -482,7 +497,7 @@ PetscErrorCode MatDestroy_MPISELL(Mat mat) {
   PetscCall(MatDestroy(&sell->A));
   PetscCall(MatDestroy(&sell->B));
 #if defined(PETSC_USE_CTABLE)
-  PetscCall(PetscTableDestroy(&sell->colmap));
+  PetscCall(PetscHMapIDestroy(&sell->colmap));
 #else
   PetscCall(PetscFree(sell->colmap));
 #endif
@@ -504,7 +519,8 @@ PetscErrorCode MatDestroy_MPISELL(Mat mat) {
 }
 
 #include <petscdraw.h>
-PetscErrorCode MatView_MPISELL_ASCIIorDraworSocket(Mat mat, PetscViewer viewer) {
+PetscErrorCode MatView_MPISELL_ASCIIorDraworSocket(Mat mat, PetscViewer viewer)
+{
   Mat_MPISELL      *sell = (Mat_MPISELL *)mat->data;
   PetscMPIInt       rank = sell->rank, size = sell->size;
   PetscBool         isdraw, iascii, isbinary;
@@ -587,7 +603,6 @@ PetscErrorCode MatView_MPISELL_ASCIIorDraworSocket(Mat mat, PetscViewer viewer) 
     PetscCall(MatSetType(A, MATMPISELL));
     PetscCall(MatMPISELLSetPreallocation(A, 0, NULL, 0, NULL));
     PetscCall(MatSetOption(A, MAT_NEW_NONZERO_LOCATION_ERR, PETSC_FALSE));
-    PetscCall(PetscLogObjectParent((PetscObject)mat, (PetscObject)A));
 
     /* copy over the A part */
     Aloc    = (Mat_SeqSELL *)sell->A->data;
@@ -641,7 +656,8 @@ PetscErrorCode MatView_MPISELL_ASCIIorDraworSocket(Mat mat, PetscViewer viewer) 
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatView_MPISELL(Mat mat, PetscViewer viewer) {
+PetscErrorCode MatView_MPISELL(Mat mat, PetscViewer viewer)
+{
   PetscBool iascii, isdraw, issocket, isbinary;
 
   PetscFunctionBegin;
@@ -653,7 +669,8 @@ PetscErrorCode MatView_MPISELL(Mat mat, PetscViewer viewer) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatGetGhosts_MPISELL(Mat mat, PetscInt *nghosts, const PetscInt *ghosts[]) {
+PetscErrorCode MatGetGhosts_MPISELL(Mat mat, PetscInt *nghosts, const PetscInt *ghosts[])
+{
   Mat_MPISELL *sell = (Mat_MPISELL *)mat->data;
 
   PetscFunctionBegin;
@@ -662,7 +679,8 @@ PetscErrorCode MatGetGhosts_MPISELL(Mat mat, PetscInt *nghosts, const PetscInt *
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatGetInfo_MPISELL(Mat matin, MatInfoType flag, MatInfo *info) {
+PetscErrorCode MatGetInfo_MPISELL(Mat matin, MatInfoType flag, MatInfo *info)
+{
   Mat_MPISELL   *mat = (Mat_MPISELL *)matin->data;
   Mat            A = mat->A, B = mat->B;
   PetscLogDouble isend[5], irecv[5];
@@ -713,7 +731,8 @@ PetscErrorCode MatGetInfo_MPISELL(Mat matin, MatInfoType flag, MatInfo *info) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatSetOption_MPISELL(Mat A, MatOption op, PetscBool flg) {
+PetscErrorCode MatSetOption_MPISELL(Mat A, MatOption op, PetscBool flg)
+{
   Mat_MPISELL *a = (Mat_MPISELL *)A->data;
 
   PetscFunctionBegin;
@@ -737,10 +756,15 @@ PetscErrorCode MatSetOption_MPISELL(Mat A, MatOption op, PetscBool flg) {
     PetscCall(MatSetOption(a->B, op, flg));
     break;
   case MAT_FORCE_DIAGONAL_ENTRIES:
-  case MAT_SORTED_FULL: PetscCall(PetscInfo(A, "Option %s ignored\n", MatOptions[op])); break;
-  case MAT_IGNORE_OFF_PROC_ENTRIES: a->donotstash = flg; break;
+  case MAT_SORTED_FULL:
+    PetscCall(PetscInfo(A, "Option %s ignored\n", MatOptions[op]));
+    break;
+  case MAT_IGNORE_OFF_PROC_ENTRIES:
+    a->donotstash = flg;
+    break;
   case MAT_SPD:
-  case MAT_SPD_ETERNAL: break;
+  case MAT_SPD_ETERNAL:
+    break;
   case MAT_SYMMETRIC:
     MatCheckPreallocated(A, 1);
     PetscCall(MatSetOption(a->A, op, flg));
@@ -761,12 +785,14 @@ PetscErrorCode MatSetOption_MPISELL(Mat A, MatOption op, PetscBool flg) {
     MatCheckPreallocated(A, 1);
     PetscCall(MatSetOption(a->A, op, flg));
     break;
-  default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "unknown option %d", op);
+  default:
+    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "unknown option %d", op);
   }
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatDiagonalScale_MPISELL(Mat mat, Vec ll, Vec rr) {
+PetscErrorCode MatDiagonalScale_MPISELL(Mat mat, Vec ll, Vec rr)
+{
   Mat_MPISELL *sell = (Mat_MPISELL *)mat->data;
   Mat          a = sell->A, b = sell->B;
   PetscInt     s1, s2, s3;
@@ -795,7 +821,8 @@ PetscErrorCode MatDiagonalScale_MPISELL(Mat mat, Vec ll, Vec rr) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatSetUnfactored_MPISELL(Mat A) {
+PetscErrorCode MatSetUnfactored_MPISELL(Mat A)
+{
   Mat_MPISELL *a = (Mat_MPISELL *)A->data;
 
   PetscFunctionBegin;
@@ -803,7 +830,8 @@ PetscErrorCode MatSetUnfactored_MPISELL(Mat A) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatEqual_MPISELL(Mat A, Mat B, PetscBool *flag) {
+PetscErrorCode MatEqual_MPISELL(Mat A, Mat B, PetscBool *flag)
+{
   Mat_MPISELL *matB = (Mat_MPISELL *)B->data, *matA = (Mat_MPISELL *)A->data;
   Mat          a, b, c, d;
   PetscBool    flg;
@@ -820,7 +848,8 @@ PetscErrorCode MatEqual_MPISELL(Mat A, Mat B, PetscBool *flag) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatCopy_MPISELL(Mat A, Mat B, MatStructure str) {
+PetscErrorCode MatCopy_MPISELL(Mat A, Mat B, MatStructure str)
+{
   Mat_MPISELL *a = (Mat_MPISELL *)A->data;
   Mat_MPISELL *b = (Mat_MPISELL *)B->data;
 
@@ -840,7 +869,8 @@ PetscErrorCode MatCopy_MPISELL(Mat A, Mat B, MatStructure str) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatSetUp_MPISELL(Mat A) {
+PetscErrorCode MatSetUp_MPISELL(Mat A)
+{
   PetscFunctionBegin;
   PetscCall(MatMPISELLSetPreallocation(A, PETSC_DEFAULT, NULL, PETSC_DEFAULT, NULL));
   PetscFunctionReturn(0);
@@ -848,7 +878,8 @@ PetscErrorCode MatSetUp_MPISELL(Mat A) {
 
 extern PetscErrorCode MatConjugate_SeqSELL(Mat);
 
-PetscErrorCode MatConjugate_MPISELL(Mat mat) {
+PetscErrorCode MatConjugate_MPISELL(Mat mat)
+{
   PetscFunctionBegin;
   if (PetscDefined(USE_COMPLEX)) {
     Mat_MPISELL *sell = (Mat_MPISELL *)mat->data;
@@ -859,7 +890,8 @@ PetscErrorCode MatConjugate_MPISELL(Mat mat) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatRealPart_MPISELL(Mat A) {
+PetscErrorCode MatRealPart_MPISELL(Mat A)
+{
   Mat_MPISELL *a = (Mat_MPISELL *)A->data;
 
   PetscFunctionBegin;
@@ -868,7 +900,8 @@ PetscErrorCode MatRealPart_MPISELL(Mat A) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatImaginaryPart_MPISELL(Mat A) {
+PetscErrorCode MatImaginaryPart_MPISELL(Mat A)
+{
   Mat_MPISELL *a = (Mat_MPISELL *)A->data;
 
   PetscFunctionBegin;
@@ -877,7 +910,8 @@ PetscErrorCode MatImaginaryPart_MPISELL(Mat A) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatInvertBlockDiagonal_MPISELL(Mat A, const PetscScalar **values) {
+PetscErrorCode MatInvertBlockDiagonal_MPISELL(Mat A, const PetscScalar **values)
+{
   Mat_MPISELL *a = (Mat_MPISELL *)A->data;
 
   PetscFunctionBegin;
@@ -886,7 +920,8 @@ PetscErrorCode MatInvertBlockDiagonal_MPISELL(Mat A, const PetscScalar **values)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatSetRandom_MPISELL(Mat x, PetscRandom rctx) {
+static PetscErrorCode MatSetRandom_MPISELL(Mat x, PetscRandom rctx)
+{
   Mat_MPISELL *sell = (Mat_MPISELL *)x->data;
 
   PetscFunctionBegin;
@@ -897,14 +932,16 @@ static PetscErrorCode MatSetRandom_MPISELL(Mat x, PetscRandom rctx) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatSetFromOptions_MPISELL(Mat A, PetscOptionItems *PetscOptionsObject) {
+PetscErrorCode MatSetFromOptions_MPISELL(Mat A, PetscOptionItems *PetscOptionsObject)
+{
   PetscFunctionBegin;
   PetscOptionsHeadBegin(PetscOptionsObject, "MPISELL options");
   PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatShift_MPISELL(Mat Y, PetscScalar a) {
+PetscErrorCode MatShift_MPISELL(Mat Y, PetscScalar a)
+{
   Mat_MPISELL *msell = (Mat_MPISELL *)Y->data;
   Mat_SeqSELL *sell  = (Mat_SeqSELL *)msell->A->data;
 
@@ -920,7 +957,8 @@ PetscErrorCode MatShift_MPISELL(Mat Y, PetscScalar a) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatMissingDiagonal_MPISELL(Mat A, PetscBool *missing, PetscInt *d) {
+PetscErrorCode MatMissingDiagonal_MPISELL(Mat A, PetscBool *missing, PetscInt *d)
+{
   Mat_MPISELL *a = (Mat_MPISELL *)A->data;
 
   PetscFunctionBegin;
@@ -934,7 +972,8 @@ PetscErrorCode MatMissingDiagonal_MPISELL(Mat A, PetscBool *missing, PetscInt *d
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatGetDiagonalBlock_MPISELL(Mat A, Mat *a) {
+PetscErrorCode MatGetDiagonalBlock_MPISELL(Mat A, Mat *a)
+{
   PetscFunctionBegin;
   *a = ((Mat_MPISELL *)A->data)->A;
   PetscFunctionReturn(0);
@@ -1091,11 +1130,13 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPISELL,
                                        NULL,
                                        NULL,
                                        NULL,
-                                       /*150*/ NULL};
+                                       /*150*/ NULL,
+                                       NULL};
 
 /* ----------------------------------------------------------------------------------------*/
 
-PetscErrorCode MatStoreValues_MPISELL(Mat mat) {
+PetscErrorCode MatStoreValues_MPISELL(Mat mat)
+{
   Mat_MPISELL *sell = (Mat_MPISELL *)mat->data;
 
   PetscFunctionBegin;
@@ -1104,7 +1145,8 @@ PetscErrorCode MatStoreValues_MPISELL(Mat mat) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatRetrieveValues_MPISELL(Mat mat) {
+PetscErrorCode MatRetrieveValues_MPISELL(Mat mat)
+{
   Mat_MPISELL *sell = (Mat_MPISELL *)mat->data;
 
   PetscFunctionBegin;
@@ -1113,7 +1155,8 @@ PetscErrorCode MatRetrieveValues_MPISELL(Mat mat) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatMPISELLSetPreallocation_MPISELL(Mat B, PetscInt d_rlenmax, const PetscInt d_rlen[], PetscInt o_rlenmax, const PetscInt o_rlen[]) {
+PetscErrorCode MatMPISELLSetPreallocation_MPISELL(Mat B, PetscInt d_rlenmax, const PetscInt d_rlen[], PetscInt o_rlenmax, const PetscInt o_rlen[])
+{
   Mat_MPISELL *b;
 
   PetscFunctionBegin;
@@ -1127,12 +1170,10 @@ PetscErrorCode MatMPISELLSetPreallocation_MPISELL(Mat B, PetscInt d_rlenmax, con
     PetscCall(MatSetSizes(b->A, B->rmap->n, B->cmap->n, B->rmap->n, B->cmap->n));
     PetscCall(MatSetBlockSizesFromMats(b->A, B, B));
     PetscCall(MatSetType(b->A, MATSEQSELL));
-    PetscCall(PetscLogObjectParent((PetscObject)B, (PetscObject)b->A));
     PetscCall(MatCreate(PETSC_COMM_SELF, &b->B));
     PetscCall(MatSetSizes(b->B, B->rmap->n, B->cmap->N, B->rmap->n, B->cmap->N));
     PetscCall(MatSetBlockSizesFromMats(b->B, B, B));
     PetscCall(MatSetType(b->B, MATSEQSELL));
-    PetscCall(PetscLogObjectParent((PetscObject)B, (PetscObject)b->B));
   }
 
   PetscCall(MatSeqSELLSetPreallocation(b->A, d_rlenmax, d_rlen));
@@ -1144,11 +1185,12 @@ PetscErrorCode MatMPISELLSetPreallocation_MPISELL(Mat B, PetscInt d_rlenmax, con
     MatAssemblyBegin checks it to set up was_assembled
     and MatAssemblyEnd checks was_assembled to determine whether to build garray
   */
-  B->assembled     = PETSC_FALSE;
+  B->assembled = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatDuplicate_MPISELL(Mat matin, MatDuplicateOption cpvalues, Mat *newmat) {
+PetscErrorCode MatDuplicate_MPISELL(Mat matin, MatDuplicateOption cpvalues, Mat *newmat)
+{
   Mat          mat;
   Mat_MPISELL *a, *oldmat = (Mat_MPISELL *)matin->data;
 
@@ -1178,10 +1220,9 @@ PetscErrorCode MatDuplicate_MPISELL(Mat matin, MatDuplicateOption cpvalues, Mat 
 
   if (oldmat->colmap) {
 #if defined(PETSC_USE_CTABLE)
-    PetscCall(PetscTableCreateCopy(oldmat->colmap, &a->colmap));
+    PetscCall(PetscHMapIDuplicate(oldmat->colmap, &a->colmap));
 #else
     PetscCall(PetscMalloc1(mat->cmap->N, &a->colmap));
-    PetscCall(PetscLogObjectMemory((PetscObject)mat, (mat->cmap->N) * sizeof(PetscInt)));
     PetscCall(PetscArraycpy(a->colmap, oldmat->colmap, mat->cmap->N));
 #endif
   } else a->colmap = NULL;
@@ -1189,18 +1230,13 @@ PetscErrorCode MatDuplicate_MPISELL(Mat matin, MatDuplicateOption cpvalues, Mat 
     PetscInt len;
     len = oldmat->B->cmap->n;
     PetscCall(PetscMalloc1(len + 1, &a->garray));
-    PetscCall(PetscLogObjectMemory((PetscObject)mat, len * sizeof(PetscInt)));
     if (len) PetscCall(PetscArraycpy(a->garray, oldmat->garray, len));
   } else a->garray = NULL;
 
   PetscCall(VecDuplicate(oldmat->lvec, &a->lvec));
-  PetscCall(PetscLogObjectParent((PetscObject)mat, (PetscObject)a->lvec));
   PetscCall(VecScatterCopy(oldmat->Mvctx, &a->Mvctx));
-  PetscCall(PetscLogObjectParent((PetscObject)mat, (PetscObject)a->Mvctx));
   PetscCall(MatDuplicate(oldmat->A, cpvalues, &a->A));
-  PetscCall(PetscLogObjectParent((PetscObject)mat, (PetscObject)a->A));
   PetscCall(MatDuplicate(oldmat->B, cpvalues, &a->B));
-  PetscCall(PetscLogObjectParent((PetscObject)mat, (PetscObject)a->B));
   PetscCall(PetscFunctionListDuplicate(((PetscObject)matin)->qlist, &((PetscObject)mat)->qlist));
   *newmat = mat;
   PetscFunctionReturn(0);
@@ -1330,7 +1366,8 @@ PetscErrorCode MatDuplicate_MPISELL(Mat matin, MatDuplicateOption cpvalues, Mat 
 .seealso: `MatCreate()`, `MatCreateSeqSELL()`, `MatSetValues()`, `MatCreatesell()`,
           `MATMPISELL`, `MatGetInfo()`, `PetscSplitOwnership()`, `MATSELL`
 @*/
-PetscErrorCode MatMPISELLSetPreallocation(Mat B, PetscInt d_nz, const PetscInt d_nnz[], PetscInt o_nz, const PetscInt o_nnz[]) {
+PetscErrorCode MatMPISELLSetPreallocation(Mat B, PetscInt d_nz, const PetscInt d_nnz[], PetscInt o_nz, const PetscInt o_nnz[])
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(B, MAT_CLASSID, 1);
   PetscValidType(B, 1);
@@ -1509,7 +1546,8 @@ M*/
 .seealso: `MATSELL`, `MatCreate()`, `MatCreateSeqSELL()`, `MatSetValues()`, `MatMPISELLSetPreallocation()`, `MatMPISELLSetPreallocationSELL()`,
           `MATMPISELL`, `MatCreateMPISELLWithArrays()`
 @*/
-PetscErrorCode MatCreateSELL(MPI_Comm comm, PetscInt m, PetscInt n, PetscInt M, PetscInt N, PetscInt d_rlenmax, const PetscInt d_rlen[], PetscInt o_rlenmax, const PetscInt o_rlen[], Mat *A) {
+PetscErrorCode MatCreateSELL(MPI_Comm comm, PetscInt m, PetscInt n, PetscInt M, PetscInt N, PetscInt d_rlenmax, const PetscInt d_rlen[], PetscInt o_rlenmax, const PetscInt o_rlen[], Mat *A)
+{
   PetscMPIInt size;
 
   PetscFunctionBegin;
@@ -1526,7 +1564,8 @@ PetscErrorCode MatCreateSELL(MPI_Comm comm, PetscInt m, PetscInt n, PetscInt M, 
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatMPISELLGetSeqSELL(Mat A, Mat *Ad, Mat *Ao, const PetscInt *colmap[]) {
+PetscErrorCode MatMPISELLGetSeqSELL(Mat A, Mat *Ad, Mat *Ao, const PetscInt *colmap[])
+{
   Mat_MPISELL *a = (Mat_MPISELL *)A->data;
   PetscBool    flg;
 
@@ -1556,7 +1595,8 @@ PetscErrorCode MatMPISELLGetSeqSELL(Mat A, Mat *Ad, Mat *Ao, const PetscInt *col
 
 .seealso: `MATSEQSELL`, `MATMPISELL`, `MatGetOwnershipRange()`, `MatMPISELLGetLocalMat()`
 @*/
-PetscErrorCode MatMPISELLGetLocalMatCondensed(Mat A, MatReuse scall, IS *row, IS *col, Mat *A_loc) {
+PetscErrorCode MatMPISELLGetLocalMatCondensed(Mat A, MatReuse scall, IS *row, IS *col, Mat *A_loc)
+{
   Mat_MPISELL *a = (Mat_MPISELL *)A->data;
   PetscInt     i, start, end, ncols, nzA, nzB, *cmap, imark, *idx;
   IS           isrowa, iscola;
@@ -1607,7 +1647,8 @@ PetscErrorCode MatMPISELLGetLocalMatCondensed(Mat A, MatReuse scall, IS *row, IS
 
 #include <../src/mat/impls/aij/mpi/mpiaij.h>
 
-PetscErrorCode MatConvert_MPISELL_MPIAIJ(Mat A, MatType newtype, MatReuse reuse, Mat *newmat) {
+PetscErrorCode MatConvert_MPISELL_MPIAIJ(Mat A, MatType newtype, MatReuse reuse, Mat *newmat)
+{
   Mat_MPISELL *a = (Mat_MPISELL *)A->data;
   Mat          B;
   Mat_MPIAIJ  *b;
@@ -1650,7 +1691,8 @@ PetscErrorCode MatConvert_MPISELL_MPIAIJ(Mat A, MatType newtype, MatReuse reuse,
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatConvert_MPIAIJ_MPISELL(Mat A, MatType newtype, MatReuse reuse, Mat *newmat) {
+PetscErrorCode MatConvert_MPIAIJ_MPISELL(Mat A, MatType newtype, MatReuse reuse, Mat *newmat)
+{
   Mat_MPIAIJ  *a = (Mat_MPIAIJ *)A->data;
   Mat          B;
   Mat_MPISELL *b;
@@ -1693,7 +1735,8 @@ PetscErrorCode MatConvert_MPIAIJ_MPISELL(Mat A, MatType newtype, MatReuse reuse,
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatSOR_MPISELL(Mat matin, Vec bb, PetscReal omega, MatSORType flag, PetscReal fshift, PetscInt its, PetscInt lits, Vec xx) {
+PetscErrorCode MatSOR_MPISELL(Mat matin, Vec bb, PetscReal omega, MatSORType flag, PetscReal fshift, PetscInt its, PetscInt lits, Vec xx)
+{
   Mat_MPISELL *mat = (Mat_MPISELL *)matin->data;
   Vec          bb1 = NULL;
 
@@ -1772,13 +1815,14 @@ PetscErrorCode MatSOR_MPISELL(Mat matin, Vec bb, PetscReal omega, MatSORType fla
 
 .seealso: `MATSELL`, `MATSEQSELL` `MatCreateSELL()`
 M*/
-PETSC_EXTERN PetscErrorCode MatCreate_MPISELL(Mat B) {
+PETSC_EXTERN PetscErrorCode MatCreate_MPISELL(Mat B)
+{
   Mat_MPISELL *b;
   PetscMPIInt  size;
 
   PetscFunctionBegin;
   PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)B), &size));
-  PetscCall(PetscNewLog(B, &b));
+  PetscCall(PetscNew(&b));
   B->data = (void *)b;
   PetscCall(PetscMemcpy(B->ops, &MatOps_Values, sizeof(struct _MatOps)));
   B->assembled  = PETSC_FALSE;

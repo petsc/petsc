@@ -34,7 +34,8 @@ extern PetscErrorCode SampleShellPCDestroy(PC);
    provides the added traceback detail of the application routine names.
 */
 
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   Vec            x, b, u; /* approx solution, RHS, exact solution */
   Mat            A;       /* linear system matrix */
   KSP            ksp;     /* linear solver context */
@@ -237,7 +238,8 @@ int main(int argc, char **args) {
    Output Parameter:
 .  shell - user-defined preconditioner context
 */
-PetscErrorCode SampleShellPCCreate(SampleShellPC **shell) {
+PetscErrorCode SampleShellPCCreate(SampleShellPC **shell)
+{
   SampleShellPC *newctx;
 
   PetscCall(PetscNew(&newctx));
@@ -264,7 +266,8 @@ PetscErrorCode SampleShellPCCreate(SampleShellPC **shell) {
    of the diagonal of the preconditioner matrix; this vector is then
    used within the routine SampleShellPCApply().
 */
-PetscErrorCode SampleShellPCSetUp(PC pc, Mat pmat, Vec x) {
+PetscErrorCode SampleShellPCSetUp(PC pc, Mat pmat, Vec x)
+{
   SampleShellPC *shell;
   Vec            diag;
 
@@ -293,7 +296,8 @@ PetscErrorCode SampleShellPCSetUp(PC pc, Mat pmat, Vec x) {
    example of working with a PCSHELL.  Note that the Jacobi method
    is already provided within PETSc.
 */
-PetscErrorCode SampleShellPCApply(PC pc, Vec x, Vec y) {
+PetscErrorCode SampleShellPCApply(PC pc, Vec x, Vec y)
+{
   SampleShellPC *shell;
 
   PetscCall(PCShellGetContext(pc, &shell));
@@ -309,7 +313,8 @@ PetscErrorCode SampleShellPCApply(PC pc, Vec x, Vec y) {
    Input Parameter:
 .  shell - user-defined preconditioner context
 */
-PetscErrorCode SampleShellPCDestroy(PC pc) {
+PetscErrorCode SampleShellPCDestroy(PC pc)
+{
   SampleShellPC *shell;
 
   PetscCall(PCShellGetContext(pc, &shell));

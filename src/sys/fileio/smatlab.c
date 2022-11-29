@@ -25,7 +25,8 @@
 
 .seealso: `PetscPOpen()`, `PetscPClose()`
 @*/
-PetscErrorCode PetscStartMatlab(MPI_Comm comm, const char machine[], const char script[], FILE **fp) {
+PetscErrorCode PetscStartMatlab(MPI_Comm comm, const char machine[], const char script[], FILE **fp)
+{
   FILE *fd;
   char  command[512];
 #if defined(PETSC_HAVE_UCBPS) && defined(PETSC_HAVE_POPEN)
@@ -47,7 +48,7 @@ PetscErrorCode PetscStartMatlab(MPI_Comm comm, const char machine[], const char 
   if (script) {
     /* the remote machine won't know about current directory, so add it to MATLAB path */
     /* the extra \" are to protect possible () in the script command from the shell */
-    sprintf(command, "echo \"delete ${HOMEDIRECTORY}/matlab/startup.m ; path(path,'${WORKINGDIRECTORY}'); %s  \" > ${HOMEDIRECTORY}/matlab/startup.m", script);
+    PetscCall(PetscSNPrintf(command, PETSC_STATIC_ARRAY_LENGTH(command), "echo \"delete ${HOMEDIRECTORY}/matlab/startup.m ; path(path,'${WORKINGDIRECTORY}'); %s  \" > ${HOMEDIRECTORY}/matlab/startup.m", script));
 #if defined(PETSC_HAVE_POPEN)
     PetscCall(PetscPOpen(comm, machine, command, "r", &fd));
     PetscCall(PetscPClose(comm, fd));

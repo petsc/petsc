@@ -19,16 +19,13 @@ PetscBool         PetscDSRegisterAllCalled = PETSC_FALSE;
 */
 
 /*@C
-  PetscDSRegister - Adds a new PetscDS implementation
+  PetscDSRegister - Adds a new `PetscDS` implementation
 
   Not Collective
 
   Input Parameters:
 + name        - The name of a new user-defined creation routine
 - create_func - The creation routine itself
-
-  Notes:
-  PetscDSRegister() may be called multiple times to add several user-defined PetscDSs
 
   Sample usage:
 .vb
@@ -47,36 +44,42 @@ PetscBool         PetscDSRegisterAllCalled = PETSC_FALSE;
 
   Level: advanced
 
-   Not available from Fortran
+  Note:
+  `PetscDSRegister()` may be called multiple times to add several user-defined `PetscDSs`
 
-.seealso: `PetscDSRegisterAll()`, `PetscDSRegisterDestroy()`
+  Fortran Note:
+  Not available from Fortran
 
+.seealso: `PetscDSType`, `PetscDS`, `PetscDSRegisterAll()`, `PetscDSRegisterDestroy()`
 @*/
-PetscErrorCode PetscDSRegister(const char sname[], PetscErrorCode (*function)(PetscDS)) {
+PetscErrorCode PetscDSRegister(const char sname[], PetscErrorCode (*function)(PetscDS))
+{
   PetscFunctionBegin;
   PetscCall(PetscFunctionListAdd(&PetscDSList, sname, function));
   PetscFunctionReturn(0);
 }
 
 /*@C
-  PetscDSSetType - Builds a particular PetscDS
+  PetscDSSetType - Builds a particular `PetscDS`
 
   Collective on prob
 
   Input Parameters:
-+ prob - The PetscDS object
-- name - The kind of system
++ prob - The `PetscDS` object
+- name - The `PetscDSType`
 
   Options Database Key:
 . -petscds_type <type> - Sets the PetscDS type; use -help for a list of available types
 
   Level: intermediate
 
-   Not available from Fortran
+  Fortran Note:
+  Not available from Fortran
 
-.seealso: `PetscDSGetType()`, `PetscDSCreate()`
+.seealso: `PetscDSType`, `PetscDS`, `PetscDSGetType()`, `PetscDSCreate()`
 @*/
-PetscErrorCode PetscDSSetType(PetscDS prob, PetscDSType name) {
+PetscErrorCode PetscDSSetType(PetscDS prob, PetscDSType name)
+{
   PetscErrorCode (*r)(PetscDS);
   PetscBool match;
 
@@ -98,23 +101,25 @@ PetscErrorCode PetscDSSetType(PetscDS prob, PetscDSType name) {
 }
 
 /*@C
-  PetscDSGetType - Gets the PetscDS type name (as a string) from the object.
+  PetscDSGetType - Gets the `PetscDSType` name (as a string) from the `PetscDS`
 
   Not Collective
 
   Input Parameter:
-. prob  - The PetscDS
+. prob  - The `PetscDS`
 
   Output Parameter:
-. name - The PetscDS type name
+. name - The `PetscDSType` name
 
   Level: intermediate
 
-   Not available from Fortran
+  Fortran Note:
+  Not available from Fortran
 
-.seealso: `PetscDSSetType()`, `PetscDSCreate()`
+.seealso: `PetscDSType`, `PetscDS`, `PetscDSSetType()`, `PetscDSCreate()`
 @*/
-PetscErrorCode PetscDSGetType(PetscDS prob, PetscDSType *name) {
+PetscErrorCode PetscDSGetType(PetscDS prob, PetscDSType *name)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
   PetscValidPointer(name, 2);
@@ -123,7 +128,8 @@ PetscErrorCode PetscDSGetType(PetscDS prob, PetscDSType *name) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscDSView_Ascii(PetscDS ds, PetscViewer viewer) {
+static PetscErrorCode PetscDSView_Ascii(PetscDS ds, PetscViewer viewer)
+{
   PetscViewerFormat  format;
   const PetscScalar *constants;
   PetscInt           Nf, numConstants, f;
@@ -229,19 +235,21 @@ static PetscErrorCode PetscDSView_Ascii(PetscDS ds, PetscViewer viewer) {
 }
 
 /*@C
-   PetscDSViewFromOptions - View from Options
+   PetscDSViewFromOptions - View a `PetscDS` based on values in the options database
 
    Collective on PetscDS
 
    Input Parameters:
-+  A - the PetscDS object
++  A - the `PetscDS` object
 .  obj - Optional object
 -  name - command line option
 
    Level: intermediate
-.seealso: `PetscDS`, `PetscDSView`, `PetscObjectViewFromOptions()`, `PetscDSCreate()`
+
+.seealso: `PetscDSType`, `PetscDS`, `PetscDSView()`, `PetscObjectViewFromOptions()`, `PetscDSCreate()`
 @*/
-PetscErrorCode PetscDSViewFromOptions(PetscDS A, PetscObject obj, const char name[]) {
+PetscErrorCode PetscDSViewFromOptions(PetscDS A, PetscObject obj, const char name[])
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, PETSCDS_CLASSID, 1);
   PetscCall(PetscObjectViewFromOptions((PetscObject)A, obj, name));
@@ -249,19 +257,20 @@ PetscErrorCode PetscDSViewFromOptions(PetscDS A, PetscObject obj, const char nam
 }
 
 /*@C
-  PetscDSView - Views a PetscDS
+  PetscDSView - Views a `PetscDS`
 
   Collective on prob
 
   Input Parameters:
-+ prob - the PetscDS object to view
++ prob - the `PetscDS` object to view
 - v  - the viewer
 
   Level: developer
 
-.seealso `PetscDSDestroy()`
+.seealso: `PetscDSType`, `PetscDS`, `PetscViewer`, `PetscDSDestroy()`
 @*/
-PetscErrorCode PetscDSView(PetscDS prob, PetscViewer v) {
+PetscErrorCode PetscDSView(PetscDS prob, PetscViewer v)
+{
   PetscBool iascii;
 
   PetscFunctionBegin;
@@ -275,25 +284,26 @@ PetscErrorCode PetscDSView(PetscDS prob, PetscViewer v) {
 }
 
 /*@
-  PetscDSSetFromOptions - sets parameters in a PetscDS from the options database
+  PetscDSSetFromOptions - sets parameters in a `PetscDS` from the options database
 
   Collective on prob
 
   Input Parameter:
-. prob - the PetscDS object to set options for
+. prob - the `PetscDS` object to set options for
 
-  Options Database:
-+ -petscds_type <type>     - Set the DS type
-. -petscds_view <view opt> - View the DS
+  Options Database Keys:
++ -petscds_type <type>     - Set the `PetscDS` type
+. -petscds_view <view opt> - View the `PetscDS`
 . -petscds_jac_pre         - Turn formation of a separate Jacobian preconditioner on or off
 . -bc_<name> <ids>         - Specify a list of label ids for a boundary condition
 - -bc_<name>_comp <comps>  - Specify a list of field components to constrain for a boundary condition
 
-  Level: developer
+  Level: intermediate
 
-.seealso `PetscDSView()`
+.seealso: `PetscDS`, `PetscDSView()`
 @*/
-PetscErrorCode PetscDSSetFromOptions(PetscDS prob) {
+PetscErrorCode PetscDSSetFromOptions(PetscDS prob)
+{
   DSBoundary  b;
   const char *defaultType;
   char        name[256];
@@ -351,18 +361,19 @@ PetscErrorCode PetscDSSetFromOptions(PetscDS prob) {
 }
 
 /*@C
-  PetscDSSetUp - Construct data structures for the PetscDS
+  PetscDSSetUp - Construct data structures for the `PetscDS`
 
   Collective on prob
 
   Input Parameter:
-. prob - the PetscDS object to setup
+. prob - the `PetscDS` object to setup
 
   Level: developer
 
-.seealso `PetscDSView()`, `PetscDSDestroy()`
+.seealso: `PetscDS`, `PetscDSView()`, `PetscDSDestroy()`
 @*/
-PetscErrorCode PetscDSSetUp(PetscDS prob) {
+PetscErrorCode PetscDSSetUp(PetscDS prob)
+{
   const PetscInt Nf   = prob->Nf;
   PetscBool      hasH = PETSC_FALSE;
   PetscInt       dim, dimEmbed, NbMax = 0, NcMax = 0, NqMax = 0, NsMax = 1, f;
@@ -432,7 +443,7 @@ PetscErrorCode PetscDSSetUp(PetscDS prob) {
   prob->offCohesive[1][Nf]    = prob->offCohesive[0][Nf];
   prob->offDerCohesive[1][Nf] = prob->offDerCohesive[0][Nf];
   /* Allocate works space */
-  NsMax                       = 2; /* A non-cohesive discretizations can be used on a cohesive cell, so we need this extra workspace for all DS */
+  NsMax = 2; /* A non-cohesive discretizations can be used on a cohesive cell, so we need this extra workspace for all DS */
   PetscCall(PetscMalloc3(NsMax * prob->totComp, &prob->u, NsMax * prob->totComp, &prob->u_t, NsMax * prob->totComp * dimEmbed + (hasH ? NsMax * prob->totComp * dimEmbed * dimEmbed : 0), &prob->u_x));
   PetscCall(PetscMalloc5(dimEmbed, &prob->x, NbMax * NcMax, &prob->basisReal, NbMax * NcMax * dimEmbed, &prob->basisDerReal, NbMax * NcMax, &prob->testReal, NbMax * NcMax * dimEmbed, &prob->testDerReal));
   PetscCall(PetscMalloc6(NsMax * NqMax * NcMax, &prob->f0, NsMax * NqMax * NcMax * dimEmbed, &prob->f1, NsMax * NsMax * NqMax * NcMax * NcMax, &prob->g0, NsMax * NsMax * NqMax * NcMax * NcMax * dimEmbed, &prob->g1, NsMax * NsMax * NqMax * NcMax * NcMax * dimEmbed,
@@ -442,7 +453,8 @@ PetscErrorCode PetscDSSetUp(PetscDS prob) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscDSDestroyStructs_Static(PetscDS prob) {
+static PetscErrorCode PetscDSDestroyStructs_Static(PetscDS prob)
+{
   PetscFunctionBegin;
   PetscCall(PetscFree2(prob->Nc, prob->Nb));
   PetscCall(PetscFree2(prob->off, prob->offDer));
@@ -454,7 +466,8 @@ static PetscErrorCode PetscDSDestroyStructs_Static(PetscDS prob) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscDSEnlarge_Static(PetscDS prob, PetscInt NfNew) {
+static PetscErrorCode PetscDSEnlarge_Static(PetscDS prob, PetscInt NfNew)
+{
   PetscObject          *tmpd;
   PetscBool            *tmpi;
   PetscInt             *tmpk;
@@ -523,9 +536,10 @@ static PetscErrorCode PetscDSEnlarge_Static(PetscDS prob, PetscInt NfNew) {
 
   Level: developer
 
-.seealso `PetscDSView()`
+.seealso: `PetscDSView()`
 @*/
-PetscErrorCode PetscDSDestroy(PetscDS *ds) {
+PetscErrorCode PetscDSDestroy(PetscDS *ds)
+{
   PetscInt f;
 
   PetscFunctionBegin;
@@ -558,21 +572,22 @@ PetscErrorCode PetscDSDestroy(PetscDS *ds) {
 }
 
 /*@
-  PetscDSCreate - Creates an empty PetscDS object. The type can then be set with PetscDSSetType().
+  PetscDSCreate - Creates an empty `PetscDS` object. The type can then be set with `PetscDSSetType()`.
 
   Collective
 
   Input Parameter:
-. comm - The communicator for the PetscDS object
+. comm - The communicator for the `PetscDS` object
 
   Output Parameter:
-. ds   - The PetscDS object
+. ds   - The `PetscDS` object
 
   Level: beginner
 
-.seealso: `PetscDSSetType()`, `PETSCDSBASIC`
+.seealso: `PetscDS`, `PetscDSSetType()`, `PETSCDSBASIC`, `PetscDSType`
 @*/
-PetscErrorCode PetscDSCreate(MPI_Comm comm, PetscDS *ds) {
+PetscErrorCode PetscDSCreate(MPI_Comm comm, PetscDS *ds)
+{
   PetscDS p;
 
   PetscFunctionBegin;
@@ -595,7 +610,7 @@ PetscErrorCode PetscDSCreate(MPI_Comm comm, PetscDS *ds) {
 }
 
 /*@
-  PetscDSGetNumFields - Returns the number of fields in the DS
+  PetscDSGetNumFields - Returns the number of fields in the `PetscDS`
 
   Not collective
 
@@ -607,9 +622,10 @@ PetscErrorCode PetscDSCreate(MPI_Comm comm, PetscDS *ds) {
 
   Level: beginner
 
-.seealso: `PetscDSGetSpatialDimension()`, `PetscDSCreate()`
+.seealso: `PetscDS`, `PetscDSGetSpatialDimension()`, `PetscDSCreate()`
 @*/
-PetscErrorCode PetscDSGetNumFields(PetscDS prob, PetscInt *Nf) {
+PetscErrorCode PetscDSGetNumFields(PetscDS prob, PetscInt *Nf)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
   PetscValidIntPointer(Nf, 2);
@@ -618,21 +634,22 @@ PetscErrorCode PetscDSGetNumFields(PetscDS prob, PetscInt *Nf) {
 }
 
 /*@
-  PetscDSGetSpatialDimension - Returns the spatial dimension of the DS, meaning the topological dimension of the discretizations
+  PetscDSGetSpatialDimension - Returns the spatial dimension of the `PetscDS`, meaning the topological dimension of the discretizations
 
   Not collective
 
   Input Parameter:
-. prob - The PetscDS object
+. prob - The `PetscDS` object
 
   Output Parameter:
 . dim - The spatial dimension
 
   Level: beginner
 
-.seealso: `PetscDSGetCoordinateDimension()`, `PetscDSGetNumFields()`, `PetscDSCreate()`
+.seealso: `PetscDS`, `PetscDSGetCoordinateDimension()`, `PetscDSGetNumFields()`, `PetscDSCreate()`
 @*/
-PetscErrorCode PetscDSGetSpatialDimension(PetscDS prob, PetscInt *dim) {
+PetscErrorCode PetscDSGetSpatialDimension(PetscDS prob, PetscInt *dim)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
   PetscValidIntPointer(dim, 2);
@@ -653,21 +670,22 @@ PetscErrorCode PetscDSGetSpatialDimension(PetscDS prob, PetscInt *dim) {
 }
 
 /*@
-  PetscDSGetCoordinateDimension - Returns the coordinate dimension of the DS, meaning the dimension of the space into which the discretiaztions are embedded
+  PetscDSGetCoordinateDimension - Returns the coordinate dimension of the `PetscDS`, meaning the dimension of the space into which the discretiaztions are embedded
 
   Not collective
 
   Input Parameter:
-. prob - The PetscDS object
+. prob - The `PetscDS` object
 
   Output Parameter:
 . dimEmbed - The coordinate dimension
 
   Level: beginner
 
-.seealso: `PetscDSSetCoordinateDimension()`, `PetscDSGetSpatialDimension()`, `PetscDSGetNumFields()`, `PetscDSCreate()`
+.seealso: `PetscDS`, `PetscDSSetCoordinateDimension()`, `PetscDSGetSpatialDimension()`, `PetscDSGetNumFields()`, `PetscDSCreate()`
 @*/
-PetscErrorCode PetscDSGetCoordinateDimension(PetscDS prob, PetscInt *dimEmbed) {
+PetscErrorCode PetscDSGetCoordinateDimension(PetscDS prob, PetscInt *dimEmbed)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
   PetscValidIntPointer(dimEmbed, 2);
@@ -677,19 +695,20 @@ PetscErrorCode PetscDSGetCoordinateDimension(PetscDS prob, PetscInt *dimEmbed) {
 }
 
 /*@
-  PetscDSSetCoordinateDimension - Set the coordinate dimension of the DS, meaning the dimension of the space into which the discretiaztions are embedded
+  PetscDSSetCoordinateDimension - Set the coordinate dimension of the `PetscDS`, meaning the dimension of the space into which the discretiaztions are embedded
 
   Logically collective on prob
 
   Input Parameters:
-+ prob - The PetscDS object
++ prob - The `PetscDS` object
 - dimEmbed - The coordinate dimension
 
   Level: beginner
 
-.seealso: `PetscDSGetCoordinateDimension()`, `PetscDSGetSpatialDimension()`, `PetscDSGetNumFields()`, `PetscDSCreate()`
+.seealso: `PetscDS`, `PetscDSGetCoordinateDimension()`, `PetscDSGetSpatialDimension()`, `PetscDSGetNumFields()`, `PetscDSCreate()`
 @*/
-PetscErrorCode PetscDSSetCoordinateDimension(PetscDS prob, PetscInt dimEmbed) {
+PetscErrorCode PetscDSSetCoordinateDimension(PetscDS prob, PetscInt dimEmbed)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
   PetscCheck(dimEmbed >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Coordinate dimension must be non-negative, not %" PetscInt_FMT, dimEmbed);
@@ -698,21 +717,22 @@ PetscErrorCode PetscDSSetCoordinateDimension(PetscDS prob, PetscInt dimEmbed) {
 }
 
 /*@
-  PetscDSIsCohesive - Returns the flag indicating that this DS is for a cohesive cell
+  PetscDSIsCohesive - Returns the flag indicating that this `PetscDS` is for a cohesive cell
 
   Not collective
 
   Input Parameter:
-. ds - The PetscDS object
+. ds - The `PetscDS` object
 
   Output Parameter:
 . isCohesive - The flag
 
   Level: developer
 
-.seealso: `PetscDSGetNumCohesive()`, `PetscDSGetCohesive()`, `PetscDSSetCohesive()`, `PetscDSCreate()`
+.seealso: `PetscDS`, `PetscDSGetNumCohesive()`, `PetscDSGetCohesive()`, `PetscDSSetCohesive()`, `PetscDSCreate()`
 @*/
-PetscErrorCode PetscDSIsCohesive(PetscDS ds, PetscBool *isCohesive) {
+PetscErrorCode PetscDSIsCohesive(PetscDS ds, PetscBool *isCohesive)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ds, PETSCDS_CLASSID, 1);
   PetscValidBoolPointer(isCohesive, 2);
@@ -726,16 +746,17 @@ PetscErrorCode PetscDSIsCohesive(PetscDS ds, PetscBool *isCohesive) {
   Not collective
 
   Input Parameter:
-. ds - The PetscDS object
+. ds - The `PetscDS` object
 
   Output Parameter:
 . numCohesive - The number of cohesive fields
 
   Level: developer
 
-.seealso: `PetscDSSetCohesive()`, `PetscDSCreate()`
+.seealso: `PetscDS`, `PetscDSSetCohesive()`, `PetscDSCreate()`
 @*/
-PetscErrorCode PetscDSGetNumCohesive(PetscDS ds, PetscInt *numCohesive) {
+PetscErrorCode PetscDSGetNumCohesive(PetscDS ds, PetscInt *numCohesive)
+{
   PetscInt f;
 
   PetscFunctionBegin;
@@ -752,7 +773,7 @@ PetscErrorCode PetscDSGetNumCohesive(PetscDS ds, PetscInt *numCohesive) {
   Not collective
 
   Input Parameters:
-+ ds - The PetscDS object
++ ds - The `PetscDS` object
 - f  - The field index
 
   Output Parameter:
@@ -760,9 +781,10 @@ PetscErrorCode PetscDSGetNumCohesive(PetscDS ds, PetscInt *numCohesive) {
 
   Level: developer
 
-.seealso: `PetscDSSetCohesive()`, `PetscDSIsCohesive()`, `PetscDSCreate()`
+.seealso: `PetscDS`, `PetscDSSetCohesive()`, `PetscDSIsCohesive()`, `PetscDSCreate()`
 @*/
-PetscErrorCode PetscDSGetCohesive(PetscDS ds, PetscInt f, PetscBool *isCohesive) {
+PetscErrorCode PetscDSGetCohesive(PetscDS ds, PetscInt f, PetscBool *isCohesive)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ds, PETSCDS_CLASSID, 1);
   PetscValidBoolPointer(isCohesive, 3);
@@ -777,15 +799,16 @@ PetscErrorCode PetscDSGetCohesive(PetscDS ds, PetscInt f, PetscBool *isCohesive)
   Not collective
 
   Input Parameters:
-+ ds - The PetscDS object
++ ds - The `PetscDS` object
 . f  - The field index
 - isCohesive - The flag for a cohesive field
 
   Level: developer
 
-.seealso: `PetscDSGetCohesive()`, `PetscDSIsCohesive()`, `PetscDSCreate()`
+.seealso: `PetscDS`, `PetscDSGetCohesive()`, `PetscDSIsCohesive()`, `PetscDSCreate()`
 @*/
-PetscErrorCode PetscDSSetCohesive(PetscDS ds, PetscInt f, PetscBool isCohesive) {
+PetscErrorCode PetscDSSetCohesive(PetscDS ds, PetscInt f, PetscBool isCohesive)
+{
   PetscInt i;
 
   PetscFunctionBegin;
@@ -803,16 +826,17 @@ PetscErrorCode PetscDSSetCohesive(PetscDS ds, PetscInt f, PetscBool isCohesive) 
   Not collective
 
   Input Parameter:
-. prob - The PetscDS object
+. prob - The `PetscDS` object
 
   Output Parameter:
 . dim - The total problem dimension
 
   Level: beginner
 
-.seealso: `PetscDSGetNumFields()`, `PetscDSCreate()`
+.seealso: `PetscDS`, `PetscDSGetNumFields()`, `PetscDSCreate()`
 @*/
-PetscErrorCode PetscDSGetTotalDimension(PetscDS prob, PetscInt *dim) {
+PetscErrorCode PetscDSGetTotalDimension(PetscDS prob, PetscInt *dim)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
   PetscCall(PetscDSSetUp(prob));
@@ -827,16 +851,17 @@ PetscErrorCode PetscDSGetTotalDimension(PetscDS prob, PetscInt *dim) {
   Not collective
 
   Input Parameter:
-. prob - The PetscDS object
+. prob - The `PetscDS` object
 
   Output Parameter:
 . dim - The total number of components
 
   Level: beginner
 
-.seealso: `PetscDSGetNumFields()`, `PetscDSCreate()`
+.seealso: `PetscDS`, `PetscDSGetNumFields()`, `PetscDSCreate()`
 @*/
-PetscErrorCode PetscDSGetTotalComponents(PetscDS prob, PetscInt *Nc) {
+PetscErrorCode PetscDSGetTotalComponents(PetscDS prob, PetscInt *Nc)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
   PetscCall(PetscDSSetUp(prob));
@@ -851,7 +876,7 @@ PetscErrorCode PetscDSGetTotalComponents(PetscDS prob, PetscInt *Nc) {
   Not collective
 
   Input Parameters:
-+ prob - The PetscDS object
++ prob - The `PetscDS` object
 - f - The field number
 
   Output Parameter:
@@ -859,9 +884,10 @@ PetscErrorCode PetscDSGetTotalComponents(PetscDS prob, PetscInt *Nc) {
 
   Level: beginner
 
-.seealso: `PetscDSSetDiscretization()`, `PetscDSAddDiscretization()`, `PetscDSGetNumFields()`, `PetscDSCreate()`
+.seealso: `PetscDS`, `PetscFE`, `PetscFV`, `PetscDSSetDiscretization()`, `PetscDSAddDiscretization()`, `PetscDSGetNumFields()`, `PetscDSCreate()`
 @*/
-PetscErrorCode PetscDSGetDiscretization(PetscDS prob, PetscInt f, PetscObject *disc) {
+PetscErrorCode PetscDSGetDiscretization(PetscDS prob, PetscInt f, PetscObject *disc)
+{
   PetscFunctionBeginHot;
   PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
   PetscValidPointer(disc, 3);
@@ -876,15 +902,16 @@ PetscErrorCode PetscDSGetDiscretization(PetscDS prob, PetscInt f, PetscObject *d
   Not collective
 
   Input Parameters:
-+ prob - The PetscDS object
++ prob - The `PetscDS` object
 . f - The field number
 - disc - The discretization object
 
   Level: beginner
 
-.seealso: `PetscDSGetDiscretization()`, `PetscDSAddDiscretization()`, `PetscDSGetNumFields()`, `PetscDSCreate()`
+.seealso: `PetscDS`, `PetscFE`, `PetscFV`, `PetscDSGetDiscretization()`, `PetscDSAddDiscretization()`, `PetscDSGetNumFields()`, `PetscDSCreate()`
 @*/
-PetscErrorCode PetscDSSetDiscretization(PetscDS prob, PetscInt f, PetscObject disc) {
+PetscErrorCode PetscDSSetDiscretization(PetscDS prob, PetscInt f, PetscObject disc)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
   if (disc) PetscValidPointer(disc, 3);
@@ -913,16 +940,17 @@ PetscErrorCode PetscDSSetDiscretization(PetscDS prob, PetscInt f, PetscObject di
   Not collective
 
   Input Parameter:
-. ds - The PetscDS object
+. ds - The `PetscDS` object
 
   Output Parameter:
 . wf - The weak form object
 
   Level: beginner
 
-.seealso: `PetscDSSetWeakForm()`, `PetscDSGetNumFields()`, `PetscDSCreate()`
+.seealso: `PetscWeakForm`, `PetscDSSetWeakForm()`, `PetscDSGetNumFields()`, `PetscDSCreate()`
 @*/
-PetscErrorCode PetscDSGetWeakForm(PetscDS ds, PetscWeakForm *wf) {
+PetscErrorCode PetscDSGetWeakForm(PetscDS ds, PetscWeakForm *wf)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ds, PETSCDS_CLASSID, 1);
   PetscValidPointer(wf, 2);
@@ -936,14 +964,15 @@ PetscErrorCode PetscDSGetWeakForm(PetscDS ds, PetscWeakForm *wf) {
   Not collective
 
   Input Parameters:
-+ ds - The PetscDS object
++ ds - The `PetscDS` object
 - wf - The weak form object
 
   Level: beginner
 
-.seealso: `PetscDSGetWeakForm()`, `PetscDSGetNumFields()`, `PetscDSCreate()`
+.seealso: `PetscWeakForm`, `PetscDSGetWeakForm()`, `PetscDSGetNumFields()`, `PetscDSCreate()`
 @*/
-PetscErrorCode PetscDSSetWeakForm(PetscDS ds, PetscWeakForm wf) {
+PetscErrorCode PetscDSSetWeakForm(PetscDS ds, PetscWeakForm wf)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ds, PETSCDS_CLASSID, 1);
   PetscValidHeaderSpecific(wf, PETSCWEAKFORM_CLASSID, 2);
@@ -960,35 +989,37 @@ PetscErrorCode PetscDSSetWeakForm(PetscDS ds, PetscWeakForm wf) {
   Not collective
 
   Input Parameters:
-+ prob - The PetscDS object
++ prob - The `PetscDS` object
 - disc - The boundary discretization object
 
   Level: beginner
 
-.seealso: `PetscDSGetDiscretization()`, `PetscDSSetDiscretization()`, `PetscDSGetNumFields()`, `PetscDSCreate()`
+.seealso: `PetscWeakForm`, `PetscDSGetDiscretization()`, `PetscDSSetDiscretization()`, `PetscDSGetNumFields()`, `PetscDSCreate()`
 @*/
-PetscErrorCode PetscDSAddDiscretization(PetscDS prob, PetscObject disc) {
+PetscErrorCode PetscDSAddDiscretization(PetscDS prob, PetscObject disc)
+{
   PetscFunctionBegin;
   PetscCall(PetscDSSetDiscretization(prob, prob->Nf, disc));
   PetscFunctionReturn(0);
 }
 
 /*@
-  PetscDSGetQuadrature - Returns the quadrature, which must agree for all fields in the DS
+  PetscDSGetQuadrature - Returns the quadrature, which must agree for all fields in the `PetscDS`
 
   Not collective
 
   Input Parameter:
-. prob - The PetscDS object
+. prob - The `PetscDS` object
 
   Output Parameter:
 . q - The quadrature object
 
-Level: intermediate
+  Level: intermediate
 
-.seealso: `PetscDSSetImplicit()`, `PetscDSSetDiscretization()`, `PetscDSAddDiscretization()`, `PetscDSGetNumFields()`, `PetscDSCreate()`
+.seealso: `PetscDS`, `PetscQuadrature`, `PetscDSSetImplicit()`, `PetscDSSetDiscretization()`, `PetscDSAddDiscretization()`, `PetscDSGetNumFields()`, `PetscDSCreate()`
 @*/
-PetscErrorCode PetscDSGetQuadrature(PetscDS prob, PetscQuadrature *q) {
+PetscErrorCode PetscDSGetQuadrature(PetscDS prob, PetscQuadrature *q)
+{
   PetscObject  obj;
   PetscClassId id;
 
@@ -1004,12 +1035,12 @@ PetscErrorCode PetscDSGetQuadrature(PetscDS prob, PetscQuadrature *q) {
 }
 
 /*@
-  PetscDSGetImplicit - Returns the flag for implicit solve for this field. This is just a guide for IMEX
+  PetscDSGetImplicit - Returns the flag for implicit solve for this field. This is just a guide for `TSIMEX`
 
   Not collective
 
   Input Parameters:
-+ prob - The PetscDS object
++ prob - The `PetscDS` object
 - f - The field number
 
   Output Parameter:
@@ -1017,9 +1048,10 @@ PetscErrorCode PetscDSGetQuadrature(PetscDS prob, PetscQuadrature *q) {
 
   Level: developer
 
-.seealso: `PetscDSSetImplicit()`, `PetscDSSetDiscretization()`, `PetscDSAddDiscretization()`, `PetscDSGetNumFields()`, `PetscDSCreate()`
+.seealso: `TSIMEX`, `PetscDS`, `PetscDSSetImplicit()`, `PetscDSSetDiscretization()`, `PetscDSAddDiscretization()`, `PetscDSGetNumFields()`, `PetscDSCreate()`
 @*/
-PetscErrorCode PetscDSGetImplicit(PetscDS prob, PetscInt f, PetscBool *implicit) {
+PetscErrorCode PetscDSGetImplicit(PetscDS prob, PetscInt f, PetscBool *implicit)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
   PetscValidBoolPointer(implicit, 3);
@@ -1029,20 +1061,21 @@ PetscErrorCode PetscDSGetImplicit(PetscDS prob, PetscInt f, PetscBool *implicit)
 }
 
 /*@
-  PetscDSSetImplicit - Set the flag for implicit solve for this field. This is just a guide for IMEX
+  PetscDSSetImplicit - Set the flag for implicit solve for this field. This is just a guide for `TSIMEX`
 
   Not collective
 
   Input Parameters:
-+ prob - The PetscDS object
++ prob - The `PetscDS` object
 . f - The field number
 - implicit - The flag indicating what kind of solve to use for this field
 
   Level: developer
 
-.seealso: `PetscDSGetImplicit()`, `PetscDSSetDiscretization()`, `PetscDSAddDiscretization()`, `PetscDSGetNumFields()`, `PetscDSCreate()`
+.seealso: `TSIMEX`, `PetscDSGetImplicit()`, `PetscDSSetDiscretization()`, `PetscDSAddDiscretization()`, `PetscDSGetNumFields()`, `PetscDSCreate()`
 @*/
-PetscErrorCode PetscDSSetImplicit(PetscDS prob, PetscInt f, PetscBool implicit) {
+PetscErrorCode PetscDSSetImplicit(PetscDS prob, PetscInt f, PetscBool implicit)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
   PetscCheck(!(f < 0) && !(f >= prob->Nf), PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %" PetscInt_FMT " must be in [0, %" PetscInt_FMT ")", f, prob->Nf);
@@ -1056,7 +1089,7 @@ PetscErrorCode PetscDSSetImplicit(PetscDS prob, PetscInt f, PetscBool implicit) 
   Not collective
 
   Input Parameters:
-+ ds - The PetscDS object
++ ds - The `PetscDS` object
 - f  - The field number
 
   Output Parameter:
@@ -1064,9 +1097,10 @@ PetscErrorCode PetscDSSetImplicit(PetscDS prob, PetscInt f, PetscBool implicit) 
 
   Level: developer
 
-.seealso: `PetscDSSetJetDegree()`, `PetscDSSetDiscretization()`, `PetscDSAddDiscretization()`, `PetscDSGetNumFields()`, `PetscDSCreate()`
+.seealso: `PetscDS`, `PetscDSSetJetDegree()`, `PetscDSSetDiscretization()`, `PetscDSAddDiscretization()`, `PetscDSGetNumFields()`, `PetscDSCreate()`
 @*/
-PetscErrorCode PetscDSGetJetDegree(PetscDS ds, PetscInt f, PetscInt *k) {
+PetscErrorCode PetscDSGetJetDegree(PetscDS ds, PetscInt f, PetscInt *k)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ds, PETSCDS_CLASSID, 1);
   PetscValidIntPointer(k, 3);
@@ -1081,15 +1115,16 @@ PetscErrorCode PetscDSGetJetDegree(PetscDS ds, PetscInt f, PetscInt *k) {
   Not collective
 
   Input Parameters:
-+ ds - The PetscDS object
++ ds - The `PetscDS` object
 . f  - The field number
 - k  - The highest derivative we need to tabulate
 
   Level: developer
 
-.seealso: `PetscDSGetJetDegree()`, `PetscDSSetDiscretization()`, `PetscDSAddDiscretization()`, `PetscDSGetNumFields()`, `PetscDSCreate()`
+.seealso: ``PetscDS`, PetscDSGetJetDegree()`, `PetscDSSetDiscretization()`, `PetscDSAddDiscretization()`, `PetscDSGetNumFields()`, `PetscDSCreate()`
 @*/
-PetscErrorCode PetscDSSetJetDegree(PetscDS ds, PetscInt f, PetscInt k) {
+PetscErrorCode PetscDSSetJetDegree(PetscDS ds, PetscInt f, PetscInt k)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ds, PETSCDS_CLASSID, 1);
   PetscCheck(!(f < 0) && !(f >= ds->Nf), PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %" PetscInt_FMT " must be in [0, %" PetscInt_FMT ")", f, ds->Nf);
@@ -1097,7 +1132,8 @@ PetscErrorCode PetscDSSetJetDegree(PetscDS ds, PetscInt f, PetscInt k) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscDSGetObjective(PetscDS ds, PetscInt f, void (**obj)(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar obj[])) {
+PetscErrorCode PetscDSGetObjective(PetscDS ds, PetscInt f, void (**obj)(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar obj[]))
+{
   PetscPointFunc *tmp;
   PetscInt        n;
 
@@ -1110,7 +1146,8 @@ PetscErrorCode PetscDSGetObjective(PetscDS ds, PetscInt f, void (**obj)(PetscInt
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscDSSetObjective(PetscDS ds, PetscInt f, void (*obj)(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar obj[])) {
+PetscErrorCode PetscDSSetObjective(PetscDS ds, PetscInt f, void (*obj)(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar obj[]))
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ds, PETSCDS_CLASSID, 1);
   if (obj) PetscValidFunction(obj, 3);
@@ -1125,24 +1162,20 @@ PetscErrorCode PetscDSSetObjective(PetscDS ds, PetscInt f, void (*obj)(PetscInt 
   Not collective
 
   Input Parameters:
-+ ds - The PetscDS
++ ds - The `PetscDS`
 - f  - The test field number
 
   Output Parameters:
 + f0 - integrand for the test function term
 - f1 - integrand for the test function gradient term
 
-  Note: We are using a first order FEM model for the weak form:
-
-  \int_\Omega \phi f_0(u, u_t, \nabla u, x, t) + \nabla\phi \cdot {\vec f}_1(u, u_t, \nabla u, x, t)
-
-The calling sequence for the callbacks f0 and f1 is given by:
-
-$ f0(PetscInt dim, PetscInt Nf, PetscInt NfAux,
-$    const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
-$    const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-$    PetscReal t, const PetscReal x[], PetscScalar f0[])
-
+  Calling sequence for the callbacks f0 and f1:
+.vb
+  f0(PetscInt dim, PetscInt Nf, PetscInt NfAux,
+     const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
+     const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
+     PetscReal t, const PetscReal x[], PetscScalar f0[])
+.ve
 + dim - the spatial dimension
 . Nf - the number of fields
 . uOff - the offset into u[] and u_t[] for each field
@@ -1163,9 +1196,13 @@ $    PetscReal t, const PetscReal x[], PetscScalar f0[])
 
   Level: intermediate
 
-.seealso: `PetscDSSetResidual()`
+  Note:
+  We are using a first order FEM model for the weak form:  \int_\Omega \phi f_0(u, u_t, \nabla u, x, t) + \nabla\phi \cdot {\vec f}_1(u, u_t, \nabla u, x, t)
+
+.seealso: `PetscDS`, `PetscDSSetResidual()`
 @*/
-PetscErrorCode PetscDSGetResidual(PetscDS ds, PetscInt f, void (**f0)(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[]), void (**f1)(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f1[])) {
+PetscErrorCode PetscDSGetResidual(PetscDS ds, PetscInt f, void (**f0)(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[]), void (**f1)(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f1[]))
+{
   PetscPointFunc *tmp0, *tmp1;
   PetscInt        n0, n1;
 
@@ -1184,22 +1221,18 @@ PetscErrorCode PetscDSGetResidual(PetscDS ds, PetscInt f, void (**f0)(PetscInt d
   Not collective
 
   Input Parameters:
-+ ds - The PetscDS
++ ds - The `PetscDS`
 . f  - The test field number
 . f0 - integrand for the test function term
 - f1 - integrand for the test function gradient term
 
-  Note: We are using a first order FEM model for the weak form:
-
-  \int_\Omega \phi f_0(u, u_t, \nabla u, x, t) + \nabla\phi \cdot {\vec f}_1(u, u_t, \nabla u, x, t)
-
-The calling sequence for the callbacks f0 and f1 is given by:
-
-$ f0(PetscInt dim, PetscInt Nf, PetscInt NfAux,
-$    const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
-$    const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-$    PetscReal t, const PetscReal x[], PetscScalar f0[])
-
+  Calling sequence for the callbacks f0 and f1:
+.vb
+  f0(PetscInt dim, PetscInt Nf, PetscInt NfAux,
+     const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
+     const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
+     PetscReal t, const PetscReal x[], PetscScalar f0[])
+.ve
 + dim - the spatial dimension
 . Nf - the number of fields
 . uOff - the offset into u[] and u_t[] for each field
@@ -1220,9 +1253,13 @@ $    PetscReal t, const PetscReal x[], PetscScalar f0[])
 
   Level: intermediate
 
-.seealso: `PetscDSGetResidual()`
+  Note:
+  We are using a first order FEM model for the weak form:  \int_\Omega \phi f_0(u, u_t, \nabla u, x, t) + \nabla\phi \cdot {\vec f}_1(u, u_t, \nabla u, x, t)
+
+.seealso: `PetscDS`, `PetscDSGetResidual()`
 @*/
-PetscErrorCode PetscDSSetResidual(PetscDS ds, PetscInt f, void (*f0)(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[]), void (*f1)(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f1[])) {
+PetscErrorCode PetscDSSetResidual(PetscDS ds, PetscInt f, void (*f0)(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[]), void (*f1)(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f1[]))
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ds, PETSCDS_CLASSID, 1);
   if (f0) PetscValidFunction(f0, 3);
@@ -1238,24 +1275,20 @@ PetscErrorCode PetscDSSetResidual(PetscDS ds, PetscInt f, void (*f0)(PetscInt di
   Not collective
 
   Input Parameters:
-+ ds - The PetscDS
++ ds - The `PetscDS`
 - f  - The test field number
 
   Output Parameters:
 + f0 - integrand for the test function term
 - f1 - integrand for the test function gradient term
 
-  Note: We are using a first order FEM model for the weak form:
-
-  \int_\Omega \phi f_0(u, u_t, \nabla u, x, t) + \nabla\phi \cdot {\vec f}_1(u, u_t, \nabla u, x, t)
-
-The calling sequence for the callbacks f0 and f1 is given by:
-
-$ f0(PetscInt dim, PetscInt Nf, PetscInt NfAux,
-$    const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
-$    const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-$    PetscReal t, const PetscReal x[], PetscScalar f0[])
-
+  Calling sequence for the callbacks f0 and f1:
+.vb
+  f0(PetscInt dim, PetscInt Nf, PetscInt NfAux,
+     const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
+     const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
+    PetscReal t, const PetscReal x[], PetscScalar f0[])
+.ve
 + dim - the spatial dimension
 . Nf - the number of fields
 . uOff - the offset into u[] and u_t[] for each field
@@ -1276,9 +1309,13 @@ $    PetscReal t, const PetscReal x[], PetscScalar f0[])
 
   Level: intermediate
 
-.seealso: `PetscDSSetRHSResidual()`
+  Note:
+  We are using a first order FEM model for the weak form: \int_\Omega \phi f_0(u, u_t, \nabla u, x, t) + \nabla\phi \cdot {\vec f}_1(u, u_t, \nabla u, x, t)
+
+.seealso: `PetscDS`, `PetscDSSetRHSResidual()`
 @*/
-PetscErrorCode PetscDSGetRHSResidual(PetscDS ds, PetscInt f, void (**f0)(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[]), void (**f1)(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f1[])) {
+PetscErrorCode PetscDSGetRHSResidual(PetscDS ds, PetscInt f, void (**f0)(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[]), void (**f1)(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f1[]))
+{
   PetscPointFunc *tmp0, *tmp1;
   PetscInt        n0, n1;
 
@@ -1297,22 +1334,18 @@ PetscErrorCode PetscDSGetRHSResidual(PetscDS ds, PetscInt f, void (**f0)(PetscIn
   Not collective
 
   Input Parameters:
-+ ds - The PetscDS
++ ds - The `PetscDS`
 . f  - The test field number
 . f0 - integrand for the test function term
 - f1 - integrand for the test function gradient term
 
-  Note: We are using a first order FEM model for the weak form:
-
-  \int_\Omega \phi f_0(u, u_t, \nabla u, x, t) + \nabla\phi \cdot {\vec f}_1(u, u_t, \nabla u, x, t)
-
-The calling sequence for the callbacks f0 and f1 is given by:
-
-$ f0(PetscInt dim, PetscInt Nf, PetscInt NfAux,
-$    const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
-$    const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-$    PetscReal t, const PetscReal x[], PetscScalar f0[])
-
+  Clling sequence for the callbacks f0 and f1:
+.vb
+  f0(PetscInt dim, PetscInt Nf, PetscInt NfAux,
+     const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
+     const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
+     PetscReal t, const PetscReal x[], PetscScalar f0[])
+.ve
 + dim - the spatial dimension
 . Nf - the number of fields
 . uOff - the offset into u[] and u_t[] for each field
@@ -1333,9 +1366,13 @@ $    PetscReal t, const PetscReal x[], PetscScalar f0[])
 
   Level: intermediate
 
-.seealso: `PetscDSGetResidual()`
+  Note:
+  We are using a first order FEM model for the weak form:  \int_\Omega \phi f_0(u, u_t, \nabla u, x, t) + \nabla\phi \cdot {\vec f}_1(u, u_t, \nabla u, x, t)
+
+.seealso: `PetscDS`, `PetscDSGetResidual()`
 @*/
-PetscErrorCode PetscDSSetRHSResidual(PetscDS ds, PetscInt f, void (*f0)(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[]), void (*f1)(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f1[])) {
+PetscErrorCode PetscDSSetRHSResidual(PetscDS ds, PetscInt f, void (*f0)(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[]), void (*f1)(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f1[]))
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ds, PETSCDS_CLASSID, 1);
   if (f0) PetscValidFunction(f0, 3);
@@ -1346,21 +1383,22 @@ PetscErrorCode PetscDSSetRHSResidual(PetscDS ds, PetscInt f, void (*f0)(PetscInt
 }
 
 /*@C
-  PetscDSHasJacobian - Signals that Jacobian functions have been set
+  PetscDSHasJacobian - Checks that the Jacobian functions have been set
 
   Not collective
 
   Input Parameter:
-. prob - The PetscDS
+. prob - The `PetscDS`
 
   Output Parameter:
 . hasJac - flag that pointwise function for the Jacobian has been set
 
   Level: intermediate
 
-.seealso: `PetscDSGetJacobianPreconditioner()`, `PetscDSSetJacobianPreconditioner()`, `PetscDSGetJacobian()`
+.seealso: `PetscDS`, `PetscDSGetJacobianPreconditioner()`, `PetscDSSetJacobianPreconditioner()`, `PetscDSGetJacobian()`
 @*/
-PetscErrorCode PetscDSHasJacobian(PetscDS ds, PetscBool *hasJac) {
+PetscErrorCode PetscDSHasJacobian(PetscDS ds, PetscBool *hasJac)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ds, PETSCDS_CLASSID, 1);
   PetscCall(PetscWeakFormHasJacobian(ds->wf, hasJac));
@@ -1373,7 +1411,7 @@ PetscErrorCode PetscDSHasJacobian(PetscDS ds, PetscBool *hasJac) {
   Not collective
 
   Input Parameters:
-+ ds - The PetscDS
++ ds - The `PetscDS`
 . f  - The test field number
 - g  - The field number
 
@@ -1383,17 +1421,13 @@ PetscErrorCode PetscDSHasJacobian(PetscDS ds, PetscBool *hasJac) {
 . g2 - integrand for the test function gradient and basis function term
 - g3 - integrand for the test function gradient and basis function gradient term
 
-  Note: We are using a first order FEM model for the weak form:
-
-  \int_\Omega \phi g_0(u, u_t, \nabla u, x, t) \psi + \phi {\vec g}_1(u, u_t, \nabla u, x, t) \nabla \psi + \nabla\phi \cdot {\vec g}_2(u, u_t, \nabla u, x, t) \psi + \nabla\phi \cdot {\overleftrightarrow g}_3(u, u_t, \nabla u, x, t) \cdot \nabla \psi
-
-The calling sequence for the callbacks g0, g1, g2 and g3 is given by:
-
-$ g0(PetscInt dim, PetscInt Nf, PetscInt NfAux,
-$    const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
-$    const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-$    PetscReal t, const PetscReal u_tShift, const PetscReal x[], PetscScalar g0[])
-
+  Calling sequence for the callbacks g0, g1, g2 and g3:
+.vb
+  g0(PetscInt dim, PetscInt Nf, PetscInt NfAux,
+     const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
+     const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
+     PetscReal t, const PetscReal u_tShift, const PetscReal x[], PetscScalar g0[])
+.ve
 + dim - the spatial dimension
 . Nf - the number of fields
 . uOff - the offset into u[] and u_t[] for each field
@@ -1415,9 +1449,14 @@ $    PetscReal t, const PetscReal u_tShift, const PetscReal x[], PetscScalar g0[
 
   Level: intermediate
 
-.seealso: `PetscDSSetJacobian()`
+  Note:
+  We are using a first order FEM model for the weak form:
+  \int_\Omega \phi g_0(u, u_t, \nabla u, x, t) \psi + \phi {\vec g}_1(u, u_t, \nabla u, x, t) \nabla \psi + \nabla\phi \cdot {\vec g}_2(u, u_t, \nabla u, x, t) \psi + \nabla\phi \cdot {\overleftrightarrow g}_3(u, u_t, \nabla u, x, t) \cdot \nabla \psi
+
+.seealso: `PetscDS`, `PetscDSSetJacobian()`
 @*/
-PetscErrorCode PetscDSGetJacobian(PetscDS ds, PetscInt f, PetscInt g, void (**g0)(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g0[]), void (**g1)(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g1[]), void (**g2)(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g2[]), void (**g3)(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g3[])) {
+PetscErrorCode PetscDSGetJacobian(PetscDS ds, PetscInt f, PetscInt g, void (**g0)(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g0[]), void (**g1)(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g1[]), void (**g2)(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g2[]), void (**g3)(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g3[]))
+{
   PetscPointJac *tmp0, *tmp1, *tmp2, *tmp3;
   PetscInt       n0, n1, n2, n3;
 
@@ -1439,7 +1478,7 @@ PetscErrorCode PetscDSGetJacobian(PetscDS ds, PetscInt f, PetscInt g, void (**g0
   Not collective
 
   Input Parameters:
-+ ds - The PetscDS
++ ds - The `PetscDS`
 . f  - The test field number
 . g  - The field number
 . g0 - integrand for the test and basis function term
@@ -1447,17 +1486,13 @@ PetscErrorCode PetscDSGetJacobian(PetscDS ds, PetscInt f, PetscInt g, void (**g0
 . g2 - integrand for the test function gradient and basis function term
 - g3 - integrand for the test function gradient and basis function gradient term
 
-  Note: We are using a first order FEM model for the weak form:
-
-  \int_\Omega \phi g_0(u, u_t, \nabla u, x, t) \psi + \phi {\vec g}_1(u, u_t, \nabla u, x, t) \nabla \psi + \nabla\phi \cdot {\vec g}_2(u, u_t, \nabla u, x, t) \psi + \nabla\phi \cdot {\overleftrightarrow g}_3(u, u_t, \nabla u, x, t) \cdot \nabla \psi
-
-The calling sequence for the callbacks g0, g1, g2 and g3 is given by:
-
-$ g0(PetscInt dim, PetscInt Nf, PetscInt NfAux,
-$    const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
-$    const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-$    PetscReal t, const PetscReal x[], PetscScalar g0[])
-
+  Calling sequence for the callbacks g0, g1, g2 and g3:
+.vb
+  g0(PetscInt dim, PetscInt Nf, PetscInt NfAux,
+     const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
+     const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
+     PetscReal t, const PetscReal x[], PetscScalar g0[])
+.ve
 + dim - the spatial dimension
 . Nf - the number of fields
 . uOff - the offset into u[] and u_t[] for each field
@@ -1479,9 +1514,14 @@ $    PetscReal t, const PetscReal x[], PetscScalar g0[])
 
   Level: intermediate
 
-.seealso: `PetscDSGetJacobian()`
+  Note:
+   We are using a first order FEM model for the weak form:
+  \int_\Omega \phi g_0(u, u_t, \nabla u, x, t) \psi + \phi {\vec g}_1(u, u_t, \nabla u, x, t) \nabla \psi + \nabla\phi \cdot {\vec g}_2(u, u_t, \nabla u, x, t) \psi + \nabla\phi \cdot {\overleftrightarrow g}_3(u, u_t, \nabla u, x, t) \cdot \nabla \psi
+
+.seealso: `PetscDS`, `PetscDSGetJacobian()`
 @*/
-PetscErrorCode PetscDSSetJacobian(PetscDS ds, PetscInt f, PetscInt g, void (*g0)(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g0[]), void (*g1)(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g1[]), void (*g2)(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g2[]), void (*g3)(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g3[])) {
+PetscErrorCode PetscDSSetJacobian(PetscDS ds, PetscInt f, PetscInt g, void (*g0)(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g0[]), void (*g1)(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g1[]), void (*g2)(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g2[]), void (*g3)(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g3[]))
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ds, PETSCDS_CLASSID, 1);
   if (g0) PetscValidFunction(g0, 4);
@@ -1495,19 +1535,20 @@ PetscErrorCode PetscDSSetJacobian(PetscDS ds, PetscInt f, PetscInt g, void (*g0)
 }
 
 /*@C
-  PetscDSUseJacobianPreconditioner - Whether to construct a Jacobian preconditioner
+  PetscDSUseJacobianPreconditioner - Set whether to construct a Jacobian preconditioner
 
   Not collective
 
   Input Parameters:
-+ prob - The PetscDS
++ prob - The `PetscDS`
 - useJacPre - flag that enables construction of a Jacobian preconditioner
 
   Level: intermediate
 
-.seealso: `PetscDSGetJacobianPreconditioner()`, `PetscDSSetJacobianPreconditioner()`, `PetscDSGetJacobian()`
+.seealso: `PetscDS`, `PetscDSGetJacobianPreconditioner()`, `PetscDSSetJacobianPreconditioner()`, `PetscDSGetJacobian()`
 @*/
-PetscErrorCode PetscDSUseJacobianPreconditioner(PetscDS prob, PetscBool useJacPre) {
+PetscErrorCode PetscDSUseJacobianPreconditioner(PetscDS prob, PetscBool useJacPre)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
   prob->useJacPre = useJacPre;
@@ -1515,21 +1556,22 @@ PetscErrorCode PetscDSUseJacobianPreconditioner(PetscDS prob, PetscBool useJacPr
 }
 
 /*@C
-  PetscDSHasJacobianPreconditioner - Signals that a Jacobian preconditioner matrix has been set
+  PetscDSHasJacobianPreconditioner - Checks if a Jacobian preconditioner matrix has been set
 
   Not collective
 
   Input Parameter:
-. prob - The PetscDS
+. prob - The `PetscDS`
 
   Output Parameter:
 . hasJacPre - flag that pointwise function for Jacobian preconditioner matrix has been set
 
   Level: intermediate
 
-.seealso: `PetscDSGetJacobianPreconditioner()`, `PetscDSSetJacobianPreconditioner()`, `PetscDSGetJacobian()`
+.seealso: `PetscDS`, `PetscDSGetJacobianPreconditioner()`, `PetscDSSetJacobianPreconditioner()`, `PetscDSGetJacobian()`
 @*/
-PetscErrorCode PetscDSHasJacobianPreconditioner(PetscDS ds, PetscBool *hasJacPre) {
+PetscErrorCode PetscDSHasJacobianPreconditioner(PetscDS ds, PetscBool *hasJacPre)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ds, PETSCDS_CLASSID, 1);
   *hasJacPre = PETSC_FALSE;
@@ -1539,12 +1581,13 @@ PetscErrorCode PetscDSHasJacobianPreconditioner(PetscDS ds, PetscBool *hasJacPre
 }
 
 /*@C
-  PetscDSGetJacobianPreconditioner - Get the pointwise Jacobian preconditioner function for given test and basis field. If this is missing, the system matrix is used to build the preconditioner.
+  PetscDSGetJacobianPreconditioner - Get the pointwise Jacobian preconditioner function for given test and basis field. If this is missing,
+   the system matrix is used to build the preconditioner.
 
   Not collective
 
   Input Parameters:
-+ ds - The PetscDS
++ ds - The `PetscDS`
 . f  - The test field number
 - g  - The field number
 
@@ -1554,17 +1597,13 @@ PetscErrorCode PetscDSHasJacobianPreconditioner(PetscDS ds, PetscBool *hasJacPre
 . g2 - integrand for the test function gradient and basis function term
 - g3 - integrand for the test function gradient and basis function gradient term
 
-  Note: We are using a first order FEM model for the weak form:
-
-  \int_\Omega \phi g_0(u, u_t, \nabla u, x, t) \psi + \phi {\vec g}_1(u, u_t, \nabla u, x, t) \nabla \psi + \nabla\phi \cdot {\vec g}_2(u, u_t, \nabla u, x, t) \psi + \nabla\phi \cdot {\overleftrightarrow g}_3(u, u_t, \nabla u, x, t) \cdot \nabla \psi
-
-The calling sequence for the callbacks g0, g1, g2 and g3 is given by:
-
-$ g0(PetscInt dim, PetscInt Nf, PetscInt NfAux,
-$    const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
-$    const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-$    PetscReal t, const PetscReal u_tShift, const PetscReal x[], PetscScalar g0[])
-
+  Calling sequence for the callbacks g0, g1, g2 and g3:
+.vb
+  g0(PetscInt dim, PetscInt Nf, PetscInt NfAux,
+     const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
+     const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
+     PetscReal t, const PetscReal u_tShift, const PetscReal x[], PetscScalar g0[])
+.ve
 + dim - the spatial dimension
 . Nf - the number of fields
 . uOff - the offset into u[] and u_t[] for each field
@@ -1586,9 +1625,14 @@ $    PetscReal t, const PetscReal u_tShift, const PetscReal x[], PetscScalar g0[
 
   Level: intermediate
 
-.seealso: `PetscDSSetJacobianPreconditioner()`, `PetscDSGetJacobian()`
+  Note:
+  We are using a first order FEM model for the weak form:
+  \int_\Omega \phi g_0(u, u_t, \nabla u, x, t) \psi + \phi {\vec g}_1(u, u_t, \nabla u, x, t) \nabla \psi + \nabla\phi \cdot {\vec g}_2(u, u_t, \nabla u, x, t) \psi + \nabla\phi \cdot {\overleftrightarrow g}_3(u, u_t, \nabla u, x, t) \cdot \nabla \psi
+
+.seealso: `PetscDS`, `PetscDSSetJacobianPreconditioner()`, `PetscDSGetJacobian()`
 @*/
-PetscErrorCode PetscDSGetJacobianPreconditioner(PetscDS ds, PetscInt f, PetscInt g, void (**g0)(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g0[]), void (**g1)(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g1[]), void (**g2)(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g2[]), void (**g3)(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g3[])) {
+PetscErrorCode PetscDSGetJacobianPreconditioner(PetscDS ds, PetscInt f, PetscInt g, void (**g0)(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g0[]), void (**g1)(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g1[]), void (**g2)(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g2[]), void (**g3)(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g3[]))
+{
   PetscPointJac *tmp0, *tmp1, *tmp2, *tmp3;
   PetscInt       n0, n1, n2, n3;
 
@@ -1605,12 +1649,13 @@ PetscErrorCode PetscDSGetJacobianPreconditioner(PetscDS ds, PetscInt f, PetscInt
 }
 
 /*@C
-  PetscDSSetJacobianPreconditioner - Set the pointwise Jacobian preconditioner function for given test and basis fields. If this is missing, the system matrix is used to build the preconditioner.
+  PetscDSSetJacobianPreconditioner - Set the pointwise Jacobian preconditioner function for given test and basis fields.
+  If this is missing, the system matrix is used to build the preconditioner.
 
   Not collective
 
   Input Parameters:
-+ ds - The PetscDS
++ ds - The `PetscDS`
 . f  - The test field number
 . g  - The field number
 . g0 - integrand for the test and basis function term
@@ -1618,17 +1663,13 @@ PetscErrorCode PetscDSGetJacobianPreconditioner(PetscDS ds, PetscInt f, PetscInt
 . g2 - integrand for the test function gradient and basis function term
 - g3 - integrand for the test function gradient and basis function gradient term
 
-  Note: We are using a first order FEM model for the weak form:
-
-  \int_\Omega \phi g_0(u, u_t, \nabla u, x, t) \psi + \phi {\vec g}_1(u, u_t, \nabla u, x, t) \nabla \psi + \nabla\phi \cdot {\vec g}_2(u, u_t, \nabla u, x, t) \psi + \nabla\phi \cdot {\overleftrightarrow g}_3(u, u_t, \nabla u, x, t) \cdot \nabla \psi
-
-The calling sequence for the callbacks g0, g1, g2 and g3 is given by:
-
-$ g0(PetscInt dim, PetscInt Nf, PetscInt NfAux,
-$    const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
-$    const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-$    PetscReal t, const PetscReal x[], PetscScalar g0[])
-
+  Calling sequence for the callbacks g0, g1, g2 and g3:
+.vb
+  g0(PetscInt dim, PetscInt Nf, PetscInt NfAux,
+     const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
+     const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
+     PetscReal t, const PetscReal x[], PetscScalar g0[])
+.ve
 + dim - the spatial dimension
 . Nf - the number of fields
 . uOff - the offset into u[] and u_t[] for each field
@@ -1650,9 +1691,14 @@ $    PetscReal t, const PetscReal x[], PetscScalar g0[])
 
   Level: intermediate
 
-.seealso: `PetscDSGetJacobianPreconditioner()`, `PetscDSSetJacobian()`
+  Note:
+  We are using a first order FEM model for the weak form:
+  \int_\Omega \phi g_0(u, u_t, \nabla u, x, t) \psi + \phi {\vec g}_1(u, u_t, \nabla u, x, t) \nabla \psi + \nabla\phi \cdot {\vec g}_2(u, u_t, \nabla u, x, t) \psi + \nabla\phi \cdot {\overleftrightarrow g}_3(u, u_t, \nabla u, x, t) \cdot \nabla \psi
+
+.seealso: `PetscDS`, `PetscDSGetJacobianPreconditioner()`, `PetscDSSetJacobian()`
 @*/
-PetscErrorCode PetscDSSetJacobianPreconditioner(PetscDS ds, PetscInt f, PetscInt g, void (*g0)(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g0[]), void (*g1)(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g1[]), void (*g2)(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g2[]), void (*g3)(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g3[])) {
+PetscErrorCode PetscDSSetJacobianPreconditioner(PetscDS ds, PetscInt f, PetscInt g, void (*g0)(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g0[]), void (*g1)(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g1[]), void (*g2)(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g2[]), void (*g3)(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g3[]))
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ds, PETSCDS_CLASSID, 1);
   if (g0) PetscValidFunction(g0, 4);
@@ -1671,16 +1717,17 @@ PetscErrorCode PetscDSSetJacobianPreconditioner(PetscDS ds, PetscInt f, PetscInt
   Not collective
 
   Input Parameter:
-. ds - The PetscDS
+. ds - The `PetscDS`
 
   Output Parameter:
 . hasDynJac - flag that pointwise function for dynamic Jacobian has been set
 
   Level: intermediate
 
-.seealso: `PetscDSGetDynamicJacobian()`, `PetscDSSetDynamicJacobian()`, `PetscDSGetJacobian()`
+.seealso: `PetscDS`, `PetscDSGetDynamicJacobian()`, `PetscDSSetDynamicJacobian()`, `PetscDSGetJacobian()`
 @*/
-PetscErrorCode PetscDSHasDynamicJacobian(PetscDS ds, PetscBool *hasDynJac) {
+PetscErrorCode PetscDSHasDynamicJacobian(PetscDS ds, PetscBool *hasDynJac)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ds, PETSCDS_CLASSID, 1);
   PetscCall(PetscWeakFormHasDynamicJacobian(ds->wf, hasDynJac));
@@ -1693,7 +1740,7 @@ PetscErrorCode PetscDSHasDynamicJacobian(PetscDS ds, PetscBool *hasDynJac) {
   Not collective
 
   Input Parameters:
-+ ds - The PetscDS
++ ds - The `PetscDS`
 . f  - The test field number
 - g  - The field number
 
@@ -1703,17 +1750,13 @@ PetscErrorCode PetscDSHasDynamicJacobian(PetscDS ds, PetscBool *hasDynJac) {
 . g2 - integrand for the test function gradient and basis function term
 - g3 - integrand for the test function gradient and basis function gradient term
 
-  Note: We are using a first order FEM model for the weak form:
-
-  \int_\Omega \phi g_0(u, u_t, \nabla u, x, t) \psi + \phi {\vec g}_1(u, u_t, \nabla u, x, t) \nabla \psi + \nabla\phi \cdot {\vec g}_2(u, u_t, \nabla u, x, t) \psi + \nabla\phi \cdot {\overleftrightarrow g}_3(u, u_t, \nabla u, x, t) \cdot \nabla \psi
-
-The calling sequence for the callbacks g0, g1, g2 and g3 is given by:
-
-$ g0(PetscInt dim, PetscInt Nf, PetscInt NfAux,
-$    const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
-$    const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-$    PetscReal t, const PetscReal u_tShift, const PetscReal x[], PetscScalar g0[])
-
+   Calling sequence for the callbacks g0, g1, g2 and g3:
+.vb
+  g0(PetscInt dim, PetscInt Nf, PetscInt NfAux,
+     const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
+     const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
+     PetscReal t, const PetscReal u_tShift, const PetscReal x[], PetscScalar g0[])
+.ve
 + dim - the spatial dimension
 . Nf - the number of fields
 . uOff - the offset into u[] and u_t[] for each field
@@ -1735,9 +1778,14 @@ $    PetscReal t, const PetscReal u_tShift, const PetscReal x[], PetscScalar g0[
 
   Level: intermediate
 
-.seealso: `PetscDSSetJacobian()`
+  Note:
+  We are using a first order FEM model for the weak form:
+  \int_\Omega \phi g_0(u, u_t, \nabla u, x, t) \psi + \phi {\vec g}_1(u, u_t, \nabla u, x, t) \nabla \psi + \nabla\phi \cdot {\vec g}_2(u, u_t, \nabla u, x, t) \psi + \nabla\phi \cdot {\overleftrightarrow g}_3(u, u_t, \nabla u, x, t) \cdot \nabla \psi
+
+.seealso: `PetscDS`, `PetscDSSetJacobian()`
 @*/
-PetscErrorCode PetscDSGetDynamicJacobian(PetscDS ds, PetscInt f, PetscInt g, void (**g0)(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g0[]), void (**g1)(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g1[]), void (**g2)(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g2[]), void (**g3)(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g3[])) {
+PetscErrorCode PetscDSGetDynamicJacobian(PetscDS ds, PetscInt f, PetscInt g, void (**g0)(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g0[]), void (**g1)(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g1[]), void (**g2)(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g2[]), void (**g3)(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g3[]))
+{
   PetscPointJac *tmp0, *tmp1, *tmp2, *tmp3;
   PetscInt       n0, n1, n2, n3;
 
@@ -1759,7 +1807,7 @@ PetscErrorCode PetscDSGetDynamicJacobian(PetscDS ds, PetscInt f, PetscInt g, voi
   Not collective
 
   Input Parameters:
-+ ds - The PetscDS
++ ds - The `PetscDS`
 . f  - The test field number
 . g  - The field number
 . g0 - integrand for the test and basis function term
@@ -1767,17 +1815,13 @@ PetscErrorCode PetscDSGetDynamicJacobian(PetscDS ds, PetscInt f, PetscInt g, voi
 . g2 - integrand for the test function gradient and basis function term
 - g3 - integrand for the test function gradient and basis function gradient term
 
-  Note: We are using a first order FEM model for the weak form:
-
-  \int_\Omega \phi g_0(u, u_t, \nabla u, x, t) \psi + \phi {\vec g}_1(u, u_t, \nabla u, x, t) \nabla \psi + \nabla\phi \cdot {\vec g}_2(u, u_t, \nabla u, x, t) \psi + \nabla\phi \cdot {\overleftrightarrow g}_3(u, u_t, \nabla u, x, t) \cdot \nabla \psi
-
-The calling sequence for the callbacks g0, g1, g2 and g3 is given by:
-
-$ g0(PetscInt dim, PetscInt Nf, PetscInt NfAux,
-$    const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
-$    const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-$    PetscReal t, const PetscReal x[], PetscScalar g0[])
-
+  Calling sequence for the callbacks g0, g1, g2 and g3:
+.vb
+   g0(PetscInt dim, PetscInt Nf, PetscInt NfAux,
+     const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
+     const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
+     PetscReal t, const PetscReal x[], PetscScalar g0[])
+.ve
 + dim - the spatial dimension
 . Nf - the number of fields
 . uOff - the offset into u[] and u_t[] for each field
@@ -1799,9 +1843,14 @@ $    PetscReal t, const PetscReal x[], PetscScalar g0[])
 
   Level: intermediate
 
-.seealso: `PetscDSGetJacobian()`
+  Note:
+  We are using a first order FEM model for the weak form:
+  \int_\Omega \phi g_0(u, u_t, \nabla u, x, t) \psi + \phi {\vec g}_1(u, u_t, \nabla u, x, t) \nabla \psi + \nabla\phi \cdot {\vec g}_2(u, u_t, \nabla u, x, t) \psi + \nabla\phi \cdot {\overleftrightarrow g}_3(u, u_t, \nabla u, x, t) \cdot \nabla \psi
+
+.seealso: `PetscDS`, `PetscDSGetJacobian()`
 @*/
-PetscErrorCode PetscDSSetDynamicJacobian(PetscDS ds, PetscInt f, PetscInt g, void (*g0)(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g0[]), void (*g1)(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g1[]), void (*g2)(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g2[]), void (*g3)(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g3[])) {
+PetscErrorCode PetscDSSetDynamicJacobian(PetscDS ds, PetscInt f, PetscInt g, void (*g0)(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g0[]), void (*g1)(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g1[]), void (*g2)(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g2[]), void (*g3)(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g3[]))
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ds, PETSCDS_CLASSID, 1);
   if (g0) PetscValidFunction(g0, 4);
@@ -1820,16 +1869,16 @@ PetscErrorCode PetscDSSetDynamicJacobian(PetscDS ds, PetscInt f, PetscInt g, voi
   Not collective
 
   Input Parameters:
-+ ds - The PetscDS object
++ ds - The `PetscDS` object
 - f  - The field number
 
   Output Parameter:
 . r    - Riemann solver
 
   Calling sequence for r:
-
-$ r(PetscInt dim, PetscInt Nf, const PetscReal x[], const PetscReal n[], const PetscScalar uL[], const PetscScalar uR[], PetscScalar flux[], void *ctx)
-
+.vb
+  r(PetscInt dim, PetscInt Nf, const PetscReal x[], const PetscReal n[], const PetscScalar uL[], const PetscScalar uR[], PetscScalar flux[], void *ctx)
+.ve
 + dim  - The spatial dimension
 . Nf   - The number of fields
 . x    - The coordinates at a point on the interface
@@ -1843,9 +1892,10 @@ $ r(PetscInt dim, PetscInt Nf, const PetscReal x[], const PetscReal n[], const P
 
   Level: intermediate
 
-.seealso: `PetscDSSetRiemannSolver()`
+.seealso: `PetscDS`, `PetscDSSetRiemannSolver()`
 @*/
-PetscErrorCode PetscDSGetRiemannSolver(PetscDS ds, PetscInt f, void (**r)(PetscInt dim, PetscInt Nf, const PetscReal x[], const PetscReal n[], const PetscScalar uL[], const PetscScalar uR[], PetscInt numConstants, const PetscScalar constants[], PetscScalar flux[], void *ctx)) {
+PetscErrorCode PetscDSGetRiemannSolver(PetscDS ds, PetscInt f, void (**r)(PetscInt dim, PetscInt Nf, const PetscReal x[], const PetscReal n[], const PetscScalar uL[], const PetscScalar uR[], PetscInt numConstants, const PetscScalar constants[], PetscScalar flux[], void *ctx))
+{
   PetscRiemannFunc *tmp;
   PetscInt          n;
 
@@ -1864,14 +1914,14 @@ PetscErrorCode PetscDSGetRiemannSolver(PetscDS ds, PetscInt f, void (**r)(PetscI
   Not collective
 
   Input Parameters:
-+ ds - The PetscDS object
++ ds - The `PetscDS` object
 . f  - The field number
 - r  - Riemann solver
 
   Calling sequence for r:
-
-$ r(PetscInt dim, PetscInt Nf, const PetscReal x[], const PetscReal n[], const PetscScalar uL[], const PetscScalar uR[], PetscScalar flux[], void *ctx)
-
+.vb
+   r(PetscInt dim, PetscInt Nf, const PetscReal x[], const PetscReal n[], const PetscScalar uL[], const PetscScalar uR[], PetscScalar flux[], void *ctx)
+.ve
 + dim  - The spatial dimension
 . Nf   - The number of fields
 . x    - The coordinates at a point on the interface
@@ -1885,9 +1935,10 @@ $ r(PetscInt dim, PetscInt Nf, const PetscReal x[], const PetscReal n[], const P
 
   Level: intermediate
 
-.seealso: `PetscDSGetRiemannSolver()`
+.seealso: `PetscDS`, `PetscDSGetRiemannSolver()`
 @*/
-PetscErrorCode PetscDSSetRiemannSolver(PetscDS ds, PetscInt f, void (*r)(PetscInt dim, PetscInt Nf, const PetscReal x[], const PetscReal n[], const PetscScalar uL[], const PetscScalar uR[], PetscInt numConstants, const PetscScalar constants[], PetscScalar flux[], void *ctx)) {
+PetscErrorCode PetscDSSetRiemannSolver(PetscDS ds, PetscInt f, void (*r)(PetscInt dim, PetscInt Nf, const PetscReal x[], const PetscReal n[], const PetscScalar uL[], const PetscScalar uR[], PetscInt numConstants, const PetscScalar constants[], PetscScalar flux[], void *ctx))
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ds, PETSCDS_CLASSID, 1);
   if (r) PetscValidFunction(r, 3);
@@ -1902,19 +1953,19 @@ PetscErrorCode PetscDSSetRiemannSolver(PetscDS ds, PetscInt f, void (*r)(PetscIn
   Not collective
 
   Input Parameters:
-+ ds - The PetscDS
++ ds - The `PetscDS`
 - f  - The field number
 
   Output Parameter:
 . update - update function
 
-  Note: The calling sequence for the callback update is given by:
-
-$ update(PetscInt dim, PetscInt Nf, PetscInt NfAux,
-$        const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
-$        const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-$        PetscReal t, const PetscReal x[], PetscScalar uNew[])
-
+  Calling sequence for the callback update:
+.vb
+  update(PetscInt dim, PetscInt Nf, PetscInt NfAux,
+         const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
+         const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
+         PetscReal t, const PetscReal x[], PetscScalar uNew[])
+.ve
 + dim - the spatial dimension
 . Nf - the number of fields
 . uOff - the offset into u[] and u_t[] for each field
@@ -1933,9 +1984,10 @@ $        PetscReal t, const PetscReal x[], PetscScalar uNew[])
 
   Level: intermediate
 
-.seealso: `PetscDSSetUpdate()`, `PetscDSSetResidual()`
+.seealso: `PetscDS`, `PetscDSSetUpdate()`, `PetscDSSetResidual()`
 @*/
-PetscErrorCode PetscDSGetUpdate(PetscDS ds, PetscInt f, void (**update)(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar uNew[])) {
+PetscErrorCode PetscDSGetUpdate(PetscDS ds, PetscInt f, void (**update)(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar uNew[]))
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ds, PETSCDS_CLASSID, 1);
   PetscCheck(!(f < 0) && !(f >= ds->Nf), PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %" PetscInt_FMT " must be in [0, %" PetscInt_FMT ")", f, ds->Nf);
@@ -1952,17 +2004,17 @@ PetscErrorCode PetscDSGetUpdate(PetscDS ds, PetscInt f, void (**update)(PetscInt
   Not collective
 
   Input Parameters:
-+ ds     - The PetscDS
++ ds     - The `PetscDS`
 . f      - The field number
 - update - update function
 
-  Note: The calling sequence for the callback update is given by:
-
-$ update(PetscInt dim, PetscInt Nf, PetscInt NfAux,
-$        const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
-$        const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-$        PetscReal t, const PetscReal x[], PetscScalar uNew[])
-
+  Calling sequence for the callback update:
+.vb
+  update(PetscInt dim, PetscInt Nf, PetscInt NfAux,
+         const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
+         const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
+         PetscReal t, const PetscReal x[], PetscScalar uNew[])
+.ve
 + dim - the spatial dimension
 . Nf - the number of fields
 . uOff - the offset into u[] and u_t[] for each field
@@ -1981,9 +2033,10 @@ $        PetscReal t, const PetscReal x[], PetscScalar uNew[])
 
   Level: intermediate
 
-.seealso: `PetscDSGetResidual()`
+.seealso: `PetscDS`, `PetscDSGetResidual()`
 @*/
-PetscErrorCode PetscDSSetUpdate(PetscDS ds, PetscInt f, void (*update)(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar uNew[])) {
+PetscErrorCode PetscDSSetUpdate(PetscDS ds, PetscInt f, void (*update)(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar uNew[]))
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ds, PETSCDS_CLASSID, 1);
   if (update) PetscValidFunction(update, 3);
@@ -1993,7 +2046,8 @@ PetscErrorCode PetscDSSetUpdate(PetscDS ds, PetscInt f, void (*update)(PetscInt 
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscDSGetContext(PetscDS ds, PetscInt f, void *ctx) {
+PetscErrorCode PetscDSGetContext(PetscDS ds, PetscInt f, void *ctx)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ds, PETSCDS_CLASSID, 1);
   PetscCheck(!(f < 0) && !(f >= ds->Nf), PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %" PetscInt_FMT " must be in [0, %" PetscInt_FMT ")", f, ds->Nf);
@@ -2002,7 +2056,8 @@ PetscErrorCode PetscDSGetContext(PetscDS ds, PetscInt f, void *ctx) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscDSSetContext(PetscDS ds, PetscInt f, void *ctx) {
+PetscErrorCode PetscDSSetContext(PetscDS ds, PetscInt f, void *ctx)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ds, PETSCDS_CLASSID, 1);
   PetscCheck(f >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %" PetscInt_FMT " must be non-negative", f);
@@ -2024,17 +2079,13 @@ PetscErrorCode PetscDSSetContext(PetscDS ds, PetscInt f, void *ctx) {
 + f0 - boundary integrand for the test function term
 - f1 - boundary integrand for the test function gradient term
 
-  Note: We are using a first order FEM model for the weak form:
-
-  \int_\Gamma \phi {\vec f}_0(u, u_t, \nabla u, x, t) \cdot \hat n + \nabla\phi \cdot {\overleftrightarrow f}_1(u, u_t, \nabla u, x, t) \cdot \hat n
-
-The calling sequence for the callbacks f0 and f1 is given by:
-
-$ f0(PetscInt dim, PetscInt Nf, PetscInt NfAux,
-$    const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
-$    const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-$    PetscReal t, const PetscReal x[], const PetscReal n[], PetscScalar f0[])
-
+  Calling sequence for the callbacks f0 and f1:
+.vb
+  f0(PetscInt dim, PetscInt Nf, PetscInt NfAux,
+     const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
+     const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
+     PetscReal t, const PetscReal x[], const PetscReal n[], PetscScalar f0[])
+.ve
 + dim - the spatial dimension
 . Nf - the number of fields
 . uOff - the offset into u[] and u_t[] for each field
@@ -2056,9 +2107,14 @@ $    PetscReal t, const PetscReal x[], const PetscReal n[], PetscScalar f0[])
 
   Level: intermediate
 
-.seealso: `PetscDSSetBdResidual()`
+  Note:
+  We are using a first order FEM model for the weak form:
+  \int_\Gamma \phi {\vec f}_0(u, u_t, \nabla u, x, t) \cdot \hat n + \nabla\phi \cdot {\overleftrightarrow f}_1(u, u_t, \nabla u, x, t) \cdot \hat n
+
+.seealso: `PetscDS`, `PetscDSSetBdResidual()`
 @*/
-PetscErrorCode PetscDSGetBdResidual(PetscDS ds, PetscInt f, void (**f0)(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], const PetscReal n[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[]), void (**f1)(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], const PetscReal n[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f1[])) {
+PetscErrorCode PetscDSGetBdResidual(PetscDS ds, PetscInt f, void (**f0)(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], const PetscReal n[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[]), void (**f1)(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], const PetscReal n[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f1[]))
+{
   PetscBdPointFunc *tmp0, *tmp1;
   PetscInt          n0, n1;
 
@@ -2077,22 +2133,18 @@ PetscErrorCode PetscDSGetBdResidual(PetscDS ds, PetscInt f, void (**f0)(PetscInt
   Not collective
 
   Input Parameters:
-+ ds - The PetscDS
++ ds - The `PetscDS`
 . f  - The test field number
 . f0 - boundary integrand for the test function term
 - f1 - boundary integrand for the test function gradient term
 
-  Note: We are using a first order FEM model for the weak form:
-
-  \int_\Gamma \phi {\vec f}_0(u, u_t, \nabla u, x, t) \cdot \hat n + \nabla\phi \cdot {\overleftrightarrow f}_1(u, u_t, \nabla u, x, t) \cdot \hat n
-
-The calling sequence for the callbacks f0 and f1 is given by:
-
-$ f0(PetscInt dim, PetscInt Nf, PetscInt NfAux,
-$    const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
-$    const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-$    PetscReal t, const PetscReal x[], const PetscReal n[], PetscScalar f0[])
-
+  Calling sequence for the callbacks f0 and f1:
+.vb
+  f0(PetscInt dim, PetscInt Nf, PetscInt NfAux,
+     const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
+     const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
+     PetscReal t, const PetscReal x[], const PetscReal n[], PetscScalar f0[])
+.ve
 + dim - the spatial dimension
 . Nf - the number of fields
 . uOff - the offset into u[] and u_t[] for each field
@@ -2114,9 +2166,14 @@ $    PetscReal t, const PetscReal x[], const PetscReal n[], PetscScalar f0[])
 
   Level: intermediate
 
-.seealso: `PetscDSGetBdResidual()`
+  Note:
+  We are using a first order FEM model for the weak form:
+  \int_\Gamma \phi {\vec f}_0(u, u_t, \nabla u, x, t) \cdot \hat n + \nabla\phi \cdot {\overleftrightarrow f}_1(u, u_t, \nabla u, x, t) \cdot \hat n
+
+.seealso: `PetscDS`, `PetscDSGetBdResidual()`
 @*/
-PetscErrorCode PetscDSSetBdResidual(PetscDS ds, PetscInt f, void (*f0)(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], const PetscReal n[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[]), void (*f1)(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], const PetscReal n[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f1[])) {
+PetscErrorCode PetscDSSetBdResidual(PetscDS ds, PetscInt f, void (*f0)(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], const PetscReal n[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[]), void (*f1)(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], const PetscReal n[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f1[]))
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ds, PETSCDS_CLASSID, 1);
   PetscCheck(f >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %" PetscInt_FMT " must be non-negative", f);
@@ -2125,21 +2182,22 @@ PetscErrorCode PetscDSSetBdResidual(PetscDS ds, PetscInt f, void (*f0)(PetscInt 
 }
 
 /*@
-  PetscDSHasBdJacobian - Signals that boundary Jacobian functions have been set
+  PetscDSHasBdJacobian - Indicates that boundary Jacobian functions have been set
 
   Not collective
 
   Input Parameter:
-. ds - The PetscDS
+. ds - The `PetscDS`
 
   Output Parameter:
 . hasBdJac - flag that pointwise function for the boundary Jacobian has been set
 
   Level: intermediate
 
-.seealso: `PetscDSHasJacobian()`, `PetscDSSetBdJacobian()`, `PetscDSGetBdJacobian()`
+.seealso: `PetscDS`, `PetscDSHasJacobian()`, `PetscDSSetBdJacobian()`, `PetscDSGetBdJacobian()`
 @*/
-PetscErrorCode PetscDSHasBdJacobian(PetscDS ds, PetscBool *hasBdJac) {
+PetscErrorCode PetscDSHasBdJacobian(PetscDS ds, PetscBool *hasBdJac)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ds, PETSCDS_CLASSID, 1);
   PetscValidBoolPointer(hasBdJac, 2);
@@ -2153,7 +2211,7 @@ PetscErrorCode PetscDSHasBdJacobian(PetscDS ds, PetscBool *hasBdJac) {
   Not collective
 
   Input Parameters:
-+ ds - The PetscDS
++ ds - The `PetscDS`
 . f  - The test field number
 - g  - The field number
 
@@ -2163,17 +2221,13 @@ PetscErrorCode PetscDSHasBdJacobian(PetscDS ds, PetscBool *hasBdJac) {
 . g2 - integrand for the test function gradient and basis function term
 - g3 - integrand for the test function gradient and basis function gradient term
 
-  Note: We are using a first order FEM model for the weak form:
-
-  \int_\Gamma \phi {\vec g}_0(u, u_t, \nabla u, x, t) \cdot \hat n \psi + \phi {\vec g}_1(u, u_t, \nabla u, x, t) \cdot \hat n \nabla \psi + \nabla\phi \cdot {\vec g}_2(u, u_t, \nabla u, x, t) \cdot \hat n \psi + \nabla\phi \cdot {\overleftrightarrow g}_3(u, u_t, \nabla u, x, t) \cdot \hat n \cdot \nabla \psi
-
-The calling sequence for the callbacks g0, g1, g2 and g3 is given by:
-
-$ g0(PetscInt dim, PetscInt Nf, PetscInt NfAux,
-$    const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
-$    const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-$    PetscReal t, const PetscReal x[], const PetscReal n[], PetscScalar g0[])
-
+  Calling sequence for the callbacks g0, g1, g2 and g3:
+.vb
+  g0(PetscInt dim, PetscInt Nf, PetscInt NfAux,
+     const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
+     const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
+     PetscReal t, const PetscReal x[], const PetscReal n[], PetscScalar g0[])
+.ve
 + dim - the spatial dimension
 . Nf - the number of fields
 . uOff - the offset into u[] and u_t[] for each field
@@ -2196,9 +2250,14 @@ $    PetscReal t, const PetscReal x[], const PetscReal n[], PetscScalar g0[])
 
   Level: intermediate
 
-.seealso: `PetscDSSetBdJacobian()`
+  Note:
+  We are using a first order FEM model for the weak form:
+  \int_\Gamma \phi {\vec g}_0(u, u_t, \nabla u, x, t) \cdot \hat n \psi + \phi {\vec g}_1(u, u_t, \nabla u, x, t) \cdot \hat n \nabla \psi + \nabla\phi \cdot {\vec g}_2(u, u_t, \nabla u, x, t) \cdot \hat n \psi + \nabla\phi \cdot {\overleftrightarrow g}_3(u, u_t, \nabla u, x, t) \cdot \hat n \cdot \nabla \psi
+
+.seealso: `PetscDS`, `PetscDSSetBdJacobian()`
 @*/
-PetscErrorCode PetscDSGetBdJacobian(PetscDS ds, PetscInt f, PetscInt g, void (**g0)(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], const PetscReal n[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g0[]), void (**g1)(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], const PetscReal n[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g1[]), void (**g2)(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], const PetscReal n[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g2[]), void (**g3)(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], const PetscReal n[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g3[])) {
+PetscErrorCode PetscDSGetBdJacobian(PetscDS ds, PetscInt f, PetscInt g, void (**g0)(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], const PetscReal n[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g0[]), void (**g1)(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], const PetscReal n[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g1[]), void (**g2)(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], const PetscReal n[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g2[]), void (**g3)(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], const PetscReal n[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g3[]))
+{
   PetscBdPointJac *tmp0, *tmp1, *tmp2, *tmp3;
   PetscInt         n0, n1, n2, n3;
 
@@ -2228,17 +2287,13 @@ PetscErrorCode PetscDSGetBdJacobian(PetscDS ds, PetscInt f, PetscInt g, void (**
 . g2 - integrand for the test function gradient and basis function term
 - g3 - integrand for the test function gradient and basis function gradient term
 
-  Note: We are using a first order FEM model for the weak form:
-
-  \int_\Gamma \phi {\vec g}_0(u, u_t, \nabla u, x, t) \cdot \hat n \psi + \phi {\vec g}_1(u, u_t, \nabla u, x, t) \cdot \hat n \nabla \psi + \nabla\phi \cdot {\vec g}_2(u, u_t, \nabla u, x, t) \cdot \hat n \psi + \nabla\phi \cdot {\overleftrightarrow g}_3(u, u_t, \nabla u, x, t) \cdot \hat n \cdot \nabla \psi
-
-The calling sequence for the callbacks g0, g1, g2 and g3 is given by:
-
-$ g0(PetscInt dim, PetscInt Nf, PetscInt NfAux,
-$    const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
-$    const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-$    PetscReal t, const PetscReal x[], const PetscReal n[], PetscScalar g0[])
-
+  Calling sequence for the callbacks g0, g1, g2 and g3:
+.vb
+  g0(PetscInt dim, PetscInt Nf, PetscInt NfAux,
+     const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
+     const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
+     PetscReal t, const PetscReal x[], const PetscReal n[], PetscScalar g0[])
+.ve
 + dim - the spatial dimension
 . Nf - the number of fields
 . uOff - the offset into u[] and u_t[] for each field
@@ -2261,9 +2316,14 @@ $    PetscReal t, const PetscReal x[], const PetscReal n[], PetscScalar g0[])
 
   Level: intermediate
 
-.seealso: `PetscDSGetBdJacobian()`
+  Note:
+  We are using a first order FEM model for the weak form:
+  \int_\Gamma \phi {\vec g}_0(u, u_t, \nabla u, x, t) \cdot \hat n \psi + \phi {\vec g}_1(u, u_t, \nabla u, x, t) \cdot \hat n \nabla \psi + \nabla\phi \cdot {\vec g}_2(u, u_t, \nabla u, x, t) \cdot \hat n \psi + \nabla\phi \cdot {\overleftrightarrow g}_3(u, u_t, \nabla u, x, t) \cdot \hat n \cdot \nabla \psi
+
+.seealso: `PetscDS`, `PetscDSGetBdJacobian()`
 @*/
-PetscErrorCode PetscDSSetBdJacobian(PetscDS ds, PetscInt f, PetscInt g, void (*g0)(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], const PetscReal n[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g0[]), void (*g1)(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], const PetscReal n[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g1[]), void (*g2)(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], const PetscReal n[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g2[]), void (*g3)(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], const PetscReal n[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g3[])) {
+PetscErrorCode PetscDSSetBdJacobian(PetscDS ds, PetscInt f, PetscInt g, void (*g0)(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], const PetscReal n[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g0[]), void (*g1)(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], const PetscReal n[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g1[]), void (*g2)(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], const PetscReal n[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g2[]), void (*g3)(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], const PetscReal n[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g3[]))
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ds, PETSCDS_CLASSID, 1);
   if (g0) PetscValidFunction(g0, 4);
@@ -2282,16 +2342,17 @@ PetscErrorCode PetscDSSetBdJacobian(PetscDS ds, PetscInt f, PetscInt g, void (*g
   Not collective
 
   Input Parameter:
-. ds - The PetscDS
+. ds - The `PetscDS`
 
   Output Parameter:
 . hasBdJac - flag that pointwise function for the boundary Jacobian preconditioner has been set
 
   Level: intermediate
 
-.seealso: `PetscDSHasJacobian()`, `PetscDSSetBdJacobian()`, `PetscDSGetBdJacobian()`
+.seealso: `PetscDS`, `PetscDSHasJacobian()`, `PetscDSSetBdJacobian()`, `PetscDSGetBdJacobian()`
 @*/
-PetscErrorCode PetscDSHasBdJacobianPreconditioner(PetscDS ds, PetscBool *hasBdJacPre) {
+PetscErrorCode PetscDSHasBdJacobianPreconditioner(PetscDS ds, PetscBool *hasBdJacPre)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ds, PETSCDS_CLASSID, 1);
   PetscValidBoolPointer(hasBdJacPre, 2);
@@ -2305,7 +2366,7 @@ PetscErrorCode PetscDSHasBdJacobianPreconditioner(PetscDS ds, PetscBool *hasBdJa
   Not collective
 
   Input Parameters:
-+ ds - The PetscDS
++ ds - The `PetscDS`
 . f  - The test field number
 - g  - The field number
 
@@ -2315,17 +2376,13 @@ PetscErrorCode PetscDSHasBdJacobianPreconditioner(PetscDS ds, PetscBool *hasBdJa
 . g2 - integrand for the test function gradient and basis function term
 - g3 - integrand for the test function gradient and basis function gradient term
 
-  Note: We are using a first order FEM model for the weak form:
-
-  \int_\Gamma \phi {\vec g}_0(u, u_t, \nabla u, x, t) \cdot \hat n \psi + \phi {\vec g}_1(u, u_t, \nabla u, x, t) \cdot \hat n \nabla \psi + \nabla\phi \cdot {\vec g}_2(u, u_t, \nabla u, x, t) \cdot \hat n \psi + \nabla\phi \cdot {\overleftrightarrow g}_3(u, u_t, \nabla u, x, t) \cdot \hat n \cdot \nabla \psi
-
-The calling sequence for the callbacks g0, g1, g2 and g3 is given by:
-
-$ g0(PetscInt dim, PetscInt Nf, PetscInt NfAux,
-$    const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
-$    const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-$    PetscReal t, const PetscReal x[], const PetscReal n[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g0[])
-
+   Calling sequence for the callbacks g0, g1, g2 and g3:
+.vb
+  g0(PetscInt dim, PetscInt Nf, PetscInt NfAux,
+     const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
+     const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
+     PetscReal t, const PetscReal x[], const PetscReal n[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g0[])
+.ve
 + dim - the spatial dimension
 . Nf - the number of fields
 . NfAux - the number of auxiliary fields
@@ -2347,13 +2404,19 @@ $    PetscReal t, const PetscReal x[], const PetscReal n[], PetscInt numConstant
 . constants - constant parameters
 - g0 - output values at the current point
 
-  This is not yet available in Fortran.
-
   Level: intermediate
 
-.seealso: `PetscDSSetBdJacobianPreconditioner()`
+  Note:
+  We are using a first order FEM model for the weak form:
+  \int_\Gamma \phi {\vec g}_0(u, u_t, \nabla u, x, t) \cdot \hat n \psi + \phi {\vec g}_1(u, u_t, \nabla u, x, t) \cdot \hat n \nabla \psi + \nabla\phi \cdot {\vec g}_2(u, u_t, \nabla u, x, t) \cdot \hat n \psi + \nabla\phi \cdot {\overleftrightarrow g}_3(u, u_t, \nabla u, x, t) \cdot \hat n \cdot \nabla \psi
+
+  Fortran Note:
+  This is not yet available in Fortran.
+
+.seealso: `PetscDS`, `PetscDSSetBdJacobianPreconditioner()`
 @*/
-PetscErrorCode PetscDSGetBdJacobianPreconditioner(PetscDS ds, PetscInt f, PetscInt g, void (**g0)(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], const PetscReal n[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g0[]), void (**g1)(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], const PetscReal n[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g1[]), void (**g2)(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], const PetscReal n[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g2[]), void (**g3)(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], const PetscReal n[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g3[])) {
+PetscErrorCode PetscDSGetBdJacobianPreconditioner(PetscDS ds, PetscInt f, PetscInt g, void (**g0)(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], const PetscReal n[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g0[]), void (**g1)(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], const PetscReal n[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g1[]), void (**g2)(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], const PetscReal n[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g2[]), void (**g3)(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], const PetscReal n[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g3[]))
+{
   PetscBdPointJac *tmp0, *tmp1, *tmp2, *tmp3;
   PetscInt         n0, n1, n2, n3;
 
@@ -2375,7 +2438,7 @@ PetscErrorCode PetscDSGetBdJacobianPreconditioner(PetscDS ds, PetscInt f, PetscI
   Not collective
 
   Input Parameters:
-+ ds - The PetscDS
++ ds - The `PetscDS`
 . f  - The test field number
 . g  - The field number
 . g0 - integrand for the test and basis function term
@@ -2383,17 +2446,13 @@ PetscErrorCode PetscDSGetBdJacobianPreconditioner(PetscDS ds, PetscInt f, PetscI
 . g2 - integrand for the test function gradient and basis function term
 - g3 - integrand for the test function gradient and basis function gradient term
 
-  Note: We are using a first order FEM model for the weak form:
-
-  \int_\Gamma \phi {\vec g}_0(u, u_t, \nabla u, x, t) \cdot \hat n \psi + \phi {\vec g}_1(u, u_t, \nabla u, x, t) \cdot \hat n \nabla \psi + \nabla\phi \cdot {\vec g}_2(u, u_t, \nabla u, x, t) \cdot \hat n \psi + \nabla\phi \cdot {\overleftrightarrow g}_3(u, u_t, \nabla u, x, t) \cdot \hat n \cdot \nabla \psi
-
-The calling sequence for the callbacks g0, g1, g2 and g3 is given by:
-
-$ g0(PetscInt dim, PetscInt Nf, PetscInt NfAux,
-$    const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
-$    const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-$    PetscReal t, const PetscReal x[], const PetscReal n[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g0[])
-
+   Calling sequence for the callbacks g0, g1, g2 and g3:
+.vb
+  g0(PetscInt dim, PetscInt Nf, PetscInt NfAux,
+     const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
+     const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
+     PetscReal t, const PetscReal x[], const PetscReal n[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g0[])
+.ve
 + dim - the spatial dimension
 . Nf - the number of fields
 . NfAux - the number of auxiliary fields
@@ -2415,13 +2474,19 @@ $    PetscReal t, const PetscReal x[], const PetscReal n[], PetscInt numConstant
 . constants - constant parameters
 - g0 - output values at the current point
 
-  This is not yet available in Fortran.
-
   Level: intermediate
 
-.seealso: `PetscDSGetBdJacobianPreconditioner()`
+  Note:
+  We are using a first order FEM model for the weak form:
+  \int_\Gamma \phi {\vec g}_0(u, u_t, \nabla u, x, t) \cdot \hat n \psi + \phi {\vec g}_1(u, u_t, \nabla u, x, t) \cdot \hat n \nabla \psi + \nabla\phi \cdot {\vec g}_2(u, u_t, \nabla u, x, t) \cdot \hat n \psi + \nabla\phi \cdot {\overleftrightarrow g}_3(u, u_t, \nabla u, x, t) \cdot \hat n \cdot \nabla \psi
+
+  Fortran Note:
+  This is not yet available in Fortran.
+
+.seealso: `PetscDS`, `PetscDSGetBdJacobianPreconditioner()`
 @*/
-PetscErrorCode PetscDSSetBdJacobianPreconditioner(PetscDS ds, PetscInt f, PetscInt g, void (*g0)(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], const PetscReal n[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g0[]), void (*g1)(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], const PetscReal n[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g1[]), void (*g2)(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], const PetscReal n[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g2[]), void (*g3)(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], const PetscReal n[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g3[])) {
+PetscErrorCode PetscDSSetBdJacobianPreconditioner(PetscDS ds, PetscInt f, PetscInt g, void (*g0)(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], const PetscReal n[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g0[]), void (*g1)(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], const PetscReal n[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g1[]), void (*g2)(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], const PetscReal n[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g2[]), void (*g3)(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], const PetscReal n[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g3[]))
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ds, PETSCDS_CLASSID, 1);
   if (g0) PetscValidFunction(g0, 4);
@@ -2447,10 +2512,10 @@ PetscErrorCode PetscDSSetBdJacobianPreconditioner(PetscDS ds, PetscInt f, PetscI
 + exactSol - exact solution for the test field
 - exactCtx - exact solution context
 
-  Note: The calling sequence for the solution functions is given by:
-
-$ sol(PetscInt dim, PetscReal t, const PetscReal x[], PetscInt Nc, PetscScalar u[], void *ctx)
-
+  Calling sequence for the solution functions:
+.vb
+  sol(PetscInt dim, PetscReal t, const PetscReal x[], PetscInt Nc, PetscScalar u[], void *ctx)
+.ve
 + dim - the spatial dimension
 . t - current time
 . x - coordinates of the current point
@@ -2460,9 +2525,10 @@ $ sol(PetscInt dim, PetscReal t, const PetscReal x[], PetscInt Nc, PetscScalar u
 
   Level: intermediate
 
-.seealso: `PetscDSSetExactSolution()`, `PetscDSGetExactSolutionTimeDerivative()`
+.seealso: `PetscDS`, `PetscDSSetExactSolution()`, `PetscDSGetExactSolutionTimeDerivative()`
 @*/
-PetscErrorCode PetscDSGetExactSolution(PetscDS prob, PetscInt f, PetscErrorCode (**sol)(PetscInt dim, PetscReal t, const PetscReal x[], PetscInt Nc, PetscScalar u[], void *ctx), void **ctx) {
+PetscErrorCode PetscDSGetExactSolution(PetscDS prob, PetscInt f, PetscErrorCode (**sol)(PetscInt dim, PetscReal t, const PetscReal x[], PetscInt Nc, PetscScalar u[], void *ctx), void **ctx)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
   PetscCheck(!(f < 0) && !(f >= prob->Nf), PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %" PetscInt_FMT " must be in [0, %" PetscInt_FMT ")", f, prob->Nf);
@@ -2483,15 +2549,15 @@ PetscErrorCode PetscDSGetExactSolution(PetscDS prob, PetscInt f, PetscErrorCode 
   Not collective
 
   Input Parameters:
-+ prob - The PetscDS
++ prob - The `PetscDS`
 . f    - The test field number
 . sol  - solution function for the test fields
 - ctx  - solution context or NULL
 
-  Note: The calling sequence for solution functions is given by:
-
-$ sol(PetscInt dim, PetscReal t, const PetscReal x[], PetscInt Nc, PetscScalar u[], void *ctx)
-
+  Calling sequence for solution functions:
+.vb
+  sol(PetscInt dim, PetscReal t, const PetscReal x[], PetscInt Nc, PetscScalar u[], void *ctx)
+.ve
 + dim - the spatial dimension
 . t - current time
 . x - coordinates of the current point
@@ -2501,9 +2567,10 @@ $ sol(PetscInt dim, PetscReal t, const PetscReal x[], PetscInt Nc, PetscScalar u
 
   Level: intermediate
 
-.seealso: `PetscDSGetExactSolution()`
+.seealso: `PetscDS`, `PetscDSGetExactSolution()`
 @*/
-PetscErrorCode PetscDSSetExactSolution(PetscDS prob, PetscInt f, PetscErrorCode (*sol)(PetscInt dim, PetscReal t, const PetscReal x[], PetscInt Nc, PetscScalar u[], void *ctx), void *ctx) {
+PetscErrorCode PetscDSSetExactSolution(PetscDS prob, PetscInt f, PetscErrorCode (*sol)(PetscInt dim, PetscReal t, const PetscReal x[], PetscInt Nc, PetscScalar u[], void *ctx), void *ctx)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
   PetscCheck(f >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %" PetscInt_FMT " must be non-negative", f);
@@ -2525,17 +2592,17 @@ PetscErrorCode PetscDSSetExactSolution(PetscDS prob, PetscInt f, PetscErrorCode 
   Not collective
 
   Input Parameters:
-+ prob - The PetscDS
++ prob - The `PetscDS`
 - f    - The test field number
 
   Output Parameters:
 + exactSol - time derivative of the exact solution for the test field
 - exactCtx - time derivative of the exact solution context
 
-  Note: The calling sequence for the solution functions is given by:
-
-$ sol(PetscInt dim, PetscReal t, const PetscReal x[], PetscInt Nc, PetscScalar u[], void *ctx)
-
+  Calling sequence for the solution functions:
+.vb
+  sol(PetscInt dim, PetscReal t, const PetscReal x[], PetscInt Nc, PetscScalar u[], void *ctx)
+.ve
 + dim - the spatial dimension
 . t - current time
 . x - coordinates of the current point
@@ -2545,9 +2612,10 @@ $ sol(PetscInt dim, PetscReal t, const PetscReal x[], PetscInt Nc, PetscScalar u
 
   Level: intermediate
 
-.seealso: `PetscDSSetExactSolutionTimeDerivative()`, `PetscDSGetExactSolution()`
+.seealso: `PetscDS`, `PetscDSSetExactSolutionTimeDerivative()`, `PetscDSGetExactSolution()`
 @*/
-PetscErrorCode PetscDSGetExactSolutionTimeDerivative(PetscDS prob, PetscInt f, PetscErrorCode (**sol)(PetscInt dim, PetscReal t, const PetscReal x[], PetscInt Nc, PetscScalar u[], void *ctx), void **ctx) {
+PetscErrorCode PetscDSGetExactSolutionTimeDerivative(PetscDS prob, PetscInt f, PetscErrorCode (**sol)(PetscInt dim, PetscReal t, const PetscReal x[], PetscInt Nc, PetscScalar u[], void *ctx), void **ctx)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
   PetscCheck(!(f < 0) && !(f >= prob->Nf), PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %" PetscInt_FMT " must be in [0, %" PetscInt_FMT ")", f, prob->Nf);
@@ -2568,15 +2636,15 @@ PetscErrorCode PetscDSGetExactSolutionTimeDerivative(PetscDS prob, PetscInt f, P
   Not collective
 
   Input Parameters:
-+ prob - The PetscDS
++ prob - The `PetscDS`
 . f    - The test field number
 . sol  - time derivative of the solution function for the test fields
 - ctx  - time derivative of the solution context or NULL
 
-  Note: The calling sequence for solution functions is given by:
-
-$ sol(PetscInt dim, PetscReal t, const PetscReal x[], PetscInt Nc, PetscScalar u[], void *ctx)
-
+  Calling sequence for solution functions:
+.vb
+  sol(PetscInt dim, PetscReal t, const PetscReal x[], PetscInt Nc, PetscScalar u[], void *ctx)
+.ve
 + dim - the spatial dimension
 . t - current time
 . x - coordinates of the current point
@@ -2586,9 +2654,10 @@ $ sol(PetscInt dim, PetscReal t, const PetscReal x[], PetscInt Nc, PetscScalar u
 
   Level: intermediate
 
-.seealso: `PetscDSGetExactSolutionTimeDerivative()`, `PetscDSSetExactSolution()`
+.seealso: `PetscDS`, `PetscDSGetExactSolutionTimeDerivative()`, `PetscDSSetExactSolution()`
 @*/
-PetscErrorCode PetscDSSetExactSolutionTimeDerivative(PetscDS prob, PetscInt f, PetscErrorCode (*sol)(PetscInt dim, PetscReal t, const PetscReal x[], PetscInt Nc, PetscScalar u[], void *ctx), void *ctx) {
+PetscErrorCode PetscDSSetExactSolutionTimeDerivative(PetscDS prob, PetscInt f, PetscErrorCode (*sol)(PetscInt dim, PetscReal t, const PetscReal x[], PetscInt Nc, PetscScalar u[], void *ctx), void *ctx)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
   PetscCheck(f >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %" PetscInt_FMT " must be non-negative", f);
@@ -2610,7 +2679,7 @@ PetscErrorCode PetscDSSetExactSolutionTimeDerivative(PetscDS prob, PetscInt f, P
   Not collective
 
   Input Parameter:
-. prob - The PetscDS object
+. prob - The `PetscDS` object
 
   Output Parameters:
 + numConstants - The number of constants
@@ -2618,9 +2687,10 @@ PetscErrorCode PetscDSSetExactSolutionTimeDerivative(PetscDS prob, PetscInt f, P
 
   Level: intermediate
 
-.seealso: `PetscDSSetConstants()`, `PetscDSCreate()`
+.seealso: `PetscDS`, `PetscDSSetConstants()`, `PetscDSCreate()`
 @*/
-PetscErrorCode PetscDSGetConstants(PetscDS prob, PetscInt *numConstants, const PetscScalar *constants[]) {
+PetscErrorCode PetscDSGetConstants(PetscDS prob, PetscInt *numConstants, const PetscScalar *constants[])
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
   if (numConstants) {
@@ -2640,15 +2710,16 @@ PetscErrorCode PetscDSGetConstants(PetscDS prob, PetscInt *numConstants, const P
   Not collective
 
   Input Parameters:
-+ prob         - The PetscDS object
++ prob         - The `PetscDS` object
 . numConstants - The number of constants
 - constants    - The array of constants, NULL if there are none
 
   Level: intermediate
 
-.seealso: `PetscDSGetConstants()`, `PetscDSCreate()`
+.seealso: `PetscDS`, `PetscDSGetConstants()`, `PetscDSCreate()`
 @*/
-PetscErrorCode PetscDSSetConstants(PetscDS prob, PetscInt numConstants, PetscScalar constants[]) {
+PetscErrorCode PetscDSSetConstants(PetscDS prob, PetscInt numConstants, PetscScalar constants[])
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
   if (numConstants != prob->numConstants) {
@@ -2673,7 +2744,7 @@ PetscErrorCode PetscDSSetConstants(PetscDS prob, PetscInt numConstants, PetscSca
   Not collective
 
   Input Parameters:
-+ prob - The PetscDS object
++ prob - The `PetscDS` object
 - disc - The discretization object
 
   Output Parameter:
@@ -2681,9 +2752,10 @@ PetscErrorCode PetscDSSetConstants(PetscDS prob, PetscInt numConstants, PetscSca
 
   Level: beginner
 
-.seealso: `PetscGetDiscretization()`, `PetscDSGetNumFields()`, `PetscDSCreate()`
+.seealso: `PetscDS`, `PetscGetDiscretization()`, `PetscDSGetNumFields()`, `PetscDSCreate()`
 @*/
-PetscErrorCode PetscDSGetFieldIndex(PetscDS prob, PetscObject disc, PetscInt *f) {
+PetscErrorCode PetscDSGetFieldIndex(PetscDS prob, PetscObject disc, PetscInt *f)
+{
   PetscInt g;
 
   PetscFunctionBegin;
@@ -2704,7 +2776,7 @@ PetscErrorCode PetscDSGetFieldIndex(PetscDS prob, PetscObject disc, PetscInt *f)
   Not collective
 
   Input Parameters:
-+ prob - The PetscDS object
++ prob - The `PetscDS` object
 - f - The field number
 
   Output Parameter:
@@ -2712,9 +2784,10 @@ PetscErrorCode PetscDSGetFieldIndex(PetscDS prob, PetscObject disc, PetscInt *f)
 
   Level: beginner
 
-.seealso: `PetscDSGetFieldOffset()`, `PetscDSGetNumFields()`, `PetscDSCreate()`
+.seealso: `PetscDS`, `PetscDSGetFieldOffset()`, `PetscDSGetNumFields()`, `PetscDSCreate()`
 @*/
-PetscErrorCode PetscDSGetFieldSize(PetscDS prob, PetscInt f, PetscInt *size) {
+PetscErrorCode PetscDSGetFieldSize(PetscDS prob, PetscInt f, PetscInt *size)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
   PetscValidIntPointer(size, 3);
@@ -2730,7 +2803,7 @@ PetscErrorCode PetscDSGetFieldSize(PetscDS prob, PetscInt f, PetscInt *size) {
   Not collective
 
   Input Parameters:
-+ prob - The PetscDS object
++ prob - The `PetscDS` object
 - f - The field number
 
   Output Parameter:
@@ -2738,9 +2811,10 @@ PetscErrorCode PetscDSGetFieldSize(PetscDS prob, PetscInt f, PetscInt *size) {
 
   Level: beginner
 
-.seealso: `PetscDSGetFieldSize()`, `PetscDSGetNumFields()`, `PetscDSCreate()`
+.seealso: `PetscDS`, `PetscDSGetFieldSize()`, `PetscDSGetNumFields()`, `PetscDSCreate()`
 @*/
-PetscErrorCode PetscDSGetFieldOffset(PetscDS prob, PetscInt f, PetscInt *off) {
+PetscErrorCode PetscDSGetFieldOffset(PetscDS prob, PetscInt f, PetscInt *off)
+{
   PetscInt size, g;
 
   PetscFunctionBegin;
@@ -2761,7 +2835,7 @@ PetscErrorCode PetscDSGetFieldOffset(PetscDS prob, PetscInt f, PetscInt *off) {
   Not collective
 
   Input Parameters:
-+ prob - The PetscDS object
++ prob - The `PetscDS` object
 - f - The field number
 
   Output Parameter:
@@ -2769,9 +2843,10 @@ PetscErrorCode PetscDSGetFieldOffset(PetscDS prob, PetscInt f, PetscInt *off) {
 
   Level: beginner
 
-.seealso: `PetscDSGetFieldSize()`, `PetscDSGetNumFields()`, `PetscDSCreate()`
+.seealso: `PetscDS`, `PetscDSGetFieldSize()`, `PetscDSGetNumFields()`, `PetscDSCreate()`
 @*/
-PetscErrorCode PetscDSGetFieldOffsetCohesive(PetscDS ds, PetscInt f, PetscInt *off) {
+PetscErrorCode PetscDSGetFieldOffsetCohesive(PetscDS ds, PetscInt f, PetscInt *off)
+{
   PetscInt size, g;
 
   PetscFunctionBegin;
@@ -2795,16 +2870,17 @@ PetscErrorCode PetscDSGetFieldOffsetCohesive(PetscDS ds, PetscInt f, PetscInt *o
   Not collective
 
   Input Parameter:
-. prob - The PetscDS object
+. prob - The `PetscDS` object
 
   Output Parameter:
 . dimensions - The number of dimensions
 
   Level: beginner
 
-.seealso: `PetscDSGetComponentOffsets()`, `PetscDSGetNumFields()`, `PetscDSCreate()`
+.seealso: `PetscDS`, `PetscDSGetComponentOffsets()`, `PetscDSGetNumFields()`, `PetscDSCreate()`
 @*/
-PetscErrorCode PetscDSGetDimensions(PetscDS prob, PetscInt *dimensions[]) {
+PetscErrorCode PetscDSGetDimensions(PetscDS prob, PetscInt *dimensions[])
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
   PetscCall(PetscDSSetUp(prob));
@@ -2819,16 +2895,17 @@ PetscErrorCode PetscDSGetDimensions(PetscDS prob, PetscInt *dimensions[]) {
   Not collective
 
   Input Parameter:
-. prob - The PetscDS object
+. prob - The `PetscDS` object
 
   Output Parameter:
 . components - The number of components
 
   Level: beginner
 
-.seealso: `PetscDSGetComponentOffsets()`, `PetscDSGetNumFields()`, `PetscDSCreate()`
+.seealso: `PetscDS`, `PetscDSGetComponentOffsets()`, `PetscDSGetNumFields()`, `PetscDSCreate()`
 @*/
-PetscErrorCode PetscDSGetComponents(PetscDS prob, PetscInt *components[]) {
+PetscErrorCode PetscDSGetComponents(PetscDS prob, PetscInt *components[])
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
   PetscCall(PetscDSSetUp(prob));
@@ -2843,7 +2920,7 @@ PetscErrorCode PetscDSGetComponents(PetscDS prob, PetscInt *components[]) {
   Not collective
 
   Input Parameters:
-+ prob - The PetscDS object
++ prob - The `PetscDS` object
 - f - The field number
 
   Output Parameter:
@@ -2851,9 +2928,10 @@ PetscErrorCode PetscDSGetComponents(PetscDS prob, PetscInt *components[]) {
 
   Level: beginner
 
-.seealso: `PetscDSGetNumFields()`, `PetscDSCreate()`
+.seealso: `PetscDS`, `PetscDSGetNumFields()`, `PetscDSCreate()`
 @*/
-PetscErrorCode PetscDSGetComponentOffset(PetscDS prob, PetscInt f, PetscInt *off) {
+PetscErrorCode PetscDSGetComponentOffset(PetscDS prob, PetscInt f, PetscInt *off)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
   PetscValidIntPointer(off, 3);
@@ -2869,16 +2947,17 @@ PetscErrorCode PetscDSGetComponentOffset(PetscDS prob, PetscInt f, PetscInt *off
   Not collective
 
   Input Parameter:
-. prob - The PetscDS object
+. prob - The `PetscDS` object
 
   Output Parameter:
 . offsets - The offsets
 
   Level: beginner
 
-.seealso: `PetscDSGetNumFields()`, `PetscDSCreate()`
+.seealso: `PetscDS`, `PetscDSGetNumFields()`, `PetscDSCreate()`
 @*/
-PetscErrorCode PetscDSGetComponentOffsets(PetscDS prob, PetscInt *offsets[]) {
+PetscErrorCode PetscDSGetComponentOffsets(PetscDS prob, PetscInt *offsets[])
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
   PetscValidPointer(offsets, 2);
@@ -2893,16 +2972,17 @@ PetscErrorCode PetscDSGetComponentOffsets(PetscDS prob, PetscInt *offsets[]) {
   Not collective
 
   Input Parameter:
-. prob - The PetscDS object
+. prob - The `PetscDS` object
 
   Output Parameter:
 . offsets - The offsets
 
   Level: beginner
 
-.seealso: `PetscDSGetNumFields()`, `PetscDSCreate()`
+.seealso: `PetscDS`, `PetscDSGetNumFields()`, `PetscDSCreate()`
 @*/
-PetscErrorCode PetscDSGetComponentDerivativeOffsets(PetscDS prob, PetscInt *offsets[]) {
+PetscErrorCode PetscDSGetComponentDerivativeOffsets(PetscDS prob, PetscInt *offsets[])
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
   PetscValidPointer(offsets, 2);
@@ -2917,7 +2997,7 @@ PetscErrorCode PetscDSGetComponentDerivativeOffsets(PetscDS prob, PetscInt *offs
   Not collective
 
   Input Parameters:
-+ ds - The PetscDS object
++ ds - The `PetscDS` object
 - s  - The cohesive side, 0 for negative, 1 for positive, 2 for cohesive
 
   Output Parameter:
@@ -2925,9 +3005,10 @@ PetscErrorCode PetscDSGetComponentDerivativeOffsets(PetscDS prob, PetscInt *offs
 
   Level: beginner
 
-.seealso: `PetscDSGetNumFields()`, `PetscDSCreate()`
+.seealso: `PetscDS`, `PetscDSGetNumFields()`, `PetscDSCreate()`
 @*/
-PetscErrorCode PetscDSGetComponentOffsetsCohesive(PetscDS ds, PetscInt s, PetscInt *offsets[]) {
+PetscErrorCode PetscDSGetComponentOffsetsCohesive(PetscDS ds, PetscInt s, PetscInt *offsets[])
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ds, PETSCDS_CLASSID, 1);
   PetscValidPointer(offsets, 3);
@@ -2944,7 +3025,7 @@ PetscErrorCode PetscDSGetComponentOffsetsCohesive(PetscDS ds, PetscInt s, PetscI
   Not collective
 
   Input Parameters:
-+ ds - The PetscDS object
++ ds - The `PetscDS` object
 - s  - The cohesive side, 0 for negative, 1 for positive, 2 for cohesive
 
   Output Parameter:
@@ -2952,9 +3033,10 @@ PetscErrorCode PetscDSGetComponentOffsetsCohesive(PetscDS ds, PetscInt s, PetscI
 
   Level: beginner
 
-.seealso: `PetscDSGetNumFields()`, `PetscDSCreate()`
+.seealso: `PetscDS`, `PetscDSGetNumFields()`, `PetscDSCreate()`
 @*/
-PetscErrorCode PetscDSGetComponentDerivativeOffsetsCohesive(PetscDS ds, PetscInt s, PetscInt *offsets[]) {
+PetscErrorCode PetscDSGetComponentDerivativeOffsetsCohesive(PetscDS ds, PetscInt s, PetscInt *offsets[])
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ds, PETSCDS_CLASSID, 1);
   PetscValidPointer(offsets, 3);
@@ -2971,16 +3053,17 @@ PetscErrorCode PetscDSGetComponentDerivativeOffsetsCohesive(PetscDS ds, PetscInt
   Not collective
 
   Input Parameter:
-. prob - The PetscDS object
+. prob - The `PetscDS` object
 
   Output Parameter:
 . T - The basis function and derivatives tabulation at quadrature points for each field
 
   Level: intermediate
 
-.seealso: `PetscDSCreate()`
+.seealso: `PetscDS`, `PetscTabulation`, `PetscDSCreate()`
 @*/
-PetscErrorCode PetscDSGetTabulation(PetscDS prob, PetscTabulation *T[]) {
+PetscErrorCode PetscDSGetTabulation(PetscDS prob, PetscTabulation *T[])
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
   PetscValidPointer(T, 2);
@@ -2995,16 +3078,17 @@ PetscErrorCode PetscDSGetTabulation(PetscDS prob, PetscTabulation *T[]) {
   Not collective
 
   Input Parameter:
-. prob - The PetscDS object
+. prob - The `PetscDS` object
 
   Output Parameter:
 . Tf - The basis function and derivative tabulation on each local face at quadrature points for each and field
 
   Level: intermediate
 
-.seealso: `PetscDSGetTabulation()`, `PetscDSCreate()`
+.seealso: `PetscTabulation`, `PetscDS`, `PetscDSGetTabulation()`, `PetscDSCreate()`
 @*/
-PetscErrorCode PetscDSGetFaceTabulation(PetscDS prob, PetscTabulation *Tf[]) {
+PetscErrorCode PetscDSGetFaceTabulation(PetscDS prob, PetscTabulation *Tf[])
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
   PetscValidPointer(Tf, 2);
@@ -3013,7 +3097,8 @@ PetscErrorCode PetscDSGetFaceTabulation(PetscDS prob, PetscTabulation *Tf[]) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscDSGetEvaluationArrays(PetscDS prob, PetscScalar **u, PetscScalar **u_t, PetscScalar **u_x) {
+PetscErrorCode PetscDSGetEvaluationArrays(PetscDS prob, PetscScalar **u, PetscScalar **u_t, PetscScalar **u_x)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
   PetscCall(PetscDSSetUp(prob));
@@ -3032,7 +3117,8 @@ PetscErrorCode PetscDSGetEvaluationArrays(PetscDS prob, PetscScalar **u, PetscSc
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscDSGetWeakFormArrays(PetscDS prob, PetscScalar **f0, PetscScalar **f1, PetscScalar **g0, PetscScalar **g1, PetscScalar **g2, PetscScalar **g3) {
+PetscErrorCode PetscDSGetWeakFormArrays(PetscDS prob, PetscScalar **f0, PetscScalar **f1, PetscScalar **g0, PetscScalar **g1, PetscScalar **g2, PetscScalar **g3)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
   PetscCall(PetscDSSetUp(prob));
@@ -3063,7 +3149,8 @@ PetscErrorCode PetscDSGetWeakFormArrays(PetscDS prob, PetscScalar **f0, PetscSca
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscDSGetWorkspace(PetscDS prob, PetscReal **x, PetscScalar **basisReal, PetscScalar **basisDerReal, PetscScalar **testReal, PetscScalar **testDerReal) {
+PetscErrorCode PetscDSGetWorkspace(PetscDS prob, PetscReal **x, PetscScalar **basisReal, PetscScalar **basisDerReal, PetscScalar **testReal, PetscScalar **testDerReal)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
   PetscCall(PetscDSSetUp(prob));
@@ -3091,16 +3178,18 @@ PetscErrorCode PetscDSGetWorkspace(PetscDS prob, PetscReal **x, PetscScalar **ba
 }
 
 /*@C
-  PetscDSAddBoundary - Add a boundary condition to the model. The pointwise functions are used to provide boundary values for essential boundary conditions. In FEM, they are acting upon by dual basis functionals to generate FEM coefficients which are fixed. Natural boundary conditions signal to PETSc that boundary integrals should be performed, using the kernels from PetscDSSetBdResidual().
+  PetscDSAddBoundary - Add a boundary condition to the model. The pointwise functions are used to provide boundary values for essential boundary conditions.
+  In FEM, they are acting upon by dual basis functionals to generate FEM coefficients which are fixed. Natural boundary conditions signal to PETSc that boundary
+  integrals should be performed, using the kernels from `PetscDSSetBdResidual()`.
 
   Collective on ds
 
   Input Parameters:
 + ds       - The PetscDS object
-. type     - The type of condition, e.g. DM_BC_ESSENTIAL/DM_BC_ESSENTIAL_FIELD (Dirichlet), or DM_BC_NATURAL (Neumann)
+. type     - The type of condition, e.g. `DM_BC_ESSENTIAL`/`DM_BC_ESSENTIAL_FIELD` (Dirichlet), or `DM_BC_NATURAL` (Neumann)
 . name     - The BC name
 . label    - The label defining constrained points
-. Nv       - The number of DMLabel values for constrained points
+. Nv       - The number of `DMLabel` values for constrained points
 . values   - An array of label values for constrained points
 . field    - The field to constrain
 . Nc       - The number of constrained field components (0 will constrain all fields)
@@ -3116,18 +3205,20 @@ PetscErrorCode PetscDSGetWorkspace(PetscDS prob, PetscReal **x, PetscScalar **ba
 + -bc_<boundary name> <num> - Overrides the boundary ids
 - -bc_<boundary name>_comp <num> - Overrides the boundary components
 
+  Level: developer
+
   Note:
-  Both bcFunc abd bcFunc_t will depend on the boundary condition type. If the type if DM_BC_ESSENTIAL, Then the calling sequence is:
+  Both bcFunc abd bcFunc_t will depend on the boundary condition type. If the type if `DM_BC_ESSENTIAL`, Then the calling sequence is:
 
 $ bcFunc(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar bcval[])
 
-  If the type is DM_BC_ESSENTIAL_FIELD or other _FIELD value, then the calling sequence is:
-
-$ bcFunc(PetscInt dim, PetscInt Nf, PetscInt NfAux,
-$        const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
-$        const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-$        PetscReal time, const PetscReal x[], PetscScalar bcval[])
-
+  If the type is `DM_BC_ESSENTIAL_FIELD` or other _FIELD value, then the calling sequence is:
+.vb
+  bcFunc(PetscInt dim, PetscInt Nf, PetscInt NfAux,
+         const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
+         const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
+         PetscReal time, const PetscReal x[], PetscScalar bcval[])
+.ve
 + dim - the spatial dimension
 . Nf - the number of fields
 . uOff - the offset into u[] and u_t[] for each field
@@ -3146,11 +3237,10 @@ $        PetscReal time, const PetscReal x[], PetscScalar bcval[])
 . constants - constant parameters
 - bcval - output values at the current point
 
-  Level: developer
-
-.seealso: `PetscDSAddBoundaryByName()`, `PetscDSGetBoundary()`, `PetscDSSetResidual()`, `PetscDSSetBdResidual()`
+.seealso: `PetscDS`, `PetscWeakForm`, `DMLabel`, `DMBoundaryConditionType`, `PetscDSAddBoundaryByName()`, `PetscDSGetBoundary()`, `PetscDSSetResidual()`, `PetscDSSetBdResidual()`
 @*/
-PetscErrorCode PetscDSAddBoundary(PetscDS ds, DMBoundaryConditionType type, const char name[], DMLabel label, PetscInt Nv, const PetscInt values[], PetscInt field, PetscInt Nc, const PetscInt comps[], void (*bcFunc)(void), void (*bcFunc_t)(void), void *ctx, PetscInt *bd) {
+PetscErrorCode PetscDSAddBoundary(PetscDS ds, DMBoundaryConditionType type, const char name[], DMLabel label, PetscInt Nv, const PetscInt values[], PetscInt field, PetscInt Nc, const PetscInt comps[], void (*bcFunc)(void), void (*bcFunc_t)(void), void *ctx, PetscInt *bd)
+{
   DSBoundary  head = ds->boundary, b;
   PetscInt    n    = 0;
   const char *lname;
@@ -3210,16 +3300,18 @@ PetscErrorCode PetscDSAddBoundary(PetscDS ds, DMBoundaryConditionType type, cons
 }
 
 /*@C
-  PetscDSAddBoundaryByName - Add a boundary condition to the model. The pointwise functions are used to provide boundary values for essential boundary conditions. In FEM, they are acting upon by dual basis functionals to generate FEM coefficients which are fixed. Natural boundary conditions signal to PETSc that boundary integrals should be performed, using the kernels from PetscDSSetBdResidual().
+  PetscDSAddBoundaryByName - Add a boundary condition to the model. The pointwise functions are used to provide boundary values for essential boundary conditions.
+  In FEM, they are acting upon by dual basis functionals to generate FEM coefficients which are fixed. Natural boundary conditions signal to PETSc that
+  boundary integrals should be performed, using the kernels from `PetscDSSetBdResidual()`.
 
   Collective on ds
 
   Input Parameters:
-+ ds       - The PetscDS object
-. type     - The type of condition, e.g. DM_BC_ESSENTIAL/DM_BC_ESSENTIAL_FIELD (Dirichlet), or DM_BC_NATURAL (Neumann)
++ ds       - The `PetscDS` object
+. type     - The type of condition, e.g. `DM_BC_ESSENTIAL`/`DM_BC_ESSENTIAL_FIELD` (Dirichlet), or `DM_BC_NATURAL` (Neumann)
 . name     - The BC name
 . lname    - The naem of the label defining constrained points
-. Nv       - The number of DMLabel values for constrained points
+. Nv       - The number of `DMLabel` values for constrained points
 . values   - An array of label values for constrained points
 . field    - The field to constrain
 . Nc       - The number of constrained field components (0 will constrain all fields)
@@ -3235,20 +3327,18 @@ PetscErrorCode PetscDSAddBoundary(PetscDS ds, DMBoundaryConditionType type, cons
 + -bc_<boundary name> <num> - Overrides the boundary ids
 - -bc_<boundary name>_comp <num> - Overrides the boundary components
 
-  Note:
-  This function should only be used with DMForest currently, since labels cannot be defined before the underlygin Plex is built.
-
-  Both bcFunc abd bcFunc_t will depend on the boundary condition type. If the type if DM_BC_ESSENTIAL, Then the calling sequence is:
-
-$ bcFunc(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar bcval[])
-
-  If the type is DM_BC_ESSENTIAL_FIELD or other _FIELD value, then the calling sequence is:
-
-$ bcFunc(PetscInt dim, PetscInt Nf, PetscInt NfAux,
-$        const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
-$        const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
-$        PetscReal time, const PetscReal x[], PetscScalar bcval[])
-
+  Calling Sequence of bcFunc() and bcFunc_t():
+  If the type is `DM_BC_ESSENTIAL`
+.vb
+  bcFunc(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar bcval[])
+.ve
+  If the type is `DM_BC_ESSENTIAL_FIELD` or other _FIELD value,
+.vb
+  bcFunc(PetscInt dim, PetscInt Nf, PetscInt NfAux,
+         const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[],
+         const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
+         PetscReal time, const PetscReal x[], PetscScalar bcval[])
+.ve
 + dim - the spatial dimension
 . Nf - the number of fields
 . uOff - the offset into u[] and u_t[] for each field
@@ -3269,9 +3359,13 @@ $        PetscReal time, const PetscReal x[], PetscScalar bcval[])
 
   Level: developer
 
-.seealso: `PetscDSAddBoundary()`, `PetscDSGetBoundary()`, `PetscDSSetResidual()`, `PetscDSSetBdResidual()`
+  Note:
+  This function should only be used with `DMFOREST` currently, since labels cannot be defined before the underlying `DMPLEX` is built.
+
+.seealso: `PetscDS`, `PetscWeakForm`, `DMLabel`, `DMBoundaryConditionType`, `PetscDSAddBoundary()`, `PetscDSGetBoundary()`, `PetscDSSetResidual()`, `PetscDSSetBdResidual()`
 @*/
-PetscErrorCode PetscDSAddBoundaryByName(PetscDS ds, DMBoundaryConditionType type, const char name[], const char lname[], PetscInt Nv, const PetscInt values[], PetscInt field, PetscInt Nc, const PetscInt comps[], void (*bcFunc)(void), void (*bcFunc_t)(void), void *ctx, PetscInt *bd) {
+PetscErrorCode PetscDSAddBoundaryByName(PetscDS ds, DMBoundaryConditionType type, const char name[], const char lname[], PetscInt Nv, const PetscInt values[], PetscInt field, PetscInt Nc, const PetscInt comps[], void (*bcFunc)(void), void (*bcFunc_t)(void), void *ctx, PetscInt *bd)
+{
   DSBoundary head = ds->boundary, b;
   PetscInt   n    = 0;
 
@@ -3319,15 +3413,17 @@ PetscErrorCode PetscDSAddBoundaryByName(PetscDS ds, DMBoundaryConditionType type
 }
 
 /*@C
-  PetscDSUpdateBoundary - Change a boundary condition for the model. The pointwise functions are used to provide boundary values for essential boundary conditions. In FEM, they are acting upon by dual basis functionals to generate FEM coefficients which are fixed. Natural boundary conditions signal to PETSc that boundary integrals should be performed, using the kernels from PetscDSSetBdResidual().
+  PetscDSUpdateBoundary - Change a boundary condition for the model. The pointwise functions are used to provide boundary values for essential boundary conditions.
+  In FEM, they are acting upon by dual basis functionals to generate FEM coefficients which are fixed. Natural boundary conditions signal to PETSc that boundary integrals
+  should be performed, using the kernels from `PetscDSSetBdResidual()`.
 
   Input Parameters:
-+ ds       - The PetscDS object
++ ds       - The `PetscDS` object
 . bd       - The boundary condition number
-. type     - The type of condition, e.g. DM_BC_ESSENTIAL/DM_BC_ESSENTIAL_FIELD (Dirichlet), or DM_BC_NATURAL (Neumann)
+. type     - The type of condition, e.g. `DM_BC_ESSENTIAL`/`DM_BC_ESSENTIAL_FIELD` (Dirichlet), or `DM_BC_NATURAL` (Neumann)
 . name     - The BC name
 . label    - The label defining constrained points
-. Nv       - The number of DMLabel ids for constrained points
+. Nv       - The number of `DMLabel` ids for constrained points
 . values   - An array of ids for constrained points
 . field    - The field to constrain
 . Nc       - The number of constrained field components
@@ -3336,14 +3432,16 @@ PetscErrorCode PetscDSAddBoundaryByName(PetscDS ds, DMBoundaryConditionType type
 . bcFunc_t - A pointwise function giving the time derivative of the boundary values, or NULL
 - ctx      - An optional user context for bcFunc
 
-  Note:
-  The boundary condition number is the order in which it was registered. The user can get the number of boundary conditions from PetscDSGetNumBoundary(). See PetscDSAddBoundary() for a description of the calling sequences for the callbacks.
-
   Level: developer
 
-.seealso: `PetscDSAddBoundary()`, `PetscDSGetBoundary()`, `PetscDSGetNumBoundary()`
+  Note:
+  The boundary condition number is the order in which it was registered. The user can get the number of boundary conditions from `PetscDSGetNumBoundary()`.
+  See `PetscDSAddBoundary()` for a description of the calling sequences for the callbacks.
+
+.seealso: `PetscDS`, `PetscWeakForm`, `DMBoundaryConditionType`, `PetscDSAddBoundary()`, `PetscDSGetBoundary()`, `PetscDSGetNumBoundary()`, `DMLabel`
 @*/
-PetscErrorCode PetscDSUpdateBoundary(PetscDS ds, PetscInt bd, DMBoundaryConditionType type, const char name[], DMLabel label, PetscInt Nv, const PetscInt values[], PetscInt field, PetscInt Nc, const PetscInt comps[], void (*bcFunc)(void), void (*bcFunc_t)(void), void *ctx) {
+PetscErrorCode PetscDSUpdateBoundary(PetscDS ds, PetscInt bd, DMBoundaryConditionType type, const char name[], DMLabel label, PetscInt Nv, const PetscInt values[], PetscInt field, PetscInt Nc, const PetscInt comps[], void (*bcFunc)(void), void (*bcFunc_t)(void), void *ctx)
+{
   DSBoundary b = ds->boundary;
   PetscInt   n = 0;
 
@@ -3391,16 +3489,17 @@ PetscErrorCode PetscDSUpdateBoundary(PetscDS ds, PetscInt bd, DMBoundaryConditio
   PetscDSGetNumBoundary - Get the number of registered BC
 
   Input Parameters:
-. ds - The PetscDS object
+. ds - The `PetscDS` object
 
   Output Parameters:
 . numBd - The number of BC
 
   Level: intermediate
 
-.seealso: `PetscDSAddBoundary()`, `PetscDSGetBoundary()`
+.seealso: `PetscDS`, `PetscDSAddBoundary()`, `PetscDSGetBoundary()`
 @*/
-PetscErrorCode PetscDSGetNumBoundary(PetscDS ds, PetscInt *numBd) {
+PetscErrorCode PetscDSGetNumBoundary(PetscDS ds, PetscInt *numBd)
+{
   DSBoundary b = ds->boundary;
 
   PetscFunctionBegin;
@@ -3418,15 +3517,15 @@ PetscErrorCode PetscDSGetNumBoundary(PetscDS ds, PetscInt *numBd) {
   PetscDSGetBoundary - Gets a boundary condition to the model
 
   Input Parameters:
-+ ds          - The PetscDS object
++ ds          - The `PetscDS` object
 - bd          - The BC number
 
   Output Parameters:
-+ wf       - The PetscWeakForm holding the pointwise functions
-. type     - The type of condition, e.g. DM_BC_ESSENTIAL/DM_BC_ESSENTIAL_FIELD (Dirichlet), or DM_BC_NATURAL (Neumann)
++ wf       - The `PetscWeakForm` holding the pointwise functions
+. type     - The type of condition, e.g. `DM_BC_ESSENTIAL`/`DM_BC_ESSENTIAL_FIELD` (Dirichlet), or `DM_BC_NATURAL` (Neumann)
 . name     - The BC name
 . label    - The label defining constrained points
-. Nv       - The number of DMLabel ids for constrained points
+. Nv       - The number of `DMLabel` ids for constrained points
 . values   - An array of ids for constrained points
 . field    - The field to constrain
 . Nc       - The number of constrained field components
@@ -3441,9 +3540,10 @@ PetscErrorCode PetscDSGetNumBoundary(PetscDS ds, PetscInt *numBd) {
 
   Level: developer
 
-.seealso: `PetscDSAddBoundary()`
+.seealso: `PetscDS`, `PetscWeakForm`, `DMBoundaryConditionType`, `PetscDSAddBoundary()`, `DMLabel`
 @*/
-PetscErrorCode PetscDSGetBoundary(PetscDS ds, PetscInt bd, PetscWeakForm *wf, DMBoundaryConditionType *type, const char *name[], DMLabel *label, PetscInt *Nv, const PetscInt *values[], PetscInt *field, PetscInt *Nc, const PetscInt *comps[], void (**func)(void), void (**func_t)(void), void **ctx) {
+PetscErrorCode PetscDSGetBoundary(PetscDS ds, PetscInt bd, PetscWeakForm *wf, DMBoundaryConditionType *type, const char *name[], DMLabel *label, PetscInt *Nv, const PetscInt *values[], PetscInt *field, PetscInt *Nc, const PetscInt *comps[], void (**func)(void), void (**func_t)(void), void **ctx)
+{
   DSBoundary b = ds->boundary;
   PetscInt   n = 0;
 
@@ -3506,7 +3606,8 @@ PetscErrorCode PetscDSGetBoundary(PetscDS ds, PetscInt bd, PetscWeakForm *wf, DM
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DSBoundaryDuplicate_Internal(DSBoundary b, DSBoundary *bNew) {
+static PetscErrorCode DSBoundaryDuplicate_Internal(DSBoundary b, DSBoundary *bNew)
+{
   PetscFunctionBegin;
   PetscCall(PetscNew(bNew));
   PetscCall(PetscWeakFormCreate(PETSC_COMM_SELF, &(*bNew)->wf));
@@ -3534,18 +3635,19 @@ static PetscErrorCode DSBoundaryDuplicate_Internal(DSBoundary b, DSBoundary *bNe
   Not collective
 
   Input Parameters:
-+ ds        - The source PetscDS object
-. numFields - The number of selected fields, or PETSC_DEFAULT for all fields
++ ds        - The source `PetscDS` object
+. numFields - The number of selected fields, or `PETSC_DEFAULT` for all fields
 - fields    - The selected fields, or NULL for all fields
 
   Output Parameter:
-. newds     - The target PetscDS, now with a copy of the boundary conditions
+. newds     - The target `PetscDS`, now with a copy of the boundary conditions
 
   Level: intermediate
 
-.seealso: `PetscDSCopyEquations()`, `PetscDSSetResidual()`, `PetscDSSetJacobian()`, `PetscDSSetRiemannSolver()`, `PetscDSSetBdResidual()`, `PetscDSSetBdJacobian()`, `PetscDSCreate()`
+.seealso: `PetscDS`, `DMBoundary`, `PetscDSCopyEquations()`, `PetscDSSetResidual()`, `PetscDSSetJacobian()`, `PetscDSSetRiemannSolver()`, `PetscDSSetBdResidual()`, `PetscDSSetBdJacobian()`, `PetscDSCreate()`
 @*/
-PetscErrorCode PetscDSCopyBoundary(PetscDS ds, PetscInt numFields, const PetscInt fields[], PetscDS newds) {
+PetscErrorCode PetscDSCopyBoundary(PetscDS ds, PetscInt numFields, const PetscInt fields[], PetscDS newds)
+{
   DSBoundary b, *lastnext;
 
   PetscFunctionBegin;
@@ -3575,18 +3677,19 @@ PetscErrorCode PetscDSCopyBoundary(PetscDS ds, PetscInt numFields, const PetscIn
 }
 
 /*@
-  PetscDSDestroyBoundary - Remove all DMBoundary objects from the PetscDS
+  PetscDSDestroyBoundary - Remove all `DMBoundary` objects from the `PetscDS`
 
   Not collective
 
   Input Parameter:
-. ds - The PetscDS object
+. ds - The `PetscDS` object
 
   Level: intermediate
 
-.seealso: `PetscDSCopyBoundary()`, `PetscDSCopyEquations()`
+.seealso: `PetscDS`, `DMBoundary`, `PetscDSCopyBoundary()`, `PetscDSCopyEquations()`
 @*/
-PetscErrorCode PetscDSDestroyBoundary(PetscDS ds) {
+PetscErrorCode PetscDSDestroyBoundary(PetscDS ds)
+{
   DSBoundary next = ds->boundary;
 
   PetscFunctionBegin;
@@ -3610,18 +3713,19 @@ PetscErrorCode PetscDSDestroyBoundary(PetscDS ds) {
   Not collective
 
   Input Parameters:
-+ prob - The PetscDS object
++ prob - The `PetscDS` object
 . numFields - Number of new fields
 - fields - Old field number for each new field
 
   Output Parameter:
-. newprob - The PetscDS copy
+. newprob - The `PetscDS` copy
 
   Level: intermediate
 
-.seealso: `PetscDSSelectEquations()`, `PetscDSCopyBoundary()`, `PetscDSSetResidual()`, `PetscDSSetJacobian()`, `PetscDSSetRiemannSolver()`, `PetscDSSetBdResidual()`, `PetscDSSetBdJacobian()`, `PetscDSCreate()`
+.seealso: `PetscDS`, `PetscDSSelectEquations()`, `PetscDSCopyBoundary()`, `PetscDSSetResidual()`, `PetscDSSetJacobian()`, `PetscDSSetRiemannSolver()`, `PetscDSSetBdResidual()`, `PetscDSSetBdJacobian()`, `PetscDSCreate()`
 @*/
-PetscErrorCode PetscDSSelectDiscretizations(PetscDS prob, PetscInt numFields, const PetscInt fields[], PetscDS newprob) {
+PetscErrorCode PetscDSSelectDiscretizations(PetscDS prob, PetscInt numFields, const PetscInt fields[], PetscDS newprob)
+{
   PetscInt Nf, Nfn, fn;
 
   PetscFunctionBegin;
@@ -3648,18 +3752,19 @@ PetscErrorCode PetscDSSelectDiscretizations(PetscDS prob, PetscInt numFields, co
   Not collective
 
   Input Parameters:
-+ prob - The PetscDS object
++ prob - The `PetscDS` object
 . numFields - Number of new fields
 - fields - Old field number for each new field
 
   Output Parameter:
-. newprob - The PetscDS copy
+. newprob - The `PetscDS` copy
 
   Level: intermediate
 
-.seealso: `PetscDSSelectDiscretizations()`, `PetscDSCopyBoundary()`, `PetscDSSetResidual()`, `PetscDSSetJacobian()`, `PetscDSSetRiemannSolver()`, `PetscDSSetBdResidual()`, `PetscDSSetBdJacobian()`, `PetscDSCreate()`
+.seealso: `PetscDS`, `PetscDSSelectDiscretizations()`, `PetscDSCopyBoundary()`, `PetscDSSetResidual()`, `PetscDSSetJacobian()`, `PetscDSSetRiemannSolver()`, `PetscDSSetBdResidual()`, `PetscDSSetBdJacobian()`, `PetscDSCreate()`
 @*/
-PetscErrorCode PetscDSSelectEquations(PetscDS prob, PetscInt numFields, const PetscInt fields[], PetscDS newprob) {
+PetscErrorCode PetscDSSelectEquations(PetscDS prob, PetscInt numFields, const PetscInt fields[], PetscDS newprob)
+{
   PetscInt Nf, Nfn, fn, gn;
 
   PetscFunctionBegin;
@@ -3704,21 +3809,22 @@ PetscErrorCode PetscDSSelectEquations(PetscDS prob, PetscInt numFields, const Pe
 }
 
 /*@
-  PetscDSCopyEquations - Copy all pointwise function pointers to the new problem
+  PetscDSCopyEquations - Copy all pointwise function pointers to another `PetscDS`
 
   Not collective
 
   Input Parameter:
-. prob - The PetscDS object
+. prob - The `PetscDS` object
 
   Output Parameter:
-. newprob - The PetscDS copy
+. newprob - The `PetscDS` copy
 
   Level: intermediate
 
-.seealso: `PetscDSCopyBoundary()`, `PetscDSSetResidual()`, `PetscDSSetJacobian()`, `PetscDSSetRiemannSolver()`, `PetscDSSetBdResidual()`, `PetscDSSetBdJacobian()`, `PetscDSCreate()`
+.seealso: `PetscDS`, `PetscDSCopyBoundary()`, `PetscDSSetResidual()`, `PetscDSSetJacobian()`, `PetscDSSetRiemannSolver()`, `PetscDSSetBdResidual()`, `PetscDSSetBdJacobian()`, `PetscDSCreate()`
 @*/
-PetscErrorCode PetscDSCopyEquations(PetscDS prob, PetscDS newprob) {
+PetscErrorCode PetscDSCopyEquations(PetscDS prob, PetscDS newprob)
+{
   PetscWeakForm wf, newwf;
   PetscInt      Nf, Ng;
 
@@ -3735,21 +3841,22 @@ PetscErrorCode PetscDSCopyEquations(PetscDS prob, PetscDS newprob) {
 }
 
 /*@
-  PetscDSCopyConstants - Copy all constants to the new problem
+  PetscDSCopyConstants - Copy all constants to another `PetscDS`
 
   Not collective
 
   Input Parameter:
-. prob - The PetscDS object
+. prob - The `PetscDS` object
 
   Output Parameter:
-. newprob - The PetscDS copy
+. newprob - The `PetscDS` copy
 
   Level: intermediate
 
-.seealso: `PetscDSCopyBoundary()`, `PetscDSCopyEquations()`, `PetscDSSetResidual()`, `PetscDSSetJacobian()`, `PetscDSSetRiemannSolver()`, `PetscDSSetBdResidual()`, `PetscDSSetBdJacobian()`, `PetscDSCreate()`
+.seealso: `PetscDS`, `PetscDSCopyBoundary()`, `PetscDSCopyEquations()`, `PetscDSSetResidual()`, `PetscDSSetJacobian()`, `PetscDSSetRiemannSolver()`, `PetscDSSetBdResidual()`, `PetscDSSetBdJacobian()`, `PetscDSCreate()`
 @*/
-PetscErrorCode PetscDSCopyConstants(PetscDS prob, PetscDS newprob) {
+PetscErrorCode PetscDSCopyConstants(PetscDS prob, PetscDS newprob)
+{
   PetscInt           Nc;
   const PetscScalar *constants;
 
@@ -3762,21 +3869,22 @@ PetscErrorCode PetscDSCopyConstants(PetscDS prob, PetscDS newprob) {
 }
 
 /*@
-  PetscDSCopyExactSolutions - Copy all exact solutions to the new problem
+  PetscDSCopyExactSolutions - Copy all exact solutions to another `PetscDS`
 
   Not collective
 
   Input Parameter:
-. ds - The PetscDS object
+. ds - The `PetscDS` object
 
   Output Parameter:
-. newds - The PetscDS copy
+. newds - The `PetscDS` copy
 
   Level: intermediate
 
-.seealso: `PetscDSCopyBoundary()`, `PetscDSCopyEquations()`, `PetscDSSetResidual()`, `PetscDSSetJacobian()`, `PetscDSSetRiemannSolver()`, `PetscDSSetBdResidual()`, `PetscDSSetBdJacobian()`, `PetscDSCreate()`
+.seealso: `PetscDS`, `PetscDSCopyBoundary()`, `PetscDSCopyEquations()`, `PetscDSSetResidual()`, `PetscDSSetJacobian()`, `PetscDSSetRiemannSolver()`, `PetscDSSetBdResidual()`, `PetscDSSetBdJacobian()`, `PetscDSCreate()`
 @*/
-PetscErrorCode PetscDSCopyExactSolutions(PetscDS ds, PetscDS newds) {
+PetscErrorCode PetscDSCopyExactSolutions(PetscDS ds, PetscDS newds)
+{
   PetscSimplePointFunc sol;
   void                *ctx;
   PetscInt             Nf, f;
@@ -3794,7 +3902,8 @@ PetscErrorCode PetscDSCopyExactSolutions(PetscDS ds, PetscDS newds) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscDSGetHeightSubspace(PetscDS prob, PetscInt height, PetscDS *subprob) {
+PetscErrorCode PetscDSGetHeightSubspace(PetscDS prob, PetscInt height, PetscDS *subprob)
+{
   PetscInt dim, Nf, f;
 
   PetscFunctionBegin;
@@ -3830,7 +3939,8 @@ PetscErrorCode PetscDSGetHeightSubspace(PetscDS prob, PetscInt height, PetscDS *
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscDSGetDiscType_Internal(PetscDS ds, PetscInt f, PetscDiscType *disctype) {
+PetscErrorCode PetscDSGetDiscType_Internal(PetscDS ds, PetscInt f, PetscDiscType *disctype)
+{
   PetscObject  obj;
   PetscClassId id;
   PetscInt     Nf;
@@ -3850,13 +3960,15 @@ PetscErrorCode PetscDSGetDiscType_Internal(PetscDS ds, PetscInt f, PetscDiscType
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscDSDestroy_Basic(PetscDS ds) {
+static PetscErrorCode PetscDSDestroy_Basic(PetscDS ds)
+{
   PetscFunctionBegin;
   PetscCall(PetscFree(ds->data));
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscDSInitialize_Basic(PetscDS ds) {
+static PetscErrorCode PetscDSInitialize_Basic(PetscDS ds)
+{
   PetscFunctionBegin;
   ds->ops->setfromoptions = NULL;
   ds->ops->setup          = NULL;
@@ -3873,12 +3985,13 @@ static PetscErrorCode PetscDSInitialize_Basic(PetscDS ds) {
 .seealso: `PetscDSType`, `PetscDSCreate()`, `PetscDSSetType()`
 M*/
 
-PETSC_EXTERN PetscErrorCode PetscDSCreate_Basic(PetscDS ds) {
+PETSC_EXTERN PetscErrorCode PetscDSCreate_Basic(PetscDS ds)
+{
   PetscDS_Basic *b;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ds, PETSCDS_CLASSID, 1);
-  PetscCall(PetscNewLog(ds, &b));
+  PetscCall(PetscNew(&b));
   ds->data = b;
 
   PetscCall(PetscDSInitialize_Basic(ds));

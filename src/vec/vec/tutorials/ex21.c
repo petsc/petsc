@@ -2,30 +2,32 @@
 #include <petsc/private/f90impl.h>
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
-#define vecgetarraymystruct_       VECGETARRAYMYSTRUCT
-#define vecrestorearraymystruct_   VECRESTOREARRAYMYSTRUCT
-#define f90array1dcreatemystruct_  F90ARRAY1DCREATEMYSTRUCT
-#define f90array1daccessmystruct_  F90ARRAY1DACCESSMYSTRUCT
-#define f90array1ddestroymystruct_ F90ARRAY1DDESTROYMYSTRUCT
-#define f90array1dgetaddrmystruct_ F90ARRAY1DGETADDRMYSTRUCT
+  #define vecgetarraymystruct_       VECGETARRAYMYSTRUCT
+  #define vecrestorearraymystruct_   VECRESTOREARRAYMYSTRUCT
+  #define f90array1dcreatemystruct_  F90ARRAY1DCREATEMYSTRUCT
+  #define f90array1daccessmystruct_  F90ARRAY1DACCESSMYSTRUCT
+  #define f90array1ddestroymystruct_ F90ARRAY1DDESTROYMYSTRUCT
+  #define f90array1dgetaddrmystruct_ F90ARRAY1DGETADDRMYSTRUCT
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
-#define vecgetarraymystruct_       vecgetarraymystruct
-#define vecrestorearraymystruct_   vecrestorearraymystruct
-#define f90array1dcreatemystruct_  f90array1dcreatemystruct
-#define f90array1daccessmystruct_  f90array1daccessmystruct
-#define f90array1ddestroymystruct_ f90array1ddestroymystruct
-#define f90array1dgetaddrmystruct_ f90array1dgetaddrmystruct
+  #define vecgetarraymystruct_       vecgetarraymystruct
+  #define vecrestorearraymystruct_   vecrestorearraymystruct
+  #define f90array1dcreatemystruct_  f90array1dcreatemystruct
+  #define f90array1daccessmystruct_  f90array1daccessmystruct
+  #define f90array1ddestroymystruct_ f90array1ddestroymystruct
+  #define f90array1dgetaddrmystruct_ f90array1dgetaddrmystruct
 #endif
 
 PETSC_INTERN void f90array1dcreatemystruct_(void *, PetscInt *, PetscInt *, F90Array1d *PETSC_F90_2PTR_PROTO_NOVAR);
 PETSC_INTERN void f90array1daccessmystruct_(F90Array1d *, void **PETSC_F90_2PTR_PROTO_NOVAR);
 PETSC_INTERN void f90array1ddestroymystruct_(F90Array1d *ptr PETSC_F90_2PTR_PROTO_NOVAR);
 
-PETSC_INTERN void f90array1dgetaddrmystruct_(void *array, PetscFortranAddr *address) {
+PETSC_INTERN void f90array1dgetaddrmystruct_(void *array, PetscFortranAddr *address)
+{
   *address = (PetscFortranAddr)array;
 }
 
-PETSC_INTERN void vecgetarraymystruct_(Vec *x, F90Array1d *ptr, int *__ierr PETSC_F90_2PTR_PROTO(ptrd)) {
+PETSC_INTERN void vecgetarraymystruct_(Vec *x, F90Array1d *ptr, int *__ierr PETSC_F90_2PTR_PROTO(ptrd))
+{
   PetscScalar *fa;
   PetscInt     len, one = 1;
   if (!ptr) {
@@ -39,7 +41,8 @@ PETSC_INTERN void vecgetarraymystruct_(Vec *x, F90Array1d *ptr, int *__ierr PETS
   f90array1dcreatemystruct_(fa, &one, &len, ptr PETSC_F90_2PTR_PARAM(ptrd));
 }
 
-PETSC_INTERN void vecrestorearraymystruct_(Vec *x, F90Array1d *ptr, int *__ierr PETSC_F90_2PTR_PROTO(ptrd)) {
+PETSC_INTERN void vecrestorearraymystruct_(Vec *x, F90Array1d *ptr, int *__ierr PETSC_F90_2PTR_PROTO(ptrd))
+{
   PetscScalar *fa;
   f90array1daccessmystruct_(ptr, (void **)&fa PETSC_F90_2PTR_PARAM(ptrd));
   f90array1ddestroymystruct_(ptr PETSC_F90_2PTR_PARAM(ptrd));

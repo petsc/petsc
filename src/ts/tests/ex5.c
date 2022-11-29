@@ -143,7 +143,8 @@ extern PetscErrorCode potential_temperature(PetscScalar, PetscScalar, PetscScala
 extern PetscErrorCode latentflux(PetscScalar, PetscScalar, PetscScalar, PetscScalar, PetscScalar *);             /* calculates latent heat flux */
 extern PetscErrorCode calc_gflux(PetscScalar, PetscScalar, PetscScalar *);                                       /* calculates flux between top soil layer and underlying earth */
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscInt      time; /* amount of loops */
   struct in     put;
   PetscScalar   rh;                 /* relative humidity */
@@ -169,6 +170,7 @@ int main(int argc, char **argv) {
   PetscBool     use_coloring  = PETSC_TRUE;
   MatFDColoring matfdcoloring = 0;
   PetscBool     monitor_off   = PETSC_FALSE;
+  PetscBool     prunejacobian = PETSC_FALSE;
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
@@ -187,7 +189,7 @@ int main(int argc, char **argv) {
   deep_grnd_temp = sfctemp - 10;   /* set underlying ground layer temperature */
   emma           = emission(pwat); /* accounts for radiative effects of water vapor */
 
-  /* Converts from Fahrenheit to Celsuis */
+  /* Converts from Fahrenheit to Celsius */
   sfctemp        = fahr_to_cel(sfctemp);
   airtemp        = fahr_to_cel(airtemp);
   dewtemp        = fahr_to_cel(dewtemp);
@@ -267,24 +269,26 @@ int main(int argc, char **argv) {
   /* Set Jacobian evaluation routine - use coloring to compute finite difference Jacobian efficiently */
   PetscCall(DMSetMatType(da, MATAIJ));
   PetscCall(DMCreateMatrix(da, &J));
-  PetscCall(TSGetSNES(ts, &snes));
   if (use_coloring) {
     ISColoring iscoloring;
+    PetscInt   ncolors;
+
     PetscCall(DMCreateColoring(da, IS_COLORING_GLOBAL, &iscoloring));
     PetscCall(MatFDColoringCreate(J, iscoloring, &matfdcoloring));
     PetscCall(MatFDColoringSetFromOptions(matfdcoloring));
     PetscCall(MatFDColoringSetUp(J, iscoloring, matfdcoloring));
+    PetscCall(ISColoringGetColors(iscoloring, NULL, &ncolors, NULL));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "DMColoring generates %" PetscInt_FMT " colors\n", ncolors));
     PetscCall(ISColoringDestroy(&iscoloring));
-    PetscCall(MatFDColoringSetFunction(matfdcoloring, (PetscErrorCode(*)(void))SNESTSFormFunction, ts));
-    PetscCall(SNESSetJacobian(snes, J, J, SNESComputeJacobianDefaultColor, matfdcoloring));
+    PetscCall(TSSetIJacobian(ts, J, J, TSComputeIJacobianDefaultColor, NULL));
   } else {
+    PetscCall(TSGetSNES(ts, &snes));
     PetscCall(SNESSetJacobian(snes, J, J, SNESComputeJacobianDefault, NULL));
   }
 
   /* Define what to print for ts_monitor option */
   PetscCall(PetscOptionsHasName(NULL, NULL, "-monitor_off", &monitor_off));
   if (!monitor_off) PetscCall(TSMonitorSet(ts, Monitor, &usermonitor, NULL));
-  PetscCall(FormInitialSolution(da, T, &user));
   dt    = TIMESTEP; /* initial time step */
   ftime = TIMESTEP * time;
   PetscCall(PetscPrintf(PETSC_COMM_WORLD, "time %" PetscInt_FMT ", ftime %g hour, TIMESTEP %g\n", time, (double)(ftime / 3600), (double)dt));
@@ -299,11 +303,28 @@ int main(int argc, char **argv) {
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set runtime options
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-prune_jacobian", &prunejacobian, NULL));
   PetscCall(TSSetFromOptions(ts));
-
+  if (prunejacobian && matfdcoloring) {
+    PetscRandom rctx;
+    Vec         Tdot;
+    /* Compute the Jacobian with randomized vector values to capture the sparsity pattern for coloring */
+    PetscCall(VecDuplicate(T, &Tdot));
+    PetscCall(PetscRandomCreate(PETSC_COMM_WORLD, &rctx));
+    PetscCall(PetscRandomSetInterval(rctx, 1.0, 2.0));
+    PetscCall(VecSetRandom(T, rctx));
+    PetscCall(VecSetRandom(Tdot, rctx));
+    PetscCall(PetscRandomDestroy(&rctx));
+    PetscCall(TSSetUp(ts));
+    PetscCall(TSComputeIJacobian(ts, 0.0, T, Tdot, 0.12345, J, J, PETSC_FALSE));
+    PetscCall(VecDestroy(&Tdot));
+    PetscCall(MatFDColoringDestroy(&matfdcoloring));
+    PetscCall(TSPruneIJacobianColor(ts, J, J));
+  }
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Solve nonlinear system
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+  PetscCall(FormInitialSolution(da, T, &user));
   PetscCall(TSSolve(ts, T));
   PetscCall(TSGetSolveTime(ts, &ftime));
   PetscCall(TSGetStepNumber(ts, &steps));
@@ -324,7 +345,8 @@ int main(int argc, char **argv) {
 /*****************************************************************************/
 /*****************************************************************************/
 /*****************************************************************************/
-PetscErrorCode calcfluxs(PetscScalar sfctemp, PetscScalar airtemp, PetscScalar emma, PetscScalar fract, PetscScalar cloudTemp, PetscScalar *flux) {
+PetscErrorCode calcfluxs(PetscScalar sfctemp, PetscScalar airtemp, PetscScalar emma, PetscScalar fract, PetscScalar cloudTemp, PetscScalar *flux)
+{
   PetscFunctionBeginUser;
   *flux = SIG * ((EMMSFC * emma * PetscPowScalarInt(airtemp, 4)) + (EMMSFC * fract * (1 - emma) * PetscPowScalarInt(cloudTemp, 4)) - (EMMSFC * PetscPowScalarInt(sfctemp, 4))); /* calculates flux using Stefan-Boltzmann relation */
   PetscFunctionReturn(0);
@@ -338,7 +360,8 @@ PetscErrorCode calcfluxa(PetscScalar sfctemp, PetscScalar airtemp, PetscScalar e
   *flux = SIG * (-emm * (PetscPowScalarInt(airtemp, 4))); /* calculates flux usinge Stefan-Boltzmann relation */
   PetscFunctionReturn(0);
 }
-PetscErrorCode sensibleflux(PetscScalar sfctemp, PetscScalar airtemp, PetscScalar wind, PetscScalar *sheat) {
+PetscErrorCode sensibleflux(PetscScalar sfctemp, PetscScalar airtemp, PetscScalar wind, PetscScalar *sheat)
+{
   PetscScalar density = 1;    /* air density */
   PetscScalar Cp      = 1005; /* heat capicity for dry air */
   PetscScalar wndmix;         /* temperature change from wind mixing: wind*Ch */
@@ -349,7 +372,8 @@ PetscErrorCode sensibleflux(PetscScalar sfctemp, PetscScalar airtemp, PetscScala
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode latentflux(PetscScalar sfctemp, PetscScalar dewtemp, PetscScalar wind, PetscScalar pressure1, PetscScalar *latentheat) {
+PetscErrorCode latentflux(PetscScalar sfctemp, PetscScalar dewtemp, PetscScalar wind, PetscScalar pressure1, PetscScalar *latentheat)
+{
   PetscScalar density = 1; /* density of dry air */
   PetscScalar q;           /* actual specific humitity */
   PetscScalar qs;          /* saturation specific humidity */
@@ -373,7 +397,8 @@ PetscErrorCode latentflux(PetscScalar sfctemp, PetscScalar dewtemp, PetscScalar 
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode potential_temperature(PetscScalar temp, PetscScalar pressure1, PetscScalar pressure2, PetscScalar sfctemp, PetscScalar *pottemp) {
+PetscErrorCode potential_temperature(PetscScalar temp, PetscScalar pressure1, PetscScalar pressure2, PetscScalar sfctemp, PetscScalar *pottemp)
+{
   PetscScalar kdry; /* poisson constant for dry atmosphere */
   PetscScalar pavg; /* average atmospheric pressure */
   /* PetscScalar mixratio; mixing ratio */
@@ -390,7 +415,8 @@ PetscErrorCode potential_temperature(PetscScalar temp, PetscScalar pressure1, Pe
   *pottemp = temp * (PetscPowScalar((pressure1 / pavg), kdry)); /* calculates potential temperature */
   PetscFunctionReturn(0);
 }
-extern PetscScalar calcmixingr(PetscScalar dtemp, PetscScalar pressure1) {
+extern PetscScalar calcmixingr(PetscScalar dtemp, PetscScalar pressure1)
+{
   PetscScalar e;        /* vapor pressure */
   PetscScalar mixratio; /* mixing ratio */
 
@@ -402,13 +428,15 @@ extern PetscScalar calcmixingr(PetscScalar dtemp, PetscScalar pressure1) {
 
   return mixratio;
 }
-extern PetscScalar calc_q(PetscScalar rv) {
+extern PetscScalar calc_q(PetscScalar rv)
+{
   PetscScalar specific_humidity;     /* define specific humidity variable */
   specific_humidity = rv / (1 + rv); /* calculates specific humidity */
   return specific_humidity;
 }
 
-PetscErrorCode calc_gflux(PetscScalar sfctemp, PetscScalar deep_grnd_temp, PetscScalar *Gflux) {
+PetscErrorCode calc_gflux(PetscScalar sfctemp, PetscScalar deep_grnd_temp, PetscScalar *Gflux)
+{
   PetscScalar k;                       /* thermal conductivity parameter */
   PetscScalar n                = 0.38; /* value of soil porosity */
   PetscScalar dz               = 1;    /* depth of layer between soil surface and deep soil layer */
@@ -419,14 +447,16 @@ PetscErrorCode calc_gflux(PetscScalar sfctemp, PetscScalar deep_grnd_temp, Petsc
   *Gflux = (k * (deep_grnd_temp - sfctemp) / dz);                                                                     /* calculates flux from deep ground layer */
   PetscFunctionReturn(0);
 }
-extern PetscScalar emission(PetscScalar pwat) {
+extern PetscScalar emission(PetscScalar pwat)
+{
   PetscScalar emma;
 
   emma = 0.725 + 0.17 * PetscLog10Real(PetscRealPart(pwat));
 
   return emma;
 }
-extern PetscScalar cloud(PetscScalar fract) {
+extern PetscScalar cloud(PetscScalar fract)
+{
   PetscScalar emma = 0;
 
   /* modifies radiative balance depending on cloud cover */
@@ -438,25 +468,30 @@ extern PetscScalar cloud(PetscScalar fract) {
   else if (0.4 > fract && fract >= 0.3) emma = emma * 1.086956;
   return emma;
 }
-extern PetscScalar Lconst(PetscScalar sfctemp) {
+extern PetscScalar Lconst(PetscScalar sfctemp)
+{
   PetscScalar Lheat;
   sfctemp -= 273;                               /* converts from kelvin to celsius */
   Lheat = 4186.8 * (597.31 - 0.5625 * sfctemp); /* calculates latent heat constant */
   return Lheat;
 }
-extern PetscScalar mph2mpers(PetscScalar wind) {
+extern PetscScalar mph2mpers(PetscScalar wind)
+{
   wind = ((wind * 1.6 * 1000) / 3600); /* converts wind from mph to meters per second */
   return wind;
 }
-extern PetscScalar fahr_to_cel(PetscScalar temp) {
-  temp = (5 * (temp - 32)) / 9; /* converts from farhrenheit to celsuis */
+extern PetscScalar fahr_to_cel(PetscScalar temp)
+{
+  temp = (5 * (temp - 32)) / 9; /* converts from farhrenheit to celsius */
   return temp;
 }
-extern PetscScalar cel_to_fahr(PetscScalar temp) {
-  temp = ((temp * 9) / 5) + 32; /* converts from celsuis to farhrenheit */
+extern PetscScalar cel_to_fahr(PetscScalar temp)
+{
+  temp = ((temp * 9) / 5) + 32; /* converts from celsius to farhrenheit */
   return temp;
 }
-PetscErrorCode readinput(struct in *put) {
+PetscErrorCode readinput(struct in *put)
+{
   int    i;
   char   x;
   FILE  *ifp;
@@ -508,7 +543,8 @@ PetscErrorCode readinput(struct in *put) {
 }
 
 /* ------------------------------------------------------------------- */
-PetscErrorCode FormInitialSolution(DM da, Vec Xglobal, void *ctx) {
+PetscErrorCode FormInitialSolution(DM da, Vec Xglobal, void *ctx)
+{
   AppCtx  *user = (AppCtx *)ctx; /* user-defined application context */
   PetscInt i, j, xs, ys, xm, ym, Mx, My;
   Field  **X;
@@ -566,7 +602,8 @@ PetscErrorCode FormInitialSolution(DM da, Vec Xglobal, void *ctx) {
    Output Parameter:
 .  F - rhs function vector
  */
-PetscErrorCode RhsFunc(TS ts, PetscReal t, Vec Xglobal, Vec F, void *ctx) {
+PetscErrorCode RhsFunc(TS ts, PetscReal t, Vec Xglobal, Vec F, void *ctx)
+{
   AppCtx     *user = (AppCtx *)ctx; /* user-defined application context */
   DM          da   = user->da;
   PetscInt    i, j, Mx, My, xs, ys, xm, ym;
@@ -687,7 +724,8 @@ PetscErrorCode RhsFunc(TS ts, PetscReal t, Vec Xglobal, Vec F, void *ctx) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode Monitor(TS ts, PetscInt step, PetscReal time, Vec T, void *ctx) {
+PetscErrorCode Monitor(TS ts, PetscInt step, PetscReal time, Vec T, void *ctx)
+{
   const PetscScalar *array;
   MonitorCtx        *user   = (MonitorCtx *)ctx;
   PetscViewer        viewer = user->drawviewer;
@@ -724,5 +762,13 @@ PetscErrorCode Monitor(TS ts, PetscInt step, PetscReal time, Vec T, void *ctx) {
       output_file: output/ex5.out
       localrunfiles: ex5_control.txt
       requires: !complex !single
+
+   # Test TSPruneIJacobianColor() for improved FD coloring
+   test:
+      suffix: 3
+      nsize: 4
+      args: -ts_max_steps 130 -monitor_interval 60 -prune_jacobian -mat_coloring_view
+      requires: !complex !single
+      localrunfiles: ex5_control.txt
 
 TEST*/

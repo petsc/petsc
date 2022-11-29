@@ -29,7 +29,8 @@ const char *const MatLMVMSymBroydenScaleTypes[] = {"NONE", "SCALAR", "DIAGONAL",
     dX <- dX + (psi[i] * (Y[i]^T Q[i]) * (W^T F) * W)
   end
 */
-static PetscErrorCode MatSolve_LMVMSymBrdn(Mat B, Vec F, Vec dX) {
+static PetscErrorCode MatSolve_LMVMSymBrdn(Mat B, Vec F, Vec dX)
+{
   Mat_LMVM    *lmvm = (Mat_LMVM *)B->data;
   Mat_SymBrdn *lsb  = (Mat_SymBrdn *)lmvm->ctx;
   PetscInt     i, j;
@@ -153,7 +154,8 @@ static PetscErrorCode MatSolve_LMVMSymBrdn(Mat B, Vec F, Vec dX) {
     dX <- dX + (phi * (S[i]^T P[i]) * (W^T F) * W)
   end
 */
-static PetscErrorCode MatMult_LMVMSymBrdn(Mat B, Vec X, Vec Z) {
+static PetscErrorCode MatMult_LMVMSymBrdn(Mat B, Vec X, Vec Z)
+{
   Mat_LMVM    *lmvm = (Mat_LMVM *)B->data;
   Mat_SymBrdn *lsb  = (Mat_SymBrdn *)lmvm->ctx;
   PetscInt     i, j;
@@ -218,7 +220,8 @@ static PetscErrorCode MatMult_LMVMSymBrdn(Mat B, Vec X, Vec Z) {
 
 /*------------------------------------------------------------*/
 
-static PetscErrorCode MatUpdate_LMVMSymBrdn(Mat B, Vec X, Vec F) {
+static PetscErrorCode MatUpdate_LMVMSymBrdn(Mat B, Vec X, Vec F)
+{
   Mat_LMVM     *lmvm = (Mat_LMVM *)B->data;
   Mat_SymBrdn  *lsb  = (Mat_SymBrdn *)lmvm->ctx;
   Mat_LMVM     *dbase;
@@ -276,9 +279,14 @@ static PetscErrorCode MatUpdate_LMVMSymBrdn(Mat B, Vec X, Vec F) {
       dctx  = (Mat_DiagBrdn *)dbase->ctx;
       PetscCall(VecSet(dctx->invD, lsb->delta));
       break;
-    case MAT_LMVM_SYMBROYDEN_SCALE_SCALAR: lsb->sigma = lsb->delta; break;
-    case MAT_LMVM_SYMBROYDEN_SCALE_NONE: lsb->sigma = 1.0; break;
-    default: break;
+    case MAT_LMVM_SYMBROYDEN_SCALE_SCALAR:
+      lsb->sigma = lsb->delta;
+      break;
+    case MAT_LMVM_SYMBROYDEN_SCALE_NONE:
+      lsb->sigma = 1.0;
+      break;
+    default:
+      break;
     }
   }
 
@@ -299,7 +307,8 @@ static PetscErrorCode MatUpdate_LMVMSymBrdn(Mat B, Vec X, Vec F) {
 
 /*------------------------------------------------------------*/
 
-static PetscErrorCode MatCopy_LMVMSymBrdn(Mat B, Mat M, MatStructure str) {
+static PetscErrorCode MatCopy_LMVMSymBrdn(Mat B, Mat M, MatStructure str)
+{
   Mat_LMVM    *bdata = (Mat_LMVM *)B->data;
   Mat_SymBrdn *blsb  = (Mat_SymBrdn *)bdata->ctx;
   Mat_LMVM    *mdata = (Mat_LMVM *)M->data;
@@ -327,17 +336,25 @@ static PetscErrorCode MatCopy_LMVMSymBrdn(Mat B, Mat M, MatStructure str) {
   mlsb->watchdog        = blsb->watchdog;
   mlsb->max_seq_rejects = blsb->max_seq_rejects;
   switch (blsb->scale_type) {
-  case MAT_LMVM_SYMBROYDEN_SCALE_SCALAR: mlsb->sigma = blsb->sigma; break;
-  case MAT_LMVM_SYMBROYDEN_SCALE_DIAGONAL: PetscCall(MatCopy(blsb->D, mlsb->D, SAME_NONZERO_PATTERN)); break;
-  case MAT_LMVM_SYMBROYDEN_SCALE_NONE: mlsb->sigma = 1.0; break;
-  default: break;
+  case MAT_LMVM_SYMBROYDEN_SCALE_SCALAR:
+    mlsb->sigma = blsb->sigma;
+    break;
+  case MAT_LMVM_SYMBROYDEN_SCALE_DIAGONAL:
+    PetscCall(MatCopy(blsb->D, mlsb->D, SAME_NONZERO_PATTERN));
+    break;
+  case MAT_LMVM_SYMBROYDEN_SCALE_NONE:
+    mlsb->sigma = 1.0;
+    break;
+  default:
+    break;
   }
   PetscFunctionReturn(0);
 }
 
 /*------------------------------------------------------------*/
 
-static PetscErrorCode MatReset_LMVMSymBrdn(Mat B, PetscBool destructive) {
+static PetscErrorCode MatReset_LMVMSymBrdn(Mat B, PetscBool destructive)
+{
   Mat_LMVM     *lmvm = (Mat_LMVM *)B->data;
   Mat_SymBrdn  *lsb  = (Mat_SymBrdn *)lmvm->ctx;
   Mat_LMVM     *dbase;
@@ -354,22 +371,30 @@ static PetscErrorCode MatReset_LMVMSymBrdn(Mat B, PetscBool destructive) {
       PetscCall(VecDestroyVecs(lmvm->m, &lsb->P));
       PetscCall(VecDestroyVecs(lmvm->m, &lsb->Q));
       switch (lsb->scale_type) {
-      case MAT_LMVM_SYMBROYDEN_SCALE_DIAGONAL: PetscCall(MatLMVMReset(lsb->D, PETSC_TRUE)); break;
-      default: break;
+      case MAT_LMVM_SYMBROYDEN_SCALE_DIAGONAL:
+        PetscCall(MatLMVMReset(lsb->D, PETSC_TRUE));
+        break;
+      default:
+        break;
       }
       lsb->allocated = PETSC_FALSE;
     } else {
       PetscCall(PetscMemzero(lsb->psi, lmvm->m));
       switch (lsb->scale_type) {
-      case MAT_LMVM_SYMBROYDEN_SCALE_SCALAR: lsb->sigma = lsb->delta; break;
+      case MAT_LMVM_SYMBROYDEN_SCALE_SCALAR:
+        lsb->sigma = lsb->delta;
+        break;
       case MAT_LMVM_SYMBROYDEN_SCALE_DIAGONAL:
         PetscCall(MatLMVMReset(lsb->D, PETSC_FALSE));
         dbase = (Mat_LMVM *)lsb->D->data;
         dctx  = (Mat_DiagBrdn *)dbase->ctx;
         PetscCall(VecSet(dctx->invD, lsb->delta));
         break;
-      case MAT_LMVM_SYMBROYDEN_SCALE_NONE: lsb->sigma = 1.0; break;
-      default: break;
+      case MAT_LMVM_SYMBROYDEN_SCALE_NONE:
+        lsb->sigma = 1.0;
+        break;
+      default:
+        break;
       }
     }
   }
@@ -379,7 +404,8 @@ static PetscErrorCode MatReset_LMVMSymBrdn(Mat B, PetscBool destructive) {
 
 /*------------------------------------------------------------*/
 
-static PetscErrorCode MatAllocate_LMVMSymBrdn(Mat B, Vec X, Vec F) {
+static PetscErrorCode MatAllocate_LMVMSymBrdn(Mat B, Vec X, Vec F)
+{
   Mat_LMVM    *lmvm = (Mat_LMVM *)B->data;
   Mat_SymBrdn *lsb  = (Mat_SymBrdn *)lmvm->ctx;
 
@@ -394,8 +420,11 @@ static PetscErrorCode MatAllocate_LMVMSymBrdn(Mat B, Vec X, Vec F) {
       PetscCall(VecDuplicateVecs(X, lmvm->m, &lsb->Q));
     }
     switch (lsb->scale_type) {
-    case MAT_LMVM_SYMBROYDEN_SCALE_DIAGONAL: PetscCall(MatLMVMAllocate(lsb->D, X, F)); break;
-    default: break;
+    case MAT_LMVM_SYMBROYDEN_SCALE_DIAGONAL:
+      PetscCall(MatLMVMAllocate(lsb->D, X, F));
+      break;
+    default:
+      break;
     }
     lsb->allocated = PETSC_TRUE;
   }
@@ -404,7 +433,8 @@ static PetscErrorCode MatAllocate_LMVMSymBrdn(Mat B, Vec X, Vec F) {
 
 /*------------------------------------------------------------*/
 
-static PetscErrorCode MatDestroy_LMVMSymBrdn(Mat B) {
+static PetscErrorCode MatDestroy_LMVMSymBrdn(Mat B)
+{
   Mat_LMVM    *lmvm = (Mat_LMVM *)B->data;
   Mat_SymBrdn *lsb  = (Mat_SymBrdn *)lmvm->ctx;
 
@@ -425,7 +455,8 @@ static PetscErrorCode MatDestroy_LMVMSymBrdn(Mat B) {
 
 /*------------------------------------------------------------*/
 
-static PetscErrorCode MatSetUp_LMVMSymBrdn(Mat B) {
+static PetscErrorCode MatSetUp_LMVMSymBrdn(Mat B)
+{
   Mat_LMVM    *lmvm = (Mat_LMVM *)B->data;
   Mat_SymBrdn *lsb  = (Mat_SymBrdn *)lmvm->ctx;
   PetscInt     n, N;
@@ -447,7 +478,8 @@ static PetscErrorCode MatSetUp_LMVMSymBrdn(Mat B) {
       PetscCall(MatSetSizes(lsb->D, n, n, N, N));
       PetscCall(MatSetUp(lsb->D));
       break;
-    default: break;
+    default:
+      break;
     }
     lsb->allocated = PETSC_TRUE;
   }
@@ -456,7 +488,8 @@ static PetscErrorCode MatSetUp_LMVMSymBrdn(Mat B) {
 
 /*------------------------------------------------------------*/
 
-PetscErrorCode MatView_LMVMSymBrdn(Mat B, PetscViewer pv) {
+PetscErrorCode MatView_LMVMSymBrdn(Mat B, PetscViewer pv)
+{
   Mat_LMVM    *lmvm = (Mat_LMVM *)B->data;
   Mat_SymBrdn *lsb  = (Mat_SymBrdn *)lmvm->ctx;
   PetscBool    isascii;
@@ -476,7 +509,8 @@ PetscErrorCode MatView_LMVMSymBrdn(Mat B, PetscViewer pv) {
 
 /*------------------------------------------------------------*/
 
-PetscErrorCode MatSetFromOptions_LMVMSymBrdn(Mat B, PetscOptionItems *PetscOptionsObject) {
+PetscErrorCode MatSetFromOptions_LMVMSymBrdn(Mat B, PetscOptionItems *PetscOptionsObject)
+{
   Mat_LMVM    *lmvm = (Mat_LMVM *)B->data;
   Mat_SymBrdn *lsb  = (Mat_SymBrdn *)lmvm->ctx;
 
@@ -490,7 +524,8 @@ PetscErrorCode MatSetFromOptions_LMVMSymBrdn(Mat B, PetscOptionItems *PetscOptio
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatSetFromOptions_LMVMSymBrdn_Private(Mat B, PetscOptionItems *PetscOptionsObject) {
+PetscErrorCode MatSetFromOptions_LMVMSymBrdn_Private(Mat B, PetscOptionItems *PetscOptionsObject)
+{
   Mat_LMVM                  *lmvm = (Mat_LMVM *)B->data;
   Mat_SymBrdn               *lsb  = (Mat_SymBrdn *)lmvm->ctx;
   Mat_LMVM                  *dbase;
@@ -531,7 +566,8 @@ PetscErrorCode MatSetFromOptions_LMVMSymBrdn_Private(Mat B, PetscOptionItems *Pe
 
 /*------------------------------------------------------------*/
 
-PetscErrorCode MatCreate_LMVMSymBrdn(Mat B) {
+PetscErrorCode MatCreate_LMVMSymBrdn(Mat B)
+{
   Mat_LMVM    *lmvm;
   Mat_SymBrdn *lsb;
 
@@ -554,7 +590,7 @@ PetscErrorCode MatCreate_LMVMSymBrdn(Mat B) {
   lmvm->ops->mult     = MatMult_LMVMSymBrdn;
   lmvm->ops->copy     = MatCopy_LMVMSymBrdn;
 
-  PetscCall(PetscNewLog(B, &lsb));
+  PetscCall(PetscNew(&lsb));
   lmvm->ctx      = (void *)lsb;
   lsb->allocated = PETSC_FALSE;
   lsb->needP = lsb->needQ = PETSC_TRUE;
@@ -588,9 +624,11 @@ PetscErrorCode MatCreate_LMVMSymBrdn(Mat B) {
 -  delta - initial value for diagonal scaling
 
    Level: intermediate
+
 @*/
 
-PetscErrorCode MatLMVMSymBroydenSetDelta(Mat B, PetscScalar delta) {
+PetscErrorCode MatLMVMSymBroydenSetDelta(Mat B, PetscScalar delta)
+{
   Mat_LMVM    *lmvm = (Mat_LMVM *)B->data;
   Mat_SymBrdn *lsb  = (Mat_SymBrdn *)lmvm->ctx;
   PetscBool    is_bfgs, is_dfp, is_symbrdn, is_symbadbrdn;
@@ -616,7 +654,7 @@ PetscErrorCode MatLMVMSymBroydenSetDelta(Mat B, PetscScalar delta) {
 +   snes - the iterative context
 -   rtype - restart type
 
-    Options Database:
+    Options Database Key:
 .   -mat_lmvm_scale_type <none,scalar,diagonal> - set the scaling type
 
     Level: intermediate
@@ -626,9 +664,10 @@ PetscErrorCode MatLMVMSymBroydenSetDelta(Mat B, PetscScalar delta) {
 .   MAT_LMVM_SYMBROYDEN_SCALE_SCALAR - use the Shanno scalar as the initial Hessian
 -   MAT_LMVM_SYMBROYDEN_SCALE_DIAGONAL - use a diagonalized BFGS update as the initial Hessian
 
-.seealso: `MATLMVMSYMBROYDEN`, `MatCreateLMVMSymBroyden()`
+.seealso: [](chapter_ksp), `MATLMVMSYMBROYDEN`, `MatCreateLMVMSymBroyden()`
 @*/
-PetscErrorCode MatLMVMSymBroydenSetScaleType(Mat B, MatLMVMSymBroydenScaleType stype) {
+PetscErrorCode MatLMVMSymBroydenSetScaleType(Mat B, MatLMVMSymBroydenScaleType stype)
+{
   Mat_LMVM    *lmvm = (Mat_LMVM *)B->data;
   Mat_SymBrdn *lsb  = (Mat_SymBrdn *)lmvm->ctx;
 
@@ -679,10 +718,11 @@ PetscErrorCode MatLMVMSymBroydenSetScaleType(Mat B, MatLMVMSymBroydenScaleType s
 
    Level: intermediate
 
-.seealso: `MatCreate()`, `MATLMVM`, `MATLMVMSYMBROYDEN`, `MatCreateLMVMDFP()`, `MatCreateLMVMSR1()`,
+.seealso: [](chapter_ksp), `MatCreate()`, `MATLMVM`, `MATLMVMSYMBROYDEN`, `MatCreateLMVMDFP()`, `MatCreateLMVMSR1()`,
           `MatCreateLMVMBFGS()`, `MatCreateLMVMBrdn()`, `MatCreateLMVMBadBrdn()`
 @*/
-PetscErrorCode MatCreateLMVMSymBroyden(MPI_Comm comm, PetscInt n, PetscInt N, Mat *B) {
+PetscErrorCode MatCreateLMVMSymBroyden(MPI_Comm comm, PetscInt n, PetscInt N, Mat *B)
+{
   PetscFunctionBegin;
   PetscCall(MatCreate(comm, B));
   PetscCall(MatSetSizes(*B, n, n, N, N));
@@ -693,7 +733,8 @@ PetscErrorCode MatCreateLMVMSymBroyden(MPI_Comm comm, PetscInt n, PetscInt N, Ma
 
 /*------------------------------------------------------------*/
 
-PetscErrorCode MatSymBrdnApplyJ0Fwd(Mat B, Vec X, Vec Z) {
+PetscErrorCode MatSymBrdnApplyJ0Fwd(Mat B, Vec X, Vec Z)
+{
   Mat_LMVM    *lmvm = (Mat_LMVM *)B->data;
   Mat_SymBrdn *lsb  = (Mat_SymBrdn *)lmvm->ctx;
 
@@ -707,9 +748,13 @@ PetscErrorCode MatSymBrdnApplyJ0Fwd(Mat B, Vec X, Vec Z) {
       PetscCall(VecCopy(X, Z));
       PetscCall(VecScale(Z, 1.0 / lsb->sigma));
       break;
-    case MAT_LMVM_SYMBROYDEN_SCALE_DIAGONAL: PetscCall(MatMult(lsb->D, X, Z)); break;
+    case MAT_LMVM_SYMBROYDEN_SCALE_DIAGONAL:
+      PetscCall(MatMult(lsb->D, X, Z));
+      break;
     case MAT_LMVM_SYMBROYDEN_SCALE_NONE:
-    default: PetscCall(VecCopy(X, Z)); break;
+    default:
+      PetscCall(VecCopy(X, Z));
+      break;
     }
   }
   PetscFunctionReturn(0);
@@ -717,7 +762,8 @@ PetscErrorCode MatSymBrdnApplyJ0Fwd(Mat B, Vec X, Vec Z) {
 
 /*------------------------------------------------------------*/
 
-PetscErrorCode MatSymBrdnApplyJ0Inv(Mat B, Vec F, Vec dX) {
+PetscErrorCode MatSymBrdnApplyJ0Inv(Mat B, Vec F, Vec dX)
+{
   Mat_LMVM    *lmvm = (Mat_LMVM *)B->data;
   Mat_SymBrdn *lsb  = (Mat_SymBrdn *)lmvm->ctx;
 
@@ -731,9 +777,13 @@ PetscErrorCode MatSymBrdnApplyJ0Inv(Mat B, Vec F, Vec dX) {
       PetscCall(VecCopy(F, dX));
       PetscCall(VecScale(dX, lsb->sigma));
       break;
-    case MAT_LMVM_SYMBROYDEN_SCALE_DIAGONAL: PetscCall(MatSolve(lsb->D, F, dX)); break;
+    case MAT_LMVM_SYMBROYDEN_SCALE_DIAGONAL:
+      PetscCall(MatSolve(lsb->D, F, dX));
+      break;
     case MAT_LMVM_SYMBROYDEN_SCALE_NONE:
-    default: PetscCall(VecCopy(F, dX)); break;
+    default:
+      PetscCall(VecCopy(F, dX));
+      break;
     }
   }
   PetscFunctionReturn(0);
@@ -741,7 +791,8 @@ PetscErrorCode MatSymBrdnApplyJ0Inv(Mat B, Vec F, Vec dX) {
 
 /*------------------------------------------------------------*/
 
-PetscErrorCode MatSymBrdnComputeJ0Scalar(Mat B) {
+PetscErrorCode MatSymBrdnComputeJ0Scalar(Mat B)
+{
   Mat_LMVM    *lmvm = (Mat_LMVM *)B->data;
   Mat_SymBrdn *lsb  = (Mat_SymBrdn *)lmvm->ctx;
   PetscInt     i, start;

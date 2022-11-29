@@ -8,7 +8,8 @@
 
 #include <../src/ksp/ksp/impls/tcqmr/tcqmrimpl.h>
 
-static PetscErrorCode KSPSolve_TCQMR(KSP ksp) {
+static PetscErrorCode KSPSolve_TCQMR(KSP ksp)
+{
   PetscReal   rnorm0, rnorm, dp1, Gamma;
   PetscScalar theta, ep, cl1, sl1, cl, sl, sprod, tau_n1, f;
   PetscScalar deltmp, rho, beta, eptmp, ta, s, c, tau_n, delta;
@@ -149,37 +150,34 @@ static PetscErrorCode KSPSolve_TCQMR(KSP ksp) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode KSPSetUp_TCQMR(KSP ksp) {
+static PetscErrorCode KSPSetUp_TCQMR(KSP ksp)
+{
   PetscFunctionBegin;
-  PetscCheck(ksp->pc_side != PC_SYMMETRIC, PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "no symmetric preconditioning for KSPTCQMR");
   PetscCall(KSPSetWorkVecs(ksp, TCQMR_VECS));
   PetscFunctionReturn(0);
 }
 
 /*MC
-     KSPTCQMR - A variant of QMR (quasi minimal residual) developed by Tony Chan
-
-   Options Database Keys:
-    see KSPSolve()
+     KSPTCQMR - A variant of QMR (quasi minimal residual) [1]
 
    Level: beginner
 
   Notes:
-    Supports either left or right preconditioning, but not symmetric
+  Supports either left or right preconditioning, but not symmetric
 
-          The "residual norm" computed in this algorithm is actually just an upper bound on the actual residual norm.
-          That is for left preconditioning it is a bound on the preconditioned residual and for right preconditioning
-          it is a bound on the true residual.
+  The "residual norm" computed in this algorithm is actually just an upper bound on the actual residual norm.
+  That is for left preconditioning it is a bound on the preconditioned residual and for right preconditioning
+  it is a bound on the true residual.
 
   References:
-. * - Tony F. Chan, Lisette de Pillis, and Henk van der Vorst, Transpose free formulations of Lanczos type methods for nonsymmetric linear systems,
+. [1] - Tony F. Chan, Lisette de Pillis, and Henk van der Vorst, Transpose free formulations of Lanczos type methods for nonsymmetric linear systems,
   Numerical Algorithms, Volume 17, 1998.
 
-.seealso: `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPTFQMR`
-
+.seealso: [](chapter_ksp), `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPTFQMR`
 M*/
 
-PETSC_EXTERN PetscErrorCode KSPCreate_TCQMR(KSP ksp) {
+PETSC_EXTERN PetscErrorCode KSPCreate_TCQMR(KSP ksp)
+{
   PetscFunctionBegin;
   PetscCall(KSPSetSupportedNorm(ksp, KSP_NORM_PRECONDITIONED, PC_LEFT, 3));
   PetscCall(KSPSetSupportedNorm(ksp, KSP_NORM_UNPRECONDITIONED, PC_RIGHT, 2));

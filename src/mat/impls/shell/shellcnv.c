@@ -1,6 +1,7 @@
 #include <petsc/private/matimpl.h> /*I "petscmat.h" I*/
 
-PetscErrorCode MatConvert_Shell(Mat oldmat, MatType newtype, MatReuse reuse, Mat *newmat) {
+PetscErrorCode MatConvert_Shell(Mat oldmat, MatType newtype, MatReuse reuse, Mat *newmat)
+{
   Mat          mat;
   Vec          in, out;
   PetscScalar *array;
@@ -71,7 +72,8 @@ PetscErrorCode MatConvert_Shell(Mat oldmat, MatType newtype, MatReuse reuse, Mat
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatGetDiagonal_CF(Mat A, Vec X) {
+static PetscErrorCode MatGetDiagonal_CF(Mat A, Vec X)
+{
   Mat B;
 
   PetscFunctionBegin;
@@ -81,7 +83,8 @@ static PetscErrorCode MatGetDiagonal_CF(Mat A, Vec X) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatMult_CF(Mat A, Vec X, Vec Y) {
+static PetscErrorCode MatMult_CF(Mat A, Vec X, Vec Y)
+{
   Mat B;
 
   PetscFunctionBegin;
@@ -91,7 +94,8 @@ static PetscErrorCode MatMult_CF(Mat A, Vec X, Vec Y) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatMultTranspose_CF(Mat A, Vec X, Vec Y) {
+static PetscErrorCode MatMultTranspose_CF(Mat A, Vec X, Vec Y)
+{
   Mat B;
 
   PetscFunctionBegin;
@@ -101,7 +105,8 @@ static PetscErrorCode MatMultTranspose_CF(Mat A, Vec X, Vec Y) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatDestroy_CF(Mat A) {
+static PetscErrorCode MatDestroy_CF(Mat A)
+{
   Mat B;
 
   PetscFunctionBegin;
@@ -121,7 +126,8 @@ typedef struct {
   Mat            Dwork;
 } MatMatCF;
 
-static PetscErrorCode MatProductDestroy_CF(void *data) {
+static PetscErrorCode MatProductDestroy_CF(void *data)
+{
   MatMatCF *mmcfdata = (MatMatCF *)data;
 
   PetscFunctionBegin;
@@ -131,7 +137,8 @@ static PetscErrorCode MatProductDestroy_CF(void *data) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatProductNumericPhase_CF(Mat A, Mat B, Mat C, void *data) {
+static PetscErrorCode MatProductNumericPhase_CF(Mat A, Mat B, Mat C, void *data)
+{
   MatMatCF *mmcfdata = (MatMatCF *)data;
 
   PetscFunctionBegin;
@@ -149,7 +156,8 @@ static PetscErrorCode MatProductNumericPhase_CF(Mat A, Mat B, Mat C, void *data)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatProductSymbolicPhase_CF(Mat A, Mat B, Mat C, void **data) {
+static PetscErrorCode MatProductSymbolicPhase_CF(Mat A, Mat B, Mat C, void **data)
+{
   MatMatCF *mmcfdata;
 
   PetscFunctionBegin;
@@ -175,7 +183,8 @@ static PetscErrorCode MatProductSymbolicPhase_CF(Mat A, Mat B, Mat C, void **dat
 }
 
 /* only for A of type shell, mainly used for MatMat operations of shells with AXPYs */
-static PetscErrorCode MatProductSetFromOptions_CF(Mat D) {
+static PetscErrorCode MatProductSetFromOptions_CF(Mat D)
+{
   Mat A, B, Ain;
   void (*Af)(void) = NULL;
   PetscBool flg;
@@ -201,7 +210,8 @@ static PetscErrorCode MatProductSetFromOptions_CF(Mat D) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatConvertFrom_Shell(Mat A, MatType newtype, MatReuse reuse, Mat *B) {
+PetscErrorCode MatConvertFrom_Shell(Mat A, MatType newtype, MatReuse reuse, Mat *B)
+{
   Mat       M;
   PetscBool flg;
 

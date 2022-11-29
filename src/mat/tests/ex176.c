@@ -1,5 +1,5 @@
 
-static char help[] = "Tests MatCreateMPIAIJWithArrays() abd MatUpdateMPIAIJWithArrays()\n";
+static char help[] = "Tests MatCreateMPIAIJWithArrays() abd MatUpdateMPIAIJWithArray()\n";
 
 #include <petscmat.h>
 
@@ -17,8 +17,9 @@ static char help[] = "Tests MatCreateMPIAIJWithArrays() abd MatUpdateMPIAIJWithA
  *
  * */
 
-int main(int argc, char **argv) {
-  Mat      A;
+int main(int argc, char **argv)
+{
+  Mat      A, B;
   PetscInt i[3][3] = {
     {0, 3, 6},
     {0, 3, 7},
@@ -40,29 +41,53 @@ int main(int argc, char **argv) {
     {140, 150, 160, 170, 180, -1,  -1 }
   };
   MPI_Comm    comm;
-  PetscMPIInt rank, size;
+  PetscMPIInt rank;
+  PetscBool   equal = PETSC_FALSE;
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   comm = PETSC_COMM_WORLD;
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
-  PetscCallMPI(MPI_Comm_size(comm, &size));
-  PetscCheck(size == 3, comm, PETSC_ERR_WRONG_MPI_SIZE, "You have to use three MPI processes to run this example ");
-  PetscCall(MatCreateMPIAIJWithArrays(comm, 2, 2, PETSC_DETERMINE, PETSC_DETERMINE, i[rank], j[rank], a[rank], &A));
-  PetscCall(MatView(A, NULL));
-  PetscCall(MatUpdateMPIAIJWithArrays(A, 2, 2, PETSC_DETERMINE, PETSC_DETERMINE, i[rank], j[rank], anew[rank]));
-  PetscCall(MatView(A, NULL));
-  PetscCall(MatUpdateMPIAIJWithArrays(A, 2, 2, PETSC_DETERMINE, PETSC_DETERMINE, i[rank], j[rank], a[rank]));
-  PetscCall(MatView(A, NULL));
+  PetscCall(MatCreateMPIAIJWithArrays(comm, 2, PETSC_DETERMINE, PETSC_DETERMINE, 6, i[rank], j[rank], a[rank], &B));
+
+  PetscCall(MatCreateMPIAIJWithArrays(comm, 2, PETSC_DETERMINE, PETSC_DETERMINE, 6, i[rank], j[rank], a[rank], &A));
+  PetscCall(MatSetFromOptions(A)); /* might change A's type */
+
+  PetscCall(MatEqual(A, B, &equal));
+  PetscCheck(equal, comm, PETSC_ERR_PLIB, "wrong results");
+
   PetscCall(MatUpdateMPIAIJWithArray(A, anew[rank]));
-  PetscCall(MatView(A, NULL));
+  PetscCall(MatUpdateMPIAIJWithArray(B, anew[rank]));
+  PetscCall(MatEqual(A, B, &equal));
+  PetscCheck(equal, comm, PETSC_ERR_PLIB, "wrong results");
+
+  PetscCall(MatUpdateMPIAIJWithArray(A, a[rank]));
+  PetscCall(MatUpdateMPIAIJWithArray(B, a[rank]));
+  PetscCall(MatEqual(A, B, &equal));
+  PetscCheck(equal, comm, PETSC_ERR_PLIB, "wrong results");
+
   PetscCall(MatDestroy(&A));
+  PetscCall(MatDestroy(&B));
   PetscCall(PetscFinalize());
   return 0;
 }
 
 /*TEST
-   test:
-     nsize: 3
+   testset:
+     nsize: {{1 3}}
+     output_file: output/empty.out
 
+     test:
+       suffix: aij
+
+     test:
+       requires: cuda
+       suffix: cuda
+       # since the matrices are created with MatCreateMPIxxx(), users are allowed to pass 'mpiaijcusparse' even with one rank
+       args: -mat_type {{aijcusparse mpiaijcusparse}}
+
+     test:
+       requires: kokkos_kernels
+       suffix: kok
+       args: -mat_type aijkokkos
 TEST*/

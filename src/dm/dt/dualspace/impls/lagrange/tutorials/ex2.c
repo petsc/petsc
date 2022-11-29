@@ -2,13 +2,15 @@ const char help[] = "Simple example to get equally space points in high-order el
 
 #include <petscfe.h>
 #include <petscdmplex.h>
-static PetscErrorCode x(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf_dummy, PetscScalar *u, void *actx) {
+static PetscErrorCode x(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf_dummy, PetscScalar *u, void *actx)
+{
   PetscFunctionBegin;
   u[0] = x[0];
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscInt       dim = 2, cells[] = {1, 1, 1};
   DM             K;
   PetscReal      radius = 2, lo[] = {-radius, -radius, -radius}, hi[] = {radius, radius, radius};

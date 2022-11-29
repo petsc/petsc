@@ -1,9 +1,10 @@
 
-static char help[] = "Sends a PETSc vector to a socket connection, receives it back, within a loop. Works with ex42.c.\n";
+static char help[] = "Sends a PETSc vector to a socket connection, receives it back, within a loop. Must be run with ex42.c.\n";
 
 #include <petscvec.h>
 
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   Vec         b;
   PetscViewer fd;
   PetscInt    i;
@@ -21,6 +22,7 @@ int main(int argc, char **args) {
     PetscCall(VecLoad(b, fd));
   }
   PetscCall(VecDestroy(&b));
+  PetscCall(PetscViewerDestroy(&fd));
   PetscCall(PetscFinalize());
   return 0;
 }

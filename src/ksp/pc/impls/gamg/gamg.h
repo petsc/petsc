@@ -1,4 +1,4 @@
-#if !defined(__GAMG_H)
+#ifndef __GAMG_H
 #define __GAMG_H
 
 #include <petsc/private/pcgamgimpl.h>

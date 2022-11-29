@@ -300,7 +300,7 @@ a linear system with ``KSP``, the interface to the preconditioners,
 Krylov subspace methods, and direct linear solvers of PETSc. Following
 the code we highlight a few of the most important parts of this example.
 
-.. admonition:: Listing: `KSP Tutorial src/ksp/ksp/tutorials/ex1.c <../../src/ksp/ksp/tutorials/ex1..c.html>`__
+.. admonition:: Listing: `KSP Tutorial src/ksp/ksp/tutorials/ex1.c <PETSC_DOC_OUT_ROOT_PLACEHOLDER/src/ksp/ksp/tutorials/ex1.c.html>`__
    :name: ksp-ex1
 
    .. literalinclude:: /../src/ksp/ksp/tutorials/ex1.c
@@ -599,7 +599,7 @@ being used, they *must* be called in the same order on each processor.
 The next example, given below,
 illustrates the solution of a linear system in parallel. This code,
 corresponding to
-`KSP Tutorial ex2 <../../src/ksp/ksp/tutorials/ex2.c.html>`__,
+`KSP Tutorial ex2 <PETSC_DOC_OUT_ROOT_PLACEHOLDER/src/ksp/ksp/tutorials/ex2.c.html>`__,
 handles the two-dimensional Laplacian discretized with finite
 differences, where the linear system is again solved with KSP. The code
 performs the same tasks as the sequential version within
@@ -611,7 +611,7 @@ multiprocessor examples. The primary difference between the examples in
 here is that each processor forms only its
 local part of the matrix and vectors in the parallel case.
 
-.. admonition:: Listing: `KSP Tutorial src/ksp/ksp/tutorials/ex2.c <../../src/ksp/ksp/tutorials/ex2..c.html>`__``
+.. admonition:: Listing: `KSP Tutorial src/ksp/ksp/tutorials/ex2.c <PETSC_DOC_OUT_ROOT_PLACEHOLDER/src/ksp/ksp/tutorials/ex2.c.html>`__
    :name: ksp-ex2
 
    .. literalinclude:: /../src/ksp/ksp/tutorials/ex2.c
@@ -658,7 +658,7 @@ PETSc MPI based linear solvers may be accessed from a sequential or OpenMP progr
 
 
 There is an OpenMP thread-safe subset of PETSc that may be configured for using ``--with-threadsafety --with-log=0 [--with-openmp or
---download-concurrencykit]``. `KSP Tutorial ex61f <../../src/ksp/ksp/tutorials/ex61f.F90.html>`__ demonstrates
+--download-concurrencykit]``. `KSP Tutorial ex61f <PETSC_DOC_OUT_ROOT_PLACEHOLDER/src/ksp/ksp/tutorials/ex61f.F90.html>`__ demonstrates
 how this may be used with OpenMP. In this mode one may have individual OpenMP threads that each manage their own
 (sequential) PETSc objects (each thread can interact only with its own objects). This
 is useful when one has many small systems (or sets of ODEs) that must be integrated in an
@@ -865,7 +865,7 @@ To develop an application program that uses PETSc, we suggest the following:
       * Using make. Update the application makefile to add the appropriate PETSc include
         directories and libraries.
 
-        *  Recommended approach. Examine the comments in $PETSC_DIR/shared/petsc/Makefile.user and transfer selected portions of
+        *  Recommended approach. Examine the comments in $PETSC_DIR/share/petsc/Makefile.user and transfer selected portions of
            that file to your makefile.
 
         *  Minimalist. Add the line
@@ -875,7 +875,7 @@ To develop an application program that uses PETSc, we suggest the following:
               include ${PETSC_DIR}/lib/petsc/conf/variables
 
            to the bottom of your makefile. This will provide a set of PETSc specific make variables you may use in your makefile. See
-           the comments in the file $PETSC_DIR/shared/petsc/Makefile.basic.user for details on the usage.
+           the comments in the file $PETSC_DIR/share/petsc/Makefile.basic.user for details on the usage.
 
         *  Simple, but hands the build process over to PETSc's control. Add the lines
 
@@ -885,7 +885,7 @@ To develop an application program that uses PETSc, we suggest the following:
               include ${PETSC_DIR}/lib/petsc/conf/rules
               include ${PETSC_DIR}/lib/petsc/conf/tests
 
-           to the bottom of your makefile. See the comments in the file $PETSC_DIR/shared/petsc/Makefile.basic.user for details on the usage.
+           to the bottom of your makefile. See the comments in the file $PETSC_DIR/share/petsc/Makefile.basic.user for details on the usage.
            Since PETSc's rules now control the build process you will likely need to simplify and remove much of your makefile.
 
         *  Not recommended since you must change your makefile for each new configuration/computing system. This approach does not require
@@ -913,6 +913,223 @@ To develop an application program that uses PETSc, we suggest the following:
 
    #. Slowly start utilizing PETSc functionality in your code, ensure that your code continues to build and run correctly.
 
+.. _sec_oo:
+
+PETSc's Object-Oriented Design
+------------------------------
+
+Though PETSc has a large API, conceptually it's rather simple.
+There are three abstract basic data objects (classes): index sets, ``IS``, vectors, ``Vec``, and matrices, ``Mat``.
+Plus a larger number of abstract algorithm objects (classes) starting with: preconditioners, ``PC``, Krylov solvers, ``KSP``, and so forth.
+
+Let ``Object``
+represent any of these objects. Objects are created with
+
+.. code-block::
+
+   Object obj;
+   ObjectCreate(MPI_Comm, &obj);
+
+The object is empty and little can be done with it. A particular implementation of the class is associated with the object by setting the object's "type", where type
+is merely a string name of an implementation class using
+
+.. code-block::
+
+   Object obj;
+   ObjectSetType(obj,"Name");
+
+Some objects support subclasses which are specializations of the type. These are set with
+
+.. code-block::
+
+   Object obj;
+   ObjectNameSetType(obj,"SubName");
+
+For example, within ``TS`` one may do
+
+.. code-block::
+
+   TS obj;
+   TSCreate(PETSC_COMM_WORLD,&obj);
+   TSSetType(obj,TSARKIMEX);
+   TSARKIMEXSetType(obj,TSARKIMEX3);
+
+The abstract class ``TS`` can embody any ODE/DAE integrator scheme.
+This example creates an additive Runge-Kutta ODE/DAE IMEX integrator, whose type name is ``TSARKIMEX``, using a 3-order scheme with an L-stable implicit part,
+whose subtype name is ``TSARKIMEX3``.
+
+In order to allow PETSc objects to be runtime configurable, PETSc objects provide a universal way of selecting types (classes) and subtypes at runtime, from
+what is referred to as the "options database". The code above can be replaced with
+
+.. code-block::
+
+   TS obj;
+   TSCreate(PETSC_COMM_WORLD,&obj);
+   TSSetFromOptions(obj);
+
+now both the type and subtype can be conveniently set from the command line
+
+.. code-block:: console
+
+   $ ./app -ts_type arkimex -ts_arkimex_type 3
+
+The object's type (implementation class) or subclass can also be changed at any time simply by calling ``TSSetType()`` again (though in order to override command line options the call to ``TSSetType()`` must be made _after_ ``TSSetFromOptions()``). For example:
+
+.. code-block::
+
+   // (if set) command line options "override" TSSetType()
+   TSSetType(ts, TSGLLE);
+   TSSetFromOptions(ts);
+
+   // TSSetType() overrides command line options
+   TSSetFromOptions(ts);
+   TSSetType(ts, TSGLLE);
+
+Since the later call always overrides the earlier call the second form shown is rarely -- if ever -- used, as it is less flexible than configuring command line settings.
+
+The standard methods on an object are of the general form
+
+.. code-block::
+
+   ObjectSetXXX(obj,...);
+   ObjectGetXXX(obj,...);
+   ObjectYYY(obj,...);
+
+For example
+
+.. code-block::
+
+   TSSetRHSFunction(obj,...)
+
+Particular types and subtypes of objects may have their own methods, which are given in the form
+
+.. code-block::
+
+   ObjectNameSetXXX(obj,...);
+   ObjectNameGetXXX(obj,...);
+   ObjectNameYYY(obj,...);
+
+and
+
+.. code-block::
+
+   ObjectNameSubNameSetXXX(obj,...);
+   ObjectNameSubNameGetXXX(obj,...);
+   ObjectNameSubNameYYY(obj,...);
+
+where Name and SubName are the type and subtype names (for example, as above ``TSARKIMEX`` and ``3``. Most "set" operations have options database versions with the same
+names in lower case, separated by underscores and with the set remove. For example,
+
+.. code-block::
+
+   KSPGMRESSetRestart(obj,30);   // ignored if the type is not KSPGMRES
+
+can be set at the command line with
+
+.. code-block:: console
+
+   $ ./app -ksp_gmres_restart 30
+
+
+There are a special subset of type-specific methods that
+are ignored if the type does not match the function name. These are usually setter functions that control some aspect specific to the subtype. For example,
+
+.. code-block::
+
+   KSPGMRESSetRestart(obj,30);   // ignored if the type is not KSPGMRES
+
+These allow cleaner code since it does not have a multitude of if statements to avoid inactive methods. That is one does not need to write code like
+
+.. code-block::
+
+   if (type == KSPGMRES) {     // unneeded clutter
+     KSPGMRESSetRestart(obj,30);
+   }
+
+There are many "get" routines that give one temporary access to the internal data of an object. They are used in the style
+
+.. code-block::
+
+   XXX xxx;
+   ObjectGetXXX(obj,&xxx);
+   // use xxx
+   ObjectRestoreXXX(obj,&xxx);
+
+Objects obtained with a "get" routine should be returned with a "restore" routine, generally within the same function. Objects obtained with a "create" routine should be freed
+with a "destroy" routine.
+
+There may be variants of the "get" routines that give more limited access to the obtained object. For example,
+
+.. code-block::
+
+   const PetscScalar *x;
+
+   // specialized variant of VecGetArray()
+   VecGetArrayRead(vec, &x);
+   // one can read but not write with x[]
+   PetscReal y = 2*x[0];
+   // don't forget to restore x after you are done with it
+   VecRestoreArrayRead(vec, &x);
+
+Objects can be displayed (in a large number of ways) with
+
+.. code-block::
+
+   ObjectView(obj,PetscViewer viewer);
+   ObjectViewFromOptions(obj,...);
+
+Where ``PetscViewer`` is an abstract object that can represent standard output, an ASCII or binary file, a graphical window, etc. The second
+variant allows the user to delay until runtime the decision of what viewer and format to use to view the object or if to view the object at all.
+
+Objects are destroyed with
+
+.. code-block::
+
+   ObjectDestroy(&obj)
+
+.. figure:: /images/docs/manual/objectlife.svg
+  :name: fig_objectlife
+
+  Sample lifetime of a PETSc object
+
+
+User Callbacks
+~~~~~~~~~~~~~~
+
+In many situations the user may also wish to override or provide custom functionality. This is handled via callbacks which the library will call at the appropriate time. The most general callback is provided by
+
+.. code-block::
+
+   PetscObjecSetCallback(obj,callbackfunction(), void *ctx, callbackdestroy(void *ctx));
+
+where ``callbackfunction()`` is what is used by the library, ``ctx`` is an optional data-structure (array, struct, PETSc object) that is used by ``callbackfunction()``
+and ``callbackdestroy(void *ctx)`` is an optional function that will be called when ``obj`` is destroyed. The use of the ``callbackdestroy()`` allows users to "set and forget"
+data structures that will not be needed elsewhere but still need to be cleaned up when no longer needed. Here is an example of the use of a full-fledged callback
+
+.. code-block::
+
+   TS              ts;
+   TSMonitorLGCtx *ctx;
+
+   TSMonitorLGCtxCreate(..., &ctx)
+   TSMonitorSet(ts, TSMonitorLGTimeStep, ctx, (PetscErrorCode(*)(void **))TSMonitorLGCtxDestroy);
+   TSSolve(ts);
+
+Occasionally routines to set callback functions take additional data objects that will be used by the object but are not context data for the function. For example,
+
+.. code-block::
+
+   SNES obj;
+   Vec  r;
+   void *ctx;
+
+   SNESSetFunction(snes, r, UserApplyFunction(SNES,Vec,Vec,void *ctx), ctx);
+
+The ``r`` vector is an optional argument provided by the user which will be used as work-space by ``SNES``. Note that this callback does not provide a way for the user
+to have the ``ctx`` destroyed when the ``SNES`` object is destroyed, the users must ensure that they free it at an appropriate time. There is no logic to the various ways
+PETSc accepts callback functions in different places in the code.
+
+See :any:`fig_taocallbacks` for a cartoon on the use of callbacks in ``Tao``.
 
 .. _sec_directory:
 

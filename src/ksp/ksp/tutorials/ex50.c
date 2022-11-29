@@ -35,7 +35,8 @@ typedef struct {
   PetscScalar uu, tt;
 } UserContext;
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   KSP         ksp;
   DM          da;
   UserContext user;
@@ -63,7 +64,8 @@ int main(int argc, char **argv) {
   return 0;
 }
 
-PetscErrorCode ComputeRHS(KSP ksp, Vec b, void *ctx) {
+PetscErrorCode ComputeRHS(KSP ksp, Vec b, void *ctx)
+{
   UserContext  *user = (UserContext *)ctx;
   PetscInt      i, j, M, N, xm, ym, xs, ys;
   PetscScalar   Hx, Hy, pi, uu, tt;
@@ -97,7 +99,8 @@ PetscErrorCode ComputeRHS(KSP ksp, Vec b, void *ctx) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode ComputeJacobian(KSP ksp, Mat J, Mat jac, void *ctx) {
+PetscErrorCode ComputeJacobian(KSP ksp, Mat J, Mat jac, void *ctx)
+{
   PetscInt     i, j, M, N, xm, ym, xs, ys, num, numi, numj;
   PetscScalar  v[5], Hx, Hy, HydHx, HxdHy;
   MatStencil   row, col[5];

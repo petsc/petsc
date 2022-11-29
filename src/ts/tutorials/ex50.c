@@ -83,7 +83,8 @@ extern PetscErrorCode TrueSolution(TS, PetscReal, Vec, AppCtx *);
 extern PetscErrorCode RHSFunction(TS, PetscReal, Vec, Vec, void *);
 extern PetscErrorCode RHSJacobian(TS, PetscReal, Vec, Mat, Mat, void *);
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   AppCtx       appctx; /* user-defined application context */
   PetscInt     i, xs, xm, ind, j, lenglob;
   PetscReal    x, *wrk_ptr1, *wrk_ptr2;
@@ -257,7 +258,8 @@ int main(int argc, char **argv) {
    Output Parameter:
    u - vector with solution at initial time (global)
 */
-PetscErrorCode TrueSolution(TS ts, PetscReal t, Vec u, AppCtx *appctx) {
+PetscErrorCode TrueSolution(TS ts, PetscReal t, Vec u, AppCtx *appctx)
+{
   PetscScalar       *s;
   const PetscScalar *xg;
   PetscInt           i, xs, xn;
@@ -273,7 +275,8 @@ PetscErrorCode TrueSolution(TS ts, PetscReal t, Vec u, AppCtx *appctx) {
   return 0;
 }
 
-PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec globalin, Vec globalout, void *ctx) {
+PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec globalin, Vec globalout, void *ctx)
+{
   AppCtx *appctx = (AppCtx *)ctx;
 
   PetscFunctionBeginUser;
@@ -292,7 +295,8 @@ PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec globalin, Vec globalout, void
       Computes Jacobian of      K u + diag(u) G u   which is given by
               K   + diag(u)G + diag(Gu)
 */
-PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec globalin, Mat A, Mat B, void *ctx) {
+PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec globalin, Mat A, Mat B, void *ctx)
+{
   AppCtx *appctx = (AppCtx *)ctx;
   Vec     Gglobalin;
 
@@ -320,7 +324,8 @@ PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec globalin, Mat A, Mat B, void 
 /*
      Matrix free operation of 1d Laplacian and Grad for GLL spectral elements
 */
-PetscErrorCode MatMult_Laplacian(Mat A, Vec x, Vec y) {
+PetscErrorCode MatMult_Laplacian(Mat A, Vec x, Vec y)
+{
   AppCtx            *appctx;
   PetscReal        **temp, vv;
   PetscInt           i, j, xs, xn;
@@ -358,7 +363,8 @@ PetscErrorCode MatMult_Laplacian(Mat A, Vec x, Vec y) {
   return 0;
 }
 
-PetscErrorCode MatMult_Advection(Mat A, Vec x, Vec y) {
+PetscErrorCode MatMult_Advection(Mat A, Vec x, Vec y)
+{
   AppCtx            *appctx;
   PetscReal        **temp;
   PetscInt           j, xs, xn;
@@ -409,7 +415,8 @@ PetscErrorCode MatMult_Advection(Mat A, Vec x, Vec y) {
    str - flag indicating matrix structure
 
 */
-PetscErrorCode RHSMatrixLaplaciangllDM(TS ts, PetscReal t, Vec X, Mat A, Mat BB, void *ctx) {
+PetscErrorCode RHSMatrixLaplaciangllDM(TS ts, PetscReal t, Vec X, Mat A, Mat BB, void *ctx)
+{
   PetscReal **temp;
   PetscReal   vv;
   AppCtx     *appctx = (AppCtx *)ctx; /* user-defined application context */
@@ -480,7 +487,8 @@ PetscErrorCode RHSMatrixLaplaciangllDM(TS ts, PetscReal t, Vec X, Mat A, Mat BB,
    str - flag indicating matrix structure
 
 */
-PetscErrorCode RHSMatrixAdvectiongllDM(TS ts, PetscReal t, Vec X, Mat A, Mat BB, void *ctx) {
+PetscErrorCode RHSMatrixAdvectiongllDM(TS ts, PetscReal t, Vec X, Mat A, Mat BB, void *ctx)
+{
   PetscReal **temp;
   AppCtx     *appctx = (AppCtx *)ctx; /* user-defined application context */
   PetscInt    xs, xn, l, j;

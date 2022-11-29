@@ -69,15 +69,15 @@ typedef struct {
   PetscReal    *npmaxwork;  /* work vector of length npmax */
   PetscBLASInt *npmaxiwork; /* integer work vector of length npmax */
   /* morepoints and getquadnlsmfq */
-  PetscReal    *L;      /* n*(n+1)/2 x npmax */
-  PetscReal    *L_tmp;  /* n*(n+1)/2 x npmax */
-  PetscReal    *L_save; /* n*(n+1)/2 x npmax */
-  PetscReal    *Z;      /* npmax x npmax-(n+1) */
-  PetscReal    *M;      /* npmax x n+1 */
-  PetscReal    *N;      /* npmax x n*(n+1)/2  */
-  PetscReal    *alpha;  /* n+1 */
-  PetscReal    *beta;   /*  r(n+1)/2 */
-  PetscReal    *omega;  /* npmax - np - 1 */
+  PetscReal *L;      /* n*(n+1)/2 x npmax */
+  PetscReal *L_tmp;  /* n*(n+1)/2 x npmax */
+  PetscReal *L_save; /* n*(n+1)/2 x npmax */
+  PetscReal *Z;      /* npmax x npmax-(n+1) */
+  PetscReal *M;      /* npmax x n+1 */
+  PetscReal *N;      /* npmax x n*(n+1)/2  */
+  PetscReal *alpha;  /* n+1 */
+  PetscReal *beta;   /*  r(n+1)/2 */
+  PetscReal *omega;  /* npmax - np - 1 */
 
   Tao subtao;
   Vec subxl, subxu, subx, subpdel, subndel, subb;

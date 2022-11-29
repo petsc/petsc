@@ -11,7 +11,7 @@
 
 PetscErrorCode PetscViewerHDF5PushGroup(PETSC_UNUSED PetscViewer vw,PETSC_UNUSED const char g[]){PetscViewerHDF5Error;}
 PetscErrorCode PetscViewerHDF5PopGroup(PETSC_UNUSED PetscViewer vw){PetscViewerHDF5Error;}
-PetscErrorCode PetscViewerHDF5GetGroup(PETSC_UNUSED PetscViewer vw,PETSC_UNUSED const char *g[]){PetscViewerHDF5Error;}
+PetscErrorCode PetscViewerHDF5GetGroup(PETSC_UNUSED PetscViewer vw, PETSC_UNUSED const char p[], PETSC_UNUSED char *g[]){PetscViewerHDF5Error;}
 PetscErrorCode PetscViewerHDF5PushTimestepping(PETSC_UNUSED PetscViewer vw){PetscViewerHDF5Error;}
 PetscErrorCode PetscViewerHDF5PopTimestepping(PETSC_UNUSED PetscViewer vw){PetscViewerHDF5Error;}
 PetscErrorCode PetscViewerHDF5SetTimestep(PETSC_UNUSED PetscViewer vw, PETSC_UNUSED PetscInt n){PetscViewerHDF5Error;}

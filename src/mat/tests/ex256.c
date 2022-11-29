@@ -2,7 +2,8 @@ static char help[] = "Test some operations of SeqDense matrices with an LDA larg
 
 #include <petscmat.h>
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   Mat          A, B;
   PetscScalar *a, *b;
   PetscInt     n = 4, lda = 5, i;

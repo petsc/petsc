@@ -1,6 +1,6 @@
 #PETSc Option Table entries:
--option1 value1
--option2
--option3 value3
--option_in_file 22
+-option1 value1 # (source: code)
+-option2 # (source: code)
+-option3 value3 # (source: code)
+-option_in_file 22 # (source: file)
 #End of PETSc Option Table entries

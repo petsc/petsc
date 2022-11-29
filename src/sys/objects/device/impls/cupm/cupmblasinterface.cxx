@@ -1,14 +1,18 @@
 #include <petsc/private/cupmblasinterface.hpp>
 
-namespace Petsc {
+namespace Petsc
+{
 
-namespace Device {
+namespace device
+{
 
-namespace CUPM {
+namespace cupm
+{
 
-namespace Impl {
+namespace impl
+{
 
-#define PETSC_CUPMBLAS_STATIC_VARIABLE_DEFN(THEIRS, DEVICE, OURS) const decltype(THEIRS) BlasInterface<DeviceType::DEVICE>::OURS;
+#define PETSC_CUPMBLAS_STATIC_VARIABLE_DEFN(THEIRS, DEVICE, OURS) const decltype(THEIRS) BlasInterfaceImpl<DeviceType::DEVICE>::OURS;
 
 // in case either one or the other don't agree on a name, you can specify all three here:
 //
@@ -30,11 +34,21 @@ namespace Impl {
 PETSC_CUPMBLAS_DEFINE_STATIC_VARIABLE_MATCHING_SCHEME(STATUS_SUCCESS)
 PETSC_CUPMBLAS_DEFINE_STATIC_VARIABLE_MATCHING_SCHEME(STATUS_NOT_INITIALIZED)
 PETSC_CUPMBLAS_DEFINE_STATIC_VARIABLE_MATCHING_SCHEME(STATUS_ALLOC_FAILED)
+PETSC_CUPMBLAS_DEFINE_STATIC_VARIABLE_MATCHING_SCHEME(POINTER_MODE_HOST)
+PETSC_CUPMBLAS_DEFINE_STATIC_VARIABLE_MATCHING_SCHEME(POINTER_MODE_DEVICE)
 
-} // namespace Impl
+#if PetscDefined(HAVE_CUDA)
+template struct BlasInterface<DeviceType::CUDA>;
+#endif
 
-} // namespace CUPM
+#if PetscDefined(HAVE_HIP)
+template struct BlasInterface<DeviceType::HIP>;
+#endif
 
-} // namespace Device
+} // namespace impl
+
+} // namespace cupm
+
+} // namespace device
 
 } // namespace Petsc

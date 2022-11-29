@@ -1,13 +1,13 @@
 #PETSc Option Table entries:
--alias_opt alias_val
--option1 1
--option2
--option3 value3
--option4 value4
--option5
--option_in_file_1
--options_monitor_cancel 1
--options_monitor_viewer ascii
--options_view
--skip_petscrc 1
+-alias_opt alias_val # (source: file)
+-option1 1 # (source: code)
+-option2 # (source: code)
+-option3 value3 # (source: code)
+-option4 value4 # (source: code)
+-option5 # (source: code)
+-option_in_file_1 # (source: file)
+-options_monitor_cancel 1 # (source: command line)
+-options_monitor_viewer ascii # (source: command line)
+-options_view # (source: command line)
+-skip_petscrc 1 # (source: command line)
 #End of PETSc Option Table entries

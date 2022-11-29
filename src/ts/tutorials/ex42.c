@@ -23,7 +23,8 @@ typedef struct {
   PetscReal D_h;
 } AppCtx;
 
-PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec X, Vec DXDT, void *ptr) {
+PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec X, Vec DXDT, void *ptr)
+{
   AppCtx            *user = (AppCtx *)ptr;
   PetscInt           nb_cells, i;
   PetscReal          alpha, beta;
@@ -48,11 +49,11 @@ PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec X, Vec DXDT, void *ptr) {
   PetscCall(VecGetArray(DXDT, &dxdt));
 
   for (i = 0; i < nb_cells; i++) {
-    a   = x[2 * i];
-    h   = x[2 * i + 1];
+    a = x[2 * i];
+    h = x[2 * i + 1];
     // Reaction:
-    da  = alpha * a * a / (1. + beta * h) + rho_a - mu_a * a;
-    dh  = alpha * a * a + rho_h - mu_h * h;
+    da = alpha * a * a / (1. + beta * h) + rho_a - mu_a * a;
+    dh = alpha * a * a + rho_h - mu_h * h;
     // Diffusion:
     d2a = d2h = 0.;
     if (i > 0) {
@@ -71,7 +72,8 @@ PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec X, Vec DXDT, void *ptr) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec X, Mat J, Mat B, void *ptr) {
+PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec X, Mat J, Mat B, void *ptr)
+{
   AppCtx            *user = (AppCtx *)ptr;
   PetscInt           nb_cells, i, idx;
   PetscReal          alpha, beta;
@@ -135,7 +137,8 @@ PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec X, Mat J, Mat B, void *ptr) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DomainErrorFunction(TS ts, PetscReal t, Vec Y, PetscBool *accept) {
+PetscErrorCode DomainErrorFunction(TS ts, PetscReal t, Vec Y, PetscBool *accept)
+{
   AppCtx            *user;
   PetscReal          dt;
   const PetscScalar *x;
@@ -157,7 +160,8 @@ PetscErrorCode DomainErrorFunction(TS ts, PetscReal t, Vec Y, PetscBool *accept)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode FormInitialState(Vec X, AppCtx *user) {
+PetscErrorCode FormInitialState(Vec X, AppCtx *user)
+{
   PetscRandom R;
 
   PetscFunctionBeginUser;
@@ -173,7 +177,8 @@ PetscErrorCode FormInitialState(Vec X, AppCtx *user) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PrintSolution(Vec X, AppCtx *user) {
+PetscErrorCode PrintSolution(Vec X, AppCtx *user)
+{
   const PetscScalar *x;
   PetscInt           i;
   PetscInt           nb_cells = user->nb_cells;
@@ -186,7 +191,8 @@ PetscErrorCode PrintSolution(Vec X, AppCtx *user) {
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   TS          ts;   /* time-stepping context */
   Vec         x;    /* State vector */
   Mat         J;    /* Jacobian matrix */

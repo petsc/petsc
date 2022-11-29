@@ -1,6 +1,7 @@
 #include <petsc/private/tsimpl.h> /*I "petscts.h" I*/
 
-static PetscErrorCode TSAdaptChoose_CFL(TSAdapt adapt, TS ts, PetscReal h, PetscInt *next_sc, PetscReal *next_h, PetscBool *accept, PetscReal *wlte, PetscReal *wltea, PetscReal *wlter) {
+static PetscErrorCode TSAdaptChoose_CFL(TSAdapt adapt, TS ts, PetscReal h, PetscInt *next_sc, PetscReal *next_h, PetscBool *accept, PetscReal *wlte, PetscReal *wltea, PetscReal *wlter)
+{
   PetscReal        hcfl, cfltimestep, ccfl;
   PetscInt         ncandidates;
   const PetscReal *ccflarray;
@@ -42,9 +43,10 @@ static PetscErrorCode TSAdaptChoose_CFL(TSAdapt adapt, TS ts, PetscReal h, Petsc
 
    Level: intermediate
 
-.seealso: `TS`, `TSAdapt`, `TSGetAdapt()`
+.seealso: [](chapter_ts), `TS`, `TSAdapt`, `TSGetAdapt()`, `TSAdaptType`
 M*/
-PETSC_EXTERN PetscErrorCode TSAdaptCreate_CFL(TSAdapt adapt) {
+PETSC_EXTERN PetscErrorCode TSAdaptCreate_CFL(TSAdapt adapt)
+{
   PetscFunctionBegin;
   adapt->ops->choose = TSAdaptChoose_CFL;
   PetscFunctionReturn(0);

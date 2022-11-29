@@ -1,7 +1,8 @@
 #include <petsc/private/dmpatchimpl.h> /*I      "petscdmpatch.h"   I*/
 #include <petscdmda.h>
 
-PetscErrorCode DMSetFromOptions_Patch(DM dm, PetscOptionItems *PetscOptionsObject) {
+PetscErrorCode DMSetFromOptions_Patch(DM dm, PetscOptionItems *PetscOptionsObject)
+{
   /* DM_Patch      *mesh = (DM_Patch*) dm->data; */
 
   PetscFunctionBegin;
@@ -20,7 +21,8 @@ extern PetscErrorCode DMCreateLocalVector_Patch(DM dm, Vec *l);
 extern PetscErrorCode DMDestroy_Patch(DM dm);
 extern PetscErrorCode DMCreateSubDM_Patch(DM dm, PetscInt numFields, const PetscInt fields[], IS *is, DM *subdm);
 
-PetscErrorCode DMInitialize_Patch(DM dm) {
+PetscErrorCode DMInitialize_Patch(DM dm)
+{
   PetscFunctionBegin;
   dm->ops->view                    = DMView_Patch;
   dm->ops->setfromoptions          = DMSetFromOptions_Patch;
@@ -46,12 +48,13 @@ PetscErrorCode DMInitialize_Patch(DM dm) {
   PetscFunctionReturn(0);
 }
 
-PETSC_EXTERN PetscErrorCode DMCreate_Patch(DM dm) {
+PETSC_EXTERN PetscErrorCode DMCreate_Patch(DM dm)
+{
   DM_Patch *mesh;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscCall(PetscNewLog(dm, &mesh));
+  PetscCall(PetscNew(&mesh));
   dm->data = mesh;
 
   mesh->refct       = 1;
@@ -85,7 +88,8 @@ PETSC_EXTERN PetscErrorCode DMCreate_Patch(DM dm) {
 .seealso: `DMPatchZoom()`
 
 @*/
-PetscErrorCode DMPatchCreate(MPI_Comm comm, DM *mesh) {
+PetscErrorCode DMPatchCreate(MPI_Comm comm, DM *mesh)
+{
   PetscFunctionBegin;
   PetscValidPointer(mesh, 2);
   PetscCall(DMCreate(comm, mesh));
@@ -93,7 +97,8 @@ PetscErrorCode DMPatchCreate(MPI_Comm comm, DM *mesh) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMPatchCreateGrid(MPI_Comm comm, PetscInt dim, MatStencil patchSize, MatStencil commSize, MatStencil gridSize, DM *dm) {
+PetscErrorCode DMPatchCreateGrid(MPI_Comm comm, PetscInt dim, MatStencil patchSize, MatStencil commSize, MatStencil gridSize, DM *dm)
+{
   DM_Patch *mesh;
   DM        da;
   PetscInt  dof = 1, width = 1;

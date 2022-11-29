@@ -1,0 +1,11 @@
+===========================================
+Test: KSP performance - Poisson
+        Input matrix: 27-pt finite difference stencil
+        -n 8
+        DoFs = 512
+        Number of nonzeros = 10648
+
+Step1  - creating Vecs and Mat...
+Step2  - running KSPSolve()...
+Step3  - calculating error norm...
+===========================================

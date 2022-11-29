@@ -8,7 +8,8 @@ static char help[] = "Tests shared memory subcommunicators\n\n";
   having two nodes that do not share common memory
 */
 
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   PetscCommShared scomm;
   MPI_Comm        comm;
   PetscMPIInt     lrank, rank, size, i;

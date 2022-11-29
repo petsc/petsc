@@ -8,7 +8,8 @@
 /* Helper function which determines if any DMDA fields are named.  This is used
    as a proxy for the user's intention to use DMDA fields as distinct
    scalar-valued fields as opposed to a single vector-valued field */
-static PetscErrorCode DMDAGetFieldsNamed(DM da, PetscBool *fieldsnamed) {
+static PetscErrorCode DMDAGetFieldsNamed(DM da, PetscBool *fieldsnamed)
+{
   PetscInt f, bs;
 
   PetscFunctionBegin;
@@ -25,7 +26,8 @@ static PetscErrorCode DMDAGetFieldsNamed(DM da, PetscBool *fieldsnamed) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMDAVTKWriteAll_VTS(DM da, PetscViewer viewer) {
+static PetscErrorCode DMDAVTKWriteAll_VTS(DM da, PetscViewer viewer)
+{
   const char *byte_order = PetscBinaryBigEndian() ? "BigEndian" : "LittleEndian";
 #if defined(PETSC_USE_REAL_SINGLE)
   const char precision[] = "Float32";
@@ -244,7 +246,8 @@ static PetscErrorCode DMDAVTKWriteAll_VTS(DM da, PetscViewer viewer) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMDAVTKWriteAll_VTR(DM da, PetscViewer viewer) {
+static PetscErrorCode DMDAVTKWriteAll_VTR(DM da, PetscViewer viewer)
+{
   const char *byte_order = PetscBinaryBigEndian() ? "BigEndian" : "LittleEndian";
 #if defined(PETSC_USE_REAL_SINGLE)
   const char precision[] = "Float32";
@@ -483,8 +486,8 @@ static PetscErrorCode DMDAVTKWriteAll_VTR(DM da, PetscViewer viewer) {
    Collective
 
    Input Parameters:
-+  odm - DM specifying the grid layout, passed as a PetscObject
--  viewer - viewer of type VTK
++  odm - `DMDA` specifying the grid layout, passed as a `PetscObject`
+-  viewer - viewer of type `PETSCVIEWERVTK`
 
    Level: developer
 
@@ -496,9 +499,10 @@ static PetscErrorCode DMDAVTKWriteAll_VTR(DM da, PetscViewer viewer) {
    If any fields have been named (see e.g. DMDASetFieldName()), then individual scalar
    fields are written. Otherwise, a single multi-dof (vector) field is written.
 
-.seealso: `PETSCVIEWERVTK`
+.seealso: `DMDA`, `DM`, `PETSCVIEWERVTK`
 @*/
-PetscErrorCode DMDAVTKWriteAll(PetscObject odm, PetscViewer viewer) {
+PetscErrorCode DMDAVTKWriteAll(PetscObject odm, PetscViewer viewer)
+{
   DM        dm = (DM)odm;
   PetscBool isvtk;
 
@@ -508,9 +512,14 @@ PetscErrorCode DMDAVTKWriteAll(PetscObject odm, PetscViewer viewer) {
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERVTK, &isvtk));
   PetscCheck(isvtk, PetscObjectComm((PetscObject)viewer), PETSC_ERR_ARG_INCOMP, "Cannot use viewer type %s", ((PetscObject)viewer)->type_name);
   switch (viewer->format) {
-  case PETSC_VIEWER_VTK_VTS: PetscCall(DMDAVTKWriteAll_VTS(dm, viewer)); break;
-  case PETSC_VIEWER_VTK_VTR: PetscCall(DMDAVTKWriteAll_VTR(dm, viewer)); break;
-  default: SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "No support for format '%s'", PetscViewerFormats[viewer->format]);
+  case PETSC_VIEWER_VTK_VTS:
+    PetscCall(DMDAVTKWriteAll_VTS(dm, viewer));
+    break;
+  case PETSC_VIEWER_VTK_VTR:
+    PetscCall(DMDAVTKWriteAll_VTR(dm, viewer));
+    break;
+  default:
+    SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "No support for format '%s'", PetscViewerFormats[viewer->format]);
   }
   PetscFunctionReturn(0);
 }

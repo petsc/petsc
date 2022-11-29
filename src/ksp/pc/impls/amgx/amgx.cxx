@@ -8,7 +8,7 @@
 */
 
 #include <petsc/private/pcimpl.h> /*I "petscpc.h" I*/
-#include <petscdevice.h>
+#include <petscdevice_cuda.h>
 #include <amgx_c.h>
 #include <limits>
 #include <vector>
@@ -165,12 +165,14 @@ static PetscInt s_count = 0;
 static std::string amgx_output{};
 
 // A print callback that allows AmgX to return status messages
-static void print_callback(const char *msg, int length) {
+static void print_callback(const char *msg, int length)
+{
   amgx_output.append(msg);
 }
 
 // Outputs messages from the AmgX message buffer and clears it
-PetscErrorCode amgx_output_messages(PC_AMGX *amgx) {
+PetscErrorCode amgx_output_messages(PC_AMGX *amgx)
+{
   PetscFunctionBegin;
 
   // If AmgX output is enabled and we have a message, output it
@@ -192,8 +194,11 @@ PetscErrorCode amgx_output_messages(PC_AMGX *amgx) {
     AMGX_RC err = (rc); \
     char    msg[4096]; \
     switch (err) { \
-    case AMGX_RC_OK: break; \
-    default: AMGX_get_error_string(err, msg, 4096); SETERRQ(amgx->comm, PETSC_ERR_LIB, "%s", msg); \
+    case AMGX_RC_OK: \
+      break; \
+    default: \
+      AMGX_get_error_string(err, msg, 4096); \
+      SETERRQ(amgx->comm, PETSC_ERR_LIB, "%s", msg); \
     } \
   } while (0)
 
@@ -206,11 +211,12 @@ PetscErrorCode amgx_output_messages(PC_AMGX *amgx) {
 
    Application Interface Routine: PCSetUp()
 
-   Notes:
+   Note:
    The interface routine PCSetUp() is not usually called directly by
    the user, but instead is called by PCApply() if necessary.
 */
-static PetscErrorCode PCSetUp_AMGX(PC pc) {
+static PetscErrorCode PCSetUp_AMGX(PC pc)
+{
   PC_AMGX  *amgx = (PC_AMGX *)pc->data;
   Mat       Pmat = pc->pmat;
   PetscBool is_dev_ptrs;
@@ -324,7 +330,8 @@ static PetscErrorCode PCSetUp_AMGX(PC pc) {
 
    Application Interface Routine: PCApply()
  */
-static PetscErrorCode PCApply_AMGX(PC pc, Vec b, Vec x) {
+static PetscErrorCode PCApply_AMGX(PC pc, Vec b, Vec x)
+{
   PC_AMGX           *amgx = (PC_AMGX *)pc->data;
   PetscScalar       *x_;
   const PetscScalar *b_;
@@ -362,7 +369,8 @@ static PetscErrorCode PCApply_AMGX(PC pc, Vec b, Vec x) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCReset_AMGX(PC pc) {
+static PetscErrorCode PCReset_AMGX(PC pc)
+{
   PC_AMGX *amgx = (PC_AMGX *)pc->data;
 
   PetscFunctionBegin;
@@ -387,7 +395,8 @@ static PetscErrorCode PCReset_AMGX(PC pc) {
 
    Application Interface Routine: PCDestroy()
 */
-static PetscErrorCode PCDestroy_AMGX(PC pc) {
+static PetscErrorCode PCDestroy_AMGX(PC pc)
+{
   PC_AMGX *amgx = (PC_AMGX *)pc->data;
 
   PetscFunctionBegin;
@@ -410,14 +419,16 @@ static PetscErrorCode PCDestroy_AMGX(PC pc) {
 }
 
 template <class T>
-std::string map_reverse_lookup(const std::map<std::string, T> &map, const T &key) {
+std::string map_reverse_lookup(const std::map<std::string, T> &map, const T &key)
+{
   for (auto const &m : map) {
     if (m.second == key) return m.first;
   }
   return "";
 }
 
-static PetscErrorCode PCSetFromOptions_AMGX(PC pc, PetscOptionItems *PetscOptionsObject) {
+static PetscErrorCode PCSetFromOptions_AMGX(PC pc, PetscOptionItems *PetscOptionsObject)
+{
   PC_AMGX      *amgx          = (PC_AMGX *)pc->data;
   constexpr int MAX_PARAM_LEN = 128;
   char          option[MAX_PARAM_LEN];
@@ -528,7 +539,8 @@ static PetscErrorCode PCSetFromOptions_AMGX(PC pc, PetscOptionItems *PetscOption
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCView_AMGX(PC pc, PetscViewer viewer) {
+static PetscErrorCode PCView_AMGX(PC pc, PetscViewer viewer)
+{
   PC_AMGX  *amgx = (PC_AMGX *)pc->data;
   PetscBool iascii;
 
@@ -541,17 +553,6 @@ static PetscErrorCode PCView_AMGX(PC pc, PetscViewer viewer) {
   }
   PetscFunctionReturn(0);
 }
-
-/*
-   PCCreate_AMGX - Creates a AmgX preconditioner context, PC_AMGX,
-   and sets this as the private data within the generic preconditioning
-   context, PC, that was created within PCCreate().
-
-   Input Parameter:
-.  pc - the preconditioner context
-
-   Application Interface Routine: PCCreate()
-*/
 
 /*MC
      PCAMGX - Interface to NVIDIA's AmgX algebraic multigrid
@@ -574,17 +575,18 @@ static PetscErrorCode PCView_AMGX(PC pc, PetscViewer viewer) {
 
    Level: intermediate
 
-   Notes:
-     Preconditioner supplied by the GPU accelerated library AmgX. Implementation will accept host or device pointers, but good performance will require that the KSP is also GPU accelerated so that data is not frequently transferred between host and device.
+   Note:
+     Implementation will accept host or device pointers, but good performance will require that the `KSP` is also GPU accelerated so that data is not frequently transferred between host and device.
 
-.seealso:  `PCGAMG`, `PCHYPRE`, `PCMG`, `PCAmgXGetResources()`, `PCCreate()`, `PCSetType()`, `PCType` (for list of available types), `PC`
+.seealso: `PCGAMG`, `PCHYPRE`, `PCMG`, `PCAmgXGetResources()`, `PCCreate()`, `PCSetType()`, `PCType` (for list of available types), `PC`
 M*/
 
-PETSC_EXTERN PetscErrorCode PCCreate_AMGX(PC pc) {
+PETSC_EXTERN PetscErrorCode PCCreate_AMGX(PC pc)
+{
   PC_AMGX *amgx;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(pc, &amgx));
+  PetscCall(PetscNew(&amgx));
   pc->ops->apply          = PCApply_AMGX;
   pc->ops->setfromoptions = PCSetFromOptions_AMGX;
   pc->ops->setup          = PCSetUp_AMGX;
@@ -636,7 +638,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_AMGX(PC pc) {
 
     Not Collective
 
-   Input Parameters:
+   Input Parameter:
 .  pc - the PC
 
    Output Parameter:
@@ -644,9 +646,10 @@ PETSC_EXTERN PetscErrorCode PCCreate_AMGX(PC pc) {
 
    Level: advanced
 
-.seealso: `PCCreate_AMGX()`
+.seealso: `PCAMGX`, `PC`, `PCGAMG`
 @*/
-PETSC_EXTERN PetscErrorCode PCAmgXGetResources(PC pc, void *rsrc_out) {
+PETSC_EXTERN PetscErrorCode PCAmgXGetResources(PC pc, void *rsrc_out)
+{
   PC_AMGX *amgx = (PC_AMGX *)pc->data;
 
   PetscFunctionBegin;
@@ -656,7 +659,6 @@ PETSC_EXTERN PetscErrorCode PCAmgXGetResources(PC pc, void *rsrc_out) {
     PetscCallAmgX(AMGX_resources_create(&amgx->rsrc, amgx->cfg, &amgx->comm, 1, &amgx->devID));
     amgx->rsrc_init = true;
   }
-
   *static_cast<AMGX_resources_handle *>(rsrc_out) = amgx->rsrc;
   PetscFunctionReturn(0);
 }

@@ -1,4 +1,4 @@
-#!/bin/bash 
+#!/bin/bash
 
 #
 # Author: Eloy Romero (slepc-maint@upv.es)
@@ -12,42 +12,48 @@
 #  It is based on the CLAPACK scripts, see http://www.netlib.org/clapack/
 #
 #  Usage: toclapack.sh [blas-src-dir] [lapack-src-dir]
-#  where blas-src-dir and lapack-src-dir are the SRC directories that
-#  contain the fortran sources for BLAS and LAPACK, respectively.
+#         where blas-src-dir and lapack-src-dir are the SRC directories that
+#         contain the fortran sources for BLAS and LAPACK, respectively.
+#  For example:  git.lapack/BLAS/SRC git.lapack/SRC/
 #
 #  This script needs the following tools:
 #	*) f2c available from http://www.netlib.org/f2c or as a tarball at http://pkgs.fedoraproject.org/repo/pkgs/f2c/
-#	*) lex
+#	*) lex, on macOS you need to do "brew install flex"
 #	*) c compiler (cc)
 #	*) awk
-#	*) sed - the sed on Apple does not work with this script so you must do
-#          brew install gnu-sed
+#	*) sed - the sed on Apple does not work with this script so you must do "brew install gnu-sed"
 #          to install a suitable sed. This script will automatically use that version once you have installed it
-#       *) the BLAS and LAPACK source code. Download the tarball from http://www.netlib.org/lapack/lapack-3.4.2.tgz
-#             blas-src-dir is lapack-version/BLAS/SRC
-#             lapack-src-dir is lapack-version/SRC
-#             newer releases of LAPACK will not work
+#       *) the BLAS and LAPACK source code. Download the tarball from http://www.netlib.org/ or better yet use
+#             the git repository. Post 3.8 releases of LAPACK will not work, they have pure f90 code that cannot easily be patched
 #
-#  This script should be run with bash, because it uses the 'echo -n' option. 
+#  This script should be run with bash, because it uses the 'echo -n' option.
+
+FBLASLAPACK=f2cblaslapack-3.8.0.q1
 
 if [ $# -lt 2 ]
 then
   echo Usage: toclapack.sh [blas-src-dir] [lapack-src-dir]
+  echo The result is put into the tarball ${FBLASLAPACK}
   exit
 fi
 
 # Path tools and temp directory
 F2C=f2c
-LEX=lex
 CC=cc
 AWK=awk
 TMP=${PWD}/toclapack.$$
-LEXFLAGS=-lfl
+OS=`uname`
+if [ "${OS}" == "Darwin" ]; then
+  LEX=/usr/local/opt/flex/bin/flex
+  LEXFLAGS=" -L/usr/local/opt/flex/lib -lfl"
+else
+  LEX=lex
+  LEXFLAGS=-lfl
+fi
 SED=sed
 TAR=tar
 
 # Some vars
-FBLASLAPACK=f2cblaslapack-3.4.2.q4
 BIN=${TMP}/bin
 PAC=${TMP}/${FBLASLAPACK}
 BLASDIR=${PAC}/blas
@@ -89,6 +95,7 @@ len	[a-z][a-z0-9]*_len
 "do_fio"{iofun}         |
 "do_lio"{iofun}         { printf("%s", yytext); /* unchanged */ }
 {any}"ilaenv_("         |
+{any}"iparmq_("         |
 [a-z]"tim"[a-z0-9]*"_(" |
 [a-z]"prtb"[a-z0-9]"_(" { 
                           register int c, paran_count = 1;
@@ -200,23 +207,23 @@ dist: cleanblaslapck cleanlib
 
 # 2) Transform fortran source to c from blas and lapack
 
-# Create blacklist of files that won't be compiled
-# Those functions correspond to extra precision routines
-cat > ${TMP}/black.list << EOF
+# Create list of files that won't be be processed by fc2
+# Those functions correspond to extra precision routines and codes with f90 constructs
+cat > ${TMP}/skip.list << EOF
 SXLASRC = sgesvxx.o sgerfsx.o sla_gerfsx_extended.o sla_geamv.o		\
    sla_gercond.o sla_rpvgrw.o ssysvxx.o ssyrfsx.o			\
    sla_syrfsx_extended.o sla_syamv.o sla_syrcond.o sla_syrpvgrw.o	\
    sposvxx.o sporfsx.o sla_porfsx_extended.o sla_porcond.o		\
    sla_porpvgrw.o sgbsvxx.o sgbrfsx.o sla_gbrfsx_extended.o		\
    sla_gbamv.o sla_gbrcond.o sla_gbrpvgrw.o sla_lin_berr.o slarscl2.o	\
-   slascl2.o sla_wwaddw.o
+   slascl2.o sla_wwaddw.o sgesvdx.o sgejsv.o sbdsvdx.o ssytrd_sb2st.o
 DXLASRC = dgesvxx.o dgerfsx.o dla_gerfsx_extended.o dla_geamv.o		\
    dla_gercond.o dla_rpvgrw.o dsysvxx.o dsyrfsx.o			\
    dla_syrfsx_extended.o dla_syamv.o dla_syrcond.o dla_syrpvgrw.o	\
    dposvxx.o dporfsx.o dla_porfsx_extended.o dla_porcond.o		\
    dla_porpvgrw.o dgbsvxx.o dgbrfsx.o dla_gbrfsx_extended.o		\
    dla_gbamv.o dla_gbrcond.o dla_gbrpvgrw.o dla_lin_berr.o dlarscl2.o	\
-   dlascl2.o dla_wwaddw.o
+   dlascl2.o dla_wwaddw.o dgesvdx.o dgejsv.o dbdsvdx.o dsytrd_sb2st.o
 CXLASRC =    cgesvxx.o cgerfsx.o cla_gerfsx_extended.o cla_geamv.o \
    cla_gercond_c.o cla_gercond_x.o cla_rpvgrw.o \
    csysvxx.o csyrfsx.o cla_syrfsx_extended.o cla_syamv.o \
@@ -227,7 +234,8 @@ CXLASRC =    cgesvxx.o cgerfsx.o cla_gerfsx_extended.o cla_geamv.o \
    cla_gbrcond_c.o cla_gbrcond_x.o cla_gbrpvgrw.o \
    chesvxx.o cherfsx.o cla_herfsx_extended.o cla_heamv.o \
    cla_hercond_c.o cla_hercond_x.o cla_herpvgrw.o \
-   cla_lin_berr.o clarscl2.o clascl2.o cla_wwaddw.o
+   cla_lin_berr.o clarscl2.o clascl2.o cla_wwaddw.o cgesvdx.o cgejsv.o cbdsvdx.o \
+   chetrd_hb2st.o
 ZXLASRC = zgesvxx.o zgerfsx.o zla_gerfsx_extended.o zla_geamv.o		\
    zla_gercond_c.o zla_gercond_x.o zla_rpvgrw.o zsysvxx.o zsyrfsx.o	\
    zla_syrfsx_extended.o zla_syamv.o zla_syrcond_c.o zla_syrcond_x.o	\
@@ -236,7 +244,7 @@ ZXLASRC = zgesvxx.o zgerfsx.o zla_gerfsx_extended.o zla_geamv.o		\
    zla_gbrfsx_extended.o zla_gbamv.o zla_gbrcond_c.o zla_gbrcond_x.o	\
    zla_gbrpvgrw.o zhesvxx.o zherfsx.o zla_herfsx_extended.o		\
    zla_heamv.o zla_hercond_c.o zla_hercond_x.o zla_herpvgrw.o		\
-   zla_lin_berr.o zlarscl2.o zlascl2.o zla_wwaddw.o
+   zla_lin_berr.o zlarscl2.o zlascl2.o zla_wwaddw.o zgesvdx.o zgejsv.o zsbdsvdx.o zhetrd_hb2st.o
 EOF
 
 QL=${TMP}/ql.sed
@@ -331,8 +339,8 @@ for p in blas qblas hblas lapack qlapack hlapack; do
 	NPROC="0"
 	for file in $files; do
 		base=`echo $file | $SED -e 's/\.f//g'`
-		[[ ${p} = lapack || ${p} = qlapack || ${p} = hlapack ]] && grep -q ${base}.o ${TMP}/black.list && continue
-
+		[[ ${p} = lapack || ${p} = qlapack || ${p} = hlapack ]] && grep -q ${base}.o ${TMP}/skip.list && continue
+                echo ${base} | grep 2stage && continue
 		# Get the precision of the BLAS and LAPACK routines
 		case $base in
 		chla_transtype)	PR="AUX";;
@@ -364,6 +372,8 @@ for p in blas qblas hblas lapack qlapack hlapack; do
 		# - Replace the intrinsic functions exit and maxloc by the macros myexit and mymaxloc
 		# - Replace sqrt, sin, cos, log and exp by M(*)
 		# - Replace max and min by f2cmax and f2cmin
+                # - F90 constructs that snuck into LAPACK
+		case $base in [zwk]*) $SED -r -e "s/\bAIMAG\b/DIMAG/g;" ${base}.f;; *) cat ${base}.f;; esac |
 		$SED -r -e "
 			s/RECURSIVE//g;
 			s/CHARACTER\\(1\\)/CHARACTER/g;
@@ -373,8 +383,34 @@ for p in blas qblas hblas lapack qlapack hlapack; do
 			s/(INTRINSIC [^\\n]*)MYMAXLOC/\\1 MAX/g;
 			s/MAXLOC\\(([^:]+):/MAXLOC(\\1,/g;
 			s/MAXLOC\\(([^(]+)\\((.+)\\),/MAXLOC( \\1, \\2,/g;
-		" ${base}.f |
+        		s/^([ ]*SUBROUTINE[^(]+\\([^)]+\\))/\\1\\n      EXTERNAL LEN_TRIM, CEILING\\n       INTEGER LEN_TRIM, CEILING\\n/g;
+            		s/(INTRINSIC [^\\n]*)LEN_TRIM/\\1 MAX/g;
+        		s/(INTRINSIC [^\\n]*)CEILING/\\1 MIN/g;
+                        s/INTENT\\([ A-Za-z]*\\)//g;
+                        s/^([ A-Z]*), EXTERNAL :: ([A-Z, 0-9]*)/\\1 \\2\\n       EXTERNAL \\2/g;
+                        s/^[ ]*REAL,/       REAL/g;
+                        s/^[ ]*COMPLEX,/       COMPLEX/g;
+                        s/^[ ]*INTEGER,/       INTEGER/g;
+                        s/^[ ]*DOUBLE PRECISION,/      DOUBLE PRECISION/g;
+                        s/^[ ]*LOGICAL,/       LOGICAL/g;
+                        s/:://g;
+		" |
 		$F2C -a -A -R | ${BIN}/lenscrub |
+             	$SED -e "
+                        1 i\
+                        #define len_trim__(cad,len) ({ \
+                          integer _r=0,i; \
+                          for(i=0; i<(len) && (cad)[i]; i++) \
+                            if((cad)[i] != ' ') _r=i; \
+                          _r+1; })
+                        1 i\
+                        #define ceiling_(a) (myceil(*(a)))
+                        1 i\
+                        #define myceil(a) (sizeof(a) == sizeof(float) ? ceilf(a) : ceil(a))
+                        1 i\
+                        #include <math.h>
+                        s/extern integer len_trim__([^)]*);//g
+                        s/extern [^ ]* ceiling_([^)]*);//g" |
 		$SED -r -e "
 			/\\/\\*  *\\.\\. .*\\*\\//d;
 			s/extern integer mymaxloc_\\([^)]*\\);//g;
@@ -384,6 +420,9 @@ for p in blas qblas hblas lapack qlapack hlapack; do
 			done )
 			s/([^a-zA-Z_1-9]+)max([^a-zA-Z_1-9]+)/\\1f2cmax\\2/g;
 			s/([^a-zA-Z_1-9]+)min([^a-zA-Z_1-9]+)/\\1f2cmin\\2/g;" |
+                $SED -r -e "
+                        s?/\* Subroutine \*/ int?void ?g;
+                        s?return 0?return?g;" |
 		$AWK '
 			BEGIN {	a=1; }
 			{
@@ -418,6 +457,10 @@ for p in blas qblas hblas lapack qlapack hlapack; do
 				s/^sdsdot/dqddot/
 				/^ila[dz]l[rc]/ { y/dz/qw/; }' )";
 			echo "s/([^a-zA-Z_1-9]+)${base}_([^a-zA-Z_1-9]+)/\\1${qbase}_\\2/g;" >> $QL
+                        if [ "$base" = "dladiv" ]; then  # special routine that has auxiliary functions
+                           echo "s/([^a-zA-Z_1-9]+)${base}1_([^a-zA-Z_1-9]+)/\\1${qbase}1_\\2/g;" >> $QL;
+                           echo "s/([^a-zA-Z_1-9]+)${base}2_([^a-zA-Z_1-9]+)/\\1${qbase}2_\\2/g;" >> $QL;
+                        fi;
 			cp $base.f ${TMP}/${qbase}.f
 			echo ${qbase}.f >> ${TMP}/ql.list
 		fi
@@ -434,6 +477,10 @@ for p in blas qblas hblas lapack qlapack hlapack; do
 				s/^sdsdot/dhddot/
 				/^ila[dz]l[rc]/ { y/dz/hk/; }' )";
 			echo "s/([^a-zA-Z_1-9]+)${base}_([^a-zA-Z_1-9]+)/\\1${hbase}_\\2/g;" >> $HL
+                        if [ "$base" = "dladiv" ]; then  # special routine that has auxiliary functions
+                           echo "s/([^a-zA-Z_1-9]+)${base}1_([^a-zA-Z_1-9]+)/\\1${hbase}1_\\2/g;" >> $HL;
+                           echo "s/([^a-zA-Z_1-9]+)${base}2_([^a-zA-Z_1-9]+)/\\1${hbase}2_\\2/g;" >> $HL;
+                        fi;
 			cp $base.f ${TMP}/${hbase}.f
 			echo ${hbase}.f >> ${TMP}/hl.list
 		fi
@@ -493,7 +540,7 @@ hlib: \$(SINGLEO) \$(DOUBLEO) \$(HALFO) \$(AUXO)
 	\$(AR) \$(AR_FLAGS) ../\$(LIBNAME) \$(SINGLEO) \$(DOUBLEO) \$(HALFO) \$(AUXO)
 
 qhlib: \$(SINGLEO) \$(DOUBLEO) \$(QUADO) \$(HALFO) \$(AUXO)
-	\$(AR) \$(AR_FLAGS) ../\$(LIBNAME) \$(SINGLEO) \$(DOUBLEO) \$(QUADO) \$(HALFO \$(AUXO)
+	\$(AR) \$(AR_FLAGS) ../\$(LIBNAME) \$(SINGLEO) \$(DOUBLEO) \$(QUADO) \$(HALFO) \$(AUXO)
 
 EOF
 		;;
@@ -511,10 +558,9 @@ done
 	cat << EOF > ${TMP}/xerbla.c
 #include "f2c.h"
 
-int xerbla_(char *srname, integer *info) {
+void xerbla_(char *srname, integer *info) {
     printf("** On entry to %6s, parameter number %2i had an illegal value\n",
 		srname, *info);
-    return 0;
 }
 EOF
 	cp ${TMP}/xerbla.c ${BLASDIR}

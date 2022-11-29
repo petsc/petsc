@@ -13,7 +13,8 @@ typedef struct {
   PetscInt nd;
 } PC_TFS;
 
-PetscErrorCode PCDestroy_TFS(PC pc) {
+PetscErrorCode PCDestroy_TFS(PC pc)
+{
   PC_TFS *tfs = (PC_TFS *)pc->data;
 
   PetscFunctionBegin;
@@ -27,7 +28,8 @@ PetscErrorCode PCDestroy_TFS(PC pc) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCApply_TFS_XXT(PC pc, Vec x, Vec y) {
+static PetscErrorCode PCApply_TFS_XXT(PC pc, Vec x, Vec y)
+{
   PC_TFS            *tfs = (PC_TFS *)pc->data;
   PetscScalar       *yy;
   const PetscScalar *xx;
@@ -41,7 +43,8 @@ static PetscErrorCode PCApply_TFS_XXT(PC pc, Vec x, Vec y) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCApply_TFS_XYT(PC pc, Vec x, Vec y) {
+static PetscErrorCode PCApply_TFS_XYT(PC pc, Vec x, Vec y)
+{
   PC_TFS            *tfs = (PC_TFS *)pc->data;
   PetscScalar       *yy;
   const PetscScalar *xx;
@@ -55,7 +58,8 @@ static PetscErrorCode PCApply_TFS_XYT(PC pc, Vec x, Vec y) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCTFSLocalMult_TFS(PC pc, PetscScalar *xin, PetscScalar *xout) {
+static PetscErrorCode PCTFSLocalMult_TFS(PC pc, PetscScalar *xin, PetscScalar *xout)
+{
   PC_TFS     *tfs = (PC_TFS *)pc->data;
   Mat         A   = pc->pmat;
   Mat_MPIAIJ *a   = (Mat_MPIAIJ *)A->data;
@@ -72,7 +76,8 @@ static PetscErrorCode PCTFSLocalMult_TFS(PC pc, PetscScalar *xin, PetscScalar *x
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCSetUp_TFS(PC pc) {
+static PetscErrorCode PCSetUp_TFS(PC pc)
+{
   PC_TFS     *tfs = (PC_TFS *)pc->data;
   Mat         A   = pc->pmat;
   Mat_MPIAIJ *a   = (Mat_MPIAIJ *)A->data;
@@ -118,11 +123,13 @@ static PetscErrorCode PCSetUp_TFS(PC pc) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCSetFromOptions_TFS(PC pc, PetscOptionItems *PetscOptionsObject) {
+static PetscErrorCode PCSetFromOptions_TFS(PC pc, PetscOptionItems *PetscOptionsObject)
+{
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
-static PetscErrorCode PCView_TFS(PC pc, PetscViewer viewer) {
+static PetscErrorCode PCView_TFS(PC pc, PetscViewer viewer)
+{
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
@@ -132,27 +139,28 @@ static PetscErrorCode PCView_TFS(PC pc, PetscViewer viewer) {
          coarse grid in multigrid). Performs a Cholesky or LU factorization of a matrix defined by
          its local matrix vector product.
 
-   Implemented by  Henry M. Tufo III and Paul Fischer originally for Nek5000 and called XXT or XYT
-
    Level: beginner
 
    Notes:
-    Only implemented for the MPIAIJ matrices
+    Only implemented for the `MATMPIAIJ` matrices
 
-    Only works on a solver object that lives on all of PETSC_COMM_WORLD!
+    Only works on a solver object that lives on all of `PETSC_COMM_WORLD`!
 
-    Only works for real numbers (is not built if PetscScalar is complex)
+    Only works for real numbers (is not built if `PetscScalar` is complex)
+
+   Implemented by  Henry M. Tufo III and Paul Fischer originally for Nek5000 and called XXT or XYT
 
 .seealso: `PCCreate()`, `PCSetType()`, `PCType`, `PC`
 M*/
-PETSC_EXTERN PetscErrorCode PCCreate_TFS(PC pc) {
+PETSC_EXTERN PetscErrorCode PCCreate_TFS(PC pc)
+{
   PC_TFS     *tfs;
   PetscMPIInt cmp;
 
   PetscFunctionBegin;
   PetscCallMPI(MPI_Comm_compare(PETSC_COMM_WORLD, PetscObjectComm((PetscObject)pc), &cmp));
   PetscCheck(cmp == MPI_IDENT || cmp == MPI_CONGRUENT, PetscObjectComm((PetscObject)pc), PETSC_ERR_SUP, "TFS only works with PETSC_COMM_WORLD objects");
-  PetscCall(PetscNewLog(pc, &tfs));
+  PetscCall(PetscNew(&tfs));
 
   tfs->xxt = NULL;
   tfs->xyt = NULL;

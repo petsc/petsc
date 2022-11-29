@@ -1,0 +1,18 @@
+[0] <sys> PetscDeviceInitializeTypeFromOptions_Private(): PetscDeviceType host available, initializing
+[0] <sys> PetscDeviceInitializeTypeFromOptions_Private(): PetscDevice host initialized, default device id 0, view FALSE, init type lazy
+[0] <sys> PetscDeviceInitializeTypeFromOptions_Private(): PetscDeviceType cuda available, initializing
+[0]PETSC ERROR: --------------------- Error Message --------------------------------------------------------------
+[0]PETSC ERROR: Missing or incorrect user input
+[0]PETSC ERROR: Cannot eagerly initialize cuda, as doing so results in cuda error 100 (cudaErrorNoDevice) : no CUDA-capable device is detected
+[0]PETSC ERROR: See https://petsc.org/release/faq/ for trouble shooting.
+[0]PETSC ERROR: #1 initialize() at cupmdevice.cxx:0
+[0]PETSC ERROR: #2 PetscDeviceInitializeTypeFromOptions_Private() at device.cxx:0
+[0]PETSC ERROR: #3 PetscDeviceInitializeFromOptions_Internal() at device.cxx:0
+[0]PETSC ERROR: #4 PetscInitialize_Common() at pinit.c:0
+[0]PETSC ERROR: #5 PetscInitialize() at pinit.c:0
+[0]PETSC ERROR: #6 main() at ex12.c:0
+[0]PETSC ERROR: PETSc Option Table entries:
+[0]PETSC ERROR: -device_enable eager (source: command line)
+[0]PETSC ERROR: -device_enable_cuda eager (source: command line)
+[0]PETSC ERROR: -info (source: command line)
+[0]PETSC ERROR: ----------------End of Error Message -------send entire error message to petsc-maint@mcs.anl.gov----------

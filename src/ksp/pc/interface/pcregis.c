@@ -84,7 +84,8 @@ PETSC_EXTERN PetscErrorCode PCCreate_MPI(PC);
 
 .seealso: `PCRegister()`
 @*/
-PetscErrorCode PCRegisterAll(void) {
+PetscErrorCode PCRegisterAll(void)
+{
   PetscFunctionBegin;
   if (PCRegisterAllCalled) PetscFunctionReturn(0);
   PCRegisterAllCalled = PETSC_TRUE;

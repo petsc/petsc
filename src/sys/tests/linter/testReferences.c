@@ -4,7 +4,8 @@
 /* forward declare */
 void extractFunc(PetscViewer, void **);
 
-void testOutOfLineReference(PetscViewer v, PetscViewer v2) {
+void testOutOfLineReference(PetscViewer v, PetscViewer v2)
+{
   /* linter should be able to connect all of these to v */
   void  *foo  = v->data, *bar, *baz, *blop;
   void **blip = &v->data;

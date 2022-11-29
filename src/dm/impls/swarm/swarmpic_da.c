@@ -4,7 +4,8 @@
 #include <petsc/private/dmswarmimpl.h>
 #include "../src/dm/impls/swarm/data_bucket.h"
 
-PetscErrorCode private_DMSwarmCreateCellLocalCoords_DA_Q1_Regular(PetscInt dim, PetscInt np[], PetscInt *_npoints, PetscReal **_xi) {
+PetscErrorCode private_DMSwarmCreateCellLocalCoords_DA_Q1_Regular(PetscInt dim, PetscInt np[], PetscInt *_npoints, PetscReal **_xi)
+{
   PetscReal *xi;
   PetscInt   d, npoints = 0, cnt;
   PetscReal  ds[] = {0.0, 0.0, 0.0};
@@ -12,9 +13,15 @@ PetscErrorCode private_DMSwarmCreateCellLocalCoords_DA_Q1_Regular(PetscInt dim, 
 
   PetscFunctionBegin;
   switch (dim) {
-  case 1: npoints = np[0]; break;
-  case 2: npoints = np[0] * np[1]; break;
-  case 3: npoints = np[0] * np[1] * np[2]; break;
+  case 1:
+    npoints = np[0];
+    break;
+  case 2:
+    npoints = np[0] * np[1];
+    break;
+  case 3:
+    npoints = np[0] * np[1] * np[2];
+    break;
   }
   for (d = 0; d < dim; d++) ds[d] = 2.0 / ((PetscReal)np[d]);
 
@@ -58,7 +65,8 @@ PetscErrorCode private_DMSwarmCreateCellLocalCoords_DA_Q1_Regular(PetscInt dim, 
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode private_DMSwarmCreateCellLocalCoords_DA_Q1_Gauss(PetscInt dim, PetscInt np_1d, PetscInt *_npoints, PetscReal **_xi) {
+PetscErrorCode private_DMSwarmCreateCellLocalCoords_DA_Q1_Gauss(PetscInt dim, PetscInt np_1d, PetscInt *_npoints, PetscReal **_xi)
+{
   PetscQuadrature  quadrature;
   const PetscReal *quadrature_xi;
   PetscReal       *xi;
@@ -77,7 +85,8 @@ PetscErrorCode private_DMSwarmCreateCellLocalCoords_DA_Q1_Gauss(PetscInt dim, Pe
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode private_DMSwarmInsertPointsUsingCellDM_DA_Q1(DM dm, DM dmc, PetscInt npoints, DMSwarmPICLayoutType layout) {
+PetscErrorCode private_DMSwarmInsertPointsUsingCellDM_DA_Q1(DM dm, DM dmc, PetscInt npoints, DMSwarmPICLayoutType layout)
+{
   PetscInt           dim, npoints_q;
   PetscInt           nel, npe, e, q, k, d;
   const PetscInt    *element_list;
@@ -98,7 +107,9 @@ PetscErrorCode private_DMSwarmInsertPointsUsingCellDM_DA_Q1(DM dm, DM dmc, Petsc
     np_dir[0] = np_dir[1] = np_dir[2] = npoints;
     PetscCall(private_DMSwarmCreateCellLocalCoords_DA_Q1_Regular(dim, np_dir, &npoints_q, &xi));
   } break;
-  case DMSWARMPIC_LAYOUT_GAUSS: PetscCall(private_DMSwarmCreateCellLocalCoords_DA_Q1_Gauss(dim, npoints, &npoints_q, &xi)); break;
+  case DMSWARMPIC_LAYOUT_GAUSS:
+    PetscCall(private_DMSwarmCreateCellLocalCoords_DA_Q1_Gauss(dim, npoints, &npoints_q, &xi));
+    break;
 
   case DMSWARMPIC_LAYOUT_SUBDIVISION: {
     PetscInt s, nsub;
@@ -110,7 +121,8 @@ PetscErrorCode private_DMSwarmInsertPointsUsingCellDM_DA_Q1(DM dm, DM dmc, Petsc
     np_dir[2] = np_dir[0];
     PetscCall(private_DMSwarmCreateCellLocalCoords_DA_Q1_Regular(dim, np_dir, &npoints_q, &xi));
   } break;
-  default: SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "A valid DMSwarmPIC layout must be provided");
+  default:
+    SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "A valid DMSwarmPIC layout must be provided");
   }
 
   PetscCall(DMDAGetElements(dmc, &nel, &npe, &element_list));
@@ -179,7 +191,8 @@ PetscErrorCode private_DMSwarmInsertPointsUsingCellDM_DA_Q1(DM dm, DM dmc, Petsc
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode private_DMSwarmInsertPointsUsingCellDM_DA(DM dm, DM celldm, DMSwarmPICLayoutType layout, PetscInt layout_param) {
+PetscErrorCode private_DMSwarmInsertPointsUsingCellDM_DA(DM dm, DM celldm, DMSwarmPICLayoutType layout, PetscInt layout_param)
+{
   DMDAElementType etype;
   PetscInt        dim;
 
@@ -187,7 +200,8 @@ PetscErrorCode private_DMSwarmInsertPointsUsingCellDM_DA(DM dm, DM celldm, DMSwa
   PetscCall(DMDAGetElementType(celldm, &etype));
   PetscCall(DMGetDimension(celldm, &dim));
   switch (etype) {
-  case DMDA_ELEMENT_P1: SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "DA support is not currently available for DMDA_ELEMENT_P1");
+  case DMDA_ELEMENT_P1:
+    SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "DA support is not currently available for DMDA_ELEMENT_P1");
   case DMDA_ELEMENT_Q1:
     PetscCheck(dim != 1, PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Support only available for dim = 2, 3");
     PetscCall(private_DMSwarmInsertPointsUsingCellDM_DA_Q1(dm, celldm, layout_param, layout));
@@ -196,7 +210,8 @@ PetscErrorCode private_DMSwarmInsertPointsUsingCellDM_DA(DM dm, DM celldm, DMSwa
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMSwarmProjectField_ApproxQ1_DA_2D(DM swarm, PetscReal *swarm_field, DM dm, Vec v_field) {
+PetscErrorCode DMSwarmProjectField_ApproxQ1_DA_2D(DM swarm, PetscReal *swarm_field, DM dm, Vec v_field)
+{
   Vec                v_field_l, denom_l, coor_l, denom;
   PetscScalar       *_field_l, *_denom_l;
   PetscInt           k, p, e, npoints, nel, npe;
@@ -280,7 +295,8 @@ PetscErrorCode DMSwarmProjectField_ApproxQ1_DA_2D(DM swarm, PetscReal *swarm_fie
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode private_DMSwarmProjectFields_DA(DM swarm, DM celldm, PetscInt project_type, PetscInt nfields, DMSwarmDataField dfield[], Vec vecs[]) {
+PetscErrorCode private_DMSwarmProjectFields_DA(DM swarm, DM celldm, PetscInt project_type, PetscInt nfields, DMSwarmDataField dfield[], Vec vecs[])
+{
   PetscInt        f, dim;
   DMDAElementType etype;
 
@@ -298,8 +314,10 @@ PetscErrorCode private_DMSwarmProjectFields_DA(DM swarm, DM celldm, PetscInt pro
       PetscCall(DMSwarmProjectField_ApproxQ1_DA_2D(swarm, swarm_field, celldm, vecs[f]));
     }
     break;
-  case 3: SETERRQ(PetscObjectComm((PetscObject)swarm), PETSC_ERR_SUP, "No support for 3D");
-  default: break;
+  case 3:
+    SETERRQ(PetscObjectComm((PetscObject)swarm), PETSC_ERR_SUP, "No support for 3D");
+  default:
+    break;
   }
   PetscFunctionReturn(0);
 }

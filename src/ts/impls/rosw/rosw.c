@@ -70,7 +70,7 @@ typedef struct {
 
      Level: intermediate
 
-.seealso: `TSROSW`
+.seealso: [](chapter_ts), `TSROSW`
 M*/
 
 /*MC
@@ -80,7 +80,7 @@ M*/
 
      Level: intermediate
 
-.seealso: `TSROSW`
+.seealso: [](chapter_ts), `TSROSW`
 M*/
 
 /*MC
@@ -90,7 +90,7 @@ M*/
 
      Level: intermediate
 
-.seealso: `TSROSW`
+.seealso: [](chapter_ts), `TSROSW`
 M*/
 
 /*MC
@@ -100,7 +100,7 @@ M*/
 
      Level: intermediate
 
-.seealso: `TSROSW`
+.seealso: [](chapter_ts), `TSROSW`
 M*/
 
 /*MC
@@ -110,12 +110,12 @@ M*/
 
      This is strongly A-stable with R(infty) = 0.73. The embedded method of order 2 is strongly A-stable with R(infty) = 0.73.
 
+     Level: intermediate
+
      References:
 .  * - Rang and Angermann, New Rosenbrock W methods of order 3 for partial differential algebraic equations of index 1, 2005.
 
-     Level: intermediate
-
-.seealso: `TSROSW`
+.seealso: [](chapter_ts), `TSROSW`
 M*/
 
 /*MC
@@ -125,12 +125,12 @@ M*/
 
      This is strongly A-stable with R(infty) = 0. The embedded method of order 2 is strongly A-stable with R(infty) = 0.48.
 
+     Level: intermediate
+
      References:
 .  * - Rang and Angermann, New Rosenbrock W methods of order 3 for partial differential algebraic equations of index 1, 2005.
 
-     Level: intermediate
-
-.seealso: `TSROSW`
+.seealso: [](chapter_ts), `TSROSW`
 M*/
 
 /*MC
@@ -140,12 +140,12 @@ M*/
 
      Both the third order and embedded second order methods are stiffly accurate and L-stable.
 
+     Level: intermediate
+
      References:
 .  * - Sandu et al, Benchmarking stiff ODE solvers for atmospheric chemistry problems II, Rosenbrock solvers, 1997.
 
-     Level: intermediate
-
-.seealso: `TSROSW`, `TSROSWSANDU3`
+.seealso: [](chapter_ts), `TSROSW`, `TSROSWSANDU3`
 M*/
 
 /*MC
@@ -158,12 +158,12 @@ M*/
      The internal stages are L-stable.
      This method is called ROS3 in the paper.
 
+     Level: intermediate
+
      References:
 .  * - Sandu et al, Benchmarking stiff ODE solvers for atmospheric chemistry problems II, Rosenbrock solvers, 1997.
 
-     Level: intermediate
-
-.seealso: `TSROSW`, `TSROSWRODAS3`
+.seealso: [](chapter_ts), `TSROSW`, `TSROSWRODAS3`
 M*/
 
 /*MC
@@ -173,12 +173,12 @@ M*/
 
      A-stable SPP explicit order 3, 3 stages, CFL 1 (eff = 1/3)
 
+     Level: intermediate
+
      References:
 . * - Emil Constantinescu
 
-     Level: intermediate
-
-.seealso: `TSROSW`, `TSROSWLASSP3P4S2C`, `TSROSWLLSSP3P4S2C`, `SSP`
+.seealso: [](chapter_ts), `TSROSW`, `TSROSWLASSP3P4S2C`, `TSROSWLLSSP3P4S2C`, `SSP`
 M*/
 
 /*MC
@@ -188,12 +188,12 @@ M*/
 
      L-stable (A-stable embedded) SPP explicit order 3, 4 stages, CFL 2 (eff = 1/2)
 
+     Level: intermediate
+
      References:
 . * - Emil Constantinescu
 
-     Level: intermediate
-
-.seealso: `TSROSW`, `TSROSWASSP3P3S1C`, `TSROSWLLSSP3P4S2C`, `TSSSP`
+.seealso: [](chapter_ts), `TSROSW`, `TSROSWASSP3P3S1C`, `TSROSWLLSSP3P4S2C`, `TSSSP`
 M*/
 
 /*MC
@@ -203,12 +203,12 @@ M*/
 
      L-stable (L-stable embedded) SPP explicit order 3, 4 stages, CFL 2 (eff = 1/2)
 
+     Level: intermediate
+
      References:
 . * - Emil Constantinescu
 
-     Level: intermediate
-
-.seealso: `TSROSW`, `TSROSWASSP3P3S1C`, `TSROSWLASSP3P4S2C`, `TSSSP`
+.seealso: [](chapter_ts), `TSROSW`, `TSROSWASSP3P3S1C`, `TSROSWLASSP3P4S2C`, `TSSSP`
 M*/
 
 /*MC
@@ -220,15 +220,15 @@ M*/
 
      This method does not provide a dense output formula.
 
+     Level: intermediate
+
      References:
 +   * -  Kaps and Rentrop, Generalized Runge Kutta methods of order four with stepsize control for stiff ordinary differential equations, 1979.
 -   * -  Hairer and Wanner, Solving Ordinary Differential Equations II, Section 4 Table 7.2.
 
      Hairer's code ros4.f
 
-     Level: intermediate
-
-.seealso: `TSROSW`, `TSROSWSHAMP4`, `TSROSWVELDD4`, `TSROSW4L`
+.seealso: [](chapter_ts), `TSROSW`, `TSROSWSHAMP4`, `TSROSWVELDD4`, `TSROSW4L`
 M*/
 
 /*MC
@@ -240,15 +240,15 @@ M*/
 
      This method does not provide a dense output formula.
 
+     Level: intermediate
+
      References:
 +   * -  Shampine, Implementation of Rosenbrock methods, 1982.
 -   * -  Hairer and Wanner, Solving Ordinary Differential Equations II, Section 4 Table 7.2.
 
      Hairer's code ros4.f
 
-     Level: intermediate
-
-.seealso: `TSROSW`, `TSROSWGRK4T`, `TSROSWVELDD4`, `TSROSW4L`
+.seealso: [](chapter_ts), `TSROSW`, `TSROSWGRK4T`, `TSROSWVELDD4`, `TSROSW4L`
 M*/
 
 /*MC
@@ -260,15 +260,15 @@ M*/
 
      This method does not provide a dense output formula.
 
+     Level: intermediate
+
      References:
 +   * -  van Veldhuizen, D stability and Kaps Rentrop methods, 1984.
 -   * -  Hairer and Wanner, Solving Ordinary Differential Equations II, Section 4 Table 7.2.
 
      Hairer's code ros4.f
 
-     Level: intermediate
-
-.seealso: `TSROSW`, `TSROSWGRK4T`, `TSROSWSHAMP4`, `TSROSW4L`
+.seealso: [](chapter_ts), `TSROSW`, `TSROSWGRK4T`, `TSROSWSHAMP4`, `TSROSW4L`
 M*/
 
 /*MC
@@ -280,26 +280,27 @@ M*/
 
      This method does not provide a dense output formula.
 
+     Level: intermediate
+
      References:
 .  * -   Hairer and Wanner, Solving Ordinary Differential Equations II, Section 4 Table 7.2.
 
      Hairer's code ros4.f
 
-     Level: intermediate
-
-.seealso: `TSROSW`, `TSROSWGRK4T`, `TSROSWSHAMP4`, `TSROSW4L`
+.seealso: [](chapter_ts), `TSROSW`, `TSROSWGRK4T`, `TSROSWSHAMP4`, `TSROSW4L`
 M*/
 
 /*@C
-  TSRosWRegisterAll - Registers all of the Rosenbrock-W methods in TSRosW
+  TSRosWRegisterAll - Registers all of the Rosenbrock-W methods in `TSROSW`
 
   Not Collective, but should be called by all processes which will need the schemes to be registered
 
   Level: advanced
 
-.seealso: `TSRosWRegisterDestroy()`
+.seealso: [](chapter_ts), `TSROSW`, `TSRosWRegisterDestroy()`
 @*/
-PetscErrorCode TSRosWRegisterAll(void) {
+PetscErrorCode TSRosWRegisterAll(void)
+{
   PetscFunctionBegin;
   if (TSRosWRegisterAllCalled) PetscFunctionReturn(0);
   TSRosWRegisterAllCalled = PETSC_TRUE;
@@ -375,7 +376,7 @@ PetscErrorCode TSRosWRegisterAll(void) {
     PetscCall(TSRosWRegister(TSROSWRA3PW, 3, 3, &A[0][0], &Gamma[0][0], b, b2, 2, &binterpt[0][0]));
   }
   {
-    PetscReal       binterpt[4][3];
+    PetscReal binterpt[4][3];
     /*const PetscReal g = 4.3586652150845900e-01; Directly written in-place below */
     const PetscReal A[4][4] =
       {
@@ -583,15 +584,16 @@ PetscErrorCode TSRosWRegisterAll(void) {
 }
 
 /*@C
-   TSRosWRegisterDestroy - Frees the list of schemes that were registered by TSRosWRegister().
+   TSRosWRegisterDestroy - Frees the list of schemes that were registered by `TSRosWRegister()`.
 
    Not Collective
 
    Level: advanced
 
-.seealso: `TSRosWRegister()`, `TSRosWRegisterAll()`
+.seealso: [](chapter_ts), `TSRosWRegister()`, `TSRosWRegisterAll()`
 @*/
-PetscErrorCode TSRosWRegisterDestroy(void) {
+PetscErrorCode TSRosWRegisterDestroy(void)
+{
   RosWTableauLink link;
 
   PetscFunctionBegin;
@@ -610,14 +612,15 @@ PetscErrorCode TSRosWRegisterDestroy(void) {
 }
 
 /*@C
-  TSRosWInitializePackage - This function initializes everything in the TSRosW package. It is called
-  from TSInitializePackage().
+  TSRosWInitializePackage - This function initializes everything in the `TSROSW` package. It is called
+  from `TSInitializePackage()`.
 
   Level: developer
 
-.seealso: `PetscInitialize()`
+.seealso: [](chapter_ts), `TSROSW`, `PetscInitialize()`, `TSRosWFinalizePackage()`
 @*/
-PetscErrorCode TSRosWInitializePackage(void) {
+PetscErrorCode TSRosWInitializePackage(void)
+{
   PetscFunctionBegin;
   if (TSRosWPackageInitialized) PetscFunctionReturn(0);
   TSRosWPackageInitialized = PETSC_TRUE;
@@ -627,14 +630,15 @@ PetscErrorCode TSRosWInitializePackage(void) {
 }
 
 /*@C
-  TSRosWFinalizePackage - This function destroys everything in the TSRosW package. It is
-  called from PetscFinalize().
+  TSRosWFinalizePackage - This function destroys everything in the `TSROSW` package. It is
+  called from `PetscFinalize()`.
 
   Level: developer
 
-.seealso: `PetscFinalize()`
+.seealso: [](chapter_ts), `TSROSW`, `PetscFinalize()`, `TSRosWInitializePackage()`
 @*/
-PetscErrorCode TSRosWFinalizePackage(void) {
+PetscErrorCode TSRosWFinalizePackage(void)
+{
   PetscFunctionBegin;
   TSRosWPackageInitialized = PETSC_FALSE;
   PetscCall(TSRosWRegisterDestroy());
@@ -642,7 +646,7 @@ PetscErrorCode TSRosWFinalizePackage(void) {
 }
 
 /*@C
-   TSRosWRegister - register a Rosenbrock W scheme by providing the entries in the Butcher tableau and optionally embedded approximations and interpolation
+   TSRosWRegister - register a `TSROSW`, Rosenbrock W scheme by providing the entries in the Butcher tableau and optionally embedded approximations and interpolation
 
    Not Collective, but the same schemes should be registered on all processes on which they will be used
 
@@ -657,14 +661,15 @@ PetscErrorCode TSRosWFinalizePackage(void) {
 .  pinterp - Order of the interpolation scheme, equal to the number of columns of binterpt
 -  binterpt - Coefficients of the interpolation formula (dimension s*pinterp)
 
-   Notes:
-   Several Rosenbrock W methods are provided, this function is only needed to create new methods.
-
    Level: advanced
 
-.seealso: `TSRosW`
+   Note:
+   Several Rosenbrock W methods are provided, this function is only needed to create new methods.
+
+.seealso: [](chapter_ts), `TSROSW`
 @*/
-PetscErrorCode TSRosWRegister(TSRosWType name, PetscInt order, PetscInt s, const PetscReal A[], const PetscReal Gamma[], const PetscReal b[], const PetscReal bembed[], PetscInt pinterp, const PetscReal binterpt[]) {
+PetscErrorCode TSRosWRegister(TSRosWType name, PetscInt order, PetscInt s, const PetscReal A[], const PetscReal Gamma[], const PetscReal b[], const PetscReal bembed[], PetscInt pinterp, const PetscReal binterpt[])
+{
   RosWTableauLink link;
   RosWTableau     t;
   PetscInt        i, j, k;
@@ -713,19 +718,32 @@ PetscErrorCode TSRosWRegister(TSRosWType name, PetscInt order, PetscInt s, const
   }
 
   switch (s) {
-  case 1: GammaInv[0] = 1. / GammaInv[0]; break;
-  case 2: PetscCall(PetscKernel_A_gets_inverse_A_2(GammaInv, 0, PETSC_FALSE, NULL)); break;
-  case 3: PetscCall(PetscKernel_A_gets_inverse_A_3(GammaInv, 0, PETSC_FALSE, NULL)); break;
-  case 4: PetscCall(PetscKernel_A_gets_inverse_A_4(GammaInv, 0, PETSC_FALSE, NULL)); break;
+  case 1:
+    GammaInv[0] = 1. / GammaInv[0];
+    break;
+  case 2:
+    PetscCall(PetscKernel_A_gets_inverse_A_2(GammaInv, 0, PETSC_FALSE, NULL));
+    break;
+  case 3:
+    PetscCall(PetscKernel_A_gets_inverse_A_3(GammaInv, 0, PETSC_FALSE, NULL));
+    break;
+  case 4:
+    PetscCall(PetscKernel_A_gets_inverse_A_4(GammaInv, 0, PETSC_FALSE, NULL));
+    break;
   case 5: {
     PetscInt  ipvt5[5];
     MatScalar work5[5 * 5];
     PetscCall(PetscKernel_A_gets_inverse_A_5(GammaInv, ipvt5, work5, 0, PETSC_FALSE, NULL));
     break;
   }
-  case 6: PetscCall(PetscKernel_A_gets_inverse_A_6(GammaInv, 0, PETSC_FALSE, NULL)); break;
-  case 7: PetscCall(PetscKernel_A_gets_inverse_A_7(GammaInv, 0, PETSC_FALSE, NULL)); break;
-  default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Not implemented for %" PetscInt_FMT " stages", s);
+  case 6:
+    PetscCall(PetscKernel_A_gets_inverse_A_6(GammaInv, 0, PETSC_FALSE, NULL));
+    break;
+  case 7:
+    PetscCall(PetscKernel_A_gets_inverse_A_7(GammaInv, 0, PETSC_FALSE, NULL));
+    break;
+  default:
+    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Not implemented for %" PetscInt_FMT " stages", s);
   }
   for (i = 0; i < s * s; i++) t->GammaInv[i] = PetscRealPart(GammaInv[i]);
   PetscCall(PetscFree(GammaInv));
@@ -773,21 +791,22 @@ PetscErrorCode TSRosWRegister(TSRosWType name, PetscInt order, PetscInt s, const
 .  beta43 - design parameter or PETSC_DEFAULT to use Equation 7.21 of Hairer&Wanner
 -  e4 - design parameter for embedded method, see coefficient E4 in ros4.f code from Hairer
 
+   Level: developer
+
    Notes:
    This routine encodes the design of fourth order Rosenbrock methods as described in Hairer and Wanner volume 2.
    It is used here to implement several methods from the book and can be used to experiment with new methods.
    It was written this way instead of by copying coefficients in order to provide better than double precision satisfaction of the order conditions.
 
-   Level: developer
-
-.seealso: `TSRosW`, `TSRosWRegister()`
+.seealso: [](chapter_ts), `TSRosW`, `TSRosWRegister()`
 @*/
-PetscErrorCode TSRosWRegisterRos4(TSRosWType name, PetscReal gamma, PetscReal a2, PetscReal a3, PetscReal b3, PetscReal e4) {
+PetscErrorCode TSRosWRegisterRos4(TSRosWType name, PetscReal gamma, PetscReal a2, PetscReal a3, PetscReal b3, PetscReal e4)
+{
   /* Declare numeric constants so they can be quad precision without being truncated at double */
   const PetscReal one = 1, two = 2, three = 3, four = 4, five = 5, six = 6, eight = 8, twelve = 12, twenty = 20, twentyfour = 24, p32 = one / six - gamma + gamma * gamma, p42 = one / eight - gamma / three, p43 = one / twelve - gamma / three, p44 = one / twentyfour - gamma / two + three / two * gamma * gamma - gamma * gamma * gamma, p56 = one / twenty - gamma / four;
-  PetscReal       a4, a32, a42, a43, b1, b2, b4, beta2p, beta3p, beta4p, beta32, beta42, beta43, beta32beta2p, beta4jbetajp;
-  PetscReal       A[4][4], Gamma[4][4], b[4], bm[4];
-  PetscScalar     M[3][3], rhs[3];
+  PetscReal   a4, a32, a42, a43, b1, b2, b4, beta2p, beta3p, beta4p, beta32, beta42, beta43, beta32beta2p, beta4jbetajp;
+  PetscReal   A[4][4], Gamma[4][4], b[4], bm[4];
+  PetscScalar M[3][3], rhs[3];
 
   PetscFunctionBegin;
   /* Step 1: choose Gamma (input) */
@@ -908,7 +927,8 @@ PetscErrorCode TSRosWRegisterRos4(TSRosWType name, PetscReal gamma, PetscReal a2
 
  so we can evaluate the method of different order even after the step has been optimistically completed.
 */
-static PetscErrorCode TSEvaluateStep_RosW(TS ts, PetscInt order, Vec U, PetscBool *done) {
+static PetscErrorCode TSEvaluateStep_RosW(TS ts, PetscInt order, Vec U, PetscBool *done)
+{
   TS_RosW     *ros = (TS_RosW *)ts->data;
   RosWTableau  tab = ros->tableau;
   PetscScalar *w   = ros->work;
@@ -945,7 +965,8 @@ unavailable:
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSRollBack_RosW(TS ts) {
+static PetscErrorCode TSRollBack_RosW(TS ts)
+{
   TS_RosW *ros = (TS_RosW *)ts->data;
 
   PetscFunctionBegin;
@@ -953,7 +974,8 @@ static PetscErrorCode TSRollBack_RosW(TS ts) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSStep_RosW(TS ts) {
+static PetscErrorCode TSStep_RosW(TS ts)
+{
   TS_RosW         *ros = (TS_RosW *)ts->data;
   RosWTableau      tab = ros->tableau;
   const PetscInt   s   = tab->s;
@@ -1067,7 +1089,8 @@ static PetscErrorCode TSStep_RosW(TS ts) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSInterpolate_RosW(TS ts, PetscReal itime, Vec U) {
+static PetscErrorCode TSInterpolate_RosW(TS ts, PetscReal itime, Vec U)
+{
   TS_RosW         *ros = (TS_RosW *)ts->data;
   PetscInt         s = ros->tableau->s, pinterp = ros->tableau->pinterp, i, j;
   PetscReal        h;
@@ -1091,7 +1114,8 @@ static PetscErrorCode TSInterpolate_RosW(TS ts, PetscReal itime, Vec U) {
     h = ts->ptime - ts->ptime_prev;
     t = (itime - ts->ptime) / h + 1; /* In the interval [0,1] */
     break;
-  default: SETERRQ(PetscObjectComm((PetscObject)ts), PETSC_ERR_PLIB, "Invalid TSStepStatus");
+  default:
+    SETERRQ(PetscObjectComm((PetscObject)ts), PETSC_ERR_PLIB, "Invalid TSStepStatus");
   }
   PetscCall(PetscMalloc1(s, &bt));
   for (i = 0; i < s; i++) bt[i] = 0;
@@ -1117,7 +1141,8 @@ static PetscErrorCode TSInterpolate_RosW(TS ts, PetscReal itime, Vec U) {
 
 /*------------------------------------------------------------*/
 
-static PetscErrorCode TSRosWTableauReset(TS ts) {
+static PetscErrorCode TSRosWTableauReset(TS ts)
+{
   TS_RosW    *ros = (TS_RosW *)ts->data;
   RosWTableau tab = ros->tableau;
 
@@ -1128,7 +1153,8 @@ static PetscErrorCode TSRosWTableauReset(TS ts) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSReset_RosW(TS ts) {
+static PetscErrorCode TSReset_RosW(TS ts)
+{
   TS_RosW *ros = (TS_RosW *)ts->data;
 
   PetscFunctionBegin;
@@ -1141,7 +1167,8 @@ static PetscErrorCode TSReset_RosW(TS ts) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSRosWGetVecs(TS ts, DM dm, Vec *Ydot, Vec *Zdot, Vec *Ystage, Vec *Zstage) {
+static PetscErrorCode TSRosWGetVecs(TS ts, DM dm, Vec *Ydot, Vec *Zdot, Vec *Ystage, Vec *Zstage)
+{
   TS_RosW *rw = (TS_RosW *)ts->data;
 
   PetscFunctionBegin;
@@ -1168,7 +1195,8 @@ static PetscErrorCode TSRosWGetVecs(TS ts, DM dm, Vec *Ydot, Vec *Zdot, Vec *Yst
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSRosWRestoreVecs(TS ts, DM dm, Vec *Ydot, Vec *Zdot, Vec *Ystage, Vec *Zstage) {
+static PetscErrorCode TSRosWRestoreVecs(TS ts, DM dm, Vec *Ydot, Vec *Zdot, Vec *Ystage, Vec *Zstage)
+{
   PetscFunctionBegin;
   if (Ydot) {
     if (dm && dm != ts->dm) PetscCall(DMRestoreNamedGlobalVector(dm, "TSRosW_Ydot", Ydot));
@@ -1185,12 +1213,14 @@ static PetscErrorCode TSRosWRestoreVecs(TS ts, DM dm, Vec *Ydot, Vec *Zdot, Vec 
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMCoarsenHook_TSRosW(DM fine, DM coarse, void *ctx) {
+static PetscErrorCode DMCoarsenHook_TSRosW(DM fine, DM coarse, void *ctx)
+{
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMRestrictHook_TSRosW(DM fine, Mat restrct, Vec rscale, Mat inject, DM coarse, void *ctx) {
+static PetscErrorCode DMRestrictHook_TSRosW(DM fine, Mat restrct, Vec rscale, Mat inject, DM coarse, void *ctx)
+{
   TS  ts = (TS)ctx;
   Vec Ydot, Zdot, Ystage, Zstage;
   Vec Ydotc, Zdotc, Ystagec, Zstagec;
@@ -1211,12 +1241,14 @@ static PetscErrorCode DMRestrictHook_TSRosW(DM fine, Mat restrct, Vec rscale, Ma
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMSubDomainHook_TSRosW(DM fine, DM coarse, void *ctx) {
+static PetscErrorCode DMSubDomainHook_TSRosW(DM fine, DM coarse, void *ctx)
+{
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMSubDomainRestrictHook_TSRosW(DM dm, VecScatter gscat, VecScatter lscat, DM subdm, void *ctx) {
+static PetscErrorCode DMSubDomainRestrictHook_TSRosW(DM dm, VecScatter gscat, VecScatter lscat, DM subdm, void *ctx)
+{
   TS  ts = (TS)ctx;
   Vec Ydot, Zdot, Ystage, Zstage;
   Vec Ydots, Zdots, Ystages, Zstages;
@@ -1246,7 +1278,8 @@ static PetscErrorCode DMSubDomainRestrictHook_TSRosW(DM dm, VecScatter gscat, Ve
   This defines the nonlinear equation that is to be solved with SNES
   G(U) = F[t0+Theta*dt, U, (U-U0)*shift] = 0
 */
-static PetscErrorCode SNESTSFormFunction_RosW(SNES snes, Vec U, Vec F, TS ts) {
+static PetscErrorCode SNESTSFormFunction_RosW(SNES snes, Vec U, Vec F, TS ts)
+{
   TS_RosW  *ros = (TS_RosW *)ts->data;
   Vec       Ydot, Zdot, Ystage, Zstage;
   PetscReal shift = ros->scoeff / ts->time_step;
@@ -1265,7 +1298,8 @@ static PetscErrorCode SNESTSFormFunction_RosW(SNES snes, Vec U, Vec F, TS ts) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode SNESTSFormJacobian_RosW(SNES snes, Vec U, Mat A, Mat B, TS ts) {
+static PetscErrorCode SNESTSFormJacobian_RosW(SNES snes, Vec U, Mat A, Mat B, TS ts)
+{
   TS_RosW  *ros = (TS_RosW *)ts->data;
   Vec       Ydot, Zdot, Ystage, Zstage;
   PetscReal shift = ros->scoeff / ts->time_step;
@@ -1283,7 +1317,8 @@ static PetscErrorCode SNESTSFormJacobian_RosW(SNES snes, Vec U, Mat A, Mat B, TS
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSRosWTableauSetUp(TS ts) {
+static PetscErrorCode TSRosWTableauSetUp(TS ts)
+{
   TS_RosW    *ros = (TS_RosW *)ts->data;
   RosWTableau tab = ros->tableau;
 
@@ -1293,7 +1328,8 @@ static PetscErrorCode TSRosWTableauSetUp(TS ts) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSSetUp_RosW(TS ts) {
+static PetscErrorCode TSSetUp_RosW(TS ts)
+{
   TS_RosW      *ros = (TS_RosW *)ts->data;
   DM            dm;
   SNES          snes;
@@ -1338,7 +1374,8 @@ static PetscErrorCode TSSetUp_RosW(TS ts) {
 }
 /*------------------------------------------------------------*/
 
-static PetscErrorCode TSSetFromOptions_RosW(TS ts, PetscOptionItems *PetscOptionsObject) {
+static PetscErrorCode TSSetFromOptions_RosW(TS ts, PetscOptionItems *PetscOptionsObject)
+{
   TS_RosW *ros = (TS_RosW *)ts->data;
   SNES     snes;
 
@@ -1367,7 +1404,8 @@ static PetscErrorCode TSSetFromOptions_RosW(TS ts, PetscOptionItems *PetscOption
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSView_RosW(TS ts, PetscViewer viewer) {
+static PetscErrorCode TSView_RosW(TS ts, PetscViewer viewer)
+{
   TS_RosW  *ros = (TS_RosW *)ts->data;
   PetscBool iascii;
 
@@ -1390,7 +1428,8 @@ static PetscErrorCode TSView_RosW(TS ts, PetscViewer viewer) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSLoad_RosW(TS ts, PetscViewer viewer) {
+static PetscErrorCode TSLoad_RosW(TS ts, PetscViewer viewer)
+{
   SNES    snes;
   TSAdapt adapt;
 
@@ -1406,7 +1445,7 @@ static PetscErrorCode TSLoad_RosW(TS ts, PetscViewer viewer) {
 }
 
 /*@C
-  TSRosWSetType - Set the type of Rosenbrock-W scheme
+  TSRosWSetType - Set the type of Rosenbrock-W, `TSROSW`, scheme
 
   Logically collective
 
@@ -1416,9 +1455,10 @@ static PetscErrorCode TSLoad_RosW(TS ts, PetscViewer viewer) {
 
   Level: beginner
 
-.seealso: `TSRosWGetType()`, `TSROSW`, `TSROSW2M`, `TSROSW2P`, `TSROSWRA3PW`, `TSROSWRA34PW2`, `TSROSWRODAS3`, `TSROSWSANDU3`, `TSROSWASSP3P3S1C`, `TSROSWLASSP3P4S2C`, `TSROSWLLSSP3P4S2C`, `TSROSWARK3`
+.seealso: [](chapter_ts), `TSRosWGetType()`, `TSROSW`, `TSROSW2M`, `TSROSW2P`, `TSROSWRA3PW`, `TSROSWRA34PW2`, `TSROSWRODAS3`, `TSROSWSANDU3`, `TSROSWASSP3P3S1C`, `TSROSWLASSP3P4S2C`, `TSROSWLLSSP3P4S2C`, `TSROSWARK3`
 @*/
-PetscErrorCode TSRosWSetType(TS ts, TSRosWType roswtype) {
+PetscErrorCode TSRosWSetType(TS ts, TSRosWType roswtype)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscValidCharPointer(roswtype, 2);
@@ -1439,9 +1479,10 @@ PetscErrorCode TSRosWSetType(TS ts, TSRosWType roswtype) {
 
   Level: intermediate
 
-.seealso: `TSRosWGetType()`
+.seealso: [](chapter_ts), `TSRosWType`, `TSRosWSetType()`
 @*/
-PetscErrorCode TSRosWGetType(TS ts, TSRosWType *rostype) {
+PetscErrorCode TSRosWGetType(TS ts, TSRosWType *rostype)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscUseMethod(ts, "TSRosWGetType_C", (TS, TSRosWType *), (ts, rostype));
@@ -1455,20 +1496,22 @@ PetscErrorCode TSRosWGetType(TS ts, TSRosWType *rostype) {
 
   Input Parameters:
 +  ts - timestepping context
--  flg - PETSC_TRUE to recompute the Jacobian at each stage
+-  flg - `PETSC_TRUE` to recompute the Jacobian at each stage
 
   Level: intermediate
 
-.seealso: `TSRosWGetType()`
+.seealso: [](chapter_ts), `TSRosWType`, `TSRosWGetType()`
 @*/
-PetscErrorCode TSRosWSetRecomputeJacobian(TS ts, PetscBool flg) {
+PetscErrorCode TSRosWSetRecomputeJacobian(TS ts, PetscBool flg)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscTryMethod(ts, "TSRosWSetRecomputeJacobian_C", (TS, PetscBool), (ts, flg));
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSRosWGetType_RosW(TS ts, TSRosWType *rostype) {
+static PetscErrorCode TSRosWGetType_RosW(TS ts, TSRosWType *rostype)
+{
   TS_RosW *ros = (TS_RosW *)ts->data;
 
   PetscFunctionBegin;
@@ -1476,7 +1519,8 @@ static PetscErrorCode TSRosWGetType_RosW(TS ts, TSRosWType *rostype) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSRosWSetType_RosW(TS ts, TSRosWType rostype) {
+static PetscErrorCode TSRosWSetType_RosW(TS ts, TSRosWType rostype)
+{
   TS_RosW        *ros = (TS_RosW *)ts->data;
   PetscBool       match;
   RosWTableauLink link;
@@ -1499,7 +1543,8 @@ static PetscErrorCode TSRosWSetType_RosW(TS ts, TSRosWType rostype) {
   SETERRQ(PetscObjectComm((PetscObject)ts), PETSC_ERR_ARG_UNKNOWN_TYPE, "Could not find '%s'", rostype);
 }
 
-static PetscErrorCode TSRosWSetRecomputeJacobian_RosW(TS ts, PetscBool flg) {
+static PetscErrorCode TSRosWSetRecomputeJacobian_RosW(TS ts, PetscBool flg)
+{
   TS_RosW *ros = (TS_RosW *)ts->data;
 
   PetscFunctionBegin;
@@ -1507,7 +1552,8 @@ static PetscErrorCode TSRosWSetRecomputeJacobian_RosW(TS ts, PetscBool flg) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSDestroy_RosW(TS ts) {
+static PetscErrorCode TSDestroy_RosW(TS ts)
+{
   PetscFunctionBegin;
   PetscCall(TSReset_RosW(ts));
   if (ts->dm) {
@@ -1527,12 +1573,14 @@ static PetscErrorCode TSDestroy_RosW(TS ts) {
 
   These methods are intended for problems with well-separated time scales, especially when a slow scale is strongly
   nonlinear such that it is expensive to solve with a fully implicit method. The user should provide the stiff part
-  of the equation using TSSetIFunction() and the non-stiff part with TSSetRHSFunction().
+  of the equation using `TSSetIFunction()` and the non-stiff part with `TSSetRHSFunction()`.
+
+  Level: beginner
 
   Notes:
   This method currently only works with autonomous ODE and DAE.
 
-  Consider trying TSARKIMEX if the stiff part is strongly nonlinear.
+  Consider trying `TSARKIMEX` if the stiff part is strongly nonlinear.
 
   Since this uses a single linear solve per time-step if you wish to lag the jacobian or preconditioner computation you must use also -snes_lag_jacobian_persists true or -snes_lag_jacobian_preconditioner true
 
@@ -1580,12 +1628,11 @@ $  g(u_0 + sum_j a_ij y_j + y_i, ydot_i) = 0
 
    with initial guess y_i = 0.
 
-  Level: beginner
-
-.seealso: `TSCreate()`, `TS`, `TSSetType()`, `TSRosWSetType()`, `TSRosWRegister()`, `TSROSWTHETA1`, `TSROSWTHETA2`, `TSROSW2M`, `TSROSW2P`, `TSROSWRA3PW`, `TSROSWRA34PW2`, `TSROSWRODAS3`,
-          `TSROSWSANDU3`, `TSROSWASSP3P3S1C`, `TSROSWLASSP3P4S2C`, `TSROSWLLSSP3P4S2C`, `TSROSWGRK4T`, `TSROSWSHAMP4`, `TSROSWVELDD4`, `TSROSW4L`
+.seealso: [](chapter_ts), `TSCreate()`, `TS`, `TSSetType()`, `TSRosWSetType()`, `TSRosWRegister()`, `TSROSWTHETA1`, `TSROSWTHETA2`, `TSROSW2M`, `TSROSW2P`, `TSROSWRA3PW`, `TSROSWRA34PW2`, `TSROSWRODAS3`,
+          `TSROSWSANDU3`, `TSROSWASSP3P3S1C`, `TSROSWLASSP3P4S2C`, `TSROSWLLSSP3P4S2C`, `TSROSWGRK4T`, `TSROSWSHAMP4`, `TSROSWVELDD4`, `TSROSW4L`, `TSType`
 M*/
-PETSC_EXTERN PetscErrorCode TSCreate_RosW(TS ts) {
+PETSC_EXTERN PetscErrorCode TSCreate_RosW(TS ts)
+{
   TS_RosW *ros;
 
   PetscFunctionBegin;
@@ -1606,7 +1653,7 @@ PETSC_EXTERN PetscErrorCode TSCreate_RosW(TS ts) {
 
   ts->usessnes = PETSC_TRUE;
 
-  PetscCall(PetscNewLog(ts, &ros));
+  PetscCall(PetscNew(&ros));
   ts->data = (void *)ros;
 
   PetscCall(PetscObjectComposeFunction((PetscObject)ts, "TSRosWGetType_C", TSRosWGetType_RosW));

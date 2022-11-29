@@ -3,7 +3,8 @@ static char help[] = "Tests MatLoad() MatView() for MPIBAIJ.\n\n";
 
 #include <petscmat.h>
 
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   Mat         A, B;
   char        file[PETSC_MAX_PATH_LEN];
   PetscBool   flg;

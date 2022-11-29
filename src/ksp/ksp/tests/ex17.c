@@ -13,7 +13,8 @@ typedef enum {
 } TestType;
 extern PetscErrorCode FormTestMatrix(Mat, PetscInt, TestType);
 
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   Vec         x, b, u; /* approx solution, RHS, exact solution */
   Mat         A;       /* linear system matrix */
   KSP         ksp;     /* KSP context */
@@ -49,7 +50,9 @@ int main(int argc, char **args) {
     type = HELMHOLTZ_2;
     dim  = n * n;
     break;
-  default: type = TEST_1; dim = n;
+  default:
+    type = TEST_1;
+    dim  = n;
   }
 
   /* Create vectors */
@@ -114,7 +117,8 @@ int main(int argc, char **args) {
   return 0;
 }
 
-PetscErrorCode FormTestMatrix(Mat A, PetscInt n, TestType type) {
+PetscErrorCode FormTestMatrix(Mat A, PetscInt n, TestType type)
+{
   PetscScalar val[5];
   PetscInt    i, j, Ii, J, col[5], Istart, Iend;
 

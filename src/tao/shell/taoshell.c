@@ -30,7 +30,8 @@ struct _n_TaoShell {
 
 .seealso: `TAOSHELL`, `TaoShellSetContext()`, `TaoShellGetContext()`
 @*/
-PetscErrorCode TaoShellSetSolve(Tao tao, PetscErrorCode (*solve)(Tao)) {
+PetscErrorCode TaoShellSetSolve(Tao tao, PetscErrorCode (*solve)(Tao))
+{
   Tao_Shell *shell = (Tao_Shell *)tao->data;
 
   PetscFunctionBegin;
@@ -57,7 +58,8 @@ PetscErrorCode TaoShellSetSolve(Tao tao, PetscErrorCode (*solve)(Tao)) {
 
 .seealso: `TaoCreateShell()`, `TaoShellSetContext()`
 @*/
-PetscErrorCode TaoShellGetContext(Tao tao, void *ctx) {
+PetscErrorCode TaoShellGetContext(Tao tao, void *ctx)
+{
   PetscBool flg;
 
   PetscFunctionBegin;
@@ -86,7 +88,8 @@ PetscErrorCode TaoShellGetContext(Tao tao, void *ctx) {
 
 .seealso: `TaoCreateShell()`, `TaoShellGetContext()`
 @*/
-PetscErrorCode TaoShellSetContext(Tao tao, void *ctx) {
+PetscErrorCode TaoShellSetContext(Tao tao, void *ctx)
+{
   Tao_Shell *shell = (Tao_Shell *)tao->data;
   PetscBool  flg;
 
@@ -97,7 +100,8 @@ PetscErrorCode TaoShellSetContext(Tao tao, void *ctx) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TaoSolve_Shell(Tao tao) {
+static PetscErrorCode TaoSolve_Shell(Tao tao)
+{
   Tao_Shell *shell = (Tao_Shell *)tao->data;
 
   PetscFunctionBegin;
@@ -107,23 +111,27 @@ static PetscErrorCode TaoSolve_Shell(Tao tao) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode TaoDestroy_Shell(Tao tao) {
+PetscErrorCode TaoDestroy_Shell(Tao tao)
+{
   PetscFunctionBegin;
   PetscCall(PetscFree(tao->data));
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode TaoSetUp_Shell(Tao tao) {
+PetscErrorCode TaoSetUp_Shell(Tao tao)
+{
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode TaoSetFromOptions_Shell(Tao tao, PetscOptionItems *PetscOptionsObject) {
+PetscErrorCode TaoSetFromOptions_Shell(Tao tao, PetscOptionItems *PetscOptionsObject)
+{
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode TaoView_Shell(Tao tao, PetscViewer viewer) {
+PetscErrorCode TaoView_Shell(Tao tao, PetscViewer viewer)
+{
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
@@ -135,7 +143,8 @@ PetscErrorCode TaoView_Shell(Tao tao, PetscViewer viewer) {
 
 .seealso: `TaoCreate()`, `Tao`, `TaoSetType()`, `TaoType`
 M*/
-PETSC_EXTERN PetscErrorCode TaoCreate_Shell(Tao tao) {
+PETSC_EXTERN PetscErrorCode TaoCreate_Shell(Tao tao)
+{
   Tao_Shell *shell;
 
   PetscFunctionBegin;
@@ -145,7 +154,7 @@ PETSC_EXTERN PetscErrorCode TaoCreate_Shell(Tao tao) {
   tao->ops->view           = TaoView_Shell;
   tao->ops->solve          = TaoSolve_Shell;
 
-  PetscCall(PetscNewLog(tao, &shell));
+  PetscCall(PetscNew(&shell));
   tao->data = (void *)shell;
   PetscFunctionReturn(0);
 }

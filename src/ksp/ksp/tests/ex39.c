@@ -15,7 +15,8 @@ difference. Input parameters include:\n\
   -beta      : beta (default 0.01/h^2)\n\n";
 
 #include <petscksp.h>
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   Vec         x, b, u;        /* approx solution, RHS, working vector */
   Mat         A;              /* linear system matrix */
   KSP         ksp;            /* linear solver context */

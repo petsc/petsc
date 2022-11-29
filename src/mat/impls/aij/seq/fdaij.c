@@ -7,7 +7,8 @@
     This routine is shared by SeqAIJ and SeqBAIJ matrices,
     since it operators only on the nonzero structure of the elements or blocks.
 */
-PetscErrorCode MatFDColoringCreate_SeqXAIJ(Mat mat, ISColoring iscoloring, MatFDColoring c) {
+PetscErrorCode MatFDColoringCreate_SeqXAIJ(Mat mat, ISColoring iscoloring, MatFDColoring c)
+{
   PetscInt  bs, nis = iscoloring->n, m = mat->rmap->n;
   PetscBool isBAIJ, isSELL;
 
@@ -34,6 +35,7 @@ PetscErrorCode MatFDColoringCreate_SeqXAIJ(Mat mat, ISColoring iscoloring, MatFD
     bs    = 1; /* only bs=1 is supported for SeqAIJ matrix */
     mem   = nz * (sizeof(PetscScalar) + sizeof(PetscInt)) + 3 * m * sizeof(PetscInt);
     bcols = (PetscInt)(0.5 * mem / (m * sizeof(PetscScalar)));
+    if (!bcols) bcols = 1;
     brows = 1000 / bcols;
     if (bcols > nis) bcols = nis;
     if (brows == 0 || brows > m) brows = m;
@@ -57,7 +59,8 @@ PetscErrorCode MatFDColoringCreate_SeqXAIJ(Mat mat, ISColoring iscoloring, MatFD
 .  color - the coloring context
 -  nz - number of local non-zeros in mat
 */
-PetscErrorCode MatFDColoringSetUpBlocked_AIJ_Private(Mat mat, MatFDColoring c, PetscInt nz) {
+PetscErrorCode MatFDColoringSetUpBlocked_AIJ_Private(Mat mat, MatFDColoring c, PetscInt nz)
+{
   PetscInt  i, j, nrows, nbcols, brows = c->brows, bcols = c->bcols, mbs = c->m, nis = c->ncolors;
   PetscInt *color_start, *row_start, *nrows_new, nz_new, row_end;
 
@@ -66,7 +69,6 @@ PetscErrorCode MatFDColoringSetUpBlocked_AIJ_Private(Mat mat, MatFDColoring c, P
   PetscCall(PetscMalloc2(bcols + 1, &color_start, bcols, &row_start));
   PetscCall(PetscCalloc1(nis, &nrows_new));
   PetscCall(PetscMalloc1(bcols * mat->rmap->n, &c->dy));
-  PetscCall(PetscLogObjectMemory((PetscObject)c, bcols * mat->rmap->n * sizeof(PetscScalar)));
 
   nz_new             = 0;
   nbcols             = 0;
@@ -171,7 +173,8 @@ PetscErrorCode MatFDColoringSetUpBlocked_AIJ_Private(Mat mat, MatFDColoring c, P
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatFDColoringSetUp_SeqXAIJ(Mat mat, ISColoring iscoloring, MatFDColoring c) {
+PetscErrorCode MatFDColoringSetUp_SeqXAIJ(Mat mat, ISColoring iscoloring, MatFDColoring c)
+{
   PetscInt           i, n, nrows, mbs = c->m, j, k, m, ncols, col, nis = iscoloring->n, *rowhit, bs, bs2, *spidx, nz, tmp;
   const PetscInt    *is, *row, *ci, *cj;
   PetscBool          isBAIJ, isSELL;
@@ -206,16 +209,13 @@ PetscErrorCode MatFDColoringSetUp_SeqXAIJ(Mat mat, ISColoring iscoloring, MatFDC
   }
 
   PetscCall(PetscMalloc2(nis, &c->ncolumns, nis, &c->columns));
-  PetscCall(PetscMalloc1(nis, &c->nrows)); /* nrows is freeed separately from ncolumns and columns */
-  PetscCall(PetscLogObjectMemory((PetscObject)c, 3 * nis * sizeof(PetscInt)));
+  PetscCall(PetscMalloc1(nis, &c->nrows)); /* nrows is freed separately from ncolumns and columns */
 
   if (c->htype[0] == 'd') {
     PetscCall(PetscMalloc1(nz, &Jentry));
-    PetscCall(PetscLogObjectMemory((PetscObject)c, nz * sizeof(MatEntry)));
     c->matentry = Jentry;
   } else if (c->htype[0] == 'w') {
     PetscCall(PetscMalloc1(nz, &Jentry2));
-    PetscCall(PetscLogObjectMemory((PetscObject)c, nz * sizeof(MatEntry2)));
     c->matentry2 = Jentry2;
   } else SETERRQ(PetscObjectComm((PetscObject)mat), PETSC_ERR_SUP, "htype is not supported");
 
@@ -285,7 +285,6 @@ PetscErrorCode MatFDColoringSetUp_SeqXAIJ(Mat mat, ISColoring iscoloring, MatFDC
   if (isBAIJ) {
     PetscCall(MatRestoreColumnIJ_SeqBAIJ_Color(mat, 0, PETSC_FALSE, PETSC_FALSE, &ncols, &ci, &cj, &spidx, NULL));
     PetscCall(PetscMalloc1(bs * mat->rmap->n, &c->dy));
-    PetscCall(PetscLogObjectMemory((PetscObject)c, bs * mat->rmap->n * sizeof(PetscScalar)));
   } else if (isSELL) {
     PetscCall(MatRestoreColumnIJ_SeqSELL_Color(mat, 0, PETSC_FALSE, PETSC_FALSE, &ncols, &ci, &cj, &spidx, NULL));
   } else {

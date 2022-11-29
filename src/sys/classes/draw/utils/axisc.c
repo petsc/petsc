@@ -24,7 +24,8 @@ PetscClassId PETSC_DRAWAXIS_CLASSID = 0;
           `PetscDrawHGGetAxis()`, `PetscDrawBarGetAxis()`, `PetscDrawAxis`, `PetscDrawAxisDestroy()`, `PetscDrawAxisSetColors()`, `PetscDrawAxisSetLabels()`, `PetscDrawAxisSetLimits()`, `PetscDrawAxisGetLimits()`, `PetscDrawAxisSetHoldLimits()`,
           `PetscDrawAxisDraw()`
 @*/
-PetscErrorCode PetscDrawAxisCreate(PetscDraw draw, PetscDrawAxis *axis) {
+PetscErrorCode PetscDrawAxisCreate(PetscDraw draw, PetscDrawAxis *axis)
+{
   PetscDrawAxis ad;
 
   PetscFunctionBegin;
@@ -32,7 +33,6 @@ PetscErrorCode PetscDrawAxisCreate(PetscDraw draw, PetscDrawAxis *axis) {
   PetscValidPointer(axis, 2);
 
   PetscCall(PetscHeaderCreate(ad, PETSC_DRAWAXIS_CLASSID, "DrawAxis", "Draw Axis", "Draw", PetscObjectComm((PetscObject)draw), PetscDrawAxisDestroy, NULL));
-  PetscCall(PetscLogObjectParent((PetscObject)draw, (PetscObject)ad));
 
   PetscCall(PetscObjectReference((PetscObject)draw));
   ad->win = draw;
@@ -64,7 +64,8 @@ PetscErrorCode PetscDrawAxisCreate(PetscDraw draw, PetscDrawAxis *axis) {
 
 .seealso: `PetscDraw`, `PetscDrawAxisCreate()`, `PetscDrawAxis`
 @*/
-PetscErrorCode PetscDrawAxisDestroy(PetscDrawAxis *axis) {
+PetscErrorCode PetscDrawAxisDestroy(PetscDrawAxis *axis)
+{
   PetscFunctionBegin;
   if (!*axis) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(*axis, PETSC_DRAWAXIS_CLASSID, 1);
@@ -97,7 +98,8 @@ PetscErrorCode PetscDrawAxisDestroy(PetscDrawAxis *axis) {
 
 .seealso: `PetscDraw`, `PetscDrawAxisCreate()`, `PetscDrawAxis`, `PetscDrawAxisSetLabels()`, `PetscDrawAxisDraw()`, `PetscDrawAxisSetLimits()`
 @*/
-PetscErrorCode PetscDrawAxisSetColors(PetscDrawAxis axis, int ac, int tc, int cc) {
+PetscErrorCode PetscDrawAxisSetColors(PetscDrawAxis axis, int ac, int tc, int cc)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(axis, PETSC_DRAWAXIS_CLASSID, 1);
   PetscValidLogicalCollectiveInt(axis, ac, 2);
@@ -128,7 +130,8 @@ PetscErrorCode PetscDrawAxisSetColors(PetscDrawAxis axis, int ac, int tc, int cc
 
 .seealso: `PetscDraw`, `PetscDrawAxisCreate()`, `PetscDrawAxis`, `PetscDrawAxisSetColors()`, `PetscDrawAxisDraw()`, `PetscDrawAxisSetLimits()`
 @*/
-PetscErrorCode PetscDrawAxisSetLabels(PetscDrawAxis axis, const char top[], const char xlabel[], const char ylabel[]) {
+PetscErrorCode PetscDrawAxisSetLabels(PetscDrawAxis axis, const char top[], const char xlabel[], const char ylabel[])
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(axis, PETSC_DRAWAXIS_CLASSID, 1);
   PetscCall(PetscFree(axis->xlabel));
@@ -157,7 +160,8 @@ PetscErrorCode PetscDrawAxisSetLabels(PetscDrawAxis axis, const char top[], cons
 
 .seealso: `PetscDrawAxisSetHoldLimits()`, `PetscDrawAxisGetLimits()`, `PetscDrawAxisSetLabels()`, `PetscDrawAxisSetColors()`
 @*/
-PetscErrorCode PetscDrawAxisSetLimits(PetscDrawAxis axis, PetscReal xmin, PetscReal xmax, PetscReal ymin, PetscReal ymax) {
+PetscErrorCode PetscDrawAxisSetLimits(PetscDrawAxis axis, PetscReal xmin, PetscReal xmax, PetscReal ymin, PetscReal ymax)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(axis, PETSC_DRAWAXIS_CLASSID, 1);
   if (axis->hold) PetscFunctionReturn(0);
@@ -183,7 +187,8 @@ PetscErrorCode PetscDrawAxisSetLimits(PetscDrawAxis axis, PetscReal xmin, PetscR
 
 .seealso: `PetscDrawAxisCreate()`, `PetscDrawAxis`, `PetscDrawAxisSetHoldLimits()`, `PetscDrawAxisSetLimits()`, `PetscDrawAxisSetLabels()`, `PetscDrawAxisSetColors()`
 @*/
-PetscErrorCode PetscDrawAxisGetLimits(PetscDrawAxis axis, PetscReal *xmin, PetscReal *xmax, PetscReal *ymin, PetscReal *ymax) {
+PetscErrorCode PetscDrawAxisGetLimits(PetscDrawAxis axis, PetscReal *xmin, PetscReal *xmax, PetscReal *ymin, PetscReal *ymax)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(axis, PETSC_DRAWAXIS_CLASSID, 1);
   if (xmin) *xmin = axis->xlow;
@@ -211,7 +216,8 @@ PetscErrorCode PetscDrawAxisGetLimits(PetscDrawAxis axis, PetscReal *xmin, Petsc
 
 .seealso: `PetscDrawAxisCreate()`, `PetscDrawAxis`, `PetscDrawAxisGetLimits()`, `PetscDrawAxisSetLimits()`, `PetscDrawAxisSetLabels()`, `PetscDrawAxisSetColors()`
 @*/
-PetscErrorCode PetscDrawAxisSetHoldLimits(PetscDrawAxis axis, PetscBool hold) {
+PetscErrorCode PetscDrawAxisSetHoldLimits(PetscDrawAxis axis, PetscBool hold)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(axis, PETSC_DRAWAXIS_CLASSID, 1);
   PetscValidLogicalCollectiveBool(axis, hold, 2);
@@ -237,7 +243,8 @@ PetscErrorCode PetscDrawAxisSetHoldLimits(PetscDrawAxis axis, PetscBool hold) {
 
 .seealso: `PetscDrawAxisCreate()`, `PetscDrawAxis`, `PetscDrawAxisGetLimits()`, `PetscDrawAxisSetLimits()`, `PetscDrawAxisSetLabels()`, `PetscDrawAxisSetColors()`
 @*/
-PetscErrorCode PetscDrawAxisDraw(PetscDrawAxis axis) {
+PetscErrorCode PetscDrawAxisDraw(PetscDrawAxis axis)
+{
   int         i, ntick, numx, numy, ac, tc, cc;
   PetscMPIInt rank;
   size_t      len, ytlen = 0;
@@ -376,7 +383,8 @@ finally:
 /*
     Removes all zeros but one from .0000
 */
-PetscErrorCode PetscStripe0(char *buf) {
+PetscErrorCode PetscStripe0(char *buf)
+{
   size_t    n;
   PetscBool flg;
   char     *str;
@@ -401,7 +409,8 @@ PetscErrorCode PetscStripe0(char *buf) {
 /*
     Removes all zeros but one from .0000
 */
-PetscErrorCode PetscStripAllZeros(char *buf) {
+PetscErrorCode PetscStripAllZeros(char *buf)
+{
   size_t i, n;
 
   PetscFunctionBegin;
@@ -418,7 +427,8 @@ PetscErrorCode PetscStripAllZeros(char *buf) {
 /*
     Removes trailing zeros
 */
-PetscErrorCode PetscStripTrailingZeros(char *buf) {
+PetscErrorCode PetscStripTrailingZeros(char *buf)
+{
   char  *found;
   size_t i, n, m = PETSC_MAX_INT;
 
@@ -448,7 +458,8 @@ PetscErrorCode PetscStripTrailingZeros(char *buf) {
 /*
     Removes leading 0 from 0.22 or -0.22
 */
-PetscErrorCode PetscStripInitialZero(char *buf) {
+PetscErrorCode PetscStripInitialZero(char *buf)
+{
   size_t i, n;
 
   PetscFunctionBegin;
@@ -464,7 +475,8 @@ PetscErrorCode PetscStripInitialZero(char *buf) {
 /*
      Removes the extraneous zeros in numbers like 1.10000e6
 */
-PetscErrorCode PetscStripZeros(char *buf) {
+PetscErrorCode PetscStripZeros(char *buf)
+{
   size_t i, j, n;
 
   PetscFunctionBegin;
@@ -483,7 +495,8 @@ PetscErrorCode PetscStripZeros(char *buf) {
 /*
       Removes the plus in something like 1.1e+2 or 1.1e+02
 */
-PetscErrorCode PetscStripZerosPlus(char *buf) {
+PetscErrorCode PetscStripZerosPlus(char *buf)
+{
   size_t i, j, n;
 
   PetscFunctionBegin;

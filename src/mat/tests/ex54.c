@@ -3,7 +3,8 @@ static char help[] = "Tests MatIncreaseOverlap(), MatCreateSubMatrices() for par
 
 #include <petscmat.h>
 
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   Mat          A, B, *submatA, *submatB;
   PetscInt     bs = 1, m = 11, ov = 1, i, j, k, *rows, *cols, nd = 5, *idx, rstart, rend, sz, mm, nn, M, N, Mbs;
   PetscMPIInt  size, rank;

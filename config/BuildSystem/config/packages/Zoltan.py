@@ -33,7 +33,7 @@ class Configure(config.package.GNUPackage):
     args.append('LIBS="'+self.libraries.toStringNoDupes(self.dlib)+'"')
     if hasattr(self.compilers, 'FC'):
       args.append('--enable-f90interface')
-      args.append('FCFLAGS="'+self.headers.toStringNoDupes(self.dinclude)+'"')
+      self.addToArgs(args,'FCFLAGS',self.headers.toStringNoDupes(self.dinclude))
     if self.parmetis.found:
       args.append('--with-parmetis')
     if self.ptscotch.found:

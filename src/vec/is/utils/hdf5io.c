@@ -12,26 +12,31 @@ struct _n_HDF5ReadCtx {
 };
 typedef struct _n_HDF5ReadCtx *HDF5ReadCtx;
 
-PetscErrorCode PetscViewerHDF5CheckTimestepping_Internal(PetscViewer viewer, const char name[]) {
+PetscErrorCode PetscViewerHDF5CheckTimestepping_Internal(PetscViewer viewer, const char name[])
+{
   PetscViewer_HDF5 *hdf5         = (PetscViewer_HDF5 *)viewer->data;
   PetscBool         timestepping = PETSC_FALSE;
-  const char       *group;
 
   PetscFunctionBegin;
-  PetscCall(PetscViewerHDF5GetGroup(viewer, &group));
   PetscCall(PetscViewerHDF5ReadAttribute(viewer, name, "timestepping", PETSC_BOOL, &timestepping, &timestepping));
-  PetscCheck(timestepping == hdf5->timestepping, PetscObjectComm((PetscObject)viewer), PETSC_ERR_FILE_UNEXPECTED, "Dataset %s/%s stored with timesteps? %s Timestepping pushed? %s", group, name, PetscBools[timestepping], PetscBools[hdf5->timestepping]);
+  if (timestepping != hdf5->timestepping) {
+    char *group;
+
+    PetscCall(PetscViewerHDF5GetGroup(viewer, NULL, &group));
+    SETERRQ(PetscObjectComm((PetscObject)viewer), PETSC_ERR_FILE_UNEXPECTED, "Dataset %s/%s stored with timesteps? %s Timestepping pushed? %s", group, name, PetscBools[timestepping], PetscBools[hdf5->timestepping]);
+  }
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscViewerHDF5ReadInitialize_Private(PetscViewer viewer, const char name[], HDF5ReadCtx *ctx) {
+static PetscErrorCode PetscViewerHDF5ReadInitialize_Private(PetscViewer viewer, const char name[], HDF5ReadCtx *ctx)
+{
   PetscViewer_HDF5 *hdf5 = (PetscViewer_HDF5 *)viewer->data;
   HDF5ReadCtx       h    = NULL;
 
   PetscFunctionBegin;
   PetscCall(PetscViewerHDF5CheckTimestepping_Internal(viewer, name));
   PetscCall(PetscNew(&h));
-  PetscCall(PetscViewerHDF5OpenGroup(viewer, &h->file, &h->group));
+  PetscCall(PetscViewerHDF5OpenGroup(viewer, NULL, &h->file, &h->group));
   PetscCallHDF5Return(h->dataset, H5Dopen2, (h->group, name, H5P_DEFAULT));
   PetscCallHDF5Return(h->dataspace, H5Dget_space, (h->dataset));
   PetscCall(PetscViewerHDF5ReadAttribute(viewer, name, "complex", PETSC_BOOL, &h->complexVal, &h->complexVal));
@@ -43,7 +48,8 @@ static PetscErrorCode PetscViewerHDF5ReadInitialize_Private(PetscViewer viewer, 
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscViewerHDF5ReadFinalize_Private(PetscViewer viewer, HDF5ReadCtx *ctx) {
+static PetscErrorCode PetscViewerHDF5ReadFinalize_Private(PetscViewer viewer, HDF5ReadCtx *ctx)
+{
   HDF5ReadCtx h;
 
   PetscFunctionBegin;
@@ -56,7 +62,8 @@ static PetscErrorCode PetscViewerHDF5ReadFinalize_Private(PetscViewer viewer, HD
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscViewerHDF5ReadSizes_Private(PetscViewer viewer, HDF5ReadCtx ctx, PetscBool setup, PetscLayout *map_) {
+static PetscErrorCode PetscViewerHDF5ReadSizes_Private(PetscViewer viewer, HDF5ReadCtx ctx, PetscBool setup, PetscLayout *map_)
+{
   PetscViewer_HDF5 *hdf5 = (PetscViewer_HDF5 *)viewer->data;
   PetscInt          bs, len, N;
   PetscLayout       map;
@@ -128,7 +135,8 @@ static PetscErrorCode PetscViewerHDF5ReadSizes_Private(PetscViewer viewer, HDF5R
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscViewerHDF5ReadSelectHyperslab_Private(PetscViewer viewer, HDF5ReadCtx ctx, PetscLayout map, hid_t *memspace) {
+static PetscErrorCode PetscViewerHDF5ReadSelectHyperslab_Private(PetscViewer viewer, HDF5ReadCtx ctx, PetscLayout map, hid_t *memspace)
+{
   PetscViewer_HDF5 *hdf5 = (PetscViewer_HDF5 *)viewer->data;
   hsize_t          *count, *offset;
   PetscInt          bs, n, low;
@@ -162,7 +170,8 @@ static PetscErrorCode PetscViewerHDF5ReadSelectHyperslab_Private(PetscViewer vie
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscViewerHDF5ReadArray_Private(PetscViewer viewer, HDF5ReadCtx h, hid_t datatype, hid_t memspace, void *arr) {
+static PetscErrorCode PetscViewerHDF5ReadArray_Private(PetscViewer viewer, HDF5ReadCtx h, hid_t datatype, hid_t memspace, void *arr)
+{
   PetscViewer_HDF5 *hdf5 = (PetscViewer_HDF5 *)viewer->data;
 
   PetscFunctionBegin;
@@ -171,7 +180,7 @@ static PetscErrorCode PetscViewerHDF5ReadArray_Private(PetscViewer viewer, HDF5R
 }
 
 /*@C
-  PetscViewerHDF5Load - Read a raw array from the HDF5 dataset.
+  PetscViewerHDF5Load - Read a raw array from the `PETSCVIEWERHDF5` dataset.
 
   Input Parameters:
 + viewer   - The HDF5 viewer
@@ -188,36 +197,39 @@ static PetscErrorCode PetscViewerHDF5ReadArray_Private(PetscViewer viewer, HDF5R
   Level: developer
 
   Notes:
-  This is intended mainly for internal use; users should use higher level routines such as ISLoad(), VecLoad(), DMLoad().
-  The array is partitioned according to the given PetscLayout which is converted to an HDF5 hyperslab.
-  This name is relative to the current group returned by PetscViewerHDF5OpenGroup().
+  This is intended mainly for internal use; users should use higher level routines such as `ISLoad()`, `VecLoad()`, `DMLoad()`.
 
-  Fortran Notes:
+  The array is partitioned according to the given `PetscLayout` which is converted to an HDF5 hyperslab.
+
+  This name is relative to the current group returned by `PetscViewerHDF5OpenGroup()`.
+
+  Fortran Note:
   This routine is not available in Fortran.
 
-.seealso `PetscViewerHDF5Open()`, `PetscViewerHDF5PushGroup()`, `PetscViewerHDF5OpenGroup()`, `PetscViewerHDF5ReadSizes()`, `VecLoad()`, `ISLoad()`
+.seealso: `PetscViewer`, `PETSCVIEWERHDF5`, `PetscViewerHDF5Open()`, `PetscViewerHDF5PushGroup()`, `PetscViewerHDF5OpenGroup()`, `PetscViewerHDF5ReadSizes()`, `VecLoad()`, `ISLoad()`
 @*/
-PetscErrorCode PetscViewerHDF5Load(PetscViewer viewer, const char *name, PetscLayout map, hid_t datatype, void **newarr) {
+PetscErrorCode PetscViewerHDF5Load(PetscViewer viewer, const char *name, PetscLayout map, hid_t datatype, void **newarr)
+{
   PetscBool   has;
-  const char *group;
+  char       *group;
   HDF5ReadCtx h        = NULL;
   hid_t       memspace = 0;
   size_t      unitsize;
   void       *arr;
 
   PetscFunctionBegin;
-  PetscCall(PetscViewerHDF5GetGroup(viewer, &group));
+  PetscCall(PetscViewerHDF5GetGroup(viewer, NULL, &group));
   PetscCall(PetscViewerHDF5HasDataset(viewer, name, &has));
-  PetscCheck(has, PetscObjectComm((PetscObject)viewer), PETSC_ERR_FILE_UNEXPECTED, "Object (dataset) \"%s\" not stored in group %s", name, group ? group : "/");
+  PetscCheck(has, PetscObjectComm((PetscObject)viewer), PETSC_ERR_FILE_UNEXPECTED, "Object (dataset) \"%s\" not stored in group %s", name, group);
   PetscCall(PetscViewerHDF5ReadInitialize_Private(viewer, name, &h));
-#if defined(PETSC_USE_COMPLEX)
+  #if defined(PETSC_USE_COMPLEX)
   if (!h->complexVal) {
     H5T_class_t clazz = H5Tget_class(datatype);
     PetscCheck(clazz != H5T_FLOAT, PetscObjectComm((PetscObject)viewer), PETSC_ERR_SUP, "Dataset %s/%s is marked as real but PETSc is configured for complex scalars. The conversion is not yet implemented. Configure with --with-scalar-type=real to read this dataset", group ? group : "", name);
   }
-#else
-  PetscCheck(!h->complexVal, PetscObjectComm((PetscObject)viewer), PETSC_ERR_SUP, "Dataset %s/%s is marked as complex but PETSc is configured for real scalars. Configure with --with-scalar-type=complex to read this dataset", group ? group : "", name);
-#endif
+  #else
+  PetscCheck(!h->complexVal, PetscObjectComm((PetscObject)viewer), PETSC_ERR_SUP, "Dataset %s/%s is marked as complex but PETSc is configured for real scalars. Configure with --with-scalar-type=complex to read this dataset", group, name);
+  #endif
 
   PetscCall(PetscViewerHDF5ReadSizes_Private(viewer, h, PETSC_TRUE, &map));
   PetscCall(PetscViewerHDF5ReadSelectHyperslab_Private(viewer, h, map, &memspace));
@@ -231,12 +243,13 @@ PetscErrorCode PetscViewerHDF5Load(PetscViewer viewer, const char *name, PetscLa
   PetscCall(PetscViewerHDF5ReadArray_Private(viewer, h, datatype, memspace, arr));
   PetscCallHDF5(H5Sclose, (memspace));
   PetscCall(PetscViewerHDF5ReadFinalize_Private(viewer, &h));
+  PetscCall(PetscFree(group));
   *newarr = arr;
   PetscFunctionReturn(0);
 }
 
 /*@C
- PetscViewerHDF5ReadSizes - Read block size and global size of a vector (Vec or IS) stored in an HDF5 file.
+ PetscViewerHDF5ReadSizes - Read block size and global size of a `Vec` or `IS` stored in an HDF5 file.
 
   Input Parameters:
 + viewer - The HDF5 viewer
@@ -246,17 +259,18 @@ PetscErrorCode PetscViewerHDF5Load(PetscViewer viewer, const char *name, PetscLa
 + bs     - block size
 - N      - global size
 
+  Level: advanced
+
   Notes:
   The dataset is stored as an HDF5 dataspace with 1-4 dimensions in the order
   1) # timesteps (optional), 2) # blocks, 3) # elements per block (optional), 4) real and imaginary part (only for complex).
 
-  The dataset can be stored as a 2D dataspace even if its blocksize is 1; see PetscViewerHDF5SetBaseDimension2().
+  The dataset can be stored as a 2D dataspace even if its blocksize is 1; see `PetscViewerHDF5SetBaseDimension2()`.
 
-  Level: advanced
-
-.seealso: `PetscViewerHDF5Open()`, `VecLoad()`, `ISLoad()`, `VecGetSize()`, `ISGetSize()`, `PetscViewerHDF5SetBaseDimension2()`
+.seealso: `PetscViewer`, `PETSCVIEWERHDF5`, `PetscViewerHDF5Open()`, `VecLoad()`, `ISLoad()`, `VecGetSize()`, `ISGetSize()`, `PetscViewerHDF5SetBaseDimension2()`
 @*/
-PetscErrorCode PetscViewerHDF5ReadSizes(PetscViewer viewer, const char name[], PetscInt *bs, PetscInt *N) {
+PetscErrorCode PetscViewerHDF5ReadSizes(PetscViewer viewer, const char name[], PetscInt *bs, PetscInt *N)
+{
   HDF5ReadCtx h   = NULL;
   PetscLayout map = NULL;
 

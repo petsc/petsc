@@ -1,11 +1,13 @@
 #include <../src/tao/leastsquares/impls/pounders/pounders.h>
 
-static PetscErrorCode pounders_h(Tao subtao, Vec v, Mat H, Mat Hpre, void *ctx) {
+static PetscErrorCode pounders_h(Tao subtao, Vec v, Mat H, Mat Hpre, void *ctx)
+{
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode pounders_fg(Tao subtao, Vec x, PetscReal *f, Vec g, void *ctx) {
+static PetscErrorCode pounders_fg(Tao subtao, Vec x, PetscReal *f, Vec g, void *ctx)
+{
   TAO_POUNDERS *mfqP = (TAO_POUNDERS *)ctx;
   PetscReal     d1, d2;
 
@@ -23,7 +25,8 @@ static PetscErrorCode pounders_fg(Tao subtao, Vec x, PetscReal *f, Vec g, void *
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode pounders_feval(Tao tao, Vec x, Vec F, PetscReal *fsum) {
+static PetscErrorCode pounders_feval(Tao tao, Vec x, Vec F, PetscReal *fsum)
+{
   TAO_POUNDERS *mfqP = (TAO_POUNDERS *)tao->data;
   PetscInt      i, row, col;
   PetscReal     fr, fc;
@@ -50,7 +53,8 @@ static PetscErrorCode pounders_feval(Tao tao, Vec x, Vec F, PetscReal *fsum) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode gqtwrap(Tao tao, PetscReal *gnorm, PetscReal *qmin) {
+static PetscErrorCode gqtwrap(Tao tao, PetscReal *gnorm, PetscReal *qmin)
+{
 #if defined(PETSC_USE_REAL_SINGLE)
   PetscReal atol = 1.0e-5;
 #else
@@ -140,7 +144,8 @@ static PetscErrorCode gqtwrap(Tao tao, PetscReal *gnorm, PetscReal *qmin) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode pounders_update_res(Tao tao) {
+static PetscErrorCode pounders_update_res(Tao tao)
+{
   TAO_POUNDERS *mfqP = (TAO_POUNDERS *)tao->data;
   PetscInt      i, row, col;
   PetscBLASInt  blasn = mfqP->n, blasn2 = blasn * blasn, blasm = mfqP->m, ione = 1;
@@ -227,7 +232,8 @@ static PetscErrorCode pounders_update_res(Tao tao) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode phi2eval(PetscReal *x, PetscInt n, PetscReal *phi) {
+static PetscErrorCode phi2eval(PetscReal *x, PetscInt n, PetscReal *phi)
+{
   /* Phi = .5*[x(1)^2  sqrt(2)*x(1)*x(2) ... sqrt(2)*x(1)*x(n) ... x(2)^2 sqrt(2)*x(2)*x(3) .. x(n)^2] */
   PetscInt  i, j, k;
   PetscReal sqrt2 = PetscSqrtReal(2.0);
@@ -245,7 +251,8 @@ static PetscErrorCode phi2eval(PetscReal *x, PetscInt n, PetscReal *phi) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode getquadpounders(TAO_POUNDERS *mfqP) {
+static PetscErrorCode getquadpounders(TAO_POUNDERS *mfqP)
+{
   /* Computes the parameters of the quadratic Q(x) = c + g'*x + 0.5*x*G*x'
    that satisfies the interpolation conditions Q(X[:,j]) = f(j)
    for j=1,...,m and with a Hessian matrix of least Frobenius norm */
@@ -317,7 +324,8 @@ static PetscErrorCode getquadpounders(TAO_POUNDERS *mfqP) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode morepoints(TAO_POUNDERS *mfqP) {
+static PetscErrorCode morepoints(TAO_POUNDERS *mfqP)
+{
   /* Assumes mfqP->model_indices[0]  is minimum index
    Finishes adding points to mfqP->model_indices (up to npmax)
    Computes L,Z,M,N
@@ -375,7 +383,7 @@ static PetscErrorCode morepoints(TAO_POUNDERS *mfqP) {
     for (i = 0; i < mfqP->n + 1; i++) {
       for (j = 0; j < mfqP->npmax; j++) mfqP->Q_tmp[j + mfqP->npmax * i] = mfqP->M[i + (mfqP->n + 1) * j];
     }
-    blasnp    = mfqP->nmodelpoints + 1;
+    blasnp = mfqP->nmodelpoints + 1;
     /* Q_tmp,R = qr(M') */
     blasmaxmn = PetscMax(mfqP->m, mfqP->n + 1);
     PetscCallBLAS("LAPACKgeqrf", LAPACKgeqrf_(&blasnp, &blasnplus1, mfqP->Q_tmp, &blasnpmax, mfqP->tau_tmp, mfqP->mwork, &blasmaxmn, &info));
@@ -440,7 +448,8 @@ static PetscErrorCode morepoints(TAO_POUNDERS *mfqP) {
 }
 
 /* Only call from modelimprove, addpoint() needs ->Q_tmp and ->work to be set */
-static PetscErrorCode addpoint(Tao tao, TAO_POUNDERS *mfqP, PetscInt index) {
+static PetscErrorCode addpoint(Tao tao, TAO_POUNDERS *mfqP, PetscInt index)
+{
   PetscFunctionBegin;
   /* Create new vector in history: X[newidx] = X[mfqP->index] + delta*X[index]*/
   PetscCall(VecDuplicate(mfqP->Xhist[0], &mfqP->Xhist[mfqP->nHist]));
@@ -464,7 +473,8 @@ static PetscErrorCode addpoint(Tao tao, TAO_POUNDERS *mfqP, PetscInt index) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode modelimprove(Tao tao, TAO_POUNDERS *mfqP, PetscInt addallpoints) {
+static PetscErrorCode modelimprove(Tao tao, TAO_POUNDERS *mfqP, PetscInt addallpoints)
+{
   /* modeld = Q(:,np+1:n)' */
   PetscInt     i, j, minindex = 0;
   PetscReal    dp, half = 0.5, one = 1.0, minvalue = PETSC_INFINITY;
@@ -501,7 +511,8 @@ static PetscErrorCode modelimprove(Tao tao, TAO_POUNDERS *mfqP, PetscInt addallp
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode affpoints(TAO_POUNDERS *mfqP, PetscReal *xmin, PetscReal c) {
+static PetscErrorCode affpoints(TAO_POUNDERS *mfqP, PetscReal *xmin, PetscReal c)
+{
   PetscInt         i, j;
   PetscBLASInt     blasm = mfqP->m, blasj, blask, blasn = mfqP->n, ione = 1, info;
   PetscBLASInt     blasnpmax = mfqP->npmax, blasmaxmn;
@@ -544,7 +555,8 @@ static PetscErrorCode affpoints(TAO_POUNDERS *mfqP, PetscReal *xmin, PetscReal c
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TaoSolve_POUNDERS(Tao tao) {
+static PetscErrorCode TaoSolve_POUNDERS(Tao tao)
+{
   TAO_POUNDERS    *mfqP = (TAO_POUNDERS *)tao->data;
   PetscInt         i, ii, j, k, l;
   PetscReal        step = 1.0;
@@ -890,7 +902,8 @@ static PetscErrorCode TaoSolve_POUNDERS(Tao tao) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TaoSetUp_POUNDERS(Tao tao) {
+static PetscErrorCode TaoSetUp_POUNDERS(Tao tao)
+{
   TAO_POUNDERS *mfqP = (TAO_POUNDERS *)tao->data;
   PetscInt      i, j;
   IS            isfloc, isfglob, isxloc, isxglob;
@@ -1013,7 +1026,8 @@ static PetscErrorCode TaoSetUp_POUNDERS(Tao tao) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TaoDestroy_POUNDERS(Tao tao) {
+static PetscErrorCode TaoDestroy_POUNDERS(Tao tao)
+{
   TAO_POUNDERS *mfqP = (TAO_POUNDERS *)tao->data;
   PetscInt      i;
 
@@ -1084,7 +1098,8 @@ static PetscErrorCode TaoDestroy_POUNDERS(Tao tao) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TaoSetFromOptions_POUNDERS(Tao tao, PetscOptionItems *PetscOptionsObject) {
+static PetscErrorCode TaoSetFromOptions_POUNDERS(Tao tao, PetscOptionItems *PetscOptionsObject)
+{
   TAO_POUNDERS *mfqP = (TAO_POUNDERS *)tao->data;
 
   PetscFunctionBegin;
@@ -1097,7 +1112,8 @@ static PetscErrorCode TaoSetFromOptions_POUNDERS(Tao tao, PetscOptionItems *Pets
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TaoView_POUNDERS(Tao tao, PetscViewer viewer) {
+static PetscErrorCode TaoView_POUNDERS(Tao tao, PetscViewer viewer)
+{
   TAO_POUNDERS *mfqP = (TAO_POUNDERS *)tao->data;
   PetscBool     isascii;
 
@@ -1127,7 +1143,8 @@ static PetscErrorCode TaoView_POUNDERS(Tao tao, PetscViewer viewer) {
 
 M*/
 
-PETSC_EXTERN PetscErrorCode TaoCreate_POUNDERS(Tao tao) {
+PETSC_EXTERN PetscErrorCode TaoCreate_POUNDERS(Tao tao)
+{
   TAO_POUNDERS *mfqP = (TAO_POUNDERS *)tao->data;
 
   PetscFunctionBegin;
@@ -1137,7 +1154,7 @@ PETSC_EXTERN PetscErrorCode TaoCreate_POUNDERS(Tao tao) {
   tao->ops->setfromoptions = TaoSetFromOptions_POUNDERS;
   tao->ops->destroy        = TaoDestroy_POUNDERS;
 
-  PetscCall(PetscNewLog(tao, &mfqP));
+  PetscCall(PetscNew(&mfqP));
   tao->data = (void *)mfqP;
   /* Override default settings (unless already changed) */
   if (!tao->max_it_changed) tao->max_it = 2000;

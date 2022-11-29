@@ -8,7 +8,8 @@ static BIO *bio_err = NULL;
 #define PASSWORD "password"
 
 #if defined(PETSC_USE_SSL_CERTIFICATE)
-static int password_cb(char *buf, int num, int rwflag, void *userdata) {
+static int password_cb(char *buf, int num, int rwflag, void *userdata)
+{
   if (num < strlen(PASSWORD) + 1) return (0);
   strcpy(buf, PASSWORD);
   return (strlen(PASSWORD));
@@ -34,7 +35,8 @@ $    cat newkey.pem newcert.pem > sslclient.pem
 
 .seealso: `PetscSSLDestroyContext()`, `PetscHTTPSConnect()`, `PetscHTTPSRequest()`
 @*/
-PetscErrorCode PetscSSLInitializeContext(SSL_CTX **octx) {
+PetscErrorCode PetscSSLInitializeContext(SSL_CTX **octx)
+{
   SSL_CTX *ctx;
 #if defined(PETSC_USE_SSL_CERTIFICATE)
   char      keyfile[PETSC_MAX_PATH_LEN];
@@ -92,13 +94,15 @@ PetscErrorCode PetscSSLInitializeContext(SSL_CTX **octx) {
 
 .seealso: `PetscSSLInitializeContext()`, `PetscHTTPSConnect()`
 @*/
-PetscErrorCode PetscSSLDestroyContext(SSL_CTX *ctx) {
+PetscErrorCode PetscSSLDestroyContext(SSL_CTX *ctx)
+{
   PetscFunctionBegin;
   SSL_CTX_free(ctx);
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscHTTPBuildRequest(const char type[], const char url[], const char header[], const char ctype[], const char body[], char **outrequest) {
+static PetscErrorCode PetscHTTPBuildRequest(const char type[], const char url[], const char header[], const char ctype[], const char body[], char **outrequest)
+{
   char     *request = 0;
   char      contentlength[40], contenttype[80], *path, *host;
   size_t    request_len, headlen, bodylen, contentlen, pathlen, hostlen, typelen, contenttypelen = 0;
@@ -169,7 +173,8 @@ static PetscErrorCode PetscHTTPBuildRequest(const char type[], const char url[],
 
 .seealso: `PetscHTTPRequest()`, `PetscHTTPSConnect()`, `PetscSSLInitializeContext()`, `PetscSSLDestroyContext()`, `PetscPullJSONValue()`
 @*/
-PetscErrorCode PetscHTTPSRequest(const char type[], const char url[], const char header[], const char ctype[], const char body[], SSL *ssl, char buff[], size_t buffsize) {
+PetscErrorCode PetscHTTPSRequest(const char type[], const char url[], const char header[], const char ctype[], const char body[], SSL *ssl, char buff[], size_t buffsize)
+{
   char     *request;
   int       r;
   size_t    request_len, len;
@@ -181,8 +186,11 @@ PetscErrorCode PetscHTTPSRequest(const char type[], const char url[], const char
 
   r = SSL_write(ssl, request, (int)request_len);
   switch (SSL_get_error(ssl, r)) {
-  case SSL_ERROR_NONE: PetscCheck(request_len == (size_t)r, PETSC_COMM_SELF, PETSC_ERR_LIB, "Incomplete write to SSL socket"); break;
-  default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "SSL socket write problem");
+  case SSL_ERROR_NONE:
+    PetscCheck(request_len == (size_t)r, PETSC_COMM_SELF, PETSC_ERR_LIB, "Incomplete write to SSL socket");
+    break;
+  default:
+    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "SSL socket write problem");
   }
 
   /* Now read the server's response, globus sends it in two chunks hence must read a second time if needed */
@@ -197,13 +205,17 @@ PetscErrorCode PetscHTTPSRequest(const char type[], const char url[], const char
     r = SSL_read(ssl, buff + len, (int)buffsize);
     len += r;
     switch (SSL_get_error(ssl, r)) {
-    case SSL_ERROR_NONE: break;
+    case SSL_ERROR_NONE:
+      break;
     case SSL_ERROR_ZERO_RETURN:
       foundbody = PETSC_TRUE;
       SSL_shutdown(ssl);
       break;
-    case SSL_ERROR_SYSCALL: foundbody = PETSC_TRUE; break;
-    default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "SSL read problem");
+    case SSL_ERROR_SYSCALL:
+      foundbody = PETSC_TRUE;
+      break;
+    default:
+      SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "SSL read problem");
     }
 
     PetscCall(PetscStrstr(buff, "Content-Length: ", &clen));
@@ -249,7 +261,8 @@ PetscErrorCode PetscHTTPSRequest(const char type[], const char url[], const char
 
 .seealso: `PetscHTTPSRequest()`, `PetscOpenSocket()`, `PetscHTTPSConnect()`, `PetscPullJSONValue()`
 @*/
-PetscErrorCode PetscHTTPRequest(const char type[], const char url[], const char header[], const char ctype[], const char body[], int sock, char buff[], size_t buffsize) {
+PetscErrorCode PetscHTTPRequest(const char type[], const char url[], const char header[], const char ctype[], const char body[], int sock, char buff[], size_t buffsize)
+{
   char  *request;
   size_t request_len;
 
@@ -281,7 +294,8 @@ PetscErrorCode PetscHTTPRequest(const char type[], const char url[], const char 
 
 .seealso: `PetscOpenSocket()`, `PetscHTTPSRequest()`, `PetscSSLInitializeContext()`
 @*/
-PetscErrorCode PetscHTTPSConnect(const char host[], int port, SSL_CTX *ctx, int *sock, SSL **ssl) {
+PetscErrorCode PetscHTTPSConnect(const char host[], int port, SSL_CTX *ctx, int *sock, SSL **ssl)
+{
   BIO *sbio;
 
   PetscFunctionBegin;
@@ -312,7 +326,8 @@ PetscErrorCode PetscHTTPSConnect(const char host[], int port, SSL_CTX *ctx, int 
 
 .seealso: `PetscOpenSocket()`, `PetscHTTPSRequest()`, `PetscSSLInitializeContext()`, `PetscPushJSONValue()`
 @*/
-PetscErrorCode PetscPullJSONValue(const char buff[], const char key[], char value[], size_t valuelen, PetscBool *found) {
+PetscErrorCode PetscPullJSONValue(const char buff[], const char key[], char value[], size_t valuelen, PetscBool *found)
+{
   char  *v, *w;
   char   work[256];
   size_t len;
@@ -368,7 +383,8 @@ PetscErrorCode PetscPullJSONValue(const char buff[], const char key[], char valu
 
 .seealso: `PetscOpenSocket()`, `PetscHTTPSRequest()`, `PetscSSLInitializeContext()`, `PetscPullJSONValue()`
 @*/
-PetscErrorCode PetscPushJSONValue(char buff[], const char key[], const char value[], size_t bufflen) {
+PetscErrorCode PetscPushJSONValue(char buff[], const char key[], const char value[], size_t bufflen)
+{
   size_t    len;
   PetscBool special;
 

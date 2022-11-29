@@ -3,7 +3,8 @@ static char help[] = "Solves a linear system in parallel with MINRES. Modified f
 
 #include <petscksp.h>
 
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   Vec         x, b; /* approx solution, RHS */
   Mat         A;    /* linear system matrix */
   KSP         ksp;  /* linear solver context */

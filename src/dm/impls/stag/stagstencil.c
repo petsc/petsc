@@ -27,7 +27,8 @@ const char *const DMStagStencilLocations[] = {"NONE", "BACK_DOWN_LEFT", "BACK_DO
 
 .seealso: `DMSTAG`, `IS`, `DMStagStencil`, `DMCreateGlobalVector`
 @*/
-PetscErrorCode DMStagCreateISFromStencils(DM dm, PetscInt n_stencil, DMStagStencil *stencils, IS *is) {
+PetscErrorCode DMStagCreateISFromStencils(DM dm, PetscInt n_stencil, DMStagStencil *stencils, IS *is)
+{
   PetscInt              *stencil_active;
   DMStagStencil         *stencils_ordered_unique;
   PetscInt              *idx, *idxLocal;
@@ -135,7 +136,8 @@ PetscErrorCode DMStagCreateISFromStencils(DM dm, PetscInt n_stencil, DMStagStenc
 
 .seealso: `DMSTAG`, `DMStagStencilLocation`, `DMStagStencil`, `DMDAGetDof()`
 @*/
-PetscErrorCode DMStagGetLocationDOF(DM dm, DMStagStencilLocation loc, PetscInt *dof) {
+PetscErrorCode DMStagGetLocationDOF(DM dm, DMStagStencilLocation loc, PetscInt *dof)
+{
   const DM_Stag *const stag = (DM_Stag *)dm->data;
   PetscInt             dim;
 
@@ -146,9 +148,14 @@ PetscErrorCode DMStagGetLocationDOF(DM dm, DMStagStencilLocation loc, PetscInt *
   case 1:
     switch (loc) {
     case DMSTAG_LEFT:
-    case DMSTAG_RIGHT: *dof = stag->dof[0]; break;
-    case DMSTAG_ELEMENT: *dof = stag->dof[1]; break;
-    default: SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Not implemented for location %s", DMStagStencilLocations[loc]);
+    case DMSTAG_RIGHT:
+      *dof = stag->dof[0];
+      break;
+    case DMSTAG_ELEMENT:
+      *dof = stag->dof[1];
+      break;
+    default:
+      SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Not implemented for location %s", DMStagStencilLocations[loc]);
     }
     break;
   case 2:
@@ -156,13 +163,20 @@ PetscErrorCode DMStagGetLocationDOF(DM dm, DMStagStencilLocation loc, PetscInt *
     case DMSTAG_DOWN_LEFT:
     case DMSTAG_DOWN_RIGHT:
     case DMSTAG_UP_LEFT:
-    case DMSTAG_UP_RIGHT: *dof = stag->dof[0]; break;
+    case DMSTAG_UP_RIGHT:
+      *dof = stag->dof[0];
+      break;
     case DMSTAG_LEFT:
     case DMSTAG_RIGHT:
     case DMSTAG_UP:
-    case DMSTAG_DOWN: *dof = stag->dof[1]; break;
-    case DMSTAG_ELEMENT: *dof = stag->dof[2]; break;
-    default: SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Not implemented for location %s", DMStagStencilLocations[loc]);
+    case DMSTAG_DOWN:
+      *dof = stag->dof[1];
+      break;
+    case DMSTAG_ELEMENT:
+      *dof = stag->dof[2];
+      break;
+    default:
+      SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Not implemented for location %s", DMStagStencilLocations[loc]);
     }
     break;
   case 3:
@@ -174,7 +188,9 @@ PetscErrorCode DMStagGetLocationDOF(DM dm, DMStagStencilLocation loc, PetscInt *
     case DMSTAG_FRONT_DOWN_LEFT:
     case DMSTAG_FRONT_DOWN_RIGHT:
     case DMSTAG_FRONT_UP_LEFT:
-    case DMSTAG_FRONT_UP_RIGHT: *dof = stag->dof[0]; break;
+    case DMSTAG_FRONT_UP_RIGHT:
+      *dof = stag->dof[0];
+      break;
     case DMSTAG_BACK_DOWN:
     case DMSTAG_BACK_LEFT:
     case DMSTAG_BACK_RIGHT:
@@ -186,18 +202,26 @@ PetscErrorCode DMStagGetLocationDOF(DM dm, DMStagStencilLocation loc, PetscInt *
     case DMSTAG_FRONT_DOWN:
     case DMSTAG_FRONT_LEFT:
     case DMSTAG_FRONT_RIGHT:
-    case DMSTAG_FRONT_UP: *dof = stag->dof[1]; break;
+    case DMSTAG_FRONT_UP:
+      *dof = stag->dof[1];
+      break;
     case DMSTAG_LEFT:
     case DMSTAG_RIGHT:
     case DMSTAG_DOWN:
     case DMSTAG_UP:
     case DMSTAG_BACK:
-    case DMSTAG_FRONT: *dof = stag->dof[2]; break;
-    case DMSTAG_ELEMENT: *dof = stag->dof[3]; break;
-    default: SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Not implemented for location %s", DMStagStencilLocations[loc]);
+    case DMSTAG_FRONT:
+      *dof = stag->dof[2];
+      break;
+    case DMSTAG_ELEMENT:
+      *dof = stag->dof[3];
+      break;
+    default:
+      SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Not implemented for location %s", DMStagStencilLocations[loc]);
     }
     break;
-  default: SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Unsupported dimension %" PetscInt_FMT, dim);
+  default:
+    SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Unsupported dimension %" PetscInt_FMT, dim);
   }
   PetscFunctionReturn(0);
 }
@@ -205,28 +229,43 @@ PetscErrorCode DMStagGetLocationDOF(DM dm, DMStagStencilLocation loc, PetscInt *
 /*
 Convert to a location value with only BACK, DOWN, LEFT, and ELEMENT involved
 */
-PETSC_INTERN PetscErrorCode DMStagStencilLocationCanonicalize(DMStagStencilLocation loc, DMStagStencilLocation *locCanonical) {
+PETSC_INTERN PetscErrorCode DMStagStencilLocationCanonicalize(DMStagStencilLocation loc, DMStagStencilLocation *locCanonical)
+{
   PetscFunctionBegin;
   switch (loc) {
-  case DMSTAG_ELEMENT: *locCanonical = DMSTAG_ELEMENT; break;
+  case DMSTAG_ELEMENT:
+    *locCanonical = DMSTAG_ELEMENT;
+    break;
   case DMSTAG_LEFT:
-  case DMSTAG_RIGHT: *locCanonical = DMSTAG_LEFT; break;
+  case DMSTAG_RIGHT:
+    *locCanonical = DMSTAG_LEFT;
+    break;
   case DMSTAG_DOWN:
-  case DMSTAG_UP: *locCanonical = DMSTAG_DOWN; break;
+  case DMSTAG_UP:
+    *locCanonical = DMSTAG_DOWN;
+    break;
   case DMSTAG_BACK:
-  case DMSTAG_FRONT: *locCanonical = DMSTAG_BACK; break;
+  case DMSTAG_FRONT:
+    *locCanonical = DMSTAG_BACK;
+    break;
   case DMSTAG_DOWN_LEFT:
   case DMSTAG_DOWN_RIGHT:
   case DMSTAG_UP_LEFT:
-  case DMSTAG_UP_RIGHT: *locCanonical = DMSTAG_DOWN_LEFT; break;
+  case DMSTAG_UP_RIGHT:
+    *locCanonical = DMSTAG_DOWN_LEFT;
+    break;
   case DMSTAG_BACK_LEFT:
   case DMSTAG_BACK_RIGHT:
   case DMSTAG_FRONT_LEFT:
-  case DMSTAG_FRONT_RIGHT: *locCanonical = DMSTAG_BACK_LEFT; break;
+  case DMSTAG_FRONT_RIGHT:
+    *locCanonical = DMSTAG_BACK_LEFT;
+    break;
   case DMSTAG_BACK_DOWN:
   case DMSTAG_BACK_UP:
   case DMSTAG_FRONT_DOWN:
-  case DMSTAG_FRONT_UP: *locCanonical = DMSTAG_BACK_DOWN; break;
+  case DMSTAG_FRONT_UP:
+    *locCanonical = DMSTAG_BACK_DOWN;
+    break;
   case DMSTAG_BACK_DOWN_LEFT:
   case DMSTAG_BACK_DOWN_RIGHT:
   case DMSTAG_BACK_UP_LEFT:
@@ -234,8 +273,12 @@ PETSC_INTERN PetscErrorCode DMStagStencilLocationCanonicalize(DMStagStencilLocat
   case DMSTAG_FRONT_DOWN_LEFT:
   case DMSTAG_FRONT_DOWN_RIGHT:
   case DMSTAG_FRONT_UP_LEFT:
-  case DMSTAG_FRONT_UP_RIGHT: *locCanonical = DMSTAG_BACK_DOWN_LEFT; break;
-  default: *locCanonical = DMSTAG_NULL_LOCATION; break;
+  case DMSTAG_FRONT_UP_RIGHT:
+    *locCanonical = DMSTAG_BACK_DOWN_LEFT;
+    break;
+  default:
+    *locCanonical = DMSTAG_NULL_LOCATION;
+    break;
   }
   PetscFunctionReturn(0);
 }
@@ -260,7 +303,8 @@ PETSC_INTERN PetscErrorCode DMStagStencilLocationCanonicalize(DMStagStencilLocat
 
 .seealso: `DMSTAG`, `DMStagStencil`, `DMStagStencilLocation`, `DMStagVecGetValuesStencil()`, `DMStagVecSetValuesStencil()`, `DMStagMatSetValuesStencil()`, `MatSetValuesStencil()`, `MatAssemblyBegin()`, `MatAssemblyEnd()`, `DMCreateMatrix()`
 @*/
-PetscErrorCode DMStagMatGetValuesStencil(DM dm, Mat mat, PetscInt nRow, const DMStagStencil *posRow, PetscInt nCol, const DMStagStencil *posCol, PetscScalar *val) {
+PetscErrorCode DMStagMatGetValuesStencil(DM dm, Mat mat, PetscInt nRow, const DMStagStencil *posRow, PetscInt nCol, const DMStagStencil *posCol, PetscScalar *val)
+{
   PetscInt  dim;
   PetscInt *ir, *ic;
 
@@ -298,7 +342,8 @@ PetscErrorCode DMStagMatGetValuesStencil(DM dm, Mat mat, PetscInt nRow, const DM
 
 .seealso: `DMSTAG`, `DMStagStencil`, `DMStagStencilLocation`, `DMStagVecGetValuesStencil()`, `DMStagVecSetValuesStencil()`, `DMStagMatGetValuesStencil()`, `MatSetValuesStencil()`, `MatAssemblyBegin()`, `MatAssemblyEnd()`, `DMCreateMatrix()`
 @*/
-PetscErrorCode DMStagMatSetValuesStencil(DM dm, Mat mat, PetscInt nRow, const DMStagStencil *posRow, PetscInt nCol, const DMStagStencil *posCol, const PetscScalar *val, InsertMode insertMode) {
+PetscErrorCode DMStagMatSetValuesStencil(DM dm, Mat mat, PetscInt nRow, const DMStagStencil *posRow, PetscInt nCol, const DMStagStencil *posCol, const PetscScalar *val, InsertMode insertMode)
+{
   PetscInt *ir, *ic;
 
   PetscFunctionBegin;
@@ -338,7 +383,8 @@ PetscErrorCode DMStagMatSetValuesStencil(DM dm, Mat mat, PetscInt nRow, const DM
 
 .seealso: `DMSTAG`, `DMStagStencilLocation`, `DMStagStencil`, `DMGetLocalVector`, `DMCreateLocalVector`
 @*/
-PetscErrorCode DMStagStencilToIndexLocal(DM dm, PetscInt dim, PetscInt n, const DMStagStencil *pos, PetscInt *ix) {
+PetscErrorCode DMStagStencilToIndexLocal(DM dm, PetscInt dim, PetscInt n, const DMStagStencil *pos, PetscInt *ix)
+{
   const DM_Stag *const stag = (DM_Stag *)dm->data;
   const PetscInt       epe  = stag->entriesPerElement;
 
@@ -400,7 +446,8 @@ PetscErrorCode DMStagStencilToIndexLocal(DM dm, PetscInt dim, PetscInt n, const 
 
 .seealso: `DMSTAG`, `DMStagStencil`, `DMStagStencilLocation`, `DMStagVecSetValuesStencil()`, `DMStagMatSetValuesStencil()`, `DMStagVecGetArray()`
 @*/
-PetscErrorCode DMStagVecGetValuesStencil(DM dm, Vec vec, PetscInt n, const DMStagStencil *pos, PetscScalar *val) {
+PetscErrorCode DMStagVecGetValuesStencil(DM dm, Vec vec, PetscInt n, const DMStagStencil *pos, PetscScalar *val)
+{
   DM_Stag *const     stag = (DM_Stag *)dm->data;
   PetscInt           nLocal, idx;
   PetscInt          *ix;
@@ -443,7 +490,8 @@ PetscErrorCode DMStagVecGetValuesStencil(DM dm, Vec vec, PetscInt n, const DMSta
 
 .seealso: `DMSTAG`, `DMStagStencil`, `DMStagStencilLocation`, `DMStagVecGetValuesStencil()`, `DMStagMatSetValuesStencil()`, `DMCreateGlobalVector()`, `DMGetLocalVector()`, `DMStagVecGetArray()`
 @*/
-PetscErrorCode DMStagVecSetValuesStencil(DM dm, Vec vec, PetscInt n, const DMStagStencil *pos, const PetscScalar *val, InsertMode insertMode) {
+PetscErrorCode DMStagVecSetValuesStencil(DM dm, Vec vec, PetscInt n, const DMStagStencil *pos, const PetscScalar *val, InsertMode insertMode)
+{
   DM_Stag *const stag = (DM_Stag *)dm->data;
   PetscInt       nLocal;
   PetscInt      *ix;

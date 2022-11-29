@@ -15,6 +15,10 @@ cdef extern from "Python.h":
        inquiry      tp_clear
     PyTypeObject *Py_TYPE(PyObject *)
 
+cdef extern from "petsc/private/garbagecollector.h" nogil:
+    int PetscGarbageCleanup(MPI_Comm)
+    int PetscGarbageView(MPI_Comm,PetscViewer);
+
 cdef int tp_traverse(PyObject *o, visitproc visit, void *arg):
     ## printf("%s.tp_traverse(%p)\n", Py_TYPE(o).tp_name, <void*>o)
     cdef PetscObject p = (<Object>o).obj[0]
@@ -33,5 +37,47 @@ cdef inline void TypeEnableGC(PyTypeObject *t):
     ## printf("%s: enforcing GC support\n", t.tp_name)
     t.tp_traverse = tp_traverse
     t.tp_clear    = tp_clear
+
+def garbage_cleanup(comm=None):
+    """Cleans up unused PETSc objects on the communicator `comm`. If no
+    communicator is provided first clean up on PETSC_COMM_WORLD, then
+    clean up on PETSC_COMM_SELF.
+
+    Optional argument `comm=None`.
+
+    No return value.
+    """
+    if not (<int>PetscInitializeCalled): return
+    if (<int>PetscFinalizeCalled):   return
+    cdef MPI_Comm ccomm
+    if comm is None:
+        ccomm = GetComm(COMM_WORLD, MPI_COMM_NULL)
+        CHKERR( PetscGarbageCleanup(ccomm) )
+        ccomm = GetComm(COMM_SELF, MPI_COMM_NULL)
+        CHKERR( PetscGarbageCleanup(ccomm) )
+    else:
+        ccomm = GetComm(comm, MPI_COMM_NULL)
+        if ccomm == MPI_COMM_NULL:
+            raise ValueError("null communicator")
+        CHKERR( PetscGarbageCleanup(ccomm) )
+
+def garbage_view(comm=None):
+    """Prints out summary of the unused PETSc objects on each rank of
+    the communicator `comm`. If no communicator is provided then
+    PETSC_COMM_WORLD is used.
+
+    Optional argument `comm=None`.
+
+    No return value.
+    """
+    if not (<int>PetscInitializeCalled): return
+    if (<int>PetscFinalizeCalled):   return
+    cdef MPI_Comm ccomm
+    if comm is None:
+        comm = COMM_WORLD
+    ccomm = GetComm(comm, MPI_COMM_NULL)
+    if ccomm == MPI_COMM_NULL:
+        raise ValueError("null communicator")
+    CHKERR( PetscGarbageView(ccomm, NULL) )
 
 # --------------------------------------------------------------------

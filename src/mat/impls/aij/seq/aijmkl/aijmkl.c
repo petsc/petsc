@@ -9,6 +9,9 @@
 
 #include <../src/mat/impls/aij/seq/aij.h>
 #include <../src/mat/impls/aij/seq/aijmkl/aijmkl.h>
+#if defined(PETSC_HAVE_MKL_INTEL_ILP64)
+  #define MKL_ILP64
+#endif
 #include <mkl_spblas.h>
 
 typedef struct {
@@ -24,7 +27,8 @@ typedef struct {
 
 extern PetscErrorCode MatAssemblyEnd_SeqAIJ(Mat, MatAssemblyType);
 
-PETSC_INTERN PetscErrorCode MatConvert_SeqAIJMKL_SeqAIJ(Mat A, MatType type, MatReuse reuse, Mat *newmat) {
+PETSC_INTERN PetscErrorCode MatConvert_SeqAIJMKL_SeqAIJ(Mat A, MatType type, MatReuse reuse, Mat *newmat)
+{
   /* This routine is only called to convert a MATAIJMKL to its base PETSc type, */
   /* so we will ignore 'MatType type'. */
   Mat B = *newmat;
@@ -69,7 +73,8 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJMKL_SeqAIJ(Mat A, MatType type, Mat
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatDestroy_SeqAIJMKL(Mat A) {
+PetscErrorCode MatDestroy_SeqAIJMKL(Mat A)
+{
   Mat_SeqAIJMKL *aijmkl = (Mat_SeqAIJMKL *)A->spptr;
 
   PetscFunctionBegin;
@@ -101,7 +106,8 @@ PetscErrorCode MatDestroy_SeqAIJMKL(Mat A) {
  * Although in normal MKL usage it is possible to have a valid matrix handle on which mkl_sparse_optimize() has not been
  * called, for AIJMKL the handle creation and optimization step always occur together, so we don't handle the case of
  * an unoptimized matrix handle here. */
-PETSC_INTERN PetscErrorCode MatSeqAIJMKL_create_mkl_handle(Mat A) {
+PETSC_INTERN PetscErrorCode MatSeqAIJMKL_create_mkl_handle(Mat A)
+{
 #if !defined(PETSC_HAVE_MKL_SPARSE_OPTIMIZE)
   /* If the MKL library does not have mkl_sparse_optimize(), then this routine
    * does nothing. We make it callable anyway in this case because it cuts
@@ -116,13 +122,13 @@ PETSC_INTERN PetscErrorCode MatSeqAIJMKL_create_mkl_handle(Mat A) {
   PetscInt      *aj, *ai;
 
   PetscFunctionBegin;
-#if !defined(PETSC_MKL_SPBLAS_DEPRECATED)
+  #if !defined(PETSC_MKL_SPBLAS_DEPRECATED)
   /* For MKL versions that still support the old, non-inspector-executor interfaces versions, we simply exit here if the no_SpMV2
    * option has been specified. For versions that have deprecated the old interfaces (version 18, update 2 and later), we must
    * use the new inspector-executor interfaces, but we can still use the old, non-inspector-executor code by not calling
    * mkl_sparse_optimize() later. */
   if (aijmkl->no_SpMV2) PetscFunctionReturn(0);
-#endif
+  #endif
 
   if (aijmkl->sparse_optimized) {
     /* Matrix has been previously assembled and optimized. Must destroy old
@@ -143,7 +149,7 @@ PETSC_INTERN PetscErrorCode MatSeqAIJMKL_create_mkl_handle(Mat A) {
   if (a->nz && aa && !A->structure_only) {
     /* Create a new, optimized sparse matrix handle only if the matrix has nonzero entries.
      * The MKL sparse-inspector executor routines don't like being passed an empty matrix. */
-    PetscCallExternal(mkl_sparse_x_create_csr, &aijmkl->csrA, SPARSE_INDEX_BASE_ZERO, m, n, ai, ai + 1, aj, aa);
+    PetscCallExternal(mkl_sparse_x_create_csr, &aijmkl->csrA, SPARSE_INDEX_BASE_ZERO, (MKL_INT)m, (MKL_INT)n, (MKL_INT *)ai, (MKL_INT *)(ai + 1), (MKL_INT *)aj, aa);
     PetscCallExternal(mkl_sparse_set_mv_hint, aijmkl->csrA, SPARSE_OPERATION_NON_TRANSPOSE, aijmkl->descr, 1000);
     PetscCallExternal(mkl_sparse_set_memory_hint, aijmkl->csrA, SPARSE_MEMORY_AGGRESSIVE);
     if (!aijmkl->no_SpMV2) PetscCallExternal(mkl_sparse_optimize, aijmkl->csrA);
@@ -159,7 +165,8 @@ PETSC_INTERN PetscErrorCode MatSeqAIJMKL_create_mkl_handle(Mat A) {
 
 #if defined(PETSC_HAVE_MKL_SPARSE_SP2M_FEATURE)
 /* Take an already created but empty matrix and set up the nonzero structure from an MKL sparse matrix handle. */
-static PetscErrorCode MatSeqAIJMKL_setup_structure_from_mkl_handle(MPI_Comm comm, sparse_matrix_t csrA, PetscInt nrows, PetscInt ncols, Mat A) {
+static PetscErrorCode MatSeqAIJMKL_setup_structure_from_mkl_handle(MPI_Comm comm, sparse_matrix_t csrA, PetscInt nrows, PetscInt ncols, Mat A)
+{
   sparse_index_base_t indexing;
   PetscInt            m, n;
   PetscInt           *aj, *ai, *dummy;
@@ -169,7 +176,7 @@ static PetscErrorCode MatSeqAIJMKL_setup_structure_from_mkl_handle(MPI_Comm comm
   PetscFunctionBegin;
   if (csrA) {
     /* Note: Must pass in &dummy below since MKL can't accept NULL for this output array we don't actually want. */
-    PetscCallExternal(mkl_sparse_x_export_csr, csrA, &indexing, &m, &n, &ai, &dummy, &aj, &aa);
+    PetscCallExternal(mkl_sparse_x_export_csr, csrA, &indexing, (MKL_INT *)&m, (MKL_INT *)&n, (MKL_INT **)&ai, (MKL_INT **)&dummy, (MKL_INT **)&aj, &aa);
     PetscCheck((m == nrows) && (n == ncols), PETSC_COMM_SELF, PETSC_ERR_LIB, "Number of rows/columns does not match those from mkl_sparse_x_export_csr()");
   } else {
     aj = ai = PETSC_NULL;
@@ -217,7 +224,8 @@ static PetscErrorCode MatSeqAIJMKL_setup_structure_from_mkl_handle(MPI_Comm comm
  * This is needed after mkl_sparse_sp2m() with SPARSE_STAGE_FINALIZE_MULT has been used to compute new values of the matrix in
  * MatMatMultNumeric(). */
 #if defined(PETSC_HAVE_MKL_SPARSE_SP2M_FEATURE)
-static PetscErrorCode MatSeqAIJMKL_update_from_mkl_handle(Mat A) {
+static PetscErrorCode MatSeqAIJMKL_update_from_mkl_handle(Mat A)
+{
   PetscInt            i;
   PetscInt            nrows, ncols;
   PetscInt            nz;
@@ -231,7 +239,7 @@ static PetscErrorCode MatSeqAIJMKL_update_from_mkl_handle(Mat A) {
   if (!aijmkl->csrA) PetscFunctionReturn(0);
 
   /* Note: Must pass in &dummy below since MKL can't accept NULL for this output array we don't actually want. */
-  PetscCallExternal(mkl_sparse_x_export_csr, aijmkl->csrA, &indexing, &nrows, &ncols, &ai, &dummy, &aj, &aa);
+  PetscCallExternal(mkl_sparse_x_export_csr, aijmkl->csrA, &indexing, (MKL_INT *)&nrows, (MKL_INT *)&ncols, (MKL_INT **)&ai, (MKL_INT **)&dummy, (MKL_INT **)&aj, &aa);
 
   /* We can't just do a copy from the arrays exported by MKL to those used for the PETSc AIJ storage, because the MKL and PETSc
    * representations differ in small ways (e.g., more explicit nonzeros per row due to preallocation). */
@@ -253,7 +261,8 @@ static PetscErrorCode MatSeqAIJMKL_update_from_mkl_handle(Mat A) {
 #endif /* PETSC_HAVE_MKL_SPARSE_SP2M_FEATURE */
 
 #if defined(PETSC_HAVE_MKL_SPARSE_OPTIMIZE)
-PETSC_INTERN PetscErrorCode MatSeqAIJMKL_view_mkl_handle(Mat A, PetscViewer viewer) {
+PETSC_INTERN PetscErrorCode MatSeqAIJMKL_view_mkl_handle(Mat A, PetscViewer viewer)
+{
   PetscInt            i, j, k;
   PetscInt            nrows, ncols;
   PetscInt            nz;
@@ -272,7 +281,7 @@ PETSC_INTERN PetscErrorCode MatSeqAIJMKL_view_mkl_handle(Mat A, PetscViewer view
   }
 
   /* Note: Must pass in &dummy below since MKL can't accept NULL for this output array we don't actually want. */
-  PetscCallExternal(mkl_sparse_x_export_csr, aijmkl->csrA, &indexing, &nrows, &ncols, &ai, &dummy, &aj, &aa);
+  PetscCallExternal(mkl_sparse_x_export_csr, aijmkl->csrA, &indexing, (MKL_INT *)&nrows, (MKL_INT *)&ncols, (MKL_INT **)&ai, (MKL_INT **)&dummy, (MKL_INT **)&aj, &aa);
 
   k = 0;
   for (i = 0; i < nrows; i++) {
@@ -292,7 +301,8 @@ PETSC_INTERN PetscErrorCode MatSeqAIJMKL_view_mkl_handle(Mat A, PetscViewer view
 }
 #endif /* PETSC_HAVE_MKL_SPARSE_OPTIMIZE */
 
-PetscErrorCode MatDuplicate_SeqAIJMKL(Mat A, MatDuplicateOption op, Mat *M) {
+PetscErrorCode MatDuplicate_SeqAIJMKL(Mat A, MatDuplicateOption op, Mat *M)
+{
   Mat_SeqAIJMKL *aijmkl = (Mat_SeqAIJMKL *)A->spptr;
   Mat_SeqAIJMKL *aijmkl_dest;
 
@@ -305,7 +315,8 @@ PetscErrorCode MatDuplicate_SeqAIJMKL(Mat A, MatDuplicateOption op, Mat *M) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatAssemblyEnd_SeqAIJMKL(Mat A, MatAssemblyType mode) {
+PetscErrorCode MatAssemblyEnd_SeqAIJMKL(Mat A, MatAssemblyType mode)
+{
   Mat_SeqAIJ    *a = (Mat_SeqAIJ *)A->data;
   Mat_SeqAIJMKL *aijmkl;
 
@@ -329,7 +340,8 @@ PetscErrorCode MatAssemblyEnd_SeqAIJMKL(Mat A, MatAssemblyType mode) {
 }
 
 #if !defined(PETSC_MKL_SPBLAS_DEPRECATED)
-PetscErrorCode MatMult_SeqAIJMKL(Mat A, Vec xx, Vec yy) {
+PetscErrorCode MatMult_SeqAIJMKL(Mat A, Vec xx, Vec yy)
+{
   Mat_SeqAIJ        *a = (Mat_SeqAIJ *)A->data;
   const PetscScalar *x;
   PetscScalar       *y;
@@ -364,7 +376,8 @@ PetscErrorCode MatMult_SeqAIJMKL(Mat A, Vec xx, Vec yy) {
 #endif
 
 #if defined(PETSC_HAVE_MKL_SPARSE_OPTIMIZE)
-PetscErrorCode MatMult_SeqAIJMKL_SpMV2(Mat A, Vec xx, Vec yy) {
+PetscErrorCode MatMult_SeqAIJMKL_SpMV2(Mat A, Vec xx, Vec yy)
+{
   Mat_SeqAIJ        *a      = (Mat_SeqAIJ *)A->data;
   Mat_SeqAIJMKL     *aijmkl = (Mat_SeqAIJMKL *)A->spptr;
   const PetscScalar *x;
@@ -401,7 +414,8 @@ PetscErrorCode MatMult_SeqAIJMKL_SpMV2(Mat A, Vec xx, Vec yy) {
 #endif /* PETSC_HAVE_MKL_SPARSE_OPTIMIZE */
 
 #if !defined(PETSC_MKL_SPBLAS_DEPRECATED)
-PetscErrorCode MatMultTranspose_SeqAIJMKL(Mat A, Vec xx, Vec yy) {
+PetscErrorCode MatMultTranspose_SeqAIJMKL(Mat A, Vec xx, Vec yy)
+{
   Mat_SeqAIJ        *a = (Mat_SeqAIJ *)A->data;
   const PetscScalar *x;
   PetscScalar       *y;
@@ -436,7 +450,8 @@ PetscErrorCode MatMultTranspose_SeqAIJMKL(Mat A, Vec xx, Vec yy) {
 #endif
 
 #if defined(PETSC_HAVE_MKL_SPARSE_OPTIMIZE)
-PetscErrorCode MatMultTranspose_SeqAIJMKL_SpMV2(Mat A, Vec xx, Vec yy) {
+PetscErrorCode MatMultTranspose_SeqAIJMKL_SpMV2(Mat A, Vec xx, Vec yy)
+{
   Mat_SeqAIJ        *a      = (Mat_SeqAIJ *)A->data;
   Mat_SeqAIJMKL     *aijmkl = (Mat_SeqAIJMKL *)A->spptr;
   const PetscScalar *x;
@@ -473,7 +488,8 @@ PetscErrorCode MatMultTranspose_SeqAIJMKL_SpMV2(Mat A, Vec xx, Vec yy) {
 #endif /* PETSC_HAVE_MKL_SPARSE_OPTIMIZE */
 
 #if !defined(PETSC_MKL_SPBLAS_DEPRECATED)
-PetscErrorCode MatMultAdd_SeqAIJMKL(Mat A, Vec xx, Vec yy, Vec zz) {
+PetscErrorCode MatMultAdd_SeqAIJMKL(Mat A, Vec xx, Vec yy, Vec zz)
+{
   Mat_SeqAIJ        *a = (Mat_SeqAIJ *)A->data;
   const PetscScalar *x;
   PetscScalar       *y, *z;
@@ -520,7 +536,8 @@ PetscErrorCode MatMultAdd_SeqAIJMKL(Mat A, Vec xx, Vec yy, Vec zz) {
 #endif
 
 #if defined(PETSC_HAVE_MKL_SPARSE_OPTIMIZE)
-PetscErrorCode MatMultAdd_SeqAIJMKL_SpMV2(Mat A, Vec xx, Vec yy, Vec zz) {
+PetscErrorCode MatMultAdd_SeqAIJMKL_SpMV2(Mat A, Vec xx, Vec yy, Vec zz)
+{
   Mat_SeqAIJ        *a      = (Mat_SeqAIJ *)A->data;
   Mat_SeqAIJMKL     *aijmkl = (Mat_SeqAIJMKL *)A->spptr;
   const PetscScalar *x;
@@ -570,7 +587,8 @@ PetscErrorCode MatMultAdd_SeqAIJMKL_SpMV2(Mat A, Vec xx, Vec yy, Vec zz) {
 #endif /* PETSC_HAVE_MKL_SPARSE_OPTIMIZE */
 
 #if !defined(PETSC_MKL_SPBLAS_DEPRECATED)
-PetscErrorCode MatMultTransposeAdd_SeqAIJMKL(Mat A, Vec xx, Vec yy, Vec zz) {
+PetscErrorCode MatMultTransposeAdd_SeqAIJMKL(Mat A, Vec xx, Vec yy, Vec zz)
+{
   Mat_SeqAIJ        *a = (Mat_SeqAIJ *)A->data;
   const PetscScalar *x;
   PetscScalar       *y, *z;
@@ -617,7 +635,8 @@ PetscErrorCode MatMultTransposeAdd_SeqAIJMKL(Mat A, Vec xx, Vec yy, Vec zz) {
 #endif
 
 #if defined(PETSC_HAVE_MKL_SPARSE_OPTIMIZE)
-PetscErrorCode MatMultTransposeAdd_SeqAIJMKL_SpMV2(Mat A, Vec xx, Vec yy, Vec zz) {
+PetscErrorCode MatMultTransposeAdd_SeqAIJMKL_SpMV2(Mat A, Vec xx, Vec yy, Vec zz)
+{
   Mat_SeqAIJ        *a      = (Mat_SeqAIJ *)A->data;
   Mat_SeqAIJMKL     *aijmkl = (Mat_SeqAIJMKL *)A->spptr;
   const PetscScalar *x;
@@ -668,7 +687,8 @@ PetscErrorCode MatMultTransposeAdd_SeqAIJMKL_SpMV2(Mat A, Vec xx, Vec yy, Vec zz
 
 /* -------------------------- MatProduct code -------------------------- */
 #if defined(PETSC_HAVE_MKL_SPARSE_SP2M_FEATURE)
-static PetscErrorCode MatMatMultSymbolic_SeqAIJMKL_SeqAIJMKL_Private(Mat A, const sparse_operation_t transA, Mat B, const sparse_operation_t transB, Mat C) {
+static PetscErrorCode MatMatMultSymbolic_SeqAIJMKL_SeqAIJMKL_Private(Mat A, const sparse_operation_t transA, Mat B, const sparse_operation_t transB, Mat C)
+{
   Mat_SeqAIJMKL      *a = (Mat_SeqAIJMKL *)A->spptr, *b = (Mat_SeqAIJMKL *)B->spptr;
   sparse_matrix_t     csrA, csrB, csrC;
   PetscInt            nrows, ncols;
@@ -702,7 +722,8 @@ static PetscErrorCode MatMatMultSymbolic_SeqAIJMKL_SeqAIJMKL_Private(Mat A, cons
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatMatMultNumeric_SeqAIJMKL_SeqAIJMKL_Private(Mat A, const sparse_operation_t transA, Mat B, const sparse_operation_t transB, Mat C) {
+PetscErrorCode MatMatMultNumeric_SeqAIJMKL_SeqAIJMKL_Private(Mat A, const sparse_operation_t transA, Mat B, const sparse_operation_t transB, Mat C)
+{
   Mat_SeqAIJMKL      *a = (Mat_SeqAIJMKL *)A->spptr, *b = (Mat_SeqAIJMKL *)B->spptr, *c = (Mat_SeqAIJMKL *)C->spptr;
   sparse_matrix_t     csrA, csrB, csrC;
   struct matrix_descr descr_type_gen;
@@ -730,43 +751,50 @@ PetscErrorCode MatMatMultNumeric_SeqAIJMKL_SeqAIJMKL_Private(Mat A, const sparse
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatMatMultSymbolic_SeqAIJMKL_SeqAIJMKL(Mat A, Mat B, PetscReal fill, Mat C) {
+PetscErrorCode MatMatMultSymbolic_SeqAIJMKL_SeqAIJMKL(Mat A, Mat B, PetscReal fill, Mat C)
+{
   PetscFunctionBegin;
   PetscCall(MatMatMultSymbolic_SeqAIJMKL_SeqAIJMKL_Private(A, SPARSE_OPERATION_NON_TRANSPOSE, B, SPARSE_OPERATION_NON_TRANSPOSE, C));
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatMatMultNumeric_SeqAIJMKL_SeqAIJMKL(Mat A, Mat B, Mat C) {
+PetscErrorCode MatMatMultNumeric_SeqAIJMKL_SeqAIJMKL(Mat A, Mat B, Mat C)
+{
   PetscFunctionBegin;
   PetscCall(MatMatMultNumeric_SeqAIJMKL_SeqAIJMKL_Private(A, SPARSE_OPERATION_NON_TRANSPOSE, B, SPARSE_OPERATION_NON_TRANSPOSE, C));
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatTransposeMatMultNumeric_SeqAIJMKL_SeqAIJMKL(Mat A, Mat B, Mat C) {
+PetscErrorCode MatTransposeMatMultNumeric_SeqAIJMKL_SeqAIJMKL(Mat A, Mat B, Mat C)
+{
   PetscFunctionBegin;
   PetscCall(MatMatMultNumeric_SeqAIJMKL_SeqAIJMKL_Private(A, SPARSE_OPERATION_TRANSPOSE, B, SPARSE_OPERATION_NON_TRANSPOSE, C));
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatTransposeMatMultSymbolic_SeqAIJMKL_SeqAIJMKL(Mat A, Mat B, PetscReal fill, Mat C) {
+PetscErrorCode MatTransposeMatMultSymbolic_SeqAIJMKL_SeqAIJMKL(Mat A, Mat B, PetscReal fill, Mat C)
+{
   PetscFunctionBegin;
   PetscCall(MatMatMultSymbolic_SeqAIJMKL_SeqAIJMKL_Private(A, SPARSE_OPERATION_TRANSPOSE, B, SPARSE_OPERATION_NON_TRANSPOSE, C));
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatMatTransposeMultSymbolic_SeqAIJMKL_SeqAIJMKL(Mat A, Mat B, PetscReal fill, Mat C) {
+PetscErrorCode MatMatTransposeMultSymbolic_SeqAIJMKL_SeqAIJMKL(Mat A, Mat B, PetscReal fill, Mat C)
+{
   PetscFunctionBegin;
   PetscCall(MatMatMultSymbolic_SeqAIJMKL_SeqAIJMKL_Private(A, SPARSE_OPERATION_NON_TRANSPOSE, B, SPARSE_OPERATION_TRANSPOSE, C));
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatMatTransposeMultNumeric_SeqAIJMKL_SeqAIJMKL(Mat A, Mat B, Mat C) {
+PetscErrorCode MatMatTransposeMultNumeric_SeqAIJMKL_SeqAIJMKL(Mat A, Mat B, Mat C)
+{
   PetscFunctionBegin;
   PetscCall(MatMatMultNumeric_SeqAIJMKL_SeqAIJMKL_Private(A, SPARSE_OPERATION_NON_TRANSPOSE, B, SPARSE_OPERATION_TRANSPOSE, C));
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatProductNumeric_AtB_SeqAIJMKL_SeqAIJMKL(Mat C) {
+static PetscErrorCode MatProductNumeric_AtB_SeqAIJMKL_SeqAIJMKL(Mat C)
+{
   Mat_Product *product = C->product;
   Mat          A = product->A, B = product->B;
 
@@ -775,7 +803,8 @@ static PetscErrorCode MatProductNumeric_AtB_SeqAIJMKL_SeqAIJMKL(Mat C) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatProductSymbolic_AtB_SeqAIJMKL_SeqAIJMKL(Mat C) {
+static PetscErrorCode MatProductSymbolic_AtB_SeqAIJMKL_SeqAIJMKL(Mat C)
+{
   Mat_Product *product = C->product;
   Mat          A = product->A, B = product->B;
   PetscReal    fill = product->fill;
@@ -786,7 +815,8 @@ static PetscErrorCode MatProductSymbolic_AtB_SeqAIJMKL_SeqAIJMKL(Mat C) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatPtAPNumeric_SeqAIJMKL_SeqAIJMKL_SymmetricReal(Mat A, Mat P, Mat C) {
+PetscErrorCode MatPtAPNumeric_SeqAIJMKL_SeqAIJMKL_SymmetricReal(Mat A, Mat P, Mat C)
+{
   Mat                 Ct;
   Vec                 zeros;
   Mat_SeqAIJMKL      *a = (Mat_SeqAIJMKL *)A->spptr, *p = (Mat_SeqAIJMKL *)P->spptr, *c = (Mat_SeqAIJMKL *)C->spptr;
@@ -836,7 +866,8 @@ PetscErrorCode MatPtAPNumeric_SeqAIJMKL_SeqAIJMKL_SymmetricReal(Mat A, Mat P, Ma
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatProductSymbolic_PtAP_SeqAIJMKL_SeqAIJMKL_SymmetricReal(Mat C) {
+PetscErrorCode MatProductSymbolic_PtAP_SeqAIJMKL_SeqAIJMKL_SymmetricReal(Mat C)
+{
   Mat_Product        *product = C->product;
   Mat                 A = product->A, P = product->B;
   Mat_SeqAIJMKL      *a = (Mat_SeqAIJMKL *)A->spptr, *p = (Mat_SeqAIJMKL *)P->spptr;
@@ -873,27 +904,31 @@ PetscErrorCode MatProductSymbolic_PtAP_SeqAIJMKL_SeqAIJMKL_SymmetricReal(Mat C) 
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatProductSetFromOptions_SeqAIJMKL_AB(Mat C) {
+static PetscErrorCode MatProductSetFromOptions_SeqAIJMKL_AB(Mat C)
+{
   PetscFunctionBegin;
   C->ops->productsymbolic = MatProductSymbolic_AB;
   C->ops->matmultsymbolic = MatMatMultSymbolic_SeqAIJMKL_SeqAIJMKL;
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatProductSetFromOptions_SeqAIJMKL_AtB(Mat C) {
+static PetscErrorCode MatProductSetFromOptions_SeqAIJMKL_AtB(Mat C)
+{
   PetscFunctionBegin;
   C->ops->productsymbolic = MatProductSymbolic_AtB_SeqAIJMKL_SeqAIJMKL;
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatProductSetFromOptions_SeqAIJMKL_ABt(Mat C) {
+static PetscErrorCode MatProductSetFromOptions_SeqAIJMKL_ABt(Mat C)
+{
   PetscFunctionBegin;
   C->ops->mattransposemultsymbolic = MatMatTransposeMultSymbolic_SeqAIJ_SeqAIJ;
   C->ops->productsymbolic          = MatProductSymbolic_ABt;
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatProductSetFromOptions_SeqAIJMKL_PtAP(Mat C) {
+static PetscErrorCode MatProductSetFromOptions_SeqAIJMKL_PtAP(Mat C)
+{
   Mat_Product *product = C->product;
   Mat          A       = product->A;
   PetscBool    set, flag;
@@ -916,30 +951,46 @@ static PetscErrorCode MatProductSetFromOptions_SeqAIJMKL_PtAP(Mat C) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatProductSetFromOptions_SeqAIJMKL_RARt(Mat C) {
+static PetscErrorCode MatProductSetFromOptions_SeqAIJMKL_RARt(Mat C)
+{
   PetscFunctionBegin;
   C->ops->productsymbolic = NULL; /* MatProductSymbolic_Unsafe() will be used. */
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatProductSetFromOptions_SeqAIJMKL_ABC(Mat C) {
+static PetscErrorCode MatProductSetFromOptions_SeqAIJMKL_ABC(Mat C)
+{
   PetscFunctionBegin;
   C->ops->productsymbolic = NULL; /* MatProductSymbolic_Unsafe() will be used. */
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatProductSetFromOptions_SeqAIJMKL(Mat C) {
+PetscErrorCode MatProductSetFromOptions_SeqAIJMKL(Mat C)
+{
   Mat_Product *product = C->product;
 
   PetscFunctionBegin;
   switch (product->type) {
-  case MATPRODUCT_AB: PetscCall(MatProductSetFromOptions_SeqAIJMKL_AB(C)); break;
-  case MATPRODUCT_AtB: PetscCall(MatProductSetFromOptions_SeqAIJMKL_AtB(C)); break;
-  case MATPRODUCT_ABt: PetscCall(MatProductSetFromOptions_SeqAIJMKL_ABt(C)); break;
-  case MATPRODUCT_PtAP: PetscCall(MatProductSetFromOptions_SeqAIJMKL_PtAP(C)); break;
-  case MATPRODUCT_RARt: PetscCall(MatProductSetFromOptions_SeqAIJMKL_RARt(C)); break;
-  case MATPRODUCT_ABC: PetscCall(MatProductSetFromOptions_SeqAIJMKL_ABC(C)); break;
-  default: break;
+  case MATPRODUCT_AB:
+    PetscCall(MatProductSetFromOptions_SeqAIJMKL_AB(C));
+    break;
+  case MATPRODUCT_AtB:
+    PetscCall(MatProductSetFromOptions_SeqAIJMKL_AtB(C));
+    break;
+  case MATPRODUCT_ABt:
+    PetscCall(MatProductSetFromOptions_SeqAIJMKL_ABt(C));
+    break;
+  case MATPRODUCT_PtAP:
+    PetscCall(MatProductSetFromOptions_SeqAIJMKL_PtAP(C));
+    break;
+  case MATPRODUCT_RARt:
+    PetscCall(MatProductSetFromOptions_SeqAIJMKL_RARt(C));
+    break;
+  case MATPRODUCT_ABC:
+    PetscCall(MatProductSetFromOptions_SeqAIJMKL_ABC(C));
+    break;
+  default:
+    break;
   }
   PetscFunctionReturn(0);
 }
@@ -950,7 +1001,8 @@ PetscErrorCode MatProductSetFromOptions_SeqAIJMKL(Mat C) {
  * SeqAIJMKL matrix.  This routine is called by the MatCreate_SeqAIJMKL()
  * routine, but can also be used to convert an assembled SeqAIJ matrix
  * into a SeqAIJMKL one. */
-PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJMKL(Mat A, MatType type, MatReuse reuse, Mat *newmat) {
+PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJMKL(Mat A, MatType type, MatReuse reuse, Mat *newmat)
+{
   Mat            B = *newmat;
   Mat_SeqAIJMKL *aijmkl;
   PetscBool      set;
@@ -962,7 +1014,7 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJMKL(Mat A, MatType type, Mat
   PetscCall(PetscObjectTypeCompare((PetscObject)A, type, &sametype));
   if (sametype) PetscFunctionReturn(0);
 
-  PetscCall(PetscNewLog(B, &aijmkl));
+  PetscCall(PetscNew(&aijmkl));
   B->spptr = (void *)aijmkl;
 
   /* Set function pointers for methods that we inherit from AIJ but override.
@@ -996,18 +1048,18 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJMKL(Mat A, MatType type, Mat
   B->ops->multtranspose    = MatMultTranspose_SeqAIJMKL_SpMV2;
   B->ops->multadd          = MatMultAdd_SeqAIJMKL_SpMV2;
   B->ops->multtransposeadd = MatMultTransposeAdd_SeqAIJMKL_SpMV2;
-#if defined(PETSC_HAVE_MKL_SPARSE_SP2M_FEATURE)
+  #if defined(PETSC_HAVE_MKL_SPARSE_SP2M_FEATURE)
   B->ops->productsetfromoptions   = MatProductSetFromOptions_SeqAIJMKL;
   B->ops->matmultsymbolic         = MatMatMultSymbolic_SeqAIJMKL_SeqAIJMKL;
   B->ops->matmultnumeric          = MatMatMultNumeric_SeqAIJMKL_SeqAIJMKL;
   B->ops->mattransposemultnumeric = MatMatTransposeMultNumeric_SeqAIJMKL_SeqAIJMKL;
   B->ops->transposematmultnumeric = MatTransposeMatMultNumeric_SeqAIJMKL_SeqAIJMKL;
-#if !defined(PETSC_USE_COMPLEX)
+    #if !defined(PETSC_USE_COMPLEX)
   B->ops->ptapnumeric = MatPtAPNumeric_SeqAIJMKL_SeqAIJMKL_SymmetricReal;
-#else
+    #else
   B->ops->ptapnumeric = NULL;
-#endif
-#endif
+    #endif
+  #endif
 #endif /* PETSC_HAVE_MKL_SPARSE_OPTIMIZE */
 
 #if !defined(PETSC_MKL_SPBLAS_DEPRECATED)
@@ -1064,7 +1116,8 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJMKL(Mat A, MatType type, Mat
 
 .seealso: `MatCreate()`, `MatCreateMPIAIJMKL()`, `MatSetValues()`
 @*/
-PetscErrorCode MatCreateSeqAIJMKL(MPI_Comm comm, PetscInt m, PetscInt n, PetscInt nz, const PetscInt nnz[], Mat *A) {
+PetscErrorCode MatCreateSeqAIJMKL(MPI_Comm comm, PetscInt m, PetscInt n, PetscInt nz, const PetscInt nnz[], Mat *A)
+{
   PetscFunctionBegin;
   PetscCall(MatCreate(comm, A));
   PetscCall(MatSetSizes(*A, m, n, m, n));
@@ -1073,7 +1126,8 @@ PetscErrorCode MatCreateSeqAIJMKL(MPI_Comm comm, PetscInt m, PetscInt n, PetscIn
   PetscFunctionReturn(0);
 }
 
-PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJMKL(Mat A) {
+PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJMKL(Mat A)
+{
   PetscFunctionBegin;
   PetscCall(MatSetType(A, MATSEQAIJ));
   PetscCall(MatConvert_SeqAIJ_SeqAIJMKL(A, MATSEQAIJMKL, MAT_INPLACE_MATRIX, &A));

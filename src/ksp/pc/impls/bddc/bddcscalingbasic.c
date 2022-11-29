@@ -10,7 +10,8 @@ static PetscErrorCode PCBDDCScalingSetUp_Deluxe(PC);
 static PetscErrorCode PCBDDCScalingSetUp_Deluxe_Private(PC);
 static PetscErrorCode PCBDDCScalingReset_Deluxe_Solvers(PCBDDCDeluxeScaling);
 
-static PetscErrorCode PCBDDCMatTransposeMatSolve_SeqDense(Mat A, Mat B, Mat X) {
+static PetscErrorCode PCBDDCMatTransposeMatSolve_SeqDense(Mat A, Mat B, Mat X)
+{
   Mat_SeqDense      *mat = (Mat_SeqDense *)A->data;
   const PetscScalar *b;
   PetscScalar       *x;
@@ -32,17 +33,17 @@ static PetscErrorCode PCBDDCMatTransposeMatSolve_SeqDense(Mat A, Mat B, Mat X) {
   PetscCall(PetscArraycpy(x, b, m * nrhs));
   PetscCall(MatDenseRestoreArrayRead(B, &b));
 
-  if (A->factortype == MAT_FACTOR_LU) {
-    PetscCallBLAS("LAPACKgetrs", LAPACKgetrs_("T", &m, &nrhs, mat->v, &mat->lda, mat->pivots, x, &m, &info));
-    PetscCheck(!info, PETSC_COMM_SELF, PETSC_ERR_LIB, "GETRS - Bad solve");
-  } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Only LU factor supported");
+  PetscCheck(A->factortype == MAT_FACTOR_LU, PETSC_COMM_SELF, PETSC_ERR_SUP, "Only LU factor supported");
+  PetscCallBLAS("LAPACKgetrs", LAPACKgetrs_("T", &m, &nrhs, mat->v, &mat->lda, mat->pivots, x, &m, &info));
+  PetscCheck(!info, PETSC_COMM_SELF, PETSC_ERR_LIB, "GETRS - Bad solve");
 
   PetscCall(MatDenseRestoreArray(X, &x));
   PetscCall(PetscLogFlops(nrhs * (2.0 * m * m - m)));
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCBDDCScalingExtension_Basic(PC pc, Vec local_interface_vector, Vec global_vector) {
+static PetscErrorCode PCBDDCScalingExtension_Basic(PC pc, Vec local_interface_vector, Vec global_vector)
+{
   PC_IS   *pcis   = (PC_IS *)pc->data;
   PC_BDDC *pcbddc = (PC_BDDC *)pc->data;
 
@@ -55,7 +56,8 @@ static PetscErrorCode PCBDDCScalingExtension_Basic(PC pc, Vec local_interface_ve
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCBDDCScalingExtension_Deluxe(PC pc, Vec x, Vec y) {
+static PetscErrorCode PCBDDCScalingExtension_Deluxe(PC pc, Vec x, Vec y)
+{
   PC_IS              *pcis       = (PC_IS *)pc->data;
   PC_BDDC            *pcbddc     = (PC_BDDC *)pc->data;
   PCBDDCDeluxeScaling deluxe_ctx = pcbddc->deluxe_ctx;
@@ -123,7 +125,8 @@ static PetscErrorCode PCBDDCScalingExtension_Deluxe(PC pc, Vec x, Vec y) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PCBDDCScalingExtension(PC pc, Vec local_interface_vector, Vec global_vector) {
+PetscErrorCode PCBDDCScalingExtension(PC pc, Vec local_interface_vector, Vec global_vector)
+{
   PC_BDDC *pcbddc = (PC_BDDC *)pc->data;
 
   PetscFunctionBegin;
@@ -135,7 +138,8 @@ PetscErrorCode PCBDDCScalingExtension(PC pc, Vec local_interface_vector, Vec glo
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCBDDCScalingRestriction_Basic(PC pc, Vec global_vector, Vec local_interface_vector) {
+static PetscErrorCode PCBDDCScalingRestriction_Basic(PC pc, Vec global_vector, Vec local_interface_vector)
+{
   PC_IS *pcis = (PC_IS *)pc->data;
 
   PetscFunctionBegin;
@@ -146,7 +150,8 @@ static PetscErrorCode PCBDDCScalingRestriction_Basic(PC pc, Vec global_vector, V
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCBDDCScalingRestriction_Deluxe(PC pc, Vec x, Vec y) {
+static PetscErrorCode PCBDDCScalingRestriction_Deluxe(PC pc, Vec x, Vec y)
+{
   PC_IS              *pcis       = (PC_IS *)pc->data;
   PC_BDDC            *pcbddc     = (PC_BDDC *)pc->data;
   PCBDDCDeluxeScaling deluxe_ctx = pcbddc->deluxe_ctx;
@@ -210,7 +215,8 @@ static PetscErrorCode PCBDDCScalingRestriction_Deluxe(PC pc, Vec x, Vec y) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PCBDDCScalingRestriction(PC pc, Vec global_vector, Vec local_interface_vector) {
+PetscErrorCode PCBDDCScalingRestriction(PC pc, Vec global_vector, Vec local_interface_vector)
+{
   PC_BDDC *pcbddc = (PC_BDDC *)pc->data;
 
   PetscFunctionBegin;
@@ -222,7 +228,8 @@ PetscErrorCode PCBDDCScalingRestriction(PC pc, Vec global_vector, Vec local_inte
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PCBDDCScalingSetUp(PC pc) {
+PetscErrorCode PCBDDCScalingSetUp(PC pc)
+{
   PC_IS   *pcis   = (PC_IS *)pc->data;
   PC_BDDC *pcbddc = (PC_BDDC *)pc->data;
 
@@ -328,7 +335,8 @@ PetscErrorCode PCBDDCScalingSetUp(PC pc) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PCBDDCScalingDestroy(PC pc) {
+PetscErrorCode PCBDDCScalingDestroy(PC pc)
+{
   PC_BDDC *pcbddc = (PC_BDDC *)pc->data;
 
   PetscFunctionBegin;
@@ -339,7 +347,8 @@ PetscErrorCode PCBDDCScalingDestroy(PC pc) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCBDDCScalingCreate_Deluxe(PC pc) {
+static PetscErrorCode PCBDDCScalingCreate_Deluxe(PC pc)
+{
   PC_BDDC            *pcbddc = (PC_BDDC *)pc->data;
   PCBDDCDeluxeScaling deluxe_ctx;
 
@@ -349,7 +358,8 @@ static PetscErrorCode PCBDDCScalingCreate_Deluxe(PC pc) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCBDDCScalingDestroy_Deluxe(PC pc) {
+static PetscErrorCode PCBDDCScalingDestroy_Deluxe(PC pc)
+{
   PC_BDDC *pcbddc = (PC_BDDC *)pc->data;
 
   PetscFunctionBegin;
@@ -358,7 +368,8 @@ static PetscErrorCode PCBDDCScalingDestroy_Deluxe(PC pc) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCBDDCScalingReset_Deluxe_Solvers(PCBDDCDeluxeScaling deluxe_ctx) {
+static PetscErrorCode PCBDDCScalingReset_Deluxe_Solvers(PCBDDCDeluxeScaling deluxe_ctx)
+{
   PetscInt i;
 
   PetscFunctionBegin;
@@ -377,7 +388,8 @@ static PetscErrorCode PCBDDCScalingReset_Deluxe_Solvers(PCBDDCDeluxeScaling delu
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCBDDCScalingSetUp_Deluxe(PC pc) {
+static PetscErrorCode PCBDDCScalingSetUp_Deluxe(PC pc)
+{
   PC_IS              *pcis       = (PC_IS *)pc->data;
   PC_BDDC            *pcbddc     = (PC_BDDC *)pc->data;
   PCBDDCDeluxeScaling deluxe_ctx = pcbddc->deluxe_ctx;
@@ -429,7 +441,8 @@ static PetscErrorCode PCBDDCScalingSetUp_Deluxe(PC pc) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCBDDCScalingSetUp_Deluxe_Private(PC pc) {
+static PetscErrorCode PCBDDCScalingSetUp_Deluxe_Private(PC pc)
+{
   PC_BDDC            *pcbddc     = (PC_BDDC *)pc->data;
   PCBDDCDeluxeScaling deluxe_ctx = pcbddc->deluxe_ctx;
   PCBDDCSubSchurs     sub_schurs = pcbddc->sub_schurs;

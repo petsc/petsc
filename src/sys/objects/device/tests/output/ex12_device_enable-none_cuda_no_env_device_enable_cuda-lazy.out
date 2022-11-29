@@ -1,0 +1,9 @@
+[0] <sys> PetscDeviceInitializeTypeFromOptions_Private(): PetscDeviceType host available, initializing
+[0] <sys> PetscDeviceInitializeTypeFromOptions_Private(): PetscDevice host initialized, default device id 0, view FALSE, init type lazy
+[0] <sys> PetscDeviceInitializeTypeFromOptions_Private(): PetscDeviceType cuda available, initializing
+[0] <sys> PetscDeviceInitializeTypeFromOptions_Private(): PetscDevice cuda initialized, default device id 0, view FALSE, init type lazy
+[0] <sys> PetscDeviceInitializeTypeFromOptions_Private(): PetscDeviceType hip not available
+[0] <sys> PetscDeviceInitializeTypeFromOptions_Private(): PetscDeviceType sycl not available
+[0] <sys> PetscInitialize_Common(): PETSc successfully started: number of processors = 1
+[0] <device> PetscDeviceContextSetupGlobalContext_Private(): Initializing global PetscDeviceContext with device type host
+[0] <device> operator()(): Destroying global PetscDeviceContext with device type host

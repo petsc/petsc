@@ -24,7 +24,8 @@
 
 .seealso: `PetscViewerType`, `MatPartitioningType`, `MatSolverType`
 @*/
-PetscErrorCode PetscHasExternalPackage(const char pkg[], PetscBool *has) {
+PetscErrorCode PetscHasExternalPackage(const char pkg[], PetscBool *has)
+{
   char   pkgstr[128], *loc;
   size_t cnt;
 
@@ -37,7 +38,7 @@ PetscErrorCode PetscHasExternalPackage(const char pkg[], PetscBool *has) {
 #if defined(PETSC_HAVE_PACKAGES)
   PetscCall(PetscStrstr(PETSC_HAVE_PACKAGES, pkgstr, &loc));
 #else
-#error "PETSC_HAVE_PACKAGES macro undefined. Please reconfigure"
+  #error "PETSC_HAVE_PACKAGES macro undefined. Please reconfigure"
 #endif
   *has = loc ? PETSC_TRUE : PETSC_FALSE;
   PetscFunctionReturn(0);

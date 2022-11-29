@@ -4,7 +4,8 @@ static char help[] = "Tests MatILUFactorSymbolic() on matrix with missing diagon
 #include <petscmat.h>
 #include <petscpc.h>
 
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   Mat         C, A;
   PetscInt    i, j;
   PetscScalar v;

@@ -1,4 +1,4 @@
-#if !defined(PETSCFETYPES_H)
+#ifndef PETSCFETYPES_H
 #define PETSCFETYPES_H
 
 /* SUBMANSEC = FE */
@@ -24,7 +24,7 @@ typedef struct _p_PetscDualSpace *PetscDualSpace;
 /*MC
   PetscDualSpaceReferenceCell - The type of reference cell
 
-  Notes: This is used only for automatic creation of reference cells. A `PetscDualSpace` can accept an arbitary `DM` for a reference cell.
+  Notes: This is used only for automatic creation of reference cells. A `PetscDualSpace` can accept an arbitrary `DM` for a reference cell.
 
   Level: beginner
 

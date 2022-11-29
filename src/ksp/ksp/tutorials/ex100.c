@@ -2,7 +2,8 @@
 
 /* ------------------------------------------------------- */
 
-PetscErrorCode RunTest(void) {
+PetscErrorCode RunTest(void)
+{
   PetscInt  N = 100, its = 0;
   PetscBool draw = PETSC_FALSE, test = PETSC_FALSE;
   PetscReal rnorm;
@@ -68,13 +69,14 @@ PetscErrorCode RunTest(void) {
 static char help[] = "Python-implemented Mat/KSP/PC.\n\n";
 
 #if !defined(PYTHON_EXE)
-#define PYTHON_EXE 0
+  #define PYTHON_EXE 0
 #endif
 #if !defined(PYTHON_LIB)
-#define PYTHON_LIB 0
+  #define PYTHON_LIB 0
 #endif
 
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[])
+{
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, 0, help));
   PetscCall(PetscPythonInitialize(PYTHON_EXE, PYTHON_LIB));

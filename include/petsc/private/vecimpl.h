@@ -110,6 +110,20 @@ struct _VecOps {
   PetscErrorCode (*setvaluescoo)(Vec, const PetscScalar[], InsertMode);
 };
 
+#if defined(offsetof) && (defined(__cplusplus) || (PETSC_C_VERSION >= 11))
+  #if (PETSC_C_VERSION >= 11) && (PETSC_C_VERSION < 23)
+    // static_assert() is a keyword since C23, before that defined as macro in assert.h
+    #include <assert.h>
+  #endif
+
+static_assert(offsetof(struct _VecOps, duplicate) == sizeof(void (*)(void)) * VECOP_DUPLICATE, "");
+static_assert(offsetof(struct _VecOps, set) == sizeof(void (*)(void)) * VECOP_SET, "");
+static_assert(offsetof(struct _VecOps, view) == sizeof(void (*)(void)) * VECOP_VIEW, "");
+static_assert(offsetof(struct _VecOps, load) == sizeof(void (*)(void)) * VECOP_LOAD, "");
+static_assert(offsetof(struct _VecOps, viewnative) == sizeof(void (*)(void)) * VECOP_VIEWNATIVE, "");
+static_assert(offsetof(struct _VecOps, loadnative) == sizeof(void (*)(void)) * VECOP_LOADNATIVE, "");
+#endif
+
 /*
     The stash is used to temporarily store inserted vec values that
   belong to another processor. During the assembly phase the stashed
@@ -204,25 +218,13 @@ PETSC_EXTERN PetscLogEvent VEC_ViennaCLCopyToGPU;
 PETSC_EXTERN PetscLogEvent VEC_ViennaCLCopyFromGPU;
 PETSC_EXTERN PetscLogEvent VEC_CUDACopyToGPU;
 PETSC_EXTERN PetscLogEvent VEC_CUDACopyFromGPU;
-PETSC_EXTERN PetscLogEvent VEC_CUDACopyToGPUSome;
-PETSC_EXTERN PetscLogEvent VEC_CUDACopyFromGPUSome;
 PETSC_EXTERN PetscLogEvent VEC_HIPCopyToGPU;
 PETSC_EXTERN PetscLogEvent VEC_HIPCopyFromGPU;
-PETSC_EXTERN PetscLogEvent VEC_HIPCopyToGPUSome;
-PETSC_EXTERN PetscLogEvent VEC_HIPCopyFromGPUSome;
 
 PETSC_EXTERN PetscErrorCode VecView_Seq(Vec, PetscViewer);
 #if defined(PETSC_HAVE_VIENNACL)
 PETSC_EXTERN PetscErrorCode VecViennaCLAllocateCheckHost(Vec v);
 PETSC_EXTERN PetscErrorCode VecViennaCLCopyFromGPU(Vec v);
-#endif
-#if defined(PETSC_HAVE_CUDA)
-PETSC_EXTERN PetscErrorCode VecCUDAAllocateCheckHost(Vec v);
-PETSC_EXTERN PetscErrorCode VecCUDACopyFromGPU(Vec v);
-#endif
-#if defined(PETSC_HAVE_HIP)
-PETSC_EXTERN PetscErrorCode VecHIPAllocateCheckHost(Vec v);
-PETSC_EXTERN PetscErrorCode VecHIPCopyFromGPU(Vec v);
 #endif
 
 /*
@@ -265,7 +267,8 @@ PETSC_INTERN PetscErrorCode VecStashGetOwnerList_Private(VecStash *, PetscLayout
   idx    - the global of the inserted value
   values - the value inserted
 */
-static inline PetscErrorCode VecStashValue_Private(VecStash *stash, PetscInt row, PetscScalar value) {
+static inline PetscErrorCode VecStashValue_Private(VecStash *stash, PetscInt row, PetscScalar value)
+{
   /* Check and see if we have sufficient memory */
   if (((stash)->n + 1) > (stash)->nmax) PetscCall(VecStashExpand_Private(stash, 1));
   (stash)->idx[(stash)->n]   = row;
@@ -282,7 +285,8 @@ static inline PetscErrorCode VecStashValue_Private(VecStash *stash, PetscInt row
   idx    - the global block index
   values - the values inserted
 */
-static inline PetscErrorCode VecStashValuesBlocked_Private(VecStash *stash, PetscInt row, PetscScalar *values) {
+static inline PetscErrorCode VecStashValuesBlocked_Private(VecStash *stash, PetscInt row, PetscScalar *values)
+{
   PetscInt     stash_bs = (stash)->bs;
   PetscScalar *array;
 
@@ -300,7 +304,7 @@ PETSC_INTERN PetscErrorCode VecReciprocal_Default(Vec);
 PETSC_INTERN PetscErrorCode VecStrideSubSetGather_Default(Vec, PetscInt, const PetscInt[], const PetscInt[], Vec, InsertMode);
 PETSC_INTERN PetscErrorCode VecStrideSubSetScatter_Default(Vec, PetscInt, const PetscInt[], const PetscInt[], Vec, InsertMode);
 
-#if defined(PETSC_HAVE_MATLAB_ENGINE)
+#if defined(PETSC_HAVE_MATLAB)
 PETSC_EXTERN PetscErrorCode VecMatlabEnginePut_Default(PetscObject, void *);
 PETSC_EXTERN PetscErrorCode VecMatlabEngineGet_Default(PetscObject, void *);
 #endif
@@ -321,7 +325,9 @@ PETSC_EXTERN PetscErrorCode PetscSectionRestoreField_Internal(PetscSection, Pets
   } while (0)
 
 #define VecCheckLocalSize(x, ar1, n) \
-  do { PetscCheck((x)->map->n == (n), PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Incorrect vector local size: parameter # %d local size %" PetscInt_FMT " != %" PetscInt_FMT, ar1, (x)->map->n, n); } while (0)
+  do { \
+    PetscCheck((x)->map->n == (n), PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Incorrect vector local size: parameter # %d local size %" PetscInt_FMT " != %" PetscInt_FMT, ar1, (x)->map->n, n); \
+  } while (0)
 
 #define VecCheckSize(x, ar1, n, N) \
   do { \
@@ -356,6 +362,20 @@ PETSC_INTERN PetscInt       VecGetSubVectorSavedStateId;
 PETSC_INTERN PetscErrorCode VecGetSubVectorContiguityAndBS_Private(Vec, IS, PetscBool *, PetscInt *, PetscInt *);
 PETSC_INTERN PetscErrorCode VecGetSubVectorThroughVecScatter_Private(Vec, IS, PetscInt, Vec *);
 
+#if PetscDefined(HAVE_CUDA)
+PETSC_INTERN PetscErrorCode VecCreate_CUDA(Vec);
+PETSC_INTERN PetscErrorCode VecCreate_SeqCUDA(Vec);
+PETSC_INTERN PetscErrorCode VecCreate_MPICUDA(Vec);
+PETSC_INTERN PetscErrorCode VecCUDAGetArrays_Private(Vec, const PetscScalar **, const PetscScalar **, PetscOffloadMask *);
+#endif
+
+#if PetscDefined(HAVE_HIP)
+PETSC_INTERN PetscErrorCode VecCreate_HIP(Vec);
+PETSC_INTERN PetscErrorCode VecCreate_SeqHIP(Vec);
+PETSC_INTERN PetscErrorCode VecCreate_MPIHIP(Vec);
+PETSC_INTERN PetscErrorCode VecHIPGetArrays_Private(Vec, const PetscScalar **, const PetscScalar **, PetscOffloadMask *);
+#endif
+
 #if defined(PETSC_HAVE_KOKKOS)
 PETSC_INTERN PetscErrorCode VecCreateSeqKokkosWithArrays_Private(MPI_Comm, PetscInt, PetscInt, const PetscScalar *, const PetscScalar *, Vec *);
 PETSC_INTERN PetscErrorCode VecCreateMPIKokkosWithArrays_Private(MPI_Comm, PetscInt, PetscInt, PetscInt, const PetscScalar *, const PetscScalar *, Vec *);
@@ -364,7 +384,8 @@ PETSC_INTERN PetscErrorCode VecCreateMPIKokkosWithArrays_Private(MPI_Comm, Petsc
 /* std::upper_bound(): Given a sorted array, return index of the first element in range [first,last) whose value
    is greater than value, or last if there is no such element.
 */
-static inline PetscErrorCode PetscSortedIntUpperBound(PetscInt *array, PetscCount first, PetscCount last, PetscInt value, PetscCount *upper) {
+static inline PetscErrorCode PetscSortedIntUpperBound(PetscInt *array, PetscCount first, PetscCount last, PetscInt value, PetscCount *upper)
+{
   PetscCount it, step, count = last - first;
 
   PetscFunctionBegin;

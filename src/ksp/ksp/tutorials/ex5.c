@@ -16,7 +16,8 @@ also uses multiple profiling stages.  Input arguments are\n\
 */
 #include <petscksp.h>
 
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   KSP         ksp;         /* linear solver context */
   Mat         C;           /* matrix */
   Vec         x, u, b;     /* approx solution, RHS, exact solution */

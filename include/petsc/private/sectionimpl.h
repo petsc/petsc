@@ -1,4 +1,4 @@
-#if !defined(PETSCSECTIONIMPL_H)
+#ifndef PETSCSECTIONIMPL_H
 #define PETSCSECTIONIMPL_H
 
 #include <petscsection.h>
@@ -13,11 +13,13 @@ typedef struct {
   PetscInt *perm, *invPerm;
 } PetscSectionClosurePermVal;
 
-static inline PetscHash_t PetscSectionClosurePermHash(PetscSectionClosurePermKey k) {
+static inline PetscHash_t PetscSectionClosurePermHash(PetscSectionClosurePermKey k)
+{
   return PetscHashCombine(PetscHashInt(k.depth), PetscHashInt(k.size));
 }
 
-static inline int PetscSectionClosurePermEqual(PetscSectionClosurePermKey k1, PetscSectionClosurePermKey k2) {
+static inline int PetscSectionClosurePermEqual(PetscSectionClosurePermKey k1, PetscSectionClosurePermKey k2)
+{
   return k1.depth == k2.depth && k1.size == k2.size;
 }
 
@@ -84,7 +86,8 @@ PETSC_INTERN PetscErrorCode PetscSectionView_HDF5_Internal(PetscSection, PetscVi
 PETSC_INTERN PetscErrorCode PetscSectionLoad_HDF5_Internal(PetscSection, PetscViewer);
 #endif
 
-static inline PetscErrorCode PetscSectionCheckConstraints_Private(PetscSection s) {
+static inline PetscErrorCode PetscSectionCheckConstraints_Private(PetscSection s)
+{
   PetscFunctionBegin;
   if (!s->bc) {
     PetscCall(PetscSectionCreate(PETSC_COMM_SELF, &s->bc));
@@ -94,7 +97,8 @@ static inline PetscErrorCode PetscSectionCheckConstraints_Private(PetscSection s
 }
 
 /* Call this if you directly modify atlasDof so that maxDof gets recalculated on next PetscSectionGetMaxDof() */
-static inline PetscErrorCode PetscSectionInvalidateMaxDof_Internal(PetscSection s) {
+static inline PetscErrorCode PetscSectionInvalidateMaxDof_Internal(PetscSection s)
+{
   PetscFunctionBegin;
   s->maxDof = PETSC_MIN_INT;
   PetscFunctionReturn(0);
@@ -104,12 +108,14 @@ static inline PetscErrorCode PetscSectionInvalidateMaxDof_Internal(PetscSection 
 void PetscSectionCheckValidField(PetscInt, PetscInt);
 void PetscSectionCheckValidFieldComponent(PetscInt, PetscInt);
 #else
-#define PetscSectionCheckValid_(description, item, nitems) \
-  do { PetscCheck(((item) >= 0) && ((item) < (nitems)), PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid " description " %" PetscInt_FMT "; not in [0, %" PetscInt_FMT ")", (item), (nitems)); } while (0)
+  #define PetscSectionCheckValid_(description, item, nitems) \
+    do { \
+      PetscCheck(((item) >= 0) && ((item) < (nitems)), PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid " description " %" PetscInt_FMT "; not in [0, %" PetscInt_FMT ")", (item), (nitems)); \
+    } while (0)
 
-#define PetscSectionCheckValidFieldComponent(comp, nfieldcomp) PetscSectionCheckValid_("section field component", comp, nfieldcomp)
+  #define PetscSectionCheckValidFieldComponent(comp, nfieldcomp) PetscSectionCheckValid_("section field component", comp, nfieldcomp)
 
-#define PetscSectionCheckValidField(field, nfields) PetscSectionCheckValid_("field number", field, nfields)
+  #define PetscSectionCheckValidField(field, nfields) PetscSectionCheckValid_("field number", field, nfields)
 #endif /* PETSC_CLANG_STATIC_ANALYZER */
 
 #endif /* PETSCSECTIONIMPL_H */

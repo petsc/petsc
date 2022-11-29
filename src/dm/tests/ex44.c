@@ -5,7 +5,8 @@ static char help[] = "Tests various DMComposite routines.\n\n";
 #include <petscdmda.h>
 #include <petscdmcomposite.h>
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscMPIInt rank;
   DM          da1, da2, packer;
   Vec         local, global, globals[2], buffer;

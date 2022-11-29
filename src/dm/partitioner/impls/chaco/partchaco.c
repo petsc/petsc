@@ -17,7 +17,8 @@ typedef struct {
   PetscInt dummy;
 } PetscPartitioner_Chaco;
 
-static PetscErrorCode PetscPartitionerDestroy_Chaco(PetscPartitioner part) {
+static PetscErrorCode PetscPartitionerDestroy_Chaco(PetscPartitioner part)
+{
   PetscPartitioner_Chaco *p = (PetscPartitioner_Chaco *)part->data;
 
   PetscFunctionBegin;
@@ -25,12 +26,14 @@ static PetscErrorCode PetscPartitionerDestroy_Chaco(PetscPartitioner part) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscPartitionerView_Chaco_ASCII(PetscPartitioner part, PetscViewer viewer) {
+static PetscErrorCode PetscPartitionerView_Chaco_ASCII(PetscPartitioner part, PetscViewer viewer)
+{
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscPartitionerView_Chaco(PetscPartitioner part, PetscViewer viewer) {
+static PetscErrorCode PetscPartitionerView_Chaco(PetscPartitioner part, PetscViewer viewer)
+{
   PetscBool iascii;
 
   PetscFunctionBegin;
@@ -42,19 +45,20 @@ static PetscErrorCode PetscPartitionerView_Chaco(PetscPartitioner part, PetscVie
 }
 
 #if defined(PETSC_HAVE_CHACO)
-#if defined(PETSC_HAVE_UNISTD_H)
-#include <unistd.h>
-#endif
-#if defined(PETSC_HAVE_CHACO_INT_ASSIGNMENT)
-#include <chaco.h>
-#else
+  #if defined(PETSC_HAVE_UNISTD_H)
+    #include <unistd.h>
+  #endif
+  #if defined(PETSC_HAVE_CHACO_INT_ASSIGNMENT)
+    #include <chaco.h>
+  #else
 /* Older versions of Chaco do not have an include file */
 PETSC_EXTERN int interface(int nvtxs, int *start, int *adjacency, int *vwgts, float *ewgts, float *x, float *y, float *z, char *outassignname, char *outfilename, short *assignment, int architecture, int ndims_tot, int mesh_dims[3], double *goal, int global_method, int local_method, int rqi_flag, int vmax, int ndims, double eigtol, long seed);
-#endif
+  #endif
 extern int FREE_GRAPH;
 #endif
 
-static PetscErrorCode PetscPartitionerPartition_Chaco(PetscPartitioner part, PetscInt nparts, PetscInt numVertices, PetscInt start[], PetscInt adjacency[], PetscSection vertSection, PetscSection targetSection, PetscSection partSection, IS *partition) {
+static PetscErrorCode PetscPartitionerPartition_Chaco(PetscPartitioner part, PetscInt nparts, PetscInt numVertices, PetscInt start[], PetscInt adjacency[], PetscSection vertSection, PetscSection targetSection, PetscSection partSection, IS *partition)
+{
 #if defined(PETSC_HAVE_CHACO)
   enum {
     DEFAULT_METHOD  = 1,
@@ -78,11 +82,11 @@ static PetscErrorCode PetscPartitionerPartition_Chaco(PetscPartitioner part, Pet
   int      ndims         = 1;              /* number of eigenvectors (2^d sets) */
   double   eigtol        = 0.001;          /* tolerance on eigenvectors */
   long     seed          = 123636512;      /* for random graph mutations */
-#if defined(PETSC_HAVE_CHACO_INT_ASSIGNMENT)
+  #if defined(PETSC_HAVE_CHACO_INT_ASSIGNMENT)
   int *assignment; /* Output partition */
-#else
+  #else
   short int *assignment; /* Output partition */
-#endif
+  #endif
   int       fd_stdout, fd_pipe[2];
   PetscInt *points;
   int       i, v, p;
@@ -115,7 +119,7 @@ static PetscErrorCode PetscPartitionerPartition_Chaco(PetscPartitioner part, Pet
   PetscCall(PetscMalloc1(nvtxs, &assignment));
   /* Chaco outputs to stdout. We redirect this to a buffer. */
   /* TODO: check error codes for UNIX calls */
-#if defined(PETSC_HAVE_UNISTD_H)
+  #if defined(PETSC_HAVE_UNISTD_H)
   {
     int piperet;
     piperet = pipe(fd_pipe);
@@ -124,10 +128,10 @@ static PetscErrorCode PetscPartitionerPartition_Chaco(PetscPartitioner part, Pet
     close(1);
     dup2(fd_pipe[1], 1);
   }
-#endif
+  #endif
   if (part->usevwgt) PetscCall(PetscInfo(part, "PETSCPARTITIONERCHACO ignores vertex weights\n"));
   err = interface(nvtxs, (int *)start, (int *)adjacency, vwgts, ewgts, x, y, z, outassignname, outfilename, assignment, architecture, ndims_tot, mesh_dims, goal, global_method, local_method, rqi_flag, vmax, ndims, eigtol, seed);
-#if defined(PETSC_HAVE_UNISTD_H)
+  #if defined(PETSC_HAVE_UNISTD_H)
   {
     char msgLog[10000];
     int  count;
@@ -143,9 +147,9 @@ static PetscErrorCode PetscPartitionerPartition_Chaco(PetscPartitioner part, Pet
     close(fd_pipe[1]);
     PetscCheck(!err, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in Chaco library: %s", msgLog);
   }
-#else
+  #else
   PetscCheck(!err, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in Chaco library: %s", "error in stdout");
-#endif
+  #endif
   /* Convert to PetscSection+IS */
   for (v = 0; v < nvtxs; ++v) PetscCall(PetscSectionAddDof(partSection, assignment[v], 1));
   PetscCall(PetscMalloc1(nvtxs, &points));
@@ -166,7 +170,8 @@ static PetscErrorCode PetscPartitionerPartition_Chaco(PetscPartitioner part, Pet
 #endif
 }
 
-static PetscErrorCode PetscPartitionerInitialize_Chaco(PetscPartitioner part) {
+static PetscErrorCode PetscPartitionerInitialize_Chaco(PetscPartitioner part)
+{
   PetscFunctionBegin;
   part->noGraph        = PETSC_FALSE;
   part->ops->view      = PetscPartitionerView_Chaco;
@@ -183,12 +188,13 @@ static PetscErrorCode PetscPartitionerInitialize_Chaco(PetscPartitioner part) {
 .seealso: `PetscPartitionerType`, `PetscPartitionerCreate()`, `PetscPartitionerSetType()`
 M*/
 
-PETSC_EXTERN PetscErrorCode PetscPartitionerCreate_Chaco(PetscPartitioner part) {
+PETSC_EXTERN PetscErrorCode PetscPartitionerCreate_Chaco(PetscPartitioner part)
+{
   PetscPartitioner_Chaco *p;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part, PETSCPARTITIONER_CLASSID, 1);
-  PetscCall(PetscNewLog(part, &p));
+  PetscCall(PetscNew(&p));
   part->data = p;
 
   PetscCall(PetscPartitionerInitialize_Chaco(part));

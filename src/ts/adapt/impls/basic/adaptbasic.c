@@ -1,7 +1,8 @@
 #include <petsc/private/tsimpl.h> /*I "petscts.h" I*/
 #include <petscdm.h>
 
-static PetscErrorCode TSAdaptChoose_Basic(TSAdapt adapt, TS ts, PetscReal h, PetscInt *next_sc, PetscReal *next_h, PetscBool *accept, PetscReal *wlte, PetscReal *wltea, PetscReal *wlter) {
+static PetscErrorCode TSAdaptChoose_Basic(TSAdapt adapt, TS ts, PetscReal h, PetscInt *next_sc, PetscReal *next_h, PetscBool *accept, PetscReal *wlte, PetscReal *wltea, PetscReal *wlter)
+{
   Vec       Y;
   DM        dm;
   PetscInt  order = PETSC_DECIDE;
@@ -73,9 +74,10 @@ static PetscErrorCode TSAdaptChoose_Basic(TSAdapt adapt, TS ts, PetscReal h, Pet
 
    Level: intermediate
 
-.seealso: `TS`, `TSAdapt`, `TSGetAdapt()`
+.seealso: [](chapter_ts), `TS`, `TSAdapt`, `TSGetAdapt()`, `TSAdaptType`
 M*/
-PETSC_EXTERN PetscErrorCode TSAdaptCreate_Basic(TSAdapt adapt) {
+PETSC_EXTERN PetscErrorCode TSAdaptCreate_Basic(TSAdapt adapt)
+{
   PetscFunctionBegin;
   adapt->ops->choose = TSAdaptChoose_Basic;
   PetscFunctionReturn(0);

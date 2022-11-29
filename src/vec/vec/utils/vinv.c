@@ -25,7 +25,8 @@
 
 .seealso: `VecNorm()`, `VecStrideGather()`, `VecStrideScatter()`, `VecStrideMin()`, `VecStrideMax()`, `VecStrideScale()`
 @*/
-PetscErrorCode VecStrideSet(Vec v, PetscInt start, PetscScalar s) {
+PetscErrorCode VecStrideSet(Vec v, PetscInt start, PetscScalar s)
+{
   PetscInt     i, n, bs;
   PetscScalar *x;
 
@@ -62,7 +63,8 @@ PetscErrorCode VecStrideSet(Vec v, PetscInt start, PetscScalar s) {
 
 .seealso: `VecNorm()`, `VecStrideGather()`, `VecStrideScatter()`, `VecStrideMin()`, `VecStrideMax()`, `VecStrideScale()`
 @*/
-PetscErrorCode VecStrideScale(Vec v, PetscInt start, PetscScalar scale) {
+PetscErrorCode VecStrideScale(Vec v, PetscInt start, PetscScalar scale)
+{
   PetscInt     i, n, bs;
   PetscScalar *x;
 
@@ -108,7 +110,8 @@ PetscErrorCode VecStrideScale(Vec v, PetscInt start, PetscScalar scale) {
 
 .seealso: `VecNorm()`, `VecStrideGather()`, `VecStrideScatter()`, `VecStrideMin()`, `VecStrideMax()`
 @*/
-PetscErrorCode VecStrideNorm(Vec v, PetscInt start, NormType ntype, PetscReal *nrm) {
+PetscErrorCode VecStrideNorm(Vec v, PetscInt start, NormType ntype, PetscReal *nrm)
+{
   PetscInt           i, n, bs;
   const PetscScalar *x;
   PetscReal          tnorm;
@@ -172,7 +175,8 @@ PetscErrorCode VecStrideNorm(Vec v, PetscInt start, NormType ntype, PetscReal *n
 
 .seealso: `VecMax()`, `VecStrideNorm()`, `VecStrideGather()`, `VecStrideScatter()`, `VecStrideMin()`
 @*/
-PetscErrorCode VecStrideMax(Vec v, PetscInt start, PetscInt *idex, PetscReal *nrm) {
+PetscErrorCode VecStrideMax(Vec v, PetscInt start, PetscInt *idex, PetscReal *nrm)
+{
   PetscInt           i, n, bs, id = -1;
   const PetscScalar *x;
   PetscReal          max = PETSC_MIN_REAL;
@@ -245,7 +249,8 @@ PetscErrorCode VecStrideMax(Vec v, PetscInt start, PetscInt *idex, PetscReal *nr
 
 .seealso: `VecMin()`, `VecStrideNorm()`, `VecStrideGather()`, `VecStrideScatter()`, `VecStrideMax()`
 @*/
-PetscErrorCode VecStrideMin(Vec v, PetscInt start, PetscInt *idex, PetscReal *nrm) {
+PetscErrorCode VecStrideMin(Vec v, PetscInt start, PetscInt *idex, PetscReal *nrm)
+{
   PetscInt           i, n, bs, id = -1;
   const PetscScalar *x;
   PetscReal          min = PETSC_MAX_REAL;
@@ -313,7 +318,8 @@ PetscErrorCode VecStrideMin(Vec v, PetscInt start, PetscInt *idex, PetscReal *nr
 
 .seealso: `VecSum()`, `VecStrideGather()`, `VecStrideScatter()`, `VecStrideMin()`, `VecStrideMax()`
 @*/
-PetscErrorCode VecStrideSum(Vec v, PetscInt start, PetscScalar *sum) {
+PetscErrorCode VecStrideSum(Vec v, PetscInt start, PetscScalar *sum)
+{
   PetscInt           i, n, bs;
   const PetscScalar *x;
   PetscScalar        local_sum = 0.0;
@@ -352,7 +358,8 @@ PetscErrorCode VecStrideSum(Vec v, PetscInt start, PetscScalar *sum) {
 
 .seealso: `VecNorm()`, `VecStrideScale()`, `VecScale()`, `VecStrideGather()`, `VecStrideScatter()`, `VecStrideMin()`, `VecStrideMax()`
 @*/
-PetscErrorCode VecStrideScaleAll(Vec v, const PetscScalar *scales) {
+PetscErrorCode VecStrideScaleAll(Vec v, const PetscScalar *scales)
+{
   PetscInt     i, j, n, bs;
   PetscScalar *x;
 
@@ -398,7 +405,8 @@ PetscErrorCode VecStrideScaleAll(Vec v, const PetscScalar *scales) {
 
 .seealso: `VecNorm()`, `VecStrideGather()`, `VecStrideScatter()`, `VecStrideMin()`, `VecStrideMax()`
 @*/
-PetscErrorCode VecStrideNormAll(Vec v, NormType ntype, PetscReal nrm[]) {
+PetscErrorCode VecStrideNormAll(Vec v, NormType ntype, PetscReal nrm[])
+{
   PetscInt           i, j, n, bs;
   const PetscScalar *x;
   PetscReal          tnorm[128];
@@ -477,7 +485,8 @@ PetscErrorCode VecStrideNormAll(Vec v, NormType ntype, PetscReal nrm[]) {
 
 .seealso: `VecMax()`, `VecStrideNorm()`, `VecStrideGather()`, `VecStrideScatter()`, `VecStrideMin()`
 @*/
-PetscErrorCode VecStrideMaxAll(Vec v, PetscInt idex[], PetscReal nrm[]) {
+PetscErrorCode VecStrideMaxAll(Vec v, PetscInt idex[], PetscReal nrm[])
+{
   PetscInt           i, j, n, bs;
   const PetscScalar *x;
   PetscReal          max[128], tmp;
@@ -535,7 +544,8 @@ PetscErrorCode VecStrideMaxAll(Vec v, PetscInt idex[], PetscReal nrm[]) {
 
 .seealso: `VecMin()`, `VecStrideNorm()`, `VecStrideGather()`, `VecStrideScatter()`, `VecStrideMax()`
 @*/
-PetscErrorCode VecStrideMinAll(Vec v, PetscInt idex[], PetscReal nrm[]) {
+PetscErrorCode VecStrideMinAll(Vec v, PetscInt idex[], PetscReal nrm[])
+{
   PetscInt           i, n, bs, j;
   const PetscScalar *x;
   PetscReal          min[128], tmp;
@@ -591,7 +601,8 @@ PetscErrorCode VecStrideMinAll(Vec v, PetscInt idex[], PetscReal nrm[]) {
 
 .seealso: `VecSum()`, `VecStrideGather()`, `VecStrideScatter()`, `VecStrideMin()`, `VecStrideMax()`
 @*/
-PetscErrorCode VecStrideSumAll(Vec v, PetscScalar sums[]) {
+PetscErrorCode VecStrideSumAll(Vec v, PetscScalar sums[])
+{
   PetscInt           i, j, n, bs;
   const PetscScalar *x;
   PetscScalar        local_sums[128];
@@ -649,7 +660,8 @@ PetscErrorCode VecStrideSumAll(Vec v, PetscScalar sums[]) {
 .seealso: `VecStrideNorm()`, `VecStrideScatter()`, `VecStrideMin()`, `VecStrideMax()`, `VecStrideGather()`,
           `VecStrideScatterAll()`
 @*/
-PetscErrorCode VecStrideGatherAll(Vec v, Vec s[], InsertMode addv) {
+PetscErrorCode VecStrideGatherAll(Vec v, Vec s[], InsertMode addv)
+{
   PetscInt           i, n, n2, bs, j, k, *bss = NULL, nv, jj, nvc;
   PetscScalar      **y;
   const PetscScalar *x;
@@ -739,7 +751,8 @@ PetscErrorCode VecStrideGatherAll(Vec v, Vec s[], InsertMode addv) {
 .seealso: `VecStrideNorm()`, `VecStrideScatter()`, `VecStrideMin()`, `VecStrideMax()`, `VecStrideGather()`,
           `VecStrideScatterAll()`
 @*/
-PetscErrorCode VecStrideScatterAll(Vec s[], Vec v, InsertMode addv) {
+PetscErrorCode VecStrideScatterAll(Vec s[], Vec v, InsertMode addv)
+{
   PetscInt            i, n, n2, bs, j, jj, k, *bss = NULL, nv, nvc;
   PetscScalar        *x;
   PetscScalar const **y;
@@ -832,7 +845,8 @@ PetscErrorCode VecStrideScatterAll(Vec s[], Vec v, InsertMode addv) {
 .seealso: `VecStrideNorm()`, `VecStrideScatter()`, `VecStrideMin()`, `VecStrideMax()`, `VecStrideGatherAll()`,
           `VecStrideScatterAll()`
 @*/
-PetscErrorCode VecStrideGather(Vec v, PetscInt start, Vec s, InsertMode addv) {
+PetscErrorCode VecStrideGather(Vec v, PetscInt start, Vec s, InsertMode addv)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v, VEC_CLASSID, 1);
   PetscValidHeaderSpecific(s, VEC_CLASSID, 3);
@@ -870,7 +884,8 @@ PetscErrorCode VecStrideGather(Vec v, PetscInt start, Vec s, InsertMode addv) {
 .seealso: `VecStrideNorm()`, `VecStrideGather()`, `VecStrideMin()`, `VecStrideMax()`, `VecStrideGatherAll()`,
           `VecStrideScatterAll()`, `VecStrideSubSetScatter()`, `VecStrideSubSetGather()`
 @*/
-PetscErrorCode VecStrideScatter(Vec s, PetscInt start, Vec v, InsertMode addv) {
+PetscErrorCode VecStrideScatter(Vec s, PetscInt start, Vec v, InsertMode addv)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(s, VEC_CLASSID, 1);
   PetscValidHeaderSpecific(v, VEC_CLASSID, 3);
@@ -910,7 +925,8 @@ PetscErrorCode VecStrideScatter(Vec s, PetscInt start, Vec v, InsertMode addv) {
 .seealso: `VecStrideNorm()`, `VecStrideScatter()`, `VecStrideGather()`, `VecStrideSubSetScatter()`, `VecStrideMin()`, `VecStrideMax()`, `VecStrideGatherAll()`,
           `VecStrideScatterAll()`
 @*/
-PetscErrorCode VecStrideSubSetGather(Vec v, PetscInt nidx, const PetscInt idxv[], const PetscInt idxs[], Vec s, InsertMode addv) {
+PetscErrorCode VecStrideSubSetGather(Vec v, PetscInt nidx, const PetscInt idxv[], const PetscInt idxs[], Vec s, InsertMode addv)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v, VEC_CLASSID, 1);
   PetscValidHeaderSpecific(s, VEC_CLASSID, 5);
@@ -947,7 +963,8 @@ PetscErrorCode VecStrideSubSetGather(Vec v, PetscInt nidx, const PetscInt idxv[]
 .seealso: `VecStrideNorm()`, `VecStrideGather()`, `VecStrideGather()`, `VecStrideSubSetGather()`, `VecStrideMin()`, `VecStrideMax()`, `VecStrideGatherAll()`,
           `VecStrideScatterAll()`
 @*/
-PetscErrorCode VecStrideSubSetScatter(Vec s, PetscInt nidx, const PetscInt idxs[], const PetscInt idxv[], Vec v, InsertMode addv) {
+PetscErrorCode VecStrideSubSetScatter(Vec s, PetscInt nidx, const PetscInt idxs[], const PetscInt idxv[], Vec v, InsertMode addv)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(s, VEC_CLASSID, 1);
   PetscValidHeaderSpecific(v, VEC_CLASSID, 5);
@@ -956,7 +973,8 @@ PetscErrorCode VecStrideSubSetScatter(Vec s, PetscInt nidx, const PetscInt idxs[
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode VecStrideGather_Default(Vec v, PetscInt start, Vec s, InsertMode addv) {
+PetscErrorCode VecStrideGather_Default(Vec v, PetscInt start, Vec s, InsertMode addv)
+{
   PetscInt           i, n, bs, ns;
   const PetscScalar *x;
   PetscScalar       *y;
@@ -987,7 +1005,8 @@ PetscErrorCode VecStrideGather_Default(Vec v, PetscInt start, Vec s, InsertMode 
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode VecStrideScatter_Default(Vec s, PetscInt start, Vec v, InsertMode addv) {
+PetscErrorCode VecStrideScatter_Default(Vec s, PetscInt start, Vec v, InsertMode addv)
+{
   PetscInt           i, n, bs, ns;
   PetscScalar       *x;
   const PetscScalar *y;
@@ -1018,7 +1037,8 @@ PetscErrorCode VecStrideScatter_Default(Vec s, PetscInt start, Vec v, InsertMode
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode VecStrideSubSetGather_Default(Vec v, PetscInt nidx, const PetscInt idxv[], const PetscInt idxs[], Vec s, InsertMode addv) {
+PetscErrorCode VecStrideSubSetGather_Default(Vec v, PetscInt nidx, const PetscInt idxv[], const PetscInt idxs[], Vec s, InsertMode addv)
+{
   PetscInt           i, j, n, bs, bss, ns;
   const PetscScalar *x;
   PetscScalar       *y;
@@ -1081,7 +1101,8 @@ PetscErrorCode VecStrideSubSetGather_Default(Vec v, PetscInt nidx, const PetscIn
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode VecStrideSubSetScatter_Default(Vec s, PetscInt nidx, const PetscInt idxs[], const PetscInt idxv[], Vec v, InsertMode addv) {
+PetscErrorCode VecStrideSubSetScatter_Default(Vec s, PetscInt nidx, const PetscInt idxs[], const PetscInt idxv[], Vec v, InsertMode addv)
+{
   PetscInt           j, i, n, bs, ns, bss;
   PetscScalar       *x;
   const PetscScalar *y;
@@ -1146,18 +1167,44 @@ PetscErrorCode VecStrideSubSetScatter_Default(Vec s, PetscInt nidx, const PetscI
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode VecReciprocal_Default(Vec v) {
-  PetscInt     i, n;
-  PetscScalar *x;
-
+static PetscErrorCode VecApplyUnary_Private(Vec v, PetscErrorCode (*unary_op)(Vec), PetscScalar (*UnaryFunc)(PetscScalar))
+{
   PetscFunctionBegin;
-  PetscCall(VecGetLocalSize(v, &n));
-  PetscCall(VecGetArray(v, &x));
-  for (i = 0; i < n; i++) {
-    if (x[i] != (PetscScalar)0.0) x[i] = (PetscScalar)1.0 / x[i];
+  PetscValidHeaderSpecific(v, VEC_CLASSID, 1);
+  PetscCall(VecSetErrorIfLocked(v, 1));
+  if (unary_op) {
+    PetscValidFunction(unary_op, 2);
+    PetscCall((*unary_op)(v));
+  } else {
+    PetscInt     n;
+    PetscScalar *x;
+
+    PetscValidFunction(UnaryFunc, 3);
+    PetscCall(VecGetLocalSize(v, &n));
+    PetscCall(VecGetArray(v, &x));
+    for (PetscInt i = 0; i < n; ++i) x[i] = UnaryFunc(x[i]);
+    PetscCall(VecRestoreArray(v, &x));
   }
-  PetscCall(VecRestoreArray(v, &x));
   PetscFunctionReturn(0);
+}
+
+static PetscScalar ScalarReciprocal_Fn(PetscScalar x)
+{
+  const PetscScalar zero = 0.0;
+
+  return x == zero ? zero : ((PetscScalar)1.0) / x;
+}
+
+PetscErrorCode VecReciprocal_Default(Vec v)
+{
+  PetscFunctionBegin;
+  PetscCall(VecApplyUnary_Private(v, NULL, ScalarReciprocal_Fn));
+  PetscFunctionReturn(0);
+}
+
+static PetscScalar ScalarExp_Fn(PetscScalar x)
+{
+  return PetscExpScalar(x);
 }
 
 /*@
@@ -1176,20 +1223,17 @@ PetscErrorCode VecReciprocal_Default(Vec v) {
 .seealso: `VecLog()`, `VecAbs()`, `VecSqrtAbs()`, `VecReciprocal()`
 
 @*/
-PetscErrorCode VecExp(Vec v) {
-  PetscScalar *x;
-  PetscInt     i, n;
-
+PetscErrorCode VecExp(Vec v)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v, VEC_CLASSID, 1);
-  if (v->ops->exp) PetscUseTypeMethod(v, exp);
-  else {
-    PetscCall(VecGetLocalSize(v, &n));
-    PetscCall(VecGetArray(v, &x));
-    for (i = 0; i < n; i++) x[i] = PetscExpScalar(x[i]);
-    PetscCall(VecRestoreArray(v, &x));
-  }
+  PetscCall(VecApplyUnary_Private(v, v->ops->exp, ScalarExp_Fn));
   PetscFunctionReturn(0);
+}
+
+static PetscScalar ScalarLog_Fn(PetscScalar x)
+{
+  return PetscLogScalar(x);
 }
 
 /*@
@@ -1208,20 +1252,41 @@ PetscErrorCode VecExp(Vec v) {
 .seealso: `VecExp()`, `VecAbs()`, `VecSqrtAbs()`, `VecReciprocal()`
 
 @*/
-PetscErrorCode VecLog(Vec v) {
-  PetscScalar *x;
-  PetscInt     i, n;
-
+PetscErrorCode VecLog(Vec v)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v, VEC_CLASSID, 1);
-  if (v->ops->log) PetscUseTypeMethod(v, log);
-  else {
-    PetscCall(VecGetLocalSize(v, &n));
-    PetscCall(VecGetArray(v, &x));
-    for (i = 0; i < n; i++) x[i] = PetscLogScalar(x[i]);
-    PetscCall(VecRestoreArray(v, &x));
-  }
+  PetscCall(VecApplyUnary_Private(v, v->ops->log, ScalarLog_Fn));
   PetscFunctionReturn(0);
+}
+
+static PetscScalar ScalarAbs_Fn(PetscScalar x)
+{
+  return PetscAbsScalar(x);
+}
+
+/*@
+   VecAbs - Replaces every element in a vector with its absolute value.
+
+   Logically Collective on Vec
+
+   Input Parameters:
+.  v - the vector
+
+   Level: intermediate
+
+@*/
+PetscErrorCode VecAbs(Vec v)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(v, VEC_CLASSID, 1);
+  PetscCall(VecApplyUnary_Private(v, v->ops->abs, ScalarAbs_Fn));
+  PetscFunctionReturn(0);
+}
+
+static PetscScalar ScalarSqrtAbs_Fn(PetscScalar x)
+{
+  return PetscSqrtScalar(ScalarAbs_Fn(x));
 }
 
 /*@
@@ -1242,19 +1307,73 @@ PetscErrorCode VecLog(Vec v) {
 .seealso: `VecLog()`, `VecExp()`, `VecReciprocal()`, `VecAbs()`
 
 @*/
-PetscErrorCode VecSqrtAbs(Vec v) {
-  PetscScalar *x;
-  PetscInt     i, n;
-
+PetscErrorCode VecSqrtAbs(Vec v)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v, VEC_CLASSID, 1);
-  if (v->ops->sqrt) PetscUseTypeMethod(v, sqrt);
-  else {
-    PetscCall(VecGetLocalSize(v, &n));
-    PetscCall(VecGetArray(v, &x));
-    for (i = 0; i < n; i++) x[i] = PetscSqrtReal(PetscAbsScalar(x[i]));
-    PetscCall(VecRestoreArray(v, &x));
-  }
+  PetscCall(VecApplyUnary_Private(v, v->ops->sqrt, ScalarSqrtAbs_Fn));
+  PetscFunctionReturn(0);
+}
+
+static PetscScalar ScalarImaginaryPart_Fn(PetscScalar x)
+{
+  const PetscReal imag = PetscImaginaryPart(x);
+
+#if PetscDefined(USE_COMPLEX)
+  return PetscCMPLX(imag, 0.0);
+#else
+  return imag;
+#endif
+}
+
+/*@
+   VecImaginaryPart - Replaces a complex vector with its imginary part
+
+   Collective on Vec
+
+   Input Parameter:
+.  v - the vector
+
+   Level: beginner
+
+.seealso: `VecNorm()`, `VecRealPart()`
+@*/
+PetscErrorCode VecImaginaryPart(Vec v)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(v, VEC_CLASSID, 1);
+  PetscCall(VecApplyUnary_Private(v, NULL, ScalarImaginaryPart_Fn));
+  PetscFunctionReturn(0);
+}
+
+static PetscScalar ScalarRealPart_Fn(PetscScalar x)
+{
+  const PetscReal real = PetscRealPart(x);
+
+#if PetscDefined(USE_COMPLEX)
+  return PetscCMPLX(real, 0.0);
+#else
+  return real;
+#endif
+}
+
+/*@
+   VecRealPart - Replaces a complex vector with its real part
+
+   Collective on Vec
+
+   Input Parameter:
+.  v - the vector
+
+   Level: beginner
+
+.seealso: `VecNorm()`, `VecImaginaryPart()`
+@*/
+PetscErrorCode VecRealPart(Vec v)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(v, VEC_CLASSID, 1);
+  PetscCall(VecApplyUnary_Private(v, NULL, ScalarRealPart_Fn));
   PetscFunctionReturn(0);
 }
 
@@ -1279,10 +1398,9 @@ PetscErrorCode VecSqrtAbs(Vec v) {
 .seealso: `VecDot()`, `VecNorm()`, `VecDotBegin()`, `VecNormBegin()`, `VecDotEnd()`, `VecNormEnd()`
 
 @*/
-PetscErrorCode VecDotNorm2(Vec s, Vec t, PetscScalar *dp, PetscReal *nm) {
-  const PetscScalar *sx, *tx;
-  PetscScalar        dpx = 0.0, nmx = 0.0, work[2], sum[2];
-  PetscInt           i, n;
+PetscErrorCode VecDotNorm2(Vec s, Vec t, PetscScalar *dp, PetscReal *nm)
+{
+  PetscScalar work[] = {0.0, 0.0};
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(s, VEC_CLASSID, 1);
@@ -1297,29 +1415,28 @@ PetscErrorCode VecDotNorm2(Vec s, Vec t, PetscScalar *dp, PetscReal *nm) {
 
   PetscCall(PetscLogEventBegin(VEC_DotNorm2, s, t, 0, 0));
   if (s->ops->dotnorm2) {
-    PetscUseTypeMethod(s, dotnorm2, t, dp, &dpx);
-    *nm = PetscRealPart(dpx);
+    PetscUseTypeMethod(s, dotnorm2, t, work, work + 1);
   } else {
+    const PetscScalar *sx, *tx;
+    PetscInt           n;
+
     PetscCall(VecGetLocalSize(s, &n));
     PetscCall(VecGetArrayRead(s, &sx));
     PetscCall(VecGetArrayRead(t, &tx));
+    for (PetscInt i = 0; i < n; ++i) {
+      const PetscScalar txconj = PetscConj(tx[i]);
 
-    for (i = 0; i < n; i++) {
-      dpx += sx[i] * PetscConj(tx[i]);
-      nmx += tx[i] * PetscConj(tx[i]);
+      work[0] += sx[i] * txconj;
+      work[1] += tx[i] * txconj;
     }
-    work[0] = dpx;
-    work[1] = nmx;
-
-    PetscCall(MPIU_Allreduce(work, sum, 2, MPIU_SCALAR, MPIU_SUM, PetscObjectComm((PetscObject)s)));
-    *dp = sum[0];
-    *nm = PetscRealPart(sum[1]);
-
     PetscCall(VecRestoreArrayRead(t, &tx));
     PetscCall(VecRestoreArrayRead(s, &sx));
+    PetscCall(MPIU_Allreduce(MPI_IN_PLACE, work, 2, MPIU_SCALAR, MPIU_SUM, PetscObjectComm((PetscObject)s)));
     PetscCall(PetscLogFlops(4.0 * n));
   }
   PetscCall(PetscLogEventEnd(VEC_DotNorm2, s, t, 0, 0));
+  *dp = work[0];
+  *nm = PetscRealPart(work[1]);
   PetscFunctionReturn(0);
 }
 
@@ -1338,23 +1455,26 @@ PetscErrorCode VecDotNorm2(Vec s, Vec t, PetscScalar *dp, PetscReal *nm) {
 
 .seealso: `VecMean()`, `VecNorm()`
 @*/
-PetscErrorCode VecSum(Vec v, PetscScalar *sum) {
-  PetscInt           i, n;
-  const PetscScalar *x;
+PetscErrorCode VecSum(Vec v, PetscScalar *sum)
+{
+  PetscScalar tmp = 0.0;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v, VEC_CLASSID, 1);
   PetscValidScalarPointer(sum, 2);
-  *sum = 0.0;
   if (v->ops->sum) {
-    PetscUseTypeMethod(v, sum, sum);
+    PetscUseTypeMethod(v, sum, &tmp);
   } else {
+    const PetscScalar *x;
+    PetscInt           n;
+
     PetscCall(VecGetLocalSize(v, &n));
     PetscCall(VecGetArrayRead(v, &x));
-    for (i = 0; i < n; i++) *sum += x[i];
+    for (PetscInt i = 0; i < n; ++i) tmp += x[i];
     PetscCall(VecRestoreArrayRead(v, &x));
   }
-  PetscCall(MPIU_Allreduce(MPI_IN_PLACE, sum, 1, MPIU_SCALAR, MPIU_SUM, PetscObjectComm((PetscObject)v)));
+  PetscCall(MPIU_Allreduce(MPI_IN_PLACE, &tmp, 1, MPIU_SCALAR, MPIU_SUM, PetscObjectComm((PetscObject)v)));
+  *sum = tmp;
   PetscFunctionReturn(0);
 }
 
@@ -1373,7 +1493,8 @@ PetscErrorCode VecSum(Vec v, PetscScalar *sum) {
 
 .seealso: `VecSum()`, `VecNorm()`
 @*/
-PetscErrorCode VecMean(Vec v, PetscScalar *mean) {
+PetscErrorCode VecMean(Vec v, PetscScalar *mean)
+{
   PetscInt n;
 
   PetscFunctionBegin;
@@ -1382,56 +1503,6 @@ PetscErrorCode VecMean(Vec v, PetscScalar *mean) {
   PetscCall(VecGetSize(v, &n));
   PetscCall(VecSum(v, mean));
   *mean /= n;
-  PetscFunctionReturn(0);
-}
-
-/*@
-   VecImaginaryPart - Replaces a complex vector with its imginary part
-
-   Collective on Vec
-
-   Input Parameter:
-.  v - the vector
-
-   Level: beginner
-
-.seealso: `VecNorm()`, `VecRealPart()`
-@*/
-PetscErrorCode VecImaginaryPart(Vec v) {
-  PetscInt     i, n;
-  PetscScalar *x;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(v, VEC_CLASSID, 1);
-  PetscCall(VecGetLocalSize(v, &n));
-  PetscCall(VecGetArray(v, &x));
-  for (i = 0; i < n; i++) x[i] = PetscImaginaryPart(x[i]);
-  PetscCall(VecRestoreArray(v, &x));
-  PetscFunctionReturn(0);
-}
-
-/*@
-   VecRealPart - Replaces a complex vector with its real part
-
-   Collective on Vec
-
-   Input Parameter:
-.  v - the vector
-
-   Level: beginner
-
-.seealso: `VecNorm()`, `VecImaginaryPart()`
-@*/
-PetscErrorCode VecRealPart(Vec v) {
-  PetscInt     i, n;
-  PetscScalar *x;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(v, VEC_CLASSID, 1);
-  PetscCall(VecGetLocalSize(v, &n));
-  PetscCall(VecGetArray(v, &x));
-  for (i = 0; i < n; i++) x[i] = PetscRealPart(x[i]);
-  PetscCall(VecRestoreArray(v, &x));
   PetscFunctionReturn(0);
 }
 
@@ -1448,51 +1519,23 @@ PetscErrorCode VecRealPart(Vec v) {
    Level: intermediate
 
 @*/
-PetscErrorCode VecShift(Vec v, PetscScalar shift) {
-  PetscInt     i, n;
-  PetscScalar *x;
-
+PetscErrorCode VecShift(Vec v, PetscScalar shift)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v, VEC_CLASSID, 1);
   PetscValidLogicalCollectiveScalar(v, shift, 2);
   PetscCall(VecSetErrorIfLocked(v, 1));
-  if (shift == 0.0) PetscFunctionReturn(0);
+  if (shift == (PetscScalar)0.0) PetscFunctionReturn(0);
 
-  if (v->ops->shift) PetscUseTypeMethod(v, shift, shift);
-  else {
-    PetscCall(VecGetLocalSize(v, &n));
-    PetscCall(VecGetArray(v, &x));
-    for (i = 0; i < n; i++) x[i] += shift;
-    PetscCall(VecRestoreArray(v, &x));
-  }
-  PetscFunctionReturn(0);
-}
-
-/*@
-   VecAbs - Replaces every element in a vector with its absolute value.
-
-   Logically Collective on Vec
-
-   Input Parameters:
-.  v - the vector
-
-   Level: intermediate
-
-@*/
-PetscErrorCode VecAbs(Vec v) {
-  PetscInt     i, n;
-  PetscScalar *x;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(v, VEC_CLASSID, 1);
-  PetscCall(VecSetErrorIfLocked(v, 1));
-
-  if (v->ops->abs) {
-    PetscUseTypeMethod(v, abs);
+  if (v->ops->shift) {
+    PetscUseTypeMethod(v, shift, shift);
   } else {
+    PetscInt     n;
+    PetscScalar *x;
+
     PetscCall(VecGetLocalSize(v, &n));
     PetscCall(VecGetArray(v, &x));
-    for (i = 0; i < n; i++) x[i] = PetscAbsScalar(x[i]);
+    for (PetscInt i = 0; i < n; ++i) x[i] += shift;
     PetscCall(VecRestoreArray(v, &x));
   }
   PetscFunctionReturn(0);
@@ -1512,7 +1555,8 @@ PetscErrorCode VecAbs(Vec v) {
 
 .seealso: `MatPermute()`
 @*/
-PetscErrorCode VecPermute(Vec x, IS row, PetscBool inv) {
+PetscErrorCode VecPermute(Vec x, IS row, PetscBool inv)
+{
   const PetscScalar *array;
   PetscScalar       *newArray;
   const PetscInt    *idx;
@@ -1556,7 +1600,8 @@ PetscErrorCode VecPermute(Vec x, IS row, PetscBool inv) {
 
    Level: intermediate
 @*/
-PetscErrorCode VecEqual(Vec vec1, Vec vec2, PetscBool *flg) {
+PetscErrorCode VecEqual(Vec vec1, Vec vec2, PetscBool *flg)
+{
   const PetscScalar *v1, *v2;
   PetscInt           n1, n2, N1, N2;
   PetscBool          flg1;
@@ -1603,7 +1648,8 @@ PetscErrorCode VecEqual(Vec vec1, Vec vec2, PetscBool *flg) {
    Level: intermediate
 
 @*/
-PetscErrorCode VecUniqueEntries(Vec vec, PetscInt *n, PetscScalar **e) {
+PetscErrorCode VecUniqueEntries(Vec vec, PetscInt *n, PetscScalar **e)
+{
   const PetscScalar *v;
   PetscScalar       *tmp, *vals;
   PetscMPIInt       *N, *displs, l;

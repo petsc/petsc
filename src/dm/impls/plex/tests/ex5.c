@@ -398,7 +398,8 @@ typedef struct {
   PetscInt  cohesiveFields; /* The number of cohesive fields */
 } AppCtx;
 
-static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options) {
+static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
+{
   PetscFunctionBegin;
   options->debug          = 0;
   options->dim            = 2;
@@ -418,7 +419,8 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode CreateSimplex_2D(MPI_Comm comm, PetscInt testNum, DM *dm) {
+static PetscErrorCode CreateSimplex_2D(MPI_Comm comm, PetscInt testNum, DM *dm)
+{
   DM          idm;
   PetscInt    p;
   PetscMPIInt rank;
@@ -467,7 +469,7 @@ static PetscErrorCode CreateSimplex_2D(MPI_Comm comm, PetscInt testNum, DM *dm) 
       PetscInt    cones[18]            = {6, 7, 9, 9, 12, 11, 7, 12, 9, 7, 8, 10, 10, 13, 12, 7, 10, 12};
       PetscInt    coneOrientations[18] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
       PetscScalar vertexCoords[16]     = {
-            -1., -1., 0., -1., 1., -1., -1., 0., 1., 0., -1., 1., 0., 1., 1., 1.,
+        -1., -1., 0., -1., 1., -1., -1., 0., 1., 0., -1., 1., 0., 1., 1., 1.,
       };
       PetscInt markerPoints[16] = {6, 1, 7, 1, 8, 1, 9, 1, 10, 1, 11, 1, 12, 1, 13, 1};
       PetscInt faultPoints[2]   = {7, 12};
@@ -504,7 +506,8 @@ static PetscErrorCode CreateSimplex_2D(MPI_Comm comm, PetscInt testNum, DM *dm) 
       PetscCall(DMSetLabelValue(*dm, "material", 3, 2));
       PetscCall(DMSetLabelValue(*dm, "material", 5, 2));
     } break;
-    default: SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh %" PetscInt_FMT, testNum);
+    default:
+      SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh %" PetscInt_FMT, testNum);
     }
   } else {
     PetscInt numPoints[3] = {0, 0, 0};
@@ -520,7 +523,8 @@ static PetscErrorCode CreateSimplex_2D(MPI_Comm comm, PetscInt testNum, DM *dm) 
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode CreateSimplex_3D(MPI_Comm comm, AppCtx *user, DM dm) {
+static PetscErrorCode CreateSimplex_3D(MPI_Comm comm, AppCtx *user, DM dm)
+{
   PetscInt    depth = 3, testNum = user->testNum, p;
   PetscMPIInt rank;
 
@@ -560,7 +564,8 @@ static PetscErrorCode CreateSimplex_3D(MPI_Comm comm, AppCtx *user, DM dm) {
       PetscCall(DMSetLabelValue(dm, "material", 0, 1));
       PetscCall(DMSetLabelValue(dm, "material", 1, 2));
     } break;
-    default: SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh %" PetscInt_FMT, testNum);
+    default:
+      SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh %" PetscInt_FMT, testNum);
     }
   } else {
     PetscInt numPoints[4] = {0, 0, 0, 0};
@@ -571,7 +576,8 @@ static PetscErrorCode CreateSimplex_3D(MPI_Comm comm, AppCtx *user, DM dm) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode CreateQuad_2D(MPI_Comm comm, PetscInt testNum, DM *dm) {
+static PetscErrorCode CreateQuad_2D(MPI_Comm comm, PetscInt testNum, DM *dm)
+{
   DM          idm;
   PetscInt    p;
   PetscMPIInt rank;
@@ -623,7 +629,8 @@ static PetscErrorCode CreateQuad_2D(MPI_Comm comm, PetscInt testNum, DM *dm) {
       PetscCall(DMSetLabelValue(*dm, "material", 7, 2));
       PetscCall(DMSetLabelValue(*dm, "material", 8, 2));
     } break;
-    default: SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh %" PetscInt_FMT, testNum);
+    default:
+      SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh %" PetscInt_FMT, testNum);
     }
   } else {
     PetscInt numPoints[3] = {0, 0, 0};
@@ -639,7 +646,8 @@ static PetscErrorCode CreateQuad_2D(MPI_Comm comm, PetscInt testNum, DM *dm) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode CreateHex_3D(MPI_Comm comm, PetscInt testNum, DM *dm) {
+static PetscErrorCode CreateHex_3D(MPI_Comm comm, PetscInt testNum, DM *dm)
+{
   DM          idm;
   PetscInt    depth = 3, p;
   PetscMPIInt rank;
@@ -712,7 +720,8 @@ static PetscErrorCode CreateHex_3D(MPI_Comm comm, PetscInt testNum, DM *dm) {
       PetscCall(DMSetLabelValue(*dm, "material", 2, 2));
       PetscCall(DMSetLabelValue(*dm, "material", 3, 2));
     } break;
-    default: SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh %" PetscInt_FMT, testNum);
+    default:
+      SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "No test mesh %" PetscInt_FMT, testNum);
     }
   } else {
     PetscInt numPoints[4] = {0, 0, 0, 0};
@@ -727,7 +736,8 @@ static PetscErrorCode CreateHex_3D(MPI_Comm comm, PetscInt testNum, DM *dm) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode CreateFaultLabel(DM dm) {
+static PetscErrorCode CreateFaultLabel(DM dm)
+{
   DMLabel  label;
   PetscInt dim, h, pStart, pEnd, pMax, p;
 
@@ -743,7 +753,8 @@ static PetscErrorCode CreateFaultLabel(DM dm) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode CreateDiscretization(DM dm, AppCtx *user) {
+static PetscErrorCode CreateDiscretization(DM dm, AppCtx *user)
+{
   PetscFE  fe;
   DMLabel  fault;
   PetscInt dim, Ncf = user->cohesiveFields, f;
@@ -779,7 +790,8 @@ static PetscErrorCode CreateDiscretization(DM dm, AppCtx *user) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm) {
+static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
+{
   PetscInt    dim         = user->dim;
   PetscBool   cellSimplex = user->cellSimplex, hasFault, hasFault2, hasParallelFault;
   PetscMPIInt rank, size;
@@ -806,7 +818,8 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm) {
       PetscCall(CreateHex_3D(comm, user->testNum, dm));
     }
     break;
-  default: SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "Cannot make hybrid meshes for dimension %" PetscInt_FMT, dim);
+  default:
+    SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "Cannot make hybrid meshes for dimension %" PetscInt_FMT, dim);
   }
   PetscCall(PetscObjectSetOptionsPrefix((PetscObject)*dm, "orig_"));
   PetscCall(DMPlexDistributeSetDefault(*dm, PETSC_FALSE));
@@ -875,7 +888,8 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm) {
           PetscCall(PetscArraycpy(points, triPoints_p2, 6));
           break;
         }
-        default: SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Could not find matching test number %" PetscInt_FMT " for triangular mesh on 2 procs", user->testNum);
+        default:
+          SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Could not find matching test number %" PetscInt_FMT " for triangular mesh on 2 procs", user->testNum);
         }
       } else if (dim == 2 && cellSimplex && size == 6) {
         switch (user->testNum) {
@@ -888,7 +902,8 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm) {
           PetscCall(PetscArraycpy(points, triPoints_p6, 6));
           break;
         }
-        default: SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Could not find matching test number %" PetscInt_FMT " for triangular mesh on 6 procs", user->testNum);
+        default:
+          SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Could not find matching test number %" PetscInt_FMT " for triangular mesh on 6 procs", user->testNum);
         }
       } else if (dim == 2 && !cellSimplex && size == 2) {
         switch (user->testNum) {
@@ -919,7 +934,8 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm) {
           PetscCall(PetscArraycpy(points, quadPoints_p2, 2));
           break;
         }
-        default: SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Could not find matching test number %" PetscInt_FMT " for quadrilateral mesh on 2 procs", user->testNum);
+        default:
+          SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Could not find matching test number %" PetscInt_FMT " for quadrilateral mesh on 2 procs", user->testNum);
         }
       } else if (dim == 3 && cellSimplex && size == 2) {
         switch (user->testNum) {
@@ -932,7 +948,8 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm) {
           PetscCall(PetscArraycpy(points, tetPoints_p2, 3));
           break;
         }
-        default: SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Could not find matching test number %" PetscInt_FMT " for teterehedral mesh on 2 procs", user->testNum);
+        default:
+          SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Could not find matching test number %" PetscInt_FMT " for teterehedral mesh on 2 procs", user->testNum);
         }
       } else if (dim == 3 && !cellSimplex && size == 2) {
         switch (user->testNum) {
@@ -945,7 +962,8 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm) {
           PetscCall(PetscArraycpy(points, hexPoints_p2, 3));
           break;
         }
-        default: SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Could not find matching test number %" PetscInt_FMT " for hexahedral mesh on 2 procs", user->testNum);
+        default:
+          SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Could not find matching test number %" PetscInt_FMT " for hexahedral mesh on 2 procs", user->testNum);
         }
       } else SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Could not find matching test partition");
     }
@@ -1000,7 +1018,8 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TestMesh(DM dm, AppCtx *user) {
+static PetscErrorCode TestMesh(DM dm, AppCtx *user)
+{
   PetscFunctionBegin;
   PetscCall(DMPlexCheckSymmetry(dm));
   PetscCall(DMPlexCheckSkeleton(dm, 0));
@@ -1008,7 +1027,8 @@ static PetscErrorCode TestMesh(DM dm, AppCtx *user) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TestDiscretization(DM dm, AppCtx *user) {
+static PetscErrorCode TestDiscretization(DM dm, AppCtx *user)
+{
   PetscSection s;
 
   PetscFunctionBegin;
@@ -1017,19 +1037,22 @@ static PetscErrorCode TestDiscretization(DM dm, AppCtx *user) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode r(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx) {
+static PetscErrorCode r(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
+{
   PetscInt d;
   for (d = 0; d < dim; ++d) u[d] = x[d];
   return 0;
 }
 
-static PetscErrorCode rp1(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx) {
+static PetscErrorCode rp1(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
+{
   PetscInt d;
   for (d = 0; d < dim; ++d) u[d] = x[d] + (d > 0 ? 1.0 : 0.0);
   return 0;
 }
 
-static PetscErrorCode phi(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx) {
+static PetscErrorCode phi(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
+{
   PetscInt d;
   u[0] = -x[1];
   u[1] = x[0];
@@ -1038,7 +1061,8 @@ static PetscErrorCode phi(PetscInt dim, PetscReal time, const PetscReal x[], Pet
 }
 
 /* \lambda \cdot (\psi_u^- - \psi_u^+) */
-static void f0_bd_u(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], const PetscReal n[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[]) {
+static void f0_bd_u(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], const PetscReal n[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
+{
   const PetscInt Nc = uOff[1] - uOff[0];
   PetscInt       c;
   for (c = 0; c < Nc; ++c) {
@@ -1048,7 +1072,8 @@ static void f0_bd_u(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uO
 }
 
 /* (d - u^+ + u^-) \cdot \psi_\lambda */
-static void f0_bd_l(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], const PetscReal n[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[]) {
+static void f0_bd_l(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], const PetscReal n[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
+{
   const PetscInt Nc = uOff[2] - uOff[1];
   PetscInt       c;
 
@@ -1056,7 +1081,8 @@ static void f0_bd_l(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uO
 }
 
 /* \psi_lambda \cdot (\psi_u^- - \psi_u^+) */
-static void g0_bd_ul(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], const PetscReal n[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g0[]) {
+static void g0_bd_ul(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], const PetscReal n[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g0[])
+{
   const PetscInt Nc = uOff[1] - uOff[0];
   PetscInt       c;
 
@@ -1067,7 +1093,8 @@ static void g0_bd_ul(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt u
 }
 
 /* (-\psi_u^+ + \psi_u^-) \cdot \psi_\lambda */
-static void g0_bd_lu(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], const PetscReal n[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g0[]) {
+static void g0_bd_lu(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], const PetscReal n[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g0[])
+{
   const PetscInt Nc = uOff[2] - uOff[1];
   PetscInt       c;
 
@@ -1077,7 +1104,8 @@ static void g0_bd_lu(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt u
   }
 }
 
-static PetscErrorCode TestAssembly(DM dm, AppCtx *user) {
+static PetscErrorCode TestAssembly(DM dm, AppCtx *user)
+{
   Mat           J;
   Vec           locX, locF;
   PetscDS       probh;
@@ -1160,7 +1188,8 @@ static PetscErrorCode TestAssembly(DM dm, AppCtx *user) {
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   DM     dm;
   AppCtx user; /* user-defined work context */
 

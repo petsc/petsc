@@ -4,7 +4,7 @@ class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self,framework)
     self.minversion        = '5.6.0'
-    self.version           = '5.12.0'
+    self.version           = '5.13.0'
     self.versioninclude    = 'SuiteSparse_config.h'
     self.versionname       = 'SUITESPARSE_MAIN_VERSION.SUITESPARSE_SUB_VERSION.SUITESPARSE_SUBSUB_VERSION'
     self.gitcommit         = 'v'+self.version
@@ -69,7 +69,6 @@ class Configure(config.package.Package):
     with self.Language('Cxx'):
       args.append(self.getCompiler().join(('CXX="','"')))
 
-    args.append('MAKE="'+self.make.make+'"')
     args.append('RANLIB="'+self.setCompilers.RANLIB+'"')
     args.append('ARCHIVE="'+self.setCompilers.AR+' '+self.setCompilers.AR_FLAGS+'"')
     args.append('RM="'+self.programs.RM+'"')
@@ -134,38 +133,39 @@ class Configure(config.package.Package):
     args = ' '.join(args)
     conffile = os.path.join(self.packageDir,self.package+'.petscconf')
     fd = open(conffile, 'w')
-    fd.write(args)
+    fd.write(args+' MAKE="'+self.make.make+'"')
     fd.close()
 
     if self.installNeeded(conffile):
       try:
         self.logPrintBox('Compiling and installing SuiteSparse; this may take several minutes')
-        makewithargs=self.make.make+' '+args
+        makewithargs=self.make.make+' '+args+' MAKE="'+self.make.make+'"'
+        makewithargs_jnp=self.make.make+' '+args+' MAKE="'+self.make.make_jnp+'"'
         # SuiteSparse install may not create missing directories, hence we need to create them first
         output,err,ret = config.package.Package.executeShellCommand('mkdir -p '+os.path.join(self.installDir,'lib'), timeout=2500, log=self.log)
         output,err,ret = config.package.Package.executeShellCommand('mkdir -p '+os.path.join(self.installDir,'include'), timeout=2500, log=self.log)
         if self.checkSharedLibrariesEnabled():
-          output,err,ret = config.package.Package.executeShellCommand('cd '+self.packageDir+'/SuiteSparse_config && '+makewithargs+' clean && '+makewithargs+' && '+makewithargs+' install && '+makewithargs+' clean', timeout=2500, log=self.log)
-          output,err,ret = config.package.Package.executeShellCommand('cd '+self.packageDir+'/AMD                && '+makewithargs+' clean && '+makewithargs+' library && '+makewithargs+' install && '+makewithargs+' clean', timeout=2500, log=self.log)
-          output,err,ret = config.package.Package.executeShellCommand('cd '+self.packageDir+'/COLAMD             && '+makewithargs+' clean && '+makewithargs+' library && '+makewithargs+' install && '+makewithargs+' clean', timeout=2500, log=self.log)
-          output,err,ret = config.package.Package.executeShellCommand('cd '+self.packageDir+'/BTF                && '+makewithargs+' clean && '+makewithargs+' library && '+makewithargs+' install && '+makewithargs+' clean', timeout=2500, log=self.log)
-          output,err,ret = config.package.Package.executeShellCommand('cd '+self.packageDir+'/CAMD               && '+makewithargs+' clean && '+makewithargs+' library && '+makewithargs+' install && '+makewithargs+' clean', timeout=2500, log=self.log)
-          output,err,ret = config.package.Package.executeShellCommand('cd '+self.packageDir+'/CCOLAMD            && '+makewithargs+' clean && '+makewithargs+' library && '+makewithargs+' install && '+makewithargs+' clean', timeout=2500, log=self.log)
-          output,err,ret = config.package.Package.executeShellCommand('cd '+self.packageDir+'/CHOLMOD            && '+makewithargs+' clean && '+makewithargs+' library && '+makewithargs+' install && '+makewithargs+' clean', timeout=2500, log=self.log)
-          output,err,ret = config.package.Package.executeShellCommand('cd '+self.packageDir+'/UMFPACK            && '+makewithargs+' clean && '+makewithargs+' library && '+makewithargs+' install && '+makewithargs+' clean', timeout=2500, log=self.log)
-          output,err,ret = config.package.Package.executeShellCommand('cd '+self.packageDir+'/KLU                && '+makewithargs+' clean && '+makewithargs+' library && '+makewithargs+' install && '+makewithargs+' clean', timeout=2500, log=self.log)
-          output,err,ret = config.package.Package.executeShellCommand('cd '+self.packageDir+'/SPQR               && '+makewithargs+' clean && '+makewithargs+' library && '+makewithargs+' install && '+makewithargs+' clean', timeout=2500, log=self.log)
+          output,err,ret = config.package.Package.executeShellCommand('cd '+self.packageDir+'/SuiteSparse_config && '+makewithargs+' clean && '+makewithargs_jnp+' && '+makewithargs+' install && '+makewithargs+' clean', timeout=2500, log=self.log)
+          output,err,ret = config.package.Package.executeShellCommand('cd '+self.packageDir+'/AMD                && '+makewithargs+' clean && '+makewithargs_jnp+' library && '+makewithargs+' install && '+makewithargs+' clean', timeout=2500, log=self.log)
+          output,err,ret = config.package.Package.executeShellCommand('cd '+self.packageDir+'/COLAMD             && '+makewithargs+' clean && '+makewithargs_jnp+' library && '+makewithargs+' install && '+makewithargs+' clean', timeout=2500, log=self.log)
+          output,err,ret = config.package.Package.executeShellCommand('cd '+self.packageDir+'/BTF                && '+makewithargs+' clean && '+makewithargs_jnp+' library && '+makewithargs+' install && '+makewithargs+' clean', timeout=2500, log=self.log)
+          output,err,ret = config.package.Package.executeShellCommand('cd '+self.packageDir+'/CAMD               && '+makewithargs+' clean && '+makewithargs_jnp+' library && '+makewithargs+' install && '+makewithargs+' clean', timeout=2500, log=self.log)
+          output,err,ret = config.package.Package.executeShellCommand('cd '+self.packageDir+'/CCOLAMD            && '+makewithargs+' clean && '+makewithargs_jnp+' library && '+makewithargs+' install && '+makewithargs+' clean', timeout=2500, log=self.log)
+          output,err,ret = config.package.Package.executeShellCommand('cd '+self.packageDir+'/CHOLMOD            && '+makewithargs+' clean && '+makewithargs_jnp+' library && '+makewithargs+' install && '+makewithargs+' clean', timeout=2500, log=self.log)
+          output,err,ret = config.package.Package.executeShellCommand('cd '+self.packageDir+'/UMFPACK            && '+makewithargs+' clean && '+makewithargs_jnp+' library && '+makewithargs+' install && '+makewithargs+' clean', timeout=2500, log=self.log)
+          output,err,ret = config.package.Package.executeShellCommand('cd '+self.packageDir+'/KLU                && '+makewithargs+' clean && '+makewithargs_jnp+' library && '+makewithargs+' install && '+makewithargs+' clean', timeout=2500, log=self.log)
+          output,err,ret = config.package.Package.executeShellCommand('cd '+self.packageDir+'/SPQR               && '+makewithargs+' clean && '+makewithargs_jnp+' library && '+makewithargs+' install && '+makewithargs+' clean', timeout=2500, log=self.log)
         else:
-          output,err,ret = config.package.Package.executeShellCommand('cd '+self.packageDir+'/SuiteSparse_config && '+makewithargs+' clean && '+makewithargs+' static && '+self.programs.cp+' *h '+os.path.join(self.installDir,'include')+' && '+self.programs.cp+' libsuitesparseconfig.* '+os.path.join(self.installDir,'lib')+' && '+makewithargs+' clean', timeout=2500, log=self.log)
-          output,err,ret = config.package.Package.executeShellCommand('cd '+self.packageDir+'/AMD                && '+makewithargs+' clean && '+makewithargs+' static && '+self.programs.cp+' '+os.path.join('Include','amd.h')+' '+os.path.join(self.installDir,'include')+' && '+self.programs.cp+' '+os.path.join('Lib','libamd.*')+' '+os.path.join(self.installDir,'lib')+' && '+makewithargs+' clean', timeout=2500, log=self.log)
-          output,err,ret = config.package.Package.executeShellCommand('cd '+self.packageDir+'/COLAMD             && '+makewithargs+' clean && '+makewithargs+' static && '+self.programs.cp+' '+os.path.join('Include','*h')+' '+os.path.join(self.installDir,'include')+' && '+self.programs.cp+' '+os.path.join('Lib','libcolamd.*')+' '+os.path.join(self.installDir,'lib')+' && '+makewithargs+' clean', timeout=2500, log=self.log)
-          output,err,ret = config.package.Package.executeShellCommand('cd '+self.packageDir+'/BTF                && '+makewithargs+' clean && '+makewithargs+' static && '+self.programs.cp+' '+os.path.join('Include','btf.h')+' '+os.path.join(self.installDir,'include')+' && '+self.programs.cp+' '+os.path.join('Lib','libbtf.*')+' '+os.path.join(self.installDir,'lib')+' && '+makewithargs+' clean', timeout=2500, log=self.log)
-          output,err,ret = config.package.Package.executeShellCommand('cd '+self.packageDir+'/CAMD               && '+makewithargs+' clean && '+makewithargs+' static && '+self.programs.cp+' '+os.path.join('Include','camd.h')+' '+os.path.join(self.installDir,'include')+' && '+self.programs.cp+' '+os.path.join('Lib','libcamd.*')+' '+os.path.join(self.installDir,'lib')+' && '+makewithargs+' clean', timeout=2500, log=self.log)
-          output,err,ret = config.package.Package.executeShellCommand('cd '+self.packageDir+'/CCOLAMD            && '+makewithargs+' clean && '+makewithargs+' static && '+self.programs.cp+' '+os.path.join('Include','*h')+' '+os.path.join(self.installDir,'include')+' && '+self.programs.cp+' '+os.path.join('Lib','libccolamd.*')+' '+os.path.join(self.installDir,'lib')+' && '+makewithargs+' clean', timeout=2500, log=self.log)
-          output,err,ret = config.package.Package.executeShellCommand('cd '+self.packageDir+'/CHOLMOD            && '+makewithargs+' clean && '+makewithargs+' static && '+self.programs.cp+' '+os.path.join('Include','*h')+' '+os.path.join(self.installDir,'include')+' && '+self.programs.cp+' '+os.path.join('Lib','libcholmod.*')+' '+os.path.join(self.installDir,'lib')+' && '+makewithargs+' clean', timeout=2500, log=self.log)
-          output,err,ret = config.package.Package.executeShellCommand('cd '+self.packageDir+'/UMFPACK            && '+makewithargs+' clean && '+makewithargs+' static && '+self.programs.cp+' '+os.path.join('Include','*h')+' '+os.path.join(self.installDir,'include')+' && '+self.programs.cp+' '+os.path.join('Lib','libumfpack.*')+' '+os.path.join(self.installDir,'lib')+' && '+makewithargs+' clean', timeout=2500, log=self.log)
-          output,err,ret = config.package.Package.executeShellCommand('cd '+self.packageDir+'/KLU                && '+makewithargs+' clean && '+makewithargs+' static && '+self.programs.cp+' '+os.path.join('Include','*h')+' '+os.path.join(self.installDir,'include')+' && '+self.programs.cp+' '+os.path.join('Lib','libklu.*')+' '+os.path.join(self.installDir,'lib')+' && '+makewithargs+' clean', timeout=2500, log=self.log)
-          output,err,ret = config.package.Package.executeShellCommand('cd '+self.packageDir+'/SPQR               && '+makewithargs+' clean && '+makewithargs+' static && '+self.programs.cp+' '+os.path.join('Include','*h')+' '+os.path.join(self.installDir,'include')+' && '+self.programs.cp+' '+os.path.join('Lib','libspqr.*')+' '+os.path.join(self.installDir,'lib')+' && '+makewithargs+' clean', timeout=2500, log=self.log)
+          output,err,ret = config.package.Package.executeShellCommand('cd '+self.packageDir+'/SuiteSparse_config && '+makewithargs+' clean && '+makewithargs_jnp+' static && '+self.programs.cp+' *h '+os.path.join(self.installDir,'include')+' && '+self.programs.cp+' libsuitesparseconfig.* '+os.path.join(self.installDir,'lib')+' && '+makewithargs+' clean', timeout=2500, log=self.log)
+          output,err,ret = config.package.Package.executeShellCommand('cd '+self.packageDir+'/AMD                && '+makewithargs+' clean && '+makewithargs_jnp+' static && '+self.programs.cp+' '+os.path.join('Include','amd.h')+' '+os.path.join(self.installDir,'include')+' && '+self.programs.cp+' '+os.path.join('Lib','libamd.*')+' '+os.path.join(self.installDir,'lib')+' && '+makewithargs+' clean', timeout=2500, log=self.log)
+          output,err,ret = config.package.Package.executeShellCommand('cd '+self.packageDir+'/COLAMD             && '+makewithargs+' clean && '+makewithargs_jnp+' static && '+self.programs.cp+' '+os.path.join('Include','*h')+' '+os.path.join(self.installDir,'include')+' && '+self.programs.cp+' '+os.path.join('Lib','libcolamd.*')+' '+os.path.join(self.installDir,'lib')+' && '+makewithargs+' clean', timeout=2500, log=self.log)
+          output,err,ret = config.package.Package.executeShellCommand('cd '+self.packageDir+'/BTF                && '+makewithargs+' clean && '+makewithargs_jnp+' static && '+self.programs.cp+' '+os.path.join('Include','btf.h')+' '+os.path.join(self.installDir,'include')+' && '+self.programs.cp+' '+os.path.join('Lib','libbtf.*')+' '+os.path.join(self.installDir,'lib')+' && '+makewithargs+' clean', timeout=2500, log=self.log)
+          output,err,ret = config.package.Package.executeShellCommand('cd '+self.packageDir+'/CAMD               && '+makewithargs+' clean && '+makewithargs_jnp+' static && '+self.programs.cp+' '+os.path.join('Include','camd.h')+' '+os.path.join(self.installDir,'include')+' && '+self.programs.cp+' '+os.path.join('Lib','libcamd.*')+' '+os.path.join(self.installDir,'lib')+' && '+makewithargs+' clean', timeout=2500, log=self.log)
+          output,err,ret = config.package.Package.executeShellCommand('cd '+self.packageDir+'/CCOLAMD            && '+makewithargs+' clean && '+makewithargs_jnp+' static && '+self.programs.cp+' '+os.path.join('Include','*h')+' '+os.path.join(self.installDir,'include')+' && '+self.programs.cp+' '+os.path.join('Lib','libccolamd.*')+' '+os.path.join(self.installDir,'lib')+' && '+makewithargs+' clean', timeout=2500, log=self.log)
+          output,err,ret = config.package.Package.executeShellCommand('cd '+self.packageDir+'/CHOLMOD            && '+makewithargs+' clean && '+makewithargs_jnp+' static && '+self.programs.cp+' '+os.path.join('Include','*h')+' '+os.path.join(self.installDir,'include')+' && '+self.programs.cp+' '+os.path.join('Lib','libcholmod.*')+' '+os.path.join(self.installDir,'lib')+' && '+makewithargs+' clean', timeout=2500, log=self.log)
+          output,err,ret = config.package.Package.executeShellCommand('cd '+self.packageDir+'/UMFPACK            && '+makewithargs+' clean && '+makewithargs_jnp+' static && '+self.programs.cp+' '+os.path.join('Include','*h')+' '+os.path.join(self.installDir,'include')+' && '+self.programs.cp+' '+os.path.join('Lib','libumfpack.*')+' '+os.path.join(self.installDir,'lib')+' && '+makewithargs+' clean', timeout=2500, log=self.log)
+          output,err,ret = config.package.Package.executeShellCommand('cd '+self.packageDir+'/KLU                && '+makewithargs+' clean && '+makewithargs_jnp+' static && '+self.programs.cp+' '+os.path.join('Include','*h')+' '+os.path.join(self.installDir,'include')+' && '+self.programs.cp+' '+os.path.join('Lib','libklu.*')+' '+os.path.join(self.installDir,'lib')+' && '+makewithargs+' clean', timeout=2500, log=self.log)
+          output,err,ret = config.package.Package.executeShellCommand('cd '+self.packageDir+'/SPQR               && '+makewithargs+' clean && '+makewithargs_jnp+' static && '+self.programs.cp+' '+os.path.join('Include','*h')+' '+os.path.join(self.installDir,'include')+' && '+self.programs.cp+' '+os.path.join('Lib','libspqr.*')+' '+os.path.join(self.installDir,'lib')+' && '+makewithargs+' clean', timeout=2500, log=self.log)
 
         self.addDefine('HAVE_SUITESPARSE',1)
       except RuntimeError as e:

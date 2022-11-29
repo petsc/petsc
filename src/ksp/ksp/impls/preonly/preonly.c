@@ -1,12 +1,14 @@
 
 #include <petsc/private/kspimpl.h>
 
-static PetscErrorCode KSPSetUp_PREONLY(KSP ksp) {
+static PetscErrorCode KSPSetUp_PREONLY(KSP ksp)
+{
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode KSPSolve_PREONLY(KSP ksp) {
+static PetscErrorCode KSPSolve_PREONLY(KSP ksp)
+{
   PetscBool      diagonalscale;
   PCFailedReason pcreason;
 
@@ -44,7 +46,8 @@ static PetscErrorCode KSPSolve_PREONLY(KSP ksp) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode KSPMatSolve_PREONLY(KSP ksp, Mat B, Mat X) {
+static PetscErrorCode KSPMatSolve_PREONLY(KSP ksp, Mat B, Mat X)
+{
   PetscBool      diagonalscale;
   PCFailedReason pcreason;
 
@@ -71,29 +74,29 @@ static PetscErrorCode KSPMatSolve_PREONLY(KSP ksp, Mat B, Mat X) {
      KSPPREONLY - This implements a method that applies ONLY the preconditioner exactly once.
                   This may be used in inner iterations, where it is desired to
                   allow multiple iterations as well as the "0-iteration" case. It is
-                  commonly used with the direct solver preconditioners like PCLU and PCCHOLESKY.
-                  There is an alias of KSPNONE.
+                  commonly used with the direct solver preconditioners like `PCLU` and `PCCHOLESKY`.
+                  There is an alias of `KSPNONE`.
 
-   Options Database Keys:
+   Options Database Key:
 .   -ksp_type preonly - use preconditioner only
 
    Level: beginner
 
    Notes:
-    Since this does not involve an iteration the basic KSP parameters such as tolerances and iteration counts
-          do not apply
+   Since this does not involve an iteration the basic `KSP` parameters such as tolerances and iteration counts
+   do not apply
 
-    To apply multiple preconditioners in a simple iteration use KSPRICHARDSON
+   To apply multiple preconditioners in a simple iteration use `KSPRICHARDSON`
 
-   Developer Notes:
-    Even though this method does not use any norms, the user is allowed to set the KSPNormType to any value.
-    This is so the users does not have to change KSPNormType options when they switch from other KSP methods to this one.
+   Developer Note:
+   Even though this method does not use any norms, the user is allowed to set the `KSPNormType` to any value.
+   This is so the users does not have to change `KSPNormType` options when they switch from other `KSP` methods to this one.
 
-.seealso: `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPRICHARDSON`, `KSPCHEBYSHEV`
-
+.seealso: [](chapter_ksp), `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPRICHARDSON`, `KSPCHEBYSHEV`
 M*/
 
-PETSC_EXTERN PetscErrorCode KSPCreate_PREONLY(KSP ksp) {
+PETSC_EXTERN PetscErrorCode KSPCreate_PREONLY(KSP ksp)
+{
   PetscFunctionBegin;
   PetscCall(KSPSetSupportedNorm(ksp, KSP_NORM_NONE, PC_LEFT, 3));
   PetscCall(KSPSetSupportedNorm(ksp, KSP_NORM_NONE, PC_RIGHT, 2));

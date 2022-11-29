@@ -20,7 +20,8 @@ static const int GLIDER[3][3] = {
   {1, 0, 1}
 };
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   DM          da;
   PetscViewer viewer;
   Vec         Xlocal, Xglobal;
@@ -35,7 +36,7 @@ int main(int argc, char **argv) {
     PetscCall(PetscOptionsIntArray("-glider", "Coordinate at which to center a glider", NULL, glider_loc, (two = 2, &two), &has_glider));
     PetscCall(PetscOptionsIntArray("-blinker", "Coordinate at which to center a blinker", NULL, blinker_loc, (two = 2, &two), &has_blinker));
     PetscCall(PetscOptionsInt("-steps", "Number of steps to take", NULL, steps, &steps, NULL));
-    PetscCall(PetscOptionsInt("-viz_interval", "Vizualization interval", NULL, viz_interval, &viz_interval, NULL));
+    PetscCall(PetscOptionsInt("-viz_interval", "Visualization interval", NULL, viz_interval, &viz_interval, NULL));
     PetscCall(PetscOptionsInt("-check_step_alive", "Step on which to check that the simulation is alive", NULL, check_step_alive, &check_step_alive, NULL));
     PetscCall(PetscOptionsInt("-check_step_dead", "Step on which to check that the simulation is dead", NULL, check_step_dead, &check_step_dead, NULL));
   }
@@ -108,7 +109,8 @@ int main(int argc, char **argv) {
             case 3:
               y[j][i] = 1; /* Survive */
               break;
-            default: y[j][i] = 0; /* Death */
+            default:
+              y[j][i] = 0; /* Death */
             }
           } else {                                /* Dead cell */
             if (live_neighbors == 3) y[j][i] = 1; /* Birth */

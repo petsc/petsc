@@ -14,7 +14,8 @@
  * perm - contains on exit the permutation vector to reorder the vectors val_r and val_i.
  */
 #define DEPTH 500
-static PetscErrorCode KSPAGMRESQuickSort(PetscScalar *val_r, PetscScalar *val_i, PetscInt size, PetscInt *perm) {
+static PetscErrorCode KSPAGMRESQuickSort(PetscScalar *val_r, PetscScalar *val_i, PetscInt size, PetscInt *perm)
+{
   PetscInt    deb[DEPTH], fin[DEPTH];
   PetscInt    ipivot;
   PetscScalar pivot_r, pivot_i;
@@ -88,7 +89,8 @@ static PetscErrorCode KSPAGMRESQuickSort(PetscScalar *val_r, PetscScalar *val_i,
  * the smallest eigenvalues (with complex conjugates)
  * CurNeig - Number of extracted eigenvalues
  */
-static PetscErrorCode KSPAGMRESSchurForm(KSP ksp, PetscBLASInt KspSize, PetscScalar *A, PetscBLASInt ldA, PetscScalar *B, PetscBLASInt ldB, PetscBool IsReduced, PetscScalar *Sr, PetscInt *CurNeig) {
+static PetscErrorCode KSPAGMRESSchurForm(KSP ksp, PetscBLASInt KspSize, PetscScalar *A, PetscBLASInt ldA, PetscScalar *B, PetscBLASInt ldB, PetscBool IsReduced, PetscScalar *Sr, PetscInt *CurNeig)
+{
   KSP_AGMRES   *agmres = (KSP_AGMRES *)ksp->data;
   PetscInt      max_k  = agmres->max_k;
   PetscBLASInt  r;
@@ -174,7 +176,8 @@ static PetscErrorCode KSPAGMRESSchurForm(KSP ksp, PetscBLASInt KspSize, PetscSca
  * This function form the matrices for the generalized eigenvalue problem,
  * it then compute the Schur vectors needed to augment the Newton basis.
  */
-PetscErrorCode KSPAGMRESComputeDeflationData(KSP ksp) {
+PetscErrorCode KSPAGMRESComputeDeflationData(KSP ksp)
+{
   KSP_AGMRES  *agmres  = (KSP_AGMRES *)ksp->data;
   Vec         *U       = agmres->U;
   Vec         *TmpU    = agmres->TmpU;

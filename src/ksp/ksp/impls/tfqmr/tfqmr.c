@@ -1,14 +1,16 @@
 
 #include <petsc/private/kspimpl.h>
 
-static PetscErrorCode KSPSetUp_TFQMR(KSP ksp) {
+static PetscErrorCode KSPSetUp_TFQMR(KSP ksp)
+{
   PetscFunctionBegin;
   PetscCheck(ksp->pc_side != PC_SYMMETRIC, PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "no symmetric preconditioning for KSPTFQMR");
   PetscCall(KSPSetWorkVecs(ksp, 9));
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode KSPSolve_TFQMR(KSP ksp) {
+static PetscErrorCode KSPSolve_TFQMR(KSP ksp)
+{
   PetscInt    i, m;
   PetscScalar rho, rhoold, a, s, b, eta, etaold, psiold, cf;
   PetscReal   dp, dpold, w, dpest, tau, psi, cm;
@@ -123,24 +125,22 @@ static PetscErrorCode KSPSolve_TFQMR(KSP ksp) {
 /*MC
      KSPTFQMR - A transpose free QMR (quasi minimal residual),
 
-   Options Database Keys:
-   see KSPSolve()
-
    Level: beginner
 
    Notes:
-    Supports left and right preconditioning, but not symmetric
+   Supports left and right preconditioning, but not symmetric
 
-          The "residual norm" computed in this algorithm is actually just an upper bound on the actual residual norm.
-          That is for left preconditioning it is a bound on the preconditioned residual and for right preconditioning
-          it is a bound on the true residual.
+   The "residual norm" computed in this algorithm is actually just an upper bound on the actual residual norm.
+   That is for left preconditioning it is a bound on the preconditioned residual and for right preconditioning
+   it is a bound on the true residual.
 
    References:
 .  * - Freund, 1993
 
-.seealso: `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPTCQMR`
+.seealso: [](chapter_ksp), `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPTCQMR`
 M*/
-PETSC_EXTERN PetscErrorCode KSPCreate_TFQMR(KSP ksp) {
+PETSC_EXTERN PetscErrorCode KSPCreate_TFQMR(KSP ksp)
+{
   PetscFunctionBegin;
   PetscCall(KSPSetSupportedNorm(ksp, KSP_NORM_PRECONDITIONED, PC_LEFT, 3));
   PetscCall(KSPSetSupportedNorm(ksp, KSP_NORM_UNPRECONDITIONED, PC_RIGHT, 2));

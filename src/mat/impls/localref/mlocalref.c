@@ -25,14 +25,16 @@ typedef struct {
     if (nrow + ncol > (PetscInt)PETSC_STATIC_ARRAY_LENGTH(buf)) PetscCall(PetscFree2(irowm, icolm)); \
   } while (0)
 
-static void BlockIndicesExpand(PetscInt n, const PetscInt idx[], PetscInt bs, PetscInt idxm[]) {
+static void BlockIndicesExpand(PetscInt n, const PetscInt idx[], PetscInt bs, PetscInt idxm[])
+{
   PetscInt i, j;
   for (i = 0; i < n; i++) {
     for (j = 0; j < bs; j++) idxm[i * bs + j] = idx[i] * bs + j;
   }
 }
 
-static PetscErrorCode MatSetValuesBlockedLocal_LocalRef_Block(Mat A, PetscInt nrow, const PetscInt irow[], PetscInt ncol, const PetscInt icol[], const PetscScalar y[], InsertMode addv) {
+static PetscErrorCode MatSetValuesBlockedLocal_LocalRef_Block(Mat A, PetscInt nrow, const PetscInt irow[], PetscInt ncol, const PetscInt icol[], const PetscScalar y[], InsertMode addv)
+{
   Mat_LocalRef *lr = (Mat_LocalRef *)A->data;
   PetscInt      buf[4096], *irowm = NULL, *icolm; /* suppress maybe-uninitialized warning */
 
@@ -46,7 +48,8 @@ static PetscErrorCode MatSetValuesBlockedLocal_LocalRef_Block(Mat A, PetscInt nr
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatSetValuesBlockedLocal_LocalRef_Scalar(Mat A, PetscInt nrow, const PetscInt irow[], PetscInt ncol, const PetscInt icol[], const PetscScalar y[], InsertMode addv) {
+static PetscErrorCode MatSetValuesBlockedLocal_LocalRef_Scalar(Mat A, PetscInt nrow, const PetscInt irow[], PetscInt ncol, const PetscInt icol[], const PetscScalar y[], InsertMode addv)
+{
   Mat_LocalRef *lr = (Mat_LocalRef *)A->data;
   PetscInt      rbs, cbs, buf[4096], *irowm, *icolm;
 
@@ -62,7 +65,8 @@ static PetscErrorCode MatSetValuesBlockedLocal_LocalRef_Scalar(Mat A, PetscInt n
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatSetValuesLocal_LocalRef_Scalar(Mat A, PetscInt nrow, const PetscInt irow[], PetscInt ncol, const PetscInt icol[], const PetscScalar y[], InsertMode addv) {
+static PetscErrorCode MatSetValuesLocal_LocalRef_Scalar(Mat A, PetscInt nrow, const PetscInt irow[], PetscInt ncol, const PetscInt icol[], const PetscScalar y[], InsertMode addv)
+{
   Mat_LocalRef *lr = (Mat_LocalRef *)A->data;
   PetscInt      buf[4096], *irowm, *icolm;
 
@@ -87,7 +91,8 @@ static PetscErrorCode MatSetValuesLocal_LocalRef_Scalar(Mat A, PetscInt nrow, co
 }
 
 /* Compose an IS with an ISLocalToGlobalMapping to map from IS source indices to global indices */
-static PetscErrorCode ISL2GCompose(IS is, ISLocalToGlobalMapping ltog, ISLocalToGlobalMapping *cltog) {
+static PetscErrorCode ISL2GCompose(IS is, ISLocalToGlobalMapping ltog, ISLocalToGlobalMapping *cltog)
+{
   const PetscInt *idx;
   PetscInt        m, *idxm;
   PetscInt        bs;
@@ -128,7 +133,8 @@ static PetscErrorCode ISL2GCompose(IS is, ISLocalToGlobalMapping ltog, ISLocalTo
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode ISL2GComposeBlock(IS is, ISLocalToGlobalMapping ltog, ISLocalToGlobalMapping *cltog) {
+static PetscErrorCode ISL2GComposeBlock(IS is, ISLocalToGlobalMapping ltog, ISLocalToGlobalMapping *cltog)
+{
   const PetscInt *idx;
   PetscInt        m, *idxm, bs;
 
@@ -150,7 +156,8 @@ static PetscErrorCode ISL2GComposeBlock(IS is, ISLocalToGlobalMapping ltog, ISLo
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatDestroy_LocalRef(Mat B) {
+static PetscErrorCode MatDestroy_LocalRef(Mat B)
+{
   PetscFunctionBegin;
   PetscCall(PetscFree(B->data));
   PetscFunctionReturn(0);
@@ -180,7 +187,8 @@ static PetscErrorCode MatDestroy_LocalRef(Mat B) {
 
 .seealso: MATSUBMATRIX`, `MatCreateSubMatrixVirtual()`, `MatSetValuesLocal()`, `MatSetValuesBlockedLocal()`, `MatGetLocalSubMatrix()`, `MatCreateSubMatrix()`
 @*/
-PetscErrorCode MatCreateLocalRef(Mat A, IS isrow, IS iscol, Mat *newmat) {
+PetscErrorCode MatCreateLocalRef(Mat A, IS isrow, IS iscol, Mat *newmat)
+{
   Mat_LocalRef *lr;
   Mat           B;
   PetscInt      m, n;
@@ -203,7 +211,7 @@ PetscErrorCode MatCreateLocalRef(Mat A, IS isrow, IS iscol, Mat *newmat) {
 
   B->ops->destroy = MatDestroy_LocalRef;
 
-  PetscCall(PetscNewLog(B, &lr));
+  PetscCall(PetscNew(&lr));
   B->data = (void *)lr;
 
   PetscCall(PetscObjectTypeCompare((PetscObject)A, MATLOCALREF, &islr));

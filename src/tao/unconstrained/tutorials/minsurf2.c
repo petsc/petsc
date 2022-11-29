@@ -40,7 +40,8 @@ PetscErrorCode        FormGradient(Tao, Vec, Vec, void *);
 PetscErrorCode        FormHessian(Tao, Vec, Mat, Mat, void *);
 PetscErrorCode        My_Monitor(Tao, void *);
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscInt      Nx, Ny;                /* number of processors in x- and y- directions */
   Vec           x;                     /* solution, gradient vectors */
   PetscBool     flg, viewmat;          /* flags */
@@ -104,8 +105,8 @@ int main(int argc, char **argv) {
 
   /*
      Create a matrix data structure to store the Hessian and set
-     the Hessian evalution routine.
-     Set the matrix structure to be used for Hessian evalutions
+     the Hessian evaluation routine.
+     Set the matrix structure to be used for Hessian evaluations
   */
   PetscCall(DMCreateMatrix(user.dm, &user.H));
   PetscCall(MatSetOption(user.H, MAT_SYMMETRIC, PETSC_TRUE));
@@ -154,7 +155,8 @@ int main(int argc, char **argv) {
   return 0;
 }
 
-PetscErrorCode FormGradient(Tao tao, Vec X, Vec G, void *userCtx) {
+PetscErrorCode FormGradient(Tao tao, Vec X, Vec G, void *userCtx)
+{
   PetscReal fcn;
 
   PetscFunctionBegin;
@@ -174,7 +176,8 @@ PetscErrorCode FormGradient(Tao tao, Vec X, Vec G, void *userCtx) {
 .   fcn     - the newly evaluated function
 .   GG       - vector containing the newly evaluated gradient
 */
-PetscErrorCode FormFunctionGradient(Tao tao, Vec X, PetscReal *fcn, Vec G, void *userCtx) {
+PetscErrorCode FormFunctionGradient(Tao tao, Vec X, PetscReal *fcn, Vec G, void *userCtx)
+{
   AppCtx     *user = (AppCtx *)userCtx;
   PetscInt    i, j;
   PetscInt    mx = user->mx, my = user->my;
@@ -353,7 +356,8 @@ PetscErrorCode FormFunctionGradient(Tao tao, Vec X, PetscReal *fcn, Vec G, void 
 .  flg  - flag indicating matrix structure
 
 */
-PetscErrorCode FormHessian(Tao tao, Vec X, Mat H, Mat Hpre, void *ptr) {
+PetscErrorCode FormHessian(Tao tao, Vec X, Mat H, Mat Hpre, void *ptr)
+{
   AppCtx *user = (AppCtx *)ptr;
 
   PetscFunctionBegin;
@@ -373,7 +377,8 @@ PetscErrorCode FormHessian(Tao tao, Vec X, Mat H, Mat Hpre, void *ptr) {
    Output Parameter:
 .  H    - Hessian matrix
 */
-PetscErrorCode QuadraticH(AppCtx *user, Vec X, Mat Hessian) {
+PetscErrorCode QuadraticH(AppCtx *user, Vec X, Mat Hessian)
+{
   PetscInt    i, j, k;
   PetscInt    mx = user->mx, my = user->my;
   PetscInt    xs, xm, gxs, gxm, ys, ym, gys, gym;
@@ -558,7 +563,8 @@ PetscErrorCode QuadraticH(AppCtx *user, Vec X, Mat Hessian) {
    Output Parameter:
 .  user - user-defined application context
 */
-static PetscErrorCode MSA_BoundaryConditions(AppCtx *user) {
+static PetscErrorCode MSA_BoundaryConditions(AppCtx *user)
+{
   PetscInt   i, j, k, limit = 0, maxits = 5;
   PetscInt   xs, ys, xm, ym, gxs, gys, gxm, gym;
   PetscInt   mx = user->mx, my = user->my;
@@ -675,7 +681,8 @@ static PetscErrorCode MSA_BoundaryConditions(AppCtx *user) {
    Output Parameters:
 .  X - newly computed initial guess
 */
-static PetscErrorCode MSA_InitialPoint(AppCtx *user, Vec X) {
+static PetscErrorCode MSA_InitialPoint(AppCtx *user, Vec X)
+{
   PetscInt  start2 = -1, i, j;
   PetscReal start1 = 0;
   PetscBool flg1, flg2;
@@ -719,7 +726,8 @@ static PetscErrorCode MSA_InitialPoint(AppCtx *user, Vec X) {
 }
 
 /*-----------------------------------------------------------------------*/
-PetscErrorCode My_Monitor(Tao tao, void *ctx) {
+PetscErrorCode My_Monitor(Tao tao, void *ctx)
+{
   Vec X;
 
   PetscFunctionBegin;

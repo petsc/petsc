@@ -13,7 +13,8 @@ typedef struct {
   PetscInt          ntimes;                      /* How many times do the cycle */
 } AppCtx;
 
-static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options) {
+static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
+{
   PetscBool flg;
 
   PetscFunctionBeginUser;
@@ -37,7 +38,8 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options) {
 };
 
 //TODO test DMLabel I/O (not yet working for PETSC_VIEWER_HDF5_XDMF)
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   AppCtx            user;
   MPI_Comm          comm;
   PetscMPIInt       gsize, grank, mycolor;

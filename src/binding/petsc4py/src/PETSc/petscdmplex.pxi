@@ -69,7 +69,7 @@ cdef extern from * nogil:
     #int DMPlexGetFullMeet(PetscDM,PetscInt,const PetscInt[],PetscInt*,const PetscInt**)
     int DMPlexRestoreMeet(PetscDM,PetscInt,const PetscInt[],PetscInt*,const PetscInt**)
     int DMPlexGetJoin(PetscDM,PetscInt,const PetscInt[],PetscInt*,const PetscInt**)
-    #int DMPlexGetFullJoin(PetscDM,PetscInt,const PetscInt[],PetscInt*,const PetscInt**)
+    int DMPlexGetFullJoin(PetscDM,PetscInt,const PetscInt[],PetscInt*,const PetscInt**)
     int DMPlexRestoreJoin(PetscDM,PetscInt,const PetscInt[],PetscInt*,const PetscInt**)
     int DMPlexGetTransitiveClosure(PetscDM,PetscInt,PetscBool,PetscInt*,PetscInt*[])
     int DMPlexRestoreTransitiveClosure(PetscDM,PetscInt,PetscBool,PetscInt*,PetscInt*[])

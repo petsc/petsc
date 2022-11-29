@@ -1,7 +1,8 @@
 #include <../src/tao/bound/impls/bqnk/bqnk.h>
 #include <petscksp.h>
 
-static PetscErrorCode TaoSetUp_BQNKTR(Tao tao) {
+static PetscErrorCode TaoSetUp_BQNKTR(Tao tao)
+{
   KSP               ksp;
   PetscVoidFunction valid;
 
@@ -21,9 +22,11 @@ static PetscErrorCode TaoSetUp_BQNKTR(Tao tao) {
               prefix `-tao_bqnk_`. For options database, see TAOBNK
 
   Level: beginner
-.seealso `TAOBNK`, `TAOBQNKTR`, `TAOBQNKLS`
+
+.seealso: `Tao`, `TaoType`, `TAOBNK`, `TAOBQNKTR`, `TAOBQNKLS`
 M*/
-PETSC_EXTERN PetscErrorCode TaoCreate_BQNKTR(Tao tao) {
+PETSC_EXTERN PetscErrorCode TaoCreate_BQNKTR(Tao tao)
+{
   TAO_BNK  *bnk;
   TAO_BQNK *bqnk;
 

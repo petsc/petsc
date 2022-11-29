@@ -18,7 +18,8 @@ differently from the way it is assembled.  Input arguments are:\n\
 extern PetscErrorCode FormElementStiffness(PetscReal, PetscScalar *);
 extern PetscErrorCode FormElementRhs(PetscScalar, PetscScalar, PetscReal, PetscScalar *);
 
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   Vec         u, b, ustar; /* approx solution, RHS, exact solution */
   Mat         A;           /* linear system matrix */
   KSP         ksp;         /* Krylov subspace method context */
@@ -91,8 +92,8 @@ int main(int argc, char **args) {
   */
   for (i = start; i < end; i++) {
     /* location of lower left corner of element */
-    x      = h * (i % m);
-    y      = h * (i / m);
+    x = h * (i % m);
+    y = h * (i / m);
     /* node numbers for the four corners of element */
     idx[0] = (m + 1) * (i / m) + (i % m);
     idx[1] = idx[0] + 1;
@@ -183,7 +184,8 @@ int main(int argc, char **args) {
 
 /* --------------------------------------------------------------------- */
 /* element stiffness for Laplacian */
-PetscErrorCode FormElementStiffness(PetscReal H, PetscScalar *Ke) {
+PetscErrorCode FormElementStiffness(PetscReal H, PetscScalar *Ke)
+{
   PetscFunctionBeginUser;
   Ke[0]  = H / 6.0;
   Ke[1]  = -.125 * H;
@@ -204,7 +206,8 @@ PetscErrorCode FormElementStiffness(PetscReal H, PetscScalar *Ke) {
   PetscFunctionReturn(0);
 }
 /* --------------------------------------------------------------------- */
-PetscErrorCode FormElementRhs(PetscScalar x, PetscScalar y, PetscReal H, PetscScalar *r) {
+PetscErrorCode FormElementRhs(PetscScalar x, PetscScalar y, PetscReal H, PetscScalar *r)
+{
   PetscFunctionBeginUser;
   r[0] = 0.;
   r[1] = 0.;

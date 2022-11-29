@@ -4,7 +4,8 @@ this case processor zero is as long as the entire parallel vector; rest are zero
 
 #include <petscvec.h>
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscInt    n = 5, N, low, high, iglobal, i;
   PetscMPIInt size, rank;
   PetscScalar value, zero = 0.0;

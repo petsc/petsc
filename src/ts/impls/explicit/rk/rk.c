@@ -24,55 +24,55 @@ static RKTableauLink RKTableauList;
 
      This method has one stage.
 
-     Options database:
+     Options Database Key:
 .     -ts_rk_type 1fe - use type 1fe
 
      Level: advanced
 
-.seealso: `TSRK`, `TSRKType`, `TSRKSetType()`
+.seealso: [](chapter_ts), `TSRK`, `TSRKType`, `TSRKSetType()`
 M*/
 /*MC
      TSRK2A - Second order RK scheme (Heun's method).
 
      This method has two stages.
 
-     Options database:
+     Options Database Key:
 .     -ts_rk_type 2a - use type 2a
 
      Level: advanced
 
-.seealso: `TSRK`, `TSRKType`, `TSRKSetType()`
+.seealso: [](chapter_ts), `TSRK`, `TSRKType`, `TSRKSetType()`
 M*/
 /*MC
      TSRK2B - Second order RK scheme (the midpoint method).
 
      This method has two stages.
 
-     Options database:
+     Options Database Key:
 .     -ts_rk_type 2b - use type 2b
 
      Level: advanced
 
-.seealso: `TSRK`, `TSRKType`, `TSRKSetType()`
+.seealso: [](chapter_ts), `TSRK`, `TSRKType`, `TSRKSetType()`
 M*/
 /*MC
      TSRK3 - Third order RK scheme.
 
      This method has three stages.
 
-     Options database:
+     Options Database Key:
 .     -ts_rk_type 3 - use type 3
 
      Level: advanced
 
-.seealso: `TSRK`, `TSRKType`, `TSRKSetType()`
+.seealso: [](chapter_ts), `TSRK`, `TSRKType`, `TSRKSetType()`
 M*/
 /*MC
      TSRK3BS - Third order RK scheme of Bogacki-Shampine with 2nd order embedded method.
 
      This method has four stages with the First Same As Last (FSAL) property.
 
-     Options database:
+     Options Database Key:
 .     -ts_rk_type 3bs - use type 3bs
 
      Level: advanced
@@ -80,38 +80,38 @@ M*/
      References:
 . * - https://doi.org/10.1016/0893-9659(89)90079-7
 
-.seealso: `TSRK`, `TSRKType`, `TSRKSetType()`
+.seealso: [](chapter_ts), `TSRK`, `TSRKType`, `TSRKSetType()`
 M*/
 /*MC
      TSRK4 - Fourth order RK scheme.
 
      This is the classical Runge-Kutta method with four stages.
 
-     Options database:
+     Options Database Key:
 .     -ts_rk_type 4 - use type 4
 
      Level: advanced
 
-.seealso: `TSRK`, `TSRKType`, `TSRKSetType()`
+.seealso: [](chapter_ts), `TSRK`, `TSRKType`, `TSRKSetType()`
 M*/
 /*MC
      TSRK5F - Fifth order Fehlberg RK scheme with a 4th order embedded method.
 
      This method has six stages.
 
-     Options database:
+     Options Database Key:
 .     -ts_rk_type 5f - use type 5f
 
      Level: advanced
 
-.seealso: `TSRK`, `TSRKType`, `TSRKSetType()`
+.seealso: [](chapter_ts), `TSRK`, `TSRKType`, `TSRKSetType()`
 M*/
 /*MC
      TSRK5DP - Fifth order Dormand-Prince RK scheme with the 4th order embedded method.
 
      This method has seven stages with the First Same As Last (FSAL) property.
 
-     Options database:
+     Options Database Key:
 .     -ts_rk_type 5dp - use type 5dp
 
      Level: advanced
@@ -119,14 +119,14 @@ M*/
      References:
 . * - https://doi.org/10.1016/0771-050X(80)90013-3
 
-.seealso: `TSRK`, `TSRKType`, `TSRKSetType()`
+.seealso: [](chapter_ts), `TSRK`, `TSRKType`, `TSRKSetType()`
 M*/
 /*MC
      TSRK5BS - Fifth order Bogacki-Shampine RK scheme with 4th order embedded method.
 
      This method has eight stages with the First Same As Last (FSAL) property.
 
-     Options database:
+     Options Database Key:
 .     -ts_rk_type 5bs - use type 5bs
 
      Level: advanced
@@ -134,14 +134,14 @@ M*/
      References:
 . * - https://doi.org/10.1016/0898-1221(96)00141-1
 
-.seealso: `TSRK`, `TSRKType`, `TSRKSetType()`
+.seealso: [](chapter_ts), `TSRK`, `TSRKType`, `TSRKSetType()`
 M*/
 /*MC
      TSRK6VR - Sixth order robust Verner RK scheme with fifth order embedded method.
 
      This method has nine stages with the First Same As Last (FSAL) property.
 
-     Options database:
+     Options Database Key:
 .     -ts_rk_type 6vr - use type 6vr
 
      Level: advanced
@@ -149,14 +149,14 @@ M*/
      References:
 . * - http://people.math.sfu.ca/~jverner/RKV65.IIIXb.Robust.00010102836.081204.CoeffsOnlyRAT
 
-.seealso: `TSRK`, `TSRKType`, `TSRKSetType()`
+.seealso: [](chapter_ts), `TSRK`, `TSRKType`, `TSRKSetType()`
 M*/
 /*MC
      TSRK7VR - Seventh order robust Verner RK scheme with sixth order embedded method.
 
      This method has ten stages.
 
-     Options database:
+     Options Database Key:
 .     -ts_rk_type 7vr - use type 7vr
 
      Level: advanced
@@ -164,14 +164,14 @@ M*/
      References:
 . * - http://people.math.sfu.ca/~jverner/RKV76.IIa.Robust.000027015646.081206.CoeffsOnlyRAT
 
-.seealso: `TSRK`, `TSRKType`, `TSRKSetType()`
+.seealso: [](chapter_ts), `TSRK`, `TSRKType`, `TSRKSetType()`
 M*/
 /*MC
-     TSRK8VR - Eigth order robust Verner RK scheme with seventh order embedded method.
+     TSRK8VR - Eighth order robust Verner RK scheme with seventh order embedded method.
 
      This method has thirteen stages.
 
-     Options database:
+     Options Database Key:
 .     -ts_rk_type 8vr - use type 8vr
 
      Level: advanced
@@ -179,19 +179,20 @@ M*/
      References:
 . * - http://people.math.sfu.ca/~jverner/RKV87.IIa.Robust.00000754677.081208.CoeffsOnlyRATandFLOAT
 
-.seealso: `TSRK`, `TSRKType`, `TSRKSetType()`
+.seealso: [](chapter_ts), `TSRK`, `TSRKType`, `TSRKSetType()`
 M*/
 
 /*@C
-  TSRKRegisterAll - Registers all of the Runge-Kutta explicit methods in TSRK
+  TSRKRegisterAll - Registers all of the Runge-Kutta explicit methods in `TSRK`
 
   Not Collective, but should be called by all processes which will need the schemes to be registered
 
   Level: advanced
 
-.seealso: `TSRKRegisterDestroy()`
+.seealso: [](chapter_ts), `TSRKRegisterDestroy()`, `TSRKRegister()`
 @*/
-PetscErrorCode TSRKRegisterAll(void) {
+PetscErrorCode TSRKRegisterAll(void)
+{
   PetscFunctionBegin;
   if (TSRKRegisterAllCalled) PetscFunctionReturn(0);
   TSRKRegisterAllCalled = PETSC_TRUE;
@@ -276,7 +277,7 @@ PetscErrorCode TSRKRegisterAll(void) {
         {RC(9017.0) / RC(3168.0),  RC(-355.0) / RC(33.0),     RC(46732.0) / RC(5247.0), RC(49.0) / RC(176.0),   RC(-5103.0) / RC(18656.0), 0,                   0},
         {RC(35.0) / RC(384.0),     0,                         RC(500.0) / RC(1113.0),   RC(125.0) / RC(192.0),  RC(-2187.0) / RC(6784.0),  RC(11.0) / RC(84.0), 0}
     },
-                    b[7]      = {RC(35.0) / RC(384.0), 0, RC(500.0) / RC(1113.0), RC(125.0) / RC(192.0), RC(-2187.0) / RC(6784.0), RC(11.0) / RC(84.0), 0},
+                    b[7] = {RC(35.0) / RC(384.0), 0, RC(500.0) / RC(1113.0), RC(125.0) / RC(192.0), RC(-2187.0) / RC(6784.0), RC(11.0) / RC(84.0), 0},
                     bembed[7] = {RC(5179.0) / RC(57600.0), 0, RC(7571.0) / RC(16695.0), RC(393.0) / RC(640.0), RC(-92097.0) / RC(339200.0), RC(187.0) / RC(2100.0), RC(1.0) / RC(40.0)}, binterp[7][5] = {{RC(1.0), RC(-4034104133.0) / RC(1410260304.0), RC(105330401.0) / RC(33982176.0), RC(-13107642775.0) / RC(11282082432.0), RC(6542295.0) / RC(470086768.0)}, {0, 0, 0, 0, 0}, {0, RC(132343189600.0) / RC(32700410799.0), RC(-833316000.0) / RC(131326951.0), RC(91412856700.0) / RC(32700410799.0), RC(-523383600.0) / RC(10900136933.0)}, {0, RC(-115792950.0) / RC(29380423.0), RC(185270875.0) / RC(16991088.0), RC(-12653452475.0) / RC(1880347072.0), RC(98134425.0) / RC(235043384.0)}, {0, RC(70805911779.0) / RC(24914598704.0), RC(-4531260609.0) / RC(600351776.0), RC(988140236175.0) / RC(199316789632.0), RC(-14307999165.0) / RC(24914598704.0)}, {0, RC(-331320693.0) / RC(205662961.0), RC(31361737.0) / RC(7433601.0), RC(-2426908385.0) / RC(822651844.0), RC(97305120.0) / RC(205662961.0)}, {0, RC(44764047.0) / RC(29380423.0), RC(-1532549.0) / RC(353981.0), RC(90730570.0) / RC(29380423.0), RC(-8293050.0) / RC(29380423.0)}};
     PetscCall(TSRKRegister(TSRK5DP, 5, 7, &A[0][0], b, NULL, bembed, 5, binterp[0]));
   }
@@ -309,8 +310,8 @@ PetscErrorCode TSRKRegisterAll(void) {
         {RC(3.6423751686909581646423751686909581646424e-01),  0,                                                  RC(-2.0404858299595141700404858299595141700405e-01), RC(-3.4883737816068643136312309244640071707741e-01), RC(3.2619323032856867443333608747142581729048e+00),  RC(-2.7551020408163265306122448979591836734694e+00), RC(6.8181818181818181818181818181818181818182e-01), 0,                                                  0},
         {RC(7.6388888888888888888888888888888888888889e-02),  0,                                                  0,                                                   RC(3.6940836940836940836940836940836940836941e-01),  0,                                                   RC(2.4801587301587301587301587301587301587302e-01),  RC(2.3674242424242424242424242424242424242424e-01), RC(6.9444444444444444444444444444444444444444e-02), 0}
     },
-                    b[9]      = {RC(7.6388888888888888888888888888888888888889e-02), 0, 0, RC(3.6940836940836940836940836940836940836941e-01), 0, RC(2.4801587301587301587301587301587301587302e-01), RC(2.3674242424242424242424242424242424242424e-01),
-                                 RC(6.9444444444444444444444444444444444444444e-02), 0},
+                    b[9] = {RC(7.6388888888888888888888888888888888888889e-02), 0, 0, RC(3.6940836940836940836940836940836940836941e-01), 0, RC(2.4801587301587301587301587301587301587302e-01), RC(2.3674242424242424242424242424242424242424e-01),
+                            RC(6.9444444444444444444444444444444444444444e-02), 0},
                     bembed[9] = {RC(5.8700209643605870020964360587002096436059e-02), 0, 0, RC(4.8072562358276643990929705215419501133787e-01), RC(-8.5341242076919085578832094861228313083563e-01), RC(1.2046485260770975056689342403628117913832e+00), 0, RC(-5.9242373072160306202859394348756050883710e-02), RC(1.6858043453788134639198468985703028256220e-01)};
     PetscCall(TSRKRegister(TSRK6VR, 6, 9, &A[0][0], b, NULL, bembed, 0, NULL));
   }
@@ -357,15 +358,16 @@ PetscErrorCode TSRKRegisterAll(void) {
 }
 
 /*@C
-   TSRKRegisterDestroy - Frees the list of schemes that were registered by TSRKRegister().
+   TSRKRegisterDestroy - Frees the list of schemes that were registered by `TSRKRegister()`.
 
    Not Collective
 
    Level: advanced
 
-.seealso: `TSRKRegister()`, `TSRKRegisterAll()`
+.seealso: [](chapter_ts), `TSRK`, `TSRKRegister()`, `TSRKRegisterAll()`
 @*/
-PetscErrorCode TSRKRegisterDestroy(void) {
+PetscErrorCode TSRKRegisterDestroy(void)
+{
   RKTableauLink link;
 
   PetscFunctionBegin;
@@ -383,14 +385,15 @@ PetscErrorCode TSRKRegisterDestroy(void) {
 }
 
 /*@C
-  TSRKInitializePackage - This function initializes everything in the TSRK package. It is called
-  from TSInitializePackage().
+  TSRKInitializePackage - This function initializes everything in the `TSRK` package. It is called
+  from `TSInitializePackage()`.
 
   Level: developer
 
-.seealso: `PetscInitialize()`
+.seealso: [](chapter_ts), `TSInitializePackage()`, `PetscInitialize()`, `TSRKFinalizePackage()`
 @*/
-PetscErrorCode TSRKInitializePackage(void) {
+PetscErrorCode TSRKInitializePackage(void)
+{
   PetscFunctionBegin;
   if (TSRKPackageInitialized) PetscFunctionReturn(0);
   TSRKPackageInitialized = PETSC_TRUE;
@@ -400,14 +403,15 @@ PetscErrorCode TSRKInitializePackage(void) {
 }
 
 /*@C
-  TSRKFinalizePackage - This function destroys everything in the TSRK package. It is
-  called from PetscFinalize().
+  TSRKFinalizePackage - This function destroys everything in the `TSRK` package. It is
+  called from `PetscFinalize()`.
 
   Level: developer
 
-.seealso: `PetscFinalize()`
+.seealso: [](chapter_ts), `PetscFinalize()`, `TSRKInitializePackage()`
 @*/
-PetscErrorCode TSRKFinalizePackage(void) {
+PetscErrorCode TSRKFinalizePackage(void)
+{
   PetscFunctionBegin;
   TSRKPackageInitialized = PETSC_FALSE;
   PetscCall(TSRKRegisterDestroy());
@@ -415,7 +419,7 @@ PetscErrorCode TSRKFinalizePackage(void) {
 }
 
 /*@C
-   TSRKRegister - register an RK scheme by providing the entries in the Butcher tableau and optionally embedded approximations and interpolation
+   TSRKRegister - register an `TSRK` scheme by providing the entries in the Butcher tableau and optionally embedded approximations and interpolation
 
    Not Collective, but the same schemes should be registered on all processes on which they will be used
 
@@ -430,14 +434,15 @@ PetscErrorCode TSRKFinalizePackage(void) {
 .  p - Order of the interpolation scheme, equal to the number of columns of binterp
 -  binterp - Coefficients of the interpolation formula (dimension s*p; NULL to reuse b with p=1)
 
-   Notes:
-   Several RK methods are provided, this function is only needed to create new methods.
-
    Level: advanced
 
-.seealso: `TSRK`
+   Note:
+   Several `TSRK` methods are provided, this function is only needed to create new methods.
+
+.seealso: [](chapter_ts), `TSRK`
 @*/
-PetscErrorCode TSRKRegister(TSRKType name, PetscInt order, PetscInt s, const PetscReal A[], const PetscReal b[], const PetscReal c[], const PetscReal bembed[], PetscInt p, const PetscReal binterp[]) {
+PetscErrorCode TSRKRegister(TSRKType name, PetscInt order, PetscInt s, const PetscReal A[], const PetscReal b[], const PetscReal c[], const PetscReal bembed[], PetscInt p, const PetscReal binterp[])
+{
   RKTableauLink link;
   RKTableau     t;
   PetscInt      i, j;
@@ -488,7 +493,8 @@ PetscErrorCode TSRKRegister(TSRKType name, PetscInt order, PetscInt s, const Pet
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode TSRKGetTableau_RK(TS ts, PetscInt *s, const PetscReal **A, const PetscReal **b, const PetscReal **c, const PetscReal **bembed, PetscInt *p, const PetscReal **binterp, PetscBool *FSAL) {
+PetscErrorCode TSRKGetTableau_RK(TS ts, PetscInt *s, const PetscReal **A, const PetscReal **b, const PetscReal **c, const PetscReal **bembed, PetscInt *p, const PetscReal **binterp, PetscBool *FSAL)
+{
   TS_RK    *rk  = (TS_RK *)ts->data;
   RKTableau tab = rk->tableau;
 
@@ -505,7 +511,7 @@ PetscErrorCode TSRKGetTableau_RK(TS ts, PetscInt *s, const PetscReal **A, const 
 }
 
 /*@C
-   TSRKGetTableau - Get info on the RK tableau
+   TSRKGetTableau - Get info on the `TSRK` tableau
 
    Not Collective
 
@@ -524,9 +530,10 @@ PetscErrorCode TSRKGetTableau_RK(TS ts, PetscInt *s, const PetscReal **A, const 
 
    Level: developer
 
-.seealso: `TSRK`
+.seealso: [](chapter_ts), `TSRK`, `TSRKRegister()`, `TSRKSetType()`
 @*/
-PetscErrorCode TSRKGetTableau(TS ts, PetscInt *s, const PetscReal **A, const PetscReal **b, const PetscReal **c, const PetscReal **bembed, PetscInt *p, const PetscReal **binterp, PetscBool *FSAL) {
+PetscErrorCode TSRKGetTableau(TS ts, PetscInt *s, const PetscReal **A, const PetscReal **b, const PetscReal **c, const PetscReal **bembed, PetscInt *p, const PetscReal **binterp, PetscBool *FSAL)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscUseMethod(ts, "TSRKGetTableau_C", (TS, PetscInt *, const PetscReal **, const PetscReal **, const PetscReal **, const PetscReal **, PetscInt *, const PetscReal **, PetscBool *), (ts, s, A, b, c, bembed, p, binterp, FSAL));
@@ -549,7 +556,8 @@ PetscErrorCode TSRKGetTableau(TS ts, PetscInt *s, const PetscReal **A, const Pet
 
  so we can evaluate the method with different order even after the step has been optimistically completed.
 */
-static PetscErrorCode TSEvaluateStep_RK(TS ts, PetscInt order, Vec X, PetscBool *done) {
+static PetscErrorCode TSEvaluateStep_RK(TS ts, PetscInt order, Vec X, PetscBool *done)
+{
   TS_RK       *rk  = (TS_RK *)ts->data;
   RKTableau    tab = rk->tableau;
   PetscScalar *w   = rk->work;
@@ -559,9 +567,14 @@ static PetscErrorCode TSEvaluateStep_RK(TS ts, PetscInt order, Vec X, PetscBool 
   PetscFunctionBegin;
   switch (rk->status) {
   case TS_STEP_INCOMPLETE:
-  case TS_STEP_PENDING: h = ts->time_step; break;
-  case TS_STEP_COMPLETE: h = ts->ptime - ts->ptime_prev; break;
-  default: SETERRQ(PetscObjectComm((PetscObject)ts), PETSC_ERR_PLIB, "Invalid TSStepStatus");
+  case TS_STEP_PENDING:
+    h = ts->time_step;
+    break;
+  case TS_STEP_COMPLETE:
+    h = ts->ptime - ts->ptime_prev;
+    break;
+  default:
+    SETERRQ(PetscObjectComm((PetscObject)ts), PETSC_ERR_PLIB, "Invalid TSStepStatus");
   }
   if (order == tab->order) {
     if (rk->status == TS_STEP_INCOMPLETE) {
@@ -591,7 +604,8 @@ unavailable:
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSForwardCostIntegral_RK(TS ts) {
+static PetscErrorCode TSForwardCostIntegral_RK(TS ts)
+{
   TS_RK           *rk     = (TS_RK *)ts->data;
   TS               quadts = ts->quadraturets;
   RKTableau        tab    = rk->tableau;
@@ -610,7 +624,8 @@ static PetscErrorCode TSForwardCostIntegral_RK(TS ts) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSAdjointCostIntegral_RK(TS ts) {
+static PetscErrorCode TSAdjointCostIntegral_RK(TS ts)
+{
   TS_RK           *rk     = (TS_RK *)ts->data;
   RKTableau        tab    = rk->tableau;
   TS               quadts = ts->quadraturets;
@@ -628,7 +643,8 @@ static PetscErrorCode TSAdjointCostIntegral_RK(TS ts) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSRollBack_RK(TS ts) {
+static PetscErrorCode TSRollBack_RK(TS ts)
+{
   TS_RK           *rk     = (TS_RK *)ts->data;
   TS               quadts = ts->quadraturets;
   RKTableau        tab    = rk->tableau;
@@ -642,9 +658,14 @@ static PetscErrorCode TSRollBack_RK(TS ts) {
   PetscFunctionBegin;
   switch (rk->status) {
   case TS_STEP_INCOMPLETE:
-  case TS_STEP_PENDING: h = ts->time_step; break;
-  case TS_STEP_COMPLETE: h = ts->ptime - ts->ptime_prev; break;
-  default: SETERRQ(PetscObjectComm((PetscObject)ts), PETSC_ERR_PLIB, "Invalid TSStepStatus");
+  case TS_STEP_PENDING:
+    h = ts->time_step;
+    break;
+  case TS_STEP_COMPLETE:
+    h = ts->ptime - ts->ptime_prev;
+    break;
+  default:
+    SETERRQ(PetscObjectComm((PetscObject)ts), PETSC_ERR_PLIB, "Invalid TSStepStatus");
   }
   for (j = 0; j < s; j++) w[j] = -h * b[j];
   PetscCall(VecMAXPY(ts->vec_sol, s, w, YdotRHS));
@@ -658,7 +679,8 @@ static PetscErrorCode TSRollBack_RK(TS ts) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSForwardStep_RK(TS ts) {
+static PetscErrorCode TSForwardStep_RK(TS ts)
+{
   TS_RK           *rk  = (TS_RK *)ts->data;
   RKTableau        tab = rk->tableau;
   Mat              J, *MatsFwdSensipTemp = rk->MatsFwdSensipTemp;
@@ -710,7 +732,8 @@ static PetscErrorCode TSForwardStep_RK(TS ts) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSForwardGetStages_RK(TS ts, PetscInt *ns, Mat **stagesensip) {
+static PetscErrorCode TSForwardGetStages_RK(TS ts, PetscInt *ns, Mat **stagesensip)
+{
   TS_RK    *rk  = (TS_RK *)ts->data;
   RKTableau tab = rk->tableau;
 
@@ -720,7 +743,8 @@ static PetscErrorCode TSForwardGetStages_RK(TS ts, PetscInt *ns, Mat **stagesens
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSForwardSetUp_RK(TS ts) {
+static PetscErrorCode TSForwardSetUp_RK(TS ts)
+{
   TS_RK    *rk  = (TS_RK *)ts->data;
   RKTableau tab = rk->tableau;
   PetscInt  i;
@@ -739,7 +763,8 @@ static PetscErrorCode TSForwardSetUp_RK(TS ts) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSForwardReset_RK(TS ts) {
+static PetscErrorCode TSForwardReset_RK(TS ts)
+{
   TS_RK    *rk  = (TS_RK *)ts->data;
   RKTableau tab = rk->tableau;
   PetscInt  i;
@@ -758,7 +783,8 @@ static PetscErrorCode TSForwardReset_RK(TS ts) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSStep_RK(TS ts) {
+static PetscErrorCode TSStep_RK(TS ts)
+{
   TS_RK           *rk  = (TS_RK *)ts->data;
   RKTableau        tab = rk->tableau;
   const PetscInt   s   = tab->s;
@@ -828,7 +854,8 @@ static PetscErrorCode TSStep_RK(TS ts) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSAdjointSetUp_RK(TS ts) {
+static PetscErrorCode TSAdjointSetUp_RK(TS ts)
+{
   TS_RK    *rk  = (TS_RK *)ts->data;
   RKTableau tab = rk->tableau;
   PetscInt  s   = tab->s;
@@ -850,7 +877,8 @@ static PetscErrorCode TSAdjointSetUp_RK(TS ts) {
   Assumptions:
     - TSStep_RK() always evaluates the step with b, not bembed.
 */
-static PetscErrorCode TSAdjointStep_RK(TS ts) {
+static PetscErrorCode TSAdjointStep_RK(TS ts)
+{
   TS_RK           *rk     = (TS_RK *)ts->data;
   TS               quadts = ts->quadraturets;
   RKTableau        tab    = rk->tableau;
@@ -1009,7 +1037,8 @@ static PetscErrorCode TSAdjointStep_RK(TS ts) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSAdjointReset_RK(TS ts) {
+static PetscErrorCode TSAdjointReset_RK(TS ts)
+{
   TS_RK    *rk  = (TS_RK *)ts->data;
   RKTableau tab = rk->tableau;
 
@@ -1023,7 +1052,8 @@ static PetscErrorCode TSAdjointReset_RK(TS ts) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSInterpolate_RK(TS ts, PetscReal itime, Vec X) {
+static PetscErrorCode TSInterpolate_RK(TS ts, PetscReal itime, Vec X)
+{
   TS_RK           *rk = (TS_RK *)ts->data;
   PetscInt         s = rk->tableau->s, p = rk->tableau->p, i, j;
   PetscReal        h;
@@ -1044,7 +1074,8 @@ static PetscErrorCode TSInterpolate_RK(TS ts, PetscReal itime, Vec X) {
     h = ts->ptime - ts->ptime_prev;
     t = (itime - ts->ptime) / h + 1; /* In the interval [0,1] */
     break;
-  default: SETERRQ(PetscObjectComm((PetscObject)ts), PETSC_ERR_PLIB, "Invalid TSStepStatus");
+  default:
+    SETERRQ(PetscObjectComm((PetscObject)ts), PETSC_ERR_PLIB, "Invalid TSStepStatus");
   }
   PetscCall(PetscMalloc1(s, &b));
   for (i = 0; i < s; i++) b[i] = 0;
@@ -1059,7 +1090,8 @@ static PetscErrorCode TSInterpolate_RK(TS ts, PetscReal itime, Vec X) {
 
 /*------------------------------------------------------------*/
 
-static PetscErrorCode TSRKTableauReset(TS ts) {
+static PetscErrorCode TSRKTableauReset(TS ts)
+{
   TS_RK    *rk  = (TS_RK *)ts->data;
   RKTableau tab = rk->tableau;
 
@@ -1071,7 +1103,8 @@ static PetscErrorCode TSRKTableauReset(TS ts) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSReset_RK(TS ts) {
+static PetscErrorCode TSReset_RK(TS ts)
+{
   PetscFunctionBegin;
   PetscCall(TSRKTableauReset(ts));
   if (ts->use_splitrhsfunction) {
@@ -1082,27 +1115,32 @@ static PetscErrorCode TSReset_RK(TS ts) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMCoarsenHook_TSRK(DM fine, DM coarse, void *ctx) {
+static PetscErrorCode DMCoarsenHook_TSRK(DM fine, DM coarse, void *ctx)
+{
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMRestrictHook_TSRK(DM fine, Mat restrct, Vec rscale, Mat inject, DM coarse, void *ctx) {
+static PetscErrorCode DMRestrictHook_TSRK(DM fine, Mat restrct, Vec rscale, Mat inject, DM coarse, void *ctx)
+{
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMSubDomainHook_TSRK(DM dm, DM subdm, void *ctx) {
+static PetscErrorCode DMSubDomainHook_TSRK(DM dm, DM subdm, void *ctx)
+{
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMSubDomainRestrictHook_TSRK(DM dm, VecScatter gscat, VecScatter lscat, DM subdm, void *ctx) {
+static PetscErrorCode DMSubDomainRestrictHook_TSRK(DM dm, VecScatter gscat, VecScatter lscat, DM subdm, void *ctx)
+{
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSRKTableauSetUp(TS ts) {
+static PetscErrorCode TSRKTableauSetUp(TS ts)
+{
   TS_RK    *rk  = (TS_RK *)ts->data;
   RKTableau tab = rk->tableau;
 
@@ -1113,7 +1151,8 @@ static PetscErrorCode TSRKTableauSetUp(TS ts) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSSetUp_RK(TS ts) {
+static PetscErrorCode TSSetUp_RK(TS ts)
+{
   TS quadts = ts->quadraturets;
   DM dm;
 
@@ -1135,7 +1174,8 @@ static PetscErrorCode TSSetUp_RK(TS ts) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSSetFromOptions_RK(TS ts, PetscOptionItems *PetscOptionsObject) {
+static PetscErrorCode TSSetFromOptions_RK(TS ts, PetscOptionItems *PetscOptionsObject)
+{
   TS_RK *rk = (TS_RK *)ts->data;
 
   PetscFunctionBegin;
@@ -1163,7 +1203,8 @@ static PetscErrorCode TSSetFromOptions_RK(TS ts, PetscOptionItems *PetscOptionsO
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSView_RK(TS ts, PetscViewer viewer) {
+static PetscErrorCode TSView_RK(TS ts, PetscViewer viewer)
+{
   TS_RK    *rk = (TS_RK *)ts->data;
   PetscBool iascii;
 
@@ -1188,7 +1229,8 @@ static PetscErrorCode TSView_RK(TS ts, PetscViewer viewer) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSLoad_RK(TS ts, PetscViewer viewer) {
+static PetscErrorCode TSLoad_RK(TS ts, PetscViewer viewer)
+{
   TSAdapt adapt;
 
   PetscFunctionBegin;
@@ -1198,7 +1240,7 @@ static PetscErrorCode TSLoad_RK(TS ts, PetscViewer viewer) {
 }
 
 /*@
-  TSRKGetOrder - Get the order of RK scheme
+  TSRKGetOrder - Get the order of the `TSRK` scheme
 
   Not collective
 
@@ -1206,13 +1248,14 @@ static PetscErrorCode TSLoad_RK(TS ts, PetscViewer viewer) {
 .  ts - timestepping context
 
   Output Parameter:
-.  order - order of RK-scheme
+.  order - order of `TSRK` scheme
 
   Level: intermediate
 
-.seealso: `TSRKGetType()`
+.seealso: [](chapter_ts), `TSRK`, `TSRKGetType()`
 @*/
-PetscErrorCode TSRKGetOrder(TS ts, PetscInt *order) {
+PetscErrorCode TSRKGetOrder(TS ts, PetscInt *order)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscValidIntPointer(order, 2);
@@ -1221,22 +1264,23 @@ PetscErrorCode TSRKGetOrder(TS ts, PetscInt *order) {
 }
 
 /*@C
-  TSRKSetType - Set the type of RK scheme
+  TSRKSetType - Set the type of the `TSRK` scheme
 
   Logically collective
 
   Input Parameters:
 +  ts - timestepping context
--  rktype - type of RK-scheme
+-  rktype - type of `TSRK` scheme
 
-  Options Database:
+  Options Database Key:
 .   -ts_rk_type - <1fe,2a,3,3bs,4,5f,5dp,5bs>
 
   Level: intermediate
 
-.seealso: `TSRKGetType()`, `TSRK`, `TSRKType`, `TSRK1FE`, `TSRK2A`, `TSRK2B`, `TSRK3`, `TSRK3BS`, `TSRK4`, `TSRK5F`, `TSRK5DP`, `TSRK5BS`, `TSRK6VR`, `TSRK7VR`, `TSRK8VR`
+.seealso: [](chapter_ts), `TSRKGetType()`, `TSRK`, `TSRKType`, `TSRK1FE`, `TSRK2A`, `TSRK2B`, `TSRK3`, `TSRK3BS`, `TSRK4`, `TSRK5F`, `TSRK5DP`, `TSRK5BS`, `TSRK6VR`, `TSRK7VR`, `TSRK8VR`
 @*/
-PetscErrorCode TSRKSetType(TS ts, TSRKType rktype) {
+PetscErrorCode TSRKSetType(TS ts, TSRKType rktype)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscValidCharPointer(rktype, 2);
@@ -1245,7 +1289,7 @@ PetscErrorCode TSRKSetType(TS ts, TSRKType rktype) {
 }
 
 /*@C
-  TSRKGetType - Get the type of RK scheme
+  TSRKGetType - Get the type of `TSRK` scheme
 
   Not collective
 
@@ -1253,20 +1297,22 @@ PetscErrorCode TSRKSetType(TS ts, TSRKType rktype) {
 .  ts - timestepping context
 
   Output Parameter:
-.  rktype - type of RK-scheme
+.  rktype - type of `TSRK`-scheme
 
   Level: intermediate
 
-.seealso: `TSRKSetType()`
+.seealso: [](chapter_ts), `TSRKSetType()`
 @*/
-PetscErrorCode TSRKGetType(TS ts, TSRKType *rktype) {
+PetscErrorCode TSRKGetType(TS ts, TSRKType *rktype)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscUseMethod(ts, "TSRKGetType_C", (TS, TSRKType *), (ts, rktype));
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSRKGetOrder_RK(TS ts, PetscInt *order) {
+static PetscErrorCode TSRKGetOrder_RK(TS ts, PetscInt *order)
+{
   TS_RK *rk = (TS_RK *)ts->data;
 
   PetscFunctionBegin;
@@ -1274,7 +1320,8 @@ static PetscErrorCode TSRKGetOrder_RK(TS ts, PetscInt *order) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSRKGetType_RK(TS ts, TSRKType *rktype) {
+static PetscErrorCode TSRKGetType_RK(TS ts, TSRKType *rktype)
+{
   TS_RK *rk = (TS_RK *)ts->data;
 
   PetscFunctionBegin;
@@ -1282,7 +1329,8 @@ static PetscErrorCode TSRKGetType_RK(TS ts, TSRKType *rktype) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSRKSetType_RK(TS ts, TSRKType rktype) {
+static PetscErrorCode TSRKSetType_RK(TS ts, TSRKType rktype)
+{
   TS_RK        *rk = (TS_RK *)ts->data;
   PetscBool     match;
   RKTableauLink link;
@@ -1305,7 +1353,8 @@ static PetscErrorCode TSRKSetType_RK(TS ts, TSRKType rktype) {
   SETERRQ(PetscObjectComm((PetscObject)ts), PETSC_ERR_ARG_UNKNOWN_TYPE, "Could not find '%s'", rktype);
 }
 
-static PetscErrorCode TSGetStages_RK(TS ts, PetscInt *ns, Vec **Y) {
+static PetscErrorCode TSGetStages_RK(TS ts, PetscInt *ns, Vec **Y)
+{
   TS_RK *rk = (TS_RK *)ts->data;
 
   PetscFunctionBegin;
@@ -1314,7 +1363,8 @@ static PetscErrorCode TSGetStages_RK(TS ts, PetscInt *ns, Vec **Y) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSDestroy_RK(TS ts) {
+static PetscErrorCode TSDestroy_RK(TS ts)
+{
   PetscFunctionBegin;
   PetscCall(TSReset_RK(ts));
   if (ts->dm) {
@@ -1339,7 +1389,8 @@ static PetscErrorCode TSDestroy_RK(TS ts) {
   This defines the nonlinear equation that is to be solved with SNES
   We do not need to solve the equation; we just use SNES to approximate the Jacobian
 */
-static PetscErrorCode SNESTSFormFunction_RK(SNES snes, Vec x, Vec y, TS ts) {
+static PetscErrorCode SNESTSFormFunction_RK(SNES snes, Vec x, Vec y, TS ts)
+{
   TS_RK *rk = (TS_RK *)ts->data;
   DM     dm, dmsave;
 
@@ -1353,7 +1404,8 @@ static PetscErrorCode SNESTSFormFunction_RK(SNES snes, Vec x, Vec y, TS ts) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode SNESTSFormJacobian_RK(SNES snes, Vec x, Mat A, Mat B, TS ts) {
+static PetscErrorCode SNESTSFormJacobian_RK(SNES snes, Vec x, Mat A, Mat B, TS ts)
+{
   TS_RK *rk = (TS_RK *)ts->data;
   DM     dm, dmsave;
 
@@ -1367,32 +1419,33 @@ static PetscErrorCode SNESTSFormJacobian_RK(SNES snes, Vec x, Mat A, Mat B, TS t
 }
 
 /*@C
-  TSRKSetMultirate - Use the interpolation-based multirate RK method
+  TSRKSetMultirate - Use the interpolation-based multirate `TSRK` method
 
   Logically collective
 
   Input Parameters:
 +  ts - timestepping context
--  use_multirate - PETSC_TRUE enables the multirate RK method, sets the basic method to be RK2A and sets the ratio between slow stepsize and fast stepsize to be 2
+-  use_multirate - `PETSC_TRUE` enables the multirate `TSRK` method, sets the basic method to be RK2A and sets the ratio between slow stepsize and fast stepsize to be 2
 
-  Options Database:
+  Options Database Key:
 .   -ts_rk_multirate - <true,false>
-
-  Notes:
-  The multirate method requires interpolation. The default interpolation works for 1st- and 2nd- order RK, but not for high-order RKs except TSRK5DP which comes with the interpolation coeffcients (binterp).
 
   Level: intermediate
 
-.seealso: `TSRKGetMultirate()`
+  Note:
+  The multirate method requires interpolation. The default interpolation works for 1st- and 2nd- order RK, but not for high-order RKs except `TSRK5DP` which comes with the interpolation coeffcients (binterp).
+
+.seealso: [](chapter_ts), `TSRK`, `TSRKGetMultirate()`
 @*/
-PetscErrorCode TSRKSetMultirate(TS ts, PetscBool use_multirate) {
+PetscErrorCode TSRKSetMultirate(TS ts, PetscBool use_multirate)
+{
   PetscFunctionBegin;
   PetscTryMethod(ts, "TSRKSetMultirate_C", (TS, PetscBool), (ts, use_multirate));
   PetscFunctionReturn(0);
 }
 
 /*@C
-  TSRKGetMultirate - Gets whether to Use the interpolation-based multirate RK method
+  TSRKGetMultirate - Gets whether to use the interpolation-based multirate `TSRK` method
 
   Not collective
 
@@ -1400,13 +1453,14 @@ PetscErrorCode TSRKSetMultirate(TS ts, PetscBool use_multirate) {
 .  ts - timestepping context
 
   Output Parameter:
-.  use_multirate - PETSC_TRUE if the multirate RK method is enabled, PETSC_FALSE otherwise
+.  use_multirate - `PETSC_TRUE` if the multirate RK method is enabled, `PETSC_FALSE` otherwise
 
   Level: intermediate
 
-.seealso: `TSRKSetMultirate()`
+.seealso: [](chapter_ts), `TSRK`, `TSRKSetMultirate()`
 @*/
-PetscErrorCode TSRKGetMultirate(TS ts, PetscBool *use_multirate) {
+PetscErrorCode TSRKGetMultirate(TS ts, PetscBool *use_multirate)
+{
   PetscFunctionBegin;
   PetscUseMethod(ts, "TSRKGetMultirate_C", (TS, PetscBool *), (ts, use_multirate));
   PetscFunctionReturn(0);
@@ -1416,18 +1470,18 @@ PetscErrorCode TSRKGetMultirate(TS ts, PetscBool *use_multirate) {
       TSRK - ODE and DAE solver using Runge-Kutta schemes
 
   The user should provide the right hand side of the equation
-  using TSSetRHSFunction().
-
-  Notes:
-  The default is TSRK3BS, it can be changed with TSRKSetType() or -ts_rk_type
+  using `TSSetRHSFunction()`.
 
   Level: beginner
 
-.seealso: `TSCreate()`, `TS`, `TSSetType()`, `TSRKSetType()`, `TSRKGetType()`, `TSRK2D`, `TTSRK2E`, `TSRK3`,
-          `TSRK4`, `TSRK5`, `TSRKPRSSP2`, `TSRKBPR3`, `TSRKType`, `TSRKRegister()`, `TSRKSetMultirate()`, `TSRKGetMultirate()`
+  Notes:
+  The default is `TSRK3BS`, it can be changed with `TSRKSetType()` or -ts_rk_type
 
+.seealso: [](chapter_ts), `TSCreate()`, `TS`, `TSRK`, `TSSetType()`, `TSRKSetType()`, `TSRKGetType()`, `TSRK2D`, `TSRK2E`, `TSRK3`,
+          `TSRK4`, `TSRK5`, `TSRKPRSSP2`, `TSRKBPR3`, `TSRKType`, `TSRKRegister()`, `TSRKSetMultirate()`, `TSRKGetMultirate()`, `TSType`
 M*/
-PETSC_EXTERN PetscErrorCode TSCreate_RK(TS ts) {
+PETSC_EXTERN PetscErrorCode TSCreate_RK(TS ts)
+{
   TS_RK *rk;
 
   PetscFunctionBegin;
@@ -1458,7 +1512,7 @@ PETSC_EXTERN PetscErrorCode TSCreate_RK(TS ts) {
   ts->ops->forwardstep      = TSForwardStep_RK;
   ts->ops->forwardgetstages = TSForwardGetStages_RK;
 
-  PetscCall(PetscNewLog(ts, &rk));
+  PetscCall(PetscNew(&rk));
   ts->data = (void *)rk;
 
   PetscCall(PetscObjectComposeFunction((PetscObject)ts, "TSRKGetOrder_C", TSRKGetOrder_RK));

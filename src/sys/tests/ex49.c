@@ -2,7 +2,8 @@
 static char help[] = "Demonstrates PetscDataTypeFromString().\n\n";
 
 #include <petscsys.h>
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscDataType dtype;
   PetscBool     found;
 

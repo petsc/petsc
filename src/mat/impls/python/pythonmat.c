@@ -16,7 +16,8 @@
 
 .seealso: `Mat`, `MatType`, `MatCreate()`, `MatSetType()`, `MATPYTHON`, `PetscPythonInitialize()`
 @*/
-PetscErrorCode MatPythonSetType(Mat mat, const char pyname[]) {
+PetscErrorCode MatPythonSetType(Mat mat, const char pyname[])
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat, MAT_CLASSID, 1);
   PetscValidCharPointer(pyname, 2);
@@ -39,7 +40,8 @@ PetscErrorCode MatPythonSetType(Mat mat, const char pyname[]) {
 
 .seealso: `Mat`, `MatType`, `MatCreate()`, `MatSetType()`, `MATPYTHON`, `PetscPythonInitialize()`, `MatPythonSetType()`
 @*/
-PetscErrorCode MatPythonGetType(Mat mat, const char *pyname[]) {
+PetscErrorCode MatPythonGetType(Mat mat, const char *pyname[])
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat, MAT_CLASSID, 1);
   PetscValidPointer(pyname, 2);
@@ -67,7 +69,8 @@ PetscErrorCode MatPythonGetType(Mat mat, const char *pyname[]) {
 
 .seealso: `Mat`, `MatType`, `MATPYTHON`, `MatPythonSetType()`, `PetscPythonInitialize()`
 @*/
-PetscErrorCode MatPythonCreate(MPI_Comm comm, PetscInt m, PetscInt n, PetscInt M, PetscInt N, const char pyname[], Mat *A) {
+PetscErrorCode MatPythonCreate(MPI_Comm comm, PetscInt m, PetscInt n, PetscInt M, PetscInt N, const char pyname[], Mat *A)
+{
   PetscFunctionBegin;
   PetscValidCharPointer(pyname, 6);
   PetscValidPointer(A, 6);

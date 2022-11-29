@@ -1,4 +1,4 @@
-#if !defined(__MPIAIJ_H)
+#ifndef __MPIAIJ_H
 #define __MPIAIJ_H
 
 #include <../src/mat/impls/aij/seq/aij.h>
@@ -45,7 +45,7 @@ typedef struct {
   PetscScalar *svalues, *rvalues; /* sending and receiving data */
   PetscInt     rmax;              /* maximum message length */
 #if defined(PETSC_USE_CTABLE)
-  PetscTable colmap;
+  PetscHMapI colmap;
 #else
   PetscInt *colmap; /* local col number of off-diag col */
 #endif
@@ -195,11 +195,11 @@ PETSC_INTERN PetscErrorCode MatResetPreallocationCOO_MPIAIJ(Mat);
     _aj  = ad->j + _ai[i]; \
     _aa  = ad->a + _ai[i]; \
     for (_j = 0; _j < _anz; _j++) { \
-      _row    = _aj[_j]; \
-      _pi     = p_loc->i; \
-      _pnz    = _pi[_row + 1] - _pi[_row]; \
-      _pj     = p_loc->j + _pi[_row]; \
-      _pa     = p_loc->a + _pi[_row]; \
+      _row = _aj[_j]; \
+      _pi  = p_loc->i; \
+      _pnz = _pi[_row + 1] - _pi[_row]; \
+      _pj  = p_loc->j + _pi[_row]; \
+      _pa  = p_loc->a + _pi[_row]; \
       /* perform sparse axpy */ \
       _valtmp = _aa[_j]; \
       _nextp  = 0; \
@@ -217,11 +217,11 @@ PETSC_INTERN PetscErrorCode MatResetPreallocationCOO_MPIAIJ(Mat);
       _aj  = ao->j + _ai[i]; \
       _aa  = ao->a + _ai[i]; \
       for (_j = 0; _j < _anz; _j++) { \
-        _row    = _aj[_j]; \
-        _pi     = p_oth->i; \
-        _pnz    = _pi[_row + 1] - _pi[_row]; \
-        _pj     = p_oth->j + _pi[_row]; \
-        _pa     = p_oth->a + _pi[_row]; \
+        _row = _aj[_j]; \
+        _pi  = p_oth->i; \
+        _pnz = _pi[_row + 1] - _pi[_row]; \
+        _pj  = p_oth->j + _pi[_row]; \
+        _pa  = p_oth->a + _pi[_row]; \
         /* perform sparse axpy */ \
         _valtmp = _aa[_j]; \
         _nextp  = 0; \
@@ -245,11 +245,11 @@ PETSC_INTERN PetscErrorCode MatResetPreallocationCOO_MPIAIJ(Mat);
     _aj  = ad->j + _ai[i]; \
     _aa  = ad->a + _ai[i]; \
     for (_j = 0; _j < _anz; _j++) { \
-      _row    = _aj[_j]; \
-      _pi     = p_loc->i; \
-      _pnz    = _pi[_row + 1] - _pi[_row]; \
-      _pj     = p_loc->j + _pi[_row]; \
-      _pa     = p_loc->a + _pi[_row]; \
+      _row = _aj[_j]; \
+      _pi  = p_loc->i; \
+      _pnz = _pi[_row + 1] - _pi[_row]; \
+      _pj  = p_loc->j + _pi[_row]; \
+      _pa  = p_loc->a + _pi[_row]; \
       /* perform dense axpy */ \
       _valtmp = _aa[_j]; \
       for (_k = 0; _k < _pnz; _k++) apa[_pj[_k]] += _valtmp * _pa[_k]; \
@@ -262,11 +262,11 @@ PETSC_INTERN PetscErrorCode MatResetPreallocationCOO_MPIAIJ(Mat);
       _aj  = ao->j + _ai[i]; \
       _aa  = ao->a + _ai[i]; \
       for (_j = 0; _j < _anz; _j++) { \
-        _row    = _aj[_j]; \
-        _pi     = p_oth->i; \
-        _pnz    = _pi[_row + 1] - _pi[_row]; \
-        _pj     = p_oth->j + _pi[_row]; \
-        _pa     = p_oth->a + _pi[_row]; \
+        _row = _aj[_j]; \
+        _pi  = p_oth->i; \
+        _pnz = _pi[_row + 1] - _pi[_row]; \
+        _pj  = p_oth->j + _pi[_row]; \
+        _pa  = p_oth->a + _pi[_row]; \
         /* perform dense axpy */ \
         _valtmp = _aa[_j]; \
         for (_k = 0; _k < _pnz; _k++) apa[_pj[_k]] += _valtmp * _pa[_k]; \

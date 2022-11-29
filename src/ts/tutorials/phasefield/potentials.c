@@ -5,7 +5,8 @@ static char help[] = "Plots the various potentials used in the examples.\n";
 #include <petscts.h>
 #include <petscdraw.h>
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscDrawLG         lg;
   PetscInt            Mx = 100, i;
   PetscReal           x, hx = .1 / Mx, pause, xx[3], yy[3];

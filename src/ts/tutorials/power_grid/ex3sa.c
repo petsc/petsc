@@ -22,7 +22,8 @@ F*/
 #include <petscts.h>
 #include "ex3.h"
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   TS           ts, quadts; /* ODE integrator */
   Vec          U;          /* solution will be stored here */
   PetscMPIInt  size;

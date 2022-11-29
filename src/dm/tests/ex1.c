@@ -4,7 +4,8 @@ static char help[] = "Tests various DM routines.\n\n";
 #include <petscdm.h>
 #include <petscdmda.h>
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscMPIInt rank;
   PetscInt    M = 10, N = 8, m = PETSC_DECIDE, n = PETSC_DECIDE;
   DM          da;

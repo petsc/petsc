@@ -3,7 +3,8 @@ const char help[] = "Test MatCreateLocalRef()\n\n";
 
 #include <petscmat.h>
 
-static PetscErrorCode GetLocalRef(Mat A, IS isrow, IS iscol, Mat *B) {
+static PetscErrorCode GetLocalRef(Mat A, IS isrow, IS iscol, Mat *B)
+{
   IS istmp;
 
   PetscFunctionBegin;
@@ -20,7 +21,8 @@ static PetscErrorCode GetLocalRef(Mat A, IS isrow, IS iscol, Mat *B) {
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[])
+{
   MPI_Comm               comm;
   Mat                    J, B;
   PetscInt               i, j, k, l, rstart, rend, m, n, top_bs, row_bs, col_bs, nlocblocks, *idx, nrowblocks, ncolblocks, *ridx, *cidx, *icol, *irow;

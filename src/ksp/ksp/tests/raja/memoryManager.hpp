@@ -11,11 +11,11 @@
 #include "RAJA/RAJA.hpp"
 
 #if defined(RAJA_ENABLE_CUDA)
-#include "RAJA/policy/cuda/raja_cudaerrchk.hpp"
+  #include "RAJA/policy/cuda/raja_cudaerrchk.hpp"
 #endif
 
 #if defined(RAJA_ENABLE_HIP)
-#include "RAJA/policy/hip/raja_hiperrchk.hpp"
+  #include "RAJA/policy/hip/raja_hiperrchk.hpp"
 #endif
 
 /*
@@ -24,14 +24,16 @@
   or allocate/deallocate CUDA unified memory. The type of memory allocated
   is dependent on how RAJA was configured.
 */
-namespace memoryManager {
+namespace memoryManager
+{
 
 #if defined(RAJA_ENABLE_SYCL)
 static camp::resources::Resource *sycl_res;
 #endif
 
 template <typename T>
-T *allocate(RAJA::Index_type size) {
+T *allocate(RAJA::Index_type size)
+{
   T *ptr;
 #if defined(RAJA_ENABLE_CUDA)
   cudaErrchk(cudaMallocManaged((void **)&ptr, sizeof(T) * size, cudaMemAttachGlobal));
@@ -46,7 +48,8 @@ T *allocate(RAJA::Index_type size) {
 }
 
 template <typename T>
-void deallocate(T *&ptr) {
+void deallocate(T *&ptr)
+{
   if (ptr) {
 #if defined(RAJA_ENABLE_CUDA)
     cudaErrchk(cudaFree(ptr));
@@ -63,29 +66,31 @@ void deallocate(T *&ptr) {
 
 #if defined(RAJA_ENABLE_CUDA) || defined(RAJA_ENABLE_HIP) || defined(RAJA_ENABLE_SYCL)
 template <typename T>
-T *allocate_gpu(RAJA::Index_type size) {
+T *allocate_gpu(RAJA::Index_type size)
+{
   T *ptr;
-#if defined(RAJA_ENABLE_CUDA)
+  #if defined(RAJA_ENABLE_CUDA)
   cudaErrchk(cudaMalloc((void **)&ptr, sizeof(T) * size));
-#elif defined(RAJA_ENABLE_HIP)
+  #elif defined(RAJA_ENABLE_HIP)
   hipErrchk(hipMalloc((void **)&ptr, sizeof(T) * size));
-#elif defined(RAJA_ENABLE_SYCL)
+  #elif defined(RAJA_ENABLE_SYCL)
   auto qu = sycl_res->get<camp::resources::Sycl>().get_queue();
   ptr     = cl::sycl::malloc_device<T>(size, *qu);
-#endif
+  #endif
   return ptr;
 }
 
 template <typename T>
-void deallocate_gpu(T *&ptr) {
+void deallocate_gpu(T *&ptr)
+{
   if (ptr) {
-#if defined(RAJA_ENABLE_CUDA)
+  #if defined(RAJA_ENABLE_CUDA)
     cudaErrchk(cudaFree(ptr));
-#elif defined(RAJA_ENABLE_HIP)
+  #elif defined(RAJA_ENABLE_HIP)
     hipErrchk(hipFree(ptr));
-#elif defined(RAJA_ENABLE_SYCL)
+  #elif defined(RAJA_ENABLE_SYCL)
     sycl_res->deallocate(ptr);
-#endif
+  #endif
     ptr = nullptr;
   }
 }

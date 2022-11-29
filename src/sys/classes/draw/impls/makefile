@@ -1,4 +1,4 @@
--include ../../../../../petsckdir.mk
+-include ../../../../../petscdir.mk
 
 DIRS     = image tikz x win32 null
 LOCDIR   = src/sys/classes/draw/impls/

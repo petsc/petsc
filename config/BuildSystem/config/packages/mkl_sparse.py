@@ -9,7 +9,7 @@ class Configure(config.package.Package):
     self.liblist          = [[]] # use MKL detected by BlasLapack.py
     self.precisions       = ['single','double']
     self.lookforbydefault = 1
-    self.requires32bitint = 1
+    self.requires32bitintblas   = 0
     return
 
   def setupDependencies(self, framework):
@@ -19,7 +19,7 @@ class Configure(config.package.Package):
     return
 
   def configureLibrary(self):
-    if not self.blasLapack.mkl:
+    if not self.blasLapack.mkl or (not self.blasLapack.has64bitindices and self.defaultIndexSize == 64):
       self.argDB['with-'+self.package] = 0
       return
     config.package.Package.configureLibrary(self)

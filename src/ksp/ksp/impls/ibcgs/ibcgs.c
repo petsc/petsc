@@ -2,7 +2,8 @@
 #include <petsc/private/kspimpl.h>
 #include <petsc/private/vecimpl.h>
 
-static PetscErrorCode KSPSetUp_IBCGS(KSP ksp) {
+static PetscErrorCode KSPSetUp_IBCGS(KSP ksp)
+{
   PetscBool diagonalscale;
 
   PetscFunctionBegin;
@@ -36,7 +37,8 @@ static PetscErrorCode KSPSetUp_IBCGS(KSP ksp) {
 #define qn_1 qn
 #define Zn_1 Zn
 #define zn_1 zn
-static PetscErrorCode KSPSolve_IBCGS(KSP ksp) {
+static PetscErrorCode KSPSolve_IBCGS(KSP ksp)
+{
   PetscInt  i, N;
   PetscReal rnorm = 0.0, rnormin = 0.0;
 #if defined(PETSC_HAVE_MPI_LONG_DOUBLE) && !defined(PETSC_USE_COMPLEX) && (defined(PETSC_USE_REAL_SINGLE) || defined(PETSC_USE_REAL_DOUBLE))
@@ -308,34 +310,33 @@ static PetscErrorCode KSPSolve_IBCGS(KSP ksp) {
      KSPIBCGS - Implements the IBiCGStab (Improved Stabilized version of BiConjugate Gradient) method
             in an alternative form to have only a single global reduction operation instead of the usual 3 (or 4)
 
-   Options Database Keys:
-    see KSPSolve()
-
    Level: beginner
 
    Notes:
-    Supports left and right preconditioning
+   Supports left and right preconditioning
 
-          See KSPBCGSL for additional stabilization
+   See `KSPBCGSL` for additional stabilization
 
-          Unlike the Bi-CG-stab algorithm, this requires one multiplication be the transpose of the operator
-           before the iteration starts.
+   Unlike the Bi-CG-stab algorithm, this requires one multiplication be the transpose of the operator
+   before the iteration starts.
 
-          The paper has two errors in the algorithm presented, they are fixed in the code in KSPSolve_IBCGS()
+   The paper has two errors in the algorithm presented, they are fixed in the code in `KSPSolve_IBCGS()`
 
-          For maximum reduction in the number of global reduction operations, this solver should be used with
-          KSPSetLagNorm().
+   For maximum reduction in the number of global reduction operations, this solver should be used with
+   `KSPSetLagNorm()`.
 
-          This is not supported for complex numbers.
+   This is not supported for complex numbers.
 
-   Reference: The Improved BiCGStab Method for Large and Sparse Unsymmetric Linear Systems on Parallel Distributed Memory
+   Reference:
+   The Improved BiCGStab Method for Large and Sparse Unsymmetric Linear Systems on Parallel Distributed Memory
                      Architectures. L. T. Yang and R. Brent, Proceedings of the Fifth International Conference on Algorithms and
                      Architectures for Parallel Processing, 2002, IEEE.
 
-.seealso: `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPBICG`, `KSPBCGSL`, `KSPIBCGS`, `KSPSetLagNorm()`
+.seealso: [](chapter_ksp), `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPBICG`, `KSPBCGSL`, `KSPIBCGS`, `KSPSetLagNorm()`
 M*/
 
-PETSC_EXTERN PetscErrorCode KSPCreate_IBCGS(KSP ksp) {
+PETSC_EXTERN PetscErrorCode KSPCreate_IBCGS(KSP ksp)
+{
   PetscFunctionBegin;
 
   PetscCall(KSPSetSupportedNorm(ksp, KSP_NORM_PRECONDITIONED, PC_LEFT, 3));

@@ -9,18 +9,21 @@ typedef struct {
   PetscInt  processGrid[3]; /* Dimension of local process grid on each node */
 } PetscPartitioner_Simple;
 
-static PetscErrorCode PetscPartitionerDestroy_Simple(PetscPartitioner part) {
+static PetscErrorCode PetscPartitionerDestroy_Simple(PetscPartitioner part)
+{
   PetscFunctionBegin;
   PetscCall(PetscFree(part->data));
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscPartitionerView_Simple_ASCII(PetscPartitioner part, PetscViewer viewer) {
+static PetscErrorCode PetscPartitionerView_Simple_ASCII(PetscPartitioner part, PetscViewer viewer)
+{
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscPartitionerView_Simple(PetscPartitioner part, PetscViewer viewer) {
+static PetscErrorCode PetscPartitionerView_Simple(PetscPartitioner part, PetscViewer viewer)
+{
   PetscBool iascii;
 
   PetscFunctionBegin;
@@ -31,7 +34,8 @@ static PetscErrorCode PetscPartitionerView_Simple(PetscPartitioner part, PetscVi
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscPartitionerSetFromOptions_Simple(PetscPartitioner part, PetscOptionItems *PetscOptionsObject) {
+static PetscErrorCode PetscPartitionerSetFromOptions_Simple(PetscPartitioner part, PetscOptionItems *PetscOptionsObject)
+{
   PetscPartitioner_Simple *p = (PetscPartitioner_Simple *)part->data;
   PetscInt                 num, i;
   PetscBool                flg;
@@ -56,7 +60,8 @@ static PetscErrorCode PetscPartitionerSetFromOptions_Simple(PetscPartitioner par
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscPartitionerPartition_Simple_Grid(PetscPartitioner part, PetscInt nparts, PetscInt numVertices, PetscInt start[], PetscInt adjacency[], PetscSection vertSection, PetscSection targetSection, PetscSection partSection, IS *partition) {
+static PetscErrorCode PetscPartitionerPartition_Simple_Grid(PetscPartitioner part, PetscInt nparts, PetscInt numVertices, PetscInt start[], PetscInt adjacency[], PetscSection vertSection, PetscSection targetSection, PetscSection partSection, IS *partition)
+{
   PetscPartitioner_Simple *p     = (PetscPartitioner_Simple *)part->data;
   const PetscInt          *nodes = p->nodeGrid;
   const PetscInt          *procs = p->processGrid;
@@ -128,7 +133,8 @@ static PetscErrorCode PetscPartitionerPartition_Simple_Grid(PetscPartitioner par
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscPartitionerPartition_Simple(PetscPartitioner part, PetscInt nparts, PetscInt numVertices, PetscInt start[], PetscInt adjacency[], PetscSection vertSection, PetscSection targetSection, PetscSection partSection, IS *partition) {
+static PetscErrorCode PetscPartitionerPartition_Simple(PetscPartitioner part, PetscInt nparts, PetscInt numVertices, PetscInt start[], PetscInt adjacency[], PetscSection vertSection, PetscSection targetSection, PetscSection partSection, IS *partition)
+{
   PetscPartitioner_Simple *p = (PetscPartitioner_Simple *)part->data;
   MPI_Comm                 comm;
   PetscInt                 np, *tpwgts = NULL, sumw = 0, numVerticesGlobal = 0;
@@ -248,7 +254,8 @@ static PetscErrorCode PetscPartitionerPartition_Simple(PetscPartitioner part, Pe
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscPartitionerInitialize_Simple(PetscPartitioner part) {
+static PetscErrorCode PetscPartitionerInitialize_Simple(PetscPartitioner part)
+{
   PetscFunctionBegin;
   part->noGraph             = PETSC_TRUE;
   part->ops->view           = PetscPartitionerView_Simple;
@@ -266,12 +273,13 @@ static PetscErrorCode PetscPartitionerInitialize_Simple(PetscPartitioner part) {
 .seealso: `PetscPartitionerType`, `PetscPartitionerCreate()`, `PetscPartitionerSetType()`
 M*/
 
-PETSC_EXTERN PetscErrorCode PetscPartitionerCreate_Simple(PetscPartitioner part) {
+PETSC_EXTERN PetscErrorCode PetscPartitionerCreate_Simple(PetscPartitioner part)
+{
   PetscPartitioner_Simple *p;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part, PETSCPARTITIONER_CLASSID, 1);
-  PetscCall(PetscNewLog(part, &p));
+  PetscCall(PetscNew(&p));
   p->gridDim = -1;
   part->data = p;
 

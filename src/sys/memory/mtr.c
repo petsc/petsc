@@ -5,7 +5,7 @@
 #include <petsc/private/petscimpl.h> /*I "petscsys.h" I*/
 #include <petscviewer.h>
 #if defined(PETSC_HAVE_MALLOC_H)
-#include <malloc.h>
+  #include <malloc.h>
 #endif
 
 /*
@@ -47,17 +47,17 @@ typedef union
 } TrSPACE;
 
 #define MAXTRMAXMEMS 50
-static size_t       TRallocated           = 0;
-static int          TRfrags               = 0;
-static TRSPACE     *TRhead                = NULL;
-static int          TRid                  = 0;
-static PetscBool    TRdebugLevel          = PETSC_FALSE;
-static PetscBool    TRdebugIinitializenan = PETSC_FALSE;
-static PetscBool    TRrequestedSize       = PETSC_FALSE;
-static size_t       TRMaxMem              = 0;
-static int          NumTRMaxMems          = 0;
-static size_t       TRMaxMems[MAXTRMAXMEMS];
-static int          TRMaxMemsEvents[MAXTRMAXMEMS];
+static size_t    TRallocated           = 0;
+static int       TRfrags               = 0;
+static TRSPACE  *TRhead                = NULL;
+static int       TRid                  = 0;
+static PetscBool TRdebugLevel          = PETSC_FALSE;
+static PetscBool TRdebugIinitializenan = PETSC_FALSE;
+static PetscBool TRrequestedSize       = PETSC_FALSE;
+static size_t    TRMaxMem              = 0;
+static int       NumTRMaxMems          = 0;
+static size_t    TRMaxMems[MAXTRMAXMEMS];
+static int       TRMaxMemsEvents[MAXTRMAXMEMS];
 /*
       Arrays to log information on mallocs for PetscMallocView()
 */
@@ -104,7 +104,8 @@ static PetscViewer  PetscLogMallocTraceViewer    = NULL;
 
 .seealso: `CHKMEMQ`
 @*/
-PetscErrorCode PetscMallocValidate(int line, const char function[], const char file[]) {
+PetscErrorCode PetscMallocValidate(int line, const char function[], const char file[])
+{
   TRSPACE      *head, *lasthead;
   char         *a;
   PetscClassId *nend;
@@ -166,7 +167,8 @@ PetscErrorCode PetscMallocValidate(int line, const char function[], const char f
     Returns:
     double aligned pointer to requested storage, or null if not  available.
  */
-PetscErrorCode PetscTrMallocDefault(size_t a, PetscBool clear, int lineno, const char function[], const char filename[], void **result) {
+PetscErrorCode PetscTrMallocDefault(size_t a, PetscBool clear, int lineno, const char function[], const char filename[], void **result)
+{
   TRSPACE *head;
   char    *inew;
   size_t   nsize;
@@ -214,19 +216,19 @@ PetscErrorCode PetscTrMallocDefault(size_t a, PetscBool clear, int lineno, const
   PetscCall(PetscStackCopy(&petscstack, &head->stack));
   /* fix the line number to where the malloc() was called, not the PetscFunctionBegin; */
   head->stack.line[head->stack.currentsize - 2] = lineno;
-#if defined(PETSC_USE_REAL_SINGLE) || defined(PETSC_USE_REAL_DOUBLE)
+  #if defined(PETSC_USE_REAL_SINGLE) || defined(PETSC_USE_REAL_DOUBLE)
   if (!clear && TRdebugIinitializenan) {
     size_t     i, n = a / sizeof(PetscReal);
     PetscReal *s = (PetscReal *)inew;
-    /* from https://www.doc.ic.ac.uk/~eedwards/compsys/float/nan.html */
-#if defined(PETSC_USE_REAL_SINGLE)
+      /* from https://www.doc.ic.ac.uk/~eedwards/compsys/float/nan.html */
+    #if defined(PETSC_USE_REAL_SINGLE)
     int nas = 0x7F800002;
-#else
+    #else
     PetscInt64 nas = 0x7FF0000000000002;
-#endif
+    #endif
     for (i = 0; i < n; i++) memcpy(s + i, &nas, sizeof(PetscReal));
   }
-#endif
+  #endif
 #endif
 
   /*
@@ -261,7 +263,8 @@ PetscErrorCode PetscTrMallocDefault(size_t a, PetscBool clear, int lineno, const
 .   lineno - line number where used.  Use __LINE__ for this
 .   filename  - file name where used.  Use __FILE__ for this
  */
-PetscErrorCode PetscTrFreeDefault(void *aa, int lineno, const char function[], const char filename[]) {
+PetscErrorCode PetscTrFreeDefault(void *aa, int lineno, const char function[], const char filename[])
+{
   char         *a = (char *)aa;
   TRSPACE      *head;
   char         *ahead;
@@ -343,7 +346,8 @@ PetscErrorCode PetscTrFreeDefault(void *aa, int lineno, const char function[], c
 
 .seealso: `PetscTrMallocDefault()`, `PetscTrFreeDefault()`
 */
-PetscErrorCode PetscTrReallocDefault(size_t len, int lineno, const char function[], const char filename[], void **result) {
+PetscErrorCode PetscTrReallocDefault(size_t len, int lineno, const char function[], const char filename[], void **result)
+{
   char         *a = (char *)*result;
   TRSPACE      *head;
   char         *ahead, *inew;
@@ -479,7 +483,8 @@ PetscErrorCode PetscTrReallocDefault(size_t len, int lineno, const char function
 
 .seealso: `PetscMallocDump()`, `PetscMemoryGetCurrentUsage()`, `PetscMemorySetGetMaximumUsage()`, `PetscMallocView()`
  @*/
-PetscErrorCode PetscMemoryView(PetscViewer viewer, const char message[]) {
+PetscErrorCode PetscMemoryView(PetscViewer viewer, const char message[])
+{
   PetscLogDouble allocated, allocatedmax, resident, residentmax, gallocated, gallocatedmax, gresident, gresidentmax, maxgallocated, maxgallocatedmax, maxgresident, maxgresidentmax;
   PetscLogDouble mingallocated, mingallocatedmax, mingresident, mingresidentmax;
   MPI_Comm       comm;
@@ -556,7 +561,8 @@ PetscErrorCode PetscMemoryView(PetscViewer viewer, const char message[]) {
 .seealso: `PetscMallocDump()`, `PetscMallocGetMaximumUsage()`, `PetscMemoryGetCurrentUsage()`,
           `PetscMemoryGetMaximumUsage()`
  @*/
-PetscErrorCode PetscMallocGetCurrentUsage(PetscLogDouble *space) {
+PetscErrorCode PetscMallocGetCurrentUsage(PetscLogDouble *space)
+{
   PetscFunctionBegin;
   *space = (PetscLogDouble)TRallocated;
   PetscFunctionReturn(0);
@@ -576,7 +582,8 @@ PetscErrorCode PetscMallocGetCurrentUsage(PetscLogDouble *space) {
 .seealso: `PetscMallocDump()`, `PetscMallocView()`, `PetscMallocGetMaximumUsage()`, `PetscMemoryGetCurrentUsage()`,
           `PetscMallocPushMaximumUsage()`
  @*/
-PetscErrorCode PetscMallocGetMaximumUsage(PetscLogDouble *space) {
+PetscErrorCode PetscMallocGetMaximumUsage(PetscLogDouble *space)
+{
   PetscFunctionBegin;
   *space = (PetscLogDouble)TRMaxMem;
   PetscFunctionReturn(0);
@@ -595,7 +602,8 @@ PetscErrorCode PetscMallocGetMaximumUsage(PetscLogDouble *space) {
 .seealso: `PetscMallocDump()`, `PetscMallocView()`, `PetscMallocGetMaximumUsage()`, `PetscMemoryGetCurrentUsage()`,
           `PetscMallocPopMaximumUsage()`
  @*/
-PetscErrorCode PetscMallocPushMaximumUsage(int event) {
+PetscErrorCode PetscMallocPushMaximumUsage(int event)
+{
   PetscFunctionBegin;
   if (++NumTRMaxMems > MAXTRMAXMEMS) PetscFunctionReturn(0);
   TRMaxMems[NumTRMaxMems - 1]       = TRallocated;
@@ -619,7 +627,8 @@ PetscErrorCode PetscMallocPushMaximumUsage(int event) {
 .seealso: `PetscMallocDump()`, `PetscMallocView()`, `PetscMallocGetMaximumUsage()`, `PetscMemoryGetCurrentUsage()`,
           `PetscMallocPushMaximumUsage()`
  @*/
-PetscErrorCode PetscMallocPopMaximumUsage(int event, PetscLogDouble *mu) {
+PetscErrorCode PetscMallocPopMaximumUsage(int event, PetscLogDouble *mu)
+{
   PetscFunctionBegin;
   *mu = 0;
   if (NumTRMaxMems-- > MAXTRMAXMEMS) PetscFunctionReturn(0);
@@ -644,7 +653,8 @@ PetscErrorCode PetscMallocPopMaximumUsage(int event, PetscLogDouble *mu) {
 
 .seealso: `PetscMallocGetCurrentUsage()`, `PetscMallocView()`
 @*/
-PetscErrorCode PetscMallocGetStack(void *ptr, PetscStack **stack) {
+PetscErrorCode PetscMallocGetStack(void *ptr, PetscStack **stack)
+{
   TRSPACE *head;
 
   PetscFunctionBegin;
@@ -653,7 +663,8 @@ PetscErrorCode PetscMallocGetStack(void *ptr, PetscStack **stack) {
   PetscFunctionReturn(0);
 }
 #else
-PetscErrorCode PetscMallocGetStack(void *ptr, void **stack) {
+PetscErrorCode PetscMallocGetStack(void *ptr, void **stack)
+{
   PetscFunctionBegin;
   *stack = NULL;
   PetscFunctionReturn(0);
@@ -689,7 +700,8 @@ PetscErrorCode PetscMallocGetStack(void *ptr, void **stack) {
 
 .seealso: `PetscMallocGetCurrentUsage()`, `PetscMallocView()`, `PetscMallocViewSet()`, `PetscMallocValidate()`
 @*/
-PetscErrorCode PetscMallocDump(FILE *fp) {
+PetscErrorCode PetscMallocDump(FILE *fp)
+{
   TRSPACE    *head;
   size_t      libAlloc = 0;
   PetscMPIInt rank;
@@ -741,7 +753,8 @@ PetscErrorCode PetscMallocDump(FILE *fp) {
 
 .seealso: `PetscMallocDump()`, `PetscMallocView()`, `PetscMallocViewSet()`, `PetscMallocTraceSet()`, `PetscMallocValidate()`
 @*/
-PetscErrorCode PetscMallocViewSet(PetscLogDouble logmin) {
+PetscErrorCode PetscMallocViewSet(PetscLogDouble logmin)
+{
   PetscFunctionBegin;
   PetscLogMalloc = 0;
   PetscCall(PetscMemorySetGetMaximumUsage());
@@ -765,7 +778,8 @@ PetscErrorCode PetscMallocViewSet(PetscLogDouble logmin) {
 
 .seealso: `PetscMallocDump()`, `PetscMallocView()`, `PetscMallocTraceGet()`
 @*/
-PetscErrorCode PetscMallocViewGet(PetscBool *logging) {
+PetscErrorCode PetscMallocViewGet(PetscBool *logging)
+{
   PetscFunctionBegin;
   *logging = (PetscBool)(PetscLogMalloc >= 0);
   PetscFunctionReturn(0);
@@ -788,7 +802,8 @@ PetscErrorCode PetscMallocViewGet(PetscBool *logging) {
 
 .seealso: `PetscMallocTraceGet()`, `PetscMallocViewGet()`, `PetscMallocDump()`, `PetscMallocView()`
 @*/
-PetscErrorCode PetscMallocTraceSet(PetscViewer viewer, PetscBool active, PetscLogDouble logmin) {
+PetscErrorCode PetscMallocTraceSet(PetscViewer viewer, PetscBool active, PetscLogDouble logmin)
+{
   PetscFunctionBegin;
   if (!active) {
     PetscLogMallocTrace = -1;
@@ -817,7 +832,8 @@ PetscErrorCode PetscMallocTraceSet(PetscViewer viewer, PetscBool active, PetscLo
 
 .seealso: `PetscMallocTraceSet()`, `PetscMallocViewGet()`, `PetscMallocDump()`, `PetscMallocView()`
 @*/
-PetscErrorCode PetscMallocTraceGet(PetscBool *logging) {
+PetscErrorCode PetscMallocTraceGet(PetscBool *logging)
+{
   PetscFunctionBegin;
   *logging = (PetscBool)(PetscLogMallocTrace >= 0);
   PetscFunctionReturn(0);
@@ -848,7 +864,8 @@ PetscErrorCode PetscMallocTraceGet(PetscBool *logging) {
 
 .seealso: `PetscMallocGetCurrentUsage()`, `PetscMallocDump()`, `PetscMallocViewSet()`, `PetscMemoryView()`
 @*/
-PetscErrorCode PetscMallocView(FILE *fp) {
+PetscErrorCode PetscMallocView(FILE *fp)
+{
   PetscInt       i, j, n, *perm;
   size_t        *shortlength;
   int           *shortcount, err;
@@ -935,7 +952,8 @@ PetscErrorCode PetscMallocView(FILE *fp) {
 
 .seealso: `CHKMEMQ()`, `PetscMallocValidate()`, `PetscMallocGetDebug()`
 @*/
-PetscErrorCode PetscMallocSetDebug(PetscBool eachcall, PetscBool initializenan) {
+PetscErrorCode PetscMallocSetDebug(PetscBool eachcall, PetscBool initializenan)
+{
   PetscFunctionBegin;
   PetscCheck(PetscTrMalloc != PetscTrMallocDefault, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Cannot call this routine more than once, it can only be called in PetscInitialize()");
   PetscCall(PetscMallocSet(PetscTrMallocDefault, PetscTrFreeDefault, PetscTrReallocDefault));
@@ -969,7 +987,8 @@ PetscErrorCode PetscMallocSetDebug(PetscBool eachcall, PetscBool initializenan) 
 
 .seealso: `CHKMEMQ()`, `PetscMallocValidate()`, `PetscMallocSetDebug()`
 @*/
-PetscErrorCode PetscMallocGetDebug(PetscBool *basic, PetscBool *eachcall, PetscBool *initializenan) {
+PetscErrorCode PetscMallocGetDebug(PetscBool *basic, PetscBool *eachcall, PetscBool *initializenan)
+{
   PetscFunctionBegin;
   if (basic) *basic = (PetscTrMalloc == PetscTrMallocDefault) ? PETSC_TRUE : PETSC_FALSE;
   if (eachcall) *eachcall = TRdebugLevel;
@@ -992,7 +1011,8 @@ PetscErrorCode PetscMallocGetDebug(PetscBool *basic, PetscBool *eachcall, PetscB
 
 .seealso: `PetscMallocLogRequestedSizeGet()`, `PetscMallocViewSet()`
 @*/
-PetscErrorCode PetscMallocLogRequestedSizeSet(PetscBool flg) {
+PetscErrorCode PetscMallocLogRequestedSizeSet(PetscBool flg)
+{
   PetscFunctionBegin;
   TRrequestedSize = flg;
   PetscFunctionReturn(0);
@@ -1010,7 +1030,8 @@ PetscErrorCode PetscMallocLogRequestedSizeSet(PetscBool flg) {
 
 .seealso: `PetscMallocLogRequestedSizeSetinalSizeSet()`, `PetscMallocViewSet()`
 @*/
-PetscErrorCode PetscMallocLogRequestedSizeGet(PetscBool *flg) {
+PetscErrorCode PetscMallocLogRequestedSizeGet(PetscBool *flg)
+{
   PetscFunctionBegin;
   *flg = TRrequestedSize;
   PetscFunctionReturn(0);

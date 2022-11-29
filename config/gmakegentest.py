@@ -6,6 +6,7 @@ import os,shutil, string, re
 import sys
 import logging, time
 import types
+import shlex
 sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
 from collections import defaultdict
 from gmakegen import *
@@ -351,16 +352,13 @@ class generateExamples(Petsc):
       Create a dictionary with all of the variables that get substituted
       into the template commands found in example_template.py
     """
-    subst={}
-
     # Handle defaults of testparse.acceptedkeys (e.g., ignores subtests)
     if 'nsize' not in testDict: testDict['nsize'] = '1'
     if 'timeoutfactor' not in testDict: testDict['timeoutfactor']="1"
-    for ak in testparse.acceptedkeys:
-      if ak=='test': continue
-      subst[ak]=(testDict[ak] if ak in testDict else '')
+    subst = {key : testDict.get(key, '') for key in testparse.acceptedkeys if key != 'test'}
 
     # Now do other variables
+    subst['env'] = '\n'.join('export '+cmd for cmd in shlex.split(subst['env']))
     subst['execname']=testDict['execname']
     subst['error']=''
     if 'filter' in testDict:
@@ -428,11 +426,11 @@ class generateExamples(Petsc):
       Substitute variables
     """
     Str=origStr
-    for subkey in subst:
+    for subkey, subvalue in subst.items():
       if subkey=='regexes': continue
-      if not isinstance(subst[subkey],str): continue
+      if not isinstance(subvalue,str): continue
       if subkey.upper() not in Str: continue
-      Str=subst['regexes'][subkey].sub(lambda x: subst[subkey],Str)
+      Str=subst['regexes'][subkey].sub(lambda x: subvalue,Str)
     return Str
 
   def getCmds(self,subst,i, debug=False):
@@ -546,12 +544,16 @@ class generateExamples(Petsc):
       Generate bash script using template found next to this file.
       This file is read in at constructor time to avoid file I/O
     """
+    def opener(path,flags,*args,**kwargs):
+      kwargs.setdefault('mode',0o755)
+      return os.open(path,flags,*args,**kwargs)
+
     # runscript_dir directory has to be consistent with gmakefile
     testDict=srcDict[testname]
     rpath=self.srcrelpath(root)
     runscript_dir=os.path.join(self.testroot_dir,rpath)
     if not os.path.isdir(runscript_dir): os.makedirs(runscript_dir)
-    with open(os.path.join(runscript_dir,testname+".sh"),"w") as fh:
+    with open(os.path.join(runscript_dir,testname+".sh"),"w",opener=opener) as fh:
 
       # Get variables to go into shell scripts.  last time testDict used
       subst=self.getSubstVars(testDict,rpath,testname)
@@ -617,9 +619,6 @@ class generateExamples(Petsc):
         fh.write(loopFoot+"\n")
 
       fh.write(footer+"\n")
-
-    os.chmod(os.path.join(runscript_dir,testname+".sh"),0o755)
-    #if '10_9' in testname: sys.exit()
     return
 
   def  genScriptsAndInfo(self,exfile,root,srcDict):
@@ -873,17 +872,14 @@ class generateExamples(Petsc):
     # Use examplesAnalyze to get what the makefles think are sources
     #self.examplesAnalyze(root,dirs,files,anlzDict)
 
-    dataDict[root]={}
-
+    data = {}
     for exfile in files:
-      #TST: Until we replace files, still leaving the orginals as is
+      #TST: Until we replace files, still leaving the originals as is
       #if not exfile.startswith("new_"+"ex"): continue
       #if not exfile.startswith("ex"): continue
 
       # Ignore emacs and other temporary files
-      if exfile.startswith("."): continue
-      if exfile.startswith("#"): continue
-      if exfile.endswith("~"): continue
+      if exfile.startswith((".", "#")) or exfile.endswith("~"): continue
       # Only parse source files
       ext=getlangext(exfile).lstrip('.').replace('.','_')
       if ext not in LANGS: continue
@@ -891,13 +887,14 @@ class generateExamples(Petsc):
       # Convenience
       fullex=os.path.join(root,exfile)
       if self.verbose: print('   --> '+fullex)
-      dataDict[root].update(testparse.parseTestFile(fullex,0))
-      if exfile in dataDict[root]:
-        if not self.check_output:
-          self.genScriptsAndInfo(exfile,root,dataDict[root][exfile])
+      data.update(testparse.parseTestFile(fullex,0))
+      if exfile in data:
+        if self.check_output:
+          self.checkOutput(exfile,root,data[exfile])
         else:
-          self.checkOutput(exfile,root,dataDict[root][exfile])
+          self.genScriptsAndInfo(exfile,root,data[exfile])
 
+    dataDict[root] = data
     return
 
   def walktree(self,top):

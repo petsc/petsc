@@ -1,4 +1,4 @@
-#if !defined(_VTKVIMPL_H)
+#ifndef _VTKVIMPL_H
 #define _VTKVIMPL_H
 
 #include <petsc/private/viewerimpl.h> /*I   "petscsys.h"   I*/
@@ -31,17 +31,18 @@ typedef unsigned char PetscVTKType;
 #define PETSC_VTK_INT_MAX 2147483647
 #define PETSC_VTK_INT_MIN -2147483647
 #if defined(PETSC_USE_64BIT_INDICES)
-#define PetscVTKIntCheck(a) PetscCheck((a) <= PETSC_VTK_INT_MAX, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Array too long for 32-bit VTK binary format")
-#define PetscVTKIntCast(a) \
-  (PetscVTKInt)(a); \
-  PetscVTKIntCheck(a)
+  #define PetscVTKIntCheck(a) PetscCheck((a) <= PETSC_VTK_INT_MAX, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Array too long for 32-bit VTK binary format")
+  #define PetscVTKIntCast(a) \
+    (PetscVTKInt)(a); \
+    PetscVTKIntCheck(a)
 #else
-#define PetscVTKIntCheck(a)
-#define PetscVTKIntCast(a) a
+  #define PetscVTKIntCheck(a)
+  #define PetscVTKIntCast(a) a
 #endif
 
 /* the only problem we've encountered so far is spaces not being acceptable for paraview field names */
-static inline PetscErrorCode PetscViewerVTKSanitizeName_Internal(char name[], size_t maxlen) {
+static inline PetscErrorCode PetscViewerVTKSanitizeName_Internal(char name[], size_t maxlen)
+{
   size_t c;
 
   PetscFunctionBegin;

@@ -2,8 +2,8 @@
     Private data structure for BiCGStab(L) solver.
     Allocation takes place before each solve.
 */
-#if !defined(__BCGSL)
-#define __BCGSL
+#ifndef PETSC_BCGSLIMPL_H
+#define PETSC_BCGSLIMPL_H
 #include <petscsys.h>
 
 typedef struct {
@@ -43,4 +43,4 @@ typedef struct {
 #define MZa  (bcgsl->mZa)
 #define MZb  (bcgsl->mZb)
 
-#endif
+#endif // PETSC_BCGSLIMPL_H

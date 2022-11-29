@@ -1,13 +1,11 @@
----
 Language:        Cpp
-# BasedOnStyle:  LLVM
 AccessModifierOffset: -2
 AlignAfterOpenBracket: Align
 AlignArrayOfStructures: Left
 AlignConsecutiveMacros: Consecutive
-AlignConsecutiveAssignments: AcrossComments
-AlignConsecutiveBitFields: AcrossComments
-AlignConsecutiveDeclarations: AcrossComments
+AlignConsecutiveAssignments: Consecutive
+AlignConsecutiveBitFields: Consecutive
+AlignConsecutiveDeclarations: Consecutive
 AlignEscapedNewlines: DontAlign
 AlignOperands: AlignAfterOperator
 AlignTrailingComments: true
@@ -16,7 +14,7 @@ AllowAllConstructorInitializersOnNextLine: true
 AllowAllParametersOfDeclarationOnNextLine: true
 AllowShortEnumsOnASingleLine: false
 AllowShortBlocksOnASingleLine: Always
-AllowShortCaseLabelsOnASingleLine: true
+AllowShortCaseLabelsOnASingleLine: false
 AllowShortFunctionsOnASingleLine: Inline
 AllowShortLambdasOnASingleLine: All
 AllowShortIfStatementsOnASingleLine: AllIfsAndElse
@@ -30,6 +28,13 @@ AttributeMacros:
   - PETSC_EXTERN
   - PETSC_INTERN
   - PETSC_UNUSED
+  - PETSC_RESTRICT
+  - PETSC_SINGLE_LIBRARY_INTERN
+  - PETSC_ATTRIBUTE_FORMAT
+  - PETSC_ATTRIBUTE_MPI_TYPE_TAG
+  - PETSC_ATTRIBUTE_MPI_POINTER_WITH_TYPE
+  - PETSC_ATTRIBUTE_MPI_TYPE_TAG_LAYOUT_COMPATIBLE
+  - PETSC_ATTRIBUTE_COLD
 BinPackArguments: true
 BinPackParameters: true
 BreakBeforeBraces: Custom
@@ -38,8 +43,8 @@ BraceWrapping:
   AfterClass:      false
   AfterControlStatement: Never
   AfterEnum:       false
-  AfterFunction:   false
-  AfterNamespace:  false
+  AfterFunction:   true
+  AfterNamespace:  true
   AfterObjCDeclaration: false
   AfterStruct:     false
   AfterUnion:      true
@@ -50,7 +55,7 @@ BraceWrapping:
   BeforeWhile:     false
   IndentBraces:    false
   SplitEmptyFunction: true
-  SplitEmptyRecord: true
+  SplitEmptyRecord: false
   SplitEmptyNamespace: true
 BreakBeforeBinaryOperators: None
 # BreakBeforeConceptDeclarations: Allowed
@@ -85,7 +90,7 @@ IndentAccessModifiers: false
 IndentCaseLabels: false
 IndentCaseBlocks: false
 IndentGotoLabels: true
-IndentPPDirectives: None
+IndentPPDirectives: BeforeHash
 IndentExternBlock: NoIndent
 IndentRequires: false
 IndentWidth: 2
@@ -113,7 +118,7 @@ ReferenceAlignment: Pointer
 ReflowComments: false
 ShortNamespaceLines: 0
 SortIncludes: Never
-SortUsingDeclarations: true
+SortUsingDeclarations: false
 SpaceAfterCStyleCast: false
 SpaceAfterLogicalNot: false
 SpaceAfterTemplateKeyword: true
@@ -146,11 +151,17 @@ StatementAttributeLikeMacros:
   - PETSC_INTERN
   - PETSC_NODISCARD
 StatementMacros:
+  - PetscKernel_A_gets_transpose_A_DECLARE
+  - PETSC_RETURNS
+  - PETSC_DECLTYPE_AUTO_RETURNS
+  - PETSC_NOEXCEPT_AUTO_RETURNS
+  - PETSC_DECLTYPE_NOEXCEPT_AUTO_RETURNS
   - PETSC_UNUSED
-  - QT_REQUIRE_VERSION
 TabWidth: 2
 UseCRLF: false
 UseTab: Never
 WhitespaceSensitiveMacros:
   - PetscStringize
   - PetscStringize_
+TypenameMacros:
+  - khash_t

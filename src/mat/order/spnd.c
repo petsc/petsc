@@ -5,7 +5,8 @@
 /*
     MatGetOrdering_ND - Find the nested dissection ordering of a given matrix.
 */
-PETSC_INTERN PetscErrorCode MatGetOrdering_ND(Mat mat, MatOrderingType type, IS *row, IS *col) {
+PETSC_INTERN PetscErrorCode MatGetOrdering_ND(Mat mat, MatOrderingType type, IS *row, IS *col)
+{
   PetscInt        i, *mask, *xls, *ls, nrow, *perm;
   const PetscInt *ia, *ja;
   PetscBool       done;

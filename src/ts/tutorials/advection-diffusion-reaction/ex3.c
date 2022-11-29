@@ -46,7 +46,8 @@ extern PetscErrorCode InitialConditions(TS, Vec, AppCtx *);
 extern PetscErrorCode RHSMatrixHeat(TS, PetscReal, Vec, Mat, Mat, void *);
 extern PetscErrorCode Solution(TS, PetscReal, Vec, AppCtx *);
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   AppCtx    appctx; /* user-defined application context */
   TS        ts;     /* timestepping context */
   Vec       U;      /* approximate solution vector */
@@ -152,7 +153,8 @@ int main(int argc, char **argv) {
    Output Parameter:
    u - vector with solution at initial time (global)
 */
-PetscErrorCode InitialConditions(TS ts, Vec U, AppCtx *appctx) {
+PetscErrorCode InitialConditions(TS ts, Vec U, AppCtx *appctx)
+{
   PetscScalar *u, h;
   PetscInt     i, mstart, mend, xm, M;
   DM           da;
@@ -198,7 +200,8 @@ PetscErrorCode InitialConditions(TS ts, Vec U, AppCtx *appctx) {
    Output Parameter:
    solution - vector with the newly computed exact solution
 */
-PetscErrorCode Solution(TS ts, PetscReal t, Vec U, AppCtx *appctx) {
+PetscErrorCode Solution(TS ts, PetscReal t, Vec U, AppCtx *appctx)
+{
   PetscScalar *u, ex1, ex2, sc1, sc2, h;
   PetscInt     i, mstart, mend, xm, M;
   DM           da;
@@ -250,7 +253,8 @@ PetscErrorCode Solution(TS ts, PetscReal t, Vec U, AppCtx *appctx) {
    Recall that MatSetValues() uses 0-based row and column numbers
    in Fortran as well as in C.
 */
-PetscErrorCode RHSMatrixHeat(TS ts, PetscReal t, Vec U, Mat AA, Mat BB, void *ctx) {
+PetscErrorCode RHSMatrixHeat(TS ts, PetscReal t, Vec U, Mat AA, Mat BB, void *ctx)
+{
   Mat         A      = AA;            /* Jacobian matrix */
   AppCtx     *appctx = (AppCtx *)ctx; /* user-defined application context */
   PetscInt    mstart, mend;

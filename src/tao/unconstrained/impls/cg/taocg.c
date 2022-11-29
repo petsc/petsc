@@ -10,7 +10,8 @@
 
 static const char *CG_Table[64] = {"fr", "pr", "prp", "hs", "dy"};
 
-static PetscErrorCode TaoSolve_CG(Tao tao) {
+static PetscErrorCode TaoSolve_CG(Tao tao)
+{
   TAO_CG                      *cgP       = (TAO_CG *)tao->data;
   TaoLineSearchConvergedReason ls_status = TAOLINESEARCH_CONTINUE_ITERATING;
   PetscReal                    step      = 1.0, f, gnorm, gnorm2, delta, gd, ginner, beta;
@@ -149,11 +150,17 @@ static PetscErrorCode TaoSolve_CG(Tao tao) {
     } else {
       /*  Gradients close to orthogonal; use conjugate gradient formula */
       switch (cgP->cg_type) {
-      case CG_FletcherReeves: beta = gnorm2 / gnorm2_old; break;
+      case CG_FletcherReeves:
+        beta = gnorm2 / gnorm2_old;
+        break;
 
-      case CG_PolakRibiere: beta = (gnorm2 - ginner) / gnorm2_old; break;
+      case CG_PolakRibiere:
+        beta = (gnorm2 - ginner) / gnorm2_old;
+        break;
 
-      case CG_PolakRibierePlus: beta = PetscMax((gnorm2 - ginner) / gnorm2_old, 0.0); break;
+      case CG_PolakRibierePlus:
+        beta = PetscMax((gnorm2 - ginner) / gnorm2_old, 0.0);
+        break;
 
       case CG_HestenesStiefel:
         PetscCall(VecDot(tao->gradient, tao->stepdirection, &gd));
@@ -167,7 +174,9 @@ static PetscErrorCode TaoSolve_CG(Tao tao) {
         beta = gnorm2 / (gd - gd_old);
         break;
 
-      default: beta = 0.0; break;
+      default:
+        beta = 0.0;
+        break;
       }
     }
 
@@ -182,7 +191,8 @@ static PetscErrorCode TaoSolve_CG(Tao tao) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TaoSetUp_CG(Tao tao) {
+static PetscErrorCode TaoSetUp_CG(Tao tao)
+{
   TAO_CG *cgP = (TAO_CG *)tao->data;
 
   PetscFunctionBegin;
@@ -193,7 +203,8 @@ static PetscErrorCode TaoSetUp_CG(Tao tao) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TaoDestroy_CG(Tao tao) {
+static PetscErrorCode TaoDestroy_CG(Tao tao)
+{
   TAO_CG *cgP = (TAO_CG *)tao->data;
 
   PetscFunctionBegin;
@@ -206,7 +217,8 @@ static PetscErrorCode TaoDestroy_CG(Tao tao) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TaoSetFromOptions_CG(Tao tao, PetscOptionItems *PetscOptionsObject) {
+static PetscErrorCode TaoSetFromOptions_CG(Tao tao, PetscOptionItems *PetscOptionsObject)
+{
   TAO_CG *cgP = (TAO_CG *)tao->data;
 
   PetscFunctionBegin;
@@ -220,7 +232,8 @@ static PetscErrorCode TaoSetFromOptions_CG(Tao tao, PetscOptionItems *PetscOptio
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TaoView_CG(Tao tao, PetscViewer viewer) {
+static PetscErrorCode TaoView_CG(Tao tao, PetscViewer viewer)
+{
   PetscBool isascii;
   TAO_CG   *cgP = (TAO_CG *)tao->data;
 
@@ -256,7 +269,8 @@ nonlinear conjugate gradient solver for nonlinear optimization.
   Level: beginner
 M*/
 
-PETSC_EXTERN PetscErrorCode TaoCreate_CG(Tao tao) {
+PETSC_EXTERN PetscErrorCode TaoCreate_CG(Tao tao)
+{
   TAO_CG     *cgP;
   const char *morethuente_type = TAOLINESEARCHMT;
 
@@ -281,7 +295,7 @@ PETSC_EXTERN PetscErrorCode TaoCreate_CG(Tao tao) {
   PetscCall(TaoLineSearchUseTaoRoutines(tao->linesearch, tao));
   PetscCall(TaoLineSearchSetOptionsPrefix(tao->linesearch, tao->hdr.prefix));
 
-  PetscCall(PetscNewLog(tao, &cgP));
+  PetscCall(PetscNew(&cgP));
   tao->data      = (void *)cgP;
   cgP->eta       = 0.1;
   cgP->delta_min = 1e-7;

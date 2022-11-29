@@ -20,7 +20,8 @@
 
   Level: developer
 @*/
-PetscErrorCode TaoVecGetSubVec(Vec vfull, IS is, TaoSubsetType reduced_type, PetscReal maskvalue, Vec *vreduced) {
+PetscErrorCode TaoVecGetSubVec(Vec vfull, IS is, TaoSubsetType reduced_type, PetscReal maskvalue, Vec *vreduced)
+{
   PetscInt        nfull, nreduced, nreduced_local, rlow, rhigh, flow, fhigh;
   PetscInt        i, nlocal;
   PetscReal      *fv, *rv;
@@ -99,7 +100,8 @@ PetscErrorCode TaoVecGetSubVec(Vec vfull, IS is, TaoSubsetType reduced_type, Pet
 
   Level: developer
 @*/
-PetscErrorCode TaoMatGetSubMat(Mat M, IS is, Vec v1, TaoSubsetType subset_type, Mat *Msub) {
+PetscErrorCode TaoMatGetSubMat(Mat M, IS is, Vec v1, TaoSubsetType subset_type, Mat *Msub)
+{
   IS        iscomp;
   PetscBool flg = PETSC_TRUE;
 
@@ -108,7 +110,9 @@ PetscErrorCode TaoMatGetSubMat(Mat M, IS is, Vec v1, TaoSubsetType subset_type, 
   PetscValidHeaderSpecific(is, IS_CLASSID, 2);
   PetscCall(MatDestroy(Msub));
   switch (subset_type) {
-  case TAO_SUBSET_SUBVEC: PetscCall(MatCreateSubMatrix(M, is, is, MAT_INITIAL_MATRIX, Msub)); break;
+  case TAO_SUBSET_SUBVEC:
+    PetscCall(MatCreateSubMatrix(M, is, is, MAT_INITIAL_MATRIX, Msub));
+    break;
 
   case TAO_SUBSET_MASK:
     /* Get Reduced Hessian
@@ -171,7 +175,8 @@ PetscErrorCode TaoMatGetSubMat(Mat M, IS is, Vec v1, TaoSubsetType subset_type, 
 
   Level: developer
 @*/
-PetscErrorCode TaoEstimateActiveBounds(Vec X, Vec XL, Vec XU, Vec G, Vec S, Vec W, PetscReal steplen, PetscReal *bound_tol, IS *active_lower, IS *active_upper, IS *active_fixed, IS *active, IS *inactive) {
+PetscErrorCode TaoEstimateActiveBounds(Vec X, Vec XL, Vec XU, Vec G, Vec S, Vec W, PetscReal steplen, PetscReal *bound_tol, IS *active_lower, IS *active_upper, IS *active_fixed, IS *active, IS *inactive)
+{
   PetscReal          wnorm;
   PetscReal          zero = PetscPowReal(PETSC_MACHINE_EPSILON, 2.0 / 3.0);
   PetscInt           i, n_isl = 0, n_isu = 0, n_isf = 0, n_isa = 0, n_isi = 0;
@@ -328,7 +333,8 @@ PetscErrorCode TaoEstimateActiveBounds(Vec X, Vec XL, Vec XU, Vec G, Vec S, Vec 
 
   Level: developer
 @*/
-PetscErrorCode TaoBoundStep(Vec X, Vec XL, Vec XU, IS active_lower, IS active_upper, IS active_fixed, PetscReal scale, Vec S) {
+PetscErrorCode TaoBoundStep(Vec X, Vec XL, Vec XU, IS active_lower, IS active_upper, IS active_fixed, PetscReal scale, Vec S)
+{
   Vec step_lower, step_upper, step_fixed;
   Vec x_lower, x_upper;
   Vec bound_lower, bound_upper;
@@ -388,7 +394,8 @@ PetscErrorCode TaoBoundStep(Vec X, Vec XL, Vec XU, IS active_lower, IS active_up
 
 .seealso: `TAOBNCG`, `TAOBNTL`, `TAOBNTR`
 @*/
-PetscErrorCode TaoBoundSolution(Vec X, Vec XL, Vec XU, PetscReal bound_tol, PetscInt *nDiff, Vec Xout) {
+PetscErrorCode TaoBoundSolution(Vec X, Vec XL, Vec XU, PetscReal bound_tol, PetscInt *nDiff, Vec Xout)
+{
   PetscInt           i, n, low, high, nDiff_loc = 0;
   PetscScalar       *xout;
   const PetscScalar *x, *xl, *xu;

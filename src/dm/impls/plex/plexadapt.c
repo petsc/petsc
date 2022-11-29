@@ -1,6 +1,7 @@
 #include <petsc/private/dmpleximpl.h> /*I      "petscdmplex.h"   I*/
 
-static PetscErrorCode DMPlexLabelToVolumeConstraint(DM dm, DMLabel adaptLabel, PetscInt cStart, PetscInt cEnd, PetscReal refRatio, PetscReal maxVolumes[]) {
+static PetscErrorCode DMPlexLabelToVolumeConstraint(DM dm, DMLabel adaptLabel, PetscInt cStart, PetscInt cEnd, PetscReal refRatio, PetscReal maxVolumes[])
+{
   PetscInt dim, c;
 
   PetscFunctionBegin;
@@ -23,11 +24,19 @@ static PetscErrorCode DMPlexLabelToVolumeConstraint(DM dm, DMLabel adaptLabel, P
 
       PetscCall(DMLabelGetValue(adaptLabel, point, &refFlag));
       switch (refFlag) {
-      case DM_ADAPT_REFINE: anyRefine = PETSC_TRUE; break;
-      case DM_ADAPT_COARSEN: anyCoarsen = PETSC_TRUE; break;
-      case DM_ADAPT_KEEP: anyKeep = PETSC_TRUE; break;
-      case DM_ADAPT_DETERMINE: break;
-      default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "DMPlex does not support refinement flag %" PetscInt_FMT, refFlag);
+      case DM_ADAPT_REFINE:
+        anyRefine = PETSC_TRUE;
+        break;
+      case DM_ADAPT_COARSEN:
+        anyCoarsen = PETSC_TRUE;
+        break;
+      case DM_ADAPT_KEEP:
+        anyKeep = PETSC_TRUE;
+        break;
+      case DM_ADAPT_DETERMINE:
+        break;
+      default:
+        SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "DMPlex does not support refinement flag %" PetscInt_FMT, refFlag);
       }
       if (anyRefine) break;
     }
@@ -43,7 +52,8 @@ static PetscErrorCode DMPlexLabelToVolumeConstraint(DM dm, DMLabel adaptLabel, P
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMPlexLabelToMetricConstraint(DM dm, DMLabel adaptLabel, PetscInt cStart, PetscInt cEnd, PetscInt vStart, PetscInt vEnd, PetscReal refRatio, Vec *metricVec) {
+static PetscErrorCode DMPlexLabelToMetricConstraint(DM dm, DMLabel adaptLabel, PetscInt cStart, PetscInt cEnd, PetscInt vStart, PetscInt vEnd, PetscReal refRatio, Vec *metricVec)
+{
   DM              udm, coordDM;
   PetscSection    coordSection;
   Vec             coordinates, mb, mx;
@@ -151,7 +161,8 @@ static PetscErrorCode DMPlexLabelToMetricConstraint(DM dm, DMLabel adaptLabel, P
 /*
    Contains the list of registered DMPlexGenerators routines
 */
-PetscErrorCode DMPlexRefine_Internal(DM dm, PETSC_UNUSED Vec metric, DMLabel adaptLabel, PETSC_UNUSED DMLabel rgLabel, DM *dmRefined) {
+PetscErrorCode DMPlexRefine_Internal(DM dm, PETSC_UNUSED Vec metric, DMLabel adaptLabel, PETSC_UNUSED DMLabel rgLabel, DM *dmRefined)
+{
   DMGeneratorFunctionList fl;
   PetscErrorCode (*refine)(DM, PetscReal *, DM *);
   PetscErrorCode (*adapt)(DM, Vec, DMLabel, DMLabel, DM *);
@@ -225,7 +236,8 @@ gotit:
       PetscCall(PetscFree(maxVolumes));
     }
     break;
-  default: SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Mesh refinement in dimension %" PetscInt_FMT " is not supported.", dim);
+  default:
+    SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Mesh refinement in dimension %" PetscInt_FMT " is not supported.", dim);
   }
   PetscCall(DMCopyDisc(dm, *dmRefined));
   PetscCall(DMPlexCopy_Internal(dm, PETSC_TRUE, PETSC_TRUE, *dmRefined));
@@ -233,7 +245,8 @@ gotit:
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMPlexCoarsen_Internal(DM dm, PETSC_UNUSED Vec metric, DMLabel adaptLabel, PETSC_UNUSED DMLabel rgLabel, DM *dmCoarsened) {
+PetscErrorCode DMPlexCoarsen_Internal(DM dm, PETSC_UNUSED Vec metric, DMLabel adaptLabel, PETSC_UNUSED DMLabel rgLabel, DM *dmCoarsened)
+{
   Vec       metricVec;
   PetscInt  cStart, cEnd, vStart, vEnd;
   DMLabel   bdLabel = NULL;
@@ -257,7 +270,8 @@ PetscErrorCode DMPlexCoarsen_Internal(DM dm, PETSC_UNUSED Vec metric, DMLabel ad
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMAdaptLabel_Plex(DM dm, PETSC_UNUSED Vec metric, DMLabel adaptLabel, PETSC_UNUSED DMLabel rgLabel, DM *dmAdapted) {
+PetscErrorCode DMAdaptLabel_Plex(DM dm, PETSC_UNUSED Vec metric, DMLabel adaptLabel, PETSC_UNUSED DMLabel rgLabel, DM *dmAdapted)
+{
   IS              flagIS;
   const PetscInt *flags;
   PetscInt        defFlag, minFlag, maxFlag, numFlags, f;
@@ -288,13 +302,18 @@ PetscErrorCode DMAdaptLabel_Plex(DM dm, PETSC_UNUSED Vec metric, DMLabel adaptLa
   }
   if (minFlag == maxFlag) {
     switch (minFlag) {
-    case DM_ADAPT_DETERMINE: *dmAdapted = NULL; break;
+    case DM_ADAPT_DETERMINE:
+      *dmAdapted = NULL;
+      break;
     case DM_ADAPT_REFINE:
       PetscCall(DMPlexSetRefinementUniform(dm, PETSC_TRUE));
       PetscCall(DMRefine(dm, MPI_COMM_NULL, dmAdapted));
       break;
-    case DM_ADAPT_COARSEN: PetscCall(DMCoarsen(dm, MPI_COMM_NULL, dmAdapted)); break;
-    default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "DMPlex does not support refinement flag %" PetscInt_FMT, minFlag);
+    case DM_ADAPT_COARSEN:
+      PetscCall(DMCoarsen(dm, MPI_COMM_NULL, dmAdapted));
+      break;
+    default:
+      SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "DMPlex does not support refinement flag %" PetscInt_FMT, minFlag);
     }
   } else {
     PetscCall(DMPlexSetRefinementUniform(dm, PETSC_FALSE));

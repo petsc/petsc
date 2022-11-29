@@ -33,7 +33,8 @@ struct KSP_CG_PIPE_L_s {
   This is called once, usually automatically by KSPSolve() or KSPSetUp()
   but can be called directly by KSPSetUp()
 */
-static PetscErrorCode KSPSetUp_PIPELCG(KSP ksp) {
+static PetscErrorCode KSPSetUp_PIPELCG(KSP ksp)
+{
   KSP_CG_PIPE_L *plcg = (KSP_CG_PIPE_L *)ksp->data;
   PetscInt       l = plcg->l, max_it = ksp->max_it;
   MPI_Comm       comm;
@@ -57,7 +58,8 @@ static PetscErrorCode KSPSetUp_PIPELCG(KSP ksp) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode KSPReset_PIPELCG(KSP ksp) {
+static PetscErrorCode KSPReset_PIPELCG(KSP ksp)
+{
   KSP_CG_PIPE_L *plcg = (KSP_CG_PIPE_L *)ksp->data;
   PetscInt       l    = plcg->l;
 
@@ -71,14 +73,16 @@ static PetscErrorCode KSPReset_PIPELCG(KSP ksp) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode KSPDestroy_PIPELCG(KSP ksp) {
+static PetscErrorCode KSPDestroy_PIPELCG(KSP ksp)
+{
   PetscFunctionBegin;
   PetscCall(KSPReset_PIPELCG(ksp));
   PetscCall(KSPDestroyDefault(ksp));
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode KSPSetFromOptions_PIPELCG(KSP ksp, PetscOptionItems *PetscOptionsObject) {
+static PetscErrorCode KSPSetFromOptions_PIPELCG(KSP ksp, PetscOptionItems *PetscOptionsObject)
+{
   KSP_CG_PIPE_L *plcg = (KSP_CG_PIPE_L *)ksp->data;
   PetscBool      flag = PETSC_FALSE;
 
@@ -96,7 +100,8 @@ static PetscErrorCode KSPSetFromOptions_PIPELCG(KSP ksp, PetscOptionItems *Petsc
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MPIPetsc_Iallreduce(void *sendbuf, void *recvbuf, PetscMPIInt count, MPI_Datatype datatype, MPI_Op op, MPI_Comm comm, MPI_Request *request) {
+static PetscErrorCode MPIPetsc_Iallreduce(void *sendbuf, void *recvbuf, PetscMPIInt count, MPI_Datatype datatype, MPI_Op op, MPI_Comm comm, MPI_Request *request)
+{
   PetscFunctionBegin;
 #if defined(PETSC_HAVE_MPI_NONBLOCKING_COLLECTIVES)
   PetscCallMPI(MPI_Iallreduce(sendbuf, recvbuf, count, datatype, op, comm, request));
@@ -107,7 +112,8 @@ static PetscErrorCode MPIPetsc_Iallreduce(void *sendbuf, void *recvbuf, PetscMPI
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode KSPView_PIPELCG(KSP ksp, PetscViewer viewer) {
+static PetscErrorCode KSPView_PIPELCG(KSP ksp, PetscViewer viewer)
+{
   KSP_CG_PIPE_L *plcg   = (KSP_CG_PIPE_L *)ksp->data;
   PetscBool      iascii = PETSC_FALSE, isstring = PETSC_FALSE;
 
@@ -126,7 +132,8 @@ static PetscErrorCode KSPView_PIPELCG(KSP ksp, PetscViewer viewer) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode KSPSolve_InnerLoop_PIPELCG(KSP ksp) {
+static PetscErrorCode KSPSolve_InnerLoop_PIPELCG(KSP ksp)
+{
   KSP_CG_PIPE_L *plcg = (KSP_CG_PIPE_L *)ksp->data;
   Mat            A = NULL, Pmat = NULL;
   PetscInt       it = 0, max_it = ksp->max_it, l = plcg->l, i = 0, j = 0, k = 0;
@@ -342,7 +349,8 @@ static PetscErrorCode KSPSolve_InnerLoop_PIPELCG(KSP ksp) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode KSPSolve_ReInitData_PIPELCG(KSP ksp) {
+static PetscErrorCode KSPSolve_ReInitData_PIPELCG(KSP ksp)
+{
   KSP_CG_PIPE_L *plcg = (KSP_CG_PIPE_L *)ksp->data;
   PetscInt       i = 0, j = 0, l = plcg->l, max_it = ksp->max_it;
 
@@ -362,7 +370,8 @@ static PetscErrorCode KSPSolve_ReInitData_PIPELCG(KSP ksp) {
 /*
   KSPSolve_PIPELCG - This routine actually applies the pipelined(l) conjugate gradient method
 */
-static PetscErrorCode KSPSolve_PIPELCG(KSP ksp) {
+static PetscErrorCode KSPSolve_PIPELCG(KSP ksp)
+{
   KSP_CG_PIPE_L *plcg = (KSP_CG_PIPE_L *)ksp->data;
   Mat            A = NULL, Pmat = NULL;
   Vec            b = NULL, x = NULL, p = NULL;
@@ -430,9 +439,9 @@ static PetscErrorCode KSPSolve_PIPELCG(KSP ksp) {
 
 /*MC
     KSPPIPELCG - Deep pipelined (length l) Conjugate Gradient method. This method has only a single non-blocking global
-    reduction per iteration, compared to 2 blocking reductions for standard CG. The reduction is overlapped by the
+    reduction per iteration, compared to 2 blocking reductions for standard `KSPCG`. The reduction is overlapped by the
     matrix-vector product and preconditioner application of the next l iterations. The pipeline length l is a parameter
-    of the method.
+    of the method. [](sec_pipelineksp)
 
     Options Database Keys:
 +   -ksp_pipelcg_pipel - pipelined length
@@ -440,25 +449,25 @@ static PetscErrorCode KSPSolve_PIPELCG(KSP ksp) {
 .   -ksp_pipelcg_lmax - approximation to the largest eigenvalue of the preconditioned operator (default: 0.0)
 -   -ksp_pipelcg_monitor - output where/why the method restarts when a sqrt breakdown occurs
 
-   see KSPSolve() for additional options
-
     Level: advanced
 
     Notes:
     MPI configuration may be necessary for reductions to make asynchronous progress, which is important for
-    performance of pipelined methods. See the FAQ on the PETSc website for details.
+    performance of pipelined methods. See [](doc_faq_pipelined)
 
     Contributed by:
     Siegfried Cools, University of Antwerp, Dept. Mathematics and Computer Science,
     funded by Flemish Research Foundation (FWO) grant number 12H4617N.
 
     Example usage:
-    [*] KSP ex2, no preconditioner, pipel = 2, lmin = 0.0, lmax = 8.0 :
+.vb
+    KSP tutorials ex2, no preconditioner, pipel = 2, lmin = 0.0, lmax = 8.0 :
         $mpiexec -n 14 ./ex2 -m 1000 -n 1000 -ksp_type pipelcg -pc_type none -ksp_norm_type natural
-        -ksp_rtol 1e-10 -ksp_max_it 1000 -ksp_pipelcg_pipel 2 -ksp_pipelcg_lmin 0.0 -ksp_pipelcg_lmax 8.0 -log_view
-    [*] SNES ex48, bjacobi preconditioner, pipel = 3, lmin = 0.0, lmax = 2.0, show restart information :
+           -ksp_rtol 1e-10 -ksp_max_it 1000 -ksp_pipelcg_pipel 2 -ksp_pipelcg_lmin 0.0 -ksp_pipelcg_lmax 8.0 -log_view
+    SNES tutorials ex48, bjacobi preconditioner, pipel = 3, lmin = 0.0, lmax = 2.0, show restart information :
         $mpiexec -n 14 ./ex48 -M 150 -P 100 -ksp_type pipelcg -pc_type bjacobi -ksp_rtol 1e-10 -ksp_pipelcg_pipel 3
-        -ksp_pipelcg_lmin 0.0 -ksp_pipelcg_lmax 2.0 -ksp_pipelcg_monitor -log_view
+           -ksp_pipelcg_lmin 0.0 -ksp_pipelcg_lmax 2.0 -ksp_pipelcg_monitor -log_view
+.ve
 
     References:
 +   * - J. Cornelis, S. Cools and W. Vanroose,
@@ -468,15 +477,15 @@ static PetscErrorCode KSPSolve_PIPELCG(KSP ksp) {
         "Numerically Stable Recurrence Relations for the Communication Hiding Pipelined Conjugate Gradient Method"
         Submitted to IEEE Transactions on Parallel and Distributed Systems, 2019.
 
-.seealso: `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSPCG`, `KSPPIPECG`, `KSPPIPECGRR`, `KSPPGMRES`,
-          `KSPPIPEBCGS`, `KSPSetPCSide()`
+.seealso: [](chapter_ksp), [](sec_pipelineksp), [](doc_faq_pipelined), `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSPCG`, `KSPPIPECG`, `KSPPIPECGRR`, `KSPPGMRES`,
+          `KSPPIPEBCGS`, `KSPSetPCSide()`, `KSPGROPPCG`
 M*/
-PETSC_EXTERN
-PetscErrorCode KSPCreate_PIPELCG(KSP ksp) {
+PETSC_EXTERN PetscErrorCode KSPCreate_PIPELCG(KSP ksp)
+{
   KSP_CG_PIPE_L *plcg = NULL;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(ksp, &plcg));
+  PetscCall(PetscNew(&plcg));
   ksp->data = (void *)plcg;
 
   PetscCall(KSPSetSupportedNorm(ksp, KSP_NORM_NONE, PC_LEFT, 1));

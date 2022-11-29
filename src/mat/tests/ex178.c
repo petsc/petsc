@@ -5,7 +5,8 @@ static char help[] = "Tests MatInvertVariableBlockEnvelope()\n\n";
 extern PetscErrorCode MatIsDiagonal(Mat);
 extern PetscErrorCode BuildMatrix(const PetscInt *, PetscInt, const PetscInt *, Mat *);
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   Mat         A, C, D, F;
   PetscInt    i, j, rows[2], *parts, cnt, N = 21, nblocks, *blocksizes;
   PetscScalar values[2][2];
@@ -99,7 +100,8 @@ int main(int argc, char **argv) {
   return 0;
 }
 
-PetscErrorCode MatIsDiagonal(Mat A) {
+PetscErrorCode MatIsDiagonal(Mat A)
+{
   PetscInt           ncols, i, j, rstart, rend;
   const PetscInt    *cols;
   const PetscScalar *vals;
@@ -127,7 +129,8 @@ PetscErrorCode MatIsDiagonal(Mat A) {
 /*
     All processes receive all the block information
 */
-PetscErrorCode BuildMatrix(const PetscInt *parts, PetscInt nblocks, const PetscInt *blocksizes, Mat *A) {
+PetscErrorCode BuildMatrix(const PetscInt *parts, PetscInt nblocks, const PetscInt *blocksizes, Mat *A)
+{
   PetscInt    i, cnt = 0;
   PetscMPIInt rank;
 

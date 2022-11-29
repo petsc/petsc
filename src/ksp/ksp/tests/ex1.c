@@ -3,7 +3,8 @@ static char help[] = "Tests solving linear system on 0 by 0 matrix, and KSPLSQR 
 
 #include <petscksp.h>
 
-static PetscErrorCode GetConvergenceTestName(PetscErrorCode (*converged)(KSP, PetscInt, PetscReal, KSPConvergedReason *, void *), char name[], size_t n) {
+static PetscErrorCode GetConvergenceTestName(PetscErrorCode (*converged)(KSP, PetscInt, PetscReal, KSPConvergedReason *, void *), char name[], size_t n)
+{
   PetscFunctionBegin;
   if (converged == KSPConvergedDefault) {
     PetscCall(PetscStrncpy(name, "default", n));
@@ -17,7 +18,8 @@ static PetscErrorCode GetConvergenceTestName(PetscErrorCode (*converged)(KSP, Pe
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   Mat       C;
   PetscInt  N = 0;
   Vec       u, b, x;

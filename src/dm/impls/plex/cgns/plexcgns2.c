@@ -6,13 +6,14 @@
 #include <cgns_io.h>
 
 #if !defined(CGNS_ENUMT)
-#define CGNS_ENUMT(a) a
+  #define CGNS_ENUMT(a) a
 #endif
 #if !defined(CGNS_ENUMV)
-#define CGNS_ENUMV(a) a
+  #define CGNS_ENUMV(a) a
 #endif
 
-PetscErrorCode DMPlexCreateCGNSFromFile_Internal(MPI_Comm comm, const char filename[], PetscBool interpolate, DM *dm) {
+PetscErrorCode DMPlexCreateCGNSFromFile_Internal(MPI_Comm comm, const char filename[], PetscBool interpolate, DM *dm)
+{
   PetscMPIInt rank;
   int         cgid = -1;
 
@@ -28,7 +29,8 @@ PetscErrorCode DMPlexCreateCGNSFromFile_Internal(MPI_Comm comm, const char filen
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMPlexCreateCGNS_Internal(MPI_Comm comm, PetscInt cgid, PetscBool interpolate, DM *dm) {
+PetscErrorCode DMPlexCreateCGNS_Internal(MPI_Comm comm, PetscInt cgid, PetscBool interpolate, DM *dm)
+{
   PetscMPIInt  num_proc, rank;
   DM           cdm;
   DMLabel      label;
@@ -38,10 +40,10 @@ PetscErrorCode DMPlexCreateCGNS_Internal(MPI_Comm comm, PetscInt cgid, PetscBool
   PetscInt    *cellStart, *vertStart, v;
   PetscInt     labelIdRange[2], labelId;
   /* Read from file */
-  char         basename[CGIO_MAX_NAME_LENGTH + 1];
-  char         buffer[CGIO_MAX_NAME_LENGTH + 1];
-  int          dim = 0, physDim = 0, coordDim = 0, numVertices = 0, numCells = 0;
-  int          nzones = 0;
+  char basename[CGIO_MAX_NAME_LENGTH + 1];
+  char buffer[CGIO_MAX_NAME_LENGTH + 1];
+  int  dim = 0, physDim = 0, coordDim = 0, numVertices = 0, numCells = 0;
+  int  nzones = 0;
 
   PetscFunctionBegin;
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
@@ -135,7 +137,8 @@ PetscErrorCode DMPlexCreateCGNS_Internal(MPI_Comm comm, PetscInt cgid, PetscBool
             numCorners = 8;
             ctype      = DM_POLYTOPE_HEXAHEDRON;
             break;
-          default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Invalid cell type %d", (int)elements[off]);
+          default:
+            SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Invalid cell type %d", (int)elements[off]);
           }
           PetscCall(DMPlexSetConeSize(*dm, c, numCorners));
           PetscCall(DMPlexSetCellType(*dm, c, ctype));
@@ -168,7 +171,8 @@ PetscErrorCode DMPlexCreateCGNS_Internal(MPI_Comm comm, PetscInt cgid, PetscBool
           numCorners = 8;
           ctype      = DM_POLYTOPE_HEXAHEDRON;
           break;
-        default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Invalid cell type %d", (int)cellType);
+        default:
+          SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Invalid cell type %d", (int)cellType);
         }
         for (c_loc = start; c_loc <= end; ++c_loc, ++c) {
           PetscCall(DMPlexSetConeSize(*dm, c, numCorners));
@@ -202,13 +206,26 @@ PetscErrorCode DMPlexCreateCGNS_Internal(MPI_Comm comm, PetscInt cgid, PetscBool
         /* CGNS uses Fortran-based indexing, DMPlex uses C-style and numbers cell first then vertices. */
         for (c_loc = 0, v = 0; c_loc <= numc; ++c_loc, ++c) {
           switch (elements[v]) {
-          case CGNS_ENUMV(BAR_2): numCorners = 2; break;
-          case CGNS_ENUMV(TRI_3): numCorners = 3; break;
-          case CGNS_ENUMV(QUAD_4): numCorners = 4; break;
-          case CGNS_ENUMV(TETRA_4): numCorners = 4; break;
-          case CGNS_ENUMV(PENTA_6): numCorners = 6; break;
-          case CGNS_ENUMV(HEXA_8): numCorners = 8; break;
-          default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Invalid cell type %d", (int)elements[v]);
+          case CGNS_ENUMV(BAR_2):
+            numCorners = 2;
+            break;
+          case CGNS_ENUMV(TRI_3):
+            numCorners = 3;
+            break;
+          case CGNS_ENUMV(QUAD_4):
+            numCorners = 4;
+            break;
+          case CGNS_ENUMV(TETRA_4):
+            numCorners = 4;
+            break;
+          case CGNS_ENUMV(PENTA_6):
+            numCorners = 6;
+            break;
+          case CGNS_ENUMV(HEXA_8):
+            numCorners = 8;
+            break;
+          default:
+            SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Invalid cell type %d", (int)elements[v]);
           }
           ++v;
           for (v_loc = 0; v_loc < numCorners; ++v_loc, ++v) cone[v_loc] = elements[v] + numCells - 1;
@@ -218,13 +235,26 @@ PetscErrorCode DMPlexCreateCGNS_Internal(MPI_Comm comm, PetscInt cgid, PetscBool
         }
       } else {
         switch (cellType) {
-        case CGNS_ENUMV(BAR_2): numCorners = 2; break;
-        case CGNS_ENUMV(TRI_3): numCorners = 3; break;
-        case CGNS_ENUMV(QUAD_4): numCorners = 4; break;
-        case CGNS_ENUMV(TETRA_4): numCorners = 4; break;
-        case CGNS_ENUMV(PENTA_6): numCorners = 6; break;
-        case CGNS_ENUMV(HEXA_8): numCorners = 8; break;
-        default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Invalid cell type %d", (int)cellType);
+        case CGNS_ENUMV(BAR_2):
+          numCorners = 2;
+          break;
+        case CGNS_ENUMV(TRI_3):
+          numCorners = 3;
+          break;
+        case CGNS_ENUMV(QUAD_4):
+          numCorners = 4;
+          break;
+        case CGNS_ENUMV(TETRA_4):
+          numCorners = 4;
+          break;
+        case CGNS_ENUMV(PENTA_6):
+          numCorners = 6;
+          break;
+        case CGNS_ENUMV(HEXA_8):
+          numCorners = 8;
+          break;
+        default:
+          SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Invalid cell type %d", (int)cellType);
         }
         /* CGNS uses Fortran-based indexing, DMPlex uses C-style and numbers cell first then vertices. */
         for (c_loc = 0, v = 0; c_loc <= numc; ++c_loc, ++c) {
@@ -381,7 +411,8 @@ PetscErrorCode DMPlexCreateCGNS_Internal(MPI_Comm comm, PetscInt cgid, PetscBool
 }
 
 // Permute plex closure ordering to CGNS
-static PetscErrorCode DMPlexCGNSGetPermutation_Internal(DMPolytopeType cell_type, PetscInt closure_size, CGNS_ENUMT(ElementType_t) * element_type, const int **perm) {
+static PetscErrorCode DMPlexCGNSGetPermutation_Internal(DMPolytopeType cell_type, PetscInt closure_size, CGNS_ENUMT(ElementType_t) * element_type, const int **perm)
+{
   // https://cgns.github.io/CGNS_docs_current/sids/conv.html#unst_example
   static const int bar_2[2]   = {0, 1};
   static const int bar_3[3]   = {1, 2, 0};
@@ -392,9 +423,9 @@ static PetscErrorCode DMPlexCGNSGetPermutation_Internal(DMPolytopeType cell_type
   static const int tri_10[10] = {7, 8, 9, 1, 2, 3, 4, 5, 6, 0};
   static const int quad_4[4]  = {0, 1, 2, 3};
   static const int quad_9[9]  = {
-     5, 6, 7, 8, // vertices
-     1, 2, 3, 4, // edges
-     0,          // center
+    5, 6, 7, 8, // vertices
+    1, 2, 3, 4, // edges
+    0,          // center
   };
   static const int quad_16[] = {
     12, 13, 14, 15,               // vertices
@@ -444,8 +475,12 @@ static PetscErrorCode DMPlexCGNSGetPermutation_Internal(DMPolytopeType cell_type
   switch (cell_type) {
   case DM_POLYTOPE_SEGMENT:
     switch (closure_size) {
-    case 2: *element_type = CGNS_ENUMV(BAR_2); *perm = bar_2;
-    case 3: *element_type = CGNS_ENUMV(BAR_3); *perm = bar_3;
+    case 2:
+      *element_type = CGNS_ENUMV(BAR_2);
+      *perm         = bar_2;
+    case 3:
+      *element_type = CGNS_ENUMV(BAR_3);
+      *perm         = bar_3;
     case 4:
       *element_type = CGNS_ENUMV(BAR_4);
       *perm         = bar_4;
@@ -454,7 +489,8 @@ static PetscErrorCode DMPlexCGNSGetPermutation_Internal(DMPolytopeType cell_type
       *element_type = CGNS_ENUMV(BAR_5);
       *perm         = bar_5;
       break;
-    default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Cell type %s with closure size %" PetscInt_FMT, DMPolytopeTypes[cell_type], closure_size);
+    default:
+      SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Cell type %s with closure size %" PetscInt_FMT, DMPolytopeTypes[cell_type], closure_size);
     }
     break;
   case DM_POLYTOPE_TRIANGLE:
@@ -471,7 +507,8 @@ static PetscErrorCode DMPlexCGNSGetPermutation_Internal(DMPolytopeType cell_type
       *element_type = CGNS_ENUMV(TRI_10);
       *perm         = tri_10;
       break;
-    default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Cell type %s with closure size %" PetscInt_FMT, DMPolytopeTypes[cell_type], closure_size);
+    default:
+      SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Cell type %s with closure size %" PetscInt_FMT, DMPolytopeTypes[cell_type], closure_size);
     }
     break;
   case DM_POLYTOPE_QUADRILATERAL:
@@ -492,7 +529,8 @@ static PetscErrorCode DMPlexCGNSGetPermutation_Internal(DMPolytopeType cell_type
       *element_type = CGNS_ENUMV(QUAD_25);
       *perm         = quad_25;
       break;
-    default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Cell type %s with closure size %" PetscInt_FMT, DMPolytopeTypes[cell_type], closure_size);
+    default:
+      SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Cell type %s with closure size %" PetscInt_FMT, DMPolytopeTypes[cell_type], closure_size);
     }
     break;
   case DM_POLYTOPE_TETRAHEDRON:
@@ -509,7 +547,8 @@ static PetscErrorCode DMPlexCGNSGetPermutation_Internal(DMPolytopeType cell_type
       *element_type = CGNS_ENUMV(TETRA_20);
       *perm         = tetra_20;
       break;
-    default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Cell type %s with closure size %" PetscInt_FMT, DMPolytopeTypes[cell_type], closure_size);
+    default:
+      SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Cell type %s with closure size %" PetscInt_FMT, DMPolytopeTypes[cell_type], closure_size);
     }
     break;
   case DM_POLYTOPE_HEXAHEDRON:
@@ -526,16 +565,19 @@ static PetscErrorCode DMPlexCGNSGetPermutation_Internal(DMPolytopeType cell_type
       *element_type = CGNS_ENUMV(HEXA_64);
       *perm         = hexa_64;
       break;
-    default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Cell type %s with closure size %" PetscInt_FMT, DMPolytopeTypes[cell_type], closure_size);
+    default:
+      SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Cell type %s with closure size %" PetscInt_FMT, DMPolytopeTypes[cell_type], closure_size);
     }
     break;
-  default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Cell type %s with closure size %" PetscInt_FMT, DMPolytopeTypes[cell_type], closure_size);
+  default:
+    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Cell type %s with closure size %" PetscInt_FMT, DMPolytopeTypes[cell_type], closure_size);
   }
   PetscFunctionReturn(0);
 }
 
 // node_l2g must be freed
-static PetscErrorCode DMPlexCreateNodeNumbering(DM dm, PetscInt *num_local_nodes, PetscInt *num_global_nodes, PetscInt *nStart, PetscInt *nEnd, const PetscInt **node_l2g) {
+static PetscErrorCode DMPlexCreateNodeNumbering(DM dm, PetscInt *num_local_nodes, PetscInt *num_global_nodes, PetscInt *nStart, PetscInt *nEnd, const PetscInt **node_l2g)
+{
   PetscSection    local_section;
   PetscSF         point_sf;
   PetscInt        pStart, pEnd, spStart, spEnd, *points, nleaves, ncomp, *nodes;
@@ -608,13 +650,14 @@ static PetscErrorCode DMPlexCreateNodeNumbering(DM dm, PetscInt *num_local_nodes
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMView_PlexCGNS(DM dm, PetscViewer viewer) {
+PetscErrorCode DMView_PlexCGNS(DM dm, PetscViewer viewer)
+{
   PetscViewer_CGNS *cgv = (PetscViewer_CGNS *)viewer->data;
   PetscInt          topo_dim, coord_dim, num_global_elems;
   PetscInt          cStart, cEnd, num_local_nodes, num_global_nodes, nStart, nEnd;
   const PetscInt   *node_l2g;
   Vec               coord;
-  DM                cdm;
+  DM                colloc_dm, cdm;
   PetscMPIInt       size;
   const char       *dm_name;
   int               base, zone;
@@ -629,9 +672,37 @@ PetscErrorCode DMView_PlexCGNS(DM dm, PetscViewer viewer) {
   PetscCallCGNS(cg_goto(cgv->file_num, base, NULL));
   PetscCallCGNS(cg_dataclass_write(CGNS_ENUMV(NormalizedByDimensional)));
 
-  PetscCall(DMGetCoordinateDM(dm, &cdm));
+  {
+    PetscFE        fe, fe_coord;
+    PetscDualSpace dual_space, dual_space_coord;
+    PetscInt       field_order, field_order_coord;
+    PetscBool      is_simplex;
+    PetscCall(DMGetField(dm, 0, NULL, (PetscObject *)&fe));
+    if (fe) {
+      PetscCall(PetscFEGetDualSpace(fe, &dual_space));
+      PetscCall(PetscDualSpaceGetOrder(dual_space, &field_order));
+    } else field_order = 1;
+    PetscCall(DMGetCoordinateDM(dm, &cdm));
+    PetscCall(DMGetField(cdm, 0, NULL, (PetscObject *)&fe_coord));
+    if (fe_coord) {
+      PetscCall(PetscFEGetDualSpace(fe_coord, &dual_space_coord));
+      PetscCall(PetscDualSpaceGetOrder(dual_space_coord, &field_order_coord));
+    } else field_order_coord = 1;
+    if (field_order != field_order_coord) {
+      PetscInt quadrature_order = field_order;
+      PetscCall(DMClone(dm, &colloc_dm));
+      PetscCall(DMPlexIsSimplex(dm, &is_simplex));
+      PetscCall(PetscFECreateLagrange(PetscObjectComm((PetscObject)dm), topo_dim, coord_dim, is_simplex, field_order, quadrature_order, &fe));
+      PetscCall(DMProjectCoordinates(colloc_dm, fe));
+      PetscCall(PetscFEDestroy(&fe));
+    } else {
+      PetscCall(PetscObjectReference((PetscObject)dm));
+      colloc_dm = dm;
+    }
+  }
+  PetscCall(DMGetCoordinateDM(colloc_dm, &cdm));
   PetscCall(DMPlexCreateNodeNumbering(cdm, &num_local_nodes, &num_global_nodes, &nStart, &nEnd, &node_l2g));
-  PetscCall(DMGetCoordinatesLocal(dm, &coord));
+  PetscCall(DMGetCoordinatesLocal(colloc_dm, &coord));
   PetscCall(DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd));
   num_global_elems = cEnd - cStart;
   PetscCallMPI(MPI_Allreduce(MPI_IN_PLACE, &num_global_elems, 1, MPIU_INT, MPI_SUM, PetscObjectComm((PetscObject)dm)));
@@ -726,26 +797,37 @@ PetscErrorCode DMView_PlexCGNS(DM dm, PetscViewer viewer) {
       PetscCall(PetscFree(efield));
     }
   }
+  PetscCall(DMDestroy(&colloc_dm));
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscCGNSDataType(PetscDataType pd, CGNS_ENUMT(DataType_t) * cd) {
+static PetscErrorCode PetscCGNSDataType(PetscDataType pd, CGNS_ENUMT(DataType_t) * cd)
+{
   PetscFunctionBegin;
   switch (pd) {
-  case PETSC_FLOAT: *cd = CGNS_ENUMV(RealSingle); break;
-  case PETSC_DOUBLE: *cd = CGNS_ENUMV(RealDouble); break;
-  case PETSC_COMPLEX: *cd = CGNS_ENUMV(ComplexDouble); break;
-  default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Data type %s", PetscDataTypes[pd]);
+  case PETSC_FLOAT:
+    *cd = CGNS_ENUMV(RealSingle);
+    break;
+  case PETSC_DOUBLE:
+    *cd = CGNS_ENUMV(RealDouble);
+    break;
+  case PETSC_COMPLEX:
+    *cd = CGNS_ENUMV(ComplexDouble);
+    break;
+  default:
+    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Data type %s", PetscDataTypes[pd]);
   }
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode VecView_Plex_Local_CGNS(Vec V, PetscViewer viewer) {
+PetscErrorCode VecView_Plex_Local_CGNS(Vec V, PetscViewer viewer)
+{
   PetscViewer_CGNS  *cgv = (PetscViewer_CGNS *)viewer->data;
   DM                 dm;
   PetscSection       section;
   PetscInt           ncomp, time_step;
   PetscReal          time, *time_slot;
+  size_t            *step_slot;
   const PetscInt     field = 0;
   const PetscScalar *v;
   char               solution_name[PETSC_MAX_PATH_LEN];
@@ -756,6 +838,7 @@ PetscErrorCode VecView_Plex_Local_CGNS(Vec V, PetscViewer viewer) {
   if (!cgv->node_l2g) PetscCall(DMView(dm, viewer));
   if (!cgv->nodal_field) PetscCall(PetscMalloc1(cgv->nEnd - cgv->nStart, &cgv->nodal_field));
   if (!cgv->output_times) PetscCall(PetscSegBufferCreate(sizeof(PetscReal), 20, &cgv->output_times));
+  if (!cgv->output_steps) PetscCall(PetscSegBufferCreate(sizeof(size_t), 20, &cgv->output_steps));
 
   PetscCall(DMGetOutputSequenceNumber(dm, &time_step, &time));
   if (time_step < 0) {
@@ -764,6 +847,8 @@ PetscErrorCode VecView_Plex_Local_CGNS(Vec V, PetscViewer viewer) {
   }
   PetscCall(PetscSegBufferGet(cgv->output_times, 1, &time_slot));
   *time_slot = time;
+  PetscCall(PetscSegBufferGet(cgv->output_steps, 1, &step_slot));
+  *step_slot = time_step;
   PetscCall(PetscSNPrintf(solution_name, sizeof solution_name, "FlowSolution%" PetscInt_FMT, time_step));
   PetscCallCGNS(cg_sol_write(cgv->file_num, cgv->base, cgv->zone, solution_name, CGNS_ENUMV(Vertex), &sol));
   PetscCall(DMGetLocalSection(dm, &section));

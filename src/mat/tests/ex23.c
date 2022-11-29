@@ -6,7 +6,8 @@ static char help[] = "Tests the use of interface functions for MATIS matrices an
 PetscErrorCode TestMatZeroRows(Mat, Mat, PetscBool, IS, PetscScalar);
 PetscErrorCode CheckMat(Mat, Mat, PetscBool, const char *);
 
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   Mat                    A, B, A2, B2, T;
   Mat                    Aee, Aeo, Aoe, Aoo;
   Mat                   *mats, *Asub, *Bsub;
@@ -676,9 +677,15 @@ int main(int argc, char **args) {
           PetscCall(PetscMalloc1(nl, &idxs2));
           for (i = 0; i < nl; i++) {
             switch (perm) { /* invert some of the indices */
-            case 2: idxs2[i] = rank % 2 ? idxs[i] : idxs[nl - i - 1]; break;
-            case 1: idxs2[i] = rank % 2 ? idxs[nl - i - 1] : idxs[i]; break;
-            default: idxs2[i] = idxs[i]; break;
+            case 2:
+              idxs2[i] = rank % 2 ? idxs[i] : idxs[nl - i - 1];
+              break;
+            case 1:
+              idxs2[i] = rank % 2 ? idxs[nl - i - 1] : idxs[i];
+              break;
+            default:
+              idxs2[i] = idxs[i];
+              break;
             }
           }
           PetscCall(ISRestoreIndices(is, &idxs));
@@ -747,7 +754,8 @@ int main(int argc, char **args) {
   return 0;
 }
 
-PetscErrorCode CheckMat(Mat A, Mat B, PetscBool usemult, const char *func) {
+PetscErrorCode CheckMat(Mat A, Mat B, PetscBool usemult, const char *func)
+{
   Mat       Bcheck;
   PetscReal error;
 
@@ -803,7 +811,8 @@ PetscErrorCode CheckMat(Mat A, Mat B, PetscBool usemult, const char *func) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode TestMatZeroRows(Mat A, Mat Afull, PetscBool squaretest, IS is, PetscScalar diag) {
+PetscErrorCode TestMatZeroRows(Mat A, Mat Afull, PetscBool squaretest, IS is, PetscScalar diag)
+{
   Mat                    B, Bcheck, B2 = NULL, lB;
   Vec                    x = NULL, b = NULL, b2 = NULL;
   ISLocalToGlobalMapping l2gr, l2gc;

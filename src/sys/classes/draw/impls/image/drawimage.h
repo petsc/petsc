@@ -1,4 +1,4 @@
-#if !defined(_PETSCIMAGE_H)
+#ifndef _PETSCIMAGE_H
 #define _PETSCIMAGE_H
 
 #include <petscdraw.h>
@@ -11,27 +11,31 @@ typedef struct _n_PetscImage {
   unsigned char  palette[256][3]; /* colormap       */
 } _n_PetscImage;
 
-static inline void PetscImageSetClip(PetscImage img, int x, int y, int w, int h) {
+static inline void PetscImageSetClip(PetscImage img, int x, int y, int w, int h)
+{
   img->clip[0] = PetscClipInterval(x, 0, img->w - 1); /* xmin   */
   img->clip[1] = PetscClipInterval(y, 0, img->h - 1); /* ymin   */
   img->clip[2] = PetscClipInterval(x + w, 0, img->w); /* xmax+1 */
   img->clip[3] = PetscClipInterval(y + h, 0, img->h); /* ymax+1 */
 }
 
-static inline void PetscImageClear(PetscImage img) {
+static inline void PetscImageClear(PetscImage img)
+{
   int x, xs = img->clip[0], xe = img->clip[2];
   int y, ys = img->clip[1], ye = img->clip[3];
   for (y = ys; y < ye; y++)
     for (x = xs; x < xe; x++) img->buffer[y * img->w + x] = 0;
 }
 
-static inline void PetscImageDrawPixel(PetscImage img, int x, int y, int c) {
+static inline void PetscImageDrawPixel(PetscImage img, int x, int y, int c)
+{
   if (x < img->clip[0] || x >= img->clip[2]) return;
   if (y < img->clip[1] || y >= img->clip[3]) return;
   img->buffer[y * img->w + x] = (unsigned char)c;
 }
 
-static inline void PetscImageDrawLine(PetscImage img, int x_1, int y_1, int x_2, int y_2, int c) {
+static inline void PetscImageDrawLine(PetscImage img, int x_1, int y_1, int x_2, int y_2, int c)
+{
   if (y_1 == y_2) {
     /* Horizontal line */
     if (x_2 - x_1 < 0) {
@@ -69,7 +73,8 @@ static inline void PetscImageDrawLine(PetscImage img, int x_1, int y_1, int x_2,
   }
 }
 
-static inline void PetscImageDrawRectangle(PetscImage img, int x, int y, int w, int h, int c) {
+static inline void PetscImageDrawRectangle(PetscImage img, int x, int y, int w, int h, int c)
+{
   int xs = PetscMax(x, img->clip[0]), xe = PetscMin(x + w, img->clip[2]);
   int ys = PetscMax(y, img->clip[1]), ye = PetscMin(y + h, img->clip[3]);
   if (xs >= xe || ys >= ye) return;
@@ -77,7 +82,8 @@ static inline void PetscImageDrawRectangle(PetscImage img, int x, int y, int w, 
     for (x = xs; x < xe; x++) img->buffer[y * img->w + x] = (unsigned char)c;
 }
 
-static inline void PetscImageDrawEllipse(PetscImage img, int xc, int yc, int w, int h, int c) {
+static inline void PetscImageDrawEllipse(PetscImage img, int xc, int yc, int w, int h, int c)
+{
   /* Bresenham's circle/ellipse drawing algorithm */
   int x, y, s, a2 = w * w, b2 = h * h;
   for (x = 0, y = h, s = 2 * b2 + a2 * (1 - 2 * h); b2 * x <= a2 * y; x++) {
@@ -100,7 +106,8 @@ static inline void PetscImageDrawEllipse(PetscImage img, int xc, int yc, int w, 
   }
 }
 
-static inline void PetscImageDrawTriangle(PetscImage img, int x_1, int y_1, int t_1, int x_2, int y_2, int t_2, int x_3, int y_3, int t_3) {
+static inline void PetscImageDrawTriangle(PetscImage img, int x_1, int y_1, int t_1, int x_2, int y_2, int t_2, int x_3, int y_3, int t_3)
+{
   const int SHIFT_VAL = 6;
   const int xmin = img->clip[0], xmax = img->clip[2] - 1;
   const int ymin = img->clip[1], ymax = img->clip[3] - 1;
@@ -329,7 +336,8 @@ static const unsigned char PetscImageFontBitmap[128 - 32][10] = {
   {0x00, 0x2A, 0x00, 0x22, 0x00, 0x22, 0x00, 0x2A, 0x00, 0x00}, /* ASCII 127 */
 };
 
-static inline void PetscImageDrawText(PetscImage img, int x, int y, int c, const char text[]) {
+static inline void PetscImageDrawText(PetscImage img, int x, int y, int c, const char text[])
+{
   int i, j, k, tw = PetscImageFontWidth, th = PetscImageFontHeight;
   for (i = 0; i < th; i++) {
     for (k = 0; text[k]; k++) {

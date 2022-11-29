@@ -3,7 +3,8 @@ static const char help[] = "Demonstrates PetscMatlabEngineXXX()\n";
 #include <petscvec.h>
 #include <petscmatlab.h>
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscMPIInt rank;
   PetscInt    n = 5;
   char       *output;
@@ -19,7 +20,7 @@ int main(int argc, char **argv) {
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
   PetscCall(PetscMatlabEngineGetOutput(PETSC_MATLAB_ENGINE_WORLD, &output));
   PetscCall(PetscMatlabEngineEvaluate(PETSC_MATLAB_ENGINE_WORLD, "MPI_Comm_rank"));
-  PetscCall(PetscSynchronizedPrintf(PETSC_COMM_WORLD, "[%d]Processor rank is %s", rank, output));
+  PetscCall(PetscSynchronizedPrintf(PETSC_COMM_WORLD, "[%d]Processor rank is\n %s", rank, output));
   PetscCall(PetscSynchronizedFlush(PETSC_COMM_WORLD, PETSC_STDOUT));
 
   PetscCall(PetscObjectSetName((PetscObject)x, "x"));
@@ -28,7 +29,7 @@ int main(int argc, char **argv) {
   PetscCall(PetscMatlabEngineGet(PETSC_MATLAB_ENGINE_WORLD, (PetscObject)x));
 
   PetscCall(PetscMatlabEngineEvaluate(PETSC_MATLAB_ENGINE_WORLD, "whos\n"));
-  PetscCall(PetscSynchronizedPrintf(PETSC_COMM_WORLD, "[%d]The result is %s", rank, output));
+  PetscCall(PetscSynchronizedPrintf(PETSC_COMM_WORLD, "[%d]The result is\n %s", rank, output));
   PetscCall(PetscSynchronizedFlush(PETSC_COMM_WORLD, PETSC_STDOUT));
 
   PetscCall(VecView(x, PETSC_VIEWER_STDOUT_WORLD));

@@ -138,41 +138,6 @@ class Configure(config.base.Configure):
       raise RuntimeError("Cannot locate all the standard C header files needed by PETSc")
     return
 
-  def checkStat(self):
-    '''Checks whether stat file-mode macros are broken, and defines STAT_MACROS_BROKEN if they are'''
-    code = '''
-#include <sys/types.h>
-#include <sys/stat.h>
-
-#if defined(S_ISBLK) && defined(S_IFDIR)
-# if S_ISBLK (S_IFDIR)
-  You lose.
-# endif
-#endif
-
-#if defined(S_ISBLK) && defined(S_IFCHR)
-# if S_ISBLK (S_IFCHR)
-  You lose.
-# endif
-#endif
-
-#if defined(S_ISLNK) && defined(S_IFREG)
-# if S_ISLNK (S_IFREG)
-  You lose.
-# endif
-#endif
-
-#if defined(S_ISSOCK) && defined(S_IFREG)
-# if S_ISSOCK (S_IFREG)
-  You lose.
-# endif
-#endif
-'''
-    if self.outputPreprocess(code).find('You lose') >= 0:
-      self.addDefine('STAT_MACROS_BROKEN', 1)
-      return 0
-    return 1
-
   def checkSysWait(self):
     '''Check for POSIX.1 compatible sys/wait.h, and defines HAVE_SYS_WAIT_H if found'''
     includes = '''
@@ -205,9 +170,9 @@ class Configure(config.base.Configure):
     '''Checks for the math headers and defines'''
     haveMath = self.check('math.h',adddefine=0)
     if haveMath:
-      if self.checkCompile('#include <math.h>\n', 'double pi = M_PI;\n\nif (pi);\n'):
+      if self.checkCompile('#include <math.h>\n', 'double pi = M_PI;\n(void)pi'):
         self.logPrint('Found math #defines, like M_PI')
-      elif self.checkCompile('#define _USE_MATH_DEFINES 1\n#include <math.h>\n', 'double pi = M_PI;\n\nif (pi);\n'):
+      elif self.checkCompile('#define _USE_MATH_DEFINES 1\n#include <math.h>\n', 'double pi = M_PI;\n(void)pi'):
         self.framework.addDefine('_USE_MATH_DEFINES', 1)
         self.logPrint('Activated Windows math #defines, like M_PI')
       else:
@@ -227,7 +192,6 @@ class Configure(config.base.Configure):
 
   def configure(self):
     self.executeTest(self.checkStdC)
-    self.executeTest(self.checkStat)
     self.executeTest(self.checkSysWait)
     self.executeTest(self.checkTime)
     self.executeTest(self.checkMath)

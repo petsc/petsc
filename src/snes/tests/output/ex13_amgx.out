@@ -9,6 +9,7 @@ Labels:
   depth: 3 strata with value/size (0 (25), 1 (40), 2 (16))
   marker: 1 strata with value/size (1 (17))
   Face Sets: 2 strata with value/size (1 (7), 4 (7))
+Number equations N = 225
 The AMGX_initialize_plugins API call is deprecated and can be safely removed.
     0 KSP Residual norm 9.295786691920e+00 
     1 KSP Residual norm 2.069412016514e+00 

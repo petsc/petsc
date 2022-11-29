@@ -93,7 +93,8 @@ static PetscErrorCode ComputeRHS_MOAB(KSP, Vec, void *);
 static PetscErrorCode ComputeDiscreteL2Error(KSP ksp, Vec err, UserContext *user);
 static PetscErrorCode InitializeOptions(UserContext *user);
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   const char *fields[1] = {"T-Variable"};
   DM          dm, dmref, *dmhierarchy;
   UserContext user;
@@ -206,21 +207,24 @@ int main(int argc, char **argv) {
   return 0;
 }
 
-PetscReal ComputeDiffusionCoefficient(PetscReal coords[3], UserContext *user) {
+PetscReal ComputeDiffusionCoefficient(PetscReal coords[3], UserContext *user)
+{
   if (user->problem == 2) {
     if ((coords[0] > 1.0 / 3.0) && (coords[0] < 2.0 / 3.0) && (coords[1] > 1.0 / 3.0) && (coords[1] < 2.0 / 3.0) && (coords[2] > 1.0 / 3.0) && (coords[2] < 2.0 / 3.0)) return user->rho;
     else return 1.0;
   } else return 1.0; /* problem = 1 */
 }
 
-PetscReal ComputeReactionCoefficient(PetscReal coords[3], UserContext *user) {
+PetscReal ComputeReactionCoefficient(PetscReal coords[3], UserContext *user)
+{
   if (user->problem == 2) {
     if ((coords[0] > 1.0 / 3.0) && (coords[0] < 2.0 / 3.0) && (coords[1] > 1.0 / 3.0) && (coords[1] < 2.0 / 3.0) && (coords[2] > 1.0 / 3.0) && (coords[2] < 2.0 / 3.0)) return 10.0;
     else return 0.0;
   } else return 5.0; /* problem = 1 */
 }
 
-double ExactSolution(PetscReal coords[3], UserContext *user) {
+double ExactSolution(PetscReal coords[3], UserContext *user)
+{
   if (user->problem == 2) {
     const PetscScalar xx = (coords[0] - user->xyzref[0]) * (coords[0] - user->xyzref[0]);
     const PetscScalar yy = (coords[1] - user->xyzref[1]) * (coords[1] - user->xyzref[1]);
@@ -229,12 +233,14 @@ double ExactSolution(PetscReal coords[3], UserContext *user) {
   } else return sin(PETSC_PI * coords[0]) * sin(PETSC_PI * coords[1]) * sin(PETSC_PI * coords[2]);
 }
 
-PetscReal exact_solution(PetscReal x, PetscReal y, PetscReal z) {
+PetscReal exact_solution(PetscReal x, PetscReal y, PetscReal z)
+{
   PetscReal coords[3] = {x, y, z};
   return ExactSolution(coords, 0);
 }
 
-double ForcingFunction(PetscReal coords[3], UserContext *user) {
+double ForcingFunction(PetscReal coords[3], UserContext *user)
+{
   const PetscReal exact = ExactSolution(coords, user);
   if (user->problem == 2) {
     const PetscReal duxyz = ((coords[0] - user->xyzref[0]) + (coords[1] - user->xyzref[1]) + (coords[2] - user->xyzref[2]));
@@ -245,7 +251,8 @@ double ForcingFunction(PetscReal coords[3], UserContext *user) {
   }
 }
 
-PetscErrorCode ComputeRHS_MOAB(KSP ksp, Vec b, void *ptr) {
+PetscErrorCode ComputeRHS_MOAB(KSP ksp, Vec b, void *ptr)
+{
   UserContext              *user = (UserContext *)ptr;
   DM                        dm;
   PetscInt                  dof_indices[8], nc, npoints;
@@ -339,7 +346,8 @@ PetscErrorCode ComputeRHS_MOAB(KSP ksp, Vec b, void *ptr) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode ComputeMatrix_MOAB(KSP ksp, Mat J, Mat jac, void *ctx) {
+PetscErrorCode ComputeMatrix_MOAB(KSP ksp, Mat J, Mat jac, void *ctx)
+{
   UserContext              *user = (UserContext *)ctx;
   DM                        dm;
   PetscInt                  i, j, q, nconn, nglobale, nglobalv, nc, npoints, hlevel;
@@ -443,7 +451,8 @@ PetscErrorCode ComputeMatrix_MOAB(KSP ksp, Mat J, Mat jac, void *ctx) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode ComputeDiscreteL2Error(KSP ksp, Vec err, UserContext *user) {
+PetscErrorCode ComputeDiscreteL2Error(KSP ksp, Vec err, UserContext *user)
+{
   DM                 dm;
   Vec                sol;
   PetscScalar        vpos[3];
@@ -500,7 +509,8 @@ PetscErrorCode ComputeDiscreteL2Error(KSP ksp, Vec err, UserContext *user) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode InitializeOptions(UserContext *user) {
+PetscErrorCode InitializeOptions(UserContext *user)
+{
   const char *bcTypes[2] = {"dirichlet", "neumann"};
   PetscInt    bc;
 

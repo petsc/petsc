@@ -23,7 +23,8 @@ static PetscErrorCode FormIFunction(TS, PetscReal, Vec, Vec, Vec, void *);
 static PetscErrorCode FormIJacobian(TS, PetscReal, Vec, Vec, PetscReal, Mat, Mat, void *ctx);
 static PetscErrorCode FormInitialSolution(TS, Vec, void *);
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   TS        ts;
   Vec       x; /* solution vector */
   Mat       A; /* Jacobian */
@@ -101,7 +102,8 @@ int main(int argc, char **argv) {
   return 0;
 }
 
-static PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec X, Vec F, void *ptr) {
+static PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec X, Vec F, void *ptr)
+{
   AppCtx            *user = (AppCtx *)ptr;
   PetscScalar       *f;
   const PetscScalar *x;
@@ -122,7 +124,8 @@ static PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec X, Vec F, void *ptr) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode FormIFunction(TS ts, PetscReal t, Vec X, Vec Xdot, Vec F, void *ptr) {
+static PetscErrorCode FormIFunction(TS ts, PetscReal t, Vec X, Vec Xdot, Vec F, void *ptr)
+{
   AppCtx            *user = (AppCtx *)ptr;
   PetscScalar       *f;
   const PetscScalar *x, *xdot;
@@ -142,7 +145,8 @@ static PetscErrorCode FormIFunction(TS ts, PetscReal t, Vec X, Vec Xdot, Vec F, 
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode FormIJacobian(TS ts, PetscReal t, Vec U, Vec Udot, PetscReal a, Mat J, Mat Jpre, void *ctx) {
+static PetscErrorCode FormIJacobian(TS ts, PetscReal t, Vec U, Vec Udot, PetscReal a, Mat J, Mat Jpre, void *ctx)
+{
   AppCtx            *user = (AppCtx *)ctx;
   PetscScalar        v;
   const PetscScalar *x;
@@ -167,7 +171,8 @@ static PetscErrorCode FormIJacobian(TS ts, PetscReal t, Vec U, Vec Udot, PetscRe
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode FormInitialSolution(TS ts, Vec U, void *ctx) {
+static PetscErrorCode FormInitialSolution(TS ts, Vec U, void *ctx)
+{
   AppCtx      *user = (AppCtx *)ctx;
   PetscInt     i;
   PetscScalar *x;

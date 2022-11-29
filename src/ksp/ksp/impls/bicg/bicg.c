@@ -1,16 +1,15 @@
 
 #include <petsc/private/kspimpl.h>
 
-static PetscErrorCode KSPSetUp_BiCG(KSP ksp) {
+static PetscErrorCode KSPSetUp_BiCG(KSP ksp)
+{
   PetscFunctionBegin;
-  /* check user parameters and functions */
-  PetscCheck(ksp->pc_side != PC_RIGHT, PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "no right preconditioning for KSPBiCG");
-  PetscCheck(ksp->pc_side != PC_SYMMETRIC, PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "no symmetric preconditioning for KSPBiCG");
   PetscCall(KSPSetWorkVecs(ksp, 6));
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode KSPSolve_BiCG(KSP ksp) {
+static PetscErrorCode KSPSolve_BiCG(KSP ksp)
+{
   PetscInt    i;
   PetscBool   diagonalscale;
   PetscScalar dpi, a = 1.0, beta, betaold = 1.0, b, ma;
@@ -117,23 +116,22 @@ static PetscErrorCode KSPSolve_BiCG(KSP ksp) {
      KSPBICG - Implements the Biconjugate gradient method (similar to running the conjugate
          gradient on the normal equations).
 
-   Options Database Keys:
-   see KSPSolve()
-
    Level: beginner
 
    Notes:
-    this method requires that one be apply to apply the transpose of the preconditioner and operator
-         as well as the operator and preconditioner.
-         Supports only left preconditioning
+   This method requires that one be apply to apply the transpose of the preconditioner and operator
+   as well as the operator and preconditioner.
 
-         See KSPCGNE for code that EXACTLY runs the preconditioned conjugate gradient method on the
-         normal equations
+   Supports only left preconditioning
 
-.seealso: `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPBCGS`, `KSPCGNE`
+   See `KSPCGNE` for code that EXACTLY runs the preconditioned conjugate gradient method on the normal equations
 
+   See `KSPBCGS` for the famous stabilized variant of this algorithm
+
+.seealso: [](chapter_ksp), `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPBCGS`, `KSPCGNE`
 M*/
-PETSC_EXTERN PetscErrorCode KSPCreate_BiCG(KSP ksp) {
+PETSC_EXTERN PetscErrorCode KSPCreate_BiCG(KSP ksp)
+{
   PetscFunctionBegin;
   PetscCall(KSPSetSupportedNorm(ksp, KSP_NORM_PRECONDITIONED, PC_LEFT, 3));
   PetscCall(KSPSetSupportedNorm(ksp, KSP_NORM_UNPRECONDITIONED, PC_LEFT, 2));

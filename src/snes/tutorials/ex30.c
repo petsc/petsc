@@ -120,9 +120,7 @@ extern PetscErrorCode StressField(DM);
 extern PetscErrorCode SNESConverged_Interactive(SNES, PetscInt, PetscReal, PetscReal, PetscReal, SNESConvergedReason *, void *);
 extern PetscErrorCode InteractiveHandler(int, void *);
 
-/*-----------------------------------------------------------------------*/
 int main(int argc, char **argv)
-/*-----------------------------------------------------------------------*/
 {
   SNES      snes;
   AppCtx   *user; /* user-defined work context */
@@ -207,9 +205,9 @@ int main(int argc, char **argv)
   PETSc INTERACTION FUNCTIONS (initialize & call SNESSolve)
   =====================================================================*/
 
-/*---------------------------------------------------------------------*/
 /*  manages solve: adaptive continuation method  */
-PetscErrorCode UpdateSolution(SNES snes, AppCtx *user, PetscInt *nits) {
+PetscErrorCode UpdateSolution(SNES snes, AppCtx *user, PetscInt *nits)
+{
   KSP                 ksp;
   PC                  pc;
   SNESConvergedReason reason    = SNES_CONVERGED_ITERATING;
@@ -284,38 +282,28 @@ done:
   PHYSICS FUNCTIONS (compute the discrete residual)
   =====================================================================*/
 
-/*---------------------------------------------------------------------*/
 static inline PetscScalar UInterp(Field **x, PetscInt i, PetscInt j)
-/*---------------------------------------------------------------------*/
 {
   return 0.25 * (x[j][i].u + x[j + 1][i].u + x[j][i + 1].u + x[j + 1][i + 1].u);
 }
 
-/*---------------------------------------------------------------------*/
 static inline PetscScalar WInterp(Field **x, PetscInt i, PetscInt j)
-/*---------------------------------------------------------------------*/
 {
   return 0.25 * (x[j][i].w + x[j + 1][i].w + x[j][i + 1].w + x[j + 1][i + 1].w);
 }
 
-/*---------------------------------------------------------------------*/
 static inline PetscScalar PInterp(Field **x, PetscInt i, PetscInt j)
-/*---------------------------------------------------------------------*/
 {
   return 0.25 * (x[j][i].p + x[j + 1][i].p + x[j][i + 1].p + x[j + 1][i + 1].p);
 }
 
-/*---------------------------------------------------------------------*/
 static inline PetscScalar TInterp(Field **x, PetscInt i, PetscInt j)
-/*---------------------------------------------------------------------*/
 {
   return 0.25 * (x[j][i].T + x[j + 1][i].T + x[j][i + 1].T + x[j + 1][i + 1].T);
 }
 
-/*---------------------------------------------------------------------*/
 /*  isoviscous analytic solution for IC */
 static inline PetscScalar HorizVelocity(PetscInt i, PetscInt j, AppCtx *user)
-/*---------------------------------------------------------------------*/
 {
   Parameter  *param = user->param;
   GridInfo   *grid  = user->grid;
@@ -331,10 +319,9 @@ static inline PetscScalar HorizVelocity(PetscInt i, PetscInt j, AppCtx *user)
   return ct * (c * th * st + d * (st + th * ct)) + st * (c * (st - th * ct) + d * th * st);
 }
 
-/*---------------------------------------------------------------------*/
 /*  isoviscous analytic solution for IC */
 static inline PetscScalar VertVelocity(PetscInt i, PetscInt j, AppCtx *user)
-/*---------------------------------------------------------------------*/
+
 {
   Parameter  *param = user->param;
   GridInfo   *grid  = user->grid;
@@ -350,10 +337,8 @@ static inline PetscScalar VertVelocity(PetscInt i, PetscInt j, AppCtx *user)
   return st * (c * th * st + d * (st + th * ct)) - ct * (c * (st - th * ct) + d * th * st);
 }
 
-/*---------------------------------------------------------------------*/
 /*  isoviscous analytic solution for IC */
 static inline PetscScalar Pressure(PetscInt i, PetscInt j, AppCtx *user)
-/*---------------------------------------------------------------------*/
 {
   Parameter  *param = user->param;
   GridInfo   *grid  = user->grid;
@@ -369,7 +354,6 @@ static inline PetscScalar Pressure(PetscInt i, PetscInt j, AppCtx *user)
 
 /*  computes the second invariant of the strain rate tensor */
 static inline PetscScalar CalcSecInv(Field **x, PetscInt i, PetscInt j, PetscInt ipos, AppCtx *user)
-/*---------------------------------------------------------------------*/
 {
   Parameter  *param = user->param;
   GridInfo   *grid  = user->grid;
@@ -433,10 +417,8 @@ static inline PetscScalar CalcSecInv(Field **x, PetscInt i, PetscInt j, PetscInt
   return PetscSqrtReal(0.5 * (eps11 * eps11 + 2.0 * eps12 * eps12 + eps22 * eps22));
 }
 
-/*---------------------------------------------------------------------*/
 /*  computes the shear viscosity */
 static inline PetscScalar Viscosity(PetscScalar T, PetscScalar eps, PetscScalar z, Parameter *param)
-/*---------------------------------------------------------------------*/
 {
   PetscReal   result = 0.0;
   ViscParam   difn = param->diffusion, disl = param->dislocation;
@@ -477,10 +459,8 @@ static inline PetscScalar Viscosity(PetscScalar T, PetscScalar eps, PetscScalar 
   return result;
 }
 
-/*---------------------------------------------------------------------*/
 /*  computes the residual of the x-component of eqn (1) above */
 static inline PetscScalar XMomentumResidual(Field **x, PetscInt i, PetscInt j, AppCtx *user)
-/*---------------------------------------------------------------------*/
 {
   Parameter  *param = user->param;
   GridInfo   *grid  = user->grid;
@@ -530,10 +510,9 @@ static inline PetscScalar XMomentumResidual(Field **x, PetscInt i, PetscInt j, A
   return residual;
 }
 
-/*---------------------------------------------------------------------*/
 /*  computes the residual of the z-component of eqn (1) above */
 static inline PetscScalar ZMomentumResidual(Field **x, PetscInt i, PetscInt j, AppCtx *user)
-/*---------------------------------------------------------------------*/
+
 {
   Parameter  *param = user->param;
   GridInfo   *grid  = user->grid;
@@ -586,10 +565,8 @@ static inline PetscScalar ZMomentumResidual(Field **x, PetscInt i, PetscInt j, A
   return residual;
 }
 
-/*---------------------------------------------------------------------*/
 /*  computes the residual of eqn (2) above */
 static inline PetscScalar ContinuityResidual(Field **x, PetscInt i, PetscInt j, AppCtx *user)
-/*---------------------------------------------------------------------*/
 {
   GridInfo   *grid = user->grid;
   PetscScalar uE, uW, wN, wS, dudx, dwdz;
@@ -604,10 +581,8 @@ static inline PetscScalar ContinuityResidual(Field **x, PetscInt i, PetscInt j, 
   return dudx + dwdz;
 }
 
-/*---------------------------------------------------------------------*/
 /*  computes the residual of eqn (3) above */
 static inline PetscScalar EnergyResidual(Field **x, PetscInt i, PetscInt j, AppCtx *user)
-/*---------------------------------------------------------------------*/
 {
   Parameter  *param = user->param;
   GridInfo   *grid  = user->grid;
@@ -665,10 +640,8 @@ static inline PetscScalar EnergyResidual(Field **x, PetscInt i, PetscInt j, AppC
   return residual;
 }
 
-/*---------------------------------------------------------------------*/
 /*  computes the shear stress---used on the boundaries */
 static inline PetscScalar ShearStress(Field **x, PetscInt i, PetscInt j, PetscInt ipos, AppCtx *user)
-/*---------------------------------------------------------------------*/
 {
   Parameter  *param = user->param;
   GridInfo   *grid  = user->grid;
@@ -701,10 +674,8 @@ static inline PetscScalar ShearStress(Field **x, PetscInt i, PetscInt j, PetscIn
   return (uN - uS) / grid->dz + (wE - wW) / grid->dx;
 }
 
-/*---------------------------------------------------------------------*/
 /*  computes the normal stress---used on the boundaries */
 static inline PetscScalar XNormalStress(Field **x, PetscInt i, PetscInt j, PetscInt ipos, AppCtx *user)
-/*---------------------------------------------------------------------*/
 {
   Parameter  *param = user->param;
   GridInfo   *grid  = user->grid;
@@ -742,10 +713,8 @@ static inline PetscScalar XNormalStress(Field **x, PetscInt i, PetscInt j, Petsc
   return 2.0 * etaC * (uE - uW) / dx - pC;
 }
 
-/*---------------------------------------------------------------------*/
 /*  computes the normal stress---used on the boundaries */
 static inline PetscScalar ZNormalStress(Field **x, PetscInt i, PetscInt j, PetscInt ipos, AppCtx *user)
-/*---------------------------------------------------------------------*/
 {
   Parameter  *param = user->param;
   GridInfo   *grid  = user->grid;
@@ -782,17 +751,13 @@ static inline PetscScalar ZNormalStress(Field **x, PetscInt i, PetscInt j, Petsc
   return 2.0 * etaC * (wN - wS) / dz - pC;
 }
 
-/*---------------------------------------------------------------------*/
-
 /*=====================================================================
   INITIALIZATION, POST-PROCESSING AND OUTPUT FUNCTIONS
   =====================================================================*/
 
-/*---------------------------------------------------------------------*/
 /* initializes the problem parameters and checks for
    command line changes */
 PetscErrorCode SetParams(Parameter *param, GridInfo *grid)
-/*---------------------------------------------------------------------*/
 {
   PetscReal SEC_PER_YR                     = 3600.00 * 24.00 * 365.2500;
   PetscReal alpha_g_on_cp_units_inverse_km = 4.0e-5 * 9.8;
@@ -925,10 +890,8 @@ PetscErrorCode SetParams(Parameter *param, GridInfo *grid)
   return 0;
 }
 
-/*---------------------------------------------------------------------*/
 /*  prints a report of the problem parameters to stdout */
 PetscErrorCode ReportParams(Parameter *param, GridInfo *grid)
-/*---------------------------------------------------------------------*/
 {
   char date[30];
 
@@ -977,7 +940,7 @@ PetscErrorCode ReportParams(Parameter *param, GridInfo *grid)
     }
 
     if (param->output_to_file) {
-#if defined(PETSC_HAVE_MATLAB_ENGINE)
+#if defined(PETSC_HAVE_MATLAB)
       PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Output Destination:       Mat file \"%s\"\n", param->filename));
 #else
       PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Output Destination:       PETSc binary file \"%s\"\n", param->filename));
@@ -1036,10 +999,8 @@ PetscErrorCode Initialize(DM da)
   return 0;
 }
 
-/*---------------------------------------------------------------------*/
 /*  controls output to a file */
 PetscErrorCode DoOutput(SNES snes, PetscInt its)
-/*---------------------------------------------------------------------*/
 {
   AppCtx     *user;
   Parameter  *param;
@@ -1097,7 +1058,7 @@ PetscErrorCode DoOutput(SNES snes, PetscInt its)
     PetscCall(VecAssemblyEnd(pars));
 
     /* create viewer */
-#if defined(PETSC_HAVE_MATLAB_ENGINE)
+#if defined(PETSC_HAVE_MATLAB)
     PetscCall(PetscViewerMatlabOpen(PETSC_COMM_WORLD, param->filename, FILE_MODE_WRITE, &viewer));
 #else
     PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD, param->filename, FILE_MODE_WRITE, &viewer));
@@ -1226,11 +1187,8 @@ PetscErrorCode StressField(DM da)
   UTILITY FUNCTIONS
   =====================================================================*/
 
-/*---------------------------------------------------------------------*/
-/* returns the velocity of the subducting slab and handles fault nodes
-   for BC */
+/* returns the velocity of the subducting slab and handles fault nodes for BC */
 static inline PetscScalar SlabVel(char c, PetscInt i, PetscInt j, AppCtx *user)
-/*---------------------------------------------------------------------*/
 {
   Parameter *param = user->param;
   GridInfo  *grid  = user->grid;
@@ -1247,10 +1205,8 @@ static inline PetscScalar SlabVel(char c, PetscInt i, PetscInt j, AppCtx *user)
   }
 }
 
-/*---------------------------------------------------------------------*/
 /*  solution to diffusive half-space cooling model for BC */
 static inline PetscScalar PlateModel(PetscInt j, PetscInt plate, AppCtx *user)
-/*---------------------------------------------------------------------*/
 {
   Parameter  *param = user->param;
   PetscScalar z;
@@ -1327,11 +1283,8 @@ PetscErrorCode InteractiveHandler(int signum, void *ctx)
   return 0;
 }
 
-/*---------------------------------------------------------------------*/
-/*  main call-back function that computes the processor-local piece
-    of the residual */
+/*  main call-back function that computes the processor-local piece of the residual */
 PetscErrorCode FormFunctionLocal(DMDALocalInfo *info, Field **x, Field **f, void *ptr)
-/*---------------------------------------------------------------------*/
 {
   AppCtx     *user  = (AppCtx *)ptr;
   Parameter  *param = user->param;

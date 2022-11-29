@@ -15,7 +15,8 @@
 #include <../src/mat/impls/aij/mpi/mpiaij.h>
 #include <../src/mat/impls/aij/seq/crl/crl.h>
 
-PetscErrorCode MatDestroy_MPIAIJCRL(Mat A) {
+PetscErrorCode MatDestroy_MPIAIJCRL(Mat A)
+{
   Mat_AIJCRL *aijcrl = (Mat_AIJCRL *)A->spptr;
 
   PetscFunctionBegin;
@@ -32,7 +33,8 @@ PetscErrorCode MatDestroy_MPIAIJCRL(Mat A) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatMPIAIJCRL_create_aijcrl(Mat A) {
+PetscErrorCode MatMPIAIJCRL_create_aijcrl(Mat A)
+{
   Mat_MPIAIJ  *a   = (Mat_MPIAIJ *)(A)->data;
   Mat_SeqAIJ  *Aij = (Mat_SeqAIJ *)(a->A->data), *Bij = (Mat_SeqAIJ *)(a->B->data);
   Mat_AIJCRL  *aijcrl = (Mat_AIJCRL *)A->spptr;
@@ -82,7 +84,8 @@ PetscErrorCode MatMPIAIJCRL_create_aijcrl(Mat A) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatAssemblyEnd_MPIAIJCRL(Mat A, MatAssemblyType mode) {
+PetscErrorCode MatAssemblyEnd_MPIAIJCRL(Mat A, MatAssemblyType mode)
+{
   Mat_MPIAIJ *a   = (Mat_MPIAIJ *)A->data;
   Mat_SeqAIJ *Aij = (Mat_SeqAIJ *)(a->A->data), *Bij = (Mat_SeqAIJ *)(a->A->data);
 
@@ -106,14 +109,15 @@ extern PetscErrorCode MatDuplicate_AIJCRL(Mat, MatDuplicateOption, Mat *);
  * routine, but can also be used to convert an assembled MPIAIJ matrix
  * into a MPIAIJCRL one. */
 
-PETSC_INTERN PetscErrorCode MatConvert_MPIAIJ_MPIAIJCRL(Mat A, MatType type, MatReuse reuse, Mat *newmat) {
+PETSC_INTERN PetscErrorCode MatConvert_MPIAIJ_MPIAIJCRL(Mat A, MatType type, MatReuse reuse, Mat *newmat)
+{
   Mat         B = *newmat;
   Mat_AIJCRL *aijcrl;
 
   PetscFunctionBegin;
   if (reuse == MAT_INITIAL_MATRIX) PetscCall(MatDuplicate(A, MAT_COPY_VALUES, &B));
 
-  PetscCall(PetscNewLog(B, &aijcrl));
+  PetscCall(PetscNew(&aijcrl));
   B->spptr = (void *)aijcrl;
 
   /* Set function pointers for methods that we inherit from AIJ but override. */
@@ -158,9 +162,10 @@ PETSC_INTERN PetscErrorCode MatConvert_MPIAIJ_MPIAIJCRL(Mat A, MatType type, Mat
 
    Level: intermediate
 
-.seealso: `MATAIJ`, `MATAIJSELL`, `MATAIJPERM`, `MATAIJMKL`, `MatCreate()`, `MatCreateMPIAIJPERM()`, `MatSetValues()`
+.seealso: [Sparse Matrix Creation](sec_matsparse), `MATAIJ`, `MATAIJSELL`, `MATAIJPERM`, `MATAIJMKL`, `MatCreate()`, `MatCreateMPIAIJPERM()`, `MatSetValues()`
 @*/
-PetscErrorCode MatCreateMPIAIJCRL(MPI_Comm comm, PetscInt m, PetscInt n, PetscInt nz, const PetscInt nnz[], PetscInt onz, const PetscInt onnz[], Mat *A) {
+PetscErrorCode MatCreateMPIAIJCRL(MPI_Comm comm, PetscInt m, PetscInt n, PetscInt nz, const PetscInt nnz[], PetscInt onz, const PetscInt onnz[], Mat *A)
+{
   PetscFunctionBegin;
   PetscCall(MatCreate(comm, A));
   PetscCall(MatSetSizes(*A, m, n, m, n));
@@ -169,7 +174,8 @@ PetscErrorCode MatCreateMPIAIJCRL(MPI_Comm comm, PetscInt m, PetscInt n, PetscIn
   PetscFunctionReturn(0);
 }
 
-PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJCRL(Mat A) {
+PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJCRL(Mat A)
+{
   PetscFunctionBegin;
   PetscCall(MatSetType(A, MATMPIAIJ));
   PetscCall(MatConvert_MPIAIJ_MPIAIJCRL(A, MATMPIAIJCRL, MAT_INPLACE_MATRIX, &A));

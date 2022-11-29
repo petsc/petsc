@@ -24,7 +24,8 @@ PETSC_EXTERN PetscErrorCode MatColoringCreate_LF(MatColoring);
 
  .seealso: `MatColoring`, `MatColoringRegister()`, `MatColoringRegisterDestroy()`
  @*/
-PetscErrorCode MatColoringRegisterAll(void) {
+PetscErrorCode MatColoringRegisterAll(void)
+{
   PetscFunctionBegin;
   if (MatColoringRegisterAllCalled) PetscFunctionReturn(0);
   MatColoringRegisterAllCalled = PETSC_TRUE;

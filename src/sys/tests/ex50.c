@@ -4,7 +4,8 @@ static char help[] = "Tests using PetscViewerGetSubViewer() recursively\n\n";
 #include <petscsys.h>
 #include <petscviewer.h>
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscViewer       viewer, subviewer, subsubviewer;
   PetscViewerFormat format;
   PetscBool         flg;

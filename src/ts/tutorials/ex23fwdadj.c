@@ -26,7 +26,8 @@ struct _n_User {
   PetscInt  der;
 };
 
-static PetscErrorCode IFunction(TS ts, PetscReal t, Vec X, Vec Xdot, Vec F, void *ctx) {
+static PetscErrorCode IFunction(TS ts, PetscReal t, Vec X, Vec Xdot, Vec F, void *ctx)
+{
   User               user = (User)ctx;
   const PetscScalar *x, *xdot;
   PetscScalar       *f;
@@ -42,7 +43,8 @@ static PetscErrorCode IFunction(TS ts, PetscReal t, Vec X, Vec Xdot, Vec F, void
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode IJacobian(TS ts, PetscReal t, Vec X, Vec Xdot, PetscReal a, Mat A, Mat B, void *ctx) {
+static PetscErrorCode IJacobian(TS ts, PetscReal t, Vec X, Vec Xdot, PetscReal a, Mat A, Mat B, void *ctx)
+{
   User               user     = (User)ctx;
   PetscInt           rowcol[] = {0};
   PetscScalar        J[1][1];
@@ -63,7 +65,8 @@ static PetscErrorCode IJacobian(TS ts, PetscReal t, Vec X, Vec Xdot, PetscReal a
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode IJacobianP(TS ts, PetscReal t, Vec X, Vec Xdot, PetscReal shift, Mat A, void *ctx) {
+static PetscErrorCode IJacobianP(TS ts, PetscReal t, Vec X, Vec Xdot, PetscReal shift, Mat A, void *ctx)
+{
   User               user  = (User)ctx;
   PetscInt           row[] = {0}, col[] = {0};
   PetscScalar        J[1][1];
@@ -84,7 +87,8 @@ static PetscErrorCode IJacobianP(TS ts, PetscReal t, Vec X, Vec Xdot, PetscReal 
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   TS             ts;
   PetscScalar   *x_ptr;
   PetscMPIInt    size;

@@ -2,7 +2,8 @@ static const char help[] = "Test parallel assembly of SBAIJ matrices\n\n";
 
 #include <petscmat.h>
 
-PetscErrorCode Assemble(MPI_Comm comm, PetscInt bs, MatType mtype) {
+PetscErrorCode Assemble(MPI_Comm comm, PetscInt bs, MatType mtype)
+{
   const PetscInt    rc[]   = {0, 1, 2, 3};
   const PetscScalar vals[] = {100, 2,  3,  4,  5,  600, 7,  8,  9,  100, 11, 1200, 13, 14, 15, 1600, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 2800, 29, 30, 31, 32,
                               33,  34, 35, 36, 37, 38,  39, 40, 41, 42,  43, 44,   45, 46, 47, 48,   49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 49, 60,   61, 62, 63, 64};
@@ -43,16 +44,16 @@ PetscErrorCode Assemble(MPI_Comm comm, PetscInt bs, MatType mtype) {
   PetscCall(MatCreateVecs(A, &x, &y));
   PetscCall(VecDuplicate(x, &b));
   for (j = 0; j < 2; j++) {
-#if defined(PETSC_HAVE_MUMPS)
+  #if defined(PETSC_HAVE_MUMPS)
     if (j == 0) stype = MATSOLVERMUMPS;
-#else
+  #else
     if (j == 0) continue;
-#endif
-#if defined(PETSC_HAVE_MKL_CPARDISO)
+  #endif
+  #if defined(PETSC_HAVE_MKL_CPARDISO)
     if (j == 1) stype = MATSOLVERMKL_CPARDISO;
-#else
+  #else
     if (j == 1) continue;
-#endif
+  #endif
     if (issbaij) {
       PetscCall(MatGetFactor(A, stype, MAT_FACTOR_CHOLESKY, &F));
       PetscCall(MatCholeskyFactorSymbolic(F, A, NULL, NULL));
@@ -82,7 +83,8 @@ PetscErrorCode Assemble(MPI_Comm comm, PetscInt bs, MatType mtype) {
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[])
+{
   MPI_Comm    comm;
   PetscMPIInt size;
 

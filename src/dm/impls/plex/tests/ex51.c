@@ -8,7 +8,8 @@ typedef struct {
   char fname[PETSC_MAX_PATH_LEN]; /* Output mesh filename */
 } AppCtx;
 
-PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options) {
+PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
+{
   PetscBool flg;
 
   PetscFunctionBegin;
@@ -19,7 +20,8 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options) {
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   const char        exampleDMPlexName[]       = "exampleDMPlex";
   const char        exampleDistributionName[] = "exampleDistribution";
   PetscViewerFormat format                    = PETSC_VIEWER_HDF5_PETSC;
@@ -115,6 +117,6 @@ int main(int argc, char **argv) {
     nsize: {{1 2 4}separate output}
     args: -fname ex51_dump.h5 -dm_view ascii::ascii_info_detail
     args: -petscpartitioner_type parmetis
-    args: -dm_plex_view_hdf5_storage_version 2.0.0
+    args: -dm_plex_view_hdf5_storage_version 2.1.0
 
 TEST*/

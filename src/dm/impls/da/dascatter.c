@@ -21,13 +21,14 @@ extern PetscErrorCode DMLocalToLocalCreate_DA(DM);
 
    Level: developer
 
-   Notes:
+   Note:
    The output contexts are valid only as long as the input da is valid.
    If you delete the da, the scatter contexts will become invalid.
 
-.seealso: `DMGlobalToLocalBegin()`, `DMGlobalToLocalEnd()`, `DMLocalToGlobalBegin()`
+.seealso: `DM`, `DMDA`, `DMGlobalToLocalBegin()`, `DMGlobalToLocalEnd()`, `DMLocalToGlobalBegin()`
 @*/
-PetscErrorCode DMDAGetScatter(DM da, VecScatter *gtol, VecScatter *ltol) {
+PetscErrorCode DMDAGetScatter(DM da, VecScatter *gtol, VecScatter *ltol)
+{
   DM_DA *dd = (DM_DA *)da->data;
 
   PetscFunctionBegin;

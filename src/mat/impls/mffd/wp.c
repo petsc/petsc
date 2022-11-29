@@ -55,7 +55,8 @@ typedef struct {
 .   h - the scale computed
 
 */
-static PetscErrorCode MatMFFDCompute_WP(MatMFFD ctx, Vec U, Vec a, PetscScalar *h, PetscBool *zeroa) {
+static PetscErrorCode MatMFFDCompute_WP(MatMFFD ctx, Vec U, Vec a, PetscScalar *h, PetscBool *zeroa)
+{
   MatMFFD_WP *hctx = (MatMFFD_WP *)ctx->hctx;
   PetscReal   normU, norma;
 
@@ -89,7 +90,8 @@ static PetscErrorCode MatMFFDCompute_WP(MatMFFD ctx, Vec U, Vec a, PetscScalar *
 -   viewer - the PETSc viewer
 
 */
-static PetscErrorCode MatMFFDView_WP(MatMFFD ctx, PetscViewer viewer) {
+static PetscErrorCode MatMFFDView_WP(MatMFFD ctx, PetscViewer viewer)
+{
   MatMFFD_WP *hctx = (MatMFFD_WP *)ctx->hctx;
   PetscBool   iascii;
 
@@ -113,7 +115,8 @@ static PetscErrorCode MatMFFDView_WP(MatMFFD ctx, PetscViewer viewer) {
 .  ctx - the matrix free context
 
 */
-static PetscErrorCode MatMFFDSetFromOptions_WP(MatMFFD ctx, PetscOptionItems *PetscOptionsObject) {
+static PetscErrorCode MatMFFDSetFromOptions_WP(MatMFFD ctx, PetscOptionItems *PetscOptionsObject)
+{
   MatMFFD_WP *hctx = (MatMFFD_WP *)ctx->hctx;
 
   PetscFunctionBegin;
@@ -134,14 +137,16 @@ static PetscErrorCode MatMFFDSetFromOptions_WP(MatMFFD ctx, PetscOptionItems *Pe
     does not free the ctx, that is handled by the calling routine
 
 */
-static PetscErrorCode MatMFFDDestroy_WP(MatMFFD ctx) {
+static PetscErrorCode MatMFFDDestroy_WP(MatMFFD ctx)
+{
   PetscFunctionBegin;
   PetscCall(PetscObjectComposeFunction((PetscObject)ctx->mat, "MatMFFDWPSetComputeNormU_C", NULL));
   PetscCall(PetscFree(ctx->hctx));
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatMFFDWPSetComputeNormU_P(Mat mat, PetscBool flag) {
+PetscErrorCode MatMFFDWPSetComputeNormU_P(Mat mat, PetscBool flag)
+{
   MatMFFD     ctx  = (MatMFFD)mat->data;
   MatMFFD_WP *hctx = (MatMFFD_WP *)ctx->hctx;
 
@@ -171,7 +176,8 @@ PetscErrorCode MatMFFDWPSetComputeNormU_P(Mat mat, PetscBool flag) {
 
 .seealso: `MATMFFD_WP`, `MATMFFD`, `MatMFFDSetFunctionError()`, `MatCreateSNESMF()`
 @*/
-PetscErrorCode MatMFFDWPSetComputeNormU(Mat A, PetscBool flag) {
+PetscErrorCode MatMFFDWPSetComputeNormU(Mat A, PetscBool flag)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
   PetscTryMethod(A, "MatMFFDWPSetComputeNormU_C", (Mat, PetscBool), (A, flag));
@@ -186,12 +192,13 @@ PetscErrorCode MatMFFDWPSetComputeNormU(Mat A, PetscBool flag) {
 .  ctx - the matrix free context created by MatCreateMFFD()
 
 */
-PETSC_EXTERN PetscErrorCode MatCreateMFFD_WP(MatMFFD ctx) {
+PETSC_EXTERN PetscErrorCode MatCreateMFFD_WP(MatMFFD ctx)
+{
   MatMFFD_WP *hctx;
 
   PetscFunctionBegin;
   /* allocate my own private data structure */
-  PetscCall(PetscNewLog(ctx, &hctx));
+  PetscCall(PetscNew(&hctx));
   ctx->hctx          = (void *)hctx;
   hctx->computenormU = PETSC_FALSE;
 

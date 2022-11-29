@@ -2,7 +2,8 @@ static char help[] = "Tests for creation of submeshes\n\n";
 
 #include <petscdmplex.h>
 
-static PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm) {
+static PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm)
+{
   PetscFunctionBeginUser;
   PetscCall(DMCreate(comm, dm));
   PetscCall(DMSetType(*dm, DMPLEX));
@@ -12,7 +13,8 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm) {
 }
 
 // Label half of the cells
-static PetscErrorCode CreateHalfCellsLabel(DM dm, PetscBool lower, DMLabel *label) {
+static PetscErrorCode CreateHalfCellsLabel(DM dm, PetscBool lower, DMLabel *label)
+{
   PetscInt cStart, cEnd, cStartSub, cEndSub;
 
   PetscFunctionBeginUser;
@@ -33,11 +35,13 @@ static PetscErrorCode CreateHalfCellsLabel(DM dm, PetscBool lower, DMLabel *labe
 }
 
 // Label everything on the right half of the domain
-static PetscErrorCode CreateHalfDomainLabel(DM dm, PetscBool lower, DMLabel *label) {
+static PetscErrorCode CreateHalfDomainLabel(DM dm, PetscBool lower, PetscReal height, DMLabel *label)
+{
   PetscReal centroid[3];
   PetscInt  cStart, cEnd, cdim;
 
   PetscFunctionBeginUser;
+  PetscCall(DMGetCoordinatesLocalSetUp(dm));
   PetscCall(DMCreateLabel(dm, "cells"));
   PetscCall(DMGetLabel(dm, "cells", label));
   PetscCall(DMLabelClearStratum(*label, 1));
@@ -45,6 +49,7 @@ static PetscErrorCode CreateHalfDomainLabel(DM dm, PetscBool lower, DMLabel *lab
   PetscCall(DMGetCoordinateDim(dm, &cdim));
   for (PetscInt c = cStart; c < cEnd; ++c) {
     PetscCall(DMPlexComputeCellGeometryFVM(dm, c, NULL, centroid, NULL));
+    if (height > 0.0 && PetscAbsReal(centroid[1] - height) > PETSC_SMALL) continue;
     if (lower) {
       if (centroid[0] < 0.5) PetscCall(DMLabelSetValue(*label, c, 1));
     } else {
@@ -56,7 +61,8 @@ static PetscErrorCode CreateHalfDomainLabel(DM dm, PetscBool lower, DMLabel *lab
 }
 
 // Create a line of faces at a given x value
-static PetscErrorCode CreateLineLabel(DM dm, PetscReal x, DMLabel *label) {
+static PetscErrorCode CreateLineLabel(DM dm, PetscReal x, DMLabel *label)
+{
   PetscReal centroid[3];
   PetscInt  fStart, fEnd;
 
@@ -73,11 +79,12 @@ static PetscErrorCode CreateLineLabel(DM dm, PetscReal x, DMLabel *label) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode CreateVolumeSubmesh(DM dm, PetscBool domain, PetscBool lower, DM *subdm) {
+static PetscErrorCode CreateVolumeSubmesh(DM dm, PetscBool domain, PetscBool lower, PetscReal height, DM *subdm)
+{
   DMLabel label, map;
 
   PetscFunctionBegin;
-  if (domain) PetscCall(CreateHalfDomainLabel(dm, lower, &label));
+  if (domain) PetscCall(CreateHalfDomainLabel(dm, lower, height, &label));
   else PetscCall(CreateHalfCellsLabel(dm, lower, &label));
   PetscCall(DMPlexFilter(dm, label, 1, subdm));
   PetscCall(PetscObjectSetName((PetscObject)*subdm, "Submesh"));
@@ -88,7 +95,8 @@ static PetscErrorCode CreateVolumeSubmesh(DM dm, PetscBool domain, PetscBool low
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TestBoundaryField(DM dm) {
+static PetscErrorCode TestBoundaryField(DM dm)
+{
   DM       subdm;
   DMLabel  label, map;
   PetscFV  fvm;
@@ -124,21 +132,24 @@ static PetscErrorCode TestBoundaryField(DM dm) {
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   DM        dm, subdm;
+  PetscReal height = -1.0;
   PetscBool volume = PETSC_TRUE, domain = PETSC_FALSE;
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
+  PetscCall(PetscOptionsGetReal(NULL, NULL, "-height", &height, NULL));
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-volume", &volume, NULL));
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-domain", &domain, NULL));
 
   PetscCall(CreateMesh(PETSC_COMM_WORLD, &dm));
   if (volume) {
-    PetscCall(CreateVolumeSubmesh(dm, domain, PETSC_TRUE, &subdm));
+    PetscCall(CreateVolumeSubmesh(dm, domain, PETSC_TRUE, height, &subdm));
     PetscCall(DMSetFromOptions(subdm));
     PetscCall(DMDestroy(&subdm));
-    PetscCall(CreateVolumeSubmesh(dm, domain, PETSC_FALSE, &subdm));
+    PetscCall(CreateVolumeSubmesh(dm, domain, PETSC_FALSE, height, &subdm));
     PetscCall(DMSetFromOptions(subdm));
     PetscCall(DMDestroy(&subdm));
   } else {
@@ -171,6 +182,17 @@ int main(int argc, char **argv) {
       suffix: 2
       args: -domain
 
+  # This set tests that global numberings can be made when some strata are missing on a process
+  testset:
+    nsize: 3
+    requires: hdf5
+    args: -dm_plex_simplex 0 -dm_plex_box_faces 4,4 -petscpartitioner_type simple -sub_dm_distribute 0 \
+          -sub_dm_plex_check_all -sub_dm_view hdf5:subdm.h5
+
+    test:
+      suffix: 3
+      args: -domain -height 0.625
+
   # This test checks whether filter can extract a lower-dimensional manifold and output a field on it
   testset:
     args: -volume 0 -dm_plex_simplex 0 -sub_dm_view hdf5:subdm.h5 -vec_view hdf5:subdm.h5::append
@@ -183,5 +205,11 @@ int main(int argc, char **argv) {
     test:
       suffix: surface_3d
       args: -dm_plex_box_faces 5,5,5
+
+    # This test checks that if cells are present in the SF, the dm is marked as having an overlap
+    test:
+      suffix: surface_2d_2
+      nsize: 3
+      args: -dm_plex_box_faces 5,5 -domain -height 0.625
 
 TEST*/

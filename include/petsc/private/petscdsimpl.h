@@ -1,4 +1,4 @@
-#if !defined(PETSCDSIMPL_H)
+#ifndef PETSCDSIMPL_H
 #define PETSCDSIMPL_H
 
 #include <petscds.h>
@@ -55,7 +55,8 @@ PETSC_HASH_MAP(HMapForm, PetscFormKey, PetscChunk, PetscFormKeyHash, PetscFormKe
    0: left = right
    1: left > right
 */
-static inline int Compare_PetscFormKey_Private(const void *left, const void *right, PETSC_UNUSED void *ctx) {
+static inline int Compare_PetscFormKey_Private(const void *left, const void *right, PETSC_UNUSED void *ctx)
+{
   PetscFormKey l = *(const PetscFormKey *)left;
   PetscFormKey r = *(const PetscFormKey *)right;
   return (l.label < r.label) ? -1 : ((l.label > r.label) ? 1 : ((l.value < r.value) ? -1 : (l.value > r.value) ? 1 : ((l.field < r.field) ? -1 : (l.field > r.field) ? 1 : ((l.part < r.part) ? -1 : (l.part > r.part)))));
@@ -88,14 +89,14 @@ struct _PetscDSOps {
 
 struct _p_PetscDS {
   PETSCHEADER(struct _PetscDSOps);
-  void                 *data;       /* Implementation object */
-  PetscDS              *subprobs;   /* The subspaces for each dimension */
-  PetscBool             setup;      /* Flag for setup */
-  PetscInt              dimEmbed;   /* The real space coordinate dimension */
-  PetscInt              Nf;         /* The number of solution fields */
-  PetscObject          *disc;       /* The discretization for each solution field (PetscFE, PetscFV, etc.) */
-  PetscBool            *cohesive;   /* Flag for cohesive discretization */
-  PetscBool             isCohesive; /* We are on a cohesive cell, meaning lower dimensional FE used on a 0-volume cell. Normal fields appear on both endcaps, whereas cohesive field only appear once in the middle */
+  void        *data;       /* Implementation object */
+  PetscDS     *subprobs;   /* The subspaces for each dimension */
+  PetscBool    setup;      /* Flag for setup */
+  PetscInt     dimEmbed;   /* The real space coordinate dimension */
+  PetscInt     Nf;         /* The number of solution fields */
+  PetscObject *disc;       /* The discretization for each solution field (PetscFE, PetscFV, etc.) */
+  PetscBool   *cohesive;   /* Flag for cohesive discretization */
+  PetscBool    isCohesive; /* We are on a cohesive cell, meaning lower dimensional FE used on a 0-volume cell. Normal fields appear on both endcaps, whereas cohesive field only appear once in the middle */
   /* Equations */
   DSBoundary            boundary;     /* Linked list of boundary conditions */
   PetscBool             useJacPre;    /* Flag for using the Jacobian preconditioner */
@@ -111,27 +112,27 @@ struct _p_PetscDS {
   PetscScalar          *constants;    /* Array of constants passed to point functions */
   void                **ctx;          /* User contexts for each field */
   /* Computed sizes */
-  PetscInt              totDim;            /* Total system dimension */
-  PetscInt              totComp;           /* Total field components */
-  PetscInt             *Nc;                /* Number of components for each field */
-  PetscInt             *Nb;                /* Number of basis functions for each field */
-  PetscInt             *off;               /* Offsets for each field */
-  PetscInt             *offDer;            /* Derivative offsets for each field */
-  PetscInt             *offCohesive[3];    /* Offsets for each field on side s of a cohesive cell */
-  PetscInt             *offDerCohesive[3]; /* Derivative offsets for each field on side s of a cohesive cell */
-  PetscTabulation      *T;                 /* Basis function and derivative tabulation for each field */
-  PetscTabulation      *Tf;                /* Basis function and derivative tabulation for each local face and field */
+  PetscInt         totDim;            /* Total system dimension */
+  PetscInt         totComp;           /* Total field components */
+  PetscInt        *Nc;                /* Number of components for each field */
+  PetscInt        *Nb;                /* Number of basis functions for each field */
+  PetscInt        *off;               /* Offsets for each field */
+  PetscInt        *offDer;            /* Derivative offsets for each field */
+  PetscInt        *offCohesive[3];    /* Offsets for each field on side s of a cohesive cell */
+  PetscInt        *offDerCohesive[3]; /* Derivative offsets for each field on side s of a cohesive cell */
+  PetscTabulation *T;                 /* Basis function and derivative tabulation for each field */
+  PetscTabulation *Tf;                /* Basis function and derivative tabulation for each local face and field */
   /* Work space */
-  PetscScalar          *u;                 /* Field evaluation */
-  PetscScalar          *u_t;               /* Field time derivative evaluation */
-  PetscScalar          *u_x;               /* Field gradient evaluation */
-  PetscScalar          *basisReal;         /* Workspace for pushforward */
-  PetscScalar          *basisDerReal;      /* Workspace for derivative pushforward */
-  PetscScalar          *testReal;          /* Workspace for pushforward */
-  PetscScalar          *testDerReal;       /* Workspace for derivative pushforward */
-  PetscReal            *x;                 /* Workspace for computing real coordinates */
-  PetscScalar          *f0, *f1;           /* Point evaluations of weak form residual integrands */
-  PetscScalar          *g0, *g1, *g2, *g3; /* Point evaluations of weak form Jacobian integrands */
+  PetscScalar *u;                 /* Field evaluation */
+  PetscScalar *u_t;               /* Field time derivative evaluation */
+  PetscScalar *u_x;               /* Field gradient evaluation */
+  PetscScalar *basisReal;         /* Workspace for pushforward */
+  PetscScalar *basisDerReal;      /* Workspace for derivative pushforward */
+  PetscScalar *testReal;          /* Workspace for pushforward */
+  PetscScalar *testDerReal;       /* Workspace for derivative pushforward */
+  PetscReal   *x;                 /* Workspace for computing real coordinates */
+  PetscScalar *f0, *f1;           /* Point evaluations of weak form residual integrands */
+  PetscScalar *g0, *g1, *g2, *g3; /* Point evaluations of weak form Jacobian integrands */
 };
 
 typedef struct {

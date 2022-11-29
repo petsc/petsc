@@ -1,7 +1,8 @@
 #include <../src/snes/impls/ngmres/snesngmres.h> /*I "petscsnes.h" I*/
 #include <petscblaslapack.h>
 
-PetscErrorCode SNESNGMRESUpdateSubspace_Private(SNES snes, PetscInt ivec, PetscInt l, Vec F, PetscReal fnorm, Vec X) {
+PetscErrorCode SNESNGMRESUpdateSubspace_Private(SNES snes, PetscInt ivec, PetscInt l, Vec F, PetscReal fnorm, Vec X)
+{
   SNES_NGMRES *ngmres = (SNES_NGMRES *)snes->data;
   Vec         *Fdot   = ngmres->Fdot;
   Vec         *Xdot   = ngmres->Xdot;
@@ -15,7 +16,8 @@ PetscErrorCode SNESNGMRESUpdateSubspace_Private(SNES snes, PetscInt ivec, PetscI
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode SNESNGMRESFormCombinedSolution_Private(SNES snes, PetscInt ivec, PetscInt l, Vec XM, Vec FM, PetscReal fMnorm, Vec X, Vec XA, Vec FA) {
+PetscErrorCode SNESNGMRESFormCombinedSolution_Private(SNES snes, PetscInt ivec, PetscInt l, Vec XM, Vec FM, PetscReal fMnorm, Vec X, Vec XA, Vec FA)
+{
   SNES_NGMRES *ngmres = (SNES_NGMRES *)snes->data;
   PetscInt     i, j;
   Vec         *Fdot       = ngmres->Fdot;
@@ -94,7 +96,8 @@ PetscErrorCode SNESNGMRESFormCombinedSolution_Private(SNES snes, PetscInt ivec, 
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode SNESNGMRESNorms_Private(SNES snes, PetscInt l, Vec X, Vec F, Vec XM, Vec FM, Vec XA, Vec FA, Vec D, PetscReal *dnorm, PetscReal *dminnorm, PetscReal *xMnorm, PetscReal *fMnorm, PetscReal *yMnorm, PetscReal *xAnorm, PetscReal *fAnorm, PetscReal *yAnorm) {
+PetscErrorCode SNESNGMRESNorms_Private(SNES snes, PetscInt l, Vec X, Vec F, Vec XM, Vec FM, Vec XA, Vec FA, Vec D, PetscReal *dnorm, PetscReal *dminnorm, PetscReal *xMnorm, PetscReal *fMnorm, PetscReal *yMnorm, PetscReal *xAnorm, PetscReal *fAnorm, PetscReal *yAnorm)
+{
   SNES_NGMRES *ngmres = (SNES_NGMRES *)snes->data;
   PetscReal    dcurnorm, dmin = -1.0;
   Vec         *Xdot = ngmres->Xdot;
@@ -145,7 +148,8 @@ PetscErrorCode SNESNGMRESNorms_Private(SNES snes, PetscInt l, Vec X, Vec F, Vec 
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode SNESNGMRESSelect_Private(SNES snes, PetscInt k_restart, Vec XM, Vec FM, PetscReal xMnorm, PetscReal fMnorm, PetscReal yMnorm, Vec XA, Vec FA, PetscReal xAnorm, PetscReal fAnorm, PetscReal yAnorm, PetscReal dnorm, PetscReal fminnorm, PetscReal dminnorm, Vec X, Vec F, Vec Y, PetscReal *xnorm, PetscReal *fnorm, PetscReal *ynorm) {
+PetscErrorCode SNESNGMRESSelect_Private(SNES snes, PetscInt k_restart, Vec XM, Vec FM, PetscReal xMnorm, PetscReal fMnorm, PetscReal yMnorm, Vec XA, Vec FA, PetscReal xAnorm, PetscReal fAnorm, PetscReal yAnorm, PetscReal dnorm, PetscReal fminnorm, PetscReal dminnorm, Vec X, Vec F, Vec Y, PetscReal *xnorm, PetscReal *fnorm, PetscReal *ynorm)
+{
   SNES_NGMRES         *ngmres = (SNES_NGMRES *)snes->data;
   SNESLineSearchReason lssucceed;
   PetscBool            selectA;
@@ -207,7 +211,8 @@ PetscErrorCode SNESNGMRESSelect_Private(SNES snes, PetscInt k_restart, Vec XM, V
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode SNESNGMRESSelectRestart_Private(SNES snes, PetscInt l, PetscReal fMnorm, PetscReal fAnorm, PetscReal dnorm, PetscReal fminnorm, PetscReal dminnorm, PetscBool *selectRestart) {
+PetscErrorCode SNESNGMRESSelectRestart_Private(SNES snes, PetscInt l, PetscReal fMnorm, PetscReal fAnorm, PetscReal dnorm, PetscReal fminnorm, PetscReal dminnorm, PetscBool *selectRestart)
+{
   SNES_NGMRES *ngmres = (SNES_NGMRES *)snes->data;
 
   PetscFunctionBegin;

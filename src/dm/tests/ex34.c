@@ -3,7 +3,8 @@ static const char help[] = "Test DMDAGetOwnershipRanges()\n";
 #include <petscdm.h>
 #include <petscdmda.h>
 
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[])
+{
   DM              da;
   PetscViewer     vw;
   PetscInt        dim = 2, m, n, p;
@@ -14,9 +15,14 @@ int main(int argc, char *argv[]) {
   PetscCall(PetscInitialize(&argc, &argv, 0, help));
   PetscCall(PetscOptionsGetInt(NULL, 0, "-dim", &dim, 0));
   switch (dim) {
-  case 2: PetscCall(DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DMDA_STENCIL_STAR, 3, 5, PETSC_DECIDE, PETSC_DECIDE, 2, 1, NULL, NULL, &da)); break;
-  case 3: PetscCall(DMDACreate3d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DMDA_STENCIL_STAR, 3, 5, 7, PETSC_DECIDE, PETSC_DECIDE, PETSC_DECIDE, 2, 1, NULL, NULL, NULL, &da)); break;
-  default: SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP, "No support for %" PetscInt_FMT " dimensions", dim);
+  case 2:
+    PetscCall(DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DMDA_STENCIL_STAR, 3, 5, PETSC_DECIDE, PETSC_DECIDE, 2, 1, NULL, NULL, &da));
+    break;
+  case 3:
+    PetscCall(DMDACreate3d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DMDA_STENCIL_STAR, 3, 5, 7, PETSC_DECIDE, PETSC_DECIDE, PETSC_DECIDE, 2, 1, NULL, NULL, NULL, &da));
+    break;
+  default:
+    SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP, "No support for %" PetscInt_FMT " dimensions", dim);
   }
   PetscCall(DMSetFromOptions(da));
   PetscCall(DMSetUp(da));

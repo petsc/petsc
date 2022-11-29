@@ -13,7 +13,8 @@ typedef struct {
   PetscReal D1, D2, gamma, kappa;
 } AppCtx;
 
-PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec U, Mat A, Mat BB, void *ctx) {
+PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec U, Mat A, Mat BB, void *ctx)
+{
   AppCtx     *appctx = (AppCtx *)ctx; /* user-defined application context */
   DM          da;
   PetscInt    i, j, Mx, My, xs, ys, xm, ym;
@@ -136,7 +137,8 @@ PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec U, Mat A, Mat BB, void *ctx) 
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode InitialConditions(DM da, Vec U) {
+PetscErrorCode InitialConditions(DM da, Vec U)
+{
   PetscInt  i, j, xs, ys, xm, ym, Mx, My;
   Field   **u;
   PetscReal hx, hy, x, y;
@@ -178,7 +180,8 @@ PetscErrorCode InitialConditions(DM da, Vec U) {
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   TS        ts;
   Vec       U, Udot;
   Mat       Jac, Jac2;

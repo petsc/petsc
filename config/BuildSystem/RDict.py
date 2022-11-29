@@ -15,7 +15,7 @@
     cascade to the parent. For instance, the length of the dictionary is the
     number of local keys plus the number of keys in the parent, and its
     parent, etc. Also, a dictionary need not have a parent. If a key does not
-    appear in the local dicitonary, the call if passed to the parent. However,
+    appear in the local dictionary, the call if passed to the parent. However,
     in this case we see that local keys can shadow those in a parent.
     Communication with the parent is handled using sockets, with the parent
     being a server and the interactive dictionary a client.

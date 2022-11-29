@@ -24,8 +24,8 @@ if [ ! -f include/petscversion.h ]; then
   exit
 fi
 
-if [ ! -f doc/download/index.rst ]; then
-  echo "Error: dir $petscrepo/doc/download/index.rst does not exist"
+if [ ! -f doc/install/download.rst ]; then
+  echo "Error: dir $petscrepo/doc/install/download.rst does not exist"
   exit
 fi
 
@@ -76,14 +76,14 @@ cat src/binding/petsc4py/src/__init__.py.bak | \
   sed -e "s/__version__   =.*/__version__   = '${newver}'/" > src/binding/petsc4py/src/__init__.py
 /bin/rm -f src/binding/petsc4py/src/__init__.py.bak
 
-# Update patchlevel in download/index.html
-/bin/mv doc/download/index.rst doc/download/index.rst.bak
-cat doc/download/index.rst.bak | \
-  sed -e "s/-${oldver}.tar.gz/-${newver}.tar.gz/g" > doc/download/index.rst
-/bin/rm -f doc/download/index.rst.bak
+# Update patchlevel in doc/install/download.rst
+/bin/mv doc/install/download.rst doc/install/download.rst.bak
+cat doc/install/download.rst.bak | \
+  sed -e "s/-${oldver}.tar.gz/-${newver}.tar.gz/g" > doc/install/download.rst
+/bin/rm -f doc/install/download.rst.bak
 
 # now create a changeset
-git commit -m"Increase patchlevel to ${newver}" include/petscversion.h doc/download/index.rst src/binding/petsc4py/src/__init__.py
+git commit -m"Increase patchlevel to ${newver}" include/petscversion.h doc/install/download.rst src/binding/petsc4py/src/__init__.py
 echo "#########################################################"
 echo "# Created patch for the following change                #"
 echo "#########################################################"

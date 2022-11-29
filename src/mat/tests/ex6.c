@@ -3,7 +3,8 @@ static char help[] = "Tests reordering a matrix.\n\n";
 
 #include <petscmat.h>
 
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   Mat         C;
   PetscInt    i, j, m = 5, n = 5, Ii, J;
   PetscScalar v;

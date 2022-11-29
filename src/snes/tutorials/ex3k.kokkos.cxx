@@ -19,7 +19,8 @@ typedef struct {
    Input/Output Parameter:
 .  x - the solution vector
 */
-PetscErrorCode FormInitialGuess(Vec x) {
+PetscErrorCode FormInitialGuess(Vec x)
+{
   PetscScalar pfive = .50;
 
   PetscFunctionBeginUser;
@@ -43,7 +44,8 @@ PetscErrorCode FormInitialGuess(Vec x) {
    The user-defined context can contain any application-specific
    data needed for the function evaluation.
 */
-PetscErrorCode CpuFunction(SNES snes, Vec x, Vec r, void *ctx) {
+PetscErrorCode CpuFunction(SNES snes, Vec x, Vec r, void *ctx)
+{
   ApplicationCtx *user = (ApplicationCtx *)ctx;
   DM              da   = user->da;
   PetscScalar    *X, *R, *F, d;
@@ -84,7 +86,8 @@ using DefaultMemorySpace               = Kokkos::DefaultExecutionSpace::memory_s
 using PetscScalarKokkosOffsetView      = Kokkos::Experimental::OffsetView<PetscScalar *, DefaultMemorySpace>;
 using ConstPetscScalarKokkosOffsetView = Kokkos::Experimental::OffsetView<const PetscScalar *, DefaultMemorySpace>;
 
-PetscErrorCode KokkosFunction(SNES snes, Vec x, Vec r, void *ctx) {
+PetscErrorCode KokkosFunction(SNES snes, Vec x, Vec r, void *ctx)
+{
   ApplicationCtx                  *user = (ApplicationCtx *)ctx;
   DM                               da   = user->da;
   PetscScalar                      d;
@@ -114,7 +117,8 @@ PetscErrorCode KokkosFunction(SNES snes, Vec x, Vec r, void *ctx) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode StubFunction(SNES snes, Vec x, Vec r, void *ctx) {
+PetscErrorCode StubFunction(SNES snes, Vec x, Vec r, void *ctx)
+{
   ApplicationCtx *user = (ApplicationCtx *)ctx;
   DM              da   = user->da;
   Vec             rk;
@@ -144,7 +148,8 @@ PetscErrorCode StubFunction(SNES snes, Vec x, Vec r, void *ctx) {
 .  B - optionally different preconditioning matrix
 .  flag - flag indicating matrix structure
 */
-PetscErrorCode FormJacobian(SNES snes, Vec x, Mat jac, Mat B, void *ctx) {
+PetscErrorCode FormJacobian(SNES snes, Vec x, Mat jac, Mat B, void *ctx)
+{
   ApplicationCtx *user = (ApplicationCtx *)ctx;
   PetscScalar    *xx, d, A[3];
   PetscInt        i, j[3], M, xs, xm;
@@ -213,7 +218,8 @@ PetscErrorCode FormJacobian(SNES snes, Vec x, Mat jac, Mat B, void *ctx) {
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   SNES           snes;       /* SNES context */
   Mat            J;          /* Jacobian matrix */
   ApplicationCtx ctx;        /* user-defined context */

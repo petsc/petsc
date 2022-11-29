@@ -2,7 +2,8 @@
 
 static char help[] = "Solves a linear system with a block of right-hand sides using KSPHPDDM.\n\n";
 
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   Mat                X, B;         /* computed solutions and RHS */
   Vec                cx, cb;       /* columns of X and B */
   Mat                A, KA = NULL; /* linear system matrix */

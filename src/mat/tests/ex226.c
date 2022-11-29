@@ -3,11 +3,13 @@ static char help[] = "Benchmark for MatMatMult() of AIJ matrices using different
 #include <petscmat.h>
 
 /* Converts 3d grid coordinates (i,j,k) for a grid of size m \times n to global indexing. Pass k = 0 for a 2d grid. */
-int global_index(PetscInt i, PetscInt j, PetscInt k, PetscInt m, PetscInt n) {
+int global_index(PetscInt i, PetscInt j, PetscInt k, PetscInt m, PetscInt n)
+{
   return i + j * m + k * m * n;
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   Mat         A, B, C, PtAP, PtAP_copy, PtAP_squared;
   PetscInt    i, M, N, Istart, Iend, n = 7, j, J, Ii, m = 8, k, o = 1;
   PetscScalar v;

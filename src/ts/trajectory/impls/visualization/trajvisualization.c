@@ -1,7 +1,8 @@
 
 #include <petsc/private/tsimpl.h> /*I "petscts.h"  I*/
 
-static PetscErrorCode OutputBIN(MPI_Comm comm, const char *filename, PetscViewer *viewer) {
+static PetscErrorCode OutputBIN(MPI_Comm comm, const char *filename, PetscViewer *viewer)
+{
   PetscFunctionBegin;
   PetscCall(PetscViewerCreate(comm, viewer));
   PetscCall(PetscViewerSetType(*viewer, PETSCVIEWERBINARY));
@@ -10,7 +11,8 @@ static PetscErrorCode OutputBIN(MPI_Comm comm, const char *filename, PetscViewer
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSTrajectorySet_Visualization(TSTrajectory tj, TS ts, PetscInt stepnum, PetscReal time, Vec X) {
+static PetscErrorCode TSTrajectorySet_Visualization(TSTrajectory tj, TS ts, PetscInt stepnum, PetscReal time, Vec X)
+{
   PetscViewer viewer;
   char        filename[PETSC_MAX_PATH_LEN];
   PetscReal   tprev;
@@ -70,17 +72,18 @@ static PetscErrorCode TSTrajectorySet_Visualization(TSTrajectory tj, TS ts, Pets
       Saves each timestep into a separate file in Visualization-data/SA-%06d.bin
 
       This version saves only the solutions at each timestep, it does not save the solution at each stage,
-      see TSTRAJECTORYBASIC that saves all stages
+      see `TSTRAJECTORYBASIC` that saves all stages
 
       $PETSC_DIR/share/petsc/matlab/PetscReadBinaryTrajectory.m and $PETSC_DIR/lib/petsc/bin/PetscBinaryIOTrajectory.py
       can read in files created with this format into MATLAB and Python.
 
   Level: intermediate
 
-.seealso: `TSTrajectoryCreate()`, `TS`, `TSTrajectorySetType()`, `TSTrajectoryType`, `TSTrajectorySetVariableNames()`
-
+.seealso: [](chapter_ts), `TSTrajectoryCreate()`, `TS`, `TSTrajectorySetType()`, `TSTrajectoryType`, `TSTrajectorySetVariableNames()`,
+          `TSTrajectoryType`, `TSTrajectory`
 M*/
-PETSC_EXTERN PetscErrorCode TSTrajectoryCreate_Visualization(TSTrajectory tj, TS ts) {
+PETSC_EXTERN PetscErrorCode TSTrajectoryCreate_Visualization(TSTrajectory tj, TS ts)
+{
   PetscFunctionBegin;
   tj->ops->set    = TSTrajectorySet_Visualization;
   tj->setupcalled = PETSC_TRUE;

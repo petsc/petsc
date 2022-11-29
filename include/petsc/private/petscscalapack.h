@@ -1,4 +1,4 @@
-#if !defined(_PETSCSCALAPACK_H)
+#ifndef _PETSCSCALAPACK_H
 #define _PETSCSCALAPACK_H
 
 #include <petsc/private/matimpl.h>
@@ -30,19 +30,21 @@ PETSC_INTERN PetscErrorCode MatMatMultNumeric_ScaLAPACK(Mat, Mat, Mat);
 
 /* Macro to check nonzero info after ScaLAPACK call */
 #define PetscCheckScaLapackInfo(routine, info) \
-  do { PetscCheck(!info, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in ScaLAPACK subroutine %s: info=%d", routine, (int)info); } while (0)
+  do { \
+    PetscCheck(!info, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in ScaLAPACK subroutine %s: info=%d", routine, (int)info); \
+  } while (0)
 
 #define PETSC_PASTE4_(a, b, c, d) a##b##c##d
 #define PETSC_PASTE4(a, b, c, d)  PETSC_PASTE4_(a, b, c, d)
 
 #if defined(PETSC_BLASLAPACK_CAPS)
-#define PETSC_SCALAPACK_PREFIX_ P
-#define PETSCBLASNOTYPE(x, X)   PETSC_PASTE2(X, PETSC_BLASLAPACK_SUFFIX_)
-#define PETSCSCALAPACK(x, X)    PETSC_PASTE4(PETSC_SCALAPACK_PREFIX_, PETSC_BLASLAPACK_PREFIX_, X, PETSC_BLASLAPACK_SUFFIX_)
+  #define PETSC_SCALAPACK_PREFIX_ P
+  #define PETSCBLASNOTYPE(x, X)   PETSC_PASTE2(X, PETSC_BLASLAPACK_SUFFIX_)
+  #define PETSCSCALAPACK(x, X)    PETSC_PASTE4(PETSC_SCALAPACK_PREFIX_, PETSC_BLASLAPACK_PREFIX_, X, PETSC_BLASLAPACK_SUFFIX_)
 #else
-#define PETSC_SCALAPACK_PREFIX_ p
-#define PETSCBLASNOTYPE(x, X)   PETSC_PASTE2(x, PETSC_BLASLAPACK_SUFFIX_)
-#define PETSCSCALAPACK(x, X)    PETSC_PASTE4(PETSC_SCALAPACK_PREFIX_, PETSC_BLASLAPACK_PREFIX_, x, PETSC_BLASLAPACK_SUFFIX_)
+  #define PETSC_SCALAPACK_PREFIX_ p
+  #define PETSCBLASNOTYPE(x, X)   PETSC_PASTE2(x, PETSC_BLASLAPACK_SUFFIX_)
+  #define PETSCSCALAPACK(x, X)    PETSC_PASTE4(PETSC_SCALAPACK_PREFIX_, PETSC_BLASLAPACK_PREFIX_, x, PETSC_BLASLAPACK_SUFFIX_)
 #endif
 
 /* BLACS routines (C interface) */
@@ -62,9 +64,9 @@ BLAS_EXTERN void         Cdgsum2d(PetscBLASInt ctxt, const char *scope, const ch
 #define PBLASgemv_ PETSCSCALAPACK(gemv, GEMV)
 #define PBLASgemm_ PETSCSCALAPACK(gemm, GEMM)
 #if defined(PETSC_USE_COMPLEX)
-#define PBLAStran_ PETSCSCALAPACK(tranc, TRANC)
+  #define PBLAStran_ PETSCSCALAPACK(tranc, TRANC)
 #else
-#define PBLAStran_ PETSCSCALAPACK(tran, TRAN)
+  #define PBLAStran_ PETSCSCALAPACK(tran, TRAN)
 #endif
 
 BLAS_EXTERN void PBLASgemv_(const char *, PetscBLASInt *, PetscBLASInt *, PetscScalar *, PetscScalar *, PetscBLASInt *, PetscBLASInt *, PetscBLASInt *, PetscScalar *, PetscBLASInt *, PetscBLASInt *, PetscBLASInt *, PetscBLASInt *, PetscScalar *, PetscScalar *, PetscBLASInt *, PetscBLASInt *, PetscBLASInt *, PetscBLASInt *);
@@ -106,21 +108,21 @@ BLAS_EXTERN void         SCALAPACKelget_(const char *, const char *, PetscScalar
 */
 #if !defined(PETSC_USE_DEBUG)
 
-#define MatScaLAPACKCheckDistribution(a, arga, b, argb) \
-  do { \
-    (void)(a); \
-    (void)(b); \
-  } while (0)
+  #define MatScaLAPACKCheckDistribution(a, arga, b, argb) \
+    do { \
+      (void)(a); \
+      (void)(b); \
+    } while (0)
 
 #else
 
-#define MatScaLAPACKCheckDistribution(a, arga, b, argb) \
-  do { \
-    Mat_ScaLAPACK *_aa = (Mat_ScaLAPACK *)(a)->data, *_bb = (Mat_ScaLAPACK *)(b)->data; \
-    PetscCheck(_aa->mb == _bb->mb && _aa->nb == _bb->nb && _aa->rsrc == _bb->rsrc && _aa->csrc == _bb->csrc && _aa->grid->nprow == _bb->grid->nprow && _aa->grid->npcol == _bb->grid->npcol && _aa->grid->myrow == _bb->grid->myrow && \
-                 _aa->grid->mycol == _bb->grid->mycol, \
-               PetscObjectComm((PetscObject)(a)), PETSC_ERR_ARG_INCOMP, "Arguments #%d and #%d have different ScaLAPACK distribution", arga, argb); \
-  } while (0)
+  #define MatScaLAPACKCheckDistribution(a, arga, b, argb) \
+    do { \
+      Mat_ScaLAPACK *_aa = (Mat_ScaLAPACK *)(a)->data, *_bb = (Mat_ScaLAPACK *)(b)->data; \
+      PetscCheck(_aa->mb == _bb->mb && _aa->nb == _bb->nb && _aa->rsrc == _bb->rsrc && _aa->csrc == _bb->csrc && _aa->grid->nprow == _bb->grid->nprow && _aa->grid->npcol == _bb->grid->npcol && _aa->grid->myrow == _bb->grid->myrow && \
+                   _aa->grid->mycol == _bb->grid->mycol, \
+                 PetscObjectComm((PetscObject)(a)), PETSC_ERR_ARG_INCOMP, "Arguments #%d and #%d have different ScaLAPACK distribution", arga, argb); \
+    } while (0)
 
 #endif
 

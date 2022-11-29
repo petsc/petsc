@@ -25,37 +25,37 @@ typedef unsigned long  u_long;
 #include <errno.h>
 #include <ctype.h>
 #if defined(PETSC_HAVE_MACHINE_ENDIAN_H)
-#include <machine/endian.h>
+  #include <machine/endian.h>
 #endif
 #if defined(PETSC_HAVE_UNISTD_H)
-#include <unistd.h>
+  #include <unistd.h>
 #endif
 #if defined(PETSC_HAVE_SYS_SOCKET_H)
-#include <sys/socket.h>
+  #include <sys/socket.h>
 #endif
 #if defined(PETSC_HAVE_SYS_WAIT_H)
-#include <sys/wait.h>
+  #include <sys/wait.h>
 #endif
 #if defined(PETSC_HAVE_NETINET_IN_H)
-#include <netinet/in.h>
+  #include <netinet/in.h>
 #endif
 #if defined(PETSC_HAVE_NETDB_H)
-#include <netdb.h>
+  #include <netdb.h>
 #endif
 #if defined(PETSC_HAVE_FCNTL_H)
-#include <fcntl.h>
+  #include <fcntl.h>
 #endif
 #if defined(PETSC_HAVE_IO_H)
-#include <io.h>
+  #include <io.h>
 #endif
 #if defined(PETSC_HAVE_SYS_UTSNAME_H)
-#include <sys/utsname.h>
+  #include <sys/utsname.h>
 #endif
 #if defined(PETSC_HAVE_WINSOCK2_H)
-#include <Winsock2.h>
+  #include <Winsock2.h>
 #endif
 #if defined(PETSC_HAVE_WS2TCPIP_H)
-#include <Ws2tcpip.h>
+  #include <Ws2tcpip.h>
 #endif
 #include <../src/sys/classes/viewer/impls/socket/socket.h>
 #include <mex.h>
@@ -81,8 +81,9 @@ typedef unsigned long  u_long;
 static int listenport;
 /*-----------------------------------------------------------------*/
 extern int establish(u_short);
-int        SOCKConnect_Private(int portnumber) {
-         struct sockaddr_in isa;
+int        SOCKConnect_Private(int portnumber)
+{
+  struct sockaddr_in isa;
 #if defined(PETSC_HAVE_ACCEPT_SIZE_T)
   size_t i;
 #else
@@ -102,7 +103,8 @@ int        SOCKConnect_Private(int portnumber) {
 }
 /*-----------------------------------------------------------------*/
 #define MAXHOSTNAME 100
-int establish(u_short portnum) {
+int establish(u_short portnum)
+{
   char               myname[MAXHOSTNAME + 1];
   int                s;
   struct sockaddr_in sa;
@@ -159,7 +161,8 @@ int establish(u_short portnum) {
 /*-----------------------------------------------------------------*/
 /*                                                                 */
 /*-----------------------------------------------------------------*/
-PETSC_EXTERN void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
+PETSC_EXTERN void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
+{
   int t, portnumber;
 
   /* check output parameters */
@@ -183,6 +186,7 @@ PETSC_EXTERN void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray
   return;
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   return 0;
 }

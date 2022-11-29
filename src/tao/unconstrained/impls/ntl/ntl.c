@@ -25,7 +25,8 @@ static const char *NTL_UPDATE[64] = {"reduction", "interpolation"};
 #define NTL_SCALED_GRADIENT 2
 #define NTL_GRADIENT        3
 
-static PetscErrorCode TaoSolve_NTL(Tao tao) {
+static PetscErrorCode TaoSolve_NTL(Tao tao)
+{
   TAO_NTL                     *tl = (TAO_NTL *)tao->data;
   KSPType                      ksp_type;
   PetscBool                    is_nash, is_stcg, is_gltr, is_bfgs, is_jacobi, is_symmetric, sym_set;
@@ -598,7 +599,8 @@ static PetscErrorCode TaoSolve_NTL(Tao tao) {
 }
 
 /* ---------------------------------------------------------- */
-static PetscErrorCode TaoSetUp_NTL(Tao tao) {
+static PetscErrorCode TaoSetUp_NTL(Tao tao)
+{
   TAO_NTL *tl = (TAO_NTL *)tao->data;
 
   PetscFunctionBegin;
@@ -613,7 +615,8 @@ static PetscErrorCode TaoSetUp_NTL(Tao tao) {
 }
 
 /*------------------------------------------------------------*/
-static PetscErrorCode TaoDestroy_NTL(Tao tao) {
+static PetscErrorCode TaoDestroy_NTL(Tao tao)
+{
   TAO_NTL *tl = (TAO_NTL *)tao->data;
 
   PetscFunctionBegin;
@@ -628,7 +631,8 @@ static PetscErrorCode TaoDestroy_NTL(Tao tao) {
 }
 
 /*------------------------------------------------------------*/
-static PetscErrorCode TaoSetFromOptions_NTL(Tao tao, PetscOptionItems *PetscOptionsObject) {
+static PetscErrorCode TaoSetFromOptions_NTL(Tao tao, PetscOptionItems *PetscOptionsObject)
+{
   TAO_NTL *tl = (TAO_NTL *)tao->data;
 
   PetscFunctionBegin;
@@ -677,7 +681,8 @@ static PetscErrorCode TaoSetFromOptions_NTL(Tao tao, PetscOptionItems *PetscOpti
 }
 
 /*------------------------------------------------------------*/
-static PetscErrorCode TaoView_NTL(Tao tao, PetscViewer viewer) {
+static PetscErrorCode TaoView_NTL(Tao tao, PetscViewer viewer)
+{
   TAO_NTL  *tl = (TAO_NTL *)tao->data;
   PetscBool isascii;
 
@@ -734,12 +739,13 @@ static PetscErrorCode TaoView_NTL(Tao tao, PetscViewer viewer) {
 
   Level: beginner
 M*/
-PETSC_EXTERN PetscErrorCode TaoCreate_NTL(Tao tao) {
+PETSC_EXTERN PetscErrorCode TaoCreate_NTL(Tao tao)
+{
   TAO_NTL    *tl;
   const char *morethuente_type = TAOLINESEARCHMT;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(tao, &tl));
+  PetscCall(PetscNew(&tl));
   tao->ops->setup          = TaoSetUp_NTL;
   tao->ops->solve          = TaoSolve_NTL;
   tao->ops->view           = TaoView_NTL;

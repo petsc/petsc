@@ -7,7 +7,8 @@ static char help[] = "Solves the Poisson equation using DMStag, with a single fi
 
 static PetscErrorCode AssembleSystem(DM, Mat *, Vec *);
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   Mat      A;
   Vec      x, b;
   KSP      ksp;
@@ -60,7 +61,8 @@ int main(int argc, char **argv) {
   return 0;
 }
 
-static PetscErrorCode AssembleSystem1DVertexCentered(DM dm, Mat *pA, Vec *pb) {
+static PetscErrorCode AssembleSystem1DVertexCentered(DM dm, Mat *pA, Vec *pb)
+{
   Mat      A;
   Vec      b;
   PetscInt start, n, n_extra, N;
@@ -139,15 +141,19 @@ static PetscErrorCode AssembleSystem1DVertexCentered(DM dm, Mat *pA, Vec *pb) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode AssembleSystem(DM dm, Mat *pA, Vec *pb) {
+PetscErrorCode AssembleSystem(DM dm, Mat *pA, Vec *pb)
+{
   PetscInt dim;
 
   PetscFunctionBeginUser;
   PetscCall(DMSetMatrixPreallocateOnly(dm, PETSC_TRUE));
   PetscCall(DMGetDimension(dm, &dim));
   switch (dim) {
-  case 1: PetscCall(AssembleSystem1DVertexCentered(dm, pA, pb)); break;
-  default: SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP, "Unsupported dimension: %" PetscInt_FMT, dim);
+  case 1:
+    PetscCall(AssembleSystem1DVertexCentered(dm, pA, pb));
+    break;
+  default:
+    SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP, "Unsupported dimension: %" PetscInt_FMT, dim);
   }
   PetscFunctionReturn(0);
 }

@@ -1,6 +1,7 @@
 #include <petsc/private/dmplextransformimpl.h> /*I "petscdmplextransform.h" I*/
 
-static PetscErrorCode DMPlexTransformSetUp_1D(DMPlexTransform tr) {
+static PetscErrorCode DMPlexTransformSetUp_1D(DMPlexTransform tr)
+{
   DM       dm;
   DMLabel  active;
   PetscInt pStart, pEnd, p;
@@ -19,20 +20,24 @@ static PetscErrorCode DMPlexTransformSetUp_1D(DMPlexTransform tr) {
 
     PetscCall(DMPlexGetCellType(dm, p, &ct));
     switch (ct) {
-    case DM_POLYTOPE_POINT: PetscCall(DMLabelSetValue(trType, p, 0)); break;
+    case DM_POLYTOPE_POINT:
+      PetscCall(DMLabelSetValue(trType, p, 0));
+      break;
     case DM_POLYTOPE_SEGMENT:
     case DM_POLYTOPE_POINT_PRISM_TENSOR:
       PetscCall(DMLabelGetValue(active, p, &val));
       if (val == 1) PetscCall(DMLabelSetValue(trType, p, val));
       else PetscCall(DMLabelSetValue(trType, p, 2));
       break;
-    default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Cannot handle points of type %s", DMPolytopeTypes[ct]);
+    default:
+      SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Cannot handle points of type %s", DMPolytopeTypes[ct]);
     }
   }
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMPlexTransformGetSubcellOrientation_1D(DMPlexTransform tr, DMPolytopeType sct, PetscInt sp, PetscInt so, DMPolytopeType tct, PetscInt r, PetscInt o, PetscInt *rnew, PetscInt *onew) {
+static PetscErrorCode DMPlexTransformGetSubcellOrientation_1D(DMPlexTransform tr, DMPolytopeType sct, PetscInt sp, PetscInt so, DMPolytopeType tct, PetscInt r, PetscInt o, PetscInt *rnew, PetscInt *onew)
+{
   PetscInt rt;
 
   PetscFunctionBeginHot;
@@ -40,13 +45,17 @@ static PetscErrorCode DMPlexTransformGetSubcellOrientation_1D(DMPlexTransform tr
   *rnew = r;
   *onew = o;
   switch (rt) {
-  case 1: PetscCall(DMPlexTransformGetSubcellOrientation_Regular(tr, sct, sp, so, tct, r, o, rnew, onew)); break;
-  default: PetscCall(DMPlexTransformGetSubcellOrientationIdentity(tr, sct, sp, so, tct, r, o, rnew, onew));
+  case 1:
+    PetscCall(DMPlexTransformGetSubcellOrientation_Regular(tr, sct, sp, so, tct, r, o, rnew, onew));
+    break;
+  default:
+    PetscCall(DMPlexTransformGetSubcellOrientationIdentity(tr, sct, sp, so, tct, r, o, rnew, onew));
   }
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMPlexTransformCellTransform_1D(DMPlexTransform tr, DMPolytopeType source, PetscInt p, PetscInt *rt, PetscInt *Nt, DMPolytopeType *target[], PetscInt *size[], PetscInt *cone[], PetscInt *ornt[]) {
+static PetscErrorCode DMPlexTransformCellTransform_1D(DMPlexTransform tr, DMPolytopeType source, PetscInt p, PetscInt *rt, PetscInt *Nt, DMPolytopeType *target[], PetscInt *size[], PetscInt *cone[], PetscInt *ornt[])
+{
   DMLabel  trType = tr->trType;
   PetscInt val;
 
@@ -55,18 +64,22 @@ static PetscErrorCode DMPlexTransformCellTransform_1D(DMPlexTransform tr, DMPoly
   PetscCall(DMLabelGetValue(trType, p, &val));
   if (rt) *rt = val;
   switch (source) {
-  case DM_POLYTOPE_POINT: PetscCall(DMPlexTransformCellRefine_Regular(tr, source, p, NULL, Nt, target, size, cone, ornt)); break;
+  case DM_POLYTOPE_POINT:
+    PetscCall(DMPlexTransformCellRefine_Regular(tr, source, p, NULL, Nt, target, size, cone, ornt));
+    break;
   case DM_POLYTOPE_POINT_PRISM_TENSOR:
   case DM_POLYTOPE_SEGMENT:
     if (val == 1) PetscCall(DMPlexTransformCellRefine_Regular(tr, source, p, NULL, Nt, target, size, cone, ornt));
     else PetscCall(DMPlexTransformCellTransformIdentity(tr, source, p, NULL, Nt, target, size, cone, ornt));
     break;
-  default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "No refinement strategy for %s", DMPolytopeTypes[source]);
+  default:
+    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "No refinement strategy for %s", DMPolytopeTypes[source]);
   }
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMPlexTransformSetFromOptions_1D(DMPlexTransform tr, PetscOptionItems *PetscOptionsObject) {
+static PetscErrorCode DMPlexTransformSetFromOptions_1D(DMPlexTransform tr, PetscOptionItems *PetscOptionsObject)
+{
   PetscInt  cells[256], n = 256, i;
   PetscBool flg;
 
@@ -85,7 +98,8 @@ static PetscErrorCode DMPlexTransformSetFromOptions_1D(DMPlexTransform tr, Petsc
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMPlexTransformView_1D(DMPlexTransform tr, PetscViewer viewer) {
+static PetscErrorCode DMPlexTransformView_1D(DMPlexTransform tr, PetscViewer viewer)
+{
   PetscBool isascii;
 
   PetscFunctionBegin;
@@ -106,30 +120,34 @@ static PetscErrorCode DMPlexTransformView_1D(DMPlexTransform tr, PetscViewer vie
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMPlexTransformDestroy_1D(DMPlexTransform tr) {
+static PetscErrorCode DMPlexTransformDestroy_1D(DMPlexTransform tr)
+{
   PetscFunctionBegin;
   PetscCall(PetscFree(tr->data));
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMPlexTransformInitialize_1D(DMPlexTransform tr) {
+static PetscErrorCode DMPlexTransformInitialize_1D(DMPlexTransform tr)
+{
   PetscFunctionBegin;
   tr->ops->view                  = DMPlexTransformView_1D;
   tr->ops->setfromoptions        = DMPlexTransformSetFromOptions_1D;
   tr->ops->setup                 = DMPlexTransformSetUp_1D;
   tr->ops->destroy               = DMPlexTransformDestroy_1D;
+  tr->ops->setdimensions         = DMPlexTransformSetDimensions_Internal;
   tr->ops->celltransform         = DMPlexTransformCellTransform_1D;
   tr->ops->getsubcellorientation = DMPlexTransformGetSubcellOrientation_1D;
   tr->ops->mapcoordinates        = DMPlexTransformMapCoordinatesBarycenter_Internal;
   PetscFunctionReturn(0);
 }
 
-PETSC_EXTERN PetscErrorCode DMPlexTransformCreate_1D(DMPlexTransform tr) {
+PETSC_EXTERN PetscErrorCode DMPlexTransformCreate_1D(DMPlexTransform tr)
+{
   DMPlexRefine_1D *f;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tr, DMPLEXTRANSFORM_CLASSID, 1);
-  PetscCall(PetscNewLog(tr, &f));
+  PetscCall(PetscNew(&f));
   tr->data = f;
 
   PetscCall(DMPlexTransformInitialize_1D(tr));

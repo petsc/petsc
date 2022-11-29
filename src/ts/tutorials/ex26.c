@@ -109,7 +109,8 @@ typedef struct {
 
 PetscErrorCode FormInitialSolution(TS, Vec, AppCtx *);
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   AppCtx            user; /* user-defined work context */
   PetscInt          mx, my, steps;
   TS                ts;
@@ -205,7 +206,8 @@ int main(int argc, char **argv) {
    Output Parameter:
    X - vector
  */
-PetscErrorCode FormInitialSolution(TS ts, Vec X, AppCtx *user) {
+PetscErrorCode FormInitialSolution(TS ts, Vec X, AppCtx *user)
+{
   DM        da;
   PetscInt  i, j, mx, xs, ys, xm, ym;
   PetscReal grashof, dx;
@@ -252,7 +254,8 @@ PetscErrorCode FormInitialSolution(TS ts, Vec X, AppCtx *user) {
   return 0;
 }
 
-PetscErrorCode FormIFunctionLocal(DMDALocalInfo *info, PetscReal ptime, Field **x, Field **xdot, Field **f, void *ptr) {
+PetscErrorCode FormIFunctionLocal(DMDALocalInfo *info, PetscReal ptime, Field **x, Field **xdot, Field **f, void *ptr)
+{
   AppCtx     *user = (AppCtx *)ptr;
   PetscInt    xints, xinte, yints, yinte, i, j;
   PetscReal   hx, hy, dhx, dhy, hxdhy, hydhx;
@@ -365,9 +368,9 @@ PetscErrorCode FormIFunctionLocal(DMDALocalInfo *info, PetscReal ptime, Field **
       f[j][i].v = udot + uxx + uyy + .5 * (x[j][i + 1].omega - x[j][i - 1].omega) * hy;
 
       /* Omega */
-      u             = x[j][i].omega;
-      uxx           = (2.0 * u - x[j][i - 1].omega - x[j][i + 1].omega) * hydhx;
-      uyy           = (2.0 * u - x[j - 1][i].omega - x[j + 1][i].omega) * hxdhy;
+      u   = x[j][i].omega;
+      uxx = (2.0 * u - x[j][i - 1].omega - x[j][i + 1].omega) * hydhx;
+      uyy = (2.0 * u - x[j - 1][i].omega - x[j + 1][i].omega) * hxdhy;
       f[j][i].omega = (xdot[j][i].omega + uxx + uyy + (vxp * (u - x[j][i - 1].omega) + vxm * (x[j][i + 1].omega - u)) * hy + (vyp * (u - x[j - 1][i].omega) + vym * (x[j + 1][i].omega - u)) * hx - .5 * grashof * (x[j][i + 1].temp - x[j][i - 1].temp) * hy);
 
       /* Temperature */

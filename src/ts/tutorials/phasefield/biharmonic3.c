@@ -41,7 +41,8 @@ typedef struct {
   PetscReal theta_c;
 } UserCtx;
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   TS            ts;   /* nonlinear solver */
   Vec           x, r; /* solution, residual vectors */
   Mat           J;    /* Jacobian matrix */
@@ -179,7 +180,8 @@ typedef struct {
    Output Parameter:
 .  F - function vector
  */
-PetscErrorCode FormFunction(TS ts, PetscReal ftime, Vec X, Vec Xdot, Vec F, void *ptr) {
+PetscErrorCode FormFunction(TS ts, PetscReal ftime, Vec X, Vec Xdot, Vec F, void *ptr)
+{
   DM          da;
   PetscInt    i, Mx, xs, xm;
   PetscReal   hx, sx;
@@ -227,22 +229,27 @@ PetscErrorCode FormFunction(TS ts, PetscReal ftime, Vec X, Vec Xdot, Vec F, void
     f[i].w = x[i].w + ctx->kappa * (x[i - 1].u + x[i + 1].u - 2.0 * x[i].u) * sx;
     if (ctx->cahnhillard) {
       switch (ctx->energy) {
-      case 1: /* double well */ f[i].w += -x[i].u * x[i].u * x[i].u + x[i].u; break;
-      case 2: /* double obstacle */ f[i].w += x[i].u; break;
+      case 1: /* double well */
+        f[i].w += -x[i].u * x[i].u * x[i].u + x[i].u;
+        break;
+      case 2: /* double obstacle */
+        f[i].w += x[i].u;
+        break;
       case 3: /* logarithmic */
         if (x[i].u < -1.0 + 2.0 * ctx->tol) f[i].w += .5 * ctx->theta * (-PetscLogScalar(ctx->tol) + PetscLogScalar((1.0 - x[i].u) / 2.0)) + ctx->theta_c * x[i].u;
         else if (x[i].u > 1.0 - 2.0 * ctx->tol) f[i].w += .5 * ctx->theta * (-PetscLogScalar((1.0 + x[i].u) / 2.0) + PetscLogScalar(ctx->tol)) + ctx->theta_c * x[i].u;
         else f[i].w += .5 * ctx->theta * (-PetscLogScalar((1.0 + x[i].u) / 2.0) + PetscLogScalar((1.0 - x[i].u) / 2.0)) + ctx->theta_c * x[i].u;
         break;
-      case 4: break;
+      case 4:
+        break;
       }
     }
     f[i].u = xdot[i].u - (x[i - 1].w + x[i + 1].w - 2.0 * x[i].w) * sx;
     if (ctx->energy == 4) {
       f[i].u = xdot[i].u;
       /* approximation of \grad (M(u) \grad w), where M(u) = (1-u^2) */
-      r      = (1.0 - x[i + 1].u * x[i + 1].u) * (x[i + 2].w - x[i].w) * .5 / hx;
-      l      = (1.0 - x[i - 1].u * x[i - 1].u) * (x[i].w - x[i - 2].w) * .5 / hx;
+      r = (1.0 - x[i + 1].u * x[i + 1].u) * (x[i + 2].w - x[i].w) * .5 / hx;
+      l = (1.0 - x[i - 1].u * x[i - 1].u) * (x[i].w - x[i - 2].w) * .5 / hx;
       f[i].u -= (r - l) * .5 / hx;
       f[i].u += 2.0 * ctx->theta_c * x[i].u * (x[i + 1].u - x[i - 1].u) * (x[i + 1].u - x[i - 1].u) * .25 * sx - (ctx->theta - ctx->theta_c * (1 - x[i].u * x[i].u)) * (x[i + 1].u + x[i - 1].u - 2.0 * x[i].u) * sx;
     }
@@ -260,7 +267,8 @@ PetscErrorCode FormFunction(TS ts, PetscReal ftime, Vec X, Vec Xdot, Vec F, void
 }
 
 /* ------------------------------------------------------------------- */
-PetscErrorCode FormInitialSolution(DM da, Vec X, PetscReal kappa) {
+PetscErrorCode FormInitialSolution(DM da, Vec X, PetscReal kappa)
+{
   PetscInt  i, xs, xm, Mx, xgs, xgm;
   Field    *x;
   PetscReal hx, xx, r, sx;

@@ -32,7 +32,8 @@ extern PetscErrorCode Solution(TS, PetscReal, Vec, AppCtx *);
 extern PetscErrorCode IFunction_LaxFriedrichs(TS, PetscReal, Vec, Vec, Vec, void *);
 extern PetscErrorCode IFunction_LaxWendroff(TS, PetscReal, Vec, Vec, Vec, void *);
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   AppCtx      appctx; /* user-defined application context */
   TS          ts;     /* timestepping context */
   Vec         U;      /* approximate solution vector */
@@ -109,7 +110,8 @@ int main(int argc, char **argv) {
    Output Parameter:
    u - vector with solution at initial time (global)
 */
-PetscErrorCode InitialConditions(TS ts, Vec U, AppCtx *appctx) {
+PetscErrorCode InitialConditions(TS ts, Vec U, AppCtx *appctx)
+{
   PetscScalar *u;
   PetscInt     i, mstart, mend, um, M;
   DM           da;
@@ -155,7 +157,8 @@ PetscErrorCode InitialConditions(TS ts, Vec U, AppCtx *appctx) {
    solution - vector with the newly computed exact solution
               u(x,t) = sin(6*PI*(x - a*t)) + 3 * sin(2*PI*(x - a*t))
 */
-PetscErrorCode Solution(TS ts, PetscReal t, Vec U, AppCtx *appctx) {
+PetscErrorCode Solution(TS ts, PetscReal t, Vec U, AppCtx *appctx)
+{
   PetscScalar *u;
   PetscReal    a = appctx->a, h, PI6, PI2;
   PetscInt     i, mstart, mend, um, M;
@@ -186,7 +189,8 @@ PetscErrorCode Solution(TS ts, PetscReal t, Vec U, AppCtx *appctx) {
 
  See https://en.wikipedia.org/wiki/Lax%E2%80%93Friedrichs_method
  */
-PetscErrorCode IFunction_LaxFriedrichs(TS ts, PetscReal t, Vec U, Vec Udot, Vec F, void *ctx) {
+PetscErrorCode IFunction_LaxFriedrichs(TS ts, PetscReal t, Vec U, Vec Udot, Vec F, void *ctx)
+{
   AppCtx      *appctx = (AppCtx *)ctx;
   PetscInt     mstart, mend, M, i, um;
   DM           da;
@@ -233,7 +237,8 @@ PetscErrorCode IFunction_LaxFriedrichs(TS ts, PetscReal t, Vec U, Vec Udot, Vec 
 /*
  Use Lax-Wendroff method to evaluate F(u,t) = du/dt + a *  du/dx
 */
-PetscErrorCode IFunction_LaxWendroff(TS ts, PetscReal t, Vec U, Vec Udot, Vec F, void *ctx) {
+PetscErrorCode IFunction_LaxWendroff(TS ts, PetscReal t, Vec U, Vec Udot, Vec F, void *ctx)
+{
   AppCtx      *appctx = (AppCtx *)ctx;
   PetscInt     mstart, mend, M, i, um;
   DM           da;

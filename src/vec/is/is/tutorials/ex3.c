@@ -4,7 +4,8 @@ static char help[] = "Demonstrates creating a blocked index set.\n\n";
 #include <petscis.h>
 #include <petscviewer.h>
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscInt        i, n = 4, inputindices[] = {0, 1, 3, 4}, bs = 3, issize;
   const PetscInt *indices;
   IS              set;

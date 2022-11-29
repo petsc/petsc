@@ -4,7 +4,8 @@ static char help[] = "Demonstrates using ISLocalToGlobalMappings.\n\n";
 #include <petscis.h>
 #include <petscviewer.h>
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscInt               i, n = 4, indices[] = {0, 3, 9, 12}, m = 2, input[] = {0, 2};
   PetscInt               output[2], inglobals[13], outlocals[13];
   ISLocalToGlobalMapping mapping;

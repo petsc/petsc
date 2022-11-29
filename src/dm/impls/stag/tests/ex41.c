@@ -3,7 +3,8 @@ static char help[] = "Test -dm_preallocate_only with DMStag\n\n";
 #include <petscdm.h>
 #include <petscdmstag.h>
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   DM            dm;
   PetscInt      dim;
   Mat           A;
@@ -16,8 +17,11 @@ int main(int argc, char **argv) {
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-dim", &dim, NULL));
 
   switch (dim) {
-  case 1: PetscCall(DMStagCreate1d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, 4, 1, 1, DMSTAG_STENCIL_BOX, 1, NULL, &dm)); break;
-  default: SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP, "Unsupported dimension %" PetscInt_FMT, dim);
+  case 1:
+    PetscCall(DMStagCreate1d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, 4, 1, 1, DMSTAG_STENCIL_BOX, 1, NULL, &dm));
+    break;
+  default:
+    SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP, "Unsupported dimension %" PetscInt_FMT, dim);
   }
   PetscCall(DMSetFromOptions(dm));
   PetscCall(DMSetUp(dm));

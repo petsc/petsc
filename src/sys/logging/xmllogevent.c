@@ -77,7 +77,7 @@
  * default timers with 'dft'.
  */
 
-#define DFT_ID_AWAKE -1
+  #define DFT_ID_AWAKE -1
 
 typedef PetscLogEvent NestedEventId;
 typedef struct {
@@ -96,7 +96,7 @@ static int               nNestedEventsAllocated = 0;
 static PetscNestedEvent *nestedEvents           = NULL;
 static PetscLogDouble    thresholdTime          = 0.01; /* initial value was 0.1 */
 
-#define THRESHOLD (thresholdTime / 100.0 + 1e-12)
+  #define THRESHOLD (thresholdTime / 100.0 + 1e-12)
 
 static PetscErrorCode       PetscLogEventBeginNested(NestedEventId nstEvent, int t, PetscObject o1, PetscObject o2, PetscObject o3, PetscObject o4);
 static PetscErrorCode       PetscLogEventEndNested(NestedEventId nstEvent, int t, PetscObject o1, PetscObject o2, PetscObject o3, PetscObject o4);
@@ -125,7 +125,8 @@ PETSC_INTERN PetscErrorCode PetscLogView_Flamegraph(PetscViewer);
 
 .seealso: `PetscLogDump()`, `PetscLogAllBegin()`, `PetscLogView()`, `PetscLogTraceBegin()`, `PetscLogDefaultBegin()`
 @*/
-PetscErrorCode PetscLogNestedBegin(void) {
+PetscErrorCode PetscLogNestedBegin(void)
+{
   PetscFunctionBegin;
   PetscCheck(!nestedEvents, PETSC_COMM_SELF, PETSC_ERR_COR, "nestedEvents already allocated");
 
@@ -147,7 +148,8 @@ PetscErrorCode PetscLogNestedBegin(void) {
 }
 
 /* Delete the data structures for the nested timers */
-PetscErrorCode PetscLogNestedEnd(void) {
+PetscErrorCode PetscLogNestedEnd(void)
+{
   int i;
 
   PetscFunctionBegin;
@@ -171,7 +173,8 @@ PetscErrorCode PetscLogNestedEnd(void) {
      if dftArray[entry] != dftIndex, then dftIndex is not part of dftArray
      In that case, the dftIndex can be inserted at this entry.
 */
-static PetscErrorCode PetscLogEventFindDefaultTimer(PetscLogEvent dftIndex, const PetscLogEvent *dftArray, int narray, int *entry) {
+static PetscErrorCode PetscLogEventFindDefaultTimer(PetscLogEvent dftIndex, const PetscLogEvent *dftArray, int narray, int *entry)
+{
   PetscFunctionBegin;
   if (narray == 0 || dftIndex <= dftArray[0]) {
     *entry = 0;
@@ -203,7 +206,8 @@ static PetscErrorCode PetscLogEventFindDefaultTimer(PetscLogEvent dftIndex, cons
 
     if nestedEvents[entry].nstEvent != nstEvent, then index is not part of iarray
 */
-static PetscErrorCode PetscLogEventFindNestedTimer(NestedEventId nstEvent, int *entry) {
+static PetscErrorCode PetscLogEventFindNestedTimer(NestedEventId nstEvent, int *entry)
+{
   PetscFunctionBegin;
   if (nNestedEvents == 0 || nstEvent <= nestedEvents[0].nstEvent) {
     *entry = 0;
@@ -232,11 +236,12 @@ static PetscErrorCode PetscLogEventFindNestedTimer(NestedEventId nstEvent, int *
  Using PetscLogStage{Push/Pop}() would be more appropriate, but these two calls do extra bookkeeping work we don't need.
 */
 
-#define MAINSTAGE 0
+  #define MAINSTAGE 0
 
 static PetscLogStage savedStage = 0;
 
-static inline PetscErrorCode PetscLogStageOverride(void) {
+static inline PetscErrorCode PetscLogStageOverride(void)
+{
   PetscStageLog stageLog = petsc_stageLog;
 
   PetscFunctionBegin;
@@ -247,7 +252,8 @@ static inline PetscErrorCode PetscLogStageOverride(void) {
   PetscFunctionReturn(0);
 }
 
-static inline PetscErrorCode PetscLogStageRestore(void) {
+static inline PetscErrorCode PetscLogStageRestore(void)
+{
   PetscStageLog stageLog = petsc_stageLog;
 
   PetscFunctionBegin;
@@ -259,7 +265,8 @@ static inline PetscErrorCode PetscLogStageRestore(void) {
 
 /******************************************************************************************/
 /* Start a nested event */
-static PetscErrorCode PetscLogEventBeginNested(NestedEventId nstEvent, int t, PetscObject o1, PetscObject o2, PetscObject o3, PetscObject o4) {
+static PetscErrorCode PetscLogEventBeginNested(NestedEventId nstEvent, int t, PetscObject o1, PetscObject o2, PetscObject o3, PetscObject o4)
+{
   int           entry, pentry, tentry, i;
   PetscLogEvent dftEvent;
 
@@ -312,7 +319,7 @@ static PetscErrorCode PetscLogEventBeginNested(NestedEventId nstEvent, int t, Pe
       char           name[100];
 
       /* Register a new default timer */
-      sprintf(name, "%d -> %d", (int)dftParentActive, (int)nstEvent);
+      PetscCall(PetscSNPrintf(name, PETSC_STATIC_ARRAY_LENGTH(name), "%d -> %d", (int)dftParentActive, (int)nstEvent));
       PetscCall(PetscLogEventRegister(name, 0, &dftEvent));
       PetscCall(PetscLogEventFindDefaultTimer(dftEvent, dftEventsSorted, nParents, &tentry));
 
@@ -362,7 +369,8 @@ static PetscErrorCode PetscLogEventBeginNested(NestedEventId nstEvent, int t, Pe
 }
 
 /* End a nested event */
-static PetscErrorCode PetscLogEventEndNested(NestedEventId nstEvent, int t, PetscObject o1, PetscObject o2, PetscObject o3, PetscObject o4) {
+static PetscErrorCode PetscLogEventEndNested(NestedEventId nstEvent, int t, PetscObject o1, PetscObject o2, PetscObject o3, PetscObject o4)
+{
   int            entry, pentry, nParents;
   PetscLogEvent *dftEventsSorted;
 
@@ -418,7 +426,8 @@ static PetscErrorCode PetscLogEventEndNested(NestedEventId nstEvent, int t, Pets
 .seealso: `PetscLogDump()`, `PetscLogAllBegin()`, `PetscLogView()`, `PetscLogTraceBegin()`, `PetscLogDefaultBegin()`,
           `PetscLogNestedBegin()`
 @*/
-PetscErrorCode PetscLogSetThreshold(PetscLogDouble newThresh, PetscLogDouble *oldThresh) {
+PetscErrorCode PetscLogSetThreshold(PetscLogDouble newThresh, PetscLogDouble *oldThresh)
+{
   PetscFunctionBegin;
   if (oldThresh) *oldThresh = thresholdTime;
   if (newThresh == PETSC_DECIDE) newThresh = 0.01;
@@ -427,7 +436,8 @@ PetscErrorCode PetscLogSetThreshold(PetscLogDouble newThresh, PetscLogDouble *ol
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscPrintExeSpecs(PetscViewer viewer) {
+static PetscErrorCode PetscPrintExeSpecs(PetscViewer viewer)
+{
   char        arch[128], hostname[128], username[128], pname[PETSC_MAX_PATH_LEN], date[128];
   char        version[256], buildoptions[128] = "";
   PetscMPIInt size;
@@ -461,9 +471,9 @@ static PetscErrorCode PetscPrintExeSpecs(PetscViewer viewer) {
     PetscCall(PetscStrlcat(buildoptions, "Half ", sizeof(buildoptions)));
   }
   if (PetscDefined(USE_64BIT_INDICES)) PetscCall(PetscStrlcat(buildoptions, "Int64 ", sizeof(buildoptions)));
-#if defined(__cplusplus)
+  #if defined(__cplusplus)
   PetscCall(PetscStrlcat(buildoptions, "C++ ", sizeof(buildoptions)));
-#endif
+  #endif
   PetscCall(PetscStrlen(buildoptions, &len));
   if (len) PetscCall(PetscViewerXMLPutString(viewer, "petscbuildoptions", "Petsc build options", buildoptions));
   PetscCall(PetscViewerXMLEndSection(viewer, "runspecification"));
@@ -473,7 +483,8 @@ static PetscErrorCode PetscPrintExeSpecs(PetscViewer viewer) {
 /* Print the global performance: max, max/min, average and total of
  *      time, objects, flops, flops/sec, memory, MPI messages, MPI message lengths, MPI reductions.
  */
-static PetscErrorCode PetscPrintXMLGlobalPerformanceElement(PetscViewer viewer, const char *name, const char *desc, PetscLogDouble local_val, const PetscBool print_average, const PetscBool print_total) {
+static PetscErrorCode PetscPrintXMLGlobalPerformanceElement(PetscViewer viewer, const char *name, const char *desc, PetscLogDouble local_val, const PetscBool print_average, const PetscBool print_total)
+{
   PetscLogDouble min, tot, ratio, avg;
   MPI_Comm       comm;
   PetscMPIInt    rank, size;
@@ -506,7 +517,8 @@ static PetscErrorCode PetscPrintXMLGlobalPerformanceElement(PetscViewer viewer, 
 /* Print the global performance: max, max/min, average and total of
  *      time, objects, flops, flops/sec, memory, MPI messages, MPI message lengths, MPI reductions.
  */
-static PetscErrorCode PetscPrintGlobalPerformance(PetscViewer viewer, PetscLogDouble locTotalTime) {
+static PetscErrorCode PetscPrintGlobalPerformance(PetscViewer viewer, PetscLogDouble locTotalTime)
+{
   PetscLogDouble  flops, mem, red, mess;
   const PetscBool print_total_yes = PETSC_TRUE, print_total_no = PETSC_FALSE, print_average_no = PETSC_FALSE, print_average_yes = PETSC_TRUE;
 
@@ -559,7 +571,8 @@ typedef struct {
 } PetscNestedEventTree;
 
 /* Compare timers to sort them in the tree */
-static int compareTreeItems(const void *item1_, const void *item2_) {
+static int compareTreeItems(const void *item1_, const void *item2_)
+{
   int                   i;
   PetscNestedEventTree *item1 = (PetscNestedEventTree *)item1_;
   PetscNestedEventTree *item2 = (PetscNestedEventTree *)item2_;
@@ -584,7 +597,8 @@ static int compareTreeItems(const void *item1_, const void *item2_) {
  * + if information from my own process is available, then that is the information stored in tree.
  *   otherwise it is some other process's information.
  */
-static PetscErrorCode PetscLogNestedTreeCreate(PetscViewer viewer, PetscNestedEventTree **p_tree, int *p_nTimers) {
+static PetscErrorCode PetscLogNestedTreeCreate(PetscViewer viewer, PetscNestedEventTree **p_tree, int *p_nTimers)
+{
   PetscNestedEventTree *tree = NULL, *newTree;
   int                  *treeIndices;
   int                   nTimers, totalNTimers, i, j, iTimer0, maxDefaultTimer;
@@ -783,7 +797,8 @@ static PetscErrorCode PetscLogNestedTreeCreate(PetscViewer viewer, PetscNestedEv
 /*
  * Delete the nested timer tree
  */
-static PetscErrorCode PetscLogNestedTreeDestroy(PetscNestedEventTree *tree, int nTimers) {
+static PetscErrorCode PetscLogNestedTreeDestroy(PetscNestedEventTree *tree, int nTimers)
+{
   int i;
 
   PetscFunctionBegin;
@@ -795,7 +810,8 @@ static PetscErrorCode PetscLogNestedTreeDestroy(PetscNestedEventTree *tree, int 
 /* Print the global performance: max, max/min, average and total of
  *      time, objects, flops, flops/sec, memory, MPI messages, MPI message lengths, MPI reductions.
  */
-static PetscErrorCode PetscPrintXMLNestedLinePerfResults(PetscViewer viewer, const char *name, PetscLogDouble value, PetscLogDouble minthreshold, PetscLogDouble maxthreshold, PetscLogDouble minmaxtreshold) {
+static PetscErrorCode PetscPrintXMLNestedLinePerfResults(PetscViewer viewer, const char *name, PetscLogDouble value, PetscLogDouble minthreshold, PetscLogDouble maxthreshold, PetscLogDouble minmaxtreshold)
+{
   MPI_Comm       comm; /* MPI communicator in reduction */
   PetscMPIInt    rank; /* rank of this process */
   PetscLogDouble val_in[2], max[2], min[2];
@@ -835,8 +851,9 @@ static PetscErrorCode PetscPrintXMLNestedLinePerfResults(PetscViewer viewer, con
   PetscFunctionReturn(0);
 }
 
-#define N_COMM 8
-static PetscErrorCode PetscLogNestedTreePrintLine(PetscViewer viewer, PetscEventPerfInfo perfInfo, PetscLogDouble countsPerCall, int parentCount, int depth, const char *name, PetscLogDouble totalTime, PetscBool *isPrinted) {
+  #define N_COMM 8
+static PetscErrorCode PetscLogNestedTreePrintLine(PetscViewer viewer, PetscEventPerfInfo perfInfo, PetscLogDouble countsPerCall, int parentCount, int depth, const char *name, PetscLogDouble totalTime, PetscBool *isPrinted)
+{
   PetscLogDouble time = perfInfo.time;
   PetscLogDouble timeMx;
   MPI_Comm       comm;
@@ -859,7 +876,8 @@ static PetscErrorCode PetscLogNestedTreePrintLine(PetscViewer viewer, PetscEvent
 
 /* Count the number of times the parent event was called */
 
-static int countParents(const PetscNestedEventTree *tree, PetscEventPerfInfo *eventPerfInfo, int i) {
+static int countParents(const PetscNestedEventTree *tree, PetscEventPerfInfo *eventPerfInfo, int i)
+{
   if (tree[i].depth <= 1) {
     return 1; /* Main event: only once */
   } else if (!tree[i].own) {
@@ -884,7 +902,8 @@ typedef struct {
   PetscLogDouble val;
 } PetscSortItem;
 
-static int compareSortItems(const void *item1_, const void *item2_) {
+static int compareSortItems(const void *item1_, const void *item2_)
+{
   PetscSortItem *item1 = (PetscSortItem *)item1_;
   PetscSortItem *item2 = (PetscSortItem *)item2_;
   if (item1->val > item2->val) return -1;
@@ -895,7 +914,8 @@ static int compareSortItems(const void *item1_, const void *item2_) {
 /*
  * Find the number of child events.
  */
-static PetscErrorCode PetscLogNestedTreeGetChildrenCount(const PetscNestedEventTree *tree, int nTimers, int iStart, int depth, int *nChildren) {
+static PetscErrorCode PetscLogNestedTreeGetChildrenCount(const PetscNestedEventTree *tree, int nTimers, int iStart, int depth, int *nChildren)
+{
   int n = 0;
 
   PetscFunctionBegin;
@@ -910,7 +930,8 @@ static PetscErrorCode PetscLogNestedTreeGetChildrenCount(const PetscNestedEventT
 /*
  * Initialize child event sort items with ID and times.
  */
-static PetscErrorCode PetscLogNestedTreeSetChildrenSortItems(const PetscViewer viewer, const PetscNestedEventTree *tree, int nTimers, int iStart, int depth, int nChildren, PetscSortItem **children) {
+static PetscErrorCode PetscLogNestedTreeSetChildrenSortItems(const PetscViewer viewer, const PetscNestedEventTree *tree, int nTimers, int iStart, int depth, int nChildren, PetscSortItem **children)
+{
   MPI_Comm            comm;
   PetscLogDouble     *times, *maxTimes;
   PetscStageLog       stageLog;
@@ -954,7 +975,8 @@ static PetscErrorCode PetscLogNestedTreeSetChildrenSortItems(const PetscViewer v
 /*
  * Set 'self' and 'other' performance info.
  */
-static PetscErrorCode PetscLogNestedTreeSetSelfOtherPerfInfo(const PetscNestedEventTree *tree, int iStart, PetscLogDouble totalTime, const PetscSortItem *children, int nChildren, PetscEventPerfInfo *myPerfInfo, PetscEventPerfInfo *selfPerfInfo, PetscEventPerfInfo *otherPerfInfo, int *parentCount, PetscLogDouble *countsPerCall) {
+static PetscErrorCode PetscLogNestedTreeSetSelfOtherPerfInfo(const PetscNestedEventTree *tree, int iStart, PetscLogDouble totalTime, const PetscSortItem *children, int nChildren, PetscEventPerfInfo *myPerfInfo, PetscEventPerfInfo *selfPerfInfo, PetscEventPerfInfo *otherPerfInfo, int *parentCount, PetscLogDouble *countsPerCall)
+{
   const int           stage = MAINSTAGE;
   PetscStageLog       stageLog;
   PetscEventPerfInfo *eventPerfInfo;
@@ -1015,7 +1037,8 @@ static PetscErrorCode PetscLogNestedTreeSetSelfOtherPerfInfo(const PetscNestedEv
 /*
  * Set max times across ranks for 'self' and 'other'.
  */
-static PetscErrorCode PetscLogNestedTreeSetMaxTimes(MPI_Comm comm, int nChildren, const PetscEventPerfInfo selfPerfInfo, const PetscEventPerfInfo otherPerfInfo, PetscSortItem *children) {
+static PetscErrorCode PetscLogNestedTreeSetMaxTimes(MPI_Comm comm, int nChildren, const PetscEventPerfInfo selfPerfInfo, const PetscEventPerfInfo otherPerfInfo, PetscSortItem *children)
+{
   PetscLogDouble times[2], maxTimes[2];
 
   PetscFunctionBegin;
@@ -1030,7 +1053,8 @@ static PetscErrorCode PetscLogNestedTreeSetMaxTimes(MPI_Comm comm, int nChildren
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscLogNestedTreePrint(PetscViewer viewer, PetscNestedEventTree *tree, int nTimers, int iStart, PetscLogDouble totalTime) {
+static PetscErrorCode PetscLogNestedTreePrint(PetscViewer viewer, PetscNestedEventTree *tree, int nTimers, int iStart, PetscLogDouble totalTime)
+{
   int                depth = tree[iStart].depth;
   const char        *name;
   int                parentCount = 1, nChildren;
@@ -1098,7 +1122,8 @@ static PetscErrorCode PetscLogNestedTreePrint(PetscViewer viewer, PetscNestedEve
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscLogNestedTreePrintTop(PetscViewer viewer, PetscNestedEventTree *tree, int nTimers, PetscLogDouble totalTime) {
+static PetscErrorCode PetscLogNestedTreePrintTop(PetscViewer viewer, PetscNestedEventTree *tree, int nTimers, PetscLogDouble totalTime)
+{
   int            i, nChildren;
   PetscSortItem *children;
   MPI_Comm       comm;
@@ -1140,7 +1165,8 @@ typedef struct {
   PetscLogDouble numReductions;
 } PetscSelfTimer;
 
-static PetscErrorCode PetscCalcSelfTime(PetscViewer viewer, PetscSelfTimer **p_self, int *p_nstMax) {
+static PetscErrorCode PetscCalcSelfTime(PetscViewer viewer, PetscSelfTimer **p_self, int *p_nstMax)
+{
   const int           stage = MAINSTAGE;
   PetscStageLog       stageLog;
   PetscEventRegInfo  *eventRegInfo;
@@ -1239,7 +1265,8 @@ static PetscErrorCode PetscCalcSelfTime(PetscViewer viewer, PetscSelfTimer **p_s
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscPrintSelfTime(PetscViewer viewer, const PetscSelfTimer *selftimes, int nstMax, PetscLogDouble totalTime) {
+static PetscErrorCode PetscPrintSelfTime(PetscViewer viewer, const PetscSelfTimer *selftimes, int nstMax, PetscLogDouble totalTime)
+{
   int                i;
   NestedEventId      nst;
   PetscSortItem     *sortSelfTimes;
@@ -1295,7 +1322,8 @@ static PetscErrorCode PetscPrintSelfTime(PetscViewer viewer, const PetscSelfTime
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscLogView_Nested(PetscViewer viewer) {
+PetscErrorCode PetscLogView_Nested(PetscViewer viewer)
+{
   PetscLogDouble        locTotalTime, globTotalTime;
   PetscNestedEventTree *tree       = NULL;
   PetscSelfTimer       *selftimers = NULL;
@@ -1334,7 +1362,8 @@ PetscErrorCode PetscLogView_Nested(PetscViewer viewer) {
 /*
  * Get the name of a nested event.
  */
-static PetscErrorCode PetscGetNestedEventName(const PetscNestedEventTree *tree, int id, char **name) {
+static PetscErrorCode PetscGetNestedEventName(const PetscNestedEventTree *tree, int id, char **name)
+{
   PetscStageLog stageLog;
 
   PetscFunctionBegin;
@@ -1346,7 +1375,8 @@ static PetscErrorCode PetscGetNestedEventName(const PetscNestedEventTree *tree, 
 /*
  * Get the total time elapsed.
  */
-static PetscErrorCode PetscGetTotalTime(const PetscViewer viewer, PetscLogDouble *totalTime) {
+static PetscErrorCode PetscGetTotalTime(const PetscViewer viewer, PetscLogDouble *totalTime)
+{
   PetscLogDouble locTotalTime;
   MPI_Comm       comm;
 
@@ -1361,7 +1391,8 @@ static PetscErrorCode PetscGetTotalTime(const PetscViewer viewer, PetscLogDouble
 /*
  * Write a line to the flame graph output and then recurse into child events.
  */
-static PetscErrorCode PetscLogNestedTreePrintFlamegraph(PetscViewer viewer, PetscNestedEventTree *tree, int nTimers, int iStart, PetscLogDouble totalTime, PetscIntStack eventStack) {
+static PetscErrorCode PetscLogNestedTreePrintFlamegraph(PetscViewer viewer, PetscNestedEventTree *tree, int nTimers, int iStart, PetscLogDouble totalTime, PetscIntStack eventStack)
+{
   int                depth = tree[iStart].depth, parentCount = 1, i, nChildren;
   char              *name       = NULL;
   PetscEventPerfInfo myPerfInfo = {0}, selfPerfInfo = {0}, otherPerfInfo = {0};
@@ -1420,7 +1451,8 @@ static PetscErrorCode PetscLogNestedTreePrintFlamegraph(PetscViewer viewer, Pets
  *
  * This option may be requested from the command line by passing in the flag `-log_view :<somefile>.txt:ascii_flamegraph`.
  */
-PetscErrorCode PetscLogView_Flamegraph(PetscViewer viewer) {
+PetscErrorCode PetscLogView_Flamegraph(PetscViewer viewer)
+{
   int                   nTimers = 0, i, nChildren;
   PetscIntStack         eventStack;
   PetscLogDouble        totalTime;
@@ -1443,31 +1475,34 @@ PetscErrorCode PetscLogView_Flamegraph(PetscViewer viewer) {
   PetscFunctionReturn(0);
 }
 
-PETSC_EXTERN PetscErrorCode PetscASend(int count, int datatype) {
-#if !defined(MPIUNI_H) && !defined(PETSC_HAVE_BROKEN_RECURSIVE_MACRO) && !defined(PETSC_HAVE_MPI_MISSING_TYPESIZE)
-#endif
+PETSC_EXTERN PetscErrorCode PetscASend(int count, int datatype)
+{
+  #if !defined(MPIUNI_H) && !defined(PETSC_HAVE_BROKEN_RECURSIVE_MACRO) && !defined(PETSC_HAVE_MPI_MISSING_TYPESIZE)
+  #endif
 
   PetscFunctionBegin;
   petsc_send_ct++;
-#if !defined(MPIUNI_H) && !defined(PETSC_HAVE_BROKEN_RECURSIVE_MACRO) && !defined(PETSC_HAVE_MPI_MISSING_TYPESIZE)
+  #if !defined(MPIUNI_H) && !defined(PETSC_HAVE_BROKEN_RECURSIVE_MACRO) && !defined(PETSC_HAVE_MPI_MISSING_TYPESIZE)
   PetscCall(PetscMPITypeSize(count, MPI_Type_f2c((MPI_Fint)datatype), &petsc_send_len));
-#endif
+  #endif
   PetscFunctionReturn(0);
 }
 
-PETSC_EXTERN PetscErrorCode PetscARecv(int count, int datatype) {
-#if !defined(MPIUNI_H) && !defined(PETSC_HAVE_BROKEN_RECURSIVE_MACRO) && !defined(PETSC_HAVE_MPI_MISSING_TYPESIZE)
-#endif
+PETSC_EXTERN PetscErrorCode PetscARecv(int count, int datatype)
+{
+  #if !defined(MPIUNI_H) && !defined(PETSC_HAVE_BROKEN_RECURSIVE_MACRO) && !defined(PETSC_HAVE_MPI_MISSING_TYPESIZE)
+  #endif
 
   PetscFunctionBegin;
   petsc_recv_ct++;
-#if !defined(MPIUNI_H) && !defined(PETSC_HAVE_BROKEN_RECURSIVE_MACRO) && !defined(PETSC_HAVE_MPI_MISSING_TYPESIZE)
+  #if !defined(MPIUNI_H) && !defined(PETSC_HAVE_BROKEN_RECURSIVE_MACRO) && !defined(PETSC_HAVE_MPI_MISSING_TYPESIZE)
   PetscCall(PetscMPITypeSize(count, MPI_Type_f2c((MPI_Fint)datatype), &petsc_recv_len));
-#endif
+  #endif
   PetscFunctionReturn(0);
 }
 
-PETSC_EXTERN PetscErrorCode PetscAReduce() {
+PETSC_EXTERN PetscErrorCode PetscAReduce(void)
+{
   PetscFunctionBegin;
   petsc_allreduce_ct++;
   PetscFunctionReturn(0);

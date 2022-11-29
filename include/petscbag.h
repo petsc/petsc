@@ -1,5 +1,5 @@
 
-#if !defined(PETSCBAG_H)
+#ifndef PETSCBAG_H
 #define PETSCBAG_H
 
 #include <petscsys.h>

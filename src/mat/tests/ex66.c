@@ -3,7 +3,8 @@ static char help[] = "Tests MATH2OPUS\n\n";
 #include <petscmat.h>
 #include <petscsf.h>
 
-static PetscScalar GenEntry_Symm(PetscInt sdim, PetscReal x[], PetscReal y[], void *ctx) {
+static PetscScalar GenEntry_Symm(PetscInt sdim, PetscReal x[], PetscReal y[], void *ctx)
+{
   PetscInt  d;
   PetscReal clength = sdim == 3 ? 0.2 : 0.1;
   PetscReal dist, diff = 0.0;
@@ -13,7 +14,8 @@ static PetscScalar GenEntry_Symm(PetscInt sdim, PetscReal x[], PetscReal y[], vo
   return PetscExpReal(-dist / clength);
 }
 
-static PetscScalar GenEntry_Unsymm(PetscInt sdim, PetscReal x[], PetscReal y[], void *ctx) {
+static PetscScalar GenEntry_Unsymm(PetscInt sdim, PetscReal x[], PetscReal y[], void *ctx)
+{
   PetscInt  d;
   PetscReal clength = sdim == 3 ? 0.2 : 0.1;
   PetscReal dist, diff = 0.0, nx = 0.0, ny = 0.0;
@@ -25,7 +27,8 @@ static PetscScalar GenEntry_Unsymm(PetscInt sdim, PetscReal x[], PetscReal y[], 
   return nx > ny ? PetscExpReal(-dist / clength) : PetscExpReal(-dist / clength) + 1.;
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   Mat          A, B, C, D;
   Vec          v, x, y, Ax, Ay, Bx, By;
   PetscRandom  r;
@@ -431,7 +434,7 @@ int main(int argc, char **argv) {
      nsize: 1
      suffix: 2_cuda
      output_file: output/ex66_2.out
-     args: -n {{17 33}} -kernel 0 -dim 2 -symm 1 -checkexpl -bgpu {{0 1}} -agpu {{0 1}}
+     args: -n {{17 29}} -kernel 0 -dim 2 -symm 1 -checkexpl -bgpu {{0 1}} -agpu {{0 1}}
 
 #tests view operation
    test:

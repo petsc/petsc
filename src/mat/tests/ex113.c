@@ -6,7 +6,8 @@ Input arguments are:\n\
 
 #include <petscmat.h>
 
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   Mat         A, A1, A2, Mtmp, dstMat;
   PetscViewer viewer;
   PetscReal   fill = 4.0;

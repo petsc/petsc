@@ -92,7 +92,8 @@ struct grid_s {
 double solution(double x, double y);
 void   computeErr(double *I, grid_s grid);
 
-int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[])) {
+int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
+{
   std::cout << "Jacobi Example" << std::endl;
 
   /*
@@ -398,14 +399,16 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[])) {
 //
 // Function for the anlytic solution
 //
-double solution(double x, double y) {
+double solution(double x, double y)
+{
   return x * y * exp(x - y) * (1 - x) * (1 - y);
 }
 
 //
 // Error is computed via ||I_{approx}(:) - U_{analytic}(:)||_{inf}
 //
-void computeErr(double *I, grid_s grid) {
+void computeErr(double *I, grid_s grid)
+{
   RAJA::RangeSegment                        gridRange(0, grid.n);
   RAJA::ReduceMax<RAJA::seq_reduce, double> tMax(-1.0);
 

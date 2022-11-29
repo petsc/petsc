@@ -5,7 +5,8 @@ static char help[] = "Demonstrates HDF5 vector input/ouput\n\n";
 #include <petscdmda.h>
 #include <petscviewerhdf5.h>
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscViewer viewer;
   DM          da;
   Vec         global, local, global2;

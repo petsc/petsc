@@ -17,7 +17,8 @@
  */
 static PetscErrorCode KSPAGMRESRoddecGivens(PetscReal *, PetscReal *, PetscReal *, PetscInt);
 
-PetscErrorCode KSPAGMRESRoddecInitNeighboor(KSP ksp) {
+PetscErrorCode KSPAGMRESRoddecInitNeighboor(KSP ksp)
+{
   MPI_Comm    comm;
   KSP_AGMRES *agmres = (KSP_AGMRES *)(ksp->data);
   PetscMPIInt First, Last, rank, size;
@@ -50,7 +51,8 @@ PetscErrorCode KSPAGMRESRoddecInitNeighboor(KSP ksp) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode KSPAGMRESRoddecGivens(PetscReal *c, PetscReal *s, PetscReal *r, PetscInt make_r) {
+static PetscErrorCode KSPAGMRESRoddecGivens(PetscReal *c, PetscReal *s, PetscReal *r, PetscInt make_r)
+{
   PetscReal a, b, t;
 
   PetscFunctionBegin;
@@ -100,7 +102,7 @@ static PetscErrorCode KSPAGMRESRoddecGivens(PetscReal *c, PetscReal *s, PetscRea
 /*
  * Compute the QR factorization of the Krylov basis vectors
  * Input :
- *  - the vectors are availabe in agmres->vecs (alias VEC_V)
+ *  - the vectors are available in agmres->vecs (alias VEC_V)
  *  - nvec :  the number of vectors
  * Output :
  *  - agmres->Qloc : product of elementary reflectors for the QR of the (local part) of the vectors.
@@ -108,7 +110,8 @@ static PetscErrorCode KSPAGMRESRoddecGivens(PetscReal *c, PetscReal *s, PetscRea
  *  - agmres->tloc : scalar factors of the elementary reflectors.
 
  */
-PetscErrorCode KSPAGMRESRoddec(KSP ksp, PetscInt nvec) {
+PetscErrorCode KSPAGMRESRoddec(KSP ksp, PetscInt nvec)
+{
   KSP_AGMRES  *agmres = (KSP_AGMRES *)ksp->data;
   MPI_Comm     comm;
   PetscScalar *Qloc    = agmres->Qloc;
@@ -227,7 +230,8 @@ PetscErrorCode KSPAGMRESRoddec(KSP ksp, PetscInt nvec) {
  *  Output :
  *   - Out : Petsc vector (distributed as the basis vectors)
  */
-PetscErrorCode KSPAGMRESRodvec(KSP ksp, PetscInt nvec, PetscScalar *In, Vec Out) {
+PetscErrorCode KSPAGMRESRodvec(KSP ksp, PetscInt nvec, PetscScalar *In, Vec Out)
+{
   KSP_AGMRES  *agmres = (KSP_AGMRES *)ksp->data;
   MPI_Comm     comm;
   PetscScalar *Qloc  = agmres->Qloc;

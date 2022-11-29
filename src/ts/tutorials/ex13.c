@@ -26,7 +26,8 @@ extern PetscErrorCode RHSFunction(TS, PetscReal, Vec, Vec, void *);
 extern PetscErrorCode RHSJacobian(TS, PetscReal, Vec, Mat, Mat, void *);
 extern PetscErrorCode FormInitialSolution(DM, Vec, void *);
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   TS        ts;    /* nonlinear solver */
   Vec       u, r;  /* solution, residual vector */
   Mat       J;     /* Jacobian matrix */
@@ -113,7 +114,8 @@ int main(int argc, char **argv) {
    Output Parameter:
 .  F - function vector
  */
-PetscErrorCode RHSFunction(TS ts, PetscReal ftime, Vec U, Vec F, void *ptr) {
+PetscErrorCode RHSFunction(TS ts, PetscReal ftime, Vec U, Vec F, void *ptr)
+{
   /* PETSC_UNUSED AppCtx *user=(AppCtx*)ptr; */
   DM          da;
   PetscInt    i, j, Mx, My, xs, ys, xm, ym;
@@ -185,7 +187,8 @@ PetscErrorCode RHSFunction(TS ts, PetscReal ftime, Vec U, Vec F, void *ptr) {
    Jpre - optionally different preconditioning matrix
    str - flag indicating matrix structure
 */
-PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec U, Mat J, Mat Jpre, void *ctx) {
+PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec U, Mat J, Mat Jpre, void *ctx)
+{
   DM            da;
   DMDALocalInfo info;
   PetscInt      i, j;
@@ -239,7 +242,8 @@ PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec U, Mat J, Mat Jpre, void *ctx
 }
 
 /* ------------------------------------------------------------------- */
-PetscErrorCode FormInitialSolution(DM da, Vec U, void *ptr) {
+PetscErrorCode FormInitialSolution(DM da, Vec U, void *ptr)
+{
   AppCtx       *user = (AppCtx *)ptr;
   PetscReal     c    = user->c;
   PetscInt      i, j, xs, ys, xm, ym, Mx, My;

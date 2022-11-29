@@ -3,7 +3,8 @@
 #include <petsc/private/dmimpl.h>
 #include <petsc/private/glvisviewerimpl.h>
 
-PetscErrorCode DMView_GLVis(DM dm, PetscViewer viewer, PetscErrorCode (*DMView_GLVis_ASCII)(DM, PetscViewer)) {
+PetscErrorCode DMView_GLVis(DM dm, PetscViewer viewer, PetscErrorCode (*DMView_GLVis_ASCII)(DM, PetscViewer))
+{
   PetscBool isglvis, isascii;
 
   PetscFunctionBegin;

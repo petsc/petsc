@@ -1,5 +1,5 @@
-#if !defined(__DMSWARM_DATA_BUCKET_H__)
-#define __DMSWARM_DATA_BUCKET_H__
+#ifndef PETSC_DMSWARM_DATA_BUCKET_H
+#define PETSC_DMSWARM_DATA_BUCKET_H
 
 #include <petsc/private/dmswarmimpl.h> /*I   "petscdmswarm.h"   I*/
 
@@ -95,4 +95,4 @@ PETSC_INTERN PetscErrorCode DMSwarmDataBucketDestroyPackedArray(DMSwarmDataBucke
 PETSC_INTERN PetscErrorCode DMSwarmDataBucketFillPackedArray(DMSwarmDataBucket, const PetscInt, void *);
 PETSC_INTERN PetscErrorCode DMSwarmDataBucketInsertPackedArray(DMSwarmDataBucket, const PetscInt, void *);
 
-#endif
+#endif // PETSC_DMSWARM_DATA_BUCKET_H

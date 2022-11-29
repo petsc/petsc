@@ -4,7 +4,8 @@
 #include <petsc/private/dmstagimpl.h>
 #include <petscdmdatypes.h>
 
-static PetscErrorCode DMStagCreateCompatibleDMDA(DM dm, DMStagStencilLocation loc, PetscInt c, DM *dmda) {
+static PetscErrorCode DMStagCreateCompatibleDMDA(DM dm, DMStagStencilLocation loc, PetscInt c, DM *dmda)
+{
   DM_Stag *const  stag = (DM_Stag *)dm->data;
   PetscInt        dim, i, j, stencilWidth, dof, N[DMSTAG_MAX_DIM];
   DMDAStencilType stencilType;
@@ -26,7 +27,8 @@ static PetscErrorCode DMStagCreateCompatibleDMDA(DM dm, DMStagStencilLocation lo
 
   /* Determine/adjust sizes */
   switch (loc) {
-  case DMSTAG_ELEMENT: break;
+  case DMSTAG_ELEMENT:
+    break;
   case DMSTAG_LEFT:
   case DMSTAG_RIGHT:
     PetscCheck(dim >= 1, PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Incompatible dim (%" PetscInt_FMT ") and loc(%s) combination", dim, DMStagStencilLocations[loc]);
@@ -89,7 +91,8 @@ static PetscErrorCode DMStagCreateCompatibleDMDA(DM dm, DMStagStencilLocation lo
       N[i] += 1;
     }
     break;
-  default: SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Not implemented for location %s", DMStagStencilLocations[loc]);
+  default:
+    SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Not implemented for location %s", DMStagStencilLocations[loc]);
   }
 
   /* Use the same stencil type */
@@ -102,17 +105,23 @@ static PetscErrorCode DMStagCreateCompatibleDMDA(DM dm, DMStagStencilLocation lo
     stencilType  = DMDA_STENCIL_BOX;
     stencilWidth = stag->stencilWidth;
     break;
-  default: SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Unsupported Stencil Type %d", stag->stencilType);
+  default:
+    SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Unsupported Stencil Type %d", stag->stencilType);
   }
 
   /* Create DMDA, using same boundary type */
   switch (dim) {
-  case 1: PetscCall(DMDACreate1d(PetscObjectComm((PetscObject)dm), stag->boundaryType[0], N[0], dof, stencilWidth, l[0], dmda)); break;
-  case 2: PetscCall(DMDACreate2d(PetscObjectComm((PetscObject)dm), stag->boundaryType[0], stag->boundaryType[1], stencilType, N[0], N[1], stag->nRanks[0], stag->nRanks[1], dof, stencilWidth, l[0], l[1], dmda)); break;
+  case 1:
+    PetscCall(DMDACreate1d(PetscObjectComm((PetscObject)dm), stag->boundaryType[0], N[0], dof, stencilWidth, l[0], dmda));
+    break;
+  case 2:
+    PetscCall(DMDACreate2d(PetscObjectComm((PetscObject)dm), stag->boundaryType[0], stag->boundaryType[1], stencilType, N[0], N[1], stag->nRanks[0], stag->nRanks[1], dof, stencilWidth, l[0], l[1], dmda));
+    break;
   case 3:
     PetscCall(DMDACreate3d(PetscObjectComm((PetscObject)dm), stag->boundaryType[0], stag->boundaryType[1], stag->boundaryType[2], stencilType, N[0], N[1], N[2], stag->nRanks[0], stag->nRanks[1], stag->nRanks[2], dof, stencilWidth, l[0], l[1], l[2], dmda));
     break;
-  default: SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "not implemented for dim %" PetscInt_FMT, dim);
+  default:
+    SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "not implemented for dim %" PetscInt_FMT, dim);
   }
   for (i = 0; i < dim; ++i) PetscCall(PetscFree(l[i]));
   PetscFunctionReturn(0);
@@ -121,7 +130,8 @@ static PetscErrorCode DMStagCreateCompatibleDMDA(DM dm, DMStagStencilLocation lo
 /*
 Helper function to get the number of extra points in a DMDA representation for a given canonical location.
 */
-static PetscErrorCode DMStagDMDAGetExtraPoints(DM dm, DMStagStencilLocation locCanonical, PetscInt *extraPoint) {
+static PetscErrorCode DMStagDMDAGetExtraPoints(DM dm, DMStagStencilLocation locCanonical, PetscInt *extraPoint)
+{
   PetscInt dim, d, nExtra[DMSTAG_MAX_DIM];
 
   PetscFunctionBegin;
@@ -131,10 +141,17 @@ static PetscErrorCode DMStagDMDAGetExtraPoints(DM dm, DMStagStencilLocation locC
   PetscCall(DMStagGetCorners(dm, NULL, NULL, NULL, NULL, NULL, NULL, &nExtra[0], &nExtra[1], &nExtra[2]));
   for (d = 0; d < dim; ++d) extraPoint[d] = 0;
   switch (locCanonical) {
-  case DMSTAG_ELEMENT: break;                         /* no extra points */
-  case DMSTAG_LEFT: extraPoint[0] = nExtra[0]; break; /* only extra point in x */
-  case DMSTAG_DOWN: extraPoint[1] = nExtra[1]; break; /* only extra point in y */
-  case DMSTAG_BACK: extraPoint[2] = nExtra[2]; break; /* only extra point in z */
+  case DMSTAG_ELEMENT:
+    break; /* no extra points */
+  case DMSTAG_LEFT:
+    extraPoint[0] = nExtra[0];
+    break; /* only extra point in x */
+  case DMSTAG_DOWN:
+    extraPoint[1] = nExtra[1];
+    break; /* only extra point in y */
+  case DMSTAG_BACK:
+    extraPoint[2] = nExtra[2];
+    break; /* only extra point in z */
   case DMSTAG_DOWN_LEFT:
     extraPoint[0] = nExtra[0];
     extraPoint[1] = nExtra[1];
@@ -152,7 +169,8 @@ static PetscErrorCode DMStagDMDAGetExtraPoints(DM dm, DMStagStencilLocation locC
     extraPoint[1] = nExtra[1];
     extraPoint[2] = nExtra[2];
     break; /* extra points in x,y,z */
-  default: SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Not implemented for location (perhaps not canonical) %s", DMStagStencilLocations[locCanonical]);
+  default:
+    SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Not implemented for location (perhaps not canonical) %s", DMStagStencilLocations[locCanonical]);
   }
   PetscFunctionReturn(0);
 }
@@ -162,7 +180,8 @@ Function much like DMStagMigrateVec(), but which accepts an additional position 
 type of DMDA to migrate to.
 */
 
-static PetscErrorCode DMStagMigrateVecDMDA(DM dm, Vec vec, DMStagStencilLocation loc, PetscInt c, DM dmTo, Vec vecTo) {
+static PetscErrorCode DMStagMigrateVecDMDA(DM dm, Vec vec, DMStagStencilLocation loc, PetscInt c, DM dmTo, Vec vecTo)
+{
   PetscInt i, j, k, d, dim, dof, dofToMax, start[DMSTAG_MAX_DIM], n[DMSTAG_MAX_DIM], extraPoint[DMSTAG_MAX_DIM];
   Vec      vecLocal;
 
@@ -279,7 +298,8 @@ static PetscErrorCode DMStagMigrateVecDMDA(DM dm, Vec vec, DMStagStencilLocation
 }
 
 /* Transfer coordinates from a DMStag to a DMDA, specifying which location */
-static PetscErrorCode DMStagTransferCoordinatesToDMDA(DM dmstag, DMStagStencilLocation loc, DM dmda) {
+static PetscErrorCode DMStagTransferCoordinatesToDMDA(DM dmstag, DMStagStencilLocation loc, DM dmda)
+{
   PetscInt  dim, start[DMSTAG_MAX_DIM], n[DMSTAG_MAX_DIM], extraPoint[DMSTAG_MAX_DIM], d;
   DM        dmstagCoord, dmdaCoord;
   DMType    dmstagCoordType;
@@ -416,7 +436,8 @@ static PetscErrorCode DMStagTransferCoordinatesToDMDA(DM dmstag, DMStagStencilLo
 
 .seealso: `DMSTAG`, `DMDA`, `DMStagMigrateVec()`, `DMStagCreateCompatibleDMStag()`
 @*/
-PetscErrorCode DMStagVecSplitToDMDA(DM dm, Vec vec, DMStagStencilLocation loc, PetscInt c, DM *pda, Vec *pdavec) {
+PetscErrorCode DMStagVecSplitToDMDA(DM dm, Vec vec, DMStagStencilLocation loc, PetscInt c, DM *pda, Vec *pdavec)
+{
   PetscInt              dim, locdof;
   DM                    da, coordDM;
   Vec                   davec;

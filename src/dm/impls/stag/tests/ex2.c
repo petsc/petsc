@@ -5,7 +5,8 @@ static char help[] = "Directly check a DMStag local-to-global scatter";
 
 static PetscErrorCode Test_3d_4x4x4_3x3x3(DM dmstag);
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   DM       dmstag;
   PetscInt dim, dof[4], i, elx, ely, elz;
 
@@ -18,7 +19,8 @@ int main(int argc, char **argv) {
   case 3:
     PetscCall(DMStagCreate3d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, elx, ely, elz, PETSC_DECIDE, PETSC_DECIDE, PETSC_DECIDE, dof[0], dof[1], dof[2], dof[3], DMSTAG_STENCIL_BOX, 1, NULL, NULL, NULL, &dmstag));
     break;
-  default: SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP, "No support for dimension %" PetscInt_FMT, dim);
+  default:
+    SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP, "No support for dimension %" PetscInt_FMT, dim);
   }
   PetscCall(DMSetFromOptions(dmstag));
   PetscCall(DMSetUp(dmstag));
@@ -28,7 +30,8 @@ int main(int argc, char **argv) {
   return 0;
 }
 
-static PetscErrorCode Test_3d_4x4x4_3x3x3(DM dmstag) {
+static PetscErrorCode Test_3d_4x4x4_3x3x3(DM dmstag)
+{
   Vec          vecLocal, vecGlobal;
   PetscInt     i, low, high, n;
   PetscScalar *arr;

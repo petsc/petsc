@@ -66,7 +66,8 @@ struct Mat_SeqAIJKokkosTriFactors {
 
   ~Mat_SeqAIJKokkosTriFactors() { Destroy(); }
 
-  void Destroy() {
+  void Destroy()
+  {
     kh.destroy_spiluk_handle();
     khL.destroy_sptrsv_handle();
     khU.destroy_sptrsv_handle();
@@ -100,7 +101,8 @@ struct Mat_SeqAIJKokkos {
   Kokkos::View<PetscInt *>                      diag_d; // factorizations
 
   /* Construct a nrows by ncols matrix with nnz nonzeros from the given (i,j,a) on host. Caller also specifies a nonzero state */
-  Mat_SeqAIJKokkos(PetscInt nrows, PetscInt ncols, PetscInt nnz, const MatRowMapType *i, MatColIdxType *j, MatScalarType *a, PetscObjectState nzstate, PetscBool copyValues = PETSC_TRUE) {
+  Mat_SeqAIJKokkos(PetscInt nrows, PetscInt ncols, PetscInt nnz, const MatRowMapType *i, MatColIdxType *j, MatScalarType *a, PetscObjectState nzstate, PetscBool copyValues = PETSC_TRUE)
+  {
     MatScalarKokkosViewHost a_h(a, nnz);
     MatRowMapKokkosViewHost i_h(const_cast<MatRowMapType *>(i), nrows + 1);
     MatColIdxKokkosViewHost j_h(j, nnz);
@@ -122,10 +124,9 @@ struct Mat_SeqAIJKokkos {
   }
 
   /* Construct with a KokkosCsrMatrix. For performance, only i, j are copied to host, but not the matrix values. */
-  Mat_SeqAIJKokkos(const KokkosCsrMatrix &csr) :
-    csrmat(csr) /* Shallow-copy csr's views to csrmat */
+  Mat_SeqAIJKokkos(const KokkosCsrMatrix &csr) : csrmat(csr) /* Shallow-copy csr's views to csrmat */
   {
-    auto                a_d = csr.values;
+    auto a_d = csr.values;
     /* Get a non-const version since I don't want to deal with DualView<const T*>, which is not well defined */
     MatRowMapKokkosView i_d(const_cast<MatRowMapType *>(csr.graph.row_map.data()), csr.graph.row_map.extent(0));
     auto                j_d = csr.graph.entries;
@@ -140,7 +141,8 @@ struct Mat_SeqAIJKokkos {
     Init();
   }
 
-  Mat_SeqAIJKokkos(PetscInt nrows, PetscInt ncols, PetscInt nnz, MatRowMapKokkosDualView &i, MatColIdxKokkosDualView &j, MatScalarKokkosDualView a) : i_dual(i), j_dual(j), a_dual(a) {
+  Mat_SeqAIJKokkos(PetscInt nrows, PetscInt ncols, PetscInt nnz, MatRowMapKokkosDualView &i, MatColIdxKokkosDualView &j, MatScalarKokkosDualView a) : i_dual(i), j_dual(j), a_dual(a)
+  {
     csrmat = KokkosCsrMatrix("csrmat", nrows, ncols, nnz, a.view_device(), i.view_device(), j.view_device());
     Init();
   }
@@ -160,24 +162,28 @@ struct Mat_SeqAIJKokkos {
   /* Change the csrmat size to n */
   void SetColSize(MatColIdxType n) { csrmat = KokkosCsrMatrix("csrmat", n, a_dual.view_device(), csrmat.graph); }
 
-  void SetUpCOO(const Mat_SeqAIJ *aij) {
+  void SetUpCOO(const Mat_SeqAIJ *aij)
+  {
     jmap_d = Kokkos::create_mirror_view_and_copy(DefaultMemorySpace(), PetscCountKokkosViewHost(aij->jmap, aij->nz + 1));
     perm_d = Kokkos::create_mirror_view_and_copy(DefaultMemorySpace(), PetscCountKokkosViewHost(aij->perm, aij->Atot));
   }
 
-  void SetDiagonal(const MatRowMapType *diag) {
+  void SetDiagonal(const MatRowMapType *diag)
+  {
     MatRowMapKokkosViewHost diag_h(const_cast<MatRowMapType *>(diag), nrows());
     auto                    diag_d = Kokkos::create_mirror_view_and_copy(DefaultMemorySpace(), diag_h);
     diag_dual                      = MatRowMapKokkosDualView(diag_d, diag_h);
   }
 
   /* Shared init stuff */
-  void Init(void) {
+  void Init(void)
+  {
     transpose_updated = hermitian_updated = PETSC_FALSE;
     nonzerostate                          = 0;
   }
 
-  PetscErrorCode DestroyMatTranspose(void) {
+  PetscErrorCode DestroyMatTranspose(void)
+  {
     PetscFunctionBegin;
     csrmatT = KokkosCsrMatrix(); /* Overwrite with empty matrices */
     csrmatH = KokkosCsrMatrix();

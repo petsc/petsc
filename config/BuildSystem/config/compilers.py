@@ -122,7 +122,7 @@ class Configure(config.base.Configure):
     '''Check for the CXX restrict keyword equivalent to C99 restrict'''
     with self.Language('Cxx'):
       for kw in ['__restrict', ' __restrict__', 'restrict', ' ']:
-        if self.checkCompile('', 'float * '+kw+' x;'):
+        if self.checkCompile('', 'float * '+kw+' x;\n(void)x'):
           self.cxxRestrict = kw
           break
     self.logPrint('Set Cxx restrict keyword to : '+self.cxxRestrict, 4, 'compilers')
@@ -358,7 +358,7 @@ class Configure(config.base.Configure):
 
   def checkCFormatting(self):
     '''Activate format string checking if using the GNU compilers'''
-    '''No checking because we use additional formating conventions'''
+    '''No checking because we use additional formatting conventions'''
     if self.isGCC and 0:
       self.gccFormatChecking = ('PRINTF_FORMAT_CHECK(A,B)', '__attribute__((format (printf, A, B)))')
       self.logPrint('Added gcc printf format checking', 4, 'compilers')
@@ -370,19 +370,19 @@ class Configure(config.base.Configure):
   def checkDynamicLoadFlag(self):
     '''Checks that dlopen() takes RTLD_XXX, and defines PETSC_HAVE_RTLD_XXX if it does'''
     if self.setCompilers.dynamicLibraries:
-      if self.checkLink('#include <dlfcn.h>\nchar *libname;\n', 'dlopen(libname, RTLD_LAZY);dlopen(libname, RTLD_NOW);dlopen(libname, RTLD_LOCAL);dlopen(libname, RTLD_GLOBAL);\n'):
+      if self.checkLink('#include <dlfcn.h>\nchar *libname;\n', 'dlopen(libname, RTLD_LAZY);dlopen(libname, RTLD_NOW);dlopen(libname, RTLD_LOCAL);dlopen(libname, RTLD_GLOBAL)'):
         self.addDefine('HAVE_RTLD_LAZY', 1)
         self.addDefine('HAVE_RTLD_NOW', 1)
         self.addDefine('HAVE_RTLD_LOCAL', 1)
         self.addDefine('HAVE_RTLD_GLOBAL', 1)
         return
-      if self.checkLink('#include <dlfcn.h>\nchar *libname;\n', 'dlopen(libname, RTLD_LAZY);\n'):
+      if self.checkLink('#include <dlfcn.h>\nchar *libname;\n', 'dlopen(libname, RTLD_LAZY)'):
         self.addDefine('HAVE_RTLD_LAZY', 1)
-      if self.checkLink('#include <dlfcn.h>\nchar *libname;\n', 'dlopen(libname, RTLD_NOW);\n'):
+      if self.checkLink('#include <dlfcn.h>\nchar *libname;\n', 'dlopen(libname, RTLD_NOW)'):
         self.addDefine('HAVE_RTLD_NOW', 1)
-      if self.checkLink('#include <dlfcn.h>\nchar *libname;\n', 'dlopen(libname, RTLD_LOCAL);\n'):
+      if self.checkLink('#include <dlfcn.h>\nchar *libname;\n', 'dlopen(libname, RTLD_LOCAL)'):
         self.addDefine('HAVE_RTLD_LOCAL', 1)
-      if self.checkLink('#include <dlfcn.h>\nchar *libname;\n', 'dlopen(libname, RTLD_GLOBAL);\n'):
+      if self.checkLink('#include <dlfcn.h>\nchar *libname;\n', 'dlopen(libname, RTLD_GLOBAL)'):
         self.addDefine('HAVE_RTLD_GLOBAL', 1)
     return
 
@@ -395,7 +395,7 @@ class Configure(config.base.Configure):
     cxxObj.sourceExtension = self.framework.getCompilerObject('C').sourceExtension
     for flag in ['', '-+', '-x cxx -tlocal', '-Kc++']:
       try:
-        self.setCompilers.addCompilerFlag(flag, body = 'class somename { int i; };')
+        self.setCompilers.addCompilerFlag(flag, body = 'class somename { public: int i; };\nsomename b;\nb.i = 0;\n(void)b.i')
         self.cxxCompileC = True
         break
       except RuntimeError:
@@ -403,7 +403,7 @@ class Configure(config.base.Configure):
     if not self.cxxCompileC:
       for flag in ['-x c++', '-TP','-P']:
         try:
-          self.setCompilers.addCompilerFlag(flag, body = 'class somename { int i; };', compilerOnly = 1)
+          self.setCompilers.addCompilerFlag(flag, body = 'class somename { public: int i; };\nsomename b;\nb.i = 0;\n(void)b.i', compilerOnly = 1)
           self.cxxCompileC = True
           break
         except RuntimeError:
@@ -1393,7 +1393,7 @@ Otherwise you need a different combination of C, C++, and Fortran compilers")
     for (int i=0; i<2; i++){
       x[i] = i*j*(*z);
     }
-    """
+    (void)x"""
     self.setCompilers.pushLanguage('C')
     flags_to_try = ['','-std=c99','-std=gnu99','-std=c11','-std=gnu11','-c99']
     for flag in flags_to_try:
@@ -1408,7 +1408,7 @@ Otherwise you need a different combination of C, C++, and Fortran compilers")
         self.logWrite(self.setCompilers.restoreLog())
     self.setCompilers.popLanguage()
     if self.c99flag is None:
-      if self.isGCC: additionalErrorMsg = '\nPerhaps you have an Intel compiler environment or module set that is interferring with the GNU compilers.\nTry removing that environment or module and running ./configure again.'
+      if self.isGCC: additionalErrorMsg = '\nPerhaps you have an Intel compiler environment or module set that is interfering with the GNU compilers.\nTry removing that environment or module and running ./configure again.'
       else: additionalErrorMsg = ''
       raise RuntimeError('PETSc requires c99 compiler! Configure could not determine compatible compiler flag.\nPerhaps you can specify it via CFLAGS.'+additionalErrorMsg)
     return

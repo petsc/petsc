@@ -4,7 +4,8 @@ static char help[] = "Tests mirror boundary conditions in 2-d.\n\n";
 #include <petscdm.h>
 #include <petscdmda.h>
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscInt       M = 8, N = 8, stencil_width = 1, dof = 1, m, n, xstart, ystart, i, j, c;
   DM             da;
   Vec            global, local;

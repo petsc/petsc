@@ -13,13 +13,13 @@ PETSC_INTERN FILE *petsc_history;
      PETSC_STDOUT = fopen("/dev/ttyXX","w") will cause all standard out
      writes to go to terminal XX; assuming you have write permission there
 */
-FILE              *PETSC_STDOUT = NULL;
+FILE *PETSC_STDOUT = NULL;
 /*
      Allows one to overwrite where standard error is sent. For example
      PETSC_STDERR = fopen("/dev/ttyXX","w") will cause all standard error
      writes to go to terminal XX; assuming you have write permission there
 */
-FILE              *PETSC_STDERR = NULL;
+FILE *PETSC_STDERR = NULL;
 
 /*@C
      PetscFormatConvertGetSize - Gets the length of a string needed to hold format converted with `PetscFormatConvert()`
@@ -36,7 +36,8 @@ FILE              *PETSC_STDERR = NULL;
 
 .seealso: `PetscFormatConvert()`, `PetscVSNPrintf()`, `PetscVFPrintf()`
 @*/
-PetscErrorCode PetscFormatConvertGetSize(const char *format, size_t *size) {
+PetscErrorCode PetscFormatConvertGetSize(const char *format, size_t *size)
+{
   size_t   sz = 0;
   PetscInt i  = 0;
 
@@ -57,10 +58,14 @@ PetscErrorCode PetscFormatConvertGetSize(const char *format, size_t *size) {
       }
       switch (format[i]) {
 #if PetscDefined(USE_64BIT_INDICES)
-      case 'D': sz += 2; break;
+      case 'D':
+        sz += 2;
+        break;
 #endif
-      case 'g': sz += 4;
-      default: break;
+      case 'g':
+        sz += 4;
+      default:
+        break;
       }
     }
     ++i;
@@ -87,7 +92,8 @@ PetscErrorCode PetscFormatConvertGetSize(const char *format, size_t *size) {
 
 .seealso: `PetscFormatConvertGetSize()`, `PetscVSNPrintf()`, `PetscVFPrintf()`
 @*/
-PetscErrorCode PetscFormatConvert(const char *format, char *newformat) {
+PetscErrorCode PetscFormatConvert(const char *format, char *newformat)
+{
   PetscInt i = 0, j = 0;
 
   PetscFunctionBegin;
@@ -119,9 +125,13 @@ PetscErrorCode PetscFormatConvert(const char *format, char *newformat) {
           newformat[j++] = ']';
         }
         break;
-      case 'G': SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "%%G format is no longer supported, use %%g and cast the argument to double");
-      case 'F': SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "%%F format is no longer supported, use %%f and cast the argument to double");
-      default: newformat[j++] = format[i]; break;
+      case 'G':
+        SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "%%G format is no longer supported, use %%g and cast the argument to double");
+      case 'F':
+        SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "%%F format is no longer supported, use %%f and cast the argument to double");
+      default:
+        newformat[j++] = format[i];
+        break;
       }
       i++;
     } else newformat[j++] = format[i++];
@@ -150,7 +160,8 @@ PetscErrorCode PetscFormatConvert(const char *format, char *newformat) {
 
 .seealso: `PetscVSNPrintf()`, `PetscErrorPrintf()`, `PetscVPrintf()`
 @*/
-PetscErrorCode PetscVSNPrintf(char *str, size_t len, const char *format, size_t *fullLength, va_list Argp) {
+PetscErrorCode PetscVSNPrintf(char *str, size_t len, const char *format, size_t *fullLength, va_list Argp)
+{
   char  *newformat = NULL;
   char   formatbuf[PETSCDEFAULTBUFFERSIZE];
   size_t newLength;
@@ -168,7 +179,7 @@ PetscErrorCode PetscVSNPrintf(char *str, size_t len, const char *format, size_t 
 #if defined(PETSC_HAVE_VSNPRINTF)
   flen = vsnprintf(str, len, newformat, Argp);
 #else
-#error "vsnprintf not found"
+  #error "vsnprintf not found"
 #endif
   if (newLength > sizeof(formatbuf) - 1) PetscCall(PetscFree(newformat));
   {
@@ -275,7 +286,8 @@ $    PetscVFPrintf = mypetscvfprintf;
 
 .seealso: `PetscVSNPrintf()`, `PetscErrorPrintf()`
 @*/
-PetscErrorCode PetscVFPrintfDefault(FILE *fd, const char *format, va_list Argp) {
+PetscErrorCode PetscVFPrintfDefault(FILE *fd, const char *format, va_list Argp)
+{
   char   str[PETSCDEFAULTBUFFERSIZE];
   char  *buff = str;
   size_t fullLength;
@@ -318,7 +330,8 @@ PetscErrorCode PetscVFPrintfDefault(FILE *fd, const char *format, va_list Argp) 
 .seealso: `PetscSynchronizedFlush()`, `PetscSynchronizedFPrintf()`, `PetscFPrintf()`, `PetscVSNPrintf()`,
           `PetscPrintf()`, `PetscViewerASCIIPrintf()`, `PetscViewerASCIISynchronizedPrintf()`, `PetscVFPrintf()`
 @*/
-PetscErrorCode PetscSNPrintf(char *str, size_t len, const char format[], ...) {
+PetscErrorCode PetscSNPrintf(char *str, size_t len, const char format[], ...)
+{
   size_t  fullLength;
   va_list Argp;
 
@@ -347,7 +360,8 @@ PetscErrorCode PetscSNPrintf(char *str, size_t len, const char format[], ...) {
 .seealso: `PetscSynchronizedFlush()`, `PetscSynchronizedFPrintf()`, `PetscFPrintf()`, `PetscVSNPrintf()`,
           `PetscPrintf()`, `PetscViewerASCIIPrintf()`, `PetscViewerASCIISynchronizedPrintf()`, `PetscSNPrintf()`, `PetscVFPrintf()`
 @*/
-PetscErrorCode PetscSNPrintfCount(char *str, size_t len, const char format[], size_t *countused, ...) {
+PetscErrorCode PetscSNPrintfCount(char *str, size_t len, const char format[], size_t *countused, ...)
+{
   va_list Argp;
 
   PetscFunctionBegin;
@@ -384,7 +398,8 @@ int         petsc_printfqueuelength = 0;
 .seealso: `PetscSynchronizedFlush()`, `PetscSynchronizedFPrintf()`, `PetscFPrintf()`,
           `PetscPrintf()`, `PetscViewerASCIIPrintf()`, `PetscViewerASCIISynchronizedPrintf()`
 @*/
-PetscErrorCode PetscSynchronizedPrintf(MPI_Comm comm, const char format[], ...) {
+PetscErrorCode PetscSynchronizedPrintf(MPI_Comm comm, const char format[], ...)
+{
   PetscMPIInt rank;
 
   PetscFunctionBegin;
@@ -449,7 +464,8 @@ PetscErrorCode PetscSynchronizedPrintf(MPI_Comm comm, const char format[], ...) 
 .seealso: `PetscSynchronizedPrintf()`, `PetscSynchronizedFlush()`, `PetscFPrintf()`,
           `PetscFOpen()`, `PetscViewerASCIISynchronizedPrintf()`, `PetscViewerASCIIPrintf()`
 @*/
-PetscErrorCode PetscSynchronizedFPrintf(MPI_Comm comm, FILE *fp, const char format[], ...) {
+PetscErrorCode PetscSynchronizedFPrintf(MPI_Comm comm, FILE *fp, const char format[], ...)
+{
   PetscMPIInt rank;
 
   PetscFunctionBegin;
@@ -515,7 +531,8 @@ PetscErrorCode PetscSynchronizedFPrintf(MPI_Comm comm, FILE *fp, const char form
 .seealso: `PetscSynchronizedPrintf()`, `PetscFPrintf()`, `PetscPrintf()`, `PetscViewerASCIIPrintf()`,
           `PetscViewerASCIISynchronizedPrintf()`
 @*/
-PetscErrorCode PetscSynchronizedFlush(MPI_Comm comm, FILE *fd) {
+PetscErrorCode PetscSynchronizedFlush(MPI_Comm comm, FILE *fd)
+{
   PetscMPIInt rank, size, tag, i, j, n = 0, dummy = 0;
   char       *message;
   MPI_Status  status;
@@ -583,7 +600,8 @@ PetscErrorCode PetscSynchronizedFlush(MPI_Comm comm, FILE *fd) {
 .seealso: `PetscPrintf()`, `PetscSynchronizedPrintf()`, `PetscViewerASCIIPrintf()`,
           `PetscViewerASCIISynchronizedPrintf()`, `PetscSynchronizedFlush()`
 @*/
-PetscErrorCode PetscFPrintf(MPI_Comm comm, FILE *fd, const char format[], ...) {
+PetscErrorCode PetscFPrintf(MPI_Comm comm, FILE *fd, const char format[], ...)
+{
   PetscMPIInt rank;
 
   PetscFunctionBegin;
@@ -624,7 +642,8 @@ PetscErrorCode PetscFPrintf(MPI_Comm comm, FILE *fd, const char format[], ...) {
 
 .seealso: `PetscFPrintf()`, `PetscSynchronizedPrintf()`, `PetscFormatConvert()`
 @*/
-PetscErrorCode PetscPrintf(MPI_Comm comm, const char format[], ...) {
+PetscErrorCode PetscPrintf(MPI_Comm comm, const char format[], ...)
+{
   PetscMPIInt rank;
 
   PetscFunctionBegin;
@@ -643,7 +662,8 @@ PetscErrorCode PetscPrintf(MPI_Comm comm, const char format[], ...) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscHelpPrintfDefault(MPI_Comm comm, const char format[], ...) {
+PetscErrorCode PetscHelpPrintfDefault(MPI_Comm comm, const char format[], ...)
+{
   PetscMPIInt rank;
 
   PetscFunctionBegin;
@@ -682,7 +702,8 @@ PetscErrorCode PetscHelpPrintfDefault(MPI_Comm comm, const char format[], ...) {
 .seealso: `PetscSynchronizedPrintf()`, `PetscSynchronizedFlush()`,
           `PetscFOpen()`, `PetscViewerASCIISynchronizedPrintf()`, `PetscViewerASCIIPrintf()`
 @*/
-PetscErrorCode PetscSynchronizedFGets(MPI_Comm comm, FILE *fp, size_t len, char string[]) {
+PetscErrorCode PetscSynchronizedFGets(MPI_Comm comm, FILE *fp, size_t len, char string[])
+{
   PetscMPIInt rank;
 
   PetscFunctionBegin;
@@ -700,33 +721,6 @@ PetscErrorCode PetscSynchronizedFGets(MPI_Comm comm, FILE *fp, size_t len, char 
   PetscFunctionReturn(0);
 }
 
-#if defined(PETSC_HAVE_CLOSURE)
-int (^SwiftClosure)(const char *) = 0;
-
-PetscErrorCode PetscVFPrintfToString(FILE *fd, const char format[], va_list Argp) {
-  PetscFunctionBegin;
-  if (fd != stdout && fd != stderr) { /* handle regular files */
-    PetscCall(PetscVFPrintfDefault(fd, format, Argp));
-  } else {
-    size_t length;
-    char   buff[PETSCDEFAULTBUFFERSIZE];
-
-    PetscCall(PetscVSNPrintf(buff, sizeof(buff), format, &length, Argp));
-    PetscCall(SwiftClosure(buff));
-  }
-  PetscFunctionReturn(0);
-}
-
-/*
-   Provide a Swift function that processes all the PETSc calls to PetscVFPrintf()
-*/
-PetscErrorCode PetscVFPrintfSetClosure(int (^closure)(const char *)) {
-  PetscVFPrintf = PetscVFPrintfToString;
-  SwiftClosure  = closure;
-  return 0;
-}
-#endif
-
 /*@C
      PetscFormatStrip - Takes a PETSc format string and removes all numerical modifiers to % operations
 
@@ -736,7 +730,8 @@ PetscErrorCode PetscVFPrintfSetClosure(int (^closure)(const char *)) {
  Level: developer
 
 @*/
-PetscErrorCode PetscFormatStrip(char *format) {
+PetscErrorCode PetscFormatStrip(char *format)
+{
   size_t loc1 = 0, loc2 = 0;
 
   PetscFunctionBegin;
@@ -750,7 +745,8 @@ PetscErrorCode PetscFormatStrip(char *format) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscFormatRealArray(char buf[], size_t len, const char *fmt, PetscInt n, const PetscReal x[]) {
+PetscErrorCode PetscFormatRealArray(char buf[], size_t len, const char *fmt, PetscInt n, const PetscReal x[])
+{
   PetscInt i;
   size_t   left, count;
   char    *p;

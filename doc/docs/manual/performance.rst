@@ -644,9 +644,9 @@ a user-defined context. In C and C++ such a context is merely a
 structure in which various objects can be stashed; in Fortran a user
 context can be an integer array that contains both parameters and
 pointers to PETSc objects. See
-`SNES Tutorial ex5 <../../src/snes/tutorials/ex5.c.html>`__
+`SNES Tutorial ex5 <PETSC_DOC_OUT_ROOT_PLACEHOLDER/src/snes/tutorials/ex5.c.html>`__
 and
-`SNES Tutorial ex5f <../../src/snes/tutorials/ex5f.F90.html>`__
+`SNES Tutorial ex5f <PETSC_DOC_OUT_ROOT_PLACEHOLDER/src/snes/tutorials/ex5f.F90.html>`__
 for examples of user-defined application contexts in C and Fortran,
 respectively.
 
@@ -734,7 +734,7 @@ them.
 -  **Overhead of timing routines on certain machines**: On certain
    machines, even calling the system clock in order to time routines is
    slow; this skews all of the flop rates and timing results. The file
-   ``$PETSC_DIR/src/benchmarks/PetscTime.c`` (`source <../../src/benchmarks/PetscTime.c.html>`__)
+   ``$PETSC_DIR/src/benchmarks/PetscTime.c`` (`source <PETSC_DOC_OUT_ROOT_PLACEHOLDER/src/benchmarks/PetscTime.c.html>`__)
    contains a simple test problem that will approximate the amount of
    time required to get the current time in a running program. On good
    systems it will on the order of :math:`10^{-6}` seconds or less.

@@ -1,4 +1,4 @@
--include ../../../power_../stability_../petsckdir.mk
+-include ../../../power_../stability_../petscdir.mk
 
 LOCDIR          = src/ts/tutorials/power_grid/stability_9bus/
 MANSEC          = TS

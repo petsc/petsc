@@ -5,7 +5,8 @@
 #define OWLQN_SCALED_GRADIENT 1
 #define OWLQN_GRADIENT        2
 
-static PetscErrorCode ProjDirect_OWLQN(Vec d, Vec g) {
+static PetscErrorCode ProjDirect_OWLQN(Vec d, Vec g)
+{
   const PetscReal *gptr;
   PetscReal       *dptr;
   PetscInt         low, high, low1, high1, i;
@@ -24,7 +25,8 @@ static PetscErrorCode ProjDirect_OWLQN(Vec d, Vec g) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode ComputePseudoGrad_OWLQN(Vec x, Vec gv, PetscReal lambda) {
+static PetscErrorCode ComputePseudoGrad_OWLQN(Vec x, Vec gv, PetscReal lambda)
+{
   const PetscReal *xptr;
   PetscReal       *gptr;
   PetscInt         low, high, low1, high1, i;
@@ -47,7 +49,8 @@ static PetscErrorCode ComputePseudoGrad_OWLQN(Vec x, Vec gv, PetscReal lambda) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TaoSolve_OWLQN(Tao tao) {
+static PetscErrorCode TaoSolve_OWLQN(Tao tao)
+{
   TAO_OWLQN                   *lmP = (TAO_OWLQN *)tao->data;
   PetscReal                    f, fold, gdx, gnorm;
   PetscReal                    step = 1.0;
@@ -215,7 +218,8 @@ static PetscErrorCode TaoSolve_OWLQN(Tao tao) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TaoSetUp_OWLQN(Tao tao) {
+static PetscErrorCode TaoSetUp_OWLQN(Tao tao)
+{
   TAO_OWLQN *lmP = (TAO_OWLQN *)tao->data;
   PetscInt   n, N;
 
@@ -237,7 +241,8 @@ static PetscErrorCode TaoSetUp_OWLQN(Tao tao) {
 }
 
 /* ---------------------------------------------------------- */
-static PetscErrorCode TaoDestroy_OWLQN(Tao tao) {
+static PetscErrorCode TaoDestroy_OWLQN(Tao tao)
+{
   TAO_OWLQN *lmP = (TAO_OWLQN *)tao->data;
 
   PetscFunctionBegin;
@@ -253,7 +258,8 @@ static PetscErrorCode TaoDestroy_OWLQN(Tao tao) {
 }
 
 /*------------------------------------------------------------*/
-static PetscErrorCode TaoSetFromOptions_OWLQN(Tao tao, PetscOptionItems *PetscOptionsObject) {
+static PetscErrorCode TaoSetFromOptions_OWLQN(Tao tao, PetscOptionItems *PetscOptionsObject)
+{
   TAO_OWLQN *lmP = (TAO_OWLQN *)tao->data;
 
   PetscFunctionBegin;
@@ -265,7 +271,8 @@ static PetscErrorCode TaoSetFromOptions_OWLQN(Tao tao, PetscOptionItems *PetscOp
 }
 
 /*------------------------------------------------------------*/
-static PetscErrorCode TaoView_OWLQN(Tao tao, PetscViewer viewer) {
+static PetscErrorCode TaoView_OWLQN(Tao tao, PetscViewer viewer)
+{
   TAO_OWLQN *lm = (TAO_OWLQN *)tao->data;
   PetscBool  isascii;
 
@@ -290,7 +297,8 @@ static PetscErrorCode TaoView_OWLQN(Tao tao, PetscViewer viewer) {
   Level: beginner
 M*/
 
-PETSC_EXTERN PetscErrorCode TaoCreate_OWLQN(Tao tao) {
+PETSC_EXTERN PetscErrorCode TaoCreate_OWLQN(Tao tao)
+{
   TAO_OWLQN  *lmP;
   const char *owarmijo_type = TAOLINESEARCHOWARMIJO;
 
@@ -301,7 +309,7 @@ PETSC_EXTERN PetscErrorCode TaoCreate_OWLQN(Tao tao) {
   tao->ops->setfromoptions = TaoSetFromOptions_OWLQN;
   tao->ops->destroy        = TaoDestroy_OWLQN;
 
-  PetscCall(PetscNewLog(tao, &lmP));
+  PetscCall(PetscNew(&lmP));
   lmP->D      = NULL;
   lmP->M      = NULL;
   lmP->GV     = NULL;

@@ -9,7 +9,8 @@ static char help[] = "A benchmark for testing PetscSortInt(), PetscSortIntSemiOr
 #include <petsctime.h>
 #include <petscviewer.h>
 #include <petscvec.h>
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscInt       i, l, n = 100, r = 10, d = 1, vsize = 1;
   PetscInt      *X, *X1, *XR, *XSO, *W, *Y, *Z, *XP, *X1P;
   PetscReal      val, norm1, nreal;

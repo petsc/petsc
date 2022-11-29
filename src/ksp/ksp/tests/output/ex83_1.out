@@ -1,0 +1,17 @@
+KSPFischerGuess alphas = 2. 3. 4.
+Vec Object: 1 MPI process
+  type: nest
+  VecNest, rows=1,  structure: 
+  (0) : type=seq, rows=10 
+    Vec Object: 1 MPI process
+      type: seq
+    0.
+    2.
+    3.
+    4.
+    0.
+    0.
+    0.
+    0.
+    0.
+    0.

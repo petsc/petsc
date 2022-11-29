@@ -23,6 +23,12 @@ cdef extern from "petsc.h":
     struct _p_PetscRandom
     ctypedef _p_PetscRandom* PetscRandom
 
+    struct _n_PetscDevice
+    ctypedef _n_PetscDevice* PetscDevice
+
+    struct _p_PetscDeviceContext
+    ctypedef _p_PetscDeviceContext* PetscDeviceContext
+
     struct _p_IS
     ctypedef _p_IS* PetscIS "IS"
 
@@ -131,6 +137,19 @@ ctypedef public api class Random(Object) [
     object PyPetscRandomObject,
     ]:
     cdef PetscRandom rnd
+
+ctypedef public api class Device [
+    type   PyPetscDevice_Type,
+    object PyPetscDeviceObject,
+    ]:
+    cdef PetscDevice device
+    cdef object __weakref__
+
+ctypedef public api class DeviceContext(Object) [
+    type   PyPetscDeviceContext_Type,
+    object PyPetscDeviceContextObject,
+    ]:
+    cdef PetscDeviceContext dctx
 
 ctypedef public api class IS(Object) [
     type   PyPetscIS_Type,

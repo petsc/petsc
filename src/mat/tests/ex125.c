@@ -3,7 +3,8 @@ Example: mpiexec -n <np> ./ex125 -f <matrix binary file> -nrhs 4 \n\n";
 
 #include <petscmat.h>
 
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   Mat           A, RHS = NULL, RHS1 = NULL, C, F, X;
   Vec           u, x, b;
   PetscMPIInt   size;
@@ -186,20 +187,20 @@ int main(int argc, char **args) {
        -- input: matrix factor F; output: main diagonal of matrix U on all processes */
       PetscInt     M;
       PetscScalar *diag;
-#if !defined(PETSC_USE_COMPLEX)
+  #if !defined(PETSC_USE_COMPLEX)
       PetscInt nneg, nzero, npos;
-#endif
+  #endif
 
       PetscCall(MatGetSize(F, &M, NULL));
       PetscCall(PetscMalloc1(M, &diag));
       PetscCall(MatSuperluDistGetDiagU(F, diag));
       PetscCall(PetscFree(diag));
 
-#if !defined(PETSC_USE_COMPLEX)
+  #if !defined(PETSC_USE_COMPLEX)
       /* Test MatGetInertia() */
       PetscCall(MatGetInertia(F, &nneg, &nzero, &npos));
       PetscCall(PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD, " MatInertia: nneg: %" PetscInt_FMT ", nzero: %" PetscInt_FMT ", npos: %" PetscInt_FMT "\n", nneg, nzero, npos));
-#endif
+  #endif
     }
 #endif
 

@@ -68,7 +68,9 @@ cdef extern from * nogil:
     ctypedef void (*PetscVoidFunction)()
     PetscErrorCode PetscObjectComposeFunction(PetscObject,char[],void (*ptr)())
     PetscErrorCode PetscObjectTypeCompare(PetscObject,char[],PetscBool*)
-    PetscErrorCode PetscObjectChangeTypeName(PetscObject, char[])
+    PetscErrorCode PetscObjectChangeTypeName(PetscObject,char[])
+    ctypedef int PetscObjectState
+    PetscErrorCode PetscObjectStateGet(PetscObject,PetscObjectState*)
 
     ctypedef struct _p_PetscOptionItems
     ctypedef _p_PetscOptionItems* PetscOptionItems
@@ -285,11 +287,8 @@ cdef object load_module(object path):
     module.__package__ = None
     module_cache[path] = module
     try:
-        source = open(path, 'rU')
-        try:
+        with open(path, 'r') as source:
             code = compile(source.read(), path, 'exec')
-        finally:
-            source.close()
         exec(code, module.__dict__)
     except:
         del module_cache[path]
@@ -2344,9 +2343,17 @@ cdef PetscErrorCode SNESSolve_Python_default(
     CHKERR( SNESConverged(snes, snes.iter, xnorm, ynorm, fnorm, &snes.reason) )
     CHKERR( SNESLogHistory(snes, snes.norm, lits) )
     CHKERR( SNESMonitor(snes, snes.iter, snes.norm) )
+
+    cdef PetscObjectState ostate = -1
+    cdef PetscObjectState nstate = -1
     for its from 0 <= its < snes.max_its:
         if snes.reason: break
+        CHKERR( PetscObjectStateGet(<PetscObject>X, &ostate) )
         SNESPreStep_Python(snes)
+        CHKERR( PetscObjectStateGet(<PetscObject>X, &nstate) )
+        if ostate != nstate:
+            CHKERR( SNESComputeFunction(snes, X, F) )
+            CHKERR( VecNorm(F, NORM_2, &fnorm) )
         #
         lits = -snes.linear_its
         SNESStep_Python(snes, X, F, Y)
@@ -2978,8 +2985,6 @@ cdef PetscErrorCode TaoCreate_Python(
             <PetscObject>tao, b"TaoPythonGetType_C",
             <PetscVoidFunction>TaoPythonGetType_PYTHON) )
     #
-    tao.max_it = 10000
-    #
     CHKERR( TaoCreateDefaultLineSearch(tao) )
     CHKERR( TaoCreateDefaultKSP(tao) )
     #
@@ -3111,16 +3116,23 @@ cdef PetscErrorCode TaoSolve_Python_default(
     CHKERR( TaoMonitor(tao, tao.niter, f, gnorm, 0.0, step) )
     CHKERR( TaoConverged(tao) )
 
-    if tao.reason != TAO_CONTINUE_ITERATING:
-        return FunctionEnd()
-
+    cdef PetscObjectState ostate = -1
+    cdef PetscObjectState nstate = -1
     cdef PetscInt its = 0
     cdef TaoLineSearchConvergedReason lsr = TAOLINESEARCH_SUCCESS
     for its from 0 <= its < tao.max_it:
         if tao.reason: break
+        CHKERR( PetscObjectStateGet(<PetscObject>X, &ostate) )
         CHKERR( TaoComputeUpdate(tao) )
 
         TaoPreStep_Python(tao)
+        CHKERR( PetscObjectStateGet(<PetscObject>X, &nstate) )
+        if ostate != nstate:
+            if G != NULL:
+                CHKERR( TaoComputeObjectiveAndGradient(tao, X, &f, G) )
+                CHKERR( VecNorm(G, NORM_2, &gnorm) )
+            else:
+                CHKERR( TaoComputeObjective(tao, X, &f) )
         #
         tao.ksp_its = 0
         TaoStep_Python(tao, X, G, S)
@@ -3128,12 +3140,12 @@ cdef PetscErrorCode TaoSolve_Python_default(
         tao.ksp_tot_its += tao.ksp_its
         #
         if G != NULL:
-          CHKERR( TaoApplyLineSearch(tao, &f, &step, &lsr) )
-          CHKERR( VecNorm(G, NORM_2, &gnorm) )
-          if lsr < TAOLINESEARCH_CONTINUE_ITERATING:
-            tao.reason = TAO_DIVERGED_LS_FAILURE
+            CHKERR( TaoApplyLineSearch(tao, &f, &step, &lsr) )
+            CHKERR( VecNorm(G, NORM_2, &gnorm) )
+            if lsr < TAOLINESEARCH_CONTINUE_ITERATING:
+                tao.reason = TAO_DIVERGED_LS_FAILURE
         else:
-          CHKERR( TaoComputeObjective(tao, X, &f) )
+            CHKERR( TaoComputeObjective(tao, X, &f) )
         CHKERR( TaoCheckReals(tao, f, gnorm) )
 
         tao.niter += 1

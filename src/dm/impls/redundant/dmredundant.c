@@ -7,7 +7,8 @@ typedef struct {
   PetscInt    n;    /* owned number of dofs, n=N on owner, n=0 on non-owners */
 } DM_Redundant;
 
-static PetscErrorCode DMCreateMatrix_Redundant(DM dm, Mat *J) {
+static PetscErrorCode DMCreateMatrix_Redundant(DM dm, Mat *J)
+{
   DM_Redundant          *red = (DM_Redundant *)dm->data;
   ISLocalToGlobalMapping ltog;
   PetscInt               i, rstart, rend, *cols;
@@ -39,7 +40,8 @@ static PetscErrorCode DMCreateMatrix_Redundant(DM dm, Mat *J) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMDestroy_Redundant(DM dm) {
+static PetscErrorCode DMDestroy_Redundant(DM dm)
+{
   PetscFunctionBegin;
   PetscCall(PetscObjectComposeFunction((PetscObject)dm, "DMRedundantSetSize_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)dm, "DMRedundantGetSize_C", NULL));
@@ -49,7 +51,8 @@ static PetscErrorCode DMDestroy_Redundant(DM dm) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMCreateGlobalVector_Redundant(DM dm, Vec *gvec) {
+static PetscErrorCode DMCreateGlobalVector_Redundant(DM dm, Vec *gvec)
+{
   DM_Redundant          *red = (DM_Redundant *)dm->data;
   ISLocalToGlobalMapping ltog;
 
@@ -66,7 +69,8 @@ static PetscErrorCode DMCreateGlobalVector_Redundant(DM dm, Vec *gvec) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMCreateLocalVector_Redundant(DM dm, Vec *lvec) {
+static PetscErrorCode DMCreateLocalVector_Redundant(DM dm, Vec *lvec)
+{
   DM_Redundant *red = (DM_Redundant *)dm->data;
 
   PetscFunctionBegin;
@@ -80,7 +84,8 @@ static PetscErrorCode DMCreateLocalVector_Redundant(DM dm, Vec *lvec) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMLocalToGlobalBegin_Redundant(DM dm, Vec l, InsertMode imode, Vec g) {
+static PetscErrorCode DMLocalToGlobalBegin_Redundant(DM dm, Vec l, InsertMode imode, Vec g)
+{
   DM_Redundant      *red = (DM_Redundant *)dm->data;
   const PetscScalar *lv;
   PetscScalar       *gv;
@@ -108,20 +113,25 @@ static PetscErrorCode DMLocalToGlobalBegin_Redundant(DM dm, Vec l, InsertMode im
     } else source = (void *)lv;
     PetscCallMPI(MPI_Reduce(source, gv, red->N, MPIU_SCALAR, (imode == ADD_VALUES) ? MPIU_SUM : MPIU_MAX, red->rank, PetscObjectComm((PetscObject)dm)));
   } break;
-  case INSERT_VALUES: PetscCall(PetscArraycpy(gv, lv, red->n)); break;
-  default: SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "InsertMode not supported");
+  case INSERT_VALUES:
+    PetscCall(PetscArraycpy(gv, lv, red->n));
+    break;
+  default:
+    SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "InsertMode not supported");
   }
   PetscCall(VecRestoreArrayRead(l, &lv));
   PetscCall(VecRestoreArray(g, &gv));
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMLocalToGlobalEnd_Redundant(DM dm, Vec l, InsertMode imode, Vec g) {
+static PetscErrorCode DMLocalToGlobalEnd_Redundant(DM dm, Vec l, InsertMode imode, Vec g)
+{
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMGlobalToLocalBegin_Redundant(DM dm, Vec g, InsertMode imode, Vec l) {
+static PetscErrorCode DMGlobalToLocalBegin_Redundant(DM dm, Vec g, InsertMode imode, Vec l)
+{
   DM_Redundant      *red = (DM_Redundant *)dm->data;
   const PetscScalar *gv;
   PetscScalar       *lv;
@@ -134,24 +144,28 @@ static PetscErrorCode DMGlobalToLocalBegin_Redundant(DM dm, Vec g, InsertMode im
     if (red->n) PetscCall(PetscArraycpy(lv, gv, red->n));
     PetscCallMPI(MPI_Bcast(lv, red->N, MPIU_SCALAR, red->rank, PetscObjectComm((PetscObject)dm)));
     break;
-  default: SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "InsertMode not supported");
+  default:
+    SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "InsertMode not supported");
   }
   PetscCall(VecRestoreArrayRead(g, &gv));
   PetscCall(VecRestoreArray(l, &lv));
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMGlobalToLocalEnd_Redundant(DM dm, Vec g, InsertMode imode, Vec l) {
+static PetscErrorCode DMGlobalToLocalEnd_Redundant(DM dm, Vec g, InsertMode imode, Vec l)
+{
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMSetUp_Redundant(DM dm) {
+static PetscErrorCode DMSetUp_Redundant(DM dm)
+{
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMView_Redundant(DM dm, PetscViewer viewer) {
+static PetscErrorCode DMView_Redundant(DM dm, PetscViewer viewer)
+{
   DM_Redundant *red = (DM_Redundant *)dm->data;
   PetscBool     iascii;
 
@@ -161,16 +175,22 @@ static PetscErrorCode DMView_Redundant(DM dm, PetscViewer viewer) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMCreateColoring_Redundant(DM dm, ISColoringType ctype, ISColoring *coloring) {
+static PetscErrorCode DMCreateColoring_Redundant(DM dm, ISColoringType ctype, ISColoring *coloring)
+{
   DM_Redundant    *red = (DM_Redundant *)dm->data;
   PetscInt         i, nloc;
   ISColoringValue *colors;
 
   PetscFunctionBegin;
   switch (ctype) {
-  case IS_COLORING_GLOBAL: nloc = red->n; break;
-  case IS_COLORING_LOCAL: nloc = red->N; break;
-  default: SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Unknown ISColoringType %d", (int)ctype);
+  case IS_COLORING_GLOBAL:
+    nloc = red->n;
+    break;
+  case IS_COLORING_LOCAL:
+    nloc = red->N;
+    break;
+  default:
+    SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Unknown ISColoringType %d", (int)ctype);
   }
   PetscCall(PetscMalloc1(nloc, &colors));
   for (i = 0; i < nloc; i++) colors[i] = i;
@@ -179,7 +199,8 @@ static PetscErrorCode DMCreateColoring_Redundant(DM dm, ISColoringType ctype, IS
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMRefine_Redundant(DM dmc, MPI_Comm comm, DM *dmf) {
+static PetscErrorCode DMRefine_Redundant(DM dmc, MPI_Comm comm, DM *dmf)
+{
   PetscMPIInt   flag;
   DM_Redundant *redc = (DM_Redundant *)dmc->data;
 
@@ -191,7 +212,8 @@ static PetscErrorCode DMRefine_Redundant(DM dmc, MPI_Comm comm, DM *dmf) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMCoarsen_Redundant(DM dmf, MPI_Comm comm, DM *dmc) {
+static PetscErrorCode DMCoarsen_Redundant(DM dmf, MPI_Comm comm, DM *dmc)
+{
   PetscMPIInt   flag;
   DM_Redundant *redf = (DM_Redundant *)dmf->data;
 
@@ -203,7 +225,8 @@ static PetscErrorCode DMCoarsen_Redundant(DM dmf, MPI_Comm comm, DM *dmc) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMCreateInterpolation_Redundant(DM dmc, DM dmf, Mat *P, Vec *scale) {
+static PetscErrorCode DMCreateInterpolation_Redundant(DM dmc, DM dmf, Mat *P, Vec *scale)
+{
   DM_Redundant *redc = (DM_Redundant *)dmc->data;
   DM_Redundant *redf = (DM_Redundant *)dmf->data;
   PetscMPIInt   flag;
@@ -241,7 +264,8 @@ static PetscErrorCode DMCreateInterpolation_Redundant(DM dmc, DM dmf, Mat *P, Ve
 
 .seealso `DMDestroy()`, `DMCreateGlobalVector()`, `DMRedundantCreate()`, `DMRedundantGetSize()`
 @*/
-PetscErrorCode DMRedundantSetSize(DM dm, PetscMPIInt rank, PetscInt N) {
+PetscErrorCode DMRedundantSetSize(DM dm, PetscMPIInt rank, PetscInt N)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidType(dm, 1);
@@ -267,7 +291,8 @@ PetscErrorCode DMRedundantSetSize(DM dm, PetscMPIInt rank, PetscInt N) {
 
 .seealso `DMDestroy()`, `DMCreateGlobalVector()`, `DMRedundantCreate()`, `DMRedundantSetSize()`
 @*/
-PetscErrorCode DMRedundantGetSize(DM dm, PetscMPIInt *rank, PetscInt *N) {
+PetscErrorCode DMRedundantGetSize(DM dm, PetscMPIInt *rank, PetscInt *N)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidType(dm, 1);
@@ -275,7 +300,8 @@ PetscErrorCode DMRedundantGetSize(DM dm, PetscMPIInt *rank, PetscInt *N) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMRedundantSetSize_Redundant(DM dm, PetscMPIInt rank, PetscInt N) {
+static PetscErrorCode DMRedundantSetSize_Redundant(DM dm, PetscMPIInt rank, PetscInt N)
+{
   DM_Redundant *red = (DM_Redundant *)dm->data;
   PetscMPIInt   myrank;
   PetscInt      i, *globals;
@@ -294,7 +320,8 @@ static PetscErrorCode DMRedundantSetSize_Redundant(DM dm, PetscMPIInt rank, Pets
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMRedundantGetSize_Redundant(DM dm, PetscInt *rank, PetscInt *N) {
+static PetscErrorCode DMRedundantGetSize_Redundant(DM dm, PetscInt *rank, PetscInt *N)
+{
   DM_Redundant *red = (DM_Redundant *)dm->data;
 
   PetscFunctionBegin;
@@ -303,7 +330,8 @@ static PetscErrorCode DMRedundantGetSize_Redundant(DM dm, PetscInt *rank, PetscI
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMSetUpGLVisViewer_Redundant(PetscObject odm, PetscViewer viewer) {
+static PetscErrorCode DMSetUpGLVisViewer_Redundant(PetscObject odm, PetscViewer viewer)
+{
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
@@ -321,11 +349,12 @@ static PetscErrorCode DMSetUpGLVisViewer_Redundant(PetscObject odm, PetscViewer 
 .seealso: `DMType`, `DMCOMPOSITE`, `DMCreate()`, `DMRedundantSetSize()`, `DMRedundantGetSize()`
 M*/
 
-PETSC_EXTERN PetscErrorCode DMCreate_Redundant(DM dm) {
+PETSC_EXTERN PetscErrorCode DMCreate_Redundant(DM dm)
+{
   DM_Redundant *red;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(dm, &red));
+  PetscCall(PetscNew(&red));
   dm->data = red;
 
   dm->ops->setup               = DMSetUp_Redundant;
@@ -367,7 +396,8 @@ PETSC_EXTERN PetscErrorCode DMCreate_Redundant(DM dm) {
 .seealso `DMDestroy()`, `DMCreateGlobalVector()`, `DMCreateMatrix()`, `DMCompositeAddDM()`, `DMREDUNDANT`, `DMSetType()`, `DMRedundantSetSize()`, `DMRedundantGetSize()`
 
 @*/
-PetscErrorCode DMRedundantCreate(MPI_Comm comm, PetscMPIInt rank, PetscInt N, DM *dm) {
+PetscErrorCode DMRedundantCreate(MPI_Comm comm, PetscMPIInt rank, PetscInt N, DM *dm)
+{
   PetscFunctionBegin;
   PetscValidPointer(dm, 4);
   PetscCall(DMCreate(comm, dm));

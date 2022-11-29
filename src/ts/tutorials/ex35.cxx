@@ -34,7 +34,8 @@ struct pUserCtx {
 };
 typedef pUserCtx *UserCtx;
 
-PetscErrorCode Initialize_AppContext(UserCtx *puser) {
+PetscErrorCode Initialize_AppContext(UserCtx *puser)
+{
   UserCtx user;
 
   PetscFunctionBegin;
@@ -70,7 +71,8 @@ PetscErrorCode Initialize_AppContext(UserCtx *puser) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode Destroy_AppContext(UserCtx *user) {
+PetscErrorCode Destroy_AppContext(UserCtx *user)
+{
   PetscFunctionBegin;
   PetscCall(PetscFree(*user));
   PetscFunctionReturn(0);
@@ -86,7 +88,8 @@ static PetscErrorCode FormIJacobian(TS, PetscReal, Vec, Vec, PetscReal, Mat, Mat
  *     MAIN     *
  *              *
  ****************/
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   TS                ts; /* nonlinear solver */
   Vec               X;  /* solution, residual vectors */
   Mat               J;  /* Jacobian matrix */
@@ -189,7 +192,8 @@ int main(int argc, char **argv) {
 /*
   IJacobian - Compute IJacobian = dF/dU + a dF/dUdot
 */
-PetscErrorCode FormIJacobian(TS ts, PetscReal t, Vec X, Vec Xdot, PetscReal a, Mat J, Mat Jpre, void *ptr) {
+PetscErrorCode FormIJacobian(TS ts, PetscReal t, Vec X, Vec Xdot, PetscReal a, Mat J, Mat Jpre, void *ptr)
+{
   UserCtx            user = (UserCtx)ptr;
   PetscInt           dof;
   PetscReal          hx;
@@ -243,7 +247,8 @@ PetscErrorCode FormIJacobian(TS ts, PetscReal t, Vec X, Vec Xdot, PetscReal a, M
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode FormRHSFunction(TS ts, PetscReal t, Vec X, Vec F, void *ptr) {
+static PetscErrorCode FormRHSFunction(TS ts, PetscReal t, Vec X, Vec F, void *ptr)
+{
   UserCtx            user = (UserCtx)ptr;
   DM                 dm;
   PetscReal          hx;
@@ -280,7 +285,8 @@ static PetscErrorCode FormRHSFunction(TS ts, PetscReal t, Vec X, Vec F, void *pt
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode FormIFunction(TS ts, PetscReal t, Vec X, Vec Xdot, Vec F, void *ctx) {
+static PetscErrorCode FormIFunction(TS ts, PetscReal t, Vec X, Vec Xdot, Vec F, void *ctx)
+{
   UserCtx            user = (UserCtx)ctx;
   DM                 dm;
   Field             *x, *xdot, *f;
@@ -341,7 +347,8 @@ static PetscErrorCode FormIFunction(TS ts, PetscReal t, Vec X, Vec Xdot, Vec F, 
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode FormInitialSolution(TS ts, Vec X, void *ctx) {
+PetscErrorCode FormInitialSolution(TS ts, Vec X, void *ctx)
+{
   UserCtx               user = (UserCtx)ctx;
   PetscReal             vpos[3];
   DM                    dm;

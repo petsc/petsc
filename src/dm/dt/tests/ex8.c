@@ -4,7 +4,8 @@ const char help[] = "Tests PetscDTBaryToIndex(), PetscDTIndexToBary(), PetscDTIn
 #include <petsc/private/dtimpl.h>
 #include <petsc/private/petscfeimpl.h>
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscInt  d, n, maxdim = 4;
   PetscInt *btupprev, *btup;
   PetscInt *gtup;

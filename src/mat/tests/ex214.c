@@ -4,7 +4,8 @@ Example: mpiexec -n <np> ./ex214 -displ \n\n";
 
 #include <petscmat.h>
 
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   PetscMPIInt size, rank;
 #if defined(PETSC_HAVE_MUMPS)
   Mat         A, RHS, C, F, X, AX, spRHST;

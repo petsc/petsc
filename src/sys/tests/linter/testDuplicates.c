@@ -1,6 +1,7 @@
 #include <petscsys.h>
 
-void testDuplicatesWithChanges(PetscInt *a, PetscScalar *b) {
+void testDuplicatesWithChanges(PetscInt *a, PetscScalar *b)
+{
   /* no remove */
   PetscValidIntPointer(a, 1);
   /* remove */
@@ -13,7 +14,8 @@ void testDuplicatesWithChanges(PetscInt *a, PetscScalar *b) {
   return;
 }
 
-void testDuplicatesScoped(PetscInt *a, PetscScalar *b) {
+void testDuplicatesScoped(PetscInt *a, PetscScalar *b)
+{
   /* no remove */
   PetscValidIntPointer(a, 1);
   PetscValidScalarPointer(b, 2);
@@ -28,7 +30,8 @@ void testDuplicatesScoped(PetscInt *a, PetscScalar *b) {
   return;
 }
 
-void testDuplicatesDoubleScoped(PetscInt *a, PetscScalar *b) {
+void testDuplicatesDoubleScoped(PetscInt *a, PetscScalar *b)
+{
   /* no remove */
   PetscValidIntPointer(a, 1);
   PetscValidScalarPointer(b, 2);
@@ -48,7 +51,8 @@ void testDuplicatesDoubleScoped(PetscInt *a, PetscScalar *b) {
   return;
 }
 
-void testNoDuplicatesSwitch(PetscInt *a, PetscScalar *b, PetscBool cond) {
+void testNoDuplicatesSwitch(PetscInt *a, PetscScalar *b, PetscBool cond)
+{
   switch (cond) {
   case PETSC_TRUE:
     /* no remove */
@@ -64,7 +68,8 @@ void testNoDuplicatesSwitch(PetscInt *a, PetscScalar *b, PetscBool cond) {
   return;
 }
 
-void testDuplicatesNoChangesSwitch(PetscInt *a, PetscScalar *b, PetscBool cond) {
+void testDuplicatesNoChangesSwitch(PetscInt *a, PetscScalar *b, PetscBool cond)
+{
   /* no remove */
   PetscValidIntPointer(a, 1);
   PetscValidScalarPointer(b, 2);
@@ -83,7 +88,8 @@ void testDuplicatesNoChangesSwitch(PetscInt *a, PetscScalar *b, PetscBool cond) 
   return;
 }
 
-void testNoDuplicatesIfElse(PetscInt *a, PetscScalar *b, PetscBool cond) {
+void testNoDuplicatesIfElse(PetscInt *a, PetscScalar *b, PetscBool cond)
+{
   if (cond) {
     /* no remove */
     PetscValidIntPointer(a, 1);
@@ -96,7 +102,8 @@ void testNoDuplicatesIfElse(PetscInt *a, PetscScalar *b, PetscBool cond) {
   return;
 }
 
-void testDuplicatesIfElse(PetscInt *a, PetscScalar *b, PetscBool cond) {
+void testDuplicatesIfElse(PetscInt *a, PetscScalar *b, PetscBool cond)
+{
   /* no remove */
   PetscValidIntPointer(a, 1);
   PetscValidScalarPointer(b, 2);
@@ -112,7 +119,8 @@ void testDuplicatesIfElse(PetscInt *a, PetscScalar *b, PetscBool cond) {
   return;
 }
 
-void testNoDuplicatesIfElseIfElse(PetscInt *a, PetscScalar *b, PetscBool cond) {
+void testNoDuplicatesIfElseIfElse(PetscInt *a, PetscScalar *b, PetscBool cond)
+{
   if (cond) {
     /* no remove */
     PetscValidIntPointer(a, 1);

@@ -5,41 +5,44 @@
 /*@C
    SNESComputeJacobianDefault - Computes the Jacobian using finite differences.
 
-   Collective on SNES
+   Collective on snes
 
    Input Parameters:
-+  snes - the SNES context
++  snes - the `SNES` context
 .  x1 - compute Jacobian at this point
--  ctx - application's function context, as set with SNESSetFunction()
+-  ctx - application's function context, as set with `SNESSetFunction()`
 
    Output Parameters:
 +  J - Jacobian matrix (not altered in this routine)
 -  B - newly computed Jacobian matrix to use with preconditioner (generally the same as J)
 
-   Options Database Key:
-+  -snes_fd - Activates SNESComputeJacobianDefault()
+   Options Database Keys:
++  -snes_fd - Activates `SNESComputeJacobianDefault()`
 .  -snes_test_err - Square root of function error tolerance, default square root of machine
                     epsilon (1.e-8 in double, 3.e-4 in single)
--  -mat_fd_type - Either wp or ds (see MATMFFD_WP or MATMFFD_DS)
+-  -mat_fd_type - Either wp or ds (see `MATMFFD_WP` or `MATMFFD_DS`)
 
    Notes:
    This routine is slow and expensive, and is not currently optimized
    to take advantage of sparsity in the problem.  Although
-   SNESComputeJacobianDefault() is not recommended for general use
+   `SNESComputeJacobianDefault()` is not recommended for general use
    in large-scale applications, It can be useful in checking the
    correctness of a user-provided Jacobian.
 
    An alternative routine that uses coloring to exploit matrix sparsity is
-   SNESComputeJacobianDefaultColor().
+   `SNESComputeJacobianDefaultColor()`.
 
-   This routine ignores the maximum number of function evaluations set with SNESSetTolerances() and the function
-   evaluations it performs are not counted in what is returned by of SNESGetNumberFunctionEvals().
+   This routine ignores the maximum number of function evaluations set with `SNESSetTolerances()` and the function
+   evaluations it performs are not counted in what is returned by of `SNESGetNumberFunctionEvals()`.
+
+   This function can be provided to `SNESSetJacobian()` along with a dense matrix to hold the Jacobian
 
    Level: intermediate
 
-.seealso: `SNESSetJacobian()`, `SNESComputeJacobianDefaultColor()`, `MatCreateSNESMF()`
+.seealso: `SNES`, `SNESSetJacobian()`, `SNESSetJacobian()`, `SNESComputeJacobianDefaultColor()`, `MatCreateSNESMF()`
 @*/
-PetscErrorCode SNESComputeJacobianDefault(SNES snes, Vec x1, Mat J, Mat B, void *ctx) {
+PetscErrorCode SNESComputeJacobianDefault(SNES snes, Vec x1, Mat J, Mat B, void *ctx)
+{
   Vec                j1a, j2a, x2;
   PetscInt           i, N, start, end, j, value, root, max_funcs = snes->max_funcs;
   PetscScalar        dx, *y, wscale;
@@ -72,7 +75,6 @@ PetscErrorCode SNESComputeJacobianDefault(SNES snes, Vec x1, Mat J, Mat B, void 
     } else {
       snes->nvwork = 3;
       PetscCall(VecDuplicateVecs(x1, snes->nvwork, &snes->vwork));
-      PetscCall(PetscLogObjectParents(snes, snes->nvwork, snes->vwork));
       j1a = snes->vwork[0];
       j2a = snes->vwork[1];
       x2  = snes->vwork[2];

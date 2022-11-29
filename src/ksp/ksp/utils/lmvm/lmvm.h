@@ -1,4 +1,4 @@
-#if !defined(__LMVM_H)
+#ifndef __LMVM_H
 #define __LMVM_H
 #include <petscksp.h>
 #include <petsc/private/matimpl.h>

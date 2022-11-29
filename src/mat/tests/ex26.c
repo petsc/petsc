@@ -3,7 +3,8 @@ static char help[] = "Tests MatGetRowIJ for SeqAIJ, SeqBAIJ and SeqSBAIJ\n\n";
 
 #include <petscmat.h>
 
-PetscErrorCode DumpCSR(Mat A, PetscInt shift, PetscBool symmetric, PetscBool compressed) {
+PetscErrorCode DumpCSR(Mat A, PetscInt shift, PetscBool symmetric, PetscBool compressed)
+{
   MatType         type;
   PetscInt        i, j, nr, bs = 1;
   const PetscInt *ia, *ja;
@@ -26,7 +27,8 @@ PetscErrorCode DumpCSR(Mat A, PetscInt shift, PetscBool symmetric, PetscBool com
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   Mat         A, B, C;
   PetscInt    i, j, k, m = 3, n = 3, bs = 1;
   PetscMPIInt size;

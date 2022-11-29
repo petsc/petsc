@@ -2,7 +2,8 @@ static char help[] = "Test PetscSFFCompose against some corner cases \n\n";
 
 #include <petscsf.h>
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscMPIInt  size;
   PetscSF      sfA0, sfA1, sfA2, sfB;
   PetscInt     nroots, nleaves;

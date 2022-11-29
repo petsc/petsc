@@ -1,7 +1,8 @@
 static char help[] = "Test VecSetValuesCOO\n\n";
 
 #include <petscmat.h>
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   Vec            x, y;
   PetscInt       k;
   const PetscInt M = 18;

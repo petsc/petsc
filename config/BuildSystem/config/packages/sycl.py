@@ -84,8 +84,10 @@ class Configure(config.package.Package):
         # https://en.wikipedia.org/wiki/List_of_Intel_graphics_processing_units
         if self.syclArch == 'gen':
           devArg = 'gen9-' # compile for all targets of gen9 and up
+        elif self.syclArch == 'xehp':
+          devArg = '12.50.4'
         elif self.syclArch == 'pvc':
-          devArg = '12.1.0,12.4.0' # compile for both ATS and PVC to make testing easier
+          devArg = '12.60.7'
         else:
           devArg = self.syclArch
         flags += ' -fsycl-targets=spir64_gen -Xsycl-target-backend "-device '+ devArg + '" '

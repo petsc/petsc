@@ -6,7 +6,8 @@
  This is called once, usually automatically by KSPSolve() or KSPSetUp()
  but can be called directly by KSPSetUp()
 */
-static PetscErrorCode KSPSetUp_GROPPCG(KSP ksp) {
+static PetscErrorCode KSPSetUp_GROPPCG(KSP ksp)
+{
   PetscFunctionBegin;
   PetscCall(KSPSetWorkVecs(ksp, 6));
   PetscFunctionReturn(0);
@@ -19,7 +20,8 @@ static PetscErrorCode KSPSetUp_GROPPCG(KSP ksp) {
  .     ksp - the Krylov space object that was set to use conjugate gradient, by, for
              example, KSPCreate(MPI_Comm,KSP *ksp); KSPSetType(ksp,KSPCG);
 */
-static PetscErrorCode KSPSolve_GROPPCG(KSP ksp) {
+static PetscErrorCode KSPSolve_GROPPCG(KSP ksp)
+{
   PetscInt    i;
   PetscScalar alpha, beta = 0.0, gamma, gammaNew, t;
   PetscReal   dp = 0.0;
@@ -70,8 +72,11 @@ static PetscErrorCode KSPSolve_GROPPCG(KSP ksp) {
     KSPCheckDot(ksp, gamma);
     dp = PetscSqrtReal(PetscAbsScalar(gamma)); /*     dp <- r'*z = r'*B*r = e'*A'*B*A*e */
     break;
-  case KSP_NORM_NONE: dp = 0.0; break;
-  default: SETERRQ(PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "%s", KSPNormTypes[ksp->normtype]);
+  case KSP_NORM_NONE:
+    dp = 0.0;
+    break;
+  default:
+    SETERRQ(PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "%s", KSPNormTypes[ksp->normtype]);
   }
   PetscCall(KSPLogResidualHistory(ksp, dp));
   PetscCall(KSPMonitor(ksp, 0, dp));
@@ -139,18 +144,18 @@ static PetscErrorCode KSPSolve_GROPPCG(KSP ksp) {
 PETSC_INTERN PetscErrorCode KSPBuildResidual_CG(KSP, Vec, Vec, Vec *);
 
 /*MC
-   KSPGROPPCG - A pipelined conjugate gradient method from Bill Gropp
-
-   This method has two reductions, one of which is overlapped with the matrix-vector product and one of which is
-   overlapped with the preconditioner.
-
-   See also KSPPIPECG, which has only a single reduction that overlaps both the matrix-vector product and the preconditioner.
+   KSPGROPPCG - A pipelined conjugate gradient method developed by Bill Gropp. [](sec_pipelineksp)
 
    Level: intermediate
 
    Notes:
+   This method has two reductions, one of which is overlapped with the matrix-vector product and one of which is
+   overlapped with the preconditioner.
+
+   See also `KSPPIPECG`, which has only a single reduction that overlaps both the matrix-vector product and the preconditioner.
+
    MPI configuration may be necessary for reductions to make asynchronous progress, which is important for performance of pipelined methods.
-   See the FAQ on the PETSc website for details.
+   See [](doc_faq_pipelined)
 
    Contributed by:
    Pieter Ghysels, Universiteit Antwerpen, Intel Exascience lab Flanders
@@ -158,10 +163,11 @@ PETSC_INTERN PetscErrorCode KSPBuildResidual_CG(KSP, Vec, Vec, Vec *);
    Reference:
    http://www.cs.uiuc.edu/~wgropp/bib/talks/tdata/2012/icerm.pdf
 
-.seealso: `KSPCreate()`, `KSPSetType()`, `KSPPIPECG`, `KSPPIPECR`, `KSPPGMRES`, `KSPCG`, `KSPCGUseSingleReduction()`
+.seealso: [](chapter_ksp), [](sec_pipelineksp), [](doc_faq_pipelined), `KSPCreate()`, `KSPPIPECG2()`, `KSPSetType()`, `KSPPIPECG`, `KSPPIPECR`, `KSPPGMRES`, `KSPCG`, `KSPCGUseSingleReduction()`
 M*/
 
-PETSC_EXTERN PetscErrorCode KSPCreate_GROPPCG(KSP ksp) {
+PETSC_EXTERN PetscErrorCode KSPCreate_GROPPCG(KSP ksp)
+{
   PetscFunctionBegin;
   PetscCall(KSPSetSupportedNorm(ksp, KSP_NORM_UNPRECONDITIONED, PC_LEFT, 2));
   PetscCall(KSPSetSupportedNorm(ksp, KSP_NORM_PRECONDITIONED, PC_LEFT, 2));

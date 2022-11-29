@@ -1,4 +1,4 @@
--include ../../../../../../petsckdir.mk
+-include ../../../../../../petscdir.mk
 #requirespackage  'PETSC_HAVE_MMG'
 
 SOURCEC  = mmgadapt.c

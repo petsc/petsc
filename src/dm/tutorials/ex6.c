@@ -33,7 +33,8 @@ static char help[] = "\n\n";
 #include <petscdm.h>
 #include <petscdmda.h>
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscInt     M = 6;
   DM           da;
   Vec          local, global, natural;

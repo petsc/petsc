@@ -2,7 +2,7 @@
 
 #if defined(PETSC_HAVE_PTSCOTCH)
 EXTERN_C_BEGIN
-#include <ptscotch.h>
+  #include <ptscotch.h>
 EXTERN_C_END
 #endif
 
@@ -26,24 +26,37 @@ typedef struct {
 
 #if defined(PETSC_HAVE_PTSCOTCH)
 
-#define PetscCallPTSCOTCH(...) \
-  do { PetscCheck(!(__VA_ARGS__), PETSC_COMM_SELF, PETSC_ERR_LIB, "Error calling PT-Scotch library"); } while (0)
+  #define PetscCallPTSCOTCH(...) \
+    do { \
+      PetscCheck(!(__VA_ARGS__), PETSC_COMM_SELF, PETSC_ERR_LIB, "Error calling PT-Scotch library"); \
+    } while (0)
 
-static int PTScotch_Strategy(PetscInt strategy) {
+static int PTScotch_Strategy(PetscInt strategy)
+{
   switch (strategy) {
-  case 0: return SCOTCH_STRATDEFAULT;
-  case 1: return SCOTCH_STRATQUALITY;
-  case 2: return SCOTCH_STRATSPEED;
-  case 3: return SCOTCH_STRATBALANCE;
-  case 4: return SCOTCH_STRATSAFETY;
-  case 5: return SCOTCH_STRATSCALABILITY;
-  case 6: return SCOTCH_STRATRECURSIVE;
-  case 7: return SCOTCH_STRATREMAP;
-  default: return SCOTCH_STRATDEFAULT;
+  case 0:
+    return SCOTCH_STRATDEFAULT;
+  case 1:
+    return SCOTCH_STRATQUALITY;
+  case 2:
+    return SCOTCH_STRATSPEED;
+  case 3:
+    return SCOTCH_STRATBALANCE;
+  case 4:
+    return SCOTCH_STRATSAFETY;
+  case 5:
+    return SCOTCH_STRATSCALABILITY;
+  case 6:
+    return SCOTCH_STRATRECURSIVE;
+  case 7:
+    return SCOTCH_STRATREMAP;
+  default:
+    return SCOTCH_STRATDEFAULT;
   }
 }
 
-static PetscErrorCode PTScotch_PartGraph_Seq(SCOTCH_Num strategy, double imbalance, SCOTCH_Num n, SCOTCH_Num xadj[], SCOTCH_Num adjncy[], SCOTCH_Num vtxwgt[], SCOTCH_Num adjwgt[], SCOTCH_Num nparts, SCOTCH_Num tpart[], SCOTCH_Num part[]) {
+static PetscErrorCode PTScotch_PartGraph_Seq(SCOTCH_Num strategy, double imbalance, SCOTCH_Num n, SCOTCH_Num xadj[], SCOTCH_Num adjncy[], SCOTCH_Num vtxwgt[], SCOTCH_Num adjwgt[], SCOTCH_Num nparts, SCOTCH_Num tpart[], SCOTCH_Num part[])
+{
   SCOTCH_Arch  archdat;
   SCOTCH_Graph grafdat;
   SCOTCH_Strat stradat;
@@ -78,7 +91,8 @@ static PetscErrorCode PTScotch_PartGraph_Seq(SCOTCH_Num strategy, double imbalan
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PTScotch_PartGraph_MPI(SCOTCH_Num strategy, double imbalance, SCOTCH_Num vtxdist[], SCOTCH_Num xadj[], SCOTCH_Num adjncy[], SCOTCH_Num vtxwgt[], SCOTCH_Num adjwgt[], SCOTCH_Num nparts, SCOTCH_Num tpart[], SCOTCH_Num part[], MPI_Comm comm) {
+static PetscErrorCode PTScotch_PartGraph_MPI(SCOTCH_Num strategy, double imbalance, SCOTCH_Num vtxdist[], SCOTCH_Num xadj[], SCOTCH_Num adjncy[], SCOTCH_Num vtxwgt[], SCOTCH_Num adjwgt[], SCOTCH_Num nparts, SCOTCH_Num tpart[], SCOTCH_Num part[], MPI_Comm comm)
+{
   PetscMPIInt     procglbnbr;
   PetscMPIInt     proclocnum;
   SCOTCH_Arch     archdat;
@@ -127,7 +141,8 @@ static PetscErrorCode PTScotch_PartGraph_MPI(SCOTCH_Num strategy, double imbalan
 
 static const char *const PTScotchStrategyList[] = {"DEFAULT", "QUALITY", "SPEED", "BALANCE", "SAFETY", "SCALABILITY", "RECURSIVE", "REMAP"};
 
-static PetscErrorCode PetscPartitionerDestroy_PTScotch(PetscPartitioner part) {
+static PetscErrorCode PetscPartitionerDestroy_PTScotch(PetscPartitioner part)
+{
   PetscPartitioner_PTScotch *p = (PetscPartitioner_PTScotch *)part->data;
 
   PetscFunctionBegin;
@@ -136,7 +151,8 @@ static PetscErrorCode PetscPartitionerDestroy_PTScotch(PetscPartitioner part) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscPartitionerView_PTScotch_ASCII(PetscPartitioner part, PetscViewer viewer) {
+static PetscErrorCode PetscPartitionerView_PTScotch_ASCII(PetscPartitioner part, PetscViewer viewer)
+{
   PetscPartitioner_PTScotch *p = (PetscPartitioner_PTScotch *)part->data;
 
   PetscFunctionBegin;
@@ -147,7 +163,8 @@ static PetscErrorCode PetscPartitionerView_PTScotch_ASCII(PetscPartitioner part,
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscPartitionerView_PTScotch(PetscPartitioner part, PetscViewer viewer) {
+static PetscErrorCode PetscPartitionerView_PTScotch(PetscPartitioner part, PetscViewer viewer)
+{
   PetscBool iascii;
 
   PetscFunctionBegin;
@@ -158,7 +175,8 @@ static PetscErrorCode PetscPartitionerView_PTScotch(PetscPartitioner part, Petsc
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscPartitionerSetFromOptions_PTScotch(PetscPartitioner part, PetscOptionItems *PetscOptionsObject) {
+static PetscErrorCode PetscPartitionerSetFromOptions_PTScotch(PetscPartitioner part, PetscOptionItems *PetscOptionsObject)
+{
   PetscPartitioner_PTScotch *p     = (PetscPartitioner_PTScotch *)part->data;
   const char *const         *slist = PTScotchStrategyList;
   PetscInt                   nlist = PETSC_STATIC_ARRAY_LENGTH(PTScotchStrategyList);
@@ -172,7 +190,8 @@ static PetscErrorCode PetscPartitionerSetFromOptions_PTScotch(PetscPartitioner p
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscPartitionerPartition_PTScotch(PetscPartitioner part, PetscInt nparts, PetscInt numVertices, PetscInt start[], PetscInt adjacency[], PetscSection vertSection, PetscSection targetSection, PetscSection partSection, IS *partition) {
+static PetscErrorCode PetscPartitionerPartition_PTScotch(PetscPartitioner part, PetscInt nparts, PetscInt numVertices, PetscInt start[], PetscInt adjacency[], PetscSection vertSection, PetscSection targetSection, PetscSection partSection, IS *partition)
+{
 #if defined(PETSC_HAVE_PTSCOTCH)
   MPI_Comm    comm;
   PetscInt    nvtxs = numVertices; /* The number of vertices in full graph */
@@ -271,7 +290,8 @@ static PetscErrorCode PetscPartitionerPartition_PTScotch(PetscPartitioner part, 
 #endif
 }
 
-static PetscErrorCode PetscPartitionerInitialize_PTScotch(PetscPartitioner part) {
+static PetscErrorCode PetscPartitionerInitialize_PTScotch(PetscPartitioner part)
+{
   PetscFunctionBegin;
   part->noGraph             = PETSC_FALSE;
   part->ops->view           = PetscPartitionerView_PTScotch;
@@ -295,12 +315,13 @@ static PetscErrorCode PetscPartitionerInitialize_PTScotch(PetscPartitioner part)
 .seealso: `PetscPartitionerType`, `PetscPartitionerCreate()`, `PetscPartitionerSetType()`
 M*/
 
-PETSC_EXTERN PetscErrorCode PetscPartitionerCreate_PTScotch(PetscPartitioner part) {
+PETSC_EXTERN PetscErrorCode PetscPartitionerCreate_PTScotch(PetscPartitioner part)
+{
   PetscPartitioner_PTScotch *p;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part, PETSCPARTITIONER_CLASSID, 1);
-  PetscCall(PetscNewLog(part, &p));
+  PetscCall(PetscNew(&p));
   part->data = p;
 
   PetscCallMPI(MPI_Comm_dup(PetscObjectComm((PetscObject)part), &p->pcomm));

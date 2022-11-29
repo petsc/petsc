@@ -15,7 +15,8 @@
    Level: intermediate
 
 @*/
-PetscErrorCode PetscDrawClear(PetscDraw draw) {
+PetscErrorCode PetscDrawClear(PetscDraw draw)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw, PETSC_DRAW_CLASSID, 1);
   if (draw->saveonclear) PetscCall(PetscDrawSave(draw));
@@ -35,7 +36,8 @@ PetscErrorCode PetscDrawClear(PetscDraw draw) {
 
 .seealso: `PetscDrawEOP()`, `PetscDrawClear()`
 @*/
-PetscErrorCode PetscDrawBOP(PetscDraw draw) {
+PetscErrorCode PetscDrawBOP(PetscDraw draw)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw, PETSC_DRAW_CLASSID, 1);
   PetscTryTypeMethod(draw, beginpage);
@@ -53,7 +55,8 @@ PetscErrorCode PetscDrawBOP(PetscDraw draw) {
 
 .seealso: `PetscDrawBOP()`, `PetscDrawClear()`
 @*/
-PetscErrorCode PetscDrawEOP(PetscDraw draw) {
+PetscErrorCode PetscDrawEOP(PetscDraw draw)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw, PETSC_DRAW_CLASSID, 1);
   PetscTryTypeMethod(draw, endpage);

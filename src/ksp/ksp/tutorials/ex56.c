@@ -8,15 +8,18 @@ Load of 1.0 in x + 2y direction on all nodes (not a true uniform load).\n\
 #include <petscksp.h>
 
 static PetscBool      log_stages = PETSC_TRUE;
-static PetscErrorCode MaybeLogStagePush(PetscLogStage stage) {
+static PetscErrorCode MaybeLogStagePush(PetscLogStage stage)
+{
   return log_stages ? PetscLogStagePush(stage) : 0;
 }
-static PetscErrorCode MaybeLogStagePop() {
+static PetscErrorCode MaybeLogStagePop()
+{
   return log_stages ? PetscLogStagePop() : 0;
 }
 PetscErrorCode elem_3d_elast_v_25(PetscScalar *);
 
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   Mat           Amat;
   PetscInt      m, nn, M, Istart, Iend, i, j, k, ii, jj, kk, ic, ne = 4, id;
   PetscReal     x, y, z, h, *coords, soft_alpha = 1.e-3;
@@ -63,7 +66,7 @@ int main(int argc, char **args) {
   h  = 1. / ne;
   nn = ne + 1;
   /* ne*ne; number of global elements */
-  M  = 3 * nn * nn * nn; /* global number of equations */
+  M = 3 * nn * nn * nn; /* global number of equations */
   if (npe == 2) {
     if (mype == 1) m = 0;
     else m = nn * nn * nn;
@@ -176,7 +179,7 @@ int main(int argc, char **args) {
           y = coords[3 * ic + 1] = h * (PetscReal)j;
           z = coords[3 * ic + 2] = h * (PetscReal)k;
           /* matrix */
-          id                     = id0 + ii + NN * jj + NN * NN * kk;
+          id = id0 + ii + NN * jj + NN * NN * kk;
           if (i < ne && j < ne && k < ne) {
             /* radius */
             PetscReal radius = PetscSqrtReal((x - .5 + h / 2) * (x - .5 + h / 2) + (y - .5 + h / 2) * (y - .5 + h / 2) + (z - .5 + h / 2) * (z - .5 + h / 2));
@@ -371,7 +374,8 @@ int main(int argc, char **args) {
 }
 
 /* Data was previously provided in the file data/elem_3d_elast_v_25.tx */
-PetscErrorCode elem_3d_elast_v_25(PetscScalar *dd) {
+PetscErrorCode elem_3d_elast_v_25(PetscScalar *dd)
+{
   PetscScalar DD[] = {
     0.18981481481481474,       5.27777777777777568E-002,  5.27777777777777568E-002,  -5.64814814814814659E-002, -1.38888888888889072E-002, -1.38888888888889089E-002, -8.24074074074073876E-002, -5.27777777777777429E-002, 1.38888888888888725E-002,
     4.90740740740740339E-002,  1.38888888888889124E-002,  4.72222222222222071E-002,  4.90740740740740339E-002,  4.72222222222221932E-002,  1.38888888888888968E-002,  -8.24074074074073876E-002, 1.38888888888888673E-002,  -5.27777777777777429E-002,

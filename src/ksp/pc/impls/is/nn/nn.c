@@ -11,11 +11,12 @@
 
    Application Interface Routine: PCSetUp()
 
-   Notes:
+   Note:
    The interface routine PCSetUp() is not usually called directly by
    the user, but instead is called by PCApply() if necessary.
 */
-static PetscErrorCode PCSetUp_NN(PC pc) {
+static PetscErrorCode PCSetUp_NN(PC pc)
+{
   PetscFunctionBegin;
   if (!pc->setupcalled) {
     /* Set up all the "iterative substructuring" common block */
@@ -39,7 +40,8 @@ static PetscErrorCode PCSetUp_NN(PC pc) {
 
    Application Interface Routine: PCApply()
  */
-static PetscErrorCode PCApply_NN(PC pc, Vec r, Vec z) {
+static PetscErrorCode PCApply_NN(PC pc, Vec r, Vec z)
+{
   PC_IS      *pcis  = (PC_IS *)(pc->data);
   PetscScalar m_one = -1.0;
   Vec         w     = pcis->vec1_global;
@@ -101,7 +103,8 @@ static PetscErrorCode PCApply_NN(PC pc, Vec r, Vec z) {
 
    Application Interface Routine: PCDestroy()
 */
-static PetscErrorCode PCDestroy_NN(PC pc) {
+static PetscErrorCode PCDestroy_NN(PC pc)
+{
   PC_NN *pcnn = (PC_NN *)pc->data;
 
   PetscFunctionBegin;
@@ -123,7 +126,6 @@ static PetscErrorCode PCDestroy_NN(PC pc) {
   PetscFunctionReturn(0);
 }
 
-/* -------------------------------------------------------------------------- */
 /*MC
    PCNN - Balancing Neumann-Neumann for scalar elliptic PDEs.
 
@@ -138,25 +140,27 @@ static PetscErrorCode PCDestroy_NN(PC pc) {
 .    -pc_is_not_damp_floating -
 -    -pc_is_not_remove_nullspace_floating -
 
+   Options Database prefixes for the subsolvers this preconditioner uses:
++  -nn_coarse_pc_ - for the coarse grid preconditioner
+.  -is_localD_pc_ - for the Dirichlet subproblem preconditioner
+-  -is_localN_pc_ - for the Neumann subproblem preconditioner
+
    Level: intermediate
 
    Notes:
-    The matrix used with this preconditioner must be of type MATIS
+    The matrix used with this preconditioner must be of type `MATIS`
 
           Unlike more 'conventional' Neumann-Neumann preconditioners this iterates over ALL the
           degrees of freedom, NOT just those on the interface (this allows the use of approximate solvers
           on the subdomains; though in our experience using approximate solvers is slower.).
 
-          Options for the coarse grid preconditioner can be set with -nn_coarse_pc_xxx
-          Options for the Dirichlet subproblem preconditioner can be set with -is_localD_pc_xxx
-          Options for the Neumann subproblem preconditioner can be set with -is_localN_pc_xxx
-
    Contributed by Paulo Goldfeld
 
-.seealso: `PCCreate()`, `PCSetType()`, `PCType`, `PC`, `MATIS`
+.seealso: `PCCreate()`, `PCSetType()`, `PCType`, `PC`, `MATIS`, `PCBDDC`
 M*/
 
-PETSC_EXTERN PetscErrorCode PCCreate_NN(PC pc) {
+PETSC_EXTERN PetscErrorCode PCCreate_NN(PC pc)
+{
   PC_NN *pcnn;
 
   PetscFunctionBegin;
@@ -164,7 +168,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_NN(PC pc) {
      Creates the private data structure for this preconditioner and
      attach it to the PC object.
   */
-  PetscCall(PetscNewLog(pc, &pcnn));
+  PetscCall(PetscNew(&pcnn));
   pc->data = (void *)pcnn;
 
   PetscCall(PCISCreate(pc));
@@ -192,11 +196,11 @@ PETSC_EXTERN PetscErrorCode PCCreate_NN(PC pc) {
   PetscFunctionReturn(0);
 }
 
-/* -------------------------------------------------------------------------- */
 /*
    PCNNCreateCoarseMatrix -
 */
-PetscErrorCode PCNNCreateCoarseMatrix(PC pc) {
+PetscErrorCode PCNNCreateCoarseMatrix(PC pc)
+{
   MPI_Request  *send_request, *recv_request;
   PetscInt      i, j, k;
   PetscScalar  *mat;    /* Sub-matrix with this subdomain's contribution to the coarse matrix             */
@@ -375,7 +379,6 @@ PetscErrorCode PCNNCreateCoarseMatrix(PC pc) {
   PetscFunctionReturn(0);
 }
 
-/* -------------------------------------------------------------------------- */
 /*
    PCNNApplySchurToChunk -
 
@@ -393,7 +396,8 @@ PetscErrorCode PCNNCreateCoarseMatrix(PC pc) {
 .  vec2_D  - garbage (used as work space)
 
 */
-PetscErrorCode PCNNApplySchurToChunk(PC pc, PetscInt n, PetscInt *idx, PetscScalar *chunk, PetscScalar *array_N, Vec vec1_B, Vec vec2_B, Vec vec1_D, Vec vec2_D) {
+PetscErrorCode PCNNApplySchurToChunk(PC pc, PetscInt n, PetscInt *idx, PetscScalar *chunk, PetscScalar *array_N, Vec vec1_B, Vec vec2_B, Vec vec1_D, Vec vec2_D)
+{
   PetscInt i;
   PC_IS   *pcis = (PC_IS *)(pc->data);
 
@@ -406,7 +410,6 @@ PetscErrorCode PCNNApplySchurToChunk(PC pc, PetscInt n, PetscInt *idx, PetscScal
   PetscFunctionReturn(0);
 }
 
-/* -------------------------------------------------------------------------- */
 /*
    PCNNApplyInterfacePreconditioner - Apply the interface preconditioner, i.e.,
                                       the preconditioner for the Schur complement.
@@ -428,7 +431,8 @@ PetscErrorCode PCNNApplySchurToChunk(PC pc, PetscInt n, PetscInt *idx, PetscScal
 .  vec2_N - vector of local nodes (interior and interface, including ghosts); returns garbage (used as work space)
 
 */
-PetscErrorCode PCNNApplyInterfacePreconditioner(PC pc, Vec r, Vec z, PetscScalar *work_N, Vec vec1_B, Vec vec2_B, Vec vec3_B, Vec vec1_D, Vec vec2_D, Vec vec1_N, Vec vec2_N) {
+PetscErrorCode PCNNApplyInterfacePreconditioner(PC pc, Vec r, Vec z, PetscScalar *work_N, Vec vec1_B, Vec vec2_B, Vec vec3_B, Vec vec1_D, Vec vec2_D, Vec vec1_N, Vec vec2_N)
+{
   PC_IS *pcis = (PC_IS *)(pc->data);
 
   PetscFunctionBegin;
@@ -473,7 +477,6 @@ PetscErrorCode PCNNApplyInterfacePreconditioner(PC pc, Vec r, Vec z, PetscScalar
   PetscFunctionReturn(0);
 }
 
-/* -------------------------------------------------------------------------- */
 /*
    PCNNBalancing - Computes z, as given in equations (15) and (16) (if the
                    input argument u is provided), or s, as given in equations
@@ -496,7 +499,8 @@ PetscErrorCode PCNNApplyInterfacePreconditioner(PC pc, Vec r, Vec z, PetscScalar
 .  work_N - Array of all local nodes (interior and interface). Workspace.
 
 */
-PetscErrorCode PCNNBalancing(PC pc, Vec r, Vec u, Vec z, Vec vec1_B, Vec vec2_B, Vec vec3_B, Vec vec1_D, Vec vec2_D, PetscScalar *work_N) {
+PetscErrorCode PCNNBalancing(PC pc, Vec r, Vec u, Vec z, Vec vec1_B, Vec vec2_B, Vec vec3_B, Vec vec1_D, Vec vec2_D, PetscScalar *work_N)
+{
   PetscInt     k;
   PetscScalar  value;
   PetscScalar *lambda;
@@ -558,16 +562,12 @@ PetscErrorCode PCNNBalancing(PC pc, Vec r, Vec u, Vec z, Vec vec1_B, Vec vec2_B,
   PetscFunctionReturn(0);
 }
 
-/*  -------   E N D   O F   T H E   C O D E   -------  */
 /*                                                     */
 /*  From now on, "footnotes" (or "historical notes").  */
 /*                                                     */
-/*  -------------------------------------------------  */
-
-/* --------------------------------------------------------------------------
-   Historical note 01
-   -------------------------------------------------------------------------- */
 /*
+   Historical note 01
+
    We considered the possibility of an alternative D_i that would still
    provide a partition of unity (i.e., $ \sum_i  N_i D_i N_i^T = I $).
    The basic principle was still the pseudo-inverse of the counting
@@ -580,10 +580,9 @@ PetscErrorCode PCNNBalancing(PC pc, Vec r, Vec u, Vec z, Vec vec1_B, Vec vec2_B,
    the balanced residual by zero.
 */
 
-/* --------------------------------------------------------------------------
-   Historical note 02
-   -------------------------------------------------------------------------- */
 /*
+   Historical note 02
+
    We tried an alternative coarse problem, that would eliminate exactly a
    constant error. Turned out not to improve the overall convergence.
 */

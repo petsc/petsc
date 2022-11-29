@@ -93,7 +93,8 @@ typedef struct {
   PetscBool includes_constraints;      /* Flag for if global section is to include constrained DoFs or not */
 } AppCtx;
 
-PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options) {
+PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
+{
   PetscFunctionBegin;
   options->fname[0]             = '\0';
   options->includes_constraints = PETSC_TRUE;
@@ -104,7 +105,8 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options) {
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   MPI_Comm    comm;
   PetscMPIInt size, rank, mycolor;
   AppCtx      user;
@@ -212,9 +214,15 @@ int main(int argc, char **argv) {
 
     PetscCall(PetscSectionCreate(comm, &section));
     switch (rank) {
-    case 0: chartSize = 4; break;
-    case 1: chartSize = 0; break;
-    case 2: chartSize = 1; break;
+    case 0:
+      chartSize = 4;
+      break;
+    case 1:
+      chartSize = 0;
+      break;
+    case 2:
+      chartSize = 1;
+      break;
     }
     PetscCall(PetscSectionSetChart(section, 0, chartSize));
     PetscCall(PetscViewerHDF5Open(comm, user.fname, FILE_MODE_READ, &viewer));

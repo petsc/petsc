@@ -3,7 +3,8 @@ static char help[] = "Solves a linear system in parallel with KSP. \n\
 Contributed by Jose E. Roman, SLEPc developer, for testing repeated call of KSPSetOperators(), 2014 \n\n";
 
 #include <petscksp.h>
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   Vec         x, b, u; /* approx solution, RHS, exact solution */
   Mat         A;       /* linear system matrix */
   KSP         ksp;     /* linear solver context */
@@ -115,9 +116,9 @@ int main(int argc, char **args) {
   PetscCall(KSPGetPC(ksp, &pc));
   PetscCall(PCSetType(pc, PCCHOLESKY));
 #if defined(PETSC_HAVE_MUMPS)
-#if defined(PETSC_USE_COMPLEX)
+  #if defined(PETSC_USE_COMPLEX)
   SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP, "Spectrum slicing with MUMPS is not available for complex scalars");
-#endif
+  #endif
   PetscCall(PCFactorSetMatSolverType(pc, MATSOLVERMUMPS));
   /*
      must use runtime option '-mat_mumps_icntl_13 1' (turn off ScaLAPACK for

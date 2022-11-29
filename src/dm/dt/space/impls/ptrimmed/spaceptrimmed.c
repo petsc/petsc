@@ -1,6 +1,7 @@
 #include <petsc/private/petscfeimpl.h> /*I "petscfe.h" I*/
 
-static PetscErrorCode PetscSpaceSetFromOptions_Ptrimmed(PetscSpace sp, PetscOptionItems *PetscOptionsObject) {
+static PetscErrorCode PetscSpaceSetFromOptions_Ptrimmed(PetscSpace sp, PetscOptionItems *PetscOptionsObject)
+{
   PetscSpace_Ptrimmed *pt = (PetscSpace_Ptrimmed *)sp->data;
 
   PetscFunctionBegin;
@@ -10,7 +11,8 @@ static PetscErrorCode PetscSpaceSetFromOptions_Ptrimmed(PetscSpace sp, PetscOpti
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscSpacePTrimmedView_Ascii(PetscSpace sp, PetscViewer v) {
+static PetscErrorCode PetscSpacePTrimmedView_Ascii(PetscSpace sp, PetscViewer v)
+{
   PetscSpace_Ptrimmed *pt = (PetscSpace_Ptrimmed *)sp->data;
   PetscInt             f, tdegree;
 
@@ -21,7 +23,8 @@ static PetscErrorCode PetscSpacePTrimmedView_Ascii(PetscSpace sp, PetscViewer v)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscSpaceView_Ptrimmed(PetscSpace sp, PetscViewer viewer) {
+static PetscErrorCode PetscSpaceView_Ptrimmed(PetscSpace sp, PetscViewer viewer)
+{
   PetscBool iascii;
 
   PetscFunctionBegin;
@@ -32,7 +35,8 @@ static PetscErrorCode PetscSpaceView_Ptrimmed(PetscSpace sp, PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscSpaceDestroy_Ptrimmed(PetscSpace sp) {
+static PetscErrorCode PetscSpaceDestroy_Ptrimmed(PetscSpace sp)
+{
   PetscSpace_Ptrimmed *pt = (PetscSpace_Ptrimmed *)sp->data;
 
   PetscFunctionBegin;
@@ -48,7 +52,8 @@ static PetscErrorCode PetscSpaceDestroy_Ptrimmed(PetscSpace sp) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscSpaceSetUp_Ptrimmed(PetscSpace sp) {
+static PetscErrorCode PetscSpaceSetUp_Ptrimmed(PetscSpace sp)
+{
   PetscSpace_Ptrimmed *pt = (PetscSpace_Ptrimmed *)sp->data;
   PetscInt             Nf;
 
@@ -108,7 +113,8 @@ static PetscErrorCode PetscSpaceSetUp_Ptrimmed(PetscSpace sp) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscSpaceGetDimension_Ptrimmed(PetscSpace sp, PetscInt *dim) {
+static PetscErrorCode PetscSpaceGetDimension_Ptrimmed(PetscSpace sp, PetscInt *dim)
+{
   PetscSpace_Ptrimmed *pt = (PetscSpace_Ptrimmed *)sp->data;
   PetscInt             f;
   PetscInt             Nf;
@@ -128,7 +134,8 @@ static PetscErrorCode PetscSpaceGetDimension_Ptrimmed(PetscSpace sp, PetscInt *d
 
   B[p][i][c] = B[p][i_scalar][c][c]
 */
-static PetscErrorCode PetscSpaceEvaluate_Ptrimmed(PetscSpace sp, PetscInt npoints, const PetscReal points[], PetscReal B[], PetscReal D[], PetscReal H[]) {
+static PetscErrorCode PetscSpaceEvaluate_Ptrimmed(PetscSpace sp, PetscInt npoints, const PetscReal points[], PetscReal B[], PetscReal D[], PetscReal H[])
+{
   PetscSpace_Ptrimmed *pt = (PetscSpace_Ptrimmed *)sp->data;
   DM                   dm = sp->dm;
   PetscInt             jet, degree, Nf, Ncopies, Njet;
@@ -236,14 +243,15 @@ static PetscErrorCode PetscSpaceEvaluate_Ptrimmed(PetscSpace sp, PetscInt npoint
 + sp         - the function space object
 - formDegree - the form degree
 
-  Options Database:
+  Options Database Key:
 . -petscspace_ptrimmed_form_degree <int> - The trimmed polynomial form degree
 
   Level: intermediate
 
-.seealso: `PetscDTAltV`, `PetscDTPTrimmedEvalJet()`, `PetscSpacePTrimmedGetFormDegree()`
+.seealso: `PetscSpace`, `PetscDTAltV`, `PetscDTPTrimmedEvalJet()`, `PetscSpacePTrimmedGetFormDegree()`
 @*/
-PetscErrorCode PetscSpacePTrimmedSetFormDegree(PetscSpace sp, PetscInt formDegree) {
+PetscErrorCode PetscSpacePTrimmedSetFormDegree(PetscSpace sp, PetscInt formDegree)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCSPACE_CLASSID, 1);
   PetscTryMethod(sp, "PetscSpacePTrimmedSetFormDegree_C", (PetscSpace, PetscInt), (sp, formDegree));
@@ -261,9 +269,10 @@ PetscErrorCode PetscSpacePTrimmedSetFormDegree(PetscSpace sp, PetscInt formDegre
 
   Level: intermediate
 
-.seealso: `PetscDTAltV`, `PetscDTPTrimmedEvalJet()`, `PetscSpacePTrimmedSetFormDegree()`
+.seealso: `PetscSpace`, `PetscDTAltV`, `PetscDTPTrimmedEvalJet()`, `PetscSpacePTrimmedSetFormDegree()`
 @*/
-PetscErrorCode PetscSpacePTrimmedGetFormDegree(PetscSpace sp, PetscInt *formDegree) {
+PetscErrorCode PetscSpacePTrimmedGetFormDegree(PetscSpace sp, PetscInt *formDegree)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCSPACE_CLASSID, 1);
   PetscValidIntPointer(formDegree, 2);
@@ -271,7 +280,8 @@ PetscErrorCode PetscSpacePTrimmedGetFormDegree(PetscSpace sp, PetscInt *formDegr
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscSpacePTrimmedSetFormDegree_Ptrimmed(PetscSpace sp, PetscInt formDegree) {
+static PetscErrorCode PetscSpacePTrimmedSetFormDegree_Ptrimmed(PetscSpace sp, PetscInt formDegree)
+{
   PetscSpace_Ptrimmed *pt = (PetscSpace_Ptrimmed *)sp->data;
 
   PetscFunctionBegin;
@@ -279,7 +289,8 @@ static PetscErrorCode PetscSpacePTrimmedSetFormDegree_Ptrimmed(PetscSpace sp, Pe
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscSpacePTrimmedGetFormDegree_Ptrimmed(PetscSpace sp, PetscInt *formDegree) {
+static PetscErrorCode PetscSpacePTrimmedGetFormDegree_Ptrimmed(PetscSpace sp, PetscInt *formDegree)
+{
   PetscSpace_Ptrimmed *pt = (PetscSpace_Ptrimmed *)sp->data;
 
   PetscFunctionBegin;
@@ -289,7 +300,8 @@ static PetscErrorCode PetscSpacePTrimmedGetFormDegree_Ptrimmed(PetscSpace sp, Pe
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscSpaceGetHeightSubspace_Ptrimmed(PetscSpace sp, PetscInt height, PetscSpace *subsp) {
+static PetscErrorCode PetscSpaceGetHeightSubspace_Ptrimmed(PetscSpace sp, PetscInt height, PetscSpace *subsp)
+{
   PetscSpace_Ptrimmed *pt = (PetscSpace_Ptrimmed *)sp->data;
   PetscInt             dim;
 
@@ -327,7 +339,8 @@ static PetscErrorCode PetscSpaceGetHeightSubspace_Ptrimmed(PetscSpace sp, PetscI
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscSpaceInitialize_Ptrimmed(PetscSpace sp) {
+static PetscErrorCode PetscSpaceInitialize_Ptrimmed(PetscSpace sp)
+{
   PetscFunctionBegin;
   PetscCall(PetscObjectComposeFunction((PetscObject)sp, "PetscSpacePTrimmedGetFormDegree_C", PetscSpacePTrimmedGetFormDegree_Ptrimmed));
   PetscCall(PetscObjectComposeFunction((PetscObject)sp, "PetscSpacePTrimmedSetFormDegree_C", PetscSpacePTrimmedSetFormDegree_Ptrimmed));
@@ -342,19 +355,20 @@ static PetscErrorCode PetscSpaceInitialize_Ptrimmed(PetscSpace sp) {
 }
 
 /*MC
-  PETSCSPACEPTRIMMED = "ptrimmed" - A PetscSpace object that encapsulates a trimmed polynomial space.
+  PETSCSPACEPTRIMMED = "ptrimmed" - A `PetscSpace` object that encapsulates a trimmed polynomial space.
 
   Level: intermediate
 
-.seealso: `PetscSpaceType`, `PetscSpaceCreate()`, `PetscSpaceSetType()`, `PetscDTPTrimmedEvalJet()`
+.seealso: `PetscSpace`, `PetscSpaceType`, `PetscSpaceCreate()`, `PetscSpaceSetType()`, `PetscDTPTrimmedEvalJet()`
 M*/
 
-PETSC_EXTERN PetscErrorCode PetscSpaceCreate_Ptrimmed(PetscSpace sp) {
+PETSC_EXTERN PetscErrorCode PetscSpaceCreate_Ptrimmed(PetscSpace sp)
+{
   PetscSpace_Ptrimmed *pt;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCSPACE_CLASSID, 1);
-  PetscCall(PetscNewLog(sp, &pt));
+  PetscCall(PetscNew(&pt));
   sp->data = pt;
 
   pt->subspaces = NULL;

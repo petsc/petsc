@@ -1,5 +1,5 @@
 #PETSc Option Table entries:
--Buzz 5
--Fizz 3
--FizzBuzz 15
+-Buzz 5 # (source: file)
+-Fizz 3 # (source: file)
+-FizzBuzz 15 # (source: file)
 #End of PETSc Option Table entries

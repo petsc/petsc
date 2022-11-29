@@ -7,7 +7,8 @@
       This is called once, usually automatically by KSPSolve() or KSPSetUp()
      but can be called directly by KSPSetUp()
 */
-static PetscErrorCode KSPSetUp_PIPECGRR(KSP ksp) {
+static PetscErrorCode KSPSetUp_PIPECGRR(KSP ksp)
+{
   PetscFunctionBegin;
   /* get work vectors needed by PIPECGRR */
   PetscCall(KSPSetWorkVecs(ksp, 9));
@@ -17,7 +18,8 @@ static PetscErrorCode KSPSetUp_PIPECGRR(KSP ksp) {
 /*
  KSPSolve_PIPECGRR - This routine actually applies the pipelined conjugate gradient method with automated residual replacement
 */
-static PetscErrorCode KSPSolve_PIPECGRR(KSP ksp) {
+static PetscErrorCode KSPSolve_PIPECGRR(KSP ksp)
+{
   PetscInt    i = 0, replace = 0, nsize;
   PetscScalar alpha = 0.0, beta = 0.0, gamma = 0.0, gammaold = 0.0, delta = 0.0, alphap = 0.0, betap = 0.0;
   PetscReal   dp = 0.0, nsi = 0.0, sqn = 0.0, Anorm = 0.0, rnp = 0.0, pnp = 0.0, snp = 0.0, unp = 0.0, wnp = 0.0, xnp = 0.0, qnp = 0.0, znp = 0.0, mnz = 5.0, tol = PETSC_SQRT_MACHINE_EPSILON, eps = PETSC_MACHINE_EPSILON;
@@ -85,7 +87,8 @@ static PetscErrorCode KSPSolve_PIPECGRR(KSP ksp) {
     PetscCall(KSP_MatMult(ksp, Amat, U, W));
     dp = 0.0;
     break;
-  default: SETERRQ(PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "%s", KSPNormTypes[ksp->normtype]);
+  default:
+    SETERRQ(PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "%s", KSPNormTypes[ksp->normtype]);
   }
   PetscCall(KSPLogResidualHistory(ksp, dp));
   PetscCall(KSPMonitor(ksp, 0, dp));
@@ -237,23 +240,23 @@ static PetscErrorCode KSPSolve_PIPECGRR(KSP ksp) {
 }
 
 /*MC
-   KSPPIPECGRR - Pipelined conjugate gradient method with automated residual replacements.
-
-   This method has only a single non-blocking reduction per iteration, compared to 2 blocking for standard CG.  The
-   non-blocking reduction is overlapped by the matrix-vector product and preconditioner application.
-
-   KSPPIPECGRR improves the robustness of KSPPIPECG by adding an automated residual replacement strategy.
-   True residual and other auxiliary variables are computed explicitly in a number of dynamically determined
-   iterations to counteract the accumulation of rounding errors and thus attain a higher maximal final accuracy.
-
-   See also KSPPIPECG, which is identical to KSPPIPECGRR without residual replacements.
-   See also KSPPIPECR, where the reduction is only overlapped with the matrix-vector product.
+   KSPPIPECGRR - Pipelined conjugate gradient method with automated residual replacements. [](sec_pipelineksp)
 
    Level: intermediate
 
    Notes:
+   This method has only a single non-blocking reduction per iteration, compared to 2 blocking for standard `KSPCG`.  The
+   non-blocking reduction is overlapped by the matrix-vector product and preconditioner application.
+
+   `KSPPIPECGRR` improves the robustness of `KSPPIPECG` by adding an automated residual replacement strategy.
+   True residual and other auxiliary variables are computed explicitly in a number of dynamically determined
+   iterations to counteract the accumulation of rounding errors and thus attain a higher maximal final accuracy.
+
+   See also `KSPPIPECG`, which is identical to `KSPPIPECGRR` without residual replacements.
+   See also `KSPPIPECR`, where the reduction is only overlapped with the matrix-vector product.
+
    MPI configuration may be necessary for reductions to make asynchronous progress, which is important for
-   performance of pipelined methods. See the FAQ on the PETSc website for details.
+   performance of pipelined methods. See [](doc_faq_pipelined)
 
    Contributed by:
    Siegfried Cools, Universiteit Antwerpen, Dept. Mathematics & Computer Science,
@@ -264,9 +267,10 @@ static PetscErrorCode KSPSolve_PIPECGRR(KSP ksp) {
    propagation on the maximal attainable accuracy of the pipelined Conjugate Gradients method",
    SIAM Journal on Matrix Analysis and Applications (SIMAX), 39(1):426--450, 2018.
 
-.seealso: `KSPCreate()`, `KSPSetType()`, `KSPPIPECR`, `KSPGROPPCG`, `KSPPIPECG`, `KSPPGMRES`, `KSPCG`, `KSPPIPEBCGS`, `KSPCGUseSingleReduction()`
+.seealso: [](chapter_ksp), [](doc_faq_pipelined), [](sec_pipelineksp), `KSPCreate()`, `KSPSetType()`, `KSPPIPECR`, `KSPGROPPCG`, `KSPPIPECG`, `KSPPGMRES`, `KSPCG`, `KSPPIPEBCGS`, `KSPCGUseSingleReduction()`
 M*/
-PETSC_EXTERN PetscErrorCode KSPCreate_PIPECGRR(KSP ksp) {
+PETSC_EXTERN PetscErrorCode KSPCreate_PIPECGRR(KSP ksp)
+{
   PetscFunctionBegin;
   PetscCall(KSPSetSupportedNorm(ksp, KSP_NORM_UNPRECONDITIONED, PC_LEFT, 2));
   PetscCall(KSPSetSupportedNorm(ksp, KSP_NORM_PRECONDITIONED, PC_LEFT, 2));

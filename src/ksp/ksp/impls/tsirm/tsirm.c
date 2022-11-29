@@ -8,7 +8,8 @@ typedef struct {
   Vec       Alpha, r;
 } KSP_TSIRM;
 
-static PetscErrorCode KSPSetUp_TSIRM(KSP ksp) {
+static PetscErrorCode KSPSetUp_TSIRM(KSP ksp)
+{
   KSP_TSIRM *tsirm = (KSP_TSIRM *)ksp->data;
 
   PetscFunctionBegin;
@@ -38,7 +39,8 @@ static PetscErrorCode KSPSetUp_TSIRM(KSP ksp) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode KSPSolve_TSIRM(KSP ksp) {
+PetscErrorCode KSPSolve_TSIRM(KSP ksp)
+{
   KSP_TSIRM   *tsirm = (KSP_TSIRM *)ksp->data;
   KSP          sub_ksp;
   PC           pc;
@@ -106,7 +108,6 @@ PetscErrorCode KSPSolve_TSIRM(KSP ksp) {
       }
 
       /* CGLS or LSQR method to minimize the residuals*/
-
       PetscCall(KSPCreate(PETSC_COMM_WORLD, &ksp_min));
       if (tsirm->cgls) {
         PetscCall(KSPSetType(ksp_min, KSPCGLS));
@@ -129,7 +130,8 @@ PetscErrorCode KSPSolve_TSIRM(KSP ksp) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode KSPSetFromOptions_TSIRM(KSP ksp, PetscOptionItems *PetscOptionsObject) {
+PetscErrorCode KSPSetFromOptions_TSIRM(KSP ksp, PetscOptionItems *PetscOptionsObject)
+{
   KSP_TSIRM *tsirm = (KSP_TSIRM *)ksp->data;
 
   PetscFunctionBegin;
@@ -142,7 +144,8 @@ PetscErrorCode KSPSetFromOptions_TSIRM(KSP ksp, PetscOptionItems *PetscOptionsOb
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode KSPDestroy_TSIRM(KSP ksp) {
+PetscErrorCode KSPDestroy_TSIRM(KSP ksp)
+{
   KSP_TSIRM *tsirm = (KSP_TSIRM *)ksp->data;
 
   PetscFunctionBegin;
@@ -169,31 +172,33 @@ PetscErrorCode KSPDestroy_TSIRM(KSP ksp) {
    Level: advanced
 
    Notes:
-    TSIRM is a new two-stage iteration method for solving large sparse linear systems of the form Ax=b. The main idea behind this new
+    `KSPTSIRM` is a two-stage iteration method for solving large sparse linear systems of the form Ax=b. The main idea behind this new
           method is the use a least-squares residual minimization to improve the convergence of Krylov based iterative methods, typically those of GMRES variants.
-          The principle of TSIRM algorithm  is to build an outer iteration over a Krylov method, called inner solver, and to frequently store the current residual
+          The principle of TSIRM algorithm  is to build an outer iteration over a Krylov method, called the inner solver, and to frequently store the current residual
           computed by the given Krylov method in a matrix of residuals S. After a few outer iterations, a least-squares minimization step is applied on the matrix
-          composed by the saved residuals, in order to compute a better solution and to make new iterations if required. The GMRES method , or any of its variants,
-          can potentially be used as inner solver. The minimization step consists in solving the least-squares problem min||b-ASa|| to find 'a' which minimizes the
-          residuals (b-AS). The minimization step is performed using two solvers of linear least-squares problems: CGLS  or LSQR. A new solution x with
+          composed by the saved residuals, in order to compute a better solution and to make new iterations if required.
+          The minimization step consists in solving the least-squares problem min||b-ASa|| to find 'a' which minimizes the
+          residuals (b-AS). The minimization step is performed using two solvers of linear least-squares problems: `KSPCGLS`  or `KSPLSQR`. A new solution x with
           a minimal residual is computed with x=Sa.
 
    References:
-.  * - R. Couturier, L. Ziane Khodja, and C. Guyeux. TSIRM: A Two-Stage Iteration with least-squares Residual Minimization algorithm to solve large sparse linear systems. In PDSEC 2015, 16th IEEE Int. Workshop on Parallel and Distributed Scientific and Engineering Computing (in conjunction with IPDPS 2015), Hyderabad, India, 2015.
+.  * - R. Couturier, L. Ziane Khodja, and C. Guyeux. TSIRM: A Two-Stage Iteration with least-squares Residual Minimization algorithm to solve large sparse linear systems.
+   In PDSEC 2015, 16th IEEE Int. Workshop on Parallel and Distributed Scientific and Engineering Computing (in conjunction with IPDPS 2015), Hyderabad, India, 2015.
 
-   Contributed by: Lilia Ziane Khodja
+   Contributed by:
+   Lilia Ziane Khodja
 
-.seealso: `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPFGMRES`, `KSPLGMRES`,
+.seealso: [](chapter_ksp), `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPFGMRES`, `KSPLGMRES`,
           `KSPGMRESSetRestart()`, `KSPGMRESSetHapTol()`, `KSPGMRESSetPreAllocateVectors()`, `KSPGMRESSetOrthogonalization()`, `KSPGMRESGetOrthogonalization()`,
           `KSPGMRESClassicalGramSchmidtOrthogonalization()`, `KSPGMRESModifiedGramSchmidtOrthogonalization()`,
           `KSPGMRESCGSRefinementType`, `KSPGMRESSetCGSRefinementType()`, `KSPGMRESGetCGSRefinementType()`, `KSPGMRESMonitorKrylov()`, `KSPSetPCSide()`
-
 M*/
-PETSC_EXTERN PetscErrorCode KSPCreate_TSIRM(KSP ksp) {
+PETSC_EXTERN PetscErrorCode KSPCreate_TSIRM(KSP ksp)
+{
   KSP_TSIRM *tsirm;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(ksp, &tsirm));
+  PetscCall(PetscNew(&tsirm));
   ksp->data = (void *)tsirm;
   PetscCall(KSPSetSupportedNorm(ksp, KSP_NORM_PRECONDITIONED, PC_LEFT, 2));
   PetscCall(KSPSetSupportedNorm(ksp, KSP_NORM_UNPRECONDITIONED, PC_RIGHT, 1));

@@ -15,6 +15,41 @@ iter =   1, Function value 1.50567, Residual: 0.00326476
 iter =   2, Function value 1.50566, Residual: 1.2998e-06 
 Tao Object: 1 MPI process
   type: bntl
+    Tao Object: (tao_bnk_cg_) 1 MPI process
+      type: bncg
+        CG Type: ssml_bfgs
+        Skipped Stepdirection Updates: 1
+        Scaled gradient steps: 0
+        Pure gradient steps: 0
+        Not a descent direction: 0
+        Line search fails: 0
+        Mat Object: (tao_bnk_cg_tao_bncg_) 1 MPI process
+          type: lmvmdiagbroyden
+          rows=48, cols=48
+            Scale history: 1
+            Scale params: alpha=1., beta=0.5, rho=1.
+            Convex factor: theta=0.
+            Max. storage: 1
+            Used storage: 1
+            Number of updates: 3
+            Number of rejects: 0
+            Number of resets: 2
+      TaoLineSearch Object: (tao_bnk_cg_) 1 MPI process
+        type: more-thuente
+        maximum function evaluations=30
+        tolerances: ftol=0.0001, rtol=1e-10, gtol=0.9
+        total number of function evaluations=0
+        total number of gradient evaluations=0
+        total number of function/gradient evaluations=1
+        using variable bounds
+        Termination reason: 1
+      Active Set subset type: subvec
+      convergence tolerances: gatol=1e-05,       steptol=0.,       gttol=0.
+      Residual in Function/Gradient:=0.00125295
+      Objective value=1.50566
+      total number of iterations=3,                              (max: 3)
+      total number of function/gradient evaluations=8,          (max: 4000)
+      Solver terminated: -2       Maximum Iterations
     Rejected BFGS updates: 0
     CG steps: 6
     Newton steps: 2

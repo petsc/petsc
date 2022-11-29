@@ -3,7 +3,8 @@
 #include <../src/mat/impls/dense/seq/dense.h>
 
 /* E + small_solve */
-static PetscErrorCode PCBDDCNullSpaceCorrPreSolve(KSP ksp, Vec y, Vec x, void *ctx) {
+static PetscErrorCode PCBDDCNullSpaceCorrPreSolve(KSP ksp, Vec y, Vec x, void *ctx)
+{
   NullSpaceCorrection_ctx corr_ctx = (NullSpaceCorrection_ctx)ctx;
   Mat                     K;
 
@@ -25,7 +26,8 @@ static PetscErrorCode PCBDDCNullSpaceCorrPreSolve(KSP ksp, Vec y, Vec x, void *c
 }
 
 /* E^t + small */
-static PetscErrorCode PCBDDCNullSpaceCorrPostSolve(KSP ksp, Vec y, Vec x, void *ctx) {
+static PetscErrorCode PCBDDCNullSpaceCorrPostSolve(KSP ksp, Vec y, Vec x, void *ctx)
+{
   NullSpaceCorrection_ctx corr_ctx = (NullSpaceCorrection_ctx)ctx;
   Mat                     K;
 
@@ -48,7 +50,8 @@ static PetscErrorCode PCBDDCNullSpaceCorrPostSolve(KSP ksp, Vec y, Vec x, void *
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCBDDCNullSpaceCorrDestroy(void *ctx) {
+static PetscErrorCode PCBDDCNullSpaceCorrDestroy(void *ctx)
+{
   NullSpaceCorrection_ctx corr_ctx = (NullSpaceCorrection_ctx)ctx;
 
   PetscFunctionBegin;
@@ -60,7 +63,8 @@ static PetscErrorCode PCBDDCNullSpaceCorrDestroy(void *ctx) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PCBDDCNullSpaceAssembleCorrection(PC pc, PetscBool isdir, PetscBool needscaling) {
+PetscErrorCode PCBDDCNullSpaceAssembleCorrection(PC pc, PetscBool isdir, PetscBool needscaling)
+{
   PC_BDDC                *pcbddc    = (PC_BDDC *)pc->data;
   MatNullSpace            NullSpace = NULL;
   KSP                     local_ksp;

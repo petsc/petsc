@@ -13,7 +13,8 @@ typedef struct {
   DMSlicedBlockFills *dfill, *ofill;
 } DM_Sliced;
 
-PetscErrorCode DMCreateMatrix_Sliced(DM dm, Mat *J) {
+PetscErrorCode DMCreateMatrix_Sliced(DM dm, Mat *J)
+{
   PetscInt              *globals, *sd_nnz, *so_nnz, rstart, bs, i;
   ISLocalToGlobalMapping lmap;
   void (*aij)(void) = NULL;
@@ -82,7 +83,8 @@ PetscErrorCode DMCreateMatrix_Sliced(DM dm, Mat *J) {
 .seealso `DMDestroy()`, `DMCreateGlobalVector()`
 
 @*/
-PetscErrorCode DMSlicedSetGhosts(DM dm, PetscInt bs, PetscInt nlocal, PetscInt Nghosts, const PetscInt ghosts[]) {
+PetscErrorCode DMSlicedSetGhosts(DM dm, PetscInt bs, PetscInt nlocal, PetscInt Nghosts, const PetscInt ghosts[])
+{
   DM_Sliced *slice = (DM_Sliced *)dm->data;
 
   PetscFunctionBegin;
@@ -124,7 +126,8 @@ PetscErrorCode DMSlicedSetGhosts(DM dm, PetscInt bs, PetscInt nlocal, PetscInt N
          `MatMPIBAIJSetPreallocation()`, `DMSlicedGetMatrix()`, `DMSlicedSetBlockFills()`
 
 @*/
-PetscErrorCode DMSlicedSetPreallocation(DM dm, PetscInt d_nz, const PetscInt d_nnz[], PetscInt o_nz, const PetscInt o_nnz[]) {
+PetscErrorCode DMSlicedSetPreallocation(DM dm, PetscInt d_nz, const PetscInt d_nnz[], PetscInt o_nz, const PetscInt o_nnz[])
+{
   DM_Sliced *slice = (DM_Sliced *)dm->data;
 
   PetscFunctionBegin;
@@ -136,7 +139,8 @@ PetscErrorCode DMSlicedSetPreallocation(DM dm, PetscInt d_nz, const PetscInt d_n
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMSlicedSetBlockFills_Private(PetscInt bs, const PetscInt *fill, DMSlicedBlockFills **inf) {
+static PetscErrorCode DMSlicedSetBlockFills_Private(PetscInt bs, const PetscInt *fill, DMSlicedBlockFills **inf)
+{
   PetscInt            i, j, nz, *fi, *fj;
   DMSlicedBlockFills *f;
 
@@ -180,7 +184,8 @@ static PetscErrorCode DMSlicedSetBlockFills_Private(PetscInt bs, const PetscInt 
 
 .seealso `DMSlicedGetMatrix()`, `DMDASetBlockFills()`
 @*/
-PetscErrorCode DMSlicedSetBlockFills(DM dm, const PetscInt *dfill, const PetscInt *ofill) {
+PetscErrorCode DMSlicedSetBlockFills(DM dm, const PetscInt *dfill, const PetscInt *ofill)
+{
   DM_Sliced *slice = (DM_Sliced *)dm->data;
 
   PetscFunctionBegin;
@@ -190,7 +195,8 @@ PetscErrorCode DMSlicedSetBlockFills(DM dm, const PetscInt *dfill, const PetscIn
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMDestroy_Sliced(DM dm) {
+static PetscErrorCode DMDestroy_Sliced(DM dm)
+{
   DM_Sliced *slice = (DM_Sliced *)dm->data;
 
   PetscFunctionBegin;
@@ -202,7 +208,8 @@ static PetscErrorCode DMDestroy_Sliced(DM dm) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMCreateGlobalVector_Sliced(DM dm, Vec *gvec) {
+static PetscErrorCode DMCreateGlobalVector_Sliced(DM dm, Vec *gvec)
+{
   DM_Sliced *slice = (DM_Sliced *)dm->data;
 
   PetscFunctionBegin;
@@ -214,7 +221,8 @@ static PetscErrorCode DMCreateGlobalVector_Sliced(DM dm, Vec *gvec) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMGlobalToLocalBegin_Sliced(DM da, Vec g, InsertMode mode, Vec l) {
+static PetscErrorCode DMGlobalToLocalBegin_Sliced(DM da, Vec g, InsertMode mode, Vec l)
+{
   PetscBool flg;
 
   PetscFunctionBegin;
@@ -225,7 +233,8 @@ static PetscErrorCode DMGlobalToLocalBegin_Sliced(DM da, Vec g, InsertMode mode,
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMGlobalToLocalEnd_Sliced(DM da, Vec g, InsertMode mode, Vec l) {
+static PetscErrorCode DMGlobalToLocalEnd_Sliced(DM da, Vec g, InsertMode mode, Vec l)
+{
   PetscBool flg;
 
   PetscFunctionBegin;
@@ -245,11 +254,12 @@ static PetscErrorCode DMGlobalToLocalEnd_Sliced(DM da, Vec g, InsertMode mode, V
 .seealso: `DMType`, `DMCOMPOSITE`, `DMCreateSliced()`, `DMCreate()`
 M*/
 
-PETSC_EXTERN PetscErrorCode DMCreate_Sliced(DM p) {
+PETSC_EXTERN PetscErrorCode DMCreate_Sliced(DM p)
+{
   DM_Sliced *slice;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(p, &slice));
+  PetscCall(PetscNew(&slice));
   p->data = slice;
 
   p->ops->createglobalvector = DMCreateGlobalVector_Sliced;
@@ -290,7 +300,8 @@ PETSC_EXTERN PetscErrorCode DMCreate_Sliced(DM p) {
          `VecGhostGetLocalForm()`, `VecGhostRestoreLocalForm()`
 
 @*/
-PetscErrorCode DMSlicedCreate(MPI_Comm comm, PetscInt bs, PetscInt nlocal, PetscInt Nghosts, const PetscInt ghosts[], const PetscInt d_nnz[], const PetscInt o_nnz[], DM *dm) {
+PetscErrorCode DMSlicedCreate(MPI_Comm comm, PetscInt bs, PetscInt nlocal, PetscInt Nghosts, const PetscInt ghosts[], const PetscInt d_nnz[], const PetscInt o_nnz[], DM *dm)
+{
   PetscFunctionBegin;
   PetscValidPointer(dm, 8);
   PetscCall(DMCreate(comm, dm));

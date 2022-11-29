@@ -1,6 +1,7 @@
 #include <petsc/private/tsimpl.h> /*I "petscts.h" I*/
 
-static PetscErrorCode TSAdaptChoose_None(TSAdapt adapt, TS ts, PetscReal h, PetscInt *next_sc, PetscReal *next_h, PetscBool *accept, PetscReal *wlte, PetscReal *wltea, PetscReal *wlter) {
+static PetscErrorCode TSAdaptChoose_None(TSAdapt adapt, TS ts, PetscReal h, PetscInt *next_sc, PetscReal *next_h, PetscBool *accept, PetscReal *wlte, PetscReal *wltea, PetscReal *wlter)
+{
   PetscFunctionBegin;
   *accept  = PETSC_TRUE;
   *next_sc = 0;  /* Reuse the same order scheme */
@@ -16,9 +17,10 @@ static PetscErrorCode TSAdaptChoose_None(TSAdapt adapt, TS ts, PetscReal h, Pets
 
    Level: intermediate
 
-.seealso: `TS`, `TSAdapt`, `TSAdaptChoose()`
+.seealso: [](chapter_ts), `TS`, `TSAdapt`, `TSAdaptChoose()`, `TSAdaptType`
 M*/
-PETSC_EXTERN PetscErrorCode TSAdaptCreate_None(TSAdapt adapt) {
+PETSC_EXTERN PetscErrorCode TSAdaptCreate_None(TSAdapt adapt)
+{
   PetscFunctionBegin;
   adapt->ops->choose = TSAdaptChoose_None;
   PetscFunctionReturn(0);

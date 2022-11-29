@@ -13,14 +13,16 @@ Input arguments are:\n\
      B = A - B
      norm = norm(B)
 */
-PetscErrorCode MatNormDifference(Mat A, Mat B, PetscReal *norm) {
+PetscErrorCode MatNormDifference(Mat A, Mat B, PetscReal *norm)
+{
   PetscFunctionBegin;
   PetscCall(MatAXPY(B, -1.0, A, DIFFERENT_NONZERO_PATTERN));
   PetscCall(MatNorm(B, NORM_FROBENIUS, norm));
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   Mat          A, A_save, B, AT, ATT, BT, BTT, P, R, C, C1;
   Vec          x, v1, v2, v3, v4;
   PetscViewer  viewer;

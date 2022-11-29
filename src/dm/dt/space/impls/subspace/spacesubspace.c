@@ -15,7 +15,8 @@ typedef struct {
   PetscInt       Nb;
 } PetscSpace_Subspace;
 
-static PetscErrorCode PetscSpaceDestroy_Subspace(PetscSpace sp) {
+static PetscErrorCode PetscSpaceDestroy_Subspace(PetscSpace sp)
+{
   PetscSpace_Subspace *subsp;
 
   PetscFunctionBegin;
@@ -37,7 +38,8 @@ static PetscErrorCode PetscSpaceDestroy_Subspace(PetscSpace sp) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscSpaceView_Subspace(PetscSpace sp, PetscViewer viewer) {
+static PetscErrorCode PetscSpaceView_Subspace(PetscSpace sp, PetscViewer viewer)
+{
   PetscBool            iascii;
   PetscSpace_Subspace *subsp;
 
@@ -86,7 +88,8 @@ static PetscErrorCode PetscSpaceView_Subspace(PetscSpace sp, PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscSpaceEvaluate_Subspace(PetscSpace sp, PetscInt npoints, const PetscReal points[], PetscReal B[], PetscReal D[], PetscReal H[]) {
+static PetscErrorCode PetscSpaceEvaluate_Subspace(PetscSpace sp, PetscInt npoints, const PetscReal points[], PetscReal B[], PetscReal D[], PetscReal H[])
+{
   PetscSpace_Subspace *subsp = (PetscSpace_Subspace *)sp->data;
   PetscSpace           origsp;
   PetscInt             origDim, subDim, origNc, subNc, subNb, origNb, i, j, k, l, m, n, o;
@@ -246,16 +249,18 @@ static PetscErrorCode PetscSpaceEvaluate_Subspace(PetscSpace sp, PetscInt npoint
   PetscFunctionReturn(0);
 }
 
-PETSC_EXTERN PetscErrorCode PetscSpaceCreate_Subspace(PetscSpace sp) {
+PETSC_EXTERN PetscErrorCode PetscSpaceCreate_Subspace(PetscSpace sp)
+{
   PetscSpace_Subspace *subsp;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(sp, &subsp));
+  PetscCall(PetscNew(&subsp));
   sp->data = (void *)subsp;
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscSpaceGetDimension_Subspace(PetscSpace sp, PetscInt *dim) {
+static PetscErrorCode PetscSpaceGetDimension_Subspace(PetscSpace sp, PetscInt *dim)
+{
   PetscSpace_Subspace *subsp;
 
   PetscFunctionBegin;
@@ -264,7 +269,8 @@ static PetscErrorCode PetscSpaceGetDimension_Subspace(PetscSpace sp, PetscInt *d
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscSpaceSetUp_Subspace(PetscSpace sp) {
+static PetscErrorCode PetscSpaceSetUp_Subspace(PetscSpace sp)
+{
   const PetscReal     *x;
   const PetscReal     *Jx;
   const PetscReal     *u;
@@ -373,7 +379,8 @@ static PetscErrorCode PetscSpaceSetUp_Subspace(PetscSpace sp) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscSpacePolynomialGetTensor_Subspace(PetscSpace sp, PetscBool *poly) {
+static PetscErrorCode PetscSpacePolynomialGetTensor_Subspace(PetscSpace sp, PetscBool *poly)
+{
   PetscSpace_Subspace *subsp = (PetscSpace_Subspace *)sp->data;
 
   PetscFunctionBegin;
@@ -405,7 +412,8 @@ static PetscErrorCode PetscSpacePolynomialGetTensor_Subspace(PetscSpace sp, Pets
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscSpaceInitialize_Subspace(PetscSpace sp) {
+static PetscErrorCode PetscSpaceInitialize_Subspace(PetscSpace sp)
+{
   PetscFunctionBegin;
   sp->ops->setup        = PetscSpaceSetUp_Subspace;
   sp->ops->view         = PetscSpaceView_Subspace;
@@ -416,7 +424,8 @@ static PetscErrorCode PetscSpaceInitialize_Subspace(PetscSpace sp) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscSpaceCreateSubspace(PetscSpace origSpace, PetscDualSpace dualSubspace, PetscReal *x, PetscReal *Jx, PetscReal *u, PetscReal *Ju, PetscCopyMode copymode, PetscSpace *subspace) {
+PetscErrorCode PetscSpaceCreateSubspace(PetscSpace origSpace, PetscDualSpace dualSubspace, PetscReal *x, PetscReal *Jx, PetscReal *u, PetscReal *Ju, PetscCopyMode copymode, PetscSpace *subspace)
+{
   PetscSpace_Subspace *subsp;
   PetscInt             origDim, subDim, origNc, subNc, subNb;
   PetscInt             order;
@@ -450,6 +459,7 @@ PetscErrorCode PetscSpaceCreateSubspace(PetscSpace origSpace, PetscDualSpace dua
     if (Jx) subsp->Jx_alloc = Jx;
     if (u) subsp->u_alloc = u;
     if (Ju) subsp->Ju_alloc = Ju;
+    /* fall through */
   case PETSC_USE_POINTER:
     if (x) subsp->x = x;
     if (Jx) subsp->Jx = Jx;
@@ -478,7 +488,8 @@ PetscErrorCode PetscSpaceCreateSubspace(PetscSpace origSpace, PetscDualSpace dua
       subsp->Ju = subsp->Ju_alloc;
     }
     break;
-  default: SETERRQ(PetscObjectComm((PetscObject)origSpace), PETSC_ERR_ARG_OUTOFRANGE, "Unknown copy mode");
+  default:
+    SETERRQ(PetscObjectComm((PetscObject)origSpace), PETSC_ERR_ARG_OUTOFRANGE, "Unknown copy mode");
   }
   PetscCall(PetscObjectReference((PetscObject)origSpace));
   subsp->origSpace = origSpace;

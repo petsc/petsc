@@ -8,7 +8,8 @@ struct complexscalelw : public thrust::unary_function<thrust::tuple<PetscReal, s
   PetscReal rl, rw;
   PetscReal il, iw;
 
-  complexscalelw(PetscScalar low, PetscScalar width) {
+  complexscalelw(PetscScalar low, PetscScalar width)
+  {
     rl = PetscRealPart(low);
     il = PetscImaginaryPart(low);
     rw = PetscRealPart(width);
@@ -27,7 +28,8 @@ struct realscalelw : public thrust::unary_function<PetscReal, PetscReal> {
   __host__ __device__ PetscReal operator()(PetscReal x) { return x * w + l; }
 };
 
-PETSC_INTERN PetscErrorCode PetscRandomCurandScale_Private(PetscRandom r, size_t n, PetscReal *val, PetscBool isneg) {
+PETSC_INTERN PetscErrorCode PetscRandomCurandScale_Private(PetscRandom r, size_t n, PetscReal *val, PetscBool isneg)
+{
   PetscFunctionBegin;
   if (!r->iset) PetscFunctionReturn(0);
   if (isneg) { /* complex case, need to scale differently */

@@ -22,7 +22,8 @@ extern PetscErrorCode FormFunction(TS, PetscReal, Vec, Vec, void *), FormInitial
 extern PetscErrorCode MyTSMonitor(TS, PetscInt, PetscReal, Vec, void *);
 extern PetscErrorCode MySNESMonitor(SNES, PetscInt, PetscReal, PetscViewerAndFormat *);
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   TS                    ts; /* time integrator */
   SNES                  snes;
   Vec                   x, r; /* solution, residual vectors */
@@ -121,7 +122,8 @@ int main(int argc, char **argv) {
    Output Parameter:
 .  F - function vector
  */
-PetscErrorCode FormFunction(TS ts, PetscReal ftime, Vec X, Vec F, void *ptr) {
+PetscErrorCode FormFunction(TS ts, PetscReal ftime, Vec X, Vec F, void *ptr)
+{
   DM          da;
   PetscInt    i, j, Mx, My, xs, ys, xm, ym;
   PetscReal   two = 2.0, hx, hy, sx, sy;
@@ -167,9 +169,9 @@ PetscErrorCode FormFunction(TS ts, PetscReal ftime, Vec X, Vec F, void *ptr) {
         f[j][i] = x[j][i];
         continue;
       }
-      u       = x[j][i];
-      uxx     = (two * u - x[j][i - 1] - x[j][i + 1]) * sx;
-      uyy     = (two * u - x[j - 1][i] - x[j + 1][i]) * sy;
+      u   = x[j][i];
+      uxx = (two * u - x[j][i - 1] - x[j][i + 1]) * sx;
+      uyy = (two * u - x[j - 1][i] - x[j + 1][i]) * sy;
       /*      f[j][i] = -(uxx + uyy); */
       f[j][i] = -u * (uxx + uyy) - (4.0 - 1.0) * ((x[j][i + 1] - x[j][i - 1]) * (x[j][i + 1] - x[j][i - 1]) * .25 * sx + (x[j + 1][i] - x[j - 1][i]) * (x[j + 1][i] - x[j - 1][i]) * .25 * sy);
     }
@@ -186,7 +188,8 @@ PetscErrorCode FormFunction(TS ts, PetscReal ftime, Vec X, Vec F, void *ptr) {
 }
 
 /* ------------------------------------------------------------------- */
-PetscErrorCode FormInitialSolution(DM da, Vec U) {
+PetscErrorCode FormInitialSolution(DM da, Vec U)
+{
   PetscInt      i, j, xs, ys, xm, ym, Mx, My;
   PetscScalar **u;
   PetscReal     hx, hy, x, y, r;
@@ -227,7 +230,8 @@ PetscErrorCode FormInitialSolution(DM da, Vec U) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MyTSMonitor(TS ts, PetscInt step, PetscReal ptime, Vec v, void *ctx) {
+PetscErrorCode MyTSMonitor(TS ts, PetscInt step, PetscReal ptime, Vec v, void *ctx)
+{
   PetscReal norm;
   MPI_Comm  comm;
 
@@ -248,7 +252,8 @@ PetscErrorCode MyTSMonitor(TS ts, PetscInt step, PetscReal ptime, Vec v, void *c
      ctx - optional user-defined context for private data for the
          monitor routine, as set by SNESMonitorSet()
  */
-PetscErrorCode MySNESMonitor(SNES snes, PetscInt its, PetscReal fnorm, PetscViewerAndFormat *vf) {
+PetscErrorCode MySNESMonitor(SNES snes, PetscInt its, PetscReal fnorm, PetscViewerAndFormat *vf)
+{
   PetscFunctionBeginUser;
   PetscCall(SNESMonitorDefaultShort(snes, its, fnorm, vf));
   PetscFunctionReturn(0);

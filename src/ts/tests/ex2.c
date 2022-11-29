@@ -27,7 +27,8 @@ extern PetscReal solx(PetscReal);
 extern PetscReal soly(PetscReal);
 extern PetscReal solz(PetscReal);
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscInt  time_steps = 100, steps;
   Vec       global;
   PetscReal dt, ftime;
@@ -88,7 +89,8 @@ int main(int argc, char **argv) {
   return 0;
 }
 
-PetscErrorCode MyMatMult(Mat S, Vec x, Vec y) {
+PetscErrorCode MyMatMult(Mat S, Vec x, Vec y)
+{
   const PetscScalar *inptr;
   PetscScalar       *outptr;
 
@@ -106,7 +108,8 @@ PetscErrorCode MyMatMult(Mat S, Vec x, Vec y) {
 }
 
 /* this test problem has initial values (1,1,1).                      */
-PetscErrorCode Initial(Vec global, void *ctx) {
+PetscErrorCode Initial(Vec global, void *ctx)
+{
   PetscScalar *localptr;
   PetscInt     i, mybase, myend, locsize;
 
@@ -124,7 +127,8 @@ PetscErrorCode Initial(Vec global, void *ctx) {
   return 0;
 }
 
-PetscErrorCode Monitor(TS ts, PetscInt step, PetscReal time, Vec global, void *ctx) {
+PetscErrorCode Monitor(TS ts, PetscInt step, PetscReal time, Vec global, void *ctx)
+{
   VecScatter         scatter;
   IS                 from, to;
   PetscInt           i, n, *idx;
@@ -160,7 +164,8 @@ PetscErrorCode Monitor(TS ts, PetscInt step, PetscReal time, Vec global, void *c
   return 0;
 }
 
-PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec globalin, Vec globalout, void *ctx) {
+PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec globalin, Vec globalout, void *ctx)
+{
   PetscScalar       *outptr;
   const PetscScalar *inptr;
   PetscInt           i, n, *idx;
@@ -214,7 +219,8 @@ PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec globalin, Vec globalout, void
   return 0;
 }
 
-PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec x, Mat A, Mat BB, void *ctx) {
+PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec x, Mat A, Mat BB, void *ctx)
+{
   PetscScalar        v[3];
   const PetscScalar *tmp;
   PetscInt           idx[3], i;
@@ -257,15 +263,18 @@ PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec x, Mat A, Mat BB, void *ctx) 
 /*
       The exact solutions
 */
-PetscReal solx(PetscReal t) {
+PetscReal solx(PetscReal t)
+{
   return PetscExpReal((2.0 - PetscSqrtReal(2.0)) * t) / 2.0 - PetscExpReal((2.0 - PetscSqrtReal(2.0)) * t) / (2.0 * PetscSqrtReal(2.0)) + PetscExpReal((2.0 + PetscSqrtReal(2.0)) * t) / 2.0 + PetscExpReal((2.0 + PetscSqrtReal(2.0)) * t) / (2.0 * PetscSqrtReal(2.0));
 }
 
-PetscReal soly(PetscReal t) {
+PetscReal soly(PetscReal t)
+{
   return PetscExpReal((2.0 - PetscSqrtReal(2.0)) * t) / 2.0 - PetscExpReal((2.0 - PetscSqrtReal(2.0)) * t) / PetscSqrtReal(2.0) + PetscExpReal((2.0 + PetscSqrtReal(2.0)) * t) / 2.0 + PetscExpReal((2.0 + PetscSqrtReal(2.0)) * t) / PetscSqrtReal(2.0);
 }
 
-PetscReal solz(PetscReal t) {
+PetscReal solz(PetscReal t)
+{
   return PetscExpReal((2.0 - PetscSqrtReal(2.0)) * t) / 2.0 - PetscExpReal((2.0 - PetscSqrtReal(2.0)) * t) / (2.0 * PetscSqrtReal(2.0)) + PetscExpReal((2.0 + PetscSqrtReal(2.0)) * t) / 2.0 + PetscExpReal((2.0 + PetscSqrtReal(2.0)) * t) / (2.0 * PetscSqrtReal(2.0));
 }
 

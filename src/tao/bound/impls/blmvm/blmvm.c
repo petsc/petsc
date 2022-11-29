@@ -3,7 +3,8 @@
 #include <../src/tao/bound/impls/blmvm/blmvm.h>
 
 /*------------------------------------------------------------*/
-static PetscErrorCode TaoSolve_BLMVM(Tao tao) {
+static PetscErrorCode TaoSolve_BLMVM(Tao tao)
+{
   TAO_BLMVM                   *blmP      = (TAO_BLMVM *)tao->data;
   TaoLineSearchConvergedReason ls_status = TAOLINESEARCH_CONTINUE_ITERATING;
   PetscReal                    f, fold, gdx, gnorm, gnorm2;
@@ -114,7 +115,8 @@ static PetscErrorCode TaoSolve_BLMVM(Tao tao) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TaoSetup_BLMVM(Tao tao) {
+static PetscErrorCode TaoSetup_BLMVM(Tao tao)
+{
   TAO_BLMVM *blmP = (TAO_BLMVM *)tao->data;
 
   PetscFunctionBegin;
@@ -133,7 +135,8 @@ static PetscErrorCode TaoSetup_BLMVM(Tao tao) {
 }
 
 /* ---------------------------------------------------------- */
-static PetscErrorCode TaoDestroy_BLMVM(Tao tao) {
+static PetscErrorCode TaoDestroy_BLMVM(Tao tao)
+{
   TAO_BLMVM *blmP = (TAO_BLMVM *)tao->data;
 
   PetscFunctionBegin;
@@ -149,7 +152,8 @@ static PetscErrorCode TaoDestroy_BLMVM(Tao tao) {
 }
 
 /*------------------------------------------------------------*/
-static PetscErrorCode TaoSetFromOptions_BLMVM(Tao tao, PetscOptionItems *PetscOptionsObject) {
+static PetscErrorCode TaoSetFromOptions_BLMVM(Tao tao, PetscOptionItems *PetscOptionsObject)
+{
   TAO_BLMVM *blmP = (TAO_BLMVM *)tao->data;
   PetscBool  is_spd, is_set;
 
@@ -166,7 +170,8 @@ static PetscErrorCode TaoSetFromOptions_BLMVM(Tao tao, PetscOptionItems *PetscOp
 }
 
 /*------------------------------------------------------------*/
-static PetscErrorCode TaoView_BLMVM(Tao tao, PetscViewer viewer) {
+static PetscErrorCode TaoView_BLMVM(Tao tao, PetscViewer viewer)
+{
   TAO_BLMVM *lmP = (TAO_BLMVM *)tao->data;
   PetscBool  isascii;
 
@@ -181,7 +186,8 @@ static PetscErrorCode TaoView_BLMVM(Tao tao, PetscViewer viewer) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TaoComputeDual_BLMVM(Tao tao, Vec DXL, Vec DXU) {
+static PetscErrorCode TaoComputeDual_BLMVM(Tao tao, Vec DXL, Vec DXU)
+{
   TAO_BLMVM *blm = (TAO_BLMVM *)tao->data;
 
   PetscFunctionBegin;
@@ -212,7 +218,8 @@ static PetscErrorCode TaoComputeDual_BLMVM(Tao tao, Vec DXL, Vec DXU) {
 
   Level: beginner
 M*/
-PETSC_EXTERN PetscErrorCode TaoCreate_BLMVM(Tao tao) {
+PETSC_EXTERN PetscErrorCode TaoCreate_BLMVM(Tao tao)
+{
   TAO_BLMVM  *blmP;
   const char *morethuente_type = TAOLINESEARCHMT;
 
@@ -224,7 +231,7 @@ PETSC_EXTERN PetscErrorCode TaoCreate_BLMVM(Tao tao) {
   tao->ops->destroy        = TaoDestroy_BLMVM;
   tao->ops->computedual    = TaoComputeDual_BLMVM;
 
-  PetscCall(PetscNewLog(tao, &blmP));
+  PetscCall(PetscNew(&blmP));
   blmP->H0      = NULL;
   blmP->recycle = PETSC_FALSE;
   tao->data     = (void *)blmP;
@@ -254,7 +261,8 @@ PETSC_EXTERN PetscErrorCode TaoCreate_BLMVM(Tao tao) {
 
   Level: intermediate
 @*/
-PetscErrorCode TaoLMVMRecycle(Tao tao, PetscBool flg) {
+PetscErrorCode TaoLMVMRecycle(Tao tao, PetscBool flg)
+{
   TAO_LMVM  *lmP;
   TAO_BLMVM *blmP;
   PetscBool  is_lmvm, is_blmvm;
@@ -283,7 +291,8 @@ PetscErrorCode TaoLMVMRecycle(Tao tao, PetscBool flg) {
 
 .seealso: `TaoLMVMGetH0()`, `TaoLMVMGetH0KSP()`
 @*/
-PetscErrorCode TaoLMVMSetH0(Tao tao, Mat H0) {
+PetscErrorCode TaoLMVMSetH0(Tao tao, Mat H0)
+{
   TAO_LMVM  *lmP;
   TAO_BLMVM *blmP;
   PetscBool  is_lmvm, is_blmvm;
@@ -316,7 +325,8 @@ PetscErrorCode TaoLMVMSetH0(Tao tao, Mat H0) {
 
 .seealso: `TaoLMVMSetH0()`, `TaoLMVMGetH0KSP()`
 @*/
-PetscErrorCode TaoLMVMGetH0(Tao tao, Mat *H0) {
+PetscErrorCode TaoLMVMGetH0(Tao tao, Mat *H0)
+{
   TAO_LMVM  *lmP;
   TAO_BLMVM *blmP;
   PetscBool  is_lmvm, is_blmvm;
@@ -349,7 +359,8 @@ PetscErrorCode TaoLMVMGetH0(Tao tao, Mat *H0) {
 
 .seealso: `TaoLMVMGetH0()`, `TaoLMVMGetH0KSP()`
 @*/
-PetscErrorCode TaoLMVMGetH0KSP(Tao tao, KSP *ksp) {
+PetscErrorCode TaoLMVMGetH0KSP(Tao tao, KSP *ksp)
+{
   TAO_LMVM  *lmP;
   TAO_BLMVM *blmP;
   PetscBool  is_lmvm, is_blmvm;

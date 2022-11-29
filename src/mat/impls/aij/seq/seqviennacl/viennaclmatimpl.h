@@ -1,5 +1,5 @@
-#if !defined(__VIENNACLMATIMPL)
-#define __VIENNACLMATIMPL
+#ifndef PETSC_VIENNACLMATIMPL_H
+#define PETSC_VIENNACLMATIMPL_H
 
 #define PETSC_SKIP_IMMINTRIN_H_CUDAWORKAROUND 1
 #include <../src/mat/impls/aij/seq/aij.h> /*I "petscmat.h" I*/
@@ -23,4 +23,4 @@ struct Mat_SeqAIJViennaCL {
 
 PETSC_INTERN PetscErrorCode MatViennaCLCopyToGPU(Mat);
 PETSC_INTERN PetscErrorCode MatViennaCLCopyFromGPU(Mat, ViennaCLAIJMatrix *);
-#endif
+#endif // PETSC_VIENNACLMATIMPL_H

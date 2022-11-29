@@ -6,30 +6,33 @@
 #include <../src/mat/impls/aij/seq/aij.h>
 
 #if defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
-#define LU1FAC lu1fac_
-#define LU6SOL lu6sol_
-#define M1PAGE m1page_
-#define M5SETX m5setx_
-#define M6RDEL m6rdel_
+  #define LU1FAC lu1fac_
+  #define LU6SOL lu6sol_
+  #define M1PAGE m1page_
+  #define M5SETX m5setx_
+  #define M6RDEL m6rdel_
 #elif !defined(PETSC_HAVE_FORTRAN_CAPS)
-#define LU1FAC lu1fac
-#define LU6SOL lu6sol
-#define M1PAGE m1page
-#define M5SETX m5setx
-#define M6RDEL m6rdel
+  #define LU1FAC lu1fac
+  #define LU6SOL lu6sol
+  #define M1PAGE m1page
+  #define M5SETX m5setx
+  #define M6RDEL m6rdel
 #endif
 
 /*
     Dummy symbols that the MINOS files mi25bfac.f and mi15blas.f may require
 */
-PETSC_EXTERN void M1PAGE() {
+PETSC_EXTERN void M1PAGE()
+{
   ;
 }
-PETSC_EXTERN void M5SETX() {
+PETSC_EXTERN void M5SETX()
+{
   ;
 }
 
-PETSC_EXTERN void M6RDEL() {
+PETSC_EXTERN void M6RDEL()
+{
   ;
 }
 
@@ -166,7 +169,8 @@ typedef struct {
 #define Factorization_Pivot_Tolerance pow(2.2204460492503131E-16, 2.0 / 3.0)
 #define Factorization_Small_Tolerance 1e-15 /* pow(DBL_EPSILON, 0.8) */
 
-PetscErrorCode MatDestroy_LUSOL(Mat A) {
+PetscErrorCode MatDestroy_LUSOL(Mat A)
+{
   Mat_LUSOL *lusol = (Mat_LUSOL *)A->spptr;
 
   PetscFunctionBegin;
@@ -190,7 +194,8 @@ PetscErrorCode MatDestroy_LUSOL(Mat A) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatSolve_LUSOL(Mat A, Vec b, Vec x) {
+PetscErrorCode MatSolve_LUSOL(Mat A, Vec b, Vec x)
+{
   Mat_LUSOL    *lusol = (Mat_LUSOL *)A->spptr;
   double       *xx;
   const double *bb;
@@ -215,7 +220,8 @@ PetscErrorCode MatSolve_LUSOL(Mat A, Vec b, Vec x) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatLUFactorNumeric_LUSOL(Mat F, Mat A, const MatFactorInfo *info) {
+PetscErrorCode MatLUFactorNumeric_LUSOL(Mat F, Mat A, const MatFactorInfo *info)
+{
   Mat_SeqAIJ *a;
   Mat_LUSOL  *lusol = (Mat_LUSOL *)F->spptr;
   int         m, n, nz, nnz, status;
@@ -279,17 +285,22 @@ PetscErrorCode MatLUFactorNumeric_LUSOL(Mat F, Mat A, const MatFactorInfo *info)
     LU1FAC(&m, &n, &nz, &nnz, lusol->luparm, lusol->parmlu, lusol->data, lusol->indc, lusol->indr, lusol->ip, lusol->iq, lusol->lenc, lusol->lenr, lusol->locc, lusol->locr, lusol->iploc, lusol->iqloc, lusol->ipinv, lusol->iqinv, lusol->mnsw, &status);
 
     switch (status) {
-    case 0: /* factored */ break;
+    case 0: /* factored */
+      break;
 
-    case 7: /* insufficient memory */ break;
+    case 7: /* insufficient memory */
+      break;
 
     case 1:
-    case -1: /* singular */ SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "Singular matrix");
+    case -1: /* singular */
+      SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "Singular matrix");
 
     case 3:
-    case 4: /* error conditions */ SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "matrix error");
+    case 4: /* error conditions */
+      SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "matrix error");
 
-    default: /* unknown condition */ SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "matrix unknown return code");
+    default: /* unknown condition */
+      SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "matrix unknown return code");
     }
 
     factorizations++;
@@ -300,7 +311,8 @@ PetscErrorCode MatLUFactorNumeric_LUSOL(Mat F, Mat A, const MatFactorInfo *info)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatLUFactorSymbolic_LUSOL(Mat F, Mat A, IS r, IS c, const MatFactorInfo *info) {
+PetscErrorCode MatLUFactorSymbolic_LUSOL(Mat F, Mat A, IS r, IS c, const MatFactorInfo *info)
+{
   /************************************************************************/
   /* Input                                                                */
   /*     A  - matrix to factor                                            */
@@ -381,13 +393,15 @@ PetscErrorCode MatLUFactorSymbolic_LUSOL(Mat F, Mat A, IS r, IS c, const MatFact
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatFactorGetSolverType_seqaij_lusol(Mat A, MatSolverType *type) {
+PetscErrorCode MatFactorGetSolverType_seqaij_lusol(Mat A, MatSolverType *type)
+{
   PetscFunctionBegin;
   *type = MATSOLVERLUSOL;
   PetscFunctionReturn(0);
 }
 
-PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_lusol(Mat A, MatFactorType ftype, Mat *F) {
+PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_lusol(Mat A, MatFactorType ftype, Mat *F)
+{
   Mat        B;
   Mat_LUSOL *lusol;
   int        m, n;
@@ -399,7 +413,7 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_lusol(Mat A, MatFactorType ftype
   PetscCall(MatSetType(B, ((PetscObject)A)->type_name));
   PetscCall(MatSeqAIJSetPreallocation(B, 0, NULL));
 
-  PetscCall(PetscNewLog(B, &lusol));
+  PetscCall(PetscNew(&lusol));
   B->spptr = lusol;
 
   B->trivialsymbolic       = PETSC_TRUE;
@@ -415,7 +429,8 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_lusol(Mat A, MatFactorType ftype
   PetscFunctionReturn(0);
 }
 
-PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_Lusol(void) {
+PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_Lusol(void)
+{
   PetscFunctionBegin;
   PetscCall(MatSolverTypeRegister(MATSOLVERLUSOL, MATSEQAIJ, MAT_FACTOR_LU, MatGetFactor_seqaij_lusol));
   PetscFunctionReturn(0);

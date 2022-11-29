@@ -71,7 +71,7 @@ class Configure(config.package.Package):
     self.addMakeMacro('PETSC4PY','yes')
     self.addMakeRule('petsc4pybuild','', \
                        ['@echo "*** Building petsc4py ***"',\
-                          '@${RM} -f ${PETSC_ARCH}/lib/petsc/conf/petsc4py.errorflg',\
+                          '@${RM} ${PETSC_ARCH}/lib/petsc/conf/petsc4py.errorflg',\
                           '@(cd '+self.packageDir+' && \\\n\
            '+newdir+archflags+self.python.pyexe+' setup.py build )  || \\\n\
              (echo "**************************ERROR*************************************" && \\\n\
@@ -118,7 +118,9 @@ class Configure(config.package.Package):
   def configureLibrary(self):
     if not self.sharedLibraries.useShared and not self.setCompilers.isCygwin(self.log):
         raise RuntimeError('petsc4py requires PETSc be built with shared libraries; rerun with --with-shared-libraries')
-    chkpkgs = ['cython','numpy']
+    chkpkgs = ['numpy']
+    if self.petscclone.isClone:
+      chkpkgs.append('cython')
     npkgs  = []
     for pkg in chkpkgs:
       if not getattr(self.python,pkg): npkgs.append(pkg)
@@ -126,6 +128,10 @@ class Configure(config.package.Package):
       raise RuntimeError('PETSc4py requires Python with "%s" module(s) installed!\n'
                          'Please install using package managers - for ex: "apt" or "dnf" (on linux),\n'
                          'or with "pip" using: %s -m pip install %s' % (" ".join(npkgs), self.python.pyexe, " ".join(npkgs)))
+
+    if self.petscclone.isClone and self.versionToTuple(self.python.pyver) >= (3,11) and self.versionToTuple(self.python.cyver) < (0,29,32):
+      raise RuntimeError('PETSc4py requires cython 2.29.32+ when building with python-3.11+\n'
+                         'Currently using '+self.python.pyexe+' version: '+self.python.pyver+', cython: '+self.python.cyver)
     self.getInstallDir()
 
   def alternateConfigureLibrary(self):

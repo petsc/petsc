@@ -6,14 +6,16 @@ PetscBool         TSRegisterAllCalled = PETSC_FALSE;
 /*@C
   TSSetType - Sets the method to be used as the timestepping solver.
 
-  Collective on TS
+  Collective on ts
 
   Input Parameters:
-+ ts   - The TS context
++ ts   - The `TS` context
 - type - A known method
 
-  Options Database Command:
+  Options Database Key:
 . -ts_type <type> - Sets the method; use -help for a list of available methods (for instance, euler)
+
+   Level: intermediate
 
    Notes:
    See "petsc/include/petscts.h" for available methods (for instance)
@@ -22,8 +24,8 @@ PetscBool         TSRegisterAllCalled = PETSC_FALSE;
 .  TSBEULER - Backward Euler
 -  TSPSEUDO - Pseudo-timestepping
 
-   Normally, it is best to use the TSSetFromOptions() command and
-   then set the TS type from the options database rather than by using
+   Normally, it is best to use the `TSSetFromOptions()` command and
+   then set the `TS` type from the options database rather than by using
    this routine.  Using the options database provides the user with
    maximum flexibility in evaluating the many different solvers.
    The TSSetType() routine is provided for those situations where it
@@ -34,12 +36,10 @@ PetscBool         TSRegisterAllCalled = PETSC_FALSE;
    choosing the appropriate method.  In other words, this routine is
    not for beginners.
 
-   Level: intermediate
-
-.seealso: `TS`, `TSSolve()`, `TSCreate()`, `TSSetFromOptions()`, `TSDestroy()`, `TSType`
-
+.seealso: [](chapter_ts), `TS`, `TSSolve()`, `TSCreate()`, `TSSetFromOptions()`, `TSDestroy()`, `TSType`
 @*/
-PetscErrorCode TSSetType(TS ts, TSType type) {
+PetscErrorCode TSSetType(TS ts, TSType type)
+{
   PetscErrorCode (*r)(TS);
   PetscBool match;
 
@@ -64,21 +64,22 @@ PetscErrorCode TSSetType(TS ts, TSType type) {
 }
 
 /*@C
-  TSGetType - Gets the TS method type (as a string).
+  TSGetType - Gets the `TS` method type (as a string).
 
   Not Collective
 
   Input Parameter:
-. ts - The TS
+. ts - The `TS`
 
   Output Parameter:
-. type - The name of TS method
+. type - The name of `TS` method
 
   Level: intermediate
 
-.seealso `TSSetType()`
+.seealso: [](chapter_ts), `TS`, `TSType`, `TSSetType()`
 @*/
-PetscErrorCode TSGetType(TS ts, TSType *type) {
+PetscErrorCode TSGetType(TS ts, TSType *type)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscValidPointer(type, 2);
@@ -89,7 +90,7 @@ PetscErrorCode TSGetType(TS ts, TSType *type) {
 /*--------------------------------------------------------------------------------------------------------------------*/
 
 /*@C
-  TSRegister - Adds a creation method to the TS package.
+  TSRegister - Adds a creation method to the `TS` package.
 
   Not Collective
 
@@ -97,8 +98,10 @@ PetscErrorCode TSGetType(TS ts, TSType *type) {
 + name        - The name of a new user-defined creation routine
 - create_func - The creation routine itself
 
+  Level: advanced
+
   Notes:
-  TSRegister() may be called multiple times to add several user-defined tses.
+  `TSRegister()` may be called multiple times to add several user-defined tses.
 
   Sample usage:
 .vb
@@ -116,11 +119,10 @@ PetscErrorCode TSGetType(TS ts, TSType *type) {
     -ts_type my_ts
 .ve
 
-  Level: advanced
-
-.seealso: `TSRegisterAll()`, `TSRegisterDestroy()`
+.seealso: [](chapter_ts), `TSSetType()`, `TSType`, `TSRegisterAll()`, `TSRegisterDestroy()`
 @*/
-PetscErrorCode TSRegister(const char sname[], PetscErrorCode (*function)(TS)) {
+PetscErrorCode TSRegister(const char sname[], PetscErrorCode (*function)(TS))
+{
   PetscFunctionBegin;
   PetscCall(TSInitializePackage());
   PetscCall(PetscFunctionListAdd(&TSList, sname, function));

@@ -1,6 +1,7 @@
 #ifndef PETSC4PY_CUSTOM_H
 #define PETSC4PY_CUSTOM_H
 
+#include "petsc/private/deviceimpl.h"
 #include "petsc/private/vecimpl.h"
 #include "petsc/private/matimpl.h"
 #include "petsc/private/kspimpl.h"
@@ -141,18 +142,6 @@ PetscLogEventFindName(PetscLogEvent eventid,
   }
   PetscFunctionReturn(0);
 }
-
-#if !defined(PETSC_USE_LOG)
-static PetscErrorCode
-PetscLogEventGetPerfInfo(int stage,PetscLogEvent event,PetscEventPerfInfo *info)
-{
-  PetscFunctionBegin;
-  PetscValidPointer(info,3);
-  (void)stage; (void)event; /* unused */
-  PetscCall(PetscMemzero(info,sizeof(PetscEventPerfInfo)));
-  PetscFunctionReturn(0);
-}
-#endif
 
 /* ---------------------------------------------------------------- */
 

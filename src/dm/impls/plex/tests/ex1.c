@@ -15,15 +15,16 @@ typedef struct {
   PetscLogEvent createMeshEvent;
   PetscLogStage stages[4];
   /* Domain and mesh definition */
-  PetscInt      dim;     /* The topological mesh dimension */
-  PetscInt      overlap; /* The cell overlap to use during partitioning */
-  PetscBool     testp4est[2];
-  PetscBool     redistribute;
-  PetscBool     final_ref;         /* Run refinement at the end */
-  PetscBool     final_diagnostics; /* Run diagnostics on the final mesh */
+  PetscInt  dim;     /* The topological mesh dimension */
+  PetscInt  overlap; /* The cell overlap to use during partitioning */
+  PetscBool testp4est[2];
+  PetscBool redistribute;
+  PetscBool final_ref;         /* Run refinement at the end */
+  PetscBool final_diagnostics; /* Run diagnostics on the final mesh */
 } AppCtx;
 
-PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options) {
+PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
+{
   PetscFunctionBegin;
   options->dim               = 2;
   options->overlap           = 0;
@@ -51,7 +52,8 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm) {
+PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
+{
   PetscInt    dim           = user->dim;
   PetscBool   testp4est_seq = user->testp4est[0];
   PetscBool   testp4est_par = user->testp4est[1];
@@ -228,7 +230,8 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm) {
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   DM     dm;
   AppCtx user;
 
@@ -314,15 +317,31 @@ int main(int argc, char **argv) {
 
   # Parallel extrusion tests
   test:
+    suffix: 1d_extruded
+    args: -dm_plex_dim 1 -dm_plex_box_faces 5 -dm_extrude 3 -dm_plex_check_all -dm_view draw
+
+  test:
+    # This test needs a non-tensor prism so we can make a coordinate space
     suffix: spheresurface_extruded
     nsize : 4
-    args: -dm_coord_space 0 -dm_plex_shape sphere -dm_extrude 3 -dist_dm_distribute -petscpartitioner_type simple \
+    args: -dm_plex_shape sphere -dm_extrude 3 -dm_plex_transform_extrude_use_tensor 0 \
+          -dist_dm_distribute -petscpartitioner_type simple \
           -dm_plex_check_all -dm_view ::ascii_info_detail -dm_plex_view_coord_system spherical
 
   test:
+    # This test needs a non-tensor prism so we can make a coordinate space
     suffix: spheresurface_extruded_symmetric
     nsize : 4
-    args: -dm_coord_space 0 -dm_plex_shape sphere -dm_extrude 3 -dm_plex_transform_extrude_symmetric -dist_dm_distribute -petscpartitioner_type simple \
+    args: -dm_plex_shape sphere -dm_extrude 3 -dm_plex_transform_extrude_use_tensor 0 -dm_plex_transform_extrude_symmetric \
+          -dist_dm_distribute -petscpartitioner_type simple \
+          -dm_plex_check_all -dm_view ::ascii_info_detail -dm_plex_view_coord_system spherical
+
+  test:
+    # Test with a tensor prism which cannot have a coordinate space
+    suffix: spheresurface_extruded_nocoord
+    nsize : 4
+    args: -dm_coord_space 0 -dm_plex_shape sphere -dm_extrude 3 \
+          -dist_dm_distribute -petscpartitioner_type simple \
           -dm_plex_check_all -dm_view ::ascii_info_detail -dm_plex_view_coord_system spherical
 
   # Parallel simple partitioner tests

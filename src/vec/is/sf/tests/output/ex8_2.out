@@ -23,30 +23,24 @@ Vec Object: y 1 MPI process
 16.
 18.
 Vec Object: x 3 MPI processes
-Process [0]
 0.
 2.
 4.
 6.
-Process [1]
 8.
 10.
 12.
-Process [2]
 14.
 16.
 18.
 Vec Object: x 3 MPI processes
-Process [0]
 0.
 4.
 8.
 12.
-Process [1]
 8.
 10.
 12.
-Process [2]
 14.
 16.
 18.
@@ -75,30 +69,24 @@ Vec Object: y 1 MPI process
 16.
 18.
 Vec Object: x 3 MPI processes
-Process [0]
 0.
 2.
 4.
 6.
-Process [1]
 8.
 10.
 12.
-Process [2]
 14.
 16.
 18.
 Vec Object: x 3 MPI processes
-Process [0]
 0.
 8.
 16.
 24.
-Process [1]
 32.
 40.
 48.
-Process [2]
 56.
 64.
 72.

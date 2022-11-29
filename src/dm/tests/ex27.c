@@ -10,7 +10,8 @@ static char help[] = "Test sequential USFFT interface on a uniform DMDA and comp
 #include <petscmat.h>
 #include <petscdm.h>
 #include <petscdmda.h>
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   typedef enum {
     RANDOM,
     CONSTANT,

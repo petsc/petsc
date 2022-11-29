@@ -56,10 +56,6 @@ cdef extern from * nogil:
 
     int PetscHasExternalPackage(const char[],PetscBool*)
 
-    int PetscDeviceInitialize(PetscDeviceType)
-    PetscBool PetscDeviceInitialized(PetscDeviceType)
-
-
 cdef extern from *:
     int (*PetscVFPrintf)(FILE*,const char[],va_list)
 

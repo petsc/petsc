@@ -1,7 +1,7 @@
 -include ../../petscdir.mk
 
 SOURCEH   =
-DIRS      = mpiuni f90-mod classes error dll fileio memory objects time utils logging tests tutorials info fsrc f90-src python ams totalview webclient yaml
+DIRS      = mpiuni f90-mod classes error dll fileio memory objects time utils logging tests tutorials info fsrc f90-src python ams totalview webclient yaml perfstubs
 LOCDIR    = src/sys/
 MANSEC    = Sys
 

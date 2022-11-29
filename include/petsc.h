@@ -5,9 +5,9 @@
 #include <petscbag.h>
 #include <petsctime.h>
 #include <petscbt.h>
-#include <petscctable.h>
 #include <petscmatlab.h>
 #include <petscdraw.h>
+#include <petscdevice.h>
 
 #include <petscsf.h>
 #include <petscsection.h>

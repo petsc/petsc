@@ -1,4 +1,3 @@
-
 /*
     Provides an implementation of the Unevenly Sampled FFT algorithm as a Mat.
     Testing examples can be found in ~/src/mat/tests FIX: should these be moved to dm/da/tests?
@@ -20,7 +19,8 @@ typedef struct {
   unsigned  p_flag; /* planner flags, FFTW_ESTIMATE,FFTW_MEASURE, FFTW_PATIENT, FFTW_EXHAUSTIVE */
 } Mat_USFFT;
 
-PetscErrorCode MatApply_USFFT_Private(Mat A, fftw_plan *plan, int direction, Vec x, Vec y) {
+PetscErrorCode MatApply_USFFT_Private(Mat A, fftw_plan *plan, int direction, Vec x, Vec y)
+{
 #if 0
   PetscScalar    *r_array, *y_array;
   Mat_USFFT* = (Mat_USFFT*)(A->data);
@@ -36,12 +36,12 @@ PetscErrorCode MatApply_USFFT_Private(Mat A, fftw_plan *plan, int direction, Vec
   PetscCall(VecGetArray(y,&y_array));
   if (!*plan) { /* create a plan then execute it*/
     if (usfft->dof == 1) {
-#if defined(PETSC_DEBUG_USFFT)
+  #if defined(PETSC_DEBUG_USFFT)
       PetscCall(PetscPrintf(PetscObjectComm((PetscObject)A), "direction = %d, usfft->ndim = %d\n", direction, usfft->ndim));
       for (int ii = 0; ii < usfft->ndim; ++ii) {
         PetscCall(PetscPrintf(PetscObjectComm((PetscObject)A), "usfft->outdim[%d] = %d\n", ii, usfft->outdim[ii]));
       }
-#endif
+  #endif
 
       switch (usfft->dim) {
       case 1:
@@ -127,7 +127,7 @@ PetscErrorCode MatDestroy_SeqUSFFT(Mat A)
   PetscCall(PetscFree(usfft));
   PetscCall(PetscObjectChangeTypeName((PetscObject)A,0));
   PetscFunctionReturn(0);
-} /* MatDestroy_SeqUSFFT() */
+}
 
 /*@C
       MatCreateSeqUSFFT - Creates a matrix object that provides sequential USFFT
@@ -136,16 +136,17 @@ PetscErrorCode MatDestroy_SeqUSFFT(Mat A)
    Collective
 
    Input Parameter:
-.   da - geometry of the domain encoded by a DMDA
+.   da - geometry of the domain encoded by a `DMDA`
 
    Output Parameter:
 .   A  - the matrix
 
-  Options Database Keys:
+  Options Database Key:
 . -mat_usfft_plannerflags - set the FFTW planner flags
 
    Level: intermediate
 
+.seealso: `Mat`, `Vec`, `DMDA`, `DM`
 @*/
 PetscErrorCode  MatCreateSeqUSFFT(Vec sampleCoords, DMDA freqDA, Mat *A)
 {
@@ -166,7 +167,7 @@ PetscErrorCode  MatCreateSeqUSFFT(Vec sampleCoords, DMDA freqDA, Mat *A)
   PetscCallMPI(MPI_Comm_size(comm, &size));
   PetscCheck(size <= 1,comm,PETSC_ERR_USER, "Parallel DMDA (out) not yet supported by USFFT");
   PetscCall(MatCreate(comm,A));
-  PetscCall(PetscNewLog(*A,&usfft));
+  PetscCall(PetscNew(&usfft));
   (*A)->data   = (void*)usfft;
   usfft->inda  = inda;
   usfft->outda = outda;
@@ -193,10 +194,10 @@ PetscErrorCode  MatCreateSeqUSFFT(Vec sampleCoords, DMDA freqDA, Mat *A)
   for (i = usfft->ndim; i > 0; --i) usfft->outdim[usfft->ndim-i] = dim[i-1];
 
   /* TODO: Use the new form of DMDACreate() */
-#if 0
+  #if 0
   PetscCall(DMDACreate(comm,usfft->dim, DMDA_NONPERIODIC, DMDA_STENCIL_STAR, usfft->freqSizes[0], usfft->freqSizes[1], usfft->freqSizes[2],
                        PETSC_DECIDE, PETSC_DECIDE, PETSC_DECIDE, dof, 0, NULL, NULL, NULL,  0, &(usfft->resampleDA)));
-#endif
+  #endif
   PetscCall(DMDAGetVec(usfft->resampleDA, usfft->resample));
 
   /* CONTINUE: Need to build the connectivity "Sieve" attaching sample points to the resample points they are close to */

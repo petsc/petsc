@@ -32,8 +32,10 @@ static PetscErrorCode Refine(DM, MPI_Comm, DM *);
 static PetscErrorCode Coarsen(DM, MPI_Comm, DM *);
 static PetscErrorCode CreateInterpolation(DM, DM, Mat *, Vec *);
 static PetscErrorCode CreateRestriction(DM, DM, Mat *);
+static PetscErrorCode Destroy(void *);
 
-static PetscErrorCode MyDMShellCreate(MPI_Comm comm, DM da, DM *shell) {
+static PetscErrorCode MyDMShellCreate(MPI_Comm comm, DM da, DM *shell)
+{
   PetscCall(DMShellCreate(comm, shell));
   PetscCall(DMShellSetContext(*shell, da));
   PetscCall(DMShellSetCreateMatrix(*shell, CreateMatrix));
@@ -43,10 +45,12 @@ static PetscErrorCode MyDMShellCreate(MPI_Comm comm, DM da, DM *shell) {
   PetscCall(DMShellSetCoarsen(*shell, Coarsen));
   PetscCall(DMShellSetCreateInterpolation(*shell, CreateInterpolation));
   PetscCall(DMShellSetCreateRestriction(*shell, CreateRestriction));
+  PetscCall(DMShellSetDestroyContext(*shell, Destroy));
   return 0;
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   KSP      ksp;
   DM       da, shell;
   PetscInt levels;
@@ -70,12 +74,18 @@ int main(int argc, char **argv) {
 
   PetscCall(KSPDestroy(&ksp));
   PetscCall(DMDestroy(&shell));
-  PetscCall(DMDestroy(&da));
   PetscCall(PetscFinalize());
   return 0;
 }
 
-static PetscErrorCode CreateMatrix(DM shell, Mat *A) {
+static PetscErrorCode Destroy(void *ctx)
+{
+  PetscCall(DMDestroy((DM *)&ctx));
+  return 0;
+}
+
+static PetscErrorCode CreateMatrix(DM shell, Mat *A)
+{
   DM da;
 
   PetscCall(DMShellGetContext(shell, &da));
@@ -83,7 +93,8 @@ static PetscErrorCode CreateMatrix(DM shell, Mat *A) {
   return 0;
 }
 
-static PetscErrorCode CreateInterpolation(DM dm1, DM dm2, Mat *mat, Vec *vec) {
+static PetscErrorCode CreateInterpolation(DM dm1, DM dm2, Mat *mat, Vec *vec)
+{
   DM da1, da2;
 
   PetscCall(DMShellGetContext(dm1, &da1));
@@ -92,7 +103,8 @@ static PetscErrorCode CreateInterpolation(DM dm1, DM dm2, Mat *mat, Vec *vec) {
   return 0;
 }
 
-static PetscErrorCode CreateRestriction(DM dm1, DM dm2, Mat *mat) {
+static PetscErrorCode CreateRestriction(DM dm1, DM dm2, Mat *mat)
+{
   DM  da1, da2;
   Mat tmat;
 
@@ -104,7 +116,8 @@ static PetscErrorCode CreateRestriction(DM dm1, DM dm2, Mat *mat) {
   return 0;
 }
 
-static PetscErrorCode CreateGlobalVector(DM shell, Vec *x) {
+static PetscErrorCode CreateGlobalVector(DM shell, Vec *x)
+{
   DM da;
 
   PetscCall(DMShellGetContext(shell, &da));
@@ -113,7 +126,8 @@ static PetscErrorCode CreateGlobalVector(DM shell, Vec *x) {
   return 0;
 }
 
-static PetscErrorCode CreateLocalVector(DM shell, Vec *x) {
+static PetscErrorCode CreateLocalVector(DM shell, Vec *x)
+{
   DM da;
 
   PetscCall(DMShellGetContext(shell, &da));
@@ -122,7 +136,8 @@ static PetscErrorCode CreateLocalVector(DM shell, Vec *x) {
   return 0;
 }
 
-static PetscErrorCode Refine(DM shell, MPI_Comm comm, DM *dmnew) {
+static PetscErrorCode Refine(DM shell, MPI_Comm comm, DM *dmnew)
+{
   DM da, dafine;
 
   PetscCall(DMShellGetContext(shell, &da));
@@ -131,18 +146,18 @@ static PetscErrorCode Refine(DM shell, MPI_Comm comm, DM *dmnew) {
   return 0;
 }
 
-static PetscErrorCode Coarsen(DM shell, MPI_Comm comm, DM *dmnew) {
+static PetscErrorCode Coarsen(DM shell, MPI_Comm comm, DM *dmnew)
+{
   DM da, dacoarse;
 
   PetscCall(DMShellGetContext(shell, &da));
   PetscCall(DMCoarsen(da, comm, &dacoarse));
   PetscCall(MyDMShellCreate(PetscObjectComm((PetscObject)shell), dacoarse, dmnew));
-  /* discard an "extra" reference count to dacoarse */
-  PetscCall(DMDestroy(&dacoarse));
   return 0;
 }
 
-static PetscErrorCode ComputeRHS(KSP ksp, Vec b, void *ctx) {
+static PetscErrorCode ComputeRHS(KSP ksp, Vec b, void *ctx)
+{
   PetscInt    mx, idx[2];
   PetscScalar h, v[2];
   DM          da, shell;
@@ -162,7 +177,8 @@ static PetscErrorCode ComputeRHS(KSP ksp, Vec b, void *ctx) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode ComputeMatrix(KSP ksp, Mat J, Mat jac, void *ctx) {
+static PetscErrorCode ComputeMatrix(KSP ksp, Mat J, Mat jac, void *ctx)
+{
   PetscInt    i, mx, xm, xs;
   PetscScalar v[3], h;
   MatStencil  row, col[3];

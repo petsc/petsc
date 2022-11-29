@@ -68,7 +68,7 @@ typedef PetscScalar JacField[9];
 PetscErrorCode FormFunctionLocal(DMDALocalInfo *, Field ***, Field ***, void *);
 PetscErrorCode FormJacobianLocal(DMDALocalInfo *, Field ***, Mat, Mat, void *);
 PetscErrorCode DisplayLine(SNES, Vec);
-PetscErrorCode FormElements();
+PetscErrorCode FormElements(void);
 
 typedef struct {
   PetscReal loading;
@@ -86,7 +86,8 @@ PetscErrorCode        FormRHS(DM, AppCtx *, Vec);
 PetscErrorCode        FormCoordinates(DM, AppCtx *);
 extern PetscErrorCode NonlinearGS(SNES, Vec, Vec, void *);
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   AppCtx    user; /* user-defined work context */
   PetscInt  mx, my, its;
   MPI_Comm  comm;
@@ -188,12 +189,14 @@ int main(int argc, char **argv) {
   return 0;
 }
 
-PetscInt OnBoundary(PetscInt i, PetscInt j, PetscInt k, PetscInt mx, PetscInt my, PetscInt mz) {
+PetscInt OnBoundary(PetscInt i, PetscInt j, PetscInt k, PetscInt mx, PetscInt my, PetscInt mz)
+{
   if ((i == 0 || i == mx - 1) && j == my - 1) return 1;
   return 0;
 }
 
-void BoundaryValue(PetscInt i, PetscInt j, PetscInt k, PetscInt mx, PetscInt my, PetscInt mz, PetscScalar *val, AppCtx *user) {
+void BoundaryValue(PetscInt i, PetscInt j, PetscInt k, PetscInt mx, PetscInt my, PetscInt mz, PetscScalar *val, AppCtx *user)
+{
   /* reference coordinates */
   PetscReal p_x = ((PetscReal)i) / (((PetscReal)(mx - 1)));
   PetscReal p_y = ((PetscReal)j) / (((PetscReal)(my - 1)));
@@ -206,7 +209,8 @@ void BoundaryValue(PetscInt i, PetscInt j, PetscInt k, PetscInt mx, PetscInt my,
   val[2]        = o_z - p_z;
 }
 
-void InvertTensor(PetscScalar *t, PetscScalar *ti, PetscReal *dett) {
+void InvertTensor(PetscScalar *t, PetscScalar *ti, PetscReal *dett)
+{
   const PetscScalar a   = t[0];
   const PetscScalar b   = t[1];
   const PetscScalar c   = t[2];
@@ -241,7 +245,8 @@ void InvertTensor(PetscScalar *t, PetscScalar *ti, PetscReal *dett) {
   if (dett) *dett = det;
 }
 
-void TensorTensor(PetscScalar *a, PetscScalar *b, PetscScalar *c) {
+void TensorTensor(PetscScalar *a, PetscScalar *b, PetscScalar *c)
+{
   PetscInt i, j, m;
   for (i = 0; i < 3; i++) {
     for (j = 0; j < 3; j++) {
@@ -251,7 +256,8 @@ void TensorTensor(PetscScalar *a, PetscScalar *b, PetscScalar *c) {
   }
 }
 
-void TensorTransposeTensor(PetscScalar *a, PetscScalar *b, PetscScalar *c) {
+void TensorTransposeTensor(PetscScalar *a, PetscScalar *b, PetscScalar *c)
+{
   PetscInt i, j, m;
   for (i = 0; i < 3; i++) {
     for (j = 0; j < 3; j++) {
@@ -261,13 +267,15 @@ void TensorTransposeTensor(PetscScalar *a, PetscScalar *b, PetscScalar *c) {
   }
 }
 
-void TensorVector(PetscScalar *rot, PetscScalar *vec, PetscScalar *tvec) {
+void TensorVector(PetscScalar *rot, PetscScalar *vec, PetscScalar *tvec)
+{
   tvec[0] = rot[0] * vec[0] + rot[1] * vec[1] + rot[2] * vec[2];
   tvec[1] = rot[3] * vec[0] + rot[4] * vec[1] + rot[5] * vec[2];
   tvec[2] = rot[6] * vec[0] + rot[7] * vec[1] + rot[8] * vec[2];
 }
 
-void DeformationGradient(Field *ex, PetscInt qi, PetscInt qj, PetscInt qk, PetscScalar *invJ, PetscScalar *F) {
+void DeformationGradient(Field *ex, PetscInt qi, PetscInt qj, PetscInt qk, PetscScalar *invJ, PetscScalar *F)
+{
   PetscInt ii, jj, kk, l;
   for (l = 0; l < 9; l++) F[l] = 0.;
   F[0] = 1.;
@@ -295,7 +303,8 @@ void DeformationGradient(Field *ex, PetscInt qi, PetscInt qj, PetscInt qk, Petsc
   }
 }
 
-void DeformationGradientJacobian(PetscInt qi, PetscInt qj, PetscInt qk, PetscInt ii, PetscInt jj, PetscInt kk, PetscInt fld, PetscScalar *invJ, PetscScalar *dF) {
+void DeformationGradientJacobian(PetscInt qi, PetscInt qj, PetscInt qk, PetscInt ii, PetscInt jj, PetscInt kk, PetscInt fld, PetscScalar *invJ, PetscScalar *dF)
+{
   PetscInt    l;
   PetscScalar lgrad[3];
   PetscInt    idx  = ii + jj * NB + kk * NB * NB;
@@ -308,7 +317,8 @@ void DeformationGradientJacobian(PetscInt qi, PetscInt qj, PetscInt qk, PetscInt
   dF[3 * fld + 2] = lgrad[2];
 }
 
-void LagrangeGreenStrain(PetscScalar *F, PetscScalar *E) {
+void LagrangeGreenStrain(PetscScalar *F, PetscScalar *E)
+{
   PetscInt i, j, m;
   for (i = 0; i < 3; i++) {
     for (j = 0; j < 3; j++) {
@@ -319,7 +329,8 @@ void LagrangeGreenStrain(PetscScalar *F, PetscScalar *E) {
   for (i = 0; i < 3; i++) E[i + 3 * i] -= 0.5;
 }
 
-void SaintVenantKirchoff(PetscReal lambda, PetscReal mu, PetscScalar *F, PetscScalar *S) {
+void SaintVenantKirchoff(PetscReal lambda, PetscReal mu, PetscScalar *F, PetscScalar *S)
+{
   PetscInt    i, j;
   PetscScalar E[9];
   PetscScalar trE = 0;
@@ -333,7 +344,8 @@ void SaintVenantKirchoff(PetscReal lambda, PetscReal mu, PetscScalar *F, PetscSc
   }
 }
 
-void SaintVenantKirchoffJacobian(PetscReal lambda, PetscReal mu, PetscScalar *F, PetscScalar *dF, PetscScalar *dS) {
+void SaintVenantKirchoffJacobian(PetscReal lambda, PetscReal mu, PetscScalar *F, PetscScalar *dF, PetscScalar *dS)
+{
   PetscScalar FtdF[9], dE[9];
   PetscInt    i, j;
   PetscScalar dtrE = 0.;
@@ -350,7 +362,8 @@ void SaintVenantKirchoffJacobian(PetscReal lambda, PetscReal mu, PetscScalar *F,
   }
 }
 
-PetscErrorCode FormElements() {
+PetscErrorCode FormElements()
+{
   PetscInt  i, j, k, ii, jj, kk;
   PetscReal bx, by, bz, dbx, dby, dbz;
 
@@ -395,7 +408,8 @@ PetscErrorCode FormElements() {
   PetscFunctionReturn(0);
 }
 
-void GatherElementData(PetscInt mx, PetscInt my, PetscInt mz, Field ***x, CoordField ***c, PetscInt i, PetscInt j, PetscInt k, Field *ex, CoordField *ec, AppCtx *user) {
+void GatherElementData(PetscInt mx, PetscInt my, PetscInt mz, Field ***x, CoordField ***c, PetscInt i, PetscInt j, PetscInt k, Field *ex, CoordField *ec, AppCtx *user)
+{
   PetscInt m;
   PetscInt ii, jj, kk;
   /* gather the data -- loop over element unknowns */
@@ -415,7 +429,8 @@ void GatherElementData(PetscInt mx, PetscInt my, PetscInt mz, Field ***x, CoordF
   }
 }
 
-void QuadraturePointGeometricJacobian(CoordField *ec, PetscInt qi, PetscInt qj, PetscInt qk, PetscScalar *J) {
+void QuadraturePointGeometricJacobian(CoordField *ec, PetscInt qi, PetscInt qj, PetscInt qk, PetscScalar *J)
+{
   PetscInt ii, jj, kk;
   /* construct the gradient at the given quadrature point named by i,j,k */
   for (ii = 0; ii < 9; ii++) J[ii] = 0;
@@ -438,7 +453,8 @@ void QuadraturePointGeometricJacobian(CoordField *ec, PetscInt qi, PetscInt qj, 
   }
 }
 
-void FormElementJacobian(Field *ex, CoordField *ec, Field *ef, PetscScalar *ej, AppCtx *user) {
+void FormElementJacobian(Field *ex, CoordField *ec, Field *ef, PetscScalar *ej, AppCtx *user)
+{
   PetscReal   vol;
   PetscScalar J[9];
   PetscScalar invJ[9];
@@ -518,7 +534,8 @@ void FormElementJacobian(Field *ex, CoordField *ec, Field *ef, PetscScalar *ej, 
   } /* end of quadrature points */
 }
 
-void FormPBJacobian(PetscInt i, PetscInt j, PetscInt k, Field *ex, CoordField *ec, Field *ef, PetscScalar *ej, AppCtx *user) {
+void FormPBJacobian(PetscInt i, PetscInt j, PetscInt k, Field *ex, CoordField *ec, Field *ef, PetscScalar *ej, AppCtx *user)
+{
   PetscReal   vol;
   PetscScalar J[9];
   PetscScalar invJ[9];
@@ -569,7 +586,8 @@ void FormPBJacobian(PetscInt i, PetscInt j, PetscInt k, Field *ex, CoordField *e
   }
 }
 
-void ApplyBCsElement(PetscInt mx, PetscInt my, PetscInt mz, PetscInt i, PetscInt j, PetscInt k, PetscScalar *jacobian) {
+void ApplyBCsElement(PetscInt mx, PetscInt my, PetscInt mz, PetscInt i, PetscInt j, PetscInt k, PetscScalar *jacobian)
+{
   PetscInt ii, jj, kk, ll, ei, ej, ek, el;
   for (kk = 0; kk < NB; kk++) {
     for (jj = 0; jj < NB; jj++) {
@@ -598,7 +616,8 @@ void ApplyBCsElement(PetscInt mx, PetscInt my, PetscInt mz, PetscInt i, PetscInt
   }
 }
 
-PetscErrorCode FormJacobianLocal(DMDALocalInfo *info, Field ***x, Mat jacpre, Mat jac, void *ptr) {
+PetscErrorCode FormJacobianLocal(DMDALocalInfo *info, Field ***x, Mat jacpre, Mat jac, void *ptr)
+{
   /* values for each basis function at each quadrature point */
   AppCtx     *user = (AppCtx *)ptr;
   PetscInt    i, j, k, m, l;
@@ -706,7 +725,8 @@ PetscErrorCode FormJacobianLocal(DMDALocalInfo *info, Field ***x, Mat jacpre, Ma
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode FormFunctionLocal(DMDALocalInfo *info, Field ***x, Field ***f, void *ptr) {
+PetscErrorCode FormFunctionLocal(DMDALocalInfo *info, Field ***x, Field ***f, void *ptr)
+{
   /* values for each basis function at each quadrature point */
   AppCtx  *user = (AppCtx *)ptr;
   PetscInt i, j, k, l;
@@ -779,7 +799,8 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info, Field ***x, Field ***f, vo
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode NonlinearGS(SNES snes, Vec X, Vec B, void *ptr) {
+PetscErrorCode NonlinearGS(SNES snes, Vec X, Vec B, void *ptr)
+{
   /* values for each basis function at each quadrature point */
   AppCtx       *user = (AppCtx *)ptr;
   PetscInt      i, j, k, l, m, n, s;
@@ -886,7 +907,8 @@ PetscErrorCode NonlinearGS(SNES snes, Vec X, Vec B, void *ptr) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode FormCoordinates(DM da, AppCtx *user) {
+PetscErrorCode FormCoordinates(DM da, AppCtx *user)
+{
   Vec           coords;
   DM            cda;
   PetscInt      mx, my, mz;
@@ -919,7 +941,8 @@ PetscErrorCode FormCoordinates(DM da, AppCtx *user) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode InitialGuess(DM da, AppCtx *user, Vec X) {
+PetscErrorCode InitialGuess(DM da, AppCtx *user, Vec X)
+{
   PetscInt i, j, k, xs, ys, zs, xm, ym, zm;
   PetscInt mx, my, mz;
   Field ***x;
@@ -949,7 +972,8 @@ PetscErrorCode InitialGuess(DM da, AppCtx *user, Vec X) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode FormRHS(DM da, AppCtx *user, Vec X) {
+PetscErrorCode FormRHS(DM da, AppCtx *user, Vec X)
+{
   PetscInt i, j, k, xs, ys, zs, xm, ym, zm;
   PetscInt mx, my, mz;
   Field ***x;
@@ -973,7 +997,8 @@ PetscErrorCode FormRHS(DM da, AppCtx *user, Vec X) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DisplayLine(SNES snes, Vec X) {
+PetscErrorCode DisplayLine(SNES snes, Vec X)
+{
   PetscInt      r, i, j = 0, k = 0, xs, xm, ys, ym, zs, zm, mx, my, mz;
   Field      ***x;
   CoordField ***c;

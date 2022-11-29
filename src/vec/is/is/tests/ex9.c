@@ -1,11 +1,12 @@
 
-static char help[] = "Test ISLocalToGlobalMappingCreateSF().\n\n";
+static char help[] = "Test ISLocalToGlobalMappingCreateSF(), PetscSFSetGraphLayout(), PetscSFGetGraphLayout().\n\n";
 
 #include <petscis.h>
 #include <petscsf.h>
 #include <petscviewer.h>
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   MPI_Comm               comm;
   PetscViewer            viewer;
   PetscViewerFormat      format;
@@ -56,6 +57,20 @@ int main(int argc, char **argv) {
       PetscCall(PetscObjectSetName((PetscObject)l2g1, "l2g1"));
       PetscCall(PetscSFView(sf, viewer));
       PetscCall(ISLocalToGlobalMappingView(l2g1, viewer));
+    }
+    /* Test PetscSFSetGraphLayout() / PetscSFGetGraphLayout() */
+    {
+      PetscLayout lt;
+      PetscInt   *ind;
+      PetscInt    nl;
+
+      PetscCall(PetscSFGetGraphLayout(sf, &lt, &nl, NULL, &ind));
+      PetscCall(PetscLayoutCompare(lt, rootLayout, &flg));
+      PetscCheck(flg, comm, PETSC_ERR_PLIB, "PetscSFGetGraphLayout() gives different layout than the one passed to PetscSFSetGraphLayout()");
+      for (i = 0; i < nl; i++)
+        PetscCheck(ind[i] == indices[i], PETSC_COMM_SELF, PETSC_ERR_PLIB, "PetscSFSetGraphLayout() gives global_roots[%" PetscInt_FMT "] = %" PetscInt_FMT " != %" PetscInt_FMT " = global_roots[%" PetscInt_FMT "] passed to PetscSFSetGraphLayout()", i, ind[i], indices[i], i);
+      PetscCall(PetscLayoutDestroy(&lt));
+      PetscCall(PetscFree(ind));
     }
     PetscCall(PetscLayoutDestroy(&rootLayout));
     PetscCall(PetscSFDestroy(&sf));

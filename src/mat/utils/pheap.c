@@ -24,7 +24,8 @@ struct _PetscHeap {
 
 #define B     1        /* log2(ARITY) */
 #define ARITY (1 << B) /* tree branching factor */
-static inline PetscInt Parent(PetscInt loc) {
+static inline PetscInt Parent(PetscInt loc)
+{
   PetscInt p = loc >> B;
   if (p < ARITY) return (PetscInt)(loc != 1); /* Parent(1) is 0, otherwise fix entries ending up in the hole */
   return p;
@@ -32,7 +33,8 @@ static inline PetscInt Parent(PetscInt loc) {
 #define Value(h, loc) ((h)->base[loc].value)
 #define Id(h, loc)    ((h)->base[loc].id)
 
-static inline void Swap(PetscHeap h, PetscInt loc, PetscInt loc2) {
+static inline void Swap(PetscHeap h, PetscInt loc, PetscInt loc2)
+{
   PetscInt id, val;
   id                  = Id(h, loc);
   val                 = Value(h, loc);
@@ -41,7 +43,8 @@ static inline void Swap(PetscHeap h, PetscInt loc, PetscInt loc2) {
   h->base[loc2].id    = id;
   h->base[loc2].value = val;
 }
-static inline PetscInt MinChild(PetscHeap h, PetscInt loc) {
+static inline PetscInt MinChild(PetscHeap h, PetscInt loc)
+{
   PetscInt min, chld, left, right;
   left  = loc << B;
   right = PetscMin(left + ARITY - 1, h->end - 1);
@@ -57,7 +60,8 @@ static inline PetscInt MinChild(PetscHeap h, PetscInt loc) {
   return chld;
 }
 
-PetscErrorCode PetscHeapCreate(PetscInt maxsize, PetscHeap *heap) {
+PetscErrorCode PetscHeapCreate(PetscInt maxsize, PetscHeap *heap)
+{
   PetscHeap h;
 
   PetscFunctionBegin;
@@ -73,7 +77,8 @@ PetscErrorCode PetscHeapCreate(PetscInt maxsize, PetscHeap *heap) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscHeapAdd(PetscHeap h, PetscInt id, PetscInt val) {
+PetscErrorCode PetscHeapAdd(PetscHeap h, PetscInt id, PetscInt val)
+{
   PetscInt loc, par;
 
   PetscFunctionBegin;
@@ -91,7 +96,8 @@ PetscErrorCode PetscHeapAdd(PetscHeap h, PetscInt id, PetscInt val) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscHeapPop(PetscHeap h, PetscInt *id, PetscInt *val) {
+PetscErrorCode PetscHeapPop(PetscHeap h, PetscInt *id, PetscInt *val)
+{
   PetscInt loc, chld;
 
   PetscFunctionBegin;
@@ -119,7 +125,8 @@ PetscErrorCode PetscHeapPop(PetscHeap h, PetscInt *id, PetscInt *val) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscHeapPeek(PetscHeap h, PetscInt *id, PetscInt *val) {
+PetscErrorCode PetscHeapPeek(PetscHeap h, PetscInt *id, PetscInt *val)
+{
   PetscFunctionBegin;
   if (h->end == 1) {
     *id  = h->base[0].id;
@@ -132,7 +139,8 @@ PetscErrorCode PetscHeapPeek(PetscHeap h, PetscInt *id, PetscInt *val) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscHeapStash(PetscHeap h, PetscInt id, PetscInt val) {
+PetscErrorCode PetscHeapStash(PetscHeap h, PetscInt id, PetscInt val)
+{
   PetscInt loc;
 
   PetscFunctionBegin;
@@ -142,7 +150,8 @@ PetscErrorCode PetscHeapStash(PetscHeap h, PetscInt id, PetscInt val) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscHeapUnstash(PetscHeap h) {
+PetscErrorCode PetscHeapUnstash(PetscHeap h)
+{
   PetscFunctionBegin;
   while (h->stash < h->alloc) {
     PetscInt id = Id(h, h->stash), value = Value(h, h->stash);
@@ -152,14 +161,16 @@ PetscErrorCode PetscHeapUnstash(PetscHeap h) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscHeapDestroy(PetscHeap *heap) {
+PetscErrorCode PetscHeapDestroy(PetscHeap *heap)
+{
   PetscFunctionBegin;
   PetscCall(PetscFree((*heap)->base));
   PetscCall(PetscFree(*heap));
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscHeapView(PetscHeap h, PetscViewer viewer) {
+PetscErrorCode PetscHeapView(PetscHeap h, PetscViewer viewer)
+{
   PetscBool iascii;
 
   PetscFunctionBegin;

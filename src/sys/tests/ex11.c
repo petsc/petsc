@@ -3,7 +3,8 @@ static char help[] = "Tests PetscSynchronizedPrintf() and PetscSynchronizedFPrin
 
 #include <petscsys.h>
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscMPIInt rank;
 
   PetscFunctionBeginUser;

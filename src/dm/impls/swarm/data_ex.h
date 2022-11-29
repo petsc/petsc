@@ -1,5 +1,5 @@
-#if !defined(DMSWARM_DATA_EXCHANGER_H__)
-#define DMSWARM_DATA_EXCHANGER_H__
+#ifndef PETSC_DMSWARM_DATA_EXCHANGER_H
+#define PETSC_DMSWARM_DATA_EXCHANGER_H
 
 #include <petscvec.h>
 #include <petscmat.h>
@@ -61,4 +61,4 @@ PETSC_INTERN PetscErrorCode DMSwarmDataExGetSendData(DMSwarmDataEx, PetscInt *, 
 PETSC_INTERN PetscErrorCode DMSwarmDataExGetRecvData(DMSwarmDataEx, PetscInt *, void **);
 PETSC_INTERN PetscErrorCode DMSwarmDataExTopologyGetNeighbours(DMSwarmDataEx, PetscMPIInt *, PetscMPIInt *[]);
 
-#endif
+#endif // PETSC_DMSWARM_DATA_EXCHANGER_H

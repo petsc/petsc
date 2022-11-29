@@ -5,8 +5,8 @@ class Configure(config.package.CMakePackage):
   def __init__(self, framework):
     config.package.CMakePackage.__init__(self, framework)
     self.versionname       = 'AMREX_GIT_VERSION'
-    self.gitcommit         = '09bf302d4' # 19.12 + fixes in branch:add-petsc
-    self.download          = ['git://https://github.com/petsc/amrex','https://github.com/petsc/amrex/archive/'+self.gitcommit+'.tar.gz']
+    self.gitcommit         = '22.10'
+    self.download          = ['git://https://github.com/AMReX-Codes/amrex.git']
     self.includes          = ['AMReX.H']
     self.liblist           = [['libamrex.a']]
     self.versioninclude    = 'AMReX_Config.H'
@@ -32,22 +32,42 @@ class Configure(config.package.CMakePackage):
     #  Src/Extern/PETSc/AMReX_PETSc.cpp:10:10: fatal error: 'AMReX_HypreABec_F.H' file not found
     self.hypre          = framework.require('config.packages.hypre',self)
     self.cuda           = framework.require('config.packages.cuda',self)
+    self.hip            = framework.require('config.packages.hip',self)
+    self.sycl           = framework.require('config.packages.sycl',self)
     self.openmp         = framework.require('config.packages.openmp',self)
-    self.odeps          = [self.mpi,self.blasLapack,self.cuda,self.openmp]
+    self.odeps          = [self.mpi,self.blasLapack,self.cuda,self.hip,self.sycl,self.openmp]
     self.deps           = [self.hypre,self.mpi,self.blasLapack]
     return
 
   def formCMakeConfigureArgs(self):
     args = config.package.CMakePackage.formCMakeConfigureArgs(self)
-    args.append('-DENABLE_EB=yes')
-    args.append('-DENABLE_LINEAR_SOLVERS=yes')
-    args.append('-DENABLE_PARTICLES=yes')
-    args.append('-DENABLE_PETSC=yes')
-    args.append('-DENABLE_HYPRE=yes')
+    args.append('-DAMReX_EB=YES')
+    args.append('-DAMReX_LINEAR_SOLVERS=YES')
+    args.append('-DAMReX_PARTICLES=YES')
+    args.append('-DAMReX_PETSC=YES')
+    args.append('-DAMReX_HYPRE=YES')
     if hasattr(self.compilers, 'FC'):
-      args.append('-DENABLE_FORTRAN_INTERFACES=yes')
+      args.append('-DAMReX_FORTRAN_INTERFACES=YES')
+
+    GPUBackend = ''
     if self.cuda.found:
-      args.append('-DENABLE_CUDA=yes')
+      GPUBackend = 'CUDA'
+      with self.Language('CUDA'):
+        petscNvcc = self.getCompiler()
+      args.append('-DCMAKE_CUDA_COMPILER="'+petscNvcc+'"')
+      if hasattr(self.setCompilers,'CUDA_CXX'): # CUDA_CXX is set in cuda.py and might be mpicxx. It's useful in compiling CUDA+MPI files in AMReX
+        args.append('-DCMAKE_CUDA_HOST_COMPILER="'+self.setCompilers.CUDA_CXX+'"')
+        # Prefer cmake options instead of -DAMReX_CUDA_ARCH
+        args.append('-DCMAKE_CUDA_ARCHITECTURES="'+self.cuda.cudaArch+'"')
+    elif self.hip.found:
+      GPUBackend = 'HIP'
+      args.append('-DCMAKE_HIP_ARCHITECTURES="'+self.hip.hipArch+'"')
+    elif self.sycl.found:
+      GPUBackend = 'SYCL'
+
+    if GPUBackend:
+      args.append('-DAMReX_GPU_BACKEND='+GPUBackend)
+
     if self.argDB['prefix'] and not 'package-prefix-hash' in self.argDB:
       args.append('-DPETSC_DIR='+os.path.abspath(os.path.expanduser(self.argDB['prefix'])))
       args.append('-DPETSC_ARCH=""')
@@ -122,7 +142,7 @@ class Configure(config.package.CMakePackage):
     self.addMakeMacro('AMREX','yes')
     self.addMakeRule('amrexbuild','', \
                        ['@echo "*** Building amrex ***"',\
-                          '@${RM} -f ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/amrex.errorflg',\
+                          '@${RM} ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/amrex.errorflg',\
                           '@cd '+os.path.join(self.packageDir,'petsc-build')+' && \\\n\
            '+carg+' '+self.cmake.cmake+' .. '+args+'  > ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/amrex.log 2>&1 &&'+\
            self.make.make_jnp+' '+self.makerulename+'  >> ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/amrex.log 2>&1  || \\\n\

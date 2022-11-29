@@ -19,7 +19,7 @@ class Configure(config.package.Package):
     #    (for ex:) /usr/lib64/libcuda.so (compile), libcuda.so.1 (runtime)
     # -	stub library - useable only for compiles
     # 	 (for ex:) /usr/local/cuda/lib64/stubs/libcuda.so  (without corresponding libcuda.so.1 for runtime)
-    # We are prefering this stub library - as it enables compiles on non-GPU nodes (for ex: login nodes).
+    # We are preferring this stub library - as it enables compiles on non-GPU nodes (for ex: login nodes).
     # Using RPATH to this stub location is not appropriate - so skipping via libraries.rpathSkipDirs()
     # Note: PETSc does not use CUDA driver API (as of Sep 29, 2021), but external package for ex: Kokkos does.
     #
@@ -350,6 +350,7 @@ to set the right generation for your hardware.')
       self.addDefine('HAVE_CUDA_VERSION_11PLUS','1')
 
     # determine the compiler used by nvcc
+    # '-ccbin mpicxx' might be in by self.setCompilers.CUDAFLAGS
     (out, err, ret) = Configure.executeShellCommand(petscNvcc + ' ' + self.setCompilers.CUDAFLAGS + ' --dryrun dummy.cu 2>&1 | grep D__CUDACC__ | head -1 | cut -f2 -d" "')
     if out:
       # MPI.py adds its include paths and libraries to these lists and saves them again
@@ -361,16 +362,19 @@ to set the right generation for your hardware.')
       self.logPrint('PETSc C++ compiler '+self.compilers.CXX)
 
       # TODO: How to handle MPI compiler wrapper as opposed to its underlying compiler
-      if out == self.compilers.CC or out == self.compilers.CXX:
+      if out == self.compilers.CXX:
         # nvcc will say it is using gcc as its compiler, it pass a flag when using to
         # treat it as a C++ compiler
-        newFlags = self.setCompilers.CPPFLAGS.split()+self.setCompilers.CFLAGS.split()+self.setCompilers.CXXPPFLAGS.split()+self.setCompilers.CXXFLAGS.split()
+        newFlags = self.setCompilers.CXXPPFLAGS.split()+self.setCompilers.CXXFLAGS.split()
         # need to remove the std flag from the list, nvcc will already have its own flag set
         # With IBM XL compilers, we also need to remove -+
-        self.setCompilers.CUDA_CXXFLAGS = ' '.join([flg for flg in newFlags if not flg.startswith(('-std=c++','-std=gnu++','-+'))])
+        # Remove -O since the optimization level is already set by CUDAC_FLAGS, otherwise Kokkos nvcc_wrapper will complain
+        #   "nvcc_wrapper - *warning* you have set multiple optimization flags (-O*), only the last
+        #    is used because nvcc can only accept a single optimization setting."
+        self.setCompilers.CUDA_CXXFLAGS = ' '.join([flg for flg in newFlags if not flg.startswith(('-std=c++','-std=gnu++','-+','-O'))])
       else:
         # only add any -I arguments since compiler arguments may not work
-        flags = self.setCompilers.CPPFLAGS.split(' ')+self.setCompilers.CFLAGS.split(' ')+self.setCompilers.CXXFLAGS.split(' ')
+        flags = self.setCompilers.CPPFLAGS.split(' ')+self.setCompilers.CXXFLAGS.split(' ')
         for i in flags:
           if i.startswith('-I'):
             self.setCompilers.CUDA_CXXFLAGS += ' '+i

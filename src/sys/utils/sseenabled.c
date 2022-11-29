@@ -3,10 +3,11 @@
 
 #if defined(PETSC_HAVE_SSE)
 
-#include PETSC_HAVE_SSE
-#define SSE_FEATURE_FLAG 0x2000000 /* Mask for bit 25 (from bit 0) */
+  #include PETSC_HAVE_SSE
+  #define SSE_FEATURE_FLAG 0x2000000 /* Mask for bit 25 (from bit 0) */
 
-PetscErrorCode PetscSSEHardwareTest(PetscBool *flag) {
+PetscErrorCode PetscSSEHardwareTest(PetscBool *flag)
+{
   char      vendor[13];
   char      Intel[13] = "GenuineIntel";
   char      AMD[13]   = "AuthenticAMD";
@@ -32,23 +33,25 @@ PetscErrorCode PetscSSEHardwareTest(PetscBool *flag) {
   }
 }
 
-#if defined(PETSC_HAVE_FORK)
-#include <signal.h>
-/*
+  #if defined(PETSC_HAVE_FORK)
+    #include <signal.h>
+    /*
    Early versions of the Linux kernel disables SSE hardware because
    it does not know how to preserve the SSE state at a context switch.
    To detect this feature, try an sse instruction in another process.
    If it works, great!  If not, an illegal instruction signal will be thrown,
    so catch it and return an error code.
 */
-#define PetscSSEOSEnabledTest(arg) PetscSSEOSEnabledTest_Linux(arg)
+    #define PetscSSEOSEnabledTest(arg) PetscSSEOSEnabledTest_Linux(arg)
 
-static void PetscSSEDisabledHandler(int sig) {
+static void PetscSSEDisabledHandler(int sig)
+{
   signal(SIGILL, SIG_IGN);
   exit(-1);
 }
 
-PetscErrorCode PetscSSEOSEnabledTest_Linux(PetscBool *flag) {
+PetscErrorCode PetscSSEOSEnabledTest_Linux(PetscBool *flag)
+{
   int status, pid = 0;
 
   PetscFunctionBegin;
@@ -65,15 +68,16 @@ PetscErrorCode PetscSSEOSEnabledTest_Linux(PetscBool *flag) {
   PetscFunctionReturn(0);
 }
 
-#else
-/*
+  #else
+    /*
    Windows 95/98/NT4 should have a Windows Update/Service Patch which enables this hardware.
    Windows ME/2000 doesn't disable SSE Hardware
 */
-#define PetscSSEOSEnabledTest(arg) PetscSSEOSEnabledTest_TRUE(arg)
-#endif
+    #define PetscSSEOSEnabledTest(arg) PetscSSEOSEnabledTest_TRUE(arg)
+  #endif
 
-PetscErrorCode PetscSSEOSEnabledTest_TRUE(PetscBool *flag) {
+PetscErrorCode PetscSSEOSEnabledTest_TRUE(PetscBool *flag)
+{
   PetscFunctionBegin;
   if (flag) *flag = PETSC_TRUE;
   PetscFunctionReturn(0);
@@ -81,10 +85,11 @@ PetscErrorCode PetscSSEOSEnabledTest_TRUE(PetscBool *flag) {
 
 #else /* Not defined PETSC_HAVE_SSE */
 
-#define PetscSSEHardwareTest(arg)  PetscSSEEnabledTest_FALSE(arg)
-#define PetscSSEOSEnabledTest(arg) PetscSSEEnabledTest_FALSE(arg)
+  #define PetscSSEHardwareTest(arg)  PetscSSEEnabledTest_FALSE(arg)
+  #define PetscSSEOSEnabledTest(arg) PetscSSEEnabledTest_FALSE(arg)
 
-PetscErrorCode PetscSSEEnabledTest_FALSE(PetscBool *flag) {
+PetscErrorCode PetscSSEEnabledTest_FALSE(PetscBool *flag)
+{
   PetscFunctionBegin;
   if (flag) *flag = PETSC_FALSE;
   PetscFunctionReturn(0);
@@ -118,35 +123,36 @@ static PetscBool petsc_sse_local_is_untested  = PETSC_TRUE;
 static PetscBool petsc_sse_enabled_local      = PETSC_FALSE;
 static PetscBool petsc_sse_global_is_untested = PETSC_TRUE;
 static PetscBool petsc_sse_enabled_global     = PETSC_FALSE;
-PetscErrorCode   PetscSSEIsEnabled(MPI_Comm comm, PetscBool *lflag, PetscBool *gflag) {
-    PetscBool disabled_option;
+PetscErrorCode   PetscSSEIsEnabled(MPI_Comm comm, PetscBool *lflag, PetscBool *gflag)
+{
+  PetscBool disabled_option;
 
-    PetscFunctionBegin;
-    if (petsc_sse_local_is_untested && petsc_sse_global_is_untested) {
-      disabled_option = PETSC_FALSE;
+  PetscFunctionBegin;
+  if (petsc_sse_local_is_untested && petsc_sse_global_is_untested) {
+    disabled_option = PETSC_FALSE;
 
-      PetscCall(PetscOptionsGetBool(NULL, NULL, "-disable_sse", &disabled_option, NULL));
-      if (disabled_option) {
-        petsc_sse_local_is_untested  = PETSC_FALSE;
-        petsc_sse_enabled_local      = PETSC_FALSE;
-        petsc_sse_global_is_untested = PETSC_FALSE;
-        petsc_sse_enabled_global     = PETSC_FALSE;
+    PetscCall(PetscOptionsGetBool(NULL, NULL, "-disable_sse", &disabled_option, NULL));
+    if (disabled_option) {
+      petsc_sse_local_is_untested  = PETSC_FALSE;
+      petsc_sse_enabled_local      = PETSC_FALSE;
+      petsc_sse_global_is_untested = PETSC_FALSE;
+      petsc_sse_enabled_global     = PETSC_FALSE;
     }
 
-      if (petsc_sse_local_is_untested) {
-        PetscCall(PetscSSEHardwareTest(&petsc_sse_enabled_local));
-        if (petsc_sse_enabled_local) { PetscCall(PetscSSEOSEnabledTest(&petsc_sse_enabled_local)); }
-        petsc_sse_local_is_untested = PETSC_FALSE;
+    if (petsc_sse_local_is_untested) {
+      PetscCall(PetscSSEHardwareTest(&petsc_sse_enabled_local));
+      if (petsc_sse_enabled_local) { PetscCall(PetscSSEOSEnabledTest(&petsc_sse_enabled_local)); }
+      petsc_sse_local_is_untested = PETSC_FALSE;
     }
 
-      if (gflag && petsc_sse_global_is_untested) {
-        PetscCall(MPIU_Allreduce(&petsc_sse_enabled_local, &petsc_sse_enabled_global, 1, MPIU_BOOL, MPI_LAND, comm));
+    if (gflag && petsc_sse_global_is_untested) {
+      PetscCall(MPIU_Allreduce(&petsc_sse_enabled_local, &petsc_sse_enabled_global, 1, MPIU_BOOL, MPI_LAND, comm));
 
-        petsc_sse_global_is_untested = PETSC_FALSE;
+      petsc_sse_global_is_untested = PETSC_FALSE;
     }
   }
 
-    if (lflag) *lflag = petsc_sse_enabled_local;
+  if (lflag) *lflag = petsc_sse_enabled_local;
   if (gflag) *gflag = petsc_sse_enabled_global;
   PetscFunctionReturn(0);
 }

@@ -2,7 +2,8 @@ static char help[] = "Element closure restrictions in tensor/lexicographic/spect
 
 #include <petscdmplex.h>
 
-static PetscErrorCode ViewOffsets(DM dm, Vec X) {
+static PetscErrorCode ViewOffsets(DM dm, Vec X)
+{
   PetscInt           num_elem, elem_size, num_comp, num_dof;
   PetscInt          *elem_restr_offsets;
   const PetscScalar *x = NULL;
@@ -24,7 +25,8 @@ static PetscErrorCode ViewOffsets(DM dm, Vec X) {
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   DM           dm;
   PetscSection section;
   PetscFE      fe;
@@ -71,6 +73,7 @@ int main(int argc, char **argv) {
     Vec      X;
     PetscInt cdim;
 
+    PetscCall(DMGetCoordinatesLocalSetUp(dm));
     PetscCall(DMGetCoordinateDim(dm, &cdim));
     PetscCall(DMGetCoordinateDM(dm, &cdm));
     PetscCall(PetscObjectSetName((PetscObject)cdm, "coords"));

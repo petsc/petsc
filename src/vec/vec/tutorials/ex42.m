@@ -1,18 +1,18 @@
 function ex42(np,opt)
 %
-%  ex41(np,opt) - receives a matrix and vector from Matlab via socket
-%  solves the linear system and returns the solution vector
+%  ex42(np,opt) - launches ./ex42 and runs a loop 1000 times sending and then receiving a one dimensional array via a Unix socket to it
 %
-% Run with option -on_error_attach_debugger to debug
+%  Run with option -on_error_attach_debugger to debug
 %
-%  Requires the Matlab mex routines in ${PETSC_DIR}/share/petsc/matlab and ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/matlab.
-%  Make sure that ${PETSC_DIR}/share/petsc/matlab and ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/matlab is in your MATLABPATH or
-%  $prefix/share/petsc/matlab and $prefix/lib/petsc/matlab if you ran ./configure with --prefix
+%  Requires PETSc be configured with --with-matlab
+%
+%  MATLABPATH must contain
+%     ${PETSC_DIR}/share/petsc/matlab and ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/matlab
 %
 if (nargin < 1)
   np = 1;
 end
-if (nargin < 2) 
+if (nargin < 2)
   opt = ' ';
 end
 launch('./ex42  ',np,opt);

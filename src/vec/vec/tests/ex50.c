@@ -1,7 +1,7 @@
 static char help[] = "Test if VecLoad_HDF5 can correctly handle FFTW vectors\n\n";
 
 /*
-  fftw vectors alloate their data array through fftw_malloc() and have their specialized VecDestroy().
+  fftw vectors allocate their data array through fftw_malloc() and have their specialized VecDestroy().
   When doing VecLoad on these vectors, we must take care of the v->array, v->array_allocated properly
   to avoid memory leaks and double-free.
 
@@ -11,7 +11,8 @@ static char help[] = "Test if VecLoad_HDF5 can correctly handle FFTW vectors\n\n
 #include <petscmat.h>
 #include <petscviewerhdf5.h>
 
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   PetscInt    i, low, high, ldim, iglobal;
   PetscInt    m = 64, dim[2] = {8, 8}, DIM = 2; /* FFT parameters */
   Vec         u, u_, H;                         /* wave, work and transfer function vectors */

@@ -5,7 +5,8 @@
 const char *const SNESNGMRESRestartTypes[] = {"NONE", "PERIODIC", "DIFFERENCE", "SNESNGMRESRestartType", "SNES_NGMRES_RESTART_", NULL};
 const char *const SNESNGMRESSelectTypes[]  = {"NONE", "DIFFERENCE", "LINESEARCH", "SNESNGMRESSelectType", "SNES_NGMRES_SELECT_", NULL};
 
-PetscErrorCode SNESReset_NGMRES(SNES snes) {
+PetscErrorCode SNESReset_NGMRES(SNES snes)
+{
   SNES_NGMRES *ngmres = (SNES_NGMRES *)snes->data;
 
   PetscFunctionBegin;
@@ -15,7 +16,8 @@ PetscErrorCode SNESReset_NGMRES(SNES snes) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode SNESDestroy_NGMRES(SNES snes) {
+PetscErrorCode SNESDestroy_NGMRES(SNES snes)
+{
   SNES_NGMRES *ngmres = (SNES_NGMRES *)snes->data;
 
   PetscFunctionBegin;
@@ -34,7 +36,8 @@ PetscErrorCode SNESDestroy_NGMRES(SNES snes) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode SNESSetUp_NGMRES(SNES snes) {
+PetscErrorCode SNESSetUp_NGMRES(SNES snes)
+{
   SNES_NGMRES *ngmres = (SNES_NGMRES *)snes->data;
   const char  *optionsprefix;
   PetscInt     msize, hsize;
@@ -87,7 +90,8 @@ PetscErrorCode SNESSetUp_NGMRES(SNES snes) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode SNESSetFromOptions_NGMRES(SNES snes, PetscOptionItems *PetscOptionsObject) {
+PetscErrorCode SNESSetFromOptions_NGMRES(SNES snes, PetscOptionItems *PetscOptionsObject)
+{
   SNES_NGMRES *ngmres = (SNES_NGMRES *)snes->data;
   PetscBool    debug  = PETSC_FALSE;
 
@@ -113,7 +117,8 @@ PetscErrorCode SNESSetFromOptions_NGMRES(SNES snes, PetscOptionItems *PetscOptio
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode SNESView_NGMRES(SNES snes, PetscViewer viewer) {
+PetscErrorCode SNESView_NGMRES(SNES snes, PetscViewer viewer)
+{
   SNES_NGMRES *ngmres = (SNES_NGMRES *)snes->data;
   PetscBool    iascii;
 
@@ -128,10 +133,11 @@ PetscErrorCode SNESView_NGMRES(SNES snes, PetscViewer viewer) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode SNESSolve_NGMRES(SNES snes) {
+PetscErrorCode SNESSolve_NGMRES(SNES snes)
+{
   SNES_NGMRES *ngmres = (SNES_NGMRES *)snes->data;
   /* present solution, residual, and preconditioned residual */
-  Vec          X, F, B, D, Y;
+  Vec X, F, B, D, Y;
 
   /* candidate linear combination answers */
   Vec XA, FA, XM, FM;
@@ -314,25 +320,25 @@ PetscErrorCode SNESSolve_NGMRES(SNES snes) {
 /*@
  SNESNGMRESSetRestartFmRise - Increase the restart count if the step x_M increases the residual F_M
 
-  Input Parameters:
-  +  snes - the SNES context.
-  -  flg  - boolean value deciding whether to use the option or not
+   Input Parameters:
++  snes - the `SNES` context.
+-  flg  - boolean value deciding whether to use the option or not, default is `PETSC_FALSE`
 
-  Options Database:
-  + -snes_ngmres_restart_fm_rise - Increase the restart count if the step x_M increases the residual F_M
+   Options Database Key:
+.   -snes_ngmres_restart_fm_rise - Increase the restart count if the step x_M increases the residual F_M
 
-  Level: intermediate
+   Level: intermediate
 
-  Notes:
-  If the proposed step x_M increases the residual F_M, it might be trying to get out of a stagnation area.
-  To help the solver do that, reset the Krylov subspace whenever F_M increases.
+   Notes:
+   If the proposed step x_M increases the residual F_M, it might be trying to get out of a stagnation area.
+   To help the solver do that, reset the Krylov subspace whenever F_M increases.
 
-  This option must be used with SNES_NGMRES_RESTART_DIFFERENCE
+   This option must be used with the `SNESNGMRES` `SNESNGMRESRestartType` of `SNES_NGMRES_RESTART_DIFFERENCE`
 
-  The default is FALSE.
-  .seealso: `SNES_NGMRES_RESTART_DIFFERENCE`
+.seealso: `SNES_NGMRES_RESTART_DIFFERENCE`, `SNESNGMRES`, `SNESNGMRESRestartType`, `SNESNGMRESSetRestartType()`
   @*/
-PetscErrorCode SNESNGMRESSetRestartFmRise(SNES snes, PetscBool flg) {
+PetscErrorCode SNESNGMRESSetRestartFmRise(SNES snes, PetscBool flg)
+{
   PetscErrorCode (*f)(SNES, PetscBool);
 
   PetscFunctionBegin;
@@ -341,7 +347,8 @@ PetscErrorCode SNESNGMRESSetRestartFmRise(SNES snes, PetscBool flg) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode SNESNGMRESSetRestartFmRise_NGMRES(SNES snes, PetscBool flg) {
+PetscErrorCode SNESNGMRESSetRestartFmRise_NGMRES(SNES snes, PetscBool flg)
+{
   SNES_NGMRES *ngmres = (SNES_NGMRES *)snes->data;
 
   PetscFunctionBegin;
@@ -349,7 +356,8 @@ PetscErrorCode SNESNGMRESSetRestartFmRise_NGMRES(SNES snes, PetscBool flg) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode SNESNGMRESGetRestartFmRise(SNES snes, PetscBool *flg) {
+PetscErrorCode SNESNGMRESGetRestartFmRise(SNES snes, PetscBool *flg)
+{
   PetscErrorCode (*f)(SNES, PetscBool *);
 
   PetscFunctionBegin;
@@ -358,7 +366,8 @@ PetscErrorCode SNESNGMRESGetRestartFmRise(SNES snes, PetscBool *flg) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode SNESNGMRESGetRestartFmRise_NGMRES(SNES snes, PetscBool *flg) {
+PetscErrorCode SNESNGMRESGetRestartFmRise_NGMRES(SNES snes, PetscBool *flg)
+{
   SNES_NGMRES *ngmres = (SNES_NGMRES *)snes->data;
 
   PetscFunctionBegin;
@@ -367,30 +376,29 @@ PetscErrorCode SNESNGMRESGetRestartFmRise_NGMRES(SNES snes, PetscBool *flg) {
 }
 
 /*@
-    SNESNGMRESSetRestartType - Sets the restart type for SNESNGMRES.
+    SNESNGMRESSetRestartType - Sets the restart type for `SNESNGMRES`.
 
-    Logically Collective on SNES
+    Logically Collective on snes
 
     Input Parameters:
 +   snes - the iterative context
 -   rtype - restart type
 
-    Options Database:
+    Options Databas Keys:
 +   -snes_ngmres_restart_type<difference,periodic,none> - set the restart type
 -   -snes_ngmres_restart[30] - sets the number of iterations before restart for periodic
 
+    `SNESNGMRESRestartType`s:
++   `SNES_NGMRES_RESTART_NONE` - never restart
+.   `SNES_NGMRES_RESTART_DIFFERENCE` - restart based upon difference criteria
+-   `SNES_NGMRES_RESTART_PERIODIC` - restart after a fixed number of iterations
+
     Level: intermediate
 
-    SNESNGMRESRestartTypes:
-+   SNES_NGMRES_RESTART_NONE - never restart
-.   SNES_NGMRES_RESTART_DIFFERENCE - restart based upon difference criteria
--   SNES_NGMRES_RESTART_PERIODIC - restart after a fixed number of iterations
-
-    Notes:
-    The default line search used is the L2 line search and it requires two additional function evaluations.
-
+.seealso: `SNES_NGMRES_RESTART_DIFFERENCE`, `SNESNGMRES`, `SNESNGMRESRestartType`, `SNESNGMRESSetRestartFmRise()`
 @*/
-PetscErrorCode SNESNGMRESSetRestartType(SNES snes, SNESNGMRESRestartType rtype) {
+PetscErrorCode SNESNGMRESSetRestartType(SNES snes, SNESNGMRESRestartType rtype)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
   PetscTryMethod(snes, "SNESNGMRESSetRestartType_C", (SNES, SNESNGMRESRestartType), (snes, rtype));
@@ -398,37 +406,40 @@ PetscErrorCode SNESNGMRESSetRestartType(SNES snes, SNESNGMRESRestartType rtype) 
 }
 
 /*@
-    SNESNGMRESSetSelectType - Sets the selection type for SNESNGMRES.  This determines how the candidate solution and
+    SNESNGMRESSetSelectType - Sets the selection type for `SNESNGMRES`.  This determines how the candidate solution and
     combined solution are used to create the next iterate.
 
-    Logically Collective on SNES
+    Logically Collective on snes
 
     Input Parameters:
 +   snes - the iterative context
 -   stype - selection type
 
-    Options Database:
+    Options Database Key:
 .   -snes_ngmres_select_type<difference,none,linesearch> - select type
 
     Level: intermediate
 
-    SNESNGMRESSelectTypes:
-+   SNES_NGMRES_SELECT_NONE - choose the combined solution all the time
-.   SNES_NGMRES_SELECT_DIFFERENCE - choose based upon the selection criteria
--   SNES_NGMRES_SELECT_LINESEARCH - choose based upon line search combination
+    `SNESNGMRESSelectType`s:
++   `SNES_NGMRES_SELECT_NONE` - choose the combined solution all the time
+.   `SNES_NGMRES_SELECT_DIFFERENCE` - choose based upon the selection criteria
+-   `SNES_NGMRES_SELECT_LINESEARCH` - choose based upon line search combination
 
-    Notes:
-    The default line search used is the L2 line search and it requires two additional function evaluations.
+    Note:
+    The default line search used is the `SNESLINESEARCHL2` line search and it requires two additional function evaluations.
 
+.seealso: `SNESNGMRESSelectType()`, `SNES_NGMRES_SELECT_NONE`, `SNES_NGMRES_SELECT_DIFFERENCE`, `SNES_NGMRES_SELECT_LINESEARCH`
 @*/
-PetscErrorCode SNESNGMRESSetSelectType(SNES snes, SNESNGMRESSelectType stype) {
+PetscErrorCode SNESNGMRESSetSelectType(SNES snes, SNESNGMRESSelectType stype)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
   PetscTryMethod(snes, "SNESNGMRESSetSelectType_C", (SNES, SNESNGMRESSelectType), (snes, stype));
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode SNESNGMRESSetSelectType_NGMRES(SNES snes, SNESNGMRESSelectType stype) {
+PetscErrorCode SNESNGMRESSetSelectType_NGMRES(SNES snes, SNESNGMRESSelectType stype)
+{
   SNES_NGMRES *ngmres = (SNES_NGMRES *)snes->data;
 
   PetscFunctionBegin;
@@ -436,7 +447,8 @@ PetscErrorCode SNESNGMRESSetSelectType_NGMRES(SNES snes, SNESNGMRESSelectType st
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode SNESNGMRESSetRestartType_NGMRES(SNES snes, SNESNGMRESRestartType rtype) {
+PetscErrorCode SNESNGMRESSetRestartType_NGMRES(SNES snes, SNESNGMRESRestartType rtype)
+{
   SNES_NGMRES *ngmres = (SNES_NGMRES *)snes->data;
 
   PetscFunctionBegin;
@@ -449,10 +461,10 @@ PetscErrorCode SNESNGMRESSetRestartType_NGMRES(SNES snes, SNESNGMRESRestartType 
 
    Level: beginner
 
-   Options Database:
+   Options Database Keys:
 +  -snes_ngmres_select_type<difference,none,linesearch> - choose the select between candidate and combined solution
 .  -snes_ngmres_restart_type<difference,none,periodic> - choose the restart conditions
-.  -snes_ngmres_candidate        - Use NGMRES variant which combines candidate solutions instead of actual solutions
+.  -snes_ngmres_candidate        - Use `SNESNGMRES` variant which combines candidate solutions instead of actual solutions
 .  -snes_ngmres_m                - Number of stored previous solutions and residuals
 .  -snes_ngmres_restart_it       - Number of iterations the restart conditions hold before restart
 .  -snes_ngmres_gammaA           - Residual tolerance for solution select between the candidate and combination
@@ -465,11 +477,10 @@ PetscErrorCode SNESNGMRESSetRestartType_NGMRES(SNES snes, SNESNGMRESRestartType 
 -  -additive_snes_linesearch_type - linesearch type used to select between the candidate and combined solution with additive select type
 
    Notes:
-
    The N-GMRES method combines m previous solutions into a minimum-residual solution by solving a small linearized
    optimization problem at each iteration.
 
-   Very similar to the SNESANDERSON algorithm.
+   Very similar to the `SNESANDERSON` algorithm.
 
    References:
 +  * - C. W. Oosterlee and T. Washio, "Krylov Subspace Acceleration of Nonlinear Multigrid with Application to Recirculating Flows",
@@ -477,10 +488,12 @@ PetscErrorCode SNESNGMRESSetRestartType_NGMRES(SNES snes, SNESNGMRESRestartType 
 -  * - Peter R. Brune, Matthew G. Knepley, Barry F. Smith, and Xuemin Tu, "Composing Scalable Nonlinear Algebraic Solvers",
    SIAM Review, 57(4), 2015
 
-.seealso: `SNESCreate()`, `SNES`, `SNESSetType()`, `SNESType`
+.seealso: `SNESCreate()`, `SNES`, `SNESSetType()`, `SNESType`, `SNESANDERSON`, `SNESNGMRESSetSelectType()`, `SNESNGMRESSetRestartType()`,
+          `SNESNGMRESSetRestartFmRise()`
 M*/
 
-PETSC_EXTERN PetscErrorCode SNESCreate_NGMRES(SNES snes) {
+PETSC_EXTERN PetscErrorCode SNESCreate_NGMRES(SNES snes)
+{
   SNES_NGMRES   *ngmres;
   SNESLineSearch linesearch;
 
@@ -498,7 +511,7 @@ PETSC_EXTERN PetscErrorCode SNESCreate_NGMRES(SNES snes) {
 
   snes->alwayscomputesfinalresidual = PETSC_TRUE;
 
-  PetscCall(PetscNewLog(snes, &ngmres));
+  PetscCall(PetscNew(&ngmres));
   snes->data    = (void *)ngmres;
   ngmres->msize = 30;
 

@@ -31,17 +31,20 @@ Examples:
 #include <petscdevice.h>
 
 #if defined(PETSC_HAVE_CUDA)
-#define SyncDevice() PetscCallCUDA(cudaDeviceSynchronize())
+  #include <petscdevice_cuda.h>
+  #define SyncDevice() PetscCallCUDA(cudaDeviceSynchronize())
 #elif defined(PETSC_HAVE_HIP)
-#define SyncDevice() PetscCallHIP(hipDeviceSynchronize())
+  #include <petscdevice_hip.h>
+  #define SyncDevice() PetscCallHIP(hipDeviceSynchronize())
 #elif defined(PETSC_HAVE_KOKKOS)
-#include <Kokkos_Core.hpp>
-#define SyncDevice() Kokkos::fence()
+  #include <Kokkos_Core.hpp>
+  #define SyncDevice() Kokkos::fence()
 #else
-#define SyncDevice()
+  #define SyncDevice()
 #endif
 
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   Mat            A, A2;
   Vec            x, y, x2, y2;
   PetscViewer    fd;
@@ -144,5 +147,10 @@ int main(int argc, char **args) {
     test:
       suffix: 2
       args: -mat_type aijkokkos
+
+    test:
+      suffix: 3
+      requires: hip
+      args: -mat_type aijhipsparse
 
 TEST*/

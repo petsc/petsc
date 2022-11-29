@@ -1,11 +1,11 @@
-#if !defined(__pcbddc_h)
-#define __pcbddc_h
+#ifndef PETSC_PCBDDCIMPL_H
+#define PETSC_PCBDDCIMPL_H
 
 #include <petsc/private/pcisimpl.h>
 #include <petsc/private/pcbddcstructsimpl.h>
 
 #if !defined(PETSC_PCBDDC_MAXLEVELS)
-#define PETSC_PCBDDC_MAXLEVELS 8
+  #define PETSC_PCBDDC_MAXLEVELS 8
 #endif
 
 PETSC_EXTERN PetscLogEvent PC_BDDC_Topology[PETSC_PCBDDC_MAXLEVELS];
@@ -24,56 +24,56 @@ PETSC_EXTERN PetscLogEvent PC_BDDC_Solves[PETSC_PCBDDC_MAXLEVELS][3];
 /* Private context (data structure) for the BDDC preconditioner.  */
 typedef struct {
   /* First MUST come the folowing line, for the stuff that is common to FETI and Neumann-Neumann. */
-  PC_IS        pcis;
+  PC_IS pcis;
   /* Coarse stuffs needed by BDDC application in KSP */
-  Vec          coarse_vec;
-  KSP          coarse_ksp;
-  Mat          coarse_phi_B;
-  Mat          coarse_phi_D;
-  Mat          coarse_psi_B;
-  Mat          coarse_psi_D;
-  PetscInt     local_primal_size;
-  PetscInt     coarse_size;
-  PetscInt    *global_primal_indices;
-  VecScatter   coarse_loc_to_glob;
+  Vec        coarse_vec;
+  KSP        coarse_ksp;
+  Mat        coarse_phi_B;
+  Mat        coarse_phi_D;
+  Mat        coarse_psi_B;
+  Mat        coarse_psi_D;
+  PetscInt   local_primal_size;
+  PetscInt   coarse_size;
+  PetscInt  *global_primal_indices;
+  VecScatter coarse_loc_to_glob;
   /* Local stuffs needed by BDDC application in KSP */
-  Vec          vec1_P;
-  Vec          vec1_C;
-  Mat          local_auxmat1;
-  Mat          local_auxmat2;
-  Vec          vec1_R;
-  Vec          vec2_R;
-  IS           is_R_local;
-  VecScatter   R_to_B;
-  VecScatter   R_to_D;
-  KSP          ksp_R;
-  KSP          ksp_D;
+  Vec        vec1_P;
+  Vec        vec1_C;
+  Mat        local_auxmat1;
+  Mat        local_auxmat2;
+  Vec        vec1_R;
+  Vec        vec2_R;
+  IS         is_R_local;
+  VecScatter R_to_B;
+  VecScatter R_to_D;
+  KSP        ksp_R;
+  KSP        ksp_D;
   /* Quantities defining constraining details (local) of the preconditioner */
   /* These quantities define the preconditioner itself */
-  PetscInt     n_vertices;
-  Mat          ConstraintMatrix;
-  PetscBool    new_primal_space;
-  PetscBool    new_primal_space_local;
-  PetscInt    *primal_indices_local_idxs;
-  PetscInt     local_primal_size_cc;
-  PetscInt    *local_primal_ref_node;
-  PetscInt    *local_primal_ref_mult;
-  PetscBool    use_change_of_basis;
-  PetscBool    use_change_on_faces;
-  PetscBool    fake_change;
-  Mat          ChangeOfBasisMatrix;
-  Mat          user_ChangeOfBasisMatrix;
-  PetscBool    change_interior;
-  Mat          switch_static_change;
-  Vec          work_change;
-  Vec          original_rhs;
-  Vec          temp_solution;
-  Mat          local_mat;
-  PetscBool    use_exact_dirichlet_trick;
-  PetscBool    exact_dirichlet_trick_app;
-  PetscBool    ksp_guess_nonzero;
-  PetscBool    rhs_change;
-  PetscBool    temp_solution_used;
+  PetscInt  n_vertices;
+  Mat       ConstraintMatrix;
+  PetscBool new_primal_space;
+  PetscBool new_primal_space_local;
+  PetscInt *primal_indices_local_idxs;
+  PetscInt  local_primal_size_cc;
+  PetscInt *local_primal_ref_node;
+  PetscInt *local_primal_ref_mult;
+  PetscBool use_change_of_basis;
+  PetscBool use_change_on_faces;
+  PetscBool fake_change;
+  Mat       ChangeOfBasisMatrix;
+  Mat       user_ChangeOfBasisMatrix;
+  PetscBool change_interior;
+  Mat       switch_static_change;
+  Vec       work_change;
+  Vec       original_rhs;
+  Vec       temp_solution;
+  Mat       local_mat;
+  PetscBool use_exact_dirichlet_trick;
+  PetscBool exact_dirichlet_trick_app;
+  PetscBool ksp_guess_nonzero;
+  PetscBool rhs_change;
+  PetscBool temp_solution_used;
   /* benign subspace trick */
   PetscBool    benign_saddle_point;
   PetscBool    benign_have_null;
@@ -190,4 +190,4 @@ typedef struct {
   PetscViewer dbg_viewer;
 } PC_BDDC;
 
-#endif /* __pcbddc_h */
+#endif // PETSC_PCBDDCIMPL_H

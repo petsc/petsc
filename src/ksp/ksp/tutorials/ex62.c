@@ -35,7 +35,8 @@ Without -user_set_subdomains, the general PCGASM options are meaningful:\n\
 
 PetscErrorCode AssembleMatrix(Mat, PetscInt m, PetscInt n);
 
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   Vec         x, b, u;           /* approx solution, RHS, exact solution */
   Mat         A;                 /* linear system matrix */
   KSP         ksp;               /* linear solver context */
@@ -285,7 +286,8 @@ int main(int argc, char **args) {
   return 0;
 }
 
-PetscErrorCode AssembleMatrix(Mat A, PetscInt m, PetscInt n) {
+PetscErrorCode AssembleMatrix(Mat A, PetscInt m, PetscInt n)
+{
   PetscInt    i, j, Ii, J, Istart, Iend;
   PetscScalar v;
 

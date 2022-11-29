@@ -15,7 +15,8 @@ PetscBool VecTaggerRegisterAllCalled;
 
 .seealso: `VecTaggerFinalizePackage()`
 @*/
-PetscErrorCode VecTaggerInitializePackage(void) {
+PetscErrorCode VecTaggerInitializePackage(void)
+{
   PetscFunctionBegin;
   if (VecTaggerPackageInitialized) PetscFunctionReturn(0);
   VecTaggerPackageInitialized = PETSC_TRUE;
@@ -35,7 +36,8 @@ PetscErrorCode VecTaggerInitializePackage(void) {
 
 .seealso: `VecTaggerInitializePackage()`
 @*/
-PetscErrorCode VecTaggerFinalizePackage(void) {
+PetscErrorCode VecTaggerFinalizePackage(void)
+{
   PetscFunctionBegin;
   PetscCall(PetscFunctionListDestroy(&VecTaggerList));
   VecTaggerPackageInitialized = PETSC_FALSE;

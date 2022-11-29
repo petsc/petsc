@@ -17,7 +17,8 @@ static PetscErrorCode PetscDrawXiMatchFontSize(PetscDrawXiFont *, int, int);
    ok because there will never be many windows and the graphics
    are not intended to be high performance.
 */
-PetscErrorCode PetscDrawXiFontFixed(PetscDraw_X *XBWin, int w, int h, PetscDrawXiFont **outfont) {
+PetscErrorCode PetscDrawXiFontFixed(PetscDraw_X *XBWin, int w, int h, PetscDrawXiFont **outfont)
+{
   static PetscDrawXiFont *curfont = NULL, *font;
 
   PetscFunctionBegin;
@@ -33,7 +34,9 @@ PetscErrorCode PetscDrawXiFontFixed(PetscDraw_X *XBWin, int w, int h, PetscDrawX
 
 /* this is set by XListFonts at startup */
 #define NFONTS 20
-static struct { int w, h, descent; } nfonts[NFONTS];
+static struct {
+  int w, h, descent;
+} nfonts[NFONTS];
 static int act_nfonts = 0;
 
 /*
@@ -41,13 +44,14 @@ static int act_nfonts = 0;
   and load it if necessary
 */
 
-static PetscErrorCode PetscDrawXiLoadFont(PetscDraw_X *XBWin, PetscDrawXiFont *font) {
+static PetscErrorCode PetscDrawXiLoadFont(PetscDraw_X *XBWin, PetscDrawXiFont *font)
+{
   char         font_name[100];
   XFontStruct *FontInfo;
   XGCValues    values;
 
   PetscFunctionBegin;
-  (void)sprintf(font_name, "%dx%d", font->font_w, font->font_h);
+  PetscCall(PetscSNPrintf(font_name, PETSC_STATIC_ARRAY_LENGTH(font_name), "%dx%d", font->font_w, font->font_h));
   font->fnt = XLoadFont(XBWin->disp, font_name);
 
   /* The font->descent may not have been set correctly; get it now that
@@ -66,7 +70,8 @@ static PetscErrorCode PetscDrawXiLoadFont(PetscDraw_X *XBWin, PetscDrawXiFont *f
 }
 
 /* Code to find fonts and their characteristics */
-static PetscErrorCode PetscDrawXiInitFonts(PetscDraw_X *XBWin) {
+static PetscErrorCode PetscDrawXiInitFonts(PetscDraw_X *XBWin)
+{
   char       **names;
   int          cnt, i, j;
   XFontStruct *info;
@@ -97,8 +102,8 @@ static PetscErrorCode PetscDrawXiInitFonts(PetscDraw_X *XBWin) {
 
       PetscCall(PetscStrlen(names[i], &len));
       if (len != 2) continue;
-      names[i][1]       = '\0';
-      nfonts[j].w       = info[i].max_bounds.width;
+      names[i][1] = '\0';
+      nfonts[j].w = info[i].max_bounds.width;
       /* nfonts[j].w         = info[i].max_bounds.lbearing + info[i].max_bounds.rbearing; */
       nfonts[j].h       = info[i].ascent + info[i].descent;
       nfonts[j].descent = info[i].descent;
@@ -112,7 +117,8 @@ static PetscErrorCode PetscDrawXiInitFonts(PetscDraw_X *XBWin) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscDrawXiMatchFontSize(PetscDrawXiFont *font, int w, int h) {
+static PetscErrorCode PetscDrawXiMatchFontSize(PetscDrawXiFont *font, int w, int h)
+{
   int i, max, imax, tmp;
 
   PetscFunctionBegin;

@@ -4,7 +4,8 @@
 
 static PetscInt c_n1 = -1;
 
-PetscErrorCode MINPACKdsm(PetscInt *m, PetscInt *n, PetscInt *npairs, PetscInt *indrow, PetscInt *indcol, PetscInt *ngrp, PetscInt *maxgrp, PetscInt *mingrp, PetscInt *info, PetscInt *ipntr, PetscInt *jpntr, PetscInt *iwa, PetscInt *liwa) {
+PetscErrorCode MINPACKdsm(PetscInt *m, PetscInt *n, PetscInt *npairs, PetscInt *indrow, PetscInt *indcol, PetscInt *ngrp, PetscInt *maxgrp, PetscInt *mingrp, PetscInt *info, PetscInt *ipntr, PetscInt *jpntr, PetscInt *iwa, PetscInt *liwa)
+{
   /* System generated locals */
   PetscInt i__1, i__2, i__3;
 

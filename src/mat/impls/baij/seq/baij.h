@@ -1,5 +1,5 @@
 
-#if !defined(__BAIJ_H)
+#ifndef __BAIJ_H
 #define __BAIJ_H
 #include <petsc/private/matimpl.h>
 #include <../src/mat/impls/aij/seq/aij.h>
@@ -277,7 +277,8 @@ PETSC_INTERN PetscErrorCode MatDestroySubMatrices_SeqBAIJ(PetscInt, Mat *[]);
 .  A = A * B
 */
 
-static inline PetscErrorCode PetscKernel_A_gets_A_times_B_2(PetscScalar *A, const PetscScalar *B, PetscScalar *W) {
+static inline PetscErrorCode PetscKernel_A_gets_A_times_B_2(PetscScalar *A, const PetscScalar *B, PetscScalar *W)
+{
   PetscCall(PetscArraycpy(W, A, 4));
   A[0] = W[0] * B[0] + W[2] * B[1];
   A[1] = W[1] * B[0] + W[3] * B[1];
@@ -296,7 +297,8 @@ static inline PetscErrorCode PetscKernel_A_gets_A_times_B_2(PetscScalar *A, cons
 .  A = A - B*C
 */
 
-static inline PetscErrorCode PetscKernel_A_gets_A_minus_B_times_C_2(PetscScalar *A, const PetscScalar *B, const PetscScalar *C) {
+static inline PetscErrorCode PetscKernel_A_gets_A_minus_B_times_C_2(PetscScalar *A, const PetscScalar *B, const PetscScalar *C)
+{
   A[0] -= B[0] * C[0] + B[2] * C[1];
   A[1] -= B[1] * C[0] + B[3] * C[1];
   A[2] -= B[0] * C[2] + B[2] * C[3];
@@ -315,7 +317,8 @@ static inline PetscErrorCode PetscKernel_A_gets_A_minus_B_times_C_2(PetscScalar 
 .  A = A * B
 */
 
-static inline PetscErrorCode PetscKernel_A_gets_A_times_B_3(PetscScalar *A, const PetscScalar *B, PetscScalar *W) {
+static inline PetscErrorCode PetscKernel_A_gets_A_times_B_3(PetscScalar *A, const PetscScalar *B, PetscScalar *W)
+{
   PetscCall(PetscArraycpy(W, A, 9));
   A[0] = W[0] * B[0] + W[3] * B[1] + W[6] * B[2];
   A[1] = W[1] * B[0] + W[4] * B[1] + W[7] * B[2];
@@ -339,7 +342,8 @@ static inline PetscErrorCode PetscKernel_A_gets_A_times_B_3(PetscScalar *A, cons
 .  A = A - B*C
 */
 
-static inline PetscErrorCode PetscKernel_A_gets_A_minus_B_times_C_3(PetscScalar *A, const PetscScalar *B, const PetscScalar *C) {
+static inline PetscErrorCode PetscKernel_A_gets_A_minus_B_times_C_3(PetscScalar *A, const PetscScalar *B, const PetscScalar *C)
+{
   A[0] -= B[0] * C[0] + B[3] * C[1] + B[6] * C[2];
   A[1] -= B[1] * C[0] + B[4] * C[1] + B[7] * C[2];
   A[2] -= B[2] * C[0] + B[5] * C[1] + B[8] * C[2];
@@ -363,7 +367,8 @@ static inline PetscErrorCode PetscKernel_A_gets_A_minus_B_times_C_3(PetscScalar 
 .  A = A * B
 */
 
-static inline PetscErrorCode PetscKernel_A_gets_A_times_B_4(PetscScalar *A, const PetscScalar *B, PetscScalar *W) {
+static inline PetscErrorCode PetscKernel_A_gets_A_times_B_4(PetscScalar *A, const PetscScalar *B, PetscScalar *W)
+{
   PetscCall(PetscArraycpy(W, A, 16));
   A[0]  = W[0] * B[0] + W[4] * B[1] + W[8] * B[2] + W[12] * B[3];
   A[1]  = W[1] * B[0] + W[5] * B[1] + W[9] * B[2] + W[13] * B[3];
@@ -394,7 +399,8 @@ static inline PetscErrorCode PetscKernel_A_gets_A_times_B_4(PetscScalar *A, cons
 .  A = A - B*C
 */
 
-static inline PetscErrorCode PetscKernel_A_gets_A_minus_B_times_C_4(PetscScalar *A, const PetscScalar *B, const PetscScalar *C) {
+static inline PetscErrorCode PetscKernel_A_gets_A_minus_B_times_C_4(PetscScalar *A, const PetscScalar *B, const PetscScalar *C)
+{
   A[0] -= B[0] * C[0] + B[4] * C[1] + B[8] * C[2] + B[12] * C[3];
   A[1] -= B[1] * C[0] + B[5] * C[1] + B[9] * C[2] + B[13] * C[3];
   A[2] -= B[2] * C[0] + B[6] * C[1] + B[10] * C[2] + B[14] * C[3];
@@ -414,7 +420,8 @@ static inline PetscErrorCode PetscKernel_A_gets_A_minus_B_times_C_4(PetscScalar 
   return 0;
 }
 
-static inline PetscErrorCode PetscKernel_A_gets_A_times_B_5(PetscScalar *A, const PetscScalar *B, PetscScalar *W) {
+static inline PetscErrorCode PetscKernel_A_gets_A_times_B_5(PetscScalar *A, const PetscScalar *B, PetscScalar *W)
+{
   PetscCall(PetscArraycpy(W, A, 25));
   A[0]  = W[0] * B[0] + W[5] * B[1] + W[10] * B[2] + W[15] * B[3] + W[20] * B[4];
   A[1]  = W[1] * B[0] + W[6] * B[1] + W[11] * B[2] + W[16] * B[3] + W[21] * B[4];
@@ -454,7 +461,8 @@ static inline PetscErrorCode PetscKernel_A_gets_A_times_B_5(PetscScalar *A, cons
 .  A = A - B*C
 */
 
-static inline PetscErrorCode PetscKernel_A_gets_A_minus_B_times_C_5(PetscScalar *A, const PetscScalar *B, const PetscScalar *C) {
+static inline PetscErrorCode PetscKernel_A_gets_A_minus_B_times_C_5(PetscScalar *A, const PetscScalar *B, const PetscScalar *C)
+{
   A[0] -= B[0] * C[0] + B[5] * C[1] + B[10] * C[2] + B[15] * C[3] + B[20] * C[4];
   A[1] -= B[1] * C[0] + B[6] * C[1] + B[11] * C[2] + B[16] * C[3] + B[21] * C[4];
   A[2] -= B[2] * C[0] + B[7] * C[1] + B[12] * C[2] + B[17] * C[3] + B[22] * C[4];
@@ -483,7 +491,8 @@ static inline PetscErrorCode PetscKernel_A_gets_A_minus_B_times_C_5(PetscScalar 
   return 0;
 }
 
-static inline PetscErrorCode PetscKernel_A_gets_A_times_B_6(PetscScalar *A, const PetscScalar *B, PetscScalar *W) {
+static inline PetscErrorCode PetscKernel_A_gets_A_times_B_6(PetscScalar *A, const PetscScalar *B, PetscScalar *W)
+{
   PetscCall(PetscArraycpy(W, A, 36));
   A[0]  = W[0] * B[0] + W[6] * B[1] + W[12] * B[2] + W[18] * B[3] + W[24] * B[4] + W[30] * B[5];
   A[1]  = W[1] * B[0] + W[7] * B[1] + W[13] * B[2] + W[19] * B[3] + W[25] * B[4] + W[31] * B[5];
@@ -534,7 +543,8 @@ static inline PetscErrorCode PetscKernel_A_gets_A_times_B_6(PetscScalar *A, cons
 .  A = A - B*C
 */
 
-static inline PetscErrorCode PetscKernel_A_gets_A_minus_B_times_C_6(PetscScalar *A, const PetscScalar *B, const PetscScalar *C) {
+static inline PetscErrorCode PetscKernel_A_gets_A_minus_B_times_C_6(PetscScalar *A, const PetscScalar *B, const PetscScalar *C)
+{
   A[0] -= B[0] * C[0] + B[6] * C[1] + B[12] * C[2] + B[18] * C[3] + B[24] * C[4] + B[30] * C[5];
   A[1] -= B[1] * C[0] + B[7] * C[1] + B[13] * C[2] + B[19] * C[3] + B[25] * C[4] + B[31] * C[5];
   A[2] -= B[2] * C[0] + B[8] * C[1] + B[14] * C[2] + B[20] * C[3] + B[26] * C[4] + B[32] * C[5];
@@ -574,7 +584,8 @@ static inline PetscErrorCode PetscKernel_A_gets_A_minus_B_times_C_6(PetscScalar 
   return 0;
 }
 
-static inline PetscErrorCode PetscKernel_A_gets_A_times_B_7(PetscScalar *A, const PetscScalar *B, PetscScalar *W) {
+static inline PetscErrorCode PetscKernel_A_gets_A_times_B_7(PetscScalar *A, const PetscScalar *B, PetscScalar *W)
+{
   PetscCall(PetscArraycpy(W, A, 49));
   A[0]  = W[0] * B[0] + W[7] * B[1] + W[14] * B[2] + W[21] * B[3] + W[28] * B[4] + W[35] * B[5] + W[42] * B[6];
   A[1]  = W[1] * B[0] + W[8] * B[1] + W[15] * B[2] + W[22] * B[3] + W[29] * B[4] + W[36] * B[5] + W[43] * B[6];
@@ -638,7 +649,8 @@ static inline PetscErrorCode PetscKernel_A_gets_A_times_B_7(PetscScalar *A, cons
 .  A = A - B*C
 */
 
-static inline PetscErrorCode PetscKernel_A_gets_A_minus_B_times_C_7(PetscScalar *A, const PetscScalar *B, const PetscScalar *C) {
+static inline PetscErrorCode PetscKernel_A_gets_A_minus_B_times_C_7(PetscScalar *A, const PetscScalar *B, const PetscScalar *C)
+{
   A[0] -= B[0] * C[0] + B[7] * C[1] + B[14] * C[2] + B[21] * C[3] + B[28] * C[4] + B[35] * C[5] + B[42] * C[6];
   A[1] -= B[1] * C[0] + B[8] * C[1] + B[15] * C[2] + B[22] * C[3] + B[29] * C[4] + B[36] * C[5] + B[43] * C[6];
   A[2] -= B[2] * C[0] + B[9] * C[1] + B[16] * C[2] + B[23] * C[3] + B[30] * C[4] + B[37] * C[5] + B[44] * C[6];
@@ -692,8 +704,9 @@ static inline PetscErrorCode PetscKernel_A_gets_A_minus_B_times_C_7(PetscScalar 
 }
 
 #if defined(PETSC_HAVE_IMMINTRIN_H) && defined(__AVX2__) && defined(__FMA__) && defined(PETSC_USE_REAL_DOUBLE) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_64BIT_INDICES) && !defined(PETSC_SKIP_IMMINTRIN_H_CUDAWORKAROUND)
-#include <immintrin.h>
-static inline PetscErrorCode PetscKernel_A_gets_A_times_B_9(PetscScalar *A, const PetscScalar *B, PetscScalar *W) {
+  #include <immintrin.h>
+static inline PetscErrorCode PetscKernel_A_gets_A_times_B_9(PetscScalar *A, const PetscScalar *B, PetscScalar *W)
+{
   PetscInt i;
   __m256d  S0, S1, S2, S3, S4, S5, S6, S7, S8, B0, B1, B2, B6, B7, B8, A0, A1, A2, A3, A4, A5, A6, A7, A8;
 
@@ -868,7 +881,8 @@ static inline PetscErrorCode PetscKernel_A_gets_A_times_B_9(PetscScalar *A, cons
   return 0;
 }
 #else
-static inline PetscErrorCode PetscKernel_A_gets_A_times_B_9(PetscScalar *A, const PetscScalar *B, PetscScalar *W) {
+static inline PetscErrorCode PetscKernel_A_gets_A_times_B_9(PetscScalar *A, const PetscScalar *B, PetscScalar *W)
+{
   PetscCall(PetscArraycpy(W, A, 81));
   A[0] = W[0] * B[0] + W[9] * B[1] + W[18] * B[2] + W[27] * B[3] + W[36] * B[4] + W[45] * B[5] + W[54] * B[6] + W[63] * B[7] + W[72] * B[8];
   A[1] = W[1] * B[0] + W[10] * B[1] + W[19] * B[2] + W[28] * B[3] + W[37] * B[4] + W[46] * B[5] + W[55] * B[6] + W[64] * B[7] + W[73] * B[8];
@@ -964,7 +978,8 @@ static inline PetscErrorCode PetscKernel_A_gets_A_times_B_9(PetscScalar *A, cons
 #endif
 
 #if defined(PETSC_HAVE_IMMINTRIN_H) && defined(__AVX2__) && defined(__FMA__) && defined(PETSC_USE_REAL_DOUBLE) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_64BIT_INDICES) && !defined(PETSC_SKIP_IMMINTRIN_H_CUDAWORKAROUND)
-static inline PetscErrorCode PetscKernel_A_gets_A_minus_B_times_C_9(PetscScalar *A, const PetscScalar *B, const PetscScalar *C) {
+static inline PetscErrorCode PetscKernel_A_gets_A_minus_B_times_C_9(PetscScalar *A, const PetscScalar *B, const PetscScalar *C)
+{
   PetscInt i;
   __m256d  A0, A1, A2, A3, A4, A5, A6, A7, A8, B0, B1, B2, B3, B4, B5, B6, B7, B8, C0, C1, C2, C3, C4, C5, C6, C7, C8;
 
@@ -1139,7 +1154,8 @@ static inline PetscErrorCode PetscKernel_A_gets_A_minus_B_times_C_9(PetscScalar 
   return 0;
 }
 #else
-static inline PetscErrorCode PetscKernel_A_gets_A_minus_B_times_C_9(PetscScalar *A, const PetscScalar *B, const PetscScalar *C) {
+static inline PetscErrorCode PetscKernel_A_gets_A_minus_B_times_C_9(PetscScalar *A, const PetscScalar *B, const PetscScalar *C)
+{
   A[0] -= B[0] * C[0] + B[9] * C[1] + B[18] * C[2] + B[27] * C[3] + B[36] * C[4] + B[45] * C[5] + B[54] * C[6] + B[63] * C[7] + B[72] * C[8];
   A[1] -= B[1] * C[0] + B[10] * C[1] + B[19] * C[2] + B[28] * C[3] + B[37] * C[4] + B[46] * C[5] + B[55] * C[6] + B[64] * C[7] + B[73] * C[8];
   A[2] -= B[2] * C[0] + B[11] * C[1] + B[20] * C[2] + B[29] * C[3] + B[38] * C[4] + B[47] * C[5] + B[56] * C[6] + B[65] * C[7] + B[74] * C[8];
@@ -1243,7 +1259,8 @@ static inline PetscErrorCode PetscKernel_A_gets_A_minus_B_times_C_9(PetscScalar 
   Output Parameter:
 .  A = A * B
 */
-static inline PetscErrorCode PetscKernel_A_gets_A_times_B_11(PetscScalar *A, const PetscScalar *B, PetscScalar *W) {
+static inline PetscErrorCode PetscKernel_A_gets_A_times_B_11(PetscScalar *A, const PetscScalar *B, PetscScalar *W)
+{
   PetscCall(PetscArraycpy(W, A, 121));
   A[0]  = W[0] * B[0] + W[11] * B[1] + W[22] * B[2] + W[33] * B[3] + W[44] * B[4] + W[55] * B[5] + W[66] * B[6] + W[77] * B[7] + W[88] * B[8] + W[99] * B[9] + W[110] * B[10];
   A[1]  = W[1] * B[0] + W[12] * B[1] + W[23] * B[2] + W[34] * B[3] + W[45] * B[4] + W[56] * B[5] + W[67] * B[6] + W[78] * B[7] + W[89] * B[8] + W[100] * B[9] + W[111] * B[10];
@@ -1388,7 +1405,8 @@ static inline PetscErrorCode PetscKernel_A_gets_A_times_B_11(PetscScalar *A, con
   Output Parameter:
 .  A = A - W * B
 */
-static inline PetscErrorCode PetscKernel_A_gets_A_minus_B_times_C_11(PetscScalar *A, const PetscScalar *W, const PetscScalar *B) {
+static inline PetscErrorCode PetscKernel_A_gets_A_minus_B_times_C_11(PetscScalar *A, const PetscScalar *W, const PetscScalar *B)
+{
   A[0] -= W[0] * B[0] + W[11] * B[1] + W[22] * B[2] + W[33] * B[3] + W[44] * B[4] + W[55] * B[5] + W[66] * B[6] + W[77] * B[7] + W[88] * B[8] + W[99] * B[9] + W[110] * B[10];
   A[1] -= W[1] * B[0] + W[12] * B[1] + W[23] * B[2] + W[34] * B[3] + W[45] * B[4] + W[56] * B[5] + W[67] * B[6] + W[78] * B[7] + W[89] * B[8] + W[100] * B[9] + W[111] * B[10];
   A[2] -= W[2] * B[0] + W[13] * B[1] + W[24] * B[2] + W[35] * B[3] + W[46] * B[4] + W[57] * B[5] + W[68] * B[6] + W[79] * B[7] + W[90] * B[8] + W[101] * B[9] + W[112] * B[10];
@@ -1523,7 +1541,8 @@ static inline PetscErrorCode PetscKernel_A_gets_A_minus_B_times_C_11(PetscScalar
   return 0;
 }
 
-static inline PetscErrorCode PetscKernel_A_gets_A_times_B_15(PetscScalar *A, const PetscScalar *B, PetscScalar *W) {
+static inline PetscErrorCode PetscKernel_A_gets_A_times_B_15(PetscScalar *A, const PetscScalar *B, PetscScalar *W)
+{
   PetscCall(PetscArraycpy(W, A, 225));
   A[0]  = W[0] * B[0] + W[15] * B[1] + W[30] * B[2] + W[45] * B[3] + W[60] * B[4] + W[75] * B[5] + W[90] * B[6] + W[105] * B[7] + W[120] * B[8] + W[135] * B[9] + W[150] * B[10] + W[165] * B[11] + W[180] * B[12] + W[195] * B[13] + W[210] * B[14];
   A[1]  = W[1] * B[0] + W[16] * B[1] + W[31] * B[2] + W[46] * B[3] + W[61] * B[4] + W[76] * B[5] + W[91] * B[6] + W[106] * B[7] + W[121] * B[8] + W[136] * B[9] + W[151] * B[10] + W[166] * B[11] + W[181] * B[12] + W[196] * B[13] + W[211] * B[14];
@@ -1615,16 +1634,16 @@ static inline PetscErrorCode PetscKernel_A_gets_A_times_B_15(PetscScalar *A, con
   A[87] = W[12] * B[75] + W[27] * B[76] + W[42] * B[77] + W[57] * B[78] + W[72] * B[79] + W[87] * B[80] + W[102] * B[81] + W[117] * B[82] + W[132] * B[83] + W[147] * B[84] + W[162] * B[85] + W[177] * B[86] + W[192] * B[87] + W[207] * B[88] + W[222] * B[89];
   A[88] = W[13] * B[75] + W[28] * B[76] + W[43] * B[77] + W[58] * B[78] + W[73] * B[79] + W[88] * B[80] + W[103] * B[81] + W[118] * B[82] + W[133] * B[83] + W[148] * B[84] + W[163] * B[85] + W[178] * B[86] + W[193] * B[87] + W[208] * B[88] + W[223] * B[89];
   A[89] = W[14] * B[75] + W[29] * B[76] + W[44] * B[77] + W[59] * B[78] + W[74] * B[79] + W[89] * B[80] + W[104] * B[81] + W[119] * B[82] + W[134] * B[83] + W[149] * B[84] + W[164] * B[85] + W[179] * B[86] + W[194] * B[87] + W[209] * B[88] + W[224] * B[89];
-  A[90]  = W[0] * B[90] + W[15] * B[91] + W[30] * B[92] + W[45] * B[93] + W[60] * B[94] + W[75] * B[95] + W[90] * B[96] + W[105] * B[97] + W[120] * B[98] + W[135] * B[99] + W[150] * B[100] + W[165] * B[101] + W[180] * B[102] + W[195] * B[103] + W[210] * B[104];
-  A[91]  = W[1] * B[90] + W[16] * B[91] + W[31] * B[92] + W[46] * B[93] + W[61] * B[94] + W[76] * B[95] + W[91] * B[96] + W[106] * B[97] + W[121] * B[98] + W[136] * B[99] + W[151] * B[100] + W[166] * B[101] + W[181] * B[102] + W[196] * B[103] + W[211] * B[104];
-  A[92]  = W[2] * B[90] + W[17] * B[91] + W[32] * B[92] + W[47] * B[93] + W[62] * B[94] + W[77] * B[95] + W[92] * B[96] + W[107] * B[97] + W[122] * B[98] + W[137] * B[99] + W[152] * B[100] + W[167] * B[101] + W[182] * B[102] + W[197] * B[103] + W[212] * B[104];
-  A[93]  = W[3] * B[90] + W[18] * B[91] + W[33] * B[92] + W[48] * B[93] + W[63] * B[94] + W[78] * B[95] + W[93] * B[96] + W[108] * B[97] + W[123] * B[98] + W[138] * B[99] + W[153] * B[100] + W[168] * B[101] + W[183] * B[102] + W[198] * B[103] + W[213] * B[104];
-  A[94]  = W[4] * B[90] + W[19] * B[91] + W[34] * B[92] + W[49] * B[93] + W[64] * B[94] + W[79] * B[95] + W[94] * B[96] + W[109] * B[97] + W[124] * B[98] + W[139] * B[99] + W[154] * B[100] + W[169] * B[101] + W[184] * B[102] + W[199] * B[103] + W[214] * B[104];
-  A[95]  = W[5] * B[90] + W[20] * B[91] + W[35] * B[92] + W[50] * B[93] + W[65] * B[94] + W[80] * B[95] + W[95] * B[96] + W[110] * B[97] + W[125] * B[98] + W[140] * B[99] + W[155] * B[100] + W[170] * B[101] + W[185] * B[102] + W[200] * B[103] + W[215] * B[104];
-  A[96]  = W[6] * B[90] + W[21] * B[91] + W[36] * B[92] + W[51] * B[93] + W[66] * B[94] + W[81] * B[95] + W[96] * B[96] + W[111] * B[97] + W[126] * B[98] + W[141] * B[99] + W[156] * B[100] + W[171] * B[101] + W[186] * B[102] + W[201] * B[103] + W[216] * B[104];
-  A[97]  = W[7] * B[90] + W[22] * B[91] + W[37] * B[92] + W[52] * B[93] + W[67] * B[94] + W[82] * B[95] + W[97] * B[96] + W[112] * B[97] + W[127] * B[98] + W[142] * B[99] + W[157] * B[100] + W[172] * B[101] + W[187] * B[102] + W[202] * B[103] + W[217] * B[104];
-  A[98]  = W[8] * B[90] + W[23] * B[91] + W[38] * B[92] + W[53] * B[93] + W[68] * B[94] + W[83] * B[95] + W[98] * B[96] + W[113] * B[97] + W[128] * B[98] + W[143] * B[99] + W[158] * B[100] + W[173] * B[101] + W[188] * B[102] + W[203] * B[103] + W[218] * B[104];
-  A[99]  = W[9] * B[90] + W[24] * B[91] + W[39] * B[92] + W[54] * B[93] + W[69] * B[94] + W[84] * B[95] + W[99] * B[96] + W[114] * B[97] + W[129] * B[98] + W[144] * B[99] + W[159] * B[100] + W[174] * B[101] + W[189] * B[102] + W[204] * B[103] + W[219] * B[104];
+  A[90] = W[0] * B[90] + W[15] * B[91] + W[30] * B[92] + W[45] * B[93] + W[60] * B[94] + W[75] * B[95] + W[90] * B[96] + W[105] * B[97] + W[120] * B[98] + W[135] * B[99] + W[150] * B[100] + W[165] * B[101] + W[180] * B[102] + W[195] * B[103] + W[210] * B[104];
+  A[91] = W[1] * B[90] + W[16] * B[91] + W[31] * B[92] + W[46] * B[93] + W[61] * B[94] + W[76] * B[95] + W[91] * B[96] + W[106] * B[97] + W[121] * B[98] + W[136] * B[99] + W[151] * B[100] + W[166] * B[101] + W[181] * B[102] + W[196] * B[103] + W[211] * B[104];
+  A[92] = W[2] * B[90] + W[17] * B[91] + W[32] * B[92] + W[47] * B[93] + W[62] * B[94] + W[77] * B[95] + W[92] * B[96] + W[107] * B[97] + W[122] * B[98] + W[137] * B[99] + W[152] * B[100] + W[167] * B[101] + W[182] * B[102] + W[197] * B[103] + W[212] * B[104];
+  A[93] = W[3] * B[90] + W[18] * B[91] + W[33] * B[92] + W[48] * B[93] + W[63] * B[94] + W[78] * B[95] + W[93] * B[96] + W[108] * B[97] + W[123] * B[98] + W[138] * B[99] + W[153] * B[100] + W[168] * B[101] + W[183] * B[102] + W[198] * B[103] + W[213] * B[104];
+  A[94] = W[4] * B[90] + W[19] * B[91] + W[34] * B[92] + W[49] * B[93] + W[64] * B[94] + W[79] * B[95] + W[94] * B[96] + W[109] * B[97] + W[124] * B[98] + W[139] * B[99] + W[154] * B[100] + W[169] * B[101] + W[184] * B[102] + W[199] * B[103] + W[214] * B[104];
+  A[95] = W[5] * B[90] + W[20] * B[91] + W[35] * B[92] + W[50] * B[93] + W[65] * B[94] + W[80] * B[95] + W[95] * B[96] + W[110] * B[97] + W[125] * B[98] + W[140] * B[99] + W[155] * B[100] + W[170] * B[101] + W[185] * B[102] + W[200] * B[103] + W[215] * B[104];
+  A[96] = W[6] * B[90] + W[21] * B[91] + W[36] * B[92] + W[51] * B[93] + W[66] * B[94] + W[81] * B[95] + W[96] * B[96] + W[111] * B[97] + W[126] * B[98] + W[141] * B[99] + W[156] * B[100] + W[171] * B[101] + W[186] * B[102] + W[201] * B[103] + W[216] * B[104];
+  A[97] = W[7] * B[90] + W[22] * B[91] + W[37] * B[92] + W[52] * B[93] + W[67] * B[94] + W[82] * B[95] + W[97] * B[96] + W[112] * B[97] + W[127] * B[98] + W[142] * B[99] + W[157] * B[100] + W[172] * B[101] + W[187] * B[102] + W[202] * B[103] + W[217] * B[104];
+  A[98] = W[8] * B[90] + W[23] * B[91] + W[38] * B[92] + W[53] * B[93] + W[68] * B[94] + W[83] * B[95] + W[98] * B[96] + W[113] * B[97] + W[128] * B[98] + W[143] * B[99] + W[158] * B[100] + W[173] * B[101] + W[188] * B[102] + W[203] * B[103] + W[218] * B[104];
+  A[99] = W[9] * B[90] + W[24] * B[91] + W[39] * B[92] + W[54] * B[93] + W[69] * B[94] + W[84] * B[95] + W[99] * B[96] + W[114] * B[97] + W[129] * B[98] + W[144] * B[99] + W[159] * B[100] + W[174] * B[101] + W[189] * B[102] + W[204] * B[103] + W[219] * B[104];
   A[100] = W[10] * B[90] + W[25] * B[91] + W[40] * B[92] + W[55] * B[93] + W[70] * B[94] + W[85] * B[95] + W[100] * B[96] + W[115] * B[97] + W[130] * B[98] + W[145] * B[99] + W[160] * B[100] + W[175] * B[101] + W[190] * B[102] + W[205] * B[103] + W[220] * B[104];
   A[101] = W[11] * B[90] + W[26] * B[91] + W[41] * B[92] + W[56] * B[93] + W[71] * B[94] + W[86] * B[95] + W[101] * B[96] + W[116] * B[97] + W[131] * B[98] + W[146] * B[99] + W[161] * B[100] + W[176] * B[101] + W[191] * B[102] + W[206] * B[103] + W[221] * B[104];
   A[102] = W[12] * B[90] + W[27] * B[91] + W[42] * B[92] + W[57] * B[93] + W[72] * B[94] + W[87] * B[95] + W[102] * B[96] + W[117] * B[97] + W[132] * B[98] + W[147] * B[99] + W[162] * B[100] + W[177] * B[101] + W[192] * B[102] + W[207] * B[103] + W[222] * B[104];
@@ -1763,7 +1782,8 @@ static inline PetscErrorCode PetscKernel_A_gets_A_times_B_15(PetscScalar *A, con
 .  A = A - B*C
 */
 
-static inline PetscErrorCode PetscKernel_A_gets_A_minus_B_times_C_15(PetscScalar *A, const PetscScalar *B, const PetscScalar *C) {
+static inline PetscErrorCode PetscKernel_A_gets_A_minus_B_times_C_15(PetscScalar *A, const PetscScalar *B, const PetscScalar *C)
+{
   A[0] -= B[0] * C[0] + B[15] * C[1] + B[30] * C[2] + B[45] * C[3] + B[60] * C[4] + B[75] * C[5] + B[90] * C[6] + B[105] * C[7] + B[120] * C[8] + B[135] * C[9] + B[150] * C[10] + B[165] * C[11] + B[180] * C[12] + B[195] * C[13] + B[210] * C[14];
   A[1] -= B[1] * C[0] + B[16] * C[1] + B[31] * C[2] + B[46] * C[3] + B[61] * C[4] + B[76] * C[5] + B[91] * C[6] + B[106] * C[7] + B[121] * C[8] + B[136] * C[9] + B[151] * C[10] + B[166] * C[11] + B[181] * C[12] + B[196] * C[13] + B[211] * C[14];
   A[2] -= B[2] * C[0] + B[17] * C[1] + B[32] * C[2] + B[47] * C[3] + B[62] * C[4] + B[77] * C[5] + B[92] * C[6] + B[107] * C[7] + B[122] * C[8] + B[137] * C[9] + B[152] * C[10] + B[167] * C[11] + B[182] * C[12] + B[197] * C[13] + B[212] * C[14];

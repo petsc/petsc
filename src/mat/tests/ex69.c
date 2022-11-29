@@ -2,7 +2,8 @@ static char help[] = "Tests MatCreateDenseCUDA(), MatDenseCUDAPlaceArray(), MatD
 
 #include <petscmat.h>
 
-static PetscErrorCode MatMult_S(Mat S, Vec x, Vec y) {
+static PetscErrorCode MatMult_S(Mat S, Vec x, Vec y)
+{
   Mat A;
 
   PetscFunctionBeginUser;
@@ -13,7 +14,8 @@ static PetscErrorCode MatMult_S(Mat S, Vec x, Vec y) {
 
 static PetscBool test_cusparse_transgen = PETSC_FALSE;
 
-static PetscErrorCode MatMultTranspose_S(Mat S, Vec x, Vec y) {
+static PetscErrorCode MatMultTranspose_S(Mat S, Vec x, Vec y)
+{
   Mat A;
 
   PetscFunctionBeginUser;
@@ -26,7 +28,8 @@ static PetscErrorCode MatMultTranspose_S(Mat S, Vec x, Vec y) {
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   Mat          A, B, C, S;
   Vec          t, v;
   PetscScalar *vv, *aa;
@@ -99,7 +102,6 @@ int main(int argc, char **argv) {
     reset = PETSC_FALSE;
     break;
   }
-  PetscCall(VecCUDARestoreArray(v, &vv));
 
   /* Test MatMatMult */
   if (use_shell) {

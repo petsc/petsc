@@ -20,7 +20,7 @@ configure_options = [
   '--download-bison',
   '--download-scalapack',
   '--download-strumpack',
-  #'--download-fblaslapack', #vecLib has incomplete lapack - so unuseable by strumpack
+  #'--download-fblaslapack', #vecLib has incomplete lapack - so unusable by strumpack
   '--download-f2cblaslapack',
   '--download-blis',
   '--download-codipack=1',

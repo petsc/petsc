@@ -26,7 +26,7 @@ Several examples are also included that represent the
 interoperability with other numerical software packages in the `xSDK
 Toolkit <http://www.xsdk.info>`__. These packages can be
 automatically installed by PETSc by :ref:`configuring <tut_install_config>` with
-``--download-trilinos``,  ``--download-hypre``, and/or
+``--download-trilinos``, ``--download-hypre``, and/or
 ``--download-superlu_dist``.
 
 -  :ref:`Nonlinear PDE Example <handson_example_3>` using `Trilinos preconditioner ML <http://trilinos.org/packages/ml>`__

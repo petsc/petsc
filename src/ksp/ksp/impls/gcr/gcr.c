@@ -14,7 +14,8 @@ typedef struct {
   void *modifypc_ctx; /* user defined data for the modifypc function */
 } KSP_GCR;
 
-static PetscErrorCode KSPSolve_GCR_cycle(KSP ksp) {
+static PetscErrorCode KSPSolve_GCR_cycle(KSP ksp)
+{
   KSP_GCR    *ctx = (KSP_GCR *)ksp->data;
   PetscScalar r_dot_v;
   Mat         A, B;
@@ -23,9 +24,9 @@ static PetscErrorCode KSPSolve_GCR_cycle(KSP ksp) {
   /*
      The residual norm will not be computed when ksp->its > ksp->chknorm hence need to initialize norm_r with some dummy value
   */
-  PetscReal   norm_r = 0.0, nrm;
-  PetscInt    k, i, restart;
-  Vec         x;
+  PetscReal norm_r = 0.0, nrm;
+  PetscInt  k, i, restart;
+  Vec       x;
 
   PetscFunctionBegin;
   restart = ctx->restart;
@@ -80,7 +81,8 @@ static PetscErrorCode KSPSolve_GCR_cycle(KSP ksp) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode KSPSolve_GCR(KSP ksp) {
+static PetscErrorCode KSPSolve_GCR(KSP ksp)
+{
   KSP_GCR  *ctx = (KSP_GCR *)ksp->data;
   Mat       A, B;
   Vec       r, b, x;
@@ -116,7 +118,8 @@ static PetscErrorCode KSPSolve_GCR(KSP ksp) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode KSPView_GCR(KSP ksp, PetscViewer viewer) {
+static PetscErrorCode KSPView_GCR(KSP ksp, PetscViewer viewer)
+{
   KSP_GCR  *ctx = (KSP_GCR *)ksp->data;
   PetscBool iascii;
 
@@ -129,7 +132,8 @@ static PetscErrorCode KSPView_GCR(KSP ksp, PetscViewer viewer) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode KSPSetUp_GCR(KSP ksp) {
+static PetscErrorCode KSPSetUp_GCR(KSP ksp)
+{
   KSP_GCR  *ctx = (KSP_GCR *)ksp->data;
   Mat       A;
   PetscBool diagonalscale;
@@ -147,7 +151,8 @@ static PetscErrorCode KSPSetUp_GCR(KSP ksp) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode KSPReset_GCR(KSP ksp) {
+static PetscErrorCode KSPReset_GCR(KSP ksp)
+{
   KSP_GCR *ctx = (KSP_GCR *)ksp->data;
 
   PetscFunctionBegin;
@@ -159,7 +164,8 @@ static PetscErrorCode KSPReset_GCR(KSP ksp) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode KSPDestroy_GCR(KSP ksp) {
+static PetscErrorCode KSPDestroy_GCR(KSP ksp)
+{
   PetscFunctionBegin;
   PetscCall(KSPReset_GCR(ksp));
   PetscCall(KSPDestroyDefault(ksp));
@@ -169,7 +175,8 @@ static PetscErrorCode KSPDestroy_GCR(KSP ksp) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode KSPSetFromOptions_GCR(KSP ksp, PetscOptionItems *PetscOptionsObject) {
+static PetscErrorCode KSPSetFromOptions_GCR(KSP ksp, PetscOptionItems *PetscOptionsObject)
+{
   KSP_GCR  *ctx = (KSP_GCR *)ksp->data;
   PetscInt  restart;
   PetscBool flg;
@@ -186,7 +193,8 @@ static PetscErrorCode KSPSetFromOptions_GCR(KSP ksp, PetscOptionItems *PetscOpti
 typedef PetscErrorCode (*KSPGCRModifyPCFunction)(KSP, PetscInt, PetscReal, void *);
 typedef PetscErrorCode (*KSPGCRDestroyFunction)(void *);
 
-static PetscErrorCode KSPGCRSetModifyPC_GCR(KSP ksp, KSPGCRModifyPCFunction function, void *data, KSPGCRDestroyFunction destroy) {
+static PetscErrorCode KSPGCRSetModifyPC_GCR(KSP ksp, KSPGCRModifyPCFunction function, void *data, KSPGCRDestroyFunction destroy)
+{
   KSP_GCR *ctx = (KSP_GCR *)ksp->data;
 
   PetscFunctionBegin;
@@ -198,7 +206,7 @@ static PetscErrorCode KSPGCRSetModifyPC_GCR(KSP ksp, KSPGCRModifyPCFunction func
 }
 
 /*@C
- KSPGCRSetModifyPC - Sets the routine used by GCR to modify the preconditioner.
+ KSPGCRSetModifyPC - Sets the routine used by `KSPGCR` to modify the preconditioner for each iteration
 
  Logically Collective on ksp
 
@@ -210,27 +218,30 @@ static PetscErrorCode KSPGCRSetModifyPC_GCR(KSP ksp, KSPGCRModifyPCFunction func
 
  Calling Sequence of function:
   PetscErrorCode function (KSP ksp, PetscInt n, PetscReal rnorm, void *ctx)
-
- ksp   - iterative context
- n     - the total number of GCR iterations that have occurred
- rnorm - 2-norm residual value
- ctx   - the user provided application context
++  ksp   - iterative context
+.  n     - the total number of GCR iterations that have occurred
+.  rnorm - 2-norm residual value
+-  ctx   - the user provided application context
 
  Level: intermediate
 
- Notes:
- The default modifypc routine is KSPGCRModifyPCNoChange()
+ Note:
+ The default modifypc routine is `KSPGCRModifyPCNoChange()`
 
- .seealso: `KSPGCRModifyPCNoChange()`
+ Developer Note:
+ The API should make uniform for all flexible types, [](sec_flexibleksp), and not have seperate function calls for each type.
 
+.seealso: [](chapter_ksp), `KSP`, `KSPGCR`, `KSPGCRModifyPCNoChange()`, [](sec_flexibleksp)
  @*/
-PetscErrorCode KSPGCRSetModifyPC(KSP ksp, PetscErrorCode (*function)(KSP, PetscInt, PetscReal, void *), void *data, PetscErrorCode (*destroy)(void *)) {
+PetscErrorCode KSPGCRSetModifyPC(KSP ksp, PetscErrorCode (*function)(KSP, PetscInt, PetscReal, void *), void *data, PetscErrorCode (*destroy)(void *))
+{
   PetscFunctionBegin;
   PetscUseMethod(ksp, "KSPGCRSetModifyPC_C", (KSP, PetscErrorCode(*)(KSP, PetscInt, PetscReal, void *), void *data, PetscErrorCode (*)(void *)), (ksp, function, data, destroy));
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode KSPGCRSetRestart_GCR(KSP ksp, PetscInt restart) {
+static PetscErrorCode KSPGCRSetRestart_GCR(KSP ksp, PetscInt restart)
+{
   KSP_GCR *ctx;
 
   PetscFunctionBegin;
@@ -239,7 +250,8 @@ static PetscErrorCode KSPGCRSetRestart_GCR(KSP ksp, PetscInt restart) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode KSPGCRGetRestart_GCR(KSP ksp, PetscInt *restart) {
+static PetscErrorCode KSPGCRGetRestart_GCR(KSP ksp, PetscInt *restart)
+{
   KSP_GCR *ctx;
 
   PetscFunctionBegin;
@@ -249,7 +261,7 @@ static PetscErrorCode KSPGCRGetRestart_GCR(KSP ksp, PetscInt *restart) {
 }
 
 /*@
-   KSPGCRSetRestart - Sets number of iterations at which GCR restarts.
+   KSPGCRSetRestart - Sets number of iterations at which `KSPGCR` restarts.
 
    Not Collective
 
@@ -257,20 +269,28 @@ static PetscErrorCode KSPGCRGetRestart_GCR(KSP ksp, PetscInt *restart) {
 +  ksp - the Krylov space context
 -  restart - integer restart value
 
-   Note: The default value is 30.
+   Options Database Key:
+.   -ksp_gcr_restart <restart> - the number of stored vectors to orthogonalize against
 
    Level: intermediate
 
-.seealso: `KSPSetTolerances()`, `KSPGCRGetRestart()`, `KSPGMRESSetRestart()`
+   Note:
+   The default value is 30.
+
+   Developer Note:
+   The API could be made uniform for all `KSP` methods have have a restart.
+
+.seealso: [](chapter_ksp), `KSPGCR`, `KSPSetTolerances()`, `KSPGCRGetRestart()`, `KSPGMRESSetRestart()`
 @*/
-PetscErrorCode KSPGCRSetRestart(KSP ksp, PetscInt restart) {
+PetscErrorCode KSPGCRSetRestart(KSP ksp, PetscInt restart)
+{
   PetscFunctionBegin;
   PetscTryMethod(ksp, "KSPGCRSetRestart_C", (KSP, PetscInt), (ksp, restart));
   PetscFunctionReturn(0);
 }
 
 /*@
-   KSPGCRGetRestart - Gets number of iterations at which GCR restarts.
+   KSPGCRGetRestart - Gets number of iterations at which `KSPGCR` restarts.
 
    Not Collective
 
@@ -280,19 +300,19 @@ PetscErrorCode KSPGCRSetRestart(KSP ksp, PetscInt restart) {
    Output Parameter:
 .   restart - integer restart value
 
-   Note: The default value is 30.
-
    Level: intermediate
 
-.seealso: `KSPSetTolerances()`, `KSPGCRSetRestart()`, `KSPGMRESGetRestart()`
+.seealso: [](chapter_ksp), `KSPGCR`, `KSPSetTolerances()`, `KSPGCRSetRestart()`, `KSPGMRESGetRestart()`
 @*/
-PetscErrorCode KSPGCRGetRestart(KSP ksp, PetscInt *restart) {
+PetscErrorCode KSPGCRGetRestart(KSP ksp, PetscInt *restart)
+{
   PetscFunctionBegin;
   PetscTryMethod(ksp, "KSPGCRGetRestart_C", (KSP, PetscInt *), (ksp, restart));
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode KSPBuildSolution_GCR(KSP ksp, Vec v, Vec *V) {
+static PetscErrorCode KSPBuildSolution_GCR(KSP ksp, Vec v, Vec *V)
+{
   Vec x;
 
   PetscFunctionBegin;
@@ -306,7 +326,8 @@ static PetscErrorCode KSPBuildSolution_GCR(KSP ksp, Vec v, Vec *V) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode KSPBuildResidual_GCR(KSP ksp, Vec t, Vec v, Vec *V) {
+static PetscErrorCode KSPBuildResidual_GCR(KSP ksp, Vec t, Vec v, Vec *V)
+{
   KSP_GCR *ctx;
 
   PetscFunctionBegin;
@@ -321,48 +342,51 @@ static PetscErrorCode KSPBuildResidual_GCR(KSP ksp, Vec t, Vec v, Vec *V) {
 }
 
 /*MC
-     KSPGCR - Implements the preconditioned Generalized Conjugate Residual method.
+     KSPGCR - Implements the preconditioned flexible Generalized Conjugate Residual method. [](sec_flexibleksp),
 
-   Options Database Keys:
+   Options Database Key:
 .   -ksp_gcr_restart <restart> - the number of stored vectors to orthogonalize against
 
    Level: beginner
 
     Notes:
     The GCR Krylov method supports non-symmetric matrices and permits the use of a preconditioner
-           which may vary from one iteration to the next. Users can can define a method to vary the
-           preconditioner between iterates via KSPGCRSetModifyPC().
+    which may vary from one iteration to the next.
+
+    Users can can define a method to vary the
+           preconditioner between iterates via `KSPGCRSetModifyPC()`.
 
            Restarts are solves with x0 not equal to zero. When a restart occurs, the initial starting
            solution is given by the current estimate for x which was obtained by the last restart
            iterations of the GCR algorithm.
 
-           Unlike GMRES and FGMRES, when using GCR, the solution and residual vector can be directly accessed at any iterate,
-           with zero computational cost, via a call to KSPBuildSolution() and KSPBuildResidual() respectively.
+           Unlike `KSPGMRES` and `KSPFGMRES`, when using GCR, the solution and residual vector can be directly accessed at any iterate,
+           with zero computational cost, via a call to `KSPBuildSolution()` and `KSPBuildResidual()` respectively.
 
            This implementation of GCR will only apply the stopping condition test whenever ksp->its > ksp->chknorm,
            where ksp->chknorm is specified via the command line argument -ksp_check_norm_iteration or via
-           the function KSPSetCheckNormIteration(). Hence the residual norm reported by the monitor and stored
+           the function `KSPSetCheckNormIteration()`. Hence the residual norm reported by the monitor and stored
            in the residual history will be listed as 0.0 before this iteration. It is actually not 0.0; just not calculated.
 
-           The method implemented requires the storage of 2 x restart + 1 vectors, twice as much as GMRES.
+           The method implemented requires the storage of 2 x restart + 1 vectors, twice as much as `KSPGMRES`.
            Support only for right preconditioning.
 
-    Contributed by Dave May
+    Contributed by:
+    Dave May
 
     References:
 .   * - S. C. Eisenstat, H. C. Elman, and H. C. Schultz. Variational iterative methods for
            nonsymmetric systems of linear equations. SIAM J. Numer. Anal., 20, 1983
 
-.seealso: `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`,
+.seealso: [](chapter_ksp), [](sec_flexibleksp), `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPGCRSetRestart()`, `KSPGCRGetRestart()`,
           `KSPGCRSetRestart()`, `KSPGCRSetModifyPC()`, `KSPGMRES`, `KSPFGMRES`
-
 M*/
-PETSC_EXTERN PetscErrorCode KSPCreate_GCR(KSP ksp) {
+PETSC_EXTERN PetscErrorCode KSPCreate_GCR(KSP ksp)
+{
   KSP_GCR *ctx;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(ksp, &ctx));
+  PetscCall(PetscNew(&ctx));
 
   ctx->restart    = 30;
   ctx->n_restarts = 0;

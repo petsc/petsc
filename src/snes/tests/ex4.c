@@ -31,7 +31,8 @@ extern PetscErrorCode FormObjective(SNES, Vec, PetscReal *, void *);
 */
 PetscInt infatcount = 0;
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   SNES         snes; /* nonlinear solver context */
   KSP          ksp;  /* linear solver context */
   PC           pc;   /* preconditioner context */
@@ -138,7 +139,8 @@ int main(int argc, char **argv) {
   return 0;
 }
 
-PetscErrorCode FormObjective(SNES snes, Vec x, PetscReal *f, void *dummy) {
+PetscErrorCode FormObjective(SNES snes, Vec x, PetscReal *f, void *dummy)
+{
   Vec             F;
   static PetscInt cnt = 0;
 
@@ -153,8 +155,8 @@ PetscErrorCode FormObjective(SNES snes, Vec x, PetscReal *f, void *dummy) {
   return 0;
 }
 
-/* ------------------------------------------------------------------- */
-PetscErrorCode FormFunction2(SNES snes, Vec x, Vec f, void *dummy) {
+PetscErrorCode FormFunction2(SNES snes, Vec x, Vec f, void *dummy)
+{
   const PetscScalar *xx;
   PetscScalar       *ff;
 
@@ -181,8 +183,9 @@ PetscErrorCode FormFunction2(SNES snes, Vec x, Vec f, void *dummy) {
   PetscCall(VecRestoreArray(f, &ff));
   return 0;
 }
-/* ------------------------------------------------------------------- */
-PetscErrorCode FormJacobian2(SNES snes, Vec x, Mat jac, Mat B, void *dummy) {
+
+PetscErrorCode FormJacobian2(SNES snes, Vec x, Mat jac, Mat B, void *dummy)
+{
   const PetscScalar *xx;
   PetscScalar        A[4];
   PetscInt           idx[2] = {0, 1};

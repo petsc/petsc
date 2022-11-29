@@ -2,7 +2,7 @@
      Data structure for the PetscDraw version of the viewer
 */
 
-#if !defined(__VDRAW_H)
+#ifndef __VDRAW_H
 #define __VDRAW_H
 
 #include <petscdraw.h>

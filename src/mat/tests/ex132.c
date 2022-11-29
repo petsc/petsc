@@ -3,7 +3,8 @@ static char help[] = "Test MatAXPY()\n\n";
 
 #include <petscmat.h>
 
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   Mat         C, C1, C2, CU;
   PetscScalar v;
   PetscInt    Ii, J, Istart, Iend;

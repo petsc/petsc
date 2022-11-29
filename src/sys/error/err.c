@@ -1,6 +1,8 @@
 
 /*
       Code that allows one to set the error handlers
+      Portions of this code are under:
+      Copyright (c) 2022 Advanced Micro Devices, Inc. All rights reserved.
 */
 #include <petsc/private/petscimpl.h> /*I "petscsys.h" I*/
 #include <petscviewer.h>
@@ -44,7 +46,8 @@ static EH eh = NULL;
 .seealso: `PetscError()`, `PetscPushErrorHandler()`, `PetscPopErrorHandler()`, `PetscAttachDebuggerErrorHandler()`,
           `PetscAbortErrorHandler()`, `PetscMPIAbortErrorHandler()`, `PetscTraceBackErrorHandler()`, `PetscReturnErrorHandler()`
  @*/
-PetscErrorCode PetscEmacsClientErrorHandler(MPI_Comm comm, int line, const char *fun, const char *file, PetscErrorCode n, PetscErrorType p, const char *mess, void *ctx) {
+PetscErrorCode PetscEmacsClientErrorHandler(MPI_Comm comm, int line, const char *fun, const char *file, PetscErrorCode n, PetscErrorType p, const char *mess, void *ctx)
+{
   PetscErrorCode ierr;
   char           command[PETSC_MAX_PATH_LEN];
   const char    *pdir;
@@ -52,7 +55,8 @@ PetscErrorCode PetscEmacsClientErrorHandler(MPI_Comm comm, int line, const char 
 
   ierr = PetscGetPetscDir(&pdir);
   if (ierr) return ierr;
-  sprintf(command, "cd %s; emacsclient --no-wait +%d %s\n", pdir, line, file);
+  ierr = PetscSNPrintf(command, PETSC_STATIC_ARRAY_LENGTH(command), "cd %s; emacsclient --no-wait +%d %s\n", pdir, line, file);
+  if (ierr) return ierr;
 #if defined(PETSC_HAVE_POPEN)
   ierr = PetscPOpen(MPI_COMM_WORLD, (char *)ctx, command, "r", &fp);
   if (ierr) return ierr;
@@ -109,7 +113,8 @@ $    int handler(MPI_Comm comm,int line,char *func,char *file,PetscErrorCode n,i
 
 .seealso: `PetscPopErrorHandler()`, `PetscAttachDebuggerErrorHandler()`, `PetscAbortErrorHandler()`, `PetscTraceBackErrorHandler()`, `PetscPushSignalHandler()`
 @*/
-PetscErrorCode PetscPushErrorHandler(PetscErrorCode (*handler)(MPI_Comm comm, int, const char *, const char *, PetscErrorCode, PetscErrorType, const char *, void *), void *ctx) {
+PetscErrorCode PetscPushErrorHandler(PetscErrorCode (*handler)(MPI_Comm comm, int, const char *, const char *, PetscErrorCode, PetscErrorType, const char *, void *), void *ctx)
+{
   EH neweh;
 
   PetscFunctionBegin;
@@ -132,7 +137,8 @@ PetscErrorCode PetscPushErrorHandler(PetscErrorCode (*handler)(MPI_Comm comm, in
 
 .seealso: `PetscPushErrorHandler()`
 @*/
-PetscErrorCode PetscPopErrorHandler(void) {
+PetscErrorCode PetscPopErrorHandler(void)
+{
   EH tmp;
 
   PetscFunctionBegin;
@@ -172,11 +178,12 @@ $     SETERRQ(comm,number,mess)
 .seealso: `PetscPushErrorHandler()`, `PetscPopErrorHandler()`, `PetscError()`, `PetscAbortErrorHandler()`, `PetscMPIAbortErrorHandler()`, `PetscTraceBackErrorHandler()`,
           `PetscAttachDebuggerErrorHandler()`, `PetscEmacsClientErrorHandler()`
  @*/
-PetscErrorCode PetscReturnErrorHandler(MPI_Comm comm, int line, const char *fun, const char *file, PetscErrorCode n, PetscErrorType p, const char *mess, void *ctx) {
+PetscErrorCode PetscReturnErrorHandler(MPI_Comm comm, int line, const char *fun, const char *file, PetscErrorCode n, PetscErrorType p, const char *mess, void *ctx)
+{
   return n;
 }
 
-static char        PetscErrorBaseMessage[1024];
+static char PetscErrorBaseMessage[1024];
 /*
        The numerical values for these are defined in include/petscerror.h; any changes
    there must also be made here
@@ -225,7 +232,8 @@ static const char *PetscErrorStrings[] = {
   /*95 */ "Missing or incorrect user input",
   /*96 */ "GPU resources unavailable",
   /*97 */ "GPU error",
-  /*98 */ "General MPI error"};
+  /*98 */ "General MPI error",
+  /*99 */ "PetscError() incorrectly returned an error code of 0"};
 
 /*@C
    PetscErrorMessage - returns the text string associated with a PETSc error code.
@@ -244,7 +252,8 @@ static const char *PetscErrorStrings[] = {
 .seealso: `PetscPushErrorHandler()`, `PetscAttachDebuggerErrorHandler()`, `PetscError()`, `SETERRQ()`, `PetscCall()`
           `PetscAbortErrorHandler()`, `PetscTraceBackErrorHandler()`
  @*/
-PetscErrorCode PetscErrorMessage(int errnum, const char *text[], char **specific) {
+PetscErrorCode PetscErrorMessage(int errnum, const char *text[], char **specific)
+{
   size_t len;
 
   PetscFunctionBegin;
@@ -259,7 +268,7 @@ PetscErrorCode PetscErrorMessage(int errnum, const char *text[], char **specific
 }
 
 #if defined(PETSC_CLANGUAGE_CXX)
-/* C++ exceptions are formally not allowed to propagate through extern "C" code. In practice, far too much software
+  /* C++ exceptions are formally not allowed to propagate through extern "C" code. In practice, far too much software
  * would be broken if implementations did not handle it it some common cases. However, keep in mind
  *
  *   Rule 62. Don't allow exceptions to propagate across module boundaries
@@ -271,9 +280,10 @@ PetscErrorCode PetscErrorMessage(int errnum, const char *text[], char **specific
  * and stack information from the PETSc error. You could make everyone write exactly this code in their C++, but that
  * seems crazy to me.
  */
-#include <sstream>
-#include <stdexcept>
-static void PetscCxxErrorThrow() {
+  #include <sstream>
+  #include <stdexcept>
+static void PetscCxxErrorThrow()
+{
   const char *str;
   if (eh && eh->ctx) {
     std::ostringstream *msg;
@@ -306,17 +316,25 @@ static void PetscCxxErrorThrow() {
   Level: intermediate
 
    Notes:
-   PETSc error handling is done with error return codes. A non-zero return indicates an error was detected. Errors are generally not something that the code
-   can recover from. Note that numerical errors (potential divide by zero, for example) are not managed by the error return codes; they are managed via, for example,
-   `KSPGetConvergedReason()` that indicates if the solve was successful or not. The option -ksp_error_if_not_converged, for example, turns numerical failures into
-   hard errors managed via `PetscError()`.
+   PETSc error handling is done with error return codes. A non-zero return indicates an error
+   was detected. The return-value of this routine is what is ultimately returned by
+   `SETERRQ()`.
 
-   PETSc provides a rich supply of error handlers, see the list below, and users can also provide their own error handlers.
+   Note that numerical errors (potential divide by zero, for example) are not managed by the
+   error return codes; they are managed via, for example, `KSPGetConvergedReason()` that
+   indicates if the solve was successful or not. The option `-ksp_error_if_not_converged`, for
+   example, turns numerical failures into hard errors managed via `PetscError()`.
 
-   Most users need not directly use this routine and the error handlers, but
-   can instead use the simplified interface `PetscCall()` or `SETERRQ()`
+   PETSc provides a rich supply of error handlers, see the list below, and users can also
+   provide their own error handlers.
 
-   Set the error handler with `PetscPushErrorHandler()`.
+   If the user sets their own error handler (via `PetscPushErrorHandler()`) they may return any
+   arbitrary value from it, but are encouraged to return nonzero values. If the return value is
+   zero, `SETERRQ()` will ignore the value and return `PETSC_ERR_RETURN` (a nonzero value)
+   instead.
+
+   Most users need not directly use this routine and the error handlers, but can instead use
+   the simplified interface `PetscCall()` or `SETERRQ()`.
 
    Fortran Note:
    This routine is used differently from Fortran
@@ -331,7 +349,8 @@ $    PetscError(MPI_Comm comm,PetscErrorCode n,PetscErrorType p,char *message)
           `PetscReturnErrorHandler()`, `PetscAttachDebuggerErrorHandler()`, `PetscEmacsClientErrorHandler()`,
           `SETERRQ()`, `PetscCall()`, `CHKMEMQ`, `SETERRQ()`, `SETERRQ()`, `PetscErrorMessage()`, `PETSCABORT()`
 @*/
-PetscErrorCode PetscError(MPI_Comm comm, int line, const char *func, const char *file, PetscErrorCode n, PetscErrorType p, const char *mess, ...) {
+PetscErrorCode PetscError(MPI_Comm comm, int line, const char *func, const char *file, PetscErrorCode n, PetscErrorType p, const char *mess, ...)
+{
   va_list        Argp;
   size_t         fullLength;
   char           buf[2048], *lbuf = NULL;
@@ -385,7 +404,7 @@ PetscErrorCode PetscError(MPI_Comm comm, int line, const char *func, const char 
     Input Parameters:
 +   N - number of integers in array
 .   idx - array of integers
--   viewer - location to print array,  `PETSC_VIEWER_STDOUT_WORLD`, `PETSC_VIEWER_STDOUT_SELF` or 0
+-   viewer - location to print array, `PETSC_VIEWER_STDOUT_WORLD`, `PETSC_VIEWER_STDOUT_SELF` or 0
 
   Level: intermediate
 
@@ -397,7 +416,8 @@ PetscErrorCode PetscError(MPI_Comm comm, int line, const char *func, const char 
 
 .seealso: `PetscViewer`, `PetscRealView()`
 @*/
-PetscErrorCode PetscIntView(PetscInt N, const PetscInt idx[], PetscViewer viewer) {
+PetscErrorCode PetscIntView(PetscInt N, const PetscInt idx[], PetscViewer viewer)
+{
   PetscMPIInt rank, size;
   PetscInt    j, i, n = N / 20, p = N % 20;
   PetscBool   iascii, isbinary;
@@ -481,7 +501,7 @@ PetscErrorCode PetscIntView(PetscInt N, const PetscInt idx[], PetscViewer viewer
     Input Parameters:
 +   N - number of `PetscReal` in array
 .   idx - array of `PetscReal`
--   viewer - location to print array,  `PETSC_VIEWER_STDOUT_WORLD`, `PETSC_VIEWER_STDOUT_SELF` or 0
+-   viewer - location to print array, `PETSC_VIEWER_STDOUT_WORLD`, `PETSC_VIEWER_STDOUT_SELF` or 0
 
   Level: intermediate
 
@@ -493,7 +513,8 @@ PetscErrorCode PetscIntView(PetscInt N, const PetscInt idx[], PetscViewer viewer
 
 .seealso: `PetscViewer`, `PetscIntView()`
 @*/
-PetscErrorCode PetscRealView(PetscInt N, const PetscReal idx[], PetscViewer viewer) {
+PetscErrorCode PetscRealView(PetscInt N, const PetscReal idx[], PetscViewer viewer)
+{
   PetscMPIInt rank, size;
   PetscInt    j, i, n = N / 5, p = N % 5;
   PetscBool   iascii, isbinary;
@@ -585,7 +606,7 @@ PetscErrorCode PetscRealView(PetscInt N, const PetscReal idx[], PetscViewer view
     Input Parameters:
 +   N - number of scalars in array
 .   idx - array of scalars
--   viewer - location to print array,  `PETSC_VIEWER_STDOUT_WORLD`, `PETSC_VIEWER_STDOUT_SELF` or 0
+-   viewer - location to print array, `PETSC_VIEWER_STDOUT_WORLD`, `PETSC_VIEWER_STDOUT_SELF` or 0
 
   Level: intermediate
 
@@ -597,7 +618,8 @@ PetscErrorCode PetscRealView(PetscInt N, const PetscReal idx[], PetscViewer view
 
 .seealso: `PetscViewer`, `PetscIntView()`, `PetscRealView()`
 @*/
-PetscErrorCode PetscScalarView(PetscInt N, const PetscScalar idx[], PetscViewer viewer) {
+PetscErrorCode PetscScalarView(PetscInt N, const PetscScalar idx[], PetscViewer viewer)
+{
   PetscMPIInt rank, size;
   PetscInt    j, i, n = N / 3, p = N % 3;
   PetscBool   iascii, isbinary;
@@ -686,83 +708,200 @@ PetscErrorCode PetscScalarView(PetscInt N, const PetscScalar idx[], PetscViewer 
 }
 
 #if defined(PETSC_HAVE_CUDA)
-#include <petscdevice.h>
-PETSC_EXTERN const char *PetscCUBLASGetErrorName(cublasStatus_t status) {
+  #include <petscdevice_cuda.h>
+PETSC_EXTERN const char *PetscCUBLASGetErrorName(cublasStatus_t status)
+{
   switch (status) {
-#if (CUDART_VERSION >= 8000) /* At least CUDA 8.0 of Sep. 2016 had these */
-  case CUBLAS_STATUS_SUCCESS: return "CUBLAS_STATUS_SUCCESS";
-  case CUBLAS_STATUS_NOT_INITIALIZED: return "CUBLAS_STATUS_NOT_INITIALIZED";
-  case CUBLAS_STATUS_ALLOC_FAILED: return "CUBLAS_STATUS_ALLOC_FAILED";
-  case CUBLAS_STATUS_INVALID_VALUE: return "CUBLAS_STATUS_INVALID_VALUE";
-  case CUBLAS_STATUS_ARCH_MISMATCH: return "CUBLAS_STATUS_ARCH_MISMATCH";
-  case CUBLAS_STATUS_MAPPING_ERROR: return "CUBLAS_STATUS_MAPPING_ERROR";
-  case CUBLAS_STATUS_EXECUTION_FAILED: return "CUBLAS_STATUS_EXECUTION_FAILED";
-  case CUBLAS_STATUS_INTERNAL_ERROR: return "CUBLAS_STATUS_INTERNAL_ERROR";
-  case CUBLAS_STATUS_NOT_SUPPORTED: return "CUBLAS_STATUS_NOT_SUPPORTED";
-  case CUBLAS_STATUS_LICENSE_ERROR: return "CUBLAS_STATUS_LICENSE_ERROR";
-#endif
-  default: return "unknown error";
+  #if (CUDART_VERSION >= 8000) /* At least CUDA 8.0 of Sep. 2016 had these */
+  case CUBLAS_STATUS_SUCCESS:
+    return "CUBLAS_STATUS_SUCCESS";
+  case CUBLAS_STATUS_NOT_INITIALIZED:
+    return "CUBLAS_STATUS_NOT_INITIALIZED";
+  case CUBLAS_STATUS_ALLOC_FAILED:
+    return "CUBLAS_STATUS_ALLOC_FAILED";
+  case CUBLAS_STATUS_INVALID_VALUE:
+    return "CUBLAS_STATUS_INVALID_VALUE";
+  case CUBLAS_STATUS_ARCH_MISMATCH:
+    return "CUBLAS_STATUS_ARCH_MISMATCH";
+  case CUBLAS_STATUS_MAPPING_ERROR:
+    return "CUBLAS_STATUS_MAPPING_ERROR";
+  case CUBLAS_STATUS_EXECUTION_FAILED:
+    return "CUBLAS_STATUS_EXECUTION_FAILED";
+  case CUBLAS_STATUS_INTERNAL_ERROR:
+    return "CUBLAS_STATUS_INTERNAL_ERROR";
+  case CUBLAS_STATUS_NOT_SUPPORTED:
+    return "CUBLAS_STATUS_NOT_SUPPORTED";
+  case CUBLAS_STATUS_LICENSE_ERROR:
+    return "CUBLAS_STATUS_LICENSE_ERROR";
+  #endif
+  default:
+    return "unknown error";
   }
 }
-PETSC_EXTERN const char *PetscCUSolverGetErrorName(cusolverStatus_t status) {
+PETSC_EXTERN const char *PetscCUSolverGetErrorName(cusolverStatus_t status)
+{
   switch (status) {
-#if (CUDART_VERSION >= 8000) /* At least CUDA 8.0 of Sep. 2016 had these */
-  case CUSOLVER_STATUS_SUCCESS: return "CUSOLVER_STATUS_SUCCESS";
-  case CUSOLVER_STATUS_NOT_INITIALIZED: return "CUSOLVER_STATUS_NOT_INITIALIZED";
-  case CUSOLVER_STATUS_INVALID_VALUE: return "CUSOLVER_STATUS_INVALID_VALUE";
-  case CUSOLVER_STATUS_ARCH_MISMATCH: return "CUSOLVER_STATUS_ARCH_MISMATCH";
-  case CUSOLVER_STATUS_INTERNAL_ERROR: return "CUSOLVER_STATUS_INTERNAL_ERROR";
-#if (CUDART_VERSION >= 9000) /* CUDA 9.0 had these defined on June 2021 */
-  case CUSOLVER_STATUS_ALLOC_FAILED: return "CUSOLVER_STATUS_ALLOC_FAILED";
-  case CUSOLVER_STATUS_MAPPING_ERROR: return "CUSOLVER_STATUS_MAPPING_ERROR";
-  case CUSOLVER_STATUS_EXECUTION_FAILED: return "CUSOLVER_STATUS_EXECUTION_FAILED";
-  case CUSOLVER_STATUS_MATRIX_TYPE_NOT_SUPPORTED: return "CUSOLVER_STATUS_MATRIX_TYPE_NOT_SUPPORTED";
-  case CUSOLVER_STATUS_NOT_SUPPORTED: return "CUSOLVER_STATUS_NOT_SUPPORTED ";
-  case CUSOLVER_STATUS_ZERO_PIVOT: return "CUSOLVER_STATUS_ZERO_PIVOT";
-  case CUSOLVER_STATUS_INVALID_LICENSE: return "CUSOLVER_STATUS_INVALID_LICENSE";
-#endif
-#endif
-  default: return "unknown error";
+  #if (CUDART_VERSION >= 8000) /* At least CUDA 8.0 of Sep. 2016 had these */
+  case CUSOLVER_STATUS_SUCCESS:
+    return "CUSOLVER_STATUS_SUCCESS";
+  case CUSOLVER_STATUS_NOT_INITIALIZED:
+    return "CUSOLVER_STATUS_NOT_INITIALIZED";
+  case CUSOLVER_STATUS_INVALID_VALUE:
+    return "CUSOLVER_STATUS_INVALID_VALUE";
+  case CUSOLVER_STATUS_ARCH_MISMATCH:
+    return "CUSOLVER_STATUS_ARCH_MISMATCH";
+  case CUSOLVER_STATUS_INTERNAL_ERROR:
+    return "CUSOLVER_STATUS_INTERNAL_ERROR";
+    #if (CUDART_VERSION >= 9000) /* CUDA 9.0 had these defined on June 2021 */
+  case CUSOLVER_STATUS_ALLOC_FAILED:
+    return "CUSOLVER_STATUS_ALLOC_FAILED";
+  case CUSOLVER_STATUS_MAPPING_ERROR:
+    return "CUSOLVER_STATUS_MAPPING_ERROR";
+  case CUSOLVER_STATUS_EXECUTION_FAILED:
+    return "CUSOLVER_STATUS_EXECUTION_FAILED";
+  case CUSOLVER_STATUS_MATRIX_TYPE_NOT_SUPPORTED:
+    return "CUSOLVER_STATUS_MATRIX_TYPE_NOT_SUPPORTED";
+  case CUSOLVER_STATUS_NOT_SUPPORTED:
+    return "CUSOLVER_STATUS_NOT_SUPPORTED ";
+  case CUSOLVER_STATUS_ZERO_PIVOT:
+    return "CUSOLVER_STATUS_ZERO_PIVOT";
+  case CUSOLVER_STATUS_INVALID_LICENSE:
+    return "CUSOLVER_STATUS_INVALID_LICENSE";
+    #endif
+  #endif
+  default:
+    return "unknown error";
   }
 }
-PETSC_EXTERN const char *PetscCUFFTGetErrorName(cufftResult result) {
+PETSC_EXTERN const char *PetscCUFFTGetErrorName(cufftResult result)
+{
   switch (result) {
-  case CUFFT_SUCCESS: return "CUFFT_SUCCESS";
-  case CUFFT_INVALID_PLAN: return "CUFFT_INVALID_PLAN";
-  case CUFFT_ALLOC_FAILED: return "CUFFT_ALLOC_FAILED";
-  case CUFFT_INVALID_TYPE: return "CUFFT_INVALID_TYPE";
-  case CUFFT_INVALID_VALUE: return "CUFFT_INVALID_VALUE";
-  case CUFFT_INTERNAL_ERROR: return "CUFFT_INTERNAL_ERROR";
-  case CUFFT_EXEC_FAILED: return "CUFFT_EXEC_FAILED";
-  case CUFFT_SETUP_FAILED: return "CUFFT_SETUP_FAILED";
-  case CUFFT_INVALID_SIZE: return "CUFFT_INVALID_SIZE";
-  case CUFFT_UNALIGNED_DATA: return "CUFFT_UNALIGNED_DATA";
-  case CUFFT_INCOMPLETE_PARAMETER_LIST: return "CUFFT_INCOMPLETE_PARAMETER_LIST";
-  case CUFFT_INVALID_DEVICE: return "CUFFT_INVALID_DEVICE";
-  case CUFFT_PARSE_ERROR: return "CUFFT_PARSE_ERROR";
-  case CUFFT_NO_WORKSPACE: return "CUFFT_NO_WORKSPACE";
-  case CUFFT_NOT_IMPLEMENTED: return "CUFFT_NOT_IMPLEMENTED";
-  case CUFFT_LICENSE_ERROR: return "CUFFT_LICENSE_ERROR";
-  case CUFFT_NOT_SUPPORTED: return "CUFFT_NOT_SUPPORTED";
-  default: return "unknown error";
+  case CUFFT_SUCCESS:
+    return "CUFFT_SUCCESS";
+  case CUFFT_INVALID_PLAN:
+    return "CUFFT_INVALID_PLAN";
+  case CUFFT_ALLOC_FAILED:
+    return "CUFFT_ALLOC_FAILED";
+  case CUFFT_INVALID_TYPE:
+    return "CUFFT_INVALID_TYPE";
+  case CUFFT_INVALID_VALUE:
+    return "CUFFT_INVALID_VALUE";
+  case CUFFT_INTERNAL_ERROR:
+    return "CUFFT_INTERNAL_ERROR";
+  case CUFFT_EXEC_FAILED:
+    return "CUFFT_EXEC_FAILED";
+  case CUFFT_SETUP_FAILED:
+    return "CUFFT_SETUP_FAILED";
+  case CUFFT_INVALID_SIZE:
+    return "CUFFT_INVALID_SIZE";
+  case CUFFT_UNALIGNED_DATA:
+    return "CUFFT_UNALIGNED_DATA";
+  case CUFFT_INCOMPLETE_PARAMETER_LIST:
+    return "CUFFT_INCOMPLETE_PARAMETER_LIST";
+  case CUFFT_INVALID_DEVICE:
+    return "CUFFT_INVALID_DEVICE";
+  case CUFFT_PARSE_ERROR:
+    return "CUFFT_PARSE_ERROR";
+  case CUFFT_NO_WORKSPACE:
+    return "CUFFT_NO_WORKSPACE";
+  case CUFFT_NOT_IMPLEMENTED:
+    return "CUFFT_NOT_IMPLEMENTED";
+  case CUFFT_LICENSE_ERROR:
+    return "CUFFT_LICENSE_ERROR";
+  case CUFFT_NOT_SUPPORTED:
+    return "CUFFT_NOT_SUPPORTED";
+  default:
+    return "unknown error";
   }
 }
 #endif
 
 #if defined(PETSC_HAVE_HIP)
-#include <petscdevice.h>
-PETSC_EXTERN const char *PetscHIPBLASGetErrorName(hipblasStatus_t status) {
+  #include <petscdevice_hip.h>
+PETSC_EXTERN const char *PetscHIPBLASGetErrorName(hipblasStatus_t status)
+{
   switch (status) {
-  case HIPBLAS_STATUS_SUCCESS: return "HIPBLAS_STATUS_SUCCESS";
-  case HIPBLAS_STATUS_NOT_INITIALIZED: return "HIPBLAS_STATUS_NOT_INITIALIZED";
-  case HIPBLAS_STATUS_ALLOC_FAILED: return "HIPBLAS_STATUS_ALLOC_FAILED";
-  case HIPBLAS_STATUS_INVALID_VALUE: return "HIPBLAS_STATUS_INVALID_VALUE";
-  case HIPBLAS_STATUS_ARCH_MISMATCH: return "HIPBLAS_STATUS_ARCH_MISMATCH";
-  case HIPBLAS_STATUS_MAPPING_ERROR: return "HIPBLAS_STATUS_MAPPING_ERROR";
-  case HIPBLAS_STATUS_EXECUTION_FAILED: return "HIPBLAS_STATUS_EXECUTION_FAILED";
-  case HIPBLAS_STATUS_INTERNAL_ERROR: return "HIPBLAS_STATUS_INTERNAL_ERROR";
-  case HIPBLAS_STATUS_NOT_SUPPORTED: return "HIPBLAS_STATUS_NOT_SUPPORTED";
-  default: return "unknown error";
+  case HIPBLAS_STATUS_SUCCESS:
+    return "HIPBLAS_STATUS_SUCCESS";
+  case HIPBLAS_STATUS_NOT_INITIALIZED:
+    return "HIPBLAS_STATUS_NOT_INITIALIZED";
+  case HIPBLAS_STATUS_ALLOC_FAILED:
+    return "HIPBLAS_STATUS_ALLOC_FAILED";
+  case HIPBLAS_STATUS_INVALID_VALUE:
+    return "HIPBLAS_STATUS_INVALID_VALUE";
+  case HIPBLAS_STATUS_ARCH_MISMATCH:
+    return "HIPBLAS_STATUS_ARCH_MISMATCH";
+  case HIPBLAS_STATUS_MAPPING_ERROR:
+    return "HIPBLAS_STATUS_MAPPING_ERROR";
+  case HIPBLAS_STATUS_EXECUTION_FAILED:
+    return "HIPBLAS_STATUS_EXECUTION_FAILED";
+  case HIPBLAS_STATUS_INTERNAL_ERROR:
+    return "HIPBLAS_STATUS_INTERNAL_ERROR";
+  case HIPBLAS_STATUS_NOT_SUPPORTED:
+    return "HIPBLAS_STATUS_NOT_SUPPORTED";
+  default:
+    return "unknown error";
+  }
+}
+PETSC_EXTERN const char *PetscHIPSPARSEGetErrorName(hipsparseStatus_t status)
+{
+  switch (status) {
+  case HIPSPARSE_STATUS_SUCCESS:
+    return "HIPSPARSE_STATUS_SUCCESS";
+  case HIPSPARSE_STATUS_NOT_INITIALIZED:
+    return "HIPSPARSE_STATUS_NOT_INITIALIZED";
+  case HIPSPARSE_STATUS_ALLOC_FAILED:
+    return "HIPSPARSE_STATUS_ALLOC_FAILED";
+  case HIPSPARSE_STATUS_INVALID_VALUE:
+    return "HIPSPARSE_STATUS_INVALID_VALUE";
+  case HIPSPARSE_STATUS_ARCH_MISMATCH:
+    return "HIPSPARSE_STATUS_ARCH_MISMATCH";
+  case HIPSPARSE_STATUS_MAPPING_ERROR:
+    return "HIPSPARSE_STATUS_MAPPING_ERROR";
+  case HIPSPARSE_STATUS_EXECUTION_FAILED:
+    return "HIPSPARSE_STATUS_EXECUTION_FAILED";
+  case HIPSPARSE_STATUS_INTERNAL_ERROR:
+    return "HIPSPARSE_STATUS_INTERNAL_ERROR";
+  case HIPSPARSE_STATUS_MATRIX_TYPE_NOT_SUPPORTED:
+    return "HIPSPARSE_STATUS_MATRIX_TYPE_NOT_SUPPORTED";
+  case HIPSPARSE_STATUS_ZERO_PIVOT:
+    return "HIPSPARSE_STATUS_ZERO_PIVOT";
+  case HIPSPARSE_STATUS_NOT_SUPPORTED:
+    return "HIPSPARSE_STATUS_NOT_SUPPORTED";
+  case HIPSPARSE_STATUS_INSUFFICIENT_RESOURCES:
+    return "HIPSPARSE_STATUS_INSUFFICIENT_RESOURCES";
+  default:
+    return "unknown error";
+  }
+}
+PETSC_EXTERN const char *PetscHIPSolverGetErrorName(hipsolverStatus_t status)
+{
+  switch (status) {
+  case HIPSOLVER_STATUS_SUCCESS:
+    return "HIPSOLVER_STATUS_SUCCESS";
+  case HIPSOLVER_STATUS_NOT_INITIALIZED:
+    return "HIPSOLVER_STATUS_NOT_INITIALIZED";
+  case HIPSOLVER_STATUS_ALLOC_FAILED:
+    return "HIPSOLVER_STATUS_ALLOC_FAILED";
+  case HIPSOLVER_STATUS_MAPPING_ERROR:
+    return "HIPSOLVER_STATUS_MAPPING_ERROR";
+  case HIPSOLVER_STATUS_INVALID_VALUE:
+    return "HIPSOLVER_STATUS_INVALID_VALUE";
+  case HIPSOLVER_STATUS_EXECUTION_FAILED:
+    return "HIPSOLVER_STATUS_EXECUTION_FAILED";
+  case HIPSOLVER_STATUS_INTERNAL_ERROR:
+    return "HIPSOLVER_STATUS_INTERNAL_ERROR";
+  case HIPSOLVER_STATUS_NOT_SUPPORTED:
+    return "HIPSOLVER_STATUS_NOT_SUPPORTED ";
+  case HIPSOLVER_STATUS_ARCH_MISMATCH:
+    return "HIPSOLVER_STATUS_ARCH_MISMATCH";
+  case HIPSOLVER_STATUS_HANDLE_IS_NULLPTR:
+    return "HIPSOLVER_STATUS_HANDLE_IS_NULLPTR";
+  case HIPSOLVER_STATUS_INVALID_ENUM:
+    return "HIPSOLVER_STATUS_INVALID_ENUM";
+  case HIPSOLVER_STATUS_UNKNOWN:
+  default:
+    return "HIPSOLVER_STATUS_UNKNOWN";
   }
 }
 #endif
@@ -783,7 +922,8 @@ PETSC_EXTERN const char *PetscHIPBLASGetErrorName(hipblasStatus_t status) {
     Does not return an error code or do error handling because it may be called from inside an error handler
 
 @*/
-void PetscMPIErrorString(PetscMPIInt err, char *string) {
+void PetscMPIErrorString(PetscMPIInt err, char *string)
+{
   char        errorstring[MPI_MAX_ERROR_STRING];
   PetscMPIInt len, j = 0;
 

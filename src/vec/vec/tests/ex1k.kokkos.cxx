@@ -16,17 +16,20 @@ static char help[] = "Benchmarking memory bandwidth with VecAXPY() on parallel v
 #include <petscdevice.h>
 
 #if defined(PETSC_HAVE_CUDA)
-#define SyncDevice() PetscCallCUDA(cudaDeviceSynchronize())
+  #include <petscdevice_cuda.h>
+  #define SyncDevice() PetscCallCUDA(cudaDeviceSynchronize())
 #elif defined(PETSC_HAVE_HIP)
-#define SyncDevice() PetscCallHIP(hipDeviceSynchronize())
+  #include <petscdevice_hip.h>
+  #define SyncDevice() PetscCallHIP(hipDeviceSynchronize())
 #elif defined(PETSC_HAVE_KOKKOS)
-#include <Kokkos_Core.hpp>
-#define SyncDevice() Kokkos::fence()
+  #include <Kokkos_Core.hpp>
+  #define SyncDevice() Kokkos::fence()
 #else
-#define SyncDevice() 0
+  #define SyncDevice() 0
 #endif
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscInt       i, k, N, n, m = 1000, nsamples;
   PetscLogDouble tstart, tend, time;
   Vec            x, y;

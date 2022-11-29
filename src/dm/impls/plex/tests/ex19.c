@@ -19,7 +19,8 @@ Classic hyperbolic sensor function for testing multi-scale anisotropic mesh adap
 
 (mapped to have domain [0,1] x [0,1] in this case).
 */
-static PetscErrorCode sensor(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar u[], void *ctx) {
+static PetscErrorCode sensor(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar u[], void *ctx)
+{
   const PetscReal xref = 2. * x[0] - 1.;
   const PetscReal yref = 2. * x[1] - 1.;
   const PetscReal xy   = xref * yref;
@@ -30,7 +31,8 @@ static PetscErrorCode sensor(PetscInt dim, PetscReal time, const PetscReal x[], 
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options) {
+static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
+{
   PetscFunctionBegin;
   options->Nr     = 1;
   options->metOpt = 1;
@@ -49,7 +51,8 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm) {
+static PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm)
+{
   PetscFunctionBegin;
   PetscCall(DMCreate(comm, dm));
   PetscCall(DMSetType(*dm, DMPLEX));
@@ -59,7 +62,8 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode ComputeMetricSensor(DM dm, AppCtx *user, Vec *metric) {
+static PetscErrorCode ComputeMetricSensor(DM dm, AppCtx *user, Vec *metric)
+{
   PetscSimplePointFunc funcs[1] = {sensor};
   DM                   dmSensor, dmGrad, dmHess, dmDet;
   PetscFE              fe;
@@ -111,7 +115,8 @@ static PetscErrorCode ComputeMetricSensor(DM dm, AppCtx *user, Vec *metric) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode ComputeMetric(DM dm, AppCtx *user, Vec *metric) {
+static PetscErrorCode ComputeMetric(DM dm, AppCtx *user, Vec *metric)
+{
   PetscReal lambda = 1 / (user->hmax * user->hmax);
 
   PetscFunctionBeginUser;
@@ -141,9 +146,14 @@ static PetscErrorCode ComputeMetric(DM dm, AppCtx *user, Vec *metric) {
 
       PetscCall(DMPlexPointLocalRead(cdm, v, coords, &vcoords));
       switch (user->metOpt) {
-      case 1: h = user->hmax - (user->hmax - user->hmin) * PetscRealPart(vcoords[0]); break;
-      case 2: h = user->hmax * PetscAbsReal(((PetscReal)1.0) - PetscExpReal(-PetscAbsScalar(vcoords[0] - (PetscReal)0.5))) + user->hmin; break;
-      default: SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "metOpt = 0, 1, 2 or 3, cannot be %d", user->metOpt);
+      case 1:
+        h = user->hmax - (user->hmax - user->hmin) * PetscRealPart(vcoords[0]);
+        break;
+      case 2:
+        h = user->hmax * PetscAbsReal(((PetscReal)1.0) - PetscExpReal(-PetscAbsScalar(vcoords[0] - (PetscReal)0.5))) + user->hmin;
+        break;
+      default:
+        SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "metOpt = 0, 1, 2 or 3, cannot be %d", user->metOpt);
       }
       PetscCall(DMPlexPointLocalRef(dm, v, met, &pmet));
       for (i = 0; i < dim; ++i) {
@@ -161,12 +171,14 @@ static PetscErrorCode ComputeMetric(DM dm, AppCtx *user, Vec *metric) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode linear(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx) {
+static PetscErrorCode linear(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
+{
   u[0] = x[0] + x[1];
   return 0;
 }
 
-static PetscErrorCode TestL2Projection(DM dm, DM dma, AppCtx *user) {
+static PetscErrorCode TestL2Projection(DM dm, DM dma, AppCtx *user)
+{
   PetscErrorCode (*funcs[1])(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar *, void *) = {linear};
   DM        dmProj, dmaProj;
   PetscFE   fe;
@@ -245,7 +257,8 @@ static PetscErrorCode TestL2Projection(DM dm, DM dma, AppCtx *user) {
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[])
+{
   DM       dm;
   AppCtx   user; /* user-defined work context */
   MPI_Comm comm;

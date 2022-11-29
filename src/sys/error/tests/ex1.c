@@ -9,7 +9,8 @@ typedef struct _handlerCtx {
   int signum;
 } HandlerCtx;
 
-int handleSignal(int signum, void *ctx) {
+int handleSignal(int signum, void *ctx)
+{
   HandlerCtx *user = (HandlerCtx *)ctx;
 
   user->signum = signum;
@@ -17,7 +18,8 @@ int handleSignal(int signum, void *ctx) {
   return 0;
 }
 
-int main(int argc, char *args[]) {
+int main(int argc, char *args[])
+{
   HandlerCtx user;
 
   user.exitHandler = 0;

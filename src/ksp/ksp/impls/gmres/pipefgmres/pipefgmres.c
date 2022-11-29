@@ -1,6 +1,3 @@
-/*
-  Contributed by Patrick Sanan and Sascha M. Schnepp
-*/
 
 #include <../src/ksp/ksp/impls/gmres/pipefgmres/pipefgmresimpl.h> /*I  "petscksp.h"  I*/
 
@@ -34,7 +31,8 @@ extern PetscErrorCode KSPReset_PIPEFGMRES(KSP);
     but can be called directly by KSPSetUp().
 
 */
-static PetscErrorCode KSPSetUp_PIPEFGMRES(KSP ksp) {
+static PetscErrorCode KSPSetUp_PIPEFGMRES(KSP ksp)
+{
   PetscInt        k;
   KSP_PIPEFGMRES *pipefgmres = (KSP_PIPEFGMRES *)ksp->data;
   const PetscInt  max_k      = pipefgmres->max_k;
@@ -44,21 +42,16 @@ static PetscErrorCode KSPSetUp_PIPEFGMRES(KSP ksp) {
 
   PetscCall(PetscMalloc1((VEC_OFFSET + max_k), &pipefgmres->prevecs));
   PetscCall(PetscMalloc1((VEC_OFFSET + max_k), &pipefgmres->prevecs_user_work));
-  PetscCall(PetscLogObjectMemory((PetscObject)ksp, (VEC_OFFSET + max_k) * (2 * sizeof(void *))));
 
   PetscCall(KSPCreateVecs(ksp, pipefgmres->vv_allocated, &pipefgmres->prevecs_user_work[0], 0, NULL));
-  PetscCall(PetscLogObjectParents(ksp, pipefgmres->vv_allocated, pipefgmres->prevecs_user_work[0]));
   for (k = 0; k < pipefgmres->vv_allocated; k++) pipefgmres->prevecs[k] = pipefgmres->prevecs_user_work[0][k];
 
   PetscCall(PetscMalloc1((VEC_OFFSET + max_k), &pipefgmres->zvecs));
   PetscCall(PetscMalloc1((VEC_OFFSET + max_k), &pipefgmres->zvecs_user_work));
-  PetscCall(PetscLogObjectMemory((PetscObject)ksp, (VEC_OFFSET + max_k) * (2 * sizeof(void *))));
 
   PetscCall(PetscMalloc1((VEC_OFFSET + max_k), &pipefgmres->redux));
-  PetscCall(PetscLogObjectMemory((PetscObject)ksp, (VEC_OFFSET + max_k) * (sizeof(void *))));
 
   PetscCall(KSPCreateVecs(ksp, pipefgmres->vv_allocated, &pipefgmres->zvecs_user_work[0], 0, NULL));
-  PetscCall(PetscLogObjectParents(ksp, pipefgmres->vv_allocated, pipefgmres->zvecs_user_work[0]));
   for (k = 0; k < pipefgmres->vv_allocated; k++) pipefgmres->zvecs[k] = pipefgmres->zvecs_user_work[0][k];
 
   PetscFunctionReturn(0);
@@ -81,7 +74,8 @@ static PetscErrorCode KSPSetUp_PIPEFGMRES(KSP ksp) {
     the initial residual.
 
 */
-static PetscErrorCode KSPPIPEFGMRESCycle(PetscInt *itcount, KSP ksp) {
+static PetscErrorCode KSPPIPEFGMRESCycle(PetscInt *itcount, KSP ksp)
+{
   KSP_PIPEFGMRES *pipefgmres = (KSP_PIPEFGMRES *)(ksp->data);
   PetscReal       res_norm;
   PetscReal       hapbnd, tt;
@@ -343,7 +337,8 @@ static PetscErrorCode KSPPIPEFGMRESCycle(PetscInt *itcount, KSP ksp) {
 .     outits - number of iterations used
 
 */
-static PetscErrorCode KSPSolve_PIPEFGMRES(KSP ksp) {
+static PetscErrorCode KSPSolve_PIPEFGMRES(KSP ksp)
+{
   PetscInt        its, itcount;
   KSP_PIPEFGMRES *pipefgmres = (KSP_PIPEFGMRES *)ksp->data;
   PetscBool       guess_zero = ksp->guess_zero;
@@ -376,7 +371,8 @@ static PetscErrorCode KSPSolve_PIPEFGMRES(KSP ksp) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode KSPDestroy_PIPEFGMRES(KSP ksp) {
+static PetscErrorCode KSPDestroy_PIPEFGMRES(KSP ksp)
+{
   PetscFunctionBegin;
   PetscCall(KSPReset_PIPEFGMRES(ksp));
   PetscCall(KSPDestroy_GMRES(ksp));
@@ -396,7 +392,8 @@ static PetscErrorCode KSPDestroy_PIPEFGMRES(KSP ksp) {
 
      This is an internal routine that knows about the PIPEFGMRES internals.
  */
-static PetscErrorCode KSPPIPEFGMRESBuildSoln(PetscScalar *nrs, Vec vguess, Vec vdest, KSP ksp, PetscInt it) {
+static PetscErrorCode KSPPIPEFGMRESBuildSoln(PetscScalar *nrs, Vec vguess, Vec vdest, KSP ksp, PetscInt it)
+{
   PetscScalar     tt;
   PetscInt        k, j;
   KSP_PIPEFGMRES *pipefgmres = (KSP_PIPEFGMRES *)(ksp->data);
@@ -452,7 +449,8 @@ static PetscErrorCode KSPPIPEFGMRESBuildSoln(PetscScalar *nrs, Vec vguess, Vec v
 /*
 .  it - column of the Hessenberg that is complete, PIPEFGMRES is actually computing two columns ahead of this
  */
-static PetscErrorCode KSPPIPEFGMRESUpdateHessenberg(KSP ksp, PetscInt it, PetscBool *hapend, PetscReal *res) {
+static PetscErrorCode KSPPIPEFGMRESUpdateHessenberg(KSP ksp, PetscInt it, PetscBool *hapend, PetscReal *res)
+{
   PetscScalar    *hh, *cc, *ss, *rs;
   PetscInt        j;
   PetscReal       hapbnd;
@@ -537,21 +535,18 @@ static PetscErrorCode KSPPIPEFGMRESUpdateHessenberg(KSP ksp, PetscInt it, PetscB
    calls directly.
 
 */
-PetscErrorCode KSPBuildSolution_PIPEFGMRES(KSP ksp, Vec ptr, Vec *result) {
+PetscErrorCode KSPBuildSolution_PIPEFGMRES(KSP ksp, Vec ptr, Vec *result)
+{
   KSP_PIPEFGMRES *pipefgmres = (KSP_PIPEFGMRES *)ksp->data;
 
   PetscFunctionBegin;
   if (!ptr) {
-    if (!pipefgmres->sol_temp) {
-      PetscCall(VecDuplicate(ksp->vec_sol, &pipefgmres->sol_temp));
-      PetscCall(PetscLogObjectParent((PetscObject)ksp, (PetscObject)pipefgmres->sol_temp));
-    }
+    if (!pipefgmres->sol_temp) { PetscCall(VecDuplicate(ksp->vec_sol, &pipefgmres->sol_temp)); }
     ptr = pipefgmres->sol_temp;
   }
   if (!pipefgmres->nrs) {
     /* allocate the work area */
     PetscCall(PetscMalloc1(pipefgmres->max_k, &pipefgmres->nrs));
-    PetscCall(PetscLogObjectMemory((PetscObject)ksp, pipefgmres->max_k * sizeof(PetscScalar)));
   }
 
   PetscCall(KSPPIPEFGMRESBuildSoln(pipefgmres->nrs, ksp->vec_sol, ptr, ksp, pipefgmres->it));
@@ -559,7 +554,8 @@ PetscErrorCode KSPBuildSolution_PIPEFGMRES(KSP ksp, Vec ptr, Vec *result) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode KSPSetFromOptions_PIPEFGMRES(KSP ksp, PetscOptionItems *PetscOptionsObject) {
+PetscErrorCode KSPSetFromOptions_PIPEFGMRES(KSP ksp, PetscOptionItems *PetscOptionsObject)
+{
   KSP_PIPEFGMRES *pipefgmres = (KSP_PIPEFGMRES *)ksp->data;
   PetscBool       flg;
   PetscScalar     shift;
@@ -573,7 +569,8 @@ PetscErrorCode KSPSetFromOptions_PIPEFGMRES(KSP ksp, PetscOptionItems *PetscOpti
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode KSPView_PIPEFGMRES(KSP ksp, PetscViewer viewer) {
+PetscErrorCode KSPView_PIPEFGMRES(KSP ksp, PetscViewer viewer)
+{
   KSP_PIPEFGMRES *pipefgmres = (KSP_PIPEFGMRES *)ksp->data;
   PetscBool       iascii, isstring;
 
@@ -600,7 +597,8 @@ PetscErrorCode KSPView_PIPEFGMRES(KSP ksp, PetscViewer viewer) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode KSPReset_PIPEFGMRES(KSP ksp) {
+PetscErrorCode KSPReset_PIPEFGMRES(KSP ksp)
+{
   KSP_PIPEFGMRES *pipefgmres = (KSP_PIPEFGMRES *)ksp->data;
   PetscInt        i;
 
@@ -619,9 +617,7 @@ PetscErrorCode KSPReset_PIPEFGMRES(KSP ksp) {
 }
 
 /*MC
-   KSPPIPEFGMRES - Implements the Pipelined Generalized Minimal Residual method.
-
-   A flexible, 1-stage pipelined variant of GMRES.
+   KSPPIPEFGMRES - Implements the Pipelined (1-stage) Flexible Generalized Minimal Residual method. [](sec_pipelineksp). [](sec_flexibleksp)
 
    Options Database Keys:
 +   -ksp_gmres_restart <restart> - the number of Krylov directions to orthogonalize against
@@ -634,17 +630,20 @@ PetscErrorCode KSPReset_PIPEFGMRES(KSP ksp) {
    Level: intermediate
 
    Notes:
-
-   This variant is not "explicitly normalized" like KSPPGMRES, and requires a shift parameter.
+   This variant is not "explicitly normalized" like `KSPPGMRES`, and requires a shift parameter.
 
    A heuristic for choosing the shift parameter is the largest eigenvalue of the preconditioned operator.
 
-   Only right preconditioning is supported (but this preconditioner may be nonlinear/variable/inexact, as with KSPFGMRES).
-   MPI configuration may be necessary for reductions to make asynchronous progress, which is important for performance of pipelined methods.
-   See the FAQ on the PETSc website for details.
+   Only right preconditioning is supported (but this preconditioner may be nonlinear/variable/inexact, as with `KSPFGMRES`).
 
-   Developer Notes:
-    This class is subclassed off of KSPGMRES.
+   MPI configuration may be necessary for reductions to make asynchronous progress, which is important for performance of pipelined methods.
+   See [](doc_faq_pipelined)
+
+   Developer Note:
+    This class is subclassed off of `KSPGMRES`.
+
+   Contributed by:
+   P. Sanan and S.M. Schnepp
 
    Reference:
     P. Sanan, S.M. Schnepp, and D.A. May,
@@ -652,15 +651,16 @@ PetscErrorCode KSPReset_PIPEFGMRES(KSP ksp) {
     SIAM Journal on Scientific Computing 2016 38:5, C441-C470,
     DOI: 10.1137/15M1049130
 
-.seealso: `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPLGMRES`, `KSPPIPECG`, `KSPPIPECR`, `KSPPGMRES`, `KSPFGMRES`
+.seealso: [](chapter_ksp), [](doc_faq_pipelined), [](sec_pipelineksp), [](sec_flexibleksp), `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPLGMRES`, `KSPPIPECG`, `KSPPIPECR`, `KSPPGMRES`, `KSPFGMRES`
           `KSPGMRESSetRestart()`, `KSPGMRESSetHapTol()`, `KSPGMRESSetPreAllocateVectors()`, `KSPGMRESMonitorKrylov()`, `KSPPIPEFGMRESSetShift()`
 M*/
 
-PETSC_EXTERN PetscErrorCode KSPCreate_PIPEFGMRES(KSP ksp) {
+PETSC_EXTERN PetscErrorCode KSPCreate_PIPEFGMRES(KSP ksp)
+{
   KSP_PIPEFGMRES *pipefgmres;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(ksp, &pipefgmres));
+  PetscCall(PetscNew(&pipefgmres));
 
   ksp->data                              = (void *)pipefgmres;
   ksp->ops->buildsolution                = KSPBuildSolution_PIPEFGMRES;
@@ -695,7 +695,8 @@ PETSC_EXTERN PetscErrorCode KSPCreate_PIPEFGMRES(KSP ksp) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode KSPPIPEFGMRESGetNewVectors(KSP ksp, PetscInt it) {
+static PetscErrorCode KSPPIPEFGMRESGetNewVectors(KSP ksp, PetscInt it)
+{
   KSP_PIPEFGMRES *pipefgmres = (KSP_PIPEFGMRES *)ksp->data;
   PetscInt        nwork      = pipefgmres->nwork_alloc; /* number of work vector chunks allocated */
   PetscInt        nalloc;                               /* number to allocate */
@@ -714,18 +715,15 @@ static PetscErrorCode KSPPIPEFGMRESGetNewVectors(KSP ksp, PetscInt it) {
 
   /* work vectors */
   PetscCall(KSPCreateVecs(ksp, nalloc, &pipefgmres->user_work[nwork], 0, NULL));
-  PetscCall(PetscLogObjectParents(ksp, nalloc, pipefgmres->user_work[nwork]));
   for (k = 0; k < nalloc; k++) pipefgmres->vecs[it + VEC_OFFSET + k] = pipefgmres->user_work[nwork][k];
   /* specify size of chunk allocated */
   pipefgmres->mwork_alloc[nwork] = nalloc;
 
   /* preconditioned vectors (note we don't use VEC_OFFSET) */
   PetscCall(KSPCreateVecs(ksp, nalloc, &pipefgmres->prevecs_user_work[nwork], 0, NULL));
-  PetscCall(PetscLogObjectParents(ksp, nalloc, pipefgmres->prevecs_user_work[nwork]));
   for (k = 0; k < nalloc; k++) pipefgmres->prevecs[it + k] = pipefgmres->prevecs_user_work[nwork][k];
 
   PetscCall(KSPCreateVecs(ksp, nalloc, &pipefgmres->zvecs_user_work[nwork], 0, NULL));
-  PetscCall(PetscLogObjectParents(ksp, nalloc, pipefgmres->zvecs_user_work[nwork]));
   for (k = 0; k < nalloc; k++) pipefgmres->zvecs[it + k] = pipefgmres->zvecs_user_work[nwork][k];
 
   /* increment the number of work vector chunks */
@@ -734,24 +732,28 @@ static PetscErrorCode KSPPIPEFGMRESGetNewVectors(KSP ksp, PetscInt it) {
 }
 
 /*@
-  KSPPIPEFGMRESSetShift - Set the shift parameter for the flexible, pipelined GMRES solver.
+  KSPPIPEFGMRESSetShift - Set the shift parameter for the flexible, pipelined `KSPPIPEFGMRES` solver.
 
-  A heuristic is to set this to be comparable to the largest eigenvalue of the preconditioned operator. This can be acheived with PETSc itself by using a few iterations of a Krylov method. See KSPComputeEigenvalues (and note the caveats there).
+  Logically Collective on ksp
 
-Logically Collective on ksp
-
-Input Parameters:
+  Input Parameters:
 +  ksp - the Krylov space context
 -  shift - the shift
 
-Level: intermediate
+  Options Database Key:
+.  -ksp_pipefgmres_shift <shift> - set the shift parameter
 
-Options Database:
-. -ksp_pipefgmres_shift <shift> - set the shift parameter
+  Level: intermediate
 
-.seealso: `KSPComputeEigenvalues()`
+  Note:
+  A heuristic is to set this to be comparable to the largest eigenvalue of the preconditioned operator.
+  This can be acheived with PETSc itself by using a few iterations of a Krylov method.
+  See `KSPComputeEigenvalues()` (and note the caveats there).
+
+.seealso: [](chapter_ksp), `KSPPIPEFGMRES`, `KSPComputeEigenvalues()`
 @*/
-PetscErrorCode KSPPIPEFGMRESSetShift(KSP ksp, PetscScalar shift) {
+PetscErrorCode KSPPIPEFGMRESSetShift(KSP ksp, PetscScalar shift)
+{
   KSP_PIPEFGMRES *pipefgmres = (KSP_PIPEFGMRES *)ksp->data;
 
   PetscFunctionBegin;

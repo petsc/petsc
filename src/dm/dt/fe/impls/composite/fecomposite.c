@@ -3,7 +3,8 @@
 #include <petscblaslapack.h>
 #include <petscdmplextransform.h>
 
-static PetscErrorCode PetscFEDestroy_Composite(PetscFE fem) {
+static PetscErrorCode PetscFEDestroy_Composite(PetscFE fem)
+{
   PetscFE_Composite *cmp = (PetscFE_Composite *)fem->data;
 
   PetscFunctionBegin;
@@ -12,7 +13,8 @@ static PetscErrorCode PetscFEDestroy_Composite(PetscFE fem) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscFESetUp_Composite(PetscFE fem) {
+static PetscErrorCode PetscFESetUp_Composite(PetscFE fem)
+{
   PetscFE_Composite *cmp = (PetscFE_Composite *)fem->data;
   DM                 K;
   DMPolytopeType     ct;
@@ -95,7 +97,8 @@ static PetscErrorCode PetscFESetUp_Composite(PetscFE fem) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscFECreateTabulation_Composite(PetscFE fem, PetscInt npoints, const PetscReal points[], PetscInt K, PetscTabulation T) {
+static PetscErrorCode PetscFECreateTabulation_Composite(PetscFE fem, PetscInt npoints, const PetscReal points[], PetscInt K, PetscTabulation T)
+{
   PetscFE_Composite *cmp = (PetscFE_Composite *)fem->data;
   DM                 dm;
   DMPolytopeType     ct;
@@ -189,7 +192,8 @@ static PetscErrorCode PetscFECreateTabulation_Composite(PetscFE fem, PetscInt np
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscFEInitialize_Composite(PetscFE fem) {
+static PetscErrorCode PetscFEInitialize_Composite(PetscFE fem)
+{
   PetscFunctionBegin;
   fem->ops->setfromoptions          = NULL;
   fem->ops->setup                   = PetscFESetUp_Composite;
@@ -205,18 +209,19 @@ static PetscErrorCode PetscFEInitialize_Composite(PetscFE fem) {
 }
 
 /*MC
-  PETSCFECOMPOSITE = "composite" - A PetscFE object that represents a composite element
+  PETSCFECOMPOSITE = "composite" - A `PetscFEType` that represents a composite element
 
   Level: intermediate
 
 .seealso: `PetscFEType`, `PetscFECreate()`, `PetscFESetType()`
 M*/
-PETSC_EXTERN PetscErrorCode PetscFECreate_Composite(PetscFE fem) {
+PETSC_EXTERN PetscErrorCode PetscFECreate_Composite(PetscFE fem)
+{
   PetscFE_Composite *cmp;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fem, PETSCFE_CLASSID, 1);
-  PetscCall(PetscNewLog(fem, &cmp));
+  PetscCall(PetscNew(&cmp));
   fem->data = cmp;
 
   cmp->numSubelements = -1;
@@ -233,7 +238,7 @@ PETSC_EXTERN PetscErrorCode PetscFECreate_Composite(PetscFE fem) {
   Not collective
 
   Input Parameter:
-. fem - The PetscFE object
+. fem - The `PetscFE` object
 
   Output Parameters:
 + blockSize - The number of elements in a block
@@ -243,9 +248,10 @@ PETSC_EXTERN PetscErrorCode PetscFECreate_Composite(PetscFE fem) {
 
   Level: intermediate
 
-.seealso: `PetscFECreate()`
+.seealso: `PetscFE`, `PetscFECreate()`
 @*/
-PetscErrorCode PetscFECompositeGetMapping(PetscFE fem, PetscInt *numSubelements, const PetscReal *v0[], const PetscReal *jac[], const PetscReal *invjac[]) {
+PetscErrorCode PetscFECompositeGetMapping(PetscFE fem, PetscInt *numSubelements, const PetscReal *v0[], const PetscReal *jac[], const PetscReal *invjac[])
+{
   PetscFE_Composite *cmp = (PetscFE_Composite *)fem->data;
 
   PetscFunctionBegin;

@@ -8,7 +8,8 @@ static char help[] = "Tests DMSwarm with DMShell\n\n";
 #include <petscdmswarm.h>
 #include <petsc/private/dmimpl.h>
 
-PetscErrorCode _DMLocatePoints_DMDARegular_IS(DM dm, Vec pos, IS *iscell) {
+PetscErrorCode _DMLocatePoints_DMDARegular_IS(DM dm, Vec pos, IS *iscell)
+{
   PetscInt           p, n, bs, npoints, si, sj, milocal, mjlocal, mx, my;
   DM                 dmregular;
   PetscInt          *cellidx;
@@ -56,7 +57,8 @@ PetscErrorCode _DMLocatePoints_DMDARegular_IS(DM dm, Vec pos, IS *iscell) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMLocatePoints_DMDARegular(DM dm, Vec pos, DMPointLocationType ltype, PetscSF cellSF) {
+PetscErrorCode DMLocatePoints_DMDARegular(DM dm, Vec pos, DMPointLocationType ltype, PetscSF cellSF)
+{
   IS              iscell;
   PetscSFNode    *cells;
   PetscInt        p, bs, npoints, nfound;
@@ -84,7 +86,8 @@ PetscErrorCode DMLocatePoints_DMDARegular(DM dm, Vec pos, DMPointLocationType lt
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMGetNeighbors_DMDARegular(DM dm, PetscInt *nneighbors, const PetscMPIInt **neighbors) {
+PetscErrorCode DMGetNeighbors_DMDARegular(DM dm, PetscInt *nneighbors, const PetscMPIInt **neighbors)
+{
   DM dmregular;
 
   PetscFunctionBegin;
@@ -93,7 +96,8 @@ PetscErrorCode DMGetNeighbors_DMDARegular(DM dm, PetscInt *nneighbors, const Pet
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode SwarmViewGP(DM dms, const char prefix[]) {
+PetscErrorCode SwarmViewGP(DM dms, const char prefix[])
+{
   PetscReal  *array;
   PetscInt   *iarray;
   PetscInt    npoints, p, bs;
@@ -120,7 +124,8 @@ PetscErrorCode SwarmViewGP(DM dms, const char prefix[]) {
  Create a DMShell and attach a regularly spaced DMDA for point location
  Override methods for point location
 */
-PetscErrorCode ex3_1(void) {
+PetscErrorCode ex3_1(void)
+{
   DM          dms, dmcell, dmregular;
   PetscMPIInt rank;
   PetscInt    p, bs, nlocal, overlap, mx, tk;
@@ -237,7 +242,8 @@ PetscErrorCode ex3_1(void) {
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
   PetscCall(ex3_1());

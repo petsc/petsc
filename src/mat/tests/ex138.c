@@ -3,7 +3,8 @@ static char help[] = "Tests MatGetColumnNorms()/Sums()/Means() for matrix read f
 
 #include <petscmat.h>
 
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   Mat          A;
   PetscReal   *reductions_real;
   PetscScalar *reductions_scalar;

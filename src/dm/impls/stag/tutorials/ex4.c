@@ -56,7 +56,8 @@ static PetscErrorCode PopulateCoefficientData(Ctx, PetscInt);
 static PetscErrorCode SystemParametersCreate(SystemParameters *, Ctx);
 static PetscErrorCode SystemParametersDestroy(SystemParameters *);
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   Ctx       ctx;
   Mat       A, *A_faces = NULL, S_hat = NULL, P = NULL;
   Vec       x, b;
@@ -312,7 +313,8 @@ int main(int argc, char **argv) {
   return 0;
 }
 
-static PetscScalar GetEta_constant(Ctx ctx, PetscScalar x, PetscScalar y, PetscScalar z) {
+static PetscScalar GetEta_constant(Ctx ctx, PetscScalar x, PetscScalar y, PetscScalar z)
+{
   (void)ctx;
   (void)x;
   (void)y;
@@ -320,19 +322,22 @@ static PetscScalar GetEta_constant(Ctx ctx, PetscScalar x, PetscScalar y, PetscS
   return 1.0;
 }
 
-static PetscScalar GetRho_layers(Ctx ctx, PetscScalar x, PetscScalar y, PetscScalar z) {
+static PetscScalar GetRho_layers(Ctx ctx, PetscScalar x, PetscScalar y, PetscScalar z)
+{
   (void)y;
   (void)z;
   return PetscRealPart(x) < (ctx->xmax - ctx->xmin) / 2.0 ? ctx->rho1 : ctx->rho2;
 }
 
-static PetscScalar GetEta_layers(Ctx ctx, PetscScalar x, PetscScalar y, PetscScalar z) {
+static PetscScalar GetEta_layers(Ctx ctx, PetscScalar x, PetscScalar y, PetscScalar z)
+{
   (void)y;
   (void)z;
   return PetscRealPart(x) < (ctx->xmax - ctx->xmin) / 2.0 ? ctx->eta1 : ctx->eta2;
 }
 
-static PetscScalar GetRho_sinker_box2(Ctx ctx, PetscScalar x, PetscScalar y, PetscScalar z) {
+static PetscScalar GetRho_sinker_box2(Ctx ctx, PetscScalar x, PetscScalar y, PetscScalar z)
+{
   (void)z;
   const PetscReal d  = ctx->xmax - ctx->xmin;
   const PetscReal xx = PetscRealPart(x) / d - 0.5;
@@ -340,7 +345,8 @@ static PetscScalar GetRho_sinker_box2(Ctx ctx, PetscScalar x, PetscScalar y, Pet
   return (xx * xx > 0.15 * 0.15 || yy * yy > 0.15 * 0.15) ? ctx->rho1 : ctx->rho2;
 }
 
-static PetscScalar GetEta_sinker_box2(Ctx ctx, PetscScalar x, PetscScalar y, PetscScalar z) {
+static PetscScalar GetEta_sinker_box2(Ctx ctx, PetscScalar x, PetscScalar y, PetscScalar z)
+{
   (void)z;
   const PetscReal d  = ctx->xmax - ctx->xmin;
   const PetscReal xx = PetscRealPart(x) / d - 0.5;
@@ -348,7 +354,8 @@ static PetscScalar GetEta_sinker_box2(Ctx ctx, PetscScalar x, PetscScalar y, Pet
   return (xx * xx > 0.15 * 0.15 || yy * yy > 0.15 * 0.15) ? ctx->eta1 : ctx->eta2;
 }
 
-static PetscScalar GetRho_sinker_box3(Ctx ctx, PetscScalar x, PetscScalar y, PetscScalar z) {
+static PetscScalar GetRho_sinker_box3(Ctx ctx, PetscScalar x, PetscScalar y, PetscScalar z)
+{
   const PetscReal d          = ctx->xmax - ctx->xmin;
   const PetscReal xx         = PetscRealPart(x) / d - 0.5;
   const PetscReal yy         = PetscRealPart(y) / d - 0.5;
@@ -357,7 +364,8 @@ static PetscScalar GetRho_sinker_box3(Ctx ctx, PetscScalar x, PetscScalar y, Pet
   return (PetscAbsReal(xx) > half_width || PetscAbsReal(yy) > half_width || PetscAbsReal(zz) > half_width) ? ctx->rho1 : ctx->rho2;
 }
 
-static PetscScalar GetEta_sinker_box3(Ctx ctx, PetscScalar x, PetscScalar y, PetscScalar z) {
+static PetscScalar GetEta_sinker_box3(Ctx ctx, PetscScalar x, PetscScalar y, PetscScalar z)
+{
   const PetscReal d          = ctx->xmax - ctx->xmin;
   const PetscReal xx         = PetscRealPart(x) / d - 0.5;
   const PetscReal yy         = PetscRealPart(y) / d - 0.5;
@@ -366,7 +374,8 @@ static PetscScalar GetEta_sinker_box3(Ctx ctx, PetscScalar x, PetscScalar y, Pet
   return (PetscAbsReal(xx) > half_width || PetscAbsReal(yy) > half_width || PetscAbsReal(zz) > half_width) ? ctx->eta1 : ctx->eta2;
 }
 
-static PetscScalar GetRho_sinker_sphere3(Ctx ctx, PetscScalar x, PetscScalar y, PetscScalar z) {
+static PetscScalar GetRho_sinker_sphere3(Ctx ctx, PetscScalar x, PetscScalar y, PetscScalar z)
+{
   const PetscReal d          = ctx->xmax - ctx->xmin;
   const PetscReal xx         = PetscRealPart(x) / d - 0.5;
   const PetscReal yy         = PetscRealPart(y) / d - 0.5;
@@ -375,7 +384,8 @@ static PetscScalar GetRho_sinker_sphere3(Ctx ctx, PetscScalar x, PetscScalar y, 
   return (xx * xx + yy * yy + zz * zz > half_width * half_width) ? ctx->rho1 : ctx->rho2;
 }
 
-static PetscScalar GetEta_sinker_sphere3(Ctx ctx, PetscScalar x, PetscScalar y, PetscScalar z) {
+static PetscScalar GetEta_sinker_sphere3(Ctx ctx, PetscScalar x, PetscScalar y, PetscScalar z)
+{
   const PetscReal d          = ctx->xmax - ctx->xmin;
   const PetscReal xx         = PetscRealPart(x) / d - 0.5;
   const PetscReal yy         = PetscRealPart(y) / d - 0.5;
@@ -384,7 +394,8 @@ static PetscScalar GetEta_sinker_sphere3(Ctx ctx, PetscScalar x, PetscScalar y, 
   return (xx * xx + yy * yy + zz * zz > half_width * half_width) ? ctx->eta1 : ctx->eta2;
 }
 
-static PetscScalar GetEta_blob3(Ctx ctx, PetscScalar x, PetscScalar y, PetscScalar z) {
+static PetscScalar GetEta_blob3(Ctx ctx, PetscScalar x, PetscScalar y, PetscScalar z)
+{
   const PetscReal d  = ctx->xmax - ctx->xmin;
   const PetscReal xx = PetscRealPart(x) / d - 0.5;
   const PetscReal yy = PetscRealPart(y) / d - 0.5;
@@ -392,7 +403,8 @@ static PetscScalar GetEta_blob3(Ctx ctx, PetscScalar x, PetscScalar y, PetscScal
   return ctx->eta1 + ctx->eta2 * PetscExpScalar(-20.0 * (xx * xx + yy * yy + zz * zz));
 }
 
-static PetscScalar GetRho_blob3(Ctx ctx, PetscScalar x, PetscScalar y, PetscScalar z) {
+static PetscScalar GetRho_blob3(Ctx ctx, PetscScalar x, PetscScalar y, PetscScalar z)
+{
   const PetscReal d  = ctx->xmax - ctx->xmin;
   const PetscReal xx = PetscRealPart(x) / d - 0.5;
   const PetscReal yy = PetscRealPart(y) / d - 0.5;
@@ -400,7 +412,8 @@ static PetscScalar GetRho_blob3(Ctx ctx, PetscScalar x, PetscScalar y, PetscScal
   return ctx->rho1 + ctx->rho2 * PetscExpScalar(-20.0 * (xx * xx + yy * yy + zz * zz));
 }
 
-static PetscErrorCode LevelCtxCreate(LevelCtx *p_level_ctx) {
+static PetscErrorCode LevelCtxCreate(LevelCtx *p_level_ctx)
+{
   LevelCtx level_ctx;
 
   PetscFunctionBeginUser;
@@ -412,7 +425,8 @@ static PetscErrorCode LevelCtxCreate(LevelCtx *p_level_ctx) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode LevelCtxDestroy(LevelCtx *p_level_ctx) {
+static PetscErrorCode LevelCtxDestroy(LevelCtx *p_level_ctx)
+{
   LevelCtx level_ctx;
 
   PetscFunctionBeginUser;
@@ -425,7 +439,8 @@ static PetscErrorCode LevelCtxDestroy(LevelCtx *p_level_ctx) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode CtxCreateAndSetFromOptions(Ctx *p_ctx) {
+static PetscErrorCode CtxCreateAndSetFromOptions(Ctx *p_ctx)
+{
   Ctx ctx;
 
   PetscFunctionBeginUser;
@@ -526,7 +541,8 @@ static PetscErrorCode CtxCreateAndSetFromOptions(Ctx *p_ctx) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode CtxDestroy(Ctx *p_ctx) {
+static PetscErrorCode CtxDestroy(Ctx *p_ctx)
+{
   Ctx ctx;
 
   PetscFunctionBeginUser;
@@ -537,7 +553,8 @@ static PetscErrorCode CtxDestroy(Ctx *p_ctx) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode SystemParametersCreate(SystemParameters *parameters, Ctx ctx) {
+static PetscErrorCode SystemParametersCreate(SystemParameters *parameters, Ctx ctx)
+{
   PetscFunctionBeginUser;
   PetscCall(PetscMalloc1(1, parameters));
   (*parameters)->ctx                  = ctx;
@@ -547,14 +564,16 @@ static PetscErrorCode SystemParametersCreate(SystemParameters *parameters, Ctx c
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode SystemParametersDestroy(SystemParameters *parameters) {
+static PetscErrorCode SystemParametersDestroy(SystemParameters *parameters)
+{
   PetscFunctionBeginUser;
   PetscCall(PetscFree(*parameters));
   *parameters = NULL;
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode CreateSystem2d(SystemParameters parameters, Mat *pA, Vec *pRhs) {
+static PetscErrorCode CreateSystem2d(SystemParameters parameters, Mat *pA, Vec *pRhs)
+{
   PetscInt    N[2];
   PetscInt    ex, ey, startx, starty, nx, ny;
   Mat         A;
@@ -971,7 +990,8 @@ static PetscErrorCode CreateSystem2d(SystemParameters parameters, Mat *pA, Vec *
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode CreateSystem3d(SystemParameters parameters, Mat *pA, Vec *pRhs) {
+static PetscErrorCode CreateSystem3d(SystemParameters parameters, Mat *pA, Vec *pRhs)
+{
   PetscInt    N[3];
   PetscInt    ex, ey, ez, startx, starty, startz, nx, ny, nz;
   Mat         A;
@@ -1825,7 +1845,8 @@ static PetscErrorCode CreateSystem3d(SystemParameters parameters, Mat *pA, Vec *
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode CreateSystem(SystemParameters parameters, Mat *pA, Vec *pRhs) {
+static PetscErrorCode CreateSystem(SystemParameters parameters, Mat *pA, Vec *pRhs)
+{
   PetscFunctionBeginUser;
   if (parameters->ctx->dim == 2) {
     PetscCall(CreateSystem2d(parameters, pA, pRhs));
@@ -1835,7 +1856,8 @@ static PetscErrorCode CreateSystem(SystemParameters parameters, Mat *pA, Vec *pR
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PopulateCoefficientData(Ctx ctx, PetscInt level) {
+PetscErrorCode PopulateCoefficientData(Ctx ctx, PetscInt level)
+{
   PetscInt    dim;
   PetscInt    N[3];
   PetscInt    ex, ey, ez, startx, starty, startz, nx, ny, nz;
@@ -1858,7 +1880,7 @@ PetscErrorCode PopulateCoefficientData(Ctx ctx, PetscInt level) {
   PetscCall(DMGetLocalVector(dm_coefficients, &coeff_local));
   PetscCall(DMGlobalToLocal(dm_coefficients, coeff, INSERT_VALUES, coeff_local));
 
-  /* Use direct array acccess to coefficient and coordinate arrays, to popoulate coefficient data */
+  /* Use direct array access to coefficient and coordinate arrays, to popoulate coefficient data */
   PetscCall(DMStagGetGhostCorners(dm_coefficients, &startx, &starty, &startz, &nx, &ny, &nz));
   PetscCall(DMStagGetGlobalSizes(dm_coefficients, &N[0], &N[1], &N[2]));
   PetscCall(DMStagGetProductCoordinateArraysRead(dm_coefficients, &arr_coordinates_x, &arr_coordinates_y, &arr_coordinates_z));
@@ -1917,7 +1939,8 @@ PetscErrorCode PopulateCoefficientData(Ctx ctx, PetscInt level) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode CreateAuxiliaryOperator(Ctx ctx, PetscInt level, Mat *p_S_hat) {
+static PetscErrorCode CreateAuxiliaryOperator(Ctx ctx, PetscInt level, Mat *p_S_hat)
+{
   DM  dm_element;
   Mat S_hat;
   DM  dm_stokes, dm_coefficients;
@@ -1941,7 +1964,8 @@ static PetscErrorCode CreateAuxiliaryOperator(Ctx ctx, PetscInt level, Mat *p_S_
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode OperatorInsertInverseViscosityPressureTerms(DM dm, DM dm_coefficients, Vec coefficients, PetscScalar scale, Mat mat) {
+static PetscErrorCode OperatorInsertInverseViscosityPressureTerms(DM dm, DM dm_coefficients, Vec coefficients, PetscScalar scale, Mat mat)
+{
   PetscInt dim, ex, ey, ez, startx, starty, startz, nx, ny, nz;
   Vec      coeff_local;
 
@@ -1985,7 +2009,8 @@ static PetscErrorCode OperatorInsertInverseViscosityPressureTerms(DM dm, DM dm_c
    that this will fill in zeros for "extra" dof)
    - Set the nullspace for the operator
    - Destroy everything (the operator keeps the references it needs) */
-static PetscErrorCode AttachNullspace(DM dmSol, Mat A) {
+static PetscErrorCode AttachNullspace(DM dmSol, Mat A)
+{
   DM           dmPressure;
   Vec          constantPressure, basis;
   PetscReal    nrm;
@@ -2008,7 +2033,8 @@ static PetscErrorCode AttachNullspace(DM dmSol, Mat A) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DumpSolution(Ctx ctx, PetscInt level, Vec x) {
+static PetscErrorCode DumpSolution(Ctx ctx, PetscInt level, Vec x)
+{
   DM       dm_stokes, dm_coefficients;
   Vec      coeff;
   DM       dm_vel_avg;

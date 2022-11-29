@@ -6,7 +6,8 @@
 */
 #include <../src/ksp/ksp/impls/gmres/agmres/agmresimpl.h>
 
-static PetscErrorCode KSPAGMRESLejafmaxarray(PetscScalar *re, PetscInt pt, PetscInt n, PetscInt *pos) {
+static PetscErrorCode KSPAGMRESLejafmaxarray(PetscScalar *re, PetscInt pt, PetscInt n, PetscInt *pos)
+{
   PetscInt    i;
   PetscScalar mx;
 
@@ -22,7 +23,8 @@ static PetscErrorCode KSPAGMRESLejafmaxarray(PetscScalar *re, PetscInt pt, Petsc
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode KSPAGMRESLejaCfpdMax(PetscScalar *rm, PetscScalar *im, PetscInt *spos, PetscInt nbre, PetscInt n, PetscInt *rpos) {
+static PetscErrorCode KSPAGMRESLejaCfpdMax(PetscScalar *rm, PetscScalar *im, PetscInt *spos, PetscInt nbre, PetscInt n, PetscInt *rpos)
+{
   PetscScalar rd, id, pd, max;
   PetscInt    i, j;
 
@@ -45,7 +47,8 @@ static PetscErrorCode KSPAGMRESLejaCfpdMax(PetscScalar *rm, PetscScalar *im, Pet
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode KSPAGMRESLejaOrdering(PetscScalar *re, PetscScalar *im, PetscScalar *rre, PetscScalar *rim, PetscInt m) {
+PetscErrorCode KSPAGMRESLejaOrdering(PetscScalar *re, PetscScalar *im, PetscScalar *rre, PetscScalar *rim, PetscInt m)
+{
   PetscInt    *spos;
   PetscScalar *n_cmpl, temp;
   PetscInt     i, pos, j;

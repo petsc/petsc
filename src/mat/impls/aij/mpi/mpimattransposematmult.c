@@ -8,7 +8,8 @@
 #include <../src/mat/impls/aij/mpi/mpiaij.h>
 #include <../src/mat/impls/dense/mpi/mpidense.h>
 
-PetscErrorCode MatDestroy_MPIDense_MatTransMatMult(void *data) {
+PetscErrorCode MatDestroy_MPIDense_MatTransMatMult(void *data)
+{
   Mat_MatTransMatMult *atb = (Mat_MatTransMatMult *)data;
 
   PetscFunctionBegin;
@@ -21,7 +22,8 @@ PetscErrorCode MatDestroy_MPIDense_MatTransMatMult(void *data) {
 
 static PetscErrorCode MatTransposeMatMultNumeric_MPIAIJ_MPIDense(Mat, Mat, Mat);
 
-PETSC_INTERN PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIDense(Mat A, Mat B, PetscReal fill, Mat C) {
+PETSC_INTERN PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIDense(Mat A, Mat B, PetscReal fill, Mat C)
+{
   Mat_MatTransMatMult *atb;
   PetscBool            cisdense;
 
@@ -52,7 +54,8 @@ PETSC_INTERN PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIDense(Mat A, M
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatTransposeMatMultNumeric_MPIAIJ_MPIDense(Mat A, Mat B, Mat C) {
+static PetscErrorCode MatTransposeMatMultNumeric_MPIAIJ_MPIDense(Mat A, Mat B, Mat C)
+{
   const PetscScalar   *Barray, *ctarray;
   PetscScalar         *Carray, *btarray;
   PetscInt             i, j, m = A->rmap->n, n = A->cmap->n, ldb, BN = B->cmap->N, ldc;

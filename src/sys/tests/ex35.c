@@ -2,7 +2,8 @@ static char help[] = "Tests PetscSortReal(), PetscSortRealWithArrayInt(), PetscF
 
 #include <petscsys.h>
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscInt  i, loc;
   PetscReal val;
   PetscReal x[]      = {39, 9, 19, -39, 29, 309, 209, 390, 12, 11};

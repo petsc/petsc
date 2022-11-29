@@ -28,7 +28,8 @@
 /*    PROGRAM SUBROUTINES -*/
 /*       FN1WD, REVRSE, ROOTLS.*/
 /****************************************************************/
-PetscErrorCode SPARSEPACKgen1wd(const PetscInt *neqns, const PetscInt *xadj, const PetscInt *adjncy, PetscInt *mask, PetscInt *nblks, PetscInt *xblk, PetscInt *perm, PetscInt *xls, PetscInt *ls) {
+PetscErrorCode SPARSEPACKgen1wd(const PetscInt *neqns, const PetscInt *xadj, const PetscInt *adjncy, PetscInt *mask, PetscInt *nblks, PetscInt *xblk, PetscInt *perm, PetscInt *xls, PetscInt *ls)
+{
   /* System generated locals */
   PetscInt i__1, i__2, i__3;
 
@@ -64,7 +65,7 @@ PetscErrorCode SPARSEPACKgen1wd(const PetscInt *neqns, const PetscInt *xadj, con
     /*             NUMBER THE REMAINING NODES IN THE COMPONENT.*/
     /*             EACH COMPONENT IN THE REMAINING SUBGRAPH FORMS*/
     /*             A NEW BLOCK IN THE PARTITIONING.*/
-    i__2         = ccsize;
+    i__2 = ccsize;
     for (j = 1; j <= i__2; ++j) {
       node = ls[j];
       if (!mask[node]) goto L300;

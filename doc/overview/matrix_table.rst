@@ -44,7 +44,7 @@ Summary of Matrix Types Available In PETSc
      - ``MatCreateAIJKokkos()``
      - Kokkos
      - GPU acceleration
-   * - + Constant row length
+   * - Constant row length
      - ``MATAIJCRL``
      - ``MatCreateMPIAIJCRL()``
      -

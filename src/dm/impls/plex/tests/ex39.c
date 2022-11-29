@@ -21,7 +21,8 @@ const char help[] = "A test of H-div conforming discretizations on different cel
   the divergence of a function in H(div) should be exactly representable in L_2
   by definition.
 */
-static PetscErrorCode zero_func(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx) {
+static PetscErrorCode zero_func(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
+{
   PetscInt c;
   for (c = 0; c < Nc; ++c) u[c] = 0;
   return 0;
@@ -30,12 +31,14 @@ static PetscErrorCode zero_func(PetscInt dim, PetscReal time, const PetscReal x[
    \vec{u} = \vec{x};
    p = dim;
    */
-static PetscErrorCode linear_u(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx) {
+static PetscErrorCode linear_u(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
+{
   PetscInt c;
   for (c = 0; c < Nc; ++c) u[c] = x[c];
   return 0;
 }
-static PetscErrorCode linear_p(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx) {
+static PetscErrorCode linear_p(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
+{
   u[0] = dim;
   return 0;
 }
@@ -45,12 +48,14 @@ static PetscErrorCode linear_p(PetscInt dim, PetscReal time, const PetscReal x[]
  * p = \Sum_{i=1}^{dim} 2*\pi*cos{2*\pi*x_i}
  * */
 
-static PetscErrorCode sinusoid_u(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx) {
+static PetscErrorCode sinusoid_u(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
+{
   PetscInt c;
   for (c = 0; c < Nc; ++c) u[c] = PetscSinReal(2 * PETSC_PI * x[c]);
   return 0;
 }
-static PetscErrorCode sinusoid_p(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx) {
+static PetscErrorCode sinusoid_p(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
+{
   PetscInt d;
   u[0] = 0;
   for (d = 0; d < dim; ++d) u[0] += 2 * PETSC_PI * PetscCosReal(2 * PETSC_PI * x[d]);
@@ -58,7 +63,8 @@ static PetscErrorCode sinusoid_p(PetscInt dim, PetscReal time, const PetscReal x
 }
 
 /* Pointwise residual for u = u*. Need one of these for each possible u* */
-static void f0_v_linear(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[]) {
+static void f0_v_linear(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
+{
   PetscInt     i;
   PetscScalar *u_rhs;
 
@@ -68,7 +74,8 @@ static void f0_v_linear(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscIn
   PetscFree(u_rhs);
 }
 
-static void f0_v_sinusoid(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[]) {
+static void f0_v_sinusoid(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
+{
   PetscInt     i;
   PetscScalar *u_rhs;
 
@@ -79,7 +86,8 @@ static void f0_v_sinusoid(PetscInt dim, PetscInt Nf, PetscInt NfAux, const Petsc
 }
 
 /* Residual function for enforcing p = \div{u}. */
-static void f0_q(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[]) {
+static void f0_q(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
+{
   PetscInt    i;
   PetscScalar divu;
 
@@ -89,7 +97,8 @@ static void f0_q(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[
 }
 
 /* Residual function for p_err = \div{u} - p. */
-static void f0_w(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[]) {
+static void f0_w(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
+{
   PetscInt    i;
   PetscScalar divu;
 
@@ -100,7 +109,8 @@ static void f0_w(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[
 
 /* Boundary residual for the embedding system. Need one for each form of
  * solution. These enforce u = \hat{u} at the boundary. */
-static void f0_bd_u_sinusoid(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], const PetscReal n[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[]) {
+static void f0_bd_u_sinusoid(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], const PetscReal n[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
+{
   PetscInt     d;
   PetscScalar *u_rhs;
   PetscCalloc1(dim, &u_rhs);
@@ -110,7 +120,8 @@ static void f0_bd_u_sinusoid(PetscInt dim, PetscInt Nf, PetscInt NfAux, const Pe
   PetscFree(u_rhs);
 }
 
-static void f0_bd_u_linear(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], const PetscReal n[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[]) {
+static void f0_bd_u_linear(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], const PetscReal n[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
+{
   PetscInt     d;
   PetscScalar *u_rhs;
   PetscCalloc1(dim, &u_rhs);
@@ -123,13 +134,15 @@ static void f0_bd_u_linear(PetscInt dim, PetscInt Nf, PetscInt NfAux, const Pets
  * u, q the test function associated with p, and w the test function associated
  * with d. */
 /* <v, u> */
-static void g0_vu(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g0[]) {
+static void g0_vu(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g0[])
+{
   PetscInt c;
   for (c = 0; c < dim; ++c) g0[c * dim + c] = 1.0;
 }
 
 /* <q, p> */
-static void g0_qp(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g0[]) {
+static void g0_qp(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g0[])
+{
   PetscInt d;
   for (d = 0; d < dim; ++d) g0[d * dim + d] = 1.0;
 }
@@ -137,26 +150,30 @@ static void g0_qp(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff
 /* -<q, \div{u}> For the embedded system. This is different from the method of
  * manufactured solution because instead of computing <q,\div{u}> - <q,f> we
  * need <q,p> - <q,\div{u}.*/
-static void g1_qu(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g1[]) {
+static void g1_qu(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g1[])
+{
   PetscInt d;
   for (d = 0; d < dim; ++d) g1[d * dim + d] = -1.0;
 }
 
 /* <w, p> This is only used by the embedded system. Where we need to compute
  * <w,d> - <w,p> + <w, \div{u}>*/
-static void g0_wp(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g0[]) {
+static void g0_wp(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g0[])
+{
   PetscInt d;
   for (d = 0; d < dim; ++d) g0[d * dim + d] = -1.0;
 }
 
 /* <w, d> */
-static void g0_wd(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g0[]) {
+static void g0_wd(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g0[])
+{
   PetscInt c;
   for (c = 0; c < dim; ++c) g0[c * dim + c] = 1.0;
 }
 
 /* <w, \div{u}> for the embedded system. */
-static void g1_wu(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g1[]) {
+static void g1_wu(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g1[])
+{
   PetscInt d;
   for (d = 0; d < dim; ++d) g1[d * dim + d] = 1.0;
 }
@@ -183,7 +200,8 @@ typedef struct {
 } UserCtx;
 
 /* Process command line options and initialize the UserCtx struct */
-static PetscErrorCode ProcessOptions(MPI_Comm comm, UserCtx *user) {
+static PetscErrorCode ProcessOptions(MPI_Comm comm, UserCtx *user)
+{
   PetscFunctionBegin;
   /* Default to  2D, unperturbed triangle mesh and Linear solution.*/
   user->mesh_transform = NONE;
@@ -197,7 +215,8 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, UserCtx *user) {
 }
 
 /* Perturb the position of each mesh vertex by a small amount.*/
-static PetscErrorCode PerturbMesh(DM *mesh, PetscScalar *coordVals, PetscInt npoints, PetscInt dim) {
+static PetscErrorCode PerturbMesh(DM *mesh, PetscScalar *coordVals, PetscInt npoints, PetscInt dim)
+{
   PetscInt    i, j, k;
   PetscReal   minCoords[3], maxCoords[3], maxPert[3], randVal, amp;
   PetscRandom ran;
@@ -228,7 +247,8 @@ static PetscErrorCode PerturbMesh(DM *mesh, PetscScalar *coordVals, PetscInt npo
 }
 
 /* Apply a global skew transformation to the mesh. */
-static PetscErrorCode SkewMesh(DM *mesh, PetscScalar *coordVals, PetscInt npoints, PetscInt dim) {
+static PetscErrorCode SkewMesh(DM *mesh, PetscScalar *coordVals, PetscInt npoints, PetscInt dim)
+{
   PetscInt     i, j, k, l;
   PetscScalar *transMat;
   PetscScalar  tmpcoord[3];
@@ -264,7 +284,8 @@ static PetscErrorCode SkewMesh(DM *mesh, PetscScalar *coordVals, PetscInt npoint
 
 /* Accesses the mesh coordinate array and performs the transformation operations
  * specified by the user options */
-static PetscErrorCode TransformMesh(UserCtx *user, DM *mesh) {
+static PetscErrorCode TransformMesh(UserCtx *user, DM *mesh)
+{
   PetscInt     dim, npoints;
   PetscScalar *coordVals;
   Vec          coords;
@@ -277,20 +298,26 @@ static PetscErrorCode TransformMesh(UserCtx *user, DM *mesh) {
   npoints = npoints / dim;
 
   switch (user->mesh_transform) {
-  case PERTURB: PetscCall(PerturbMesh(mesh, coordVals, npoints, dim)); break;
-  case SKEW: PetscCall(SkewMesh(mesh, coordVals, npoints, dim)); break;
+  case PERTURB:
+    PetscCall(PerturbMesh(mesh, coordVals, npoints, dim));
+    break;
+  case SKEW:
+    PetscCall(SkewMesh(mesh, coordVals, npoints, dim));
+    break;
   case SKEW_PERTURB:
     PetscCall(SkewMesh(mesh, coordVals, npoints, dim));
     PetscCall(PerturbMesh(mesh, coordVals, npoints, dim));
     break;
-  default: SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "invalid mesh transformation");
+  default:
+    SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "invalid mesh transformation");
   }
   PetscCall(VecRestoreArray(coords, &coordVals));
   PetscCall(DMSetCoordinates(*mesh, coords));
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode CreateMesh(MPI_Comm comm, UserCtx *user, DM *mesh) {
+static PetscErrorCode CreateMesh(MPI_Comm comm, UserCtx *user, DM *mesh)
+{
   PetscFunctionBegin;
   PetscCall(DMCreate(comm, mesh));
   PetscCall(DMSetType(*mesh, DMPLEX));
@@ -306,7 +333,8 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, UserCtx *user, DM *mesh) {
 }
 
 /* Setup the system of equations that we wish to solve */
-static PetscErrorCode SetupProblem(DM dm, UserCtx *user) {
+static PetscErrorCode SetupProblem(DM dm, UserCtx *user)
+{
   PetscDS        prob;
   DMLabel        label;
   const PetscInt id = 1;
@@ -340,7 +368,8 @@ static PetscErrorCode SetupProblem(DM dm, UserCtx *user) {
     PetscCall(PetscDSSetExactSolution(prob, 0, sinusoid_u, NULL));
     PetscCall(PetscDSSetExactSolution(prob, 1, sinusoid_p, NULL));
     break;
-  default: SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "invalid solution form");
+  default:
+    SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "invalid solution form");
   }
 
   PetscCall(DMGetLabel(dm, "marker", &label));
@@ -349,7 +378,8 @@ static PetscErrorCode SetupProblem(DM dm, UserCtx *user) {
 }
 
 /* Create the finite element spaces we will use for this system */
-static PetscErrorCode SetupDiscretization(DM mesh, PetscErrorCode (*setup)(DM, UserCtx *), UserCtx *user) {
+static PetscErrorCode SetupDiscretization(DM mesh, PetscErrorCode (*setup)(DM, UserCtx *), UserCtx *user)
+{
   DM        cdm = mesh;
   PetscFE   fevel, fepres, fedivErr;
   PetscInt  dim;
@@ -393,7 +423,8 @@ static PetscErrorCode SetupDiscretization(DM mesh, PetscErrorCode (*setup)(DM, U
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscInt        i;
   UserCtx         user;
   DM              mesh;

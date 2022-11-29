@@ -5,7 +5,8 @@ static char help[] = "Tests 1D discretization tools.\n\n";
 #include <petsc/private/petscimpl.h>
 #include <petsc/private/dtimpl.h>
 
-static PetscErrorCode CheckPoints(const char *name, PetscInt npoints, const PetscReal *points, PetscInt ndegrees, const PetscInt *degrees) {
+static PetscErrorCode CheckPoints(const char *name, PetscInt npoints, const PetscReal *points, PetscInt ndegrees, const PetscInt *degrees)
+{
   PetscReal *B, *D, *D2;
   PetscInt   i, j;
 
@@ -31,7 +32,8 @@ static PetscErrorCode CheckPoints(const char *name, PetscInt npoints, const Pets
 
 typedef PetscErrorCode (*quadratureFunc)(PetscInt, PetscReal, PetscReal, PetscReal, PetscReal, PetscReal[], PetscReal[]);
 
-static PetscErrorCode CheckQuadrature_Basics(PetscInt npoints, PetscReal alpha, PetscReal beta, const PetscReal x[], const PetscReal w[]) {
+static PetscErrorCode CheckQuadrature_Basics(PetscInt npoints, PetscReal alpha, PetscReal beta, const PetscReal x[], const PetscReal w[])
+{
   PetscInt i;
 
   PetscFunctionBegin;
@@ -44,7 +46,8 @@ static PetscErrorCode CheckQuadrature_Basics(PetscInt npoints, PetscReal alpha, 
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode CheckQuadrature(PetscInt npoints, PetscReal alpha, PetscReal beta, const PetscReal x[], const PetscReal w[], PetscInt nexact) {
+static PetscErrorCode CheckQuadrature(PetscInt npoints, PetscReal alpha, PetscReal beta, const PetscReal x[], const PetscReal w[], PetscInt nexact)
+{
   PetscInt   i, j, k;
   PetscReal *Pi, *Pj;
   PetscReal  eps;
@@ -92,7 +95,8 @@ static PetscErrorCode CheckQuadrature(PetscInt npoints, PetscReal alpha, PetscRe
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode CheckJacobiQuadrature(PetscInt npoints, PetscReal alpha, PetscReal beta, quadratureFunc func, PetscInt nexact) {
+static PetscErrorCode CheckJacobiQuadrature(PetscInt npoints, PetscReal alpha, PetscReal beta, quadratureFunc func, PetscInt nexact)
+{
   PetscReal *x, *w;
 
   PetscFunctionBegin;
@@ -133,7 +137,8 @@ static PetscErrorCode CheckJacobiQuadrature(PetscInt npoints, PetscReal alpha, P
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscInt  degrees[1000], ndegrees, npoints, two;
   PetscReal points[1000], weights[1000], interval[2];
   PetscInt  minpoints, maxpoints;

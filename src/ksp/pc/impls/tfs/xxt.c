@@ -60,7 +60,8 @@ static PetscErrorCode xxt_generate(xxt_ADT xxt_handle);
 static PetscErrorCode do_xxt_factor(xxt_ADT xxt_handle);
 static mv_info       *set_mvi(PetscInt *local2global, PetscInt n, PetscInt m, PetscErrorCode (*matvec)(mv_info *, PetscScalar *, PetscScalar *), void *grid_data);
 
-xxt_ADT XXT_new(void) {
+xxt_ADT XXT_new(void)
+{
   xxt_ADT xxt_handle;
 
   /* rolling count on n_xxt ... pot. problem here */
@@ -102,7 +103,8 @@ PetscErrorCode XXT_factor(xxt_ADT   xxt_handle,                                 
   return (do_xxt_factor(xxt_handle));
 }
 
-PetscErrorCode XXT_solve(xxt_ADT xxt_handle, PetscScalar *x, PetscScalar *b) {
+PetscErrorCode XXT_solve(xxt_ADT xxt_handle, PetscScalar *x, PetscScalar *b)
+{
   PCTFS_comm_init();
   check_handle(xxt_handle);
 
@@ -111,7 +113,8 @@ PetscErrorCode XXT_solve(xxt_ADT xxt_handle, PetscScalar *x, PetscScalar *b) {
   return do_xxt_solve(xxt_handle, x);
 }
 
-PetscInt XXT_free(xxt_ADT xxt_handle) {
+PetscInt XXT_free(xxt_ADT xxt_handle)
+{
   PCTFS_comm_init();
   check_handle(xxt_handle);
   n_xxt_handles--;
@@ -139,7 +142,8 @@ PetscInt XXT_free(xxt_ADT xxt_handle) {
 }
 
 /* This function is currently unused */
-PetscErrorCode XXT_stats(xxt_ADT xxt_handle) {
+PetscErrorCode XXT_stats(xxt_ADT xxt_handle)
+{
   PetscInt    op[]  = {NON_UNIFORM, GL_MIN, GL_MAX, GL_ADD, GL_MIN, GL_MAX, GL_ADD, GL_MIN, GL_MAX, GL_ADD};
   PetscInt    fop[] = {NON_UNIFORM, GL_MIN, GL_MAX, GL_ADD};
   PetscInt    vals[9], work[9];
@@ -197,11 +201,13 @@ is a row dist. nxm matrix w/ n<m.
 mylocmatvec = my_ml->Amat[grid_tag].matvec->external;
 mylocmatvec (void :: void *data, double *in, double *out)
 */
-static PetscErrorCode do_xxt_factor(xxt_ADT xxt_handle) {
+static PetscErrorCode do_xxt_factor(xxt_ADT xxt_handle)
+{
   return xxt_generate(xxt_handle);
 }
 
-static PetscErrorCode xxt_generate(xxt_ADT xxt_handle) {
+static PetscErrorCode xxt_generate(xxt_ADT xxt_handle)
+{
   PetscInt      i, j, k, idex;
   PetscInt      dim, col;
   PetscScalar  *u, *uu, *v, *z, *w, alpha, alpha_w;
@@ -305,10 +311,9 @@ static PetscErrorCode xxt_generate(xxt_ADT xxt_handle) {
     if (col == fo[start]) {
       start++;
       idex = PCTFS_ivec_linear_search(col, a_local2global, a_n);
-      if (idex != -1) {
-        v[idex] = 1.0;
-        j++;
-      } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "NOT FOUND!");
+      PetscCheck(idex != -1, PETSC_COMM_SELF, PETSC_ERR_PLIB, "NOT FOUND!");
+      v[idex] = 1.0;
+      j++;
     } else {
       idex = PCTFS_ivec_linear_search(col, a_local2global, a_m);
       if (idex != -1) v[idex] = 1.0;
@@ -442,7 +447,8 @@ static PetscErrorCode xxt_generate(xxt_ADT xxt_handle) {
   return (0);
 }
 
-static PetscErrorCode do_xxt_solve(xxt_ADT xxt_handle, PetscScalar *uc) {
+static PetscErrorCode do_xxt_solve(xxt_ADT xxt_handle, PetscScalar *uc)
+{
   PetscInt     off, len, *iptr;
   PetscInt     level       = xxt_handle->level;
   PetscInt     n           = xxt_handle->info->n;
@@ -468,7 +474,7 @@ static PetscErrorCode do_xxt_solve(xxt_ADT xxt_handle, PetscScalar *uc) {
     PetscCallBLAS("BLASdot", *uu_ptr++ = BLASdot_(&dlen, uc + off, &i1, x_ptr, &i1));
   }
 
-  /* comunication of beta */
+  /* communication of beta */
   uu_ptr = solve_uu;
   if (level) PetscCall(PCTFS_ssgl_radd(uu_ptr, solve_w, level, stages));
 
@@ -484,7 +490,8 @@ static PetscErrorCode do_xxt_solve(xxt_ADT xxt_handle, PetscScalar *uc) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode check_handle(xxt_ADT xxt_handle) {
+static PetscErrorCode check_handle(xxt_ADT xxt_handle)
+{
   PetscInt vals[2], work[2], op[] = {NON_UNIFORM, GL_MIN, GL_MAX};
 
   PetscFunctionBegin;
@@ -496,7 +503,8 @@ static PetscErrorCode check_handle(xxt_ADT xxt_handle) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode det_separators(xxt_ADT xxt_handle) {
+static PetscErrorCode det_separators(xxt_ADT xxt_handle)
+{
   PetscInt     i, ct, id;
   PetscInt     mask, edge, *iptr;
   PetscInt    *dir, *used;
@@ -744,7 +752,8 @@ static PetscErrorCode det_separators(xxt_ADT xxt_handle) {
   PetscFunctionReturn(0);
 }
 
-static mv_info *set_mvi(PetscInt *local2global, PetscInt n, PetscInt m, PetscErrorCode (*matvec)(mv_info *, PetscScalar *, PetscScalar *), void *grid_data) {
+static mv_info *set_mvi(PetscInt *local2global, PetscInt n, PetscInt m, PetscErrorCode (*matvec)(mv_info *, PetscScalar *, PetscScalar *), void *grid_data)
+{
   mv_info *mvi;
 
   mvi               = (mv_info *)malloc(sizeof(mv_info));
@@ -764,7 +773,8 @@ static mv_info *set_mvi(PetscInt *local2global, PetscInt n, PetscInt m, PetscErr
   return (mvi);
 }
 
-static PetscErrorCode do_matvec(mv_info *A, PetscScalar *v, PetscScalar *u) {
+static PetscErrorCode do_matvec(mv_info *A, PetscScalar *v, PetscScalar *u)
+{
   PetscFunctionBegin;
   A->matvec((mv_info *)A->grid_data, v, u);
   PetscFunctionReturn(0);

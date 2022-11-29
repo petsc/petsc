@@ -4,7 +4,8 @@
 #include <petscds.h>
 #include <petscfv.h>
 
-static PetscErrorCode DMTSConvertPlex(DM dm, DM *plex, PetscBool copy) {
+static PetscErrorCode DMTSConvertPlex(DM dm, DM *plex, PetscBool copy)
+{
   PetscBool isPlex;
 
   PetscFunctionBegin;
@@ -43,9 +44,10 @@ static PetscErrorCode DMTSConvertPlex(DM dm, DM *plex, PetscBool copy) {
 
   Level: developer
 
-.seealso: `DMPlexComputeJacobianActionFEM()`
+.seealso: [](chapter_ts), `DMPLEX`, `TS`, `DMPlexComputeJacobianActionFEM()`
 @*/
-PetscErrorCode DMPlexTSComputeRHSFunctionFVM(DM dm, PetscReal time, Vec locX, Vec F, void *user) {
+PetscErrorCode DMPlexTSComputeRHSFunctionFVM(DM dm, PetscReal time, Vec locX, Vec F, void *user)
+{
   Vec          locF;
   IS           cellIS;
   DM           plex;
@@ -80,9 +82,10 @@ PetscErrorCode DMPlexTSComputeRHSFunctionFVM(DM dm, PetscReal time, Vec locX, Ve
 
   Level: developer
 
-.seealso: `DMPlexComputeJacobianActionFEM()`
+.seealso: [](chapter_ts), `DMPLEX`, `TS`, `DMPlexComputeJacobianActionFEM()`
 @*/
-PetscErrorCode DMPlexTSComputeBoundary(DM dm, PetscReal time, Vec locX, Vec locX_t, void *user) {
+PetscErrorCode DMPlexTSComputeBoundary(DM dm, PetscReal time, Vec locX, Vec locX_t, void *user)
+{
   DM       plex;
   Vec      faceGeometryFVM = NULL;
   PetscInt Nf, f;
@@ -125,9 +128,10 @@ PetscErrorCode DMPlexTSComputeBoundary(DM dm, PetscReal time, Vec locX, Vec locX
 
   Level: developer
 
-.seealso: `DMPlexTSComputeIFunctionFEM()`, `DMPlexTSComputeRHSFunctionFEM()`
+.seealso: [](chapter_ts), `DMPLEX`, `TS`, `DMPlexTSComputeIFunctionFEM()`, `DMPlexTSComputeRHSFunctionFEM()`
 @*/
-PetscErrorCode DMPlexTSComputeIFunctionFEM(DM dm, PetscReal time, Vec locX, Vec locX_t, Vec locF, void *user) {
+PetscErrorCode DMPlexTSComputeIFunctionFEM(DM dm, PetscReal time, Vec locX, Vec locX_t, Vec locF, void *user)
+{
   DM       plex;
   IS       allcellIS;
   PetscInt Nds, s;
@@ -180,9 +184,10 @@ PetscErrorCode DMPlexTSComputeIFunctionFEM(DM dm, PetscReal time, Vec locX, Vec 
 
   Level: developer
 
-.seealso: `DMPlexTSComputeIFunctionFEM()`, `DMPlexTSComputeRHSFunctionFEM()`
+.seealso: [](chapter_ts), `TS`, `DM`, `DMPlexTSComputeIFunctionFEM()`, `DMPlexTSComputeRHSFunctionFEM()`
 @*/
-PetscErrorCode DMPlexTSComputeIJacobianFEM(DM dm, PetscReal time, Vec locX, Vec locX_t, PetscReal X_tShift, Mat Jac, Mat JacP, void *user) {
+PetscErrorCode DMPlexTSComputeIJacobianFEM(DM dm, PetscReal time, Vec locX, Vec locX_t, PetscReal X_tShift, Mat Jac, Mat JacP, void *user)
+{
   DM        plex;
   IS        allcellIS;
   PetscBool hasJac, hasPrec;
@@ -240,9 +245,10 @@ PetscErrorCode DMPlexTSComputeIJacobianFEM(DM dm, PetscReal time, Vec locX, Vec 
 
   Level: developer
 
-.seealso: `DMPlexTSComputeIFunctionFEM()`, `DMPlexTSComputeIJacobianFEM()`
+.seealso: [](chapter_ts),  `TS`, `DM`, `DMPlexTSComputeIFunctionFEM()`, `DMPlexTSComputeIJacobianFEM()`
 @*/
-PetscErrorCode DMPlexTSComputeRHSFunctionFEM(DM dm, PetscReal time, Vec locX, Vec locG, void *user) {
+PetscErrorCode DMPlexTSComputeRHSFunctionFEM(DM dm, PetscReal time, Vec locX, Vec locG, void *user)
+{
   DM       plex;
   IS       allcellIS;
   PetscInt Nds, s;
@@ -283,11 +289,11 @@ PetscErrorCode DMPlexTSComputeRHSFunctionFEM(DM dm, PetscReal time, Vec locX, Ve
   DMTSCheckResidual - Check the residual of the exact solution
 
   Input Parameters:
-+ ts  - the TS object
-. dm  - the DM
++ ts  - the `TS` object
+. dm  - the `DM`
 . t   - the time
-. u   - a DM vector
-. u_t - a DM vector
+. u   - a `DM` vector
+. u_t - a `DM` vector
 - tol - A tolerance for the check, or -1 to print the results instead
 
   Output Parameters:
@@ -295,9 +301,10 @@ PetscErrorCode DMPlexTSComputeRHSFunctionFEM(DM dm, PetscReal time, Vec locX, Ve
 
   Level: developer
 
-.seealso: `DNTSCheckFromOptions()`, `DMTSCheckJacobian()`, `DNSNESCheckFromOptions()`, `DMSNESCheckDiscretization()`, `DMSNESCheckJacobian()`
+.seealso: [](chapter_ts), `DM`, `DMTSCheckFromOptions()`, `DMTSCheckJacobian()`, `DNSNESCheckFromOptions()`, `DMSNESCheckDiscretization()`, `DMSNESCheckJacobian()`
 @*/
-PetscErrorCode DMTSCheckResidual(TS ts, DM dm, PetscReal t, Vec u, Vec u_t, PetscReal tol, PetscReal *residual) {
+PetscErrorCode DMTSCheckResidual(TS ts, DM dm, PetscReal t, Vec u, Vec u_t, PetscReal tol, PetscReal *residual)
+{
   MPI_Comm  comm;
   Vec       r;
   PetscReal res;
@@ -346,9 +353,10 @@ PetscErrorCode DMTSCheckResidual(TS ts, DM dm, PetscReal t, Vec u, Vec u_t, Pets
 
   Level: developer
 
-.seealso: `DNTSCheckFromOptions()`, `DMTSCheckResidual()`, `DNSNESCheckFromOptions()`, `DMSNESCheckDiscretization()`, `DMSNESCheckResidual()`
+.seealso: [](chapter_ts), `DNTSCheckFromOptions()`, `DMTSCheckResidual()`, `DNSNESCheckFromOptions()`, `DMSNESCheckDiscretization()`, `DMSNESCheckResidual()`
 @*/
-PetscErrorCode DMTSCheckJacobian(TS ts, DM dm, PetscReal t, Vec u, Vec u_t, PetscReal tol, PetscBool *isLinear, PetscReal *convRate) {
+PetscErrorCode DMTSCheckJacobian(TS ts, DM dm, PetscReal t, Vec u, Vec u_t, PetscReal tol, PetscBool *isLinear, PetscReal *convRate)
+{
   MPI_Comm     comm;
   PetscDS      ds;
   Mat          J, M;
@@ -460,14 +468,16 @@ PetscErrorCode DMTSCheckJacobian(TS ts, DM dm, PetscReal t, Vec u, Vec u_t, Pets
   DMTSCheckFromOptions - Check the residual and Jacobian functions using the exact solution by outputting some diagnostic information
 
   Input Parameters:
-+ ts - the TS object
-- u  - representative TS vector
++ ts - the `TS` object
+- u  - representative `TS` vector
 
-  Note: The user must call PetscDSSetExactSolution() beforehand
+  Note:
+  The user must call `PetscDSSetExactSolution()` beforehand
 
   Level: developer
 @*/
-PetscErrorCode DMTSCheckFromOptions(TS ts, Vec u) {
+PetscErrorCode DMTSCheckFromOptions(TS ts, Vec u)
+{
   DM        dm;
   SNES      snes;
   Vec       sol, u_t;

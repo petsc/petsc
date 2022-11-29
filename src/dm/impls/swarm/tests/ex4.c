@@ -61,7 +61,8 @@ typedef struct {
   PetscInt  ostep; /* print the energy at each ostep time steps */
 } AppCtx;
 
-static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options) {
+static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
+{
   PetscFunctionBeginUser;
   options->omega = 64.0;
   options->error = PETSC_FALSE;
@@ -75,7 +76,8 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm) {
+static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
+{
   PetscFunctionBeginUser;
   PetscCall(DMCreate(comm, dm));
   PetscCall(DMSetType(*dm, DMPLEX));
@@ -84,7 +86,8 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode CreateSwarm(DM dm, AppCtx *user, DM *sw) {
+static PetscErrorCode CreateSwarm(DM dm, AppCtx *user, DM *sw)
+{
   PetscReal v0[1] = {0.}; // Initialize velocities to 0
   PetscInt  dim;
 
@@ -119,7 +122,8 @@ static PetscErrorCode CreateSwarm(DM dm, AppCtx *user, DM *sw) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec U, Vec G, void *ctx) {
+static PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec U, Vec G, void *ctx)
+{
   const PetscReal    omega = ((AppCtx *)ctx)->omega;
   DM                 sw;
   const PetscScalar *u;
@@ -148,7 +152,8 @@ static PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec U, Vec G, void *ctx) {
    J_p = (  0   1)
          (-w^2  0)
 */
-static PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec U, Mat J, Mat P, void *ctx) {
+static PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec U, Mat J, Mat P, void *ctx)
+{
   PetscScalar vals[4] = {0., 1., -PetscSqr(((AppCtx *)ctx)->omega), 0.};
   DM          sw;
   PetscInt    dim, d, Np, p, rStart;
@@ -170,7 +175,8 @@ static PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec U, Mat J, Mat P, void 
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode RHSFunctionX(TS ts, PetscReal t, Vec V, Vec Xres, void *ctx) {
+static PetscErrorCode RHSFunctionX(TS ts, PetscReal t, Vec V, Vec Xres, void *ctx)
+{
   const PetscScalar *v;
   PetscScalar       *xres;
   PetscInt           Np, p;
@@ -185,7 +191,8 @@ static PetscErrorCode RHSFunctionX(TS ts, PetscReal t, Vec V, Vec Xres, void *ct
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode RHSFunctionV(TS ts, PetscReal t, Vec X, Vec Vres, void *ctx) {
+static PetscErrorCode RHSFunctionV(TS ts, PetscReal t, Vec X, Vec Vres, void *ctx)
+{
   const PetscReal    omega = ((AppCtx *)ctx)->omega;
   const PetscScalar *x;
   PetscScalar       *vres;
@@ -201,7 +208,8 @@ static PetscErrorCode RHSFunctionV(TS ts, PetscReal t, Vec X, Vec Vres, void *ct
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode RHSJacobianS(TS ts, PetscReal t, Vec U, Mat S, void *ctx) {
+PetscErrorCode RHSJacobianS(TS ts, PetscReal t, Vec U, Mat S, void *ctx)
+{
   PetscScalar vals[4] = {0., 1., -1., 0.};
   DM          sw;
   PetscInt    dim, d, Np, p, rStart;
@@ -223,7 +231,8 @@ PetscErrorCode RHSJacobianS(TS ts, PetscReal t, Vec U, Mat S, void *ctx) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode RHSObjectiveF(TS ts, PetscReal t, Vec U, PetscScalar *F, void *ctx) {
+PetscErrorCode RHSObjectiveF(TS ts, PetscReal t, Vec U, PetscScalar *F, void *ctx)
+{
   const PetscReal    omega = ((AppCtx *)ctx)->omega;
   DM                 sw;
   const PetscScalar *u;
@@ -247,7 +256,8 @@ PetscErrorCode RHSObjectiveF(TS ts, PetscReal t, Vec U, PetscScalar *F, void *ct
 }
 
 /* dF/dx = omega^2 x   dF/dv = v */
-PetscErrorCode RHSFunctionG(TS ts, PetscReal t, Vec U, Vec G, void *ctx) {
+PetscErrorCode RHSFunctionG(TS ts, PetscReal t, Vec U, Vec G, void *ctx)
+{
   const PetscReal    omega = ((AppCtx *)ctx)->omega;
   DM                 sw;
   const PetscScalar *u;
@@ -272,7 +282,8 @@ PetscErrorCode RHSFunctionG(TS ts, PetscReal t, Vec U, Vec G, void *ctx) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode CreateSolution(TS ts) {
+static PetscErrorCode CreateSolution(TS ts)
+{
   DM       sw;
   Vec      u;
   PetscInt dim, Np;
@@ -290,7 +301,8 @@ static PetscErrorCode CreateSolution(TS ts) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode SetProblem(TS ts) {
+static PetscErrorCode SetProblem(TS ts)
+{
   AppCtx *user;
   DM      sw;
 
@@ -339,11 +351,14 @@ static PetscErrorCode SetProblem(TS ts) {
     PetscCall(TSRHSSplitSetRHSFunction(ts, "momentum", NULL, RHSFunctionV, user));
   }
   // Define symplectic formulation U_t = S . G, where G = grad F
-  { PetscCall(TSDiscGradSetFormulation(ts, RHSJacobianS, RHSObjectiveF, RHSFunctionG, user)); }
+  {
+    PetscCall(TSDiscGradSetFormulation(ts, RHSJacobianS, RHSObjectiveF, RHSFunctionG, user));
+  }
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode InitializeSolve(TS ts, Vec u) {
+static PetscErrorCode InitializeSolve(TS ts, Vec u)
+{
   DM      sw;
   Vec     gc, gc0;
   IS      isx, isv;
@@ -371,7 +386,8 @@ static PetscErrorCode InitializeSolve(TS ts, Vec u) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode ComputeError(TS ts, Vec U, Vec E) {
+static PetscErrorCode ComputeError(TS ts, Vec U, Vec E)
+{
   MPI_Comm           comm;
   DM                 sw;
   AppCtx            *user;
@@ -418,7 +434,8 @@ static PetscErrorCode ComputeError(TS ts, Vec U, Vec E) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode EnergyMonitor(TS ts, PetscInt step, PetscReal t, Vec U, void *ctx) {
+static PetscErrorCode EnergyMonitor(TS ts, PetscInt step, PetscReal t, Vec U, void *ctx)
+{
   const PetscReal    omega = ((AppCtx *)ctx)->omega;
   const PetscInt     ostep = ((AppCtx *)ctx)->ostep;
   DM                 sw;
@@ -450,7 +467,8 @@ static PetscErrorCode EnergyMonitor(TS ts, PetscInt step, PetscReal t, Vec U, vo
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   DM     dm, sw;
   TS     ts;
   Vec    u;

@@ -11,7 +11,8 @@ typedef struct {
   VecScatter *scctx;
 } GLVisViewerCtx;
 
-static PetscErrorCode DestroyGLVisViewerCtx_Private(void *vctx) {
+static PetscErrorCode DestroyGLVisViewerCtx_Private(void *vctx)
+{
   GLVisViewerCtx *ctx = (GLVisViewerCtx *)vctx;
   PetscInt        i;
 
@@ -22,7 +23,8 @@ static PetscErrorCode DestroyGLVisViewerCtx_Private(void *vctx) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMPlexSampleGLVisFields_Private(PetscObject oX, PetscInt nf, PetscObject oXfield[], void *vctx) {
+static PetscErrorCode DMPlexSampleGLVisFields_Private(PetscObject oX, PetscInt nf, PetscObject oXfield[], void *vctx)
+{
   GLVisViewerCtx *ctx = (GLVisViewerCtx *)vctx;
   PetscInt        f;
 
@@ -35,7 +37,8 @@ static PetscErrorCode DMPlexSampleGLVisFields_Private(PetscObject oX, PetscInt n
 }
 
 /* for FEM, it works for H1 fields only and extracts dofs at cell vertices, discarding any other dof */
-PetscErrorCode DMSetUpGLVisViewer_Plex(PetscObject odm, PetscViewer viewer) {
+PetscErrorCode DMSetUpGLVisViewer_Plex(PetscObject odm, PetscViewer viewer)
+{
   DM              dm = (DM)odm;
   Vec             xlocal, xfield, *Ufield;
   PetscDS         ds;
@@ -243,7 +246,8 @@ MFEM_cid mfem_table_cid_unint[4][9] = {
   {MFEM_POINT, MFEM_UNDEF, MFEM_SEGMENT, MFEM_UNDEF,    MFEM_TETRAHEDRON, MFEM_UNDEF, MFEM_PRISM, MFEM_UNDEF, MFEM_CUBE }
 };
 
-static PetscErrorCode DMPlexGetPointMFEMCellID_Internal(DM dm, DMLabel label, PetscInt minl, PetscInt p, PetscInt *mid, PetscInt *cid) {
+static PetscErrorCode DMPlexGetPointMFEMCellID_Internal(DM dm, DMLabel label, PetscInt minl, PetscInt p, PetscInt *mid, PetscInt *cid)
+{
   DMLabel  dlabel;
   PetscInt depth, csize, pdepth, dim;
 
@@ -270,7 +274,8 @@ static PetscErrorCode DMPlexGetPointMFEMCellID_Internal(DM dm, DMLabel label, Pe
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMPlexGetPointMFEMVertexIDs_Internal(DM dm, PetscInt p, PetscSection csec, PetscInt *nv, PetscInt vids[]) {
+static PetscErrorCode DMPlexGetPointMFEMVertexIDs_Internal(DM dm, PetscInt p, PetscSection csec, PetscInt *nv, PetscInt vids[])
+{
   PetscInt dim, sdim, dof = 0, off = 0, i, q, vStart, vEnd, numPoints, *points = NULL;
 
   PetscFunctionBegin;
@@ -300,7 +305,8 @@ static PetscErrorCode DMPlexGetPointMFEMVertexIDs_Internal(DM dm, PetscInt p, Pe
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode GLVisCreateFE(PetscFE femIn, char name[32], PetscFE *fem, IS *perm) {
+static PetscErrorCode GLVisCreateFE(PetscFE femIn, char name[32], PetscFE *fem, IS *perm)
+{
   DM              K;
   PetscSpace      P;
   PetscDualSpace  Q;
@@ -324,8 +330,12 @@ static PetscErrorCode GLVisCreateFE(PetscFE femIn, char name[32], PetscFE *fem, 
   PetscCall(DMPlexGetCellType(K, 0, &ptype));
   switch (ptype) {
   case DM_POLYTOPE_QUADRILATERAL:
-  case DM_POLYTOPE_HEXAHEDRON: isSimplex = PETSC_FALSE; break;
-  default: isSimplex = PETSC_TRUE; break;
+  case DM_POLYTOPE_HEXAHEDRON:
+    isSimplex = PETSC_FALSE;
+    break;
+  default:
+    isSimplex = PETSC_TRUE;
+    break;
   }
   isTensor = isSimplex ? PETSC_FALSE : PETSC_TRUE;
   if (isSimplex) deg = PetscMin(deg, 3); /* Permutation not coded for degree higher than 3 */
@@ -418,7 +428,9 @@ static PetscErrorCode GLVisCreateFE(PetscFE femIn, char name[32], PetscFE *fem, 
       pidx[18] = 17;
       pidx[19] = 19;
       break;
-    default: SETERRQ(comm, PETSC_ERR_SUP, "Unhandled degree,dof pair %" PetscInt_FMT ",%" PetscInt_FMT, deg, celldofs); break;
+    default:
+      SETERRQ(comm, PETSC_ERR_SUP, "Unhandled degree,dof pair %" PetscInt_FMT ",%" PetscInt_FMT, deg, celldofs);
+      break;
     }
     PetscCall(ISCreateBlock(PETSC_COMM_SELF, dof, celldofs, pidx, PETSC_OWN_POINTER, perm));
   }
@@ -435,7 +447,8 @@ static PetscErrorCode GLVisCreateFE(PetscFE femIn, char name[32], PetscFE *fem, 
    ASCII visualization/dump: full support for simplices and tensor product cells. It supports AMR
    Higher order meshes are also supported
 */
-static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer) {
+static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
+{
   DMLabel            label;
   PetscSection       coordSection, coordSectionCell, parentSection, hoSection = NULL;
   Vec                coordinates, coordinatesCell, hovec;
@@ -646,7 +659,8 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer) {
             vpc = 4;
             dof = quadv;
             break;
-          default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Unhandled case: faces per cell %" PetscInt_FMT, fpc);
+          default:
+            SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Unhandled case: faces per cell %" PetscInt_FMT, fpc);
           }
           break;
         case 3:
@@ -665,10 +679,12 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer) {
             vpc = 8;
             dof = hexv;
             break;
-          default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Unhandled case: faces per cell %" PetscInt_FMT, fpc);
+          default:
+            SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Unhandled case: faces per cell %" PetscInt_FMT, fpc);
           }
           break;
-        default: SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Unhandled dim");
+        default:
+          SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Unhandled dim");
         }
         PetscCall(DMPlexReorderCell(dm, cStart, vids));
       }
@@ -1089,7 +1105,8 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer) {
               }
             }
             break;
-          default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Don't know how to deal with support size %" PetscInt_FMT, ssize);
+          default:
+            SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Don't know how to deal with support size %" PetscInt_FMT, ssize);
           }
         }
       }
@@ -1160,7 +1177,8 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMPlexView_GLVis(DM dm, PetscViewer viewer) {
+PetscErrorCode DMPlexView_GLVis(DM dm, PetscViewer viewer)
+{
   PetscFunctionBegin;
   PetscCall(DMView_GLVis(dm, viewer, DMPlexView_GLVis_ASCII));
   PetscFunctionReturn(0);

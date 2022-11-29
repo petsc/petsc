@@ -36,7 +36,8 @@ static char help[] = "Test DMStagMatGetValuesStencil() in 3D\n\n";
 static PetscErrorCode CreateMat(DM, Mat *);
 static PetscErrorCode CheckMat(DM, Mat);
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   DM  dmSol;
   Mat A;
 
@@ -58,7 +59,8 @@ int main(int argc, char **argv) {
   return 0;
 }
 
-static PetscErrorCode CreateMat(DM dmSol, Mat *pA) {
+static PetscErrorCode CreateMat(DM dmSol, Mat *pA)
+{
   Vec             coordLocal;
   Mat             A;
   PetscInt        startx, starty, startz, N[3], nx, ny, nz, ex, ey, ez, d;
@@ -1614,7 +1616,8 @@ static PetscErrorCode CreateMat(DM dmSol, Mat *pA) {
 }
 
 /* A helper function to check values */
-static PetscErrorCode check_vals(PetscInt ex, PetscInt ey, PetscInt ez, PetscInt n, const PetscScalar *ref, const PetscScalar *computed) {
+static PetscErrorCode check_vals(PetscInt ex, PetscInt ey, PetscInt ez, PetscInt n, const PetscScalar *ref, const PetscScalar *computed)
+{
   PetscInt i;
 
   PetscFunctionBeginUser;
@@ -1625,7 +1628,8 @@ static PetscErrorCode check_vals(PetscInt ex, PetscInt ey, PetscInt ez, PetscInt
 }
 
 /* The same function as above, but getting and checking values, instead of setting them */
-static PetscErrorCode CheckMat(DM dmSol, Mat A) {
+static PetscErrorCode CheckMat(DM dmSol, Mat A)
+{
   Vec             coordLocal;
   PetscInt        startx, starty, startz, N[3], nx, ny, nz, ex, ey, ez, d;
   PetscInt        icp[3], icux[3], icuy[3], icuz[3], icux_right[3], icuy_up[3], icuz_front[3];

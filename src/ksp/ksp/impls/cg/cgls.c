@@ -9,7 +9,8 @@ typedef struct {
   Vec     *vwork_n; /* work vectors of length n */
 } KSP_CGLS;
 
-static PetscErrorCode KSPSetUp_CGLS(KSP ksp) {
+static PetscErrorCode KSPSetUp_CGLS(KSP ksp)
+{
   KSP_CGLS *cgls = (KSP_CGLS *)ksp->data;
 
   PetscFunctionBegin;
@@ -22,7 +23,8 @@ static PetscErrorCode KSPSetUp_CGLS(KSP ksp) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode KSPSolve_CGLS(KSP ksp) {
+static PetscErrorCode KSPSolve_CGLS(KSP ksp)
+{
   KSP_CGLS   *cgls = (KSP_CGLS *)ksp->data;
   Mat         A;
   Vec         x, b, r, p, q, ss;
@@ -82,7 +84,8 @@ static PetscErrorCode KSPSolve_CGLS(KSP ksp) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode KSPDestroy_CGLS(KSP ksp) {
+static PetscErrorCode KSPDestroy_CGLS(KSP ksp)
+{
   KSP_CGLS *cgls = (KSP_CGLS *)ksp->data;
 
   PetscFunctionBegin;
@@ -94,24 +97,22 @@ static PetscErrorCode KSPDestroy_CGLS(KSP ksp) {
 }
 
 /*MC
-     KSPCGLS - Conjugate Gradient method for Least-Squares problems
+     KSPCGLS - Conjugate Gradient method for Least-Squares problems. Supports non-square (rectangular) matrices.
 
    Level: beginner
 
-   Supports non-square (rectangular) matrices.
+   Note:
+   This does not use the preconditioner, so one should probably use `KSPLSQR` instead.
 
-   Notes:
-    This does not use the preconditioner, so one should probably use KSPLSQR instead.
-
-.seealso: `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`,
+.seealso: [](chapter_ksp), `KSPLSQR`, `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`,
           `KSPCGSetType()`, `KSPCGUseSingleReduction()`, `KSPPIPECG`, `KSPGROPPCG`
-
 M*/
-PETSC_EXTERN PetscErrorCode KSPCreate_CGLS(KSP ksp) {
+PETSC_EXTERN PetscErrorCode KSPCreate_CGLS(KSP ksp)
+{
   KSP_CGLS *cgls;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(ksp, &cgls));
+  PetscCall(PetscNew(&cgls));
   ksp->data = (void *)cgls;
   PetscCall(KSPSetSupportedNorm(ksp, KSP_NORM_UNPRECONDITIONED, PC_LEFT, 3));
   PetscCall(KSPSetSupportedNorm(ksp, KSP_NORM_NONE, PC_LEFT, 1));

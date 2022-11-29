@@ -1,5 +1,5 @@
 
-#if !defined(PETSCFPIMPL_H)
+#ifndef PETSCFPIMPL_H
 #define PETSCFPIMPL_H
 #include <petscviewertypes.h>
 #include <petscsys.h>
@@ -23,7 +23,8 @@ struct _n_PetscFPT {
 };
 PETSC_INTERN PetscFPT PetscFPTData;
 
-static inline PetscErrorCode PetscFPTView(PetscViewer viewer) {
+static inline PetscErrorCode PetscFPTView(PetscViewer viewer)
+{
   if (PetscFPTData) {
     for (PetscInt i = 0; i < PetscFPTData->tablesize; ++i) {
       if (PetscFPTData->functionpointer[i]) printf("%s()\n", PetscFPTData->functionname[i]);
@@ -32,7 +33,8 @@ static inline PetscErrorCode PetscFPTView(PetscViewer viewer) {
   return 0;
 }
 
-static inline PetscErrorCode PetscFPTDestroy(void) {
+static inline PetscErrorCode PetscFPTDestroy(void)
+{
   PetscFPT data = PetscFPTData;
 
   PetscFPTData = NULL;
@@ -50,7 +52,8 @@ static inline PetscErrorCode PetscFPTDestroy(void) {
 .     n - expected number of keys
 
 */
-static inline PetscErrorCode PetscFPTCreate(PetscInt n) {
+static inline PetscErrorCode PetscFPTCreate(PetscInt n)
+{
   PetscFPT _PetscFPTData;
 
   PetscCheck(n >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "n < 0");
@@ -65,12 +68,14 @@ static inline PetscErrorCode PetscFPTCreate(PetscInt n) {
   return (0);
 }
 
-static inline unsigned long PetscFPTHashPointer(void *ptr) {
+static inline unsigned long PetscFPTHashPointer(void *ptr)
+{
 #define PETSC_FPT_HASH_FACT 79943
   return ((PETSC_FPT_HASH_FACT * ((size_t)ptr)) % PetscFPTData->tablesize);
 }
 
-static inline PetscErrorCode PetscFPTAdd(void *key, const char *data) {
+static inline PetscErrorCode PetscFPTAdd(void *key, const char *data)
+{
   PetscCheck(data, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Null function name");
   if (!PetscFPTData) return 0;
   for (PetscInt i = 0, hash = (PetscInt)PetscFPTHashPointer(key); i < PetscFPTData->tablesize; ++i) {
@@ -94,7 +99,8 @@ static inline PetscErrorCode PetscFPTAdd(void *key, const char *data) {
     If data==0, then no entry exists
 
 */
-static inline PetscErrorCode PetscFPTFind(void *key, char const **data) {
+static inline PetscErrorCode PetscFPTFind(void *key, char const **data)
+{
   PetscInt hash, ii = 0;
 
   *data = NULL;

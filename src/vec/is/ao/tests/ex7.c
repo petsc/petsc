@@ -4,7 +4,8 @@ static char help[] = "Demonstrates constructing an application ordering.\n\n";
 #include <petscao.h>
 #include <petscviewer.h>
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscInt    n = 5;
   PetscMPIInt rank, size;
   IS          ispetsc, isapp;

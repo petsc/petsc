@@ -1,0 +1,19 @@
+DMPlexTransform Object: Transform (first_) 1 MPI process
+  type: refine_regular
+Source Starts
+         vertex        segment tensor_segment       triangle  quadrilateral    tensor_quad    tetrahedron     hexahedron triangular_prism
+              8             17             33              0              8              8              0              0              0
+Target Starts
+         vertex        segment tensor_segment       triangle  quadrilateral    tensor_quad    tetrahedron     hexahedron triangular_prism
+             32             57            113              0             32             32              0              0              0
+Offsets
+              vertex        segment tensor_segment       triangle  quadrilateral    tensor_quad    tetrahedron     hexahedron
+ 0  |              0             -1             -1             -1             -1             -1             -1             -1 |
+ 1  |              9             24             -1             -1             -1             -1             -1             -1 |
+ 2  |             -1             -1              0             -1             -1             -1             -1             -1 |
+ 3  |             -1              0             -1              0             -1             -1             -1             -1 |
+ 4  |              0             24             -1             -1              0             -1             -1             -1 |
+ 5  |             -1             -1              0             -1             -1              0             -1             -1 |
+ 6  |             -1              0             -1              0             -1             -1              0             -1 |
+ 7  |              0              0             -1             -1              0             -1             -1              0 |
+Regular refinement Transform

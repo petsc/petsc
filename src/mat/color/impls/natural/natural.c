@@ -1,7 +1,8 @@
 #include <petsc/private/matimpl.h> /*I "petscmat.h"  I*/
 #include <petsc/private/isimpl.h>
 
-static PetscErrorCode MatColoringApply_Natural(MatColoring mc, ISColoring *iscoloring) {
+static PetscErrorCode MatColoringApply_Natural(MatColoring mc, ISColoring *iscoloring)
+{
   PetscInt         start, end, i, bs = 1, n;
   ISColoringValue *colors;
   MPI_Comm         comm;
@@ -67,7 +68,8 @@ static PetscErrorCode MatColoringApply_Natural(MatColoring mc, ISColoring *iscol
 
 .seealso: `MatColoring`, `MatColoringType`, `MatColoringCreate()`, `MatColoring`, `MatColoringSetType()`, `MatColoringType`
 M*/
-PETSC_EXTERN PetscErrorCode MatColoringCreate_Natural(MatColoring mc) {
+PETSC_EXTERN PetscErrorCode MatColoringCreate_Natural(MatColoring mc)
+{
   PetscFunctionBegin;
   mc->data                = NULL;
   mc->ops->apply          = MatColoringApply_Natural;

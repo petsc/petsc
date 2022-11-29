@@ -1,4 +1,4 @@
--include ../../../../../../../petsckdir.mk
+-include ../../../../../../../petscdir.mk
 
 SOURCEH   =
 SOURCEC   = sfgatherv.c

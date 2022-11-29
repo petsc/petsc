@@ -36,7 +36,7 @@ def _check_version(app: Sphinx) -> None:
 
 
 def _setup_translators(app: Sphinx) -> None:
-    """ Use a mixin strategy to add to the HTML translator without overriding
+    """ Use a mixin strategy to add to the Sphinx HTML translator without overriding
 
     This allows use of other extensions which modify the translator.
 
@@ -72,6 +72,12 @@ class PETScHTMLTranslatorMixin:
     """
     A custom HTML translator which overrides methods to add PETSc-specific
     custom processing to the generated HTML.
+
+    Replaces any string XXX that matches a manual page name with
+    <a href="PETSC_DOC_OUT_ROOT_PLACEHOLDER/docs/manualpages/YY/XXX.html">XXX</a>
+    or
+    <a href="PETSC_DOC_OUT_ROOT_PLACEHOLDER/docs/manualpages/YY/XXX">XXX</a>
+    depending on if the Sphinx build is html or dirhtml
     """
 
     def __init__(self, *args: Any) -> None:
@@ -183,10 +189,8 @@ def htmlmap_to_dict(htmlmap_filename: str) -> Dict[str,str]:
 
 
 def dict_complete_links(string_to_link: Dict[str,str], prefix: str = '') -> Dict[str,str]:
-    """ Complete HTML links
-
-    Prepend a prefix to any links not starting with 'http'.
-    Add HTML tags.
+    """
+    Prepend a prefix to any links not starting with 'http' so Sphinx will recognize them as URLs
     """
     def link_string(name: str, link: str, prefix: str) -> str:
         url = link if link.startswith('http') else prefix + link

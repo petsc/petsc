@@ -1,7 +1,8 @@
 static char help[] = "Test MatAXPY \n\n";
 
 #include <petscmat.h>
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   Mat            A = NULL, B = NULL;
   PetscInt       k;
   const PetscInt M = 18, N = 18;

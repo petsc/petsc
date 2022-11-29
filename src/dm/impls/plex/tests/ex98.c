@@ -2,7 +2,8 @@ static char help[] = "Test FEM layout with constraints\n\n";
 
 #include <petsc.h>
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   DM              dm, pdm;
   PetscSection    section;
   const PetscInt  field = 0;

@@ -6,7 +6,8 @@ static char help[] = "Test MatMatMult(), MatTranspose(), MatTransposeMatMult() f
 
 #include <petscmat.h>
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   Mat             A, B, C, D;
   PetscInt        i, M = 10, N = 5, j, nrows, ncols, am, an, rstart, rend;
   PetscRandom     r;

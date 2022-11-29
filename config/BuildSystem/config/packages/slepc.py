@@ -3,7 +3,7 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.gitcommit              = '5ffc856f7811ab2c90a3c5ebf8782ebf19f26327' # August 17, 2022
+    self.gitcommit              = 'bf375fba8758fa4186e71b1dfc048df90eddfef5' # branch jose/configure-hash
     self.download               = ['git://https://gitlab.com/slepc/slepc.git','https://gitlab.com/slepc/slepc/-/archive/'+self.gitcommit+'/slepc-'+self.gitcommit+'.tar.gz']
     self.functions              = []
     self.includes               = []
@@ -52,7 +52,7 @@ class Configure(config.package.Package):
     if 'download-slepc-configure-arguments' in self.argDB and self.argDB['download-slepc-configure-arguments']:
       configargs = self.argDB['download-slepc-configure-arguments']
       if '--with-slepc4py' in self.argDB['download-slepc-configure-arguments']:
-        carg += ' PYTHONPATH='+os.path.join(self.installDir,'lib')+':${PYTHONPATH}'
+        carg += 'PYTHONPATH='+os.path.join(self.installDir,'lib')+':${PYTHONPATH} '
     else:
       configargs = ''
 
@@ -62,9 +62,9 @@ class Configure(config.package.Package):
     self.addMakeMacro('SLEPC','yes')
     self.addMakeRule('slepcbuild','', \
                        ['@echo "*** Building SLEPc ***"',\
-                          '@${RM} -f ${PETSC_ARCH}/lib/petsc/conf/slepc.errorflg',\
+                          '@${RM} ${PETSC_ARCH}/lib/petsc/conf/slepc.errorflg',\
                           '@(cd '+self.packageDir+' && \\\n\
-           '+carg+self.python.pyexe+' ./configure --with-clean --prefix='+prefix+' '+configargs+' && \\\n\
+           '+carg+self.python.pyexe+' ./configure --prefix='+prefix+' '+configargs+' && \\\n\
            '+barg+'${OMAKE} '+barg+') || \\\n\
              (echo "**************************ERROR*************************************" && \\\n\
              echo "Error building SLEPc." && \\\n\

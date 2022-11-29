@@ -24,7 +24,8 @@ const char *const TaoADMMRegularizerTypes[] = {"REGULARIZER_USER", "REGULARIZER_
 const char *const TaoADMMUpdateTypes[]      = {"UPDATE_BASIC", "UPDATE_ADAPTIVE", "UPDATE_ADAPTIVE_RELAXED", "TaoADMMUpdateType", "TAO_ADMM_", NULL};
 const char *const TaoALMMTypes[]            = {"CLASSIC", "PHR", "TaoALMMType", "TAO_ALMM_", NULL};
 
-static PetscErrorCode TaoADMMToleranceUpdate(Tao tao) {
+static PetscErrorCode TaoADMMToleranceUpdate(Tao tao)
+{
   TAO_ADMM *am = (TAO_ADMM *)tao->data;
   PetscReal Axnorm, Bznorm, ATynorm, temp;
   Vec       tempJR, tempL;
@@ -58,7 +59,8 @@ static PetscErrorCode TaoADMMToleranceUpdate(Tao tao) {
 }
 
 /* Penaly Update for Adaptive ADMM. */
-static PetscErrorCode AdaptiveADMMPenaltyUpdate(Tao tao) {
+static PetscErrorCode AdaptiveADMMPenaltyUpdate(Tao tao)
+{
   TAO_ADMM *am = (TAO_ADMM *)tao->data;
   PetscReal ydiff_norm, yhatdiff_norm, Axdiff_norm, Bzdiff_norm, Axyhat, Bzy, a_sd, a_mg, a_k, b_sd, b_mg, b_k;
   PetscBool hflag, gflag;
@@ -109,7 +111,8 @@ static PetscErrorCode AdaptiveADMMPenaltyUpdate(Tao tao) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TaoADMMSetRegularizerType_ADMM(Tao tao, TaoADMMRegularizerType type) {
+static PetscErrorCode TaoADMMSetRegularizerType_ADMM(Tao tao, TaoADMMRegularizerType type)
+{
   TAO_ADMM *am = (TAO_ADMM *)tao->data;
 
   PetscFunctionBegin;
@@ -117,7 +120,8 @@ static PetscErrorCode TaoADMMSetRegularizerType_ADMM(Tao tao, TaoADMMRegularizer
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TaoADMMGetRegularizerType_ADMM(Tao tao, TaoADMMRegularizerType *type) {
+static PetscErrorCode TaoADMMGetRegularizerType_ADMM(Tao tao, TaoADMMRegularizerType *type)
+{
   TAO_ADMM *am = (TAO_ADMM *)tao->data;
 
   PetscFunctionBegin;
@@ -125,7 +129,8 @@ static PetscErrorCode TaoADMMGetRegularizerType_ADMM(Tao tao, TaoADMMRegularizer
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TaoADMMSetUpdateType_ADMM(Tao tao, TaoADMMUpdateType type) {
+static PetscErrorCode TaoADMMSetUpdateType_ADMM(Tao tao, TaoADMMUpdateType type)
+{
   TAO_ADMM *am = (TAO_ADMM *)tao->data;
 
   PetscFunctionBegin;
@@ -133,7 +138,8 @@ static PetscErrorCode TaoADMMSetUpdateType_ADMM(Tao tao, TaoADMMUpdateType type)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TaoADMMGetUpdateType_ADMM(Tao tao, TaoADMMUpdateType *type) {
+static PetscErrorCode TaoADMMGetUpdateType_ADMM(Tao tao, TaoADMMUpdateType *type)
+{
   TAO_ADMM *am = (TAO_ADMM *)tao->data;
 
   PetscFunctionBegin;
@@ -143,7 +149,8 @@ static PetscErrorCode TaoADMMGetUpdateType_ADMM(Tao tao, TaoADMMUpdateType *type
 
 /* This routine updates Jacobians with new x,z vectors,
  * and then updates Ax and Bz vectors, then computes updated residual vector*/
-static PetscErrorCode ADMMUpdateConstraintResidualVector(Tao tao, Vec x, Vec z, Vec Ax, Vec Bz, Vec residual) {
+static PetscErrorCode ADMMUpdateConstraintResidualVector(Tao tao, Vec x, Vec z, Vec Ax, Vec Bz, Vec residual)
+{
   TAO_ADMM *am = (TAO_ADMM *)tao->data;
   Tao       mis, reg;
 
@@ -163,7 +170,8 @@ static PetscErrorCode ADMMUpdateConstraintResidualVector(Tao tao, Vec x, Vec z, 
 /* Updates Augmented Lagrangians to given routines *
  * For subsolverX, routine needs to be ComputeObjectiveAndGraidnet
  * Separate Objective and Gradient routines are not supported.  */
-static PetscErrorCode SubObjGradUpdate(Tao tao, Vec x, PetscReal *f, Vec g, void *ptr) {
+static PetscErrorCode SubObjGradUpdate(Tao tao, Vec x, PetscReal *f, Vec g, void *ptr)
+{
   Tao       parent = (Tao)ptr;
   TAO_ADMM *am     = (TAO_ADMM *)parent->data;
   PetscReal temp, temp2;
@@ -191,7 +199,8 @@ static PetscErrorCode SubObjGradUpdate(Tao tao, Vec x, PetscReal *f, Vec g, void
 /* Updates Augmented Lagrangians to given routines
  * For subsolverZ, routine needs to be ComputeObjectiveAndGraidnet
  * Separate Objective and Gradient routines are not supported.  */
-static PetscErrorCode RegObjGradUpdate(Tao tao, Vec z, PetscReal *f, Vec g, void *ptr) {
+static PetscErrorCode RegObjGradUpdate(Tao tao, Vec z, PetscReal *f, Vec g, void *ptr)
+{
   Tao       parent = (Tao)ptr;
   TAO_ADMM *am     = (TAO_ADMM *)parent->data;
   PetscReal temp, temp2;
@@ -216,7 +225,8 @@ static PetscErrorCode RegObjGradUpdate(Tao tao, Vec z, PetscReal *f, Vec g, void
 }
 
 /* Computes epsilon padded L1 norm lambda*sum(sqrt(x^2+eps^2)-eps */
-static PetscErrorCode ADMML1EpsilonNorm(Tao tao, Vec x, PetscReal eps, PetscReal *norm) {
+static PetscErrorCode ADMML1EpsilonNorm(Tao tao, Vec x, PetscReal eps, PetscReal *norm)
+{
   TAO_ADMM *am = (TAO_ADMM *)tao->data;
   PetscInt  N;
 
@@ -231,12 +241,14 @@ static PetscErrorCode ADMML1EpsilonNorm(Tao tao, Vec x, PetscReal eps, PetscReal
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode ADMMInternalHessianUpdate(Mat H, Mat Constraint, PetscBool Identity, void *ptr) {
+static PetscErrorCode ADMMInternalHessianUpdate(Mat H, Mat Constraint, PetscBool Identity, void *ptr)
+{
   TAO_ADMM *am = (TAO_ADMM *)ptr;
 
   PetscFunctionBegin;
   switch (am->update) {
-  case (TAO_ADMM_UPDATE_BASIC): break;
+  case (TAO_ADMM_UPDATE_BASIC):
+    break;
   case (TAO_ADMM_UPDATE_ADAPTIVE):
   case (TAO_ADMM_UPDATE_ADAPTIVE_RELAXED):
     if (H && (am->muold != am->mu)) {
@@ -258,7 +270,8 @@ static PetscErrorCode ADMMInternalHessianUpdate(Mat H, Mat Constraint, PetscBool
  * H \gets H + (\rho-\rhoold)*ATA
  * Here, we assume that A is linear constraint i.e., doesnt change.
  * Thus, for both ADAPTIVE, and RELAXED, ATA matrix is pre-set (except for A=I (null case)) see TaoSetUp_ADMM */
-static PetscErrorCode SubHessianUpdate(Tao tao, Vec x, Mat H, Mat Hpre, void *ptr) {
+static PetscErrorCode SubHessianUpdate(Tao tao, Vec x, Mat H, Mat Hpre, void *ptr)
+{
   Tao       parent = (Tao)ptr;
   TAO_ADMM *am     = (TAO_ADMM *)parent->data;
 
@@ -277,7 +290,8 @@ static PetscErrorCode SubHessianUpdate(Tao tao, Vec x, Mat H, Mat Hpre, void *pt
 }
 
 /* Same as SubHessianUpdate, except for B matrix instead of A matrix */
-static PetscErrorCode RegHessianUpdate(Tao tao, Vec z, Mat H, Mat Hpre, void *ptr) {
+static PetscErrorCode RegHessianUpdate(Tao tao, Vec z, Mat H, Mat Hpre, void *ptr)
+{
   Tao       parent = (Tao)ptr;
   TAO_ADMM *am     = (TAO_ADMM *)parent->data;
 
@@ -300,7 +314,8 @@ static PetscErrorCode RegHessianUpdate(Tao tao, Vec z, Mat H, Mat Hpre, void *pt
  * This gets used when user puts NULL for
  * TaoSetJacobianEqualityRoutine(tao, NULL,NULL, ...)
  * Essentially sets A=I*/
-static PetscErrorCode JacobianIdentity(Mat mat, Vec in, Vec out) {
+static PetscErrorCode JacobianIdentity(Mat mat, Vec in, Vec out)
+{
   PetscFunctionBegin;
   PetscCall(VecCopy(in, out));
   PetscFunctionReturn(0);
@@ -310,7 +325,8 @@ static PetscErrorCode JacobianIdentity(Mat mat, Vec in, Vec out) {
  * This gets used when user puts NULL for
  * TaoADMMSetRegularizerConstraintJacobian(tao, NULL,NULL, ...)
  * Sets B=-I */
-static PetscErrorCode JacobianIdentityB(Mat mat, Vec in, Vec out) {
+static PetscErrorCode JacobianIdentityB(Mat mat, Vec in, Vec out)
+{
   PetscFunctionBegin;
   PetscCall(VecCopy(in, out));
   PetscCall(VecScale(out, -1.));
@@ -318,7 +334,8 @@ static PetscErrorCode JacobianIdentityB(Mat mat, Vec in, Vec out) {
 }
 
 /* Solve f(x) + g(z) s.t. Ax + Bz = c */
-static PetscErrorCode TaoSolve_ADMM(Tao tao) {
+static PetscErrorCode TaoSolve_ADMM(Tao tao)
+{
   TAO_ADMM *am = (TAO_ADMM *)tao->data;
   PetscInt  N;
   PetscReal reg_func;
@@ -351,7 +368,8 @@ static PetscErrorCode TaoSolve_ADMM(Tao tao) {
 
   if (!is_reg_shell) {
     switch (am->regswitch) {
-    case (TAO_ADMM_REGULARIZER_USER): break;
+    case (TAO_ADMM_REGULARIZER_USER):
+      break;
     case (TAO_ADMM_REGULARIZER_SOFT_THRESH):
       /* Soft Threshold. */
       break;
@@ -380,7 +398,8 @@ static PetscErrorCode TaoSolve_ADMM(Tao tao) {
     }
     break;
   case TAO_ADMM_UPDATE_ADAPTIVE:
-  case TAO_ADMM_UPDATE_ADAPTIVE_RELAXED: break;
+  case TAO_ADMM_UPDATE_ADAPTIVE_RELAXED:
+    break;
   }
 
   PetscCall(PetscCitationsRegister(citation, &cited));
@@ -399,7 +418,9 @@ static PetscErrorCode TaoSolve_ADMM(Tao tao) {
 
     /* z update */
     switch (am->regswitch) {
-    case TAO_ADMM_REGULARIZER_USER: PetscCall(TaoSolve(am->subsolverZ)); break;
+    case TAO_ADMM_REGULARIZER_USER:
+      PetscCall(TaoSolve(am->subsolverZ));
+      break;
     case TAO_ADMM_REGULARIZER_SOFT_THRESH:
       /* L1 assumes A,B jacobians are identity nxn matrix */
       PetscCall(VecWAXPY(am->workJacobianRight, 1 / am->mu, am->y, am->Ax));
@@ -417,7 +438,9 @@ static PetscErrorCode TaoSolve_ADMM(Tao tao) {
 
     /* Updating Spectral Penalty */
     switch (am->update) {
-    case TAO_ADMM_UPDATE_BASIC: am->muold = am->mu; break;
+    case TAO_ADMM_UPDATE_BASIC:
+      am->muold = am->mu;
+      break;
     case TAO_ADMM_UPDATE_ADAPTIVE:
     case TAO_ADMM_UPDATE_ADAPTIVE_RELAXED:
       if (tao->niter == 0) {
@@ -442,7 +465,8 @@ static PetscErrorCode TaoSolve_ADMM(Tao tao) {
         am->muold = am->mu;
       }
       break;
-    default: break;
+    default:
+      break;
     }
     tao->niter++;
 
@@ -455,7 +479,9 @@ static PetscErrorCode TaoSolve_ADMM(Tao tao) {
         (*am->ops->regobjgrad)(am->subsolverZ, am->subsolverX->solution, &reg_func, tempL, am->regobjgradP);
       }
       break;
-    case TAO_ADMM_REGULARIZER_SOFT_THRESH: PetscCall(ADMML1EpsilonNorm(tao, am->subsolverZ->solution, am->l1epsilon, &reg_func)); break;
+    case TAO_ADMM_REGULARIZER_SOFT_THRESH:
+      PetscCall(ADMML1EpsilonNorm(tao, am->subsolverZ->solution, am->l1epsilon, &reg_func));
+      break;
     }
     PetscCall(VecCopy(am->y, am->yold));
     PetscCall(ADMMUpdateConstraintResidualVector(tao, am->subsolverX->solution, am->subsolverZ->solution, am->Ax, am->Bz, am->residual));
@@ -477,7 +503,8 @@ static PetscErrorCode TaoSolve_ADMM(Tao tao) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TaoSetFromOptions_ADMM(Tao tao, PetscOptionItems *PetscOptionsObject) {
+static PetscErrorCode TaoSetFromOptions_ADMM(Tao tao, PetscOptionItems *PetscOptionsObject)
+{
   TAO_ADMM *am = (TAO_ADMM *)tao->data;
 
   PetscFunctionBegin;
@@ -496,7 +523,8 @@ static PetscErrorCode TaoSetFromOptions_ADMM(Tao tao, PetscOptionItems *PetscOpt
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TaoView_ADMM(Tao tao, PetscViewer viewer) {
+static PetscErrorCode TaoView_ADMM(Tao tao, PetscViewer viewer)
+{
   TAO_ADMM *am = (TAO_ADMM *)tao->data;
 
   PetscFunctionBegin;
@@ -507,7 +535,8 @@ static PetscErrorCode TaoView_ADMM(Tao tao, PetscViewer viewer) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TaoSetUp_ADMM(Tao tao) {
+static PetscErrorCode TaoSetUp_ADMM(Tao tao)
+{
   TAO_ADMM *am = (TAO_ADMM *)tao->data;
   PetscInt  n, N, M;
 
@@ -586,7 +615,8 @@ static PetscErrorCode TaoSetUp_ADMM(Tao tao) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TaoDestroy_ADMM(Tao tao) {
+static PetscErrorCode TaoDestroy_ADMM(Tao tao)
+{
   TAO_ADMM *am = (TAO_ADMM *)tao->data;
 
   PetscFunctionBegin;
@@ -673,11 +703,12 @@ static PetscErrorCode TaoDestroy_ADMM(Tao tao) {
           `TaoADMMGetRegularizerType()`, `TaoADMMSetUpdateType()`, `TaoADMMGetUpdateType()`
 M*/
 
-PETSC_EXTERN PetscErrorCode TaoCreate_ADMM(Tao tao) {
+PETSC_EXTERN PetscErrorCode TaoCreate_ADMM(Tao tao)
+{
   TAO_ADMM *am;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(tao, &am));
+  PetscCall(PetscNew(&am));
 
   tao->ops->destroy        = TaoDestroy_ADMM;
   tao->ops->setup          = TaoSetUp_ADMM;
@@ -745,7 +776,8 @@ PETSC_EXTERN PetscErrorCode TaoCreate_ADMM(Tao tao) {
 .seealso: `TAOADMM`
 
 @*/
-PetscErrorCode TaoADMMSetMisfitHessianChangeStatus(Tao tao, PetscBool b) {
+PetscErrorCode TaoADMMSetMisfitHessianChangeStatus(Tao tao, PetscBool b)
+{
   TAO_ADMM *am = (TAO_ADMM *)tao->data;
 
   PetscFunctionBegin;
@@ -767,7 +799,8 @@ PetscErrorCode TaoADMMSetMisfitHessianChangeStatus(Tao tao, PetscBool b) {
 .seealso: `TAOADMM`
 
 @*/
-PetscErrorCode TaoADMMSetRegHessianChangeStatus(Tao tao, PetscBool b) {
+PetscErrorCode TaoADMMSetRegHessianChangeStatus(Tao tao, PetscBool b)
+{
   TAO_ADMM *am = (TAO_ADMM *)tao->data;
 
   PetscFunctionBegin;
@@ -788,7 +821,8 @@ PetscErrorCode TaoADMMSetRegHessianChangeStatus(Tao tao, PetscBool b) {
 
 .seealso: `TaoADMMSetMinimumSpectralPenalty()`, `TAOADMM`
 @*/
-PetscErrorCode TaoADMMSetSpectralPenalty(Tao tao, PetscReal mu) {
+PetscErrorCode TaoADMMSetSpectralPenalty(Tao tao, PetscReal mu)
+{
   TAO_ADMM *am = (TAO_ADMM *)tao->data;
 
   PetscFunctionBegin;
@@ -811,7 +845,8 @@ PetscErrorCode TaoADMMSetSpectralPenalty(Tao tao, PetscReal mu) {
 
 .seealso: `TaoADMMSetMinimumSpectralPenalty()`, `TaoADMMSetSpectralPenalty()`, `TAOADMM`
 @*/
-PetscErrorCode TaoADMMGetSpectralPenalty(Tao tao, PetscReal *mu) {
+PetscErrorCode TaoADMMGetSpectralPenalty(Tao tao, PetscReal *mu)
+{
   TAO_ADMM *am = (TAO_ADMM *)tao->data;
 
   PetscFunctionBegin;
@@ -837,7 +872,8 @@ PetscErrorCode TaoADMMGetSpectralPenalty(Tao tao, PetscReal *mu) {
 .seealso: `TAOADMM`
 
 @*/
-PetscErrorCode TaoADMMGetMisfitSubsolver(Tao tao, Tao *misfit) {
+PetscErrorCode TaoADMMGetMisfitSubsolver(Tao tao, Tao *misfit)
+{
   TAO_ADMM *am = (TAO_ADMM *)tao->data;
 
   PetscFunctionBegin;
@@ -861,7 +897,8 @@ PetscErrorCode TaoADMMGetMisfitSubsolver(Tao tao, Tao *misfit) {
 .seealso: `TAOADMM`
 
 @*/
-PetscErrorCode TaoADMMGetRegularizationSubsolver(Tao tao, Tao *reg) {
+PetscErrorCode TaoADMMGetRegularizationSubsolver(Tao tao, Tao *reg)
+{
   TAO_ADMM *am = (TAO_ADMM *)tao->data;
 
   PetscFunctionBegin;
@@ -883,7 +920,8 @@ PetscErrorCode TaoADMMGetRegularizationSubsolver(Tao tao, Tao *reg) {
 .seealso: `TAOADMM`
 
 @*/
-PetscErrorCode TaoADMMSetConstraintVectorRHS(Tao tao, Vec c) {
+PetscErrorCode TaoADMMSetConstraintVectorRHS(Tao tao, Vec c)
+{
   TAO_ADMM *am = (TAO_ADMM *)tao->data;
 
   PetscFunctionBegin;
@@ -904,7 +942,8 @@ PetscErrorCode TaoADMMSetConstraintVectorRHS(Tao tao, Vec c) {
 
 .seealso: `TaoADMMGetSpectralPenalty()`, `TAOADMM`
 @*/
-PetscErrorCode TaoADMMSetMinimumSpectralPenalty(Tao tao, PetscReal mu) {
+PetscErrorCode TaoADMMSetMinimumSpectralPenalty(Tao tao, PetscReal mu)
+{
   TAO_ADMM *am = (TAO_ADMM *)tao->data;
 
   PetscFunctionBegin;
@@ -926,7 +965,8 @@ PetscErrorCode TaoADMMSetMinimumSpectralPenalty(Tao tao, PetscReal mu) {
 .seealso: `TaoADMMSetMisfitConstraintJacobian()`, `TaoADMMSetRegularizerConstraintJacobian()`, `TAOADMM`
 
 @*/
-PetscErrorCode TaoADMMSetRegularizerCoefficient(Tao tao, PetscReal lambda) {
+PetscErrorCode TaoADMMSetRegularizerCoefficient(Tao tao, PetscReal lambda)
+{
   TAO_ADMM *am = (TAO_ADMM *)tao->data;
 
   PetscFunctionBegin;
@@ -951,7 +991,8 @@ PetscErrorCode TaoADMMSetRegularizerCoefficient(Tao tao, PetscReal lambda) {
 .seealso: `TaoADMMSetRegularizerCoefficient()`, `TaoADMMSetRegularizerConstraintJacobian()`, `TAOADMM`
 
 @*/
-PetscErrorCode TaoADMMSetMisfitConstraintJacobian(Tao tao, Mat J, Mat Jpre, PetscErrorCode (*func)(Tao, Vec, Mat, Mat, void *), void *ctx) {
+PetscErrorCode TaoADMMSetMisfitConstraintJacobian(Tao tao, Mat J, Mat Jpre, PetscErrorCode (*func)(Tao, Vec, Mat, Mat, void *), void *ctx)
+{
   TAO_ADMM *am = (TAO_ADMM *)tao->data;
 
   PetscFunctionBegin;
@@ -997,7 +1038,8 @@ PetscErrorCode TaoADMMSetMisfitConstraintJacobian(Tao tao, Mat J, Mat Jpre, Pets
 .seealso: `TaoADMMSetRegularizerCoefficient()`, `TaoADMMSetMisfitConstraintJacobian()`, `TAOADMM`
 
 @*/
-PetscErrorCode TaoADMMSetRegularizerConstraintJacobian(Tao tao, Mat J, Mat Jpre, PetscErrorCode (*func)(Tao, Vec, Mat, Mat, void *), void *ctx) {
+PetscErrorCode TaoADMMSetRegularizerConstraintJacobian(Tao tao, Mat J, Mat Jpre, PetscErrorCode (*func)(Tao, Vec, Mat, Mat, void *), void *ctx)
+{
   TAO_ADMM *am = (TAO_ADMM *)tao->data;
 
   PetscFunctionBegin;
@@ -1041,7 +1083,8 @@ PetscErrorCode TaoADMMSetRegularizerConstraintJacobian(Tao tao, Mat J, Mat Jpre,
 .seealso: `TAOADMM`
 
 @*/
-PetscErrorCode TaoADMMSetMisfitObjectiveAndGradientRoutine(Tao tao, PetscErrorCode (*func)(Tao, Vec, PetscReal *, Vec, void *), void *ctx) {
+PetscErrorCode TaoADMMSetMisfitObjectiveAndGradientRoutine(Tao tao, PetscErrorCode (*func)(Tao, Vec, PetscReal *, Vec, void *), void *ctx)
+{
   TAO_ADMM *am = (TAO_ADMM *)tao->data;
 
   PetscFunctionBegin;
@@ -1069,7 +1112,8 @@ PetscErrorCode TaoADMMSetMisfitObjectiveAndGradientRoutine(Tao tao, PetscErrorCo
 .seealso: `TAOADMM`
 
 @*/
-PetscErrorCode TaoADMMSetMisfitHessianRoutine(Tao tao, Mat H, Mat Hpre, PetscErrorCode (*func)(Tao, Vec, Mat, Mat, void *), void *ctx) {
+PetscErrorCode TaoADMMSetMisfitHessianRoutine(Tao tao, Mat H, Mat Hpre, PetscErrorCode (*func)(Tao, Vec, Mat, Mat, void *), void *ctx)
+{
   TAO_ADMM *am = (TAO_ADMM *)tao->data;
 
   PetscFunctionBegin;
@@ -1112,7 +1156,8 @@ PetscErrorCode TaoADMMSetMisfitHessianRoutine(Tao tao, Mat H, Mat Hpre, PetscErr
 .seealso: `TAOADMM`
 
 @*/
-PetscErrorCode TaoADMMSetRegularizerObjectiveAndGradientRoutine(Tao tao, PetscErrorCode (*func)(Tao, Vec, PetscReal *, Vec, void *), void *ctx) {
+PetscErrorCode TaoADMMSetRegularizerObjectiveAndGradientRoutine(Tao tao, PetscErrorCode (*func)(Tao, Vec, PetscReal *, Vec, void *), void *ctx)
+{
   TAO_ADMM *am = (TAO_ADMM *)tao->data;
 
   PetscFunctionBegin;
@@ -1140,7 +1185,8 @@ PetscErrorCode TaoADMMSetRegularizerObjectiveAndGradientRoutine(Tao tao, PetscEr
 .seealso: `TAOADMM`
 
 @*/
-PetscErrorCode TaoADMMSetRegularizerHessianRoutine(Tao tao, Mat H, Mat Hpre, PetscErrorCode (*func)(Tao, Vec, Mat, Mat, void *), void *ctx) {
+PetscErrorCode TaoADMMSetRegularizerHessianRoutine(Tao tao, Mat H, Mat Hpre, PetscErrorCode (*func)(Tao, Vec, Mat, Mat, void *), void *ctx)
+{
   TAO_ADMM *am = (TAO_ADMM *)tao->data;
 
   PetscFunctionBegin;
@@ -1184,7 +1230,8 @@ PetscErrorCode TaoADMMSetRegularizerHessianRoutine(Tao tao, Mat H, Mat Hpre, Pet
 .seealso: `TAOADMM`
 
 @*/
-PetscErrorCode TaoGetADMMParentTao(Tao tao, Tao *admm_tao) {
+PetscErrorCode TaoGetADMMParentTao(Tao tao, Tao *admm_tao)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao, TAO_CLASSID, 1);
   PetscCall(PetscObjectQuery((PetscObject)tao, "TaoGetADMMParentTao_ADMM", (PetscObject *)admm_tao));
@@ -1207,7 +1254,8 @@ PetscErrorCode TaoGetADMMParentTao(Tao tao, Tao *admm_tao) {
 .seealso: `TAOADMM`
 
 @*/
-PetscErrorCode TaoADMMGetDualVector(Tao tao, Vec *Y) {
+PetscErrorCode TaoADMMGetDualVector(Tao tao, Vec *Y)
+{
   TAO_ADMM *am = (TAO_ADMM *)tao->data;
 
   PetscFunctionBegin;
@@ -1225,14 +1273,15 @@ PetscErrorCode TaoADMMGetDualVector(Tao tao, Vec *Y) {
 + tao  - the Tao context
 - type - regularizer type
 
-  Options Database:
+  Options Database Key:
 .  -tao_admm_regularizer_type <admm_regularizer_user,admm_regularizer_soft_thresh> - select the regularizer
 
   Level: intermediate
 
 .seealso: `TaoADMMGetRegularizerType()`, `TaoADMMRegularizerType`, `TAOADMM`
 @*/
-PetscErrorCode TaoADMMSetRegularizerType(Tao tao, TaoADMMRegularizerType type) {
+PetscErrorCode TaoADMMSetRegularizerType(Tao tao, TaoADMMRegularizerType type)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao, TAO_CLASSID, 1);
   PetscValidLogicalCollectiveEnum(tao, type, 2);
@@ -1255,7 +1304,8 @@ PetscErrorCode TaoADMMSetRegularizerType(Tao tao, TaoADMMRegularizerType type) {
 
 .seealso: `TaoADMMSetRegularizerType()`, `TaoADMMRegularizerType`, `TAOADMM`
 @*/
-PetscErrorCode TaoADMMGetRegularizerType(Tao tao, TaoADMMRegularizerType *type) {
+PetscErrorCode TaoADMMGetRegularizerType(Tao tao, TaoADMMRegularizerType *type)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao, TAO_CLASSID, 1);
   PetscUseMethod(tao, "TaoADMMGetRegularizerType_C", (Tao, TaoADMMRegularizerType *), (tao, type));
@@ -1275,7 +1325,8 @@ PetscErrorCode TaoADMMGetRegularizerType(Tao tao, TaoADMMRegularizerType *type) 
 
 .seealso: `TaoADMMGetUpdateType()`, `TaoADMMUpdateType`, `TAOADMM`
 @*/
-PetscErrorCode TaoADMMSetUpdateType(Tao tao, TaoADMMUpdateType type) {
+PetscErrorCode TaoADMMSetUpdateType(Tao tao, TaoADMMUpdateType type)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao, TAO_CLASSID, 1);
   PetscValidLogicalCollectiveEnum(tao, type, 2);
@@ -1298,7 +1349,8 @@ PetscErrorCode TaoADMMSetUpdateType(Tao tao, TaoADMMUpdateType type) {
 
 .seealso: `TaoADMMSetUpdateType()`, `TaoADMMUpdateType`, `TAOADMM`
 @*/
-PetscErrorCode TaoADMMGetUpdateType(Tao tao, TaoADMMUpdateType *type) {
+PetscErrorCode TaoADMMGetUpdateType(Tao tao, TaoADMMUpdateType *type)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao, TAO_CLASSID, 1);
   PetscUseMethod(tao, "TaoADMMGetUpdateType_C", (Tao, TaoADMMUpdateType *), (tao, type));

@@ -1,13 +1,14 @@
 #include <petsc/private/dmpleximpl.h> /*I      "petscdmplex.h"   I*/
 
 #ifdef PETSC_HAVE_EGADS
-#include <egads.h>
+  #include <egads.h>
 #endif
 
 #include <ctetgen.h>
 
 /* This is to fix the tetrahedron orientation from TetGen */
-static PetscErrorCode DMPlexInvertCells_CTetgen(PetscInt numCells, PetscInt numCorners, PetscInt cells[]) {
+static PetscErrorCode DMPlexInvertCells_CTetgen(PetscInt numCells, PetscInt numCorners, PetscInt cells[])
+{
   PetscInt bound = numCells * numCorners, coff;
 
   PetscFunctionBegin;
@@ -22,7 +23,8 @@ static PetscErrorCode DMPlexInvertCells_CTetgen(PetscInt numCells, PetscInt numC
   PetscFunctionReturn(0);
 }
 
-PETSC_EXTERN PetscErrorCode DMPlexGenerate_CTetgen(DM boundary, PetscBool interpolate, DM *dm) {
+PETSC_EXTERN PetscErrorCode DMPlexGenerate_CTetgen(DM boundary, PetscBool interpolate, DM *dm)
+{
   MPI_Comm               comm;
   const PetscInt         dim = 3;
   PLC                   *in, *out;
@@ -131,10 +133,10 @@ PETSC_EXTERN PetscErrorCode DMPlexGenerate_CTetgen(DM boundary, PetscBool interp
     t.quiet     = 1;
     t.verbose   = verbose;
 #if 0
-#ifdef PETSC_HAVE_EGADS
+  #ifdef PETSC_HAVE_EGADS
     /* Need to add in more TetGen code */
     t.nobisect  = 1; /* Add Y to preserve Surface Mesh for EGADS */
-#endif
+  #endif
 #endif
 
     PetscCall(TetGenCheckOpts(&t));
@@ -280,7 +282,8 @@ PETSC_EXTERN PetscErrorCode DMPlexGenerate_CTetgen(DM boundary, PetscBool interp
   PetscFunctionReturn(0);
 }
 
-PETSC_EXTERN PetscErrorCode DMPlexRefine_CTetgen(DM dm, PetscReal *maxVolumes, DM *dmRefined) {
+PETSC_EXTERN PetscErrorCode DMPlexRefine_CTetgen(DM dm, PetscReal *maxVolumes, DM *dmRefined)
+{
   MPI_Comm               comm;
   const PetscInt         dim = 3;
   PLC                   *in, *out;

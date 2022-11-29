@@ -14,9 +14,10 @@
 
   Level: intermediate
 
-.seealso: `MatChop()`, `MatFilter()`, `MatGetGraph()`
+.seealso: `MatChop()`, `MatGetGraph()`
  @*/
-PetscErrorCode MatCreateLaplacian(Mat A, PetscReal tol, PetscBool weighted, Mat *L) {
+PetscErrorCode MatCreateLaplacian(Mat A, PetscReal tol, PetscBool weighted, Mat *L)
+{
   PetscScalar *newVals;
   PetscInt    *newCols;
   PetscInt     rStart, rEnd, r, colMax = 0;
@@ -99,7 +100,8 @@ PetscErrorCode MatCreateLaplacian(Mat A, PetscReal tol, PetscBool weighted, Mat 
 /*
   MatGetOrdering_Spectral - Find the symmetric reordering of the graph by .
 */
-PETSC_INTERN PetscErrorCode MatGetOrdering_Spectral(Mat A, MatOrderingType type, IS *row, IS *col) {
+PETSC_INTERN PetscErrorCode MatGetOrdering_Spectral(Mat A, MatOrderingType type, IS *row, IS *col)
+{
   Mat             L;
   const PetscReal eps = 1.0e-12;
 

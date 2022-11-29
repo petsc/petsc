@@ -1,4 +1,4 @@
--include ../../../../petsckdir.mk
+-include ../../../../petscdir.mk
 
 SOURCEC  = snesngmres.c ngmresfunc.c anderson.c
 SOURCEF  =

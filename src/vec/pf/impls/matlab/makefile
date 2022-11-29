@@ -1,5 +1,5 @@
--include ../../../../../petsckdir.mk
-#requiresdefine  'PETSC_HAVE_MATLAB_ENGINE'
+-include ../../../../../petscdir.mk
+#requiresdefine  'PETSC_HAVE_MATLAB'
 
 SOURCEC  = cmatlab.c
 SOURCEF  =

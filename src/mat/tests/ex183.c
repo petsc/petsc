@@ -4,7 +4,8 @@ static char help[] = "Example of extracting an array of MPI submatrices from a g
 
 #include <petscmat.h>
 
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   Mat          A, *submats;
   MPI_Comm     subcomm;
   PetscMPIInt  rank, size, subrank, subsize, color;

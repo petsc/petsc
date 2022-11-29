@@ -3,7 +3,8 @@ static char help[] = "Demonstrates PetscOptionsPush()/PetscOptionsPop().\n\n";
 
 #include <petscsys.h>
 #include <petscoptions.h>
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscOptions opt1, opt2;
   PetscInt     int1, int2;
   PetscBool    flg1, flg2, flga, match;

@@ -114,7 +114,8 @@ PetscErrorCode FormConstraints(Tao, Vec, Vec, void *);
 PetscErrorCode FormJacobian(Tao, Vec, Mat, Mat, void *);
 PetscErrorCode ComputeVariableBounds(Tao, Vec, Vec, void *);
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   Vec        x;    /* solution vector */
   Vec        c;    /* Constraints function vector */
   Mat        J;    /* jacobian matrix */
@@ -254,7 +255,8 @@ int main(int argc, char **argv) {
 }
 
 /* -------------------------------------------------------------------- */
-PetscErrorCode ComputeVariableBounds(Tao tao, Vec xl, Vec xu, void *ctx) {
+PetscErrorCode ComputeVariableBounds(Tao tao, Vec xl, Vec xu, void *ctx)
+{
   AppCtx   *user = (AppCtx *)ctx;
   PetscInt  i;
   PetscInt  xs, xm;
@@ -298,7 +300,8 @@ PetscErrorCode ComputeVariableBounds(Tao tao, Vec xl, Vec xu, void *ctx) {
     Output Parameters:
 .   F - vector containing the newly evaluated gradient
 */
-PetscErrorCode FormConstraints(Tao tao, Vec X, Vec F, void *ptr) {
+PetscErrorCode FormConstraints(Tao tao, Vec X, Vec F, void *ptr)
+{
   AppCtx    *user = (AppCtx *)ptr;
   PetscReal *x, *f;
   PetscReal *Vt1 = user->Vt1, *c = user->c, *d = user->d;
@@ -371,7 +374,8 @@ PetscErrorCode FormConstraints(Tao tao, Vec X, Vec F, void *ptr) {
    Output Parameters:
 .  J    - Jacobian matrix
 */
-PetscErrorCode FormJacobian(Tao tao, Vec X, Mat J, Mat tJPre, void *ptr) {
+PetscErrorCode FormJacobian(Tao tao, Vec X, Mat J, Mat tJPre, void *ptr)
+{
   AppCtx    *user = (AppCtx *)ptr;
   PetscReal *c = user->c, *d = user->d;
   PetscReal  rate = user->rate;

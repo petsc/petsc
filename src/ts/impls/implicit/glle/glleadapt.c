@@ -23,7 +23,7 @@ PETSC_EXTERN PetscErrorCode TSGLLEAdaptCreate_Size(TSGLLEAdapt);
 PETSC_EXTERN PetscErrorCode TSGLLEAdaptCreate_Both(TSGLLEAdapt);
 
 /*@C
-   TSGLLEAdaptRegister -  adds a TSGLLEAdapt implementation
+   TSGLLEAdaptRegister -  adds a `TSGLLEAdapt` implementation
 
    Not Collective
 
@@ -31,8 +31,8 @@ PETSC_EXTERN PetscErrorCode TSGLLEAdaptCreate_Both(TSGLLEAdapt);
 +  name_scheme - name of user-defined adaptivity scheme
 -  routine_create - routine to create method context
 
-   Notes:
-   TSGLLEAdaptRegister() may be called multiple times to add several user-defined families.
+   Note:
+   `TSGLLEAdaptRegister()` may be called multiple times to add several user-defined families.
 
    Sample usage:
 .vb
@@ -46,9 +46,10 @@ $     -ts_adapt_type my_scheme
 
    Level: advanced
 
-.seealso: `TSGLLEAdaptRegisterAll()`
+.seealso: [](chapter_ts), `TSGLLE`, `TSGLLEAdapt`, `TSGLLEAdaptRegisterAll()`
 @*/
-PetscErrorCode TSGLLEAdaptRegister(const char sname[], PetscErrorCode (*function)(TSGLLEAdapt)) {
+PetscErrorCode TSGLLEAdaptRegister(const char sname[], PetscErrorCode (*function)(TSGLLEAdapt))
+{
   PetscFunctionBegin;
   PetscCall(TSGLLEAdaptInitializePackage());
   PetscCall(PetscFunctionListAdd(&TSGLLEAdaptList, sname, function));
@@ -56,15 +57,16 @@ PetscErrorCode TSGLLEAdaptRegister(const char sname[], PetscErrorCode (*function
 }
 
 /*@C
-  TSGLLEAdaptRegisterAll - Registers all of the adaptivity schemes in TSGLLEAdapt
+  TSGLLEAdaptRegisterAll - Registers all of the adaptivity schemes in `TSGLLEAdapt`
 
   Not Collective
 
   Level: advanced
 
-.seealso: `TSGLLEAdaptRegisterDestroy()`
+.seealso: [](chapter_ts), `TSGLLEAdapt`, `TSGLLE`, `TSGLLEAdaptRegisterDestroy()`
 @*/
-PetscErrorCode TSGLLEAdaptRegisterAll(void) {
+PetscErrorCode TSGLLEAdaptRegisterAll(void)
+{
   PetscFunctionBegin;
   if (TSGLLEAdaptRegisterAllCalled) PetscFunctionReturn(0);
   TSGLLEAdaptRegisterAllCalled = PETSC_TRUE;
@@ -75,14 +77,15 @@ PetscErrorCode TSGLLEAdaptRegisterAll(void) {
 }
 
 /*@C
-  TSGLLEFinalizePackage - This function destroys everything in the TSGLLE package. It is
-  called from PetscFinalize().
+  TSGLLEFinalizePackage - This function destroys everything in the `TSGLLE` package. It is
+  called from `PetscFinalize()`.
 
   Level: developer
 
-.seealso: `PetscFinalize()`
+.seealso: [](chapter_ts), `PetscFinalize()`, `TSGLLEAdapt`, `TSGLLEAdaptInitializePackage()`
 @*/
-PetscErrorCode TSGLLEAdaptFinalizePackage(void) {
+PetscErrorCode TSGLLEAdaptFinalizePackage(void)
+{
   PetscFunctionBegin;
   PetscCall(PetscFunctionListDestroy(&TSGLLEAdaptList));
   TSGLLEAdaptPackageInitialized = PETSC_FALSE;
@@ -91,14 +94,15 @@ PetscErrorCode TSGLLEAdaptFinalizePackage(void) {
 }
 
 /*@C
-  TSGLLEAdaptInitializePackage - This function initializes everything in the TSGLLEAdapt package. It is
-  called from TSInitializePackage().
+  TSGLLEAdaptInitializePackage - This function initializes everything in the `TSGLLEAdapt` package. It is
+  called from `TSInitializePackage()`.
 
   Level: developer
 
-.seealso: `PetscInitialize()`
+.seealso: [](chapter_ts), `PetscInitialize()`, `TSGLLEAdapt`, `TSGLLEAdaptFinalizePackage()`
 @*/
-PetscErrorCode TSGLLEAdaptInitializePackage(void) {
+PetscErrorCode TSGLLEAdaptInitializePackage(void)
+{
   PetscFunctionBegin;
   if (TSGLLEAdaptPackageInitialized) PetscFunctionReturn(0);
   TSGLLEAdaptPackageInitialized = PETSC_TRUE;
@@ -108,7 +112,8 @@ PetscErrorCode TSGLLEAdaptInitializePackage(void) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode TSGLLEAdaptSetType(TSGLLEAdapt adapt, TSGLLEAdaptType type) {
+PetscErrorCode TSGLLEAdaptSetType(TSGLLEAdapt adapt, TSGLLEAdaptType type)
+{
   PetscErrorCode (*r)(TSGLLEAdapt);
 
   PetscFunctionBegin;
@@ -120,13 +125,15 @@ PetscErrorCode TSGLLEAdaptSetType(TSGLLEAdapt adapt, TSGLLEAdaptType type) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode TSGLLEAdaptSetOptionsPrefix(TSGLLEAdapt adapt, const char prefix[]) {
+PetscErrorCode TSGLLEAdaptSetOptionsPrefix(TSGLLEAdapt adapt, const char prefix[])
+{
   PetscFunctionBegin;
   PetscCall(PetscObjectSetOptionsPrefix((PetscObject)adapt, prefix));
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode TSGLLEAdaptView(TSGLLEAdapt adapt, PetscViewer viewer) {
+PetscErrorCode TSGLLEAdaptView(TSGLLEAdapt adapt, PetscViewer viewer)
+{
   PetscBool iascii;
 
   PetscFunctionBegin;
@@ -142,7 +149,8 @@ PetscErrorCode TSGLLEAdaptView(TSGLLEAdapt adapt, PetscViewer viewer) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode TSGLLEAdaptDestroy(TSGLLEAdapt *adapt) {
+PetscErrorCode TSGLLEAdaptDestroy(TSGLLEAdapt *adapt)
+{
   PetscFunctionBegin;
   if (!*adapt) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(*adapt, TSGLLEADAPT_CLASSID, 1);
@@ -155,7 +163,8 @@ PetscErrorCode TSGLLEAdaptDestroy(TSGLLEAdapt *adapt) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode TSGLLEAdaptSetFromOptions(TSGLLEAdapt adapt, PetscOptionItems *PetscOptionsObject) {
+PetscErrorCode TSGLLEAdaptSetFromOptions(TSGLLEAdapt adapt, PetscOptionItems *PetscOptionsObject)
+{
   char      type[256] = TSGLLEADAPT_BOTH;
   PetscBool flg;
 
@@ -170,7 +179,8 @@ PetscErrorCode TSGLLEAdaptSetFromOptions(TSGLLEAdapt adapt, PetscOptionItems *Pe
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode TSGLLEAdaptChoose(TSGLLEAdapt adapt, PetscInt n, const PetscInt orders[], const PetscReal errors[], const PetscReal cost[], PetscInt cur, PetscReal h, PetscReal tleft, PetscInt *next_sc, PetscReal *next_h, PetscBool *finish) {
+PetscErrorCode TSGLLEAdaptChoose(TSGLLEAdapt adapt, PetscInt n, const PetscInt orders[], const PetscReal errors[], const PetscReal cost[], PetscInt cur, PetscReal h, PetscReal tleft, PetscInt *next_sc, PetscReal *next_h, PetscBool *finish)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(adapt, TSGLLEADAPT_CLASSID, 1);
   PetscValidIntPointer(orders, 3);
@@ -183,7 +193,8 @@ PetscErrorCode TSGLLEAdaptChoose(TSGLLEAdapt adapt, PetscInt n, const PetscInt o
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode TSGLLEAdaptCreate(MPI_Comm comm, TSGLLEAdapt *inadapt) {
+PetscErrorCode TSGLLEAdaptCreate(MPI_Comm comm, TSGLLEAdapt *inadapt)
+{
   TSGLLEAdapt adapt;
 
   PetscFunctionBegin;
@@ -197,7 +208,8 @@ PetscErrorCode TSGLLEAdaptCreate(MPI_Comm comm, TSGLLEAdapt *inadapt) {
    Implementations
 */
 
-static PetscErrorCode TSGLLEAdaptDestroy_JustFree(TSGLLEAdapt adapt) {
+static PetscErrorCode TSGLLEAdaptDestroy_JustFree(TSGLLEAdapt adapt)
+{
   PetscFunctionBegin;
   PetscCall(PetscFree(adapt->data));
   PetscFunctionReturn(0);
@@ -209,7 +221,8 @@ typedef struct {
   PetscReal h;
 } TSGLLEAdapt_None;
 
-static PetscErrorCode TSGLLEAdaptChoose_None(TSGLLEAdapt adapt, PetscInt n, const PetscInt orders[], const PetscReal errors[], const PetscReal cost[], PetscInt cur, PetscReal h, PetscReal tleft, PetscInt *next_sc, PetscReal *next_h, PetscBool *finish) {
+static PetscErrorCode TSGLLEAdaptChoose_None(TSGLLEAdapt adapt, PetscInt n, const PetscInt orders[], const PetscReal errors[], const PetscReal cost[], PetscInt cur, PetscReal h, PetscReal tleft, PetscInt *next_sc, PetscReal *next_h, PetscBool *finish)
+{
   PetscFunctionBegin;
   *next_sc = cur;
   *next_h  = h;
@@ -220,11 +233,12 @@ static PetscErrorCode TSGLLEAdaptChoose_None(TSGLLEAdapt adapt, PetscInt n, cons
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode TSGLLEAdaptCreate_None(TSGLLEAdapt adapt) {
+PetscErrorCode TSGLLEAdaptCreate_None(TSGLLEAdapt adapt)
+{
   TSGLLEAdapt_None *a;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(adapt, &a));
+  PetscCall(PetscNew(&a));
   adapt->data         = (void *)a;
   adapt->ops->choose  = TSGLLEAdaptChoose_None;
   adapt->ops->destroy = TSGLLEAdaptDestroy_JustFree;
@@ -236,13 +250,14 @@ typedef struct {
   PetscReal desired_h;
 } TSGLLEAdapt_Size;
 
-static PetscErrorCode TSGLLEAdaptChoose_Size(TSGLLEAdapt adapt, PetscInt n, const PetscInt orders[], const PetscReal errors[], const PetscReal cost[], PetscInt cur, PetscReal h, PetscReal tleft, PetscInt *next_sc, PetscReal *next_h, PetscBool *finish) {
+static PetscErrorCode TSGLLEAdaptChoose_Size(TSGLLEAdapt adapt, PetscInt n, const PetscInt orders[], const PetscReal errors[], const PetscReal cost[], PetscInt cur, PetscReal h, PetscReal tleft, PetscInt *next_sc, PetscReal *next_h, PetscBool *finish)
+{
   TSGLLEAdapt_Size *sz  = (TSGLLEAdapt_Size *)adapt->data;
   PetscReal         dec = 0.2, inc = 5.0, safe = 0.9, optimal, last_desired_h;
 
   PetscFunctionBegin;
-  *next_sc       = cur;
-  optimal        = PetscPowReal((PetscReal)errors[cur], (PetscReal)-1. / (safe * orders[cur]));
+  *next_sc = cur;
+  optimal  = PetscPowReal((PetscReal)errors[cur], (PetscReal)-1. / (safe * orders[cur]));
   /* Step sizes oscillate when there is no smoothing.  Here we use a geometric mean of the current step size and the
   * one that would have been taken (without smoothing) on the last step. */
   last_desired_h = sz->desired_h;
@@ -259,11 +274,12 @@ static PetscErrorCode TSGLLEAdaptChoose_Size(TSGLLEAdapt adapt, PetscInt n, cons
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode TSGLLEAdaptCreate_Size(TSGLLEAdapt adapt) {
+PetscErrorCode TSGLLEAdaptCreate_Size(TSGLLEAdapt adapt)
+{
   TSGLLEAdapt_Size *a;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(adapt, &a));
+  PetscCall(PetscNew(&a));
   adapt->data         = (void *)a;
   adapt->ops->choose  = TSGLLEAdaptChoose_Size;
   adapt->ops->destroy = TSGLLEAdaptDestroy_JustFree;
@@ -276,7 +292,8 @@ typedef struct {
   PetscReal desired_h;
 } TSGLLEAdapt_Both;
 
-static PetscErrorCode TSGLLEAdaptChoose_Both(TSGLLEAdapt adapt, PetscInt n, const PetscInt orders[], const PetscReal errors[], const PetscReal cost[], PetscInt cur, PetscReal h, PetscReal tleft, PetscInt *next_sc, PetscReal *next_h, PetscBool *finish) {
+static PetscErrorCode TSGLLEAdaptChoose_Both(TSGLLEAdapt adapt, PetscInt n, const PetscInt orders[], const PetscReal errors[], const PetscReal cost[], PetscInt cur, PetscReal h, PetscReal tleft, PetscInt *next_sc, PetscReal *next_h, PetscBool *finish)
+{
   TSGLLEAdapt_Both *both = (TSGLLEAdapt_Both *)adapt->data;
   PetscReal         dec = 0.2, inc = 5.0, safe = 0.9;
   struct {
@@ -319,11 +336,12 @@ static PetscErrorCode TSGLLEAdaptChoose_Both(TSGLLEAdapt adapt, PetscInt n, cons
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode TSGLLEAdaptCreate_Both(TSGLLEAdapt adapt) {
+PetscErrorCode TSGLLEAdaptCreate_Both(TSGLLEAdapt adapt)
+{
   TSGLLEAdapt_Both *a;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(adapt, &a));
+  PetscCall(PetscNew(&a));
   adapt->data         = (void *)a;
   adapt->ops->choose  = TSGLLEAdaptChoose_Both;
   adapt->ops->destroy = TSGLLEAdaptDestroy_JustFree;

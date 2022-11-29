@@ -1,7 +1,7 @@
 /*
   Common tools for constructing discretizations
 */
-#if !defined(PETSCDT_H)
+#ifndef PETSCDT_H
 #define PETSCDT_H
 
 #include <petscsys.h>
@@ -153,11 +153,11 @@ PETSC_EXTERN PetscErrorCode PetscDTGradedOrderToIndex(PetscInt, const PetscInt[]
 PETSC_EXTERN PetscErrorCode PetscDTIndexToGradedOrder(PetscInt, PetscInt, PetscInt[]);
 
 #if defined(PETSC_USE_64BIT_INDICES)
-#define PETSC_FACTORIAL_MAX 20
-#define PETSC_BINOMIAL_MAX  61
+  #define PETSC_FACTORIAL_MAX 20
+  #define PETSC_BINOMIAL_MAX  61
 #else
-#define PETSC_FACTORIAL_MAX 12
-#define PETSC_BINOMIAL_MAX  29
+  #define PETSC_FACTORIAL_MAX 12
+  #define PETSC_BINOMIAL_MAX  29
 #endif
 
 /*MC
@@ -171,7 +171,8 @@ PETSC_EXTERN PetscErrorCode PetscDTIndexToGradedOrder(PetscInt, PetscInt, PetscI
 
    Level: beginner
 M*/
-static inline PetscErrorCode PetscDTFactorial(PetscInt n, PetscReal *factorial) {
+static inline PetscErrorCode PetscDTFactorial(PetscInt n, PetscReal *factorial)
+{
   PetscReal f = 1.0;
 
   PetscFunctionBegin;
@@ -195,7 +196,8 @@ static inline PetscErrorCode PetscDTFactorial(PetscInt n, PetscReal *factorial) 
 
    Note: this is limited to n such that n! can be represented by PetscInt, which is 12 if PetscInt is a signed 32-bit integer and 20 if PetscInt is a signed 64-bit integer.
 M*/
-static inline PetscErrorCode PetscDTFactorialInt(PetscInt n, PetscInt *factorial) {
+static inline PetscErrorCode PetscDTFactorialInt(PetscInt n, PetscInt *factorial)
+{
   PetscInt facLookup[13] = {1, 1, 2, 6, 24, 120, 720, 5040, 40320, 362880, 3628800, 39916800, 479001600};
 
   PetscFunctionBegin;
@@ -225,7 +227,8 @@ static inline PetscErrorCode PetscDTFactorialInt(PetscInt n, PetscInt *factorial
 
    Level: beginner
 M*/
-static inline PetscErrorCode PetscDTBinomial(PetscInt n, PetscInt k, PetscReal *binomial) {
+static inline PetscErrorCode PetscDTBinomial(PetscInt n, PetscInt k, PetscReal *binomial)
+{
   PetscFunctionBeginHot;
   *binomial = -1.0;
   PetscCheck(n >= 0 && k >= 0 && k <= n, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Binomial arguments (%" PetscInt_FMT " %" PetscInt_FMT ") must be non-negative, k <= n", n, k);
@@ -262,7 +265,8 @@ static inline PetscErrorCode PetscDTBinomial(PetscInt n, PetscInt k, PetscReal *
 
    Level: beginner
 M*/
-static inline PetscErrorCode PetscDTBinomialInt(PetscInt n, PetscInt k, PetscInt *binomial) {
+static inline PetscErrorCode PetscDTBinomialInt(PetscInt n, PetscInt k, PetscInt *binomial)
+{
   PetscInt bin;
 
   PetscFunctionBegin;
@@ -304,14 +308,15 @@ static inline PetscErrorCode PetscDTBinomialInt(PetscInt n, PetscInt k, PetscInt
 
    Output Parameters:
 +  perm - the permuted list of the integers [0, ..., n-1]
--  isOdd - if not NULL, returns wether the permutation used an even or odd number of swaps.
+-  isOdd - if not NULL, returns whether the permutation used an even or odd number of swaps.
 
    Note:
    Limited to n such that n! can be represented by `PetscInt`, which is 12 if `PetscInt` is a signed 32-bit integer and 20 if `PetscInt` is a signed 64-bit integer.
 
    Level: beginner
 M*/
-static inline PetscErrorCode PetscDTEnumPerm(PetscInt n, PetscInt k, PetscInt *perm, PetscBool *isOdd) {
+static inline PetscErrorCode PetscDTEnumPerm(PetscInt n, PetscInt k, PetscInt *perm, PetscBool *isOdd)
+{
   PetscInt  odd = 0;
   PetscInt  i;
   PetscInt  work[PETSC_FACTORIAL_MAX];
@@ -347,14 +352,15 @@ static inline PetscErrorCode PetscDTEnumPerm(PetscInt n, PetscInt k, PetscInt *p
 
    Output Parameters:
 +  k - an integer in [0, n!)
--  isOdd - if not NULL, returns wether the permutation used an even or odd number of swaps.
+-  isOdd - if not NULL, returns whether the permutation used an even or odd number of swaps.
 
    Note:
    Limited to n such that n! can be represented by `PetscInt`, which is 12 if `PetscInt` is a signed 32-bit integer and 20 if `PetscInt` is a signed 64-bit integer.
 
    Level: beginner
 M*/
-static inline PetscErrorCode PetscDTPermIndex(PetscInt n, const PetscInt *perm, PetscInt *k, PetscBool *isOdd) {
+static inline PetscErrorCode PetscDTPermIndex(PetscInt n, const PetscInt *perm, PetscInt *k, PetscBool *isOdd)
+{
   PetscInt odd = 0;
   PetscInt i, idx;
   PetscInt work[PETSC_FACTORIAL_MAX];
@@ -372,7 +378,7 @@ static inline PetscErrorCode PetscDTPermIndex(PetscInt n, const PetscInt *perm, 
     PetscInt jloc = iwork[j];
     PetscInt diff = jloc - i;
 
-    idx         = idx * (n - i) + diff;
+    idx = idx * (n - i) + diff;
     /* swap (i, jloc) */
     work[i]     = j;
     work[jloc]  = icur;
@@ -404,7 +410,8 @@ static inline PetscErrorCode PetscDTPermIndex(PetscInt n, const PetscInt *perm, 
 
 .seealso: `PetscDTSubsetIndex()`
 M*/
-static inline PetscErrorCode PetscDTEnumSubset(PetscInt n, PetscInt k, PetscInt j, PetscInt *subset) {
+static inline PetscErrorCode PetscDTEnumSubset(PetscInt n, PetscInt k, PetscInt j, PetscInt *subset)
+{
   PetscInt Nk;
 
   PetscFunctionBeginHot;
@@ -443,7 +450,8 @@ static inline PetscErrorCode PetscDTEnumSubset(PetscInt n, PetscInt k, PetscInt 
 
 .seealso: `PetscDTEnumSubset()`
 M*/
-static inline PetscErrorCode PetscDTSubsetIndex(PetscInt n, PetscInt k, const PetscInt *subset, PetscInt *index) {
+static inline PetscErrorCode PetscDTSubsetIndex(PetscInt n, PetscInt k, const PetscInt *subset, PetscInt *index)
+{
   PetscInt j = 0, Nk;
 
   PetscFunctionBegin;
@@ -484,7 +492,8 @@ static inline PetscErrorCode PetscDTSubsetIndex(PetscInt n, PetscInt k, const Pe
 
 .seealso: `PetscDTEnumSubset()`, `PetscDTSubsetIndex()`
 M*/
-static inline PetscErrorCode PetscDTEnumSplit(PetscInt n, PetscInt k, PetscInt j, PetscInt *perm, PetscBool *isOdd) {
+static inline PetscErrorCode PetscDTEnumSplit(PetscInt n, PetscInt k, PetscInt j, PetscInt *perm, PetscBool *isOdd)
+{
   PetscInt  i, l, m, Nk, odd = 0;
   PetscInt *subcomp = perm + k;
 

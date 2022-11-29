@@ -9,6 +9,7 @@ Labels:
   depth: 3 strata with value/size (0 (289), 1 (544), 2 (256))
   marker: 1 strata with value/size (1 (65))
   Face Sets: 2 strata with value/size (1 (30), 4 (30))
+Number equations N = 3969
   Linear solve converged due to CONVERGED_RTOL iterations 11
   Linear solve converged due to CONVERGED_RTOL iterations 11
   Linear solve converged due to CONVERGED_RTOL iterations 11

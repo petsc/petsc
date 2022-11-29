@@ -5,7 +5,8 @@
       Special case where the matrix was ILU(0) factored in the natural
    ordering. This eliminates the need for the column and row permutation.
 */
-PetscErrorCode MatSolve_SeqBAIJ_4_NaturalOrdering_inplace(Mat A, Vec bb, Vec xx) {
+PetscErrorCode MatSolve_SeqBAIJ_4_NaturalOrdering_inplace(Mat A, Vec bb, Vec xx)
+{
   Mat_SeqBAIJ       *a  = (Mat_SeqBAIJ *)A->data;
   PetscInt           n  = a->mbs;
   const PetscInt    *ai = a->i, *aj = a->j;
@@ -103,7 +104,8 @@ PetscErrorCode MatSolve_SeqBAIJ_4_NaturalOrdering_inplace(Mat A, Vec bb, Vec xx)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatSolve_SeqBAIJ_4_NaturalOrdering(Mat A, Vec bb, Vec xx) {
+PetscErrorCode MatSolve_SeqBAIJ_4_NaturalOrdering(Mat A, Vec bb, Vec xx)
+{
   Mat_SeqBAIJ       *a = (Mat_SeqBAIJ *)A->data;
   const PetscInt     n = a->mbs, *vi, *ai = a->i, *aj = a->j, *adiag = a->diag;
   PetscInt           i, k, nz, idx, jdx, idt;
@@ -188,7 +190,8 @@ PetscErrorCode MatSolve_SeqBAIJ_4_NaturalOrdering(Mat A, Vec bb, Vec xx) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatSolve_SeqBAIJ_4_NaturalOrdering_Demotion(Mat A, Vec bb, Vec xx) {
+PetscErrorCode MatSolve_SeqBAIJ_4_NaturalOrdering_Demotion(Mat A, Vec bb, Vec xx)
+{
   Mat_SeqBAIJ       *a = (Mat_SeqBAIJ *)A->data;
   const PetscInt     n = a->mbs, *ai = a->i, *aj = a->j, *diag = a->diag;
   const MatScalar   *aa = a->a;
@@ -278,8 +281,9 @@ PetscErrorCode MatSolve_SeqBAIJ_4_NaturalOrdering_Demotion(Mat A, Vec bb, Vec xx
 
 #if defined(PETSC_HAVE_SSE)
 
-#include PETSC_HAVE_SSE
-PetscErrorCode MatSolve_SeqBAIJ_4_NaturalOrdering_SSE_Demotion_usj(Mat A, Vec bb, Vec xx) {
+  #include PETSC_HAVE_SSE
+PetscErrorCode MatSolve_SeqBAIJ_4_NaturalOrdering_SSE_Demotion_usj(Mat A, Vec bb, Vec xx)
+{
   Mat_SeqBAIJ    *a  = (Mat_SeqBAIJ *)A->data;
   unsigned short *aj = (unsigned short *)a->j;
   int            *ai = a->i, n = a->mbs, *diag = a->diag;
@@ -472,7 +476,8 @@ PetscErrorCode MatSolve_SeqBAIJ_4_NaturalOrdering_SSE_Demotion_usj(Mat A, Vec bb
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatSolve_SeqBAIJ_4_NaturalOrdering_SSE_Demotion(Mat A, Vec bb, Vec xx) {
+PetscErrorCode MatSolve_SeqBAIJ_4_NaturalOrdering_SSE_Demotion(Mat A, Vec bb, Vec xx)
+{
   Mat_SeqBAIJ *a  = (Mat_SeqBAIJ *)A->data;
   int         *aj = a->j;
   int         *ai = a->i, n = a->mbs, *diag = a->diag;

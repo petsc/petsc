@@ -14,9 +14,11 @@ if __name__ == '__main__':
     '--with-cxx=mpiicpc',
     '--with-fc=mpiifort',
     '--with-mpiexec=mpiexec.hydra',
-    'COPTFLAGS=-g -O',
-    'FOPTFLAGS=-g -O',
-    'CXXOPTFLAGS=-g -O',
+    # Intel compilers enable GCC/clangs equivalent of -ffast-math *by default*. This is
+    # bananas, so we make sure they use the same model as everyone else
+    'COPTFLAGS=-g -O -fp-model=precise',
+    'FOPTFLAGS=-g -O -fp-model=precise',
+    'CXXOPTFLAGS=-g -O -fp-model=precise',
     '--with-precision=single',
     '--with-blaslapack-dir='+os.environ['MKLROOT'],
     '--with-mkl_pardiso-dir='+os.environ['MKLROOT'],

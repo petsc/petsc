@@ -16,7 +16,8 @@ static char help[] = "Illustrate how to solves a matrix-free linear system with 
    Output Parameter:
    y - vector
  */
-PetscErrorCode MyMatShellMult(Mat As, Vec x, Vec y) {
+PetscErrorCode MyMatShellMult(Mat As, Vec x, Vec y)
+{
   Mat P;
 
   PetscFunctionBegin;
@@ -26,7 +27,8 @@ PetscErrorCode MyMatShellMult(Mat As, Vec x, Vec y) {
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   Vec         x, b, u; /* approx solution, RHS, exact solution */
   Mat         P, As;   /* preconditioner matrix, linear system (matrix-free) */
   KSP         ksp;     /* linear solver context */

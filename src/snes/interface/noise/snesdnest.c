@@ -9,7 +9,8 @@
 
 PETSC_INTERN PetscErrorCode SNESNoise_dnest_(PetscInt *, PetscScalar *, PetscScalar *, PetscScalar *, PetscScalar *, PetscScalar *, PetscInt *, PetscScalar *);
 
-PetscErrorCode SNESNoise_dnest_(PetscInt *nf, double *fval, double *h__, double *fnoise, double *fder2, double *hopt, PetscInt *info, double *eps) {
+PetscErrorCode SNESNoise_dnest_(PetscInt *nf, double *fval, double *h__, double *fnoise, double *fder2, double *hopt, PetscInt *info, double *eps)
+{
   /* Initialized data */
 
   static double const__[15] = {.71, .41, .23, .12, .063, .033, .018, .0089, .0046, .0024, .0012, 6.1e-4, 3.1e-4, 1.6e-4, 8e-5};
@@ -116,19 +117,19 @@ PetscErrorCode SNESNoise_dnest_(PetscInt *nf, double *fval, double *h__, double 
   *hopt   = 0.;
   /*     Compute an estimate of the second derivative and */
   /*     determine a bound on the error. */
-  mh      = (*nf + 1) / 2;
-  est1    = (fval[mh + 1] - fval[mh] * 2 + fval[mh - 1]) / *h__ / *h__;
-  est2    = (fval[mh + 2] - fval[mh] * 2 + fval[mh - 2]) / (*h__ * 2) / (*h__ * 2);
-  est3    = (fval[mh + 3] - fval[mh] * 2 + fval[mh - 3]) / (*h__ * 3) / (*h__ * 3);
-  est4    = (est1 + est2 + est3) / 3;
+  mh   = (*nf + 1) / 2;
+  est1 = (fval[mh + 1] - fval[mh] * 2 + fval[mh - 1]) / *h__ / *h__;
+  est2 = (fval[mh + 2] - fval[mh] * 2 + fval[mh - 2]) / (*h__ * 2) / (*h__ * 2);
+  est3 = (fval[mh + 3] - fval[mh] * 2 + fval[mh - 3]) / (*h__ * 3) / (*h__ * 3);
+  est4 = (est1 + est2 + est3) / 3;
   /* Computing MAX */
   /* Computing PETSCMAX */
-  d__3    = PetscMax(est1, est2);
+  d__3 = PetscMax(est1, est2);
   /* Computing MIN */
-  d__4    = PetscMin(est1, est2);
-  d__1    = PetscMax(d__3, est3) - est4;
-  d__2    = est4 - PetscMin(d__4, est3);
-  err2    = PetscMax(d__1, d__2);
+  d__4 = PetscMin(est1, est2);
+  d__1 = PetscMax(d__3, est3) - est4;
+  d__2 = est4 - PetscMin(d__4, est3);
+  err2 = PetscMax(d__1, d__2);
   /*      write (2,123) est1, est2, est3 */
   /* 123  format ('Second derivative estimates', 3d12.2) */
   if (err2 <= PetscAbsScalar(est4) * .1) *fder2 = est4;
@@ -182,7 +183,7 @@ PetscErrorCode SNESNoise_dnest_(PetscInt *nf, double *fval, double *h__, double 
     }
     eps[j] = const__[j - 1] * stdv;
     /*        Determine differences in sign. */
-    i__1   = *nf - j - 1;
+    i__1 = *nf - j - 1;
     for (i__ = 1; i__ <= i__1; ++i__) {
       /* Computing MIN */
       d__1 = fval[i__];
@@ -196,7 +197,7 @@ PetscErrorCode SNESNoise_dnest_(PetscInt *nf, double *fval, double *h__, double 
   /*     First requirement for detection of noise. */
   dnoise = dsgn[3];
   /*     Check for h too small or too large. */
-  *info  = 0;
+  *info = 0;
   if (f_max == f_min) *info = 2;
   else /* if (complicated condition) */ {
     /* Computing MIN */

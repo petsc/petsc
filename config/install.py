@@ -154,7 +154,7 @@ class Installer(script.Script):
     alllines=oldFile.read()
     oldFile.close()
     newlines=alllines.split('\n')[0]+'\n'  # Firstline
-    # Hardcode PETSC_DIR and PETSC_ARCH to avoid users doing the worng thing
+    # Hardcode PETSC_DIR and PETSC_ARCH to avoid users doing the wrong thing
     newlines+='PETSC_DIR='+self.installDir+'\n'
     newlines+='PETSC_ARCH=\n'
     for line in alllines.split('\n')[1:]:

@@ -22,22 +22,32 @@
 .seealso: DMRestrict(), DMCoarsen(), DMSTAG, DMCreateInjection()
 
 @*/
-PetscErrorCode DMStagRestrictSimple(DM dmf, Vec xf, DM dmc, Vec xc) {
+PetscErrorCode DMStagRestrictSimple(DM dmf, Vec xf, DM dmc, Vec xc)
+{
   PetscInt dim;
 
   PetscFunctionBegin;
   PetscCall(DMGetDimension(dmf, &dim));
   switch (dim) {
-  case 1: PetscCall(DMStagRestrictSimple_1d(dmf, xf, dmc, xc)); break;
-  case 2: PetscCall(DMStagRestrictSimple_2d(dmf, xf, dmc, xc)); break;
-  case 3: PetscCall(DMStagRestrictSimple_3d(dmf, xf, dmc, xc)); break;
-  default: SETERRQ(PetscObjectComm((PetscObject)dmf), PETSC_ERR_ARG_OUTOFRANGE, "Unsupported dimension %" PetscInt_FMT "", dim); break;
+  case 1:
+    PetscCall(DMStagRestrictSimple_1d(dmf, xf, dmc, xc));
+    break;
+  case 2:
+    PetscCall(DMStagRestrictSimple_2d(dmf, xf, dmc, xc));
+    break;
+  case 3:
+    PetscCall(DMStagRestrictSimple_3d(dmf, xf, dmc, xc));
+    break;
+  default:
+    SETERRQ(PetscObjectComm((PetscObject)dmf), PETSC_ERR_ARG_OUTOFRANGE, "Unsupported dimension %" PetscInt_FMT "", dim);
+    break;
   }
   PetscFunctionReturn(0);
 }
 
 /* Code duplication note: the next two functions are nearly identical, save the inclusion of the element terms */
-PETSC_INTERN PetscErrorCode DMStagPopulateInterpolation1d_a_b_Private(DM dmc, DM dmf, Mat A) {
+PETSC_INTERN PetscErrorCode DMStagPopulateInterpolation1d_a_b_Private(DM dmc, DM dmf, Mat A)
+{
   PetscInt       exf, startexf, nexf, nextraxf, startexc;
   PetscInt       dof[2];
   const PetscInt dim = 1;
@@ -110,7 +120,8 @@ PETSC_INTERN PetscErrorCode DMStagPopulateInterpolation1d_a_b_Private(DM dmc, DM
   PetscFunctionReturn(0);
 }
 
-PETSC_INTERN PetscErrorCode DMStagPopulateInterpolation2d_0_a_b_Private(DM dmc, DM dmf, Mat A) {
+PETSC_INTERN PetscErrorCode DMStagPopulateInterpolation2d_0_a_b_Private(DM dmc, DM dmf, Mat A)
+{
   PetscInt       exf, eyf, startexf, starteyf, nexf, neyf, nextraxf, nextrayf, startexc, starteyc, Nexf, Neyf;
   PetscInt       dof[3];
   const PetscInt dim = 2;
@@ -316,7 +327,8 @@ PETSC_INTERN PetscErrorCode DMStagPopulateInterpolation2d_0_a_b_Private(DM dmc, 
   PetscFunctionReturn(0);
 }
 
-PETSC_INTERN PetscErrorCode DMStagPopulateInterpolation3d_0_0_a_b_Private(DM dmc, DM dmf, Mat A) {
+PETSC_INTERN PetscErrorCode DMStagPopulateInterpolation3d_0_0_a_b_Private(DM dmc, DM dmf, Mat A)
+{
   PetscInt       exf, eyf, ezf, startexf, starteyf, startezf, nexf, neyf, nezf, nextraxf, nextrayf, nextrazf, startexc, starteyc, startezc, Nexf, Neyf, Nezf;
   PetscInt       dof[4];
   const PetscInt dim = 3;
@@ -848,7 +860,8 @@ PETSC_INTERN PetscErrorCode DMStagPopulateInterpolation3d_0_0_a_b_Private(DM dmc
   PetscFunctionReturn(0);
 }
 
-PETSC_INTERN PetscErrorCode DMStagPopulateRestriction1d_a_b_Private(DM dmc, DM dmf, Mat A) {
+PETSC_INTERN PetscErrorCode DMStagPopulateRestriction1d_a_b_Private(DM dmc, DM dmf, Mat A)
+{
   PetscInt       exf, startexf, nexf, nextraxf, startexc, Nexf;
   PetscInt       dof[2];
   const PetscInt dim = 1;
@@ -923,7 +936,8 @@ PETSC_INTERN PetscErrorCode DMStagPopulateRestriction1d_a_b_Private(DM dmc, DM d
   PetscFunctionReturn(0);
 }
 
-PETSC_INTERN PetscErrorCode DMStagPopulateRestriction2d_0_a_b_Private(DM dmc, DM dmf, Mat A) {
+PETSC_INTERN PetscErrorCode DMStagPopulateRestriction2d_0_a_b_Private(DM dmc, DM dmf, Mat A)
+{
   PetscInt       exf, eyf, startexf, starteyf, nexf, neyf, nextraxf, nextrayf, startexc, starteyc, Nexf, Neyf;
   PetscInt       dof[3];
   const PetscInt dim = 2;
@@ -1044,7 +1058,8 @@ PETSC_INTERN PetscErrorCode DMStagPopulateRestriction2d_0_a_b_Private(DM dmc, DM
   PetscFunctionReturn(0);
 }
 
-PETSC_INTERN PetscErrorCode DMStagPopulateRestriction3d_0_0_a_b_Private(DM dmc, DM dmf, Mat A) {
+PETSC_INTERN PetscErrorCode DMStagPopulateRestriction3d_0_0_a_b_Private(DM dmc, DM dmf, Mat A)
+{
   PetscInt       exf, eyf, ezf, startexf, starteyf, startezf, nexf, neyf, nezf, nextraxf, nextrayf, nextrazf, startexc, starteyc, startezc, Nexf, Neyf, Nezf;
   PetscInt       dof[4];
   const PetscInt dim = 3;

@@ -3,7 +3,7 @@
   minimization
 */
 
-#if !defined(__TAO_NTL_H)
+#ifndef __TAO_NTL_H
 #define __TAO_NTL_H
 #include <petsc/private/taoimpl.h>
 

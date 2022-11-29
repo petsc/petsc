@@ -5,7 +5,7 @@ petsc_hash_pkgs=os.path.join(os.getenv('HOME'),'petsc-hash-pkgs')
 
 configure_options = [
   '--package-prefix-hash='+petsc_hash_pkgs,
-  '--with-gcov=1',
+  '--with-coverage',
   #'--download-mpich=1', use system MPI as elemental fails with this
   '--download-fblaslapack=1',
   '--download-hypre=1',
@@ -21,8 +21,10 @@ configure_options = [
   '--download-mumps=1',
   '--download-elemental=1',
   '--download-spai=1',
+  '--download-moab=1',
   '--download-parms=1',
   '--download-chaco=1',
+  '--download-fftw=1',
   '--download-pastix=1',
   '--download-hwloc=1',
   '--download-ctetgen',
@@ -39,6 +41,19 @@ configure_options = [
   '--download-p4est=1',
   '--download-eigen',
   '--download-pragmatic',
+  '--download-mmg=1',
+  '--download-parmmg=1',
+  '--download-hpddm=1',
+  '--download-bamg=1',
+  '--download-htool=1',
+  '--download-mfem=1',
+  '--download-glvis=1',
+  '--with-opengl=1',
+  '--download-revolve=1',
+  '--download-cams=1',
+  '--download-slepc',
+  '--download-kokkos',
+  '--download-kokkos-kernels',
   ]
 
 if __name__ == '__main__':

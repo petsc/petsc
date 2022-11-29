@@ -8,7 +8,7 @@
 
 */
 
-#if !defined(__CGIMPL_H)
+#ifndef __CGIMPL_H
 #define __CGIMPL_H
 
 /*
@@ -27,8 +27,8 @@ PETSC_INTERN PetscErrorCode KSPCGSetType_CG(KSP, KSPCGType);
 */
 
 typedef struct {
-  KSPCGType    type;       /* type of system (symmetric or Hermitian) */
-  PetscScalar  emin, emax; /* eigenvalues */
+  KSPCGType   type;       /* type of system (symmetric or Hermitian) */
+  PetscScalar emin, emax; /* eigenvalues */
   // The following arrays are of size ksp->maxit
   PetscScalar *e, *d;
   PetscReal   *ee, *dd; /* work space for Lanczos algorithm */

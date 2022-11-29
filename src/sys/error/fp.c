@@ -12,7 +12,7 @@
   shenanigans ought to be unnecessary.
 */
 #if !defined(_GNU_SOURCE)
-#define _GNU_SOURCE
+  #define _GNU_SOURCE
 #endif
 
 #include <petsc/private/petscimpl.h> /*I  "petscsys.h"  I*/
@@ -48,13 +48,14 @@ $       ifort -fpe0
 
 .seealso: `PetscFPTrapPop()`, `PetscSetFPTrap()`, `PetscDetermineInitialFPTrap()`
 @*/
-PetscErrorCode PetscFPTrapPush(PetscFPTrap trap) {
+PetscErrorCode PetscFPTrapPush(PetscFPTrap trap)
+{
   struct PetscFPTrapLink *link;
 
   PetscFunctionBegin;
   PetscCall(PetscNew(&link));
 #if defined(PETSC_HAVE_THREADSAFETY) && defined(PETSC_HAVE_OPENMP)
-#pragma omp critical
+  #pragma omp critical
 #endif
   {
     link->trapmode = _trapmode;
@@ -74,13 +75,14 @@ PetscErrorCode PetscFPTrapPush(PetscFPTrap trap) {
 
 .seealso: `PetscFPTrapPush()`, `PetscSetFPTrap()`, `PetscDetermineInitialFPTrap()`
 @*/
-PetscErrorCode PetscFPTrapPop(void) {
+PetscErrorCode PetscFPTrapPop(void)
+{
   struct PetscFPTrapLink *link;
 
   PetscFunctionBegin;
   if (_trapstack->trapmode != _trapmode) PetscCall(PetscSetFPTrap(_trapstack->trapmode));
 #if defined(PETSC_HAVE_THREADSAFETY) && defined(PETSC_HAVE_OPENMP)
-#pragma omp critical
+  #pragma omp critical
 #endif
   {
     link       = _trapstack;
@@ -92,7 +94,7 @@ PetscErrorCode PetscFPTrapPop(void) {
 
 /*--------------------------------------- ---------------------------------------------------*/
 #if defined(PETSC_HAVE_SUN4_STYLE_FPTRAP)
-#include <floatingpoint.h>
+  #include <floatingpoint.h>
 
 PETSC_EXTERN PetscErrorCode ieee_flags(char *, char *, char *, char **);
 PETSC_EXTERN PetscErrorCode ieee_handler(char *, char *, sigfpe_handler_type(int, int, struct sigcontext *, char *));
@@ -109,10 +111,11 @@ static struct {
   {FPE_FLTINEX_TRAP,  "inexact floating point result"},
   {0,                 "unknown error"                }
 };
-#define SIGPC(scp) (scp->sc_pc)
+  #define SIGPC(scp) (scp->sc_pc)
 
 /* this function gets called if a trap has occurred and been caught */
-sigfpe_handler_type PetscDefaultFPTrap(int sig, int code, struct sigcontext *scp, char *addr) {
+sigfpe_handler_type PetscDefaultFPTrap(int sig, int code, struct sigcontext *scp, char *addr)
+{
   int err_ind = -1;
 
   PetscFunctionBegin;
@@ -173,7 +176,8 @@ sigfpe_handler_type PetscDefaultFPTrap(int sig, int code, struct sigcontext *scp
 
 .seealso: `PetscFPTrapPush()`, `PetscFPTrapPop()`, `PetscDetermineInitialFPTrap()`
 @*/
-PetscErrorCode PetscSetFPTrap(PetscFPTrap flag) {
+PetscErrorCode PetscSetFPTrap(PetscFPTrap flag)
+{
   char *out;
 
   PetscFunctionBegin;
@@ -204,7 +208,8 @@ PetscErrorCode PetscSetFPTrap(PetscFPTrap flag) {
 
 .seealso: `PetscFPTrapPush()`, `PetscFPTrapPop()`, `PetscDetermineInitialFPTrap()`
 @*/
-PetscErrorCode PetscDetermineInitialFPTrap(void) {
+PetscErrorCode PetscDetermineInitialFPTrap(void)
+{
   PetscFunctionBegin;
   PetscCall(PetscInfo(NULL, "Unable to determine initial floating point trapping. Assuming it is off\n"));
   PetscFunctionReturn(0);
@@ -212,10 +217,10 @@ PetscErrorCode PetscDetermineInitialFPTrap(void) {
 
 /* -------------------------------------------------------------------------------------------*/
 #elif defined(PETSC_HAVE_SOLARIS_STYLE_FPTRAP)
-#include <sunmath.h>
-#include <floatingpoint.h>
-#include <siginfo.h>
-#include <ucontext.h>
+  #include <sunmath.h>
+  #include <floatingpoint.h>
+  #include <siginfo.h>
+  #include <ucontext.h>
 
 static struct {
   int   code_no;
@@ -228,9 +233,10 @@ static struct {
   {FPE_FLTOVF, "floating point overflow"       },
   {0,          "unknown error"                 }
 };
-#define SIGPC(scp) (scp->si_addr)
+  #define SIGPC(scp) (scp->si_addr)
 
-void PetscDefaultFPTrap(int sig, siginfo_t *scp, ucontext_t *uap) {
+void PetscDefaultFPTrap(int sig, siginfo_t *scp, ucontext_t *uap)
+{
   int err_ind = -1, code = scp->si_code;
 
   PetscFunctionBegin;
@@ -245,7 +251,8 @@ void PetscDefaultFPTrap(int sig, siginfo_t *scp, ucontext_t *uap) {
   PETSCABORT(MPI_COMM_WORLD, PETSC_ERR_FP);
 }
 
-PetscErrorCode PetscSetFPTrap(PetscFPTrap flag) {
+PetscErrorCode PetscSetFPTrap(PetscFPTrap flag)
+{
   char *out;
 
   PetscFunctionBegin;
@@ -261,7 +268,8 @@ PetscErrorCode PetscSetFPTrap(PetscFPTrap flag) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscDetermineInitialFPTrap(void) {
+PetscErrorCode PetscDetermineInitialFPTrap(void)
+{
   PetscFunctionBegin;
   PetscCall(PetscInfo(NULL, "Unable to determine initial floating point trapping. Assuming it is off\n"));
   PetscFunctionReturn(0);
@@ -269,7 +277,7 @@ PetscErrorCode PetscDetermineInitialFPTrap(void) {
 
 /* ------------------------------------------------------------------------------------------*/
 #elif defined(PETSC_HAVE_IRIX_STYLE_FPTRAP)
-#include <sigfpe.h>
+  #include <sigfpe.h>
 static struct {
   int   code_no;
   char *name;
@@ -280,7 +288,8 @@ static struct {
   {_DIVZERO, "floating point divide"   },
   {0,        "unknown error"           }
 };
-void PetscDefaultFPTrap(unsigned exception[], int val[]) {
+void PetscDefaultFPTrap(unsigned exception[], int val[])
+{
   int err_ind = -1, code = exception[0];
 
   PetscFunctionBegin;
@@ -294,7 +303,8 @@ void PetscDefaultFPTrap(unsigned exception[], int val[]) {
   PETSCABORT(MPI_COMM_WORLD, PETSC_ERR_FP);
 }
 
-PetscErrorCode PetscSetFPTrap(PetscFPTrap flag) {
+PetscErrorCode PetscSetFPTrap(PetscFPTrap flag)
+{
   PetscFunctionBegin;
   if (flag == PETSC_FP_TRAP_ON) handle_sigfpes(_ON, , _EN_UNDERFL | _EN_OVERFL | _EN_DIVZERO | _EN_INVALID, PetscDefaultFPTrap, _ABORT_ON_ERROR, 0);
   else handle_sigfpes(_OFF, _EN_UNDERFL | _EN_OVERFL | _EN_DIVZERO | _EN_INVALID, 0, _ABORT_ON_ERROR, 0);
@@ -303,7 +313,8 @@ PetscErrorCode PetscSetFPTrap(PetscFPTrap flag) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscDetermineInitialFPTrap(void) {
+PetscErrorCode PetscDetermineInitialFPTrap(void)
+{
   PetscFunctionBegin;
   PetscCall(PetscInfo(NULL, "Unable to determine initial floating point trapping. Assuming it is off\n"));
   PetscFunctionReturn(0);
@@ -314,13 +325,13 @@ PetscErrorCode PetscDetermineInitialFPTrap(void) {
 /* In "fast" mode, floating point traps are imprecise and ignored.
    This is the reason for the fptrap(FP_TRAP_SYNC) call */
 struct sigcontext;
-#include <fpxcp.h>
-#include <fptrap.h>
-#define FPE_FLTOPERR_TRAP (fptrap_t)(0x20000000)
-#define FPE_FLTOVF_TRAP   (fptrap_t)(0x10000000)
-#define FPE_FLTUND_TRAP   (fptrap_t)(0x08000000)
-#define FPE_FLTDIV_TRAP   (fptrap_t)(0x04000000)
-#define FPE_FLTINEX_TRAP  (fptrap_t)(0x02000000)
+  #include <fpxcp.h>
+  #include <fptrap.h>
+  #define FPE_FLTOPERR_TRAP (fptrap_t)(0x20000000)
+  #define FPE_FLTOVF_TRAP   (fptrap_t)(0x10000000)
+  #define FPE_FLTUND_TRAP   (fptrap_t)(0x08000000)
+  #define FPE_FLTDIV_TRAP   (fptrap_t)(0x04000000)
+  #define FPE_FLTINEX_TRAP  (fptrap_t)(0x02000000)
 
 static struct {
   int   code_no;
@@ -333,14 +344,15 @@ static struct {
   {FPE_FLTINEX_TRAP,  "inexact floating point result"},
   < {0,                 "unknown error"                }
 };
-#define SIGPC(scp)        (0) /* Info MIGHT be in scp->sc_jmpbuf.jmp_context.iar */
+  #define SIGPC(scp)        (0) /* Info MIGHT be in scp->sc_jmpbuf.jmp_context.iar */
 /*
    For some reason, scp->sc_jmpbuf does not work on the RS6000, even though
    it looks like it should from the include definitions.  It is probably
    some strange interaction with the "POSIX_SOURCE" that we require.
 */
 
-void PetscDefaultFPTrap(int sig, int code, struct sigcontext *scp) {
+void PetscDefaultFPTrap(int sig, int code, struct sigcontext *scp)
+{
   int      err_ind, j;
   fp_ctx_t flt_context;
 
@@ -359,7 +371,8 @@ void PetscDefaultFPTrap(int sig, int code, struct sigcontext *scp) {
   PETSCABORT(MPI_COMM_WORLD, PETSC_ERR_FP);
 }
 
-PetscErrorCode PetscSetFPTrap(PetscFPTrap flag) {
+PetscErrorCode PetscSetFPTrap(PetscFPTrap flag)
+{
   PetscFunctionBegin;
   if (flag == PETSC_FP_TRAP_ON) {
     signal(SIGFPE, (void (*)(int))PetscDefaultFPTrap);
@@ -376,7 +389,8 @@ PetscErrorCode PetscSetFPTrap(PetscFPTrap flag) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscDetermineInitialFPTrap(void) {
+PetscErrorCode PetscDetermineInitialFPTrap(void)
+{
   PetscFunctionBegin;
   PetscCall(PetscInfo(NULL, "Unable to determine initial floating point trapping. Assuming it is off\n"));
   PetscFunctionReturn(0);
@@ -384,15 +398,17 @@ PetscErrorCode PetscDetermineInitialFPTrap(void) {
 
 /* ------------------------------------------------------------*/
 #elif defined(PETSC_HAVE_WINDOWS_COMPILERS)
-#include <float.h>
-void PetscDefaultFPTrap(int sig) {
+  #include <float.h>
+void PetscDefaultFPTrap(int sig)
+{
   PetscFunctionBegin;
   (*PetscErrorPrintf)("*** floating point error occurred ***\n");
   PetscError(PETSC_COMM_SELF, 0, NULL, NULL, PETSC_ERR_FP, PETSC_ERROR_REPEAT, "floating point error");
   PETSCABORT(MPI_COMM_WORLD, PETSC_ERR_FP);
 }
 
-PetscErrorCode PetscSetFPTrap(PetscFPTrap flag) {
+PetscErrorCode PetscSetFPTrap(PetscFPTrap flag)
+{
   unsigned int cw;
 
   PetscFunctionBegin;
@@ -410,7 +426,8 @@ PetscErrorCode PetscSetFPTrap(PetscFPTrap flag) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscDetermineInitialFPTrap(void) {
+PetscErrorCode PetscDetermineInitialFPTrap(void)
+{
   PetscFunctionBegin;
   PetscCall(PetscInfo(NULL, "Unable to determine initial floating point trapping. Assuming it is off\n"));
   PetscFunctionReturn(0);
@@ -418,7 +435,7 @@ PetscErrorCode PetscDetermineInitialFPTrap(void) {
 
 /* ------------------------------------------------------------*/
 #elif defined(PETSC_HAVE_FENV_H) && !defined(__cplusplus)
-/*
+  /*
    C99 style floating point environment.
 
    Note that C99 merely specifies how to save, restore, and clear the floating
@@ -427,7 +444,8 @@ PetscErrorCode PetscDetermineInitialFPTrap(void) {
    a signal.  Glibc offers this capability through FE_NOMASK_ENV (or with finer
    granularity, feenableexcept()), xmmintrin.h offers _MM_SET_EXCEPTION_MASK().
 */
-#include <fenv.h>
+  #include <fenv.h>
+  #if defined(PETSC_HAVE_FE_VALUES)
 typedef struct {
   int         code;
   const char *name;
@@ -440,11 +458,15 @@ static const FPNode error_codes[] = {
   {FE_UNDERFLOW, "floating point underflow"                       },
   {0,            "unknown error"                                  }
 };
+  #endif
 
-void PetscDefaultFPTrap(int sig) {
+void PetscDefaultFPTrap(int sig)
+{
+  #if defined(PETSC_HAVE_FE_VALUES)
   const FPNode *node;
   int           code;
   PetscBool     matched = PETSC_FALSE;
+  #endif
 
   PetscFunctionBegin;
   /* Note: While it is possible for the exception state to be preserved by the
@@ -452,6 +474,7 @@ void PetscDefaultFPTrap(int sig) {
    * useless.  But on a system where the flags can be preserved, it would provide
    * more detail.
    */
+  #if defined(PETSC_HAVE_FE_VALUES)
   code = fetestexcept(FE_ALL_EXCEPT);
   for (node = &error_codes[0]; node->code; node++) {
     if (code & node->code) {
@@ -467,41 +490,45 @@ void PetscDefaultFPTrap(int sig) {
     (*PetscErrorPrintf)("where the result is a bitwise OR of the following flags:\n");
     (*PetscErrorPrintf)("FE_INVALID=0x%x FE_DIVBYZERO=0x%x FE_OVERFLOW=0x%x FE_UNDERFLOW=0x%x FE_INEXACT=0x%x\n", FE_INVALID, FE_DIVBYZERO, FE_OVERFLOW, FE_UNDERFLOW, FE_INEXACT);
   }
+  #else
+  (*PetscErrorPrintf)("*** unknown floating point error occurred ***\n");
+  #endif
 
   (*PetscErrorPrintf)("Try option -start_in_debugger\n");
-#if PetscDefined(USE_DEBUG)
+  #if PetscDefined(USE_DEBUG)
   (*PetscErrorPrintf)("likely location of problem given in stack below\n");
   (*PetscErrorPrintf)("---------------------  Stack Frames ------------------------------------\n");
   PetscStackView(PETSC_STDOUT);
-#else
+  #else
   (*PetscErrorPrintf)("configure using --with-debugging=yes, recompile, link, and run \n");
   (*PetscErrorPrintf)("with -start_in_debugger to get more information on the crash.\n");
-#endif
+  #endif
   PetscError(PETSC_COMM_SELF, 0, NULL, NULL, PETSC_ERR_FP, PETSC_ERROR_INITIAL, "trapped floating point error");
   PETSCABORT(MPI_COMM_WORLD, PETSC_ERR_FP);
 }
 
-PetscErrorCode PetscSetFPTrap(PetscFPTrap flag) {
+PetscErrorCode PetscSetFPTrap(PetscFPTrap flag)
+{
   PetscFunctionBegin;
   if (flag == PETSC_FP_TRAP_ON) {
     /* Clear any flags that are currently set so that activating trapping will not immediately call the signal handler. */
     PetscCheck(!feclearexcept(FE_ALL_EXCEPT), PETSC_COMM_SELF, PETSC_ERR_LIB, "Cannot clear floating point exception flags");
-#if defined(FE_NOMASK_ENV)
+  #if defined(FE_NOMASK_ENV) && defined(PETSC_HAVE_FE_VALUES)
     /* Could use fesetenv(FE_NOMASK_ENV), but that causes spurious exceptions (like gettimeofday() -> PetscLogDouble). */
     /* PetscCheck(feenableexcept(FE_DIVBYZERO | FE_INVALID | FE_OVERFLOW | FE_UNDERFLOW) != -1,PETSC_COMM_SELF,PETSC_ERR_LIB,"Cannot activate floating point exceptions"); */
     /* Doesn't work on AArch64 targets. There's a known hardware limitation. Need to detect hardware at configure time? */
     PetscCheck(feenableexcept(FE_DIVBYZERO | FE_INVALID | FE_OVERFLOW) != -1, PETSC_COMM_SELF, PETSC_ERR_LIB, "Cannot activate floating point exceptions");
     PetscCall(PetscInfo(NULL, "Using PETSC_HAVE_FENV_H FPTRAP with FE_NOMASK_ENV\n"));
-#elif defined PETSC_HAVE_XMMINTRIN_H
+  #elif defined PETSC_HAVE_XMMINTRIN_H
     _MM_SET_EXCEPTION_MASK(_MM_GET_EXCEPTION_MASK() & ~_MM_MASK_DIV_ZERO);
     /* _MM_SET_EXCEPTION_MASK(_MM_GET_EXCEPTION_MASK() & ~_MM_MASK_UNDERFLOW); */
     _MM_SET_EXCEPTION_MASK(_MM_GET_EXCEPTION_MASK() & ~_MM_MASK_OVERFLOW);
     _MM_SET_EXCEPTION_MASK(_MM_GET_EXCEPTION_MASK() & ~_MM_MASK_INVALID);
     PetscCall(PetscInfo(NULL, "Using PETSC_HAVE_FENV_H FPTRAP with PETSC_HAVE_XMMINTRIN_H\n"));
-#else
+  #else
     /* C99 does not provide a way to modify the environment so there is no portable way to activate trapping. */
     PetscCall(PetscInfo(NULL, "Using PETSC_HAVE_FENV_H FPTRAP\n"));
-#endif
+  #endif
     PetscCheck(SIG_ERR != signal(SIGFPE, PetscDefaultFPTrap), PETSC_COMM_SELF, PETSC_ERR_LIB, "Can't set floating point handler");
   } else {
     PetscCheck(!fesetenv(FE_DFL_ENV), PETSC_COMM_SELF, PETSC_ERR_LIB, "Cannot disable floating point exceptions");
@@ -512,23 +539,24 @@ PetscErrorCode PetscSetFPTrap(PetscFPTrap flag) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscDetermineInitialFPTrap(void) {
-#if defined(FE_NOMASK_ENV) || defined PETSC_HAVE_XMMINTRIN_H
+PetscErrorCode PetscDetermineInitialFPTrap(void)
+{
+  #if defined(FE_NOMASK_ENV) || defined PETSC_HAVE_XMMINTRIN_H
   unsigned int flags;
-#endif
+  #endif
 
   PetscFunctionBegin;
-#if defined(FE_NOMASK_ENV)
+  #if defined(FE_NOMASK_ENV)
   flags = fegetexcept();
   if (flags & FE_DIVBYZERO) {
-#elif defined PETSC_HAVE_XMMINTRIN_H
+  #elif defined PETSC_HAVE_XMMINTRIN_H
   flags = _MM_GET_EXCEPTION_MASK();
   if (!(flags & _MM_MASK_DIV_ZERO)) {
-#else
+  #else
   PetscCall(PetscInfo(NULL, "Floating point trapping unknown, assuming off\n"));
   PetscFunctionReturn(0);
-#endif
-#if defined(FE_NOMASK_ENV) || defined PETSC_HAVE_XMMINTRIN_H
+  #endif
+  #if defined(FE_NOMASK_ENV) || defined PETSC_HAVE_XMMINTRIN_H
     _trapmode = PETSC_FP_TRAP_ON;
     PetscCall(PetscInfo(NULL, "Floating point trapping is on by default %d\n", flags));
   } else {
@@ -536,35 +564,37 @@ PetscErrorCode PetscDetermineInitialFPTrap(void) {
     PetscCall(PetscInfo(NULL, "Floating point trapping is off by default %d\n", flags));
   }
   PetscFunctionReturn(0);
-#endif
+  #endif
 }
 
 /* ------------------------------------------------------------*/
 #elif defined(PETSC_HAVE_IEEEFP_H)
-#include <ieeefp.h>
-void PetscDefaultFPTrap(int sig) {
+  #include <ieeefp.h>
+void PetscDefaultFPTrap(int sig)
+{
   PetscFunctionBegin;
   (*PetscErrorPrintf)("*** floating point error occurred ***\n");
   PetscError(PETSC_COMM_SELF, 0, NULL, NULL, PETSC_ERR_FP, PETSC_ERROR_REPEAT, "floating point error");
   PETSCABORT(MPI_COMM_WORLD, PETSC_ERR_FP);
 }
 
-PetscErrorCode PetscSetFPTrap(PetscFPTrap flag) {
+PetscErrorCode PetscSetFPTrap(PetscFPTrap flag)
+{
   PetscFunctionBegin;
   if (flag == PETSC_FP_TRAP_ON) {
-#if defined(PETSC_HAVE_FPPRESETSTICKY)
+  #if defined(PETSC_HAVE_FPPRESETSTICKY)
     fpresetsticky(fpgetsticky());
-#elif defined(PETSC_HAVE_FPSETSTICKY)
+  #elif defined(PETSC_HAVE_FPSETSTICKY)
     fpsetsticky(fpgetsticky());
-#endif
+  #endif
     fpsetmask(FP_X_INV | FP_X_DZ | FP_X_OFL | FP_X_OFL);
     PetscCheck(SIG_ERR != signal(SIGFPE, PetscDefaultFPTrap), PETSC_COMM_SELF, PETSC_ERR_LIB, "Can't set floating point handler");
   } else {
-#if defined(PETSC_HAVE_FPPRESETSTICKY)
+  #if defined(PETSC_HAVE_FPPRESETSTICKY)
     fpresetsticky(fpgetsticky());
-#elif defined(PETSC_HAVE_FPSETSTICKY)
+  #elif defined(PETSC_HAVE_FPSETSTICKY)
     fpsetsticky(fpgetsticky());
-#endif
+  #endif
     fpsetmask(0);
     PetscCheck(SIG_ERR != signal(SIGFPE, SIG_DFL), PETSC_COMM_SELF, PETSC_ERR_LIB, "Can't clear floating point handler");
   }
@@ -573,7 +603,8 @@ PetscErrorCode PetscSetFPTrap(PetscFPTrap flag) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscDetermineInitialFPTrap(void) {
+PetscErrorCode PetscDetermineInitialFPTrap(void)
+{
   PetscFunctionBegin;
   PetscCall(PetscInfo(NULL, "Unable to determine initial floating point trapping. Assuming it is off\n"));
   PetscFunctionReturn(0);
@@ -582,14 +613,16 @@ PetscErrorCode PetscDetermineInitialFPTrap(void) {
 /* -------------------------Default -----------------------------------*/
 #else
 
-void PetscDefaultFPTrap(int sig) {
+void PetscDefaultFPTrap(int sig)
+{
   PetscFunctionBegin;
   (*PetscErrorPrintf)("*** floating point error occurred ***\n");
   PetscError(PETSC_COMM_SELF, 0, NULL, NULL, PETSC_ERR_FP, PETSC_ERROR_REPEAT, "floating point error");
   PETSCABORT(MPI_COMM_WORLD, PETSC_ERR_FP);
 }
 
-PetscErrorCode PetscSetFPTrap(PetscFPTrap flag) {
+PetscErrorCode PetscSetFPTrap(PetscFPTrap flag)
+{
   PetscFunctionBegin;
   if (flag == PETSC_FP_TRAP_ON) {
     if (SIG_ERR == signal(SIGFPE, PetscDefaultFPTrap)) (*PetscErrorPrintf)("Can't set floatingpoint handler\n");
@@ -600,7 +633,8 @@ PetscErrorCode PetscSetFPTrap(PetscFPTrap flag) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscDetermineInitialFPTrap(void) {
+PetscErrorCode PetscDetermineInitialFPTrap(void)
+{
   PetscFunctionBegin;
   PetscCall(PetscInfo(NULL, "Unable to determine initial floating point trapping. Assuming it is off\n"));
   PetscFunctionReturn(0);

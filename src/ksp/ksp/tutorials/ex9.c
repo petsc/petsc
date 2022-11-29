@@ -20,7 +20,8 @@ structures throughout the process.  Note the various stages of event logging.\n\
 extern PetscErrorCode CheckError(Vec, Vec, Vec, PetscInt, PetscReal, PetscLogEvent);
 extern PetscErrorCode MyKSPMonitor(KSP, PetscInt, PetscReal, void *);
 
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   Vec           x1, b1, x2, b2; /* solution and RHS vectors for systems #1 and #2 */
   Vec           u;              /* exact solution vector */
   Mat           C1, C2;         /* matrices for systems #1 and #2 */
@@ -406,7 +407,8 @@ int main(int argc, char **args) {
     the event (the vectors u,x,b).  Such information is optional;
     we could instead just use 0 instead for all objects.
 */
-PetscErrorCode CheckError(Vec u, Vec x, Vec b, PetscInt its, PetscReal tol, PetscLogEvent CHECK_ERROR) {
+PetscErrorCode CheckError(Vec u, Vec x, Vec b, PetscInt its, PetscReal tol, PetscLogEvent CHECK_ERROR)
+{
   PetscScalar none = -1.0;
   PetscReal   norm;
 
@@ -433,7 +435,8 @@ PetscErrorCode CheckError(Vec u, Vec x, Vec b, PetscInt its, PetscReal tol, Pets
      rnorm - 2-norm (preconditioned) residual value (may be estimated)
      dummy - optional user-defined monitor context (unused here)
 */
-PetscErrorCode MyKSPMonitor(KSP ksp, PetscInt n, PetscReal rnorm, void *dummy) {
+PetscErrorCode MyKSPMonitor(KSP ksp, PetscInt n, PetscReal rnorm, void *dummy)
+{
   Vec x;
 
   /*

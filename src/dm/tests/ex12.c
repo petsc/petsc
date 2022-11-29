@@ -9,7 +9,8 @@ static char help[] = "Solves the one dimensional heat equation.\n\n";
 #include <petscdm.h>
 #include <petscdmda.h>
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscMPIInt  rank, size;
   PetscInt     M = 14, time_steps = 20, w = 1, s = 1, localsize, j, i, mybase, myend, globalsize;
   DM           da;

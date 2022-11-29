@@ -2,7 +2,8 @@ static char help[] = "Tests for periodic mesh output\n\n";
 
 #include <petscdmplex.h>
 
-PetscErrorCode CheckMesh(DM dm) {
+PetscErrorCode CheckMesh(DM dm)
+{
   PetscReal detJ, J[9];
   PetscReal vol;
   PetscInt  dim, depth, cStart, cEnd, c;
@@ -22,7 +23,8 @@ PetscErrorCode CheckMesh(DM dm) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm) {
+PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm)
+{
   PetscFunctionBegin;
   PetscCall(DMCreate(comm, dm));
   PetscCall(DMSetType(*dm, DMPLEX));
@@ -31,7 +33,8 @@ PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm) {
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   DM dm;
 
   PetscFunctionBeginUser;
@@ -68,6 +71,12 @@ int main(int argc, char **argv) {
     suffix: 5
     nsize: 2
     args: -dm_plex_simplex 0 -dm_plex_box_faces 6,2,0 -dm_plex_box_bd periodic,none -dm_plex_periodic_cut -petscpartitioner_type simple -dm_view ::ascii_info_detail
+  # This checks that the SF with extra root for periodic cut still checks
+  test:
+    suffix: 5_hdf5
+    requires: hdf5
+    nsize: 2
+    args: -dm_plex_simplex 0 -dm_plex_box_faces 6,2,0 -dm_plex_box_bd periodic,none -dm_plex_periodic_cut -petscpartitioner_type simple -dm_view hdf5:mesh.h5
   test:
     suffix: 6
     nsize: 4

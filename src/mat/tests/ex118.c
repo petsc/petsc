@@ -5,7 +5,8 @@ static char help[] = "Test LAPACK routine DSTEBZ() and DTEIN().  \n\n";
 
 extern PetscErrorCode CkEigenSolutions(PetscInt, Mat, PetscInt, PetscInt, PetscScalar *, Vec *, PetscReal *);
 
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
 #if defined(PETSC_USE_COMPLEX) || defined(PETSC_MISSING_LAPACK_STEBZ) || defined(PETSC_MISSING_LAPACK_STEIN)
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &args, (char *)0, help));
@@ -121,7 +122,8 @@ int main(int argc, char **args) {
      tols[1]    - reporting tol_orth: evec[i]^T*evec[j] - delta_ij
 */
 #undef DEBUG_CkEigenSolutions
-PetscErrorCode CkEigenSolutions(PetscInt cklvl, Mat A, PetscInt il, PetscInt iu, PetscScalar *eval, Vec *evec, PetscReal *tols) {
+PetscErrorCode CkEigenSolutions(PetscInt cklvl, Mat A, PetscInt il, PetscInt iu, PetscScalar *eval, Vec *evec, PetscReal *tols)
+{
   PetscInt    ierr, i, j, nev;
   Vec         vt1, vt2; /* tmp vectors */
   PetscReal   norm, norm_max;
@@ -174,7 +176,8 @@ PetscErrorCode CkEigenSolutions(PetscInt cklvl, Mat A, PetscInt il, PetscInt iu,
     }
     PetscCall(PetscPrintf(PETSC_COMM_SELF, "    max_resi:                    %g\n", (double)norm_max));
     break;
-  default: PetscCall(PetscPrintf(PETSC_COMM_SELF, "Error: cklvl=%d is not supported \n", cklvl));
+  default:
+    PetscCall(PetscPrintf(PETSC_COMM_SELF, "Error: cklvl=%d is not supported \n", cklvl));
   }
 
   PetscCall(VecDestroy(&vt2));

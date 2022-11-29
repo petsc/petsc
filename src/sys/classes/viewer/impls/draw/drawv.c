@@ -2,7 +2,8 @@
 #include <../src/sys/classes/viewer/impls/draw/vdraw.h> /*I "petscdraw.h" I*/
 #include <petscviewer.h>                                /*I "petscviewer.h" I*/
 
-static PetscErrorCode PetscViewerDestroy_Draw(PetscViewer v) {
+static PetscErrorCode PetscViewerDestroy_Draw(PetscViewer v)
+{
   PetscInt          i;
   PetscViewer_Draw *vdraw = (PetscViewer_Draw *)v->data;
 
@@ -22,7 +23,8 @@ static PetscErrorCode PetscViewerDestroy_Draw(PetscViewer v) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscViewerFlush_Draw(PetscViewer v) {
+static PetscErrorCode PetscViewerFlush_Draw(PetscViewer v)
+{
   PetscInt          i;
   PetscViewer_Draw *vdraw = (PetscViewer_Draw *)v->data;
 
@@ -51,7 +53,8 @@ static PetscErrorCode PetscViewerFlush_Draw(PetscViewer v) {
 
 .seealso: `PETSCVIEWERDRAW`, `PetscViewerDrawGetLG()`, `PetscViewerDrawGetAxis()`, `PetscViewerDrawOpen()`
 @*/
-PetscErrorCode PetscViewerDrawGetDraw(PetscViewer viewer, PetscInt windownumber, PetscDraw *draw) {
+PetscErrorCode PetscViewerDrawGetDraw(PetscViewer viewer, PetscInt windownumber, PetscDraw *draw)
+{
   PetscViewer_Draw *vdraw;
   PetscBool         isdraw;
 
@@ -88,7 +91,6 @@ PetscErrorCode PetscViewerDrawGetDraw(PetscViewer viewer, PetscInt windownumber,
       title = tmp_str;
     }
     PetscCall(PetscDrawCreate(PetscObjectComm((PetscObject)viewer), vdraw->display, title, PETSC_DECIDE, PETSC_DECIDE, vdraw->w, vdraw->h, &vdraw->draw[windownumber]));
-    PetscCall(PetscLogObjectParent((PetscObject)viewer, (PetscObject)vdraw->draw[windownumber]));
     if (vdraw->drawtype) PetscCall(PetscDrawSetType(vdraw->draw[windownumber], vdraw->drawtype));
     PetscCall(PetscDrawSetPause(vdraw->draw[windownumber], vdraw->pause));
     PetscCall(PetscDrawSetOptionsPrefix(vdraw->draw[windownumber], ((PetscObject)viewer)->prefix));
@@ -115,7 +117,8 @@ PetscErrorCode PetscViewerDrawGetDraw(PetscViewer viewer, PetscInt windownumber,
 
 .seealso: `PetscViewerDrawGetLG()`, `PetscViewerDrawGetAxis()`, `PetscViewerDrawOpen()`, `PetscViewerDrawGetDraw()`, `PetscViewerDrawBaseSet()`
 @*/
-PetscErrorCode PetscViewerDrawBaseAdd(PetscViewer viewer, PetscInt windownumber) {
+PetscErrorCode PetscViewerDrawBaseAdd(PetscViewer viewer, PetscInt windownumber)
+{
   PetscViewer_Draw *vdraw;
   PetscBool         isdraw;
 
@@ -147,7 +150,8 @@ PetscErrorCode PetscViewerDrawBaseAdd(PetscViewer viewer, PetscInt windownumber)
 
 .seealso: `PetscViewerDrawGetLG()`, `PetscViewerDrawGetAxis()`, `PetscViewerDrawOpen()`, `PetscViewerDrawGetDraw()`, `PetscViewerDrawBaseAdd()`
 @*/
-PetscErrorCode PetscViewerDrawBaseSet(PetscViewer viewer, PetscInt windownumber) {
+PetscErrorCode PetscViewerDrawBaseSet(PetscViewer viewer, PetscInt windownumber)
+{
   PetscViewer_Draw *vdraw;
   PetscBool         isdraw;
 
@@ -183,7 +187,8 @@ PetscErrorCode PetscViewerDrawBaseSet(PetscViewer viewer, PetscInt windownumber)
 
 .seealso: `PetscDrawLG`, `PetscViewerDrawGetDraw()`, `PetscViewerDrawGetAxis()`, `PetscViewerDrawOpen()`
 @*/
-PetscErrorCode PetscViewerDrawGetDrawLG(PetscViewer viewer, PetscInt windownumber, PetscDrawLG *drawlg) {
+PetscErrorCode PetscViewerDrawGetDrawLG(PetscViewer viewer, PetscInt windownumber, PetscDrawLG *drawlg)
+{
   PetscBool         isdraw;
   PetscViewer_Draw *vdraw;
 
@@ -199,7 +204,6 @@ PetscErrorCode PetscViewerDrawGetDrawLG(PetscViewer viewer, PetscInt windownumbe
   if (windownumber + vdraw->draw_base >= vdraw->draw_max || !vdraw->draw[windownumber + vdraw->draw_base]) PetscCall(PetscViewerDrawGetDraw(viewer, windownumber, NULL));
   if (!vdraw->drawlg[windownumber + vdraw->draw_base]) {
     PetscCall(PetscDrawLGCreate(vdraw->draw[windownumber + vdraw->draw_base], 1, &vdraw->drawlg[windownumber + vdraw->draw_base]));
-    PetscCall(PetscLogObjectParent((PetscObject)viewer, (PetscObject)vdraw->drawlg[windownumber + vdraw->draw_base]));
     PetscCall(PetscDrawLGSetFromOptions(vdraw->drawlg[windownumber + vdraw->draw_base]));
   }
   *drawlg = vdraw->drawlg[windownumber + vdraw->draw_base];
@@ -226,7 +230,8 @@ PetscErrorCode PetscViewerDrawGetDrawLG(PetscViewer viewer, PetscInt windownumbe
 
 .seealso: `PetscViewerDrawGetDraw()`, `PetscViewerDrawGetLG()`, `PetscViewerDrawOpen()`
 @*/
-PetscErrorCode PetscViewerDrawGetDrawAxis(PetscViewer viewer, PetscInt windownumber, PetscDrawAxis *drawaxis) {
+PetscErrorCode PetscViewerDrawGetDrawAxis(PetscViewer viewer, PetscInt windownumber, PetscDrawAxis *drawaxis)
+{
   PetscBool         isdraw;
   PetscViewer_Draw *vdraw;
 
@@ -240,15 +245,13 @@ PetscErrorCode PetscViewerDrawGetDrawAxis(PetscViewer viewer, PetscInt windownum
   vdraw = (PetscViewer_Draw *)viewer->data;
 
   if (windownumber + vdraw->draw_base >= vdraw->draw_max || !vdraw->draw[windownumber + vdraw->draw_base]) PetscCall(PetscViewerDrawGetDraw(viewer, windownumber, NULL));
-  if (!vdraw->drawaxis[windownumber + vdraw->draw_base]) {
-    PetscCall(PetscDrawAxisCreate(vdraw->draw[windownumber + vdraw->draw_base], &vdraw->drawaxis[windownumber + vdraw->draw_base]));
-    PetscCall(PetscLogObjectParent((PetscObject)viewer, (PetscObject)vdraw->drawaxis[windownumber + vdraw->draw_base]));
-  }
+  if (!vdraw->drawaxis[windownumber + vdraw->draw_base]) PetscCall(PetscDrawAxisCreate(vdraw->draw[windownumber + vdraw->draw_base], &vdraw->drawaxis[windownumber + vdraw->draw_base]));
   *drawaxis = vdraw->drawaxis[windownumber + vdraw->draw_base];
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscViewerDrawResize(PetscViewer v, int w, int h) {
+PetscErrorCode PetscViewerDrawResize(PetscViewer v, int w, int h)
+{
   PetscViewer_Draw *vdraw;
   PetscBool         isdraw;
 
@@ -263,7 +266,8 @@ PetscErrorCode PetscViewerDrawResize(PetscViewer v, int w, int h) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscViewerDrawSetInfo(PetscViewer v, const char display[], const char title[], int x, int y, int w, int h) {
+PetscErrorCode PetscViewerDrawSetInfo(PetscViewer v, const char display[], const char title[], int x, int y, int w, int h)
+{
   PetscViewer_Draw *vdraw;
   PetscBool         isdraw;
 
@@ -280,7 +284,8 @@ PetscErrorCode PetscViewerDrawSetInfo(PetscViewer v, const char display[], const
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscViewerDrawSetDrawType(PetscViewer v, PetscDrawType drawtype) {
+PetscErrorCode PetscViewerDrawSetDrawType(PetscViewer v, PetscDrawType drawtype)
+{
   PetscViewer_Draw *vdraw;
   PetscBool         isdraw;
 
@@ -295,7 +300,8 @@ PetscErrorCode PetscViewerDrawSetDrawType(PetscViewer v, PetscDrawType drawtype)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscViewerDrawGetDrawType(PetscViewer v, PetscDrawType *drawtype) {
+PetscErrorCode PetscViewerDrawGetDrawType(PetscViewer v, PetscDrawType *drawtype)
+{
   PetscViewer_Draw *vdraw;
   PetscBool         isdraw;
 
@@ -309,7 +315,8 @@ PetscErrorCode PetscViewerDrawGetDrawType(PetscViewer v, PetscDrawType *drawtype
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscViewerDrawSetTitle(PetscViewer v, const char title[]) {
+PetscErrorCode PetscViewerDrawSetTitle(PetscViewer v, const char title[])
+{
   PetscViewer_Draw *vdraw;
   PetscBool         isdraw;
 
@@ -324,7 +331,8 @@ PetscErrorCode PetscViewerDrawSetTitle(PetscViewer v, const char title[]) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscViewerDrawGetTitle(PetscViewer v, const char *title[]) {
+PetscErrorCode PetscViewerDrawGetTitle(PetscViewer v, const char *title[])
+{
   PetscViewer_Draw *vdraw;
   PetscBool         isdraw;
 
@@ -380,7 +388,8 @@ PetscErrorCode PetscViewerDrawGetTitle(PetscViewer v, const char *title[]) {
 .seealso: `PETSCVIEWERDRAW`, `PetscDrawCreate()`, `PetscViewerDestroy()`, `PetscViewerDrawGetDraw()`, `PetscViewerCreate()`, `PETSC_VIEWER_DRAW_`,
           `PETSC_VIEWER_DRAW_WORLD`, `PETSC_VIEWER_DRAW_SELF`
 @*/
-PetscErrorCode PetscViewerDrawOpen(MPI_Comm comm, const char display[], const char title[], int x, int y, int w, int h, PetscViewer *viewer) {
+PetscErrorCode PetscViewerDrawOpen(MPI_Comm comm, const char display[], const char title[], int x, int y, int w, int h, PetscViewer *viewer)
+{
   PetscFunctionBegin;
   PetscCall(PetscViewerCreate(comm, viewer));
   PetscCall(PetscViewerSetType(*viewer, PETSCVIEWERDRAW));
@@ -390,7 +399,8 @@ PetscErrorCode PetscViewerDrawOpen(MPI_Comm comm, const char display[], const ch
 
 #include <petsc/private/drawimpl.h>
 
-PetscErrorCode PetscViewerGetSubViewer_Draw(PetscViewer viewer, MPI_Comm comm, PetscViewer *sviewer) {
+PetscErrorCode PetscViewerGetSubViewer_Draw(PetscViewer viewer, MPI_Comm comm, PetscViewer *sviewer)
+{
   PetscMPIInt       rank;
   PetscInt          i;
   PetscViewer_Draw *vdraw = (PetscViewer_Draw *)viewer->data, *svdraw;
@@ -432,7 +442,8 @@ PetscErrorCode PetscViewerGetSubViewer_Draw(PetscViewer viewer, MPI_Comm comm, P
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscViewerRestoreSubViewer_Draw(PetscViewer viewer, MPI_Comm comm, PetscViewer *sviewer) {
+PetscErrorCode PetscViewerRestoreSubViewer_Draw(PetscViewer viewer, MPI_Comm comm, PetscViewer *sviewer)
+{
   PetscMPIInt       rank;
   PetscInt          i;
   PetscViewer_Draw *vdraw = (PetscViewer_Draw *)viewer->data, *svdraw;
@@ -467,7 +478,8 @@ PetscErrorCode PetscViewerRestoreSubViewer_Draw(PetscViewer viewer, MPI_Comm com
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscViewerSetFromOptions_Draw(PetscViewer v, PetscOptionItems *PetscOptionsObject) {
+PetscErrorCode PetscViewerSetFromOptions_Draw(PetscViewer v, PetscOptionItems *PetscOptionsObject)
+{
   PetscReal bounds[16];
   PetscInt  nbounds = 16;
   PetscBool flg;
@@ -480,7 +492,8 @@ PetscErrorCode PetscViewerSetFromOptions_Draw(PetscViewer v, PetscOptionItems *P
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscViewerView_Draw(PetscViewer viewer, PetscViewer v) {
+PetscErrorCode PetscViewerView_Draw(PetscViewer viewer, PetscViewer v)
+{
   PetscDraw         draw;
   PetscInt          i;
   PetscViewer_Draw *vdraw = (PetscViewer_Draw *)viewer->data;
@@ -507,11 +520,12 @@ PetscErrorCode PetscViewerView_Draw(PetscViewer viewer, PetscViewer v) {
           `PetscViewerMatlabOpen()`, `VecView()`, `DMView()`, `PetscViewerMatlabPutArray()`, `PETSCVIEWERASCII`, `PETSCVIEWERMATLAB`,
           `PetscViewerFileSetName()`, `PetscViewerFileSetMode()`, `PetscViewerFormat`, `PetscViewerType`, `PetscViewerSetType()`
 M*/
-PETSC_EXTERN PetscErrorCode PetscViewerCreate_Draw(PetscViewer viewer) {
+PETSC_EXTERN PetscErrorCode PetscViewerCreate_Draw(PetscViewer viewer)
+{
   PetscViewer_Draw *vdraw;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(viewer, &vdraw));
+  PetscCall(PetscNew(&vdraw));
   viewer->data = (void *)vdraw;
 
   viewer->ops->flush            = PetscViewerFlush_Draw;
@@ -544,7 +558,8 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_Draw(PetscViewer viewer) {
 
 .seealso: `PETSCVIEWERDRAW`, `PetscViewerDrawOpen()`, `PetscViewerDrawGetDraw()`,
 @*/
-PetscErrorCode PetscViewerDrawClear(PetscViewer viewer) {
+PetscErrorCode PetscViewerDrawClear(PetscViewer viewer)
+{
   PetscViewer_Draw *vdraw;
   PetscBool         isdraw;
   PetscInt          i;
@@ -576,7 +591,8 @@ PetscErrorCode PetscViewerDrawClear(PetscViewer viewer) {
 
 .seealso: `PETSCVIEWERDRAW`, `PetscViewerDrawOpen()`, `PetscViewerDrawGetDraw()`,
 @*/
-PetscErrorCode PetscViewerDrawGetPause(PetscViewer viewer, PetscReal *pause) {
+PetscErrorCode PetscViewerDrawGetPause(PetscViewer viewer, PetscReal *pause)
+{
   PetscViewer_Draw *vdraw;
   PetscBool         isdraw;
   PetscInt          i;
@@ -616,7 +632,8 @@ PetscErrorCode PetscViewerDrawGetPause(PetscViewer viewer, PetscReal *pause) {
 
 .seealso: `PETSCVIEWERDRAW`, `PetscViewerDrawOpen()`, `PetscViewerDrawGetDraw()`,
 @*/
-PetscErrorCode PetscViewerDrawSetPause(PetscViewer viewer, PetscReal pause) {
+PetscErrorCode PetscViewerDrawSetPause(PetscViewer viewer, PetscReal pause)
+{
   PetscViewer_Draw *vdraw;
   PetscBool         isdraw;
   PetscInt          i;
@@ -647,7 +664,8 @@ PetscErrorCode PetscViewerDrawSetPause(PetscViewer viewer, PetscReal pause) {
 
 .seealso: `PETSCVIEWERDRAW`, `PetscViewerDrawOpen()`, `PetscViewerDrawGetDraw()`,
 @*/
-PetscErrorCode PetscViewerDrawSetHold(PetscViewer viewer, PetscBool hold) {
+PetscErrorCode PetscViewerDrawSetHold(PetscViewer viewer, PetscBool hold)
+{
   PetscViewer_Draw *vdraw;
   PetscBool         isdraw;
 
@@ -676,7 +694,8 @@ PetscErrorCode PetscViewerDrawSetHold(PetscViewer viewer, PetscBool hold) {
 
 .seealso: `PETSCVIEWERDRAW`, `PetscViewerDrawOpen()`, `PetscViewerDrawGetDraw()`,
 @*/
-PetscErrorCode PetscViewerDrawGetHold(PetscViewer viewer, PetscBool *hold) {
+PetscErrorCode PetscViewerDrawGetHold(PetscViewer viewer, PetscBool *hold)
+{
   PetscViewer_Draw *vdraw;
   PetscBool         isdraw;
 
@@ -718,7 +737,8 @@ $       XXXView(XXX object,PETSC_VIEWER_DRAW_(comm));
 
 .seealso: `PETSCVIEWERDRAW`, `PetscViewer`, `PETSC_VIEWER_DRAW_WORLD`, `PETSC_VIEWER_DRAW_SELF`, `PetscViewerDrawOpen()`,
 @*/
-PetscViewer PETSC_VIEWER_DRAW_(MPI_Comm comm) {
+PetscViewer PETSC_VIEWER_DRAW_(MPI_Comm comm)
+{
   PetscErrorCode ierr;
   PetscMPIInt    flag;
   PetscViewer    viewer;
@@ -789,7 +809,8 @@ PetscViewer PETSC_VIEWER_DRAW_(MPI_Comm comm) {
 
 .seealso: `PETSCVIEWERDRAW`, `PetscViewerDrawGetLG()`, `PetscViewerDrawGetAxis()`, `PetscViewerDrawOpen()`
 @*/
-PetscErrorCode PetscViewerDrawSetBounds(PetscViewer viewer, PetscInt nbounds, const PetscReal *bounds) {
+PetscErrorCode PetscViewerDrawSetBounds(PetscViewer viewer, PetscInt nbounds, const PetscReal *bounds)
+{
   PetscViewer_Draw *vdraw;
   PetscBool         isdraw;
 
@@ -822,7 +843,8 @@ PetscErrorCode PetscViewerDrawSetBounds(PetscViewer viewer, PetscInt nbounds, co
 
 .seealso: `PETSCVIEWERDRAW`, `PetscViewerDrawGetLG()`, `PetscViewerDrawGetAxis()`, `PetscViewerDrawOpen()`, `PetscViewerDrawSetBounds()`
 @*/
-PetscErrorCode PetscViewerDrawGetBounds(PetscViewer viewer, PetscInt *nbounds, const PetscReal **bounds) {
+PetscErrorCode PetscViewerDrawGetBounds(PetscViewer viewer, PetscInt *nbounds, const PetscReal **bounds)
+{
   PetscViewer_Draw *vdraw;
   PetscBool         isdraw;
 

@@ -1,10 +1,10 @@
-#if !defined(_NETWORKIMPL_H)
+#ifndef _NETWORKIMPL_H
 #define _NETWORKIMPL_H
 
 #include <petscmat.h>                 /*I      "petscmat.h"          I*/
 #include <petscdmnetwork.h>           /*I      "petscdmnetwork.h"    I*/
 #include <petsc/private/dmpleximpl.h> /*I  "petscdmplex.h"  I*/
-#include <petscctable.h>
+#include <petsc/private/hashmapi.h>
 
 PETSC_EXTERN PetscLogEvent DMNetwork_LayoutSetUp;
 PETSC_EXTERN PetscLogEvent DMNetwork_SetUpNetwork;
@@ -15,11 +15,11 @@ PETSC_EXTERN PetscLogEvent DMNetwork_Distribute;
 
 typedef struct _p_DMNetworkComponentHeader *DMNetworkComponentHeader;
 struct _p_DMNetworkComponentHeader {
-  PetscInt  index;    /* index for user input global edge and vertex */
-  PetscInt  subnetid; /* Id for subnetwork */
-  PetscInt  ndata;    /* number of components */
-  PetscInt  hsize;    /* Size of the header */
-  PetscInt  maxcomps; /* Maximum components at this point (ndata <= maxcomps). maxcomps
+  PetscInt index;    /* index for user input global edge and vertex */
+  PetscInt subnetid; /* Id for subnetwork */
+  PetscInt ndata;    /* number of components */
+  PetscInt hsize;    /* Size of the header */
+  PetscInt maxcomps; /* Maximum components at this point (ndata <= maxcomps). maxcomps
                         is set initially to a default value and is incremented every time
                         ndata exceeds maxcomps */
   /* The following arrays store the different attributes for each component at the given point.
@@ -29,7 +29,7 @@ struct _p_DMNetworkComponentHeader {
   PetscInt *size;         /* component data struct sizes */
   PetscInt *key;          /* component keys */
   PetscInt *offset;       /* component offset in the vector */
-  PetscInt *nvar;         /* number of variabes for the component */
+  PetscInt *nvar;         /* number of variables for the component */
   PetscInt *offsetvarrel; /* relative offset from the first component at this point */
 } PETSC_ATTRIBUTEALIGNED(PetscMax(sizeof(double), sizeof(PetscScalar)));
 
@@ -92,7 +92,7 @@ typedef struct {
 
 /* The data structure for DMNetwork is split into two parts:
    1. DMNetworkCloneShared : The part of the Network that holds information that is shared between
-      clones. Mostly topological data/refereence counting information
+      clones. Mostly topological data/reference counting information
 
    2. Everything else in the structure:  The part of the network not shared between clones. This is the data on
       the network, so dof and component type information.
@@ -115,7 +115,7 @@ struct _p_DMNetworkCloneShared {
   PetscInt      nsvtx, Nsvtx;           /* Local and global num of entries in svtx */
   PetscInt     *svertices;              /* Array of local subnetwork vertices that are merged/shared */
   PetscInt     *sedgelist;              /* Edge list of shared vertices */
-  PetscTable    svtable;                /* hash table for finding shared vertex info */
+  PetscHMapI    svtable;                /* hash table for finding shared vertex info */
 } PETSC_ATTRIBUTEALIGNED(PetscMax(sizeof(double), sizeof(PetscScalar)));
 
 typedef struct {

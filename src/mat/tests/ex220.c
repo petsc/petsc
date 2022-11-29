@@ -3,7 +3,8 @@
 
 static char help[PETSC_MAX_PATH_LEN] = "Tests MatLoad() with MatCreateDense() for memory leak ";
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscViewer viewer;
   Mat         A;
   char        filename[PETSC_MAX_PATH_LEN];

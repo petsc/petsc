@@ -18,7 +18,8 @@ static const char help[] = "Test VEC_SUBSET_OFF_PROC_ENTRIES\n\n";
   pattern. All processes must come to the same conclusion, otherwise deadlock may happen due
   to mismatched MPI_Send/Recv. It also tests changing VEC_SUBSET_OFF_PROC_ENTRIES back and forth.
 */
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   Vec         v;
   PetscInt    i, j, k, *ln, n, rstart;
   PetscBool   saveCommunicationPattern = PETSC_FALSE;

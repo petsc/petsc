@@ -7,7 +7,8 @@ is similar to ex40.c; here the index sets used are random. Input arguments are:\
 
 #include <petscmat.h>
 
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   PetscInt    nd = 2, ov = 1, i, j, m, n, *idx, lsize;
   PetscMPIInt rank;
   PetscBool   flg;

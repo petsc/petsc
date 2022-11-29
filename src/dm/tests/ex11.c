@@ -4,7 +4,8 @@ static char help[] = "Tests various 2-dimensional DMDA routines.\n\n";
 #include <petscdmda.h>
 #include <petscdraw.h>
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscInt       M = 10, N = 8, dof = 1, s = 1, bx = 0, by = 0, i, n, j, k, m, wrap, xs, ys;
   DM             da, dac;
   PetscViewer    viewer;
@@ -34,7 +35,7 @@ int main(int argc, char **argv) {
   PetscCall(DMSetUp(da));
   PetscCall(DMDASetUniformCoordinates(da, 0.0, 1.0, 0.0, 1.0, 0.0, 0.0));
   for (i = 0; i < dof; i++) {
-    sprintf(fname, "Field %d", (int)i);
+    PetscCall(PetscSNPrintf(fname, PETSC_STATIC_ARRAY_LENGTH(fname), "Field %" PetscInt_FMT, i));
     PetscCall(DMDASetFieldName(da, i, fname));
   }
 

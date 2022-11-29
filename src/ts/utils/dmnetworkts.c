@@ -5,13 +5,14 @@
 /*
    TSMonitorLGCtxDestroy - Destroys  line graph contexts that where created with TSMonitorLGCtxNetworkCreate().
 
-   Collective on TSMonitorLGCtx_Network
+   Collective on ctx
 
    Input Parameter:
 .  ctx - the monitor context
 
 */
-PetscErrorCode TSMonitorLGCtxNetworkDestroy(TSMonitorLGCtxNetwork *ctx) {
+PetscErrorCode TSMonitorLGCtxNetworkDestroy(TSMonitorLGCtxNetwork *ctx)
+{
   PetscInt i;
 
   PetscFunctionBegin;
@@ -21,7 +22,8 @@ PetscErrorCode TSMonitorLGCtxNetworkDestroy(TSMonitorLGCtxNetwork *ctx) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode TSMonitorLGCtxNetworkCreate(TS ts, const char host[], const char label[], int x, int y, int m, int n, PetscInt howoften, TSMonitorLGCtxNetwork *ctx) {
+PetscErrorCode TSMonitorLGCtxNetworkCreate(TS ts, const char host[], const char label[], int x, int y, int m, int n, PetscInt howoften, TSMonitorLGCtxNetwork *ctx)
+{
   PetscDraw draw;
   MPI_Comm  comm;
   DM        dm;
@@ -80,27 +82,28 @@ PetscErrorCode TSMonitorLGCtxNetworkCreate(TS ts, const char host[], const char 
 }
 
 /*
-   TSMonitorLGCtxNetworkSolution - Monitors progress of the TS solvers for a DMNetwork solution with one window for each vertex and each edge
+   TSMonitorLGCtxNetworkSolution - Monitors progress of the `TS` solvers for a `DMNETWORK` solution with one window for each vertex and each edge
 
-   Collective on TS
+   Collective on ts
 
    Input Parameters:
-+  ts - the TS context
++  ts - the `TS` context
 .  step - current time-step
 .  ptime - current time
 .  u - current solution
--  dctx - the TSMonitorLGCtxNetwork object that contains all the options for the monitoring, this is created with TSMonitorLGCtxCreateNetwork()
+-  dctx - the `TSMonitorLGCtxNetwork` object that contains all the options for the monitoring, this is created with `TSMonitorLGCtxCreateNetwork()`
 
-   Options Database:
+   Options Database Key:
 .   -ts_monitor_lg_solution_variables
 
    Level: intermediate
 
-   Notes:
+   Note:
     Each process in a parallel run displays its component solutions in a separate window
 
 */
-PetscErrorCode TSMonitorLGCtxNetworkSolution(TS ts, PetscInt step, PetscReal ptime, Vec u, void *dctx) {
+PetscErrorCode TSMonitorLGCtxNetworkSolution(TS ts, PetscInt step, PetscReal ptime, Vec u, void *dctx)
+{
   TSMonitorLGCtxNetwork ctx = (TSMonitorLGCtxNetwork)dctx;
   const PetscScalar    *xv;
   PetscScalar          *yv;

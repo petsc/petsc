@@ -2,7 +2,8 @@ static char help[] = "Tests DMSLICED operations\n\n";
 
 #include <petscdmsliced.h>
 
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[])
+{
   char         mat_type[256] = MATAIJ; /* default matrix type */
   MPI_Comm     comm;
   PetscMPIInt  rank, size;
@@ -129,7 +130,8 @@ int main(int argc, char *argv[]) {
       xx[2 * i]     = 0.2 * PetscExpReal(-PetscSqr(xref) / (2 * PetscSqr(sigma)));
       xx[2 * i + 1] = 0;
       break;
-    default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "not implemented for block size %" PetscInt_FMT, bs);
+    default:
+      SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "not implemented for block size %" PetscInt_FMT, bs);
     }
   }
   PetscCall(VecRestoreArray(lf, &xx));

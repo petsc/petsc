@@ -14,7 +14,8 @@ static char help[] = "Test coloring for finite difference Jacobians with DMStag\
 */
 
 /* A "diagonal" objective function which only couples dof living at the same "point" */
-PetscErrorCode FormFunction1DNoCoupling(SNES snes, Vec x, Vec f, void *ctx) {
+PetscErrorCode FormFunction1DNoCoupling(SNES snes, Vec x, Vec f, void *ctx)
+{
   PetscInt start, n, n_extra, N, dof[2];
   Vec      x_local;
   DM       dm;
@@ -59,7 +60,8 @@ PetscErrorCode FormFunction1DNoCoupling(SNES snes, Vec x, Vec f, void *ctx) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode FormJacobian1DNoCoupling(SNES snes, Vec x, Mat Amat, Mat Pmat, void *ctx) {
+PetscErrorCode FormJacobian1DNoCoupling(SNES snes, Vec x, Mat Amat, Mat Pmat, void *ctx)
+{
   PetscInt start, n, n_extra, N, dof[2];
   Vec      x_local;
   DM       dm;
@@ -107,7 +109,8 @@ PetscErrorCode FormJacobian1DNoCoupling(SNES snes, Vec x, Mat Amat, Mat Pmat, vo
 }
 
 /* Objective functions which use the DM's stencil width. */
-PetscErrorCode FormFunction1D(SNES snes, Vec x, Vec f, void *ctx) {
+PetscErrorCode FormFunction1D(SNES snes, Vec x, Vec f, void *ctx)
+{
   Vec               x_local;
   PetscInt          dim, stencil_width, start, n, n_extra, N, dof[2];
   DMStagStencilType stencil_type;
@@ -223,7 +226,8 @@ PetscErrorCode FormFunction1D(SNES snes, Vec x, Vec f, void *ctx) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode FormJacobian1D(SNES snes, Vec x, Mat Amat, Mat Pmat, void *ctx) {
+PetscErrorCode FormJacobian1D(SNES snes, Vec x, Mat Amat, Mat Pmat, void *ctx)
+{
   Vec      x_local;
   PetscInt dim, stencil_width, start, n, n_extra, N, dof[2];
   DM       dm;
@@ -337,7 +341,8 @@ PetscErrorCode FormJacobian1D(SNES snes, Vec x, Mat Amat, Mat Pmat, void *ctx) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode FormFunction2DNoCoupling(SNES snes, Vec x, Vec f, void *ctx) {
+PetscErrorCode FormFunction2DNoCoupling(SNES snes, Vec x, Vec f, void *ctx)
+{
   PetscInt start[2], n[2], n_extra[2], N[2], dof[3];
   Vec      x_local;
   DM       dm;
@@ -414,7 +419,8 @@ PetscErrorCode FormFunction2DNoCoupling(SNES snes, Vec x, Vec f, void *ctx) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode FormJacobian2DNoCoupling(SNES snes, Vec x, Mat Amat, Mat Pmat, void *ctx) {
+PetscErrorCode FormJacobian2DNoCoupling(SNES snes, Vec x, Mat Amat, Mat Pmat, void *ctx)
+{
   PetscInt start[2], n[2], n_extra[2], N[2], dof[3];
   Vec      x_local;
   DM       dm;
@@ -493,7 +499,8 @@ PetscErrorCode FormJacobian2DNoCoupling(SNES snes, Vec x, Mat Amat, Mat Pmat, vo
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode FormFunction2D(SNES snes, Vec x, Vec f, void *ctx) {
+PetscErrorCode FormFunction2D(SNES snes, Vec x, Vec f, void *ctx)
+{
   PetscInt start[2], n[2], n_extra[2], N[2], dof[3];
   Vec      x_local;
   DM       dm;
@@ -656,7 +663,8 @@ PetscErrorCode FormFunction2D(SNES snes, Vec x, Vec f, void *ctx) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode FormJacobian2D(SNES snes, Vec x, Mat Amat, Mat Pmat, void *ctx) {
+PetscErrorCode FormJacobian2D(SNES snes, Vec x, Mat Amat, Mat Pmat, void *ctx)
+{
   PetscInt start[2], n[2], n_extra[2], N[2], dof[3];
   Vec      x_local;
   DM       dm;
@@ -817,7 +825,8 @@ PetscErrorCode FormJacobian2D(SNES snes, Vec x, Mat Amat, Mat Pmat, void *ctx) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode FormFunction3DNoCoupling(SNES snes, Vec x, Vec f, void *ctx) {
+PetscErrorCode FormFunction3DNoCoupling(SNES snes, Vec x, Vec f, void *ctx)
+{
   PetscInt start[3], n[3], n_extra[3], N[3], dof[4];
   Vec      x_local;
   DM       dm;
@@ -960,7 +969,8 @@ PetscErrorCode FormFunction3DNoCoupling(SNES snes, Vec x, Vec f, void *ctx) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode FormJacobian3DNoCoupling(SNES snes, Vec x, Mat Amat, Mat Pmat, void *ctx) {
+PetscErrorCode FormJacobian3DNoCoupling(SNES snes, Vec x, Mat Amat, Mat Pmat, void *ctx)
+{
   PetscInt start[3], n[3], n_extra[3], N[3], dof[4];
   Vec      x_local;
   DM       dm;
@@ -1104,7 +1114,8 @@ PetscErrorCode FormJacobian3DNoCoupling(SNES snes, Vec x, Mat Amat, Mat Pmat, vo
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode FormFunction3D(SNES snes, Vec x, Vec f, void *ctx) {
+PetscErrorCode FormFunction3D(SNES snes, Vec x, Vec f, void *ctx)
+{
   PetscInt start[3], n[3], n_extra[3], N[3], dof[4];
   Vec      x_local;
   DM       dm;
@@ -1373,7 +1384,8 @@ PetscErrorCode FormFunction3D(SNES snes, Vec x, Vec f, void *ctx) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode FormJacobian3D(SNES snes, Vec x, Mat Amat, Mat Pmat, void *ctx) {
+PetscErrorCode FormJacobian3D(SNES snes, Vec x, Mat Amat, Mat Pmat, void *ctx)
+{
   PetscInt start[3], n[3], n_extra[3], N[3], dof[4];
   Vec      x_local;
   DM       dm;
@@ -1643,7 +1655,8 @@ PetscErrorCode FormJacobian3D(SNES snes, Vec x, Mat Amat, Mat Pmat, void *ctx) {
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   DM        dm;
   PetscInt  dim;
   PetscBool no_coupling;
@@ -1658,10 +1671,17 @@ int main(int argc, char **argv) {
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-no_coupling", &no_coupling, NULL));
 
   switch (dim) {
-  case 1: PetscCall(DMStagCreate1d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, 4, 1, 1, DMSTAG_STENCIL_BOX, 1, NULL, &dm)); break;
-  case 2: PetscCall(DMStagCreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, 4, 3, PETSC_DECIDE, PETSC_DECIDE, 1, 1, 1, DMSTAG_STENCIL_BOX, 1, NULL, NULL, &dm)); break;
-  case 3: PetscCall(DMStagCreate3d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, 4, 3, 3, PETSC_DECIDE, PETSC_DECIDE, PETSC_DECIDE, 1, 1, 1, 1, DMSTAG_STENCIL_BOX, 1, NULL, NULL, NULL, &dm)); break;
-  default: SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP, "Unsupported dimension %" PetscInt_FMT, dim);
+  case 1:
+    PetscCall(DMStagCreate1d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, 4, 1, 1, DMSTAG_STENCIL_BOX, 1, NULL, &dm));
+    break;
+  case 2:
+    PetscCall(DMStagCreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, 4, 3, PETSC_DECIDE, PETSC_DECIDE, 1, 1, 1, DMSTAG_STENCIL_BOX, 1, NULL, NULL, &dm));
+    break;
+  case 3:
+    PetscCall(DMStagCreate3d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, 4, 3, 3, PETSC_DECIDE, PETSC_DECIDE, PETSC_DECIDE, 1, 1, 1, 1, DMSTAG_STENCIL_BOX, 1, NULL, NULL, NULL, &dm));
+    break;
+  default:
+    SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP, "Unsupported dimension %" PetscInt_FMT, dim);
   }
   PetscCall(DMSetFromOptions(dm));
   PetscCall(DMSetUp(dm));
@@ -1682,7 +1702,8 @@ int main(int argc, char **argv) {
       PetscCall(SNESSetFunction(snes, NULL, FormFunction3DNoCoupling, NULL));
       PetscCall(SNESSetJacobian(snes, NULL, NULL, FormJacobian3DNoCoupling, NULL));
       break;
-    default: SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP, "Unsupported dimension %" PetscInt_FMT, dim);
+    default:
+      SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP, "Unsupported dimension %" PetscInt_FMT, dim);
     }
   } else {
     switch (dim) {
@@ -1698,7 +1719,8 @@ int main(int argc, char **argv) {
       PetscCall(SNESSetFunction(snes, NULL, FormFunction3D, NULL));
       PetscCall(SNESSetJacobian(snes, NULL, NULL, FormJacobian3D, NULL));
       break;
-    default: SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP, "Unsupported dimension %" PetscInt_FMT, dim);
+    default:
+      SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP, "Unsupported dimension %" PetscInt_FMT, dim);
     }
   }
   PetscCall(SNESSetFromOptions(snes));

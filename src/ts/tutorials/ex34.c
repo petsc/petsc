@@ -29,7 +29,8 @@ struct _User {
   PetscReal c;          /* wavespeed */
 };
 
-static PetscErrorCode FormRHSFunction(TS ts, PetscReal t, Vec U, Vec F, void *ctx) {
+static PetscErrorCode FormRHSFunction(TS ts, PetscReal t, Vec U, Vec F, void *ctx)
+{
   User               user = (User)ctx;
   DM                 dm, cdm;
   DMDALocalInfo      info;
@@ -60,7 +61,8 @@ static PetscErrorCode FormRHSFunction(TS ts, PetscReal t, Vec U, Vec F, void *ct
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode FormIFunction(TS ts, PetscReal t, Vec U, Vec Udot, Vec F, void *ctx) {
+static PetscErrorCode FormIFunction(TS ts, PetscReal t, Vec U, Vec Udot, Vec F, void *ctx)
+{
   User          user = (User)ctx;
   DM            dm, cdm;
   DMDALocalInfo info;
@@ -108,7 +110,8 @@ static PetscErrorCode FormIFunction(TS ts, PetscReal t, Vec U, Vec Udot, Vec F, 
 }
 
 /* IJacobian - Compute IJacobian = dF/dU + a dF/dUdot */
-PetscErrorCode FormIJacobian(TS ts, PetscReal t, Vec U, Vec Udot, PetscReal a, Mat J, Mat Jpre, void *ctx) {
+PetscErrorCode FormIJacobian(TS ts, PetscReal t, Vec U, Vec Udot, PetscReal a, Mat J, Mat Jpre, void *ctx)
+{
   User          user = (User)ctx;
   DM            dm, cdm;
   DMDALocalInfo info;
@@ -173,7 +176,8 @@ PetscErrorCode FormIJacobian(TS ts, PetscReal t, Vec U, Vec Udot, PetscReal a, M
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode FormInitialSolution(TS ts, Vec U, void *ctx) {
+PetscErrorCode FormInitialSolution(TS ts, Vec U, void *ctx)
+{
   /* User            user = (User) ctx; */
   DM              dm, cdm;
   DMDALocalInfo   info;
@@ -200,7 +204,8 @@ PetscErrorCode FormInitialSolution(TS ts, Vec U, void *ctx) {
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   DM                dm;
   TS                ts;
   Vec               X;

@@ -2,7 +2,8 @@ static char help[] = "Nest vector set subvector functionality.\n\n";
 
 #include <petscvec.h>
 
-PetscErrorCode test_vec_ops(void) {
+PetscErrorCode test_vec_ops(void)
+{
   Vec         X, Y, a, b;
   Vec         c, d, e, f, g, h;
   PetscScalar val;
@@ -122,7 +123,8 @@ PetscErrorCode test_vec_ops(void) {
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &args, (char *)0, help));
   PetscCall(test_vec_ops());

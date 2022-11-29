@@ -8,7 +8,8 @@ typedef struct {
   PetscInt  testNum;       /* Labels the different test partitions */
 } AppCtx;
 
-static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options) {
+static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
+{
   PetscFunctionBeginUser;
   options->testPartition = PETSC_TRUE;
   options->testNum       = 0;
@@ -20,7 +21,8 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm) {
+static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
+{
   DM        dmDist = NULL;
   PetscBool simplex;
   PetscInt  dim;
@@ -61,7 +63,8 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm) {
           PetscCall(PetscArraycpy(points, triPoints_p2, 8));
           break;
         }
-        default: SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Could not find matching test number %" PetscInt_FMT " for triangular mesh on 2 procs", user->testNum);
+        default:
+          SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Could not find matching test number %" PetscInt_FMT " for triangular mesh on 2 procs", user->testNum);
         }
       } else if (dim == 2 && simplex && size == 3) {
         PetscInt triSizes_p3[3]  = {3, 3, 2};
@@ -94,7 +97,8 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode ScrambleOrientation(DM dm, AppCtx *user) {
+static PetscErrorCode ScrambleOrientation(DM dm, AppCtx *user)
+{
   PetscInt h, cStart, cEnd, c;
 
   PetscFunctionBeginUser;
@@ -107,7 +111,8 @@ static PetscErrorCode ScrambleOrientation(DM dm, AppCtx *user) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TestOrientation(DM dm, AppCtx *user) {
+static PetscErrorCode TestOrientation(DM dm, AppCtx *user)
+{
   PetscFunctionBeginUser;
   PetscCall(ScrambleOrientation(dm, user));
   PetscCall(DMPlexOrient(dm));
@@ -115,7 +120,8 @@ static PetscErrorCode TestOrientation(DM dm, AppCtx *user) {
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   DM     dm;
   AppCtx user; /* user-defined work context */
 

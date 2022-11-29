@@ -1,7 +1,8 @@
 #include <petsc/private/matimpl.h> /*I "petscmat.h"  I*/
 #include <petscsf.h>
 
-PETSC_EXTERN PetscErrorCode MatColoringCreateBipartiteGraph(MatColoring mc, PetscSF *etoc, PetscSF *etor) {
+PETSC_EXTERN PetscErrorCode MatColoringCreateBipartiteGraph(MatColoring mc, PetscSF *etoc, PetscSF *etor)
+{
   PetscInt           nentries, ncolentries, idx;
   PetscInt           i, j, rs, re, cs, ce, cn;
   PetscInt          *rowleaf, *colleaf, *rowdata;

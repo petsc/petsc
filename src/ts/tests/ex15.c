@@ -40,7 +40,8 @@ typedef enum {
 } VarMode;
 static const char *const VarModes[] = {"CONSERVATIVE", "NONCONSERVATIVE", "TRANSIENTVAR", "VarMode", "VAR_", NULL};
 
-static PetscErrorCode IFunction_Conservative(TS ts, PetscReal t, Vec U, Vec Udot, Vec F, void *ctx) {
+static PetscErrorCode IFunction_Conservative(TS ts, PetscReal t, Vec U, Vec Udot, Vec F, void *ctx)
+{
   const PetscScalar *u, *udot;
   PetscScalar       *f;
 
@@ -58,7 +59,8 @@ static PetscErrorCode IFunction_Conservative(TS ts, PetscReal t, Vec U, Vec Udot
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode IFunction_Nonconservative(TS ts, PetscReal t, Vec U, Vec Udot, Vec F, void *ctx) {
+static PetscErrorCode IFunction_Nonconservative(TS ts, PetscReal t, Vec U, Vec Udot, Vec F, void *ctx)
+{
   const PetscScalar *u, *udot;
   PetscScalar       *f;
 
@@ -76,7 +78,8 @@ static PetscErrorCode IFunction_Nonconservative(TS ts, PetscReal t, Vec U, Vec U
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode IFunction_TransientVar(TS ts, PetscReal t, Vec U, Vec Cdot, Vec F, void *ctx) {
+static PetscErrorCode IFunction_TransientVar(TS ts, PetscReal t, Vec U, Vec Cdot, Vec F, void *ctx)
+{
   const PetscScalar *u, *cdot;
   PetscScalar       *f;
 
@@ -94,14 +97,16 @@ static PetscErrorCode IFunction_TransientVar(TS ts, PetscReal t, Vec U, Vec Cdot
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TransientVar(TS ts, Vec U, Vec C, void *ctx) {
+static PetscErrorCode TransientVar(TS ts, Vec U, Vec C, void *ctx)
+{
   PetscFunctionBeginUser;
   PetscCall(VecCopy(U, C));
   PetscCall(VecExp(C));
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[])
+{
   TS          ts;
   DM          dm;
   Vec         U;
@@ -121,7 +126,9 @@ int main(int argc, char *argv[]) {
   PetscCall(VecSetValue(U, 0, 2., INSERT_VALUES));
   PetscCall(VecSetValue(U, 1, 1., INSERT_VALUES));
   switch (var) {
-  case VAR_CONSERVATIVE: PetscCall(DMTSSetIFunction(dm, IFunction_Conservative, NULL)); break;
+  case VAR_CONSERVATIVE:
+    PetscCall(DMTSSetIFunction(dm, IFunction_Conservative, NULL));
+    break;
   case VAR_NONCONSERVATIVE:
     PetscCall(VecLog(U));
     PetscCall(DMTSSetIFunction(dm, IFunction_Nonconservative, NULL));
@@ -136,9 +143,12 @@ int main(int argc, char *argv[]) {
 
   PetscCall(TSSolve(ts, U));
   switch (var) {
-  case VAR_CONSERVATIVE: break;
+  case VAR_CONSERVATIVE:
+    break;
   case VAR_NONCONSERVATIVE:
-  case VAR_TRANSIENTVAR: PetscCall(VecExp(U)); break;
+  case VAR_TRANSIENTVAR:
+    PetscCall(VecExp(U));
+    break;
   }
   PetscCall(VecView(U, PETSC_VIEWER_STDOUT_WORLD));
   PetscCall(VecSum(U, &sum));

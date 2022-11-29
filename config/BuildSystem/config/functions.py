@@ -117,33 +117,21 @@ builtin and then its argument prototype would still apply. */
 #  error "Cannot check sysinfo without special headers"
 #endif
 '''
-      body = 'char buf[10]; long count=10; sysinfo(1, buf, count);\n'
+      body = 'char buf[10]; long count=10; sysinfo(1, buf, count)'
       if self.checkLink(includes, body):
         self.addDefine('HAVE_SYSINFO_3ARG', 1)
     return
 
-  def checkVPrintf(self):
-    '''Checks whether vprintf requires a char * last argument, and if it does defines HAVE_VPRINTF_CHAR'''
-    if not self.checkLink('#include <stdio.h>\n#include <stdarg.h>\n', 'va_list Argp;\nvprintf( "%d", Argp );\n'):
-      self.addDefine('HAVE_VPRINTF_CHAR', 1)
-    return
-
-  def checkVFPrintf(self):
-    '''Checks whether vfprintf requires a char * last argument, and if it does defines HAVE_VFPRINTF_CHAR'''
-    if not self.checkLink('#include <stdio.h>\n#include <stdarg.h>\n', 'va_list Argp;\nvfprintf(stdout, "%d", Argp );\n'):
-      self.addDefine('HAVE_VFPRINTF_CHAR', 1)
-    return
-
   def checkVSNPrintf(self):
     '''Checks whether vsnprintf requires a char * last argument, and if it does defines HAVE_VSNPRINTF_CHAR'''
-    if self.checkLink('#include <stdio.h>\n#include <stdarg.h>\n', 'va_list Argp;char str[6];\nvsnprintf(str,5, "%d", Argp );\n'):
+    if self.checkLink('#include <stdio.h>\n#include <stdarg.h>\n', 'va_list Argp = { 0 };char str[6];\nvsnprintf(str,5, "%d", Argp )'):
       self.addDefine('HAVE_VSNPRINTF', 1)
     return
 
   def checkSignalHandlerType(self):
     '''Checks the type of C++ signals handlers, and defines SIGNAL_CAST to the correct value'''
     self.pushLanguage('C++')
-    if not self.checkLink('#include <signal.h>\nstatic void myhandler(int sig) {}\n', 'signal(SIGFPE,myhandler);\n'):
+    if not self.checkLink('#include <signal.h>\nstatic void myhandler(int sig) {}\n', 'signal(SIGFPE,myhandler)'):
       self.addDefine('SIGNAL_CAST', '(void (*)(int))')
     else:
       self.addDefine('SIGNAL_CAST', ' ')
@@ -152,40 +140,38 @@ builtin and then its argument prototype would still apply. */
 
   def checkFreeReturnType(self):
     '''Checks whether free returns void or int, and defines HAVE_FREE_RETURN_INT'''
-    if self.checkLink('#include <stdlib.h>\n', 'int ierr; void *p; ierr = free(p); return 0;\n'):
+    if self.checkLink('#include <stdlib.h>\n', 'int ierr; void *p; ierr = free(p); return ierr'):
       self.addDefine('HAVE_FREE_RETURN_INT', 1)
     return
 
   def checkVariableArgumentLists(self):
     '''Checks whether the variable argument list functionality is working'''
-    if self.checkLink('#include <stdarg.h>\n', '  va_list l1, l2;\n  va_copy(l1, l2);\n  return 0;\n'):
+    if self.checkLink('#include <stdarg.h>\n', '  va_list l1, l2;\n  va_copy(l1, l2)'):
       self.addDefine('HAVE_VA_COPY', 1)
-    elif self.checkLink('#include <stdarg.h>\n', '  va_list l1, l2;\n  __va_copy(l1, l2);\n  return 0;\n'):
+    elif self.checkLink('#include <stdarg.h>\n', '  va_list l1, l2;\n  __va_copy(l1, l2)'):
       self.addDefine('HAVE___VA_COPY', 1)
     return
 
   def checkNanosleep(self):
     '''Check for functional nanosleep() - as time.h behaves differently for different compiler flags - like -std=c89'''
-    if self.checkLink('#include <time.h>','struct timespec tp;\n tp.tv_sec = 0;\n tp.tv_nsec = (long)(1e9);\n nanosleep(&tp,0);\n'):
+    if self.checkLink('#include <time.h>','struct timespec tp;\n tp.tv_sec = 0;\n tp.tv_nsec = (long)(1e9);\n nanosleep(&tp,0)'):
       self.addDefine('HAVE_NANOSLEEP', 1)
     return
 
   def checkMemmove(self):
     '''Check for functional memmove() - as MS VC requires correct includes to for this test'''
-    if self.checkLink('#include <string.h>',' char c1[1], c2[1] = "c";\n size_t n=1;\n memmove(c1,c2,n);\n'):
+    if self.checkLink('#include <string.h>',' char c1[1], c2[1] = "c";\n size_t n=1;\n memmove(c1,c2,n)'):
       self.addDefine('HAVE_MEMMOVE', 1)
     return
 
   def checkMmap(self):
     '''Check for functional mmap() to allocate shared memory and define HAVE_MMAP'''
-    if self.checkLink('#include <sys/mman.h>\n#include <sys/types.h>\n#include <sys/stat.h>\n#include <fcntl.h>\n','int fd;\n fd=open("/tmp/file",O_RDWR);\n mmap((void*)0,100,PROT_READ|PROT_WRITE,MAP_SHARED,fd,0);\n'):
+    if self.checkLink('#include <sys/mman.h>\n#include <sys/types.h>\n#include <sys/stat.h>\n#include <fcntl.h>\n','int fd;\n fd=open("/tmp/file",O_RDWR);\n mmap((void*)0,100,PROT_READ|PROT_WRITE,MAP_SHARED,fd,0)'):
       self.addDefine('HAVE_MMAP', 1)
     return
 
   def configure(self):
     self.executeTest(self.checkSysinfo)
-    self.executeTest(self.checkVPrintf)
-    self.executeTest(self.checkVFPrintf)
     self.executeTest(self.checkVSNPrintf)
     self.executeTest(self.checkNanosleep)
     self.executeTest(self.checkMemmove)

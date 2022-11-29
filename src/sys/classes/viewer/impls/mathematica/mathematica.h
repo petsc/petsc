@@ -4,7 +4,7 @@
 
 #include <petsc/private/viewerimpl.h> /*I  "petscsys.h"  I*/
 #if defined(PETSC_HAVE_MATHEMATICA)
-#include <mathlink.h>
+  #include <mathlink.h>
 #endif
 
 typedef enum {

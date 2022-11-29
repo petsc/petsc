@@ -26,7 +26,8 @@ M*/
   spbas_memory_requirement:
     Calculate the number of bytes needed to store tha matrix
 */
-size_t spbas_memory_requirement(spbas_matrix matrix) {
+size_t spbas_memory_requirement(spbas_matrix matrix)
+{
   size_t memreq = 6 * sizeof(PetscInt) +             /* nrows, ncols, nnz, n_alloc_icol, n_alloc_val, col_idx_type */
                   sizeof(PetscBool) +                /* block_data */
                   sizeof(PetscScalar **) +           /* values */
@@ -56,7 +57,8 @@ size_t spbas_memory_requirement(spbas_matrix matrix) {
   spbas_allocate_pattern:
     allocate the pattern arrays row_nnz, icols and optionally values
 */
-PetscErrorCode spbas_allocate_pattern(spbas_matrix *result, PetscBool do_values) {
+PetscErrorCode spbas_allocate_pattern(spbas_matrix *result, PetscBool do_values)
+{
   PetscInt nrows        = result->nrows;
   PetscInt col_idx_type = result->col_idx_type;
 
@@ -89,7 +91,8 @@ spbas_allocate_data:
    in case of !block_data:
        Allocate the arrays icols[i] and optionally values[i]
 */
-PetscErrorCode spbas_allocate_data(spbas_matrix *result) {
+PetscErrorCode spbas_allocate_data(spbas_matrix *result)
+{
   PetscInt  i;
   PetscInt  nnz   = result->nnz;
   PetscInt  nrows = result->nrows;
@@ -138,7 +141,8 @@ PetscErrorCode spbas_allocate_data(spbas_matrix *result) {
        + after (return 1)
        + is identical (return 0).
 */
-int spbas_row_order_icol(PetscInt i1, PetscInt i2, PetscInt *irow_in, PetscInt *icol_in, PetscInt col_idx_type) {
+int spbas_row_order_icol(PetscInt i1, PetscInt i2, PetscInt *irow_in, PetscInt *icol_in, PetscInt col_idx_type)
+{
   PetscInt  j;
   PetscInt  nnz1  = irow_in[i1 + 1] - irow_in[i1];
   PetscInt  nnz2  = irow_in[i2 + 1] - irow_in[i2];
@@ -172,7 +176,8 @@ int spbas_row_order_icol(PetscInt i1, PetscInt i2, PetscInt *irow_in, PetscInt *
     return a sorting of the rows in which identical sparseness patterns are
     next to each other
 */
-PetscErrorCode spbas_mergesort_icols(PetscInt nrows, PetscInt *irow_in, PetscInt *icol_in, PetscInt col_idx_type, PetscInt *isort) {
+PetscErrorCode spbas_mergesort_icols(PetscInt nrows, PetscInt *irow_in, PetscInt *icol_in, PetscInt col_idx_type, PetscInt *isort)
+{
   PetscInt  istep;                /* Chunk-sizes of already sorted parts of arrays */
   PetscInt  i, i1, i2;            /* Loop counters for (partly) sorted arrays */
   PetscInt  istart, i1end, i2end; /* start of newly sorted array part, end of both  parts */
@@ -242,7 +247,8 @@ PetscErrorCode spbas_mergesort_icols(PetscInt nrows, PetscInt *irow_in, PetscInt
      given in compressed row storage. The compressed sparseness pattern may
      require (much) less memory.
 */
-PetscErrorCode spbas_compress_pattern(PetscInt *irow_in, PetscInt *icol_in, PetscInt nrows, PetscInt ncols, PetscInt col_idx_type, spbas_matrix *B, PetscReal *mem_reduction) {
+PetscErrorCode spbas_compress_pattern(PetscInt *irow_in, PetscInt *icol_in, PetscInt nrows, PetscInt ncols, PetscInt col_idx_type, spbas_matrix *B, PetscReal *mem_reduction)
+{
   PetscInt        nnz      = irow_in[nrows];
   size_t          mem_orig = (nrows + nnz) * sizeof(PetscInt);
   size_t          mem_compressed;
@@ -341,7 +347,8 @@ PetscErrorCode spbas_compress_pattern(PetscInt *irow_in, PetscInt *icol_in, Pets
 /*
   spbas_delete : de-allocate the arrays owned by this matrix
 */
-PetscErrorCode spbas_delete(spbas_matrix matrix) {
+PetscErrorCode spbas_delete(spbas_matrix matrix)
+{
   PetscInt i;
 
   PetscFunctionBegin;
@@ -367,7 +374,8 @@ PetscErrorCode spbas_delete(spbas_matrix matrix) {
 spbas_matrix_to_crs:
    Convert an spbas_matrix to compessed row storage
 */
-PetscErrorCode spbas_matrix_to_crs(spbas_matrix matrix_A, MatScalar **val_out, PetscInt **irow_out, PetscInt **icol_out) {
+PetscErrorCode spbas_matrix_to_crs(spbas_matrix matrix_A, MatScalar **val_out, PetscInt **irow_out, PetscInt **icol_out)
+{
   PetscInt     nrows = matrix_A.nrows;
   PetscInt     nnz   = matrix_A.nnz;
   PetscInt     i, j, r_nnz, i0;
@@ -422,7 +430,8 @@ PetscErrorCode spbas_matrix_to_crs(spbas_matrix matrix_A, MatScalar **val_out, P
     spbas_transpose
        return the transpose of a matrix
 */
-PetscErrorCode spbas_transpose(spbas_matrix in_matrix, spbas_matrix *result) {
+PetscErrorCode spbas_transpose(spbas_matrix in_matrix, spbas_matrix *result)
+{
   PetscInt     col_idx_type = in_matrix.col_idx_type;
   PetscInt     nnz          = in_matrix.nnz;
   PetscInt     ncols        = in_matrix.nrows;
@@ -514,7 +523,8 @@ PetscErrorCode spbas_transpose(spbas_matrix in_matrix, spbas_matrix *result) {
       NB: val may be NULL: in that case, only the integers are sorted
 
 */
-PetscErrorCode spbas_mergesort(PetscInt nnz, PetscInt *icol, PetscScalar *val) {
+PetscErrorCode spbas_mergesort(PetscInt nnz, PetscInt *icol, PetscScalar *val)
+{
   PetscInt     istep;                /* Chunk-sizes of already sorted parts of arrays */
   PetscInt     i, i1, i2;            /* Loop counters for (partly) sorted arrays */
   PetscInt     istart, i1end, i2end; /* start of newly sorted array part, end of both parts */
@@ -617,7 +627,8 @@ PetscErrorCode spbas_mergesort(PetscInt nnz, PetscInt *icol, PetscScalar *val) {
   spbas_apply_reordering_rows:
     apply the given reordering to the rows:  matrix_A = matrix_A(perm,:);
 */
-PetscErrorCode spbas_apply_reordering_rows(spbas_matrix *matrix_A, const PetscInt *permutation) {
+PetscErrorCode spbas_apply_reordering_rows(spbas_matrix *matrix_A, const PetscInt *permutation)
+{
   PetscInt      i, j, ip;
   PetscInt      nrows = matrix_A->nrows;
   PetscInt     *row_nnz;
@@ -654,7 +665,8 @@ PetscErrorCode spbas_apply_reordering_rows(spbas_matrix *matrix_A, const PetscIn
   spbas_apply_reordering_cols:
     apply the given reordering to the columns:  matrix_A(:,perm) = matrix_A;
 */
-PetscErrorCode spbas_apply_reordering_cols(spbas_matrix *matrix_A, const PetscInt *permutation) {
+PetscErrorCode spbas_apply_reordering_cols(spbas_matrix *matrix_A, const PetscInt *permutation)
+{
   PetscInt     i, j;
   PetscInt     nrows = matrix_A->nrows;
   PetscInt     row_nnz;
@@ -680,14 +692,16 @@ PetscErrorCode spbas_apply_reordering_cols(spbas_matrix *matrix_A, const PetscIn
   spbas_apply_reordering:
     apply the given reordering:  matrix_A(perm,perm) = matrix_A;
 */
-PetscErrorCode spbas_apply_reordering(spbas_matrix *matrix_A, const PetscInt *permutation, const PetscInt *inv_perm) {
+PetscErrorCode spbas_apply_reordering(spbas_matrix *matrix_A, const PetscInt *permutation, const PetscInt *inv_perm)
+{
   PetscFunctionBegin;
   PetscCall(spbas_apply_reordering_rows(matrix_A, inv_perm));
   PetscCall(spbas_apply_reordering_cols(matrix_A, permutation));
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode spbas_pattern_only(PetscInt nrows, PetscInt ncols, PetscInt *ai, PetscInt *aj, spbas_matrix *result) {
+PetscErrorCode spbas_pattern_only(PetscInt nrows, PetscInt ncols, PetscInt *ai, PetscInt *aj, spbas_matrix *result)
+{
   spbas_matrix retval;
   PetscInt     i, j, i0, r_nnz;
 
@@ -758,7 +772,8 @@ PetscErrorCode spbas_mark_row_power(PetscInt     *iwork,     /* marker-vector */
       are inside the band width are found and stored in the output sparseness
       pattern.
 */
-PetscErrorCode spbas_power(spbas_matrix in_matrix, PetscInt power, spbas_matrix *result) {
+PetscErrorCode spbas_power(spbas_matrix in_matrix, PetscInt power, spbas_matrix *result)
+{
   spbas_matrix retval;
   PetscInt     nrows = in_matrix.nrows;
   PetscInt     ncols = in_matrix.ncols;
@@ -827,7 +842,8 @@ PetscErrorCode spbas_power(spbas_matrix in_matrix, PetscInt power, spbas_matrix 
    spbas_keep_upper:
       remove the lower part of the matrix: keep the upper part
 */
-PetscErrorCode spbas_keep_upper(spbas_matrix *inout_matrix) {
+PetscErrorCode spbas_keep_upper(spbas_matrix *inout_matrix)
+{
   PetscInt i, j;
   PetscInt jstart;
 

@@ -1,0 +1,21 @@
+DM Object: Concrete Mesh (ref_) 1 MPI process
+  type: plex
+Concrete Mesh in 2 dimensions:
+  Number of 0-cells per rank: 42
+  Number of 1-cells per rank: 71 (36)
+  Number of 2-cells per rank: 30
+Labels:
+  celltype: 4 strata with value/size (1 (35), 5 (30), 0 (42), 2 (36))
+  depth: 3 strata with value/size (0 (42), 1 (71), 2 (30))
+  marker: 1 strata with value/size (1 (26))
+  Face Sets: 2 strata with value/size (1 (13), 2 (13))
+  Defined by transform from:
+  Mesh in 2 dimensions:
+    Number of 0-cells per rank:   18  
+    Number of 1-cells per rank:   27   (12)  
+    Number of 2-cells per rank:   10  
+  Labels:
+    celltype: 4 strata with value/size (1 (15), 5 (10), 0 (18), 2 (12))
+    depth: 3 strata with value/size (0 (18), 1 (27), 2 (10))
+    marker: 1 strata with value/size (1 (10))
+    Face Sets: 2 strata with value/size (1 (5), 2 (5))

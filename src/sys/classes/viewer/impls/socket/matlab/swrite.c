@@ -18,7 +18,8 @@ PetscErrorCode PetscBinaryWrite(int, const void *p, int, PetscDataType);
 /*-----------------------------------------------------------------*/
 /*                                                                 */
 /*-----------------------------------------------------------------*/
-PETSC_EXTERN void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]) {
+PETSC_EXTERN void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
+{
   int            i, fd, cnt, dt;
   PetscErrorCode ierr;
 
@@ -48,6 +49,7 @@ PETSC_EXTERN void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray
   return;
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   return 0;
 }

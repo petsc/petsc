@@ -102,7 +102,8 @@ typedef struct {
 } Userctx;
 
 /* Used to read data into the DMNetwork components */
-PetscErrorCode read_data(PetscInt nc, Gen **pgen, Exc **pexc, Load **pload, Bus **pbus, Branch **pbranch, PetscInt **pedgelist) {
+PetscErrorCode read_data(PetscInt nc, Gen **pgen, Exc **pexc, Load **pload, Bus **pbus, Branch **pbranch, PetscInt **pedgelist)
+{
   PetscInt           i, j, row[1], col[2];
   PetscInt          *edgelist;
   PetscInt           nofgen[9]  = {1, 1, 1, 0, 0, 0, 0, 0, 0}; /* Buses at which generators are incident */
@@ -180,7 +181,7 @@ PetscErrorCode read_data(PetscInt nc, Gen **pgen, Exc **pexc, Load **pload, Bus 
   D[1] = 0.1 * M[1];
   D[2] = 0.1 * M[2];
 
-  /* Alocate memory for bus, generators, exciter, loads and branches */
+  /* Allocate memory for bus, generators, exciter, loads and branches */
   PetscCall(PetscCalloc5(NBUS * nc, &bus, NGEN * nc, &gen, NLOAD * nc, &load, NBRANCH * nc + (nc - 1), &branch, NGEN * nc, &exc));
 
   PetscCall(VecGetArrayRead(V0, &varr));
@@ -302,7 +303,8 @@ PetscErrorCode read_data(PetscInt nc, Gen **pgen, Exc **pexc, Load **pload, Bus 
         edgelist[i * 18 + 2 * j]     = 7 + 9 * i;
         edgelist[i * 18 + 2 * j + 1] = 8 + 9 * i;
         break;
-      default: break;
+      default:
+        break;
       }
     }
   }
@@ -352,7 +354,8 @@ PetscErrorCode read_data(PetscInt nc, Gen **pgen, Exc **pexc, Load **pload, Bus 
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode SetInitialGuess(DM networkdm, Vec X) {
+PetscErrorCode SetInitialGuess(DM networkdm, Vec X)
+{
   Bus         *bus;
   Gen         *gen;
   Exc         *exc;
@@ -461,7 +464,8 @@ PetscErrorCode SetInitialGuess(DM networkdm, Vec X) {
 }
 
 /* Converts from machine frame (dq) to network (phase a real,imag) reference frame */
-PetscErrorCode dq2ri(PetscScalar Fd, PetscScalar Fq, PetscScalar delta, PetscScalar *Fr, PetscScalar *Fi) {
+PetscErrorCode dq2ri(PetscScalar Fd, PetscScalar Fq, PetscScalar delta, PetscScalar *Fr, PetscScalar *Fi)
+{
   PetscFunctionBegin;
   *Fr = Fd * PetscSinScalar(delta) + Fq * PetscCosScalar(delta);
   *Fi = -Fd * PetscCosScalar(delta) + Fq * PetscSinScalar(delta);
@@ -469,7 +473,8 @@ PetscErrorCode dq2ri(PetscScalar Fd, PetscScalar Fq, PetscScalar delta, PetscSca
 }
 
 /* Converts from network frame ([phase a real,imag) to machine (dq) reference frame */
-PetscErrorCode ri2dq(PetscScalar Fr, PetscScalar Fi, PetscScalar delta, PetscScalar *Fd, PetscScalar *Fq) {
+PetscErrorCode ri2dq(PetscScalar Fr, PetscScalar Fi, PetscScalar delta, PetscScalar *Fd, PetscScalar *Fq)
+{
   PetscFunctionBegin;
   *Fd = Fr * PetscSinScalar(delta) - Fi * PetscCosScalar(delta);
   *Fq = Fr * PetscCosScalar(delta) + Fi * PetscSinScalar(delta);
@@ -477,7 +482,8 @@ PetscErrorCode ri2dq(PetscScalar Fr, PetscScalar Fi, PetscScalar delta, PetscSca
 }
 
 /* Computes F(t,U,U_t) where F() = 0 is the DAE to be solved. */
-PetscErrorCode FormIFunction(TS ts, PetscReal t, Vec X, Vec Xdot, Vec F, Userctx *user) {
+PetscErrorCode FormIFunction(TS ts, PetscReal t, Vec X, Vec Xdot, Vec F, Userctx *user)
+{
   DM                 networkdm;
   Vec                localX, localXdot, localF;
   PetscInt           vfrom, vto, offsetfrom, offsetto;
@@ -738,7 +744,8 @@ PetscErrorCode FormIFunction(TS ts, PetscReal t, Vec X, Vec Xdot, Vec F, Userctx
    differential equations
  F = [0;g(y)];
 */
-PetscErrorCode AlgFunction(SNES snes, Vec X, Vec F, void *ctx) {
+PetscErrorCode AlgFunction(SNES snes, Vec X, Vec F, void *ctx)
+{
   DM                 networkdm;
   Vec                localX, localF;
   PetscInt           vfrom, vto, offsetfrom, offsetto;
@@ -850,8 +857,8 @@ PetscErrorCode AlgFunction(SNES snes, Vec X, Vec F, void *ctx) {
           Edp   = xarr[offsetgen + 1];
           delta = xarr[offsetgen + 2];
           /* w     = xarr[idx+3]; not being used */
-          Id    = xarr[offsetgen + 4];
-          Iq    = xarr[offsetgen + 5];
+          Id = xarr[offsetgen + 4];
+          Iq = xarr[offsetgen + 5];
 
           /* Generator parameters */
           Xdp = gen->Xdp;
@@ -940,7 +947,8 @@ PetscErrorCode AlgFunction(SNES snes, Vec X, Vec F, void *ctx) {
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscInt    i, j, *edgelist = NULL, eStart, eEnd, vStart, vEnd;
   PetscInt    genj, excj, loadj, componentkey[5];
   PetscInt    nc = 1; /* No. of copies (default = 1) */

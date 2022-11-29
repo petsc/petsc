@@ -15,7 +15,8 @@ static char help[] = "Small ODE to test TS accuracy.\n";
 /*
      Defines the ODE passed to the ODE solver in explicit form: U_t = F(U)
 */
-static PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec U, Vec F, void *s) {
+static PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec U, Vec F, void *s)
+{
   PetscScalar       *f;
   const PetscScalar *u;
 
@@ -34,7 +35,8 @@ static PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec U, Vec F, void *s) {
 /*
      Defines the exact solution.
 */
-static PetscErrorCode ExactSolution(PetscReal t, Vec U) {
+static PetscErrorCode ExactSolution(PetscReal t, Vec U)
+{
   PetscScalar *u;
 
   PetscFunctionBeginUser;
@@ -47,7 +49,8 @@ static PetscErrorCode ExactSolution(PetscReal t, Vec U) {
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   TS           ts;  /* ODE integrator */
   Vec          U;   /* numerical solution will be stored here */
   Vec          Uex; /* analytical (exact) solution will be stored here */

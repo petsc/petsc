@@ -4,7 +4,8 @@
 #include <petscds.h>
 
 /* get adjacencies due to point-to-point constraints that can't be found with DMPlexGetAdjacency() */
-static PetscErrorCode DMPlexComputeAnchorAdjacencies(DM dm, PetscBool useCone, PetscBool useClosure, PetscSection *anchorSectionAdj, PetscInt *anchorAdj[]) {
+static PetscErrorCode DMPlexComputeAnchorAdjacencies(DM dm, PetscBool useCone, PetscBool useClosure, PetscSection *anchorSectionAdj, PetscInt *anchorAdj[])
+{
   PetscInt     pStart, pEnd;
   PetscSection section, sectionGlobal, adjSec, aSec;
   IS           aIS;
@@ -150,7 +151,8 @@ static PetscErrorCode DMPlexComputeAnchorAdjacencies(DM dm, PetscBool useCone, P
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMPlexCreateAdjacencySection_Static(DM dm, PetscInt bs, PetscSF sfDof, PetscBool useCone, PetscBool useClosure, PetscBool useAnchors, PetscSection *sA, PetscInt **colIdx) {
+static PetscErrorCode DMPlexCreateAdjacencySection_Static(DM dm, PetscInt bs, PetscSF sfDof, PetscBool useCone, PetscBool useClosure, PetscBool useAnchors, PetscSection *sA, PetscInt **colIdx)
+{
   MPI_Comm           comm;
   PetscMPIInt        size;
   PetscBool          doCommLocal, doComm, debug = PETSC_FALSE;
@@ -559,7 +561,8 @@ static PetscErrorCode DMPlexCreateAdjacencySection_Static(DM dm, PetscInt bs, Pe
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMPlexUpdateAllocation_Static(DM dm, PetscLayout rLayout, PetscInt bs, PetscInt f, PetscSection sectionAdj, const PetscInt cols[], PetscInt dnz[], PetscInt onz[], PetscInt dnzu[], PetscInt onzu[]) {
+static PetscErrorCode DMPlexUpdateAllocation_Static(DM dm, PetscLayout rLayout, PetscInt bs, PetscInt f, PetscSection sectionAdj, const PetscInt cols[], PetscInt dnz[], PetscInt onz[], PetscInt dnzu[], PetscInt onzu[])
+{
   PetscSection section;
   PetscInt     rStart, rEnd, r, pStart, pEnd, p;
 
@@ -618,7 +621,8 @@ static PetscErrorCode DMPlexUpdateAllocation_Static(DM dm, PetscLayout rLayout, 
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMPlexFillMatrix_Static(DM dm, PetscLayout rLayout, PetscInt bs, PetscInt f, PetscSection sectionAdj, const PetscInt cols[], Mat A) {
+static PetscErrorCode DMPlexFillMatrix_Static(DM dm, PetscLayout rLayout, PetscInt bs, PetscInt f, PetscSection sectionAdj, const PetscInt cols[], Mat A)
+{
   PetscSection section;
   PetscScalar *values;
   PetscInt     rStart, rEnd, r, pStart, pEnd, p, len, maxRowLen = 0;
@@ -659,28 +663,29 @@ static PetscErrorCode DMPlexFillMatrix_Static(DM dm, PetscLayout rLayout, PetscI
 }
 
 /*@C
-  DMPlexPreallocateOperator - Calculate the matrix nonzero pattern based upon the information in the DM,
-  the PetscDS it contains, and the default PetscSection.
+  DMPlexPreallocateOperator - Calculate the matrix nonzero pattern based upon the information in the `DM`,
+  the `PetscDS` it contains, and the default `PetscSection`.
 
   Collective
 
   Input Parameters:
-+ dm   - The DMPlex
++ dm   - The `DMPLEX`
 . bs   - The matrix blocksize
 . dnz  - An array to hold the number of nonzeros in the diagonal block
 . onz  - An array to hold the number of nonzeros in the off-diagonal block
 . dnzu - An array to hold the number of nonzeros in the upper triangle of the diagonal block
 . onzu - An array to hold the number of nonzeros in the upper triangle of the off-diagonal block
-- fillMatrix - If PETSC_TRUE, fill the matrix with zeros
+- fillMatrix - If `PETSC_TRUE`, fill the matrix with zeros
 
   Output Parameter:
 . A - The preallocated matrix
 
   Level: advanced
 
-.seealso: `DMCreateMatrix()`
+.seealso: [](chapter_unstructured), `DM`, `DMPLEX`, `DMCreateMatrix()`
 @*/
-PetscErrorCode DMPlexPreallocateOperator(DM dm, PetscInt bs, PetscInt dnz[], PetscInt onz[], PetscInt dnzu[], PetscInt onzu[], Mat A, PetscBool fillMatrix) {
+PetscErrorCode DMPlexPreallocateOperator(DM dm, PetscInt bs, PetscInt dnz[], PetscInt onz[], PetscInt dnzu[], PetscInt onzu[], Mat A, PetscBool fillMatrix)
+{
   MPI_Comm     comm;
   PetscDS      prob;
   MatType      mtype;

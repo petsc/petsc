@@ -10,28 +10,30 @@
 
 static PetscErrorCode DMAdaptorSimpleErrorIndicator_Private(DMAdaptor, PetscInt, PetscInt, const PetscScalar *, const PetscScalar *, const PetscFVCellGeom *, PetscReal *, void *);
 
-static PetscErrorCode DMAdaptorTransferSolution_Exact_Private(DMAdaptor adaptor, DM dm, Vec u, DM adm, Vec au, void *ctx) {
+static PetscErrorCode DMAdaptorTransferSolution_Exact_Private(DMAdaptor adaptor, DM dm, Vec u, DM adm, Vec au, void *ctx)
+{
   PetscFunctionBeginUser;
   PetscCall(DMProjectFunction(adm, 0.0, adaptor->exactSol, adaptor->exactCtx, INSERT_ALL_VALUES, au));
   PetscFunctionReturn(0);
 }
 
 /*@
-  DMAdaptorCreate - Create a DMAdaptor object. Its purpose is to construct a adaptation DMLabel or metric Vec that can be used to modify the DM.
+  DMAdaptorCreate - Create a `DMAdaptor` object. Its purpose is to construct a adaptation `DMLabel` or metric Vec that can be used to modify the `DM`.
 
   Collective
 
   Input Parameter:
-. comm - The communicator for the DMAdaptor object
+. comm - The communicator for the `DMAdaptor` object
 
   Output Parameter:
-. adaptor   - The DMAdaptor object
+. adaptor   - The `DMAdaptor` object
 
   Level: beginner
 
-.seealso: `DMAdaptorDestroy()`, `DMAdaptorAdapt()`
+.seealso: `DMAdaptor`, `DMAdaptorDestroy()`, `DMAdaptorAdapt()`
 @*/
-PetscErrorCode DMAdaptorCreate(MPI_Comm comm, DMAdaptor *adaptor) {
+PetscErrorCode DMAdaptorCreate(MPI_Comm comm, DMAdaptor *adaptor)
+{
   VecTaggerBox refineBox, coarsenBox;
 
   PetscFunctionBegin;
@@ -59,18 +61,19 @@ PetscErrorCode DMAdaptorCreate(MPI_Comm comm, DMAdaptor *adaptor) {
 }
 
 /*@
-  DMAdaptorDestroy - Destroys a DMAdaptor object
+  DMAdaptorDestroy - Destroys a `DMAdaptor` object
 
-  Collective on DMAdaptor
+  Collective on adaptor
 
   Input Parameter:
-. adaptor - The DMAdaptor object
+. adaptor - The `DMAdaptor` object
 
   Level: beginner
 
-.seealso: `DMAdaptorCreate()`, `DMAdaptorAdapt()`
+.seealso: `DMAdaptor`, `DMAdaptorCreate()`, `DMAdaptorAdapt()`
 @*/
-PetscErrorCode DMAdaptorDestroy(DMAdaptor *adaptor) {
+PetscErrorCode DMAdaptorDestroy(DMAdaptor *adaptor)
+{
   PetscFunctionBegin;
   if (!*adaptor) PetscFunctionReturn(0);
   PetscValidHeaderSpecific((*adaptor), DM_CLASSID, 1);
@@ -86,12 +89,12 @@ PetscErrorCode DMAdaptorDestroy(DMAdaptor *adaptor) {
 }
 
 /*@
-  DMAdaptorSetFromOptions - Sets a DMAdaptor object from options
+  DMAdaptorSetFromOptions - Sets properties of a `DMAdaptor` object from the options database
 
-  Collective on DMAdaptor
+  Collective on adaptor
 
   Input Parameter:
-. adaptor - The DMAdaptor object
+. adaptor - The `DMAdaptor` object
 
   Options Database Keys:
 + -adaptor_monitor <bool>        - Monitor the adaptation process
@@ -101,9 +104,10 @@ PetscErrorCode DMAdaptorDestroy(DMAdaptor *adaptor) {
 
   Level: beginner
 
-.seealso: `DMAdaptorCreate()`, `DMAdaptorAdapt()`
+.seealso: `DMAdaptor`, `DMAdaptorCreate()`, `DMAdaptorAdapt()`
 @*/
-PetscErrorCode DMAdaptorSetFromOptions(DMAdaptor adaptor) {
+PetscErrorCode DMAdaptorSetFromOptions(DMAdaptor adaptor)
+{
   PetscFunctionBegin;
   PetscOptionsBegin(PetscObjectComm((PetscObject)adaptor), "", "DM Adaptor Options", "DMAdaptor");
   PetscCall(PetscOptionsBool("-adaptor_monitor", "Monitor the adaptation process", "DMAdaptorMonitor", adaptor->monitor, &adaptor->monitor, NULL));
@@ -117,19 +121,20 @@ PetscErrorCode DMAdaptorSetFromOptions(DMAdaptor adaptor) {
 }
 
 /*@
-  DMAdaptorView - Views a DMAdaptor object
+   DMAdaptorView - Views a `DMAdaptor` object
 
-  Collective on DMAdaptor
+   Collective on adaptor
 
-  Input Parameters:
-+ adaptor     - The DMAdaptor object
-- viewer - The PetscViewer object
+   Input Parameters:
++  adaptor - The `DMAdaptor` object
+-  viewer - The `PetscViewer` object
 
   Level: beginner
 
-.seealso: `DMAdaptorCreate()`, `DMAdaptorAdapt()`
+.seealso: `DMAdaptor`, `DMAdaptorCreate()`, `DMAdaptorAdapt()`
 @*/
-PetscErrorCode DMAdaptorView(DMAdaptor adaptor, PetscViewer viewer) {
+PetscErrorCode DMAdaptorView(DMAdaptor adaptor, PetscViewer viewer)
+{
   PetscFunctionBegin;
   PetscCall(PetscObjectPrintClassNamePrefixType((PetscObject)adaptor, viewer));
   PetscCall(PetscViewerASCIIPrintf(viewer, "DM Adaptor\n"));
@@ -145,16 +150,17 @@ PetscErrorCode DMAdaptorView(DMAdaptor adaptor, PetscViewer viewer) {
   Not collective
 
   Input Parameter:
-. adaptor   - The DMAdaptor object
+. adaptor   - The `DMAdaptor` object
 
   Output Parameter:
 . snes - The solver
 
   Level: intermediate
 
-.seealso: `DMAdaptorSetSolver()`, `DMAdaptorCreate()`, `DMAdaptorAdapt()`
+.seealso: `DMAdaptor`, `DMAdaptorSetSolver()`, `DMAdaptorCreate()`, `DMAdaptorAdapt()`
 @*/
-PetscErrorCode DMAdaptorGetSolver(DMAdaptor adaptor, SNES *snes) {
+PetscErrorCode DMAdaptorGetSolver(DMAdaptor adaptor, SNES *snes)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(adaptor, DM_CLASSID, 1);
   PetscValidPointer(snes, 2);
@@ -168,16 +174,18 @@ PetscErrorCode DMAdaptorGetSolver(DMAdaptor adaptor, SNES *snes) {
   Not collective
 
   Input Parameters:
-+ adaptor   - The DMAdaptor object
++ adaptor   - The `DMAdaptor` object
 - snes - The solver
 
   Level: intermediate
 
-  Note: The solver MUST have an attached DM/DS, so that we know the exact solution
+  Note:
+  The solver MUST have an attached `DM`/`DS`, so that we know the exact solution
 
-.seealso: `DMAdaptorGetSolver()`, `DMAdaptorCreate()`, `DMAdaptorAdapt()`
+.seealso: `DMAdaptor`, `DMAdaptorGetSolver()`, `DMAdaptorCreate()`, `DMAdaptorAdapt()`
 @*/
-PetscErrorCode DMAdaptorSetSolver(DMAdaptor adaptor, SNES snes) {
+PetscErrorCode DMAdaptorSetSolver(DMAdaptor adaptor, SNES snes)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(adaptor, DM_CLASSID, 1);
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 2);
@@ -187,21 +195,22 @@ PetscErrorCode DMAdaptorSetSolver(DMAdaptor adaptor, SNES snes) {
 }
 
 /*@
-  DMAdaptorGetSequenceLength - Gets the number of sequential adaptations
+  DMAdaptorGetSequenceLength - Gets the number of sequential adaptations used by an adapter
 
   Not collective
 
   Input Parameter:
-. adaptor - The DMAdaptor object
+. adaptor - The `DMAdaptor` object
 
   Output Parameter:
 . num - The number of adaptations
 
   Level: intermediate
 
-.seealso: `DMAdaptorSetSequenceLength()`, `DMAdaptorCreate()`, `DMAdaptorAdapt()`
+.seealso: `DMAdaptor`, `DMAdaptorSetSequenceLength()`, `DMAdaptorCreate()`, `DMAdaptorAdapt()`
 @*/
-PetscErrorCode DMAdaptorGetSequenceLength(DMAdaptor adaptor, PetscInt *num) {
+PetscErrorCode DMAdaptorGetSequenceLength(DMAdaptor adaptor, PetscInt *num)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(adaptor, DM_CLASSID, 1);
   PetscValidIntPointer(num, 2);
@@ -215,14 +224,15 @@ PetscErrorCode DMAdaptorGetSequenceLength(DMAdaptor adaptor, PetscInt *num) {
   Not collective
 
   Input Parameters:
-+ adaptor - The DMAdaptor object
++ adaptor - The `DMAdaptor` object
 - num - The number of adaptations
 
   Level: intermediate
 
 .seealso: `DMAdaptorGetSequenceLength()`, `DMAdaptorCreate()`, `DMAdaptorAdapt()`
 @*/
-PetscErrorCode DMAdaptorSetSequenceLength(DMAdaptor adaptor, PetscInt num) {
+PetscErrorCode DMAdaptorSetSequenceLength(DMAdaptor adaptor, PetscInt num)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(adaptor, DM_CLASSID, 1);
   adaptor->numSeq = num;
@@ -232,16 +242,17 @@ PetscErrorCode DMAdaptorSetSequenceLength(DMAdaptor adaptor, PetscInt num) {
 /*@
   DMAdaptorSetUp - After the solver is specified, we create structures for controlling adaptivity
 
-  Collective on DMAdaptor
+  Collective on adaptor
 
   Input Parameters:
-. adaptor - The DMAdaptor object
+. adaptor - The `DMAdaptor` object
 
   Level: beginner
 
 .seealso: `DMAdaptorCreate()`, `DMAdaptorAdapt()`
 @*/
-PetscErrorCode DMAdaptorSetUp(DMAdaptor adaptor) {
+PetscErrorCode DMAdaptorSetUp(DMAdaptor adaptor)
+{
   PetscDS  prob;
   PetscInt Nf, f;
 
@@ -259,19 +270,22 @@ PetscErrorCode DMAdaptorSetUp(DMAdaptor adaptor) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMAdaptorGetTransferFunction(DMAdaptor adaptor, PetscErrorCode (**tfunc)(DMAdaptor, DM, Vec, DM, Vec, void *)) {
+PetscErrorCode DMAdaptorGetTransferFunction(DMAdaptor adaptor, PetscErrorCode (**tfunc)(DMAdaptor, DM, Vec, DM, Vec, void *))
+{
   PetscFunctionBegin;
   *tfunc = adaptor->ops->transfersolution;
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMAdaptorSetTransferFunction(DMAdaptor adaptor, PetscErrorCode (*tfunc)(DMAdaptor, DM, Vec, DM, Vec, void *)) {
+PetscErrorCode DMAdaptorSetTransferFunction(DMAdaptor adaptor, PetscErrorCode (*tfunc)(DMAdaptor, DM, Vec, DM, Vec, void *))
+{
   PetscFunctionBegin;
   adaptor->ops->transfersolution = tfunc;
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMAdaptorPreAdapt(DMAdaptor adaptor, Vec locX) {
+PetscErrorCode DMAdaptorPreAdapt(DMAdaptor adaptor, Vec locX)
+{
   DM           plex;
   PetscDS      prob;
   PetscObject  obj;
@@ -346,7 +360,8 @@ PetscErrorCode DMAdaptorPreAdapt(DMAdaptor adaptor, Vec locX) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMAdaptorTransferSolution(DMAdaptor adaptor, DM dm, Vec x, DM adm, Vec ax) {
+PetscErrorCode DMAdaptorTransferSolution(DMAdaptor adaptor, DM dm, Vec x, DM adm, Vec ax)
+{
   PetscReal time = 0.0;
   Mat       interp;
   void     *ctx;
@@ -356,7 +371,9 @@ PetscErrorCode DMAdaptorTransferSolution(DMAdaptor adaptor, DM dm, Vec x, DM adm
   if (adaptor->ops->transfersolution) PetscUseTypeMethod(adaptor, transfersolution, dm, x, adm, ax, ctx);
   else {
     switch (adaptor->adaptCriterion) {
-    case DM_ADAPTATION_LABEL: PetscCall(DMForestTransferVec(dm, x, adm, ax, PETSC_TRUE, time)); break;
+    case DM_ADAPTATION_LABEL:
+      PetscCall(DMForestTransferVec(dm, x, adm, ax, PETSC_TRUE, time));
+      break;
     case DM_ADAPTATION_REFINE:
     case DM_ADAPTATION_METRIC:
       PetscCall(DMCreateInterpolation(dm, adm, &interp, NULL));
@@ -364,13 +381,15 @@ PetscErrorCode DMAdaptorTransferSolution(DMAdaptor adaptor, DM dm, Vec x, DM adm
       PetscCall(DMInterpolate(dm, interp, adm));
       PetscCall(MatDestroy(&interp));
       break;
-    default: SETERRQ(PetscObjectComm((PetscObject)adaptor), PETSC_ERR_SUP, "No built-in projection for this adaptation criterion: %d", adaptor->adaptCriterion);
+    default:
+      SETERRQ(PetscObjectComm((PetscObject)adaptor), PETSC_ERR_SUP, "No built-in projection for this adaptation criterion: %d", adaptor->adaptCriterion);
     }
   }
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMAdaptorPostAdapt(DMAdaptor adaptor) {
+PetscErrorCode DMAdaptorPostAdapt(DMAdaptor adaptor)
+{
   PetscDS      prob;
   PetscObject  obj;
   PetscClassId id;
@@ -394,23 +413,27 @@ PetscErrorCode DMAdaptorPostAdapt(DMAdaptor adaptor) {
 }
 
 /*
-  DMAdaptorSimpleErrorIndicator - Just use the integrated gradient as an error indicator
+  DMAdaptorSimpleErrorIndicator - Use the integrated gradient as an error indicator
 
   Input Parameters:
-+ adaptor  - The DMAdaptor object
++ adaptor  - The `DMAdaptor` object
 . dim      - The topological dimension
 . cell     - The cell
 . field    - The field integrated over the cell
 . gradient - The gradient integrated over the cell
-. cg       - A PetscFVCellGeom struct
+. cg       - A `PetscFVCellGeom` struct
 - ctx      - A user context
 
   Output Parameter:
 . errInd   - The error indicator
 
-.seealso: `DMAdaptorComputeErrorIndicator()`
+  Developer Note:
+  Some of the input arguments are absurdly specialized to special situations, it is not clear this is a good general API
+
+.seealso: `DMAdaptor`, `DMAdaptorComputeErrorIndicator()`
 */
-static PetscErrorCode DMAdaptorSimpleErrorIndicator_Private(DMAdaptor adaptor, PetscInt dim, PetscInt Nc, const PetscScalar *field, const PetscScalar *gradient, const PetscFVCellGeom *cg, PetscReal *errInd, void *ctx) {
+static PetscErrorCode DMAdaptorSimpleErrorIndicator_Private(DMAdaptor adaptor, PetscInt dim, PetscInt Nc, const PetscScalar *field, const PetscScalar *gradient, const PetscFVCellGeom *cg, PetscReal *errInd, void *ctx)
+{
   PetscReal err = 0.;
   PetscInt  c, d;
 
@@ -422,7 +445,8 @@ static PetscErrorCode DMAdaptorSimpleErrorIndicator_Private(DMAdaptor adaptor, P
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMAdaptorComputeErrorIndicator_Private(DMAdaptor adaptor, DM plex, PetscInt cell, Vec locX, PetscReal *errInd) {
+static PetscErrorCode DMAdaptorComputeErrorIndicator_Private(DMAdaptor adaptor, DM plex, PetscInt cell, Vec locX, PetscReal *errInd)
+{
   PetscDS         prob;
   PetscObject     obj;
   PetscClassId    id;
@@ -502,7 +526,8 @@ static PetscErrorCode DMAdaptorComputeErrorIndicator_Private(DMAdaptor adaptor, 
   PetscFunctionReturn(0);
 }
 
-static void identityFunc(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f[]) {
+static void identityFunc(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f[])
+{
   PetscInt i, j;
 
   for (i = 0; i < dim; ++i) {
@@ -510,7 +535,8 @@ static void identityFunc(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscI
   }
 }
 
-static PetscErrorCode DMAdaptorAdapt_Sequence_Private(DMAdaptor adaptor, Vec inx, PetscBool doSolve, DM *adm, Vec *ax) {
+static PetscErrorCode DMAdaptorAdapt_Sequence_Private(DMAdaptor adaptor, Vec inx, PetscBool doSolve, DM *adm, Vec *ax)
+{
   PetscDS  prob;
   void    *ctx;
   MPI_Comm comm;
@@ -697,7 +723,8 @@ static PetscErrorCode DMAdaptorAdapt_Sequence_Private(DMAdaptor adaptor, Vec inx
       PetscCall(VecDestroy(&metric));
       PetscCall(DMDestroy(&dmMetric));
     } break;
-    default: SETERRQ(comm, PETSC_ERR_ARG_WRONG, "Invalid adaptation type: %d", adaptor->adaptCriterion);
+    default:
+      SETERRQ(comm, PETSC_ERR_ARG_WRONG, "Invalid adaptation type: %d", adaptor->adaptCriterion);
     }
     PetscCall(DMAdaptorPostAdapt(adaptor));
     PetscCall(DMRestoreLocalVector(dm, &locX));
@@ -743,40 +770,46 @@ static PetscErrorCode DMAdaptorAdapt_Sequence_Private(DMAdaptor adaptor, Vec inx
 }
 
 /*@
-  DMAdaptorAdapt - Creates a new DM that is adapted to the problem
+  DMAdaptorAdapt - Creates a new `DM` that is adapted to the problem
 
   Not collective
 
   Input Parameters:
-+ adaptor  - The DMAdaptor object
++ adaptor  - The `DMAdaptor` object
 . x        - The global approximate solution
 - strategy - The adaptation strategy
 
   Output Parameters:
-+ adm - The adapted DM
++ adm - The adapted `DM`
 - ax  - The adapted solution
 
-  Options database keys:
+  Options database Keys:
 + -snes_adapt <strategy> - initial, sequential, multigrid
 . -adapt_gradient_view - View the Clement interpolant of the solution gradient
 . -adapt_hessian_view - View the Clement interpolant of the solution Hessian
 - -adapt_metric_view - View the metric tensor for adaptive mesh refinement
 
   Note: The available adaptation strategies are:
-$ 1) Adapt the initial mesh until a quality metric, e.g., a priori error bound, is satisfied
-$ 2) Solve the problem on a series of adapted meshes until a quality metric, e.g. a posteriori error bound, is satisfied
-$ 3) Solve the problem on a hierarchy of adapted meshes generated to satisfy a quality metric using multigrid
++ * - Adapt the initial mesh until a quality metric, e.g., a priori error bound, is satisfied
+. * - Solve the problem on a series of adapted meshes until a quality metric, e.g. a posteriori error bound, is satisfied
+- * - Solve the problem on a hierarchy of adapted meshes generated to satisfy a quality metric using multigrid
 
   Level: intermediate
 
-.seealso: `DMAdaptorSetSolver()`, `DMAdaptorCreate()`, `DMAdaptorAdapt()`
+.seealso: `DMAdaptor`, `DMAdaptorSetSolver()`, `DMAdaptorCreate()`, `DMAdaptorAdapt()`
 @*/
-PetscErrorCode DMAdaptorAdapt(DMAdaptor adaptor, Vec x, DMAdaptationStrategy strategy, DM *adm, Vec *ax) {
+PetscErrorCode DMAdaptorAdapt(DMAdaptor adaptor, Vec x, DMAdaptationStrategy strategy, DM *adm, Vec *ax)
+{
   PetscFunctionBegin;
   switch (strategy) {
-  case DM_ADAPTATION_INITIAL: PetscCall(DMAdaptorAdapt_Sequence_Private(adaptor, x, PETSC_FALSE, adm, ax)); break;
-  case DM_ADAPTATION_SEQUENTIAL: PetscCall(DMAdaptorAdapt_Sequence_Private(adaptor, x, PETSC_TRUE, adm, ax)); break;
-  default: SETERRQ(PetscObjectComm((PetscObject)adaptor), PETSC_ERR_ARG_WRONG, "Unrecognized adaptation strategy %d", strategy);
+  case DM_ADAPTATION_INITIAL:
+    PetscCall(DMAdaptorAdapt_Sequence_Private(adaptor, x, PETSC_FALSE, adm, ax));
+    break;
+  case DM_ADAPTATION_SEQUENTIAL:
+    PetscCall(DMAdaptorAdapt_Sequence_Private(adaptor, x, PETSC_TRUE, adm, ax));
+    break;
+  default:
+    SETERRQ(PetscObjectComm((PetscObject)adaptor), PETSC_ERR_ARG_WRONG, "Unrecognized adaptation strategy %d", strategy);
   }
   PetscFunctionReturn(0);
 }

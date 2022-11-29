@@ -1,12 +1,11 @@
--include ../../../../petsckdir.mk
-#requiresdefine 'PETSC_HAVE_CXX'
+-include ../../../../petscdir.mk
 
 SOURCEC	  =
 SOURCEF	  =
 SOURCEH	  =
 MANSEC	  = Sys
 LIBBASE	  = libpetscsys
-DIRS	  = interface impls tests
+DIRS	  = interface impls tests util
 LOCDIR	  = src/sys/objects/device/
 
 include ${PETSC_DIR}/lib/petsc/conf/variables

@@ -9,7 +9,8 @@ PetscReal              zero2 = 0;
 
 #define CALL(call) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "%-32s -> %s\n", #call, (call) ? "True" : "False"))
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscReal neg_zero = PetscRealConstant(-0.0);
   PetscReal pos_zero = PetscRealConstant(+0.0);
   PetscReal neg_one  = PetscRealConstant(-1.0);

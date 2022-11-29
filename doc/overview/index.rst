@@ -1,14 +1,12 @@
-*********************
-Overview and Features
-*********************
+********
+Overview
+********
 
 PETSc, the Portable, Extensible Toolkit for Scientific Computation,
-is intended for use in large-scale application projects. PETSc includes a large suite of parallel linear, nonlinear
-equation solvers and ODE integrators that are easily used in application codes written in
-C, C++, Fortran and Python. PETSc provides many of the mechanisms needed within parallel
-application codes, such as simple parallel matrix and vector assembly routines that allow
-the overlap of communication and computation. In addition, PETSc includes support for
-managing parallel PDE discretizations
+includes a large suite of scalable parallel **linear and nonlinear
+equation solvers, ODE integrators, and optimization algorithms** for application codes written in
+C, C++, Fortran, and Python. In addition, PETSc includes support for
+managing parallel PDE discretizations including parallel matrix and vector assembly routines. :any:`doc_toolkits_use_petsc`.
 
 .. toctree::
    :maxdepth: 2
@@ -16,8 +14,8 @@ managing parallel PDE discretizations
    nutshell
    features
    gpu_roadmap
-   matrix_table
    vector_table
+   matrix_table
    linear_solve_table
    nonlinear_solve_table
    tao_solve_table

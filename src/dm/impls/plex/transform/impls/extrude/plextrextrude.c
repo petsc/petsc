@@ -1,6 +1,7 @@
 #include <petsc/private/dmplextransformimpl.h> /*I "petscdmplextransform.h" I*/
 
-static PetscErrorCode DMPlexTransformView_Extrude(DMPlexTransform tr, PetscViewer viewer) {
+static PetscErrorCode DMPlexTransformView_Extrude(DMPlexTransform tr, PetscViewer viewer)
+{
   DMPlexTransform_Extrude *ex = (DMPlexTransform_Extrude *)tr->data;
   PetscBool                isascii;
 
@@ -21,7 +22,8 @@ static PetscErrorCode DMPlexTransformView_Extrude(DMPlexTransform tr, PetscViewe
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMPlexTransformSetFromOptions_Extrude(DMPlexTransform tr, PetscOptionItems *PetscOptionsObject) {
+static PetscErrorCode DMPlexTransformSetFromOptions_Extrude(DMPlexTransform tr, PetscOptionItems *PetscOptionsObject)
+{
   DMPlexTransform_Extrude *ex = (DMPlexTransform_Extrude *)tr->data;
   PetscReal                th, normal[3], *thicknesses;
   PetscInt                 nl, Nc;
@@ -67,7 +69,8 @@ static PetscErrorCode DMPlexTransformSetFromOptions_Extrude(DMPlexTransform tr, 
 /* Determine the implicit dimension pre-extrusion (either the implicit dimension of the DM or of a point in the active set for the transform).
    If that dimension is the same as the current coordinate dimension (ex->dim), the extruded mesh will have a coordinate dimension one greater;
    Otherwise the coordinate dimension will be kept. */
-static PetscErrorCode DMPlexTransformExtrudeComputeExtrusionDim(DMPlexTransform tr) {
+static PetscErrorCode DMPlexTransformExtrudeComputeExtrusionDim(DMPlexTransform tr)
+{
   DMPlexTransform_Extrude *ex = (DMPlexTransform_Extrude *)tr->data;
   DM                       dm;
   DMLabel                  active;
@@ -109,7 +112,8 @@ static PetscErrorCode DMPlexTransformExtrudeComputeExtrusionDim(DMPlexTransform 
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMPlexTransformSetDimensions_Extrude(DMPlexTransform tr, DM dm, DM tdm) {
+static PetscErrorCode DMPlexTransformSetDimensions_Extrude(DMPlexTransform tr, DM dm, DM tdm)
+{
   DMPlexTransform_Extrude *ex = (DMPlexTransform_Extrude *)tr->data;
   PetscInt                 dim;
 
@@ -126,7 +130,8 @@ static PetscErrorCode DMPlexTransformSetDimensions_Extrude(DMPlexTransform tr, D
   ct:       For any normally extruded point
   ct + 100: For any point which should just return itself
 */
-static PetscErrorCode DMPlexTransformSetUp_Extrude(DMPlexTransform tr) {
+static PetscErrorCode DMPlexTransformSetUp_Extrude(DMPlexTransform tr)
+{
   DMPlexTransform_Extrude *ex = (DMPlexTransform_Extrude *)tr->data;
   DM                       dm;
   DMLabel                  active;
@@ -444,19 +449,23 @@ static PetscErrorCode DMPlexTransformSetUp_Extrude(DMPlexTransform tr) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMPlexTransformDestroy_Extrude(DMPlexTransform tr) {
+static PetscErrorCode DMPlexTransformDestroy_Extrude(DMPlexTransform tr)
+{
   DMPlexTransform_Extrude *ex = (DMPlexTransform_Extrude *)tr->data;
   PetscInt                 ct;
 
   PetscFunctionBegin;
-  for (ct = 0; ct < DM_NUM_POLYTOPES; ++ct) PetscCall(PetscFree4(ex->target[ct], ex->size[ct], ex->cone[ct], ex->ornt[ct]));
+  if (ex->target) {
+    for (ct = 0; ct < DM_NUM_POLYTOPES; ++ct) PetscCall(PetscFree4(ex->target[ct], ex->size[ct], ex->cone[ct], ex->ornt[ct]));
+  }
   PetscCall(PetscFree5(ex->Nt, ex->target, ex->size, ex->cone, ex->ornt));
   PetscCall(PetscFree(ex->layerPos));
   PetscCall(PetscFree(ex));
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMPlexTransformGetSubcellOrientation_Extrude(DMPlexTransform tr, DMPolytopeType sct, PetscInt sp, PetscInt so, DMPolytopeType tct, PetscInt r, PetscInt o, PetscInt *rnew, PetscInt *onew) {
+static PetscErrorCode DMPlexTransformGetSubcellOrientation_Extrude(DMPlexTransform tr, DMPolytopeType sct, PetscInt sp, PetscInt so, DMPolytopeType tct, PetscInt r, PetscInt o, PetscInt *rnew, PetscInt *onew)
+{
   DMPlexTransform_Extrude *ex     = (DMPlexTransform_Extrude *)tr->data;
   DMLabel                  trType = tr->trType;
   PetscInt                 rt;
@@ -471,39 +480,56 @@ static PetscErrorCode DMPlexTransformGetSubcellOrientation_Extrude(DMPlexTransfo
   }
   if (ex->useTensor) {
     switch (sct) {
-    case DM_POLYTOPE_POINT: break;
+    case DM_POLYTOPE_POINT:
+      break;
     case DM_POLYTOPE_SEGMENT:
       switch (tct) {
-      case DM_POLYTOPE_SEGMENT: break;
-      case DM_POLYTOPE_SEG_PRISM_TENSOR: *onew = DMPolytopeTypeComposeOrientation(tct, o, so ? -1 : 0); break;
-      default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cell type %s is not produced by %s", DMPolytopeTypes[tct], DMPolytopeTypes[sct]);
+      case DM_POLYTOPE_SEGMENT:
+        break;
+      case DM_POLYTOPE_SEG_PRISM_TENSOR:
+        *onew = DMPolytopeTypeComposeOrientation(tct, o, so ? -1 : 0);
+        break;
+      default:
+        SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cell type %s is not produced by %s", DMPolytopeTypes[tct], DMPolytopeTypes[sct]);
       }
       break;
     // We need to handle identity extrusions from volumes (TET, HEX, etc) when boundary faces are being extruded
-    case DM_POLYTOPE_TRIANGLE: break;
-    case DM_POLYTOPE_QUADRILATERAL: break;
-    default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Unsupported cell type %s", DMPolytopeTypes[sct]);
+    case DM_POLYTOPE_TRIANGLE:
+      break;
+    case DM_POLYTOPE_QUADRILATERAL:
+      break;
+    default:
+      SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Unsupported cell type %s", DMPolytopeTypes[sct]);
     }
   } else {
     switch (sct) {
-    case DM_POLYTOPE_POINT: break;
+    case DM_POLYTOPE_POINT:
+      break;
     case DM_POLYTOPE_SEGMENT:
       switch (tct) {
-      case DM_POLYTOPE_SEGMENT: break;
-      case DM_POLYTOPE_QUADRILATERAL: *onew = DMPolytopeTypeComposeOrientation(tct, o, so ? -3 : 0); break;
-      default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cell type %s is not produced by %s", DMPolytopeTypes[tct], DMPolytopeTypes[sct]);
+      case DM_POLYTOPE_SEGMENT:
+        break;
+      case DM_POLYTOPE_QUADRILATERAL:
+        *onew = DMPolytopeTypeComposeOrientation(tct, o, so ? -3 : 0);
+        break;
+      default:
+        SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cell type %s is not produced by %s", DMPolytopeTypes[tct], DMPolytopeTypes[sct]);
       }
       break;
     // We need to handle identity extrusions from volumes (TET, HEX, etc) when boundary faces are being extruded
-    case DM_POLYTOPE_TRIANGLE: break;
-    case DM_POLYTOPE_QUADRILATERAL: break;
-    default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Unsupported cell type %s", DMPolytopeTypes[sct]);
+    case DM_POLYTOPE_TRIANGLE:
+      break;
+    case DM_POLYTOPE_QUADRILATERAL:
+      break;
+    default:
+      SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Unsupported cell type %s", DMPolytopeTypes[sct]);
     }
   }
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMPlexTransformCellTransform_Extrude(DMPlexTransform tr, DMPolytopeType source, PetscInt p, PetscInt *rt, PetscInt *Nt, DMPolytopeType *target[], PetscInt *size[], PetscInt *cone[], PetscInt *ornt[]) {
+static PetscErrorCode DMPlexTransformCellTransform_Extrude(DMPlexTransform tr, DMPolytopeType source, PetscInt p, PetscInt *rt, PetscInt *Nt, DMPolytopeType *target[], PetscInt *size[], PetscInt *cone[], PetscInt *ornt[])
+{
   DMPlexTransform_Extrude *ex     = (DMPlexTransform_Extrude *)tr->data;
   DMLabel                  trType = tr->trType;
   PetscBool                ignore = PETSC_FALSE, identity = PETSC_FALSE;
@@ -537,7 +563,8 @@ static PetscErrorCode DMPlexTransformCellTransform_Extrude(DMPlexTransform tr, D
 }
 
 /* Computes new vertex along normal */
-static PetscErrorCode DMPlexTransformMapCoordinates_Extrude(DMPlexTransform tr, DMPolytopeType pct, DMPolytopeType ct, PetscInt p, PetscInt r, PetscInt Nv, PetscInt dE, const PetscScalar in[], PetscScalar out[]) {
+static PetscErrorCode DMPlexTransformMapCoordinates_Extrude(DMPlexTransform tr, DMPolytopeType pct, DMPolytopeType ct, PetscInt p, PetscInt r, PetscInt Nv, PetscInt dE, const PetscScalar in[], PetscScalar out[])
+{
   DMPlexTransform_Extrude *ex = (DMPlexTransform_Extrude *)tr->data;
   DM                       dm;
   DMLabel                  active;
@@ -629,7 +656,8 @@ static PetscErrorCode DMPlexTransformMapCoordinates_Extrude(DMPlexTransform tr, 
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMPlexTransformInitialize_Extrude(DMPlexTransform tr) {
+static PetscErrorCode DMPlexTransformInitialize_Extrude(DMPlexTransform tr)
+{
   PetscFunctionBegin;
   tr->ops->view                  = DMPlexTransformView_Extrude;
   tr->ops->setfromoptions        = DMPlexTransformSetFromOptions_Extrude;
@@ -642,14 +670,15 @@ static PetscErrorCode DMPlexTransformInitialize_Extrude(DMPlexTransform tr) {
   PetscFunctionReturn(0);
 }
 
-PETSC_EXTERN PetscErrorCode DMPlexTransformCreate_Extrude(DMPlexTransform tr) {
+PETSC_EXTERN PetscErrorCode DMPlexTransformCreate_Extrude(DMPlexTransform tr)
+{
   DMPlexTransform_Extrude *ex;
   DM                       dm;
   PetscInt                 dim;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tr, DMPLEXTRANSFORM_CLASSID, 1);
-  PetscCall(PetscNewLog(tr, &ex));
+  PetscCall(PetscNew(&ex));
   tr->data      = ex;
   ex->thickness = 1.;
   ex->useTensor = PETSC_TRUE;
@@ -679,7 +708,8 @@ PETSC_EXTERN PetscErrorCode DMPlexTransformCreate_Extrude(DMPlexTransform tr) {
 
 .seealso: `DMPlexTransformExtrudeSetLayers()`
 @*/
-PetscErrorCode DMPlexTransformExtrudeGetLayers(DMPlexTransform tr, PetscInt *layers) {
+PetscErrorCode DMPlexTransformExtrudeGetLayers(DMPlexTransform tr, PetscInt *layers)
+{
   DMPlexTransform_Extrude *ex = (DMPlexTransform_Extrude *)tr->data;
 
   PetscFunctionBegin;
@@ -702,7 +732,8 @@ PetscErrorCode DMPlexTransformExtrudeGetLayers(DMPlexTransform tr, PetscInt *lay
 
 .seealso: `DMPlexTransformExtrudeGetLayers()`
 @*/
-PetscErrorCode DMPlexTransformExtrudeSetLayers(DMPlexTransform tr, PetscInt layers) {
+PetscErrorCode DMPlexTransformExtrudeSetLayers(DMPlexTransform tr, PetscInt layers)
+{
   DMPlexTransform_Extrude *ex = (DMPlexTransform_Extrude *)tr->data;
 
   PetscFunctionBegin;
@@ -728,7 +759,8 @@ PetscErrorCode DMPlexTransformExtrudeSetLayers(DMPlexTransform tr, PetscInt laye
 
 .seealso: `DMPlexTransformExtrudeSetThickness()`
 @*/
-PetscErrorCode DMPlexTransformExtrudeGetThickness(DMPlexTransform tr, PetscReal *thickness) {
+PetscErrorCode DMPlexTransformExtrudeGetThickness(DMPlexTransform tr, PetscReal *thickness)
+{
   DMPlexTransform_Extrude *ex = (DMPlexTransform_Extrude *)tr->data;
 
   PetscFunctionBegin;
@@ -751,7 +783,8 @@ PetscErrorCode DMPlexTransformExtrudeGetThickness(DMPlexTransform tr, PetscReal 
 
 .seealso: `DMPlexTransformExtrudeGetThickness()`
 @*/
-PetscErrorCode DMPlexTransformExtrudeSetThickness(DMPlexTransform tr, PetscReal thickness) {
+PetscErrorCode DMPlexTransformExtrudeSetThickness(DMPlexTransform tr, PetscReal thickness)
+{
   DMPlexTransform_Extrude *ex = (DMPlexTransform_Extrude *)tr->data;
 
   PetscFunctionBegin;
@@ -778,7 +811,8 @@ PetscErrorCode DMPlexTransformExtrudeSetThickness(DMPlexTransform tr, PetscReal 
 
 .seealso: `DMPlexTransformExtrudeSetTensor()`
 @*/
-PetscErrorCode DMPlexTransformExtrudeGetTensor(DMPlexTransform tr, PetscBool *useTensor) {
+PetscErrorCode DMPlexTransformExtrudeGetTensor(DMPlexTransform tr, PetscBool *useTensor)
+{
   DMPlexTransform_Extrude *ex = (DMPlexTransform_Extrude *)tr->data;
 
   PetscFunctionBegin;
@@ -803,7 +837,8 @@ PetscErrorCode DMPlexTransformExtrudeGetTensor(DMPlexTransform tr, PetscBool *us
 
 .seealso: `DMPlexTransformExtrudeGetTensor()`
 @*/
-PetscErrorCode DMPlexTransformExtrudeSetTensor(DMPlexTransform tr, PetscBool useTensor) {
+PetscErrorCode DMPlexTransformExtrudeSetTensor(DMPlexTransform tr, PetscBool useTensor)
+{
   DMPlexTransform_Extrude *ex = (DMPlexTransform_Extrude *)tr->data;
 
   PetscFunctionBegin;
@@ -827,7 +862,8 @@ PetscErrorCode DMPlexTransformExtrudeSetTensor(DMPlexTransform tr, PetscBool use
 
 .seealso: `DMPlexTransformExtrudeSetSymmetric()`
 @*/
-PetscErrorCode DMPlexTransformExtrudeGetSymmetric(DMPlexTransform tr, PetscBool *symmetric) {
+PetscErrorCode DMPlexTransformExtrudeGetSymmetric(DMPlexTransform tr, PetscBool *symmetric)
+{
   DMPlexTransform_Extrude *ex = (DMPlexTransform_Extrude *)tr->data;
 
   PetscFunctionBegin;
@@ -850,7 +886,8 @@ PetscErrorCode DMPlexTransformExtrudeGetSymmetric(DMPlexTransform tr, PetscBool 
 
 .seealso: `DMPlexTransformExtrudeGetSymmetric()`
 @*/
-PetscErrorCode DMPlexTransformExtrudeSetSymmetric(DMPlexTransform tr, PetscBool symmetric) {
+PetscErrorCode DMPlexTransformExtrudeSetSymmetric(DMPlexTransform tr, PetscBool symmetric)
+{
   DMPlexTransform_Extrude *ex = (DMPlexTransform_Extrude *)tr->data;
 
   PetscFunctionBegin;
@@ -876,7 +913,8 @@ PetscErrorCode DMPlexTransformExtrudeSetSymmetric(DMPlexTransform tr, PetscBool 
 
 .seealso: `DMPlexTransformExtrudeSetNormal()`
 @*/
-PetscErrorCode DMPlexTransformExtrudeGetNormal(DMPlexTransform tr, PetscReal normal[]) {
+PetscErrorCode DMPlexTransformExtrudeGetNormal(DMPlexTransform tr, PetscReal normal[])
+{
   DMPlexTransform_Extrude *ex = (DMPlexTransform_Extrude *)tr->data;
   PetscInt                 d;
 
@@ -903,7 +941,8 @@ PetscErrorCode DMPlexTransformExtrudeGetNormal(DMPlexTransform tr, PetscReal nor
 
 .seealso: `DMPlexTransformExtrudeGetNormal()`
 @*/
-PetscErrorCode DMPlexTransformExtrudeSetNormal(DMPlexTransform tr, const PetscReal normal[]) {
+PetscErrorCode DMPlexTransformExtrudeSetNormal(DMPlexTransform tr, const PetscReal normal[])
+{
   DMPlexTransform_Extrude *ex = (DMPlexTransform_Extrude *)tr->data;
   PetscInt                 d;
 
@@ -935,7 +974,8 @@ $ ctx  - An optional user context
 
 .seealso: `DMPlexTransformExtrudeGetNormal()`
 @*/
-PetscErrorCode DMPlexTransformExtrudeSetNormalFunction(DMPlexTransform tr, PetscSimplePointFunc normalFunc) {
+PetscErrorCode DMPlexTransformExtrudeSetNormalFunction(DMPlexTransform tr, PetscSimplePointFunc normalFunc)
+{
   DMPlexTransform_Extrude *ex = (DMPlexTransform_Extrude *)tr->data;
 
   PetscFunctionBegin;
@@ -958,7 +998,8 @@ PetscErrorCode DMPlexTransformExtrudeSetNormalFunction(DMPlexTransform tr, Petsc
 
 .seealso: `DMPlexTransformExtrudeSetThickness()`, `DMPlexTransformExtrudeGetThickness()`
 @*/
-PetscErrorCode DMPlexTransformExtrudeSetThicknesses(DMPlexTransform tr, PetscInt Nth, const PetscReal thicknesses[]) {
+PetscErrorCode DMPlexTransformExtrudeSetThicknesses(DMPlexTransform tr, PetscInt Nth, const PetscReal thicknesses[])
+{
   DMPlexTransform_Extrude *ex = (DMPlexTransform_Extrude *)tr->data;
   PetscInt                 t;
 

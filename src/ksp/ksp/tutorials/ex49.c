@@ -62,7 +62,7 @@ Options: \n"
                               -sponge_t   : the number of elements defining the border around each inclusion \n\
                               -sponge_w   : the number of elements in x and y each inclusion will span\n\
      -use_gp_coords : Evaluate the Youngs modulus, Poisson ratio and the body force at the global coordinates of the quadrature points.\n\
-     By default, E, nu and the body force are evaulated at the element center and applied as a constant over the entire element.\n\
+     By default, E, nu and the body force are evaluated at the element center and applied as a constant over the entire element.\n\
      -use_nonsymbc : Option to use non-symmetric boundary condition imposition. This choice will use less memory.";
 
 /* Contributed by Dave May */
@@ -118,7 +118,8 @@ typedef struct {
  |     |
  0-----3
  */
-static void ConstructQ12D_Ni(PetscScalar _xi[], PetscScalar Ni[]) {
+static void ConstructQ12D_Ni(PetscScalar _xi[], PetscScalar Ni[])
+{
   PetscScalar xi  = _xi[0];
   PetscScalar eta = _xi[1];
 
@@ -128,7 +129,8 @@ static void ConstructQ12D_Ni(PetscScalar _xi[], PetscScalar Ni[]) {
   Ni[3] = 0.25 * (1.0 + xi) * (1.0 - eta);
 }
 
-static void ConstructQ12D_GNi(PetscScalar _xi[], PetscScalar GNi[][NODES_PER_EL]) {
+static void ConstructQ12D_GNi(PetscScalar _xi[], PetscScalar GNi[][NODES_PER_EL])
+{
   PetscScalar xi  = _xi[0];
   PetscScalar eta = _xi[1];
 
@@ -143,7 +145,8 @@ static void ConstructQ12D_GNi(PetscScalar _xi[], PetscScalar GNi[][NODES_PER_EL]
   GNi[1][3] = -0.25 * (1.0 + xi);
 }
 
-static void ConstructQ12D_GNx(PetscScalar GNi[][NODES_PER_EL], PetscScalar GNx[][NODES_PER_EL], PetscScalar coords[], PetscScalar *det_J) {
+static void ConstructQ12D_GNx(PetscScalar GNi[][NODES_PER_EL], PetscScalar GNx[][NODES_PER_EL], PetscScalar coords[], PetscScalar *det_J)
+{
   PetscScalar J00, J01, J10, J11, J;
   PetscScalar iJ00, iJ01, iJ10, iJ11;
   PetscInt    i;
@@ -173,7 +176,8 @@ static void ConstructQ12D_GNx(PetscScalar GNi[][NODES_PER_EL], PetscScalar GNx[]
   if (det_J) *det_J = J;
 }
 
-static void ConstructGaussQuadrature(PetscInt *ngp, PetscScalar gp_xi[][2], PetscScalar gp_weight[]) {
+static void ConstructGaussQuadrature(PetscInt *ngp, PetscScalar gp_xi[][2], PetscScalar gp_weight[])
+{
   *ngp         = 4;
   gp_xi[0][0]  = -0.57735026919;
   gp_xi[0][1]  = -0.57735026919;
@@ -189,7 +193,8 @@ static void ConstructGaussQuadrature(PetscInt *ngp, PetscScalar gp_xi[][2], Pets
   gp_weight[3] = 1.0;
 }
 
-static PetscErrorCode DMDAGetElementOwnershipRanges2d(DM da, PetscInt **_lx, PetscInt **_ly) {
+static PetscErrorCode DMDAGetElementOwnershipRanges2d(DM da, PetscInt **_lx, PetscInt **_ly)
+{
   PetscMPIInt  rank;
   PetscInt     proc_I, proc_J;
   PetscInt     cpu_x, cpu_y;
@@ -251,7 +256,8 @@ static PetscErrorCode DMDAGetElementOwnershipRanges2d(DM da, PetscInt **_lx, Pet
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMDACoordViewGnuplot2d(DM da, const char prefix[]) {
+static PetscErrorCode DMDACoordViewGnuplot2d(DM da, const char prefix[])
+{
   DM           cda;
   Vec          coords;
   DMDACoor2d **_coords;
@@ -286,7 +292,8 @@ static PetscErrorCode DMDACoordViewGnuplot2d(DM da, const char prefix[]) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMDAViewGnuplot2d(DM da, Vec fields, const char comment[], const char prefix[]) {
+static PetscErrorCode DMDAViewGnuplot2d(DM da, Vec fields, const char comment[], const char prefix[])
+{
   DM           cda;
   Vec          coords, local_fields;
   DMDACoor2d **_coords;
@@ -348,7 +355,8 @@ static PetscErrorCode DMDAViewGnuplot2d(DM da, Vec fields, const char comment[],
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMDAViewCoefficientsGnuplot2d(DM da, Vec fields, const char comment[], const char prefix[]) {
+static PetscErrorCode DMDAViewCoefficientsGnuplot2d(DM da, Vec fields, const char comment[], const char prefix[])
+{
   DM                       cda;
   Vec                      local_fields;
   FILE                    *fp;
@@ -404,7 +412,8 @@ static PetscErrorCode DMDAViewCoefficientsGnuplot2d(DM da, Vec fields, const cha
   PetscFunctionReturn(0);
 }
 
-static void FormStressOperatorQ1(PetscScalar Ke[], PetscScalar coords[], PetscScalar E[], PetscScalar nu[]) {
+static void FormStressOperatorQ1(PetscScalar Ke[], PetscScalar coords[], PetscScalar E[], PetscScalar nu[])
+{
   PetscInt    ngp;
   PetscScalar gp_xi[GAUSS_POINTS][2];
   PetscScalar gp_weight[GAUSS_POINTS];
@@ -467,7 +476,8 @@ static void FormStressOperatorQ1(PetscScalar Ke[], PetscScalar coords[], PetscSc
   } /* end quadrature */
 }
 
-static void FormMomentumRhsQ1(PetscScalar Fe[], PetscScalar coords[], PetscScalar fx[], PetscScalar fy[]) {
+static void FormMomentumRhsQ1(PetscScalar Fe[], PetscScalar coords[], PetscScalar fx[], PetscScalar fy[])
+{
   PetscInt    ngp;
   PetscScalar gp_xi[GAUSS_POINTS][2];
   PetscScalar gp_weight[GAUSS_POINTS];
@@ -498,7 +508,8 @@ static void FormMomentumRhsQ1(PetscScalar Fe[], PetscScalar coords[], PetscScala
  The unknown is a vector quantity.
  The s[].c is used to indicate the degree of freedom.
  */
-static PetscErrorCode DMDAGetElementEqnums_u(MatStencil s_u[], PetscInt i, PetscInt j) {
+static PetscErrorCode DMDAGetElementEqnums_u(MatStencil s_u[], PetscInt i, PetscInt j)
+{
   PetscFunctionBeginUser;
   /* displacement */
   /* node 0 */
@@ -535,7 +546,8 @@ static PetscErrorCode DMDAGetElementEqnums_u(MatStencil s_u[], PetscInt i, Petsc
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode GetElementCoords(DMDACoor2d **_coords, PetscInt ei, PetscInt ej, PetscScalar el_coords[]) {
+static PetscErrorCode GetElementCoords(DMDACoor2d **_coords, PetscInt ei, PetscInt ej, PetscScalar el_coords[])
+{
   PetscFunctionBeginUser;
   /* get coords for the element */
   el_coords[NSD * 0 + 0] = _coords[ej][ei].x;
@@ -549,7 +561,8 @@ static PetscErrorCode GetElementCoords(DMDACoor2d **_coords, PetscInt ei, PetscI
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode AssembleA_Elasticity(Mat A, DM elas_da, DM properties_da, Vec properties) {
+static PetscErrorCode AssembleA_Elasticity(Mat A, DM elas_da, DM properties_da, Vec properties)
+{
   DM                       cda;
   Vec                      coords;
   DMDACoor2d             **_coords;
@@ -606,7 +619,8 @@ static PetscErrorCode AssembleA_Elasticity(Mat A, DM elas_da, DM properties_da, 
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMDASetValuesLocalStencil_ADD_VALUES(ElasticityDOF **fields_F, MatStencil u_eqn[], PetscScalar Fe_u[]) {
+static PetscErrorCode DMDASetValuesLocalStencil_ADD_VALUES(ElasticityDOF **fields_F, MatStencil u_eqn[], PetscScalar Fe_u[])
+{
   PetscInt n;
 
   PetscFunctionBeginUser;
@@ -617,7 +631,8 @@ static PetscErrorCode DMDASetValuesLocalStencil_ADD_VALUES(ElasticityDOF **field
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode AssembleF_Elasticity(Vec F, DM elas_da, DM properties_da, Vec properties) {
+static PetscErrorCode AssembleF_Elasticity(Vec F, DM elas_da, DM properties_da, Vec properties)
+{
   DM                       cda;
   Vec                      coords;
   DMDACoor2d             **_coords;
@@ -685,7 +700,8 @@ static PetscErrorCode AssembleF_Elasticity(Vec F, DM elas_da, DM properties_da, 
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode solve_elasticity_2d(PetscInt mx, PetscInt my) {
+static PetscErrorCode solve_elasticity_2d(PetscInt mx, PetscInt my)
+{
   DM                       elas_da, da_prop;
   PetscInt                 u_dof, dof, stencil_width;
   Mat                      A;
@@ -937,7 +953,7 @@ static PetscErrorCode solve_elasticity_2d(PetscInt mx, PetscInt my) {
 
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-no_view", &no_view, NULL));
   if (!no_view) {
-    PetscCall(DMDAViewCoefficientsGnuplot2d(da_prop, properties, "Coeffcients for elasticity eqn.", "properties"));
+    PetscCall(DMDAViewCoefficientsGnuplot2d(da_prop, properties, "Coefficients for elasticity eqn.", "properties"));
     PetscCall(DMDACoordViewGnuplot2d(elas_da, "mesh"));
   }
 
@@ -1012,7 +1028,8 @@ static PetscErrorCode solve_elasticity_2d(PetscInt mx, PetscInt my) {
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   PetscInt mx, my;
 
   PetscFunctionBeginUser;
@@ -1027,7 +1044,8 @@ int main(int argc, char **args) {
 
 /* -------------------------- helpers for boundary conditions -------------------------------- */
 
-static PetscErrorCode BCApply_EAST(DM da, PetscInt d_idx, PetscScalar bc_val, Mat A, Vec b) {
+static PetscErrorCode BCApply_EAST(DM da, PetscInt d_idx, PetscScalar bc_val, Mat A, Vec b)
+{
   DM                     cda;
   Vec                    coords;
   PetscInt               si, sj, nx, ny, i, j;
@@ -1091,7 +1109,8 @@ static PetscErrorCode BCApply_EAST(DM da, PetscInt d_idx, PetscScalar bc_val, Ma
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode BCApply_WEST(DM da, PetscInt d_idx, PetscScalar bc_val, Mat A, Vec b) {
+static PetscErrorCode BCApply_WEST(DM da, PetscInt d_idx, PetscScalar bc_val, Mat A, Vec b)
+{
   DM                     cda;
   Vec                    coords;
   PetscInt               si, sj, nx, ny, i, j;
@@ -1155,7 +1174,8 @@ static PetscErrorCode BCApply_WEST(DM da, PetscInt d_idx, PetscScalar bc_val, Ma
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMDABCApplyCompression(DM elas_da, Mat A, Vec f) {
+static PetscErrorCode DMDABCApplyCompression(DM elas_da, Mat A, Vec f)
+{
   PetscFunctionBeginUser;
   PetscCall(BCApply_EAST(elas_da, 0, -1.0, A, f));
   PetscCall(BCApply_EAST(elas_da, 1, 0.0, A, f));
@@ -1164,7 +1184,8 @@ static PetscErrorCode DMDABCApplyCompression(DM elas_da, Mat A, Vec f) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode Orthogonalize(PetscInt n, Vec *vecs) {
+static PetscErrorCode Orthogonalize(PetscInt n, Vec *vecs)
+{
   PetscInt    i, j;
   PetscScalar dot;
 
@@ -1179,7 +1200,8 @@ static PetscErrorCode Orthogonalize(PetscInt n, Vec *vecs) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMDABCApplySymmetricCompression(DM elas_da, Mat A, Vec f, IS *dofs, Mat *AA, Vec *ff) {
+static PetscErrorCode DMDABCApplySymmetricCompression(DM elas_da, Mat A, Vec f, IS *dofs, Mat *AA, Vec *ff)
+{
   PetscInt     start, end, m;
   PetscInt    *unconstrained;
   PetscInt     cnt, i;

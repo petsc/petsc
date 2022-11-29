@@ -16,7 +16,9 @@
    Output Parameters:
 .  vres     - calculated residual
 
-   Notes:
+   Level: developer
+
+   Note:
    This routine assumes that an iterative method, designed for
 $     A x = b
    will be used with a preconditioner, C, such that the actual problem is either
@@ -27,12 +29,11 @@ $     CA x = Cb (left preconditioning).
 $     b-Ax
    is returned in the vt2 temporary.
 
-   Level: developer
-
-.seealso: `KSPMonitor()`
+.seealso: [](chapter_ksp), `KSP`, `KSPSolve()`, `KSPMonitor()`
 @*/
 
-PetscErrorCode KSPInitialResidual(KSP ksp, Vec vsoln, Vec vt1, Vec vt2, Vec vres, Vec vb) {
+PetscErrorCode KSPInitialResidual(KSP ksp, Vec vsoln, Vec vt1, Vec vt2, Vec vres, Vec vb)
+{
   Mat Amat, Pmat;
 
   PetscFunctionBegin;
@@ -86,16 +87,17 @@ PetscErrorCode KSPInitialResidual(KSP ksp, Vec vsoln, Vec vt1, Vec vt2, Vec vres
    Output Parameter:
 .  vsoln - contains solution on output
 
-   Notes:
+   Note:
    If preconditioning either symmetrically or on the right, this routine solves
    for the correction to the unpreconditioned problem.  If preconditioning on
    the left, nothing is done.
 
    Level: advanced
 
-.seealso: `KSPSetPCSide()`
+.seealso: [](chapter_ksp), `KSP`, `KSPSetPCSide()`
 @*/
-PetscErrorCode KSPUnwindPreconditioner(KSP ksp, Vec vsoln, Vec vt1) {
+PetscErrorCode KSPUnwindPreconditioner(KSP ksp, Vec vsoln, Vec vt1)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
   PetscValidHeaderSpecific(vsoln, VEC_CLASSID, 2);

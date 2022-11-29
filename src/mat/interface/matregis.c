@@ -1,4 +1,6 @@
-
+/* Portions of this code are under:
+   Copyright (c) 2022 Advanced Micro Devices, Inc. All rights reserved.
+*/
 #include <petsc/private/matimpl.h> /*I "petscmat.h" I*/
 
 PETSC_EXTERN PetscErrorCode MatCreate_MFFD(Mat);
@@ -20,6 +22,11 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIDense(Mat);
 #if defined(PETSC_HAVE_CUDA)
 PETSC_EXTERN PetscErrorCode MatCreate_SeqDenseCUDA(Mat);
 PETSC_EXTERN PetscErrorCode MatCreate_MPIDenseCUDA(Mat);
+#endif
+
+#if defined(PETSC_HAVE_HIP)
+PETSC_EXTERN PetscErrorCode MatCreate_SeqDenseHIP(Mat);
+PETSC_EXTERN PetscErrorCode MatCreate_MPIDenseHIP(Mat);
 #endif
 
 PETSC_EXTERN PetscErrorCode MatCreate_MPIAdj(Mat);
@@ -55,6 +62,11 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPISELL(Mat);
 #if defined(PETSC_HAVE_CUDA)
 PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJCUSPARSE(Mat);
 PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJCUSPARSE(Mat);
+#endif
+
+#if defined(PETSC_HAVE_HIP)
+PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJHIPSPARSE(Mat);
+PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJHIPSPARSE(Mat);
 #endif
 
 #if defined(PETSC_HAVE_VIENNACL)
@@ -103,7 +115,8 @@ PETSC_EXTERN PetscErrorCode MatCreate_Htool(Mat);
 
 .seealso: `MatType`, `MatSetType()`, `MatRegister()`
 @*/
-PetscErrorCode MatRegisterAll(void) {
+PetscErrorCode MatRegisterAll(void)
+{
   PetscFunctionBegin;
   if (MatRegisterAllCalled) PetscFunctionReturn(0);
   MatRegisterAllCalled = PETSC_TRUE;
@@ -167,6 +180,12 @@ PetscErrorCode MatRegisterAll(void) {
   PetscCall(MatRegister(MATMPIDENSECUDA, MatCreate_MPIDenseCUDA));
 #endif
 
+#if defined(PETSC_HAVE_HIP)
+  PetscCall(MatRegisterRootName(MATDENSEHIP, MATSEQDENSEHIP, MATMPIDENSEHIP));
+  PetscCall(MatRegister(MATSEQDENSEHIP, MatCreate_SeqDenseHIP));
+  PetscCall(MatRegister(MATMPIDENSEHIP, MatCreate_MPIDenseHIP));
+#endif
+
   PetscCall(MatRegister(MATMPIADJ, MatCreate_MPIAdj));
   PetscCall(MatRegister(MATSCATTER, MatCreate_Scatter));
   PetscCall(MatRegister(MATBLOCKMAT, MatCreate_BlockMat));
@@ -180,6 +199,12 @@ PetscErrorCode MatRegisterAll(void) {
   PetscCall(MatRegisterRootName(MATAIJCUSPARSE, MATSEQAIJCUSPARSE, MATMPIAIJCUSPARSE));
   PetscCall(MatRegister(MATSEQAIJCUSPARSE, MatCreate_SeqAIJCUSPARSE));
   PetscCall(MatRegister(MATMPIAIJCUSPARSE, MatCreate_MPIAIJCUSPARSE));
+#endif
+
+#if defined(PETSC_HAVE_HIP)
+  PetscCall(MatRegisterRootName(MATAIJHIPSPARSE, MATSEQAIJHIPSPARSE, MATMPIAIJHIPSPARSE));
+  PetscCall(MatRegister(MATSEQAIJHIPSPARSE, MatCreate_SeqAIJHIPSPARSE));
+  PetscCall(MatRegister(MATMPIAIJHIPSPARSE, MatCreate_MPIAIJHIPSPARSE));
 #endif
 
 #if defined(PETSC_HAVE_VIENNACL)

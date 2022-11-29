@@ -1,4 +1,4 @@
-#if !defined(PETSCDMDATYPES_H)
+#ifndef PETSCDMDATYPES_H
 #define PETSCDMDATYPES_H
 
 #include <petscdmtypes.h>

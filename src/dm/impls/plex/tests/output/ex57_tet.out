@@ -1,0 +1,71 @@
+DM Object: Ephemeral Mesh (eph_) 1 MPI process
+  type: plex
+Ephemeral Mesh in 3 dimensions:
+  Number of 0-cells per rank: 27
+  Number of 1-cells per rank: 98
+  Number of 2-cells per rank: 120
+  Number of 3-cells per rank: 48
+Labels:
+  marker: 1 strata with value/size (1 (146))
+  celltype: 4 strata with value/size (0 (8), 6 (6), 3 (18), 1 (19))
+  depth: 4 strata with value/size (0 (8), 1 (19), 2 (18), 3 (6))
+Ephemeral Label 'marker':
+[0]: 6 (1)
+[0]: 7 (1)
+[0]: 8 (1)
+[0]: 9 (1)
+[0]: 10 (1)
+[0]: 11 (1)
+[0]: 12 (1)
+[0]: 13 (1)
+[0]: 16 (1)
+[0]: 17 (1)
+[0]: 19 (1)
+[0]: 20 (1)
+[0]: 22 (1)
+[0]: 24 (1)
+[0]: 25 (1)
+[0]: 26 (1)
+[0]: 28 (1)
+[0]: 29 (1)
+[0]: 30 (1)
+[0]: 31 (1)
+[0]: 33 (1)
+[0]: 34 (1)
+[0]: 35 (1)
+[0]: 36 (1)
+[0]: 37 (1)
+[0]: 38 (1)
+[0]: 39 (1)
+[0]: 40 (1)
+[0]: 41 (1)
+[0]: 42 (1)
+[0]: 43 (1)
+[0]: 44 (1)
+[0]: 45 (1)
+[0]: 46 (1)
+[0]: 47 (1)
+[0]: 48 (1)
+[0]: 49 (1)
+[0]: 50 (1)
+DM Object: Concrete Mesh (ref_) 1 MPI process
+  type: plex
+Concrete Mesh in 3 dimensions:
+  Number of 0-cells per rank: 27
+  Number of 1-cells per rank: 98
+  Number of 2-cells per rank: 120
+  Number of 3-cells per rank: 48
+Labels:
+  celltype: 4 strata with value/size (1 (98), 3 (120), 6 (48), 0 (27))
+  depth: 4 strata with value/size (0 (27), 1 (98), 2 (120), 3 (48))
+  marker: 1 strata with value/size (1 (146))
+  Defined by transform from:
+  Mesh in 3 dimensions:
+    Number of 0-cells per rank:   8  
+    Number of 1-cells per rank:   19  
+    Number of 2-cells per rank:   18  
+    Number of 3-cells per rank:   6  
+  Labels:
+    marker: 1 strata with value/size (1 (38))
+    celltype: 4 strata with value/size (0 (8), 6 (6), 3 (18), 1 (19))
+    depth: 4 strata with value/size (0 (8), 1 (19), 2 (18), 3 (6))

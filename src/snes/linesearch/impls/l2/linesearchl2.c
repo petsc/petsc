@@ -1,7 +1,8 @@
 #include <petsc/private/linesearchimpl.h>
 #include <petscsnes.h>
 
-static PetscErrorCode SNESLineSearchApply_L2(SNESLineSearch linesearch) {
+static PetscErrorCode SNESLineSearchApply_L2(SNESLineSearch linesearch)
+{
   PetscBool   changed_y, changed_w;
   Vec         X;
   Vec         F;
@@ -90,12 +91,12 @@ static PetscErrorCode SNESLineSearchApply_L2(SNESLineSearch linesearch) {
       lambda_mid = .5 * (lambda + lambda_old);
     }
 
-    delLambda   = lambda - lambda_old;
+    delLambda = lambda - lambda_old;
     /* compute f'() at the end points using second order one sided differencing */
     delFnrm     = (3. * fnrm - 4. * fnrm_mid + 1. * fnrm_old) / delLambda;
     delFnrm_old = (-3. * fnrm_old + 4. * fnrm_mid - 1. * fnrm) / delLambda;
     /* compute f''() at the midpoint using centered differencing */
-    del2Fnrm    = (delFnrm - delFnrm_old) / delLambda;
+    del2Fnrm = (delFnrm - delFnrm_old) / delLambda;
 
     if (monitor) {
       PetscCall(PetscViewerASCIIAddTab(monitor, ((PetscObject)linesearch)->tablevel));
@@ -152,7 +153,7 @@ static PetscErrorCode SNESLineSearchApply_L2(SNESLineSearch linesearch) {
 }
 
 /*MC
-   SNESLINESEARCHL2 - Secant search in the L2 norm of the function or the objective function, if it is provided with SNESSetObjective().
+   SNESLINESEARCHL2 - Secant search in the L2 norm of the function or the objective function, if it is provided with `SNESSetObjective()`.
 
    Attempts to solve min_lambda f(x + lambda y) using the secant method with the initial bracketing of lambda between [0,damping]. Differences of f()
    are used to approximate the first and second derivative of f() with respect to lambda, f'() and f''(). The secant method is run for maxit iterations.
@@ -169,12 +170,13 @@ static PetscErrorCode SNESLineSearchApply_L2(SNESLineSearch linesearch) {
 
    Level: advanced
 
-   Developer Notes:
-    A better name for this method might be SNESLINESEARCHSECANT, L2 is not descriptive
+   Developer Note:
+    A better name for this method might be `SNESLINESEARCHSECANT`, L2 is not descriptive
 
-.seealso: `SNESLINESEARCHBT`, `SNESLINESEARCHCP`, `SNESLineSearch`, `SNESLineSearchCreate()`, `SNESLineSearchSetType()`
+.seealso: `SNESLINESEARCHBT`, `SNESLINESEARCHCP`, `SNESLineSearch`, `SNESLineSearchType`, `SNESLineSearchCreate()`, `SNESLineSearchSetType()`
 M*/
-PETSC_EXTERN PetscErrorCode SNESLineSearchCreate_L2(SNESLineSearch linesearch) {
+PETSC_EXTERN PetscErrorCode SNESLineSearchCreate_L2(SNESLineSearch linesearch)
+{
   PetscFunctionBegin;
   linesearch->ops->apply          = SNESLineSearchApply_L2;
   linesearch->ops->destroy        = NULL;

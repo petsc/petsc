@@ -25,28 +25,29 @@ $     KSPSetGuessType(ksp,"my_initial_guess")
    or at runtime via the option
 $     -ksp_guess_type my_initial_guess
 
-   Level: advanced
+   Level: developer
 
-.seealso: `KSPGuess`, `KSPGuessRegisterAll()`
-
+.seealso: [](chapter_ksp), `KSPGuess`, `KSPGuessRegisterAll()`
 @*/
-PetscErrorCode KSPGuessRegister(const char sname[], PetscErrorCode (*function)(KSPGuess)) {
+PetscErrorCode KSPGuessRegister(const char sname[], PetscErrorCode (*function)(KSPGuess))
+{
   PetscFunctionBegin;
   PetscCall(KSPInitializePackage());
   PetscCall(PetscFunctionListAdd(&KSPGuessList, sname, function));
   PetscFunctionReturn(0);
 }
 
-/*
-  KSPGuessRegisterAll - Registers all KSPGuess implementations in the KSP package.
+/*@C
+  KSPGuessRegisterAll - Registers all `KSPGuess` implementations in the `KSP` package.
 
   Not Collective
 
-  Level: advanced
+  Level: developer
 
-.seealso: `KSPRegisterAll()`, `KSPInitializePackage()`
-*/
-PetscErrorCode KSPGuessRegisterAll(void) {
+.seealso: [](chapter_ksp), `KSPGuess`, `KSPRegisterAll()`, `KSPInitializePackage()`
+@*/
+PetscErrorCode KSPGuessRegisterAll(void)
+{
   PetscFunctionBegin;
   if (KSPGuessRegisterAllCalled) PetscFunctionReturn(0);
   KSPGuessRegisterAllCalled = PETSC_TRUE;
@@ -56,18 +57,19 @@ PetscErrorCode KSPGuessRegisterAll(void) {
 }
 
 /*@
-    KSPGuessSetFromOptions - Sets the options for a KSPGuess from the options database
+    KSPGuessSetFromOptions - Sets the options for a `KSPGuess` from the options database
 
     Collective on guess
 
     Input Parameter:
-.    guess - KSPGuess object
+.    guess - `KSPGuess` object
 
-   Level: intermediate
+   Level: developer
 
-.seealso: `KSPGuess`, `KSPGetGuess()`, `KSPSetGuessType()`, `KSPGuessType`
+.seealso: [](chapter_ksp), `KSPGuess`, `KSPGetGuess()`, `KSPSetGuessType()`, `KSPGuessType`
 @*/
-PetscErrorCode KSPGuessSetFromOptions(KSPGuess guess) {
+PetscErrorCode KSPGuessSetFromOptions(KSPGuess guess)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(guess, KSPGUESS_CLASSID, 1);
   PetscTryTypeMethod(guess, setfromoptions);
@@ -75,18 +77,20 @@ PetscErrorCode KSPGuessSetFromOptions(KSPGuess guess) {
 }
 
 /*@
-    KSPGuessSetTolerance - Sets the relative tolerance used in either eigenvalue (POD) or singular value (Fischer type 3) calculations. Ignored by the first and second Fischer types.
+    KSPGuessSetTolerance - Sets the relative tolerance used in either eigenvalue (POD) or singular value (Fischer type 3) calculations.
+    Ignored by the first and second Fischer types.
 
     Collective on guess
 
     Input Parameter:
-.    guess - KSPGuess object
+.    guess - `KSPGuess` object
 
-   Level: intermediate
+   Level: developer
 
-.seealso: `KSPGuess`, `KSPGuessType`, `KSPGuessSetFromOptions()`
+.seealso: [](chapter_ksp), `KSPGuess`, `KSPGuessType`, `KSPGuessSetFromOptions()`
 @*/
-PetscErrorCode KSPGuessSetTolerance(KSPGuess guess, PetscReal tol) {
+PetscErrorCode KSPGuessSetTolerance(KSPGuess guess, PetscReal tol)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(guess, KSPGUESS_CLASSID, 1);
   PetscTryTypeMethod(guess, settolerance, tol);
@@ -94,18 +98,19 @@ PetscErrorCode KSPGuessSetTolerance(KSPGuess guess, PetscReal tol) {
 }
 
 /*@
-   KSPGuessDestroy - Destroys KSPGuess context.
+   KSPGuessDestroy - Destroys `KSPGuess` context.
 
-   Collective on kspGuess
+   Collective on guess
 
    Input Parameter:
 .  guess - initial guess object
 
-   Level: beginner
+   Level: developer
 
-.seealso: `KSPGuessCreate()`, `KSPGuess`, `KSPGuessType`
+.seealso: [](chapter_ksp), `KSPGuessCreate()`, `KSPGuess`, `KSPGuessType`
 @*/
-PetscErrorCode KSPGuessDestroy(KSPGuess *guess) {
+PetscErrorCode KSPGuessDestroy(KSPGuess *guess)
+{
   PetscFunctionBegin;
   if (!*guess) PetscFunctionReturn(0);
   PetscValidHeaderSpecific((*guess), KSPGUESS_CLASSID, 1);
@@ -120,7 +125,7 @@ PetscErrorCode KSPGuessDestroy(KSPGuess *guess) {
 }
 
 /*@C
-   KSPGuessView - View the KSPGuess object
+   KSPGuessView - View the `KSPGuess` object
 
    Logically Collective on guess
 
@@ -128,13 +133,12 @@ PetscErrorCode KSPGuessDestroy(KSPGuess *guess) {
 +  guess  - the initial guess object for the Krylov method
 -  viewer - the viewer object
 
-   Notes:
+  Level: developer
 
-  Level: intermediate
-
-.seealso: `KSP`, `KSPGuess`, `KSPGuessType`, `KSPGuessRegister()`, `KSPGuessCreate()`, `PetscViewer`
+.seealso: [](chapter_ksp), `KSP`, `KSPGuess`, `KSPGuessType`, `KSPGuessRegister()`, `KSPGuessCreate()`, `PetscViewer`
 @*/
-PetscErrorCode KSPGuessView(KSPGuess guess, PetscViewer view) {
+PetscErrorCode KSPGuessView(KSPGuess guess, PetscViewer view)
+{
   PetscBool ascii;
 
   PetscFunctionBegin;
@@ -153,7 +157,7 @@ PetscErrorCode KSPGuessView(KSPGuess guess, PetscViewer view) {
 }
 
 /*@
-   KSPGuessCreate - Creates the default KSPGuess context.
+   KSPGuessCreate - Creates the default `KSPGuess` context.
 
    Collective
 
@@ -161,16 +165,14 @@ PetscErrorCode KSPGuessView(KSPGuess guess, PetscViewer view) {
 .  comm - MPI communicator
 
    Output Parameter:
-.  guess - location to put the KSPGuess context
+.  guess - location to put the `KSPGuess` context
 
-   Notes:
-   The default KSPGuess type is XXX
+   Level: developer
 
-   Level: beginner
-
-.seealso: `KSPSolve()`, `KSPGuessDestroy()`, `KSPGuess`, `KSPGuessType`, `KSP`
+.seealso: [](chapter_ksp), `KSPSolve()`, `KSPGuessDestroy()`, `KSPGuess`, `KSPGuessType`, `KSP`
 @*/
-PetscErrorCode KSPGuessCreate(MPI_Comm comm, KSPGuess *guess) {
+PetscErrorCode KSPGuessCreate(MPI_Comm comm, KSPGuess *guess)
+{
   KSPGuess tguess;
 
   PetscFunctionBegin;
@@ -184,26 +186,23 @@ PetscErrorCode KSPGuessCreate(MPI_Comm comm, KSPGuess *guess) {
 }
 
 /*@C
-   KSPGuessSetType - Sets the type of a KSPGuess
+   KSPGuessSetType - Sets the type of a `KSPGuess`
 
    Logically Collective on guess
 
    Input Parameters:
 +  guess - the initial guess object for the Krylov method
--  type  - a known KSPGuess method
+-  type  - a known `KSPGuessType`
 
    Options Database Key:
-.  -ksp_guess_type  <method> - Sets the method; use -help for a list
-    of available methods
+.  -ksp_guess_type  <method> - Sets the method; use -help for a list of available methods
 
-   Notes:
+  Level: developer
 
-  Level: intermediate
-
-.seealso: `KSP`, `KSPGuess`, `KSPGuessType`, `KSPGuessRegister()`, `KSPGuessCreate()`
-
+.seealso: [](chapter_ksp), `KSP`, `KSPGuess`, `KSPGuessType`, `KSPGuessRegister()`, `KSPGuessCreate()`
 @*/
-PetscErrorCode KSPGuessSetType(KSPGuess guess, KSPGuessType type) {
+PetscErrorCode KSPGuessSetType(KSPGuess guess, KSPGuessType type)
+{
   PetscBool match;
   PetscErrorCode (*r)(KSPGuess);
 
@@ -226,7 +225,7 @@ PetscErrorCode KSPGuessSetType(KSPGuess guess, KSPGuessType type) {
 }
 
 /*@C
-   KSPGuessGetType - Gets the KSPGuess type as a string from the KSPGuess object.
+   KSPGuessGetType - Gets the `KSPGuessType` as a string from the `KSPGuess` object.
 
    Not Collective
 
@@ -234,13 +233,14 @@ PetscErrorCode KSPGuessSetType(KSPGuess guess, KSPGuessType type) {
 .  guess - the initial guess context
 
    Output Parameter:
-.  name - name of KSPGuess method
+.  name - type of `KSPGuess` method
 
-   Level: intermediate
+   Level: developer
 
-.seealso: `KSPGuessSetType()`
+.seealso: [](chapter_ksp), `KSPGuess`, `KSPGuessSetType()`
 @*/
-PetscErrorCode KSPGuessGetType(KSPGuess guess, KSPGuessType *type) {
+PetscErrorCode KSPGuessGetType(KSPGuess guess, KSPGuessType *type)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(guess, KSPGUESS_CLASSID, 1);
   PetscValidPointer(type, 2);
@@ -258,11 +258,12 @@ PetscErrorCode KSPGuessGetType(KSPGuess guess, KSPGuessType *type) {
 .  rhs   - the corresponding rhs
 -  sol   - the computed solution
 
-   Level: intermediate
+   Level: developer
 
-.seealso: `KSPGuessCreate()`, `KSPGuess`
+.seealso: [](chapter_ksp), `KSPGuessCreate()`, `KSPGuess`
 @*/
-PetscErrorCode KSPGuessUpdate(KSPGuess guess, Vec rhs, Vec sol) {
+PetscErrorCode KSPGuessUpdate(KSPGuess guess, Vec rhs, Vec sol)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(guess, KSPGUESS_CLASSID, 1);
   PetscValidHeaderSpecific(rhs, VEC_CLASSID, 2);
@@ -281,11 +282,12 @@ PetscErrorCode KSPGuessUpdate(KSPGuess guess, Vec rhs, Vec sol) {
 .  rhs   - the current rhs vector
 -  sol   - the initial guess vector
 
-   Level: intermediate
+   Level: developer
 
-.seealso: `KSPGuessCreate()`, `KSPGuess`
+.seealso: [](chapter_ksp), `KSPGuessCreate()`, `KSPGuess`
 @*/
-PetscErrorCode KSPGuessFormGuess(KSPGuess guess, Vec rhs, Vec sol) {
+PetscErrorCode KSPGuessFormGuess(KSPGuess guess, Vec rhs, Vec sol)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(guess, KSPGUESS_CLASSID, 1);
   PetscValidHeaderSpecific(rhs, VEC_CLASSID, 2);
@@ -302,11 +304,12 @@ PetscErrorCode KSPGuessFormGuess(KSPGuess guess, Vec rhs, Vec sol) {
    Input Parameter:
 -  guess - the initial guess context
 
-   Level: intermediate
+   Level: developer
 
-.seealso: `KSPGuessCreate()`, `KSPGuess`
+.seealso: [](chapter_ksp), `KSPGuessCreate()`, `KSPGuess`
 @*/
-PetscErrorCode KSPGuessSetUp(KSPGuess guess) {
+PetscErrorCode KSPGuessSetUp(KSPGuess guess)
+{
   PetscObjectState matstate;
   PetscInt         oM = 0, oN = 0, M, N;
   Mat              omat = NULL;

@@ -7,7 +7,8 @@ static char help[] = "Tests IS general routines.\n\n";
 #include <petscis.h>
 #include <petscviewer.h>
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscMPIInt     rank, size;
   PetscInt        i, n, *indices;
   const PetscInt *ii;

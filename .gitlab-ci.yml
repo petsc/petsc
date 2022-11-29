@@ -13,6 +13,7 @@ stages:
   - stage-1
   - stage-2
   - stage-3
+  - stage-4
 variables:
   GIT_STRATEGY: fetch
   GIT_CLEAN_FLAGS: -ffdxq
@@ -59,7 +60,7 @@ check-ci-settings:
   extends: .test
   stage: stage-1
   tags:
-    - gce-stage1
+    - gce-u22-stage1
   before_script:
     - date
     - hostname
@@ -69,13 +70,16 @@ check-ci-settings:
     - ccache --zero-stats
     - printf "CONFIG_OPTS:${CONFIG_OPTS}\n"
     - printf "PYTHON:${PYTHON}\n"
+    - if [ ! -z ${LOAD_MODULES+x} ]; then module --trace load ${LOAD_MODULES}; module list; fi
+    - if [ ! -z ${INIT_SCRIPT+x} ]; then echo "sourcing ${INIT_SCRIPT}"; source ${INIT_SCRIPT}; fi
   script:
     - printf "PATH:$PATH\n"
     - printf "PYTHONPATH:$PYTHONPATH\n"
     - printf "PETSC_OPTIONS:$PETSC_OPTIONS\n"
     - if [ ! -z ${CI_MERGE_REQUEST_SOURCE_BRANCH_NAME+x} ]; then printf "CI_MERGE_REQUEST_SOURCE_BRANCH_NAME:$CI_MERGE_REQUEST_SOURCE_BRANCH_NAME\n" ;fi
-    - ${PYTHON} ./configure --with-debugging=0 COPTFLAGS='-O3 -march=native' CXXOPTFLAGS='-O3 -march=native' FOPTFLAGS='-O3 -march=native' ${CONFIG_OPTS}
+    - ${PYTHON} ./configure --with-debugging=0 COPTFLAGS='-O -march=native' CXXOPTFLAGS='-O -march=native' FOPTFLAGS='-O -march=native' ${CONFIG_OPTS}
     - make CFLAGS="${MAKE_CFLAGS}" CXXFLAGS="${MAKE_CXXFLAGS}" FFLAGS="${MAKE_FFLAGS}"
+    - if [ ! -z ${ENABLE_CHECK+x} ]; then make CFLAGS="${MAKE_CFLAGS}" CXXFLAGS="${MAKE_CXXFLAGS}" FFLAGS="${MAKE_FFLAGS}" check; fi
     - make CFLAGS="${MAKE_TEST_CFLAGS}" CXXFLAGS="${MAKE_TEST_CXXFLAGS}" FFLAGS="${MAKE_TEST_FFLAGS}" allgtests-tap gmakesearch="${TEST_SEARCH}" TIMEOUT=${TIMEOUT}
   variables:
     PYTHON: python3
@@ -112,6 +116,7 @@ ompi-cuda:
   variables:
     CONFIG_OPTS: --with-mpi-dir=/nfs/gce/software/custom/linux-ubuntu22.04-x86_64/spack/opt/spack/linux-ubuntu22.04-x86_64/gcc-11.3.0/openmpi-4.1.3-qrpnszy --with-cuda=1 --with-fc=0
     TEST_SEARCH: snes_tutorials-ex19_cuda%
+    ENABLE_CHECK: 1
     MAKE_CXXFLAGS: -Werror
 
 mpich-cxx-py3:
@@ -119,19 +124,23 @@ mpich-cxx-py3:
   variables:
     CONFIG_OPTS: --with-clanguage=cxx --with-fc=0 CXXFLAGS=-std=c++11
     TEST_SEARCH: snes_tutorials-ex48%
+    LOAD_MODULES: gcc/12.1.0 mpich/4.1a1-gcc-12.1.0
 
 uni-complex-float-int64:
   extends: .stage-1
   variables:
     CONFIG_OPTS: --with-mpi=0 --with-scalar-type=complex --with-precision=single --with-64-bit-indices
     TEST_SEARCH: ts_tutorials-ex11_adv_2d_quad_%
+    LOAD_MODULES: gcc/12.1.0 mpich/4.1a1-gcc-12.1.0
 
 c99-mlib-static-py:
   extends: .stage-1
   variables:
-    CONFIG_OPTS: --with-single-library=0 --with-shared-libraries=0 CFLAGS=-std=c99
+    CONFIG_OPTS: --with-single-library=0 --with-shared-libraries=0 CFLAGS=-std=c99 FFLAGS= CXXFLAGS=
+    ENABLE_CHECK: 1
     TEST_SEARCH: snes_tutorials-ex19% snes_tutorials-ex5f90t%
     MAKE_TEST_FFLAGS: -Werror -std=f2008
+    LOAD_MODULES: gcc/12.1.0 mpich/4.1a1-gcc-12.1.0
 
 petsc4py-install:
   extends: .stage-2
@@ -195,7 +204,7 @@ checksource:
     - python3 ./configure --with-mpi=0 --with-fc=0 --with-cxx=0
     - vermin --version
     - make vermin
-    - make checkclangformat SHELL=bash
+    - PATH=/nfs/gce/projects/petsc/soft/u22.04/spack/opt/spack/linux-ubuntu22.04-ivybridge/gcc-11.2.0/llvm-15.0.0-m7mrrtynenjytkmiib2moeqk6kfcifmv/bin:$PATH make checkclangformat SHELL=bash
     - make checkbadSource SHELL=bash
     - make checkbadFileChange SHELL=bash
     - make -f gmakefile check_output SHELL=bash
@@ -205,6 +214,7 @@ checksource:
     when: always
     paths:
     - arch-*/lib/petsc/conf/*.patch
+    - arch-*/lib/petsc/conf/*.log
     expire_in: 4 days
 
 pause-for-approval:
@@ -232,6 +242,7 @@ pause-for-approval:
 .stage-23:
   extends: .test
   script:
+    - if [ ! -z ${RUN_GCOV+x} ]; then gcovr --version; fi
     - if [ -d ${HOME}/petsc-hash-pkgs/ ]; then find ${HOME}/petsc-hash-pkgs/ -maxdepth 1 -mindepth 1 -type d -mtime +25 -exec rm -rf {} \; ; fi
     - printf "PATH:$PATH\n"
     - printf "PYTHONPATH:$PYTHONPATH\n"
@@ -245,7 +256,8 @@ pause-for-approval:
     - make updatedatafiles
     - if [ -z ${DISABLE_PETSC4PY_TESTS+x} ]; then if [ -z ${ENABLE_PETSC4PY_LDPRELOAD+x} ]; then echo "NOT using LD_PRELOAD"; make petsc4pytest; else echo "using LD_PRELOAD"; LD_PRELOAD=${PWD}/${TEST_ARCH}/lib/libpetsc.so make petsc4pytest; fi; fi
     - if [ -z ${DISABLE_TESTS+x} ]; then make CFLAGS="${MAKE_CFLAGS}" CXXFLAGS="${MAKE_CXXFLAGS}" FFLAGS="${MAKE_FFLAGS}" cleantest allgtests-tap TIMEOUT=${TIMEOUT}  ${TEST_OPTS}; fi
-    - if [ ! -z ${RUN_GCOV+x} ]; then make gcov; fi
+    - if [ ! -z ${RUN_GCOV_OPTIONS+x} ]; then printf "RUN_GCOV_OPTIONS:$RUN_GCOV_OPTIONS\n"; fi
+    - if [ ! -z ${RUN_GCOV+x} ]; then make gcov PETSC_GCOV_OPTIONS="${RUN_GCOV_OPTIONS}"; fi
   artifacts:
     reports:
       junit: ${TEST_ARCH}/tests/testresults.xml
@@ -257,7 +269,7 @@ pause-for-approval:
     - ${TEST_ARCH}/tests/testresults.xml
     - ${TEST_ARCH}/tests/test_${TEST_ARCH}_tap.log
     - ${TEST_ARCH}/tests/test_${TEST_ARCH}_err.log
-    - ${TEST_ARCH}/gcov.tar.gz
+    - ${TEST_ARCH}/${TEST_ARCH}-gcovr-report.json.tar.gz
     expire_in: 4 days
   variables:
     OPENBLAS_NUM_THREADS: 1
@@ -391,10 +403,10 @@ freebsd-c-single-opt:
 
 mswin-opt-impi:
   extends:
-    - .stage-2
+    - .stage-3
     - .mswin_test
   tags:
-    - mswin-stage2
+    - mswin-stage3
   variables:
     TEST_ARCH: arch-ci-mswin-opt-impi
     TEST_OPTS: search='ksp_ksp_tests*'
@@ -425,6 +437,17 @@ linux-gcc-complex-opt-32bit:
     - gce-stage2
   variables:
     TEST_ARCH: arch-ci-linux-gcc-complex-opt-32bit
+
+linux-emcc:
+  extends:
+    - .stage-2
+    - .linux_test
+  tags:
+    - gce-stage2
+  variables:
+    TEST_ARCH: arch-ci-linux-emcc
+    INIT_SCRIPT: /nfs/gce/projects/petsc/soft/u22.04/emsdk/emsdk_env.sh
+    DISABLE_TESTS: 1
 
 #
 # The following tests run as part of stage-3.
@@ -478,15 +501,25 @@ linux-sycl-double:
     LOAD_MODULES: compiler/latest mpi/latest cmake/3.20.5-yjp2hz6
     TEST_OPTS: query=requires queryval=kokkos_kernels
 
-linux-cuda-pkgs:
+linux-cuda-pkgs-gcov:
   extends:
     - .stage-3
     - .linux_test
   tags:
     - cuda-stage3
   variables:
-    TEST_ARCH: arch-ci-linux-cuda-pkgs
-    TEST_OPTS: -j3 query=requires queryval=cuda
+    TEST_ARCH: arch-ci-linux-cuda-pkgs-gcov
+    # run all tests that:
+    # 1. require cuda, OR
+    # 2. require device, OR
+    # 3. require kokkos[_kernels], AND lives in the vec subdirectory
+    #
+    # need to use the alternate OR spelling since '|' is interpreted as a pipe by the
+    # shell, and I could not manage to escape it enough times...
+    TEST_OPTS: -j3 queryval='cuda,device,kokkos*,vec*' query='requires,requires,requires%OR%name'
+    LOAD_MODULES: py-gcovr-5.2-gcc-11.2.0-wcsmyet
+    RUN_GCOV: 1
+    RUN_GCOV_OPTIONS: --decisions
 
 linux-cuda112-omp:
   extends:
@@ -576,7 +609,7 @@ linux-gcc-cxx-avx2:
     - .stage-3
     - .linux_test
   tags:
-    - name:isdp001
+    - name:petsc-knl-01
   variables:
     TEST_ARCH: arch-ci-linux-gcc-cxx-avx2
 
@@ -585,7 +618,7 @@ linux-clang-avx:
     - .stage-3
     - .linux_test
   tags:
-    - name:isdp001
+    - name:petsc-knl-01
   variables:
     TEST_ARCH: arch-ci-linux-clang-avx
 
@@ -594,19 +627,21 @@ linux-knl:
     - .stage-3
     - .linux_test
   tags:
-    - name:isdp001
+    - name:petsc-knl-01
   variables:
     MAKE_FFLAGS: -warn errors
     TEST_ARCH: arch-ci-linux-knl
+    LOAD_MODULES: intel-oneapi-compilers/2022.0.2 intel-oneapi-mkl/2022.0.2 intel-oneapi-mpi/2021.5.1
 
 linux-intel-mkl-single:
   extends:
     - .stage-3
     - .linux_test_nofflags
   tags:
-    - name:isdp001
+    - name:petsc-knl-01
   variables:
     TEST_ARCH: arch-ci-linux-intel-mkl-single
+    LOAD_MODULES: intel-oneapi-compilers/2022.0.2 intel-oneapi-mkl/2022.0.2 intel-oneapi-mpi/2021.5.1
 
 linux-cxx-cmplx-pkgs-64idx:
   extends:
@@ -639,6 +674,9 @@ linux-pkgs-cxx-mlib:
     - gce-u22-stage3
   variables:
     TEST_ARCH: arch-ci-linux-pkgs-cxx-mlib
+  except:
+    variables:
+      - $PETSC_CI_SCHEDULED =~ /yes/
 
 linux-pkgs-valgrind:
   extends:
@@ -668,7 +706,9 @@ linux-pkgs-gcov:
     - gce-nfs, linux-gcov
   variables:
     TEST_ARCH: arch-ci-linux-pkgs-gcov
+    LOAD_MODULES: python-3.9.13-gcc-7.5.0-fq67pdh py-gcovr-5.2-gcc-7.5.0-o7fu4xq
     RUN_GCOV: 1
+    RUN_GCOV_OPTIONS: --decisions
 
 linux-cmplx-gcov:
   extends:
@@ -679,8 +719,9 @@ linux-cmplx-gcov:
   variables:
     PETSC_OPTIONS:  -vecscatter_mpi1 false -options_left false -checkfunctionlist
     TEST_ARCH: arch-ci-linux-cmplx-gcov
-    LOAD_MODULES: gcc/8.3.0-fjpc5ys
+    LOAD_MODULES: gcc/8.3.0-fjpc5ys python-3.9.13-gcc-7.5.0-fq67pdh py-gcovr-5.2-gcc-7.5.0-o7fu4xq
     RUN_GCOV: 1
+    RUN_GCOV_OPTIONS: --decisions
 
 linux-matlab-ilp64-gcov:
   extends:
@@ -690,8 +731,9 @@ linux-matlab-ilp64-gcov:
     - gce-nfs, linux-gcov
   variables:
     TEST_ARCH: arch-ci-linux-matlab-ilp64-gcov
-    LOAD_MODULES: matlab/R2018a
+    LOAD_MODULES: matlab/R2018a python-3.9.13-gcc-7.5.0-fq67pdh py-gcovr-5.2-gcc-7.5.0-o7fu4xq
     RUN_GCOV: 1
+    RUN_GCOV_OPTIONS: --decisions
   allow_failure: true
 
 linux-gcov:
@@ -702,7 +744,9 @@ linux-gcov:
     - gce-nfs, linux-gcov
   variables:
     TEST_ARCH: arch-ci-linux-gcov
+    LOAD_MODULES: python-3.9.13-gcc-7.5.0-fq67pdh py-gcovr-5.2-gcc-7.5.0-o7fu4xq
     RUN_GCOV: 1
+    RUN_GCOV_OPTIONS: --decisions
 
 linux-pgi:
   extends:
@@ -762,7 +806,7 @@ linux-xsdk-dbg:
 
 linux-analyzer:
   extends:
-    - .stage-2
+    - .stage-3
     - .linux_test
   tags:
     - gce-u22-stage2
@@ -783,6 +827,10 @@ linux-analyzer:
     paths:
     - ${TEST_ARCH}/lib/petsc/conf/*.log
     - ./petscLintPatches/*.patch
+    expire_in: 4 days
+  except:
+    variables:
+      - $PETSC_CI_SCHEDULED =~ /yes/
 
 linux-intel:
   extends:
@@ -973,10 +1021,10 @@ osx-xsdk-opt:
   variables:
     TEST_ARCH: arch-ci-osx-xsdk-opt
 
-# job for analyzing the final coverage results
-analyze-pipeline:
+# job for analyzing the coverage results and generating the various reports
+analyze-coverage:
   extends: .test
-  stage: .post
+  stage: stage-4
   tags:
     - gce-nfs-short
   dependencies:
@@ -984,22 +1032,83 @@ analyze-pipeline:
     - linux-cmplx-gcov
     - linux-matlab-ilp64-gcov
     - linux-gcov
+    - linux-cuda-pkgs-gcov
   variables:
+    PYTHON: python3
     PETSC_ARCH: arch-ci-analyze-pipeline
+    LOAD_MODULES: python-3.9.13-gcc-7.5.0-fq67pdh py-gcovr-5.2-gcc-7.5.0-o7fu4xq
   before_script:
     - date
     - hostname
+    - if [ ! -z ${LOAD_MODULES+x} ]; then module --trace load ${LOAD_MODULES}; module list; fi
+    - ${PYTHON} --version
+    - gcovr --version
   script:
-  - ./configure --with-mpi=0 --with-cxx=0 --with-c2html
-  - make srchtml
-  - make mergegcov
+    - printf "PATH:$PATH\n"
+    - printf "PYTHONPATH:$PYTHONPATH\n"
+    - if [ ! -z ${CI_MERGE_REQUEST_SOURCE_BRANCH_NAME+x} ]; then printf "CI_MERGE_REQUEST_SOURCE_BRANCH_NAME:$CI_MERGE_REQUEST_SOURCE_BRANCH_NAME\n" ;fi
+    - ${PYTHON} ./configure --with-mpi=0 --with-cxx=0 --download-sowing --with-fortran-bindings
+    - make mergegcov PETSC_GCOV_OPTIONS='--ci-mode --verbose'
+  coverage: /^\s*lines:\s*\d+.\d+\%/
   artifacts:
     name: "$CI_JOB_NAME"
     when: always
     paths:
-    - arch-ci-analyze-pipeline/*
+    - arch-ci-analyze-pipeline/gcovr/*
+    - arch-ci-analyze-pipeline/lib/petsc/conf/*.log
+    expire_in: 4 days
+    reports:
+      coverage_report:
+        coverage_format: cobertura
+        path: arch-ci-analyze-pipeline/gcovr/xml/*.xml
+
+# template for the coverage review jobs, these must be separate jobs as you cannot deploy multiple
+# environments from one job...
+.coverage-review:
+  extends: .test
+  stage: .post
+  tags:
+    - gce-nfs-short
+  dependencies:
+    - analyze-coverage
+  script:
+    - date
+    - hostname
+  artifacts:
+    name: "$CI_JOB_NAME"
+    when: always
+    paths:
+    - arch-ci-analyze-pipeline/gcovr/*
+    - arch-ci-analyze-pipeline/lib/petsc/conf/*.log
     expire_in: 4 days
 
+coverage-total-review:
+  extends: .coverage-review
+  environment:
+    name: coverage/all/$CI_COMMIT_REF_SLUG
+    url: https://$CI_PROJECT_NAMESPACE.gitlab.io/-/$CI_PROJECT_NAME/-/jobs/$CI_JOB_ID/artifacts/arch-ci-analyze-pipeline/gcovr/html/report.html
+    auto_stop_in: one week
+    deployment_tier: testing
+
+coverage-untested-review:
+  extends: .coverage-review
+  environment:
+    name: coverage/untested/$CI_COMMIT_REF_SLUG
+    url: https://$CI_PROJECT_NAMESPACE.gitlab.io/-/$CI_PROJECT_NAME/-/jobs/$CI_JOB_ID/artifacts/arch-ci-analyze-pipeline/gcovr/html_untested/report_untested.html
+    auto_stop_in: one week
+    deployment_tier: testing
+
+analyze-pipeline:
+  extends: .coverage-review
+  script:
+    - date
+    - hostname
+    # This file is created by lib/petsc/bin/maint/gcov.py. If it exists then the CI
+    # pipeline should fail
+    - if [ -f ./arch-ci-analyze-pipeline/gcovr/.CI_FAIL ]; then
+        cat ./arch-ci-analyze-pipeline/gcovr/merge_gcov_errors.log;
+        exit 1;
+      fi
 
 #
 # Base job for a documentation build
@@ -1023,7 +1132,7 @@ docs-review:
     - .docs
     - .test-basic
   script:
-    - (make html BUILDDIR="../public" SPHINXOPTS="-T -E -W --keep-going") || (printf "Sphinx build failed (warnings count as errors)\n" && false)
+    - (make html BUILDDIR="../public" SPHINXOPTS="-T -E -W --keep-going -j 1") || (printf "Sphinx build failed (warnings count as errors)\n" && false)
     - (make latexpdf SPHINXOPTS="-T -E -W --keep-going") || (printf "Sphinx build failed (warnings count as errors)\n" && false)
     - cp _build/latex/manual.pdf ../public/html/docs/manual/
   environment:
@@ -1032,6 +1141,7 @@ docs-review:
   artifacts:
     paths:
       - public
+    expire_in: 4 days
   except:
     variables:
       - $PETSC_CI_SCHEDULED =~ /yes/
@@ -1045,15 +1155,17 @@ pages:  # this job name has special meaning to GitLab
   script:
     - mkdir -p ../public/ && cp public/* ../public/
     - git fetch --unshallow --no-tags origin +release:remotes/origin/release +main:remotes/origin/main
-    - git checkout origin/main && pip install -r requirements.txt && make website-deploy BUILDDIR="../public/main" && make latexpdf && mkdir -p ../public/main/docs/manual && cp _build/latex/manual.pdf ../public/main/docs/manual/
+    - git checkout origin/main && pip install -r requirements.txt && make website-deploy SPHINXOPTS="-j 1" BUILDDIR="../public/main" && make latexpdf && mkdir -p ../public/main/docs/manual && cp _build/latex/manual.pdf ../public/main/docs/manual/
     - make clean BUILDDIR="../public/release"
-    - git checkout origin/release && pip install -r requirements.txt && make website-deploy BUILDDIR="../public/release" && make latexpdf && mkdir -p ../public/release/docs/manual && cp _build/latex/manual.pdf ../public/release/docs/manual/
+    - git checkout origin/release && pip install -r requirements.txt && make website-deploy SPHINXOPTS="-j 1"  BUILDDIR="../public/release" && make latexpdf && mkdir -p ../public/release/docs/manual && cp _build/latex/manual.pdf ../public/release/docs/manual/
+    - rm -rf ../public/*/.doctrees
   only:
     variables:
       - $PETSC_CI_SCHEDULED == "yes"
   artifacts:
     paths:
       - public
+    expire_in: 4 days
 
 #
 #

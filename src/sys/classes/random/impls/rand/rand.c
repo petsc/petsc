@@ -1,14 +1,16 @@
 
 #include <petsc/private/randomimpl.h>
 
-PetscErrorCode PetscRandomSeed_Rand(PetscRandom r) {
+PetscErrorCode PetscRandomSeed_Rand(PetscRandom r)
+{
   PetscFunctionBegin;
   srand(r->seed);
   PetscFunctionReturn(0);
 }
 
 #define RAND_WRAP ((PetscReal)((rand() / (double)((unsigned int)RAND_MAX + 1))))
-PetscErrorCode PetscRandomGetValue_Rand(PetscRandom r, PetscScalar *val) {
+PetscErrorCode PetscRandomGetValue_Rand(PetscRandom r, PetscScalar *val)
+{
   PetscFunctionBegin;
 #if defined(PETSC_USE_COMPLEX)
   if (r->iset) *val = PetscRealPart(r->width) * RAND_WRAP + PetscRealPart(r->low) + (PetscImaginaryPart(r->width) * RAND_WRAP + PetscImaginaryPart(r->low)) * PETSC_i;
@@ -20,7 +22,8 @@ PetscErrorCode PetscRandomGetValue_Rand(PetscRandom r, PetscScalar *val) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscRandomGetValueReal_Rand(PetscRandom r, PetscReal *val) {
+PetscErrorCode PetscRandomGetValueReal_Rand(PetscRandom r, PetscReal *val)
+{
   PetscFunctionBegin;
 #if defined(PETSC_USE_COMPLEX)
   if (r->iset) *val = PetscRealPart(r->width) * RAND_WRAP + PetscRealPart(r->low);
@@ -52,7 +55,8 @@ static struct _PetscRandomOps PetscRandomOps_Values = {
 .seealso: `PetscRandomCreate()`, `PetscRandomSetType()`, `PETSCRAND48`, `PETSCSPRNG`, `PetscRandomSetFromOptions()`, `PetscRandomType`
 M*/
 
-PETSC_EXTERN PetscErrorCode PetscRandomCreate_Rand(PetscRandom r) {
+PETSC_EXTERN PetscErrorCode PetscRandomCreate_Rand(PetscRandom r)
+{
   PetscFunctionBegin;
   PetscCall(PetscMemcpy(r->ops, &PetscRandomOps_Values, sizeof(PetscRandomOps_Values)));
   PetscCall(PetscObjectChangeTypeName((PetscObject)r, PETSCRAND));

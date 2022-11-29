@@ -1,7 +1,8 @@
 #include <petsc/private/dmpleximpl.h> /*I      "petscdmplex.h"   I*/
 #include <pragmatic/cpragmatic.h>
 
-PETSC_EXTERN PetscErrorCode DMAdaptMetric_Pragmatic_Plex(DM dm, Vec vertexMetric, DMLabel bdLabel, DMLabel rgLabel, DM *dmNew) {
+PETSC_EXTERN PetscErrorCode DMAdaptMetric_Pragmatic_Plex(DM dm, Vec vertexMetric, DMLabel bdLabel, DMLabel rgLabel, DM *dmNew)
+{
   MPI_Comm    comm;
   const char *bdName = "_boundary_";
 #if 0
@@ -157,9 +158,14 @@ PETSC_EXTERN PetscErrorCode DMAdaptMetric_Pragmatic_Plex(DM dm, Vec vertexMetric
 #endif
   /* Send to Pragmatic and remesh */
   switch (dim) {
-  case 2: pragmatic_2d_mpi_init(&numVertices, &numCells, cells, x, y, l2gv, numLocVertices, comm); break;
-  case 3: pragmatic_3d_mpi_init(&numVertices, &numCells, cells, x, y, z, l2gv, numLocVertices, comm); break;
-  default: SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "No Pragmatic adaptation defined for dimension %" PetscInt_FMT, dim);
+  case 2:
+    pragmatic_2d_mpi_init(&numVertices, &numCells, cells, x, y, l2gv, numLocVertices, comm);
+    break;
+  case 3:
+    pragmatic_3d_mpi_init(&numVertices, &numCells, cells, x, y, z, l2gv, numLocVertices, comm);
+    break;
+  default:
+    SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "No Pragmatic adaptation defined for dimension %" PetscInt_FMT, dim);
   }
   pragmatic_set_boundary(&numBdFaces, bdFaces, bdFaceIds);
   pragmatic_set_metric(metric);
@@ -180,7 +186,8 @@ PETSC_EXTERN PetscErrorCode DMAdaptMetric_Pragmatic_Plex(DM dm, Vec vertexMetric
     PetscCall(PetscMalloc3(numVerticesNew, &xNew[0], numVerticesNew, &xNew[1], numVerticesNew, &xNew[2]));
     pragmatic_get_coords_3d_mpi(xNew[0], xNew[1], xNew[2]);
     break;
-  default: SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "No Pragmatic adaptation defined for dimension %" PetscInt_FMT, dim);
+  default:
+    SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "No Pragmatic adaptation defined for dimension %" PetscInt_FMT, dim);
   }
   for (v = 0; v < numVerticesNew; ++v) {
     for (d = 0; d < dim; ++d) coordsNew[v * dim + d] = xNew[d][v];
@@ -220,8 +227,12 @@ PETSC_EXTERN PetscErrorCode DMAdaptMetric_Pragmatic_Plex(DM dm, Vec vertexMetric
 
   /* Clean up */
   switch (dim) {
-  case 2: PetscCall(PetscFree2(xNew[0], xNew[1])); break;
-  case 3: PetscCall(PetscFree3(xNew[0], xNew[1], xNew[2])); break;
+  case 2:
+    PetscCall(PetscFree2(xNew[0], xNew[1]));
+    break;
+  case 3:
+    PetscCall(PetscFree3(xNew[0], xNew[1], xNew[2]));
+    break;
   }
   PetscCall(PetscFree(cellsNew));
   PetscCall(PetscFree5(x, y, z, metric, cells));

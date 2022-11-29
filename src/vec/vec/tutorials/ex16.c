@@ -10,7 +10,8 @@ static char help[] = "Demonstrates VecStrideScatter() and VecStrideGather() with
 
 #include <petscvec.h>
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   Vec         v, s, r, vecs[2]; /* vectors */
   PetscInt    i, start, end, n = 20;
   PetscScalar value;

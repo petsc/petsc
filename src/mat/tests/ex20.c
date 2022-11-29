@@ -3,7 +3,8 @@ static char help[] = "Tests converting a matrix to another format with MatConver
 
 #include <petscmat.h>
 
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   Mat         C, A;
   PetscInt    i, j, m = 5, n = 4, Ii, J;
   PetscMPIInt rank, size;

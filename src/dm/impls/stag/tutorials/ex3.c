@@ -69,32 +69,41 @@ and left boundaries.
 These expressions could be made more interesting with more z terms,
 and convergence could be confirmed.  */
 
-static PetscScalar uxRef(PetscScalar x, PetscScalar y, PetscScalar z) {
+static PetscScalar uxRef(PetscScalar x, PetscScalar y, PetscScalar z)
+{
   return 0.0 * x + y * y - 2.0 * y * y * y + y * y * y * y + 0.0 * z;
 }
-static PetscScalar uyRef(PetscScalar x, PetscScalar y, PetscScalar z) {
+static PetscScalar uyRef(PetscScalar x, PetscScalar y, PetscScalar z)
+{
   return x * x - 2.0 * x * x * x + x * x * x * x + 0.0 * y + 0.0 * z;
 }
-static PetscScalar uzRef(PetscScalar x, PetscScalar y, PetscScalar z) {
+static PetscScalar uzRef(PetscScalar x, PetscScalar y, PetscScalar z)
+{
   return 0.0 * x + 0.0 * y + 0.0 * z + 1.0;
 }
-static PetscScalar pRef(PetscScalar x, PetscScalar y, PetscScalar z) {
+static PetscScalar pRef(PetscScalar x, PetscScalar y, PetscScalar z)
+{
   return -1.0 * (x - 0.5) + -3.0 / 2.0 * y * y + 0.5 - 2.0 * (z - 1.0);
 } /* zero integral */
-static PetscScalar fx(PetscScalar x, PetscScalar y, PetscScalar z) {
+static PetscScalar fx(PetscScalar x, PetscScalar y, PetscScalar z)
+{
   return 0.0 * x + 2.0 - 12.0 * y + 12.0 * y * y + 0.0 * z + 1.0;
 }
-static PetscScalar fy(PetscScalar x, PetscScalar y, PetscScalar z) {
+static PetscScalar fy(PetscScalar x, PetscScalar y, PetscScalar z)
+{
   return 2.0 - 12.0 * x + 12.0 * x * x + 3.0 * y + 0.0 * z;
 }
-static PetscScalar fz(PetscScalar x, PetscScalar y, PetscScalar z) {
+static PetscScalar fz(PetscScalar x, PetscScalar y, PetscScalar z)
+{
   return 0.0 * x + 0.0 * y + 0.0 * z + 2.0;
 }
-static PetscScalar g(PetscScalar x, PetscScalar y, PetscScalar z) {
+static PetscScalar g(PetscScalar x, PetscScalar y, PetscScalar z)
+{
   return 0.0 * x + 0.0 * y + 0.0 * z + 0.0;
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   DM        dmSol;
   Vec       sol, solRef, rhs;
   Mat       A;
@@ -154,7 +163,8 @@ int main(int argc, char **argv) {
   return 0;
 }
 
-static PetscErrorCode CreateSystem(DM dmSol, Mat *pA, Vec *pRhs, PetscBool pinPressure) {
+static PetscErrorCode CreateSystem(DM dmSol, Mat *pA, Vec *pRhs, PetscBool pinPressure)
+{
   Vec             rhs, coordLocal;
   Mat             A;
   PetscInt        startx, starty, startz, N[3], nx, ny, nz, ex, ey, ez, d;
@@ -1758,7 +1768,8 @@ static PetscErrorCode CreateSystem(DM dmSol, Mat *pA, Vec *pRhs, PetscBool pinPr
    that this will fill in zeros for "extra" dof)
    - Set the nullspace for the operator
    - Destroy everything (the operator keeps the references it needs) */
-static PetscErrorCode AttachNullspace(DM dmSol, Mat A) {
+static PetscErrorCode AttachNullspace(DM dmSol, Mat A)
+{
   DM           dmPressure;
   Vec          constantPressure, basis;
   PetscReal    nrm;
@@ -1780,7 +1791,8 @@ static PetscErrorCode AttachNullspace(DM dmSol, Mat A) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode CreateReferenceSolution(DM dmSol, Vec *pSolRef) {
+static PetscErrorCode CreateReferenceSolution(DM dmSol, Vec *pSolRef)
+{
   PetscInt        start[3], n[3], nExtra[3], ex, ey, ez, d;
   PetscInt        ip, iux, iuy, iuz, icp[3], icux[3], icuy[3], icuz[3];
   Vec             solRef, solRefLocal, coord, coordLocal;
@@ -1826,7 +1838,8 @@ static PetscErrorCode CreateReferenceSolution(DM dmSol, Vec *pSolRef) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode CheckSolution(Vec sol, Vec solRef) {
+static PetscErrorCode CheckSolution(Vec sol, Vec solRef)
+{
   Vec       diff;
   PetscReal normsolRef, errAbs, errRel;
 
@@ -1854,7 +1867,7 @@ static PetscErrorCode CheckSolution(Vec sol, Vec solRef) {
       suffix: 2
       requires: !single
       nsize: 4
-      args: -ksp_monitor_short -ksp_converged_reason -pc_fieldsplit_schur_fact_type diag -fieldsplit_0_ksp_type preonly -fieldsplit_1_pc_type none -fieldsplit_0_pc_type gamg -fieldsplit_0_ksp_type gmres -fieldsplit_0_pc_gamg_esteig_ksp_max_it 5 -fieldsplit_0_pc_gamg_symmetrize_graph
+      args: -ksp_monitor_short -ksp_converged_reason -pc_fieldsplit_schur_fact_type diag -fieldsplit_0_ksp_type preonly -fieldsplit_1_pc_type none -fieldsplit_0_pc_type gamg -fieldsplit_0_ksp_type gmres -fieldsplit_0_pc_gamg_esteig_ksp_max_it 5
 
    test:
       suffix: direct_umfpack

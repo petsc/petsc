@@ -16,7 +16,8 @@
 #include <../src/ts/impls/explicit/rk/rk.h>
 #include <../src/ts/impls/explicit/rk/mrk.h>
 
-static PetscErrorCode TSReset_RK_MultirateNonsplit(TS ts) {
+static PetscErrorCode TSReset_RK_MultirateNonsplit(TS ts)
+{
   TS_RK    *rk  = (TS_RK *)ts->data;
   RKTableau tab = rk->tableau;
 
@@ -26,7 +27,8 @@ static PetscErrorCode TSReset_RK_MultirateNonsplit(TS ts) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSInterpolate_RK_MultirateNonsplit(TS ts, PetscReal itime, Vec X) {
+static PetscErrorCode TSInterpolate_RK_MultirateNonsplit(TS ts, PetscReal itime, Vec X)
+{
   TS_RK           *rk = (TS_RK *)ts->data;
   PetscInt         s = rk->tableau->s, p = rk->tableau->p, i, j;
   PetscReal        h = ts->time_step;
@@ -48,7 +50,8 @@ static PetscErrorCode TSInterpolate_RK_MultirateNonsplit(TS ts, PetscReal itime,
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSStepRefine_RK_MultirateNonsplit(TS ts) {
+static PetscErrorCode TSStepRefine_RK_MultirateNonsplit(TS ts)
+{
   TS               previousts, subts;
   TS_RK           *rk  = (TS_RK *)ts->data;
   RKTableau        tab = rk->tableau;
@@ -112,7 +115,8 @@ static PetscErrorCode TSStepRefine_RK_MultirateNonsplit(TS ts) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSStep_RK_MultirateNonsplit(TS ts) {
+static PetscErrorCode TSStep_RK_MultirateNonsplit(TS ts)
+{
   TS_RK           *rk  = (TS_RK *)ts->data;
   RKTableau        tab = rk->tableau;
   Vec             *Y = rk->Y, *YdotRHS = rk->YdotRHS, *YdotRHS_slow = rk->YdotRHS_slow;
@@ -166,7 +170,8 @@ static PetscErrorCode TSStep_RK_MultirateNonsplit(TS ts) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSSetUp_RK_MultirateNonsplit(TS ts) {
+static PetscErrorCode TSSetUp_RK_MultirateNonsplit(TS ts)
+{
   TS_RK    *rk  = (TS_RK *)ts->data;
   RKTableau tab = rk->tableau;
 
@@ -189,7 +194,8 @@ static PetscErrorCode TSSetUp_RK_MultirateNonsplit(TS ts) {
 /*
   Copy DM from tssrc to tsdest, while keeping the original DMTS and DMSNES in tsdest.
 */
-static PetscErrorCode TSCopyDM(TS tssrc, TS tsdest) {
+static PetscErrorCode TSCopyDM(TS tssrc, TS tsdest)
+{
   DM newdm, dmsrc, dmdest;
 
   PetscFunctionBegin;
@@ -203,7 +209,8 @@ static PetscErrorCode TSCopyDM(TS tssrc, TS tsdest) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSReset_RK_MultirateSplit(TS ts) {
+static PetscErrorCode TSReset_RK_MultirateSplit(TS ts)
+{
   TS_RK *rk = (TS_RK *)ts->data;
 
   PetscFunctionBegin;
@@ -222,7 +229,8 @@ static PetscErrorCode TSReset_RK_MultirateSplit(TS ts) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSInterpolate_RK_MultirateSplit(TS ts, PetscReal itime, Vec X) {
+static PetscErrorCode TSInterpolate_RK_MultirateSplit(TS ts, PetscReal itime, Vec X)
+{
   TS_RK           *rk = (TS_RK *)ts->data;
   Vec              Xslow;
   PetscInt         s = rk->tableau->s, p = rk->tableau->p, i, j;
@@ -244,7 +252,8 @@ static PetscErrorCode TSInterpolate_RK_MultirateSplit(TS ts, PetscReal itime, Ve
     h = ts->ptime - ts->ptime_prev;
     t = (itime - ts->ptime) / h + 1; /* In the interval [0,1] */
     break;
-  default: SETERRQ(PetscObjectComm((PetscObject)ts), PETSC_ERR_PLIB, "Invalid TSStepStatus");
+  default:
+    SETERRQ(PetscObjectComm((PetscObject)ts), PETSC_ERR_PLIB, "Invalid TSStepStatus");
   }
   PetscCall(PetscMalloc1(s, &b));
   for (i = 0; i < s; i++) b[i] = 0;
@@ -268,7 +277,8 @@ static PetscErrorCode TSInterpolate_RK_MultirateSplit(TS ts, PetscReal itime, Ve
  x1 = x0 + h b^T YdotRHS
 
 */
-static PetscErrorCode TSEvaluateStep_RK_MultirateSplit(TS ts, PetscInt order, Vec X, PetscBool *done) {
+static PetscErrorCode TSEvaluateStep_RK_MultirateSplit(TS ts, PetscInt order, Vec X, PetscBool *done)
+{
   TS_RK       *rk  = (TS_RK *)ts->data;
   RKTableau    tab = rk->tableau;
   Vec          Xslow, Xfast; /* subvectors of X which store slow components and fast components respectively */
@@ -292,7 +302,8 @@ static PetscErrorCode TSEvaluateStep_RK_MultirateSplit(TS ts, PetscInt order, Ve
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSStepRefine_RK_MultirateSplit(TS ts) {
+static PetscErrorCode TSStepRefine_RK_MultirateSplit(TS ts)
+{
   TS_RK           *rk         = (TS_RK *)ts->data;
   TS               subts_fast = rk->subts_fast, currentlevelts;
   TS_RK           *subrk_fast = (TS_RK *)subts_fast->data;
@@ -350,7 +361,8 @@ static PetscErrorCode TSStepRefine_RK_MultirateSplit(TS ts) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSStep_RK_MultirateSplit(TS ts) {
+static PetscErrorCode TSStep_RK_MultirateSplit(TS ts)
+{
   TS_RK           *rk  = (TS_RK *)ts->data;
   RKTableau        tab = rk->tableau;
   Vec             *Y = rk->Y, *YdotRHS = rk->YdotRHS;
@@ -402,7 +414,8 @@ static PetscErrorCode TSStep_RK_MultirateSplit(TS ts) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TSSetUp_RK_MultirateSplit(TS ts) {
+static PetscErrorCode TSSetUp_RK_MultirateSplit(TS ts)
+{
   TS_RK *rk = (TS_RK *)ts->data, *nextlevelrk, *currentlevelrk;
   TS     nextlevelts;
   Vec    X0;
@@ -427,7 +440,7 @@ static PetscErrorCode TSSetUp_RK_MultirateSplit(TS ts) {
 
     /* set up the ts for the slow part */
     nextlevelts = currentlevelrk->subts_slow;
-    PetscCall(PetscNewLog(nextlevelts, &nextlevelrk));
+    PetscCall(PetscNew(&nextlevelrk));
     nextlevelrk->tableau = rk->tableau;
     nextlevelrk->work    = rk->work;
     nextlevelrk->Y       = rk->Y;
@@ -438,7 +451,7 @@ static PetscErrorCode TSSetUp_RK_MultirateSplit(TS ts) {
 
     /* set up the ts for the fast part */
     nextlevelts = currentlevelrk->subts_fast;
-    PetscCall(PetscNewLog(nextlevelts, &nextlevelrk));
+    PetscCall(PetscNew(&nextlevelrk));
     nextlevelrk->tableau = rk->tableau;
     nextlevelrk->work    = rk->work;
     nextlevelrk->Y       = rk->Y;
@@ -462,7 +475,8 @@ static PetscErrorCode TSSetUp_RK_MultirateSplit(TS ts) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode TSRKSetMultirate_RK(TS ts, PetscBool use_multirate) {
+PetscErrorCode TSRKSetMultirate_RK(TS ts, PetscBool use_multirate)
+{
   TS_RK *rk = (TS_RK *)ts->data;
 
   PetscFunctionBegin;
@@ -484,7 +498,8 @@ PetscErrorCode TSRKSetMultirate_RK(TS ts, PetscBool use_multirate) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode TSRKGetMultirate_RK(TS ts, PetscBool *use_multirate) {
+PetscErrorCode TSRKGetMultirate_RK(TS ts, PetscBool *use_multirate)
+{
   TS_RK *rk = (TS_RK *)ts->data;
 
   PetscFunctionBegin;

@@ -8,7 +8,7 @@
 */
 
 #ifndef ADOLCCTX
-#define ADOLCCTX
+  #define ADOLCCTX
 typedef struct {
   /* No ADOL-C annotation */
   PetscBool no_an;
@@ -25,7 +25,7 @@ typedef struct {
 
 /* Matrix (free) context */
 #ifndef MATCTX
-#define MATCTX
+  #define MATCTX
 typedef struct {
   PetscReal     time;
   Vec           X;

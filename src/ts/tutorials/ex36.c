@@ -35,7 +35,8 @@ F*/
 FILE *gfilepointer_data, *gfilepointer_info;
 
 /* Defines the source  */
-PetscErrorCode Ue(PetscScalar t, PetscScalar *U) {
+PetscErrorCode Ue(PetscScalar t, PetscScalar *U)
+{
   PetscFunctionBeginUser;
   *U = 0.4 * PetscSinReal(200 * PETSC_PI * t);
   PetscFunctionReturn(0);
@@ -44,7 +45,8 @@ PetscErrorCode Ue(PetscScalar t, PetscScalar *U) {
 /*
      Defines the DAE passed to the time solver
 */
-static PetscErrorCode IFunctionImplicit(TS ts, PetscReal t, Vec Y, Vec Ydot, Vec F, void *ctx) {
+static PetscErrorCode IFunctionImplicit(TS ts, PetscReal t, Vec Y, Vec Ydot, Vec F, void *ctx)
+{
   const PetscScalar *y, *ydot;
   PetscScalar       *f;
 
@@ -69,7 +71,8 @@ static PetscErrorCode IFunctionImplicit(TS ts, PetscReal t, Vec Y, Vec Ydot, Vec
 /*
      Defines the Jacobian of the ODE passed to the ODE solver. See TSSetIJacobian() for the meaning of a and the Jacobian.
 */
-static PetscErrorCode IJacobianImplicit(TS ts, PetscReal t, Vec Y, Vec Ydot, PetscReal a, Mat A, Mat B, void *ctx) {
+static PetscErrorCode IJacobianImplicit(TS ts, PetscReal t, Vec Y, Vec Ydot, PetscReal a, Mat A, Mat B, void *ctx)
+{
   PetscInt           rowcol[] = {0, 1, 2, 3, 4};
   const PetscScalar *y, *ydot;
   PetscScalar        J[5][5];
@@ -108,7 +111,8 @@ static PetscErrorCode IJacobianImplicit(TS ts, PetscReal t, Vec Y, Vec Ydot, Pet
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   TS           ts; /* ODE integrator */
   Vec          Y;  /* solution will be stored here */
   Mat          A;  /* Jacobian matrix */

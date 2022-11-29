@@ -7,7 +7,8 @@ PetscClassId MAT_PARTITIONING_CLASSID;
 /*
    Simplest partitioning, keeps the current partitioning.
 */
-static PetscErrorCode MatPartitioningApply_Current(MatPartitioning part, IS *partitioning) {
+static PetscErrorCode MatPartitioningApply_Current(MatPartitioning part, IS *partitioning)
+{
   PetscInt    m;
   PetscMPIInt rank, size;
 
@@ -28,7 +29,8 @@ static PetscErrorCode MatPartitioningApply_Current(MatPartitioning part, IS *par
 /*
    partition an index to rebalance the computation
 */
-static PetscErrorCode MatPartitioningApply_Average(MatPartitioning part, IS *partitioning) {
+static PetscErrorCode MatPartitioningApply_Average(MatPartitioning part, IS *partitioning)
+{
   PetscInt m, M, nparts, *indices, r, d, *parts, i, start, end, loc;
 
   PetscFunctionBegin;
@@ -54,7 +56,8 @@ static PetscErrorCode MatPartitioningApply_Average(MatPartitioning part, IS *par
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatPartitioningApply_Square(MatPartitioning part, IS *partitioning) {
+static PetscErrorCode MatPartitioningApply_Square(MatPartitioning part, IS *partitioning)
+{
   PetscInt    cell, n, N, p, rstart, rend, *color;
   PetscMPIInt size;
 
@@ -76,7 +79,8 @@ static PetscErrorCode MatPartitioningApply_Square(MatPartitioning part, IS *part
   PetscFunctionReturn(0);
 }
 
-PETSC_EXTERN PetscErrorCode MatPartitioningCreate_Current(MatPartitioning part) {
+PETSC_EXTERN PetscErrorCode MatPartitioningCreate_Current(MatPartitioning part)
+{
   PetscFunctionBegin;
   part->ops->apply   = MatPartitioningApply_Current;
   part->ops->view    = NULL;
@@ -84,7 +88,8 @@ PETSC_EXTERN PetscErrorCode MatPartitioningCreate_Current(MatPartitioning part) 
   PetscFunctionReturn(0);
 }
 
-PETSC_EXTERN PetscErrorCode MatPartitioningCreate_Average(MatPartitioning part) {
+PETSC_EXTERN PetscErrorCode MatPartitioningCreate_Average(MatPartitioning part)
+{
   PetscFunctionBegin;
   part->ops->apply   = MatPartitioningApply_Average;
   part->ops->view    = NULL;
@@ -92,7 +97,8 @@ PETSC_EXTERN PetscErrorCode MatPartitioningCreate_Average(MatPartitioning part) 
   PetscFunctionReturn(0);
 }
 
-PETSC_EXTERN PetscErrorCode MatPartitioningCreate_Square(MatPartitioning part) {
+PETSC_EXTERN PetscErrorCode MatPartitioningCreate_Square(MatPartitioning part)
+{
   PetscFunctionBegin;
   part->ops->apply   = MatPartitioningApply_Square;
   part->ops->view    = NULL;
@@ -106,7 +112,8 @@ PETSC_EXTERN PetscErrorCode MatPartitioningCreate_Square(MatPartitioning part) {
      levels[  0 :         p-1) : level in the tree for each separator (-1 root, -2 and -3 first level and so on)
    The arrays must be large enough
 */
-PETSC_INTERN PetscErrorCode MatPartitioningSizesToSep_Private(PetscInt p, PetscInt sizes[], PetscInt seps[], PetscInt level[]) {
+PETSC_INTERN PetscErrorCode MatPartitioningSizesToSep_Private(PetscInt p, PetscInt sizes[], PetscInt seps[], PetscInt level[])
+{
   PetscInt l2p, i, pTree, pStartTree;
 
   PetscFunctionBegin;
@@ -179,7 +186,8 @@ $     -mat_partitioning_type my_part
 
 .seealso: `MatPartitioning`, `MatPartitioningType`, `MatPartitioningCreate()`, `MatPartitioningRegisterDestroy()`, `MatPartitioningRegisterAll()`
 @*/
-PetscErrorCode MatPartitioningRegister(const char sname[], PetscErrorCode (*function)(MatPartitioning)) {
+PetscErrorCode MatPartitioningRegister(const char sname[], PetscErrorCode (*function)(MatPartitioning))
+{
   PetscFunctionBegin;
   PetscCall(MatInitializePackage());
   PetscCall(PetscFunctionListAdd(&MatPartitioningList, sname, function));
@@ -204,7 +212,8 @@ PetscErrorCode MatPartitioningRegister(const char sname[], PetscErrorCode (*func
 
 .seealso: `MatPartitioning`, `MatPartitioningType`, `MatPartitioningCreate()`, `MatPartitioningRegisterDestroy()`, `MatPartitioningRegisterAll()`
 @*/
-PetscErrorCode MatPartitioningGetType(MatPartitioning partitioning, MatPartitioningType *type) {
+PetscErrorCode MatPartitioningGetType(MatPartitioning partitioning, MatPartitioningType *type)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(partitioning, MAT_PARTITIONING_CLASSID, 1);
   PetscValidPointer(type, 2);
@@ -227,7 +236,8 @@ PetscErrorCode MatPartitioningGetType(MatPartitioning partitioning, MatPartition
 
 .seealso: `MatPartitioning`, `MatPartitioningCreate()`, `MatPartitioningApply()`
 @*/
-PetscErrorCode MatPartitioningSetNParts(MatPartitioning part, PetscInt n) {
+PetscErrorCode MatPartitioningSetNParts(MatPartitioning part, PetscInt n)
+{
   PetscFunctionBegin;
   part->n = n;
   PetscFunctionReturn(0);
@@ -254,7 +264,8 @@ PetscErrorCode MatPartitioningSetNParts(MatPartitioning part, PetscInt n) {
           `MatPartitioningDestroy()`, `MatPartitioningSetAdjacency()`, `ISPartitioningToNumbering()`,
           `ISPartitioningCount()`
 @*/
-PetscErrorCode MatPartitioningApplyND(MatPartitioning matp, IS *partitioning) {
+PetscErrorCode MatPartitioningApplyND(MatPartitioning matp, IS *partitioning)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(matp, MAT_PARTITIONING_CLASSID, 1);
   PetscValidPointer(partitioning, 2);
@@ -296,7 +307,8 @@ $    -mat_partitioning_view
           `MatPartitioningDestroy()`, `MatPartitioningSetAdjacency()`, `ISPartitioningToNumbering()`,
           `ISPartitioningCount()`
 @*/
-PetscErrorCode MatPartitioningApply(MatPartitioning matp, IS *partitioning) {
+PetscErrorCode MatPartitioningApply(MatPartitioning matp, IS *partitioning)
+{
   PetscBool viewbalance, improve;
 
   PetscFunctionBegin;
@@ -348,7 +360,8 @@ $    -mat_partitioning_improve
           `MatPartitioningDestroy()`, `MatPartitioningSetAdjacency()`, `ISPartitioningToNumbering()`,
           `ISPartitioningCount()`
 @*/
-PetscErrorCode MatPartitioningImprove(MatPartitioning matp, IS *partitioning) {
+PetscErrorCode MatPartitioningImprove(MatPartitioning matp, IS *partitioning)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(matp, MAT_PARTITIONING_CLASSID, 1);
   PetscValidPointer(partitioning, 2);
@@ -378,7 +391,8 @@ $    -mat_partitioning_view_balance
 
 .seealso: `MatPartitioning`, `MatPartitioningType`, `MatPartitioningApply()`, `MatPartitioningView()`
 @*/
-PetscErrorCode MatPartitioningViewImbalance(MatPartitioning matp, IS partitioning) {
+PetscErrorCode MatPartitioningViewImbalance(MatPartitioning matp, IS partitioning)
+{
   PetscInt        nparts, *subdomainsizes, *subdomainsizes_tmp, nlocal, i, maxsub, minsub, avgsub;
   const PetscInt *indices;
   PetscViewer     viewer;
@@ -421,7 +435,8 @@ PetscErrorCode MatPartitioningViewImbalance(MatPartitioning matp, IS partitionin
 
 .seealso: `MatPartitioning`, `MatPartitioningType`, `MatPartitioningCreate()`
 @*/
-PetscErrorCode MatPartitioningSetAdjacency(MatPartitioning part, Mat adj) {
+PetscErrorCode MatPartitioningSetAdjacency(MatPartitioning part, Mat adj)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part, MAT_PARTITIONING_CLASSID, 1);
   PetscValidHeaderSpecific(adj, MAT_CLASSID, 2);
@@ -441,7 +456,8 @@ PetscErrorCode MatPartitioningSetAdjacency(MatPartitioning part, Mat adj) {
 
 .seealso: `MatPartitioning`, `MatPartitioningType`, `MatPartitioningCreate()`
 @*/
-PetscErrorCode MatPartitioningDestroy(MatPartitioning *part) {
+PetscErrorCode MatPartitioningDestroy(MatPartitioning *part)
+{
   PetscFunctionBegin;
   if (!*part) PetscFunctionReturn(0);
   PetscValidHeaderSpecific((*part), MAT_PARTITIONING_CLASSID, 1);
@@ -477,7 +493,8 @@ PetscErrorCode MatPartitioningDestroy(MatPartitioning *part) {
 
 .seealso: `MatPartitioning`, `MatPartitioningCreate()`, `MatPartitioningSetType()`, `MatPartitioningSetPartitionWeights()`, `MatPartitioningSetNumberVertexWeights()`
 @*/
-PetscErrorCode MatPartitioningSetVertexWeights(MatPartitioning part, const PetscInt weights[]) {
+PetscErrorCode MatPartitioningSetVertexWeights(MatPartitioning part, const PetscInt weights[])
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part, MAT_PARTITIONING_CLASSID, 1);
   PetscCall(PetscFree(part->vertex_weights));
@@ -507,7 +524,8 @@ PetscErrorCode MatPartitioningSetVertexWeights(MatPartitioning part, const Petsc
 
 .seealso:  `MatPartitioning`, `MatPartitioningSetVertexWeights()`, `MatPartitioningCreate()`, `MatPartitioningSetType()`, `MatPartitioningSetVertexWeights()`
 @*/
-PetscErrorCode MatPartitioningSetPartitionWeights(MatPartitioning part, const PetscReal weights[]) {
+PetscErrorCode MatPartitioningSetPartitionWeights(MatPartitioning part, const PetscReal weights[])
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part, MAT_PARTITIONING_CLASSID, 1);
   PetscCall(PetscFree(part->part_weights));
@@ -532,7 +550,8 @@ PetscErrorCode MatPartitioningSetPartitionWeights(MatPartitioning part, const Pe
 
 .seealso: `MatPartitioning`, `MatPartitioningCreate()`, `MatPartitioningSetType()`, `MatPartitioningSetVertexWeights()`, `MatPartitioningSetPartitionWeights()`
 @*/
-PetscErrorCode MatPartitioningSetUseEdgeWeights(MatPartitioning part, PetscBool use_edge_weights) {
+PetscErrorCode MatPartitioningSetUseEdgeWeights(MatPartitioning part, PetscBool use_edge_weights)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part, MAT_PARTITIONING_CLASSID, 1);
   part->use_edge_weights = use_edge_weights;
@@ -555,7 +574,8 @@ PetscErrorCode MatPartitioningSetUseEdgeWeights(MatPartitioning part, PetscBool 
 .seealso: `MatPartitioning`, `MatPartitioningCreate()`, `MatPartitioningSetType()`, `MatPartitioningSetVertexWeights()`, `MatPartitioningSetPartitionWeights()`,
           `MatPartitioningSetUseEdgeWeights`
 @*/
-PetscErrorCode MatPartitioningGetUseEdgeWeights(MatPartitioning part, PetscBool *use_edge_weights) {
+PetscErrorCode MatPartitioningGetUseEdgeWeights(MatPartitioning part, PetscBool *use_edge_weights)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part, MAT_PARTITIONING_CLASSID, 1);
   PetscValidBoolPointer(use_edge_weights, 2);
@@ -579,7 +599,8 @@ PetscErrorCode MatPartitioningGetUseEdgeWeights(MatPartitioning part, PetscBool 
 .seealso: `MatPartitioning`, `MatPartitioningSetType()`, `MatPartitioningApply()`, `MatPartitioningDestroy()`,
           `MatPartitioningSetAdjacency()`
 @*/
-PetscErrorCode MatPartitioningCreate(MPI_Comm comm, MatPartitioning *newp) {
+PetscErrorCode MatPartitioningCreate(MPI_Comm comm, MatPartitioning *newp)
+{
   MatPartitioning part;
   PetscMPIInt     size;
 
@@ -629,7 +650,8 @@ PetscErrorCode MatPartitioningCreate(MPI_Comm comm, MatPartitioning *newp) {
 
 .seealso: `MatPartitioning`, `MatPartitioningView()`, `PetscObjectViewFromOptions()`, `MatPartitioningCreate()`
 @*/
-PetscErrorCode MatPartitioningViewFromOptions(MatPartitioning A, PetscObject obj, const char name[]) {
+PetscErrorCode MatPartitioningViewFromOptions(MatPartitioning A, PetscObject obj, const char name[])
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, MAT_PARTITIONING_CLASSID, 1);
   PetscCall(PetscObjectViewFromOptions((PetscObject)A, obj, name));
@@ -660,7 +682,8 @@ PetscErrorCode MatPartitioningViewFromOptions(MatPartitioning A, PetscObject obj
 
 .seealso: `MatPartitioning`, `PetscViewer`, `PetscViewerASCIIOpen()`
 @*/
-PetscErrorCode MatPartitioningView(MatPartitioning part, PetscViewer viewer) {
+PetscErrorCode MatPartitioningView(MatPartitioning part, PetscViewer viewer)
+{
   PetscBool iascii;
 
   PetscFunctionBegin;
@@ -689,16 +712,15 @@ PetscErrorCode MatPartitioningView(MatPartitioning part, PetscViewer viewer) {
 +  part - the partitioning context.
 -  type - a known method
 
-   Options Database Command:
-$  -mat_partitioning_type  <type>
-$      Use -help for a list of available methods
-$      (for instance, parmetis)
+   Options Database Key:
+.  -mat_partitioning_type  <type> - (for instance, parmetis), use -help for a list of available methods
 
    Level: intermediate
 
 .seealso: `MatPartitioning`, `MatPartitioningCreate()`, `MatPartitioningApply()`, `MatPartitioningType`
 @*/
-PetscErrorCode MatPartitioningSetType(MatPartitioning part, MatPartitioningType type) {
+PetscErrorCode MatPartitioningSetType(MatPartitioning part, MatPartitioningType type)
+{
   PetscBool match;
   PetscErrorCode (*r)(MatPartitioning);
 
@@ -735,21 +757,20 @@ PetscErrorCode MatPartitioningSetType(MatPartitioning part, MatPartitioningType 
    Input Parameter:
 .  part - the partitioning context.
 
-   Options Database Command:
-$  -mat_partitioning_type  <type>
-$      Use -help for a list of available methods
-$      (for instance, parmetis)
-$  -mat_partitioning_nparts - number of subgraphs
+   Options Database Keys:
++  -mat_partitioning_type  <type> - (for instance, parmetis), use -help for a list of available methods
+-  -mat_partitioning_nparts - number of subgraphs
+
+   Level: beginner
 
    Note:
     If the partitioner has not been set by the user it uses one of the installed partitioner such as ParMetis. If there are
    no installed partitioners it uses current which means no repartioning.
 
-   Level: beginner
-
 .seealso: `MatPartitioning`
 @*/
-PetscErrorCode MatPartitioningSetFromOptions(MatPartitioning part) {
+PetscErrorCode MatPartitioningSetFromOptions(MatPartitioning part)
+{
   PetscBool   flag;
   char        type[256];
   const char *def;
@@ -801,7 +822,8 @@ PetscErrorCode MatPartitioningSetFromOptions(MatPartitioning part) {
 
 .seealso: `MatPartitioning`, `MatPartitioningSetVertexWeights()`
 @*/
-PetscErrorCode MatPartitioningSetNumberVertexWeights(MatPartitioning partitioning, PetscInt ncon) {
+PetscErrorCode MatPartitioningSetNumberVertexWeights(MatPartitioning partitioning, PetscInt ncon)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(partitioning, MAT_PARTITIONING_CLASSID, 1);
   partitioning->ncon = ncon;

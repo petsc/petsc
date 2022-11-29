@@ -1,7 +1,6 @@
 
 /*
     This file implements FBiCGStab-R.
-    Only allow right preconditioning.
     FBiCGStab-R is a mathematically equivalent variant of FBiCGStab. Differences are:
       (1) There are fewer MPI_Allreduce calls.
       (2) The convergence occasionally is much faster than that of FBiCGStab.
@@ -9,13 +8,15 @@
 #include <../src/ksp/ksp/impls/bcgs/bcgsimpl.h> /*I  "petscksp.h"  I*/
 #include <petsc/private/vecimpl.h>
 
-static PetscErrorCode KSPSetUp_FBCGSR(KSP ksp) {
+static PetscErrorCode KSPSetUp_FBCGSR(KSP ksp)
+{
   PetscFunctionBegin;
   PetscCall(KSPSetWorkVecs(ksp, 8));
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode KSPSolve_FBCGSR(KSP ksp) {
+static PetscErrorCode KSPSolve_FBCGSR(KSP ksp)
+{
   PetscInt                    i, j, N;
   PetscScalar                 tau, sigma, alpha, omega, beta;
   PetscReal                   rho;
@@ -201,23 +202,28 @@ static PetscErrorCode KSPSolve_FBCGSR(KSP ksp) {
 }
 
 /*MC
-     KSPFBCGSR - Implements a mathematically equivalent variant of FBiCGSTab.
-
-   Options Database Keys:
-    see KSPSolve()
+     KSPFBCGSR - Implements a mathematically equivalent variant of flexible bi-CG-stab, `KSPFBCGS`. [](sec_flexibleksp)
 
    Level: beginner
 
    Notes:
-    Only allow right preconditioning
+   This implementation requires fewer `MPI_Allreduce()` calls than `KSPFBCGS` and may converge faster
 
-.seealso: `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPBICG`, `KSPFBCGSL`, `KSPSetPCSide()`
+   See `KSPPIPEBCGS` for a pipelined version of the algorithm
+
+   Flexible BiCGStab, unlike most Krylov methods, allows the preconditioner to be nonlinear, that is the action of the preconditioner to a vector need not be linear
+   in the vector entries.
+
+   Only supports right preconditioning
+
+.seealso: [](chapter_ksp),  [](sec_flexibleksp), `KSPFBCGSR`, `KSPPIPEBCGS`, `KSPBCGSL`, `KSPBCGS`, `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPBICG`, `KSPFBCGSL`, `KSPSetPCSide()`
 M*/
-PETSC_EXTERN PetscErrorCode KSPCreate_FBCGSR(KSP ksp) {
+PETSC_EXTERN PetscErrorCode KSPCreate_FBCGSR(KSP ksp)
+{
   KSP_BCGS *bcgs;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(ksp, &bcgs));
+  PetscCall(PetscNew(&bcgs));
 
   ksp->data                = bcgs;
   ksp->ops->setup          = KSPSetUp_FBCGSR;

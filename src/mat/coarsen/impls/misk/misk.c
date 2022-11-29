@@ -15,7 +15,8 @@ typedef struct edge_tag {
   PetscInt  lid0, gid1, cpid1;
 } Edge;
 
-static PetscErrorCode PetscCoarsenDataView_private(PetscCoarsenData *agg_lists, PetscViewer viewer) {
+static PetscErrorCode PetscCoarsenDataView_private(PetscCoarsenData *agg_lists, PetscViewer viewer)
+{
   PetscCDIntNd *pos, *pos2;
 
   PetscFunctionBegin;
@@ -44,7 +45,8 @@ static PetscErrorCode PetscCoarsenDataView_private(PetscCoarsenData *agg_lists, 
   Output Parameter:
    . a_locals_llist - array of list of local nodes rooted at local node
 */
-static PetscErrorCode MatCoarsenApply_MISK_private(IS perm, const PetscInt misk, Mat Gmat, PetscCoarsenData **a_locals_llist) {
+static PetscErrorCode MatCoarsenApply_MISK_private(IS perm, const PetscInt misk, Mat Gmat, PetscCoarsenData **a_locals_llist)
+{
   PetscBool   isMPI;
   MPI_Comm    comm;
   PetscMPIInt rank, size;
@@ -62,7 +64,8 @@ static PetscErrorCode MatCoarsenApply_MISK_private(IS perm, const PetscInt misk,
   PetscCallMPI(MPI_Comm_size(comm, &size));
   PetscCall(PetscInfo(Gmat, "misk %d\n", (int)misk));
   /* make a copy of the graph, this gets destroyed in iterates */
-  PetscCall(MatDuplicate(Gmat, MAT_COPY_VALUES, &cMat));
+  if (misk > 1) PetscCall(MatDuplicate(Gmat, MAT_COPY_VALUES, &cMat));
+  else cMat = Gmat;
   for (PetscInt iterIdx = 0; iterIdx < misk; iterIdx++) {
     Mat_SeqAIJ       *matA, *matB = NULL;
     Mat_MPIAIJ       *mpimat = NULL;
@@ -257,7 +260,6 @@ static PetscErrorCode MatCoarsenApply_MISK_private(IS perm, const PetscInt misk,
     PetscCall(MatSetSizes(Prols[iterIdx], nloc, nselected, PETSC_DETERMINE, PETSC_DETERMINE));
     PetscCall(MatSeqAIJSetPreallocation(Prols[iterIdx], 1, NULL));
     PetscCall(MatMPIAIJSetPreallocation(Prols[iterIdx], 1, NULL, 1, NULL));
-    //PetscCall(MatCreateAIJ(comm, nloc, nselected, PETSC_DETERMINE, PETSC_DETERMINE, 1, NULL, 1, NULL, &Prols[iterIdx]));
     {
       PetscCDIntNd *pos, *pos2;
       PetscInt      colIndex, Iend, fgid;
@@ -283,9 +285,7 @@ static PetscErrorCode MatCoarsenApply_MISK_private(IS perm, const PetscInt misk,
       PetscCall(MatPtAP(cMat, Prols[iterIdx], MAT_INITIAL_MATRIX, PETSC_DEFAULT, &new_mat));
       PetscCall(MatDestroy(&cMat));
       cMat = new_mat; // next iter
-    } else {
-      PetscCall(MatDestroy(&cMat));
-    }
+    } else if (cMat != Gmat) PetscCall(MatDestroy(&cMat));
     // cleanup
     PetscCall(PetscCDDestroy(agg_lists));
   } /* MIS-k iteration */
@@ -350,7 +350,8 @@ static PetscErrorCode MatCoarsenApply_MISK_private(IS perm, const PetscInt misk,
 /*
    Distance k MIS. k is in 'subctx'
 */
-static PetscErrorCode MatCoarsenApply_MISK(MatCoarsen coarse) {
+static PetscErrorCode MatCoarsenApply_MISK(MatCoarsen coarse)
+{
   Mat      mat = coarse->graph;
   PetscInt k;
 
@@ -371,7 +372,8 @@ static PetscErrorCode MatCoarsenApply_MISK(MatCoarsen coarse) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatCoarsenView_MISK(MatCoarsen coarse, PetscViewer viewer) {
+static PetscErrorCode MatCoarsenView_MISK(MatCoarsen coarse, PetscViewer viewer)
+{
   PetscMPIInt rank;
   PetscBool   iascii;
 
@@ -388,7 +390,8 @@ static PetscErrorCode MatCoarsenView_MISK(MatCoarsen coarse, PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatCoarsenSetFromOptions_MISK(MatCoarsen coarse, PetscOptionItems *PetscOptionsObject) {
+static PetscErrorCode MatCoarsenSetFromOptions_MISK(MatCoarsen coarse, PetscOptionItems *PetscOptionsObject)
+{
   PetscInt  k = 1;
   PetscBool flg;
   PetscFunctionBegin;
@@ -404,13 +407,14 @@ static PetscErrorCode MatCoarsenSetFromOptions_MISK(MatCoarsen coarse, PetscOpti
 
    Level: beginner
 
-   Options Database:
+   Options Database Key:
 .   -mat_coarsen_misk_distance <k> - distance for MIS
 
-.seealso:`MatCoarsen`,  `MatCoarsenMISKSetDistance()`, `MatCoarsenApply()`, `MatCoarsenSetType()`, `MatCoarsenType`, `MatCoarsenCreate()`
+.seealso: `MatCoarsen`, `MatCoarsenMISKSetDistance()`, `MatCoarsenApply()`, `MatCoarsenSetType()`, `MatCoarsenType`, `MatCoarsenCreate()`
 M*/
 
-PETSC_EXTERN PetscErrorCode MatCoarsenCreate_MISK(MatCoarsen coarse) {
+PETSC_EXTERN PetscErrorCode MatCoarsenCreate_MISK(MatCoarsen coarse)
+{
   PetscFunctionBegin;
   coarse->ops->apply          = MatCoarsenApply_MISK;
   coarse->ops->view           = MatCoarsenView_MISK;
@@ -437,7 +441,8 @@ PETSC_EXTERN PetscErrorCode MatCoarsenCreate_MISK(MatCoarsen coarse) {
           `MatCoarsenDestroy()`, `MatCoarsenSetAdjacency()`, `MatCoarsenMISKGetDistance()`
           `MatCoarsenGetData()`
 @*/
-PetscErrorCode MatCoarsenMISKSetDistance(MatCoarsen crs, PetscInt k) {
+PetscErrorCode MatCoarsenMISKSetDistance(MatCoarsen crs, PetscInt k)
+{
   PetscFunctionBegin;
   crs->subctx = (void *)(size_t)k;
   PetscFunctionReturn(0);
@@ -451,7 +456,7 @@ PetscErrorCode MatCoarsenMISKSetDistance(MatCoarsen crs, PetscInt k) {
    Input Parameter:
 .   coarsen - the coarsen
 
-   Output Paramter:
+   Output Parameter:
 .   k - the distance
 
    Level: advanced
@@ -460,7 +465,8 @@ PetscErrorCode MatCoarsenMISKSetDistance(MatCoarsen crs, PetscInt k) {
           `MatCoarsenDestroy()`, `MatCoarsenSetAdjacency()`, `MatCoarsenMISKGetDistance()`
           `MatCoarsenGetData()`
 @*/
-PetscErrorCode MatCoarsenMISKGetDistance(MatCoarsen crs, PetscInt *k) {
+PetscErrorCode MatCoarsenMISKGetDistance(MatCoarsen crs, PetscInt *k)
+{
   PetscFunctionBegin;
   *k = (PetscInt)(size_t)crs->subctx;
   PetscFunctionReturn(0);

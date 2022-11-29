@@ -16,7 +16,8 @@ static char help[] = "This example demonstrates DMNetwork. It is used for testin
 
    Note: The routine is used for testing parallel generation of dmnetwork, then redistribute.
 */
-PetscErrorCode WashNetworkDistribute(MPI_Comm comm, Wash wash) {
+PetscErrorCode WashNetworkDistribute(MPI_Comm comm, Wash wash)
+{
   PetscMPIInt rank, size, tag = 0;
   PetscInt    i, e, v, numEdges, numVertices, nedges, *eowners = NULL, estart, eend, *vtype = NULL, nvertices;
   PetscInt   *edgelist = wash->edgelist, *nvtx = NULL, *vtxDone = NULL;
@@ -94,7 +95,8 @@ PetscErrorCode WashNetworkDistribute(MPI_Comm comm, Wash wash) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode WASHIFunction(TS ts, PetscReal t, Vec X, Vec Xdot, Vec F, void *ctx) {
+PetscErrorCode WASHIFunction(TS ts, PetscReal t, Vec X, Vec Xdot, Vec F, void *ctx)
+{
   Wash               wash = (Wash)ctx;
   DM                 networkdm;
   Vec                localX, localXdot, localF, localXold;
@@ -221,7 +223,8 @@ PetscErrorCode WASHIFunction(TS ts, PetscReal t, Vec X, Vec Xdot, Vec F, void *c
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode WASHSetInitialSolution(DM networkdm, Vec X, Wash wash) {
+PetscErrorCode WASHSetInitialSolution(DM networkdm, Vec X, Wash wash)
+{
   PetscInt           k, nx, vkey, vfrom, vto, offsetfrom, offsetto;
   PetscInt           type, varoffset;
   PetscInt           e, eStart, eEnd;
@@ -282,7 +285,8 @@ PetscErrorCode WASHSetInitialSolution(DM networkdm, Vec X, Wash wash) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode TSDMNetworkMonitor(TS ts, PetscInt step, PetscReal t, Vec x, void *context) {
+PetscErrorCode TSDMNetworkMonitor(TS ts, PetscInt step, PetscReal t, Vec x, void *context)
+{
   DMNetworkMonitor monitor;
 
   PetscFunctionBegin;
@@ -291,7 +295,8 @@ PetscErrorCode TSDMNetworkMonitor(TS ts, PetscInt step, PetscReal t, Vec x, void
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PipesView(DM networkdm, PetscInt KeyPipe, Vec X) {
+PetscErrorCode PipesView(DM networkdm, PetscInt KeyPipe, Vec X)
+{
   PetscInt   i, numkeys = 1, *blocksize, *numselectedvariable, **selectedvariables, n;
   IS         isfrom_q, isfrom_h, isfrom;
   Vec        Xto;
@@ -372,7 +377,8 @@ PetscErrorCode PipesView(DM networkdm, PetscInt KeyPipe, Vec X) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode ISJunctionsView(DM networkdm, PetscInt KeyJunc) {
+PetscErrorCode ISJunctionsView(DM networkdm, PetscInt KeyJunc)
+{
   PetscInt    numkeys = 1;
   IS          isfrom;
   MPI_Comm    comm;
@@ -398,7 +404,8 @@ PetscErrorCode ISJunctionsView(DM networkdm, PetscInt KeyJunc) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode WashNetworkCleanUp(Wash wash) {
+PetscErrorCode WashNetworkCleanUp(Wash wash)
+{
   PetscMPIInt rank;
 
   PetscFunctionBegin;
@@ -409,7 +416,8 @@ PetscErrorCode WashNetworkCleanUp(Wash wash) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode WashNetworkCreate(MPI_Comm comm, PetscInt pipesCase, Wash *wash_ptr) {
+PetscErrorCode WashNetworkCreate(MPI_Comm comm, PetscInt pipesCase, Wash *wash_ptr)
+{
   PetscInt    npipes;
   PetscMPIInt rank;
   Wash        wash = NULL;
@@ -530,7 +538,7 @@ PetscErrorCode WashNetworkCreate(MPI_Comm comm, PetscInt pipesCase, Wash *wash_p
     (RESERVOIR)               (VALVE)
     =============================  */
 
-    /* Set application parameters -- to be used in function evalutions */
+    /* Set application parameters -- to be used in function evaluations */
     npipes        = 3;
     wash->nedge   = npipes;
     wash->nvertex = npipes + 1;
@@ -562,7 +570,8 @@ PetscErrorCode WashNetworkCreate(MPI_Comm comm, PetscInt pipesCase, Wash *wash_p
       junctions[2].type = RESERVOIR;
     }
     break;
-  default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "not done yet");
+  default:
+    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "not done yet");
   }
 
   /* set edge global id */
@@ -597,7 +606,8 @@ PetscErrorCode WashNetworkCreate(MPI_Comm comm, PetscInt pipesCase, Wash *wash_p
 }
 
 /* ------------------------------------------------------- */
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   Wash              wash;
   Junction          junctions, junction;
   Pipe              pipe, pipes;

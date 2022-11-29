@@ -24,7 +24,7 @@ PETSC_EXTERN PetscErrorCode TSCreate_DiscGrad(TS);
 PETSC_EXTERN PetscErrorCode TSCreate_IRK(TS);
 
 /*@C
-  TSRegisterAll - Registers all of the timesteppers in the TS package.
+  TSRegisterAll - Registers all of the timesteppers in the `TS` package.
 
   Not Collective
 
@@ -33,9 +33,10 @@ PETSC_EXTERN PetscErrorCode TSCreate_IRK(TS);
 
   Level: advanced
 
-.seealso: `TSCreate()`, `TSRegister()`, `TSRegisterDestroy()`
+.seealso: [](chapter_ts), `TS`, `TSCreate()`, `TSRegister()`, `TSRegisterDestroy()`
 @*/
-PetscErrorCode TSRegisterAll(void) {
+PetscErrorCode TSRegisterAll(void)
+{
   PetscFunctionBegin;
   if (TSRegisterAllCalled) PetscFunctionReturn(0);
   TSRegisterAllCalled = PETSC_TRUE;

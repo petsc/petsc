@@ -38,7 +38,8 @@
 /*       DEGREE.                                                */
 /*                                                              */
 /****************************************************************/
-PetscErrorCode SPARSEPACKrcm(const PetscInt *root, const PetscInt *xadj, const PetscInt *adjncy, PetscInt *mask, PetscInt *perm, PetscInt *ccsize, PetscInt *deg) {
+PetscErrorCode SPARSEPACKrcm(const PetscInt *root, const PetscInt *xadj, const PetscInt *adjncy, PetscInt *mask, PetscInt *perm, PetscInt *ccsize, PetscInt *deg)
+{
   /* System generated locals */
   PetscInt i__1, i__2;
 

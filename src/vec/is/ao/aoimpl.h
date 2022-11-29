@@ -2,8 +2,8 @@
    This private file should not be included in users' code.
 */
 
-#if !defined(__AOIMPL)
-#define __AOIMPL
+#ifndef PETSC_AOIMPL_H
+#define PETSC_AOIMPL_H
 
 #include <petscao.h>
 #include <petsc/private/petscimpl.h>
@@ -39,4 +39,4 @@ struct _p_AO {
 
 extern PetscLogEvent AO_PetscToApplication, AO_ApplicationToPetsc;
 
-#endif
+#endif // PETSC_AOIMPL_H

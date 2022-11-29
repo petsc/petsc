@@ -47,7 +47,8 @@ typedef struct {
 extern PetscErrorCode FormFunction(SNES, Vec, Vec, void *);
 extern PetscErrorCode Monitor(SNES, PetscInt, PetscReal, void *);
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscInt its;
   Vec      U, FU;
   SNES     snes;
@@ -103,10 +104,11 @@ int main(int argc, char **argv) {
 }
 
 /*
-      Evaluates FU = Gradiant(L(w,u,lambda))
+      Evaluates FU = Gradient(L(w,u,lambda))
 
 */
-PetscErrorCode FormFunction(SNES snes, Vec U, Vec FU, void *dummy) {
+PetscErrorCode FormFunction(SNES snes, Vec U, Vec FU, void *dummy)
+{
   UserCtx     *user = (UserCtx *)dummy;
   PetscInt     xs, xm, i, N;
   PetscScalar *u, *lambda, *w, *fu, *fw, *flambda, d, h;
@@ -162,7 +164,8 @@ PetscErrorCode FormFunction(SNES snes, Vec U, Vec FU, void *dummy) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode Monitor(SNES snes, PetscInt its, PetscReal rnorm, void *dummy) {
+PetscErrorCode Monitor(SNES snes, PetscInt its, PetscReal rnorm, void *dummy)
+{
   UserCtx *user = (UserCtx *)dummy;
   Vec      w, u, lambda, U, F;
 

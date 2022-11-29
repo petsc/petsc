@@ -3,7 +3,8 @@ static char help[] = "Test device/host memory allocation in MatDenseSeqCUDA()\n\
 /* Contributed by: Victor Eijkhout <eijkhout@tacc.utexas.edu> */
 
 #include <petscmat.h>
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscInt  global_size = 100;
   Mat       cuda_matrix;
   Vec       input, output;

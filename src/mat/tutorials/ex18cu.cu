@@ -1,7 +1,8 @@
-#include <petscdevice.h>
+#include <petscdevice_cuda.h>
 #include "ex18.h"
 
-__global__ void FillValues(PetscInt n, PetscScalar *v) {
+__global__ void FillValues(PetscInt n, PetscScalar *v)
+{
   PetscInt     i = blockIdx.x * blockDim.x + threadIdx.x;
   PetscScalar *s;
   if (i < n) {
@@ -12,7 +13,8 @@ __global__ void FillValues(PetscInt n, PetscScalar *v) {
   }
 }
 
-PetscErrorCode FillMatrixCUDACOO(FEStruct *fe, Mat A) {
+PetscErrorCode FillMatrixCUDACOO(FEStruct *fe, Mat A)
+{
   PetscScalar *v;
 
   PetscFunctionBeginUser;

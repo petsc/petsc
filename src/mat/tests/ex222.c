@@ -2,7 +2,8 @@ static char help[] = "Tests MatComputeOperator() and MatComputeOperatorTranspose
 
 #include <petscmat.h>
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   Mat       A, Ae, Aet;
   char      filename[PETSC_MAX_PATH_LEN];
   char      expltype[128], *etype = NULL;

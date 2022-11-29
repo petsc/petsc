@@ -2,7 +2,8 @@ static char help[] = "Test MatSetPreallocationCOO and MatSetValuesCOO\n\n";
 
 #include <petscmat.h>
 
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   Mat                    A, At, AAt;
   Vec                    x, y, z;
   ISLocalToGlobalMapping rl2g, cl2g;

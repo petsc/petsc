@@ -5,7 +5,8 @@
 #define PETSCMAPNAME(a) PetscConcat(a, GTOLNAME)
 #define PETSCMAPTYPE(a) PetscConcat(a, GTOLTYPE)
 
-static PetscErrorCode PETSCMAPNAME(ISGlobalToLocalMappingApply)(ISLocalToGlobalMapping mapping, ISGlobalToLocalMappingMode type, PetscInt n, const PetscInt idx[], PetscInt *nout, PetscInt idxout[]) {
+static PetscErrorCode PETSCMAPNAME(ISGlobalToLocalMappingApply)(ISLocalToGlobalMapping mapping, ISGlobalToLocalMappingMode type, PetscInt n, const PetscInt idx[], PetscInt *nout, PetscInt idxout[])
+{
   PetscInt i, nf = 0, tmp, start, end, bs;
   PETSCMAPTYPE(ISLocalToGlobalMapping) *map = (PETSCMAPTYPE(ISLocalToGlobalMapping) *)mapping->data;
 

@@ -2,11 +2,11 @@
 #include <../src/mat/impls/adj/mpi/mpiadj.h> /*I "petscmat.h" I*/
 
 #if defined(PETSC_HAVE_UNISTD_H)
-#include <unistd.h>
+  #include <unistd.h>
 #endif
 
 #if defined(PETSC_HAVE_CHACO_INT_ASSIGNMENT)
-#include <chaco.h>
+  #include <chaco.h>
 #else
 /* Older versions of Chaco do not have an include file */
 PETSC_EXTERN int interface(int nvtxs, int *start, int *adjacency, int *vwgts, float *ewgts, float *x, float *y, float *z, char *outassignname, char *outfilename, short *assignment, int architecture, int ndims_tot, int mesh_dims[3], double *goal, int global_method, int local_method, int rqi_flag, int vmax, int ndims, double eigtol, long seed);
@@ -49,7 +49,8 @@ typedef struct {
 
 #define SIZE_LOG 10000 /* size of buffer for mesg_log */
 
-static PetscErrorCode MatPartitioningApply_Chaco(MatPartitioning part, IS *partitioning) {
+static PetscErrorCode MatPartitioningApply_Chaco(MatPartitioning part, IS *partitioning)
+{
   int                    cerr;
   PetscInt              *parttab, *locals, i, nb_locals, M, N;
   PetscMPIInt            size, rank;
@@ -170,7 +171,8 @@ static PetscErrorCode MatPartitioningApply_Chaco(MatPartitioning part, IS *parti
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatPartitioningView_Chaco(MatPartitioning part, PetscViewer viewer) {
+PetscErrorCode MatPartitioningView_Chaco(MatPartitioning part, PetscViewer viewer)
+{
   MatPartitioning_Chaco *chaco = (MatPartitioning_Chaco *)part->data;
   PetscBool              isascii;
 
@@ -197,7 +199,7 @@ PetscErrorCode MatPartitioningView_Chaco(MatPartitioning part, PetscViewer viewe
 -  method - one of `MP_CHACO_MULTILEVEL`, `MP_CHACO_SPECTRAL`, `MP_CHACO_LINEAR`,
             `MP_CHACO_RANDOM` or `MP_CHACO_SCATTERED`
 
-   Options Database:
+   Options Database Key:
 .  -mat_partitioning_chaco_global <method> - the global method
 
    Level: advanced
@@ -208,7 +210,8 @@ PetscErrorCode MatPartitioningView_Chaco(MatPartitioning part, PetscViewer viewe
 
 .seealso: `MatPartitioning`, `MatPartioningSetType()`, `MatPartitioningType`, `MATPARTITIONINGCHACO`, `MatPartitioningChacoSetLocal()`, `MatPartitioningChacoGetGlobal()`
 @*/
-PetscErrorCode MatPartitioningChacoSetGlobal(MatPartitioning part, MPChacoGlobalType method) {
+PetscErrorCode MatPartitioningChacoSetGlobal(MatPartitioning part, MPChacoGlobalType method)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part, MAT_PARTITIONING_CLASSID, 1);
   PetscValidLogicalCollectiveEnum(part, method, 2);
@@ -216,7 +219,8 @@ PetscErrorCode MatPartitioningChacoSetGlobal(MatPartitioning part, MPChacoGlobal
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatPartitioningChacoSetGlobal_Chaco(MatPartitioning part, MPChacoGlobalType method) {
+PetscErrorCode MatPartitioningChacoSetGlobal_Chaco(MatPartitioning part, MPChacoGlobalType method)
+{
   MatPartitioning_Chaco *chaco = (MatPartitioning_Chaco *)part->data;
 
   PetscFunctionBegin;
@@ -225,8 +229,11 @@ PetscErrorCode MatPartitioningChacoSetGlobal_Chaco(MatPartitioning part, MPChaco
   case MP_CHACO_SPECTRAL:
   case MP_CHACO_LINEAR:
   case MP_CHACO_RANDOM:
-  case MP_CHACO_SCATTERED: chaco->global_method = method; break;
-  default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Chaco: Unknown or unsupported option");
+  case MP_CHACO_SCATTERED:
+    chaco->global_method = method;
+    break;
+  default:
+    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Chaco: Unknown or unsupported option");
   }
   PetscFunctionReturn(0);
 }
@@ -246,7 +253,8 @@ PetscErrorCode MatPartitioningChacoSetGlobal_Chaco(MatPartitioning part, MPChaco
 
 .seealso:  `MatPartitioningType`, `MATPARTITIONINGCHACO`, `MatPartitioningChacoSetGlobal()`
 @*/
-PetscErrorCode MatPartitioningChacoGetGlobal(MatPartitioning part, MPChacoGlobalType *method) {
+PetscErrorCode MatPartitioningChacoGetGlobal(MatPartitioning part, MPChacoGlobalType *method)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part, MAT_PARTITIONING_CLASSID, 1);
   PetscValidPointer(method, 2);
@@ -254,7 +262,8 @@ PetscErrorCode MatPartitioningChacoGetGlobal(MatPartitioning part, MPChacoGlobal
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatPartitioningChacoGetGlobal_Chaco(MatPartitioning part, MPChacoGlobalType *method) {
+PetscErrorCode MatPartitioningChacoGetGlobal_Chaco(MatPartitioning part, MPChacoGlobalType *method)
+{
   MatPartitioning_Chaco *chaco = (MatPartitioning_Chaco *)part->data;
 
   PetscFunctionBegin;
@@ -271,7 +280,7 @@ PetscErrorCode MatPartitioningChacoGetGlobal_Chaco(MatPartitioning part, MPChaco
 +  part - the partitioning context
 -  method - one of `MP_CHACO_KERNIGHAN` or `MP_CHACO_NONE`
 
-   Options Database:
+   Options Database Key:
 .  -mat_partitioning_chaco_local <method> - the local method
 
    Level: advanced
@@ -282,7 +291,8 @@ PetscErrorCode MatPartitioningChacoGetGlobal_Chaco(MatPartitioning part, MPChaco
 
 .seealso: `MatPartitioningType`, `MATPARTITIONINGCHACO`, `MatPartitioningChacoSetGlobal()`, `MatPartitioningChacoGetLocal()`
 @*/
-PetscErrorCode MatPartitioningChacoSetLocal(MatPartitioning part, MPChacoLocalType method) {
+PetscErrorCode MatPartitioningChacoSetLocal(MatPartitioning part, MPChacoLocalType method)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part, MAT_PARTITIONING_CLASSID, 1);
   PetscValidLogicalCollectiveEnum(part, method, 2);
@@ -290,14 +300,18 @@ PetscErrorCode MatPartitioningChacoSetLocal(MatPartitioning part, MPChacoLocalTy
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatPartitioningChacoSetLocal_Chaco(MatPartitioning part, MPChacoLocalType method) {
+PetscErrorCode MatPartitioningChacoSetLocal_Chaco(MatPartitioning part, MPChacoLocalType method)
+{
   MatPartitioning_Chaco *chaco = (MatPartitioning_Chaco *)part->data;
 
   PetscFunctionBegin;
   switch (method) {
   case MP_CHACO_KERNIGHAN:
-  case MP_CHACO_NONE: chaco->local_method = method; break;
-  default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Chaco: Unknown or unsupported option");
+  case MP_CHACO_NONE:
+    chaco->local_method = method;
+    break;
+  default:
+    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Chaco: Unknown or unsupported option");
   }
   PetscFunctionReturn(0);
 }
@@ -317,7 +331,8 @@ PetscErrorCode MatPartitioningChacoSetLocal_Chaco(MatPartitioning part, MPChacoL
 
 .seealso: `MatPartitioningType`, `MATPARTITIONINGCHACO`, `MatPartitioningChacoSetLocal()`
 @*/
-PetscErrorCode MatPartitioningChacoGetLocal(MatPartitioning part, MPChacoLocalType *method) {
+PetscErrorCode MatPartitioningChacoGetLocal(MatPartitioning part, MPChacoLocalType *method)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part, MAT_PARTITIONING_CLASSID, 1);
   PetscValidPointer(method, 2);
@@ -325,7 +340,8 @@ PetscErrorCode MatPartitioningChacoGetLocal(MatPartitioning part, MPChacoLocalTy
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatPartitioningChacoGetLocal_Chaco(MatPartitioning part, MPChacoLocalType *method) {
+PetscErrorCode MatPartitioningChacoGetLocal_Chaco(MatPartitioning part, MPChacoLocalType *method)
+{
   MatPartitioning_Chaco *chaco = (MatPartitioning_Chaco *)part->data;
 
   PetscFunctionBegin;
@@ -343,14 +359,15 @@ PetscErrorCode MatPartitioningChacoGetLocal_Chaco(MatPartitioning part, MPChacoL
 +  part - the partitioning context
 -  level - the coarse level in range [0.0,1.0]
 
-   Options Database:
+   Options Database Key:
 .  -mat_partitioning_chaco_coarse <l> - Coarse level
 
    Level: advanced
 
 .seealso: `MatPartitioningType`, `MatPartitioning`, `MATPARTITIONINGCHACO`
 @*/
-PetscErrorCode MatPartitioningChacoSetCoarseLevel(MatPartitioning part, PetscReal level) {
+PetscErrorCode MatPartitioningChacoSetCoarseLevel(MatPartitioning part, PetscReal level)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part, MAT_PARTITIONING_CLASSID, 1);
   PetscValidLogicalCollectiveReal(part, level, 2);
@@ -358,7 +375,8 @@ PetscErrorCode MatPartitioningChacoSetCoarseLevel(MatPartitioning part, PetscRea
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatPartitioningChacoSetCoarseLevel_Chaco(MatPartitioning part, PetscReal level) {
+PetscErrorCode MatPartitioningChacoSetCoarseLevel_Chaco(MatPartitioning part, PetscReal level)
+{
   MatPartitioning_Chaco *chaco = (MatPartitioning_Chaco *)part->data;
 
   PetscFunctionBegin;
@@ -377,7 +395,7 @@ PetscErrorCode MatPartitioningChacoSetCoarseLevel_Chaco(MatPartitioning part, Pe
 +  part - the partitioning context
 -  method - one of `MP_CHACO_LANCZOS` or `MP_CHACO_RQI`
 
-   Options Database:
+   Options Database Key:
 .  -mat_partitioning_chaco_eigen_solver <method> - the eigensolver
 
    Level: advanced
@@ -388,7 +406,8 @@ PetscErrorCode MatPartitioningChacoSetCoarseLevel_Chaco(MatPartitioning part, Pe
 .seealso: `MatPartitioningType`, `MatPartitioning`, `MATPARTITIONINGCHACO`, `MatPartitioningChacoSetEigenTol()`, `MatPartitioningChacoSetEigenNumber()`,
           `MatPartitioningChacoGetEigenSolver()`
 @*/
-PetscErrorCode MatPartitioningChacoSetEigenSolver(MatPartitioning part, MPChacoEigenType method) {
+PetscErrorCode MatPartitioningChacoSetEigenSolver(MatPartitioning part, MPChacoEigenType method)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part, MAT_PARTITIONING_CLASSID, 1);
   PetscValidLogicalCollectiveEnum(part, method, 2);
@@ -396,14 +415,18 @@ PetscErrorCode MatPartitioningChacoSetEigenSolver(MatPartitioning part, MPChacoE
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatPartitioningChacoSetEigenSolver_Chaco(MatPartitioning part, MPChacoEigenType method) {
+PetscErrorCode MatPartitioningChacoSetEigenSolver_Chaco(MatPartitioning part, MPChacoEigenType method)
+{
   MatPartitioning_Chaco *chaco = (MatPartitioning_Chaco *)part->data;
 
   PetscFunctionBegin;
   switch (method) {
   case MP_CHACO_LANCZOS:
-  case MP_CHACO_RQI: chaco->eigen_method = method; break;
-  default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Chaco: Unknown or unsupported option");
+  case MP_CHACO_RQI:
+    chaco->eigen_method = method;
+    break;
+  default:
+    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Chaco: Unknown or unsupported option");
   }
   PetscFunctionReturn(0);
 }
@@ -423,7 +446,8 @@ PetscErrorCode MatPartitioningChacoSetEigenSolver_Chaco(MatPartitioning part, MP
 
 .seealso: `MatPartitioningType`, `MatPartitioning`, `MATPARTITIONINGCHACO`, `MatPartitioningChacoSetEigenSolver()`
 @*/
-PetscErrorCode MatPartitioningChacoGetEigenSolver(MatPartitioning part, MPChacoEigenType *method) {
+PetscErrorCode MatPartitioningChacoGetEigenSolver(MatPartitioning part, MPChacoEigenType *method)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part, MAT_PARTITIONING_CLASSID, 1);
   PetscValidPointer(method, 2);
@@ -431,7 +455,8 @@ PetscErrorCode MatPartitioningChacoGetEigenSolver(MatPartitioning part, MPChacoE
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatPartitioningChacoGetEigenSolver_Chaco(MatPartitioning part, MPChacoEigenType *method) {
+PetscErrorCode MatPartitioningChacoGetEigenSolver_Chaco(MatPartitioning part, MPChacoEigenType *method)
+{
   MatPartitioning_Chaco *chaco = (MatPartitioning_Chaco *)part->data;
 
   PetscFunctionBegin;
@@ -448,7 +473,7 @@ PetscErrorCode MatPartitioningChacoGetEigenSolver_Chaco(MatPartitioning part, MP
 +  part - the partitioning context
 -  tol  - the tolerance
 
-   Options Database:
+   Options Database Key:
 .  -mat_partitioning_chaco_eigen_tol <tol> - Tolerance for eigensolver
 
    Note:
@@ -458,7 +483,8 @@ PetscErrorCode MatPartitioningChacoGetEigenSolver_Chaco(MatPartitioning part, MP
 
 .seealso: `MatPartitioningType`, `MatPartitioning`, `MATPARTITIONINGCHACO`, `MatPartitioningChacoSetEigenSolver()`, `MatPartitioningChacoGetEigenTol()`
 @*/
-PetscErrorCode MatPartitioningChacoSetEigenTol(MatPartitioning part, PetscReal tol) {
+PetscErrorCode MatPartitioningChacoSetEigenTol(MatPartitioning part, PetscReal tol)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part, MAT_PARTITIONING_CLASSID, 1);
   PetscValidLogicalCollectiveReal(part, tol, 2);
@@ -466,7 +492,8 @@ PetscErrorCode MatPartitioningChacoSetEigenTol(MatPartitioning part, PetscReal t
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatPartitioningChacoSetEigenTol_Chaco(MatPartitioning part, PetscReal tol) {
+PetscErrorCode MatPartitioningChacoSetEigenTol_Chaco(MatPartitioning part, PetscReal tol)
+{
   MatPartitioning_Chaco *chaco = (MatPartitioning_Chaco *)part->data;
 
   PetscFunctionBegin;
@@ -493,7 +520,8 @@ PetscErrorCode MatPartitioningChacoSetEigenTol_Chaco(MatPartitioning part, Petsc
 
 .seealso: `MatPartitioningType`, `MatPartitioning`, `MATPARTITIONINGCHACO`, `MatPartitioningChacoSetEigenTol()`
 @*/
-PetscErrorCode MatPartitioningChacoGetEigenTol(MatPartitioning part, PetscReal *tol) {
+PetscErrorCode MatPartitioningChacoGetEigenTol(MatPartitioning part, PetscReal *tol)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part, MAT_PARTITIONING_CLASSID, 1);
   PetscValidRealPointer(tol, 2);
@@ -501,7 +529,8 @@ PetscErrorCode MatPartitioningChacoGetEigenTol(MatPartitioning part, PetscReal *
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatPartitioningChacoGetEigenTol_Chaco(MatPartitioning part, PetscReal *tol) {
+PetscErrorCode MatPartitioningChacoGetEigenTol_Chaco(MatPartitioning part, PetscReal *tol)
+{
   MatPartitioning_Chaco *chaco = (MatPartitioning_Chaco *)part->data;
 
   PetscFunctionBegin;
@@ -519,7 +548,7 @@ PetscErrorCode MatPartitioningChacoGetEigenTol_Chaco(MatPartitioning part, Petsc
 +  part - the partitioning context
 -  num  - the number of eigenvectors
 
-   Options Database:
+   Options Database Key:
 .  -mat_partitioning_chaco_eigen_number <n> - Number of eigenvectors
 
    Note:
@@ -528,9 +557,10 @@ PetscErrorCode MatPartitioningChacoGetEigenTol_Chaco(MatPartitioning part, Petsc
 
    Level: advanced
 
-.seealso: `MatPartitioningType`, `MatPartitioning`, `MATPARTITIONINGCHACO`,`MatPartitioningChacoSetEigenSolver()`, `MatPartitioningChacoGetEigenTol()`
+.seealso: `MatPartitioningType`, `MatPartitioning`, `MATPARTITIONINGCHACO`, `MatPartitioningChacoSetEigenSolver()`, `MatPartitioningChacoGetEigenTol()`
 @*/
-PetscErrorCode MatPartitioningChacoSetEigenNumber(MatPartitioning part, PetscInt num) {
+PetscErrorCode MatPartitioningChacoSetEigenNumber(MatPartitioning part, PetscInt num)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part, MAT_PARTITIONING_CLASSID, 1);
   PetscValidLogicalCollectiveInt(part, num, 2);
@@ -538,7 +568,8 @@ PetscErrorCode MatPartitioningChacoSetEigenNumber(MatPartitioning part, PetscInt
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatPartitioningChacoSetEigenNumber_Chaco(MatPartitioning part, PetscInt num) {
+PetscErrorCode MatPartitioningChacoSetEigenNumber_Chaco(MatPartitioning part, PetscInt num)
+{
   MatPartitioning_Chaco *chaco = (MatPartitioning_Chaco *)part->data;
 
   PetscFunctionBegin;
@@ -565,7 +596,8 @@ PetscErrorCode MatPartitioningChacoSetEigenNumber_Chaco(MatPartitioning part, Pe
 
 .seealso: `MatPartitioningType`, `MatPartitioning`, `MATPARTITIONINGCHACO`, `MatPartitioningChacoSetEigenNumber()`
 @*/
-PetscErrorCode MatPartitioningChacoGetEigenNumber(MatPartitioning part, PetscInt *num) {
+PetscErrorCode MatPartitioningChacoGetEigenNumber(MatPartitioning part, PetscInt *num)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part, MAT_PARTITIONING_CLASSID, 1);
   PetscValidIntPointer(num, 2);
@@ -573,7 +605,8 @@ PetscErrorCode MatPartitioningChacoGetEigenNumber(MatPartitioning part, PetscInt
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatPartitioningChacoGetEigenNumber_Chaco(MatPartitioning part, PetscInt *num) {
+PetscErrorCode MatPartitioningChacoGetEigenNumber_Chaco(MatPartitioning part, PetscInt *num)
+{
   MatPartitioning_Chaco *chaco = (MatPartitioning_Chaco *)part->data;
 
   PetscFunctionBegin;
@@ -581,7 +614,8 @@ PetscErrorCode MatPartitioningChacoGetEigenNumber_Chaco(MatPartitioning part, Pe
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatPartitioningSetFromOptions_Chaco(MatPartitioning part, PetscOptionItems *PetscOptionsObject) {
+PetscErrorCode MatPartitioningSetFromOptions_Chaco(MatPartitioning part, PetscOptionItems *PetscOptionsObject)
+{
   PetscInt               i;
   PetscReal              r;
   PetscBool              flag;
@@ -609,7 +643,8 @@ PetscErrorCode MatPartitioningSetFromOptions_Chaco(MatPartitioning part, PetscOp
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatPartitioningDestroy_Chaco(MatPartitioning part) {
+PetscErrorCode MatPartitioningDestroy_Chaco(MatPartitioning part)
+{
   MatPartitioning_Chaco *chaco = (MatPartitioning_Chaco *)part->data;
 
   PetscFunctionBegin;
@@ -643,11 +678,12 @@ PetscErrorCode MatPartitioningDestroy_Chaco(MatPartitioning part) {
 .seealso: `MatPartitioningSetType()`, `MatPartitioningType`
 M*/
 
-PETSC_EXTERN PetscErrorCode MatPartitioningCreate_Chaco(MatPartitioning part) {
+PETSC_EXTERN PetscErrorCode MatPartitioningCreate_Chaco(MatPartitioning part)
+{
   MatPartitioning_Chaco *chaco;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(part, &chaco));
+  PetscCall(PetscNew(&chaco));
   part->data = (void *)chaco;
 
   chaco->global_method = MP_CHACO_MULTILEVEL;

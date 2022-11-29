@@ -2,7 +2,8 @@ static const char help[] = "Uses KSPComputeRitz() on a matrix loaded from disk\n
 
 #include <petscksp.h>
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   Mat         A;
   KSP         ksp;
   char        file[PETSC_MAX_PATH_LEN];

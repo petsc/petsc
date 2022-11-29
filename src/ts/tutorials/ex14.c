@@ -51,18 +51,18 @@ use compatible domain decomposition relative to the 3D DMDAs.
 #include <petsc/private/petscimpl.h>
 
 #if defined __SSE2__
-#include <emmintrin.h>
+  #include <emmintrin.h>
 #endif
 
 /* The SSE2 kernels are only for PetscScalar=double on architectures that support it */
 #define USE_SSE2_KERNELS (!defined NO_SSE2 && !defined PETSC_USE_COMPLEX && !defined PETSC_USE_REAL_SINGLE && defined __SSE2__)
 
 #if !defined __STDC_VERSION__ || __STDC_VERSION__ < 199901L
-#if defined  __cplusplus /* C++ restrict is nonstandard and compilers have inconsistent rules about where it can be used */
-#define restrict
-#else
-#define restrict PETSC_RESTRICT
-#endif
+  #if defined __cplusplus /* C++ restrict is nonstandard and compilers have inconsistent rules about where it can be used */
+    #define restrict
+  #else
+    #define restrict PETSC_RESTRICT
+  #endif
 #endif
 
 static PetscClassId THI_CLASSID;
@@ -173,11 +173,13 @@ static const PetscReal QuadQDeriv[4][4][2] = {
     (n)[3] = (x)[i][j + 1]; \
   } while (0)
 
-static PetscScalar Sqr(PetscScalar a) {
+static PetscScalar Sqr(PetscScalar a)
+{
   return a * a;
 }
 
-static void HexGrad(const PetscReal dphi[][3], const PetscReal zn[], PetscReal dz[]) {
+static void HexGrad(const PetscReal dphi[][3], const PetscReal zn[], PetscReal dz[])
+{
   PetscInt i;
   dz[0] = dz[1] = dz[2] = 0;
   for (i = 0; i < 8; i++) {
@@ -187,7 +189,8 @@ static void HexGrad(const PetscReal dphi[][3], const PetscReal zn[], PetscReal d
   }
 }
 
-static void HexComputeGeometry(PetscInt q, PetscReal hx, PetscReal hy, const PetscReal dz[restrict], PetscReal phi[restrict], PetscReal dphi[restrict][3], PetscReal *restrict jw) {
+static void HexComputeGeometry(PetscInt q, PetscReal hx, PetscReal hy, const PetscReal dz[restrict], PetscReal phi[restrict], PetscReal dphi[restrict][3], PetscReal *restrict jw)
+{
   const PetscReal jac[3][3] =
     {
       {hx / 2, 0,      0    },
@@ -270,7 +273,8 @@ struct _n_Units {
   PetscReal year;
 };
 
-static void PrmHexGetZ(const PrmNode pn[], PetscInt k, PetscInt zm, PetscReal zn[]) {
+static void PrmHexGetZ(const PrmNode pn[], PetscInt k, PetscInt zm, PetscReal zn[])
+{
   const PetscScalar zm1 = zm - 1, znl[8] = {pn[0].b + pn[0].h * (PetscScalar)k / zm1,       pn[1].b + pn[1].h * (PetscScalar)k / zm1,       pn[2].b + pn[2].h * (PetscScalar)k / zm1,       pn[3].b + pn[3].h * (PetscScalar)k / zm1,
                                             pn[0].b + pn[0].h * (PetscScalar)(k + 1) / zm1, pn[1].b + pn[1].h * (PetscScalar)(k + 1) / zm1, pn[2].b + pn[2].h * (PetscScalar)(k + 1) / zm1, pn[3].b + pn[3].h * (PetscScalar)(k + 1) / zm1};
   PetscInt          i;
@@ -278,7 +282,8 @@ static void PrmHexGetZ(const PrmNode pn[], PetscInt k, PetscInt zm, PetscReal zn
 }
 
 /* Compute a gradient of all the 2D fields at four quadrature points.  Output for [quadrature_point][direction].field_name */
-static PetscErrorCode QuadComputeGrad4(const PetscReal dphi[][4][2], PetscReal hx, PetscReal hy, const PrmNode pn[4], PrmNode dp[4][2]) {
+static PetscErrorCode QuadComputeGrad4(const PetscReal dphi[][4][2], PetscReal hx, PetscReal hy, const PrmNode pn[4], PrmNode dp[4][2])
+{
   PetscInt q, i, f;
   const PetscScalar(*restrict pg)[PRMNODE_SIZE] = (const PetscScalar(*)[PRMNODE_SIZE])pn; /* Get generic array pointers to the node */
   PetscScalar(*restrict dpg)[2][PRMNODE_SIZE]   = (PetscScalar(*)[2][PRMNODE_SIZE])dp;
@@ -296,10 +301,12 @@ static PetscErrorCode QuadComputeGrad4(const PetscReal dphi[][4][2], PetscReal h
   PetscFunctionReturn(0);
 }
 
-static inline PetscReal StaggeredMidpoint2D(PetscScalar a, PetscScalar b, PetscScalar c, PetscScalar d) {
+static inline PetscReal StaggeredMidpoint2D(PetscScalar a, PetscScalar b, PetscScalar c, PetscScalar d)
+{
   return 0.5 * PetscRealPart(0.75 * a + 0.75 * b + 0.25 * c + 0.25 * d);
 }
-static inline PetscReal UpwindFlux1D(PetscReal u, PetscReal hL, PetscReal hR) {
+static inline PetscReal UpwindFlux1D(PetscReal u, PetscReal hL, PetscReal hR)
+{
   return (u > 0) ? hL * u : hR * u;
 }
 
@@ -312,7 +319,8 @@ static inline PetscReal UpwindFlux1D(PetscReal u, PetscReal hL, PetscReal hR) {
 #define UpwindFluxYN(x3, x2, h, i, j, k, di) \
   UpwindFlux1D(StaggeredMidpoint2D(x3[i][j][k].v, x3[i][j + 1][k].v, x3[i + di][j + 1][k].v, x3[i + di][j][k].v), PetscRealPart(0.75 * x2[i][j].h + 0.25 * x2[i + di][j].h), PetscRealPart(0.75 * x2[i][j + 1].h + 0.25 * x2[i + di][j + 1].h))
 
-static void PrmNodeGetFaceMeasure(const PrmNode **p, PetscInt i, PetscInt j, PetscScalar h[]) {
+static void PrmNodeGetFaceMeasure(const PrmNode **p, PetscInt i, PetscInt j, PetscScalar h[])
+{
   /* West */
   h[0] = StaggeredMidpoint2D(p[i][j].h, p[i - 1][j].h, p[i - 1][j - 1].h, p[i][j - 1].h);
   h[1] = StaggeredMidpoint2D(p[i][j].h, p[i - 1][j].h, p[i - 1][j + 1].h, p[i][j + 1].h);
@@ -328,7 +336,8 @@ static void PrmNodeGetFaceMeasure(const PrmNode **p, PetscInt i, PetscInt j, Pet
 }
 
 /* Tests A and C are from the ISMIP-HOM paper (Pattyn et al. 2008) */
-static void THIInitialize_HOM_A(THI thi, PetscReal x, PetscReal y, PrmNode *p) {
+static void THIInitialize_HOM_A(THI thi, PetscReal x, PetscReal y, PrmNode *p)
+{
   Units     units = thi->units;
   PetscReal s     = -x * PetscSinReal(thi->alpha);
   p->b            = s - 1000 * units->meter + 500 * units->meter * PetscSinReal(x * 2 * PETSC_PI / thi->Lx) * PetscSinReal(y * 2 * PETSC_PI / thi->Ly);
@@ -336,20 +345,22 @@ static void THIInitialize_HOM_A(THI thi, PetscReal x, PetscReal y, PrmNode *p) {
   p->beta2        = -1e-10; /* This value is not used, but it should not be huge because that would change the finite difference step size  */
 }
 
-static void THIInitialize_HOM_C(THI thi, PetscReal x, PetscReal y, PrmNode *p) {
+static void THIInitialize_HOM_C(THI thi, PetscReal x, PetscReal y, PrmNode *p)
+{
   Units     units = thi->units;
   PetscReal s     = -x * PetscSinReal(thi->alpha);
   p->b            = s - 1000 * units->meter;
   p->h            = s - p->b;
   /* tau_b = beta2 v   is a stress (Pa).
    * This is a big number in our units (it needs to balance the driving force from the surface), so we scale it by 1/rhog, just like the residual. */
-  p->beta2        = 1000 * (1 + PetscSinReal(x * 2 * PETSC_PI / thi->Lx) * PetscSinReal(y * 2 * PETSC_PI / thi->Ly)) * units->Pascal * units->year / units->meter / thi->rhog;
+  p->beta2 = 1000 * (1 + PetscSinReal(x * 2 * PETSC_PI / thi->Lx) * PetscSinReal(y * 2 * PETSC_PI / thi->Ly)) * units->Pascal * units->year / units->meter / thi->rhog;
 }
 
 /* These are just toys */
 
 /* From Fred Herman */
-static void THIInitialize_HOM_F(THI thi, PetscReal x, PetscReal y, PrmNode *p) {
+static void THIInitialize_HOM_F(THI thi, PetscReal x, PetscReal y, PrmNode *p)
+{
   Units     units = thi->units;
   PetscReal s     = -x * PetscSinReal(thi->alpha);
   p->b            = s - 1000 * units->meter + 100 * units->meter * PetscSinReal(x * 2 * PETSC_PI / thi->Lx); /* * sin(y*2*PETSC_PI/thi->Ly); */
@@ -361,7 +372,8 @@ static void THIInitialize_HOM_F(THI thi, PetscReal x, PetscReal y, PrmNode *p) {
 }
 
 /* Same bed as test A, free slip everywhere except for a discontinuous jump to a circular sticky region in the middle. */
-static void THIInitialize_HOM_X(THI thi, PetscReal xx, PetscReal yy, PrmNode *p) {
+static void THIInitialize_HOM_X(THI thi, PetscReal xx, PetscReal yy, PrmNode *p)
+{
   Units     units = thi->units;
   PetscReal x = xx * 2 * PETSC_PI / thi->Lx - PETSC_PI, y = yy * 2 * PETSC_PI / thi->Ly - PETSC_PI; /* [-pi,pi] */
   PetscReal r = PetscSqrtReal(x * x + y * y), s = -x * PetscSinReal(thi->alpha);
@@ -371,7 +383,8 @@ static void THIInitialize_HOM_X(THI thi, PetscReal xx, PetscReal yy, PrmNode *p)
 }
 
 /* Like Z, but with 200 meter cliffs */
-static void THIInitialize_HOM_Y(THI thi, PetscReal xx, PetscReal yy, PrmNode *p) {
+static void THIInitialize_HOM_Y(THI thi, PetscReal xx, PetscReal yy, PrmNode *p)
+{
   Units     units = thi->units;
   PetscReal x = xx * 2 * PETSC_PI / thi->Lx - PETSC_PI, y = yy * 2 * PETSC_PI / thi->Ly - PETSC_PI; /* [-pi,pi] */
   PetscReal r = PetscSqrtReal(x * x + y * y), s = -x * PetscSinReal(thi->alpha);
@@ -382,7 +395,8 @@ static void THIInitialize_HOM_Y(THI thi, PetscReal xx, PetscReal yy, PrmNode *p)
 }
 
 /* Same bed as A, smoothly varying slipperiness, similar to MATLAB's "sombrero" (uncorrelated with bathymetry) */
-static void THIInitialize_HOM_Z(THI thi, PetscReal xx, PetscReal yy, PrmNode *p) {
+static void THIInitialize_HOM_Z(THI thi, PetscReal xx, PetscReal yy, PrmNode *p)
+{
   Units     units = thi->units;
   PetscReal x = xx * 2 * PETSC_PI / thi->Lx - PETSC_PI, y = yy * 2 * PETSC_PI / thi->Ly - PETSC_PI; /* [-pi,pi] */
   PetscReal r = PetscSqrtReal(x * x + y * y), s = -x * PetscSinReal(thi->alpha);
@@ -391,7 +405,8 @@ static void THIInitialize_HOM_Z(THI thi, PetscReal xx, PetscReal yy, PrmNode *p)
   p->beta2 = 1000 * (1. + PetscSinReal(PetscSqrtReal(16 * r)) / PetscSqrtReal(1e-2 + 16 * r) * PetscCosReal(x * 3 / 2) * PetscCosReal(y * 3 / 2)) * units->Pascal * units->year / units->meter / thi->rhog;
 }
 
-static void THIFriction(THI thi, PetscReal rbeta2, PetscReal gam, PetscReal *beta2, PetscReal *dbeta2) {
+static void THIFriction(THI thi, PetscReal rbeta2, PetscReal gam, PetscReal *beta2, PetscReal *dbeta2)
+{
   if (thi->friction.irefgam == 0) {
     Units units           = thi->units;
     thi->friction.irefgam = 1. / (0.5 * PetscSqr(100 * units->meter / units->year));
@@ -406,7 +421,8 @@ static void THIFriction(THI thi, PetscReal rbeta2, PetscReal gam, PetscReal *bet
   }
 }
 
-static void THIViscosity(THI thi, PetscReal gam, PetscReal *eta, PetscReal *deta) {
+static void THIViscosity(THI thi, PetscReal gam, PetscReal *eta, PetscReal *deta)
+{
   PetscReal Bd2, eps, exponent;
   if (thi->viscosity.Bd2 == 0) {
     Units           units   = thi->units;
@@ -425,7 +441,8 @@ static void THIViscosity(THI thi, PetscReal gam, PetscReal *eta, PetscReal *deta
   *deta    = exponent * (*eta) / (eps + gam);
 }
 
-static void THIErosion(THI thi, const Node *vel, PetscScalar *erate, Node *derate) {
+static void THIErosion(THI thi, const Node *vel, PetscScalar *erate, Node *derate)
+{
   const PetscScalar magref2 = 1.e-10 + (PetscSqr(vel->u) + PetscSqr(vel->v)) / PetscSqr(thi->erosion.refvel), rate = -thi->erosion.rate * PetscPowScalar(magref2, 0.5 * thi->erosion.exponent);
   if (erate) *erate = rate;
   if (derate) {
@@ -439,17 +456,20 @@ static void THIErosion(THI thi, const Node *vel, PetscScalar *erate, Node *derat
   }
 }
 
-static void RangeUpdate(PetscReal *min, PetscReal *max, PetscReal x) {
+static void RangeUpdate(PetscReal *min, PetscReal *max, PetscReal x)
+{
   if (x < *min) *min = x;
   if (x > *max) *max = x;
 }
 
-static void PRangeClear(PRange *p) {
+static void PRangeClear(PRange *p)
+{
   p->cmin = p->min = 1e100;
   p->cmax = p->max = -1e100;
 }
 
-static PetscErrorCode PRangeMinMax(PRange *p, PetscReal min, PetscReal max) {
+static PetscErrorCode PRangeMinMax(PRange *p, PetscReal min, PetscReal max)
+{
   PetscFunctionBeginUser;
   p->cmin = min;
   p->cmax = max;
@@ -458,7 +478,8 @@ static PetscErrorCode PRangeMinMax(PRange *p, PetscReal min, PetscReal max) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode THIDestroy(THI *thi) {
+static PetscErrorCode THIDestroy(THI *thi)
+{
   PetscFunctionBeginUser;
   if (--((PetscObject)(*thi))->refct > 0) PetscFunctionReturn(0);
   PetscCall(PetscFree((*thi)->units));
@@ -468,7 +489,8 @@ static PetscErrorCode THIDestroy(THI *thi) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode THICreate(MPI_Comm comm, THI *inthi) {
+static PetscErrorCode THICreate(MPI_Comm comm, THI *inthi)
+{
   static PetscBool registered = PETSC_FALSE;
   THI              thi;
   Units            units;
@@ -557,7 +579,8 @@ static PetscErrorCode THICreate(MPI_Comm comm, THI *inthi) {
       thi->no_slip    = PETSC_FALSE;
       thi->alpha      = 0.5;
       break;
-    default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "HOM experiment '%c' not implemented", homexp[0]);
+    default:
+      SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "HOM experiment '%c' not implemented", homexp[0]);
     }
     PetscCall(PetscOptionsEnum("-thi_quadrature", "Quadrature to use for 3D elements", "", QuadratureTypes, (PetscEnum)quad, (PetscEnum *)&quad, NULL));
     switch (quad) {
@@ -625,7 +648,8 @@ static PetscErrorCode THICreate(MPI_Comm comm, THI *inthi) {
 /* Our problem is periodic, but the domain has a mean slope of alpha so the bed does not line up between the upstream
  * and downstream ends of the domain.  This function fixes the ghost values so that the domain appears truly periodic in
  * the horizontal. */
-static PetscErrorCode THIFixGhosts(THI thi, DM da3, DM da2, Vec X3, Vec X2) {
+static PetscErrorCode THIFixGhosts(THI thi, DM da3, DM da2, Vec X3, Vec X2)
+{
   DMDALocalInfo info;
   PrmNode     **x2;
   PetscInt      i, j;
@@ -643,7 +667,8 @@ static PetscErrorCode THIFixGhosts(THI thi, DM da3, DM da2, Vec X3, Vec X2) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode THIInitializePrm(THI thi, DM da2prm, PrmNode **p) {
+static PetscErrorCode THIInitializePrm(THI thi, DM da2prm, PrmNode **p)
+{
   PetscInt i, j, xs, xm, ys, ym, mx, my;
 
   PetscFunctionBeginUser;
@@ -658,7 +683,8 @@ static PetscErrorCode THIInitializePrm(THI thi, DM da2prm, PrmNode **p) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode THIInitial(THI thi, DM pack, Vec X) {
+static PetscErrorCode THIInitial(THI thi, DM pack, Vec X)
+{
   DM        da3, da2;
   PetscInt  i, j, k, xs, xm, ys, ym, zs, zm, mx, my;
   PetscReal hx, hy;
@@ -701,7 +727,8 @@ static PetscErrorCode THIInitial(THI thi, DM pack, Vec X) {
   PetscFunctionReturn(0);
 }
 
-static void PointwiseNonlinearity(THI thi, const Node n[restrict 8], const PetscReal phi[restrict 3], PetscReal dphi[restrict 8][3], PetscScalar *restrict u, PetscScalar *restrict v, PetscScalar du[restrict 3], PetscScalar dv[restrict 3], PetscReal *eta, PetscReal *deta) {
+static void PointwiseNonlinearity(THI thi, const Node n[restrict 8], const PetscReal phi[restrict 3], PetscReal dphi[restrict 8][3], PetscScalar *restrict u, PetscScalar *restrict v, PetscScalar du[restrict 3], PetscScalar dv[restrict 3], PetscReal *eta, PetscReal *deta)
+{
   PetscInt    l, ll;
   PetscScalar gam;
 
@@ -721,7 +748,8 @@ static void PointwiseNonlinearity(THI thi, const Node n[restrict 8], const Petsc
   THIViscosity(thi, PetscRealPart(gam), eta, deta);
 }
 
-static PetscErrorCode THIFunctionLocal_3D(DMDALocalInfo *info, const Node ***x, const PrmNode **prm, const Node ***xdot, Node ***f, THI thi) {
+static PetscErrorCode THIFunctionLocal_3D(DMDALocalInfo *info, const Node ***x, const PrmNode **prm, const Node ***xdot, Node ***f, THI thi)
+{
   PetscInt  xs, ys, xm, ym, zm, i, j, k, q, l;
   PetscReal hx, hy, etamin, etamax, beta2min, beta2max;
 
@@ -828,7 +856,8 @@ static PetscErrorCode THIFunctionLocal_3D(DMDALocalInfo *info, const Node ***x, 
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode THIFunctionLocal_2D(DMDALocalInfo *info, const Node ***x, const PrmNode **prm, const PrmNode **prmdot, PrmNode **f, THI thi) {
+static PetscErrorCode THIFunctionLocal_2D(DMDALocalInfo *info, const Node ***x, const PrmNode **prm, const PrmNode **prmdot, PrmNode **f, THI thi)
+{
   PetscInt xs, ys, xm, ym, zm, i, j, k;
 
   PetscFunctionBeginUser;
@@ -863,7 +892,8 @@ static PetscErrorCode THIFunctionLocal_2D(DMDALocalInfo *info, const Node ***x, 
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode THIFunction(TS ts, PetscReal t, Vec X, Vec Xdot, Vec F, void *ctx) {
+static PetscErrorCode THIFunction(TS ts, PetscReal t, Vec X, Vec Xdot, Vec F, void *ctx)
+{
   THI             thi = (THI)ctx;
   DM              pack, da3, da2;
   Vec             X3, X2, Xdot3, Xdot2, F3, F2, F3g, F2g;
@@ -934,7 +964,8 @@ static PetscErrorCode THIFunction(TS ts, PetscReal t, Vec X, Vec Xdot, Vec F, vo
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode THIMatrixStatistics(THI thi, Mat B, PetscViewer viewer) {
+static PetscErrorCode THIMatrixStatistics(THI thi, Mat B, PetscViewer viewer)
+{
   PetscReal   nrm;
   PetscInt    m;
   PetscMPIInt rank;
@@ -953,7 +984,8 @@ static PetscErrorCode THIMatrixStatistics(THI thi, Mat B, PetscViewer viewer) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode THISurfaceStatistics(DM pack, Vec X, PetscReal *min, PetscReal *max, PetscReal *mean) {
+static PetscErrorCode THISurfaceStatistics(DM pack, Vec X, PetscReal *min, PetscReal *max, PetscReal *mean)
+{
   DM          da3, da2;
   Vec         X3, X2;
   Node     ***x;
@@ -986,7 +1018,8 @@ static PetscErrorCode THISurfaceStatistics(DM pack, Vec X, PetscReal *min, Petsc
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode THISolveStatistics(THI thi, TS ts, PetscInt coarsened, const char name[]) {
+static PetscErrorCode THISolveStatistics(THI thi, TS ts, PetscInt coarsened, const char name[])
+{
   MPI_Comm comm;
   DM       pack;
   Vec      X, X3, X2;
@@ -1050,14 +1083,17 @@ static PetscErrorCode THISolveStatistics(THI thi, TS ts, PetscInt coarsened, con
   PetscFunctionReturn(0);
 }
 
-static inline PetscInt DMDALocalIndex3D(DMDALocalInfo *info, PetscInt i, PetscInt j, PetscInt k) {
+static inline PetscInt DMDALocalIndex3D(DMDALocalInfo *info, PetscInt i, PetscInt j, PetscInt k)
+{
   return ((i - info->gzs) * info->gym + (j - info->gys)) * info->gxm + (k - info->gxs);
 }
-static inline PetscInt DMDALocalIndex2D(DMDALocalInfo *info, PetscInt i, PetscInt j) {
+static inline PetscInt DMDALocalIndex2D(DMDALocalInfo *info, PetscInt i, PetscInt j)
+{
   return (i - info->gzs) * info->gym + (j - info->gys);
 }
 
-static PetscErrorCode THIJacobianLocal_Momentum(DMDALocalInfo *info, const Node ***x, const PrmNode **prm, Mat B, Mat Bcpl, THI thi) {
+static PetscErrorCode THIJacobianLocal_Momentum(DMDALocalInfo *info, const Node ***x, const PrmNode **prm, Mat B, Mat Bcpl, THI thi)
+{
   PetscInt  xs, ys, xm, ym, zm, i, j, k, q, l, ll;
   PetscReal hx, hy;
 
@@ -1189,7 +1225,8 @@ static PetscErrorCode THIJacobianLocal_Momentum(DMDALocalInfo *info, const Node 
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode THIJacobianLocal_2D(DMDALocalInfo *info, const Node ***x3, const PrmNode **x2, const PrmNode **xdot2, PetscReal a, Mat B22, Mat B21, THI thi) {
+static PetscErrorCode THIJacobianLocal_2D(DMDALocalInfo *info, const Node ***x3, const PrmNode **x2, const PrmNode **xdot2, PetscReal a, Mat B22, Mat B21, THI thi)
+{
   PetscInt xs, ys, xm, ym, zm, i, j, k;
 
   PetscFunctionBeginUser;
@@ -1232,7 +1269,8 @@ static PetscErrorCode THIJacobianLocal_2D(DMDALocalInfo *info, const Node ***x3,
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode THIJacobian(TS ts, PetscReal t, Vec X, Vec Xdot, PetscReal a, Mat A, Mat B, void *ctx) {
+static PetscErrorCode THIJacobian(TS ts, PetscReal t, Vec X, Vec Xdot, PetscReal a, Mat A, Mat B, void *ctx)
+{
   THI             thi = (THI)ctx;
   DM              pack, da3, da2;
   Vec             X3, X2, Xdot2;
@@ -1301,7 +1339,8 @@ static PetscErrorCode THIJacobian(TS ts, PetscReal t, Vec X, Vec Xdot, PetscReal
  * can be shared between the two grids, we write two files at once, one for velocity (living on a 3D grid defined by
  * h=thickness and b=bed) and another for all properties living on the 2D grid.
  */
-static PetscErrorCode THIDAVecView_VTK_XML(THI thi, DM pack, Vec X, const char filename[], const char filename2[]) {
+static PetscErrorCode THIDAVecView_VTK_XML(THI thi, DM pack, Vec X, const char filename[], const char filename2[])
+{
   const PetscInt dof = NODE_SIZE, dof2 = PRMNODE_SIZE;
   Units          units = thi->units;
   MPI_Comm       comm;
@@ -1432,7 +1471,8 @@ static PetscErrorCode THIDAVecView_VTK_XML(THI thi, DM pack, Vec X, const char f
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode THITSMonitor(TS ts, PetscInt step, PetscReal t, Vec X, void *ctx) {
+static PetscErrorCode THITSMonitor(TS ts, PetscInt step, PetscReal t, Vec X, void *ctx)
+{
   THI  thi = (THI)ctx;
   DM   pack;
   char filename3[PETSC_MAX_PATH_LEN], filename2[PETSC_MAX_PATH_LEN];
@@ -1448,7 +1488,8 @@ static PetscErrorCode THITSMonitor(TS ts, PetscInt step, PetscReal t, Vec X, voi
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode THICreateDM3d(THI thi, DM *dm3d) {
+static PetscErrorCode THICreateDM3d(THI thi, DM *dm3d)
+{
   MPI_Comm comm;
   PetscInt M = 3, N = 3, P = 2;
   DM       da;
@@ -1472,7 +1513,8 @@ static PetscErrorCode THICreateDM3d(THI thi, DM *dm3d) {
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[])
+{
   MPI_Comm  comm;
   DM        pack, da3, da2;
   TS        ts;

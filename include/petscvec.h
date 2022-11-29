@@ -3,7 +3,7 @@
   degrees of freedom for finite element/finite difference functions
   on a grid. They have more mathematical structure then simple arrays.
 */
-#if !defined(PETSCVEC_H)
+#ifndef PETSCVEC_H
 #define PETSCVEC_H
 
 #include <petscsys.h>
@@ -383,7 +383,8 @@ PETSC_EXTERN PetscErrorCode VecSetValuesCOO(Vec, const PetscScalar[], InsertMode
 
 .seealso: `VecSetValues()`, `VecAssemblyBegin()`, `VecAssemblyEnd()`, `VecSetValuesBlockedLocal()`, `VecSetValueLocal()`
 M*/
-static inline PetscErrorCode VecSetValue(Vec v, PetscInt i, PetscScalar va, InsertMode mode) {
+static inline PetscErrorCode VecSetValue(Vec v, PetscInt i, PetscScalar va, InsertMode mode)
+{
   return VecSetValues(v, 1, &i, &va, mode);
 }
 
@@ -455,32 +456,6 @@ PETSC_EXTERN PetscErrorCode VecGetOwnershipRanges(Vec, const PetscInt *[]);
 PETSC_EXTERN PetscErrorCode VecSetLocalToGlobalMapping(Vec, ISLocalToGlobalMapping);
 PETSC_EXTERN PetscErrorCode VecSetValuesLocal(Vec, PetscInt, const PetscInt[], const PetscScalar[], InsertMode);
 
-PETSC_EXTERN PetscErrorCode VecCUDAGetArray(Vec, PetscScalar **);
-PETSC_EXTERN PetscErrorCode VecCUDARestoreArray(Vec, PetscScalar **);
-
-PETSC_EXTERN PetscErrorCode VecCUDAGetArrayRead(Vec, const PetscScalar **);
-PETSC_EXTERN PetscErrorCode VecCUDARestoreArrayRead(Vec, const PetscScalar **);
-
-PETSC_EXTERN PetscErrorCode VecCUDAGetArrayWrite(Vec, PetscScalar **);
-PETSC_EXTERN PetscErrorCode VecCUDARestoreArrayWrite(Vec, PetscScalar **);
-
-PETSC_EXTERN PetscErrorCode VecCUDAPlaceArray(Vec, const PetscScalar[]);
-PETSC_EXTERN PetscErrorCode VecCUDAReplaceArray(Vec, const PetscScalar[]);
-PETSC_EXTERN PetscErrorCode VecCUDAResetArray(Vec);
-
-PETSC_EXTERN PetscErrorCode VecHIPGetArray(Vec, PetscScalar **);
-PETSC_EXTERN PetscErrorCode VecHIPRestoreArray(Vec, PetscScalar **);
-
-PETSC_EXTERN PetscErrorCode VecHIPGetArrayRead(Vec, const PetscScalar **);
-PETSC_EXTERN PetscErrorCode VecHIPRestoreArrayRead(Vec, const PetscScalar **);
-
-PETSC_EXTERN PetscErrorCode VecHIPGetArrayWrite(Vec, PetscScalar **);
-PETSC_EXTERN PetscErrorCode VecHIPRestoreArrayWrite(Vec, PetscScalar **);
-
-PETSC_EXTERN PetscErrorCode VecHIPPlaceArray(Vec, const PetscScalar[]);
-PETSC_EXTERN PetscErrorCode VecHIPReplaceArray(Vec, const PetscScalar[]);
-PETSC_EXTERN PetscErrorCode VecHIPResetArray(Vec);
-
 PETSC_EXTERN PetscErrorCode VecViennaCLGetCLContext(Vec, PETSC_UINTPTR_T *);
 PETSC_EXTERN PetscErrorCode VecViennaCLGetCLQueue(Vec, PETSC_UINTPTR_T *);
 PETSC_EXTERN PetscErrorCode VecViennaCLGetCLMemRead(Vec, PETSC_UINTPTR_T *);
@@ -517,7 +492,8 @@ PETSC_EXTERN PetscErrorCode VecViennaCLRestoreCLMem(Vec);
 
 .seealso: `VecSetValues()`, `VecAssemblyBegin()`, `VecAssemblyEnd()`, `VecSetValuesBlockedLocal()`, `VecSetValue()`
 M*/
-static inline PetscErrorCode VecSetValueLocal(Vec v, PetscInt i, PetscScalar va, InsertMode mode) {
+static inline PetscErrorCode VecSetValueLocal(Vec v, PetscInt i, PetscScalar va, InsertMode mode)
+{
   return VecSetValuesLocal(v, 1, &i, &va, mode);
 }
 
@@ -538,7 +514,8 @@ PETSC_EXTERN PetscErrorCode VecMTDotEnd(Vec, PetscInt, const Vec[], PetscScalar[
 PETSC_EXTERN PetscErrorCode PetscCommSplitReductionBegin(MPI_Comm);
 
 PETSC_EXTERN PetscErrorCode VecBindToCPU(Vec, PetscBool);
-PETSC_DEPRECATED_FUNCTION("Use VecBindToCPU (since v3.13)") static inline PetscErrorCode VecPinToCPU(Vec v, PetscBool flg) {
+PETSC_DEPRECATED_FUNCTION("Use VecBindToCPU (since v3.13)") static inline PetscErrorCode VecPinToCPU(Vec v, PetscBool flg)
+{
   return VecBindToCPU(v, flg);
 }
 PETSC_EXTERN PetscErrorCode VecBoundToCPU(Vec, PetscBool *);
@@ -594,7 +571,8 @@ PETSC_EXTERN PetscErrorCode VecRestoreArrayWriteAndMemType(Vec, PetscScalar **);
 .seealso: `VecGetArray()`, `VecGetArrayRead()`, `VecRestoreArrayPair()`
 
 @*/
-static inline PetscErrorCode VecGetArrayPair(Vec x, Vec y, PetscScalar **xv, PetscScalar **yv) {
+static inline PetscErrorCode VecGetArrayPair(Vec x, Vec y, PetscScalar **xv, PetscScalar **yv)
+{
   PetscFunctionBegin;
   PetscCall(VecGetArray(y, yv));
   if (x == y) *xv = *yv;
@@ -622,7 +600,8 @@ static inline PetscErrorCode VecGetArrayPair(Vec x, Vec y, PetscScalar **xv, Pet
 .seealso: `VecGetArray()`, `VecGetArrayRead()`, `VecGetArrayPair()`
 
 @*/
-static inline PetscErrorCode VecRestoreArrayPair(Vec x, Vec y, PetscScalar **xv, PetscScalar **yv) {
+static inline PetscErrorCode VecRestoreArrayPair(Vec x, Vec y, PetscScalar **xv, PetscScalar **yv)
+{
   PetscFunctionBegin;
   PetscCall(VecRestoreArray(y, yv));
   if (x != y) PetscCall(VecRestoreArrayRead(x, (const PetscScalar **)xv));
@@ -635,7 +614,8 @@ PETSC_EXTERN PetscErrorCode  VecLockReadPop(Vec);
 PETSC_EXTERN PetscErrorCode  VecLockWriteSet(Vec, PetscBool);
 PETSC_EXTERN PetscErrorCode  VecLockGet(Vec, PetscInt *);
 PETSC_EXTERN PetscErrorCode  VecLockGetLocation(Vec, const char *[], const char *[], int *);
-static inline PetscErrorCode VecSetErrorIfLocked(Vec x, PetscInt arg) {
+static inline PetscErrorCode VecSetErrorIfLocked(Vec x, PetscInt arg)
+{
   PetscInt state;
 
   PetscFunctionBegin;
@@ -653,27 +633,44 @@ static inline PetscErrorCode VecSetErrorIfLocked(Vec x, PetscInt arg) {
 /* The three are deprecated */
 PETSC_EXTERN PETSC_DEPRECATED_FUNCTION("Use VecLockReadPush() (since version 3.11)") PetscErrorCode VecLockPush(Vec);
 PETSC_EXTERN PETSC_DEPRECATED_FUNCTION("Use VecLockReadPop() (since version 3.11)") PetscErrorCode VecLockPop(Vec);
-#define VecLocked(x, arg) VecSetErrorIfLocked(x, arg) PETSC_DEPRECATED_MACRO("GCC warning \"Use VecSetErrorIfLocked() (since version 3.11)\"")
+  #define VecLocked(x, arg) VecSetErrorIfLocked(x, arg) PETSC_DEPRECATED_MACRO("GCC warning \"Use VecSetErrorIfLocked() (since version 3.11)\"")
 #else
-#define VecLockReadPush(x)          0
-#define VecLockReadPop(x)           0
-#define VecLockGet(x, s)            *(s) = 0
-#define VecSetErrorIfLocked(x, arg) 0
-#define VecLockWriteSet(x, flg)     0
-/* The three are deprecated */
-#define VecLockPush(x)              0
-#define VecLockPop(x)               0
-#define VecLocked(x, arg)           0
+  #define VecLockReadPush(x)          0
+  #define VecLockReadPop(x)           0
+  #define VecLockGet(x, s)            *(s) = 0
+  #define VecSetErrorIfLocked(x, arg) 0
+  #define VecLockWriteSet(x, flg)     0
+  /* The three are deprecated */
+  #define VecLockPush(x)              0
+  #define VecLockPop(x)               0
+  #define VecLocked(x, arg)           0
 #endif
 
-PETSC_EXTERN PetscErrorCode VecValidValues(Vec, PetscInt, PetscBool);
+/*E
+  VecOperation - Enumeration of overide-able methods in the `Vec` implementation function-table.
 
-/*
-    These numbers need to match the entries in
-  the function table in vecimpl.h
-*/
++ VECOP_DUPLICATE  - `VecDuplicate()`
+. VECOP_SET        - `VecSet()`
+. VECOP_VIEW       - `VecView()`
+. VECOP_LOAD       - `VecLoad()`
+. VECOP_VIEWNATIVE - `VecViewNative()`
+- VECOP_LOADNATIVE - `VecLoadNative()`
+
+  Notes:
+  Some operations may serve as the implementation for other routines not listed above. For
+  example `VECOP_SET` can be used to simultaneously overriding the implementation used in
+  `VecSet()`, `VecSetInf()`, and `VecZeroEntries()`.
+
+  Entries to `VecOperation` are added as needed so if you do not see the operation listed which
+  you'd like to replace, please send mail to `petsc-maint@mcs.anl.gov`!
+
+  Level: advanced
+
+.seealso: `Vec`, `VecSetOperation()`
+E*/
 typedef enum {
   VECOP_DUPLICATE  = 0,
+  VECOP_SET        = 10,
   VECOP_VIEW       = 33,
   VECOP_LOAD       = 41,
   VECOP_VIEWNATIVE = 68,
@@ -758,22 +755,6 @@ PETSC_EXTERN PetscErrorCode             VecCreateMPIViennaCL(MPI_Comm, PetscInt,
 #if defined(PETSC_HAVE_CUDA) || defined(PETSC_HAVE_HIP)
 PETSC_EXTERN PetscErrorCode VecScatterInitializeForGPU(VecScatter, Vec);
 PETSC_EXTERN PetscErrorCode VecScatterFinalizeForGPU(VecScatter);
-#endif
-#if defined(PETSC_HAVE_CUDA)
-PETSC_EXTERN PetscErrorCode VecCreateSeqCUDA(MPI_Comm, PetscInt, Vec *);
-PETSC_EXTERN PetscErrorCode VecCreateSeqCUDAWithArray(MPI_Comm, PetscInt, PetscInt, const PetscScalar *, Vec *);
-PETSC_EXTERN PetscErrorCode VecCreateSeqCUDAWithArrays(MPI_Comm, PetscInt, PetscInt, const PetscScalar *, const PetscScalar *, Vec *);
-PETSC_EXTERN PetscErrorCode VecCreateMPICUDA(MPI_Comm, PetscInt, PetscInt, Vec *);
-PETSC_EXTERN PetscErrorCode VecCreateMPICUDAWithArray(MPI_Comm, PetscInt, PetscInt, PetscInt, const PetscScalar *, Vec *);
-PETSC_EXTERN PetscErrorCode VecCreateMPICUDAWithArrays(MPI_Comm, PetscInt, PetscInt, PetscInt, const PetscScalar *, const PetscScalar *, Vec *);
-#endif
-#if defined(PETSC_HAVE_HIP)
-PETSC_EXTERN PetscErrorCode VecCreateSeqHIP(MPI_Comm, PetscInt, Vec *);
-PETSC_EXTERN PetscErrorCode VecCreateSeqHIPWithArray(MPI_Comm, PetscInt, PetscInt, const PetscScalar *, Vec *);
-PETSC_EXTERN PetscErrorCode VecCreateSeqHIPWithArrays(MPI_Comm, PetscInt, PetscInt, const PetscScalar *, const PetscScalar *, Vec *);
-PETSC_EXTERN PetscErrorCode VecCreateMPIHIP(MPI_Comm, PetscInt, PetscInt, Vec *);
-PETSC_EXTERN PetscErrorCode VecCreateMPIHIPWithArray(MPI_Comm, PetscInt, PetscInt, PetscInt, const PetscScalar *, Vec *);
-PETSC_EXTERN PetscErrorCode VecCreateMPIHIPWithArrays(MPI_Comm, PetscInt, PetscInt, PetscInt, const PetscScalar *, const PetscScalar *, Vec *);
 #endif
 #if defined(PETSC_HAVE_KOKKOS_KERNELS)
 PETSC_EXTERN PetscErrorCode VecCreateSeqKokkos(MPI_Comm, PetscInt, Vec *);
@@ -898,5 +879,86 @@ PETSC_EXTERN PetscErrorCode VecTaggerAndGetSubs(VecTagger, PetscInt *, VecTagger
 
 PETSC_EXTERN PetscErrorCode VecTaggerInitializePackage(void);
 PETSC_EXTERN PetscErrorCode VecTaggerFinalizePackage(void);
+
+#if PetscDefined(USE_DEBUG)
+/* This is an internal debug-only routine that should not be used by users */
+PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode VecValidValues_Internal(Vec, PetscInt, PetscBool);
+#else
+  #define VecValidValues_Internal(...) 0
+#endif /* PETSC_USE_DEBUG */
+
+#define VEC_CUPM_NOT_CONFIGURED(impl) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP_SYS, "Must configure PETSc with " PetscStringize(impl) " support to use %s", PETSC_FUNCTION_NAME)
+
+#if PetscDefined(HAVE_CUDA)
+  #define VEC_CUDA_DECL_OR_STUB(__decl__, ...) PETSC_EXTERN __decl__;
+#else
+  #define VEC_CUDA_DECL_OR_STUB(__decl__, ...) \
+    static inline __decl__ \
+    { \
+      __VA_ARGS__; \
+      VEC_CUPM_NOT_CONFIGURED(cuda); \
+    }
+#endif /* PETSC_HAVE_CUDA */
+
+/* extra underscore here to make it line up with the cuda versions */
+#if PetscDefined(HAVE_HIP)
+  #define VEC_HIP__DECL_OR_STUB(__decl__, ...) PETSC_EXTERN __decl__;
+#else
+  #define VEC_HIP__DECL_OR_STUB(__decl__, ...) \
+    static inline __decl__ \
+    { \
+      __VA_ARGS__; \
+      VEC_CUPM_NOT_CONFIGURED(hip); \
+    }
+#endif /* PETSC_HAVE_HIP */
+
+VEC_CUDA_DECL_OR_STUB(PetscErrorCode VecCreateSeqCUDA(MPI_Comm a, PetscInt b, Vec *c), (void)a, (void)b, (void)c)
+VEC_HIP__DECL_OR_STUB(PetscErrorCode VecCreateSeqHIP(MPI_Comm a, PetscInt b, Vec *c), (void)a, (void)b, (void)c)
+
+VEC_CUDA_DECL_OR_STUB(PetscErrorCode VecCreateSeqCUDAWithArray(MPI_Comm a, PetscInt b, PetscInt c, const PetscScalar *d, Vec *e), (void)a, (void)b, (void)c, (void)d, (void)e)
+VEC_HIP__DECL_OR_STUB(PetscErrorCode VecCreateSeqHIPWithArray(MPI_Comm a, PetscInt b, PetscInt c, const PetscScalar *d, Vec *e), (void)a, (void)b, (void)c, (void)d, (void)e)
+
+VEC_CUDA_DECL_OR_STUB(PetscErrorCode VecCreateSeqCUDAWithArrays(MPI_Comm a, PetscInt b, PetscInt c, const PetscScalar *d, const PetscScalar *e, Vec *f), (void)a, (void)b, (void)c, (void)d, (void)e, (void)f)
+VEC_HIP__DECL_OR_STUB(PetscErrorCode VecCreateSeqHIPWithArrays(MPI_Comm a, PetscInt b, PetscInt c, const PetscScalar *d, const PetscScalar *e, Vec *f), (void)a, (void)b, (void)c, (void)d, (void)e, (void)f)
+
+VEC_CUDA_DECL_OR_STUB(PetscErrorCode VecCreateMPICUDA(MPI_Comm a, PetscInt b, PetscInt c, Vec *d), (void)a, (void)b, (void)c, (void)d)
+VEC_HIP__DECL_OR_STUB(PetscErrorCode VecCreateMPIHIP(MPI_Comm a, PetscInt b, PetscInt c, Vec *d), (void)a, (void)b, (void)c, (void)d)
+
+VEC_CUDA_DECL_OR_STUB(PetscErrorCode VecCreateMPICUDAWithArray(MPI_Comm a, PetscInt b, PetscInt c, PetscInt d, const PetscScalar *e, Vec *f), (void)a, (void)b, (void)c, (void)d, (void)e, (void)f)
+VEC_HIP__DECL_OR_STUB(PetscErrorCode VecCreateMPIHIPWithArray(MPI_Comm a, PetscInt b, PetscInt c, PetscInt d, const PetscScalar *e, Vec *f), (void)a, (void)b, (void)c, (void)d, (void)e, (void)f)
+
+VEC_CUDA_DECL_OR_STUB(PetscErrorCode VecCreateMPICUDAWithArrays(MPI_Comm a, PetscInt b, PetscInt c, PetscInt d, const PetscScalar *e, const PetscScalar *f, Vec *g), (void)a, (void)b, (void)c, (void)d, (void)e, (void)f, (void)g)
+VEC_HIP__DECL_OR_STUB(PetscErrorCode VecCreateMPIHIPWithArrays(MPI_Comm a, PetscInt b, PetscInt c, PetscInt d, const PetscScalar *e, const PetscScalar *f, Vec *g), (void)a, (void)b, (void)c, (void)d, (void)e, (void)f, (void)g)
+
+VEC_CUDA_DECL_OR_STUB(PetscErrorCode VecCUDAGetArray(Vec a, PetscScalar **b), (void)a, (void)b)
+VEC_HIP__DECL_OR_STUB(PetscErrorCode VecHIPGetArray(Vec a, PetscScalar **b), (void)a, (void)b)
+
+VEC_CUDA_DECL_OR_STUB(PetscErrorCode VecCUDARestoreArray(Vec a, PetscScalar **b), (void)a, (void)b)
+VEC_HIP__DECL_OR_STUB(PetscErrorCode VecHIPRestoreArray(Vec a, PetscScalar **b), (void)a, (void)b)
+
+VEC_CUDA_DECL_OR_STUB(PetscErrorCode VecCUDAGetArrayRead(Vec a, const PetscScalar **b), (void)a, (void)b)
+VEC_HIP__DECL_OR_STUB(PetscErrorCode VecHIPGetArrayRead(Vec a, const PetscScalar **b), (void)a, (void)b)
+
+VEC_CUDA_DECL_OR_STUB(PetscErrorCode VecCUDARestoreArrayRead(Vec a, const PetscScalar **b), (void)a, (void)b)
+VEC_HIP__DECL_OR_STUB(PetscErrorCode VecHIPRestoreArrayRead(Vec a, const PetscScalar **b), (void)a, (void)b)
+
+VEC_CUDA_DECL_OR_STUB(PetscErrorCode VecCUDAGetArrayWrite(Vec a, PetscScalar **b), (void)a, (void)b)
+VEC_HIP__DECL_OR_STUB(PetscErrorCode VecHIPGetArrayWrite(Vec a, PetscScalar **b), (void)a, (void)b)
+
+VEC_CUDA_DECL_OR_STUB(PetscErrorCode VecCUDARestoreArrayWrite(Vec a, PetscScalar **b), (void)a, (void)b)
+VEC_HIP__DECL_OR_STUB(PetscErrorCode VecHIPRestoreArrayWrite(Vec a, PetscScalar **b), (void)a, (void)b)
+
+VEC_CUDA_DECL_OR_STUB(PetscErrorCode VecCUDAPlaceArray(Vec a, const PetscScalar b[]), (void)a, (void)b)
+VEC_HIP__DECL_OR_STUB(PetscErrorCode VecHIPPlaceArray(Vec a, const PetscScalar b[]), (void)a, (void)b)
+
+VEC_CUDA_DECL_OR_STUB(PetscErrorCode VecCUDAReplaceArray(Vec a, const PetscScalar b[]), (void)a, (void)b)
+VEC_HIP__DECL_OR_STUB(PetscErrorCode VecHIPReplaceArray(Vec a, const PetscScalar b[]), (void)a, (void)b)
+
+VEC_CUDA_DECL_OR_STUB(PetscErrorCode VecCUDAResetArray(Vec a), (void)a)
+VEC_HIP__DECL_OR_STUB(PetscErrorCode VecHIPResetArray(Vec a), (void)a)
+
+#undef VEC_CUPM_NOT_CONFIGURED
+#undef VEC_CUDA_DECL_OR_STUB
+#undef VEC_HIP__DECL_OR_STUB
 
 #endif

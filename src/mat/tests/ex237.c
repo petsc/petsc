@@ -10,21 +10,24 @@ static char help[] = "Mini-app to benchmark matrix--matrix multiplication\n\n";
 #include <petsc.h>
 
 #if defined(PETSC_HAVE_MKL_SPARSE_OPTIMIZE)
-#include <mkl.h>
-#define PetscCallMKLSparse(func, args) \
-  do { \
-    sparse_status_t __ierr; \
-    PetscStackPushExternal(#func); \
-    __ierr = func args; \
-    PetscStackPop; \
-    PetscCheck(__ierr == SPARSE_STATUS_SUCCESS, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in %s(): error code %d", #func, (int)__ierr); \
-  } while (0)
+  #include <mkl.h>
+  #define PetscCallMKLSparse(func, args) \
+    do { \
+      sparse_status_t __ierr; \
+      PetscStackPushExternal(#func); \
+      __ierr = func args; \
+      PetscStackPop; \
+      PetscCheck(__ierr == SPARSE_STATUS_SUCCESS, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in %s(): error code %d", #func, (int)__ierr); \
+    } while (0)
 #else
-#define PetscCallMKLSparse(func, args) \
-  do { SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "No MKL support"); } while (0)
+  #define PetscCallMKLSparse(func, args) \
+    do { \
+      SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "No MKL support"); \
+    } while (0)
 #endif
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   Mat         A, C, D, E;
   PetscInt    nbs = 10, ntype = 10, nN = 8, m, M, trial = 5;
   PetscViewer viewer;

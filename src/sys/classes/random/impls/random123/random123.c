@@ -16,15 +16,16 @@ R123_ULONG_LONG PETSCR123_SEED_1 = R123_64BIT(0xAFF6369B3EE9FE96);
 R123_ULONG_LONG PETSCR123_SEED_2 = R123_64BIT(0x5956EBC717B60E07);
 R123_ULONG_LONG PETSCR123_SEED_3 = R123_64BIT(0xEE8612A0CBEABFF1);
 
-PetscErrorCode PetscRandomSeed_Random123(PetscRandom r) {
+PetscErrorCode PetscRandomSeed_Random123(PetscRandom r)
+{
   threefry4x64_ukey_t ukey;
   PetscRandom123     *r123 = (PetscRandom123 *)r->data;
 
   PetscFunctionBegin;
-  ukey.v[0]          = (R123_ULONG_LONG)r->seed;
-  ukey.v[1]          = PETSCR123_SEED_1;
-  ukey.v[2]          = PETSCR123_SEED_2;
-  ukey.v[3]          = PETSCR123_SEED_3;
+  ukey.v[0] = (R123_ULONG_LONG)r->seed;
+  ukey.v[1] = PETSCR123_SEED_1;
+  ukey.v[2] = PETSCR123_SEED_2;
+  ukey.v[3] = PETSCR123_SEED_3;
   /* The point of seeding should be that every time the sequence is seeded you get the same output.  In this CBRNG,
    * that means we have to initialize the key and reset the counts */
   r123->key          = threefry4x64keyinit(ukey);
@@ -37,7 +38,8 @@ PetscErrorCode PetscRandomSeed_Random123(PetscRandom r) {
   PetscFunctionReturn(0);
 }
 
-static PetscReal PetscRandom123Step(PetscRandom123 *r123) {
+static PetscReal PetscRandom123Step(PetscRandom123 *r123)
+{
   PetscReal scale = ((PetscReal)1.) / (UINT64_MAX + ((PetscReal)1.));
   PetscReal shift = .5 * scale;
   PetscInt  mod   = (r123->count++) % 4;
@@ -56,7 +58,8 @@ static PetscReal PetscRandom123Step(PetscRandom123 *r123) {
   return ret;
 }
 
-PetscErrorCode PetscRandomGetValue_Random123(PetscRandom r, PetscScalar *val) {
+PetscErrorCode PetscRandomGetValue_Random123(PetscRandom r, PetscScalar *val)
+{
   PetscRandom123 *r123 = (PetscRandom123 *)r->data;
   PetscScalar     rscal;
 
@@ -81,7 +84,8 @@ PetscErrorCode PetscRandomGetValue_Random123(PetscRandom r, PetscScalar *val) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscRandomGetValueReal_Random123(PetscRandom r, PetscReal *val) {
+PetscErrorCode PetscRandomGetValueReal_Random123(PetscRandom r, PetscReal *val)
+{
   PetscRandom123 *r123 = (PetscRandom123 *)r->data;
   PetscReal       rreal;
 
@@ -92,7 +96,8 @@ PetscErrorCode PetscRandomGetValueReal_Random123(PetscRandom r, PetscReal *val) 
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscRandomDestroy_Random123(PetscRandom r) {
+PetscErrorCode PetscRandomDestroy_Random123(PetscRandom r)
+{
   PetscFunctionBegin;
   PetscCall(PetscFree(r->data));
   PetscFunctionReturn(0);
@@ -121,11 +126,12 @@ static struct _PetscRandomOps PetscRandomOps_Values = {
 .seealso: `RandomCreate()`, `RandomSetType()`, `PETSCRAND`, `PETSCRAND48`, `PETSCSPRNG`, `PetscRandomSetFromOptions()`
 M*/
 
-PETSC_EXTERN PetscErrorCode PetscRandomCreate_Random123(PetscRandom r) {
+PETSC_EXTERN PetscErrorCode PetscRandomCreate_Random123(PetscRandom r)
+{
   PetscRandom123 *r123;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(r, &r123));
+  PetscCall(PetscNew(&r123));
   r->data = r123;
   PetscCall(PetscMemcpy(r->ops, &PetscRandomOps_Values, sizeof(PetscRandomOps_Values)));
   PetscCall(PetscObjectChangeTypeName((PetscObject)r, PETSCRANDOM123));

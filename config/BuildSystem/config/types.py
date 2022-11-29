@@ -32,7 +32,7 @@ class Configure(config.base.Configure):
 #include <stddef.h>
 %s
     ''' % ('\n'.join(['#include<%s>' % inc for inc in includes]))
-    found = self.checkCompile(include,typeName+' a;')
+    found = self.checkCompile(include,typeName+' a;\n(void)a')
     if not found and defaultType:
       self.addTypedef(defaultType, typeName)
     else:
@@ -71,18 +71,11 @@ class Configure(config.base.Configure):
     '''Checks for pid_t, and defines it if necessary'''
     return self.check('pid_t', 'int')
 
-  def checkUID(self):
-    '''Checks for uid_t and gid_t, and defines them if necessary'''
-    if self.outputPreprocess('#include <sys/types.h>').find('uid_t') < 0:
-      self.addDefine('uid_t', 'int')
-      self.addDefine('gid_t', 'int')
-    return
-
   def checkC99Complex(self):
     '''Check for complex numbers in in C99 std
        Note that since PETSc source code uses _Complex we test specifically for that, not complex'''
     includes = '#include <complex.h>\n'
-    body     = 'double _Complex x;\n x = I;\n'
+    body     = 'double _Complex x;\n x = I;\n(void)x'
     if not self.checkCompile(includes, body): return    # checkLink can succeed even if checkCompile fails
     if self.checkLink(includes, body):
       # recheck with _GNU_SOURCE active (Issues with crayCC on aarch64)
@@ -96,67 +89,11 @@ class Configure(config.base.Configure):
     '''Check for complex numbers in namespace std'''
     self.pushLanguage('C++')
     includes = '#include <complex>\n'
-    body     = 'std::complex<double> x;\n'
+    body     = 'std::complex<double> x;\n(void)x'
     if self.checkLink(includes, body):
       self.addDefine('HAVE_CXX_COMPLEX', 1)
       self.cxx_complex = 1
     self.popLanguage()
-    return
-
-  def checkConst(self):
-    '''Checks for working const, and if not found defines it to empty string'''
-    body = '''
-    /* Ultrix mips cc rejects this.  */
-    typedef int charset[2]; const charset x;
-    /* SunOS 4.1.1 cc rejects this.  */
-    char const *const *ccp;
-    char **p;
-    /* NEC SVR4.0.2 mips cc rejects this.  */
-    struct point {int x, y;};
-    static struct point const zero = {0,0};
-    /* AIX XL C 1.02.0.0 rejects this.
-    It does not let you subtract one const X* pointer from another in an arm
-    of an if-expression whose if-part is not a constant expression */
-    const char *g = "string";
-    ccp = &g + (g ? g-g : 0);
-    /* HPUX 7.0 cc rejects these. */
-    ++ccp;
-    p = (char**) ccp;
-    ccp = (char const *const *) p;
-    /* This section avoids unused variable warnings */
-    if (zero.x);
-    if (x[0]);
-    { /* SCO 3.2v4 cc rejects this.  */
-      char *t;
-      char const *s = 0 ? (char *) 0 : (char const *) 0;
-
-      *t++ = 0;
-      if (*s);
-    }
-    { /* Someone thinks the Sun supposedly-ANSI compiler will reject this.  */
-      int x[] = {25, 17};
-      const int *foo = &x[0];
-      ++foo;
-    }
-    { /* Sun SC1.0 ANSI compiler rejects this -- but not the above. */
-      typedef const int *iptr;
-      iptr p = 0;
-      ++p;
-    }
-    { /* AIX XL C 1.02.0.0 rejects this saying
-      "k.c", line 2.27: 1506-025 (S) Operand must be a modifiable lvalue. */
-      struct s { int j; const int *ap[3]; };
-      struct s *b; b->j = 5;
-    }
-    { /* ULTRIX-32 V3.1 (Rev 9) vcc rejects this */
-      const int foo = 10;
-
-      /* Get rid of unused variable warning */
-      if (foo);
-    }
-    '''
-    if not self.checkCompile('', body):
-      self.addDefine('const', '')
     return
 
   def checkSizeof(self, typeName, typeSizes, otherInclude = None, lang='C', save=True, codeBegin=''):
@@ -259,11 +196,9 @@ char petsc_max_path_len[] = xstr(PETSC_MAX_PATH_LEN);
     self.executeTest(self.checkFileTypes)
     self.executeTest(self.checkIntegerTypes)
     self.executeTest(self.checkPID)
-    self.executeTest(self.checkUID)
     self.executeTest(self.checkC99Complex)
     if hasattr(self.compilers, 'CXX'):
       self.executeTest(self.checkCxxComplex)
-    self.executeTest(self.checkConst)
     for t, sizes in {'void *': (8, 4),
                      'short': (2, 4, 8),
                      'int': (4, 8, 2),

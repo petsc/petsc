@@ -15,24 +15,27 @@ ifneq ($(KOKKOS_USE_CUDA_COMPILER),)
   # Kokkos requires nvcc to be in PATH and the C++ compiler to be given in an environmental variable
   # We prefer to use the Kokkos nvcc_wrapper compiler wrapper for compiling Kokkos files. The command is adapted from PETSC_COMPILE.kokkos.cxx
   # in gmakefile.test, with additional "-o $*.o" to generate intended foo.o intead of foo.kokkos.o
-  PETSC_KOKKOSCOMPILE_SINGLE = PATH=`dirname $(CUDAC)`:$(PATH) NVCC_WRAPPER_DEFAULT_COMPILER="$(CUDA_CXX)" $(KOKKOS_BIN)/nvcc_wrapper --expt-extended-lambda -c $(CUDAC_FLAGS) ${PETSC_CCPPFLAGS} $(CUDACPPFLAGS) $(CUDA_CXXFLAGS) $(MPICXX_INCLUDES) -o $*.o
+  KOKKOS_COMPILE_SINGLE = PATH=`dirname $(CUDAC)`:$(PATH) NVCC_WRAPPER_DEFAULT_COMPILER="$(CUDA_CXX)" $(KOKKOS_BIN)/nvcc_wrapper --expt-extended-lambda -c $(CUDAC_FLAGS) ${PETSC_CCPPFLAGS} $(CUDACPPFLAGS) $(CUDA_CXXFLAGS) $(MPICXX_INCLUDES) -o $*.o
 
   LINK.kokkos.cxx = PATH=`dirname $(CUDAC)`:$(PATH) NVCC_WRAPPER_DEFAULT_COMPILER=$(CUDA_CXX) $(KOKKOS_BIN)/nvcc_wrapper --expt-extended-lambda $(CUDAC_FLAGS) $(MPICXX_INCLUDES) ${PETSC_CCPPFLAGS} $(CUDA_CXXFLAGS) $(CUDACPPFLAGS) $(CUDA_CXXLIBS) $(MPICXX_LIBS) $(LDFLAGS)
 else ifneq ($(KOKKOS_USE_HIP_COMPILER),)
-  PETSC_KOKKOSCOMPILE_SINGLE = ${PETSC_HIPCOMPILE_SINGLE}
+  KOKKOS_COMPILE_SINGLE = ${PETSC_HIPCOMPILE_SINGLE}
   LINK.kokkos.cxx = $(HIPC)  $(HIPC_FLAGS)  $(HIPPP_FLAGS)  $(HIPOPTFLAGS)  $(CXXFLAGS) $(CXXCPPFLAGS) $(LDFLAGS) $(MPICXX_INCLUDES) $(MPICXX_LIBS)
 else ifneq ($(KOKKOS_USE_SYCL_COMPILER),)
-  PETSC_KOKKOSCOMPILE_SINGLE = ${PETSC_SYCLCOMPILE_SINGLE}
+  KOKKOS_COMPILE_SINGLE = ${PETSC_SYCLCOMPILE_SINGLE}
   LINK.kokkos.cxx = $(SYCLC) $(SYCLC_FLAGS) $(SYCLPP_FLAGS) $(SYCLOPTFLAGS) $(CXXFLAGS) $(CXXCPPFLAGS) $(LDFLAGS) $(MPICXX_INCLUDES) $(MPICXX_LIBS)
 else
-  PETSC_KOKKOSCOMPILE_SINGLE = ${PETSC_CXXCOMPILE_SINGLE}
+  KOKKOS_COMPILE_SINGLE = ${PETSC_CXXCOMPILE_SINGLE}
   LINK.kokkos.cxx = $(CXXLINKER) $(CXX_FLAGS) $(CXXFLAGS) $(CXXCPPFLAGS) $(LDFLAGS)
 endif
+
+# Why do we filter out -fvisibility=hidden? See comments in gmakefile.test on PETSC_COMPILE.kokkos.cxx
+PETSC_KOKKOSCOMPILE_SINGLE = $(filter-out -fvisibility=hidden,$(KOKKOS_COMPILE_SINGLE))
 
 LINK.hip.cpp = $(HIPC) $(HIPC_FLAGS) $(HIPPP_FLAGS) $(HIPOPTFLAGS) $(CXXFLAGS) $(CXXCPPFLAGS) $(LDFLAGS) $(MPICXX_INCLUDES) $(MPICXX_LIBS)
 
 ifneq ($(RAJA_USE_CUDA_COMPILER),)
-  PETSC_RAJACOMPILE_SINGLE  = ${CUDAC} -o $*.o $(MPICXX_INCLUDES) ${CUDAC_FLAGS} ${CUFLAGS} -x cu -Xcudafe "--display_error_number" -c --compiler-options="${PETSC_CCPPFLAGS} ${PETSC_CC_INCLUDES} ${CUDA_CXXFLAGS}" --expt-extended-lambda --expt-relaxed-constexpr
+  PETSC_RAJACOMPILE_SINGLE  = ${CUDAC} -o $*.o $(MPICXX_INCLUDES) ${CUDAC_FLAGS} -x cu -Xcudafe "--display_error_number" -c --compiler-options="${PETSC_CCPPFLAGS} ${PETSC_CC_INCLUDES} ${CUDA_CXXFLAGS}" --expt-extended-lambda --expt-relaxed-constexpr
 else
     PETSC_RAJACOMPILE_SINGLE = ${CXX} -o $*.o -c ${CXX_FLAGS} ${CXXFLAGS} ${CXXCPPFLAGS}
 endif
@@ -52,6 +55,18 @@ ifneq (,$(findstring -TP,$(PCC_FLAGS)))
 % : %.c
 	${PETSC_COMPILE_SINGLE} `pwd`/$<
 	${CLINKER} $(EXEFLAGS) -o $@ $@.o  $(PETSC_LIB)
+endif
+
+#  makes an Emscripten https://emscripten.org/ executable from a PETSc C main program
+#  See config/examples/arch-ci-linux-emcc.py for an example of building the PETSc libraries with Emscripten
+#  node drops a variety of silly crums that are not all trivially blockable
+#
+ifneq (,$(findstring emcc,$(CC)))
+% : %.c
+	${PETSC_COMPILE_SINGLE} `pwd`/$<
+	${CLINKER} -s MAIN_MODULE -s ASSERTIONS=2 -s SAFE_HEAP=1 -s STACK_OVERFLOW_CHECK=1 -s ALLOW_MEMORY_GROWTH $(EXEFLAGS) -o $@.js $@.o $(PETSC_LIB)
+	-@printf '#!/usr/bin/env sh\nnode --redirect-warnings=/dev/null $@.js $$* | grep -v "Heap resize call from" ' > $@
+	-@chmod u+x $@
 endif
 
 include ${PETSC_DIR}/lib/petsc/conf/test.common

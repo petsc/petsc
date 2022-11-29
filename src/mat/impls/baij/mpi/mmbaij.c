@@ -5,7 +5,8 @@
 #include <../src/mat/impls/baij/mpi/mpibaij.h>
 #include <petsc/private/isimpl.h> /* needed because accesses data structure of ISLocalToGlobalMapping directly */
 
-PetscErrorCode MatSetUpMultiply_MPIBAIJ(Mat mat) {
+PetscErrorCode MatSetUpMultiply_MPIBAIJ(Mat mat)
+{
   Mat_MPIBAIJ *baij = (Mat_MPIBAIJ *)mat->data;
   Mat_SeqBAIJ *B    = (Mat_SeqBAIJ *)(baij->B->data);
   PetscInt     i, j, *aj = B->j, ec = 0, *garray;
@@ -13,9 +14,9 @@ PetscErrorCode MatSetUpMultiply_MPIBAIJ(Mat mat) {
   IS           from, to;
   Vec          gvec;
 #if defined(PETSC_USE_CTABLE)
-  PetscTable         gid1_lid1;
-  PetscTablePosition tpos;
-  PetscInt           gid, lid;
+  PetscHMapI    gid1_lid1 = NULL;
+  PetscHashIter tpos;
+  PetscInt      gid, lid;
 #else
   PetscInt Nbs = baij->Nbs, *indices;
 #endif
@@ -23,34 +24,36 @@ PetscErrorCode MatSetUpMultiply_MPIBAIJ(Mat mat) {
   PetscFunctionBegin;
 #if defined(PETSC_USE_CTABLE)
   /* use a table - Mark Adams */
-  PetscCall(PetscTableCreate(B->mbs, baij->Nbs + 1, &gid1_lid1));
+  PetscCall(PetscHMapICreateWithSize(B->mbs, &gid1_lid1));
   for (i = 0; i < B->mbs; i++) {
     for (j = 0; j < B->ilen[i]; j++) {
       PetscInt data, gid1 = aj[B->i[i] + j] + 1;
-      PetscCall(PetscTableFind(gid1_lid1, gid1, &data));
+      PetscCall(PetscHMapIGetWithDefault(gid1_lid1, gid1, 0, &data));
       if (!data) {
         /* one based table */
-        PetscCall(PetscTableAdd(gid1_lid1, gid1, ++ec, INSERT_VALUES));
+        PetscCall(PetscHMapISet(gid1_lid1, gid1, ++ec));
       }
     }
   }
   /* form array of columns we need */
   PetscCall(PetscMalloc1(ec, &garray));
-  PetscCall(PetscTableGetHeadPosition(gid1_lid1, &tpos));
-  while (tpos) {
-    PetscCall(PetscTableGetNext(gid1_lid1, &tpos, &gid, &lid));
+  PetscHashIterBegin(gid1_lid1, tpos);
+  while (!PetscHashIterAtEnd(gid1_lid1, tpos)) {
+    PetscHashIterGetKey(gid1_lid1, tpos, gid);
+    PetscHashIterGetVal(gid1_lid1, tpos, lid);
+    PetscHashIterNext(gid1_lid1, tpos);
     gid--;
     lid--;
     garray[lid] = gid;
   }
   PetscCall(PetscSortInt(ec, garray));
-  PetscCall(PetscTableRemoveAll(gid1_lid1));
-  for (i = 0; i < ec; i++) PetscCall(PetscTableAdd(gid1_lid1, garray[i] + 1, i + 1, INSERT_VALUES));
+  PetscCall(PetscHMapIClear(gid1_lid1));
+  for (i = 0; i < ec; i++) PetscCall(PetscHMapISet(gid1_lid1, garray[i] + 1, i + 1));
   /* compact out the extra columns in B */
   for (i = 0; i < B->mbs; i++) {
     for (j = 0; j < B->ilen[i]; j++) {
       PetscInt gid1 = aj[B->i[i] + j] + 1;
-      PetscCall(PetscTableFind(gid1_lid1, gid1, &lid));
+      PetscCall(PetscHMapIGetWithDefault(gid1_lid1, gid1, 0, &lid));
       lid--;
       aj[B->i[i] + j] = lid;
     }
@@ -58,7 +61,7 @@ PetscErrorCode MatSetUpMultiply_MPIBAIJ(Mat mat) {
   B->nbs = ec;
   PetscCall(PetscLayoutDestroy(&baij->B->cmap));
   PetscCall(PetscLayoutCreateFromSizes(PetscObjectComm((PetscObject)baij->B), ec * mat->rmap->bs, ec * mat->rmap->bs, mat->rmap->bs, &baij->B->cmap));
-  PetscCall(PetscTableDestroy(&gid1_lid1));
+  PetscCall(PetscHMapIDestroy(&gid1_lid1));
 #else
   /* Make an array as long as the number of columns */
   /* mark those columns that are in baij->B */
@@ -106,14 +109,8 @@ PetscErrorCode MatSetUpMultiply_MPIBAIJ(Mat mat) {
   PetscCall(VecScatterCreate(gvec, from, baij->lvec, to, &baij->Mvctx));
   PetscCall(VecScatterViewFromOptions(baij->Mvctx, (PetscObject)mat, "-matmult_vecscatter_view"));
 
-  PetscCall(PetscLogObjectParent((PetscObject)mat, (PetscObject)baij->Mvctx));
-  PetscCall(PetscLogObjectParent((PetscObject)mat, (PetscObject)baij->lvec));
-  PetscCall(PetscLogObjectParent((PetscObject)mat, (PetscObject)from));
-  PetscCall(PetscLogObjectParent((PetscObject)mat, (PetscObject)to));
-
   baij->garray = garray;
 
-  PetscCall(PetscLogObjectMemory((PetscObject)mat, ec * sizeof(PetscInt)));
   PetscCall(ISDestroy(&from));
   PetscCall(ISDestroy(&to));
   PetscCall(VecDestroy(&gvec));
@@ -129,28 +126,27 @@ PetscErrorCode MatSetUpMultiply_MPIBAIJ(Mat mat) {
    Kind of slow! But that's what application programmers get when
    they are sloppy.
 */
-PetscErrorCode MatDisAssemble_MPIBAIJ(Mat A) {
+PetscErrorCode MatDisAssemble_MPIBAIJ(Mat A)
+{
   Mat_MPIBAIJ *baij  = (Mat_MPIBAIJ *)A->data;
   Mat          B     = baij->B, Bnew;
   Mat_SeqBAIJ *Bbaij = (Mat_SeqBAIJ *)B->data;
   PetscInt     i, j, mbs = Bbaij->mbs, n = A->cmap->N, col, *garray = baij->garray;
-  PetscInt     bs2 = baij->bs2, *nz, ec, m = A->rmap->n;
+  PetscInt     bs2 = baij->bs2, *nz, m = A->rmap->n;
   MatScalar   *a = Bbaij->a;
   MatScalar   *atmp;
 
   PetscFunctionBegin;
   /* free stuff related to matrix-vec multiply */
-  PetscCall(VecGetSize(baij->lvec, &ec)); /* needed for PetscLogObjectMemory below */
   PetscCall(VecDestroy(&baij->lvec));
   baij->lvec = NULL;
   PetscCall(VecScatterDestroy(&baij->Mvctx));
   baij->Mvctx = NULL;
   if (baij->colmap) {
 #if defined(PETSC_USE_CTABLE)
-    PetscCall(PetscTableDestroy(&baij->colmap));
+    PetscCall(PetscHMapIDestroy(&baij->colmap));
 #else
     PetscCall(PetscFree(baij->colmap));
-    PetscCall(PetscLogObjectMemory((PetscObject)A, -Bbaij->nbs * sizeof(PetscInt)));
 #endif
   }
 
@@ -187,9 +183,7 @@ PetscErrorCode MatDisAssemble_MPIBAIJ(Mat A) {
 
   PetscCall(PetscFree(nz));
   PetscCall(PetscFree(baij->garray));
-  PetscCall(PetscLogObjectMemory((PetscObject)A, -ec * sizeof(PetscInt)));
   PetscCall(MatDestroy(&B));
-  PetscCall(PetscLogObjectParent((PetscObject)A, (PetscObject)Bnew));
 
   baij->B          = Bnew;
   A->was_assembled = PETSC_FALSE;
@@ -202,7 +196,8 @@ PetscErrorCode MatDisAssemble_MPIBAIJ(Mat A) {
 static PetscInt *uglyrmapd = NULL, *uglyrmapo = NULL; /* mapping from the local ordering to the "diagonal" and "off-diagonal" parts of the local matrix */
 static Vec       uglydd = NULL, uglyoo = NULL;        /* work vectors used to scale the two parts of the local matrix */
 
-PetscErrorCode MatMPIBAIJDiagonalScaleLocalSetUp(Mat inA, Vec scale) {
+PetscErrorCode MatMPIBAIJDiagonalScaleLocalSetUp(Mat inA, Vec scale)
+{
   Mat_MPIBAIJ *ina = (Mat_MPIBAIJ *)inA->data; /*access private part of matrix */
   Mat_SeqBAIJ *B   = (Mat_SeqBAIJ *)ina->B->data;
   PetscInt     bs = inA->rmap->bs, i, n, nt, j, cstart, cend, no, *garray = ina->garray, *lindices;
@@ -253,7 +248,8 @@ PetscErrorCode MatMPIBAIJDiagonalScaleLocalSetUp(Mat inA, Vec scale) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatMPIBAIJDiagonalScaleLocal(Mat A, Vec scale) {
+PetscErrorCode MatMPIBAIJDiagonalScaleLocal(Mat A, Vec scale)
+{
   /* This routine should really be abandoned as it duplicates MatDiagonalScaleLocal */
 
   PetscFunctionBegin;
@@ -261,7 +257,8 @@ PetscErrorCode MatMPIBAIJDiagonalScaleLocal(Mat A, Vec scale) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatDiagonalScaleLocal_MPIBAIJ(Mat A, Vec scale) {
+PetscErrorCode MatDiagonalScaleLocal_MPIBAIJ(Mat A, Vec scale)
+{
   Mat_MPIBAIJ       *a = (Mat_MPIBAIJ *)A->data; /*access private part of matrix */
   PetscInt           n, i;
   PetscScalar       *d, *o;

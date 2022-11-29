@@ -4,16 +4,16 @@ static const char help[] = "Integrate chemistry using TChem.\n";
 #include <petscdmda.h>
 
 #if defined(PETSC_HAVE_TCHEM)
-#if defined(MAX)
-#undef MAX
-#endif
-#if defined(MIN)
-#undef MIN
-#endif
-#include <TC_params.h>
-#include <TC_interface.h>
+  #if defined(MAX)
+    #undef MAX
+  #endif
+  #if defined(MIN)
+    #undef MIN
+  #endif
+  #include <TC_params.h>
+  #include <TC_interface.h>
 #else
-#error TChem is required for this example.  Reconfigure PETSc using --download-tchem.
+  #error TChem is required for this example.  Reconfigure PETSc using --download-tchem.
 #endif
 /*
 
@@ -81,9 +81,12 @@ static PetscErrorCode FormRHSJacobian(TS, PetscReal, Vec, Mat, Mat, void *);
 static PetscErrorCode FormInitialSolution(TS, Vec, void *);
 
 #define PetscCallTC(ierr) \
-  do { PetscCheck(!ierr, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in TChem library, return code %d", ierr); } while (0)
+  do { \
+    PetscCheck(!ierr, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in TChem library, return code %d", ierr); \
+  } while (0)
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   TS                ts; /* time integrator */
   TSAdapt           adapt;
   Vec               X; /* solution vector */
@@ -236,7 +239,8 @@ int main(int argc, char **argv) {
 /*
    Applies the second order centered difference diffusion operator on a one dimensional periodic domain
 */
-static PetscErrorCode FormDiffusionFunction(TS ts, PetscReal t, Vec X, Vec F, void *ptr) {
+static PetscErrorCode FormDiffusionFunction(TS ts, PetscReal t, Vec X, Vec F, void *ptr)
+{
   User                user = (User)ptr;
   PetscScalar       **f;
   const PetscScalar **x;
@@ -268,7 +272,8 @@ static PetscErrorCode FormDiffusionFunction(TS ts, PetscReal t, Vec X, Vec F, vo
 /*
    Produces the second order centered difference diffusion operator on a one dimensional periodic domain
 */
-static PetscErrorCode FormDiffusionJacobian(TS ts, PetscReal t, Vec X, Mat Amat, Mat Pmat, void *ptr) {
+static PetscErrorCode FormDiffusionJacobian(TS ts, PetscReal t, Vec X, Mat Amat, Mat Pmat, void *ptr)
+{
   User       user = (User)ptr;
   DM         dm;
   PetscInt   i, xs, xm, j, dof;
@@ -302,7 +307,8 @@ static PetscErrorCode FormDiffusionJacobian(TS ts, PetscReal t, Vec X, Mat Amat,
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode FormRHSFunction(TS ts, PetscReal t, Vec X, Vec F, void *ptr) {
+static PetscErrorCode FormRHSFunction(TS ts, PetscReal t, Vec X, Vec F, void *ptr)
+{
   User                user = (User)ptr;
   PetscScalar       **f;
   const PetscScalar **x;
@@ -332,7 +338,8 @@ static PetscErrorCode FormRHSFunction(TS ts, PetscReal t, Vec X, Vec F, void *pt
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode FormRHSJacobian(TS ts, PetscReal t, Vec X, Mat Amat, Mat Pmat, void *ptr) {
+static PetscErrorCode FormRHSJacobian(TS ts, PetscReal t, Vec X, Mat Amat, Mat Pmat, void *ptr)
+{
   User                user = (User)ptr;
   const PetscScalar **x;
   PetscInt            M = user->Nspec + 1, i, j, xs, xm;
@@ -371,7 +378,8 @@ static PetscErrorCode FormRHSJacobian(TS ts, PetscReal t, Vec X, Mat Amat, Mat P
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode FormInitialSolution(TS ts, Vec X, void *ctx) {
+PetscErrorCode FormInitialSolution(TS ts, Vec X, void *ctx)
+{
   PetscScalar **x, *xc;
   struct {
     const char *name;
@@ -414,7 +422,8 @@ typedef struct {
   User     user;
 } UserLGCtx;
 
-static PetscErrorCode FormMoleFraction(UserLGCtx *ctx, Vec massf, Vec *molef) {
+static PetscErrorCode FormMoleFraction(UserLGCtx *ctx, Vec massf, Vec *molef)
+{
   User                user = ctx->user;
   PetscReal          *M, tM = 0;
   PetscInt            i, n  = user->Nspec + 1;
@@ -436,7 +445,8 @@ static PetscErrorCode FormMoleFraction(UserLGCtx *ctx, Vec massf, Vec *molef) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MonitorCellDestroy(UserLGCtx *uctx) {
+static PetscErrorCode MonitorCellDestroy(UserLGCtx *uctx)
+{
   PetscFunctionBeginUser;
   PetscCall(PetscFree(uctx));
   PetscFunctionReturn(0);
@@ -445,7 +455,8 @@ static PetscErrorCode MonitorCellDestroy(UserLGCtx *uctx) {
 /*
    Use TSMonitorLG to monitor the reactions in a particular cell
 */
-static PetscErrorCode MonitorCell(TS ts, User user, PetscInt cell) {
+static PetscErrorCode MonitorCell(TS ts, User user, PetscInt cell)
+{
   TSMonitorLGCtx ctx;
   char         **snames;
   UserLGCtx     *uctx;

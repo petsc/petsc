@@ -35,7 +35,7 @@ const PetscInt lbus[3] = {4, 5, 7}; /* Buses at which loads are incident */
 PetscScalar PG[3] = {0.69, 1.59, 0.69};
 /* PetscScalar PG[3] = {0.716786142395021,1.630000000000000,0.850000000000000};*/
 
-const PetscScalar QG[3]   = {0.270702180178785, 0.066120127797275, -0.108402221791588};
+const PetscScalar QG[3] = {0.270702180178785, 0.066120127797275, -0.108402221791588};
 /* Generator constants */
 const PetscScalar H[3]    = {23.64, 6.4, 3.01};       /* Inertia constant */
 const PetscScalar Rs[3]   = {0.0, 0.0, 0.0};          /* Stator Resistance */
@@ -48,7 +48,7 @@ const PetscScalar Tq0p[3] = {0.31, 0.535, 0.6};       /* q-axis open circuit tim
 PetscScalar       M[3];                               /* M = 2*H/w_s */
 PetscScalar       D[3];                               /* D = 0.1*M */
 
-PetscScalar       TM[3]; /* Mechanical Torque */
+PetscScalar TM[3]; /* Mechanical Torque */
 /* Exciter system constants */
 const PetscScalar KA[3] = {20.0, 20.0, 20.0};    /* Voltage regulartor gain constant */
 const PetscScalar TA[3] = {0.2, 0.2, 0.2};       /* Voltage regulator time constant */
@@ -59,7 +59,7 @@ const PetscScalar TF[3] = {0.35, 0.35, 0.35};    /* Feedback stabilizer time con
 const PetscScalar k1[3] = {0.0039, 0.0039, 0.0039};
 const PetscScalar k2[3] = {1.555, 1.555, 1.555}; /* k1 and k2 for calculating the saturation function SE = k1*exp(k2*Efd) */
 
-PetscScalar       Vref[3];
+PetscScalar Vref[3];
 /* Load constants
   We use a composite load model that describes the load and reactive powers at each time instant as follows
   P(t) = \sum\limits_{i=0}^ld_nsegsp \ld_alphap_i*P_D0(\frac{V_m(t)}{V_m0})^\ld_betap_i
@@ -108,7 +108,8 @@ typedef struct {
 } Userctx;
 
 /* Converts from machine frame (dq) to network (phase a real,imag) reference frame */
-PetscErrorCode dq2ri(PetscScalar Fd, PetscScalar Fq, PetscScalar delta, PetscScalar *Fr, PetscScalar *Fi) {
+PetscErrorCode dq2ri(PetscScalar Fd, PetscScalar Fq, PetscScalar delta, PetscScalar *Fr, PetscScalar *Fi)
+{
   PetscFunctionBegin;
   *Fr = Fd * PetscSinScalar(delta) + Fq * PetscCosScalar(delta);
   *Fi = -Fd * PetscCosScalar(delta) + Fq * PetscSinScalar(delta);
@@ -116,7 +117,8 @@ PetscErrorCode dq2ri(PetscScalar Fd, PetscScalar Fq, PetscScalar delta, PetscSca
 }
 
 /* Converts from network frame ([phase a real,imag) to machine (dq) reference frame */
-PetscErrorCode ri2dq(PetscScalar Fr, PetscScalar Fi, PetscScalar delta, PetscScalar *Fd, PetscScalar *Fq) {
+PetscErrorCode ri2dq(PetscScalar Fr, PetscScalar Fi, PetscScalar delta, PetscScalar *Fd, PetscScalar *Fq)
+{
   PetscFunctionBegin;
   *Fd = Fr * PetscSinScalar(delta) - Fi * PetscCosScalar(delta);
   *Fq = Fr * PetscCosScalar(delta) + Fi * PetscSinScalar(delta);
@@ -124,7 +126,8 @@ PetscErrorCode ri2dq(PetscScalar Fr, PetscScalar Fi, PetscScalar delta, PetscSca
 }
 
 /* Saves the solution at each time to a matrix */
-PetscErrorCode SaveSolution(TS ts) {
+PetscErrorCode SaveSolution(TS ts)
+{
   Userctx           *user;
   Vec                X;
   PetscScalar       *mat;
@@ -147,7 +150,8 @@ PetscErrorCode SaveSolution(TS ts) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode SetInitialGuess(Vec X, Userctx *user) {
+PetscErrorCode SetInitialGuess(Vec X, Userctx *user)
+{
   Vec          Xgen, Xnet;
   PetscScalar *xgen, *xnet;
   PetscInt     i, idx = 0;
@@ -234,7 +238,8 @@ PetscErrorCode SetInitialGuess(Vec X, Userctx *user) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode InitialGuess(Vec X, Userctx *user, const PetscScalar PGv[]) {
+PetscErrorCode InitialGuess(Vec X, Userctx *user, const PetscScalar PGv[])
+{
   Vec          Xgen, Xnet;
   PetscScalar *xgen, *xnet;
   PetscInt     i, idx = 0;
@@ -317,7 +322,8 @@ PetscErrorCode InitialGuess(Vec X, Userctx *user, const PetscScalar PGv[]) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DICDPFiniteDifference(Vec X, Vec *DICDP, Userctx *user) {
+PetscErrorCode DICDPFiniteDifference(Vec X, Vec *DICDP, Userctx *user)
+{
   Vec         Y;
   PetscScalar PGv[3], eps;
   PetscInt    i, j;
@@ -341,7 +347,8 @@ PetscErrorCode DICDPFiniteDifference(Vec X, Vec *DICDP, Userctx *user) {
 }
 
 /* Computes F = [-f(x,y);g(x,y)] */
-PetscErrorCode ResidualFunction(SNES snes, Vec X, Vec F, Userctx *user) {
+PetscErrorCode ResidualFunction(SNES snes, Vec X, Vec F, Userctx *user)
+{
   Vec          Xgen, Xnet, Fgen, Fnet;
   PetscScalar *xgen, *xnet, *fgen, *fnet;
   PetscInt     i, idx = 0;
@@ -462,7 +469,8 @@ PetscErrorCode ResidualFunction(SNES snes, Vec X, Vec F, Userctx *user) {
 /* \dot{x} - f(x,y)
      g(x,y) = 0
  */
-PetscErrorCode IFunction(TS ts, PetscReal t, Vec X, Vec Xdot, Vec F, Userctx *user) {
+PetscErrorCode IFunction(TS ts, PetscReal t, Vec X, Vec Xdot, Vec F, Userctx *user)
+{
   SNES               snes;
   PetscScalar       *f;
   const PetscScalar *xdot;
@@ -494,7 +502,8 @@ PetscErrorCode IFunction(TS ts, PetscReal t, Vec X, Vec Xdot, Vec F, Userctx *us
    differential equations
  F = [0;g(y)];
 */
-PetscErrorCode AlgFunction(SNES snes, Vec X, Vec F, void *ctx) {
+PetscErrorCode AlgFunction(SNES snes, Vec X, Vec F, void *ctx)
+{
   Userctx     *user = (Userctx *)ctx;
   PetscScalar *f;
   PetscInt     i;
@@ -515,7 +524,8 @@ PetscErrorCode AlgFunction(SNES snes, Vec X, Vec F, void *ctx) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PreallocateJacobian(Mat J, Userctx *user) {
+PetscErrorCode PreallocateJacobian(Mat J, Userctx *user)
+{
   PetscInt *d_nnz;
   PetscInt  i, idx = 0, start = 0;
   PetscInt  ncols;
@@ -559,7 +569,8 @@ PetscErrorCode PreallocateJacobian(Mat J, Userctx *user) {
    J = [-df_dx, -df_dy
         dg_dx, dg_dy]
 */
-PetscErrorCode ResidualJacobian(SNES snes, Vec X, Mat J, Mat B, void *ctx) {
+PetscErrorCode ResidualJacobian(SNES snes, Vec X, Mat J, Mat B, void *ctx)
+{
   Userctx           *user = (Userctx *)ctx;
   Vec                Xgen, Xnet;
   PetscScalar       *xgen, *xnet;
@@ -848,7 +859,8 @@ PetscErrorCode ResidualJacobian(SNES snes, Vec X, Mat J, Mat B, void *ctx) {
    J = [I, 0
         dg_dx, dg_dy]
 */
-PetscErrorCode AlgJacobian(SNES snes, Vec X, Mat A, Mat B, void *ctx) {
+PetscErrorCode AlgJacobian(SNES snes, Vec X, Mat A, Mat B, void *ctx)
+{
   Userctx *user = (Userctx *)ctx;
 
   PetscFunctionBegin;
@@ -863,7 +875,8 @@ PetscErrorCode AlgJacobian(SNES snes, Vec X, Mat A, Mat B, void *ctx) {
         dg_dx, dg_dy]
 */
 
-PetscErrorCode IJacobian(TS ts, PetscReal t, Vec X, Vec Xdot, PetscReal a, Mat A, Mat B, Userctx *user) {
+PetscErrorCode IJacobian(TS ts, PetscReal t, Vec X, Vec Xdot, PetscReal a, Mat A, Mat B, Userctx *user)
+{
   SNES        snes;
   PetscScalar atmp = (PetscScalar)a;
   PetscInt    i, row;
@@ -895,7 +908,8 @@ PetscErrorCode IJacobian(TS ts, PetscReal t, Vec X, Vec Xdot, PetscReal a, Mat A
 }
 
 /* Matrix JacobianP is constant so that it only needs to be evaluated once */
-static PetscErrorCode RHSJacobianP(TS ts, PetscReal t, Vec X, Mat A, void *ctx0) {
+static PetscErrorCode RHSJacobianP(TS ts, PetscReal t, Vec X, Mat A, void *ctx0)
+{
   PetscScalar a;
   PetscInt    row, col;
   Userctx    *ctx = (Userctx *)ctx0;
@@ -919,7 +933,8 @@ static PetscErrorCode RHSJacobianP(TS ts, PetscReal t, Vec X, Mat A, void *ctx0)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode CostIntegrand(TS ts, PetscReal t, Vec U, Vec R, Userctx *user) {
+static PetscErrorCode CostIntegrand(TS ts, PetscReal t, Vec U, Vec R, Userctx *user)
+{
   const PetscScalar *u;
   PetscInt           idx;
   Vec                Xgen, Xnet;
@@ -946,7 +961,8 @@ static PetscErrorCode CostIntegrand(TS ts, PetscReal t, Vec U, Vec R, Userctx *u
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DRDUJacobianTranspose(TS ts, PetscReal t, Vec U, Mat DRDU, Mat B, Userctx *user) {
+static PetscErrorCode DRDUJacobianTranspose(TS ts, PetscReal t, Vec U, Mat DRDU, Mat B, Userctx *user)
+{
   Vec          Xgen, Xnet, Dgen, Dnet;
   PetscScalar *xgen, *dgen;
   PetscInt     i;
@@ -985,12 +1001,14 @@ static PetscErrorCode DRDUJacobianTranspose(TS ts, PetscReal t, Vec U, Mat DRDU,
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DRDPJacobianTranspose(TS ts, PetscReal t, Vec U, Mat drdp, Userctx *user) {
+static PetscErrorCode DRDPJacobianTranspose(TS ts, PetscReal t, Vec U, Mat drdp, Userctx *user)
+{
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode ComputeSensiP(Vec lambda, Vec mu, Vec *DICDP, Userctx *user) {
+PetscErrorCode ComputeSensiP(Vec lambda, Vec mu, Vec *DICDP, Userctx *user)
+{
   PetscScalar *x, *y, sensip;
   PetscInt     i;
 
@@ -1002,13 +1020,14 @@ PetscErrorCode ComputeSensiP(Vec lambda, Vec mu, Vec *DICDP, Userctx *user) {
     PetscCall(VecDot(lambda, DICDP[i], &sensip));
     sensip = sensip + y[i];
     /* PetscCall(PetscPrintf(PETSC_COMM_WORLD,"\n sensitivity wrt %" PetscInt_FMT " th parameter: %g \n",i,(double)sensip)); */
-    y[i]   = sensip;
+    y[i] = sensip;
   }
   PetscCall(VecRestoreArray(mu, &y));
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   Userctx      user;
   Vec          p;
   PetscScalar *x_ptr;
@@ -1199,12 +1218,13 @@ int main(int argc, char **argv) {
    f   - the newly evaluated function
    G   - the newly evaluated gradient
 */
-PetscErrorCode FormFunctionGradient(Tao tao, Vec P, PetscReal *f, Vec G, void *ctx0) {
-  TS           ts, quadts;
-  SNES         snes_alg;
-  Userctx     *ctx = (Userctx *)ctx0;
-  Vec          X;
-  PetscInt     i;
+PetscErrorCode FormFunctionGradient(Tao tao, Vec P, PetscReal *f, Vec G, void *ctx0)
+{
+  TS       ts, quadts;
+  SNES     snes_alg;
+  Userctx *ctx = (Userctx *)ctx0;
+  Vec      X;
+  PetscInt i;
   /* sensitivity context */
   PetscScalar *x_ptr;
   Vec          lambda[1], q;

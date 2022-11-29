@@ -17,7 +17,7 @@ const char LimiterCitation[] = "@article{BergerAftosmisMurman2005,\n"
                                "  year    = {2005}\n}\n";
 
 /*@C
-  PetscLimiterRegister - Adds a new PetscLimiter implementation
+  PetscLimiterRegister - Adds a new `PetscLimiter` implementation
 
   Not Collective
 
@@ -25,15 +25,12 @@ const char LimiterCitation[] = "@article{BergerAftosmisMurman2005,\n"
 + name        - The name of a new user-defined creation routine
 - create_func - The creation routine itself
 
-  Notes:
-  PetscLimiterRegister() may be called multiple times to add several user-defined PetscLimiters
-
   Sample usage:
 .vb
     PetscLimiterRegister("my_lim", MyPetscLimiterCreate);
 .ve
 
-  Then, your PetscLimiter type can be chosen with the procedural interface via
+  Then, your `PetscLimiter` type can be chosen with the procedural interface via
 .vb
     PetscLimiterCreate(MPI_Comm, PetscLimiter *);
     PetscLimiterSetType(PetscLimiter, "my_lim");
@@ -45,22 +42,25 @@ const char LimiterCitation[] = "@article{BergerAftosmisMurman2005,\n"
 
   Level: advanced
 
-.seealso: `PetscLimiterRegisterAll()`, `PetscLimiterRegisterDestroy()`
+  Note:
+  `PetscLimiterRegister()` may be called multiple times to add several user-defined PetscLimiters
 
+.seealso: `PetscLimiter`, `PetscLimiterType`, `PetscLimiterRegisterAll()`, `PetscLimiterRegisterDestroy()`
 @*/
-PetscErrorCode PetscLimiterRegister(const char sname[], PetscErrorCode (*function)(PetscLimiter)) {
+PetscErrorCode PetscLimiterRegister(const char sname[], PetscErrorCode (*function)(PetscLimiter))
+{
   PetscFunctionBegin;
   PetscCall(PetscFunctionListAdd(&PetscLimiterList, sname, function));
   PetscFunctionReturn(0);
 }
 
 /*@C
-  PetscLimiterSetType - Builds a particular PetscLimiter
+  PetscLimiterSetType - Builds a `PetscLimiter` for a given `PetscLimiterType`
 
   Collective on lim
 
   Input Parameters:
-+ lim  - The PetscLimiter object
++ lim  - The `PetscLimiter` object
 - name - The kind of limiter
 
   Options Database Key:
@@ -68,9 +68,10 @@ PetscErrorCode PetscLimiterRegister(const char sname[], PetscErrorCode (*functio
 
   Level: intermediate
 
-.seealso: `PetscLimiterGetType()`, `PetscLimiterCreate()`
+.seealso: `PetscLimiter`, `PetscLimiterType`, `PetscLimiterGetType()`, `PetscLimiterCreate()`
 @*/
-PetscErrorCode PetscLimiterSetType(PetscLimiter lim, PetscLimiterType name) {
+PetscErrorCode PetscLimiterSetType(PetscLimiter lim, PetscLimiterType name)
+{
   PetscErrorCode (*r)(PetscLimiter);
   PetscBool match;
 
@@ -93,21 +94,22 @@ PetscErrorCode PetscLimiterSetType(PetscLimiter lim, PetscLimiterType name) {
 }
 
 /*@C
-  PetscLimiterGetType - Gets the PetscLimiter type name (as a string) from the object.
+  PetscLimiterGetType - Gets the `PetscLimiterType` name (as a string) from the `PetscLimiter`.
 
   Not Collective
 
   Input Parameter:
-. lim  - The PetscLimiter
+. lim  - The `PetscLimiter`
 
   Output Parameter:
-. name - The PetscLimiter type name
+. name - The `PetscLimiterType`
 
   Level: intermediate
 
-.seealso: `PetscLimiterSetType()`, `PetscLimiterCreate()`
+.seealso: `PetscLimiter`, `PetscLimiterType`, `PetscLimiterSetType()`, `PetscLimiterCreate()`
 @*/
-PetscErrorCode PetscLimiterGetType(PetscLimiter lim, PetscLimiterType *name) {
+PetscErrorCode PetscLimiterGetType(PetscLimiter lim, PetscLimiterType *name)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(lim, PETSCLIMITER_CLASSID, 1);
   PetscValidPointer(name, 2);
@@ -117,19 +119,21 @@ PetscErrorCode PetscLimiterGetType(PetscLimiter lim, PetscLimiterType *name) {
 }
 
 /*@C
-   PetscLimiterViewFromOptions - View from Options
+   PetscLimiterViewFromOptions - View a `PetscLimiter` based on values in the options database
 
-   Collective on PetscLimiter
+   Collective on A
 
    Input Parameters:
-+  A - the PetscLimiter object to view
-.  obj - Optional object
--  name - command line option
++  A - the `PetscLimiter` object to view
+.  obj - Optional object that provides the options prefix to use
+-  name - command line option name
 
    Level: intermediate
-.seealso: `PetscLimiter`, `PetscLimiterView`, `PetscObjectViewFromOptions()`, `PetscLimiterCreate()`
+
+.seealso: `PetscLimiter`, `PetscLimiterView()`, `PetscObjectViewFromOptions()`, `PetscLimiterCreate()`
 @*/
-PetscErrorCode PetscLimiterViewFromOptions(PetscLimiter A, PetscObject obj, const char name[]) {
+PetscErrorCode PetscLimiterViewFromOptions(PetscLimiter A, PetscObject obj, const char name[])
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, PETSCLIMITER_CLASSID, 1);
   PetscCall(PetscObjectViewFromOptions((PetscObject)A, obj, name));
@@ -137,19 +141,20 @@ PetscErrorCode PetscLimiterViewFromOptions(PetscLimiter A, PetscObject obj, cons
 }
 
 /*@C
-  PetscLimiterView - Views a PetscLimiter
+  PetscLimiterView - Views a `PetscLimiter`
 
   Collective on lim
 
   Input Parameters:
-+ lim - the PetscLimiter object to view
++ lim - the `PetscLimiter` object to view
 - v   - the viewer
 
   Level: beginner
 
-.seealso: `PetscLimiterDestroy()`
+.seealso: `PetscLimiter`, `PetscViewer`, `PetscLimiterDestroy()`, `PetscLimiterViewFromOptions()`
 @*/
-PetscErrorCode PetscLimiterView(PetscLimiter lim, PetscViewer v) {
+PetscErrorCode PetscLimiterView(PetscLimiter lim, PetscViewer v)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(lim, PETSCLIMITER_CLASSID, 1);
   if (!v) PetscCall(PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)lim), &v));
@@ -158,18 +163,19 @@ PetscErrorCode PetscLimiterView(PetscLimiter lim, PetscViewer v) {
 }
 
 /*@
-  PetscLimiterSetFromOptions - sets parameters in a PetscLimiter from the options database
+  PetscLimiterSetFromOptions - sets parameters in a `PetscLimiter` from the options database
 
   Collective on lim
 
   Input Parameter:
-. lim - the PetscLimiter object to set options for
+. lim - the `PetscLimiter` object to set options for
 
   Level: intermediate
 
-.seealso: `PetscLimiterView()`
+.seealso: `PetscLimiter`, ``PetscLimiterView()`
 @*/
-PetscErrorCode PetscLimiterSetFromOptions(PetscLimiter lim) {
+PetscErrorCode PetscLimiterSetFromOptions(PetscLimiter lim)
+{
   const char *defaultType;
   char        name[256];
   PetscBool   flg;
@@ -196,18 +202,19 @@ PetscErrorCode PetscLimiterSetFromOptions(PetscLimiter lim) {
 }
 
 /*@C
-  PetscLimiterSetUp - Construct data structures for the PetscLimiter
+  PetscLimiterSetUp - Construct data structures for the `PetscLimiter`
 
   Collective on lim
 
   Input Parameter:
-. lim - the PetscLimiter object to setup
+. lim - the `PetscLimiter` object to setup
 
   Level: intermediate
 
-.seealso: `PetscLimiterView()`, `PetscLimiterDestroy()`
+.seealso: `PetscLimiter`, ``PetscLimiterView()`, `PetscLimiterDestroy()`
 @*/
-PetscErrorCode PetscLimiterSetUp(PetscLimiter lim) {
+PetscErrorCode PetscLimiterSetUp(PetscLimiter lim)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(lim, PETSCLIMITER_CLASSID, 1);
   PetscTryTypeMethod(lim, setup);
@@ -215,18 +222,19 @@ PetscErrorCode PetscLimiterSetUp(PetscLimiter lim) {
 }
 
 /*@
-  PetscLimiterDestroy - Destroys a PetscLimiter object
+  PetscLimiterDestroy - Destroys a `PetscLimiter` object
 
   Collective on lim
 
   Input Parameter:
-. lim - the PetscLimiter object to destroy
+. lim - the `PetscLimiter` object to destroy
 
   Level: beginner
 
-.seealso: `PetscLimiterView()`
+.seealso: `PetscLimiter`, `PetscLimiterView()`
 @*/
-PetscErrorCode PetscLimiterDestroy(PetscLimiter *lim) {
+PetscErrorCode PetscLimiterDestroy(PetscLimiter *lim)
+{
   PetscFunctionBegin;
   if (!*lim) PetscFunctionReturn(0);
   PetscValidHeaderSpecific((*lim), PETSCLIMITER_CLASSID, 1);
@@ -243,21 +251,22 @@ PetscErrorCode PetscLimiterDestroy(PetscLimiter *lim) {
 }
 
 /*@
-  PetscLimiterCreate - Creates an empty PetscLimiter object. The type can then be set with PetscLimiterSetType().
+  PetscLimiterCreate - Creates an empty `PetscLimiter` object. The type can then be set with `PetscLimiterSetType()`.
 
   Collective
 
   Input Parameter:
-. comm - The communicator for the PetscLimiter object
+. comm - The communicator for the `PetscLimiter` object
 
   Output Parameter:
-. lim - The PetscLimiter object
+. lim - The `PetscLimiter` object
 
   Level: beginner
 
-.seealso: `PetscLimiterSetType()`, `PETSCLIMITERSIN`
+.seealso: `PetscLimiter`, PetscLimiterType`, `PetscLimiterSetType()`, `PETSCLIMITERSIN`
 @*/
-PetscErrorCode PetscLimiterCreate(MPI_Comm comm, PetscLimiter *lim) {
+PetscErrorCode PetscLimiterCreate(MPI_Comm comm, PetscLimiter *lim)
+{
   PetscLimiter l;
 
   PetscFunctionBegin;
@@ -276,51 +285,55 @@ PetscErrorCode PetscLimiterCreate(MPI_Comm comm, PetscLimiter *lim) {
   PetscLimiterLimit - Limit the flux
 
   Input Parameters:
-+ lim  - The PetscLimiter
++ lim  - The `PetscLimiter`
 - flim - The input field
 
   Output Parameter:
 . phi  - The limited field
 
-Note: Limiters given in symmetric form following Berger, Aftosmis, and Murman 2005
-$ The classical flux-limited formulation is psi(r) where
-$
-$ r = (u[0] - u[-1]) / (u[1] - u[0])
-$
-$ The second order TVD region is bounded by
-$
-$ psi_minmod(r) = min(r,1)      and        psi_superbee(r) = min(2, 2r, max(1,r))
-$
-$ where all limiters are implicitly clipped to be non-negative. A more convenient slope-limited form is psi(r) =
-$ phi(r)(r+1)/2 in which the reconstructed interface values are
-$
-$ u(v) = u[0] + phi(r) (grad u)[0] v
-$
-$ where v is the vector from centroid to quadrature point. In these variables, the usual limiters become
-$
-$ phi_minmod(r) = 2 min(1/(1+r),r/(1+r))   phi_superbee(r) = 2 min(2/(1+r), 2r/(1+r), max(1,r)/(1+r))
-$
-$ For a nicer symmetric formulation, rewrite in terms of
-$
-$ f = (u[0] - u[-1]) / (u[1] - u[-1])
-$
-$ where r(f) = f/(1-f). Not that r(1-f) = (1-f)/f = 1/r(f) so the symmetry condition
-$
-$ phi(r) = phi(1/r)
-$
-$ becomes
-$
-$ w(f) = w(1-f).
-$
-$ The limiters below implement this final form w(f). The reference methods are
-$
-$ w_minmod(f) = 2 min(f,(1-f))             w_superbee(r) = 4 min((1-f), f)
-
   Level: beginner
 
-.seealso: `PetscLimiterSetType()`, `PetscLimiterCreate()`
+  Note:
+  Limiters given in symmetric form following Berger, Aftosmis, and Murman 2005
+.vb
+ The classical flux-limited formulation is psi(r) where
+
+ r = (u[0] - u[-1]) / (u[1] - u[0])
+
+ The second order TVD region is bounded by
+
+ psi_minmod(r) = min(r,1)      and        psi_superbee(r) = min(2, 2r, max(1,r))
+
+ where all limiters are implicitly clipped to be non-negative. A more convenient slope-limited form is psi(r) =
+ phi(r)(r+1)/2 in which the reconstructed interface values are
+
+ u(v) = u[0] + phi(r) (grad u)[0] v
+
+ where v is the vector from centroid to quadrature point. In these variables, the usual limiters become
+
+ phi_minmod(r) = 2 min(1/(1+r),r/(1+r))   phi_superbee(r) = 2 min(2/(1+r), 2r/(1+r), max(1,r)/(1+r))
+
+ For a nicer symmetric formulation, rewrite in terms of
+
+ f = (u[0] - u[-1]) / (u[1] - u[-1])
+
+ where r(f) = f/(1-f). Not that r(1-f) = (1-f)/f = 1/r(f) so the symmetry condition
+
+ phi(r) = phi(1/r)
+
+ becomes
+
+ w(f) = w(1-f).
+
+ The limiters below implement this final form w(f). The reference methods are
+
+ w_minmod(f) = 2 min(f,(1-f))             w_superbee(r) = 4 min((1-f), f)
+.ve
+
+.seealso: `PetscLimiter`, `PetscLimiterType`, `PetscLimiterSetType()`, `PetscLimiterCreate()`
 @*/
-PetscErrorCode PetscLimiterLimit(PetscLimiter lim, PetscReal flim, PetscReal *phi) {
+PetscErrorCode PetscLimiterLimit(PetscLimiter lim, PetscReal flim, PetscReal *phi)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(lim, PETSCLIMITER_CLASSID, 1);
   PetscValidRealPointer(phi, 3);
@@ -328,7 +341,8 @@ PetscErrorCode PetscLimiterLimit(PetscLimiter lim, PetscReal flim, PetscReal *ph
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscLimiterDestroy_Sin(PetscLimiter lim) {
+static PetscErrorCode PetscLimiterDestroy_Sin(PetscLimiter lim)
+{
   PetscLimiter_Sin *l = (PetscLimiter_Sin *)lim->data;
 
   PetscFunctionBegin;
@@ -336,7 +350,8 @@ static PetscErrorCode PetscLimiterDestroy_Sin(PetscLimiter lim) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscLimiterView_Sin_Ascii(PetscLimiter lim, PetscViewer viewer) {
+static PetscErrorCode PetscLimiterView_Sin_Ascii(PetscLimiter lim, PetscViewer viewer)
+{
   PetscViewerFormat format;
 
   PetscFunctionBegin;
@@ -345,7 +360,8 @@ static PetscErrorCode PetscLimiterView_Sin_Ascii(PetscLimiter lim, PetscViewer v
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscLimiterView_Sin(PetscLimiter lim, PetscViewer viewer) {
+static PetscErrorCode PetscLimiterView_Sin(PetscLimiter lim, PetscViewer viewer)
+{
   PetscBool iascii;
 
   PetscFunctionBegin;
@@ -356,13 +372,15 @@ static PetscErrorCode PetscLimiterView_Sin(PetscLimiter lim, PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscLimiterLimit_Sin(PetscLimiter lim, PetscReal f, PetscReal *phi) {
+static PetscErrorCode PetscLimiterLimit_Sin(PetscLimiter lim, PetscReal f, PetscReal *phi)
+{
   PetscFunctionBegin;
   *phi = PetscSinReal(PETSC_PI * PetscMax(0, PetscMin(f, 1)));
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscLimiterInitialize_Sin(PetscLimiter lim) {
+static PetscErrorCode PetscLimiterInitialize_Sin(PetscLimiter lim)
+{
   PetscFunctionBegin;
   lim->ops->view    = PetscLimiterView_Sin;
   lim->ops->destroy = PetscLimiterDestroy_Sin;
@@ -371,26 +389,28 @@ static PetscErrorCode PetscLimiterInitialize_Sin(PetscLimiter lim) {
 }
 
 /*MC
-  PETSCLIMITERSIN = "sin" - A PetscLimiter object
+  PETSCLIMITERSIN = "sin" - A `PetscLimiter` implementation
 
   Level: intermediate
 
-.seealso: `PetscLimiterType`, `PetscLimiterCreate()`, `PetscLimiterSetType()`
+.seealso: `PetscLimiter`, `PetscLimiterType`, `PetscLimiterCreate()`, `PetscLimiterSetType()`
 M*/
 
-PETSC_EXTERN PetscErrorCode PetscLimiterCreate_Sin(PetscLimiter lim) {
+PETSC_EXTERN PetscErrorCode PetscLimiterCreate_Sin(PetscLimiter lim)
+{
   PetscLimiter_Sin *l;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(lim, PETSCLIMITER_CLASSID, 1);
-  PetscCall(PetscNewLog(lim, &l));
+  PetscCall(PetscNew(&l));
   lim->data = l;
 
   PetscCall(PetscLimiterInitialize_Sin(lim));
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscLimiterDestroy_Zero(PetscLimiter lim) {
+static PetscErrorCode PetscLimiterDestroy_Zero(PetscLimiter lim)
+{
   PetscLimiter_Zero *l = (PetscLimiter_Zero *)lim->data;
 
   PetscFunctionBegin;
@@ -398,7 +418,8 @@ static PetscErrorCode PetscLimiterDestroy_Zero(PetscLimiter lim) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscLimiterView_Zero_Ascii(PetscLimiter lim, PetscViewer viewer) {
+static PetscErrorCode PetscLimiterView_Zero_Ascii(PetscLimiter lim, PetscViewer viewer)
+{
   PetscViewerFormat format;
 
   PetscFunctionBegin;
@@ -407,7 +428,8 @@ static PetscErrorCode PetscLimiterView_Zero_Ascii(PetscLimiter lim, PetscViewer 
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscLimiterView_Zero(PetscLimiter lim, PetscViewer viewer) {
+static PetscErrorCode PetscLimiterView_Zero(PetscLimiter lim, PetscViewer viewer)
+{
   PetscBool iascii;
 
   PetscFunctionBegin;
@@ -418,13 +440,15 @@ static PetscErrorCode PetscLimiterView_Zero(PetscLimiter lim, PetscViewer viewer
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscLimiterLimit_Zero(PetscLimiter lim, PetscReal f, PetscReal *phi) {
+static PetscErrorCode PetscLimiterLimit_Zero(PetscLimiter lim, PetscReal f, PetscReal *phi)
+{
   PetscFunctionBegin;
   *phi = 0.0;
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscLimiterInitialize_Zero(PetscLimiter lim) {
+static PetscErrorCode PetscLimiterInitialize_Zero(PetscLimiter lim)
+{
   PetscFunctionBegin;
   lim->ops->view    = PetscLimiterView_Zero;
   lim->ops->destroy = PetscLimiterDestroy_Zero;
@@ -433,26 +457,28 @@ static PetscErrorCode PetscLimiterInitialize_Zero(PetscLimiter lim) {
 }
 
 /*MC
-  PETSCLIMITERZERO = "zero" - A PetscLimiter object
+  PETSCLIMITERZERO = "zero" - A simple `PetscLimiter` implementation
 
   Level: intermediate
 
-.seealso: `PetscLimiterType`, `PetscLimiterCreate()`, `PetscLimiterSetType()`
+.seealso: `PetscLimiter`, `PetscLimiterType`, `PetscLimiterCreate()`, `PetscLimiterSetType()`
 M*/
 
-PETSC_EXTERN PetscErrorCode PetscLimiterCreate_Zero(PetscLimiter lim) {
+PETSC_EXTERN PetscErrorCode PetscLimiterCreate_Zero(PetscLimiter lim)
+{
   PetscLimiter_Zero *l;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(lim, PETSCLIMITER_CLASSID, 1);
-  PetscCall(PetscNewLog(lim, &l));
+  PetscCall(PetscNew(&l));
   lim->data = l;
 
   PetscCall(PetscLimiterInitialize_Zero(lim));
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscLimiterDestroy_None(PetscLimiter lim) {
+static PetscErrorCode PetscLimiterDestroy_None(PetscLimiter lim)
+{
   PetscLimiter_None *l = (PetscLimiter_None *)lim->data;
 
   PetscFunctionBegin;
@@ -460,7 +486,8 @@ static PetscErrorCode PetscLimiterDestroy_None(PetscLimiter lim) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscLimiterView_None_Ascii(PetscLimiter lim, PetscViewer viewer) {
+static PetscErrorCode PetscLimiterView_None_Ascii(PetscLimiter lim, PetscViewer viewer)
+{
   PetscViewerFormat format;
 
   PetscFunctionBegin;
@@ -469,7 +496,8 @@ static PetscErrorCode PetscLimiterView_None_Ascii(PetscLimiter lim, PetscViewer 
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscLimiterView_None(PetscLimiter lim, PetscViewer viewer) {
+static PetscErrorCode PetscLimiterView_None(PetscLimiter lim, PetscViewer viewer)
+{
   PetscBool iascii;
 
   PetscFunctionBegin;
@@ -480,13 +508,15 @@ static PetscErrorCode PetscLimiterView_None(PetscLimiter lim, PetscViewer viewer
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscLimiterLimit_None(PetscLimiter lim, PetscReal f, PetscReal *phi) {
+static PetscErrorCode PetscLimiterLimit_None(PetscLimiter lim, PetscReal f, PetscReal *phi)
+{
   PetscFunctionBegin;
   *phi = 1.0;
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscLimiterInitialize_None(PetscLimiter lim) {
+static PetscErrorCode PetscLimiterInitialize_None(PetscLimiter lim)
+{
   PetscFunctionBegin;
   lim->ops->view    = PetscLimiterView_None;
   lim->ops->destroy = PetscLimiterDestroy_None;
@@ -495,26 +525,28 @@ static PetscErrorCode PetscLimiterInitialize_None(PetscLimiter lim) {
 }
 
 /*MC
-  PETSCLIMITERNONE = "none" - A PetscLimiter object
+  PETSCLIMITERNONE = "none" - A trivial `PetscLimiter` implementation
 
   Level: intermediate
 
-.seealso: `PetscLimiterType`, `PetscLimiterCreate()`, `PetscLimiterSetType()`
+.seealso: `PetscLimiter`, `PetscLimiterType`, `PetscLimiterCreate()`, `PetscLimiterSetType()`
 M*/
 
-PETSC_EXTERN PetscErrorCode PetscLimiterCreate_None(PetscLimiter lim) {
+PETSC_EXTERN PetscErrorCode PetscLimiterCreate_None(PetscLimiter lim)
+{
   PetscLimiter_None *l;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(lim, PETSCLIMITER_CLASSID, 1);
-  PetscCall(PetscNewLog(lim, &l));
+  PetscCall(PetscNew(&l));
   lim->data = l;
 
   PetscCall(PetscLimiterInitialize_None(lim));
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscLimiterDestroy_Minmod(PetscLimiter lim) {
+static PetscErrorCode PetscLimiterDestroy_Minmod(PetscLimiter lim)
+{
   PetscLimiter_Minmod *l = (PetscLimiter_Minmod *)lim->data;
 
   PetscFunctionBegin;
@@ -522,7 +554,8 @@ static PetscErrorCode PetscLimiterDestroy_Minmod(PetscLimiter lim) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscLimiterView_Minmod_Ascii(PetscLimiter lim, PetscViewer viewer) {
+static PetscErrorCode PetscLimiterView_Minmod_Ascii(PetscLimiter lim, PetscViewer viewer)
+{
   PetscViewerFormat format;
 
   PetscFunctionBegin;
@@ -531,7 +564,8 @@ static PetscErrorCode PetscLimiterView_Minmod_Ascii(PetscLimiter lim, PetscViewe
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscLimiterView_Minmod(PetscLimiter lim, PetscViewer viewer) {
+static PetscErrorCode PetscLimiterView_Minmod(PetscLimiter lim, PetscViewer viewer)
+{
   PetscBool iascii;
 
   PetscFunctionBegin;
@@ -542,13 +576,15 @@ static PetscErrorCode PetscLimiterView_Minmod(PetscLimiter lim, PetscViewer view
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscLimiterLimit_Minmod(PetscLimiter lim, PetscReal f, PetscReal *phi) {
+static PetscErrorCode PetscLimiterLimit_Minmod(PetscLimiter lim, PetscReal f, PetscReal *phi)
+{
   PetscFunctionBegin;
   *phi = 2 * PetscMax(0, PetscMin(f, 1 - f));
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscLimiterInitialize_Minmod(PetscLimiter lim) {
+static PetscErrorCode PetscLimiterInitialize_Minmod(PetscLimiter lim)
+{
   PetscFunctionBegin;
   lim->ops->view    = PetscLimiterView_Minmod;
   lim->ops->destroy = PetscLimiterDestroy_Minmod;
@@ -557,26 +593,28 @@ static PetscErrorCode PetscLimiterInitialize_Minmod(PetscLimiter lim) {
 }
 
 /*MC
-  PETSCLIMITERMINMOD = "minmod" - A PetscLimiter object
+  PETSCLIMITERMINMOD = "minmod" - A `PetscLimiter` implementation
 
   Level: intermediate
 
-.seealso: `PetscLimiterType`, `PetscLimiterCreate()`, `PetscLimiterSetType()`
+.seealso: `PetscLimiter`, `PetscLimiterType`, `PetscLimiterCreate()`, `PetscLimiterSetType()`
 M*/
 
-PETSC_EXTERN PetscErrorCode PetscLimiterCreate_Minmod(PetscLimiter lim) {
+PETSC_EXTERN PetscErrorCode PetscLimiterCreate_Minmod(PetscLimiter lim)
+{
   PetscLimiter_Minmod *l;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(lim, PETSCLIMITER_CLASSID, 1);
-  PetscCall(PetscNewLog(lim, &l));
+  PetscCall(PetscNew(&l));
   lim->data = l;
 
   PetscCall(PetscLimiterInitialize_Minmod(lim));
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscLimiterDestroy_VanLeer(PetscLimiter lim) {
+static PetscErrorCode PetscLimiterDestroy_VanLeer(PetscLimiter lim)
+{
   PetscLimiter_VanLeer *l = (PetscLimiter_VanLeer *)lim->data;
 
   PetscFunctionBegin;
@@ -584,7 +622,8 @@ static PetscErrorCode PetscLimiterDestroy_VanLeer(PetscLimiter lim) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscLimiterView_VanLeer_Ascii(PetscLimiter lim, PetscViewer viewer) {
+static PetscErrorCode PetscLimiterView_VanLeer_Ascii(PetscLimiter lim, PetscViewer viewer)
+{
   PetscViewerFormat format;
 
   PetscFunctionBegin;
@@ -593,7 +632,8 @@ static PetscErrorCode PetscLimiterView_VanLeer_Ascii(PetscLimiter lim, PetscView
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscLimiterView_VanLeer(PetscLimiter lim, PetscViewer viewer) {
+static PetscErrorCode PetscLimiterView_VanLeer(PetscLimiter lim, PetscViewer viewer)
+{
   PetscBool iascii;
 
   PetscFunctionBegin;
@@ -604,13 +644,15 @@ static PetscErrorCode PetscLimiterView_VanLeer(PetscLimiter lim, PetscViewer vie
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscLimiterLimit_VanLeer(PetscLimiter lim, PetscReal f, PetscReal *phi) {
+static PetscErrorCode PetscLimiterLimit_VanLeer(PetscLimiter lim, PetscReal f, PetscReal *phi)
+{
   PetscFunctionBegin;
   *phi = PetscMax(0, 4 * f * (1 - f));
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscLimiterInitialize_VanLeer(PetscLimiter lim) {
+static PetscErrorCode PetscLimiterInitialize_VanLeer(PetscLimiter lim)
+{
   PetscFunctionBegin;
   lim->ops->view    = PetscLimiterView_VanLeer;
   lim->ops->destroy = PetscLimiterDestroy_VanLeer;
@@ -619,26 +661,28 @@ static PetscErrorCode PetscLimiterInitialize_VanLeer(PetscLimiter lim) {
 }
 
 /*MC
-  PETSCLIMITERVANLEER = "vanleer" - A PetscLimiter object
+  PETSCLIMITERVANLEER = "vanleer" - A `PetscLimiter` implementation
 
   Level: intermediate
 
-.seealso: `PetscLimiterType`, `PetscLimiterCreate()`, `PetscLimiterSetType()`
+.seealso: `PetscLimiter`, `PetscLimiterType`, `PetscLimiterCreate()`, `PetscLimiterSetType()`
 M*/
 
-PETSC_EXTERN PetscErrorCode PetscLimiterCreate_VanLeer(PetscLimiter lim) {
+PETSC_EXTERN PetscErrorCode PetscLimiterCreate_VanLeer(PetscLimiter lim)
+{
   PetscLimiter_VanLeer *l;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(lim, PETSCLIMITER_CLASSID, 1);
-  PetscCall(PetscNewLog(lim, &l));
+  PetscCall(PetscNew(&l));
   lim->data = l;
 
   PetscCall(PetscLimiterInitialize_VanLeer(lim));
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscLimiterDestroy_VanAlbada(PetscLimiter lim) {
+static PetscErrorCode PetscLimiterDestroy_VanAlbada(PetscLimiter lim)
+{
   PetscLimiter_VanAlbada *l = (PetscLimiter_VanAlbada *)lim->data;
 
   PetscFunctionBegin;
@@ -646,7 +690,8 @@ static PetscErrorCode PetscLimiterDestroy_VanAlbada(PetscLimiter lim) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscLimiterView_VanAlbada_Ascii(PetscLimiter lim, PetscViewer viewer) {
+static PetscErrorCode PetscLimiterView_VanAlbada_Ascii(PetscLimiter lim, PetscViewer viewer)
+{
   PetscViewerFormat format;
 
   PetscFunctionBegin;
@@ -655,7 +700,8 @@ static PetscErrorCode PetscLimiterView_VanAlbada_Ascii(PetscLimiter lim, PetscVi
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscLimiterView_VanAlbada(PetscLimiter lim, PetscViewer viewer) {
+static PetscErrorCode PetscLimiterView_VanAlbada(PetscLimiter lim, PetscViewer viewer)
+{
   PetscBool iascii;
 
   PetscFunctionBegin;
@@ -666,13 +712,15 @@ static PetscErrorCode PetscLimiterView_VanAlbada(PetscLimiter lim, PetscViewer v
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscLimiterLimit_VanAlbada(PetscLimiter lim, PetscReal f, PetscReal *phi) {
+static PetscErrorCode PetscLimiterLimit_VanAlbada(PetscLimiter lim, PetscReal f, PetscReal *phi)
+{
   PetscFunctionBegin;
   *phi = PetscMax(0, 2 * f * (1 - f) / (PetscSqr(f) + PetscSqr(1 - f)));
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscLimiterInitialize_VanAlbada(PetscLimiter lim) {
+static PetscErrorCode PetscLimiterInitialize_VanAlbada(PetscLimiter lim)
+{
   PetscFunctionBegin;
   lim->ops->view    = PetscLimiterView_VanAlbada;
   lim->ops->destroy = PetscLimiterDestroy_VanAlbada;
@@ -681,26 +729,28 @@ static PetscErrorCode PetscLimiterInitialize_VanAlbada(PetscLimiter lim) {
 }
 
 /*MC
-  PETSCLIMITERVANALBADA = "vanalbada" - A PetscLimiter object
+  PETSCLIMITERVANALBADA = "vanalbada" - A PetscLimiter implementation
 
   Level: intermediate
 
-.seealso: `PetscLimiterType`, `PetscLimiterCreate()`, `PetscLimiterSetType()`
+.seealso: `PetscLimiter`, `PetscLimiterType`, `PetscLimiterCreate()`, `PetscLimiterSetType()`
 M*/
 
-PETSC_EXTERN PetscErrorCode PetscLimiterCreate_VanAlbada(PetscLimiter lim) {
+PETSC_EXTERN PetscErrorCode PetscLimiterCreate_VanAlbada(PetscLimiter lim)
+{
   PetscLimiter_VanAlbada *l;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(lim, PETSCLIMITER_CLASSID, 1);
-  PetscCall(PetscNewLog(lim, &l));
+  PetscCall(PetscNew(&l));
   lim->data = l;
 
   PetscCall(PetscLimiterInitialize_VanAlbada(lim));
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscLimiterDestroy_Superbee(PetscLimiter lim) {
+static PetscErrorCode PetscLimiterDestroy_Superbee(PetscLimiter lim)
+{
   PetscLimiter_Superbee *l = (PetscLimiter_Superbee *)lim->data;
 
   PetscFunctionBegin;
@@ -708,7 +758,8 @@ static PetscErrorCode PetscLimiterDestroy_Superbee(PetscLimiter lim) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscLimiterView_Superbee_Ascii(PetscLimiter lim, PetscViewer viewer) {
+static PetscErrorCode PetscLimiterView_Superbee_Ascii(PetscLimiter lim, PetscViewer viewer)
+{
   PetscViewerFormat format;
 
   PetscFunctionBegin;
@@ -717,7 +768,8 @@ static PetscErrorCode PetscLimiterView_Superbee_Ascii(PetscLimiter lim, PetscVie
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscLimiterView_Superbee(PetscLimiter lim, PetscViewer viewer) {
+static PetscErrorCode PetscLimiterView_Superbee(PetscLimiter lim, PetscViewer viewer)
+{
   PetscBool iascii;
 
   PetscFunctionBegin;
@@ -728,13 +780,15 @@ static PetscErrorCode PetscLimiterView_Superbee(PetscLimiter lim, PetscViewer vi
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscLimiterLimit_Superbee(PetscLimiter lim, PetscReal f, PetscReal *phi) {
+static PetscErrorCode PetscLimiterLimit_Superbee(PetscLimiter lim, PetscReal f, PetscReal *phi)
+{
   PetscFunctionBegin;
   *phi = 4 * PetscMax(0, PetscMin(f, 1 - f));
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscLimiterInitialize_Superbee(PetscLimiter lim) {
+static PetscErrorCode PetscLimiterInitialize_Superbee(PetscLimiter lim)
+{
   PetscFunctionBegin;
   lim->ops->view    = PetscLimiterView_Superbee;
   lim->ops->destroy = PetscLimiterDestroy_Superbee;
@@ -743,26 +797,28 @@ static PetscErrorCode PetscLimiterInitialize_Superbee(PetscLimiter lim) {
 }
 
 /*MC
-  PETSCLIMITERSUPERBEE = "superbee" - A PetscLimiter object
+  PETSCLIMITERSUPERBEE = "superbee" - A `PetscLimiter` implementation
 
   Level: intermediate
 
-.seealso: `PetscLimiterType`, `PetscLimiterCreate()`, `PetscLimiterSetType()`
+.seealso: `PetscLimiter`, `PetscLimiterType`, `PetscLimiterCreate()`, `PetscLimiterSetType()`
 M*/
 
-PETSC_EXTERN PetscErrorCode PetscLimiterCreate_Superbee(PetscLimiter lim) {
+PETSC_EXTERN PetscErrorCode PetscLimiterCreate_Superbee(PetscLimiter lim)
+{
   PetscLimiter_Superbee *l;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(lim, PETSCLIMITER_CLASSID, 1);
-  PetscCall(PetscNewLog(lim, &l));
+  PetscCall(PetscNew(&l));
   lim->data = l;
 
   PetscCall(PetscLimiterInitialize_Superbee(lim));
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscLimiterDestroy_MC(PetscLimiter lim) {
+static PetscErrorCode PetscLimiterDestroy_MC(PetscLimiter lim)
+{
   PetscLimiter_MC *l = (PetscLimiter_MC *)lim->data;
 
   PetscFunctionBegin;
@@ -770,7 +826,8 @@ static PetscErrorCode PetscLimiterDestroy_MC(PetscLimiter lim) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscLimiterView_MC_Ascii(PetscLimiter lim, PetscViewer viewer) {
+static PetscErrorCode PetscLimiterView_MC_Ascii(PetscLimiter lim, PetscViewer viewer)
+{
   PetscViewerFormat format;
 
   PetscFunctionBegin;
@@ -779,7 +836,8 @@ static PetscErrorCode PetscLimiterView_MC_Ascii(PetscLimiter lim, PetscViewer vi
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscLimiterView_MC(PetscLimiter lim, PetscViewer viewer) {
+static PetscErrorCode PetscLimiterView_MC(PetscLimiter lim, PetscViewer viewer)
+{
   PetscBool iascii;
 
   PetscFunctionBegin;
@@ -791,13 +849,15 @@ static PetscErrorCode PetscLimiterView_MC(PetscLimiter lim, PetscViewer viewer) 
 }
 
 /* aka Barth-Jespersen */
-static PetscErrorCode PetscLimiterLimit_MC(PetscLimiter lim, PetscReal f, PetscReal *phi) {
+static PetscErrorCode PetscLimiterLimit_MC(PetscLimiter lim, PetscReal f, PetscReal *phi)
+{
   PetscFunctionBegin;
   *phi = PetscMin(1, 4 * PetscMax(0, PetscMin(f, 1 - f)));
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscLimiterInitialize_MC(PetscLimiter lim) {
+static PetscErrorCode PetscLimiterInitialize_MC(PetscLimiter lim)
+{
   PetscFunctionBegin;
   lim->ops->view    = PetscLimiterView_MC;
   lim->ops->destroy = PetscLimiterDestroy_MC;
@@ -806,19 +866,20 @@ static PetscErrorCode PetscLimiterInitialize_MC(PetscLimiter lim) {
 }
 
 /*MC
-  PETSCLIMITERMC = "mc" - A PetscLimiter object
+  PETSCLIMITERMC = "mc" - A `PetscLimiter` implementation
 
   Level: intermediate
 
-.seealso: `PetscLimiterType`, `PetscLimiterCreate()`, `PetscLimiterSetType()`
+.seealso: `PetscLimiter`, `PetscLimiterType`, `PetscLimiterCreate()`, `PetscLimiterSetType()`
 M*/
 
-PETSC_EXTERN PetscErrorCode PetscLimiterCreate_MC(PetscLimiter lim) {
+PETSC_EXTERN PetscErrorCode PetscLimiterCreate_MC(PetscLimiter lim)
+{
   PetscLimiter_MC *l;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(lim, PETSCLIMITER_CLASSID, 1);
-  PetscCall(PetscNewLog(lim, &l));
+  PetscCall(PetscNew(&l));
   lim->data = l;
 
   PetscCall(PetscLimiterInitialize_MC(lim));
@@ -831,16 +892,13 @@ PetscFunctionList PetscFVList              = NULL;
 PetscBool         PetscFVRegisterAllCalled = PETSC_FALSE;
 
 /*@C
-  PetscFVRegister - Adds a new PetscFV implementation
+  PetscFVRegister - Adds a new `PetscFV` implementation
 
   Not Collective
 
   Input Parameters:
 + name        - The name of a new user-defined creation routine
 - create_func - The creation routine itself
-
-  Notes:
-  PetscFVRegister() may be called multiple times to add several user-defined PetscFVs
 
   Sample usage:
 .vb
@@ -859,32 +917,36 @@ PetscBool         PetscFVRegisterAllCalled = PETSC_FALSE;
 
   Level: advanced
 
-.seealso: `PetscFVRegisterAll()`, `PetscFVRegisterDestroy()`
+  Note:
+  `PetscFVRegister()` may be called multiple times to add several user-defined PetscFVs
 
+.seealso: `PetscFV`, `PetscFVType`, `PetscFVRegisterAll()`, `PetscFVRegisterDestroy()`
 @*/
-PetscErrorCode PetscFVRegister(const char sname[], PetscErrorCode (*function)(PetscFV)) {
+PetscErrorCode PetscFVRegister(const char sname[], PetscErrorCode (*function)(PetscFV))
+{
   PetscFunctionBegin;
   PetscCall(PetscFunctionListAdd(&PetscFVList, sname, function));
   PetscFunctionReturn(0);
 }
 
 /*@C
-  PetscFVSetType - Builds a particular PetscFV
+  PetscFVSetType - Builds a particular `PetscFV`
 
   Collective on fvm
 
   Input Parameters:
-+ fvm  - The PetscFV object
-- name - The kind of FVM space
++ fvm  - The `PetscFV` object
+- name - The type of FVM space
 
   Options Database Key:
-. -petscfv_type <type> - Sets the PetscFV type; use -help for a list of available types
+. -petscfv_type <type> - Sets the `PetscFVType`; use -help for a list of available types
 
   Level: intermediate
 
-.seealso: `PetscFVGetType()`, `PetscFVCreate()`
+.seealso: `PetscFV`, `PetscFVType`, `PetscFVGetType()`, `PetscFVCreate()`
 @*/
-PetscErrorCode PetscFVSetType(PetscFV fvm, PetscFVType name) {
+PetscErrorCode PetscFVSetType(PetscFV fvm, PetscFVType name)
+{
   PetscErrorCode (*r)(PetscFV);
   PetscBool match;
 
@@ -906,21 +968,22 @@ PetscErrorCode PetscFVSetType(PetscFV fvm, PetscFVType name) {
 }
 
 /*@C
-  PetscFVGetType - Gets the PetscFV type name (as a string) from the object.
+  PetscFVGetType - Gets the `PetscFVType` (as a string) from a `PetscFV`.
 
   Not Collective
 
   Input Parameter:
-. fvm  - The PetscFV
+. fvm  - The `PetscFV`
 
   Output Parameter:
-. name - The PetscFV type name
+. name - The `PetscFVType` name
 
   Level: intermediate
 
-.seealso: `PetscFVSetType()`, `PetscFVCreate()`
+.seealso: `PetscFV`, `PetscFVType`, `PetscFVSetType()`, `PetscFVCreate()`
 @*/
-PetscErrorCode PetscFVGetType(PetscFV fvm, PetscFVType *name) {
+PetscErrorCode PetscFVGetType(PetscFV fvm, PetscFVType *name)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fvm, PETSCFV_CLASSID, 1);
   PetscValidPointer(name, 2);
@@ -930,19 +993,21 @@ PetscErrorCode PetscFVGetType(PetscFV fvm, PetscFVType *name) {
 }
 
 /*@C
-   PetscFVViewFromOptions - View from Options
+   PetscFVViewFromOptions - View a `PetscFV` based on values in the options database
 
-   Collective on PetscFV
+   Collective on A
 
    Input Parameters:
-+  A - the PetscFV object
-.  obj - Optional object
--  name - command line option
++  A - the `PetscFV` object
+.  obj - Optional object that provides the options prefix
+-  name - command line option name
 
    Level: intermediate
-.seealso: `PetscFV`, `PetscFVView`, `PetscObjectViewFromOptions()`, `PetscFVCreate()`
+
+.seealso: `PetscFV`, `PetscFVView()`, `PetscObjectViewFromOptions()`, `PetscFVCreate()`
 @*/
-PetscErrorCode PetscFVViewFromOptions(PetscFV A, PetscObject obj, const char name[]) {
+PetscErrorCode PetscFVViewFromOptions(PetscFV A, PetscObject obj, const char name[])
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, PETSCFV_CLASSID, 1);
   PetscCall(PetscObjectViewFromOptions((PetscObject)A, obj, name));
@@ -950,19 +1015,20 @@ PetscErrorCode PetscFVViewFromOptions(PetscFV A, PetscObject obj, const char nam
 }
 
 /*@C
-  PetscFVView - Views a PetscFV
+  PetscFVView - Views a `PetscFV`
 
   Collective on fvm
 
   Input Parameters:
-+ fvm - the PetscFV object to view
++ fvm - the `PetscFV` object to view
 - v   - the viewer
 
   Level: beginner
 
-.seealso: `PetscFVDestroy()`
+.seealso: `PetscFV`, `PetscViewer`, `PetscFVDestroy()`
 @*/
-PetscErrorCode PetscFVView(PetscFV fvm, PetscViewer v) {
+PetscErrorCode PetscFVView(PetscFV fvm, PetscViewer v)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fvm, PETSCFV_CLASSID, 1);
   if (!v) PetscCall(PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)fvm), &v));
@@ -971,21 +1037,22 @@ PetscErrorCode PetscFVView(PetscFV fvm, PetscViewer v) {
 }
 
 /*@
-  PetscFVSetFromOptions - sets parameters in a PetscFV from the options database
+  PetscFVSetFromOptions - sets parameters in a `PetscFV` from the options database
 
   Collective on fvm
 
   Input Parameter:
-. fvm - the PetscFV object to set options for
+. fvm - the `PetscFV` object to set options for
 
   Options Database Key:
 . -petscfv_compute_gradients <bool> - Determines whether cell gradients are calculated
 
   Level: intermediate
 
-.seealso: `PetscFVView()`
+.seealso: `PetscFV`, `PetscFVView()`
 @*/
-PetscErrorCode PetscFVSetFromOptions(PetscFV fvm) {
+PetscErrorCode PetscFVSetFromOptions(PetscFV fvm)
+{
   const char *defaultType;
   char        name[256];
   PetscBool   flg;
@@ -1014,18 +1081,19 @@ PetscErrorCode PetscFVSetFromOptions(PetscFV fvm) {
 }
 
 /*@
-  PetscFVSetUp - Construct data structures for the PetscFV
+  PetscFVSetUp - Setup the data structures for the `PetscFV` based on the `PetscFVType` provided by `PetscFVSetType()`
 
   Collective on fvm
 
   Input Parameter:
-. fvm - the PetscFV object to setup
+. fvm - the `PetscFV` object to setup
 
   Level: intermediate
 
-.seealso: `PetscFVView()`, `PetscFVDestroy()`
+.seealso: `PetscFV`, `PetscFVView()`, `PetscFVDestroy()`
 @*/
-PetscErrorCode PetscFVSetUp(PetscFV fvm) {
+PetscErrorCode PetscFVSetUp(PetscFV fvm)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fvm, PETSCFV_CLASSID, 1);
   PetscCall(PetscLimiterSetUp(fvm->limiter));
@@ -1034,18 +1102,19 @@ PetscErrorCode PetscFVSetUp(PetscFV fvm) {
 }
 
 /*@
-  PetscFVDestroy - Destroys a PetscFV object
+  PetscFVDestroy - Destroys a `PetscFV` object
 
   Collective on fvm
 
   Input Parameter:
-. fvm - the PetscFV object to destroy
+. fvm - the `PetscFV` object to destroy
 
   Level: beginner
 
-.seealso: `PetscFVView()`
+.seealso: `PetscFV`, `PetscFVCreate()`, `PetscFVView()`
 @*/
-PetscErrorCode PetscFVDestroy(PetscFV *fvm) {
+PetscErrorCode PetscFVDestroy(PetscFV *fvm)
+{
   PetscInt i;
 
   PetscFunctionBegin;
@@ -1072,21 +1141,22 @@ PetscErrorCode PetscFVDestroy(PetscFV *fvm) {
 }
 
 /*@
-  PetscFVCreate - Creates an empty PetscFV object. The type can then be set with PetscFVSetType().
+  PetscFVCreate - Creates an empty `PetscFV` object. The type can then be set with `PetscFVSetType()`.
 
   Collective
 
   Input Parameter:
-. comm - The communicator for the PetscFV object
+. comm - The communicator for the `PetscFV` object
 
   Output Parameter:
-. fvm - The PetscFV object
+. fvm - The `PetscFV` object
 
   Level: beginner
 
-.seealso: `PetscFVSetType()`, `PETSCFVUPWIND`
+.seealso: `PetscFVSet`, `PetscFVSetType()`, `PETSCFVUPWIND`, `PetscFVDestroy()`
 @*/
-PetscErrorCode PetscFVCreate(MPI_Comm comm, PetscFV *fvm) {
+PetscErrorCode PetscFVCreate(MPI_Comm comm, PetscFV *fvm)
+{
   PetscFV f;
 
   PetscFunctionBegin;
@@ -1109,19 +1179,20 @@ PetscErrorCode PetscFVCreate(MPI_Comm comm, PetscFV *fvm) {
 }
 
 /*@
-  PetscFVSetLimiter - Set the limiter object
+  PetscFVSetLimiter - Set the `PetscLimiter` to the `PetscFV`
 
   Logically collective on fvm
 
   Input Parameters:
-+ fvm - the PetscFV object
-- lim - The PetscLimiter
++ fvm - the `PetscFV` object
+- lim - The `PetscLimiter`
 
   Level: intermediate
 
-.seealso: `PetscFVGetLimiter()`
+.seealso: `PetscFV`, `PetscLimiter`, `PetscFVGetLimiter()`
 @*/
-PetscErrorCode PetscFVSetLimiter(PetscFV fvm, PetscLimiter lim) {
+PetscErrorCode PetscFVSetLimiter(PetscFV fvm, PetscLimiter lim)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fvm, PETSCFV_CLASSID, 1);
   PetscValidHeaderSpecific(lim, PETSCLIMITER_CLASSID, 2);
@@ -1132,21 +1203,22 @@ PetscErrorCode PetscFVSetLimiter(PetscFV fvm, PetscLimiter lim) {
 }
 
 /*@
-  PetscFVGetLimiter - Get the limiter object
+  PetscFVGetLimiter - Get the `PetscLimiter` object from the `PetscFV`
 
   Not collective
 
   Input Parameter:
-. fvm - the PetscFV object
+. fvm - the `PetscFV` object
 
   Output Parameter:
-. lim - The PetscLimiter
+. lim - The `PetscLimiter`
 
   Level: intermediate
 
-.seealso: `PetscFVSetLimiter()`
+.seealso: `PetscFV`, `PetscLimiter`, `PetscFVSetLimiter()`
 @*/
-PetscErrorCode PetscFVGetLimiter(PetscFV fvm, PetscLimiter *lim) {
+PetscErrorCode PetscFVGetLimiter(PetscFV fvm, PetscLimiter *lim)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fvm, PETSCFV_CLASSID, 1);
   PetscValidPointer(lim, 2);
@@ -1155,19 +1227,20 @@ PetscErrorCode PetscFVGetLimiter(PetscFV fvm, PetscLimiter *lim) {
 }
 
 /*@
-  PetscFVSetNumComponents - Set the number of field components
+  PetscFVSetNumComponents - Set the number of field components in a `PetscFV`
 
   Logically collective on fvm
 
   Input Parameters:
-+ fvm - the PetscFV object
++ fvm - the `PetscFV` object
 - comp - The number of components
 
   Level: intermediate
 
-.seealso: `PetscFVGetNumComponents()`
+.seealso: `PetscFV`, `PetscFVGetNumComponents()`
 @*/
-PetscErrorCode PetscFVSetNumComponents(PetscFV fvm, PetscInt comp) {
+PetscErrorCode PetscFVSetNumComponents(PetscFV fvm, PetscInt comp)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fvm, PETSCFV_CLASSID, 1);
   if (fvm->numComponents != comp) {
@@ -1184,21 +1257,22 @@ PetscErrorCode PetscFVSetNumComponents(PetscFV fvm, PetscInt comp) {
 }
 
 /*@
-  PetscFVGetNumComponents - Get the number of field components
+  PetscFVGetNumComponents - Get the number of field components in a `PetscFV`
 
   Not collective
 
   Input Parameter:
-. fvm - the PetscFV object
+. fvm - the `PetscFV` object
 
   Output Parameter:
 , comp - The number of components
 
   Level: intermediate
 
-.seealso: `PetscFVSetNumComponents()`
+.seealso: `PetscFV`, `PetscFVSetNumComponents()`, `PetscFVSetComponentName()`
 @*/
-PetscErrorCode PetscFVGetNumComponents(PetscFV fvm, PetscInt *comp) {
+PetscErrorCode PetscFVGetNumComponents(PetscFV fvm, PetscInt *comp)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fvm, PETSCFV_CLASSID, 1);
   PetscValidIntPointer(comp, 2);
@@ -1207,19 +1281,21 @@ PetscErrorCode PetscFVGetNumComponents(PetscFV fvm, PetscInt *comp) {
 }
 
 /*@C
-  PetscFVSetComponentName - Set the name of a component (used in output and viewing)
+  PetscFVSetComponentName - Set the name of a component (used in output and viewing) in a `PetscFV`
 
   Logically collective on fvm
+
   Input Parameters:
-+ fvm - the PetscFV object
++ fvm - the `PetscFV` object
 . comp - the component number
 - name - the component name
 
   Level: intermediate
 
-.seealso: `PetscFVGetComponentName()`
+.seealso: `PetscFV`, `PetscFVGetComponentName()`
 @*/
-PetscErrorCode PetscFVSetComponentName(PetscFV fvm, PetscInt comp, const char *name) {
+PetscErrorCode PetscFVSetComponentName(PetscFV fvm, PetscInt comp, const char *name)
+{
   PetscFunctionBegin;
   PetscCall(PetscFree(fvm->componentNames[comp]));
   PetscCall(PetscStrallocpy(name, &fvm->componentNames[comp]));
@@ -1227,11 +1303,11 @@ PetscErrorCode PetscFVSetComponentName(PetscFV fvm, PetscInt comp, const char *n
 }
 
 /*@C
-  PetscFVGetComponentName - Get the name of a component (used in output and viewing)
+  PetscFVGetComponentName - Get the name of a component (used in output and viewing) in a `PetscFV`
 
   Logically collective on fvm
   Input Parameters:
-+ fvm - the PetscFV object
++ fvm - the `PetscFV` object
 - comp - the component number
 
   Output Parameter:
@@ -1239,28 +1315,30 @@ PetscErrorCode PetscFVSetComponentName(PetscFV fvm, PetscInt comp, const char *n
 
   Level: intermediate
 
-.seealso: `PetscFVSetComponentName()`
+.seealso: `PetscFV`, `PetscFVSetComponentName()`
 @*/
-PetscErrorCode PetscFVGetComponentName(PetscFV fvm, PetscInt comp, const char **name) {
+PetscErrorCode PetscFVGetComponentName(PetscFV fvm, PetscInt comp, const char **name)
+{
   PetscFunctionBegin;
   *name = fvm->componentNames[comp];
   PetscFunctionReturn(0);
 }
 
 /*@
-  PetscFVSetSpatialDimension - Set the spatial dimension
+  PetscFVSetSpatialDimension - Set the spatial dimension of a `PetscFV`
 
   Logically collective on fvm
 
   Input Parameters:
-+ fvm - the PetscFV object
++ fvm - the `PetscFV` object
 - dim - The spatial dimension
 
   Level: intermediate
 
-.seealso: `PetscFVGetSpatialDimension()`
+.seealso: `PetscFV`, ``PetscFVGetSpatialDimension()`
 @*/
-PetscErrorCode PetscFVSetSpatialDimension(PetscFV fvm, PetscInt dim) {
+PetscErrorCode PetscFVSetSpatialDimension(PetscFV fvm, PetscInt dim)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fvm, PETSCFV_CLASSID, 1);
   fvm->dim = dim;
@@ -1268,21 +1346,22 @@ PetscErrorCode PetscFVSetSpatialDimension(PetscFV fvm, PetscInt dim) {
 }
 
 /*@
-  PetscFVGetSpatialDimension - Get the spatial dimension
+  PetscFVGetSpatialDimension - Get the spatial dimension of a `PetscFV`
 
   Logically collective on fvm
 
   Input Parameter:
-. fvm - the PetscFV object
+. fvm - the `PetscFV` object
 
   Output Parameter:
 . dim - The spatial dimension
 
   Level: intermediate
 
-.seealso: `PetscFVSetSpatialDimension()`
+.seealso: `PetscFV`, `PetscFVSetSpatialDimension()`
 @*/
-PetscErrorCode PetscFVGetSpatialDimension(PetscFV fvm, PetscInt *dim) {
+PetscErrorCode PetscFVGetSpatialDimension(PetscFV fvm, PetscInt *dim)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fvm, PETSCFV_CLASSID, 1);
   PetscValidIntPointer(dim, 2);
@@ -1291,19 +1370,20 @@ PetscErrorCode PetscFVGetSpatialDimension(PetscFV fvm, PetscInt *dim) {
 }
 
 /*@
-  PetscFVSetComputeGradients - Toggle computation of cell gradients
+ PetscFVSetComputeGradients - Toggle computation of cell gradients on a `PetscFV`
 
   Logically collective on fvm
 
   Input Parameters:
-+ fvm - the PetscFV object
++ fvm - the `PetscFV` object
 - computeGradients - Flag to compute cell gradients
 
   Level: intermediate
 
-.seealso: `PetscFVGetComputeGradients()`
+.seealso: `PetscFV`, `PetscFVGetComputeGradients()`
 @*/
-PetscErrorCode PetscFVSetComputeGradients(PetscFV fvm, PetscBool computeGradients) {
+PetscErrorCode PetscFVSetComputeGradients(PetscFV fvm, PetscBool computeGradients)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fvm, PETSCFV_CLASSID, 1);
   fvm->computeGradients = computeGradients;
@@ -1311,21 +1391,22 @@ PetscErrorCode PetscFVSetComputeGradients(PetscFV fvm, PetscBool computeGradient
 }
 
 /*@
-  PetscFVGetComputeGradients - Return flag for computation of cell gradients
+  PetscFVGetComputeGradients - Return flag for computation of cell gradients on a `PetscFV`
 
   Not collective
 
   Input Parameter:
-. fvm - the PetscFV object
+. fvm - the `PetscFV` object
 
   Output Parameter:
 . computeGradients - Flag to compute cell gradients
 
   Level: intermediate
 
-.seealso: `PetscFVSetComputeGradients()`
+.seealso: `PetscFV`, `PetscFVSetComputeGradients()`
 @*/
-PetscErrorCode PetscFVGetComputeGradients(PetscFV fvm, PetscBool *computeGradients) {
+PetscErrorCode PetscFVGetComputeGradients(PetscFV fvm, PetscBool *computeGradients)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fvm, PETSCFV_CLASSID, 1);
   PetscValidBoolPointer(computeGradients, 2);
@@ -1334,19 +1415,20 @@ PetscErrorCode PetscFVGetComputeGradients(PetscFV fvm, PetscBool *computeGradien
 }
 
 /*@
-  PetscFVSetQuadrature - Set the quadrature object
+  PetscFVSetQuadrature - Set the `PetscQuadrature` object for a `PetscFV`
 
   Logically collective on fvm
 
   Input Parameters:
-+ fvm - the PetscFV object
-- q - The PetscQuadrature
++ fvm - the `PetscFV` object
+- q - The `PetscQuadrature`
 
   Level: intermediate
 
-.seealso: `PetscFVGetQuadrature()`
+.seealso: `PetscQuadrature`, `PetscFV`, `PetscFVGetQuadrature()`
 @*/
-PetscErrorCode PetscFVSetQuadrature(PetscFV fvm, PetscQuadrature q) {
+PetscErrorCode PetscFVSetQuadrature(PetscFV fvm, PetscQuadrature q)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fvm, PETSCFV_CLASSID, 1);
   PetscCall(PetscQuadratureDestroy(&fvm->quadrature));
@@ -1356,21 +1438,22 @@ PetscErrorCode PetscFVSetQuadrature(PetscFV fvm, PetscQuadrature q) {
 }
 
 /*@
-  PetscFVGetQuadrature - Get the quadrature object
+  PetscFVGetQuadrature - Get the `PetscQuadrature` from a `PetscFV`
 
   Not collective
 
   Input Parameter:
-. fvm - the PetscFV object
+. fvm - the `PetscFV` object
 
   Output Parameter:
-. lim - The PetscQuadrature
+. lim - The `PetscQuadrature`
 
   Level: intermediate
 
-.seealso: `PetscFVSetQuadrature()`
+.seealso: `PetscQuadrature`, `PetscFV`, `PetscFVSetQuadrature()`
 @*/
-PetscErrorCode PetscFVGetQuadrature(PetscFV fvm, PetscQuadrature *q) {
+PetscErrorCode PetscFVGetQuadrature(PetscFV fvm, PetscQuadrature *q)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fvm, PETSCFV_CLASSID, 1);
   PetscValidPointer(q, 2);
@@ -1389,23 +1472,25 @@ PetscErrorCode PetscFVGetQuadrature(PetscFV fvm, PetscQuadrature *q) {
 }
 
 /*@
-  PetscFVGetDualSpace - Returns the PetscDualSpace used to define the inner product
+  PetscFVGetDualSpace - Returns the `PetscDualSpace` used to define the inner product on a `PetscFV`
 
   Not collective
 
   Input Parameter:
-. fvm - The PetscFV object
+. fvm - The `PetscFV` object
 
   Output Parameter:
 . sp - The PetscDualSpace object
 
-  Note: A simple dual space is provided automatically, and the user typically will not need to override it.
-
   Level: intermediate
 
-.seealso: `PetscFVCreate()`
+  Developer Note:
+  There is overlap between the methods of `PetscFE` and `PetscFV`, they should probably share a common parent class
+
+.seealso: `PetscDualSpace`, `PetscFV`, `PetscFVCreate()`
 @*/
-PetscErrorCode PetscFVGetDualSpace(PetscFV fvm, PetscDualSpace *sp) {
+PetscErrorCode PetscFVGetDualSpace(PetscFV fvm, PetscDualSpace *sp)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fvm, PETSCFV_CLASSID, 1);
   PetscValidPointer(sp, 2);
@@ -1442,21 +1527,23 @@ PetscErrorCode PetscFVGetDualSpace(PetscFV fvm, PetscDualSpace *sp) {
 }
 
 /*@
-  PetscFVSetDualSpace - Sets the PetscDualSpace used to define the inner product
+  PetscFVSetDualSpace - Sets the `PetscDualSpace` used to define the inner product
 
   Not collective
 
   Input Parameters:
-+ fvm - The PetscFV object
-- sp  - The PetscDualSpace object
++ fvm - The `PetscFV` object
+- sp  - The `PetscDualSpace` object
 
   Level: intermediate
 
-  Note: A simple dual space is provided automatically, and the user typically will not need to override it.
+  Note:
+  A simple dual space is provided automatically, and the user typically will not need to override it.
 
-.seealso: `PetscFVCreate()`
+.seealso: `PetscDualSpace`, `PetscFV`, `PetscFVCreate()`
 @*/
-PetscErrorCode PetscFVSetDualSpace(PetscFV fvm, PetscDualSpace sp) {
+PetscErrorCode PetscFVSetDualSpace(PetscFV fvm, PetscDualSpace sp)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fvm, PETSCFV_CLASSID, 1);
   PetscValidHeaderSpecific(sp, PETSCDUALSPACE_CLASSID, 2);
@@ -1472,21 +1559,24 @@ PetscErrorCode PetscFVSetDualSpace(PetscFV fvm, PetscDualSpace sp) {
   Not collective
 
   Input Parameter:
-. fvm - The PetscFV object
+. fvm - The `PetscFV` object
 
   Output Parameter:
 . T - The basis function values and derivatives at quadrature points
 
-  Note:
-$ T->T[0] = B[(p*pdim + i)*Nc + c] is the value at point p for basis function i and component c
-$ T->T[1] = D[((p*pdim + i)*Nc + c)*dim + d] is the derivative value at point p for basis function i, component c, in direction d
-$ T->T[2] = H[(((p*pdim + i)*Nc + c)*dim + d)*dim + e] is the value at point p for basis function i, component c, in directions d and e
-
   Level: intermediate
 
-.seealso: `PetscFEGetCellTabulation()`, `PetscFVCreateTabulation()`, `PetscFVGetQuadrature()`, `PetscQuadratureGetData()`
+  Note:
+.vb
+  T->T[0] = B[(p*pdim + i)*Nc + c] is the value at point p for basis function i and component c
+  T->T[1] = D[((p*pdim + i)*Nc + c)*dim + d] is the derivative value at point p for basis function i, component c, in direction d
+  T->T[2] = H[(((p*pdim + i)*Nc + c)*dim + d)*dim + e] is the value at point p for basis function i, component c, in directions d and e
+.ve
+
+.seealso: `PetscFV`, `PetscTabulation`, `PetscFEGetCellTabulation()`, `PetscFVCreateTabulation()`, `PetscFVGetQuadrature()`, `PetscQuadratureGetData()`
 @*/
-PetscErrorCode PetscFVGetCellTabulation(PetscFV fvm, PetscTabulation *T) {
+PetscErrorCode PetscFVGetCellTabulation(PetscFV fvm, PetscTabulation *T)
+{
   PetscInt         npoints;
   const PetscReal *points;
 
@@ -1505,7 +1595,7 @@ PetscErrorCode PetscFVGetCellTabulation(PetscFV fvm, PetscTabulation *T) {
   Not collective
 
   Input Parameters:
-+ fvm     - The PetscFV object
++ fvm     - The `PetscFV` object
 . nrepl   - The number of replicas
 . npoints - The number of tabulation points in a replica
 . points  - The tabulation point coordinates
@@ -1514,16 +1604,19 @@ PetscErrorCode PetscFVGetCellTabulation(PetscFV fvm, PetscTabulation *T) {
   Output Parameter:
 . T - The basis function values and derivative at tabulation points
 
-  Note:
-$ T->T[0] = B[(p*pdim + i)*Nc + c] is the value at point p for basis function i and component c
-$ T->T[1] = D[((p*pdim + i)*Nc + c)*dim + d] is the derivative value at point p for basis function i, component c, in direction d
-$ T->T[2] = H[(((p*pdim + i)*Nc + c)*dim + d)*dim + e] is the value at point p for basis function i, component c, in directions d and e
-
   Level: intermediate
 
-.seealso: `PetscFECreateTabulation()`, `PetscTabulationDestroy()`, `PetscFEGetCellTabulation()`
+  Note:
+.vb
+  T->T[0] = B[(p*pdim + i)*Nc + c] is the value at point p for basis function i and component c
+  T->T[1] = D[((p*pdim + i)*Nc + c)*dim + d] is the derivative value at point p for basis function i, component c, in direction d
+  T->T[2] = H[(((p*pdim + i)*Nc + c)*dim + d)*dim + e] is the value at point p for basis function i, component c, in directions d and e
+.ve
+
+.seealso: `PetscFV`, `PetscTabulation`, `PetscFECreateTabulation()`, `PetscTabulationDestroy()`, `PetscFEGetCellTabulation()`
 @*/
-PetscErrorCode PetscFVCreateTabulation(PetscFV fvm, PetscInt nrepl, PetscInt npoints, const PetscReal points[], PetscInt K, PetscTabulation *T) {
+PetscErrorCode PetscFVCreateTabulation(PetscFV fvm, PetscInt nrepl, PetscInt npoints, const PetscReal points[], PetscInt K, PetscTabulation *T)
+{
   PetscInt pdim = 1; /* Dimension of approximation space P */
   PetscInt cdim;     /* Spatial dimension */
   PetscInt Nc;       /* Field components */
@@ -1572,15 +1665,16 @@ PetscErrorCode PetscFVCreateTabulation(PetscFV fvm, PetscInt nrepl, PetscInt npo
   PetscFVComputeGradient - Compute the gradient reconstruction matrix for a given cell
 
   Input Parameters:
-+ fvm      - The PetscFV object
++ fvm      - The `PetscFV` object
 . numFaces - The number of cell faces which are not constrained
 - dx       - The vector from the cell centroid to the neighboring cell centroid for each face
 
   Level: advanced
 
-.seealso: `PetscFVCreate()`
+.seealso: `PetscFV`, `PetscFVCreate()`
 @*/
-PetscErrorCode PetscFVComputeGradient(PetscFV fvm, PetscInt numFaces, PetscScalar dx[], PetscScalar grad[]) {
+PetscErrorCode PetscFVComputeGradient(PetscFV fvm, PetscInt numFaces, PetscScalar dx[], PetscScalar grad[])
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fvm, PETSCFV_CLASSID, 1);
   PetscTryTypeMethod(fvm, computegradient, numFaces, dx, grad);
@@ -1593,8 +1687,8 @@ PetscErrorCode PetscFVComputeGradient(PetscFV fvm, PetscInt numFaces, PetscScala
   Not collective
 
   Input Parameters:
-+ fvm          - The PetscFV object for the field being integrated
-. prob         - The PetscDS specifing the discretizations and continuum functions
++ fvm          - The `PetscFV` object for the field being integrated
+. prob         - The `PetscDS` specifing the discretizations and continuum functions
 . field        - The field being integrated
 . Nf           - The number of faces in the chunk
 . fgeom        - The face geometry for each face in the chunk
@@ -1608,9 +1702,10 @@ PetscErrorCode PetscFVComputeGradient(PetscFV fvm, PetscInt numFaces, PetscScala
 
   Level: developer
 
-.seealso: `PetscFVCreate()`
+.seealso: `PetscFV`, `PetscDS`, `PetscFVFaceGeom`, `PetscFVCreate()`
 @*/
-PetscErrorCode PetscFVIntegrateRHSFunction(PetscFV fvm, PetscDS prob, PetscInt field, PetscInt Nf, PetscFVFaceGeom *fgeom, PetscReal *neighborVol, PetscScalar uL[], PetscScalar uR[], PetscScalar fluxL[], PetscScalar fluxR[]) {
+PetscErrorCode PetscFVIntegrateRHSFunction(PetscFV fvm, PetscDS prob, PetscInt field, PetscInt Nf, PetscFVFaceGeom *fgeom, PetscReal *neighborVol, PetscScalar uL[], PetscScalar uR[], PetscScalar fluxL[], PetscScalar fluxR[])
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fvm, PETSCFV_CLASSID, 1);
   PetscTryTypeMethod(fvm, integraterhsfunction, prob, field, Nf, fgeom, neighborVol, uL, uR, fluxL, fluxR);
@@ -1618,21 +1713,22 @@ PetscErrorCode PetscFVIntegrateRHSFunction(PetscFV fvm, PetscDS prob, PetscInt f
 }
 
 /*@
-  PetscFVRefine - Create a "refined" PetscFV object that refines the reference cell into smaller copies. This is typically used
+  PetscFVRefine - Create a "refined" `PetscFV` object that refines the reference cell into smaller copies. This is typically used
   to precondition a higher order method with a lower order method on a refined mesh having the same number of dofs (but more
   sparsity). It is also used to create an interpolation between regularly refined meshes.
 
   Input Parameter:
-. fv - The initial PetscFV
+. fv - The initial `PetscFV`
 
   Output Parameter:
-. fvRef - The refined PetscFV
+. fvRef - The refined `PetscFV`
 
   Level: advanced
 
-.seealso: `PetscFVType`, `PetscFVCreate()`, `PetscFVSetType()`
+.seealso: `PetscFV`, `PetscFVType`, `PetscFVCreate()`, `PetscFVSetType()`
 @*/
-PetscErrorCode PetscFVRefine(PetscFV fv, PetscFV *fvRef) {
+PetscErrorCode PetscFVRefine(PetscFV fv, PetscFV *fvRef)
+{
   PetscDualSpace  Q, Qref;
   DM              K, Kref;
   PetscQuadrature q, qref;
@@ -1689,7 +1785,8 @@ PetscErrorCode PetscFVRefine(PetscFV fv, PetscFV *fvRef) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscFVDestroy_Upwind(PetscFV fvm) {
+static PetscErrorCode PetscFVDestroy_Upwind(PetscFV fvm)
+{
   PetscFV_Upwind *b = (PetscFV_Upwind *)fvm->data;
 
   PetscFunctionBegin;
@@ -1697,7 +1794,8 @@ static PetscErrorCode PetscFVDestroy_Upwind(PetscFV fvm) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscFVView_Upwind_Ascii(PetscFV fv, PetscViewer viewer) {
+static PetscErrorCode PetscFVView_Upwind_Ascii(PetscFV fv, PetscViewer viewer)
+{
   PetscInt          Nc, c;
   PetscViewerFormat format;
 
@@ -1712,7 +1810,8 @@ static PetscErrorCode PetscFVView_Upwind_Ascii(PetscFV fv, PetscViewer viewer) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscFVView_Upwind(PetscFV fv, PetscViewer viewer) {
+static PetscErrorCode PetscFVView_Upwind(PetscFV fv, PetscViewer viewer)
+{
   PetscBool iascii;
 
   PetscFunctionBegin;
@@ -1723,7 +1822,8 @@ static PetscErrorCode PetscFVView_Upwind(PetscFV fv, PetscViewer viewer) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscFVSetUp_Upwind(PetscFV fvm) {
+static PetscErrorCode PetscFVSetUp_Upwind(PetscFV fvm)
+{
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
@@ -1732,7 +1832,8 @@ static PetscErrorCode PetscFVSetUp_Upwind(PetscFV fvm) {
   neighborVol[f*2+0] contains the left  geom
   neighborVol[f*2+1] contains the right geom
 */
-static PetscErrorCode PetscFVIntegrateRHSFunction_Upwind(PetscFV fvm, PetscDS prob, PetscInt field, PetscInt Nf, PetscFVFaceGeom *fgeom, PetscReal *neighborVol, PetscScalar uL[], PetscScalar uR[], PetscScalar fluxL[], PetscScalar fluxR[]) {
+static PetscErrorCode PetscFVIntegrateRHSFunction_Upwind(PetscFV fvm, PetscDS prob, PetscInt field, PetscInt Nf, PetscFVFaceGeom *fgeom, PetscReal *neighborVol, PetscScalar uL[], PetscScalar uR[], PetscScalar fluxL[], PetscScalar fluxR[])
+{
   void (*riemann)(PetscInt, PetscInt, const PetscReal[], const PetscReal[], const PetscScalar[], const PetscScalar[], PetscInt, const PetscScalar[], PetscScalar[], void *);
   void              *rctx;
   PetscScalar       *flux = fvm->fluxWork;
@@ -1758,7 +1859,8 @@ static PetscErrorCode PetscFVIntegrateRHSFunction_Upwind(PetscFV fvm, PetscDS pr
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscFVInitialize_Upwind(PetscFV fvm) {
+static PetscErrorCode PetscFVInitialize_Upwind(PetscFV fvm)
+{
   PetscFunctionBegin;
   fvm->ops->setfromoptions       = NULL;
   fvm->ops->setup                = PetscFVSetUp_Upwind;
@@ -1769,19 +1871,20 @@ static PetscErrorCode PetscFVInitialize_Upwind(PetscFV fvm) {
 }
 
 /*MC
-  PETSCFVUPWIND = "upwind" - A PetscFV object
+  PETSCFVUPWIND = "upwind" - A `PetscFV` implementation
 
   Level: intermediate
 
-.seealso: `PetscFVType`, `PetscFVCreate()`, `PetscFVSetType()`
+.seealso: `PetscFV`, `PetscFVType`, `PetscFVCreate()`, `PetscFVSetType()`
 M*/
 
-PETSC_EXTERN PetscErrorCode PetscFVCreate_Upwind(PetscFV fvm) {
+PETSC_EXTERN PetscErrorCode PetscFVCreate_Upwind(PetscFV fvm)
+{
   PetscFV_Upwind *b;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fvm, PETSCFV_CLASSID, 1);
-  PetscCall(PetscNewLog(fvm, &b));
+  PetscCall(PetscNew(&b));
   fvm->data = b;
 
   PetscCall(PetscFVInitialize_Upwind(fvm));
@@ -1790,7 +1893,8 @@ PETSC_EXTERN PetscErrorCode PetscFVCreate_Upwind(PetscFV fvm) {
 
 #include <petscblaslapack.h>
 
-static PetscErrorCode PetscFVDestroy_LeastSquares(PetscFV fvm) {
+static PetscErrorCode PetscFVDestroy_LeastSquares(PetscFV fvm)
+{
   PetscFV_LeastSquares *ls = (PetscFV_LeastSquares *)fvm->data;
 
   PetscFunctionBegin;
@@ -1800,7 +1904,8 @@ static PetscErrorCode PetscFVDestroy_LeastSquares(PetscFV fvm) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscFVView_LeastSquares_Ascii(PetscFV fv, PetscViewer viewer) {
+static PetscErrorCode PetscFVView_LeastSquares_Ascii(PetscFV fv, PetscViewer viewer)
+{
   PetscInt          Nc, c;
   PetscViewerFormat format;
 
@@ -1815,7 +1920,8 @@ static PetscErrorCode PetscFVView_LeastSquares_Ascii(PetscFV fv, PetscViewer vie
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscFVView_LeastSquares(PetscFV fv, PetscViewer viewer) {
+static PetscErrorCode PetscFVView_LeastSquares(PetscFV fv, PetscViewer viewer)
+{
   PetscBool iascii;
 
   PetscFunctionBegin;
@@ -1826,13 +1932,15 @@ static PetscErrorCode PetscFVView_LeastSquares(PetscFV fv, PetscViewer viewer) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscFVSetUp_LeastSquares(PetscFV fvm) {
+static PetscErrorCode PetscFVSetUp_LeastSquares(PetscFV fvm)
+{
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
 
 /* Overwrites A. Can only handle full-rank problems with m>=n */
-static PetscErrorCode PetscFVLeastSquaresPseudoInverse_Static(PetscInt m, PetscInt mstride, PetscInt n, PetscScalar *A, PetscScalar *Ainv, PetscScalar *tau, PetscInt worksize, PetscScalar *work) {
+static PetscErrorCode PetscFVLeastSquaresPseudoInverse_Static(PetscInt m, PetscInt mstride, PetscInt n, PetscScalar *A, PetscScalar *Ainv, PetscScalar *tau, PetscInt worksize, PetscScalar *work)
+{
   PetscBool    debug = PETSC_FALSE;
   PetscBLASInt M, N, K, lda, ldb, ldwork, info;
   PetscScalar *R, *Q, *Aback, Alpha;
@@ -1879,7 +1987,8 @@ static PetscErrorCode PetscFVLeastSquaresPseudoInverse_Static(PetscInt m, PetscI
 }
 
 /* Overwrites A. Can handle degenerate problems and m<n. */
-static PetscErrorCode PetscFVLeastSquaresPseudoInverseSVD_Static(PetscInt m, PetscInt mstride, PetscInt n, PetscScalar *A, PetscScalar *Ainv, PetscScalar *tau, PetscInt worksize, PetscScalar *work) {
+static PetscErrorCode PetscFVLeastSquaresPseudoInverseSVD_Static(PetscInt m, PetscInt mstride, PetscInt n, PetscScalar *A, PetscScalar *Ainv, PetscScalar *tau, PetscInt worksize, PetscScalar *work)
+{
   PetscScalar *Brhs;
   PetscScalar *tmpwork;
   PetscReal    rcond;
@@ -1962,15 +2071,16 @@ static PetscErrorCode PetscFVLeastSquaresDebugCell_Static(PetscFV fvm, PetscInt 
   PetscFVComputeGradient - Compute the gradient reconstruction matrix for a given cell
 
   Input Parameters:
-+ fvm      - The PetscFV object
++ fvm      - The `PetscFV` object
 . numFaces - The number of cell faces which are not constrained
 . dx       - The vector from the cell centroid to the neighboring cell centroid for each face
 
   Level: developer
 
-.seealso: `PetscFVCreate()`
+.seealso: `PetscFV`, `PetscFVCreate()`
 */
-static PetscErrorCode PetscFVComputeGradient_LeastSquares(PetscFV fvm, PetscInt numFaces, const PetscScalar dx[], PetscScalar grad[]) {
+static PetscErrorCode PetscFVComputeGradient_LeastSquares(PetscFV fvm, PetscInt numFaces, const PetscScalar dx[], PetscScalar grad[])
+{
   PetscFV_LeastSquares *ls       = (PetscFV_LeastSquares *)fvm->data;
   const PetscBool       useSVD   = PETSC_TRUE;
   const PetscInt        maxFaces = ls->maxFaces;
@@ -2007,7 +2117,8 @@ static PetscErrorCode PetscFVComputeGradient_LeastSquares(PetscFV fvm, PetscInt 
   neighborVol[f*2+0] contains the left  geom
   neighborVol[f*2+1] contains the right geom
 */
-static PetscErrorCode PetscFVIntegrateRHSFunction_LeastSquares(PetscFV fvm, PetscDS prob, PetscInt field, PetscInt Nf, PetscFVFaceGeom *fgeom, PetscReal *neighborVol, PetscScalar uL[], PetscScalar uR[], PetscScalar fluxL[], PetscScalar fluxR[]) {
+static PetscErrorCode PetscFVIntegrateRHSFunction_LeastSquares(PetscFV fvm, PetscDS prob, PetscInt field, PetscInt Nf, PetscFVFaceGeom *fgeom, PetscReal *neighborVol, PetscScalar uL[], PetscScalar uR[], PetscScalar fluxL[], PetscScalar fluxR[])
+{
   void (*riemann)(PetscInt, PetscInt, const PetscReal[], const PetscReal[], const PetscScalar[], const PetscScalar[], PetscInt, const PetscScalar[], PetscScalar[], void *);
   void              *rctx;
   PetscScalar       *flux = fvm->fluxWork;
@@ -2033,7 +2144,8 @@ static PetscErrorCode PetscFVIntegrateRHSFunction_LeastSquares(PetscFV fvm, Pets
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PetscFVLeastSquaresSetMaxFaces_LS(PetscFV fvm, PetscInt maxFaces) {
+static PetscErrorCode PetscFVLeastSquaresSetMaxFaces_LS(PetscFV fvm, PetscInt maxFaces)
+{
   PetscFV_LeastSquares *ls = (PetscFV_LeastSquares *)fvm->data;
   PetscInt              dim, m, n, nrhs, minmn, maxmn;
 
@@ -2052,7 +2164,8 @@ static PetscErrorCode PetscFVLeastSquaresSetMaxFaces_LS(PetscFV fvm, PetscInt ma
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscFVInitialize_LeastSquares(PetscFV fvm) {
+PetscErrorCode PetscFVInitialize_LeastSquares(PetscFV fvm)
+{
   PetscFunctionBegin;
   fvm->ops->setfromoptions       = NULL;
   fvm->ops->setup                = PetscFVSetUp_LeastSquares;
@@ -2064,19 +2177,20 @@ PetscErrorCode PetscFVInitialize_LeastSquares(PetscFV fvm) {
 }
 
 /*MC
-  PETSCFVLEASTSQUARES = "leastsquares" - A PetscFV object
+  PETSCFVLEASTSQUARES = "leastsquares" - A `PetscFV` implementation
 
   Level: intermediate
 
-.seealso: `PetscFVType`, `PetscFVCreate()`, `PetscFVSetType()`
+.seealso: `PetscFV`, `PetscFVType`, `PetscFVCreate()`, `PetscFVSetType()`
 M*/
 
-PETSC_EXTERN PetscErrorCode PetscFVCreate_LeastSquares(PetscFV fvm) {
+PETSC_EXTERN PetscErrorCode PetscFVCreate_LeastSquares(PetscFV fvm)
+{
   PetscFV_LeastSquares *ls;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fvm, PETSCFV_CLASSID, 1);
-  PetscCall(PetscNewLog(fvm, &ls));
+  PetscCall(PetscNew(&ls));
   fvm->data = ls;
 
   ls->maxFaces = -1;
@@ -2098,14 +2212,15 @@ PETSC_EXTERN PetscErrorCode PetscFVCreate_LeastSquares(PetscFV fvm) {
   Not collective
 
   Input parameters:
-+ fvm      - The PetscFV object
++ fvm      - The `PetscFV` object
 - maxFaces - The maximum number of cell faces
 
   Level: intermediate
 
-.seealso: `PetscFVCreate()`, `PETSCFVLEASTSQUARES`
+.seealso: `PetscFV`, `PetscFVCreate()`, `PETSCFVLEASTSQUARES`, `PetscFVComputeGradient()`
 @*/
-PetscErrorCode PetscFVLeastSquaresSetMaxFaces(PetscFV fvm, PetscInt maxFaces) {
+PetscErrorCode PetscFVLeastSquaresSetMaxFaces(PetscFV fvm, PetscInt maxFaces)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fvm, PETSCFV_CLASSID, 1);
   PetscTryMethod(fvm, "PetscFVLeastSquaresSetMaxFaces_C", (PetscFV, PetscInt), (fvm, maxFaces));

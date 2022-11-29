@@ -8,7 +8,8 @@ static char help[] = "Tests DMSwarm\n\n";
 PETSC_EXTERN PetscErrorCode DMSwarmCollect_General(DM, PetscErrorCode (*)(DM, void *, PetscInt *, PetscInt **), size_t, void *, PetscInt *);
 PETSC_EXTERN PetscErrorCode DMSwarmCollect_DMDABoundingBox(DM, PetscInt *);
 
-PetscErrorCode ex1_1(void) {
+PetscErrorCode ex1_1(void)
+{
   DM          dms;
   Vec         x;
   PetscMPIInt rank, size;
@@ -17,7 +18,7 @@ PetscErrorCode ex1_1(void) {
   PetscFunctionBegin;
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
-  PetscCheck(!(size > 1) || !(size != 4), PETSC_COMM_WORLD, PETSC_ERR_SUP, "Must be run wuth 4 MPI ranks");
+  PetscCheck(!(size > 1) || !(size != 4), PETSC_COMM_WORLD, PETSC_ERR_SUP, "Must be run with 4 MPI ranks");
 
   PetscCall(DMCreate(PETSC_COMM_WORLD, &dms));
   PetscCall(DMSetType(dms, DMSWARM));
@@ -87,7 +88,8 @@ PetscErrorCode ex1_1(void) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode ex1_2(void) {
+PetscErrorCode ex1_2(void)
+{
   DM          dms;
   Vec         x;
   PetscMPIInt rank, size;
@@ -169,7 +171,8 @@ PetscErrorCode ex1_2(void) {
 /*
  splot "c-rank0.gp","c-rank1.gp","c-rank2.gp","c-rank3.gp"
 */
-PetscErrorCode ex1_3(void) {
+PetscErrorCode ex1_3(void)
+{
   DM          dms;
   PetscMPIInt rank, size;
   PetscInt    is, js, ni, nj, overlap;
@@ -287,7 +290,8 @@ typedef struct {
   PetscReal radius;
 } CollectZoneCtx;
 
-PetscErrorCode collect_zone(DM dm, void *ctx, PetscInt *nfound, PetscInt **foundlist) {
+PetscErrorCode collect_zone(DM dm, void *ctx, PetscInt *nfound, PetscInt **foundlist)
+{
   CollectZoneCtx *zone = (CollectZoneCtx *)ctx;
   PetscInt        p, npoints;
   PetscReal      *array_x, *array_y, r2;
@@ -330,7 +334,8 @@ PetscErrorCode collect_zone(DM dm, void *ctx, PetscInt *nfound, PetscInt **found
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode ex1_4(void) {
+PetscErrorCode ex1_4(void)
+{
   DM              dms;
   PetscMPIInt     rank, size;
   PetscInt        is, js, ni, nj, overlap, nn;
@@ -471,7 +476,8 @@ PetscErrorCode ex1_4(void) {
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscInt test_mode = 4;
 
   PetscFunctionBeginUser;

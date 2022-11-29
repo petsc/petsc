@@ -17,7 +17,8 @@
   Output Parameters:
   stash    - the newly created stash
 */
-PetscErrorCode VecStashCreate_Private(MPI_Comm comm, PetscInt bs, VecStash *stash) {
+PetscErrorCode VecStashCreate_Private(MPI_Comm comm, PetscInt bs, VecStash *stash)
+{
   PetscInt  max, *opt, nopt;
   PetscBool flg;
 
@@ -71,7 +72,8 @@ PetscErrorCode VecStashCreate_Private(MPI_Comm comm, PetscInt bs, VecStash *stas
 /*
    VecStashDestroy_Private - Destroy the stash
 */
-PetscErrorCode VecStashDestroy_Private(VecStash *stash) {
+PetscErrorCode VecStashDestroy_Private(VecStash *stash)
+{
   PetscFunctionBegin;
   PetscCall(PetscFree2(stash->array, stash->idx));
   PetscCall(PetscFree(stash->bowners));
@@ -86,7 +88,8 @@ PetscErrorCode VecStashDestroy_Private(VecStash *stash) {
    for the stash. It also keeps track of the current memory usage
    so that the same value can be used the next time through.
 */
-PetscErrorCode VecStashScatterEnd_Private(VecStash *stash) {
+PetscErrorCode VecStashScatterEnd_Private(VecStash *stash)
+{
   PetscInt    nsends = stash->nsends, oldnmax;
   MPI_Status *send_status;
 
@@ -132,7 +135,8 @@ PetscErrorCode VecStashScatterEnd_Private(VecStash *stash) {
    reallocs - the number of additional mallocs incurred.
 
 */
-PetscErrorCode VecStashGetInfo_Private(VecStash *stash, PetscInt *nstash, PetscInt *reallocs) {
+PetscErrorCode VecStashGetInfo_Private(VecStash *stash, PetscInt *nstash, PetscInt *reallocs)
+{
   PetscFunctionBegin;
   if (nstash) *nstash = stash->n * stash->bs;
   if (reallocs) {
@@ -151,7 +155,8 @@ PetscErrorCode VecStashGetInfo_Private(VecStash *stash, PetscInt *nstash, PetscI
             this value is used while allocating memory. It specifies
             the number of vals stored, even with the block-stash
 */
-PetscErrorCode VecStashSetInitialSize_Private(VecStash *stash, PetscInt max) {
+PetscErrorCode VecStashSetInitialSize_Private(VecStash *stash, PetscInt max)
+{
   PetscFunctionBegin;
   stash->umax = max;
   PetscFunctionReturn(0);
@@ -168,7 +173,8 @@ PetscErrorCode VecStashSetInitialSize_Private(VecStash *stash, PetscInt max) {
    Notes:
    This routine doubles the currently used memory.
 */
-PetscErrorCode VecStashExpand_Private(VecStash *stash, PetscInt incr) {
+PetscErrorCode VecStashExpand_Private(VecStash *stash, PetscInt incr)
+{
   PetscInt    *n_idx, newnmax, bs = stash->bs;
   PetscScalar *n_array;
 
@@ -211,7 +217,8 @@ PetscErrorCode VecStashExpand_Private(VecStash *stash, PetscInt incr) {
   ranges specified blocked global indices, and for the regular stash in
   the proper global indices.
 */
-PetscErrorCode VecStashScatterBegin_Private(VecStash *stash, PetscInt *owners) {
+PetscErrorCode VecStashScatterBegin_Private(VecStash *stash, PetscInt *owners)
+{
   PetscMPIInt  size = stash->size, tag1 = stash->tag1, tag2 = stash->tag2;
   PetscInt    *owner, *start, *nprocs, nsends, nreceives;
   PetscInt     nmax, count, *sindices, *rindices, i, j, idx, bs = stash->bs, lastidx;
@@ -320,7 +327,8 @@ PetscErrorCode VecStashScatterBegin_Private(VecStash *stash, PetscInt *owners) {
            1 indicates that the current call successfully received a message, and the
              other output parameters nvals,rows,cols,vals are set appropriately.
 */
-PetscErrorCode VecStashScatterGetMesg_Private(VecStash *stash, PetscMPIInt *nvals, PetscInt **rows, PetscScalar **vals, PetscInt *flg) {
+PetscErrorCode VecStashScatterGetMesg_Private(VecStash *stash, PetscMPIInt *nvals, PetscInt **rows, PetscScalar **vals, PetscInt *flg)
+{
   PetscMPIInt i = 0; /* dummy value so MPI-Uni doesn't think it is not set */
   PetscInt   *flg_v;
   PetscInt    i1, i2, bs = stash->bs;
@@ -364,7 +372,8 @@ PetscErrorCode VecStashScatterGetMesg_Private(VecStash *stash, PetscMPIInt *nval
 /*
  * Sort the stash, removing duplicates (combining as appropriate).
  */
-PetscErrorCode VecStashSortCompress_Private(VecStash *stash) {
+PetscErrorCode VecStashSortCompress_Private(VecStash *stash)
+{
   PetscInt i, j, bs = stash->bs;
 
   PetscFunctionBegin;
@@ -374,9 +383,14 @@ PetscErrorCode VecStashSortCompress_Private(VecStash *stash) {
     for (i = 1, j = 0; i < stash->n; i++) {
       if (stash->idx[i] == stash->idx[j]) {
         switch (stash->insertmode) {
-        case ADD_VALUES: stash->array[j] += stash->array[i]; break;
-        case INSERT_VALUES: stash->array[j] = stash->array[i]; break;
-        default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Insert mode not supported 0x%x", stash->insertmode);
+        case ADD_VALUES:
+          stash->array[j] += stash->array[i];
+          break;
+        case INSERT_VALUES:
+          stash->array[j] = stash->array[i];
+          break;
+        default:
+          SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Insert mode not supported 0x%x", stash->insertmode);
         }
       } else {
         j++;
@@ -404,7 +418,8 @@ PetscErrorCode VecStashSortCompress_Private(VecStash *stash) {
         case INSERT_VALUES:
           for (k = 0; k < bs; k++) arr[j * bs + k] = stash->array[perm[i] * bs + k];
           break;
-        default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Insert mode not supported 0x%x", stash->insertmode);
+        default:
+          SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Insert mode not supported 0x%x", stash->insertmode);
         }
       } else {
         j++;
@@ -419,7 +434,8 @@ PetscErrorCode VecStashSortCompress_Private(VecStash *stash) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode VecStashGetOwnerList_Private(VecStash *stash, PetscLayout map, PetscMPIInt *nowners, PetscMPIInt **owners) {
+PetscErrorCode VecStashGetOwnerList_Private(VecStash *stash, PetscLayout map, PetscMPIInt *nowners, PetscMPIInt **owners)
+{
   PetscInt       i, bs = stash->bs;
   PetscMPIInt    r;
   PetscSegBuffer seg;

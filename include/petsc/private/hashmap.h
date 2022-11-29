@@ -1,9 +1,9 @@
-#if !defined(PETSC_HASHMAP_H)
+#ifndef PETSC_HASHMAP_H
 #define PETSC_HASHMAP_H
 
 #include <petsc/private/hashtable.h>
 
-/* SUBMANSEC = Sys */
+/* SUBMANSEC = PetscH */
 
 /*MC
   PETSC_HASH_MAP - Instantiate a PETSc hash table map type
@@ -22,424 +22,52 @@
 
   Level: developer
 
-.seealso: `PetscHMapT`, `PetscHMapTCreate()`
+  Developer Note:
+    Each time this macro is used to create a new hash map type, the make rule for allmanpages in $PETSC_DIR/makefile should
+    be updated to cause the automatic generation of appropriate manual pages for that type. The manual pages
+    are generated from the templated version of the documentation in include/petsc/private/hashmap.txt.
+
+  References:
+    This code uses the standalone and portable C language khash software https://github.com/attractivechaos/klib
+
+.seealso: `PETSC_HASH_MAP_DECL()`, `PetscHMapI`, `PetscHMapICreate()`, `PetscHMapIJ`,
+`PetscHMapIJCreate()`, `PETSC_HASH_SET()`
 M*/
 
-/*S
-  PetscHMapT - Hash table map
-
-  Synopsis:
-  typedef khash_t(HMapT) *PetscHMapT;
-
-  Level: developer
-
-.seealso: `PETSC_HASH_MAP()`, `PetscHMapTCreate()`
-S*/
-
-/*MC
-  PetscHMapTCreate - Create a hash table
-
-  Synopsis:
-  #include <petsc/private/hashmap.h>
-  PetscErrorCode PetscHMapTCreate(PetscHMapT *ht)
-
-  Output Parameter:
-. ht - The hash table
-
-  Level: developer
-
-.seealso: `PetscHMapTDestroy()`
-M*/
-
-/*MC
-  PetscHMapTDestroy - Destroy a hash table
-
-  Synopsis:
-  #include <petsc/private/hashmap.h>
-  PetscErrorCode PetscHMapTDestroy(PetscHMapT *ht)
-
-  Input Parameter:
-. ht - The hash table
-
-  Level: developer
-
-.seealso: `PetscHMapTCreate()`
-M*/
-
-/*MC
-  PetscHMapTReset - Reset a hash table
-
-  Synopsis:
-  #include <petsc/private/hashmap.h>
-  PetscErrorCode PetscHMapTReset(PetscHMapT ht)
-
-  Input Parameter:
-. ht - The hash table
-
-  Level: developer
-
-.seealso: `PetscHMapTClear()`
-M*/
-
-/*MC
-  PetscHMapTDuplicate - Duplicate a hash table
-
-  Synopsis:
-  #include <petsc/private/hashmap.h>
-  PetscErrorCode PetscHMapTDuplicate(PetscHMapT ht,PetscHMapT *hd)
-
-  Input Parameter:
-. ht - The source hash table
-
-  Output Parameter:
-. ht - The duplicated hash table
-
-  Level: developer
-
-.seealso: `PetscHMapTCreate()`
-M*/
-
-/*MC
-  PetscHMapTClear - Clear a hash table
-
-  Synopsis:
-  #include <petsc/private/hashmap.h>
-  PetscErrorCode PetscHMapTClear(PetscHMapT ht)
-
-  Input Parameter:
-. ht - The hash table
-
-  Level: developer
-
-.seealso: `PetscHMapTReset()`
-M*/
-
-/*MC
-  PetscHMapTResize - Set the number of buckets in a hash table
-
-  Synopsis:
-  #include <petsc/private/hashmap.h>
-  PetscErrorCode PetscHMapTResize(PetscHMapT ht,PetscInt nb)
-
-  Input Parameters:
-+ ht - The hash table
-- nb - The number of buckets
-
-  Level: developer
-
-.seealso: `PetscHMapTCreate()`
-M*/
-
-/*MC
-  PetscHMapTGetSize - Get the number of entries in a hash table
-
-  Synopsis:
-  #include <petsc/private/hashmap.h>
-  PetscErrorCode PetscHMapTGetSize(PetscHMapT ht,PetscInt *n)
-
-  Input Parameter:
-. ht - The hash table
-
-  Output Parameter:
-. n - The number of entries
-
-  Level: developer
-
-.seealso: `PetscHMapTResize()`
-M*/
-
-/*MC
-  PetscHMapTGetCapacity - Get the current size of the array in the hash table
-
-  Synopsis:
-  #include <petsc/private/hashmap.h>
-  PetscErrorCode PetscHMapTGetCapacity(PetscHMapT ht,PetscInt *n)
-
-  Input Parameter:
-. ht - The hash table
-
-  Output Parameter:
-. n - The capacity
-
-  Level: developer
-
-.seealso: `PetscHMapTResize()`, `PetscHMapTGetSize()`
-M*/
-
-/*MC
-  PetscHMapTHas - Query for a key in the hash table
-
-  Synopsis:
-  #include <petsc/private/hashmap.h>
-  PetscErrorCode PetscHMapTHas(PetscHMapT ht,KeyType key,PetscBool *has)
-
-  Input Parameters:
-+ ht  - The hash table
-- key - The key
-
-  Output Parameter:
-. has - Boolean indicating whether key is in the hash table
-
-  Level: developer
-
-.seealso: `PetscHMapTGet()`, `PetscHMapTSet()`, `PetscHMapTFind()`
-M*/
-
-/*MC
-  PetscHMapTGet - Get the value for a key in the hash table
-
-  Synopsis:
-  #include <petsc/private/hashmap.h>
-  PetscErrorCode PetscHMapTGet(PetscHMapT ht,KeyType key,ValType *val)
-
-  Input Parameters:
-+ ht  - The hash table
-- key - The key
-
-  Output Parameter:
-. val - The value
-
-  Level: developer
-
-.seealso: `PetscHMapTSet()`, `PetscHMapTIterGet()`
-M*/
-
-/*MC
-  PetscHMapTSet - Set a (key,value) entry in the hash table
-
-  Synopsis:
-  #include <petsc/private/hashmap.h>
-  PetscErrorCode PetscHMapTSet(PetscHMapT ht,KeyType key,ValType val)
-
-  Input Parameters:
-+ ht  - The hash table
-. key - The key
-- val - The value
-
-  Level: developer
-
-.seealso: `PetscHMapTGet()`, `PetscHMapTIterSet()`
-M*/
-
-/*MC
-  PetscHMapTDel - Remove a key and its value from the hash table
-
-  Synopsis:
-  #include <petsc/private/hashmap.h>
-  PetscErrorCode PetscHMapTDel(PetscHMapT ht,KeyType key)
-
-  Input Parameters:
-+ ht  - The hash table
-- key - The key
-
-  Level: developer
-
-.seealso: `PetscHMapTHas()`, `PetscHMapTIterDel()`
-M*/
-
-/*MC
-  PetscHMapTQuerySet - Query and set a (key,value) entry in the hash table
-
-  Synopsis:
-  #include <petsc/private/hashmap.h>
-  PetscErrorCode PetscHMapTQuerySet(PetscHMapT ht,KeyType key,ValType val,PetscBool *missing)
-
-  Input Parameters:
-+ ht  - The hash table
-. key - The key
-- val - The value
-
-  Output Parameter:
-. missing - Boolean indicating whether the key was missing
-
-  Level: developer
-
-.seealso: `PetscHMapTQueryDel()`, `PetscHMapTSet()`
-M*/
-
-/*MC
-  PetscHMapTQueryDel - Query and remove a (key,value) entry from the hash table
-
-  Synopsis:
-  #include <petsc/private/hashmap.h>
-  PetscErrorCode PetscHMapTQueryDel(PetscHMapT ht,KeyType key,PetscBool *present)
-
-  Input Parameters:
-+ ht  - The hash table
-- key - The key
-
-  Output Parameter:
-. present - Boolean indicating whether the key was present
-
-  Level: developer
-
-.seealso: `PetscHMapTQuerySet()`, `PetscHMapTDel()`
-M*/
-
-/*MC
-  PetscHMapTFind - Query for key in the hash table
-
-  Synopsis:
-  #include <petsc/private/hashmap.h>
-  PetscErrorCode PetscHMapTFind(PetscHMapT ht,KeyType key,PetscHashIter *iter,PetscBool *found)
-
-  Input Parameters:
-+ ht  - The hash table
-- key - The key
-
-  Output Parameters:
-+ iter - Iterator referencing the value for key
-- found - Boolean indicating whether the key was present
-
-  Level: developer
-
-.seealso: `PetscHMapTIterGet()`, `PetscHMapTIterDel()`
-M*/
-
-/*MC
-  PetscHMapTPut - Set a key in the hash table
-
-  Synopsis:
-  #include <petsc/private/hashmap.h>
-  PetscErrorCode PetscHMapTPut(PetscHMapT ht,KeyType key,PetscHashIter *iter,PetscBool *missing)
-
-  Input Parameters:
-+ ht  - The hash table
-- key - The key
-
-  Output Parameters:
-+ iter - Iterator referencing the value for key
-- missing - Boolean indicating whether the key was missing
-
-  Level: developer
-
-.seealso: `PetscHMapTIterSet()`, `PetscHMapTQuerySet()`, `PetscHMapTSet()`
-M*/
-
-/*MC
-  PetscHMapTIterGet - Get the value referenced by an iterator in the hash table
-
-  Synopsis:
-  #include <petsc/private/hashmap.h>
-  PetscErrorCode PetscHMapTIterGet(PetscHMapT ht,PetscHashIter iter,ValType *val)
-
-  Input Parameters:
-+ ht   - The hash table
-- iter - The iterator
-
-  Output Parameter:
-. val  - The value
-
-  Level: developer
-
-.seealso: `PetscHMapTFind()`, `PetscHMapTGet()`
-M*/
-
-/*MC
-  PetscHMapTIterSet - Set the value referenced by an iterator in the hash
-
-  Synopsis:
-  #include <petsc/private/hashmap.h>
-  PetscErrorCode PetscHMapTIterSet(PetscHMapT ht,PetscHashIter iter,ValType val)
-
-  Input Parameters:
-+ ht   - The hash table
-. iter - The iterator
-- val  - The value
-
-  Level: developer
-
-.seealso: `PetscHMapTPut()`, `PetscHMapTQuerySet()`, `PetscHMapTSet()`
-M*/
-
-/*MC
-  PetscHMapTIterDel - Remove the (key,value) referenced by an iterator from the hash table
-
-  Synopsis:
-  #include <petsc/private/hashmap.h>
-  PetscErrorCode PetscHMapTIterDel(PetscHMapT ht,PetscHashIter iter)
-
-  Input Parameters:
-+ ht   - The hash table
-- iter - The iterator
-
-  Level: developer
-
-.seealso: `PetscHMapTFind()`, `PetscHMapTQueryDel()`, `PetscHMapTDel()`
-M*/
-
-/*MC
-  PetscHMapTGetKeys - Get all keys from a hash table
-
-  Synopsis:
-  #include <petsc/private/hashmap.h>
-  PetscErrorCode PetscHMapTGetKeys(PetscHMapT ht,PetscInt *off,KeyType array[])
-
-  Input Parameters:
-+ ht    - The hash table
-. off   - Input offset in array (usually zero)
-- array - Array where to put hash table keys into
-
-  Output Parameters:
-+ off   - Output offset in array (output offset = input offset + hash table size)
-- array - Array filled with the hash table keys
-
-  Level: developer
-
-.seealso: `PetscHSetTGetSize()`, `PetscHMapTGetVals()`
-M*/
-
-/*MC
-  PetscHMapTGetVals - Get all values from a hash table
-
-  Synopsis:
-  #include <petsc/private/hashmap.h>
-  PetscErrorCode PetscHMapTGetVals(PetscHMapT ht,PetscInt *off,ValType array[])
-
-  Input Parameters:
-+ ht    - The hash table
-. off   - Input offset in array (usually zero)
-- array - Array where to put hash table values into
-
-  Output Parameters:
-+ off   - Output offset in array (output offset = input offset + hash table size)
-- array - Array filled with the hash table values
-
-  Level: developer
-
-.seealso: `PetscHSetTGetSize()`, `PetscHMapTGetKeys()`
-M*/
-
-/*MC
-  PetscHMapTGetPairs - Get all (key,value) pairs from a hash table
-
-  Synopsis:
-  #include <petsc/private/hashmap.h>
-  PetscErrorCode PetscHMapTGetPairs(PetscHMapT ht,PetscInt *off,KeyType karray[],ValType varray[])
-
-  Input Parameters:
-+ ht    - The hash table
-. off   - Input offset in array (usually zero)
-- karray - Array where to put hash table keys into
-- varray - Array where to put hash table values into
-
-  Output Parameters:
-+ off   - Output offset in array (output offset = input offset + hash table size)
-- karray - Array filled with the hash table keys
-- varray - Array filled with the hash table values
-
-  Level: developer
-
-.seealso: `PetscHSetTGetSize()`, `PetscHMapTGetKeys()`, `PetscHMapTGetVals()`
-M*/
+#define PETSC_HASH_MAP_DECL(HashT, KeyType, ValType) \
+  typedef kh_##HashT##_t                   *Petsc##HashT; \
+  static inline PETSC_UNUSED PetscErrorCode Petsc##HashT##Create(Petsc##HashT *); \
+  static inline PETSC_UNUSED PetscErrorCode Petsc##HashT##CreateWithSize(PetscInt, Petsc##HashT *); \
+  static inline PETSC_UNUSED PetscErrorCode Petsc##HashT##Destroy(Petsc##HashT *); \
+  static inline PETSC_UNUSED PetscErrorCode Petsc##HashT##Reset(Petsc##HashT); \
+  static inline PETSC_UNUSED PetscErrorCode Petsc##HashT##Duplicate(Petsc##HashT, Petsc##HashT *); \
+  static inline PETSC_UNUSED PetscErrorCode Petsc##HashT##Clear(Petsc##HashT); \
+  static inline PETSC_UNUSED PetscErrorCode Petsc##HashT##Resize(Petsc##HashT, PetscInt); \
+  static inline PETSC_UNUSED PetscErrorCode Petsc##HashT##GetSize(Petsc##HashT, PetscInt *); \
+  static inline PETSC_UNUSED PetscErrorCode Petsc##HashT##GetCapacity(Petsc##HashT, PetscInt *); \
+  static inline PETSC_UNUSED PetscErrorCode Petsc##HashT##Has(Petsc##HashT, KeyType, PetscBool *); \
+  static inline PETSC_UNUSED PetscErrorCode Petsc##HashT##Get(Petsc##HashT, KeyType, ValType *); \
+  static inline PETSC_UNUSED PetscErrorCode Petsc##HashT##GetWithDefault(Petsc##HashT, KeyType, ValType, ValType *); \
+  static inline PETSC_UNUSED PetscErrorCode Petsc##HashT##Set(Petsc##HashT, KeyType, ValType); \
+  static inline PETSC_UNUSED PetscErrorCode Petsc##HashT##Del(Petsc##HashT, KeyType); \
+  static inline PETSC_UNUSED PetscErrorCode Petsc##HashT##QuerySet(Petsc##HashT, KeyType, ValType, PetscBool *); \
+  static inline PETSC_UNUSED PetscErrorCode Petsc##HashT##QueryDel(Petsc##HashT, KeyType, PetscBool *); \
+  static inline PETSC_UNUSED PetscErrorCode Petsc##HashT##Find(Petsc##HashT, KeyType, PetscHashIter *, PetscBool *); \
+  static inline PETSC_UNUSED PetscErrorCode Petsc##HashT##Put(Petsc##HashT, KeyType, PetscHashIter *, PetscBool *); \
+  static inline PETSC_UNUSED PetscErrorCode Petsc##HashT##IterGet(Petsc##HashT, PetscHashIter, ValType *); \
+  static inline PETSC_UNUSED PetscErrorCode Petsc##HashT##IterSet(Petsc##HashT, PetscHashIter, ValType); \
+  static inline PETSC_UNUSED PetscErrorCode Petsc##HashT##IterDel(Petsc##HashT, PetscHashIter); \
+  static inline PETSC_UNUSED PetscErrorCode Petsc##HashT##GetKeys(Petsc##HashT, PetscInt *, KeyType[]); \
+  static inline PETSC_UNUSED PetscErrorCode Petsc##HashT##GetVals(Petsc##HashT, PetscInt *, ValType[]); \
+  static inline PETSC_UNUSED PetscErrorCode Petsc##HashT##GetPairs(Petsc##HashT, PetscInt *, KeyType[], ValType[])
 
 #define PETSC_HASH_MAP(HashT, KeyType, ValType, HashFunc, EqualFunc, DefaultValue) \
 \
   KHASH_INIT(HashT, KeyType, ValType, 1, HashFunc, EqualFunc) \
+  PETSC_HASH_MAP_DECL(HashT, KeyType, ValType); \
 \
-  typedef khash_t(HashT) * Petsc##HashT; \
-\
-  static inline PETSC_UNUSED PetscErrorCode Petsc##HashT##Create(Petsc##HashT *ht) { \
+  static inline PETSC_UNUSED PetscErrorCode Petsc##HashT##Create(Petsc##HashT *ht) \
+  { \
     PetscFunctionBegin; \
     PetscValidPointer(ht, 1); \
     *ht = kh_init(HashT); \
@@ -447,7 +75,18 @@ M*/
     PetscFunctionReturn(0); \
   } \
 \
-  static inline PETSC_UNUSED PetscErrorCode Petsc##HashT##Destroy(Petsc##HashT *ht) { \
+  static inline PETSC_UNUSED PetscErrorCode Petsc##HashT##CreateWithSize(PetscInt n, Petsc##HashT *ht) \
+  { \
+    PetscFunctionBegin; \
+    PetscAssert(n >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Hash table size %" PetscInt_FMT " must be >= 0", n); \
+    PetscValidPointer(ht, 2); \
+    PetscCall(Petsc##HashT##Create(ht)); \
+    if (n) PetscCall(Petsc##HashT##Resize(*ht, n)); \
+    PetscFunctionReturn(0); \
+  } \
+\
+  static inline PETSC_UNUSED PetscErrorCode Petsc##HashT##Destroy(Petsc##HashT *ht) \
+  { \
     PetscFunctionBegin; \
     PetscValidPointer(ht, 1); \
     if (!*ht) PetscFunctionReturn(0); \
@@ -456,14 +95,16 @@ M*/
     PetscFunctionReturn(0); \
   } \
 \
-  static inline PETSC_UNUSED PetscErrorCode Petsc##HashT##Reset(Petsc##HashT ht) { \
+  static inline PETSC_UNUSED PetscErrorCode Petsc##HashT##Reset(Petsc##HashT ht) \
+  { \
     PetscFunctionBegin; \
     PetscValidPointer(ht, 1); \
     kh_reset(HashT, ht); \
     PetscFunctionReturn(0); \
   } \
 \
-  static inline PETSC_UNUSED PetscErrorCode Petsc##HashT##Duplicate(Petsc##HashT ht, Petsc##HashT *hd) { \
+  static inline PETSC_UNUSED PetscErrorCode Petsc##HashT##Duplicate(Petsc##HashT ht, Petsc##HashT *hd) \
+  { \
     int     ret; \
     KeyType key; \
     ValType val; \
@@ -482,14 +123,16 @@ M*/
     }) PetscFunctionReturn(0); \
   } \
 \
-  static inline PETSC_UNUSED PetscErrorCode Petsc##HashT##Clear(Petsc##HashT ht) { \
+  static inline PETSC_UNUSED PetscErrorCode Petsc##HashT##Clear(Petsc##HashT ht) \
+  { \
     PetscFunctionBegin; \
     PetscValidPointer(ht, 1); \
     kh_clear(HashT, ht); \
     PetscFunctionReturn(0); \
   } \
 \
-  static inline PETSC_UNUSED PetscErrorCode Petsc##HashT##Resize(Petsc##HashT ht, PetscInt nb) { \
+  static inline PETSC_UNUSED PetscErrorCode Petsc##HashT##Resize(Petsc##HashT ht, PetscInt nb) \
+  { \
     int ret; \
     PetscFunctionBegin; \
     PetscValidPointer(ht, 1); \
@@ -498,7 +141,8 @@ M*/
     PetscFunctionReturn(0); \
   } \
 \
-  static inline PETSC_UNUSED PetscErrorCode Petsc##HashT##GetSize(Petsc##HashT ht, PetscInt *n) { \
+  static inline PETSC_UNUSED PetscErrorCode Petsc##HashT##GetSize(Petsc##HashT ht, PetscInt *n) \
+  { \
     PetscFunctionBegin; \
     PetscValidPointer(ht, 1); \
     PetscValidIntPointer(n, 2); \
@@ -506,7 +150,8 @@ M*/
     PetscFunctionReturn(0); \
   } \
 \
-  static inline PETSC_UNUSED PetscErrorCode Petsc##HashT##GetCapacity(Petsc##HashT ht, PetscInt *n) { \
+  static inline PETSC_UNUSED PetscErrorCode Petsc##HashT##GetCapacity(Petsc##HashT ht, PetscInt *n) \
+  { \
     PetscFunctionBegin; \
     PetscValidPointer(ht, 1); \
     PetscValidIntPointer(n, 2); \
@@ -514,7 +159,8 @@ M*/
     PetscFunctionReturn(0); \
   } \
 \
-  static inline PETSC_UNUSED PetscErrorCode Petsc##HashT##Has(Petsc##HashT ht, KeyType key, PetscBool *has) { \
+  static inline PETSC_UNUSED PetscErrorCode Petsc##HashT##Has(Petsc##HashT ht, KeyType key, PetscBool *has) \
+  { \
     khiter_t iter; \
     PetscFunctionBeginHot; \
     PetscValidPointer(ht, 1); \
@@ -524,7 +170,8 @@ M*/
     PetscFunctionReturn(0); \
   } \
 \
-  static inline PETSC_UNUSED PetscErrorCode Petsc##HashT##Get(Petsc##HashT ht, KeyType key, ValType *val) { \
+  static inline PETSC_UNUSED PetscErrorCode Petsc##HashT##Get(Petsc##HashT ht, KeyType key, ValType *val) \
+  { \
     khiter_t iter; \
     PetscFunctionBeginHot; \
     PetscValidPointer(ht, 1); \
@@ -534,7 +181,25 @@ M*/
     PetscFunctionReturn(0); \
   } \
 \
-  static inline PETSC_UNUSED PetscErrorCode Petsc##HashT##Set(Petsc##HashT ht, KeyType key, ValType val) { \
+  static inline PETSC_UNUSED PetscErrorCode Petsc##HashT##GetWithDefault(Petsc##HashT ht, KeyType key, ValType default_val, ValType *val) \
+  { \
+    PetscHashIter it    = 0; \
+    PetscBool     found = PETSC_FALSE; \
+\
+    PetscFunctionBeginHot; \
+    PetscValidPointer(ht, 1); \
+    PetscValidPointer(val, 4); \
+    PetscCall(Petsc##HashT##Find(ht, key, &it, &found)); \
+    if (found) { \
+      PetscHashIterGetVal(ht, it, *val); \
+    } else { \
+      *val = default_val; \
+    } \
+    PetscFunctionReturn(0); \
+  } \
+\
+  static inline PETSC_UNUSED PetscErrorCode Petsc##HashT##Set(Petsc##HashT ht, KeyType key, ValType val) \
+  { \
     int      ret; \
     khiter_t iter; \
     PetscFunctionBeginHot; \
@@ -545,7 +210,8 @@ M*/
     PetscFunctionReturn(0); \
   } \
 \
-  static inline PETSC_UNUSED PetscErrorCode Petsc##HashT##Del(Petsc##HashT ht, KeyType key) { \
+  static inline PETSC_UNUSED PetscErrorCode Petsc##HashT##Del(Petsc##HashT ht, KeyType key) \
+  { \
     khiter_t iter; \
     PetscFunctionBeginHot; \
     PetscValidPointer(ht, 1); \
@@ -554,7 +220,8 @@ M*/
     PetscFunctionReturn(0); \
   } \
 \
-  static inline PETSC_UNUSED PetscErrorCode Petsc##HashT##QuerySet(Petsc##HashT ht, KeyType key, ValType val, PetscBool *missing) { \
+  static inline PETSC_UNUSED PetscErrorCode Petsc##HashT##QuerySet(Petsc##HashT ht, KeyType key, ValType val, PetscBool *missing) \
+  { \
     int      ret; \
     khiter_t iter; \
     PetscFunctionBeginHot; \
@@ -567,7 +234,8 @@ M*/
     PetscFunctionReturn(0); \
   } \
 \
-  static inline PETSC_UNUSED PetscErrorCode Petsc##HashT##QueryDel(Petsc##HashT ht, KeyType key, PetscBool *present) { \
+  static inline PETSC_UNUSED PetscErrorCode Petsc##HashT##QueryDel(Petsc##HashT ht, KeyType key, PetscBool *present) \
+  { \
     khiter_t iter; \
     PetscFunctionBeginHot; \
     PetscValidPointer(ht, 1); \
@@ -594,7 +262,8 @@ M*/
     PetscFunctionReturn(0); \
   } \
 \
-  static inline PETSC_UNUSED PetscErrorCode Petsc##HashT##Put(Petsc##HashT ht, KeyType key, PetscHashIter *iter, PetscBool *missing) { \
+  static inline PETSC_UNUSED PetscErrorCode Petsc##HashT##Put(Petsc##HashT ht, KeyType key, PetscHashIter *iter, PetscBool *missing) \
+  { \
     int ret; \
     PetscFunctionBeginHot; \
     PetscValidPointer(ht, 1); \
@@ -606,7 +275,8 @@ M*/
     PetscFunctionReturn(0); \
   } \
 \
-  static inline PETSC_UNUSED PetscErrorCode Petsc##HashT##IterGet(Petsc##HashT ht, PetscHashIter iter, ValType *val) { \
+  static inline PETSC_UNUSED PetscErrorCode Petsc##HashT##IterGet(Petsc##HashT ht, PetscHashIter iter, ValType *val) \
+  { \
     PetscFunctionBeginHot; \
     PetscValidPointer(ht, 1); \
     PetscValidPointer(val, 3); \
@@ -614,21 +284,24 @@ M*/
     PetscFunctionReturn(0); \
   } \
 \
-  static inline PETSC_UNUSED PetscErrorCode Petsc##HashT##IterSet(Petsc##HashT ht, PetscHashIter iter, ValType val) { \
+  static inline PETSC_UNUSED PetscErrorCode Petsc##HashT##IterSet(Petsc##HashT ht, PetscHashIter iter, ValType val) \
+  { \
     PetscFunctionBeginHot; \
     PetscValidPointer(ht, 1); \
     if (PetscLikely(iter < kh_end(ht) && kh_exist(ht, iter))) kh_val(ht, iter) = val; \
     PetscFunctionReturn(0); \
   } \
 \
-  static inline PETSC_UNUSED PetscErrorCode Petsc##HashT##IterDel(Petsc##HashT ht, PetscHashIter iter) { \
+  static inline PETSC_UNUSED PetscErrorCode Petsc##HashT##IterDel(Petsc##HashT ht, PetscHashIter iter) \
+  { \
     PetscFunctionBeginHot; \
     PetscValidPointer(ht, 1); \
     if (PetscLikely(iter < kh_end(ht))) kh_del(HashT, ht, iter); \
     PetscFunctionReturn(0); \
   } \
 \
-  static inline PETSC_UNUSED PetscErrorCode Petsc##HashT##GetKeys(Petsc##HashT ht, PetscInt *off, KeyType array[]) { \
+  static inline PETSC_UNUSED PetscErrorCode Petsc##HashT##GetKeys(Petsc##HashT ht, PetscInt *off, KeyType array[]) \
+  { \
     KeyType  key; \
     PetscInt pos; \
     PetscFunctionBegin; \
@@ -640,7 +313,8 @@ M*/
     PetscFunctionReturn(0); \
   } \
 \
-  static inline PETSC_UNUSED PetscErrorCode Petsc##HashT##GetVals(Petsc##HashT ht, PetscInt *off, ValType array[]) { \
+  static inline PETSC_UNUSED PetscErrorCode Petsc##HashT##GetVals(Petsc##HashT ht, PetscInt *off, ValType array[]) \
+  { \
     ValType  val; \
     PetscInt pos; \
     PetscFunctionBegin; \
@@ -652,7 +326,8 @@ M*/
     PetscFunctionReturn(0); \
   } \
 \
-  static inline PETSC_UNUSED PetscErrorCode Petsc##HashT##GetPairs(Petsc##HashT ht, PetscInt *off, KeyType karray[], ValType varray[]) { \
+  static inline PETSC_UNUSED PetscErrorCode Petsc##HashT##GetPairs(Petsc##HashT ht, PetscInt *off, KeyType karray[], ValType varray[]) \
+  { \
     ValType  val; \
     KeyType  key; \
     PetscInt pos; \
@@ -664,6 +339,50 @@ M*/
       karray[pos]   = key; \
       varray[pos++] = val; \
     }) *off = pos; \
+    PetscFunctionReturn(0); \
+  }
+
+#define PETSC_HASH_MAP_EXTENDED_DECL(HashT, KeyType, ValType) static inline PETSC_UNUSED PetscErrorCode Petsc##HashT##SetWithMode(Petsc##HashT, KeyType, ValType, InsertMode)
+
+#define PETSC_HASH_MAP_EXTENDED(HashT, KeyType, ValType, HashFunc, EqualFunc, DefaultValue) \
+  PETSC_HASH_MAP(HashT, KeyType, ValType, HashFunc, EqualFunc, DefaultValue) \
+\
+  PETSC_HASH_MAP_EXTENDED_DECL(HashT, KeyType, ValType); \
+\
+  static inline PETSC_UNUSED PetscErrorCode Petsc##HashT##SetWithMode(Petsc##HashT ht, KeyType key, ValType val, InsertMode mode) \
+  { \
+    PetscHashIter it      = 0; \
+    PetscBool     missing = PETSC_FALSE; \
+\
+    PetscFunctionBeginHot; \
+    PetscValidPointer(ht, 1); \
+    PetscCall(Petsc##HashT##Put(ht, key, &it, &missing)); \
+    if (!missing) { \
+      ValType cur_val; \
+\
+      PetscHashIterGetVal(ht, it, cur_val); \
+      switch (mode) { \
+      case INSERT_VALUES: \
+        break; \
+      case ADD_VALUES: \
+        val += cur_val; \
+        break; \
+      case MAX_VALUES: \
+        val = PetscMax(cur_val, val); \
+        break; \
+      case MIN_VALUES: \
+        val = PetscMin(cur_val, val); \
+        break; \
+      case NOT_SET_VALUES:    /* fallthrough */ \
+      case INSERT_ALL_VALUES: /* fallthrough */ \
+      case ADD_ALL_VALUES:    /* fallthrough */ \
+      case INSERT_BC_VALUES:  /* fallthrough */ \
+      case ADD_BC_VALUES:     /* fallthrough */ \
+      default: \
+        SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Unsupported InsertMode %d", (int)mode); \
+      } \
+    } \
+    PetscCall(Petsc##HashT##IterSet(ht, it, val)); \
     PetscFunctionReturn(0); \
   }
 

@@ -9,21 +9,22 @@
 
 /* relativistic terms */
 #if defined(PETSC_USE_REAL_SINGLE)
-#define SPEED_OF_LIGHT 2.99792458e8F
-#define C_0(v0)        (SPEED_OF_LIGHT / v0) /* needed for relativistic tensor on all architectures */
+  #define SPEED_OF_LIGHT 2.99792458e8F
+  #define C_0(v0)        (SPEED_OF_LIGHT / v0) /* needed for relativistic tensor on all architectures */
 #else
-#define SPEED_OF_LIGHT 2.99792458e8
-#define C_0(v0)        (SPEED_OF_LIGHT / v0) /* needed for relativistic tensor on all architectures */
+  #define SPEED_OF_LIGHT 2.99792458e8
+  #define C_0(v0)        (SPEED_OF_LIGHT / v0) /* needed for relativistic tensor on all architectures */
 #endif
 
 #define PETSC_THREAD_SYNC
 #include "land_tensors.h"
 
 #if defined(PETSC_HAVE_OPENMP)
-#include <omp.h>
+  #include <omp.h>
 #endif
 
-static PetscErrorCode LandauGPUMapsDestroy(void *ptr) {
+static PetscErrorCode LandauGPUMapsDestroy(void *ptr)
+{
   P4estVertexMaps *maps = (P4estVertexMaps *)ptr;
   PetscFunctionBegin;
   // free device data
@@ -47,7 +48,8 @@ static PetscErrorCode LandauGPUMapsDestroy(void *ptr) {
 
   PetscFunctionReturn(0);
 }
-static PetscErrorCode energy_f(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf_dummy, PetscScalar *u, void *actx) {
+static PetscErrorCode energy_f(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf_dummy, PetscScalar *u, void *actx)
+{
   PetscReal v2 = 0;
   PetscFunctionBegin;
   /* compute v^2 / 2 */
@@ -58,7 +60,8 @@ static PetscErrorCode energy_f(PetscInt dim, PetscReal time, const PetscReal x[]
 }
 
 /* needs double */
-static PetscErrorCode gamma_m1_f(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf_dummy, PetscScalar *u, void *actx) {
+static PetscErrorCode gamma_m1_f(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf_dummy, PetscScalar *u, void *actx)
+{
   PetscReal *c2_0_arr = ((PetscReal *)actx);
   double     u2 = 0, c02 = (double)*c2_0_arr, xx;
 
@@ -86,7 +89,8 @@ static PetscErrorCode gamma_m1_f(PetscInt dim, PetscReal time, const PetscReal x
  Output Parameters:
  .  J0acP - Jacobian matrix filled, not created
  */
-static PetscErrorCode LandauFormJacobian_Internal(Vec a_X, Mat JacP, const PetscInt dim, PetscReal shift, void *a_ctx) {
+static PetscErrorCode LandauFormJacobian_Internal(Vec a_X, Mat JacP, const PetscInt dim, PetscReal shift, void *a_ctx)
+{
   LandauCtx         *ctx = (LandauCtx *)a_ctx;
   PetscInt           numCells[LANDAU_MAX_GRIDS], Nq, Nb;
   PetscQuadrature    quad;
@@ -262,7 +266,7 @@ static PetscErrorCode LandauFormJacobian_Internal(Vec a_X, Mat JacP, const Petsc
       for (PetscInt tid = 0; tid < ctx->batch_sz * elem_offset[num_grids]; tid++) {                        // for each element
         const PetscInt b_Nelem = elem_offset[num_grids], b_elem_idx = tid % b_Nelem, b_id = tid / b_Nelem; // b_id == OMP thd_id in batch
         // find my grid:
-        PetscInt       grid = 0;
+        PetscInt grid = 0;
         while (b_elem_idx >= elem_offset[grid + 1]) grid++; // yuck search for grid
         {
           const PetscInt loc_nip = numCells[grid] * Nq, loc_Nf = ctx->species_offset[grid + 1] - ctx->species_offset[grid], loc_elem = b_elem_idx - elem_offset[grid];
@@ -604,7 +608,8 @@ static PetscErrorCode LandauFormJacobian_Internal(Vec a_X, Mat JacP, const Petsc
 }
 
 #if defined(LANDAU_ADD_BCS)
-static void zero_bc(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar uexact[]) {
+static void zero_bc(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar uexact[])
+{
   uexact[0] = 0;
 }
 #endif
@@ -617,7 +622,8 @@ static void zero_bc(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uO
       for (j = 0.; j < 2; j++) __p[i] += __a[i][j] * __x[j]; \
     } \
   }
-static void CircleInflate(PetscReal r1, PetscReal r2, PetscReal r0, PetscInt num_sections, PetscReal x, PetscReal y, PetscReal *outX, PetscReal *outY) {
+static void CircleInflate(PetscReal r1, PetscReal r2, PetscReal r0, PetscInt num_sections, PetscReal x, PetscReal y, PetscReal *outX, PetscReal *outY)
+{
   PetscReal rr = PetscSqrtReal(x * x + y * y), outfact, efact;
   if (rr < r1 + PETSC_SQRT_MACHINE_EPSILON) {
     *outX = x;
@@ -708,7 +714,8 @@ static void CircleInflate(PetscReal r1, PetscReal r2, PetscReal r0, PetscInt num
   }
 }
 
-static PetscErrorCode GeometryDMLandau(DM base, PetscInt point, PetscInt dim, const PetscReal abc[], PetscReal xyz[], void *a_ctx) {
+static PetscErrorCode GeometryDMLandau(DM base, PetscInt point, PetscInt dim, const PetscReal abc[], PetscReal xyz[], void *a_ctx)
+{
   LandauCtx *ctx = (LandauCtx *)a_ctx;
   PetscReal  r = abc[0], z = abc[1];
   if (ctx->inflate) {
@@ -727,22 +734,19 @@ static PetscErrorCode GeometryDMLandau(DM base, PetscInt point, PetscInt dim, co
 }
 
 /* create DMComposite of meshes for each species group */
-static PetscErrorCode LandauDMCreateVMeshes(MPI_Comm comm_self, const PetscInt dim, const char prefix[], LandauCtx *ctx, DM pack) {
+static PetscErrorCode LandauDMCreateVMeshes(MPI_Comm comm_self, const PetscInt dim, const char prefix[], LandauCtx *ctx, DM pack)
+{
   PetscFunctionBegin;
   { /* p4est, quads */
     /* Create plex mesh of Landau domain */
     for (PetscInt grid = 0; grid < ctx->num_grids; grid++) {
       PetscReal radius = ctx->radius[grid];
       if (!ctx->sphere) {
-        PetscInt       cells[] = {2, 2, 2};
         PetscReal      lo[] = {-radius, -radius, -radius}, hi[] = {radius, radius, radius};
         DMBoundaryType periodicity[3] = {DM_BOUNDARY_NONE, dim == 2 ? DM_BOUNDARY_NONE : DM_BOUNDARY_NONE, DM_BOUNDARY_NONE};
-        if (dim == 2) {
-          lo[0]                     = 0;
-          cells[0] /* = cells[1] */ = 1;
-        }
-        PetscCall(DMPlexCreateBoxMesh(comm_self, dim, PETSC_FALSE, cells, lo, hi, periodicity, PETSC_TRUE, &ctx->plex[grid])); // todo: make composite and create dm[grid] here
-        PetscCall(DMLocalizeCoordinates(ctx->plex[grid]));                                                                     /* needed for periodic */
+        if (dim == 2) lo[0] = 0;
+        PetscCall(DMPlexCreateBoxMesh(comm_self, dim, PETSC_FALSE, ctx->cells0, lo, hi, periodicity, PETSC_TRUE, &ctx->plex[grid])); // todo: make composite and create dm[grid] here
+        PetscCall(DMLocalizeCoordinates(ctx->plex[grid]));                                                                           /* needed for periodic */
         if (dim == 3) PetscCall(PetscObjectSetName((PetscObject)ctx->plex[grid], "cube"));
         else PetscCall(PetscObjectSetName((PetscObject)ctx->plex[grid], "half-plane"));
       } else if (dim == 2) { // sphere is all wrong. should just have one inner radius
@@ -911,7 +915,8 @@ static PetscErrorCode LandauDMCreateVMeshes(MPI_Comm comm_self, const PetscInt d
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode SetupDS(DM pack, PetscInt dim, PetscInt grid, LandauCtx *ctx) {
+static PetscErrorCode SetupDS(DM pack, PetscInt dim, PetscInt grid, LandauCtx *ctx)
+{
   PetscInt     ii, i0;
   char         buf[256];
   PetscSection section;
@@ -959,7 +964,8 @@ typedef struct {
   PetscReal shift;
 } MaxwellianCtx;
 
-static PetscErrorCode maxwellian(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf_dummy, PetscScalar *u, void *actx) {
+static PetscErrorCode maxwellian(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf_dummy, PetscScalar *u, void *actx)
+{
   MaxwellianCtx *mctx = (MaxwellianCtx *)actx;
   PetscInt       i;
   PetscReal      v2 = 0, theta = 2 * mctx->kT_m / (mctx->v_0 * mctx->v_0); /* theta = 2kT/mc^2 */
@@ -1001,7 +1007,8 @@ static PetscErrorCode maxwellian(PetscInt dim, PetscReal time, const PetscReal x
  .keywords: mesh
  .seealso: `DMPlexLandauCreateVelocitySpace()`
  @*/
-PetscErrorCode DMPlexLandauAddMaxwellians(DM dm, Vec X, PetscReal time, PetscReal temps[], PetscReal ns[], PetscInt grid, PetscInt b_id, PetscInt n_batch, void *actx) {
+PetscErrorCode DMPlexLandauAddMaxwellians(DM dm, Vec X, PetscReal time, PetscReal temps[], PetscReal ns[], PetscInt grid, PetscInt b_id, PetscInt n_batch, void *actx)
+{
   LandauCtx *ctx = (LandauCtx *)actx;
   PetscErrorCode (*initu[LANDAU_MAX_SPECIES])(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar[], void *);
   PetscInt       dim;
@@ -1044,7 +1051,8 @@ PetscErrorCode DMPlexLandauAddMaxwellians(DM dm, Vec X, PetscReal time, PetscRea
  .keywords: mesh
  .seealso: `DMPlexLandauCreateVelocitySpace()`, `DMPlexLandauAddMaxwellians()`
  */
-static PetscErrorCode LandauSetInitialCondition(DM dm, Vec X, PetscInt grid, PetscInt b_id, PetscInt n_batch, void *actx) {
+static PetscErrorCode LandauSetInitialCondition(DM dm, Vec X, PetscInt grid, PetscInt b_id, PetscInt n_batch, void *actx)
+{
   LandauCtx *ctx = (LandauCtx *)actx;
   PetscFunctionBegin;
   if (!ctx) PetscCall(DMGetApplicationContext(dm, &ctx));
@@ -1054,7 +1062,8 @@ static PetscErrorCode LandauSetInitialCondition(DM dm, Vec X, PetscInt grid, Pet
 }
 
 // adapt a level once. Forest in/out
-static PetscErrorCode adaptToleranceFEM(PetscFE fem, Vec sol, PetscInt type, PetscInt grid, LandauCtx *ctx, DM *newForest) {
+static PetscErrorCode adaptToleranceFEM(PetscFE fem, Vec sol, PetscInt type, PetscInt grid, LandauCtx *ctx, DM *newForest)
+{
   DM              forest, plex, adaptedDM = NULL;
   PetscDS         prob;
   PetscBool       isForest;
@@ -1181,7 +1190,8 @@ static PetscErrorCode adaptToleranceFEM(PetscFE fem, Vec sol, PetscInt type, Pet
 }
 
 // forest goes in (ctx->plex[grid]), plex comes out
-static PetscErrorCode adapt(PetscInt grid, LandauCtx *ctx, Vec *uu) {
+static PetscErrorCode adapt(PetscInt grid, LandauCtx *ctx, Vec *uu)
+{
   PetscInt adaptIter;
 
   PetscFunctionBegin;
@@ -1205,7 +1215,8 @@ static PetscErrorCode adapt(PetscInt grid, LandauCtx *ctx, Vec *uu) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode ProcessOptions(LandauCtx *ctx, const char prefix[]) {
+static PetscErrorCode ProcessOptions(LandauCtx *ctx, const char prefix[])
+{
   PetscBool flg, sph_flg;
   PetscInt  ii, nt, nm, nc, num_species_grid[LANDAU_MAX_GRIDS];
   PetscReal v0_grid[LANDAU_MAX_GRIDS];
@@ -1228,10 +1239,10 @@ static PetscErrorCode ProcessOptions(LandauCtx *ctx, const char prefix[]) {
   ctx->M              = NULL;
   ctx->J              = NULL;
   /* geometry and grids */
-  ctx->sphere         = PETSC_FALSE;
-  ctx->inflate        = PETSC_FALSE;
-  ctx->use_p4est      = PETSC_FALSE;
-  ctx->num_sections   = 3; /* 2, 3 or 4 */
+  ctx->sphere       = PETSC_FALSE;
+  ctx->inflate      = PETSC_FALSE;
+  ctx->use_p4est    = PETSC_FALSE;
+  ctx->num_sections = 3; /* 2, 3 or 4 */
   for (PetscInt grid = 0; grid < LANDAU_MAX_GRIDS; grid++) {
     ctx->radius[grid]             = 5.; /* thermal radius (velocity) */
     ctx->numAMRRefine[grid]       = 5;
@@ -1249,18 +1260,20 @@ static PetscErrorCode ProcessOptions(LandauCtx *ctx, const char prefix[]) {
   ctx->numRERefine       = 0;
   num_species_grid[0]    = 1; // one species default
   /* species - [0] electrons, [1] one ion species eg, duetarium, [2] heavy impurity ion, ... */
-  ctx->charges[0]        = -1;                       /* electron charge (MKS) */
-  ctx->masses[0]         = 1 / 1835.469965278441013; /* temporary value in proton mass */
-  ctx->n[0]              = 1;
-  ctx->v_0               = 1; /* thermal velocity, we could start with a scale != 1 */
-  ctx->thermal_temps[0]  = 1;
+  ctx->charges[0]       = -1;                       /* electron charge (MKS) */
+  ctx->masses[0]        = 1 / 1835.469965278441013; /* temporary value in proton mass */
+  ctx->n[0]             = 1;
+  ctx->v_0              = 1; /* thermal velocity, we could start with a scale != 1 */
+  ctx->thermal_temps[0] = 1;
   /* constants, etc. */
-  ctx->epsilon0          = 8.8542e-12;     /* permittivity of free space (MKS) F/m */
-  ctx->k                 = 1.38064852e-23; /* Boltzmann constant (MKS) J/K */
-  ctx->lnLam             = 10;             /* cross section ratio large - small angle collisions */
-  ctx->n_0               = 1.e20;          /* typical plasma n, but could set it to 1 */
-  ctx->Ez                = 0;
+  ctx->epsilon0 = 8.8542e-12;     /* permittivity of free space (MKS) F/m */
+  ctx->k        = 1.38064852e-23; /* Boltzmann constant (MKS) J/K */
+  ctx->lnLam    = 10;             /* cross section ratio large - small angle collisions */
+  ctx->n_0      = 1.e20;          /* typical plasma n, but could set it to 1 */
+  ctx->Ez       = 0;
   for (PetscInt grid = 0; grid < LANDAU_NUM_TIMERS; grid++) ctx->times[grid] = 0;
+  for (PetscInt ii = 0; ii < LANDAU_DIM; ii++) ctx->cells0[ii] = 2;
+  if (LANDAU_DIM == 2) ctx->cells0[0] = 1;
   ctx->use_matrix_mass                = PETSC_FALSE;
   ctx->use_relativistic_corrections   = PETSC_FALSE;
   ctx->use_energy_tensor_trick        = PETSC_FALSE; /* Use Eero's trick for energy conservation v --> grad(v^2/2) */
@@ -1368,7 +1381,7 @@ static PetscErrorCode ProcessOptions(LandauCtx *ctx, const char prefix[]) {
   ctx->v_0 = v0_grid[ii];                                                                                                                       /* arbitrary units for non dimensionalization: global mean velocity in 1D of electrons */
   ctx->t_0 = 8 * PETSC_PI * PetscSqr(ctx->epsilon0 * ctx->m_0 / PetscSqr(ctx->charges[0])) / ctx->lnLam / ctx->n_0 * PetscPowReal(ctx->v_0, 3); /* note, this t_0 makes nu[0,0]=1 */
   /* domain */
-  nt       = LANDAU_MAX_GRIDS;
+  nt = LANDAU_MAX_GRIDS;
   PetscCall(PetscOptionsRealArray("-dm_landau_domain_radius", "Phase space size in units of thermal velocity of grid", "plexland.c", ctx->radius, &nt, &flg));
   if (flg) PetscCheck(nt >= ctx->num_grids, ctx->comm, PETSC_ERR_ARG_WRONG, "-dm_landau_domain_radius: given %" PetscInt_FMT " radius != number grids %" PetscInt_FMT, nt, ctx->num_grids);
   for (PetscInt grid = 0; grid < ctx->num_grids; grid++) {
@@ -1381,6 +1394,8 @@ static PetscErrorCode ProcessOptions(LandauCtx *ctx, const char prefix[]) {
     ctx->radius[grid] *= v0_grid[grid] / ctx->v_0; // scale domain by thermal radius relative to v_0
   }
   /* amr parametres */
+  nt = LANDAU_DIM;
+  PetscCall(PetscOptionsIntArray("-dm_landau_num_cells", "Number of cells in each dimention of base grid", "plexland.c", ctx->cells0, &nt, &flg));
   nt = LANDAU_MAX_GRIDS;
   PetscCall(PetscOptionsIntArray("-dm_landau_amr_levels_max", "Number of AMR levels of refinement around origin, after (RE) refinements along z", "plexland.c", ctx->numAMRRefine, &nt, &flg));
   PetscCheck(!flg || nt >= ctx->num_grids, ctx->comm, PETSC_ERR_ARG_WRONG, "-dm_landau_amr_levels_max: given %" PetscInt_FMT " != number grids %" PetscInt_FMT, nt, ctx->num_grids);
@@ -1482,7 +1497,8 @@ static PetscErrorCode ProcessOptions(LandauCtx *ctx, const char prefix[]) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode CreateStaticGPUData(PetscInt dim, IS grid_batch_is_inv[], LandauCtx *ctx) {
+static PetscErrorCode CreateStaticGPUData(PetscInt dim, IS grid_batch_is_inv[], LandauCtx *ctx)
+{
   PetscSection     section[LANDAU_MAX_GRIDS], globsection[LANDAU_MAX_GRIDS];
   PetscQuadrature  quad;
   const PetscReal *quadWeights;
@@ -1859,17 +1875,17 @@ static PetscErrorCode CreateStaticGPUData(PetscInt dim, IS grid_batch_is_inv[], 
         }
       }
       if (ctx->deviceType == LANDAU_CUDA) {
-#if defined(PETSC_HAVE_CUDA)
+  #if defined(PETSC_HAVE_CUDA)
         PetscCall(LandauCUDAStaticDataSet(ctx->plex[0], Nq, ctx->batch_sz, ctx->num_grids, numCells, ctx->species_offset, ctx->mat_offset, nu_alpha, nu_beta, invMass, invJ_a, xx, yy, zz, ww, &ctx->SData_d));
-#else
+  #else
         SETERRQ(ctx->comm, PETSC_ERR_ARG_WRONG, "-landau_device_type cuda not built");
-#endif
+  #endif
       } else if (ctx->deviceType == LANDAU_KOKKOS) {
-#if defined(PETSC_HAVE_KOKKOS_KERNELS)
+  #if defined(PETSC_HAVE_KOKKOS_KERNELS)
         PetscCall(LandauKokkosStaticDataSet(ctx->plex[0], Nq, ctx->batch_sz, ctx->num_grids, numCells, ctx->species_offset, ctx->mat_offset, nu_alpha, nu_beta, invMass, invJ_a, xx, yy, zz, ww, &ctx->SData_d));
-#else
+  #else
         SETERRQ(ctx->comm, PETSC_ERR_ARG_WRONG, "-landau_device_type kokkos not built");
-#endif
+  #endif
       }
 #endif
       /* free */
@@ -1888,22 +1904,26 @@ static PetscErrorCode CreateStaticGPUData(PetscInt dim, IS grid_batch_is_inv[], 
 }
 
 /* < v, u > */
-static void g0_1(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g0[]) {
+static void g0_1(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g0[])
+{
   g0[0] = 1.;
 }
 
 /* < v, u > */
-static void g0_fake(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g0[]) {
+static void g0_fake(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g0[])
+{
   static double ttt = 1e-12;
   g0[0]             = ttt++;
 }
 
 /* < v, u > */
-static void g0_r(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g0[]) {
+static void g0_r(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g0[])
+{
   g0[0] = 2. * PETSC_PI * x[0];
 }
 
-static PetscErrorCode MatrixNfDestroy(void *ptr) {
+static PetscErrorCode MatrixNfDestroy(void *ptr)
+{
   PetscInt *nf = (PetscInt *)ptr;
   PetscFunctionBegin;
   PetscCall(PetscFree(nf));
@@ -1915,7 +1935,8 @@ static PetscErrorCode MatrixNfDestroy(void *ptr) {
   - Like DMPlexLandauCreateMassMatrix. Should remove one and combine
   - has old support for field major ordering
  */
-static PetscErrorCode LandauCreateJacobianMatrix(MPI_Comm comm, Vec X, IS grid_batch_is_inv[LANDAU_MAX_GRIDS], LandauCtx *ctx) {
+static PetscErrorCode LandauCreateJacobianMatrix(MPI_Comm comm, Vec X, IS grid_batch_is_inv[LANDAU_MAX_GRIDS], LandauCtx *ctx)
+{
   PetscInt *idxs = NULL;
   Mat       subM[LANDAU_MAX_GRIDS];
 
@@ -1923,7 +1944,7 @@ static PetscErrorCode LandauCreateJacobianMatrix(MPI_Comm comm, Vec X, IS grid_b
   if (!ctx->gpu_assembly) { /* we need GPU object with GPU assembly */
     PetscFunctionReturn(0);
   }
-  // get the RCM for this grid to separate out species into blocks -- create 'idxs' & 'ctx->batch_is'
+  // get the RCM for this grid to separate out species into blocks -- create 'idxs' & 'ctx->batch_is' -- not used
   if (ctx->gpu_assembly && ctx->jacobian_field_major_order) PetscCall(PetscMalloc1(ctx->mat_offset[ctx->num_grids] * ctx->batch_sz, &idxs));
   for (PetscInt grid = 0; grid < ctx->num_grids; grid++) {
     const PetscInt *values, n = ctx->mat_offset[grid + 1] - ctx->mat_offset[grid];
@@ -2035,7 +2056,8 @@ PetscErrorCode DMPlexLandauCreateMassMatrix(DM pack, Mat *Amat);
  .keywords: mesh
  .seealso: `DMPlexCreate()`, `DMPlexLandauDestroyVelocitySpace()`
  @*/
-PetscErrorCode DMPlexLandauCreateVelocitySpace(MPI_Comm comm, PetscInt dim, const char prefix[], Vec *X, Mat *J, DM *pack) {
+PetscErrorCode DMPlexLandauCreateVelocitySpace(MPI_Comm comm, PetscInt dim, const char prefix[], Vec *X, Mat *J, DM *pack)
+{
   LandauCtx *ctx;
   Vec        Xsub[LANDAU_MAX_GRIDS];
   IS         grid_batch_is_inv[LANDAU_MAX_GRIDS];
@@ -2111,7 +2133,7 @@ PetscErrorCode DMPlexLandauCreateVelocitySpace(MPI_Comm comm, PetscInt dim, cons
       PetscScalar const *values;
       const PetscInt     moffset = LAND_MOFFSET(b_id, grid, ctx->batch_sz, ctx->num_grids, ctx->mat_offset);
       PetscCall(LandauSetInitialCondition(ctx->plex[grid], Xsub[grid], grid, b_id, ctx->batch_sz, ctx));
-      PetscCall(VecGetArrayRead(Xsub[grid], &values));
+      PetscCall(VecGetArrayRead(Xsub[grid], &values)); // Drop whole grid in Plex ordering
       for (int i = 0, idx = moffset; i < n; i++, idx++) PetscCall(VecSetValue(*X, idx, values[i], INSERT_VALUES));
       PetscCall(VecRestoreArrayRead(Xsub[grid], &values));
     }
@@ -2134,8 +2156,8 @@ PetscErrorCode DMPlexLandauCreateVelocitySpace(MPI_Comm comm, PetscInt dim, cons
     }
   }
   PetscCall(PetscLogEventEnd(ctx->events[15], 0, 0, 0, 0));
-  // create field major ordering
 
+  // create field major ordering
   ctx->work_vec   = NULL;
   ctx->plex_batch = NULL;
   ctx->batch_is   = NULL;
@@ -2184,7 +2206,7 @@ PetscErrorCode DMPlexLandauCreateVelocitySpace(MPI_Comm comm, PetscInt dim, cons
 }
 
 /*@
- DMPlexLandauAddToFunction - Add to the distribution function with user callback
+ DMPlexLandauAccess - Access to the distribution function with user callback
 
  Collective on dm
 
@@ -2201,41 +2223,41 @@ PetscErrorCode DMPlexLandauCreateVelocitySpace(MPI_Comm comm, PetscInt dim, cons
  .keywords: mesh
  .seealso: `DMPlexLandauCreateVelocitySpace()`
  @*/
-PetscErrorCode DMPlexLandauAddToFunction(DM pack, Vec X, PetscErrorCode (*func)(DM, Vec, PetscInt, PetscInt, PetscInt, void *), void *user_ctx) {
+PetscErrorCode DMPlexLandauAccess(DM pack, Vec X, PetscErrorCode (*func)(DM, Vec, PetscInt, PetscInt, PetscInt, void *), void *user_ctx)
+{
   LandauCtx *ctx;
   PetscFunctionBegin;
   PetscCall(DMGetApplicationContext(pack, &ctx)); // uses ctx->num_grids; ctx->plex[grid]; ctx->batch_sz; ctx->mat_offset
   for (PetscInt grid = 0; grid < ctx->num_grids; grid++) {
-    PetscInt dim, n, Nf = ctx->species_offset[grid + 1] - ctx->species_offset[grid];
-    Vec      vec;
-    DM       dm;
-    PetscFE  fe;
+    PetscInt dim, n;
     PetscCall(DMGetDimension(pack, &dim));
-    PetscCall(DMClone(ctx->plex[grid], &dm));
-    PetscCall(PetscFECreateDefault(PETSC_COMM_SELF, dim, 1, PETSC_FALSE, NULL, PETSC_DECIDE, &fe));
-    PetscCall(PetscObjectSetName((PetscObject)fe, "species"));
-    PetscCall(DMSetField(dm, 0, NULL, (PetscObject)fe));
-    PetscCall(PetscFEDestroy(&fe));
-    PetscCall(DMSetApplicationContext(dm, ctx)); // does the user want this?
-    PetscCall(DMCreateGlobalVector(dm, &vec));
-    PetscCall(VecGetSize(vec, &n));
-    for (PetscInt b_id = 0; b_id < ctx->batch_sz; b_id++) {
-      const PetscInt moffset = LAND_MOFFSET(b_id, grid, ctx->batch_sz, ctx->num_grids, ctx->mat_offset);
-      for (PetscInt sp = ctx->species_offset[grid], i0 = 0; sp < ctx->species_offset[grid + 1]; sp++, i0++) {
+    for (PetscInt sp = ctx->species_offset[grid], i0 = 0; sp < ctx->species_offset[grid + 1]; sp++, i0++) {
+      Vec      vec;
+      PetscInt vf[1] = {i0};
+      IS       vis;
+      DM       vdm;
+      PetscCall(DMCreateSubDM(ctx->plex[grid], 1, vf, &vis, &vdm));
+      PetscCall(DMSetApplicationContext(vdm, ctx)); // the user might want this
+      PetscCall(DMCreateGlobalVector(vdm, &vec));
+      PetscCall(VecGetSize(vec, &n));
+      for (PetscInt b_id = 0; b_id < ctx->batch_sz; b_id++) {
+        const PetscInt moffset = LAND_MOFFSET(b_id, grid, ctx->batch_sz, ctx->num_grids, ctx->mat_offset);
         PetscCall(VecZeroEntries(vec));
         /* Add your data with 'dm' for species 'sp' to 'vec' */
-        PetscCall(func(dm, vec, i0, grid, b_id, user_ctx));
+        PetscCall(func(vdm, vec, i0, grid, b_id, user_ctx));
         /* add to global */
         PetscScalar const *values;
+        const PetscInt    *offsets;
         PetscCall(VecGetArrayRead(vec, &values));
-        for (int i = 0, idx = moffset + i0; i < n; i++, idx += Nf) { // works for Q1 & Q2 only -- TODO
-          PetscCall(VecSetValue(X, idx, values[i], ADD_VALUES));
-        }
+        PetscCall(ISGetIndices(vis, &offsets));
+        for (int i = 0; i < n; i++) { PetscCall(VecSetValue(X, moffset + offsets[i], values[i], ADD_VALUES)); }
         PetscCall(VecRestoreArrayRead(vec, &values));
-      }
-    } // batch
-    PetscCall(VecDestroy(&vec));
-    PetscCall(DMDestroy(&dm));
+        PetscCall(ISRestoreIndices(vis, &offsets));
+      } // batch
+      PetscCall(VecDestroy(&vec));
+      PetscCall(ISDestroy(&vis));
+      PetscCall(DMDestroy(&vdm));
+    }
   } // grid
   PetscFunctionReturn(0);
 }
@@ -2253,7 +2275,8 @@ PetscErrorCode DMPlexLandauAddToFunction(DM pack, Vec X, PetscErrorCode (*func)(
  .keywords: mesh
  .seealso: `DMPlexLandauCreateVelocitySpace()`
  @*/
-PetscErrorCode DMPlexLandauDestroyVelocitySpace(DM *dm) {
+PetscErrorCode DMPlexLandauDestroyVelocitySpace(DM *dm)
+{
   LandauCtx *ctx;
   PetscFunctionBegin;
   PetscCall(DMGetApplicationContext(*dm, &ctx));
@@ -2306,25 +2329,29 @@ PetscErrorCode DMPlexLandauDestroyVelocitySpace(DM *dm) {
 }
 
 /* < v, ru > */
-static void f0_s_den(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar *f0) {
+static void f0_s_den(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar *f0)
+{
   PetscInt ii = (PetscInt)PetscRealPart(constants[0]);
   f0[0]       = u[ii];
 }
 
 /* < v, ru > */
-static void f0_s_mom(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar *f0) {
+static void f0_s_mom(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar *f0)
+{
   PetscInt ii = (PetscInt)PetscRealPart(constants[0]), jj = (PetscInt)PetscRealPart(constants[1]);
   f0[0] = x[jj] * u[ii]; /* x momentum */
 }
 
-static void f0_s_v2(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar *f0) {
+static void f0_s_v2(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar *f0)
+{
   PetscInt i, ii = (PetscInt)PetscRealPart(constants[0]);
   double   tmp1 = 0.;
   for (i = 0; i < dim; ++i) tmp1 += x[i] * x[i];
   f0[0] = tmp1 * u[ii];
 }
 
-static PetscErrorCode gamma_n_f(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *actx) {
+static PetscErrorCode gamma_n_f(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *actx)
+{
   const PetscReal *c2_0_arr = ((PetscReal *)actx);
   const PetscReal  c02      = c2_0_arr[0];
 
@@ -2345,18 +2372,21 @@ static PetscErrorCode gamma_n_f(PetscInt dim, PetscReal time, const PetscReal x[
 }
 
 /* < v, ru > */
-static void f0_s_rden(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar *f0) {
+static void f0_s_rden(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar *f0)
+{
   PetscInt ii = (PetscInt)PetscRealPart(constants[0]);
   f0[0]       = 2. * PETSC_PI * x[0] * u[ii];
 }
 
 /* < v, ru > */
-static void f0_s_rmom(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar *f0) {
+static void f0_s_rmom(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar *f0)
+{
   PetscInt ii = (PetscInt)PetscRealPart(constants[0]);
   f0[0]       = 2. * PETSC_PI * x[0] * x[1] * u[ii];
 }
 
-static void f0_s_rv2(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar *f0) {
+static void f0_s_rv2(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar *f0)
+{
   PetscInt ii = (PetscInt)PetscRealPart(constants[0]);
   f0[0]       = 2. * PETSC_PI * x[0] * (x[0] * x[0] + x[1] * x[1]) * u[ii];
 }
@@ -2375,7 +2405,8 @@ static void f0_s_rv2(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt u
  .keywords: mesh
  .seealso: `DMPlexLandauCreateVelocitySpace()`
  @*/
-PetscErrorCode DMPlexLandauPrintNorms(Vec X, PetscInt stepi) {
+PetscErrorCode DMPlexLandauPrintNorms(Vec X, PetscInt stepi)
+{
   LandauCtx  *ctx;
   PetscDS     prob;
   DM          pack;
@@ -2540,7 +2571,8 @@ PetscErrorCode DMPlexLandauPrintNorms(Vec X, PetscInt stepi) {
  .keywords: mesh
  .seealso: `DMPlexLandauCreateVelocitySpace()`
  @*/
-PetscErrorCode DMPlexLandauCreateMassMatrix(DM pack, Mat *Amat) {
+PetscErrorCode DMPlexLandauCreateMassMatrix(DM pack, Mat *Amat)
+{
   DM         mass_pack, massDM[LANDAU_MAX_GRIDS];
   PetscDS    prob;
   PetscInt   ii, dim, N1 = 1, N2;
@@ -2658,7 +2690,8 @@ PetscErrorCode DMPlexLandauCreateMassMatrix(DM pack, Mat *Amat) {
  .keywords: mesh
  .seealso: `DMPlexLandauCreateVelocitySpace()`, `DMPlexLandauIJacobian()`
  @*/
-PetscErrorCode DMPlexLandauIFunction(TS ts, PetscReal time_dummy, Vec X, Vec X_t, Vec F, void *actx) {
+PetscErrorCode DMPlexLandauIFunction(TS ts, PetscReal time_dummy, Vec X, Vec X_t, Vec F, void *actx)
+{
   LandauCtx *ctx = (LandauCtx *)actx;
   PetscInt   dim;
   DM         pack;
@@ -2734,7 +2767,8 @@ PetscErrorCode DMPlexLandauIFunction(TS ts, PetscReal time_dummy, Vec X, Vec X_t
  .keywords: mesh
  .seealso: `DMPlexLandauCreateVelocitySpace()`, `DMPlexLandauIFunction()`
  @*/
-PetscErrorCode DMPlexLandauIJacobian(TS ts, PetscReal time_dummy, Vec X, Vec U_tdummy, PetscReal shift, Mat Amat, Mat Pmat, void *actx) {
+PetscErrorCode DMPlexLandauIJacobian(TS ts, PetscReal time_dummy, Vec X, Vec U_tdummy, PetscReal shift, Mat Amat, Mat Pmat, void *actx)
+{
   LandauCtx *ctx = NULL;
   PetscInt   dim;
   DM         pack;

@@ -35,7 +35,8 @@ typedef struct {
 /*
       Mm_ratio - ration of grid lines between fine and coarse grids.
 */
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   AppCtx          user;
   PetscMPIInt     size, rank;
   PetscInt        m, n, M, N, i, nrows;

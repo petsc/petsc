@@ -1,7 +1,7 @@
 
 #include <petscsys.h>
 #if defined(PETSC_HAVE_PWD_H)
-#include <pwd.h>
+  #include <pwd.h>
 #endif
 
 /*@C
@@ -18,7 +18,8 @@
 
 .seealso: `PetscGetRelativePath()`
 @*/
-PetscErrorCode PetscGetFullPath(const char path[], char fullpath[], size_t flen) {
+PetscErrorCode PetscGetFullPath(const char path[], char fullpath[], size_t flen)
+{
   size_t    ln;
   PetscBool flg;
 

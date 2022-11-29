@@ -2,7 +2,7 @@
 #include <petsc/private/viewerimpl.h> /*I "petscviewer.h" I*/
 #include <petsc/private/hashtable.h>
 #if defined(PETSC_HAVE_SAWS)
-#include <petscviewersaws.h>
+  #include <petscviewersaws.h>
 #endif
 
 PetscFunctionList PetscViewerList = NULL;
@@ -10,11 +10,12 @@ PetscFunctionList PetscViewerList = NULL;
 PetscOptionsHelpPrinted PetscOptionsHelpPrintedSingleton = NULL;
 KHASH_SET_INIT_STR(HTPrinted)
 struct _n_PetscOptionsHelpPrinted {
-  khash_t(HTPrinted) * printed;
-  PetscSegBuffer strings;
+  khash_t(HTPrinted) *printed;
+  PetscSegBuffer      strings;
 };
 
-PetscErrorCode PetscOptionsHelpPrintedDestroy(PetscOptionsHelpPrinted *hp) {
+PetscErrorCode PetscOptionsHelpPrintedDestroy(PetscOptionsHelpPrinted *hp)
+{
   PetscFunctionBegin;
   if (!*hp) PetscFunctionReturn(0);
   kh_destroy(HTPrinted, (*hp)->printed);
@@ -33,7 +34,8 @@ PetscErrorCode PetscOptionsHelpPrintedDestroy(PetscOptionsHelpPrinted *hp) {
 
 .seealso: `PetscOptionsHelpPrintedCheck()`, `PetscOptionsHelpPrintChecked()`
 @*/
-PetscErrorCode PetscOptionsHelpPrintedCreate(PetscOptionsHelpPrinted *hp) {
+PetscErrorCode PetscOptionsHelpPrintedCreate(PetscOptionsHelpPrinted *hp)
+{
   PetscFunctionBegin;
   PetscCall(PetscNew(hp));
   (*hp)->printed = kh_init(HTPrinted);
@@ -58,7 +60,8 @@ PetscErrorCode PetscOptionsHelpPrintedCreate(PetscOptionsHelpPrinted *hp) {
 
 .seealso: `PetscOptionsHelpPrintedCreate()`
 @*/
-PetscErrorCode PetscOptionsHelpPrintedCheck(PetscOptionsHelpPrinted hp, const char *pre, const char *name, PetscBool *found) {
+PetscErrorCode PetscOptionsHelpPrintedCheck(PetscOptionsHelpPrinted hp, const char *pre, const char *name, PetscBool *found)
+{
   size_t l1, l2;
 #if !defined(PETSC_HAVE_THREADSAFETY)
   char *both;
@@ -105,7 +108,8 @@ static PetscInt  inoviewers = 0;
 
 .seealso: `PetscOptionsGetViewer()`, `PetscOptionsPopGetViewerOff()`
 @*/
-PetscErrorCode PetscOptionsPushGetViewerOff(PetscBool flg) {
+PetscErrorCode PetscOptionsPushGetViewerOff(PetscBool flg)
+{
   PetscFunctionBegin;
   PetscCheck(inoviewers < PETSCVIEWERGETVIEWEROFFPUSHESMAX, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Too many PetscOptionsPushGetViewerOff(), perhaps you forgot PetscOptionsPopGetViewerOff()?");
 
@@ -127,7 +131,8 @@ PetscErrorCode PetscOptionsPushGetViewerOff(PetscBool flg) {
 
 .seealso: `PetscOptionsGetViewer()`, `PetscOptionsPushGetViewerOff()`
 @*/
-PetscErrorCode PetscOptionsPopGetViewerOff(void) {
+PetscErrorCode PetscOptionsPopGetViewerOff(void)
+{
   PetscFunctionBegin;
   PetscCheck(inoviewers, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Too many PetscOptionsPopGetViewerOff(), perhaps you forgot PetscOptionsPushGetViewerOff()?");
   noviewer = noviewers[--inoviewers];
@@ -150,7 +155,8 @@ PetscErrorCode PetscOptionsPopGetViewerOff(void) {
 
 .seealso: `PetscOptionsGetViewer()`, `PetscOptionsPushGetViewerOff()`, `PetscOptionsPopGetViewerOff()`
 @*/
-PetscErrorCode PetscOptionsGetViewerOff(PetscBool *flg) {
+PetscErrorCode PetscOptionsGetViewerOff(PetscBool *flg)
+{
   PetscFunctionBegin;
   PetscValidBoolPointer(flg, 1);
   *flg = noviewer;
@@ -202,7 +208,8 @@ PetscErrorCode PetscOptionsGetViewerOff(PetscBool *flg) {
           `PetscOptionsFList()`, `PetscOptionsEList()`, `PetscOptionsPushGetViewerOff()`, `PetscOptionsPopGetViewerOff()`,
           `PetscOptionsGetViewerOff()`
 @*/
-PetscErrorCode PetscOptionsGetViewer(MPI_Comm comm, PetscOptions options, const char pre[], const char name[], PetscViewer *viewer, PetscViewerFormat *format, PetscBool *set) {
+PetscErrorCode PetscOptionsGetViewer(MPI_Comm comm, PetscOptions options, const char pre[], const char name[], PetscViewer *viewer, PetscViewerFormat *format, PetscBool *set)
+{
   const char *value;
   PetscBool   flag, hashelp;
 
@@ -261,7 +268,9 @@ PetscErrorCode PetscOptionsGetViewer(MPI_Comm comm, PetscOptions options, const 
       if (viewer) {
         if (!loc1_fname) {
           switch (cnt) {
-          case 0: PetscCall(PetscViewerASCIIGetStdout(comm, viewer)); break;
+          case 0:
+            PetscCall(PetscViewerASCIIGetStdout(comm, viewer));
+            break;
           case 1:
             if (!(*viewer = PETSC_VIEWER_BINARY_(comm))) PetscCall(PETSC_ERR_PLIB);
             break;
@@ -273,7 +282,7 @@ PetscErrorCode PetscOptionsGetViewer(MPI_Comm comm, PetscOptions options, const 
             if (!(*viewer = PETSC_VIEWER_SOCKET_(comm))) PetscCall(PETSC_ERR_PLIB);
             break;
 #endif
-#if defined(PETSC_HAVE_MATLAB_ENGINE)
+#if defined(PETSC_HAVE_MATLAB)
           case 4:
             if (!(*viewer = PETSC_VIEWER_MATLAB_(comm))) PetscCall(PETSC_ERR_PLIB);
             break;
@@ -296,7 +305,8 @@ PetscErrorCode PetscOptionsGetViewer(MPI_Comm comm, PetscOptions options, const 
             if (!(*viewer = PETSC_VIEWER_EXODUSII_(comm))) PetscCall(PETSC_ERR_PLIB);
             break;
 #endif
-          default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Unsupported viewer %s", loc0_vtype);
+          default:
+            SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Unsupported viewer %s", loc0_vtype);
           }
           PetscCall(PetscObjectReference((PetscObject)*viewer));
         } else {
@@ -359,7 +369,8 @@ PetscErrorCode PetscOptionsGetViewer(MPI_Comm comm, PetscOptions options, const 
 
 .seealso: `PetscViewer`, `PetscViewerDestroy()`, `PetscViewerSetType()`, `PetscViewerType`
 @*/
-PetscErrorCode PetscViewerCreate(MPI_Comm comm, PetscViewer *inviewer) {
+PetscErrorCode PetscViewerCreate(MPI_Comm comm, PetscViewer *inviewer)
+{
   PetscViewer viewer;
 
   PetscFunctionBegin;
@@ -380,9 +391,8 @@ PetscErrorCode PetscViewerCreate(MPI_Comm comm, PetscViewer *inviewer) {
 +  viewer      - the `PetscViewer` context obtained with `PetscViewerCreate()`
 -  type        - for example, `PETSCVIEWERASCII`
 
-   Options Database Command:
-.  -viewer_type  <type> - Sets the type; use -help for a list
-    of available methods (for instance, ascii)
+   Options Database Key:
+.  -viewer_type  <type> - Sets the type; use -help for a list of available methods (for instance, ascii)
 
    Level: advanced
 
@@ -392,7 +402,8 @@ PetscErrorCode PetscViewerCreate(MPI_Comm comm, PetscViewer *inviewer) {
 
 .seealso: `PetscViewer`, `PetscViewerCreate()`, `PetscViewerGetType()`, `PetscViewerType`, `PetscViewerPushFormat()`
 @*/
-PetscErrorCode PetscViewerSetType(PetscViewer viewer, PetscViewerType type) {
+PetscErrorCode PetscViewerSetType(PetscViewer viewer, PetscViewerType type)
+{
   PetscBool match;
   PetscErrorCode (*r)(PetscViewer);
 
@@ -443,7 +454,8 @@ $     -viewer_type my_viewer_type
 
 .seealso: `PetscViewerRegisterAll()`
  @*/
-PetscErrorCode PetscViewerRegister(const char *sname, PetscErrorCode (*function)(PetscViewer)) {
+PetscErrorCode PetscViewerRegister(const char *sname, PetscErrorCode (*function)(PetscViewer))
+{
   PetscFunctionBegin;
   PetscCall(PetscViewerInitializePackage());
   PetscCall(PetscFunctionListAdd(&PetscViewerList, sname, function));
@@ -465,7 +477,8 @@ PetscErrorCode PetscViewerRegister(const char *sname, PetscErrorCode (*function)
 
 .seealso: `PetscViewer`, `PetscViewerCreate()`, `PetscViewerSetType()`, `PetscViewerType`
 @*/
-PetscErrorCode PetscViewerSetFromOptions(PetscViewer viewer) {
+PetscErrorCode PetscViewerSetFromOptions(PetscViewer viewer)
+{
   char      vtype[256];
   PetscBool flg;
 
@@ -487,14 +500,16 @@ PetscErrorCode PetscViewerSetFromOptions(PetscViewer viewer) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscViewerFlowControlStart(PetscViewer viewer, PetscInt *mcnt, PetscInt *cnt) {
+PetscErrorCode PetscViewerFlowControlStart(PetscViewer viewer, PetscInt *mcnt, PetscInt *cnt)
+{
   PetscFunctionBegin;
   PetscCall(PetscViewerBinaryGetFlowControl(viewer, mcnt));
   PetscCall(PetscViewerBinaryGetFlowControl(viewer, cnt));
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscViewerFlowControlStepMain(PetscViewer viewer, PetscInt i, PetscInt *mcnt, PetscInt cnt) {
+PetscErrorCode PetscViewerFlowControlStepMain(PetscViewer viewer, PetscInt i, PetscInt *mcnt, PetscInt cnt)
+{
   MPI_Comm comm;
 
   PetscFunctionBegin;
@@ -506,7 +521,8 @@ PetscErrorCode PetscViewerFlowControlStepMain(PetscViewer viewer, PetscInt i, Pe
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscViewerFlowControlEndMain(PetscViewer viewer, PetscInt *mcnt) {
+PetscErrorCode PetscViewerFlowControlEndMain(PetscViewer viewer, PetscInt *mcnt)
+{
   MPI_Comm comm;
   PetscFunctionBegin;
   PetscCall(PetscObjectGetComm((PetscObject)viewer, &comm));
@@ -515,7 +531,8 @@ PetscErrorCode PetscViewerFlowControlEndMain(PetscViewer viewer, PetscInt *mcnt)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscViewerFlowControlStepWorker(PetscViewer viewer, PetscMPIInt rank, PetscInt *mcnt) {
+PetscErrorCode PetscViewerFlowControlStepWorker(PetscViewer viewer, PetscMPIInt rank, PetscInt *mcnt)
+{
   MPI_Comm comm;
   PetscFunctionBegin;
   PetscCall(PetscObjectGetComm((PetscObject)viewer, &comm));
@@ -526,7 +543,8 @@ PetscErrorCode PetscViewerFlowControlStepWorker(PetscViewer viewer, PetscMPIInt 
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PetscViewerFlowControlEndWorker(PetscViewer viewer, PetscInt *mcnt) {
+PetscErrorCode PetscViewerFlowControlEndWorker(PetscViewer viewer, PetscInt *mcnt)
+{
   MPI_Comm comm;
   PetscFunctionBegin;
   PetscCall(PetscObjectGetComm((PetscObject)viewer, &comm));

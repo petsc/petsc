@@ -1,4 +1,4 @@
-#if !defined(_SFALLGATHER_H)
+#ifndef _SFALLGATHER_H
 #define _SFALLGATHER_H
 
 #include <petscsftypes.h>

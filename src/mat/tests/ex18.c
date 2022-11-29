@@ -3,7 +3,8 @@ Contributed-by: Stephan Kramer <s.kramer@imperial.ac.uk>\n\n";
 
 #include <petscmat.h>
 
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   Mat         A;
   Vec         x, rhs, y;
   PetscInt    i, j, k, b, m = 3, n, nlocal = 2, bs = 1, Ii, J;

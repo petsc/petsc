@@ -170,7 +170,7 @@ nonzero pattern (such as within a nonlinear or time-dependent problem).
 Where possible, data structures and communication
 information will be reused (instead of regenerated) during successive
 steps, thereby increasing efficiency. See
-`KSP Tutorial ex5 <../../src/ksp/ksp/tutorials/ex5.c.html>`__
+`KSP Tutorial ex5 <PETSC_DOC_OUT_ROOT_PLACEHOLDER/src/ksp/ksp/tutorials/ex5.c.html>`__
 for a simple example of solving two linear systems that use the same
 matrix data structure.
 
@@ -199,7 +199,7 @@ next rank has entries from ``rend1`` to ``rend2`` - 1, etc. Thus the ownership r
 obtained with ``VecGetOwnershipRange``\(``Vec`` x, ``PetscInt`` \* ``rstart``, ``PetscInt`` \* ``rend``). Each PETSc ``Vec`` has a ``PetscLayout`` object that contains this information.
 
 All PETSc matrices have two ``PetscLayout``\s, they define the vector layouts for y and x in the product, y = A \* x. Their ownership range information
-can be obtained with ``MatGetOwnershipRange()``, ``MatGetOwnershipRangeColumn()``,  ``MatGetOwnershipRanges()``, and  ``MatGetOwnershipRangesColumn()``.
+can be obtained with ``MatGetOwnershipRange()``, ``MatGetOwnershipRangeColumn()``, ``MatGetOwnershipRanges()``, and  ``MatGetOwnershipRangesColumn()``.
 Note that ``MatCreateVecs()`` provides two vectors that have compatible layouts for the associated vector.
 
 For most PETSc matrices, excluding ``MATELEMENTAL`` and ``MATSCALAPACK``, the row ownership range obtained with  ``MatGetOwnershipRange()`` also defines
@@ -208,6 +208,9 @@ the rank where each matrix entry is stored is more complicated; information abou
 Note that for
 most PETSc matrices the values returned by ``MatGetOwnershipIS()`` are the same as those returned by  ``MatGetOwnershipRange()`` and
 ``MatGetOwnershipRangeColumn()``.
+
+The PETSc object ``PetscLayout`` contains the ownership information that is provided by ``VecGetOwnershipRange()`` and with ``MatGetOwnershipRange()``, ``MatGetOwnershipRangeColumn()``. Each vector has one layout, which can be obtained with ``VecGetLayout()`` and ``MatGetLayouts()``. Layouts support the routines ``PetscLayoutGetLocalSize()``, ``PetscLayoutGetSize()``, ``PetscLayoutGetBlockSize()``, ``PetscLayoutGetRanges()``, ``PetscLayoutCompare()`` as well as a variety of creation routines. These are used by the ``Vec`` and ``Mat`` and so are rarely needed directly. Finally ``PetscSplitOwnership()`` is a utility routine that does the same splitting of ownership ranges as `PetscLayout``.
+
 
 .. _sec_matsparse:
 
@@ -530,6 +533,8 @@ requiring the detailed preallocation information.
 
 See :any:`doc_matrix` for a table of the matrix types available in PETSc.
 
+.. _sec_matlmvm:
+
 Limited-Memory Variable Metric (LMVM) Matrices
 ''''''''''''''''''''''''''''''''''''''''''''''
 
@@ -776,7 +781,7 @@ assembly functions (which are not collective). The index sets
 matrices, in which case the ``MATNEST`` format can be specified using
 ``-prefix_dm_mat_type nest`` and ``MATAIJ`` can be specified using
 ``-prefix_dm_mat_type aij``. See
-`SNES Tutorial ex28 <../../src/snes/tutorials/ex28.c.html>`__
+`SNES Tutorial ex28 <PETSC_DOC_OUT_ROOT_PLACEHOLDER/src/snes/tutorials/ex28.c.html>`__
 for a simple example using this interface.
 
 .. _sec_matoptions:
@@ -949,7 +954,7 @@ discussed in the following chapters.
 
 The routine ``MatShellSetOperation()`` can be used to set any other
 matrix operations as well. The file
-``$PETSC_DIR/include/petscmat.h`` (`source <../../../include/petscmat.h.html>`__)
+``$PETSC_DIR/include/petscmat.h`` (`source <PETSC_DOC_OUT_ROOT_PLACEHOLDER/include/petscmat.h.html>`__)
 provides a complete list of matrix operations, which have the form
 ``MATOP_<OPERATION>``, where ``<OPERATION>`` is the name (in all capital
 letters) of the user interface routine (for example, ``MatMult()``
@@ -1126,7 +1131,7 @@ Another matrix routine of interest is
 which converts the matrix ``mat`` to new matrix, ``M``, that has either
 the same or different format. Set ``newtype`` to ``MATSAME`` to copy the
 matrix, keeping the same matrix format. See
-``$PETSC_DIR/include/petscmat.h`` (`source <../../../include/petscmat.h.html>`__)
+``$PETSC_DIR/include/petscmat.h`` (`source <PETSC_DOC_OUT_ROOT_PLACEHOLDER/include/petscmat.h.html>`__)
 for other available matrix types; standard ones are ``MATSEQDENSE``,
 ``MATSEQAIJ``, ``MATMPIAIJ``, ``MATSEQBAIJ`` and ``MATMPIBAIJ``.
 

@@ -4,7 +4,8 @@ static char help[] = "Tests options database monitoring and precedence.\n\n";
 #include <petscsys.h>
 #include <petscviewer.h>
 
-PetscErrorCode PetscOptionsMonitorCustom(const char name[], const char value[], void *ctx) {
+PetscErrorCode PetscOptionsMonitorCustom(const char name[], const char value[], PetscOptionSource source, void *ctx)
+{
   PetscViewer viewer = (PetscViewer)ctx;
 
   PetscFunctionBegin;
@@ -18,7 +19,8 @@ PetscErrorCode PetscOptionsMonitorCustom(const char name[], const char value[], 
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscViewer       viewer = NULL;
   PetscViewerFormat format;
 
@@ -41,7 +43,7 @@ int main(int argc, char **argv) {
 
    testset:
       localrunfiles: ex55options .petscrc petscrc
-      filter: egrep -v -e "(options_left)"
+      filter: grep -E -v -e "(options_left)"
       args: -options_left 0 -options_view -options_monitor_viewer ascii
       args: -skip_petscrc {{0 1}separate output} -options_monitor_cancel {{0 1}separate output}
       test:
@@ -56,12 +58,12 @@ int main(int argc, char **argv) {
       # test effect of -skip_petscrc in ex55options file
       suffix: 4
       localrunfiles: ex55options .petscrc petscrc
-      filter: egrep -v -e "(options_left)"
+      filter: grep -E -v -e "(options_left)"
       args: -options_left 0 -options_view -options_monitor
    testset:
       # test -help / -help intro / -version from command line
       localrunfiles: ex55options .petscrc petscrc
-      filter: egrep -e "(version|help|^See)"
+      filter: grep -E -e "(version|help|^See)"
       args: -options_left -options_view -options_monitor
       test:
         suffix: 5a
@@ -75,7 +77,7 @@ int main(int argc, char **argv) {
    testset:
       # test -help / -help intro / -version from file
       localrunfiles: ex55options rc_help rc_help_intro rc_version
-      filter: egrep -e "(version|help|^See)"
+      filter: grep -E -e "(version|help|^See)"
       args: -skip_petscrc
       args: -options_left -options_view -options_monitor
       test:
@@ -87,5 +89,11 @@ int main(int argc, char **argv) {
       test:
         suffix: 6c
         args: -options_file rc_version
+
+   test:
+     localrunfiles: ex55options .petscrc petscrc
+     suffix: 7
+     filter: grep -E -v -e "(options_left)"
+     args: -options_monitor -options_left 0
 
 TEST*/

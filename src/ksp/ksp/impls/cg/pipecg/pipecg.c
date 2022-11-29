@@ -7,7 +7,8 @@
       This is called once, usually automatically by KSPSolve() or KSPSetUp()
      but can be called directly by KSPSetUp()
 */
-static PetscErrorCode KSPSetUp_PIPECG(KSP ksp) {
+static PetscErrorCode KSPSetUp_PIPECG(KSP ksp)
+{
   PetscFunctionBegin;
   /* get work vectors needed by PIPECG */
   PetscCall(KSPSetWorkVecs(ksp, 9));
@@ -17,7 +18,8 @@ static PetscErrorCode KSPSetUp_PIPECG(KSP ksp) {
 /*
  KSPSolve_PIPECG - This routine actually applies the pipelined conjugate gradient method
 */
-static PetscErrorCode KSPSolve_PIPECG(KSP ksp) {
+static PetscErrorCode KSPSolve_PIPECG(KSP ksp)
+{
   PetscInt    i;
   PetscScalar alpha = 0.0, beta = 0.0, gamma = 0.0, gammaold = 0.0, delta = 0.0;
   PetscReal   dp = 0.0;
@@ -78,7 +80,8 @@ static PetscErrorCode KSPSolve_PIPECG(KSP ksp) {
     PetscCall(KSP_MatMult(ksp, Amat, U, W));
     dp = 0.0;
     break;
-  default: SETERRQ(PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "%s", KSPNormTypes[ksp->normtype]);
+  default:
+    SETERRQ(PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "%s", KSPNormTypes[ksp->normtype]);
   }
   PetscCall(KSPLogResidualHistory(ksp, dp));
   PetscCall(KSPMonitor(ksp, 0, dp));
@@ -156,18 +159,18 @@ static PetscErrorCode KSPSolve_PIPECG(KSP ksp) {
 PETSC_INTERN PetscErrorCode KSPBuildResidual_CG(KSP, Vec, Vec, Vec *);
 
 /*MC
-   KSPPIPECG - Pipelined conjugate gradient method.
-
-   This method has only a single non-blocking reduction per iteration, compared to 2 blocking for standard CG.  The
-   non-blocking reduction is overlapped by the matrix-vector product and preconditioner application.
-
-   See also KSPPIPECR, where the reduction is only overlapped with the matrix-vector product.
+   KSPPIPECG - Pipelined conjugate gradient method. [](sec_pipelineksp)
 
    Level: intermediate
 
    Notes:
+   This method has only a single non-blocking reduction per iteration, compared to 2 blocking for standard CG.  The
+   non-blocking reduction is overlapped by the matrix-vector product and preconditioner application.
+
+   See also `KSPPIPECR`, where the reduction is only overlapped with the matrix-vector product and `KSPGROPPCG`
+
    MPI configuration may be necessary for reductions to make asynchronous progress, which is important for performance of pipelined methods.
-   See the FAQ on the PETSc website for details.
+   See [](doc_faq_pipelined)
 
    Contributed by:
    Pieter Ghysels, Universiteit Antwerpen, Intel Exascience lab Flanders
@@ -176,9 +179,10 @@ PETSC_INTERN PetscErrorCode KSPBuildResidual_CG(KSP, Vec, Vec, Vec *);
    P. Ghysels and W. Vanroose, "Hiding global synchronization latency in the preconditioned Conjugate Gradient algorithm",
    Submitted to Parallel Computing, 2012.
 
-.seealso: `KSPCreate()`, `KSPSetType()`, `KSPPIPECR`, `KSPGROPPCG`, `KSPPGMRES`, `KSPCG`, `KSPCGUseSingleReduction()`
+.seealso: [](chapter_ksp), [](doc_faq_pipelined), [](sec_pipelineksp), `KSPCreate()`, `KSPSetType()`, `KSPPIPECG2`, `KSPPIPECR`, `KSPGROPPCG`, `KSPPGMRES`, `KSPCG`, `KSPCGUseSingleReduction()`
 M*/
-PETSC_EXTERN PetscErrorCode KSPCreate_PIPECG(KSP ksp) {
+PETSC_EXTERN PetscErrorCode KSPCreate_PIPECG(KSP ksp)
+{
   PetscFunctionBegin;
   PetscCall(KSPSetSupportedNorm(ksp, KSP_NORM_UNPRECONDITIONED, PC_LEFT, 2));
   PetscCall(KSPSetSupportedNorm(ksp, KSP_NORM_PRECONDITIONED, PC_LEFT, 2));

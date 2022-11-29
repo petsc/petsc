@@ -1,4 +1,4 @@
-@@ -7,6 +7,6 @@
+@@ -8,6 +8,6 @@
 -  PetscValidLogicalCollectiveInt(v, d, 2);
 -  PetscValidLogicalCollectiveEnum(v, e, 3);
 -  PetscValidLogicalCollectiveMPIInt(v, f, 4);

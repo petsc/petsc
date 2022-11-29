@@ -24,7 +24,8 @@ static const char help[] = "Test ParMETIS handling of negative weights.\n\n";
     PetscCheck(metis_ierr != METIS_ERROR, PETSC_COMM_SELF, PETSC_ERR_LIB, "ParMETIS general error"); \
   } while (0)
 
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[])
+{
   PetscBool   flg;
   PetscMPIInt rank, size;
   idx_t       ni, isize, *vtxdist, *xadj, *adjncy, *vwgt, *part;

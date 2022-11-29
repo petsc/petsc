@@ -15,7 +15,8 @@ static char help[] = "AO test contributed by Sebastian Steiger <steiger@purdue.e
 
 using namespace std;
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   AO          ao;
   IS          isapp;
   char        infile[PETSC_MAX_PATH_LEN], datafiles[PETSC_MAX_PATH_LEN];

@@ -10,7 +10,8 @@ static char help[] = "Demonstrates VecStrideNorm().\n\n";
 
 #include <petscvec.h>
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   Vec         x; /* vectors */
   PetscReal   norm;
   PetscInt    n   = 20;

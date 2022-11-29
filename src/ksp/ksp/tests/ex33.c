@@ -7,7 +7,8 @@ static char help[] = "Test MatGetInertia().\n\n";
 */
 
 #include <petscksp.h>
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   Mat         A, B, F;
   KSP         ksp;
   PC          pc;

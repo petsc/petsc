@@ -29,7 +29,8 @@ typedef struct {
   PetscReal momentTol; /* Tolerance for checking moment conservation */
 } AppCtx;
 
-static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options) {
+static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
+{
   PetscFunctionBeginUser;
   options->N         = 1;
   options->momentTol = 100.0 * PETSC_MACHINE_EPSILON;
@@ -46,7 +47,8 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, AppCtx *user) {
+static PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, AppCtx *user)
+{
   PetscFunctionBeginUser;
   PetscCall(DMCreate(comm, dm));
   PetscCall(DMSetType(*dm, DMPLEX));
@@ -55,7 +57,8 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, AppCtx *user) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode SetInitialCoordinates(DM sw) {
+static PetscErrorCode SetInitialCoordinates(DM sw)
+{
   AppCtx        *user;
   PetscRandom    rnd, rndv;
   DM             dm;
@@ -76,6 +79,7 @@ static PetscErrorCode SetInitialCoordinates(DM sw) {
   Np = user->N;
   PetscCall(DMGetDimension(sw, &dim));
   PetscCall(DMSwarmGetCellDM(sw, &dm));
+  PetscCall(DMGetCoordinatesLocalSetUp(dm));
   PetscCall(DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd));
   PetscCall(DMPlexGetCellType(dm, cStart, &ct));
   simplex = DMPolytopeTypeGetNumVertices(ct) == DMPolytopeTypeGetDim(ct) + 1 ? PETSC_TRUE : PETSC_FALSE;
@@ -127,7 +131,8 @@ static PetscErrorCode SetInitialCoordinates(DM sw) {
 }
 
 /* Get velocities from swarm and place in solution vector */
-static PetscErrorCode SetInitialConditions(DM dmSw, Vec u) {
+static PetscErrorCode SetInitialConditions(DM dmSw, Vec u)
+{
   DM           dm;
   AppCtx      *user;
   PetscReal   *velocity;
@@ -154,7 +159,8 @@ static PetscErrorCode SetInitialConditions(DM dmSw, Vec u) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode CreateParticles(DM dm, DM *sw, AppCtx *user) {
+static PetscErrorCode CreateParticles(DM dm, DM *sw, AppCtx *user)
+{
   PetscInt *cellid;
   PetscInt  dim, cStart, cEnd, c, Np = user->N, p;
   PetscBool view = PETSC_FALSE;
@@ -192,14 +198,16 @@ static PetscErrorCode CreateParticles(DM dm, DM *sw, AppCtx *user) {
 }
 
 /* Internal dmplex function, same as found in dmpleximpl.h */
-static void DMPlex_WaxpyD_Internal(PetscInt dim, PetscReal a, const PetscReal *x, const PetscReal *y, PetscReal *w) {
+static void DMPlex_WaxpyD_Internal(PetscInt dim, PetscReal a, const PetscReal *x, const PetscReal *y, PetscReal *w)
+{
   PetscInt d;
 
   for (d = 0; d < dim; ++d) w[d] = a * x[d] + y[d];
 }
 
 /* Internal dmplex function, same as found in dmpleximpl.h */
-static PetscReal DMPlex_DotD_Internal(PetscInt dim, const PetscScalar *x, const PetscReal *y) {
+static PetscReal DMPlex_DotD_Internal(PetscInt dim, const PetscScalar *x, const PetscReal *y)
+{
   PetscReal sum = 0.0;
   PetscInt  d;
 
@@ -208,7 +216,8 @@ static PetscReal DMPlex_DotD_Internal(PetscInt dim, const PetscScalar *x, const 
 }
 
 /* Internal dmplex function, same as found in dmpleximpl.h */
-static void DMPlex_MultAdd2DReal_Internal(const PetscReal A[], PetscInt ldx, const PetscScalar x[], PetscScalar y[]) {
+static void DMPlex_MultAdd2DReal_Internal(const PetscReal A[], PetscInt ldx, const PetscScalar x[], PetscScalar y[])
+{
   PetscScalar z[2];
   z[0] = x[0];
   z[1] = x[ldx];
@@ -218,7 +227,8 @@ static void DMPlex_MultAdd2DReal_Internal(const PetscReal A[], PetscInt ldx, con
 }
 
 /* Internal dmplex function, same as found in dmpleximpl.h to avoid private includes. */
-static void DMPlex_MultAdd3DReal_Internal(const PetscReal A[], PetscInt ldx, const PetscScalar x[], PetscScalar y[]) {
+static void DMPlex_MultAdd3DReal_Internal(const PetscReal A[], PetscInt ldx, const PetscScalar x[], PetscScalar y[])
+{
   PetscScalar z[3];
   z[0] = x[0];
   z[1] = x[ldx];
@@ -241,7 +251,8 @@ static void DMPlex_MultAdd3DReal_Internal(const PetscReal A[], PetscInt ldx, con
   Output Parameter:
 . ret - The value G(x)
 */
-static PetscReal Gaussian(PetscInt dim, const PetscReal mu[], PetscReal sigma, const PetscReal x[]) {
+static PetscReal Gaussian(PetscInt dim, const PetscReal mu[], PetscReal sigma, const PetscReal x[])
+{
   PetscReal arg = 0.0;
   PetscInt  d;
 
@@ -269,7 +280,8 @@ $   \nabla_v S_p = \grad \psi_\epsilon(v_p - v) log \sum_q \psi_\epsilon(v - v_q
 $   \sum_l h^d \nabla\psi_\epsilon(v_p - v^c_l) \log\left( \sum_q w_q \psi_\epsilon(v^c_l - v_q) \right)
   where h^d is the volume of each box.
 */
-static PetscErrorCode ComputeGradS(PetscInt dim, PetscInt Np, const PetscReal vp[], const PetscReal velocity[], PetscReal integral[], AppCtx *ctx) {
+static PetscErrorCode ComputeGradS(PetscInt dim, PetscInt Np, const PetscReal vp[], const PetscReal velocity[], PetscReal integral[], AppCtx *ctx)
+{
   PetscReal vc_l[3], L = ctx->L, h = ctx->h, epsilon = ctx->epsilon, init = 0.5 * h - L;
   PetscInt  nx = roundf(2. * L / h);
   PetscInt  ny = dim > 1 ? nx : 1;
@@ -295,7 +307,8 @@ static PetscErrorCode ComputeGradS(PetscInt dim, PetscInt Np, const PetscReal vp
 }
 
 /* Q = 1/|xi| (I - xi xi^T / |xi|^2), xi = vp - vq */
-static PetscErrorCode QCompute(PetscInt dim, const PetscReal vp[], const PetscReal vq[], PetscReal Q[]) {
+static PetscErrorCode QCompute(PetscInt dim, const PetscReal vp[], const PetscReal vq[], PetscReal Q[])
+{
   PetscReal xi[3], xi2, xi3, mag;
   PetscInt  d, e;
 
@@ -311,7 +324,8 @@ static PetscErrorCode QCompute(PetscInt dim, const PetscReal vp[], const PetscRe
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode RHSFunctionParticles(TS ts, PetscReal t, Vec U, Vec R, void *ctx) {
+static PetscErrorCode RHSFunctionParticles(TS ts, PetscReal t, Vec U, Vec R, void *ctx)
+{
   AppCtx            *user = (AppCtx *)ctx;
   PetscInt           dbg  = 0;
   DM                 sw;  /* Particles */
@@ -344,9 +358,14 @@ static PetscErrorCode RHSFunctionParticles(TS ts, PetscReal t, Vec U, Vec R, voi
       DMPlex_WaxpyD_Internal(dim, -1.0, gradS_q, gradS_p, GammaS);
       PetscCall(QCompute(dim, &u[p * dim], &u[q * dim], Q));
       switch (dim) {
-      case 2: DMPlex_MultAdd2DReal_Internal(Q, 1, GammaS, &r[p * dim]); break;
-      case 3: DMPlex_MultAdd3DReal_Internal(Q, 1, GammaS, &r[p * dim]); break;
-      default: SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Do not support dimension %" PetscInt_FMT, dim);
+      case 2:
+        DMPlex_MultAdd2DReal_Internal(Q, 1, GammaS, &r[p * dim]);
+        break;
+      case 3:
+        DMPlex_MultAdd3DReal_Internal(Q, 1, GammaS, &r[p * dim]);
+        break;
+      default:
+        SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Do not support dimension %" PetscInt_FMT, dim);
       }
     }
     if (dbg) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Final %4" PetscInt_FMT " %10.8lf %10.8lf\n", p, r[p * dim + 0], r[p * dim + 1]));
@@ -363,7 +382,8 @@ static PetscErrorCode RHSFunctionParticles(TS ts, PetscReal t, Vec U, Vec R, voi
  the solution vector in cases of particle migration, but we forgo that here since there is no velocity space grid
  to migrate between.
 */
-static PetscErrorCode UpdateSwarm(TS ts) {
+static PetscErrorCode UpdateSwarm(TS ts)
+{
   PetscInt           idx, n;
   const PetscScalar *u;
   PetscScalar       *velocity;
@@ -382,7 +402,8 @@ static PetscErrorCode UpdateSwarm(TS ts) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode InitializeSolve(TS ts, Vec u) {
+static PetscErrorCode InitializeSolve(TS ts, Vec u)
+{
   DM      dm;
   AppCtx *user;
 
@@ -394,7 +415,8 @@ static PetscErrorCode InitializeSolve(TS ts, Vec u) {
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   TS       ts;     /* nonlinear solver */
   DM       dm, sw; /* Velocity space mesh and Particle Swarm */
   Vec      u, v;   /* problem vector */

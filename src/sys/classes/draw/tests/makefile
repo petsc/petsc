@@ -2,7 +2,6 @@
 
 LOCDIR          = src/sys/classes/draw/tests/
 MANSEC          = Sys
-SUBMANSEC       = Draw
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules

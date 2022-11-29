@@ -68,7 +68,7 @@ if __name__ == '__main__':
 
     '--with-cuda=1',
     '--with-cudac=nvcc',
-    # nvcc reqires the user to specify host compiler name via "-ccbin" when using non-GCC compilers:
+    # nvcc requires the user to specify host compiler name via "-ccbin" when using non-GCC compilers:
     'CUDAFLAGS=-ccbin pgc++',  # For PGI
     #'CUDAFLAGS=-ccbin xlc++_r',  # For IBM XL
 

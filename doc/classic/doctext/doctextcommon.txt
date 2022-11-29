@@ -1,0 +1,51 @@
+/*N ASYNC_API
+  Asynchronous API Notes:
+  This routine is explicitly marked as exhibiting asynchronous behavior. Asynchronous
+  behavior implies that routines launching operations on (or associated with) a
+  `PetscDeviceContext` may return to the caller before the operation has completed.
+
+  Sequential Consistency\:
+
+  Operations using the _same_ `PetscDeviceContext` which access objects or memory regions
+  are ordered per the language specification.
+
+  Operations using _separate_ `PetscDeviceContext`s which access the _same_ object or
+  memory region are strongly write-ordered. That is, the following operations\:
+
+  - `write-write`
+  - `write-read`
+  - `read-write`
+
+  are strongly ordered. Formally\:
+
+  _Given an operation `A-B` (e.g. `A` = `write`, `B` = `read`) on an object or memory
+  region `M` such that `A` "happens-before" `B`, where `A` uses `PetscDeviceContext` `X`
+  and `B` uses `PetscDeviceContext` `Y`, then `B` shall not begin before `A`
+  completes. This implies that any side-effects resulting from `A` are also observed by
+  `B`._
+
+  Note the omission of `read-read`; there is no implied ordering between separate
+  `PetscDeviceContext`s for consecutive reads.
+
+  Operations using _separate_ `PetscDeviceContext`s which access _separate_ objects or
+  memory regions may execute in an arbitrary order and offer no guarantee of sequential
+  consistency.
+
+  Memory Consistency\:
+
+  If this routine modifies the participating object(s) then -- unless otherwise stated --
+  the contents of any externally held references to internal data structures should be
+  considered to be in an undefined state. A well-defined state can only be restored by
+  re-acquiring these references through the appropriate API or by calling
+  `PetscDeviceContextSynchronize()`.
+
+  Unless otherwise stated, exceptions to this rule are\:
+
+  - References returned by the routine itself. If a routine returns a pointer, the value
+    of the top-most pointer is guaranteed to always be valid. For example, given a routine
+    which asynchronously allocates memory and returns a pointer to the memory, the value
+    of said pointer is immediately valid but dereferencing the pointer may not be.
+  - References to structures. If a routine returns a `PetscFoo`, or array thereof then the
+    objects themselves are always valid (though their member variables `PetscFoo->data`
+    may not be).
+N*/

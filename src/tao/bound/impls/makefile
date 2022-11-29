@@ -1,4 +1,4 @@
--include ../../../../petsckdir.mk
+-include ../../../../petscdir.mk
 
 DIRS     = blmvm tron bncg bnk bqnk bqnls
 LOCDIR   = src/tao/bound/impls/

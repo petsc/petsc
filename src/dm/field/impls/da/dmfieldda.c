@@ -9,7 +9,8 @@ typedef struct _n_DMField_DA {
   PetscReal    coordRange[3][2];
 } DMField_DA;
 
-static PetscErrorCode DMFieldDestroy_DA(DMField field) {
+static PetscErrorCode DMFieldDestroy_DA(DMField field)
+{
   DMField_DA *dafield;
 
   PetscFunctionBegin;
@@ -19,7 +20,8 @@ static PetscErrorCode DMFieldDestroy_DA(DMField field) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMFieldView_DA(DMField field, PetscViewer viewer) {
+static PetscErrorCode DMFieldView_DA(DMField field, PetscViewer viewer)
+{
   DMField_DA *dafield = (DMField_DA *)field->data;
   PetscBool   iascii;
 
@@ -78,7 +80,8 @@ static PetscErrorCode DMFieldView_DA(DMField field, PetscViewer viewer) {
     } \
   } while (0)
 
-static void MultilinearEvaluate(PetscInt dim, PetscReal (*coordRange)[2], PetscInt nc, PetscScalar *cf, PetscScalar *cfWork, PetscInt nPoints, const PetscScalar *points, PetscDataType datatype, void *B, void *D, void *H) {
+static void MultilinearEvaluate(PetscInt dim, PetscReal (*coordRange)[2], PetscInt nc, PetscScalar *cf, PetscScalar *cfWork, PetscInt nPoints, const PetscScalar *points, PetscDataType datatype, void *B, void *D, void *H)
+{
   PetscInt i, j, k, l, m;
   PetscInt whol = 1 << dim;
   PetscInt half = whol >> 1;
@@ -173,7 +176,8 @@ static void MultilinearEvaluate(PetscInt dim, PetscReal (*coordRange)[2], PetscI
   PetscFunctionReturnVoid();
 }
 
-static PetscErrorCode DMFieldEvaluate_DA(DMField field, Vec points, PetscDataType datatype, void *B, void *D, void *H) {
+static PetscErrorCode DMFieldEvaluate_DA(DMField field, Vec points, PetscDataType datatype, void *B, void *D, void *H)
+{
   DM                 dm;
   DMField_DA        *dafield;
   PetscInt           dim;
@@ -196,7 +200,8 @@ static PetscErrorCode DMFieldEvaluate_DA(DMField field, Vec points, PetscDataTyp
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMFieldEvaluateFE_DA(DMField field, IS cellIS, PetscQuadrature points, PetscDataType datatype, void *B, void *D, void *H) {
+static PetscErrorCode DMFieldEvaluateFE_DA(DMField field, IS cellIS, PetscQuadrature points, PetscDataType datatype, void *B, void *D, void *H)
+{
   PetscInt  c, i, j, k, dim, cellsPer[3] = {0}, first[3] = {0}, whol, half;
   PetscReal stepPer[3]           = {0.};
   PetscReal cellCoordRange[3][2] = {
@@ -295,7 +300,8 @@ static PetscErrorCode DMFieldEvaluateFE_DA(DMField field, IS cellIS, PetscQuadra
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMFieldEvaluateFV_DA(DMField field, IS cellIS, PetscDataType datatype, void *B, void *D, void *H) {
+static PetscErrorCode DMFieldEvaluateFV_DA(DMField field, IS cellIS, PetscDataType datatype, void *B, void *D, void *H)
+{
   PetscInt        c, i, dim, cellsPer[3] = {0}, first[3] = {0};
   PetscReal       stepPer[3] = {0.};
   DM              dm;
@@ -348,7 +354,8 @@ static PetscErrorCode DMFieldEvaluateFV_DA(DMField field, IS cellIS, PetscDataTy
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMFieldGetDegree_DA(DMField field, IS pointIS, PetscInt *minDegree, PetscInt *maxDegree) {
+static PetscErrorCode DMFieldGetDegree_DA(DMField field, IS pointIS, PetscInt *minDegree, PetscInt *maxDegree)
+{
   DM       dm;
   PetscInt dim, h, imin;
 
@@ -368,7 +375,8 @@ static PetscErrorCode DMFieldGetDegree_DA(DMField field, IS pointIS, PetscInt *m
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMFieldCreateDefaultQuadrature_DA(DMField field, IS cellIS, PetscQuadrature *quad) {
+static PetscErrorCode DMFieldCreateDefaultQuadrature_DA(DMField field, IS cellIS, PetscQuadrature *quad)
+{
   PetscInt h, dim, imax, imin;
   DM       dm;
 
@@ -389,7 +397,8 @@ static PetscErrorCode DMFieldCreateDefaultQuadrature_DA(DMField field, IS cellIS
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMFieldInitialize_DA(DMField field) {
+static PetscErrorCode DMFieldInitialize_DA(DMField field)
+{
   DM          dm;
   Vec         coords = NULL;
   PetscInt    dim, i, j, k;
@@ -410,9 +419,9 @@ static PetscErrorCode DMFieldInitialize_DA(DMField field) {
     PetscInt           n;
     const PetscScalar *array;
     PetscReal          mins[3][2] = {
-               {PETSC_MAX_REAL, PETSC_MAX_REAL},
-               {PETSC_MAX_REAL, PETSC_MAX_REAL},
-               {PETSC_MAX_REAL, PETSC_MAX_REAL}
+      {PETSC_MAX_REAL, PETSC_MAX_REAL},
+      {PETSC_MAX_REAL, PETSC_MAX_REAL},
+      {PETSC_MAX_REAL, PETSC_MAX_REAL}
     };
 
     PetscCall(VecGetLocalSize(coords, &n));
@@ -445,17 +454,19 @@ static PetscErrorCode DMFieldInitialize_DA(DMField field) {
   PetscFunctionReturn(0);
 }
 
-PETSC_INTERN PetscErrorCode DMFieldCreate_DA(DMField field) {
+PETSC_INTERN PetscErrorCode DMFieldCreate_DA(DMField field)
+{
   DMField_DA *dafield;
 
   PetscFunctionBegin;
-  PetscCall(PetscNewLog(field, &dafield));
+  PetscCall(PetscNew(&dafield));
   field->data = dafield;
   PetscCall(DMFieldInitialize_DA(field));
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMFieldCreateDA(DM dm, PetscInt nc, const PetscScalar *cornerValues, DMField *field) {
+PetscErrorCode DMFieldCreateDA(DM dm, PetscInt nc, const PetscScalar *cornerValues, DMField *field)
+{
   DMField      b;
   DMField_DA  *dafield;
   PetscInt     dim, nv, i, j, k;

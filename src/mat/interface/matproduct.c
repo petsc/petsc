@@ -44,7 +44,8 @@ const char *const MatProductTypes[] = {"UNSPECIFIED", "AB", "AtB", "ABt", "PtAP"
 
 /* these are basic implementations relying on the old function pointers
  * they are dangerous and should be removed in the future */
-static PetscErrorCode MatProductNumeric_PtAP_Unsafe(Mat C) {
+static PetscErrorCode MatProductNumeric_PtAP_Unsafe(Mat C)
+{
   Mat_Product *product = C->product;
   Mat          P = product->B, AP = product->Dwork;
 
@@ -56,7 +57,8 @@ static PetscErrorCode MatProductNumeric_PtAP_Unsafe(Mat C) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatProductSymbolic_PtAP_Unsafe(Mat C) {
+static PetscErrorCode MatProductSymbolic_PtAP_Unsafe(Mat C)
+{
   Mat_Product *product = C->product;
   Mat          A = product->A, P = product->B, AP;
   PetscReal    fill = product->fill;
@@ -88,7 +90,8 @@ static PetscErrorCode MatProductSymbolic_PtAP_Unsafe(Mat C) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatProductNumeric_RARt_Unsafe(Mat C) {
+static PetscErrorCode MatProductNumeric_RARt_Unsafe(Mat C)
+{
   Mat_Product *product = C->product;
   Mat          R = product->B, RA = product->Dwork;
 
@@ -100,7 +103,8 @@ static PetscErrorCode MatProductNumeric_RARt_Unsafe(Mat C) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatProductSymbolic_RARt_Unsafe(Mat C) {
+static PetscErrorCode MatProductSymbolic_RARt_Unsafe(Mat C)
+{
   Mat_Product *product = C->product;
   Mat          A = product->A, R = product->B, RA;
   PetscReal    fill = product->fill;
@@ -129,7 +133,8 @@ static PetscErrorCode MatProductSymbolic_RARt_Unsafe(Mat C) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatProductNumeric_ABC_Unsafe(Mat mat) {
+static PetscErrorCode MatProductNumeric_ABC_Unsafe(Mat mat)
+{
   Mat_Product *product = mat->product;
   Mat          A = product->A, BC = product->Dwork;
 
@@ -141,7 +146,8 @@ static PetscErrorCode MatProductNumeric_ABC_Unsafe(Mat mat) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatProductSymbolic_ABC_Unsafe(Mat mat) {
+static PetscErrorCode MatProductSymbolic_ABC_Unsafe(Mat mat)
+{
   Mat_Product *product = mat->product;
   Mat          B = product->B, C = product->C, BC;
   PetscReal    fill = product->fill;
@@ -170,15 +176,23 @@ static PetscErrorCode MatProductSymbolic_ABC_Unsafe(Mat mat) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatProductSymbolic_Unsafe(Mat mat) {
+static PetscErrorCode MatProductSymbolic_Unsafe(Mat mat)
+{
   Mat_Product *product = mat->product;
 
   PetscFunctionBegin;
   switch (product->type) {
-  case MATPRODUCT_PtAP: PetscCall(MatProductSymbolic_PtAP_Unsafe(mat)); break;
-  case MATPRODUCT_RARt: PetscCall(MatProductSymbolic_RARt_Unsafe(mat)); break;
-  case MATPRODUCT_ABC: PetscCall(MatProductSymbolic_ABC_Unsafe(mat)); break;
-  default: SETERRQ(PetscObjectComm((PetscObject)mat), PETSC_ERR_SUP, "ProductType %s is not supported", MatProductTypes[product->type]);
+  case MATPRODUCT_PtAP:
+    PetscCall(MatProductSymbolic_PtAP_Unsafe(mat));
+    break;
+  case MATPRODUCT_RARt:
+    PetscCall(MatProductSymbolic_RARt_Unsafe(mat));
+    break;
+  case MATPRODUCT_ABC:
+    PetscCall(MatProductSymbolic_ABC_Unsafe(mat));
+    break;
+  default:
+    SETERRQ(PetscObjectComm((PetscObject)mat), PETSC_ERR_SUP, "ProductType %s is not supported", MatProductTypes[product->type]);
   }
   PetscFunctionReturn(0);
 }
@@ -204,7 +218,8 @@ static PetscErrorCode MatProductSymbolic_Unsafe(Mat mat) {
 
 .seealso: `MatProductCreate()`, `MatProductSetFromOptions()`, `MatProductSymbolic().` `MatProductClear()`
 @*/
-PetscErrorCode MatProductReplaceMats(Mat A, Mat B, Mat C, Mat D) {
+PetscErrorCode MatProductReplaceMats(Mat A, Mat B, Mat C, Mat D)
+{
   Mat_Product *product;
   PetscBool    flgA = PETSC_TRUE, flgB = PETSC_TRUE, flgC = PETSC_TRUE, isset, issym;
 
@@ -261,7 +276,8 @@ PetscErrorCode MatProductReplaceMats(Mat A, Mat B, Mat C, Mat D) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatProductNumeric_X_Dense(Mat C) {
+static PetscErrorCode MatProductNumeric_X_Dense(Mat C)
+{
   Mat_Product *product = C->product;
   Mat          A = product->A, B = product->B;
   PetscInt     k, K              = B->cmap->N;
@@ -271,9 +287,12 @@ static PetscErrorCode MatProductNumeric_X_Dense(Mat C) {
 
   PetscFunctionBegin;
   switch (product->type) {
-  case MATPRODUCT_AB: t = PETSC_FALSE;
-  case MATPRODUCT_AtB: break;
-  default: SETERRQ(PetscObjectComm((PetscObject)C), PETSC_ERR_SUP, "MatProductNumeric type %s not supported for %s and %s matrices", MatProductTypes[product->type], ((PetscObject)A)->type_name, ((PetscObject)B)->type_name);
+  case MATPRODUCT_AB:
+    t = PETSC_FALSE;
+  case MATPRODUCT_AtB:
+    break;
+  default:
+    SETERRQ(PetscObjectComm((PetscObject)C), PETSC_ERR_SUP, "MatProductNumeric type %s not supported for %s and %s matrices", MatProductTypes[product->type], ((PetscObject)A)->type_name, ((PetscObject)B)->type_name);
   }
   if (PetscDefined(HAVE_CUDA)) {
     VecType vtype;
@@ -329,16 +348,22 @@ static PetscErrorCode MatProductNumeric_X_Dense(Mat C) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatProductSymbolic_X_Dense(Mat C) {
+static PetscErrorCode MatProductSymbolic_X_Dense(Mat C)
+{
   Mat_Product *product = C->product;
   Mat          A = product->A, B = product->B;
   PetscBool    isdense;
 
   PetscFunctionBegin;
   switch (product->type) {
-  case MATPRODUCT_AB: PetscCall(MatSetSizes(C, A->rmap->n, B->cmap->n, A->rmap->N, B->cmap->N)); break;
-  case MATPRODUCT_AtB: PetscCall(MatSetSizes(C, A->cmap->n, B->cmap->n, A->cmap->N, B->cmap->N)); break;
-  default: SETERRQ(PetscObjectComm((PetscObject)C), PETSC_ERR_SUP, "MatProductSymbolic type %s not supported for %s and %s matrices", MatProductTypes[product->type], ((PetscObject)A)->type_name, ((PetscObject)B)->type_name);
+  case MATPRODUCT_AB:
+    PetscCall(MatSetSizes(C, A->rmap->n, B->cmap->n, A->rmap->N, B->cmap->N));
+    break;
+  case MATPRODUCT_AtB:
+    PetscCall(MatSetSizes(C, A->cmap->n, B->cmap->n, A->cmap->N, B->cmap->N));
+    break;
+  default:
+    SETERRQ(PetscObjectComm((PetscObject)C), PETSC_ERR_SUP, "MatProductSymbolic type %s not supported for %s and %s matrices", MatProductTypes[product->type], ((PetscObject)A)->type_name, ((PetscObject)B)->type_name);
   }
   PetscCall(PetscObjectBaseTypeCompareAny((PetscObject)C, &isdense, MATSEQDENSE, MATMPIDENSE, ""));
   if (!isdense) {
@@ -352,7 +377,8 @@ static PetscErrorCode MatProductSymbolic_X_Dense(Mat C) {
 }
 
 /* a single driver to query the dispatching */
-static PetscErrorCode MatProductSetFromOptions_Private(Mat mat) {
+static PetscErrorCode MatProductSetFromOptions_Private(Mat mat)
+{
   Mat_Product      *product = mat->product;
   PetscInt          Am, An, Bm, Bn, Cm, Cn;
   Mat               A = product->A, B = product->B, C = product->C;
@@ -492,7 +518,8 @@ static PetscErrorCode MatProductSetFromOptions_Private(Mat mat) {
 
 .seealso: `MatSetFromOptions()`, `MatProductCreate()`, `MatProductCreateWithMat()`, `MatProductNumeric()`, `MatProductSetType()`, `MatProductSetAlgorithm()`
 @*/
-PetscErrorCode MatProductSetFromOptions(Mat mat) {
+PetscErrorCode MatProductSetFromOptions(Mat mat)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat, MAT_CLASSID, 1);
   MatCheckProduct(mat, 1);
@@ -518,7 +545,8 @@ PetscErrorCode MatProductSetFromOptions(Mat mat) {
 
 .seealso: `MatProductSetFromOptions()`, `MatView()`, `MatProductCreate()`, `MatProductCreateWithMat()`
 @*/
-PetscErrorCode MatProductView(Mat mat, PetscViewer viewer) {
+PetscErrorCode MatProductView(Mat mat, PetscViewer viewer)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat, MAT_CLASSID, 1);
   if (!mat->product) PetscFunctionReturn(0);
@@ -532,7 +560,8 @@ PetscErrorCode MatProductView(Mat mat, PetscViewer viewer) {
 /* ----------------------------------------------- */
 /* these are basic implementations relying on the old function pointers
  * they are dangerous and should be removed in the future */
-PetscErrorCode MatProductNumeric_AB(Mat mat) {
+PetscErrorCode MatProductNumeric_AB(Mat mat)
+{
   Mat_Product *product = mat->product;
   Mat          A = product->A, B = product->B;
 
@@ -541,7 +570,8 @@ PetscErrorCode MatProductNumeric_AB(Mat mat) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatProductNumeric_AtB(Mat mat) {
+PetscErrorCode MatProductNumeric_AtB(Mat mat)
+{
   Mat_Product *product = mat->product;
   Mat          A = product->A, B = product->B;
 
@@ -550,7 +580,8 @@ PetscErrorCode MatProductNumeric_AtB(Mat mat) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatProductNumeric_ABt(Mat mat) {
+PetscErrorCode MatProductNumeric_ABt(Mat mat)
+{
   Mat_Product *product = mat->product;
   Mat          A = product->A, B = product->B;
 
@@ -559,7 +590,8 @@ PetscErrorCode MatProductNumeric_ABt(Mat mat) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatProductNumeric_PtAP(Mat mat) {
+PetscErrorCode MatProductNumeric_PtAP(Mat mat)
+{
   Mat_Product *product = mat->product;
   Mat          A = product->A, B = product->B;
 
@@ -568,7 +600,8 @@ PetscErrorCode MatProductNumeric_PtAP(Mat mat) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatProductNumeric_RARt(Mat mat) {
+PetscErrorCode MatProductNumeric_RARt(Mat mat)
+{
   Mat_Product *product = mat->product;
   Mat          A = product->A, B = product->B;
 
@@ -577,7 +610,8 @@ PetscErrorCode MatProductNumeric_RARt(Mat mat) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatProductNumeric_ABC(Mat mat) {
+PetscErrorCode MatProductNumeric_ABC(Mat mat)
+{
   Mat_Product *product = mat->product;
   Mat          A = product->A, B = product->B, C = product->C;
 
@@ -603,7 +637,8 @@ PetscErrorCode MatProductNumeric_ABC(Mat mat) {
 
 .seealso: `MatProductSetAlgorithm()`, `MatProductSetType()`, `MatProductCreate()`, `MatSetType()`, `MatProductSymbolic()`
 @*/
-PetscErrorCode MatProductNumeric(Mat mat) {
+PetscErrorCode MatProductNumeric(Mat mat)
+{
   PetscLogEvent eventtype = -1;
   PetscBool     missing   = PETSC_FALSE;
 
@@ -611,13 +646,26 @@ PetscErrorCode MatProductNumeric(Mat mat) {
   PetscValidHeaderSpecific(mat, MAT_CLASSID, 1);
   MatCheckProduct(mat, 1);
   switch (mat->product->type) {
-  case MATPRODUCT_AB: eventtype = MAT_MatMultNumeric; break;
-  case MATPRODUCT_AtB: eventtype = MAT_TransposeMatMultNumeric; break;
-  case MATPRODUCT_ABt: eventtype = MAT_MatTransposeMultNumeric; break;
-  case MATPRODUCT_PtAP: eventtype = MAT_PtAPNumeric; break;
-  case MATPRODUCT_RARt: eventtype = MAT_RARtNumeric; break;
-  case MATPRODUCT_ABC: eventtype = MAT_MatMatMultNumeric; break;
-  default: SETERRQ(PetscObjectComm((PetscObject)mat), PETSC_ERR_SUP, "ProductType %s is not supported", MatProductTypes[mat->product->type]);
+  case MATPRODUCT_AB:
+    eventtype = MAT_MatMultNumeric;
+    break;
+  case MATPRODUCT_AtB:
+    eventtype = MAT_TransposeMatMultNumeric;
+    break;
+  case MATPRODUCT_ABt:
+    eventtype = MAT_MatTransposeMultNumeric;
+    break;
+  case MATPRODUCT_PtAP:
+    eventtype = MAT_PtAPNumeric;
+    break;
+  case MATPRODUCT_RARt:
+    eventtype = MAT_RARtNumeric;
+    break;
+  case MATPRODUCT_ABC:
+    eventtype = MAT_MatMatMultNumeric;
+    break;
+  default:
+    SETERRQ(PetscObjectComm((PetscObject)mat), PETSC_ERR_SUP, "ProductType %s is not supported", MatProductTypes[mat->product->type]);
   }
 
   if (mat->ops->productnumeric) {
@@ -646,7 +694,8 @@ PetscErrorCode MatProductNumeric(Mat mat) {
 /* ----------------------------------------------- */
 /* these are basic implementations relying on the old function pointers
  * they are dangerous and should be removed in the future */
-PetscErrorCode MatProductSymbolic_AB(Mat mat) {
+PetscErrorCode MatProductSymbolic_AB(Mat mat)
+{
   Mat_Product *product = mat->product;
   Mat          A = product->A, B = product->B;
 
@@ -656,7 +705,8 @@ PetscErrorCode MatProductSymbolic_AB(Mat mat) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatProductSymbolic_AtB(Mat mat) {
+PetscErrorCode MatProductSymbolic_AtB(Mat mat)
+{
   Mat_Product *product = mat->product;
   Mat          A = product->A, B = product->B;
 
@@ -666,7 +716,8 @@ PetscErrorCode MatProductSymbolic_AtB(Mat mat) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatProductSymbolic_ABt(Mat mat) {
+PetscErrorCode MatProductSymbolic_ABt(Mat mat)
+{
   Mat_Product *product = mat->product;
   Mat          A = product->A, B = product->B;
 
@@ -676,7 +727,8 @@ PetscErrorCode MatProductSymbolic_ABt(Mat mat) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatProductSymbolic_ABC(Mat mat) {
+PetscErrorCode MatProductSymbolic_ABC(Mat mat)
+{
   Mat_Product *product = mat->product;
   Mat          A = product->A, B = product->B, C = product->C;
 
@@ -704,7 +756,8 @@ PetscErrorCode MatProductSymbolic_ABC(Mat mat) {
 
 .seealso: `MatProductCreate()`, `MatProductCreateWithMat()`, `MatProductSetFromOptions()`, `MatProductNumeric()`, `MatProductSetType()`, `MatProductSetAlgorithm()`
 @*/
-PetscErrorCode MatProductSymbolic(Mat mat) {
+PetscErrorCode MatProductSymbolic(Mat mat)
+{
   PetscLogEvent eventtype = -1;
   PetscBool     missing   = PETSC_FALSE;
 
@@ -713,13 +766,26 @@ PetscErrorCode MatProductSymbolic(Mat mat) {
   MatCheckProduct(mat, 1);
   PetscCheck(!mat->product->data, PetscObjectComm((PetscObject)mat), PETSC_ERR_ORDER, "Cannot run symbolic phase. Product data not empty");
   switch (mat->product->type) {
-  case MATPRODUCT_AB: eventtype = MAT_MatMultSymbolic; break;
-  case MATPRODUCT_AtB: eventtype = MAT_TransposeMatMultSymbolic; break;
-  case MATPRODUCT_ABt: eventtype = MAT_MatTransposeMultSymbolic; break;
-  case MATPRODUCT_PtAP: eventtype = MAT_PtAPSymbolic; break;
-  case MATPRODUCT_RARt: eventtype = MAT_RARtSymbolic; break;
-  case MATPRODUCT_ABC: eventtype = MAT_MatMatMultSymbolic; break;
-  default: SETERRQ(PetscObjectComm((PetscObject)mat), PETSC_ERR_SUP, "ProductType %s is not supported", MatProductTypes[mat->product->type]);
+  case MATPRODUCT_AB:
+    eventtype = MAT_MatMultSymbolic;
+    break;
+  case MATPRODUCT_AtB:
+    eventtype = MAT_TransposeMatMultSymbolic;
+    break;
+  case MATPRODUCT_ABt:
+    eventtype = MAT_MatTransposeMultSymbolic;
+    break;
+  case MATPRODUCT_PtAP:
+    eventtype = MAT_PtAPSymbolic;
+    break;
+  case MATPRODUCT_RARt:
+    eventtype = MAT_RARtSymbolic;
+    break;
+  case MATPRODUCT_ABC:
+    eventtype = MAT_MatMatMultSymbolic;
+    break;
+  default:
+    SETERRQ(PetscObjectComm((PetscObject)mat), PETSC_ERR_SUP, "ProductType %s is not supported", MatProductTypes[mat->product->type]);
   }
   mat->ops->productnumeric = NULL;
   if (mat->ops->productsymbolic) {
@@ -755,7 +821,8 @@ PetscErrorCode MatProductSymbolic(Mat mat) {
 
 .seealso: `MatProductSetFromOptions()`, `MatProductSetType()`, `MatProductSetAlgorithm()`, `MatProductCreate()`
 @*/
-PetscErrorCode MatProductSetFill(Mat mat, PetscReal fill) {
+PetscErrorCode MatProductSetFill(Mat mat, PetscReal fill)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat, MAT_CLASSID, 1);
   MatCheckProduct(mat, 1);
@@ -781,7 +848,8 @@ PetscErrorCode MatProductSetFill(Mat mat, PetscReal fill) {
 
 .seealso: `MatProductSetType()`, `MatProductSetFill()`, `MatProductCreate()`, `MatProductAlgorithm`, `MatProductType`
 @*/
-PetscErrorCode MatProductSetAlgorithm(Mat mat, MatProductAlgorithm alg) {
+PetscErrorCode MatProductSetAlgorithm(Mat mat, MatProductAlgorithm alg)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat, MAT_CLASSID, 1);
   MatCheckProduct(mat, 1);
@@ -807,7 +875,8 @@ PetscErrorCode MatProductSetAlgorithm(Mat mat, MatProductAlgorithm alg) {
 .seealso: `MatProductCreate()`, `MatProductType`, `MatProductType`,
           `MATPRODUCT_AB`, `MATPRODUCT_AtB`, `MATPRODUCT_ABt`, `MATPRODUCT_PtAP`, `MATPRODUCT_RARt`, `MATPRODUCT_ABC`
 @*/
-PetscErrorCode MatProductSetType(Mat mat, MatProductType productype) {
+PetscErrorCode MatProductSetType(Mat mat, MatProductType productype)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat, MAT_CLASSID, 1);
   MatCheckProduct(mat, 1);
@@ -840,7 +909,8 @@ PetscErrorCode MatProductSetType(Mat mat, MatProductType productype) {
 
 .seealso: `MatProductCreate()`
 @*/
-PetscErrorCode MatProductClear(Mat mat) {
+PetscErrorCode MatProductClear(Mat mat)
+{
   Mat_Product *product = mat->product;
 
   PetscFunctionBegin;
@@ -860,13 +930,14 @@ PetscErrorCode MatProductClear(Mat mat) {
 }
 
 /* Create a supporting struct and attach it to the matrix product */
-PetscErrorCode MatProductCreate_Private(Mat A, Mat B, Mat C, Mat D) {
+PetscErrorCode MatProductCreate_Private(Mat A, Mat B, Mat C, Mat D)
+{
   Mat_Product *product = NULL;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(D, MAT_CLASSID, 4);
   PetscCheck(!D->product, PetscObjectComm((PetscObject)D), PETSC_ERR_PLIB, "Product already present");
-  PetscCall(PetscNewLog(D, &product));
+  PetscCall(PetscNew(&product));
   product->A        = A;
   product->B        = B;
   product->C        = C;
@@ -910,7 +981,8 @@ PetscErrorCode MatProductCreate_Private(Mat A, Mat B, Mat C, Mat D) {
 
 .seealso: `MatProductCreate()`, `MatProductClear()`
 @*/
-PetscErrorCode MatProductCreateWithMat(Mat A, Mat B, Mat C, Mat D) {
+PetscErrorCode MatProductCreateWithMat(Mat A, Mat B, Mat C, Mat D)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
   PetscValidType(A, 1);
@@ -983,7 +1055,8 @@ PetscErrorCode MatProductCreateWithMat(Mat A, Mat B, Mat C, Mat D) {
 
 .seealso: `MatProductCreateWithMat()`, `MatProductSetType()`, `MatProductSetAlgorithm()`, `MatProductClear()`
 @*/
-PetscErrorCode MatProductCreate(Mat A, Mat B, Mat C, Mat *D) {
+PetscErrorCode MatProductCreate(Mat A, Mat B, Mat C, Mat *D)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
   PetscValidType(A, 1);
@@ -1015,7 +1088,8 @@ typedef struct {
   Mat ABC;
 } MatMatMatPrivate;
 
-static PetscErrorCode MatDestroy_MatMatMatPrivate(void *data) {
+static PetscErrorCode MatDestroy_MatMatMatPrivate(void *data)
+{
   MatMatMatPrivate *mmdata = (MatMatMatPrivate *)data;
 
   PetscFunctionBegin;
@@ -1025,7 +1099,8 @@ static PetscErrorCode MatDestroy_MatMatMatPrivate(void *data) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatProductNumeric_ABC_Basic(Mat mat) {
+static PetscErrorCode MatProductNumeric_ABC_Basic(Mat mat)
+{
   Mat_Product      *product = mat->product;
   MatMatMatPrivate *mmabc;
 
@@ -1046,7 +1121,8 @@ static PetscErrorCode MatProductNumeric_ABC_Basic(Mat mat) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatProductSymbolic_ABC_Basic(Mat mat) {
+PetscErrorCode MatProductSymbolic_ABC_Basic(Mat mat)
+{
   Mat_Product      *product = mat->product;
   Mat               A, B, C;
   MatProductType    p1, p2;
@@ -1082,7 +1158,8 @@ PetscErrorCode MatProductSymbolic_ABC_Basic(Mat mat) {
     B  = product->B;
     C  = product->C;
     break;
-  default: SETERRQ(PetscObjectComm((PetscObject)mat), PETSC_ERR_PLIB, "Not for ProductType %s", MatProductTypes[product->type]);
+  default:
+    SETERRQ(PetscObjectComm((PetscObject)mat), PETSC_ERR_PLIB, "Not for ProductType %s", MatProductTypes[product->type]);
   }
   PetscCall(MatProductCreate(B, C, NULL, &mmabc->BC));
   PetscCall(MatSetOptionsPrefix(mmabc->BC, prefix));
@@ -1132,7 +1209,8 @@ PetscErrorCode MatProductSymbolic_ABC_Basic(Mat mat) {
 
 .seealso: `MatProductCreateWithMat()`, `MatProductSetType()`, `MatProductCreate()`, `MatProductType`, `MatProductAlgorithm`
 @*/
-PetscErrorCode MatProductGetType(Mat mat, MatProductType *mtype) {
+PetscErrorCode MatProductGetType(Mat mat, MatProductType *mtype)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat, MAT_CLASSID, 1);
   PetscValidPointer(mtype, 2);
@@ -1158,7 +1236,8 @@ PetscErrorCode MatProductGetType(Mat mat, MatProductType *mtype) {
 
 .seealso: `MatProductCreateWithMat()`, `MatProductSetType()`, `MatProductSetAlgorithm()`, `MatProductCreate()`
 @*/
-PetscErrorCode MatProductGetMats(Mat mat, Mat *A, Mat *B, Mat *C) {
+PetscErrorCode MatProductGetMats(Mat mat, Mat *A, Mat *B, Mat *C)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat, MAT_CLASSID, 1);
   if (A) *A = mat->product ? mat->product->A : NULL;

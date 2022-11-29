@@ -3,7 +3,8 @@ static char help[] = "Saves a rectangular sparse matrix to disk.\n\n";
 
 #include <petscmat.h>
 
-int main(int argc, char **args) {
+int main(int argc, char **args)
+{
   Mat         A;
   PetscInt    m = 100, n = 11, js[11], i, j, cnt;
   PetscScalar values[11];

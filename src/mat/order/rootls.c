@@ -22,7 +22,8 @@
 /*       NLVL - IS THE NUMBER OF LEVELS IN THE LEVEL STRUCTURE.*/
 /*       (XLS, LS) - ARRAY PAIR FOR THE ROOTED LEVEL STRUCTURE.*/
 /*****************************************************************/
-PetscErrorCode SPARSEPACKrootls(const PetscInt *root, const PetscInt *xadj, const PetscInt *adjncy, PetscInt *mask, PetscInt *nlvl, PetscInt *xls, PetscInt *ls) {
+PetscErrorCode SPARSEPACKrootls(const PetscInt *root, const PetscInt *xadj, const PetscInt *adjncy, PetscInt *mask, PetscInt *nlvl, PetscInt *xls, PetscInt *ls)
+{
   /* System generated locals */
   PetscInt i__1, i__2;
 
@@ -53,7 +54,7 @@ L200:
   xls[*nlvl] = lbegin;
   /*       GENERATE THE NEXT LEVEL BY FINDING ALL THE MASKED */
   /*       NEIGHBORS OF NODES IN THE CURRENT LEVEL.*/
-  i__1       = lvlend;
+  i__1 = lvlend;
   for (i = lbegin; i <= i__1; ++i) {
     node  = ls[i];
     jstrt = xadj[node];

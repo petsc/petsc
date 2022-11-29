@@ -5,7 +5,8 @@
 
 #include <petsc/private/dmdaimpl.h> /*I   "petscdmda.h"   I*/
 
-PetscErrorCode VecDuplicate_MPI_DA(Vec g, Vec *gg) {
+PetscErrorCode VecDuplicate_MPI_DA(Vec g, Vec *gg)
+{
   DM          da;
   PetscLayout map;
 
@@ -17,7 +18,8 @@ PetscErrorCode VecDuplicate_MPI_DA(Vec g, Vec *gg) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode DMCreateGlobalVector_DA(DM da, Vec *g) {
+PetscErrorCode DMCreateGlobalVector_DA(DM da, Vec *g)
+{
   DM_DA *dd = (DM_DA *)da->data;
 
   PetscFunctionBegin;
@@ -42,7 +44,7 @@ PetscErrorCode DMCreateGlobalVector_DA(DM da, Vec *g) {
 /*@
    DMDACreateNaturalVector - Creates a parallel PETSc vector that
    will hold vector values in the natural numbering, rather than in
-   the PETSc parallel numbering associated with the DMDA.
+   the PETSc parallel numbering associated with the `DMDA`.
 
    Collective
 
@@ -54,18 +56,19 @@ PetscErrorCode DMCreateGlobalVector_DA(DM da, Vec *g) {
 
    Level: developer
 
-   Note:
+   Notes:
    The output parameter, g, is a regular PETSc vector that should be destroyed
-   with a call to VecDestroy() when usage is finished.
+   with a call to `VecDestroy()` when usage is finished.
 
    The number of local entries in the vector on each process is the same
-   as in a vector created with DMCreateGlobalVector().
+   as in a vector created with `DMCreateGlobalVector()`.
 
-.seealso: `DMCreateLocalVector()`, `VecDuplicate()`, `VecDuplicateVecs()`,
+.seealso: `DM`, `DMDA`, `DMCreateLocalVector()`, `VecDuplicate()`, `VecDuplicateVecs()`,
           `DMDACreate1d()`, `DMDACreate2d()`, `DMDACreate3d()`, `DMGlobalToLocalBegin()`,
           `DMGlobalToLocalEnd()`, `DMLocalToGlobalBegin()`
 @*/
-PetscErrorCode DMDACreateNaturalVector(DM da, Vec *g) {
+PetscErrorCode DMDACreateNaturalVector(DM da, Vec *g)
+{
   PetscInt cnt;
   DM_DA   *dd = (DM_DA *)da->data;
 

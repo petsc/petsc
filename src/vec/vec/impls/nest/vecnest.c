@@ -2,7 +2,8 @@
 #include <../src/vec/vec/impls/nest/vecnestimpl.h> /*I  "petscvec.h"   I*/
 
 /* check all blocks are filled */
-static PetscErrorCode VecAssemblyBegin_Nest(Vec v) {
+static PetscErrorCode VecAssemblyBegin_Nest(Vec v)
+{
   Vec_Nest *vs = (Vec_Nest *)v->data;
   PetscInt  i;
 
@@ -14,7 +15,8 @@ static PetscErrorCode VecAssemblyBegin_Nest(Vec v) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode VecAssemblyEnd_Nest(Vec v) {
+static PetscErrorCode VecAssemblyEnd_Nest(Vec v)
+{
   Vec_Nest *vs = (Vec_Nest *)v->data;
   PetscInt  i;
 
@@ -23,7 +25,8 @@ static PetscErrorCode VecAssemblyEnd_Nest(Vec v) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode VecDestroy_Nest(Vec v) {
+static PetscErrorCode VecDestroy_Nest(Vec v)
+{
   Vec_Nest *vs = (Vec_Nest *)v->data;
   PetscInt  i;
 
@@ -44,7 +47,8 @@ static PetscErrorCode VecDestroy_Nest(Vec v) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode VecCopy_Nest(Vec x, Vec y) {
+static PetscErrorCode VecCopy_Nest(Vec x, Vec y)
+{
   Vec_Nest *bx = (Vec_Nest *)x->data;
   Vec_Nest *by = (Vec_Nest *)y->data;
   PetscInt  i;
@@ -56,7 +60,8 @@ static PetscErrorCode VecCopy_Nest(Vec x, Vec y) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode VecDuplicate_Nest(Vec x, Vec *y) {
+static PetscErrorCode VecDuplicate_Nest(Vec x, Vec *y)
+{
   Vec_Nest *bx = (Vec_Nest *)x->data;
   Vec       Y;
   Vec      *sub;
@@ -72,7 +77,8 @@ static PetscErrorCode VecDuplicate_Nest(Vec x, Vec *y) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode VecDot_Nest(Vec x, Vec y, PetscScalar *val) {
+static PetscErrorCode VecDot_Nest(Vec x, Vec y, PetscScalar *val)
+{
   Vec_Nest   *bx = (Vec_Nest *)x->data;
   Vec_Nest   *by = (Vec_Nest *)y->data;
   PetscInt    i, nr;
@@ -89,7 +95,8 @@ static PetscErrorCode VecDot_Nest(Vec x, Vec y, PetscScalar *val) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode VecTDot_Nest(Vec x, Vec y, PetscScalar *val) {
+static PetscErrorCode VecTDot_Nest(Vec x, Vec y, PetscScalar *val)
+{
   Vec_Nest   *bx = (Vec_Nest *)x->data;
   Vec_Nest   *by = (Vec_Nest *)y->data;
   PetscInt    i, nr;
@@ -106,7 +113,8 @@ static PetscErrorCode VecTDot_Nest(Vec x, Vec y, PetscScalar *val) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode VecDotNorm2_Nest(Vec x, Vec y, PetscScalar *dp, PetscScalar *nm) {
+static PetscErrorCode VecDotNorm2_Nest(Vec x, Vec y, PetscScalar *dp, PetscScalar *nm)
+{
   Vec_Nest   *bx = (Vec_Nest *)x->data;
   Vec_Nest   *by = (Vec_Nest *)y->data;
   PetscInt    i, nr;
@@ -127,7 +135,8 @@ static PetscErrorCode VecDotNorm2_Nest(Vec x, Vec y, PetscScalar *dp, PetscScala
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode VecAXPY_Nest(Vec y, PetscScalar alpha, Vec x) {
+static PetscErrorCode VecAXPY_Nest(Vec y, PetscScalar alpha, Vec x)
+{
   Vec_Nest *bx = (Vec_Nest *)x->data;
   Vec_Nest *by = (Vec_Nest *)y->data;
   PetscInt  i, nr;
@@ -138,7 +147,8 @@ static PetscErrorCode VecAXPY_Nest(Vec y, PetscScalar alpha, Vec x) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode VecAYPX_Nest(Vec y, PetscScalar alpha, Vec x) {
+static PetscErrorCode VecAYPX_Nest(Vec y, PetscScalar alpha, Vec x)
+{
   Vec_Nest *bx = (Vec_Nest *)x->data;
   Vec_Nest *by = (Vec_Nest *)y->data;
   PetscInt  i, nr;
@@ -149,7 +159,8 @@ static PetscErrorCode VecAYPX_Nest(Vec y, PetscScalar alpha, Vec x) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode VecAXPBY_Nest(Vec y, PetscScalar alpha, PetscScalar beta, Vec x) {
+static PetscErrorCode VecAXPBY_Nest(Vec y, PetscScalar alpha, PetscScalar beta, Vec x)
+{
   Vec_Nest *bx = (Vec_Nest *)x->data;
   Vec_Nest *by = (Vec_Nest *)y->data;
   PetscInt  i, nr;
@@ -160,7 +171,8 @@ static PetscErrorCode VecAXPBY_Nest(Vec y, PetscScalar alpha, PetscScalar beta, 
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode VecAXPBYPCZ_Nest(Vec z, PetscScalar alpha, PetscScalar beta, PetscScalar gamma, Vec x, Vec y) {
+static PetscErrorCode VecAXPBYPCZ_Nest(Vec z, PetscScalar alpha, PetscScalar beta, PetscScalar gamma, Vec x, Vec y)
+{
   Vec_Nest *bx = (Vec_Nest *)x->data;
   Vec_Nest *by = (Vec_Nest *)y->data;
   Vec_Nest *bz = (Vec_Nest *)z->data;
@@ -172,7 +184,8 @@ static PetscErrorCode VecAXPBYPCZ_Nest(Vec z, PetscScalar alpha, PetscScalar bet
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode VecScale_Nest(Vec x, PetscScalar alpha) {
+static PetscErrorCode VecScale_Nest(Vec x, PetscScalar alpha)
+{
   Vec_Nest *bx = (Vec_Nest *)x->data;
   PetscInt  i, nr;
 
@@ -182,7 +195,8 @@ static PetscErrorCode VecScale_Nest(Vec x, PetscScalar alpha) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode VecPointwiseMult_Nest(Vec w, Vec x, Vec y) {
+static PetscErrorCode VecPointwiseMult_Nest(Vec w, Vec x, Vec y)
+{
   Vec_Nest *bx = (Vec_Nest *)x->data;
   Vec_Nest *by = (Vec_Nest *)y->data;
   Vec_Nest *bw = (Vec_Nest *)w->data;
@@ -195,7 +209,8 @@ static PetscErrorCode VecPointwiseMult_Nest(Vec w, Vec x, Vec y) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode VecPointwiseDivide_Nest(Vec w, Vec x, Vec y) {
+static PetscErrorCode VecPointwiseDivide_Nest(Vec w, Vec x, Vec y)
+{
   Vec_Nest *bx = (Vec_Nest *)x->data;
   Vec_Nest *by = (Vec_Nest *)y->data;
   Vec_Nest *bw = (Vec_Nest *)w->data;
@@ -209,7 +224,8 @@ static PetscErrorCode VecPointwiseDivide_Nest(Vec w, Vec x, Vec y) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode VecReciprocal_Nest(Vec x) {
+static PetscErrorCode VecReciprocal_Nest(Vec x)
+{
   Vec_Nest *bx = (Vec_Nest *)x->data;
   PetscInt  i, nr;
 
@@ -219,7 +235,8 @@ static PetscErrorCode VecReciprocal_Nest(Vec x) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode VecNorm_Nest(Vec xin, NormType type, PetscReal *z) {
+static PetscErrorCode VecNorm_Nest(Vec xin, NormType type, PetscReal *z)
+{
   Vec_Nest *bx = (Vec_Nest *)xin->data;
   PetscInt  i, nr;
   PetscReal z_i;
@@ -249,7 +266,8 @@ static PetscErrorCode VecNorm_Nest(Vec xin, NormType type, PetscReal *z) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode VecMAXPY_Nest(Vec y, PetscInt nv, const PetscScalar alpha[], Vec *x) {
+static PetscErrorCode VecMAXPY_Nest(Vec y, PetscInt nv, const PetscScalar alpha[], Vec *x)
+{
   PetscInt v;
 
   PetscFunctionBegin;
@@ -260,7 +278,8 @@ static PetscErrorCode VecMAXPY_Nest(Vec y, PetscInt nv, const PetscScalar alpha[
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode VecMDot_Nest(Vec x, PetscInt nv, const Vec y[], PetscScalar *val) {
+static PetscErrorCode VecMDot_Nest(Vec x, PetscInt nv, const Vec y[], PetscScalar *val)
+{
   PetscInt j;
 
   PetscFunctionBegin;
@@ -268,7 +287,8 @@ static PetscErrorCode VecMDot_Nest(Vec x, PetscInt nv, const Vec y[], PetscScala
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode VecMTDot_Nest(Vec x, PetscInt nv, const Vec y[], PetscScalar *val) {
+static PetscErrorCode VecMTDot_Nest(Vec x, PetscInt nv, const Vec y[], PetscScalar *val)
+{
   PetscInt j;
 
   PetscFunctionBegin;
@@ -276,7 +296,8 @@ static PetscErrorCode VecMTDot_Nest(Vec x, PetscInt nv, const Vec y[], PetscScal
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode VecSet_Nest(Vec x, PetscScalar alpha) {
+static PetscErrorCode VecSet_Nest(Vec x, PetscScalar alpha)
+{
   Vec_Nest *bx = (Vec_Nest *)x->data;
   PetscInt  i, nr;
 
@@ -286,7 +307,8 @@ static PetscErrorCode VecSet_Nest(Vec x, PetscScalar alpha) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode VecConjugate_Nest(Vec x) {
+static PetscErrorCode VecConjugate_Nest(Vec x)
+{
   Vec_Nest *bx = (Vec_Nest *)x->data;
   PetscInt  j, nr;
 
@@ -296,7 +318,8 @@ static PetscErrorCode VecConjugate_Nest(Vec x) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode VecSwap_Nest(Vec x, Vec y) {
+static PetscErrorCode VecSwap_Nest(Vec x, Vec y)
+{
   Vec_Nest *bx = (Vec_Nest *)x->data;
   Vec_Nest *by = (Vec_Nest *)y->data;
   PetscInt  i, nr;
@@ -308,7 +331,8 @@ static PetscErrorCode VecSwap_Nest(Vec x, Vec y) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode VecWAXPY_Nest(Vec w, PetscScalar alpha, Vec x, Vec y) {
+static PetscErrorCode VecWAXPY_Nest(Vec w, PetscScalar alpha, Vec x, Vec y)
+{
   Vec_Nest *bx = (Vec_Nest *)x->data;
   Vec_Nest *by = (Vec_Nest *)y->data;
   Vec_Nest *bw = (Vec_Nest *)w->data;
@@ -322,7 +346,8 @@ static PetscErrorCode VecWAXPY_Nest(Vec w, PetscScalar alpha, Vec x, Vec y) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode VecMin_Nest(Vec x, PetscInt *p, PetscReal *v) {
+static PetscErrorCode VecMin_Nest(Vec x, PetscInt *p, PetscReal *v)
+{
   PetscInt  i, lp = -1, lw = -1;
   PetscReal lv;
   Vec_Nest *bx = (Vec_Nest *)x->data;
@@ -354,7 +379,8 @@ static PetscErrorCode VecMin_Nest(Vec x, PetscInt *p, PetscReal *v) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode VecMax_Nest(Vec x, PetscInt *p, PetscReal *v) {
+static PetscErrorCode VecMax_Nest(Vec x, PetscInt *p, PetscReal *v)
+{
   PetscInt  i, lp = -1, lw = -1;
   PetscReal lv;
   Vec_Nest *bx = (Vec_Nest *)x->data;
@@ -386,7 +412,8 @@ static PetscErrorCode VecMax_Nest(Vec x, PetscInt *p, PetscReal *v) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode VecView_Nest(Vec x, PetscViewer viewer) {
+static PetscErrorCode VecView_Nest(Vec x, PetscViewer viewer)
+{
   Vec_Nest *bx = (Vec_Nest *)x->data;
   PetscBool isascii;
   PetscInt  i;
@@ -417,7 +444,8 @@ static PetscErrorCode VecView_Nest(Vec x, PetscViewer viewer) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode VecSize_Nest_Recursive(Vec x, PetscBool globalsize, PetscInt *L) {
+static PetscErrorCode VecSize_Nest_Recursive(Vec x, PetscBool globalsize, PetscInt *L)
+{
   Vec_Nest *bx;
   PetscInt  size, i, nr;
   PetscBool isnest;
@@ -442,20 +470,23 @@ static PetscErrorCode VecSize_Nest_Recursive(Vec x, PetscBool globalsize, PetscI
 }
 
 /* Returns the sum of the global size of all the consituent vectors in the nest */
-static PetscErrorCode VecGetSize_Nest(Vec x, PetscInt *N) {
+static PetscErrorCode VecGetSize_Nest(Vec x, PetscInt *N)
+{
   PetscFunctionBegin;
   *N = x->map->N;
   PetscFunctionReturn(0);
 }
 
 /* Returns the sum of the local size of all the consituent vectors in the nest */
-static PetscErrorCode VecGetLocalSize_Nest(Vec x, PetscInt *n) {
+static PetscErrorCode VecGetLocalSize_Nest(Vec x, PetscInt *n)
+{
   PetscFunctionBegin;
   *n = x->map->n;
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode VecMaxPointwiseDivide_Nest(Vec x, Vec y, PetscReal *max) {
+static PetscErrorCode VecMaxPointwiseDivide_Nest(Vec x, Vec y, PetscReal *max)
+{
   Vec_Nest *bx = (Vec_Nest *)x->data;
   Vec_Nest *by = (Vec_Nest *)y->data;
   PetscInt  i, nr;
@@ -473,7 +504,8 @@ static PetscErrorCode VecMaxPointwiseDivide_Nest(Vec x, Vec y, PetscReal *max) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode VecGetSubVector_Nest(Vec X, IS is, Vec *x) {
+static PetscErrorCode VecGetSubVector_Nest(Vec X, IS is, Vec *x)
+{
   Vec_Nest *bx = (Vec_Nest *)X->data;
   PetscInt  i;
 
@@ -492,13 +524,16 @@ static PetscErrorCode VecGetSubVector_Nest(Vec X, IS is, Vec *x) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode VecRestoreSubVector_Nest(Vec X, IS is, Vec *x) {
+static PetscErrorCode VecRestoreSubVector_Nest(Vec X, IS is, Vec *x)
+{
   PetscFunctionBegin;
+  PetscCall(PetscObjectStateIncrease((PetscObject)X));
   PetscCall(VecDestroy(x));
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode VecGetArray_Nest(Vec X, PetscScalar **x) {
+static PetscErrorCode VecGetArray_Nest(Vec X, PetscScalar **x)
+{
   Vec_Nest *bx = (Vec_Nest *)X->data;
   PetscInt  i, m, rstart, rend;
 
@@ -526,7 +561,8 @@ static PetscErrorCode VecGetArray_Nest(Vec X, PetscScalar **x) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode VecRestoreArray_Nest(Vec X, PetscScalar **x) {
+static PetscErrorCode VecRestoreArray_Nest(Vec X, PetscScalar **x)
+{
   Vec_Nest *bx = (Vec_Nest *)X->data;
   PetscInt  i, m, rstart, rend;
 
@@ -551,22 +587,26 @@ static PetscErrorCode VecRestoreArray_Nest(Vec X, PetscScalar **x) {
     PetscCall(VecRestoreArray(subvec, &y));
   }
   PetscCall(PetscFree(*x));
+  PetscCall(PetscObjectStateIncrease((PetscObject)X));
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode VecRestoreArrayRead_Nest(Vec X, const PetscScalar **x) {
+static PetscErrorCode VecRestoreArrayRead_Nest(Vec X, const PetscScalar **x)
+{
   PetscFunctionBegin;
   PetscCall(PetscFree(*x));
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode VecConcatenate_Nest(PetscInt nx, const Vec X[], Vec *Y, IS *x_is[]) {
+static PetscErrorCode VecConcatenate_Nest(PetscInt nx, const Vec X[], Vec *Y, IS *x_is[])
+{
   PetscFunctionBegin;
   PetscCheck(nx <= 0, PetscObjectComm((PetscObject)(*X)), PETSC_ERR_SUP, "VecConcatenate() is not supported for VecNest");
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode VecCreateLocalVector_Nest(Vec v, Vec *w) {
+static PetscErrorCode VecCreateLocalVector_Nest(Vec v, Vec *w)
+{
   Vec      *ww;
   IS       *wis;
   Vec_Nest *bv = (Vec_Nest *)v->data;
@@ -591,7 +631,8 @@ static PetscErrorCode VecCreateLocalVector_Nest(Vec v, Vec *w) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode VecGetLocalVector_Nest(Vec v, Vec w) {
+static PetscErrorCode VecGetLocalVector_Nest(Vec v, Vec w)
+{
   Vec_Nest *bv = (Vec_Nest *)v->data;
   Vec_Nest *bw = (Vec_Nest *)w->data;
   PetscInt  i;
@@ -603,7 +644,8 @@ static PetscErrorCode VecGetLocalVector_Nest(Vec v, Vec w) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode VecRestoreLocalVector_Nest(Vec v, Vec w) {
+static PetscErrorCode VecRestoreLocalVector_Nest(Vec v, Vec w)
+{
   Vec_Nest *bv = (Vec_Nest *)v->data;
   Vec_Nest *bw = (Vec_Nest *)w->data;
   PetscInt  i;
@@ -616,7 +658,8 @@ static PetscErrorCode VecRestoreLocalVector_Nest(Vec v, Vec w) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode VecGetLocalVectorRead_Nest(Vec v, Vec w) {
+static PetscErrorCode VecGetLocalVectorRead_Nest(Vec v, Vec w)
+{
   Vec_Nest *bv = (Vec_Nest *)v->data;
   Vec_Nest *bw = (Vec_Nest *)w->data;
   PetscInt  i;
@@ -628,7 +671,8 @@ static PetscErrorCode VecGetLocalVectorRead_Nest(Vec v, Vec w) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode VecRestoreLocalVectorRead_Nest(Vec v, Vec w) {
+static PetscErrorCode VecRestoreLocalVectorRead_Nest(Vec v, Vec w)
+{
   Vec_Nest *bv = (Vec_Nest *)v->data;
   Vec_Nest *bw = (Vec_Nest *)w->data;
   PetscInt  i;
@@ -640,7 +684,8 @@ static PetscErrorCode VecRestoreLocalVectorRead_Nest(Vec v, Vec w) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode VecSetRandom_Nest(Vec v, PetscRandom r) {
+static PetscErrorCode VecSetRandom_Nest(Vec v, PetscRandom r)
+{
   Vec_Nest *bv = (Vec_Nest *)v->data;
   PetscInt  i;
 
@@ -649,7 +694,8 @@ static PetscErrorCode VecSetRandom_Nest(Vec v, PetscRandom r) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode VecNestSetOps_Private(struct _VecOps *ops) {
+static PetscErrorCode VecNestSetOps_Private(struct _VecOps *ops)
+{
   PetscFunctionBegin;
   ops->duplicate               = VecDuplicate_Nest;
   ops->duplicatevecs           = VecDuplicateVecs_Default;
@@ -727,7 +773,8 @@ static PetscErrorCode VecNestSetOps_Private(struct _VecOps *ops) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode VecNestGetSubVecs_Private(Vec x, PetscInt m, const PetscInt idxm[], Vec vec[]) {
+static PetscErrorCode VecNestGetSubVecs_Private(Vec x, PetscInt m, const PetscInt idxm[], Vec vec[])
+{
   Vec_Nest *b = (Vec_Nest *)x->data;
   PetscInt  i;
   PetscInt  row;
@@ -742,7 +789,8 @@ static PetscErrorCode VecNestGetSubVecs_Private(Vec x, PetscInt m, const PetscIn
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode VecNestGetSubVec_Nest(Vec X, PetscInt idxm, Vec *sx) {
+PetscErrorCode VecNestGetSubVec_Nest(Vec X, PetscInt idxm, Vec *sx)
+{
   PetscFunctionBegin;
   PetscCall(PetscObjectStateIncrease((PetscObject)X));
   PetscCall(VecNestGetSubVecs_Private(X, 1, &idxm, sx));
@@ -767,13 +815,15 @@ PetscErrorCode VecNestGetSubVec_Nest(Vec X, PetscInt idxm, Vec *sx) {
 
 .seealso: `VecNestGetSize()`, `VecNestGetSubVecs()`
 @*/
-PetscErrorCode VecNestGetSubVec(Vec X, PetscInt idxm, Vec *sx) {
+PetscErrorCode VecNestGetSubVec(Vec X, PetscInt idxm, Vec *sx)
+{
   PetscFunctionBegin;
   PetscUseMethod(X, "VecNestGetSubVec_C", (Vec, PetscInt, Vec *), (X, idxm, sx));
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode VecNestGetSubVecs_Nest(Vec X, PetscInt *N, Vec **sx) {
+PetscErrorCode VecNestGetSubVecs_Nest(Vec X, PetscInt *N, Vec **sx)
+{
   Vec_Nest *b = (Vec_Nest *)X->data;
 
   PetscFunctionBegin;
@@ -805,13 +855,15 @@ PetscErrorCode VecNestGetSubVecs_Nest(Vec X, PetscInt *N, Vec **sx) {
 
 .seealso: `VecNestGetSize()`, `VecNestGetSubVec()`
 @*/
-PetscErrorCode VecNestGetSubVecs(Vec X, PetscInt *N, Vec **sx) {
+PetscErrorCode VecNestGetSubVecs(Vec X, PetscInt *N, Vec **sx)
+{
   PetscFunctionBegin;
   PetscUseMethod(X, "VecNestGetSubVecs_C", (Vec, PetscInt *, Vec **), (X, N, sx));
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode VecNestSetSubVec_Private(Vec X, PetscInt idxm, Vec x) {
+static PetscErrorCode VecNestSetSubVec_Private(Vec X, PetscInt idxm, Vec x)
+{
   Vec_Nest *bx = (Vec_Nest *)X->data;
   PetscInt  i, offset = 0, n = 0, bs;
   IS        is;
@@ -878,7 +930,8 @@ static PetscErrorCode VecNestSetSubVec_Private(Vec X, PetscInt idxm, Vec x) {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode VecNestSetSubVec_Nest(Vec X, PetscInt idxm, Vec sx) {
+PetscErrorCode VecNestSetSubVec_Nest(Vec X, PetscInt idxm, Vec sx)
+{
   PetscFunctionBegin;
   PetscCall(PetscObjectStateIncrease((PetscObject)X));
   PetscCall(VecNestSetSubVec_Private(X, idxm, sx));
@@ -902,13 +955,15 @@ PetscErrorCode VecNestSetSubVec_Nest(Vec X, PetscInt idxm, Vec sx) {
 
 .seealso: `VecNestSetSubVecs()`, `VecNestGetSubVec()`
 @*/
-PetscErrorCode VecNestSetSubVec(Vec X, PetscInt idxm, Vec sx) {
+PetscErrorCode VecNestSetSubVec(Vec X, PetscInt idxm, Vec sx)
+{
   PetscFunctionBegin;
   PetscUseMethod(X, "VecNestSetSubVec_C", (Vec, PetscInt, Vec), (X, idxm, sx));
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode VecNestSetSubVecs_Nest(Vec X, PetscInt N, PetscInt *idxm, Vec *sx) {
+PetscErrorCode VecNestSetSubVecs_Nest(Vec X, PetscInt N, PetscInt *idxm, Vec *sx)
+{
   PetscInt i;
 
   PetscFunctionBegin;
@@ -936,13 +991,15 @@ PetscErrorCode VecNestSetSubVecs_Nest(Vec X, PetscInt N, PetscInt *idxm, Vec *sx
 
 .seealso: `VecNestGetSize()`, `VecNestGetSubVec()`
 @*/
-PetscErrorCode VecNestSetSubVecs(Vec X, PetscInt N, PetscInt *idxm, Vec *sx) {
+PetscErrorCode VecNestSetSubVecs(Vec X, PetscInt N, PetscInt *idxm, Vec *sx)
+{
   PetscFunctionBegin;
   PetscUseMethod(X, "VecNestSetSubVecs_C", (Vec, PetscInt, PetscInt *, Vec *), (X, N, idxm, sx));
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode VecNestGetSize_Nest(Vec X, PetscInt *N) {
+PetscErrorCode VecNestGetSize_Nest(Vec X, PetscInt *N)
+{
   Vec_Nest *b = (Vec_Nest *)X->data;
 
   PetscFunctionBegin;
@@ -967,7 +1024,8 @@ PetscErrorCode VecNestGetSize_Nest(Vec X, PetscInt *N) {
 
 .seealso: `VecNestGetSubVec()`, `VecNestGetSubVecs()`
 @*/
-PetscErrorCode VecNestGetSize(Vec X, PetscInt *N) {
+PetscErrorCode VecNestGetSize(Vec X, PetscInt *N)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(X, VEC_CLASSID, 1);
   PetscValidIntPointer(N, 2);
@@ -975,7 +1033,8 @@ PetscErrorCode VecNestGetSize(Vec X, PetscInt *N) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode VecSetUp_Nest_Private(Vec V, PetscInt nb, Vec x[]) {
+static PetscErrorCode VecSetUp_Nest_Private(Vec V, PetscInt nb, Vec x[])
+{
   Vec_Nest *ctx = (Vec_Nest *)V->data;
   PetscInt  i;
 
@@ -999,7 +1058,8 @@ static PetscErrorCode VecSetUp_Nest_Private(Vec V, PetscInt nb, Vec x[]) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode VecSetUp_NestIS_Private(Vec V, PetscInt nb, IS is[]) {
+static PetscErrorCode VecSetUp_NestIS_Private(Vec V, PetscInt nb, IS is[])
+{
   Vec_Nest *ctx = (Vec_Nest *)V->data;
   PetscInt  i, offset, m, n, M, N;
 
@@ -1049,7 +1109,8 @@ static PetscErrorCode VecSetUp_NestIS_Private(Vec V, PetscInt nb, IS is[]) {
 
 .seealso: `VecCreate()`, `MatCreateNest()`, `DMSetVecType()`, `VECNEST`
 @*/
-PetscErrorCode VecCreateNest(MPI_Comm comm, PetscInt nb, IS is[], Vec x[], Vec *Y) {
+PetscErrorCode VecCreateNest(MPI_Comm comm, PetscInt nb, IS is[], Vec x[], Vec *Y)
+{
   Vec       V;
   Vec_Nest *s;
   PetscInt  n, N;

@@ -31,7 +31,7 @@ class Configure(config.package.CMakePackage):
 
   def updateControlFiles(self):
     import os.path
-    # The OCE build relies on fiels in the adm directory
+    # The OCE build relies on files in the adm directory
     controlDir = os.path.join(self.packageDir, 'adm')
     modfile = os.path.join(controlDir, 'MODULES')
     fd = open(modfile, 'w')

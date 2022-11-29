@@ -1,33 +1,23 @@
-    0 KSP Residual norm 134.43 
-    1 KSP Residual norm 10.2927 
-    2 KSP Residual norm 0.776014 
-    3 KSP Residual norm 0.055947 
-    4 KSP Residual norm 0.00189533 
-    5 KSP Residual norm 0.000104591 
-    6 KSP Residual norm 7.98684e-06 
-    7 KSP Residual norm 5.03674e-07 
+    0 KSP Residual norm 74.3728 
+    1 KSP Residual norm 5.76247 
+    2 KSP Residual norm 0.428041 
+    3 KSP Residual norm 0.0221031 
+    4 KSP Residual norm 0.00126538 
+    5 KSP Residual norm 0.000168669 
+    6 KSP Residual norm 6.70201e-06 
+    7 KSP Residual norm 3.32964e-07 
   Linear solve converged due to CONVERGED_RTOL iterations 7
-    0 KSP Residual norm 394.781 
-    1 KSP Residual norm 37.1922 
-    2 KSP Residual norm 5.30976 
-    3 KSP Residual norm 0.810893 
-    4 KSP Residual norm 0.0961992 
-    5 KSP Residual norm 0.0113632 
-    6 KSP Residual norm 0.00147855 
-    7 KSP Residual norm 0.000249148 
-    8 KSP Residual norm 3.01723e-05 
-    9 KSP Residual norm 3.49564e-06 
-  Linear solve converged due to CONVERGED_RTOL iterations 9
-    0 KSP Residual norm 3.49564e-06 
-    1 KSP Residual norm 5.8386e-07 
-    2 KSP Residual norm 6.87797e-08 
-    3 KSP Residual norm 1.02389e-08 
-    4 KSP Residual norm 1.5315e-09 
-    5 KSP Residual norm 1.866e-10 
-    6 KSP Residual norm 2.077e-11 
-    7 KSP Residual norm < 1.e-11
-    8 KSP Residual norm < 1.e-11
-    9 KSP Residual norm < 1.e-11
-   10 KSP Residual norm < 1.e-11
+    0 KSP Residual norm 217.936 
+    1 KSP Residual norm 20.2583 
+    2 KSP Residual norm 3.23339 
+    3 KSP Residual norm 0.383901 
+    4 KSP Residual norm 0.0436814 
+    5 KSP Residual norm 0.00651109 
+    6 KSP Residual norm 0.00102475 
+    7 KSP Residual norm 0.000136116 
+    8 KSP Residual norm 1.6728e-05 
+    9 KSP Residual norm 2.36275e-06 
+   10 KSP Residual norm 3.02618e-07 
   Linear solve converged due to CONVERGED_RTOL iterations 10
-[0] 1) N=         441, max displ=5.5560415e+01, disp diff= 1.19e+01, error=4.415e+00, rate=1.9
+[0] 0) N=          27, max displ=4.1232123e+01, error=1.850e+01
+[0] 1) N=         441, max displ=5.3174288e+01, disp diff= 1.19e+01, error=6.557e+00, rate=1.5

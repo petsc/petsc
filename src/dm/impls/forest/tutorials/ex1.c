@@ -4,7 +4,8 @@ static char help[] = "Create and view a forest mesh\n\n";
 #include <petscdmplex.h>
 #include <petscoptions.h>
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   DM          dm;
   char        typeString[256] = {'\0'};
   PetscViewer viewer          = NULL;

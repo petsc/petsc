@@ -8,7 +8,8 @@ static char help[] = "Tests PetscTreeProcess()";
                     1         4
                     5
 */
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   PetscInt  n = 7, cnt = 0, i, j;
   PetscBool mask[]     = {PETSC_TRUE, PETSC_FALSE, PETSC_FALSE, PETSC_TRUE, PETSC_FALSE, PETSC_FALSE, PETSC_FALSE};
   PetscInt  parentId[] = {-1, 2, 0, -1, 2, 1, 0};

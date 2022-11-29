@@ -136,15 +136,16 @@ PETSC_INTERN PetscErrorCode PetscLogGetCurrentEvent_Internal(PetscLogEvent *);
 PETSC_INTERN PetscErrorCode PetscLogEventPause_Internal(PetscLogEvent);
 PETSC_INTERN PetscErrorCode PetscLogEventResume_Internal(PetscLogEvent);
 
-#if defined(PETSC_HAVE_DEVICE)
+  #if defined(PETSC_HAVE_DEVICE)
 PETSC_EXTERN PetscBool PetscLogGpuTimeFlag;
-#endif
+  #endif
 #else /* PETSC_USE_LOG */
-#define PetscLogGetCurrentEvent_Internal(event) ((*(event) = PETSC_DECIDE), 0)
-#define PetscLogEventPause_Internal(event)      0
-#define PetscLogEventResume_Internal(event)     0
+  #define PetscLogGetCurrentEvent_Internal(event) ((*(event) = PETSC_DECIDE), 0)
+  #define PetscLogEventPause_Internal(event)      0
+  #define PetscLogEventResume_Internal(event)     0
 #endif /* PETSC_USE_LOG */
-static inline PetscErrorCode PetscLogPauseCurrentEvent_Internal(PetscLogEvent *event) {
+static inline PetscErrorCode PetscLogPauseCurrentEvent_Internal(PetscLogEvent *event)
+{
   PetscFunctionBegin;
   PetscValidIntPointer(event, 1);
   PetscCall(PetscLogGetCurrentEvent_Internal(event));

@@ -7,7 +7,8 @@
 #include <petsc/private/dmstagimpl.h>
 #include <petscsf.h>
 
-static PetscErrorCode DMCreateFieldDecomposition_Stag(DM dm, PetscInt *len, char ***namelist, IS **islist, DM **dmlist) {
+static PetscErrorCode DMCreateFieldDecomposition_Stag(DM dm, PetscInt *len, char ***namelist, IS **islist, DM **dmlist)
+{
   PetscInt       f0, f1, f2, f3, dof0, dof1, dof2, dof3, n_entries, k, d, cnt, n_fields, dim;
   DMStagStencil *stencil0, *stencil1, *stencil2, *stencil3;
 
@@ -246,7 +247,8 @@ static PetscErrorCode DMCreateFieldDecomposition_Stag(DM dm, PetscInt *len, char
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMClone_Stag(DM dm, DM *newdm) {
+static PetscErrorCode DMClone_Stag(DM dm, DM *newdm)
+{
   PetscFunctionBegin;
   /* Destroy the DM created by generic logic in DMClone() */
   if (*newdm) PetscCall(DMDestroy(newdm));
@@ -255,7 +257,8 @@ static PetscErrorCode DMClone_Stag(DM dm, DM *newdm) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMCoarsen_Stag(DM dm, MPI_Comm comm, DM *dmc) {
+static PetscErrorCode DMCoarsen_Stag(DM dm, MPI_Comm comm, DM *dmc)
+{
   const DM_Stag *const stag = (DM_Stag *)dm->data;
   PetscInt             d, dim;
 
@@ -308,7 +311,8 @@ static PetscErrorCode DMCoarsen_Stag(DM dm, MPI_Comm comm, DM *dmc) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMRefine_Stag(DM dm, MPI_Comm comm, DM *dmc) {
+static PetscErrorCode DMRefine_Stag(DM dm, MPI_Comm comm, DM *dmc)
+{
   const DM_Stag *const stag = (DM_Stag *)dm->data;
 
   PetscFunctionBegin;
@@ -332,7 +336,8 @@ static PetscErrorCode DMRefine_Stag(DM dm, MPI_Comm comm, DM *dmc) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMDestroy_Stag(DM dm) {
+static PetscErrorCode DMDestroy_Stag(DM dm)
+{
   DM_Stag *stag;
   PetscInt i;
 
@@ -348,7 +353,8 @@ static PetscErrorCode DMDestroy_Stag(DM dm) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMCreateGlobalVector_Stag(DM dm, Vec *vec) {
+static PetscErrorCode DMCreateGlobalVector_Stag(DM dm, Vec *vec)
+{
   DM_Stag *const stag = (DM_Stag *)dm->data;
 
   PetscFunctionBegin;
@@ -362,7 +368,8 @@ static PetscErrorCode DMCreateGlobalVector_Stag(DM dm, Vec *vec) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMCreateLocalVector_Stag(DM dm, Vec *vec) {
+static PetscErrorCode DMCreateLocalVector_Stag(DM dm, Vec *vec)
+{
   DM_Stag *const stag = (DM_Stag *)dm->data;
 
   PetscFunctionBegin;
@@ -377,7 +384,8 @@ static PetscErrorCode DMCreateLocalVector_Stag(DM dm, Vec *vec) {
 
 /* Helper function to check for the limited situations for which interpolation
    and restriction functions are implemented */
-static PetscErrorCode CheckTransferOperatorRequirements_Private(DM dmc, DM dmf) {
+static PetscErrorCode CheckTransferOperatorRequirements_Private(DM dmc, DM dmf)
+{
   PetscInt dim, stencilWidthc, stencilWidthf, nf[DMSTAG_MAX_DIM], nc[DMSTAG_MAX_DIM], doff[DMSTAG_MAX_STRATA], dofc[DMSTAG_MAX_STRATA];
 
   PetscFunctionBegin;
@@ -408,7 +416,8 @@ static PetscErrorCode CheckTransferOperatorRequirements_Private(DM dmc, DM dmf) 
    Mat routines in parts of DM. If we find a need for ConvertToAIJ() elsewhere, then we should consolidate it to one
    place in mat/utils.
 */
-static PetscErrorCode ConvertToAIJ(MatType intype, MatType *outtype) {
+static PetscErrorCode ConvertToAIJ(MatType intype, MatType *outtype)
+{
   PetscInt    i;
   char const *types[3] = {MATAIJ, MATSEQAIJ, MATMPIAIJ};
   PetscBool   flg;
@@ -425,7 +434,8 @@ static PetscErrorCode ConvertToAIJ(MatType intype, MatType *outtype) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMCreateInterpolation_Stag(DM dmc, DM dmf, Mat *A, Vec *vec) {
+static PetscErrorCode DMCreateInterpolation_Stag(DM dmc, DM dmf, Mat *A, Vec *vec)
+{
   PetscInt               dim, entriesf, entriesc, doff[DMSTAG_MAX_STRATA];
   ISLocalToGlobalMapping ltogmf, ltogmc;
   MatType                mattype;
@@ -466,7 +476,8 @@ static PetscErrorCode DMCreateInterpolation_Stag(DM dmc, DM dmf, Mat *A, Vec *ve
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMCreateRestriction_Stag(DM dmc, DM dmf, Mat *A) {
+static PetscErrorCode DMCreateRestriction_Stag(DM dmc, DM dmf, Mat *A)
+{
   PetscInt               dim, entriesf, entriesc, doff[DMSTAG_MAX_STRATA];
   ISLocalToGlobalMapping ltogmf, ltogmc;
   MatType                mattype;
@@ -506,7 +517,8 @@ static PetscErrorCode DMCreateRestriction_Stag(DM dmc, DM dmf, Mat *A) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMCreateMatrix_Stag(DM dm, Mat *mat) {
+static PetscErrorCode DMCreateMatrix_Stag(DM dm, Mat *mat)
+{
   MatType                mat_type;
   PetscBool              is_shell, is_aij;
   PetscInt               dim, entries;
@@ -543,10 +555,17 @@ static PetscErrorCode DMCreateMatrix_Stag(DM dm, Mat *mat) {
     PetscCall(MatSetLocalToGlobalMapping(preallocator, ltogmap, ltogmap));
     PetscCall(MatSetUp(preallocator));
     switch (dim) {
-    case 1: PetscCall(DMCreateMatrix_Stag_1D_AIJ_Assemble(dm, preallocator)); break;
-    case 2: PetscCall(DMCreateMatrix_Stag_2D_AIJ_Assemble(dm, preallocator)); break;
-    case 3: PetscCall(DMCreateMatrix_Stag_3D_AIJ_Assemble(dm, preallocator)); break;
-    default: SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Unsupported dimension %" PetscInt_FMT, dim);
+    case 1:
+      PetscCall(DMCreateMatrix_Stag_1D_AIJ_Assemble(dm, preallocator));
+      break;
+    case 2:
+      PetscCall(DMCreateMatrix_Stag_2D_AIJ_Assemble(dm, preallocator));
+      break;
+    case 3:
+      PetscCall(DMCreateMatrix_Stag_3D_AIJ_Assemble(dm, preallocator));
+      break;
+    default:
+      SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Unsupported dimension %" PetscInt_FMT, dim);
     }
     PetscCall(MatPreallocatorPreallocate(preallocator, fill_with_zeros, *mat));
     PetscCall(MatDestroy(&preallocator));
@@ -555,10 +574,17 @@ static PetscErrorCode DMCreateMatrix_Stag(DM dm, Mat *mat) {
       /* Bind to CPU before assembly, to prevent unnecessary copies of zero entries from CPU to GPU */
       PetscCall(MatBindToCPU(*mat, PETSC_TRUE));
       switch (dim) {
-      case 1: PetscCall(DMCreateMatrix_Stag_1D_AIJ_Assemble(dm, *mat)); break;
-      case 2: PetscCall(DMCreateMatrix_Stag_2D_AIJ_Assemble(dm, *mat)); break;
-      case 3: PetscCall(DMCreateMatrix_Stag_3D_AIJ_Assemble(dm, *mat)); break;
-      default: SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Unsupported dimension %" PetscInt_FMT, dim);
+      case 1:
+        PetscCall(DMCreateMatrix_Stag_1D_AIJ_Assemble(dm, *mat));
+        break;
+      case 2:
+        PetscCall(DMCreateMatrix_Stag_2D_AIJ_Assemble(dm, *mat));
+        break;
+      case 3:
+        PetscCall(DMCreateMatrix_Stag_3D_AIJ_Assemble(dm, *mat));
+        break;
+      default:
+        SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Unsupported dimension %" PetscInt_FMT, dim);
       }
       PetscCall(MatBindToCPU(*mat, PETSC_FALSE));
     }
@@ -568,7 +594,8 @@ static PetscErrorCode DMCreateMatrix_Stag(DM dm, Mat *mat) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMGetCompatibility_Stag(DM dm, DM dm2, PetscBool *compatible, PetscBool *set) {
+static PetscErrorCode DMGetCompatibility_Stag(DM dm, DM dm2, PetscBool *compatible, PetscBool *set)
+{
   const DM_Stag *const stag  = (DM_Stag *)dm->data;
   const DM_Stag *const stag2 = (DM_Stag *)dm2->data;
   PetscInt             dim, dim2, i;
@@ -642,7 +669,8 @@ static PetscErrorCode DMGetCompatibility_Stag(DM dm, DM dm2, PetscBool *compatib
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMHasCreateInjection_Stag(DM dm, PetscBool *flg) {
+static PetscErrorCode DMHasCreateInjection_Stag(DM dm, PetscBool *flg)
+{
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidBoolPointer(flg, 2);
@@ -660,7 +688,8 @@ Also in all cases, only subdomains which are the last in their dimension have pa
 3) Local ordering. Including ghost elements (both interior and on the right/top/front to complete partial elements), use the same convention to create a local numbering.
 */
 
-static PetscErrorCode DMLocalToGlobalBegin_Stag(DM dm, Vec l, InsertMode mode, Vec g) {
+static PetscErrorCode DMLocalToGlobalBegin_Stag(DM dm, Vec l, InsertMode mode, Vec g)
+{
   DM_Stag *const stag = (DM_Stag *)dm->data;
 
   PetscFunctionBegin;
@@ -676,7 +705,8 @@ static PetscErrorCode DMLocalToGlobalBegin_Stag(DM dm, Vec l, InsertMode mode, V
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMLocalToGlobalEnd_Stag(DM dm, Vec l, InsertMode mode, Vec g) {
+static PetscErrorCode DMLocalToGlobalEnd_Stag(DM dm, Vec l, InsertMode mode, Vec g)
+{
   DM_Stag *const stag = (DM_Stag *)dm->data;
 
   PetscFunctionBegin;
@@ -692,7 +722,8 @@ static PetscErrorCode DMLocalToGlobalEnd_Stag(DM dm, Vec l, InsertMode mode, Vec
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMGlobalToLocalBegin_Stag(DM dm, Vec g, InsertMode mode, Vec l) {
+static PetscErrorCode DMGlobalToLocalBegin_Stag(DM dm, Vec g, InsertMode mode, Vec l)
+{
   DM_Stag *const stag = (DM_Stag *)dm->data;
 
   PetscFunctionBegin;
@@ -700,7 +731,8 @@ static PetscErrorCode DMGlobalToLocalBegin_Stag(DM dm, Vec g, InsertMode mode, V
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMGlobalToLocalEnd_Stag(DM dm, Vec g, InsertMode mode, Vec l) {
+static PetscErrorCode DMGlobalToLocalEnd_Stag(DM dm, Vec g, InsertMode mode, Vec l)
+{
   DM_Stag *const stag = (DM_Stag *)dm->data;
 
   PetscFunctionBegin;
@@ -711,10 +743,12 @@ static PetscErrorCode DMGlobalToLocalEnd_Stag(DM dm, Vec g, InsertMode mode, Vec
 /*
 If a stratum is active (non-zero dof), make it active in the coordinate DM.
 */
-static PetscErrorCode DMCreateCoordinateDM_Stag(DM dm, DM *dmc) {
+static PetscErrorCode DMCreateCoordinateDM_Stag(DM dm, DM *dmc)
+{
   DM_Stag *const stag = (DM_Stag *)dm->data;
   PetscInt       dim;
   PetscBool      isstag, isproduct;
+  const char    *prefix;
 
   PetscFunctionBegin;
 
@@ -730,26 +764,38 @@ static PetscErrorCode DMCreateCoordinateDM_Stag(DM dm, DM *dmc) {
     PetscCall(DMSetType(*dmc, DMPRODUCT));
     PetscCall(DMSetDimension(*dmc, dim));
   } else SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Unsupported coordinate DM type %s", stag->coordinateDMType);
+  PetscCall(PetscObjectGetOptionsPrefix((PetscObject)dm, &prefix));
+  PetscCall(PetscObjectSetOptionsPrefix((PetscObject)*dmc, prefix));
+  PetscCall(PetscObjectAppendOptionsPrefix((PetscObject)*dmc, "cdm_"));
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMGetNeighbors_Stag(DM dm, PetscInt *nRanks, const PetscMPIInt *ranks[]) {
+static PetscErrorCode DMGetNeighbors_Stag(DM dm, PetscInt *nRanks, const PetscMPIInt *ranks[])
+{
   DM_Stag *const stag = (DM_Stag *)dm->data;
   PetscInt       dim;
 
   PetscFunctionBegin;
   PetscCall(DMGetDimension(dm, &dim));
   switch (dim) {
-  case 1: *nRanks = 3; break;
-  case 2: *nRanks = 9; break;
-  case 3: *nRanks = 27; break;
-  default: SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Get neighbors not implemented for dim = %" PetscInt_FMT, dim);
+  case 1:
+    *nRanks = 3;
+    break;
+  case 2:
+    *nRanks = 9;
+    break;
+  case 3:
+    *nRanks = 27;
+    break;
+  default:
+    SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Get neighbors not implemented for dim = %" PetscInt_FMT, dim);
   }
   *ranks = stag->neighbors;
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMView_Stag(DM dm, PetscViewer viewer) {
+static PetscErrorCode DMView_Stag(DM dm, PetscViewer viewer)
+{
   DM_Stag *const stag = (DM_Stag *)dm->data;
   PetscBool      isascii, viewAllRanks;
   PetscMPIInt    rank, size;
@@ -763,7 +809,9 @@ static PetscErrorCode DMView_Stag(DM dm, PetscViewer viewer) {
   if (isascii) {
     PetscCall(PetscViewerASCIIPrintf(viewer, "Dimension: %" PetscInt_FMT "\n", dim));
     switch (dim) {
-    case 1: PetscCall(PetscViewerASCIIPrintf(viewer, "Global size: %" PetscInt_FMT "\n", stag->N[0])); break;
+    case 1:
+      PetscCall(PetscViewerASCIIPrintf(viewer, "Global size: %" PetscInt_FMT "\n", stag->N[0]));
+      break;
     case 2:
       PetscCall(PetscViewerASCIIPrintf(viewer, "Global sizes: %" PetscInt_FMT " x %" PetscInt_FMT "\n", stag->N[0], stag->N[1]));
       PetscCall(PetscViewerASCIIPrintf(viewer, "Parallel decomposition: %" PetscInt_FMT " x %" PetscInt_FMT " ranks\n", stag->nRanks[0], stag->nRanks[1]));
@@ -772,7 +820,8 @@ static PetscErrorCode DMView_Stag(DM dm, PetscViewer viewer) {
       PetscCall(PetscViewerASCIIPrintf(viewer, "Global sizes: %" PetscInt_FMT " x %" PetscInt_FMT " x %" PetscInt_FMT "\n", stag->N[0], stag->N[1], stag->N[2]));
       PetscCall(PetscViewerASCIIPrintf(viewer, "Parallel decomposition: %" PetscInt_FMT " x %" PetscInt_FMT " x %" PetscInt_FMT " ranks\n", stag->nRanks[0], stag->nRanks[1], stag->nRanks[2]));
       break;
-    default: SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "not implemented for dim==%" PetscInt_FMT, dim);
+    default:
+      SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "not implemented for dim==%" PetscInt_FMT, dim);
     }
     PetscCall(PetscViewerASCIIPrintf(viewer, "Boundary ghosting:"));
     for (i = 0; i < dim; ++i) PetscCall(PetscViewerASCIIPrintf(viewer, " %s", DMBoundaryTypes[stag->boundaryType[i]]));
@@ -793,7 +842,9 @@ static PetscErrorCode DMView_Stag(DM dm, PetscViewer viewer) {
     if (viewAllRanks) {
       PetscCall(PetscViewerASCIIPushSynchronized(viewer));
       switch (dim) {
-      case 1: PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "[%d] Local elements : %" PetscInt_FMT " (%" PetscInt_FMT " with ghosts)\n", rank, stag->n[0], stag->nGhost[0])); break;
+      case 1:
+        PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "[%d] Local elements : %" PetscInt_FMT " (%" PetscInt_FMT " with ghosts)\n", rank, stag->n[0], stag->nGhost[0]));
+        break;
       case 2:
         PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "[%d] Rank coordinates (%d,%d)\n", rank, stag->rank[0], stag->rank[1]));
         PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "[%d] Local elements : %" PetscInt_FMT " x %" PetscInt_FMT " (%" PetscInt_FMT " x %" PetscInt_FMT " with ghosts)\n", rank, stag->n[0], stag->n[1], stag->nGhost[0], stag->nGhost[1]));
@@ -803,7 +854,8 @@ static PetscErrorCode DMView_Stag(DM dm, PetscViewer viewer) {
         PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "[%d] Local elements : %" PetscInt_FMT " x %" PetscInt_FMT " x %" PetscInt_FMT " (%" PetscInt_FMT " x %" PetscInt_FMT " x %" PetscInt_FMT " with ghosts)\n", rank, stag->n[0], stag->n[1],
                                                      stag->n[2], stag->nGhost[0], stag->nGhost[1], stag->nGhost[2]));
         break;
-      default: SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "not implemented for dim==%" PetscInt_FMT, dim);
+      default:
+        SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "not implemented for dim==%" PetscInt_FMT, dim);
       }
       PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "[%d] Local native entries: %" PetscInt_FMT "\n", rank, stag->entries));
       PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "[%d] Local entries total : %" PetscInt_FMT "\n", rank, stag->entriesGhost));
@@ -816,7 +868,8 @@ static PetscErrorCode DMView_Stag(DM dm, PetscViewer viewer) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMSetFromOptions_Stag(DM dm, PetscOptionItems *PetscOptionsObject) {
+static PetscErrorCode DMSetFromOptions_Stag(DM dm, PetscOptionItems *PetscOptionsObject)
+{
   DM_Stag *const stag = (DM_Stag *)dm->data;
   PetscInt       dim;
 
@@ -869,13 +922,14 @@ static PetscErrorCode DMSetFromOptions_Stag(DM dm, PetscOptionItems *PetscOption
 .seealso: `DM`, `DMPRODUCT`, `DMDA`, `DMPLEX`, `DMStagCreate1d()`, `DMStagCreate2d()`, `DMStagCreate3d()`, `DMType`, `DMCreate()`, `DMSetType()`
 M*/
 
-PETSC_EXTERN PetscErrorCode DMCreate_Stag(DM dm) {
+PETSC_EXTERN PetscErrorCode DMCreate_Stag(DM dm)
+{
   DM_Stag *stag;
   PetscInt i, dim;
 
   PetscFunctionBegin;
   PetscValidPointer(dm, 1);
-  PetscCall(PetscNewLog(dm, &stag));
+  PetscCall(PetscNew(&stag));
   dm->data = stag;
 
   stag->gtol           = NULL;
@@ -908,10 +962,17 @@ PETSC_EXTERN PetscErrorCode DMCreate_Stag(DM dm) {
   dm->ops->localtoglobalend    = DMLocalToGlobalEnd_Stag;
   dm->ops->setfromoptions      = DMSetFromOptions_Stag;
   switch (dim) {
-  case 1: dm->ops->setup = DMSetUp_Stag_1d; break;
-  case 2: dm->ops->setup = DMSetUp_Stag_2d; break;
-  case 3: dm->ops->setup = DMSetUp_Stag_3d; break;
-  default: SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Unsupported dimension %" PetscInt_FMT, dim);
+  case 1:
+    dm->ops->setup = DMSetUp_Stag_1d;
+    break;
+  case 2:
+    dm->ops->setup = DMSetUp_Stag_2d;
+    break;
+  case 3:
+    dm->ops->setup = DMSetUp_Stag_3d;
+    break;
+  default:
+    SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Unsupported dimension %" PetscInt_FMT, dim);
   }
   dm->ops->clone                    = DMClone_Stag;
   dm->ops->view                     = DMView_Stag;

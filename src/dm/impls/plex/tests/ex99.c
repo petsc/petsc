@@ -3,16 +3,18 @@ static char help[] = "Tests DMPlex Gmsh reader.\n\n";
 #include <petscdmplex.h>
 
 #if !defined(PETSC_GMSH_EXE)
-#define PETSC_GMSH_EXE "gmsh"
+  #define PETSC_GMSH_EXE "gmsh"
 #endif
 
 #include <petscds.h>
 
-static void one(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar value[]) {
+static void one(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar value[])
+{
   value[0] = (PetscReal)1;
 }
 
-static PetscErrorCode CreateFE(DM dm) {
+static PetscErrorCode CreateFE(DM dm)
+{
   DM             cdm;
   PetscSpace     P;
   PetscDualSpace Q;
@@ -36,8 +38,12 @@ static PetscErrorCode CreateFE(DM dm) {
   PetscCall(DMPlexGetCellType(K, 0, &ptype));
   switch (ptype) {
   case DM_POLYTOPE_QUADRILATERAL:
-  case DM_POLYTOPE_HEXAHEDRON: isSimplex = PETSC_FALSE; break;
-  default: isSimplex = PETSC_TRUE; break;
+  case DM_POLYTOPE_HEXAHEDRON:
+    isSimplex = PETSC_FALSE;
+    break;
+  default:
+    isSimplex = PETSC_TRUE;
+    break;
   }
 
   PetscCall(PetscFECreateLagrange(PETSC_COMM_SELF, dim, 1, isSimplex, k, PETSC_DETERMINE, &fe));
@@ -51,7 +57,8 @@ static PetscErrorCode CreateFE(DM dm) {
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode CheckIntegral(DM dm, PetscReal integral, PetscReal tol) {
+static PetscErrorCode CheckIntegral(DM dm, PetscReal integral, PetscReal tol)
+{
   Vec         u;
   PetscReal   rval;
   PetscScalar result;
@@ -67,7 +74,8 @@ static PetscErrorCode CheckIntegral(DM dm, PetscReal integral, PetscReal tol) {
   PetscFunctionReturn(0);
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   DM                dm;
   const char *const mshlist[] = {"seg", "tri", "qua", "tet", "wed", "hex", "vtx", "B2tri", "B2qua", "B3tet", "B3hex"};
   const char *const fmtlist[] = {"msh22", "msh40", "msh41"};

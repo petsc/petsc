@@ -1,10 +1,10 @@
 
-#if !defined(_DMIMPL_H)
+#ifndef _DMIMPL_H
 #define _DMIMPL_H
 
 #include <petscdm.h>
 #ifdef PETSC_HAVE_LIBCEED
-#include <petscdmceed.h>
+  #include <petscdmceed.h>
 #endif
 #include <petsc/private/petscimpl.h>
 #include <petsc/private/petscdsimpl.h>
@@ -105,6 +105,8 @@ struct _DMOps {
 PETSC_EXTERN PetscErrorCode DMLocalizeCoordinate_Internal(DM, PetscInt, const PetscScalar[], const PetscScalar[], PetscScalar[]);
 PETSC_EXTERN PetscErrorCode DMLocalizeCoordinateReal_Internal(DM, PetscInt, const PetscReal[], const PetscReal[], PetscReal[]);
 PETSC_EXTERN PetscErrorCode DMLocalizeAddCoordinate_Internal(DM, PetscInt, const PetscScalar[], const PetscScalar[], PetscScalar[]);
+
+PETSC_INTERN PetscErrorCode DMCountNonCyclicReferences(PetscObject, PetscInt *);
 
 typedef struct _DMCoarsenHookLink *DMCoarsenHookLink;
 struct _DMCoarsenHookLink {
@@ -231,20 +233,20 @@ struct _p_DM {
   DMLabel        celltypeLabel; /* Optimized access to celltype label */
   void          *ctx;           /* a user context */
   PetscErrorCode (*ctxdestroy)(void **);
-  ISColoringType          coloringtype;
-  MatFDColoring           fd;
-  VecType                 vectype;    /* type of vector created with DMCreateLocalVector() and DMCreateGlobalVector() */
-  MatType                 mattype;    /* type of matrix created with DMCreateMatrix() */
-  PetscInt                bind_below; /* Local size threshold (in entries/rows) below which Vec/Mat objects are bound to CPU */
-  PetscInt                bs;
-  ISLocalToGlobalMapping  ltogmap;
-  PetscBool               prealloc_skip;      // Flag indicating the DMCreateMatrix() should not preallocate (only set sizes and local-to-global)
-  PetscBool               prealloc_only;      /* Flag indicating the DMCreateMatrix() should only preallocate, not fill the matrix */
-  PetscBool               structure_only;     /* Flag indicating the DMCreateMatrix() create matrix structure without values */
-  PetscInt                levelup, leveldown; /* if the DM has been obtained by refining (or coarsening) this indicates how many times that process has been used to generate this DM */
-  PetscBool               setupcalled;        /* Indicates that the DM has been set up, methods that modify a DM such that a fresh setup is required should reset this flag */
-  PetscBool               setfromoptionscalled;
-  void                   *data;
+  ISColoringType         coloringtype;
+  MatFDColoring          fd;
+  VecType                vectype;    /* type of vector created with DMCreateLocalVector() and DMCreateGlobalVector() */
+  MatType                mattype;    /* type of matrix created with DMCreateMatrix() */
+  PetscInt               bind_below; /* Local size threshold (in entries/rows) below which Vec/Mat objects are bound to CPU */
+  PetscInt               bs;
+  ISLocalToGlobalMapping ltogmap;
+  PetscBool              prealloc_skip;      // Flag indicating the DMCreateMatrix() should not preallocate (only set sizes and local-to-global)
+  PetscBool              prealloc_only;      /* Flag indicating the DMCreateMatrix() should only preallocate, not fill the matrix */
+  PetscBool              structure_only;     /* Flag indicating the DMCreateMatrix() create matrix structure without values */
+  PetscInt               levelup, leveldown; /* if the DM has been obtained by refining (or coarsening) this indicates how many times that process has been used to generate this DM */
+  PetscBool              setupcalled;        /* Indicates that the DM has been set up, methods that modify a DM such that a fresh setup is required should reset this flag */
+  PetscBool              setfromoptionscalled;
+  void                  *data;
   /* Hierarchy / Submeshes */
   DM                      coarseMesh;
   DM                      fineMesh;
@@ -254,20 +256,20 @@ struct _p_DM {
   DMGlobalToLocalHookLink gtolhook;
   DMLocalToGlobalHookLink ltoghook;
   /* Topology */
-  PetscInt                dim; /* The topological dimension */
+  PetscInt dim; /* The topological dimension */
   /* Auxiliary data */
-  PetscHMapAux            auxData; /* Auxiliary DM and Vec for region denoted by the key */
+  PetscHMapAux auxData; /* Auxiliary DM and Vec for region denoted by the key */
   /* Flexible communication */
-  PetscSF                 sfMigration; /* SF for point distribution created during distribution */
-  PetscSF                 sf;          /* SF for parallel point overlap */
-  PetscSF                 sectionSF;   /* SF for parallel dof overlap using section */
-  PetscSF                 sfNatural;   /* SF mapping to the "natural" ordering */
-  PetscBool               useNatural;  /* Create the natural SF */
+  PetscSF   sfMigration; /* SF for point distribution created during distribution */
+  PetscSF   sf;          /* SF for parallel point overlap */
+  PetscSF   sectionSF;   /* SF for parallel dof overlap using section */
+  PetscSF   sfNatural;   /* SF mapping to the "natural" ordering */
+  PetscBool useNatural;  /* Create the natural SF */
   /* Allows a non-standard data layout */
-  PetscBool               adjacency[2];  /* [use cone() or support() first, use the transitive closure] */
-  PetscSection            localSection;  /* Layout for local vectors */
-  PetscSection            globalSection; /* Layout for global vectors */
-  PetscLayout             map;
+  PetscBool    adjacency[2];  /* [use cone() or support() first, use the transitive closure] */
+  PetscSection localSection;  /* Layout for local vectors */
+  PetscSection globalSection; /* Layout for global vectors */
+  PetscLayout  map;
   /* Constraints */
   struct {
     PetscSection section;
@@ -284,25 +286,27 @@ struct _p_DM {
   /* Coordinates */
   DMCoordinates coordinates[2]; /* Coordinates, 0 is default, 1 is possible DG coordinate field for periodicity */
   /* Periodicity */
-  PetscReal    *Lstart, *L, *maxCell; /* Size of periodic box and max cell size for determining periodicity */
-  PetscBool     sparseLocalize;       /* Localize coordinates only for cells near periodic boundary */
+  PetscReal *Lstart, *L, *maxCell; /* Size of periodic box and max cell size for determining periodicity */
+  PetscBool  sparseLocalize;       /* Localize coordinates only for cells near periodic boundary */
   /* Null spaces -- of course I should make this have a variable number of fields */
   NullSpaceFunc nullspaceConstructors[10];
   NullSpaceFunc nearnullspaceConstructors[10];
   /* Fields are represented by objects */
-  PetscInt      Nf;       /* Number of fields defined on the total domain */
-  RegionField  *fields;   /* Array of discretization fields with regions of validity */
-  DMBoundary    boundary; /* List of boundary conditions */
-  PetscInt      Nds;      /* Number of discrete systems defined on the total domain */
-  DMSpace      *probs;    /* Array of discrete systems */
+  PetscInt     Nf;       /* Number of fields defined on the total domain */
+  RegionField *fields;   /* Array of discretization fields with regions of validity */
+  DMBoundary   boundary; /* List of boundary conditions */
+  PetscInt     Nds;      /* Number of discrete systems defined on the total domain */
+  DMSpace     *probs;    /* Array of discrete systems */
   /* Output structures */
-  DM            dmBC;              /* The DM with boundary conditions in the global DM */
-  PetscInt      outputSequenceNum; /* The current sequence number for output */
-  PetscReal     outputSequenceVal; /* The current sequence value for output */
+  DM        dmBC;              /* The DM with boundary conditions in the global DM */
+  PetscInt  outputSequenceNum; /* The current sequence number for output */
+  PetscReal outputSequenceVal; /* The current sequence value for output */
   PetscErrorCode (*monitor[MAXDMMONITORS])(DM, void *);
   PetscErrorCode (*monitordestroy[MAXDMMONITORS])(void **);
   void    *monitorcontext[MAXDMMONITORS];
   PetscInt numbermonitors;
+  /* Configuration */
+  PetscBool cloneOpts; /* Flag indicating that this is a linked clone and should not respond to some options. This is currently used to prevent transformations from also affecting the coordinate DM */
 
   PetscObject dmksp, dmsnes, dmts;
 #ifdef PETSC_HAVE_LIBCEED
@@ -398,7 +402,8 @@ PETSC_EXTERN PetscErrorCode DMView_GLVis(DM, PetscViewer, PetscErrorCode (*)(DM,
 PETSC_EXTERN PetscErrorCode DMSequenceLoad_HDF5_Internal(DM, const char *, PetscInt, PetscScalar *, PetscViewer);
 #endif
 
-static inline PetscErrorCode DMGetLocalOffset_Private(DM dm, PetscInt point, PetscInt *start, PetscInt *end) {
+static inline PetscErrorCode DMGetLocalOffset_Private(DM dm, PetscInt point, PetscInt *start, PetscInt *end)
+{
   PetscFunctionBeginHot;
 #if defined(PETSC_USE_DEBUG)
   {
@@ -420,7 +425,8 @@ static inline PetscErrorCode DMGetLocalOffset_Private(DM dm, PetscInt point, Pet
   PetscFunctionReturn(0);
 }
 
-static inline PetscErrorCode DMGetLocalFieldOffset_Private(DM dm, PetscInt point, PetscInt field, PetscInt *start, PetscInt *end) {
+static inline PetscErrorCode DMGetLocalFieldOffset_Private(DM dm, PetscInt point, PetscInt field, PetscInt *start, PetscInt *end)
+{
   PetscFunctionBegin;
 #if defined(PETSC_USE_DEBUG)
   {
@@ -441,7 +447,8 @@ static inline PetscErrorCode DMGetLocalFieldOffset_Private(DM dm, PetscInt point
   PetscFunctionReturn(0);
 }
 
-static inline PetscErrorCode DMGetGlobalOffset_Private(DM dm, PetscInt point, PetscInt *start, PetscInt *end) {
+static inline PetscErrorCode DMGetGlobalOffset_Private(DM dm, PetscInt point, PetscInt *start, PetscInt *end)
+{
   PetscFunctionBegin;
 #if defined(PETSC_USE_DEBUG)
   {
@@ -466,14 +473,15 @@ static inline PetscErrorCode DMGetGlobalOffset_Private(DM dm, PetscInt point, Pe
   PetscFunctionReturn(0);
 }
 
-static inline PetscErrorCode DMGetGlobalFieldOffset_Private(DM dm, PetscInt point, PetscInt field, PetscInt *start, PetscInt *end) {
+static inline PetscErrorCode DMGetGlobalFieldOffset_Private(DM dm, PetscInt point, PetscInt field, PetscInt *start, PetscInt *end)
+{
   PetscFunctionBegin;
 #if defined(PETSC_USE_DEBUG)
   {
     PetscInt loff, lfoff, fdof, fcdof, ffcdof, f;
     *start = *end = 0; /* Silence overzealous compiler warning */
     PetscCheck(dm->localSection, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "DM must have a local section, see DMSetLocalSection()");
-    PetscCheck(dm->globalSection, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "DM must have a global section. It will be crated automatically by DMGetGlobalSection()");
+    PetscCheck(dm->globalSection, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "DM must have a global section. It will be created automatically by DMGetGlobalSection()");
     PetscCall(PetscSectionGetOffset(dm->globalSection, point, start));
     PetscCall(PetscSectionGetOffset(dm->localSection, point, &loff));
     PetscCall(PetscSectionGetFieldOffset(dm->localSection, point, field, &lfoff));

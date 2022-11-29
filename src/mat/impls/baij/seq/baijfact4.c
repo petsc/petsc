@@ -6,7 +6,8 @@
 #include <petsc/private/kernels/blockinvert.h>
 
 /* ----------------------------------------------------------- */
-PetscErrorCode MatLUFactorNumeric_SeqBAIJ_N_inplace(Mat C, Mat A, const MatFactorInfo *info) {
+PetscErrorCode MatLUFactorNumeric_SeqBAIJ_N_inplace(Mat C, Mat A, const MatFactorInfo *info)
+{
   Mat_SeqBAIJ    *a = (Mat_SeqBAIJ *)A->data, *b = (Mat_SeqBAIJ *)C->data;
   IS              isrow = b->row, isicol = b->icol;
   const PetscInt *r, *ic;
@@ -62,7 +63,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_N_inplace(Mat C, Mat A, const MatFacto
     for (j = 0; j < nz; j++) PetscCall(PetscArraycpy(pv + bs2 * j, rtmp + bs2 * pj[j], bs2));
     diag = diag_offset[i] - bi[i];
     /* invert diagonal block */
-    w    = pv + bs2 * diag;
+    w = pv + bs2 * diag;
 
     PetscCall(PetscKernel_A_gets_inverse_A(bs, w, v_pivots, v_work, allowzeropivot, &zeropivotdetected));
     if (zeropivotdetected) C->factorerrortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;

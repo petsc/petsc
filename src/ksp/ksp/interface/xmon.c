@@ -2,7 +2,8 @@
 #include <petsc/private/kspimpl.h> /*I  "petscksp.h"   I*/
 #include <petscdraw.h>
 
-PetscErrorCode KSPMonitorLGCreate(MPI_Comm comm, const char host[], const char label[], const char metric[], PetscInt l, const char *names[], int x, int y, int m, int n, PetscDrawLG *lgctx) {
+PetscErrorCode KSPMonitorLGCreate(MPI_Comm comm, const char host[], const char label[], const char metric[], PetscInt l, const char *names[], int x, int y, int m, int n, PetscDrawLG *lgctx)
+{
   PetscDraw     draw;
   PetscDrawAxis axis;
   PetscDrawLG   lg;
@@ -20,7 +21,8 @@ PetscErrorCode KSPMonitorLGCreate(MPI_Comm comm, const char host[], const char l
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode KSPMonitorLGRange(KSP ksp, PetscInt n, PetscReal rnorm, void *monctx) {
+PetscErrorCode KSPMonitorLGRange(KSP ksp, PetscInt n, PetscReal rnorm, void *monctx)
+{
   PetscDrawLG      lg;
   PetscReal        x, y, per;
   PetscViewer      v = (PetscViewer)monctx;

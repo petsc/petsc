@@ -1,5 +1,5 @@
-#if !defined(__DGMRES)
-#define __DGMRES
+#ifndef PETSC_DGMRESIMPL_H
+#define PETSC_DGMRESIMPL_H
 
 #define KSPGMRES_NO_MACROS
 #include <../src/ksp/ksp/impls/gmres/gmresimpl.h>
@@ -89,4 +89,4 @@ PETSC_EXTERN PetscLogEvent KSP_DGMRESApplyDeflation;
 #define IWORK    dgmres->iwork
 #define ORTH     dgmres->orth
 #define SMV      1
-#endif
+#endif // PETSC_DGMRESIMPL_H

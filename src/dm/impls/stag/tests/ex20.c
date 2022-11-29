@@ -3,7 +3,8 @@ static char help[] = "Test DMStag transfer operators, on a faces-only grid.\n\n"
 #include <petscdm.h>
 #include <petscdmstag.h>
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   DM        dm;
   PetscInt  dim;
   PetscBool flg, dump;
