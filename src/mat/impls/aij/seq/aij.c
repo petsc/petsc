@@ -2809,13 +2809,13 @@ PetscErrorCode MatCreateSubMatrices_SeqAIJ(Mat A, PetscInt n, const IS irow[], c
 PetscErrorCode MatIncreaseOverlap_SeqAIJ(Mat A, PetscInt is_max, IS is[], PetscInt ov)
 {
   Mat_SeqAIJ     *a = (Mat_SeqAIJ *)A->data;
-  PetscInt        row, i, j, k, l, m, n, *nidx, isz, val;
+  PetscInt        row, i, j, k, l, ll, m, n, *nidx, isz, val;
   const PetscInt *idx;
-  PetscInt        start, end, *ai, *aj;
+  PetscInt        start, end, *ai, *aj, bs = (A->rmap->bs > 0 && A->rmap->bs == A->cmap->bs) ? A->rmap->bs : 1;
   PetscBT         table;
 
   PetscFunctionBegin;
-  m  = A->rmap->n;
+  m  = A->rmap->n / bs;
   ai = a->i;
   aj = a->j;
 
@@ -2833,27 +2833,53 @@ PetscErrorCode MatIncreaseOverlap_SeqAIJ(Mat A, PetscInt is_max, IS is[], PetscI
     PetscCall(ISGetIndices(is[i], &idx));
     PetscCall(ISGetLocalSize(is[i], &n));
 
-    /* Enter these into the temp arrays. I.e., mark table[row], enter row into new index */
-    for (j = 0; j < n; ++j) {
-      if (!PetscBTLookupSet(table, idx[j])) nidx[isz++] = idx[j];
-    }
-    PetscCall(ISRestoreIndices(is[i], &idx));
-    PetscCall(ISDestroy(&is[i]));
+    if (bs > 1) {
+      /* Enter these into the temp arrays. I.e., mark table[row], enter row into new index */
+      for (j = 0; j < n; ++j) {
+        if (!PetscBTLookupSet(table, idx[j] / bs)) nidx[isz++] = idx[j] / bs;
+      }
+      PetscCall(ISRestoreIndices(is[i], &idx));
+      PetscCall(ISDestroy(&is[i]));
 
-    k = 0;
-    for (j = 0; j < ov; j++) { /* for each overlap */
-      n = isz;
-      for (; k < n; k++) { /* do only those rows in nidx[k], which are not done yet */
-        row   = nidx[k];
-        start = ai[row];
-        end   = ai[row + 1];
-        for (l = start; l < end; l++) {
-          val = aj[l];
-          if (!PetscBTLookupSet(table, val)) nidx[isz++] = val;
+      k = 0;
+      for (j = 0; j < ov; j++) { /* for each overlap */
+        n = isz;
+        for (; k < n; k++) { /* do only those rows in nidx[k], which are not done yet */
+          for (ll = 0; ll < bs; ll++) {
+            row   = bs * nidx[k] + ll;
+            start = ai[row];
+            end   = ai[row + 1];
+            for (l = start; l < end; l++) {
+              val = aj[l] / bs;
+              if (!PetscBTLookupSet(table, val)) nidx[isz++] = val;
+            }
+          }
         }
       }
+      PetscCall(ISCreateBlock(PETSC_COMM_SELF, bs, isz, nidx, PETSC_COPY_VALUES, (is + i)));
+    } else {
+      /* Enter these into the temp arrays. I.e., mark table[row], enter row into new index */
+      for (j = 0; j < n; ++j) {
+        if (!PetscBTLookupSet(table, idx[j])) nidx[isz++] = idx[j];
+      }
+      PetscCall(ISRestoreIndices(is[i], &idx));
+      PetscCall(ISDestroy(&is[i]));
+
+      k = 0;
+      for (j = 0; j < ov; j++) { /* for each overlap */
+        n = isz;
+        for (; k < n; k++) { /* do only those rows in nidx[k], which are not done yet */
+          row   = nidx[k];
+          start = ai[row];
+          end   = ai[row + 1];
+          for (l = start; l < end; l++) {
+            val = aj[l];
+            if (!PetscBTLookupSet(table, val)) nidx[isz++] = val;
+          }
+        }
+      }
+      PetscCall(ISCreateGeneral(PETSC_COMM_SELF, isz, nidx, PETSC_COPY_VALUES, (is + i)));
     }
-    PetscCall(ISCreateGeneral(PETSC_COMM_SELF, isz, nidx, PETSC_COPY_VALUES, (is + i)));
   }
   PetscCall(PetscBTDestroy(&table));
   PetscCall(PetscFree(nidx));

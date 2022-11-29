@@ -7236,10 +7236,12 @@ PetscErrorCode MatDestroySeqNonzeroStructure(Mat *mat)
 
    Level: developer
 
-   Developer Note:
-   Any implementation must preserve block sizes. That is: if the row block size and the column block size of mat are equal to bs, then the output index sets must be compatible with bs.
+   Note:
+   The computed overlap preserves the matrix block sizes when the blocks are square.
+   That is: if a matrix nonzero for a given block would increase the overlap all columns associated with
+   that block are included in the overlap regardless of whether each specific column would increase the overlap.
 
-.seealso: `Mat`, `PCASM`, `MatIncreaseOverlapSplit()`, `MatCreateSubMatrices()`
+.seealso: `Mat`, `PCASM`, `MatSetBlockSize()`, `MatIncreaseOverlapSplit()`, `MatCreateSubMatrices()`
 @*/
 PetscErrorCode MatIncreaseOverlap(Mat mat, PetscInt n, IS is[], PetscInt ov)
 {
