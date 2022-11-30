@@ -556,7 +556,7 @@ PetscErrorCode VecDuplicateVecs(Vec v, PetscInt m, Vec *V[])
   PetscValidPointer(V, 3);
   PetscValidType(v, 1);
   PetscUseTypeMethod(v, duplicatevecs, m, V);
-#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
+#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA) || defined(PETSC_HAVE_HIP)
   if (v->boundtocpu && v->bindingpropagates) {
     PetscInt i;
 
@@ -2012,7 +2012,7 @@ PetscErrorCode VecSetBindingPropagates(Vec v, PetscBool flg)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v, VEC_CLASSID, 1);
-#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
+#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA) || defined(PETSC_HAVE_HIP)
   v->bindingpropagates = flg;
 #endif
   PetscFunctionReturn(0);
@@ -2036,7 +2036,7 @@ PetscErrorCode VecGetBindingPropagates(Vec v, PetscBool *flg)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v, VEC_CLASSID, 1);
   PetscValidBoolPointer(flg, 2);
-#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
+#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA) || defined(PETSC_HAVE_HIP)
   *flg = v->bindingpropagates;
 #else
   *flg = PETSC_FALSE;

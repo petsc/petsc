@@ -72,7 +72,7 @@ static PetscErrorCode MatBindToCPU_MPIAIJ(Mat A, PetscBool flg)
   Mat_MPIAIJ *a = (Mat_MPIAIJ *)A->data;
 
   PetscFunctionBegin;
-#if defined(PETSC_HAVE_CUDA) || defined(PETSC_HAVE_VIENNACL)
+#if defined(PETSC_HAVE_CUDA) || defined(PETSC_HAVE_HIP) || defined(PETSC_HAVE_VIENNACL)
   A->boundtocpu = flg;
 #endif
   if (a->A) PetscCall(MatBindToCPU(a->A, flg));
@@ -1163,6 +1163,9 @@ PetscErrorCode MatDestroy_MPIAIJ(Mat mat)
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatConvert_mpiaij_mpisbaij_C", NULL));
 #if defined(PETSC_HAVE_CUDA)
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatConvert_mpiaij_mpiaijcusparse_C", NULL));
+#endif
+#if defined(PETSC_HAVE_HIP)
+  PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatConvert_mpiaij_mpiaijhipsparse_C", NULL));
 #endif
 #if defined(PETSC_HAVE_KOKKOS_KERNELS)
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatConvert_mpiaij_mpiaijkokkos_C", NULL));
@@ -6025,6 +6028,9 @@ PETSC_INTERN PetscErrorCode MatConvert_AIJ_HYPRE(Mat, MatType, MatReuse, Mat *);
 #if defined(PETSC_HAVE_CUDA)
 PETSC_INTERN PetscErrorCode MatConvert_MPIAIJ_MPIAIJCUSPARSE(Mat, MatType, MatReuse, Mat *);
 #endif
+#if defined(PETSC_HAVE_HIP)
+PETSC_INTERN PetscErrorCode MatConvert_MPIAIJ_MPIAIJHIPSPARSE(Mat, MatType, MatReuse, Mat *);
+#endif
 #if defined(PETSC_HAVE_KOKKOS_KERNELS)
 PETSC_INTERN PetscErrorCode MatConvert_MPIAIJ_MPIAIJKokkos(Mat, MatType, MatReuse, Mat *);
 #endif
@@ -6065,7 +6071,7 @@ static PetscErrorCode MatMatMultSymbolic_MPIDense_MPIAIJ(Mat A, Mat B, PetscReal
   PetscCheck(A->cmap->n == B->rmap->n, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "A->cmap->n %" PetscInt_FMT " != B->rmap->n %" PetscInt_FMT, A->cmap->n, B->rmap->n);
   PetscCall(MatSetSizes(C, A->rmap->n, B->cmap->n, A->rmap->N, B->cmap->N));
   PetscCall(MatSetBlockSizesFromMats(C, A, B));
-  PetscCall(PetscObjectTypeCompareAny((PetscObject)C, &cisdense, MATMPIDENSE, MATMPIDENSECUDA, ""));
+  PetscCall(PetscObjectTypeCompareAny((PetscObject)C, &cisdense, MATMPIDENSE, MATMPIDENSECUDA, MATMPIDENSEHIP, ""));
   if (!cisdense) PetscCall(MatSetType(C, ((PetscObject)A)->type_name));
   PetscCall(MatSetUp(C));
 
@@ -6790,6 +6796,9 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJ(Mat B)
 #if defined(PETSC_HAVE_CUDA)
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatConvert_mpiaij_mpiaijcusparse_C", MatConvert_MPIAIJ_MPIAIJCUSPARSE));
 #endif
+#if defined(PETSC_HAVE_HIP)
+  PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatConvert_mpiaij_mpiaijhipsparse_C", MatConvert_MPIAIJ_MPIAIJHIPSPARSE));
+#endif
 #if defined(PETSC_HAVE_KOKKOS_KERNELS)
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatConvert_mpiaij_mpiaijkokkos_C", MatConvert_MPIAIJ_MPIAIJKokkos));
 #endif
@@ -7044,7 +7053,7 @@ PetscErrorCode MatProductSymbolic_MPIAIJBACKEND(Mat C)
   const PetscInt *cmapa[MAX_NUMBER_INTERMEDIATE], *rmapa[MAX_NUMBER_INTERMEDIATE];       /* col/row local to global map array (table) for type-2 map type */
 
   MatProductType ptype;
-  PetscBool      mptmp[MAX_NUMBER_INTERMEDIATE], hasoffproc = PETSC_FALSE, iscuda, iskokk;
+  PetscBool      mptmp[MAX_NUMBER_INTERMEDIATE], hasoffproc = PETSC_FALSE, iscuda, iship, iskokk;
   PetscMPIInt    size;
 
   PetscFunctionBegin;
@@ -7336,8 +7345,10 @@ PetscErrorCode MatProductSymbolic_MPIAIJBACKEND(Mat C)
   /* memory type */
   mmdata->mtype = PETSC_MEMTYPE_HOST;
   PetscCall(PetscObjectTypeCompareAny((PetscObject)C, &iscuda, MATSEQAIJCUSPARSE, MATMPIAIJCUSPARSE, ""));
+  PetscCall(PetscObjectTypeCompareAny((PetscObject)C, &iship, MATSEQAIJHIPSPARSE, MATMPIAIJHIPSPARSE, ""));
   PetscCall(PetscObjectTypeCompareAny((PetscObject)C, &iskokk, MATSEQAIJKOKKOS, MATMPIAIJKOKKOS, ""));
   if (iscuda) mmdata->mtype = PETSC_MEMTYPE_CUDA;
+  else if (iship) mmdata->mtype = PETSC_MEMTYPE_HIP;
   else if (iskokk) mmdata->mtype = PETSC_MEMTYPE_KOKKOS;
 
   /* prepare coo coordinates for values insertion */
