@@ -738,7 +738,7 @@ PetscErrorCode MatSetBindingPropagates(Mat A, PetscBool flg)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
-#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
+#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA) || defined(PETSC_HAVE_HIP)
   A->bindingpropagates = flg;
 #endif
   PetscFunctionReturn(0);
@@ -762,7 +762,7 @@ PetscErrorCode MatGetBindingPropagates(Mat A, PetscBool *flg)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
   PetscValidBoolPointer(flg, 2);
-#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
+#if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA) || defined(PETSC_HAVE_HIP)
   *flg = A->bindingpropagates;
 #else
   *flg = PETSC_FALSE;
