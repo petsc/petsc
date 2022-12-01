@@ -10,9 +10,12 @@ int main(int argc, char **args)
   PetscMPIInt size, rank;
   PetscScalar v;
   IS          isrow, iscol;
+  PetscBool   test_matmatmult = PETSC_FALSE;
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &args, (char *)0, help));
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-test_matmatmult", &test_matmatmult, NULL));
+
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
   n = 2 * size;
@@ -53,6 +56,12 @@ int main(int argc, char **args)
   PetscCall(MatCreateSubMatrix(C, isrow, iscol, MAT_REUSE_MATRIX, &A));
   PetscCall(MatView(A, PETSC_VIEWER_STDOUT_WORLD));
 
+  if (test_matmatmult) {
+    PetscCall(MatDestroy(&C));
+    PetscCall(MatMatMult(A, A, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &C));
+    PetscCall(MatView(C, PETSC_VIEWER_STDOUT_WORLD));
+  }
+
   PetscCall(ISDestroy(&isrow));
   PetscCall(ISDestroy(&iscol));
   PetscCall(MatDestroy(&A));
@@ -88,5 +97,13 @@ int main(int argc, char **args)
       suffix: sbaij
       args: -mat_type sbaij
       output_file: output/ex59_1_sbaij.out
+
+   test:
+      suffix: kok
+      nsize: 3
+      requires: kokkos_kernels
+      args: -mat_type aijkokkos -test_matmatmult
+      filter: grep -v -i type
+      output_file: output/ex59_kok.out
 
 TEST*/

@@ -8,9 +8,18 @@
 PetscErrorCode MatAssemblyEnd_MPIAIJKokkos(Mat A, MatAssemblyType mode)
 {
   Mat_SeqAIJKokkos *aijkok;
+  Mat_MPIAIJ       *mpiaij = (Mat_MPIAIJ *)A->data;
 
   PetscFunctionBegin;
   PetscCall(MatAssemblyEnd_MPIAIJ(A, mode));
+  /* E.g., MatCreateSubMatrix() calls MatCreateMPIAIJWithSeqAIJ(comm,A,B,..), which creates Bnew of SEQAIJ and destroys B of SEQAIJKOKKOS.
+     Thus we finalize A/B/lvec's type in MatAssemblyEnd() to handle various cases.
+   */
+  if (mode == MAT_FINAL_ASSEMBLY) {
+    PetscCall(MatSetType(mpiaij->A, MATSEQAIJKOKKOS));
+    PetscCall(MatSetType(mpiaij->B, MATSEQAIJKOKKOS));
+    PetscCall(VecSetType(mpiaij->lvec, VECSEQKOKKOS));
+  }
   aijkok = static_cast<Mat_SeqAIJKokkos *>(((Mat_MPIAIJ *)A->data)->A->spptr); /* Access spptr after MatAssemblyEnd_MPIAIJ(), which might have deleted old spptr */
   if (aijkok && aijkok->device_mat_d.data()) {
     A->offloadmask = PETSC_OFFLOAD_GPU; // in GPU mode, no going back. MatSetValues checks this
@@ -1238,7 +1247,7 @@ static PetscErrorCode MatSetPreallocationCOO_MPIAIJKokkos(Mat mat, PetscCount co
   Mat_MPIAIJKokkos *mpikok;
 
   PetscFunctionBegin;
-  PetscCall(MatSetPreallocationCOO_MPIAIJ(mat, coo_n, coo_i, coo_j));
+  PetscCall(MatSetPreallocationCOO_MPIAIJ(mat, coo_n, coo_i, coo_j)); /* mpiaij->A,B's type is set to seqaijkokkos */
   mat->preallocated = PETSC_TRUE;
   PetscCall(MatAssemblyBegin(mat, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(mat, MAT_FINAL_ASSEMBLY));
