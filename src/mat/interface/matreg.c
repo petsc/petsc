@@ -115,6 +115,10 @@ PetscErrorCode MatSetType(Mat mat, MatType matype)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat, MAT_CLASSID, 1);
 
+  /* make this special case fast */
+  PetscCall(PetscObjectTypeCompare((PetscObject)mat, matype, &sametype));
+  if (sametype) PetscFunctionReturn(0);
+
   /* suppose with one MPI process, one created an MPIAIJ (mpiaij) matrix with MatCreateMPIAIJWithArrays(), and later tried
      to change its type via '-mat_type aijcusparse'. Even there is only one MPI rank, we need to adapt matype to
      'mpiaijcusparse' so that it will be treated as a subclass of MPIAIJ and proper MatCovert() will be called.
