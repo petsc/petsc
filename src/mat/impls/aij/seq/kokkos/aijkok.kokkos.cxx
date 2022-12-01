@@ -279,7 +279,7 @@ static PetscErrorCode MatMult_SeqAIJKokkos(Mat A, Vec xx, Vec yy)
   PetscCall(VecGetKokkosView(xx, &xv));
   PetscCall(VecGetKokkosViewWrite(yy, &yv));
   aijkok = static_cast<Mat_SeqAIJKokkos *>(A->spptr);
-  KokkosSparse::spmv("N", 1.0 /*alpha*/, aijkok->csrmat, xv, 0.0 /*beta*/, yv); /* y = alpha A x + beta y */
+  PetscCallCXX(KokkosSparse::spmv("N", 1.0 /*alpha*/, aijkok->csrmat, xv, 0.0 /*beta*/, yv)); /* y = alpha A x + beta y */
   PetscCall(VecRestoreKokkosView(xx, &xv));
   PetscCall(VecRestoreKokkosViewWrite(yy, &yv));
   /* 2.0*nnz - numRows seems more accurate here but assumes there are no zero-rows. So a little sloppy here. */
@@ -310,7 +310,7 @@ static PetscErrorCode MatMultTranspose_SeqAIJKokkos(Mat A, Vec xx, Vec yy)
     csrmat = &aijkok->csrmat;
     mode   = "T";
   }
-  KokkosSparse::spmv(mode, 1.0 /*alpha*/, *csrmat, xv, 0.0 /*beta*/, yv); /* y = alpha A^T x + beta y */
+  PetscCallCXX(KokkosSparse::spmv(mode, 1.0 /*alpha*/, *csrmat, xv, 0.0 /*beta*/, yv)); /* y = alpha A^T x + beta y */
   PetscCall(VecRestoreKokkosView(xx, &xv));
   PetscCall(VecRestoreKokkosViewWrite(yy, &yv));
   PetscCall(PetscLogGpuFlops(2.0 * csrmat->nnz()));
@@ -340,7 +340,7 @@ static PetscErrorCode MatMultHermitianTranspose_SeqAIJKokkos(Mat A, Vec xx, Vec 
     csrmat = &aijkok->csrmat;
     mode   = "C";
   }
-  KokkosSparse::spmv(mode, 1.0 /*alpha*/, *csrmat, xv, 0.0 /*beta*/, yv); /* y = alpha A^H x + beta y */
+  PetscCallCXX(KokkosSparse::spmv(mode, 1.0 /*alpha*/, *csrmat, xv, 0.0 /*beta*/, yv)); /* y = alpha A^H x + beta y */
   PetscCall(VecRestoreKokkosView(xx, &xv));
   PetscCall(VecRestoreKokkosViewWrite(yy, &yv));
   PetscCall(PetscLogGpuFlops(2.0 * csrmat->nnz()));
@@ -363,7 +363,7 @@ static PetscErrorCode MatMultAdd_SeqAIJKokkos(Mat A, Vec xx, Vec yy, Vec zz)
   PetscCall(VecGetKokkosViewWrite(zz, &zv));
   if (zz != yy) Kokkos::deep_copy(zv, yv);
   aijkok = static_cast<Mat_SeqAIJKokkos *>(A->spptr);
-  KokkosSparse::spmv("N", 1.0 /*alpha*/, aijkok->csrmat, xv, 1.0 /*beta*/, zv); /* z = alpha A x + beta z */
+  PetscCallCXX(KokkosSparse::spmv("N", 1.0 /*alpha*/, aijkok->csrmat, xv, 1.0 /*beta*/, zv)); /* z = alpha A x + beta z */
   PetscCall(VecRestoreKokkosView(xx, &xv));
   PetscCall(VecRestoreKokkosView(yy, &yv));
   PetscCall(VecRestoreKokkosViewWrite(zz, &zv));
@@ -396,7 +396,7 @@ static PetscErrorCode MatMultTransposeAdd_SeqAIJKokkos(Mat A, Vec xx, Vec yy, Ve
     csrmat = &aijkok->csrmat;
     mode   = "T";
   }
-  KokkosSparse::spmv(mode, 1.0 /*alpha*/, *csrmat, xv, 1.0 /*beta*/, zv); /* z = alpha A^T x + beta z */
+  PetscCallCXX(KokkosSparse::spmv(mode, 1.0 /*alpha*/, *csrmat, xv, 1.0 /*beta*/, zv)); /* z = alpha A^T x + beta z */
   PetscCall(VecRestoreKokkosView(xx, &xv));
   PetscCall(VecRestoreKokkosView(yy, &yv));
   PetscCall(VecRestoreKokkosViewWrite(zz, &zv));
@@ -429,7 +429,7 @@ static PetscErrorCode MatMultHermitianTransposeAdd_SeqAIJKokkos(Mat A, Vec xx, V
     csrmat = &aijkok->csrmat;
     mode   = "C";
   }
-  KokkosSparse::spmv(mode, 1.0 /*alpha*/, *csrmat, xv, 1.0 /*beta*/, zv); /* z = alpha A^H x + beta z */
+  PetscCallCXX(KokkosSparse::spmv(mode, 1.0 /*alpha*/, *csrmat, xv, 1.0 /*beta*/, zv)); /* z = alpha A^H x + beta z */
   PetscCall(VecRestoreKokkosView(xx, &xv));
   PetscCall(VecRestoreKokkosView(yy, &yv));
   PetscCall(VecRestoreKokkosViewWrite(zz, &zv));
