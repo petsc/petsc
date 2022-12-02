@@ -1,3 +1,5 @@
+.. _ch_contributing:
+
 =====================
 Contributing to PETSc
 =====================
