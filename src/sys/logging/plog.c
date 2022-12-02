@@ -11,6 +11,8 @@
 #include <petsc/private/logimpl.h> /*I    "petscsys.h"   I*/
 #include <petsctime.h>
 #include <petscviewer.h>
+#include <petscdevice.h>
+#include <petsc/private/deviceimpl.h>
 #if defined(PETSC_HAVE_TAU_PERFSTUBS)
   #include <../src/sys/perfstubs/timer.h>
 #endif
@@ -1434,10 +1436,19 @@ static PetscErrorCode PetscLogViewWarnNoGpuAwareMpi(MPI_Comm comm, FILE *fd)
 {
   #if defined(PETSC_HAVE_DEVICE)
   PetscMPIInt size;
+  PetscBool   deviceInitialized = PETSC_FALSE;
 
   PetscFunctionBegin;
   PetscCallMPI(MPI_Comm_size(comm, &size));
-  if (use_gpu_aware_mpi || size == 1) PetscFunctionReturn(0);
+  for (int i = PETSC_DEVICE_HOST + 1; i < PETSC_DEVICE_MAX; ++i) {
+    const PetscDeviceType dtype = PetscDeviceTypeCast(i);
+    if (PetscDeviceInitialized(dtype)) { /* a non-host device was initialized */
+      deviceInitialized = PETSC_TRUE;
+      break;
+    }
+  }
+  /* the last condition says petsc is configured with device but it is a pure CPU run, so don't print misleading warnings */
+  if (use_gpu_aware_mpi || size == 1 || !deviceInitialized) PetscFunctionReturn(0);
   PetscCall(PetscFPrintf(comm, fd, "\n\n"));
   PetscCall(PetscFPrintf(comm, fd, "      ##########################################################\n"));
   PetscCall(PetscFPrintf(comm, fd, "      #                                                        #\n"));

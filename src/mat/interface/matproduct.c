@@ -1073,6 +1073,7 @@ PetscErrorCode MatProductCreate(Mat A, Mat B, Mat C, Mat *D)
 
   PetscValidPointer(D, 4);
   PetscCall(MatCreate(PetscObjectComm((PetscObject)A), D));
+  /* Delay setting type of D to the MatProduct symbolic phase, as we allow sparse A and dense B */
   PetscCall(MatProductCreate_Private(A, B, C, *D));
   PetscFunctionReturn(0);
 }
