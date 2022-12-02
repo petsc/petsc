@@ -5,26 +5,31 @@ Download
 ========
 
 
-Recommended Download
-====================
+Recommended: Obtain Release Version With Git
+============================================
+
+Use ``release`` branch from PETSc git repository - it provides latest release with additional fixes.
 
 .. code-block:: console
 
    $ git clone -b release https://gitlab.com/petsc/petsc.git petsc
+   $ git pull # obtain new release fixes (since a prior clone or pull)
 
-Use ``git pull`` to download any new patches or changes that have been added since your
-``git clone`` or last ``git pull``. Use ``git checkout vMAJOR.MINOR.PATCH`` to download a
-particular version.
+To anchor to a release version (without intermediate fixes), use:
+
+.. code-block:: console
+
+   $ git checkout vMAJOR.MINOR.PATCH
 
 We recommend users join the official PETSc :ref:`mailing lists <doc_mail>` to be submit
 any questions they may have directly to the development team, be notified of new major
 releases and bug-fixes, or to simply keep up to date with the current state of the
 library.
 
-Alternative Download
-====================
+Alternative: Obtain Release Version with Tarball
+================================================
 
-Tarball which contains only the source, identical to ``git`` download. Documentation available online.
+Tarball which contains only the source. Documentation available `online <https://petsc.org/release>`__.
 
 - `petsc-3.18.2.tar.gz <https://ftp.mcs.anl.gov/pub/petsc/release-snapshots/petsc-3.18.2.tar.gz>`__
 
@@ -55,10 +60,22 @@ Use mirror if GitLab and our primary download server are unavailable:
    applications that have not been updated to the latest release. We urge you, whenever
    possible, to upgrade to the latest version of PETSc.
 
-PETSc Development Repository
-============================
+Advanced: Obtain PETSc Development Version With Git
+===================================================
 
-You can work with the `development version of PETSc
-<https://petsc.org/main>`__, and decide when to update to
-the latest code in the repository. This also facilitates easy submission of fixes and new
-features to the development team.
+Improvements and new features get added to ``main`` branch of PETSc git repository. To obtain development sources, use:
+
+.. code-block:: console
+
+   $ git clone https://gitlab.com/petsc/petsc.git petsc
+
+or if you already have a local clone of petsc git repository
+
+.. code-block:: console
+
+   $ git checkout main
+   $ git pull
+
+More details on contributing to PETSc development are at :any:`ch_contributing`. The development version of
+the documentation, which is largely the same as the release documentation is `available <https://petsc.org/main>`__.
+
