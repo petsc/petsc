@@ -3740,6 +3740,7 @@ PetscErrorCode VecLockGetLocation(Vec x, const char *file[], const char *func[],
   PetscValidPointer(file, 2);
   PetscValidPointer(func, 3);
   PetscValidIntPointer(line, 4);
+  #if !PetscDefined(HAVE_THREADSAFETY)
   {
     const int index = x->lockstack.currentsize - 1;
 
@@ -3748,6 +3749,11 @@ PetscErrorCode VecLockGetLocation(Vec x, const char *file[], const char *func[],
     *func = x->lockstack.function[index];
     *line = x->lockstack.line[index];
   }
+  #else
+  *file = NULL;
+  *func = NULL;
+  *line = 0;
+  #endif
   PetscFunctionReturn(0);
 }
 
@@ -3771,25 +3777,29 @@ PetscErrorCode VecLockGetLocation(Vec x, const char *file[], const char *func[],
 @*/
 PetscErrorCode VecLockReadPush(Vec x)
 {
-  const char *file, *func;
-  int         index, line;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x, VEC_CLASSID, 1);
   PetscCheck(x->lock++ >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Vector is already locked for exclusive write access but you want to read it");
-  if ((index = petscstack.currentsize - 2) == -1) {
-    // vec was locked "outside" of petsc, either in user-land or main. the error message will
-    // now show this function as the culprit, but it will include the stacktrace
-    file = "unknown user-file";
-    func = "unknown_user_function";
-    line = 0;
-  } else {
-    PetscCheck(index >= 0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Unexpected petscstack, have negative index %d", index);
-    file = petscstack.file[index];
-    func = petscstack.function[index];
-    line = petscstack.line[index];
+  #if !PetscDefined(HAVE_THREADSAFETY)
+  {
+    const char *file, *func;
+    int         index, line;
+
+    if ((index = petscstack.currentsize - 2) == -1) {
+      // vec was locked "outside" of petsc, either in user-land or main. the error message will
+      // now show this function as the culprit, but it will include the stacktrace
+      file = "unknown user-file";
+      func = "unknown_user_function";
+      line = 0;
+    } else {
+      PetscCheck(index >= 0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Unexpected petscstack, have negative index %d", index);
+      file = petscstack.file[index];
+      func = petscstack.function[index];
+      line = petscstack.line[index];
+    }
+    PetscStackPush_Private(x->lockstack, file, func, line, petscstack.petscroutine[index], PETSC_FALSE);
   }
-  PetscStackPush_Private(x->lockstack, file, func, line, petscstack.petscroutine[index], PETSC_FALSE);
+  #endif
   PetscFunctionReturn(0);
 }
 
@@ -3810,11 +3820,13 @@ PetscErrorCode VecLockReadPop(Vec x)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x, VEC_CLASSID, 1);
   PetscCheck(--x->lock >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Vector has been unlocked from read-only access too many times");
+  #if !PetscDefined(HAVE_THREADSAFETY)
   {
     const char *previous = x->lockstack.function[x->lockstack.currentsize - 1];
 
     PetscStackPop_Private(x->lockstack, previous);
   }
+  #endif
   PetscFunctionReturn(0);
 }
 

@@ -14,7 +14,7 @@
   #define PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(expr) expr
 #endif
 
-#if PetscDefined(USE_DEBUG)
+#if PetscDefined(USE_DEBUG) && !PetscDefined(HAVE_THREADSAFETY)
 PETSC_INTERN PetscErrorCode PetscStackSetCheck(PetscBool);
 PETSC_INTERN PetscErrorCode PetscStackView(FILE *);
 PETSC_INTERN PetscErrorCode PetscStackReset(void);
@@ -26,7 +26,7 @@ PETSC_INTERN PetscErrorCode PetscStackPrint(PetscStack *, FILE *);
   #define PetscStackReset()                 0
   #define PetscStackCopy(stackin, stackout) 0
   #define PetscStackPrint(stack, file)      0
-#endif /* PetscDefined(USE_DEBUG) */
+#endif
 
 /* These are used internally by PETSc ASCII IO routines*/
 #include <stdarg.h>
