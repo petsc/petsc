@@ -1,8 +1,6 @@
 #ifndef PETSCVECSEQCUPM_HPP
 #define PETSCVECSEQCUPM_HPP
 
-#define PETSC_SKIP_SPINLOCK // REVIEW ME: why
-
 #include <petsc/private/veccupmimpl.h>
 #include <petsc/private/randomimpl.h> // for _p_PetscRandom
 #include "../src/sys/objects/device/impls/cupm/cupmthrustutility.hpp"

@@ -1199,17 +1199,16 @@ PETSC_EXTERN PetscErrorCode PetscSplitReductionGet(MPI_Comm, PetscSplitReduction
 PETSC_EXTERN PetscErrorCode PetscSplitReductionEnd(PetscSplitReduction *);
 PETSC_EXTERN PetscErrorCode PetscSplitReductionExtend(PetscSplitReduction *);
 
-#if !defined(PETSC_SKIP_SPINLOCK)
-  #if defined(PETSC_HAVE_THREADSAFETY)
-    #if defined(PETSC_HAVE_CONCURRENCYKIT)
-      #if defined(__cplusplus)
+#if defined(PETSC_HAVE_THREADSAFETY)
+  #if defined(PETSC_HAVE_CONCURRENCYKIT)
+    #if defined(__cplusplus)
 /*  CK does not have extern "C" protection in their include files */
 extern "C" {
-      #endif
-      #include <ck_spinlock.h>
-      #if defined(__cplusplus)
+    #endif
+    #include <ck_spinlock.h>
+    #if defined(__cplusplus)
 }
-      #endif
+    #endif
 typedef ck_spinlock_t        PetscSpinlock;
 static inline PetscErrorCode PetscSpinlockCreate(PetscSpinlock *ck_spinlock)
 {
@@ -1230,10 +1229,10 @@ static inline PetscErrorCode PetscSpinlockDestroy(PetscSpinlock *ck_spinlock)
 {
   return 0;
 }
-    #elif defined(PETSC_HAVE_OPENMP)
+  #elif defined(PETSC_HAVE_OPENMP)
 
-      #include <omp.h>
-typedef omp_lock_t           PetscSpinlock;
+    #include <omp.h>
+typedef omp_lock_t PetscSpinlock;
 static inline PetscErrorCode PetscSpinlockCreate(PetscSpinlock *omp_lock)
 {
   omp_init_lock(omp_lock);
@@ -1254,24 +1253,23 @@ static inline PetscErrorCode PetscSpinlockDestroy(PetscSpinlock *omp_lock)
   omp_destroy_lock(omp_lock);
   return 0;
 }
-    #else
-      #error "Thread safety requires either --with-openmp or --download-concurrencykit"
-    #endif
-
   #else
-typedef int PetscSpinlock;
-    #define PetscSpinlockCreate(a)  0
-    #define PetscSpinlockLock(a)    0
-    #define PetscSpinlockUnlock(a)  0
-    #define PetscSpinlockDestroy(a) 0
+    #error "Thread safety requires either --with-openmp or --download-concurrencykit"
   #endif
 
-  #if defined(PETSC_HAVE_THREADSAFETY)
+#else
+typedef int PetscSpinlock;
+  #define PetscSpinlockCreate(a)  0
+  #define PetscSpinlockLock(a)    0
+  #define PetscSpinlockUnlock(a)  0
+  #define PetscSpinlockDestroy(a) 0
+#endif
+
+#if defined(PETSC_HAVE_THREADSAFETY)
 PETSC_INTERN PetscSpinlock PetscViewerASCIISpinLockOpen;
 PETSC_INTERN PetscSpinlock PetscViewerASCIISpinLockStdout;
 PETSC_INTERN PetscSpinlock PetscViewerASCIISpinLockStderr;
 PETSC_INTERN PetscSpinlock PetscCommSpinLock;
-  #endif
 #endif
 
 PETSC_EXTERN PetscLogEvent PETSC_Barrier;

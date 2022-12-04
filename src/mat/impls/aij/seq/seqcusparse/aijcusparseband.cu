@@ -1,7 +1,6 @@
 /*
   AIJCUSPARSE methods implemented with Cuda kernels. Uses cuSparse/Thrust maps from AIJCUSPARSE
 */
-#define PETSC_SKIP_SPINLOCK
 #define PETSC_SKIP_IMMINTRIN_H_CUDAWORKAROUND 1
 
 #include <petscconf.h>
