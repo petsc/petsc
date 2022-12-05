@@ -5,7 +5,7 @@ static char help[] = "Tests MatIncreaseOverlap(), MatCreateSubMatrices() for par
 
 int main(int argc, char **args)
 {
-  Mat          E, A, B, *submatA, *submatB;
+  Mat          E, A, B, Bt, *submatA, *submatB;
   PetscInt     bs = 1, m = 11, ov = 1, i, j, k, *rows, *cols, nd = 5, *idx, rstart, rend, sz, mm, nn, M, N, Mbs;
   PetscMPIInt  size, rank;
   PetscScalar *vals, rval;
@@ -85,9 +85,15 @@ int main(int argc, char **args)
   PetscCall(MatAssemblyBegin(B, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(B, MAT_FINAL_ASSEMBLY));
 
-  /* Test MatConvert_MPIAIJ_MPIBAIJ handles incompletely filled blocks */
+  /* Test MatConvert_MPIAIJ_MPI(S)BAIJ handles incompletely filled blocks */
   PetscCall(MatConvert(A, MATBAIJ, MAT_INITIAL_MATRIX, &E));
   PetscCall(MatDestroy(&E));
+  PetscCall(MatTranspose(A, MAT_INITIAL_MATRIX, &Bt));
+  PetscCall(MatAXPY(Bt, 1.0, B, DIFFERENT_NONZERO_PATTERN));
+  PetscCall(MatSetOption(Bt, MAT_SYMMETRIC, PETSC_TRUE));
+  PetscCall(MatConvert(Bt, MATSBAIJ, MAT_INITIAL_MATRIX, &E));
+  PetscCall(MatDestroy(&E));
+  PetscCall(MatDestroy(&Bt));
 
   /* Test MatIncreaseOverlap() */
   PetscCall(PetscMalloc1(nd, &is1));

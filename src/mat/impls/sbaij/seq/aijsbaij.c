@@ -122,6 +122,39 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqSBAIJ_SeqAIJ(Mat A, MatType newtype, M
   PetscFunctionReturn(0);
 }
 
+#include <../src/mat/impls/aij/seq/aij.h>
+
+PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqSBAIJ_Preallocate(Mat A, PetscInt **nnz)
+{
+  PetscInt    m, n, bs = PetscAbs(A->rmap->bs);
+  PetscInt   *ii;
+  Mat_SeqAIJ *Aa = (Mat_SeqAIJ *)A->data;
+
+  PetscFunctionBegin;
+  PetscCall(MatGetSize(A, &m, &n));
+  PetscCall(PetscCalloc1(m / bs, nnz));
+  PetscCall(PetscMalloc1(bs, &ii));
+
+  /* loop over all potential blocks in the matrix to see if the potential block has a nonzero */
+  for (PetscInt i = 0; i < m / bs; i++) {
+    for (PetscInt k = 0; k < bs; k++) ii[k] = Aa->i[i * bs + k];
+    for (PetscInt j = 0; j < n / bs; j++) {
+      for (PetscInt k = 0; k < bs; k++) {
+        for (; ii[k] < Aa->i[i * bs + k + 1] && Aa->j[ii[k]] < (j + 1) * bs; ii[k]++) {
+          if (j >= i && Aa->j[ii[k]] >= j * bs) {
+            /* found a nonzero in the potential block so allocate for that block and jump to check the next potential block */
+            (*nnz)[i]++;
+            goto theend;
+          }
+        }
+      }
+    theend:;
+    }
+  }
+  PetscCall(PetscFree(ii));
+  PetscFunctionReturn(0);
+}
+
 PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqSBAIJ(Mat A, MatType newtype, MatReuse reuse, Mat *newmat)
 {
   Mat           B;
@@ -139,15 +172,17 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqSBAIJ(Mat A, MatType newtype, M
 #endif
   PetscCheck(n == m, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Matrix must be square");
 
-  PetscCall(PetscMalloc1(m / bs, &rowlengths));
-  for (i = 0; i < m / bs; i++) {
-    if (a->diag[i * bs] == ai[i * bs + 1]) {              /* missing diagonal */
-      rowlengths[i] = (ai[i * bs + 1] - ai[i * bs]) / bs; /* allocate some extra space */
-      miss          = PETSC_TRUE;
-    } else {
-      rowlengths[i] = (ai[i * bs + 1] - a->diag[i * bs]) / bs;
+  if (bs == 1) {
+    PetscCall(PetscMalloc1(m, &rowlengths));
+    for (i = 0; i < m; i++) {
+      if (a->diag[i] == ai[i + 1]) {             /* missing diagonal */
+        rowlengths[i] = (ai[i + 1] - ai[i]) + 1; /* allocate some extra space */
+        miss          = PETSC_TRUE;
+      } else {
+        rowlengths[i] = (ai[i + 1] - a->diag[i]);
+      }
     }
-  }
+  } else PetscCall(MatConvert_SeqAIJ_SeqSBAIJ_Preallocate(A, &rowlengths));
   if (reuse != MAT_REUSE_MATRIX) {
     PetscCall(MatCreate(PetscObjectComm((PetscObject)A), &B));
     PetscCall(MatSetSizes(B, m, n, m, n));
