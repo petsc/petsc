@@ -100,6 +100,7 @@ int main(int argc, char **argv)
 
   # Memory checks cannot be included in tests because the allocated memory differs among environments
   testset:
+    requires: !defined(PETSC_HAVE_THREADSAFETY)
     args: -malloc_requested_size -dm_plex_box_faces 5,5 -check_memory 0
     test:
       suffix: tri
@@ -121,6 +122,7 @@ int main(int argc, char **argv)
 
   # Memory checks cannot be included in tests because the allocated memory differs among environments
   testset:
+    requires: !defined(PETSC_HAVE_THREADSAFETY)
     args: -malloc_requested_size -dm_plex_dim 3 -dm_plex_box_faces 5,5,5 -check_memory 0
 
     # Filter out label memory because tet mesher produce different surface meshes for different compilers
