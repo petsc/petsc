@@ -6,8 +6,10 @@ PETSc for Fortran Users
 Most of the functionality of PETSc can be obtained by people who program
 purely in Fortran.
 
-Synopsis
-~~~~~~~~
+.. _sec_fortran_includes:
+
+Modules and Include Files
+~~~~~~~~~~~~~~~~~~~~~~~~~
 
 To use PETSc with Fortran you must use both PETSc include files and modules.
 At the beginning of every function and module definition you need something like
@@ -40,23 +42,6 @@ For example,
 
 PETSc types like ``PetscInt`` and ``PetscReal`` are simply aliases for basic Fortran types and cannot be written as ``type(tPetscInt)``
 
-C vs. Fortran Interfaces
-~~~~~~~~~~~~~~~~~~~~~~~~
-
-Only a few differences exist between the C and Fortran PETSc interfaces,
-are due to Fortran syntax differences. All Fortran routines have the
-same names as the corresponding C versions, and PETSc command line
-options are fully supported. The routine arguments follow the usual
-Fortran conventions; the user need not worry about passing pointers or
-values. The calling sequences for the Fortran version are in most cases
-identical to the C version, except for the error checking variable
-discussed in :any:`sec_fortran_errors` and a few routines
-listed in :any:`sec_fortran_exceptions`.
-
-.. _sec_fortran_includes:
-
-Fortran Include Files
-^^^^^^^^^^^^^^^^^^^^^
 
 The Fortran include files for PETSc are located in the directory
 ``$PETSC_DIR/include/petsc/finclude`` and should be used via
@@ -84,63 +69,65 @@ for example,
 
    use petscksp
 
+The few differences between the C and Fortran PETSc interfaces
+are due to Fortran syntax differences. All Fortran routines have the
+same names as the corresponding C versions, and PETSc command line
+options are fully supported. The routine arguments follow the usual
+Fortran conventions; the user need not worry about passing pointers or
+values. The calling sequences for the Fortran version are in most cases
+identical to the C version, except for the error checking variable
+discussed in :any:`sec_fortran_errors` and a few routines
+listed in :any:`sec_fortran_exceptions`.
+
 .. _sec_fortran_errors:
 
 Error Checking
 ^^^^^^^^^^^^^^
 
 In the Fortran version, each PETSc routine has as its final argument an
-integer error variable, in contrast to the C convention of providing the
-error variable as the routine’s return value. The error code is set to
+integer error variable. The error code is set to
 be nonzero if an error has been detected; otherwise, it is zero. For
 example, the Fortran and C variants of ``KSPSolve()`` are given,
-respectively, below, where ``ierr`` denotes the error variable:
+respectively, below, where ``ierr`` denotes the ``PetscErrorCode`` error variable:
 
 .. code-block:: fortran
 
    call KSPSolve(ksp,b,x,ierr) ! Fortran
-   ierr = KSPSolve(ksp,b,x);   /* C */
+   ierr = KSPSolve(ksp,b,x);   // C
 
-Fortran programmers can check these error codes with ``PetscCall(ierr)``,
-which terminates all processes when an error is encountered. Likewise,
-one can set error codes within Fortran programs by using
-``SETERRQ(comm,p,' ')``, which again terminates all processes upon
-detection of an error. Note that complete error tracebacks with
-``PetscCall()`` and ``SETERRQ()``, as described in
-:any:`sec_simple` for C routines, are *not* directly supported for
-Fortran routines; however, Fortran programmers can easily use the error
-codes in writing their own tracebacks. For example, one could use code
-such as the following:
+For proper error handling one should not use the above syntax instead one should use
 
 .. code-block:: fortran
 
-   call KSPSolve(ksp,b,x,ierr)
-   if (ierr .ne. 0) then
-      print*, 'Error in routine ...'
-      return
-   end if
+   PetscCall(KSPSolve(ksp,b,x,ierr))   ! Fortran subroutines
+   PetscCallA(KSPSolve(ksp,b,x,ierr))  ! Fortran main program
+   PetscCall(KSPSolve(ksp,b,x))        // C
+
+
+
 
 Calling Fortran Routines from C (and C Routines from Fortran)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Different machines have different methods of naming Fortran routines
+Different compilers have different methods of naming Fortran routines
 called from C (or C routines called from Fortran). Most Fortran
 compilers change all the capital letters in Fortran routines to
-lowercase. On some machines, the Fortran compiler appends an underscore
+all lowercase. With some compilers, the Fortran compiler appends an underscore
 to the end of each Fortran routine name; for example, the Fortran
 routine ``Dabsc()`` would be called from C with ``dabsc_()``. Other
-machines change all the letters in Fortran routine names to capitals.
+compilers change all the letters in Fortran routine names to capitals.
 
 PETSc provides two macros (defined in C/C++) to help write portable code
 that mixes C/C++ and Fortran. They are ``PETSC_HAVE_FORTRAN_UNDERSCORE``
-and ``PETSC_HAVE_FORTRAN_CAPS`` , which are defined in the file
-``$PETSC_DIR/$PETSC_ARCH/include/petscconf.h``. The macros are used,
+and ``PETSC_HAVE_FORTRAN_CAPS`` , which will be defined in the file
+``$PETSC_DIR/$PETSC_ARCH/include/petscconf.h`` based on the compilers
+conventions. The macros are used,
 for example, as follows:
 
 .. code-block:: fortran
 
    #if defined(PETSC_HAVE_FORTRAN_CAPS)
-   #define dabsc_ DMDABSC
+   #define dabsc_ DABSC
    #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
    #define dabsc_ dabsc
    #endif
@@ -150,22 +137,18 @@ for example, as follows:
 Passing Null Pointers
 ^^^^^^^^^^^^^^^^^^^^^
 
-In several PETSc C functions, one has the option of passing a NULL (0)
+Many PETSc C functions have the option of passing a NULL
 argument (for example, the fifth argument of ``MatCreateSeqAIJ()``).
 From Fortran, users *must* pass ``PETSC_NULL_XXX`` to indicate a null
-argument (where ``XXX`` is ``INTEGER``, ``DOUBLE``, ``CHARACTER``, or
-``SCALAR`` depending on the type of argument required); passing 0 from
-Fortran will crash the code. Note that the C convention of passing NULL
-(or 0) *cannot* be used. For example, when no options prefix is desired
+argument (where ``XXX`` is ``INTEGER``, ``DOUBLE``, ``CHARACTER``,
+``SCALAR``, ``VEC``, ``MAT``, etc depending on the argument type); passing a literal 0 from
+Fortran in this case will crash the code.  For example, when no options prefix is desired
 in the routine ``PetscOptionsGetInt()``, one must use the following
 command in Fortran:
 
 .. code-block:: fortran
 
    call PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,PETSC_NULL_CHARACTER,'-name',N,flg,ierr)
-
-This Fortran requirement is inconsistent with C, where the user can
-employ ``NULL`` for all null arguments.
 
 .. _sec_fortvecd:
 
@@ -235,8 +218,7 @@ chapter for details:
 
 .. code-block:: fortran
 
-   PetscInitialize(char *filename,int ierr)
-   PetscError(MPI_COMM,int err,char *message,int ierr)
+   PetscInitialize()
    VecGetArray(), MatDenseGetArray()
    ISGetIndices(),
    VecDuplicateVecs(), VecDestroyVecs()
@@ -255,7 +237,7 @@ The following functions are not supported in Fortran:
    PetscViewerStringOpen(), PetscViewerStringSPrintf()
    PetscOptionsGetStringArray()
 
-PETSc includes some support for direct use of Fortran90 pointers.
+PETSc includes some support for direct use of Fortran allocatable arrays.
 Current routines include:
 
 .. code-block:: fortran
@@ -291,6 +273,7 @@ differs only slightly.
 
    .. literalinclude:: /../src/vec/vec/tests/ex19f.F90
       :language: fortran
+      :end-at: end
 
 .. _listing_vec_ex4f:
 
@@ -299,25 +282,28 @@ differs only slightly.
 
    .. literalinclude:: /../src/vec/vec/tutorials/ex4f.F90
       :language: fortran
+      :end-before: !/*TEST
 
 .. admonition:: Listing: ``src/sys/classes/draw/tests/ex5f.F90``
    :name: draw-test-ex5f
 
    .. literalinclude:: /../src/sys/classes/draw/tests/ex5f.F90
       :language: fortran
+      :end-at: end
 
 .. admonition:: Listing: ``src/snes/tutorials/ex1f.F90``
    :name: snes-ex1f
 
    .. literalinclude:: /../src/snes/tutorials/ex1f.F90
       :language: fortran
+      :end-before: !/*TEST
 
 .. _sec_fortranarrays:
 
 Array Arguments
 ^^^^^^^^^^^^^^^
 
-This material is no longer relevant since one should use
+This material is deprecated and will be removed in the next release since one should use
 ``VecGetArrayF90()`` and the other routines that utilize Fortran
 pointers, instead of the code below, but it is included for historical
 reasons and because many of the Fortran examples still utilize the old

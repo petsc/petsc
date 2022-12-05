@@ -32,7 +32,7 @@ static PetscErrorCode PetscViewerDestroy_String(PetscViewer viewer)
     Note:
     Though this is collective each MPI rank maintains a separate string
 
-.seealso: `PETSCVIEWERSTRING`, `PetscViewerStringOpen()`, `PetscViewerStringGetStringRead()`, `PetscViewerStringSetString()`
+.seealso: [](sec_viewers), `PETSCVIEWERSTRING`, `PetscViewerStringOpen()`, `PetscViewerStringGetStringRead()`, `PetscViewerStringSetString()`
 @*/
 PetscErrorCode PetscViewerStringSPrintf(PetscViewer viewer, const char format[], ...)
 {
@@ -79,7 +79,7 @@ PetscErrorCode PetscViewerStringSPrintf(PetscViewer viewer, const char format[],
 
     Level: advanced
 
-.seealso: `PETSCVIEWERSTRING`, `PetscViewerDestroy()`, `PetscViewerStringSPrintf()`, `PetscViewerStringGetStringRead()`, `PetscViewerStringSetString()`
+.seealso: [](sec_viewers), `PETSCVIEWERSTRING`, `PetscViewerDestroy()`, `PetscViewerStringSPrintf()`, `PetscViewerStringGetStringRead()`, `PetscViewerStringSetString()`
 @*/
 PetscErrorCode PetscViewerStringOpen(MPI_Comm comm, char string[], size_t len, PetscViewer *lab)
 {
@@ -116,7 +116,7 @@ PetscErrorCode PetscViewerRestoreSubViewer_String(PetscViewer viewer, MPI_Comm c
 
   Level: beginner
 
-.seealso: `PetscViewerStringOpen()`, `PetscViewerStringSPrintf()`, `PetscViewerSocketOpen()`, `PetscViewerDrawOpen()`, `PETSCVIEWERSOCKET`,
+.seealso: [](sec_viewers), `PetscViewerStringOpen()`, `PetscViewerStringSPrintf()`, `PetscViewerSocketOpen()`, `PetscViewerDrawOpen()`, `PETSCVIEWERSOCKET`,
           `PetscViewerCreate()`, `PetscViewerASCIIOpen()`, `PetscViewerBinaryOpen()`, `PETSCVIEWERBINARY`, `PETSCVIEWERDRAW`,
           `PetscViewerMatlabOpen()`, `VecView()`, `DMView()`, `PetscViewerMatlabPutArray()`, `PETSCVIEWERASCII`, `PETSCVIEWERMATLAB`,
           `PetscViewerFileSetName()`, `PetscViewerFileSetMode()`, `PetscViewerFormat`, `PetscViewerType`, `PetscViewerSetType()`
@@ -151,12 +151,12 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_String(PetscViewer v)
 +    string - the string, optional use NULL if you do not need
 -   len - the length of the string, optional use NULL if you do
 
+  Level: advanced
+
   Note:
   Do not write to the string nor free it
 
-  Level: advanced
-
-.seealso: `PetscViewerStringOpen()`, `PETSCVIEWERSTRING`, `PetscViewerStringSetString()`, `PetscViewerStringSPrintf()`,
+.seealso: [](sec_viewers), `PetscViewerStringOpen()`, `PETSCVIEWERSTRING`, `PetscViewerStringSetString()`, `PetscViewerStringSPrintf()`,
           `PetscViewerStringSetOwnString()`
 @*/
 PetscErrorCode PetscViewerStringGetStringRead(PetscViewer viewer, const char *string[], size_t *len)
@@ -184,14 +184,15 @@ PetscErrorCode PetscViewerStringGetStringRead(PetscViewer viewer, const char *st
 .   string - the string to print data into
 -   len - the length of the string
 
-  Note: The function does not copy the string, it uses it directly therefore you cannot free
-   the string until the viewer is destroyed. If you call `PetscViewerStringSetOwnString()` the ownership
-   passes to the viewer and it will be responsable for freeing it. In this case the string must be
-   obtained with `PetscMalloc()`.
-
   Level: advanced
 
-.seealso: `PetscViewerStringOpen()`, `PETSCVIEWERSTRING`, `PetscViewerStringGetStringRead()`, `PetscViewerStringSPrintf()`,
+  Note:
+  The function does not copy the string, it uses it directly therefore you cannot free
+  the string until the viewer is destroyed. If you call `PetscViewerStringSetOwnString()` the ownership
+  passes to the viewer and it will be responsable for freeing it. In this case the string must be
+  obtained with `PetscMalloc()`.
+
+.seealso: [](sec_viewers), `PetscViewerStringOpen()`, `PETSCVIEWERSTRING`, `PetscViewerStringGetStringRead()`, `PetscViewerStringSPrintf()`,
           `PetscViewerStringSetOwnString()`
 @*/
 PetscErrorCode PetscViewerStringSetString(PetscViewer viewer, char string[], size_t len)
@@ -223,12 +224,12 @@ PetscErrorCode PetscViewerStringSetString(PetscViewer viewer, char string[], siz
   Input Parameters:
 .   viewer - string viewer
 
+  Level: advanced
+
   Note:
   If you call this the string must have been obtained with `PetscMalloc()` and you cannot free the string
 
-  Level: advanced
-
-.seealso: `PetscViewerStringOpen()`, `PETSCVIEWERSTRING`, `PetscViewerStringGetStringRead()`, `PetscViewerStringSPrintf()`,
+.seealso: [](sec_viewers), `PetscViewerStringOpen()`, `PETSCVIEWERSTRING`, `PetscViewerStringGetStringRead()`, `PetscViewerStringSPrintf()`,
           `PetscViewerStringSetString()`
 @*/
 PetscErrorCode PetscViewerStringSetOwnString(PetscViewer viewer)
