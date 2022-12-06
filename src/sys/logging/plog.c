@@ -23,6 +23,17 @@ PetscLogEvent PETSC_LARGEST_EVENT = PETSC_EVENT;
   #include <petscmachineinfo.h>
   #include <petscconfiginfo.h>
 
+  #if defined(PETSC_HAVE_THREADSAFETY)
+
+PetscInt           petsc_log_gid = -1; /* Global threadId counter */
+PETSC_TLS PetscInt petsc_log_tid = -1; /* Local threadId */
+
+/* shared variables */
+PetscSpinlock  PetscLogSpinLock;
+PetscHMapEvent eventInfoMap_th = NULL;
+
+  #endif
+
 /* used in the MPI_XXX() count macros in petsclog.h */
 
 /* Action and object logging variables */
@@ -37,7 +48,6 @@ int       petsc_numObjectsDestroyed = 0;
 /* Global counters */
 PetscLogDouble petsc_BaseTime        = 0.0;
 PetscLogDouble petsc_TotalFlops      = 0.0; /* The number of flops */
-PetscLogDouble petsc_tmp_flops       = 0.0; /* The incremental number of flops */
 PetscLogDouble petsc_send_ct         = 0.0; /* The number of sends */
 PetscLogDouble petsc_recv_ct         = 0.0; /* The number of receives */
 PetscLogDouble petsc_send_len        = 0.0; /* The total length of all sent messages */
@@ -53,6 +63,25 @@ PetscLogDouble petsc_sum_of_waits_ct = 0.0; /* The total number of waits */
 PetscLogDouble petsc_allreduce_ct    = 0.0; /* The number of reductions */
 PetscLogDouble petsc_gather_ct       = 0.0; /* The number of gathers and gathervs */
 PetscLogDouble petsc_scatter_ct      = 0.0; /* The number of scatters and scattervs */
+
+/* Thread Local storage */
+PETSC_TLS PetscLogDouble petsc_TotalFlops_th      = 0.0;
+PETSC_TLS PetscLogDouble petsc_send_ct_th         = 0.0;
+PETSC_TLS PetscLogDouble petsc_recv_ct_th         = 0.0;
+PETSC_TLS PetscLogDouble petsc_send_len_th        = 0.0;
+PETSC_TLS PetscLogDouble petsc_recv_len_th        = 0.0;
+PETSC_TLS PetscLogDouble petsc_isend_ct_th        = 0.0;
+PETSC_TLS PetscLogDouble petsc_irecv_ct_th        = 0.0;
+PETSC_TLS PetscLogDouble petsc_isend_len_th       = 0.0;
+PETSC_TLS PetscLogDouble petsc_irecv_len_th       = 0.0;
+PETSC_TLS PetscLogDouble petsc_wait_ct_th         = 0.0;
+PETSC_TLS PetscLogDouble petsc_wait_any_ct_th     = 0.0;
+PETSC_TLS PetscLogDouble petsc_wait_all_ct_th     = 0.0;
+PETSC_TLS PetscLogDouble petsc_sum_of_waits_ct_th = 0.0;
+PETSC_TLS PetscLogDouble petsc_allreduce_ct_th    = 0.0;
+PETSC_TLS PetscLogDouble petsc_gather_ct_th       = 0.0;
+PETSC_TLS PetscLogDouble petsc_scatter_ct_th      = 0.0;
+
   #if defined(PETSC_HAVE_DEVICE)
 PetscLogDouble petsc_ctog_ct        = 0.0; /* The total number of CPU to GPU copies */
 PetscLogDouble petsc_gtoc_ct        = 0.0; /* The total number of GPU to CPU copies */
@@ -64,6 +93,50 @@ PetscLogDouble petsc_ctog_sz_scalar = 0.0; /* The total size of CPU to GPU copie
 PetscLogDouble petsc_gtoc_sz_scalar = 0.0; /* The total size of GPU to CPU copies */
 PetscLogDouble petsc_gflops         = 0.0; /* The flops done on a GPU */
 PetscLogDouble petsc_gtime          = 0.0; /* The time spent on a GPU */
+
+PETSC_TLS PetscLogDouble petsc_ctog_ct_th        = 0.0;
+PETSC_TLS PetscLogDouble petsc_gtoc_ct_th        = 0.0;
+PETSC_TLS PetscLogDouble petsc_ctog_sz_th        = 0.0;
+PETSC_TLS PetscLogDouble petsc_gtoc_sz_th        = 0.0;
+PETSC_TLS PetscLogDouble petsc_ctog_ct_scalar_th = 0.0;
+PETSC_TLS PetscLogDouble petsc_gtoc_ct_scalar_th = 0.0;
+PETSC_TLS PetscLogDouble petsc_ctog_sz_scalar_th = 0.0;
+PETSC_TLS PetscLogDouble petsc_gtoc_sz_scalar_th = 0.0;
+PETSC_TLS PetscLogDouble petsc_gflops_th         = 0.0;
+PETSC_TLS PetscLogDouble petsc_gtime_th          = 0.0;
+  #endif
+
+  #if defined(PETSC_HAVE_THREADSAFETY)
+PetscErrorCode PetscAddLogDouble(PetscLogDouble *tot, PetscLogDouble *tot_th, PetscLogDouble tmp)
+{
+  *tot_th += tmp;
+  PetscSpinlockLock(&PetscLogSpinLock);
+  *tot += tmp;
+  PetscSpinlockUnlock(&PetscLogSpinLock);
+  return 0;
+}
+
+PetscErrorCode PetscAddLogDoubleCnt(PetscLogDouble *cnt, PetscLogDouble *tot, PetscLogDouble *cnt_th, PetscLogDouble *tot_th, PetscLogDouble tmp)
+{
+  *cnt_th = *cnt_th + 1;
+  *tot_th += tmp;
+  PetscSpinlockLock(&PetscLogSpinLock);
+  *tot += (PetscLogDouble)(tmp);
+  *cnt += *cnt + 1;
+  PetscSpinlockUnlock(&PetscLogSpinLock);
+  return 0;
+}
+
+PetscInt PetscLogGetTid(void)
+{
+  if (petsc_log_tid < 0) {
+    PetscSpinlockLock(&PetscLogSpinLock);
+    petsc_log_tid = ++petsc_log_gid;
+    PetscSpinlockUnlock(&PetscLogSpinLock);
+  }
+  return petsc_log_tid;
+}
+
   #endif
 
 /* Logging functions */
@@ -104,6 +177,13 @@ PETSC_INTERN PetscErrorCode PetscLogInitialize(void)
   PetscCall(PetscStageLogCreate(&petsc_stageLog));
   PetscCall(PetscStageLogRegister(petsc_stageLog, "Main Stage", &stage));
 
+  PetscCall(PetscSpinlockCreate(&PetscLogSpinLock));
+  #if defined(PETSC_HAVE_THREADSAFETY)
+  petsc_log_tid = 0;
+  petsc_log_gid = 0;
+  PetscCall(PetscHMapEventCreate(&eventInfoMap_th));
+  #endif
+
   /* All processors sync here for more consistent logging */
   PetscCallMPI(MPI_Barrier(PETSC_COMM_WORLD));
   PetscTime(&petsc_BaseTime);
@@ -119,6 +199,19 @@ PETSC_INTERN PetscErrorCode PetscLogFinalize(void)
   PetscStageLog stageLog;
 
   PetscFunctionBegin;
+  #if defined(PETSC_HAVE_THREADSAFETY)
+  if (eventInfoMap_th) {
+    PetscEventPerfInfo **array;
+    PetscInt             n, off = 0;
+
+    PetscCall(PetscHMapEventGetSize(eventInfoMap_th, &n));
+    PetscCall(PetscMalloc1(n, &array));
+    PetscCall(PetscHMapEventGetVals(eventInfoMap_th, &off, array));
+    for (PetscInt i = 0; i < n; i++) PetscCall(PetscFree(array[i]));
+    PetscCall(PetscFree(array));
+    PetscCall(PetscHMapEventDestroy(&eventInfoMap_th));
+  }
+  #endif
   PetscCall(PetscFree(petsc_actions));
   PetscCall(PetscFree(petsc_objects));
   PetscCall(PetscLogNestedEnd());
@@ -142,7 +235,6 @@ PETSC_INTERN PetscErrorCode PetscLogFinalize(void)
   petsc_logObjects          = PETSC_FALSE;
   petsc_BaseTime            = 0.0;
   petsc_TotalFlops          = 0.0;
-  petsc_tmp_flops           = 0.0;
   petsc_send_ct             = 0.0;
   petsc_recv_ct             = 0.0;
   petsc_send_len            = 0.0;
@@ -158,14 +250,38 @@ PETSC_INTERN PetscErrorCode PetscLogFinalize(void)
   petsc_allreduce_ct        = 0.0;
   petsc_gather_ct           = 0.0;
   petsc_scatter_ct          = 0.0;
+  petsc_TotalFlops_th       = 0.0;
+  petsc_send_ct_th          = 0.0;
+  petsc_recv_ct_th          = 0.0;
+  petsc_send_len_th         = 0.0;
+  petsc_recv_len_th         = 0.0;
+  petsc_isend_ct_th         = 0.0;
+  petsc_irecv_ct_th         = 0.0;
+  petsc_isend_len_th        = 0.0;
+  petsc_irecv_len_th        = 0.0;
+  petsc_wait_ct_th          = 0.0;
+  petsc_wait_any_ct_th      = 0.0;
+  petsc_wait_all_ct_th      = 0.0;
+  petsc_sum_of_waits_ct_th  = 0.0;
+  petsc_allreduce_ct_th     = 0.0;
+  petsc_gather_ct_th        = 0.0;
+  petsc_scatter_ct_th       = 0.0;
+
   #if defined(PETSC_HAVE_DEVICE)
-  petsc_ctog_ct = 0.0;
-  petsc_gtoc_ct = 0.0;
-  petsc_ctog_sz = 0.0;
-  petsc_gtoc_sz = 0.0;
-  petsc_gflops  = 0.0;
-  petsc_gtime   = 0.0;
+  petsc_ctog_ct    = 0.0;
+  petsc_gtoc_ct    = 0.0;
+  petsc_ctog_sz    = 0.0;
+  petsc_gtoc_sz    = 0.0;
+  petsc_gflops     = 0.0;
+  petsc_gtime      = 0.0;
+  petsc_ctog_ct_th = 0.0;
+  petsc_gtoc_ct_th = 0.0;
+  petsc_ctog_sz_th = 0.0;
+  petsc_gtoc_sz_th = 0.0;
+  petsc_gflops_th  = 0.0;
+  petsc_gtime_th   = 0.0;
   #endif
+
   PETSC_LARGEST_EVENT      = PETSC_EVENT;
   PetscLogPHC              = NULL;
   PetscLogPHD              = NULL;
@@ -1127,14 +1243,14 @@ PetscErrorCode PetscLogEventGetId(const char name[], PetscLogEvent *event)
 PetscErrorCode PetscLogPushCurrentEvent_Internal(PetscLogEvent event)
 {
   PetscFunctionBegin;
-  PetscCall(PetscIntStackPush(current_log_event_stack, event));
+  if (!PetscDefined(HAVE_THREADSAFETY)) PetscCall(PetscIntStackPush(current_log_event_stack, event));
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode PetscLogPopCurrentEvent_Internal(void)
 {
   PetscFunctionBegin;
-  PetscCall(PetscIntStackPop(current_log_event_stack, NULL));
+  if (!PetscDefined(HAVE_THREADSAFETY)) PetscCall(PetscIntStackPop(current_log_event_stack, NULL));
   PetscFunctionReturn(0);
 }
 
@@ -2440,6 +2556,7 @@ PetscErrorCode PetscLogGpuTimeEnd(void)
   }
   PetscFunctionReturn(0);
 }
+
   #endif /* end of PETSC_HAVE_DEVICE */
 
 #else /* end of -DPETSC_USE_LOG section */

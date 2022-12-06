@@ -730,33 +730,6 @@ typedef struct {
   PetscScalar pv; /* pivot of the active row */
 } FactorShiftCtx;
 
-/*
- Used by MatCreateSubMatrices_MPIXAIJ_Local()
-*/
-#include <petsc/private/hashmapi.h>
-typedef struct { /* used by MatCreateSubMatrices_MPIAIJ_SingleIS_Local() and MatCreateSubMatrices_MPIAIJ_Local */
-  PetscInt   id; /* index of submats, only submats[0] is responsible for deleting some arrays below */
-  PetscInt   nrqs, nrqr;
-  PetscInt **rbuf1, **rbuf2, **rbuf3, **sbuf1, **sbuf2;
-  PetscInt **ptr;
-  PetscInt  *tmp;
-  PetscInt  *ctr;
-  PetscInt  *pa; /* proc array */
-  PetscInt  *req_size, *req_source1, *req_source2;
-  PetscBool  allcolumns, allrows;
-  PetscBool  singleis;
-  PetscInt  *row2proc; /* row to proc map */
-  PetscInt   nstages;
-#if defined(PETSC_USE_CTABLE)
-  PetscHMapI cmap, rmap;
-  PetscInt  *cmap_loc, *rmap_loc;
-#else
-  PetscInt *cmap, *rmap;
-#endif
-
-  PetscErrorCode (*destroy)(Mat);
-} Mat_SubSppt;
-
 PETSC_EXTERN PetscErrorCode MatTransposeCheckNonzeroState_Private(Mat, Mat);
 
 /*

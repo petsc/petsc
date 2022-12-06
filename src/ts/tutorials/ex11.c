@@ -2339,8 +2339,8 @@ int initLinearWave(EulerNode *ux, const PetscReal gamma, const PetscReal coord[]
     test:
       suffix: 4
       requires: exodusii
-      nsize: 8
-      args: -dm_distribute_overlap 1 -ufv_vtk_interval 0 -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/sevenside-quad.exo
+      nsize: 4
+      args: -dm_distribute_overlap 1 -ufv_vtk_interval 0 -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/sevenside-quad.exo -petscpartitioner_type simple
 
     test:
       suffix: 5

@@ -293,6 +293,7 @@ PetscErrorCode PetscLogObjCreateDefault(PetscObject obj)
   int               stage;
 
   PetscFunctionBegin;
+  PetscCall(PetscSpinlockLock(&PetscLogSpinLock));
   /* Record stage info */
   PetscCall(PetscLogGetStageLog(&stageLog));
   PetscCall(PetscStageLogGetCurrent(stageLog, &stage));
@@ -350,6 +351,7 @@ PetscErrorCode PetscLogObjCreateDefault(PetscObject obj)
       petsc_BaseTime += (end - start);
     }
   }
+  PetscCall(PetscSpinlockUnlock(&PetscLogSpinLock));
   PetscFunctionReturn(0);
 }
 
@@ -366,6 +368,7 @@ PetscErrorCode PetscLogObjDestroyDefault(PetscObject obj)
 
   PetscFunctionBegin;
   /* Record stage info */
+  PetscCall(PetscSpinlockLock(&PetscLogSpinLock));
   PetscCall(PetscLogGetStageLog(&stageLog));
   PetscCall(PetscStageLogGetCurrent(stageLog, &stage));
   if (stage != -1) {
@@ -408,5 +411,6 @@ PetscErrorCode PetscLogObjDestroyDefault(PetscObject obj)
     if (obj->name) PetscCall(PetscStrncpy(petsc_objects[obj->id].name, obj->name, 64));
     petsc_objects[obj->id].obj = NULL;
   }
+  PetscCall(PetscSpinlockUnlock(&PetscLogSpinLock));
   PetscFunctionReturn(0);
 }

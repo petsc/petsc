@@ -1334,11 +1334,9 @@ PETSC_EXTERN PetscErrorCode PetscDLAddr(void (*)(void), char **);
 PETSC_EXTERN PetscErrorCode PetscDemangleSymbol(const char *, char **);
 #endif
 
-#if defined(PETSC_USE_DEBUG)
 PETSC_EXTERN PetscErrorCode PetscMallocGetStack(void *, PetscStack **);
-#endif
-PETSC_EXTERN PetscErrorCode PetscObjectsDump(FILE *, PetscBool);
 
+PETSC_EXTERN PetscErrorCode PetscObjectsDump(FILE *, PetscBool);
 PETSC_EXTERN PetscErrorCode PetscObjectListDestroy(PetscObjectList *);
 PETSC_EXTERN PetscErrorCode PetscObjectListFind(PetscObjectList, const char[], PetscObject *);
 PETSC_EXTERN PetscErrorCode PetscObjectListReverseFind(PetscObjectList, PetscObject, char **, PetscBool *);

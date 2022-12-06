@@ -1226,7 +1226,7 @@ static PetscErrorCode ProcessOptions(LandauCtx *ctx, const char prefix[])
   PetscCall(DMCreate(ctx->comm, &dummy));
   /* get options - initialize context */
   ctx->verbose = 1; // should be 0 for silent compliance
-#if defined(PETSC_HAVE_THREADSAFETY)
+#if defined(PETSC_HAVE_THREADSAFETY) && defined(PETSC_HAVE_OPENMP)
   ctx->batch_sz = PetscNumOMPThreads;
 #else
   ctx->batch_sz = 1;
@@ -2731,17 +2731,13 @@ PetscErrorCode DMPlexLandauIFunction(TS ts, PetscReal time_dummy, Vec X, Vec X_t
     endtime = MPI_Wtime();
     ctx->times[LANDAU_OPERATOR] += (endtime - starttime);
     ctx->times[LANDAU_JACOBIAN] += (endtime - starttime);
+    ctx->times[LANDAU_MATRIX_TOTAL] += (endtime - starttime);
     ctx->times[LANDAU_JACOBIAN_COUNT] += 1;
   }
 #endif
   PetscCall(PetscLogEventEnd(ctx->events[0], 0, 0, 0, 0));
   PetscCall(PetscLogEventEnd(ctx->events[11], 0, 0, 0, 0));
-  if (ctx->stage) {
-    PetscCall(PetscLogStagePop());
-#if defined(PETSC_HAVE_THREADSAFETY)
-    ctx->times[LANDAU_MATRIX_TOTAL] += (endtime - starttime);
-#endif
-  }
+  if (ctx->stage) PetscCall(PetscLogStagePop());
   PetscFunctionReturn(0);
 }
 
@@ -2804,15 +2800,11 @@ PetscErrorCode DMPlexLandauIJacobian(TS ts, PetscReal time_dummy, Vec X, Vec U_t
     endtime = MPI_Wtime();
     ctx->times[LANDAU_OPERATOR] += (endtime - starttime);
     ctx->times[LANDAU_MASS] += (endtime - starttime);
+    ctx->times[LANDAU_MATRIX_TOTAL] += (endtime - starttime);
   }
 #endif
   PetscCall(PetscLogEventEnd(ctx->events[9], 0, 0, 0, 0));
   PetscCall(PetscLogEventEnd(ctx->events[11], 0, 0, 0, 0));
-  if (ctx->stage) {
-    PetscCall(PetscLogStagePop());
-#if defined(PETSC_HAVE_THREADSAFETY)
-    ctx->times[LANDAU_MATRIX_TOTAL] += (endtime - starttime);
-#endif
-  }
+  if (ctx->stage) PetscCall(PetscLogStagePop());
   PetscFunctionReturn(0);
 }

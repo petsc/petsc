@@ -245,6 +245,7 @@ PETSC_INTERN PetscErrorCode PetscOptionsCheckInitial_Private(const char help[])
   char        string[64];
   MPI_Comm    comm = PETSC_COMM_WORLD;
   PetscBool   flg1 = PETSC_FALSE, flg2 = PETSC_FALSE, flg3 = PETSC_FALSE, flag, hasHelp;
+  PetscBool   checkstack = PETSC_FALSE;
   PetscReal   si;
   PetscInt    intensity;
   int         i;
@@ -259,7 +260,10 @@ PETSC_INTERN PetscErrorCode PetscOptionsCheckInitial_Private(const char help[])
   PetscFunctionBegin;
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
 
-  if (PetscDefined(USE_DEBUG) && !PetscDefined(HAVE_THREADSAFETY)) PetscCall(PetscStackSetCheck(PETSC_TRUE));
+  if (PetscDefined(USE_DEBUG) && !PetscDefined(HAVE_THREADSAFETY)) checkstack = PETSC_TRUE;
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-checkstack", &checkstack, NULL));
+  PetscCall(PetscStackSetCheck(checkstack));
+
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-checkfunctionlist", &PetscPrintFunctionList, NULL));
 
 #if !defined(PETSC_HAVE_THREADSAFETY)

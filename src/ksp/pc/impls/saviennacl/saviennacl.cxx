@@ -3,7 +3,6 @@
    Include files needed for the ViennaCL Smoothed Aggregation preconditioner:
      pcimpl.h - private include file intended for use by all preconditioners
 */
-#define PETSC_SKIP_SPINLOCK
 #define PETSC_SKIP_IMMINTRIN_H_CUDAWORKAROUND 1
 #include <petsc/private/pcimpl.h> /*I "petscpc.h" I*/
 #include <../src/mat/impls/aij/seq/aij.h>

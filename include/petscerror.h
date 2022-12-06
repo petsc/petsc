@@ -1128,8 +1128,7 @@ PETSC_EXTERN PetscErrorCode PetscDetermineInitialFPTrap(void);
       Allows the code to build a stack frame as it runs
 */
 
-#if defined(PETSC_USE_DEBUG)
-  #define PETSCSTACKSIZE 64
+#define PETSCSTACKSIZE 64
 typedef struct {
   const char *function[PETSCSTACKSIZE];
   const char *file[PETSCSTACKSIZE];
@@ -1139,11 +1138,8 @@ typedef struct {
   int         hotdepth;
   PetscBool   check; /* option to check for correct Push/Pop semantics, true for default petscstack but not other stacks */
 } PetscStack;
+#if defined(PETSC_USE_DEBUG) && !defined(PETSC_HAVE_THREADSAFETY)
 PETSC_EXTERN PetscStack petscstack;
-#else
-typedef struct {
-  char Silence_empty_struct_has_size_0_in_C_size_1_in_Cpp;
-} PetscStack;
 #endif
 
 #if defined(PETSC_SERIALIZE_FUNCTIONS)
@@ -1179,7 +1175,7 @@ typedef struct {
   #define PetscFunctionReturnVoid() return
   #define PetscStackPop
   #define PetscStackPush(f)
-#elif defined(PETSC_USE_DEBUG)
+#elif defined(PETSC_USE_DEBUG) && !defined(PETSC_HAVE_THREADSAFETY)
 
   #define PetscStackPush_Private(stack__, file__, func__, line__, petsc_routine__, hot__) \
     do { \

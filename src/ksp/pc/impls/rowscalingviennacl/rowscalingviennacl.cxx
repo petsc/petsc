@@ -3,7 +3,6 @@
    Include files needed for the ViennaCL row-scaling preconditioner:
      pcimpl.h - private include file intended for use by all preconditioners
 */
-#define PETSC_SKIP_SPINLOCK
 #define PETSC_SKIP_IMMINTRIN_H_CUDAWORKAROUND 1
 
 #include <petsc/private/pcimpl.h> /*I "petscpc.h" I*/

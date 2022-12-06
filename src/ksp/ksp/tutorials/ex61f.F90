@@ -6,7 +6,7 @@
 !        Run with "export OMP_NUM_THREADS=16 ./ex61f"
 !           to use 16 independent threads
 !
-!        ./configure --with-threadsafety --with-log=0 --with-openmp
+!        ./configure --with-threadsafety --with-openmp
 !
          module ex61fmodule
          implicit none

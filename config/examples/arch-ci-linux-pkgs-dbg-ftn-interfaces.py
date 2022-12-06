@@ -16,6 +16,7 @@ configure_options = [
   '--download-openmpi=1',
   '--download-fblaslapack=1',
   '--with-openmp=1',
+  '--with-threadsafety=1',
   '--download-hwloc=1',
   #'--download-hypre=1', disabled as hypre produces wrong results when openmp is enabled
   #'--download-cmake=1',
