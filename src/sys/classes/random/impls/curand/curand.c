@@ -87,7 +87,6 @@ PETSC_EXTERN PetscErrorCode PetscRandomCreate_CURAND(PetscRandom r)
   PetscCall(PetscMemcpy(r->ops, &PetscRandomOps_Values, sizeof(PetscRandomOps_Values)));
   PetscCall(PetscObjectChangeTypeName((PetscObject)r, PETSCCURAND));
   r->data = curand;
-  r->seed = 1234ULL; /* taken from example */
   PetscCall(PetscRandomSeed_CURAND(r));
   PetscFunctionReturn(0);
 }
