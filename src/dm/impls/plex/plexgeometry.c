@@ -687,7 +687,7 @@ PetscErrorCode DMPlexComputeGridHash_Internal(DM dm, PetscGridHash *localBox)
     /* Mark cells containing the vertices */
     for (e = 0; e < csize / dim; ++e) {
       if (debug)
-        PetscCall(PetscPrintf(PETSC_COMM_SELF, "Cell %" PetscInt_FMT " has vertex in box %" PetscInt_FMT " (%" PetscInt_FMT ", %" PetscInt_FMT ", %" PetscInt_FMT ")\n", c, boxes[e], dboxes[e * dim + 0], dim > 1 ? dboxes[e * dim + 1] : -1, dim > 2 ? dboxes[e * dim + 2] : -1));
+        PetscCall(PetscPrintf(PETSC_COMM_SELF, "Cell %" PetscInt_FMT " has vertex (%g, %g, %g) in box %" PetscInt_FMT " (%" PetscInt_FMT ", %" PetscInt_FMT ", %" PetscInt_FMT ")\n", c, (double)PetscRealPart(ccoords[e * dim + 0]), dim > 1 ? (double)PetscRealPart(ccoords[e * dim + 1]) : 0., dim > 2 ? (double)PetscRealPart(ccoords[e * dim + 2]) : 0., boxes[e], dboxes[e * dim + 0], dim > 1 ? dboxes[e * dim + 1] : -1, dim > 2 ? dboxes[e * dim + 2] : -1));
       PetscCall(DMLabelSetValue(lbox->cellsSparse, c, boxes[e]));
     }
     /* Get grid of boxes containing these */

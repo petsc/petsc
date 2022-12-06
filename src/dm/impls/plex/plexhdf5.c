@@ -1686,7 +1686,7 @@ static PetscErrorCode DMPlexDistributionLoad_HDF5_Private(DM dm, PetscViewer vie
     PetscCheck(has, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Distribution %s cannot be found: HDF5 group %s not found in file", distribution_name, full_group);
   }
   PetscCall(PetscViewerHDF5ReadAttribute(viewer, NULL, "comm_size", PETSC_INT, NULL, (void *)&dist_size));
-  PetscCheck(dist_size == size, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Mismatching comm sizes: comm size of this session (%" PetscInt_FMT ") != comm size used for %s (%" PetscInt_FMT ")", size, distribution_name, dist_size);
+  PetscCheck(dist_size == size, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Mismatching comm sizes: comm size of this session (%d) != comm size used for %s (%d)", size, distribution_name, dist_size);
   PetscCall(ISCreate(comm, &chartSizesIS));
   PetscCall(PetscObjectSetName((PetscObject)chartSizesIS, "chart_sizes"));
   PetscCall(ISCreate(comm, &ownersIS));
@@ -1745,7 +1745,7 @@ static PetscErrorCode DMPlexDistributionLoad_HDF5_Private(DM dm, PetscViewer vie
     PetscCall(PetscSFBcastEnd(*distsf, MPIU_2INT, buffer1, buffer2, MPI_REPLACE));
     if (PetscDefined(USE_DEBUG)) {
       for (p = 0; p < *chartSize; ++p) {
-        PetscCheck(buffer2[p].rank >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Found negative root rank %" PetscInt_FMT " at local point %" PetscInt_FMT " on rank %" PetscInt_FMT " when making migrationSF", buffer2[p].rank, p, rank);
+        PetscCheck(buffer2[p].rank >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Found negative root rank %" PetscInt_FMT " at local point %" PetscInt_FMT " on rank %d when making migrationSF", buffer2[p].rank, p, rank);
       }
     }
     PetscCall(PetscFree2(buffer0, buffer1));
@@ -1787,9 +1787,7 @@ static PetscErrorCode DMPlexDistributionLoad_HDF5_Private(DM dm, PetscViewer vie
     PetscCall(PetscSFBcastBegin(*distsf, MPIU_2INT, buffer1, buffer0, MPI_REPLACE));
     PetscCall(PetscSFBcastEnd(*distsf, MPIU_2INT, buffer1, buffer0, MPI_REPLACE));
     if (PetscDefined(USE_DEBUG)) {
-      for (p = 0; p < *chartSize; ++p) {
-        PetscCheck(buffer0[p].rank >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Found negative root rank %" PetscInt_FMT " at local point %" PetscInt_FMT " on rank %" PetscInt_FMT " when making pointSF", buffer0[p].rank, p, rank);
-      }
+      for (p = 0; p < *chartSize; ++p) { PetscCheck(buffer0[p].rank >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Found negative root rank %" PetscInt_FMT " at local point %" PetscInt_FMT " on rank %d when making pointSF", buffer0[p].rank, p, rank); }
     }
     PetscCall(PetscMalloc1(nleaves, &ilocal));
     PetscCall(PetscMalloc1(nleaves, &iremote));

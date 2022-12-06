@@ -62,84 +62,87 @@ PetscErrorCode main(int argc, char **argv)
   PetscMPIInt size;
   TaoType     type;
   PetscReal   f;
-  PetscBool   pdipm;
+  PetscBool   pdipm, mumps;
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
-  PetscCheck(size <= 2, PETSC_COMM_SELF, PETSC_ERR_WRONG_MPI_SIZE, "More than 2 processors detected. Example written to use max of 2 processors.");
+  PetscCheck(size <= 2, PETSC_COMM_WORLD, PETSC_ERR_WRONG_MPI_SIZE, "More than 2 processors detected. Example written to use max of 2 processors.");
 
   PetscCall(PetscPrintf(PETSC_COMM_WORLD, "---- Constrained Problem -----\n"));
   PetscCall(InitializeProblem(&user)); /* sets up problem, function below */
+
   PetscCall(TaoCreate(PETSC_COMM_WORLD, &tao));
-  PetscCall(TaoSetType(tao, TAOPDIPM));
-  PetscCall(TaoSetSolution(tao, user.x));                 /* gets solution vector from problem */
-  PetscCall(TaoSetVariableBounds(tao, user.xl, user.xu)); /* sets lower upper bounds from given solution */
+  PetscCall(TaoSetType(tao, TAOALMM));
+  PetscCall(TaoSetSolution(tao, user.x));
+  PetscCall(TaoSetVariableBounds(tao, user.xl, user.xu));
   PetscCall(TaoSetObjectiveAndGradient(tao, NULL, FormFunctionGradient, (void *)&user));
-
-  if (!user.noeqflag) PetscCall(TaoSetEqualityConstraintsRoutine(tao, user.ce, FormEqualityConstraints, (void *)&user));
-  PetscCall(TaoSetInequalityConstraintsRoutine(tao, user.ci, FormInequalityConstraints, (void *)&user));
-  if (!user.noeqflag) { PetscCall(TaoSetJacobianEqualityRoutine(tao, user.Ae, user.Ae, FormEqualityJacobian, (void *)&user)); /* equality jacobian */ }
-  PetscCall(TaoSetJacobianInequalityRoutine(tao, user.Ai, user.Ai, FormInequalityJacobian, (void *)&user)); /* inequality jacobian */
-  PetscCall(TaoSetTolerances(tao, 1.e-6, 1.e-6, 1.e-6));
-  PetscCall(TaoSetConstraintTolerances(tao, 1.e-6, 1.e-6));
-
-  PetscCall(TaoGetKSP(tao, &ksp));
-  PetscCall(KSPGetPC(ksp, &pc));
-  PetscCall(PCSetType(pc, PCCHOLESKY));
-  /*
-      This algorithm produces matrices with zeros along the diagonal therefore we use
-    MUMPS which provides solver for indefinite matrices
-  */
-#if defined(PETSC_HAVE_MUMPS)
-  PetscCall(PCFactorSetMatSolverType(pc, MATSOLVERMUMPS)); /* requires mumps to solve pdipm */
-#else
-  PetscCheck(size == 1, PetscObjectComm((PetscObject)pc), PETSC_ERR_SUP, "Requires an external package that supports parallel PCCHOLESKY, e.g., MUMPS.");
-#endif
-  PetscCall(KSPSetType(ksp, KSPPREONLY));
-  PetscCall(KSPSetFromOptions(ksp));
-
+  PetscCall(TaoSetTolerances(tao, 1.e-4, 0.0, 0.0));
+  PetscCall(TaoSetConstraintTolerances(tao, 1.e-4, 0.0));
+  PetscCall(TaoSetMaximumFunctionEvaluations(tao, 1e6));
   PetscCall(TaoSetFromOptions(tao));
+
+  if (!user.noeqflag) {
+    PetscCall(TaoSetEqualityConstraintsRoutine(tao, user.ce, FormEqualityConstraints, (void *)&user));
+    PetscCall(TaoSetJacobianEqualityRoutine(tao, user.Ae, user.Ae, FormEqualityJacobian, (void *)&user));
+  }
+  PetscCall(TaoSetInequalityConstraintsRoutine(tao, user.ci, FormInequalityConstraints, (void *)&user));
+  PetscCall(TaoSetJacobianInequalityRoutine(tao, user.Ai, user.Ai, FormInequalityJacobian, (void *)&user));
+
   PetscCall(TaoGetType(tao, &type));
   PetscCall(PetscObjectTypeCompare((PetscObject)tao, TAOPDIPM, &pdipm));
   if (pdipm) {
+    /*
+      PDIPM produces an indefinite KKT matrix with some zeros along the diagonal
+      Inverting this indefinite matrix requires PETSc to be configured with MUMPS
+    */
+    PetscCall(PetscHasExternalPackage("mumps", &mumps));
+    PetscCheck(mumps, PetscObjectComm((PetscObject)tao), PETSC_ERR_SUP, "TAOPDIPM requires PETSc to be configured with MUMPS (--download-mumps)");
+    PetscCall(TaoGetKSP(tao, &ksp));
+    PetscCall(KSPGetPC(ksp, &pc));
+    PetscCall(PCFactorSetMatSolverType(pc, MATSOLVERMUMPS));
+    PetscCall(KSPSetType(ksp, KSPPREONLY));
+    PetscCall(KSPSetFromOptions(ksp));
     PetscCall(TaoSetHessian(tao, user.H, user.H, FormHessian, (void *)&user));
-    if (user.initview) {
-      PetscCall(TaoSetUp(tao));
-      PetscCall(VecDuplicate(user.x, &G));
-      PetscCall(FormFunctionGradient(tao, user.x, &f, G, (void *)&user));
-      PetscCall(FormHessian(tao, user.x, user.H, user.H, (void *)&user));
-      PetscCall(PetscViewerASCIIPushTab(PETSC_VIEWER_STDOUT_WORLD));
-      PetscCall(PetscPrintf(PETSC_COMM_WORLD, "\nInitial point X:\n"));
-      PetscCall(VecView(user.x, PETSC_VIEWER_STDOUT_WORLD));
-      PetscCall(PetscPrintf(PETSC_COMM_WORLD, "\nInitial objective f(x) = %g\n", (double)f));
-      PetscCall(PetscPrintf(PETSC_COMM_WORLD, "\nInitial gradient and Hessian:\n"));
-      PetscCall(VecView(G, PETSC_VIEWER_STDOUT_WORLD));
-      PetscCall(MatView(user.H, PETSC_VIEWER_STDOUT_WORLD));
-      PetscCall(VecDestroy(&G));
-      PetscCall(FormInequalityJacobian(tao, user.x, user.Ai, user.Ai, (void *)&user));
-      PetscCall(MatCreateVecs(user.Ai, NULL, &CI));
-      PetscCall(FormInequalityConstraints(tao, user.x, CI, (void *)&user));
-      PetscCall(PetscPrintf(PETSC_COMM_WORLD, "\nInitial inequality constraints and Jacobian:\n"));
-      PetscCall(VecView(CI, PETSC_VIEWER_STDOUT_WORLD));
-      PetscCall(MatView(user.Ai, PETSC_VIEWER_STDOUT_WORLD));
-      PetscCall(VecDestroy(&CI));
-      if (!user.noeqflag) {
-        PetscCall(FormEqualityJacobian(tao, user.x, user.Ae, user.Ae, (void *)&user));
-        PetscCall(MatCreateVecs(user.Ae, NULL, &CE));
-        PetscCall(FormEqualityConstraints(tao, user.x, CE, (void *)&user));
-        PetscCall(PetscPrintf(PETSC_COMM_WORLD, "\nInitial equality constraints and Jacobian:\n"));
-        PetscCall(VecView(CE, PETSC_VIEWER_STDOUT_WORLD));
-        PetscCall(MatView(user.Ae, PETSC_VIEWER_STDOUT_WORLD));
-        PetscCall(VecDestroy(&CE));
-      }
-      PetscCall(PetscPrintf(PETSC_COMM_WORLD, "\n"));
-      PetscCall(PetscViewerASCIIPopTab(PETSC_VIEWER_STDOUT_WORLD));
+  }
+
+  /* Print out an initial view of the problem */
+  if (user.initview) {
+    PetscCall(TaoSetUp(tao));
+    PetscCall(VecDuplicate(user.x, &G));
+    PetscCall(FormFunctionGradient(tao, user.x, &f, G, (void *)&user));
+    PetscCall(FormHessian(tao, user.x, user.H, user.H, (void *)&user));
+    PetscCall(PetscViewerASCIIPushTab(PETSC_VIEWER_STDOUT_WORLD));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "\nInitial point X:\n"));
+    PetscCall(VecView(user.x, PETSC_VIEWER_STDOUT_WORLD));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "\nInitial objective f(x) = %g\n", (double)f));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "\nInitial gradient and Hessian:\n"));
+    PetscCall(VecView(G, PETSC_VIEWER_STDOUT_WORLD));
+    PetscCall(MatView(user.H, PETSC_VIEWER_STDOUT_WORLD));
+    PetscCall(VecDestroy(&G));
+    PetscCall(FormInequalityJacobian(tao, user.x, user.Ai, user.Ai, (void *)&user));
+    PetscCall(MatCreateVecs(user.Ai, NULL, &CI));
+    PetscCall(FormInequalityConstraints(tao, user.x, CI, (void *)&user));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "\nInitial inequality constraints and Jacobian:\n"));
+    PetscCall(VecView(CI, PETSC_VIEWER_STDOUT_WORLD));
+    PetscCall(MatView(user.Ai, PETSC_VIEWER_STDOUT_WORLD));
+    PetscCall(VecDestroy(&CI));
+    if (!user.noeqflag) {
+      PetscCall(FormEqualityJacobian(tao, user.x, user.Ae, user.Ae, (void *)&user));
+      PetscCall(MatCreateVecs(user.Ae, NULL, &CE));
+      PetscCall(FormEqualityConstraints(tao, user.x, CE, (void *)&user));
+      PetscCall(PetscPrintf(PETSC_COMM_WORLD, "\nInitial equality constraints and Jacobian:\n"));
+      PetscCall(VecView(CE, PETSC_VIEWER_STDOUT_WORLD));
+      PetscCall(MatView(user.Ae, PETSC_VIEWER_STDOUT_WORLD));
+      PetscCall(VecDestroy(&CE));
     }
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "\n"));
+    PetscCall(PetscViewerASCIIPopTab(PETSC_VIEWER_STDOUT_WORLD));
   }
 
   PetscCall(TaoSolve(tao));
   PetscCall(TaoGetSolution(tao, &x));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Found solution:\n"));
   PetscCall(VecView(x, PETSC_VIEWER_STDOUT_WORLD));
 
   /* Free objects */
@@ -163,9 +166,11 @@ PetscErrorCode InitializeProblem(AppCtx *user)
   user->initview = PETSC_FALSE;
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-init_view", &user->initview, NULL));
 
+  /* Tell user the correct solution, not an error checking */
   if (!user->noeqflag) {
-    /* Tell user the correct solution, not an error checking */
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Solution should be f(1,1)=-2\n"));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Expected solution: f(1, 1) = -2\n"));
+  } else {
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Expected solution (-no_eq): f(1.73205, 2) = -7.3923\n"));
   }
 
   /* create vector x and set initial values */
@@ -174,7 +179,7 @@ PetscErrorCode InitializeProblem(AppCtx *user)
   PetscCall(VecCreate(PETSC_COMM_WORLD, &user->x));
   PetscCall(VecSetSizes(user->x, nloc, user->n));
   PetscCall(VecSetFromOptions(user->x));
-  PetscCall(VecSet(user->x, 0));
+  PetscCall(VecSet(user->x, 0.0));
 
   /* create and set lower and upper bound vectors */
   PetscCall(VecDuplicate(user->x, &user->xl));
@@ -476,58 +481,53 @@ PetscErrorCode FormEqualityJacobian(Tao tao, Vec X, Mat JE, Mat JEpre, void *ctx
       requires: !complex !defined(PETSC_USE_CXX)
 
    test:
-      args: -tao_converged_reason -tao_pdipm_kkt_shift_pd
+      args: -tao_converged_reason -tao_gatol 1.e-6 -tao_type pdipm -tao_pdipm_kkt_shift_pd
       requires: mumps
+      filter: sed  -e "s/CONVERGED_GATOL iterations *[0-9]\{1,\}/CONVERGED_GATOL/g"
 
    test:
       suffix: 2
-      nsize: 2
-      args: -tao_converged_reason -tao_pdipm_kkt_shift_pd
-      requires: mumps
+      args: -tao_converged_reason
+      filter: sed  -e "s/CONVERGED_GATOL iterations *[0-9]\{1,\}/CONVERGED_GATOL/g"
 
    test:
       suffix: 3
       args: -tao_converged_reason -no_eq
-      requires: mumps
+      filter: sed  -e "s/CONVERGED_GATOL iterations *[0-9]\{1,\}/CONVERGED_GATOL/g"
 
    test:
       suffix: 4
-      nsize: 2
-      args: -tao_converged_reason -no_eq
-      requires: mumps
+      args: -tao_converged_reason -tao_almm_type classic
+      requires: !single
+      filter: sed  -e "s/CONVERGED_GATOL iterations *[0-9]\{1,\}/CONVERGED_GATOL/g"
 
    test:
       suffix: 5
-      args: -tao_cmonitor -tao_type almm
-      requires: mumps
+      args: -tao_converged_reason -tao_almm_type classic -no_eq
+      requires: !single
+      filter: sed  -e "s/CONVERGED_GATOL iterations *[0-9]\{1,\}/CONVERGED_GATOL/g"
 
    test:
       suffix: 6
-      args: -tao_cmonitor -tao_type almm -tao_almm_type phr
-      requires: mumps
+      args: -tao_converged_reason -tao_almm_subsolver_tao_type bqnktr
+      filter: sed  -e "s/CONVERGED_GATOL iterations *[0-9]\{1,\}/CONVERGED_GATOL/g"
 
    test:
       suffix: 7
-      nsize: 2
-      requires: mumps
-      args: -tao_cmonitor -tao_type almm
+      args: -tao_converged_reason -tao_almm_subsolver_tao_type bncg
+      filter: sed  -e "s/CONVERGED_GATOL iterations *[0-9]\{1,\}/CONVERGED_GATOL/g"
 
    test:
       suffix: 8
       nsize: 2
-      requires: cuda mumps
-      args: -tao_cmonitor -tao_type almm -vec_type cuda -mat_type aijcusparse
+      args: -tao_converged_reason
+      filter: sed  -e "s/CONVERGED_GATOL iterations *[0-9]\{1,\}/CONVERGED_GATOL/g"
 
    test:
       suffix: 9
       nsize: 2
-      args: -tao_cmonitor -tao_type almm -no_eq
-      requires: mumps
-
-   test:
-      suffix: 10
-      nsize: 2
-      args: -tao_cmonitor -tao_type almm -tao_almm_type phr -no_eq
-      requires: mumps
+      args: -tao_converged_reason -vec_type cuda -mat_type aijcusparse
+      requires: cuda
+      filter: sed  -e "s/CONVERGED_GATOL iterations *[0-9]\{1,\}/CONVERGED_GATOL/g"
 
 TEST*/

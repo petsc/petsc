@@ -34,7 +34,7 @@ static PetscErrorCode SBRGetEdgeLen_Private(DMPlexTransform tr, PetscInt edge, P
     PetscCall(DMPlexGetConeSize(dm, edge, &coneSize));
     PetscCheck(coneSize == 2, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Edge %" PetscInt_FMT " cone size must be 2, not %" PetscInt_FMT, edge, coneSize);
     PetscCall(DMGetCoordinateDim(dm, &cdim));
-    PetscCall(DMGetCoordinatesLocal(dm, &coordsLocal));
+    PetscCall(DMGetCoordinatesLocalNoncollective(dm, &coordsLocal));
     PetscCall(VecGetArrayRead(coordsLocal, &coords));
     PetscCall(DMPlexPointLocalRead(cdm, cone[0], coords, &cA));
     PetscCall(DMPlexPointLocalRead(cdm, cone[1], coords, &cB));
@@ -154,6 +154,7 @@ static PetscErrorCode DMPlexTransformSetUp_SBR(DMPlexTransform tr)
   PetscCall(DMPlexTransformGetDM(tr, &dm));
   PetscCall(DMLabelCreate(PETSC_COMM_SELF, "Split Points", &sbr->splitPoints));
   /* Create edge lengths */
+  PetscCall(DMGetCoordinatesLocalSetUp(dm));
   PetscCall(DMPlexGetDepthStratum(dm, 1, &eStart, &eEnd));
   PetscCall(PetscSectionCreate(PETSC_COMM_SELF, &sbr->secEdgeLen));
   PetscCall(PetscSectionSetChart(sbr->secEdgeLen, eStart, eEnd));

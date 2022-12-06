@@ -1,9 +1,8 @@
 ---- Constrained Problem -----
-Solution should be f(1,1)=-2
-TAO solve converged due to CONVERGED_GATOL iterations 8
-Vec Object: 2 MPI processes
-  type: mpi
-Process [0]
-1.
-Process [1]
-1.
+Expected solution: f(1, 1) = -2
+  TAO  solve converged due to CONVERGED_GATOL
+Found solution:
+Vec Object: 1 MPI process
+  type: seq
+1.00001
+1.00004
