@@ -3156,14 +3156,15 @@ PetscErrorCode SNESSetUp(SNES snes)
   DMSNES         sdm;
   SNESLineSearch linesearch, pclinesearch;
   void          *lsprectx, *lspostctx;
+  PetscBool      mf_operator, mf;
+  Vec            f, fpc;
+  void          *funcctx;
+  void          *jacctx, *appctx;
+  Mat            j, jpre;
   PetscErrorCode (*precheck)(SNESLineSearch, Vec, Vec, PetscBool *, void *);
   PetscErrorCode (*postcheck)(SNESLineSearch, Vec, Vec, Vec, PetscBool *, PetscBool *, void *);
   PetscErrorCode (*func)(SNES, Vec, Vec, void *);
-  Vec   f, fpc;
-  void *funcctx;
   PetscErrorCode (*jac)(SNES, Vec, Mat, Mat, void *);
-  void *jacctx, *appctx;
-  Mat   j, jpre;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
@@ -3187,6 +3188,7 @@ PetscErrorCode SNESSetUp(SNES snes)
     PetscCall(SNESLineSearchSetFunction(snes->linesearch, SNESComputeFunction));
   }
 
+  PetscCall(SNESGetUseMatrixFree(snes, &mf_operator, &mf));
   if (snes->npc && snes->npcside == PC_LEFT) {
     snes->mf          = PETSC_TRUE;
     snes->mf_operator = PETSC_FALSE;
@@ -3204,6 +3206,7 @@ PetscErrorCode SNESSetUp(SNES snes)
     PetscCall(SNESSetJacobian(snes->npc, j, jpre, jac, jacctx));
     PetscCall(SNESGetApplicationContext(snes, &appctx));
     PetscCall(SNESSetApplicationContext(snes->npc, appctx));
+    PetscCall(SNESSetUseMatrixFree(snes->npc, mf_operator, mf));
     PetscCall(VecDestroy(&fpc));
 
     /* copy the function pointers over */
