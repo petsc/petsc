@@ -2553,6 +2553,7 @@ PetscErrorCode MatMult(Mat mat, Vec x, Vec y)
   PetscValidHeaderSpecific(mat, MAT_CLASSID, 1);
   PetscValidType(mat, 1);
   PetscValidHeaderSpecific(x, VEC_CLASSID, 2);
+  VecCheckAssembled(x);
   PetscValidHeaderSpecific(y, VEC_CLASSID, 3);
   PetscCheck(mat->assembled, PetscObjectComm((PetscObject)mat), PETSC_ERR_ARG_WRONGSTATE, "Not for unassembled matrix");
   PetscCheck(!mat->factortype, PetscObjectComm((PetscObject)mat), PETSC_ERR_ARG_WRONGSTATE, "Not for factored matrix");
@@ -2605,6 +2606,7 @@ PetscErrorCode MatMultTranspose(Mat mat, Vec x, Vec y)
   PetscValidHeaderSpecific(mat, MAT_CLASSID, 1);
   PetscValidType(mat, 1);
   PetscValidHeaderSpecific(x, VEC_CLASSID, 2);
+  VecCheckAssembled(x);
   PetscValidHeaderSpecific(y, VEC_CLASSID, 3);
 
   PetscCheck(mat->assembled, PetscObjectComm((PetscObject)mat), PETSC_ERR_ARG_WRONGSTATE, "Not for unassembled matrix");
