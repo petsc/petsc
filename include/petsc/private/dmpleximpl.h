@@ -511,7 +511,7 @@ static inline void DMPlex_MultTransposeReal_Internal(const PetscReal A[], PetscI
   for (j = 0; j < n; ++j) {
     const PetscInt l = j * ldx;
     y[l]             = 0;
-    for (i = 0; i < m; ++i) y[l] += A[j * n + i] * z[i];
+    for (i = 0; i < m; ++i) y[l] += A[j * m + i] * z[i];
   }
   (void)PetscLogFlops(2 * m * n);
 }
