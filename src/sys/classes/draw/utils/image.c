@@ -17,7 +17,7 @@ PETSC_EXTERN PetscErrorCode PetscDrawImageSavePPM(const char filename[], unsigne
 
   PetscFunctionBegin;
   PetscValidCharPointer(filename, 1);
-  if (palette) PetscValidCharPointer(palette, 2);
+  if (palette) PetscValidPointer(palette, 2);
   PetscValidCharPointer(pixels, 5);
   /* map pixels to RGB colors */
   if (palette) {

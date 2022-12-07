@@ -1479,7 +1479,7 @@ PETSC_INTERN PetscErrorCode PCPreSolveChangeRHS(PC pc, PetscBool *change)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
-  PetscValidPointer(change, 2);
+  PetscValidBoolPointer(change, 2);
   *change = PETSC_FALSE;
   PetscTryMethod(pc, "PCPreSolveChangeRHS_C", (PC, PetscBool *), (pc, change));
   PetscFunctionReturn(0);
