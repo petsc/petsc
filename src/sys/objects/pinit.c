@@ -1026,7 +1026,7 @@ PETSC_INTERN PetscErrorCode PetscInitialize_Common(const char *prog, const char 
 
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
   PetscCall(PetscInfo(NULL, "PETSc successfully started: number of processors = %d\n", size));
-  PetscCall(PetscGetHostName(hostname, 256));
+  PetscCall(PetscGetHostName(hostname, sizeof(hostname)));
   PetscCall(PetscInfo(NULL, "Running on machine: %s\n", hostname));
 #if defined(PETSC_HAVE_OPENMP)
   {

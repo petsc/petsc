@@ -18,6 +18,51 @@ static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Local_Scalable(Mat, PetscInt, IS
 static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Send_Scalable(Mat, PetscInt, PetscMPIInt, PetscMPIInt *, PetscInt *, PetscInt *, PetscInt **, PetscInt **);
 static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Receive_Scalable(Mat, PetscInt, IS *, PetscInt, PetscInt *);
 
+/*
+   Takes a general IS and builds a block version of the IS that contains the given IS plus any needed values to fill out the blocks
+
+   The entire MatIncreaseOverlap_MPIAIJ() stack could be rewritten to respect the bs and it would offer higher performance but
+   that is a very major recoding job.
+
+   Possible scalability issues with this routine because it allocates space proportional to Nmax-Nmin
+*/
+static PetscErrorCode ISAdjustForBlockSize(PetscInt bs, PetscInt imax, IS is[])
+{
+  PetscFunctionBegin;
+  for (PetscInt i = 0; i < imax; i++) {
+    if (!is[i]) break;
+    PetscInt        n = 0, N, Nmax, Nmin;
+    const PetscInt *idx;
+    PetscInt       *nidx = NULL;
+    MPI_Comm        comm;
+    PetscBT         bt;
+
+    PetscCall(ISGetLocalSize(is[i], &N));
+    if (N > 0) { /* Nmax and Nmin are garbage for empty IS */
+      PetscCall(ISGetIndices(is[i], &idx));
+      PetscCall(ISGetMinMax(is[i], &Nmin, &Nmax));
+      Nmin = Nmin / bs;
+      Nmax = Nmax / bs;
+      PetscCall(PetscBTCreate(Nmax - Nmin, &bt));
+      for (PetscInt i = 0; i < N; i++) {
+        if (!PetscBTLookupSet(bt, idx[i] / bs - Nmin)) n++;
+      }
+      PetscCall(PetscMalloc1(n, &nidx));
+      n = 0;
+      PetscCall(PetscBTMemzero(Nmax - Nmin, bt));
+      for (PetscInt i = 0; i < N; i++) {
+        if (!PetscBTLookupSet(bt, idx[i] / bs - Nmin)) nidx[n++] = idx[i] / bs;
+      }
+      PetscCall(PetscBTDestroy(&bt));
+      PetscCall(ISRestoreIndices(is[i], &idx));
+    }
+    PetscCall(PetscObjectGetComm((PetscObject)is[i], &comm));
+    PetscCall(ISDestroy(is + i));
+    PetscCall(ISCreateBlock(comm, bs, n, nidx, PETSC_OWN_POINTER, is + i));
+  }
+  PetscFunctionReturn(0);
+}
+
 PetscErrorCode MatIncreaseOverlap_MPIAIJ(Mat C, PetscInt imax, IS is[], PetscInt ov)
 {
   PetscInt i;
@@ -25,6 +70,7 @@ PetscErrorCode MatIncreaseOverlap_MPIAIJ(Mat C, PetscInt imax, IS is[], PetscInt
   PetscFunctionBegin;
   PetscCheck(ov >= 0, PetscObjectComm((PetscObject)C), PETSC_ERR_ARG_OUTOFRANGE, "Negative overlap specified");
   for (i = 0; i < ov; ++i) PetscCall(MatIncreaseOverlap_MPIAIJ_Once(C, imax, is));
+  if (C->rmap->bs > 1 && C->rmap->bs == C->cmap->bs) PetscCall(ISAdjustForBlockSize(C->rmap->bs, imax, is));
   PetscFunctionReturn(0);
 }
 
@@ -35,6 +81,7 @@ PetscErrorCode MatIncreaseOverlap_MPIAIJ_Scalable(Mat C, PetscInt imax, IS is[],
   PetscFunctionBegin;
   PetscCheck(ov >= 0, PetscObjectComm((PetscObject)C), PETSC_ERR_ARG_OUTOFRANGE, "Negative overlap specified");
   for (i = 0; i < ov; ++i) PetscCall(MatIncreaseOverlap_MPIAIJ_Once_Scalable(C, imax, is));
+  if (C->rmap->bs > 1 && C->rmap->bs == C->cmap->bs) PetscCall(ISAdjustForBlockSize(C->rmap->bs, imax, is));
   PetscFunctionReturn(0);
 }
 
