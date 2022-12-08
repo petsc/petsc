@@ -1,0 +1,22 @@
+Mat Object: 2 MPI processes
+row 0:
+row 1:
+row 2:
+row 3: (3, 22.) 
+row 4: (7, 22.) 
+row 5:
+row 6:
+row 7: (4, 22.)  (9, 22.) 
+row 8:
+row 9: (7, 22.) 
+Mat Object: 2 MPI processes
+row 0:
+row 1:
+row 2:
+row 3: (3, 0.3) 
+row 4: (7, 3.3) 
+row 5:
+row 6:
+row 7: (4, 3.3)  (9, 4.3) 
+row 8:
+row 9: (7, 4.3) 

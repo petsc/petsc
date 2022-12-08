@@ -3,6 +3,69 @@
 #include <../src/mat/impls/sbaij/seq/sbaij.h>
 #include <petscblaslapack.h>
 
+PetscErrorCode MatDestroy_MPISBAIJ(Mat mat)
+{
+  Mat_MPISBAIJ *baij = (Mat_MPISBAIJ *)mat->data;
+
+  PetscFunctionBegin;
+#if defined(PETSC_USE_LOG)
+  PetscCall(PetscLogObjectState((PetscObject)mat, "Rows=%" PetscInt_FMT ",Cols=%" PetscInt_FMT, mat->rmap->N, mat->cmap->N));
+#endif
+  PetscCall(MatStashDestroy_Private(&mat->stash));
+  PetscCall(MatStashDestroy_Private(&mat->bstash));
+  PetscCall(MatDestroy(&baij->A));
+  PetscCall(MatDestroy(&baij->B));
+#if defined(PETSC_USE_CTABLE)
+  PetscCall(PetscHMapIDestroy(&baij->colmap));
+#else
+  PetscCall(PetscFree(baij->colmap));
+#endif
+  PetscCall(PetscFree(baij->garray));
+  PetscCall(VecDestroy(&baij->lvec));
+  PetscCall(VecScatterDestroy(&baij->Mvctx));
+  PetscCall(VecDestroy(&baij->slvec0));
+  PetscCall(VecDestroy(&baij->slvec0b));
+  PetscCall(VecDestroy(&baij->slvec1));
+  PetscCall(VecDestroy(&baij->slvec1a));
+  PetscCall(VecDestroy(&baij->slvec1b));
+  PetscCall(VecScatterDestroy(&baij->sMvctx));
+  PetscCall(PetscFree2(baij->rowvalues, baij->rowindices));
+  PetscCall(PetscFree(baij->barray));
+  PetscCall(PetscFree(baij->hd));
+  PetscCall(VecDestroy(&baij->diag));
+  PetscCall(VecDestroy(&baij->bb1));
+  PetscCall(VecDestroy(&baij->xx1));
+#if defined(PETSC_USE_REAL_MAT_SINGLE)
+  PetscCall(PetscFree(baij->setvaluescopy));
+#endif
+  PetscCall(PetscFree(baij->in_loc));
+  PetscCall(PetscFree(baij->v_loc));
+  PetscCall(PetscFree(baij->rangebs));
+  PetscCall(PetscFree(mat->data));
+
+  PetscCall(PetscObjectChangeTypeName((PetscObject)mat, NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatStoreValues_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatRetrieveValues_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatMPISBAIJSetPreallocation_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatMPISBAIJSetPreallocationCSR_C", NULL));
+#if defined(PETSC_HAVE_ELEMENTAL)
+  PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatConvert_mpisbaij_elemental_C", NULL));
+#endif
+#if defined(PETSC_HAVE_SCALAPACK)
+  PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatConvert_mpisbaij_scalapack_C", NULL));
+#endif
+  PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatConvert_mpisbaij_mpiaij_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatConvert_mpisbaij_mpibaij_C", NULL));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/* defines MatSetValues_MPI_Hash(), MatAssemblyBegin_MPI_Hash(), MatAssemblyEnd_MPI_Hash(), MatSetUp_MPI_Hash() */
+#define TYPE SBAIJ
+#define TYPE_SBAIJ
+#include "../src/mat/impls/aij/mpi/mpihashmat.h"
+#undef TYPE
+#undef TYPE_SBAIJ
+
 #if defined(PETSC_HAVE_ELEMENTAL)
 PETSC_INTERN PetscErrorCode MatConvert_MPISBAIJ_Elemental(Mat, MatType, MatReuse, Mat *);
 #endif
@@ -974,62 +1037,6 @@ PetscErrorCode MatView_MPISBAIJ(Mat mat, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatDestroy_MPISBAIJ(Mat mat)
-{
-  Mat_MPISBAIJ *baij = (Mat_MPISBAIJ *)mat->data;
-
-  PetscFunctionBegin;
-#if defined(PETSC_USE_LOG)
-  PetscCall(PetscLogObjectState((PetscObject)mat, "Rows=%" PetscInt_FMT ",Cols=%" PetscInt_FMT, mat->rmap->N, mat->cmap->N));
-#endif
-  PetscCall(MatStashDestroy_Private(&mat->stash));
-  PetscCall(MatStashDestroy_Private(&mat->bstash));
-  PetscCall(MatDestroy(&baij->A));
-  PetscCall(MatDestroy(&baij->B));
-#if defined(PETSC_USE_CTABLE)
-  PetscCall(PetscHMapIDestroy(&baij->colmap));
-#else
-  PetscCall(PetscFree(baij->colmap));
-#endif
-  PetscCall(PetscFree(baij->garray));
-  PetscCall(VecDestroy(&baij->lvec));
-  PetscCall(VecScatterDestroy(&baij->Mvctx));
-  PetscCall(VecDestroy(&baij->slvec0));
-  PetscCall(VecDestroy(&baij->slvec0b));
-  PetscCall(VecDestroy(&baij->slvec1));
-  PetscCall(VecDestroy(&baij->slvec1a));
-  PetscCall(VecDestroy(&baij->slvec1b));
-  PetscCall(VecScatterDestroy(&baij->sMvctx));
-  PetscCall(PetscFree2(baij->rowvalues, baij->rowindices));
-  PetscCall(PetscFree(baij->barray));
-  PetscCall(PetscFree(baij->hd));
-  PetscCall(VecDestroy(&baij->diag));
-  PetscCall(VecDestroy(&baij->bb1));
-  PetscCall(VecDestroy(&baij->xx1));
-#if defined(PETSC_USE_REAL_MAT_SINGLE)
-  PetscCall(PetscFree(baij->setvaluescopy));
-#endif
-  PetscCall(PetscFree(baij->in_loc));
-  PetscCall(PetscFree(baij->v_loc));
-  PetscCall(PetscFree(baij->rangebs));
-  PetscCall(PetscFree(mat->data));
-
-  PetscCall(PetscObjectChangeTypeName((PetscObject)mat, NULL));
-  PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatStoreValues_C", NULL));
-  PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatRetrieveValues_C", NULL));
-  PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatMPISBAIJSetPreallocation_C", NULL));
-  PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatMPISBAIJSetPreallocationCSR_C", NULL));
-#if defined(PETSC_HAVE_ELEMENTAL)
-  PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatConvert_mpisbaij_elemental_C", NULL));
-#endif
-#if defined(PETSC_HAVE_SCALAPACK)
-  PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatConvert_mpisbaij_scalapack_C", NULL));
-#endif
-  PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatConvert_mpisbaij_mpiaij_C", NULL));
-  PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatConvert_mpisbaij_mpibaij_C", NULL));
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
 PetscErrorCode MatMult_MPISBAIJ_Hermitian(Mat A, Vec xx, Vec yy)
 {
   Mat_MPISBAIJ      *a   = (Mat_MPISBAIJ *)A->data;
@@ -1648,13 +1655,6 @@ PetscErrorCode MatCopy_MPISBAIJ(Mat A, Mat B, MatStructure str)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatSetUp_MPISBAIJ(Mat A)
-{
-  PetscFunctionBegin;
-  PetscCall(MatMPISBAIJSetPreallocation(A, A->rmap->bs, PETSC_DEFAULT, NULL, PETSC_DEFAULT, NULL));
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
 PetscErrorCode MatAXPY_MPISBAIJ(Mat Y, PetscScalar a, Mat X, MatStructure str)
 {
   Mat_MPISBAIJ *xx = (Mat_MPISBAIJ *)X->data, *yy = (Mat_MPISBAIJ *)Y->data;
@@ -1787,7 +1787,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPISBAIJ,
                                        NULL,
                                        NULL,
                                        NULL,
-                                       /* 29*/ MatSetUp_MPISBAIJ,
+                                       /* 29*/ MatSetUp_MPI_Hash,
                                        NULL,
                                        NULL,
                                        MatGetDiagonalBlock_MPISBAIJ,

@@ -281,16 +281,10 @@ void MatCheckPreallocated(Tm, int);
 template <typename Tm>
 void MatCheckProduct(Tm, int);
 #else /* PETSC_CLANG_STATIC_ANALYZER */
-  #if defined(PETSC_USE_DEBUG)
-    #define MatCheckPreallocated(A, arg) \
-      do { \
-        PetscCheck((A)->preallocated, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Must call MatXXXSetPreallocation(), MatSetUp() or the matrix has not yet been factored on argument %d \"%s\" before %s()", (arg), #A, PETSC_FUNCTION_NAME); \
-      } while (0)
-  #else
-    #define MatCheckPreallocated(A, arg) \
-      do { \
-      } while (0)
-  #endif
+  #define MatCheckPreallocated(A, arg) \
+    do { \
+      if (!(A)->preallocated) PetscCall(MatSetUp(A)); \
+    } while (0)
 
   #if defined(PETSC_USE_DEBUG)
     #define MatCheckProduct(A, arg) \
@@ -511,12 +505,15 @@ struct _p_Mat {
   PetscBool            form_explicit_transpose; /* hint to generate an explicit mat tranpsose for operations like MatMultTranspose() */
   PetscBool            transupdated;            /* whether or not the explicitly generated transpose is up-to-date */
   char                *factorprefix;            /* the prefix to use with factored matrix that is created */
+  void                *hash_ctx;                /* for use when user did not provide preallocation information */
 };
 
 PETSC_INTERN PetscErrorCode MatAXPY_Basic(Mat, PetscScalar, Mat, MatStructure);
 PETSC_INTERN PetscErrorCode MatAXPY_BasicWithPreallocation(Mat, Mat, PetscScalar, Mat, MatStructure);
 PETSC_INTERN PetscErrorCode MatAXPY_Basic_Preallocate(Mat, Mat, Mat *);
 PETSC_INTERN PetscErrorCode MatAXPY_Dense_Nest(Mat, PetscScalar, Mat);
+
+PETSC_INTERN PetscErrorCode MatSetUp_Default(Mat);
 
 /*
     Utility for MatZeroRows

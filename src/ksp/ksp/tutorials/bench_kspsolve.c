@@ -36,7 +36,7 @@ typedef struct {
   PetscBool   debug;    /* Debug flag for PreallocateCOO() */
   PetscBool   splitksp; /* Split KSPSolve and PCSetUp */
   PetscInt    its;      /* No of matmult_iterations */
-  PetscInt    Istart,Iend;
+  PetscInt    Istart, Iend;
 } AppCtx;
 
 static PetscErrorCode PreallocateCOO(Mat A, void *ctx)
@@ -106,7 +106,9 @@ static PetscErrorCode PreallocateCOO(Mat A, void *ctx)
     user->nnz += 3 * nnz[idx] + (3 * nm2 + xend) * nnz[idx + 1] + (nm2 * nm2) * nnz[idx + 2];
   else if (xend == n1 && yend == n1) // top right
     user->nnz += 4 * nnz[idx] + (4 * nm2) * nnz[idx + 1] + (nm2 * nm2) * nnz[idx + 2];
-  if (user->debug) PetscCall(PetscPrintf(PETSC_COMM_SELF, "rank %d: xyzstart = %" PetscInt_FMT ",%" PetscInt_FMT ",%" PetscInt_FMT ", xvzend = %" PetscInt_FMT ",%" PetscInt_FMT ",%" PetscInt_FMT ", nnz = %" PetscInt_FMT "\n", user->rank, xstart, ystart, zstart, xend, yend, zend,user->nnz));
+  if (user->debug)
+    PetscCall(PetscPrintf(PETSC_COMM_SELF, "rank %d: xyzstart = %" PetscInt_FMT ",%" PetscInt_FMT ",%" PetscInt_FMT ", xvzend = %" PetscInt_FMT ",%" PetscInt_FMT ",%" PetscInt_FMT ", nnz = %" PetscInt_FMT "\n", user->rank, xstart, ystart, zstart, xend, yend, zend,
+                          user->nnz));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -303,14 +305,14 @@ PetscErrorCode FillCOO(Mat A, void *ctx)
 
 int main(int argc, char **argv)
 {
-  AppCtx                     user;           /* Application context */
-  Vec                        x, b, u;        /* approx solution, RHS, and exact solution */
-  Mat                        A;              /* linear system matrix */
-  KSP                        ksp;            /* linear solver context */
-  PC                         pc;             /* Preconditioner */
-  PetscReal                  norm;           /* Error norm */
-  PetscInt                   nlocal = PETSC_DECIDE, ksp_its;        /* Number of KSP iterations */
-  PetscInt                   global_nnz = 0; /* Total number of nonzeros */
+  AppCtx                     user;                               /* Application context */
+  Vec                        x, b, u;                            /* approx solution, RHS, and exact solution */
+  Mat                        A;                                  /* linear system matrix */
+  KSP                        ksp;                                /* linear solver context */
+  PC                         pc;                                 /* Preconditioner */
+  PetscReal                  norm;                               /* Error norm */
+  PetscInt                   nlocal     = PETSC_DECIDE, ksp_its; /* Number of KSP iterations */
+  PetscInt                   global_nnz = 0;                     /* Total number of nonzeros */
   PetscLogDouble             time_start, time_mid1 = 0.0, time_mid2 = 0.0, time_end, time_avg, floprate;
   PetscBool                  printTiming = PETSC_TRUE; /* If run in CI, do not print timing result */
   PETSC_UNUSED PetscLogStage stage;
@@ -362,7 +364,7 @@ int main(int argc, char **argv)
 
   /* cannot use MatGetOwnershipRange() because the matrix has yet to be preallocated; that happens in MatSetPreallocateCOO() */
   PetscCall(PetscSplitOwnership(PetscObjectComm((PetscObject)A), &nlocal, &user.dim));
-  PetscCallMPI(MPI_Scan(&nlocal,&user.Istart,1,MPIU_INT,MPI_SUM,PetscObjectComm((PetscObject)A)));
+  PetscCallMPI(MPI_Scan(&nlocal, &user.Istart, 1, MPIU_INT, MPI_SUM, PetscObjectComm((PetscObject)A)));
   user.Istart -= nlocal;
   user.Iend = user.Istart + nlocal;
 

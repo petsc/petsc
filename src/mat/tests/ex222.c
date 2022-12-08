@@ -18,13 +18,21 @@ int main(int argc, char **argv)
   PetscCall(PetscOptionsGetString(NULL, NULL, "-f", filename, sizeof(filename), &flg));
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-bs", &bs, NULL));
   if (!flg) {
-    PetscInt M = 13, N = 6;
+    PetscInt  M = 13, N = 6;
+    PetscBool sbaij;
 
     PetscCall(PetscOptionsGetInt(NULL, NULL, "-M", &M, NULL));
     PetscCall(PetscOptionsGetInt(NULL, NULL, "-N", &N, NULL));
     PetscCall(MatCreateDense(PETSC_COMM_WORLD, PETSC_DECIDE, PETSC_DECIDE, M, N, NULL, &A));
     PetscCall(MatSetBlockSize(A, bs));
     PetscCall(MatSetRandom(A, NULL));
+    PetscCall(PetscStrcmp(etype, MATSBAIJ, &sbaij));
+    if (sbaij) {
+      Mat At;
+      PetscCall(MatTranspose(A, MAT_INITIAL_MATRIX, &At));
+      PetscCall(MatAXPY(A, 1.0, At, DIFFERENT_NONZERO_PATTERN));
+      PetscCall(MatDestroy(&At));
+    }
   } else {
     PetscViewer viewer;
 

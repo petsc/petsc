@@ -44,7 +44,6 @@ int main(int argc, char **args)
   PetscCall(ISRestoreIndices(sizes, &idx));
   PetscCall(ISDestroy(&sizes));
   PetscCall(PetscViewerDestroy(&viewer));
-  PetscCall(MatSetUp(A));
   PetscCall(PetscSNPrintf(name, sizeof(name), "%s/A.dat", dir));
   PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD, name, FILE_MODE_READ, &viewer));
   PetscCall(MatLoad(A, viewer));

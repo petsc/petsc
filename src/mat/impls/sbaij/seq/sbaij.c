@@ -11,6 +11,21 @@
 #define USESHORT
 #include <../src/mat/impls/sbaij/seq/relax.h>
 
+/* defines MatSetValues_Seq_Hash(), MatAssemblyEnd_Seq_Hash(), MatSetUp_Seq_Hash() */
+#define TYPE SBAIJ
+#define TYPE_SBAIJ
+#define TYPE_BS
+#include "../src/mat/impls/aij/seq/seqhashmatsetvalues.h"
+#undef TYPE_BS
+#define TYPE_BS _BS
+#define TYPE_BS_ON
+#include "../src/mat/impls/aij/seq/seqhashmatsetvalues.h"
+#undef TYPE_BS
+#undef TYPE_SBAIJ
+#include "../src/mat/impls/aij/seq/seqhashmat.h"
+#undef TYPE
+#undef TYPE_BS_ON
+
 #if defined(PETSC_HAVE_ELEMENTAL)
 PETSC_INTERN PetscErrorCode MatConvert_SeqSBAIJ_Elemental(Mat, MatType, MatReuse, Mat *);
 #endif
@@ -1097,13 +1112,6 @@ PetscErrorCode MatCopy_SeqSBAIJ(Mat A, Mat B, MatStructure str)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatSetUp_SeqSBAIJ(Mat A)
-{
-  PetscFunctionBegin;
-  PetscCall(MatSeqSBAIJSetPreallocation(A, A->rmap->bs, PETSC_DEFAULT, NULL));
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
 static PetscErrorCode MatSeqSBAIJGetArray_SeqSBAIJ(Mat A, PetscScalar *array[])
 {
   Mat_SeqSBAIJ *a = (Mat_SeqSBAIJ *)A->data;
@@ -1359,7 +1367,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqSBAIJ,
                                        NULL,
                                        NULL,
                                        NULL,
-                                       /* 29*/ MatSetUp_SeqSBAIJ,
+                                       /* 29*/ MatSetUp_Seq_Hash,
                                        NULL,
                                        NULL,
                                        NULL,

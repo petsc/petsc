@@ -932,10 +932,7 @@ PetscErrorCode MatSetUp(Mat A)
     PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)A), &size));
     PetscCall(MatSetType(A, size == 1 ? MATSEQAIJ : MATMPIAIJ));
   }
-  if (!A->preallocated && A->ops->setup) {
-    PetscCall(PetscInfo(A, "Warning not preallocating matrix storage\n"));
-    PetscUseTypeMethod(A, setup);
-  }
+  if (!A->preallocated) PetscTryTypeMethod(A, setup);
   PetscCall(PetscLayoutSetUp(A->rmap));
   PetscCall(PetscLayoutSetUp(A->cmap));
   A->preallocated = PETSC_TRUE;
@@ -5144,7 +5141,7 @@ PetscErrorCode MatGetRowSum(Mat mat, Vec v)
    Level: advanced
 
    Note:
-   Normally he use of `MatTranspose`(A,`MAT_REUSE_MATRIX`,&B) requires that B was obtained with a call to `MatTranspose`(A,`MAT_INITIAL_MATRIX`,&B). This
+   Normally the use of `MatTranspose`(A, `MAT_REUSE_MATRIX`, &B) requires that `B` was obtained with a call to `MatTranspose`(A, `MAT_INITIAL_MATRIX`, &B). This
    routine allows bypassing that call.
 
 .seealso: `Mat`, `MatTransposeSymbolic()`, `MatTranspose()`, `MatMultTranspose()`, `MatMultTransposeAdd()`, `MatIsTranspose()`, `MatReuse`, `MAT_INITIAL_MATRIX`, `MAT_REUSE_MATRIX`, `MAT_INPLACE_MATRIX`
@@ -5196,7 +5193,7 @@ PetscErrorCode MatTransposeSetPrecursor(Mat mat, Mat B)
      If you only need the symbolic transpose, and not the numerical values, use `MatTransposeSymbolic()`
 
 .seealso: `Mat`, `MatTransposeSetPrecursor()`, `MatMultTranspose()`, `MatMultTransposeAdd()`, `MatIsTranspose()`, `MatReuse`, `MAT_INITIAL_MATRIX`, `MAT_REUSE_MATRIX`, `MAT_INPLACE_MATRIX`,
-          `MatTransposeSymbolic()`
+          `MatTransposeSymbolic()`, `MatCreateTranspose()`
 @*/
 PetscErrorCode MatTranspose(Mat mat, MatReuse reuse, Mat *B)
 {

@@ -8,6 +8,14 @@
 #include <petscbt.h>
 #include <petsc/private/kernels/blocktranspose.h>
 
+/* defines MatSetValues_Seq_Hash(), MatAssemblyEnd_Seq_Hash(), MatSetUp_Seq_Hash() */
+#define TYPE AIJ
+#define TYPE_BS
+#include "../src/mat/impls/aij/seq/seqhashmatsetvalues.h"
+#include "../src/mat/impls/aij/seq/seqhashmat.h"
+#undef TYPE
+#undef TYPE_BS
+
 PetscErrorCode MatSeqAIJSetTypeFromOptions(Mat A)
 {
   PetscBool flg;
@@ -2968,13 +2976,6 @@ PetscErrorCode MatCopy_SeqAIJ(Mat A, Mat B, MatStructure str)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatSetUp_SeqAIJ(Mat A)
-{
-  PetscFunctionBegin;
-  PetscCall(MatSeqAIJSetPreallocation_SeqAIJ(A, PETSC_DEFAULT, NULL));
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
 PETSC_INTERN PetscErrorCode MatSeqAIJGetArray_SeqAIJ(Mat A, PetscScalar *array[])
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ *)A->data;
@@ -3497,7 +3498,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqAIJ,
                                        NULL,
                                        NULL,
                                        NULL,
-                                       /* 29*/ MatSetUp_SeqAIJ,
+                                       /* 29*/ MatSetUp_Seq_Hash,
                                        NULL,
                                        NULL,
                                        NULL,

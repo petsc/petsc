@@ -41,6 +41,6 @@ static inline PetscErrorCode PetscHMapIJVQueryAdd(PetscHMapIJV ht, PetscHashIJKe
   if (ret) kh_val(ht, iter) = val;
   else kh_val(ht, iter) += val;
   *missing = ret ? PETSC_TRUE : PETSC_FALSE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 #endif /* _PETSC_HASHMAPIJV_H */

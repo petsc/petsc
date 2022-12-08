@@ -135,6 +135,7 @@ Changes: Development
 
 .. rubric:: Mat:
 
+- ``MatSetValues()`` and friends will now provide reasonable performance when no preallocation information is provided.
 - Add ``MatEliminateZeros()``
 - Improve efficiency of ``MatConvert()`` from ``MATNORMAL`` to ``MATHYPRE``
 - Add ``MatDenseGetArrayAndMemType()``, ``MatDenseRestoreArrayAndMemType()``, ``MatDenseGetArrayReadAndMemType()``, ``MatDenseRestoreArrayReadAndMemType()``, ``MatDenseGetArrayWriteAndMemType()`` and ``MatDenseRestoreArrayWriteAndMemType()`` to return the array and memory type of a dense matrix
