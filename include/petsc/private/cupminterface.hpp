@@ -109,9 +109,9 @@ struct InterfaceBase {
 
   PETSC_NODISCARD static constexpr const char *cupmName() noexcept
   {
-    static_assert(util::integral_value(DeviceType::CUDA) == 0, "");
-    static_assert(util::integral_value(DeviceType::HIP) == 1, "");
-    return std::get<util::integral_value(T)>(DeviceTypes);
+    static_assert(util::to_underlying(DeviceType::CUDA) == 0, "");
+    static_assert(util::to_underlying(DeviceType::HIP) == 1, "");
+    return std::get<util::to_underlying(T)>(DeviceTypes);
   }
 
   PETSC_NODISCARD static constexpr PetscDeviceType PETSC_DEVICE_CUPM() noexcept { return T == DeviceType::CUDA ? PETSC_DEVICE_CUDA : PETSC_DEVICE_HIP; }

@@ -489,7 +489,7 @@ static PetscErrorCode PetscDeviceInitializeTypeFromOptions_Private(MPI_Comm comm
   default:
     SETERRQ(comm, PETSC_ERR_PLIB, "PETSc was seemingly configured for PetscDeviceType %s but we've fallen through all cases in a switch", PetscDeviceTypes[type]);
   }
-  PetscCall(PetscInfo(nullptr, "PetscDevice %s initialized, default device id %" PetscInt_FMT ", view %s, init type %s\n", PetscDeviceTypes[type], defaultDeviceId, PetscBools[defaultView], PetscDeviceInitTypes[Petsc::util::integral_value(*defaultInitType)]));
+  PetscCall(PetscInfo(nullptr, "PetscDevice %s initialized, default device id %" PetscInt_FMT ", view %s, init type %s\n", PetscDeviceTypes[type], defaultDeviceId, PetscBools[defaultView], PetscDeviceInitTypes[Petsc::util::to_underlying(*defaultInitType)]));
   /*
     defaultInitType, defaultView  and defaultDeviceId now represent what the individual TYPES
     have decided to initialize as
@@ -622,11 +622,11 @@ PetscErrorCode PetscDeviceInitializeFromOptions_Internal(MPI_Comm comm)
   PetscCall(PetscDeviceInitializeQueryOptions_Private(comm, &deviceContextInitDevice, &defaultInitType, &defaultDevice, &defaultDeviceSet, &defaultView));
 
   // the precise values don't matter here, so long as they are sequential
-  static_assert(Petsc::util::integral_value(PETSC_DEVICE_HOST) == 0, "");
-  static_assert(Petsc::util::integral_value(PETSC_DEVICE_CUDA) == 1, "");
-  static_assert(Petsc::util::integral_value(PETSC_DEVICE_HIP) == 2, "");
-  static_assert(Petsc::util::integral_value(PETSC_DEVICE_SYCL) == 3, "");
-  static_assert(Petsc::util::integral_value(PETSC_DEVICE_MAX) == 4, "");
+  static_assert(Petsc::util::to_underlying(PETSC_DEVICE_HOST) == 0, "");
+  static_assert(Petsc::util::to_underlying(PETSC_DEVICE_CUDA) == 1, "");
+  static_assert(Petsc::util::to_underlying(PETSC_DEVICE_HIP) == 2, "");
+  static_assert(Petsc::util::to_underlying(PETSC_DEVICE_SYCL) == 3, "");
+  static_assert(Petsc::util::to_underlying(PETSC_DEVICE_MAX) == 4, "");
   for (int i = PETSC_DEVICE_HOST; i < PETSC_DEVICE_MAX; ++i) {
     const auto deviceType = PetscDeviceTypeCast(i);
     auto       initType   = defaultInitType;
