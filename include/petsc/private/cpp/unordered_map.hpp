@@ -746,10 +746,9 @@ inline KHashTable<V, H, KE>::KHashTable(Iter first, Iter last) noexcept : KHashT
 }
 
 template <typename V, typename H, typename KE>
-inline KHashTable<V, H, KE>::KHashTable(KHashTable &&other) noexcept
-try : values_(std::move(other.values_)), flags_(std::move(other.flags_)), count_(util::exchange(other.count_, 0)), n_occupied_(util::exchange(other.n_occupied_, 0)), upper_bound_(util::exchange(other.upper_bound_, 0)) {
-} catch (const std::exception &exc) {
-  SETERRABORT(PETSC_COMM_SELF, PETSC_ERR_LIB, "%s", exc.what());
+inline KHashTable<V, H, KE>::KHashTable(KHashTable &&other) noexcept :
+  values_(std::move(other.values_)), flags_(std::move(other.flags_)), count_(util::exchange(other.count_, 0)), n_occupied_(util::exchange(other.n_occupied_, 0)), upper_bound_(util::exchange(other.upper_bound_, 0))
+{
 }
 
 template <typename V, typename H, typename KE>
@@ -903,7 +902,7 @@ template <typename T>
 static inline constexpr unsigned integer_log2(T x) noexcept
 {
   static_assert(std::numeric_limits<T>::is_integer && std::is_unsigned<T>::value, "");
-  return x ? 1 + integer_log2(x >> 1) : -1;
+  return x ? 1 + integer_log2(x >> 1) : static_cast<unsigned>(-1);
 }
 
 } // namespace detail
