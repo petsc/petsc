@@ -261,7 +261,7 @@ inline PetscErrorCode DeviceContext<T>::destroy(PetscDeviceContext dctx) noexcep
   PetscFunctionBegin;
   if (const auto dci = impls_cast_(dctx)) {
     PetscCall(dci->stream.destroy());
-    if (dci->event) PetscCall(cupm_fast_event_pool<T>().deallocate(std::move(dci->event)));
+    if (dci->event) PetscCall(cupm_fast_event_pool<T>().deallocate(&dci->event));
     if (dci->begin) PetscCallCUPM(cupmEventDestroy(dci->begin));
     if (dci->end) PetscCallCUPM(cupmEventDestroy(dci->end));
     delete dci;

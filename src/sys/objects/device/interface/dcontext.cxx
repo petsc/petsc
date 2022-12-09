@@ -9,18 +9,19 @@
 #include <string> // std::to_string among other things
 
 /* Define the allocator */
-class PetscDeviceContextAllocator : public Petsc::AllocatorBase<PetscDeviceContext> {
+class PetscDeviceContextConstructor : public Petsc::ConstructorInterface<_p_PetscDeviceContext, PetscDeviceContextConstructor> {
 public:
-  PETSC_CXX_COMPAT_DECL(PetscErrorCode create(PetscDeviceContext *dctx))
+  PETSC_NODISCARD PetscErrorCode construct_(PetscDeviceContext dctx) const noexcept
   {
     PetscFunctionBegin;
-    PetscCall(PetscHeaderCreate(*dctx, PETSC_DEVICE_CONTEXT_CLASSID, "PetscDeviceContext", "PetscDeviceContext", "Sys", PETSC_COMM_SELF, PetscDeviceContextDestroy, PetscDeviceContextView));
-    PetscCallCXX(PetscObjectCast(*dctx)->cpp = new CxxData());
-    PetscCall(reset(*dctx, false));
+    PetscCall(PetscArrayzero(dctx, 1));
+    PetscCall(PetscHeaderInitialize_Private(dctx, PETSC_DEVICE_CONTEXT_CLASSID, "PetscDeviceContext", "PetscDeviceContext", "Sys", PETSC_COMM_SELF, PetscDeviceContextDestroy, PetscDeviceContextView));
+    PetscCallCXX(PetscObjectCast(dctx)->cpp = new CxxData());
+    PetscCall(underlying().reset(dctx, false));
     PetscFunctionReturn(0);
   }
 
-  PETSC_CXX_COMPAT_DECL(PetscErrorCode destroy(PetscDeviceContext dctx))
+  PETSC_NODISCARD static PetscErrorCode destroy_(PetscDeviceContext dctx) noexcept
   {
     PetscFunctionBegin;
     PetscAssert(!dctx->numChildren, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Device context still has %" PetscInt_FMT " un-joined children, must call PetscDeviceContextJoin() with all children before destroying", dctx->numChildren);
@@ -28,17 +29,16 @@ public:
     PetscCall(PetscDeviceDestroy(&dctx->device));
     PetscCall(PetscFree(dctx->childIDs));
     delete CxxDataCast(dctx);
-    PetscCall(PetscHeaderDestroy(&dctx));
+    PetscCall(PetscHeaderDestroy_Private(PetscObjectCast(dctx), PETSC_FALSE));
     PetscFunctionReturn(0);
   }
 
-  PETSC_CXX_COMPAT_DECL(PetscErrorCode reset(PetscDeviceContext dctx, bool zero = true))
+  PETSC_NODISCARD static PetscErrorCode reset_(PetscDeviceContext dctx, bool zero = true) noexcept
   {
     PetscFunctionBegin;
     if (zero) {
       // reset the device if the user set it
-      if (auto &userset = dctx->usersetdevice) {
-        userset = PETSC_FALSE;
+      if (Petsc::util::exchange(dctx->usersetdevice, PETSC_FALSE)) {
         PetscTryTypeMethod(dctx, destroy);
         PetscCall(PetscDeviceDestroy(&dctx->device));
         PetscCall(PetscArrayzero(dctx->ops, 1));
@@ -54,9 +54,11 @@ public:
     dctx->streamType = PETSC_STREAM_DEFAULT_BLOCKING;
     PetscFunctionReturn(0);
   }
+
+  PETSC_NODISCARD static PetscErrorCode invalidate_(PetscDeviceContext) noexcept { return 0; }
 };
 
-static Petsc::ObjectPool<PetscDeviceContext, PetscDeviceContextAllocator> contextPool;
+static Petsc::ObjectPool<_p_PetscDeviceContext, PetscDeviceContextConstructor> contextPool;
 
 /*@C
   PetscDeviceContextCreate - Creates a `PetscDeviceContext`
@@ -139,10 +141,7 @@ PetscErrorCode PetscDeviceContextDestroy(PetscDeviceContext *dctx)
   PetscCall(PetscLogEventBegin(DCONTEXT_Destroy, nullptr, nullptr, nullptr, nullptr));
   if (--(PetscObjectCast(*dctx)->refct) <= 0) {
     PetscCall(PetscDeviceContextCheckNotOrphaned_Internal(*dctx));
-    // std::move of the expression of the trivially-copyable type 'PetscDeviceContext' (aka
-    // '_n_PetscDeviceContext *') has no effect; remove std::move() [performance-move-const-arg]
-    // can't remove std::move, since reclaim only takes r-value reference
-    PetscCall(contextPool.deallocate(std::move(*dctx))); // NOLINT (performance-move-const-arg)
+    PetscCall(contextPool.deallocate(dctx));
   }
   PetscCall(PetscLogEventEnd(DCONTEXT_Destroy, nullptr, nullptr, nullptr, nullptr));
   *dctx = nullptr;

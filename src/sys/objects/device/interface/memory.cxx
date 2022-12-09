@@ -80,7 +80,7 @@ inline bool PointerAttributes::contains(const void *ptr_begin, const void *ptr) 
 //
 // Each entry maps pointer -> {
 //   PetscMemType  - The memtype of the pointer
-//   PetscObjectId - A unique ID assigned at allocation or registratrion so auto-dep can
+//   PetscObjectId - A unique ID assigned at allocation or registration so auto-dep can
 //                   identify the pointer
 //   size          - The size (in bytes) of the allocation
 // }

@@ -22,7 +22,7 @@ namespace impl
 {
 
 template <typename Derived> // CRTP
-class DeviceBase : public util::crtp<Derived, DeviceBase> {
+class DeviceBase : public util::crtp<DeviceBase, Derived> {
 public:
   using derived_type            = Derived;
   using createContextFunction_t = PetscErrorCode (*)(PetscDeviceContext);

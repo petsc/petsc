@@ -165,11 +165,12 @@ int main(int argc, char *argv[])
   // PetscContainers (and incrementing the global PetscObjectId counter) until it reaches some
   // arbitrarily high number to ensure that our first PetscDeviceContext has the same ID across
   // systems.
-  if (PETSC_DEVICE_DEFAULT() == PETSC_DEVICE_HOST) {
-    PetscObjectId id, prev_id = 0;
+  {
+    PetscObjectId prev_id = 0;
 
     do {
       PetscContainer c;
+      PetscObjectId  id;
 
       PetscCall(PetscContainerCreate(PETSC_COMM_WORLD, &c));
       PetscCall(PetscObjectGetId((PetscObject)c, &id));
@@ -177,7 +178,7 @@ int main(int argc, char *argv[])
       PetscCheck(id > prev_id, PETSC_COMM_SELF, PETSC_ERR_PLIB, "PetscObjectIds are not increasing for successively created PetscContainers! current: %" PetscInt64_FMT ", previous: %" PetscInt64_FMT, id, prev_id);
       prev_id = id;
       PetscCall(PetscContainerDestroy(&c));
-    } while (id < 10);
+    } while (prev_id < 50);
   }
   PetscCall(PetscDeviceContextGetCurrentContext(&dctx));
 
