@@ -58,17 +58,47 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqBAIJ_SeqAIJ(Mat A, MatType newtype, Ma
 
 #include <../src/mat/impls/aij/seq/aij.h>
 
+PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqBAIJ_Preallocate(Mat A, PetscInt **nnz)
+{
+  PetscInt    m, n, bs = PetscAbs(A->rmap->bs);
+  PetscInt   *ii;
+  Mat_SeqAIJ *Aa = (Mat_SeqAIJ *)A->data;
+
+  PetscFunctionBegin;
+  PetscCall(MatGetSize(A, &m, &n));
+  PetscCall(PetscCalloc1(m / bs, nnz));
+  PetscCall(PetscMalloc1(bs, &ii));
+
+  /* loop over all potential blocks in the matrix to see if the potential block has a nonzero */
+  for (PetscInt i = 0; i < m / bs; i++) {
+    for (PetscInt k = 0; k < bs; k++) ii[k] = Aa->i[i * bs + k];
+    for (PetscInt j = 0; j < n / bs; j++) {
+      for (PetscInt k = 0; k < bs; k++) {
+        for (; ii[k] < Aa->i[i * bs + k + 1] && Aa->j[ii[k]] < (j + 1) * bs; ii[k]++) {
+          if (Aa->j[ii[k]] >= j * bs) {
+            /* found a nonzero in the potential block so allocate for that block and jump to check the next potential block */
+            (*nnz)[i]++;
+            goto theend;
+          }
+        }
+      }
+    theend:;
+    }
+  }
+  PetscCall(PetscFree(ii));
+  PetscFunctionReturn(0);
+}
+
 PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqBAIJ(Mat A, MatType newtype, MatReuse reuse, Mat *newmat)
 {
   Mat          B;
   Mat_SeqAIJ  *a = (Mat_SeqAIJ *)A->data;
   Mat_SeqBAIJ *b;
-  PetscInt    *ai = a->i, m = A->rmap->N, n = A->cmap->N, i, *rowlengths, bs = PetscAbs(A->rmap->bs);
+  PetscInt     m = A->rmap->N, n = A->cmap->N, *rowlengths, bs = PetscAbs(A->rmap->bs);
 
   PetscFunctionBegin;
   if (reuse != MAT_REUSE_MATRIX) {
-    PetscCall(PetscMalloc1(m / bs, &rowlengths));
-    for (i = 0; i < m / bs; i++) rowlengths[i] = (ai[i * bs + 1] - ai[i * bs]) / bs;
+    PetscCall(MatConvert_SeqAIJ_SeqBAIJ_Preallocate(A, &rowlengths));
     PetscCall(MatCreate(PetscObjectComm((PetscObject)A), &B));
     PetscCall(MatSetSizes(B, m, n, m, n));
     PetscCall(MatSetType(B, MATSEQBAIJ));

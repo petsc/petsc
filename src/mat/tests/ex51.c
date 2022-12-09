@@ -5,7 +5,7 @@ static char help[] = "Tests MatIncreaseOverlap(), MatCreateSubMatrices() for Mat
 
 int main(int argc, char **args)
 {
-  Mat          A, B, *submatA, *submatB;
+  Mat          A, B, E, Bt, *submatA, *submatB;
   PetscInt     bs = 1, m = 43, ov = 1, i, j, k, *rows, *cols, M, nd = 5, *idx, mm, nn, lsize;
   PetscScalar *vals, rval;
   IS          *is1, *is2;
@@ -25,6 +25,7 @@ int main(int argc, char **args)
   PetscCall(MatCreateSeqBAIJ(PETSC_COMM_SELF, bs, M, M, 1, NULL, &A));
   PetscCall(MatSetOption(A, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_FALSE));
   PetscCall(MatCreateSeqAIJ(PETSC_COMM_SELF, M, M, 15, NULL, &B));
+  PetscCall(MatSetBlockSize(B, bs));
   PetscCall(MatSetOption(B, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_FALSE));
   PetscCall(PetscRandomCreate(PETSC_COMM_SELF, &rdm));
   PetscCall(PetscRandomSetFromOptions(rdm));
@@ -36,27 +37,42 @@ int main(int argc, char **args)
 
   /* Now set blocks of values */
   for (i = 0; i < 20 * bs; i++) {
+    PetscInt nr = 1, nc = 1;
     PetscCall(PetscRandomGetValue(rdm, &rval));
     cols[0] = bs * (int)(PetscRealPart(rval) * m);
     PetscCall(PetscRandomGetValue(rdm, &rval));
     rows[0] = bs * (int)(PetscRealPart(rval) * m);
     for (j = 1; j < bs; j++) {
-      rows[j] = rows[j - 1] + 1;
-      cols[j] = cols[j - 1] + 1;
+      PetscCall(PetscRandomGetValue(rdm, &rval));
+      if (PetscRealPart(rval) > .5) rows[nr++] = rows[0] + j - 1;
+    }
+    for (j = 1; j < bs; j++) {
+      PetscCall(PetscRandomGetValue(rdm, &rval));
+      if (PetscRealPart(rval) > .5) cols[nc++] = cols[0] + j - 1;
     }
 
-    for (j = 0; j < bs * bs; j++) {
+    for (j = 0; j < nr * nc; j++) {
       PetscCall(PetscRandomGetValue(rdm, &rval));
       vals[j] = rval;
     }
-    PetscCall(MatSetValues(A, bs, rows, bs, cols, vals, ADD_VALUES));
-    PetscCall(MatSetValues(B, bs, rows, bs, cols, vals, ADD_VALUES));
+    PetscCall(MatSetValues(A, nr, rows, nc, cols, vals, ADD_VALUES));
+    PetscCall(MatSetValues(B, nr, rows, nc, cols, vals, ADD_VALUES));
   }
 
   PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyBegin(B, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(B, MAT_FINAL_ASSEMBLY));
+
+  /* Test MatConvert_SeqAIJ_Seq(S)BAIJ handles incompletely filled blocks */
+  PetscCall(MatConvert(B, MATBAIJ, MAT_INITIAL_MATRIX, &E));
+  PetscCall(MatDestroy(&E));
+  PetscCall(MatTranspose(B, MAT_INITIAL_MATRIX, &Bt));
+  PetscCall(MatAXPY(Bt, 1.0, B, DIFFERENT_NONZERO_PATTERN));
+  PetscCall(MatSetOption(Bt, MAT_SYMMETRIC, PETSC_TRUE));
+  PetscCall(MatConvert(Bt, MATSBAIJ, MAT_INITIAL_MATRIX, &E));
+  PetscCall(MatDestroy(&E));
+  PetscCall(MatDestroy(&Bt));
 
   /* Test MatIncreaseOverlap() */
   PetscCall(PetscMalloc1(nd, &is1));

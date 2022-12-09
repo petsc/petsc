@@ -119,7 +119,7 @@ int main(int argc, char **args)
 
     PetscCall(MatGetSize(P2, &M, &N));
     PetscCall(MatGetInfo(P2, MAT_GLOBAL_SUM, &info));
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Input matrix P: %s, %" PetscInt_FMT " x %" PetscInt_FMT ", %lld nonzeros, %.1f per row\n", fileA, M, N, (long long)info.nz_used, (double)info.nz_used / (double)M));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Input matrix P: %s, %" PetscInt_FMT " x %" PetscInt_FMT ", %lld nonzeros, %.1f per row\n", fileP, M, N, (long long)info.nz_used, (double)info.nz_used / (double)M));
   } else { /* otherwise just let P = A */
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Input matrix P = A\n"));
     P2 = A2;

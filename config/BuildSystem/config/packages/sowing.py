@@ -9,7 +9,7 @@ class Configure(config.package.GNUPackage):
   def __init__(self, framework):
     config.package.GNUPackage.__init__(self, framework)
     self.minversion        = '1.1.26'
-    self.gitcommit         = 'v'+self.minversion+'-p5'
+    self.gitcommit         = 'v'+self.minversion+'-p6'
     self.download          = ['git://https://bitbucket.org/petsc/pkg-sowing.git','https://bitbucket.org/petsc/pkg-sowing/get/'+self.gitcommit+'.tar.gz']
     self.downloaddirnames  = ['petsc-pkg-sowing']
     self.downloadonWindows = 1
@@ -113,7 +113,7 @@ class Configure(config.package.GNUPackage):
           self.logPrint('Bfort not found. Installing sowing for FortranStubs')
           if (not self.argDB['download-sowing']):  self.argDB['download-sowing'] = 1
           #check cygwin has g++
-          if os.path.exists('/usr/bin/cygcheck.exe') and not os.path.exists('/usr/bin/g++.exe'):
+          if os.path.exists('/usr/bin/cygcheck.exe') and not os.path.exists('/usr/bin/g++.exe') and not self.setCompilers.isMINGW(self.framework.getCompiler(), self.log):
             raise RuntimeError("Error! Sowing on Microsoft Windows requires cygwin's g++ compiler. Please install it with cygwin setup.exe and rerun configure")
           config.package.GNUPackage.configure(self)
           installDir = os.path.join(self.installDir,'bin')
