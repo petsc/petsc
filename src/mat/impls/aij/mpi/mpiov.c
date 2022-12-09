@@ -44,14 +44,14 @@ static PetscErrorCode ISAdjustForBlockSize(PetscInt bs, PetscInt imax, IS is[])
       Nmin = Nmin / bs;
       Nmax = Nmax / bs;
       PetscCall(PetscBTCreate(Nmax - Nmin, &bt));
-      for (PetscInt i = 0; i < N; i++) {
-        if (!PetscBTLookupSet(bt, idx[i] / bs - Nmin)) n++;
+      for (PetscInt j = 0; j < N; j++) {
+        if (!PetscBTLookupSet(bt, idx[j] / bs - Nmin)) n++;
       }
       PetscCall(PetscMalloc1(n, &nidx));
       n = 0;
       PetscCall(PetscBTMemzero(Nmax - Nmin, bt));
-      for (PetscInt i = 0; i < N; i++) {
-        if (!PetscBTLookupSet(bt, idx[i] / bs - Nmin)) nidx[n++] = idx[i] / bs;
+      for (PetscInt j = 0; j < N; j++) {
+        if (!PetscBTLookupSet(bt, idx[j] / bs - Nmin)) nidx[n++] = idx[j] / bs;
       }
       PetscCall(PetscBTDestroy(&bt));
       PetscCall(ISRestoreIndices(is[i], &idx));
