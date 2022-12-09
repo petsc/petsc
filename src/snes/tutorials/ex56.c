@@ -435,13 +435,13 @@ int main(int argc, char **args)
     }
   }
   PetscCall(DMDestroy(&dm));
-  if (run_type == 1) err[0] = 5.9731627e+01 - mdisp[0]; /* error with what I think is the exact solution */
+  if (run_type == 1) err[0] = 5.97537599375e+01 - mdisp[0]; /* error with what I think is the exact solution */
   else if (run_type == 0) err[0] = 0;
   else if (run_type == 2) err[0] = 3.527795e+01 - mdisp[0];
   else err[0] = 0;
   PetscCall(PetscPrintf(PETSC_COMM_WORLD, "[%d] %d) N=%12" PetscInt_FMT ", max displ=%9.7e, error=%4.3e\n", rank, 0, sizes[0], (double)mdisp[0], (double)err[0]));
   for (iter = 1; iter < max_conv_its; iter++) {
-    if (run_type == 1) err[iter] = 5.9731627e+01 - mdisp[iter];
+    if (run_type == 1) err[iter] = 5.97537599375e+01 - mdisp[iter];
     else if (run_type == 0) err[iter] = 0;
     else if (run_type == 2) err[iter] = 3.527795e+01 - mdisp[iter];
     else err[iter] = 0;
