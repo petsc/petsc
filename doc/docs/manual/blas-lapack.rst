@@ -22,7 +22,7 @@ dramatic improvement in performance.
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 BLAS/LAPACK libraries may use 32 bit integers or 64 bit integers. PETSc configure and compile handles this automatically
-so long at the arguments to the BLAS/LAPACK routines are set to the type ``PetscBLASInt``.  The routine ``PetscBLASIntCast``(``PetscInt``,``PetscBLASInt``*) casts
+so long at the arguments to the BLAS/LAPACK routines are set to the type ``PetscBLASInt``.  The routine ``PetscBLASIntCast``\(``PetscInt``, ``PetscBLASInt`` \*) casts
 a ``PetscInt`` to the BLAS/LAPACK size. If the BLAS/LAPACK size is not large enough it generates an error. For the vast majority of
 simulations even very large ones 64 bit BLAS/LAPACK integers are not needed, even if 64 bit PETSc integers are used, The configure
 option ``--with-64-bit-blas-indices`` attempts to locate and use a 64 bit integer version of BLAS/LAPACK library.

@@ -201,7 +201,7 @@ If you are running PETSc on a cluster (or machine) that does not have a license 
 Licensing the MATLAB Compute Engine on a cluster
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-To activate MATLAB on head node which does not have access to the internet.[#matlabsection_footnote]_
+To activate MATLAB on head node which does not have access to the internet. [#matlabsection_footnote]_
 
 First ssh into the head node using the command:    ssh node_name
 
