@@ -76,7 +76,6 @@ static PetscErrorCode PetscHBWRealloc(size_t a, int lineno, const char function[
 PETSC_INTERN PetscErrorCode PetscSetUseHBWMalloc_Private(void)
 {
   PetscFunctionBegin;
-  PetscCall(PetscMallocSet(PetscHBWMalloc, PetscHBWFree, NULL));
-  PetscTrRealloc = PetscHBWRealloc;
+  PetscCall(PetscMallocSet(PetscHBWMalloc, PetscHBWFree, PetscHBWRealloc));
   PetscFunctionReturn(0);
 }
