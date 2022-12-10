@@ -54,149 +54,44 @@ namespace impl
       PetscCheckAbort(cerr_abort_p_ == cupmSuccess, comm_, PETSC_ERR_GPU, "%s error %d (%s) : %s", cupmName(), static_cast<PetscErrorCode>(cerr_abort_p_), cupmGetErrorName(cerr_abort_p_), cupmGetErrorString(cerr_abort_p_)); \
     } while (0)
 
-  // PETSC_CUPM_ALIAS_INTEGRAL_VALUE_EXACT() - declaration to alias a cuda/hip integral constant
-  // value
+  // PETSC_CUPM_ALIAS_FUNCTION() - declaration to alias a cuda/hip function
   //
   // input params:
-  // our_prefix   - the prefix of the alias
-  // our_suffix   - the suffix of the alias
-  // their_prefix - the prefix of the variable being aliased
-  // their_suffix - the suffix of the variable being aliased
-  //
-  // example usage:
-  // PETSC_CUPM_ALIAS_INTEGRAL_VALUE_EXACT(cupm,Success,cuda,AllGood); ->
-  // static const auto cupmSuccess = cudaAllGood;
-  //
-  // PETSC_CUPM_ALIAS_INTEGRAL_VALUE_EXACT(cupm,Success,hip,AllRight); ->
-  // static const auto cupmSuccess = hipAllRight;
-  #define PETSC_CUPM_ALIAS_INTEGRAL_VALUE_EXACT(our_prefix, our_suffix, their_prefix, their_suffix) static const auto PetscConcat(our_prefix, our_suffix) = PetscConcat(their_prefix, their_suffix)
-
-  // PETSC_CUPM_ALIAS_INTEGRAL_VALUE_COMMON() - declaration to alias a cuda/hip integral constant
-  // value
-  //
-  // input params:
-  // our_suffix   - the suffix of the alias
-  // their_suffix - the suffix of the variable being aliased
-  //
-  // notes:
-  // requires PETSC_CUPM_PREFIX_L to be defined to the specific prefix
-  //
-  // example usage:
-  // #define PETSC_CUPM_PREFIX_L cuda
-  // PETSC_CUPM_ALIAS_INTEGRAL_VALUE_COMMON(Success,AllGood); ->
-  // static const auto cupmSuccess = cudaAllGood;
-  //
-  // #define PETSC_CUPM_PREFIX_L hip
-  // PETSC_CUPM_ALIAS_INTEGRAL_VALUE_COMMON(Success,AllRight); ->
-  // static const auto cupmSuccess = hipAllRight;
-  #define PETSC_CUPM_ALIAS_INTEGRAL_VALUE_COMMON(our_suffix, their_suffix) PETSC_CUPM_ALIAS_INTEGRAL_VALUE_EXACT(cupm, our_suffix, PETSC_CUPM_PREFIX_L, their_suffix)
-
-  // PETSC_CUPM_ALIAS_INTEGRAL_VALUE() - declaration to alias a cuda/hip integral constant value
-  //
-  // input param:
-  // suffix - the common suffix shared between cuda, hip, and cupm
-  //
-  // notes:
-  // requires PETSC_CUPM_PREFIX_L to be defined to the specific prefix
-  //
-  // example usage:
-  // #define PETSC_CUPM_PREFIX_L cuda
-  // PETSC_CUPM_ALIAS_INTEGRAL_VALUE(Success); -> static const auto cupmSuccess = cudaSuccess;
-  //
-  // #define PETSC_CUPM_PREFIX_L hip
-  // PETSC_CUPM_ALIAS_INTEGRAL_VALUE(Success); -> static const auto cupmSuccess = hipSuccess;
-  #define PETSC_CUPM_ALIAS_INTEGRAL_VALUE(suffix) PETSC_CUPM_ALIAS_INTEGRAL_VALUE_COMMON(suffix, suffix)
-
-  // PETSC_CUPM_ALIAS_FUNCTION_EXACT() - declaration to alias a cuda/hip function
-  //
-  // input params:
-  // our_prefix   - the prefix of the alias
-  // our_suffix   - the suffix of the alias
-  // their_prefix - the prefix of the function being aliased
-  // their_suffix - the suffix of the function being aliased
+  // our_name   - the name of the alias
+  // their_name - the name of the function being aliased
   //
   // notes:
   // see PETSC_ALIAS_FUNCTION() for the exact nature of the expansion
   //
   // example usage:
-  // PETSC_CUPM_ALIAS_FUNCTION_EXACT(cupm,Malloc,cuda,Malloc) ->
-  // template <typename... T>
-  // static constexpr auto cupmMalloc(T&&... args) *noexcept and trailing return type deduction*
-  // {
-  //   return cudaMalloc(std::forward<T>(args)...);
-  // }
-  #define PETSC_CUPM_ALIAS_FUNCTION_EXACT(our_prefix, our_suffix, their_prefix, their_suffix) PETSC_ALIAS_FUNCTION(static PetscConcat(our_prefix, our_suffix), PetscConcat(their_prefix, their_suffix))
-
-  // PETSC_CUPM_ALIAS_FUNCTION_COMMON() - declaration to alias a cuda/hip function
-  //
-  // input params:
-  // our_suffix   - the suffix of the alias
-  // their_suffix - the common suffix of the cuda/hip function being aliased
-  //
-  // notes:
-  // requires PETSC_CUPM_PREFIX_L to be defined to the specific prefix of the function being
-  // aliased. see PETSC_ALIAS_FUNCTION() for the exact nature of the expansion
-  //
-  // example usage:
-  // #define PETSC_CUPM_PREFIX_L cuda
-  // PETSC_CUPM_ALIAS_FUNCTION_COMMON(MallocFancy,Malloc) ->
-  // template <typename... T>
-  // static constexpr auto cupmMallocFancy(T&&... args) *noexcept and trailing return type deduction*
-  // {
-  //   return cudaMalloc(std::forward<T>(args)...);
-  // }
-  //
-  // #define PETSC_CUPM_PREFIX_L hip
-  // PETSC_CUPM_ALIAS_FUNCTION_COMMON(MallocFancy,Malloc) ->
-  // template <typename... T>
-  // static constexpr auto cupmMallocFancy(T&&... args) *noexcept and trailing return type deduction*
-  // {
-  //   return hipMalloc(std::forward<T>(args)...);
-  // }
-  #define PETSC_CUPM_ALIAS_FUNCTION_COMMON(our_suffix, their_suffix) PETSC_CUPM_ALIAS_FUNCTION_EXACT(cupm, our_suffix, PETSC_CUPM_PREFIX_L, their_suffix)
-
-  // PETSC_CUPM_ALIAS_FUNCTION() - declaration to alias a cuda/hip function
-  //
-  // input param:
-  // suffix - the common suffix for hip, cuda and the alias
-  //
-  // notes:
-  // requires PETSC_CUPM_PREFIX_L to be defined to the specific prefix of the function being
-  // aliased. see PETSC_ALIAS_FUNCTION() for the exact nature of the expansion
-  //
-  // example usage:
-  // #define PETSC_CUPM_PREFIX_L cuda
-  // PETSC_CUPM_ALIAS_FUNCTION(Malloc) ->
+  // PETSC_CUPM_ALIAS_FUNCTION(cupmMalloc, cudaMalloc) ->
   // template <typename... T>
   // static constexpr auto cupmMalloc(T&&... args) *noexcept and trailing return type deduction*
   // {
   //   return cudaMalloc(std::forward<T>(args)...);
   // }
   //
-  // #define PETSC_CUPM_PREFIX_L hip
-  // PETSC_CUPM_ALIAS_FUNCTION(Malloc) ->
+  // PETSC_CUPM_ALIAS_FUNCTION(cupmMalloc, hipMalloc) ->
   // template <typename... T>
   // static constexpr auto cupmMalloc(T&&... args) *noexcept and trailing return type deduction*
   // {
   //   return hipMalloc(std::forward<T>(args)...);
   // }
-  #define PETSC_CUPM_ALIAS_FUNCTION(suffix) PETSC_CUPM_ALIAS_FUNCTION_COMMON(suffix, suffix)
+  #define PETSC_CUPM_ALIAS_FUNCTION(our_name, their_name) PETSC_ALIAS_FUNCTION(static our_name, their_name)
 
-  // PETSC_CUPM_ALIAS_FUNCTION_GOBBLE_EXACT() - declaration to alias a cuda/hip function but
+  // PETSC_CUPM_ALIAS_FUNCTION_GOBBLE() - declaration to alias a cuda/hip function but
   // discard the last N arguments
   //
   // input params:
-  // our_prefix   - the prefix of the alias
-  // our_suffix   - the suffix of the alias
-  // their_prefix - the prefix of the function being aliased
-  // their_suffix - the suffix of the function being aliased
-  // N            - integer constant [0,INT_MAX) dictating how many arguments to chop off the end
+  // our_name   - the name of the alias
+  // their_name - the name of the function being aliased
+  // N          - integer constant [0, INT_MAX) dictating how many arguments to chop off the end
   //
   // notes:
   // see PETSC_ALIAS_FUNCTION_GOBBLE_NTH_LAST_ARGS() for the exact nature of the expansion
   //
   // example use:
-  // PETSC_CUPM_ALIAS_FUNCTION_GOBBLE_EXACT(cupm,MallocAsync,cuda,Malloc,1) ->
+  // PETSC_CUPM_ALIAS_FUNCTION_GOBBLE_COMMON(cupmMallocAsync, cudaMalloc, 1) ->
   // template <typename... T, typename Tend>
   // static constexpr auto cupmMallocAsync(T&&... args, Tend argend) *noexcept and trailing
   // return type deduction*
@@ -204,32 +99,7 @@ namespace impl
   //   (void)argend;
   //   return cudaMalloc(std::forward<T>(args)...);
   // }
-  #define PETSC_CUPM_ALIAS_FUNCTION_GOBBLE_EXACT(our_prefix, our_suffix, their_prefix, their_suffix, N) PETSC_ALIAS_FUNCTION_GOBBLE_NTH_LAST_ARGS(static PetscConcat(our_prefix, our_suffix), PetscConcat(their_prefix, their_suffix), N)
-
-  // PETSC_CUPM_ALIAS_FUNCTION_GOBBLE_COMMON() - declaration to alias a cuda/hip function but
-  // discard the last N arguments
-  //
-  // input params:
-  // our_suffix   - the suffix of the alias
-  // their_suffix - the suffix of the function being aliased
-  // N            - integer constant [0,INT_MAX) dictating how many arguments to chop off the end
-  //
-  // notes:
-  // requires PETSC_CUPM_PREFIX_L to be defined to the specific prefix of the function being
-  // aliased. see PETSC_ALIAS_FUNCTION_GOBBLE_NTH_LAST_ARGS() for the exact nature of the
-  // expansion
-  //
-  // example use:
-  // #define PETSC_CUPM_PREFIX_L cuda
-  // PETSC_CUPM_ALIAS_FUNCTION_GOBBLE_COMMON(MallocAsync,Malloc,1) ->
-  // template <typename... T, typename Tend>
-  // static constexpr auto cupmMallocAsync(T&&... args, Tend argend) *noexcept and trailing
-  // return type deduction*
-  // {
-  //   (void)argend;
-  //   return cudaMalloc(std::forward<T>(args)...);
-  // }
-  #define PETSC_CUPM_ALIAS_FUNCTION_GOBBLE_COMMON(our_suffix, their_suffix, N) PETSC_CUPM_ALIAS_FUNCTION_GOBBLE_EXACT(cupm, our_suffix, PETSC_CUPM_PREFIX_L, their_suffix, N)
+  #define PETSC_CUPM_ALIAS_FUNCTION_GOBBLE(our_name, their_name, N) PETSC_ALIAS_FUNCTION_GOBBLE_NTH_LAST_ARGS(static our_name, their_name, N)
 
 // Base class that holds functions and variables that don't require CUDA or HIP to be present
 // on the system
@@ -267,8 +137,6 @@ template <DeviceType>
 struct InterfaceImpl;
 
   #if PetscDefined(HAVE_CUDA)
-    #define PETSC_CUPM_PREFIX_L cuda
-    #define PETSC_CUPM_PREFIX_U CUDA
 template <>
 struct InterfaceImpl<DeviceType::CUDA> : InterfaceBase<DeviceType::CUDA> {
   PETSC_CUPM_BASE_CLASS_HEADER(base_type, DeviceType::CUDA);
@@ -280,7 +148,7 @@ struct InterfaceImpl<DeviceType::CUDA> : InterfaceBase<DeviceType::CUDA> {
   using cupmDeviceProp_t        = cudaDeviceProp;
   using cupmMemcpyKind_t        = cudaMemcpyKind;
   using cupmComplex_t           = util::conditional_t<PetscDefined(USE_REAL_SINGLE), cuComplex, cuDoubleComplex>;
-  using cupmPointerAttributes_t = struct cudaPointerAttributes;
+  using cupmPointerAttributes_t = cudaPointerAttributes;
   using cupmMemoryType_t        = enum cudaMemoryType;
   using cupmDim3                = dim3;
   using cupmHostFn_t            = cudaHostFn_t;
@@ -293,52 +161,55 @@ struct InterfaceImpl<DeviceType::CUDA> : InterfaceBase<DeviceType::CUDA> {
     #endif
 
   // values
-  PETSC_CUPM_ALIAS_INTEGRAL_VALUE(Success);
-  PETSC_CUPM_ALIAS_INTEGRAL_VALUE(ErrorNotReady);
-  PETSC_CUPM_ALIAS_INTEGRAL_VALUE(ErrorDeviceAlreadyInUse);
-  PETSC_CUPM_ALIAS_INTEGRAL_VALUE(ErrorSetOnActiveProcess);
+  static const auto cupmSuccess                 = cudaSuccess;
+  static const auto cupmErrorNotReady           = cudaErrorNotReady;
+  static const auto cupmErrorDeviceAlreadyInUse = cudaErrorDeviceAlreadyInUse;
+  static const auto cupmErrorSetOnActiveProcess = cudaErrorSetOnActiveProcess;
+  static const auto cupmErrorStubLibrary =
     #if PETSC_PKG_CUDA_VERSION_GE(11, 1, 0)
-  PETSC_CUPM_ALIAS_INTEGRAL_VALUE(ErrorStubLibrary);
+    cudaErrorStubLibrary;
     #else
-  PETSC_CUPM_ALIAS_INTEGRAL_VALUE_COMMON(ErrorStubLibrary, ErrorInsufficientDriver);
+    cudaErrorInsufficientDriver;
     #endif
-  PETSC_CUPM_ALIAS_INTEGRAL_VALUE(ErrorNoDevice);
-  PETSC_CUPM_ALIAS_INTEGRAL_VALUE(StreamDefault);
-  PETSC_CUPM_ALIAS_INTEGRAL_VALUE(StreamNonBlocking);
-  PETSC_CUPM_ALIAS_INTEGRAL_VALUE(DeviceMapHost);
-  PETSC_CUPM_ALIAS_INTEGRAL_VALUE(MemcpyHostToDevice);
-  PETSC_CUPM_ALIAS_INTEGRAL_VALUE(MemcpyDeviceToHost);
-  PETSC_CUPM_ALIAS_INTEGRAL_VALUE(MemcpyDeviceToDevice);
-  PETSC_CUPM_ALIAS_INTEGRAL_VALUE(MemcpyHostToHost);
-  PETSC_CUPM_ALIAS_INTEGRAL_VALUE(MemcpyDefault);
-  PETSC_CUPM_ALIAS_INTEGRAL_VALUE(MemoryTypeHost);
-  PETSC_CUPM_ALIAS_INTEGRAL_VALUE(MemoryTypeDevice);
-  PETSC_CUPM_ALIAS_INTEGRAL_VALUE(MemoryTypeManaged);
-  PETSC_CUPM_ALIAS_INTEGRAL_VALUE(EventDisableTiming);
-  PETSC_CUPM_ALIAS_INTEGRAL_VALUE(HostAllocDefault);
-  PETSC_CUPM_ALIAS_INTEGRAL_VALUE(HostAllocWriteCombined);
+
+  static const auto cupmErrorNoDevice          = cudaErrorNoDevice;
+  static const auto cupmStreamDefault          = cudaStreamDefault;
+  static const auto cupmStreamNonBlocking      = cudaStreamNonBlocking;
+  static const auto cupmDeviceMapHost          = cudaDeviceMapHost;
+  static const auto cupmMemcpyHostToDevice     = cudaMemcpyHostToDevice;
+  static const auto cupmMemcpyDeviceToHost     = cudaMemcpyDeviceToHost;
+  static const auto cupmMemcpyDeviceToDevice   = cudaMemcpyDeviceToDevice;
+  static const auto cupmMemcpyHostToHost       = cudaMemcpyHostToHost;
+  static const auto cupmMemcpyDefault          = cudaMemcpyDefault;
+  static const auto cupmMemoryTypeHost         = cudaMemoryTypeHost;
+  static const auto cupmMemoryTypeDevice       = cudaMemoryTypeDevice;
+  static const auto cupmMemoryTypeManaged      = cudaMemoryTypeManaged;
+  static const auto cupmEventDisableTiming     = cudaEventDisableTiming;
+  static const auto cupmHostAllocDefault       = cudaHostAllocDefault;
+  static const auto cupmHostAllocWriteCombined = cudaHostAllocWriteCombined;
+  static const auto cupmMemPoolAttrReleaseThreshold =
     #if PETSC_PKG_CUDA_VERSION_GE(11, 2, 0)
-  PETSC_CUPM_ALIAS_INTEGRAL_VALUE(MemPoolAttrReleaseThreshold);
+    cudaMemPoolAttrReleaseThreshold;
     #else
-  static const cupmMemPoolAttr       cupmMemPoolAttrReleaseThreshold = 0;
+    cupmMemPoolAttr{0};
     #endif
 
   // error functions
-  PETSC_CUPM_ALIAS_FUNCTION(GetErrorName)
-  PETSC_CUPM_ALIAS_FUNCTION(GetErrorString)
-  PETSC_CUPM_ALIAS_FUNCTION(GetLastError)
+  PETSC_CUPM_ALIAS_FUNCTION(cupmGetErrorName, cudaGetErrorName)
+  PETSC_CUPM_ALIAS_FUNCTION(cupmGetErrorString, cudaGetErrorString)
+  PETSC_CUPM_ALIAS_FUNCTION(cupmGetLastError, cudaGetLastError)
 
   // device management
-  PETSC_CUPM_ALIAS_FUNCTION(GetDeviceCount)
-  PETSC_CUPM_ALIAS_FUNCTION(GetDeviceProperties)
-  PETSC_CUPM_ALIAS_FUNCTION(GetDevice)
-  PETSC_CUPM_ALIAS_FUNCTION(SetDevice)
-  PETSC_CUPM_ALIAS_FUNCTION(GetDeviceFlags)
-  PETSC_CUPM_ALIAS_FUNCTION(SetDeviceFlags)
-  PETSC_CUPM_ALIAS_FUNCTION(PointerGetAttributes)
+  PETSC_CUPM_ALIAS_FUNCTION(cupmGetDeviceCount, cudaGetDeviceCount)
+  PETSC_CUPM_ALIAS_FUNCTION(cupmGetDeviceProperties, cudaGetDeviceProperties)
+  PETSC_CUPM_ALIAS_FUNCTION(cupmGetDevice, cudaGetDevice)
+  PETSC_CUPM_ALIAS_FUNCTION(cupmSetDevice, cudaSetDevice)
+  PETSC_CUPM_ALIAS_FUNCTION(cupmGetDeviceFlags, cudaGetDeviceFlags)
+  PETSC_CUPM_ALIAS_FUNCTION(cupmSetDeviceFlags, cudaSetDeviceFlags)
+  PETSC_CUPM_ALIAS_FUNCTION(cupmPointerGetAttributes, cudaPointerGetAttributes)
     #if PETSC_PKG_CUDA_VERSION_GE(11, 2, 0)
-  PETSC_CUPM_ALIAS_FUNCTION(DeviceGetMemPool)
-  PETSC_CUPM_ALIAS_FUNCTION(MemPoolSetAttribute)
+  PETSC_CUPM_ALIAS_FUNCTION(cupmDeviceGetMemPool, cudaDeviceGetMemPool)
+  PETSC_CUPM_ALIAS_FUNCTION(cupmMemPoolSetAttribute, cudaMemPoolSetAttribute)
     #else
   PETSC_NODISCARD static cupmError_t cupmDeviceGetMemPool(cupmMemPool_t *pool, int) noexcept
   {
@@ -352,46 +223,46 @@ struct InterfaceImpl<DeviceType::CUDA> : InterfaceBase<DeviceType::CUDA> {
   PETSC_NODISCARD static cupmError_t cupmInit(unsigned int) noexcept { return cudaFree(nullptr); }
 
   // stream management
-  PETSC_CUPM_ALIAS_FUNCTION(EventCreate)
-  PETSC_CUPM_ALIAS_FUNCTION(EventCreateWithFlags)
-  PETSC_CUPM_ALIAS_FUNCTION(EventDestroy)
-  PETSC_CUPM_ALIAS_FUNCTION(EventRecord)
-  PETSC_CUPM_ALIAS_FUNCTION(EventSynchronize)
-  PETSC_CUPM_ALIAS_FUNCTION(EventElapsedTime)
-  PETSC_CUPM_ALIAS_FUNCTION(EventQuery)
-  PETSC_CUPM_ALIAS_FUNCTION(StreamCreate)
-  PETSC_CUPM_ALIAS_FUNCTION(StreamCreateWithFlags)
-  PETSC_CUPM_ALIAS_FUNCTION(StreamGetFlags)
-  PETSC_CUPM_ALIAS_FUNCTION(StreamDestroy)
-  PETSC_CUPM_ALIAS_FUNCTION(StreamWaitEvent)
-  PETSC_CUPM_ALIAS_FUNCTION(StreamQuery)
-  PETSC_CUPM_ALIAS_FUNCTION(StreamSynchronize)
-  PETSC_CUPM_ALIAS_FUNCTION(DeviceSynchronize)
-  PETSC_CUPM_ALIAS_FUNCTION(GetSymbolAddress)
+  PETSC_CUPM_ALIAS_FUNCTION(cupmEventCreate, cudaEventCreate)
+  PETSC_CUPM_ALIAS_FUNCTION(cupmEventCreateWithFlags, cudaEventCreateWithFlags)
+  PETSC_CUPM_ALIAS_FUNCTION(cupmEventDestroy, cudaEventDestroy)
+  PETSC_CUPM_ALIAS_FUNCTION(cupmEventRecord, cudaEventRecord)
+  PETSC_CUPM_ALIAS_FUNCTION(cupmEventSynchronize, cudaEventSynchronize)
+  PETSC_CUPM_ALIAS_FUNCTION(cupmEventElapsedTime, cudaEventElapsedTime)
+  PETSC_CUPM_ALIAS_FUNCTION(cupmEventQuery, cudaEventQuery)
+  PETSC_CUPM_ALIAS_FUNCTION(cupmStreamCreate, cudaStreamCreate)
+  PETSC_CUPM_ALIAS_FUNCTION(cupmStreamCreateWithFlags, cudaStreamCreateWithFlags)
+  PETSC_CUPM_ALIAS_FUNCTION(cupmStreamGetFlags, cudaStreamGetFlags)
+  PETSC_CUPM_ALIAS_FUNCTION(cupmStreamDestroy, cudaStreamDestroy)
+  PETSC_CUPM_ALIAS_FUNCTION(cupmStreamWaitEvent, cudaStreamWaitEvent)
+  PETSC_CUPM_ALIAS_FUNCTION(cupmStreamQuery, cudaStreamQuery)
+  PETSC_CUPM_ALIAS_FUNCTION(cupmStreamSynchronize, cudaStreamSynchronize)
+  PETSC_CUPM_ALIAS_FUNCTION(cupmDeviceSynchronize, cudaDeviceSynchronize)
+  PETSC_CUPM_ALIAS_FUNCTION(cupmGetSymbolAddress, cudaGetSymbolAddress)
 
   // memory management
-  PETSC_CUPM_ALIAS_FUNCTION(Free)
-  PETSC_CUPM_ALIAS_FUNCTION(Malloc)
+  PETSC_CUPM_ALIAS_FUNCTION(cupmFree, cudaFree)
+  PETSC_CUPM_ALIAS_FUNCTION(cupmMalloc, cudaMalloc)
     #if PETSC_PKG_CUDA_VERSION_GE(11, 2, 0)
-  PETSC_CUPM_ALIAS_FUNCTION(FreeAsync)
-  PETSC_CUPM_ALIAS_FUNCTION(MallocAsync)
+  PETSC_CUPM_ALIAS_FUNCTION(cupmFreeAsync, cudaFreeAsync)
+  PETSC_CUPM_ALIAS_FUNCTION(cupmMallocAsync, cudaMallocAsync)
     #else
-  PETSC_CUPM_ALIAS_FUNCTION_GOBBLE_COMMON(FreeAsync, Free, 1)
-  PETSC_CUPM_ALIAS_FUNCTION_GOBBLE_COMMON(MallocAsync, Malloc, 1)
+  PETSC_CUPM_ALIAS_FUNCTION_GOBBLE(cupmFreeAsync, cudaFree, 1)
+  PETSC_CUPM_ALIAS_FUNCTION_GOBBLE(cupmMallocAsync, cudaMalloc, 1)
     #endif
-  PETSC_CUPM_ALIAS_FUNCTION(Memcpy)
-  PETSC_CUPM_ALIAS_FUNCTION(MemcpyAsync)
-  PETSC_CUPM_ALIAS_FUNCTION(MallocHost)
-  PETSC_CUPM_ALIAS_FUNCTION(FreeHost)
-  PETSC_CUPM_ALIAS_FUNCTION(Memset)
+  PETSC_CUPM_ALIAS_FUNCTION(cupmMemcpy, cudaMemcpy)
+  PETSC_CUPM_ALIAS_FUNCTION(cupmMemcpyAsync, cudaMemcpyAsync)
+  PETSC_CUPM_ALIAS_FUNCTION(cupmMallocHost, cudaMallocHost)
+  PETSC_CUPM_ALIAS_FUNCTION(cupmFreeHost, cudaFreeHost)
+  PETSC_CUPM_ALIAS_FUNCTION(cupmMemset, cudaMemset)
     #if PETSC_PKG_CUDA_VERSION_GE(11, 2, 0)
-  PETSC_CUPM_ALIAS_FUNCTION(MemsetAsync)
+  PETSC_CUPM_ALIAS_FUNCTION(cupmMemsetAsync, cudaMemsetAsync)
     #else
-  PETSC_CUPM_ALIAS_FUNCTION_GOBBLE_COMMON(MemsetAsync, Memset, 1)
+  PETSC_CUPM_ALIAS_FUNCTION_GOBBLE(cupmMemsetAsync, cudaMemset, 1)
     #endif
 
   // launch control
-  PETSC_CUPM_ALIAS_FUNCTION(LaunchHostFunc)
+  PETSC_CUPM_ALIAS_FUNCTION(cupmLaunchHostFunc, cudaLaunchHostFunc)
   template <typename FunctionT, typename... KernelArgsT>
   PETSC_NODISCARD static cudaError_t cupmLaunchKernel(FunctionT &&func, dim3 gridDim, dim3 blockDim, std::size_t sharedMem, cudaStream_t stream, KernelArgsT &&...kernelArgs) noexcept
   {
@@ -399,13 +270,9 @@ struct InterfaceImpl<DeviceType::CUDA> : InterfaceBase<DeviceType::CUDA> {
     return cudaLaunchKernel((void *)func, std::move(gridDim), std::move(blockDim), args, sharedMem, std::move(stream));
   }
 };
-    #undef PETSC_CUPM_PREFIX_L
-    #undef PETSC_CUPM_PREFIX_U
   #endif // PetscDefined(HAVE_CUDA)
 
   #if PetscDefined(HAVE_HIP)
-    #define PETSC_CUPM_PREFIX_L hip
-    #define PETSC_CUPM_PREFIX_U HIP
 template <>
 struct InterfaceImpl<DeviceType::HIP> : InterfaceBase<DeviceType::HIP> {
   PETSC_CUPM_BASE_CLASS_HEADER(base_type, DeviceType::HIP);
@@ -425,58 +292,59 @@ struct InterfaceImpl<DeviceType::HIP> : InterfaceBase<DeviceType::HIP> {
   using cupmMemPool_t   = hipMemPool_t;
   using cupmMemPoolAttr = hipMemPoolAttr;
     #else
-  using cupmHostFn_t                                                 = void (*)(void *);
-  using cupmMemPool_t                                                = void *;
-  using cupmMemPoolAttr                                              = unsigned int;
+  using cupmHostFn_t    = void (*)(void *);
+  using cupmMemPool_t   = void *;
+  using cupmMemPoolAttr = unsigned int;
     #endif
 
   // values
-  PETSC_CUPM_ALIAS_INTEGRAL_VALUE(Success);
-  PETSC_CUPM_ALIAS_INTEGRAL_VALUE(ErrorNotReady);
+  static const auto cupmSuccess       = hipSuccess;
+  static const auto cupmErrorNotReady = hipErrorNotReady;
   // see https://github.com/ROCm-Developer-Tools/HIP/blob/develop/bin/hipify-perl
-  PETSC_CUPM_ALIAS_INTEGRAL_VALUE_COMMON(ErrorDeviceAlreadyInUse, ErrorContextAlreadyInUse);
-  PETSC_CUPM_ALIAS_INTEGRAL_VALUE(ErrorSetOnActiveProcess);
+  static const auto cupmErrorDeviceAlreadyInUse = hipErrorContextAlreadyInUse;
+  static const auto cupmErrorSetOnActiveProcess = hipErrorSetOnActiveProcess;
   // as of HIP v4.2 cudaErrorStubLibrary has no HIP equivalent
-  PETSC_CUPM_ALIAS_INTEGRAL_VALUE_COMMON(ErrorStubLibrary, ErrorInsufficientDriver);
-  PETSC_CUPM_ALIAS_INTEGRAL_VALUE(ErrorNoDevice);
-  PETSC_CUPM_ALIAS_INTEGRAL_VALUE(StreamDefault);
-  PETSC_CUPM_ALIAS_INTEGRAL_VALUE(StreamNonBlocking);
-  PETSC_CUPM_ALIAS_INTEGRAL_VALUE(DeviceMapHost);
-  PETSC_CUPM_ALIAS_INTEGRAL_VALUE(MemcpyHostToDevice);
-  PETSC_CUPM_ALIAS_INTEGRAL_VALUE(MemcpyDeviceToHost);
-  PETSC_CUPM_ALIAS_INTEGRAL_VALUE(MemcpyDeviceToDevice);
-  PETSC_CUPM_ALIAS_INTEGRAL_VALUE(MemcpyHostToHost);
-  PETSC_CUPM_ALIAS_INTEGRAL_VALUE(MemcpyDefault);
-  PETSC_CUPM_ALIAS_INTEGRAL_VALUE(MemoryTypeHost);
-  PETSC_CUPM_ALIAS_INTEGRAL_VALUE(MemoryTypeDevice);
+  static const auto cupmErrorStubLibrary     = hipErrorInsufficientDriver;
+  static const auto cupmErrorNoDevice        = hipErrorNoDevice;
+  static const auto cupmStreamDefault        = hipStreamDefault;
+  static const auto cupmStreamNonBlocking    = hipStreamNonBlocking;
+  static const auto cupmDeviceMapHost        = hipDeviceMapHost;
+  static const auto cupmMemcpyHostToDevice   = hipMemcpyHostToDevice;
+  static const auto cupmMemcpyDeviceToHost   = hipMemcpyDeviceToHost;
+  static const auto cupmMemcpyDeviceToDevice = hipMemcpyDeviceToDevice;
+  static const auto cupmMemcpyHostToHost     = hipMemcpyHostToHost;
+  static const auto cupmMemcpyDefault        = hipMemcpyDefault;
+  static const auto cupmMemoryTypeHost       = hipMemoryTypeHost;
+  static const auto cupmMemoryTypeDevice     = hipMemoryTypeDevice;
   // see
   // https://github.com/ROCm-Developer-Tools/HIP/blob/develop/include/hip/hip_runtime_api.h#L156
-  PETSC_CUPM_ALIAS_INTEGRAL_VALUE_COMMON(MemoryTypeManaged, MemoryTypeUnified);
-  PETSC_CUPM_ALIAS_INTEGRAL_VALUE(EventDisableTiming);
-  PETSC_CUPM_ALIAS_INTEGRAL_VALUE_COMMON(HostAllocDefault, HostMallocDefault);
-  PETSC_CUPM_ALIAS_INTEGRAL_VALUE_COMMON(HostAllocWriteCombined, HostMallocWriteCombined);
+  static const auto cupmMemoryTypeManaged      = hipMemoryTypeUnified;
+  static const auto cupmEventDisableTiming     = hipEventDisableTiming;
+  static const auto cupmHostAllocDefault       = hipHostMallocDefault;
+  static const auto cupmHostAllocWriteCombined = hipHostMallocWriteCombined;
+  static const auto cupmMemPoolAttrReleaseThreshold =
     #if PETSC_PKG_HIP_VERSION_GE(5, 2, 0)
-  PETSC_CUPM_ALIAS_INTEGRAL_VALUE(MemPoolAttrReleaseThreshold);
+    hipMemPoolAttrReleaseThreshold;
     #else
-  static const cupmMemPoolAttr       cupmMemPoolAttrReleaseThreshold = 0;
+    cupmMemPoolAttr{0};
     #endif
 
   // error functions
-  PETSC_CUPM_ALIAS_FUNCTION(GetErrorName)
-  PETSC_CUPM_ALIAS_FUNCTION(GetErrorString)
-  PETSC_CUPM_ALIAS_FUNCTION(GetLastError)
+  PETSC_CUPM_ALIAS_FUNCTION(cupmGetErrorName, hipGetErrorName)
+  PETSC_CUPM_ALIAS_FUNCTION(cupmGetErrorString, hipGetErrorString)
+  PETSC_CUPM_ALIAS_FUNCTION(cupmGetLastError, hipGetLastError)
 
   // device management
-  PETSC_CUPM_ALIAS_FUNCTION(GetDeviceCount)
-  PETSC_CUPM_ALIAS_FUNCTION(GetDeviceProperties)
-  PETSC_CUPM_ALIAS_FUNCTION(GetDevice)
-  PETSC_CUPM_ALIAS_FUNCTION(SetDevice)
-  PETSC_CUPM_ALIAS_FUNCTION(GetDeviceFlags)
-  PETSC_CUPM_ALIAS_FUNCTION(SetDeviceFlags)
-  PETSC_CUPM_ALIAS_FUNCTION(PointerGetAttributes)
+  PETSC_CUPM_ALIAS_FUNCTION(cupmGetDeviceCount, hipGetDeviceCount)
+  PETSC_CUPM_ALIAS_FUNCTION(cupmGetDeviceProperties, hipGetDeviceProperties)
+  PETSC_CUPM_ALIAS_FUNCTION(cupmGetDevice, hipGetDevice)
+  PETSC_CUPM_ALIAS_FUNCTION(cupmSetDevice, hipSetDevice)
+  PETSC_CUPM_ALIAS_FUNCTION(cupmGetDeviceFlags, hipGetDeviceFlags)
+  PETSC_CUPM_ALIAS_FUNCTION(cupmSetDeviceFlags, hipSetDeviceFlags)
+  PETSC_CUPM_ALIAS_FUNCTION(cupmPointerGetAttributes, hipPointerGetAttributes)
     #if PETSC_PKG_HIP_VERSION_GE(5, 2, 0)
-  PETSC_CUPM_ALIAS_FUNCTION(DeviceGetMemPool)
-  PETSC_CUPM_ALIAS_FUNCTION(MemPoolSetAttribute)
+  PETSC_CUPM_ALIAS_FUNCTION(cupmDeviceGetMemPool, hipDeviceGetMemPool)
+  PETSC_CUPM_ALIAS_FUNCTION(cupmMemPoolSetAttribute, hipMemPoolSetAttribute)
     #else
   PETSC_NODISCARD static cupmError_t cupmDeviceGetMemPool(cupmMemPool_t *pool, int) noexcept
   {
@@ -486,50 +354,50 @@ struct InterfaceImpl<DeviceType::HIP> : InterfaceBase<DeviceType::HIP> {
 
   PETSC_NODISCARD static cupmError_t cupmMemPoolSetAttribute(cupmMemPool_t, cupmMemPoolAttr, void *) noexcept { return cupmSuccess; }
     #endif
-  PETSC_CUPM_ALIAS_FUNCTION(Init)
+  PETSC_CUPM_ALIAS_FUNCTION(cupmInit, hipInit)
 
   // stream management
-  PETSC_CUPM_ALIAS_FUNCTION(EventCreate)
-  PETSC_CUPM_ALIAS_FUNCTION(EventCreateWithFlags)
-  PETSC_CUPM_ALIAS_FUNCTION(EventDestroy)
-  PETSC_CUPM_ALIAS_FUNCTION(EventRecord)
-  PETSC_CUPM_ALIAS_FUNCTION(EventSynchronize)
-  PETSC_CUPM_ALIAS_FUNCTION(EventElapsedTime)
-  PETSC_CUPM_ALIAS_FUNCTION(EventQuery)
-  PETSC_CUPM_ALIAS_FUNCTION(StreamCreate)
-  PETSC_CUPM_ALIAS_FUNCTION(StreamCreateWithFlags)
-  PETSC_CUPM_ALIAS_FUNCTION(StreamGetFlags)
-  PETSC_CUPM_ALIAS_FUNCTION(StreamDestroy)
-  PETSC_CUPM_ALIAS_FUNCTION(StreamWaitEvent)
-  PETSC_CUPM_ALIAS_FUNCTION(StreamQuery)
-  PETSC_CUPM_ALIAS_FUNCTION(StreamSynchronize)
-  PETSC_CUPM_ALIAS_FUNCTION(DeviceSynchronize)
-  PETSC_CUPM_ALIAS_FUNCTION(GetSymbolAddress)
+  PETSC_CUPM_ALIAS_FUNCTION(cupmEventCreate, hipEventCreate)
+  PETSC_CUPM_ALIAS_FUNCTION(cupmEventCreateWithFlags, hipEventCreateWithFlags)
+  PETSC_CUPM_ALIAS_FUNCTION(cupmEventDestroy, hipEventDestroy)
+  PETSC_CUPM_ALIAS_FUNCTION(cupmEventRecord, hipEventRecord)
+  PETSC_CUPM_ALIAS_FUNCTION(cupmEventSynchronize, hipEventSynchronize)
+  PETSC_CUPM_ALIAS_FUNCTION(cupmEventElapsedTime, hipEventElapsedTime)
+  PETSC_CUPM_ALIAS_FUNCTION(cupmEventQuery, hipEventQuery)
+  PETSC_CUPM_ALIAS_FUNCTION(cupmStreamCreate, hipStreamCreate)
+  PETSC_CUPM_ALIAS_FUNCTION(cupmStreamCreateWithFlags, hipStreamCreateWithFlags)
+  PETSC_CUPM_ALIAS_FUNCTION(cupmStreamGetFlags, hipStreamGetFlags)
+  PETSC_CUPM_ALIAS_FUNCTION(cupmStreamDestroy, hipStreamDestroy)
+  PETSC_CUPM_ALIAS_FUNCTION(cupmStreamWaitEvent, hipStreamWaitEvent)
+  PETSC_CUPM_ALIAS_FUNCTION(cupmStreamQuery, hipStreamQuery)
+  PETSC_CUPM_ALIAS_FUNCTION(cupmStreamSynchronize, hipStreamSynchronize)
+  PETSC_CUPM_ALIAS_FUNCTION(cupmDeviceSynchronize, hipDeviceSynchronize)
+  PETSC_CUPM_ALIAS_FUNCTION(cupmGetSymbolAddress, hipGetSymbolAddress)
 
   // memory management
-  PETSC_CUPM_ALIAS_FUNCTION(Free)
-  PETSC_CUPM_ALIAS_FUNCTION(Malloc)
+  PETSC_CUPM_ALIAS_FUNCTION(cupmFree, hipFree)
+  PETSC_CUPM_ALIAS_FUNCTION(cupmMalloc, hipMalloc)
     #if PETSC_PKG_HIP_VERSION_GE(5, 2, 0)
-  PETSC_CUPM_ALIAS_FUNCTION(MallocAsync)
-  PETSC_CUPM_ALIAS_FUNCTION(FreeAsync)
+  PETSC_CUPM_ALIAS_FUNCTION(cupmMallocAsync, hipMallocAsync)
+  PETSC_CUPM_ALIAS_FUNCTION(cupmFreeAsync, hipFreeAsync)
     #else
-  PETSC_CUPM_ALIAS_FUNCTION_GOBBLE_COMMON(MallocAsync, Malloc, 1)
-  PETSC_CUPM_ALIAS_FUNCTION_GOBBLE_COMMON(FreeAsync, Free, 1)
+  PETSC_CUPM_ALIAS_FUNCTION_GOBBLE(cupmMallocAsync, hipMalloc, 1)
+  PETSC_CUPM_ALIAS_FUNCTION_GOBBLE(cupmFreeAsync, hipFree, 1)
     #endif
-  PETSC_CUPM_ALIAS_FUNCTION(Memcpy)
-  PETSC_CUPM_ALIAS_FUNCTION(MemcpyAsync)
+  PETSC_CUPM_ALIAS_FUNCTION(cupmMemcpy, hipMemcpy)
+  PETSC_CUPM_ALIAS_FUNCTION(cupmMemcpyAsync, hipMemcpyAsync)
   // hipMallocHost is deprecated
-  PETSC_CUPM_ALIAS_FUNCTION_COMMON(MallocHost, HostMalloc)
+  PETSC_CUPM_ALIAS_FUNCTION(cupmMallocHost, hipHostMalloc)
   // hipFreeHost is deprecated
-  PETSC_CUPM_ALIAS_FUNCTION_COMMON(FreeHost, HostFree)
-  PETSC_CUPM_ALIAS_FUNCTION(Memset)
-  PETSC_CUPM_ALIAS_FUNCTION(MemsetAsync)
+  PETSC_CUPM_ALIAS_FUNCTION(cupmFreeHost, hipHostFree)
+  PETSC_CUPM_ALIAS_FUNCTION(cupmMemset, hipMemset)
+  PETSC_CUPM_ALIAS_FUNCTION(cupmMemsetAsync, hipMemsetAsync)
 
       // launch control
       // HIP appears to only have hipLaunchHostFunc from 5.2.0 onwards
       // https://github.com/ROCm-Developer-Tools/HIPIFY/blob/master/doc/markdown/CUDA_Runtime_API_functions_supported_by_HIP.md#7-execution-control=
     #if PETSC_PKG_HIP_VERSION_GE(5, 2, 0)
-  PETSC_CUPM_ALIAS_FUNCTION(LaunchHostFunc)
+  PETSC_CUPM_ALIAS_FUNCTION(cupmLaunchHostFunc, hipLaunchHostFunc)
     #else
   PETSC_NODISCARD static hipError_t cupmLaunchHostFunc(hipStream_t stream, cupmHostFn_t fn, void *ctx) noexcept
   {
@@ -548,8 +416,6 @@ struct InterfaceImpl<DeviceType::HIP> : InterfaceBase<DeviceType::HIP> {
     return hipLaunchKernel((void *)func, std::move(gridDim), std::move(blockDim), args, sharedMem, std::move(stream));
   }
 };
-    #undef PETSC_CUPM_PREFIX_L
-    #undef PETSC_CUPM_PREFIX_U
   #endif // PetscDefined(HAVE_HIP)
 
   // shorthand for bringing all of the typedefs from the base Interface class into your own,
@@ -558,17 +424,17 @@ struct InterfaceImpl<DeviceType::HIP> : InterfaceBase<DeviceType::HIP> {
     PETSC_CUPM_BASE_CLASS_HEADER(PetscConcat(base_, base_name), T); \
     using base_name = ::Petsc::device::cupm::impl::InterfaceImpl<T>; \
     /* types */ \
-    using typename base_name::cupmComplex_t; \
-    using typename base_name::cupmError_t; \
-    using typename base_name::cupmEvent_t; \
-    using typename base_name::cupmStream_t; \
-    using typename base_name::cupmDeviceProp_t; \
-    using typename base_name::cupmMemcpyKind_t; \
-    using typename base_name::cupmPointerAttributes_t; \
-    using typename base_name::cupmMemoryType_t; \
-    using typename base_name::cupmDim3; \
-    using typename base_name::cupmMemPool_t; \
-    using typename base_name::cupmMemPoolAttr; \
+    using cupmComplex_t           = typename base_name::cupmComplex_t; \
+    using cupmError_t             = typename base_name::cupmError_t; \
+    using cupmEvent_t             = typename base_name::cupmEvent_t; \
+    using cupmStream_t            = typename base_name::cupmStream_t; \
+    using cupmDeviceProp_t        = typename base_name::cupmDeviceProp_t; \
+    using cupmMemcpyKind_t        = typename base_name::cupmMemcpyKind_t; \
+    using cupmPointerAttributes_t = typename base_name::cupmPointerAttributes_t; \
+    using cupmMemoryType_t        = typename base_name::cupmMemoryType_t; \
+    using cupmDim3                = typename base_name::cupmDim3; \
+    using cupmMemPool_t           = typename base_name::cupmMemPool_t; \
+    using cupmMemPoolAttr         = typename base_name::cupmMemPoolAttr; \
     /* variables */ \
     using base_name::cupmSuccess; \
     using base_name::cupmErrorNotReady; \
@@ -951,9 +817,9 @@ private:
 
   #define PETSC_CUPM_INHERIT_INTERFACE_TYPEDEFS_USING(base_name, T) \
     PETSC_CUPM_IMPL_CLASS_HEADER(PetscConcat(base_name, _impl), T); \
-    using base_name = ::Petsc::device::cupm::impl::Interface<T>; \
-    using typename base_name::cupmReal_t; \
-    using typename base_name::cupmScalar_t; \
+    using base_name    = ::Petsc::device::cupm::impl::Interface<T>; \
+    using cupmReal_t   = typename base_name::cupmReal_t; \
+    using cupmScalar_t = typename base_name::cupmScalar_t; \
     using base_name::makeCupmScalar; \
     using base_name::cupmScalarCast; \
     using base_name::cupmRealCast; \
