@@ -81,7 +81,7 @@ PetscErrorCode MatIncreaseOverlap_SeqSBAIJ(Mat A, PetscInt is_max, IS is[], Pets
   PetscCall(PetscBTDestroy(&table_out));
   PetscCall(PetscFree(nidx));
   PetscCall(PetscBTDestroy(&table_in));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Bseq is non-symmetric SBAIJ matrix, only used internally by PETSc.
@@ -99,7 +99,7 @@ PetscErrorCode MatSeqSBAIJZeroOps_Private(Mat Bseq)
   Bseq->ops->lufactorsymbolic       = NULL;
   Bseq->ops->choleskyfactorsymbolic = NULL;
   Bseq->ops->getinertia             = NULL;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* same as MatCreateSubMatrices_SeqBAIJ(), except cast Mat_SeqSBAIJ */
@@ -193,7 +193,7 @@ PetscErrorCode MatCreateSubMatrix_SeqSBAIJ_Private(Mat A, IS isrow, IS iscol, Ma
 
   PetscCall(ISRestoreIndices(isrow, &irow));
   *B = C;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatCreateSubMatrix_SeqSBAIJ(Mat A, IS isrow, IS iscol, MatReuse scall, Mat *B)
@@ -245,7 +245,7 @@ PetscErrorCode MatCreateSubMatrix_SeqSBAIJ(Mat A, IS isrow, IS iscol, MatReuse s
     PetscCall(ISEqual(isrow, iscol, &isequal));
     if (!isequal) PetscCall(MatSeqSBAIJZeroOps_Private(*B));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatCreateSubMatrices_SeqSBAIJ(Mat A, PetscInt n, const IS irow[], const IS icol[], MatReuse scall, Mat *B[])
@@ -256,7 +256,7 @@ PetscErrorCode MatCreateSubMatrices_SeqSBAIJ(Mat A, PetscInt n, const IS irow[],
   if (scall == MAT_INITIAL_MATRIX) PetscCall(PetscCalloc1(n + 1, B));
 
   for (i = 0; i < n; i++) PetscCall(MatCreateSubMatrix_SeqSBAIJ(A, irow[i], icol[i], scall, &(*B)[i]));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* -------------------------------------------------------*/
@@ -275,7 +275,7 @@ PetscErrorCode MatMult_SeqSBAIJ_2(Mat A, Vec xx, Vec zz)
 
   PetscFunctionBegin;
   PetscCall(VecSet(zz, zero));
-  if (!a->nz) PetscFunctionReturn(0);
+  if (!a->nz) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(VecGetArrayRead(xx, &x));
   PetscCall(VecGetArray(zz, &z));
 
@@ -314,7 +314,7 @@ PetscErrorCode MatMult_SeqSBAIJ_2(Mat A, Vec xx, Vec zz)
   PetscCall(VecRestoreArrayRead(xx, &x));
   PetscCall(VecRestoreArray(zz, &z));
   PetscCall(PetscLogFlops(8.0 * (a->nz * 2.0 - nonzerorow) - nonzerorow));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatMult_SeqSBAIJ_3(Mat A, Vec xx, Vec zz)
@@ -329,7 +329,7 @@ PetscErrorCode MatMult_SeqSBAIJ_3(Mat A, Vec xx, Vec zz)
 
   PetscFunctionBegin;
   PetscCall(VecSet(zz, zero));
-  if (!a->nz) PetscFunctionReturn(0);
+  if (!a->nz) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(VecGetArrayRead(xx, &x));
   PetscCall(VecGetArray(zz, &z));
 
@@ -372,7 +372,7 @@ PetscErrorCode MatMult_SeqSBAIJ_3(Mat A, Vec xx, Vec zz)
   PetscCall(VecRestoreArrayRead(xx, &x));
   PetscCall(VecRestoreArray(zz, &z));
   PetscCall(PetscLogFlops(18.0 * (a->nz * 2.0 - nonzerorow) - nonzerorow));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatMult_SeqSBAIJ_4(Mat A, Vec xx, Vec zz)
@@ -387,7 +387,7 @@ PetscErrorCode MatMult_SeqSBAIJ_4(Mat A, Vec xx, Vec zz)
 
   PetscFunctionBegin;
   PetscCall(VecSet(zz, zero));
-  if (!a->nz) PetscFunctionReturn(0);
+  if (!a->nz) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(VecGetArrayRead(xx, &x));
   PetscCall(VecGetArray(zz, &z));
 
@@ -434,7 +434,7 @@ PetscErrorCode MatMult_SeqSBAIJ_4(Mat A, Vec xx, Vec zz)
   PetscCall(VecRestoreArrayRead(xx, &x));
   PetscCall(VecRestoreArray(zz, &z));
   PetscCall(PetscLogFlops(32.0 * (a->nz * 2.0 - nonzerorow) - nonzerorow));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatMult_SeqSBAIJ_5(Mat A, Vec xx, Vec zz)
@@ -449,7 +449,7 @@ PetscErrorCode MatMult_SeqSBAIJ_5(Mat A, Vec xx, Vec zz)
 
   PetscFunctionBegin;
   PetscCall(VecSet(zz, zero));
-  if (!a->nz) PetscFunctionReturn(0);
+  if (!a->nz) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(VecGetArrayRead(xx, &x));
   PetscCall(VecGetArray(zz, &z));
 
@@ -500,7 +500,7 @@ PetscErrorCode MatMult_SeqSBAIJ_5(Mat A, Vec xx, Vec zz)
   PetscCall(VecRestoreArrayRead(xx, &x));
   PetscCall(VecRestoreArray(zz, &z));
   PetscCall(PetscLogFlops(50.0 * (a->nz * 2.0 - nonzerorow) - nonzerorow));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatMult_SeqSBAIJ_6(Mat A, Vec xx, Vec zz)
@@ -515,7 +515,7 @@ PetscErrorCode MatMult_SeqSBAIJ_6(Mat A, Vec xx, Vec zz)
 
   PetscFunctionBegin;
   PetscCall(VecSet(zz, zero));
-  if (!a->nz) PetscFunctionReturn(0);
+  if (!a->nz) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(VecGetArrayRead(xx, &x));
   PetscCall(VecGetArray(zz, &z));
 
@@ -570,7 +570,7 @@ PetscErrorCode MatMult_SeqSBAIJ_6(Mat A, Vec xx, Vec zz)
   PetscCall(VecRestoreArrayRead(xx, &x));
   PetscCall(VecRestoreArray(zz, &z));
   PetscCall(PetscLogFlops(72.0 * (a->nz * 2.0 - nonzerorow) - nonzerorow));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatMult_SeqSBAIJ_7(Mat A, Vec xx, Vec zz)
@@ -585,7 +585,7 @@ PetscErrorCode MatMult_SeqSBAIJ_7(Mat A, Vec xx, Vec zz)
 
   PetscFunctionBegin;
   PetscCall(VecSet(zz, zero));
-  if (!a->nz) PetscFunctionReturn(0);
+  if (!a->nz) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(VecGetArrayRead(xx, &x));
   PetscCall(VecGetArray(zz, &z));
 
@@ -643,7 +643,7 @@ PetscErrorCode MatMult_SeqSBAIJ_7(Mat A, Vec xx, Vec zz)
   PetscCall(VecRestoreArrayRead(xx, &x));
   PetscCall(VecRestoreArray(zz, &z));
   PetscCall(PetscLogFlops(98.0 * (a->nz * 2.0 - nonzerorow) - nonzerorow));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -661,7 +661,7 @@ PetscErrorCode MatMult_SeqSBAIJ_N(Mat A, Vec xx, Vec zz)
 
   PetscFunctionBegin;
   PetscCall(VecSet(zz, zero));
-  if (!a->nz) PetscFunctionReturn(0);
+  if (!a->nz) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(VecGetArrayRead(xx, &x));
   PetscCall(VecGetArray(zz, &z));
 
@@ -719,7 +719,7 @@ PetscErrorCode MatMult_SeqSBAIJ_N(Mat A, Vec xx, Vec zz)
   PetscCall(VecRestoreArrayRead(xx, &x));
   PetscCall(VecRestoreArray(zz, &z));
   PetscCall(PetscLogFlops(2.0 * (a->nz * 2.0 - nonzerorow) * bs2 - nonzerorow));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatMultAdd_SeqSBAIJ_1(Mat A, Vec xx, Vec yy, Vec zz)
@@ -739,7 +739,7 @@ PetscErrorCode MatMultAdd_SeqSBAIJ_1(Mat A, Vec xx, Vec yy, Vec zz)
 
   PetscFunctionBegin;
   PetscCall(VecCopy(yy, zz));
-  if (!a->nz) PetscFunctionReturn(0);
+  if (!a->nz) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(VecGetArrayRead(xx, &x));
   PetscCall(VecGetArray(zz, &z));
   v  = a->a;
@@ -776,7 +776,7 @@ PetscErrorCode MatMultAdd_SeqSBAIJ_1(Mat A, Vec xx, Vec yy, Vec zz)
   PetscCall(VecRestoreArray(zz, &z));
 
   PetscCall(PetscLogFlops(2.0 * (a->nz * 2.0 - nonzerorow)));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatMultAdd_SeqSBAIJ_2(Mat A, Vec xx, Vec yy, Vec zz)
@@ -791,7 +791,7 @@ PetscErrorCode MatMultAdd_SeqSBAIJ_2(Mat A, Vec xx, Vec yy, Vec zz)
 
   PetscFunctionBegin;
   PetscCall(VecCopy(yy, zz));
-  if (!a->nz) PetscFunctionReturn(0);
+  if (!a->nz) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(VecGetArrayRead(xx, &x));
   PetscCall(VecGetArray(zz, &z));
 
@@ -830,7 +830,7 @@ PetscErrorCode MatMultAdd_SeqSBAIJ_2(Mat A, Vec xx, Vec yy, Vec zz)
   PetscCall(VecRestoreArray(zz, &z));
 
   PetscCall(PetscLogFlops(4.0 * (a->nz * 2.0 - nonzerorow)));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatMultAdd_SeqSBAIJ_3(Mat A, Vec xx, Vec yy, Vec zz)
@@ -845,7 +845,7 @@ PetscErrorCode MatMultAdd_SeqSBAIJ_3(Mat A, Vec xx, Vec yy, Vec zz)
 
   PetscFunctionBegin;
   PetscCall(VecCopy(yy, zz));
-  if (!a->nz) PetscFunctionReturn(0);
+  if (!a->nz) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(VecGetArrayRead(xx, &x));
   PetscCall(VecGetArray(zz, &z));
 
@@ -889,7 +889,7 @@ PetscErrorCode MatMultAdd_SeqSBAIJ_3(Mat A, Vec xx, Vec yy, Vec zz)
   PetscCall(VecRestoreArray(zz, &z));
 
   PetscCall(PetscLogFlops(18.0 * (a->nz * 2.0 - nonzerorow)));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatMultAdd_SeqSBAIJ_4(Mat A, Vec xx, Vec yy, Vec zz)
@@ -904,7 +904,7 @@ PetscErrorCode MatMultAdd_SeqSBAIJ_4(Mat A, Vec xx, Vec yy, Vec zz)
 
   PetscFunctionBegin;
   PetscCall(VecCopy(yy, zz));
-  if (!a->nz) PetscFunctionReturn(0);
+  if (!a->nz) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(VecGetArrayRead(xx, &x));
   PetscCall(VecGetArray(zz, &z));
 
@@ -952,7 +952,7 @@ PetscErrorCode MatMultAdd_SeqSBAIJ_4(Mat A, Vec xx, Vec yy, Vec zz)
   PetscCall(VecRestoreArray(zz, &z));
 
   PetscCall(PetscLogFlops(32.0 * (a->nz * 2.0 - nonzerorow)));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatMultAdd_SeqSBAIJ_5(Mat A, Vec xx, Vec yy, Vec zz)
@@ -967,7 +967,7 @@ PetscErrorCode MatMultAdd_SeqSBAIJ_5(Mat A, Vec xx, Vec yy, Vec zz)
 
   PetscFunctionBegin;
   PetscCall(VecCopy(yy, zz));
-  if (!a->nz) PetscFunctionReturn(0);
+  if (!a->nz) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(VecGetArrayRead(xx, &x));
   PetscCall(VecGetArray(zz, &z));
 
@@ -1019,7 +1019,7 @@ PetscErrorCode MatMultAdd_SeqSBAIJ_5(Mat A, Vec xx, Vec yy, Vec zz)
   PetscCall(VecRestoreArray(zz, &z));
 
   PetscCall(PetscLogFlops(50.0 * (a->nz * 2.0 - nonzerorow)));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatMultAdd_SeqSBAIJ_6(Mat A, Vec xx, Vec yy, Vec zz)
@@ -1034,7 +1034,7 @@ PetscErrorCode MatMultAdd_SeqSBAIJ_6(Mat A, Vec xx, Vec yy, Vec zz)
 
   PetscFunctionBegin;
   PetscCall(VecCopy(yy, zz));
-  if (!a->nz) PetscFunctionReturn(0);
+  if (!a->nz) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(VecGetArrayRead(xx, &x));
   PetscCall(VecGetArray(zz, &z));
 
@@ -1090,7 +1090,7 @@ PetscErrorCode MatMultAdd_SeqSBAIJ_6(Mat A, Vec xx, Vec yy, Vec zz)
   PetscCall(VecRestoreArray(zz, &z));
 
   PetscCall(PetscLogFlops(72.0 * (a->nz * 2.0 - nonzerorow)));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatMultAdd_SeqSBAIJ_7(Mat A, Vec xx, Vec yy, Vec zz)
@@ -1105,7 +1105,7 @@ PetscErrorCode MatMultAdd_SeqSBAIJ_7(Mat A, Vec xx, Vec yy, Vec zz)
 
   PetscFunctionBegin;
   PetscCall(VecCopy(yy, zz));
-  if (!a->nz) PetscFunctionReturn(0);
+  if (!a->nz) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(VecGetArrayRead(xx, &x));
   PetscCall(VecGetArray(zz, &z));
 
@@ -1165,7 +1165,7 @@ PetscErrorCode MatMultAdd_SeqSBAIJ_7(Mat A, Vec xx, Vec yy, Vec zz)
   PetscCall(VecRestoreArray(zz, &z));
 
   PetscCall(PetscLogFlops(98.0 * (a->nz * 2.0 - nonzerorow)));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatMultAdd_SeqSBAIJ_N(Mat A, Vec xx, Vec yy, Vec zz)
@@ -1180,7 +1180,7 @@ PetscErrorCode MatMultAdd_SeqSBAIJ_N(Mat A, Vec xx, Vec yy, Vec zz)
 
   PetscFunctionBegin;
   PetscCall(VecCopy(yy, zz));
-  if (!a->nz) PetscFunctionReturn(0);
+  if (!a->nz) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(VecGetArrayRead(xx, &x));
   x_ptr = x;
   PetscCall(VecGetArray(zz, &z));
@@ -1238,7 +1238,7 @@ PetscErrorCode MatMultAdd_SeqSBAIJ_N(Mat A, Vec xx, Vec yy, Vec zz)
   PetscCall(VecRestoreArray(zz, &z));
 
   PetscCall(PetscLogFlops(2.0 * (a->nz * 2.0 - nonzerorow)));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatScale_SeqSBAIJ(Mat inA, PetscScalar alpha)
@@ -1251,7 +1251,7 @@ PetscErrorCode MatScale_SeqSBAIJ(Mat inA, PetscScalar alpha)
   PetscCall(PetscBLASIntCast(a->bs2 * a->nz, &totalnz));
   PetscCallBLAS("BLASscal", BLASscal_(&totalnz, &oalpha, a->a, &one));
   PetscCall(PetscLogFlops(totalnz));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatNorm_SeqSBAIJ(Mat A, NormType type, PetscReal *norm)
@@ -1265,7 +1265,7 @@ PetscErrorCode MatNorm_SeqSBAIJ(Mat A, NormType type, PetscReal *norm)
   PetscFunctionBegin;
   if (!a->nz) {
     *norm = 0.0;
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
   if (type == NORM_FROBENIUS) {
     for (k = 0; k < mbs; k++) {
@@ -1349,7 +1349,7 @@ PetscErrorCode MatNorm_SeqSBAIJ(Mat A, NormType type, PetscReal *norm)
     PetscCall(PetscFree3(sum, il, jl));
     PetscCall(PetscLogFlops(PetscMax(mbs * a->nz - 1, 0)));
   } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "No support for this norm yet");
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatEqual_SeqSBAIJ(Mat A, Mat B, PetscBool *flg)
@@ -1360,20 +1360,20 @@ PetscErrorCode MatEqual_SeqSBAIJ(Mat A, Mat B, PetscBool *flg)
   /* If the  matrix/block dimensions are not equal, or no of nonzeros or shift */
   if ((A->rmap->N != B->rmap->N) || (A->cmap->n != B->cmap->n) || (A->rmap->bs != B->rmap->bs) || (a->nz != b->nz)) {
     *flg = PETSC_FALSE;
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   /* if the a->i are the same */
   PetscCall(PetscArraycmp(a->i, b->i, a->mbs + 1, flg));
-  if (!*flg) PetscFunctionReturn(0);
+  if (!*flg) PetscFunctionReturn(PETSC_SUCCESS);
 
   /* if a->j are the same */
   PetscCall(PetscArraycmp(a->j, b->j, a->nz, flg));
-  if (!*flg) PetscFunctionReturn(0);
+  if (!*flg) PetscFunctionReturn(PETSC_SUCCESS);
 
   /* if a->a are the same */
   PetscCall(PetscArraycmp(a->a, b->a, (a->nz) * (A->rmap->bs) * (A->rmap->bs), flg));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatGetDiagonal_SeqSBAIJ(Mat A, Vec v)
@@ -1398,14 +1398,14 @@ PetscErrorCode MatGetDiagonal_SeqSBAIJ(Mat A, Vec v)
     PetscCall(VecGetArray(v, &x));
     for (i = 0; i < ambs; i++) x[i] = 1.0 / aa[diag[i]];
     PetscCall(VecRestoreArray(v, &x));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   ai  = a->i;
   aj  = a->j;
   bs2 = a->bs2;
   PetscCall(VecSet(v, zero));
-  if (!a->nz) PetscFunctionReturn(0);
+  if (!a->nz) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(VecGetArray(v, &x));
   for (i = 0; i < ambs; i++) {
     j = ai[i];
@@ -1416,7 +1416,7 @@ PetscErrorCode MatGetDiagonal_SeqSBAIJ(Mat A, Vec v)
     }
   }
   PetscCall(VecRestoreArray(v, &x));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatDiagonalScale_SeqSBAIJ(Mat A, Vec ll, Vec rr)
@@ -1434,7 +1434,7 @@ PetscErrorCode MatDiagonalScale_SeqSBAIJ(Mat A, Vec ll, Vec rr)
     PetscCall(VecEqual(ll, rr, &flg));
     PetscCheck(flg, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "For symmetric format, left and right scaling vectors must be same");
   }
-  if (!ll) PetscFunctionReturn(0);
+  if (!ll) PetscFunctionReturn(PETSC_SUCCESS);
   ai  = a->i;
   aj  = a->j;
   aa  = a->a;
@@ -1460,7 +1460,7 @@ PetscErrorCode MatDiagonalScale_SeqSBAIJ(Mat A, Vec ll, Vec rr)
   }
   PetscCall(VecRestoreArrayRead(ll, &l));
   PetscCall(PetscLogFlops(2.0 * a->nz));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatGetInfo_SeqSBAIJ(Mat A, MatInfoType flag, MatInfo *info)
@@ -1484,7 +1484,7 @@ PetscErrorCode MatGetInfo_SeqSBAIJ(Mat A, MatInfoType flag, MatInfo *info)
     info->fill_ratio_needed = 0;
     info->factor_mallocs    = 0;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatZeroEntries_SeqSBAIJ(Mat A)
@@ -1493,7 +1493,7 @@ PetscErrorCode MatZeroEntries_SeqSBAIJ(Mat A)
 
   PetscFunctionBegin;
   PetscCall(PetscArrayzero(a->a, a->bs2 * a->i[a->mbs]));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatGetRowMaxAbs_SeqSBAIJ(Mat A, Vec v, PetscInt idx[])
@@ -1539,7 +1539,7 @@ PetscErrorCode MatGetRowMaxAbs_SeqSBAIJ(Mat A, Vec v, PetscInt idx[])
     }
   }
   PetscCall(VecRestoreArray(v, &x));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatMatMultSymbolic_SeqSBAIJ_SeqDense(Mat A, Mat B, PetscReal fill, Mat C)
@@ -1547,7 +1547,7 @@ PetscErrorCode MatMatMultSymbolic_SeqSBAIJ_SeqDense(Mat A, Mat B, PetscReal fill
   PetscFunctionBegin;
   PetscCall(MatMatMultSymbolic_SeqDense_SeqDense(A, B, 0.0, C));
   C->ops->matmultnumeric = MatMatMultNumeric_SeqSBAIJ_SeqDense;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatMatMult_SeqSBAIJ_1_Private(Mat A, PetscScalar *b, PetscInt bm, PetscScalar *c, PetscInt cm, PetscInt cn)
@@ -1586,7 +1586,7 @@ PetscErrorCode MatMatMult_SeqSBAIJ_1_Private(Mat A, PetscScalar *b, PetscInt bm,
     }
     z += 1;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatMatMult_SeqSBAIJ_2_Private(Mat A, PetscScalar *b, PetscInt bm, PetscScalar *c, PetscInt cm, PetscInt cn)
@@ -1625,7 +1625,7 @@ PetscErrorCode MatMatMult_SeqSBAIJ_2_Private(Mat A, PetscScalar *b, PetscInt bm,
     }
     z += 2;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatMatMult_SeqSBAIJ_3_Private(Mat A, PetscScalar *b, PetscInt bm, PetscScalar *c, PetscInt cm, PetscInt cn)
@@ -1667,7 +1667,7 @@ PetscErrorCode MatMatMult_SeqSBAIJ_3_Private(Mat A, PetscScalar *b, PetscInt bm,
     }
     z += 3;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatMatMult_SeqSBAIJ_4_Private(Mat A, PetscScalar *b, PetscInt bm, PetscScalar *c, PetscInt cm, PetscInt cn)
@@ -1712,7 +1712,7 @@ PetscErrorCode MatMatMult_SeqSBAIJ_4_Private(Mat A, PetscScalar *b, PetscInt bm,
     }
     z += 4;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatMatMult_SeqSBAIJ_5_Private(Mat A, PetscScalar *b, PetscInt bm, PetscScalar *c, PetscInt cm, PetscInt cn)
@@ -1760,7 +1760,7 @@ PetscErrorCode MatMatMult_SeqSBAIJ_5_Private(Mat A, PetscScalar *b, PetscInt bm,
     }
     z += 5;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatMatMultNumeric_SeqSBAIJ_SeqDense(Mat A, Mat B, Mat C)
@@ -1778,7 +1778,7 @@ PetscErrorCode MatMatMultNumeric_SeqSBAIJ_SeqDense(Mat A, Mat B, Mat C)
   PetscScalar      _DOne = 1.0;
 
   PetscFunctionBegin;
-  if (!cm || !cn) PetscFunctionReturn(0);
+  if (!cm || !cn) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCheck(B->rmap->n == A->cmap->n, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Number columns in A %" PetscInt_FMT " not equal rows in B %" PetscInt_FMT, A->cmap->n, B->rmap->n);
   PetscCheck(A->rmap->n == C->rmap->n, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Number rows in C %" PetscInt_FMT " not equal rows in A %" PetscInt_FMT, C->rmap->n, A->rmap->n);
   PetscCheck(B->cmap->n == C->cmap->n, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Number columns in B %" PetscInt_FMT " not equal columns in C %" PetscInt_FMT, B->cmap->n, C->cmap->n);
@@ -1824,5 +1824,5 @@ PetscErrorCode MatMatMultNumeric_SeqSBAIJ_SeqDense(Mat A, Mat B, Mat C)
   }
   PetscCall(MatDenseRestoreArray(C, &c));
   PetscCall(PetscLogFlops((2.0 * (a->nz * 2.0 - a->nonzerorowcnt) * bs2 - a->nonzerorowcnt) * cn));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

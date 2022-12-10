@@ -47,7 +47,7 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJSELL_SeqAIJ(Mat A, MatType type, Ma
   PetscCall(PetscObjectChangeTypeName((PetscObject)B, MATSEQAIJ));
 
   *newmat = B;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatDestroy_SeqAIJSELL(Mat A)
@@ -72,7 +72,7 @@ PetscErrorCode MatDestroy_SeqAIJSELL(Mat A)
    * that is how things work for the SuperLU matrix class. */
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatConvert_seqaijsell_seqaij_C", NULL));
   PetscCall(MatDestroy_SeqAIJ(A));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Build or update the shadow matrix if and only if needed.
@@ -86,7 +86,7 @@ PETSC_INTERN PetscErrorCode MatSeqAIJSELL_build_shadow(Mat A)
   PetscCall(PetscObjectStateGet((PetscObject)A, &state));
   if (aijsell->S && aijsell->state == state) {
     /* The existing shadow matrix is up-to-date, so simply exit. */
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   PetscCall(PetscLogEventBegin(MAT_Convert, A, 0, 0, 0));
@@ -100,7 +100,7 @@ PETSC_INTERN PetscErrorCode MatSeqAIJSELL_build_shadow(Mat A)
   /* Record the ObjectState so that we can tell when the shadow matrix needs updating */
   PetscCall(PetscObjectStateGet((PetscObject)A, &aijsell->state));
 
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatDuplicate_SeqAIJSELL(Mat A, MatDuplicateOption op, Mat *M)
@@ -116,7 +116,7 @@ PetscErrorCode MatDuplicate_SeqAIJSELL(Mat A, MatDuplicateOption op, Mat *M)
   /* We don't duplicate the shadow matrix -- that will be constructed as needed. */
   aijsell_dest->S = NULL;
   if (aijsell->eager_shadow) PetscCall(MatSeqAIJSELL_build_shadow(A));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatAssemblyEnd_SeqAIJSELL(Mat A, MatAssemblyType mode)
@@ -125,7 +125,7 @@ PetscErrorCode MatAssemblyEnd_SeqAIJSELL(Mat A, MatAssemblyType mode)
   Mat_SeqAIJSELL *aijsell = (Mat_SeqAIJSELL *)A->spptr;
 
   PetscFunctionBegin;
-  if (mode == MAT_FLUSH_ASSEMBLY) PetscFunctionReturn(0);
+  if (mode == MAT_FLUSH_ASSEMBLY) PetscFunctionReturn(PETSC_SUCCESS);
 
   /* I disable the use of the inode routines so that the AIJSELL ones will be
    * used instead, but I wonder if it might make sense (and is feasible) to
@@ -144,7 +144,7 @@ PetscErrorCode MatAssemblyEnd_SeqAIJSELL(Mat A, MatAssemblyType mode)
    * (The default is to take a "lazy" approach, deferring this until something like MatMult() is called.) */
   if (aijsell->eager_shadow) PetscCall(MatSeqAIJSELL_build_shadow(A));
 
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatMult_SeqAIJSELL(Mat A, Vec xx, Vec yy)
@@ -154,7 +154,7 @@ PetscErrorCode MatMult_SeqAIJSELL(Mat A, Vec xx, Vec yy)
   PetscFunctionBegin;
   PetscCall(MatSeqAIJSELL_build_shadow(A));
   PetscCall(MatMult_SeqSELL(aijsell->S, xx, yy));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatMultTranspose_SeqAIJSELL(Mat A, Vec xx, Vec yy)
@@ -164,7 +164,7 @@ PetscErrorCode MatMultTranspose_SeqAIJSELL(Mat A, Vec xx, Vec yy)
   PetscFunctionBegin;
   PetscCall(MatSeqAIJSELL_build_shadow(A));
   PetscCall(MatMultTranspose_SeqSELL(aijsell->S, xx, yy));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatMultAdd_SeqAIJSELL(Mat A, Vec xx, Vec yy, Vec zz)
@@ -174,7 +174,7 @@ PetscErrorCode MatMultAdd_SeqAIJSELL(Mat A, Vec xx, Vec yy, Vec zz)
   PetscFunctionBegin;
   PetscCall(MatSeqAIJSELL_build_shadow(A));
   PetscCall(MatMultAdd_SeqSELL(aijsell->S, xx, yy, zz));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatMultTransposeAdd_SeqAIJSELL(Mat A, Vec xx, Vec yy, Vec zz)
@@ -184,7 +184,7 @@ PetscErrorCode MatMultTransposeAdd_SeqAIJSELL(Mat A, Vec xx, Vec yy, Vec zz)
   PetscFunctionBegin;
   PetscCall(MatSeqAIJSELL_build_shadow(A));
   PetscCall(MatMultTransposeAdd_SeqSELL(aijsell->S, xx, yy, zz));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatSOR_SeqAIJSELL(Mat A, Vec bb, PetscReal omega, MatSORType flag, PetscReal fshift, PetscInt its, PetscInt lits, Vec xx)
@@ -194,7 +194,7 @@ PetscErrorCode MatSOR_SeqAIJSELL(Mat A, Vec bb, PetscReal omega, MatSORType flag
   PetscFunctionBegin;
   PetscCall(MatSeqAIJSELL_build_shadow(A));
   PetscCall(MatSOR_SeqSELL(aijsell->S, bb, omega, flag, fshift, its, lits, xx));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* MatConvert_SeqAIJ_SeqAIJSELL converts a SeqAIJ matrix into a
@@ -213,7 +213,7 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJSELL(Mat A, MatType type, Ma
   if (reuse == MAT_INITIAL_MATRIX) PetscCall(MatDuplicate(A, MAT_COPY_VALUES, &B));
 
   PetscCall(PetscObjectTypeCompare((PetscObject)A, type, &sametype));
-  if (sametype) PetscFunctionReturn(0);
+  if (sametype) PetscFunctionReturn(PETSC_SUCCESS);
 
   PetscCall(PetscNew(&aijsell));
   b        = (Mat_SeqAIJ *)B->data;
@@ -251,7 +251,7 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJSELL(Mat A, MatType type, Ma
 
   PetscCall(PetscObjectChangeTypeName((PetscObject)B, MATSEQAIJSELL));
   *newmat = B;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -295,7 +295,7 @@ PetscErrorCode MatCreateSeqAIJSELL(MPI_Comm comm, PetscInt m, PetscInt n, PetscI
   PetscCall(MatSetSizes(*A, m, n, m, n));
   PetscCall(MatSetType(*A, MATSEQAIJSELL));
   PetscCall(MatSeqAIJSetPreallocation_SeqAIJ(*A, nz, nnz));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJSELL(Mat A)
@@ -303,5 +303,5 @@ PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJSELL(Mat A)
   PetscFunctionBegin;
   PetscCall(MatSetType(A, MATSEQAIJ));
   PetscCall(MatConvert_SeqAIJ_SeqAIJSELL(A, MATSEQAIJSELL, MAT_INPLACE_MATRIX, &A));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -16,7 +16,7 @@ PETSC_INTERN PetscErrorCode MatGetOrdering_1WD(Mat mat, MatOrderingType type, IS
   PetscCheck(done, PetscObjectComm((PetscObject)mat), PETSC_ERR_SUP, "Cannot get rows for matrix");
 
   PetscCall(PetscMalloc5(nrow, &mask, nrow + 1, &xls, nrow, &ls, nrow + 1, &xblk, nrow, &perm));
-  SPARSEPACKgen1wd(&nrow, ia, ja, mask, &nblks, xblk, perm, xls, ls);
+  PetscCall(SPARSEPACKgen1wd(&nrow, ia, ja, mask, &nblks, xblk, perm, xls, ls));
   PetscCall(MatRestoreRowIJ(mat, 1, PETSC_TRUE, PETSC_TRUE, NULL, &ia, &ja, &done));
 
   for (i = 0; i < nrow; i++) perm[i]--;
@@ -24,5 +24,5 @@ PETSC_INTERN PetscErrorCode MatGetOrdering_1WD(Mat mat, MatOrderingType type, IS
   PetscCall(ISCreateGeneral(PETSC_COMM_SELF, nrow, perm, PETSC_COPY_VALUES, row));
   PetscCall(ISCreateGeneral(PETSC_COMM_SELF, nrow, perm, PETSC_COPY_VALUES, col));
   PetscCall(PetscFree5(mask, xls, ls, xblk, perm));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

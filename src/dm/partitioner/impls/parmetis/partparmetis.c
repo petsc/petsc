@@ -32,7 +32,7 @@ static PetscErrorCode PetscPartitionerDestroy_ParMetis(PetscPartitioner part)
   PetscFunctionBegin;
   PetscCallMPI(MPI_Comm_free(&p->pcomm));
   PetscCall(PetscFree(part->data));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscPartitionerView_ParMetis_ASCII(PetscPartitioner part, PetscViewer viewer)
@@ -46,7 +46,7 @@ static PetscErrorCode PetscPartitionerView_ParMetis_ASCII(PetscPartitioner part,
   PetscCall(PetscViewerASCIIPrintf(viewer, "debug flag %" PetscInt_FMT "\n", p->debugFlag));
   PetscCall(PetscViewerASCIIPrintf(viewer, "random seed %" PetscInt_FMT "\n", p->randomSeed));
   PetscCall(PetscViewerASCIIPopTab(viewer));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscPartitionerView_ParMetis(PetscPartitioner part, PetscViewer viewer)
@@ -58,7 +58,7 @@ static PetscErrorCode PetscPartitionerView_ParMetis(PetscPartitioner part, Petsc
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
   if (iascii) PetscCall(PetscPartitionerView_ParMetis_ASCII(part, viewer));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscPartitionerSetFromOptions_ParMetis(PetscPartitioner part, PetscOptionItems *PetscOptionsObject)
@@ -72,7 +72,7 @@ static PetscErrorCode PetscPartitionerSetFromOptions_ParMetis(PetscPartitioner p
   PetscCall(PetscOptionsInt("-petscpartitioner_parmetis_debug", "Debugging flag", "", p->debugFlag, &p->debugFlag, NULL));
   PetscCall(PetscOptionsInt("-petscpartitioner_parmetis_seed", "Random seed", "", p->randomSeed, &p->randomSeed, NULL));
   PetscOptionsHeadEnd();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscPartitionerPartition_ParMetis(PetscPartitioner part, PetscInt nparts, PetscInt numVertices, PetscInt start[], PetscInt adjacency[], PetscSection vertSection, PetscSection targetSection, PetscSection partSection, IS *partition)
@@ -113,7 +113,7 @@ static PetscErrorCode PetscPartitionerPartition_ParMetis(PetscPartitioner part, 
   if (vtxdist[size] == 0) {
     PetscCall(PetscFree4(vtxdist, tpwgts, ubvec, assignment));
     PetscCall(ISCreateGeneral(comm, 0, NULL, PETSC_OWN_POINTER, partition));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
   /* Calculate partition weights */
   if (targetSection) {
@@ -216,7 +216,7 @@ static PetscErrorCode PetscPartitionerPartition_ParMetis(PetscPartitioner part, 
   PetscCall(ISCreateGeneral(comm, nvtxs, points, PETSC_OWN_POINTER, partition));
   PetscCall(PetscFree4(vtxdist, tpwgts, ubvec, assignment));
   PetscCall(PetscFree(vwgt));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 #else
   SETERRQ(PetscObjectComm((PetscObject)part), PETSC_ERR_SUP, "Mesh partitioning needs external package support.\nPlease reconfigure with --download-parmetis.");
 #endif
@@ -230,7 +230,7 @@ static PetscErrorCode PetscPartitionerInitialize_ParMetis(PetscPartitioner part)
   part->ops->setfromoptions = PetscPartitionerSetFromOptions_ParMetis;
   part->ops->destroy        = PetscPartitionerDestroy_ParMetis;
   part->ops->partition      = PetscPartitionerPartition_ParMetis;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -266,5 +266,5 @@ PETSC_EXTERN PetscErrorCode PetscPartitionerCreate_ParMetis(PetscPartitioner par
 
   PetscCall(PetscPartitionerInitialize_ParMetis(part));
   PetscCall(PetscCitationsRegister(ParMetisPartitionerCitation, &ParMetisPartitionerCite));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

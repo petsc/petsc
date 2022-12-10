@@ -110,7 +110,7 @@ static PetscErrorCode MatSOR_BlockMat_Symmetric(Mat A, Vec bb, PetscReal omega, 
   }
   PetscCall(VecRestoreArray(xx, &x));
   PetscCall(VecRestoreArrayRead(a->workb, &b));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatSOR_BlockMat(Mat A, Vec bb, PetscReal omega, MatSORType flag, PetscReal fshift, PetscInt its, PetscInt lits, Vec xx)
@@ -201,7 +201,7 @@ static PetscErrorCode MatSOR_BlockMat(Mat A, Vec bb, PetscReal omega, MatSORType
   }
   PetscCall(VecRestoreArray(xx, &x));
   PetscCall(VecRestoreArrayRead(bb, &b));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatSetValues_BlockMat(Mat A, PetscInt m, const PetscInt im[], PetscInt n, const PetscInt in[], const PetscScalar v[], InsertMode is)
@@ -271,7 +271,7 @@ static PetscErrorCode MatSetValues_BlockMat(Mat A, PetscInt m, const PetscInt im
     }
     ailen[brow] = nrow;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatLoad_BlockMat(Mat newmat, PetscViewer viewer)
@@ -385,7 +385,7 @@ static PetscErrorCode MatLoad_BlockMat(Mat newmat, PetscViewer viewer)
   }
   PetscCall(MatAssemblyBegin(newmat, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(newmat, MAT_FINAL_ASSEMBLY));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatView_BlockMat(Mat A, PetscViewer viewer)
@@ -401,7 +401,7 @@ static PetscErrorCode MatView_BlockMat(Mat A, PetscViewer viewer)
     PetscCall(PetscViewerASCIIPrintf(viewer, "Nonzero block matrices = %" PetscInt_FMT " \n", a->nz));
     if (A->symmetric == PETSC_BOOL3_TRUE) PetscCall(PetscViewerASCIIPrintf(viewer, "Only upper triangular part of symmetric matrix is stored\n"));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatDestroy_BlockMat(Mat mat)
@@ -422,7 +422,7 @@ static PetscErrorCode MatDestroy_BlockMat(Mat mat)
   }
   PetscCall(MatSeqXAIJFreeAIJ(mat, (PetscScalar **)&bmat->a, &bmat->j, &bmat->i));
   PetscCall(PetscFree(mat->data));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatMult_BlockMat(Mat A, Vec x, Vec y)
@@ -457,7 +457,7 @@ static PetscErrorCode MatMult_BlockMat(Mat A, Vec x, Vec y)
   }
   PetscCall(VecRestoreArray(x, &xx));
   PetscCall(VecRestoreArray(y, &yy));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatMult_BlockMat_Symmetric(Mat A, Vec x, Vec y)
@@ -506,25 +506,25 @@ PetscErrorCode MatMult_BlockMat_Symmetric(Mat A, Vec x, Vec y)
   }
   PetscCall(VecRestoreArray(x, &xx));
   PetscCall(VecRestoreArray(y, &yy));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatMultAdd_BlockMat(Mat A, Vec x, Vec y, Vec z)
 {
   PetscFunctionBegin;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatMultTranspose_BlockMat(Mat A, Vec x, Vec y)
 {
   PetscFunctionBegin;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatMultTransposeAdd_BlockMat(Mat A, Vec x, Vec y, Vec z)
 {
   PetscFunctionBegin;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -546,7 +546,7 @@ static PetscErrorCode MatMarkDiagonal_BlockMat(Mat A)
       }
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatCreateSubMatrix_BlockMat(Mat A, IS isrow, IS iscol, MatReuse scall, Mat *B)
@@ -605,7 +605,7 @@ static PetscErrorCode MatCreateSubMatrix_BlockMat(Mat A, IS isrow, IS iscol, Mat
   PetscCall(MatAssemblyBegin(C, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(C, MAT_FINAL_ASSEMBLY));
   *B = C;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatAssemblyEnd_BlockMat(Mat A, MatAssemblyType mode)
@@ -616,7 +616,7 @@ static PetscErrorCode MatAssemblyEnd_BlockMat(Mat A, MatAssemblyType mode)
   Mat          *aa = a->a, *ap;
 
   PetscFunctionBegin;
-  if (mode == MAT_FLUSH_ASSEMBLY) PetscFunctionReturn(0);
+  if (mode == MAT_FLUSH_ASSEMBLY) PetscFunctionReturn(PETSC_SUCCESS);
 
   if (m) rmax = ailen[0]; /* determine row with most nonzeros */
   for (i = 1; i < m; i++) {
@@ -655,7 +655,7 @@ static PetscErrorCode MatAssemblyEnd_BlockMat(Mat A, MatAssemblyType mode)
   A->info.nz_unneeded = (double)fshift;
   a->rmax             = rmax;
   PetscCall(MatMarkDiagonal_BlockMat(A));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatSetOption_BlockMat(Mat A, MatOption opt, PetscBool flg)
@@ -667,7 +667,7 @@ static PetscErrorCode MatSetOption_BlockMat(Mat A, MatOption opt, PetscBool flg)
   } else {
     PetscCall(PetscInfo(A, "Unused matrix option %s\n", MatOptions[opt]));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static struct _MatOps MatOps_Values = {MatSetValues_BlockMat,
@@ -854,7 +854,7 @@ PetscErrorCode MatBlockMatSetPreallocation(Mat B, PetscInt bs, PetscInt nz, cons
 {
   PetscFunctionBegin;
   PetscTryMethod(B, "MatBlockMatSetPreallocation_C", (Mat, PetscInt, PetscInt, const PetscInt[]), (B, bs, nz, nnz));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatBlockMatSetPreallocation_BlockMat(Mat A, PetscInt bs, PetscInt nz, PetscInt *nnz)
@@ -908,7 +908,7 @@ static PetscErrorCode MatBlockMatSetPreallocation_BlockMat(Mat A, PetscInt bs, P
   bmat->maxnz         = nz;
   A->info.nz_unneeded = (double)bmat->maxnz;
   PetscCall(MatSetOption(A, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_TRUE));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -934,7 +934,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_BlockMat(Mat A)
   PetscCall(PetscObjectChangeTypeName((PetscObject)A, MATBLOCKMAT));
 
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatBlockMatSetPreallocation_C", MatBlockMatSetPreallocation_BlockMat));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -973,5 +973,5 @@ PetscErrorCode MatCreateBlockMat(MPI_Comm comm, PetscInt m, PetscInt n, PetscInt
   PetscCall(MatSetSizes(*A, m, n, PETSC_DETERMINE, PETSC_DETERMINE));
   PetscCall(MatSetType(*A, MATBLOCKMAT));
   PetscCall(MatBlockMatSetPreallocation(*A, bs, nz, nnz));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

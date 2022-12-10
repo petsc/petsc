@@ -31,10 +31,10 @@ static PetscErrorCode ConvertToAIJ(MatType intype, MatType *outtype)
     PetscCall(PetscStrbeginswith(intype, types[i], &flg));
     if (flg) {
       *outtype = intype;
-      PetscFunctionReturn(0);
+      PetscFunctionReturn(PETSC_SUCCESS);
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMCreateInterpolation_DA_1D_Q1(DM dac, DM daf, Mat *A)
@@ -171,7 +171,7 @@ PetscErrorCode DMCreateInterpolation_DA_1D_Q1(DM dac, DM daf, Mat *A)
   PetscCall(MatAssemblyEnd(mat, MAT_FINAL_ASSEMBLY));
   PetscCall(MatCreateMAIJ(mat, dof, A));
   PetscCall(MatDestroy(&mat));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMCreateInterpolation_DA_1D_Q0(DM dac, DM daf, Mat *A)
@@ -257,7 +257,7 @@ PetscErrorCode DMCreateInterpolation_DA_1D_Q0(DM dac, DM daf, Mat *A)
   PetscCall(MatCreateMAIJ(mat, dof, A));
   PetscCall(MatDestroy(&mat));
   PetscCall(PetscLogFlops(5.0 * m_f));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMCreateInterpolation_DA_2D_Q1(DM dac, DM daf, Mat *A)
@@ -486,7 +486,7 @@ PetscErrorCode DMCreateInterpolation_DA_2D_Q1(DM dac, DM daf, Mat *A)
   PetscCall(MatAssemblyEnd(mat, MAT_FINAL_ASSEMBLY));
   PetscCall(MatCreateMAIJ(mat, dof, A));
   PetscCall(MatDestroy(&mat));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -611,7 +611,7 @@ PetscErrorCode DMCreateInterpolation_DA_2D_Q0(DM dac, DM daf, Mat *A)
   PetscCall(MatCreateMAIJ(mat, dof, A));
   PetscCall(MatDestroy(&mat));
   PetscCall(PetscLogFlops(13.0 * m_f * n_f));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -749,7 +749,7 @@ PetscErrorCode DMCreateInterpolation_DA_3D_Q0(DM dac, DM daf, Mat *A)
   PetscCall(MatCreateMAIJ(mat, dof, A));
   PetscCall(MatDestroy(&mat));
   PetscCall(PetscLogFlops(13.0 * m_f * n_f * p_f));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMCreateInterpolation_DA_3D_Q1(DM dac, DM daf, Mat *A)
@@ -1028,7 +1028,7 @@ PetscErrorCode DMCreateInterpolation_DA_3D_Q1(DM dac, DM daf, Mat *A)
 
   PetscCall(MatCreateMAIJ(mat, dof, A));
   PetscCall(MatDestroy(&mat));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMCreateInterpolation_DA(DM dac, DM daf, Mat *A, Vec *scale)
@@ -1073,7 +1073,7 @@ PetscErrorCode DMCreateInterpolation_DA(DM dac, DM daf, Mat *A, Vec *scale)
     } else SETERRQ(PetscObjectComm((PetscObject)daf), PETSC_ERR_SUP, "No support for this DMDA dimension %" PetscInt_FMT " for interpolation type %d", dimc, (int)ddc->interptype);
   }
   if (scale) PetscCall(DMCreateInterpolationScale((DM)dac, (DM)daf, *A, scale));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMCreateInjection_DA_1D(DM dac, DM daf, VecScatter *inject)
@@ -1129,7 +1129,7 @@ PetscErrorCode DMCreateInjection_DA_1D(DM dac, DM daf, VecScatter *inject)
   PetscCall(DMRestoreGlobalVector(dac, &vecc));
   PetscCall(DMRestoreGlobalVector(daf, &vecf));
   PetscCall(ISDestroy(&isf));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMCreateInjection_DA_2D(DM dac, DM daf, VecScatter *inject)
@@ -1199,7 +1199,7 @@ PetscErrorCode DMCreateInjection_DA_2D(DM dac, DM daf, VecScatter *inject)
   PetscCall(DMRestoreGlobalVector(dac, &vecc));
   PetscCall(DMRestoreGlobalVector(daf, &vecf));
   PetscCall(ISDestroy(&isf));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMCreateInjection_DA_3D(DM dac, DM daf, VecScatter *inject)
@@ -1289,7 +1289,7 @@ PetscErrorCode DMCreateInjection_DA_3D(DM dac, DM daf, VecScatter *inject)
   PetscCall(DMRestoreGlobalVector(dac, &vecc));
   PetscCall(DMRestoreGlobalVector(daf, &vecf));
   PetscCall(ISDestroy(&isf));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMCreateInjection_DA(DM dac, DM daf, Mat *mat)
@@ -1324,7 +1324,7 @@ PetscErrorCode DMCreateInjection_DA(DM dac, DM daf, Mat *mat)
   }
   PetscCall(MatCreateScatter(PetscObjectComm((PetscObject)inject), inject, mat));
   PetscCall(VecScatterDestroy(&inject));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -1464,5 +1464,5 @@ PetscErrorCode DMDACreateAggregates(DM dac, DM daf, Mat *rest)
   PetscCall(PetscFree2(one_vec, fine_nodes));
   PetscCall(MatAssemblyBegin(*rest, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(*rest, MAT_FINAL_ASSEMBLY));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

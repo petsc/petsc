@@ -47,7 +47,7 @@ static PetscErrorCode TSAdaptRestart_DSP(TSAdapt adapt)
   dsp->cerror[0] = dsp->hratio[0] = 1.0;
   dsp->cerror[1] = dsp->hratio[1] = 1.0;
   dsp->cerror[2] = dsp->hratio[2] = 1.0;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TSAdaptRollBack_DSP(TSAdapt adapt)
@@ -60,7 +60,7 @@ static PetscErrorCode TSAdaptRollBack_DSP(TSAdapt adapt)
   dsp->hratio[0] = dsp->hratio[1];
   dsp->hratio[1] = dsp->hratio[2];
   dsp->hratio[2] = 1.0;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TSAdaptChoose_DSP(TSAdapt adapt, TS ts, PetscReal h, PetscInt *next_sc, PetscReal *next_h, PetscBool *accept, PetscReal *wlte, PetscReal *wltea, PetscReal *wlter)
@@ -99,7 +99,7 @@ static PetscErrorCode TSAdaptChoose_DSP(TSAdapt adapt, TS ts, PetscReal h, Petsc
     *accept = PETSC_TRUE; /* Accept the step */
     *next_h = h;          /* Reuse the old step size */
     *wlte   = -1;         /* Weighted local truncation error was not evaluated */
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   PetscCall(PetscCitationsRegister(citation[0], &cited[0]));
@@ -162,7 +162,7 @@ static PetscErrorCode TSAdaptChoose_DSP(TSAdapt adapt, TS ts, PetscReal h, Petsc
   hnew    = h * PetscClipInterval(hfac, adapt->clip[0], adapt->clip[1]);
   *next_h = PetscClipInterval(hnew, adapt->dt_min, adapt->dt_max);
   *wlte   = enorm;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TSAdaptDestroy_DSP(TSAdapt adapt)
@@ -171,7 +171,7 @@ static PetscErrorCode TSAdaptDestroy_DSP(TSAdapt adapt)
   PetscCall(PetscObjectComposeFunction((PetscObject)adapt, "TSAdaptDSPSetFilter_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)adapt, "TSAdaptDSPSetPID_C", NULL));
   PetscCall(PetscFree(adapt->data));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TSAdaptView_DSP(TSAdapt adapt, PetscViewer viewer)
@@ -186,7 +186,7 @@ static PetscErrorCode TSAdaptView_DSP(TSAdapt adapt, PetscViewer viewer)
     double b1 = (double)dsp->kBeta[0], b2 = (double)dsp->kBeta[1], b3 = (double)dsp->kBeta[2];
     PetscCall(PetscViewerASCIIPrintf(viewer, "filter parameters kBeta=[%g,%g,%g] Alpha=[%g,%g]\n", b1, b2, b3, a2, a3));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 struct FilterTab {
@@ -241,7 +241,7 @@ static PetscErrorCode TSAdaptDSPSetFilter_DSP(TSAdapt adapt, const char *name)
   dsp->kBeta[2] = tab->kBeta[2] / tab->scale;
   dsp->Alpha[0] = tab->Alpha[0] / tab->scale;
   dsp->Alpha[1] = tab->Alpha[1] / tab->scale;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TSAdaptDSPSetPID_DSP(TSAdapt adapt, PetscReal kkI, PetscReal kkP, PetscReal kkD)
@@ -254,7 +254,7 @@ static PetscErrorCode TSAdaptDSPSetPID_DSP(TSAdapt adapt, PetscReal kkI, PetscRe
   dsp->kBeta[2] = kkD;
   dsp->Alpha[0] = 0;
   dsp->Alpha[1] = 0;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TSAdaptSetFromOptions_DSP(TSAdapt adapt, PetscOptionItems *PetscOptionsObject)
@@ -289,7 +289,7 @@ static PetscErrorCode TSAdaptSetFromOptions_DSP(TSAdapt adapt, PetscOptionItems 
     for (i = n; i < 2; i++) dsp->Alpha[i] = 0;
 
   PetscOptionsHeadEnd();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -325,7 +325,7 @@ PetscErrorCode TSAdaptDSPSetFilter(TSAdapt adapt, const char *name)
   PetscValidHeaderSpecific(adapt, TSADAPT_CLASSID, 1);
   PetscValidCharPointer(name, 2);
   PetscTryMethod(adapt, "TSAdaptDSPSetFilter_C", (TSAdapt, const char *), (adapt, name));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -355,7 +355,7 @@ PetscErrorCode TSAdaptDSPSetPID(TSAdapt adapt, PetscReal kkI, PetscReal kkP, Pet
   PetscValidLogicalCollectiveReal(adapt, kkP, 3);
   PetscValidLogicalCollectiveReal(adapt, kkD, 4);
   PetscTryMethod(adapt, "TSAdaptDSPSetPID_C", (TSAdapt, PetscReal, PetscReal, PetscReal), (adapt, kkI, kkP, kkD));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -394,5 +394,5 @@ PETSC_EXTERN PetscErrorCode TSAdaptCreate_DSP(TSAdapt adapt)
 
   PetscCall(TSAdaptDSPSetFilter_DSP(adapt, "PI42"));
   PetscCall(TSAdaptRestart_DSP(adapt));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

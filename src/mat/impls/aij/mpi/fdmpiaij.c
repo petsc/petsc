@@ -150,7 +150,7 @@ PetscErrorCode MatFDColoringApply_BAIJ(Mat J, MatFDColoring coloring, Vec x1, vo
 
   coloring->currentcolor = -1;
   PetscCall(VecBindToCPU(x1, PETSC_FALSE));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* this is declared PETSC_EXTERN because it is used by MatFDColoringUseDM() which is in the DM library */
@@ -374,7 +374,7 @@ PetscErrorCode MatFDColoringApply_AIJ(Mat J, MatFDColoring coloring, Vec x1, voi
   if (vscale) PetscCall(VecRestoreArray(vscale, &vscale_array));
   coloring->currentcolor = -1;
   if (!alreadyboundtocpu) PetscCall(VecBindToCPU(x1, PETSC_FALSE));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatFDColoringSetUp_MPIXAIJ(Mat mat, ISColoring iscoloring, MatFDColoring c)
@@ -628,7 +628,7 @@ PetscErrorCode MatFDColoringSetUp_MPIXAIJ(Mat mat, ISColoring iscoloring, MatFDC
 
   if (ctype == IS_COLORING_LOCAL) PetscCall(ISLocalToGlobalMappingRestoreIndices(map, &ltog));
   PetscCall(PetscInfo(c, "ncolors %" PetscInt_FMT ", brows %" PetscInt_FMT " and bcols %" PetscInt_FMT " are used.\n", c->ncolors, c->brows, c->bcols));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatFDColoringCreate_MPIXAIJ(Mat mat, ISColoring iscoloring, MatFDColoring c)
@@ -696,7 +696,7 @@ PetscErrorCode MatFDColoringCreate_MPIXAIJ(Mat mat, ISColoring iscoloring, MatFD
   c->m       = mat->rmap->n / bs;
   c->rstart  = mat->rmap->rstart / bs;
   c->ncolors = nis;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -746,5 +746,5 @@ PetscErrorCode MatFDColoringSetValues(Mat J, MatFDColoring coloring, const Petsc
   }
   PetscCall(MatAssemblyBegin(J, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(J, MAT_FINAL_ASSEMBLY));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

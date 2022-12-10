@@ -49,7 +49,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscCall(PetscOptionsReal("-v", "The y component of the convective coefficient", "advection_DMPLEX.c", options->v, &options->v, NULL));
   PetscCall(PetscOptionsScalar("-diffus", "The diffusive coefficient", "advection_DMPLEX.c", options->diffusion, &options->diffusion, NULL));
   PetscOptionsEnd();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -68,7 +68,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     PetscCall(DMGetLabel(*dm, "boundary", &label));
     PetscCall(DMPlexLabelComplete(*dm, label));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* This routine is responsible for defining the local solution vector x
@@ -96,7 +96,7 @@ PetscErrorCode FormInitialSolution(DM da, Vec U)
     } else u[cell] = 0;
   }
   PetscCall(VecRestoreArray(U, &u));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MyTSMonitor(TS ts, PetscInt step, PetscReal ptime, Vec v, void *ctx)
@@ -105,11 +105,11 @@ PetscErrorCode MyTSMonitor(TS ts, PetscInt step, PetscReal ptime, Vec v, void *c
   MPI_Comm  comm;
 
   PetscFunctionBeginUser;
-  if (step < 0) PetscFunctionReturn(0); /* step of -1 indicates an interpolated solution */
+  if (step < 0) PetscFunctionReturn(PETSC_SUCCESS); /* step of -1 indicates an interpolated solution */
   PetscCall(VecNorm(v, NORM_2, &norm));
   PetscCall(PetscObjectGetComm((PetscObject)ts, &comm));
   PetscCall(PetscPrintf(comm, "timestep %" PetscInt_FMT " time %g norm %g\n", step, (double)ptime, (double)norm));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -125,7 +125,7 @@ PetscErrorCode MySNESMonitor(SNES snes, PetscInt its, PetscReal fnorm, PetscView
 {
   PetscFunctionBeginUser;
   PetscCall(SNESMonitorDefaultShort(snes, its, fnorm, vf));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -254,7 +254,7 @@ PetscErrorCode FormFunction(TS ts, PetscReal ftime, Vec X, Vec F, void *ctx)
   PetscCall(VecRestoreArray(localX, &x));
   PetscCall(VecRestoreArray(F, &f));
   PetscCall(DMRestoreLocalVector(da, &localX));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)

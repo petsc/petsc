@@ -16,7 +16,7 @@ static PetscErrorCode DMPlexTransformView_Filter(DMPlexTransform tr, PetscViewer
   } else {
     SETERRQ(PetscObjectComm((PetscObject)tr), PETSC_ERR_SUP, "Viewer type %s not yet supported for DMPlexTransform writing", ((PetscObject)viewer)->type_name);
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMPlexTransformSetUp_Filter(DMPlexTransform tr)
@@ -55,7 +55,7 @@ static PetscErrorCode DMPlexTransformSetUp_Filter(DMPlexTransform tr)
       PetscCall(ISDestroy(&filterIS));
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMPlexTransformDestroy_Filter(DMPlexTransform tr)
@@ -64,7 +64,7 @@ static PetscErrorCode DMPlexTransformDestroy_Filter(DMPlexTransform tr)
 
   PetscFunctionBegin;
   PetscCall(PetscFree(f));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMPlexTransformCellTransform_Filter(DMPlexTransform tr, DMPolytopeType source, PetscInt p, PetscInt *rt, PetscInt *Nt, DMPolytopeType *target[], PetscInt *size[], PetscInt *cone[], PetscInt *ornt[])
@@ -77,7 +77,7 @@ static PetscErrorCode DMPlexTransformCellTransform_Filter(DMPlexTransform tr, DM
     if (val >= 0) {
       if (rt) *rt = val;
       PetscCall(DMPlexTransformCellTransformIdentity(tr, source, p, NULL, Nt, target, size, cone, ornt));
-      PetscFunctionReturn(0);
+      PetscFunctionReturn(PETSC_SUCCESS);
     }
   }
   if (rt) *rt = -1;
@@ -86,7 +86,7 @@ static PetscErrorCode DMPlexTransformCellTransform_Filter(DMPlexTransform tr, DM
   *size   = NULL;
   *cone   = NULL;
   *ornt   = NULL;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMPlexTransformInitialize_Filter(DMPlexTransform tr)
@@ -99,7 +99,7 @@ static PetscErrorCode DMPlexTransformInitialize_Filter(DMPlexTransform tr)
   tr->ops->celltransform         = DMPlexTransformCellTransform_Filter;
   tr->ops->getsubcellorientation = DMPlexTransformGetSubcellOrientationIdentity;
   tr->ops->mapcoordinates        = DMPlexTransformMapCoordinatesBarycenter_Internal;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_EXTERN PetscErrorCode DMPlexTransformCreate_Filter(DMPlexTransform tr)
@@ -112,5 +112,5 @@ PETSC_EXTERN PetscErrorCode DMPlexTransformCreate_Filter(DMPlexTransform tr)
   tr->data = f;
 
   PetscCall(DMPlexTransformInitialize_Filter(tr));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

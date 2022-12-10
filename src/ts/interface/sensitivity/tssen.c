@@ -45,7 +45,7 @@ PetscErrorCode TSSetRHSJacobianP(TS ts, Mat Amat, PetscErrorCode (*func)(TS, Pet
     PetscCall(MatDestroy(&ts->Jacprhs));
     ts->Jacprhs = Amat;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -81,7 +81,7 @@ PetscErrorCode TSGetRHSJacobianP(TS ts, Mat *Amat, PetscErrorCode (**func)(TS, P
   if (func) *func = ts->rhsjacobianp;
   if (ctx) *ctx = ts->rhsjacobianpctx;
   if (Amat) *Amat = ts->Jacprhs;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -99,12 +99,12 @@ PetscErrorCode TSGetRHSJacobianP(TS ts, Mat *Amat, PetscErrorCode (**func)(TS, P
 PetscErrorCode TSComputeRHSJacobianP(TS ts, PetscReal t, Vec U, Mat Amat)
 {
   PetscFunctionBegin;
-  if (!Amat) PetscFunctionReturn(0);
+  if (!Amat) PetscFunctionReturn(PETSC_SUCCESS);
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscValidHeaderSpecific(U, VEC_CLASSID, 3);
 
   PetscCallBack("TS callback JacobianP for sensitivity analysis", (*ts->rhsjacobianp)(ts, t, U, Amat, ts->rhsjacobianpctx));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -147,7 +147,7 @@ PetscErrorCode TSSetIJacobianP(TS ts, Mat Amat, PetscErrorCode (*func)(TS, Petsc
     PetscCall(MatDestroy(&ts->Jacp));
     ts->Jacp = Amat;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -173,7 +173,7 @@ PetscErrorCode TSSetIJacobianP(TS ts, Mat Amat, PetscErrorCode (*func)(TS, Petsc
 PetscErrorCode TSComputeIJacobianP(TS ts, PetscReal t, Vec U, Vec Udot, PetscReal shift, Mat Amat, PetscBool imex)
 {
   PetscFunctionBegin;
-  if (!Amat) PetscFunctionReturn(0);
+  if (!Amat) PetscFunctionReturn(PETSC_SUCCESS);
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscValidHeaderSpecific(U, VEC_CLASSID, 3);
   PetscValidHeaderSpecific(Udot, VEC_CLASSID, 4);
@@ -203,7 +203,7 @@ PetscErrorCode TSComputeIJacobianP(TS ts, PetscReal t, Vec U, Vec Udot, PetscRea
     }
   }
   PetscCall(PetscLogEventEnd(TS_JacobianPEval, ts, U, Amat, 0));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -266,7 +266,7 @@ PetscErrorCode TSSetCostIntegrand(TS ts, PetscInt numcost, Vec costintegral, Pet
   ts->costintegrandctx = ctx;
   ts->drdufunction     = drduf;
   ts->drdpfunction     = drdpf;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -294,7 +294,7 @@ PetscErrorCode TSGetCostIntegral(TS ts, Vec *v)
   PetscValidPointer(v, 2);
   PetscCall(TSGetQuadratureTS(ts, NULL, &quadts));
   *v = quadts->vec_sol;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -327,7 +327,7 @@ PetscErrorCode TSComputeCostIntegrand(TS ts, PetscReal t, Vec U, Vec Q)
   if (ts->costintegrand) PetscCallBack("TS callback integrand in the cost function", (*ts->costintegrand)(ts, t, U, Q, ts->costintegrandctx));
   else PetscCall(VecZeroEntries(Q));
   PetscCall(PetscLogEventEnd(TS_FunctionEval, ts, U, Q, 0));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -339,12 +339,12 @@ PetscErrorCode TSComputeCostIntegrand(TS ts, PetscReal t, Vec U, Vec Q)
 PetscErrorCode TSComputeDRDUFunction(TS ts, PetscReal t, Vec U, Vec *DRDU)
 {
   PetscFunctionBegin;
-  if (!DRDU) PetscFunctionReturn(0);
+  if (!DRDU) PetscFunctionReturn(PETSC_SUCCESS);
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscValidHeaderSpecific(U, VEC_CLASSID, 3);
 
   PetscCallBack("TS callback DRDU for sensitivity analysis", (*ts->drdufunction)(ts, t, U, DRDU, ts->costintegrandctx));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -356,12 +356,12 @@ PetscErrorCode TSComputeDRDUFunction(TS ts, PetscReal t, Vec U, Vec *DRDU)
 PetscErrorCode TSComputeDRDPFunction(TS ts, PetscReal t, Vec U, Vec *DRDP)
 {
   PetscFunctionBegin;
-  if (!DRDP) PetscFunctionReturn(0);
+  if (!DRDP) PetscFunctionReturn(PETSC_SUCCESS);
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscValidHeaderSpecific(U, VEC_CLASSID, 3);
 
   PetscCallBack("TS callback DRDP for sensitivity analysis", (*ts->drdpfunction)(ts, t, U, DRDP, ts->costintegrandctx));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -419,7 +419,7 @@ PetscErrorCode TSSetIHessianProduct(TS ts, Vec *ihp1, PetscErrorCode (*ihessianp
   ts->ihessianproduct_fup = ihessianproductfunc2;
   ts->ihessianproduct_fpu = ihessianproductfunc3;
   ts->ihessianproduct_fpp = ihessianproductfunc4;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -441,7 +441,7 @@ PetscErrorCode TSSetIHessianProduct(TS ts, Vec *ihp1, PetscErrorCode (*ihessianp
 PetscErrorCode TSComputeIHessianProductFunctionUU(TS ts, PetscReal t, Vec U, Vec *Vl, Vec Vr, Vec *VHV)
 {
   PetscFunctionBegin;
-  if (!VHV) PetscFunctionReturn(0);
+  if (!VHV) PetscFunctionReturn(PETSC_SUCCESS);
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscValidHeaderSpecific(U, VEC_CLASSID, 3);
 
@@ -453,7 +453,7 @@ PetscErrorCode TSComputeIHessianProductFunctionUU(TS ts, PetscReal t, Vec U, Vec
     PetscCall(TSComputeRHSHessianProductFunctionUU(ts, t, U, Vl, Vr, VHV));
     for (nadj = 0; nadj < ts->numcost; nadj++) PetscCall(VecScale(VHV[nadj], -1));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -475,7 +475,7 @@ PetscErrorCode TSComputeIHessianProductFunctionUU(TS ts, PetscReal t, Vec U, Vec
 PetscErrorCode TSComputeIHessianProductFunctionUP(TS ts, PetscReal t, Vec U, Vec *Vl, Vec Vr, Vec *VHV)
 {
   PetscFunctionBegin;
-  if (!VHV) PetscFunctionReturn(0);
+  if (!VHV) PetscFunctionReturn(PETSC_SUCCESS);
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscValidHeaderSpecific(U, VEC_CLASSID, 3);
 
@@ -487,7 +487,7 @@ PetscErrorCode TSComputeIHessianProductFunctionUP(TS ts, PetscReal t, Vec U, Vec
     PetscCall(TSComputeRHSHessianProductFunctionUP(ts, t, U, Vl, Vr, VHV));
     for (nadj = 0; nadj < ts->numcost; nadj++) PetscCall(VecScale(VHV[nadj], -1));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -509,7 +509,7 @@ PetscErrorCode TSComputeIHessianProductFunctionUP(TS ts, PetscReal t, Vec U, Vec
 PetscErrorCode TSComputeIHessianProductFunctionPU(TS ts, PetscReal t, Vec U, Vec *Vl, Vec Vr, Vec *VHV)
 {
   PetscFunctionBegin;
-  if (!VHV) PetscFunctionReturn(0);
+  if (!VHV) PetscFunctionReturn(PETSC_SUCCESS);
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscValidHeaderSpecific(U, VEC_CLASSID, 3);
 
@@ -521,7 +521,7 @@ PetscErrorCode TSComputeIHessianProductFunctionPU(TS ts, PetscReal t, Vec U, Vec
     PetscCall(TSComputeRHSHessianProductFunctionPU(ts, t, U, Vl, Vr, VHV));
     for (nadj = 0; nadj < ts->numcost; nadj++) PetscCall(VecScale(VHV[nadj], -1));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -543,7 +543,7 @@ PetscErrorCode TSComputeIHessianProductFunctionPU(TS ts, PetscReal t, Vec U, Vec
 PetscErrorCode TSComputeIHessianProductFunctionPP(TS ts, PetscReal t, Vec U, Vec *Vl, Vec Vr, Vec *VHV)
 {
   PetscFunctionBegin;
-  if (!VHV) PetscFunctionReturn(0);
+  if (!VHV) PetscFunctionReturn(PETSC_SUCCESS);
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscValidHeaderSpecific(U, VEC_CLASSID, 3);
 
@@ -555,7 +555,7 @@ PetscErrorCode TSComputeIHessianProductFunctionPP(TS ts, PetscReal t, Vec U, Vec
     PetscCall(TSComputeRHSHessianProductFunctionPP(ts, t, U, Vl, Vr, VHV));
     for (nadj = 0; nadj < ts->numcost; nadj++) PetscCall(VecScale(VHV[nadj], -1));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -613,7 +613,7 @@ PetscErrorCode TSSetRHSHessianProduct(TS ts, Vec *rhshp1, PetscErrorCode (*rhshe
   ts->rhshessianproduct_gup = rhshessianproductfunc2;
   ts->rhshessianproduct_gpu = rhshessianproductfunc3;
   ts->rhshessianproduct_gpp = rhshessianproductfunc4;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -635,12 +635,12 @@ PetscErrorCode TSSetRHSHessianProduct(TS ts, Vec *rhshp1, PetscErrorCode (*rhshe
 PetscErrorCode TSComputeRHSHessianProductFunctionUU(TS ts, PetscReal t, Vec U, Vec *Vl, Vec Vr, Vec *VHV)
 {
   PetscFunctionBegin;
-  if (!VHV) PetscFunctionReturn(0);
+  if (!VHV) PetscFunctionReturn(PETSC_SUCCESS);
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscValidHeaderSpecific(U, VEC_CLASSID, 3);
 
   PetscCallBack("TS callback RHSHessianProduct 1 for sensitivity analysis", (*ts->rhshessianproduct_guu)(ts, t, U, Vl, Vr, VHV, ts->rhshessianproductctx));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -662,12 +662,12 @@ PetscErrorCode TSComputeRHSHessianProductFunctionUU(TS ts, PetscReal t, Vec U, V
 PetscErrorCode TSComputeRHSHessianProductFunctionUP(TS ts, PetscReal t, Vec U, Vec *Vl, Vec Vr, Vec *VHV)
 {
   PetscFunctionBegin;
-  if (!VHV) PetscFunctionReturn(0);
+  if (!VHV) PetscFunctionReturn(PETSC_SUCCESS);
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscValidHeaderSpecific(U, VEC_CLASSID, 3);
 
   PetscCallBack("TS callback RHSHessianProduct 2 for sensitivity analysis", (*ts->rhshessianproduct_gup)(ts, t, U, Vl, Vr, VHV, ts->rhshessianproductctx));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -689,12 +689,12 @@ PetscErrorCode TSComputeRHSHessianProductFunctionUP(TS ts, PetscReal t, Vec U, V
 PetscErrorCode TSComputeRHSHessianProductFunctionPU(TS ts, PetscReal t, Vec U, Vec *Vl, Vec Vr, Vec *VHV)
 {
   PetscFunctionBegin;
-  if (!VHV) PetscFunctionReturn(0);
+  if (!VHV) PetscFunctionReturn(PETSC_SUCCESS);
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscValidHeaderSpecific(U, VEC_CLASSID, 3);
 
   PetscCallBack("TS callback RHSHessianProduct 3 for sensitivity analysis", (*ts->rhshessianproduct_gpu)(ts, t, U, Vl, Vr, VHV, ts->rhshessianproductctx));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -716,12 +716,12 @@ PetscErrorCode TSComputeRHSHessianProductFunctionPU(TS ts, PetscReal t, Vec U, V
 PetscErrorCode TSComputeRHSHessianProductFunctionPP(TS ts, PetscReal t, Vec U, Vec *Vl, Vec Vr, Vec *VHV)
 {
   PetscFunctionBegin;
-  if (!VHV) PetscFunctionReturn(0);
+  if (!VHV) PetscFunctionReturn(PETSC_SUCCESS);
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscValidHeaderSpecific(U, VEC_CLASSID, 3);
 
   PetscCallBack("TS callback RHSHessianProduct 3 for sensitivity analysis", (*ts->rhshessianproduct_gpp)(ts, t, U, Vl, Vr, VHV, ts->rhshessianproductctx));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* --------------------------- Adjoint sensitivity ---------------------------*/
@@ -756,7 +756,7 @@ PetscErrorCode TSSetCostGradients(TS ts, PetscInt numcost, Vec *lambda, Vec *mu)
   ts->vecs_sensip = mu;
   PetscCheck(!ts->numcost || ts->numcost == numcost, PetscObjectComm((PetscObject)ts), PETSC_ERR_USER, "The number of cost functions (2nd parameter of TSSetCostIntegrand()) is inconsistent with the one set by TSSetCostIntegrand");
   ts->numcost = numcost;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -783,7 +783,7 @@ PetscErrorCode TSGetCostGradients(TS ts, PetscInt *numcost, Vec **lambda, Vec **
   if (numcost) *numcost = ts->numcost;
   if (lambda) *lambda = ts->vecs_sensi;
   if (mu) *mu = ts->vecs_sensip;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -821,7 +821,7 @@ PetscErrorCode TSSetCostHessianProducts(TS ts, PetscInt numcost, Vec *lambda2, V
   ts->vecs_sensi2  = lambda2;
   ts->vecs_sensi2p = mu2;
   ts->vec_dir      = dir;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -850,7 +850,7 @@ PetscErrorCode TSGetCostHessianProducts(TS ts, PetscInt *numcost, Vec **lambda2,
   if (lambda2) *lambda2 = ts->vecs_sensi2;
   if (mu2) *mu2 = ts->vecs_sensi2p;
   if (dir) *dir = ts->vec_dir;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -905,7 +905,7 @@ PetscErrorCode TSAdjointSetForward(TS ts, Mat didp)
   PetscCall(TSForwardSetInitialSensitivities(ts, A)); /* if didp is NULL, identity matrix is assumed */
 
   PetscCall(MatDestroy(&A));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -925,7 +925,7 @@ PetscErrorCode TSAdjointResetForward(TS ts)
   PetscFunctionBegin;
   ts->forward_solve = PETSC_FALSE; /* turn off tangent linear mode */
   PetscCall(TSForwardReset(ts));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -948,7 +948,7 @@ PetscErrorCode TSAdjointSetUp(TS ts)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
-  if (ts->adjointsetupcalled) PetscFunctionReturn(0);
+  if (ts->adjointsetupcalled) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCheck(ts->vecs_sensi, PetscObjectComm((PetscObject)ts), PETSC_ERR_ARG_WRONGSTATE, "Must call TSSetCostGradients() first");
   PetscCheck(!ts->vecs_sensip || ts->Jacp || ts->Jacprhs, PetscObjectComm((PetscObject)ts), PETSC_ERR_ARG_WRONGSTATE, "Must call TSSetRHSJacobianP() or TSSetIJacobianP() first");
   PetscCall(TSGetTrajectory(ts, &tj));
@@ -967,7 +967,7 @@ PetscErrorCode TSAdjointSetUp(TS ts)
 
   PetscTryTypeMethod(ts, adjointsetup);
   ts->adjointsetupcalled = PETSC_TRUE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -997,7 +997,7 @@ PetscErrorCode TSAdjointReset(TS ts)
   ts->vecs_sensi2p       = NULL;
   ts->vec_dir            = NULL;
   ts->adjointsetupcalled = PETSC_FALSE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -1025,7 +1025,7 @@ PetscErrorCode TSAdjointSetSteps(TS ts, PetscInt steps)
   PetscCheck(steps >= 0, PetscObjectComm((PetscObject)ts), PETSC_ERR_ARG_OUTOFRANGE, "Cannot step back a negative number of steps");
   PetscCheck(steps <= ts->steps, PetscObjectComm((PetscObject)ts), PETSC_ERR_ARG_OUTOFRANGE, "Cannot step back more than the total number of forward steps");
   ts->adjoint_max_steps = steps;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1047,7 +1047,7 @@ PetscErrorCode TSAdjointSetRHSJacobian(TS ts, Mat Amat, PetscErrorCode (*func)(T
     PetscCall(MatDestroy(&ts->Jacp));
     ts->Jacp = Amat;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1064,7 +1064,7 @@ PetscErrorCode TSAdjointComputeRHSJacobian(TS ts, PetscReal t, Vec U, Mat Amat)
   PetscValidPointer(Amat, 4);
 
   PetscCallBack("TS callback JacobianP for sensitivity analysis", (*ts->rhsjacobianp)(ts, t, U, Amat, ts->rhsjacobianpctx));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -1080,7 +1080,7 @@ PetscErrorCode TSAdjointComputeDRDYFunction(TS ts, PetscReal t, Vec U, Vec *DRDU
   PetscValidHeaderSpecific(U, VEC_CLASSID, 3);
 
   PetscCallBack("TS callback DRDY for sensitivity analysis", (*ts->drdufunction)(ts, t, U, DRDU, ts->costintegrandctx));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -1096,7 +1096,7 @@ PetscErrorCode TSAdjointComputeDRDPFunction(TS ts, PetscReal t, Vec U, Vec *DRDP
   PetscValidHeaderSpecific(U, VEC_CLASSID, 3);
 
   PetscCallBack("TS callback DRDP for sensitivity analysis", (*ts->drdpfunction)(ts, t, U, DRDP, ts->costintegrandctx));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1115,7 +1115,7 @@ PetscErrorCode TSAdjointMonitorSensi(TS ts, PetscInt step, PetscReal ptime, Vec 
   PetscCall(PetscViewerPushFormat(viewer, vf->format));
   PetscCall(VecView(lambda[0], viewer));
   PetscCall(PetscViewerPopFormat(viewer));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1156,7 +1156,7 @@ PetscErrorCode TSAdjointMonitorSetFromOptions(TS ts, const char name[], const ch
     if (monitorsetup) PetscCall((*monitorsetup)(ts, vf));
     PetscCall(TSAdjointMonitorSet(ts, (PetscErrorCode(*)(TS, PetscInt, PetscReal, Vec, PetscInt, Vec *, Vec *, void *))monitor, vf, (PetscErrorCode(*)(void **))PetscViewerAndFormatDestroy));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1206,13 +1206,13 @@ PetscErrorCode TSAdjointMonitorSet(TS ts, PetscErrorCode (*adjointmonitor)(TS, P
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   for (i = 0; i < ts->numbermonitors; i++) {
     PetscCall(PetscMonitorCompare((PetscErrorCode(*)(void))adjointmonitor, adjointmctx, adjointmdestroy, (PetscErrorCode(*)(void))ts->adjointmonitor[i], ts->adjointmonitorcontext[i], ts->adjointmonitordestroy[i], &identical));
-    if (identical) PetscFunctionReturn(0);
+    if (identical) PetscFunctionReturn(PETSC_SUCCESS);
   }
   PetscCheck(ts->numberadjointmonitors < MAXTSMONITORS, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Too many adjoint monitors set");
   ts->adjointmonitor[ts->numberadjointmonitors]          = adjointmonitor;
   ts->adjointmonitordestroy[ts->numberadjointmonitors]   = adjointmdestroy;
   ts->adjointmonitorcontext[ts->numberadjointmonitors++] = (void *)adjointmctx;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1240,7 +1240,7 @@ PetscErrorCode TSAdjointMonitorCancel(TS ts)
     if (ts->adjointmonitordestroy[i]) PetscCall((*ts->adjointmonitordestroy[i])(&ts->adjointmonitorcontext[i]));
   }
   ts->numberadjointmonitors = 0;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1261,7 +1261,7 @@ PetscErrorCode TSAdjointMonitorDefault(TS ts, PetscInt step, PetscReal ptime, Ve
   PetscCall(PetscViewerASCIIPrintf(viewer, "%" PetscInt_FMT " TS dt %g time %g%s", step, (double)ts->time_step, (double)ptime, ts->steprollback ? " (r)\n" : "\n"));
   PetscCall(PetscViewerASCIISubtractTab(viewer, ((PetscObject)ts)->tablevel));
   PetscCall(PetscViewerPopFormat(viewer));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1292,7 +1292,7 @@ PetscErrorCode TSAdjointMonitorDrawSensi(TS ts, PetscInt step, PetscReal ptime, 
   char             time[32];
 
   PetscFunctionBegin;
-  if (!(((ictx->howoften > 0) && (!(step % ictx->howoften))) || ((ictx->howoften == -1) && ts->reason))) PetscFunctionReturn(0);
+  if (!(((ictx->howoften > 0) && (!(step % ictx->howoften))) || ((ictx->howoften == -1) && ts->reason))) PetscFunctionReturn(PETSC_SUCCESS);
 
   PetscCall(VecView(lambda[0], ictx->viewer));
   PetscCall(PetscViewerDrawGetDraw(ictx->viewer, 0, &draw));
@@ -1301,7 +1301,7 @@ PetscErrorCode TSAdjointMonitorDrawSensi(TS ts, PetscInt step, PetscReal ptime, 
   h = yl + .95 * (yr - yl);
   PetscCall(PetscDrawStringCentered(draw, .5 * (xl + xr), h, PETSC_DRAW_BLACK, time));
   PetscCall(PetscDrawFlush(draw));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -1349,7 +1349,7 @@ PetscErrorCode TSAdjointSetFromOptions(TS ts, PetscOptionItems *PetscOptionsObje
     PetscCall(TSMonitorDrawCtxCreate(PetscObjectComm((PetscObject)ts), NULL, NULL, PETSC_DECIDE, PETSC_DECIDE, 300, 300, howoften, &ctx));
     PetscCall(TSAdjointMonitorSet(ts, TSAdjointMonitorDrawSensi, ctx, (PetscErrorCode(*)(void **))TSMonitorDrawCtxDestroy));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -1386,7 +1386,7 @@ PetscErrorCode TSAdjointStep(TS ts)
   } else if (!ts->reason) {
     if (ts->adjoint_steps >= ts->adjoint_max_steps) ts->reason = TS_CONVERGED_ITS;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -1463,7 +1463,7 @@ PetscErrorCode TSAdjointSolve(TS ts)
 #if defined(TSADJOINT_STAGE)
   PetscCall(PetscLogStagePop());
 #endif
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1498,7 +1498,7 @@ PetscErrorCode TSAdjointMonitor(TS ts, PetscInt step, PetscReal ptime, Vec u, Pe
   PetscCall(VecLockReadPush(u));
   for (i = 0; i < n; i++) PetscCall((*ts->adjointmonitor[i])(ts, step, ptime, u, numcost, lambda, mu, ts->adjointmonitorcontext[i]));
   PetscCall(VecLockReadPop(u));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -1521,7 +1521,7 @@ PetscErrorCode TSAdjointCostIntegral(TS ts)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscUseTypeMethod(ts, adjointintegral);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* ------------------ Forward (tangent linear) sensitivity  ------------------*/
@@ -1543,11 +1543,11 @@ PetscErrorCode TSForwardSetUp(TS ts)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
-  if (ts->forwardsetupcalled) PetscFunctionReturn(0);
+  if (ts->forwardsetupcalled) PetscFunctionReturn(PETSC_SUCCESS);
   PetscTryTypeMethod(ts, forwardsetup);
   PetscCall(VecDuplicate(ts->vec_sol, &ts->vec_sensip_col));
   ts->forwardsetupcalled = PETSC_TRUE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -1574,7 +1574,7 @@ PetscErrorCode TSForwardReset(TS ts)
   PetscCall(VecDestroy(&ts->vec_sensip_col));
   ts->forward_solve      = PETSC_FALSE;
   ts->forwardsetupcalled = PETSC_FALSE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -1597,7 +1597,7 @@ PetscErrorCode TSForwardSetIntegralGradients(TS ts, PetscInt numfwdint, Vec *vp)
   if (!ts->numcost) ts->numcost = numfwdint;
 
   ts->vecs_integral_sensip = vp;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -1620,7 +1620,7 @@ PetscErrorCode TSForwardGetIntegralGradients(TS ts, PetscInt *numfwdint, Vec **v
   PetscValidPointer(vp, 3);
   if (numfwdint) *numfwdint = ts->numcost;
   if (vp) *vp = ts->vecs_integral_sensip;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -1646,7 +1646,7 @@ PetscErrorCode TSForwardStep(TS ts)
   PetscUseTypeMethod(ts, forwardstep);
   PetscCall(PetscLogEventEnd(TS_ForwardStep, ts, 0, 0, 0));
   PetscCheck(ts->reason >= 0 || !ts->errorifstepfailed, PetscObjectComm((PetscObject)ts), PETSC_ERR_NOT_CONVERGED, "TSFowardStep has failed due to %s", TSConvergedReasons[ts->reason]);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -1681,7 +1681,7 @@ PetscErrorCode TSForwardSetSensitivities(TS ts, PetscInt nump, Mat Smat)
   PetscCall(PetscObjectReference((PetscObject)Smat));
   PetscCall(MatDestroy(&ts->mat_sensip));
   ts->mat_sensip = Smat;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -1704,7 +1704,7 @@ PetscErrorCode TSForwardGetSensitivities(TS ts, PetscInt *nump, Mat *Smat)
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   if (nump) *nump = ts->num_parameters;
   if (Smat) *Smat = ts->mat_sensip;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -1727,7 +1727,7 @@ PetscErrorCode TSForwardCostIntegral(TS ts)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscUseTypeMethod(ts, forwardintegral);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -1753,7 +1753,7 @@ PetscErrorCode TSForwardSetInitialSensitivities(TS ts, Mat didp)
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscValidHeaderSpecific(didp, MAT_CLASSID, 2);
   if (!ts->mat_sensip) PetscCall(TSForwardSetSensitivities(ts, PETSC_DEFAULT, didp));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -1777,7 +1777,7 @@ PetscErrorCode TSForwardGetStages(TS ts, PetscInt *ns, Mat **S)
 
   if (!ts->ops->getstages) *S = NULL;
   else PetscUseTypeMethod(ts, forwardgetstages, ns, S);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -1814,7 +1814,7 @@ PetscErrorCode TSCreateQuadratureTS(TS ts, PetscBool fwd, TS *quadts)
     PetscCall(VecCreateSeq(PETSC_COMM_SELF, 1, &(*quadts)->vec_sol));
   }
   ts->costintegralfwd = fwd;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -1837,7 +1837,7 @@ PetscErrorCode TSGetQuadratureTS(TS ts, PetscBool *fwd, TS *quadts)
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   if (fwd) *fwd = ts->costintegralfwd;
   if (quadts) *quadts = ts->quadraturets;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -1881,5 +1881,5 @@ PetscErrorCode TSComputeSNESJacobian(TS ts, Vec x, Mat J, Mat Jpre)
     PetscCall(SNESComputeFunction(snes, x, f));
   }
   PetscCall(SNESComputeJacobian(snes, x, J, Jpre));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

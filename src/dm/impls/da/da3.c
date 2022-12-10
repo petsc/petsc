@@ -49,7 +49,7 @@ static PetscErrorCode DMView_DA_3d(DM da, PetscViewer viewer)
       PetscCall(PetscFree(nz));
       navg = navg / size;
       PetscCall(PetscViewerASCIIPrintf(viewer, "  Load Balance - Grid Points: Min %" PetscInt_FMT "  avg %" PetscInt_FMT "  max %" PetscInt_FMT "\n", nmin, navg, nmax));
-      PetscFunctionReturn(0);
+      PetscFunctionReturn(PETSC_SUCCESS);
     }
     if (format != PETSC_VIEWER_ASCII_VTK_DEPRECATED && format != PETSC_VIEWER_ASCII_VTK_CELL_DEPRECATED && format != PETSC_VIEWER_ASCII_GLVIS) {
       DMDALocalInfo info;
@@ -84,7 +84,7 @@ static PetscErrorCode DMView_DA_3d(DM da, PetscViewer viewer)
 
     PetscCall(PetscViewerDrawGetDraw(viewer, 0, &draw));
     PetscCall(PetscDrawIsNull(draw, &isnull));
-    if (isnull) PetscFunctionReturn(0);
+    if (isnull) PetscFunctionReturn(PETSC_SUCCESS);
 
     PetscCall(PetscDrawCheckResizedWindow(draw));
     PetscCall(PetscDrawClear(draw));
@@ -186,7 +186,7 @@ static PetscErrorCode DMView_DA_3d(DM da, PetscViewer viewer)
     PetscCall(DMView_DA_Matlab(da, viewer));
 #endif
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMSetUp_DA_3D(DM da)
@@ -1431,7 +1431,7 @@ PetscErrorCode DMSetUp_DA_3D(DM da)
   da->ops->view = DMView_DA_3d;
   dd->ltol      = NULL;
   dd->ao        = NULL;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1505,5 +1505,5 @@ PetscErrorCode DMDACreate3d(MPI_Comm comm, DMBoundaryType bx, DMBoundaryType by,
   PetscCall(DMDASetStencilType(*da, stencil_type));
   PetscCall(DMDASetStencilWidth(*da, s));
   PetscCall(DMDASetOwnershipRanges(*da, lx, ly, lz));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

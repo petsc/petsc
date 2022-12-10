@@ -19,10 +19,10 @@ PetscErrorCode PetscDLLibraryPrintPath(PetscDLLibrary libs)
 {
   PetscFunctionBegin;
   while (libs) {
-    PetscErrorPrintf("  %s\n", libs->libname);
+    PetscCall(PetscErrorPrintf("  %s\n", libs->libname));
     libs = libs->next;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -92,7 +92,7 @@ PetscErrorCode PetscDLLibraryRetrieve(MPI_Comm comm, const char libname[], char 
   }
 
   PetscCall(PetscFree(buf));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -184,7 +184,7 @@ PetscErrorCode PetscDLLibraryOpen(MPI_Comm comm, const char path[], PetscDLLibra
   (*entry)->next   = NULL;
   (*entry)->handle = handle;
   PetscCall(PetscStrcpy((*entry)->libname, libname));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -286,7 +286,7 @@ PetscErrorCode PetscDLLibrarySym(MPI_Comm comm, PetscDLLibrary *outlist, const c
   }
 
   if (symbol != insymbol) PetscCall(PetscFree(symbol));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -338,7 +338,7 @@ PetscErrorCode PetscDLLibraryAppend(MPI_Comm comm, PetscDLLibrary *outlist, cons
     PetscCall(PetscStrlcat(program, PETSC_SLSUFFIX, sizeof(program)));
 
     PetscCall(PetscLs(comm, program, found, 8 * PETSC_MAX_PATH_LEN, &dir));
-    if (!dir) PetscFunctionReturn(0);
+    if (!dir) PetscFunctionReturn(PETSC_SUCCESS);
   } else {
     PetscCall(PetscStrncpy(found, path, PETSC_MAX_PATH_LEN));
   }
@@ -372,7 +372,7 @@ PetscErrorCode PetscDLLibraryAppend(MPI_Comm comm, PetscDLLibrary *outlist, cons
     PetscCall(PetscTokenFind(token, &libname));
   }
   PetscCall(PetscTokenDestroy(&token));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -420,7 +420,7 @@ PetscErrorCode PetscDLLibraryPrepend(MPI_Comm comm, PetscDLLibrary *outlist, con
     PetscCall(PetscStrlcat(program, PETSC_SLSUFFIX, sizeof(program)));
 
     PetscCall(PetscLs(comm, program, found, 8 * PETSC_MAX_PATH_LEN, &dir));
-    if (!dir) PetscFunctionReturn(0);
+    if (!dir) PetscFunctionReturn(PETSC_SUCCESS);
   } else {
     PetscCall(PetscStrncpy(found, path, PETSC_MAX_PATH_LEN));
   }
@@ -462,7 +462,7 @@ PetscErrorCode PetscDLLibraryPrepend(MPI_Comm comm, PetscDLLibrary *outlist, con
     PetscCall(PetscTokenFind(token, &libname));
   }
   PetscCall(PetscTokenDestroy(&token));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -482,7 +482,7 @@ PetscErrorCode PetscDLLibraryClose(PetscDLLibrary list)
   PetscDLLibrary prev, tail;
 
   PetscFunctionBegin;
-  if (!list) PetscFunctionReturn(0);
+  if (!list) PetscFunctionReturn(PETSC_SUCCESS);
   /* traverse the list in reverse order */
   while (!done) {
     if (!list->next) done = PETSC_TRUE;
@@ -497,5 +497,5 @@ PetscErrorCode PetscDLLibraryClose(PetscDLLibrary list)
     PetscCall(PetscDLClose(&tail->handle));
     PetscCall(PetscFree(tail));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

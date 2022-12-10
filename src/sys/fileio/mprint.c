@@ -72,7 +72,7 @@ PetscErrorCode PetscFormatConvertGetSize(const char *format, size_t *size)
     ++sz;
   }
   *size = sz + 1; /* space for NULL character */
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -137,7 +137,7 @@ PetscErrorCode PetscFormatConvert(const char *format, char *newformat)
     } else newformat[j++] = format[i++];
   }
   newformat[j] = 0;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 #define PETSCDEFAULTBUFFERSIZE 8 * 1024
@@ -248,7 +248,7 @@ PetscErrorCode PetscVSNPrintf(char *str, size_t len, const char *format, size_t 
   }
 #endif
   if (fullLength) *fullLength = 1 + (size_t)flen;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -269,7 +269,7 @@ $     size_t length;
 $     PetscCall(PetscVSNPrintf(buff,BIG,format,&length,Argp));
 $     now send buff to whatever stream or whatever you want
 $ }
-$ PetscFunctionReturn(0);
+$ PetscFunctionReturn(PETSC_SUCCESS);
 $}
 then before the call to PetscInitialize() do the assignment
 $    PetscVFPrintf = mypetscvfprintf;
@@ -311,7 +311,7 @@ PetscErrorCode PetscVFPrintfDefault(FILE *fd, const char *format, va_list Argp)
   fprintf(fd, "%s", buff);
   fflush(fd);
   if (buff != str) PetscCall(PetscFree(buff));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -338,7 +338,7 @@ PetscErrorCode PetscSNPrintf(char *str, size_t len, const char format[], ...)
   PetscFunctionBegin;
   va_start(Argp, format);
   PetscCall(PetscVSNPrintf(str, len, format, &fullLength, Argp));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -367,7 +367,7 @@ PetscErrorCode PetscSNPrintfCount(char *str, size_t len, const char format[], si
   PetscFunctionBegin;
   va_start(Argp, countused);
   PetscCall(PetscVSNPrintf(str, len, format, countused, Argp));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* ----------------------------------------------------------------------- */
@@ -440,7 +440,7 @@ PetscErrorCode PetscSynchronizedPrintf(MPI_Comm comm, const char format[], ...)
       va_end(Argp);
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -506,7 +506,7 @@ PetscErrorCode PetscSynchronizedFPrintf(MPI_Comm comm, FILE *fp, const char form
       va_end(Argp);
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -576,7 +576,7 @@ PetscErrorCode PetscSynchronizedFlush(MPI_Comm comm, FILE *fd)
     petsc_printfqueuelength = 0;
   }
   PetscCall(PetscCommDestroy(&comm));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* ---------------------------------------------------------------------------------------*/
@@ -614,7 +614,7 @@ PetscErrorCode PetscFPrintf(MPI_Comm comm, FILE *fd, const char format[], ...)
     }
     va_end(Argp);
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -656,7 +656,7 @@ PetscErrorCode PetscPrintf(MPI_Comm comm, const char format[], ...)
     }
     va_end(Argp);
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PetscHelpPrintfDefault(MPI_Comm comm, const char format[], ...)
@@ -676,7 +676,7 @@ PetscErrorCode PetscHelpPrintfDefault(MPI_Comm comm, const char format[], ...)
     }
     va_end(Argp);
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* ---------------------------------------------------------------------------------------*/
@@ -715,7 +715,7 @@ PetscErrorCode PetscSynchronizedFGets(MPI_Comm comm, FILE *fp, size_t len, char 
     }
   }
   PetscCallMPI(MPI_Bcast(string, len, MPI_BYTE, 0, comm));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -739,7 +739,7 @@ PetscErrorCode PetscFormatStrip(char *format)
     }
     format[loc1++] = format[loc2++];
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PetscFormatRealArray(char buf[], size_t len, const char *fmt, PetscInt n, const PetscReal x[])
@@ -757,5 +757,5 @@ PetscErrorCode PetscFormatRealArray(char buf[], size_t len, const char *fmt, Pet
     *p++ = ' ';
   }
   p[i ? 0 : -1] = 0;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

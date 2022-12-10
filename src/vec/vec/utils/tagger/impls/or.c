@@ -22,7 +22,7 @@ PetscErrorCode VecTaggerOrGetSubs(VecTagger tagger, PetscInt *nsubs, VecTagger *
 {
   PetscFunctionBegin;
   PetscCall(VecTaggerGetSubs_AndOr(tagger, nsubs, subs));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -43,7 +43,7 @@ PetscErrorCode VecTaggerOrSetSubs(VecTagger tagger, PetscInt nsubs, VecTagger *s
 {
   PetscFunctionBegin;
   PetscCall(VecTaggerSetSubs_AndOr(tagger, nsubs, subs, mode));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode VecTaggerComputeBoxes_Or(VecTagger tagger, Vec vec, PetscInt *numBoxes, VecTaggerBox **boxes, PetscBool *listed)
@@ -101,7 +101,7 @@ static PetscErrorCode VecTaggerComputeBoxes_Or(VecTagger tagger, Vec vec, PetscI
   *numBoxes = nboxes;
   *boxes    = bxs;
   if (listed) *listed = PETSC_TRUE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode VecTaggerComputeIS_Or(VecTagger tagger, Vec vec, IS *is, PetscBool *listed)
@@ -115,7 +115,7 @@ static PetscErrorCode VecTaggerComputeIS_Or(VecTagger tagger, Vec vec, IS *is, P
   PetscCall(VecTaggerComputeIS_FromBoxes(tagger, vec, is, &boxlisted));
   if (boxlisted) {
     if (listed) *listed = PETSC_TRUE;
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
   PetscCall(VecTaggerOrGetSubs(tagger, &nsubs, &subs));
   PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject)vec), 0, NULL, PETSC_OWN_POINTER, &unionIS));
@@ -132,7 +132,7 @@ static PetscErrorCode VecTaggerComputeIS_Or(VecTagger tagger, Vec vec, IS *is, P
   }
   *is = unionIS;
   if (listed) *listed = PETSC_TRUE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_INTERN PetscErrorCode VecTaggerCreate_Or(VecTagger tagger)
@@ -141,5 +141,5 @@ PETSC_INTERN PetscErrorCode VecTaggerCreate_Or(VecTagger tagger)
   PetscCall(VecTaggerCreate_AndOr(tagger));
   tagger->ops->computeboxes = VecTaggerComputeBoxes_Or;
   tagger->ops->computeis    = VecTaggerComputeIS_Or;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -22,7 +22,7 @@ PetscErrorCode DMLocalToLocalCreate_DA(DM da)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da, DM_CLASSID, 1);
 
-  if (dd->ltol) PetscFunctionReturn(0);
+  if (dd->ltol) PetscFunctionReturn(PETSC_SUCCESS);
   /*
      We simply remap the values in the from part of
      global to local to read from an array with the ghost values
@@ -60,7 +60,7 @@ PetscErrorCode DMLocalToLocalCreate_DA(DM da)
 
   PetscCall(VecScatterRemap(dd->ltol, idx, NULL));
   PetscCall(PetscFree(idx));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -93,7 +93,7 @@ PetscErrorCode DMLocalToLocalBegin_DA(DM da, Vec g, InsertMode mode, Vec l)
   PetscValidHeaderSpecific(da, DM_CLASSID, 1);
   if (!dd->ltol) PetscCall(DMLocalToLocalCreate_DA(da));
   PetscCall(VecScatterBegin(dd->ltol, g, l, mode, SCATTER_FORWARD));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -127,5 +127,5 @@ PetscErrorCode DMLocalToLocalEnd_DA(DM da, Vec g, InsertMode mode, Vec l)
   PetscValidHeaderSpecific(da, DM_CLASSID, 1);
   PetscValidHeaderSpecific(g, VEC_CLASSID, 2);
   PetscCall(VecScatterEnd(dd->ltol, g, l, mode, SCATTER_FORWARD));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

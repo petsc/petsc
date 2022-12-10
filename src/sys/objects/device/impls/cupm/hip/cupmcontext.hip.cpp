@@ -10,7 +10,7 @@ PetscErrorCode PetscDeviceContextCreate_HIP(PetscDeviceContext dctx)
   PetscCall(hip_context.initialize(dctx->device));
   dctx->data = new PetscDeviceContext_(HIP);
   PetscCall(PetscMemcpy(dctx->ops, &hip_context.ops, sizeof(hip_context.ops)));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -30,7 +30,7 @@ PetscErrorCode PetscHIPBLASGetHandle(hipblasHandle_t *handle)
   PetscValidPointer(handle, 1);
   PetscCall(PetscDeviceContextGetCurrentContextAssertType_Internal(&dctx, PETSC_DEVICE_HIP));
   PetscCall(PetscDeviceContextGetBLASHandle_Internal(dctx, handle));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PetscHIPSOLVERGetHandle(hipsolverHandle_t *handle)
@@ -41,5 +41,5 @@ PetscErrorCode PetscHIPSOLVERGetHandle(hipsolverHandle_t *handle)
   PetscValidPointer(handle, 1);
   PetscCall(PetscDeviceContextGetCurrentContextAssertType_Internal(&dctx, PETSC_DEVICE_HIP));
   PetscCall(PetscDeviceContextGetSOLVERHandle_Internal(dctx, handle));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

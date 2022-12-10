@@ -17,7 +17,7 @@ PetscErrorCode MatDestroy_SeqDense_MatTransMatMult(void *data)
   PetscCall(VecDestroy(&atb->bt));
   PetscCall(VecDestroy(&atb->ct));
   PetscCall(PetscFree(atb));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatTMatTMultNumeric_SeqAIJ_SeqDense(Mat, Mat, Mat);
@@ -57,7 +57,7 @@ PETSC_INTERN PetscErrorCode MatTMatTMultSymbolic_SeqAIJ_SeqDense(Mat A, Mat B, P
   } else {
     C->ops->mattransposemultnumeric = MatTMatTMultNumeric_SeqAIJ_SeqDense;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatTMatTMultNumeric_SeqAIJ_SeqDense(Mat A, Mat B, Mat C)
@@ -127,5 +127,5 @@ PetscErrorCode MatTMatTMultNumeric_SeqAIJ_SeqDense(Mat A, Mat B, Mat C)
   }
   PetscCall(MatDenseRestoreArrayRead(B, &Barray));
   PetscCall(MatDenseRestoreArray(C, &Carray));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

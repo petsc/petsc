@@ -28,7 +28,7 @@ PetscErrorCode f(PetscReal t, Vec UV, Vec F)
   for (i = 0; i < n; i++) f[i] = u[i] + v[i];
   PetscCall(VecRestoreArrayRead(UV, &u));
   PetscCall(VecRestoreArrayWrite(F, &f));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -52,7 +52,7 @@ PetscErrorCode F(PetscReal t, Vec UV, Vec F)
   f = f - n;
   PetscCall(VecRestoreArrayRead(UV, &u));
   PetscCall(VecRestoreArrayWrite(F, &f));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 typedef struct {
@@ -102,7 +102,7 @@ PetscErrorCode TSFunctionRHS(TS ts, PetscReal t, Vec UV, Vec F, void *actx)
   PetscFunctionBeginUser;
   PetscCall(VecSet(F, 0.0));
   PetscCall((*ctx->f)(t, UV, F));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -115,7 +115,7 @@ PetscErrorCode TSFunctionI(TS ts, PetscReal t, Vec UV, Vec UVdot, Vec F, void *a
   PetscFunctionBeginUser;
   PetscCall(VecCopy(UVdot, F));
   PetscCall((*ctx->F)(t, UV, F));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*TEST

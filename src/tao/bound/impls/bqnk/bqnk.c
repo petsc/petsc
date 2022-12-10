@@ -41,7 +41,7 @@ static PetscErrorCode TaoBQNKComputeHessian(Tao tao)
   PetscCall(MatDestroy(&bnk->Hpre_inactive));
   PetscCall(PetscObjectReference((PetscObject)bnk->H_inactive));
   bnk->Hpre_inactive = bnk->H_inactive;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TaoBQNKComputeStep(Tao tao, PetscBool shift, KSPConvergedReason *ksp_reason, PetscInt *step_type)
@@ -56,7 +56,7 @@ static PetscErrorCode TaoBQNKComputeStep(Tao tao, PetscBool shift, KSPConvergedR
     PetscCall(MatLMVMReset(bqnk->B, PETSC_FALSE));
     PetscCall(MatLMVMUpdate(bqnk->B, tao->solution, bnk->unprojected_gradient));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode TaoSolve_BQNK(Tao tao)
@@ -88,7 +88,7 @@ PetscErrorCode TaoSolve_BQNK(Tao tao)
     }
   }
   PetscCall((*bqnk->solve)(tao));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode TaoSetUp_BQNK(Tao tao)
@@ -111,7 +111,7 @@ PetscErrorCode TaoSetUp_BQNK(Tao tao)
   PetscCall(KSPGetPC(tao->ksp, &bqnk->pc));
   PetscCall(PCSetType(bqnk->pc, PCLMVM));
   PetscCall(PCLMVMSetMatLMVM(bqnk->pc, bqnk->B));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TaoSetFromOptions_BQNK(Tao tao, PetscOptionItems *PetscOptionsObject)
@@ -128,7 +128,7 @@ static PetscErrorCode TaoSetFromOptions_BQNK(Tao tao, PetscOptionItems *PetscOpt
   PetscCall(MatSetFromOptions(bqnk->B));
   PetscCall(MatIsSPDKnown(bqnk->B, &is_set, &bqnk->is_spd));
   if (!is_set) bqnk->is_spd = PETSC_FALSE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TaoView_BQNK(Tao tao, PetscViewer viewer)
@@ -145,7 +145,7 @@ static PetscErrorCode TaoView_BQNK(Tao tao, PetscViewer viewer)
     PetscCall(MatView(bqnk->B, viewer));
     PetscCall(PetscViewerPopFormat(viewer));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TaoDestroy_BQNK(Tao tao)
@@ -159,7 +159,7 @@ static PetscErrorCode TaoDestroy_BQNK(Tao tao)
   PetscCall(MatDestroy(&bqnk->B));
   PetscCall(PetscFree(bnk->ctx));
   PetscCall(TaoDestroy_BNK(tao));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_INTERN PetscErrorCode TaoCreate_BQNK(Tao tao)
@@ -187,7 +187,7 @@ PETSC_INTERN PetscErrorCode TaoCreate_BQNK(Tao tao)
   PetscCall(MatCreate(PetscObjectComm((PetscObject)tao), &bqnk->B));
   PetscCall(PetscObjectIncrementTabLevel((PetscObject)bqnk->B, (PetscObject)tao, 1));
   PetscCall(MatSetType(bqnk->B, MATLMVMSR1));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -214,7 +214,7 @@ PetscErrorCode TaoGetLMVMMatrix(Tao tao, Mat *B)
   PetscCall(PetscObjectTypeCompareAny((PetscObject)tao, &flg, TAOBQNLS, TAOBQNKLS, TAOBQNKTR, TAOBQNKTL, ""));
   PetscCheck(flg, PetscObjectComm((PetscObject)tao), PETSC_ERR_ARG_INCOMP, "LMVM Matrix only exists for quasi-Newton algorithms");
   *B = bqnk->B;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -246,5 +246,5 @@ PetscErrorCode TaoSetLMVMMatrix(Tao tao, Mat B)
   if (bqnk->B) PetscCall(MatDestroy(&bqnk->B));
   PetscCall(PetscObjectReference((PetscObject)B));
   bqnk->B = B;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

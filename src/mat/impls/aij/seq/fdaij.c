@@ -49,7 +49,7 @@ PetscErrorCode MatFDColoringCreate_SeqXAIJ(Mat mat, ISColoring iscoloring, MatFD
   c->rstart  = 0;
   c->ncolors = nis;
   c->ctype   = iscoloring->ctype;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -170,7 +170,7 @@ PetscErrorCode MatFDColoringSetUpBlocked_AIJ_Private(Mat mat, MatFDColoring c, P
   for (i = nbcols - 1; i > 0; i--) nrows_new[i] -= nrows_new[i - 1];
   PetscCall(PetscFree(c->nrows));
   c->nrows = nrows_new;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatFDColoringSetUp_SeqXAIJ(Mat mat, ISColoring iscoloring, MatFDColoring c)
@@ -296,5 +296,5 @@ PetscErrorCode MatFDColoringSetUp_SeqXAIJ(Mat mat, ISColoring iscoloring, MatFDC
 
   PetscCall(VecCreateGhost(PetscObjectComm((PetscObject)mat), mat->rmap->n, PETSC_DETERMINE, 0, NULL, &c->vscale));
   PetscCall(PetscInfo(c, "ncolors %" PetscInt_FMT ", brows %" PetscInt_FMT " and bcols %" PetscInt_FMT " are used.\n", c->ncolors, c->brows, c->bcols));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

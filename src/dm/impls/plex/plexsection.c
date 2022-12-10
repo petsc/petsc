@@ -82,7 +82,7 @@ static PetscErrorCode DMPlexCreateSectionFields(DM dm, const PetscInt numComp[],
   PetscCall(DMPlexGetChart(dm, &pStart, &pEnd));
   PetscCall(PetscSectionSetChart(*section, pStart, pEnd));
   PetscCall(PetscFree(isFE));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Set the number of dof on each point and separate by fields */
@@ -185,7 +185,7 @@ static PetscErrorCode DMPlexCreateSectionDof(DM dm, DMLabel label[], const Petsc
     }
   }
   PetscCall(PetscFree(isFE));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Set the number of dof on each point and separate by fields
@@ -261,7 +261,7 @@ static PetscErrorCode DMPlexCreateSectionBCDof(DM dm, PetscInt numBC, const Pets
       }
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Set the constrained field indices on each point
@@ -275,7 +275,7 @@ static PetscErrorCode DMPlexCreateSectionBCIndicesField(DM dm, PetscInt numBC, c
 
   PetscFunctionBegin;
   PetscCall(PetscSectionGetNumFields(section, &Nf));
-  if (!Nf) PetscFunctionReturn(0);
+  if (!Nf) PetscFunctionReturn(PETSC_SUCCESS);
   /* Initialize all field indices to -1 */
   PetscCall(PetscSectionGetChart(section, &pStart, &pEnd));
   for (p = pStart; p < pEnd; ++p) {
@@ -349,7 +349,7 @@ static PetscErrorCode DMPlexCreateSectionBCIndicesField(DM dm, PetscInt numBC, c
     }
   }
   PetscCall(PetscFree(indices));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Set the constrained indices on each point */
@@ -392,7 +392,7 @@ static PetscErrorCode DMPlexCreateSectionBCIndices(DM dm, PetscSection section)
     }
   }
   PetscCall(PetscFree(indices));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -444,7 +444,7 @@ PetscErrorCode DMPlexCreateSection(DM dm, DMLabel label[], const PetscInt numCom
     PetscCall(DMPlexCreateSectionBCIndices(dm, *section));
   }
   PetscCall(PetscSectionViewFromOptions(*section, NULL, "-section_view"));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMCreateLocalSection_Plex(DM dm)
@@ -629,5 +629,5 @@ PetscErrorCode DMCreateLocalSection_Plex(DM dm)
   PetscCall(PetscFree3(bcFields, bcPoints, bcComps));
   PetscCall(PetscFree3(labels, numComp, numDof));
   PetscCall(PetscFree(isFE));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

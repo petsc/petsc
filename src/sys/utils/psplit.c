@@ -40,7 +40,7 @@ PetscErrorCode PetscSplitOwnershipBlock(MPI_Comm comm, PetscInt bs, PetscInt *n,
     PetscCallMPI(MPI_Comm_rank(comm, &rank));
     *n = bs * (Nbs / size + ((Nbs % size) > rank));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -95,7 +95,7 @@ PetscErrorCode PetscSplitOwnership(MPI_Comm comm, PetscInt *n, PetscInt *N)
     PetscCall(MPIU_Allreduce(n, &tmp, 1, MPIU_INT, MPI_SUM, comm));
     PetscCheck(tmp == *N, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Sum of local lengths %" PetscInt_FMT " does not equal global length %" PetscInt_FMT ", my local length %" PetscInt_FMT "\n  likely a call to VecSetSizes() or MatSetSizes() is wrong.\nSee https://petsc.org/release/faq/#split-ownership", tmp, *N, *n);
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -159,5 +159,5 @@ PetscErrorCode PetscSplitOwnershipEqual(MPI_Comm comm, PetscInt *n, PetscInt *N)
     PetscCall(MPIU_Allreduce(n, &tmp, 1, MPIU_INT, MPI_SUM, comm));
     PetscCheck(tmp == *N, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Sum of local lengths %" PetscInt_FMT " does not equal global length %" PetscInt_FMT ", my local length %" PetscInt_FMT, tmp, *N, *n);
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

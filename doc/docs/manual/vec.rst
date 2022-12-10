@@ -510,7 +510,7 @@ for a scalar problem in two dimensions one could use
    .. literalinclude:: /../src/snes/tutorials/ex3.c
       :name: snesex3
       :start-at: PetscErrorCode FormFunction(SNES snes, Vec x, Vec f, void *ctx)
-      :end-at: PetscFunctionReturn(0);
+      :end-at: PetscFunctionReturn(PETSC_SUCCESS);
 
 The recommended approach for multi-component PDEs is to declare a
 ``struct`` representing the fields defined at each node of the grid,
@@ -549,7 +549,7 @@ that act on the local portion of ``DMDA`` vectors.
 
    .. literalinclude:: /../src/snes/tutorials/ex3k.kokkos.cxx
       :start-at: PetscErrorCode KokkosFunction(SNES snes, Vec x, Vec r, void *ctx)
-      :end-at: PetscFunctionReturn(0);
+      :end-at: PetscFunctionReturn(PETSC_SUCCESS);
 
 The global indices of the lower left corner of the local portion of vectors obtained from ``DMDA``
 as well as the local array size can be obtained with the commands

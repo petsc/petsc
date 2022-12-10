@@ -73,7 +73,7 @@ static PetscErrorCode KSPAGMRESQuickSort(PetscScalar *val_r, PetscScalar *val_i,
       PetscCheck(i != DEPTH - 1, PETSC_COMM_SELF, PETSC_ERR_MEM, "Could cause stack overflow: Try to increase the value of DEPTH ");
     } else i--;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -169,7 +169,7 @@ static PetscErrorCode KSPAGMRESSchurForm(KSP ksp, PetscBLASInt KspSize, PetscSca
   /* Update the Shift values for the Newton basis. This is surely necessary when applying the DeflationPrecond */
   if (agmres->DeflPrecond) PetscCall(KSPAGMRESLejaOrdering(wr, wi, agmres->Rshift, agmres->Ishift, max_k));
   *CurNeig = r; /* Number of extracted eigenvalues */
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -197,7 +197,7 @@ PetscErrorCode KSPAGMRESComputeDeflationData(KSP ksp)
 
   PetscFunctionBegin;
   PetscCall(PetscLogEventBegin(KSP_AGMRESComputeDeflationData, ksp, 0, 0, 0));
-  if (agmres->neig <= 1) PetscFunctionReturn(0);
+  if (agmres->neig <= 1) PetscFunctionReturn(PETSC_SUCCESS);
   /* Explicitly form MatEigL = H^T*H, It can also be formed as H^T+h_{N+1,N}H^-1e^T */
   alpha = 1.0;
   beta  = 0.0;
@@ -229,7 +229,7 @@ PetscErrorCode KSPAGMRESComputeDeflationData(KSP ksp)
   if (agmres->DeflPrecond) { /* Switch to DGMRES to improve the basis of the invariant subspace associated to the deflation */
     agmres->HasSchur = PETSC_TRUE;
     PetscCall(KSPDGMRESComputeDeflationData(ksp, &CurNeig));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
   /* Form the Schur vectors in the entire subspace: U = W * Sr where W = [VEC_V(1:max_k); U]*/
   for (j = 0; j < PrevNeig; j++) { /* First, copy U to a temporary place */
@@ -243,5 +243,5 @@ PetscErrorCode KSPAGMRESComputeDeflationData(KSP ksp)
   }
   agmres->r = CurNeig;
   PetscCall(PetscLogEventEnd(KSP_AGMRESComputeDeflationData, ksp, 0, 0, 0));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

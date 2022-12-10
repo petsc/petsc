@@ -76,7 +76,7 @@ PetscErrorCode Create(MPI_Comm comm, Mat *inA, IS *is0, IS *is1)
   PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
   *inA = A;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode Destroy(Mat *A, IS *is0, IS *is1)
@@ -85,7 +85,7 @@ PetscErrorCode Destroy(Mat *A, IS *is0, IS *is1)
   PetscCall(MatDestroy(A));
   PetscCall(ISDestroy(is0));
   PetscCall(ISDestroy(is1));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char *argv[])

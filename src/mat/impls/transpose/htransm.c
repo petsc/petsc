@@ -105,7 +105,7 @@ PETSC_INTERN PetscErrorCode MatProductSetFromOptions_HermitianTranspose(Mat D)
   PetscCall(MatProductReplaceMats(Ain, Bin, Cin, D));
   PetscCall(MatProductSetType(D, ptype));
   PetscCall(MatProductSetFromOptions(D));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 PetscErrorCode MatMult_HT(Mat N, Vec x, Vec y)
 {
@@ -113,7 +113,7 @@ PetscErrorCode MatMult_HT(Mat N, Vec x, Vec y)
 
   PetscFunctionBegin;
   PetscCall(MatMultHermitianTranspose(Na->A, x, y));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatMultAdd_HT(Mat N, Vec v1, Vec v2, Vec v3)
@@ -122,7 +122,7 @@ PetscErrorCode MatMultAdd_HT(Mat N, Vec v1, Vec v2, Vec v3)
 
   PetscFunctionBegin;
   PetscCall(MatMultHermitianTransposeAdd(Na->A, v1, v2, v3));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatMultHermitianTranspose_HT(Mat N, Vec x, Vec y)
@@ -131,7 +131,7 @@ PetscErrorCode MatMultHermitianTranspose_HT(Mat N, Vec x, Vec y)
 
   PetscFunctionBegin;
   PetscCall(MatMult(Na->A, x, y));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatMultHermitianTransposeAdd_HT(Mat N, Vec v1, Vec v2, Vec v3)
@@ -140,7 +140,7 @@ PetscErrorCode MatMultHermitianTransposeAdd_HT(Mat N, Vec v1, Vec v2, Vec v3)
 
   PetscFunctionBegin;
   PetscCall(MatMultAdd(Na->A, v1, v2, v3));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatDestroy_HT(Mat N)
@@ -155,7 +155,7 @@ PetscErrorCode MatDestroy_HT(Mat N)
   PetscCall(PetscObjectComposeFunction((PetscObject)N, "MatTransposeGetMat_C", NULL));
 #endif
   PetscCall(PetscFree(N->data));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatDuplicate_HT(Mat N, MatDuplicateOption op, Mat *m)
@@ -169,7 +169,7 @@ PetscErrorCode MatDuplicate_HT(Mat N, MatDuplicateOption op, Mat *m)
     PetscCall(MatDuplicate(Na->A, MAT_DO_NOT_COPY_VALUES, m));
     PetscCall(MatHermitianTranspose(*m, MAT_INPLACE_MATRIX, m));
   } else SETERRQ(PetscObjectComm((PetscObject)N), PETSC_ERR_SUP, "MAT_SHARE_NONZERO_PATTERN not supported for this matrix type");
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatCreateVecs_HT(Mat N, Vec *r, Vec *l)
@@ -178,7 +178,7 @@ PetscErrorCode MatCreateVecs_HT(Mat N, Vec *r, Vec *l)
 
   PetscFunctionBegin;
   PetscCall(MatCreateVecs(Na->A, l, r));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatAXPY_HT(Mat Y, PetscScalar a, Mat X, MatStructure str)
@@ -190,7 +190,7 @@ PetscErrorCode MatAXPY_HT(Mat Y, PetscScalar a, Mat X, MatStructure str)
 
   PetscFunctionBegin;
   PetscCall(MatAXPY(M, a, N, str));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatHermitianTransposeGetMat_HT(Mat N, Mat *M)
@@ -199,7 +199,7 @@ PetscErrorCode MatHermitianTransposeGetMat_HT(Mat N, Mat *M)
 
   PetscFunctionBegin;
   *M = Na->A;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -224,7 +224,7 @@ PetscErrorCode MatHermitianTransposeGetMat(Mat A, Mat *M)
   PetscValidType(A, 1);
   PetscValidPointer(M, 2);
   PetscUseMethod(A, "MatHermitianTransposeGetMat_C", (Mat, Mat *), (A, M));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_INTERN PetscErrorCode MatProductSetFromOptions_Transpose(Mat);
@@ -236,7 +236,7 @@ PetscErrorCode MatGetDiagonal_HT(Mat A, Vec v)
   PetscFunctionBegin;
   PetscCall(MatGetDiagonal(Na->A, v));
   PetscCall(VecConjugate(v));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatConvert_HT(Mat A, MatType newtype, MatReuse reuse, Mat *newmat)
@@ -260,7 +260,7 @@ PetscErrorCode MatConvert_HT(Mat A, MatType newtype, MatReuse reuse, Mat *newmat
   } else { /* use basic converter as fallback */
     PetscCall(MatConvert_Basic(A, newtype, reuse, newmat));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -342,5 +342,5 @@ PetscErrorCode MatCreateHermitianTranspose(Mat A, Mat *N)
   PetscCall(MatBindToCPU(*N, A->boundtocpu));
 #endif
   PetscCall(MatSetUp(*N));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

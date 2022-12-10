@@ -45,7 +45,7 @@ PETSC_EXTERN PetscErrorCode DMStagCreate1d(MPI_Comm comm, DMBoundaryType bndx, P
   PetscCall(DMCreate(comm, dm));
   PetscCall(DMSetDimension(*dm, 1));
   PetscCall(DMStagInitialize(bndx, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, M, 0, 0, size, 0, 0, dof0, dof1, 0, 0, stencilType, stencilWidth, lx, NULL, NULL, *dm));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_INTERN PetscErrorCode DMStagRestrictSimple_1d(DM dmf, Vec xf_local, DM dmc, Vec xc_local)
@@ -98,7 +98,7 @@ PETSC_INTERN PetscErrorCode DMStagRestrictSimple_1d(DM dmf, Vec xf_local, DM dmc
   }
   PetscCall(DMStagVecRestoreArray(dmf, xf_local, &LA_xf));
   PetscCall(DMStagVecRestoreArray(dmc, xc_local, &LA_xc));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_INTERN PetscErrorCode DMStagSetUniformCoordinatesExplicit_1d(DM dm, PetscReal xmin, PetscReal xmax)
@@ -141,7 +141,7 @@ PETSC_INTERN PetscErrorCode DMStagSetUniformCoordinatesExplicit_1d(DM dm, PetscR
   PetscCall(DMStagVecRestoreArray(dmCoord, coordLocal, &arr));
   PetscCall(DMSetCoordinatesLocal(dm, coordLocal));
   PetscCall(VecDestroy(&coordLocal));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Helper functions used in DMSetUp_Stag() */
@@ -459,7 +459,7 @@ PETSC_INTERN PetscErrorCode DMSetUp_Stag_1d(DM dm)
   /* View from Options */
   PetscCall(DMViewFromOptions(dm, NULL, "-dm_view"));
 
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMStagComputeLocationOffsets_1d(DM dm)
@@ -472,7 +472,7 @@ static PetscErrorCode DMStagComputeLocationOffsets_1d(DM dm)
   stag->locationOffsets[DMSTAG_LEFT]    = 0;
   stag->locationOffsets[DMSTAG_ELEMENT] = stag->locationOffsets[DMSTAG_LEFT] + stag->dof[0];
   stag->locationOffsets[DMSTAG_RIGHT]   = stag->locationOffsets[DMSTAG_LEFT] + epe;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_INTERN PetscErrorCode DMStagPopulateLocalToGlobalInjective_1d(DM dm)
@@ -513,7 +513,7 @@ PETSC_INTERN PetscErrorCode DMStagPopulateLocalToGlobalInjective_1d(DM dm)
   }
   PetscCall(ISDestroy(&isLocal));
   PetscCall(ISDestroy(&isGlobal));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_INTERN PetscErrorCode DMCreateMatrix_Stag_1D_AIJ_Assemble(DM dm, Mat A)
@@ -610,5 +610,5 @@ PETSC_INTERN PetscErrorCode DMCreateMatrix_Stag_1D_AIJ_Assemble(DM dm, Mat A)
   } else SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Unsupported stencil type %s", DMStagStencilTypes[stencil_type]);
   PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

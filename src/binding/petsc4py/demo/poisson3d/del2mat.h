@@ -37,7 +37,7 @@ PetscErrorCode Del2Mat_mult(Mat A, Vec x, Vec y)
   /* restore raw vector arrays */
   PetscCall(VecRestoreArrayRead(x,&xx));
   PetscCall(VecRestoreArray(y,&yy));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*D_i <- A_ii */
@@ -45,7 +45,7 @@ PetscErrorCode Del2Mat_diag(Mat A, Vec D)
 {
   PetscFunctionBegin;
   PetscCall(VecSet(D,6.0));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 #endif

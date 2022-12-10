@@ -12,14 +12,14 @@ static PetscErrorCode PetscConvEstSetTS_Private(PetscConvEst ce, PetscObject sol
   PetscCall(PetscObjectGetClassId(ce->solver, &id));
   PetscCheck(id == TS_CLASSID, PetscObjectComm((PetscObject)ce), PETSC_ERR_ARG_WRONG, "Solver was not a TS");
   PetscCall(TSGetDM((TS)ce->solver, &ce->idm));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscConvEstInitGuessTS_Private(PetscConvEst ce, PetscInt r, DM dm, Vec u)
 {
   PetscFunctionBegin;
   PetscCall(TSComputeInitialCondition((TS)ce->solver, u));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscConvEstComputeErrorTS_Private(PetscConvEst ce, PetscInt r, DM dm, Vec u, PetscReal errors[])
@@ -44,7 +44,7 @@ static PetscErrorCode PetscConvEstComputeErrorTS_Private(PetscConvEst ce, PetscI
     PetscCall(TSGetSolveTime(ts, &t));
     PetscCall(DMComputeL2FieldDiff(dm, t, ce->exactSol, ce->ctxs, u, errors));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscConvEstGetConvRateTS_Temporal_Private(PetscConvEst ce, PetscReal alpha[])
@@ -110,7 +110,7 @@ static PetscErrorCode PetscConvEstGetConvRateTS_Temporal_Private(PetscConvEst ce
   PetscCall(PetscConvEstComputeInitialGuess(ce, 0, NULL, u0));
   PetscCall(VecDestroy(&u0));
   PetscCall(PetscFree(dt));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscConvEstGetConvRateTS_Spatial_Private(PetscConvEst ce, PetscReal alpha[])
@@ -275,7 +275,7 @@ static PetscErrorCode PetscConvEstGetConvRateTS_Spatial_Private(PetscConvEst ce,
   PetscCall(TSSetFromOptions(ts));
   PetscCall(TSSetSolution(ts, uInitial));
   PetscCall(PetscConvEstComputeInitialGuess(ce, 0, NULL, uInitial));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PetscConvEstUseTS(PetscConvEst ce, PetscBool checkTemporal)
@@ -290,5 +290,5 @@ PetscErrorCode PetscConvEstUseTS(PetscConvEst ce, PetscBool checkTemporal)
   } else {
     ce->ops->getconvrate = PetscConvEstGetConvRateTS_Spatial_Private;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

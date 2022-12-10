@@ -1,6 +1,5 @@
-
-#ifndef __VIEWERADIOSIMPL_H
-#define __VIEWERADIOSIMPL_H
+#ifndef PETSC_VIEWER_ADIOS_IMPL_H
+#define PETSC_VIEWER_ADIOS_IMPL_H
 
 typedef struct {
   char         *filename;

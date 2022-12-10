@@ -118,7 +118,7 @@ static PetscErrorCode Test1(DM dm)
   PetscCall(VecDestroy(&vecLocal));
   PetscCall(VecDestroy(&vecGlobal));
   PetscCall(VecDestroy(&vecGlobalCheck));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Test function with positive values for positive arguments */
@@ -131,7 +131,7 @@ static PetscErrorCode CompareValues(PetscInt i, PetscInt j, PetscInt k, PetscInt
   if (val != valRef && PetscAbsScalar(val - valRef) / PetscAbsScalar(valRef) > 10 * PETSC_MACHINE_EPSILON) {
     SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "(%" PetscInt_FMT ",%" PetscInt_FMT ",%" PetscInt_FMT ",%" PetscInt_FMT ") Value %.17g does not match the expected %.17g", i, j, k, c, (double)PetscRealPart(val), (double)PetscRealPart(valRef));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode Test2_1d(DM dm)
@@ -192,7 +192,7 @@ static PetscErrorCode Test2_1d(DM dm)
   PetscCall(VecDestroy(&vecLocal));
   PetscCall(VecDestroy(&vecLocalCheck));
   PetscCall(VecDestroy(&vecGlobal));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode Test2_2d(DM dm)
@@ -299,7 +299,7 @@ static PetscErrorCode Test2_2d(DM dm)
   PetscCall(VecDestroy(&vecLocal));
   PetscCall(VecDestroy(&vecLocalCheck));
   PetscCall(VecDestroy(&vecGlobal));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode Test2_3d(DM dm)
@@ -491,7 +491,7 @@ static PetscErrorCode Test2_3d(DM dm)
   PetscCall(VecDestroy(&vecLocal));
   PetscCall(VecDestroy(&vecLocalCheck));
   PetscCall(VecDestroy(&vecGlobal));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 #undef TEST_FUNCTION
 

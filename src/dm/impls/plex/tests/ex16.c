@@ -9,7 +9,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm)
   PetscCall(DMSetType(*dm, DMPLEX));
   PetscCall(DMSetFromOptions(*dm));
   PetscCall(DMViewFromOptions(*dm, NULL, "-dm_view"));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 // Label half of the cells
@@ -31,7 +31,7 @@ static PetscErrorCode CreateHalfCellsLabel(DM dm, PetscBool lower, DMLabel *labe
   }
   for (PetscInt c = cStartSub; c < cEndSub; ++c) PetscCall(DMLabelSetValue(*label, c, 1));
   PetscCall(DMPlexLabelComplete(dm, *label));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 // Label everything on the right half of the domain
@@ -57,7 +57,7 @@ static PetscErrorCode CreateHalfDomainLabel(DM dm, PetscBool lower, PetscReal he
     }
   }
   PetscCall(DMPlexLabelComplete(dm, *label));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 // Create a line of faces at a given x value
@@ -76,7 +76,7 @@ static PetscErrorCode CreateLineLabel(DM dm, PetscReal x, DMLabel *label)
     if (PetscAbsReal(centroid[0] - x) < PETSC_SMALL) PetscCall(DMLabelSetValue(*label, f, 1));
   }
   PetscCall(DMPlexLabelComplete(dm, *label));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode CreateVolumeSubmesh(DM dm, PetscBool domain, PetscBool lower, PetscReal height, DM *subdm)
@@ -92,7 +92,7 @@ static PetscErrorCode CreateVolumeSubmesh(DM dm, PetscBool domain, PetscBool low
   PetscCall(DMViewFromOptions(*subdm, NULL, "-dm_view"));
   PetscCall(DMPlexGetSubpointMap(*subdm, &map));
   PetscCall(PetscObjectViewFromOptions((PetscObject)map, NULL, "-map_view"));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TestBoundaryField(DM dm)
@@ -129,7 +129,7 @@ static PetscErrorCode TestBoundaryField(DM dm)
   PetscCall(VecViewFromOptions(gv, NULL, "-vec_view"));
   PetscCall(VecDestroy(&gv));
   PetscCall(DMDestroy(&subdm));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)

@@ -65,7 +65,7 @@ static inline PetscErrorCode PetscMallocWithMemType(PetscMemType mtype, size_t s
   else if (PetscMemTypeSYCL(mtype))
     PetscCallCXX(*ptr = Kokkos::kokkos_malloc(size));
 #endif
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static inline PetscErrorCode PetscFreeWithMemType_Private(PetscMemType mtype, void *ptr)
@@ -84,7 +84,7 @@ static inline PetscErrorCode PetscFreeWithMemType_Private(PetscMemType mtype, vo
   else if (PetscMemTypeSYCL(mtype))
     PetscCallCXX(Kokkos::kokkos_free(ptr));
 #endif
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Free memory and set ptr to NULL when succeeded */
@@ -105,7 +105,7 @@ static inline PetscErrorCode PetscMemcpyFromHostWithMemType(PetscMemType mtype, 
     PetscCallCXX(Kokkos::deep_copy(dstView, srcView));
   }
 #endif
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)

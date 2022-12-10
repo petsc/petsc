@@ -46,7 +46,7 @@ static PetscErrorCode FormFunctionLocal_U(User user, DMDALocalInfo *info, const 
     else if (i == info->mx - 1) f[i] = 1. / hx * (u[i] - 1.0);
     else f[i] = hx * ((k[i - 1] * (u[i] - u[i - 1]) - k[i] * (u[i + 1] - u[i])) / (hx * hx) - 1.0);
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode FormFunctionLocal_K(User user, DMDALocalInfo *info, const PetscScalar u[], const PetscScalar k[], PetscScalar f[])
@@ -59,7 +59,7 @@ static PetscErrorCode FormFunctionLocal_K(User user, DMDALocalInfo *info, const 
     const PetscScalar ubar = 0.5 * (u[i + 1] + u[i]), gradu = (u[i + 1] - u[i]) / hx, g = 1. + gradu * gradu, w = 1. / (1. + ubar) + 1. / g;
     f[i] = hx * (PetscExpScalar(k[i] - 1.0) + k[i] - 1. / w);
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode FormFunction_All(SNES snes, Vec X, Vec F, void *ctx)
@@ -116,7 +116,7 @@ static PetscErrorCode FormFunction_All(SNES snes, Vec X, Vec F, void *ctx)
     break;
   }
   PetscCall(DMCompositeRestoreLocalVectors(user->pack, &Uloc, &Kloc));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode FormJacobianLocal_U(User user, DMDALocalInfo *info, const PetscScalar u[], const PetscScalar k[], Mat Buu)
@@ -137,7 +137,7 @@ static PetscErrorCode FormJacobianLocal_U(User user, DMDALocalInfo *info, const 
       PetscCall(MatSetValuesLocal(Buu, 1, &row, 3, cols, vals, INSERT_VALUES));
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode FormJacobianLocal_K(User user, DMDALocalInfo *info, const PetscScalar u[], const PetscScalar k[], Mat Bkk)
@@ -151,7 +151,7 @@ static PetscErrorCode FormJacobianLocal_K(User user, DMDALocalInfo *info, const 
     PetscScalar vals[] = {hx * (PetscExpScalar(k[i] - 1.) + (PetscScalar)1.)};
     PetscCall(MatSetValuesLocal(Bkk, 1, &row, 1, &row, vals, INSERT_VALUES));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode FormJacobianLocal_UK(User user, DMDALocalInfo *info, DMDALocalInfo *infok, const PetscScalar u[], const PetscScalar k[], Mat Buk)
@@ -162,7 +162,7 @@ static PetscErrorCode FormJacobianLocal_UK(User user, DMDALocalInfo *info, DMDAL
   PetscScalar vals[2];
 
   PetscFunctionBeginUser;
-  if (!Buk) PetscFunctionReturn(0); /* Not assembling this block */
+  if (!Buk) PetscFunctionReturn(PETSC_SUCCESS); /* Not assembling this block */
   for (i = info->xs; i < info->xs + info->xm; i++) {
     if (i == 0 || i == info->mx - 1) continue;
     row     = i - info->gxs;
@@ -172,7 +172,7 @@ static PetscErrorCode FormJacobianLocal_UK(User user, DMDALocalInfo *info, DMDAL
     vals[1] = (u[i] - u[i + 1]) / hx;
     PetscCall(MatSetValuesLocal(Buk, 1, &row, 2, cols, vals, INSERT_VALUES));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode FormJacobianLocal_KU(User user, DMDALocalInfo *info, DMDALocalInfo *infok, const PetscScalar u[], const PetscScalar k[], Mat Bku)
@@ -181,7 +181,7 @@ static PetscErrorCode FormJacobianLocal_KU(User user, DMDALocalInfo *info, DMDAL
   PetscReal hx = 1. / (info->mx - 1);
 
   PetscFunctionBeginUser;
-  if (!Bku) PetscFunctionReturn(0); /* Not assembling this block */
+  if (!Bku) PetscFunctionReturn(PETSC_SUCCESS); /* Not assembling this block */
   for (i = infok->xs; i < infok->xs + infok->xm; i++) {
     PetscInt    row = i - infok->gxs, cols[2];
     PetscScalar vals[2];
@@ -192,7 +192,7 @@ static PetscErrorCode FormJacobianLocal_KU(User user, DMDALocalInfo *info, DMDAL
     vals[1] = -hx * (iw_ubar * ubar_R + iw_gradu * gradu_R);
     PetscCall(MatSetValuesLocal(Bku, 1, &row, 2, cols, vals, INSERT_VALUES));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode FormJacobian_All(SNES snes, Vec X, Mat J, Mat B, void *ctx)
@@ -271,7 +271,7 @@ static PetscErrorCode FormJacobian_All(SNES snes, Vec X, Mat J, Mat B, void *ctx
     PetscCall(MatAssemblyBegin(J, MAT_FINAL_ASSEMBLY));
     PetscCall(MatAssemblyEnd(J, MAT_FINAL_ASSEMBLY));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode FormInitial_Coupled(User user, Vec X)
@@ -296,7 +296,7 @@ static PetscErrorCode FormInitial_Coupled(User user, Vec X)
   PetscCall(DMDAVecRestoreArray(dak, Xk, &k));
   PetscCall(DMCompositeRestoreAccess(user->pack, X, &Xu, &Xk));
   PetscCall(DMCompositeScatter(user->pack, X, user->Uloc, user->Kloc));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char *argv[])

@@ -270,11 +270,12 @@ PETSC_INTERN PetscErrorCode VecStashGetOwnerList_Private(VecStash *, PetscLayout
 static inline PetscErrorCode VecStashValue_Private(VecStash *stash, PetscInt row, PetscScalar value)
 {
   /* Check and see if we have sufficient memory */
+  PetscFunctionBegin;
   if (((stash)->n + 1) > (stash)->nmax) PetscCall(VecStashExpand_Private(stash, 1));
   (stash)->idx[(stash)->n]   = row;
   (stash)->array[(stash)->n] = value;
   (stash)->n++;
-  return 0;
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -290,12 +291,13 @@ static inline PetscErrorCode VecStashValuesBlocked_Private(VecStash *stash, Pets
   PetscInt     stash_bs = (stash)->bs;
   PetscScalar *array;
 
+  PetscFunctionBegin;
   if (((stash)->n + 1) > (stash)->nmax) PetscCall(VecStashExpand_Private(stash, 1));
   array                    = (stash)->array + stash_bs * (stash)->n;
   (stash)->idx[(stash)->n] = row;
   PetscCall(PetscArraycpy(array, values, stash_bs));
   (stash)->n++;
-  return 0;
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_INTERN PetscErrorCode VecStrideGather_Default(Vec, PetscInt, Vec, InsertMode);
@@ -399,7 +401,7 @@ static inline PetscErrorCode PetscSortedIntUpperBound(PetscInt *array, PetscCoun
     } else count = step;
   }
   *upper = first;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 #endif /* __VECIMPL_H */

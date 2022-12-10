@@ -104,7 +104,7 @@ PetscErrorCode MyMatMult(Mat S, Vec x, Vec y)
 
   PetscCall(VecRestoreArrayRead(x, &inptr));
   PetscCall(VecRestoreArrayWrite(y, &outptr));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* this test problem has initial values (1,1,1).                      */
@@ -113,6 +113,7 @@ PetscErrorCode Initial(Vec global, void *ctx)
   PetscScalar *localptr;
   PetscInt     i, mybase, myend, locsize;
 
+  PetscFunctionBeginUser;
   /* determine starting point of each processor */
   PetscCall(VecGetOwnershipRange(global, &mybase, &myend));
   PetscCall(VecGetLocalSize(global, &locsize));
@@ -124,7 +125,7 @@ PetscErrorCode Initial(Vec global, void *ctx)
   if (mybase == 0) localptr[0] = 1.0;
 
   PetscCall(VecRestoreArrayWrite(global, &localptr));
-  return 0;
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode Monitor(TS ts, PetscInt step, PetscReal time, Vec global, void *ctx)
@@ -135,6 +136,7 @@ PetscErrorCode Monitor(TS ts, PetscInt step, PetscReal time, Vec global, void *c
   Vec                tmp_vec;
   const PetscScalar *tmp;
 
+  PetscFunctionBeginUser;
   /* Get the size of the vector */
   PetscCall(VecGetSize(global, &n));
 
@@ -161,7 +163,7 @@ PetscErrorCode Monitor(TS ts, PetscInt step, PetscReal time, Vec global, void *c
   PetscCall(ISDestroy(&to));
   PetscCall(PetscFree(idx));
   PetscCall(VecDestroy(&tmp_vec));
-  return 0;
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec globalin, Vec globalout, void *ctx)
@@ -173,6 +175,7 @@ PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec globalin, Vec globalout, void
   VecScatter         scatter;
   Vec                tmp_in, tmp_out;
 
+  PetscFunctionBeginUser;
   /* Get the length of parallel vector */
   PetscCall(VecGetSize(globalin, &n));
 
@@ -216,7 +219,7 @@ PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec globalin, Vec globalout, void
   PetscCall(VecDestroy(&tmp_in));
   PetscCall(VecDestroy(&tmp_out));
   PetscCall(PetscFree(idx));
-  return 0;
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec x, Mat A, Mat BB, void *ctx)
@@ -225,6 +228,7 @@ PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec x, Mat A, Mat BB, void *ctx)
   const PetscScalar *tmp;
   PetscInt           idx[3], i;
 
+  PetscFunctionBeginUser;
   idx[0] = 0;
   idx[1] = 1;
   idx[2] = 2;
@@ -257,7 +261,7 @@ PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec x, Mat A, Mat BB, void *ctx)
   }
   PetscCall(VecRestoreArrayRead(x, &tmp));
 
-  return 0;
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*

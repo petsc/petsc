@@ -14,7 +14,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscOptionsBegin(comm, "", "Meshing Interpolation Test Options", "DMPLEX");
   PetscCall(PetscOptionsBool("-adapt", "Flag for adaptation of the surface mesh", "ex10.c", options->adapt, &options->adapt, NULL));
   PetscOptionsEnd();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode CreateDomainLabel(DM dm)
@@ -44,7 +44,7 @@ static PetscErrorCode CreateDomainLabel(DM dm)
       continue;
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode AdaptMesh(DM *dm, AppCtx *ctx)
@@ -60,7 +60,7 @@ static PetscErrorCode AdaptMesh(DM *dm, AppCtx *ctx)
   PetscBool       adapt = PETSC_TRUE;
 
   PetscFunctionBeginUser;
-  if (!ctx->adapt) PetscFunctionReturn(0);
+  if (!ctx->adapt) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(DMHasLabel(*dm, "Cell Sets", &hasLabel));
   if (!hasLabel) PetscCall(CreateDomainLabel(*dm));
   PetscCall(DMGetDimension(*dm, &dim));
@@ -140,7 +140,7 @@ static PetscErrorCode AdaptMesh(DM *dm, AppCtx *ctx)
   }
   PetscCall(PetscFree(volConst));
   *dm = dmCur;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
@@ -162,7 +162,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   PetscCall(PetscObjectSetName((PetscObject)*dm, "Mesh"));
   PetscCall(DMSetFromOptions(*dm));
   PetscCall(DMViewFromOptions(*dm, NULL, "-dm_view"));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)

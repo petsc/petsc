@@ -22,7 +22,7 @@ PetscErrorCode MatView_SeqAIJ_Inode(Mat A, PetscViewer viewer)
       }
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatAssemblyEnd_SeqAIJ_Inode(Mat A, MatAssemblyType mode)
@@ -32,7 +32,7 @@ PetscErrorCode MatAssemblyEnd_SeqAIJ_Inode(Mat A, MatAssemblyType mode)
   PetscFunctionBegin;
   PetscCall(MatSeqAIJCheckInode(A));
   a->inode.ibdiagvalid = PETSC_FALSE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatDestroy_SeqAIJ_Inode(Mat A)
@@ -44,7 +44,7 @@ PetscErrorCode MatDestroy_SeqAIJ_Inode(Mat A)
   PetscCall(PetscFree3(a->inode.ibdiag, a->inode.bdiag, a->inode.ssor_work));
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatInodeAdjustForInodes_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatInodeGetInodeSizes_C", NULL));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* MatCreate_SeqAIJ_Inode is not DLLEXPORTed because it is not a constructor for a complete type.    */
@@ -82,7 +82,7 @@ PetscErrorCode MatCreate_SeqAIJ_Inode(Mat B)
 
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatInodeAdjustForInodes_C", MatInodeAdjustForInodes_SeqAIJ_Inode));
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatInodeGetInodeSizes_C", MatInodeGetInodeSizes_SeqAIJ_Inode));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatSetOption_SeqAIJ_Inode(Mat A, MatOption op, PetscBool flg)
@@ -97,5 +97,5 @@ PetscErrorCode MatSetOption_SeqAIJ_Inode(Mat A, MatOption op, PetscBool flg)
   default:
     break;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

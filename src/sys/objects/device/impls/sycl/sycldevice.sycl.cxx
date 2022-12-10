@@ -38,16 +38,16 @@ public:
   PETSC_NODISCARD PetscErrorCode initialize() noexcept
   {
     PetscFunctionBegin;
-    if (initialized()) PetscFunctionReturn(0);
+    if (initialized()) PetscFunctionReturn(PETSC_SUCCESS);
     if (syclDevice_.is_gpu() && use_gpu_aware_mpi) {
       if (!isMPISyclAware_()) {
-        (*PetscErrorPrintf)("PETSc is configured with sycl support, but your MPI is not aware of sycl GPU devices. For better performance, please use a sycl GPU-aware MPI.\n");
-        (*PetscErrorPrintf)("If you do not care, add option -use_gpu_aware_mpi 0. To not see the message again, add the option to your .petscrc, OR add it to the env var PETSC_OPTIONS.\n");
+        PetscCall((*PetscErrorPrintf)("PETSc is configured with sycl support, but your MPI is not aware of sycl GPU devices. For better performance, please use a sycl GPU-aware MPI.\n"));
+        PetscCall((*PetscErrorPrintf)("If you do not care, add option -use_gpu_aware_mpi 0. To not see the message again, add the option to your .petscrc, OR add it to the env var PETSC_OPTIONS.\n"));
         PETSCABORT(PETSC_COMM_SELF, PETSC_ERR_LIB);
       }
     }
     devInitialized_ = true;
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   PETSC_NODISCARD PetscErrorCode view(PetscViewer viewer) const noexcept
@@ -73,7 +73,7 @@ public:
       PetscCall(PetscViewerRestoreSubViewer(viewer, PETSC_COMM_SELF, &sviewer));
       PetscCall(PetscViewerFlush(viewer));
     }
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   PETSC_NODISCARD PetscErrorCode getattribute(PetscDeviceAttribute attr, void *value) const noexcept
@@ -86,7 +86,7 @@ public:
     case PETSC_DEVICE_ATTR_MAX:
       break;
     }
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
 private:
@@ -137,7 +137,7 @@ PetscErrorCode Device::initialize(MPI_Comm comm, PetscInt *defaultDeviceId, Pets
   PetscInt ngpus;
 
   PetscFunctionBegin;
-  if (initialized_) PetscFunctionReturn(0);
+  if (initialized_) PetscFunctionReturn(PETSC_SUCCESS);
   initialized_ = true;
   PetscCall(PetscRegisterFinalize(finalize_));
   PetscOptionsBegin(comm, nullptr, "PetscDevice sycl Options", "Sys");
@@ -174,17 +174,17 @@ PetscErrorCode Device::initialize(MPI_Comm comm, PetscInt *defaultDeviceId, Pets
   *defaultDeviceId = id;
   *defaultView     = view;
   *defaultInitType = initType;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode Device::finalize_() noexcept
 {
   PetscFunctionBegin;
-  if (!initialized_) PetscFunctionReturn(0);
+  if (!initialized_) PetscFunctionReturn(PETSC_SUCCESS);
   for (auto &&devPtr : devices_array_) delete devPtr;
   defaultDevice_ = PETSC_SYCL_DEVICE_NONE; // disabled by default
   initialized_   = false;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode Device::init_device_id_(PetscInt *inid) const noexcept
@@ -199,21 +199,21 @@ PetscErrorCode Device::init_device_id_(PetscInt *inid) const noexcept
   PetscCheck(id == devices_[id]->id(), PETSC_COMM_SELF, PETSC_ERR_PLIB, "Entry %" PetscInt_FMT " contains device with mismatching id %" PetscInt_FMT, id, devices_[id]->id());
   PetscCall(devices_[id]->initialize());
   *inid = id;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode Device::view_device_(PetscDevice device, PetscViewer viewer) noexcept
 {
   PetscFunctionBegin;
   PetscCall(devices_[device->deviceId]->view(viewer));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode Device::get_attribute_(PetscInt id, PetscDeviceAttribute attr, void *value) noexcept
 {
   PetscFunctionBegin;
   PetscCall(devices_[id]->getattribute(attr, value));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 } // namespace sycl

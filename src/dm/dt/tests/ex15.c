@@ -36,7 +36,7 @@ static PetscErrorCode testQuadrature(PetscInt dim, PetscInt degree, PetscDTSimpl
   }
   PetscCall(PetscFree(eval));
   PetscCall(PetscQuadratureDestroy(&quad));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)

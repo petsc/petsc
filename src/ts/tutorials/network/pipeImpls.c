@@ -29,7 +29,7 @@ PetscErrorCode PipeComputeSteadyState(Pipe pipe, PetscScalar Q0, PetscScalar H0)
 
   PetscCall(DMDAVecRestoreArray(pipe->da, pipe->x, &x));
   PetscCall(DMDAVecRestoreArrayRead(cda, local, &coords));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Function evaluations for PIPE    */
@@ -89,5 +89,5 @@ PetscErrorCode PipeIFunctionLocal_Lax(DMDALocalInfo *info, PetscReal ptime, Pipe
   /* Characteristic equations */
   f[start + 1] = x[start].q - xold[start + 1].q - ((GRAV * A) / a) * (x[start].h - xold[start + 1].h) + dt * R * xold[start + 1].q * PetscAbsScalar(xold[start + 1].q);
   f[2 * ilast] = x[ilast].q - xold[ilast - 1].q + ((GRAV * A) / a) * (x[ilast].h - xold[ilast - 1].h) + dt * R * xold[ilast - 1].q * PetscAbsScalar(xold[ilast - 1].q);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

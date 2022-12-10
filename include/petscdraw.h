@@ -421,7 +421,7 @@ M*/
       PetscCallMPI(MPI_Allreduce(&_Petsc_xioerr_local, &_Petsc_xioerr, 1, MPIU_BOOL, MPI_LOR, PetscObjectComm((PetscObject)(draw)))); \
       if (_Petsc_xioerr) { \
         PetscCall(PetscDrawSetType((draw), PETSC_DRAW_NULL)); \
-        PetscFunctionReturn(0); \
+        PetscFunctionReturn(PETSC_SUCCESS); \
       } \
     } \
     } \

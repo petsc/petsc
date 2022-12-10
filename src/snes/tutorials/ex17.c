@@ -59,7 +59,7 @@ static PetscErrorCode zero(PetscInt dim, PetscReal time, const PetscReal x[], Pe
 {
   PetscInt d;
   for (d = 0; d < dim; ++d) u[d] = 0.0;
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 static PetscErrorCode ge_shift(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
@@ -67,14 +67,14 @@ static PetscErrorCode ge_shift(PetscInt dim, PetscReal time, const PetscReal x[]
   PetscInt d;
   u[0] = 0.1;
   for (d = 1; d < dim; ++d) u[d] = 0.0;
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 static PetscErrorCode quadratic_2d_u(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
 {
   u[0] = x[0] * x[0];
   u[1] = x[1] * x[1] - 2.0 * x[0] * x[1];
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 static PetscErrorCode quadratic_3d_u(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
@@ -82,7 +82,7 @@ static PetscErrorCode quadratic_3d_u(PetscInt dim, PetscReal time, const PetscRe
   u[0] = x[0] * x[0];
   u[1] = x[1] * x[1] - 2.0 * x[0] * x[1];
   u[2] = x[2] * x[2] - 2.0 * x[1] * x[2];
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 /*
@@ -148,7 +148,7 @@ static PetscErrorCode trig_2d_u(PetscInt dim, PetscReal time, const PetscReal x[
 {
   u[0] = PetscSinReal(2.0 * PETSC_PI * x[0]);
   u[1] = PetscSinReal(2.0 * PETSC_PI * x[1]) - 2.0 * x[0] * x[1];
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 static PetscErrorCode trig_3d_u(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
@@ -156,7 +156,7 @@ static PetscErrorCode trig_3d_u(PetscInt dim, PetscReal time, const PetscReal x[
   u[0] = PetscSinReal(2.0 * PETSC_PI * x[0]);
   u[1] = PetscSinReal(2.0 * PETSC_PI * x[1]) - 2.0 * x[0] * x[1];
   u[2] = PetscSinReal(2.0 * PETSC_PI * x[2]) - 2.0 * x[1] * x[2];
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 /*
@@ -216,7 +216,7 @@ static PetscErrorCode axial_disp_u(PetscInt dim, PetscReal time, const PetscReal
   u[0] = (3. * lambda * lambda + 8. * lambda * mu + 4 * mu * mu) / (4 * mu * (3 * lambda * lambda + 5. * lambda * mu + 2 * mu * mu)) * N * x[0];
   u[1] = -0.25 * lambda / mu / (lambda + mu) * N * x[1];
   for (d = 2; d < dim; ++d) u[d] = 0.0;
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 /*
@@ -265,7 +265,7 @@ static PetscErrorCode uniform_strain_u(PetscInt dim, PetscReal time, const Petsc
   u[0] = eps_xx * x[0] + eps_xy * x[1];
   u[1] = eps_xy * x[0] + eps_yy * x[1];
   for (d = 2; d < dim; ++d) u[d] = 0.0;
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 static void f0_mass_u(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
@@ -358,7 +358,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscCall(PetscOptionsBool("-near_nullspace", "Use the rigid body modes as an AMG near nullspace", "ex17.c", options->useNearNullspace, &options->useNearNullspace, NULL));
   PetscCall(PetscOptionsFList("-dm_type", "Convert DMPlex to another format", "ex17.c", DMList, options->dmType, options->dmType, 256, NULL));
   PetscOptionsEnd();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode SetupParameters(MPI_Comm comm, AppCtx *ctx)
@@ -388,7 +388,7 @@ static PetscErrorCode SetupParameters(MPI_Comm comm, AppCtx *ctx)
       PetscCall(PetscViewerDestroy(&viewer));
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMPlexDistortGeometry(DM dm)
@@ -419,7 +419,7 @@ static PetscErrorCode DMPlexDistortGeometry(DM dm)
     for (d = 1; d < cdim; ++d) pcoords[d] += shift;
   }
   PetscCall(VecRestoreArrayWrite(coordinates, &coords));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
@@ -442,7 +442,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   }
   PetscCall(DMSetApplicationContext(*dm, user));
   PetscCall(DMViewFromOptions(*dm, NULL, "-dm_view"));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode SetupPrimalProblem(DM dm, AppCtx *user)
@@ -591,14 +591,14 @@ static PetscErrorCode SetupPrimalProblem(DM dm, AppCtx *user)
     constants[1] = param->lambda; /* Lame's first parameter, Pa */
     PetscCall(PetscDSSetConstants(ds, 2, constants));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode CreateElasticityNullSpace(DM dm, PetscInt origField, PetscInt field, MatNullSpace *nullspace)
 {
   PetscFunctionBegin;
   PetscCall(DMPlexCreateRigidBody(dm, origField, nullspace));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode SetupFE(DM dm, const char name[], PetscErrorCode (*setup)(DM, AppCtx *), void *ctx)
@@ -631,7 +631,7 @@ PetscErrorCode SetupFE(DM dm, const char name[], PetscErrorCode (*setup)(DM, App
     PetscCall(DMGetCoarseDM(cdm, &cdm));
   }
   PetscCall(PetscFEDestroy(&fe));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)

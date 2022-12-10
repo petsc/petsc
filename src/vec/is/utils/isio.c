@@ -28,7 +28,7 @@ PetscErrorCode ISView_Binary(IS is, PetscViewer viewer)
   PetscCall(ISGetIndices(is, &iarray));
   PetscCall(PetscViewerBinaryWriteAll(viewer, iarray, n, s, N, PETSC_INT));
   PetscCall(ISRestoreIndices(is, &iarray));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 #if defined(PETSC_HAVE_HDF5)
@@ -52,7 +52,7 @@ PetscErrorCode ISLoad_HDF5(IS is, PetscViewer viewer)
   PetscCall(PetscObjectGetName((PetscObject)is, &isname));
   PetscCall(PetscViewerHDF5Load(viewer, isname, is->map, inttype, (void **)&ind));
   PetscCall(ISGeneralSetIndices(is, is->map->n, ind, PETSC_OWN_POINTER));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 #endif
 
@@ -97,7 +97,7 @@ PetscErrorCode ISLoad_Binary(IS is, PetscViewer viewer)
   PetscCall(PetscMalloc1(n, &idx));
   PetscCall(PetscViewerBinaryReadAll(viewer, idx, n, s, N, PETSC_INT));
   PetscCall(ISGeneralSetIndices(is, n, idx, PETSC_OWN_POINTER));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode ISLoad_Default(IS is, PetscViewer viewer)
@@ -114,5 +114,5 @@ PetscErrorCode ISLoad_Default(IS is, PetscViewer viewer)
     PetscCall(ISLoad_HDF5(is, viewer));
 #endif
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

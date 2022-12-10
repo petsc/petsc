@@ -8,7 +8,7 @@ static PetscErrorCode KSPSetUp_PIPEBCGS(KSP ksp)
 {
   PetscFunctionBegin;
   PetscCall(KSPSetWorkVecs(ksp, 15));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Only need a few hacks from KSPSolve_BCGS */
@@ -70,7 +70,7 @@ static PetscErrorCode KSPSolve_PIPEBCGS(KSP ksp)
   PetscCall(KSPLogResidualHistory(ksp, dp));
   PetscCall(KSPMonitor(ksp, 0, dp));
   PetscCall((*ksp->converged)(ksp, 0, dp, &ksp->reason, ksp->cnvP));
-  if (ksp->reason) PetscFunctionReturn(0);
+  if (ksp->reason) PetscFunctionReturn(PETSC_SUCCESS);
 
   /* Initialize */
   PetscCall(VecCopy(R, RP)); /* rp <- r */
@@ -197,7 +197,7 @@ static PetscErrorCode KSPSolve_PIPEBCGS(KSP ksp)
   } while (i < ksp->max_it);
 
   if (i >= ksp->max_it) ksp->reason = KSP_DIVERGED_ITS;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -245,5 +245,5 @@ PETSC_EXTERN PetscErrorCode KSPCreate_PIPEBCGS(KSP ksp)
 
   PetscCall(KSPSetSupportedNorm(ksp, KSP_NORM_UNPRECONDITIONED, PC_RIGHT, 2));
   PetscCall(KSPSetSupportedNorm(ksp, KSP_NORM_NONE, PC_RIGHT, 1));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

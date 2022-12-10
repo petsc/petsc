@@ -43,7 +43,7 @@ const char *const *const SNESFunctionTypes           = SNESFunctionTypes_Shifted
 PetscErrorCode SNESRegisterAll(void)
 {
   PetscFunctionBegin;
-  if (SNESRegisterAllCalled) PetscFunctionReturn(0);
+  if (SNESRegisterAllCalled) PetscFunctionReturn(PETSC_SUCCESS);
   SNESRegisterAllCalled = PETSC_TRUE;
 
   PetscCall(SNESRegister(SNESNEWTONLS, SNESCreate_NEWTONLS));
@@ -69,5 +69,5 @@ PetscErrorCode SNESRegisterAll(void)
 
   PetscCall(KSPMonitorRegister("snes_preconditioned_residual", PETSCVIEWERASCII, PETSC_VIEWER_DEFAULT, KSPMonitorSNESResidual, NULL, NULL));
   PetscCall(KSPMonitorRegister("snes_preconditioned_residual", PETSCVIEWERDRAW, PETSC_VIEWER_DRAW_LG, KSPMonitorSNESResidualDrawLG, KSPMonitorSNESResidualDrawLGCreate, NULL));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

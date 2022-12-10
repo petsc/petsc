@@ -14,9 +14,9 @@ PETSC_EXTERN PetscErrorCode CharacteristicCreate_DA(Characteristic);
 PetscErrorCode CharacteristicRegisterAll(void)
 {
   PetscFunctionBegin;
-  if (CharacteristicRegisterAllCalled) PetscFunctionReturn(0);
+  if (CharacteristicRegisterAllCalled) PetscFunctionReturn(PETSC_SUCCESS);
   CharacteristicRegisterAllCalled = PETSC_TRUE;
 
   PetscCall(CharacteristicRegister(CHARACTERISTICDA, CharacteristicCreate_DA));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

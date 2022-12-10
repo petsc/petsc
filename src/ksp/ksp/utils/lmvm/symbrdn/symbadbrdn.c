@@ -14,11 +14,11 @@ static PetscErrorCode MatSolve_LMVMSymBadBrdn(Mat B, Vec F, Vec dX)
   /* Efficient shortcuts for pure BFGS and pure DFP configurations */
   if (lsb->phi == 0.0) {
     PetscCall(MatSolve_LMVMBFGS(B, F, dX));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
   if (lsb->phi == 1.0) {
     PetscCall(MatSolve_LMVMDFP(B, F, dX));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   VecCheckSameSize(F, 2, dX, 3);
@@ -65,7 +65,7 @@ static PetscErrorCode MatSolve_LMVMSymBadBrdn(Mat B, Vec F, Vec dX)
     PetscCall(VecAXPY(dX, lsb->phi * lsb->ytq[i] * PetscRealPart(wtf), lsb->work));
   }
 
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*------------------------------------------------------------*/
@@ -82,11 +82,11 @@ static PetscErrorCode MatMult_LMVMSymBadBrdn(Mat B, Vec X, Vec Z)
   /* Efficient shortcuts for pure BFGS and pure DFP configurations */
   if (lsb->phi == 0.0) {
     PetscCall(MatMult_LMVMBFGS(B, X, Z));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
   if (lsb->phi == 1.0) {
     PetscCall(MatMult_LMVMDFP(B, X, Z));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   VecCheckSameSize(X, 2, Z, 3);
@@ -164,7 +164,7 @@ static PetscErrorCode MatMult_LMVMSymBadBrdn(Mat B, Vec X, Vec Z)
     PetscCall(VecDot(lsb->work, X, &wtx));
     PetscCall(VecAXPY(Z, lsb->psi[i] * lsb->stp[i] * PetscRealPart(wtx), lsb->work));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*------------------------------------------------------------*/
@@ -183,7 +183,7 @@ static PetscErrorCode MatSetFromOptions_LMVMSymBadBrdn(Mat B, PetscOptionItems *
     dctx          = (Mat_DiagBrdn *)dbase->ctx;
     dctx->forward = PETSC_FALSE;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*------------------------------------------------------------*/
@@ -200,7 +200,7 @@ PetscErrorCode MatCreate_LMVMSymBadBrdn(Mat B)
 
   lmvm            = (Mat_LMVM *)B->data;
   lmvm->ops->mult = MatMult_LMVMSymBadBrdn;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*------------------------------------------------------------*/
@@ -256,5 +256,5 @@ PetscErrorCode MatCreateLMVMSymBadBroyden(MPI_Comm comm, PetscInt n, PetscInt N,
   PetscCall(MatSetSizes(*B, n, n, N, N));
   PetscCall(MatSetType(*B, MATLMVMSYMBADBROYDEN));
   PetscCall(MatSetUp(*B));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

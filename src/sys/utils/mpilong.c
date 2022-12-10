@@ -20,7 +20,7 @@ PetscErrorCode MPIULong_Send(void *mess, PetscInt cnt, MPI_Datatype type, PetscM
     else if (type == MPIU_SCALAR) mess = (void *)(((PetscScalar *)mess) + CHUNKSIZE);
     else SETERRQ(comm, PETSC_ERR_SUP, "No support for this datatype");
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MPIULong_Recv(void *mess, PetscInt cnt, MPI_Datatype type, PetscMPIInt from, PetscMPIInt tag, MPI_Comm comm)
@@ -39,5 +39,5 @@ PetscErrorCode MPIULong_Recv(void *mess, PetscInt cnt, MPI_Datatype type, PetscM
     else if (type == MPIU_SCALAR) mess = (void *)(((PetscScalar *)mess) + CHUNKSIZE);
     else SETERRQ(comm, PETSC_ERR_SUP, "No support for this datatype");
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

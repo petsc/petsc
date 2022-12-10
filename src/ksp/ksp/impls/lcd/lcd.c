@@ -12,7 +12,7 @@ PetscErrorCode KSPSetUp_LCD(KSP ksp)
 
   PetscCall(VecDuplicateVecs(ksp->work[0], restart + 1, &lcd->P));
   PetscCall(VecDuplicateVecs(ksp->work[0], restart + 1, &lcd->Q));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*     KSPSolve_LCD - This routine actually applies the left conjugate
@@ -69,9 +69,9 @@ PetscErrorCode KSPSolve_LCD(KSP ksp)
 
   /* test for convergence */
   PetscCall((*ksp->converged)(ksp, 0, rnorm, &ksp->reason, ksp->cnvP));
-  if (ksp->reason) PetscFunctionReturn(0);
+  if (ksp->reason) PetscFunctionReturn(PETSC_SUCCESS);
 
-  VecCopy(R, lcd->P[0]);
+  PetscCall(VecCopy(R, lcd->P[0]));
 
   while (!ksp->reason && ksp->its < ksp->max_it) {
     it = 0;
@@ -116,7 +116,7 @@ PetscErrorCode KSPSolve_LCD(KSP ksp)
   }
   if (ksp->its >= ksp->max_it && !ksp->reason) ksp->reason = KSP_DIVERGED_ITS;
   PetscCall(VecCopy(X, ksp->vec_sol));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 /*
        KSPDestroy_LCD - Frees all memory space used by the Krylov method
@@ -129,7 +129,7 @@ PetscErrorCode KSPReset_LCD(KSP ksp)
   PetscFunctionBegin;
   if (lcd->P) PetscCall(VecDestroyVecs(lcd->restart + 1, &lcd->P));
   if (lcd->Q) PetscCall(VecDestroyVecs(lcd->restart + 1, &lcd->Q));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode KSPDestroy_LCD(KSP ksp)
@@ -137,7 +137,7 @@ PetscErrorCode KSPDestroy_LCD(KSP ksp)
   PetscFunctionBegin;
   PetscCall(KSPReset_LCD(ksp));
   PetscCall(PetscFree(ksp->data));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -159,7 +159,7 @@ PetscErrorCode KSPView_LCD(KSP ksp, PetscViewer viewer)
     PetscCall(PetscViewerASCIIPrintf(viewer, "  restart=%" PetscInt_FMT "\n", lcd->restart));
     PetscCall(PetscViewerASCIIPrintf(viewer, "  happy breakdown tolerance %g\n", (double)lcd->haptol));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -177,7 +177,7 @@ PetscErrorCode KSPSetFromOptions_LCD(KSP ksp, PetscOptionItems *PetscOptionsObje
   PetscCheck(!flg || lcd->restart >= 1, PetscObjectComm((PetscObject)ksp), PETSC_ERR_ARG_OUTOFRANGE, "Restart must be positive");
   PetscCall(PetscOptionsReal("-ksp_lcd_haptol", "Tolerance for exact convergence (happy ending)", "KSPLCDSetHapTol", lcd->haptol, &lcd->haptol, &flg));
   PetscCheck(!flg || lcd->haptol >= 0.0, PetscObjectComm((PetscObject)ksp), PETSC_ERR_ARG_OUTOFRANGE, "Tolerance must be non-negative");
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -240,5 +240,5 @@ PETSC_EXTERN PetscErrorCode KSPCreate_LCD(KSP ksp)
   ksp->ops->setfromoptions = KSPSetFromOptions_LCD;
   ksp->ops->buildsolution  = KSPBuildSolutionDefault;
   ksp->ops->buildresidual  = KSPBuildResidualDefault;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

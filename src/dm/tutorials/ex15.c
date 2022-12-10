@@ -37,7 +37,7 @@ PetscErrorCode MyVecDump(const char fname[], PetscBool skippheader, PetscBool us
   if (isskip) PetscCall(PetscPrintf(comm, "*** PetscViewer[write] skipping header ***\n"));
 
   PetscCall(PetscViewerDestroy(&viewer));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MyVecLoad(const char fname[], PetscBool skippheader, PetscBool usempiio, Vec x)
@@ -64,7 +64,7 @@ PetscErrorCode MyVecLoad(const char fname[], PetscBool skippheader, PetscBool us
   if (ismpiio) PetscCall(PetscPrintf(comm, "*** PetscViewer[load] using MPI-IO ***\n"));
 
   PetscCall(PetscViewerDestroy(&viewer));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMDAVecGenerateEntries(DM dm, Vec a)
@@ -87,7 +87,7 @@ PetscErrorCode DMDAVecGenerateEntries(DM dm, Vec a)
     }
   }
   PetscCall(DMDAVecRestoreArrayDOF(dm, a, &LA_v));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode HeaderlessBinaryReadCheck(DM dm, const char name[])
@@ -136,7 +136,7 @@ PetscErrorCode HeaderlessBinaryReadCheck(DM dm, const char name[])
     }
     if (dataverified) PetscCall(PetscPrintf(PETSC_COMM_SELF, "Headerless read of data verified for: %s\n", name));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode VecCompare(Vec a, Vec b)
@@ -170,7 +170,7 @@ PetscErrorCode VecCompare(Vec a, Vec b)
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, "  min(a-b) < 1.0e-10\n"));
   }
   PetscCall(VecDestroy(&ref));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode TestDMDAVec(PetscBool usempiio)
@@ -213,7 +213,7 @@ PetscErrorCode TestDMDAVec(PetscBool usempiio)
   PetscCall(VecDestroy(&x_ref));
   PetscCall(VecDestroy(&x_test));
   PetscCall(DMDestroy(&dm));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **args)

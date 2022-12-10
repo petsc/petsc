@@ -123,6 +123,8 @@ PetscErrorCode FormExactSolution(DMDALocalInfo *info, Vec u)
 {
   PetscInt    i, j;
   PetscReal **au, dx, dy, x, y;
+
+  PetscFunctionBeginUser;
   dx = 4.0 / (PetscReal)(info->mx - 1);
   dy = 4.0 / (PetscReal)(info->my - 1);
   PetscCall(DMDAVecGetArray(info->da, u, &au));
@@ -134,7 +136,7 @@ PetscErrorCode FormExactSolution(DMDALocalInfo *info, Vec u)
     }
   }
   PetscCall(DMDAVecRestoreArray(info->da, u, &au));
-  return 0;
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode FormBounds(SNES snes, Vec Xl, Vec Xu)
@@ -144,6 +146,7 @@ PetscErrorCode FormBounds(SNES snes, Vec Xl, Vec Xu)
   PetscInt      i, j;
   PetscReal   **aXl, dx, dy, x, y;
 
+  PetscFunctionBeginUser;
   PetscCall(SNESGetDM(snes, &da));
   PetscCall(DMDAGetLocalInfo(da, &info));
   dx = 4.0 / (PetscReal)(info.mx - 1);
@@ -158,7 +161,7 @@ PetscErrorCode FormBounds(SNES snes, Vec Xl, Vec Xu)
   }
   PetscCall(DMDAVecRestoreArray(da, Xl, &aXl));
   PetscCall(VecSet(Xu, PETSC_INFINITY));
-  return 0;
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode FormFunctionLocal(DMDALocalInfo *info, PetscScalar **au, PetscScalar **af, void *user)
@@ -185,7 +188,7 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info, PetscScalar **au, PetscSca
     }
   }
   PetscCall(PetscLogFlops(12.0 * info->ym * info->xm));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode FormJacobianLocal(DMDALocalInfo *info, PetscScalar **au, Mat A, Mat jac, void *user)
@@ -244,7 +247,7 @@ PetscErrorCode FormJacobianLocal(DMDALocalInfo *info, PetscScalar **au, Mat A, M
     PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
   }
   PetscCall(PetscLogFlops(2.0 * info->ym * info->xm));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*TEST

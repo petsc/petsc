@@ -24,7 +24,7 @@ PETSC_EXTERN PetscErrorCode VecViennaCLGetArray(Vec v, ViennaCLVector **a)
   PetscCall(VecViennaCLCopyToGPU(v));
   *a = ((Vec_ViennaCL *)v->spptr)->GPUarray;
   ViennaCLWaitForGPU();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_EXTERN PetscErrorCode VecViennaCLRestoreArray(Vec v, ViennaCLVector **a)
@@ -34,7 +34,7 @@ PETSC_EXTERN PetscErrorCode VecViennaCLRestoreArray(Vec v, ViennaCLVector **a)
   v->offloadmask = PETSC_OFFLOAD_GPU;
 
   PetscCall(PetscObjectStateIncrease((PetscObject)v));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_EXTERN PetscErrorCode VecViennaCLGetArrayRead(Vec v, const ViennaCLVector **a)
@@ -45,14 +45,14 @@ PETSC_EXTERN PetscErrorCode VecViennaCLGetArrayRead(Vec v, const ViennaCLVector 
   PetscCall(VecViennaCLCopyToGPU(v));
   *a = ((Vec_ViennaCL *)v->spptr)->GPUarray;
   ViennaCLWaitForGPU();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_EXTERN PetscErrorCode VecViennaCLRestoreArrayRead(Vec v, const ViennaCLVector **a)
 {
   PetscFunctionBegin;
   PetscCheckTypeNames(v, VECSEQVIENNACL, VECMPIVIENNACL);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_EXTERN PetscErrorCode VecViennaCLGetArrayWrite(Vec v, ViennaCLVector **a)
@@ -63,7 +63,7 @@ PETSC_EXTERN PetscErrorCode VecViennaCLGetArrayWrite(Vec v, ViennaCLVector **a)
   PetscCall(VecViennaCLAllocateCheck(v));
   *a = ((Vec_ViennaCL *)v->spptr)->GPUarray;
   ViennaCLWaitForGPU();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_EXTERN PetscErrorCode VecViennaCLRestoreArrayWrite(Vec v, ViennaCLVector **a)
@@ -73,7 +73,7 @@ PETSC_EXTERN PetscErrorCode VecViennaCLRestoreArrayWrite(Vec v, ViennaCLVector *
   v->offloadmask = PETSC_OFFLOAD_GPU;
 
   PetscCall(PetscObjectStateIncrease((PetscObject)v));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_EXTERN PetscErrorCode PetscViennaCLInit()
@@ -155,7 +155,7 @@ PETSC_EXTERN PetscErrorCode PetscViennaCLInit()
 #endif
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, "\n"));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -177,7 +177,7 @@ PETSC_EXTERN PetscErrorCode VecViennaCLAllocateCheckHost(Vec v)
     s->array           = array;
     s->array_allocated = array;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -199,7 +199,7 @@ PetscErrorCode VecViennaCLAllocateCheck(Vec v)
       SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "ViennaCL error: %s", ex.what());
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Copies a vector from the CPU to the GPU unless we already have an up-to-date copy on the GPU */
@@ -223,7 +223,7 @@ PetscErrorCode VecViennaCLCopyToGPU(Vec v)
       v->offloadmask = PETSC_OFFLOAD_BOTH;
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -247,7 +247,7 @@ PetscErrorCode VecViennaCLCopyFromGPU(Vec v)
     PetscCall(PetscLogEventEnd(VEC_ViennaCLCopyFromGPU, v, 0, 0, 0));
     v->offloadmask = PETSC_OFFLOAD_BOTH;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Copy on CPU */
@@ -266,7 +266,7 @@ static PetscErrorCode VecCopy_SeqViennaCL_Private(Vec xin, Vec yin)
     PetscCall(VecRestoreArrayRead(xin, &xa));
     PetscCall(VecRestoreArray(yin, &ya));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode VecSetRandom_SeqViennaCL_Private(Vec xin, PetscRandom r)
@@ -278,7 +278,7 @@ static PetscErrorCode VecSetRandom_SeqViennaCL_Private(Vec xin, PetscRandom r)
   PetscCall(VecGetArray(xin, &xx));
   for (i = 0; i < n; i++) PetscCall(PetscRandomGetValue(r, &xx[i]));
   PetscCall(VecRestoreArray(xin, &xx));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode VecDestroy_SeqViennaCL_Private(Vec v)
@@ -288,11 +288,11 @@ static PetscErrorCode VecDestroy_SeqViennaCL_Private(Vec v)
   PetscFunctionBegin;
   PetscCall(PetscObjectSAWsViewOff(v));
 #if defined(PETSC_USE_LOG)
-  PetscLogObjectState((PetscObject)v, "Length=%" PetscInt_FMT, v->map->n);
+  PetscCall(PetscLogObjectState((PetscObject)v, "Length=%" PetscInt_FMT, v->map->n));
 #endif
   if (vs->array_allocated) PetscCall(PetscFree(vs->array_allocated));
   PetscCall(PetscFree(vs));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode VecResetArray_SeqViennaCL_Private(Vec vin)
@@ -302,7 +302,7 @@ static PetscErrorCode VecResetArray_SeqViennaCL_Private(Vec vin)
   PetscFunctionBegin;
   v->array         = v->unplacedarray;
   v->unplacedarray = 0;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -339,7 +339,7 @@ PetscErrorCode VecAYPX_SeqViennaCL(Vec yin, PetscScalar alpha, Vec xin)
   PetscCall(PetscLogGpuTimeEnd());
   PetscCall(VecViennaCLRestoreArrayRead(xin, &xgpu));
   PetscCall(VecViennaCLRestoreArray(yin, &ygpu));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode VecAXPY_SeqViennaCL(Vec yin, PetscScalar alpha, Vec xin)
@@ -363,7 +363,7 @@ PetscErrorCode VecAXPY_SeqViennaCL(Vec yin, PetscScalar alpha, Vec xin)
     PetscCall(VecViennaCLRestoreArray(yin, &ygpu));
     PetscCall(PetscLogGpuFlops(2.0 * yin->map->n));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode VecPointwiseDivide_SeqViennaCL(Vec win, Vec xin, Vec yin)
@@ -389,7 +389,7 @@ PetscErrorCode VecPointwiseDivide_SeqViennaCL(Vec win, Vec xin, Vec yin)
     PetscCall(VecViennaCLRestoreArrayRead(yin, &ygpu));
     PetscCall(VecViennaCLRestoreArrayWrite(win, &wgpu));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode VecWAXPY_SeqViennaCL(Vec win, PetscScalar alpha, Vec xin, Vec yin)
@@ -433,7 +433,7 @@ PetscErrorCode VecWAXPY_SeqViennaCL(Vec win, PetscScalar alpha, Vec xin, Vec yin
     PetscCall(VecViennaCLRestoreArrayRead(yin, &ygpu));
     PetscCall(VecViennaCLRestoreArrayWrite(win, &wgpu));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -449,14 +449,14 @@ PetscErrorCode VecMAXPY_SeqViennaCL(Vec xin, PetscInt nv, const PetscScalar *alp
   PetscFunctionBegin;
   for (j = 0; j < nv; ++j) {
     if (j + 1 < nv) {
-      VecAXPBYPCZ_SeqViennaCL(xin, alpha[j], alpha[j + 1], 1.0, y[j], y[j + 1]);
+      PetscCall(VecAXPBYPCZ_SeqViennaCL(xin, alpha[j], alpha[j + 1], 1.0, y[j], y[j + 1]));
       ++j;
     } else {
       PetscCall(VecAXPY_SeqViennaCL(xin, alpha[j], y[j]));
     }
   }
   ViennaCLWaitForGPU();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode VecDot_SeqViennaCL(Vec xin, Vec yin, PetscScalar *z)
@@ -479,7 +479,7 @@ PetscErrorCode VecDot_SeqViennaCL(Vec xin, Vec yin, PetscScalar *z)
     PetscCall(VecViennaCLRestoreArrayRead(xin, &xgpu));
     PetscCall(VecViennaCLRestoreArrayRead(yin, &ygpu));
   } else *z = 0.0;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -513,7 +513,7 @@ PetscErrorCode VecMDot_SeqViennaCL(Vec xin, PetscInt nv, const Vec yin[], PetscS
   } else {
     for (i = 0; i < nv; i++) z[i] = 0.0;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode VecMTDot_SeqViennaCL(Vec xin, PetscInt nv, const Vec yin[], PetscScalar *z)
@@ -522,7 +522,7 @@ PetscErrorCode VecMTDot_SeqViennaCL(Vec xin, PetscInt nv, const Vec yin[], Petsc
   /* Since complex case is not supported at the moment, this is the same as VecMDot_SeqViennaCL */
   PetscCall(VecMDot_SeqViennaCL(xin, nv, yin, z));
   ViennaCLWaitForGPU();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode VecSet_SeqViennaCL(Vec xin, PetscScalar alpha)
@@ -542,7 +542,7 @@ PetscErrorCode VecSet_SeqViennaCL(Vec xin, PetscScalar alpha)
     PetscCall(PetscLogGpuTimeEnd());
     PetscCall(VecViennaCLRestoreArrayWrite(xin, &xgpu));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode VecScale_SeqViennaCL(Vec xin, PetscScalar alpha)
@@ -566,7 +566,7 @@ PetscErrorCode VecScale_SeqViennaCL(Vec xin, PetscScalar alpha)
     PetscCall(VecViennaCLRestoreArray(xin, &xgpu));
     PetscCall(PetscLogGpuFlops(xin->map->n));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode VecTDot_SeqViennaCL(Vec xin, Vec yin, PetscScalar *z)
@@ -575,7 +575,7 @@ PetscErrorCode VecTDot_SeqViennaCL(Vec xin, Vec yin, PetscScalar *z)
   /* Since complex case is not supported at the moment, this is the same as VecDot_SeqViennaCL */
   PetscCall(VecDot_SeqViennaCL(xin, yin, z));
   ViennaCLWaitForGPU();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode VecCopy_SeqViennaCL(Vec xin, Vec yin)
@@ -644,7 +644,7 @@ PetscErrorCode VecCopy_SeqViennaCL(Vec xin, Vec yin)
       }
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode VecSwap_SeqViennaCL(Vec xin, Vec yin)
@@ -666,7 +666,7 @@ PetscErrorCode VecSwap_SeqViennaCL(Vec xin, Vec yin)
     PetscCall(VecViennaCLRestoreArray(xin, &xgpu));
     PetscCall(VecViennaCLRestoreArray(yin, &ygpu));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 // y = alpha * x + beta * y
@@ -712,7 +712,7 @@ PetscErrorCode VecAXPBY_SeqViennaCL(Vec yin, PetscScalar alpha, PetscScalar beta
     PetscCall(VecViennaCLRestoreArray(yin, &ygpu));
     PetscCall(PetscLogGpuFlops(3.0 * xin->map->n));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* operation  z = alpha * x + beta *y + gamma *z*/
@@ -789,7 +789,7 @@ PetscErrorCode VecAXPBYPCZ_SeqViennaCL(Vec zin, PetscScalar alpha, PetscScalar b
     PetscCall(VecViennaCLRestoreArrayRead(yin, &ygpu));
     PetscCall(PetscLogGpuFlops(5.0 * n));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode VecPointwiseMult_SeqViennaCL(Vec win, Vec xin, Vec yin)
@@ -816,7 +816,7 @@ PetscErrorCode VecPointwiseMult_SeqViennaCL(Vec win, Vec xin, Vec yin)
     PetscCall(VecViennaCLRestoreArray(win, &wgpu));
     PetscCall(PetscLogGpuFlops(n));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode VecNorm_SeqViennaCL(Vec xin, NormType type, PetscReal *z)
@@ -876,7 +876,7 @@ PetscErrorCode VecNorm_SeqViennaCL(Vec xin, NormType type, PetscReal *z)
     *z       = 0.0;
     *(z + 1) = 0.0;
   } else *z = 0.0;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode VecSetRandom_SeqViennaCL(Vec xin, PetscRandom r)
@@ -884,7 +884,7 @@ PetscErrorCode VecSetRandom_SeqViennaCL(Vec xin, PetscRandom r)
   PetscFunctionBegin;
   PetscCall(VecSetRandom_SeqViennaCL_Private(xin, r));
   xin->offloadmask = PETSC_OFFLOAD_CPU;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode VecResetArray_SeqViennaCL(Vec vin)
@@ -894,7 +894,7 @@ PetscErrorCode VecResetArray_SeqViennaCL(Vec vin)
   PetscCall(VecViennaCLCopyFromGPU(vin));
   PetscCall(VecResetArray_SeqViennaCL_Private(vin));
   vin->offloadmask = PETSC_OFFLOAD_CPU;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode VecPlaceArray_SeqViennaCL(Vec vin, const PetscScalar *a)
@@ -904,7 +904,7 @@ PetscErrorCode VecPlaceArray_SeqViennaCL(Vec vin, const PetscScalar *a)
   PetscCall(VecViennaCLCopyFromGPU(vin));
   PetscCall(VecPlaceArray_Seq(vin, a));
   vin->offloadmask = PETSC_OFFLOAD_CPU;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode VecReplaceArray_SeqViennaCL(Vec vin, const PetscScalar *a)
@@ -914,7 +914,7 @@ PetscErrorCode VecReplaceArray_SeqViennaCL(Vec vin, const PetscScalar *a)
   PetscCall(VecViennaCLCopyFromGPU(vin));
   PetscCall(VecReplaceArray_Seq(vin, a));
   vin->offloadmask = PETSC_OFFLOAD_CPU;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -943,7 +943,7 @@ PetscErrorCode VecCreateSeqViennaCL(MPI_Comm comm, PetscInt n, Vec *v)
   PetscCall(VecCreate(comm, v));
   PetscCall(VecSetSizes(*v, n, n));
   PetscCall(VecSetType(*v, VECSEQVIENNACL));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -988,7 +988,7 @@ PETSC_EXTERN PetscErrorCode VecCreateSeqViennaCLWithArray(MPI_Comm comm, PetscIn
   PetscCallMPI(MPI_Comm_size(comm, &size));
   PetscCheck(size <= 1, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cannot create VECSEQ on more than one process");
   PetscCall(VecCreate_SeqViennaCL_Private(*V, array));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1047,7 +1047,7 @@ PetscErrorCode VecCreateSeqViennaCLWithArrays(MPI_Comm comm, PetscInt bs, PetscI
     (*V)->offloadmask = PETSC_OFFLOAD_UNALLOCATED;
   }
 
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1081,7 +1081,7 @@ PETSC_EXTERN PetscErrorCode VecViennaCLPlaceArray(Vec vin, const ViennaCLVector 
   ((Vec_ViennaCL *)vin->spptr)->GPUarray = (ViennaCLVector *)a;
   vin->offloadmask                       = PETSC_OFFLOAD_GPU;
   PetscCall(PetscObjectStateIncrease((PetscObject)vin));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1106,7 +1106,7 @@ PETSC_EXTERN PetscErrorCode VecViennaCLResetArray(Vec vin)
   ((Vec_Seq *)vin->data)->unplacedarray  = 0;
   vin->offloadmask                       = PETSC_OFFLOAD_GPU;
   PetscCall(PetscObjectStateIncrease((PetscObject)vin));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*  VecDotNorm2 - computes the inner product of two vectors and the 2-norm squared of the second vector
@@ -1119,7 +1119,7 @@ PetscErrorCode VecDotNorm2_SeqViennaCL(Vec s, Vec t, PetscScalar *dp, PetscScala
   PetscCall(VecDot_SeqViennaCL(s, t, dp));
   PetscCall(VecNorm_SeqViennaCL(t, NORM_2, nm));
   *nm *= *nm; //squared norm required
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode VecDuplicate_SeqViennaCL(Vec win, Vec *V)
@@ -1130,7 +1130,7 @@ PetscErrorCode VecDuplicate_SeqViennaCL(Vec win, Vec *V)
   PetscCall(PetscObjectListDuplicate(((PetscObject)win)->olist, &((PetscObject)(*V))->olist));
   PetscCall(PetscFunctionListDuplicate(((PetscObject)win)->qlist, &((PetscObject)(*V))->qlist));
   (*V)->stash.ignorenegidx = win->stash.ignorenegidx;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode VecDestroy_SeqViennaCL(Vec v)
@@ -1145,7 +1145,7 @@ PetscErrorCode VecDestroy_SeqViennaCL(Vec v)
     SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "ViennaCL error: %s", ex);
   }
   PetscCall(VecDestroy_SeqViennaCL_Private(v));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode VecGetArray_SeqViennaCL(Vec v, PetscScalar **a)
@@ -1157,14 +1157,14 @@ PetscErrorCode VecGetArray_SeqViennaCL(Vec v, PetscScalar **a)
     PetscCall(VecViennaCLAllocateCheckHost(v));
   }
   *a = *((PetscScalar **)v->data);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode VecRestoreArray_SeqViennaCL(Vec v, PetscScalar **a)
 {
   PetscFunctionBegin;
   v->offloadmask = PETSC_OFFLOAD_CPU;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode VecGetArrayWrite_SeqViennaCL(Vec v, PetscScalar **a)
@@ -1172,7 +1172,7 @@ PetscErrorCode VecGetArrayWrite_SeqViennaCL(Vec v, PetscScalar **a)
   PetscFunctionBegin;
   PetscCall(VecViennaCLAllocateCheckHost(v));
   *a = *((PetscScalar **)v->data);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode VecBindToCPU_SeqAIJViennaCL(Vec V, PetscBool flg)
@@ -1244,7 +1244,7 @@ static PetscErrorCode VecBindToCPU_SeqAIJViennaCL(Vec V, PetscBool flg)
     V->ops->getarray        = VecGetArray_SeqViennaCL;
     V->ops->restorearray    = VecRestoreArray_SeqViennaCL;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_EXTERN PetscErrorCode VecCreate_SeqViennaCL(Vec V)
@@ -1262,7 +1262,7 @@ PETSC_EXTERN PetscErrorCode VecCreate_SeqViennaCL(Vec V)
 
   PetscCall(VecViennaCLAllocateCheck(V));
   PetscCall(VecSet_SeqViennaCL(V, 0.0));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1300,7 +1300,7 @@ PETSC_EXTERN PetscErrorCode VecViennaCLGetCLContext(Vec v, PETSC_UINTPTR_T *ctx)
     SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "ViennaCL error: %s", ex.what());
   }
 
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 #endif
 }
 
@@ -1340,7 +1340,7 @@ PETSC_EXTERN PetscErrorCode VecViennaCLGetCLQueue(Vec v, PETSC_UINTPTR_T *queue)
     SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "ViennaCL error: %s", ex.what());
   }
 
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 #endif
 }
 
@@ -1376,7 +1376,7 @@ PETSC_EXTERN PetscErrorCode VecViennaCLGetCLMemRead(Vec v, PETSC_UINTPTR_T *mem)
   } catch (std::exception const &ex) {
     SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "ViennaCL error: %s", ex.what());
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 #endif
 }
 
@@ -1418,7 +1418,7 @@ PETSC_EXTERN PetscErrorCode VecViennaCLGetCLMemWrite(Vec v, PETSC_UINTPTR_T *mem
     SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "ViennaCL error: %s", ex.what());
   }
 
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 #endif
 }
 
@@ -1446,7 +1446,7 @@ PETSC_EXTERN PetscErrorCode VecViennaCLRestoreCLMemWrite(Vec v)
   PetscCheckTypeNames(v, VECSEQVIENNACL, VECMPIVIENNACL);
   PetscCall(VecViennaCLRestoreArrayWrite(v, NULL));
 
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 #endif
 }
 
@@ -1488,7 +1488,7 @@ PETSC_EXTERN PetscErrorCode VecViennaCLGetCLMem(Vec v, PETSC_UINTPTR_T *mem)
     SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "ViennaCL error: %s", ex.what());
   }
 
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 #endif
 }
 
@@ -1516,7 +1516,7 @@ PETSC_EXTERN PetscErrorCode VecViennaCLRestoreCLMem(Vec v)
   PetscCheckTypeNames(v, VECSEQVIENNACL, VECMPIVIENNACL);
   PetscCall(VecViennaCLRestoreArray(v, NULL));
 
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 #endif
 }
 
@@ -1541,5 +1541,5 @@ PetscErrorCode VecCreate_SeqViennaCL_Private(Vec V, const ViennaCLVector *array)
     V->offloadmask                  = PETSC_OFFLOAD_UNALLOCATED;
   }
 
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

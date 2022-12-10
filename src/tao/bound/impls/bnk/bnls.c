@@ -100,7 +100,7 @@ PetscErrorCode TaoSolve_BNLS(Tao tao)
   /* Initialize the preconditioner, KSP solver and trust radius/line search */
   tao->reason = TAO_CONTINUE_ITERATING;
   PetscCall(TaoBNKInitialize(tao, bnk->init_type, &needH));
-  if (tao->reason != TAO_CONTINUE_ITERATING) PetscFunctionReturn(0);
+  if (tao->reason != TAO_CONTINUE_ITERATING) PetscFunctionReturn(PETSC_SUCCESS);
 
   /* Have not converged; continue with Newton method */
   while (tao->reason == TAO_CONTINUE_ITERATING) {
@@ -115,7 +115,7 @@ PetscErrorCode TaoSolve_BNLS(Tao tao)
       PetscCall(TaoBNKTakeCGSteps(tao, &cgTerminate));
       if (cgTerminate) {
         tao->reason = bnk->bncg->reason;
-        PetscFunctionReturn(0);
+        PetscFunctionReturn(PETSC_SUCCESS);
       }
       /* Compute the hessian and update the BFGS preconditioner at the new iterate */
       PetscCall((*bnk->computehessian)(tao));
@@ -169,7 +169,7 @@ PetscErrorCode TaoSolve_BNLS(Tao tao)
     PetscCall(TaoMonitor(tao, tao->niter, bnk->f, resnorm, 0.0, steplen));
     PetscUseTypeMethod(tao, convergencetest, tao->cnvP);
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*------------------------------------------------------------*/
@@ -195,5 +195,5 @@ PETSC_EXTERN PetscErrorCode TaoCreate_BNLS(Tao tao)
   bnk              = (TAO_BNK *)tao->data;
   bnk->init_type   = BNK_INIT_DIRECTION;
   bnk->update_type = BNK_UPDATE_STEP; /* trust region updates based on line search step length */
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

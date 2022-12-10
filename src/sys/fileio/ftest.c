@@ -42,7 +42,7 @@ static PetscErrorCode PetscTestOwnership(const char fname[], char mode, uid_t fu
   PetscCheck(m != X_OK, PETSC_COMM_SELF, PETSC_ERR_SUP, "Unable to check execute permission for file %s", fname);
   if (!_access(fname, m)) *flg = PETSC_TRUE;
   #endif
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 #else /* PETSC_HAVE_ACCESS or PETSC_HAVE__ACCESS */
@@ -105,15 +105,15 @@ static PetscErrorCode PetscTestOwnership(const char fname[], char mode, uid_t fu
   } else if (mode == 'x') {
     if (fmode & ebit) *flg = PETSC_TRUE;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 #endif /* PETSC_HAVE_ACCESS */
 
 static PetscErrorCode PetscGetFileStat(const char fname[], uid_t *fileUid, gid_t *fileGid, int *fileMode, PetscBool *exists)
 {
-  struct stat    statbuf;
-  PetscErrorCode ierr;
+  struct stat statbuf;
+  int         ierr;
 
   PetscFunctionBegin;
   *fileMode = 0;
@@ -136,7 +136,7 @@ static PetscErrorCode PetscGetFileStat(const char fname[], uid_t *fileUid, gid_t
     *fileGid  = statbuf.st_gid;
     *fileMode = statbuf.st_mode;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -167,19 +167,19 @@ PetscErrorCode PetscTestFile(const char fname[], char mode, PetscBool *flg)
 
   PetscFunctionBegin;
   *flg = PETSC_FALSE;
-  if (!fname) PetscFunctionReturn(0);
+  if (!fname) PetscFunctionReturn(PETSC_SUCCESS);
 
   PetscCall(PetscGetFileStat(fname, &fuid, &fgid, &fmode, &exists));
-  if (!exists) PetscFunctionReturn(0);
+  if (!exists) PetscFunctionReturn(PETSC_SUCCESS);
   /* Except for systems that have this broken stat macros (rare), this is the correct way to check for a regular file */
-  if (!S_ISREG(fmode)) PetscFunctionReturn(0);
+  if (!S_ISREG(fmode)) PetscFunctionReturn(PETSC_SUCCESS);
   /* return if asked to check for existence only */
   if (mode == '\0') {
     *flg = exists;
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
   PetscCall(PetscTestOwnership(fname, mode, fuid, fgid, fmode, flg));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -207,16 +207,16 @@ PetscErrorCode PetscTestDirectory(const char dirname[], char mode, PetscBool *fl
 
   PetscFunctionBegin;
   *flg = PETSC_FALSE;
-  if (!dirname) PetscFunctionReturn(0);
+  if (!dirname) PetscFunctionReturn(PETSC_SUCCESS);
 
   PetscCall(PetscGetFileStat(dirname, &fuid, &fgid, &fmode, &exists));
-  if (!exists) PetscFunctionReturn(0);
+  if (!exists) PetscFunctionReturn(PETSC_SUCCESS);
   /* Except for systems that have this broken stat macros (rare), this
      is the correct way to check for a directory */
-  if (!S_ISDIR(fmode)) PetscFunctionReturn(0);
+  if (!S_ISDIR(fmode)) PetscFunctionReturn(PETSC_SUCCESS);
 
   PetscCall(PetscTestOwnership(dirname, mode, fuid, fgid, fmode, flg));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -264,5 +264,5 @@ PetscErrorCode PetscLs(MPI_Comm comm, const char dirname[], char found[], size_t
 #else
   SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP_SYS, "Cannot run external programs on this machine");
 #endif
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

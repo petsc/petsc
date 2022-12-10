@@ -25,14 +25,14 @@ public:
     PetscFunctionBegin;
     PetscCall(PetscArrayzero(event, 1));
     PetscCall(underlying().reset(event));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   PETSC_NODISCARD PetscErrorCode destroy_(PetscEvent event) const noexcept
   {
     PetscFunctionBegin;
     PetscCall(underlying().reset(event));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   PETSC_NODISCARD static PetscErrorCode reset_(PetscEvent event) noexcept
@@ -46,10 +46,10 @@ public:
     event->dctx_id    = 0;
     event->dctx_state = 0;
     event->dtype      = PETSC_DEVICE_DEFAULT();
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
-  PETSC_NODISCARD static PetscErrorCode invalidate_(PetscEvent) noexcept { return 0; }
+  PETSC_NODISCARD static PetscErrorCode invalidate_(PetscEvent) noexcept { return PETSC_SUCCESS; }
 };
 
 static Petsc::ObjectPool<_n_PetscEvent, PetscEventConstructor> event_pool;
@@ -62,7 +62,7 @@ static PetscErrorCode PetscDeviceContextCreateEvent_Private(PetscDeviceContext d
   PetscCall(event_pool.allocate(event));
   PetscCall(PetscDeviceContextGetDeviceType(dctx, &(*event)->dtype));
   PetscTryTypeMethod(dctx, createevent, *event);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscEventDestroy_Private(PetscEvent *event)
@@ -70,7 +70,7 @@ static PetscErrorCode PetscEventDestroy_Private(PetscEvent *event)
   PetscFunctionBegin;
   PetscValidPointer(event, 1);
   if (*event) PetscCall(event_pool.deallocate(event));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscDeviceContextRecordEvent_Private(PetscDeviceContext dctx, PetscEvent event)
@@ -85,7 +85,7 @@ static PetscErrorCode PetscDeviceContextRecordEvent_Private(PetscDeviceContext d
   state = PetscObjectCast(dctx)->state;
   // technically state can never be less than event->dctx_state (only equal) but we include
   // it in the check just in case
-  if ((id == event->dctx_id) && (state <= event->dctx_state)) PetscFunctionReturn(0);
+  if ((id == event->dctx_id) && (state <= event->dctx_state)) PetscFunctionReturn(PETSC_SUCCESS);
   if (dctx->ops->recordevent) {
     // REVIEW ME:
     // TODO maybe move this to impls, as they can determine whether they can interoperate with
@@ -100,7 +100,7 @@ static PetscErrorCode PetscDeviceContextRecordEvent_Private(PetscDeviceContext d
   }
   event->dctx_id    = id;
   event->dctx_state = state;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscDeviceContextWaitForEvent_Private(PetscDeviceContext dctx, PetscEvent event)
@@ -109,7 +109,7 @@ static PetscErrorCode PetscDeviceContextWaitForEvent_Private(PetscDeviceContext 
   PetscValidDeviceContext(dctx, 1);
   PetscValidPointer(event, 2);
   // empty data implies you cannot wait on this event
-  if (!event->data) PetscFunctionReturn(0);
+  if (!event->data) PetscFunctionReturn(PETSC_SUCCESS);
   if (PetscDefined(USE_DEBUG)) {
     const auto      etype = event->dtype;
     PetscDeviceType dtype;
@@ -117,9 +117,9 @@ static PetscErrorCode PetscDeviceContextWaitForEvent_Private(PetscDeviceContext 
     PetscCall(PetscDeviceContextGetDeviceType(dctx, &dtype));
     PetscCheck(etype == dtype, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Event type %s does not match device context type %s", PetscDeviceTypes[etype], PetscDeviceTypes[dtype]);
   }
-  if (PetscObjectCast(dctx)->id == event->dctx_id) PetscFunctionReturn(0);
+  if (PetscObjectCast(dctx)->id == event->dctx_id) PetscFunctionReturn(PETSC_SUCCESS);
   PetscTryTypeMethod(dctx, waitforevent, event);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 // ==========================================================================================
@@ -274,7 +274,7 @@ inline PetscErrorCode MarkedObjectMap::finalize_() noexcept
   PetscFunctionBegin;
   PetscCall(PetscInfo(nullptr, "Finalizing marked object map\n"));
   PetscCall(map.clear());
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 // ==========================================================================================
@@ -322,7 +322,7 @@ PetscErrorCode MarkedObjectMap::snapshot_type::ensure_event(PetscDeviceContext d
 {
   PetscFunctionBegin;
   if (PetscUnlikely(!event_)) PetscCall(PetscDeviceContextCreateEvent_Private(dctx, &event_));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 void swap(MarkedObjectMap::snapshot_type &lhs, MarkedObjectMap::snapshot_type &rhs) noexcept
@@ -361,7 +361,7 @@ PetscErrorCode PetscGetMarkedObjectMap_Internal(std::size_t *nkeys, PetscObjectI
     for (auto &&dep : it.second.dependencies) (*dependencies)[i][j++] = dep.event();
     ++i;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PetscRestoreMarkedObjectMap_Internal(std::size_t nkeys, PetscObjectId **keys, PetscMemoryAccessMode **modes, std::size_t **ndeps, PetscEvent ***dependencies)
@@ -369,7 +369,7 @@ PetscErrorCode PetscRestoreMarkedObjectMap_Internal(std::size_t nkeys, PetscObje
   PetscFunctionBegin;
   for (std::size_t i = 0; i < nkeys; ++i) PetscCall(PetscFree((*dependencies)[i]));
   PetscCall(PetscFree4(*keys, *modes, *ndeps, *dependencies));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 template <typename T>
@@ -400,7 +400,7 @@ static PetscErrorCode PetscDeviceContextMapIterVisitor(PetscDeviceContext dctx, 
     }
   }
   PetscCallCXX(dctx_deps.clear());
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PetscDeviceContextSyncClearMap_Internal(PetscDeviceContext dctx)
@@ -423,7 +423,7 @@ PetscErrorCode PetscDeviceContextSyncClearMap_Internal(PetscDeviceContext dctx)
       oss << '}';
       PetscCall(PetscInfo(nullptr, "%s\n", oss.str().c_str()));
     }
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }));
   {
     // the recursive sync clear map call is unbounded in case of a dependenct loop so we make a
@@ -446,7 +446,7 @@ PetscErrorCode PetscDeviceContextSyncClearMap_Internal(PetscDeviceContext dctx)
       PetscCall(PetscDeviceContextSyncClearMap_Internal(upstrm.first));
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PetscDeviceContextCheckNotOrphaned_Internal(PetscDeviceContext dctx)
@@ -461,17 +461,17 @@ PetscErrorCode PetscDeviceContextCheckNotOrphaned_Internal(PetscDeviceContext dc
   PetscFunctionBegin;
   PetscCall(PetscDeviceContextMapIterVisitor(dctx, [&](map_iterator mapit, dep_iterator it, dep_iterator end) {
     PetscFunctionBegin;
-    if (allow || contained) PetscFunctionReturn(0);
+    if (allow || contained) PetscFunctionReturn(PETSC_SUCCESS);
     wrote_to_oss = true;
     oss << "- PetscObject (id " << mapit->first << "), intent " << PetscMemoryAccessModeToString(mapit->second.mode) << ' ' << it->frame();
     if (std::distance(it, end) == 0) oss << " (orphaned)"; // we were the only dependency
     oss << '\n';
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }));
   PetscCheck(!wrote_to_oss, PETSC_COMM_SELF, PETSC_ERR_ORDER, "Destroying PetscDeviceContext ('%s', id %" PetscInt64_FMT ") would leave the following dangling (possibly orphaned) dependants:\n%s\nMust synchronize before destroying it, or allow it to be destroyed with orphans",
              PetscObjectCast(dctx)->name ? PetscObjectCast(dctx)->name : "unnamed", PetscObjectCast(dctx)->id, oss.str().c_str());
   PetscCall(CxxDataCast(dctx)->clear());
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 #define DEBUG_INFO(mess, ...) PetscDebugInfo(dctx, "dctx %" PetscInt64_FMT " (%s) - obj %" PetscInt64_FMT " (%s): " mess, PetscObjectCast(dctx)->id, PetscObjectCast(dctx)->name ? PetscObjectCast(dctx)->name : "unnamed", id, name, ##__VA_ARGS__)
@@ -498,13 +498,13 @@ static PetscErrorCode MarkFromID_CompatibleModes(MarkedObjectMap::mapped_type &m
     swap(it->frame(), frame);
     PetscCall(PetscDeviceContextRecordEvent_Private(dctx, it->event()));
     *update_object_dependencies = false;
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   // we have not been here before, need to serialize with the last write event (if it exists)
   // and add ourselves to the dependency list
   if (const auto event = marked.last_write.event()) PetscCall(PetscDeviceContextWaitForEvent_Private(dctx, event));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 template <bool use_debug>
@@ -521,7 +521,7 @@ static PetscErrorCode MarkFromID_IncompatibleModes_UpdateLastWrite(MarkedObjectM
   if (last_dep.event()->dtype != dtype) {
     PetscCall(DEBUG_INFO("moving last write dependency (intent %s)\n", PetscMemoryAccessModeToString(marked.mode)));
     last_write = std::move(last_dep);
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   // we match the device type of the dependency, we can reuse its event!
@@ -545,7 +545,7 @@ static PetscErrorCode MarkFromID_IncompatibleModes_UpdateLastWrite(MarkedObjectM
     PetscCall(PetscDeviceContextRecordEvent_Private(dctx, last_dep.event()));
     *update_object_dependencies = false;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 // The current mode is NOT compatible with the previous mode. We must serialize with all events
@@ -569,7 +569,7 @@ static PetscErrorCode MarkFromID_IncompatibleModes(MarkedObjectMap::mapped_type 
   old_mode = mode;
   // clear out the old dependencies if are about to append ourselves
   if (*update_object_dependencies) object_dependencies.clear();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 template <bool use_debug>
@@ -591,7 +591,7 @@ static PetscErrorCode PetscDeviceContextMarkIntentFromID_Private(PetscDeviceCont
     PetscCallCXX(object_dependencies.emplace_back(dctx, std::move(frame)));
     PetscCallCXX(CxxDataCast(dctx)->deps.emplace(id));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 #undef DEBUG_INFO
@@ -641,7 +641,7 @@ PetscErrorCode PetscDeviceContextMarkIntentFromID(PetscDeviceContext dctx, Petsc
   PetscCall(PetscLogEventBegin(DCONTEXT_Mark, dctx, nullptr, nullptr, nullptr));
   PetscCall(PetscDeviceContextMarkIntentFromID_Private(dctx, id, mode, MarkedObjectMap::snapshot_type::frame_type{file, function, line}, name ? name : "unknown object"));
   PetscCall(PetscLogEventEnd(DCONTEXT_Mark, dctx, nullptr, nullptr, nullptr));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 #if defined(__clang__)

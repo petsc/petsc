@@ -43,7 +43,7 @@ static PetscErrorCode RoberFunction(TS ts, PetscReal t, Vec X, Vec Xdot, Vec F, 
   PetscCall(VecRestoreArrayRead(X, &x));
   PetscCall(VecRestoreArrayRead(Xdot, &xdot));
   PetscCall(VecRestoreArray(F, &f));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode RoberJacobian(TS ts, PetscReal t, Vec X, Vec Xdot, PetscReal a, Mat A, Mat B, void *ctx)
@@ -74,7 +74,7 @@ static PetscErrorCode RoberJacobian(TS ts, PetscReal t, Vec X, Vec Xdot, PetscRe
     PetscCall(MatAssemblyBegin(B, MAT_FINAL_ASSEMBLY));
     PetscCall(MatAssemblyEnd(B, MAT_FINAL_ASSEMBLY));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode RoberSolution(PetscReal t, Vec X, void *ctx)
@@ -88,7 +88,7 @@ static PetscErrorCode RoberSolution(PetscReal t, Vec X, void *ctx)
   x[1] = 0;
   x[2] = 0;
   PetscCall(VecRestoreArray(X, &x));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode RoberCreate(Problem p)
@@ -100,7 +100,7 @@ static PetscErrorCode RoberCreate(Problem p)
   p->solution   = &RoberSolution;
   p->final_time = 1e11;
   p->n          = 3;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -115,7 +115,7 @@ static PetscErrorCode CEDestroy(Problem p)
 {
   PetscFunctionBeginUser;
   PetscCall(PetscFree(p->data));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode CEFunction(TS ts, PetscReal t, Vec X, Vec Xdot, Vec F, void *ctx)
@@ -135,7 +135,7 @@ static PetscErrorCode CEFunction(TS ts, PetscReal t, Vec X, Vec Xdot, Vec F, voi
   PetscCall(VecRestoreArrayRead(X, &x));
   PetscCall(VecRestoreArrayRead(Xdot, &xdot));
   PetscCall(VecRestoreArray(F, &f));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode CEJacobian(TS ts, PetscReal t, Vec X, Vec Xdot, PetscReal a, Mat A, Mat B, void *ctx)
@@ -159,7 +159,7 @@ static PetscErrorCode CEJacobian(TS ts, PetscReal t, Vec X, Vec Xdot, PetscReal 
     PetscCall(MatAssemblyBegin(B, MAT_FINAL_ASSEMBLY));
     PetscCall(MatAssemblyEnd(B, MAT_FINAL_ASSEMBLY));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode CESolution(PetscReal t, Vec X, void *ctx)
@@ -171,7 +171,7 @@ static PetscErrorCode CESolution(PetscReal t, Vec X, void *ctx)
   PetscCall(VecGetArray(X, &x));
   x[0] = l / (l * l + 1) * (l * PetscCosReal(t) + PetscSinReal(t)) - l * l / (l * l + 1) * PetscExpReal(-l * t);
   PetscCall(VecRestoreArray(X, &x));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode CECreate(Problem p)
@@ -196,7 +196,7 @@ static PetscErrorCode CECreate(Problem p)
     PetscCall(PetscOptionsReal("-problem_ce_lambda", "Parameter controlling stiffness: xdot + lambda*(x - cos(t))", "", ce->lambda, &ce->lambda, NULL));
   }
   PetscOptionsEnd();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -217,7 +217,7 @@ static PetscErrorCode OregoFunction(TS ts, PetscReal t, Vec X, Vec Xdot, Vec F, 
   PetscCall(VecRestoreArrayRead(X, &x));
   PetscCall(VecRestoreArrayRead(Xdot, &xdot));
   PetscCall(VecRestoreArray(F, &f));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode OregoJacobian(TS ts, PetscReal t, Vec X, Vec Xdot, PetscReal a, Mat A, Mat B, void *ctx)
@@ -248,7 +248,7 @@ static PetscErrorCode OregoJacobian(TS ts, PetscReal t, Vec X, Vec Xdot, PetscRe
     PetscCall(MatAssemblyBegin(B, MAT_FINAL_ASSEMBLY));
     PetscCall(MatAssemblyEnd(B, MAT_FINAL_ASSEMBLY));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode OregoSolution(PetscReal t, Vec X, void *ctx)
@@ -262,7 +262,7 @@ static PetscErrorCode OregoSolution(PetscReal t, Vec X, void *ctx)
   x[1] = 2;
   x[2] = 3;
   PetscCall(VecRestoreArray(X, &x));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode OregoCreate(Problem p)
@@ -274,7 +274,7 @@ static PetscErrorCode OregoCreate(Problem p)
   p->solution   = &OregoSolution;
   p->final_time = 360;
   p->n          = 3;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -292,7 +292,7 @@ static PetscErrorCode MonitorError(TS ts, PetscInt step, PetscReal t, Vec x, voi
   PetscReal   h, nrm_x, nrm_exact, nrm_diff;
 
   PetscFunctionBeginUser;
-  if (!mon->problem->solution) PetscFunctionReturn(0);
+  if (!mon->problem->solution) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall((*mon->problem->solution)(t, mon->x, mon->problem->data));
   PetscCall(VecNorm(x, NORM_2, &nrm_x));
   PetscCall(VecNorm(mon->x, NORM_2, &nrm_exact));
@@ -301,7 +301,7 @@ static PetscErrorCode MonitorError(TS ts, PetscInt step, PetscReal t, Vec x, voi
   PetscCall(TSGetTimeStep(ts, &h));
   if (step < 0) PetscCall(PetscPrintf(mon->comm, "Interpolated final solution "));
   PetscCall(PetscPrintf(mon->comm, "step %4" PetscInt_FMT " t=%12.8e h=% 8.2e  |x|=%9.2e  |x_e|=%9.2e  |x-x_e|=%9.2e\n", step, (double)t, (double)h, (double)nrm_x, (double)nrm_exact, (double)nrm_diff));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)

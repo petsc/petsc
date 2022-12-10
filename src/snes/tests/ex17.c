@@ -163,7 +163,7 @@ static PetscErrorCode assembled_system(void)
   PetscCall(VecDestroy(&r));
   PetscCall(MatDestroy(&J));
   PetscCall(SNESDestroy(&snes));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -204,7 +204,7 @@ static PetscErrorCode FormFunction1(SNES snes, Vec x, Vec f, void *dummy)
   */
   PetscCall(VecRestoreArrayRead(x, &xx));
   PetscCall(VecRestoreArray(f, &ff));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -253,7 +253,7 @@ static PetscErrorCode FormJacobian1(SNES snes, Vec x, Mat jac, Mat B, void *dumm
   */
   PetscCall(MatAssemblyBegin(jac, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(jac, MAT_FINAL_ASSEMBLY));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode FormFunction2(SNES snes, Vec x, Vec f, void *dummy)
@@ -283,7 +283,7 @@ static PetscErrorCode FormFunction2(SNES snes, Vec x, Vec f, void *dummy)
   */
   PetscCall(VecRestoreArrayRead(x, &xx));
   PetscCall(VecRestoreArray(f, &ff));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode FormJacobian2(SNES snes, Vec x, Mat jac, Mat B, void *dummy)
@@ -319,7 +319,7 @@ static PetscErrorCode FormJacobian2(SNES snes, Vec x, Mat jac, Mat B, void *dumm
   */
   PetscCall(MatAssemblyBegin(jac, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(jac, MAT_FINAL_ASSEMBLY));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode block_system(void)
@@ -501,7 +501,7 @@ static PetscErrorCode block_system(void)
   PetscCall(VecDestroy(&r));
   PetscCall(MatDestroy(&J));
   PetscCall(SNESDestroy(&snes));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode FormFunction1_block(SNES snes, Vec x, Vec f, void *dummy)
@@ -538,7 +538,7 @@ static PetscErrorCode FormFunction1_block(SNES snes, Vec x, Vec f, void *dummy)
 
   PetscCall(VecAssemblyBegin(f));
   PetscCall(VecAssemblyEnd(f));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode FormJacobian1_block(SNES snes, Vec x, Mat jac, Mat B, void *dummy)
@@ -583,7 +583,7 @@ static PetscErrorCode FormJacobian1_block(SNES snes, Vec x, Mat jac, Mat B, void
   /* Assemble sub matrix */
   PetscCall(MatAssemblyBegin(jac, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(jac, MAT_FINAL_ASSEMBLY));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode FormFunction2_block(SNES snes, Vec x, Vec f, void *dummy)
@@ -613,7 +613,7 @@ static PetscErrorCode FormFunction2_block(SNES snes, Vec x, Vec f, void *dummy)
   */
   PetscCall(VecRestoreArrayRead(x, &xx));
   PetscCall(VecRestoreArray(f, &ff));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode FormJacobian2_block(SNES snes, Vec x, Mat jac, Mat B, void *dummy)
@@ -649,7 +649,7 @@ static PetscErrorCode FormJacobian2_block(SNES snes, Vec x, Mat jac, Mat B, void
   */
   PetscCall(MatAssemblyBegin(jac, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(jac, MAT_FINAL_ASSEMBLY));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)

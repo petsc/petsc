@@ -42,7 +42,7 @@ static PetscErrorCode SBRGetEdgeLen_Private(DMPlexTransform tr, PetscInt edge, P
     PetscCall(VecRestoreArrayRead(coordsLocal, &coords));
   }
   *len = sbr->edgeLen[off];
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Mark local edges that should be split */
@@ -90,7 +90,7 @@ static PetscErrorCode SBRSplitLocalEdges_Private(DMPlexTransform tr, DMPlexPoint
       PetscCall(DMLabelSetValue(sbr->splitPoints, cell, 2));
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode splitPoint(PETSC_UNUSED DMLabel label, PetscInt p, PETSC_UNUSED PetscInt val, void *ctx)
@@ -99,7 +99,7 @@ static PetscErrorCode splitPoint(PETSC_UNUSED DMLabel label, PetscInt p, PETSC_U
 
   PetscFunctionBegin;
   PetscCall(DMPlexPointQueueEnqueue(queue, p));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -267,7 +267,7 @@ static PetscErrorCode DMPlexTransformSetUp_SBR(DMPlexTransform tr)
   }
   /* Cleanup */
   PetscCall(DMPlexPointQueueDestroy(&queue));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMPlexTransformGetSubcellOrientation_SBR(DMPlexTransform tr, DMPolytopeType sct, PetscInt sp, PetscInt so, DMPolytopeType tct, PetscInt r, PetscInt o, PetscInt *rnew, PetscInt *onew)
@@ -315,7 +315,7 @@ static PetscErrorCode DMPlexTransformGetSubcellOrientation_SBR(DMPlexTransform t
   default:
     PetscCall(DMPlexTransformGetSubcellOrientationIdentity(tr, sct, sp, so, tct, r, o, rnew, onew));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Add 1 edge inside this triangle, making 2 new triangles.
@@ -355,7 +355,7 @@ static PetscErrorCode SBRGetTriangleSplitSingle(PetscInt o, PetscInt *Nt, DMPoly
   *size     = triS1;
   *cone     = triC1;
   *ornt     = triO1;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Add 2 edges inside this triangle, making 3 new triangles.
@@ -488,7 +488,7 @@ static PetscErrorCode SBRGetTriangleSplitDouble(PetscInt o, PetscInt *Nt, DMPoly
   *size     = triS2;
   *cone     = triC2;
   *ornt     = triO2;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMPlexTransformCellTransform_SBR(DMPlexTransform tr, DMPolytopeType source, PetscInt p, PetscInt *rt, PetscInt *Nt, DMPolytopeType *target[], PetscInt *size[], PetscInt *cone[], PetscInt *ornt[])
@@ -556,7 +556,7 @@ static PetscErrorCode DMPlexTransformCellTransform_SBR(DMPlexTransform tr, DMPol
   default:
     SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "No refinement strategy for %s", DMPolytopeTypes[source]);
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMPlexTransformSetFromOptions_SBR(DMPlexTransform tr, PetscOptionItems *PetscOptionsObject)
@@ -576,7 +576,7 @@ static PetscErrorCode DMPlexTransformSetFromOptions_SBR(DMPlexTransform tr, Pets
     PetscCall(DMLabelDestroy(&active));
   }
   PetscOptionsHeadEnd();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMPlexTransformView_SBR(DMPlexTransform tr, PetscViewer viewer)
@@ -598,7 +598,7 @@ static PetscErrorCode DMPlexTransformView_SBR(DMPlexTransform tr, PetscViewer vi
   } else {
     SETERRQ(PetscObjectComm((PetscObject)tr), PETSC_ERR_SUP, "Viewer type %s not yet supported for DMPlexTransform writing", ((PetscObject)viewer)->type_name);
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMPlexTransformDestroy_SBR(DMPlexTransform tr)
@@ -610,7 +610,7 @@ static PetscErrorCode DMPlexTransformDestroy_SBR(DMPlexTransform tr)
   PetscCall(PetscSectionDestroy(&sbr->secEdgeLen));
   PetscCall(DMLabelDestroy(&sbr->splitPoints));
   PetscCall(PetscFree(tr->data));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMPlexTransformInitialize_SBR(DMPlexTransform tr)
@@ -624,7 +624,7 @@ static PetscErrorCode DMPlexTransformInitialize_SBR(DMPlexTransform tr)
   tr->ops->celltransform         = DMPlexTransformCellTransform_SBR;
   tr->ops->getsubcellorientation = DMPlexTransformGetSubcellOrientation_SBR;
   tr->ops->mapcoordinates        = DMPlexTransformMapCoordinatesBarycenter_Internal;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_EXTERN PetscErrorCode DMPlexTransformCreate_SBR(DMPlexTransform tr)
@@ -638,5 +638,5 @@ PETSC_EXTERN PetscErrorCode DMPlexTransformCreate_SBR(DMPlexTransform tr)
 
   PetscCall(DMPlexTransformInitialize_SBR(tr));
   PetscCall(PetscCitationsRegister(SBRCitation, &SBRcite));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -35,7 +35,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscCall(PetscOptionsBool("-error", "Flag to print the error", "ex5.c", options->error, &options->error, NULL));
   PetscCall(PetscOptionsInt("-output_step", "Number of time steps between output", "ex5.c", options->ostep, &options->ostep, NULL));
   PetscOptionsEnd();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
@@ -45,7 +45,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   PetscCall(DMSetType(*dm, DMPLEX));
   PetscCall(DMSetFromOptions(*dm));
   PetscCall(DMViewFromOptions(*dm, NULL, "-dm_view"));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode CreateSwarm(DM dm, AppCtx *user, DM *sw)
@@ -87,7 +87,7 @@ static PetscErrorCode CreateSwarm(DM dm, AppCtx *user, DM *sw)
     PetscCall(DMSwarmDestroyGlobalVectorFromField(*sw, "velocity", &gv));
     PetscCall(DMSwarmDestroyGlobalVectorFromField(*sw, "initVelocity", &gv0));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec U, Vec G, void *ctx)
@@ -121,7 +121,7 @@ static PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec U, Vec G, void *ctx)
   PetscCall(DMSwarmRestoreField(sw, "initVelocity", NULL, NULL, (void **)&vel));
   PetscCall(VecRestoreArrayRead(U, &u));
   PetscCall(VecRestoreArray(G, &g));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* J_{ij} = dF_i/dx_j
@@ -157,7 +157,7 @@ static PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec U, Mat J, Mat P, void 
   PetscCall(DMSwarmRestoreField(sw, "initVelocity", NULL, NULL, (void **)&vel));
   PetscCall(MatAssemblyBegin(J, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(J, MAT_FINAL_ASSEMBLY));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode RHSFunctionX(TS ts, PetscReal t, Vec V, Vec Xres, void *ctx)
@@ -173,7 +173,7 @@ static PetscErrorCode RHSFunctionX(TS ts, PetscReal t, Vec V, Vec Xres, void *ct
   for (p = 0; p < Np; ++p) xres[p] = v[p];
   PetscCall(VecRestoreArrayRead(V, &v));
   PetscCall(VecRestoreArray(Xres, &xres));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode RHSFunctionV(TS ts, PetscReal t, Vec X, Vec Vres, void *ctx)
@@ -205,7 +205,7 @@ static PetscErrorCode RHSFunctionV(TS ts, PetscReal t, Vec X, Vec Vres, void *ct
   PetscCall(VecRestoreArray(Vres, &vres));
   PetscCall(DMSwarmRestoreField(sw, "initCoordinates", NULL, NULL, (void **)&coords));
   PetscCall(DMSwarmRestoreField(sw, "initVelocity", NULL, NULL, (void **)&vel));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode CreateSolution(TS ts)
@@ -224,7 +224,7 @@ static PetscErrorCode CreateSolution(TS ts)
   PetscCall(VecSetUp(u));
   PetscCall(TSSetSolution(ts, u));
   PetscCall(VecDestroy(&u));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode SetProblem(TS ts)
@@ -283,7 +283,7 @@ static PetscErrorCode SetProblem(TS ts)
   {
     //PetscCall(TSDiscGradSetFormulation(ts, RHSJacobianS, RHSObjectiveF, RHSFunctionG, &user));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMSwarmTSRedistribute(TS ts)
@@ -314,21 +314,21 @@ static PetscErrorCode DMSwarmTSRedistribute(TS ts)
   PetscCall(CreateSolution(ts));
   PetscCall(SetProblem(ts));
   PetscCall(TSGetSolution(ts, &u));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode circleSingleX(PetscInt dim, PetscReal time, const PetscReal dummy[], PetscInt p, PetscScalar x[], void *ctx)
 {
   x[0] = p + 1.;
   x[1] = 0.;
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 PetscErrorCode circleSingleV(PetscInt dim, PetscReal time, const PetscReal dummy[], PetscInt p, PetscScalar v[], void *ctx)
 {
   v[0] = 0.;
   v[1] = PetscSqrtReal(1000. / (p + 1.));
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 /* Put 5 particles into each circle */
@@ -340,7 +340,7 @@ PetscErrorCode circleMultipleX(PetscInt dim, PetscReal time, const PetscReal dum
 
   x[0] = r0 * PetscCosReal(th0);
   x[1] = r0 * PetscSinReal(th0);
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 /* Put 5 particles into each circle */
@@ -353,7 +353,7 @@ PetscErrorCode circleMultipleV(PetscInt dim, PetscReal time, const PetscReal dum
 
   v[0] = -r0 * omega * PetscSinReal(th0);
   v[1] = r0 * omega * PetscCosReal(th0);
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 /*
@@ -403,7 +403,7 @@ static PetscErrorCode InitializeSolveAndSwarm(TS ts, PetscBool useInitial)
   PetscCall(VecISCopy(u, isv, SCATTER_FORWARD, gv));
   PetscCall(DMSwarmDestroyGlobalVectorFromField(sw, "velocity", &gv));
   PetscCall(DMSwarmDestroyGlobalVectorFromField(sw, "initVelocity", &gv0));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode InitializeSolve(TS ts, Vec u)
@@ -411,7 +411,7 @@ static PetscErrorCode InitializeSolve(TS ts, Vec u)
   PetscFunctionBegin;
   PetscCall(TSSetSolution(ts, u));
   PetscCall(InitializeSolveAndSwarm(ts, PETSC_TRUE));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode ComputeError(TS ts, Vec U, Vec E)
@@ -465,7 +465,7 @@ static PetscErrorCode ComputeError(TS ts, Vec U, Vec E)
   PetscCall(DMSwarmRestoreField(sw, "initVelocity", NULL, NULL, (void **)&vel));
   PetscCall(VecRestoreArrayRead(U, &u));
   PetscCall(VecRestoreArray(E, &e));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode EnergyMonitor(TS ts, PetscInt step, PetscReal t, Vec U, void *ctx)
@@ -491,7 +491,7 @@ static PetscErrorCode EnergyMonitor(TS ts, PetscInt step, PetscReal t, Vec U, vo
     PetscCall(PetscSynchronizedFlush(PetscObjectComm((PetscObject)ts), NULL));
     PetscCall(VecRestoreArrayRead(U, &u));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MigrateParticles(TS ts)
@@ -519,7 +519,7 @@ static PetscErrorCode MigrateParticles(TS ts)
   PetscCall(DMSwarmTSRedistribute(ts));
   PetscCall(InitializeSolveAndSwarm(ts, PETSC_FALSE));
   //PetscCall(VecViewFromOptions(u, NULL, "-sol_migrate_view"));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)

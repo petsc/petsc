@@ -26,7 +26,7 @@ typedef struct {
 PetscErrorCode NullJacobian(Tao tao, Vec X, Mat J, Mat Jpre, void *ptr)
 {
   PetscFunctionBegin;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*------------------------------------------------------------*/
@@ -58,7 +58,7 @@ static PetscErrorCode TaoShellSolve_SoftThreshold(Tao tao)
 
   /* soft thresholding */
   PetscCall(TaoSoftThreshold(work, -lambda / mu, lambda / mu, out));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*------------------------------------------------------------*/
@@ -77,7 +77,7 @@ PetscErrorCode MisfitObjectiveAndGradient(Tao tao, Vec X, PetscReal *f, Vec g, v
   PetscCall(MatMult(user->ATA, X, user->workN));
   PetscCall(MatMultTranspose(user->A, user->b, user->workN2));
   PetscCall(VecWAXPY(g, -1., user->workN2, user->workN));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*------------------------------------------------------------*/
@@ -100,7 +100,7 @@ PetscErrorCode RegularizerObjectiveAndGradient1(Tao tao, Vec X, PetscReal *f_reg
   /* compute regularizer gradient = lambda*x */
   PetscCall(VecPointwiseDivide(G_reg, X, user->workN3));
   PetscCall(VecScale(G_reg, user->lambda));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*------------------------------------------------------------*/
@@ -117,7 +117,7 @@ PetscErrorCode RegularizerObjectiveAndGradient2(Tao tao, Vec X, PetscReal *f_reg
   /* compute regularizer gradient = lambda*z */
   PetscCall(VecCopy(X, G_reg));
   PetscCall(VecScale(G_reg, user->lambda));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*------------------------------------------------------------*/
@@ -125,7 +125,7 @@ PetscErrorCode RegularizerObjectiveAndGradient2(Tao tao, Vec X, PetscReal *f_reg
 static PetscErrorCode HessianMisfit(Tao tao, Vec x, Mat H, Mat Hpre, void *ptr)
 {
   PetscFunctionBegin;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*------------------------------------------------------------*/
@@ -143,7 +143,7 @@ static PetscErrorCode HessianReg(Tao tao, Vec x, Mat H, Mat Hpre, void *ptr)
   PetscCall(VecReciprocal(user->workN2));
   PetscCall(VecScale(user->workN2, user->eps * user->eps));
   PetscCall(MatDiagonalSet(H, user->workN2, INSERT_VALUES));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*------------------------------------------------------------*/
@@ -166,14 +166,14 @@ PetscErrorCode FullObjGrad(Tao tao, Vec X, PetscReal *f, Vec g, void *ptr)
   PetscCall(MatMultTranspose(user->A, user->b, user->workN2));
   PetscCall(VecWAXPY(g, -1., user->workN2, user->workN));
   PetscCall(VecAXPY(g, 2 * user->lambda, X));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 /*------------------------------------------------------------*/
 
 static PetscErrorCode HessianFull(Tao tao, Vec x, Mat H, Mat Hpre, void *ptr)
 {
   PetscFunctionBegin;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 /*------------------------------------------------------------*/
 
@@ -264,7 +264,7 @@ PetscErrorCode InitializeUserData(AppCtx *user)
   PetscCall(PetscOptionsReal("-eps", "L1 norm epsilon padding", "tomographyADMM.c", user->eps, &(user->eps), NULL));
   PetscCall(PetscOptionsReal("-mumin", "Minimum value for ADMM spectral penalty", "tomographyADMM.c", user->mumin, &(user->mumin), NULL));
   PetscOptionsEnd();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*------------------------------------------------------------*/
@@ -289,7 +289,7 @@ PetscErrorCode DestroyContext(AppCtx *user)
   PetscCall(VecDestroy(&user->workN2));
   PetscCall(VecDestroy(&user->workN));
   PetscCall(VecDestroy(&user->workM));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*------------------------------------------------------------*/

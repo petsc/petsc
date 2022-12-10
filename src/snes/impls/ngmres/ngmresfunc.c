@@ -13,7 +13,7 @@ PetscErrorCode SNESNGMRESUpdateSubspace_Private(SNES snes, PetscInt ivec, PetscI
   PetscCall(VecCopy(X, Xdot[ivec]));
 
   ngmres->fnorms[ivec] = fnorm;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode SNESNGMRESFormCombinedSolution_Private(SNES snes, PetscInt ivec, PetscInt l, Vec XM, Vec FM, PetscReal fMnorm, Vec X, Vec XA, Vec FA)
@@ -93,7 +93,7 @@ PetscErrorCode SNESNGMRESFormCombinedSolution_Private(SNES snes, PetscInt ivec, 
     PetscCall(VecScale(FA, 1. - alph_total));
     PetscCall(VecMAXPY(FA, l, beta, Fdot));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode SNESNGMRESNorms_Private(SNES snes, PetscInt l, Vec X, Vec F, Vec XM, Vec FM, Vec XA, Vec FA, Vec D, PetscReal *dnorm, PetscReal *dminnorm, PetscReal *xMnorm, PetscReal *fMnorm, PetscReal *yMnorm, PetscReal *xAnorm, PetscReal *fAnorm, PetscReal *yAnorm)
@@ -145,7 +145,7 @@ PetscErrorCode SNESNGMRESNorms_Private(SNES snes, PetscInt l, Vec X, Vec F, Vec 
     }
     *dminnorm = dmin;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode SNESNGMRESSelect_Private(SNES snes, PetscInt k_restart, Vec XM, Vec FM, PetscReal xMnorm, PetscReal fMnorm, PetscReal yMnorm, Vec XA, Vec FA, PetscReal xAnorm, PetscReal fAnorm, PetscReal yAnorm, PetscReal dnorm, PetscReal fminnorm, PetscReal dminnorm, Vec X, Vec F, Vec Y, PetscReal *xnorm, PetscReal *fnorm, PetscReal *ynorm)
@@ -169,7 +169,7 @@ PetscErrorCode SNESNGMRESSelect_Private(SNES snes, PetscInt k_restart, Vec XM, V
     if (lssucceed) {
       if (++snes->numFailures >= snes->maxFailures) {
         snes->reason = SNES_DIVERGED_LINE_SEARCH;
-        PetscFunctionReturn(0);
+        PetscFunctionReturn(PETSC_SUCCESS);
       }
     }
     if (ngmres->monitor) PetscCall(PetscViewerASCIIPrintf(ngmres->monitor, "Additive solution: ||F||_2 = %e\n", (double)*fnorm));
@@ -208,7 +208,7 @@ PetscErrorCode SNESNGMRESSelect_Private(SNES snes, PetscInt k_restart, Vec XM, V
     PetscCall(VecCopy(FA, F));
     PetscCall(VecCopy(XA, X));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode SNESNGMRESSelectRestart_Private(SNES snes, PetscInt l, PetscReal fMnorm, PetscReal fAnorm, PetscReal dnorm, PetscReal fminnorm, PetscReal dminnorm, PetscBool *selectRestart)
@@ -234,5 +234,5 @@ PetscErrorCode SNESNGMRESSelectRestart_Private(SNES snes, PetscInt l, PetscReal 
     *selectRestart = PETSC_TRUE;
   }
 
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

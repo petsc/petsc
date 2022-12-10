@@ -15,7 +15,7 @@ PetscErrorCode VecDuplicate_MPI_DA(Vec g, Vec *gg)
   PetscCall(DMCreateGlobalVector(da, gg));
   PetscCall(VecGetLayout(g, &map));
   PetscCall(VecSetLayout(*gg, map));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMCreateGlobalVector_DA(DM da, Vec *g)
@@ -38,7 +38,7 @@ PetscErrorCode DMCreateGlobalVector_DA(DM da, Vec *g)
   PetscCall(VecSetOperation(*g, VECOP_VIEW, (void (*)(void))VecView_MPI_DA));
   PetscCall(VecSetOperation(*g, VECOP_LOAD, (void (*)(void))VecLoad_Default_DA));
   PetscCall(VecSetOperation(*g, VECOP_DUPLICATE, (void (*)(void))VecDuplicate_MPI_DA));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -90,5 +90,5 @@ PetscErrorCode DMDACreateNaturalVector(DM da, Vec *g)
 
     dd->natural = *g;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

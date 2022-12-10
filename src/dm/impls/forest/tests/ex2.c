@@ -13,7 +13,7 @@ static PetscErrorCode AddIdentityLabel(DM dm)
   PetscCall(DMCreateLabel(dm, "identity"));
   PetscCall(DMPlexGetChart(dm, &pStart, &pEnd));
   for (p = pStart; p < pEnd; p++) PetscCall(DMSetLabelValue(dm, "identity", p, p));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode CreateAdaptivityLabel(DM forest, DMLabel *adaptLabel)
@@ -32,21 +32,21 @@ static PetscErrorCode CreateAdaptivityLabel(DM forest, DMLabel *adaptLabel)
     PetscCall(DMLabelGetValue(identLabel, c, &basePoint));
     if (!basePoint) PetscCall(DMLabelSetValue(*adaptLabel, c, DM_ADAPT_REFINE));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode LinearFunction(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar u[], void *ctx)
 {
   PetscFunctionBeginUser;
   u[0] = (x[0] * 2.0 + 1.) + (x[1] * 20.0 + 10.) + ((dim == 3) ? (x[2] * 200.0 + 100.) : 0.);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MultiaffineFunction(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar u[], void *ctx)
 {
   PetscFunctionBeginUser;
   u[0] = (x[0] * 1.0 + 2.0) * (x[1] * 3.0 - 4.0) * ((dim == 3) ? (x[2] * 5.0 + 6.0) : 1.);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode CoordsFunction(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar u[], void *ctx)
@@ -55,7 +55,7 @@ static PetscErrorCode CoordsFunction(PetscInt dim, PetscReal time, const PetscRe
 
   PetscFunctionBeginUser;
   for (f = 0; f < Nf; f++) u[f] = x[f];
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 typedef struct _bc_func_ctx {
@@ -72,7 +72,7 @@ static PetscErrorCode bc_func_fv(PetscReal time, const PetscReal *c, const Petsc
   PetscFunctionBegin;
   bcCtx = (bc_func_ctx *)ctx;
   PetscCall((bcCtx->func)(bcCtx->dim, time, c, bcCtx->Nf, xG, bcCtx->ctx));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode IdentifyBadPoints(DM dm, Vec vec, PetscReal tol)
@@ -127,7 +127,7 @@ static PetscErrorCode IdentifyBadPoints(DM dm, Vec vec, PetscReal tol)
   }
   PetscCall(DMDestroy(&dmplex));
   PetscCall(VecDestroy(&vecLocal));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)

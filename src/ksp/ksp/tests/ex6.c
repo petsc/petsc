@@ -19,7 +19,7 @@ static PetscErrorCode KSPTestResidualMonitor(KSP ksp, PetscInt i, PetscReal r, v
   PetscCheck(err <= PETSC_SMALL, PetscObjectComm((PetscObject)ksp), PETSC_ERR_PLIB, "Inconsistent residual computed at step %" PetscInt_FMT ": %g (KSP %g)", i, (double)err, (double)r);
   PetscCall(VecDestroyVecs(2, &t));
   PetscCall(VecDestroyVecs(2, &v));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **args)

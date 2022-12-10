@@ -39,7 +39,7 @@ typedef struct {
   Mat      A, P, R;
   KSP      ksp;
 } GridCtx;
-extern int FormJacobian_Grid(GridCtx *, Mat *);
+extern PetscErrorCode FormJacobian_Grid(GridCtx *, Mat *);
 
 int main(int argc, char **argv)
 {
@@ -116,7 +116,7 @@ int main(int argc, char **argv)
   return 0;
 }
 
-int FormJacobian_Grid(GridCtx *grid, Mat *J)
+PetscErrorCode FormJacobian_Grid(GridCtx *grid, Mat *J)
 {
   Mat                    jac = *J;
   PetscInt               i, j, row, mx, my, xs, ys, xm, ym, Xs, Ys, Xm, Ym, col[5];
@@ -168,7 +168,7 @@ int FormJacobian_Grid(GridCtx *grid, Mat *J)
   PetscCall(ISLocalToGlobalMappingRestoreIndices(ltogm, &ltog));
   PetscCall(MatAssemblyBegin(jac, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(jac, MAT_FINAL_ASSEMBLY));
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 /*TEST

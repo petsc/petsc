@@ -41,7 +41,7 @@ PETSC_EXTERN PetscErrorCode DMAdaptLabel_Forest(DM, Vec, DMLabel, DMLabel, DM *)
 PetscErrorCode DMGenerateRegisterAll(void)
 {
   PetscFunctionBegin;
-  if (DMGenerateRegisterAllCalled) PetscFunctionReturn(0);
+  if (DMGenerateRegisterAllCalled) PetscFunctionReturn(PETSC_SUCCESS);
   DMGenerateRegisterAllCalled = PETSC_TRUE;
 #if defined(PETSC_HAVE_TRIANGLE)
   PetscCall(DMGenerateRegister("triangle", DMPlexGenerate_Triangle, DMPlexRefine_Triangle, NULL, 1));
@@ -63,7 +63,7 @@ PetscErrorCode DMGenerateRegisterAll(void)
 #endif
   PetscCall(DMGenerateRegister("cellrefiner", NULL, NULL, DMPlexTransformAdaptLabel, -1));
   PetscCall(DMGenerateRegister("forest", NULL, NULL, DMAdaptLabel_Forest, -1));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -114,7 +114,7 @@ PetscErrorCode DMGenerateRegister(const char sname[], PetscErrorCode (*fnc)(DM, 
     while (fl->next) fl = fl->next;
     fl->next = entry;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 extern PetscBool DMGenerateRegisterAllCalled;
@@ -133,7 +133,7 @@ PetscErrorCode DMGenerateRegisterDestroy(void)
   }
   DMGenerateList              = NULL;
   DMGenerateRegisterAllCalled = PETSC_FALSE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -189,7 +189,7 @@ PetscErrorCode DMAdaptLabel(DM dm, DMLabel label, DM *dmAdapt)
     PetscCall(PetscFree((*dmAdapt)->mattype));
     PetscCall(PetscStrallocpy(dm->mattype, (char **)&(*dmAdapt)->mattype));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -258,5 +258,5 @@ PetscErrorCode DMAdaptMetric(DM dm, Vec metric, DMLabel bdLabel, DMLabel rgLabel
     PetscCall(PetscFree((*dmAdapt)->mattype));
     PetscCall(PetscStrallocpy(dm->mattype, (char **)&(*dmAdapt)->mattype));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

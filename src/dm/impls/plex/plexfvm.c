@@ -44,7 +44,7 @@ static PetscErrorCode DMPlexApplyLimiter_Internal(DM dm, DM dmCell, PetscLimiter
       cellPhi[d] = PetscMin(cellPhi[d], phi);
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMPlexReconstructGradients_Internal(DM dm, PetscFV fvm, PetscInt fStart, PetscInt fEnd, Vec faceGeometry, Vec cellGeometry, Vec locX, Vec grad)
@@ -140,7 +140,7 @@ PetscErrorCode DMPlexReconstructGradients_Internal(DM dm, PetscFV fvm, PetscInt 
   PetscCall(VecRestoreArrayRead(cellGeometry, &cellgeom));
   PetscCall(VecRestoreArrayRead(locX, &x));
   PetscCall(VecRestoreArray(grad, &gr));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -189,5 +189,5 @@ PetscErrorCode DMPlexReconstructGradientsFVM(DM dm, Vec locX, Vec grad)
   PetscCall(VecGetArrayRead(cellGeometryFVM, (const PetscScalar **)&cgeomFVM));
   PetscCall(DMPlexGetHeightStratum(dm, 1, &fStart, &fEnd));
   PetscCall(DMPlexReconstructGradients_Internal(dm, fvm, fStart, fEnd, faceGeometryFVM, cellGeometryFVM, locX, grad));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

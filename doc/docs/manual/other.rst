@@ -569,7 +569,7 @@ usage is given below.
        /* Declarations Here */
        PetscFunctionBeginUser;
        /* code here */
-       PetscFunctionReturn(0);
+       PetscFunctionReturn(PETSC_SUCCESS);
    }
 
 .. _sec_complex:

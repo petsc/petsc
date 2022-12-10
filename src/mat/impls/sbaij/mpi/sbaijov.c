@@ -118,7 +118,7 @@ PetscErrorCode MatIncreaseOverlap_MPISBAIJ(Mat C, PetscInt is_max, IS is[], Pets
 
   for (i = 0; i < is_max; i++) PetscCall(ISDestroy(&is_new[i]));
   PetscCall(PetscFree(is_new));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 typedef enum {
@@ -432,7 +432,7 @@ static PetscErrorCode MatIncreaseOverlap_MPISBAIJ_Once(Mat C, PetscInt is_max, I
   }
   for (k = 0; k <= nodata2; k++) PetscCall(PetscFree(odata2_ptr[k]));
   PetscCall(PetscFree(odata2_ptr));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -557,5 +557,5 @@ static PetscErrorCode MatIncreaseOverlap_MPISBAIJ_Local(Mat C, PetscInt *data, P
     nidx[1 + i] = isz; /* size of new is[i] */
   }                    /* for each is */
   PetscCall(PetscBTDestroy(&table0));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -95,7 +95,7 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info, PetscScalar **t, PetscScal
       }
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*TEST

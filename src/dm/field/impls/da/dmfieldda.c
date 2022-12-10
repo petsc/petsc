@@ -17,7 +17,7 @@ static PetscErrorCode DMFieldDestroy_DA(DMField field)
   dafield = (DMField_DA *)field->data;
   PetscCall(PetscFree3(dafield->cornerVals, dafield->cornerCoeffs, dafield->work));
   PetscCall(PetscFree(dafield));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMFieldView_DA(DMField field, PetscViewer viewer)
@@ -52,7 +52,7 @@ static PetscErrorCode DMFieldView_DA(DMField field, PetscViewer viewer)
     }
     PetscCall(PetscViewerASCIIPopTab(viewer));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 #define MEdot(y, A, x, m, c, cast) \
@@ -197,7 +197,7 @@ static PetscErrorCode DMFieldEvaluate_DA(DMField field, Vec points, PetscDataTyp
   PetscCall(VecGetArrayRead(points, &array));
   MultilinearEvaluate(dim, coordRange, nc, dafield->cornerCoeffs, dafield->work, n, array, datatype, B, D, H);
   PetscCall(VecRestoreArrayRead(points, &array));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMFieldEvaluateFE_DA(DMField field, IS cellIS, PetscQuadrature points, PetscDataType datatype, void *B, void *D, void *H)
@@ -297,7 +297,7 @@ static PetscErrorCode DMFieldEvaluateFE_DA(DMField field, IS cellIS, PetscQuadra
 #if defined(PETSC_USE_COMPLEX)
   PetscCall(DMRestoreWorkArray(dm, nq * dim, MPIU_SCALAR, &qs));
 #endif
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMFieldEvaluateFV_DA(DMField field, IS cellIS, PetscDataType datatype, void *B, void *D, void *H)
@@ -351,7 +351,7 @@ static PetscErrorCode DMFieldEvaluateFV_DA(DMField field, IS cellIS, PetscDataTy
   if (!isStride) PetscCall(ISRestoreIndices(cellIS, &cells));
   MultilinearEvaluate(dim, dafield->coordRange, nc, dafield->cornerCoeffs, dafield->work, numCells, points, datatype, B, D, H);
   PetscCall(DMRestoreWorkArray(dm, dim * numCells, MPIU_SCALAR, &points));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMFieldGetDegree_DA(DMField field, IS pointIS, PetscInt *minDegree, PetscInt *maxDegree)
@@ -372,7 +372,7 @@ static PetscErrorCode DMFieldGetDegree_DA(DMField field, IS pointIS, PetscInt *m
   dim -= h;
   if (minDegree) *minDegree = 1;
   if (maxDegree) *maxDegree = dim;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMFieldCreateDefaultQuadrature_DA(DMField field, IS cellIS, PetscQuadrature *quad)
@@ -394,7 +394,7 @@ static PetscErrorCode DMFieldCreateDefaultQuadrature_DA(DMField field, IS cellIS
   dim -= h;
   if (dim > 0) PetscCall(PetscDTGaussTensorQuadrature(dim, 1, 1, -1.0, 1.0, quad));
 
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMFieldInitialize_DA(DMField field)
@@ -451,7 +451,7 @@ static PetscErrorCode DMFieldInitialize_DA(DMField field)
     dafield->coordRange[j][0] = avg;
     dafield->coordRange[j][1] = dif;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_INTERN PetscErrorCode DMFieldCreate_DA(DMField field)
@@ -462,7 +462,7 @@ PETSC_INTERN PetscErrorCode DMFieldCreate_DA(DMField field)
   PetscCall(PetscNew(&dafield));
   field->data = dafield;
   PetscCall(DMFieldInitialize_DA(field));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMFieldCreateDA(DM dm, PetscInt nc, const PetscScalar *cornerValues, DMField *field)
@@ -500,5 +500,5 @@ PetscErrorCode DMFieldCreateDA(DM dm, PetscInt nc, const PetscScalar *cornerValu
     for (j = 0; j < nv; j++) cf[j] = work[j];
   }
   *field = b;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -32,7 +32,7 @@ static PetscErrorCode base64_encode(const unsigned char *data, unsigned char *en
   }
   encoded_data[j] = 0;
   for (i = 0; i < mod_table[input_length % 3]; i++) encoded_data[output_length - 1 - i] = '=';
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_UNUSED static PetscErrorCode base64_decode(const unsigned char *data, unsigned char *decoded_data, size_t length)
@@ -68,7 +68,7 @@ PETSC_UNUSED static PetscErrorCode base64_decode(const unsigned char *data, unsi
     if (j < output_length) decoded_data[j++] = (triple >> 0 * 8) & 0xFF;
   }
   decoded_data[j] = 0;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 #if defined(PETSC_HAVE_UNISTD_H)
@@ -138,7 +138,7 @@ PetscErrorCode PetscGlobusAuthorize(MPI_Comm comm, char access_token[], size_t t
     PetscCall(PetscPrintf(comm, "programs with the option -globus_access_token %s\n", access_token));
     PetscCall(PetscPrintf(comm, "to access Globus automatically\n"));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -188,7 +188,7 @@ PetscErrorCode PetscGlobusGetTransfers(MPI_Comm comm, const char access_token[],
     PetscCall(PetscSSLDestroyContext(ctx));
     close(sock);
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -283,5 +283,5 @@ PetscErrorCode PetscGlobusUpload(MPI_Comm comm, const char access_token[], const
     PetscCall(PetscStrcmp(submission_id, "Accepted", &found));
     PetscCheck(found, PETSC_COMM_SELF, PETSC_ERR_LIB, "Globus did not accept transfer");
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

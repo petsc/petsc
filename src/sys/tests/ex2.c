@@ -3,15 +3,15 @@ static char help[] = "Tests the signal handler.\n";
 
 #include <petscsys.h>
 
-int CreateError(int n)
+PetscErrorCode CreateError(int n)
 {
-  PetscReal *x = 0;
-  if (!n) {
-    x[0] = 100.;
-    return 0;
+  if (n) {
+    PetscCall(CreateError(n - 1));
+  } else {
+    volatile PetscReal *x = 0;
+    x[0]                  = 100.;
   }
-  PetscCall(CreateError(n - 1));
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 int main(int argc, char **argv)

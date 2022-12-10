@@ -18,7 +18,7 @@ static PetscErrorCode GetLocalRef(Mat A, IS isrow, IS iscol, Mat *B)
   PetscCall(ISDestroy(&istmp));
 
   PetscCall(MatCreateLocalRef(A, isrow, iscol, B));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char *argv[])

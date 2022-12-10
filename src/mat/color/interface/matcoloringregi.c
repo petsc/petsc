@@ -27,7 +27,7 @@ PETSC_EXTERN PetscErrorCode MatColoringCreate_LF(MatColoring);
 PetscErrorCode MatColoringRegisterAll(void)
 {
   PetscFunctionBegin;
-  if (MatColoringRegisterAllCalled) PetscFunctionReturn(0);
+  if (MatColoringRegisterAllCalled) PetscFunctionReturn(PETSC_SUCCESS);
   MatColoringRegisterAllCalled = PETSC_TRUE;
   PetscCall(MatColoringRegister(MATCOLORINGJP, MatColoringCreate_JP));
   PetscCall(MatColoringRegister(MATCOLORINGGREEDY, MatColoringCreate_Greedy));
@@ -36,5 +36,5 @@ PetscErrorCode MatColoringRegisterAll(void)
   PetscCall(MatColoringRegister(MATCOLORINGSL, MatColoringCreate_SL));
   PetscCall(MatColoringRegister(MATCOLORINGID, MatColoringCreate_ID));
   PetscCall(MatColoringRegister(MATCOLORINGLF, MatColoringCreate_LF));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

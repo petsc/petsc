@@ -42,7 +42,7 @@ PetscErrorCode DMStagRestrictSimple(DM dmf, Vec xf, DM dmc, Vec xc)
     SETERRQ(PetscObjectComm((PetscObject)dmf), PETSC_ERR_ARG_OUTOFRANGE, "Unsupported dimension %" PetscInt_FMT "", dim);
     break;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Code duplication note: the next two functions are nearly identical, save the inclusion of the element terms */
@@ -117,7 +117,7 @@ PETSC_INTERN PetscErrorCode DMStagPopulateInterpolation1d_a_b_Private(DM dmc, DM
       PetscCall(MatSetValuesLocal(A, 1, &ir, 1, &ic, &weight, INSERT_VALUES));
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_INTERN PetscErrorCode DMStagPopulateInterpolation2d_0_a_b_Private(DM dmc, DM dmf, Mat A)
@@ -324,7 +324,7 @@ PETSC_INTERN PetscErrorCode DMStagPopulateInterpolation2d_0_a_b_Private(DM dmc, 
       }
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_INTERN PetscErrorCode DMStagPopulateInterpolation3d_0_0_a_b_Private(DM dmc, DM dmf, Mat A)
@@ -857,7 +857,7 @@ PETSC_INTERN PetscErrorCode DMStagPopulateInterpolation3d_0_0_a_b_Private(DM dmc
       }
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_INTERN PetscErrorCode DMStagPopulateRestriction1d_a_b_Private(DM dmc, DM dmf, Mat A)
@@ -933,7 +933,7 @@ PETSC_INTERN PetscErrorCode DMStagPopulateRestriction1d_a_b_Private(DM dmc, DM d
       PetscCall(MatSetValuesLocal(A, 1, &ir, 1, &ic, &weight, INSERT_VALUES));
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_INTERN PetscErrorCode DMStagPopulateRestriction2d_0_a_b_Private(DM dmc, DM dmf, Mat A)
@@ -1055,7 +1055,7 @@ PETSC_INTERN PetscErrorCode DMStagPopulateRestriction2d_0_a_b_Private(DM dmc, DM
       }
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_INTERN PetscErrorCode DMStagPopulateRestriction3d_0_0_a_b_Private(DM dmc, DM dmf, Mat A)
@@ -1233,5 +1233,5 @@ PETSC_INTERN PetscErrorCode DMStagPopulateRestriction3d_0_0_a_b_Private(DM dmc, 
       }
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

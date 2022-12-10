@@ -84,7 +84,7 @@ static PetscErrorCode MatShellPreZeroRight(Mat A, Vec x, Vec *xx)
     PetscCall(VecISSet(shell->right_work, shell->zcols, 0.0));
     *xx = shell->right_work;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Insert properly diagonally scaled values stored in MatShellPreZeroRight */
@@ -97,7 +97,7 @@ static PetscErrorCode MatShellPostZeroLeft(Mat A, Vec x)
     PetscCall(VecScatterBegin(shell->zvals_sct_r, shell->zvals_w, x, INSERT_VALUES, SCATTER_REVERSE));
     PetscCall(VecScatterEnd(shell->zvals_sct_r, shell->zvals_w, x, INSERT_VALUES, SCATTER_REVERSE));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -123,7 +123,7 @@ static PetscErrorCode MatShellPreZeroLeft(Mat A, Vec x, Vec *xx)
     PetscCall(VecPointwiseMult(shell->zvals_w, shell->zvals_w, shell->zvals));
     *xx = shell->left_work;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Zero zero-columns contributions, sum contributions from properly scaled values stored in MatShellPreZeroLeft */
@@ -137,7 +137,7 @@ static PetscErrorCode MatShellPostZeroRight(Mat A, Vec x)
     PetscCall(VecScatterBegin(shell->zvals_sct_c, shell->zvals_w, x, ADD_VALUES, SCATTER_REVERSE));
     PetscCall(VecScatterEnd(shell->zvals_sct_c, shell->zvals_w, x, ADD_VALUES, SCATTER_REVERSE));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -156,7 +156,7 @@ static PetscErrorCode MatShellPreScaleLeft(Mat A, Vec x, Vec *xx)
     PetscCall(VecPointwiseMult(shell->left_work, x, shell->left));
     *xx = shell->left_work;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -175,7 +175,7 @@ static PetscErrorCode MatShellPreScaleRight(Mat A, Vec x, Vec *xx)
     PetscCall(VecPointwiseMult(shell->right_work, x, shell->right));
     *xx = shell->right_work;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -187,7 +187,7 @@ static PetscErrorCode MatShellPostScaleLeft(Mat A, Vec x)
 
   PetscFunctionBegin;
   if (shell->left) PetscCall(VecPointwiseMult(x, x, shell->left));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -199,7 +199,7 @@ static PetscErrorCode MatShellPostScaleRight(Mat A, Vec x)
 
   PetscFunctionBegin;
   if (shell->right) PetscCall(VecPointwiseMult(x, x, shell->right));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -228,7 +228,7 @@ static PetscErrorCode MatShellShiftAndScale(Mat A, Vec X, Vec Y)
     PetscCall(VecScale(Y, shell->vscale));
   }
   if (shell->vshift != 0.0) PetscCall(VecAXPY(Y, shell->vshift, X)); /* if test is for non-square matrices */
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatShellGetContext_Shell(Mat mat, void *ctx)
@@ -238,7 +238,7 @@ static PetscErrorCode MatShellGetContext_Shell(Mat mat, void *ctx)
   PetscFunctionBegin;
   if (shell->ctxcontainer) PetscCall(PetscContainerGetPointer(shell->ctxcontainer, (void **)ctx));
   else *(void **)ctx = NULL;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -266,7 +266,7 @@ PetscErrorCode MatShellGetContext(Mat mat, void *ctx)
   PetscValidHeaderSpecific(mat, MAT_CLASSID, 1);
   PetscValidPointer(ctx, 2);
   PetscUseMethod(mat, "MatShellGetContext_C", (Mat, void *), (mat, ctx));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatZeroRowsColumns_Local_Shell(Mat mat, PetscInt nr, PetscInt rows[], PetscInt nc, PetscInt cols[], PetscScalar diag, PetscBool rc)
@@ -333,7 +333,7 @@ static PetscErrorCode MatZeroRowsColumns_Local_Shell(Mat mat, PetscInt nr, Petsc
       shell->zcols = is2;
     } else shell->zcols = is1;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatZeroRows_Shell(Mat mat, PetscInt n, const PetscInt rows[], PetscScalar diag, Vec x, Vec b)
@@ -379,7 +379,7 @@ static PetscErrorCode MatZeroRows_Shell(Mat mat, PetscInt n, const PetscInt rows
   PetscCall(MatZeroRowsColumns_Local_Shell(mat, nr, lrows, 0, NULL, diag, PETSC_FALSE));
   if (shell->axpy) PetscCall(MatZeroRows(shell->axpy, n, rows, 0.0, NULL, NULL));
   PetscCall(PetscFree(lrows));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatZeroRowsColumns_Shell(Mat mat, PetscInt n, const PetscInt rowscols[], PetscScalar diag, Vec x, Vec b)
@@ -452,7 +452,7 @@ static PetscErrorCode MatZeroRowsColumns_Shell(Mat mat, PetscInt n, const PetscI
   if (!congruent) PetscCall(PetscFree(lcols));
   PetscCall(PetscFree(lrows));
   if (shell->axpy) PetscCall(MatZeroRowsColumns(shell->axpy, n, rowscols, 0.0, NULL, NULL));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatDestroy_Shell(Mat mat)
@@ -500,7 +500,7 @@ static PetscErrorCode MatDestroy_Shell(Mat mat)
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatShellGetOperation_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatShellSetMatProductOperation_C", NULL));
   PetscCall(PetscFree(mat->data));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 typedef struct {
@@ -522,7 +522,7 @@ static PetscErrorCode DestroyMatMatDataShell(void *data)
   PetscCall(MatDestroy(&mmdata->Bt));
   PetscCall(MatDestroy(&mmdata->axpy));
   PetscCall(PetscFree(mmdata));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatProductNumeric_Shell_X(Mat D)
@@ -692,7 +692,7 @@ static PetscErrorCode MatProductNumeric_Shell_X(Mat D)
       }
     }
   } else SETERRQ(PetscObjectComm((PetscObject)D), PETSC_ERR_PLIB, "Missing numeric operation");
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatProductSymbolic_Shell_X(Mat D)
@@ -764,7 +764,7 @@ static PetscErrorCode MatProductSymbolic_Shell_X(Mat D)
   /* Be sure to reset these pointers if the user did something unexpected */
   D->ops->productsymbolic = MatProductSymbolic_Shell_X;
   D->ops->productnumeric  = MatProductNumeric_Shell_X;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatProductSetFromOptions_Shell_X(Mat D)
@@ -782,7 +782,7 @@ static PetscErrorCode MatProductSetFromOptions_Shell_X(Mat D)
   A       = product->A;
   B       = product->B;
   PetscCall(MatIsShell(A, &flg));
-  if (!flg) PetscFunctionReturn(0);
+  if (!flg) PetscFunctionReturn(PETSC_SUCCESS);
   shell  = (Mat_Shell *)A->data;
   matmat = shell->matmat;
   PetscCall(PetscSNPrintf(composedname, sizeof(composedname), "MatProductSetFromOptions_%s_%s_C", ((PetscObject)A)->type_name, ((PetscObject)B)->type_name));
@@ -795,7 +795,7 @@ static PetscErrorCode MatProductSetFromOptions_Shell_X(Mat D)
   if (flg) {
     D->ops->productsymbolic = MatProductSymbolic_Shell_X;
   } else PetscCall(PetscInfo(D, "  symbolic product %s not registered for product type %s\n", composedname, MatProductTypes[product->type]));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatShellSetMatProductOperation_Private(Mat A, MatProductType ptype, PetscErrorCode (*symbolic)(Mat, Mat, Mat, void **), PetscErrorCode (*numeric)(Mat, Mat, Mat, void *), PetscErrorCode (*destroy)(void *), char *composedname, const char *resultname)
@@ -838,7 +838,7 @@ set:
   PetscCall(PetscStrallocpy(resultname, &matmat->resultname));
   PetscCall(PetscInfo(A, "Composing %s for product type %s with result %s\n", matmat->composedname, MatProductTypes[matmat->ptype], matmat->resultname ? matmat->resultname : "not specified"));
   PetscCall(PetscObjectComposeFunction((PetscObject)A, matmat->composedname, MatProductSetFromOptions_Shell_X));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -895,7 +895,7 @@ PetscErrorCode MatShellSetMatProductOperation(Mat A, MatProductType ptype, Petsc
   PetscValidCharPointer(Btype, 6);
   if (Ctype) PetscValidCharPointer(Ctype, 7);
   PetscTryMethod(A, "MatShellSetMatProductOperation_C", (Mat, MatProductType, PetscErrorCode(*)(Mat, Mat, Mat, void **), PetscErrorCode(*)(Mat, Mat, Mat, void *), PetscErrorCode(*)(void *), MatType, MatType), (A, ptype, symbolic, numeric, destroy, Btype, Ctype));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatShellSetMatProductOperation_Shell(Mat A, MatProductType ptype, PetscErrorCode (*symbolic)(Mat, Mat, Mat, void **), PetscErrorCode (*numeric)(Mat, Mat, Mat, void *), PetscErrorCode (*destroy)(void *), MatType Btype, MatType Ctype)
@@ -922,7 +922,7 @@ static PetscErrorCode MatShellSetMatProductOperation_Shell(Mat A, MatProductType
   Ctype = Cnames ? (size > 1 ? Cnames->mname : Cnames->sname) : Ctype;
   PetscCall(PetscSNPrintf(composedname, sizeof(composedname), "MatProductSetFromOptions_%s_%s_C", ((PetscObject)A)->type_name, Btype));
   PetscCall(MatShellSetMatProductOperation_Private(A, ptype, symbolic, numeric, destroy, composedname, Ctype));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatCopy_Shell(Mat A, Mat B, MatStructure str)
@@ -987,7 +987,7 @@ static PetscErrorCode MatCopy_Shell(Mat A, Mat B, MatStructure str)
       matmatA = matmatA->next;
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatDuplicate_Shell(Mat mat, MatDuplicateOption op, Mat *M)
@@ -998,7 +998,7 @@ static PetscErrorCode MatDuplicate_Shell(Mat mat, MatDuplicateOption op, Mat *M)
   PetscCall(PetscObjectCompose((PetscObject)(*M), "MatShell ctx", (PetscObject)((Mat_Shell *)(*M)->data)->ctxcontainer));
   PetscCall(PetscObjectChangeTypeName((PetscObject)(*M), ((PetscObject)mat)->type_name));
   if (op != MAT_DO_NOT_COPY_VALUES) PetscCall(MatCopy(mat, *M, SAME_NONZERO_PATTERN));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatMult_Shell(Mat A, Vec x, Vec y)
@@ -1034,7 +1034,7 @@ PetscErrorCode MatMult_Shell(Mat A, Vec x, Vec y)
     PetscCall(MatMult(shell->axpy, shell->axpy_right, shell->axpy_left));
     PetscCall(VecAXPY(y, shell->axpy_vscale, shell->axpy_left));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatMultAdd_Shell(Mat A, Vec x, Vec y, Vec z)
@@ -1050,7 +1050,7 @@ static PetscErrorCode MatMultAdd_Shell(Mat A, Vec x, Vec y, Vec z)
     PetscCall(MatMult(A, x, z));
     PetscCall(VecAXPY(z, 1.0, y));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatMultTranspose_Shell(Mat A, Vec x, Vec y)
@@ -1085,7 +1085,7 @@ static PetscErrorCode MatMultTranspose_Shell(Mat A, Vec x, Vec y)
     PetscCall(MatMultTranspose(shell->axpy, shell->axpy_left, shell->axpy_right));
     PetscCall(VecAXPY(y, shell->axpy_vscale, shell->axpy_right));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatMultTransposeAdd_Shell(Mat A, Vec x, Vec y, Vec z)
@@ -1101,7 +1101,7 @@ static PetscErrorCode MatMultTransposeAdd_Shell(Mat A, Vec x, Vec y, Vec z)
     PetscCall(MatMultTranspose(A, x, z));
     PetscCall(VecAXPY(z, 1.0, y));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -1135,7 +1135,7 @@ static PetscErrorCode MatGetDiagonal_Shell(Mat A, Vec v)
     PetscCall(MatGetDiagonal(shell->axpy, shell->axpy_left));
     PetscCall(VecAXPY(v, shell->axpy_vscale, shell->axpy_left));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatShift_Shell(Mat Y, PetscScalar a)
@@ -1159,7 +1159,7 @@ static PetscErrorCode MatShift_Shell(Mat Y, PetscScalar a)
     if (shell->right) PetscCall(VecPointwiseDivide(shell->dshift, shell->dshift, shell->right));
   } else shell->vshift += a;
   if (shell->zrows) PetscCall(VecShift(shell->zvals, a));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatDiagonalSet_Shell_Private(Mat A, Vec D, PetscScalar s)
@@ -1182,7 +1182,7 @@ static PetscErrorCode MatDiagonalSet_Shell_Private(Mat A, Vec D, PetscScalar s)
   } else {
     PetscCall(VecAXPY(shell->dshift, s, D));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatDiagonalSet_Shell(Mat A, Vec D, InsertMode ins)
@@ -1205,7 +1205,7 @@ PetscErrorCode MatDiagonalSet_Shell(Mat A, Vec D, InsertMode ins)
     PetscCall(MatDiagonalSet_Shell_Private(A, D, 1.));
     if (shell->zrows) PetscCall(VecAXPY(shell->zvals, 1.0, D));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatScale_Shell(Mat Y, PetscScalar a)
@@ -1218,7 +1218,7 @@ static PetscErrorCode MatScale_Shell(Mat Y, PetscScalar a)
   if (shell->dshift) PetscCall(VecScale(shell->dshift, a));
   shell->axpy_vscale *= a;
   if (shell->zrows) PetscCall(VecScale(shell->zvals, a));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatDiagonalScale_Shell(Mat Y, Vec left, Vec right)
@@ -1251,7 +1251,7 @@ static PetscErrorCode MatDiagonalScale_Shell(Mat Y, Vec left, Vec right)
     }
   }
   if (shell->axpy) PetscCall(MatDiagonalScale(shell->axpy, left, right));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatAssemblyEnd_Shell(Mat Y, MatAssemblyType t)
@@ -1275,14 +1275,14 @@ PetscErrorCode MatAssemblyEnd_Shell(Mat Y, MatAssemblyType t)
     PetscCall(ISDestroy(&shell->zrows));
     PetscCall(ISDestroy(&shell->zcols));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatMissingDiagonal_Shell(Mat A, PetscBool *missing, PetscInt *d)
 {
   PetscFunctionBegin;
   *missing = PETSC_FALSE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatAXPY_Shell(Mat Y, PetscScalar a, Mat X, MatStructure str)
@@ -1292,7 +1292,7 @@ PetscErrorCode MatAXPY_Shell(Mat Y, PetscScalar a, Mat X, MatStructure str)
   PetscFunctionBegin;
   if (X == Y) {
     PetscCall(MatScale(Y, 1.0 + a));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
   if (!shell->axpy) {
     PetscCall(MatConvertFrom_Shell(X, MATSHELL, MAT_INITIAL_MATRIX, &shell->axpy));
@@ -1301,7 +1301,7 @@ PetscErrorCode MatAXPY_Shell(Mat Y, PetscScalar a, Mat X, MatStructure str)
   } else {
     PetscCall(MatAXPY(shell->axpy, a / shell->axpy_vscale, X, str));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static struct _MatOps MatOps_Values = {NULL,
@@ -1474,7 +1474,7 @@ static PetscErrorCode MatShellSetContext_Shell(Mat mat, void *ctx)
     shell->ctxcontainer = NULL;
   }
 
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatShellSetContextDestroy_Shell(Mat mat, PetscErrorCode (*f)(void *))
@@ -1483,7 +1483,7 @@ PetscErrorCode MatShellSetContextDestroy_Shell(Mat mat, PetscErrorCode (*f)(void
 
   PetscFunctionBegin;
   if (shell->ctxcontainer) PetscCall(PetscContainerSetUserDestroy(shell->ctxcontainer, f));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatShellSetVecType_Shell(Mat mat, VecType vtype)
@@ -1491,7 +1491,7 @@ static PetscErrorCode MatShellSetVecType_Shell(Mat mat, VecType vtype)
   PetscFunctionBegin;
   PetscCall(PetscFree(mat->defaultvectype));
   PetscCall(PetscStrallocpy(vtype, (char **)&mat->defaultvectype));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatShellSetManageScalingShifts_Shell(Mat A)
@@ -1505,7 +1505,7 @@ PetscErrorCode MatShellSetManageScalingShifts_Shell(Mat A)
   A->ops->scale              = NULL;
   A->ops->shift              = NULL;
   A->ops->axpy               = NULL;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatShellSetOperation_Shell(Mat mat, MatOperation op, void (*f)(void))
@@ -1565,7 +1565,7 @@ static PetscErrorCode MatShellSetOperation_Shell(Mat mat, MatOperation op, void 
     (((void (**)(void))mat->ops)[op]) = f;
     break;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatShellGetOperation_Shell(Mat mat, MatOperation op, void (**f)(void))
@@ -1607,7 +1607,7 @@ static PetscErrorCode MatShellGetOperation_Shell(Mat mat, MatOperation op, void 
   default:
     *f = (((void (**)(void))mat->ops)[op]);
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -1644,7 +1644,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_Shell(Mat A)
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatShellGetOperation_C", MatShellGetOperation_Shell));
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatShellSetMatProductOperation_C", MatShellSetMatProductOperation_Shell));
   PetscCall(PetscObjectChangeTypeName((PetscObject)A, MATSHELL));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1746,7 +1746,7 @@ PetscErrorCode MatCreateShell(MPI_Comm comm, PetscInt m, PetscInt n, PetscInt M,
   PetscCall(MatSetType(*A, MATSHELL));
   PetscCall(MatShellSetContext(*A, ctx));
   PetscCall(MatSetUp(*A));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -1771,7 +1771,7 @@ PetscErrorCode MatShellSetContext(Mat mat, void *ctx)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat, MAT_CLASSID, 1);
   PetscTryMethod(mat, "MatShellSetContext_C", (Mat, void *), (mat, ctx));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -1798,7 +1798,7 @@ PetscErrorCode MatShellSetContextDestroy(Mat mat, PetscErrorCode (*f)(void *))
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat, MAT_CLASSID, 1);
   PetscTryMethod(mat, "MatShellSetContextDestroy_C", (Mat, PetscErrorCode(*)(void *)), (mat, f));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1818,7 +1818,7 @@ PetscErrorCode MatShellSetVecType(Mat mat, VecType vtype)
 {
   PetscFunctionBegin;
   PetscTryMethod(mat, "MatShellSetVecType_C", (Mat, VecType), (mat, vtype));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -1839,7 +1839,7 @@ PetscErrorCode MatShellSetManageScalingShifts(Mat A)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
   PetscTryMethod(A, "MatShellSetManageScalingShifts_C", (Mat), (A));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1901,7 +1901,7 @@ PetscErrorCode MatShellTestMult(Mat mat, PetscErrorCode (*f)(void *, Vec, Vec), 
   PetscCall(MatDestroy(&mf));
   PetscCall(MatDestroy(&Dmf));
   PetscCall(MatDestroy(&Dmat));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1970,7 +1970,7 @@ PetscErrorCode MatShellTestMultTranspose(Mat mat, PetscErrorCode (*f)(void *, Ve
   PetscCall(VecDestroy(&x));
   PetscCall(VecDestroy(&y));
   PetscCall(VecDestroy(&z));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -2024,7 +2024,7 @@ PetscErrorCode MatShellSetOperation(Mat mat, MatOperation op, void (*g)(void))
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat, MAT_CLASSID, 1);
   PetscTryMethod(mat, "MatShellSetOperation_C", (Mat, MatOperation, void (*)(void)), (mat, op, g));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -2064,7 +2064,7 @@ PetscErrorCode MatShellGetOperation(Mat mat, MatOperation op, void (**g)(void))
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat, MAT_CLASSID, 1);
   PetscUseMethod(mat, "MatShellGetOperation_C", (Mat, MatOperation, void (**)(void)), (mat, op, g));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -2089,5 +2089,5 @@ PetscErrorCode MatIsShell(Mat mat, PetscBool *flg)
   PetscValidHeaderSpecific(mat, MAT_CLASSID, 1);
   PetscValidBoolPointer(flg, 2);
   *flg = (PetscBool)(mat->ops->destroy == MatDestroy_Shell);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

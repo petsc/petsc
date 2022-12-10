@@ -152,7 +152,7 @@ static PetscErrorCode ZLayoutCreate(PetscMPIInt size, const PetscInt eextent[3],
     layout->zstarts[r + 1] = z;
   }
   layout->zstarts[size] = ZEncode(layout->vextent);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscInt ZLayoutElementsOnRank(const ZLayout *layout, PetscMPIInt rank)
@@ -281,7 +281,7 @@ static PetscErrorCode DMPlexCreateBoxMesh_Tensor_SFC_Periodicity_Private(DM dm, 
     if (periodicity[i] == DM_BOUNDARY_PERIODIC) t[i][3] = upper[i] - lower[i];
   PetscCall(DMPlexSetIsoperiodicFaceTransform(dm, &t[0][0]));
   PetscCall(PetscSFDestroy(&sfper));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 // This is a DMGlobalToLocalHook that applies the affine offsets. When extended for rotated periodicity, it'll need to
@@ -292,7 +292,7 @@ static PetscErrorCode DMCoordAddPeriodicOffsets_Private(DM dm, Vec g, InsertMode
   PetscFunctionBegin;
   PetscCall(VecScatterBegin(dm->periodic.affine_to_local, dm->periodic.affine, l, ADD_VALUES, SCATTER_FORWARD));
   PetscCall(VecScatterEnd(dm->periodic.affine_to_local, dm->periodic.affine, l, ADD_VALUES, SCATTER_FORWARD));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 // Start with an SF for a positive depth (e.g., faces) and create a new SF for matched closure. The caller must ensure
@@ -459,7 +459,7 @@ static PetscErrorCode DMPlexCreateIsoperiodicPointSF_Private(DM dm, PetscSF face
     PetscCall(PetscSFDestroy(&csf));
   }
   PetscCall(PetscObjectSetName((PetscObject)*closure_sf, "Composed Periodic Points"));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMGetIsoperiodicPointSF_Plex(DM dm, PetscSF *sf)
@@ -473,7 +473,7 @@ static PetscErrorCode DMGetIsoperiodicPointSF_Plex(DM dm, PetscSF *sf)
     PetscCall(DMPlexCreateIsoperiodicPointSF_Private(dm, face_sf, &plex->periodic.composed_sf, &plex->periodic.periodic_points));
   }
   if (sf) *sf = plex->periodic.composed_sf;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMPlexMigrateIsoperiodicFaceSF_Internal(DM old_dm, DM dm, PetscSF sf_migration)
@@ -483,7 +483,7 @@ PetscErrorCode DMPlexMigrateIsoperiodicFaceSF_Internal(DM old_dm, DM dm, PetscSF
   PetscMPIInt rank;
 
   PetscFunctionBegin;
-  if (!plex->periodic.face_sf) PetscFunctionReturn(0);
+  if (!plex->periodic.face_sf) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)dm), &rank));
   PetscCall(DMGetPointSF(dm, &sf_point));
   PetscInt           old_npoints, new_npoints, old_nleaf, new_nleaf, point_nleaf;
@@ -542,14 +542,14 @@ PetscErrorCode DMPlexMigrateIsoperiodicFaceSF_Internal(DM old_dm, DM dm, PetscSF
   PetscCall(DMPlexSetIsoperiodicFaceSF(dm, sf_face));
   PetscCall(DMPlexSetIsoperiodicFaceTransform(dm, &plex->periodic.transform[0][0]));
   PetscCall(PetscSFDestroy(&sf_face));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMPeriodicCoordinateSetUp_Internal(DM dm)
 {
   DM_Plex *plex = (DM_Plex *)dm->data;
   PetscFunctionBegin;
-  if (!plex->periodic.face_sf) PetscFunctionReturn(0);
+  if (!plex->periodic.face_sf) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(DMGetIsoperiodicPointSF_Plex(dm, NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)dm, "DMGetIsoperiodicPointSF_C", DMGetIsoperiodicPointSF_Plex));
 
@@ -608,7 +608,7 @@ PetscErrorCode DMPeriodicCoordinateSetUp_Internal(DM dm)
   dm->periodic.affine_to_local = scatter;
   dm->periodic.affine          = P;
   PetscCall(DMGlobalToLocalHookAdd(dm, NULL, DMCoordAddPeriodicOffsets_Private, NULL));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 // We'll just orient all the edges, though only periodic boundary edges need orientation
@@ -617,14 +617,14 @@ static PetscErrorCode DMPlexOrientPositiveEdges_Private(DM dm)
   PetscInt dim, eStart, eEnd;
   PetscFunctionBegin;
   PetscCall(DMGetDimension(dm, &dim));
-  if (dim < 3) PetscFunctionReturn(0); // not necessary
+  if (dim < 3) PetscFunctionReturn(PETSC_SUCCESS); // not necessary
   PetscCall(DMPlexGetDepthStratum(dm, 1, &eStart, &eEnd));
   for (PetscInt e = eStart; e < eEnd; e++) {
     const PetscInt *cone;
     PetscCall(DMPlexGetCone(dm, e, &cone));
     if (cone[0] > cone[1]) PetscCall(DMPlexOrientPoint(dm, e, -1));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMPlexCreateBoxMesh_Tensor_SFC_Internal(DM dm, PetscInt dim, const PetscInt faces[], const PetscReal lower[], const PetscReal upper[], const DMBoundaryType periodicity[], PetscBool interpolate)
@@ -681,7 +681,7 @@ PetscErrorCode DMPlexCreateBoxMesh_Tensor_SFC_Internal(DM dm, PetscInt dim, cons
   PetscInt local_elems = 0;
   for (ZCode z = layout.zstarts[rank]; z < layout.zstarts[rank + 1]; z++) {
     Ijk loc = ZCodeSplit(z);
-    if (IjkActive(layout.vextent, loc)) PetscZSetAdd(vset, z);
+    if (IjkActive(layout.vextent, loc)) PetscCall(PetscZSetAdd(vset, z));
     else {
       z += ZStepOct(z);
       continue;
@@ -693,7 +693,7 @@ PetscErrorCode DMPlexCreateBoxMesh_Tensor_SFC_Internal(DM dm, PetscInt dim, cons
         Ijk   inc  = closure_dim[dim][n];
         Ijk   nloc = {loc.i + inc.i, loc.j + inc.j, loc.k + inc.k};
         ZCode v    = ZEncode(nloc);
-        PetscZSetAdd(vset, v);
+        PetscCall(PetscZSetAdd(vset, v));
       }
     }
   }
@@ -737,7 +737,7 @@ PetscErrorCode DMPlexCreateBoxMesh_Tensor_SFC_Internal(DM dm, PetscInt dim, cons
 
   { // Create point SF
     PetscSF sf;
-    PetscSFCreate(PetscObjectComm((PetscObject)dm), &sf);
+    PetscCall(PetscSFCreate(PetscObjectComm((PetscObject)dm), &sf));
     PetscInt owned_verts = ZCodeFind(layout.zstarts[rank + 1], local_verts, vert_z);
     if (owned_verts < 0) owned_verts = -(owned_verts + 1); // We don't care whether the key was found
     PetscInt     num_ghosts = local_verts - owned_verts;   // Due to sorting, owned vertices always come first
@@ -893,7 +893,7 @@ PetscErrorCode DMPlexCreateBoxMesh_Tensor_SFC_Internal(DM dm, PetscInt dim, cons
   }
   PetscCall(PetscFree(layout.zstarts));
   PetscCall(PetscFree(vert_z));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -929,7 +929,7 @@ PetscErrorCode DMPlexSetIsoperiodicFaceSF(DM dm, PetscSF face_sf)
     PetscCall(DMPlexSetIsoperiodicFaceSF(cdm, face_sf));
     if (face_sf) cdm->periodic.setup = DMPeriodicCoordinateSetUp_Internal;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -953,7 +953,7 @@ PetscErrorCode DMPlexGetIsoperiodicFaceSF(DM dm, PetscSF *face_sf)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   *face_sf = plex->periodic.face_sf;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -988,5 +988,5 @@ PetscErrorCode DMPlexSetIsoperiodicFaceTransform(DM dm, const PetscScalar t[])
       plex->periodic.transform[i][j] = t[i * 4 + j];
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

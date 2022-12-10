@@ -193,7 +193,7 @@ PetscErrorCode FormFunction(TS ts, PetscReal ftime, Vec X, Vec F, void *ptr)
   PetscCall(DMDAVecRestoreArrayDOF(da, F, &f));
   PetscCall(DMRestoreLocalVector(da, &localX));
   PetscCall(PetscLogFlops(11.0 * ym * xm));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* ------------------------------------------------------------------- */
@@ -241,7 +241,7 @@ PetscErrorCode FormInitialSolution(DM da, Vec U)
      Restore vectors
   */
   PetscCall(DMDAVecRestoreArrayDOF(da, U, &u));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MyTSMonitor(TS ts, PetscInt step, PetscReal ptime, Vec v, void *ctx)
@@ -255,7 +255,7 @@ PetscErrorCode MyTSMonitor(TS ts, PetscInt step, PetscReal ptime, Vec v, void *c
   if (step > -1) { /* -1 is used to indicate an interpolated value */
     PetscCall(PetscPrintf(comm, "timestep %" PetscInt_FMT " time %g norm %g\n", step, (double)ptime, (double)norm));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -271,7 +271,7 @@ PetscErrorCode MySNESMonitor(SNES snes, PetscInt its, PetscReal fnorm, PetscView
 {
   PetscFunctionBeginUser;
   PetscCall(SNESMonitorDefaultShort(snes, its, fnorm, vf));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 /*TEST
 

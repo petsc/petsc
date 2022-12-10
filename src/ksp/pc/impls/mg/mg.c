@@ -58,7 +58,7 @@ PetscErrorCode PCMGMCycle_Private(PC pc, PC_MG_Levels **mglevelsin, PetscBool tr
           *reason = PCRICHARDSON_CONVERGED_RTOL;
           PetscCall(PetscInfo(pc, "Linear solver has converged. Residual norm %g is less than relative tolerance times initial residual norm %g\n", (double)rnorm, (double)mg->ttol));
         }
-        PetscFunctionReturn(0);
+        PetscFunctionReturn(PETSC_SUCCESS);
       }
     }
 
@@ -115,7 +115,7 @@ PetscErrorCode PCMGMCycle_Private(PC pc, PC_MG_Levels **mglevelsin, PetscBool tr
     }
     if (mglevels->eventsmoothsolve) PetscCall(PetscLogEventEnd(mglevels->eventsmoothsolve, 0, 0, 0, 0));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCApplyRichardson_MG(PC pc, Vec b, Vec x, Vec w, PetscReal rtol, PetscReal abstol, PetscReal dtol, PetscInt its, PetscBool zeroguess, PetscInt *outits, PCRichardsonConvergedReason *reason)
@@ -189,7 +189,7 @@ static PetscErrorCode PCApplyRichardson_MG(PC pc, Vec b, Vec x, Vec w, PetscReal
   if (!*reason) *reason = PCRICHARDSON_CONVERGED_ITS;
   *outits = i;
   if (!changed && !changeu) mglevels[levels - 1]->b = NULL;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PCReset_MG(PC pc)
@@ -231,7 +231,7 @@ PetscErrorCode PCReset_MG(PC pc)
     }
     mg->Nc = 0;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Implementing CR
@@ -286,7 +286,7 @@ static PetscErrorCode CRSetup_Private(PC pc)
   PetscCall(MatCreateNormal(ctx->Inj, &ctx->S));
   PetscCall(MatScale(ctx->S, -1.0));
   PetscCall(MatShift(ctx->S, 1.0));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode CRApply_Private(PC pc, Vec x, Vec y)
@@ -296,7 +296,7 @@ static PetscErrorCode CRApply_Private(PC pc, Vec x, Vec y)
   PetscFunctionBeginUser;
   PetscCall(PCShellGetContext(pc, &ctx));
   PetscCall(MatMult(ctx->S, x, y));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode CRDestroy_Private(PC pc)
@@ -309,7 +309,7 @@ static PetscErrorCode CRDestroy_Private(PC pc)
   PetscCall(MatDestroy(&ctx->S));
   PetscCall(PetscFree(ctx));
   PetscCall(PCShellSetContext(pc, NULL));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode CreateCR_Private(PC pc, PetscInt l, PC *cr)
@@ -327,7 +327,7 @@ static PetscErrorCode CreateCR_Private(PC pc, PetscInt l, PC *cr)
   PetscCall(PCShellSetApply(*cr, CRApply_Private));
   PetscCall(PCShellSetSetUp(*cr, CRSetup_Private));
   PetscCall(PCShellSetDestroy(*cr, CRDestroy_Private));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PCMGSetLevels_MG(PC pc, PetscInt levels, MPI_Comm *comms)
@@ -346,7 +346,7 @@ PetscErrorCode PCMGSetLevels_MG(PC pc, PetscInt levels, MPI_Comm *comms)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscValidLogicalCollectiveInt(pc, levels, 2);
-  if (mg->nlevels == levels) PetscFunctionReturn(0);
+  if (mg->nlevels == levels) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(PetscObjectGetComm((PetscObject)pc, &comm));
   if (mglevels) {
     mgctype = mglevels[0]->cycles;
@@ -425,7 +425,7 @@ PetscErrorCode PCMGSetLevels_MG(PC pc, PetscInt levels, MPI_Comm *comms)
   }
   mg->levels = mglevels;
   PetscCall(PCMGSetType(pc, mgtype));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -477,7 +477,7 @@ PetscErrorCode PCMGSetLevels(PC pc, PetscInt levels, MPI_Comm *comms)
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   if (comms) PetscValidPointer(comms, 3);
   PetscTryMethod(pc, "PCMGSetLevels_C", (PC, PetscInt, MPI_Comm *), (pc, levels, comms));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PCDestroy_MG(PC pc)
@@ -512,7 +512,7 @@ PetscErrorCode PCDestroy_MG(PC pc)
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCMGGetAdaptCR_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCMGSetAdaptCoarseSpaceType_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCMGGetAdaptCoarseSpaceType_C", NULL));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -624,28 +624,28 @@ static PetscErrorCode PCApply_MG_Internal(PC pc, Vec b, Vec x, Mat B, Mat X, Pet
       mglevels[levels - 1]->b = NULL;
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCApply_MG(PC pc, Vec b, Vec x)
 {
   PetscFunctionBegin;
   PetscCall(PCApply_MG_Internal(pc, b, x, NULL, NULL, PETSC_FALSE));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCApplyTranspose_MG(PC pc, Vec b, Vec x)
 {
   PetscFunctionBegin;
   PetscCall(PCApply_MG_Internal(pc, b, x, NULL, NULL, PETSC_TRUE));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCMatApply_MG(PC pc, Mat b, Mat x)
 {
   PetscFunctionBegin;
   PetscCall(PCApply_MG_Internal(pc, NULL, NULL, b, x, PETSC_FALSE));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PCSetFromOptions_MG(PC pc, PetscOptionItems *PetscOptionsObject)
@@ -737,7 +737,7 @@ PetscErrorCode PCSetFromOptions_MG(PC pc, PetscOptionItems *PetscOptionsObject)
   PetscCall(PCMGGetGalerkin(pc, &gtype));
   PetscCall(PCMGGetAdaptInterpolation(pc, &flg));
   PetscCheck(!flg || !(gtype >= PC_MG_GALERKIN_NONE), PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_INCOMP, "Must use Galerkin coarse operators when adapting the interpolator");
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 const char *const PCMGTypes[]            = {"MULTIPLICATIVE", "ADDITIVE", "FULL", "KASKADE", "PCMGType", "PC_MG", NULL};
@@ -827,7 +827,7 @@ PetscErrorCode PCView_MG(PC pc, PetscViewer viewer)
       bottom -= th;
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 #include <petsc/private/kspimpl.h>
@@ -1218,7 +1218,7 @@ PetscErrorCode PCSetUp_MG(PC pc)
       PetscCall(MatView(pc->mat, viewer));
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* -------------------------------------------------------------------------------------*/
@@ -1229,7 +1229,7 @@ PetscErrorCode PCMGGetLevels_MG(PC pc, PetscInt *levels)
 
   PetscFunctionBegin;
   *levels = mg->nlevels;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -1254,7 +1254,7 @@ PetscErrorCode PCMGGetLevels(PC pc, PetscInt *levels)
   PetscValidIntPointer(levels, 2);
   *levels = 0;
   PetscTryMethod(pc, "PCMGGetLevels_C", (PC, PetscInt *), (pc, levels));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -1289,7 +1289,7 @@ PetscErrorCode PCMGGetGridComplexity(PC pc, PetscReal *gc, PetscReal *oc)
   if (!pc->setupcalled) {
     if (gc) *gc = 0;
     if (oc) *oc = 0;
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
   PetscCheck(mg->nlevels > 0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "MG has no levels");
   for (lev = 0; lev < mg->nlevels; lev++) {
@@ -1307,7 +1307,7 @@ PetscErrorCode PCMGGetGridComplexity(PC pc, PetscReal *gc, PetscReal *oc)
   PetscCheck(n0 > 0 && gc, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number for grid points on finest level is not available");
   *gc = (PetscReal)(sgc / n0);
   if (nnz0 > 0 && oc) *oc = (PetscReal)(soc / nnz0);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -1338,7 +1338,7 @@ PetscErrorCode PCMGSetType(PC pc, PCMGType form)
   mg->am = form;
   if (form == PC_MG_MULTIPLICATIVE) pc->ops->applyrichardson = PCApplyRichardson_MG;
   else pc->ops->applyrichardson = NULL;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -1363,7 +1363,7 @@ PetscErrorCode PCMGGetType(PC pc, PCMGType *type)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   *type = mg->am;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -1395,7 +1395,7 @@ PetscErrorCode PCMGSetCycleType(PC pc, PCMGCycleType n)
   PetscCheck(mglevels, PetscObjectComm((PetscObject)pc), PETSC_ERR_ORDER, "Must set MG levels with PCMGSetLevels() before calling");
   levels = mglevels[0]->levels;
   for (i = 0; i < levels; i++) mglevels[i]->cycles = n;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -1426,7 +1426,7 @@ PetscErrorCode PCMGMultiplicativeSetCycles(PC pc, PetscInt n)
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscValidLogicalCollectiveInt(pc, n, 2);
   mg->cyclesperpcapply = n;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PCMGSetGalerkin_MG(PC pc, PCMGGalerkinType use)
@@ -1435,7 +1435,7 @@ PetscErrorCode PCMGSetGalerkin_MG(PC pc, PCMGGalerkinType use)
 
   PetscFunctionBegin;
   mg->galerkin = use;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -1464,7 +1464,7 @@ PetscErrorCode PCMGSetGalerkin(PC pc, PCMGGalerkinType use)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscTryMethod(pc, "PCMGSetGalerkin_C", (PC, PCMGGalerkinType), (pc, use));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -1489,7 +1489,7 @@ PetscErrorCode PCMGGetGalerkin(PC pc, PCMGGalerkinType *galerkin)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   *galerkin = mg->galerkin;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PCMGSetAdaptInterpolation_MG(PC pc, PetscBool adapt)
@@ -1498,7 +1498,7 @@ PetscErrorCode PCMGSetAdaptInterpolation_MG(PC pc, PetscBool adapt)
 
   PetscFunctionBegin;
   mg->adaptInterpolation = adapt;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PCMGGetAdaptInterpolation_MG(PC pc, PetscBool *adapt)
@@ -1507,7 +1507,7 @@ PetscErrorCode PCMGGetAdaptInterpolation_MG(PC pc, PetscBool *adapt)
 
   PetscFunctionBegin;
   *adapt = mg->adaptInterpolation;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PCMGSetAdaptCoarseSpaceType_MG(PC pc, PCMGCoarseSpaceType ctype)
@@ -1517,7 +1517,7 @@ PetscErrorCode PCMGSetAdaptCoarseSpaceType_MG(PC pc, PCMGCoarseSpaceType ctype)
   PetscFunctionBegin;
   mg->adaptInterpolation = ctype != PCMG_ADAPT_NONE ? PETSC_TRUE : PETSC_FALSE;
   mg->coarseSpaceType    = ctype;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PCMGGetAdaptCoarseSpaceType_MG(PC pc, PCMGCoarseSpaceType *ctype)
@@ -1526,7 +1526,7 @@ PetscErrorCode PCMGGetAdaptCoarseSpaceType_MG(PC pc, PCMGCoarseSpaceType *ctype)
 
   PetscFunctionBegin;
   *ctype = mg->coarseSpaceType;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PCMGSetAdaptCR_MG(PC pc, PetscBool cr)
@@ -1535,7 +1535,7 @@ PetscErrorCode PCMGSetAdaptCR_MG(PC pc, PetscBool cr)
 
   PetscFunctionBegin;
   mg->compatibleRelaxation = cr;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PCMGGetAdaptCR_MG(PC pc, PetscBool *cr)
@@ -1544,7 +1544,7 @@ PetscErrorCode PCMGGetAdaptCR_MG(PC pc, PetscBool *cr)
 
   PetscFunctionBegin;
   *cr = mg->compatibleRelaxation;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1572,7 +1572,7 @@ PetscErrorCode PCMGSetAdaptCoarseSpaceType(PC pc, PCMGCoarseSpaceType ctype)
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscValidLogicalCollectiveEnum(pc, ctype, 2);
   PetscTryMethod(pc, "PCMGSetAdaptCoarseSpaceType_C", (PC, PCMGCoarseSpaceType), (pc, ctype));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1596,7 +1596,7 @@ PetscErrorCode PCMGGetAdaptCoarseSpaceType(PC pc, PCMGCoarseSpaceType *ctype)
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscValidPointer(ctype, 2);
   PetscUseMethod(pc, "PCMGGetAdaptCoarseSpaceType_C", (PC, PCMGCoarseSpaceType *), (pc, ctype));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* MATT: REMOVE? */
@@ -1623,7 +1623,7 @@ PetscErrorCode PCMGSetAdaptInterpolation(PC pc, PetscBool adapt)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscTryMethod(pc, "PCMGSetAdaptInterpolation_C", (PC, PetscBool), (pc, adapt));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -1648,7 +1648,7 @@ PetscErrorCode PCMGGetAdaptInterpolation(PC pc, PetscBool *adapt)
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscValidBoolPointer(adapt, 2);
   PetscUseMethod(pc, "PCMGGetAdaptInterpolation_C", (PC, PetscBool *), (pc, adapt));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -1672,7 +1672,7 @@ PetscErrorCode PCMGSetAdaptCR(PC pc, PetscBool cr)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscTryMethod(pc, "PCMGSetAdaptCR_C", (PC, PetscBool), (pc, cr));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -1696,7 +1696,7 @@ PetscErrorCode PCMGGetAdaptCR(PC pc, PetscBool *cr)
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscValidBoolPointer(cr, 2);
   PetscUseMethod(pc, "PCMGGetAdaptCR_C", (PC, PetscBool *), (pc, cr));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -1738,7 +1738,7 @@ PetscErrorCode PCMGSetNumberSmooth(PC pc, PetscInt n)
     mg->default_smoothu = n;
     mg->default_smoothd = n;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -1780,7 +1780,7 @@ PetscErrorCode PCMGSetDistinctSmoothUp(PC pc)
     PetscCall(KSPSetOptionsPrefix(subksp, prefix));
     PetscCall(KSPAppendOptionsPrefix(subksp, "up_"));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* No new matrices are created, and the coarse operator matrices are the references to the original ones */
@@ -1800,7 +1800,7 @@ PetscErrorCode PCGetInterpolations_MG(PC pc, PetscInt *num_levels, Mat *interpol
   }
   *num_levels     = mg->nlevels;
   *interpolations = mat;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* No new matrices are created, and the coarse operator matrices are the references to the original ones */
@@ -1820,7 +1820,7 @@ PetscErrorCode PCGetCoarseOperators_MG(PC pc, PetscInt *num_levels, Mat *coarseO
   }
   *num_levels      = mg->nlevels;
   *coarseOperators = mat;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1854,7 +1854,7 @@ PetscErrorCode PCMGRegisterCoarseSpaceConstructor(const char name[], PetscErrorC
   PetscFunctionBegin;
   PetscCall(PCInitializePackage());
   PetscCall(PetscFunctionListAdd(&PCMGCoarseList, name, function));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1876,7 +1876,7 @@ PetscErrorCode PCMGGetCoarseSpaceConstructor(const char name[], PetscErrorCode (
 {
   PetscFunctionBegin;
   PetscCall(PetscFunctionListFind(PCMGCoarseList, name, function));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -1953,5 +1953,5 @@ PETSC_EXTERN PetscErrorCode PCCreate_MG(PC pc)
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCMGGetAdaptCR_C", PCMGGetAdaptCR_MG));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCMGSetAdaptCoarseSpaceType_C", PCMGSetAdaptCoarseSpaceType_MG));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCMGGetAdaptCoarseSpaceType_C", PCMGGetAdaptCoarseSpaceType_MG));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

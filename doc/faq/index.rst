@@ -618,7 +618,7 @@ following function:
 
        /* now send buff to whatever stream or whatever you want */
      }
-     PetscFunctionReturn(0);
+     PetscFunctionReturn(PETSC_SUCCESS);
    }
 
 Then assign ``PetscVFPrintf = mypetscprintf`` before ``PetscInitialize()`` in your main

@@ -16,7 +16,7 @@ static PetscErrorCode GetISs(Vec vecs[], IS is[], PetscBool inv)
     PetscCall(ISCreateStride(PETSC_COMM_WORLD, rend[0] - rstart[0], rend[0] + rend[1] - 1, -1, &is[0]));
     PetscCall(ISCreateStride(PETSC_COMM_WORLD, rend[1] - rstart[1], rstart[0] + rend[1] - 1, -1, &is[1]));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode test_view(void)
@@ -109,7 +109,7 @@ PetscErrorCode test_view(void)
 
   PetscCall(VecDestroy(&lX));
   PetscCall(VecDestroy(&X));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 #if 0
@@ -166,7 +166,7 @@ PetscErrorCode test_vec_ops(void)
 
   PetscCall(VecDot(X,X, &val));
   PetscCall(PetscPrintf(PETSC_COMM_WORLD, "X.X = %f \n",(double) val));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 #endif
 
@@ -192,7 +192,7 @@ PetscErrorCode gen_test_vector(MPI_Comm comm, PetscInt length, PetscInt start_va
   PetscCall(VecAssemblyEnd(v));
 
   *_v = v;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -215,11 +215,11 @@ PetscErrorCode test_axpy_dot_max(void)
   PetscFunctionBegin;
   PetscCall(PetscPrintf(PETSC_COMM_WORLD, "\n\n============== %s ==============\n", PETSC_FUNCTION_NAME));
 
-  gen_test_vector(PETSC_COMM_WORLD, 4, 0, 1, &x1);
-  gen_test_vector(PETSC_COMM_WORLD, 5, 10, 2, &x2);
+  PetscCall(gen_test_vector(PETSC_COMM_WORLD, 4, 0, 1, &x1));
+  PetscCall(gen_test_vector(PETSC_COMM_WORLD, 5, 10, 2, &x2));
 
-  gen_test_vector(PETSC_COMM_WORLD, 4, 4, 3, &y1);
-  gen_test_vector(PETSC_COMM_WORLD, 5, 5, 1, &y2);
+  PetscCall(gen_test_vector(PETSC_COMM_WORLD, 4, 4, 3, &y1));
+  PetscCall(gen_test_vector(PETSC_COMM_WORLD, 5, 5, 1, &y2));
 
   tmp_buf[0] = x1;
   tmp_buf[1] = x2;
@@ -272,7 +272,7 @@ PetscErrorCode test_axpy_dot_max(void)
 
   PetscCall(VecDestroy(&X));
   PetscCall(VecDestroy(&Y));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **args)

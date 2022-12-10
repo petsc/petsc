@@ -72,7 +72,7 @@ PetscErrorCode PetscDrawSetSave(PetscDraw draw, const char filename[])
   } else {
     PetscCall(PetscInfo(NULL, "Will save images to file %s/%s_%%d%s\n", draw->savefilename, draw->savefilename, draw->saveimageext));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -107,7 +107,7 @@ PetscErrorCode PetscDrawSetSaveMovie(PetscDraw draw, const char movieext[])
   draw->savesinglefile = PETSC_FALSE; /* otherwise we cannot generage movies */
 
   PetscCall(PetscInfo(NULL, "Will save movie to file %s%s\n", draw->savefilename, draw->savemovieext));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -153,7 +153,7 @@ PetscErrorCode PetscDrawSetSaveFinalImage(PetscDraw draw, const char filename[])
   }
   PetscCall(PetscFree(draw->savefinalfilename));
   PetscCall(PetscStrallocpy(filename, &draw->savefinalfilename));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -182,12 +182,12 @@ PetscErrorCode PetscDrawSave(PetscDraw draw)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw, PETSC_DRAW_CLASSID, 1);
-  if (!draw->ops->save && !draw->ops->getimage) PetscFunctionReturn(0);
+  if (!draw->ops->save && !draw->ops->getimage) PetscFunctionReturn(PETSC_SUCCESS);
   if (draw->ops->save) {
     PetscUseTypeMethod(draw, save);
     goto finally;
   }
-  if (!draw->savefilename || !draw->saveimageext) PetscFunctionReturn(0);
+  if (!draw->savefilename || !draw->saveimageext) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)draw), &rank));
 
   saveindex = draw->savefilecount++;
@@ -231,7 +231,7 @@ finally:
 #if defined(PETSC_HAVE_SAWS)
   PetscCall(PetscDrawSave_SAWs(draw));
 #endif
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -257,8 +257,8 @@ PetscErrorCode PetscDrawSaveMovie(PetscDraw draw)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw, PETSC_DRAW_CLASSID, 1);
-  if (!draw->ops->save && !draw->ops->getimage) PetscFunctionReturn(0);
-  if (!draw->savefilename || !draw->savemovieext || draw->savesinglefile) PetscFunctionReturn(0);
+  if (!draw->ops->save && !draw->ops->getimage) PetscFunctionReturn(PETSC_SUCCESS);
+  if (!draw->savefilename || !draw->savemovieext || draw->savesinglefile) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)draw), &rank));
   {
     const char *fname = draw->savefilename;
@@ -267,7 +267,7 @@ PetscErrorCode PetscDrawSaveMovie(PetscDraw draw)
     if (rank == 0) PetscCall(PetscDrawMovieSave(fname, draw->savefilecount, imext, draw->savemoviefps, mvext));
     PetscCallMPI(MPI_Barrier(PetscObjectComm((PetscObject)draw)));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 #if defined(PETSC_HAVE_SAWS)
@@ -298,7 +298,7 @@ static PetscErrorCode PetscImageListDestroy(void)
     PetscCall(PetscFree(image));
     image = next;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscImageListAdd(const char filename[], const char ext[], PetscInt count)
@@ -311,14 +311,14 @@ static PetscErrorCode PetscImageListAdd(const char filename[], const char ext[],
     PetscCall(PetscStrcmp(filename, oimage->filename, &flg));
     if (flg) {
       oimage->count = count;
-      PetscFunctionReturn(0);
+      PetscFunctionReturn(PETSC_SUCCESS);
     }
     while (oimage->next) {
       oimage = oimage->next;
       PetscCall(PetscStrcmp(filename, oimage->filename, &flg));
       if (flg) {
         oimage->count = count;
-        PetscFunctionReturn(0);
+        PetscFunctionReturn(PETSC_SUCCESS);
       }
     }
     PetscCall(PetscNew(&image));
@@ -331,7 +331,7 @@ static PetscErrorCode PetscImageListAdd(const char filename[], const char ext[],
   PetscCall(PetscStrallocpy(filename, &image->filename));
   PetscCall(PetscStrallocpy(ext, &image->ext));
   image->count = count;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscDrawSave_SAWs(PetscDraw draw)
@@ -341,7 +341,7 @@ static PetscErrorCode PetscDrawSave_SAWs(PetscDraw draw)
   size_t         len = 0;
 
   PetscFunctionBegin;
-  if (!draw->savefilename || !draw->saveimageext) PetscFunctionReturn(0);
+  if (!draw->savefilename || !draw->saveimageext) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(PetscImageListAdd(draw->savefilename, draw->saveimageext, draw->savefilecount - 1));
   image = SAWs_images;
   while (image) {
@@ -358,7 +358,7 @@ static PetscErrorCode PetscDrawSave_SAWs(PetscDraw draw)
   PetscCall(PetscStrlcat(body, "<br>\n", sizeof(body)));
   if (draw->savefilecount > 0) PetscCallSAWs(SAWs_Pop_Body, ("index.html", 1));
   PetscCallSAWs(SAWs_Push_Body, ("index.html", 1, body));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 #endif

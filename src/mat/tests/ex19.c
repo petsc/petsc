@@ -7,7 +7,7 @@ This example uses bilinear elements on the unit square.  Input arguments are:\n\
 
 #include <petscmat.h>
 
-int FormElementStiffness(PetscReal H, PetscScalar *Ke)
+PetscErrorCode FormElementStiffness(PetscReal H, PetscScalar *Ke)
 {
   PetscFunctionBegin;
   Ke[0]  = H / 6.0;
@@ -26,7 +26,7 @@ int FormElementStiffness(PetscReal H, PetscScalar *Ke)
   Ke[13] = H / 12.0;
   Ke[14] = -.125 * H;
   Ke[15] = H / 6.0;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **args)

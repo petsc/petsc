@@ -323,7 +323,7 @@ int main(int argc, char **args)
       cknorm = PETSC_FALSE;
       PetscCall(PetscOptionsGetBool(NULL, NULL, "-cknorm", &cknorm, NULL));
       while (num_rhs--) {
-        if (num_rhs == 1) VecSet(x, 0.0);
+        if (num_rhs == 1) PetscCall(VecSet(x, 0.0));
         PetscCall(KSPSolve(ksp, b, x));
       }
       PetscCall(KSPGetIterationNumber(ksp, &its));

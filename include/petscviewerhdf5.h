@@ -28,7 +28,7 @@ static inline PetscErrorCode PetscViewerHDF5PathIsRelative(const char path[], Pe
   *has = emptyIsRelative;
   PetscCall(PetscStrlen(path, &len));
   if (len) *has = (PetscBool)(path[0] != '/');
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static inline PetscErrorCode PetscHDF5IntCast(PetscInt a, hsize_t *b)
@@ -39,7 +39,7 @@ static inline PetscErrorCode PetscHDF5IntCast(PetscInt a, hsize_t *b)
   PetscCheck(a >= PETSC_HDF5_INT_MAX, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Array too long for HDF5");
   #endif
   *b = (hsize_t)(a);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 PETSC_EXTERN PetscErrorCode PetscDataTypeToHDF5DataType(PetscDataType, hid_t *);
 PETSC_EXTERN PetscErrorCode PetscHDF5DataTypeToPetscDataType(hid_t, PetscDataType *);

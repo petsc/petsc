@@ -105,5 +105,5 @@ PetscErrorCode MatGetMultiProcBlock_MPIBAIJ(Mat mat, MPI_Comm subComm, MatReuse 
   PetscCall(PetscFree(commRankMap));
   PetscCall(PetscFree(garrayCMap));
   if (scall == MAT_INITIAL_MATRIX) PetscCall(PetscFree(nnz));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

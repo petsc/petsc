@@ -63,7 +63,7 @@ inline PetscErrorCode CUPMStream<T>::destroy() noexcept
     stream_ = cupmStream_t{};
     id_     = 0;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 template <DeviceType T>
@@ -77,11 +77,11 @@ inline PetscErrorCode CUPMStream<T>::create(flag_type flags) noexcept
       PetscCallCUPM(cupmStreamGetFlags(stream_, &current_flags));
       PetscCheck(flags == current_flags, PETSC_COMM_SELF, PETSC_ERR_GPU, "Current flags %u != requested flags %u for stream %d", current_flags, flags, id_);
     }
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
   PetscCallCUPM(cupmStreamCreateWithFlags(&stream_, flags));
   id_ = new_id_();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 template <DeviceType T>
@@ -97,12 +97,12 @@ inline PetscErrorCode CUPMStream<T>::change_type(PetscStreamType newtype) noexce
       flag_type flag;
 
       PetscCallCUPM(cupmStreamGetFlags(stream_, &flag));
-      if (flag == preferred) PetscFunctionReturn(0);
+      if (flag == preferred) PetscFunctionReturn(PETSC_SUCCESS);
       PetscCall(destroy());
     }
     PetscCall(create(preferred));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 template <DeviceType T>
@@ -130,7 +130,7 @@ inline PetscErrorCode CUPMStream<T>::record_event_(event_type &event) const noex
 {
   PetscFunctionBegin;
   PetscCall(event.record(stream_));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 template <DeviceType T>
@@ -138,7 +138,7 @@ inline PetscErrorCode CUPMStream<T>::wait_for_(event_type &event) const noexcept
 {
   PetscFunctionBegin;
   PetscCallCUPM(cupmStreamWaitEvent(stream_, event.get(), 0));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 } // namespace cupm

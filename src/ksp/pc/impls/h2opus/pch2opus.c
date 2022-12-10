@@ -69,7 +69,7 @@ static PetscErrorCode PCReset_H2OPUS(PC pc)
   PetscCall(MatDestroy(&pch2opus->wnsmat[1]));
   PetscCall(MatDestroy(&pch2opus->wnsmat[2]));
   PetscCall(MatDestroy(&pch2opus->wnsmat[3]));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCSetCoordinates_H2OPUS(PC pc, PetscInt sdim, PetscInt nlocc, PetscReal *coords)
@@ -90,7 +90,7 @@ static PetscErrorCode PCSetCoordinates_H2OPUS(PC pc, PetscInt sdim, PetscInt nlo
     pch2opus->sdim  = sdim;
     pch2opus->nlocc = nlocc;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCDestroy_H2OPUS(PC pc)
@@ -99,7 +99,7 @@ static PetscErrorCode PCDestroy_H2OPUS(PC pc)
   PetscCall(PCReset_H2OPUS(pc));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCSetCoordinates_C", NULL));
   PetscCall(PetscFree(pc->data));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCSetFromOptions_H2OPUS(PC pc, PetscOptionItems *PetscOptionsObject)
@@ -121,7 +121,7 @@ static PetscErrorCode PCSetFromOptions_H2OPUS(PC pc, PetscOptionItems *PetscOpti
   PetscCall(PetscOptionsReal("-pc_h2opus_mrtol", "Relative tolerance for construction from sampling", NULL, pch2opus->mrtol, &pch2opus->mrtol, NULL));
   PetscCall(PetscOptionsBool("-pc_h2opus_forcecpu", "Force construction on CPU", NULL, pch2opus->forcecpu, &pch2opus->forcecpu, NULL));
   PetscOptionsHeadEnd();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 typedef struct {
@@ -139,7 +139,7 @@ static PetscErrorCode MatMult_AAt(Mat A, Vec x, Vec y)
   /* PetscCall(MatMultTranspose(aat->M,x,aat->w)); */
   PetscCall(MatMultTranspose(aat->A, x, aat->w));
   PetscCall(MatMult(aat->A, aat->w, y));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCH2OpusSetUpInit(PC pc)
@@ -168,7 +168,7 @@ static PetscErrorCode PCH2OpusSetUpInit(PC pc)
   pch2opus->s0 = 1. / n;
   PetscCall(VecDestroy(&aat.w));
   PetscCall(MatDestroy(&AAt));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCApplyKernel_H2OPUS(PC pc, Vec x, Vec y, PetscBool t)
@@ -178,7 +178,7 @@ static PetscErrorCode PCApplyKernel_H2OPUS(PC pc, Vec x, Vec y, PetscBool t)
   PetscFunctionBegin;
   if (t) PetscCall(MatMultTranspose(pch2opus->M, x, y));
   else PetscCall(MatMult(pch2opus->M, x, y));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCApplyMatKernel_H2OPUS(PC pc, Mat X, Mat Y, PetscBool t)
@@ -188,35 +188,35 @@ static PetscErrorCode PCApplyMatKernel_H2OPUS(PC pc, Mat X, Mat Y, PetscBool t)
   PetscFunctionBegin;
   if (t) PetscCall(MatTransposeMatMult(pch2opus->M, X, MAT_REUSE_MATRIX, PETSC_DEFAULT, &Y));
   else PetscCall(MatMatMult(pch2opus->M, X, MAT_REUSE_MATRIX, PETSC_DEFAULT, &Y));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCApplyMat_H2OPUS(PC pc, Mat X, Mat Y)
 {
   PetscFunctionBegin;
   PetscCall(PCApplyMatKernel_H2OPUS(pc, X, Y, PETSC_FALSE));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCApplyTransposeMat_H2OPUS(PC pc, Mat X, Mat Y)
 {
   PetscFunctionBegin;
   PetscCall(PCApplyMatKernel_H2OPUS(pc, X, Y, PETSC_TRUE));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCApply_H2OPUS(PC pc, Vec x, Vec y)
 {
   PetscFunctionBegin;
   PetscCall(PCApplyKernel_H2OPUS(pc, x, y, PETSC_FALSE));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCApplyTranspose_H2OPUS(PC pc, Vec x, Vec y)
 {
   PetscFunctionBegin;
   PetscCall(PCApplyKernel_H2OPUS(pc, x, y, PETSC_TRUE));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* used to test the norm of (M^-1 A - I) */
@@ -251,21 +251,21 @@ static PetscErrorCode MatMultKernel_MAmI(Mat M, Vec x, Vec y, PetscBool t)
     }
   }
   PetscCall(VecAXPY(y, -1.0, x));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatMult_MAmI(Mat A, Vec x, Vec y)
 {
   PetscFunctionBegin;
   PetscCall(MatMultKernel_MAmI(A, x, y, PETSC_FALSE));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatMultTranspose_MAmI(Mat A, Vec x, Vec y)
 {
   PetscFunctionBegin;
   PetscCall(MatMultKernel_MAmI(A, x, y, PETSC_TRUE));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* HyperPower kernel:
@@ -310,21 +310,21 @@ static PetscErrorCode MatMultKernel_Hyper(Mat M, Vec x, Vec y, PetscBool t)
     }
     PetscCall(PCApply_H2OPUS(pc, pch2opus->wns[3], y));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatMult_Hyper(Mat M, Vec x, Vec y)
 {
   PetscFunctionBegin;
   PetscCall(MatMultKernel_Hyper(M, x, y, PETSC_FALSE));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatMultTranspose_Hyper(Mat M, Vec x, Vec y)
 {
   PetscFunctionBegin;
   PetscCall(MatMultKernel_Hyper(M, x, y, PETSC_TRUE));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Hyper power kernel, MatMat version */
@@ -374,14 +374,14 @@ static PetscErrorCode MatMatMultKernel_Hyper(Mat M, Mat X, Mat Y, PetscBool t)
     }
     PetscCall(PCApplyMat_H2OPUS(pc, pch2opus->wnsmat[3], Y));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatMatMultNumeric_Hyper(Mat M, Mat X, Mat Y, void *ctx)
 {
   PetscFunctionBegin;
   PetscCall(MatMatMultKernel_Hyper(M, X, Y, PETSC_FALSE));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Basic Newton-Schultz sampler: (2 * I - M * A)*M */
@@ -409,21 +409,21 @@ static PetscErrorCode MatMultKernel_NS(Mat M, Vec x, Vec y, PetscBool t)
     PetscCall(PCApply_H2OPUS(pc, pch2opus->wns[0], pch2opus->wns[1]));
     PetscCall(VecAXPBY(y, -1., 2., pch2opus->wns[1]));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatMult_NS(Mat M, Vec x, Vec y)
 {
   PetscFunctionBegin;
   PetscCall(MatMultKernel_NS(M, x, y, PETSC_FALSE));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatMultTranspose_NS(Mat M, Vec x, Vec y)
 {
   PetscFunctionBegin;
   PetscCall(MatMultKernel_NS(M, x, y, PETSC_TRUE));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Basic Newton-Schultz sampler: (2 * I - M * A)*M, MatMat version */
@@ -458,14 +458,14 @@ static PetscErrorCode MatMatMultKernel_NS(Mat M, Mat X, Mat Y, PetscBool t)
     PetscCall(MatScale(Y, 2.));
     PetscCall(MatAXPY(Y, -1., pch2opus->wnsmat[1], SAME_NONZERO_PATTERN));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatMatMultNumeric_NS(Mat M, Mat X, Mat Y, void *ctx)
 {
   PetscFunctionBegin;
   PetscCall(MatMatMultKernel_NS(M, X, Y, PETSC_FALSE));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCH2OpusSetUpSampler_Private(PC pc)
@@ -500,7 +500,7 @@ static PetscErrorCode PCH2OpusSetUpSampler_Private(PC pc)
   PetscCall(MatBindToCPU(pch2opus->S, pch2opus->boundtocpu));
   /* XXX */
   PetscCall(MatSetOption(pch2opus->S, MAT_SYMMETRIC, PETSC_TRUE));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCSetUp_H2OPUS(PC pc)
@@ -615,7 +615,7 @@ static PetscErrorCode PCSetUp_H2OPUS(PC pc)
   PetscCall(MatDestroy(&pch2opus->wnsmat[1]));
   PetscCall(MatDestroy(&pch2opus->wnsmat[2]));
   PetscCall(MatDestroy(&pch2opus->wnsmat[3]));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCView_H2OPUS(PC pc, PetscViewer viewer)
@@ -644,7 +644,7 @@ static PetscErrorCode PCView_H2OPUS(PC pc, PetscViewer viewer)
     }
     PetscCall(PetscViewerASCIIPrintf(viewer, "Initial scaling: %g\n", pch2opus->s0));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -705,5 +705,5 @@ PETSC_EXTERN PetscErrorCode PCCreate_H2OPUS(PC pc)
   pc->ops->view           = PCView_H2OPUS;
 
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCSetCoordinates_C", PCSetCoordinates_H2OPUS));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

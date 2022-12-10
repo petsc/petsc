@@ -223,7 +223,7 @@ PetscErrorCode FormJacobian_Grid(AppCtx *user, GridCtx *grid, Mat *J)
   PetscCall(MatAssemblyBegin(jac, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(jac, MAT_FINAL_ASSEMBLY));
 
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 /*TEST

@@ -141,8 +141,8 @@ PetscErrorCode EvaluateResidual(Tao tao, Vec X, Vec F, void *ptr)
   /* Compute Ax - b */
   PetscCall(MatMult(user->A, X, F));
   PetscCall(VecAXPY(F, -1, user->b));
-  PetscLogFlops(2.0 * user->M * user->N);
-  PetscFunctionReturn(0);
+  PetscCall(PetscLogFlops(2.0 * user->M * user->N));
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*------------------------------------------------------------*/
@@ -150,7 +150,7 @@ PetscErrorCode EvaluateJacobian(Tao tao, Vec X, Mat J, Mat Jpre, void *ptr)
 {
   /* Jacobian is not changing here, so use a empty dummy function here.  J[m][n] = df[m]/dx[n] = A[m][n] for linear least square */
   PetscFunctionBegin;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* ------------------------------------------------------------ */
@@ -162,14 +162,14 @@ PetscErrorCode EvaluateRegularizerObjectiveAndGradient(Tao tao, Vec X, PetscReal
   *f_reg *= 0.5;
   /* compute regularizer gradient = x */
   PetscCall(VecCopy(X, G_reg));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode EvaluateRegularizerHessianProd(Mat Hreg, Vec in, Vec out)
 {
   PetscFunctionBegin;
   PetscCall(VecCopy(in, out));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* ------------------------------------------------------------ */
@@ -177,7 +177,7 @@ PetscErrorCode EvaluateRegularizerHessian(Tao tao, Vec X, Mat Hreg, void *ptr)
 {
   /* Hessian for regularizer objective = 0.5*x'*x is identity matrix, and is not changing*/
   PetscFunctionBegin;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* ------------------------------------------------------------ */
@@ -185,7 +185,7 @@ PetscErrorCode FormStartingPoint(Vec X, AppCtx *user)
 {
   PetscFunctionBegin;
   PetscCall(VecSet(X, 0.0));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* ---------------------------------------------------------------------- */
@@ -225,7 +225,7 @@ PetscErrorCode InitializeUserData(AppCtx *user)
   /* shortcut, when D is identity matrix, we may just specify it as NULL, and brgn will treat D*x as x without actually computing D*x.
   if (dictChoice == 0) {
     user->D = NULL;
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
   */
 
@@ -266,7 +266,7 @@ PetscErrorCode InitializeUserData(AppCtx *user)
   PetscCall(MatAssemblyBegin(user->D, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(user->D, MAT_FINAL_ASSEMBLY));
 
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*TEST

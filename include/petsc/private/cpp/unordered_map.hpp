@@ -397,7 +397,7 @@ private:
       static_cast<void>(map_begin_offset);
       static_cast<void>(map_end_offset);
     }
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 };
 
@@ -532,7 +532,7 @@ inline PetscErrorCode KHashTable<V, H, KE>::khash_set_flag_(khash_int it, std::v
   } else {
     flag_bucket_at_(it, flags) &= ~(flag_selector << flag_bucket_index_(it));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 template <typename V, typename H, typename KE>
@@ -541,7 +541,7 @@ inline PetscErrorCode KHashTable<V, H, KE>::khash_set_deleted_(khash_int it, std
 {
   PetscFunctionBegin;
   PetscCall(khash_set_flag_<1, b>(it, flags));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 template <typename V, typename H, typename KE>
@@ -550,7 +550,7 @@ inline PetscErrorCode KHashTable<V, H, KE>::khash_set_empty_(khash_int it, std::
 {
   PetscFunctionBegin;
   PetscCall(khash_set_flag_<2, b>(it, flags));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 template <typename V, typename H, typename KE>
@@ -559,7 +559,7 @@ inline PetscErrorCode KHashTable<V, H, KE>::khash_set_both_(khash_int it, std::v
 {
   PetscFunctionBegin;
   PetscCall(khash_set_flag_<3, b>(it, flags));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 template <typename V, typename H, typename KE>
@@ -568,7 +568,7 @@ inline PetscErrorCode KHashTable<V, H, KE>::khash_set_deleted_(khash_int it) noe
 {
   PetscFunctionBegin;
   PetscCall(khash_set_deleted_<b>(it, flags_));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 template <typename V, typename H, typename KE>
@@ -577,7 +577,7 @@ inline PetscErrorCode KHashTable<V, H, KE>::khash_set_empty_(khash_int it) noexc
 {
   PetscFunctionBegin;
   PetscCall(khash_set_empty_<b>(it, flags_));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 template <typename V, typename H, typename KE>
@@ -586,7 +586,7 @@ inline PetscErrorCode KHashTable<V, H, KE>::khash_set_both_(khash_int it) noexce
 {
   PetscFunctionBegin;
   PetscCall(khash_set_both_<b>(it, flags_));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 template <typename V, typename H, typename KE>
@@ -660,7 +660,7 @@ inline PetscErrorCode KHashTable<V, H, KE>::khash_maybe_rehash_() noexcept
     }
     PetscCall(resize(target_size));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 template <typename V, typename H, typename KE>
@@ -673,7 +673,7 @@ inline PetscErrorCode KHashTable<V, H, KE>::khash_erase_(khash_int it) noexcept
   --count_;
   PetscCall(khash_set_deleted_<true>(it));
   PetscCallCXX(values_[it] = value_type{});
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 // ==========================================================================================
@@ -711,13 +711,13 @@ inline PetscErrorCode KHashTable<V, H, KE>::khash_find_(T &&key, khash_int *it) 
       i = (i + (++step)) & mask;
       if (i == last) {
         *it = ret;
-        PetscFunctionReturn(0);
+        PetscFunctionReturn(PETSC_SUCCESS);
       }
     }
     if (occupied(i)) ret = i;
   }
   *it = ret;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 template <typename V, typename H, typename KE>
@@ -843,7 +843,7 @@ inline PetscErrorCode KHashTable<V, H, KE>::reserve(size_type req_size) noexcept
 {
   PetscFunctionBegin;
   if (size() < req_size) PetscCall(resize(req_size));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 namespace detail
@@ -902,7 +902,7 @@ template <typename T>
 static inline constexpr unsigned integer_log2(T x) noexcept
 {
   static_assert(std::numeric_limits<T>::is_integer && std::is_unsigned<T>::value, "");
-  return x ? 1 + integer_log2(x >> 1) : static_cast<unsigned>(-1);
+  return x ? 1 + integer_log2(x >> 1) : std::numeric_limits<unsigned>::max();
 }
 
 } // namespace detail
@@ -975,7 +975,7 @@ inline PetscErrorCode KHashTable<V, H, KE>::resize(size_type req_size) noexcept
     n_occupied_  = count_;
     upper_bound_ = new_size;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 template <typename V, typename H, typename KE>
@@ -988,7 +988,7 @@ inline PetscErrorCode KHashTable<V, H, KE>::clear() noexcept
   n_occupied_  = 0;
   upper_bound_ = 0;
   PetscAssert(size() == 0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "clear() did not set size (%zu) to 0", size());
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 template <typename V, typename H, typename KE>
@@ -1288,7 +1288,7 @@ inline typename UnorderedMap<K, T, H, KE>::size_type UnorderedMap<K, T, H, KE>::
   {
     auto it = this->find(key);
 
-    if (it == this->end()) PetscFunctionReturn(0);
+    if (it == this->end()) PetscFunctionReturn(PETSC_SUCCESS);
     PetscCallCXX(this->erase(it));
   }
   PetscFunctionReturn(1);

@@ -19,7 +19,7 @@ static PetscErrorCode TSAdaptChoose_History(TSAdapt adapt, TS ts, PetscReal h, P
   *wlte    = -1;
   *wltea   = -1;
   *wlter   = -1;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TSAdaptReset_History(TSAdapt adapt)
@@ -28,7 +28,7 @@ static PetscErrorCode TSAdaptReset_History(TSAdapt adapt)
 
   PetscFunctionBegin;
   PetscCall(TSHistoryDestroy(&thadapt->hist));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TSAdaptDestroy_History(TSAdapt adapt)
@@ -36,7 +36,7 @@ static PetscErrorCode TSAdaptDestroy_History(TSAdapt adapt)
   PetscFunctionBegin;
   PetscCall(TSAdaptReset_History(adapt));
   PetscCall(PetscFree(adapt->data));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* this is not public, as TSHistory is not a public object */
@@ -50,10 +50,10 @@ PetscErrorCode TSAdaptHistorySetTSHistory(TSAdapt adapt, TSHistory hist, PetscBo
   PetscValidHeaderSpecific(adapt, TSADAPT_CLASSID, 1);
   PetscValidLogicalCollectiveBool(adapt, backward, 3);
   PetscCall(PetscObjectTypeCompare((PetscObject)adapt, TSADAPTHISTORY, &flg));
-  if (!flg) PetscFunctionReturn(0);
+  if (!flg) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(TSHistoryGetHistory(hist, &n, (const PetscReal **)&hist_t, NULL, NULL));
   PetscCall(TSAdaptHistorySetHistory(adapt, n, hist_t, backward));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -89,7 +89,7 @@ PetscErrorCode TSAdaptHistoryGetStep(TSAdapt adapt, PetscInt step, PetscReal *t,
   thadapt = (TSAdapt_History *)adapt->data;
   PetscCall(TSHistoryGetTimeStep(thadapt->hist, thadapt->bw, step, dt));
   PetscCall(TSHistoryGetTime(thadapt->hist, thadapt->bw, step, t));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -121,13 +121,13 @@ PetscErrorCode TSAdaptHistorySetHistory(TSAdapt adapt, PetscInt n, PetscReal his
   PetscValidRealPointer(hist, 3);
   PetscValidLogicalCollectiveBool(adapt, backward, 4);
   PetscCall(PetscObjectTypeCompare((PetscObject)adapt, TSADAPTHISTORY, &flg));
-  if (!flg) PetscFunctionReturn(0);
+  if (!flg) PetscFunctionReturn(PETSC_SUCCESS);
   thadapt = (TSAdapt_History *)adapt->data;
   PetscCall(TSHistoryDestroy(&thadapt->hist));
   PetscCall(TSHistoryCreate(PetscObjectComm((PetscObject)adapt), &thadapt->hist));
   PetscCall(TSHistorySetHistory(thadapt->hist, n, hist, NULL, PETSC_FALSE));
   thadapt->bw = backward;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -158,9 +158,9 @@ PetscErrorCode TSAdaptHistorySetTrajectory(TSAdapt adapt, TSTrajectory tj, Petsc
   PetscValidHeaderSpecific(tj, TSTRAJECTORY_CLASSID, 2);
   PetscValidLogicalCollectiveBool(adapt, backward, 3);
   PetscCall(PetscObjectTypeCompare((PetscObject)adapt, TSADAPTHISTORY, &flg));
-  if (!flg) PetscFunctionReturn(0);
+  if (!flg) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(TSAdaptHistorySetTSHistory(adapt, tj->tsh, backward));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -183,5 +183,5 @@ PETSC_EXTERN PetscErrorCode TSAdaptCreate_History(TSAdapt adapt)
   adapt->ops->choose  = TSAdaptChoose_History;
   adapt->ops->reset   = TSAdaptReset_History;
   adapt->ops->destroy = TSAdaptDestroy_History;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

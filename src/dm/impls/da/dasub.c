@@ -76,7 +76,7 @@ PetscErrorCode DMDAGetLogicalCoordinate(DM da, PetscScalar x, PetscScalar y, Pet
   PetscCallMPI(MPI_Bcast(X, 1, MPIU_SCALAR, root, PetscObjectComm((PetscObject)da)));
   PetscCallMPI(MPI_Bcast(Y, 1, MPIU_SCALAR, root, PetscObjectComm((PetscObject)da)));
   PetscCall(DMDAVecRestoreArrayRead(dacoors, coors, &c));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -165,7 +165,7 @@ PetscErrorCode DMDAGetRay(DM da, DMDirection dir, PetscInt gp, Vec *newvec, VecS
   PetscCall(VecScatterCreate(vec, is, *newvec, NULL, scatter));
   PetscCall(DMRestoreGlobalVector(da, &vec));
   PetscCall(ISDestroy(&is));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -242,7 +242,7 @@ PetscErrorCode DMDAGetProcessorSubset(DM da, DMDirection dir, PetscInt gp, MPI_C
   PetscCallMPI(MPI_Group_free(&subgroup));
   PetscCallMPI(MPI_Group_free(&group));
   PetscCall(PetscFree2(owners, ranks));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -311,5 +311,5 @@ PetscErrorCode DMDAGetProcessorSubsets(DM da, DMDirection dir, MPI_Comm *subcomm
   PetscCallMPI(MPI_Group_free(&subgroup));
   PetscCallMPI(MPI_Group_free(&group));
   PetscCall(PetscFree2(firstPoints, subgroupRanks));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

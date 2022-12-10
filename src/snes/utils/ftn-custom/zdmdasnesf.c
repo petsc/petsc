@@ -28,7 +28,7 @@ static PetscErrorCode sourlj1d(DMDALocalInfo *info,PetscScalar *in,Mat A,Mat m,v
   PetscCall(DMGetDMSNES(info->da,&sdm));
   PetscCall(PetscObjectGetFortranCallback((PetscObject)sdm,PETSC_FORTRAN_CALLBACK_SUBTYPE,_cb.lj1d,(PetscVoidFunction*)&func,&ctx));
   PetscCallFortranVoidFunction((*func)(info,&in[info->dof*info->gxs],&A,&m,ctx,&ierr));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode sourlj2d(DMDALocalInfo *info,PetscScalar **in,Mat A,Mat m,void *ptr)
@@ -40,7 +40,7 @@ static PetscErrorCode sourlj2d(DMDALocalInfo *info,PetscScalar **in,Mat A,Mat m,
   PetscCall(DMGetDMSNES(info->da,&sdm));
   PetscCall(PetscObjectGetFortranCallback((PetscObject)sdm,PETSC_FORTRAN_CALLBACK_SUBTYPE,_cb.lj2d,(PetscVoidFunction*)&func,&ctx));
   PetscCallFortranVoidFunction((*func)(info,&in[info->gys][info->dof*info->gxs],&A,&m,ctx,&ierr));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode sourlj3d(DMDALocalInfo *info,PetscScalar ***in,Mat A,Mat m,void *ptr)
@@ -52,26 +52,31 @@ static PetscErrorCode sourlj3d(DMDALocalInfo *info,PetscScalar ***in,Mat A,Mat m
   PetscCall(DMGetDMSNES(info->da,&sdm));
   PetscCall(PetscObjectGetFortranCallback((PetscObject)sdm,PETSC_FORTRAN_CALLBACK_SUBTYPE,_cb.lj2d,(PetscVoidFunction*)&func,&ctx));
   PetscCallFortranVoidFunction((*func)(info,&in[info->gzs][info->gys][info->dof*info->gxs],&A,&m,ctx,&ierr));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PETSC_EXTERN void dmdasnessetjacobianlocal_(DM *da,void (*jac)(DMDALocalInfo*,void*,void*,void*,void*,void*,PetscErrorCode*),void *ctx,PetscErrorCode *ierr)
+PETSC_EXTERN void dmdasnessetjacobianlocal_(DM *da, void (*jac)(DMDALocalInfo *, void *, void *, void *, void *, void *, PetscErrorCode *), void *ctx, PetscErrorCode *ierr)
 {
   DMSNES   sdm;
   PetscInt dim;
 
-  *ierr = DMGetDMSNESWrite(*da,&sdm); if (*ierr) return;
-  *ierr = DMDAGetInfo(*da,&dim,0,0,0,0,0,0,0,0,0,0,0,0); if (*ierr) return;
+  *ierr = DMGetDMSNESWrite(*da, &sdm);
+  if (*ierr) return;
+  *ierr = DMDAGetInfo(*da, &dim, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+  if (*ierr) return;
   if (dim == 2) {
-    *ierr = PetscObjectSetFortranCallback((PetscObject)sdm,PETSC_FORTRAN_CALLBACK_SUBTYPE,&_cb.lj2d,(PetscVoidFunction)jac,ctx); if (*ierr) return;
-    *ierr = DMDASNESSetJacobianLocal(*da,(PetscErrorCode (*)(DMDALocalInfo*,void*,Mat,Mat,void*))sourlj2d,NULL);
+    *ierr = PetscObjectSetFortranCallback((PetscObject)sdm, PETSC_FORTRAN_CALLBACK_SUBTYPE, &_cb.lj2d, (PetscVoidFunction)jac, ctx);
+    if (*ierr) return;
+    *ierr = DMDASNESSetJacobianLocal(*da, (PetscErrorCode(*)(DMDALocalInfo *, void *, Mat, Mat, void *))sourlj2d, NULL);
   } else if (dim == 3) {
-    *ierr = PetscObjectSetFortranCallback((PetscObject)sdm,PETSC_FORTRAN_CALLBACK_SUBTYPE,&_cb.lj3d,(PetscVoidFunction)jac,ctx); if (*ierr) return;
-    *ierr = DMDASNESSetJacobianLocal(*da,(PetscErrorCode (*)(DMDALocalInfo*,void*,Mat,Mat,void*))sourlj3d,NULL);
+    *ierr = PetscObjectSetFortranCallback((PetscObject)sdm, PETSC_FORTRAN_CALLBACK_SUBTYPE, &_cb.lj3d, (PetscVoidFunction)jac, ctx);
+    if (*ierr) return;
+    *ierr = DMDASNESSetJacobianLocal(*da, (PetscErrorCode(*)(DMDALocalInfo *, void *, Mat, Mat, void *))sourlj3d, NULL);
   } else if (dim == 1) {
-    *ierr = PetscObjectSetFortranCallback((PetscObject)sdm,PETSC_FORTRAN_CALLBACK_SUBTYPE,&_cb.lj1d,(PetscVoidFunction)jac,ctx); if (*ierr) return;
-    *ierr = DMDASNESSetJacobianLocal(*da,(PetscErrorCode (*)(DMDALocalInfo*,void*,Mat,Mat,void*))sourlj1d,NULL);
-  } else *ierr = 1;
+    *ierr = PetscObjectSetFortranCallback((PetscObject)sdm, PETSC_FORTRAN_CALLBACK_SUBTYPE, &_cb.lj1d, (PetscVoidFunction)jac, ctx);
+    if (*ierr) return;
+    *ierr = DMDASNESSetJacobianLocal(*da, (PetscErrorCode(*)(DMDALocalInfo *, void *, Mat, Mat, void *))sourlj1d, NULL);
+  } else *ierr = PETSC_ERR_ARG_OUTOFRANGE;
 }
 
 /************************************************/
@@ -85,7 +90,7 @@ static PetscErrorCode sourlf1d(DMDALocalInfo *info,PetscScalar *in,PetscScalar *
   PetscCall(DMGetDMSNES(info->da,&sdm));
   PetscCall(PetscObjectGetFortranCallback((PetscObject)sdm,PETSC_FORTRAN_CALLBACK_SUBTYPE,_cb.lf1d,(PetscVoidFunction*)&func,&ctx));
   PetscCallFortranVoidFunction((*func)(info,&in[info->dof*info->gxs],&out[info->dof*info->xs],ctx,&ierr));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode sourlf2d(DMDALocalInfo *info,PetscScalar **in,PetscScalar **out,void *ptr)
@@ -97,7 +102,7 @@ static PetscErrorCode sourlf2d(DMDALocalInfo *info,PetscScalar **in,PetscScalar 
   PetscCall(DMGetDMSNES(info->da,&sdm));
   PetscCall(PetscObjectGetFortranCallback((PetscObject)sdm,PETSC_FORTRAN_CALLBACK_SUBTYPE,_cb.lf2d,(PetscVoidFunction*)&func,&ctx));
   PetscCallFortranVoidFunction((*func)(info,&in[info->gys][info->dof*info->gxs],&out[info->ys][info->dof*info->xs],ctx,&ierr));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode sourlf3d(DMDALocalInfo *info,PetscScalar ***in,PetscScalar ***out,void *ptr)
@@ -109,24 +114,29 @@ static PetscErrorCode sourlf3d(DMDALocalInfo *info,PetscScalar ***in,PetscScalar
   PetscCall(DMGetDMSNES(info->da,&sdm));
   PetscCall(PetscObjectGetFortranCallback((PetscObject)sdm,PETSC_FORTRAN_CALLBACK_SUBTYPE,_cb.lf3d,(PetscVoidFunction*)&func,&ctx));
   PetscCallFortranVoidFunction((*func)(info,&in[info->gzs][info->gys][info->dof*info->gxs],&out[info->zs][info->ys][info->dof*info->xs],ctx,&ierr));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PETSC_EXTERN void dmdasnessetfunctionlocal_(DM *da,InsertMode *mode,void (*func)(DMDALocalInfo*,void*,void*,void*,PetscErrorCode*),void *ctx,PetscErrorCode *ierr)
+PETSC_EXTERN void dmdasnessetfunctionlocal_(DM *da, InsertMode *mode, void (*func)(DMDALocalInfo *, void *, void *, void *, PetscErrorCode *), void *ctx, PetscErrorCode *ierr)
 {
   DMSNES   sdm;
   PetscInt dim;
 
-  *ierr = DMGetDMSNESWrite(*da,&sdm); if (*ierr) return;
-  *ierr = DMDAGetInfo(*da,&dim,0,0,0,0,0,0,0,0,0,0,0,0); if (*ierr) return;
+  *ierr = DMGetDMSNESWrite(*da, &sdm);
+  if (*ierr) return;
+  *ierr = DMDAGetInfo(*da, &dim, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+  if (*ierr) return;
   if (dim == 2) {
-    *ierr = PetscObjectSetFortranCallback((PetscObject)sdm,PETSC_FORTRAN_CALLBACK_SUBTYPE,&_cb.lf2d,(PetscVoidFunction)func,ctx); if (*ierr) return;
-    *ierr = DMDASNESSetFunctionLocal(*da,*mode,(PetscErrorCode (*)(DMDALocalInfo*,void*,void*,void*))sourlf2d,NULL);
+    *ierr = PetscObjectSetFortranCallback((PetscObject)sdm, PETSC_FORTRAN_CALLBACK_SUBTYPE, &_cb.lf2d, (PetscVoidFunction)func, ctx);
+    if (*ierr) return;
+    *ierr = DMDASNESSetFunctionLocal(*da, *mode, (PetscErrorCode(*)(DMDALocalInfo *, void *, void *, void *))sourlf2d, NULL);
   } else if (dim == 3) {
-    *ierr = PetscObjectSetFortranCallback((PetscObject)sdm,PETSC_FORTRAN_CALLBACK_SUBTYPE,&_cb.lf3d,(PetscVoidFunction)func,ctx); if (*ierr) return;
-    *ierr = DMDASNESSetFunctionLocal(*da,*mode,(PetscErrorCode (*)(DMDALocalInfo*,void*,void*,void*))sourlf3d,NULL);
+    *ierr = PetscObjectSetFortranCallback((PetscObject)sdm, PETSC_FORTRAN_CALLBACK_SUBTYPE, &_cb.lf3d, (PetscVoidFunction)func, ctx);
+    if (*ierr) return;
+    *ierr = DMDASNESSetFunctionLocal(*da, *mode, (PetscErrorCode(*)(DMDALocalInfo *, void *, void *, void *))sourlf3d, NULL);
   } else if (dim == 1) {
-    *ierr = PetscObjectSetFortranCallback((PetscObject)sdm,PETSC_FORTRAN_CALLBACK_SUBTYPE,&_cb.lf1d,(PetscVoidFunction)func,ctx); if (*ierr) return;
-    *ierr = DMDASNESSetFunctionLocal(*da,*mode,(PetscErrorCode (*)(DMDALocalInfo*,void*,void*,void*))sourlf1d,NULL);
-  } else *ierr = 1;
+    *ierr = PetscObjectSetFortranCallback((PetscObject)sdm, PETSC_FORTRAN_CALLBACK_SUBTYPE, &_cb.lf1d, (PetscVoidFunction)func, ctx);
+    if (*ierr) return;
+    *ierr = DMDASNESSetFunctionLocal(*da, *mode, (PetscErrorCode(*)(DMDALocalInfo *, void *, void *, void *))sourlf1d, NULL);
+  } else *ierr = PETSC_ERR_ARG_OUTOFRANGE;
 }

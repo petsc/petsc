@@ -14,7 +14,7 @@ PetscErrorCode MatScale_NormalHermitian(Mat inA, PetscScalar scale)
 
   PetscFunctionBegin;
   a->scale *= scale;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatDiagonalScale_NormalHermitian(Mat inA, Vec left, Vec right)
@@ -38,7 +38,7 @@ PetscErrorCode MatDiagonalScale_NormalHermitian(Mat inA, Vec left, Vec right)
       PetscCall(VecPointwiseMult(a->right, right, a->right));
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatCreateSubMatrices_NormalHermitian(Mat mat, PetscInt n, const IS irow[], const IS icol[], MatReuse scall, Mat *submat[])
@@ -64,7 +64,7 @@ PetscErrorCode MatCreateSubMatrices_NormalHermitian(Mat mat, PetscInt n, const I
   PetscCall(ISDestroy(&row[0]));
   PetscCall(PetscFree(row));
   PetscCall(MatDestroySubMatrices(n, &suba));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatPermute_NormalHermitian(Mat A, IS rowp, IS colp, Mat *B)
@@ -81,7 +81,7 @@ PetscErrorCode MatPermute_NormalHermitian(Mat A, IS rowp, IS colp, Mat *B)
   PetscCall(ISDestroy(&row));
   PetscCall(MatCreateNormalHermitian(C, B));
   PetscCall(MatDestroy(&C));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatDuplicate_NormalHermitian(Mat A, MatDuplicateOption op, Mat *B)
@@ -95,7 +95,7 @@ PetscErrorCode MatDuplicate_NormalHermitian(Mat A, MatDuplicateOption op, Mat *B
   PetscCall(MatCreateNormalHermitian(C, B));
   PetscCall(MatDestroy(&C));
   if (op == MAT_COPY_VALUES) ((Mat_Normal *)(*B)->data)->scale = a->scale;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatCopy_NormalHermitian(Mat A, Mat B, MatStructure str)
@@ -110,7 +110,7 @@ PetscErrorCode MatCopy_NormalHermitian(Mat A, Mat B, MatStructure str)
   PetscCall(VecDestroy(&b->right));
   PetscCall(VecDestroy(&b->leftwork));
   PetscCall(VecDestroy(&b->rightwork));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatMult_NormalHermitian(Mat N, Vec x, Vec y)
@@ -129,7 +129,7 @@ PetscErrorCode MatMult_NormalHermitian(Mat N, Vec x, Vec y)
   PetscCall(MatMultHermitianTranspose(Na->A, Na->w, y));
   if (Na->left) PetscCall(VecPointwiseMult(y, Na->left, y));
   PetscCall(VecScale(y, Na->scale));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatMultHermitianAdd_Normal(Mat N, Vec v1, Vec v2, Vec v3)
@@ -153,7 +153,7 @@ PetscErrorCode MatMultHermitianAdd_Normal(Mat N, Vec v1, Vec v2, Vec v3)
   } else {
     PetscCall(MatMultHermitianTransposeAdd(Na->A, Na->w, v2, v3));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatMultHermitianTranspose_Normal(Mat N, Vec x, Vec y)
@@ -172,7 +172,7 @@ PetscErrorCode MatMultHermitianTranspose_Normal(Mat N, Vec x, Vec y)
   PetscCall(MatMultHermitianTranspose(Na->A, Na->w, y));
   if (Na->right) PetscCall(VecPointwiseMult(y, Na->right, y));
   PetscCall(VecScale(y, Na->scale));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatMultHermitianTransposeAdd_Normal(Mat N, Vec v1, Vec v2, Vec v3)
@@ -196,7 +196,7 @@ PetscErrorCode MatMultHermitianTransposeAdd_Normal(Mat N, Vec v1, Vec v2, Vec v3
   } else {
     PetscCall(MatMultHermitianTransposeAdd(Na->A, Na->w, v2, v3));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatDestroy_NormalHermitian(Mat N)
@@ -218,7 +218,7 @@ PetscErrorCode MatDestroy_NormalHermitian(Mat N)
 #if defined(PETSC_HAVE_HYPRE)
   PetscCall(PetscObjectComposeFunction((PetscObject)N, "MatConvert_normalh_hypre_C", NULL));
 #endif
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -250,7 +250,7 @@ PetscErrorCode MatGetDiagonal_NormalHermitian(Mat N, Vec v)
   PetscCall(VecRestoreArray(v, &values));
   PetscCall(PetscFree2(diag, work));
   PetscCall(VecScale(v, Na->scale));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatGetDiagonalBlock_NormalHermitian(Mat N, Mat *D)
@@ -262,7 +262,7 @@ PetscErrorCode MatGetDiagonalBlock_NormalHermitian(Mat N, Mat *D)
   PetscCall(MatGetDiagonalBlock(A, &M));
   PetscCall(MatCreateNormalHermitian(M, &Na->D));
   *D = Na->D;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatNormalGetMat_NormalHermitian(Mat A, Mat *M)
@@ -271,7 +271,7 @@ PetscErrorCode MatNormalGetMat_NormalHermitian(Mat A, Mat *M)
 
   PetscFunctionBegin;
   *M = Aa->A;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -296,7 +296,7 @@ PetscErrorCode MatNormalHermitianGetMat(Mat A, Mat *M)
   PetscValidType(A, 1);
   PetscValidPointer(M, 2);
   PetscUseMethod(A, "MatNormalGetMatHermitian_C", (Mat, Mat *), (A, M));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatConvert_NormalHermitian_AIJ(Mat A, MatType newtype, MatReuse reuse, Mat *newmat)
@@ -329,7 +329,7 @@ PetscErrorCode MatConvert_NormalHermitian_AIJ(Mat A, MatType newtype, MatReuse r
     PetscCall(MatHeaderReplace(A, &B));
   } else if (reuse == MAT_INITIAL_MATRIX) *newmat = B;
   PetscCall(MatConvert(*newmat, MATAIJ, MAT_INPLACE_MATRIX, newmat));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 #if defined(PETSC_HAVE_HYPRE)
@@ -340,7 +340,7 @@ PetscErrorCode MatConvert_NormalHermitian_HYPRE(Mat A, MatType type, MatReuse re
     PetscCall(MatConvert(A, MATAIJ, reuse, B));
     PetscCall(MatConvert(*B, type, MAT_INPLACE_MATRIX, B));
   } else PetscCall(MatConvert_Basic(A, type, reuse, B)); /* fall back to basic convert */
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 #endif
 
@@ -414,5 +414,5 @@ PetscErrorCode MatCreateNormalHermitian(Mat A, Mat *N)
 #if defined(PETSC_HAVE_DEVICE)
   PetscCall(MatBindToCPU(*N, A->boundtocpu));
 #endif
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

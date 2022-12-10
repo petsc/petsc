@@ -117,7 +117,7 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqBAIJMKL_SeqBAIJ(Mat A, MatType type, M
   PetscCall(PetscObjectChangeTypeName((PetscObject)B, MATSEQBAIJ));
 
   *newmat = B;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatDestroy_SeqBAIJMKL(Mat A)
@@ -136,7 +136,7 @@ static PetscErrorCode MatDestroy_SeqBAIJMKL(Mat A)
    * to destroy everything that remains. */
   PetscCall(PetscObjectChangeTypeName((PetscObject)A, MATSEQBAIJ));
   PetscCall(MatDestroy_SeqBAIJ(A));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatSeqBAIJMKL_create_mkl_handle(Mat A)
@@ -188,7 +188,7 @@ static PetscErrorCode MatSeqBAIJMKL_create_mkl_handle(Mat A)
     PetscCallMKL(mkl_sparse_optimize(baijmkl->bsrA));
     baijmkl->sparse_optimized = PETSC_TRUE;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatDuplicate_SeqBAIJMKL(Mat A, MatDuplicateOption op, Mat *M)
@@ -204,7 +204,7 @@ static PetscErrorCode MatDuplicate_SeqBAIJMKL(Mat A, MatDuplicateOption op, Mat 
   PetscCall(PetscMemcpy(baijmkl_dest, baijmkl, sizeof(Mat_SeqBAIJMKL)));
   baijmkl_dest->sparse_optimized = PETSC_FALSE;
   PetscCall(MatSeqBAIJMKL_create_mkl_handle(A));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatMult_SeqBAIJMKL_SpMV2(Mat A, Vec xx, Vec yy)
@@ -218,7 +218,7 @@ static PetscErrorCode MatMult_SeqBAIJMKL_SpMV2(Mat A, Vec xx, Vec yy)
   /* If there are no nonzero entries, zero yy and return immediately. */
   if (!a->nz) {
     PetscCall(VecSet(yy, 0.0));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   PetscCall(VecGetArrayRead(xx, &x));
@@ -235,7 +235,7 @@ static PetscErrorCode MatMult_SeqBAIJMKL_SpMV2(Mat A, Vec xx, Vec yy)
   PetscCall(PetscLogFlops(2.0 * a->bs2 * a->nz - a->nonzerorowcnt * A->rmap->bs));
   PetscCall(VecRestoreArrayRead(xx, &x));
   PetscCall(VecRestoreArray(yy, &y));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatMultTranspose_SeqBAIJMKL_SpMV2(Mat A, Vec xx, Vec yy)
@@ -249,7 +249,7 @@ static PetscErrorCode MatMultTranspose_SeqBAIJMKL_SpMV2(Mat A, Vec xx, Vec yy)
   /* If there are no nonzero entries, zero yy and return immediately. */
   if (!a->nz) {
     PetscCall(VecSet(yy, 0.0));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   PetscCall(VecGetArrayRead(xx, &x));
@@ -266,7 +266,7 @@ static PetscErrorCode MatMultTranspose_SeqBAIJMKL_SpMV2(Mat A, Vec xx, Vec yy)
   PetscCall(PetscLogFlops(2.0 * a->bs2 * a->nz - a->nonzerorowcnt * A->rmap->bs));
   PetscCall(VecRestoreArrayRead(xx, &x));
   PetscCall(VecRestoreArray(yy, &y));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatMultAdd_SeqBAIJMKL_SpMV2(Mat A, Vec xx, Vec yy, Vec zz)
@@ -282,7 +282,7 @@ static PetscErrorCode MatMultAdd_SeqBAIJMKL_SpMV2(Mat A, Vec xx, Vec yy, Vec zz)
   /* If there are no nonzero entries, set zz = yy and return immediately. */
   if (!a->nz) {
     PetscCall(VecCopy(yy, zz));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   PetscCall(VecGetArrayRead(xx, &x));
@@ -308,7 +308,7 @@ static PetscErrorCode MatMultAdd_SeqBAIJMKL_SpMV2(Mat A, Vec xx, Vec yy, Vec zz)
   PetscCall(PetscLogFlops(2.0 * a->bs2 * a->nz));
   PetscCall(VecRestoreArrayRead(xx, &x));
   PetscCall(VecRestoreArrayPair(yy, zz, &y, &z));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatMultTransposeAdd_SeqBAIJMKL_SpMV2(Mat A, Vec xx, Vec yy, Vec zz)
@@ -325,7 +325,7 @@ static PetscErrorCode MatMultTransposeAdd_SeqBAIJMKL_SpMV2(Mat A, Vec xx, Vec yy
   /* If there are no nonzero entries, set zz = yy and return immediately. */
   if (!a->nz) {
     PetscCall(VecCopy(yy, zz));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   PetscCall(VecGetArrayRead(xx, &x));
@@ -351,7 +351,7 @@ static PetscErrorCode MatMultTransposeAdd_SeqBAIJMKL_SpMV2(Mat A, Vec xx, Vec yy
   PetscCall(PetscLogFlops(2.0 * a->bs2 * a->nz));
   PetscCall(VecRestoreArrayRead(xx, &x));
   PetscCall(VecRestoreArrayPair(yy, zz, &y, &z));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatScale_SeqBAIJMKL(Mat inA, PetscScalar alpha)
@@ -359,7 +359,7 @@ static PetscErrorCode MatScale_SeqBAIJMKL(Mat inA, PetscScalar alpha)
   PetscFunctionBegin;
   PetscCall(MatScale_SeqBAIJ(inA, alpha));
   PetscCall(MatSeqBAIJMKL_create_mkl_handle(inA));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatDiagonalScale_SeqBAIJMKL(Mat A, Vec ll, Vec rr)
@@ -367,7 +367,7 @@ static PetscErrorCode MatDiagonalScale_SeqBAIJMKL(Mat A, Vec ll, Vec rr)
   PetscFunctionBegin;
   PetscCall(MatDiagonalScale_SeqBAIJ(A, ll, rr));
   PetscCall(MatSeqBAIJMKL_create_mkl_handle(A));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatAXPY_SeqBAIJMKL(Mat Y, PetscScalar a, Mat X, MatStructure str)
@@ -378,7 +378,7 @@ static PetscErrorCode MatAXPY_SeqBAIJMKL(Mat Y, PetscScalar a, Mat X, MatStructu
     /* MatAssemblyEnd() is not called if SAME_NONZERO_PATTERN, so we need to force update of the MKL matrix handle. */
     PetscCall(MatSeqBAIJMKL_create_mkl_handle(Y));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 /* MatConvert_SeqBAIJ_SeqBAIJMKL converts a SeqBAIJ matrix into a
  * SeqBAIJMKL matrix.  This routine is called by the MatCreate_SeqMKLBAIJ()
@@ -394,7 +394,7 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqBAIJ_SeqBAIJMKL(Mat A, MatType type, M
   if (reuse == MAT_INITIAL_MATRIX) PetscCall(MatDuplicate(A, MAT_COPY_VALUES, &B));
 
   PetscCall(PetscObjectTypeCompare((PetscObject)A, type, &sametype));
-  if (sametype) PetscFunctionReturn(0);
+  if (sametype) PetscFunctionReturn(PETSC_SUCCESS);
 
   PetscCall(PetscNew(&baijmkl));
   B->spptr = (void *)baijmkl;
@@ -410,13 +410,13 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqBAIJ_SeqBAIJMKL(Mat A, MatType type, M
 
   PetscCall(PetscObjectChangeTypeName((PetscObject)B, MATSEQBAIJMKL));
   *newmat = B;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatAssemblyEnd_SeqBAIJMKL(Mat A, MatAssemblyType mode)
 {
   PetscFunctionBegin;
-  if (mode == MAT_FLUSH_ASSEMBLY) PetscFunctionReturn(0);
+  if (mode == MAT_FLUSH_ASSEMBLY) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(MatAssemblyEnd_SeqBAIJ(A, mode));
   PetscCall(MatSeqBAIJMKL_create_mkl_handle(A));
   A->ops->destroy          = MatDestroy_SeqBAIJMKL;
@@ -428,7 +428,7 @@ static PetscErrorCode MatAssemblyEnd_SeqBAIJMKL(Mat A, MatAssemblyType mode)
   A->ops->diagonalscale    = MatDiagonalScale_SeqBAIJMKL;
   A->ops->axpy             = MatAXPY_SeqBAIJMKL;
   A->ops->duplicate        = MatDuplicate_SeqBAIJMKL;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -489,7 +489,7 @@ PetscErrorCode MatCreateSeqBAIJMKL(MPI_Comm comm, PetscInt bs, PetscInt m, Petsc
   PetscCall(MatSetSizes(*A, m, n, m, n));
   PetscCall(MatSetType(*A, MATSEQBAIJMKL));
   PetscCall(MatSeqBAIJSetPreallocation_SeqBAIJ(*A, bs, nz, (PetscInt *)nnz));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_EXTERN PetscErrorCode MatCreate_SeqBAIJMKL(Mat A)
@@ -497,5 +497,5 @@ PETSC_EXTERN PetscErrorCode MatCreate_SeqBAIJMKL(Mat A)
   PetscFunctionBegin;
   PetscCall(MatSetType(A, MATSEQBAIJ));
   PetscCall(MatConvert_SeqBAIJ_SeqBAIJMKL(A, MATSEQBAIJMKL, MAT_INPLACE_MATRIX, &A));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

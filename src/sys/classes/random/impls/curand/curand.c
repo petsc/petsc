@@ -13,7 +13,7 @@ PetscErrorCode PetscRandomSeed_CURAND(PetscRandom r)
 
   PetscFunctionBegin;
   PetscCallCURAND(curandSetPseudoRandomGeneratorSeed(curand->gen, r->seed));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_INTERN PetscErrorCode PetscRandomCurandScale_Private(PetscRandom, size_t, PetscReal *, PetscBool);
@@ -30,7 +30,7 @@ PetscErrorCode PetscRandomGetValuesReal_CURAND(PetscRandom r, PetscInt n, PetscR
   PetscCallCURAND(curandGenerateUniformDouble(curand->gen, val, nn));
 #endif
   if (r->iset) PetscCall(PetscRandomCurandScale_Private(r, nn, val, (PetscBool)(n < 0)));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PetscRandomGetValues_CURAND(PetscRandom r, PetscInt n, PetscScalar *val)
@@ -42,7 +42,7 @@ PetscErrorCode PetscRandomGetValues_CURAND(PetscRandom r, PetscInt n, PetscScala
 #else
   PetscCall(PetscRandomGetValuesReal_CURAND(r, n, val));
 #endif
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PetscRandomDestroy_CURAND(PetscRandom r)
@@ -52,7 +52,7 @@ PetscErrorCode PetscRandomDestroy_CURAND(PetscRandom r)
   PetscFunctionBegin;
   PetscCallCURAND(curandDestroyGenerator(curand->gen));
   PetscCall(PetscFree(r->data));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static struct _PetscRandomOps PetscRandomOps_Values = {
@@ -88,5 +88,5 @@ PETSC_EXTERN PetscErrorCode PetscRandomCreate_CURAND(PetscRandom r)
   PetscCall(PetscObjectChangeTypeName((PetscObject)r, PETSCCURAND));
   r->data = curand;
   PetscCall(PetscRandomSeed_CURAND(r));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

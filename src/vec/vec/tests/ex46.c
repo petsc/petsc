@@ -31,7 +31,7 @@ PetscErrorCode MyVecDump(const char fname[], PetscBool skippheader, PetscBool us
   if (isskip) PetscCall(PetscPrintf(comm, "*** PetscViewer[write] skipping header ***\n"));
 
   PetscCall(PetscViewerDestroy(&viewer));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MyVecLoad(const char fname[], PetscBool skippheader, PetscBool usempiio, Vec x)
@@ -58,7 +58,7 @@ PetscErrorCode MyVecLoad(const char fname[], PetscBool skippheader, PetscBool us
   if (ismpiio) PetscCall(PetscPrintf(comm, "*** PetscViewer[load] using MPI-IO ***\n"));
 
   PetscCall(PetscViewerDestroy(&viewer));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode VecFill(Vec x)
@@ -70,7 +70,7 @@ PetscErrorCode VecFill(Vec x)
   for (i = s; i < e; i++) PetscCall(VecSetValue(x, i, (PetscScalar)test_values[i], INSERT_VALUES));
   PetscCall(VecAssemblyBegin(x));
   PetscCall(VecAssemblyEnd(x));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode VecCompare(Vec a, Vec b)
@@ -104,7 +104,7 @@ PetscErrorCode VecCompare(Vec a, Vec b)
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, "  min(a-b) < 1.0e-10\n"));
   }
   PetscCall(VecDestroy(&ref));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode HeaderlessBinaryRead(const char name[])
@@ -139,7 +139,7 @@ PetscErrorCode HeaderlessBinaryRead(const char name[])
     }
     if (dataverified) PetscCall(PetscPrintf(PETSC_COMM_SELF, "Headerless read of data verified\n"));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode TestBinary(void)
@@ -166,7 +166,7 @@ PetscErrorCode TestBinary(void)
   PetscCall(VecDestroy(&x));
 
   PetscCall(HeaderlessBinaryRead("xH.pbvec"));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 #if defined(PETSC_HAVE_MPIIO)
@@ -194,7 +194,7 @@ PetscErrorCode TestBinaryMPIIO(void)
   PetscCall(VecDestroy(&x));
 
   PetscCall(HeaderlessBinaryRead("xHmpi.pbvec"));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 #endif
 

@@ -102,7 +102,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscCall(PetscOptionsString("-fname", "The output file", "ex5.c", options->fname, options->fname, sizeof(options->fname), NULL));
   PetscCall(PetscOptionsBool("-includes_constraints", "Flag for if global section is to include constrained DoFs or not", "ex5.c", options->includes_constraints, &options->includes_constraints, NULL));
   PetscOptionsEnd();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)

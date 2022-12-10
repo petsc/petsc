@@ -22,7 +22,7 @@ PetscErrorCode FormInitial(PetscReal t, Vec X, void *ctx)
   formInitial(&app->nx,&app->ny,&app->nz,app->h,&t,x);
   /**/
   PetscCall(VecRestoreArray(X,&x));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode FormFunction(TS ts, PetscReal t, Vec X, Vec Xdot,Vec F, void *ctx)
@@ -41,7 +41,7 @@ PetscErrorCode FormFunction(TS ts, PetscReal t, Vec X, Vec Xdot,Vec F, void *ctx
   PetscCall(VecRestoreArrayRead(X,&x));
   PetscCall(VecRestoreArrayRead(Xdot,&xdot));
   PetscCall(VecRestoreArray(F,&f));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode RunTest(int nx, int ny, int nz, int loops, double *wt)
@@ -97,7 +97,7 @@ PetscErrorCode RunTest(int nx, int ny, int nz, int loops, double *wt)
   PetscCall(VecDestroy(&f));
   PetscCall(TSDestroy(&ts));
 
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode GetInt(const char* name, PetscInt *v, PetscInt defv)
@@ -105,7 +105,7 @@ PetscErrorCode GetInt(const char* name, PetscInt *v, PetscInt defv)
   PetscFunctionBegin;
   *v = defv;
   PetscCall(PetscOptionsGetInt(NULL,NULL,name,v,NULL));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char *argv[])

@@ -34,7 +34,7 @@ static PetscErrorCode TSAdaptChoose_Basic(TSAdapt adapt, TS ts, PetscReal h, Pet
     *accept = PETSC_TRUE;
     *next_h = h;  /* Reuse the old step */
     *wlte   = -1; /* Weighted local truncation error was not evaluated */
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   /* Determine whether the step is accepted of rejected */
@@ -66,7 +66,7 @@ static PetscErrorCode TSAdaptChoose_Basic(TSAdapt adapt, TS ts, PetscReal h, Pet
 
   *next_h = PetscClipInterval(h_lte, adapt->dt_min, adapt->dt_max);
   *wlte   = enorm;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -80,5 +80,5 @@ PETSC_EXTERN PetscErrorCode TSAdaptCreate_Basic(TSAdapt adapt)
 {
   PetscFunctionBegin;
   adapt->ops->choose = TSAdaptChoose_Basic;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -118,7 +118,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_Htool(Mat);
 PetscErrorCode MatRegisterAll(void)
 {
   PetscFunctionBegin;
-  if (MatRegisterAllCalled) PetscFunctionReturn(0);
+  if (MatRegisterAllCalled) PetscFunctionReturn(PETSC_SUCCESS);
   MatRegisterAllCalled = PETSC_TRUE;
 
   PetscCall(MatRegister(MATMFFD, MatCreate_MFFD));
@@ -245,5 +245,5 @@ PetscErrorCode MatRegisterAll(void)
 #if defined(PETSC_HAVE_HTOOL)
   PetscCall(MatRegister(MATHTOOL, MatCreate_Htool));
 #endif
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

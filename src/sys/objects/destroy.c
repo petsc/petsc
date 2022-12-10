@@ -25,7 +25,7 @@ PetscErrorCode PetscComposedQuantitiesDestroy(PetscObject obj)
   PetscCall(PetscFree2(obj->intcomposeddata, obj->intcomposedstate));
   PetscCall(PetscFree2(obj->realcomposeddata, obj->realcomposedstate));
   PetscCall(PetscFree2(obj->scalarcomposeddata, obj->scalarcomposedstate));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -45,11 +45,11 @@ PetscErrorCode PetscComposedQuantitiesDestroy(PetscObject obj)
 PetscErrorCode PetscObjectDestroy(PetscObject *obj)
 {
   PetscFunctionBegin;
-  if (!obj || !*obj) PetscFunctionReturn(0);
+  if (!obj || !*obj) PetscFunctionReturn(PETSC_SUCCESS);
   PetscValidHeader(*obj, 1);
   PetscCheck((*obj)->bops->destroy, PETSC_COMM_SELF, PETSC_ERR_PLIB, "This PETSc object of class %s does not have a generic destroy routine", (*obj)->class_name);
   PetscCall((*(*obj)->bops->destroy)(obj));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -76,7 +76,7 @@ PetscErrorCode PetscObjectView(PetscObject obj, PetscViewer viewer)
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
 
   PetscCall((*obj->bops->view)(obj, viewer));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -119,7 +119,7 @@ PetscErrorCode PetscObjectViewFromOptions(PetscObject obj, PetscObject bobj, con
   const char       *prefix;
 
   PetscFunctionBegin;
-  if (incall) PetscFunctionReturn(0);
+  if (incall) PetscFunctionReturn(PETSC_SUCCESS);
   incall = PETSC_TRUE;
   prefix = bobj ? bobj->prefix : obj->prefix;
   PetscCall(PetscOptionsGetViewer(PetscObjectComm((PetscObject)obj), obj->options, prefix, optionname, &viewer, &format, &flg));
@@ -131,7 +131,7 @@ PetscErrorCode PetscObjectViewFromOptions(PetscObject obj, PetscObject bobj, con
     PetscCall(PetscViewerDestroy(&viewer));
   }
   incall = PETSC_FALSE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -164,7 +164,7 @@ PetscErrorCode PetscObjectTypeCompare(PetscObject obj, const char type_name[], P
     PetscValidCharPointer(type_name, 2);
     PetscCall(PetscStrcmp((char *)(obj->type_name), type_name, same));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -191,7 +191,7 @@ PetscErrorCode PetscObjectObjectTypeCompare(PetscObject obj1, PetscObject obj2, 
   PetscValidHeader(obj1, 1);
   PetscValidHeader(obj2, 2);
   PetscCall(PetscStrcmp((char *)(obj1->type_name), (char *)(obj2->type_name), same));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -222,7 +222,7 @@ PetscErrorCode PetscObjectBaseTypeCompare(PetscObject obj, const char type_name[
     PetscValidCharPointer(type_name, 2);
     PetscCall(PetscStrbeginswith((char *)(obj->type_name), type_name, same));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -249,7 +249,7 @@ PetscErrorCode PetscObjectTypeCompareAny(PetscObject obj, PetscBool *match, cons
   PetscFunctionBegin;
   PetscValidBoolPointer(match, 2);
   *match = PETSC_FALSE;
-  if (!obj) PetscFunctionReturn(0);
+  if (!obj) PetscFunctionReturn(PETSC_SUCCESS);
   va_start(Argp, type_name);
   while (type_name && type_name[0]) {
     PetscBool found;
@@ -261,7 +261,7 @@ PetscErrorCode PetscObjectTypeCompareAny(PetscObject obj, PetscBool *match, cons
     type_name = va_arg(Argp, const char *);
   }
   va_end(Argp);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -299,7 +299,7 @@ PetscErrorCode PetscObjectBaseTypeCompareAny(PetscObject obj, PetscBool *match, 
     type_name = va_arg(Argp, const char *);
   }
   va_end(Argp);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 #define MAXREGDESOBJS 256
@@ -331,7 +331,7 @@ PetscErrorCode PetscObjectRegisterDestroy(PetscObject obj)
   PetscValidHeader(obj, 1);
   PetscCheck(PetscObjectRegisterDestroy_Count < (int)PETSC_STATIC_ARRAY_LENGTH(PetscObjectRegisterDestroy_Objects), PETSC_COMM_SELF, PETSC_ERR_PLIB, "No more room in array, limit %zu \n recompile %s with larger value for " PetscStringize_(MAXREGDESOBJS), PETSC_STATIC_ARRAY_LENGTH(PetscObjectRegisterDestroy_Objects), __FILE__);
   PetscObjectRegisterDestroy_Objects[PetscObjectRegisterDestroy_Count++] = obj;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -349,7 +349,7 @@ PetscErrorCode PetscObjectRegisterDestroyAll(void)
   PetscFunctionBegin;
   for (PetscInt i = 0; i < PetscObjectRegisterDestroy_Count; i++) PetscCall(PetscObjectDestroy(&PetscObjectRegisterDestroy_Objects[i]));
   PetscObjectRegisterDestroy_Count = 0;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 #define MAXREGFIN 256
@@ -375,11 +375,11 @@ PetscErrorCode PetscRegisterFinalize(PetscErrorCode (*f)(void))
 {
   PetscFunctionBegin;
   for (PetscInt i = 0; i < PetscRegisterFinalize_Count; i++) {
-    if (f == PetscRegisterFinalize_Functions[i]) PetscFunctionReturn(0);
+    if (f == PetscRegisterFinalize_Functions[i]) PetscFunctionReturn(PETSC_SUCCESS);
   }
   PetscCheck(PetscRegisterFinalize_Count < (int)PETSC_STATIC_ARRAY_LENGTH(PetscRegisterFinalize_Functions), PETSC_COMM_SELF, PETSC_ERR_PLIB, "No more room in array, limit %zu \n recompile %s with larger value for " PetscStringize_(MAXREGFIN), PETSC_STATIC_ARRAY_LENGTH(PetscRegisterFinalize_Functions), __FILE__);
   PetscRegisterFinalize_Functions[PetscRegisterFinalize_Count++] = f;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -396,5 +396,5 @@ PetscErrorCode PetscRegisterFinalizeAll(void)
   PetscFunctionBegin;
   for (PetscInt i = 0; i < PetscRegisterFinalize_Count; i++) PetscCall((*PetscRegisterFinalize_Functions[i])());
   PetscRegisterFinalize_Count = 0;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

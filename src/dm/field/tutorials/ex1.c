@@ -20,7 +20,7 @@ static PetscErrorCode ViewResults(PetscViewer viewer, PetscInt N, PetscInt dim, 
   PetscCall(PetscRealView(N * dim, rD, viewer));
   PetscCall(PetscViewerASCIIPrintf(viewer, "rH:\n"));
   PetscCall(PetscRealView(N * dim * dim, rH, viewer));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TestEvaluate(DMField field, PetscInt n, PetscRandom rand)
@@ -55,7 +55,7 @@ static PetscErrorCode TestEvaluate(DMField field, PetscInt n, PetscRandom rand)
 
   PetscCall(PetscFree6(B, rB, D, rD, H, rH));
   PetscCall(VecDestroy(&points));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TestEvaluateFE(DMField field, PetscInt n, PetscInt cStart, PetscInt cEnd, PetscQuadrature quad, PetscRandom rand)
@@ -99,7 +99,7 @@ static PetscErrorCode TestEvaluateFE(DMField field, PetscInt n, PetscInt cStart,
 
   PetscCall(PetscFree6(B, rB, D, rD, H, rH));
   PetscCall(ISDestroy(&cellIS));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TestEvaluateFV(DMField field, PetscInt n, PetscInt cStart, PetscInt cEnd, PetscRandom rand)
@@ -140,7 +140,7 @@ static PetscErrorCode TestEvaluateFV(DMField field, PetscInt n, PetscInt cStart,
 
   PetscCall(PetscFree6(B, rB, D, rD, H, rH));
   PetscCall(ISDestroy(&cellIS));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode radiusSquared(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar u[], void *ctx)
@@ -151,7 +151,7 @@ static PetscErrorCode radiusSquared(PetscInt dim, PetscReal time, const PetscRea
   PetscFunctionBegin;
   for (i = 0; i < dim; i++) r2 += PetscSqr(x[i]);
   for (i = 0; i < Nf; i++) u[i] = (i + 1) * r2;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TestShellEvaluate(DMField field, Vec points, PetscDataType type, void *B, void *D, void *H)
@@ -203,7 +203,7 @@ static PetscErrorCode TestShellEvaluate(DMField field, Vec points, PetscDataType
   }
   PetscCall(VecRestoreArrayRead(points, &x));
   PetscCall(VecRestoreArrayRead(ctxVec, &mult));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TestShellDestroy(DMField field)
@@ -213,7 +213,7 @@ static PetscErrorCode TestShellDestroy(DMField field)
   PetscFunctionBegin;
   PetscCall(DMFieldShellGetContext(field, &ctxVec));
   PetscCall(VecDestroy(&ctxVec));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)

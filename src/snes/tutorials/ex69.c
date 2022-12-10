@@ -44,13 +44,13 @@ static PetscErrorCode zero(PetscInt dim, PetscReal time, const PetscReal coords[
 {
   PetscInt c;
   for (c = 0; c < Nc; ++c) u[c] = 0.0;
-  return 0;
+  return PETSC_SUCCESS;
 }
 static PetscErrorCode one(PetscInt dim, PetscReal time, const PetscReal coords[], PetscInt Nc, PetscScalar *u, void *ctx)
 {
   PetscInt c;
   for (c = 0; c < Nc; ++c) u[c] = 1.0;
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 static void f0_u(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
@@ -651,7 +651,7 @@ static PetscErrorCode SolKxSolution(const PetscReal pos[], PetscReal m, PetscInt
     gamma[1] = (sum4) / (2.0 * Z);
     gamma[2] = (sum6 + sum5) / (2.0 * Z);
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode SolKxSolutionVelocity(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar v[], void *ctx)
@@ -660,7 +660,7 @@ static PetscErrorCode SolKxSolutionVelocity(PetscInt dim, PetscReal time, const 
 
   PetscFunctionBegin;
   PetscCall(SolKxSolution(x, s->m, s->n, s->B, v, NULL, NULL, NULL, NULL));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode SolKxSolutionPressure(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar p[], void *ctx)
@@ -669,7 +669,7 @@ static PetscErrorCode SolKxSolutionPressure(PetscInt dim, PetscReal time, const 
 
   PetscFunctionBegin;
   PetscCall(SolKxSolution(x, s->m, s->n, s->B, NULL, p, NULL, NULL, NULL));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -2954,7 +2954,7 @@ static PetscErrorCode SolCxSolution(const PetscReal pos[], PetscReal m, PetscInt
     gamma[1] = (sum4) / (2.0 * Z);
     gamma[2] = (sum6 + sum5) / (2.0 * Z);
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode SolCxSolutionVelocity(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar v[], void *ctx)
@@ -2963,7 +2963,7 @@ static PetscErrorCode SolCxSolutionVelocity(PetscInt dim, PetscReal time, const 
 
   PetscFunctionBegin;
   PetscCall(SolCxSolution(x, s->m, s->n, s->xc, s->etaA, s->etaB, v, NULL, NULL, NULL, NULL));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode SolCxSolutionPressure(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar p[], void *ctx)
@@ -2972,7 +2972,7 @@ static PetscErrorCode SolCxSolutionPressure(PetscInt dim, PetscReal time, const 
 
   PetscFunctionBegin;
   PetscCall(SolCxSolution(x, s->m, s->n, s->xc, s->etaA, s->etaB, NULL, p, NULL, NULL, NULL));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
@@ -2986,7 +2986,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscCall(PetscOptionsEList("-sol_type", "Type of exact solution", "ex69.c", solTypes, NUM_SOL_TYPES, solTypes[options->solType], &sol, NULL));
   options->solType = (SolutionType)sol;
   PetscOptionsEnd();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode SetUpParameters(AppCtx *user)
@@ -3017,7 +3017,7 @@ static PetscErrorCode SetUpParameters(AppCtx *user)
   }
   PetscCall(PetscBagSetFromOptions(bag));
   PetscCall(PetscBagViewFromOptions(bag, NULL, "-param_view"));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Make split labels so that we can have corners in multiple labels */
@@ -3038,7 +3038,7 @@ static PetscErrorCode CreateSplitLabels(DM dm)
     PetscCall(DMLabelInsertIS(label, is, 1));
     PetscCall(ISDestroy(&is));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
@@ -3055,7 +3055,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     PetscCall(DMGetCoarseDM(cdm, &cdm));
   }
   PetscCall(DMViewFromOptions(*dm, NULL, "-dm_view"));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode SetupProblem(DM dm, AppCtx *user)
@@ -3154,7 +3154,7 @@ static PetscErrorCode SetupProblem(DM dm, AppCtx *user)
   comp = 0;
   PetscCall(DMGetLabel(dm, "markerLeft", &label));
   PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "wallL", label, 1, &id, 0, 1, &comp, (void (*)(void))exactFunc, NULL, ctx, NULL));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode CreatePressureNullSpace(DM dm, PetscInt origField, PetscInt field, MatNullSpace *nullspace)
@@ -3185,7 +3185,7 @@ static PetscErrorCode CreatePressureNullSpace(DM dm, PetscInt origField, PetscIn
     PetscCall(PetscObjectCompose(pressure, "nullspace", (PetscObject)nullspacePres));
     PetscCall(MatNullSpaceDestroy(&nullspacePres));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
@@ -3228,7 +3228,7 @@ static PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
     PetscCall(PetscObjectCompose(pressure, "nullspace", (PetscObject)nullSpacePres));
     PetscCall(MatNullSpaceDestroy(&nullSpacePres));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Add a vector in the nullspace to make the continuum integral 0.
@@ -3258,7 +3258,7 @@ static PetscErrorCode CorrectDiscretePressure(DM dm, MatNullSpace nullspace, Vec
   PetscCall(VecAXPY(u, -intc[1] / intn[1], nullvecs[0]));
   PetscCall(DMPlexComputeIntegralFEM(dm, u, intc, user));
   PetscCheck(PetscAbsScalar(intc[1]) <= PETSC_SMALL, comm, PETSC_ERR_ARG_WRONG, "Continuum integral of pressure after correction: %g", (double)PetscRealPart(intc[1]));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode SNESConvergenceCorrectPressure(SNES snes, PetscInt it, PetscReal xnorm, PetscReal gnorm, PetscReal f, SNESConvergedReason *reason, void *user)
@@ -3278,7 +3278,7 @@ static PetscErrorCode SNESConvergenceCorrectPressure(SNES snes, PetscInt it, Pet
     PetscCheck(nullspace, PetscObjectComm((PetscObject)snes), PETSC_ERR_ARG_WRONG, "SNES Jacobian has no attached null space");
     PetscCall(CorrectDiscretePressure(dm, nullspace, u, (AppCtx *)user));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)

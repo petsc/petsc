@@ -28,5 +28,5 @@ PetscErrorCode DMDACreatePF(DM da, PF *pf)
   PetscValidHeaderSpecificType(da, DM_CLASSID, 1, DMDA);
   PetscValidPointer(pf, 2);
   PetscCall(PFCreate(PetscObjectComm((PetscObject)da), da->dim, dd->w, pf));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

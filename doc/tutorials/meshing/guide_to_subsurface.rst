@@ -71,7 +71,7 @@ Adaptive refinement of simplicial meshes is somewhat tricky when we demand that 
 
 .. literalinclude:: /../src/dm/impls/plex/tutorials/ex10.c
    :start-at: static PetscErrorCode CreateDomainLabel(
-   :end-at: PetscFunctionReturn(0);
+   :end-at: PetscFunctionReturn(PETSC_SUCCESS);
    :append: }
 
 or you can label the mesh using a GUI, such as GMsh, and PETSc will read the label values from the input file.

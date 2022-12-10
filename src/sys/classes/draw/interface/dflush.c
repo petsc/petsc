@@ -21,5 +21,5 @@ PetscErrorCode PetscDrawFlush(PetscDraw draw)
   PetscValidHeaderSpecific(draw, PETSC_DRAW_CLASSID, 1);
   PetscTryTypeMethod(draw, flush);
   if (draw->saveonflush) PetscCall(PetscDrawSave(draw));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

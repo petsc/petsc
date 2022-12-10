@@ -17,7 +17,7 @@ PetscErrorCode f(PetscReal t, Vec U, Vec V, Vec F)
 {
   PetscFunctionBeginUser;
   PetscCall(VecWAXPY(F, 1.0, U, V));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -28,7 +28,7 @@ PetscErrorCode F(PetscReal t, Vec U, Vec V, Vec F)
 {
   PetscFunctionBeginUser;
   PetscCall(VecWAXPY(F, -1.0, V, U));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 typedef struct {
@@ -110,7 +110,7 @@ PetscErrorCode TSFunctionRHS(TS ts, PetscReal t, Vec UV, Vec F, void *actx)
   PetscCall((*ctx->f)(t, ctx->U, ctx->V, ctx->UF));
   PetscCall(VecScatterBegin(ctx->scatterU, ctx->UF, F, INSERT_VALUES, SCATTER_FORWARD));
   PetscCall(VecScatterEnd(ctx->scatterU, ctx->UF, F, INSERT_VALUES, SCATTER_FORWARD));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -130,5 +130,5 @@ PetscErrorCode TSFunctionI(TS ts, PetscReal t, Vec UV, Vec UVdot, Vec F, void *a
   PetscCall((*ctx->F)(t, ctx->U, ctx->V, ctx->VF));
   PetscCall(VecScatterBegin(ctx->scatterV, ctx->VF, F, INSERT_VALUES, SCATTER_FORWARD));
   PetscCall(VecScatterEnd(ctx->scatterV, ctx->VF, F, INSERT_VALUES, SCATTER_FORWARD));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

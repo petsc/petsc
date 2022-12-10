@@ -168,7 +168,7 @@ PetscErrorCode MatSetUpMultiply_MPISBAIJ(Mat mat)
   PetscCall(ISDestroy(&from));
   PetscCall(ISDestroy(&to));
   PetscCall(PetscFree2(sgarray, ec_owner));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -267,5 +267,5 @@ PetscErrorCode MatDisAssemble_MPISBAIJ(Mat A)
   baij->B = Bnew;
 
   A->was_assembled = PETSC_FALSE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

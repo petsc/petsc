@@ -76,7 +76,7 @@ PetscErrorCode MatSeqBAIJSetNumericFactorization(Mat fact, PetscBool natural)
       break;
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatSeqBAIJSetNumericFactorization_inplace(Mat inA, PetscBool natural)
@@ -172,7 +172,7 @@ PetscErrorCode MatSeqBAIJSetNumericFactorization_inplace(Mat inA, PetscBool natu
       break;
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -337,7 +337,7 @@ PetscErrorCode MatLUFactorSymbolic_SeqBAIJ(Mat B, Mat A, IS isrow, IS iscol, con
   both_identity = (PetscBool)(row_identity && col_identity);
 
   PetscCall(MatSeqBAIJSetNumericFactorization(B, both_identity));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatLUFactorSymbolic_SeqBAIJ_inplace(Mat B, Mat A, IS isrow, IS iscol, const MatFactorInfo *info)
@@ -491,5 +491,5 @@ PetscErrorCode MatLUFactorSymbolic_SeqBAIJ_inplace(Mat B, Mat A, IS isrow, IS is
   both_identity = (PetscBool)(row_identity && col_identity);
 
   PetscCall(MatSeqBAIJSetNumericFactorization_inplace(B, both_identity));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

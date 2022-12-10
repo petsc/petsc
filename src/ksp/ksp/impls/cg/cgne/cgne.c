@@ -14,7 +14,7 @@ static PetscErrorCode KSPCGSetType_CGNE(KSP ksp, KSPCGType type)
 
   PetscFunctionBegin;
   cg->type = type;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -42,7 +42,7 @@ static PetscErrorCode KSPSetUp_CGNE(KSP ksp)
     ksp->ops->computeextremesingularvalues = KSPComputeExtremeSingularValues_CG;
     ksp->ops->computeeigenvalues           = KSPComputeEigenvalues_CG;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -119,7 +119,7 @@ static PetscErrorCode KSPSolve_CGNE(KSP ksp)
   PetscCall(KSPMonitor(ksp, 0, dp));
   ksp->rnorm = dp;
   PetscCall((*ksp->converged)(ksp, 0, dp, &ksp->reason, ksp->cnvP)); /* test for convergence */
-  if (ksp->reason) PetscFunctionReturn(0);
+  if (ksp->reason) PetscFunctionReturn(PETSC_SUCCESS);
 
   i = 0;
   do {
@@ -186,7 +186,7 @@ static PetscErrorCode KSPSolve_CGNE(KSP ksp)
     i++;
   } while (i < ksp->max_it);
   if (i >= ksp->max_it) ksp->reason = KSP_DIVERGED_ITS;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -267,5 +267,5 @@ PETSC_EXTERN PetscErrorCode KSPCreate_CGNE(KSP ksp)
       it. (Sort of like a dynamic member function that can be added at run time
   */
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPCGSetType_C", KSPCGSetType_CGNE));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

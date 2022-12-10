@@ -57,7 +57,7 @@ static PetscErrorCode TaoDestroy_LCL(Tao tao)
   PetscCall(MatDestroy(&lclP->R));
   PetscCall(KSPDestroy(&tao->ksp));
   PetscCall(PetscFree(tao->data));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TaoSetFromOptions_LCL(Tao tao, PetscOptionItems *PetscOptionsObject)
@@ -82,12 +82,12 @@ static PetscErrorCode TaoSetFromOptions_LCL(Tao tao, PetscOptionItems *PetscOpti
   PetscOptionsHeadEnd();
   PetscCall(TaoLineSearchSetFromOptions(tao->linesearch));
   PetscCall(MatSetFromOptions(lclP->R));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TaoView_LCL(Tao tao, PetscViewer viewer)
 {
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 static PetscErrorCode TaoSetup_LCL(Tao tao)
@@ -166,7 +166,7 @@ static PetscErrorCode TaoSetup_LCL(Tao tao)
   PetscCall(VecScatterCreate(tao->solution, tao->design_is, lclP->V, is_design, &lclP->design_scatter));
   PetscCall(ISDestroy(&is_state));
   PetscCall(ISDestroy(&is_design));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TaoSolve_LCL(Tao tao)
@@ -548,7 +548,7 @@ static PetscErrorCode TaoSolve_LCL(Tao tao)
     PetscCall(TaoMonitor(tao, tao->niter, f, mnorm, cnorm, step));
     PetscUseTypeMethod(tao, convergencetest, tao->cnvP);
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -606,7 +606,7 @@ PETSC_EXTERN PetscErrorCode TaoCreate_LCL(Tao tao)
 
   PetscCall(MatCreate(((PetscObject)tao)->comm, &lclP->R));
   PetscCall(MatSetType(lclP->R, MATLMVMBFGS));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode LCLComputeLagrangianAndGradient(TaoLineSearch ls, Vec X, PetscReal *f, Vec G, void *ptr)
@@ -653,7 +653,7 @@ static PetscErrorCode LCLComputeLagrangianAndGradient(TaoLineSearch ls, Vec X, P
 
   f[0] = lclP->lgn;
   PetscCall(VecCopy(lclP->GL, G));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode LCLComputeAugmentedLagrangianAndGradient(TaoLineSearch ls, Vec X, PetscReal *f, Vec G, void *ptr)
@@ -694,7 +694,7 @@ static PetscErrorCode LCLComputeAugmentedLagrangianAndGradient(TaoLineSearch ls,
 
   f[0] = lclP->aug;
   PetscCall(VecCopy(lclP->GAugL, G));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode LCLGather(TAO_LCL *lclP, Vec u, Vec v, Vec x)
@@ -704,7 +704,7 @@ PetscErrorCode LCLGather(TAO_LCL *lclP, Vec u, Vec v, Vec x)
   PetscCall(VecScatterEnd(lclP->state_scatter, u, x, INSERT_VALUES, SCATTER_REVERSE));
   PetscCall(VecScatterBegin(lclP->design_scatter, v, x, INSERT_VALUES, SCATTER_REVERSE));
   PetscCall(VecScatterEnd(lclP->design_scatter, v, x, INSERT_VALUES, SCATTER_REVERSE));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 PetscErrorCode LCLScatter(TAO_LCL *lclP, Vec x, Vec u, Vec v)
 {
@@ -713,5 +713,5 @@ PetscErrorCode LCLScatter(TAO_LCL *lclP, Vec x, Vec u, Vec v)
   PetscCall(VecScatterEnd(lclP->state_scatter, x, u, INSERT_VALUES, SCATTER_FORWARD));
   PetscCall(VecScatterBegin(lclP->design_scatter, x, v, INSERT_VALUES, SCATTER_FORWARD));
   PetscCall(VecScatterEnd(lclP->design_scatter, x, v, INSERT_VALUES, SCATTER_FORWARD));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

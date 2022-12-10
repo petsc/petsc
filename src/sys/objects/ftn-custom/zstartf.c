@@ -48,34 +48,34 @@ PETSC_EXTERN void petscsetcomm_(MPI_Fint*,MPI_Fint*);
 @*/
 PetscErrorCode PetscInitializeFortran(void)
 {
-  MPI_Fint c1=0,c2=0;
+  MPI_Fint c1 = 0, c2 = 0;
 
-  if (PETSC_COMM_WORLD) c1 =  MPI_Comm_c2f(PETSC_COMM_WORLD);
-  c2 =  MPI_Comm_c2f(PETSC_COMM_SELF);
+  if (PETSC_COMM_WORLD) c1 = MPI_Comm_c2f(PETSC_COMM_WORLD);
+  c2 = MPI_Comm_c2f(PETSC_COMM_SELF);
   petscsetmoduleblock_();
-  petscsetcomm_(&c1,&c2);
+  petscsetcomm_(&c1, &c2);
 
   {
-    MPI_Fint freal,fscalar,fsum,fint;
+    MPI_Fint freal, fscalar, fsum, fint;
     freal   = MPI_Type_c2f(MPIU_REAL);
     fscalar = MPI_Type_c2f(MPIU_SCALAR);
     fsum    = MPI_Op_c2f(MPIU_SUM);
     fint    = MPI_Type_c2f(MPIU_INT);
-    petscsetmoduleblockmpi_(&freal,&fscalar,&fsum,&fint);
+    petscsetmoduleblockmpi_(&freal, &fscalar, &fsum, &fint);
   }
 
   {
-    PetscReal pi = PETSC_PI;
+    PetscReal pi      = PETSC_PI;
     PetscReal maxreal = PETSC_MAX_REAL;
     PetscReal minreal = PETSC_MIN_REAL;
-    PetscReal eps = PETSC_MACHINE_EPSILON;
-    PetscReal seps = PETSC_SQRT_MACHINE_EPSILON;
-    PetscReal small = PETSC_SMALL;
-    PetscReal pinf = PETSC_INFINITY;
-    PetscReal pninf = PETSC_NINFINITY;
-    petscsetmoduleblocknumeric_(&pi,&maxreal,&minreal,&eps,&seps,&small,&pinf,&pninf);
+    PetscReal eps     = PETSC_MACHINE_EPSILON;
+    PetscReal seps    = PETSC_SQRT_MACHINE_EPSILON;
+    PetscReal small   = PETSC_SMALL;
+    PetscReal pinf    = PETSC_INFINITY;
+    PetscReal pninf   = PETSC_NINFINITY;
+    petscsetmoduleblocknumeric_(&pi, &maxreal, &minreal, &eps, &seps, &small, &pinf, &pninf);
   }
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 PETSC_EXTERN void petscinitializefortran_(int *ierr)

@@ -55,7 +55,7 @@ PetscErrorCode ISGetPointRange(IS pointIS, PetscInt *pStart, PetscInt *pEnd, con
   if (isStride) PetscCall(ISStrideGetInfo(pointIS, pStart, &step));
   *pEnd = *pStart + numCells;
   if (!isStride || step != 1) PetscCall(ISGetIndices(pointIS, points));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -82,7 +82,7 @@ PetscErrorCode ISRestorePointRange(IS pointIS, PetscInt *pStart, PetscInt *pEnd,
   PetscCall(PetscObjectTypeCompare((PetscObject)pointIS, ISSTRIDE, &isStride));
   if (isStride) PetscCall(ISStrideGetInfo(pointIS, pStart, &step));
   if (!isStride || step != 1) PetscCall(ISGetIndices(pointIS, points));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -116,7 +116,7 @@ PetscErrorCode ISGetPointSubrange(IS subpointIS, PetscInt pStart, PetscInt pEnd,
     PetscCall(ISSetType(subpointIS, ISSTRIDE));
     PetscCall(ISStrideSetStride(subpointIS, pEnd - pStart, pStart, 1));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* -----------------------------------------------------------------------------------------*/
@@ -131,7 +131,7 @@ static PetscErrorCode ISGlobalToLocalMappingSetUp(ISLocalToGlobalMapping mapping
   PetscInt i, *idx = mapping->indices, n = mapping->n, end, start;
 
   PetscFunctionBegin;
-  if (mapping->data) PetscFunctionReturn(0);
+  if (mapping->data) PetscFunctionReturn(PETSC_SUCCESS);
   end   = 0;
   start = PETSC_MAX_INT;
 
@@ -154,7 +154,7 @@ static PetscErrorCode ISGlobalToLocalMappingSetUp(ISLocalToGlobalMapping mapping
     }
   }
   PetscTryTypeMethod(mapping, globaltolocalmappingsetup);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode ISGlobalToLocalMappingSetUp_Basic(ISLocalToGlobalMapping mapping)
@@ -174,7 +174,7 @@ static PetscErrorCode ISGlobalToLocalMappingSetUp_Basic(ISLocalToGlobalMapping m
     globals[idx[i] - start] = i;
   }
   mapping->data = (void *)map;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode ISGlobalToLocalMappingSetUp_Hash(ISLocalToGlobalMapping mapping)
@@ -190,7 +190,7 @@ static PetscErrorCode ISGlobalToLocalMappingSetUp_Hash(ISLocalToGlobalMapping ma
     PetscCall(PetscHMapISet(map->globalht, idx[i], i));
   }
   mapping->data = (void *)map;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode ISLocalToGlobalMappingDestroy_Basic(ISLocalToGlobalMapping mapping)
@@ -198,10 +198,10 @@ static PetscErrorCode ISLocalToGlobalMappingDestroy_Basic(ISLocalToGlobalMapping
   ISLocalToGlobalMapping_Basic *map = (ISLocalToGlobalMapping_Basic *)mapping->data;
 
   PetscFunctionBegin;
-  if (!map) PetscFunctionReturn(0);
+  if (!map) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(PetscFree(map->globals));
   PetscCall(PetscFree(mapping->data));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode ISLocalToGlobalMappingDestroy_Hash(ISLocalToGlobalMapping mapping)
@@ -209,10 +209,10 @@ static PetscErrorCode ISLocalToGlobalMappingDestroy_Hash(ISLocalToGlobalMapping 
   ISLocalToGlobalMapping_Hash *map = (ISLocalToGlobalMapping_Hash *)mapping->data;
 
   PetscFunctionBegin;
-  if (!map) PetscFunctionReturn(0);
+  if (!map) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(PetscHMapIDestroy(&map->globalht));
   PetscCall(PetscFree(mapping->data));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 #define GTOLTYPE _Basic
@@ -278,7 +278,7 @@ PetscErrorCode ISLocalToGlobalMappingDuplicate(ISLocalToGlobalMapping ltog, ISLo
   PetscCall(ISLocalToGlobalMappingCreate(PetscObjectComm((PetscObject)ltog), ltog->bs, ltog->n, ltog->indices, PETSC_COPY_VALUES, nltog));
   PetscCall(ISLocalToGlobalMappingGetType(ltog, &l2gtype));
   PetscCall(ISLocalToGlobalMappingSetType(*nltog, l2gtype));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -302,7 +302,7 @@ PetscErrorCode ISLocalToGlobalMappingGetSize(ISLocalToGlobalMapping mapping, Pet
   PetscValidHeaderSpecific(mapping, IS_LTOGM_CLASSID, 1);
   PetscValidIntPointer(n, 2);
   *n = mapping->bs * mapping->n;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -324,7 +324,7 @@ PetscErrorCode ISLocalToGlobalMappingViewFromOptions(ISLocalToGlobalMapping A, P
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, IS_LTOGM_CLASSID, 1);
   PetscCall(PetscObjectViewFromOptions((PetscObject)A, obj, name));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -364,7 +364,7 @@ PetscErrorCode ISLocalToGlobalMappingView(ISLocalToGlobalMapping mapping, PetscV
     PetscCall(PetscViewerFlush(viewer));
     PetscCall(PetscViewerASCIIPopSynchronized(viewer));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -410,7 +410,7 @@ PetscErrorCode ISLocalToGlobalMappingCreateIS(IS is, ISLocalToGlobalMapping *map
     PetscCall(ISLocalToGlobalMappingCreate(comm, bs, n / bs, indices, PETSC_COPY_VALUES, mapping));
     PetscCall(ISBlockRestoreIndices(is, &indices));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -457,7 +457,7 @@ PetscErrorCode ISLocalToGlobalMappingCreateSF(PetscSF sf, PetscInt start, ISLoca
   PetscCall(PetscSFBcastEnd(sf, MPIU_INT, globals, ltog, MPI_REPLACE));
   PetscCall(ISLocalToGlobalMappingCreate(comm, 1, maxlocal, ltog, PETSC_OWN_POINTER, mapping));
   PetscCall(PetscFree(globals));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -482,7 +482,7 @@ PetscErrorCode ISLocalToGlobalMappingSetBlockSize(ISLocalToGlobalMapping mapping
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mapping, IS_LTOGM_CLASSID, 1);
   PetscCheck(bs >= 1, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Invalid block size %" PetscInt_FMT, bs);
-  if (bs == mapping->bs) PetscFunctionReturn(0);
+  if (bs == mapping->bs) PetscFunctionReturn(PETSC_SUCCESS);
   on  = mapping->n;
   obs = mapping->bs;
   oid = mapping->indices;
@@ -530,7 +530,7 @@ PetscErrorCode ISLocalToGlobalMappingSetBlockSize(ISLocalToGlobalMapping mapping
   mapping->info_cached = PETSC_FALSE;
 
   PetscTryTypeMethod(mapping, destroy);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -554,7 +554,7 @@ PetscErrorCode ISLocalToGlobalMappingGetBlockSize(ISLocalToGlobalMapping mapping
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mapping, IS_LTOGM_CLASSID, 1);
   *bs = mapping->bs;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -612,7 +612,7 @@ PetscErrorCode ISLocalToGlobalMappingCreate(MPI_Comm comm, PetscInt bs, PetscInt
   } else if (mode == PETSC_USE_POINTER) {
     (*mapping)->indices = (PetscInt *)indices;
   } else SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "Invalid mode %d", mode);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscFunctionList ISLocalToGlobalMappingList = NULL;
@@ -643,7 +643,7 @@ PetscErrorCode ISLocalToGlobalMappingSetFromOptions(ISLocalToGlobalMapping mappi
   PetscCall(PetscOptionsFList("-islocaltoglobalmapping_type", "ISLocalToGlobalMapping method", "ISLocalToGlobalMappingSetType", ISLocalToGlobalMappingList, (char *)(((PetscObject)mapping)->type_name) ? ((PetscObject)mapping)->type_name : defaulttype, type, 256, &flg));
   if (flg) PetscCall(ISLocalToGlobalMappingSetType(mapping, type));
   PetscOptionsEnd();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -662,11 +662,11 @@ PetscErrorCode ISLocalToGlobalMappingSetFromOptions(ISLocalToGlobalMapping mappi
 PetscErrorCode ISLocalToGlobalMappingDestroy(ISLocalToGlobalMapping *mapping)
 {
   PetscFunctionBegin;
-  if (!*mapping) PetscFunctionReturn(0);
+  if (!*mapping) PetscFunctionReturn(PETSC_SUCCESS);
   PetscValidHeaderSpecific((*mapping), IS_LTOGM_CLASSID, 1);
   if (--((PetscObject)(*mapping))->refct > 0) {
     *mapping = NULL;
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
   if ((*mapping)->dealloc_indices) PetscCall(PetscFree((*mapping)->indices));
   PetscCall(PetscFree((*mapping)->info_procs));
@@ -683,7 +683,7 @@ PetscErrorCode ISLocalToGlobalMappingDestroy(ISLocalToGlobalMapping *mapping)
   if ((*mapping)->ops->destroy) PetscCall((*(*mapping)->ops->destroy)(*mapping));
   PetscCall(PetscHeaderDestroy(mapping));
   *mapping = NULL;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -724,7 +724,7 @@ PetscErrorCode ISLocalToGlobalMappingApplyIS(ISLocalToGlobalMapping mapping, IS 
   PetscCall(ISLocalToGlobalMappingApply(mapping, n, idxin, idxout));
   PetscCall(ISRestoreIndices(is, &idxin));
   PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject)is), n, idxout, PETSC_OWN_POINTER, newis));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -779,7 +779,7 @@ PetscErrorCode ISLocalToGlobalMappingApply(ISLocalToGlobalMapping mapping, Petsc
       out[i] = idx[in[i] / bs] * bs + (in[i] % bs);
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -825,7 +825,7 @@ PetscErrorCode ISLocalToGlobalMappingApplyBlock(ISLocalToGlobalMapping mapping, 
     PetscCheck(in[i] < Nmax, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Local block index %" PetscInt_FMT " too large %" PetscInt_FMT " (max) at %" PetscInt_FMT, in[i], Nmax - 1, i);
     out[i] = idx[in[i]];
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -871,7 +871,7 @@ PetscErrorCode ISGlobalToLocalMappingApply(ISLocalToGlobalMapping mapping, ISGlo
   PetscValidHeaderSpecific(mapping, IS_LTOGM_CLASSID, 1);
   if (!mapping->data) PetscCall(ISGlobalToLocalMappingSetUp(mapping));
   PetscUseTypeMethod(mapping, globaltolocalmappingapply, type, n, idx, nout, idxout);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -919,7 +919,7 @@ PetscErrorCode ISGlobalToLocalMappingApplyIS(ISLocalToGlobalMapping mapping, ISG
   PetscCall(ISGlobalToLocalMappingApply(mapping, type, n, idxin, &nout, idxout));
   PetscCall(ISRestoreIndices(is, &idxin));
   PetscCall(ISCreateGeneral(PETSC_COMM_SELF, nout, idxout, PETSC_OWN_POINTER, newis));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -965,7 +965,7 @@ PetscErrorCode ISGlobalToLocalMappingApplyBlock(ISLocalToGlobalMapping mapping, 
   PetscValidHeaderSpecific(mapping, IS_LTOGM_CLASSID, 1);
   if (!mapping->data) PetscCall(ISGlobalToLocalMappingSetUp(mapping));
   PetscUseTypeMethod(mapping, globaltolocalmappingapplyblock, type, n, idx, nout, idxout);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1011,7 +1011,7 @@ PetscErrorCode ISLocalToGlobalMappingGetBlockInfo(ISLocalToGlobalMapping mapping
   } else {
     PetscCall(ISLocalToGlobalMappingGetBlockInfo_Private(mapping, nproc, procs, numprocs, indices));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode ISLocalToGlobalMappingGetBlockInfo_Private(ISLocalToGlobalMapping mapping, PetscInt *nproc, PetscInt *procs[], PetscInt *numprocs[], PetscInt **indices[])
@@ -1044,7 +1044,7 @@ static PetscErrorCode ISLocalToGlobalMappingGetBlockInfo_Private(ISLocalToGlobal
     mapping->info_numprocs = *numprocs;
     mapping->info_indices  = *indices;
     mapping->info_cached   = PETSC_TRUE;
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   PetscCall(PetscOptionsGetBool(((PetscObject)mapping)->options, NULL, "-islocaltoglobalmappinggetinfo_debug", &debug, NULL));
@@ -1405,7 +1405,7 @@ static PetscErrorCode ISLocalToGlobalMappingGetBlockInfo_Private(ISLocalToGlobal
   mapping->info_numprocs = *numprocs;
   mapping->info_indices  = *indices;
   mapping->info_cached   = PETSC_TRUE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1445,7 +1445,7 @@ PetscErrorCode ISLocalToGlobalMappingRestoreBlockInfo(ISLocalToGlobalMapping map
   *procs    = NULL;
   *numprocs = NULL;
   *indices  = NULL;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1505,7 +1505,7 @@ PetscErrorCode ISLocalToGlobalMappingGetInfo(ISLocalToGlobalMapping mapping, Pet
     *numprocs = bnumprocs;
     *indices  = bindices;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1531,7 +1531,7 @@ PetscErrorCode ISLocalToGlobalMappingRestoreInfo(ISLocalToGlobalMapping mapping,
 {
   PetscFunctionBegin;
   PetscCall(ISLocalToGlobalMappingRestoreBlockInfo(mapping, nproc, procs, numprocs, indices));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1599,7 +1599,7 @@ PetscErrorCode ISLocalToGlobalMappingGetNodeInfo(ISLocalToGlobalMapping mapping,
   if (nnodes) *nnodes = n;
   if (count) *count = mapping->info_nodec;
   if (indices) *indices = mapping->info_nodei;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1627,7 +1627,7 @@ PetscErrorCode ISLocalToGlobalMappingRestoreNodeInfo(ISLocalToGlobalMapping mapp
   if (nnodes) *nnodes = 0;
   if (count) *count = NULL;
   if (indices) *indices = NULL;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -1705,7 +1705,7 @@ PetscErrorCode ISLocalToGlobalMappingGetIndices(ISLocalToGlobalMapping ltog, con
     for (i = 0; i < n; i++)
       for (j = 0; j < bs; j++) jj[k++] = bs * ii[i] + j;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1729,7 +1729,7 @@ PetscErrorCode ISLocalToGlobalMappingRestoreIndices(ISLocalToGlobalMapping ltog,
   PetscCheck(ltog->bs != 1 || *array == ltog->indices, PETSC_COMM_SELF, PETSC_ERR_ARG_BADPTR, "Trying to return mismatched pointer");
 
   if (ltog->bs > 1) PetscCall(PetscFree(*(void **)array));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1753,7 +1753,7 @@ PetscErrorCode ISLocalToGlobalMappingGetBlockIndices(ISLocalToGlobalMapping ltog
   PetscValidHeaderSpecific(ltog, IS_LTOGM_CLASSID, 1);
   PetscValidPointer(array, 2);
   *array = ltog->indices;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1776,7 +1776,7 @@ PetscErrorCode ISLocalToGlobalMappingRestoreBlockIndices(ISLocalToGlobalMapping 
   PetscValidPointer(array, 2);
   PetscCheck(*array == ltog->indices, PETSC_COMM_SELF, PETSC_ERR_ARG_BADPTR, "Trying to return mismatched pointer");
   *array = NULL;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1825,7 +1825,7 @@ PetscErrorCode ISLocalToGlobalMappingConcatenate(MPI_Comm comm, PetscInt n, cons
     cnt += m;
   }
   PetscCall(ISLocalToGlobalMappingCreate(comm, 1, cnt, idx, PETSC_OWN_POINTER, ltogcat));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -1849,7 +1849,7 @@ PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingCreate_Basic(ISLocalToGlobalMa
   ltog->ops->globaltolocalmappingsetup      = ISGlobalToLocalMappingSetUp_Basic;
   ltog->ops->globaltolocalmappingapplyblock = ISGlobalToLocalMappingApplyBlock_Basic;
   ltog->ops->destroy                        = ISLocalToGlobalMappingDestroy_Basic;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -1873,7 +1873,7 @@ PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingCreate_Hash(ISLocalToGlobalMap
   ltog->ops->globaltolocalmappingsetup      = ISGlobalToLocalMappingSetUp_Hash;
   ltog->ops->globaltolocalmappingapplyblock = ISGlobalToLocalMappingApplyBlock_Hash;
   ltog->ops->destroy                        = ISLocalToGlobalMappingDestroy_Hash;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1908,7 +1908,7 @@ PetscErrorCode ISLocalToGlobalMappingRegister(const char sname[], PetscErrorCode
   PetscFunctionBegin;
   PetscCall(ISInitializePackage());
   PetscCall(PetscFunctionListAdd(&ISLocalToGlobalMappingList, sname, function));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1948,7 +1948,7 @@ PetscErrorCode ISLocalToGlobalMappingSetType(ISLocalToGlobalMapping ltog, ISLoca
   if (type) PetscValidCharPointer(type, 2);
 
   PetscCall(PetscObjectTypeCompare((PetscObject)ltog, type, &match));
-  if (match) PetscFunctionReturn(0);
+  if (match) PetscFunctionReturn(PETSC_SUCCESS);
 
   /* L2G maps defer type setup at globaltolocal calls, allow passing NULL here */
   if (type) {
@@ -1961,7 +1961,7 @@ PetscErrorCode ISLocalToGlobalMappingSetType(ISLocalToGlobalMapping ltog, ISLoca
 
   PetscCall(PetscObjectChangeTypeName((PetscObject)ltog, type));
   if (r) PetscCall((*r)(ltog));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1985,7 +1985,7 @@ PetscErrorCode ISLocalToGlobalMappingGetType(ISLocalToGlobalMapping ltog, ISLoca
   PetscValidHeaderSpecific(ltog, IS_LTOGM_CLASSID, 1);
   PetscValidPointer(type, 2);
   *type = ((PetscObject)ltog)->type_name;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscBool ISLocalToGlobalMappingRegisterAllCalled = PETSC_FALSE;
@@ -2002,9 +2002,9 @@ PetscBool ISLocalToGlobalMappingRegisterAllCalled = PETSC_FALSE;
 PetscErrorCode ISLocalToGlobalMappingRegisterAll(void)
 {
   PetscFunctionBegin;
-  if (ISLocalToGlobalMappingRegisterAllCalled) PetscFunctionReturn(0);
+  if (ISLocalToGlobalMappingRegisterAllCalled) PetscFunctionReturn(PETSC_SUCCESS);
   ISLocalToGlobalMappingRegisterAllCalled = PETSC_TRUE;
   PetscCall(ISLocalToGlobalMappingRegister(ISLOCALTOGLOBALMAPPINGBASIC, ISLocalToGlobalMappingCreate_Basic));
   PetscCall(ISLocalToGlobalMappingRegister(ISLOCALTOGLOBALMAPPINGHASH, ISLocalToGlobalMappingCreate_Hash));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

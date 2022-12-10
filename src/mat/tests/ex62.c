@@ -18,7 +18,7 @@ PetscErrorCode MatNormDifference(Mat A, Mat B, PetscReal *norm)
   PetscFunctionBegin;
   PetscCall(MatAXPY(B, -1.0, A, DIFFERENT_NONZERO_PATTERN));
   PetscCall(MatNorm(B, NORM_FROBENIUS, norm));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **args)

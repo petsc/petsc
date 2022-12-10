@@ -52,7 +52,7 @@ static PetscErrorCode PetscDrawDestroy_TikZ(PetscDraw draw)
   PetscCall(PetscFClose(PetscObjectComm((PetscObject)draw), win->fd));
   PetscCall(PetscFree(win->filename));
   PetscCall(PetscFree(draw->data));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static const char *TikZColors[] = {"white", "black", "red", "green", "cyan", "blue", "magenta", NULL, NULL, "orange", "violet", "brown", "pink", NULL, "yellow", NULL};
@@ -76,11 +76,11 @@ static PetscErrorCode PetscDrawClear_TikZ(PetscDraw draw)
   PetscFunctionBegin;
   /* often PETSc generates unneeded clears, we want avoid creating empy pictures for them */
   PetscCallMPI(MPI_Allreduce(&win->written, &written, 1, MPIU_BOOL, MPI_LOR, PetscObjectComm((PetscObject)(draw))));
-  if (!written) PetscFunctionReturn(0);
+  if (!written) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(PetscFPrintf(PetscObjectComm((PetscObject)draw), win->fd, TikZ_END_FRAME));
   PetscCall(PetscFPrintf(PetscObjectComm((PetscObject)draw), win->fd, TikZ_BEGIN_FRAME));
   win->written = PETSC_FALSE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscDrawLine_TikZ(PetscDraw draw, PetscReal xl, PetscReal yl, PetscReal xr, PetscReal yr, int cl)
@@ -90,7 +90,7 @@ static PetscErrorCode PetscDrawLine_TikZ(PetscDraw draw, PetscReal xl, PetscReal
   PetscFunctionBegin;
   win->written = PETSC_TRUE;
   PetscCall(PetscFPrintf(PetscObjectComm((PetscObject)draw), win->fd, "\\draw [%s] (%g,%g) --(%g,%g);\n", TikZColorMap(cl), XTRANS(draw, xl), YTRANS(draw, yl), XTRANS(draw, xr), YTRANS(draw, yr)));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscDrawRectangle_TikZ(PetscDraw draw, PetscReal xl, PetscReal yl, PetscReal xr, PetscReal yr, int c1, int c2, int c3, int c4)
@@ -100,7 +100,7 @@ static PetscErrorCode PetscDrawRectangle_TikZ(PetscDraw draw, PetscReal xl, Pets
   PetscFunctionBegin;
   win->written = PETSC_TRUE;
   PetscCall(PetscFPrintf(PetscObjectComm((PetscObject)draw), win->fd, "\\fill [bottom color=%s,top color=%s] (%g,%g) rectangle (%g,%g);\n", TikZColorMap(c1), TikZColorMap(c4), XTRANS(draw, xl), YTRANS(draw, yl), XTRANS(draw, xr), YTRANS(draw, yr)));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscDrawTriangle_TikZ(PetscDraw draw, PetscReal x1, PetscReal y1, PetscReal x2, PetscReal y2, PetscReal x3, PetscReal y3, int c1, int c2, int c3)
@@ -110,7 +110,7 @@ static PetscErrorCode PetscDrawTriangle_TikZ(PetscDraw draw, PetscReal x1, Petsc
   PetscFunctionBegin;
   win->written = PETSC_TRUE;
   PetscCall(PetscFPrintf(PetscObjectComm((PetscObject)draw), win->fd, "\\fill [color=%s] (%g,%g) -- (%g,%g) -- (%g,%g) -- cycle;\n", TikZColorMap(c1), XTRANS(draw, x1), YTRANS(draw, y1), XTRANS(draw, x2), YTRANS(draw, y2), XTRANS(draw, x3), YTRANS(draw, y3)));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscDrawEllipse_TikZ(PetscDraw draw, PetscReal x, PetscReal y, PetscReal a, PetscReal b, int c)
@@ -123,7 +123,7 @@ static PetscErrorCode PetscDrawEllipse_TikZ(PetscDraw draw, PetscReal x, PetscRe
   rx           = a / 2 * (draw->port_xr - draw->port_xl) / (draw->coor_xr - draw->coor_xl);
   ry           = b / 2 * (draw->port_yr - draw->port_yl) / (draw->coor_yr - draw->coor_yl);
   PetscCall(PetscFPrintf(PetscObjectComm((PetscObject)draw), win->fd, "\\fill [color=%s] (%g,%g) circle [x radius=%g,y radius=%g];\n", TikZColorMap(c), XTRANS(draw, x), YTRANS(draw, y), (double)rx, (double)ry));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscDrawString_TikZ(PetscDraw draw, PetscReal xl, PetscReal yl, int cl, const char text[])
@@ -133,7 +133,7 @@ static PetscErrorCode PetscDrawString_TikZ(PetscDraw draw, PetscReal xl, PetscRe
   PetscFunctionBegin;
   win->written = PETSC_TRUE;
   PetscCall(PetscFPrintf(PetscObjectComm((PetscObject)draw), win->fd, "\\node [above right, %s] at (%g,%g) {%s};\n", TikZColorMap(cl), XTRANS(draw, xl), YTRANS(draw, yl), text));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscDrawStringVertical_TikZ(PetscDraw draw, PetscReal xl, PetscReal yl, int cl, const char text[])
@@ -148,7 +148,7 @@ static PetscErrorCode PetscDrawStringVertical_TikZ(PetscDraw draw, PetscReal xl,
   PetscCall(PetscDrawStringGetSize(draw, &width, NULL));
   yl = yl - len * width * (draw->coor_yr - draw->coor_yl) / (draw->coor_xr - draw->coor_xl);
   PetscCall(PetscFPrintf(PetscObjectComm((PetscObject)draw), win->fd, "\\node [rotate=90, %s] at (%g,%g) {%s};\n", TikZColorMap(cl), XTRANS(draw, xl), YTRANS(draw, yl), text));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -167,7 +167,7 @@ static PetscErrorCode PetscDrawStringBoxed_TikZ(PetscDraw draw, PetscReal xl, Pe
   PetscCall(PetscStrlen(text, &len));
   if (w) *w = .07 * len;
   if (h) *h = .07;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscDrawStringGetSize_TikZ(PetscDraw draw, PetscReal *x, PetscReal *y)
@@ -175,7 +175,7 @@ static PetscErrorCode PetscDrawStringGetSize_TikZ(PetscDraw draw, PetscReal *x, 
   PetscFunctionBegin;
   if (x) *x = .014 * (draw->coor_xr - draw->coor_xl) / ((draw->port_xr - draw->port_xl));
   if (y) *y = .05 * (draw->coor_yr - draw->coor_yl) / ((draw->port_yr - draw->port_yl));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static struct _PetscDrawOps DvOps = {NULL, NULL, PetscDrawLine_TikZ, NULL, NULL, NULL, NULL, PetscDrawString_TikZ, PetscDrawStringVertical_TikZ, NULL, PetscDrawStringGetSize_TikZ, NULL, PetscDrawClear_TikZ, PetscDrawRectangle_TikZ, PetscDrawTriangle_TikZ, PetscDrawEllipse_TikZ, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, PetscDrawDestroy_TikZ, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, PetscDrawStringBoxed_TikZ};
@@ -202,5 +202,5 @@ PETSC_EXTERN PetscErrorCode PetscDrawCreate_TikZ(PetscDraw draw)
   PetscCall(PetscFPrintf(PetscObjectComm((PetscObject)draw), win->fd, TikZ_BEGIN_FRAME));
 
   win->written = PETSC_FALSE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

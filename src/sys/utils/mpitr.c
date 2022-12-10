@@ -53,7 +53,7 @@ PetscErrorCode PetscMPIDump(FILE *fd)
     err = fflush(fd);
     PetscCheck(!err, PETSC_COMM_SELF, PETSC_ERR_SYS, "fflush() failed on file");
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 #else
@@ -61,7 +61,7 @@ PetscErrorCode PetscMPIDump(FILE *fd)
 PetscErrorCode PetscMPIDump(FILE *fd)
 {
   PetscFunctionBegin;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 #endif
@@ -79,7 +79,7 @@ PetscErrorCode MPIU_Win_allocate_shared(MPI_Aint sz, PetscMPIInt szind, MPI_Info
   PetscCallMPI(MPI_Win_allocate_shared(16 + sz, szind, info, comm, &tmp, win));
   tmp += ((size_t)tmp) % szind ? szind / 4 - ((((size_t)tmp) % szind) / 4) : 0;
   *(void **)ptr = (void *)tmp;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_EXTERN PetscErrorCode MPIU_Win_shared_query(MPI_Win win, PetscMPIInt rank, MPI_Aint *sz, PetscMPIInt *szind, void *ptr)
@@ -91,7 +91,7 @@ PETSC_EXTERN PetscErrorCode MPIU_Win_shared_query(MPI_Win win, PetscMPIInt rank,
   PetscCheck(*szind > 0, PETSC_COMM_SELF, PETSC_ERR_LIB, "szkind %d must be positive", *szind);
   tmp += ((size_t)tmp) % *szind ? *szind / 4 - ((((size_t)tmp) % *szind) / 4) : 0;
   *(void **)ptr = (void *)tmp;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 #endif

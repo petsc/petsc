@@ -54,7 +54,7 @@ PetscErrorCode _DMLocatePoints_DMDARegular_IS(DM dm, Vec pos, IS *iscell)
   }
   PetscCall(VecRestoreArrayRead(pos, &coor));
   PetscCall(ISCreateGeneral(PETSC_COMM_SELF, npoints, cellidx, PETSC_OWN_POINTER, iscell));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMLocatePoints_DMDARegular(DM dm, Vec pos, DMPointLocationType ltype, PetscSF cellSF)
@@ -83,7 +83,7 @@ PetscErrorCode DMLocatePoints_DMDARegular(DM dm, Vec pos, DMPointLocationType lt
   nfound = npoints;
   PetscCall(PetscSFSetGraph(cellSF, npoints, nfound, NULL, PETSC_OWN_POINTER, cells, PETSC_OWN_POINTER));
   PetscCall(ISDestroy(&iscell));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMGetNeighbors_DMDARegular(DM dm, PetscInt *nneighbors, const PetscMPIInt **neighbors)
@@ -93,7 +93,7 @@ PetscErrorCode DMGetNeighbors_DMDARegular(DM dm, PetscInt *nneighbors, const Pet
   PetscFunctionBegin;
   PetscCall(DMGetApplicationContext(dm, &dmregular));
   PetscCall(DMGetNeighbors(dmregular, nneighbors, neighbors));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode SwarmViewGP(DM dms, const char prefix[])
@@ -117,7 +117,7 @@ PetscErrorCode SwarmViewGP(DM dms, const char prefix[])
   PetscCall(DMSwarmRestoreField(dms, "itag", NULL, NULL, (void **)&iarray));
   PetscCall(DMSwarmRestoreField(dms, DMSwarmPICField_coor, &bs, NULL, (void **)&array));
   fclose(fp);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -239,7 +239,7 @@ PetscErrorCode ex3_1(void)
   PetscCall(DMDestroy(&dmregular));
   PetscCall(DMDestroy(&dmcell));
   PetscCall(DMDestroy(&dms));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)

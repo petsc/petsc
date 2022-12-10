@@ -93,7 +93,7 @@ PetscErrorCode DMPlexExtrude(DM dm, PetscInt layers, PetscReal thickness, PetscB
     ((DM_Plex *)(*edm)->data)->printFEM = ((DM_Plex *)dm->data)->printFEM;
     ((DM_Plex *)(*edm)->data)->printL2  = ((DM_Plex *)dm->data)->printL2;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMExtrude_Plex(DM dm, PetscInt layers, DM *edm)
@@ -101,5 +101,5 @@ PetscErrorCode DMExtrude_Plex(DM dm, PetscInt layers, DM *edm)
   PetscFunctionBegin;
   PetscCall(DMPlexExtrude(dm, layers, PETSC_DETERMINE, PETSC_TRUE, PETSC_FALSE, NULL, NULL, edm));
   PetscCall(DMViewFromOptions(*edm, NULL, "-check_extrude"));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

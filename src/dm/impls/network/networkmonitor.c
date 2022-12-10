@@ -33,7 +33,7 @@ PetscErrorCode DMNetworkMonitorCreate(DM network, DMNetworkMonitor *monitorptr)
   monitor->firstnode = NULL;
 
   *monitorptr = monitor;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -54,7 +54,7 @@ PetscErrorCode DMNetworkMonitorDestroy(DMNetworkMonitor *monitor)
   while ((*monitor)->firstnode) PetscCall(DMNetworkMonitorPop(*monitor));
 
   PetscCall(PetscFree(*monitor));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -84,7 +84,7 @@ PetscErrorCode DMNetworkMonitorPop(DMNetworkMonitor monitor)
     PetscCall(VecDestroy(&(node->v)));
     PetscCall(PetscFree(node));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -139,7 +139,7 @@ PetscErrorCode DMNetworkMonitorAdd(DMNetworkMonitor monitor, const char *name, P
     PetscCall(PetscSNPrintf(titleBuffer, sizeof(titleBuffer), "%s @ edge %" PetscInt_FMT " [%d / %d]", name, element - eStart, rank, size - 1));
   } else {
     /* vertex / edge is not on local machine, so skip! */
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   PetscCall(PetscMalloc1(1, &node));
@@ -163,7 +163,7 @@ PetscErrorCode DMNetworkMonitorAdd(DMNetworkMonitor monitor, const char *name, P
 
   node->next         = monitor->firstnode;
   monitor->firstnode = node;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -198,5 +198,5 @@ PetscErrorCode DMNetworkMonitorView(DMNetworkMonitor monitor, Vec x)
     PetscCall(VecView(node->v, node->viewer));
   }
   PetscCall(VecRestoreArrayRead(x, &xx));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

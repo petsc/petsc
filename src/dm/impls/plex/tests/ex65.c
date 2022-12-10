@@ -14,7 +14,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm)
   PetscCall(PetscObjectSetOptionsPrefix((PetscObject)*dm, NULL));
 
   PetscCall(DMViewFromOptions(*dm, NULL, "-dm_view"));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)

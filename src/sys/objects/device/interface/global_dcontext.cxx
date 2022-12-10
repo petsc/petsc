@@ -11,7 +11,7 @@ PetscErrorCode PetscDeviceContextSetRootDeviceType_Internal(PetscDeviceType type
   PetscFunctionBegin;
   PetscValidDeviceType(type, 1);
   rootDeviceType = type;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PetscDeviceContextSetRootStreamType_Internal(PetscStreamType type)
@@ -19,7 +19,7 @@ PetscErrorCode PetscDeviceContextSetRootStreamType_Internal(PetscStreamType type
   PetscFunctionBegin;
   PetscValidStreamType(type, 1);
   rootStreamType = type;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscDeviceContextSetupGlobalContext_Private() noexcept
@@ -37,7 +37,7 @@ static PetscErrorCode PetscDeviceContextSetupGlobalContext_Private() noexcept
       PetscCall(PetscDeviceContextDestroy(&globalContext));
       rootDeviceType = PETSC_DEVICE_CONTEXT_DEFAULT_DEVICE_TYPE;
       rootStreamType = PETSC_DEVICE_CONTEXT_DEFAULT_STREAM_TYPE;
-      PetscFunctionReturn(0);
+      PetscFunctionReturn(PETSC_SUCCESS);
     };
 
     /* this exists purely as a valid device check. */
@@ -52,7 +52,7 @@ static PetscErrorCode PetscDeviceContextSetupGlobalContext_Private() noexcept
     PetscCall(PetscDeviceContextSetDefaultDeviceForType_Internal(globalContext, dtype));
     PetscCall(PetscDeviceContextSetUp(globalContext));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -86,7 +86,7 @@ PetscErrorCode PetscDeviceContextGetCurrentContext(PetscDeviceContext *dctx)
    * being able to connect this back to the function arguments */
   PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidDeviceContext(globalContext, -1));
   *dctx = globalContext;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -123,5 +123,5 @@ PetscErrorCode PetscDeviceContextSetCurrentContext(PetscDeviceContext dctx)
   PetscCall(PetscDeviceSetDefaultDeviceType(dtype));
   globalContext = dctx;
   PetscCall(PetscInfo(dctx, "Set global PetscDeviceContext id %" PetscInt64_FMT "\n", PetscObjectCast(dctx)->id));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

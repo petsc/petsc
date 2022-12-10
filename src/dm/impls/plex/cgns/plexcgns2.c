@@ -26,7 +26,7 @@ PetscErrorCode DMPlexCreateCGNSFromFile_Internal(MPI_Comm comm, const char filen
   }
   PetscCall(DMPlexCreateCGNS(comm, cgid, interpolate, dm));
   if (rank == 0) PetscCallCGNS(cg_close(cgid));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMPlexCreateCGNS_Internal(MPI_Comm comm, PetscInt cgid, PetscBool interpolate, DM *dm)
@@ -407,7 +407,7 @@ PetscErrorCode DMPlexCreateCGNS_Internal(MPI_Comm comm, PetscInt cgid, PetscBool
     PetscCallMPI(MPI_Bcast(labelName, (PetscMPIInt)len, MPIU_INT, 0, comm));
     PetscCallMPI(DMCreateLabel(*dm, labelName));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 // Permute plex closure ordering to CGNS
@@ -572,7 +572,7 @@ static PetscErrorCode DMPlexCGNSGetPermutation_Internal(DMPolytopeType cell_type
   default:
     SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Cell type %s with closure size %" PetscInt_FMT, DMPolytopeTypes[cell_type], closure_size);
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 // node_l2g must be freed
@@ -647,7 +647,7 @@ static PetscErrorCode DMPlexCreateNodeNumbering(DM dm, PetscInt *num_local_nodes
   *nEnd            = owned_start + owned_node;
   PetscCallMPI(MPI_Allreduce(&owned_node, num_global_nodes, 1, MPIU_INT, MPI_SUM, PetscObjectComm((PetscObject)dm)));
   *node_l2g = nodes;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMView_PlexCGNS(DM dm, PetscViewer viewer)
@@ -811,7 +811,7 @@ PetscErrorCode DMView_PlexCGNS(DM dm, PetscViewer viewer)
     }
   }
   PetscCall(DMDestroy(&colloc_dm));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscCGNSDataType(PetscDataType pd, CGNS_ENUMT(DataType_t) * cd)
@@ -830,7 +830,7 @@ static PetscErrorCode PetscCGNSDataType(PetscDataType pd, CGNS_ENUMT(DataType_t)
   default:
     SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Data type %s", PetscDataTypes[pd]);
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode VecView_Plex_Local_CGNS(Vec V, PetscViewer viewer)
@@ -885,5 +885,5 @@ PetscErrorCode VecView_Plex_Local_CGNS(Vec V, PetscViewer viewer)
   }
   PetscCall(VecRestoreArrayRead(V, &v));
   PetscCall(PetscViewerCGNSCheckBatch_Internal(viewer));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

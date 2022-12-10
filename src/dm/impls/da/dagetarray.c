@@ -73,7 +73,7 @@ PetscErrorCode DMDAVecGetArray(DM da, Vec vec, void *array)
   } else if (dim == 3) {
     PetscCall(VecGetArray3d(vec, gzm, gym, gxm * dof, gzs, gys, gxs * dof, (PetscScalar ****)array));
   } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_CORRUPT, "DMDA dimension not 1, 2, or 3, it is %" PetscInt_FMT, dim);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -130,7 +130,7 @@ PetscErrorCode DMDAVecRestoreArray(DM da, Vec vec, void *array)
   } else if (dim == 3) {
     PetscCall(VecRestoreArray3d(vec, gzm, gym, gxm * dof, gzs, gys, gxs * dof, (PetscScalar ****)array));
   } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_CORRUPT, "DMDA dimension not 1, 2, or 3, it is %" PetscInt_FMT, dim);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -186,7 +186,7 @@ PetscErrorCode DMDAVecGetArrayWrite(DM da, Vec vec, void *array)
   PetscValidPointer(array, 3);
   if (da->localSection) {
     PetscCall(VecGetArrayWrite(vec, (PetscScalar **)array));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
   PetscCall(DMDAGetCorners(da, &xs, &ys, &zs, &xm, &ym, &zm));
   PetscCall(DMDAGetGhostCorners(da, &gxs, &gys, &gzs, &gxm, &gym, &gzm));
@@ -210,7 +210,7 @@ PetscErrorCode DMDAVecGetArrayWrite(DM da, Vec vec, void *array)
   } else if (dim == 3) {
     PetscCall(VecGetArray3dWrite(vec, gzm, gym, gxm * dof, gzs, gys, gxs * dof, (PetscScalar ****)array));
   } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_CORRUPT, "DMDA dimension not 1, 2, or 3, it is %" PetscInt_FMT, dim);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -246,7 +246,7 @@ PetscErrorCode DMDAVecRestoreArrayWrite(DM da, Vec vec, void *array)
   PetscValidPointer(array, 3);
   if (da->localSection) {
     PetscCall(VecRestoreArray(vec, (PetscScalar **)array));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
   PetscCall(DMDAGetCorners(da, &xs, &ys, &zs, &xm, &ym, &zm));
   PetscCall(DMDAGetGhostCorners(da, &gxs, &gys, &gzs, &gxm, &gym, &gzm));
@@ -270,7 +270,7 @@ PetscErrorCode DMDAVecRestoreArrayWrite(DM da, Vec vec, void *array)
   } else if (dim == 3) {
     PetscCall(VecRestoreArray3dWrite(vec, gzm, gym, gxm * dof, gzs, gys, gxs * dof, (PetscScalar ****)array));
   } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_CORRUPT, "DMDA dimension not 1, 2, or 3, it is %" PetscInt_FMT, dim);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -333,7 +333,7 @@ PetscErrorCode DMDAVecGetArrayDOF(DM da, Vec vec, void *array)
   } else if (dim == 3) {
     PetscCall(VecGetArray4d(vec, gzm, gym, gxm, dof, gzs, gys, gxs, 0, (PetscScalar *****)array));
   } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_CORRUPT, "DMDA dimension not 1, 2, or 3, it is %" PetscInt_FMT, dim);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -382,7 +382,7 @@ PetscErrorCode DMDAVecRestoreArrayDOF(DM da, Vec vec, void *array)
   } else if (dim == 3) {
     PetscCall(VecRestoreArray4d(vec, gzm, gym, gxm, dof, gzs, gys, gxs, 0, (PetscScalar *****)array));
   } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_CORRUPT, "DMDA dimension not 1, 2, or 3, it is %" PetscInt_FMT, dim);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -456,7 +456,7 @@ PetscErrorCode DMDAVecGetArrayRead(DM da, Vec vec, void *array)
   } else if (dim == 3) {
     PetscCall(VecGetArray3dRead(vec, gzm, gym, gxm * dof, gzs, gys, gxs * dof, (PetscScalar ****)array));
   } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_CORRUPT, "DMDA dimension not 1, 2, or 3, it is %" PetscInt_FMT, dim);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -513,7 +513,7 @@ PetscErrorCode DMDAVecRestoreArrayRead(DM da, Vec vec, void *array)
   } else if (dim == 3) {
     PetscCall(VecRestoreArray3dRead(vec, gzm, gym, gxm * dof, gzs, gys, gxs * dof, (PetscScalar ****)array));
   } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_CORRUPT, "DMDA dimension not 1, 2, or 3, it is %" PetscInt_FMT, dim);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -576,7 +576,7 @@ PetscErrorCode DMDAVecGetArrayDOFRead(DM da, Vec vec, void *array)
   } else if (dim == 3) {
     PetscCall(VecGetArray4dRead(vec, gzm, gym, gxm, dof, gzs, gys, gxs, 0, (PetscScalar *****)array));
   } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_CORRUPT, "DMDA dimension not 1, 2, or 3, it is %" PetscInt_FMT, dim);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -625,7 +625,7 @@ PetscErrorCode DMDAVecRestoreArrayDOFRead(DM da, Vec vec, void *array)
   } else if (dim == 3) {
     PetscCall(VecRestoreArray4dRead(vec, gzm, gym, gxm, dof, gzs, gys, gxs, 0, (PetscScalar *****)array));
   } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_CORRUPT, "DMDA dimension not 1, 2, or 3, it is %" PetscInt_FMT, dim);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -688,7 +688,7 @@ PetscErrorCode DMDAVecGetArrayDOFWrite(DM da, Vec vec, void *array)
   } else if (dim == 3) {
     PetscCall(VecGetArray4dWrite(vec, gzm, gym, gxm, dof, gzs, gys, gxs, 0, (PetscScalar *****)array));
   } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_CORRUPT, "DMDA dimension not 1, 2, or 3, it is %" PetscInt_FMT, dim);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -737,5 +737,5 @@ PetscErrorCode DMDAVecRestoreArrayDOFWrite(DM da, Vec vec, void *array)
   } else if (dim == 3) {
     PetscCall(VecRestoreArray4dWrite(vec, gzm, gym, gxm, dof, gzs, gys, gxs, 0, (PetscScalar *****)array));
   } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_CORRUPT, "DMDA dimension not 1, 2, or 3, it is %" PetscInt_FMT, dim);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

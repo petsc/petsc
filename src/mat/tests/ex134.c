@@ -80,7 +80,7 @@ PetscErrorCode Assemble(MPI_Comm comm, PetscInt bs, MatType mtype)
   PetscCall(PetscRandomDestroy(&rdm));
 #endif
   PetscCall(MatDestroy(&A));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char *argv[])

@@ -17,7 +17,7 @@ PetscErrorCode AOFinalizePackage(void)
   PetscCall(PetscFunctionListDestroy(&AOList));
   AOPackageInitialized = PETSC_FALSE;
   AORegisterAllCalled  = PETSC_FALSE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -35,7 +35,7 @@ PetscErrorCode AOInitializePackage(void)
   PetscBool opt, pkg;
 
   PetscFunctionBegin;
-  if (AOPackageInitialized) PetscFunctionReturn(0);
+  if (AOPackageInitialized) PetscFunctionReturn(PETSC_SUCCESS);
   AOPackageInitialized = PETSC_TRUE;
   /* Register Classes */
   PetscCall(PetscClassIdRegister("Application Order", &AO_CLASSID));
@@ -59,5 +59,5 @@ PetscErrorCode AOInitializePackage(void)
   }
   /* Register package finalizer */
   PetscCall(PetscRegisterFinalize(AOFinalizePackage));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

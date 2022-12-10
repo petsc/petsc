@@ -412,6 +412,7 @@ PetscErrorCode CheckError(Vec u, Vec x, Vec b, PetscInt its, PetscReal tol, Pets
   PetscScalar none = -1.0;
   PetscReal   norm;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscLogEventBegin(CHECK_ERROR, u, x, b, 0));
 
   /*
@@ -422,7 +423,7 @@ PetscErrorCode CheckError(Vec u, Vec x, Vec b, PetscInt its, PetscReal tol, Pets
   PetscCall(VecNorm(b, NORM_2, &norm));
   if (norm > tol) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Norm of error %g, Iterations %" PetscInt_FMT "\n", (double)norm, its));
   PetscCall(PetscLogEventEnd(CHECK_ERROR, u, x, b, 0));
-  return 0;
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 /* ------------------------------------------------------------- */
 /*
@@ -439,6 +440,7 @@ PetscErrorCode MyKSPMonitor(KSP ksp, PetscInt n, PetscReal rnorm, void *dummy)
 {
   Vec x;
 
+  PetscFunctionBeginUser;
   /*
      Build the solution vector
   */
@@ -455,7 +457,7 @@ PetscErrorCode MyKSPMonitor(KSP ksp, PetscInt n, PetscReal rnorm, void *dummy)
   PetscCall(PetscPrintf(PETSC_COMM_WORLD, "iteration %" PetscInt_FMT " solution vector:\n", n));
   PetscCall(VecView(x, PETSC_VIEWER_STDOUT_WORLD));
   PetscCall(PetscPrintf(PETSC_COMM_WORLD, "iteration %" PetscInt_FMT " KSP Residual norm %14.12e \n", n, (double)rnorm));
-  return 0;
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*TEST

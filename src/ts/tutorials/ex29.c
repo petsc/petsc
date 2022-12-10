@@ -60,7 +60,7 @@ static PetscErrorCode CoefficientCoarsenHook(DM dm, DM dmc, void *ctx)
 
   PetscCall(DMCoarsenHookAdd(dmc, CoefficientCoarsenHook, NULL, NULL));
   PetscCall(DMDestroy(&cdmc));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* This could restrict auxiliary information to the coarse level.
@@ -98,7 +98,7 @@ static PetscErrorCode CoefficientSubDomainRestrictHook(DM dm, DM subdm, void *ct
   PetscCall(DMRestoreNamedLocalVector(csubdm, "coefficient", &cc));
 
   PetscCall(DMDestroy(&csubdm));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)
@@ -186,7 +186,7 @@ PetscErrorCode FormInitialGuess(DM da, void *ctx, Vec X)
   }
 
   PetscCall(DMDAVecRestoreArray(da, X, &x));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode FormDiffusionCoefficient(DM da, void *ctx, Vec X)
@@ -217,7 +217,7 @@ PetscErrorCode FormDiffusionCoefficient(DM da, void *ctx, Vec X)
   }
 
   PetscCall(DMDAVecRestoreArray(da, X, &x));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode FormIFunctionLocal(DMDALocalInfo *info, PetscReal ptime, Field **x, Field **xt, Field **f, void *ctx)
@@ -275,7 +275,7 @@ PetscErrorCode FormIFunctionLocal(DMDALocalInfo *info, PetscReal ptime, Field **
 
   PetscCall(DMDAVecRestoreArray(cdm, C, &c));
   PetscCall(DMRestoreNamedLocalVector(cdm, "coefficient", &C));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*TEST

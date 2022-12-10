@@ -96,7 +96,7 @@ PetscErrorCode PetscSFCreate(MPI_Comm comm, PetscSF *sf)
   b->vscat.to_n   = -1;
   b->vscat.unit   = MPIU_SCALAR;
   *sf             = b;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -140,7 +140,7 @@ PetscErrorCode PetscSFReset(PetscSF sf)
 #endif
 
   sf->setupcalled = PETSC_FALSE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -176,7 +176,7 @@ PetscErrorCode PetscSFSetType(PetscSF sf, PetscSFType type)
   PetscValidCharPointer(type, 2);
 
   PetscCall(PetscObjectTypeCompare((PetscObject)sf, type, &match));
-  if (match) PetscFunctionReturn(0);
+  if (match) PetscFunctionReturn(PETSC_SUCCESS);
 
   PetscCall(PetscFunctionListFind(PetscSFList, type, &r));
   PetscCheck(r, PETSC_COMM_SELF, PETSC_ERR_ARG_UNKNOWN_TYPE, "Unable to find requested PetscSF type %s", type);
@@ -185,7 +185,7 @@ PetscErrorCode PetscSFSetType(PetscSF sf, PetscSFType type)
   PetscCall(PetscMemzero(sf->ops, sizeof(*sf->ops)));
   PetscCall(PetscObjectChangeTypeName((PetscObject)sf, type));
   PetscCall((*r)(sf));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -209,7 +209,7 @@ PetscErrorCode PetscSFGetType(PetscSF sf, PetscSFType *type)
   PetscValidHeaderSpecific(sf, PETSCSF_CLASSID, 1);
   PetscValidPointer(type, 2);
   *type = ((PetscObject)sf)->type_name;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -227,18 +227,18 @@ PetscErrorCode PetscSFGetType(PetscSF sf, PetscSFType *type)
 PetscErrorCode PetscSFDestroy(PetscSF *sf)
 {
   PetscFunctionBegin;
-  if (!*sf) PetscFunctionReturn(0);
+  if (!*sf) PetscFunctionReturn(PETSC_SUCCESS);
   PetscValidHeaderSpecific((*sf), PETSCSF_CLASSID, 1);
   if (--((PetscObject)(*sf))->refct > 0) {
     *sf = NULL;
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
   PetscCall(PetscSFReset(*sf));
   PetscTryTypeMethod((*sf), Destroy);
   PetscCall(PetscSFDestroy(&(*sf)->vscat.lsf));
   if ((*sf)->vscat.bs > 1) PetscCallMPI(MPI_Type_free(&(*sf)->vscat.unit));
   PetscCall(PetscHeaderDestroy(sf));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscSFCheckGraphValid_Private(PetscSF sf)
@@ -249,7 +249,7 @@ static PetscErrorCode PetscSFCheckGraphValid_Private(PetscSF sf)
   const PetscSFNode *iremote;
 
   PetscFunctionBegin;
-  if (!sf->graphset || !PetscDefined(USE_DEBUG)) PetscFunctionReturn(0);
+  if (!sf->graphset || !PetscDefined(USE_DEBUG)) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(PetscSFGetGraph(sf, NULL, &nleaves, &ilocal, &iremote));
   PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)sf), &size));
   for (i = 0; i < nleaves; i++) {
@@ -260,7 +260,7 @@ static PetscErrorCode PetscSFCheckGraphValid_Private(PetscSF sf)
     PetscCheck(remote >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Provided index (%" PetscInt_FMT ") for remote %" PetscInt_FMT " is invalid, should be >= 0", remote, i);
     PetscCheck(leaf >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Provided location (%" PetscInt_FMT ") for leaf %" PetscInt_FMT " is invalid, should be >= 0", leaf, i);
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -280,7 +280,7 @@ PetscErrorCode PetscSFSetUp(PetscSF sf)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sf, PETSCSF_CLASSID, 1);
   PetscSFCheckGraphSet(sf, 1);
-  if (sf->setupcalled) PetscFunctionReturn(0);
+  if (sf->setupcalled) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(PetscLogEventBegin(PETSCSF_SetUp, sf, 0, 0, 0));
   PetscCall(PetscSFCheckGraphValid_Private(sf));
   if (!((PetscObject)sf)->type_name) PetscCall(PetscSFSetType(sf, PETSCSFBASIC)); /* Zero all sf->ops */
@@ -307,7 +307,7 @@ PetscErrorCode PetscSFSetUp(PetscSF sf)
 #endif
   PetscCall(PetscLogEventEnd(PETSCSF_SetUp, sf, 0, 0, 0));
   sf->setupcalled = PETSC_TRUE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -371,7 +371,7 @@ PetscErrorCode PetscSFSetFromOptions(PetscSF sf)
 #endif
   PetscTryTypeMethod(sf, SetFromOptions, PetscOptionsObject);
   PetscOptionsEnd();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -394,7 +394,7 @@ PetscErrorCode PetscSFSetRankOrder(PetscSF sf, PetscBool flg)
   PetscValidLogicalCollectiveBool(sf, flg, 2);
   PetscCheck(!sf->multi, PetscObjectComm((PetscObject)sf), PETSC_ERR_ARG_WRONGSTATE, "Rank ordering must be set before first call to PetscSFGatherBegin() or PetscSFScatterBegin()");
   sf->rankorder = flg;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -510,7 +510,7 @@ PetscErrorCode PetscSFSetGraph(PetscSF sf, PetscInt nroots, PetscInt nleaves, Pe
   }
   PetscCall(PetscLogEventEnd(PETSCSF_SetGraph, sf, 0, 0, 0));
   sf->graphset = PETSC_TRUE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -611,7 +611,7 @@ PetscErrorCode PetscSFSetGraphWithPattern(PetscSF sf, PetscLayout map, PetscSFPa
   }
   sf->ndranks  = 0; /* We do not need to separate out distinguished ranks for patterned graphs to improve communication performance */
   sf->graphset = PETSC_TRUE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -680,7 +680,7 @@ PetscErrorCode PetscSFCreateInverseSF(PetscSF sf, PetscSF *isf)
   PetscCall(PetscSFDuplicate(sf, PETSCSF_DUPLICATE_CONFONLY, isf));
   PetscCall(PetscSFSetGraph(*isf, maxlocal, count, newilocal, PETSC_OWN_POINTER, roots, PETSC_COPY_VALUES));
   PetscCall(PetscFree2(roots, leaves));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -740,7 +740,7 @@ PetscErrorCode PetscSFDuplicate(PetscSF sf, PetscSFDuplicateOption opt, PetscSF 
 #endif
   PetscTryTypeMethod(sf, Duplicate, opt, *newsf);
   /* Don't do PetscSFSetUp() since the new sf's graph might have not been set. */
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -786,7 +786,7 @@ PetscErrorCode PetscSFGetGraph(PetscSF sf, PetscInt *nroots, PetscInt *nleaves, 
     if (ilocal) *ilocal = sf->mine;
     if (iremote) *iremote = sf->remote;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -812,7 +812,7 @@ PetscErrorCode PetscSFGetLeafRange(PetscSF sf, PetscInt *minleaf, PetscInt *maxl
   PetscSFCheckGraphSet(sf, 1);
   if (minleaf) *minleaf = sf->minleaf;
   if (maxleaf) *maxleaf = sf->maxleaf;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -834,7 +834,7 @@ PetscErrorCode PetscSFViewFromOptions(PetscSF A, PetscObject obj, const char nam
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, PETSCSF_CLASSID, 1);
   PetscCall(PetscObjectViewFromOptions((PetscObject)A, obj, name));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -872,7 +872,7 @@ PetscErrorCode PetscSFView(PetscSF sf, PetscViewer viewer)
       if (!sf->graphset) {
         PetscCall(PetscViewerASCIIPrintf(viewer, "PetscSFSetGraph() has not been called yet\n"));
         PetscCall(PetscViewerASCIIPopTab(viewer));
-        PetscFunctionReturn(0);
+        PetscFunctionReturn(PETSC_SUCCESS);
       }
       PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)sf), &rank));
       PetscCall(PetscViewerASCIIPushSynchronized(viewer));
@@ -900,7 +900,7 @@ PetscErrorCode PetscSFView(PetscSF sf, PetscViewer viewer)
     PetscCall(PetscViewerASCIIPopTab(viewer));
   }
   PetscTryTypeMethod(sf, View, viewer);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -937,7 +937,7 @@ PetscErrorCode PetscSFGetRootRanks(PetscSF sf, PetscInt *nranks, const PetscMPII
     if (rmine) *rmine = sf->rmine;
     if (rremote) *rremote = sf->rremote;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -970,7 +970,7 @@ PetscErrorCode PetscSFGetLeafRanks(PetscSF sf, PetscInt *niranks, const PetscMPI
     PetscCall(PetscSFGetType(sf, &type));
     SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "PetscSFGetLeafRanks() is not supported on this StarForest type: %s", type);
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscBool InList(PetscMPIInt needle, PetscMPIInt n, const PetscMPIInt *list)
@@ -1084,7 +1084,7 @@ PetscErrorCode PetscSFSetUpRanks(PetscSF sf, MPI_Group dgroup)
     rcount[irank]++;
   }
   PetscCall(PetscFree2(rcount, ranks));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1146,7 +1146,7 @@ PetscErrorCode PetscSFGetGroups(PetscSF sf, MPI_Group *incoming, MPI_Group *outg
     PetscCallMPI(MPI_Group_free(&group));
   }
   *outgoing = sf->outgroup;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -1178,7 +1178,7 @@ PetscErrorCode PetscSFGetMultiSF(PetscSF sf, PetscSF *multi)
     PetscCall(PetscSFDuplicate(sf, PETSCSF_DUPLICATE_RANKS, &sf->multi));
     *multi           = sf->multi;
     sf->multi->multi = sf->multi;
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
   if (!sf->multi) {
     const PetscInt *indegree;
@@ -1235,7 +1235,7 @@ PetscErrorCode PetscSFGetMultiSF(PetscSF sf, PetscSF *multi)
     PetscCall(PetscFree3(inoffset, outones, outoffset));
   }
   *multi = sf->multi;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1324,7 +1324,7 @@ PetscErrorCode PetscSFCreateEmbeddedRootSF(PetscSF sf, PetscInt nselected, const
     PetscCall(PetscFree2(rootdata, leafmem));
   }
   PetscCall(PetscLogEventEnd(PETSCSF_EmbedSF, sf, 0, 0, 0));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1381,7 +1381,7 @@ PetscErrorCode PetscSFCreateEmbeddedLeafSF(PetscSF sf, PetscInt nselected, const
     PetscCall(PetscSFSetGraph(*newsf, nroots, nselected, new_ilocal, PETSC_OWN_POINTER, new_iremote, PETSC_OWN_POINTER));
   }
   PetscCall(PetscFree(leaves));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1419,7 +1419,7 @@ PetscErrorCode PetscSFBcastBegin(PetscSF sf, MPI_Datatype unit, const void *root
   PetscCall(PetscGetMemType(leafdata, &leafmtype));
   PetscUseTypeMethod(sf, BcastBegin, unit, rootmtype, rootdata, leafmtype, leafdata, op);
   if (!sf->vscat.logging) PetscCall(PetscLogEventEnd(PETSCSF_BcastBegin, sf, 0, 0, 0));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1450,7 +1450,7 @@ PetscErrorCode PetscSFBcastWithMemTypeBegin(PetscSF sf, MPI_Datatype unit, Petsc
   if (!sf->vscat.logging) PetscCall(PetscLogEventBegin(PETSCSF_BcastBegin, sf, 0, 0, 0));
   PetscUseTypeMethod(sf, BcastBegin, unit, rootmtype, rootdata, leafmtype, leafdata, op);
   if (!sf->vscat.logging) PetscCall(PetscLogEventEnd(PETSCSF_BcastBegin, sf, 0, 0, 0));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1478,7 +1478,7 @@ PetscErrorCode PetscSFBcastEnd(PetscSF sf, MPI_Datatype unit, const void *rootda
   if (!sf->vscat.logging) PetscCall(PetscLogEventBegin(PETSCSF_BcastEnd, sf, 0, 0, 0));
   PetscUseTypeMethod(sf, BcastEnd, unit, rootdata, leafdata, op);
   if (!sf->vscat.logging) PetscCall(PetscLogEventEnd(PETSCSF_BcastEnd, sf, 0, 0, 0));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1516,7 +1516,7 @@ PetscErrorCode PetscSFReduceBegin(PetscSF sf, MPI_Datatype unit, const void *lea
   PetscCall(PetscGetMemType(leafdata, &leafmtype));
   PetscCall((sf->ops->ReduceBegin)(sf, unit, leafmtype, leafdata, rootmtype, rootdata, op));
   if (!sf->vscat.logging) PetscCall(PetscLogEventEnd(PETSCSF_ReduceBegin, sf, 0, 0, 0));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1547,7 +1547,7 @@ PetscErrorCode PetscSFReduceWithMemTypeBegin(PetscSF sf, MPI_Datatype unit, Pets
   if (!sf->vscat.logging) PetscCall(PetscLogEventBegin(PETSCSF_ReduceBegin, sf, 0, 0, 0));
   PetscCall((sf->ops->ReduceBegin)(sf, unit, leafmtype, leafdata, rootmtype, rootdata, op));
   if (!sf->vscat.logging) PetscCall(PetscLogEventEnd(PETSCSF_ReduceBegin, sf, 0, 0, 0));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1575,7 +1575,7 @@ PetscErrorCode PetscSFReduceEnd(PetscSF sf, MPI_Datatype unit, const void *leafd
   if (!sf->vscat.logging) PetscCall(PetscLogEventBegin(PETSCSF_ReduceEnd, sf, 0, 0, 0));
   PetscUseTypeMethod(sf, ReduceEnd, unit, leafdata, rootdata, op);
   if (!sf->vscat.logging) PetscCall(PetscLogEventEnd(PETSCSF_ReduceEnd, sf, 0, 0, 0));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1618,7 +1618,7 @@ PetscErrorCode PetscSFFetchAndOpBegin(PetscSF sf, MPI_Datatype unit, void *rootd
   PetscCheck(leafmtype == leafupdatemtype, PETSC_COMM_SELF, PETSC_ERR_SUP, "No support for leafdata and leafupdate in different memory types");
   PetscUseTypeMethod(sf, FetchAndOpBegin, unit, rootmtype, rootdata, leafmtype, leafdata, leafupdate, op);
   PetscCall(PetscLogEventEnd(PETSCSF_FetchAndOpBegin, sf, 0, 0, 0));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1656,7 +1656,7 @@ PetscErrorCode PetscSFFetchAndOpWithMemTypeBegin(PetscSF sf, MPI_Datatype unit, 
   PetscCheck(leafmtype == leafupdatemtype, PETSC_COMM_SELF, PETSC_ERR_SUP, "No support for leafdata and leafupdate in different memory types");
   PetscUseTypeMethod(sf, FetchAndOpBegin, unit, rootmtype, rootdata, leafmtype, leafdata, leafupdate, op);
   PetscCall(PetscLogEventEnd(PETSCSF_FetchAndOpBegin, sf, 0, 0, 0));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1685,7 +1685,7 @@ PetscErrorCode PetscSFFetchAndOpEnd(PetscSF sf, MPI_Datatype unit, void *rootdat
   PetscCall(PetscLogEventBegin(PETSCSF_FetchAndOpEnd, sf, 0, 0, 0));
   PetscUseTypeMethod(sf, FetchAndOpEnd, unit, rootdata, leafdata, leafupdate, op);
   PetscCall(PetscLogEventEnd(PETSCSF_FetchAndOpEnd, sf, 0, 0, 0));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1723,7 +1723,7 @@ PetscErrorCode PetscSFComputeDegreeBegin(PetscSF sf, const PetscInt **degree)
     PetscCall(PetscSFReduceBegin(sf, MPIU_INT, sf->degreetmp - sf->minleaf, sf->degree, MPI_SUM));
   }
   *degree = NULL;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1757,7 +1757,7 @@ PetscErrorCode PetscSFComputeDegreeEnd(PetscSF sf, const PetscInt **degree)
     sf->degreeknown = PETSC_TRUE;
   }
   *degree = sf->degree;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1801,7 +1801,7 @@ PetscErrorCode PetscSFComputeMultiRootOriginalNumbering(PetscSF sf, const PetscI
   }
   PetscCheck(k == nmroots, PETSC_COMM_SELF, PETSC_ERR_PLIB, "sanity check fail");
   if (nMultiRoots) *nMultiRoots = nmroots;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1830,7 +1830,7 @@ PetscErrorCode PetscSFGatherBegin(PetscSF sf, MPI_Datatype unit, const void *lea
   PetscCall(PetscSFSetUp(sf));
   PetscCall(PetscSFGetMultiSF(sf, &multi));
   PetscCall(PetscSFReduceBegin(multi, unit, leafdata, multirootdata, MPI_REPLACE));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1858,7 +1858,7 @@ PetscErrorCode PetscSFGatherEnd(PetscSF sf, MPI_Datatype unit, const void *leafd
   PetscValidHeaderSpecific(sf, PETSCSF_CLASSID, 1);
   PetscCall(PetscSFGetMultiSF(sf, &multi));
   PetscCall(PetscSFReduceEnd(multi, unit, leafdata, multirootdata, MPI_REPLACE));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1887,7 +1887,7 @@ PetscErrorCode PetscSFScatterBegin(PetscSF sf, MPI_Datatype unit, const void *mu
   PetscCall(PetscSFSetUp(sf));
   PetscCall(PetscSFGetMultiSF(sf, &multi));
   PetscCall(PetscSFBcastBegin(multi, unit, multirootdata, leafdata, MPI_REPLACE));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1915,7 +1915,7 @@ PetscErrorCode PetscSFScatterEnd(PetscSF sf, MPI_Datatype unit, const void *mult
   PetscValidHeaderSpecific(sf, PETSCSF_CLASSID, 1);
   PetscCall(PetscSFGetMultiSF(sf, &multi));
   PetscCall(PetscSFBcastEnd(multi, unit, multirootdata, leafdata, MPI_REPLACE));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscSFCheckLeavesUnique_Private(PetscSF sf)
@@ -1936,7 +1936,7 @@ static PetscErrorCode PetscSFCheckLeavesUnique_Private(PetscSF sf)
     PetscCheck(n == nleaves, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Provided leaves have repeated values: all leaves must be unique");
     PetscCall(PetscHSetIDestroy(&seen));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -2039,7 +2039,7 @@ PetscErrorCode PetscSFCompose(PetscSF sfA, PetscSF sfB, PetscSF *sfBA)
   PetscCall(PetscSFCreate(PetscObjectComm((PetscObject)sfA), sfBA));
   PetscCall(PetscSFSetFromOptions(*sfBA));
   PetscCall(PetscSFSetGraph(*sfBA, numRootsA, numLeavesBA, localPointsBA, PETSC_OWN_POINTER, remotePointsBA, PETSC_OWN_POINTER));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -2142,7 +2142,7 @@ PetscErrorCode PetscSFComposeInverse(PetscSF sfA, PetscSF sfB, PetscSF *sfBA)
   PetscCall(PetscSFCreate(PetscObjectComm((PetscObject)sfA), sfBA));
   PetscCall(PetscSFSetFromOptions(*sfBA));
   PetscCall(PetscSFSetGraph(*sfBA, numRootsA, numLeavesBA, localPointsBA, PETSC_OWN_POINTER, remotePointsBA, PETSC_OWN_POINTER));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -2196,7 +2196,7 @@ PetscErrorCode PetscSFCreateLocalSF_Private(PetscSF sf, PetscSF *out)
     PetscCall(PetscSFSetUp(lsf));
     *out = lsf;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Similar to PetscSFBcast, but only Bcast to leaves on rank 0 */
@@ -2212,7 +2212,7 @@ PetscErrorCode PetscSFBcastToZero_Private(PetscSF sf, MPI_Datatype unit, const v
   PetscCall(PetscGetMemType(leafdata, &leafmtype));
   PetscUseTypeMethod(sf, BcastToZero, unit, rootmtype, rootdata, leafmtype, leafdata);
   PetscCall(PetscLogEventEnd(PETSCSF_BcastBegin, sf, 0, 0, 0));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -2380,7 +2380,7 @@ PetscErrorCode PetscSFConcatenate(MPI_Comm comm, PetscInt nsfs, PetscSF sfs[], P
   if (!nsfs) {
     PetscCall(PetscSFCreate(comm, newsf));
     PetscCall(PetscSFSetGraph(*newsf, 0, 0, NULL, PETSC_OWN_POINTER, NULL, PETSC_OWN_POINTER));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
   PetscCallMPI(MPI_Comm_size(comm, &size));
@@ -2528,5 +2528,5 @@ PetscErrorCode PetscSFConcatenate(MPI_Comm comm, PetscInt nsfs, PetscSF sfs[], P
   PetscCall(PetscLayoutDestroy(&glayout));
   PetscCall(PetscFree(gremote));
   PetscCall(PetscFree(leafArrayOffsets));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

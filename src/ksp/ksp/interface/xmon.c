@@ -18,7 +18,7 @@ PetscErrorCode KSPMonitorLGCreate(MPI_Comm comm, const char host[], const char l
   PetscCall(PetscDrawAxisSetLabels(axis, "Convergence", "Iteration", metric));
   PetscCall(PetscDrawDestroy(&draw));
   *lgctx = lg;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode KSPMonitorLGRange(KSP ksp, PetscInt n, PetscReal rnorm, void *monctx)
@@ -85,5 +85,5 @@ PetscErrorCode KSPMonitorLGRange(KSP ksp, PetscInt n, PetscReal rnorm, void *mon
   }
 
   prev = rnorm;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

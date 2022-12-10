@@ -44,13 +44,13 @@ PetscLogStageFindId(const char name[], PetscLogStage *stageid)
   PetscValidCharPointer(name,1);
   PetscValidIntPointer(stageid,2);
   *stageid = -1;
-  if (!(stageLog=petsc_stageLog)) PetscFunctionReturn(0); /* logging is off ? */
+  if (!(stageLog=petsc_stageLog)) PetscFunctionReturn(PETSC_SUCCESS); /* logging is off ? */
   for (s = 0; s < stageLog->numStages; s++) {
     const char *sname = stageLog->stageInfo[s].name;
     PetscCall(PetscStrcasecmp(sname, name, &match));
     if (match) { *stageid = s; break; }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode
@@ -64,14 +64,14 @@ PetscLogClassFindId(const char name[], PetscClassId *classid)
   PetscValidCharPointer(name,1);
   PetscValidIntPointer(classid,2);
   *classid = -1;
-  if (!(stageLog=petsc_stageLog)) PetscFunctionReturn(0); /* logging is off ? */
+  if (!(stageLog=petsc_stageLog)) PetscFunctionReturn(PETSC_SUCCESS); /* logging is off ? */
   for (c = 0; c < stageLog->classLog->numClasses; c++) {
     const char *cname = stageLog->classLog->classInfo[c].name;
     PetscClassId id = PetscCLASSID(stageLog,c);
     PetscCall(PetscStrcasecmp(cname, name, &match));
     if (match) { *classid = id; break; }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode
@@ -85,13 +85,13 @@ PetscLogEventFindId(const char name[], PetscLogEvent *eventid)
   PetscValidCharPointer(name,1);
   PetscValidIntPointer(eventid,2);
   *eventid = -1;
-  if (!(stageLog=petsc_stageLog)) PetscFunctionReturn(0); /* logging is off ? */
+  if (!(stageLog=petsc_stageLog)) PetscFunctionReturn(PETSC_SUCCESS); /* logging is off ? */
   for (e = 0; e < stageLog->eventLog->numEvents; e++) {
     const char *ename = stageLog->eventLog->eventInfo[e].name;
     PetscCall(PetscStrcasecmp(ename, name, &match));
     if (match) { *eventid = e; break; }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode
@@ -102,11 +102,11 @@ PetscLogStageFindName(PetscLogStage stageid,
   PetscFunctionBegin;
   PetscValidPointer(name,3);
   *name = 0;
-  if (!(stageLog=petsc_stageLog)) PetscFunctionReturn(0); /* logging is off ? */
+  if (!(stageLog=petsc_stageLog)) PetscFunctionReturn(PETSC_SUCCESS); /* logging is off ? */
   if (stageid >=0 && stageid < stageLog->numStages) {
     *name  = stageLog->stageInfo[stageid].name;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode
@@ -118,14 +118,14 @@ PetscLogClassFindName(PetscClassId classid,
   PetscFunctionBegin;
   PetscValidPointer(name,3);
   *name = 0;
-  if (!(stageLog=petsc_stageLog)) PetscFunctionReturn(0); /* logging is off ? */
+  if (!(stageLog=petsc_stageLog)) PetscFunctionReturn(PETSC_SUCCESS); /* logging is off ? */
   for (c = 0; c < stageLog->classLog->numClasses; c++) {
     if (classid == PetscCLASSID(stageLog,c)) {
       *name  = stageLog->classLog->classInfo[c].name;
       break;
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode
@@ -136,11 +136,11 @@ PetscLogEventFindName(PetscLogEvent eventid,
   PetscFunctionBegin;
   PetscValidPointer(name,3);
   *name = 0;
-  if (!(stageLog=petsc_stageLog)) PetscFunctionReturn(0); /* logging is off ? */
+  if (!(stageLog=petsc_stageLog)) PetscFunctionReturn(PETSC_SUCCESS); /* logging is off ? */
   if (eventid >=0 && eventid < stageLog->eventLog->numEvents) {
     *name  = stageLog->eventLog->eventInfo[eventid].name;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* ---------------------------------------------------------------- */
@@ -163,7 +163,7 @@ PetscObjectGetDeviceId(PetscObject o, PetscInt *id)
 #else
   *id = 0;
 #endif
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* ---------------------------------------------------------------- */
@@ -189,7 +189,7 @@ VecGetCurrentMemType(Vec v, PetscMemType *m)
     else if (iship) *m = PETSC_MEMTYPE_HIP;
     else if (iskok) *m = PETSC_MEMTYPE_KOKKOS;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* ---------------------------------------------------------------- */
@@ -201,7 +201,7 @@ PetscErrorCode MatIsPreallocated(Mat A,PetscBool *flag)
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
   PetscValidPointer(flag,2);
   *flag = A->preallocated;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static inline
@@ -229,7 +229,7 @@ PetscErrorCode MatHasPreallocationAIJ(Mat A,PetscBool *aij,PetscBool *baij,Petsc
   if (!f) PetscCall(PetscObjectQueryFunction((PetscObject)A,"MatISSetPreallocation_C",&f));
   if (f)  {*is = PETSC_TRUE; goto done;};
  done:
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static inline PetscErrorCode
@@ -253,7 +253,7 @@ MatGetCurrentMemType(Mat A, PetscMemType *m)
     else if (iship) *m = PETSC_MEMTYPE_HIP;
     else if (iskok) *m = PETSC_MEMTYPE_KOKKOS;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 #ifndef MatNullSpaceFunction
@@ -295,7 +295,7 @@ MatFactorInfoDefaults(PetscBool incomplete,PetscBool cholesky,
     info->shifttype      = (PetscReal)MAT_SHIFT_NONE;
     info->shiftamount    = (PetscReal)0.0;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* ---------------------------------------------------------------- */
@@ -307,7 +307,7 @@ KSPSetIterationNumber(KSP ksp, PetscInt its)
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   PetscCheck(its >= 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"iteration number must be nonnegative");
   ksp->its = its;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode
@@ -317,7 +317,7 @@ KSPSetResidualNorm(KSP ksp, PetscReal rnorm)
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   PetscCheck(rnorm >= 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"residual norm must be nonnegative");
   ksp->rnorm = rnorm;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode
@@ -329,7 +329,7 @@ KSPConvergenceTestCall(KSP ksp, PetscInt its, PetscReal rnorm, KSPConvergedReaso
   PetscCheck(its >= 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"iteration number must be nonnegative");
   PetscCheck(rnorm >= 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"residual norm must be nonnegative");
   PetscCall((*ksp->converged)(ksp,its,rnorm,reason,ksp->cnvP));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode
@@ -338,7 +338,7 @@ KSPSetConvergedReason(KSP ksp, KSPConvergedReason reason)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   ksp->reason = reason;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* ---------------------------------------------------------------- */
@@ -356,7 +356,7 @@ SNESConvergenceTestCall(SNES snes, PetscInt its,
   PetscCheck(ynorm >= 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"step norm must be nonnegative");
   PetscCheck(fnorm >= 0,PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"function norm must be nonnegative");
   PetscUseTypeMethod(snes,converged ,its,xnorm,ynorm,fnorm,reason,snes->cnvP);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode
@@ -372,7 +372,7 @@ SNESGetUseMFFD(SNES snes,PetscBool *flag)
   PetscCall(SNESGetJacobian(snes,&J,0,&jac,0));
   if (J) PetscCall(PetscObjectTypeCompare((PetscObject)J,MATMFFD,flag));
   else if (jac == MatMFFDComputeJacobian) *flag = PETSC_TRUE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode
@@ -389,8 +389,8 @@ SNESSetUseMFFD(SNES snes,PetscBool flag)
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
 
   PetscCall(SNESGetUseMFFD(snes,&flg));
-  if (flg  &&  flag) PetscFunctionReturn(0);
-  if (!flg && !flag) PetscFunctionReturn(0);
+  if (flg  &&  flag) PetscFunctionReturn(PETSC_SUCCESS);
+  if (!flg && !flag) PetscFunctionReturn(PETSC_SUCCESS);
   if (flg  && !flag) {
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,
             "cannot change matrix-free once it is set");
@@ -420,7 +420,7 @@ SNESSetUseMFFD(SNES snes,PetscBool flag)
   } else PetscCall(SNESSetJacobian(snes,J,0,0,0));
   PetscCall(MatDestroy(&J));
 
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode
@@ -434,7 +434,7 @@ SNESGetUseFDColoring(SNES snes,PetscBool *flag)
   *flag = PETSC_FALSE;
   PetscCall(SNESGetJacobian(snes,0,0,&jac,0));
   if (jac == SNESComputeJacobianDefaultColor) *flag = PETSC_TRUE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode
@@ -451,8 +451,8 @@ SNESSetUseFDColoring(SNES snes,PetscBool flag)
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
 
   PetscCall(SNESGetUseFDColoring(snes,&flg));
-  if (flg  &&  flag) PetscFunctionReturn(0);
-  if (!flg && !flag) PetscFunctionReturn(0);
+  if (flg  &&  flag) PetscFunctionReturn(PETSC_SUCCESS);
+  if (!flg && !flag) PetscFunctionReturn(PETSC_SUCCESS);
   if (flg  && !flag) {
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,
             "cannot change colored finite differences once it is set");
@@ -469,7 +469,7 @@ SNESSetUseFDColoring(SNES snes,PetscBool flag)
     PetscCall(DMGetDMSNES(dm,&sdm));
     PetscCall(DMSNESUnsetJacobianContext_Internal(dm));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* ---------------------------------------------------------------- */
@@ -498,7 +498,7 @@ DMDACreateND(MPI_Comm comm,
   PetscCall(DMDASetStencilType(da,stencil_type));
   PetscCall(DMDASetStencilWidth(da,stencil_width));
   *dm = (DM)da;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* ---------------------------------------------------------------- */

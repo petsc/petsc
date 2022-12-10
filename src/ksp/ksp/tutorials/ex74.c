@@ -220,7 +220,7 @@ int main(int argc, char **argv)
     /* time step complete */
     time += ctxt.dt;
   }
-  PetscFree3(ix, ix2, zvals);
+  PetscCall(PetscFree3(ix, ix2, zvals));
 
   /* Deallocate work and right-hand-side vectors */
   PetscCall(VecDestroy(&z));
@@ -275,7 +275,7 @@ PetscErrorCode ExactSolution(Vec u, void *c, PetscReal t)
     }
   }
   PetscCall(VecRestoreArray(u, &uarr));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Arrays should be freed with PetscFree3(A,b,c) */
@@ -313,7 +313,7 @@ static PetscErrorCode RKCreate_Gauss(PetscInt nstages, PetscScalar **gauss_A, Pe
   PetscCall(PetscFree3(b, G0, G1));
   *gauss_A = A;
   *gauss_c = c;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode Assemble_AdvDiff(MPI_Comm comm, UserContext *user, Mat *J)
@@ -364,7 +364,7 @@ static PetscErrorCode Assemble_AdvDiff(MPI_Comm comm, UserContext *user, Mat *J)
   }
   PetscCall(MatAssemblyBegin(*J, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(*J, MAT_FINAL_ASSEMBLY));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*TEST

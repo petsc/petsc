@@ -99,7 +99,7 @@ PetscErrorCode ex1_nonsquare_bs1(void)
   PetscCall(MatView(A, PETSC_VIEWER_STDOUT_WORLD));
 
   PetscCall(MatDestroy(&A));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode ex2_square_bsvariable(void)
@@ -228,7 +228,7 @@ PetscErrorCode ex2_square_bsvariable(void)
   PetscCall(MatView(A, PETSC_VIEWER_STDOUT_WORLD));
 
   PetscCall(MatDestroy(&A));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **args)

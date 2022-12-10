@@ -209,6 +209,7 @@ PetscErrorCode FormFunctionGradient(Tao tao, Vec X, PetscReal *fcn, Vec G, void 
   PetscReal *g, *x, *left, *right, *bottom, *top;
   Vec        localX = user->localX, localG = user->localV;
 
+  PetscFunctionBeginUser;
   /* Get local mesh boundaries */
   PetscCall(DMDAGetCorners(user->dm, &xs, &ys, NULL, &xm, &ym, NULL));
   PetscCall(DMDAGetGhostCorners(user->dm, &gxs, &gys, NULL, &gxm, &gym, NULL));
@@ -371,7 +372,7 @@ PetscErrorCode FormFunctionGradient(Tao tao, Vec X, PetscReal *fcn, Vec G, void 
 
   PetscCall(PetscLogFlops(70.0 * xm * ym));
 
-  return 0;
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* ------------------------------------------------------------------- */
@@ -427,6 +428,7 @@ PetscErrorCode FormHessian(Tao tao, Vec X, Mat Hptr, Mat Hessian, void *ptr)
   Vec        localX = user->localX;
   PetscBool  assembled;
 
+  PetscFunctionBeginUser;
   /* Set various matrix options */
   PetscCall(MatSetOption(Hessian, MAT_IGNORE_OFF_PROC_ENTRIES, PETSC_TRUE));
 
@@ -585,7 +587,7 @@ PetscErrorCode FormHessian(Tao tao, Vec X, Mat Hptr, Mat Hessian, void *ptr)
   PetscCall(MatAssemblyEnd(Hessian, MAT_FINAL_ASSEMBLY));
 
   PetscCall(PetscLogFlops(199.0 * xm * ym));
-  return 0;
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* ------------------------------------------------------------------- */
@@ -613,6 +615,7 @@ static PetscErrorCode MSA_BoundaryConditions(AppCtx *user)
   PetscBool  flg;
   Vec        Bottom, Top, Right, Left;
 
+  PetscFunctionBeginUser;
   /* Get local mesh boundaries */
   PetscCall(DMDAGetCorners(user->dm, &xs, &ys, NULL, &xm, &ym, NULL));
   PetscCall(DMDAGetGhostCorners(user->dm, &gxs, &gys, NULL, &gxm, &gym, NULL));
@@ -640,22 +643,22 @@ static PetscErrorCode MSA_BoundaryConditions(AppCtx *user)
       yt    = b;
       xt    = l + hx * xs;
       limit = bsize;
-      VecGetArray(Bottom, &boundary);
+      PetscCall(VecGetArray(Bottom, &boundary));
     } else if (j == 1) {
       yt    = t;
       xt    = l + hx * xs;
       limit = tsize;
-      VecGetArray(Top, &boundary);
+      PetscCall(VecGetArray(Top, &boundary));
     } else if (j == 2) {
       yt    = b + hy * ys;
       xt    = l;
       limit = lsize;
-      VecGetArray(Left, &boundary);
+      PetscCall(VecGetArray(Left, &boundary));
     } else if (j == 3) {
       yt    = b + hy * ys;
       xt    = r;
       limit = rsize;
-      VecGetArray(Right, &boundary);
+      PetscCall(VecGetArray(Right, &boundary));
     }
 
     for (i = 0; i < limit; i++) {
@@ -704,7 +707,7 @@ static PetscErrorCode MSA_BoundaryConditions(AppCtx *user)
 
   PetscCall(PetscOptionsGetReal(NULL, NULL, "-left", &scl, &flg));
   if (flg) PetscCall(VecScale(Left, scl));
-  return 0;
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* ------------------------------------------------------------------- */
@@ -727,6 +730,7 @@ static PetscErrorCode MSA_Plate(Vec XL, Vec XU, void *ctx)
   PetscReal *xl, lb = PETSC_NINFINITY, ub = PETSC_INFINITY;
   PetscBool  cylinder;
 
+  PetscFunctionBeginUser;
   user->bmy = PetscMax(0, user->bmy);
   user->bmy = PetscMin(my, user->bmy);
   user->bmx = PetscMax(0, user->bmx);
@@ -764,7 +768,7 @@ static PetscErrorCode MSA_Plate(Vec XL, Vec XU, void *ctx)
   }
   PetscCall(VecRestoreArray(XL, &xl));
 
-  return 0;
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* ------------------------------------------------------------------- */
@@ -784,6 +788,7 @@ static PetscErrorCode MSA_InitialPoint(AppCtx *user, Vec X)
   PetscReal zero  = 0.0;
   PetscBool flg;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-start", &start, &flg));
   if (flg && start == 0) { /* The zero vector is reasonable */
     PetscCall(VecSet(X, zero));
@@ -834,26 +839,29 @@ static PetscErrorCode MSA_InitialPoint(AppCtx *user, Vec X)
     PetscCall(DMLocalToGlobalBegin(user->dm, localX, INSERT_VALUES, X));
     PetscCall(DMLocalToGlobalEnd(user->dm, localX, INSERT_VALUES, X));
   }
-  return 0;
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* For testing matrix free submatrices */
 PetscErrorCode MatrixFreeHessian(Tao tao, Vec x, Mat H, Mat Hpre, void *ptr)
 {
   AppCtx *user = (AppCtx *)ptr;
+
   PetscFunctionBegin;
   PetscCall(FormHessian(tao, x, user->H, user->H, ptr));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
+
 PetscErrorCode MyMatMult(Mat H_shell, Vec X, Vec Y)
 {
   void   *ptr;
   AppCtx *user;
+
   PetscFunctionBegin;
   PetscCall(MatShellGetContext(H_shell, &ptr));
   user = (AppCtx *)ptr;
   PetscCall(MatMult(user->H, X, Y));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*TEST

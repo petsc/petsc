@@ -57,21 +57,21 @@ static PetscErrorCode PCApplyOrTranspose_PBJacobi_CUDA(PC pc, Vec x, Vec y, cubl
   PetscCall(VecCUDARestoreArrayRead(x, &xx));
   PetscCall(VecCUDARestoreArrayWrite(y, &yy));
   PetscCall(PetscLogGpuFlops(bs * bs * mbs * 2));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCApply_PBJacobi_CUDA(PC pc, Vec x, Vec y)
 {
   PetscFunctionBegin;
   PetscCall(PCApplyOrTranspose_PBJacobi_CUDA(pc, x, y, CUBLAS_OP_N)); // No transpose
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCApplyTranspose_PBJacobi_CUDA(PC pc, Vec x, Vec y)
 {
   PetscFunctionBegin;
   PetscCall(PCApplyOrTranspose_PBJacobi_CUDA(pc, x, y, CUBLAS_OP_T)); // Transpose
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCDestroy_PBJacobi_CUDA(PC pc)
@@ -81,7 +81,7 @@ static PetscErrorCode PCDestroy_PBJacobi_CUDA(PC pc)
   PetscFunctionBegin;
   PetscCallCUDA(cudaFree(jac->spptr));
   PetscCall(PCDestroy_PBJacobi(pc));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_INTERN PetscErrorCode PCSetUp_PBJacobi_CUDA(PC pc)
@@ -101,5 +101,5 @@ PETSC_INTERN PetscErrorCode PCSetUp_PBJacobi_CUDA(PC pc)
   pc->ops->apply          = PCApply_PBJacobi_CUDA;
   pc->ops->applytranspose = PCApplyTranspose_PBJacobi_CUDA;
   pc->ops->destroy        = PCDestroy_PBJacobi_CUDA;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

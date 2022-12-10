@@ -4,63 +4,63 @@ static PetscErrorCode PetscDrawCoordinateToPixel_Null(PetscDraw draw, PetscReal 
 {
   PetscFunctionBegin;
   *i = *j = 0;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscDrawPixelToCoordinate_Null(PetscDraw draw, int i, int j, PetscReal *x, PetscReal *y)
 {
   PetscFunctionBegin;
   *x = *y = 0;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscDrawPoint_Null(PetscDraw draw, PetscReal x, PetscReal y, int c)
 {
   PetscFunctionBegin;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscDrawPointPixel_Null(PetscDraw draw, int x, int y, int c)
 {
   PetscFunctionBegin;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscDrawLineGetWidth_Null(PetscDraw draw, PetscReal *width)
 {
   PetscFunctionBegin;
   if (width) *width = 0.01;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscDrawLine_Null(PetscDraw draw, PetscReal xl, PetscReal yl, PetscReal xr, PetscReal yr, int cl)
 {
   PetscFunctionBegin;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscDrawArrow_Null(PetscDraw draw, PetscReal xl, PetscReal yl, PetscReal xr, PetscReal yr, int cl)
 {
   PetscFunctionBegin;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscDrawRectangle_Null(PetscDraw draw, PetscReal xl, PetscReal yl, PetscReal xr, PetscReal yr, int c1, int c2, int c3, int c4)
 {
   PetscFunctionBegin;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscDrawEllipse_Null(PetscDraw Win, PetscReal x, PetscReal y, PetscReal a, PetscReal b, int c)
 {
   PetscFunctionBegin;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscDrawTriangle_Null(PetscDraw draw, PetscReal X1, PetscReal Y_1, PetscReal X2, PetscReal Y2, PetscReal X3, PetscReal Y3, int c1, int c2, int c3)
 {
   PetscFunctionBegin;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscDrawStringGetSize_Null(PetscDraw draw, PetscReal *x, PetscReal *y)
@@ -68,19 +68,19 @@ static PetscErrorCode PetscDrawStringGetSize_Null(PetscDraw draw, PetscReal *x, 
   PetscFunctionBegin;
   if (x) *x = 0.01;
   if (y) *y = 0.01;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscDrawString_Null(PetscDraw draw, PetscReal x, PetscReal y, int c, const char chrs[])
 {
   PetscFunctionBegin;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscDrawStringVertical_Null(PetscDraw draw, PetscReal x, PetscReal y, int c, const char chrs[])
 {
   PetscFunctionBegin;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscDrawStringBoxed_Null(PetscDraw draw, PetscReal sxl, PetscReal syl, int sc, int bc, const char text[], PetscReal *w, PetscReal *h)
@@ -88,21 +88,21 @@ static PetscErrorCode PetscDrawStringBoxed_Null(PetscDraw draw, PetscReal sxl, P
   PetscFunctionBegin;
   if (w) *w = 0.01;
   if (h) *h = 0.01;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscDrawGetSingleton_Null(PetscDraw draw, PetscDraw *sdraw)
 {
   PetscFunctionBegin;
   PetscCall(PetscDrawOpenNull(PETSC_COMM_SELF, sdraw));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscDrawRestoreSingleton_Null(PetscDraw draw, PetscDraw *sdraw)
 {
   PetscFunctionBegin;
   PetscCall(PetscDrawDestroy(sdraw));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static struct _PetscDrawOps DvOps = {NULL, /* PetscDrawSetDoubleBuffer_Null */
@@ -170,7 +170,7 @@ PETSC_EXTERN PetscErrorCode PetscDrawCreate_Null(PetscDraw draw)
 
   PetscCall(PetscMemcpy(draw->ops, &DvOps, sizeof(DvOps)));
   draw->data = NULL;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -192,7 +192,7 @@ PetscErrorCode PetscDrawOpenNull(MPI_Comm comm, PetscDraw *win)
   PetscFunctionBegin;
   PetscCall(PetscDrawCreate(comm, NULL, NULL, 0, 0, 1, 1, win));
   PetscCall(PetscDrawSetType(*win, PETSC_DRAW_NULL));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -216,5 +216,5 @@ PetscErrorCode PetscDrawIsNull(PetscDraw draw, PetscBool *yes)
   PetscValidHeaderSpecific(draw, PETSC_DRAW_CLASSID, 1);
   PetscValidBoolPointer(yes, 2);
   PetscCall(PetscObjectTypeCompare((PetscObject)draw, PETSC_DRAW_NULL, yes));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -71,7 +71,7 @@ PetscErrorCode PCSetCoordinates_GEO(PC pc, PetscInt ndm, PetscInt a_nloc, PetscR
   }
   PetscCheck(pc_gamg->data[arrsz] == -99., PETSC_COMM_SELF, PETSC_ERR_PLIB, "pc_gamg->data[arrsz %" PetscInt_FMT "] %g != -99.", arrsz, (double)pc_gamg->data[arrsz]);
   pc_gamg->data_sz = arrsz;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -107,7 +107,7 @@ PetscErrorCode PCSetFromOptions_GEO(PC pc, PetscOptionItems *PetscOptionsObject)
     /*                        &flag);  */
   }
   PetscOptionsHeadEnd();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -148,7 +148,7 @@ static PetscErrorCode triangulateAndFormProl(IS selected_2, PetscInt data_stride
   PetscCall(MPIU_Allreduce(a_worst_best, &tm, 1, MPIU_REAL, MPIU_MAX, comm));
   if (tm > 0.0) {
     *a_worst_best = 100.0;
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
   PetscCall(MatGetOwnershipRange(a_Prol, &Istart, &Iend));
   nFineLoc = (Iend - Istart) / bs;
@@ -409,7 +409,7 @@ static PetscErrorCode triangulateAndFormProl(IS selected_2, PetscInt data_stride
   free(mid.pointlist);
   free(mid.pointmarkerlist);
   PetscCall(PetscFree(in.pointlist));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 #else
   SETERRQ(PetscObjectComm((PetscObject)a_Prol), PETSC_ERR_PLIB, "configure with TRIANGLE to use geometric MG");
 #endif
@@ -514,7 +514,7 @@ static PetscErrorCode getGIDsOnSquareGraph(PC pc, PetscInt nselected_1, const Pe
     PetscCall(VecDestroy(&locState));
   }
   *a_crsGID = crsGID; /* output */
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PCGAMGCreateGraph_GEO(PC pc, Mat Amat, Mat *a_Gmat)
@@ -525,7 +525,7 @@ PetscErrorCode PCGAMGCreateGraph_GEO(PC pc, Mat Amat, Mat *a_Gmat)
 
   PetscFunctionBegin;
   PetscCall(MatCreateGraph(Amat, PETSC_TRUE, PETSC_TRUE, vfilter, a_Gmat));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -608,7 +608,7 @@ PetscErrorCode PCGAMGCoarsen_GEO(PC a_pc, Mat *a_Gmat, PetscCoarsenData **a_llis
 
   PetscCall(ISDestroy(&perm));
 
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -679,7 +679,7 @@ PetscErrorCode PCGAMGProlongator_GEO(PC pc, Mat Amat, Mat Gmat, PetscCoarsenData
     PetscCall(PetscFree(clid_flid));
     PetscCall(MatDestroy(&Prol));
     *a_P_out = NULL; /* out */
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   {
@@ -739,14 +739,14 @@ PetscErrorCode PCGAMGProlongator_GEO(PC pc, Mat Amat, Mat Gmat, PetscCoarsenData
   *a_P_out = Prol; /* out */
   PetscCall(PetscFree(clid_flid));
 
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCDestroy_GAMG_GEO(PC pc)
 {
   PetscFunctionBegin;
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCSetCoordinates_C", NULL));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -773,5 +773,5 @@ PetscErrorCode PCCreateGAMG_GEO(PC pc)
   pc_gamg->ops->createdefaultdata = PCSetData_GEO;
 
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCSetCoordinates_C", PCSetCoordinates_GEO));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

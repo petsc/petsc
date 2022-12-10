@@ -42,7 +42,7 @@ PetscErrorCode InitializeLambda(DM da, Vec lambda, Vec U, AppCtx *appctx)
   PetscCall(VecScale(Uob, 2.0));
   PetscCall(VecAXPY(lambda, 1., Uob));
   PetscCall(VecDestroy(&Uob));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -55,7 +55,7 @@ PetscErrorCode OutputBIN(DM da, const char *filename, PetscViewer *viewer)
   PetscCall(PetscViewerSetType(*viewer, PETSCVIEWERBINARY));
   PetscCall(PetscViewerFileSetMode(*viewer, FILE_MODE_WRITE));
   PetscCall(PetscViewerFileSetName(*viewer, filename));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -74,7 +74,7 @@ PetscErrorCode GenerateOBs(TS ts, Vec U, AppCtx *appctx)
   PetscCall(OutputBIN(da, filename, &viewer));
   PetscCall(VecView(U, viewer));
   PetscCall(PetscViewerDestroy(&viewer));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode InitialConditions(DM da, Vec U)
@@ -106,7 +106,7 @@ PetscErrorCode InitialConditions(DM da, Vec U)
   }
 
   PetscCall(DMDAVecRestoreArray(da, U, &u));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PerturbedInitialConditions(DM da, Vec U)
@@ -138,7 +138,7 @@ PetscErrorCode PerturbedInitialConditions(DM da, Vec U)
   }
 
   PetscCall(DMDAVecRestoreArray(da, U, &u));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PerturbedInitialConditions2(DM da, Vec U)
@@ -171,7 +171,7 @@ PetscErrorCode PerturbedInitialConditions2(DM da, Vec U)
   }
 
   PetscCall(DMDAVecRestoreArray(da, U, &u));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PerturbedInitialConditions3(DM da, Vec U)
@@ -203,7 +203,7 @@ PetscErrorCode PerturbedInitialConditions3(DM da, Vec U)
   }
 
   PetscCall(DMDAVecRestoreArray(da, U, &u));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)
@@ -370,7 +370,7 @@ PetscErrorCode FormFunctionAndGradient(Tao tao, Vec P, PetscReal *f, Vec G, void
   PetscCall(VecCopy(lambda[0], G));
 
   PetscCall(VecDestroy(&SDiff));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*TEST

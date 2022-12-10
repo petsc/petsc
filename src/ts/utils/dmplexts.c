@@ -27,7 +27,7 @@ static PetscErrorCode DMTSConvertPlex(DM dm, DM *plex, PetscBool copy)
       PetscCall(PetscObjectReference((PetscObject)*plex));
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -67,7 +67,7 @@ PetscErrorCode DMPlexTSComputeRHSFunctionFVM(DM dm, PetscReal time, Vec locX, Ve
   PetscCall(DMRestoreLocalVector(plex, &locF));
   PetscCall(ISDestroy(&cellIS));
   PetscCall(DMDestroy(&plex));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -110,7 +110,7 @@ PetscErrorCode DMPlexTSComputeBoundary(DM dm, PetscReal time, Vec locX, Vec locX
   PetscCall(DMPlexInsertBoundaryValues(plex, PETSC_TRUE, locX, time, faceGeometryFVM, NULL, NULL));
   PetscCall(DMPlexInsertTimeDerivativeBoundaryValues(plex, PETSC_TRUE, locX_t, time, faceGeometryFVM, NULL, NULL));
   PetscCall(DMDestroy(&plex));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -165,7 +165,7 @@ PetscErrorCode DMPlexTSComputeIFunctionFEM(DM dm, PetscReal time, Vec locX, Vec 
   }
   PetscCall(ISDestroy(&allcellIS));
   PetscCall(DMDestroy(&plex));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -228,7 +228,7 @@ PetscErrorCode DMPlexTSComputeIJacobianFEM(DM dm, PetscReal time, Vec locX, Vec 
   }
   PetscCall(ISDestroy(&allcellIS));
   PetscCall(DMDestroy(&plex));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -282,7 +282,7 @@ PetscErrorCode DMPlexTSComputeRHSFunctionFEM(DM dm, PetscReal time, Vec locX, Ve
   }
   PetscCall(ISDestroy(&allcellIS));
   PetscCall(DMDestroy(&plex));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -333,7 +333,7 @@ PetscErrorCode DMTSCheckResidual(TS ts, DM dm, PetscReal t, Vec u, Vec u_t, Pets
     PetscCall(PetscObjectCompose((PetscObject)r, "__Vec_bc_zero__", NULL));
   }
   PetscCall(VecDestroy(&r));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -461,7 +461,7 @@ PetscErrorCode DMTSCheckJacobian(TS ts, DM dm, PetscReal t, Vec u, Vec u_t, Pets
     }
   }
   PetscCall(MatDestroy(&J));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -486,7 +486,7 @@ PetscErrorCode DMTSCheckFromOptions(TS ts, Vec u)
 
   PetscFunctionBegin;
   PetscCall(PetscOptionsHasName(((PetscObject)ts)->options, ((PetscObject)ts)->prefix, "-dmts_check", &check));
-  if (!check) PetscFunctionReturn(0);
+  if (!check) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(VecDuplicate(u, &sol));
   PetscCall(VecCopy(u, sol));
   PetscCall(TSSetSolution(ts, u));
@@ -503,5 +503,5 @@ PetscErrorCode DMTSCheckFromOptions(TS ts, Vec u)
   PetscCall(DMRestoreGlobalVector(dm, &u_t));
 
   PetscCall(VecDestroy(&sol));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

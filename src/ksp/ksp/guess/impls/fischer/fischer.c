@@ -41,7 +41,7 @@ static PetscErrorCode KSPGuessReset_Fischer(KSPGuess guess)
   itg->last_b       = NULL;
   itg->last_b_state = 0;
   if (itg->last_b_coefs) PetscCall(PetscMemzero(itg->last_b_coefs, sizeof(*itg->last_b_coefs) * itg->maxl));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode KSPGuessSetUp_Fischer(KSPGuess guess)
@@ -56,7 +56,7 @@ static PetscErrorCode KSPGuessSetUp_Fischer(KSPGuess guess)
   if (!itg->guess && (itg->method == 1 || itg->method == 2)) PetscCall(VecDuplicate(itg->xtilde[0], &itg->guess));
   if (!itg->corr && itg->method == 3) PetscCall(PetscCalloc1(itg->maxl * itg->maxl, &itg->corr));
   if (!itg->last_b_coefs && itg->method == 3) PetscCall(PetscCalloc1(itg->maxl, &itg->last_b_coefs));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode KSPGuessDestroy_Fischer(KSPGuess guess)
@@ -73,7 +73,7 @@ static PetscErrorCode KSPGuessDestroy_Fischer(KSPGuess guess)
   PetscCall(PetscFree(itg->last_b_coefs));
   PetscCall(PetscFree(itg));
   PetscCall(PetscObjectComposeFunction((PetscObject)guess, "KSPGuessFischerSetModel_C", NULL));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Note: do not change the b right hand side as is done in the publication */
@@ -92,7 +92,7 @@ static PetscErrorCode KSPGuessFormGuess_Fischer_1(KSPGuess guess, Vec b, Vec x)
   }
   PetscCall(VecMAXPY(x, itg->curl, itg->alpha, itg->xtilde));
   PetscCall(VecCopy(x, itg->guess));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode KSPGuessUpdate_Fischer_1(KSPGuess guess, Vec b, Vec x)
@@ -128,7 +128,7 @@ static PetscErrorCode KSPGuessUpdate_Fischer_1(KSPGuess guess, Vec b, Vec x)
       PetscCall(PetscInfo(guess->ksp, "Not increasing dimension of Fischer space because new direction is identical to previous\n"));
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -151,7 +151,7 @@ static PetscErrorCode KSPGuessFormGuess_Fischer_2(KSPGuess guess, Vec b, Vec x)
   }
   PetscCall(VecMAXPY(x, itg->curl, itg->alpha, itg->xtilde));
   PetscCall(VecCopy(x, itg->guess));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode KSPGuessUpdate_Fischer_2(KSPGuess guess, Vec b, Vec x)
@@ -187,7 +187,7 @@ static PetscErrorCode KSPGuessUpdate_Fischer_2(KSPGuess guess, Vec b, Vec x)
       PetscCall(PetscInfo(guess->ksp, "Not increasing dimension of Fischer space because new direction is identical to previous\n"));
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -276,7 +276,7 @@ static PetscErrorCode KSPGuessFormGuess_Fischer_3(KSPGuess guess, Vec b, Vec x)
     PetscCall(PetscFree4(corr, s_values, work, scratch_vec));
 #endif
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode KSPGuessUpdate_Fischer_3(KSPGuess guess, Vec b, Vec x)
@@ -329,7 +329,7 @@ static PetscErrorCode KSPGuessUpdate_Fischer_3(KSPGuess guess, Vec b, Vec x)
     PetscCall(VecMDot(b, itg->curl, itg->btilde, last_column));
   }
   for (i = 0; i < itg->curl; ++i) itg->corr[i * itg->maxl + itg->curl - 1] = last_column[i];
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode KSPGuessSetFromOptions_Fischer(KSPGuess guess)
@@ -347,7 +347,7 @@ static PetscErrorCode KSPGuessSetFromOptions_Fischer(KSPGuess guess)
   PetscCall(PetscOptionsReal("-ksp_guess_fischer_tol", "Tolerance to determine rank via ratio of singular values", "KSPGuessSetTolerance", ITG->tol, &ITG->tol, NULL));
   PetscCall(PetscOptionsBool("-ksp_guess_fischer_monitor", "Monitor the guess", NULL, ITG->monitor, &ITG->monitor, NULL));
   PetscOptionsEnd();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode KSPGuessSetTolerance_Fischer(KSPGuess guess, PetscReal tol)
@@ -356,7 +356,7 @@ static PetscErrorCode KSPGuessSetTolerance_Fischer(KSPGuess guess, PetscReal tol
 
   PetscFunctionBegin;
   itg->tol = tol;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode KSPGuessView_Fischer(KSPGuess guess, PetscViewer viewer)
@@ -367,7 +367,7 @@ static PetscErrorCode KSPGuessView_Fischer(KSPGuess guess, PetscViewer viewer)
   PetscFunctionBegin;
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
   if (isascii) PetscCall(PetscViewerASCIIPrintf(viewer, "Model %" PetscInt_FMT ", size %" PetscInt_FMT "\n", itg->method, itg->maxl));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -393,7 +393,7 @@ PetscErrorCode KSPGuessFischerSetModel(KSPGuess guess, PetscInt model, PetscInt 
   PetscValidHeaderSpecific(guess, KSPGUESS_CLASSID, 1);
   PetscValidLogicalCollectiveInt(guess, model, 2);
   PetscTryMethod(guess, "KSPGuessFischerSetModel_C", (KSPGuess, PetscInt, PetscInt), (guess, model, size));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode KSPGuessFischerSetModel_Fischer(KSPGuess guess, PetscInt model, PetscInt size)
@@ -414,7 +414,7 @@ static PetscErrorCode KSPGuessFischerSetModel_Fischer(KSPGuess guess, PetscInt m
     guess->ops->update    = NULL;
     guess->ops->formguess = NULL;
     itg->method           = 0;
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
   if (size != itg->maxl) {
     PetscCall(PetscFree(itg->alpha));
@@ -425,7 +425,7 @@ static PetscErrorCode KSPGuessFischerSetModel_Fischer(KSPGuess guess, PetscInt m
   }
   itg->method = model;
   itg->maxl   = size;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -486,5 +486,5 @@ PetscErrorCode KSPGuessCreate_Fischer(KSPGuess guess)
   guess->ops->formguess      = KSPGuessFormGuess_Fischer_1;
 
   PetscCall(PetscObjectComposeFunction((PetscObject)guess, "KSPGuessFischerSetModel_C", KSPGuessFischerSetModel_Fischer));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

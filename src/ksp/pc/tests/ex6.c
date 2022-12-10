@@ -5,8 +5,9 @@ static char help[] = "Creates a matrix using 9 pt stencil, and uses it to test M
 
 #include <petscksp.h>
 
-PetscErrorCode FormElementStiffness(PetscReal H, PetscScalar *Ke)
+static PetscErrorCode FormElementStiffness(PetscReal H, PetscScalar *Ke)
 {
+  PetscFunctionBeginUser;
   Ke[0]  = H / 6.0;
   Ke[1]  = -.125 * H;
   Ke[2]  = H / 12.0;
@@ -23,16 +24,21 @@ PetscErrorCode FormElementStiffness(PetscReal H, PetscScalar *Ke)
   Ke[13] = H / 12.0;
   Ke[14] = -.125 * H;
   Ke[15] = H / 6.0;
-  return 0;
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
-PetscErrorCode FormElementRhs(PetscReal x, PetscReal y, PetscReal H, PetscScalar *r)
+
+#if 0
+// unused
+static PetscErrorCode FormElementRhs(PetscReal x, PetscReal y, PetscReal H, PetscScalar *r)
 {
+  PetscFunctionBeginUser;
   r[0] = 0.;
   r[1] = 0.;
   r[2] = 0.;
   r[3] = 0.0;
-  return 0;
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
+#endif
 
 int main(int argc, char **args)
 {

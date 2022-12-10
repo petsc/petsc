@@ -17,7 +17,7 @@ static PetscErrorCode TaoLineSearchDestroy_Armijo(TaoLineSearch ls)
   PetscCall(VecDestroy(&armP->x));
   PetscCall(VecDestroy(&armP->work));
   PetscCall(PetscFree(ls->data));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TaoLineSearchReset_Armijo(TaoLineSearch ls)
@@ -27,7 +27,7 @@ static PetscErrorCode TaoLineSearchReset_Armijo(TaoLineSearch ls)
   PetscFunctionBegin;
   PetscCall(PetscFree(armP->memory));
   armP->memorySetup = PETSC_FALSE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TaoLineSearchSetFromOptions_Armijo(TaoLineSearch ls, PetscOptionItems *PetscOptionsObject)
@@ -45,7 +45,7 @@ static PetscErrorCode TaoLineSearchSetFromOptions_Armijo(TaoLineSearch ls, Petsc
   PetscCall(PetscOptionsInt("-tao_ls_armijo_replacement_policy", "policy for updating memory", "", armP->replacementPolicy, &armP->replacementPolicy, NULL));
   PetscCall(PetscOptionsBool("-tao_ls_armijo_nondescending", "Use nondescending armijo algorithm", "", armP->nondescending, &armP->nondescending, NULL));
   PetscOptionsHeadEnd();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TaoLineSearchView_Armijo(TaoLineSearch ls, PetscViewer pv)
@@ -63,7 +63,7 @@ static PetscErrorCode TaoLineSearchView_Armijo(TaoLineSearch ls, PetscViewer pv)
     PetscCall(PetscViewerASCIIPrintf(pv, "sigma=%g ", (double)armP->sigma));
     PetscCall(PetscViewerASCIIPrintf(pv, "memsize=%" PetscInt_FMT "\n", armP->memorySize));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* @ TaoApply_Armijo - This routine performs a linesearch. It
@@ -137,7 +137,7 @@ static PetscErrorCode TaoLineSearchApply_Armijo(TaoLineSearch ls, Vec x, PetscRe
     ls->reason = TAOLINESEARCH_FAILED_BADPARAMETER;
   }
 
-  if (ls->reason != TAOLINESEARCH_CONTINUE_ITERATING) PetscFunctionReturn(0);
+  if (ls->reason != TAOLINESEARCH_CONTINUE_ITERATING) PetscFunctionReturn(PETSC_SUCCESS);
 
   /* Check to see of the memory has been allocated.  If not, allocate
      the historical array and populate it with the initial function
@@ -176,12 +176,12 @@ static PetscErrorCode TaoLineSearchApply_Armijo(TaoLineSearch ls, Vec x, PetscRe
   if (PetscIsInfOrNanReal(gdx)) {
     PetscCall(PetscInfo(ls, "Initial Line Search step * g is Inf or Nan (%g)\n", (double)gdx));
     ls->reason = TAOLINESEARCH_FAILED_INFORNAN;
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
   if (gdx >= 0.0) {
     PetscCall(PetscInfo(ls, "Initial Line Search step is not descent direction (g's=%g)\n", (double)gdx));
     ls->reason = TAOLINESEARCH_FAILED_ASCENT;
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   if (armP->nondescending) {
@@ -233,7 +233,7 @@ static PetscErrorCode TaoLineSearchApply_Armijo(TaoLineSearch ls, Vec x, PetscRe
     PetscCall(PetscInfo(ls, "Number of line search function evals (%" PetscInt_FMT ") > maximum allowed (%" PetscInt_FMT ")\n", ls->nfeval + ls->nfgeval, ls->max_funcs));
     ls->reason = TAOLINESEARCH_HALTED_MAXFCN;
   }
-  if (ls->reason) PetscFunctionReturn(0);
+  if (ls->reason) PetscFunctionReturn(PETSC_SUCCESS);
 
   /* Successful termination, update memory */
   ls->reason          = TAOLINESEARCH_SUCCESS;
@@ -250,7 +250,7 @@ static PetscErrorCode TaoLineSearchApply_Armijo(TaoLineSearch ls, Vec x, PetscRe
   PetscCall(VecCopy(armP->work, x));
   if (!g_computed) PetscCall(TaoLineSearchComputeGradient(ls, x, g));
   PetscCall(PetscInfo(ls, "%" PetscInt_FMT " function evals in line search, step = %g\n", ls->nfeval, (double)ls->step));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -291,5 +291,5 @@ PETSC_EXTERN PetscErrorCode TaoLineSearchCreate_Armijo(TaoLineSearch ls)
   ls->ops->destroy        = TaoLineSearchDestroy_Armijo;
   ls->ops->reset          = TaoLineSearchReset_Armijo;
   ls->ops->setfromoptions = TaoLineSearchSetFromOptions_Armijo;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

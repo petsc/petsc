@@ -72,7 +72,7 @@ PetscErrorCode PetscGetHostName(char name[], size_t nlen)
   if (!domain) {
     size_t l, ll;
     PetscCall(PetscStrlen(name, &l));
-    if (l == nlen - 1) PetscFunctionReturn(0);
+    if (l == nlen - 1) PetscFunctionReturn(PETSC_SUCCESS);
     name[l++] = '.';
     name[l]   = 0;
 #if defined(PETSC_HAVE_SYSINFO_3ARG)
@@ -92,5 +92,5 @@ PetscErrorCode PetscGetHostName(char name[], size_t nlen)
       }
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -24,7 +24,7 @@ PetscErrorCode PetscADefLabel(PetscReal val, PetscReal sep, char **p)
     PetscCall(PetscStripTrailingZeros(buf));
   }
   *p = buf;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Finds "nice" locations for the ticks */
@@ -51,7 +51,7 @@ PetscErrorCode PetscADefTicks(PetscReal low, PetscReal high, int num, int *ntick
   tickloc[i - 1] = PetscMin(tickloc[i - 1], high);
 
   if (i < 2 && num < 10) PetscCall(PetscADefTicks(low, high, num + 1, ntick, tickloc, maxtick));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 #define EPS 1.e-6
@@ -60,7 +60,7 @@ PetscErrorCode PetscExp10(PetscReal d, PetscReal *result)
 {
   PetscFunctionBegin;
   *result = PetscPowReal((PetscReal)10.0, d);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PetscMod(PetscReal x, PetscReal y, PetscReal *result)
@@ -70,13 +70,13 @@ PetscErrorCode PetscMod(PetscReal x, PetscReal y, PetscReal *result)
   PetscFunctionBegin;
   if (y == 1) {
     *result = 0.0;
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
   i = ((int)x) / ((int)y);
   x = x - i * y;
   while (x > y) x -= y;
   *result = x;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PetscCopysign(PetscReal a, PetscReal b, PetscReal *result)
@@ -84,7 +84,7 @@ PetscErrorCode PetscCopysign(PetscReal a, PetscReal b, PetscReal *result)
   PetscFunctionBegin;
   if (b >= 0) *result = a;
   else *result = -a;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -104,7 +104,7 @@ PetscErrorCode PetscAGetNice(PetscReal in, PetscReal base, int sign, PetscReal *
   PetscCall(PetscMod(etmp, 1.0, &m));
   etmp    = base * (etmp - m);
   *result = etmp;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PetscAGetBase(PetscReal vmin, PetscReal vmax, int num, PetscReal *Base, int *power)
@@ -139,5 +139,5 @@ PetscErrorCode PetscAGetBase(PetscReal vmin, PetscReal vmax, int num, PetscReal 
     }
   }
   *Base = base;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

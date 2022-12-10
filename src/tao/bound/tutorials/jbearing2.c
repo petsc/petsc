@@ -202,7 +202,7 @@ PetscErrorCode ComputeB(AppCtx *user)
   }
   PetscCall(VecRestoreArray(user->B, &b));
   PetscCall(PetscLogFlops(5.0 * xm * ym + 3.0 * xm));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode FormFunctionGradient(Tao tao, Vec X, PetscReal *fcn, Vec G, void *ptr)
@@ -312,7 +312,7 @@ PetscErrorCode FormFunctionGradient(Tao tao, Vec X, PetscReal *fcn, Vec G, void 
   *fcn = f1 / 2.0 + f2;
 
   PetscCall(PetscLogFlops((91 + 10.0 * ym) * xm));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -421,7 +421,7 @@ PetscErrorCode FormHessian(Tao tao, Vec X, Mat hes, Mat Hpre, void *ptr)
   PetscCall(MatSetOption(hes, MAT_SYMMETRIC, PETSC_TRUE));
 
   PetscCall(PetscLogFlops(9.0 * xm * ym + 49.0 * xm));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode Monitor(Tao tao, void *ctx)
@@ -433,7 +433,7 @@ PetscErrorCode Monitor(Tao tao, void *ctx)
   PetscFunctionBegin;
   PetscCall(TaoGetSolutionStatus(tao, &its, &f, &gnorm, &cnorm, &xdiff, &reason));
   if (!(its % 5)) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "iteration=%" PetscInt_FMT "\tf=%g\n", its, (double)f));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode ConvergenceTest(Tao tao, void *ctx)
@@ -445,7 +445,7 @@ PetscErrorCode ConvergenceTest(Tao tao, void *ctx)
   PetscFunctionBegin;
   PetscCall(TaoGetSolutionStatus(tao, &its, &f, &gnorm, &cnorm, &xdiff, &reason));
   if (its == 100) PetscCall(TaoSetConvergedReason(tao, TAO_DIVERGED_MAXITS));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*TEST

@@ -44,7 +44,7 @@ PetscErrorCode KSPSetUp_FGMRES(KSP ksp)
      term for this first allocation of vectors holding preconditioned directions */
   PetscCall(KSPCreateVecs(ksp, fgmres->vv_allocated - VEC_OFFSET, &fgmres->prevecs_user_work[0], 0, NULL));
   for (k = 0; k < fgmres->vv_allocated - VEC_OFFSET; k++) fgmres->prevecs[k] = fgmres->prevecs_user_work[0][k];
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -62,7 +62,7 @@ static PetscErrorCode KSPFGMRESResidual(KSP ksp)
   PetscCall(KSP_MatMult(ksp, Amat, ksp->vec_sol, VEC_TEMP));
   /* now put residual (-A*x + f) into vec_vv(0) */
   PetscCall(VecWAXPY(VEC_VV(0), -1.0, VEC_TEMP, ksp->vec_rhs));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -119,7 +119,7 @@ PetscErrorCode KSPFGMRESCycle(PetscInt *itcount, KSP ksp)
   PetscCall((*ksp->converged)(ksp, ksp->its, res_norm, &ksp->reason, ksp->cnvP));
   if (ksp->reason) {
     if (itcount) *itcount = 0;
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   /* scale VEC_VV (the initial residual) */
@@ -145,7 +145,7 @@ PetscErrorCode KSPFGMRESCycle(PetscInt *itcount, KSP ksp)
     /* CHANGE THE PRECONDITIONER? */
     /* ModifyPC is the callback function that can be used to
        change the PC or its attributes before its applied */
-    (*fgmres->modifypc)(ksp, ksp->its, loc_it, res_norm, fgmres->modifyctx);
+    PetscCall((*fgmres->modifypc)(ksp, ksp->its, loc_it, res_norm, fgmres->modifyctx));
 
     /* apply PRECONDITIONER to direction vector and store with
        preconditioned vectors in prevec */
@@ -230,7 +230,7 @@ PetscErrorCode KSPFGMRESCycle(PetscInt *itcount, KSP ksp)
      properly navigates */
 
   PetscCall(KSPFGMRESBuildSoln(RS(0), ksp->vec_sol, ksp->vec_sol, ksp, loc_it - 1));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -278,7 +278,7 @@ PetscErrorCode KSPSolve_FGMRES(KSP ksp)
   }
   /* mark lack of convergence */
   if (ksp->its >= ksp->max_it && !ksp->reason) ksp->reason = KSP_DIVERGED_ITS;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 extern PetscErrorCode KSPReset_FGMRES(KSP);
@@ -293,7 +293,7 @@ PetscErrorCode KSPDestroy_FGMRES(KSP ksp)
   PetscCall(KSPReset_FGMRES(ksp));
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPFGMRESSetModifyPC_C", NULL));
   PetscCall(KSPDestroy_GMRES(ksp));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -321,7 +321,7 @@ static PetscErrorCode KSPFGMRESBuildSoln(PetscScalar *nrs, Vec vguess, Vec vdest
   /* If it is < 0, no fgmres steps have been performed */
   if (it < 0) {
     PetscCall(VecCopy(vguess, vdest)); /* VecCopy() is smart, exists immediately if vguess == vdest */
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   /* so fgmres steps HAVE been performed */
@@ -352,7 +352,7 @@ static PetscErrorCode KSPFGMRESBuildSoln(PetscScalar *nrs, Vec vguess, Vec vdest
   } else { /* replace guess with solution */
     PetscCall(VecAXPY(vdest, 1.0, VEC_TEMP));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -412,7 +412,7 @@ static PetscErrorCode KSPFGMRESUpdateHessenberg(KSP ksp, PetscInt it, PetscBool 
     tt = PetscSqrtScalar(PetscConj(*hh) * *hh + PetscConj(*(hh + 1)) * *(hh + 1));
     if (tt == 0.0) {
       ksp->reason = KSP_DIVERGED_NULL;
-      PetscFunctionReturn(0);
+      PetscFunctionReturn(PETSC_SUCCESS);
     }
 
     *cc = *hh / tt;       /* new cosine value */
@@ -435,7 +435,7 @@ static PetscErrorCode KSPFGMRESUpdateHessenberg(KSP ksp, PetscInt it, PetscBool 
 
     *res = 0.0;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -459,7 +459,7 @@ static PetscErrorCode KSPFGMRESGetNewVectors(KSP ksp, PetscInt it)
   /* Adjust the number to allocate to make sure that we don't exceed the
      number of available slots (fgmres->vecs_allocated)*/
   if (it + VEC_OFFSET + nalloc >= fgmres->vecs_allocated) nalloc = fgmres->vecs_allocated - it - VEC_OFFSET;
-  if (!nalloc) PetscFunctionReturn(0);
+  if (!nalloc) PetscFunctionReturn(PETSC_SUCCESS);
 
   fgmres->vv_allocated += nalloc; /* vv_allocated is the number of vectors allocated */
 
@@ -475,7 +475,7 @@ static PetscErrorCode KSPFGMRESGetNewVectors(KSP ksp, PetscInt it)
 
   /* increment the number of work vector chunks */
   fgmres->nwork_alloc++;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -509,7 +509,7 @@ PetscErrorCode KSPBuildSolution_FGMRES(KSP ksp, Vec ptr, Vec *result)
 
   PetscCall(KSPFGMRESBuildSoln(fgmres->nrs, ksp->vec_sol, ptr, ksp, fgmres->it));
   if (result) *result = ptr;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode KSPSetFromOptions_FGMRES(KSP ksp, PetscOptionItems *PetscOptionsObject)
@@ -524,7 +524,7 @@ PetscErrorCode KSPSetFromOptions_FGMRES(KSP ksp, PetscOptionItems *PetscOptionsO
   PetscCall(PetscOptionsBoolGroupEnd("-ksp_fgmres_modifypcksp", "vary the KSP based preconditioner", "KSPFGMRESSetModifyPC", &flg));
   if (flg) PetscCall(KSPFGMRESSetModifyPC(ksp, KSPFGMRESModifyPCKSP, NULL, NULL));
   PetscOptionsHeadEnd();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 typedef PetscErrorCode (*FCN1)(KSP, PetscInt, PetscInt, PetscReal, void *); /* force argument to next function to not be extern C*/
@@ -537,7 +537,7 @@ static PetscErrorCode KSPFGMRESSetModifyPC_FGMRES(KSP ksp, FCN1 fcn, void *ctx, 
   ((KSP_FGMRES *)ksp->data)->modifypc      = fcn;
   ((KSP_FGMRES *)ksp->data)->modifydestroy = d;
   ((KSP_FGMRES *)ksp->data)->modifyctx     = ctx;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode KSPReset_FGMRES(KSP ksp)
@@ -556,7 +556,7 @@ PetscErrorCode KSPReset_FGMRES(KSP ksp)
   PetscCall(PetscFree(fgmres->prevecs_user_work));
   if (fgmres->modifydestroy) PetscCall((*fgmres->modifydestroy)(fgmres->modifyctx));
   PetscCall(KSPReset_GMRES(ksp));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode KSPGMRESSetRestart_FGMRES(KSP ksp, PetscInt max_k)
@@ -573,7 +573,7 @@ PetscErrorCode KSPGMRESSetRestart_FGMRES(KSP ksp, PetscInt max_k)
     /* free the data structures, then create them again */
     PetscCall(KSPReset_FGMRES(ksp));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode KSPGMRESGetRestart_FGMRES(KSP ksp, PetscInt *max_k)
@@ -582,7 +582,7 @@ PetscErrorCode KSPGMRESGetRestart_FGMRES(KSP ksp, PetscInt *max_k)
 
   PetscFunctionBegin;
   *max_k = gmres->max_k;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -667,5 +667,5 @@ PETSC_EXTERN PetscErrorCode KSPCreate_FGMRES(KSP ksp)
   fgmres->modifyctx      = NULL;
   fgmres->modifydestroy  = NULL;
   fgmres->cgstype        = KSP_GMRES_CGS_REFINE_NEVER;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

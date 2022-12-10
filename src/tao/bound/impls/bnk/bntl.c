@@ -119,7 +119,7 @@ PetscErrorCode TaoSolve_BNTL(Tao tao)
   /* Initialize the preconditioner, KSP solver and trust radius/line search */
   tao->reason = TAO_CONTINUE_ITERATING;
   PetscCall(TaoBNKInitialize(tao, bnk->init_type, &needH));
-  if (tao->reason != TAO_CONTINUE_ITERATING) PetscFunctionReturn(0);
+  if (tao->reason != TAO_CONTINUE_ITERATING) PetscFunctionReturn(PETSC_SUCCESS);
 
   /* Have not converged; continue with Newton method */
   while (tao->reason == TAO_CONTINUE_ITERATING) {
@@ -134,7 +134,7 @@ PetscErrorCode TaoSolve_BNTL(Tao tao)
       PetscCall(TaoBNKTakeCGSteps(tao, &cgTerminate));
       if (cgTerminate) {
         tao->reason = bnk->bncg->reason;
-        PetscFunctionReturn(0);
+        PetscFunctionReturn(PETSC_SUCCESS);
       }
       /* Compute the hessian and update the BFGS preconditioner at the new iterate */
       PetscCall((*bnk->computehessian)(tao));
@@ -226,7 +226,7 @@ PetscErrorCode TaoSolve_BNTL(Tao tao)
     PetscCall(TaoMonitor(tao, tao->niter, bnk->f, resnorm, 0.0, steplen));
     PetscUseTypeMethod(tao, convergencetest, tao->cnvP);
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*------------------------------------------------------------*/
@@ -240,7 +240,7 @@ static PetscErrorCode TaoSetUp_BNTL(Tao tao)
   PetscCall(TaoGetKSP(tao, &ksp));
   PetscCall(PetscObjectQueryFunction((PetscObject)ksp, "KSPCGSetRadius_C", &valid));
   PetscCheck(valid, PetscObjectComm((PetscObject)tao), PETSC_ERR_SUP, "Not for KSP type %s. Must use a trust-region CG method for KSP (e.g. KSPNASH, KSPSTCG, KSPGLTR)", ((PetscObject)ksp)->type_name);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*------------------------------------------------------------*/
@@ -251,7 +251,7 @@ static PetscErrorCode TaoSetFromOptions_BNTL(Tao tao, PetscOptionItems *PetscOpt
   PetscFunctionBegin;
   PetscCall(TaoSetFromOptions_BNK(tao, PetscOptionsObject));
   if (bnk->update_type == BNK_UPDATE_STEP) bnk->update_type = BNK_UPDATE_REDUCTION;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*------------------------------------------------------------*/
@@ -279,5 +279,5 @@ PETSC_EXTERN PetscErrorCode TaoCreate_BNTL(Tao tao)
 
   bnk              = (TAO_BNK *)tao->data;
   bnk->update_type = BNK_UPDATE_REDUCTION; /* trust region updates based on predicted/actual reduction */
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

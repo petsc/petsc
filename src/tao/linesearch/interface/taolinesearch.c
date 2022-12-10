@@ -26,7 +26,7 @@ PetscErrorCode TaoLineSearchViewFromOptions(TaoLineSearch A, PetscObject obj, co
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, TAOLINESEARCH_CLASSID, 1);
   PetscCall(PetscObjectViewFromOptions((PetscObject)A, obj, name));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -86,7 +86,7 @@ PetscErrorCode TaoLineSearchView(TaoLineSearch ls, PetscViewer viewer)
     PetscCall(TaoLineSearchGetType(ls, &type));
     PetscCall(PetscViewerStringSPrintf(viewer, " %-3.3s", type));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -136,7 +136,7 @@ PetscErrorCode TaoLineSearchCreate(MPI_Comm comm, TaoLineSearch *newls)
   ls->step     = 1.0;
   ls->initstep = 1.0;
   *newls       = ls;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -166,7 +166,7 @@ PetscErrorCode TaoLineSearchSetUp(TaoLineSearch ls)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ls, TAOLINESEARCH_CLASSID, 1);
-  if (ls->setupcalled) PetscFunctionReturn(0);
+  if (ls->setupcalled) PetscFunctionReturn(PETSC_SUCCESS);
   if (!((PetscObject)ls)->type_name) PetscCall(TaoLineSearchSetType(ls, default_type));
   PetscTryTypeMethod(ls, setup);
   if (ls->usetaoroutines) {
@@ -194,7 +194,7 @@ PetscErrorCode TaoLineSearchSetUp(TaoLineSearch ls)
     }
   }
   ls->setupcalled = PETSC_TRUE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -216,7 +216,7 @@ PetscErrorCode TaoLineSearchReset(TaoLineSearch ls)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ls, TAOLINESEARCH_CLASSID, 1);
   PetscTryTypeMethod(ls, reset);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -235,11 +235,11 @@ PetscErrorCode TaoLineSearchReset(TaoLineSearch ls)
 PetscErrorCode TaoLineSearchDestroy(TaoLineSearch *ls)
 {
   PetscFunctionBegin;
-  if (!*ls) PetscFunctionReturn(0);
+  if (!*ls) PetscFunctionReturn(PETSC_SUCCESS);
   PetscValidHeaderSpecific(*ls, TAOLINESEARCH_CLASSID, 1);
   if (--((PetscObject)*ls)->refct > 0) {
     *ls = NULL;
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
   PetscCall(VecDestroy(&(*ls)->stepdirection));
   PetscCall(VecDestroy(&(*ls)->start_x));
@@ -248,7 +248,7 @@ PetscErrorCode TaoLineSearchDestroy(TaoLineSearch *ls)
   if ((*ls)->ops->destroy) PetscCall((*(*ls)->ops->destroy)(*ls));
   if ((*ls)->usemonitor) PetscCall(PetscViewerDestroy(&(*ls)->viewer));
   PetscCall(PetscHeaderDestroy(ls));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -366,7 +366,7 @@ PetscErrorCode TaoLineSearchApply(TaoLineSearch ls, Vec x, PetscReal *f, Vec g, 
   if (steplength) *steplength = ls->step;
 
   PetscCall(TaoLineSearchViewFromOptions(ls, NULL, "-tao_ls_view"));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -401,7 +401,7 @@ PetscErrorCode TaoLineSearchSetType(TaoLineSearch ls, TaoLineSearchType type)
   PetscValidHeaderSpecific(ls, TAOLINESEARCH_CLASSID, 1);
   PetscValidCharPointer(type, 2);
   PetscCall(PetscObjectTypeCompare((PetscObject)ls, type, &flg));
-  if (flg) PetscFunctionReturn(0);
+  if (flg) PetscFunctionReturn(PETSC_SUCCESS);
 
   PetscCall(PetscFunctionListFind(TaoLineSearchList, type, (void (**)(void)) & r));
   PetscCheck(r, PetscObjectComm((PetscObject)ls), PETSC_ERR_ARG_UNKNOWN_TYPE, "Unable to find requested TaoLineSearch type %s", type);
@@ -428,7 +428,7 @@ PetscErrorCode TaoLineSearchSetType(TaoLineSearch ls, TaoLineSearchType type)
   ls->setupcalled         = PETSC_FALSE;
   PetscCall((*r)(ls));
   PetscCall(PetscObjectChangeTypeName((PetscObject)ls, type));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -466,7 +466,7 @@ PetscErrorCode TaoLineSearchMonitor(TaoLineSearch ls, PetscInt its, PetscReal f,
     }
     PetscCall(PetscViewerASCIISetTab(ls->viewer, tabs));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -525,7 +525,7 @@ PetscErrorCode TaoLineSearchSetFromOptions(TaoLineSearch ls)
   }
   PetscTryTypeMethod(ls, setfromoptions, PetscOptionsObject);
   PetscOptionsEnd();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -548,7 +548,7 @@ PetscErrorCode TaoLineSearchGetType(TaoLineSearch ls, TaoLineSearchType *type)
   PetscValidHeaderSpecific(ls, TAOLINESEARCH_CLASSID, 1);
   PetscValidPointer(type, 2);
   *type = ((PetscObject)ls)->type_name;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -580,7 +580,7 @@ PetscErrorCode TaoLineSearchGetNumberFunctionEvaluations(TaoLineSearch ls, Petsc
   *nfeval  = ls->nfeval;
   *ngeval  = ls->ngeval;
   *nfgeval = ls->nfgeval;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -603,7 +603,7 @@ PetscErrorCode TaoLineSearchIsUsingTaoRoutines(TaoLineSearch ls, PetscBool *flg)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ls, TAOLINESEARCH_CLASSID, 1);
   *flg = ls->usetaoroutines;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -646,7 +646,7 @@ PetscErrorCode TaoLineSearchSetObjectiveRoutine(TaoLineSearch ls, PetscErrorCode
   ls->ops->computeobjective = func;
   if (ctx) ls->userctx_func = ctx;
   ls->usetaoroutines = PETSC_FALSE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -688,7 +688,7 @@ PetscErrorCode TaoLineSearchSetGradientRoutine(TaoLineSearch ls, PetscErrorCode 
   ls->ops->computegradient = func;
   if (ctx) ls->userctx_grad = ctx;
   ls->usetaoroutines = PETSC_FALSE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -730,7 +730,7 @@ PetscErrorCode TaoLineSearchSetObjectiveAndGradientRoutine(TaoLineSearch ls, Pet
   ls->ops->computeobjectiveandgradient = func;
   if (ctx) ls->userctx_funcgrad = ctx;
   ls->usetaoroutines = PETSC_FALSE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -781,7 +781,7 @@ PetscErrorCode TaoLineSearchSetObjectiveAndGTSRoutine(TaoLineSearch ls, PetscErr
   if (ctx) ls->userctx_funcgts = ctx;
   ls->usegts         = PETSC_TRUE;
   ls->usetaoroutines = PETSC_FALSE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -805,7 +805,7 @@ PetscErrorCode TaoLineSearchUseTaoRoutines(TaoLineSearch ls, Tao ts)
   PetscValidHeaderSpecific(ts, TAO_CLASSID, 2);
   ls->tao            = ts;
   ls->usetaoroutines = PETSC_TRUE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -852,7 +852,7 @@ PetscErrorCode TaoLineSearchComputeObjective(TaoLineSearch ls, Vec x, PetscReal 
     PetscCall(PetscLogEventEnd(TAOLINESEARCH_Eval, ls, 0, 0, 0));
   }
   ls->nfeval++;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -898,7 +898,7 @@ PetscErrorCode TaoLineSearchComputeObjectiveAndGradient(TaoLineSearch ls, Vec x,
     PetscCall(PetscInfo(ls, "TaoLineSearch Function evaluation: %14.12e\n", (double)(*f)));
   }
   ls->nfgeval++;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -940,7 +940,7 @@ PetscErrorCode TaoLineSearchComputeGradient(TaoLineSearch ls, Vec x, Vec g)
     PetscCall(PetscLogEventEnd(TAOLINESEARCH_Eval, ls, 0, 0, 0));
   }
   ls->ngeval++;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -977,7 +977,7 @@ PetscErrorCode TaoLineSearchComputeObjectiveAndGTS(TaoLineSearch ls, Vec x, Pets
   PetscCall(PetscLogEventEnd(TAOLINESEARCH_Eval, ls, 0, 0, 0));
   PetscCall(PetscInfo(ls, "TaoLineSearch Function evaluation: %14.12e\n", (double)(*f)));
   ls->nfeval++;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -1026,7 +1026,7 @@ PetscErrorCode TaoLineSearchGetSolution(TaoLineSearch ls, Vec x, PetscReal *f, V
   if (ls->new_g) PetscCall(VecCopy(ls->new_g, g));
   if (steplength) *steplength = ls->step;
   *reason = ls->reason;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -1048,7 +1048,7 @@ PetscErrorCode TaoLineSearchGetStartingVector(TaoLineSearch ls, Vec *x)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ls, TAOLINESEARCH_CLASSID, 1);
   if (x) *x = ls->start_x;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -1070,7 +1070,7 @@ PetscErrorCode TaoLineSearchGetStepDirection(TaoLineSearch ls, Vec *s)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ls, TAOLINESEARCH_CLASSID, 1);
   if (s) *s = ls->stepdirection;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -1092,7 +1092,7 @@ PetscErrorCode TaoLineSearchGetFullStepObjective(TaoLineSearch ls, PetscReal *f_
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ls, TAOLINESEARCH_CLASSID, 1);
   *f_fullstep = ls->f_fullstep;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -1125,7 +1125,7 @@ PetscErrorCode TaoLineSearchSetVariableBounds(TaoLineSearch ls, Vec xl, Vec xu)
   ls->lower   = xl;
   ls->upper   = xu;
   ls->bounded = (PetscBool)(xl || xu);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -1148,7 +1148,7 @@ PetscErrorCode TaoLineSearchSetInitialStepLength(TaoLineSearch ls, PetscReal s)
   PetscValidHeaderSpecific(ls, TAOLINESEARCH_CLASSID, 1);
   PetscValidLogicalCollectiveReal(ls, s, 2);
   ls->initstep = s;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -1171,7 +1171,7 @@ PetscErrorCode TaoLineSearchGetStepLength(TaoLineSearch ls, PetscReal *s)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ls, TAOLINESEARCH_CLASSID, 1);
   *s = ls->step;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1204,7 +1204,7 @@ PetscErrorCode TaoLineSearchRegister(const char sname[], PetscErrorCode (*func)(
   PetscFunctionBegin;
   PetscCall(TaoLineSearchInitializePackage());
   PetscCall(PetscFunctionListAdd(&TaoLineSearchList, sname, (void (*)(void))func));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C

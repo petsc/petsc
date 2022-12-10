@@ -45,7 +45,7 @@ PetscErrorCode TSAdaptRegister(const char sname[], PetscErrorCode (*function)(TS
   PetscFunctionBegin;
   PetscCall(TSAdaptInitializePackage());
   PetscCall(PetscFunctionListAdd(&TSAdaptList, sname, function));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -60,7 +60,7 @@ PetscErrorCode TSAdaptRegister(const char sname[], PetscErrorCode (*function)(TS
 PetscErrorCode TSAdaptRegisterAll(void)
 {
   PetscFunctionBegin;
-  if (TSAdaptRegisterAllCalled) PetscFunctionReturn(0);
+  if (TSAdaptRegisterAllCalled) PetscFunctionReturn(PETSC_SUCCESS);
   TSAdaptRegisterAllCalled = PETSC_TRUE;
   PetscCall(TSAdaptRegister(TSADAPTNONE, TSAdaptCreate_None));
   PetscCall(TSAdaptRegister(TSADAPTBASIC, TSAdaptCreate_Basic));
@@ -68,7 +68,7 @@ PetscErrorCode TSAdaptRegisterAll(void)
   PetscCall(TSAdaptRegister(TSADAPTCFL, TSAdaptCreate_CFL));
   PetscCall(TSAdaptRegister(TSADAPTGLEE, TSAdaptCreate_GLEE));
   PetscCall(TSAdaptRegister(TSADAPTHISTORY, TSAdaptCreate_History));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -85,7 +85,7 @@ PetscErrorCode TSAdaptFinalizePackage(void)
   PetscCall(PetscFunctionListDestroy(&TSAdaptList));
   TSAdaptPackageInitialized = PETSC_FALSE;
   TSAdaptRegisterAllCalled  = PETSC_FALSE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -99,12 +99,12 @@ PetscErrorCode TSAdaptFinalizePackage(void)
 PetscErrorCode TSAdaptInitializePackage(void)
 {
   PetscFunctionBegin;
-  if (TSAdaptPackageInitialized) PetscFunctionReturn(0);
+  if (TSAdaptPackageInitialized) PetscFunctionReturn(PETSC_SUCCESS);
   TSAdaptPackageInitialized = PETSC_TRUE;
   PetscCall(PetscClassIdRegister("TSAdapt", &TSADAPT_CLASSID));
   PetscCall(TSAdaptRegisterAll());
   PetscCall(PetscRegisterFinalize(TSAdaptFinalizePackage));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -132,14 +132,14 @@ PetscErrorCode TSAdaptSetType(TSAdapt adapt, TSAdaptType type)
   PetscValidHeaderSpecific(adapt, TSADAPT_CLASSID, 1);
   PetscValidCharPointer(type, 2);
   PetscCall(PetscObjectTypeCompare((PetscObject)adapt, type, &match));
-  if (match) PetscFunctionReturn(0);
+  if (match) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(PetscFunctionListFind(TSAdaptList, type, &r));
   PetscCheck(r, PETSC_COMM_SELF, PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown TSAdapt type \"%s\" given", type);
   PetscTryTypeMethod(adapt, destroy);
   PetscCall(PetscMemzero(adapt->ops, sizeof(struct _TSAdaptOps)));
   PetscCall(PetscObjectChangeTypeName((PetscObject)adapt, type));
   PetscCall((*r)(adapt));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -163,7 +163,7 @@ PetscErrorCode TSAdaptGetType(TSAdapt adapt, TSAdaptType *type)
   PetscValidHeaderSpecific(adapt, TSADAPT_CLASSID, 1);
   PetscValidPointer(type, 2);
   *type = ((PetscObject)adapt)->type_name;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode TSAdaptSetOptionsPrefix(TSAdapt adapt, const char prefix[])
@@ -171,7 +171,7 @@ PetscErrorCode TSAdaptSetOptionsPrefix(TSAdapt adapt, const char prefix[])
   PetscFunctionBegin;
   PetscValidHeaderSpecific(adapt, TSADAPT_CLASSID, 1);
   PetscCall(PetscObjectSetOptionsPrefix((PetscObject)adapt, prefix));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -206,7 +206,7 @@ PetscErrorCode TSAdaptLoad(TSAdapt adapt, PetscViewer viewer)
   PetscCall(PetscViewerBinaryRead(viewer, type, 256, NULL, PETSC_CHAR));
   PetscCall(TSAdaptSetType(adapt, type));
   PetscTryTypeMethod(adapt, load, viewer);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode TSAdaptView(TSAdapt adapt, PetscViewer viewer)
@@ -251,7 +251,7 @@ PetscErrorCode TSAdaptView(TSAdapt adapt, PetscViewer viewer)
     PetscCall(PetscStrncpy(type, ((PetscObject)adapt)->type_name, 256));
     PetscCall(PetscViewerBinaryWrite(viewer, type, 256, PETSC_CHAR));
   } else PetscTryTypeMethod(adapt, view, viewer);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -271,17 +271,17 @@ PetscErrorCode TSAdaptReset(TSAdapt adapt)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(adapt, TSADAPT_CLASSID, 1);
   PetscTryTypeMethod(adapt, reset);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode TSAdaptDestroy(TSAdapt *adapt)
 {
   PetscFunctionBegin;
-  if (!*adapt) PetscFunctionReturn(0);
+  if (!*adapt) PetscFunctionReturn(PETSC_SUCCESS);
   PetscValidHeaderSpecific(*adapt, TSADAPT_CLASSID, 1);
   if (--((PetscObject)(*adapt))->refct > 0) {
     *adapt = NULL;
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   PetscCall(TSAdaptReset(*adapt));
@@ -289,7 +289,7 @@ PetscErrorCode TSAdaptDestroy(TSAdapt *adapt)
   PetscTryTypeMethod((*adapt), destroy);
   PetscCall(PetscViewerDestroy(&(*adapt)->monitor));
   PetscCall(PetscHeaderDestroy(adapt));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -318,7 +318,7 @@ PetscErrorCode TSAdaptSetMonitor(TSAdapt adapt, PetscBool flg)
   } else {
     PetscCall(PetscViewerDestroy(&adapt->monitor));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -346,7 +346,7 @@ PetscErrorCode TSAdaptSetCheckStage(TSAdapt adapt, PetscErrorCode (*func)(TSAdap
   PetscFunctionBegin;
   PetscValidHeaderSpecific(adapt, TSADAPT_CLASSID, 1);
   adapt->checkstage = func;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -372,7 +372,7 @@ PetscErrorCode TSAdaptSetAlwaysAccept(TSAdapt adapt, PetscBool flag)
   PetscValidHeaderSpecific(adapt, TSADAPT_CLASSID, 1);
   PetscValidLogicalCollectiveBool(adapt, flag, 2);
   adapt->always_accept = flag;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -405,7 +405,7 @@ PetscErrorCode TSAdaptSetSafety(TSAdapt adapt, PetscReal safety, PetscReal rejec
   PetscCheck(reject_safety == PETSC_DEFAULT || reject_safety <= 1, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Reject safety factor %g must be less than one", (double)reject_safety);
   if (safety != PETSC_DEFAULT) adapt->safety = safety;
   if (reject_safety != PETSC_DEFAULT) adapt->reject_safety = reject_safety;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -432,7 +432,7 @@ PetscErrorCode TSAdaptGetSafety(TSAdapt adapt, PetscReal *safety, PetscReal *rej
   if (reject_safety) PetscValidRealPointer(reject_safety, 3);
   if (safety) *safety = adapt->safety;
   if (reject_safety) *reject_safety = adapt->reject_safety;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -458,7 +458,7 @@ PetscErrorCode TSAdaptSetMaxIgnore(TSAdapt adapt, PetscReal max_ignore)
   PetscValidHeaderSpecific(adapt, TSADAPT_CLASSID, 1);
   PetscValidLogicalCollectiveReal(adapt, max_ignore, 2);
   adapt->ignore_max = max_ignore;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -483,7 +483,7 @@ PetscErrorCode TSAdaptGetMaxIgnore(TSAdapt adapt, PetscReal *max_ignore)
   PetscValidHeaderSpecific(adapt, TSADAPT_CLASSID, 1);
   PetscValidRealPointer(max_ignore, 2);
   *max_ignore = adapt->ignore_max;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -514,7 +514,7 @@ PetscErrorCode TSAdaptSetClip(TSAdapt adapt, PetscReal low, PetscReal high)
   PetscCheck(high == PETSC_DEFAULT || high >= 1, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Increase factor %g must be greater than one", (double)high);
   if (low != PETSC_DEFAULT) adapt->clip[0] = low;
   if (high != PETSC_DEFAULT) adapt->clip[1] = high;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -541,7 +541,7 @@ PetscErrorCode TSAdaptGetClip(TSAdapt adapt, PetscReal *low, PetscReal *high)
   if (high) PetscValidRealPointer(high, 3);
   if (low) *low = adapt->clip[0];
   if (high) *high = adapt->clip[1];
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -568,7 +568,7 @@ PetscErrorCode TSAdaptSetScaleSolveFailed(TSAdapt adapt, PetscReal scale)
   PetscCheck(scale == PETSC_DEFAULT || scale > 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Scale factor %g must be positive", (double)scale);
   PetscCheck(scale == PETSC_DEFAULT || scale <= 1, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Scale factor %g must be less than one", (double)scale);
   if (scale != PETSC_DEFAULT) adapt->scale_solve_failed = scale;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -592,7 +592,7 @@ PetscErrorCode TSAdaptGetScaleSolveFailed(TSAdapt adapt, PetscReal *scale)
   PetscValidHeaderSpecific(adapt, TSADAPT_CLASSID, 1);
   if (scale) PetscValidRealPointer(scale, 2);
   if (scale) *scale = adapt->scale_solve_failed;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -626,7 +626,7 @@ PetscErrorCode TSAdaptSetStepLimits(TSAdapt adapt, PetscReal hmin, PetscReal hma
   hmin = adapt->dt_min;
   hmax = adapt->dt_max;
   PetscCheck(hmax > hmin, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Maximum time step %g must greater than minimum time step %g", (double)hmax, (double)hmin);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -653,7 +653,7 @@ PetscErrorCode TSAdaptGetStepLimits(TSAdapt adapt, PetscReal *hmin, PetscReal *h
   if (hmax) PetscValidRealPointer(hmax, 3);
   if (hmin) *hmin = adapt->dt_min;
   if (hmax) *hmax = adapt->dt_max;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -737,7 +737,7 @@ PetscErrorCode TSAdaptSetFromOptions(TSAdapt adapt, PetscOptionItems *PetscOptio
 
   PetscTryTypeMethod(adapt, setfromoptions, PetscOptionsObject);
   PetscOptionsHeadEnd();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -757,7 +757,7 @@ PetscErrorCode TSAdaptCandidatesClear(TSAdapt adapt)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(adapt, TSADAPT_CLASSID, 1);
   PetscCall(PetscMemzero(&adapt->candidates, sizeof(adapt->candidates)));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -801,7 +801,7 @@ PetscErrorCode TSAdaptCandidateAdd(TSAdapt adapt, const char name[], PetscInt or
   adapt->candidates.ccfl[c]       = ccfl;
   adapt->candidates.cost[c]       = cost;
   adapt->candidates.n++;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -835,7 +835,7 @@ PetscErrorCode TSAdaptCandidatesGet(TSAdapt adapt, PetscInt *n, const PetscInt *
   if (stageorder) *stageorder = adapt->candidates.stageorder;
   if (ccfl) *ccfl = adapt->candidates.ccfl;
   if (cost) *cost = adapt->candidates.cost;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -881,7 +881,7 @@ PetscErrorCode TSAdaptChoose(TSAdapt adapt, TS ts, PetscReal h, PetscInt *next_s
   if (ts->event && ts->event->status != TSEVENT_NONE) {
     *next_h = h;
     *accept = PETSC_TRUE;
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   PetscUseTypeMethod(adapt, choose, ts, h, &scheme, next_h, accept, &wlte, &wltea, &wlter);
@@ -926,7 +926,7 @@ PetscErrorCode TSAdaptChoose(TSAdapt adapt, TS ts, PetscReal h, PetscInt *next_s
     }
     PetscCall(PetscViewerASCIISubtractTab(adapt->monitor, ((PetscObject)adapt)->tablevel));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -958,7 +958,7 @@ PetscErrorCode TSAdaptSetTimeStepIncreaseDelay(TSAdapt adapt, PetscInt cnt)
 {
   PetscFunctionBegin;
   adapt->timestepjustdecreased_delay = cnt;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -1029,7 +1029,7 @@ PetscErrorCode TSAdaptCheckStage(TSAdapt adapt, TS ts, PetscReal t, Vec Y, Petsc
       PetscCall(PetscViewerASCIISubtractTab(adapt->monitor, ((PetscObject)adapt)->tablevel));
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -1079,5 +1079,5 @@ PetscErrorCode TSAdaptCreate(MPI_Comm comm, TSAdapt *inadapt)
   adapt->timestepjustdecreased_delay = 0;
 
   *inadapt = adapt;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -27,7 +27,7 @@ PetscErrorCode TaoSetVariableBounds(Tao tao, Vec XL, Vec XU)
   tao->XL      = XL;
   tao->XU      = XU;
   tao->bounded = (PetscBool)(XL || XU);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -63,7 +63,7 @@ PetscErrorCode TaoSetVariableBoundsRoutine(Tao tao, PetscErrorCode (*func)(Tao, 
   tao->user_boundsP       = ctx;
   tao->ops->computebounds = func;
   tao->bounded            = func ? PETSC_TRUE : PETSC_FALSE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -88,7 +88,7 @@ PetscErrorCode TaoGetVariableBounds(Tao tao, Vec *XL, Vec *XU)
   PetscValidHeaderSpecific(tao, TAO_CLASSID, 1);
   if (XL) *XL = tao->XL;
   if (XU) *XU = tao->XU;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -120,7 +120,7 @@ PetscErrorCode TaoComputeVariableBounds(Tao tao)
     }
     PetscCallBack("Tao callback variable bounds", (*tao->ops->computebounds)(tao, tao->XL, tao->XU, tao->user_boundsP));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -150,7 +150,7 @@ PetscErrorCode TaoSetInequalityBounds(Tao tao, Vec IL, Vec IU)
   tao->IL               = IL;
   tao->IU               = IU;
   tao->ineq_doublesided = (PetscBool)(IL || IU);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -175,7 +175,7 @@ PetscErrorCode TaoGetInequalityBounds(Tao tao, Vec *IL, Vec *IU)
   PetscValidHeaderSpecific(tao, TAO_CLASSID, 1);
   if (IL) *IL = tao->IL;
   if (IU) *IU = tao->IU;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -204,7 +204,7 @@ PetscErrorCode TaoComputeConstraints(Tao tao, Vec X, Vec C)
   PetscCallBack("Tao callback constraints", (*tao->ops->computeconstraints)(tao, X, C, tao->user_conP));
   PetscCall(PetscLogEventEnd(TAO_ConstraintsEval, tao, X, C, NULL));
   tao->nconstraints++;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -242,7 +242,7 @@ PetscErrorCode TaoSetConstraintsRoutine(Tao tao, Vec c, PetscErrorCode (*func)(T
   tao->constraints             = c;
   tao->user_conP               = ctx;
   tao->ops->computeconstraints = func;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -283,7 +283,7 @@ PetscErrorCode TaoComputeDualVariables(Tao tao, Vec DL, Vec DU)
     PetscCall(VecSet(DL, 0.0));
     PetscCall(VecSet(DU, 0.0));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -308,7 +308,7 @@ PetscErrorCode TaoGetDualVariables(Tao tao, Vec *DE, Vec *DI)
   PetscValidHeaderSpecific(tao, TAO_CLASSID, 1);
   if (DE) *DE = tao->DE;
   if (DI) *DI = tao->DI;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -346,7 +346,7 @@ PetscErrorCode TaoSetEqualityConstraintsRoutine(Tao tao, Vec ce, PetscErrorCode 
   tao->constraints_equality            = ce;
   tao->user_con_equalityP              = ctx;
   tao->ops->computeequalityconstraints = func;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -384,7 +384,7 @@ PetscErrorCode TaoSetInequalityConstraintsRoutine(Tao tao, Vec ci, PetscErrorCod
   tao->ineq_constrained                  = func ? PETSC_TRUE : PETSC_FALSE;
   tao->user_con_inequalityP              = ctx;
   tao->ops->computeinequalityconstraints = func;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -417,7 +417,7 @@ PetscErrorCode TaoComputeEqualityConstraints(Tao tao, Vec X, Vec CE)
   PetscCallBack("Tao callback equality constraints", (*tao->ops->computeequalityconstraints)(tao, X, CE, tao->user_con_equalityP));
   PetscCall(PetscLogEventEnd(TAO_ConstraintsEval, tao, X, CE, NULL));
   tao->nconstraints++;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -450,5 +450,5 @@ PetscErrorCode TaoComputeInequalityConstraints(Tao tao, Vec X, Vec CI)
   PetscCallBack("Tao callback inequality constraints", (*tao->ops->computeinequalityconstraints)(tao, X, CI, tao->user_con_inequalityP));
   PetscCall(PetscLogEventEnd(TAO_ConstraintsEval, tao, X, CI, NULL));
   tao->nconstraints++;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

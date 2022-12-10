@@ -67,7 +67,7 @@ PetscErrorCode MatDisAssemble_MPISELL(Mat A)
   sell->B          = Bnew;
   A->was_assembled = PETSC_FALSE;
   A->assembled     = PETSC_FALSE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatSetUpMultiply_MPISELL(Mat mat)
@@ -190,7 +190,7 @@ PetscErrorCode MatSetUpMultiply_MPISELL(Mat mat)
   PetscCall(ISDestroy(&from));
   PetscCall(ISDestroy(&to));
   PetscCall(VecDestroy(&gvec));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*      ugly stuff added for Glenn someday we should fix this up */
@@ -240,7 +240,7 @@ PetscErrorCode MatMPISELLDiagonalScaleLocalSetUp(Mat inA, Vec scale)
   }
   PetscCall(PetscFree(r_rmapo));
   PetscCall(VecCreateSeq(PETSC_COMM_SELF, nt, &auglyoo));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatDiagonalScaleLocal_MPISELL(Mat A, Vec scale)
@@ -266,5 +266,5 @@ PetscErrorCode MatDiagonalScaleLocal_MPISELL(Mat A, Vec scale)
   PetscCall(VecRestoreArray(auglyoo, &o));
   /* column scale "off-diagonal" portion of local matrix */
   PetscCall(MatDiagonalScale(a->B, NULL, auglyoo));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

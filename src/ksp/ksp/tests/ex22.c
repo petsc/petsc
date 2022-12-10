@@ -115,7 +115,7 @@ PetscErrorCode test_solve(void)
   PetscCall(VecDestroy(&h));
 
   PetscCall(MatDestroy(&A));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode test_solve_matgetvecs(void)
@@ -214,7 +214,7 @@ PetscErrorCode test_solve_matgetvecs(void)
   PetscCall(MatDestroy(&A21));
 
   PetscCall(MatDestroy(&A));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **args)

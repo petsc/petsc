@@ -13,7 +13,7 @@ static PetscErrorCode PetscPartitionerReset_Shell(PetscPartitioner part)
   PetscFunctionBegin;
   PetscCall(PetscSectionDestroy(&p->section));
   PetscCall(ISDestroy(&p->partition));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscPartitionerDestroy_Shell(PetscPartitioner part)
@@ -21,7 +21,7 @@ static PetscErrorCode PetscPartitionerDestroy_Shell(PetscPartitioner part)
   PetscFunctionBegin;
   PetscCall(PetscPartitionerReset_Shell(part));
   PetscCall(PetscFree(part->data));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscPartitionerView_Shell_ASCII(PetscPartitioner part, PetscViewer viewer)
@@ -34,7 +34,7 @@ static PetscErrorCode PetscPartitionerView_Shell_ASCII(PetscPartitioner part, Pe
     PetscCall(PetscViewerASCIIPrintf(viewer, "using random partition\n"));
     PetscCall(PetscViewerASCIIPopTab(viewer));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscPartitionerView_Shell(PetscPartitioner part, PetscViewer viewer)
@@ -46,7 +46,7 @@ static PetscErrorCode PetscPartitionerView_Shell(PetscPartitioner part, PetscVie
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
   if (iascii) PetscCall(PetscPartitionerView_Shell_ASCII(part, viewer));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscPartitionerSetFromOptions_Shell(PetscPartitioner part, PetscOptionItems *PetscOptionsObject)
@@ -59,7 +59,7 @@ static PetscErrorCode PetscPartitionerSetFromOptions_Shell(PetscPartitioner part
   PetscCall(PetscOptionsBool("-petscpartitioner_shell_random", "Use a random partition", "PetscPartitionerView", PETSC_FALSE, &random, &set));
   if (set) PetscCall(PetscPartitionerShellSetRandom(part, random));
   PetscOptionsHeadEnd();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscPartitionerPartition_Shell(PetscPartitioner part, PetscInt nparts, PetscInt numVertices, PetscInt start[], PetscInt adjacency[], PetscSection vertSection, PetscSection targetSection, PetscSection partSection, IS *partition)
@@ -103,7 +103,7 @@ static PetscErrorCode PetscPartitionerPartition_Shell(PetscPartitioner part, Pet
   PetscCall(PetscSectionCopy(p->section, partSection));
   *partition = p->partition;
   PetscCall(PetscObjectReference((PetscObject)p->partition));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscPartitionerInitialize_Shell(PetscPartitioner part)
@@ -115,7 +115,7 @@ static PetscErrorCode PetscPartitionerInitialize_Shell(PetscPartitioner part)
   part->ops->reset          = PetscPartitionerReset_Shell;
   part->ops->destroy        = PetscPartitionerDestroy_Shell;
   part->ops->partition      = PetscPartitionerPartition_Shell;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -140,7 +140,7 @@ PETSC_EXTERN PetscErrorCode PetscPartitionerCreate_Shell(PetscPartitioner part)
 
   PetscCall(PetscPartitionerInitialize_Shell(part));
   p->random = PETSC_FALSE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -180,7 +180,7 @@ PetscErrorCode PetscPartitionerShellSetPartition(PetscPartitioner part, PetscInt
   PetscCall(PetscSectionSetUp(p->section));
   PetscCall(PetscSectionGetStorageSize(p->section, &numPoints));
   PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject)part), numPoints, points, PETSC_COPY_VALUES, &p->partition));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -203,7 +203,7 @@ PetscErrorCode PetscPartitionerShellSetRandom(PetscPartitioner part, PetscBool r
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(part, PETSCPARTITIONER_CLASSID, 1, PETSCPARTITIONERSHELL);
   p->random = random;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -229,5 +229,5 @@ PetscErrorCode PetscPartitionerShellGetRandom(PetscPartitioner part, PetscBool *
   PetscValidHeaderSpecificType(part, PETSCPARTITIONER_CLASSID, 1, PETSCPARTITIONERSHELL);
   PetscValidBoolPointer(random, 2);
   *random = p->random;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

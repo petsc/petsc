@@ -22,7 +22,7 @@ static PetscErrorCode InitInput_Triangle(struct triangulateio *inputCtx)
   inputCtx->holelist                   = NULL;
   inputCtx->numberofregions            = 0;
   inputCtx->regionlist                 = NULL;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode InitOutput_Triangle(struct triangulateio *outputCtx)
@@ -41,7 +41,7 @@ static PetscErrorCode InitOutput_Triangle(struct triangulateio *outputCtx)
   outputCtx->numberofedges         = 0;
   outputCtx->edgelist              = NULL;
   outputCtx->edgemarkerlist        = NULL;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode FiniOutput_Triangle(struct triangulateio *outputCtx)
@@ -55,7 +55,7 @@ static PetscErrorCode FiniOutput_Triangle(struct triangulateio *outputCtx)
   free(outputCtx->edgemarkerlist);
   free(outputCtx->trianglelist);
   free(outputCtx->neighborlist);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_EXTERN PetscErrorCode DMPlexGenerate_Triangle(DM boundary, PetscBool interpolate, DM *dm)
@@ -223,7 +223,7 @@ PETSC_EXTERN PetscErrorCode DMPlexGenerate_Triangle(DM boundary, PetscBool inter
   PetscCall(DMPlexCopyHoles(*dm, boundary));
 #endif
   PetscCall(FiniOutput_Triangle(&out));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_EXTERN PetscErrorCode DMPlexRefine_Triangle(DM dm, PetscReal *inmaxVolumes, DM *dmRefined)
@@ -392,5 +392,5 @@ PETSC_EXTERN PetscErrorCode DMPlexRefine_Triangle(DM dm, PetscReal *inmaxVolumes
 #if !defined(PETSC_USE_REAL_DOUBLE)
   PetscCall(PetscFree(maxVolumes));
 #endif
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

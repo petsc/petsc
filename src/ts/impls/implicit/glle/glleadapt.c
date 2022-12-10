@@ -53,7 +53,7 @@ PetscErrorCode TSGLLEAdaptRegister(const char sname[], PetscErrorCode (*function
   PetscFunctionBegin;
   PetscCall(TSGLLEAdaptInitializePackage());
   PetscCall(PetscFunctionListAdd(&TSGLLEAdaptList, sname, function));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -68,12 +68,12 @@ PetscErrorCode TSGLLEAdaptRegister(const char sname[], PetscErrorCode (*function
 PetscErrorCode TSGLLEAdaptRegisterAll(void)
 {
   PetscFunctionBegin;
-  if (TSGLLEAdaptRegisterAllCalled) PetscFunctionReturn(0);
+  if (TSGLLEAdaptRegisterAllCalled) PetscFunctionReturn(PETSC_SUCCESS);
   TSGLLEAdaptRegisterAllCalled = PETSC_TRUE;
   PetscCall(TSGLLEAdaptRegister(TSGLLEADAPT_NONE, TSGLLEAdaptCreate_None));
   PetscCall(TSGLLEAdaptRegister(TSGLLEADAPT_SIZE, TSGLLEAdaptCreate_Size));
   PetscCall(TSGLLEAdaptRegister(TSGLLEADAPT_BOTH, TSGLLEAdaptCreate_Both));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -90,7 +90,7 @@ PetscErrorCode TSGLLEAdaptFinalizePackage(void)
   PetscCall(PetscFunctionListDestroy(&TSGLLEAdaptList));
   TSGLLEAdaptPackageInitialized = PETSC_FALSE;
   TSGLLEAdaptRegisterAllCalled  = PETSC_FALSE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -104,12 +104,12 @@ PetscErrorCode TSGLLEAdaptFinalizePackage(void)
 PetscErrorCode TSGLLEAdaptInitializePackage(void)
 {
   PetscFunctionBegin;
-  if (TSGLLEAdaptPackageInitialized) PetscFunctionReturn(0);
+  if (TSGLLEAdaptPackageInitialized) PetscFunctionReturn(PETSC_SUCCESS);
   TSGLLEAdaptPackageInitialized = PETSC_TRUE;
   PetscCall(PetscClassIdRegister("TSGLLEAdapt", &TSGLLEADAPT_CLASSID));
   PetscCall(TSGLLEAdaptRegisterAll());
   PetscCall(PetscRegisterFinalize(TSGLLEAdaptFinalizePackage));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode TSGLLEAdaptSetType(TSGLLEAdapt adapt, TSGLLEAdaptType type)
@@ -122,14 +122,14 @@ PetscErrorCode TSGLLEAdaptSetType(TSGLLEAdapt adapt, TSGLLEAdaptType type)
   if (((PetscObject)adapt)->type_name) PetscUseTypeMethod(adapt, destroy);
   PetscCall((*r)(adapt));
   PetscCall(PetscObjectChangeTypeName((PetscObject)adapt, type));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode TSGLLEAdaptSetOptionsPrefix(TSGLLEAdapt adapt, const char prefix[])
 {
   PetscFunctionBegin;
   PetscCall(PetscObjectSetOptionsPrefix((PetscObject)adapt, prefix));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode TSGLLEAdaptView(TSGLLEAdapt adapt, PetscViewer viewer)
@@ -146,21 +146,21 @@ PetscErrorCode TSGLLEAdaptView(TSGLLEAdapt adapt, PetscViewer viewer)
       PetscCall(PetscViewerASCIIPopTab(viewer));
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode TSGLLEAdaptDestroy(TSGLLEAdapt *adapt)
 {
   PetscFunctionBegin;
-  if (!*adapt) PetscFunctionReturn(0);
+  if (!*adapt) PetscFunctionReturn(PETSC_SUCCESS);
   PetscValidHeaderSpecific(*adapt, TSGLLEADAPT_CLASSID, 1);
   if (--((PetscObject)(*adapt))->refct > 0) {
     *adapt = NULL;
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
   PetscTryTypeMethod((*adapt), destroy);
   PetscCall(PetscHeaderDestroy(adapt));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode TSGLLEAdaptSetFromOptions(TSGLLEAdapt adapt, PetscOptionItems *PetscOptionsObject)
@@ -176,7 +176,7 @@ PetscErrorCode TSGLLEAdaptSetFromOptions(TSGLLEAdapt adapt, PetscOptionItems *Pe
   if (flg || !((PetscObject)adapt)->type_name) PetscCall(TSGLLEAdaptSetType(adapt, type));
   PetscTryTypeMethod(adapt, setfromoptions, PetscOptionsObject);
   PetscOptionsHeadEnd();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode TSGLLEAdaptChoose(TSGLLEAdapt adapt, PetscInt n, const PetscInt orders[], const PetscReal errors[], const PetscReal cost[], PetscInt cur, PetscReal h, PetscReal tleft, PetscInt *next_sc, PetscReal *next_h, PetscBool *finish)
@@ -190,7 +190,7 @@ PetscErrorCode TSGLLEAdaptChoose(TSGLLEAdapt adapt, PetscInt n, const PetscInt o
   PetscValidRealPointer(next_h, 10);
   PetscValidBoolPointer(finish, 11);
   PetscUseTypeMethod(adapt, choose, n, orders, errors, cost, cur, h, tleft, next_sc, next_h, finish);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode TSGLLEAdaptCreate(MPI_Comm comm, TSGLLEAdapt *inadapt)
@@ -201,7 +201,7 @@ PetscErrorCode TSGLLEAdaptCreate(MPI_Comm comm, TSGLLEAdapt *inadapt)
   *inadapt = NULL;
   PetscCall(PetscHeaderCreate(adapt, TSGLLEADAPT_CLASSID, "TSGLLEAdapt", "General Linear adaptivity", "TS", comm, TSGLLEAdaptDestroy, TSGLLEAdaptView));
   *inadapt = adapt;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -212,7 +212,7 @@ static PetscErrorCode TSGLLEAdaptDestroy_JustFree(TSGLLEAdapt adapt)
 {
   PetscFunctionBegin;
   PetscCall(PetscFree(adapt->data));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* -------------------------------- None ----------------------------------- */
@@ -230,7 +230,7 @@ static PetscErrorCode TSGLLEAdaptChoose_None(TSGLLEAdapt adapt, PetscInt n, cons
     *finish = PETSC_TRUE;
     *next_h = tleft;
   } else *finish = PETSC_FALSE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode TSGLLEAdaptCreate_None(TSGLLEAdapt adapt)
@@ -242,7 +242,7 @@ PetscErrorCode TSGLLEAdaptCreate_None(TSGLLEAdapt adapt)
   adapt->data         = (void *)a;
   adapt->ops->choose  = TSGLLEAdaptChoose_None;
   adapt->ops->destroy = TSGLLEAdaptDestroy_JustFree;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* -------------------------------- Size ----------------------------------- */
@@ -271,7 +271,7 @@ static PetscErrorCode TSGLLEAdaptChoose_Size(TSGLLEAdapt adapt, PetscInt n, cons
     *finish = PETSC_TRUE;
     *next_h = tleft;
   } else *finish = PETSC_FALSE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode TSGLLEAdaptCreate_Size(TSGLLEAdapt adapt)
@@ -283,7 +283,7 @@ PetscErrorCode TSGLLEAdaptCreate_Size(TSGLLEAdapt adapt)
   adapt->data         = (void *)a;
   adapt->ops->choose  = TSGLLEAdaptChoose_Size;
   adapt->ops->destroy = TSGLLEAdaptDestroy_JustFree;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* -------------------------------- Both ----------------------------------- */
@@ -333,7 +333,7 @@ static PetscErrorCode TSGLLEAdaptChoose_Both(TSGLLEAdapt adapt, PetscInt n, cons
     *finish = PETSC_TRUE;
     *next_h = tleft;
   } else *finish = PETSC_FALSE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode TSGLLEAdaptCreate_Both(TSGLLEAdapt adapt)
@@ -345,5 +345,5 @@ PetscErrorCode TSGLLEAdaptCreate_Both(TSGLLEAdapt adapt)
   adapt->data         = (void *)a;
   adapt->ops->choose  = TSGLLEAdaptChoose_Both;
   adapt->ops->destroy = TSGLLEAdaptDestroy_JustFree;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

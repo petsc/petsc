@@ -27,14 +27,14 @@ static PetscErrorCode MatMult_ADA(Mat mat, Vec a, Vec y)
     PetscCall(VecPointwiseMult(ctx->W2, ctx->D2, a));
     PetscCall(VecAXPY(y, one, ctx->W2));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatMultTranspose_ADA(Mat mat, Vec a, Vec y)
 {
   PetscFunctionBegin;
   PetscCall(MatMult_ADA(mat, a, y));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatDiagonalSet_ADA(Mat M, Vec D, InsertMode mode)
@@ -50,7 +50,7 @@ static PetscErrorCode MatDiagonalSet_ADA(Mat M, Vec D, InsertMode mode)
     PetscCall(VecSet(ctx->D2, zero));
   }
   PetscCall(VecAXPY(ctx->D2, one, D));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatDestroy_ADA(Mat mat)
@@ -66,13 +66,13 @@ static PetscErrorCode MatDestroy_ADA(Mat mat)
   PetscCall(VecDestroy(&ctx->D1));
   PetscCall(VecDestroy(&ctx->D2));
   PetscCall(PetscFree(ctx));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatView_ADA(Mat mat, PetscViewer viewer)
 {
   PetscFunctionBegin;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatShift_ADA(Mat Y, PetscReal a)
@@ -82,7 +82,7 @@ static PetscErrorCode MatShift_ADA(Mat Y, PetscReal a)
   PetscFunctionBegin;
   PetscCall(MatShellGetContext(Y, &ctx));
   PetscCall(VecShift(ctx->D2, a));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatDuplicate_ADA(Mat mat, MatDuplicateOption op, Mat *M)
@@ -104,7 +104,7 @@ static PetscErrorCode MatDuplicate_ADA(Mat mat, MatDuplicateOption op, Mat *M)
   if (ctx->D1) PetscCall(PetscObjectDereference((PetscObject)D1b));
   PetscCall(PetscObjectDereference((PetscObject)D2b));
   PetscCall(PetscObjectDereference((PetscObject)A2));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatEqual_ADA(Mat A, Mat B, PetscBool *flg)
@@ -117,7 +117,7 @@ static PetscErrorCode MatEqual_ADA(Mat A, Mat B, PetscBool *flg)
   PetscCall(VecEqual(ctx1->D2, ctx2->D2, flg));
   if (*flg == PETSC_TRUE) PetscCall(VecEqual(ctx1->D1, ctx2->D1, flg));
   if (*flg == PETSC_TRUE) PetscCall(MatEqual(ctx1->A, ctx2->A, flg));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatScale_ADA(Mat mat, PetscReal a)
@@ -128,7 +128,7 @@ static PetscErrorCode MatScale_ADA(Mat mat, PetscReal a)
   PetscCall(MatShellGetContext(mat, &ctx));
   PetscCall(VecScale(ctx->D1, a));
   if (ctx->D2) PetscCall(VecScale(ctx->D2, a));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatTranspose_ADA(Mat mat, MatReuse reuse, Mat *B)
@@ -143,7 +143,7 @@ static PetscErrorCode MatTranspose_ADA(Mat mat, MatReuse reuse, Mat *B)
   } else if (reuse == MAT_REUSE_MATRIX) {
     PetscCall(MatCopy(mat, *B, SAME_NONZERO_PATTERN));
   } else SETERRQ(PetscObjectComm((PetscObject)mat), PETSC_ERR_SUP, "Does not support inplace transpose");
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatADAComputeDiagonal(Mat mat)
@@ -169,7 +169,7 @@ static PetscErrorCode MatADAComputeDiagonal(Mat mat)
   for (i = low; i < high; i++) dptr[i - low] = dtemp[i];
   PetscCall(VecRestoreArray(ctx->ADADiag, &dptr));
   PetscCall(PetscFree(dtemp));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatGetDiagonal_ADA(Mat mat, Vec v)
@@ -182,7 +182,7 @@ static PetscErrorCode MatGetDiagonal_ADA(Mat mat, Vec v)
   PetscCall(MatADAComputeDiagonal(mat));
   PetscCall(VecCopy(ctx->ADADiag, v));
   if (ctx->D2) PetscCall(VecAXPY(v, one, ctx->D2));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatCreateSubMatrix_ADA(Mat mat, IS isrow, IS iscol, MatReuse cll, Mat *newmat)
@@ -227,7 +227,7 @@ static PetscErrorCode MatCreateSubMatrix_ADA(Mat mat, IS isrow, IS iscol, MatReu
   PetscCall(PetscObjectDereference((PetscObject)Atemp));
   if (ctx->D1) PetscCall(PetscObjectDereference((PetscObject)D1));
   if (ctx->D2) PetscCall(PetscObjectDereference((PetscObject)D2));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatCreateSubMatrices_ADA(Mat A, PetscInt n, IS *irow, IS *icol, MatReuse scall, Mat **B)
@@ -237,7 +237,7 @@ static PetscErrorCode MatCreateSubMatrices_ADA(Mat A, PetscInt n, IS *irow, IS *
   PetscFunctionBegin;
   if (scall == MAT_INITIAL_MATRIX) PetscCall(PetscCalloc1(n + 1, B));
   for (i = 0; i < n; i++) PetscCall(MatCreateSubMatrix_ADA(A, irow[i], icol[i], scall, &(*B)[i]));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatGetColumnVector_ADA(Mat mat, Vec Y, PetscInt col)
@@ -252,7 +252,7 @@ static PetscErrorCode MatGetColumnVector_ADA(Mat mat, Vec Y, PetscInt col)
   PetscCall(VecAssemblyBegin(Y));
   PetscCall(VecAssemblyEnd(Y));
   PetscCall(MatMult_ADA(mat, Y, Y));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_INTERN PetscErrorCode MatConvert_ADA(Mat mat, MatType newtype, Mat *NewMat)
@@ -311,7 +311,7 @@ PETSC_INTERN PetscErrorCode MatConvert_ADA(Mat mat, MatType newtype, Mat *NewMat
     PetscCall(MatAssemblyEnd(*NewMat, MAT_FINAL_ASSEMBLY));
     PetscCall(VecDestroy(&X));
   } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "No support to convert objects to that type");
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatNorm_ADA(Mat mat, NormType type, PetscReal *norm)
@@ -325,7 +325,7 @@ static PetscErrorCode MatNorm_ADA(Mat mat, NormType type, PetscReal *norm)
   } else if (type == NORM_1 || type == NORM_INFINITY) {
     *norm = 1.0;
   } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "No two norm");
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -399,5 +399,5 @@ PetscErrorCode MatCreateADA(Mat mat, Vec d1, Vec d2, Mat *J)
   PetscCall(MatShellSetOperation(*J, MATOP_CREATE_SUBMATRIX, (void (*)(void))MatCreateSubMatrix_ADA));
 
   PetscCall(MatSetOption(*J, MAT_SYMMETRIC, PETSC_TRUE));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

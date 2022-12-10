@@ -132,7 +132,7 @@ PetscErrorCode PetscOpenHistoryFile(const char filename[], FILE **fd)
     err = fflush(*fd);
     PetscCheck(!err, PETSC_COMM_SELF, PETSC_ERR_SYS, "fflush() failed on file");
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_INTERN PetscErrorCode PetscCloseHistoryFile(FILE **fd)
@@ -153,7 +153,7 @@ PETSC_INTERN PetscErrorCode PetscCloseHistoryFile(FILE **fd)
     err = fclose(*fd);
     PetscCheck(!err, PETSC_COMM_SELF, PETSC_ERR_SYS, "fclose() failed on file");
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* ------------------------------------------------------------------------------*/
@@ -167,18 +167,18 @@ PETSC_INTERN PetscErrorCode PetscCloseHistoryFile(FILE **fd)
   in the debugger hence we call abort() instead of MPI_Abort().
 */
 
-void Petsc_MPI_AbortOnError(MPI_Comm *comm, PetscMPIInt *flag, ...)
+void Petsc_MPI_AbortOnError(PETSC_UNUSED MPI_Comm *comm, PetscMPIInt *flag, ...)
 {
   PetscFunctionBegin;
-  (*PetscErrorPrintf)("MPI error %d\n", *flag);
+  PetscCallContinue((*PetscErrorPrintf)("MPI error %d\n", *flag));
   abort();
 }
 
 void Petsc_MPI_DebuggerOnError(MPI_Comm *comm, PetscMPIInt *flag, ...)
 {
   PetscFunctionBegin;
-  (*PetscErrorPrintf)("MPI error %d\n", *flag);
-  if (PetscAttachDebugger()) PETSCABORT(*comm, *flag); /* hopeless so get out */
+  PetscCallContinue((*PetscErrorPrintf)("MPI error %d\n", *flag));
+  if (PetscAttachDebugger()) PETSCABORT(*comm, (PetscErrorCode)*flag); /* hopeless so get out */
 }
 
 /*@C
@@ -199,9 +199,9 @@ void Petsc_MPI_DebuggerOnError(MPI_Comm *comm, PetscMPIInt *flag, ...)
 PetscErrorCode PetscEnd(void)
 {
   PetscFunctionBegin;
-  PetscFinalize();
+  PetscCall(PetscFinalize());
   exit(0);
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 PetscBool                   PetscOptionsPublish = PETSC_FALSE;
@@ -233,7 +233,7 @@ PetscErrorCode PetscSetHelpVersionFunctions(PetscErrorCode (*help)(MPI_Comm), Pe
   PetscFunctionBegin;
   PetscExternalHelpFunction    = help;
   PetscExternalVersionFunction = version;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 #if defined(PETSC_USE_LOG)
@@ -540,7 +540,7 @@ PETSC_INTERN PetscErrorCode PetscOptionsCheckInitial_Private(const char help[])
     char  name[PETSC_MAX_PATH_LEN], fname[PETSC_MAX_PATH_LEN];
     FILE *file;
     if (mname[0]) {
-      PetscSNPrintf(name, PETSC_MAX_PATH_LEN, "%s.%d", mname, rank);
+      PetscCall(PetscSNPrintf(name, PETSC_MAX_PATH_LEN, "%s.%d", mname, rank));
       PetscCall(PetscFixFilename(name, fname));
       file = fopen(fname, "w");
       PetscCheck(file, PETSC_COMM_SELF, PETSC_ERR_FILE_OPEN, "Unable to open trace file: %s", fname);
@@ -636,5 +636,5 @@ PETSC_INTERN PetscErrorCode PetscOptionsCheckInitial_Private(const char help[])
 
   PetscCall(PetscOptionsGetReal(NULL, NULL, "-petsc_sleep", &si, &flg1));
   if (flg1) PetscCall(PetscSleep(si));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

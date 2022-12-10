@@ -8,7 +8,7 @@ PetscErrorCode PCFactorSetUpMatSolverType_Factor(PC pc)
   PetscFunctionBegin;
   PetscCheck(pc->pmat, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_WRONGSTATE, "You can only call this routine after the matrix object has been provided to the solver, for example with KSPSetOperators() or SNESSetJacobian()");
   if (!pc->setupcalled && !((PC_Factor *)icc)->fact) PetscCall(MatGetFactor(pc->pmat, ((PC_Factor *)icc)->solvertype, ((PC_Factor *)icc)->factortype, &((PC_Factor *)icc)->fact));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PCFactorSetZeroPivot_Factor(PC pc, PetscReal z)
@@ -17,7 +17,7 @@ PetscErrorCode PCFactorSetZeroPivot_Factor(PC pc, PetscReal z)
 
   PetscFunctionBegin;
   ilu->info.zeropivot = z;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PCFactorSetShiftType_Factor(PC pc, MatFactorShiftType shifttype)
@@ -30,7 +30,7 @@ PetscErrorCode PCFactorSetShiftType_Factor(PC pc, MatFactorShiftType shifttype)
     dir->info.shifttype = (PetscReal)shifttype;
     if ((shifttype == MAT_SHIFT_NONZERO || shifttype == MAT_SHIFT_INBLOCKS) && dir->info.shiftamount == 0.0) { dir->info.shiftamount = 100.0 * PETSC_MACHINE_EPSILON; /* set default amount if user has not called PCFactorSetShiftAmount() yet */ }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PCFactorSetShiftAmount_Factor(PC pc, PetscReal shiftamount)
@@ -40,7 +40,7 @@ PetscErrorCode PCFactorSetShiftAmount_Factor(PC pc, PetscReal shiftamount)
   PetscFunctionBegin;
   if (shiftamount == (PetscReal)PETSC_DECIDE) dir->info.shiftamount = 100.0 * PETSC_MACHINE_EPSILON;
   else dir->info.shiftamount = shiftamount;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PCFactorSetDropTolerance_Factor(PC pc, PetscReal dt, PetscReal dtcol, PetscInt dtcount)
@@ -56,7 +56,7 @@ PetscErrorCode PCFactorSetDropTolerance_Factor(PC pc, PetscReal dt, PetscReal dt
   ilu->info.dtcol   = dtcol;
   ilu->info.dtcount = dtcount;
   ilu->info.fill    = PETSC_DEFAULT;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PCFactorSetFill_Factor(PC pc, PetscReal fill)
@@ -65,7 +65,7 @@ PetscErrorCode PCFactorSetFill_Factor(PC pc, PetscReal fill)
 
   PetscFunctionBegin;
   dir->info.fill = fill;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PCFactorSetMatOrderingType_Factor(PC pc, MatOrderingType ordering)
@@ -81,7 +81,7 @@ PetscErrorCode PCFactorSetMatOrderingType_Factor(PC pc, MatOrderingType ordering
     PetscCall(PetscStrcmp(dir->ordering, ordering, &flg));
     PetscCheck(flg, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_WRONGSTATE, "Cannot change ordering after use");
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PCFactorGetLevels_Factor(PC pc, PetscInt *levels)
@@ -90,7 +90,7 @@ PetscErrorCode PCFactorGetLevels_Factor(PC pc, PetscInt *levels)
 
   PetscFunctionBegin;
   *levels = ilu->info.levels;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PCFactorGetZeroPivot_Factor(PC pc, PetscReal *pivot)
@@ -99,7 +99,7 @@ PetscErrorCode PCFactorGetZeroPivot_Factor(PC pc, PetscReal *pivot)
 
   PetscFunctionBegin;
   *pivot = ilu->info.zeropivot;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PCFactorGetShiftAmount_Factor(PC pc, PetscReal *shift)
@@ -108,7 +108,7 @@ PetscErrorCode PCFactorGetShiftAmount_Factor(PC pc, PetscReal *shift)
 
   PetscFunctionBegin;
   *shift = ilu->info.shiftamount;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PCFactorGetShiftType_Factor(PC pc, MatFactorShiftType *type)
@@ -117,7 +117,7 @@ PetscErrorCode PCFactorGetShiftType_Factor(PC pc, MatFactorShiftType *type)
 
   PetscFunctionBegin;
   *type = (MatFactorShiftType)(int)ilu->info.shifttype;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PCFactorSetLevels_Factor(PC pc, PetscInt levels)
@@ -131,7 +131,7 @@ PetscErrorCode PCFactorSetLevels_Factor(PC pc, PetscInt levels)
     pc->setupcalled  = 0;          /* force a complete rebuild of preconditioner factored matrices */
     ilu->info.levels = levels;
   } else PetscCheck(!ilu->info.usedt, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_WRONGSTATE, "Cannot change levels after use with ILUdt");
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PCFactorSetAllowDiagonalFill_Factor(PC pc, PetscBool flg)
@@ -140,7 +140,7 @@ PetscErrorCode PCFactorSetAllowDiagonalFill_Factor(PC pc, PetscBool flg)
 
   PetscFunctionBegin;
   dir->info.diagonal_fill = (PetscReal)flg;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PCFactorGetAllowDiagonalFill_Factor(PC pc, PetscBool *flg)
@@ -149,7 +149,7 @@ PetscErrorCode PCFactorGetAllowDiagonalFill_Factor(PC pc, PetscBool *flg)
 
   PetscFunctionBegin;
   *flg = dir->info.diagonal_fill ? PETSC_TRUE : PETSC_FALSE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PCFactorSetPivotInBlocks_Factor(PC pc, PetscBool pivot)
@@ -158,7 +158,7 @@ PetscErrorCode PCFactorSetPivotInBlocks_Factor(PC pc, PetscBool pivot)
 
   PetscFunctionBegin;
   dir->info.pivotinblocks = pivot ? 1.0 : 0.0;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PCFactorGetMatrix_Factor(PC pc, Mat *mat)
@@ -168,7 +168,7 @@ PetscErrorCode PCFactorGetMatrix_Factor(PC pc, Mat *mat)
   PetscFunctionBegin;
   PetscCheck(ilu->fact, PetscObjectComm((PetscObject)pc), PETSC_ERR_ORDER, "Matrix not yet factored; call after KSPSetUp() or PCSetUp()");
   *mat = ilu->fact;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* allow access to preallocation information */
@@ -189,7 +189,7 @@ PetscErrorCode PCFactorSetMatSolverType_Factor(PC pc, MatSolverType stype)
 
   PetscCall(PetscFree(lu->solvertype));
   PetscCall(PetscStrallocpy(stype, &lu->solvertype));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PCFactorGetMatSolverType_Factor(PC pc, MatSolverType *stype)
@@ -198,7 +198,7 @@ PetscErrorCode PCFactorGetMatSolverType_Factor(PC pc, MatSolverType *stype)
 
   PetscFunctionBegin;
   *stype = lu->solvertype;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PCFactorSetColumnPivot_Factor(PC pc, PetscReal dtcol)
@@ -208,7 +208,7 @@ PetscErrorCode PCFactorSetColumnPivot_Factor(PC pc, PetscReal dtcol)
   PetscFunctionBegin;
   PetscCheck(dtcol >= 0.0 && dtcol <= 1.0, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_OUTOFRANGE, "Column pivot tolerance is %g must be between 0 and 1", (double)dtcol);
   dir->info.dtcol = dtcol;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PCSetFromOptions_Factor(PC pc, PetscOptionItems *PetscOptionsObject)
@@ -248,7 +248,7 @@ PetscErrorCode PCSetFromOptions_Factor(PC pc, PetscOptionItems *PetscOptionsObje
   PetscCall(MatGetOrderingList(&ordlist));
   PetscCall(PetscOptionsFList("-pc_factor_mat_ordering_type", "Reordering to reduce nonzeros in factored matrix", "PCFactorSetMatOrderingType", ordlist, ((PC_Factor *)factor)->ordering, tname, sizeof(tname), &flg));
   if (flg) PetscCall(PCFactorSetMatOrderingType(pc, tname));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PCView_Factor(PC pc, PetscViewer viewer)
@@ -318,5 +318,5 @@ PetscErrorCode PCView_Factor(PC pc, PetscViewer viewer)
     PetscCall(MatGetFactorType(factor->fact, &t));
     if (t == MAT_FACTOR_ILU || t == MAT_FACTOR_ICC) PetscCall(PetscViewerStringSPrintf(viewer, " lvls=%" PetscInt_FMT ",order=%s", (PetscInt)factor->info.levels, factor->ordering));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

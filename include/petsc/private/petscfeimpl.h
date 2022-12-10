@@ -284,7 +284,7 @@ static inline PetscErrorCode PetscFEInterpolate_Static(PetscFE fe, const PetscSc
     }
   }
   PetscCall(PetscFEPushforward(fe, fegeom, 1, interpolant));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static inline PetscErrorCode PetscFEInterpolateGradient_Static(PetscFE fe, PetscInt k, const PetscScalar x[], PetscFEGeom *fegeom, PetscInt q, PetscScalar interpolant[])
@@ -320,7 +320,7 @@ static inline PetscErrorCode PetscFEInterpolateGradient_Static(PetscFE fe, Petsc
     }
   }
   PetscCall(PetscFEPushforwardGradient(fe, fegeom, 1, interpolant));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static inline PetscErrorCode PetscFEFreeInterpolateGradient_Static(PetscFE fe, const PetscReal basisDer[], const PetscScalar x[], PetscInt dim, const PetscReal invJ[], const PetscReal n[], PetscInt q, PetscScalar interpolant[])
@@ -349,7 +349,7 @@ static inline PetscErrorCode PetscFEFreeInterpolateGradient_Static(PetscFE fe, c
       for (d = 0; d < dim; ++d) interpolant[d] = compGradient[d];
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static inline PetscErrorCode PetscFEInterpolateFieldAndGradient_Static(PetscFE fe, PetscInt k, const PetscScalar x[], PetscFEGeom *fegeom, PetscInt q, PetscScalar interpolant[], PetscScalar interpolantGrad[])
@@ -390,7 +390,7 @@ static inline PetscErrorCode PetscFEInterpolateFieldAndGradient_Static(PetscFE f
   }
   PetscCall(PetscFEPushforward(fe, fegeom, 1, interpolant));
   PetscCall(PetscFEPushforwardGradient(fe, fegeom, 1, interpolantGrad));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_INTERN PetscErrorCode PetscDualSpaceLatticePointLexicographic_Internal(PetscInt, PetscInt, PetscInt[]);

@@ -7,7 +7,7 @@ static PetscErrorCode KSPReset_Chebyshev(KSP ksp)
 
   PetscFunctionBegin;
   if (cheb->kspest) PetscCall(KSPReset(cheb->kspest));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -31,7 +31,7 @@ static PetscErrorCode KSPChebyshevComputeExtremeEigenvalues_Private(KSP kspest, 
   PetscCall(PetscFree2(re, im));
   *emax = max;
   *emin = min;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode KSPSetUp_Chebyshev(KSP ksp)
@@ -106,7 +106,7 @@ static PetscErrorCode KSPSetUp_Chebyshev(KSP ksp)
         PetscCall(PCGetFailedReason(ksp->pc, &pcreason));
         ksp->reason = KSP_DIVERGED_PC_FAILED;
         PetscCall(PetscInfo(ksp, "Eigen estimator failed: %s %s at iteration %" PetscInt_FMT, KSPConvergedReasons[reason], PCFailedReasons[pcreason], its));
-        PetscFunctionReturn(0);
+        PetscFunctionReturn(PETSC_SUCCESS);
       } else if (reason == KSP_CONVERGED_RTOL || reason == KSP_CONVERGED_ATOL) {
         PetscCall(PetscInfo(ksp, "Eigen estimator converged prematurely. Should not happen except for small or low rank problem\n"));
       } else if (reason < 0) {
@@ -125,7 +125,7 @@ static PetscErrorCode KSPSetUp_Chebyshev(KSP ksp)
       cheb->pmatstate = pmatstate;
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode KSPChebyshevGetEigenvalues_Chebyshev(KSP ksp, PetscReal *emax, PetscReal *emin)
@@ -149,7 +149,7 @@ static PetscErrorCode KSPChebyshevGetEigenvalues_Chebyshev(KSP ksp, PetscReal *e
   } else if (cheb->emin_provided != 0.) {
     *emin = cheb->tform[0] * cheb->emin_provided + cheb->tform[1] * cheb->emax_provided;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode KSPChebyshevSetEigenvalues_Chebyshev(KSP ksp, PetscReal emax, PetscReal emin)
@@ -163,7 +163,7 @@ static PetscErrorCode KSPChebyshevSetEigenvalues_Chebyshev(KSP ksp, PetscReal em
   chebyshevP->emin = emin;
 
   PetscCall(KSPChebyshevEstEigSet(ksp, 0., 0., 0., 0.)); /* Destroy any estimation setup */
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode KSPChebyshevEstEigSet_Chebyshev(KSP ksp, PetscReal a, PetscReal b, PetscReal c, PetscReal d)
@@ -197,7 +197,7 @@ static PetscErrorCode KSPChebyshevEstEigSet_Chebyshev(KSP ksp, PetscReal a, Pets
   } else {
     PetscCall(KSPDestroy(&cheb->kspest));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode KSPChebyshevEstEigSetUseNoisy_Chebyshev(KSP ksp, PetscBool use)
@@ -206,7 +206,7 @@ static PetscErrorCode KSPChebyshevEstEigSetUseNoisy_Chebyshev(KSP ksp, PetscBool
 
   PetscFunctionBegin;
   cheb->usenoisy = use;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -242,7 +242,7 @@ PetscErrorCode KSPChebyshevSetEigenvalues(KSP ksp, PetscReal emax, PetscReal emi
   PetscValidLogicalCollectiveReal(ksp, emax, 2);
   PetscValidLogicalCollectiveReal(ksp, emin, 3);
   PetscTryMethod(ksp, "KSPChebyshevSetEigenvalues_C", (KSP, PetscReal, PetscReal), (ksp, emax, emin));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -288,7 +288,7 @@ PetscErrorCode KSPChebyshevEstEigSet(KSP ksp, PetscReal a, PetscReal b, PetscRea
   PetscValidLogicalCollectiveReal(ksp, c, 4);
   PetscValidLogicalCollectiveReal(ksp, d, 5);
   PetscTryMethod(ksp, "KSPChebyshevEstEigSet_C", (KSP, PetscReal, PetscReal, PetscReal, PetscReal), (ksp, a, b, c, d));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -315,7 +315,7 @@ PetscErrorCode KSPChebyshevEstEigSetUseNoisy(KSP ksp, PetscBool use)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
   PetscTryMethod(ksp, "KSPChebyshevEstEigSetUseNoisy_C", (KSP, PetscBool), (ksp, use));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -340,7 +340,7 @@ PetscErrorCode KSPChebyshevEstEigGetKSP(KSP ksp, KSP *kspest)
   PetscValidPointer(kspest, 2);
   *kspest = NULL;
   PetscTryMethod(ksp, "KSPChebyshevEstEigGetKSP_C", (KSP, KSP *), (ksp, kspest));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode KSPChebyshevEstEigGetKSP_Chebyshev(KSP ksp, KSP *kspest)
@@ -349,7 +349,7 @@ static PetscErrorCode KSPChebyshevEstEigGetKSP_Chebyshev(KSP ksp, KSP *kspest)
 
   PetscFunctionBegin;
   *kspest = cheb->kspest;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode KSPSetFromOptions_Chebyshev(KSP ksp, PetscOptionItems *PetscOptionsObject)
@@ -393,7 +393,7 @@ static PetscErrorCode KSPSetFromOptions_Chebyshev(KSP ksp, PetscOptionItems *Pet
     PetscCall(KSPSetFromOptions(cheb->kspest));
   }
   PetscOptionsHeadEnd();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode KSPSolve_Chebyshev(KSP ksp)
@@ -469,7 +469,7 @@ static PetscErrorCode KSPSolve_Chebyshev(KSP ksp)
   } else ksp->reason = KSP_CONVERGED_ITERATING;
   if (ksp->reason || ksp->max_it == 0) {
     if (ksp->max_it == 0) ksp->reason = KSP_DIVERGED_ITS; /* This for a V(0,x) cycle */
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
   if (ksp->normtype != KSP_NORM_PRECONDITIONED) { PetscCall(KSP_PCApply(ksp, r, p[k])); /* p[k] = B^{-1}r */ }
   PetscCall(VecAYPX(p[k], scale, p[km1])); /* p[k] = scale B^{-1}r + p[km1] */
@@ -561,7 +561,7 @@ static PetscErrorCode KSPSolve_Chebyshev(KSP ksp)
   ksp->vec_sol = sol_orig;
   if (k) PetscCall(VecCopy(p[k], sol_orig));
   if (ksp->reason == KSP_CONVERGED_ITS) PetscCall(KSPLogErrorHistory(ksp));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode KSPView_Chebyshev(KSP ksp, PetscViewer viewer)
@@ -587,7 +587,7 @@ static PetscErrorCode KSPView_Chebyshev(KSP ksp, PetscViewer viewer)
                                        (double)cheb->tform[3]));
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode KSPDestroy_Chebyshev(KSP ksp)
@@ -601,7 +601,7 @@ static PetscErrorCode KSPDestroy_Chebyshev(KSP ksp)
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPChebyshevEstEigSetUseNoisy_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPChebyshevEstEigGetKSP_C", NULL));
   PetscCall(KSPDestroyDefault(ksp));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -668,5 +668,5 @@ PETSC_EXTERN PetscErrorCode KSPCreate_Chebyshev(KSP ksp)
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPChebyshevEstEigSet_C", KSPChebyshevEstEigSet_Chebyshev));
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPChebyshevEstEigSetUseNoisy_C", KSPChebyshevEstEigSetUseNoisy_Chebyshev));
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPChebyshevEstEigGetKSP_C", KSPChebyshevEstEigGetKSP_Chebyshev));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

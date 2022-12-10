@@ -22,7 +22,7 @@ PetscErrorCode TaoPythonSetType(Tao tao, const char pyname[])
   PetscValidHeaderSpecific(tao, TAO_CLASSID, 1);
   PetscValidCharPointer(pyname, 2);
   PetscTryMethod(tao, "TaoPythonSetType_C", (Tao, const char[]), (tao, pyname));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -46,5 +46,5 @@ PetscErrorCode TaoPythonGetType(Tao tao, const char *pyname[])
   PetscValidHeaderSpecific(tao, TAO_CLASSID, 1);
   PetscValidPointer(pyname, 2);
   PetscUseMethod(tao, "TaoPythonGetType_C", (Tao, const char *[]), (tao, pyname));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

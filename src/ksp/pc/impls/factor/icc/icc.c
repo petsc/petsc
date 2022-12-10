@@ -46,7 +46,7 @@ static PetscErrorCode PCSetUp_ICC(PC pc)
   PetscCall(MatFactorGetError(((PC_Factor *)icc)->fact, &err));
   if (err) { /* FactorSymbolic() fails */
     pc->failedreason = (PCFailedReason)err;
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   PetscCall(MatCholeskyFactorNumeric(((PC_Factor *)icc)->fact, pc->pmat, &((PC_Factor *)icc)->info));
@@ -61,7 +61,7 @@ static PetscErrorCode PCSetUp_ICC(PC pc)
     PetscCall(MatFactorGetSolverType(((PC_Factor *)icc)->fact, &solverpackage));
     PetscCall(PCFactorSetMatSolverType(pc, solverpackage));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCReset_ICC(PC pc)
@@ -70,7 +70,7 @@ static PetscErrorCode PCReset_ICC(PC pc)
 
   PetscFunctionBegin;
   PetscCall(MatDestroy(&((PC_Factor *)icc)->fact));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCDestroy_ICC(PC pc)
@@ -83,7 +83,7 @@ static PetscErrorCode PCDestroy_ICC(PC pc)
   PetscCall(PetscFree(((PC_Factor *)icc)->solvertype));
   PetscCall(PCFactorClearComposedFunctions(pc));
   PetscCall(PetscFree(pc->data));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCApply_ICC(PC pc, Vec x, Vec y)
@@ -92,7 +92,7 @@ static PetscErrorCode PCApply_ICC(PC pc, Vec x, Vec y)
 
   PetscFunctionBegin;
   PetscCall(MatSolve(((PC_Factor *)icc)->fact, x, y));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCMatApply_ICC(PC pc, Mat X, Mat Y)
@@ -101,7 +101,7 @@ static PetscErrorCode PCMatApply_ICC(PC pc, Mat X, Mat Y)
 
   PetscFunctionBegin;
   PetscCall(MatMatSolve(((PC_Factor *)icc)->fact, X, Y));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCApplySymmetricLeft_ICC(PC pc, Vec x, Vec y)
@@ -110,7 +110,7 @@ static PetscErrorCode PCApplySymmetricLeft_ICC(PC pc, Vec x, Vec y)
 
   PetscFunctionBegin;
   PetscCall(MatForwardSolve(((PC_Factor *)icc)->fact, x, y));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCApplySymmetricRight_ICC(PC pc, Vec x, Vec y)
@@ -119,7 +119,7 @@ static PetscErrorCode PCApplySymmetricRight_ICC(PC pc, Vec x, Vec y)
 
   PetscFunctionBegin;
   PetscCall(MatBackwardSolve(((PC_Factor *)icc)->fact, x, y));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCSetFromOptions_ICC(PC pc, PetscOptionItems *PetscOptionsObject)
@@ -143,7 +143,7 @@ static PetscErrorCode PCSetFromOptions_ICC(PC pc, PetscOptionItems *PetscOptions
   }
   */
   PetscOptionsHeadEnd();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 extern PetscErrorCode PCFactorSetDropTolerance_ILU(PC, PetscReal, PetscReal, PetscInt);
@@ -204,5 +204,5 @@ PETSC_EXTERN PetscErrorCode PCCreate_ICC(PC pc)
   pc->ops->view                = PCView_Factor;
   pc->ops->applysymmetricleft  = PCApplySymmetricLeft_ICC;
   pc->ops->applysymmetricright = PCApplySymmetricRight_ICC;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

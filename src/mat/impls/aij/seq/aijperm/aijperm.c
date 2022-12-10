@@ -89,7 +89,7 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJPERM_SeqAIJ(Mat A, MatType type, Ma
   PetscCall(PetscObjectChangeTypeName((PetscObject)B, MATSEQAIJ));
 
   *newmat = B;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatDestroy_SeqAIJPERM(Mat A)
@@ -112,7 +112,7 @@ PetscErrorCode MatDestroy_SeqAIJPERM(Mat A)
    * that is how things work for the SuperLU matrix class. */
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatConvert_seqaijperm_seqaij_C", NULL));
   PetscCall(MatDestroy_SeqAIJ(A));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatDuplicate_SeqAIJPERM(Mat A, MatDuplicateOption op, Mat *M)
@@ -148,7 +148,7 @@ PetscErrorCode MatDuplicate_SeqAIJPERM(Mat A, MatDuplicateOption op, Mat *M)
   PetscCall(PetscArraycpy(aijperm_dest->iperm, aijperm->iperm, A->rmap->n));
   PetscCall(PetscArraycpy(aijperm_dest->xgroup, aijperm->xgroup, aijperm->ngroup + 1));
   PetscCall(PetscArraycpy(aijperm_dest->nzgroup, aijperm->nzgroup, aijperm->ngroup));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatSeqAIJPERM_create_perm(Mat A)
@@ -170,7 +170,7 @@ PetscErrorCode MatSeqAIJPERM_create_perm(Mat A)
   PetscInt i, ngroup, istart, ipos;
 
   PetscFunctionBegin;
-  if (aijperm->nonzerostate == A->nonzerostate) PetscFunctionReturn(0); /* permutation exists and matches current nonzero structure */
+  if (aijperm->nonzerostate == A->nonzerostate) PetscFunctionReturn(PETSC_SUCCESS); /* permutation exists and matches current nonzero structure */
   aijperm->nonzerostate = A->nonzerostate;
   /* Free anything previously put in the Mat_SeqAIJPERM data structure. */
   PetscCall(PetscFree(aijperm->xgroup));
@@ -248,7 +248,7 @@ PetscErrorCode MatSeqAIJPERM_create_perm(Mat A)
   PetscCall(PetscFree(rows_in_bucket));
   PetscCall(PetscFree(ipnz));
   PetscCall(PetscFree(nz_in_row));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatAssemblyEnd_SeqAIJPERM(Mat A, MatAssemblyType mode)
@@ -256,7 +256,7 @@ PetscErrorCode MatAssemblyEnd_SeqAIJPERM(Mat A, MatAssemblyType mode)
   Mat_SeqAIJ *a = (Mat_SeqAIJ *)A->data;
 
   PetscFunctionBegin;
-  if (mode == MAT_FLUSH_ASSEMBLY) PetscFunctionReturn(0);
+  if (mode == MAT_FLUSH_ASSEMBLY) PetscFunctionReturn(PETSC_SUCCESS);
 
   /* Since a MATSEQAIJPERM matrix is really just a MATSEQAIJ with some
    * extra information, call the AssemblyEnd routine for a MATSEQAIJ.
@@ -271,7 +271,7 @@ PetscErrorCode MatAssemblyEnd_SeqAIJPERM(Mat A, MatAssemblyType mode)
 
   /* Now calculate the permutation and grouping information. */
   PetscCall(MatSeqAIJPERM_create_perm(A));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatMult_SeqAIJPERM(Mat A, Vec xx, Vec yy)
@@ -453,7 +453,7 @@ PetscErrorCode MatMult_SeqAIJPERM(Mat A, Vec xx, Vec yy)
   PetscCall(PetscLogFlops(PetscMax(2.0 * a->nz - A->rmap->n, 0)));
   PetscCall(VecRestoreArrayRead(xx, &x));
   PetscCall(VecRestoreArray(yy, &y));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* MatMultAdd_SeqAIJPERM() calculates yy = ww + A * xx.
@@ -604,7 +604,7 @@ PetscErrorCode MatMultAdd_SeqAIJPERM(Mat A, Vec xx, Vec ww, Vec yy)
   PetscCall(PetscLogFlops(2.0 * a->nz));
   PetscCall(VecRestoreArrayRead(xx, &x));
   PetscCall(VecRestoreArrayPair(yy, ww, &y, &w));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* MatConvert_SeqAIJ_SeqAIJPERM converts a SeqAIJ matrix into a
@@ -620,7 +620,7 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJPERM(Mat A, MatType type, Ma
   PetscFunctionBegin;
   if (reuse == MAT_INITIAL_MATRIX) PetscCall(MatDuplicate(A, MAT_COPY_VALUES, &B));
   PetscCall(PetscObjectTypeCompare((PetscObject)A, type, &sametype));
-  if (sametype) PetscFunctionReturn(0);
+  if (sametype) PetscFunctionReturn(PETSC_SUCCESS);
 
   PetscCall(PetscNew(&aijperm));
   B->spptr = (void *)aijperm;
@@ -640,7 +640,7 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJPERM(Mat A, MatType type, Ma
 
   PetscCall(PetscObjectChangeTypeName((PetscObject)B, MATSEQAIJPERM));
   *newmat = B;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -681,7 +681,7 @@ PetscErrorCode MatCreateSeqAIJPERM(MPI_Comm comm, PetscInt m, PetscInt n, PetscI
   PetscCall(MatSetSizes(*A, m, n, m, n));
   PetscCall(MatSetType(*A, MATSEQAIJPERM));
   PetscCall(MatSeqAIJSetPreallocation_SeqAIJ(*A, nz, nnz));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJPERM(Mat A)
@@ -689,5 +689,5 @@ PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJPERM(Mat A)
   PetscFunctionBegin;
   PetscCall(MatSetType(A, MATSEQAIJ));
   PetscCall(MatConvert_SeqAIJ_SeqAIJPERM(A, MATSEQAIJPERM, MAT_INPLACE_MATRIX, &A));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

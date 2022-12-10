@@ -49,7 +49,7 @@ inline PetscErrorCode HostAllocator<T, P>::allocate(value_type **ptr, size_type 
 {
   PetscFunctionBegin;
   PetscCall(PetscCUPMMallocHost(ptr, n));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 template <DeviceType T, typename P>
@@ -58,7 +58,7 @@ inline PetscErrorCode HostAllocator<T, P>::deallocate(value_type *ptr, const Str
 {
   PetscFunctionBegin;
   PetscCallCUPM(cupmFreeHost(ptr));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 template <DeviceType T, typename P>
@@ -67,7 +67,7 @@ inline PetscErrorCode HostAllocator<T, P>::uninitialized_copy(value_type *dest, 
 {
   PetscFunctionBegin;
   PetscCall(PetscCUPMMemcpyAsync(dest, src, n, cupmMemcpyHostToHost, stream->get_stream(), true));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 // ==========================================================================================
@@ -104,7 +104,7 @@ inline PetscErrorCode DeviceAllocator<T, P>::allocate(value_type **ptr, size_typ
 {
   PetscFunctionBegin;
   PetscCall(PetscCUPMMallocAsync(ptr, n, stream->get_stream()));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 template <DeviceType T, typename P>
@@ -113,7 +113,7 @@ inline PetscErrorCode DeviceAllocator<T, P>::deallocate(value_type *ptr, const S
 {
   PetscFunctionBegin;
   PetscCallCUPM(cupmFreeAsync(ptr, stream->get_stream()));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 template <DeviceType T, typename P>
@@ -122,7 +122,7 @@ inline PetscErrorCode DeviceAllocator<T, P>::zero(value_type *ptr, size_type n, 
 {
   PetscFunctionBegin;
   PetscCall(PetscCUPMMemsetAsync(ptr, 0, n, stream->get_stream(), true));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 template <DeviceType T, typename P>
@@ -131,7 +131,7 @@ inline PetscErrorCode DeviceAllocator<T, P>::uninitialized_copy(value_type *dest
 {
   PetscFunctionBegin;
   PetscCall(PetscCUPMMemcpyAsync(dest, src, n, cupmMemcpyDeviceToDevice, stream->get_stream(), true));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 template <DeviceType T, typename P>
@@ -143,7 +143,7 @@ inline PetscErrorCode DeviceAllocator<T, P>::set_canary(value_type *ptr, size_ty
 
   PetscFunctionBegin;
   PetscCall(impl::ThrustSet<T>(stream->get_stream(), n, ptr, &canary));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 } // namespace cupm

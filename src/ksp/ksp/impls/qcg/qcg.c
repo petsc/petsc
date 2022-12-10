@@ -24,7 +24,7 @@ PetscErrorCode KSPQCGSetTrustRegionRadius(KSP ksp, PetscReal delta)
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
   PetscCheck(delta >= 0.0, PetscObjectComm((PetscObject)ksp), PETSC_ERR_ARG_OUTOFRANGE, "Tolerance must be non-negative");
   PetscTryMethod(ksp, "KSPQCGSetTrustRegionRadius_C", (KSP, PetscReal), (ksp, delta));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -46,7 +46,7 @@ PetscErrorCode KSPQCGGetTrialStepNorm(KSP ksp, PetscReal *tsnorm)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
   PetscUseMethod(ksp, "KSPQCGGetTrialStepNorm_C", (KSP, PetscReal *), (ksp, tsnorm));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -82,7 +82,7 @@ PetscErrorCode KSPQCGGetQuadratic(KSP ksp, PetscReal *quadratic)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
   PetscUseMethod(ksp, "KSPQCGGetQuadratic_C", (KSP, PetscReal *), (ksp, quadratic));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode KSPSolve_QCG(KSP ksp)
@@ -143,7 +143,7 @@ PetscErrorCode KSPSolve_QCG(KSP ksp)
   PetscCall(KSPLogResidualHistory(ksp, bsnrm));
   PetscCall(KSPMonitor(ksp, 0, bsnrm));
   PetscCall((*ksp->converged)(ksp, 0, bsnrm, &ksp->reason, ksp->cnvP));
-  if (ksp->reason) PetscFunctionReturn(0);
+  if (ksp->reason) PetscFunctionReturn(PETSC_SUCCESS);
 
   /* Compute the initial scaled direction and scaled residual */
   PetscCall(VecCopy(BS, R));
@@ -262,7 +262,7 @@ PetscErrorCode KSPSolve_QCG(KSP ksp)
   PetscCall(VecDotRealPart(X, WA, &xtax));
 
   pcgP->quadratic = btx + .5 * xtax;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode KSPSetUp_QCG(KSP ksp)
@@ -270,7 +270,7 @@ PetscErrorCode KSPSetUp_QCG(KSP ksp)
   PetscFunctionBegin;
   /* Get work vectors from user code */
   PetscCall(KSPSetWorkVecs(ksp, 7));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode KSPDestroy_QCG(KSP ksp)
@@ -280,7 +280,7 @@ PetscErrorCode KSPDestroy_QCG(KSP ksp)
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPQCGGetTrialStepNorm_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPQCGSetTrustRegionRadius_C", NULL));
   PetscCall(KSPDestroyDefault(ksp));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode KSPQCGSetTrustRegionRadius_QCG(KSP ksp, PetscReal delta)
@@ -289,7 +289,7 @@ static PetscErrorCode KSPQCGSetTrustRegionRadius_QCG(KSP ksp, PetscReal delta)
 
   PetscFunctionBegin;
   cgP->delta = delta;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode KSPQCGGetTrialStepNorm_QCG(KSP ksp, PetscReal *ltsnrm)
@@ -298,7 +298,7 @@ static PetscErrorCode KSPQCGGetTrialStepNorm_QCG(KSP ksp, PetscReal *ltsnrm)
 
   PetscFunctionBegin;
   *ltsnrm = cgP->ltsnrm;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode KSPQCGGetQuadratic_QCG(KSP ksp, PetscReal *quadratic)
@@ -307,7 +307,7 @@ static PetscErrorCode KSPQCGGetQuadratic_QCG(KSP ksp, PetscReal *quadratic)
 
   PetscFunctionBegin;
   *quadratic = cgP->quadratic;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode KSPSetFromOptions_QCG(KSP ksp, PetscOptionItems *PetscOptionsObject)
@@ -321,7 +321,7 @@ PetscErrorCode KSPSetFromOptions_QCG(KSP ksp, PetscOptionItems *PetscOptionsObje
   PetscCall(PetscOptionsReal("-ksp_qcg_trustregionradius", "Trust Region Radius", "KSPQCGSetTrustRegionRadius", cgP->delta, &delta, &flg));
   if (flg) PetscCall(KSPQCGSetTrustRegionRadius(ksp, delta));
   PetscOptionsHeadEnd();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -396,7 +396,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_QCG(KSP ksp)
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPQCGGetTrialStepNorm_C", KSPQCGGetTrialStepNorm_QCG));
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPQCGSetTrustRegionRadius_C", KSPQCGSetTrustRegionRadius_QCG));
   cgP->delta = PETSC_MAX_REAL; /* default trust region radius is infinite */
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* ---------------------------------------------------------- */
@@ -434,5 +434,5 @@ static PetscErrorCode KSPQCGQuadraticRoots(Vec s, Vec p, PetscReal delta, PetscR
     *step1 = -(pts - rad) / ptp;
     *step2 = (sts - dsq) / (ptp * *step1);
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

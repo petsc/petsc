@@ -28,7 +28,7 @@ static PetscErrorCode QPIPComputeResidual(TAO_BQPIP *qp, Tao tao)
 
   PetscCall(VecNorm(tao->gradient, NORM_1, &qp->dinfeas));
   qp->rnorm = (qp->dinfeas + qp->pinfeas) / (qp->m + qp->n);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode QPIPSetInitialPoint(TAO_BQPIP *qp, Tao tao)
@@ -120,7 +120,7 @@ static PetscErrorCode QPIPSetInitialPoint(TAO_BQPIP *qp, Tao tao)
     }
     qp->rgap = qp->gap / (PetscAbsReal(qp->dobj) + PetscAbsReal(qp->pobj) + 1.0);
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode QPIPStepLength(TAO_BQPIP *qp)
@@ -142,7 +142,7 @@ static PetscErrorCode QPIPStepLength(TAO_BQPIP *qp)
 
   qp->psteplength = PetscMin(qp->psteplength, qp->dsteplength);
   qp->dsteplength = qp->psteplength;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode QPIPComputeNormFromCentralPath(TAO_BQPIP *qp, PetscReal *norm)
@@ -167,7 +167,7 @@ static PetscErrorCode QPIPComputeNormFromCentralPath(TAO_BQPIP *qp, PetscReal *n
 
   qp->pathnorm = PetscSqrtScalar(gap[0] + gap[1]);
   *norm        = qp->pathnorm;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode QPIPComputeStepDirection(TAO_BQPIP *qp, Tao tao)
@@ -193,7 +193,7 @@ static PetscErrorCode QPIPComputeStepDirection(TAO_BQPIP *qp, Tao tao)
   PetscCall(VecPointwiseDivide(qp->TSwork, qp->DT, qp->T));
   PetscCall(VecPointwiseMult(qp->TSwork, qp->TSwork, qp->S));
   PetscCall(VecAXPY(qp->DS, -1.0, qp->TSwork));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TaoSetup_BQPIP(Tao tao)
@@ -231,7 +231,7 @@ static PetscErrorCode TaoSetup_BQPIP(Tao tao)
   PetscCall(VecDuplicate(tao->solution, &qp->TSwork));
   PetscCall(VecDuplicate(tao->solution, &qp->R5));
   qp->m = 2 * qp->n;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TaoSolve_BQPIP(Tao tao)
@@ -443,13 +443,13 @@ static PetscErrorCode TaoSolve_BQPIP(Tao tao)
     if (qp->m > 0) qp->mu = qp->gap / (qp->m);
     qp->rgap = qp->gap / (PetscAbsReal(qp->dobj) + PetscAbsReal(qp->pobj) + 1.0);
   } /* END MAIN LOOP  */
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TaoView_BQPIP(Tao tao, PetscViewer viewer)
 {
   PetscFunctionBegin;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TaoSetFromOptions_BQPIP(Tao tao, PetscOptionItems *PetscOptionsObject)
@@ -461,7 +461,7 @@ static PetscErrorCode TaoSetFromOptions_BQPIP(Tao tao, PetscOptionItems *PetscOp
   PetscCall(PetscOptionsInt("-tao_bqpip_predcorr", "Use a predictor-corrector method", "", qp->predcorr, &qp->predcorr, NULL));
   PetscOptionsHeadEnd();
   PetscCall(KSPSetFromOptions(tao->ksp));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TaoDestroy_BQPIP(Tao tao)
@@ -494,7 +494,7 @@ static PetscErrorCode TaoDestroy_BQPIP(Tao tao)
   }
   PetscCall(KSPDestroy(&tao->ksp));
   PetscCall(PetscFree(tao->data));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TaoComputeDual_BQPIP(Tao tao, Vec DXL, Vec DXU)
@@ -505,7 +505,7 @@ static PetscErrorCode TaoComputeDual_BQPIP(Tao tao, Vec DXL, Vec DXU)
   PetscCall(VecCopy(qp->Z, DXL));
   PetscCall(VecCopy(qp->S, DXU));
   PetscCall(VecScale(DXU, -1.0));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -557,5 +557,5 @@ PETSC_EXTERN PetscErrorCode TaoCreate_BQPIP(Tao tao)
   PetscCall(KSPSetOptionsPrefix(tao->ksp, tao->hdr.prefix));
   PetscCall(KSPSetType(tao->ksp, KSPCG));
   PetscCall(KSPSetTolerances(tao->ksp, 1e-14, 1e-30, 1e30, PetscMax(10, qp->n)));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

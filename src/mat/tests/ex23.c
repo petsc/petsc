@@ -808,7 +808,7 @@ PetscErrorCode CheckMat(Mat A, Mat B, PetscBool usemult, const char *func)
     PetscCall(MatMultTransposeEqual(A, B, 3, &okt));
     PetscCheck(ok && okt, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "ERROR ON %s: mult ok ?  %d, multtranspose ok ? %d", func, ok, okt);
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode TestMatZeroRows(Mat A, Mat Afull, PetscBool squaretest, IS is, PetscScalar diag)
@@ -919,7 +919,7 @@ PetscErrorCode TestMatZeroRows(Mat A, Mat Afull, PetscBool squaretest, IS is, Pe
     PetscCall(MatDestroy(&B));
     PetscCall(MatDestroy(&B2));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*TEST

@@ -108,7 +108,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_2(Mat B, Mat A, const MatFactorInfo *i
   C->assembled           = PETSC_TRUE;
 
   PetscCall(PetscLogFlops(1.333333333333 * 2 * 2 * 2 * n)); /* from inverting diagonal blocks */
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatLUFactorNumeric_SeqBAIJ_2_NaturalOrdering(Mat B, Mat A, const MatFactorInfo *info)
@@ -214,7 +214,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_2_NaturalOrdering(Mat B, Mat A, const 
   C->assembled           = PETSC_TRUE;
 
   PetscCall(PetscLogFlops(1.333333333333 * 2 * 2 * 2 * n)); /* from inverting diagonal blocks */
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatLUFactorNumeric_SeqBAIJ_2_inplace(Mat B, Mat A, const MatFactorInfo *info)
@@ -321,7 +321,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_2_inplace(Mat B, Mat A, const MatFacto
   C->assembled           = PETSC_TRUE;
 
   PetscCall(PetscLogFlops(1.333333333333 * 8 * b->mbs)); /* from inverting diagonal blocks */
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 /*
       Version for when blocks are 2 by 2 Using natural ordering
@@ -427,7 +427,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_2_NaturalOrdering_inplace(Mat C, Mat A
   C->assembled           = PETSC_TRUE;
 
   PetscCall(PetscLogFlops(1.333333333333 * 8 * b->mbs)); /* from inverting diagonal blocks */
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* ----------------------------------------------------------- */
@@ -595,7 +595,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_1(Mat B, Mat A, const MatFactorInfo *i
       PetscCall(PetscInfo(A, "number of shift_inblocks applied %" PetscInt_FMT ", each shift_amount %g\n", sctx.nshift, (double)info->shiftamount));
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatLUFactorNumeric_SeqBAIJ_1_inplace(Mat C, Mat A, const MatFactorInfo *info)
@@ -665,14 +665,14 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_1_inplace(Mat C, Mat A, const MatFacto
   }
   C->assembled = PETSC_TRUE;
   PetscCall(PetscLogFlops(C->cmap->n));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatFactorGetSolverType_petsc(Mat A, MatSolverType *type)
 {
   PetscFunctionBegin;
   *type = MATSOLVERPETSC;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_INTERN PetscErrorCode MatGetFactor_seqbaij_petsc(Mat A, MatFactorType ftype, Mat *B)
@@ -709,7 +709,7 @@ PETSC_INTERN PetscErrorCode MatGetFactor_seqbaij_petsc(Mat A, MatFactorType ftyp
   PetscCall(PetscFree((*B)->solvertype));
   PetscCall(PetscStrallocpy(MATSOLVERPETSC, &(*B)->solvertype));
   PetscCall(PetscObjectComposeFunction((PetscObject)*B, "MatFactorGetSolverType_C", MatFactorGetSolverType_petsc));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* ----------------------------------------------------------- */
@@ -726,7 +726,7 @@ PetscErrorCode MatLUFactor_SeqBAIJ(Mat A, IS row, IS col, const MatFactorInfo *i
   A->ops->solvetranspose = C->ops->solvetranspose;
 
   PetscCall(MatHeaderMerge(A, &C));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 #include <../src/mat/impls/sbaij/seq/sbaij.h>
@@ -748,7 +748,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqBAIJ_N(Mat C, Mat A, const MatFactorI
     if (!a->sbaijMat) PetscCall(MatConvert(A, MATSEQSBAIJ, MAT_INITIAL_MATRIX, &a->sbaijMat));
     PetscCall((a->sbaijMat)->ops->choleskyfactornumeric(C, a->sbaijMat, info));
     PetscCall(MatDestroy(&a->sbaijMat));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   /* MatPivotSetUp(): initialize shift context sctx */
@@ -862,7 +862,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqBAIJ_N(Mat C, Mat A, const MatFactorI
       PetscCall(PetscInfo(A, "number of shiftnz tries %" PetscInt_FMT ", shift_amount %g\n", sctx.nshift, (double)sctx.shift_amount));
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatCholeskyFactorNumeric_SeqBAIJ_N_NaturalOrdering(Mat C, Mat A, const MatFactorInfo *info)
@@ -990,7 +990,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqBAIJ_N_NaturalOrdering(Mat C, Mat A, 
       PetscCall(PetscInfo(A, "number of shiftpd tries %" PetscInt_FMT ", shift_amount %g\n", sctx.nshift, (double)sctx.shift_amount));
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 #include <petscbt.h>
@@ -1019,7 +1019,7 @@ PetscErrorCode MatICCFactorSymbolic_SeqBAIJ(Mat fact, Mat A, IS perm, const MatF
     (fact)->ops->iccfactorsymbolic = MatICCFactorSymbolic_SeqSBAIJ; /* undue the change made in MatGetFactor_seqbaij_petsc */
 
     PetscCall(MatICCFactorSymbolic(fact, a->sbaijMat, perm, info));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   PetscCall(ISIdentity(perm, &perm_identity));
@@ -1048,7 +1048,7 @@ PetscErrorCode MatICCFactorSymbolic_SeqBAIJ(Mat fact, Mat A, IS perm, const MatF
     B->factortype = MAT_FACTOR_ICC;
 
     B->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqBAIJ_N_NaturalOrdering;
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   /* initialization */
@@ -1216,7 +1216,7 @@ PetscErrorCode MatICCFactorSymbolic_SeqBAIJ(Mat fact, Mat A, IS perm, const MatF
   } else {
     (fact)->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqBAIJ_N;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatCholeskyFactorSymbolic_SeqBAIJ(Mat fact, Mat A, IS perm, const MatFactorInfo *info)
@@ -1239,7 +1239,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqBAIJ(Mat fact, Mat A, IS perm, const
     (fact)->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_SeqSBAIJ; /* undue the change made in MatGetFactor_seqbaij_petsc */
 
     PetscCall(MatCholeskyFactorSymbolic(fact, a->sbaijMat, perm, info));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   PetscCall(MatMissingDiagonal(A, &missing, &i));
@@ -1391,7 +1391,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqBAIJ(Mat fact, Mat A, IS perm, const
   } else {
     B->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqBAIJ_N;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatSolve_SeqBAIJ_N_NaturalOrdering(Mat A, Vec bb, Vec xx)
@@ -1442,7 +1442,7 @@ PetscErrorCode MatSolve_SeqBAIJ_N_NaturalOrdering(Mat A, Vec bb, Vec xx)
   PetscCall(VecRestoreArrayRead(bb, &b));
   PetscCall(VecRestoreArray(xx, &x));
   PetscCall(PetscLogFlops(2.0 * (a->bs2) * (a->nz) - A->rmap->bs * A->cmap->n));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatSolve_SeqBAIJ_N(Mat A, Vec bb, Vec xx)
@@ -1499,7 +1499,7 @@ PetscErrorCode MatSolve_SeqBAIJ_N(Mat A, Vec bb, Vec xx)
   PetscCall(VecRestoreArrayRead(bb, &b));
   PetscCall(VecRestoreArray(xx, &x));
   PetscCall(PetscLogFlops(2.0 * (a->bs2) * (a->nz) - A->rmap->bs * A->cmap->n));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -1516,7 +1516,7 @@ static PetscErrorCode MatBlockAbs_private(PetscInt nbs, PetscInt bs2, PetscScala
       if (absarray[i] < PetscAbsScalar(blockarray[i * nbs + j])) absarray[i] = PetscAbsScalar(blockarray[i * nbs + j]);
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -1760,5 +1760,5 @@ PetscErrorCode MatILUDTFactor_SeqBAIJ(Mat A, IS isrow, IS iscol, const MatFactor
   B->ops->matsolve          = NULL;
   B->assembled              = PETSC_TRUE;
   B->preallocated           = PETSC_TRUE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

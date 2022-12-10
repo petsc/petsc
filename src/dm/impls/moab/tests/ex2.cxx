@@ -51,7 +51,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   }
 
   PetscCall(PetscLogEventRegister("CreateMesh", DM_CLASSID, &options->createMeshEvent));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user)
@@ -76,13 +76,13 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user)
   }
 
   if (user->debug) {
-    PetscPrintf(comm, "Setting field names to DM: \n");
-    for (i = 0; i < user->nfields; i++) PetscPrintf(comm, "\t Field{%" PetscInt_FMT "} = %s.\n", i, user->fieldnames[i]);
+    PetscCall(PetscPrintf(comm, "Setting field names to DM: \n"));
+    for (i = 0; i < user->nfields; i++) PetscCall(PetscPrintf(comm, "\t Field{%" PetscInt_FMT "} = %s.\n", i, user->fieldnames[i]));
   }
   PetscCall(DMMoabSetFieldNames(user->dm, user->nfields, (const char **)user->fieldnames));
   PetscCall(PetscObjectSetName((PetscObject)user->dm, "Structured Mesh"));
   PetscCall(PetscLogEventEnd(user->createMeshEvent, 0, 0, 0, 0));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)
@@ -120,7 +120,7 @@ int main(int argc, char **argv)
 
   if (user.write_output) {
     PetscCall(DMMoabSetGlobalFieldVector(user.dm, solution));
-    if (user.debug) PetscPrintf(comm, "Output mesh and associated field data to file: %s.\n", user.output_file);
+    if (user.debug) PetscCall(PetscPrintf(comm, "Output mesh and associated field data to file: %s.\n", user.output_file));
     PetscCall(DMMoabOutput(user.dm, (const char *)user.output_file, ""));
   }
 

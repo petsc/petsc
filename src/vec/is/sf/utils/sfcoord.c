@@ -13,7 +13,7 @@ static PetscErrorCode GetBoundingBox_Internal(PetscInt npoints, PetscInt dim, co
       bbox[1 * dim + d] = PetscMax(bbox[1 * dim + d], coords[i * dim + d]);
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscBool IntersectBoundingBox_Internal(PetscInt dim, const PetscReal *a, const PetscReal *b, PetscReal tol)
@@ -197,5 +197,5 @@ PetscErrorCode PetscSFSetGraphFromCoordinates(PetscSF sf, PetscInt nroots, Petsc
   PetscCall(PetscFree(premote));
   PetscCall(PetscFree(target_coords));
   PetscCall(PetscSFSetGraph(sf, nroots, nleaves, NULL, PETSC_USE_POINTER, lremote, PETSC_OWN_POINTER));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

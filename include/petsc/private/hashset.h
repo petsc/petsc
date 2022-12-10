@@ -42,17 +42,17 @@ M*/
     PetscFunctionBegin; \
     PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidPointer(ht, 1)); \
     *ht = kh_init(HashT); \
-    PetscFunctionReturn(0); \
+    PetscFunctionReturn(PETSC_SUCCESS); \
   } \
 \
   static inline PETSC_UNUSED PetscErrorCode Petsc##HashT##Destroy(Petsc##HashT *ht) \
   { \
     PetscFunctionBegin; \
     PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidPointer(ht, 1)); \
-    if (!*ht) PetscFunctionReturn(0); \
+    if (!*ht) PetscFunctionReturn(PETSC_SUCCESS); \
     kh_destroy(HashT, *ht); \
     *ht = NULL; \
-    PetscFunctionReturn(0); \
+    PetscFunctionReturn(PETSC_SUCCESS); \
   } \
 \
   static inline PETSC_UNUSED PetscErrorCode Petsc##HashT##Reset(Petsc##HashT ht) \
@@ -60,7 +60,7 @@ M*/
     PetscFunctionBegin; \
     PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidPointer(ht, 1)); \
     kh_reset(HashT, ht); \
-    PetscFunctionReturn(0); \
+    PetscFunctionReturn(PETSC_SUCCESS); \
   } \
 \
   static inline PETSC_UNUSED PetscErrorCode Petsc##HashT##Duplicate(Petsc##HashT ht, Petsc##HashT *hd) \
@@ -76,7 +76,7 @@ M*/
     kh_foreach_key(ht, key, { \
       kh_put(HashT, *hd, key, &ret); \
       PetscHashAssert(ret >= 0); \
-    }) PetscFunctionReturn(0); \
+    }) PetscFunctionReturn(PETSC_SUCCESS); \
   } \
 \
   static inline PETSC_UNUSED PetscErrorCode Petsc##HashT##Update(Petsc##HashT ht, Petsc##HashT hta) \
@@ -89,7 +89,7 @@ M*/
     kh_foreach_key(hta, key, { \
       kh_put(HashT, ht, key, &ret); \
       PetscHashAssert(ret >= 0); \
-    }) PetscFunctionReturn(0); \
+    }) PetscFunctionReturn(PETSC_SUCCESS); \
   } \
 \
   static inline PETSC_UNUSED PetscErrorCode Petsc##HashT##Clear(Petsc##HashT ht) \
@@ -97,7 +97,7 @@ M*/
     PetscFunctionBegin; \
     PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidPointer(ht, 1)); \
     kh_clear(HashT, ht); \
-    PetscFunctionReturn(0); \
+    PetscFunctionReturn(PETSC_SUCCESS); \
   } \
 \
   static inline PETSC_UNUSED PetscErrorCode Petsc##HashT##Resize(Petsc##HashT ht, PetscInt nb) \
@@ -107,7 +107,7 @@ M*/
     PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidPointer(ht, 1)); \
     ret = kh_resize(HashT, ht, (khint_t)nb); \
     PetscHashAssert(ret == 0); \
-    PetscFunctionReturn(0); \
+    PetscFunctionReturn(PETSC_SUCCESS); \
   } \
 \
   static inline PETSC_UNUSED PetscErrorCode Petsc##HashT##GetSize(Petsc##HashT ht, PetscInt *n) \
@@ -116,7 +116,7 @@ M*/
     PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidPointer(ht, 1)); \
     PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidIntPointer(n, 2)); \
     *n = (PetscInt)kh_size(ht); \
-    PetscFunctionReturn(0); \
+    PetscFunctionReturn(PETSC_SUCCESS); \
   } \
 \
   static inline PETSC_UNUSED PetscErrorCode Petsc##HashT##GetCapacity(Petsc##HashT ht, PetscInt *n) \
@@ -125,7 +125,7 @@ M*/
     PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidPointer(ht, 1)); \
     PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidIntPointer(n, 2)); \
     *n = (PetscInt)kh_n_buckets(ht); \
-    PetscFunctionReturn(0); \
+    PetscFunctionReturn(PETSC_SUCCESS); \
   } \
 \
   static inline PETSC_UNUSED PetscErrorCode Petsc##HashT##Has(Petsc##HashT ht, KeyType key, PetscBool *has) \
@@ -136,19 +136,19 @@ M*/
     PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidPointer(has, 3)); \
     iter = kh_get(HashT, ht, key); \
     *has = (iter != kh_end(ht)) ? PETSC_TRUE : PETSC_FALSE; \
-    PetscFunctionReturn(0); \
+    PetscFunctionReturn(PETSC_SUCCESS); \
   } \
 \
   static inline PETSC_UNUSED PetscErrorCode Petsc##HashT##Add(Petsc##HashT ht, KeyType key) \
   { \
-    int      ret; \
-    khiter_t iter; \
+    int                   ret; \
+    PETSC_UNUSED khiter_t iter; \
     PetscFunctionBeginHot; \
     PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidPointer(ht, 1)); \
     iter = kh_put(HashT, ht, key, &ret); \
     (void)iter; \
     PetscHashAssert(ret >= 0); \
-    PetscFunctionReturn(0); \
+    PetscFunctionReturn(PETSC_SUCCESS); \
   } \
 \
   static inline PETSC_UNUSED PetscErrorCode Petsc##HashT##Del(Petsc##HashT ht, KeyType key) \
@@ -158,13 +158,13 @@ M*/
     PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidPointer(ht, 1)); \
     iter = kh_get(HashT, ht, key); \
     kh_del(HashT, ht, iter); \
-    PetscFunctionReturn(0); \
+    PetscFunctionReturn(PETSC_SUCCESS); \
   } \
 \
   static inline PETSC_UNUSED PetscErrorCode Petsc##HashT##QueryAdd(Petsc##HashT ht, KeyType key, PetscBool *missing) \
   { \
-    int      ret; \
-    khiter_t iter; \
+    int                   ret; \
+    PETSC_UNUSED khiter_t iter; \
     PetscFunctionBeginHot; \
     PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidPointer(ht, 1)); \
     PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(PetscValidPointer(missing, 3)); \
@@ -172,7 +172,7 @@ M*/
     (void)iter; \
     PetscHashAssert(ret >= 0); \
     *missing = ret ? PETSC_TRUE : PETSC_FALSE; \
-    PetscFunctionReturn(0); \
+    PetscFunctionReturn(PETSC_SUCCESS); \
   } \
 \
   static inline PETSC_UNUSED PetscErrorCode Petsc##HashT##QueryDel(Petsc##HashT ht, KeyType key, PetscBool *present) \
@@ -188,7 +188,7 @@ M*/
     } else { \
       *present = PETSC_FALSE; \
     } \
-    PetscFunctionReturn(0); \
+    PetscFunctionReturn(PETSC_SUCCESS); \
   } \
 \
   static inline PETSC_UNUSED PetscErrorCode Petsc##HashT##GetElems(Petsc##HashT ht, PetscInt *off, KeyType array[]) \
@@ -201,7 +201,7 @@ M*/
     pos = *off; \
     kh_foreach_key(ht, key, array[pos++] = key); \
     *off = pos; \
-    PetscFunctionReturn(0); \
+    PetscFunctionReturn(PETSC_SUCCESS); \
   }
 
 #endif /* PETSC_HASHSET_H */

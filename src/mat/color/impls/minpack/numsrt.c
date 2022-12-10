@@ -68,7 +68,7 @@ PetscErrorCode MINPACKnumsrt(PetscInt *n, PetscInt *nmax, PetscInt *num, PetscIn
     next[k] = last[l];
     last[l] = k;
   }
-  if (!*mode) PetscFunctionReturn(0);
+  if (!*mode) PetscFunctionReturn(PETSC_SUCCESS);
 
   /*     Store the pointers to the sorted array in index. */
 
@@ -94,5 +94,5 @@ PetscErrorCode MINPACKnumsrt(PetscInt *n, PetscInt *nmax, PetscInt *num, PetscIn
     goto L30;
   L40:;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -22,7 +22,7 @@ PetscErrorCode PetscFreeSpaceGet(PetscInt n, PetscFreeSpaceList *list)
 
   a->total_array_size += n;
   *list = a;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PetscFreeSpaceContiguous(PetscFreeSpaceList *head, PetscInt *space)
@@ -38,7 +38,7 @@ PetscErrorCode PetscFreeSpaceContiguous(PetscFreeSpaceList *head, PetscInt *spac
     PetscCall(PetscFree(*head));
     *head = a;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -112,7 +112,7 @@ PetscErrorCode PetscFreeSpaceContiguous_LU(PetscFreeSpaceList *head, PetscInt *s
     bi[n]    = bi[n - 1] + nnzL;
     bdiag[n] = bdiag[n - 1] - 1;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -162,7 +162,7 @@ PetscErrorCode PetscFreeSpaceContiguous_Cholesky(PetscFreeSpaceList *head, Petsc
     PetscCall(PetscFree(*head));
     *head = a;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PetscFreeSpaceDestroy(PetscFreeSpaceList head)
@@ -176,5 +176,5 @@ PetscErrorCode PetscFreeSpaceDestroy(PetscFreeSpaceList head)
     PetscCall(PetscFree(head));
     head = a;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

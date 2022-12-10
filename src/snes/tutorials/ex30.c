@@ -132,12 +132,12 @@ int main(int argc, char **argv)
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
-  PetscOptionsSetValue(NULL, "-file", "ex30_output");
-  PetscOptionsSetValue(NULL, "-snes_monitor_short", NULL);
-  PetscOptionsSetValue(NULL, "-snes_max_it", "20");
-  PetscOptionsSetValue(NULL, "-ksp_max_it", "1500");
-  PetscOptionsSetValue(NULL, "-ksp_gmres_restart", "300");
-  PetscOptionsInsert(NULL, &argc, &argv, NULL);
+  PetscCall(PetscOptionsSetValue(NULL, "-file", "ex30_output"));
+  PetscCall(PetscOptionsSetValue(NULL, "-snes_monitor_short", NULL));
+  PetscCall(PetscOptionsSetValue(NULL, "-snes_max_it", "20"));
+  PetscCall(PetscOptionsSetValue(NULL, "-ksp_max_it", "1500"));
+  PetscCall(PetscOptionsSetValue(NULL, "-ksp_gmres_restart", "300"));
+  PetscCall(PetscOptionsInsert(NULL, &argc, &argv, NULL));
 
   comm = PETSC_COMM_WORLD;
 
@@ -275,7 +275,7 @@ PetscErrorCode UpdateSolution(SNES snes, AppCtx *user, PetscInt *nits)
 done:
   if (param->stop_solve && !q) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "USER SIGNAL: stopping solve.\n"));
   if (reason < 0 && !q) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "FAILED TO CONVERGE: stopping solve.\n"));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*=====================================================================
@@ -762,6 +762,7 @@ PetscErrorCode SetParams(Parameter *param, GridInfo *grid)
   PetscReal SEC_PER_YR                     = 3600.00 * 24.00 * 365.2500;
   PetscReal alpha_g_on_cp_units_inverse_km = 4.0e-5 * 9.8;
 
+  PetscFunctionBeginUser;
   /* domain geometry */
   param->slab_dip    = 45.0;
   param->width       = 320.0; /* km */
@@ -886,8 +887,7 @@ PetscErrorCode SetParams(Parameter *param, GridInfo *grid)
   param->z_scale = param->L * alpha_g_on_cp_units_inverse_km;
   param->skt     = PetscSqrtReal(param->kappa * param->slab_age * SEC_PER_YR);
   PetscCall(PetscOptionsGetReal(NULL, NULL, "-peclet", &(param->peclet), NULL));
-
-  return 0;
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*  prints a report of the problem parameters to stdout */
@@ -895,6 +895,7 @@ PetscErrorCode ReportParams(Parameter *param, GridInfo *grid)
 {
   char date[30];
 
+  PetscFunctionBeginUser;
   PetscCall(PetscGetDate(date, 30));
 
   if (!(param->quiet)) {
@@ -924,7 +925,7 @@ PetscErrorCode ReportParams(Parameter *param, GridInfo *grid)
       PetscCall(PetscPrintf(PETSC_COMM_WORLD, "                          Viscosity range: %g--%g Pa-sec \n", (double)param->eta0, (double)(param->visc_cutoff * param->eta0)));
     } else {
       PetscCall(PetscPrintf(PETSC_COMM_WORLD, "                 Invalid! \n"));
-      return 1;
+      PetscFunctionReturn(PETSC_ERR_ARG_WRONG);
     }
 
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Boundary condition:"));
@@ -936,7 +937,7 @@ PetscErrorCode ReportParams(Parameter *param, GridInfo *grid)
       PetscCall(PetscPrintf(PETSC_COMM_WORLD, "       Experimental boundary condition \n"));
     } else {
       PetscCall(PetscPrintf(PETSC_COMM_WORLD, "       Invalid! \n"));
-      return 1;
+      PetscFunctionReturn(PETSC_ERR_ARG_WRONG);
     }
 
     if (param->output_to_file) {
@@ -950,8 +951,8 @@ PetscErrorCode ReportParams(Parameter *param, GridInfo *grid)
 
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, "---------------------END ex30 PARAM REPORT---------------------\n"));
   }
-  if (param->param_test) PetscEnd();
-  return 0;
+  if (param->param_test) PetscCall(PetscEnd());
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* ------------------------------------------------------------------- */
@@ -967,6 +968,7 @@ PetscErrorCode Initialize(DM da)
   Field    **x;
   Vec        Xguess;
 
+  PetscFunctionBeginUser;
   /* Get the fine grid */
   PetscCall(DMGetApplicationContext(da, &user));
   Xguess = user->Xguess;
@@ -996,7 +998,7 @@ PetscErrorCode Initialize(DM da)
   /* Restore x to Xguess */
   PetscCall(DMDAVecRestoreArray(da, Xguess, (void **)&x));
 
-  return 0;
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*  controls output to a file */
@@ -1012,6 +1014,7 @@ PetscErrorCode DoOutput(SNES snes, PetscInt its)
   MPI_Comm    comm;
   DM          da;
 
+  PetscFunctionBeginUser;
   PetscCall(SNESGetDM(snes, &da));
   PetscCall(DMGetApplicationContext(da, &user));
   param = user->param;
@@ -1083,7 +1086,7 @@ PetscErrorCode DoOutput(SNES snes, PetscInt its)
   }
 
   param->ivisc = ivt;
-  return 0;
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* ------------------------------------------------------------------- */
@@ -1142,7 +1145,7 @@ PetscErrorCode ViscosityField(DM da, Vec X, Vec V)
   PetscCall(DMRestoreLocalVector(da, &localX));
 
   param->ivisc = ivt;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* ------------------------------------------------------------------- */
@@ -1155,6 +1158,7 @@ PetscErrorCode StressField(DM da)
   Vec      locVec;
   Field  **x, **y;
 
+  PetscFunctionBeginUser;
   PetscCall(DMGetApplicationContext(da, &user));
 
   /* Get the fine grid of Xguess and X */
@@ -1180,7 +1184,7 @@ PetscErrorCode StressField(DM da)
   PetscCall(DMDAVecRestoreArray(da, user->Xguess, (void **)&x));
   PetscCall(DMDAVecRestoreArray(da, locVec, (void **)&y));
   PetscCall(DMRestoreLocalVector(da, &locVec));
-  return 0;
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*=====================================================================
@@ -1237,7 +1241,7 @@ PetscErrorCode SNESConverged_Interactive(SNES snes, PetscInt it, PetscReal xnorm
     param->interrupted = PETSC_FALSE;
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, "USER SIGNAL: exiting SNES solve. \n"));
     *reason = SNES_CONVERGED_FNORM_ABS;
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   } else if (param->toggle_kspmon) {
     param->toggle_kspmon = PETSC_FALSE;
 
@@ -1258,7 +1262,7 @@ PetscErrorCode SNESConverged_Interactive(SNES snes, PetscInt it, PetscReal xnorm
     }
   }
   PetscCall(SNESConvergedDefault(snes, it, xnorm, snorm, fnorm, reason, ctx));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* ------------------------------------------------------------------- */
@@ -1280,7 +1284,7 @@ PetscErrorCode InteractiveHandler(int signum, void *ctx)
     param->stop_solve = PETSC_TRUE;
 #endif
   }
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 /*  main call-back function that computes the processor-local piece of the residual */
@@ -1407,7 +1411,7 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info, Field **x, Field **f, void
       }
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*TEST

@@ -5,7 +5,7 @@ static PetscErrorCode KSPSetUp_BiCG(KSP ksp)
 {
   PetscFunctionBegin;
   PetscCall(KSPSetWorkVecs(ksp, 6));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode KSPSolve_BiCG(KSP ksp)
@@ -55,7 +55,7 @@ static PetscErrorCode KSPSolve_BiCG(KSP ksp)
   PetscCall(PetscObjectSAWsGrantAccess((PetscObject)ksp));
   PetscCall(KSPLogResidualHistory(ksp, dp));
   PetscCall((*ksp->converged)(ksp, 0, dp, &ksp->reason, ksp->cnvP));
-  if (ksp->reason) PetscFunctionReturn(0);
+  if (ksp->reason) PetscFunctionReturn(PETSC_SUCCESS);
 
   i = 0;
   do {
@@ -64,7 +64,7 @@ static PetscErrorCode KSPSolve_BiCG(KSP ksp)
     if (!i) {
       if (beta == 0.0) {
         ksp->reason = KSP_DIVERGED_BREAKDOWN_BICG;
-        PetscFunctionReturn(0);
+        PetscFunctionReturn(PETSC_SUCCESS);
       }
       PetscCall(VecCopy(Zr, Pr)); /*     p <- z          */
       PetscCall(VecCopy(Zl, Pl));
@@ -109,7 +109,7 @@ static PetscErrorCode KSPSolve_BiCG(KSP ksp)
     i++;
   } while (i < ksp->max_it);
   if (i >= ksp->max_it) ksp->reason = KSP_DIVERGED_ITS;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -144,5 +144,5 @@ PETSC_EXTERN PetscErrorCode KSPCreate_BiCG(KSP ksp)
   ksp->ops->setfromoptions = NULL;
   ksp->ops->buildsolution  = KSPBuildSolutionDefault;
   ksp->ops->buildresidual  = KSPBuildResidualDefault;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

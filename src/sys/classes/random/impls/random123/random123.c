@@ -35,7 +35,7 @@ PetscErrorCode PetscRandomSeed_Random123(PetscRandom r)
   r123->counter.v[3] = 3;
   r123->result       = threefry4x64(r123->counter, r123->key);
   r123->count        = 0;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscReal PetscRandom123Step(PetscRandom123 *r123)
@@ -81,7 +81,7 @@ PetscErrorCode PetscRandomGetValue_Random123(PetscRandom r, PetscScalar *val)
   if (r->iset) rscal = rscal * r->width + r->low;
 #endif
   *val = rscal;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PetscRandomGetValueReal_Random123(PetscRandom r, PetscReal *val)
@@ -93,14 +93,14 @@ PetscErrorCode PetscRandomGetValueReal_Random123(PetscRandom r, PetscReal *val)
   rreal = PetscRandom123Step(r123);
   if (r->iset) rreal = rreal * PetscRealPart(r->width) + PetscRealPart(r->low);
   *val = rreal;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PetscRandomDestroy_Random123(PetscRandom r)
 {
   PetscFunctionBegin;
   PetscCall(PetscFree(r->data));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static struct _PetscRandomOps PetscRandomOps_Values = {
@@ -136,5 +136,5 @@ PETSC_EXTERN PetscErrorCode PetscRandomCreate_Random123(PetscRandom r)
   PetscCall(PetscMemcpy(r->ops, &PetscRandomOps_Values, sizeof(PetscRandomOps_Values)));
   PetscCall(PetscObjectChangeTypeName((PetscObject)r, PETSCRANDOM123));
   PetscCall(PetscRandomSeed(r));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

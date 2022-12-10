@@ -289,6 +289,7 @@ PetscErrorCode InitialConditions(Vec u, AppCtx *appctx)
   PetscScalar *u_localptr, h = appctx->h;
   PetscInt     i;
 
+  PetscFunctionBeginUser;
   /*
     Get a pointer to vector data.
     - For default PETSc vectors, VecGetArray() returns a pointer to
@@ -320,7 +321,7 @@ PetscErrorCode InitialConditions(Vec u, AppCtx *appctx)
     PetscCall(VecView(u, PETSC_VIEWER_STDOUT_SELF));
   }
 
-  return 0;
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 /* --------------------------------------------------------------------- */
 /*
@@ -339,6 +340,7 @@ PetscErrorCode ExactSolution(PetscReal t, Vec solution, AppCtx *appctx)
   PetscScalar *s_localptr, h = appctx->h, ex1, ex2, sc1, sc2, tc = t;
   PetscInt     i;
 
+  PetscFunctionBeginUser;
   /*
      Get a pointer to vector data.
   */
@@ -358,7 +360,7 @@ PetscErrorCode ExactSolution(PetscReal t, Vec solution, AppCtx *appctx)
      Restore vector
   */
   PetscCall(VecRestoreArrayWrite(solution, &s_localptr));
-  return 0;
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 /* --------------------------------------------------------------------- */
 /*
@@ -384,6 +386,7 @@ PetscErrorCode Monitor(TS ts, PetscInt step, PetscReal time, Vec u, void *ctx)
   AppCtx   *appctx = (AppCtx *)ctx; /* user-defined application context */
   PetscReal norm_2, norm_max, dt, dttol;
 
+  PetscFunctionBeginUser;
   /*
      View a graph of the current iterate
   */
@@ -438,7 +441,7 @@ PetscErrorCode Monitor(TS ts, PetscInt step, PetscReal time, Vec u, void *ctx)
     PetscCall(VecView(appctx->solution, PETSC_VIEWER_STDOUT_SELF));
   }
 
-  return 0;
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 /* --------------------------------------------------------------------- */
 /*
@@ -469,6 +472,7 @@ PetscErrorCode RHSMatrixHeat(TS ts, PetscReal t, Vec X, Mat AA, Mat BB, void *ct
   PetscInt    i, idx[3];
   PetscScalar v[3], stwo = -2. / (appctx->h * appctx->h), sone = -.5 * stwo;
 
+  PetscFunctionBeginUser;
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Compute entries for the locally owned part of the matrix
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
@@ -517,29 +521,31 @@ PetscErrorCode RHSMatrixHeat(TS ts, PetscReal t, Vec X, Mat AA, Mat BB, void *ct
   */
   PetscCall(MatSetOption(A, MAT_NEW_NONZERO_LOCATION_ERR, PETSC_TRUE));
 
-  return 0;
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode IFunctionHeat(TS ts, PetscReal t, Vec X, Vec Xdot, Vec r, void *ctx)
 {
   AppCtx *appctx = (AppCtx *)ctx; /* user-defined application context */
 
+  PetscFunctionBeginUser;
   PetscCall(MatMult(appctx->A, X, r));
   PetscCall(VecAYPX(r, -1.0, Xdot));
-  return 0;
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode IJacobianHeat(TS ts, PetscReal t, Vec X, Vec Xdot, PetscReal s, Mat A, Mat B, void *ctx)
 {
   AppCtx *appctx = (AppCtx *)ctx; /* user-defined application context */
 
-  if (appctx->oshift == s) return 0;
+  PetscFunctionBeginUser;
+  if (appctx->oshift == s) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(MatCopy(appctx->A, A, SAME_NONZERO_PATTERN));
   PetscCall(MatScale(A, -1));
   PetscCall(MatShift(A, s));
   PetscCall(MatCopy(A, B, SAME_NONZERO_PATTERN));
   appctx->oshift = s;
-  return 0;
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*TEST

@@ -9,7 +9,7 @@ static PetscErrorCode KSPSetUp_MINRES(KSP ksp)
 {
   PetscFunctionBegin;
   PetscCall(KSPSetWorkVecs(ksp, 9));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode KSPSolve_MINRES(KSP ksp)
@@ -65,7 +65,7 @@ static PetscErrorCode KSPSolve_MINRES(KSP ksp)
     PetscCheck(!ksp->errorifnotconverged, PetscObjectComm((PetscObject)ksp), PETSC_ERR_CONV_FAILED, "Detected indefinite operator %g tolerance %g", (double)PetscRealPart(dp), (double)minres->haptol);
     PetscCall(PetscInfo(ksp, "Detected indefinite operator %g tolerance %g\n", (double)PetscRealPart(dp), (double)minres->haptol));
     ksp->reason = KSP_DIVERGED_INDEFINITE_MAT;
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   ksp->rnorm = 0.0;
@@ -73,7 +73,7 @@ static PetscErrorCode KSPSolve_MINRES(KSP ksp)
   PetscCall(KSPLogResidualHistory(ksp, ksp->rnorm));
   PetscCall(KSPMonitor(ksp, 0, ksp->rnorm));
   PetscCall((*ksp->converged)(ksp, 0, ksp->rnorm, &ksp->reason, ksp->cnvP)); /* test for convergence */
-  if (ksp->reason) PetscFunctionReturn(0);
+  if (ksp->reason) PetscFunctionReturn(PETSC_SUCCESS);
 
   dp   = PetscAbsScalar(dp);
   dp   = PetscSqrtScalar(dp);
@@ -179,7 +179,7 @@ static PetscErrorCode KSPSolve_MINRES(KSP ksp)
     i++;
   } while (i < ksp->max_it);
   if (i >= ksp->max_it) ksp->reason = KSP_DIVERGED_ITS;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -229,5 +229,5 @@ PETSC_EXTERN PetscErrorCode KSPCreate_MINRES(KSP ksp)
   ksp->ops->setfromoptions = NULL;
   ksp->ops->buildsolution  = KSPBuildSolutionDefault;
   ksp->ops->buildresidual  = KSPBuildResidualDefault;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

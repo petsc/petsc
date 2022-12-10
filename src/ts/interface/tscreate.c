@@ -69,5 +69,5 @@ PetscErrorCode TSCreate(MPI_Comm comm, TS *ts)
 
   t->axpy_pattern = UNKNOWN_NONZERO_PATTERN;
   *ts             = t;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

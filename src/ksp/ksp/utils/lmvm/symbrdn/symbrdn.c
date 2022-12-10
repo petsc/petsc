@@ -41,11 +41,11 @@ static PetscErrorCode MatSolve_LMVMSymBrdn(Mat B, Vec F, Vec dX)
   /* Efficient shortcuts for pure BFGS and pure DFP configurations */
   if (lsb->phi == 0.0) {
     PetscCall(MatSolve_LMVMBFGS(B, F, dX));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
   if (lsb->phi == 1.0) {
     PetscCall(MatSolve_LMVMDFP(B, F, dX));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   VecCheckSameSize(F, 2, dX, 3);
@@ -124,7 +124,7 @@ static PetscErrorCode MatSolve_LMVMSymBrdn(Mat B, Vec F, Vec dX)
     PetscCall(VecAXPY(dX, lsb->psi[i] * lsb->ytq[i] * PetscRealPart(wtf), lsb->work));
   }
 
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*------------------------------------------------------------*/
@@ -165,11 +165,11 @@ static PetscErrorCode MatMult_LMVMSymBrdn(Mat B, Vec X, Vec Z)
   /* Efficient shortcuts for pure BFGS and pure DFP configurations */
   if (lsb->phi == 0.0) {
     PetscCall(MatMult_LMVMBFGS(B, X, Z));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
   if (lsb->phi == 1.0) {
     PetscCall(MatMult_LMVMDFP(B, X, Z));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   VecCheckSameSize(X, 2, Z, 3);
@@ -215,7 +215,7 @@ static PetscErrorCode MatMult_LMVMSymBrdn(Mat B, Vec X, Vec Z)
     PetscCall(VecDot(lsb->work, X, &wtx));
     PetscCall(VecAXPY(Z, lsb->phi * lsb->stp[i] * PetscRealPart(wtx), lsb->work));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*------------------------------------------------------------*/
@@ -231,7 +231,7 @@ static PetscErrorCode MatUpdate_LMVMSymBrdn(Mat B, Vec X, Vec F)
   PetscScalar   curvature, ytytmp, ststmp;
 
   PetscFunctionBegin;
-  if (!lmvm->m) PetscFunctionReturn(0);
+  if (!lmvm->m) PetscFunctionReturn(PETSC_SUCCESS);
   if (lmvm->prev_set) {
     /* Compute the new (S = X - Xprev) and (Y = F - Fprev) vectors */
     PetscCall(VecAYPX(lmvm->Xprev, -1.0, X));
@@ -302,7 +302,7 @@ static PetscErrorCode MatUpdate_LMVMSymBrdn(Mat B, Vec X, Vec F)
   PetscCall(VecCopy(X, lmvm->Xprev));
   PetscCall(VecCopy(F, lmvm->Fprev));
   lmvm->prev_set = PETSC_TRUE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*------------------------------------------------------------*/
@@ -348,7 +348,7 @@ static PetscErrorCode MatCopy_LMVMSymBrdn(Mat B, Mat M, MatStructure str)
   default:
     break;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*------------------------------------------------------------*/
@@ -399,7 +399,7 @@ static PetscErrorCode MatReset_LMVMSymBrdn(Mat B, PetscBool destructive)
     }
   }
   PetscCall(MatReset_LMVM(B, destructive));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*------------------------------------------------------------*/
@@ -428,7 +428,7 @@ static PetscErrorCode MatAllocate_LMVMSymBrdn(Mat B, Vec X, Vec F)
     }
     lsb->allocated = PETSC_TRUE;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*------------------------------------------------------------*/
@@ -450,7 +450,7 @@ static PetscErrorCode MatDestroy_LMVMSymBrdn(Mat B)
   PetscCall(MatDestroy(&lsb->D));
   PetscCall(PetscFree(lmvm->ctx));
   PetscCall(MatDestroy_LMVM(B));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*------------------------------------------------------------*/
@@ -483,7 +483,7 @@ static PetscErrorCode MatSetUp_LMVMSymBrdn(Mat B)
     }
     lsb->allocated = PETSC_TRUE;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*------------------------------------------------------------*/
@@ -504,7 +504,7 @@ PetscErrorCode MatView_LMVMSymBrdn(Mat B, PetscViewer pv)
   }
   PetscCall(MatView_LMVM(B, pv));
   if (lsb->scale_type == MAT_LMVM_SYMBROYDEN_SCALE_DIAGONAL) PetscCall(MatView(lsb->D, pv));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*------------------------------------------------------------*/
@@ -521,7 +521,7 @@ PetscErrorCode MatSetFromOptions_LMVMSymBrdn(Mat B, PetscOptionItems *PetscOptio
   PetscCheck(!(lsb->phi < 0.0) && !(lsb->phi > 1.0), PetscObjectComm((PetscObject)B), PETSC_ERR_ARG_OUTOFRANGE, "convex ratio for the update formula cannot be outside the range of [0, 1]");
   PetscCall(MatSetFromOptions_LMVMSymBrdn_Private(B, PetscOptionsObject));
   PetscOptionsHeadEnd();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatSetFromOptions_LMVMSymBrdn_Private(Mat B, PetscOptionItems *PetscOptionsObject)
@@ -561,7 +561,7 @@ PetscErrorCode MatSetFromOptions_LMVMSymBrdn_Private(Mat B, PetscOptionItems *Pe
     dctx->beta       = lsb->beta;
     dctx->sigma_hist = lsb->sigma_hist;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*------------------------------------------------------------*/
@@ -610,7 +610,7 @@ PetscErrorCode MatCreate_LMVMSymBrdn(Mat B)
 
   PetscCall(MatCreate(PetscObjectComm((PetscObject)B), &lsb->D));
   PetscCall(MatSetType(lsb->D, MATLMVMDIAGBROYDEN));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*------------------------------------------------------------*/
@@ -642,7 +642,7 @@ PetscErrorCode MatLMVMSymBroydenSetDelta(Mat B, PetscScalar delta)
   lsb->delta = PetscAbsReal(PetscRealPart(delta));
   lsb->delta = PetscMin(lsb->delta, lsb->delta_max);
   lsb->delta = PetscMax(lsb->delta, lsb->delta_min);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*------------------------------------------------------------*/
@@ -674,7 +674,7 @@ PetscErrorCode MatLMVMSymBroydenSetScaleType(Mat B, MatLMVMSymBroydenScaleType s
   PetscFunctionBegin;
   PetscValidHeaderSpecific(B, MAT_CLASSID, 1);
   lsb->scale_type = stype;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*------------------------------------------------------------*/
@@ -728,7 +728,7 @@ PetscErrorCode MatCreateLMVMSymBroyden(MPI_Comm comm, PetscInt n, PetscInt N, Ma
   PetscCall(MatSetSizes(*B, n, n, N, N));
   PetscCall(MatSetType(*B, MATLMVMSYMBROYDEN));
   PetscCall(MatSetUp(*B));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*------------------------------------------------------------*/
@@ -757,7 +757,7 @@ PetscErrorCode MatSymBrdnApplyJ0Fwd(Mat B, Vec X, Vec Z)
       break;
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*------------------------------------------------------------*/
@@ -786,7 +786,7 @@ PetscErrorCode MatSymBrdnApplyJ0Inv(Mat B, Vec F, Vec dX)
       break;
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*------------------------------------------------------------*/
@@ -836,5 +836,5 @@ PetscErrorCode MatSymBrdnComputeJ0Scalar(Mat B)
     }
   }
   lsb->sigma = lsb->rho * signew + (1.0 - lsb->rho) * lsb->sigma;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

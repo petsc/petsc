@@ -137,8 +137,8 @@ PetscErrorCode EvaluateFunction(Tao tao, Vec X, Vec F, void *ptr)
   for (i = 0; i < NOBSERVATIONS; i++) f[i] = y[i] - PetscExpScalar(-x[0] * t[i]) / (x[1] + x[2] * t[i]);
   PetscCall(VecRestoreArrayRead(X, &x));
   PetscCall(VecRestoreArray(F, &f));
-  PetscLogFlops(6 * NOBSERVATIONS);
-  PetscFunctionReturn(0);
+  PetscCall(PetscLogFlops(6 * NOBSERVATIONS));
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*------------------------------------------------------------*/
@@ -167,8 +167,8 @@ PetscErrorCode EvaluateJacobian(Tao tao, Vec X, Mat J, Mat Jpre, void *ptr)
   PetscCall(MatAssemblyEnd(J, MAT_FINAL_ASSEMBLY));
 
   PetscCall(VecRestoreArrayRead(X, &x));
-  PetscLogFlops(NOBSERVATIONS * 13);
-  PetscFunctionReturn(0);
+  PetscCall(PetscLogFlops(NOBSERVATIONS * 13));
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* ------------------------------------------------------------ */
@@ -182,7 +182,7 @@ PetscErrorCode FormStartingPoint(Vec X)
   x[1] = -1.86;
   x[2] = 1.08;
   PetscCall(VecRestoreArray(X, &x));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* ---------------------------------------------------------------------- */
@@ -620,7 +620,7 @@ PetscErrorCode InitializeData(AppCtx *user)
   t[i++] = 1.7500;
   y[i]   = 28.9500;
   t[i++] = 1.7500;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*TEST

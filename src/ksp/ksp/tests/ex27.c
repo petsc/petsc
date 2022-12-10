@@ -132,7 +132,7 @@ PetscErrorCode PCShellApply_Matinv(PC pc, Vec xin, Vec xout)
   PetscFunctionBeginUser;
   PetscCall(PCShellGetContext(pc, &X));
   PetscCall(MatMult(X, xin, xout));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*TEST

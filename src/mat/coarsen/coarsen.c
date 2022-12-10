@@ -35,7 +35,7 @@ PetscErrorCode MatCoarsenRegister(const char sname[], PetscErrorCode (*function)
   PetscFunctionBegin;
   PetscCall(MatInitializePackage());
   PetscCall(PetscFunctionListAdd(&MatCoarsenList, sname, function));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -62,7 +62,7 @@ PetscErrorCode MatCoarsenGetType(MatCoarsen coarsen, MatCoarsenType *type)
   PetscValidHeaderSpecific(coarsen, MAT_COARSEN_CLASSID, 1);
   PetscValidPointer(type, 2);
   *type = ((PetscObject)coarsen)->type_name;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -101,7 +101,7 @@ PetscErrorCode MatCoarsenApply(MatCoarsen coarser)
   PetscCall(PetscLogEventBegin(MAT_Coarsen, coarser, 0, 0, 0));
   PetscUseTypeMethod(coarser, apply);
   PetscCall(PetscLogEventEnd(MAT_Coarsen, coarser, 0, 0, 0));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -123,7 +123,7 @@ PetscErrorCode MatCoarsenSetAdjacency(MatCoarsen agg, Mat adj)
   PetscValidHeaderSpecific(agg, MAT_COARSEN_CLASSID, 1);
   PetscValidHeaderSpecific(adj, MAT_CLASSID, 2);
   agg->graph = adj;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -143,7 +143,7 @@ PetscErrorCode MatCoarsenSetStrictAggs(MatCoarsen agg, PetscBool str)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(agg, MAT_COARSEN_CLASSID, 1);
   agg->strict_aggs = str;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -161,11 +161,11 @@ PetscErrorCode MatCoarsenSetStrictAggs(MatCoarsen agg, PetscBool str)
 PetscErrorCode MatCoarsenDestroy(MatCoarsen *agg)
 {
   PetscFunctionBegin;
-  if (!*agg) PetscFunctionReturn(0);
+  if (!*agg) PetscFunctionReturn(PETSC_SUCCESS);
   PetscValidHeaderSpecific((*agg), MAT_COARSEN_CLASSID, 1);
   if (--((PetscObject)(*agg))->refct > 0) {
     *agg = NULL;
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   if ((*agg)->ops->destroy) PetscCall((*(*agg)->ops->destroy)((*agg)));
@@ -173,7 +173,7 @@ PetscErrorCode MatCoarsenDestroy(MatCoarsen *agg)
   if ((*agg)->agg_lists) PetscCall(PetscCDDestroy((*agg)->agg_lists));
 
   PetscCall(PetscHeaderDestroy(agg));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -204,7 +204,7 @@ PetscErrorCode MatCoarsenCreate(MPI_Comm comm, MatCoarsen *newcrs)
   PetscCall(PetscHeaderCreate(agg, MAT_COARSEN_CLASSID, "MatCoarsen", "Matrix/graph coarsen", "MatCoarsen", comm, MatCoarsenDestroy, MatCoarsenView));
 
   *newcrs = agg;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -241,7 +241,7 @@ PetscErrorCode MatCoarsenViewFromOptions(MatCoarsen A, PetscObject obj, const ch
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, MAT_COARSEN_CLASSID, 1);
   PetscCall(PetscObjectViewFromOptions((PetscObject)A, obj, name));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -276,7 +276,7 @@ PetscErrorCode MatCoarsenView(MatCoarsen agg, PetscViewer viewer)
     PetscUseTypeMethod(agg, view, viewer);
     PetscCall(PetscViewerASCIIPopTab(viewer));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -305,7 +305,7 @@ PetscErrorCode MatCoarsenSetType(MatCoarsen coarser, MatCoarsenType type)
   PetscValidCharPointer(type, 2);
 
   PetscCall(PetscObjectTypeCompare((PetscObject)coarser, type, &match));
-  if (match) PetscFunctionReturn(0);
+  if (match) PetscFunctionReturn(PETSC_SUCCESS);
 
   PetscTryTypeMethod(coarser, destroy);
   coarser->ops->destroy = NULL;
@@ -317,7 +317,7 @@ PetscErrorCode MatCoarsenSetType(MatCoarsen coarser, MatCoarsenType type)
 
   PetscCall(PetscFree(((PetscObject)coarser)->type_name));
   PetscCall(PetscStrallocpy(type, &((PetscObject)coarser)->type_name));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -341,7 +341,7 @@ PetscErrorCode MatCoarsenSetGreedyOrdering(MatCoarsen coarser, const IS perm)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(coarser, MAT_COARSEN_CLASSID, 1);
   coarser->perm = perm;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -366,7 +366,7 @@ PetscErrorCode MatCoarsenGetData(MatCoarsen coarser, PetscCoarsenData **llist)
   PetscCheck(coarser->agg_lists, PetscObjectComm((PetscObject)coarser), PETSC_ERR_ARG_WRONGSTATE, "No linked list - generate it or call ApplyCoarsen");
   *llist             = coarser->agg_lists;
   coarser->agg_lists = NULL; /* giving up ownership */
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -411,5 +411,5 @@ PetscErrorCode MatCoarsenSetFromOptions(MatCoarsen coarser)
   PetscTryTypeMethod(coarser, setfromoptions, PetscOptionsObject);
   PetscOptionsEnd();
 
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

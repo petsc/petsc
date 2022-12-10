@@ -146,7 +146,7 @@ int main(int argc, char **argv)
       for (k = 1; k <= user.nlevels; k++) PetscCall(DMRefine(dmhierarchy[k - 1], MPI_COMM_NULL, &dmhierarchy[k]));
     }
     dmref = dmhierarchy[user.nlevels];
-    PetscObjectReference((PetscObject)dmref);
+    PetscCall(PetscObjectReference((PetscObject)dmref));
 
     if (user.usemg) {
       PetscCall(PCSetType(pc, PCMG));
@@ -167,7 +167,7 @@ int main(int argc, char **argv)
     PetscCall(PetscFree(dmhierarchy));
   } else {
     dmref = dm;
-    PetscObjectReference((PetscObject)dm);
+    PetscCall(PetscObjectReference((PetscObject)dm));
   }
 
   PetscCall(KSPSetDM(ksp, dmref));
@@ -343,7 +343,7 @@ PetscErrorCode ComputeRHS_MOAB(KSP ksp, Vec b, void *ptr)
   PetscCall(VecAssemblyEnd(b));
   PetscCall(PetscFree3(phi, phypts, jxw));
   PetscCall(PetscQuadratureDestroy(&quadratureObj));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode ComputeMatrix_MOAB(KSP ksp, Mat J, Mat jac, void *ctx)
@@ -448,7 +448,7 @@ PetscErrorCode ComputeMatrix_MOAB(KSP ksp, Mat J, Mat jac, void *ctx)
   }
   PetscCall(PetscFree6(phi, dphi[0], dphi[1], dphi[2], phypts, jxw));
   PetscCall(PetscQuadratureDestroy(&quadratureObj));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode ComputeDiscreteL2Error(KSP ksp, Vec err, UserContext *user)
@@ -506,7 +506,7 @@ PetscErrorCode ComputeDiscreteL2Error(KSP ksp, Vec err, UserContext *user)
   /* Restore vectors */
   PetscCall(VecRestoreArrayRead(sol, &x));
   if (err) PetscCall(VecRestoreArray(err, &e));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode InitializeOptions(UserContext *user)
@@ -556,7 +556,7 @@ PetscErrorCode InitializeOptions(UserContext *user)
   if (user->problem < 1 || user->problem > 2) user->problem = 1;
   user->bcType = (BCType)bc;
   user->VPERE  = (user->usetet ? 4 : 8);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*TEST

@@ -32,7 +32,7 @@ PetscErrorCode MatColoringRegister(const char sname[], PetscErrorCode (*function
   PetscFunctionBegin;
   PetscCall(MatInitializePackage());
   PetscCall(PetscFunctionListAdd(&MatColoringList, sname, function));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -88,7 +88,7 @@ PetscErrorCode MatColoringCreate(Mat m, MatColoring *mcptr)
   mc->weight_type  = MAT_COLORING_WEIGHT_RANDOM;
   mc->user_weights = NULL;
   mc->user_lperm   = NULL;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -108,14 +108,14 @@ PetscErrorCode MatColoringDestroy(MatColoring *mc)
   PetscFunctionBegin;
   if (--((PetscObject)(*mc))->refct > 0) {
     *mc = NULL;
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
   PetscCall(MatDestroy(&(*mc)->mat));
   if ((*mc)->ops->destroy) PetscCall((*((*mc)->ops->destroy))(*mc));
   if ((*mc)->user_weights) PetscCall(PetscFree((*mc)->user_weights));
   if ((*mc)->user_lperm) PetscCall(PetscFree((*mc)->user_lperm));
   PetscCall(PetscHeaderDestroy(mc));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -148,7 +148,7 @@ PetscErrorCode MatColoringSetType(MatColoring mc, MatColoringType type)
   PetscValidHeaderSpecific(mc, MAT_COLORING_CLASSID, 1);
   PetscValidCharPointer(type, 2);
   PetscCall(PetscObjectTypeCompare((PetscObject)mc, type, &match));
-  if (match) PetscFunctionReturn(0);
+  if (match) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(PetscFunctionListFind(MatColoringList, type, &r));
   PetscCheck(r, PETSC_COMM_SELF, PETSC_ERR_ARG_UNKNOWN_TYPE, "Unable to find requested MatColoring type %s", type);
   if (mc->ops->destroy) {
@@ -162,7 +162,7 @@ PetscErrorCode MatColoringSetType(MatColoring mc, MatColoringType type)
 
   PetscCall(PetscObjectChangeTypeName((PetscObject)mc, type));
   PetscCall((*r)(mc));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -217,7 +217,7 @@ PetscErrorCode MatColoringSetFromOptions(MatColoring mc)
   PetscCall(PetscOptionsEnum("-mat_coloring_weight_type", "Sets the type of vertex weighting used", "MatColoringSetWeightType", MatColoringWeightTypes, (PetscEnum)mc->weight_type, (PetscEnum *)&mc->weight_type, NULL));
   PetscCall(PetscObjectProcessOptionsHandlers((PetscObject)mc, PetscOptionsObject));
   PetscOptionsEnd();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -248,7 +248,7 @@ PetscErrorCode MatColoringSetDistance(MatColoring mc, PetscInt dist)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mc, MAT_COLORING_CLASSID, 1);
   mc->dist = dist;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -278,7 +278,7 @@ PetscErrorCode MatColoringGetDistance(MatColoring mc, PetscInt *dist)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mc, MAT_COLORING_CLASSID, 1);
   if (dist) *dist = mc->dist;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -309,7 +309,7 @@ PetscErrorCode MatColoringSetMaxColors(MatColoring mc, PetscInt maxcolors)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mc, MAT_COLORING_CLASSID, 1);
   mc->maxcolors = maxcolors;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -332,7 +332,7 @@ PetscErrorCode MatColoringGetMaxColors(MatColoring mc, PetscInt *maxcolors)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mc, MAT_COLORING_CLASSID, 1);
   if (maxcolors) *maxcolors = mc->maxcolors;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -383,7 +383,7 @@ PetscErrorCode MatColoringApply(MatColoring mc, ISColoring *coloring)
     PetscCall(PetscViewerPopFormat(viewer));
     PetscCall(PetscViewerDestroy(&viewer));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -419,7 +419,7 @@ PetscErrorCode MatColoringView(MatColoring mc, PetscViewer viewer)
       PetscCall(PetscViewerASCIIPrintf(viewer, "  Distance %" PetscInt_FMT "\n", mc->dist));
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -439,5 +439,5 @@ PetscErrorCode MatColoringSetWeightType(MatColoring mc, MatColoringWeightType wt
 {
   PetscFunctionBegin;
   mc->weight_type = wt;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

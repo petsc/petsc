@@ -58,7 +58,7 @@ PetscErrorCode DMPlexInvertCell(DMPolytopeType cellType, PetscInt cone[])
   default:
     break;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 #undef SWAPCONE
 }
 
@@ -84,7 +84,7 @@ PetscErrorCode DMPlexReorderCell(DM dm, PetscInt cell, PetscInt cone[])
   PetscFunctionBegin;
   PetscCall(DMPlexGetCellType(dm, cell, &cellType));
   PetscCall(DMPlexInvertCell(cellType, cone));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -109,7 +109,7 @@ PetscErrorCode DMPlexTriangleSetOptions(DM dm, const char *opts)
   PetscValidCharPointer(opts, 2);
   PetscCall(PetscFree(mesh->triangleOpts));
   PetscCall(PetscStrallocpy(opts, &mesh->triangleOpts));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -134,7 +134,7 @@ PetscErrorCode DMPlexTetgenSetOptions(DM dm, const char *opts)
   PetscValidCharPointer(opts, 2);
   PetscCall(PetscFree(mesh->tetgenOpts));
   PetscCall(PetscStrallocpy(opts, &mesh->tetgenOpts));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -183,7 +183,7 @@ PetscErrorCode DMPlexGenerate(DM boundary, const char name[], PetscBool interpol
       PetscCall(PetscStrcmp(fl->name, name, &flg));
       if (flg) {
         PetscCall((*fl->generate)(boundary, interpolate, mesh));
-        PetscFunctionReturn(0);
+        PetscFunctionReturn(PETSC_SUCCESS);
       }
       fl = fl->next;
     }
@@ -192,7 +192,7 @@ PetscErrorCode DMPlexGenerate(DM boundary, const char name[], PetscBool interpol
     while (fl) {
       if (boundary->dim == fl->dim) {
         PetscCall((*fl->generate)(boundary, interpolate, mesh));
-        PetscFunctionReturn(0);
+        PetscFunctionReturn(PETSC_SUCCESS);
       }
       fl = fl->next;
     }

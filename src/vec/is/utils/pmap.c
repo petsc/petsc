@@ -65,7 +65,7 @@ PetscErrorCode PetscLayoutCreate(MPI_Comm comm, PetscLayout *map)
   (*map)->oldn        = -1;
   (*map)->oldN        = -1;
   (*map)->oldbs       = -1;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -106,7 +106,7 @@ PetscErrorCode PetscLayoutCreateFromSizes(MPI_Comm comm, PetscInt n, PetscInt N,
   PetscCall(PetscLayoutSetSize(*map, N));
   PetscCall(PetscLayoutSetBlockSize(*map, bs));
   PetscCall(PetscLayoutSetUp(*map));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -126,14 +126,14 @@ PetscErrorCode PetscLayoutCreateFromSizes(MPI_Comm comm, PetscInt n, PetscInt N,
 PetscErrorCode PetscLayoutDestroy(PetscLayout *map)
 {
   PetscFunctionBegin;
-  if (!*map) PetscFunctionReturn(0);
+  if (!*map) PetscFunctionReturn(PETSC_SUCCESS);
   if (!(*map)->refcnt--) {
     if ((*map)->range_alloc) PetscCall(PetscFree((*map)->range));
     PetscCall(ISLocalToGlobalMappingDestroy(&(*map)->mapping));
     PetscCall(PetscFree((*map)));
   }
   *map = NULL;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -194,7 +194,7 @@ PetscErrorCode PetscLayoutCreateFromRanges(MPI_Comm comm, const PetscInt range[]
   map->oldN        = map->N;
   map->oldbs       = map->bs;
   *newmap          = map;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -234,7 +234,7 @@ PetscErrorCode PetscLayoutSetUp(PetscLayout map)
   PetscFunctionBegin;
   PetscCheck(!map->setupcalled || !(map->n != map->oldn || map->N != map->oldN), map->comm, PETSC_ERR_ARG_WRONGSTATE, "Layout is already setup with (local=%" PetscInt_FMT ",global=%" PetscInt_FMT "), cannot call setup again with (local=%" PetscInt_FMT ",global=%" PetscInt_FMT ")",
              map->oldn, map->oldN, map->n, map->N);
-  if (map->setupcalled) PetscFunctionReturn(0);
+  if (map->setupcalled) PetscFunctionReturn(PETSC_SUCCESS);
 
   if (map->n > 0 && map->bs > 1) PetscCheck(map->n % map->bs == 0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Local size %" PetscInt_FMT " must be divisible by blocksize %" PetscInt_FMT, map->n, map->bs);
   if (map->N > 0 && map->bs > 1) PetscCheck(map->N % map->bs == 0, map->comm, PETSC_ERR_PLIB, "Global size %" PetscInt_FMT " must be divisible by blocksize %" PetscInt_FMT, map->N, map->bs);
@@ -259,7 +259,7 @@ PetscErrorCode PetscLayoutSetUp(PetscLayout map)
   map->oldn        = map->n;
   map->oldN        = map->N;
   map->oldbs       = map->bs;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -293,7 +293,7 @@ PetscErrorCode PetscLayoutDuplicate(PetscLayout in, PetscLayout *out)
     PetscCall(PetscArraycpy((*out)->range, in->range, (*out)->size + 1));
   }
   (*out)->refcnt = 0;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -322,7 +322,7 @@ PetscErrorCode PetscLayoutReference(PetscLayout in, PetscLayout *out)
   in->refcnt++;
   PetscCall(PetscLayoutDestroy(out));
   *out = in;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -355,7 +355,7 @@ PetscErrorCode PetscLayoutSetISLocalToGlobalMapping(PetscLayout in, ISLocalToGlo
   }
   PetscCall(ISLocalToGlobalMappingDestroy(&in->mapping));
   in->mapping = ltog;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -377,7 +377,7 @@ PetscErrorCode PetscLayoutSetLocalSize(PetscLayout map, PetscInt n)
   PetscFunctionBegin;
   PetscCheck(map->bs <= 1 || (n % map->bs) == 0, map->comm, PETSC_ERR_ARG_INCOMP, "Local size %" PetscInt_FMT " not compatible with block size %" PetscInt_FMT, n, map->bs);
   map->n = n;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -403,7 +403,7 @@ PetscErrorCode PetscLayoutGetLocalSize(PetscLayout map, PetscInt *n)
 {
   PetscFunctionBegin;
   *n = map->n;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -424,7 +424,7 @@ PetscErrorCode PetscLayoutSetSize(PetscLayout map, PetscInt n)
 {
   PetscFunctionBegin;
   map->N = n;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -450,7 +450,7 @@ PetscErrorCode PetscLayoutGetSize(PetscLayout map, PetscInt *n)
 {
   PetscFunctionBegin;
   *n = map->N;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -470,7 +470,7 @@ PetscErrorCode PetscLayoutGetSize(PetscLayout map, PetscInt *n)
 PetscErrorCode PetscLayoutSetBlockSize(PetscLayout map, PetscInt bs)
 {
   PetscFunctionBegin;
-  if (bs < 0) PetscFunctionReturn(0);
+  if (bs < 0) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCheck(map->n <= 0 || (map->n % bs) == 0, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Local size %" PetscInt_FMT " not compatible with block size %" PetscInt_FMT, map->n, bs);
   if (map->mapping) {
     PetscInt obs;
@@ -479,7 +479,7 @@ PetscErrorCode PetscLayoutSetBlockSize(PetscLayout map, PetscInt bs)
     if (obs > 1) PetscCall(ISLocalToGlobalMappingSetBlockSize(map->mapping, bs));
   }
   map->bs = bs;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -505,7 +505,7 @@ PetscErrorCode PetscLayoutGetBlockSize(PetscLayout map, PetscInt *bs)
 {
   PetscFunctionBegin;
   *bs = PetscAbs(map->bs);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -533,7 +533,7 @@ PetscErrorCode PetscLayoutGetRange(PetscLayout map, PetscInt *rstart, PetscInt *
   PetscFunctionBegin;
   if (rstart) *rstart = map->rstart;
   if (rend) *rend = map->rend;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -563,7 +563,7 @@ PetscErrorCode PetscLayoutGetRanges(PetscLayout map, const PetscInt *range[])
 {
   PetscFunctionBegin;
   *range = map->range;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -588,5 +588,5 @@ PetscErrorCode PetscLayoutCompare(PetscLayout mapa, PetscLayout mapb, PetscBool 
   PetscFunctionBegin;
   *congruent = PETSC_FALSE;
   if (mapa->N == mapb->N && mapa->range && mapb->range && mapa->size == mapb->size) PetscCall(PetscArraycmp(mapa->range, mapb->range, mapa->size + 1, congruent));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

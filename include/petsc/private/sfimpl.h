@@ -206,7 +206,7 @@ PETSC_EXTERN PetscErrorCode PetscSFFree_Kokkos(PetscMemType, void *);
 #if defined(PETSC_HAVE_CUDA) || defined(PETSC_HAVE_KOKKOS) || defined(PETSC_HAVE_HIP)
   #define PetscSFMalloc(sf, mtype, sz, ptr) ((*(sf)->ops->Malloc)(mtype, sz, ptr))
   /* Free memory and set ptr to NULL when succeeded */
-  #define PetscSFFree(sf, mtype, ptr) ((ptr) && ((*(sf)->ops->Free)(mtype, ptr) || ((ptr) = NULL, 0)))
+  #define PetscSFFree(sf, mtype, ptr) ((PetscErrorCode)((ptr) && ((*(sf)->ops->Free)(mtype, ptr) || ((ptr) = NULL, PETSC_SUCCESS))))
 #else
   /* If pure host code, do with less indirection */
   #define PetscSFMalloc(sf, mtype, sz, ptr) PetscMalloc(sz, ptr)

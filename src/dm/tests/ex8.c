@@ -17,7 +17,7 @@ PetscErrorCode VecView_Shell(Vec v, PetscViewer viewer)
 
     PetscCall(VecGetDM(v, &dm));
     /* DMView() cannot be tested, as DMView_Shell defaults to VecView */
-    if (!dm) PetscFunctionReturn(0);
+    if (!dm) PetscFunctionReturn(PETSC_SUCCESS);
     PetscCall(VecView_GLVis(v, viewer));
   } else if (isascii) {
     const char *name;
@@ -27,7 +27,7 @@ PetscErrorCode VecView_Shell(Vec v, PetscViewer viewer)
     PetscCall(PetscObjectGetName((PetscObject)v, &name));
     if (!PetscGlobalRank) PetscCall(PetscViewerASCIIPrintf(viewer, "Hello from rank 0 -> vector name %s, size %" PetscInt_FMT "\n", name, n));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMSetUpGLVisViewer_Shell(PetscObject odm, PetscViewer viewer)
@@ -42,7 +42,7 @@ PetscErrorCode DMSetUpGLVisViewer_Shell(PetscObject odm, PetscViewer viewer)
   PetscCall(PetscObjectSetName((PetscObject)V, "sample"));
   PetscCall(PetscViewerGLVisSetFields(viewer, 1, &fec_type, &dim, NULL, (PetscObject *)&V, NULL, NULL));
   PetscCall(VecDestroy(&V));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)

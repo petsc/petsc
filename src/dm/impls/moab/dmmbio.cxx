@@ -24,7 +24,7 @@ static PetscErrorCode DMMoab_GetWriteOptions_Private(PetscInt fsetid, PetscInt n
 
   PetscCall(PetscSNPrintf(wopts, PETSC_MAX_PATH_LEN, "%s%s%s%s%s", wopts_par, wopts_parid, wopts_dbg, (extra_opts ? extra_opts : ""), (dm_opts ? dm_opts : "")));
   *write_opts = wopts;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -77,5 +77,5 @@ PetscErrorCode DMMoabOutput(DM dm, const char *filename, const char *usrwriteopt
   merr = dmmoab->mbiface->write_file(filename, NULL, writeopts, &dmmoab->fileset, 1);
   MBERRVM(dmmoab->mbiface, "Writing output of DMMoab failed.", merr);
   PetscCall(PetscFree(writeopts));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

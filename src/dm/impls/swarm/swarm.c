@@ -47,7 +47,7 @@ PetscErrorCode VecView_Swarm_HDF5_Internal(Vec v, PetscViewer viewer)
   PetscCall(VecViewNative(v, viewer));
   PetscCall(PetscViewerHDF5WriteObjectAttribute(viewer, (PetscObject)v, "Nc", PETSC_INT, (void *)&bs));
   PetscCall(PetscViewerHDF5PopGroup(viewer));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMSwarmView_HDF5(DM dm, PetscViewer viewer)
@@ -66,7 +66,7 @@ PetscErrorCode DMSwarmView_HDF5(DM dm, PetscViewer viewer)
   PetscCall(PetscViewerHDF5WriteObjectAttribute(viewer, (PetscObject)coordinates, "Np", PETSC_INT, (void *)&Np));
   PetscCall(PetscViewerHDF5PopGroup(viewer));
   PetscCall(DMSwarmDestroyGlobalVectorFromField(dm, DMSwarmPICField_coor, &coordinates));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 #endif
 
@@ -84,11 +84,11 @@ PetscErrorCode VecView_Swarm(Vec v, PetscViewer viewer)
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERHDF5, &ishdf5));
   if (ishdf5) {
     PetscCall(VecView_Swarm_HDF5_Internal(v, viewer));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 #endif
   PetscCall(VecViewNative(v, viewer));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -131,7 +131,7 @@ PetscErrorCode DMSwarmVectorDefineField(DM dm, const char fieldname[])
   swarm->vec_field_bs     = bs;
   swarm->vec_field_nlocal = n;
   PetscCall(DMSwarmRestoreField(dm, fieldname, &bs, &type, (void **)&array));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* requires DMSwarmDefineFieldVector has been called */
@@ -156,7 +156,7 @@ PetscErrorCode DMCreateGlobalVector_Swarm(DM dm, Vec *vec)
   PetscCall(VecSetDM(x, dm));
   PetscCall(VecSetOperation(x, VECOP_VIEW, (void (*)(void))VecView_Swarm));
   *vec = x;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* requires DMSwarmDefineFieldVector has been called */
@@ -179,7 +179,7 @@ PetscErrorCode DMCreateLocalVector_Swarm(DM dm, Vec *vec)
   PetscCall(VecSetDM(x, dm));
   PetscCall(VecSetFromOptions(x));
   *vec = x;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMSwarmDestroyVectorFromField_Private(DM dm, const char fieldname[], Vec *vec)
@@ -201,7 +201,7 @@ static PetscErrorCode DMSwarmDestroyVectorFromField_Private(DM dm, const char fi
   PetscCall(DMSwarmDataFieldRestoreAccess(gfield));
   PetscCall(VecResetArray(*vec));
   PetscCall(VecDestroy(vec));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMSwarmCreateVectorFromField_Private(DM dm, const char fieldname[], MPI_Comm comm, Vec *vec)
@@ -240,7 +240,7 @@ static PetscErrorCode DMSwarmCreateVectorFromField_Private(DM dm, const char fie
 
   PetscCall(VecSetDM(*vec, dm));
   PetscCall(VecSetOperation(*vec, VECOP_VIEW, (void (*)(void))VecView_Swarm));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* This creates a "mass matrix" between a finite element and particle space. If a finite element interpolant is given by
@@ -390,7 +390,7 @@ static PetscErrorCode DMSwarmComputeMassMatrix_Private(DM dmc, DM dmf, Mat mass,
   PetscCall(PetscFree3(v0, J, invJ));
   PetscCall(MatAssemblyBegin(mass, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(mass, MAT_FINAL_ASSEMBLY));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Returns empty matrix for use with SNES FD */
@@ -412,7 +412,7 @@ static PetscErrorCode DMCreateMatrix_Swarm(DM sw, Mat *m)
   PetscCall(MatAssemblyEnd(*m, MAT_FINAL_ASSEMBLY));
   PetscCall(MatShift(*m, 1.0));
   PetscCall(MatSetDM(*m, sw));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* FEM cols, Particle rows */
@@ -433,7 +433,7 @@ static PetscErrorCode DMCreateMassMatrix_Swarm(DM dmCoarse, DM dmFine, Mat *mass
 
   PetscCall(DMSwarmComputeMassMatrix_Private(dmCoarse, dmFine, *mass, PETSC_TRUE, ctx));
   PetscCall(MatViewFromOptions(*mass, NULL, "-mass_mat_view"));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMSwarmComputeMassMatrixSquare_Private(DM dmc, DM dmf, Mat mass, PetscBool useDeltaFunction, void *ctx)
@@ -603,7 +603,7 @@ static PetscErrorCode DMSwarmComputeMassMatrixSquare_Private(DM dmc, DM dmf, Mat
   PetscCall(PetscFree3(v0, J, invJ));
   PetscCall(MatAssemblyBegin(mass, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(mass, MAT_FINAL_ASSEMBLY));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -640,7 +640,7 @@ PetscErrorCode DMSwarmCreateMassMatrixSquare(DM dmCoarse, DM dmFine, Mat *mass)
 
   PetscCall(DMSwarmComputeMassMatrixSquare_Private(dmCoarse, dmFine, *mass, PETSC_TRUE, ctx));
   PetscCall(MatViewFromOptions(*mass, NULL, "-mass_sq_mat_view"));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -668,7 +668,7 @@ PetscErrorCode DMSwarmCreateGlobalVectorFromField(DM dm, const char fieldname[],
 
   PetscFunctionBegin;
   PetscCall(DMSwarmCreateVectorFromField_Private(dm, fieldname, comm, vec));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -691,7 +691,7 @@ PetscErrorCode DMSwarmDestroyGlobalVectorFromField(DM dm, const char fieldname[]
 {
   PetscFunctionBegin;
   PetscCall(DMSwarmDestroyVectorFromField_Private(dm, fieldname, vec));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -719,7 +719,7 @@ PetscErrorCode DMSwarmCreateLocalVectorFromField(DM dm, const char fieldname[], 
 
   PetscFunctionBegin;
   PetscCall(DMSwarmCreateVectorFromField_Private(dm, fieldname, comm, vec));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -742,7 +742,7 @@ PetscErrorCode DMSwarmDestroyLocalVectorFromField(DM dm, const char fieldname[],
 {
   PetscFunctionBegin;
   PetscCall(DMSwarmDestroyVectorFromField_Private(dm, fieldname, vec));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -771,7 +771,7 @@ PetscErrorCode DMSwarmInitializeFieldRegister(DM dm)
     PetscCall(DMSwarmRegisterPetscDatatypeField(dm, DMSwarmField_pid, 1, PETSC_INT64)); /* unique identifer */
     PetscCall(DMSwarmRegisterPetscDatatypeField(dm, DMSwarmField_rank, 1, PETSC_INT));  /* used for communication */
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -797,7 +797,7 @@ PetscErrorCode DMSwarmFinalizeFieldRegister(DM dm)
   PetscFunctionBegin;
   if (!swarm->field_registration_finalized) PetscCall(DMSwarmDataBucketFinalize(swarm->db));
   swarm->field_registration_finalized = PETSC_TRUE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -822,7 +822,7 @@ PetscErrorCode DMSwarmSetLocalSizes(DM dm, PetscInt nlocal, PetscInt buffer)
   PetscCall(PetscLogEventBegin(DMSWARM_SetSizes, 0, 0, 0, 0));
   PetscCall(DMSwarmDataBucketSetSizes(swarm->db, nlocal, buffer));
   PetscCall(PetscLogEventEnd(DMSWARM_SetSizes, 0, 0, 0, 0));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -848,7 +848,7 @@ PetscErrorCode DMSwarmSetCellDM(DM dm, DM dmcell)
 
   PetscFunctionBegin;
   swarm->dmcell = dmcell;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -872,7 +872,7 @@ PetscErrorCode DMSwarmGetCellDM(DM dm, DM *dmcell)
 
   PetscFunctionBegin;
   *dmcell = swarm->dmcell;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -896,7 +896,7 @@ PetscErrorCode DMSwarmGetLocalSize(DM dm, PetscInt *nlocal)
 
   PetscFunctionBegin;
   PetscCall(DMSwarmDataBucketGetSizes(swarm->db, nlocal, NULL, NULL));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -925,7 +925,7 @@ PetscErrorCode DMSwarmGetSize(DM dm, PetscInt *n)
   PetscFunctionBegin;
   PetscCall(DMSwarmDataBucketGetSizes(swarm->db, &nlocal, NULL, NULL));
   PetscCallMPI(MPI_Allreduce(&nlocal, n, 1, MPIU_INT, MPI_SUM, PetscObjectComm((PetscObject)dm)));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -971,7 +971,7 @@ PetscErrorCode DMSwarmRegisterPetscDatatypeField(DM dm, const char fieldname[], 
     PetscCall(DMSwarmDataFieldSetBlockSize(gfield, blocksize));
   }
   swarm->db->field[swarm->db->nfields - 1]->petsc_type = type;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -998,7 +998,7 @@ PetscErrorCode DMSwarmRegisterUserStructField(DM dm, const char fieldname[], siz
   PetscFunctionBegin;
   PetscCall(DMSwarmDataBucketRegisterField(swarm->db, "DMSwarmRegisterUserStructField", fieldname, size, NULL));
   swarm->db->field[swarm->db->nfields - 1]->petsc_type = PETSC_STRUCT;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1032,7 +1032,7 @@ PetscErrorCode DMSwarmRegisterUserDatatypeField(DM dm, const char fieldname[], s
     PetscCall(DMSwarmDataFieldSetBlockSize(gfield, blocksize));
   }
   swarm->db->field[swarm->db->nfields - 1]->petsc_type = PETSC_DATATYPE_UNKNOWN;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1068,7 +1068,7 @@ PetscErrorCode DMSwarmGetField(DM dm, const char fieldname[], PetscInt *blocksiz
   PetscCall(DMSwarmDataFieldGetEntries(gfield, data));
   if (blocksize) *blocksize = gfield->bs;
   if (type) *type = gfield->petsc_type;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1101,7 +1101,7 @@ PetscErrorCode DMSwarmRestoreField(DM dm, const char fieldname[], PetscInt *bloc
   PetscCall(DMSwarmDataBucketGetDMSwarmDataFieldByName(swarm->db, fieldname, &gfield));
   PetscCall(DMSwarmDataFieldRestoreAccess(gfield));
   if (data) *data = NULL;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -1128,7 +1128,7 @@ PetscErrorCode DMSwarmAddPoint(DM dm)
   PetscCall(PetscLogEventBegin(DMSWARM_AddPoints, 0, 0, 0, 0));
   PetscCall(DMSwarmDataBucketAddPoint(swarm->db));
   PetscCall(PetscLogEventEnd(DMSWARM_AddPoints, 0, 0, 0, 0));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -1158,7 +1158,7 @@ PetscErrorCode DMSwarmAddNPoints(DM dm, PetscInt npoints)
   nlocal = nlocal + npoints;
   PetscCall(DMSwarmDataBucketSetSizes(swarm->db, nlocal, DMSWARM_DATA_BUCKET_BUFFER_DEFAULT));
   PetscCall(PetscLogEventEnd(DMSWARM_AddPoints, 0, 0, 0, 0));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -1181,7 +1181,7 @@ PetscErrorCode DMSwarmRemovePoint(DM dm)
   PetscCall(PetscLogEventBegin(DMSWARM_RemovePoints, 0, 0, 0, 0));
   PetscCall(DMSwarmDataBucketRemovePoint(swarm->db));
   PetscCall(PetscLogEventEnd(DMSWARM_RemovePoints, 0, 0, 0, 0));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -1205,7 +1205,7 @@ PetscErrorCode DMSwarmRemovePointAtIndex(DM dm, PetscInt idx)
   PetscCall(PetscLogEventBegin(DMSWARM_RemovePoints, 0, 0, 0, 0));
   PetscCall(DMSwarmDataBucketRemovePointAtIndex(swarm->db, idx));
   PetscCall(PetscLogEventEnd(DMSWARM_RemovePoints, 0, 0, 0, 0));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -1229,14 +1229,14 @@ PetscErrorCode DMSwarmCopyPoint(DM dm, PetscInt pi, PetscInt pj)
   PetscFunctionBegin;
   if (!swarm->issetup) PetscCall(DMSetUp(dm));
   PetscCall(DMSwarmDataBucketCopyPoint(swarm->db, pi, swarm->db, pj));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMSwarmMigrate_Basic(DM dm, PetscBool remove_sent_points)
 {
   PetscFunctionBegin;
   PetscCall(DMSwarmMigrate_Push_Basic(dm, remove_sent_points));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -1279,7 +1279,7 @@ PetscErrorCode DMSwarmMigrate(DM dm, PetscBool remove_sent_points)
   }
   PetscCall(PetscLogEventEnd(DMSWARM_Migrate, 0, 0, 0, 0));
   PetscCall(DMClearGlobalVectors(dm));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMSwarmMigrate_GlobalToLocal_Basic(DM dm, PetscInt *globalsize);
@@ -1333,7 +1333,7 @@ PetscErrorCode DMSwarmCollectViewCreate(DM dm)
   }
   swarm->collect_view_active       = PETSC_TRUE;
   swarm->collect_view_reset_nlocal = ng;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -1359,7 +1359,7 @@ PetscErrorCode DMSwarmCollectViewDestroy(DM dm)
   PetscCheck(swarm->collect_view_active, PetscObjectComm((PetscObject)dm), PETSC_ERR_USER, "CollectView is currently not active");
   PetscCall(DMSwarmSetLocalSizes(dm, swarm->collect_view_reset_nlocal, -1));
   swarm->collect_view_active = PETSC_FALSE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMSwarmSetUpPIC(DM dm)
@@ -1373,7 +1373,7 @@ PetscErrorCode DMSwarmSetUpPIC(DM dm)
   PetscCheck(dim <= 3, PetscObjectComm((PetscObject)dm), PETSC_ERR_USER, "Dimension must be 1,2,3 - found %" PetscInt_FMT, dim);
   PetscCall(DMSwarmRegisterPetscDatatypeField(dm, DMSwarmPICField_coor, dim, PETSC_DOUBLE));
   PetscCall(DMSwarmRegisterPetscDatatypeField(dm, DMSwarmPICField_cellid, 1, PETSC_INT));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -1439,7 +1439,7 @@ PetscErrorCode DMSwarmSetPointCoordinatesRandom(DM dm, PetscInt Npc)
   PetscCall(DMSwarmRestoreField(dm, DMSwarmPICField_coor, NULL, NULL, (void **)&coords));
   PetscCall(PetscFree5(centroid, xi0, v0, J, invJ));
   PetscCall(PetscRandomDestroy(&rnd));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -1462,7 +1462,7 @@ PetscErrorCode DMSwarmSetType(DM dm, DMSwarmType stype)
   PetscFunctionBegin;
   swarm->swarm_type = stype;
   if (swarm->swarm_type == DMSWARM_PIC) PetscCall(DMSwarmSetUpPIC(dm));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMSetup_Swarm(DM dm)
@@ -1472,7 +1472,7 @@ PetscErrorCode DMSetup_Swarm(DM dm)
   PetscInt    p, npoints, *rankval;
 
   PetscFunctionBegin;
-  if (swarm->issetup) PetscFunctionReturn(0);
+  if (swarm->issetup) PetscFunctionReturn(PETSC_SUCCESS);
   swarm->issetup = PETSC_TRUE;
 
   if (swarm->swarm_type == DMSWARM_PIC) {
@@ -1512,7 +1512,7 @@ PetscErrorCode DMSetup_Swarm(DM dm)
   PetscCall(DMSwarmGetField(dm, DMSwarmField_rank, NULL, NULL, (void **)&rankval));
   for (p = 0; p < npoints; p++) rankval[p] = (PetscInt)rank;
   PetscCall(DMSwarmRestoreField(dm, DMSwarmField_rank, NULL, NULL, (void **)&rankval));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 extern PetscErrorCode DMSwarmSortDestroy(DMSwarmSort *_ctx);
@@ -1522,11 +1522,11 @@ PetscErrorCode DMDestroy_Swarm(DM dm)
   DM_Swarm *swarm = (DM_Swarm *)dm->data;
 
   PetscFunctionBegin;
-  if (--swarm->refct > 0) PetscFunctionReturn(0);
+  if (--swarm->refct > 0) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(DMSwarmDataBucketDestroy(&swarm->db));
   if (swarm->sort_context) PetscCall(DMSwarmSortDestroy(&swarm->sort_context));
   PetscCall(PetscFree(swarm));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMSwarmView_Draw(DM dm, PetscViewer viewer)
@@ -1556,7 +1556,7 @@ PetscErrorCode DMSwarmView_Draw(DM dm, PetscViewer viewer)
   PetscCall(PetscDrawFlush(draw));
   PetscCall(PetscDrawPause(draw));
   PetscCall(PetscDrawSave(draw));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMView_Swarm_Ascii(DM dm, PetscViewer viewer)
@@ -1605,7 +1605,7 @@ static PetscErrorCode DMView_Swarm_Ascii(DM dm, PetscViewer viewer)
     PetscCall(PetscViewerASCIIPopSynchronized(viewer));
     PetscCall(DMSwarmRestoreField(dm, DMSwarmPICField_cellid, NULL, NULL, (void **)&cell));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMView_Swarm(DM dm, PetscViewer viewer)
@@ -1643,7 +1643,7 @@ PetscErrorCode DMView_Swarm(DM dm, PetscViewer viewer)
 #endif
     if (isdraw) PetscCall(DMSwarmView_Draw(dm, viewer));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1696,7 +1696,7 @@ PETSC_EXTERN PetscErrorCode DMSwarmGetCellSwarm(DM sw, PetscInt cellID, DM cells
   PetscCall(DMPlexFilter(dmc, label, 1, &subdmc));
   PetscCall(DMSwarmSetCellDM(cellswarm, subdmc));
   PetscCall(DMLabelDestroy(&label));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1731,7 +1731,7 @@ PETSC_EXTERN PetscErrorCode DMSwarmRestoreCellSwarm(DM sw, PetscInt cellID, DM c
   PetscCall(DMSwarmGetCellDM(cellswarm, &dmc));
   PetscCall(DMDestroy(&dmc));
   PetscCall(PetscFree(pids));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_INTERN PetscErrorCode DMClone_Swarm(DM, DM *);
@@ -1769,7 +1769,7 @@ static PetscErrorCode DMInitialize_Swarm(DM sw)
   sw->ops->createsubdm              = NULL;
   sw->ops->getdimpoints             = NULL;
   sw->ops->locatepoints             = NULL;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_INTERN PetscErrorCode DMClone_Swarm(DM dm, DM *newdm)
@@ -1782,7 +1782,7 @@ PETSC_INTERN PetscErrorCode DMClone_Swarm(DM dm, DM *newdm)
   PetscCall(PetscObjectChangeTypeName((PetscObject)*newdm, DMSWARM));
   PetscCall(DMInitialize_Swarm(*newdm));
   (*newdm)->dim = dm->dim;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -1858,5 +1858,5 @@ PETSC_EXTERN PetscErrorCode DMCreate_Swarm(DM dm)
   swarm->collect_view_reset_nlocal      = -1;
   PetscCall(DMInitialize_Swarm(dm));
   if (SwarmDataFieldId == -1) PetscCall(PetscObjectComposedDataRegister(&SwarmDataFieldId));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

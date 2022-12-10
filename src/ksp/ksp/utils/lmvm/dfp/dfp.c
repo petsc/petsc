@@ -70,7 +70,7 @@ PetscErrorCode MatSolve_LMVMDFP(Mat B, Vec F, Vec dX)
     /* Update dX_{i+1} = (B^{-1})_{i+1} * f */
     PetscCall(VecAXPBYPCZ(dX, -PetscRealPart(ytx) / ldfp->ytq[i], PetscRealPart(stf) / ldfp->yts[i], 1.0, ldfp->Q[i], lmvm->S[i]));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*------------------------------------------------------------*/
@@ -129,7 +129,7 @@ PetscErrorCode MatMult_LMVMDFP(Mat B, Vec X, Vec Z)
     PetscCall(VecAXPY(Z, alpha[i] - beta, lmvm->Y[i]));
   }
   PetscCall(PetscFree(alpha));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*------------------------------------------------------------*/
@@ -145,7 +145,7 @@ static PetscErrorCode MatUpdate_LMVMDFP(Mat B, Vec X, Vec F)
   PetscScalar   curvature, ytytmp, ststmp;
 
   PetscFunctionBegin;
-  if (!lmvm->m) PetscFunctionReturn(0);
+  if (!lmvm->m) PetscFunctionReturn(PETSC_SUCCESS);
   if (lmvm->prev_set) {
     /* Compute the new (S = X - Xprev) and (Y = F - Fprev) vectors */
     PetscCall(VecAYPX(lmvm->Xprev, -1.0, X));
@@ -216,7 +216,7 @@ static PetscErrorCode MatUpdate_LMVMDFP(Mat B, Vec X, Vec F)
   PetscCall(VecCopy(X, lmvm->Xprev));
   PetscCall(VecCopy(F, lmvm->Fprev));
   lmvm->prev_set = PETSC_TRUE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*------------------------------------------------------------*/
@@ -256,7 +256,7 @@ static PetscErrorCode MatCopy_LMVMDFP(Mat B, Mat M, MatStructure str)
   default:
     break;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*------------------------------------------------------------*/
@@ -304,7 +304,7 @@ static PetscErrorCode MatReset_LMVMDFP(Mat B, PetscBool destructive)
     }
   }
   PetscCall(MatReset_LMVM(B, destructive));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*------------------------------------------------------------*/
@@ -329,7 +329,7 @@ static PetscErrorCode MatAllocate_LMVMDFP(Mat B, Vec X, Vec F)
     }
     ldfp->allocated = PETSC_TRUE;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*------------------------------------------------------------*/
@@ -349,7 +349,7 @@ static PetscErrorCode MatDestroy_LMVMDFP(Mat B)
   PetscCall(MatDestroy(&ldfp->D));
   PetscCall(PetscFree(lmvm->ctx));
   PetscCall(MatDestroy_LMVM(B));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*------------------------------------------------------------*/
@@ -378,7 +378,7 @@ static PetscErrorCode MatSetUp_LMVMDFP(Mat B)
     }
     ldfp->allocated = PETSC_TRUE;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*------------------------------------------------------------*/
@@ -390,7 +390,7 @@ static PetscErrorCode MatSetFromOptions_LMVMDFP(Mat B, PetscOptionItems *PetscOp
   PetscOptionsHeadBegin(PetscOptionsObject, "DFP method for approximating SPD Jacobian actions (MATLMVMDFP)");
   PetscCall(MatSetFromOptions_LMVMSymBrdn_Private(B, PetscOptionsObject));
   PetscOptionsHeadEnd();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*------------------------------------------------------------*/
@@ -418,7 +418,7 @@ PetscErrorCode MatCreate_LMVMDFP(Mat B)
   ldfp        = (Mat_SymBrdn *)lmvm->ctx;
   ldfp->needP = PETSC_FALSE;
   ldfp->phi   = 1.0;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*------------------------------------------------------------*/
@@ -470,5 +470,5 @@ PetscErrorCode MatCreateLMVMDFP(MPI_Comm comm, PetscInt n, PetscInt N, Mat *B)
   PetscCall(MatSetSizes(*B, n, n, N, N));
   PetscCall(MatSetType(*B, MATLMVMDFP));
   PetscCall(MatSetUp(*B));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

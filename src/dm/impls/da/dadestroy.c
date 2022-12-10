@@ -7,12 +7,11 @@
 
 PetscErrorCode DMDestroy_DA(DM da)
 {
-  PetscErrorCode i;
-  DM_DA         *dd = (DM_DA *)da->data;
+  DM_DA *dd = (DM_DA *)da->data;
 
   PetscFunctionBegin;
   /* destroy the external/common part */
-  for (i = 0; i < DMDA_MAX_WORK_ARRAYS; i++) {
+  for (PetscInt i = 0; i < DMDA_MAX_WORK_ARRAYS; i++) {
     PetscCall(PetscFree(dd->startghostedout[i]));
     PetscCall(PetscFree(dd->startghostedin[i]));
     PetscCall(PetscFree(dd->startout[i]));
@@ -35,11 +34,11 @@ PetscErrorCode DMDestroy_DA(DM da)
   PetscCall(PetscFree(dd->refine_z_hier));
 
   if (dd->fieldname) {
-    for (i = 0; i < dd->w; i++) PetscCall(PetscFree(dd->fieldname[i]));
+    for (PetscInt i = 0; i < dd->w; i++) PetscCall(PetscFree(dd->fieldname[i]));
     PetscCall(PetscFree(dd->fieldname));
   }
   if (dd->coordinatename) {
-    for (i = 0; i < da->dim; i++) PetscCall(PetscFree(dd->coordinatename[i]));
+    for (PetscInt i = 0; i < da->dim; i++) PetscCall(PetscFree(dd->coordinatename[i]));
     PetscCall(PetscFree(dd->coordinatename));
   }
   PetscCall(ISColoringDestroy(&dd->localcoloring));
@@ -55,5 +54,5 @@ PetscErrorCode DMDestroy_DA(DM da)
   PetscCall(PetscObjectComposeFunction((PetscObject)da, "DMSetUpGLVisViewer_C", NULL));
 
   PetscCall(PetscFree(dd));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

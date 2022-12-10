@@ -30,7 +30,7 @@ static PetscErrorCode CheckSymmetry(PetscInt dim, PetscInt order, PetscBool tens
   if (!perms && !flips) {
     PetscCall(PetscDualSpaceDestroy(&sp));
     PetscCall(DMDestroy(&dm));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
   PetscCall(PetscMalloc6(nFunc, &ids, nFunc, &idsCopy, nFunc, &idsCopy2, nFunc * dim, &vals, nFunc * dim, &valsCopy, nFunc * dim, &valsCopy2));
   for (i = 0; i < nFunc; i++) ids[i] = idsCopy2[i] = i;
@@ -109,7 +109,7 @@ static PetscErrorCode CheckSymmetry(PetscInt dim, PetscInt order, PetscBool tens
   PetscCall(PetscFree6(ids, idsCopy, idsCopy2, vals, valsCopy, valsCopy2));
   PetscCall(PetscDualSpaceDestroy(&sp));
   PetscCall(DMDestroy(&dm));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)

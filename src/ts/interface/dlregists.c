@@ -16,7 +16,7 @@ PetscErrorCode TSFinalizePackage(void)
   PetscCall(PetscFunctionListDestroy(&TSTrajectoryList));
   TSPackageInitialized = PETSC_FALSE;
   TSRegisterAllCalled  = PETSC_FALSE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -34,7 +34,7 @@ PetscErrorCode TSInitializePackage(void)
   PetscBool opt, pkg, cls;
 
   PetscFunctionBegin;
-  if (TSPackageInitialized) PetscFunctionReturn(0);
+  if (TSPackageInitialized) PetscFunctionReturn(PETSC_SUCCESS);
   TSPackageInitialized = PETSC_TRUE;
   /* Initialize subpackages */
   PetscCall(TSAdaptInitializePackage());
@@ -94,7 +94,7 @@ PetscErrorCode TSInitializePackage(void)
   }
   /* Register package finalizer */
   PetscCall(PetscRegisterFinalize(TSFinalizePackage));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 #if defined(PETSC_HAVE_DYNAMIC_LIBRARIES)
@@ -109,6 +109,6 @@ PETSC_EXTERN PetscErrorCode PetscDLLibraryRegister_petscts(void)
 {
   PetscFunctionBegin;
   PetscCall(TSInitializePackage());
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 #endif /* PETSC_HAVE_DYNAMIC_LIBRARIES */

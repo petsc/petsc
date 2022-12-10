@@ -23,7 +23,7 @@ PetscErrorCode VecGetKokkosView_Private(Vec v, PetscScalarKokkosViewType<MemoryS
   VecErrorIfNotKokkos(v);
   if (!overwrite) veckok->v_dual.sync<MemorySpace>(); /* If overwrite=true, no need to sync the space, since caller will overwrite the data */
   *kv = veckok->v_dual.view<MemorySpace>();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 template <class MemorySpace>
@@ -36,7 +36,7 @@ PetscErrorCode VecRestoreKokkosView_Private(Vec v, PetscScalarKokkosViewType<Mem
   if (overwrite) veckok->v_dual.clear_sync_state(); /* If overwrite=true, clear the old sync state since user forced an overwrite */
   veckok->v_dual.modify<MemorySpace>();
   PetscCall(PetscObjectStateIncrease((PetscObject)v));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 template <class MemorySpace>
@@ -47,7 +47,7 @@ PetscErrorCode VecGetKokkosView(Vec v, ConstPetscScalarKokkosViewType<MemorySpac
   VecErrorIfNotKokkos(v);
   veckok->v_dual.sync<MemorySpace>(); /* Sync the space for caller to read */
   *kv = veckok->v_dual.view<MemorySpace>();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Function template explicit instantiation */
@@ -106,7 +106,7 @@ PetscErrorCode VecSetRandom_SeqKokkos(Vec xin, PetscRandom r)
   PetscCall(VecGetArrayWrite(xin, &xx)); /* TODO: generate randoms directly on device */
   for (PetscInt i = 0; i < n; i++) PetscCall(PetscRandomGetValue(r, &xx[i]));
   PetscCall(VecRestoreArrayWrite(xin, &xx));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* x = |x| */
@@ -120,7 +120,7 @@ PetscErrorCode VecAbs_SeqKokkos(Vec xin)
   KokkosBlas::abs(xv, xv);
   PetscCall(VecRestoreKokkosView(xin, &xv));
   PetscCall(PetscLogGpuTimeEnd());
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* x = 1/x */
@@ -137,7 +137,7 @@ PetscErrorCode VecReciprocal_SeqKokkos(Vec xin)
     });
   PetscCall(VecRestoreKokkosView(xin, &xv));
   PetscCall(PetscLogGpuTimeEnd());
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 template <template <typename...> class FunctorType_, template <typename...> class CompareType_, typename IndexType, typename ScalarType>
@@ -165,21 +165,21 @@ static PetscErrorCode VecMinMax_SeqKokkos_Private(Vec xin, IndexType *p, ScalarT
   *val = result.val;
   PetscCall(VecRestoreKokkosView(xin, &xv));
   PetscCall(PetscLogGpuTimeEnd());
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode VecMin_SeqKokkos(Vec xin, PetscInt *p, PetscReal *val)
 {
   PetscFunctionBegin;
   PetscCall(VecMinMax_SeqKokkos_Private<Kokkos::MinLoc, Kokkos::less>(xin, p, val, "VecMin"));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode VecMax_SeqKokkos(Vec xin, PetscInt *p, PetscReal *val)
 {
   PetscFunctionBegin;
   PetscCall(VecMinMax_SeqKokkos_Private<Kokkos::MaxLoc, Kokkos::greater>(xin, p, val, "VecMax"));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode VecSum_SeqKokkos(Vec xin, PetscScalar *sum)
@@ -192,7 +192,7 @@ PetscErrorCode VecSum_SeqKokkos(Vec xin, PetscScalar *sum)
   *sum = KokkosBlas::sum(xv);
   PetscCall(VecRestoreKokkosView(xin, &xv));
   PetscCall(PetscLogGpuTimeEnd());
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode VecShift_SeqKokkos(Vec xin, PetscScalar shift)
@@ -206,14 +206,14 @@ PetscErrorCode VecShift_SeqKokkos(Vec xin, PetscScalar shift)
     "VecShift", xin->map->n, KOKKOS_LAMBDA(PetscInt i) { xv(i) += shift; });
   PetscCall(VecRestoreKokkosView(xin, &xv));
   PetscCall(PetscLogGpuTimeEnd());
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* y = alpha x + y */
 PetscErrorCode VecAXPY_SeqKokkos(Vec yin, PetscScalar alpha, Vec xin)
 {
   PetscFunctionBegin;
-  if (alpha == (PetscScalar)0.0) PetscFunctionReturn(0);
+  if (alpha == (PetscScalar)0.0) PetscFunctionReturn(PETSC_SUCCESS);
   if (yin == xin) {
     PetscCall(VecScale_SeqKokkos(yin, alpha + 1));
   } else {
@@ -237,7 +237,7 @@ PetscErrorCode VecAXPY_SeqKokkos(Vec yin, PetscScalar alpha, Vec xin)
       PetscCall(VecAXPY_Seq(yin, alpha, xin));
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* y = x + beta y */
@@ -246,7 +246,7 @@ PetscErrorCode VecAYPX_SeqKokkos(Vec yin, PetscScalar beta, Vec xin)
   PetscFunctionBegin;
   /* One needs to define KOKKOSBLAS_OPTIMIZATION_LEVEL_AXPBY > 2 to have optimizations for cases alpha/beta = 0,+/-1 */
   PetscCall(VecAXPBY_SeqKokkos(yin, 1.0, beta, xin));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* z = y^T x */
@@ -264,7 +264,7 @@ PetscErrorCode VecTDot_SeqKokkos(Vec xin, Vec yin, PetscScalar *z)
   PetscCall(VecRestoreKokkosView(xin, &xv));
   PetscCall(PetscLogGpuTimeEnd());
   if (xin->map->n > 0) PetscCall(PetscLogGpuFlops(2.0 * xin->map->n));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 struct TransposeDotTag { };
@@ -351,7 +351,7 @@ PetscErrorCode VecMultiDot_Private(Vec xin, PetscInt nv, const Vec yin[], PetscS
   }
   PetscCall(VecRestoreKokkosView(xin, &xv));
   Kokkos::fence(); /* If reduce is async, then we need this fence to make sure z is ready for use on host */
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* z[i] = (x,y_i) = y_i^H x */
@@ -359,7 +359,7 @@ PetscErrorCode VecMDot_SeqKokkos(Vec xin, PetscInt nv, const Vec yin[], PetscSca
 {
   PetscFunctionBegin;
   PetscCall(VecMultiDot_Private<ConjugateDotTag>(xin, nv, yin, z));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* z[i] = (x,y_i) = y_i^T x */
@@ -367,7 +367,7 @@ PetscErrorCode VecMTDot_SeqKokkos(Vec xin, PetscInt nv, const Vec yin[], PetscSc
 {
   PetscFunctionBegin;
   PetscCall(VecMultiDot_Private<TransposeDotTag>(xin, nv, yin, z));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* x[:] = alpha */
@@ -381,7 +381,7 @@ PetscErrorCode VecSet_SeqKokkos(Vec xin, PetscScalar alpha)
   KokkosBlas::fill(xv, alpha);
   PetscCall(VecRestoreKokkosViewWrite(xin, &xv));
   PetscCall(PetscLogGpuTimeEnd());
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* x = alpha x */
@@ -400,7 +400,7 @@ PetscErrorCode VecScale_SeqKokkos(Vec xin, PetscScalar alpha)
     PetscCall(PetscLogGpuTimeEnd());
     PetscCall(PetscLogGpuFlops(xin->map->n));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* z = y^H x */
@@ -417,7 +417,7 @@ PetscErrorCode VecDot_SeqKokkos(Vec xin, Vec yin, PetscScalar *z)
   PetscCall(VecRestoreKokkosView(yin, &yv));
   PetscCall(PetscLogGpuTimeEnd());
   if (xin->map->n > 0) PetscCall(PetscLogGpuFlops(2.0 * xin->map->n - 1));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* y = x, where x is VECKOKKOS, but y may be not */
@@ -449,7 +449,7 @@ PetscErrorCode VecCopy_SeqKokkos(Vec xin, Vec yin)
     }
   }
   PetscCall(PetscLogGpuTimeEnd());
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* y[i] <--> x[i] */
@@ -472,7 +472,7 @@ PetscErrorCode VecSwap_SeqKokkos(Vec xin, Vec yin)
     PetscCall(VecRestoreKokkosView(yin, &yv));
     PetscCall(PetscLogGpuTimeEnd());
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*  w = alpha x + y */
@@ -497,7 +497,7 @@ PetscErrorCode VecWAXPY_SeqKokkos(Vec win, PetscScalar alpha, Vec xin, Vec yin)
     PetscCall(PetscLogGpuTimeEnd());
     PetscCall(PetscLogGpuFlops(2 * win->map->n));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 struct MAXPYFunctor {
@@ -567,7 +567,7 @@ PetscErrorCode VecMAXPY_SeqKokkos(Vec yin, PetscInt nv, const PetscScalar *alpha
   }
   PetscCall(VecRestoreKokkosView(yin, &yv));
   PetscCall(PetscLogGpuFlops(nv * 2.0 * yin->map->n));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* y = alpha x + beta y */
@@ -599,7 +599,7 @@ PetscErrorCode VecAXPBY_SeqKokkos(Vec yin, PetscScalar alpha, PetscScalar beta, 
   } else {
     PetscCall(VecAXPBY_Seq(yin, alpha, beta, xin));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* z = alpha x + beta y + gamma z */
@@ -619,7 +619,7 @@ PetscErrorCode VecAXPBYPCZ_SeqKokkos(Vec zin, PetscScalar alpha, PetscScalar bet
   PetscCall(VecRestoreKokkosView(zin, &zv));
   PetscCall(PetscLogGpuTimeEnd());
   PetscCall(PetscLogGpuFlops(zin->map->n * 5));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* w = x*y. Any subset of the x, y, and w may be the same vector.
@@ -662,7 +662,7 @@ PetscErrorCode VecPointwiseMult_SeqKokkos(Vec win, Vec xin, Vec yin)
   }
   PetscCall(PetscLogGpuTimeEnd());
   PetscCall(PetscLogGpuFlops(n));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* w = x/y */
@@ -708,7 +708,7 @@ PetscErrorCode VecPointwiseDivide_SeqKokkos(Vec win, Vec xin, Vec yin)
   }
   PetscCall(PetscLogGpuTimeEnd());
   PetscCall(PetscLogGpuFlops(win->map->n));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode VecNorm_SeqKokkos(Vec xin, NormType type, PetscReal *z)
@@ -735,7 +735,7 @@ PetscErrorCode VecNorm_SeqKokkos(Vec xin, NormType type, PetscReal *z)
     PetscCall(VecRestoreKokkosView(xin, &xv));
     PetscCall(PetscLogGpuTimeEnd());
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* A functor for DotNorm2 so that we can compute dp and nm in one kernel */
@@ -785,7 +785,7 @@ PetscErrorCode VecDotNorm2_SeqKokkos(Vec xin, Vec yin, PetscScalar *dp, PetscSca
   PetscCall(VecRestoreKokkosView(xin, &xv));
   PetscCall(PetscLogGpuTimeEnd());
   PetscCall(PetscLogGpuFlops(4.0 * xin->map->n));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode VecConjugate_SeqKokkos(Vec xin)
@@ -803,7 +803,7 @@ PetscErrorCode VecConjugate_SeqKokkos(Vec xin)
 #else
   PetscFunctionBegin;
 #endif
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Temporarily replace the array in vin with a[]. Return to the original array with a call to VecResetArray() */
@@ -815,7 +815,7 @@ PetscErrorCode VecPlaceArray_SeqKokkos(Vec vin, const PetscScalar *a)
   PetscFunctionBegin;
   PetscCall(VecPlaceArray_Seq(vin, a));
   veckok->UpdateArray<Kokkos::HostSpace>(vecseq->array);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode VecResetArray_SeqKokkos(Vec vin)
@@ -827,7 +827,7 @@ PetscErrorCode VecResetArray_SeqKokkos(Vec vin)
   veckok->v_dual.sync_host();        /* User wants to unhook the provided host array. Sync it so that user can get the latest */
   PetscCall(VecResetArray_Seq(vin)); /* Swap back the old host array, assuming its has the latest value */
   veckok->UpdateArray<Kokkos::HostSpace>(vecseq->array);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Replace the array in vin with a[] that must be allocated by PetscMalloc. a[] is owned by vin afterwords. */
@@ -841,7 +841,7 @@ PetscErrorCode VecReplaceArray_SeqKokkos(Vec vin, const PetscScalar *a)
   if (vecseq->array != vecseq->array_allocated) veckok->v_dual.sync_host();
   PetscCall(VecReplaceArray_Seq(vin, a));
   veckok->UpdateArray<Kokkos::HostSpace>(vecseq->array);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Maps the local portion of vector v into vector w */
@@ -863,7 +863,7 @@ PetscErrorCode VecGetLocalVector_SeqKokkos(Vec v, Vec w)
   w->data  = v->data;
   w->spptr = v->spptr;
   PetscCall(PetscObjectStateIncrease((PetscObject)w));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode VecRestoreLocalVector_SeqKokkos(Vec v, Vec w)
@@ -876,7 +876,7 @@ PetscErrorCode VecRestoreLocalVector_SeqKokkos(Vec v, Vec w)
   /* TODO: need to think if setting w->data/spptr to NULL is safe */
   w->data  = NULL;
   w->spptr = NULL;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode VecGetArray_SeqKokkos(Vec v, PetscScalar **a)
@@ -886,7 +886,7 @@ PetscErrorCode VecGetArray_SeqKokkos(Vec v, PetscScalar **a)
   PetscFunctionBegin;
   veckok->v_dual.sync_host();
   *a = *((PetscScalar **)v->data);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode VecRestoreArray_SeqKokkos(Vec v, PetscScalar **a)
@@ -895,7 +895,7 @@ PetscErrorCode VecRestoreArray_SeqKokkos(Vec v, PetscScalar **a)
 
   PetscFunctionBegin;
   veckok->v_dual.modify_host();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Get array on host to overwrite, so no need to sync host. In VecRestoreArrayWrite() we will mark host is modified. */
@@ -906,7 +906,7 @@ PetscErrorCode VecGetArrayWrite_SeqKokkos(Vec v, PetscScalar **a)
   PetscFunctionBegin;
   veckok->v_dual.clear_sync_state();
   *a = veckok->v_dual.view_host().data();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode VecGetArrayAndMemType_SeqKokkos(Vec v, PetscScalar **a, PetscMemType *mtype)
@@ -923,7 +923,7 @@ PetscErrorCode VecGetArrayAndMemType_SeqKokkos(Vec v, PetscScalar **a, PetscMemT
     *a = veckok->v_dual.view_device().data();
     if (mtype) *mtype = PETSC_MEMTYPE_KOKKOS;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode VecRestoreArrayAndMemType_SeqKokkos(Vec v, PetscScalar **a)
@@ -936,7 +936,7 @@ PetscErrorCode VecRestoreArrayAndMemType_SeqKokkos(Vec v, PetscScalar **a)
   } else {
     veckok->v_dual.modify_device();
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode VecGetArrayWriteAndMemType_SeqKokkos(Vec v, PetscScalar **a, PetscMemType *mtype)
@@ -953,7 +953,7 @@ PetscErrorCode VecGetArrayWriteAndMemType_SeqKokkos(Vec v, PetscScalar **a, Pets
     *a = veckok->v_dual.view_device().data();
     if (mtype) *mtype = PETSC_MEMTYPE_KOKKOS;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Copy xin's sync state to y */
@@ -969,7 +969,7 @@ static PetscErrorCode VecCopySyncState_Kokkos_Private(Vec xin, Vec yout)
   } else if (xkok->v_dual.need_sync_device()) {
     ykok->v_dual.modify_host();
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Interal routine shared by VecGetSubVector_{SeqKokkos,MPIKokkos} */
@@ -1011,14 +1011,14 @@ PetscErrorCode VecGetSubVector_Kokkos_Private(Vec x, PetscBool xIsMPI, IS is, Ve
     PetscCall(VecGetSubVectorThroughVecScatter_Private(x, is, bs, &z));
   }
   *y = z;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode VecGetSubVector_SeqKokkos(Vec x, IS is, Vec *y)
 {
   PetscFunctionBegin;
   PetscCall(VecGetSubVector_Kokkos_Private(x, PETSC_FALSE, is, y));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Restore subvector y to x */
@@ -1030,7 +1030,7 @@ PetscErrorCode VecRestoreSubVector_SeqKokkos(Vec x, IS is, Vec *y)
 
   PetscFunctionBegin;
   PetscCall(PetscObjectComposedDataGetInt((PetscObject)*y, VecGetSubVectorSavedStateId, dummystate, unchanged));
-  if (unchanged) PetscFunctionReturn(0); /* If y's state has not changed since VecGetSubVector(), we only need to destroy it */
+  if (unchanged) PetscFunctionReturn(PETSC_SUCCESS); /* If y's state has not changed since VecGetSubVector(), we only need to destroy it */
 
   PetscCall(PetscObjectQuery((PetscObject)*y, "VecGetSubVector_Scatter", (PetscObject *)&vscat));
   if (vscat) {
@@ -1054,7 +1054,7 @@ PetscErrorCode VecRestoreSubVector_SeqKokkos(Vec x, IS is, Vec *y)
     }
     PetscCall(PetscObjectStateIncrease((PetscObject)x)); /* Since x is updated */
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode VecSetPreallocationCOO_SeqKokkos(Vec x, PetscCount ncoo, const PetscInt coo_i[])
@@ -1067,7 +1067,7 @@ static PetscErrorCode VecSetPreallocationCOO_SeqKokkos(Vec x, PetscCount ncoo, c
   PetscCall(VecSetPreallocationCOO_Seq(x, ncoo, coo_i));
   PetscCall(VecGetLocalSize(x, &m));
   PetscCallCXX(veckok->SetUpCOO(vecseq, m));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode VecSetValuesCOO_SeqKokkos(Vec x, const PetscScalar v[], InsertMode imode)
@@ -1102,7 +1102,7 @@ static PetscErrorCode VecSetValuesCOO_SeqKokkos(Vec x, const PetscScalar v[], In
 
   if (imode == INSERT_VALUES) PetscCall(VecRestoreKokkosViewWrite(x, &xv));
   else PetscCall(VecRestoreKokkosView(x, &xv));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode VecSetOps_SeqKokkos(Vec v)
@@ -1163,7 +1163,7 @@ static PetscErrorCode VecSetOps_SeqKokkos(Vec v)
 
   v->ops->setpreallocationcoo = VecSetPreallocationCOO_SeqKokkos;
   v->ops->setvaluescoo        = VecSetValuesCOO_SeqKokkos;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -1193,7 +1193,7 @@ PetscErrorCode VecCreate_SeqKokkos(Vec v)
   veckok         = new Vec_Kokkos(v->map->n, vecseq->array, NULL); /* Let host claim it has the latest data (zero) */
   v->spptr       = static_cast<void *>(veckok);
   v->offloadmask = PETSC_OFFLOAD_KOKKOS;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1259,7 +1259,7 @@ PetscErrorCode VecCreateSeqKokkosWithArray(MPI_Comm comm, PetscInt bs, PetscInt 
     w->spptr       = static_cast<void *>(veckok);
   }
   *v = w;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -1310,7 +1310,7 @@ PetscErrorCode VecCreateSeqKokkosWithArrays_Private(MPI_Comm comm, PetscInt bs, 
   PetscCallCXX(w->spptr = new Vec_Kokkos(n, const_cast<PetscScalar *>(harray), const_cast<PetscScalar *>(darray)));
   w->offloadmask = PETSC_OFFLOAD_KOKKOS;
   *v             = w;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* TODO: ftn-auto generates veckok.kokkosf.c */
@@ -1341,7 +1341,7 @@ PetscErrorCode VecCreateSeqKokkos(MPI_Comm comm, PetscInt n, Vec *v)
   PetscCall(VecCreate(comm, v));
   PetscCall(VecSetSizes(*v, n, n));
   PetscCall(VecSetType(*v, VECSEQKOKKOS)); /* Calls VecCreate_SeqKokkos */
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Duplicate layout etc but not the values in the input vector */
@@ -1349,7 +1349,7 @@ PetscErrorCode VecDuplicate_SeqKokkos(Vec win, Vec *v)
 {
   PetscFunctionBegin;
   PetscCall(VecDuplicate_Seq(win, v)); /* It also dups ops of win */
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode VecDestroy_SeqKokkos(Vec v)
@@ -1361,5 +1361,5 @@ PetscErrorCode VecDestroy_SeqKokkos(Vec v)
   delete veckok;
   v->spptr = NULL;
   if (vecseq) PetscCall(VecDestroy_Seq(v));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

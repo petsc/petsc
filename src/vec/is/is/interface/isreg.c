@@ -33,7 +33,7 @@ PetscErrorCode ISCreate(MPI_Comm comm, IS *is)
 
   PetscCall(PetscHeaderCreate(*is, IS_CLASSID, "IS", "Index Set", "IS", comm, ISDestroy, ISView));
   PetscCall(PetscLayoutCreate(comm, &(*is)->map));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -65,7 +65,7 @@ PetscErrorCode ISSetType(IS is, ISType method)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is, IS_CLASSID, 1);
   PetscCall(PetscObjectTypeCompare((PetscObject)is, method, &match));
-  if (match) PetscFunctionReturn(0);
+  if (match) PetscFunctionReturn(PETSC_SUCCESS);
 
   PetscCall(ISRegisterAll());
   PetscCall(PetscFunctionListFind(ISList, method, &r));
@@ -75,7 +75,7 @@ PetscErrorCode ISSetType(IS is, ISType method)
 
   PetscCall((*r)(is));
   PetscCall(PetscObjectChangeTypeName((PetscObject)is, method));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -100,7 +100,7 @@ PetscErrorCode ISGetType(IS is, ISType *type)
   PetscValidPointer(type, 2);
   if (!ISRegisterAllCalled) PetscCall(ISRegisterAll());
   *type = ((PetscObject)is)->type_name;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*--------------------------------------------------------------------------------------------------------------------*/
@@ -144,5 +144,5 @@ PetscErrorCode ISRegister(const char sname[], PetscErrorCode (*function)(IS))
   PetscFunctionBegin;
   PetscCall(ISInitializePackage());
   PetscCall(PetscFunctionListAdd(&ISList, sname, function));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

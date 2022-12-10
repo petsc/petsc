@@ -6,7 +6,7 @@ PetscErrorCode MatApply(PC pc, Mat X, Mat Y)
 {
   PetscFunctionBeginUser;
   PetscCall(MatCopy(X, Y, SAME_NONZERO_PATTERN));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **args)

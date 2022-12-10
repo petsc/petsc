@@ -58,7 +58,7 @@ PetscErrorCode PCGAMGGetDataWithGhosts(Mat Gmat, PetscInt data_sz, PetscReal dat
   }
   PetscCall(VecDestroy(&tmp_crds));
   *a_data_out = datas;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PCGAMGHashTableCreate(PetscInt a_size, PCGAMGHashTable *a_tab)
@@ -69,14 +69,14 @@ PetscErrorCode PCGAMGHashTableCreate(PetscInt a_size, PCGAMGHashTable *a_tab)
   a_tab->size = a_size;
   PetscCall(PetscMalloc2(a_size, &a_tab->table, a_size, &a_tab->data));
   for (kk = 0; kk < a_size; kk++) a_tab->table[kk] = -1;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PCGAMGHashTableDestroy(PCGAMGHashTable *a_tab)
 {
   PetscFunctionBegin;
   PetscCall(PetscFree2(a_tab->table, a_tab->data));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PCGAMGHashTableAdd(PCGAMGHashTable *a_tab, PetscInt a_key, PetscInt a_data)
@@ -110,5 +110,5 @@ PetscErrorCode PCGAMGHashTableAdd(PCGAMGHashTable *a_tab, PetscInt a_key, PetscI
     PetscCall(PetscFree2(oldtable, olddata));
     PetscCall(PCGAMGHashTableAdd(a_tab, a_key, a_data));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

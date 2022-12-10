@@ -39,7 +39,7 @@ static PetscErrorCode PetscSFLinkStartRequests_MPI(PetscSF sf, PetscSFLink link,
     PetscCall(PetscSFLinkSyncStreamBeforeCallMPI(sf, link, direction));
     PetscCallMPI(MPI_Startall_isend(buflen, link->unit, nreqs, reqs));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscSFLinkWaitRequests_MPI(PetscSF sf, PetscSFLink link, PetscSFDirection direction)
@@ -56,7 +56,7 @@ static PetscErrorCode PetscSFLinkWaitRequests_MPI(PetscSF sf, PetscSFLink link, 
   } else {
     PetscCall(PetscSFLinkCopyRootBufferInCaseNotUseGpuAwareMPI(sf, link, PETSC_FALSE));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -238,5 +238,5 @@ found:
   link->next = bas->inuse;
   bas->inuse = link;
   *mylink    = link;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

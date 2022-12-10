@@ -19,7 +19,7 @@ struct PC_PBJacobi_Kokkos {
     PetscCheck(diag_dual.view_host().data() == diag_ptr_h, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Host pointer has changed since last call");
     PetscCallCXX(diag_dual.modify_host()); /* mark the host has newer data */
     PetscCallCXX(diag_dual.sync_device());
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 };
 
@@ -65,7 +65,7 @@ static PetscErrorCode PCApplyOrTranspose_PBJacobi_Kokkos(PC pc, Vec x, Vec y)
   PetscCall(VecRestoreKokkosViewWrite(y, &yv));
   PetscCall(PetscLogGpuFlops(bs * bs * mbs * 2)); /* FMA on entries in all blocks */
   PetscCall(PetscLogGpuTimeEnd());
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCDestroy_PBJacobi_Kokkos(PC pc)
@@ -75,7 +75,7 @@ static PetscErrorCode PCDestroy_PBJacobi_Kokkos(PC pc)
   PetscFunctionBegin;
   PetscCallCXX(delete static_cast<PC_PBJacobi_Kokkos *>(jac->spptr));
   PetscCall(PCDestroy_PBJacobi(pc));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_INTERN PetscErrorCode PCSetUp_PBJacobi_Kokkos(PC pc)
@@ -97,5 +97,5 @@ PETSC_INTERN PetscErrorCode PCSetUp_PBJacobi_Kokkos(PC pc)
   pc->ops->apply          = PCApplyOrTranspose_PBJacobi_Kokkos<PETSC_FALSE>;
   pc->ops->applytranspose = PCApplyOrTranspose_PBJacobi_Kokkos<PETSC_TRUE>;
   pc->ops->destroy        = PCDestroy_PBJacobi_Kokkos;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

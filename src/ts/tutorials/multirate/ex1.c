@@ -27,7 +27,7 @@ static PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec U, Vec F, AppCtx *ctx)
   f[1] = u[0] * PetscCosScalar(t * ctx->b);
   PetscCall(VecRestoreArrayRead(U, &u));
   PetscCall(VecRestoreArray(F, &f));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode RHSFunctionslow(TS ts, PetscReal t, Vec U, Vec F, AppCtx *ctx)
@@ -41,7 +41,7 @@ static PetscErrorCode RHSFunctionslow(TS ts, PetscReal t, Vec U, Vec F, AppCtx *
   f[0] = u[0] / ctx->a;
   PetscCall(VecRestoreArrayRead(U, &u));
   PetscCall(VecRestoreArray(F, &f));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode RHSFunctionfast(TS ts, PetscReal t, Vec U, Vec F, AppCtx *ctx)
@@ -55,7 +55,7 @@ static PetscErrorCode RHSFunctionfast(TS ts, PetscReal t, Vec U, Vec F, AppCtx *
   f[0] = u[0] * PetscCosScalar(t * ctx->b);
   PetscCall(VecRestoreArrayRead(U, &u));
   PetscCall(VecRestoreArray(F, &f));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -70,7 +70,7 @@ static PetscErrorCode sol_true(PetscReal t, Vec U, AppCtx *ctx)
   u[0] = PetscExpScalar(t / ctx->a);
   u[1] = (ctx->a * PetscCosScalar(ctx->b * t) + ctx->a * ctx->a * ctx->b * PetscSinScalar(ctx->b * t)) * PetscExpScalar(t / ctx->a) / (1 + ctx->a * ctx->a * ctx->b * ctx->b);
   PetscCall(VecRestoreArray(U, &u));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)

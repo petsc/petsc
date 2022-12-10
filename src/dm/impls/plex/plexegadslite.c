@@ -32,7 +32,7 @@ PetscErrorCode DMPlexSnapToGeomModel_EGADSLite_Internal(DM dm, PetscInt p, Petsc
     Np = 2;
   } else {
     for (d = 0; d < dE; ++d) gcoords[d] = mcoords[d];
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   /* Calculate parameters (t or u,v) for vertices */
@@ -41,7 +41,7 @@ PetscErrorCode DMPlexSnapToGeomModel_EGADSLite_Internal(DM dm, PetscInt p, Petsc
   if (Nv == 1) {
     PetscCall(DMPlexVecRestoreClosure(cdm, NULL, coordinatesLocal, p, &Nv, &coords));
     for (d = 0; d < dE; ++d) gcoords[d] = mcoords[d];
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
   PetscCheck(Nv <= 16, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Cannot handle %" PetscInt_FMT " coordinates associated to point %" PetscInt_FMT, Nv, p);
 
@@ -78,7 +78,7 @@ PetscErrorCode DMPlexSnapToGeomModel_EGADSLite_Internal(DM dm, PetscInt p, Petsc
   /* Put coordinates for new vertex in result[] */
   PetscCall(EGlite_evaluate(obj, params, result));
   for (d = 0; d < dE; ++d) gcoords[d] = result[d];
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMPlexEGADSLiteDestroy_Private(void *context)
@@ -522,7 +522,7 @@ static PetscErrorCode DMPlexCreateEGADSLite_Internal(MPI_Comm comm, ego context,
     PetscCall(DMPlexRestoreTransitiveClosure(dm, c, PETSC_TRUE, &clSize, &closure));
   }
   *newdm = dm;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMPlexEGADSLitePrintModel_Internal(ego model)
@@ -614,7 +614,7 @@ static PetscErrorCode DMPlexEGADSLitePrintModel_Internal(ego model)
     }
     EGlite_free(lobjs);
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 #endif
 
@@ -653,7 +653,7 @@ PetscErrorCode DMPlexCreateEGADSLiteFromFile(MPI_Comm comm, const char filename[
     if (printModel) PetscCall(DMPlexEGADSLitePrintModel_Internal(model));
   }
   PetscCall(DMPlexCreateEGADSLite_Internal(comm, context, model, dm));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 #else
   SETERRQ(comm, PETSC_ERR_SUP, "This method requires EGADSLite support. Reconfigure using --download-egads");
 #endif

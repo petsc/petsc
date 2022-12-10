@@ -36,13 +36,13 @@ PetscErrorCode constant(PetscInt dim, PetscReal time, const PetscReal coords[], 
   AppCtx  *user = (AppCtx *)ctx;
   PetscInt d;
   for (d = 0; d < dim; ++d) u[d] = user->constants[d];
-  return 0;
+  return PETSC_SUCCESS;
 }
 PetscErrorCode constantDer(PetscInt dim, PetscReal time, const PetscReal coords[], const PetscReal n[], PetscInt Nf, PetscScalar *u, void *ctx)
 {
   PetscInt d;
   for (d = 0; d < dim; ++d) u[d] = 0.0;
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 /* u = x */
@@ -50,7 +50,7 @@ PetscErrorCode linear(PetscInt dim, PetscReal time, const PetscReal coords[], Pe
 {
   PetscInt d;
   for (d = 0; d < dim; ++d) u[d] = coords[d];
-  return 0;
+  return PETSC_SUCCESS;
 }
 PetscErrorCode linearDer(PetscInt dim, PetscReal time, const PetscReal coords[], const PetscReal n[], PetscInt Nf, PetscScalar *u, void *ctx)
 {
@@ -59,7 +59,7 @@ PetscErrorCode linearDer(PetscInt dim, PetscReal time, const PetscReal coords[],
     u[d] = 0.0;
     for (e = 0; e < dim; ++e) u[d] += (d == e ? 1.0 : 0.0) * n[e];
   }
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 /* u = x^2 or u = (x^2, xy) or u = (xy, yz, zx) */
@@ -75,7 +75,7 @@ PetscErrorCode quadratic(PetscInt dim, PetscReal time, const PetscReal coords[],
   } else if (dim > 0) {
     u[0] = coords[0] * coords[0];
   }
-  return 0;
+  return PETSC_SUCCESS;
 }
 PetscErrorCode quadraticDer(PetscInt dim, PetscReal time, const PetscReal coords[], const PetscReal n[], PetscInt Nf, PetscScalar *u, void *ctx)
 {
@@ -89,7 +89,7 @@ PetscErrorCode quadraticDer(PetscInt dim, PetscReal time, const PetscReal coords
   } else if (dim > 0) {
     u[0] = 2.0 * coords[0] * n[0];
   }
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 /* u = x^3 or u = (x^3, x^2y) or u = (x^2y, y^2z, z^2x) */
@@ -105,7 +105,7 @@ PetscErrorCode cubic(PetscInt dim, PetscReal time, const PetscReal coords[], Pet
   } else if (dim > 0) {
     u[0] = coords[0] * coords[0] * coords[0];
   }
-  return 0;
+  return PETSC_SUCCESS;
 }
 PetscErrorCode cubicDer(PetscInt dim, PetscReal time, const PetscReal coords[], const PetscReal n[], PetscInt Nf, PetscScalar *u, void *ctx)
 {
@@ -119,7 +119,7 @@ PetscErrorCode cubicDer(PetscInt dim, PetscReal time, const PetscReal coords[], 
   } else if (dim > 0) {
     u[0] = 3.0 * coords[0] * coords[0] * n[0];
   }
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 /* u = tanh(x) */
@@ -127,13 +127,13 @@ PetscErrorCode trig(PetscInt dim, PetscReal time, const PetscReal coords[], Pets
 {
   PetscInt d;
   for (d = 0; d < dim; ++d) u[d] = PetscTanhReal(coords[d] - 0.5);
-  return 0;
+  return PETSC_SUCCESS;
 }
 PetscErrorCode trigDer(PetscInt dim, PetscReal time, const PetscReal coords[], const PetscReal n[], PetscInt Nf, PetscScalar *u, void *ctx)
 {
   PetscInt d;
   for (d = 0; d < dim; ++d) u[d] = 1.0 / PetscSqr(PetscCoshReal(coords[d] - 0.5)) * n[d];
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
@@ -177,7 +177,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscCall(PetscOptionsRealArray("-constants", "Set the constant values", "ex3.c", options->constants, &n, NULL));
   PetscOptionsEnd();
 
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TransformCoordinates(DM dm, AppCtx *user)
@@ -242,7 +242,7 @@ static PetscErrorCode TransformCoordinates(DM dm, AppCtx *user)
     }
     PetscCall(VecRestoreArray(coordinates, &coords));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
@@ -302,7 +302,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   PetscCall(DMSetFromOptions(*dm));
   PetscCall(TransformCoordinates(*dm, user));
   PetscCall(DMViewFromOptions(*dm, NULL, "-dm_view"));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static void simple_mass(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g0[])
@@ -462,7 +462,7 @@ static PetscErrorCode SetupSection(DM dm, AppCtx *user)
       PetscCall(DMRestoreLocalVector(dm, &local));
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TestFEJacobian(DM dm, AppCtx *user)
@@ -518,7 +518,7 @@ static PetscErrorCode TestFEJacobian(DM dm, AppCtx *user)
     PetscCall(MatDestroy(&E));
     PetscCall(DMRestoreLocalVector(dm, &local));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TestInjector(DM dm, AppCtx *user)
@@ -537,7 +537,7 @@ static PetscErrorCode TestInjector(DM dm, AppCtx *user)
     if (rank == 0) PetscCall(MatView(inj, PETSC_VIEWER_STDOUT_SELF));
     PetscCall(MatDestroy(&inj));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TestFVGrad(DM dm, AppCtx *user)
@@ -654,7 +654,7 @@ static PetscErrorCode TestFVGrad(DM dm, AppCtx *user)
   PetscCall(VecRestoreArrayRead(cellgeom, &cgeom));
   PetscCall(DMDestroy(&dmfv));
   PetscCall(PetscFVDestroy(&fv));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode ComputeError(DM dm, PetscErrorCode (**exactFuncs)(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar *, void *), PetscErrorCode (**exactFuncDers)(PetscInt, PetscReal, const PetscReal[], const PetscReal[], PetscInt, PetscScalar *, void *), void **exactCtxs, PetscReal *error, PetscReal *errorDer, AppCtx *user)
@@ -671,7 +671,7 @@ static PetscErrorCode ComputeError(DM dm, PetscErrorCode (**exactFuncs)(PetscInt
   PetscCall(DMComputeL2Diff(dm, 0.0, exactFuncs, exactCtxs, u, error));
   PetscCall(DMComputeL2GradientDiff(dm, 0.0, exactFuncDers, exactCtxs, u, n, errorDer));
   PetscCall(DMRestoreGlobalVector(dm, &u));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode CheckFunctions(DM dm, PetscInt order, AppCtx *user)
@@ -714,7 +714,7 @@ static PetscErrorCode CheckFunctions(DM dm, PetscInt order, AppCtx *user)
   else PetscCall(PetscPrintf(comm, "Function tests pass for order %" PetscInt_FMT " at tolerance %g\n", order, (double)tol));
   if (errorDer > tol) PetscCall(PetscPrintf(comm, "Function tests FAIL for order %" PetscInt_FMT " derivatives at tolerance %g error %g\n", order, (double)tol, (double)errorDer));
   else PetscCall(PetscPrintf(comm, "Function tests pass for order %" PetscInt_FMT " derivatives at tolerance %g\n", order, (double)tol));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode CheckInterpolation(DM dm, PetscBool checkRestrict, PetscInt order, AppCtx *user)
@@ -794,7 +794,7 @@ static PetscErrorCode CheckInterpolation(DM dm, PetscBool checkRestrict, PetscIn
   PetscCall(MatDestroy(&Interp));
   PetscCall(VecDestroy(&scaling));
   PetscCall(DMDestroy(&rdm));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode CheckConvergence(DM dm, PetscInt Nr, AppCtx *user)
@@ -808,7 +808,7 @@ static PetscErrorCode CheckConvergence(DM dm, PetscInt Nr, AppCtx *user)
   double    p;
 
   PetscFunctionBeginUser;
-  if (!user->convergence) PetscFunctionReturn(0);
+  if (!user->convergence) PetscFunctionReturn(PETSC_SUCCESS);
   exactCtxs[0] = user;
   exactCtxs[1] = user;
   exactCtxs[2] = user;
@@ -863,7 +863,7 @@ static PetscErrorCode CheckConvergence(DM dm, PetscInt Nr, AppCtx *user)
     }
   }
   PetscCall(DMDestroy(&odm));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)

@@ -62,7 +62,7 @@ PetscErrorCode private_DMSwarmCreateCellLocalCoords_DA_Q1_Regular(PetscInt dim, 
   }
   *_npoints = npoints;
   *_xi      = xi;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode private_DMSwarmCreateCellLocalCoords_DA_Q1_Gauss(PetscInt dim, PetscInt np_1d, PetscInt *_npoints, PetscReal **_xi)
@@ -82,7 +82,7 @@ PetscErrorCode private_DMSwarmCreateCellLocalCoords_DA_Q1_Gauss(PetscInt dim, Pe
   PetscCall(PetscQuadratureDestroy(&quadrature));
   *_npoints = npoints_q;
   *_xi      = xi;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode private_DMSwarmInsertPointsUsingCellDM_DA_Q1(DM dm, DM dmc, PetscInt npoints, DMSwarmPICLayoutType layout)
@@ -188,7 +188,7 @@ PetscErrorCode private_DMSwarmInsertPointsUsingCellDM_DA_Q1(DM dm, DM dmc, Petsc
   PetscCall(PetscFree(elcoor));
   for (q = 0; q < npoints_q; q++) PetscCall(PetscFree(basis[q]));
   PetscCall(PetscFree(basis));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode private_DMSwarmInsertPointsUsingCellDM_DA(DM dm, DM celldm, DMSwarmPICLayoutType layout, PetscInt layout_param)
@@ -207,7 +207,7 @@ PetscErrorCode private_DMSwarmInsertPointsUsingCellDM_DA(DM dm, DM celldm, DMSwa
     PetscCall(private_DMSwarmInsertPointsUsingCellDM_DA_Q1(dm, celldm, layout_param, layout));
     break;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMSwarmProjectField_ApproxQ1_DA_2D(DM swarm, PetscReal *swarm_field, DM dm, Vec v_field)
@@ -292,7 +292,7 @@ PetscErrorCode DMSwarmProjectField_ApproxQ1_DA_2D(DM swarm, PetscReal *swarm_fie
   PetscCall(DMRestoreLocalVector(dm, &v_field_l));
   PetscCall(DMRestoreLocalVector(dm, &denom_l));
   PetscCall(DMRestoreGlobalVector(dm, &denom));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode private_DMSwarmProjectFields_DA(DM swarm, DM celldm, PetscInt project_type, PetscInt nfields, DMSwarmDataField dfield[], Vec vecs[])
@@ -319,5 +319,5 @@ PetscErrorCode private_DMSwarmProjectFields_DA(DM swarm, DM celldm, PetscInt pro
   default:
     break;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

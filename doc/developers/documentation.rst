@@ -92,7 +92,7 @@ Refer to Sphinx's `own documentation <https://https://www.sphinx-doc.org>`__ for
 
       .. literalinclude:: /../src/sys/error/err.c
          :start-at: PetscErrorCode PetscError(
-         :end-at: PetscFunctionReturn(0)
+         :end-at: PetscFunctionReturn(PETSC_SUCCESS)
          :append: }
 
   For robustness to changes in the source files, Use ``:start-at:`` and related options when possible, noting that you can also use (positive) values of ``:lines:`` relative to this. For languages other than C, use the ``:language:`` option to appropriately highlight.

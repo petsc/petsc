@@ -24,7 +24,7 @@ PetscErrorCode DMSwarmPrint(DM sw)
   PetscCall(DMSwarmRestoreField(sw, DMSwarmPICField_coor, &bs, NULL, (void **)&array));
   PetscCall(DMSwarmRestoreField(sw, DMSwarmField_pid, &bs, NULL, (void **)&pidArray));
   PetscCall(DMSwarmRestoreField(sw, DMSwarmPICField_cellid, &bs, NULL, (void **)&pidArray));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)
@@ -69,7 +69,7 @@ int main(int argc, char **argv)
   PetscCall(DMViewFromOptions(sw, NULL, "-swarm_view"));
   PetscCall(DMSwarmPrint(sw));
 
-  PetscPrintf(PETSC_COMM_WORLD, "\n... calling DMSwarmMigrate ...\n\n");
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "\n... calling DMSwarmMigrate ...\n\n"));
   PetscCall(DMSwarmMigrate(sw, PETSC_TRUE));
   PetscCall(DMViewFromOptions(sw, NULL, "-swarm_view"));
   PetscCall(DMSwarmPrint(sw));

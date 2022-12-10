@@ -19,12 +19,13 @@ static PetscErrorCode linear(PetscInt dim, PetscReal time, const PetscReal x[], 
 {
   PetscInt d, c;
 
+  PetscFunctionBeginUser;
   PetscCheck(Nc == 3, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Something is wrong: %" PetscInt_FMT, Nc);
   for (c = 0; c < Nc; ++c) {
     u[c] = 0.0;
     for (d = 0; d < dim; ++d) u[c] += x[d];
   }
-  return 0;
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
@@ -39,7 +40,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscCall(PetscOptionsEList("-point_type", "The point type", "ex2.c", pointTypes, 3, pointTypes[options->pointType], &pt, NULL));
   options->pointType = (PointType)pt;
   PetscOptionsEnd();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *ctx, DM *dm)
@@ -49,7 +50,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *ctx, DM *dm)
   PetscCall(DMSetType(*dm, DMPLEX));
   PetscCall(DMSetFromOptions(*dm));
   PetscCall(DMViewFromOptions(*dm, NULL, "-dm_view"));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode CreatePoints_Centroid(DM dm, PetscInt *Np, PetscReal **pcoords, PetscBool *pointsAllProcs, AppCtx *ctx)
@@ -85,7 +86,7 @@ static PetscErrorCode CreatePoints_Centroid(DM dm, PetscInt *Np, PetscReal **pco
   }
   PetscCall(PetscSynchronizedFlush(PETSC_COMM_WORLD, NULL));
   *pointsAllProcs = PETSC_FALSE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode CreatePoints_Grid(DM dm, PetscInt *Np, PetscReal **pcoords, PetscBool *pointsAllProcs, AppCtx *ctx)
@@ -137,7 +138,7 @@ static PetscErrorCode CreatePoints_Grid(DM dm, PetscInt *Np, PetscReal **pcoords
   PetscCall(PetscFree(ind));
   PetscCall(PetscFree(h));
   *pointsAllProcs = PETSC_FALSE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode CreatePoints_GridReplicated(DM dm, PetscInt *Np, PetscReal **pcoords, PetscBool *pointsAllProcs, AppCtx *ctx)
@@ -178,7 +179,7 @@ static PetscErrorCode CreatePoints_GridReplicated(DM dm, PetscInt *Np, PetscReal
   *pointsAllProcs = PETSC_TRUE;
   PetscCall(PetscFree(ind));
   PetscCall(PetscFree(h));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode CreatePoints(DM dm, PetscInt *Np, PetscReal **pcoords, PetscBool *pointsAllProcs, AppCtx *ctx)
@@ -198,7 +199,7 @@ static PetscErrorCode CreatePoints(DM dm, PetscInt *Np, PetscReal **pcoords, Pet
   default:
     SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Invalid point generation type %d", (int)ctx->pointType);
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)
@@ -272,15 +273,13 @@ int main(int argc, char **argv)
     for (c = 0; c < Nc; ++c) {
 #if defined(PETSC_USE_COMPLEX)
       PetscReal vcoordsReal[3];
-      PetscInt  i;
 
-      for (i = 0; i < spaceDim; i++) vcoordsReal[i] = PetscRealPart(vcoords[p * spaceDim + i]);
+      for (PetscInt i = 0; i < spaceDim; i++) vcoordsReal[i] = PetscRealPart(vcoords[p * spaceDim + i]);
 #else
       const PetscReal *vcoordsReal = &vcoords[p * spaceDim];
 #endif
-      (*funcs[c])(dim, 0.0, vcoordsReal, Nc, vals, NULL);
-      if (PetscAbsScalar(ivals[p * Nc + c] - vals[c]) > PETSC_SQRT_MACHINE_EPSILON)
-        SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid interpolated value %g != %g (%" PetscInt_FMT ", %" PetscInt_FMT ")", (double)PetscRealPart(ivals[p * Nc + c]), (double)PetscRealPart(vals[c]), p, c);
+      PetscCall((*funcs[c])(dim, 0.0, vcoordsReal, Nc, vals, NULL));
+      PetscCheck(PetscAbsScalar(ivals[p * Nc + c] - vals[c]) <= PETSC_SQRT_MACHINE_EPSILON, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid interpolated value %g != %g (%" PetscInt_FMT ", %" PetscInt_FMT ")", (double)PetscRealPart(ivals[p * Nc + c]), (double)PetscRealPart(vals[c]), p, c);
     }
   }
   PetscCall(VecRestoreArrayRead(interpolator->coords, &vcoords));

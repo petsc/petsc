@@ -224,7 +224,7 @@ static inline PetscErrorCode PetscSFLinkGetPack(PetscSFLink link, PetscMemType m
 #if defined(PETSC_HAVE_DEVICE)
   else *Pack = link->d_Pack;
 #endif
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_INTERN PetscErrorCode PetscSFLinkGetUnpackAndOp(PetscSFLink, PetscMemType, MPI_Op, PetscBool, PetscErrorCode (**UnpackAndOp)(PetscSFLink, PetscInt, PetscInt, PetscSFPackOpt, const PetscInt *, void *, const void *));
@@ -268,14 +268,14 @@ static inline PetscErrorCode PetscSFLinkStartCommunication(PetscSF sf, PetscSFLi
 {
   PetscFunctionBegin;
   if (link->StartCommunication) PetscCall((*link->StartCommunication)(sf, link, direction));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static inline PetscErrorCode PetscSFLinkFinishCommunication(PetscSF sf, PetscSFLink link, PetscSFDirection direction)
 {
   PetscFunctionBegin;
   if (link->FinishCommunication) PetscCall((*link->FinishCommunication)(sf, link, direction));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* A set of helper routines for Pack/Unpack/Scatter on GPUs */
@@ -301,7 +301,7 @@ static inline PetscErrorCode PetscSFLinkCopyRootBufferInCaseNotUseGpuAwareMPI(Pe
       PetscCall(PetscLogCpuToGpu(count));
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static inline PetscErrorCode PetscSFLinkCopyLeafBufferInCaseNotUseGpuAwareMPI(PetscSF sf, PetscSFLink link, PetscBool device2host)
@@ -319,7 +319,7 @@ static inline PetscErrorCode PetscSFLinkCopyLeafBufferInCaseNotUseGpuAwareMPI(Pe
       PetscCall(PetscLogCpuToGpu(count));
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Make sure root/leafbuf for the remote is ready for MPI */
@@ -340,12 +340,12 @@ static inline PetscErrorCode PetscSFLinkSyncStreamBeforeCallMPI(PetscSF sf, Pets
   }
 
   if (PetscMemTypeDevice(mtype) && buflen) PetscCall((*link->SyncStream)(link));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 #else /* Host only */
-  #define PetscSFLinkCopyRootBufferInCaseNotUseGpuAwareMPI(a, b, c) 0
-  #define PetscSFLinkCopyLeafBufferInCaseNotUseGpuAwareMPI(a, b, c) 0
-  #define PetscSFLinkSyncStreamBeforeCallMPI(a, b, c)               0
+  #define PetscSFLinkCopyRootBufferInCaseNotUseGpuAwareMPI(a, b, c) PETSC_SUCCESS
+  #define PetscSFLinkCopyLeafBufferInCaseNotUseGpuAwareMPI(a, b, c) PETSC_SUCCESS
+  #define PetscSFLinkSyncStreamBeforeCallMPI(a, b, c)               PETSC_SUCCESS
 #endif
 
 /* Get root indices used for pack/unpack
@@ -404,7 +404,7 @@ static inline PetscErrorCode PetscSFLinkGetRootPackOptAndIndices(PetscSF sf, Pet
       }
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Get leaf indices used for pack/unpack
@@ -446,6 +446,6 @@ static inline PetscErrorCode PetscSFLinkGetLeafPackOptAndIndices(PetscSF sf, Pet
       }
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 #endif

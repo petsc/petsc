@@ -109,7 +109,7 @@ PetscErrorCode MatSuperluDistGetDiagU_SuperLU_DIST(Mat F, PetscScalar *diagU)
 
   PetscFunctionBegin;
   PetscStackCallExternalVoid("SuperLU_DIST:pGetDiagU", pGetDiagU(F->rmap->N, &lu->LUstruct, &lu->grid, CASTDOUBLECOMPLEX diagU));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatSuperluDistGetDiagU(Mat F, PetscScalar *diagU)
@@ -117,7 +117,7 @@ PetscErrorCode MatSuperluDistGetDiagU(Mat F, PetscScalar *diagU)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(F, MAT_CLASSID, 1);
   PetscTryMethod(F, "MatSuperluDistGetDiagU_C", (Mat, PetscScalar *), (F, diagU));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*  This allows reusing the Superlu_DIST communicator and grid when only a single SuperLU_DIST matrix is used at a time */
@@ -167,7 +167,7 @@ static PetscErrorCode Petsc_Superlu_dist_keyval_free(void)
   PetscFunctionBegin;
   PetscCall(PetscInfo(NULL, "Freeing Petsc_Superlu_dist_keyval\n"));
   PetscCallMPI(MPI_Comm_free_keyval(&Petsc_Superlu_dist_keyval_temp));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatDestroy_SuperLU_DIST(Mat A)
@@ -229,7 +229,7 @@ static PetscErrorCode MatDestroy_SuperLU_DIST(Mat A)
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatFactorGetSolverType_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatSuperluDistGetDiagU_C", NULL));
 
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatSolve_SuperLU_DIST(Mat A, Vec b_mpi, Vec x)
@@ -270,7 +270,7 @@ static PetscErrorCode MatSolve_SuperLU_DIST(Mat A, Vec b_mpi, Vec x)
   PetscCall(VecRestoreArray(x, &bptr));
   lu->matsolve_iscalled    = PETSC_TRUE;
   lu->matmatsolve_iscalled = PETSC_FALSE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatMatSolve_SuperLU_DIST(Mat A, Mat B_mpi, Mat X)
@@ -320,7 +320,7 @@ static PetscErrorCode MatMatSolve_SuperLU_DIST(Mat A, Mat B_mpi, Mat X)
   PetscStackCallExternalVoid("SuperLU_DIST:PStatFree", PStatFree(&stat));
   lu->matsolve_iscalled    = PETSC_FALSE;
   lu->matmatsolve_iscalled = PETSC_TRUE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -363,7 +363,7 @@ static PetscErrorCode MatGetInertia_SuperLU_DIST(Mat F, PetscInt *nneg, PetscInt
   if (nneg) *nneg = neg;
   if (nzero) *nzero = zero;
   if (npos) *npos = pos;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatLUFactorNumeric_SuperLU_DIST(Mat F, Mat A, const MatFactorInfo *info)
@@ -463,7 +463,7 @@ static PetscErrorCode MatLUFactorNumeric_SuperLU_DIST(Mat F, Mat A, const MatFac
   F->assembled     = PETSC_TRUE;
   F->preallocated  = PETSC_TRUE;
   lu->options.Fact = FACTORED; /* The factored form of A is supplied. Local option used by this func. only */
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Note the Petsc r and c permutations are ignored */
@@ -667,7 +667,7 @@ static PetscErrorCode MatLUFactorSymbolic_SuperLU_DIST(Mat F, Mat A, IS r, IS c,
 
   if (A->symmetric == PETSC_BOOL3_TRUE || A->hermitian == PETSC_BOOL3_TRUE) F->ops->getinertia = MatGetInertia_SuperLU_DIST;
   lu->CleanUpSuperLU_Dist = PETSC_TRUE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatCholeskyFactorSymbolic_SuperLU_DIST(Mat F, Mat A, IS r, const MatFactorInfo *info)
@@ -675,14 +675,14 @@ static PetscErrorCode MatCholeskyFactorSymbolic_SuperLU_DIST(Mat F, Mat A, IS r,
   PetscFunctionBegin;
   PetscCall(MatLUFactorSymbolic_SuperLU_DIST(F, A, r, r, info));
   F->ops->choleskyfactornumeric = MatLUFactorNumeric_SuperLU_DIST;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatFactorGetSolverType_aij_superlu_dist(Mat A, MatSolverType *type)
 {
   PetscFunctionBegin;
   *type = MATSOLVERSUPERLU_DIST;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatView_Info_SuperLU_DIST(Mat A, PetscViewer viewer)
@@ -692,7 +692,7 @@ static PetscErrorCode MatView_Info_SuperLU_DIST(Mat A, PetscViewer viewer)
 
   PetscFunctionBegin;
   /* check if matrix is superlu_dist type */
-  if (A->ops->solve != MatSolve_SuperLU_DIST) PetscFunctionReturn(0);
+  if (A->ops->solve != MatSolve_SuperLU_DIST) PetscFunctionReturn(PETSC_SUCCESS);
 
   options = lu->options;
   PetscCall(PetscViewerASCIIPrintf(viewer, "SuperLU_DIST run parameters:\n"));
@@ -757,7 +757,7 @@ static PetscErrorCode MatView_Info_SuperLU_DIST(Mat A, PetscViewer viewer)
   } else {
     SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unknown factorization pattern");
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatView_SuperLU_DIST(Mat A, PetscViewer viewer)
@@ -771,7 +771,7 @@ static PetscErrorCode MatView_SuperLU_DIST(Mat A, PetscViewer viewer)
     PetscCall(PetscViewerGetFormat(viewer, &format));
     if (format == PETSC_VIEWER_ASCII_INFO) PetscCall(MatView_Info_SuperLU_DIST(A, viewer));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatGetFactor_aij_superlu_dist(Mat A, MatFactorType ftype, Mat *F)
@@ -835,7 +835,7 @@ static PetscErrorCode MatGetFactor_aij_superlu_dist(Mat A, MatFactorType ftype, 
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatSuperluDistGetDiagU_C", MatSuperluDistGetDiagU_SuperLU_DIST));
 
   *F = B;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_SuperLU_DIST(void)
@@ -845,7 +845,7 @@ PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_SuperLU_DIST(void)
   PetscCall(MatSolverTypeRegister(MATSOLVERSUPERLU_DIST, MATSEQAIJ, MAT_FACTOR_LU, MatGetFactor_aij_superlu_dist));
   PetscCall(MatSolverTypeRegister(MATSOLVERSUPERLU_DIST, MATMPIAIJ, MAT_FACTOR_CHOLESKY, MatGetFactor_aij_superlu_dist));
   PetscCall(MatSolverTypeRegister(MATSOLVERSUPERLU_DIST, MATSEQAIJ, MAT_FACTOR_CHOLESKY, MatGetFactor_aij_superlu_dist));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC

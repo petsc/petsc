@@ -25,7 +25,7 @@ PetscErrorCode MatAssemblyEnd_MPIAIJKokkos(Mat A, MatAssemblyType mode)
     A->offloadmask = PETSC_OFFLOAD_GPU; // in GPU mode, no going back. MatSetValues checks this
   }
 
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatMPIAIJSetPreallocation_MPIAIJKokkos(Mat mat, PetscInt d_nz, const PetscInt d_nnz[], PetscInt o_nz, const PetscInt o_nnz[])
@@ -71,7 +71,7 @@ PetscErrorCode MatMPIAIJSetPreallocation_MPIAIJKokkos(Mat mat, PetscInt d_nz, co
   PetscCall(MatSeqAIJSetPreallocation(mpiaij->A, d_nz, d_nnz));
   PetscCall(MatSeqAIJSetPreallocation(mpiaij->B, o_nz, o_nnz));
   mat->preallocated = PETSC_TRUE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatMult_MPIAIJKokkos(Mat mat, Vec xx, Vec yy)
@@ -86,7 +86,7 @@ PetscErrorCode MatMult_MPIAIJKokkos(Mat mat, Vec xx, Vec yy)
   PetscCall((*mpiaij->A->ops->mult)(mpiaij->A, xx, yy));
   PetscCall(VecScatterEnd(mpiaij->Mvctx, xx, mpiaij->lvec, INSERT_VALUES, SCATTER_FORWARD));
   PetscCall((*mpiaij->B->ops->multadd)(mpiaij->B, mpiaij->lvec, yy, yy));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatMultAdd_MPIAIJKokkos(Mat mat, Vec xx, Vec yy, Vec zz)
@@ -101,7 +101,7 @@ PetscErrorCode MatMultAdd_MPIAIJKokkos(Mat mat, Vec xx, Vec yy, Vec zz)
   PetscCall((*mpiaij->A->ops->multadd)(mpiaij->A, xx, yy, zz));
   PetscCall(VecScatterEnd(mpiaij->Mvctx, xx, mpiaij->lvec, INSERT_VALUES, SCATTER_FORWARD));
   PetscCall((*mpiaij->B->ops->multadd)(mpiaij->B, mpiaij->lvec, zz, zz));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatMultTranspose_MPIAIJKokkos(Mat mat, Vec xx, Vec yy)
@@ -116,7 +116,7 @@ PetscErrorCode MatMultTranspose_MPIAIJKokkos(Mat mat, Vec xx, Vec yy)
   PetscCall((*mpiaij->A->ops->multtranspose)(mpiaij->A, xx, yy));
   PetscCall(VecScatterBegin(mpiaij->Mvctx, mpiaij->lvec, yy, ADD_VALUES, SCATTER_REVERSE));
   PetscCall(VecScatterEnd(mpiaij->Mvctx, mpiaij->lvec, yy, ADD_VALUES, SCATTER_REVERSE));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Merge the "A, B" matrices of mat into a matrix C.  mat's type is MPIAIJKOKKOS. C's type is MATSEQAIJKOKKOS.
@@ -141,7 +141,7 @@ PetscErrorCode MatMPIAIJGetLocalMatMerge_MPIAIJKokkos(Mat mat, MatReuse reuse, I
     for (i = 0; i < on; i++) gidx[i + dn] = cmap[i];
     PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject)Ad), dn + on, gidx, PETSC_OWN_POINTER, glob));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Structs used in matrix product C=AB, C=A^tB and C=B^tAB */
@@ -152,32 +152,31 @@ struct MatMatStruct {
   Mat                 C1, C2, B_local;
   KokkosCsrMatrix     C1_global, C2_global, C_global;
   KernelHandle        kh;
-  MatMatStruct()
-  {
-    C1 = C2 = B_local = NULL;
-    sf                = NULL;
-  }
+  MatMatStruct() noexcept : sf(nullptr), C1(nullptr), C2(nullptr), B_local(nullptr) { }
 
   ~MatMatStruct()
   {
-    MatDestroy(&C1);
-    MatDestroy(&C2);
-    MatDestroy(&B_local);
-    PetscSFDestroy(&sf);
+    PetscFunctionBegin;
+    PetscCallAbort(PETSC_COMM_SELF, MatDestroy(&C1));
+    PetscCallAbort(PETSC_COMM_SELF, MatDestroy(&C2));
+    PetscCallAbort(PETSC_COMM_SELF, MatDestroy(&B_local));
+    PetscCallAbort(PETSC_COMM_SELF, PetscSFDestroy(&sf));
     kh.destroy_spadd_handle();
+    PetscFunctionReturnVoid();
   }
 };
 
 struct MatMatStruct_AB : public MatMatStruct {
-  MatColIdxKokkosView rows;
-  MatRowMapKokkosView rowoffset;
-  Mat                 B_other, C_petsc; /* SEQAIJKOKKOS matrices. TODO: have a better var name than C_petsc */
+  MatColIdxKokkosView rows{};
+  MatRowMapKokkosView rowoffset{};
+  Mat                 B_other{}, C_petsc{}; /* SEQAIJKOKKOS matrices. TODO: have a better var name than C_petsc */
 
-  MatMatStruct_AB() : B_other(NULL), C_petsc(NULL) { }
-  ~MatMatStruct_AB()
+  ~MatMatStruct_AB() noexcept
   {
-    MatDestroy(&B_other);
-    MatDestroy(&C_petsc);
+    PetscFunctionBegin;
+    PetscCallAbort(PETSC_COMM_SELF, MatDestroy(&B_other));
+    PetscCallAbort(PETSC_COMM_SELF, MatDestroy(&C_petsc));
+    PetscFunctionReturnVoid();
   }
 };
 
@@ -186,11 +185,10 @@ struct MatMatStruct_AtB : public MatMatStruct {
 };
 
 struct MatProductData_MPIAIJKokkos {
-  MatMatStruct_AB  *mmAB;
-  MatMatStruct_AtB *mmAtB;
-  PetscBool         reusesym;
+  MatMatStruct_AB  *mmAB     = nullptr;
+  MatMatStruct_AtB *mmAtB    = nullptr;
+  PetscBool         reusesym = PETSC_FALSE;
 
-  MatProductData_MPIAIJKokkos() : mmAB(NULL), mmAtB(NULL), reusesym(PETSC_FALSE) { }
   ~MatProductData_MPIAIJKokkos()
   {
     delete mmAB;
@@ -202,7 +200,7 @@ static PetscErrorCode MatProductDataDestroy_MPIAIJKokkos(void *data)
 {
   PetscFunctionBegin;
   PetscCallCXX(delete static_cast<MatProductData_MPIAIJKokkos *>(data));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* MatSeqAIJKokkosGetCSRMatrixWithGlobalColumnIds - Get a KokkosCsrMatrix from a MATSEQAIJKOKKOS matrix
@@ -224,7 +222,7 @@ static PetscErrorCode MatSeqAIJKokkosGetCSRMatrixWithGlobalColumnIds(Mat A, Pets
   PetscCallCXX(Kokkos::parallel_for(
     orig.nnz(), KOKKOS_LAMBDA(const PetscInt i) { jg(i) = l2g(orig.graph.entries(i)); }));
   PetscCallCXX(csrmat = KokkosCsrMatrix("csrmat", orig.numRows(), N, orig.nnz(), orig.values, orig.graph.row_map, jg));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* MatSetMPIAIJKokkosWithSplitSeqAIJKokkosMatrices - Set the diag and offdiag matrices of a MATMPIAIJKOKKOS matrix.
@@ -273,7 +271,7 @@ static PetscErrorCode MatSetMPIAIJKokkosWithSplitSeqAIJKokkosMatrices(Mat mat, M
   bkok->j_dual.modify_host();
   bkok->j_dual.sync_device();
   bkok->SetColSize(mpiaij->B->cmap->n);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* MatSeqAIJKokkosBcast - Bcast rows of a SEQAIJKOKKOS matrice (B) to form a SEQAIJKOKKOS matrix (C).
@@ -453,7 +451,7 @@ static PetscErrorCode MatSeqAIJKokkosBcast(Mat B, MatReuse reuse, PetscInt N, co
     PetscCall(PetscFree3(sdisp, rdisp, reqs));
     PetscCall(PetscFree(Browlens));
   } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Unsupported MatReuse enum %d", reuse);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* MatSeqAIJKokkosReduce - Reduce rows of a SEQAIJKOKKOS matrix (A) to form a Kokkos Csr matrix (C)
@@ -641,7 +639,7 @@ static PetscErrorCode MatSeqAIJKokkosReduce(Mat A, MatReuse reuse, PetscBool loc
     C = KokkosCsrMatrix("csrmat", Cm, N, Cnnz, Ca, Ci, Cj);
     PetscCall(PetscFree2(srowlens, reqs));
   } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Unsupported MatReuse enum %d", reuse);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* MatSetMPIAIJKokkosWithGlobalCSRMatrix - Set the diag and offdiag parts of a `MATMPIAIJKOKKOS` matrix by splitting a KokkosCsrMatrix
@@ -827,7 +825,7 @@ static PetscErrorCode MatSetMPIAIJKokkosWithGlobalCSRMatrix(Mat C, MatReuse reus
     PetscCall(MatCreateSeqAIJKokkosWithCSRMatrix(PETSC_COMM_SELF, cokok, &Co));
     PetscCall(MatSetMPIAIJKokkosWithSplitSeqAIJKokkosMatrices(C, Cd, Co)); /* Coj will be converted to local ids within */
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* MatSeqAIJCompactOutExtraColumns_SeqAIJKokkos - Compact a SEQAIJKOKKS matrix's global col ids.
@@ -874,7 +872,7 @@ static PetscErrorCode MatSeqAIJCompactOutExtraColumns_SeqAIJKokkos(Mat C, MatCol
 
   PetscCall(ISLocalToGlobalMappingRestoreIndices(l2gmap, &garray));
   PetscCall(ISLocalToGlobalMappingDestroy(&l2gmap));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* MatProductSymbolic_MPIAIJKokkos_AB - AB flavor of MatProductSymbolic_MPIAIJKokkos
@@ -937,7 +935,7 @@ static PetscErrorCode MatProductSymbolic_MPIAIJKokkos_AB(Mat_Product *product, M
   mm->C2 = C2;
   PetscCall(ISRestoreIndices(glob, &garray));
   PetscCall(ISDestroy(&glob));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* MatProductSymbolic_MPIAIJKokkos_AtB - A^tB flavor of MatProductSymbolic_MPIAIJKokkos
@@ -987,7 +985,7 @@ static PetscErrorCode MatProductSymbolic_MPIAIJKokkos_AtB(Mat_Product *product, 
   KokkosSparse::spadd_numeric(&mm->kh, (MatScalarType)1.0, mm->C1_global, (MatScalarType)1.0, mm->C2_global, mm->C_global);
   mm->C1 = C1;
   mm->C2 = C2;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatProductNumeric_MPIAIJKokkos(Mat C)
@@ -1024,7 +1022,7 @@ PetscErrorCode MatProductNumeric_MPIAIJKokkos(Mat C)
       static_cast<MatProductData_SeqAIJKokkos *>(atb->C1->product->data)->reusesym = PETSC_FALSE;
       static_cast<MatProductData_SeqAIJKokkos *>(atb->C2->product->data)->reusesym = PETSC_FALSE;
     }
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   if (ptype == MATPRODUCT_AB) {
@@ -1089,7 +1087,7 @@ PetscErrorCode MatProductNumeric_MPIAIJKokkos(Mat C)
   }
   /* Split C_global to form C */
   PetscCall(MatSetMPIAIJKokkosWithGlobalCSRMatrix(C, MAT_REUSE_MATRIX, mm->C_global, mm->Cdstart));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatProductSymbolic_MPIAIJKokkos(Mat C)
@@ -1173,7 +1171,7 @@ PetscErrorCode MatProductSymbolic_MPIAIJKokkos(Mat C)
   C->product->data       = mmdata;
   C->product->destroy    = MatProductDataDestroy_MPIAIJKokkos;
   C->ops->productnumeric = MatProductNumeric_MPIAIJKokkos;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_INTERN PetscErrorCode MatProductSetFromOptions_MPIAIJKokkos(Mat mat)
@@ -1238,7 +1236,7 @@ PETSC_INTERN PetscErrorCode MatProductSetFromOptions_MPIAIJKokkos(Mat mat)
   }
   /* fallback to MPIAIJ ops */
   if (!mat->ops->productsymbolic) PetscCall(MatProductSetFromOptions_MPIAIJ(mat));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatSetPreallocationCOO_MPIAIJKokkos(Mat mat, PetscCount coo_n, PetscInt coo_i[], PetscInt coo_j[])
@@ -1255,7 +1253,7 @@ static PetscErrorCode MatSetPreallocationCOO_MPIAIJKokkos(Mat mat, PetscCount co
   mpikok = static_cast<Mat_MPIAIJKokkos *>(mpiaij->spptr);
   delete mpikok;
   mpiaij->spptr = new Mat_MPIAIJKokkos(mpiaij);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatSetValuesCOO_MPIAIJKokkos(Mat mat, const PetscScalar v[], InsertMode imode)
@@ -1329,7 +1327,7 @@ static PetscErrorCode MatSetValuesCOO_MPIAIJKokkos(Mat mat, const PetscScalar v[
     PetscCall(MatSeqAIJRestoreKokkosView(A, &Aa));
     PetscCall(MatSeqAIJRestoreKokkosView(B, &Ba));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatDestroy_MPIAIJKokkos(Mat A)
@@ -1343,7 +1341,7 @@ PetscErrorCode MatDestroy_MPIAIJKokkos(Mat A)
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatSetValuesCOO_C", NULL));
   delete (Mat_MPIAIJKokkos *)mpiaij->spptr;
   PetscCall(MatDestroy_MPIAIJ(A));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_INTERN PetscErrorCode MatConvert_MPIAIJ_MPIAIJKokkos(Mat A, MatType mtype, MatReuse reuse, Mat *newmat)
@@ -1380,7 +1378,7 @@ PETSC_INTERN PetscErrorCode MatConvert_MPIAIJ_MPIAIJKokkos(Mat A, MatType mtype,
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatMPIAIJGetLocalMatMerge_C", MatMPIAIJGetLocalMatMerge_MPIAIJKokkos));
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatSetPreallocationCOO_C", MatSetPreallocationCOO_MPIAIJKokkos));
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatSetValuesCOO_C", MatSetValuesCOO_MPIAIJKokkos));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 /*MC
    MATAIJKOKKOS - "mpiaijkokkos", a matrix type to be used for CSR sparse matrices with Kokkos
@@ -1400,7 +1398,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJKokkos(Mat A)
   PetscCall(PetscKokkosInitializeCheck());
   PetscCall(MatCreate_MPIAIJ(A));
   PetscCall(MatConvert_MPIAIJ_MPIAIJKokkos(A, MATMPIAIJKOKKOS, MAT_INPLACE_MATRIX, &A));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1464,7 +1462,7 @@ PetscErrorCode MatCreateAIJKokkos(MPI_Comm comm, PetscInt m, PetscInt n, PetscIn
     PetscCall(MatSetType(*A, MATSEQAIJKOKKOS));
     PetscCall(MatSeqAIJSetPreallocation(*A, d_nz, d_nnz));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 // get GPU pointer to stripped down Mat. For both Seq and MPI Mat.
@@ -1575,7 +1573,7 @@ PetscErrorCode MatKokkosGetDeviceMatWrite(Mat A, PetscSplitCSRDataStructure *B)
   }
   *B           = d_mat;       // return it, set it in Mat, and set it up
   A->assembled = PETSC_FALSE; // ready to write with matsetvalues - this done (lazy) in normal MatSetValues
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_INTERN PetscErrorCode MatSeqAIJKokkosGetOffloadMask(Mat A, const char **mask)
@@ -1587,7 +1585,7 @@ PETSC_INTERN PetscErrorCode MatSeqAIJKokkosGetOffloadMask(Mat A, const char **ma
   else if (aijkok->a_dual.need_sync_host()) *mask = "PETSC_OFFLOAD_GPU";
   else if (aijkok->a_dual.need_sync_device()) *mask = "PETSC_OFFLOAD_CPU";
   else *mask = "PETSC_OFFLOAD_BOTH";
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_INTERN PetscErrorCode MatAIJKokkosPrintOffloadMask(Mat A)
@@ -1609,5 +1607,5 @@ PETSC_INTERN PetscErrorCode MatAIJKokkosPrintOffloadMask(Mat A)
     PetscCall(MatSeqAIJKokkosGetOffloadMask(Ao, &bmask));
     PetscCall(PetscPrintf(PETSC_COMM_SELF, "Diag : Off-diag = %s : %s\n", amask, bmask));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -76,7 +76,7 @@ PetscErrorCode DMMoabGenerateHierarchy(DM dm, PetscInt nlevels, PetscInt *ldegre
 
   hsets.clear();
   if (!ldegrees) PetscCall(PetscFree(pdegrees));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -103,7 +103,7 @@ PETSC_EXTERN PetscErrorCode DMRefineHierarchy_Moab(DM dm, PetscInt nlevels, DM d
 
   PetscCall(DMRefine(dm, PetscObjectComm((PetscObject)dm), &dmf[0]));
   for (i = 1; i < nlevels; i++) PetscCall(DMRefine(dmf[i - 1], PetscObjectComm((PetscObject)dm), &dmf[i]));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -130,7 +130,7 @@ PETSC_EXTERN PetscErrorCode DMCoarsenHierarchy_Moab(DM dm, PetscInt nlevels, DM 
 
   PetscCall(DMCoarsen(dm, PetscObjectComm((PetscObject)dm), &dmc[0]));
   for (i = 1; i < nlevels; i++) PetscCall(DMCoarsen(dmc[i - 1], PetscObjectComm((PetscObject)dm), &dmc[i]));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_EXTERN PetscErrorCode DMMoab_Compute_NNZ_From_Connectivity(DM, PetscInt *, PetscInt *, PetscInt *, PetscInt *, PetscBool);
@@ -177,7 +177,7 @@ PETSC_EXTERN PetscErrorCode DMCreateInterpolation_Moab(DM dmp, DM dmc, Mat *inte
   // Columns = Parent DoFs ;  Rows = Child DoFs
   // Interpolation matrix: \sum_{i=1}^P Owned(Child) * (Owned(Parent) + Ghosted(Parent))
   // Size: nlsizc * nlghsizp
-  PetscInfo(NULL, "Creating interpolation matrix %" PetscInt_FMT " X %" PetscInt_FMT " to apply transformation between levels %" PetscInt_FMT " -> %" PetscInt_FMT ".\n", ngsizc, nlghsizp, dmbp->hlevel, dmbc->hlevel);
+  PetscCall(PetscInfo(NULL, "Creating interpolation matrix %" PetscInt_FMT " X %" PetscInt_FMT " to apply transformation between levels %" PetscInt_FMT " -> %" PetscInt_FMT ".\n", ngsizc, nlghsizp, dmbp->hlevel, dmbc->hlevel));
 
   PetscCall(DMGetDimension(dmp, &dim));
 
@@ -234,7 +234,7 @@ PETSC_EXTERN PetscErrorCode DMCreateInterpolation_Moab(DM dmp, DM dmc, Mat *inte
     nnz[tc] = std::min(nlsizp, nnz[tc]);
     onz[tc] = std::min(ngsizp - nlsizp, onz[tc]);
 
-    PetscInfo(NULL, "  %d: NNZ = %d, ONZ = %d\n", tc, nnz[tc], onz[tc]);
+    PetscCall(PetscInfo(NULL, "  %d: NNZ = %d, ONZ = %d\n", tc, nnz[tc], onz[tc]));
 
     innz = (innz < nnz[tc] ? nnz[tc] : innz);
     ionz = (ionz < onz[tc] ? onz[tc] : ionz);
@@ -373,7 +373,7 @@ PETSC_EXTERN PetscErrorCode DMCreateInterpolation_Moab(DM dmp, DM dmc, Mat *inte
   if (vec) *vec = NULL;
   PetscCall(MatAssemblyBegin(*interpl, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(*interpl, MAT_FINAL_ASSEMBLY));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -402,8 +402,8 @@ PETSC_EXTERN PetscErrorCode DMCreateInjection_Moab(DM dm1, DM dm2, VecScatter *c
   PetscValidHeaderSpecific(dm2, DM_CLASSID, 2);
   //dmmoab = (DM_Moab*)(dm1)->data;
 
-  PetscPrintf(PETSC_COMM_WORLD, "[DMCreateInjection_Moab] :: Placeholder\n");
-  PetscFunctionReturn(0);
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "[DMCreateInjection_Moab] :: Placeholder\n"));
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMMoab_UMR_Private(DM dm, MPI_Comm comm, PetscBool refine, DM *dmref)
@@ -418,10 +418,12 @@ static PetscErrorCode DMMoab_UMR_Private(DM dm, MPI_Comm comm, PetscBool refine,
   PetscValidPointer(dmref, 4);
 
   if ((dmb->hlevel == dmb->nhlevels && refine) || (dmb->hlevel == 0 && !refine)) {
-    if (dmb->hlevel + 1 > dmb->nhlevels && refine) PetscInfo(NULL, "Invalid multigrid refinement hierarchy level specified (%" PetscInt_FMT "). MOAB UMR max levels = %" PetscInt_FMT ". Creating a NULL object.\n", dmb->hlevel + 1, dmb->nhlevels);
-    if (dmb->hlevel - 1 < 0 && !refine) PetscInfo(NULL, "Invalid multigrid coarsen hierarchy level specified (%" PetscInt_FMT "). Creating a NULL object.\n", dmb->hlevel - 1);
+    if (dmb->hlevel + 1 > dmb->nhlevels && refine) {
+      PetscCall(PetscInfo(NULL, "Invalid multigrid refinement hierarchy level specified (%" PetscInt_FMT "). MOAB UMR max levels = %" PetscInt_FMT ". Creating a NULL object.\n", dmb->hlevel + 1, dmb->nhlevels));
+    }
+    if (dmb->hlevel - 1 < 0 && !refine) PetscCall(PetscInfo(NULL, "Invalid multigrid coarsen hierarchy level specified (%" PetscInt_FMT "). Creating a NULL object.\n", dmb->hlevel - 1));
     *dmref = NULL;
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   PetscCall(DMMoabCreate(PetscObjectComm((PetscObject)dm), &dm2));
@@ -486,7 +488,7 @@ static PetscErrorCode DMMoab_UMR_Private(DM dm, MPI_Comm comm, PetscBool refine,
   PetscCall(DMSetUp(dm2));
 
   *dmref = dm2;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -514,7 +516,7 @@ PETSC_EXTERN PetscErrorCode DMRefine_Moab(DM dm, MPI_Comm comm, DM *dmf)
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
 
   PetscCall(DMMoab_UMR_Private(dm, comm, PETSC_TRUE, dmf));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -541,5 +543,5 @@ PETSC_EXTERN PetscErrorCode DMCoarsen_Moab(DM dm, MPI_Comm comm, DM *dmc)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscCall(DMMoab_UMR_Private(dm, comm, PETSC_FALSE, dmc));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

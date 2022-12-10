@@ -91,7 +91,7 @@ static PetscErrorCode MatMultEqual_Private(Mat A, Mat B, PetscInt n, PetscBool *
   PetscCall(VecDestroy(&By));
   PetscCall(VecDestroy(&s1));
   PetscCall(VecDestroy(&s2));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatMatMultEqual_Private(Mat A, Mat B, Mat C, PetscInt n, PetscBool *flg, PetscBool At, PetscBool Bt)
@@ -182,7 +182,7 @@ static PetscErrorCode MatMatMultEqual_Private(Mat A, Mat B, Mat C, PetscInt n, P
   PetscCall(VecDestroy(&s1));
   PetscCall(VecDestroy(&s2));
   PetscCall(VecDestroy(&s3));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -205,7 +205,7 @@ PetscErrorCode MatMultEqual(Mat A, Mat B, PetscInt n, PetscBool *flg)
 {
   PetscFunctionBegin;
   PetscCall(MatMultEqual_Private(A, B, n, flg, 0, PETSC_FALSE));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -228,7 +228,7 @@ PetscErrorCode MatMultAddEqual(Mat A, Mat B, PetscInt n, PetscBool *flg)
 {
   PetscFunctionBegin;
   PetscCall(MatMultEqual_Private(A, B, n, flg, 0, PETSC_TRUE));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -251,7 +251,7 @@ PetscErrorCode MatMultTransposeEqual(Mat A, Mat B, PetscInt n, PetscBool *flg)
 {
   PetscFunctionBegin;
   PetscCall(MatMultEqual_Private(A, B, n, flg, 1, PETSC_FALSE));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -274,7 +274,7 @@ PetscErrorCode MatMultTransposeAddEqual(Mat A, Mat B, PetscInt n, PetscBool *flg
 {
   PetscFunctionBegin;
   PetscCall(MatMultEqual_Private(A, B, n, flg, 1, PETSC_TRUE));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -297,7 +297,7 @@ PetscErrorCode MatMultHermitianTransposeEqual(Mat A, Mat B, PetscInt n, PetscBoo
 {
   PetscFunctionBegin;
   PetscCall(MatMultEqual_Private(A, B, n, flg, 2, PETSC_FALSE));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -320,7 +320,7 @@ PetscErrorCode MatMultHermitianTransposeAddEqual(Mat A, Mat B, PetscInt n, Petsc
 {
   PetscFunctionBegin;
   PetscCall(MatMultEqual_Private(A, B, n, flg, 2, PETSC_TRUE));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -344,7 +344,7 @@ PetscErrorCode MatMatMultEqual(Mat A, Mat B, Mat C, PetscInt n, PetscBool *flg)
 {
   PetscFunctionBegin;
   PetscCall(MatMatMultEqual_Private(A, B, C, n, flg, PETSC_FALSE, PETSC_FALSE));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -368,7 +368,7 @@ PetscErrorCode MatTransposeMatMultEqual(Mat A, Mat B, Mat C, PetscInt n, PetscBo
 {
   PetscFunctionBegin;
   PetscCall(MatMatMultEqual_Private(A, B, C, n, flg, PETSC_TRUE, PETSC_FALSE));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -392,7 +392,7 @@ PetscErrorCode MatMatTransposeMultEqual(Mat A, Mat B, Mat C, PetscInt n, PetscBo
 {
   PetscFunctionBegin;
   PetscCall(MatMatMultEqual_Private(A, B, C, n, flg, PETSC_FALSE, PETSC_TRUE));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatProjMultEqual_Private(Mat A, Mat B, Mat C, PetscInt n, PetscBool rart, PetscBool *flg)
@@ -467,7 +467,7 @@ static PetscErrorCode MatProjMultEqual_Private(Mat A, Mat B, Mat C, PetscInt n, 
   PetscCall(VecDestroy(&v2));
   PetscCall(VecDestroy(&v3));
   PetscCall(VecDestroy(&v4));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -491,7 +491,7 @@ PetscErrorCode MatPtAPMultEqual(Mat A, Mat B, Mat C, PetscInt n, PetscBool *flg)
 {
   PetscFunctionBegin;
   PetscCall(MatProjMultEqual_Private(A, B, C, n, PETSC_FALSE, flg));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -515,7 +515,7 @@ PetscErrorCode MatRARtMultEqual(Mat A, Mat B, Mat C, PetscInt n, PetscBool *flg)
 {
   PetscFunctionBegin;
   PetscCall(MatProjMultEqual_Private(A, B, C, n, PETSC_TRUE, flg));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -583,5 +583,5 @@ PetscErrorCode MatIsLinear(Mat A, PetscInt n, PetscBool *flg)
   PetscCall(VecDestroy(&y));
   PetscCall(VecDestroy(&s1));
   PetscCall(VecDestroy(&s2));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

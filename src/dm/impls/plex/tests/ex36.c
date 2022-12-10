@@ -48,7 +48,7 @@ static PetscErrorCode redistribute_vec(DM dist_dm, PetscSF sf, Vec *v)
 
   PetscCall(VecDestroy(v));
   *v = dist_v;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode dm_view_geometry(DM dm, Vec cell_geom, Vec face_geom)
@@ -95,7 +95,7 @@ static PetscErrorCode dm_view_geometry(DM dm, Vec cell_geom, Vec face_geom)
   }
   PetscCall(PetscSynchronizedFlush(PETSC_COMM_WORLD, NULL));
   PetscCall(VecRestoreArrayRead(cell_geom, &cell_array));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)

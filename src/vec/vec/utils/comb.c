@@ -30,7 +30,7 @@ static PetscErrorCode MPIPetsc_Iallreduce(void *sendbuf, void *recvbuf, PetscMPI
   PetscCall(MPIU_Allreduce(sendbuf, recvbuf, count, datatype, op, comm));
   *request = MPI_REQUEST_NULL;
 #endif
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscSplitReductionApply(PetscSplitReduction *);
@@ -58,7 +58,7 @@ static PetscErrorCode PetscSplitReductionCreate(MPI_Comm comm, PetscSplitReducti
 #endif
   /* always check for option; so that tests that run on systems without support don't warn about unhandled options */
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-splitreduction_async", &(*sr)->async, NULL));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -81,7 +81,7 @@ PETSC_EXTERN void MPIAPI PetscSplitReduction_Local(void *in, void *out, PetscMPI
 
   PetscFunctionBegin;
   if (*datatype != MPIU_SCALAR_INT) {
-    (*PetscErrorPrintf)("Can only handle MPIU_SCALAR_INT data types");
+    PetscCallAbort(MPI_COMM_SELF, (*PetscErrorPrintf)("Can only handle MPIU_SCALAR_INT data types"));
     PETSCABORT(MPI_COMM_SELF, PETSC_ERR_ARG_WRONG);
   }
   for (i = 0; i < count; i++) {
@@ -89,7 +89,7 @@ PETSC_EXTERN void MPIAPI PetscSplitReduction_Local(void *in, void *out, PetscMPI
     else if (xin[i].i == PETSC_SR_REDUCE_MAX) xout[i].v = PetscMax(PetscRealPart(xout[i].v), PetscRealPart(xin[i].v));
     else if (xin[i].i == PETSC_SR_REDUCE_MIN) xout[i].v = PetscMin(PetscRealPart(xout[i].v), PetscRealPart(xin[i].v));
     else {
-      (*PetscErrorPrintf)("Reduction type input is not PETSC_SR_REDUCE_SUM, PETSC_SR_REDUCE_MAX, or PETSC_SR_REDUCE_MIN");
+      PetscCallAbort(MPI_COMM_SELF, (*PetscErrorPrintf)("Reduction type input is not PETSC_SR_REDUCE_SUM, PETSC_SR_REDUCE_MAX, or PETSC_SR_REDUCE_MIN"));
       PETSCABORT(MPI_COMM_SELF, PETSC_ERR_ARG_WRONG);
     }
   }
@@ -160,7 +160,7 @@ PetscErrorCode PetscCommSplitReductionBegin(MPI_Comm comm)
   } else {
     PetscCall(PetscSplitReductionApply(sr));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PetscSplitReductionEnd(PetscSplitReduction *sr)
@@ -185,7 +185,7 @@ PetscErrorCode PetscSplitReductionEnd(PetscSplitReduction *sr)
   default:
     break; /* everything is already done */
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -232,7 +232,7 @@ static PetscErrorCode PetscSplitReductionApply(PetscSplitReduction *sr)
   sr->state     = STATE_END;
   sr->numopsend = 0;
   PetscCall(PetscLogEventEnd(VEC_ReduceCommunication, 0, 0, 0, 0));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -260,7 +260,7 @@ PetscErrorCode PetscSplitReductionExtend(PetscSplitReduction *sr)
   PetscCall(PetscArraycpy(sr->lvalues_mix, lvalues_mix, maxops));
   PetscCall(PetscArraycpy(sr->gvalues_mix, gvalues_mix, maxops));
   PetscCall(PetscFree6(lvalues, gvalues, reducetype, invecs, lvalues_mix, gvalues_mix));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PetscSplitReductionDestroy(PetscSplitReduction *sr)
@@ -268,7 +268,7 @@ PetscErrorCode PetscSplitReductionDestroy(PetscSplitReduction *sr)
   PetscFunctionBegin;
   PetscCall(PetscFree6(sr->lvalues, sr->gvalues, sr->reducetype, sr->invecs, sr->lvalues_mix, sr->gvalues_mix));
   PetscCall(PetscFree(sr));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscMPIInt Petsc_Reduction_keyval = MPI_KEYVAL_INVALID;
@@ -285,7 +285,7 @@ PETSC_EXTERN PetscMPIInt MPIAPI Petsc_DelReduction(MPI_Comm comm, PetscMPIInt ke
   PetscFunctionBegin;
   PetscCallMPI(PetscInfo(0, "Deleting reduction data in an MPI_Comm %ld\n", (long)comm));
   PetscCallMPI(PetscSplitReductionDestroy((PetscSplitReduction *)attr_val));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -314,7 +314,7 @@ PetscErrorCode PetscSplitReductionGet(MPI_Comm comm, PetscSplitReduction **sr)
     PetscCallMPI(MPI_Comm_set_attr(comm, Petsc_Reduction_keyval, *sr));
     PetscCall(PetscInfo(0, "Putting reduction data in an MPI_Comm %ld\n", (long)comm));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* ----------------------------------------------------------------------------------------------------*/
@@ -352,7 +352,7 @@ PetscErrorCode VecDotBegin(Vec x, Vec y, PetscScalar *result)
   PetscCall(PetscLogEventBegin(VEC_ReduceArithmetic, 0, 0, 0, 0));
   PetscUseTypeMethod(x, dot_local, y, sr->lvalues + sr->numopsbegin++);
   PetscCall(PetscLogEventEnd(VEC_ReduceArithmetic, 0, 0, 0, 0));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -396,7 +396,7 @@ PetscErrorCode VecDotEnd(Vec x, Vec y, PetscScalar *result)
     sr->numopsbegin = 0;
     sr->mix         = PETSC_FALSE;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -431,7 +431,7 @@ PetscErrorCode VecTDotBegin(Vec x, Vec y, PetscScalar *result)
   PetscCall(PetscLogEventBegin(VEC_ReduceArithmetic, 0, 0, 0, 0));
   PetscUseTypeMethod(x, tdot_local, y, sr->lvalues + sr->numopsbegin++);
   PetscCall(PetscLogEventEnd(VEC_ReduceArithmetic, 0, 0, 0, 0));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -457,7 +457,7 @@ PetscErrorCode VecTDotEnd(Vec x, Vec y, PetscScalar *result)
       TDotEnd() is the same as DotEnd() so reuse the code
   */
   PetscCall(VecDotEnd(x, y, result));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* -------------------------------------------------------------------------*/
@@ -504,7 +504,7 @@ PetscErrorCode VecNormBegin(Vec x, NormType ntype, PetscReal *result)
     sr->reducetype[sr->numopsbegin] = PETSC_SR_REDUCE_SUM;
     sr->lvalues[sr->numopsbegin++]  = lresult[1];
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -553,7 +553,7 @@ PetscErrorCode VecNormEnd(Vec x, NormType ntype, PetscReal *result)
     sr->numopsend   = 0;
     sr->numopsbegin = 0;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -601,7 +601,7 @@ PetscErrorCode VecMDotBegin(Vec x, PetscInt nv, const Vec y[], PetscScalar resul
   PetscUseTypeMethod(x, mdot_local, nv, y, sr->lvalues + sr->numopsbegin);
   PetscCall(PetscLogEventEnd(VEC_ReduceArithmetic, 0, 0, 0, 0));
   sr->numopsbegin += nv;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -648,7 +648,7 @@ PetscErrorCode VecMDotEnd(Vec x, PetscInt nv, const Vec y[], PetscScalar result[
     sr->numopsend   = 0;
     sr->numopsbegin = 0;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -688,7 +688,7 @@ PetscErrorCode VecMTDotBegin(Vec x, PetscInt nv, const Vec y[], PetscScalar resu
   PetscUseTypeMethod(x, mtdot_local, nv, y, sr->lvalues + sr->numopsbegin);
   PetscCall(PetscLogEventEnd(VEC_ReduceArithmetic, 0, 0, 0, 0));
   sr->numopsbegin += nv;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -717,5 +717,5 @@ PetscErrorCode VecMTDotEnd(Vec x, PetscInt nv, const Vec y[], PetscScalar result
       MTDotEnd() is the same as MDotEnd() so reuse the code
   */
   PetscCall(VecMDotEnd(x, nv, y, result));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

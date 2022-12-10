@@ -37,7 +37,7 @@ PetscErrorCode MatMultMtM_SeqAIJ(Mat MtM, Vec xx, Vec yy)
   PetscCheck(matshellctx, PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "No context");
   PetscCall(MatMult(matshellctx->Mp, xx, matshellctx->ff));
   PetscCall(MatMult(matshellctx->MpTrans, matshellctx->ff, yy));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatMultAddMtM_SeqAIJ(Mat MtM, Vec xx, Vec yy, Vec zz)
@@ -49,7 +49,7 @@ PetscErrorCode MatMultAddMtM_SeqAIJ(Mat MtM, Vec xx, Vec yy, Vec zz)
   PetscCheck(matshellctx, PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "No context");
   PetscCall(MatMult(matshellctx->Mp, xx, matshellctx->ff));
   PetscCall(MatMultAdd(matshellctx->MpTrans, matshellctx->ff, yy, zz));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode createSwarm(const DM dm, PetscInt dim, DM *sw)
@@ -65,7 +65,7 @@ PetscErrorCode createSwarm(const DM dm, PetscInt dim, DM *sw)
   PetscCall(DMSwarmRegisterPetscDatatypeField(*sw, "w_q", Nc, PETSC_SCALAR));
   PetscCall(DMSwarmFinalizeFieldRegister(*sw));
   PetscCall(DMSetFromOptions(*sw));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode gridToParticles(const DM dm, DM sw, Vec rhs, Vec work, Mat M_p, Mat Mass)
@@ -153,7 +153,7 @@ PetscErrorCode gridToParticles(const DM dm, DM sw, Vec rhs, Vec work, Mat M_p, M
   PetscCall(MatDestroy(&PM_p));
   PetscCall(DMSwarmDestroyGlobalVectorFromField(sw, "w_q", &ff));
 
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode particlesToGrid(const DM dm, DM sw, const PetscInt Np, const PetscInt a_tid, const PetscInt dim, const PetscReal xx[], const PetscReal yy[], const PetscReal zz[], const PetscReal a_wp[], Vec rho, Mat *Mp_out)
@@ -192,7 +192,7 @@ PetscErrorCode particlesToGrid(const DM dm, DM sw, const PetscInt Np, const Pets
   // output
   *Mp_out = M_p;
 
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 static void maxwellian(PetscInt dim, const PetscReal x[], PetscReal kt_m, PetscReal n, PetscScalar *u)
 {
@@ -453,7 +453,7 @@ PetscErrorCode go(TS ts, Vec X, const PetscInt NUserV, const PetscInt a_Np, cons
     }
   }
   PetscCall(PetscInfo(X, "Total number density: %20.12e (%20.12e); x-momentum = %20.12e (%20.12e); energy = %20.12e (%20.12e) error = %e (log10 of error = %" PetscInt_FMT "), %" PetscInt_FMT " particles. Use %" PetscInt_FMT " threads\n", (double)moments_1[0], (double)moments_0[0], (double)moments_1[1], (double)moments_0[1], (double)moments_1[2], (double)moments_0[2], (double)((moments_1[2] - moments_0[2]) / moments_0[2]), (PetscInt)PetscLog10Real(PetscAbsReal((moments_1[2] - moments_0[2]) / moments_0[2])), nTargetP, numthreads));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)

@@ -107,7 +107,7 @@ PetscErrorCode stdNormalArray(PetscReal *eps, PetscInt numdim, PetscRandom ran)
     eps[i]     = t * PetscCosReal(2 * PETSC_PI * PetscRealPart(u2));
     eps[i + 1] = t * PetscSinReal(2 * PETSC_PI * PetscRealPart(u2));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscReal basketPayoff(PetscReal vol[], PetscReal St0[], PetscInt n, PetscReal r, PetscReal dt, PetscReal eps[])
@@ -161,7 +161,7 @@ PetscErrorCode readData(MPI_Comm comm, himaInfo *hinfo)
   }
   PetscCallMPI(MPI_Bcast(v, 2 * num, MPIU_REAL, 0, PETSC_COMM_WORLD));
   /* ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] vol %g, ... %g; St0 %g, ... %g\n",rank,hinfo->vol[0],hinfo->vol[num-1],hinfo->St0 [0],hinfo->St0[num-1]); */
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 void exchangeVal(PetscReal *a, PetscReal *b)

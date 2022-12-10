@@ -19,7 +19,7 @@ static PetscErrorCode DMTSDestroy_DMLocal(DMTS tdm)
 {
   PetscFunctionBegin;
   PetscCall(PetscFree(tdm->data));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMTSDuplicate_DMLocal(DMTS oldtdm, DMTS tdm)
@@ -27,7 +27,7 @@ static PetscErrorCode DMTSDuplicate_DMLocal(DMTS oldtdm, DMTS tdm)
   PetscFunctionBegin;
   PetscCall(PetscNew((DMTS_Local **)&tdm->data));
   if (oldtdm->data) PetscCall(PetscMemcpy(tdm->data, oldtdm->data, sizeof(DMTS_Local)));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMLocalTSGetContext(DM dm, DMTS tdm, DMTS_Local **dmlocalts)
@@ -41,7 +41,7 @@ static PetscErrorCode DMLocalTSGetContext(DM dm, DMTS tdm, DMTS_Local **dmlocalt
     tdm->ops->duplicate = DMTSDuplicate_DMLocal;
   }
   *dmlocalts = (DMTS_Local *)tdm->data;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TSComputeIFunction_DMLocal(TS ts, PetscReal time, Vec X, Vec X_t, Vec F, void *ctx)
@@ -76,7 +76,7 @@ static PetscErrorCode TSComputeIFunction_DMLocal(TS ts, PetscReal time, Vec X, V
   PetscCall(DMRestoreLocalVector(dm, &locX));
   PetscCall(DMRestoreLocalVector(dm, &locX_t));
   PetscCall(DMRestoreLocalVector(dm, &locF));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TSComputeRHSFunction_DMLocal(TS ts, PetscReal time, Vec X, Vec F, void *ctx)
@@ -115,7 +115,7 @@ static PetscErrorCode TSComputeRHSFunction_DMLocal(TS ts, PetscReal time, Vec X,
   }
   PetscCall(DMRestoreLocalVector(dm, &locX));
   PetscCall(DMRestoreLocalVector(dm, &locF));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TSComputeIJacobian_DMLocal(TS ts, PetscReal time, Vec X, Vec X_t, PetscReal a, Mat A, Mat B, void *ctx)
@@ -178,7 +178,7 @@ static PetscErrorCode TSComputeIJacobian_DMLocal(TS ts, PetscReal time, Vec X, V
     PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
     PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -214,7 +214,7 @@ PetscErrorCode DMTSSetBoundaryLocal(DM dm, PetscErrorCode (*func)(DM, PetscReal,
   dmlocalts->boundarylocal    = func;
   dmlocalts->boundarylocalctx = ctx;
 
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -255,7 +255,7 @@ PetscErrorCode DMTSGetIFunctionLocal(DM dm, PetscErrorCode (**func)(DM, PetscRea
     PetscValidPointer(ctx, 3);
     *ctx = dmlocalts->ifunctionlocalctx;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -291,7 +291,7 @@ PetscErrorCode DMTSSetIFunctionLocal(DM dm, PetscErrorCode (*func)(DM, PetscReal
   if (!tdm->ops->ijacobian) { /* Call us for the Jacobian too, can be overridden by the user. */
     PetscCall(DMTSSetIJacobian(dm, TSComputeIJacobian_DMLocal, dmlocalts));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -330,7 +330,7 @@ PetscErrorCode DMTSGetIJacobianLocal(DM dm, PetscErrorCode (**func)(DM, PetscRea
     PetscValidPointer(ctx, 3);
     *ctx = dmlocalts->ijacobianlocalctx;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -361,7 +361,7 @@ PetscErrorCode DMTSSetIJacobianLocal(DM dm, PetscErrorCode (*func)(DM, PetscReal
   dmlocalts->ijacobianlocalctx = ctx;
 
   PetscCall(DMTSSetIJacobian(dm, TSComputeIJacobian_DMLocal, dmlocalts));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -402,7 +402,7 @@ PetscErrorCode DMTSGetRHSFunctionLocal(DM dm, PetscErrorCode (**func)(DM, PetscR
     PetscValidPointer(ctx, 3);
     *ctx = dmlocalts->rhsfunctionlocalctx;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -435,7 +435,7 @@ PetscErrorCode DMTSSetRHSFunctionLocal(DM dm, PetscErrorCode (*func)(DM, PetscRe
   dmlocalts->rhsfunctionlocalctx = ctx;
 
   PetscCall(DMTSSetRHSFunction(dm, TSComputeRHSFunction_DMLocal, dmlocalts));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -470,7 +470,7 @@ PetscErrorCode DMTSCreateRHSMassMatrix(DM dm)
   PetscCall(KSPAppendOptionsPrefix(dmlocalts->kspmass, "mass_"));
   PetscCall(KSPSetFromOptions(dmlocalts->kspmass));
   PetscCall(KSPSetOperators(dmlocalts->kspmass, dmlocalts->mass, dmlocalts->mass));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -501,7 +501,7 @@ PetscErrorCode DMTSCreateRHSMassMatrixLumped(DM dm)
   PetscCall(DMCreateMassMatrixLumped(dm, &dmlocalts->lumpedmassinv));
   PetscCall(VecReciprocal(dmlocalts->lumpedmassinv));
   PetscCall(VecViewFromOptions(dmlocalts->lumpedmassinv, NULL, "-lumped_mass_inv_view"));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -528,5 +528,5 @@ PetscErrorCode DMTSDestroyRHSMassMatrix(DM dm)
   PetscCall(VecDestroy(&dmlocalts->lumpedmassinv));
   PetscCall(MatDestroy(&dmlocalts->mass));
   PetscCall(KSPDestroy(&dmlocalts->kspmass));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

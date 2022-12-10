@@ -24,7 +24,7 @@ PetscErrorCode PetscPathJoin(const char dname[], const char fname[], size_t n, c
   PetscCall(PetscStrncpy(fullname, dname, n));
   PetscCall(PetscStrlcat(fullname, "/", n));
   PetscCall(PetscStrlcat(fullname, fname, n));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PetscMkdir(const char dir[])
@@ -34,14 +34,14 @@ PetscErrorCode PetscMkdir(const char dir[])
 
   PetscFunctionBegin;
   PetscCall(PetscTestDirectory(dir, 'w', &flg));
-  if (flg) PetscFunctionReturn(0);
+  if (flg) PetscFunctionReturn(PETSC_SUCCESS);
 #if defined(PETSC_HAVE__MKDIR) && defined(PETSC_HAVE_DIRECT_H)
   err = _mkdir(dir);
 #else
   err = mkdir(dir, S_IRWXU | S_IRGRP | S_IXGRP);
 #endif
   PetscCheck(!err, PETSC_COMM_SELF, PETSC_ERR_FILE_UNEXPECTED, "Could not create dir: %s", dir);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -81,7 +81,7 @@ PetscErrorCode PetscMkdtemp(char dir[])
   dir = mkdtemp(dir);
   PetscCheck(dir, PETSC_COMM_SELF, PETSC_ERR_FILE_UNEXPECTED, "Could not create temporary dir");
 #endif
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 #if defined(PETSC_HAVE_DIRECT_H)
@@ -105,7 +105,7 @@ PetscErrorCode PetscRMTree(const char dir[])
     PetscCheck(!flg, PETSC_COMM_SELF, PETSC_ERR_FILE_UNEXPECTED, "Cannot access directory to delete: %s", dir);
     PetscCall(PetscTestFile(loc, 'r', &flg));
     PetscCheck(!flg, PETSC_COMM_SELF, PETSC_ERR_FILE_UNEXPECTED, "Specified path is a file - not a dir: %s", dir);
-    PetscFunctionReturn(0); /* perhaps the dir was not yet created */
+    PetscFunctionReturn(PETSC_SUCCESS); /* perhaps the dir was not yet created */
   }
   while (_findnext(handle, &data) != -1) {
     PetscCall(PetscStrcmp(data.name, ".", &flg1));
@@ -120,7 +120,7 @@ PetscErrorCode PetscRMTree(const char dir[])
   }
   _findclose(handle);
   PetscCheck(!_rmdir(dir), PETSC_COMM_SELF, PETSC_ERR_FILE_UNEXPECTED, "Could not delete dir: %s", dir);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 #else
   #include <dirent.h>
@@ -141,7 +141,7 @@ PetscErrorCode PetscRMTree(const char dir[])
     PetscCheck(!flg, PETSC_COMM_SELF, PETSC_ERR_FILE_UNEXPECTED, "Cannot access directory to delete: %s", dir);
     PetscCall(PetscTestFile(dir, 'r', &flg));
     PetscCheck(!flg, PETSC_COMM_SELF, PETSC_ERR_FILE_UNEXPECTED, "Specified path is a file - not a dir: %s", dir);
-    PetscFunctionReturn(0); /* perhaps the dir was not yet created */
+    PetscFunctionReturn(PETSC_SUCCESS); /* perhaps the dir was not yet created */
   }
   while ((data = readdir(dirp))) {
     PetscCall(PetscStrcmp(data->d_name, ".", &flg1));
@@ -157,6 +157,6 @@ PetscErrorCode PetscRMTree(const char dir[])
   }
   closedir(dirp);
   PetscCheck(!rmdir(dir), PETSC_COMM_SELF, PETSC_ERR_FILE_UNEXPECTED, "Could not delete dir: %s", dir);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 #endif

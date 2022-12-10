@@ -118,7 +118,7 @@ PetscErrorCode MatGetOrdering_myordering(Mat mat, MatOrderingType type, IS *irow
   } else SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP, "MatRestoreRowIJ fails!");
   PetscCall(ISSetPermutation(*irow));
   PetscCall(ISSetPermutation(*icol));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*TEST

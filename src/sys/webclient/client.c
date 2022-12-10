@@ -81,7 +81,7 @@ PetscErrorCode PetscSSLInitializeContext(SSL_CTX **octx)
 #endif
 
   *octx = ctx;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -98,7 +98,7 @@ PetscErrorCode PetscSSLDestroyContext(SSL_CTX *ctx)
 {
   PetscFunctionBegin;
   SSL_CTX_free(ctx);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscHTTPBuildRequest(const char type[], const char url[], const char header[], const char ctype[], const char body[], char **outrequest)
@@ -151,7 +151,7 @@ static PetscErrorCode PetscHTTPBuildRequest(const char type[], const char url[],
   PetscCall(PetscInfo(NULL, "HTTPS request follows: \n%s\n", request));
 
   *outrequest = request;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -239,7 +239,7 @@ PetscErrorCode PetscHTTPSRequest(const char type[], const char url[], const char
 
   SSL_free(ssl);
   PetscCall(PetscFree(request));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -275,7 +275,7 @@ PetscErrorCode PetscHTTPRequest(const char type[], const char url[], const char 
   PetscBinaryRead(sock, buff, buffsize, NULL, PETSC_CHAR);
   buff[buffsize - 1] = 0;
   PetscCall(PetscInfo(NULL, "HTTP result follows: \n%s\n", buff));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -307,7 +307,7 @@ PetscErrorCode PetscHTTPSConnect(const char host[], int port, SSL_CTX *ctx, int 
   sbio = BIO_new_socket(*sock, BIO_NOCLOSE);
   SSL_set_bio(*ssl, sbio, sbio);
   PetscCheck(SSL_connect(*ssl) > 0, PETSC_COMM_SELF, PETSC_ERR_LIB, "SSL connect error");
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -346,23 +346,23 @@ PetscErrorCode PetscPullJSONValue(const char buff[], const char key[], char valu
     PetscCall(PetscStrstr(buff, work, &v));
     if (!v) {
       *found = PETSC_FALSE;
-      PetscFunctionReturn(0);
+      PetscFunctionReturn(PETSC_SUCCESS);
     }
     v += len;
   }
   PetscCall(PetscStrchr(v, '\"', &v));
   if (!v) {
     *found = PETSC_FALSE;
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
   PetscCall(PetscStrchr(v + 1, '\"', &w));
   if (!w) {
     *found = PETSC_FALSE;
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
   *found = PETSC_TRUE;
   PetscCall(PetscStrncpy(value, v + 1, PetscMin((size_t)(w - v), valuelen)));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 #include <ctype.h>
@@ -411,5 +411,5 @@ PetscErrorCode PetscPushJSONValue(char buff[], const char key[], const char valu
   if (!special) PetscCall(PetscStrcat(buff, "\""));
   PetscCall(PetscStrcat(buff, value));
   if (!special) PetscCall(PetscStrcat(buff, "\""));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

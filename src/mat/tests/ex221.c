@@ -14,7 +14,7 @@ static PetscErrorCode MatGetDiagonal_User(Mat A, Vec X)
   PetscFunctionBegin;
   PetscCall(MatShellGetContext(A, &user));
   PetscCall(MatGetDiagonal(user->B, X));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatMult_User(Mat A, Vec X, Vec Y)
@@ -24,7 +24,7 @@ static PetscErrorCode MatMult_User(Mat A, Vec X, Vec Y)
   PetscFunctionBegin;
   PetscCall(MatShellGetContext(A, &user));
   PetscCall(MatMult(user->B, X, Y));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatMultTranspose_User(Mat A, Vec X, Vec Y)
@@ -34,7 +34,7 @@ static PetscErrorCode MatMultTranspose_User(Mat A, Vec X, Vec Y)
   PetscFunctionBegin;
   PetscCall(MatShellGetContext(A, &user));
   PetscCall(MatMultTranspose(user->B, X, Y));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatCopy_User(Mat A, Mat X, MatStructure str)
@@ -46,7 +46,7 @@ static PetscErrorCode MatCopy_User(Mat A, Mat X, MatStructure str)
   PetscCall(MatShellGetContext(X, &userX));
   PetscCheck(user == userX, PetscObjectComm((PetscObject)A), PETSC_ERR_PLIB, "This should not happen");
   PetscCall(PetscObjectReference((PetscObject)user->B));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatDestroy_User(Mat A)
@@ -56,7 +56,7 @@ static PetscErrorCode MatDestroy_User(Mat A)
   PetscFunctionBegin;
   PetscCall(MatShellGetContext(A, &user));
   PetscCall(PetscObjectDereference((PetscObject)user->B));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **args)

@@ -74,7 +74,7 @@ PetscErrorCode PetscEmacsClientErrorHandler(MPI_Comm comm, int line, const char 
     ierr = (*eh->handler)(comm, line, fun, file, n, p, mess, eh->ctx);
     if (ierr) return ierr;
   }
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 /*@C
@@ -124,7 +124,7 @@ PetscErrorCode PetscPushErrorHandler(PetscErrorCode (*handler)(MPI_Comm comm, in
   neweh->handler = handler;
   neweh->ctx     = ctx;
   eh             = neweh;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -142,11 +142,11 @@ PetscErrorCode PetscPopErrorHandler(void)
   EH tmp;
 
   PetscFunctionBegin;
-  if (!eh) PetscFunctionReturn(0);
+  if (!eh) PetscFunctionReturn(PETSC_SUCCESS);
   tmp = eh;
   eh  = eh->previous;
   PetscCall(PetscFree(tmp));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -236,35 +236,51 @@ static const char *PetscErrorStrings[] = {
   /*99 */ "PetscError() incorrectly returned an error code of 0"};
 
 /*@C
-   PetscErrorMessage - returns the text string associated with a PETSc error code.
+  PetscErrorMessage - Returns the text string associated with a PETSc error code.
 
-   Not Collective
+  Not Collective
 
-   Input Parameter:
-.   errnum - the error code
+  Input Parameter:
+. errnum - the error code
 
-   Output Parameters:
-+  text - the error message (NULL if not desired)
--  specific - the specific error message that was set with `SETERRQ()` or `PetscError()`.  (NULL if not desired)
+  Output Parameters:
++ text - the error message (`NULL` if not desired)
+- specific - the specific error message that was set with `SETERRQ()` or
+             `PetscError()`. (`NULL` if not desired)
 
-   Level: developer
+  Level: developer
 
-.seealso: `PetscPushErrorHandler()`, `PetscAttachDebuggerErrorHandler()`, `PetscError()`, `SETERRQ()`, `PetscCall()`
-          `PetscAbortErrorHandler()`, `PetscTraceBackErrorHandler()`
- @*/
-PetscErrorCode PetscErrorMessage(int errnum, const char *text[], char **specific)
+.seealso: `PetscErrorCode`, `PetscPushErrorHandler()`, `PetscAttachDebuggerErrorHandler()`,
+`PetscError()`, `SETERRQ()`, `PetscCall()` `PetscAbortErrorHandler()`,
+`PetscTraceBackErrorHandler()`
+@*/
+PetscErrorCode PetscErrorMessage(PetscErrorCode errnum, const char *text[], char **specific)
 {
-  size_t len;
-
   PetscFunctionBegin;
-  if (text && errnum > PETSC_ERR_MIN_VALUE && errnum < PETSC_ERR_MAX_VALUE) {
-    *text = PetscErrorStrings[errnum - PETSC_ERR_MIN_VALUE - 1];
-    PetscCall(PetscStrlen(*text, &len));
-    if (!len) *text = NULL;
-  } else if (text) *text = NULL;
+  if (text) {
+    if (errnum > PETSC_ERR_MIN_VALUE && errnum < PETSC_ERR_MAX_VALUE) {
+      size_t len;
 
+      *text = PetscErrorStrings[errnum - PETSC_ERR_MIN_VALUE - 1];
+      PetscCall(PetscStrlen(*text, &len));
+      if (!len) *text = NULL;
+    } else if (errnum == PETSC_ERR_BOOLEAN_MACRO_FAILURE) {
+      /* this "error code" arises from failures in boolean macros, where the || operator is
+         used to short-circuit the macro call in case of error. This has the side effect of
+         "returning" either 0 (PETSC_SUCCESS) or 1 (PETSC_ERR_UNKNONWN):
+
+         #define PETSC_FOO(x) ((PetscErrorCode)(PetscBar(x) || PetscBaz(x)))
+
+         If PetscBar() fails (returns nonzero) PetscBaz() is not executed but the result of
+         this expression is boolean false, hence PETSC_ERR_UNNOWN
+       */
+      *text = "Error occurred in boolean shortcuit in macro";
+    } else {
+      *text = NULL;
+    }
+  }
   if (specific) *specific = PetscErrorBaseMessage;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 #if defined(PETSC_CLANGUAGE_CXX)
@@ -363,13 +379,13 @@ PetscErrorCode PetscError(MPI_Comm comm, int line, const char *func, const char 
   /* Compose the message evaluating the print format */
   if (mess) {
     va_start(Argp, mess);
-    PetscVSNPrintf(buf, 2048, mess, &fullLength, Argp);
+    ierr = PetscVSNPrintf(buf, 2048, mess, &fullLength, Argp);
     va_end(Argp);
     lbuf = buf;
-    if (p == PETSC_ERROR_INITIAL) PetscStrncpy(PetscErrorBaseMessage, lbuf, 1023);
+    if (p == PETSC_ERROR_INITIAL) ierr = PetscStrncpy(PetscErrorBaseMessage, lbuf, 1023);
   }
 
-  if (p == PETSC_ERROR_INITIAL && n != PETSC_ERR_MEMC) PetscMallocValidate(__LINE__, PETSC_FUNCTION_NAME, __FILE__);
+  if (p == PETSC_ERROR_INITIAL && n != PETSC_ERR_MEMC) ierr = PetscMallocValidate(__LINE__, PETSC_FUNCTION_NAME, __FILE__);
 
   if (!eh) ierr = PetscTraceBackErrorHandler(comm, line, func, file, n, p, lbuf, NULL);
   else ierr = (*eh->handler)(comm, line, func, file, n, p, lbuf, eh->ctx);
@@ -382,9 +398,10 @@ PetscErrorCode PetscError(MPI_Comm comm, int line, const char *func, const char 
     Does not call PETSCABORT() since that would provide the wrong source file and line number information
   */
   if (func) {
-    PetscStrncmp(func, "main", 4, &ismain);
+    PetscErrorCode cmp_ierr = PetscStrncmp(func, "main", 4, &ismain);
     if (ismain) {
-      if (petscwaitonerrorflg) PetscSleep(1000);
+      if (petscwaitonerrorflg) cmp_ierr = PetscSleep(1000);
+      (void)cmp_ierr;
       PETSCABORT(comm, ierr);
     }
   }
@@ -490,7 +507,7 @@ PetscErrorCode PetscIntView(PetscInt N, const PetscInt idx[], PetscViewer viewer
     PetscCall(PetscObjectGetName((PetscObject)viewer, &tname));
     SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Cannot handle that PetscViewer of type %s", tname);
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -595,7 +612,7 @@ PetscErrorCode PetscRealView(PetscInt N, const PetscReal idx[], PetscViewer view
     PetscCall(PetscObjectGetName((PetscObject)viewer, &tname));
     SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Cannot handle that PetscViewer of type %s", tname);
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -704,7 +721,7 @@ PetscErrorCode PetscScalarView(PetscInt N, const PetscScalar idx[], PetscViewer 
     PetscCall(PetscObjectGetName((PetscObject)viewer, &tname));
     SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Cannot handle that PetscViewer of type %s", tname);
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 #if defined(PETSC_HAVE_CUDA)

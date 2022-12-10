@@ -8,7 +8,7 @@ static PetscErrorCode OutputBIN(MPI_Comm comm, const char *filename, PetscViewer
   PetscCall(PetscViewerSetType(*viewer, PETSCVIEWERBINARY));
   PetscCall(PetscViewerFileSetMode(*viewer, FILE_MODE_WRITE));
   PetscCall(PetscViewerFileSetName(*viewer, filename));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TSTrajectorySet_Visualization(TSTrajectory tj, TS ts, PetscInt stepnum, PetscReal time, Vec X)
@@ -45,7 +45,7 @@ static PetscErrorCode TSTrajectorySet_Visualization(TSTrajectory tj, TS ts, Pets
     }
     PetscCall(PetscViewerBinaryWrite(viewer, &time, 1, PETSC_REAL));
     PetscCall(PetscViewerDestroy(&viewer));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
   PetscCall(PetscSNPrintf(filename, sizeof(filename), "Visualization-data/SA-%06" PetscInt_FMT ".bin", stepnum));
   PetscCall(OutputBIN(comm, filename, &viewer));
@@ -63,7 +63,7 @@ static PetscErrorCode TSTrajectorySet_Visualization(TSTrajectory tj, TS ts, Pets
   PetscCall(PetscViewerBinaryWrite(viewer, &tprev, 1, PETSC_REAL));
 
   PetscCall(PetscViewerDestroy(&viewer));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -87,5 +87,5 @@ PETSC_EXTERN PetscErrorCode TSTrajectoryCreate_Visualization(TSTrajectory tj, TS
   PetscFunctionBegin;
   tj->ops->set    = TSTrajectorySet_Visualization;
   tj->setupcalled = PETSC_TRUE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

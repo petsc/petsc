@@ -35,7 +35,7 @@ static PetscErrorCode Event(TS ts, PetscReal t, Vec U, PetscScalar *fvalue, void
   fvalue[1] = app->maxbounces - app->bounces;
   PetscCall(VecRestoreArrayRead(U, &u));
   PetscCall(VecRestoreArrayRead(V, &v));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PostEvent(TS ts, PetscInt nevents, PetscInt event_list[], PetscReal t, Vec U, PetscBool forwardsolve, void *ctx)
@@ -46,7 +46,7 @@ static PetscErrorCode PostEvent(TS ts, PetscInt nevents, PetscInt event_list[], 
   PetscMPIInt  rank;
 
   PetscFunctionBeginUser;
-  if (!nevents) PetscFunctionReturn(0);
+  if (!nevents) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
   if (event_list[0] == 0) {
     PetscCall(PetscPrintf(PETSC_COMM_SELF, "Processor [%d]: Ball hit the ground at t = %5.2f seconds\n", rank, (double)t));
@@ -62,7 +62,7 @@ static PetscErrorCode PostEvent(TS ts, PetscInt nevents, PetscInt event_list[], 
   } else if (event_list[0] == 1) {
     PetscCall(PetscPrintf(PETSC_COMM_SELF, "Processor [%d]: Ball bounced %" PetscInt_FMT " times\n", rank, app->bounces));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode I2Function(TS ts, PetscReal t, Vec U, Vec V, Vec A, Vec F, void *ctx)
@@ -83,7 +83,7 @@ static PetscErrorCode I2Function(TS ts, PetscReal t, Vec U, Vec V, Vec A, Vec F,
   PetscCall(VecGetArray(F, &f));
   f[0] = Res;
   PetscCall(VecRestoreArray(F, &f));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode I2Jacobian(TS ts, PetscReal t, Vec U, Vec V, Vec A, PetscReal shiftV, PetscReal shiftA, Mat J, Mat P, void *ctx)
@@ -110,7 +110,7 @@ static PetscErrorCode I2Jacobian(TS ts, PetscReal t, Vec U, Vec V, Vec A, PetscR
     PetscCall(MatAssemblyBegin(P, MAT_FINAL_ASSEMBLY));
     PetscCall(MatAssemblyEnd(P, MAT_FINAL_ASSEMBLY));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)

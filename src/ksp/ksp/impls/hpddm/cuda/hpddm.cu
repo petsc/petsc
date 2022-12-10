@@ -46,5 +46,5 @@ PetscErrorCode KSPSolve_HPDDM_CUDA_Private(KSP_HPDDM *data, const PetscScalar *b
     PetscCall(PetscLogGpuToCpu(2 * N * sizeof(PetscScalar)));
     PetscCall(PetscLogCpuToGpu(N * sizeof(PetscScalar)));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

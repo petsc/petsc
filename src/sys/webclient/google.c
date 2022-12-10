@@ -55,7 +55,7 @@ PetscErrorCode PetscGoogleDriveRefresh(MPI_Comm comm, const char refresh_token[]
       if (!set) {
         PetscCall(PetscGoogleDriveAuthorize(comm, access_token, refreshtoken, 512 * sizeof(char)));
         PetscCall(PetscFree(refreshtoken));
-        PetscFunctionReturn(0);
+        PetscFunctionReturn(PETSC_SUCCESS);
       }
     }
     PetscCall(PetscSSLInitializeContext(&ctx));
@@ -76,7 +76,7 @@ PetscErrorCode PetscGoogleDriveRefresh(MPI_Comm comm, const char refresh_token[]
     PetscCall(PetscPullJSONValue(buff, "access_token", access_token, tokensize, &found));
     PetscCheck(found, PETSC_COMM_SELF, PETSC_ERR_LIB, "Google drive did not return access_token");
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 #include <sys/stat.h>
@@ -171,7 +171,7 @@ PetscErrorCode PetscGoogleDriveUpload(MPI_Comm comm, const char access_token[], 
     PetscCall(PetscStrstr(buff, "\"title\"", &title));
     PetscCheck(title, PETSC_COMM_SELF, PETSC_ERR_LIB, "Upload of file %s failed", filename);
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 #if defined(PETSC_HAVE_UNISTD_H)
@@ -252,7 +252,7 @@ PetscErrorCode PetscGoogleDriveAuthorize(MPI_Comm comm, char access_token[], cha
     PetscCall(PetscPrintf(comm, "programs with the option -google_refresh_token %s\n", refresh_token));
     PetscCall(PetscPrintf(comm, "to access Google Drive automatically\n"));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -293,5 +293,5 @@ PetscErrorCode PetscURLShorten(const char url[], char shorturl[], size_t lenshor
 
   PetscCall(PetscPullJSONValue(buff, "id", shorturl, lenshorturl, &found));
   PetscCheck(found, PETSC_COMM_SELF, PETSC_ERR_LIB, "Google drive did not return short URL");
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -50,7 +50,7 @@ static PetscErrorCode trig_homogeneous_u(PetscInt dim, PetscReal time, const Pet
   PetscInt d;
   *u = 1.0;
   for (d = 0; d < dim; ++d) *u *= PetscSinReal(2.0 * PETSC_PI * x[d]);
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 static PetscErrorCode oscillatory_u(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
@@ -59,7 +59,7 @@ static PetscErrorCode oscillatory_u(PetscInt dim, PetscReal time, const PetscRea
   const PetscReal eps   = param->epsilon;
 
   u[0] = x[0] - x[0] * x[0] + (eps / (2. * PETSC_PI)) * (0.5 - x[0]) * PetscSinReal(2. * PETSC_PI * x[0] / eps) + PetscSqr(eps / (2. * PETSC_PI)) * (1. - PetscCosReal(2. * PETSC_PI * x[0] / eps));
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 static void f0_trig_homogeneous_u(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
@@ -120,7 +120,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscCall(PetscOptionsEList("-mod_type", "The model type", "ex36.c", modTypes, NUM_MOD_TYPES, modTypes[options->modType], &mod, NULL));
   options->modType = (ModType)mod;
   PetscOptionsEnd();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode SetupParameters(MPI_Comm comm, AppCtx *user)
@@ -134,7 +134,7 @@ static PetscErrorCode SetupParameters(MPI_Comm comm, AppCtx *user)
   PetscCall(PetscBagSetName(user->bag, "par", "Homogenization parameters"));
   bag = user->bag;
   PetscCall(PetscBagRegisterReal(bag, &p->epsilon, 1.0, "epsilon", "Wavelength of fine scale oscillation"));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
@@ -145,7 +145,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   PetscCall(DMSetFromOptions(*dm));
   PetscCall(DMSetApplicationContext(*dm, user));
   PetscCall(DMViewFromOptions(*dm, NULL, "-dm_view"));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode SetupPrimalProblem(DM dm, AppCtx *user)
@@ -188,7 +188,7 @@ static PetscErrorCode SetupPrimalProblem(DM dm, AppCtx *user)
     constants[EPSILON] = param->epsilon;
     PetscCall(PetscDSSetConstants(ds, NUM_CONSTANTS, constants));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode SetupDiscretization(DM dm, const char name[], PetscErrorCode (*setup)(DM, AppCtx *), AppCtx *user)
@@ -215,7 +215,7 @@ static PetscErrorCode SetupDiscretization(DM dm, const char name[], PetscErrorCo
     PetscCall(DMGetCoarseDM(cdm, &cdm));
   }
   PetscCall(PetscFEDestroy(&fe));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode CompareView(Vec u)
@@ -252,7 +252,7 @@ static PetscErrorCode CompareView(Vec u)
     PetscCall(DMRestoreGlobalVector(dm, &exact));
     PetscCall(PetscViewerDestroy(&viewer));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 typedef struct {
@@ -280,7 +280,7 @@ static PetscErrorCode DestroyCoarseProjection(Mat Pi)
   PetscCall(VecDestroy(&ctx->tmpfine));
   PetscCall(PetscFree(ctx));
   PetscCall(MatShellSetContext(Pi, NULL));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode CoarseProjection(Mat Pi, Vec x, Vec y)
@@ -300,7 +300,7 @@ static PetscErrorCode CoarseProjection(Mat Pi, Vec x, Vec y)
   PetscCall(VecPointwiseMult(ctx->tmpcoarse, ctx->Iscale, ctx->tmpcoarse));
   PetscCall(VecViewFromOptions(ctx->tmpcoarse, NULL, "-rhs_view"));
   PetscCall(KSPSolve(ctx->kspCoarse, ctx->tmpcoarse, y));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode CreateCoarseProjection(DM dmc, DM dmf, Mat *Pi)
@@ -326,7 +326,7 @@ static PetscErrorCode CreateCoarseProjection(DM dmc, DM dmf, Mat *Pi)
   PetscCall(MatCreateShell(PetscObjectComm((PetscObject)dmc), m, n, M, N, ctx, Pi));
   PetscCall(MatShellSetOperation(*Pi, MATOP_DESTROY, (void (*)(void))DestroyCoarseProjection));
   PetscCall(MatShellSetOperation(*Pi, MATOP_MULT, (void (*)(void))CoarseProjection));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 typedef struct {
@@ -348,7 +348,7 @@ static PetscErrorCode DestroyQuasiInterpolator(Mat P)
   PetscCall(VecDestroy(&ctx->tmpf));
   PetscCall(PetscFree(ctx));
   PetscCall(MatShellSetContext(P, NULL));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode QuasiInterpolate(Mat P, Vec x, Vec y)
@@ -377,7 +377,7 @@ static PetscErrorCode QuasiInterpolate(Mat P, Vec x, Vec y)
   PetscCall(DMLocalToGlobalBegin(dmc, ly, INSERT_VALUES, y));
   PetscCall(DMLocalToGlobalEnd(dmc, ly, INSERT_VALUES, y));
   PetscCall(DMRestoreLocalVector(dmc, &ly));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode CreateQuasiInterpolator(DM dmc, DM dmf, Mat *P)
@@ -428,7 +428,7 @@ static PetscErrorCode CreateQuasiInterpolator(DM dmc, DM dmf, Mat *P)
   PetscCall(MatCreateShell(PetscObjectComm((PetscObject)dmc), m, n, M, N, ctx, P));
   PetscCall(MatShellSetOperation(*P, MATOP_DESTROY, (void (*)(void))DestroyQuasiInterpolator));
   PetscCall(MatShellSetOperation(*P, MATOP_MULT, (void (*)(void))QuasiInterpolate));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode CoarseTest(DM dm, Vec u, AppCtx *user)
@@ -438,7 +438,7 @@ static PetscErrorCode CoarseTest(DM dm, Vec u, AppCtx *user)
   Vec uc;
 
   PetscFunctionBegin;
-  if (user->modType == MOD_CONSTANT) PetscFunctionReturn(0);
+  if (user->modType == MOD_CONSTANT) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(DMCreate(PetscObjectComm((PetscObject)dm), &dmc));
   PetscCall(DMSetType(dmc, DMPLEX));
   PetscCall(PetscObjectSetOptionsPrefix((PetscObject)dmc, "coarse_"));
@@ -471,7 +471,7 @@ static PetscErrorCode CoarseTest(DM dm, Vec u, AppCtx *user)
   PetscCall(MatDestroy(&P));
   PetscCall(VecDestroy(&uc));
   PetscCall(DMDestroy(&dmc));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)

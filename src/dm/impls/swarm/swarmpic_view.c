@@ -29,7 +29,7 @@ PetscErrorCode private_PetscViewerCreate_XDMF(MPI_Comm comm, const char filename
   PetscCall(PetscViewerASCIIPushTab(viewer));
   PetscCall(PetscViewerASCIIPrintf(viewer, "<Domain>\n"));
   *v = viewer;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode private_PetscViewerDestroy_XDMF(PetscViewer *v)
@@ -40,7 +40,7 @@ PetscErrorCode private_PetscViewerDestroy_XDMF(PetscViewer *v)
   PetscContainer container = NULL;
 
   PetscFunctionBegin;
-  if (!v) PetscFunctionReturn(0);
+  if (!v) PetscFunctionReturn(PETSC_SUCCESS);
   viewer = *v;
 
   PetscCall(PetscObjectQuery((PetscObject)viewer, "DMSwarm", (PetscObject *)&dm));
@@ -62,7 +62,7 @@ PetscErrorCode private_PetscViewerDestroy_XDMF(PetscViewer *v)
   }
   PetscCall(PetscViewerDestroy(&viewer));
   *v = NULL;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode private_CreateDataFileNameXDMF(const char filename[], char dfilename[])
@@ -81,7 +81,7 @@ PetscErrorCode private_CreateDataFileNameXDMF(const char filename[], char dfilen
     PetscCall(PetscStrncpy(viewername_minus_ext, filename, len - 2));
     PetscCall(PetscSNPrintf(dfilename, PETSC_MAX_PATH_LEN - 1, "%s_swarm_fields.pbin", viewername_minus_ext));
   } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "File extension must by .xmf");
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode private_DMSwarmView_XDMF(DM dm, PetscViewer viewer)
@@ -186,7 +186,7 @@ PetscErrorCode private_DMSwarmView_XDMF(DM dm, PetscViewer viewer)
   bytes[0] += sizeof(PetscReal) * ng * dim;
 
   PetscCall(PetscViewerDestroy(&fviewer));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode private_VecView_Swarm_XDMF(Vec x, PetscViewer viewer)
@@ -250,7 +250,7 @@ PetscErrorCode private_VecView_Swarm_XDMF(Vec x, PetscViewer viewer)
   bytes[0] += sizeof(PetscReal) * N * bs;
 
   PetscCall(PetscViewerDestroy(&fviewer));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode private_ISView_Swarm_XDMF(IS is, PetscViewer viewer)
@@ -314,7 +314,7 @@ PetscErrorCode private_ISView_Swarm_XDMF(IS is, PetscViewer viewer)
   bytes[0] += sizeof(PetscInt) * N * bs;
 
   PetscCall(PetscViewerDestroy(&fviewer));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -371,7 +371,7 @@ PETSC_EXTERN PetscErrorCode DMSwarmViewFieldsXDMF(DM dm, const char filename[], 
     } else SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Can only write PETSC_INT and PETSC_DOUBLE");
   }
   PetscCall(private_PetscViewerDestroy_XDMF(&viewer));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -431,5 +431,5 @@ PETSC_EXTERN PetscErrorCode DMSwarmViewXDMF(DM dm, const char filename[])
     }
   }
   PetscCall(private_PetscViewerDestroy_XDMF(&viewer));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

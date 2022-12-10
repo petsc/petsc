@@ -17,7 +17,7 @@ static PetscErrorCode PetscBagRegister_Private(PetscBag bag, PetscBagItem item, 
     nitem->next = item;
   } else bag->bagitems = item;
   bag->count++;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -73,7 +73,7 @@ PetscErrorCode PetscBagRegisterEnum(PetscBag bag, void *addr, const char *const 
   PetscCall(PetscStrArrayallocpy(list, (char ***)&item->list));
   *(PetscEnum *)addr = mdefault;
   PetscCall(PetscBagRegister_Private(bag, item, name, help));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -124,7 +124,7 @@ PetscErrorCode PetscBagRegisterIntArray(PetscBag bag, void *addr, PetscInt msize
   item->next  = NULL;
   item->msize = msize;
   PetscCall(PetscBagRegister_Private(bag, item, name, help));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -175,7 +175,7 @@ PetscErrorCode PetscBagRegisterRealArray(PetscBag bag, void *addr, PetscInt msiz
   item->next  = NULL;
   item->msize = msize;
   PetscCall(PetscBagRegister_Private(bag, item, name, help));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -222,7 +222,7 @@ PetscErrorCode PetscBagRegisterInt(PetscBag bag, void *addr, PetscInt mdefault, 
   item->msize       = 1;
   *(PetscInt *)addr = mdefault;
   PetscCall(PetscBagRegister_Private(bag, item, name, help));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -268,7 +268,7 @@ PetscErrorCode PetscBagRegisterInt64(PetscBag bag, void *addr, PetscInt64 mdefau
   item->msize         = 1;
   *(PetscInt64 *)addr = mdefault;
   PetscCall(PetscBagRegister_Private(bag, item, name, help));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -319,7 +319,7 @@ PetscErrorCode PetscBagRegisterBoolArray(PetscBag bag, void *addr, PetscInt msiz
   item->next  = NULL;
   item->msize = msize;
   PetscCall(PetscBagRegister_Private(bag, item, name, help));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -370,7 +370,7 @@ PetscErrorCode PetscBagRegisterString(PetscBag bag, void *addr, PetscInt msize, 
   if (mdefault != (char *)addr) PetscCall(PetscStrncpy((char *)addr, mdefault, msize - 1));
   PetscCall(PetscOptionsGetString(NULL, bag->bagprefix, nname, (char *)addr, msize, NULL));
   PetscCall(PetscBagRegister_Private(bag, item, name, help));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -417,7 +417,7 @@ PetscErrorCode PetscBagRegisterReal(PetscBag bag, void *addr, PetscReal mdefault
   item->msize        = 1;
   *(PetscReal *)addr = mdefault;
   PetscCall(PetscBagRegister_Private(bag, item, name, help));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -464,7 +464,7 @@ PetscErrorCode PetscBagRegisterScalar(PetscBag bag, void *addr, PetscScalar mdef
   item->msize          = 1;
   *(PetscScalar *)addr = mdefault;
   PetscCall(PetscBagRegister_Private(bag, item, name, help));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -513,7 +513,7 @@ PetscErrorCode PetscBagRegisterBool(PetscBag bag, void *addr, PetscBool mdefault
   item->msize        = 1;
   *(PetscBool *)addr = mdefault;
   PetscCall(PetscBagRegister_Private(bag, item, name, help));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -535,7 +535,7 @@ PetscErrorCode PetscBagDestroy(PetscBag *bag)
   PetscBagItem nitem;
 
   PetscFunctionBegin;
-  if (!*bag) PetscFunctionReturn(0);
+  if (!*bag) PetscFunctionReturn(PETSC_SUCCESS);
   PetscValidPointer(*bag, 1);
   nitem = (*bag)->bagitems;
   while (nitem) {
@@ -547,7 +547,7 @@ PetscErrorCode PetscBagDestroy(PetscBag *bag)
   }
   if ((*bag)->bagprefix) PetscCall(PetscFree((*bag)->bagprefix));
   PetscCall(PetscFree(*bag));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -623,7 +623,7 @@ PetscErrorCode PetscBagSetFromOptions(PetscBag bag)
     nitem = nitem->next;
   }
   PetscOptionsEnd();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -745,7 +745,7 @@ PetscErrorCode PetscBagView(PetscBag bag, PetscViewer view)
       PetscCall(PetscFPrintf(comm, info, "#--- end code written by PetscViewerBinary for MATLAB format ---#\n\n"));
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -771,7 +771,7 @@ PetscErrorCode PetscBagViewFromOptions(PetscBag bag, PetscObject bobj, const cha
   PetscBool         flg;
 
   PetscFunctionBegin;
-  if (incall) PetscFunctionReturn(0);
+  if (incall) PetscFunctionReturn(PETSC_SUCCESS);
   incall = PETSC_TRUE;
   PetscValidPointer(bag, 1);
   if (bobj) PetscCall(PetscObjectGetOptionsPrefix(bobj, &bprefix));
@@ -785,7 +785,7 @@ PetscErrorCode PetscBagViewFromOptions(PetscBag bag, PetscObject bobj, const cha
     PetscCall(PetscViewerDestroy(&viewer));
   }
   incall = PETSC_FALSE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -859,7 +859,7 @@ PetscErrorCode PetscBagLoad(PetscViewer view, PetscBag bag)
     }
     nitem = nitem->next;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -901,7 +901,7 @@ PetscErrorCode PetscBagCreate(MPI_Comm comm, size_t bagsize, PetscBag *bag)
   (*bag)->bagcomm        = comm;
   (*bag)->bagprefix      = NULL;
   (*bag)->structlocation = (void *)(((char *)(*bag)) + sizeof(PetscScalar) * (sizeof(struct _n_PetscBag) / sizeof(PetscScalar)) + sizeof(PetscScalar));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -928,7 +928,7 @@ PetscErrorCode PetscBagSetName(PetscBag bag, const char *name, const char *help)
   PetscValidCharPointer(help, 3);
   PetscCall(PetscStrncpy(bag->bagname, name, PETSC_BAG_NAME_LENGTH - 1));
   PetscCall(PetscStrncpy(bag->baghelp, help, PETSC_BAG_HELP_LENGTH - 1));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -954,7 +954,7 @@ PetscErrorCode PetscBagGetName(PetscBag bag, char **name)
   PetscValidPointer(bag, 1);
   PetscValidPointer(name, 2);
   *name = bag->bagname;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -981,7 +981,7 @@ PetscErrorCode PetscBagGetData(PetscBag bag, void **data)
   PetscValidPointer(bag, 1);
   PetscValidPointer(data, 2);
   *data = bag->structlocation;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1012,7 +1012,7 @@ PetscErrorCode PetscBagSetOptionsPrefix(PetscBag bag, const char pre[])
     PetscCall(PetscFree(bag->bagprefix));
     PetscCall(PetscStrallocpy(pre, &(bag->bagprefix)));
   } else PetscCall(PetscFree(bag->bagprefix));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1040,5 +1040,5 @@ PetscErrorCode PetscBagGetNames(PetscBag bag, const char *names[])
   PetscValidPointer(bag, 1);
   PetscValidPointer(names, 2);
   for (PetscInt n = 0; nitem; ++n, nitem = nitem->next) names[n] = nitem->name;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

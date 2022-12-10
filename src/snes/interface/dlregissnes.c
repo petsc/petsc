@@ -20,7 +20,7 @@ PetscErrorCode SNESFinalizePackage(void)
   SNESPackageInitialized          = PETSC_FALSE;
   SNESRegisterAllCalled           = PETSC_FALSE;
   SNESLineSearchRegisterAllCalled = PETSC_FALSE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -38,7 +38,7 @@ PetscErrorCode SNESInitializePackage(void)
   PetscBool opt, pkg, cls;
 
   PetscFunctionBegin;
-  if (SNESPackageInitialized) PetscFunctionReturn(0);
+  if (SNESPackageInitialized) PetscFunctionReturn(PETSC_SUCCESS);
   SNESPackageInitialized = PETSC_TRUE;
   /* Initialize subpackages */
   PetscCall(SNESMSInitializePackage());
@@ -82,7 +82,7 @@ PetscErrorCode SNESInitializePackage(void)
   }
   /* Register package finalizer */
   PetscCall(PetscRegisterFinalize(SNESFinalizePackage));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 #if defined(PETSC_HAVE_DYNAMIC_LIBRARIES)
@@ -96,7 +96,7 @@ PETSC_EXTERN PetscErrorCode PetscDLLibraryRegister_petscsnes(void)
 {
   PetscFunctionBegin;
   PetscCall(SNESInitializePackage());
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 #endif /* PETSC_HAVE_DYNAMIC_LIBRARIES */

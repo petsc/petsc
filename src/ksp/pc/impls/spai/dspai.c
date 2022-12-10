@@ -11,35 +11,43 @@
 */
 PetscErrorCode MatDumpSPAI(Mat A, FILE *file)
 {
-  const PetscScalar *vals;
-  int                i, j, n, size, nz;
-  const int         *cols;
-  MPI_Comm           comm;
+  PetscMPIInt size;
+  PetscInt    n;
+  MPI_Comm    comm;
 
   PetscFunctionBegin;
-  PetscObjectGetComm((PetscObject)A, &comm);
-  MPI_Comm_size(comm, &size);
-  PetscCheck(size == 1, PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "Only single processor dumps");
+  PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
+  PetscValidPointer(file, 2);
+  PetscCall(PetscObjectGetComm((PetscObject)A, &comm));
+  PetscCallMPI(MPI_Comm_size(comm, &size));
+  PetscCheck(size == 1, comm, PETSC_ERR_SUP, "Only single processor dumps");
   PetscCall(MatGetSize(A, &n, &n));
   /* print the matrix */
-  fprintf(file, "%d\n", n);
-  for (i = 0; i < n; i++) {
+  fprintf(file, "%" PetscInt_FMT "\n", n);
+  for (PetscInt i = 0; i < n; i++) {
+    const PetscInt    *cols;
+    const PetscScalar *vals;
+    PetscInt           nz;
+
     PetscCall(MatGetRow(A, i, &nz, &cols, &vals));
-    for (j = 0; j < nz; j++) fprintf(file, "%d %d %16.14e\n", i + 1, cols[j] + 1, vals[j]);
+    for (PetscInt j = 0; j < nz; j++) fprintf(file, "%" PetscInt_FMT " %d" PetscInt_FMT " %16.14e\n", i + 1, cols[j] + 1, vals[j]);
     PetscCall(MatRestoreRow(A, i, &nz, &cols, &vals));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode VecDumpSPAI(Vec b, FILE *file)
 {
-  int          n, i;
-  PetscScalar *array;
+  PetscInt           n;
+  const PetscScalar *array;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(b, VEC_CLASSID, 1);
+  PetscValidPointer(file, 2);
   PetscCall(VecGetSize(b, &n));
-  PetscCall(VecGetArray(b, &array));
-  fprintf(file, "%d\n", n);
-  for (i = 0; i < n; i++) fprintf(file, "%d %16.14e\n", i + 1, array[i]);
-  PetscFunctionReturn(0);
+  PetscCall(VecGetArrayRead(b, &array));
+  fprintf(file, "%" PetscInt_FMT "\n", n);
+  for (PetscInt i = 0; i < n; i++) fprintf(file, "%" PetscInt_FMT " %16.14e\n", i + 1, array[i]);
+  PetscCall(VecRestoreArrayRead(b, &array));
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

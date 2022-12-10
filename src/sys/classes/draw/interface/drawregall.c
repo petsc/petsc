@@ -28,7 +28,7 @@ PetscBool PetscDrawRegisterAllCalled = PETSC_FALSE;
 PetscErrorCode PetscDrawRegisterAll(void)
 {
   PetscFunctionBegin;
-  if (PetscDrawRegisterAllCalled) PetscFunctionReturn(0);
+  if (PetscDrawRegisterAllCalled) PetscFunctionReturn(PETSC_SUCCESS);
   PetscDrawRegisterAllCalled = PETSC_TRUE;
 
   PetscCall(PetscDrawRegister(PETSC_DRAW_IMAGE, PetscDrawCreate_Image));
@@ -39,5 +39,5 @@ PetscErrorCode PetscDrawRegisterAll(void)
   PetscCall(PetscDrawRegister(PETSC_DRAW_WIN32, PetscDrawCreate_Win32));
 #endif
   PetscCall(PetscDrawRegister(PETSC_DRAW_NULL, PetscDrawCreate_Null));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

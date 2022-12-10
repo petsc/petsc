@@ -22,7 +22,7 @@ static PetscErrorCode CheckValues(Mat A, PetscBool one)
     }
   }
   PetscCall(MatDenseRestoreArrayRead(A, &array));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 #define CheckValuesIJ(A)  CheckValues(A, PETSC_FALSE)

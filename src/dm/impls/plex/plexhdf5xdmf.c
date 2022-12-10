@@ -20,7 +20,7 @@ static PetscErrorCode SplitPath_Private(char path[], char name[])
     /* '/' not found, name = path, path = "/". */
     PetscCall(PetscStrcpy(path, "/"));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -34,7 +34,7 @@ static PetscErrorCode DMPlexInvertCells_XDMF_Private(DM dm)
 
   PetscFunctionBegin;
   PetscCall(DMGetDimension(dm, &dim));
-  if (dim != 3) PetscFunctionReturn(0);
+  if (dim != 3) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(DMPlexGetCones(dm, &cones));
   PetscCall(DMPlexGetConeSection(dm, &cs));
   PetscCall(DMPlexGetVTKCellHeight(dm, &cHeight));
@@ -56,7 +56,7 @@ static PetscErrorCode DMPlexInvertCells_XDMF_Private(DM dm)
       break;
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMPlexLoad_HDF5_Xdmf_Internal(DM dm, PetscViewer viewer)
@@ -165,6 +165,6 @@ PetscErrorCode DMPlexLoad_HDF5_Xdmf_Internal(DM dm, PetscViewer viewer)
   /* Read Labels */
   /* TODO: this probably does not work as elements get permuted */
   /* PetscCall(DMPlexLabelsLoad_HDF5_Internal(dm, viewer)); */
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 #endif

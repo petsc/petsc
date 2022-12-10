@@ -7,7 +7,7 @@ static PetscErrorCode PCISSetUseStiffnessScaling_IS(PC pc, PetscBool use)
 
   PetscFunctionBegin;
   pcis->use_stiffness_scaling = use;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -33,7 +33,7 @@ PetscErrorCode PCISSetUseStiffnessScaling(PC pc, PetscBool use)
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscValidLogicalCollectiveBool(pc, use, 2);
   PetscTryMethod(pc, "PCISSetUseStiffnessScaling_C", (PC, PetscBool), (pc, use));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCISSetSubdomainDiagonalScaling_IS(PC pc, Vec scaling_factors)
@@ -56,7 +56,7 @@ static PetscErrorCode PCISSetSubdomainDiagonalScaling_IS(PC pc, Vec scaling_fact
       PetscCall(VecCopy(pcis->vec1_B, pcis->D));
     } else PetscCheck(sn == pcis->n_B, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Invalid size for scaling vector. Expected %" PetscInt_FMT " (or full %" PetscInt_FMT "), found %" PetscInt_FMT, pcis->n_B, pcis->n, sn);
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -84,7 +84,7 @@ PetscErrorCode PCISSetSubdomainDiagonalScaling(PC pc, Vec scaling_factors)
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscValidHeaderSpecific(scaling_factors, VEC_CLASSID, 2);
   PetscTryMethod(pc, "PCISSetSubdomainDiagonalScaling_C", (PC, Vec), (pc, scaling_factors));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCISSetSubdomainScalingFactor_IS(PC pc, PetscScalar scal)
@@ -94,7 +94,7 @@ static PetscErrorCode PCISSetSubdomainScalingFactor_IS(PC pc, PetscScalar scal)
   PetscFunctionBegin;
   pcis->scaling_factor = scal;
   if (pcis->D) PetscCall(VecSet(pcis->D, pcis->scaling_factor));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -121,7 +121,7 @@ PetscErrorCode PCISSetSubdomainScalingFactor(PC pc, PetscScalar scal)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscTryMethod(pc, "PCISSetSubdomainScalingFactor_C", (PC, PetscScalar), (pc, scal));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PCISSetUp(PC pc, PetscBool computematrices, PetscBool computesolvers)
@@ -392,7 +392,7 @@ PetscErrorCode PCISSetUp(PC pc, PetscBool computematrices, PetscBool computesolv
     /* the vectors in the following line are dummy arguments, just telling the KSP the vector size. Values are not used */
     PetscCall(KSPSetUp(pcis->ksp_N));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -403,7 +403,7 @@ PetscErrorCode PCISDestroy(PC pc)
   PC_IS *pcis;
 
   PetscFunctionBegin;
-  if (!pc) PetscFunctionReturn(0);
+  if (!pc) PetscFunctionReturn(PETSC_SUCCESS);
   pcis = (PC_IS *)(pc->data);
   PetscCall(ISDestroy(&pcis->is_B_local));
   PetscCall(ISDestroy(&pcis->is_I_local));
@@ -438,7 +438,7 @@ PetscErrorCode PCISDestroy(PC pc)
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCISSetUseStiffnessScaling_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCISSetSubdomainScalingFactor_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCISSetSubdomainDiagonalScaling_C", NULL));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -460,7 +460,7 @@ PetscErrorCode PCISCreate(PC pc)
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCISSetUseStiffnessScaling_C", PCISSetUseStiffnessScaling_IS));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCISSetSubdomainScalingFactor_C", PCISSetSubdomainScalingFactor_IS));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCISSetSubdomainDiagonalScaling_C", PCISSetSubdomainDiagonalScaling_IS));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -490,7 +490,7 @@ PetscErrorCode PCISApplySchur(PC pc, Vec v, Vec vec1_B, Vec vec2_B, Vec vec1_D, 
   PetscCall(KSPCheckSolve(pcis->ksp_D, pc, vec2_D));
   PetscCall(MatMult(pcis->A_BI, vec2_D, vec2_B));
   PetscCall(VecAXPY(vec1_B, -1.0, vec2_B));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -536,7 +536,7 @@ PetscErrorCode PCISScatterArrayNToVecB(PetscScalar *array_N, Vec v_B, InsertMode
   }
   PetscCall(ISRestoreIndices(pcis->is_B_local, &idex));
   PetscCall(VecRestoreArray(v_B, &array_B));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -600,5 +600,5 @@ PetscErrorCode PCISApplyInvSchur(PC pc, Vec b, Vec x, Vec vec1_N, Vec vec2_N)
   /* Extracting the local interface vector out of the solution */
   PetscCall(VecScatterBegin(pcis->N_to_B, vec2_N, x, INSERT_VALUES, SCATTER_FORWARD));
   PetscCall(VecScatterEnd(pcis->N_to_B, vec2_N, x, INSERT_VALUES, SCATTER_FORWARD));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

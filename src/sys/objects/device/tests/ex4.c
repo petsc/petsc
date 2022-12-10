@@ -22,7 +22,7 @@ static PetscErrorCode DoFork(PetscDeviceContext parent, PetscInt n, PetscDeviceC
     PetscCall(PetscDeviceContextGetDeviceType((*sub)[i], &sub_dtype));
     PetscCall(AssertPetscDeviceTypesValidAndEqual(sub_dtype, dtype, "Child device type %s != parent device type %s"));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TestNestedPetscDeviceContextForkJoin(PetscDeviceContext parCtx, PetscDeviceContext *sub)
@@ -40,7 +40,7 @@ static PetscErrorCode TestNestedPetscDeviceContextForkJoin(PetscDeviceContext pa
   /* join on the grandparent */
   PetscCall(PetscDeviceContextJoin(parCtx, nsub - 2, PETSC_DEVICE_CONTEXT_JOIN_NO_SYNC, &subsub));
   PetscCall(PetscDeviceContextJoin(sub[1], nsub, PETSC_DEVICE_CONTEXT_JOIN_DESTROY, &subsub));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* test fork-join */
@@ -65,7 +65,7 @@ static PetscErrorCode TestPetscDeviceContextForkJoin(PetscDeviceContext dctx)
   PetscCall(PetscDeviceContextJoin(dctx, n - 1, PETSC_DEVICE_CONTEXT_JOIN_NO_SYNC, &sub));
   /* back to the ether from whence they came */
   PetscCall(PetscDeviceContextJoin(dctx, n + 1, PETSC_DEVICE_CONTEXT_JOIN_DESTROY, &sub));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char *argv[])

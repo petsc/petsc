@@ -45,7 +45,7 @@ PetscErrorCode SNESNGSSetTolerances(SNES snes, PetscReal abstol, PetscReal rtol,
     PetscCheck(maxit >= 0, PetscObjectComm((PetscObject)snes), PETSC_ERR_ARG_OUTOFRANGE, "Maximum number of iterations %" PetscInt_FMT " must be non-negative", maxit);
     gs->max_its = maxit;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -78,7 +78,7 @@ PetscErrorCode SNESNGSGetTolerances(SNES snes, PetscReal *atol, PetscReal *rtol,
   if (rtol) *rtol = gs->rtol;
   if (stol) *stol = gs->stol;
   if (maxit) *maxit = gs->max_its;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -103,7 +103,7 @@ PetscErrorCode SNESNGSSetSweeps(SNES snes, PetscInt sweeps)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
   gs->sweeps = sweeps;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -126,7 +126,7 @@ PetscErrorCode SNESNGSGetSweeps(SNES snes, PetscInt *sweeps)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
   *sweeps = gs->sweeps;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode SNESReset_NGS(SNES snes)
@@ -135,7 +135,7 @@ PetscErrorCode SNESReset_NGS(SNES snes)
 
   PetscFunctionBegin;
   PetscCall(ISColoringDestroy(&gs->coloring));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode SNESDestroy_NGS(SNES snes)
@@ -143,7 +143,7 @@ PetscErrorCode SNESDestroy_NGS(SNES snes)
   PetscFunctionBegin;
   PetscCall(SNESReset_NGS(snes));
   PetscCall(PetscFree(snes->data));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode SNESSetUp_NGS(SNES snes)
@@ -153,7 +153,7 @@ PetscErrorCode SNESSetUp_NGS(SNES snes)
   PetscFunctionBegin;
   PetscCall(SNESGetNGS(snes, &f, NULL));
   if (!f) PetscCall(SNESSetNGS(snes, SNESComputeNGSDefaultSecant, NULL));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode SNESSetFromOptions_NGS(SNES snes, PetscOptionItems *PetscOptionsObject)
@@ -183,7 +183,7 @@ PetscErrorCode SNESSetFromOptions_NGS(SNES snes, PetscOptionItems *PetscOptionsO
   PetscCall(PetscOptionsBool("-snes_ngs_secant_mat_coloring", "Use the graph coloring of the Jacobian for the secant GS", "", gs->secant_mat, &gs->secant_mat, &flg));
 
   PetscOptionsHeadEnd();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode SNESView_NGS(SNES snes, PetscViewer viewer)
@@ -198,7 +198,7 @@ PetscErrorCode SNESView_NGS(SNES snes, PetscViewer viewer)
     PetscCall(DMSNESGetNGS(snes->dm, &f, NULL));
     if (f == SNESComputeNGSDefaultSecant) PetscCall(PetscViewerASCIIPrintf(viewer, "  Use finite difference secant approximation with coloring with h = %g \n", (double)gs->h));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode SNESSolve_NGS(SNES snes)
@@ -243,7 +243,7 @@ PetscErrorCode SNESSolve_NGS(SNES snes)
 
     /* test convergence */
     PetscUseTypeMethod(snes, converged, 0, 0.0, 0.0, fnorm, &snes->reason, snes->cnvP);
-    if (snes->reason) PetscFunctionReturn(0);
+    if (snes->reason) PetscFunctionReturn(PETSC_SUCCESS);
   } else {
     PetscCall(PetscObjectSAWsGrantAccess((PetscObject)snes));
     PetscCall(SNESLogConvergenceHistory(snes, snes->norm, 0));
@@ -269,7 +269,7 @@ PetscErrorCode SNESSolve_NGS(SNES snes)
     }
     /* Test for convergence */
     if (normschedule == SNES_NORM_ALWAYS) PetscUseTypeMethod(snes, converged, snes->iter, 0.0, 0.0, fnorm, &snes->reason, snes->cnvP);
-    if (snes->reason) PetscFunctionReturn(0);
+    if (snes->reason) PetscFunctionReturn(PETSC_SUCCESS);
     /* Call general purpose update function */
     PetscTryTypeMethod(snes, update, snes->iter);
   }
@@ -279,7 +279,7 @@ PetscErrorCode SNESSolve_NGS(SNES snes)
       if (!snes->reason) snes->reason = SNES_DIVERGED_MAX_IT;
     }
   } else if (!snes->reason) snes->reason = SNES_CONVERGED_ITS; /* GS is meant to be used as a preconditioner */
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -348,5 +348,5 @@ PETSC_EXTERN PetscErrorCode SNESCreate_NGS(SNES snes)
   gs->h       = PETSC_SQRT_MACHINE_EPSILON;
 
   snes->data = (void *)gs;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

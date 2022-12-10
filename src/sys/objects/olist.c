@@ -45,11 +45,11 @@ PetscErrorCode PetscObjectListRemoveReference(PetscObjectList *fl, const char na
     if (match) { /* found it in the list */
       if (!nlist->skipdereference) PetscCall(PetscObjectDereference(nlist->obj));
       nlist->skipdereference = PETSC_TRUE;
-      PetscFunctionReturn(0);
+      PetscFunctionReturn(PETSC_SUCCESS);
     }
     nlist = nlist->next;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -88,12 +88,12 @@ PetscErrorCode PetscObjectListAdd(PetscObjectList *fl, const char name[], PetscO
         else *fl = NULL;
         if (!nlist->skipdereference) PetscCall(PetscObjectDereference(nlist->obj));
         PetscCall(PetscFree(nlist));
-        PetscFunctionReturn(0);
+        PetscFunctionReturn(PETSC_SUCCESS);
       }
       prev  = nlist;
       nlist = nlist->next;
     }
-    PetscFunctionReturn(0); /* did not find it to remove */
+    PetscFunctionReturn(PETSC_SUCCESS); /* did not find it to remove */
   }
   /* look for it already in list */
   nlist = *fl;
@@ -104,7 +104,7 @@ PetscErrorCode PetscObjectListAdd(PetscObjectList *fl, const char name[], PetscO
       if (!nlist->skipdereference) PetscCall(PetscObjectDereference(nlist->obj));
       nlist->skipdereference = PETSC_FALSE;
       nlist->obj             = obj;
-      PetscFunctionReturn(0);
+      PetscFunctionReturn(PETSC_SUCCESS);
     }
     nlist = nlist->next;
   }
@@ -122,7 +122,7 @@ PetscErrorCode PetscObjectListAdd(PetscObjectList *fl, const char name[], PetscO
     while (nlist->next) nlist = nlist->next;
     nlist->next = olist;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -149,7 +149,7 @@ PetscErrorCode PetscObjectListDestroy(PetscObjectList *ifl)
     fl = tmp;
   }
   *ifl = NULL;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -185,7 +185,7 @@ PetscErrorCode PetscObjectListFind(PetscObjectList fl, const char name[], PetscO
     }
     fl = fl->next;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -222,7 +222,7 @@ PetscErrorCode PetscObjectListReverseFind(PetscObjectList fl, PetscObject obj, c
     }
     fl = fl->next;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -246,5 +246,5 @@ PetscErrorCode PetscObjectListDuplicate(PetscObjectList fl, PetscObjectList *nl)
     PetscCall(PetscObjectListAdd(nl, fl->name, fl->obj));
     fl = fl->next;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -16,7 +16,7 @@ PetscErrorCode VecPlaceArray_MPI(Vec vin, const PetscScalar *a)
   v->unplacedarray = v->array; /* save previous array so reset can bring it back */
   v->array         = (PetscScalar *)a;
   if (v->localrep) PetscCall(VecPlaceArray(v->localrep, a));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode VecDuplicate_MPI(Vec win, Vec *v)
@@ -52,7 +52,7 @@ PetscErrorCode VecDuplicate_MPI(Vec win, Vec *v)
 
   (*v)->map->bs   = PetscAbs(win->map->bs);
   (*v)->bstash.bs = win->bstash.bs;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode VecSetOption_MPI(Vec V, VecOption op, PetscBool flag)
@@ -76,7 +76,7 @@ static PetscErrorCode VecSetOption_MPI(Vec V, VecOption op, PetscBool flag)
     break;
   }
 
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode VecResetArray_MPI(Vec vin)
@@ -87,7 +87,7 @@ PetscErrorCode VecResetArray_MPI(Vec vin)
   v->array         = v->unplacedarray;
   v->unplacedarray = NULL;
   if (v->localrep) PetscCall(VecResetArray(v->localrep));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode VecAssemblySend_MPI_Private(MPI_Comm comm, const PetscMPIInt tag[], PetscMPIInt rankid, PetscMPIInt rank, void *sdata, MPI_Request req[], void *ctx)
@@ -110,7 +110,7 @@ static PetscErrorCode VecAssemblySend_MPI_Private(MPI_Comm comm, const PetscMPII
     PetscCallMPI(MPI_Isend(x->sendptrs[rankid].intb, hdr->bcount, MPIU_INT, rank, tag[2], comm, &req[2]));
     PetscCallMPI(MPI_Isend(x->sendptrs[rankid].scalarb, hdr->bcount * bs, MPIU_SCALAR, rank, tag[3], comm, &req[3]));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode VecAssemblyRecv_MPI_Private(MPI_Comm comm, const PetscMPIInt tag[], PetscMPIInt rank, void *rdata, MPI_Request req[], void *ctx)
@@ -147,7 +147,7 @@ static PetscErrorCode VecAssemblyRecv_MPI_Private(MPI_Comm comm, const PetscMPII
     frame->scalarb  = NULL;
     frame->pendingb = 0;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode VecAssemblyBegin_MPI_BTS(Vec X)
@@ -157,7 +157,7 @@ static PetscErrorCode VecAssemblyBegin_MPI_BTS(Vec X)
   PetscInt i, j, jb, bs;
 
   PetscFunctionBegin;
-  if (X->stash.donotstash) PetscFunctionReturn(0);
+  if (X->stash.donotstash) PetscFunctionReturn(PETSC_SUCCESS);
 
   PetscCall(PetscObjectGetComm((PetscObject)X, &comm));
   PetscCall(VecGetBlockSize(X, &bs));
@@ -229,7 +229,7 @@ static PetscErrorCode VecAssemblyBegin_MPI_BTS(Vec X)
     PetscCall(VecStashGetInfo_Private(&X->bstash, &nstash, &reallocs));
     PetscCall(PetscInfo(X, "Block-Stash has %" PetscInt_FMT " entries, uses %" PetscInt_FMT " mallocs.\n", nstash, reallocs));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode VecAssemblyEnd_MPI_BTS(Vec X)
@@ -245,7 +245,7 @@ static PetscErrorCode VecAssemblyEnd_MPI_BTS(Vec X)
   if (X->stash.donotstash) {
     X->stash.insertmode  = NOT_SET_VALUES;
     X->bstash.insertmode = NOT_SET_VALUES;
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   PetscCheck(x->segrecvframe, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Missing segrecvframe! Probably you forgot to call VecAssemblyBegin first");
@@ -325,7 +325,7 @@ static PetscErrorCode VecAssemblyEnd_MPI_BTS(Vec X)
   X->bstash.insertmode = NOT_SET_VALUES;
   PetscCall(VecStashScatterEnd_Private(&X->stash));
   PetscCall(VecStashScatterEnd_Private(&X->bstash));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode VecAssemblyReset_MPI(Vec X)
@@ -343,7 +343,7 @@ PetscErrorCode VecAssemblyReset_MPI(Vec X)
   PetscCall(PetscSegBufferDestroy(&x->segrecvint));
   PetscCall(PetscSegBufferDestroy(&x->segrecvscalar));
   PetscCall(PetscSegBufferDestroy(&x->segrecvframe));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode VecSetFromOptions_MPI(Vec X, PetscOptionItems *PetscOptionsObject)
@@ -364,7 +364,7 @@ static PetscErrorCode VecSetFromOptions_MPI(Vec X, PetscOptionItems *PetscOption
   X->ops->assemblybegin = VecAssemblyBegin_MPI;
   X->ops->assemblyend   = VecAssemblyEnd_MPI;
 #endif
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static struct _VecOps DvOps = {PetscDesignatedInitializer(duplicate, VecDuplicate_MPI), /* 1 */
@@ -503,7 +503,7 @@ PetscErrorCode VecCreate_MPI_Private(Vec v, PetscBool alloc, PetscInt nghost, co
   PetscCall(PetscObjectComposeFunction((PetscObject)v, "PetscMatlabEngineGet_C", VecMatlabEngineGet_Default));
 #endif
   PetscCall(PetscObjectChangeTypeName((PetscObject)v, VECMPI));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -521,7 +521,7 @@ PetscErrorCode VecCreate_MPI(Vec vv)
 {
   PetscFunctionBegin;
   PetscCall(VecCreate_MPI_Private(vv, PETSC_TRUE, 0, NULL));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -546,7 +546,7 @@ PETSC_EXTERN PetscErrorCode VecCreate_Standard(Vec v)
   } else {
     PetscCall(VecSetType(v, VECMPI));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -590,7 +590,7 @@ PetscErrorCode VecCreateMPIWithArray(MPI_Comm comm, PetscInt bs, PetscInt n, Pet
   PetscCall(VecSetSizes(*vv, n, N));
   PetscCall(VecSetBlockSize(*vv, bs));
   PetscCall(VecCreate_MPI_Private(*vv, PETSC_FALSE, 0, array));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -665,7 +665,7 @@ PetscErrorCode VecCreateGhostWithArray(MPI_Comm comm, PetscInt n, PetscInt N, Pe
   PetscCall(ISLocalToGlobalMappingCreate(comm, 1, n + nghost, indices, PETSC_OWN_POINTER, &ltog));
   PetscCall(VecSetLocalToGlobalMapping(*vv, ltog));
   PetscCall(ISLocalToGlobalMappingDestroy(&ltog));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -701,7 +701,7 @@ PetscErrorCode VecCreateGhost(MPI_Comm comm, PetscInt n, PetscInt N, PetscInt ng
 {
   PetscFunctionBegin;
   PetscCall(VecCreateGhostWithArray(comm, n, N, nghost, ghosts, NULL, vv));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -781,7 +781,7 @@ PetscErrorCode VecMPISetGhost(Vec vv, PetscInt nghost, const PetscInt ghosts[])
     PetscCheck(vv->ops->create != VecCreate_MPI, PetscObjectComm((PetscObject)vv), PETSC_ERR_ARG_WRONGSTATE, "Must set local or global size before setting ghosting");
     PetscCheck(((PetscObject)vv)->type_name, PetscObjectComm((PetscObject)vv), PETSC_ERR_ARG_WRONGSTATE, "Must set type to VECMPI before ghosting");
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* ------------------------------------------------------------------------------------------*/
@@ -866,7 +866,7 @@ PetscErrorCode VecCreateGhostBlockWithArray(MPI_Comm comm, PetscInt bs, PetscInt
   PetscCall(ISLocalToGlobalMappingCreate(comm, bs, nb + nghost, indices, PETSC_OWN_POINTER, &ltog));
   PetscCall(VecSetLocalToGlobalMapping(*vv, ltog));
   PetscCall(ISLocalToGlobalMappingDestroy(&ltog));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -905,5 +905,5 @@ PetscErrorCode VecCreateGhostBlock(MPI_Comm comm, PetscInt bs, PetscInt n, Petsc
 {
   PetscFunctionBegin;
   PetscCall(VecCreateGhostBlockWithArray(comm, bs, n, N, nghost, ghosts, NULL, vv));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

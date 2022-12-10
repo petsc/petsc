@@ -197,7 +197,7 @@ PetscErrorCode FormJacobian_Grid(GridCtx *grid, Mat jac)
   PetscCall(ISLocalToGlobalMappingRestoreIndices(ltogm, &ltog));
   PetscCall(MatAssemblyBegin(jac, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(jac, MAT_FINAL_ASSEMBLY));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*TEST

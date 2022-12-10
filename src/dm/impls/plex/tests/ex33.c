@@ -72,7 +72,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscCall(PetscOptionsReal("-volume", "The analytical volume of the mesh", "ex33.c", options->volume, &options->volume, NULL));
   PetscCall(PetscOptionsReal("-tol", "The tolerance for the volume check", "ex33.c", options->tol, &options->tol, NULL));
   PetscOptionsEnd();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static void identity(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
@@ -156,7 +156,7 @@ static PetscErrorCode DMCreateCoordinateDisc(DM dm)
   PetscCall(PetscFECreateDefault(PETSC_COMM_SELF, dim, dE, simplex, "dm_coord_", -1, &fe));
   PetscCall(DMProjectCoordinates(dm, fe));
   PetscCall(PetscFEDestroy(&fe));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *ctx, DM *dm)
@@ -199,7 +199,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *ctx, DM *dm)
     SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "Unknown mesh transform %d", ctx->meshTransform);
   }
   PetscCall(DMViewFromOptions(*dm, NULL, "-dm_view"));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static void volume(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar vol[])
@@ -227,7 +227,7 @@ static PetscErrorCode CreateDiscretization(DM dm, AppCtx *ctx)
   PetscCall(DMCreateDS(dm));
   PetscCall(DMGetDS(dm, &ds));
   PetscCall(PetscDSSetObjective(ds, 0, volume));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode CheckVolume(DM dm, AppCtx *ctx)
@@ -245,7 +245,7 @@ static PetscErrorCode CheckVolume(DM dm, AppCtx *ctx)
   if (ctx->volume > 0.0 && PetscAbsReal(ctx->volume - vol) > tol) {
     SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Calculated volume %g != %g actual volume (error %g > %g tol)", (double)vol, (double)ctx->volume, (double)PetscAbsReal(ctx->volume - vol), (double)tol);
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)

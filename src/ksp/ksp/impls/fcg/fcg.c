@@ -32,7 +32,7 @@ static PetscErrorCode KSPAllocateVectors_FCG(KSP ksp, PetscInt nvecsneeded, Pets
     fcg->chunksizes[fcg->nchunks] = nnewvecs;
     ++fcg->nchunks;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode KSPSetUp_FCG(KSP ksp)
@@ -67,7 +67,7 @@ static PetscErrorCode KSPSetUp_FCG(KSP ksp)
     ksp->ops->computeextremesingularvalues = KSPComputeExtremeSingularValues_CG;
     ksp->ops->computeeigenvalues           = KSPComputeEigenvalues_CG;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode KSPSolve_FCG(KSP ksp)
@@ -138,7 +138,7 @@ static PetscErrorCode KSPSolve_FCG(KSP ksp)
   } else {
     PetscCall((*ksp->converged)(ksp, 0, dp, &ksp->reason, ksp->cnvP));
   }
-  if (ksp->reason) PetscFunctionReturn(0);
+  if (ksp->reason) PetscFunctionReturn(PETSC_SUCCESS);
 
   /* Apply PC if not already done for convergence check */
   if (ksp->normtype == KSP_NORM_UNPRECONDITIONED || ksp->normtype == KSP_NORM_NONE) { PetscCall(KSP_PCApply(ksp, R, Z)); /*   z <- Br         */ }
@@ -254,7 +254,7 @@ static PetscErrorCode KSPSolve_FCG(KSP ksp)
     ++i;
   } while (i < ksp->max_it);
   if (i >= ksp->max_it) ksp->reason = KSP_DIVERGED_ITS;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode KSPDestroy_FCG(KSP ksp)
@@ -265,7 +265,7 @@ static PetscErrorCode KSPDestroy_FCG(KSP ksp)
   PetscFunctionBegin;
 
   /* Destroy "standard" work vecs */
-  VecDestroyVecs(ksp->nwork, &ksp->work);
+  PetscCall(VecDestroyVecs(ksp->nwork, &ksp->work));
 
   /* Destroy P and C vectors and the arrays that manage pointers to them */
   if (fcg->nvecs) {
@@ -278,7 +278,7 @@ static PetscErrorCode KSPDestroy_FCG(KSP ksp)
   /* free space used for singular value calculations */
   if (ksp->calc_sings) PetscCall(PetscFree4(fcg->e, fcg->d, fcg->ee, fcg->dd));
   PetscCall(KSPDestroyDefault(ksp));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode KSPView_FCG(KSP ksp, PetscViewer viewer)
@@ -302,7 +302,7 @@ static PetscErrorCode KSPView_FCG(KSP ksp, PetscViewer viewer)
   } else if (isstring) {
     PetscCall(PetscViewerStringSPrintf(viewer, "m_max %" PetscInt_FMT " nprealloc %" PetscInt_FMT " %s", fcg->mmax, fcg->nprealloc, truncstr));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -334,7 +334,7 @@ PetscErrorCode KSPFCGSetMmax(KSP ksp, PetscInt mmax)
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
   PetscValidLogicalCollectiveInt(ksp, mmax, 2);
   fcg->mmax = mmax;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -363,7 +363,7 @@ PetscErrorCode KSPFCGGetMmax(KSP ksp, PetscInt *mmax)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
   *mmax = fcg->mmax;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -391,7 +391,7 @@ PetscErrorCode KSPFCGSetNprealloc(KSP ksp, PetscInt nprealloc)
   PetscValidLogicalCollectiveInt(ksp, nprealloc, 2);
   PetscCheck(nprealloc <= fcg->mmax + 1, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Cannot preallocate more than m_max+1 vectors");
   fcg->nprealloc = nprealloc;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -416,7 +416,7 @@ PetscErrorCode KSPFCGGetNprealloc(KSP ksp, PetscInt *nprealloc)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
   *nprealloc = fcg->nprealloc;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -447,7 +447,7 @@ PetscErrorCode KSPFCGSetTruncationType(KSP ksp, KSPFCDTruncationType truncstrat)
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
   PetscValidLogicalCollectiveEnum(ksp, truncstrat, 2);
   fcg->truncstrat = truncstrat;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -472,7 +472,7 @@ PetscErrorCode KSPFCGGetTruncationType(KSP ksp, KSPFCDTruncationType *truncstrat
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
   *truncstrat = fcg->truncstrat;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode KSPSetFromOptions_FCG(KSP ksp, PetscOptionItems *PetscOptionsObject)
@@ -489,7 +489,7 @@ static PetscErrorCode KSPSetFromOptions_FCG(KSP ksp, PetscOptionItems *PetscOpti
   if (flg) PetscCall(KSPFCGSetNprealloc(ksp, nprealloc));
   PetscCall(PetscOptionsEnum("-ksp_fcg_truncation_type", "Truncation approach for directions", "KSPFCGSetTruncationType", KSPFCDTruncationTypes, (PetscEnum)fcg->truncstrat, (PetscEnum *)&fcg->truncstrat, NULL));
   PetscOptionsHeadEnd();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -548,5 +548,5 @@ PETSC_EXTERN PetscErrorCode KSPCreate_FCG(KSP ksp)
   ksp->ops->setfromoptions = KSPSetFromOptions_FCG;
   ksp->ops->buildsolution  = KSPBuildSolutionDefault;
   ksp->ops->buildresidual  = KSPBuildResidualDefault;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

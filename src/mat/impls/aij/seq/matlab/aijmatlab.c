@@ -34,7 +34,7 @@ PETSC_EXTERN PetscErrorCode MatlabEnginePut_SeqAIJ(PetscObject obj, void *mengin
   PetscCheck(mat, PETSC_COMM_SELF, PETSC_ERR_LIB, "Cannot create MATLAB matrix");
   PetscCall(PetscObjectName(obj));
   engPutVariable((Engine *)mengine, obj->name, mat);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_EXTERN PetscErrorCode MatSeqAIJFromMatlab(mxArray *mmat, Mat mat)
@@ -82,7 +82,7 @@ PETSC_EXTERN PetscErrorCode MatSeqAIJFromMatlab(mxArray *mmat, Mat mat)
   mat->nonzerostate++; /* since the nonzero structure can change anytime force the Inode information to always be rebuilt */
   PetscCall(MatAssemblyBegin(mat, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(mat, MAT_FINAL_ASSEMBLY));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_EXTERN PetscErrorCode MatlabEngineGet_SeqAIJ(PetscObject obj, void *mengine)
@@ -93,7 +93,7 @@ PETSC_EXTERN PetscErrorCode MatlabEngineGet_SeqAIJ(PetscObject obj, void *mengin
   PetscFunctionBegin;
   mmat = engGetVariable((Engine *)mengine, obj->name);
   PetscCall(MatSeqAIJFromMatlab(mmat, mat));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatSolve_Matlab(Mat A, Vec b, Vec x)
@@ -113,7 +113,7 @@ PetscErrorCode MatSolve_Matlab(Mat A, Vec b, Vec x)
   PetscCall(PetscMatlabEngineEvaluate(PETSC_MATLAB_ENGINE_(PetscObjectComm((PetscObject)A)), "%s = 0;", _b));
   /* PetscCall(PetscMatlabEnginePrintOutput(PETSC_MATLAB_ENGINE_(PetscObjectComm((PetscObject)A)),stdout));  */
   PetscCall(PetscMatlabEngineGet(PETSC_MATLAB_ENGINE_(PetscObjectComm((PetscObject)A)), (PetscObject)x));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatLUFactorNumeric_Matlab(Mat F, Mat A, const MatFactorInfo *info)
@@ -153,7 +153,7 @@ PetscErrorCode MatLUFactorNumeric_Matlab(Mat F, Mat A, const MatFactorInfo *info
 
     F->ops->solve = MatSolve_Matlab;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatLUFactorSymbolic_Matlab(Mat F, Mat A, IS r, IS c, const MatFactorInfo *info)
@@ -162,14 +162,14 @@ PetscErrorCode MatLUFactorSymbolic_Matlab(Mat F, Mat A, IS r, IS c, const MatFac
   PetscCheck(A->cmap->N == A->rmap->N, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "matrix must be square");
   F->ops->lufactornumeric = MatLUFactorNumeric_Matlab;
   F->assembled            = PETSC_TRUE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatFactorGetSolverType_seqaij_matlab(Mat A, MatSolverType *type)
 {
   PetscFunctionBegin;
   *type = MATSOLVERMATLAB;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatDestroy_matlab(Mat A)
@@ -180,7 +180,7 @@ PetscErrorCode MatDestroy_matlab(Mat A)
   PetscCall(PetscObjectGetName((PetscObject)A, &_A));
   PetscCall(PetscMatlabEngineEvaluate(PETSC_MATLAB_ENGINE_(PetscObjectComm((PetscObject)A)), "delete %s l_%s u_%s;", _A, _A, _A));
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatFactorGetSolverType_C", NULL));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_matlab(Mat A, MatFactorType ftype, Mat *F)
@@ -203,14 +203,14 @@ PETSC_EXTERN PetscErrorCode MatGetFactor_seqaij_matlab(Mat A, MatFactorType ftyp
   (*F)->factortype = ftype;
   PetscCall(PetscFree((*F)->solvertype));
   PetscCall(PetscStrallocpy(MATSOLVERMATLAB, &(*F)->solvertype));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_EXTERN PetscErrorCode MatSolverTypeRegister_Matlab(void)
 {
   PetscFunctionBegin;
   PetscCall(MatSolverTypeRegister(MATSOLVERMATLAB, MATSEQAIJ, MAT_FACTOR_LU, MatGetFactor_seqaij_matlab));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* --------------------------------------------------------------------------------*/
@@ -219,7 +219,7 @@ PetscErrorCode MatView_Info_Matlab(Mat A, PetscViewer viewer)
 {
   PetscFunctionBegin;
   PetscCall(PetscViewerASCIIPrintf(viewer, "MATLAB run parameters:  -- not written yet!\n"));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatView_Matlab(Mat A, PetscViewer viewer)
@@ -235,7 +235,7 @@ PetscErrorCode MatView_Matlab(Mat A, PetscViewer viewer)
     PetscCall(PetscViewerGetFormat(viewer, &format));
     if (format == PETSC_VIEWER_ASCII_FACTOR_INFO) PetscCall(MatView_Info_Matlab(A, viewer));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC

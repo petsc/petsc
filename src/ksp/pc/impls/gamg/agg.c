@@ -34,7 +34,7 @@ PetscErrorCode PCGAMGSetNSmooths(PC pc, PetscInt n)
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscValidLogicalCollectiveInt(pc, n, 2);
   PetscTryMethod(pc, "PCGAMGSetNSmooths_C", (PC, PetscInt), (pc, n));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCGAMGSetNSmooths_AGG(PC pc, PetscInt n)
@@ -45,7 +45,7 @@ static PetscErrorCode PCGAMGSetNSmooths_AGG(PC pc, PetscInt n)
 
   PetscFunctionBegin;
   pc_gamg_agg->nsmooths = n;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -70,7 +70,7 @@ PetscErrorCode PCGAMGSetAggressiveLevels(PC pc, PetscInt n)
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscValidLogicalCollectiveInt(pc, n, 2);
   PetscTryMethod(pc, "PCGAMGSetAggressiveLevels_C", (PC, PetscInt), (pc, n));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCGAMGSetAggressiveLevels_AGG(PC pc, PetscInt n)
@@ -81,7 +81,7 @@ static PetscErrorCode PCGAMGSetAggressiveLevels_AGG(PC pc, PetscInt n)
 
   PetscFunctionBegin;
   pc_gamg_agg->aggressive_coarsening_levels = n;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCSetFromOptions_GAMG_AGG(PC pc, PetscOptionItems *PetscOptionsObject)
@@ -105,7 +105,7 @@ static PetscErrorCode PCSetFromOptions_GAMG_AGG(PC pc, PetscOptionItems *PetscOp
     }
   }
   PetscOptionsHeadEnd();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCDestroy_GAMG_AGG(PC pc)
@@ -118,7 +118,7 @@ static PetscErrorCode PCDestroy_GAMG_AGG(PC pc)
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCGAMGSetNSmooths_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCGAMGSetAggressiveLevels_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCSetCoordinates_C", NULL));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -196,7 +196,7 @@ static PetscErrorCode PCSetCoordinates_AGG(PC pc, PetscInt ndm, PetscInt a_nloc,
     }
   }
   pc_gamg->data_sz = arrsz;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -266,7 +266,7 @@ static PetscErrorCode PCSetData_AGG(PC pc, Mat a_A)
     PetscCall(MatGetBlockSize(a_A, &bs));
     pc_gamg->data_cell_rows = bs;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -406,7 +406,7 @@ static PetscErrorCode formProl0(PetscCoarsenData *agg_llists, PetscInt bs, Petsc
   PetscCall(MatAssemblyBegin(a_Prol, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(a_Prol, MAT_FINAL_ASSEMBLY));
   PetscCall(PCGAMGHashTableDestroy(&fgid_flid));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCView_GAMG_AGG(PC pc, PetscViewer viewer)
@@ -419,7 +419,7 @@ static PetscErrorCode PCView_GAMG_AGG(PC pc, PetscViewer viewer)
   PetscCall(PetscViewerASCIIPrintf(viewer, "      AGG specific options\n"));
   PetscCall(PetscViewerASCIIPrintf(viewer, "        Number of levels to square graph %d\n", (int)pc_gamg_agg->aggressive_coarsening_levels));
   PetscCall(PetscViewerASCIIPrintf(viewer, "        Number smoothing steps %d\n", (int)pc_gamg_agg->nsmooths));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCGAMGCreateGraph_AGG(PC pc, Mat Amat, Mat *a_Gmat)
@@ -444,7 +444,7 @@ static PetscErrorCode PCGAMGCreateGraph_AGG(PC pc, Mat Amat, Mat *a_Gmat)
 
   PetscCall(MatCreateGraph(Amat, PETSC_TRUE, (vfilter >= 0 || ishem) ? PETSC_TRUE : PETSC_FALSE, vfilter, a_Gmat));
   PetscCall(PetscLogEventEnd(petsc_gamg_setup_events[GAMG_GRAPH], 0, 0, 0, 0));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -538,7 +538,7 @@ static PetscErrorCode PCGAMGCoarsen_AGG(PC a_pc, Mat *a_Gmat1, PetscCoarsenData 
     }
   }
   PetscCall(PetscLogEventEnd(petsc_gamg_setup_events[GAMG_COARSEN], 0, 0, 0, 0));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -600,7 +600,7 @@ static PetscErrorCode PCGAMGProlongator_AGG(PC pc, Mat Amat, Mat Gmat, PetscCoar
     PetscCall(MatDestroy(&Prol));
     *a_P_out = NULL; /* out */
     PetscCall(PetscLogEventEnd(petsc_gamg_setup_events[GAMG_PROL], 0, 0, 0, 0));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
   PetscCall(PetscInfo(pc, "%s: New grid %" PetscInt_FMT " nodes\n", ((PetscObject)pc)->prefix, ii / col_bs));
   PetscCall(MatGetOwnershipRangeColumn(Prol, &myCrs0, &kk));
@@ -674,7 +674,7 @@ static PetscErrorCode PCGAMGProlongator_AGG(PC pc, Mat Amat, Mat Gmat, PetscCoar
   *a_P_out = Prol; /* out */
 
   PetscCall(PetscLogEventEnd(petsc_gamg_setup_events[GAMG_PROL], 0, 0, 0, 0));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -790,7 +790,7 @@ static PetscErrorCode PCGAMGOptProlongator_AGG(PC pc, Mat Amat, Mat *a_P)
   }
   PetscCall(PetscLogEventEnd(petsc_gamg_setup_events[GAMG_OPT], 0, 0, 0, 0));
   *a_P = Prol;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -828,5 +828,5 @@ PetscErrorCode PCCreateGAMG_AGG(PC pc)
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCGAMGSetNSmooths_C", PCGAMGSetNSmooths_AGG));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCGAMGSetAggressiveLevels_C", PCGAMGSetAggressiveLevels_AGG));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCSetCoordinates_C", PCSetCoordinates_AGG));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

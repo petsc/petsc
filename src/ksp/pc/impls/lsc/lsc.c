@@ -15,7 +15,7 @@ static PetscErrorCode PCLSCAllocate_Private(PC pc)
   Mat     A;
 
   PetscFunctionBegin;
-  if (lsc->allocated) PetscFunctionReturn(0);
+  if (lsc->allocated) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(KSPCreate(PetscObjectComm((PetscObject)pc), &lsc->kspL));
   PetscCall(KSPSetErrorIfNotConverged(lsc->kspL, pc->erroriffailure));
   PetscCall(PetscObjectIncrementTabLevel((PetscObject)lsc->kspL, (PetscObject)pc, 1));
@@ -27,7 +27,7 @@ static PetscErrorCode PCLSCAllocate_Private(PC pc)
   PetscCall(MatCreateVecs(pc->pmat, &lsc->x1, NULL));
   if (lsc->scalediag) PetscCall(VecDuplicate(lsc->x0, &lsc->scale));
   lsc->allocated = PETSC_TRUE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCSetUp_LSC(PC pc)
@@ -58,7 +58,7 @@ static PetscErrorCode PCSetUp_LSC(PC pc)
   }
   PetscCall(KSPSetOperators(lsc->kspL, L, Lp));
   PetscCall(KSPSetFromOptions(lsc->kspL));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCApply_LSC(PC pc, Vec x, Vec y)
@@ -77,7 +77,7 @@ static PetscErrorCode PCApply_LSC(PC pc, Vec x, Vec y)
   PetscCall(MatMult(C, lsc->y0, lsc->x1));
   PetscCall(KSPSolve(lsc->kspL, lsc->x1, y));
   PetscCall(KSPCheckSolve(lsc->kspL, pc, y));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCReset_LSC(PC pc)
@@ -91,7 +91,7 @@ static PetscErrorCode PCReset_LSC(PC pc)
   PetscCall(VecDestroy(&lsc->scale));
   PetscCall(KSPDestroy(&lsc->kspL));
   PetscCall(MatDestroy(&lsc->L));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCDestroy_LSC(PC pc)
@@ -99,7 +99,7 @@ static PetscErrorCode PCDestroy_LSC(PC pc)
   PetscFunctionBegin;
   PetscCall(PCReset_LSC(pc));
   PetscCall(PetscFree(pc->data));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCSetFromOptions_LSC(PC pc, PetscOptionItems *PetscOptionsObject)
@@ -112,7 +112,7 @@ static PetscErrorCode PCSetFromOptions_LSC(PC pc, PetscOptionItems *PetscOptions
     PetscCall(PetscOptionsBool("-pc_lsc_scale_diag", "Use diagonal of velocity block (A) for scaling", "None", lsc->scalediag, &lsc->scalediag, NULL));
   }
   PetscOptionsHeadEnd();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCView_LSC(PC pc, PetscViewer viewer)
@@ -131,7 +131,7 @@ static PetscErrorCode PCView_LSC(PC pc, PetscViewer viewer)
     }
     PetscCall(PetscViewerASCIIPopTab(viewer));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -213,5 +213,5 @@ PETSC_EXTERN PetscErrorCode PCCreate_LSC(PC pc)
   pc->ops->setfromoptions  = PCSetFromOptions_LSC;
   pc->ops->view            = PCView_LSC;
   pc->ops->applyrichardson = NULL;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

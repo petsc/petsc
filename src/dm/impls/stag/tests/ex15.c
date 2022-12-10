@@ -234,7 +234,7 @@ PetscErrorCode CreateSystem1d(DM dm, Mat *A, Vec *b)
   PetscCall(MatAssemblyEnd(*A, MAT_FINAL_ASSEMBLY));
   PetscCall(VecAssemblyBegin(*b));
   PetscCall(VecAssemblyEnd(*b));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode CreateSystem2d(DM dm, Mat *A, Vec *b)
@@ -607,7 +607,7 @@ PetscErrorCode CreateSystem2d(DM dm, Mat *A, Vec *b)
   PetscCall(VecAssemblyBegin(*b));
   PetscCall(MatAssemblyEnd(*A, MAT_FINAL_ASSEMBLY));
   PetscCall(VecAssemblyEnd(*b));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode CreateSystem(DM dm, Mat *A, Vec *b)
@@ -621,7 +621,7 @@ PetscErrorCode CreateSystem(DM dm, Mat *A, Vec *b)
   } else if (dim == 2) {
     PetscCall(CreateSystem2d(dm, A, b));
   } else SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Unsupported dimension %" PetscInt_FMT, dim);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*TEST

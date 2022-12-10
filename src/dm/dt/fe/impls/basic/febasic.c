@@ -7,7 +7,7 @@ static PetscErrorCode PetscFEDestroy_Basic(PetscFE fem)
 
   PetscFunctionBegin;
   PetscCall(PetscFree(b));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscFEView_Basic_Ascii(PetscFE fe, PetscViewer v)
@@ -29,7 +29,7 @@ static PetscErrorCode PetscFEView_Basic_Ascii(PetscFE fe, PetscViewer v)
   if (dual) PetscCall(PetscDualSpaceView(dual, v));
   if (quad) PetscCall(PetscQuadratureView(quad, v));
   PetscCall(PetscViewerASCIIPopTab(v));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscFEView_Basic(PetscFE fe, PetscViewer v)
@@ -39,7 +39,7 @@ static PetscErrorCode PetscFEView_Basic(PetscFE fe, PetscViewer v)
   PetscFunctionBegin;
   PetscCall(PetscObjectTypeCompare((PetscObject)v, PETSCVIEWERASCII, &iascii));
   if (iascii) PetscCall(PetscFEView_Basic_Ascii(fe, v));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Construct the change of basis from prime basis to nodal basis */
@@ -81,14 +81,14 @@ PETSC_INTERN PetscErrorCode PetscFESetUp_Basic(PetscFE fem)
   PetscCallBLAS("LAPACKgetri", LAPACKREALgetri_(&n, fem->invV, &n, pivots, work, &n, &info));
   PetscCheck(!info, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error returned from LAPACKgetri %" PetscInt_FMT, (PetscInt)info);
   PetscCall(PetscFree2(pivots, work));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PetscFEGetDimension_Basic(PetscFE fem, PetscInt *dim)
 {
   PetscFunctionBegin;
   PetscCall(PetscDualSpaceGetDimension(fem->dualSpace, dim));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Tensor contraction on the middle index,
@@ -115,7 +115,7 @@ static PetscErrorCode TensorContract_Private(PetscInt m, PetscInt n, PetscInt p,
     PetscCallBLAS("BLASgemm", BLASREALgemm_("N", "T", &p_, &n_, &k_, &one, A + i * k * p, &lda, B, &ldb, &zero, C + i * n * p, &ldc));
   }
   PetscCall(PetscLogFlops(2. * m * n * p * k));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_INTERN PetscErrorCode PetscFECreateTabulation_Basic(PetscFE fem, PetscInt npoints, const PetscReal points[], PetscInt K, PetscTabulation T)
@@ -155,7 +155,7 @@ PETSC_INTERN PetscErrorCode PetscFECreateTabulation_Basic(PetscFE fem, PetscInt 
   if (K >= 0) PetscCall(DMRestoreWorkArray(dm, npoints * pdim * Nc, MPIU_REAL, &tmpB));
   if (K >= 1) PetscCall(DMRestoreWorkArray(dm, npoints * pdim * Nc * dim, MPIU_REAL, &tmpD));
   if (K >= 2) PetscCall(DMRestoreWorkArray(dm, npoints * pdim * Nc * dim * dim, MPIU_REAL, &tmpH));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscFEIntegrate_Basic(PetscDS ds, PetscInt field, PetscInt Ne, PetscFEGeom *cgeom, const PetscScalar coefficients[], PetscDS dsAux, const PetscScalar coefficientsAux[], PetscScalar integral[])
@@ -176,7 +176,7 @@ static PetscErrorCode PetscFEIntegrate_Basic(PetscDS ds, PetscInt field, PetscIn
 
   PetscFunctionBegin;
   PetscCall(PetscDSGetObjective(ds, field, &obj_func));
-  if (!obj_func) PetscFunctionReturn(0);
+  if (!obj_func) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(PetscDSGetDiscretization(ds, field, (PetscObject *)&fe));
   PetscCall(PetscFEGetSpatialDimension(fe, &dim));
   PetscCall(PetscFEGetQuadrature(fe, &quad));
@@ -244,7 +244,7 @@ static PetscErrorCode PetscFEIntegrate_Basic(PetscDS ds, PetscInt field, PetscIn
     cOffset += totDim;
     cOffsetAux += totDimAux;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscFEIntegrateBd_Basic(PetscDS ds, PetscInt field, PetscBdPointFunc obj_func, PetscInt Ne, PetscFEGeom *fgeom, const PetscScalar coefficients[], PetscDS dsAux, const PetscScalar coefficientsAux[], PetscScalar integral[])
@@ -263,7 +263,7 @@ static PetscErrorCode PetscFEIntegrateBd_Basic(PetscDS ds, PetscInt field, Petsc
   PetscInt           dim, dimAux, numConstants, Nf, NfAux = 0, totDim, totDimAux = 0, cOffset = 0, cOffsetAux = 0, e;
 
   PetscFunctionBegin;
-  if (!obj_func) PetscFunctionReturn(0);
+  if (!obj_func) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(PetscDSGetDiscretization(ds, field, (PetscObject *)&fe));
   PetscCall(PetscFEGetSpatialDimension(fe, &dim));
   PetscCall(PetscFEGetFaceQuadrature(fe, &quad));
@@ -350,7 +350,7 @@ static PetscErrorCode PetscFEIntegrateBd_Basic(PetscDS ds, PetscInt field, Petsc
     cOffset += totDim;
     cOffsetAux += totDimAux;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PetscFEIntegrateResidual_Basic(PetscDS ds, PetscFormKey key, PetscInt Ne, PetscFEGeom *cgeom, const PetscScalar coefficients[], const PetscScalar coefficients_t[], PetscDS dsAux, const PetscScalar coefficientsAux[], PetscReal t, PetscScalar elemVec[])
@@ -382,7 +382,7 @@ PetscErrorCode PetscFEIntegrateResidual_Basic(PetscDS ds, PetscFormKey key, Pets
   PetscCall(PetscDSGetFieldOffset(ds, field, &fOffset));
   PetscCall(PetscDSGetWeakForm(ds, &wf));
   PetscCall(PetscWeakFormGetResidual(wf, key.label, key.value, key.field, key.part, &n0, &f0_func, &n1, &f1_func));
-  if (!n0 && !n1) PetscFunctionReturn(0);
+  if (!n0 && !n1) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(PetscDSGetEvaluationArrays(ds, &u, coefficients_t ? &u_t : NULL, &u_x));
   PetscCall(PetscDSGetWorkspace(ds, &x, &basisReal, &basisDerReal, NULL, NULL));
   PetscCall(PetscDSGetWeakFormArrays(ds, &f0, &f1, NULL, NULL, NULL, NULL));
@@ -442,7 +442,7 @@ PetscErrorCode PetscFEIntegrateResidual_Basic(PetscDS ds, PetscFormKey key, Pets
     cOffset += totDim;
     cOffsetAux += totDimAux;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PetscFEIntegrateBdResidual_Basic(PetscDS ds, PetscWeakForm wf, PetscFormKey key, PetscInt Ne, PetscFEGeom *fgeom, const PetscScalar coefficients[], const PetscScalar coefficients_t[], PetscDS dsAux, const PetscScalar coefficientsAux[], PetscReal t, PetscScalar elemVec[])
@@ -473,7 +473,7 @@ PetscErrorCode PetscFEIntegrateBdResidual_Basic(PetscDS ds, PetscWeakForm wf, Pe
   PetscCall(PetscDSGetComponentDerivativeOffsets(ds, &uOff_x));
   PetscCall(PetscDSGetFieldOffset(ds, field, &fOffset));
   PetscCall(PetscWeakFormGetBdResidual(wf, key.label, key.value, key.field, key.part, &n0, &f0_func, &n1, &f1_func));
-  if (!n0 && !n1) PetscFunctionReturn(0);
+  if (!n0 && !n1) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(PetscDSGetEvaluationArrays(ds, &u, coefficients_t ? &u_t : NULL, &u_x));
   PetscCall(PetscDSGetWorkspace(ds, &x, &basisReal, &basisDerReal, NULL, NULL));
   PetscCall(PetscDSGetWeakFormArrays(ds, &f0, &f1, NULL, NULL, NULL, NULL));
@@ -543,7 +543,7 @@ PetscErrorCode PetscFEIntegrateBdResidual_Basic(PetscDS ds, PetscWeakForm wf, Pe
     cOffset += totDim;
     cOffsetAux += totDimAux;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -586,7 +586,7 @@ static PetscErrorCode PetscFEIntegrateHybridResidual_Basic(PetscDS ds, PetscForm
   PetscCall(PetscDSGetFieldOffsetCohesive(ds, field, &fOffset));
   PetscCall(PetscDSGetWeakForm(ds, &wf));
   PetscCall(PetscWeakFormGetBdResidual(wf, key.label, key.value, key.field, key.part, &n0, &f0_func, &n1, &f1_func));
-  if (!n0 && !n1) PetscFunctionReturn(0);
+  if (!n0 && !n1) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(PetscDSGetEvaluationArrays(ds, &u, coefficients_t ? &u_t : NULL, &u_x));
   PetscCall(PetscDSGetWorkspace(ds, &x, &basisReal, &basisDerReal, NULL, NULL));
   PetscCall(PetscDSGetWeakFormArrays(ds, &f0, &f1, NULL, NULL, NULL, NULL));
@@ -642,14 +642,14 @@ static PetscErrorCode PetscFEIntegrateHybridResidual_Basic(PetscDS ds, PetscForm
         for (d = 0; d < dE; ++d) f1[(q * NcS + c) * dE + d] *= w;
     }
     if (isCohesiveField) {
-      PetscFEUpdateElementVec_Internal(fe, Tf[field], 0, basisReal, basisDerReal, e, fgeom, f0, f1, &elemVec[cOffset + fOffset]);
+      PetscCall(PetscFEUpdateElementVec_Internal(fe, Tf[field], 0, basisReal, basisDerReal, e, fgeom, f0, f1, &elemVec[cOffset + fOffset]));
     } else {
-      PetscFEUpdateElementVec_Hybrid_Internal(fe, Tf[field], 0, s, basisReal, basisDerReal, fgeom, f0, f1, &elemVec[cOffset + fOffset]);
+      PetscCall(PetscFEUpdateElementVec_Hybrid_Internal(fe, Tf[field], 0, s, basisReal, basisDerReal, fgeom, f0, f1, &elemVec[cOffset + fOffset]));
     }
     cOffset += totDim;
     cOffsetAux += totDimAux;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PetscFEIntegrateJacobian_Basic(PetscDS ds, PetscFEJacobianType jtype, PetscFormKey key, PetscInt Ne, PetscFEGeom *cgeom, const PetscScalar coefficients[], const PetscScalar coefficients_t[], PetscDS dsAux, const PetscScalar coefficientsAux[], PetscReal t, PetscReal u_tshift, PetscScalar elemMat[])
@@ -700,7 +700,7 @@ PetscErrorCode PetscFEIntegrateJacobian_Basic(PetscDS ds, PetscFEJacobianType jt
     PetscCall(PetscWeakFormGetJacobian(wf, key.label, key.value, fieldI, fieldJ, key.part, &n0, &g0_func, &n1, &g1_func, &n2, &g2_func, &n3, &g3_func));
     break;
   }
-  if (!n0 && !n1 && !n2 && !n3) PetscFunctionReturn(0);
+  if (!n0 && !n1 && !n2 && !n3) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(PetscDSGetEvaluationArrays(ds, &u, coefficients_t ? &u_t : NULL, &u_x));
   PetscCall(PetscDSGetWorkspace(ds, &x, &basisReal, &basisDerReal, &testReal, &testDerReal));
   PetscCall(PetscDSGetWeakFormArrays(ds, NULL, NULL, &g0, &g1, &g2, &g3));
@@ -801,7 +801,7 @@ PetscErrorCode PetscFEIntegrateJacobian_Basic(PetscDS ds, PetscFEJacobianType jt
     cOffsetAux += totDimAux;
     eOffset += PetscSqr(totDim);
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscFEIntegrateBdJacobian_Basic(PetscDS ds, PetscWeakForm wf, PetscFormKey key, PetscInt Ne, PetscFEGeom *fgeom, const PetscScalar coefficients[], const PetscScalar coefficients_t[], PetscDS dsAux, const PetscScalar coefficientsAux[], PetscReal t, PetscReal u_tshift, PetscScalar elemMat[])
@@ -841,7 +841,7 @@ static PetscErrorCode PetscFEIntegrateBdJacobian_Basic(PetscDS ds, PetscWeakForm
   PetscCall(PetscDSGetFieldOffset(ds, fieldI, &offsetI));
   PetscCall(PetscDSGetFieldOffset(ds, fieldJ, &offsetJ));
   PetscCall(PetscWeakFormGetBdJacobian(wf, key.label, key.value, fieldI, fieldJ, key.part, &n0, &g0_func, &n1, &g1_func, &n2, &g2_func, &n3, &g3_func));
-  if (!n0 && !n1 && !n2 && !n3) PetscFunctionReturn(0);
+  if (!n0 && !n1 && !n2 && !n3) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(PetscDSGetEvaluationArrays(ds, &u, coefficients_t ? &u_t : NULL, &u_x));
   PetscCall(PetscDSGetWorkspace(ds, &x, &basisReal, &basisDerReal, &testReal, &testDerReal));
   PetscCall(PetscDSGetWeakFormArrays(ds, NULL, NULL, &g0, &g1, &g2, &g3));
@@ -954,7 +954,7 @@ static PetscErrorCode PetscFEIntegrateBdJacobian_Basic(PetscDS ds, PetscWeakForm
     cOffsetAux += totDimAux;
     eOffset += PetscSqr(totDim);
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PetscFEIntegrateHybridJacobian_Basic(PetscDS ds, PetscFEJacobianType jtype, PetscFormKey key, PetscInt s, PetscInt Ne, PetscFEGeom *fgeom, const PetscScalar coefficients[], const PetscScalar coefficients_t[], PetscDS dsAux, const PetscScalar coefficientsAux[], PetscReal t, PetscReal u_tshift, PetscScalar elemMat[])
@@ -1004,7 +1004,7 @@ PetscErrorCode PetscFEIntegrateHybridJacobian_Basic(PetscDS ds, PetscFEJacobianT
   case PETSCFE_JACOBIAN_DYN:
     SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "No boundary hybrid Jacobians :)");
   }
-  if (!n0 && !n1 && !n2 && !n3) PetscFunctionReturn(0);
+  if (!n0 && !n1 && !n2 && !n3) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(PetscDSGetEvaluationArrays(ds, &u, coefficients_t ? &u_t : NULL, &u_x));
   PetscCall(PetscDSGetWorkspace(ds, &x, &basisReal, &basisDerReal, &testReal, &testDerReal));
   PetscCall(PetscDSGetWeakFormArrays(ds, NULL, NULL, &g0, &g1, &g2, &g3));
@@ -1129,7 +1129,7 @@ PetscErrorCode PetscFEIntegrateHybridJacobian_Basic(PetscDS ds, PetscFEJacobianT
     cOffsetAux += totDimAux;
     eOffset += PetscSqr(totDim);
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscFEInitialize_Basic(PetscFE fem)
@@ -1150,7 +1150,7 @@ static PetscErrorCode PetscFEInitialize_Basic(PetscFE fem)
   fem->ops->integratejacobian       = PetscFEIntegrateJacobian_Basic;
   fem->ops->integratebdjacobian     = PetscFEIntegrateBdJacobian_Basic;
   fem->ops->integratehybridjacobian = PetscFEIntegrateHybridJacobian_Basic;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -1171,5 +1171,5 @@ PETSC_EXTERN PetscErrorCode PetscFECreate_Basic(PetscFE fem)
   fem->data = b;
 
   PetscCall(PetscFEInitialize_Basic(fem));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

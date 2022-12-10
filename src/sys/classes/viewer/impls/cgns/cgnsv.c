@@ -12,7 +12,7 @@ static PetscErrorCode PetscViewerSetFromOptions_CGNS(PetscViewer v, PetscOptionI
   PetscOptionsHeadBegin(PetscOptionsObject, "CGNS Viewer Options");
   PetscOptionsInt("-viewer_cgns_batch_size", "Max number of steps to store in single file when using a template cgns:name-%d.cgns", "", cgv->batch_size, &cgv->batch_size, NULL);
   PetscOptionsHeadEnd();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscViewerView_CGNS(PetscViewer v, PetscViewer viewer)
@@ -21,7 +21,7 @@ static PetscErrorCode PetscViewerView_CGNS(PetscViewer v, PetscViewer viewer)
 
   PetscFunctionBegin;
   if (cgv->filename) PetscCall(PetscViewerASCIIPrintf(viewer, "Filename: %s\n", cgv->filename));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscViewerFileClose_CGNS(PetscViewer viewer)
@@ -65,7 +65,7 @@ static PetscErrorCode PetscViewerFileClose_CGNS(PetscViewer viewer)
   cgv->file_num = 0;
   PetscCall(PetscFree(cgv->node_l2g));
   PetscCall(PetscFree(cgv->nodal_field));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PetscViewerCGNSFileOpen_Internal(PetscViewer viewer, PetscInt sequence_number)
@@ -97,7 +97,7 @@ PetscErrorCode PetscViewerCGNSFileOpen_Internal(PetscViewer viewer, PetscInt seq
   default:
     SETERRQ(PetscObjectComm((PetscObject)viewer), PETSC_ERR_SUP, "Unsupported file mode %s", PetscFileModes[cgv->btype]);
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PetscViewerCGNSCheckBatch_Internal(PetscViewer viewer)
@@ -106,10 +106,10 @@ PetscErrorCode PetscViewerCGNSCheckBatch_Internal(PetscViewer viewer)
   size_t            num_steps;
 
   PetscFunctionBegin;
-  if (!cgv->filename_template) PetscFunctionReturn(0); // Batches are closed when viewer is destroyed
+  if (!cgv->filename_template) PetscFunctionReturn(PETSC_SUCCESS); // Batches are closed when viewer is destroyed
   PetscCall(PetscSegBufferGetSize(cgv->output_times, &num_steps));
   if (num_steps >= cgv->batch_size) PetscCall(PetscViewerFileClose_CGNS(viewer));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscViewerDestroy_CGNS(PetscViewer viewer)
@@ -123,7 +123,7 @@ static PetscErrorCode PetscViewerDestroy_CGNS(PetscViewer viewer)
   PetscCall(PetscObjectComposeFunction((PetscObject)viewer, "PetscViewerFileGetName_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)viewer, "PetscViewerFileSetMode_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)viewer, "PetscViewerFileGetMode_C", NULL));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscViewerFileSetMode_CGNS(PetscViewer viewer, PetscFileMode type)
@@ -132,7 +132,7 @@ static PetscErrorCode PetscViewerFileSetMode_CGNS(PetscViewer viewer, PetscFileM
 
   PetscFunctionBegin;
   cgv->btype = type;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscViewerFileGetMode_CGNS(PetscViewer viewer, PetscFileMode *type)
@@ -141,7 +141,7 @@ static PetscErrorCode PetscViewerFileGetMode_CGNS(PetscViewer viewer, PetscFileM
 
   PetscFunctionBegin;
   *type = cgv->btype;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscViewerFileSetName_CGNS(PetscViewer viewer, const char *filename)
@@ -161,7 +161,7 @@ static PetscErrorCode PetscViewerFileSetName_CGNS(PetscViewer viewer, const char
     PetscCall(PetscStrallocpy(filename, &cgv->filename));
     PetscCall(PetscViewerCGNSFileOpen_Internal(viewer, -1));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscViewerFileGetName_CGNS(PetscViewer viewer, const char **filename)
@@ -170,7 +170,7 @@ static PetscErrorCode PetscViewerFileGetName_CGNS(PetscViewer viewer, const char
 
   PetscFunctionBegin;
   *filename = cgv->filename;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -209,5 +209,5 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_CGNS(PetscViewer v)
   PetscCall(PetscObjectComposeFunction((PetscObject)v, "PetscViewerFileGetName_C", PetscViewerFileGetName_CGNS));
   PetscCall(PetscObjectComposeFunction((PetscObject)v, "PetscViewerFileSetMode_C", PetscViewerFileSetMode_CGNS));
   PetscCall(PetscObjectComposeFunction((PetscObject)v, "PetscViewerFileGetMode_C", PetscViewerFileGetMode_CGNS));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -309,7 +309,7 @@ static inline PetscErrorCode PetscLayoutFindOwner(PetscLayout map, PetscInt idx,
     else lo = t;
   }
   *owner = lo;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -350,7 +350,7 @@ static inline PetscErrorCode PetscLayoutFindOwnerIndex(PetscLayout map, PetscInt
   }
   if (owner) *owner = lo;
   if (lidx) *lidx = idx - map->range[lo];
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_EXTERN PetscErrorCode PetscLayoutCreate(MPI_Comm, PetscLayout *);

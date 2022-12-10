@@ -39,7 +39,7 @@ static inline PetscErrorCode PetscHYPREScalarCast(PetscScalar a, HYPRE_Complex *
 #else
   *b = a;
 #endif
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 #endif
 

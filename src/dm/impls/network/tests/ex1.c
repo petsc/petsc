@@ -36,7 +36,7 @@ PetscErrorCode CreateStarGraphEdgeList(PetscInt k, PetscBool directin, PetscInt 
       (*edgelist)[2 * i + 1] = i + 1;
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -86,7 +86,7 @@ PetscErrorCode CreateSimpleStarGraph(MPI_Comm comm, PetscInt numdofvert, PetscIn
   PetscCall(PetscFree2(compedge, compvert));
   PetscCall(DMNetworkDistribute(&dm, 0));
   *newdm = dm;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)

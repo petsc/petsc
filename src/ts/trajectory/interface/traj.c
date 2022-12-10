@@ -27,7 +27,7 @@ PetscErrorCode TSTrajectoryRegister(const char sname[], PetscErrorCode (*functio
 {
   PetscFunctionBegin;
   PetscCall(PetscFunctionListAdd(&TSTrajectoryList, sname, function));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -52,7 +52,7 @@ PetscErrorCode TSTrajectoryRegister(const char sname[], PetscErrorCode (*functio
 PetscErrorCode TSTrajectorySet(TSTrajectory tj, TS ts, PetscInt stepnum, PetscReal time, Vec X)
 {
   PetscFunctionBegin;
-  if (!tj) PetscFunctionReturn(0);
+  if (!tj) PetscFunctionReturn(PETSC_SUCCESS);
   PetscValidHeaderSpecific(tj, TSTRAJECTORY_CLASSID, 1);
   if (ts) PetscValidHeaderSpecific(ts, TS_CLASSID, 2);
   PetscValidLogicalCollectiveInt(tj, stepnum, 3);
@@ -65,7 +65,7 @@ PetscErrorCode TSTrajectorySet(TSTrajectory tj, TS ts, PetscInt stepnum, PetscRe
   PetscCall(PetscLogEventEnd(TSTrajectory_Set, tj, ts, 0, 0));
   if (tj->usehistory) PetscCall(TSHistoryUpdate(tj->tsh, stepnum, time));
   if (tj->lag.caching) tj->lag.Udotcached.time = PETSC_MIN_REAL;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -89,7 +89,7 @@ PetscErrorCode TSTrajectoryGetNumSteps(TSTrajectory tj, PetscInt *steps)
   PetscValidHeaderSpecific(tj, TSTRAJECTORY_CLASSID, 1);
   PetscValidIntPointer(steps, 2);
   PetscCall(TSHistoryGetNumSteps(tj->tsh, steps));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -129,7 +129,7 @@ PetscErrorCode TSTrajectoryGet(TSTrajectory tj, TS ts, PetscInt stepnum, PetscRe
   PetscCall(PetscLogEventBegin(TSTrajectory_Get, tj, ts, 0, 0));
   PetscUseTypeMethod(tj, get, ts, stepnum, time);
   PetscCall(PetscLogEventEnd(TSTrajectory_Get, tj, ts, 0, 0));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -167,7 +167,7 @@ PetscErrorCode TSTrajectoryGetVecs(TSTrajectory tj, TS ts, PetscInt stepnum, Pet
   PetscValidRealPointer(time, 4);
   if (U) PetscValidHeaderSpecific(U, VEC_CLASSID, 5);
   if (Udot) PetscValidHeaderSpecific(Udot, VEC_CLASSID, 6);
-  if (!U && !Udot) PetscFunctionReturn(0);
+  if (!U && !Udot) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCheck(tj->setupcalled, PetscObjectComm((PetscObject)tj), PETSC_ERR_ORDER, "TSTrajectorySetUp should be called first");
   PetscCall(PetscLogEventBegin(TSTrajectory_GetVecs, tj, ts, 0, 0));
   if (tj->monitor) {
@@ -215,7 +215,7 @@ PetscErrorCode TSTrajectoryGetVecs(TSTrajectory tj, TS ts, PetscInt stepnum, Pet
   }
   if (!U && !Udot) {
     PetscCall(PetscLogEventEnd(TSTrajectory_GetVecs, tj, ts, 0, 0));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   if (stepnum == PETSC_DECIDE || Udot) { /* reverse search for requested time in TSHistory */
@@ -251,7 +251,7 @@ PetscErrorCode TSTrajectoryGetVecs(TSTrajectory tj, TS ts, PetscInt stepnum, Pet
     tj->lag.Ucached.step = stepnum;
   }
   PetscCall(PetscLogEventEnd(TSTrajectory_GetVecs, tj, ts, 0, 0));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -273,7 +273,7 @@ PetscErrorCode TSTrajectoryViewFromOptions(TSTrajectory A, PetscObject obj, cons
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, TSTRAJECTORY_CLASSID, 1);
   PetscCall(PetscObjectViewFromOptions((PetscObject)A, obj, name));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -323,7 +323,7 @@ PetscErrorCode TSTrajectoryView(TSTrajectory tj, PetscViewer viewer)
     PetscTryTypeMethod(tj, view, viewer);
     PetscCall(PetscViewerASCIIPopTab(viewer));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -349,7 +349,7 @@ PetscErrorCode TSTrajectorySetVariableNames(TSTrajectory ctx, const char *const 
   PetscValidPointer(names, 2);
   PetscCall(PetscStrArrayDestroy(&ctx->names));
   PetscCall(PetscStrArrayallocpy(names, &ctx->names));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -374,7 +374,7 @@ PetscErrorCode TSTrajectorySetTransform(TSTrajectory tj, PetscErrorCode (*transf
   tj->transform        = transform;
   tj->transformdestroy = destroy;
   tj->transformctx     = tctx;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -430,7 +430,7 @@ PetscErrorCode TSTrajectoryCreate(MPI_Comm comm, TSTrajectory *tj)
   t->usehistory           = PETSC_TRUE;
   *tj                     = t;
   PetscCall(TSTrajectorySetFiletemplate(t, "TS-%06" PetscInt_FMT ".bin"));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -461,7 +461,7 @@ PetscErrorCode TSTrajectorySetType(TSTrajectory tj, TS ts, TSTrajectoryType type
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tj, TSTRAJECTORY_CLASSID, 1);
   PetscCall(PetscObjectTypeCompare((PetscObject)tj, type, &match));
-  if (match) PetscFunctionReturn(0);
+  if (match) PetscFunctionReturn(PETSC_SUCCESS);
 
   PetscCall(PetscFunctionListFind(TSTrajectoryList, type, &r));
   PetscCheck(r, PETSC_COMM_SELF, PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown TSTrajectory type: %s", type);
@@ -474,7 +474,7 @@ PetscErrorCode TSTrajectorySetType(TSTrajectory tj, TS ts, TSTrajectoryType type
 
   PetscCall(PetscObjectChangeTypeName((PetscObject)tj, type));
   PetscCall((*r)(tj, ts));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -498,7 +498,7 @@ PetscErrorCode TSTrajectoryGetType(TSTrajectory tj, TS ts, TSTrajectoryType *typ
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tj, TSTRAJECTORY_CLASSID, 1);
   if (type) *type = ((PetscObject)tj)->type_name;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_EXTERN PetscErrorCode TSTrajectoryCreate_Basic(TSTrajectory, TS);
@@ -518,14 +518,14 @@ PETSC_EXTERN PetscErrorCode TSTrajectoryCreate_Visualization(TSTrajectory, TS);
 PetscErrorCode TSTrajectoryRegisterAll(void)
 {
   PetscFunctionBegin;
-  if (TSTrajectoryRegisterAllCalled) PetscFunctionReturn(0);
+  if (TSTrajectoryRegisterAllCalled) PetscFunctionReturn(PETSC_SUCCESS);
   TSTrajectoryRegisterAllCalled = PETSC_TRUE;
 
   PetscCall(TSTrajectoryRegister(TSTRAJECTORYBASIC, TSTrajectoryCreate_Basic));
   PetscCall(TSTrajectoryRegister(TSTRAJECTORYSINGLEFILE, TSTrajectoryCreate_Singlefile));
   PetscCall(TSTrajectoryRegister(TSTRAJECTORYMEMORY, TSTrajectoryCreate_Memory));
   PetscCall(TSTrajectoryRegister(TSTRAJECTORYVISUALIZATION, TSTrajectoryCreate_Visualization));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -543,14 +543,14 @@ PetscErrorCode TSTrajectoryRegisterAll(void)
 PetscErrorCode TSTrajectoryReset(TSTrajectory tj)
 {
   PetscFunctionBegin;
-  if (!tj) PetscFunctionReturn(0);
+  if (!tj) PetscFunctionReturn(PETSC_SUCCESS);
   PetscValidHeaderSpecific(tj, TSTRAJECTORY_CLASSID, 1);
   PetscTryTypeMethod(tj, reset);
   PetscCall(PetscFree(tj->dirfiletemplate));
   PetscCall(TSHistoryDestroy(&tj->tsh));
   PetscCall(TSHistoryCreate(PetscObjectComm((PetscObject)tj), &tj->tsh));
   tj->setupcalled = PETSC_FALSE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -568,11 +568,11 @@ PetscErrorCode TSTrajectoryReset(TSTrajectory tj)
 PetscErrorCode TSTrajectoryDestroy(TSTrajectory *tj)
 {
   PetscFunctionBegin;
-  if (!*tj) PetscFunctionReturn(0);
+  if (!*tj) PetscFunctionReturn(PETSC_SUCCESS);
   PetscValidHeaderSpecific((*tj), TSTRAJECTORY_CLASSID, 1);
   if (--((PetscObject)(*tj))->refct > 0) {
     *tj = NULL;
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   PetscCall(TSTrajectoryReset(*tj));
@@ -598,7 +598,7 @@ PetscErrorCode TSTrajectoryDestroy(TSTrajectory *tj)
   PetscCall(PetscFree((*tj)->dirname));
   PetscCall(PetscFree((*tj)->filetemplate));
   PetscCall(PetscHeaderDestroy(tj));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -634,7 +634,7 @@ static PetscErrorCode TSTrajectorySetTypeFromOptions_Private(PetscOptionItems *P
   } else {
     PetscCall(TSTrajectorySetType(tj, ts, defaultType));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -659,7 +659,7 @@ PetscErrorCode TSTrajectorySetUseHistory(TSTrajectory tj, PetscBool flg)
   PetscValidHeaderSpecific(tj, TSTRAJECTORY_CLASSID, 1);
   PetscValidLogicalCollectiveBool(tj, flg, 2);
   tj->usehistory = flg;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -685,7 +685,7 @@ PetscErrorCode TSTrajectorySetMonitor(TSTrajectory tj, PetscBool flg)
   PetscValidLogicalCollectiveBool(tj, flg, 2);
   if (flg) tj->monitor = PETSC_VIEWER_STDOUT_(PetscObjectComm((PetscObject)tj));
   else tj->monitor = NULL;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -713,7 +713,7 @@ PetscErrorCode TSTrajectorySetKeepFiles(TSTrajectory tj, PetscBool flg)
   PetscValidHeaderSpecific(tj, TSTRAJECTORY_CLASSID, 1);
   PetscValidLogicalCollectiveBool(tj, flg, 2);
   tj->keepfiles = flg;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -747,7 +747,7 @@ PetscErrorCode TSTrajectorySetDirname(TSTrajectory tj, const char dirname[])
   PetscCheck(flg || !tj->dirfiletemplate, PetscObjectComm((PetscObject)tj), PETSC_ERR_ARG_WRONGSTATE, "Cannot set directoryname after TSTrajectory has been setup");
   PetscCall(PetscFree(tj->dirname));
   PetscCall(PetscStrallocpy(dirname, &tj->dirname));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -792,7 +792,7 @@ PetscErrorCode TSTrajectorySetFiletemplate(TSTrajectory tj, const char filetempl
   }
   PetscCall(PetscFree(tj->filetemplate));
   PetscCall(PetscStrallocpy(filetemplate, &tj->filetemplate));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -845,7 +845,7 @@ PetscErrorCode TSTrajectorySetFromOptions(TSTrajectory tj, TS ts)
   /* Handle specific TSTrajectory options */
   PetscTryTypeMethod(tj, setfromoptions, PetscOptionsObject);
   PetscOptionsEnd();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -867,10 +867,10 @@ PetscErrorCode TSTrajectorySetUp(TSTrajectory tj, TS ts)
   size_t s1, s2;
 
   PetscFunctionBegin;
-  if (!tj) PetscFunctionReturn(0);
+  if (!tj) PetscFunctionReturn(PETSC_SUCCESS);
   PetscValidHeaderSpecific(tj, TSTRAJECTORY_CLASSID, 1);
   if (ts) PetscValidHeaderSpecific(ts, TS_CLASSID, 2);
-  if (tj->setupcalled) PetscFunctionReturn(0);
+  if (tj->setupcalled) PetscFunctionReturn(PETSC_SUCCESS);
 
   PetscCall(PetscLogEventBegin(TSTrajectory_SetUp, tj, ts, 0, 0));
   if (!((PetscObject)tj)->type_name) PetscCall(TSTrajectorySetType(tj, ts, TSTRAJECTORYBASIC));
@@ -888,7 +888,7 @@ PetscErrorCode TSTrajectorySetUp(TSTrajectory tj, TS ts)
   PetscCall(PetscMalloc((s1 + s2 + 10) * sizeof(char), &tj->dirfiletemplate));
   PetscCall(PetscSNPrintf(tj->dirfiletemplate, s1 + s2 + 10, "%s/%s", tj->dirname, tj->filetemplate));
   PetscCall(PetscLogEventEnd(TSTrajectory_SetUp, tj, ts, 0, 0));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -910,7 +910,7 @@ PetscErrorCode TSTrajectorySetSolutionOnly(TSTrajectory tj, PetscBool solution_o
   PetscValidHeaderSpecific(tj, TSTRAJECTORY_CLASSID, 1);
   PetscValidLogicalCollectiveBool(tj, solution_only, 2);
   tj->solution_only = solution_only;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -934,7 +934,7 @@ PetscErrorCode TSTrajectoryGetSolutionOnly(TSTrajectory tj, PetscBool *solution_
   PetscValidHeaderSpecific(tj, TSTRAJECTORY_CLASSID, 1);
   PetscValidBoolPointer(solution_only, 2);
   *solution_only = tj->solution_only;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -990,7 +990,7 @@ PetscErrorCode TSTrajectoryGetUpdatedHistoryVecs(TSTrajectory tj, TS ts, PetscRe
     PetscCall(VecLockReadPush(tj->Udot));
     *Udot = tj->Udot;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -1023,5 +1023,5 @@ PetscErrorCode TSTrajectoryRestoreUpdatedHistoryVecs(TSTrajectory tj, Vec *U, Ve
     PetscCall(VecLockReadPop(tj->Udot));
     *Udot = NULL;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

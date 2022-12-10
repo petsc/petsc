@@ -56,7 +56,7 @@ PetscErrorCode PetscDSRegister(const char sname[], PetscErrorCode (*function)(Pe
 {
   PetscFunctionBegin;
   PetscCall(PetscFunctionListAdd(&PetscDSList, sname, function));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -86,7 +86,7 @@ PetscErrorCode PetscDSSetType(PetscDS prob, PetscDSType name)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
   PetscCall(PetscObjectTypeCompare((PetscObject)prob, name, &match));
-  if (match) PetscFunctionReturn(0);
+  if (match) PetscFunctionReturn(PETSC_SUCCESS);
 
   PetscCall(PetscDSRegisterAll());
   PetscCall(PetscFunctionListFind(PetscDSList, name, &r));
@@ -97,7 +97,7 @@ PetscErrorCode PetscDSSetType(PetscDS prob, PetscDSType name)
 
   PetscCall((*r)(prob));
   PetscCall(PetscObjectChangeTypeName((PetscObject)prob, name));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -125,7 +125,7 @@ PetscErrorCode PetscDSGetType(PetscDS prob, PetscDSType *name)
   PetscValidPointer(name, 2);
   PetscCall(PetscDSRegisterAll());
   *name = ((PetscObject)prob)->type_name;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscDSView_Ascii(PetscDS ds, PetscViewer viewer)
@@ -243,7 +243,7 @@ static PetscErrorCode PetscDSView_Ascii(PetscDS ds, PetscViewer viewer)
   }
   PetscCall(PetscWeakFormView(ds->wf, viewer));
   PetscCall(PetscViewerASCIIPopTab(viewer));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -265,7 +265,7 @@ PetscErrorCode PetscDSViewFromOptions(PetscDS A, PetscObject obj, const char nam
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, PETSCDS_CLASSID, 1);
   PetscCall(PetscObjectViewFromOptions((PetscObject)A, obj, name));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -292,7 +292,7 @@ PetscErrorCode PetscDSView(PetscDS prob, PetscViewer v)
   PetscCall(PetscObjectTypeCompare((PetscObject)v, PETSCVIEWERASCII, &iascii));
   if (iascii) PetscCall(PetscDSView_Ascii(prob, v));
   PetscTryTypeMethod(prob, view, v);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -369,7 +369,7 @@ PetscErrorCode PetscDSSetFromOptions(PetscDS prob)
   PetscCall(PetscObjectProcessOptionsHandlers((PetscObject)prob, PetscOptionsObject));
   PetscOptionsEnd();
   if (prob->Nf) PetscCall(PetscDSViewFromOptions(prob, NULL, "-petscds_view"));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -392,7 +392,7 @@ PetscErrorCode PetscDSSetUp(PetscDS prob)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
-  if (prob->setup) PetscFunctionReturn(0);
+  if (prob->setup) PetscFunctionReturn(PETSC_SUCCESS);
   /* Calculate sizes */
   PetscCall(PetscDSGetSpatialDimension(prob, &dim));
   PetscCall(PetscDSGetCoordinateDimension(prob, &dimEmbed));
@@ -462,7 +462,7 @@ PetscErrorCode PetscDSSetUp(PetscDS prob)
                          &prob->g2, NsMax * NsMax * NqMax * NcMax * NcMax * dimEmbed * dimEmbed, &prob->g3));
   PetscTryTypeMethod(prob, setup);
   prob->setup = PETSC_TRUE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscDSDestroyStructs_Static(PetscDS prob)
@@ -475,7 +475,7 @@ static PetscErrorCode PetscDSDestroyStructs_Static(PetscDS prob)
   PetscCall(PetscFree3(prob->u, prob->u_t, prob->u_x));
   PetscCall(PetscFree5(prob->x, prob->basisReal, prob->basisDerReal, prob->testReal, prob->testDerReal));
   PetscCall(PetscFree6(prob->f0, prob->f1, prob->g0, prob->g1, prob->g2, prob->g3));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscDSEnlarge_Static(PetscDS prob, PetscInt NfNew)
@@ -491,7 +491,7 @@ static PetscErrorCode PetscDSEnlarge_Static(PetscDS prob, PetscInt NfNew)
   PetscInt              Nf = prob->Nf, f;
 
   PetscFunctionBegin;
-  if (Nf >= NfNew) PetscFunctionReturn(0);
+  if (Nf >= NfNew) PetscFunctionReturn(PETSC_SUCCESS);
   prob->setup = PETSC_FALSE;
   PetscCall(PetscDSDestroyStructs_Static(prob));
   PetscCall(PetscMalloc4(NfNew, &tmpd, NfNew, &tmpi, NfNew, &tmpc, NfNew, &tmpk));
@@ -535,7 +535,7 @@ static PetscErrorCode PetscDSEnlarge_Static(PetscDS prob, PetscInt NfNew)
   prob->exactCtx   = tmpexactCtx;
   prob->exactSol_t = tmpexactSol_t;
   prob->exactCtx_t = tmpexactCtx_t;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -555,12 +555,12 @@ PetscErrorCode PetscDSDestroy(PetscDS *ds)
   PetscInt f;
 
   PetscFunctionBegin;
-  if (!*ds) PetscFunctionReturn(0);
+  if (!*ds) PetscFunctionReturn(PETSC_SUCCESS);
   PetscValidHeaderSpecific((*ds), PETSCDS_CLASSID, 1);
 
   if (--((PetscObject)(*ds))->refct > 0) {
     *ds = NULL;
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
   ((PetscObject)(*ds))->refct = 0;
   if ((*ds)->subprobs) {
@@ -580,7 +580,7 @@ PetscErrorCode PetscDSDestroy(PetscDS *ds)
   PetscCall(PetscDSDestroyBoundary(*ds));
   PetscCall(PetscFree((*ds)->constants));
   PetscCall(PetscHeaderDestroy(ds));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -618,7 +618,7 @@ PetscErrorCode PetscDSCreate(MPI_Comm comm, PetscDS *ds)
   PetscCall(PetscWeakFormCreate(comm, &p->wf));
 
   *ds = p;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -642,7 +642,7 @@ PetscErrorCode PetscDSGetNumFields(PetscDS prob, PetscInt *Nf)
   PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
   PetscValidIntPointer(Nf, 2);
   *Nf = prob->Nf;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -678,7 +678,7 @@ PetscErrorCode PetscDSGetSpatialDimension(PetscDS prob, PetscInt *dim)
       else SETERRQ(PetscObjectComm((PetscObject)prob), PETSC_ERR_ARG_WRONG, "Unknown discretization type for field %d", 0);
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -703,7 +703,7 @@ PetscErrorCode PetscDSGetCoordinateDimension(PetscDS prob, PetscInt *dimEmbed)
   PetscValidIntPointer(dimEmbed, 2);
   PetscCheck(prob->dimEmbed >= 0, PetscObjectComm((PetscObject)prob), PETSC_ERR_ARG_WRONGSTATE, "No coordinate dimension set for this DS");
   *dimEmbed = prob->dimEmbed;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -725,7 +725,7 @@ PetscErrorCode PetscDSSetCoordinateDimension(PetscDS prob, PetscInt dimEmbed)
   PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
   PetscCheck(dimEmbed >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Coordinate dimension must be non-negative, not %" PetscInt_FMT, dimEmbed);
   prob->dimEmbed = dimEmbed;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -749,7 +749,7 @@ PetscErrorCode PetscDSIsCohesive(PetscDS ds, PetscBool *isCohesive)
   PetscValidHeaderSpecific(ds, PETSCDS_CLASSID, 1);
   PetscValidBoolPointer(isCohesive, 2);
   *isCohesive = ds->isCohesive;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -776,7 +776,7 @@ PetscErrorCode PetscDSGetNumCohesive(PetscDS ds, PetscInt *numCohesive)
   PetscValidIntPointer(numCohesive, 2);
   *numCohesive = 0;
   for (f = 0; f < ds->Nf; ++f) *numCohesive += ds->cohesive[f] ? 1 : 0;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -802,7 +802,7 @@ PetscErrorCode PetscDSGetCohesive(PetscDS ds, PetscInt f, PetscBool *isCohesive)
   PetscValidBoolPointer(isCohesive, 3);
   PetscCheck(!(f < 0) && !(f >= ds->Nf), PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %" PetscInt_FMT " must be in [0, %" PetscInt_FMT ")", f, ds->Nf);
   *isCohesive = ds->cohesive[f];
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -829,7 +829,7 @@ PetscErrorCode PetscDSSetCohesive(PetscDS ds, PetscInt f, PetscBool isCohesive)
   ds->cohesive[f] = isCohesive;
   ds->isCohesive  = PETSC_FALSE;
   for (i = 0; i < ds->Nf; ++i) ds->isCohesive = ds->isCohesive || ds->cohesive[f] ? PETSC_TRUE : PETSC_FALSE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -854,7 +854,7 @@ PetscErrorCode PetscDSGetTotalDimension(PetscDS prob, PetscInt *dim)
   PetscCall(PetscDSSetUp(prob));
   PetscValidIntPointer(dim, 2);
   *dim = prob->totDim;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -879,7 +879,7 @@ PetscErrorCode PetscDSGetTotalComponents(PetscDS prob, PetscInt *Nc)
   PetscCall(PetscDSSetUp(prob));
   PetscValidIntPointer(Nc, 2);
   *Nc = prob->totComp;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -905,7 +905,7 @@ PetscErrorCode PetscDSGetDiscretization(PetscDS prob, PetscInt f, PetscObject *d
   PetscValidPointer(disc, 3);
   PetscCheck(!(f < 0) && !(f >= prob->Nf), PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %" PetscInt_FMT " must be in [0, %" PetscInt_FMT ")", f, prob->Nf);
   *disc = prob->disc[f];
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -943,7 +943,7 @@ PetscErrorCode PetscDSSetDiscretization(PetscDS prob, PetscInt f, PetscObject di
     }
     PetscCall(PetscDSSetJetDegree(prob, f, 1));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -967,7 +967,7 @@ PetscErrorCode PetscDSGetWeakForm(PetscDS ds, PetscWeakForm *wf)
   PetscValidHeaderSpecific(ds, PETSCDS_CLASSID, 1);
   PetscValidPointer(wf, 2);
   *wf = ds->wf;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -992,7 +992,7 @@ PetscErrorCode PetscDSSetWeakForm(PetscDS ds, PetscWeakForm wf)
   ds->wf = wf;
   PetscCall(PetscObjectReference((PetscObject)wf));
   PetscCall(PetscWeakFormSetNumFields(wf, ds->Nf));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -1012,7 +1012,7 @@ PetscErrorCode PetscDSAddDiscretization(PetscDS prob, PetscObject disc)
 {
   PetscFunctionBegin;
   PetscCall(PetscDSSetDiscretization(prob, prob->Nf, disc));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -1037,13 +1037,13 @@ PetscErrorCode PetscDSGetQuadrature(PetscDS prob, PetscQuadrature *q)
 
   PetscFunctionBegin;
   *q = NULL;
-  if (!prob->Nf) PetscFunctionReturn(0);
+  if (!prob->Nf) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(PetscDSGetDiscretization(prob, 0, &obj));
   PetscCall(PetscObjectGetClassId(obj, &id));
   if (id == PETSCFE_CLASSID) PetscCall(PetscFEGetQuadrature((PetscFE)obj, q));
   else if (id == PETSCFV_CLASSID) PetscCall(PetscFVGetQuadrature((PetscFV)obj, q));
   else SETERRQ(PetscObjectComm((PetscObject)prob), PETSC_ERR_ARG_WRONG, "Unknown discretization type for field %d", 0);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -1069,7 +1069,7 @@ PetscErrorCode PetscDSGetImplicit(PetscDS prob, PetscInt f, PetscBool *implicit)
   PetscValidBoolPointer(implicit, 3);
   PetscCheck(!(f < 0) && !(f >= prob->Nf), PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %" PetscInt_FMT " must be in [0, %" PetscInt_FMT ")", f, prob->Nf);
   *implicit = prob->implicit[f];
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -1092,7 +1092,7 @@ PetscErrorCode PetscDSSetImplicit(PetscDS prob, PetscInt f, PetscBool implicit)
   PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
   PetscCheck(!(f < 0) && !(f >= prob->Nf), PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %" PetscInt_FMT " must be in [0, %" PetscInt_FMT ")", f, prob->Nf);
   prob->implicit[f] = implicit;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -1118,7 +1118,7 @@ PetscErrorCode PetscDSGetJetDegree(PetscDS ds, PetscInt f, PetscInt *k)
   PetscValidIntPointer(k, 3);
   PetscCheck(!(f < 0) && !(f >= ds->Nf), PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %" PetscInt_FMT " must be in [0, %" PetscInt_FMT ")", f, ds->Nf);
   *k = ds->jetDegree[f];
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -1141,7 +1141,7 @@ PetscErrorCode PetscDSSetJetDegree(PetscDS ds, PetscInt f, PetscInt k)
   PetscValidHeaderSpecific(ds, PETSCDS_CLASSID, 1);
   PetscCheck(!(f < 0) && !(f >= ds->Nf), PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %" PetscInt_FMT " must be in [0, %" PetscInt_FMT ")", f, ds->Nf);
   ds->jetDegree[f] = k;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PetscDSGetObjective(PetscDS ds, PetscInt f, void (**obj)(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar obj[]))
@@ -1155,7 +1155,7 @@ PetscErrorCode PetscDSGetObjective(PetscDS ds, PetscInt f, void (**obj)(PetscInt
   PetscCheck(!(f < 0) && !(f >= ds->Nf), PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %" PetscInt_FMT " must be in [0, %" PetscInt_FMT ")", f, ds->Nf);
   PetscCall(PetscWeakFormGetObjective(ds->wf, NULL, 0, f, 0, &n, &tmp));
   *obj = tmp ? tmp[0] : NULL;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PetscDSSetObjective(PetscDS ds, PetscInt f, void (*obj)(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar obj[]))
@@ -1165,7 +1165,7 @@ PetscErrorCode PetscDSSetObjective(PetscDS ds, PetscInt f, void (*obj)(PetscInt 
   if (obj) PetscValidFunction(obj, 3);
   PetscCheck(f >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %" PetscInt_FMT " must be non-negative", f);
   PetscCall(PetscWeakFormSetIndexObjective(ds->wf, NULL, 0, f, 0, 0, obj));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1224,7 +1224,7 @@ PetscErrorCode PetscDSGetResidual(PetscDS ds, PetscInt f, void (**f0)(PetscInt d
   PetscCall(PetscWeakFormGetResidual(ds->wf, NULL, 0, f, 0, &n0, &tmp0, &n1, &tmp1));
   *f0 = tmp0 ? tmp0[0] : NULL;
   *f1 = tmp1 ? tmp1[0] : NULL;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1278,7 +1278,7 @@ PetscErrorCode PetscDSSetResidual(PetscDS ds, PetscInt f, void (*f0)(PetscInt di
   if (f1) PetscValidFunction(f1, 4);
   PetscCheck(f >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %" PetscInt_FMT " must be non-negative", f);
   PetscCall(PetscWeakFormSetIndexResidual(ds->wf, NULL, 0, f, 0, 0, f0, 0, f1));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1337,7 +1337,7 @@ PetscErrorCode PetscDSGetRHSResidual(PetscDS ds, PetscInt f, void (**f0)(PetscIn
   PetscCall(PetscWeakFormGetResidual(ds->wf, NULL, 0, f, 100, &n0, &tmp0, &n1, &tmp1));
   *f0 = tmp0 ? tmp0[0] : NULL;
   *f1 = tmp1 ? tmp1[0] : NULL;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1391,7 +1391,7 @@ PetscErrorCode PetscDSSetRHSResidual(PetscDS ds, PetscInt f, void (*f0)(PetscInt
   if (f1) PetscValidFunction(f1, 4);
   PetscCheck(f >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %" PetscInt_FMT " must be non-negative", f);
   PetscCall(PetscWeakFormSetIndexResidual(ds->wf, NULL, 0, f, 100, 0, f0, 0, f1));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1414,7 +1414,7 @@ PetscErrorCode PetscDSHasJacobian(PetscDS ds, PetscBool *hasJac)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ds, PETSCDS_CLASSID, 1);
   PetscCall(PetscWeakFormHasJacobian(ds->wf, hasJac));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1481,7 +1481,7 @@ PetscErrorCode PetscDSGetJacobian(PetscDS ds, PetscInt f, PetscInt g, void (**g0
   *g1 = tmp1 ? tmp1[0] : NULL;
   *g2 = tmp2 ? tmp2[0] : NULL;
   *g3 = tmp3 ? tmp3[0] : NULL;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1543,7 +1543,7 @@ PetscErrorCode PetscDSSetJacobian(PetscDS ds, PetscInt f, PetscInt g, void (*g0)
   PetscCheck(f >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %" PetscInt_FMT " must be non-negative", f);
   PetscCheck(g >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %" PetscInt_FMT " must be non-negative", g);
   PetscCall(PetscWeakFormSetIndexJacobian(ds->wf, NULL, 0, f, g, 0, 0, g0, 0, g1, 0, g2, 0, g3));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1564,7 +1564,7 @@ PetscErrorCode PetscDSUseJacobianPreconditioner(PetscDS prob, PetscBool useJacPr
   PetscFunctionBegin;
   PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
   prob->useJacPre = useJacPre;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1587,9 +1587,9 @@ PetscErrorCode PetscDSHasJacobianPreconditioner(PetscDS ds, PetscBool *hasJacPre
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ds, PETSCDS_CLASSID, 1);
   *hasJacPre = PETSC_FALSE;
-  if (!ds->useJacPre) PetscFunctionReturn(0);
+  if (!ds->useJacPre) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(PetscWeakFormHasJacobianPreconditioner(ds->wf, hasJacPre));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1657,7 +1657,7 @@ PetscErrorCode PetscDSGetJacobianPreconditioner(PetscDS ds, PetscInt f, PetscInt
   *g1 = tmp1 ? tmp1[0] : NULL;
   *g2 = tmp2 ? tmp2[0] : NULL;
   *g3 = tmp3 ? tmp3[0] : NULL;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1720,7 +1720,7 @@ PetscErrorCode PetscDSSetJacobianPreconditioner(PetscDS ds, PetscInt f, PetscInt
   PetscCheck(f >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %" PetscInt_FMT " must be non-negative", f);
   PetscCheck(g >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %" PetscInt_FMT " must be non-negative", g);
   PetscCall(PetscWeakFormSetIndexJacobianPreconditioner(ds->wf, NULL, 0, f, g, 0, 0, g0, 0, g1, 0, g2, 0, g3));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1743,7 +1743,7 @@ PetscErrorCode PetscDSHasDynamicJacobian(PetscDS ds, PetscBool *hasDynJac)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ds, PETSCDS_CLASSID, 1);
   PetscCall(PetscWeakFormHasDynamicJacobian(ds->wf, hasDynJac));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1810,7 +1810,7 @@ PetscErrorCode PetscDSGetDynamicJacobian(PetscDS ds, PetscInt f, PetscInt g, voi
   *g1 = tmp1 ? tmp1[0] : NULL;
   *g2 = tmp2 ? tmp2[0] : NULL;
   *g3 = tmp3 ? tmp3[0] : NULL;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1872,7 +1872,7 @@ PetscErrorCode PetscDSSetDynamicJacobian(PetscDS ds, PetscInt f, PetscInt g, voi
   PetscCheck(f >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %" PetscInt_FMT " must be non-negative", f);
   PetscCheck(g >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %" PetscInt_FMT " must be non-negative", g);
   PetscCall(PetscWeakFormSetIndexDynamicJacobian(ds->wf, NULL, 0, f, g, 0, 0, g0, 0, g1, 0, g2, 0, g3));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1917,7 +1917,7 @@ PetscErrorCode PetscDSGetRiemannSolver(PetscDS ds, PetscInt f, void (**r)(PetscI
   PetscCheck(!(f < 0) && !(f >= ds->Nf), PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %" PetscInt_FMT " must be in [0, %" PetscInt_FMT ")", f, ds->Nf);
   PetscCall(PetscWeakFormGetRiemannSolver(ds->wf, NULL, 0, f, 0, &n, &tmp));
   *r = tmp ? tmp[0] : NULL;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1956,7 +1956,7 @@ PetscErrorCode PetscDSSetRiemannSolver(PetscDS ds, PetscInt f, void (*r)(PetscIn
   if (r) PetscValidFunction(r, 3);
   PetscCheck(f >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %" PetscInt_FMT " must be non-negative", f);
   PetscCall(PetscWeakFormSetIndexRiemannSolver(ds->wf, NULL, 0, f, 0, 0, r));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -2007,7 +2007,7 @@ PetscErrorCode PetscDSGetUpdate(PetscDS ds, PetscInt f, void (**update)(PetscInt
     PetscValidPointer(update, 3);
     *update = ds->update[f];
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -2055,7 +2055,7 @@ PetscErrorCode PetscDSSetUpdate(PetscDS ds, PetscInt f, void (*update)(PetscInt 
   PetscCheck(f >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %" PetscInt_FMT " must be non-negative", f);
   PetscCall(PetscDSEnlarge_Static(ds, f + 1));
   ds->update[f] = update;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PetscDSGetContext(PetscDS ds, PetscInt f, void *ctx)
@@ -2065,7 +2065,7 @@ PetscErrorCode PetscDSGetContext(PetscDS ds, PetscInt f, void *ctx)
   PetscCheck(!(f < 0) && !(f >= ds->Nf), PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %" PetscInt_FMT " must be in [0, %" PetscInt_FMT ")", f, ds->Nf);
   PetscValidPointer(ctx, 3);
   *(void **)ctx = ds->ctx[f];
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PetscDSSetContext(PetscDS ds, PetscInt f, void *ctx)
@@ -2075,7 +2075,7 @@ PetscErrorCode PetscDSSetContext(PetscDS ds, PetscInt f, void *ctx)
   PetscCheck(f >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %" PetscInt_FMT " must be non-negative", f);
   PetscCall(PetscDSEnlarge_Static(ds, f + 1));
   ds->ctx[f] = ctx;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -2136,7 +2136,7 @@ PetscErrorCode PetscDSGetBdResidual(PetscDS ds, PetscInt f, void (**f0)(PetscInt
   PetscCall(PetscWeakFormGetBdResidual(ds->wf, NULL, 0, f, 0, &n0, &tmp0, &n1, &tmp1));
   *f0 = tmp0 ? tmp0[0] : NULL;
   *f1 = tmp1 ? tmp1[0] : NULL;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -2190,7 +2190,7 @@ PetscErrorCode PetscDSSetBdResidual(PetscDS ds, PetscInt f, void (*f0)(PetscInt 
   PetscValidHeaderSpecific(ds, PETSCDS_CLASSID, 1);
   PetscCheck(f >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %" PetscInt_FMT " must be non-negative", f);
   PetscCall(PetscWeakFormSetIndexBdResidual(ds->wf, NULL, 0, f, 0, 0, f0, 0, f1));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -2214,7 +2214,7 @@ PetscErrorCode PetscDSHasBdJacobian(PetscDS ds, PetscBool *hasBdJac)
   PetscValidHeaderSpecific(ds, PETSCDS_CLASSID, 1);
   PetscValidBoolPointer(hasBdJac, 2);
   PetscCall(PetscWeakFormHasBdJacobian(ds->wf, hasBdJac));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -2282,7 +2282,7 @@ PetscErrorCode PetscDSGetBdJacobian(PetscDS ds, PetscInt f, PetscInt g, void (**
   *g1 = tmp1 ? tmp1[0] : NULL;
   *g2 = tmp2 ? tmp2[0] : NULL;
   *g3 = tmp3 ? tmp3[0] : NULL;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -2345,7 +2345,7 @@ PetscErrorCode PetscDSSetBdJacobian(PetscDS ds, PetscInt f, PetscInt g, void (*g
   PetscCheck(f >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %" PetscInt_FMT " must be non-negative", f);
   PetscCheck(g >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %" PetscInt_FMT " must be non-negative", g);
   PetscCall(PetscWeakFormSetIndexBdJacobian(ds->wf, NULL, 0, f, g, 0, 0, g0, 0, g1, 0, g2, 0, g3));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -2369,7 +2369,7 @@ PetscErrorCode PetscDSHasBdJacobianPreconditioner(PetscDS ds, PetscBool *hasBdJa
   PetscValidHeaderSpecific(ds, PETSCDS_CLASSID, 1);
   PetscValidBoolPointer(hasBdJacPre, 2);
   PetscCall(PetscWeakFormHasBdJacobianPreconditioner(ds->wf, hasBdJacPre));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -2441,7 +2441,7 @@ PetscErrorCode PetscDSGetBdJacobianPreconditioner(PetscDS ds, PetscInt f, PetscI
   *g1 = tmp1 ? tmp1[0] : NULL;
   *g2 = tmp2 ? tmp2[0] : NULL;
   *g3 = tmp3 ? tmp3[0] : NULL;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -2508,7 +2508,7 @@ PetscErrorCode PetscDSSetBdJacobianPreconditioner(PetscDS ds, PetscInt f, PetscI
   PetscCheck(f >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %" PetscInt_FMT " must be non-negative", f);
   PetscCheck(g >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %" PetscInt_FMT " must be non-negative", g);
   PetscCall(PetscWeakFormSetIndexBdJacobianPreconditioner(ds->wf, NULL, 0, f, g, 0, 0, g0, 0, g1, 0, g2, 0, g3));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -2552,7 +2552,7 @@ PetscErrorCode PetscDSGetExactSolution(PetscDS prob, PetscInt f, PetscErrorCode 
     PetscValidPointer(ctx, 4);
     *ctx = prob->exactCtx[f];
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -2595,7 +2595,7 @@ PetscErrorCode PetscDSSetExactSolution(PetscDS prob, PetscInt f, PetscErrorCode 
     PetscValidFunction(ctx, 4);
     prob->exactCtx[f] = ctx;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -2639,7 +2639,7 @@ PetscErrorCode PetscDSGetExactSolutionTimeDerivative(PetscDS prob, PetscInt f, P
     PetscValidPointer(ctx, 4);
     *ctx = prob->exactCtx_t[f];
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -2682,7 +2682,7 @@ PetscErrorCode PetscDSSetExactSolutionTimeDerivative(PetscDS prob, PetscInt f, P
     PetscValidFunction(ctx, 4);
     prob->exactCtx_t[f] = ctx;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -2713,7 +2713,7 @@ PetscErrorCode PetscDSGetConstants(PetscDS prob, PetscInt *numConstants, const P
     PetscValidPointer(constants, 3);
     *constants = prob->constants;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -2747,7 +2747,7 @@ PetscErrorCode PetscDSSetConstants(PetscDS prob, PetscInt numConstants, PetscSca
     PetscValidScalarPointer(constants, 3);
     PetscCall(PetscArraycpy(prob->constants, constants, prob->numConstants));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -2779,7 +2779,7 @@ PetscErrorCode PetscDSGetFieldIndex(PetscDS prob, PetscObject disc, PetscInt *f)
   }
   PetscCheck(g != prob->Nf, PetscObjectComm((PetscObject)prob), PETSC_ERR_ARG_WRONG, "Field not found in PetscDS.");
   *f = g;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -2806,7 +2806,7 @@ PetscErrorCode PetscDSGetFieldSize(PetscDS prob, PetscInt f, PetscInt *size)
   PetscCheck(!(f < 0) && !(f >= prob->Nf), PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %" PetscInt_FMT " must be in [0, %" PetscInt_FMT ")", f, prob->Nf);
   PetscCall(PetscDSSetUp(prob));
   *size = prob->Nb[f];
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -2838,7 +2838,7 @@ PetscErrorCode PetscDSGetFieldOffset(PetscDS prob, PetscInt f, PetscInt *off)
     PetscCall(PetscDSGetFieldSize(prob, g, &size));
     *off += size;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -2873,7 +2873,7 @@ PetscErrorCode PetscDSGetFieldOffsetCohesive(PetscDS ds, PetscInt f, PetscInt *o
     PetscCall(PetscDSGetFieldSize(ds, g, &size));
     *off += cohesive ? size : size * 2;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -2898,7 +2898,7 @@ PetscErrorCode PetscDSGetDimensions(PetscDS prob, PetscInt *dimensions[])
   PetscCall(PetscDSSetUp(prob));
   PetscValidPointer(dimensions, 2);
   *dimensions = prob->Nb;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -2923,7 +2923,7 @@ PetscErrorCode PetscDSGetComponents(PetscDS prob, PetscInt *components[])
   PetscCall(PetscDSSetUp(prob));
   PetscValidPointer(components, 2);
   *components = prob->Nc;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -2950,7 +2950,7 @@ PetscErrorCode PetscDSGetComponentOffset(PetscDS prob, PetscInt f, PetscInt *off
   PetscCheck(!(f < 0) && !(f >= prob->Nf), PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %" PetscInt_FMT " must be in [0, %" PetscInt_FMT ")", f, prob->Nf);
   PetscCall(PetscDSSetUp(prob));
   *off = prob->off[f];
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -2975,7 +2975,7 @@ PetscErrorCode PetscDSGetComponentOffsets(PetscDS prob, PetscInt *offsets[])
   PetscValidPointer(offsets, 2);
   PetscCall(PetscDSSetUp(prob));
   *offsets = prob->off;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -3000,7 +3000,7 @@ PetscErrorCode PetscDSGetComponentDerivativeOffsets(PetscDS prob, PetscInt *offs
   PetscValidPointer(offsets, 2);
   PetscCall(PetscDSSetUp(prob));
   *offsets = prob->offDer;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -3028,7 +3028,7 @@ PetscErrorCode PetscDSGetComponentOffsetsCohesive(PetscDS ds, PetscInt s, PetscI
   PetscCheck(!(s < 0) && !(s > 2), PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Cohesive side %" PetscInt_FMT " is not in [0, 2]", s);
   PetscCall(PetscDSSetUp(ds));
   *offsets = ds->offCohesive[s];
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -3056,7 +3056,7 @@ PetscErrorCode PetscDSGetComponentDerivativeOffsetsCohesive(PetscDS ds, PetscInt
   PetscCheck(!(s < 0) && !(s > 2), PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Cohesive side %" PetscInt_FMT " is not in [0, 2]", s);
   PetscCall(PetscDSSetUp(ds));
   *offsets = ds->offDerCohesive[s];
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -3081,7 +3081,7 @@ PetscErrorCode PetscDSGetTabulation(PetscDS prob, PetscTabulation *T[])
   PetscValidPointer(T, 2);
   PetscCall(PetscDSSetUp(prob));
   *T = prob->T;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -3106,7 +3106,7 @@ PetscErrorCode PetscDSGetFaceTabulation(PetscDS prob, PetscTabulation *Tf[])
   PetscValidPointer(Tf, 2);
   PetscCall(PetscDSSetUp(prob));
   *Tf = prob->Tf;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PetscDSGetEvaluationArrays(PetscDS prob, PetscScalar **u, PetscScalar **u_t, PetscScalar **u_x)
@@ -3126,7 +3126,7 @@ PetscErrorCode PetscDSGetEvaluationArrays(PetscDS prob, PetscScalar **u, PetscSc
     PetscValidPointer(u_x, 4);
     *u_x = prob->u_x;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PetscDSGetWeakFormArrays(PetscDS prob, PetscScalar **f0, PetscScalar **f1, PetscScalar **g0, PetscScalar **g1, PetscScalar **g2, PetscScalar **g3)
@@ -3158,7 +3158,7 @@ PetscErrorCode PetscDSGetWeakFormArrays(PetscDS prob, PetscScalar **f0, PetscSca
     PetscValidPointer(g3, 7);
     *g3 = prob->g3;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PetscDSGetWorkspace(PetscDS prob, PetscReal **x, PetscScalar **basisReal, PetscScalar **basisDerReal, PetscScalar **testReal, PetscScalar **testDerReal)
@@ -3186,7 +3186,7 @@ PetscErrorCode PetscDSGetWorkspace(PetscDS prob, PetscReal **x, PetscScalar **ba
     PetscValidPointer(testDerReal, 6);
     *testDerReal = prob->testDerReal;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -3309,7 +3309,7 @@ PetscErrorCode PetscDSAddBoundary(PetscDS ds, DMBoundaryConditionType type, cons
     PetscValidIntPointer(bd, 13);
     *bd = n;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -3422,7 +3422,7 @@ PetscErrorCode PetscDSAddBoundaryByName(PetscDS ds, DMBoundaryConditionType type
     PetscValidIntPointer(bd, 13);
     *bd = n;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -3495,7 +3495,7 @@ PetscErrorCode PetscDSUpdateBoundary(PetscDS ds, PetscInt bd, DMBoundaryConditio
   if (bcFunc) b->func = bcFunc;
   if (bcFunc_t) b->func_t = bcFunc_t;
   if (ctx) b->ctx = ctx;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -3523,7 +3523,7 @@ PetscErrorCode PetscDSGetNumBoundary(PetscDS ds, PetscInt *numBd)
     ++(*numBd);
     b = b->next;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -3616,7 +3616,7 @@ PetscErrorCode PetscDSGetBoundary(PetscDS ds, PetscInt bd, PetscWeakForm *wf, DM
     PetscValidPointer(ctx, 14);
     *ctx = b->ctx;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DSBoundaryDuplicate_Internal(DSBoundary b, DSBoundary *bNew)
@@ -3639,7 +3639,7 @@ static PetscErrorCode DSBoundaryDuplicate_Internal(DSBoundary b, DSBoundary *bNe
   (*bNew)->func   = b->func;
   (*bNew)->func_t = b->func_t;
   (*bNew)->ctx    = b->ctx;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -3666,7 +3666,7 @@ PetscErrorCode PetscDSCopyBoundary(PetscDS ds, PetscInt numFields, const PetscIn
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ds, PETSCDS_CLASSID, 1);
   PetscValidHeaderSpecific(newds, PETSCDS_CLASSID, 4);
-  if (ds == newds) PetscFunctionReturn(0);
+  if (ds == newds) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(PetscDSDestroyBoundary(newds));
   lastnext = &(newds->boundary);
   for (b = ds->boundary; b; b = b->next) {
@@ -3686,7 +3686,7 @@ PetscErrorCode PetscDSCopyBoundary(PetscDS ds, PetscInt numFields, const PetscIn
     *lastnext   = bNew;
     lastnext    = &(bNew->next);
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -3717,7 +3717,7 @@ PetscErrorCode PetscDSDestroyBoundary(PetscDS ds)
     PetscCall(PetscFree(b->comps));
     PetscCall(PetscFree(b));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -3756,7 +3756,7 @@ PetscErrorCode PetscDSSelectDiscretizations(PetscDS prob, PetscInt numFields, co
     PetscCall(PetscDSGetDiscretization(prob, f, &disc));
     PetscCall(PetscDSSetDiscretization(newprob, fn, disc));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -3818,7 +3818,7 @@ PetscErrorCode PetscDSSelectEquations(PetscDS prob, PetscInt numFields, const Pe
       PetscCall(PetscDSSetBdJacobian(newprob, fn, gn, g0Bd, g1Bd, g2Bd, g3Bd));
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -3850,7 +3850,7 @@ PetscErrorCode PetscDSCopyEquations(PetscDS prob, PetscDS newprob)
   PetscCall(PetscDSGetWeakForm(prob, &wf));
   PetscCall(PetscDSGetWeakForm(newprob, &newwf));
   PetscCall(PetscWeakFormCopy(wf, newwf));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -3878,7 +3878,7 @@ PetscErrorCode PetscDSCopyConstants(PetscDS prob, PetscDS newprob)
   PetscValidHeaderSpecific(newprob, PETSCDS_CLASSID, 2);
   PetscCall(PetscDSGetConstants(prob, &Nc, &constants));
   PetscCall(PetscDSSetConstants(newprob, Nc, (PetscScalar *)constants));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -3912,7 +3912,7 @@ PetscErrorCode PetscDSCopyExactSolutions(PetscDS ds, PetscDS newds)
     PetscCall(PetscDSGetExactSolutionTimeDerivative(ds, f, &sol, &ctx));
     PetscCall(PetscDSSetExactSolutionTimeDerivative(newds, f, sol, ctx));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PetscDSGetHeightSubspace(PetscDS prob, PetscInt height, PetscDS *subprob)
@@ -3924,7 +3924,7 @@ PetscErrorCode PetscDSGetHeightSubspace(PetscDS prob, PetscInt height, PetscDS *
   PetscValidPointer(subprob, 3);
   if (height == 0) {
     *subprob = prob;
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
   PetscCall(PetscDSGetNumFields(prob, &Nf));
   PetscCall(PetscDSGetSpatialDimension(prob, &dim));
@@ -3949,7 +3949,7 @@ PetscErrorCode PetscDSGetHeightSubspace(PetscDS prob, PetscInt height, PetscDS *
     }
   }
   *subprob = prob->subprobs[height - 1];
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PetscDSGetDiscType_Internal(PetscDS ds, PetscInt f, PetscDiscType *disctype)
@@ -3970,14 +3970,14 @@ PetscErrorCode PetscDSGetDiscType_Internal(PetscDS ds, PetscInt f, PetscDiscType
     if (id == PETSCFE_CLASSID) *disctype = PETSC_DISC_FE;
     else *disctype = PETSC_DISC_FV;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscDSDestroy_Basic(PetscDS ds)
 {
   PetscFunctionBegin;
   PetscCall(PetscFree(ds->data));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscDSInitialize_Basic(PetscDS ds)
@@ -3987,7 +3987,7 @@ static PetscErrorCode PetscDSInitialize_Basic(PetscDS ds)
   ds->ops->setup          = NULL;
   ds->ops->view           = NULL;
   ds->ops->destroy        = PetscDSDestroy_Basic;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -4008,5 +4008,5 @@ PETSC_EXTERN PetscErrorCode PetscDSCreate_Basic(PetscDS ds)
   ds->data = b;
 
   PetscCall(PetscDSInitialize_Basic(ds));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

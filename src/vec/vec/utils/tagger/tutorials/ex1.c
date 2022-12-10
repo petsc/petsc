@@ -19,7 +19,7 @@ static PetscErrorCode ISGetBlockGlobalIS(IS is, Vec vec, PetscInt bs, IS *isBloc
   for (i = 0; i < n; i++) idxout[i] = rstart + idxin[i];
   PetscCall(ISRestoreIndices(is, &idxin));
   PetscCall(ISCreateBlock(PetscObjectComm((PetscObject)vec), bs, n, idxout, PETSC_OWN_POINTER, isBlockGlobal));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)

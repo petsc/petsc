@@ -74,7 +74,7 @@ static PetscErrorCode TaoSetUp_ASFLS(Tao tao)
   asls->r2       = NULL;
   asls->r3       = NULL;
   asls->dxfree   = NULL;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode Tao_ASLS_FunctionGradient(TaoLineSearch ls, Vec X, PetscReal *fcn, Vec G, void *ptr)
@@ -94,7 +94,7 @@ static PetscErrorCode Tao_ASLS_FunctionGradient(TaoLineSearch ls, Vec X, PetscRe
   PetscCall(MatMultTranspose(tao->jacobian, asls->t1, G));
   PetscCall(VecPointwiseMult(asls->t1, asls->ff, asls->da));
   PetscCall(VecAXPY(G, 1.0, asls->t1));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TaoDestroy_ASFLS(Tao tao)
@@ -119,7 +119,7 @@ static PetscErrorCode TaoDestroy_ASFLS(Tao tao)
   PetscCall(ISDestroy(&ssls->free));
   PetscCall(KSPDestroy(&tao->ksp));
   PetscCall(PetscFree(tao->data));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TaoSolve_ASFLS(Tao tao)
@@ -273,7 +273,7 @@ static PetscErrorCode TaoSolve_ASFLS(Tao tao)
     PetscCall(TaoLineSearchApply(tao->linesearch, tao->solution, &psi, asls->dpsi, tao->stepdirection, &t, &ls_reason));
     PetscCall(VecNorm(asls->dpsi, NORM_2, &ndpsi));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* ---------------------------------------------------------- */
@@ -339,5 +339,5 @@ PETSC_EXTERN PetscErrorCode TaoCreate_ASFLS(Tao tao)
   if (!tao->gatol_changed) tao->gatol = 1.0e-16;
   if (!tao->fmin_changed) tao->fmin = 1.0e-8;
 #endif
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -35,7 +35,7 @@ PetscErrorCode KSPGMRESSetOrthogonalization(KSP ksp, PetscErrorCode (*fcn)(KSP, 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
   PetscTryMethod(ksp, "KSPGMRESSetOrthogonalization_C", (KSP, PetscErrorCode(*)(KSP, PetscInt)), (ksp, fcn));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -75,5 +75,5 @@ PetscErrorCode KSPGMRESGetOrthogonalization(KSP ksp, PetscErrorCode (**fcn)(KSP,
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
   PetscUseMethod(ksp, "KSPGMRESGetOrthogonalization_C", (KSP, PetscErrorCode(**)(KSP, PetscInt)), (ksp, fcn));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

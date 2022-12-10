@@ -38,5 +38,5 @@ PetscErrorCode PetscGetRelativePath(const char fullpath[], char path[], size_t f
   /* Find string after last / or entire string if no / */
   PetscCall(PetscStrrchr(fullpath, '/', &p));
   PetscCall(PetscStrncpy(path, p, flen));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

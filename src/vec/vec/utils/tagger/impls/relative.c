@@ -52,7 +52,7 @@ static PetscErrorCode VecTaggerComputeBoxes_Relative(VecTagger tagger, Vec vec, 
   }
   *boxes = bxs;
   if (listed) *listed = PETSC_TRUE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -72,7 +72,7 @@ PetscErrorCode VecTaggerRelativeSetBox(VecTagger tagger, VecTaggerBox *box)
 {
   PetscFunctionBegin;
   PetscCall(VecTaggerSetBox_Simple(tagger, box));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -94,7 +94,7 @@ PetscErrorCode VecTaggerRelativeGetBox(VecTagger tagger, const VecTaggerBox **bo
 {
   PetscFunctionBegin;
   PetscCall(VecTaggerGetBox_Simple(tagger, box));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_INTERN PetscErrorCode VecTaggerCreate_Relative(VecTagger tagger)
@@ -102,5 +102,5 @@ PETSC_INTERN PetscErrorCode VecTaggerCreate_Relative(VecTagger tagger)
   PetscFunctionBegin;
   PetscCall(VecTaggerCreate_Simple(tagger));
   tagger->ops->computeboxes = VecTaggerComputeBoxes_Relative;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

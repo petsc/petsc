@@ -246,7 +246,7 @@ static inline PetscErrorCode SNESLogConvergenceHistory(SNES snes, PetscReal res,
     snes->conv_hist_len++;
   }
   PetscCall(PetscObjectSAWsGrantAccess((PetscObject)snes));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_EXTERN PetscErrorCode SNESVIProjectOntoBounds(SNES, Vec);
@@ -299,7 +299,7 @@ PETSC_EXTERN PetscErrorCode SNESEWSetFromOptions_Private(SNESKSPEW *, MPI_Comm, 
           snes->reason      = SNES_DIVERGED_FUNCTION_DOMAIN; \
           snes->domainerror = PETSC_FALSE; \
         } else snes->reason = SNES_DIVERGED_FNORM_NAN; \
-        PetscFunctionReturn(0); \
+        PetscFunctionReturn(PETSC_SUCCESS); \
       } \
     } \
   } while (0)
@@ -312,7 +312,7 @@ PETSC_EXTERN PetscErrorCode SNESEWSetFromOptions_Private(SNESKSPEW *, MPI_Comm, 
       if (domainerror) { \
         snes->reason = SNES_DIVERGED_JACOBIAN_DOMAIN; \
         PetscCheck(!snes->errorifnotconverged, PetscObjectComm((PetscObject)snes), PETSC_ERR_NOT_CONVERGED, "SNESSolve has not converged due to Jacobian domain error"); \
-        PetscFunctionReturn(0); \
+        PetscFunctionReturn(PETSC_SUCCESS); \
       } \
     } \
   } while (0)
@@ -330,12 +330,12 @@ PETSC_EXTERN PetscErrorCode SNESEWSetFromOptions_Private(SNESKSPEW *, MPI_Comm, 
         PetscCall(MPIU_Allreduce(&snes->domainerror, &domainerror, 1, MPIU_BOOL, MPI_LOR, PetscObjectComm((PetscObject)snes))); \
         if (domainerror) snes->reason = SNES_DIVERGED_FUNCTION_DOMAIN; \
         else snes->reason = SNES_DIVERGED_LINEAR_SOLVE; \
-        PetscFunctionReturn(0); \
+        PetscFunctionReturn(PETSC_SUCCESS); \
       } else { \
         if (++snes->numLinearSolveFailures >= snes->maxLinearSolveFailures) { \
           PetscCall(PetscInfo(snes, "iter=%" PetscInt_FMT ", number linear solve failures %" PetscInt_FMT " greater than current SNES allowed %" PetscInt_FMT ", stopping solve\n", snes->iter, snes->numLinearSolveFailures, snes->maxLinearSolveFailures)); \
           snes->reason = SNES_DIVERGED_LINEAR_SOLVE; \
-          PetscFunctionReturn(0); \
+          PetscFunctionReturn(PETSC_SUCCESS); \
         } \
       } \
     } \

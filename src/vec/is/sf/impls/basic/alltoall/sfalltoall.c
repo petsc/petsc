@@ -27,7 +27,7 @@ static PetscErrorCode PetscSFGetGraph_Alltoall(PetscSF sf, PetscInt *nroots, Pet
     }
     *iremote = sf->remote;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscSFBcastBegin_Alltoall(PetscSF sf, MPI_Datatype unit, PetscMemType rootmtype, const void *rootdata, PetscMemType leafmtype, void *leafdata, MPI_Op op)
@@ -45,7 +45,7 @@ static PetscErrorCode PetscSFBcastBegin_Alltoall(PetscSF sf, MPI_Datatype unit, 
   PetscCall(PetscSFLinkGetMPIBuffersAndRequests(sf, link, PETSCSF_ROOT2LEAF, &rootbuf, &leafbuf, &req, NULL));
   PetscCall(PetscSFLinkSyncStreamBeforeCallMPI(sf, link, PETSCSF_ROOT2LEAF));
   PetscCallMPI(MPIU_Ialltoall(rootbuf, 1, unit, leafbuf, 1, unit, comm, req));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscSFReduceBegin_Alltoall(PetscSF sf, MPI_Datatype unit, PetscMemType leafmtype, const void *leafdata, PetscMemType rootmtype, void *rootdata, MPI_Op op)
@@ -63,7 +63,7 @@ static PetscErrorCode PetscSFReduceBegin_Alltoall(PetscSF sf, MPI_Datatype unit,
   PetscCall(PetscSFLinkGetMPIBuffersAndRequests(sf, link, PETSCSF_LEAF2ROOT, &rootbuf, &leafbuf, &req, NULL));
   PetscCall(PetscSFLinkSyncStreamBeforeCallMPI(sf, link, PETSCSF_LEAF2ROOT));
   PetscCallMPI(MPIU_Ialltoall(leafbuf, 1, unit, rootbuf, 1, unit, comm, req));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscSFCreateLocalSF_Alltoall(PetscSF sf, PetscSF *out)
@@ -87,7 +87,7 @@ static PetscErrorCode PetscSFCreateLocalSF_Alltoall(PetscSF sf, PetscSF *out)
   PetscCall(PetscSFSetGraph(lsf, nroots, nleaves, NULL /*contiguous leaves*/, PETSC_OWN_POINTER, iremote, PETSC_OWN_POINTER));
   PetscCall(PetscSFSetUp(lsf));
   *out = lsf;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscSFCreateEmbeddedRootSF_Alltoall(PetscSF sf, PetscInt nselected, const PetscInt *selected, PetscSF *newsf)
@@ -187,7 +187,7 @@ static PetscErrorCode PetscSFCreateEmbeddedRootSF_Alltoall(PetscSF sf, PetscInt 
 
   esf->setupcalled = PETSC_TRUE; /* We have done setup ourselves! */
   *newsf           = esf;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_INTERN PetscErrorCode PetscSFCreate_Alltoall(PetscSF sf)
@@ -220,5 +220,5 @@ PETSC_INTERN PetscErrorCode PetscSFCreate_Alltoall(PetscSF sf)
 
   PetscCall(PetscNew(&dat));
   sf->data = (void *)dat;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

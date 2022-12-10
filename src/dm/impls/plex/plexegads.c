@@ -51,7 +51,7 @@ PetscErrorCode DMPlexSnapToGeomModel_EGADS_Internal(DM dm, PetscInt p, ego model
     Np = 2;
   } else {
     for (d = 0; d < dE; ++d) gcoords[d] = mcoords[d];
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   /* Calculate parameters (t or u,v) for vertices */
@@ -60,7 +60,7 @@ PetscErrorCode DMPlexSnapToGeomModel_EGADS_Internal(DM dm, PetscInt p, ego model
   if (Nv == 1) {
     PetscCall(DMPlexVecRestoreClosure(cdm, NULL, coordinatesLocal, p, &Nv, &coords));
     for (d = 0; d < dE; ++d) gcoords[d] = mcoords[d];
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
   PetscCheck(Nv <= 16, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Cannot handle %" PetscInt_FMT " coordinates associated to point %" PetscInt_FMT, Nv, p);
 
@@ -97,7 +97,7 @@ PetscErrorCode DMPlexSnapToGeomModel_EGADS_Internal(DM dm, PetscInt p, ego model
   /* Put coordinates for new vertex in result[] */
   PetscCall(EG_evaluate(obj, params, result));
   for (d = 0; d < dE; ++d) gcoords[d] = result[d];
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 #endif
 
@@ -141,7 +141,7 @@ PetscErrorCode DMPlexSnapToGeomModel(DM dm, PetscInt p, PetscInt dE, const Petsc
     PetscCall(DMGetLabel(dm, "EGADS Edge ID", &edgeLabel));
     if (!bodyLabel || !faceLabel || !edgeLabel || plex->ignoreModel) {
       for (d = 0; d < dE; ++d) gcoords[d] = mcoords[d];
-      PetscFunctionReturn(0);
+      PetscFunctionReturn(PETSC_SUCCESS);
     }
     PetscCall(PetscObjectQuery((PetscObject)dm, "EGADS Model", (PetscObject *)&modelObj));
     if (!modelObj) {
@@ -150,7 +150,7 @@ PetscErrorCode DMPlexSnapToGeomModel(DM dm, PetscInt p, PetscInt dE, const Petsc
     }
     if (!modelObj) {
       for (d = 0; d < dE; ++d) gcoords[d] = mcoords[d];
-      PetscFunctionReturn(0);
+      PetscFunctionReturn(PETSC_SUCCESS);
     }
     PetscCall(PetscContainerGetPointer(modelObj, (void **)&model));
     PetscCall(DMLabelGetValue(bodyLabel, p, &bodyID));
@@ -159,7 +159,7 @@ PetscErrorCode DMPlexSnapToGeomModel(DM dm, PetscInt p, PetscInt dE, const Petsc
     /* Allows for "Connective" Plex Edges present in models with multiple non-touching Entities */
     if (bodyID < 0) {
       for (d = 0; d < dE; ++d) gcoords[d] = mcoords[d];
-      PetscFunctionReturn(0);
+      PetscFunctionReturn(PETSC_SUCCESS);
     }
     if (islite) PetscCall(DMPlexSnapToGeomModel_EGADSLite_Internal(dm, p, model, bodyID, faceID, edgeID, mcoords, gcoords));
     else PetscCall(DMPlexSnapToGeomModel_EGADS_Internal(dm, p, model, bodyID, faceID, edgeID, mcoords, gcoords));
@@ -167,7 +167,7 @@ PetscErrorCode DMPlexSnapToGeomModel(DM dm, PetscInt p, PetscInt dE, const Petsc
 #else
   for (d = 0; d < dE; ++d) gcoords[d] = mcoords[d];
 #endif
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 #if defined(PETSC_HAVE_EGADS)
@@ -260,7 +260,7 @@ static PetscErrorCode DMPlexEGADSPrintModel_Internal(ego model)
     }
     EG_free(lobjs);
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMPlexEGADSDestroy_Private(void *context)
@@ -704,7 +704,7 @@ static PetscErrorCode DMPlexCreateEGADS_Internal(MPI_Comm comm, ego context, ego
     PetscCall(DMPlexRestoreTransitiveClosure(dm, c, PETSC_TRUE, &clSize, &closure));
   }
   *newdm = dm;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMPlexCreateEGADS(MPI_Comm comm, ego context, ego model, DM *newdm)
@@ -1114,7 +1114,7 @@ static PetscErrorCode DMPlexCreateEGADS(MPI_Comm comm, ego context, ego model, D
   PetscCall(PetscHMapIDestroy(&bodyFaceMap));
 
   *newdm = dm;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMPlexCreateEGADS_Tess_Internal(MPI_Comm comm, ego context, ego model, DM *newdm)
@@ -1421,7 +1421,7 @@ static PetscErrorCode DMPlexCreateEGADS_Tess_Internal(MPI_Comm comm, ego context
   }
 
   *newdm = dm;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 #endif
 
@@ -1461,7 +1461,7 @@ PetscErrorCode DMPlexInflateToGeomModel(DM dm)
   PetscFunctionBegin;
 #if defined(PETSC_HAVE_EGADS)
   PetscCall(PetscObjectQuery((PetscObject)dm, "EGADS Model", (PetscObject *)&modelObj));
-  if (!modelObj) PetscFunctionReturn(0);
+  if (!modelObj) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(DMGetCoordinateDim(dm, &cdim));
   PetscCall(DMGetCoordinateDM(dm, &cdm));
   PetscCall(DMGetCoordinatesLocal(dm, &coordinates));
@@ -1505,7 +1505,7 @@ PetscErrorCode DMPlexInflateToGeomModel(DM dm)
   /* Clear out global coordinates */
   PetscCall(VecDestroy(&dm->coordinates[0].x));
 #endif
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1547,7 +1547,7 @@ PetscErrorCode DMPlexCreateEGADSFromFile(MPI_Comm comm, const char filename[], D
   if (tessModel) PetscCall(DMPlexCreateEGADS_Tess_Internal(comm, context, model, dm));
   else if (newModel) PetscCall(DMPlexCreateEGADS(comm, context, model, dm));
   else PetscCall(DMPlexCreateEGADS_Internal(comm, context, model, dm));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 #else
   SETERRQ(comm, PETSC_ERR_SUP, "This method requires EGADS support. Reconfigure using --download-egads");
 #endif

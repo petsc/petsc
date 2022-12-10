@@ -275,7 +275,7 @@ Input : pointer to ADT.
 Description: This function frees the storage associated with an xxt handle
 Usage: XXT_free(xxt_handle);
 **************************************xxt.h***********************************/
-PETSC_INTERN PetscInt XXT_free(xxt_ADT);
+PETSC_INTERN PetscErrorCode XXT_free(xxt_ADT);
 
 /*************************************xxt.h************************************
 Function: XXT_factor

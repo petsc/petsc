@@ -239,5 +239,5 @@ PETSC_EXTERN PetscErrorCode DMAdaptMetric_Pragmatic_Plex(DM dm, Vec vertexMetric
   PetscCall(PetscFree2(bdFaces, bdFaceIds));
   PetscCall(PetscFree(coordsNew));
   pragmatic_finalize();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

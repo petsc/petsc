@@ -18,7 +18,7 @@ PetscErrorCode PetscSysFinalizePackage(void)
   PetscFunctionBegin;
   if (Petsc_Seq_keyval != MPI_KEYVAL_INVALID) PetscCallMPI(MPI_Comm_free_keyval(&Petsc_Seq_keyval));
   PetscSysPackageInitialized = PETSC_FALSE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -36,7 +36,7 @@ PetscErrorCode PetscSysInitializePackage(void)
   PetscBool opt, pkg;
 
   PetscFunctionBegin;
-  if (PetscSysPackageInitialized) PetscFunctionReturn(0);
+  if (PetscSysPackageInitialized) PetscFunctionReturn(PETSC_SUCCESS);
   PetscSysPackageInitialized = PETSC_TRUE;
   /* Register Classes */
   PetscCall(PetscClassIdRegister("Object", &PETSC_OBJECT_CLASSID));
@@ -60,7 +60,7 @@ PetscErrorCode PetscSysInitializePackage(void)
     if (pkg) PetscCall(PetscLogEventExcludeClass(PETSC_SMALLEST_CLASSID));
   }
   PetscCall(PetscRegisterFinalize(PetscSysFinalizePackage));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 #if defined(PETSC_HAVE_DYNAMIC_LIBRARIES)
@@ -103,6 +103,6 @@ PETSC_EXTERN PetscErrorCode PetscDLLibraryRegister_petscsys(void)
   PetscCall(PetscDLLibraryRegister_petscsnes());
   PetscCall(PetscDLLibraryRegister_petscts());
   #endif
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 #endif /* PETSC_HAVE_DYNAMIC_LIBRARIES */

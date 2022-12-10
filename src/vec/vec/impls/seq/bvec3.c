@@ -60,5 +60,5 @@ PetscErrorCode VecCreate_Seq(Vec V)
     SETERRQ(PetscObjectComm((PetscObject)V), PETSC_ERR_SUP, "No support for mixed precision %d", (int)(((PetscObject)V)->precision));
   }
 #endif
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

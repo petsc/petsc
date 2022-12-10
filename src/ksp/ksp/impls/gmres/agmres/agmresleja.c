@@ -20,7 +20,7 @@ static PetscErrorCode KSPAGMRESLejafmaxarray(PetscScalar *re, PetscInt pt, Petsc
       *pos = i;
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode KSPAGMRESLejaCfpdMax(PetscScalar *rm, PetscScalar *im, PetscInt *spos, PetscInt nbre, PetscInt n, PetscInt *rpos)
@@ -44,7 +44,7 @@ static PetscErrorCode KSPAGMRESLejaCfpdMax(PetscScalar *rm, PetscScalar *im, Pet
     }
     pd = 1.0;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode KSPAGMRESLejaOrdering(PetscScalar *re, PetscScalar *im, PetscScalar *rre, PetscScalar *rim, PetscInt m)
@@ -97,5 +97,5 @@ PetscErrorCode KSPAGMRESLejaOrdering(PetscScalar *re, PetscScalar *im, PetscScal
   }
   PetscCall(PetscFree(spos));
   PetscCall(PetscFree(n_cmpl));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

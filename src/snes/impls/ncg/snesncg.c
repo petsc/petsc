@@ -4,7 +4,7 @@ const char *const SNESNCGTypes[] = {"FR", "PRP", "HS", "DY", "CD", "SNESNCGType"
 static PetscErrorCode SNESReset_NCG(SNES snes)
 {
   PetscFunctionBegin;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -20,7 +20,7 @@ static PetscErrorCode SNESDestroy_NCG(SNES snes)
   PetscFunctionBegin;
   PetscCall(PetscObjectComposeFunction((PetscObject)snes, "SNESNCGSetType_C", NULL));
   PetscCall(PetscFree(snes->data));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -40,7 +40,7 @@ static PetscErrorCode SNESSetUp_NCG(SNES snes)
   PetscCall(SNESSetWorkVecs(snes, 2));
   PetscCheck(snes->npcside != PC_RIGHT, PetscObjectComm((PetscObject)snes), PETSC_ERR_ARG_WRONGSTATE, "SNESNCG only supports left preconditioning");
   if (snes->functype == SNES_FUNCTION_DEFAULT) snes->functype = SNES_FUNCTION_UNPRECONDITIONED;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode SNESLineSearchApply_NCGLinear(SNESLineSearch linesearch)
@@ -78,7 +78,7 @@ static PetscErrorCode SNESLineSearchApply_NCGLinear(SNESLineSearch linesearch)
   PetscCall(VecNorm(F, NORM_2, fnorm));
   PetscCall(VecNorm(X, NORM_2, xnorm));
   PetscCall(VecNorm(Y, NORM_2, ynorm));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -106,7 +106,7 @@ PETSC_EXTERN PetscErrorCode SNESLineSearchCreate_NCGLinear(SNESLineSearch linese
   linesearch->ops->reset          = NULL;
   linesearch->ops->view           = NULL;
   linesearch->ops->setup          = NULL;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -141,7 +141,7 @@ static PetscErrorCode SNESSetFromOptions_NCG(SNES snes, PetscOptionItems *PetscO
       }
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -161,7 +161,7 @@ static PetscErrorCode SNESView_NCG(SNES snes, PetscViewer viewer)
   PetscFunctionBegin;
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
   if (iascii) PetscCall(PetscViewerASCIIPrintf(viewer, "  type: %s\n", SNESNCGTypes[ncg->type]));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -186,7 +186,7 @@ PetscErrorCode SNESNCGComputeYtJtF_Private(SNES snes, Vec X, Vec F, Vec Y, Vec W
   PetscCall(SNESComputeFunction(snes, W, G));
   PetscCall(VecDot(G, F, &ftg));
   *ytJtf = (ftg - ftf) / h;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -226,7 +226,7 @@ PetscErrorCode SNESNCGSetType(SNES snes, SNESNCGType btype)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
   PetscTryMethod(snes, "SNESNCGSetType_C", (SNES, SNESNCGType), (snes, btype));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode SNESNCGSetType_NCG(SNES snes, SNESNCGType btype)
@@ -235,7 +235,7 @@ static PetscErrorCode SNESNCGSetType_NCG(SNES snes, SNESNCGType btype)
 
   PetscFunctionBegin;
   ncg->type = btype;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -287,7 +287,7 @@ static PetscErrorCode SNESSolve_NCG(SNES snes)
     PetscCall(SNESGetConvergedReason(snes->npc, &reason));
     if (reason < 0 && reason != SNES_DIVERGED_MAX_IT) {
       snes->reason = SNES_DIVERGED_INNER;
-      PetscFunctionReturn(0);
+      PetscFunctionReturn(PETSC_SUCCESS);
     }
     PetscCall(VecCopy(dX, F));
     PetscCall(VecNorm(F, NORM_2, &fnorm));
@@ -307,7 +307,7 @@ static PetscErrorCode SNESSolve_NCG(SNES snes)
       PetscCall(SNESGetConvergedReason(snes->npc, &reason));
       if (reason < 0 && reason != SNES_DIVERGED_MAX_IT) {
         snes->reason = SNES_DIVERGED_INNER;
-        PetscFunctionReturn(0);
+        PetscFunctionReturn(PETSC_SUCCESS);
       }
     }
   }
@@ -322,7 +322,7 @@ static PetscErrorCode SNESSolve_NCG(SNES snes)
 
   /* test convergence */
   PetscUseTypeMethod(snes, converged, 0, 0.0, 0.0, fnorm, &snes->reason, snes->cnvP);
-  if (snes->reason) PetscFunctionReturn(0);
+  if (snes->reason) PetscFunctionReturn(PETSC_SUCCESS);
 
   /* Call general purpose update function */
   PetscTryTypeMethod(snes, update, snes->iter);
@@ -338,12 +338,12 @@ static PetscErrorCode SNESSolve_NCG(SNES snes)
     if (lsresult) {
       if (++snes->numFailures >= snes->maxFailures) {
         snes->reason = SNES_DIVERGED_LINE_SEARCH;
-        PetscFunctionReturn(0);
+        PetscFunctionReturn(PETSC_SUCCESS);
       }
     }
     if (snes->nfuncs >= snes->max_funcs && snes->max_funcs >= 0) {
       snes->reason = SNES_DIVERGED_FUNCTION_COUNT;
-      PetscFunctionReturn(0);
+      PetscFunctionReturn(PETSC_SUCCESS);
     }
     /* Monitor convergence */
     PetscCall(PetscObjectSAWsTakeAccess((PetscObject)snes));
@@ -357,7 +357,7 @@ static PetscErrorCode SNESSolve_NCG(SNES snes)
 
     /* Test for convergence */
     PetscUseTypeMethod(snes, converged, snes->iter, xnorm, ynorm, fnorm, &snes->reason, snes->cnvP);
-    if (snes->reason) PetscFunctionReturn(0);
+    if (snes->reason) PetscFunctionReturn(PETSC_SUCCESS);
 
     /* Call general purpose update function */
     PetscTryTypeMethod(snes, update, snes->iter);
@@ -367,7 +367,7 @@ static PetscErrorCode SNESSolve_NCG(SNES snes)
         PetscCall(SNESGetConvergedReason(snes->npc, &reason));
         if (reason < 0 && reason != SNES_DIVERGED_MAX_IT) {
           snes->reason = SNES_DIVERGED_INNER;
-          PetscFunctionReturn(0);
+          PetscFunctionReturn(PETSC_SUCCESS);
         }
         PetscCall(VecCopy(dX, F));
       } else {
@@ -375,7 +375,7 @@ static PetscErrorCode SNESSolve_NCG(SNES snes)
         PetscCall(SNESGetConvergedReason(snes->npc, &reason));
         if (reason < 0 && reason != SNES_DIVERGED_MAX_IT) {
           snes->reason = SNES_DIVERGED_INNER;
-          PetscFunctionReturn(0);
+          PetscFunctionReturn(PETSC_SUCCESS);
         }
       }
     } else {
@@ -431,7 +431,7 @@ static PetscErrorCode SNESSolve_NCG(SNES snes)
   }
   PetscCall(PetscInfo(snes, "Maximum number of iterations has been reached: %" PetscInt_FMT "\n", maxits));
   if (!snes->reason) snes->reason = SNES_DIVERGED_MAX_IT;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -489,5 +489,5 @@ PETSC_EXTERN PetscErrorCode SNESCreate_NCG(SNES snes)
   neP->monitor = NULL;
   neP->type    = SNES_NCG_PRP;
   PetscCall(PetscObjectComposeFunction((PetscObject)snes, "SNESNCGSetType_C", SNESNCGSetType_NCG));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

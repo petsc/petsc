@@ -47,7 +47,7 @@ static PetscErrorCode DMView_DA_1d(DM da, PetscViewer viewer)
       PetscCall(PetscFree(nz));
       navg = navg / size;
       PetscCall(PetscViewerASCIIPrintf(viewer, "  Load Balance - Grid Points: Min %" PetscInt_FMT "  avg %" PetscInt_FMT "  max %" PetscInt_FMT "\n", nmin, navg, nmax));
-      PetscFunctionReturn(0);
+      PetscFunctionReturn(PETSC_SUCCESS);
     }
     if (format != PETSC_VIEWER_ASCII_VTK_DEPRECATED && format != PETSC_VIEWER_ASCII_VTK_CELL_DEPRECATED && format != PETSC_VIEWER_ASCII_GLVIS) {
       DMDALocalInfo info;
@@ -68,7 +68,7 @@ static PetscErrorCode DMView_DA_1d(DM da, PetscViewer viewer)
 
     PetscCall(PetscViewerDrawGetDraw(viewer, 0, &draw));
     PetscCall(PetscDrawIsNull(draw, &isnull));
-    if (isnull) PetscFunctionReturn(0);
+    if (isnull) PetscFunctionReturn(PETSC_SUCCESS);
 
     PetscCall(PetscDrawCheckResizedWindow(draw));
     PetscCall(PetscDrawClear(draw));
@@ -119,7 +119,7 @@ static PetscErrorCode DMView_DA_1d(DM da, PetscViewer viewer)
     PetscCall(DMView_DA_Matlab(da, viewer));
 #endif
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMSetUp_DA_1D(DM da)
@@ -311,7 +311,7 @@ PetscErrorCode DMSetUp_DA_1D(DM da)
 
   PetscCall(ISLocalToGlobalMappingCreate(comm, dof, nn, idx, PETSC_OWN_POINTER, &da->ltogmap));
 
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -372,5 +372,5 @@ PetscErrorCode DMDACreate1d(MPI_Comm comm, DMBoundaryType bx, PetscInt M, PetscI
   PetscCall(DMDASetDof(*da, dof));
   PetscCall(DMDASetStencilWidth(*da, s));
   PetscCall(DMDASetOwnershipRanges(*da, lx, NULL, NULL));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

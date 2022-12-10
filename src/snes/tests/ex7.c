@@ -108,6 +108,7 @@ PetscErrorCode FormFunction(SNES snes, Vec x, Vec f, void *dummy)
   PetscScalar       *ff, d;
   PetscInt           i, n;
 
+  PetscFunctionBeginUser;
   PetscCall(VecGetArrayRead(x, &xx));
   PetscCall(VecGetArray(f, &ff));
   PetscCall(VecGetArrayRead((Vec)dummy, &FF));
@@ -120,7 +121,7 @@ PetscErrorCode FormFunction(SNES snes, Vec x, Vec f, void *dummy)
   PetscCall(VecRestoreArrayRead(x, &xx));
   PetscCall(VecRestoreArray(f, &ff));
   PetscCall(VecRestoreArrayRead((Vec)dummy, &FF));
-  return 0;
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode FormFunctioni(void *dummy, PetscInt i, Vec x, PetscScalar *s)
@@ -131,6 +132,7 @@ PetscErrorCode FormFunctioni(void *dummy, PetscInt i, Vec x, PetscScalar *s)
   SNES               snes = (SNES)dummy;
   Vec                F;
 
+  PetscFunctionBeginUser;
   PetscCall(SNESGetFunction(snes, NULL, NULL, (void **)&F));
   PetscCall(VecGetArrayRead(x, &xx));
   PetscCall(VecGetArrayRead(F, &FF));
@@ -146,7 +148,7 @@ PetscErrorCode FormFunctioni(void *dummy, PetscInt i, Vec x, PetscScalar *s)
   }
   PetscCall(VecRestoreArrayRead(x, &xx));
   PetscCall(VecRestoreArrayRead(F, &FF));
-  return 0;
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -156,9 +158,10 @@ PetscErrorCode FormFunctioni(void *dummy, PetscInt i, Vec x, PetscScalar *s)
 */
 PetscErrorCode OtherFunctionForDifferencing(void *dummy, Vec x, Vec f)
 {
+  PetscFunctionBeginUser;
   PetscCall(FormFunction(NULL, x, f, dummy));
   PetscCall(VecShift(f, 1.0));
-  return 0;
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* --------------------  Form initial approximation ----------------- */
@@ -166,8 +169,9 @@ PetscErrorCode OtherFunctionForDifferencing(void *dummy, Vec x, Vec f)
 PetscErrorCode FormInitialGuess(SNES snes, Vec x)
 {
   PetscScalar pfive = .50;
+  PetscFunctionBeginUser;
   PetscCall(VecSet(x, pfive));
-  return 0;
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 /* --------------------  Evaluate Jacobian F'(x) -------------------- */
 /*  Evaluates a matrix that is used to precondition the matrix-free
@@ -182,6 +186,7 @@ PetscErrorCode FormJacobian(SNES snes, Vec x, Mat jac, Mat B, void *dummy)
   PetscInt           i, n, j[3];
   AppCtx            *user = (AppCtx *)dummy;
 
+  PetscFunctionBeginUser;
   PetscCall(VecGetArrayRead(x, &xx));
   PetscCall(VecGetSize(x, &n));
   d = (PetscReal)(n - 1);
@@ -209,17 +214,18 @@ PetscErrorCode FormJacobian(SNES snes, Vec x, Mat jac, Mat B, void *dummy)
   if (user->variant) PetscCall(MatMFFDSetBase(jac, x, NULL));
   PetscCall(MatAssemblyBegin(jac, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(jac, MAT_FINAL_ASSEMBLY));
-  return 0;
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode FormJacobianNoMatrix(SNES snes, Vec x, Mat jac, Mat B, void *dummy)
 {
   AppCtx *user = (AppCtx *)dummy;
 
+  PetscFunctionBeginUser;
   if (user->variant) PetscCall(MatMFFDSetBase(jac, x, NULL));
   PetscCall(MatAssemblyBegin(jac, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(jac, MAT_FINAL_ASSEMBLY));
-  return 0;
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* --------------------  User-defined monitor ----------------------- */
@@ -230,11 +236,12 @@ PetscErrorCode Monitor(SNES snes, PetscInt its, PetscReal fnorm, void *dummy)
   Vec         x;
   MPI_Comm    comm;
 
+  PetscFunctionBeginUser;
   PetscCall(PetscObjectGetComm((PetscObject)snes, &comm));
   PetscCall(PetscFPrintf(comm, stdout, "iter = %" PetscInt_FMT ", SNES Function norm %g \n", its, (double)fnorm));
   PetscCall(SNESGetSolution(snes, &x));
   PetscCall(VecView(x, monP->viewer));
-  return 0;
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*TEST

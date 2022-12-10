@@ -17,7 +17,7 @@ static PetscErrorCode MatCreateVecs_KSP(Mat A, Vec *X, Vec *Y)
   PetscCall(MatShellGetContext(A, &ctx));
   PetscCall(KSPGetOperators(ctx->ksp, &M, NULL));
   PetscCall(MatCreateVecs(M, X, Y));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatMult_KSP(Mat A, Vec X, Vec Y)
@@ -27,7 +27,7 @@ static PetscErrorCode MatMult_KSP(Mat A, Vec X, Vec Y)
   PetscFunctionBegin;
   PetscCall(MatShellGetContext(A, &ctx));
   PetscCall(KSP_PCApplyBAorAB(ctx->ksp, X, Y, ctx->work));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -74,7 +74,7 @@ PetscErrorCode KSPComputeOperator(KSP ksp, MatType mattype, Mat *mat)
   PetscCall(MatComputeOperator(Aksp, mattype, mat));
   PetscCall(VecDestroy(&ctx.work));
   PetscCall(MatDestroy(&Aksp));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -229,7 +229,7 @@ PetscErrorCode KSPComputeEigenvaluesExplicitly(KSP ksp, PetscInt nmax, PetscReal
     PetscCall(MatDenseRestoreArray(BA, &array));
   }
   PetscCall(MatDestroy(&BA));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PolyEval(PetscInt nroots, const PetscReal *r, const PetscReal *c, PetscReal x, PetscReal y, PetscReal *px, PetscReal *py)
@@ -246,7 +246,7 @@ static PetscErrorCode PolyEval(PetscInt nroots, const PetscReal *r, const PetscR
   }
   *px = rprod;
   *py = iprod;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 #include <petscdraw.h>
@@ -262,7 +262,7 @@ PetscErrorCode KSPPlotEigenContours_Private(KSP ksp, PetscInt neig, const PetscR
 
   PetscFunctionBegin;
   PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)ksp), &rank));
-  if (rank) PetscFunctionReturn(0);
+  if (rank) PetscFunctionReturn(PETSC_SUCCESS);
   M    = 80;
   N    = 80;
   xmin = r[0];
@@ -308,5 +308,5 @@ PetscErrorCode KSPPlotEigenContours_Private(KSP ksp, PetscInt neig, const PetscR
   }
   PetscCall(PetscViewerDestroy(&viewer));
   PetscCall(PetscFree3(xloc, yloc, value));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -208,7 +208,7 @@ inline PetscErrorCode PoolAllocator::delete_ptr_(void **in_ptr) noexcept
     PetscCall(PetscUnpoisonMemoryRegion(header, total_size_(header->size, header->align)));
     PetscCallCXX(::delete[] reinterpret_cast<unsigned char *>(header));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -239,13 +239,13 @@ inline PetscErrorCode PoolAllocator::clear_(size_type *remaining) noexcept
       PetscFunctionBegin;
       ++remain;
       PetscCall(delete_ptr_(&ptr));
-      PetscFunctionReturn(0);
+      PetscFunctionReturn(PETSC_SUCCESS);
     })
   );
   // clang-format on
   PetscCall(pool().clear());
   if (remaining) *remaining = remain;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -265,7 +265,7 @@ inline PetscErrorCode PoolAllocator::finalize_() noexcept
 {
   PetscFunctionBegin;
   PetscCall(clear_());
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 // a quick sanity check that the alignment is valid, does nothin in optimized builds
@@ -277,7 +277,7 @@ inline PetscErrorCode PoolAllocator::valid_alignment_(align_type in_align) noexc
   PetscFunctionBegin;
   PetscAssert((align > 0) && (align <= max_align), PETSC_COMM_SELF, PETSC_ERR_MEMC, "Alignment %zu must be (0, %zu]", align, max_align);
   PetscAssert(!(align & (align - 1)), PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Alignment %zu must be a power of 2", align);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -331,7 +331,7 @@ inline PetscErrorCode PoolAllocator::extract_header_(void *user_ptr, AllocationH
     }
     PetscCall(PetscPoisonMemoryRegion(buffer_zone_end, sizeof(*buffer_zone_end)));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -404,7 +404,7 @@ inline PetscErrorCode PoolAllocator::allocate_ptr_(size_type size, align_type al
   // any extra space on *either* ends of the array are poisoned
   PetscCall(PetscPoisonMemoryRegion(base_ptr, total_size));
   PetscCall(PetscUnpoisonMemoryRegion(aligned_ptr, size));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 // ==========================================================================================
@@ -441,7 +441,7 @@ inline PetscErrorCode PoolAllocator::get_attributes(const void *ptr, size_type *
     if (align) *align = header->align;
     PetscCall(PetscPoisonMemoryRegion(header, sizeof(*header)));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -493,7 +493,7 @@ inline PetscErrorCode PoolAllocator::try_allocate(void **out_ptr, size_type size
   }
   *out_ptr = ptr;
   *success = found;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -523,7 +523,7 @@ inline PetscErrorCode PoolAllocator::allocate(void **out_ptr, size_type size, al
     PetscCall(allocate_ptr_(size, align, out_ptr));
   }
   if (allocated_from_pool) *allocated_from_pool = success;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -558,7 +558,7 @@ inline PetscErrorCode PoolAllocator::deallocate(void **in_ptr, size_type size, a
       PetscCall(delete_ptr_(&ptr));
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -588,7 +588,7 @@ inline PetscErrorCode PoolAllocator::unpoison(const void *ptr, size_type *size) 
   PetscValidPointer(size, 2);
   PetscCall(get_attributes(ptr, size, nullptr));
   PetscCall(PetscUnpoisonMemoryRegion(ptr, *size));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -608,7 +608,7 @@ inline PetscErrorCode PoolAllocator::repoison(const void *ptr, size_type size) n
   PetscFunctionBegin;
   PetscValidPointer(ptr, 1);
   PetscCall(PetscPoisonMemoryRegion(ptr, size));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -652,7 +652,7 @@ inline PetscErrorCode PoolAllocator::for_each(T &&callable) noexcept
       }
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 // ==========================================================================================
@@ -789,14 +789,14 @@ public:
   {
     PetscFunctionBegin;
     PetscCall(underlying().construct_(ptr, std::forward<Args>(args)...));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   PETSC_NODISCARD PetscErrorCode destroy(value_type *ptr) const noexcept
   {
     PetscFunctionBegin;
     PetscCall(underlying().destroy_(ptr));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   template <typename... Args>
@@ -804,14 +804,14 @@ public:
   {
     PetscFunctionBegin;
     PetscCall(underlying().reset_(val, std::forward<Args>(args)...));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   PETSC_NODISCARD PetscErrorCode invalidate(value_type *ptr) const noexcept
   {
     PetscFunctionBegin;
     PetscCall(underlying().invalidate_(ptr));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
 protected:
@@ -821,7 +821,7 @@ protected:
     PetscFunctionBegin;
     PetscValidPointer(ptr, 1);
     PetscCallCXX(util::construct_at(ptr, std::forward<Args>(args)...));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   PETSC_NODISCARD static PetscErrorCode destroy_(value_type *ptr) noexcept
@@ -831,7 +831,7 @@ protected:
       PetscValidPointer(ptr, 1);
       PetscCallCXX(util::destroy_at(ptr));
     }
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   template <typename... Args>
@@ -839,14 +839,14 @@ protected:
   {
     PetscFunctionBegin;
     PetscCall(underlying().construct(val, std::forward<Args>(args)...));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   PETSC_NODISCARD PetscErrorCode invalidate_(value_type *ptr) const noexcept
   {
     PetscFunctionBegin;
     PetscCall(underlying().destroy(ptr));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   PETSC_NODISCARD Derived       &underlying() noexcept { return static_cast<Derived &>(*this); }
@@ -914,12 +914,12 @@ inline PetscErrorCode ObjectPool<T, Constructor>::finalize_() noexcept
     {
       PetscFunctionBegin;
       PetscCall(this->constructor().destroy(static_cast<value_type *>(ptr)));
-      PetscFunctionReturn(0);
+      PetscFunctionReturn(PETSC_SUCCESS);
     })
   );
   // clang-format on
   PetscCall(this->allocator().register_finalize());
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 // ==========================================================================================
@@ -964,7 +964,7 @@ inline PetscErrorCode ObjectPool<T, Constructor>::allocate(value_type **obj, Arg
   } else {
     PetscCall(this->constructor().construct(*obj, std::forward<Args>(args)...));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -988,7 +988,7 @@ inline PetscErrorCode ObjectPool<T, Constructor>::deallocate(value_type **obj) n
     PetscCall(this->constructor().destroy(*obj));
   }
   PetscCall(this->allocator().deallocate(reinterpret_cast<void **>(obj), sizeof(value_type), static_cast<align_type>(alignof(value_type))));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 } // namespace Petsc

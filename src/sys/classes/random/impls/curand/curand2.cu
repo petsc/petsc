@@ -31,7 +31,7 @@ struct realscalelw : public thrust::unary_function<PetscReal, PetscReal> {
 PETSC_INTERN PetscErrorCode PetscRandomCurandScale_Private(PetscRandom r, size_t n, PetscReal *val, PetscBool isneg)
 {
   PetscFunctionBegin;
-  if (!r->iset) PetscFunctionReturn(0);
+  if (!r->iset) PetscFunctionReturn(PETSC_SUCCESS);
   if (isneg) { /* complex case, need to scale differently */
 #if defined(PETSC_USE_COMPLEX)
     thrust::device_ptr<PetscReal> pval  = thrust::device_pointer_cast(val);
@@ -46,5 +46,5 @@ PETSC_INTERN PetscErrorCode PetscRandomCurandScale_Private(PetscRandom r, size_t
     thrust::device_ptr<PetscReal> pval = thrust::device_pointer_cast(val);
     thrust::transform(pval, pval + n, pval, realscalelw(rl, rw));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -144,7 +144,7 @@ PetscErrorCode PetscLogNestedBegin(void)
   nestedEvents[0].dftEventsSorted  = NULL;
 
   PetscCall(PetscLogSet(PetscLogEventBeginNested, PetscLogEventEndNested));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Delete the data structures for the nested timers */
@@ -153,13 +153,13 @@ PetscErrorCode PetscLogNestedEnd(void)
   int i;
 
   PetscFunctionBegin;
-  if (!nestedEvents) PetscFunctionReturn(0);
+  if (!nestedEvents) PetscFunctionReturn(PETSC_SUCCESS);
   for (i = 0; i < nNestedEvents; i++) PetscCall(PetscFree4(nestedEvents[i].dftParentsSorted, nestedEvents[i].dftEventsSorted, nestedEvents[i].dftParents, nestedEvents[i].dftEvents));
   PetscCall(PetscFree(nestedEvents));
   nestedEvents           = NULL;
   nNestedEvents          = 0;
   nNestedEventsAllocated = 0;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -195,7 +195,7 @@ static PetscErrorCode PetscLogEventFindDefaultTimer(PetscLogEvent dftIndex, cons
     }
     *entry = ihigh;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -228,7 +228,7 @@ static PetscErrorCode PetscLogEventFindNestedTimer(NestedEventId nstEvent, int *
     }
     *entry = ihigh;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -245,11 +245,11 @@ static inline PetscErrorCode PetscLogStageOverride(void)
   PetscStageLog stageLog = petsc_stageLog;
 
   PetscFunctionBegin;
-  if (stageLog->curStage == MAINSTAGE) PetscFunctionReturn(0);
+  if (stageLog->curStage == MAINSTAGE) PetscFunctionReturn(PETSC_SUCCESS);
   savedStage         = stageLog->curStage;
   stageLog->curStage = MAINSTAGE;
   PetscCall(PetscIntStackPush(stageLog->stack, MAINSTAGE));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static inline PetscErrorCode PetscLogStageRestore(void)
@@ -257,10 +257,10 @@ static inline PetscErrorCode PetscLogStageRestore(void)
   PetscStageLog stageLog = petsc_stageLog;
 
   PetscFunctionBegin;
-  if (savedStage == MAINSTAGE) PetscFunctionReturn(0);
+  if (savedStage == MAINSTAGE) PetscFunctionReturn(PETSC_SUCCESS);
   stageLog->curStage = savedStage;
   PetscCall(PetscIntStackPop(stageLog->stack, &savedStage));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /******************************************************************************************/
@@ -365,7 +365,7 @@ static PetscErrorCode PetscLogEventBeginNested(NestedEventId nstEvent, int t, Pe
   PetscCall(PetscLogEventBeginDefault(dftEvent, t, o1, o2, o3, o4));
   PetscCall(PetscLogStageRestore());
   dftParentActive = dftEvent;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* End a nested event */
@@ -393,7 +393,7 @@ static PetscErrorCode PetscLogEventEndNested(NestedEventId nstEvent, int t, Pets
   PetscCall(PetscLogEventEndDefault(dftParentActive, t, o1, o2, o3, o4));
   PetscCall(PetscLogStageRestore());
   dftParentActive = nestedEvents[entry].dftParents[pentry];
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -433,7 +433,7 @@ PetscErrorCode PetscLogSetThreshold(PetscLogDouble newThresh, PetscLogDouble *ol
   if (newThresh == PETSC_DECIDE) newThresh = 0.01;
   if (newThresh == PETSC_DEFAULT) newThresh = 0.01;
   thresholdTime = PetscMax(newThresh, 0.0);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscPrintExeSpecs(PetscViewer viewer)
@@ -477,7 +477,7 @@ static PetscErrorCode PetscPrintExeSpecs(PetscViewer viewer)
   PetscCall(PetscStrlen(buildoptions, &len));
   if (len) PetscCall(PetscViewerXMLPutString(viewer, "petscbuildoptions", "Petsc build options", buildoptions));
   PetscCall(PetscViewerXMLEndSection(viewer, "runspecification"));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Print the global performance: max, max/min, average and total of
@@ -511,7 +511,7 @@ static PetscErrorCode PetscPrintXMLGlobalPerformanceElement(PetscViewer viewer, 
   if (print_average) PetscCall(PetscViewerXMLPutDouble(viewer, "average", NULL, avg, "%e"));
   if (print_total) PetscCall(PetscViewerXMLPutDouble(viewer, "total", NULL, tot, "%e"));
   PetscCall(PetscViewerXMLEndSection(viewer, name));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Print the global performance: max, max/min, average and total of
@@ -557,7 +557,7 @@ static PetscErrorCode PetscPrintGlobalPerformance(PetscViewer viewer, PetscLogDo
   /*   Reductions */
   PetscCall(PetscPrintXMLGlobalPerformanceElement(viewer, "reductions", "MPI Reductions", red, print_average_no, print_total_no));
   PetscCall(PetscViewerXMLEndSection(viewer, "globalperformance"));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 typedef struct {
@@ -791,7 +791,7 @@ static PetscErrorCode PetscLogNestedTreeCreate(PetscViewer viewer, PetscNestedEv
   /* Set return value and return */
   *p_tree    = tree;
   *p_nTimers = totalNTimers;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -804,7 +804,7 @@ static PetscErrorCode PetscLogNestedTreeDestroy(PetscNestedEventTree *tree, int 
   PetscFunctionBegin;
   for (i = 0; i < nTimers; i++) PetscCall(PetscFree(tree[i].nstPath));
   PetscCall(PetscFree(tree));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Print the global performance: max, max/min, average and total of
@@ -848,7 +848,7 @@ static PetscErrorCode PetscPrintXMLNestedLinePerfResults(PetscViewer viewer, con
     }
     PetscCall(PetscViewerXMLEndSection(viewer, name));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
   #define N_COMM 8
@@ -871,7 +871,7 @@ static PetscErrorCode PetscLogNestedTreePrintLine(PetscViewer viewer, PetscEvent
     PetscCall(PetscPrintXMLNestedLinePerfResults(viewer, "mbps", time >= timeMx * 0.001 ? perfInfo.messageLength / (1024 * 1024 * time) : 0, 0, 0.01, 1.05));
     PetscCall(PetscPrintXMLNestedLinePerfResults(viewer, "nreductsps", time >= timeMx * 0.001 ? perfInfo.numReductions / time : 0, 0, 0.01, 1.05));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Count the number of times the parent event was called */
@@ -924,7 +924,7 @@ static PetscErrorCode PetscLogNestedTreeGetChildrenCount(const PetscNestedEventT
     if (tree[i].depth == depth + 1) n++;
   }
   *nChildren = n;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -969,7 +969,7 @@ static PetscErrorCode PetscLogNestedTreeSetChildrenSortItems(const PetscViewer v
     for (int i = 0; i < nChildren; i++) (*children)[i].val = maxTimes[i];
     PetscCall(PetscFree(maxTimes));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -1031,7 +1031,7 @@ static PetscErrorCode PetscLogNestedTreeSetSelfOtherPerfInfo(const PetscNestedEv
       }
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -1050,7 +1050,7 @@ static PetscErrorCode PetscLogNestedTreeSetMaxTimes(MPI_Comm comm, int nChildren
   children[nChildren + 0].val = maxTimes[0];
   children[nChildren + 1].id  = -2;
   children[nChildren + 1].val = maxTimes[1];
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscLogNestedTreePrint(PetscViewer viewer, PetscNestedEventTree *tree, int nTimers, int iStart, PetscLogDouble totalTime)
@@ -1119,7 +1119,7 @@ static PetscErrorCode PetscLogNestedTreePrint(PetscViewer viewer, PetscNestedEve
   }
 
   if (wasPrinted) PetscCall(PetscViewerXMLEndSection(viewer, "event"));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscLogNestedTreePrintTop(PetscViewer viewer, PetscNestedEventTree *tree, int nTimers, PetscLogDouble totalTime)
@@ -1153,7 +1153,7 @@ static PetscErrorCode PetscLogNestedTreePrintTop(PetscViewer viewer, PetscNested
     PetscCall(PetscViewerXMLEndSection(viewer, "timertree"));
     PetscCall(PetscFree(children));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 typedef struct {
@@ -1262,7 +1262,7 @@ static PetscErrorCode PetscCalcSelfTime(PetscViewer viewer, PetscSelfTimer **p_s
   /* Set outputs */
   *p_self   = selftimes;
   *p_nstMax = nstMax;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscPrintSelfTime(PetscViewer viewer, const PetscSelfTimer *selftimes, int nstMax, PetscLogDouble totalTime)
@@ -1319,7 +1319,7 @@ static PetscErrorCode PetscPrintSelfTime(PetscViewer viewer, const PetscSelfTime
   }
   PetscCall(PetscViewerXMLEndSection(viewer, "selftimertable"));
   PetscCall(PetscFree(sortSelfTimes));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PetscLogView_Nested(PetscViewer viewer)
@@ -1356,7 +1356,7 @@ PetscErrorCode PetscLogView_Nested(PetscViewer viewer)
 
   PetscCall(PetscViewerXMLEndSection(viewer, "petscroot"));
   PetscCall(PetscViewerFinalASCII_XML(viewer));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -1369,7 +1369,7 @@ static PetscErrorCode PetscGetNestedEventName(const PetscNestedEventTree *tree, 
   PetscFunctionBegin;
   PetscCall(PetscLogGetStageLog(&stageLog));
   *name = stageLog->eventLog->eventInfo[(PetscLogEvent)tree[id].nstEvent].name;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -1385,7 +1385,7 @@ static PetscErrorCode PetscGetTotalTime(const PetscViewer viewer, PetscLogDouble
   PetscCall(PetscTime(&locTotalTime));
   locTotalTime -= petsc_BaseTime;
   PetscCall(MPIU_Allreduce(&locTotalTime, totalTime, 1, MPIU_PETSCLOGDOUBLE, MPI_MAX, comm));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -1427,14 +1427,14 @@ static PetscErrorCode PetscLogNestedTreePrintFlamegraph(PetscViewer viewer, Pets
   }
 
   /* Add the current event to the parent stack and write the child events */
-  PetscIntStackPush(eventStack, iStart);
+  PetscCall(PetscIntStackPush(eventStack, iStart));
   for (i = 0; i < nChildren; i++) PetscCall(PetscLogNestedTreePrintFlamegraph(viewer, tree, nTimers, children[i].id, totalTime, eventStack));
   /* Pop the top item from the stack and immediately discard it */
   {
     int tmp;
-    PetscIntStackPop(eventStack, &tmp);
+    PetscCall(PetscIntStackPop(eventStack, &tmp));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -1472,34 +1472,34 @@ PetscErrorCode PetscLogView_Flamegraph(PetscViewer viewer)
 
   PetscCall(PetscLogNestedTreeDestroy(tree, nTimers));
   PetscCall(PetscIntStackDestroy(eventStack));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_EXTERN PetscErrorCode PetscASend(int count, int datatype)
 {
   PetscFunctionBegin;
-  PetscAddLogDouble(&petsc_send_ct, &petsc_send_ct_th, 1);
+  PetscCall(PetscAddLogDouble(&petsc_send_ct, &petsc_send_ct_th, 1));
   #if !defined(MPIUNI_H) && !defined(PETSC_HAVE_BROKEN_RECURSIVE_MACRO)
   PetscCall(PetscMPITypeSize(count, MPI_Type_f2c((MPI_Fint)datatype), &petsc_send_len, &petsc_send_len_th));
   #endif
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_EXTERN PetscErrorCode PetscARecv(int count, int datatype)
 {
   PetscFunctionBegin;
-  PetscAddLogDouble(&petsc_recv_ct, &petsc_recv_ct_th, 1);
+  PetscCall(PetscAddLogDouble(&petsc_recv_ct, &petsc_recv_ct_th, 1));
   #if !defined(MPIUNI_H) && !defined(PETSC_HAVE_BROKEN_RECURSIVE_MACRO)
   PetscCall(PetscMPITypeSize(count, MPI_Type_f2c((MPI_Fint)datatype), &petsc_recv_len, &petsc_recv_len_th));
   #endif
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_EXTERN PetscErrorCode PetscAReduce(void)
 {
   PetscFunctionBegin;
-  PetscAddLogDouble(&petsc_allreduce_ct, &petsc_allreduce_ct_th, 1);
-  PetscFunctionReturn(0);
+  PetscCall(PetscAddLogDouble(&petsc_allreduce_ct, &petsc_allreduce_ct_th, 1));
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 #endif

@@ -156,7 +156,7 @@ int main(int argc, char **argv)
     /* Default to a direct solver, if a package is available */
     PetscMPIInt size;
 
-    PetscCall(MPI_Comm_size(ctx->comm, &size));
+    PetscCallMPI(MPI_Comm_size(ctx->comm, &size));
     if (PetscDefined(HAVE_SUITESPARSE) && size == 1) {
       PC pc;
 
@@ -422,7 +422,7 @@ static PetscErrorCode LevelCtxCreate(LevelCtx *p_level_ctx)
   level_ctx->dm_stokes       = NULL;
   level_ctx->dm_coefficients = NULL;
   level_ctx->dm_faces        = NULL;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode LevelCtxDestroy(LevelCtx *p_level_ctx)
@@ -436,7 +436,7 @@ static PetscErrorCode LevelCtxDestroy(LevelCtx *p_level_ctx)
   if (level_ctx->dm_faces) PetscCall(DMDestroy(&level_ctx->dm_faces));
   if (level_ctx->coeff) PetscCall(VecDestroy(&level_ctx->coeff));
   PetscCall(PetscFree(*p_level_ctx));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode CtxCreateAndSetFromOptions(Ctx *p_ctx)
@@ -538,7 +538,7 @@ static PetscErrorCode CtxCreateAndSetFromOptions(Ctx *p_ctx)
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-levels", &ctx->n_levels, NULL));
   PetscCall(PetscMalloc1(ctx->n_levels, &ctx->levels));
   for (PetscInt i = 0; i < ctx->n_levels; ++i) PetscCall(LevelCtxCreate(&ctx->levels[i]));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode CtxDestroy(Ctx *p_ctx)
@@ -550,7 +550,7 @@ static PetscErrorCode CtxDestroy(Ctx *p_ctx)
   for (PetscInt i = 0; i < ctx->n_levels; ++i) PetscCall(LevelCtxDestroy(&ctx->levels[i]));
   PetscCall(PetscFree(ctx->levels));
   PetscCall(PetscFree(*p_ctx));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode SystemParametersCreate(SystemParameters *parameters, Ctx ctx)
@@ -561,7 +561,7 @@ static PetscErrorCode SystemParametersCreate(SystemParameters *parameters, Ctx c
   (*parameters)->level                = ctx->n_levels - 1;
   (*parameters)->include_inverse_visc = PETSC_FALSE;
   (*parameters)->faces_only           = PETSC_FALSE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode SystemParametersDestroy(SystemParameters *parameters)
@@ -569,7 +569,7 @@ static PetscErrorCode SystemParametersDestroy(SystemParameters *parameters)
   PetscFunctionBeginUser;
   PetscCall(PetscFree(*parameters));
   *parameters = NULL;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode CreateSystem2d(SystemParameters parameters, Mat *pA, Vec *pRhs)
@@ -987,7 +987,7 @@ static PetscErrorCode CreateSystem2d(SystemParameters parameters, Mat *pA, Vec *
   if (build_rhs) PetscCall(VecAssemblyBegin(rhs));
   PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
   if (build_rhs) PetscCall(VecAssemblyEnd(rhs));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode CreateSystem3d(SystemParameters parameters, Mat *pA, Vec *pRhs)
@@ -1842,7 +1842,7 @@ static PetscErrorCode CreateSystem3d(SystemParameters parameters, Mat *pA, Vec *
   if (build_rhs) PetscCall(VecAssemblyBegin(rhs));
   PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
   if (build_rhs) PetscCall(VecAssemblyEnd(rhs));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode CreateSystem(SystemParameters parameters, Mat *pA, Vec *pRhs)
@@ -1853,7 +1853,7 @@ static PetscErrorCode CreateSystem(SystemParameters parameters, Mat *pA, Vec *pR
   } else if (parameters->ctx->dim == 3) {
     PetscCall(CreateSystem3d(parameters, pA, pRhs));
   } else SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP, "Unsupported dimension %" PetscInt_FMT, parameters->ctx->dim);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PopulateCoefficientData(Ctx ctx, PetscInt level)
@@ -1936,7 +1936,7 @@ PetscErrorCode PopulateCoefficientData(Ctx ctx, PetscInt level)
   PetscCall(DMStagRestoreProductCoordinateArraysRead(dm_coefficients, &arr_coordinates_x, &arr_coordinates_y, &arr_coordinates_z));
   PetscCall(DMLocalToGlobal(dm_coefficients, coeff_local, INSERT_VALUES, coeff));
   PetscCall(DMRestoreLocalVector(dm_coefficients, &coeff_local));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode CreateAuxiliaryOperator(Ctx ctx, PetscInt level, Mat *p_S_hat)
@@ -1961,7 +1961,7 @@ static PetscErrorCode CreateAuxiliaryOperator(Ctx ctx, PetscInt level, Mat *p_S_
   PetscCall(MatAssemblyBegin(S_hat, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(S_hat, MAT_FINAL_ASSEMBLY));
   PetscCall(DMDestroy(&dm_element));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode OperatorInsertInverseViscosityPressureTerms(DM dm, DM dm_coefficients, Vec coefficients, PetscScalar scale, Mat mat)
@@ -1999,7 +1999,7 @@ static PetscErrorCode OperatorInsertInverseViscosityPressureTerms(DM dm, DM dm_c
   }
   PetscCall(DMRestoreLocalVector(dm_coefficients, &coeff_local));
   /* Note that this function does not call MatAssembly{Begin,End} */
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Create a pressure-only DMStag and use it to generate a nullspace vector
@@ -2030,7 +2030,7 @@ static PetscErrorCode AttachNullspace(DM dmSol, Mat A)
   PetscCall(MatNullSpaceDestroy(&matNullSpace));
   PetscCall(DMRestoreGlobalVector(dmPressure, &constantPressure));
   PetscCall(DMDestroy(&dmPressure));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DumpSolution(Ctx ctx, PetscInt level, Vec x)
@@ -2265,7 +2265,7 @@ static PetscErrorCode DumpSolution(Ctx ctx, PetscInt level, Vec x)
   }
   PetscCall(VecDestroy(&vel_avg));
   PetscCall(DMDestroy(&dm_vel_avg));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*TEST

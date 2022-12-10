@@ -8,14 +8,14 @@ PetscErrorCode PetscKokkosFinalize_Private(void)
 {
   PetscFunctionBegin;
   Kokkos::finalize();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PetscKokkosIsInitialized_Private(PetscBool *isInitialized)
 {
   PetscFunctionBegin;
   *isInitialized = Kokkos::is_initialized() ? PETSC_TRUE : PETSC_FALSE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Initialize Kokkos if not yet */
@@ -62,5 +62,5 @@ PetscErrorCode PetscKokkosInitializeCheck(void)
     PetscBeganKokkos = PETSC_TRUE;
   }
   PetscKokkosInitialized = PETSC_TRUE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

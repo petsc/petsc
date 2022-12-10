@@ -405,7 +405,7 @@ PetscErrorCode FormElements()
       }
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 void GatherElementData(PetscInt mx, PetscInt my, PetscInt mz, Field ***x, CoordField ***c, PetscInt i, PetscInt j, PetscInt k, Field *ex, CoordField *ec, AppCtx *user)
@@ -722,7 +722,7 @@ PetscErrorCode FormJacobianLocal(DMDALocalInfo *info, Field ***x, Mat jacpre, Ma
   PetscCall(MatAssemblyEnd(jac, MAT_FINAL_ASSEMBLY));
 
   PetscCall(DMDAVecRestoreArray(cda, C, &c));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode FormFunctionLocal(DMDALocalInfo *info, Field ***x, Field ***f, void *ptr)
@@ -796,7 +796,7 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info, Field ***x, Field ***f, vo
     }
   }
   PetscCall(DMDAVecRestoreArray(cda, C, &c));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode NonlinearGS(SNES snes, Vec X, Vec B, void *ptr)
@@ -904,7 +904,7 @@ PetscErrorCode NonlinearGS(SNES snes, Vec X, Vec B, void *ptr)
     PetscCall(DMRestoreLocalVector(da, &Bl));
   }
   PetscCall(DMDAVecRestoreArray(cda, C, &c));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode FormCoordinates(DM da, AppCtx *user)
@@ -938,7 +938,7 @@ PetscErrorCode FormCoordinates(DM da, AppCtx *user)
   PetscCall(DMDAVecRestoreArray(da, coords, &x));
   PetscCall(DMSetCoordinates(da, coords));
   PetscCall(VecDestroy(&coords));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode InitialGuess(DM da, AppCtx *user, Vec X)
@@ -969,7 +969,7 @@ PetscErrorCode InitialGuess(DM da, AppCtx *user, Vec X)
     }
   }
   PetscCall(DMDAVecRestoreArray(da, X, &x));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode FormRHS(DM da, AppCtx *user, Vec X)
@@ -994,7 +994,7 @@ PetscErrorCode FormRHS(DM da, AppCtx *user, Vec X)
     }
   }
   PetscCall(DMDAVecRestoreArray(da, X, &x));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DisplayLine(SNES snes, Vec X)
@@ -1030,7 +1030,7 @@ PetscErrorCode DisplayLine(SNES snes, Vec X)
   }
   PetscCall(DMDAVecRestoreArray(da, X, &x));
   PetscCall(DMDAVecRestoreArray(cda, C, &c));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*TEST

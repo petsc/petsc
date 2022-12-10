@@ -87,7 +87,7 @@ PetscErrorCode PetscMatlabEngineCreate(MPI_Comm comm, const char host[], PetscMa
   /* work around bug in MATLAB R2021b https://www.mathworks.com/matlabcentral/answers/1566246-got-error-using-exit-in-nodesktop-mode */
   PetscCall(PetscMatlabEngineEvaluate(e, "settings"));
   *mengine = e;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -109,15 +109,15 @@ PetscErrorCode PetscMatlabEngineDestroy(PetscMatlabEngine *v)
   int err;
 
   PetscFunctionBegin;
-  if (!*v) PetscFunctionReturn(0);
+  if (!*v) PetscFunctionReturn(PETSC_SUCCESS);
   PetscValidHeaderSpecific(*v, MATLABENGINE_CLASSID, 1);
-  if (--((PetscObject)(*v))->refct > 0) PetscFunctionReturn(0);
+  if (--((PetscObject)(*v))->refct > 0) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(PetscInfo(0, "Stopping MATLAB engine\n"));
   err = engClose((*v)->ep);
   PetscCheck(!err, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error closing Matlab engine");
   PetscCall(PetscInfo(0, "MATLAB engine stopped\n"));
   PetscCall(PetscHeaderDestroy(v));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -160,7 +160,7 @@ PetscErrorCode PetscMatlabEngineEvaluate(PetscMatlabEngine mengine, const char s
      Check for error in MATLAB: indicated by ? as first character in engine->buffer
   */
   PetscCheck(mengine->buffer[4] != '?', PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in evaluating MATLAB command:%s\n%s", string, mengine->buffer);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -186,7 +186,7 @@ PetscErrorCode PetscMatlabEngineGetOutput(PetscMatlabEngine mengine, char **stri
   PetscFunctionBegin;
   PetscCheck(mengine, PETSC_COMM_SELF, PETSC_ERR_ARG_NULL, "Null argument: probably PETSC_MATLAB_ENGINE_() failed");
   *string = mengine->buffer;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -213,7 +213,7 @@ PetscErrorCode PetscMatlabEnginePrintOutput(PetscMatlabEngine mengine, FILE *fd)
   PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)mengine), &rank));
   PetscCall(PetscSynchronizedFPrintf(PetscObjectComm((PetscObject)mengine), fd, "[%d]%s", rank, mengine->buffer));
   PetscCall(PetscSynchronizedFlush(PetscObjectComm((PetscObject)mengine), fd));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -247,7 +247,7 @@ PetscErrorCode PetscMatlabEnginePut(PetscMatlabEngine mengine, PetscObject obj)
   PetscCall(PetscInfo(0, "Putting MATLAB object\n"));
   PetscCall((*put)(obj, mengine->ep));
   PetscCall(PetscInfo(0, "Put MATLAB object: %s\n", obj->name));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -281,7 +281,7 @@ PetscErrorCode PetscMatlabEngineGet(PetscMatlabEngine mengine, PetscObject obj)
   PetscCall(PetscInfo(0, "Getting MATLAB object\n"));
   PetscCall((*get)(obj, mengine->ep));
   PetscCall(PetscInfo(0, "Got MATLAB object: %s\n", obj->name));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -386,7 +386,7 @@ PetscErrorCode PetscMatlabEnginePutArray(PetscMatlabEngine mengine, int m, int n
   engPutVariable(mengine->ep, name, mat);
 
   PetscCall(PetscInfo(0, "Put MATLAB array %s\n", name));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -419,5 +419,5 @@ PetscErrorCode PetscMatlabEngineGetArray(PetscMatlabEngine mengine, int m, int n
   PetscCheck(mxGetN(mat) == (size_t)n, PETSC_COMM_SELF, PETSC_ERR_LIB, "Array %s in MATLAB second dimension %d does not match requested size %d", name, (int)mxGetN(mat), m);
   PetscCall(PetscArraycpy(array, mxGetPr(mat), m * n));
   PetscCall(PetscInfo(0, "Got MATLAB array %s\n", name));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

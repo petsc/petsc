@@ -36,7 +36,7 @@ PetscErrorCode StarGraphCreateEdgeList(PetscInt k, PetscBool directin, PetscInt 
       (*edgelist)[2 * i + 1] = i + 1;
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -85,7 +85,7 @@ PetscErrorCode StarGraphCreate(MPI_Comm comm, PetscInt numdofvert, PetscInt numd
   PetscCall(DMSetUp(dm));
   PetscCall(PetscFree2(compedge, compvert));
   *newdm = dm;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode StarGraphTestQuery(DM dm, PetscInt ne)
@@ -98,7 +98,7 @@ PetscErrorCode StarGraphTestQuery(DM dm, PetscInt ne)
 
   PetscCheck(globalnumedge == ne, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Global number of edges should be %" PetscInt_FMT "instead was %" PetscInt_FMT, ne, globalnumedge);
   PetscCheck(globalnumvert == ne + 1, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Global number of vertices should be %" PetscInt_FMT "instead was %" PetscInt_FMT, ne + 1, globalnumvert);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)

@@ -52,11 +52,11 @@ PetscErrorCode SPARSEPACKqmdrch(const PetscInt *root, const PetscInt *xadj, cons
   *rchsze = 0;
   istrt   = xadj[*root];
   istop   = xadj[*root + 1] - 1;
-  if (istop < istrt) PetscFunctionReturn(0);
+  if (istop < istrt) PetscFunctionReturn(PETSC_SUCCESS);
   i__1 = istop;
   for (i = istrt; i <= i__1; ++i) {
     nabor = adjncy[i];
-    if (!nabor) PetscFunctionReturn(0);
+    if (!nabor) PetscFunctionReturn(PETSC_SUCCESS);
     if (marker[nabor] != 0) goto L600;
     if (deg[nabor] < 0) goto L200;
 
@@ -90,5 +90,5 @@ PetscErrorCode SPARSEPACKqmdrch(const PetscInt *root, const PetscInt *xadj, cons
     }
   L600:;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

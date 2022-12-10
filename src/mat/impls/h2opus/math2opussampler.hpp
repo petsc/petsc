@@ -58,7 +58,7 @@ void PetscMatrixSampler::SetSamplingMat(Mat A)
 {
   PetscMPIInt size = 1;
 
-  if (A) PetscCallVoid(MPI_Comm_size(PetscObjectComm((PetscObject)A), &size));
+  if (A) PetscCallVoid(static_cast<PetscErrorCode>(MPI_Comm_size(PetscObjectComm((PetscObject)A), &size)));
   if (size > 1) PetscCallVoid(PETSC_ERR_SUP);
   PetscCallVoid(PetscObjectReference((PetscObject)A));
   PetscCallVoid(MatDestroy(&this->A));

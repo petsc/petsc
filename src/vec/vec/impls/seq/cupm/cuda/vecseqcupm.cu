@@ -8,7 +8,7 @@ PetscErrorCode VecCreate_SeqCUDA(Vec v)
 {
   PetscFunctionBegin;
   PetscCall(VecSeq_CUDA.create(v));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -38,7 +38,7 @@ PetscErrorCode VecCreateSeqCUDA(MPI_Comm comm, PetscInt n, Vec *v)
 {
   PetscFunctionBegin;
   PetscCall(VecCreateSeqCUPMAsync(VecSeq_CUDA, comm, n, v));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -80,7 +80,7 @@ PetscErrorCode VecCreateSeqCUDAWithArrays(MPI_Comm comm, PetscInt bs, PetscInt n
 {
   PetscFunctionBegin;
   PetscCall(VecCreateSeqCUPMWithArraysAsync(VecSeq_CUDA, comm, bs, n, cpuarray, gpuarray, v));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -121,7 +121,7 @@ PetscErrorCode VecCreateSeqCUDAWithArray(MPI_Comm comm, PetscInt bs, PetscInt n,
 {
   PetscFunctionBegin;
   PetscCall(VecCreateSeqCUDAWithArrays(comm, bs, n, nullptr, gpuarray, v));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -160,7 +160,7 @@ PetscErrorCode VecCUDAGetArray(Vec v, PetscScalar **a)
 {
   PetscFunctionBegin;
   PetscCall(VecCUPMGetArrayAsync(VecSeq_CUDA, v, a));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -186,7 +186,7 @@ PetscErrorCode VecCUDARestoreArray(Vec v, PetscScalar **a)
 {
   PetscFunctionBegin;
   PetscCall(VecCUPMRestoreArrayAsync(VecSeq_CUDA, v, a));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -220,7 +220,7 @@ PetscErrorCode VecCUDAGetArrayRead(Vec v, const PetscScalar **a)
 {
   PetscFunctionBegin;
   PetscCall(VecCUPMGetArrayReadAsync(VecSeq_CUDA, v, a));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -246,7 +246,7 @@ PetscErrorCode VecCUDARestoreArrayRead(Vec v, const PetscScalar **a)
 {
   PetscFunctionBegin;
   PetscCall(VecCUPMRestoreArrayReadAsync(VecSeq_CUDA, v, a));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -279,7 +279,7 @@ PetscErrorCode VecCUDAGetArrayWrite(Vec v, PetscScalar **a)
 {
   PetscFunctionBegin;
   PetscCall(VecCUPMGetArrayWriteAsync(VecSeq_CUDA, v, a));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -305,7 +305,7 @@ PetscErrorCode VecCUDARestoreArrayWrite(Vec v, PetscScalar **a)
 {
   PetscFunctionBegin;
   PetscCall(VecCUPMRestoreArrayWriteAsync(VecSeq_CUDA, v, a));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -339,7 +339,7 @@ PetscErrorCode VecCUDAPlaceArray(Vec vin, const PetscScalar a[])
 {
   PetscFunctionBegin;
   PetscCall(VecCUPMPlaceArrayAsync(VecSeq_CUDA, vin, a));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -368,7 +368,7 @@ PetscErrorCode VecCUDAReplaceArray(Vec vin, const PetscScalar a[])
 {
   PetscFunctionBegin;
   PetscCall(VecCUPMReplaceArrayAsync(VecSeq_CUDA, vin, a));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -391,5 +391,5 @@ PetscErrorCode VecCUDAResetArray(Vec vin)
 {
   PetscFunctionBegin;
   PetscCall(VecCUPMResetArrayAsync(VecSeq_CUDA, vin));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

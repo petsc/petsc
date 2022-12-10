@@ -61,7 +61,7 @@ static inline PetscErrorCode MatSeqXSELLFreeSELL(Mat AA, MatScalar **val, PetscI
     if (A->free_val) PetscCall(PetscFree(*val));
     if (A->free_colidx) PetscCall(PetscFree(*colidx));
   }
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 #define MatSeqXSELLReallocateSELL(Amat, AM, BS2, WIDTH, SIDX, SID, ROW, COL, COLIDX, VAL, CP, VP, NONEW, datatype) \

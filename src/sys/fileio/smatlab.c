@@ -42,7 +42,7 @@ PetscErrorCode PetscStartMatlab(MPI_Comm comm, const char machine[], const char 
   if (rank == 0) found = fgets(buf, 1024, fd);
   PetscCallMPI(MPI_Bcast(&found, 1, MPI_CHAR, 0, comm));
   PetscCall(PetscPClose(comm, fd));
-  if (found) PetscFunctionReturn(0);
+  if (found) PetscFunctionReturn(PETSC_SUCCESS);
 #endif
 
   if (script) {
@@ -57,5 +57,5 @@ PetscErrorCode PetscStartMatlab(MPI_Comm comm, const char machine[], const char 
 #if defined(PETSC_HAVE_POPEN)
   PetscCall(PetscPOpen(comm, machine, "xterm -display ${DISPLAY} -e matlab -nosplash", "r", fp));
 #endif
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -35,86 +35,86 @@
 #endif
 
 /* These are not extern C because they are passed into non-extern C user level functions */
-static PetscErrorCode ourshellapply(PC pc,Vec x,Vec y)
+static PetscErrorCode ourshellapply(PC pc, Vec x, Vec y)
 {
-  PetscCallFortranVoidFunction((*(void (*)(PC*,Vec*,Vec*,PetscErrorCode*))(((PetscObject)pc)->fortran_func_pointers[0]))(&pc,&x,&y,&ierr));
-  return 0;
+  PetscCallFortranVoidFunction((*(void (*)(PC *, Vec *, Vec *, PetscErrorCode *))(((PetscObject)pc)->fortran_func_pointers[0]))(&pc, &x, &y, &ierr));
+  return PETSC_SUCCESS;
 }
 
-static PetscErrorCode ourshellapplysymmetricleft(PC pc,Vec x,Vec y)
+static PetscErrorCode ourshellapplysymmetricleft(PC pc, Vec x, Vec y)
 {
-  PetscCallFortranVoidFunction((*(void (*)(PC*,Vec*,Vec*,PetscErrorCode*))(((PetscObject)pc)->fortran_func_pointers[9]))(&pc,&x,&y,&ierr));
-  return 0;
+  PetscCallFortranVoidFunction((*(void (*)(PC *, Vec *, Vec *, PetscErrorCode *))(((PetscObject)pc)->fortran_func_pointers[9]))(&pc, &x, &y, &ierr));
+  return PETSC_SUCCESS;
 }
 
-static PetscErrorCode ourshellapplysymmetricright(PC pc,Vec x,Vec y)
+static PetscErrorCode ourshellapplysymmetricright(PC pc, Vec x, Vec y)
 {
-  PetscCallFortranVoidFunction((*(void (*)(PC*,Vec*,Vec*,PetscErrorCode*))(((PetscObject)pc)->fortran_func_pointers[10]))(&pc,&x,&y,&ierr));
-  return 0;
+  PetscCallFortranVoidFunction((*(void (*)(PC *, Vec *, Vec *, PetscErrorCode *))(((PetscObject)pc)->fortran_func_pointers[10]))(&pc, &x, &y, &ierr));
+  return PETSC_SUCCESS;
 }
 
-static PetscErrorCode ourshellapplyctx(PC pc,Vec x,Vec y)
+static PetscErrorCode ourshellapplyctx(PC pc, Vec x, Vec y)
 {
   void *ctx;
-  PetscCall(PCShellGetContext(pc,&ctx));
-  PetscCallFortranVoidFunction((*(void (*)(PC*,void*,Vec*,Vec*,PetscErrorCode*))(((PetscObject)pc)->fortran_func_pointers[0]))(&pc,ctx,&x,&y,&ierr));
-  return 0;
+  PetscCall(PCShellGetContext(pc, &ctx));
+  PetscCallFortranVoidFunction((*(void (*)(PC *, void *, Vec *, Vec *, PetscErrorCode *))(((PetscObject)pc)->fortran_func_pointers[0]))(&pc, ctx, &x, &y, &ierr));
+  return PETSC_SUCCESS;
 }
 
-static PetscErrorCode ourshellapplyba(PC pc,PCSide side,Vec x,Vec y,Vec work)
+static PetscErrorCode ourshellapplyba(PC pc, PCSide side, Vec x, Vec y, Vec work)
 {
-  PetscCallFortranVoidFunction((*(void (*)(PC*,PCSide*,Vec*,Vec*,Vec*,PetscErrorCode*))(((PetscObject)pc)->fortran_func_pointers[1]))(&pc,&side,&x,&y,&work,&ierr));
-  return 0;
+  PetscCallFortranVoidFunction((*(void (*)(PC *, PCSide *, Vec *, Vec *, Vec *, PetscErrorCode *))(((PetscObject)pc)->fortran_func_pointers[1]))(&pc, &side, &x, &y, &work, &ierr));
+  return PETSC_SUCCESS;
 }
 
-static PetscErrorCode ourapplyrichardson(PC pc,Vec x,Vec y,Vec w,PetscReal rtol,PetscReal abstol,PetscReal dtol,PetscInt m,PetscBool guesszero,PetscInt *outits,PCRichardsonConvergedReason *reason)
+static PetscErrorCode ourapplyrichardson(PC pc, Vec x, Vec y, Vec w, PetscReal rtol, PetscReal abstol, PetscReal dtol, PetscInt m, PetscBool guesszero, PetscInt *outits, PCRichardsonConvergedReason *reason)
 {
-  PetscCallFortranVoidFunction((*(void (*)(PC*,Vec*,Vec*,Vec*,PetscReal*,PetscReal*,PetscReal*,PetscInt*,PetscBool *,PetscInt*,PCRichardsonConvergedReason*,PetscErrorCode*))(((PetscObject)pc)->fortran_func_pointers[2]))(&pc,&x,&y,&w,&rtol,&abstol,&dtol,&m,&guesszero,outits,reason,&ierr));
-  return 0;
+  PetscCallFortranVoidFunction((*(void (*)(PC *, Vec *, Vec *, Vec *, PetscReal *, PetscReal *, PetscReal *, PetscInt *, PetscBool *, PetscInt *, PCRichardsonConvergedReason *, PetscErrorCode *))(((PetscObject)pc)->fortran_func_pointers[2]))(&pc, &x, &y, &w, &rtol, &abstol, &dtol, &m, &guesszero, outits, reason, &ierr));
+  return PETSC_SUCCESS;
 }
 
-static PetscErrorCode ourshellapplytranspose(PC pc,Vec x,Vec y)
+static PetscErrorCode ourshellapplytranspose(PC pc, Vec x, Vec y)
 {
-  PetscCallFortranVoidFunction((*(void (*)(void*,Vec*,Vec*,PetscErrorCode*))(((PetscObject)pc)->fortran_func_pointers[3]))(&pc,&x,&y,&ierr));
-  return 0;
+  PetscCallFortranVoidFunction((*(void (*)(void *, Vec *, Vec *, PetscErrorCode *))(((PetscObject)pc)->fortran_func_pointers[3]))(&pc, &x, &y, &ierr));
+  return PETSC_SUCCESS;
 }
 
 static PetscErrorCode ourshellsetup(PC pc)
 {
-  PetscCallFortranVoidFunction((*(void (*)(PC*,PetscErrorCode*))(((PetscObject)pc)->fortran_func_pointers[4]))(&pc,&ierr));
-  return 0;
+  PetscCallFortranVoidFunction((*(void (*)(PC *, PetscErrorCode *))(((PetscObject)pc)->fortran_func_pointers[4]))(&pc, &ierr));
+  return PETSC_SUCCESS;
 }
 
 static PetscErrorCode ourshellsetupctx(PC pc)
 {
   void *ctx;
-  PetscCall(PCShellGetContext(pc,&ctx));
-  PetscCallFortranVoidFunction((*(void (*)(PC*,void*,PetscErrorCode*))(((PetscObject)pc)->fortran_func_pointers[4]))(&pc,ctx,&ierr));
-  return 0;
+  PetscCall(PCShellGetContext(pc, &ctx));
+  PetscCallFortranVoidFunction((*(void (*)(PC *, void *, PetscErrorCode *))(((PetscObject)pc)->fortran_func_pointers[4]))(&pc, ctx, &ierr));
+  return PETSC_SUCCESS;
 }
 
 static PetscErrorCode ourshelldestroy(PC pc)
 {
-  PetscCallFortranVoidFunction((*(void (*)(void*,PetscErrorCode*))(((PetscObject)pc)->fortran_func_pointers[5]))(&pc,&ierr));
-  return 0;
+  PetscCallFortranVoidFunction((*(void (*)(void *, PetscErrorCode *))(((PetscObject)pc)->fortran_func_pointers[5]))(&pc, &ierr));
+  return PETSC_SUCCESS;
 }
 
-static PetscErrorCode ourshellpresolve(PC pc,KSP ksp,Vec x,Vec y)
+static PetscErrorCode ourshellpresolve(PC pc, KSP ksp, Vec x, Vec y)
 {
-  PetscCallFortranVoidFunction((*(void (*)(PC*,KSP*,Vec*,Vec*,PetscErrorCode*))(((PetscObject)pc)->fortran_func_pointers[6]))(&pc,&ksp,&x,&y,&ierr));
-  return 0;
+  PetscCallFortranVoidFunction((*(void (*)(PC *, KSP *, Vec *, Vec *, PetscErrorCode *))(((PetscObject)pc)->fortran_func_pointers[6]))(&pc, &ksp, &x, &y, &ierr));
+  return PETSC_SUCCESS;
 }
 
-static PetscErrorCode ourshellpostsolve(PC pc,KSP ksp,Vec x,Vec y)
+static PetscErrorCode ourshellpostsolve(PC pc, KSP ksp, Vec x, Vec y)
 {
-  PetscCallFortranVoidFunction((*(void (*)(PC*,KSP*,Vec*,Vec*,PetscErrorCode*))(((PetscObject)pc)->fortran_func_pointers[7]))(&pc,&ksp,&x,&y,&ierr));
-  return 0;
+  PetscCallFortranVoidFunction((*(void (*)(PC *, KSP *, Vec *, Vec *, PetscErrorCode *))(((PetscObject)pc)->fortran_func_pointers[7]))(&pc, &ksp, &x, &y, &ierr));
+  return PETSC_SUCCESS;
 }
 
-static PetscErrorCode ourshellview(PC pc,PetscViewer view)
+static PetscErrorCode ourshellview(PC pc, PetscViewer view)
 {
-  PetscCallFortranVoidFunction((*(void (*)(PC*,PetscViewer*,PetscErrorCode*))(((PetscObject)pc)->fortran_func_pointers[8]))(&pc,&view,&ierr));
-  return 0;
+  PetscCallFortranVoidFunction((*(void (*)(PC *, PetscViewer *, PetscErrorCode *))(((PetscObject)pc)->fortran_func_pointers[8]))(&pc, &view, &ierr));
+  return PETSC_SUCCESS;
 }
 
 PETSC_EXTERN void pcshellgetcontext_(PC *pc,void **ctx,PetscErrorCode *ierr)

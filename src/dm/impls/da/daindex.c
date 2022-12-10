@@ -42,7 +42,7 @@ PetscErrorCode DMDAGetNatural_Private(DM da, PetscInt *outNlocal, IS *isnatural)
   }
   *outNlocal = Nlocal;
   PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject)da), Nlocal, lidx, PETSC_OWN_POINTER, isnatural));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -80,11 +80,11 @@ PetscErrorCode DMDASetAOType(DM da, AOType aotype)
     PetscBool match;
     PetscCall(PetscObjectTypeCompare((PetscObject)dd->ao, aotype, &match));
     PetscCheck(match, PetscObjectComm((PetscObject)da), PETSC_ERR_SUP, "Cannot change AO type");
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
   PetscCall(PetscFree(dd->aotype));
   PetscCall(PetscStrallocpy(aotype, (char **)&dd->aotype));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -142,5 +142,5 @@ PetscErrorCode DMDAGetAO(DM da, AO *ao)
     PetscCall(ISDestroy(&isnatural));
   }
   *ao = dd->ao;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -36,7 +36,7 @@ PetscErrorCode PetscByteSwapEnum(PetscEnum *buff, PetscInt n)
     for (i = 0; i < (PetscInt)sizeof(PetscEnum); i++) ptr2[i] = ptr1[sizeof(PetscEnum) - 1 - i];
     for (i = 0; i < (PetscInt)sizeof(PetscEnum); i++) ptr1[i] = ptr2[i];
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -55,7 +55,7 @@ PetscErrorCode PetscByteSwapBool(PetscBool *buff, PetscInt n)
     for (i = 0; i < (PetscInt)sizeof(PetscBool); i++) ptr2[i] = ptr1[sizeof(PetscBool) - 1 - i];
     for (i = 0; i < (PetscInt)sizeof(PetscBool); i++) ptr1[i] = ptr2[i];
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -73,7 +73,7 @@ PetscErrorCode PetscByteSwapInt(PetscInt *buff, PetscInt n)
     for (i = 0; i < (PetscInt)sizeof(PetscInt); i++) ptr2[i] = ptr1[sizeof(PetscInt) - 1 - i];
     for (i = 0; i < (PetscInt)sizeof(PetscInt); i++) ptr1[i] = ptr2[i];
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -92,7 +92,7 @@ PetscErrorCode PetscByteSwapInt64(PetscInt64 *buff, PetscInt n)
     for (i = 0; i < (PetscInt)sizeof(PetscInt64); i++) ptr2[i] = ptr1[sizeof(PetscInt64) - 1 - i];
     for (i = 0; i < (PetscInt)sizeof(PetscInt64); i++) ptr1[i] = ptr2[i];
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* --------------------------------------------------------- */
@@ -111,7 +111,7 @@ PetscErrorCode PetscByteSwapShort(short *buff, PetscInt n)
     for (i = 0; i < (PetscInt)sizeof(short); i++) ptr2[i] = ptr1[sizeof(short) - 1 - i];
     for (i = 0; i < (PetscInt)sizeof(short); i++) ptr1[i] = ptr2[i];
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 /*
   PetscByteSwapLong - Swap bytes in a long
@@ -128,7 +128,7 @@ PetscErrorCode PetscByteSwapLong(long *buff, PetscInt n)
     for (i = 0; i < (PetscInt)sizeof(long); i++) ptr2[i] = ptr1[sizeof(long) - 1 - i];
     for (i = 0; i < (PetscInt)sizeof(long); i++) ptr1[i] = ptr2[i];
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 /* --------------------------------------------------------- */
 /*
@@ -146,7 +146,7 @@ PetscErrorCode PetscByteSwapReal(PetscReal *buff, PetscInt n)
     for (i = 0; i < (PetscInt)sizeof(PetscReal); i++) ptr2[i] = ptr1[sizeof(PetscReal) - 1 - i];
     for (i = 0; i < (PetscInt)sizeof(PetscReal); i++) ptr1[i] = ptr2[i];
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 /* --------------------------------------------------------- */
 /*
@@ -168,7 +168,7 @@ PetscErrorCode PetscByteSwapScalar(PetscScalar *buff, PetscInt n)
     for (i = 0; i < (PetscInt)sizeof(PetscReal); i++) ptr2[i] = ptr1[sizeof(PetscReal) - 1 - i];
     for (i = 0; i < (PetscInt)sizeof(PetscReal); i++) ptr1[i] = ptr2[i];
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 /* --------------------------------------------------------- */
 /*
@@ -186,7 +186,7 @@ PetscErrorCode PetscByteSwapDouble(double *buff, PetscInt n)
     for (i = 0; i < (PetscInt)sizeof(double); i++) ptr2[i] = ptr1[sizeof(double) - 1 - i];
     for (i = 0; i < (PetscInt)sizeof(double); i++) ptr1[i] = ptr2[i];
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -204,7 +204,7 @@ PetscErrorCode PetscByteSwapFloat(float *buff, PetscInt n)
     for (i = 0; i < (PetscInt)sizeof(float); i++) ptr2[i] = ptr1[sizeof(float) - 1 - i];
     for (i = 0; i < (PetscInt)sizeof(float); i++) ptr1[i] = ptr2[i];
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PetscByteSwap(void *data, PetscDataType pdtype, PetscInt count)
@@ -221,7 +221,7 @@ PetscErrorCode PetscByteSwap(void *data, PetscDataType pdtype, PetscInt count)
   else if (pdtype == PETSC_FLOAT) PetscCall(PetscByteSwapFloat((float *)data, count));
   else if (pdtype == PETSC_SHORT) PetscCall(PetscByteSwapShort((short *)data, count));
   else if (pdtype == PETSC_LONG) PetscCall(PetscByteSwapLong((long *)data, count));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -268,7 +268,7 @@ PetscErrorCode PetscBinaryRead(int fd, void *data, PetscInt num, PetscInt *count
   PetscFunctionBegin;
   if (count) *count = 0;
   PetscCheck(num >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Trying to read a negative amount of data %" PetscInt_FMT, num);
-  if (!num) PetscFunctionReturn(0);
+  if (!num) PetscFunctionReturn(PETSC_SUCCESS);
 
   if (type == PETSC_FUNCTION) {
     m     = 64;
@@ -317,7 +317,7 @@ PetscErrorCode PetscBinaryRead(int fd, void *data, PetscInt num, PetscInt *count
     if (!PetscBinaryBigEndian()) PetscCall(PetscByteSwapDouble(pdouble, cnt));
     for (i = 0; i < cnt; i++) preal[i] = pdouble[i];
     PetscCall(PetscFree(pdouble));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 #endif
 
@@ -331,7 +331,7 @@ PetscErrorCode PetscBinaryRead(int fd, void *data, PetscInt num, PetscInt *count
 #endif
     free(fname);
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -387,7 +387,7 @@ PetscErrorCode PetscBinaryWrite(int fd, const void *p, PetscInt n, PetscDataType
 
   PetscFunctionBegin;
   PetscCheck(n >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Trying to write a negative amount of data %" PetscInt_FMT, n);
-  if (!n) PetscFunctionReturn(0);
+  if (!n) PetscFunctionReturn(PETSC_SUCCESS);
 
   if (type == PETSC_FUNCTION) {
 #if defined(PETSC_SERIALIZE_FUNCTIONS)
@@ -455,7 +455,7 @@ PetscErrorCode PetscBinaryWrite(int fd, const void *p, PetscInt n, PetscDataType
 #if defined(PETSC_USE_REAL___FLOAT128)
   if ((type == PETSC_SCALAR || type == PETSC_REAL || type == PETSC_COMPLEX) && writedouble) PetscCall(PetscFree(ppp));
 #endif
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -497,7 +497,7 @@ PetscErrorCode PetscBinaryOpen(const char name[], PetscFileMode mode, int *fd)
     SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Unsupported file mode %s", PetscFileModes[mode]);
   }
   PetscCheck(*fd != -1, PETSC_COMM_SELF, PETSC_ERR_FILE_OPEN, "Cannot open file %s for %s", name, PetscFileModes[mode]);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -517,7 +517,7 @@ PetscErrorCode PetscBinaryClose(int fd)
 {
   PetscFunctionBegin;
   PetscCheck(!close(fd), PETSC_COMM_SELF, PETSC_ERR_SYS, "close() failed on file descriptor");
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -563,7 +563,7 @@ PetscErrorCode PetscBinarySeek(int fd, off_t off, PetscBinarySeekType whence, of
 #else
   SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP_SYS, "System does not have a way of seeking on a file");
 #endif
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -636,7 +636,7 @@ PetscErrorCode PetscBinarySynchronizedRead(MPI_Comm comm, int fd, void *data, Pe
 #endif
     free(fname);
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -677,7 +677,7 @@ PetscErrorCode PetscBinarySynchronizedWrite(MPI_Comm comm, int fd, const void *p
   PetscFunctionBegin;
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
   if (rank == 0) PetscCall(PetscBinaryWrite(fd, p, n, type));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -712,7 +712,7 @@ PetscErrorCode PetscBinarySynchronizedSeek(MPI_Comm comm, int fd, off_t off, Pet
   PetscFunctionBegin;
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
   if (rank == 0) PetscCall(PetscBinarySeek(fd, off, whence, offset));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 #if defined(PETSC_HAVE_MPIIO)
@@ -780,7 +780,7 @@ PetscErrorCode MPIU_File_write_all(MPI_File fd, void *data, PetscMPIInt cnt, MPI
   if (!PetscBinaryBigEndian()) PetscCall(PetscByteSwap(data, pdtype, cnt));
   PetscCallMPI(MPI_File_write_all(fd, data, cnt, dtype, status));
   if (!PetscBinaryBigEndian()) PetscCall(PetscByteSwap(data, pdtype, cnt));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MPIU_File_read_all(MPI_File fd, void *data, PetscMPIInt cnt, MPI_Datatype dtype, MPI_Status *status)
@@ -791,7 +791,7 @@ PetscErrorCode MPIU_File_read_all(MPI_File fd, void *data, PetscMPIInt cnt, MPI_
   PetscCall(PetscMPIDataTypeToPetscDataType(dtype, &pdtype));
   PetscCallMPI(MPI_File_read_all(fd, data, cnt, dtype, status));
   if (!PetscBinaryBigEndian()) PetscCall(PetscByteSwap(data, pdtype, cnt));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MPIU_File_write_at(MPI_File fd, MPI_Offset off, void *data, PetscMPIInt cnt, MPI_Datatype dtype, MPI_Status *status)
@@ -803,7 +803,7 @@ PetscErrorCode MPIU_File_write_at(MPI_File fd, MPI_Offset off, void *data, Petsc
   if (!PetscBinaryBigEndian()) PetscCall(PetscByteSwap(data, pdtype, cnt));
   PetscCallMPI(MPI_File_write_at(fd, off, data, cnt, dtype, status));
   if (!PetscBinaryBigEndian()) PetscCall(PetscByteSwap(data, pdtype, cnt));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MPIU_File_read_at(MPI_File fd, MPI_Offset off, void *data, PetscMPIInt cnt, MPI_Datatype dtype, MPI_Status *status)
@@ -814,7 +814,7 @@ PetscErrorCode MPIU_File_read_at(MPI_File fd, MPI_Offset off, void *data, PetscM
   PetscCall(PetscMPIDataTypeToPetscDataType(dtype, &pdtype));
   PetscCallMPI(MPI_File_read_at(fd, off, data, cnt, dtype, status));
   if (!PetscBinaryBigEndian()) PetscCall(PetscByteSwap(data, pdtype, cnt));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MPIU_File_write_at_all(MPI_File fd, MPI_Offset off, void *data, PetscMPIInt cnt, MPI_Datatype dtype, MPI_Status *status)
@@ -826,7 +826,7 @@ PetscErrorCode MPIU_File_write_at_all(MPI_File fd, MPI_Offset off, void *data, P
   if (!PetscBinaryBigEndian()) PetscCall(PetscByteSwap(data, pdtype, cnt));
   PetscCallMPI(MPI_File_write_at_all(fd, off, data, cnt, dtype, status));
   if (!PetscBinaryBigEndian()) PetscCall(PetscByteSwap(data, pdtype, cnt));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MPIU_File_read_at_all(MPI_File fd, MPI_Offset off, void *data, PetscMPIInt cnt, MPI_Datatype dtype, MPI_Status *status)
@@ -837,7 +837,7 @@ PetscErrorCode MPIU_File_read_at_all(MPI_File fd, MPI_Offset off, void *data, Pe
   PetscCall(PetscMPIDataTypeToPetscDataType(dtype, &pdtype));
   PetscCallMPI(MPI_File_read_at_all(fd, off, data, cnt, dtype, status));
   if (!PetscBinaryBigEndian()) PetscCall(PetscByteSwap(data, pdtype, cnt));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 #endif

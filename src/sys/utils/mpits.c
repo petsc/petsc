@@ -35,7 +35,7 @@ PetscErrorCode PetscCommBuildTwoSidedSetType(MPI_Comm comm, PetscBuildTwoSidedTy
     PetscCheck(-b2[0] == b2[1], comm, PETSC_ERR_ARG_WRONG, "Enum value must be same on all processes");
   }
   _twosided_type = twosided;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -66,7 +66,7 @@ PetscErrorCode PetscCommBuildTwoSidedGetType(MPI_Comm comm, PetscBuildTwoSidedTy
     PetscCall(PetscOptionsGetEnum(NULL, NULL, "-build_twosided", PetscBuildTwoSidedTypes, (PetscEnum *)&_twosided_type, NULL));
   }
   *twosided = _twosided_type;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 #if defined(PETSC_HAVE_MPI_NONBLOCKING_COLLECTIVES)
@@ -126,7 +126,7 @@ static PetscErrorCode PetscCommBuildTwoSided_Ibarrier(MPI_Comm comm, PetscMPIInt
   PetscCall(PetscSegBufferExtractAlloc(segdata, fromdata));
   PetscCall(PetscSegBufferDestroy(&segdata));
   PetscCall(PetscCommDestroy(&comm));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 #endif
 
@@ -172,7 +172,7 @@ static PetscErrorCode PetscCommBuildTwoSided_Allreduce(MPI_Comm comm, PetscMPIIn
   *nfrom             = nrecvs;
   *fromranks         = franks;
   *(void **)fromdata = fdata;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 #if defined(PETSC_HAVE_MPI_REDUCE_SCATTER_BLOCK)
@@ -216,7 +216,7 @@ static PetscErrorCode PetscCommBuildTwoSided_RedScatter(MPI_Comm comm, PetscMPII
   *nfrom             = nrecvs;
   *fromranks         = franks;
   *(void **)fromdata = fdata;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 #endif
 
@@ -286,7 +286,7 @@ PetscErrorCode PetscCommBuildTwoSided(MPI_Comm comm, PetscMPIInt count, MPI_Data
     SETERRQ(comm, PETSC_ERR_PLIB, "Unknown method for building two-sided communication");
   }
   PetscCall(PetscLogEventEnd(PETSC_BuildTwoSided, 0, 0, 0, 0));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscCommBuildTwoSidedFReq_Reference(MPI_Comm comm, PetscMPIInt count, MPI_Datatype dtype, PetscMPIInt nto, const PetscMPIInt *toranks, const void *todata, PetscMPIInt *nfrom, PetscMPIInt **fromranks, void *fromdata, PetscMPIInt ntags, MPI_Request **toreqs, MPI_Request **fromreqs, PetscErrorCode (*send)(MPI_Comm, const PetscMPIInt[], PetscMPIInt, PetscMPIInt, void *, MPI_Request[], void *), PetscErrorCode (*recv)(MPI_Comm, const PetscMPIInt[], PetscMPIInt, void *, MPI_Request[], void *), void *ctx)
@@ -323,7 +323,7 @@ static PetscErrorCode PetscCommBuildTwoSidedFReq_Reference(MPI_Comm comm, PetscM
   PetscCall(PetscCommDestroy(&comm));
   *toreqs   = sendreq;
   *fromreqs = recvreq;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 #if defined(PETSC_HAVE_MPI_NONBLOCKING_COLLECTIVES)
@@ -404,7 +404,7 @@ static PetscErrorCode PetscCommBuildTwoSidedFReq_Ibarrier(MPI_Comm comm, PetscMP
   PetscCall(PetscFree(sendreqs));
   PetscCall(PetscFree(tags));
   PetscCall(PetscCommDestroy(&comm));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 #endif
 
@@ -454,7 +454,7 @@ PetscErrorCode PetscCommBuildTwoSidedF(MPI_Comm comm, PetscMPIInt count, MPI_Dat
   PetscCallMPI(MPI_Waitall(*nfrom * ntags, fromreqs, MPI_STATUSES_IGNORE));
   PetscCall(PetscFree(toreqs));
   PetscCall(PetscFree(fromreqs));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -525,5 +525,5 @@ PetscErrorCode PetscCommBuildTwoSidedFReq(MPI_Comm comm, PetscMPIInt count, MPI_
   }
   PetscCall((*f)(comm, count, dtype, nto, toranks, todata, nfrom, fromranks, fromdata, ntags, toreqs, fromreqs, send, recv, ctx));
   PetscCall(PetscLogEventEnd(PETSC_BuildTwoSidedF, 0, 0, 0, 0));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

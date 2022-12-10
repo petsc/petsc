@@ -60,7 +60,7 @@ PetscErrorCode ex2_1(void)
   PetscCall(VecView(x, PETSC_VIEWER_STDOUT_WORLD));
   PetscCall(VecDestroy(&x));
   PetscCall(DMDestroy(&dms));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)

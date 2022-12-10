@@ -19,7 +19,7 @@ static PetscErrorCode DMDASetBlockFills_Private(const PetscInt *dfill, PetscInt 
   PetscInt i, j, nz, *fill;
 
   PetscFunctionBegin;
-  if (!dfill) PetscFunctionReturn(0);
+  if (!dfill) PetscFunctionReturn(PETSC_SUCCESS);
 
   /* count number nonzeros */
   nz = 0;
@@ -45,7 +45,7 @@ static PetscErrorCode DMDASetBlockFills_Private(const PetscInt *dfill, PetscInt 
   fill[w] = nz;
 
   *rfill = fill;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMDASetBlockFillsSparse_Private(const PetscInt *dfillsparse, PetscInt w, PetscInt **rfill)
@@ -53,7 +53,7 @@ static PetscErrorCode DMDASetBlockFillsSparse_Private(const PetscInt *dfillspars
   PetscInt nz;
 
   PetscFunctionBegin;
-  if (!dfillsparse) PetscFunctionReturn(0);
+  if (!dfillsparse) PetscFunctionReturn(PETSC_SUCCESS);
 
   /* Determine number of non-zeros */
   nz = (dfillsparse[w] - w - 1);
@@ -61,7 +61,7 @@ static PetscErrorCode DMDASetBlockFillsSparse_Private(const PetscInt *dfillspars
   /* Allocate space for our copy of the given sparse matrix representation. */
   PetscCall(PetscMalloc1(nz + w + 1, rfill));
   PetscCall(PetscArraycpy(*rfill, dfillsparse, nz + w + 1));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMDASetBlockFills_Private2(DM_DA *dd)
@@ -79,7 +79,7 @@ static PetscErrorCode DMDASetBlockFills_Private2(DM_DA *dd)
   for (i = 0; i < dd->w; i++) {
     if (dd->ofillcols[i]) dd->ofillcols[i] = cnt++;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -128,7 +128,7 @@ PetscErrorCode DMDASetBlockFills(DM da, const PetscInt *dfill, const PetscInt *o
 
   /* count nonzeros in ofill columns */
   PetscCall(DMDASetBlockFills_Private2(dd));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -181,7 +181,7 @@ PetscErrorCode DMDASetBlockFillsSparse(DM da, const PetscInt *dfillsparse, const
 
   /* count nonzeros in ofill columns */
   PetscCall(DMDASetBlockFills_Private2(dd));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMCreateColoring_DA(DM da, ISColoringType ctype, ISColoring *coloring)
@@ -259,7 +259,7 @@ PetscErrorCode DMCreateColoring_DA(DM da, ISColoringType ctype, ISColoring *colo
     dd->Xs = dd->Xs * nc;
     dd->Xe = dd->Xe * nc;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* ---------------------------------------------------------------------------------*/
@@ -325,7 +325,7 @@ PetscErrorCode DMCreateColoring_DA_2d_MPIAIJ(DM da, ISColoringType ctype, ISColo
     } else SETERRQ(PetscObjectComm((PetscObject)da), PETSC_ERR_ARG_WRONG, "Unknown ISColoringType %d", (int)ctype);
   }
   PetscCall(ISColoringReference(*coloring));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* ---------------------------------------------------------------------------------*/
@@ -389,7 +389,7 @@ PetscErrorCode DMCreateColoring_DA_3d_MPIAIJ(DM da, ISColoringType ctype, ISColo
     *coloring = dd->ghostedcoloring;
   } else SETERRQ(PetscObjectComm((PetscObject)da), PETSC_ERR_ARG_WRONG, "Unknown ISColoringType %d", (int)ctype);
   PetscCall(ISColoringReference(*coloring));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* ---------------------------------------------------------------------------------*/
@@ -460,7 +460,7 @@ PetscErrorCode DMCreateColoring_DA_1d_MPIAIJ(DM da, ISColoringType ctype, ISColo
     *coloring = dd->ghostedcoloring;
   } else SETERRQ(PetscObjectComm((PetscObject)da), PETSC_ERR_ARG_WRONG, "Unknown ISColoringType %d", (int)ctype);
   PetscCall(ISColoringReference(*coloring));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMCreateColoring_DA_2d_5pt_MPIAIJ(DM da, ISColoringType ctype, ISColoring *coloring)
@@ -511,7 +511,7 @@ PetscErrorCode DMCreateColoring_DA_2d_5pt_MPIAIJ(DM da, ISColoringType ctype, IS
     }
     *coloring = dd->ghostedcoloring;
   } else SETERRQ(PetscObjectComm((PetscObject)da), PETSC_ERR_ARG_WRONG, "Unknown ISColoringType %d", (int)ctype);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* =========================================================================== */
@@ -549,7 +549,7 @@ PetscErrorCode MatSetupDM(Mat mat, DM da)
   PetscValidHeaderSpecific(mat, MAT_CLASSID, 1);
   PetscValidHeaderSpecificType(da, DM_CLASSID, 2, DMDA);
   PetscTryMethod(mat, "MatSetupDM_C", (Mat, DM), (mat, da));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatView_MPI_DA(Mat A, PetscViewer viewer)
@@ -566,7 +566,7 @@ PetscErrorCode MatView_MPI_DA(Mat A, PetscViewer viewer)
   PetscFunctionBegin;
   /* Check whether we are just printing info, in which case MatView() already viewed everything we wanted to view */
   PetscCall(PetscViewerGetFormat(viewer, &format));
-  if (format == PETSC_VIEWER_ASCII_INFO || format == PETSC_VIEWER_ASCII_INFO_DETAIL) PetscFunctionReturn(0);
+  if (format == PETSC_VIEWER_ASCII_INFO || format == PETSC_VIEWER_ASCII_INFO_DETAIL) PetscFunctionReturn(PETSC_SUCCESS);
 
   PetscCall(PetscObjectGetComm((PetscObject)A, &comm));
   PetscCall(MatGetDM(A, &da));
@@ -589,7 +589,7 @@ PetscErrorCode MatView_MPI_DA(Mat A, PetscViewer viewer)
   PetscCall(MatView(Anatural, viewer));
   ((PetscObject)Anatural)->donotPetscObjectPrintClassNamePrefixType = PETSC_FALSE;
   PetscCall(MatDestroy(&Anatural));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatLoad_MPI_DA(Mat A, PetscViewer viewer)
@@ -627,7 +627,7 @@ PetscErrorCode MatLoad_MPI_DA(Mat A, PetscViewer viewer)
   PetscCall(MatHeaderReplace(A, &Aapp));
   PetscCall(ISDestroy(&is));
   PetscCall(MatDestroy(&Anatural));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMCreateMatrix_DA(DM da, Mat *J)
@@ -777,7 +777,7 @@ PetscErrorCode DMCreateMatrix_DA(DM da, Mat *J)
     PetscCall(MatSetOperation(A, MATOP_LOAD, (void (*)(void))MatLoad_MPI_DA));
   }
   *J = A;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* ---------------------------------------------------------------------------------*/
@@ -843,7 +843,7 @@ PetscErrorCode DMCreateMatrix_DA_IS(DM dm, Mat J)
     PetscCall(MatAssemblyBegin(J, MAT_FINAL_ASSEMBLY));
     PetscCall(MatAssemblyEnd(J, MAT_FINAL_ASSEMBLY));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMCreateMatrix_DA_2d_MPISELL(DM da, Mat J)
@@ -945,7 +945,7 @@ PetscErrorCode DMCreateMatrix_DA_2d_MPISELL(DM da, Mat J)
     PetscCall(MatSetOption(J, MAT_NEW_NONZERO_LOCATION_ERR, PETSC_TRUE));
   }
   PetscCall(PetscFree2(rows, cols));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMCreateMatrix_DA_3d_MPISELL(DM da, Mat J)
@@ -1057,7 +1057,7 @@ PetscErrorCode DMCreateMatrix_DA_3d_MPISELL(DM da, Mat J)
     PetscCall(MatSetOption(J, MAT_NEW_NONZERO_LOCATION_ERR, PETSC_TRUE));
   }
   PetscCall(PetscFree2(rows, cols));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMCreateMatrix_DA_2d_MPIAIJ(DM da, Mat J)
@@ -1169,7 +1169,7 @@ PetscErrorCode DMCreateMatrix_DA_2d_MPIAIJ(DM da, Mat J)
     if (bx == DM_BOUNDARY_NONE && by == DM_BOUNDARY_NONE) PetscCall(MatSetOption(J, MAT_SORTED_FULL, PETSC_FALSE));
   }
   PetscCall(PetscFree2(rows, cols));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMCreateMatrix_DA_2d_MPIAIJ_Fill(DM da, Mat J)
@@ -1294,7 +1294,7 @@ PetscErrorCode DMCreateMatrix_DA_2d_MPIAIJ_Fill(DM da, Mat J)
     PetscCall(MatSetOption(J, MAT_NEW_NONZERO_LOCATION_ERR, PETSC_TRUE));
   }
   PetscCall(PetscFree(cols));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* ---------------------------------------------------------------------------------*/
@@ -1422,7 +1422,7 @@ PetscErrorCode DMCreateMatrix_DA_3d_MPIAIJ(DM da, Mat J)
     PetscCall(MatSetOption(J, MAT_NEW_NONZERO_LOCATION_ERR, PETSC_TRUE));
   }
   PetscCall(PetscFree2(rows, cols));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* ---------------------------------------------------------------------------------*/
@@ -1585,7 +1585,7 @@ PetscErrorCode DMCreateMatrix_DA_1d_MPIAIJ_Fill(DM da, Mat J)
     PetscCall(MatBindToCPU(J, PETSC_FALSE));
     PetscCall(MatSetOption(J, MAT_NEW_NONZERO_LOCATION_ERR, PETSC_TRUE));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* ---------------------------------------------------------------------------------*/
@@ -1652,7 +1652,7 @@ PetscErrorCode DMCreateMatrix_DA_1d_MPIAIJ(DM da, Mat J)
     PetscCall(MatSetOption(J, MAT_NEW_NONZERO_LOCATION_ERR, PETSC_TRUE));
     PetscCall(PetscFree2(rows, cols));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* ---------------------------------------------------------------------------------*/
@@ -1717,7 +1717,7 @@ PetscErrorCode DMCreateMatrix_DA_1d_SeqAIJ_NoPreallocation(DM da, Mat J)
     PetscCall(PetscFree2(rows, cols));
   }
   PetscCall(MatSetOption(J, MAT_SORTED_FULL, PETSC_FALSE));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMCreateMatrix_DA_2d_MPIBAIJ(DM da, Mat J)
@@ -1809,7 +1809,7 @@ PetscErrorCode DMCreateMatrix_DA_2d_MPIBAIJ(DM da, Mat J)
     PetscCall(MatSetOption(J, MAT_NEW_NONZERO_LOCATION_ERR, PETSC_TRUE));
   }
   PetscCall(PetscFree(cols));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMCreateMatrix_DA_3d_MPIBAIJ(DM da, Mat J)
@@ -1917,7 +1917,7 @@ PetscErrorCode DMCreateMatrix_DA_3d_MPIBAIJ(DM da, Mat J)
     PetscCall(MatSetOption(J, MAT_NEW_NONZERO_LOCATION_ERR, PETSC_TRUE));
   }
   PetscCall(PetscFree(cols));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -1935,7 +1935,7 @@ static PetscErrorCode L2GFilterUpperTriangular(ISLocalToGlobalMapping ltog, Pets
     if (col[i] >= *row) col[n++] = col[i];
   }
   *cnt = n;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMCreateMatrix_DA_2d_MPISBAIJ(DM da, Mat J)
@@ -2027,7 +2027,7 @@ PetscErrorCode DMCreateMatrix_DA_2d_MPISBAIJ(DM da, Mat J)
     PetscCall(MatSetOption(J, MAT_NEW_NONZERO_LOCATION_ERR, PETSC_TRUE));
   }
   PetscCall(PetscFree(cols));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMCreateMatrix_DA_3d_MPISBAIJ(DM da, Mat J)
@@ -2133,7 +2133,7 @@ PetscErrorCode DMCreateMatrix_DA_3d_MPISBAIJ(DM da, Mat J)
     PetscCall(MatSetOption(J, MAT_NEW_NONZERO_LOCATION_ERR, PETSC_TRUE));
   }
   PetscCall(PetscFree(cols));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* ---------------------------------------------------------------------------------*/
@@ -2283,5 +2283,5 @@ PetscErrorCode DMCreateMatrix_DA_3d_MPIAIJ_Fill(DM da, Mat J)
     PetscCall(MatSetOption(J, MAT_NEW_NONZERO_LOCATION_ERR, PETSC_TRUE));
   }
   PetscCall(PetscFree(cols));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

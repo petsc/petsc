@@ -57,7 +57,7 @@ PetscErrorCode PetscRandomGetValue(PetscRandom r, PetscScalar *val)
   if (!r->ops->getvalue) PetscUseTypeMethod(r, getvalues, 1, val);
   else PetscUseTypeMethod(r, getvalue, val);
   PetscCall(PetscObjectStateIncrease((PetscObject)r));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -96,7 +96,7 @@ PetscErrorCode PetscRandomGetValueReal(PetscRandom r, PetscReal *val)
   if (!r->ops->getvaluereal) PetscUseTypeMethod(r, getvaluesreal, 1, val);
   else PetscUseTypeMethod(r, getvaluereal, val);
   PetscCall(PetscObjectStateIncrease((PetscObject)r));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -133,7 +133,7 @@ PetscErrorCode PetscRandomGetValues(PetscRandom r, PetscInt n, PetscScalar *val)
     for (PetscInt i = 0; i < n; ++i) PetscCall(getvalue(r, val + i));
   } else PetscUseTypeMethod(r, getvalues, n, val);
   PetscCall(PetscObjectStateIncrease((PetscObject)r));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -166,7 +166,7 @@ PetscErrorCode PetscRandomGetValuesReal(PetscRandom r, PetscInt n, PetscReal *va
     for (i = 0; i < n; i++) PetscCall((*r->ops->getvaluereal)(r, val + i));
   } else PetscUseTypeMethod(r, getvaluesreal, n, val);
   PetscCall(PetscObjectStateIncrease((PetscObject)r));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -198,7 +198,7 @@ PetscErrorCode PetscRandomGetInterval(PetscRandom r, PetscScalar *low, PetscScal
     PetscValidScalarPointer(high, 3);
     *high = r->low + r->width;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -234,5 +234,5 @@ PetscErrorCode PetscRandomSetInterval(PetscRandom r, PetscScalar low, PetscScala
   r->low   = low;
   r->width = high - low;
   r->iset  = PETSC_TRUE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

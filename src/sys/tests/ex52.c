@@ -129,7 +129,7 @@ int main(int argc, char **argv)
 
     for (i = 0; i < n - 1; i++) {
       if (Y[i] > Y[i + 1]) {
-        PetscIntView(n, Y, 0);
+        PetscCall(PetscIntView(n, Y, 0));
         SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "PetscSortIntWithArray() produced wrong results!");
       }
     }

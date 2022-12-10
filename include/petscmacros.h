@@ -1126,7 +1126,7 @@ M*/
 M*/
   #define PetscMacroReturns(retexpr, ...) PetscMacroReturns_(retexpr, __VA_ARGS__)
 
-  #define PetscMacroReturnStandard(...) PetscMacroReturns(0, __VA_ARGS__)
+  #define PetscMacroReturnStandard(...) PetscMacroReturns(PETSC_SUCCESS, __VA_ARGS__)
 
 #endif /* !PETSC_SKIP_VARIADIC_MACROS */
 

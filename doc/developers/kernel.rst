@@ -186,13 +186,13 @@ The most basic interfaces are
 .. literalinclude:: /../src/sys/memory/mal.c
    :language: c
    :start-at: PetscErrorCode PetscMallocA(
-   :end-at: PetscFunctionReturn(0)
+   :end-at: PetscFunctionReturn(PETSC_SUCCESS)
    :append: }
 
 .. literalinclude:: /../src/sys/memory/mal.c
    :language: c
    :start-at: PetscErrorCode PetscFreeA(
-   :end-at: PetscFunctionReturn(0)
+   :end-at: PetscFunctionReturn(PETSC_SUCCESS)
    :append: }
 
 which allow the use of any number of profiling and error-checking

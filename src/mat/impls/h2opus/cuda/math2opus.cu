@@ -31,7 +31,7 @@ PETSC_INTERN PetscErrorCode MatApproximateNorm_Private(Mat, NormType, PetscInt, 
   #if defined(PETSC_H2OPUS_USE_GPU)
     #define MatH2OpusUpdateIfNeeded(A, B) MatBindToCPU(A, (PetscBool)((A)->boundtocpu || (B)))
   #else
-    #define MatH2OpusUpdateIfNeeded(A, B) 0
+    #define MatH2OpusUpdateIfNeeded(A, B) PETSC_SUCCESS
   #endif
 
 // TODO H2OPUS:
@@ -229,7 +229,7 @@ static PetscErrorCode MatDestroy_H2OPUS(Mat A)
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatProductSetFromOptions_h2opus_mpidensecuda_C", NULL));
   PetscCall(PetscObjectChangeTypeName((PetscObject)A, NULL));
   PetscCall(PetscFree(A->data));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatH2OpusSetNativeMult(Mat A, PetscBool nm)
@@ -255,7 +255,7 @@ PetscErrorCode MatH2OpusSetNativeMult(Mat A, PetscBool nm)
     }
     a->nativemult = nm;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatH2OpusGetNativeMult(Mat A, PetscBool *nm)
@@ -269,7 +269,7 @@ PetscErrorCode MatH2OpusGetNativeMult(Mat A, PetscBool *nm)
   PetscCall(PetscObjectTypeCompare((PetscObject)A, MATH2OPUS, &ish2opus));
   PetscCheck(ish2opus, PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "Not for type %s", ((PetscObject)A)->type_name);
   *nm = a->nativemult;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_EXTERN PetscErrorCode MatNorm_H2OPUS(Mat A, NormType normtype, PetscReal *n)
@@ -292,7 +292,7 @@ PETSC_EXTERN PetscErrorCode MatNorm_H2OPUS(Mat A, NormType normtype, PetscReal *
   }
   PetscCall(MatApproximateNorm_Private(A, normtype, nmax, n));
   if (a) PetscCall(MatH2OpusSetNativeMult(A, mult));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatH2OpusResizeBuffers_Private(Mat A, PetscInt xN, PetscInt yN)
@@ -328,7 +328,7 @@ static PetscErrorCode MatH2OpusResizeBuffers_Private(Mat A, PetscInt xN, PetscIn
     }
   }
   #endif
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatMultNKernel_H2OPUS(Mat A, PetscBool transA, Mat B, Mat C)
@@ -451,7 +451,7 @@ static PetscErrorCode MatMultNKernel_H2OPUS(Mat A, PetscBool transA, Mat B, Mat 
     PetscCall(PetscLogFlops(1e9 * gops));
   #endif
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatProductNumeric_H2OPUS(Mat C)
@@ -470,7 +470,7 @@ static PetscErrorCode MatProductNumeric_H2OPUS(Mat C)
   default:
     SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "MatProduct type %s is not supported", MatProductTypes[product->type]);
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatProductSymbolic_H2OPUS(Mat C)
@@ -503,7 +503,7 @@ static PetscErrorCode MatProductSymbolic_H2OPUS(Mat C)
   }
   C->ops->productsymbolic = NULL;
   C->ops->productnumeric  = MatProductNumeric_H2OPUS;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatProductSetFromOptions_H2OPUS(Mat C)
@@ -511,7 +511,7 @@ static PetscErrorCode MatProductSetFromOptions_H2OPUS(Mat C)
   PetscFunctionBegin;
   MatCheckProduct(C, 1);
   if (C->product->type == MATPRODUCT_AB || C->product->type == MATPRODUCT_AtB) C->ops->productsymbolic = MatProductSymbolic_H2OPUS;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatMultKernel_H2OPUS(Mat A, Vec x, PetscScalar sy, Vec y, PetscBool trans)
@@ -637,7 +637,7 @@ static PetscErrorCode MatMultKernel_H2OPUS(Mat A, Vec x, PetscScalar sy, Vec y, 
     PetscCall(PetscLogFlops(1e9 * gops));
   #endif
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatMultTranspose_H2OPUS(Mat A, Vec x, Vec y)
@@ -649,7 +649,7 @@ static PetscErrorCode MatMultTranspose_H2OPUS(Mat A, Vec x, Vec y)
   PetscCall(PetscObjectTypeCompareAny((PetscObject)y, &yiscuda, VECSEQCUDA, VECMPICUDA, ""));
   PetscCall(MatH2OpusUpdateIfNeeded(A, !xiscuda || !yiscuda));
   PetscCall(MatMultKernel_H2OPUS(A, x, 0.0, y, PETSC_TRUE));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatMult_H2OPUS(Mat A, Vec x, Vec y)
@@ -661,7 +661,7 @@ static PetscErrorCode MatMult_H2OPUS(Mat A, Vec x, Vec y)
   PetscCall(PetscObjectTypeCompareAny((PetscObject)y, &yiscuda, VECSEQCUDA, VECMPICUDA, ""));
   PetscCall(MatH2OpusUpdateIfNeeded(A, !xiscuda || !yiscuda));
   PetscCall(MatMultKernel_H2OPUS(A, x, 0.0, y, PETSC_FALSE));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatMultTransposeAdd_H2OPUS(Mat A, Vec x, Vec y, Vec z)
@@ -674,7 +674,7 @@ static PetscErrorCode MatMultTransposeAdd_H2OPUS(Mat A, Vec x, Vec y, Vec z)
   PetscCall(PetscObjectTypeCompareAny((PetscObject)z, &ziscuda, VECSEQCUDA, VECMPICUDA, ""));
   PetscCall(MatH2OpusUpdateIfNeeded(A, !xiscuda || !ziscuda));
   PetscCall(MatMultKernel_H2OPUS(A, x, 1.0, z, PETSC_TRUE));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatMultAdd_H2OPUS(Mat A, Vec x, Vec y, Vec z)
@@ -687,7 +687,7 @@ static PetscErrorCode MatMultAdd_H2OPUS(Mat A, Vec x, Vec y, Vec z)
   PetscCall(PetscObjectTypeCompareAny((PetscObject)z, &ziscuda, VECSEQCUDA, VECMPICUDA, ""));
   PetscCall(MatH2OpusUpdateIfNeeded(A, !xiscuda || !ziscuda));
   PetscCall(MatMultKernel_H2OPUS(A, x, 1.0, z, PETSC_FALSE));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatScale_H2OPUS(Mat A, PetscScalar s)
@@ -696,7 +696,7 @@ static PetscErrorCode MatScale_H2OPUS(Mat A, PetscScalar s)
 
   PetscFunctionBegin;
   a->s *= s;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatSetFromOptions_H2OPUS(Mat A, PetscOptionItems *PetscOptionsObject)
@@ -716,7 +716,7 @@ static PetscErrorCode MatSetFromOptions_H2OPUS(Mat A, PetscOptionItems *PetscOpt
   PetscCall(PetscOptionsBool("-mat_h2opus_hara_verbose", "Verbose output from hara construction", NULL, a->hara_verbose, &a->hara_verbose, NULL));
   PetscCall(PetscOptionsBool("-mat_h2opus_resize", "Resize after compression", NULL, a->resize, &a->resize, NULL));
   PetscOptionsHeadEnd();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatH2OpusSetCoords_H2OPUS(Mat, PetscInt, const PetscReal[], PetscBool, MatH2OpusKernel, void *);
@@ -729,7 +729,7 @@ static PetscErrorCode MatH2OpusInferCoordinates_Private(Mat A)
   const PetscScalar *coords;
 
   PetscFunctionBegin;
-  if (a->ptcloud) PetscFunctionReturn(0);
+  if (a->ptcloud) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(PetscObjectQuery((PetscObject)A, "__math2opus_coords", (PetscObject *)&c));
   if (!c && a->sampler) {
     Mat S = a->sampler->GetSamplingMat();
@@ -744,7 +744,7 @@ static PetscErrorCode MatH2OpusInferCoordinates_Private(Mat A)
     PetscCall(MatH2OpusSetCoords_H2OPUS(A, spacedim, coords, PETSC_FALSE, NULL, NULL));
     PetscCall(VecRestoreArrayRead(c, &coords));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatSetUpMultiply_H2OPUS(Mat A)
@@ -758,7 +758,7 @@ static PetscErrorCode MatSetUpMultiply_H2OPUS(Mat A)
   PetscBool     rid;
 
   PetscFunctionBegin;
-  if (a->multsetup) PetscFunctionReturn(0);
+  if (a->multsetup) PetscFunctionReturn(PETSC_SUCCESS);
   if (a->sf) { /* MatDuplicate_H2OPUS takes reference to the SF */
     PetscCall(PetscSFGetGraph(a->sf, NULL, &n, NULL, NULL));
   #if defined(PETSC_H2OPUS_USE_GPU)
@@ -832,7 +832,7 @@ static PetscErrorCode MatSetUpMultiply_H2OPUS(Mat A)
     PetscCall(ISRestoreIndices(a->h2opus_indexmap, (const PetscInt **)&idx));
   }
   a->multsetup = PETSC_TRUE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatAssemblyEnd_H2OPUS(Mat A, MatAssemblyType assemblytype)
@@ -1000,7 +1000,7 @@ static PetscErrorCode MatAssemblyEnd_H2OPUS(Mat A, MatAssemblyType assemblytype)
     }
     a->sampler->SetSamplingMat(NULL);
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatZeroEntries_H2OPUS(Mat A)
@@ -1015,7 +1015,7 @@ static PetscErrorCode MatZeroEntries_H2OPUS(Mat A)
   #if defined(PETSC_H2OPUS_USE_GPU)
   if (a->hmatrix_gpu) a->hmatrix_gpu->clearData();
   #endif
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatDuplicate_H2OPUS(Mat B, MatDuplicateOption op, Mat *nA)
@@ -1089,7 +1089,7 @@ static PetscErrorCode MatDuplicate_H2OPUS(Mat B, MatDuplicateOption op, Mat *nA)
   PetscCall(MatBindToCPU(A, iscpu));
 
   *nA = A;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatView_H2OPUS(Mat A, PetscViewer view)
@@ -1166,7 +1166,7 @@ static PetscErrorCode MatView_H2OPUS(Mat A, PetscViewer view)
     PetscCall(PetscOptionsGetString(((PetscObject)A)->options, ((PetscObject)A)->prefix, "-mat_h2opus_vieweps_filename", filename, sizeof(filename), NULL));
     outputEps(*h2opus->hmatrix, filename);
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatH2OpusSetCoords_H2OPUS(Mat A, PetscInt spacedim, const PetscReal coords[], PetscBool cdist, MatH2OpusKernel kernel, void *kernelctx)
@@ -1208,7 +1208,7 @@ static PetscErrorCode MatH2OpusSetCoords_H2OPUS(Mat A, PetscInt spacedim, const 
   if (kernel) h2opus->kernel = new PetscFunctionGenerator<PetscScalar>(kernel, spacedim, kernelctx);
   if (gcoords != coords) PetscCall(PetscFree(gcoords));
   A->preallocated = PETSC_TRUE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
   #if defined(PETSC_H2OPUS_USE_GPU)
@@ -1261,7 +1261,7 @@ static PetscErrorCode MatBindToCPU_H2OPUS(Mat A, PetscBool flg)
     PetscCall(PetscStrallocpy(VECSTANDARD, &A->defaultvectype));
   }
   A->boundtocpu = flg;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
   #endif
 
@@ -1338,7 +1338,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_H2OPUS(Mat A)
   PetscCall(PetscFree(A->defaultvectype));
   PetscCall(PetscStrallocpy(VECCUDA, &A->defaultvectype));
   #endif
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1362,8 +1362,8 @@ PetscErrorCode MatH2OpusOrthogonalize(Mat A)
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
   PetscValidType(A, 1);
   PetscCall(PetscObjectTypeCompare((PetscObject)A, MATH2OPUS, &ish2opus));
-  if (!ish2opus) PetscFunctionReturn(0);
-  if (a->orthogonal) PetscFunctionReturn(0);
+  if (!ish2opus) PetscFunctionReturn(PETSC_SUCCESS);
+  if (a->orthogonal) PetscFunctionReturn(PETSC_SUCCESS);
   HLibProfile::clear();
   PetscCall(PetscLogEventBegin(MAT_H2Opus_Orthog, A, 0, 0, 0));
   #if defined(PETSC_H2OPUS_USE_GPU)
@@ -1421,7 +1421,7 @@ PetscErrorCode MatH2OpusOrthogonalize(Mat A)
   #endif
   }
   PetscCall(PetscLogEventEnd(MAT_H2Opus_Orthog, A, 0, 0, 0));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1447,7 +1447,7 @@ PetscErrorCode MatH2OpusCompress(Mat A, PetscReal tol)
   PetscValidType(A, 1);
   PetscValidLogicalCollectiveReal(A, tol, 2);
   PetscCall(PetscObjectTypeCompare((PetscObject)A, MATH2OPUS, &ish2opus));
-  if (!ish2opus || tol <= 0.0) PetscFunctionReturn(0);
+  if (!ish2opus || tol <= 0.0) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(MatH2OpusOrthogonalize(A));
   HLibProfile::clear();
   PetscCall(PetscLogEventBegin(MAT_H2Opus_Compress, A, 0, 0, 0));
@@ -1528,7 +1528,7 @@ PetscErrorCode MatH2OpusCompress(Mat A, PetscReal tol)
   #endif
   }
   PetscCall(PetscLogEventEnd(MAT_H2Opus_Compress, A, 0, 0, 0));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1567,7 +1567,7 @@ PetscErrorCode MatH2OpusSetSamplingMat(Mat A, Mat B, PetscInt bs, PetscReal tol)
     if (tol > 0.) a->rtol = tol;
     delete a->kernel;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1626,7 +1626,7 @@ PetscErrorCode MatCreateH2OpusFromKernel(MPI_Comm comm, PetscInt m, PetscInt n, 
   if (basisord > 0) h2opus->basisord = basisord;
 
   *nA = A;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1714,7 +1714,7 @@ PetscErrorCode MatCreateH2OpusFromMat(Mat B, PetscInt spacedim, const PetscReal 
   if (rtol > 0.) h2opus->rtol = rtol;
   *nA             = A;
   A->preallocated = PETSC_TRUE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1743,7 +1743,7 @@ PetscErrorCode MatH2OpusGetIndexMap(Mat A, IS *indexmap)
   PetscCall(PetscObjectTypeCompare((PetscObject)A, MATH2OPUS, &ish2opus));
   PetscCheck(ish2opus, PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "Not for type %s", ((PetscObject)A)->type_name);
   *indexmap = a->h2opus_indexmap;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1783,7 +1783,7 @@ PetscErrorCode MatH2OpusMapVec(Mat A, PetscBool nativetopetsc, Vec in, Vec *out)
   PetscCall(MatH2OpusSetNativeMult(A, nm));
   if (!a->sf) { /* same ordering */
     PetscCall(VecCopy(in, *out));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
   PetscCall(VecGetArrayRead(in, (const PetscScalar **)&xin));
   PetscCall(VecGetArrayWrite(*out, &xout));
@@ -1796,7 +1796,7 @@ PetscErrorCode MatH2OpusMapVec(Mat A, PetscBool nativetopetsc, Vec in, Vec *out)
   }
   PetscCall(VecRestoreArrayRead(in, (const PetscScalar **)&xin));
   PetscCall(VecRestoreArrayWrite(*out, &xout));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1833,7 +1833,7 @@ PetscErrorCode MatH2OpusLowRankUpdate(Mat A, Mat U, Mat V, PetscScalar s)
 
   if (!V) V = U;
   PetscCheck(U->cmap->N == V->cmap->N, PetscObjectComm((PetscObject)A), PETSC_ERR_ARG_WRONGSTATE, "Non matching rank update %" PetscInt_FMT " != %" PetscInt_FMT, U->cmap->N, V->cmap->N);
-  if (!U->cmap->N) PetscFunctionReturn(0);
+  if (!U->cmap->N) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(PetscLayoutCompare(U->rmap, A->rmap, &flg));
   PetscCheck(flg, PetscObjectComm((PetscObject)A), PETSC_ERR_ARG_WRONGSTATE, "A and U must have the same row layout");
   PetscCall(PetscLayoutCompare(V->rmap, A->cmap, &flg));
@@ -1930,6 +1930,6 @@ PetscErrorCode MatH2OpusLowRankUpdate(Mat A, Mat U, Mat V, PetscScalar s)
     PetscCall(PetscLogEventEnd(MAT_H2Opus_LR, A, 0, 0, 0));
     a->orthogonal = PETSC_FALSE;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 #endif

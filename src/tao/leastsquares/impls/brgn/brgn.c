@@ -48,7 +48,7 @@ static PetscErrorCode GNHessianProd(Mat H, Vec in, Vec out)
     PetscCall(VecAXPY(out, 1, gn->x_work));
     break;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 static PetscErrorCode ComputeDamping(TAO_BRGN *gn)
 {
@@ -65,7 +65,7 @@ static PetscErrorCode ComputeDamping(TAO_BRGN *gn)
   PetscCall(VecScale(gn->damping, gn->lambda));
   PetscCall(VecRestoreArray(gn->damping, &damping_ary));
   PetscCall(VecRestoreArrayRead(gn->diag, &diag_ary));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode TaoBRGNGetDampingVector(Tao tao, Vec *d)
@@ -75,7 +75,7 @@ PetscErrorCode TaoBRGNGetDampingVector(Tao tao, Vec *d)
   PetscFunctionBegin;
   PetscCheck(gn->reg_type == BRGN_REGULARIZATION_LM, PetscObjectComm((PetscObject)tao), PETSC_ERR_SUP, "Damping vector is only available if regularization type is lm.");
   *d = gn->damping;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode GNObjectiveGradientEval(Tao tao, Vec X, PetscReal *fcn, Vec G, void *ptr)
@@ -139,7 +139,7 @@ static PetscErrorCode GNObjectiveGradientEval(Tao tao, Vec X, PetscReal *fcn, Ve
     PetscCall(VecAXPY(G, gn->lambda, gn->x_work));
     break;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode GNComputeHessian(Tao tao, Vec X, Mat H, Mat Hpre, void *ptr)
@@ -193,7 +193,7 @@ static PetscErrorCode GNComputeHessian(Tao tao, Vec X, Mat H, Mat Hpre, void *pt
     if (gn->mat_explicit) PetscCall(MatDiagonalSet(gn->H, gn->damping, ADD_VALUES));
     break;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode GNHookFunction(Tao tao, PetscInt iter, void *ctx)
@@ -236,7 +236,7 @@ static PetscErrorCode GNHookFunction(Tao tao, PetscInt iter, void *ctx)
 
   /* Call general purpose update function */
   if (gn->parent->ops->update) PetscCall((*gn->parent->ops->update)(gn->parent, gn->parent->niter, gn->parent->user_update));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TaoSolve_BRGN(Tao tao)
@@ -257,7 +257,7 @@ static PetscErrorCode TaoSolve_BRGN(Tao tao)
   /* Update vectors */
   PetscCall(VecCopy(gn->subsolver->solution, tao->solution));
   PetscCall(VecCopy(gn->subsolver->gradient, tao->gradient));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TaoSetFromOptions_BRGN(Tao tao, PetscOptionItems *PetscOptionsObject)
@@ -280,7 +280,7 @@ static PetscErrorCode TaoSetFromOptions_BRGN(Tao tao, PetscOptionItems *PetscOpt
     PetscCall(TaoLineSearchSetType(ls, TAOLINESEARCHUNIT));
   }
   PetscCall(TaoSetFromOptions(gn->subsolver));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TaoView_BRGN(Tao tao, PetscViewer viewer)
@@ -291,7 +291,7 @@ static PetscErrorCode TaoView_BRGN(Tao tao, PetscViewer viewer)
   PetscCall(PetscViewerASCIIPushTab(viewer));
   PetscCall(TaoView(gn->subsolver, viewer));
   PetscCall(PetscViewerASCIIPopTab(viewer));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TaoSetUp_BRGN(Tao tao)
@@ -369,7 +369,7 @@ static PetscErrorCode TaoSetUp_BRGN(Tao tao)
     }
     PetscCall(TaoSetUp(gn->subsolver));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TaoDestroy_BRGN(Tao tao)
@@ -394,7 +394,7 @@ static PetscErrorCode TaoDestroy_BRGN(Tao tao)
   PetscCall(TaoDestroy(&gn->subsolver));
   gn->parent = NULL;
   PetscCall(PetscFree(tao->data));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -439,7 +439,7 @@ PETSC_EXTERN PetscErrorCode TaoCreate_BRGN(Tao tao)
   PetscCall(TaoCreate(PetscObjectComm((PetscObject)tao), &gn->subsolver));
   PetscCall(TaoSetType(gn->subsolver, TAOBNLS));
   PetscCall(TaoSetOptionsPrefix(gn->subsolver, "tao_brgn_subsolver_"));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -459,7 +459,7 @@ PetscErrorCode TaoBRGNGetSubsolver(Tao tao, Tao *subsolver)
 
   PetscFunctionBegin;
   *subsolver = gn->subsolver;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -481,7 +481,7 @@ PetscErrorCode TaoBRGNSetRegularizerWeight(Tao tao, PetscReal lambda)
 
   PetscFunctionBegin;
   gn->lambda = lambda;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -503,7 +503,7 @@ PetscErrorCode TaoBRGNSetL1SmoothEpsilon(Tao tao, PetscReal epsilon)
 
   PetscFunctionBegin;
   gn->epsilon = epsilon;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -527,7 +527,7 @@ PetscErrorCode TaoBRGNSetDictionaryMatrix(Tao tao, Mat dict)
   }
   PetscCall(MatDestroy(&gn->D));
   gn->D = dict;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -549,7 +549,7 @@ PetscErrorCode TaoBRGNSetRegularizerObjectiveAndGradientRoutine(Tao tao, PetscEr
   PetscValidHeaderSpecific(tao, TAO_CLASSID, 1);
   if (ctx) gn->reg_obj_ctx = ctx;
   if (func) gn->regularizerobjandgrad = func;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -581,5 +581,5 @@ PetscErrorCode TaoBRGNSetRegularizerHessianRoutine(Tao tao, Mat Hreg, PetscError
     PetscCall(MatDestroy(&gn->Hreg));
     gn->Hreg = Hreg;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

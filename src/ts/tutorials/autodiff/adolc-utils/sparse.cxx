@@ -27,7 +27,7 @@ PetscErrorCode PrintSparsity(MPI_Comm comm, PetscInt m, unsigned int **sparsity)
     for (PetscInt j = 1; j <= (PetscInt)sparsity[i][0]; j++) PetscCall(PetscPrintf(comm, " %2d ", sparsity[i][j]));
   }
   PetscCall(PetscPrintf(comm, "\n\n"));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -60,7 +60,7 @@ PetscErrorCode GenerateSeedMatrix(ISColoring iscoloring, PetscScalar **S)
     PetscCall(ISRestoreIndices(is[colour], &indices));
   }
   PetscCall(ISColoringRestoreIS(iscoloring, PETSC_USE_POINTER, &is));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -93,7 +93,7 @@ PetscErrorCode GenerateSeedMatrixPlusRecovery(ISColoring iscoloring, PetscScalar
     PetscCall(ISRestoreIndices(is[colour], &indices));
   }
   PetscCall(ISColoringRestoreIS(iscoloring, PETSC_USE_POINTER, &is));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -127,7 +127,7 @@ PetscErrorCode GetRecoveryMatrix(PetscScalar **S, unsigned int **sparsity, Petsc
       }
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -156,7 +156,7 @@ PetscErrorCode RecoverJacobian(Mat A, InsertMode mode, PetscInt m, PetscInt p, P
       }
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -186,7 +186,7 @@ PetscErrorCode RecoverJacobianLocal(Mat A, InsertMode mode, PetscInt m, PetscInt
       }
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -210,7 +210,7 @@ PetscErrorCode RecoverDiagonal(Vec diag, InsertMode mode, PetscInt m, PetscScala
     if (a) C[i][colour] *= *a;
     PetscCall(VecSetValues(diag, 1, &i, &C[i][colour], mode));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -234,5 +234,5 @@ PetscErrorCode RecoverDiagonalLocal(Vec diag, InsertMode mode, PetscInt m, Petsc
     if (a) C[i][colour] *= *a;
     PetscCall(VecSetValuesLocal(diag, 1, &i, &C[i][colour], mode));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

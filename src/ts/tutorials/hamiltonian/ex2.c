@@ -62,7 +62,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscCall(PetscOptionsReal("-timeScale", "parameter", "<1>", options->timeScale, &options->timeScale, NULL));
   PetscCall(PetscOptionsReal("-particle_perturbation", "Relative perturbation of particles (0,1)", "ex2.c", options->particleRelDx, &options->particleRelDx, NULL));
   PetscOptionsEnd();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, AppCtx *user)
@@ -72,7 +72,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, AppCtx *user)
   PetscCall(DMSetType(*dm, DMPLEX));
   PetscCall(DMSetFromOptions(*dm));
   PetscCall(DMViewFromOptions(*dm, NULL, "-dm_view"));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static void laplacian_f1(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f1[])
@@ -108,7 +108,7 @@ static PetscErrorCode CreateFEM(DM dm, AppCtx *user)
   PetscCall(DMGetDS(dm, &ds));
   PetscCall(PetscDSSetResidual(ds, 0, NULL, laplacian_f1));
   PetscCall(PetscDSSetJacobian(ds, 0, 0, NULL, NULL, NULL, laplacian));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -196,7 +196,7 @@ static PetscErrorCode CreateParticles(DM dm, DM *sw, AppCtx *user)
   PetscCall(PetscObjectSetName((PetscObject)*sw, "Particles"));
   PetscCall(DMViewFromOptions(*sw, NULL, "-sw_view"));
   PetscCall(DMLocalizeCoordinates(*sw));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Solve for particle position updates */
@@ -219,7 +219,7 @@ static PetscErrorCode RHSFunction1(TS ts, PetscReal t, Vec V, Vec Posres, void *
   }
   PetscCall(VecRestoreArrayRead(V, &v));
   PetscCall(VecRestoreArray(Posres, &posres));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -240,8 +240,8 @@ static PetscErrorCode RHSFunction2(TS ts, PetscReal t, Vec X, Vec Vres, void *ct
   PetscReal          m_e = 9.11e-31, q_e = 1.60e-19, epsi_0 = 8.85e-12;
 
   PetscFunctionBeginUser;
-  PetscObjectSetName((PetscObject)X, "rhsf2 position");
-  VecViewFromOptions(X, NULL, "-rhsf2_x_view");
+  PetscCall(PetscObjectSetName((PetscObject)X, "rhsf2 position"));
+  PetscCall(VecViewFromOptions(X, NULL, "-rhsf2_x_view"));
   PetscCall(VecGetArrayRead(X, &x));
   PetscCall(VecGetArray(Vres, &vres));
   PetscCall(TSGetDM(ts, &dm));
@@ -328,7 +328,7 @@ static PetscErrorCode RHSFunction2(TS ts, PetscReal t, Vec X, Vec Vres, void *ct
   PetscCall(VecRestoreArray(Vres, &vres));
   PetscCall(VecRestoreArrayRead(X, &x));
   PetscCall(VecViewFromOptions(Vres, NULL, "-vel_res_view"));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)
@@ -431,7 +431,7 @@ int main(int argc, char **argv)
     PetscCall(TSStep(ts));
     if (ts->steprollback) PetscCall(TSPostEvaluate(ts));
     if (!ts->steprollback) {
-      TSPostStep(ts);
+      PetscCall(TSPostStep(ts));
       PetscCall(DMSwarmGetField(sw, DMSwarmPICField_coor, NULL, NULL, (void **)&coor));
       PetscCall(DMSwarmGetField(sw, "kinematics", NULL, NULL, (void **)&kin));
       PetscCall(TSGetSolution(ts, &solution));

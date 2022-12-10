@@ -123,7 +123,7 @@ PetscErrorCode MatIsDiagonal(Mat A)
     PetscCall(MatRestoreRow(A, i, &ncols, &cols, &vals));
     PetscCheck(founddiag, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Row %" PetscInt_FMT " does not have diagonal entrie", i);
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -148,7 +148,7 @@ PetscErrorCode BuildMatrix(const PetscInt *parts, PetscInt nblocks, const PetscI
   PetscCall(MatAssemblyBegin(*A, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(*A, MAT_FINAL_ASSEMBLY));
   PetscCall(MatShift(*A, 10));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*TEST

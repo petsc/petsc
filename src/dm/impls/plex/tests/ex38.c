@@ -6,7 +6,7 @@ static PetscErrorCode bc_func(PetscInt dim, PetscReal time, const PetscReal coor
 {
   PetscFunctionBeginUser;
   for (PetscInt i = 0; i < num_comp_u; i++) u[i] = coords[i];
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)

@@ -5,7 +5,7 @@ static PetscErrorCode KSPSetUp_CR(KSP ksp)
 {
   PetscFunctionBegin;
   PetscCall(KSPSetWorkVecs(ksp, 6));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode KSPSolve_CR(KSP ksp)
@@ -63,7 +63,7 @@ static PetscErrorCode KSPSolve_CR(KSP ksp)
   if (PetscAbsScalar(btop) < 0.0) {
     ksp->reason = KSP_DIVERGED_INDEFINITE_MAT;
     PetscCall(PetscInfo(ksp, "diverging due to indefinite or negative definite matrix\n"));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   ksp->its = 0;
@@ -73,7 +73,7 @@ static PetscErrorCode KSPSolve_CR(KSP ksp)
   PetscCall(PetscObjectSAWsGrantAccess((PetscObject)ksp));
   PetscCall(KSPLogResidualHistory(ksp, dp));
   PetscCall((*ksp->converged)(ksp, 0, dp, &ksp->reason, ksp->cnvP));
-  if (ksp->reason) PetscFunctionReturn(0);
+  if (ksp->reason) PetscFunctionReturn(PETSC_SUCCESS);
 
   i = 0;
   do {
@@ -134,7 +134,7 @@ static PetscErrorCode KSPSolve_CR(KSP ksp)
     i++;
   } while (i < ksp->max_it);
   if (i >= ksp->max_it) ksp->reason = KSP_DIVERGED_ITS;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -170,5 +170,5 @@ PETSC_EXTERN PetscErrorCode KSPCreate_CR(KSP ksp)
   ksp->ops->buildresidual  = KSPBuildResidualDefault;
   ksp->ops->setfromoptions = NULL;
   ksp->ops->view           = NULL;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

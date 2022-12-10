@@ -13,7 +13,7 @@ PetscErrorCode DMPlexPointQueueCreate(PetscInt size, DMPlexPointQueue *queue)
   q->front = 0;
   q->back  = q->size - 1;
   *queue   = q;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMPlexPointQueueDestroy(DMPlexPointQueue *queue)
@@ -24,16 +24,16 @@ PetscErrorCode DMPlexPointQueueDestroy(DMPlexPointQueue *queue)
   PetscCall(PetscFree(q->points));
   PetscCall(PetscFree(q));
   *queue = NULL;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMPlexPointQueueEnsureSize(DMPlexPointQueue queue)
 {
   PetscFunctionBegin;
-  if (queue->num < queue->size) PetscFunctionReturn(0);
+  if (queue->num < queue->size) PetscFunctionReturn(PETSC_SUCCESS);
   queue->size *= 2;
   PetscCall(PetscRealloc(queue->size * sizeof(PetscInt), &queue->points));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMPlexPointQueueEnqueue(DMPlexPointQueue queue, PetscInt p)
@@ -43,7 +43,7 @@ PetscErrorCode DMPlexPointQueueEnqueue(DMPlexPointQueue queue, PetscInt p)
   queue->back                = (queue->back + 1) % queue->size;
   queue->points[queue->back] = p;
   ++queue->num;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMPlexPointQueueDequeue(DMPlexPointQueue queue, PetscInt *p)
@@ -53,7 +53,7 @@ PetscErrorCode DMPlexPointQueueDequeue(DMPlexPointQueue queue, PetscInt *p)
   *p           = queue->points[queue->front];
   queue->front = (queue->front + 1) % queue->size;
   --queue->num;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMPlexPointQueueFront(DMPlexPointQueue queue, PetscInt *p)
@@ -61,7 +61,7 @@ PetscErrorCode DMPlexPointQueueFront(DMPlexPointQueue queue, PetscInt *p)
   PetscFunctionBegin;
   PetscCheck(queue->num, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Cannot get the front of an empty queue");
   *p = queue->points[queue->front];
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMPlexPointQueueBack(DMPlexPointQueue queue, PetscInt *p)
@@ -69,7 +69,7 @@ PetscErrorCode DMPlexPointQueueBack(DMPlexPointQueue queue, PetscInt *p)
   PetscFunctionBegin;
   PetscCheck(queue->num, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Cannot get the back of an empty queue");
   *p = queue->points[queue->back];
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscBool DMPlexPointQueueEmpty(DMPlexPointQueue queue)
@@ -83,5 +83,5 @@ PetscErrorCode DMPlexPointQueueEmptyCollective(PetscObject obj, DMPlexPointQueue
   PetscFunctionBeginHot;
   *empty = DMPlexPointQueueEmpty(queue);
   PetscCallMPI(MPI_Allreduce(MPI_IN_PLACE, empty, 1, MPIU_BOOL, MPI_LAND, PetscObjectComm(obj)));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

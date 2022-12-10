@@ -26,7 +26,7 @@ static PetscErrorCode PCSetUp_BJacobi(PC pc)
 
   if (jac->n > 0 && jac->n < size) {
     PetscCall(PCSetUp_BJacobi_Multiproc(pc));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   /*    Determines the number of blocks assigned to each processor */
@@ -130,7 +130,7 @@ static PetscErrorCode PCSetUp_BJacobi(PC pc)
   } else {
     PetscCall(PCSetUp_BJacobi_Multiblock(pc, mat, pmat));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Default destroy, if it has never been setup */
@@ -147,7 +147,7 @@ static PetscErrorCode PCDestroy_BJacobi(PC pc)
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCBJacobiSetLocalBlocks_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCBJacobiGetLocalBlocks_C", NULL));
   PetscCall(PetscFree(pc->data));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCSetFromOptions_BJacobi(PC pc, PetscOptionItems *PetscOptionsObject)
@@ -168,7 +168,7 @@ static PetscErrorCode PCSetFromOptions_BJacobi(PC pc, PetscOptionItems *PetscOpt
     for (i = 0; i < jac->n_local; i++) PetscCall(KSPSetFromOptions(jac->ksp[i]));
   }
   PetscOptionsHeadEnd();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 #include <petscdraw.h>
@@ -261,7 +261,7 @@ static PetscErrorCode PCView_BJacobi(PC pc, PetscViewer viewer)
     if (jac->ksp) PetscCall(KSPView(jac->ksp[0], viewer));
     PetscCall(PetscDrawPopCurrentPoint(draw));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCBJacobiGetSubKSP_BJacobi(PC pc, PetscInt *n_local, PetscInt *first_local, KSP **ksp)
@@ -274,7 +274,7 @@ static PetscErrorCode PCBJacobiGetSubKSP_BJacobi(PC pc, PetscInt *n_local, Petsc
   if (n_local) *n_local = jac->n_local;
   if (first_local) *first_local = jac->first_local;
   if (ksp) *ksp = jac->ksp;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCBJacobiSetTotalBlocks_BJacobi(PC pc, PetscInt blocks, PetscInt *lens)
@@ -289,7 +289,7 @@ static PetscErrorCode PCBJacobiSetTotalBlocks_BJacobi(PC pc, PetscInt blocks, Pe
     PetscCall(PetscMalloc1(blocks, &jac->g_lens));
     PetscCall(PetscArraycpy(jac->g_lens, lens, blocks));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCBJacobiGetTotalBlocks_BJacobi(PC pc, PetscInt *blocks, const PetscInt *lens[])
@@ -299,7 +299,7 @@ static PetscErrorCode PCBJacobiGetTotalBlocks_BJacobi(PC pc, PetscInt *blocks, c
   PetscFunctionBegin;
   *blocks = jac->n;
   if (lens) *lens = jac->g_lens;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCBJacobiSetLocalBlocks_BJacobi(PC pc, PetscInt blocks, const PetscInt lens[])
@@ -315,7 +315,7 @@ static PetscErrorCode PCBJacobiSetLocalBlocks_BJacobi(PC pc, PetscInt blocks, co
     PetscCall(PetscMalloc1(blocks, &jac->l_lens));
     PetscCall(PetscArraycpy(jac->l_lens, lens, blocks));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCBJacobiGetLocalBlocks_BJacobi(PC pc, PetscInt *blocks, const PetscInt *lens[])
@@ -325,7 +325,7 @@ static PetscErrorCode PCBJacobiGetLocalBlocks_BJacobi(PC pc, PetscInt *blocks, c
   PetscFunctionBegin;
   *blocks = jac->n_local;
   if (lens) *lens = jac->l_lens;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -365,7 +365,7 @@ PetscErrorCode PCBJacobiGetSubKSP(PC pc, PetscInt *n_local, PetscInt *first_loca
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscUseMethod(pc, "PCBJacobiGetSubKSP_C", (PC, PetscInt *, PetscInt *, KSP **), (pc, n_local, first_local, ksp));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -396,7 +396,7 @@ PetscErrorCode PCBJacobiSetTotalBlocks(PC pc, PetscInt blocks, const PetscInt le
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscCheck(blocks > 0, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_OUTOFRANGE, "Must have positive blocks");
   PetscTryMethod(pc, "PCBJacobiSetTotalBlocks_C", (PC, PetscInt, const PetscInt[]), (pc, blocks, lens));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -422,7 +422,7 @@ PetscErrorCode PCBJacobiGetTotalBlocks(PC pc, PetscInt *blocks, const PetscInt *
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscValidIntPointer(blocks, 2);
   PetscUseMethod(pc, "PCBJacobiGetTotalBlocks_C", (PC, PetscInt *, const PetscInt *[]), (pc, blocks, lens));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -452,7 +452,7 @@ PetscErrorCode PCBJacobiSetLocalBlocks(PC pc, PetscInt blocks, const PetscInt le
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscCheck(blocks >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Must have nonegative blocks");
   PetscTryMethod(pc, "PCBJacobiSetLocalBlocks_C", (PC, PetscInt, const PetscInt[]), (pc, blocks, lens));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -479,7 +479,7 @@ PetscErrorCode PCBJacobiGetLocalBlocks(PC pc, PetscInt *blocks, const PetscInt *
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscValidIntPointer(blocks, 2);
   PetscUseMethod(pc, "PCBJacobiGetLocalBlocks_C", (PC, PetscInt *, const PetscInt *[]), (pc, blocks, lens));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -547,7 +547,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_BJacobi(PC pc)
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCBJacobiGetTotalBlocks_C", PCBJacobiGetTotalBlocks_BJacobi));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCBJacobiSetLocalBlocks_C", PCBJacobiSetLocalBlocks_BJacobi));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCBJacobiGetLocalBlocks_C", PCBJacobiGetLocalBlocks_BJacobi));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -562,7 +562,7 @@ static PetscErrorCode PCReset_BJacobi_Singleblock(PC pc)
   PetscCall(KSPReset(jac->ksp[0]));
   PetscCall(VecDestroy(&bjac->x));
   PetscCall(VecDestroy(&bjac->y));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCDestroy_BJacobi_Singleblock(PC pc)
@@ -576,7 +576,7 @@ static PetscErrorCode PCDestroy_BJacobi_Singleblock(PC pc)
   PetscCall(PetscFree(jac->ksp));
   PetscCall(PetscFree(bjac));
   PetscCall(PCDestroy_BJacobi(pc));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCSetUpOnBlocks_BJacobi_Singleblock(PC pc)
@@ -589,7 +589,7 @@ static PetscErrorCode PCSetUpOnBlocks_BJacobi_Singleblock(PC pc)
   PetscCall(KSPSetUp(subksp));
   PetscCall(KSPGetConvergedReason(subksp, &reason));
   if (reason == KSP_DIVERGED_PC_FAILED) pc->failedreason = PC_SUBPC_ERROR;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCApply_BJacobi_Singleblock(PC pc, Vec x, Vec y)
@@ -608,7 +608,7 @@ static PetscErrorCode PCApply_BJacobi_Singleblock(PC pc, Vec x, Vec y)
   PetscCall(KSPCheckSolve(jac->ksp[0], pc, bjac->y));
   PetscCall(VecRestoreLocalVectorRead(x, bjac->x));
   PetscCall(VecRestoreLocalVector(y, bjac->y));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCMatApply_BJacobi_Singleblock(PC pc, Mat X, Mat Y)
@@ -624,7 +624,7 @@ static PetscErrorCode PCMatApply_BJacobi_Singleblock(PC pc, Mat X, Mat Y)
   PetscCall(MatDenseGetLocalMatrix(X, &sX));
   PetscCall(MatDenseGetLocalMatrix(Y, &sY));
   PetscCall(KSPMatSolve(jac->ksp[0], sX, sY));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCApplySymmetricLeft_BJacobi_Singleblock(PC pc, Vec x, Vec y)
@@ -654,7 +654,7 @@ static PetscErrorCode PCApplySymmetricLeft_BJacobi_Singleblock(PC pc, Vec x, Vec
   PetscCall(VecResetArray(bjac->y));
   PetscCall(VecRestoreArrayRead(x, &x_array));
   PetscCall(VecRestoreArray(y, &y_array));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCApplySymmetricRight_BJacobi_Singleblock(PC pc, Vec x, Vec y)
@@ -687,7 +687,7 @@ static PetscErrorCode PCApplySymmetricRight_BJacobi_Singleblock(PC pc, Vec x, Ve
   PetscCall(VecResetArray(bjac->y));
   PetscCall(VecRestoreArrayRead(x, &x_array));
   PetscCall(VecRestoreArray(y, &y_array));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCApplyTranspose_BJacobi_Singleblock(PC pc, Vec x, Vec y)
@@ -714,7 +714,7 @@ static PetscErrorCode PCApplyTranspose_BJacobi_Singleblock(PC pc, Vec x, Vec y)
   PetscCall(VecResetArray(bjac->y));
   PetscCall(VecRestoreArrayRead(x, &x_array));
   PetscCall(VecRestoreArray(y, &y_array));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCSetUp_BJacobi_Singleblock(PC pc, Mat mat, Mat pmat)
@@ -788,7 +788,7 @@ static PetscErrorCode PCSetUp_BJacobi_Singleblock(PC pc, Mat mat, Mat pmat)
     /* If PCSetFromOptions_BJacobi is called later, KSPSetFromOptions will be called at that time. */
     PetscCall(KSPSetFromOptions(ksp));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCReset_BJacobi_Multiblock(PC pc)
@@ -813,7 +813,7 @@ static PetscErrorCode PCReset_BJacobi_Multiblock(PC pc)
   }
   PetscCall(PetscFree(jac->l_lens));
   PetscCall(PetscFree(jac->g_lens));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCDestroy_BJacobi_Multiblock(PC pc)
@@ -833,7 +833,7 @@ static PetscErrorCode PCDestroy_BJacobi_Multiblock(PC pc)
   for (i = 0; i < jac->n_local; i++) PetscCall(KSPDestroy(&jac->ksp[i]));
   PetscCall(PetscFree(jac->ksp));
   PetscCall(PCDestroy_BJacobi(pc));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCSetUpOnBlocks_BJacobi_Multiblock(PC pc)
@@ -848,7 +848,7 @@ static PetscErrorCode PCSetUpOnBlocks_BJacobi_Multiblock(PC pc)
     PetscCall(KSPGetConvergedReason(jac->ksp[i], &reason));
     if (reason == KSP_DIVERGED_PC_FAILED) pc->failedreason = PC_SUBPC_ERROR;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCApply_BJacobi_Multiblock(PC pc, Vec x, Vec y)
@@ -881,7 +881,7 @@ static PetscErrorCode PCApply_BJacobi_Multiblock(PC pc, Vec x, Vec y)
   }
   PetscCall(VecRestoreArrayRead(x, &xin));
   PetscCall(VecRestoreArray(y, &yin));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCApplySymmetricLeft_BJacobi_Multiblock(PC pc, Vec x, Vec y)
@@ -917,7 +917,7 @@ static PetscErrorCode PCApplySymmetricLeft_BJacobi_Multiblock(PC pc, Vec x, Vec 
   }
   PetscCall(VecRestoreArrayRead(x, &xin));
   PetscCall(VecRestoreArray(y, &yin));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCApplySymmetricRight_BJacobi_Multiblock(PC pc, Vec x, Vec y)
@@ -953,7 +953,7 @@ static PetscErrorCode PCApplySymmetricRight_BJacobi_Multiblock(PC pc, Vec x, Vec
   }
   PetscCall(VecRestoreArrayRead(x, &xin));
   PetscCall(VecRestoreArray(y, &yin));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCApplyTranspose_BJacobi_Multiblock(PC pc, Vec x, Vec y)
@@ -986,7 +986,7 @@ static PetscErrorCode PCApplyTranspose_BJacobi_Multiblock(PC pc, Vec x, Vec y)
   }
   PetscCall(VecRestoreArrayRead(x, &xin));
   PetscCall(VecRestoreArray(y, &yin));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCSetUp_BJacobi_Multiblock(PC pc, Mat mat, Mat pmat)
@@ -1105,7 +1105,7 @@ static PetscErrorCode PCSetUp_BJacobi_Multiblock(PC pc, Mat mat, Mat pmat)
     PetscCall(MatSetOptionsPrefix(bjac->pmat[i], prefix));
     if (pc->setfromoptionscalled) PetscCall(KSPSetFromOptions(jac->ksp[i]));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -1121,7 +1121,7 @@ static PetscErrorCode PCSetUpOnBlocks_BJacobi_Multiproc(PC pc)
   PetscCall(KSPSetUp(subksp));
   PetscCall(KSPGetConvergedReason(subksp, &reason));
   if (reason == KSP_DIVERGED_PC_FAILED) pc->failedreason = PC_SUBPC_ERROR;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCReset_BJacobi_Multiproc(PC pc)
@@ -1134,7 +1134,7 @@ static PetscErrorCode PCReset_BJacobi_Multiproc(PC pc)
   PetscCall(VecDestroy(&mpjac->xsub));
   PetscCall(MatDestroy(&mpjac->submats));
   if (jac->ksp) PetscCall(KSPReset(jac->ksp[0]));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCDestroy_BJacobi_Multiproc(PC pc)
@@ -1150,7 +1150,7 @@ static PetscErrorCode PCDestroy_BJacobi_Multiproc(PC pc)
 
   PetscCall(PetscFree(mpjac));
   PetscCall(PCDestroy_BJacobi(pc));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCApply_BJacobi_Multiproc(PC pc, Vec x, Vec y)
@@ -1180,7 +1180,7 @@ static PetscErrorCode PCApply_BJacobi_Multiproc(PC pc, Vec x, Vec y)
   PetscCall(VecResetArray(mpjac->ysub));
   PetscCall(VecRestoreArrayRead(x, &xarray));
   PetscCall(VecRestoreArray(y, &yarray));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCMatApply_BJacobi_Multiproc(PC pc, Mat X, Mat Y)
@@ -1214,7 +1214,7 @@ static PetscErrorCode PCMatApply_BJacobi_Multiproc(PC pc, Mat X, Mat Y)
   PetscCall(MatDenseRestoreArrayRead(X, &x));
   PetscCall(KSPGetConvergedReason(jac->ksp[0], &reason));
   if (reason == KSP_DIVERGED_PC_FAILED) pc->failedreason = PC_SUBPC_ERROR;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PCSetUp_BJacobi_Multiproc(PC pc)
@@ -1289,5 +1289,5 @@ static PetscErrorCode PCSetUp_BJacobi_Multiproc(PC pc)
   }
 
   if (!wasSetup && pc->setfromoptionscalled) PetscCall(KSPSetFromOptions(jac->ksp[0]));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

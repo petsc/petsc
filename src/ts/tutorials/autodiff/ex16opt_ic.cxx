@@ -50,7 +50,7 @@ static PetscErrorCode RHSFunctionPassive(TS ts, PetscReal t, Vec X, Vec F, void 
   f[1] = user->mu * (1. - x[0] * x[0]) * x[1] - x[0];
   PetscCall(VecRestoreArrayRead(X, &x));
   PetscCall(VecRestoreArray(F, &f));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -82,7 +82,7 @@ static PetscErrorCode RHSFunctionActive(TS ts, PetscReal t, Vec X, Vec F, void *
 
   PetscCall(VecRestoreArrayRead(X, &x));
   PetscCall(VecRestoreArray(F, &f));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -97,7 +97,7 @@ static PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec X, Mat A, Mat B, void 
   PetscCall(VecGetArrayRead(X, &x));
   PetscCall(PetscAdolcComputeRHSJacobian(1, A, x, user->adctx));
   PetscCall(VecRestoreArrayRead(X, &x));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -117,7 +117,7 @@ static PetscErrorCode Monitor(TS ts, PetscInt step, PetscReal t, Vec X, void *ct
   PetscCall(PetscPrintf(PETSC_COMM_WORLD, "[%.1f] %" PetscInt_FMT " TS %.6f (dt = %.6f) X % 12.6e % 12.6e\n", (double)user->next_output, step, (double)t, (double)dt, (double)PetscRealPart(x[0]), (double)PetscRealPart(x[1])));
   PetscCall(PetscPrintf(PETSC_COMM_WORLD, "t %.6f (tprev = %.6f) \n", (double)t, (double)tprev));
   PetscCall(VecGetArrayRead(X, &x));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)
@@ -344,7 +344,7 @@ PetscErrorCode FormFunctionGradient(Tao tao, Vec IC, PetscReal *f, Vec G, void *
   PetscCall(VecCopy(user->lambda[0], G));
 
   PetscCall(TSDestroy(&ts));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*TEST

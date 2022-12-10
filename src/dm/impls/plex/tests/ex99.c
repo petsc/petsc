@@ -54,7 +54,7 @@ static PetscErrorCode CreateFE(DM dm)
 
   PetscCall(DMGetDS(dm, &ds));
   PetscCall(PetscDSSetObjective(ds, 0, one));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode CheckIntegral(DM dm, PetscReal integral, PetscReal tol)
@@ -71,7 +71,7 @@ static PetscErrorCode CheckIntegral(DM dm, PetscReal integral, PetscReal tol)
   if (integral > 0 && PetscAbsReal(integral - rval) > tol) {
     PetscCall(PetscPrintf(PetscObjectComm((PetscObject)dm), "Calculated value %g != %g actual value (error %g > %g tol)\n", (double)rval, (double)integral, (double)PetscAbsReal(integral - rval), (double)tol));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)

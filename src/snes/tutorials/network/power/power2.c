@@ -117,7 +117,7 @@ PetscErrorCode FormFunction_Subnet(DM networkdm, Vec localX, Vec localF, PetscIn
   }
   PetscCall(VecRestoreArrayRead(localX, &xarr));
   PetscCall(VecRestoreArray(localF, &farr));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode FormFunction(SNES snes, Vec X, Vec F, void *appctx)
@@ -152,7 +152,7 @@ PetscErrorCode FormFunction(SNES snes, Vec X, Vec F, void *appctx)
   PetscCall(DMLocalToGlobalBegin(networkdm, localF, ADD_VALUES, F));
   PetscCall(DMLocalToGlobalEnd(networkdm, localF, ADD_VALUES, F));
   PetscCall(DMRestoreLocalVector(networkdm, &localF));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode FormJacobian_Subnet(DM networkdm, Vec localX, Mat J, Mat Jpre, PetscInt nv, PetscInt ne, const PetscInt *vtx, const PetscInt *edges, void *appctx)
@@ -333,7 +333,7 @@ PetscErrorCode FormJacobian_Subnet(DM networkdm, Vec localX, Mat J, Mat Jpre, Pe
     }
   }
   PetscCall(VecRestoreArrayRead(localX, &xarr));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode FormJacobian(SNES snes, Vec X, Mat J, Mat Jpre, void *appctx)
@@ -364,7 +364,7 @@ PetscErrorCode FormJacobian(SNES snes, Vec X, Mat J, Mat Jpre, void *appctx)
 
   PetscCall(MatAssemblyBegin(J, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(J, MAT_FINAL_ASSEMBLY));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode SetInitialValues_Subnet(DM networkdm, Vec localX, PetscInt nv, PetscInt ne, const PetscInt *vtx, const PetscInt *edges, void *appctx)
@@ -400,7 +400,7 @@ PetscErrorCode SetInitialValues_Subnet(DM networkdm, Vec localX, PetscInt nv, Pe
     }
   }
   PetscCall(VecRestoreArray(localX, &xarr));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode SetInitialValues(DM networkdm, Vec X, void *appctx)
@@ -427,7 +427,7 @@ PetscErrorCode SetInitialValues(DM networkdm, Vec X, void *appctx)
   PetscCall(DMLocalToGlobalBegin(networkdm, localX, ADD_VALUES, X));
   PetscCall(DMLocalToGlobalEnd(networkdm, localX, ADD_VALUES, X));
   PetscCall(DMRestoreLocalVector(networkdm, &localX));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)
@@ -466,7 +466,7 @@ int main(int argc, char **argv)
     PetscCall(DMNetworkRegisterComponent(networkdm, "loadstruct", sizeof(struct _p_LOAD), &componentkey[3]));
 
     PetscCall(PetscLogStageRegister("Read Data", &stage1));
-    PetscLogStagePush(stage1);
+    PetscCall(PetscLogStagePush(stage1));
     /* READ THE DATA */
     if (!crank) {
       /* Only rank 0 reads the data */
@@ -492,10 +492,10 @@ int main(int argc, char **argv)
       PetscCall(GetListofEdges_Power(pfdata2, edgelist2));
     }
 
-    PetscLogStagePop();
+    PetscCall(PetscLogStagePop());
     PetscCallMPI(MPI_Barrier(PETSC_COMM_WORLD));
     PetscCall(PetscLogStageRegister("Create network", &stage2));
-    PetscLogStagePush(stage2);
+    PetscCall(PetscLogStagePush(stage2));
 
     /* Set number of nodes/edges and edge connectivity */
     PetscCall(DMNetworkSetNumSubNetworks(networkdm, PETSC_DECIDE, nsubnet));
@@ -569,7 +569,7 @@ int main(int argc, char **argv)
     /* Distribute networkdm to multiple processes */
     PetscCall(DMNetworkDistribute(&networkdm, 0));
 
-    PetscLogStagePop();
+    PetscCall(PetscLogStagePop());
 
     /* Broadcast Sbase to all processors */
     PetscCallMPI(MPI_Bcast(&User.Sbase, 1, MPIU_SCALAR, 0, PETSC_COMM_WORLD));

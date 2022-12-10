@@ -21,11 +21,11 @@ PETSC_INTERN PetscErrorCode PetscStackReset(void);
 PETSC_INTERN PetscErrorCode PetscStackCopy(PetscStack *, PetscStack *);
 PETSC_INTERN PetscErrorCode PetscStackPrint(PetscStack *, FILE *);
 #else
-  #define PetscStackSetCheck(check)         0
-  #define PetscStackView(file)              0
-  #define PetscStackReset()                 0
-  #define PetscStackCopy(stackin, stackout) 0
-  #define PetscStackPrint(stack, file)      0
+  #define PetscStackSetCheck(check)         PETSC_SUCCESS
+  #define PetscStackView(file)              PETSC_SUCCESS
+  #define PetscStackReset()                 PETSC_SUCCESS
+  #define PetscStackCopy(stackin, stackout) PETSC_SUCCESS
+  #define PetscStackPrint(stack, file)      PETSC_SUCCESS
 #endif
 
 /* These are used internally by PETSc ASCII IO routines*/
@@ -149,7 +149,7 @@ PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*PetscObjectDestroyFunction)(PetscO
 PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*PetscObjectViewFunction)(PetscObject, PetscViewer);
 
 #define PetscHeaderInitialize_Private(h, classid, class_name, descr, mansec, comm, destroy, view) \
-  (PetscHeaderCreate_Private((PetscObject)(h), classid, class_name, descr, mansec, comm, (PetscObjectDestroyFunction)(destroy), (PetscObjectViewFunction)(view)) || PetscLogObjectCreate(h))
+  ((PetscErrorCode)(PetscHeaderCreate_Private((PetscObject)(h), classid, class_name, descr, mansec, comm, (PetscObjectDestroyFunction)(destroy), (PetscObjectViewFunction)(view)) || PetscLogObjectCreate(h)))
 
 /*MC
     PetscHeaderCreate - Creates a PETSc object of a particular class
@@ -280,7 +280,7 @@ PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*PetscObjectViewFunction)(PetscObje
 
 .seealso: `PetscHeaderDestroy()`, `PetscClassIdRegister()`
 M*/
-#define PetscHeaderCreate(h, classid, class_name, descr, mansec, comm, destroy, view) (PetscNew(&(h)) || PetscHeaderInitialize_Private((h), (classid), (class_name), (descr), (mansec), (comm), (destroy), (view)))
+#define PetscHeaderCreate(h, classid, class_name, descr, mansec, comm, destroy, view) ((PetscErrorCode)(PetscNew(&(h)) || PetscHeaderInitialize_Private((h), (classid), (class_name), (descr), (mansec), (comm), (destroy), (view))))
 
 PETSC_EXTERN PetscErrorCode PetscComposedQuantitiesDestroy(PetscObject obj);
 PETSC_EXTERN PetscErrorCode PetscHeaderCreate_Private(PetscObject, PetscClassId, const char[], const char[], const char[], MPI_Comm, PetscObjectDestroyFunction, PetscObjectViewFunction);
@@ -340,7 +340,7 @@ PETSC_INTERN PetscObjectId  PetscObjectNewId_Internal(void);
 
 .seealso: `PetscHeaderCreate()`
 M*/
-#define PetscHeaderDestroy(h) (PetscHeaderDestroy_Private((PetscObject)(*(h)), PETSC_FALSE) || PetscFree(*(h)))
+#define PetscHeaderDestroy(h) ((PetscErrorCode)(PetscHeaderDestroy_Private((PetscObject)(*(h)), PETSC_FALSE) || PetscFree(*(h))))
 
 PETSC_EXTERN PetscErrorCode                PetscHeaderDestroy_Private(PetscObject, PetscBool);
 PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode PetscHeaderReset_Internal(PetscObject);
@@ -928,7 +928,7 @@ M*/
 .seealso: `PetscObjectStateGet()`, `MatSetNonzeroState()`, `PetscObject`
 
 M*/
-#define PetscObjectStateIncrease(obj) ((obj)->state++, 0)
+#define PetscObjectStateIncrease(obj) ((obj)->state++, PETSC_SUCCESS)
 
 PETSC_EXTERN PetscErrorCode PetscObjectStateGet(PetscObject, PetscObjectState *);
 PETSC_EXTERN PetscErrorCode PetscObjectStateSet(PetscObject, PetscObjectState);
@@ -967,7 +967,8 @@ PETSC_EXTERN PetscInt       PetscObjectComposedDataMax;
           `PetscObjectComposedDataGetIntstar()`, `PetscObjectComposedDataSetIntstar()`, `PetscObject`,
           `PetscObjectCompose()`, `PetscObjectQuery()`
 M*/
-#define PetscObjectComposedDataSetInt(obj, id, data) ((((obj)->int_idmax < PetscObjectComposedDataMax) && PetscObjectComposedDataIncreaseInt(obj)) || ((obj)->intcomposeddata[id] = data, (obj)->intcomposedstate[id] = (obj)->state, 0))
+#define PetscObjectComposedDataSetInt(obj, id, data) \
+  ((PetscErrorCode)((((obj)->int_idmax < PetscObjectComposedDataMax) && PetscObjectComposedDataIncreaseInt(obj)) || ((obj)->intcomposeddata[id] = data, (obj)->intcomposedstate[id] = (obj)->state, PETSC_SUCCESS)))
 
 /*MC
    PetscObjectComposedDataGetInt - retrieve integer data attached to an object with `PetscObjectComposedDataSetInt()`
@@ -997,7 +998,7 @@ M*/
           `PetscObjectComposedDataGetIntstar()`, `PetscObjectComposedDataSetIntstar()`, `PetscObject`,
           `PetscObjectCompose()`, `PetscObjectQuery()`
 M*/
-#define PetscObjectComposedDataGetInt(obj, id, data, flag) (((obj)->intcomposedstate ? (data = (obj)->intcomposeddata[id], flag = (PetscBool)((obj)->intcomposedstate[id] == (obj)->state)) : (flag = PETSC_FALSE)), 0)
+#define PetscObjectComposedDataGetInt(obj, id, data, flag) (((obj)->intcomposedstate ? (data = (obj)->intcomposeddata[id], flag = (PetscBool)((obj)->intcomposedstate[id] == (obj)->state)) : (flag = PETSC_FALSE)), PETSC_SUCCESS)
 
 /*MC
    PetscObjectComposedDataSetIntstar - attach an integer array data to a `PetscObject` that may be accessed with `PetscObjectComposedDataGetIntstar()`
@@ -1025,7 +1026,7 @@ M*/
           `PetscObjectCompose()`, `PetscObjectQuery()`
 M*/
 #define PetscObjectComposedDataSetIntstar(obj, id, data) \
-  ((((obj)->intstar_idmax < PetscObjectComposedDataMax) && PetscObjectComposedDataIncreaseIntstar(obj)) || ((obj)->intstarcomposeddata[id] = data, (obj)->intstarcomposedstate[id] = (obj)->state, 0))
+  ((PetscErrorCode)((((obj)->intstar_idmax < PetscObjectComposedDataMax) && PetscObjectComposedDataIncreaseIntstar(obj)) || ((obj)->intstarcomposeddata[id] = data, (obj)->intstarcomposedstate[id] = (obj)->state, PETSC_SUCCESS)))
 
 /*MC
    PetscObjectComposedDataGetIntstar - retrieve integer array data attached to an object with `PetscObjectComposedDataSetIntstar()`
@@ -1055,7 +1056,8 @@ M*/
           `PetscObjectComposedDataSetIntstar()`, `PetscObjectComposedDataGetInt()`, `PetscObject`,
           `PetscObjectCompose()`, `PetscObjectQuery()`
 M*/
-#define PetscObjectComposedDataGetIntstar(obj, id, data, flag) (((obj)->intstarcomposedstate ? (data = (obj)->intstarcomposeddata[id], flag = (PetscBool)((obj)->intstarcomposedstate[id] == (obj)->state)) : (flag = PETSC_FALSE)), 0)
+#define PetscObjectComposedDataGetIntstar(obj, id, data, flag) \
+  ((PetscErrorCode)(((obj)->intstarcomposedstate ? (data = (obj)->intstarcomposeddata[id], flag = (PetscBool)((obj)->intstarcomposedstate[id] == (obj)->state)) : (flag = PETSC_FALSE)), PETSC_SUCCESS))
 
 /*MC
    PetscObjectComposedDataSetReal - attach real data to a `PetscObject` that may be accessed with `PetscObjectComposedDataGetReal()`
@@ -1080,7 +1082,8 @@ M*/
           `PetscObjectComposedDataSetIntstar()`, `PetscObjectComposedDataGetInt()`, `PetscObject`,
           `PetscObjectCompose()`, `PetscObjectQuery()`
 M*/
-#define PetscObjectComposedDataSetReal(obj, id, data) ((((obj)->real_idmax < PetscObjectComposedDataMax) && PetscObjectComposedDataIncreaseReal(obj)) || ((obj)->realcomposeddata[id] = data, (obj)->realcomposedstate[id] = (obj)->state, 0))
+#define PetscObjectComposedDataSetReal(obj, id, data) \
+  ((PetscErrorCode)((((obj)->real_idmax < PetscObjectComposedDataMax) && PetscObjectComposedDataIncreaseReal(obj)) || ((obj)->realcomposeddata[id] = data, (obj)->realcomposedstate[id] = (obj)->state, PETSC_SUCCESS)))
 
 /*MC
    PetscObjectComposedDataGetReal - retrieve real data attached to an object set with `PetscObjectComposedDataSetReal()`
@@ -1108,7 +1111,7 @@ M*/
           `PetscObjectComposedDataSetIntstar()`, `PetscObjectComposedDataGetInt()`, `PetscObject`,
           `PetscObjectCompose()`, `PetscObjectQuery()`
 M*/
-#define PetscObjectComposedDataGetReal(obj, id, data, flag) (((obj)->realcomposedstate ? (data = (obj)->realcomposeddata[id], flag = (PetscBool)((obj)->realcomposedstate[id] == (obj)->state)) : (flag = PETSC_FALSE)), 0)
+#define PetscObjectComposedDataGetReal(obj, id, data, flag) ((PetscErrorCode)(((obj)->realcomposedstate ? (data = (obj)->realcomposeddata[id], flag = (PetscBool)((obj)->realcomposedstate[id] == (obj)->state)) : (flag = PETSC_FALSE)), PETSC_SUCCESS))
 
 /*MC
    PetscObjectComposedDataSetRealstar - attach real array data to a `PetscObject` that may be retrieved with `PetscObjectComposedDataGetRealstar()`
@@ -1136,7 +1139,7 @@ M*/
           `PetscObjectCompose()`, `PetscObjectQuery()`, `PetscObjectComposedDataGetRealstar()`
 M*/
 #define PetscObjectComposedDataSetRealstar(obj, id, data) \
-  ((((obj)->realstar_idmax < PetscObjectComposedDataMax) && PetscObjectComposedDataIncreaseRealstar(obj)) || ((obj)->realstarcomposeddata[id] = data, (obj)->realstarcomposedstate[id] = (obj)->state, 0))
+  ((PetscErrorCode)((((obj)->realstar_idmax < PetscObjectComposedDataMax) && PetscObjectComposedDataIncreaseRealstar(obj)) || ((obj)->realstarcomposeddata[id] = data, (obj)->realstarcomposedstate[id] = (obj)->state, PETSC_SUCCESS)))
 
 /*MC
    PetscObjectComposedDataGetRealstar - retrieve real array data attached to an object with `PetscObjectComposedDataSetRealstar()`
@@ -1166,7 +1169,8 @@ M*/
           `PetscObjectComposedDataSetIntstar()`, `PetscObjectComposedDataGetInt()`, `PetscObject`,
           `PetscObjectCompose()`, `PetscObjectQuery()`, `PetscObjectComposedDataSetRealstar()`
 M*/
-#define PetscObjectComposedDataGetRealstar(obj, id, data, flag) (((obj)->realstarcomposedstate ? (data = (obj)->realstarcomposeddata[id], flag = (PetscBool)((obj)->realstarcomposedstate[id] == (obj)->state)) : (flag = PETSC_FALSE)), 0)
+#define PetscObjectComposedDataGetRealstar(obj, id, data, flag) \
+  ((PetscErrorCode)(((obj)->realstarcomposedstate ? (data = (obj)->realstarcomposeddata[id], flag = (PetscBool)((obj)->realstarcomposedstate[id] == (obj)->state)) : (flag = PETSC_FALSE)), PETSC_SUCCESS))
 
 /*MC
    PetscObjectComposedDataSetScalar - attach scalar data to a PetscObject that may be retrieved with `PetscObjectComposedDataGetScalar()`
@@ -1192,7 +1196,8 @@ M*/
           `PetscObjectCompose()`, `PetscObjectQuery()`, `PetscObjectComposedDataSetRealstar()`, `PetscObjectComposedDataGetScalar()`
 M*/
 #if defined(PETSC_USE_COMPLEX)
-  #define PetscObjectComposedDataSetScalar(obj, id, data) ((((obj)->scalar_idmax < PetscObjectComposedDataMax) && PetscObjectComposedDataIncreaseScalar(obj)) || ((obj)->scalarcomposeddata[id] = data, (obj)->scalarcomposedstate[id] = (obj)->state, 0))
+  #define PetscObjectComposedDataSetScalar(obj, id, data) \
+    ((PetscErrorCode)((((obj)->scalar_idmax < PetscObjectComposedDataMax) && PetscObjectComposedDataIncreaseScalar(obj)) || ((obj)->scalarcomposeddata[id] = data, (obj)->scalarcomposedstate[id] = (obj)->state, PETSC_SUCCESS)))
 #else
   #define PetscObjectComposedDataSetScalar(obj, id, data) PetscObjectComposedDataSetReal(obj, id, data)
 #endif
@@ -1223,7 +1228,8 @@ M*/
           `PetscObjectCompose()`, `PetscObjectQuery()`, `PetscObjectComposedDataSetRealstar()`, `PetscObjectComposedDataSetScalar()`
 M*/
 #if defined(PETSC_USE_COMPLEX)
-  #define PetscObjectComposedDataGetScalar(obj, id, data, flag) (((obj)->scalarcomposedstate ? (data = (obj)->scalarcomposeddata[id], flag = (PetscBool)((obj)->scalarcomposedstate[id] == (obj)->state)) : (flag = PETSC_FALSE)), 0)
+  #define PetscObjectComposedDataGetScalar(obj, id, data, flag) \
+    ((PetscErrorCode)(((obj)->scalarcomposedstate ? (data = (obj)->scalarcomposeddata[id], flag = (PetscBool)((obj)->scalarcomposedstate[id] == (obj)->state)) : (flag = PETSC_FALSE)), PETSC_SUCCESS))
 #else
   #define PetscObjectComposedDataGetScalar(obj, id, data, flag) PetscObjectComposedDataGetReal(obj, id, data, flag)
 #endif
@@ -1255,7 +1261,7 @@ M*/
 M*/
 #if defined(PETSC_USE_COMPLEX)
   #define PetscObjectComposedDataSetScalarstar(obj, id, data) \
-    ((((obj)->scalarstar_idmax < PetscObjectComposedDataMax) && PetscObjectComposedDataIncreaseScalarstar(obj)) || ((obj)->scalarstarcomposeddata[id] = data, (obj)->scalarstarcomposedstate[id] = (obj)->state, 0))
+    ((PetscErrorCode)((((obj)->scalarstar_idmax < PetscObjectComposedDataMax) && PetscObjectComposedDataIncreaseScalarstar(obj)) || ((obj)->scalarstarcomposeddata[id] = data, (obj)->scalarstarcomposedstate[id] = (obj)->state, PETSC_SUCCESS)))
 #else
   #define PetscObjectComposedDataSetScalarstar(obj, id, data) PetscObjectComposedDataSetRealstar(obj, id, data)
 #endif
@@ -1289,7 +1295,8 @@ M*/
           `PetscObjectCompose()`, `PetscObjectQuery()`, `PetscObjectComposedDataSetRealstar()`, `PetscObjectComposedDataSetScalarstar()`
 M*/
 #if defined(PETSC_USE_COMPLEX)
-  #define PetscObjectComposedDataGetScalarstar(obj, id, data, flag) (((obj)->scalarstarcomposedstate ? (data = (obj)->scalarstarcomposeddata[id], flag = (PetscBool)((obj)->scalarstarcomposedstate[id] == (obj)->state)) : (flag = PETSC_FALSE)), 0)
+  #define PetscObjectComposedDataGetScalarstar(obj, id, data, flag) \
+    ((PetscErrorCode)(((obj)->scalarstarcomposedstate ? (data = (obj)->scalarstarcomposeddata[id], flag = (PetscBool)((obj)->scalarstarcomposedstate[id] == (obj)->state)) : (flag = PETSC_FALSE)), PETSC_SUCCESS))
 #else
   #define PetscObjectComposedDataGetScalarstar(obj, id, data, flag) PetscObjectComposedDataGetRealstar(obj, id, data, flag)
 #endif
@@ -1369,21 +1376,21 @@ typedef ck_spinlock_t PetscSpinlock;
 static inline PetscErrorCode PetscSpinlockCreate(PetscSpinlock *ck_spinlock)
 {
   ck_spinlock_init(ck_spinlock);
-  return 0;
+  return PETSC_SUCCESS;
 }
 static inline PetscErrorCode PetscSpinlockLock(PetscSpinlock *ck_spinlock)
 {
   ck_spinlock_lock(ck_spinlock);
-  return 0;
+  return PETSC_SUCCESS;
 }
 static inline PetscErrorCode PetscSpinlockUnlock(PetscSpinlock *ck_spinlock)
 {
   ck_spinlock_unlock(ck_spinlock);
-  return 0;
+  return PETSC_SUCCESS;
 }
 static inline PetscErrorCode PetscSpinlockDestroy(PetscSpinlock *ck_spinlock)
 {
-  return 0;
+  return PETSC_SUCCESS;
 }
   #elif (defined(__cplusplus) && defined(PETSC_HAVE_CXX_ATOMIC)) || (!defined(__cplusplus) && defined(PETSC_HAVE_STDATOMIC_H))
     #if defined(__cplusplus)
@@ -1403,22 +1410,22 @@ typedef petsc_atomic_flag PetscSpinlock;
 static inline PetscErrorCode PetscSpinlockCreate(PetscSpinlock *spinlock)
 {
   petsc_atomic_flag_clear(spinlock);
-  return 0;
+  return PETSC_SUCCESS;
 }
 static inline PetscErrorCode PetscSpinlockLock(PetscSpinlock *spinlock)
 {
   do {
   } while (petsc_atomic_flag_test_and_set(spinlock));
-  return 0;
+  return PETSC_SUCCESS;
 }
 static inline PetscErrorCode PetscSpinlockUnlock(PetscSpinlock *spinlock)
 {
   petsc_atomic_flag_clear(spinlock);
-  return 0;
+  return PETSC_SUCCESS;
 }
 static inline PetscErrorCode PetscSpinlockDestroy(PetscSpinlock *spinlock)
 {
-  return 0;
+  return PETSC_SUCCESS;
 }
     #undef petsc_atomic_flag_test_and_set
     #undef petsc_atomic_flag_clear
@@ -1432,22 +1439,22 @@ typedef omp_lock_t PetscSpinlock;
 static inline PetscErrorCode PetscSpinlockCreate(PetscSpinlock *omp_lock)
 {
   omp_init_lock(omp_lock);
-  return 0;
+  return PETSC_SUCCESS;
 }
 static inline PetscErrorCode PetscSpinlockLock(PetscSpinlock *omp_lock)
 {
   omp_set_lock(omp_lock);
-  return 0;
+  return PETSC_SUCCESS;
 }
 static inline PetscErrorCode PetscSpinlockUnlock(PetscSpinlock *omp_lock)
 {
   omp_unset_lock(omp_lock);
-  return 0;
+  return PETSC_SUCCESS;
 }
 static inline PetscErrorCode PetscSpinlockDestroy(PetscSpinlock *omp_lock)
 {
   omp_destroy_lock(omp_lock);
-  return 0;
+  return PETSC_SUCCESS;
 }
   #else
     #if defined(__cplusplus)
@@ -1459,10 +1466,10 @@ static inline PetscErrorCode PetscSpinlockDestroy(PetscSpinlock *omp_lock)
 
 #else
 typedef int PetscSpinlock;
-  #define PetscSpinlockCreate(a)  0
-  #define PetscSpinlockLock(a)    0
-  #define PetscSpinlockUnlock(a)  0
-  #define PetscSpinlockDestroy(a) 0
+  #define PetscSpinlockCreate(a)  PETSC_SUCCESS
+  #define PetscSpinlockLock(a)    PETSC_SUCCESS
+  #define PetscSpinlockUnlock(a)  PETSC_SUCCESS
+  #define PetscSpinlockDestroy(a) PETSC_SUCCESS
 #endif
 
 #if defined(PETSC_HAVE_THREADSAFETY)

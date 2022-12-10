@@ -21,7 +21,7 @@
 #ifndef _BLASLAPACK_H
 #define _BLASLAPACK_H
 
-#include <petscconf.h>
+#include <petscsys.h>
 #if defined(__cplusplus)
   #define BLAS_EXTERN extern "C"
 #else
@@ -59,8 +59,7 @@ M*/
 
 static inline void PetscMissingLapack(const char *fname, ...)
 {
-  PetscError(PETSC_COMM_SELF, __LINE__, PETSC_FUNCTION_NAME, __FILE__, PETSC_ERR_SUP, PETSC_ERROR_INITIAL, "%s - Lapack routine is unavailable.", fname);
-  MPI_Abort(PETSC_COMM_SELF, PETSC_ERR_SUP);
+  SETERRABORT(PETSC_COMM_SELF, PETSC_ERR_SUP, "%s - Lapack routine is unavailable.", fname);
 }
 
 #include <petscblaslapack_mangle.h>

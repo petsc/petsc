@@ -76,7 +76,7 @@ PetscErrorCode TestPetscVSNPrintf(char *str, size_t l_str, size_t *fullLength, c
   PetscFunctionBegin;
   va_start(Argp, format);
   PetscCall(PetscVSNPrintf(str, l_str, format, fullLength, Argp));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 /*TEST
 

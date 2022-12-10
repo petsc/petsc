@@ -91,7 +91,7 @@ static PetscErrorCode TaoSolve_NTL(Tao tao)
   PetscCall(TaoLogConvergenceHistory(tao, f, gnorm, 0.0, tao->ksp_its));
   PetscCall(TaoMonitor(tao, tao->niter, f, gnorm, 0.0, step));
   PetscUseTypeMethod(tao, convergencetest, tao->cnvP);
-  if (tao->reason != TAO_CONTINUE_ITERATING) PetscFunctionReturn(0);
+  if (tao->reason != TAO_CONTINUE_ITERATING) PetscFunctionReturn(PETSC_SUCCESS);
 
   /* Initialize trust-region radius */
   switch (tl->init_type) {
@@ -199,7 +199,7 @@ static PetscErrorCode TaoSolve_NTL(Tao tao)
         PetscCall(TaoLogConvergenceHistory(tao, f, gnorm, 0.0, tao->ksp_its));
         PetscCall(TaoMonitor(tao, tao->niter, f, gnorm, 0.0, step));
         PetscUseTypeMethod(tao, convergencetest, tao->cnvP);
-        if (tao->reason != TAO_CONTINUE_ITERATING) PetscFunctionReturn(0);
+        if (tao->reason != TAO_CONTINUE_ITERATING) PetscFunctionReturn(PETSC_SUCCESS);
       }
     }
     tao->trust = PetscMax(tao->trust, max_radius);
@@ -595,7 +595,7 @@ static PetscErrorCode TaoSolve_NTL(Tao tao)
     PetscCall(TaoMonitor(tao, tao->niter, f, gnorm, 0.0, step));
     PetscUseTypeMethod(tao, convergencetest, tao->cnvP);
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* ---------------------------------------------------------- */
@@ -611,7 +611,7 @@ static PetscErrorCode TaoSetUp_NTL(Tao tao)
   if (!tl->Gold) PetscCall(VecDuplicate(tao->solution, &tl->Gold));
   tl->bfgs_pre = NULL;
   tl->M        = NULL;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*------------------------------------------------------------*/
@@ -627,7 +627,7 @@ static PetscErrorCode TaoDestroy_NTL(Tao tao)
   }
   PetscCall(KSPDestroy(&tao->ksp));
   PetscCall(PetscFree(tao->data));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*------------------------------------------------------------*/
@@ -677,7 +677,7 @@ static PetscErrorCode TaoSetFromOptions_NTL(Tao tao, PetscOptionItems *PetscOpti
   PetscOptionsHeadEnd();
   PetscCall(TaoLineSearchSetFromOptions(tao->linesearch));
   PetscCall(KSPSetFromOptions(tao->ksp));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*------------------------------------------------------------*/
@@ -696,7 +696,7 @@ static PetscErrorCode TaoView_NTL(Tao tao, PetscViewer viewer)
     PetscCall(PetscViewerASCIIPrintf(viewer, "Gradient search steps: %" PetscInt_FMT "\n", tl->grad));
     PetscCall(PetscViewerASCIIPopTab(viewer));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* ---------------------------------------------------------- */
@@ -822,5 +822,5 @@ PETSC_EXTERN PetscErrorCode TaoCreate_NTL(Tao tao)
   PetscCall(KSPSetOptionsPrefix(tao->ksp, tao->hdr.prefix));
   PetscCall(KSPAppendOptionsPrefix(tao->ksp, "tao_ntl_"));
   PetscCall(KSPSetType(tao->ksp, KSPSTCG));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -209,5 +209,5 @@ L80:
 
   i__1 = *n;
   for (jp = 1; jp <= i__1; ++jp) list[jp] = iwa2[jp];
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -15,7 +15,7 @@ static PetscErrorCode PetscPythonFindExecutable(char pythonexe[], size_t len)
   PetscCall(PetscStrncpy(pythonexe, PETSC_PYTHON_EXE, len));
   PetscCall(PetscOptionsGetString(NULL, NULL, "-python", pythonexe, len, &flag));
   if (!flag || pythonexe[0] == 0) PetscCall(PetscStrncpy(pythonexe, PETSC_PYTHON_EXE, len));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -43,7 +43,7 @@ static PetscErrorCode PetscPythonFindLibraryName(const char pythonexe[], const c
   PetscCall(PetscStrchr(pythonlib, '\n', &eol));
   if (eol) eol[0] = 0;
   PetscCall(PetscTestFile(pythonlib, 'r', found));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscPythonFindLibrary(const char pythonexe[], char pythonlib[], size_t pl)
@@ -59,7 +59,7 @@ static PetscErrorCode PetscPythonFindLibrary(const char pythonexe[], char python
   PetscFunctionBegin;
 #if defined(PETSC_PYTHON_LIB)
   PetscCall(PetscStrncpy(pythonlib, PETSC_PYTHON_LIB, pl));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 #endif
 
   PetscCall(PetscPythonFindLibraryName(pythonexe, cmdline1, pythonlib, pl, &found));
@@ -68,7 +68,7 @@ static PetscErrorCode PetscPythonFindLibrary(const char pythonexe[], char python
   if (!found) PetscCall(PetscPythonFindLibraryName(pythonexe, cmdline4, pythonlib, pl, &found));
   if (!found) PetscCall(PetscPythonFindLibraryName(pythonexe, cmdline5, pythonlib, pl, &found));
   PetscCall(PetscInfo(NULL, "Python library  %s found %d\n", pythonlib, found));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* ---------------------------------------------------------------- */
@@ -135,7 +135,7 @@ static PetscErrorCode PetscPythonLoadLibrary(const char pythonlib[])
   PetscCheck(Py_InitializeEx, PETSC_COMM_SELF, PETSC_ERR_LIB, "Python: failed to load symbols from Python dynamic library %s", pythonlib);
   PetscCheck(Py_Finalize, PETSC_COMM_SELF, PETSC_ERR_LIB, "Python: failed to load symbols from Python dynamic library %s", pythonlib);
   PetscCall(PetscInfo(NULL, "Python: all required symbols loaded from Python dynamic library %s\n", pythonlib));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* ---------------------------------------------------------------- */
@@ -158,7 +158,7 @@ PetscErrorCode PetscPythonFinalize(void)
     if (Py_IsInitialized()) Py_Finalize();
   }
   PetscBeganPython = PETSC_FALSE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -177,7 +177,7 @@ PetscErrorCode PetscPythonInitialize(const char pyexe[], const char pylib[])
   PyObject *module = NULL;
 
   PetscFunctionBegin;
-  if (PetscBeganPython) PetscFunctionReturn(0);
+  if (PetscBeganPython) PetscFunctionReturn(PETSC_SUCCESS);
   /* Python executable */
   if (pyexe && pyexe[0] != 0) {
     PetscCall(PetscStrncpy(PetscPythonExe, pyexe, sizeof(PetscPythonExe)));
@@ -246,10 +246,10 @@ PetscErrorCode PetscPythonInitialize(const char pyexe[], const char pylib[])
     Py_DecRef(module);
     module = NULL;
   } else {
-    PetscPythonPrintError();
+    PetscCall(PetscPythonPrintError());
     SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Python: could not import module 'petsc4py.PETSc', perhaps your PYTHONPATH does not contain it");
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -264,13 +264,13 @@ PetscErrorCode PetscPythonPrintError(void)
   PyObject *exc = NULL, *val = NULL, *tb = NULL;
 
   PetscFunctionBegin;
-  if (!PetscBeganPython) PetscFunctionReturn(0);
-  if (!PyErr_Occurred()) PetscFunctionReturn(0);
+  if (!PetscBeganPython) PetscFunctionReturn(PETSC_SUCCESS);
+  if (!PyErr_Occurred()) PetscFunctionReturn(PETSC_SUCCESS);
   PyErr_Fetch(&exc, &val, &tb);
   PyErr_NormalizeException(&exc, &val, &tb);
   PyErr_Display(exc ? exc : Py_None, val ? val : Py_None, tb ? tb : Py_None);
   PyErr_Restore(exc, val, tb);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* ---------------------------------------------------------------- */
@@ -295,7 +295,7 @@ PetscErrorCode PetscPythonMonitorSet(PetscObject obj, const char url[])
     PetscCheck(PetscPythonMonitorSet_C, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Couldn't initialize Python support for monitors");
   }
   PetscCall(PetscPythonMonitorSet_C(obj, url));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* ---------------------------------------------------------------- */

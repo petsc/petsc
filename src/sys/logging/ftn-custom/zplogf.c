@@ -126,22 +126,23 @@ PETSC_EXTERN void petsclogstagepush_(PetscLogStage *stage,PetscErrorCode *ierr)
 #endif
 }
 
-PETSC_EXTERN void petscgetflops_(PetscLogDouble *d,PetscErrorCode *ierr)
+PETSC_EXTERN void petscgetflops_(PetscLogDouble *d, PetscErrorCode *ierr)
 {
 #if defined(PETSC_USE_LOG)
   *ierr = PetscGetFlops(d);
 #else
-  ierr = 0;
-  *d   = 0.0;
+  *ierr = PETSC_SUCCESS;
+  *d    = 0.0;
 #endif
 }
 
-PETSC_EXTERN void petsclogstagegetid_(char* sname,PetscLogStage *stage, int *ierr,PETSC_FORTRAN_CHARLEN_T len)
+PETSC_EXTERN void petsclogstagegetid_(char *sname, PetscLogStage *stage, PetscErrorCode *ierr, PETSC_FORTRAN_CHARLEN_T len)
 {
 #if defined(PETSC_USE_LOG)
   char *t;
-  FIXCHAR(sname,len,t);
-  *ierr = PetscLogStageGetId(t,stage);if (*ierr) return;
-  FREECHAR(sname,t);
+  FIXCHAR(sname, len, t);
+  *ierr = PetscLogStageGetId(t, stage);
+  if (*ierr) return;
+  FREECHAR(sname, t);
 #endif
 }

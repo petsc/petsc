@@ -221,7 +221,7 @@ PetscErrorCode InitialConditions(DM da, Vec U)
      Restore vectors
   */
   PetscCall(DMDAVecRestoreArray(da, U, &u));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode InitializeLambda(DM da, Vec lambda, PetscReal x, PetscReal y)
@@ -243,7 +243,7 @@ PetscErrorCode InitializeLambda(DM da, Vec lambda, PetscReal x, PetscReal y)
     l[j][i].v = 1.0;
     PetscCall(DMDAVecRestoreArray(da, lambda, &l));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode IFunctionLocalPassive(DMDALocalInfo *info, PetscReal t, Field **u, Field **udot, Field **f, void *ptr)
@@ -279,7 +279,7 @@ PetscErrorCode IFunctionLocalPassive(DMDALocalInfo *info, PetscReal t, Field **u
     }
   }
   PetscCall(PetscLogFlops(16.0 * xm * ym));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode IFunctionActive(TS ts, PetscReal ftime, Vec U, Vec Udot, Vec F, void *ptr)
@@ -409,7 +409,7 @@ PetscErrorCode IFunctionActive(TS ts, PetscReal ftime, Vec U, Vec Udot, Vec F, v
   delete[] u_a;
   delete[] f_c;
   delete[] u_c;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -431,7 +431,7 @@ PetscErrorCode IJacobianMatFree(TS ts, PetscReal t, Vec X, Vec Xdot, PetscReal a
   PetscCall(TSGetDM(ts, &da));
   PetscCall(DMGlobalToLocalBegin(da, mctx->X, INSERT_VALUES, mctx->localX0));
   PetscCall(DMGlobalToLocalEnd(da, mctx->X, INSERT_VALUES, mctx->localX0));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*TEST

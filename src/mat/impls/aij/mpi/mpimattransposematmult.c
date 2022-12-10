@@ -17,7 +17,7 @@ PetscErrorCode MatDestroy_MPIDense_MatTransMatMult(void *data)
   PetscCall(VecDestroy(&atb->bt));
   PetscCall(VecDestroy(&atb->ct));
   PetscCall(PetscFree(atb));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatTransposeMatMultNumeric_MPIAIJ_MPIDense(Mat, Mat, Mat);
@@ -51,7 +51,7 @@ PETSC_INTERN PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIDense(Mat A, M
   C->product->destroy = MatDestroy_MPIDense_MatTransMatMult;
 
   C->ops->transposematmultnumeric = MatTransposeMatMultNumeric_MPIAIJ_MPIDense;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatTransposeMatMultNumeric_MPIAIJ_MPIDense(Mat A, Mat B, Mat C)
@@ -69,7 +69,7 @@ static PetscErrorCode MatTransposeMatMultNumeric_MPIAIJ_MPIDense(Mat A, Mat B, M
   if (!BN) {
     PetscCall(MatAssemblyBegin(C, MAT_FINAL_ASSEMBLY));
     PetscCall(MatAssemblyEnd(C, MAT_FINAL_ASSEMBLY));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
   bt = atb->bt;
   ct = atb->ct;
@@ -96,5 +96,5 @@ static PetscErrorCode MatTransposeMatMultNumeric_MPIAIJ_MPIDense(Mat A, Mat B, M
   PetscCall(MatDenseRestoreArray(C, &Carray));
   PetscCall(MatAssemblyBegin(C, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(C, MAT_FINAL_ASSEMBLY));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

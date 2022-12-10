@@ -57,7 +57,7 @@ PetscErrorCode VecFischer(Vec X, Vec F, Vec L, Vec U, Vec FB)
 
   if (!L && !U) {
     PetscCall(VecAXPBY(FB, -1.0, 0.0, F));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   PetscCall(VecGetOwnershipRange(X, low, high));
@@ -101,7 +101,7 @@ PetscErrorCode VecFischer(Vec X, Vec F, Vec L, Vec U, Vec FB)
   PetscCall(VecRestoreArrayRead(L, &l));
   PetscCall(VecRestoreArrayRead(U, &u));
   PetscCall(VecRestoreArray(FB, &fb));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static inline PetscReal SFischer(PetscReal a, PetscReal b, PetscReal c)
@@ -204,7 +204,7 @@ PetscErrorCode VecSFischer(Vec X, Vec F, Vec L, Vec U, PetscReal mu, Vec FB)
   PetscCall(VecRestoreArrayRead(L, &l));
   PetscCall(VecRestoreArrayRead(U, &u));
   PetscCall(VecRestoreArray(FB, &fb));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static inline PetscReal fischnorm(PetscReal a, PetscReal b)
@@ -358,7 +358,7 @@ PetscErrorCode MatDFischer(Mat jac, Vec X, Vec Con, Vec XL, Vec XU, Vec T1, Vec 
   PetscCall(VecRestoreArrayRead(XL, &l));
   PetscCall(VecRestoreArrayRead(XU, &u));
   PetscCall(VecRestoreArrayRead(T2, &t2));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -463,7 +463,7 @@ PetscErrorCode MatDSFischer(Mat jac, Vec X, Vec Con, Vec XL, Vec XU, PetscReal m
     PetscCall(VecRestoreArray(Db, &db));
     PetscCall(VecRestoreArray(Dm, &dm));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static inline PetscReal ST_InternalPN(PetscScalar in, PetscReal lb, PetscReal ub)
@@ -528,5 +528,5 @@ PetscErrorCode TaoSoftThreshold(Vec in, PetscReal lb, PetscReal ub, Vec out)
   }
 
   PetscCall(VecRestoreArrayPair(in, out, &inarray, &outarray));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

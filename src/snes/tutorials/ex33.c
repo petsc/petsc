@@ -55,7 +55,7 @@ PetscErrorCode FormPermeability(DM da, Vec Kappa, AppCtx *user)
   }
   PetscCall(DMDAVecRestoreArray(da, Kappa, &K));
   PetscCall(DMDAVecRestoreArray(cda, c, &coords));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -106,7 +106,7 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info, Field *u, Field *f, AppCtx
   /* PetscCall(PetscLogFlops(11.0*info->ym*info->xm)); */
 
   PetscCall(DMRestoreGlobalVector(user->cda, &L));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)

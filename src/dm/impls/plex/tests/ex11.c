@@ -51,7 +51,7 @@ static PetscErrorCode TestInsertion()
   }
   PetscCall(DMLabelDestroy(&label2));
   PetscCall(DMLabelDestroy(&label));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TestEmptyStrata(MPI_Comm comm)
@@ -174,7 +174,7 @@ static PetscErrorCode TestEmptyStrata(MPI_Comm comm)
     PetscCall(VecDestroy(&v));
   }
   PetscCall(DMDestroy(&dm));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TestDistribution(MPI_Comm comm)
@@ -191,7 +191,7 @@ static PetscErrorCode TestDistribution(MPI_Comm comm)
   PetscFunctionBegin;
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
   PetscCall(PetscOptionsGetString(NULL, NULL, "-filename", filename, sizeof(filename), &flg));
-  if (!flg) PetscFunctionReturn(0);
+  if (!flg) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-overlap", &overlap, NULL));
   PetscCall(DMPlexCreateFromFile(comm, filename, "ex11_plex", PETSC_TRUE, &dm));
   PetscCall(DMSetBasicAdjacency(dm, PETSC_TRUE, PETSC_FALSE));
@@ -212,7 +212,7 @@ static PetscErrorCode TestDistribution(MPI_Comm comm)
   PetscCall(DMGetLabel(dm, name, &label));
   PetscCall(DMLabelView(label, PETSC_VIEWER_STDOUT_WORLD));
   PetscCall(DMDestroy(&dm));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TestUniversalLabel(MPI_Comm comm)
@@ -225,7 +225,7 @@ static PetscErrorCode TestUniversalLabel(MPI_Comm comm)
 
   PetscFunctionBeginUser;
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-universal", &run, NULL));
-  if (!run) PetscFunctionReturn(0);
+  if (!run) PetscFunctionReturn(PETSC_SUCCESS);
 
   char      filename[PETSC_MAX_PATH_LEN];
   PetscBool flg;
@@ -289,7 +289,7 @@ static PetscErrorCode TestUniversalLabel(MPI_Comm comm)
   PetscCall(DMUniversalLabelDestroy(&universal));
   PetscCall(DMDestroy(&dm1));
   PetscCall(DMDestroy(&dm2));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)

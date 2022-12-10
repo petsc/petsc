@@ -61,7 +61,7 @@ static PetscErrorCode SNESCompositeApply_Multiplicative(SNES snes, Vec X, Vec B,
     jac->innerFailures++;
     if (jac->innerFailures >= snes->maxFailures) {
       snes->reason = SNES_DIVERGED_INNER;
-      PetscFunctionReturn(0);
+      PetscFunctionReturn(PETSC_SUCCESS);
     }
   }
 
@@ -80,7 +80,7 @@ static PetscErrorCode SNESCompositeApply_Multiplicative(SNES snes, Vec X, Vec B,
       jac->innerFailures++;
       if (jac->innerFailures >= snes->maxFailures) {
         snes->reason = SNES_DIVERGED_INNER;
-        PetscFunctionReturn(0);
+        PetscFunctionReturn(PETSC_SUCCESS);
       }
     }
   }
@@ -106,7 +106,7 @@ static PetscErrorCode SNESCompositeApply_Multiplicative(SNES snes, Vec X, Vec B,
       SNESCheckFunctionNorm(snes, *fnorm);
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode SNESCompositeApply_Additive(SNES snes, Vec X, Vec B, Vec F, PetscReal *fnorm)
@@ -137,7 +137,7 @@ static PetscErrorCode SNESCompositeApply_Additive(SNES snes, Vec X, Vec B, Vec F
     jac->innerFailures++;
     if (jac->innerFailures >= snes->maxFailures) {
       snes->reason = SNES_DIVERGED_INNER;
-      PetscFunctionReturn(0);
+      PetscFunctionReturn(PETSC_SUCCESS);
     }
   }
   PetscCall(VecAXPY(Y, -1.0, Xorig));
@@ -151,7 +151,7 @@ static PetscErrorCode SNESCompositeApply_Additive(SNES snes, Vec X, Vec B, Vec F
       jac->innerFailures++;
       if (jac->innerFailures >= snes->maxFailures) {
         snes->reason = SNES_DIVERGED_INNER;
-        PetscFunctionReturn(0);
+        PetscFunctionReturn(PETSC_SUCCESS);
       }
     }
     PetscCall(VecAXPY(Y, -1.0, Xorig));
@@ -168,7 +168,7 @@ static PetscErrorCode SNESCompositeApply_Additive(SNES snes, Vec X, Vec B, Vec F
       SNESCheckFunctionNorm(snes, *fnorm);
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* approximately solve the overdetermined system:
@@ -214,7 +214,7 @@ static PetscErrorCode SNESCompositeApply_AdditiveOptimal(SNES snes, Vec X, Vec B
     jac->innerFailures++;
     if (jac->innerFailures >= snes->maxFailures) {
       snes->reason = SNES_DIVERGED_INNER;
-      PetscFunctionReturn(0);
+      PetscFunctionReturn(PETSC_SUCCESS);
     }
   }
   while (next->next) {
@@ -227,7 +227,7 @@ static PetscErrorCode SNESCompositeApply_AdditiveOptimal(SNES snes, Vec X, Vec B
       jac->innerFailures++;
       if (jac->innerFailures >= snes->maxFailures) {
         snes->reason = SNES_DIVERGED_INNER;
-        PetscFunctionReturn(0);
+        PetscFunctionReturn(PETSC_SUCCESS);
       }
     }
   }
@@ -302,7 +302,7 @@ static PetscErrorCode SNESCompositeApply_AdditiveOptimal(SNES snes, Vec X, Vec B
     PetscCall(VecCopy(jac->Fes[min_i], F));
     *fnorm = min_fnorm;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode SNESSetUp_Composite(SNES snes)
@@ -369,7 +369,7 @@ static PetscErrorCode SNESSetUp_Composite(SNES snes)
     PetscCall(PetscMalloc1(jac->lwork, &jac->work));
   }
 
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode SNESReset_Composite(SNES snes)
@@ -392,7 +392,7 @@ static PetscErrorCode SNESReset_Composite(SNES snes)
   PetscCall(PetscFree(jac->beta));
   PetscCall(PetscFree(jac->work));
   PetscCall(PetscFree(jac->rwork));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode SNESDestroy_Composite(SNES snes)
@@ -413,7 +413,7 @@ static PetscErrorCode SNESDestroy_Composite(SNES snes)
   PetscCall(PetscObjectComposeFunction((PetscObject)snes, "SNESCompositeGetSNES_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)snes, "SNESCompositeSetDamping_C", NULL));
   PetscCall(PetscFree(snes->data));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode SNESSetFromOptions_Composite(SNES snes, PetscOptionItems *PetscOptionsObject)
@@ -449,7 +449,7 @@ static PetscErrorCode SNESSetFromOptions_Composite(SNES snes, PetscOptionItems *
     PetscCall(SNESSetFromOptions(next->snes));
     next = next->next;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode SNESView_Composite(SNES snes, PetscViewer viewer)
@@ -474,7 +474,7 @@ static PetscErrorCode SNESView_Composite(SNES snes, PetscViewer viewer)
     PetscCall(PetscViewerASCIIPopTab(viewer));
     PetscCall(PetscViewerASCIIPrintf(viewer, "  ---------------------------------\n"));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode SNESCompositeSetType_Composite(SNES snes, SNESCompositeType type)
@@ -483,7 +483,7 @@ static PetscErrorCode SNESCompositeSetType_Composite(SNES snes, SNESCompositeTyp
 
   PetscFunctionBegin;
   jac->type = type;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode SNESCompositeAddSNES_Composite(SNES snes, SNESType type)
@@ -527,7 +527,7 @@ static PetscErrorCode SNESCompositeAddSNES_Composite(SNES snes, SNESType type)
 
   ilink->dmp = 1.0;
   jac->nsnes++;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode SNESCompositeGetSNES_Composite(SNES snes, PetscInt n, SNES *subsnes)
@@ -544,7 +544,7 @@ static PetscErrorCode SNESCompositeGetSNES_Composite(SNES snes, PetscInt n, SNES
     next = next->next;
   }
   *subsnes = next->snes;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -569,7 +569,7 @@ PetscErrorCode SNESCompositeSetType(SNES snes, SNESCompositeType type)
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
   PetscValidLogicalCollectiveEnum(snes, type, 2);
   PetscTryMethod(snes, "SNESCompositeSetType_C", (SNES, SNESCompositeType), (snes, type));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -590,7 +590,7 @@ PetscErrorCode SNESCompositeAddSNES(SNES snes, SNESType type)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
   PetscTryMethod(snes, "SNESCompositeAddSNES_C", (SNES, SNESType), (snes, type));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -615,7 +615,7 @@ PetscErrorCode SNESCompositeGetSNES(SNES snes, PetscInt n, SNES *subsnes)
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
   PetscValidPointer(subsnes, 3);
   PetscUseMethod(snes, "SNESCompositeGetSNES_C", (SNES, PetscInt, SNES *), (snes, n, subsnes));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -647,7 +647,7 @@ PetscErrorCode SNESCompositeGetNumber(SNES snes, PetscInt *n)
     *n   = *n + 1;
     next = next->next;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode SNESCompositeSetDamping_Composite(SNES snes, PetscInt n, PetscReal dmp)
@@ -664,7 +664,7 @@ static PetscErrorCode SNESCompositeSetDamping_Composite(SNES snes, PetscInt n, P
     next = next->next;
   }
   next->dmp = dmp;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -687,7 +687,7 @@ PetscErrorCode SNESCompositeSetDamping(SNES snes, PetscInt n, PetscReal dmp)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
   PetscUseMethod(snes, "SNESCompositeSetDamping_C", (SNES, PetscInt, PetscReal), (snes, n, dmp));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode SNESSolve_Composite(SNES snes)
@@ -731,7 +731,7 @@ static PetscErrorCode SNESSolve_Composite(SNES snes)
 
     /* test convergence */
     PetscUseTypeMethod(snes, converged, 0, 0.0, 0.0, fnorm, &snes->reason, snes->cnvP);
-    if (snes->reason) PetscFunctionReturn(0);
+    if (snes->reason) PetscFunctionReturn(PETSC_SUCCESS);
   } else {
     PetscCall(PetscObjectSAWsGrantAccess((PetscObject)snes));
     PetscCall(SNESLogConvergenceHistory(snes, snes->norm, 0));
@@ -802,7 +802,7 @@ static PetscErrorCode SNESSolve_Composite(SNES snes)
       if (!snes->reason) snes->reason = SNES_DIVERGED_MAX_IT;
     }
   } else if (!snes->reason) snes->reason = SNES_CONVERGED_ITS;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -861,5 +861,5 @@ PETSC_EXTERN PetscErrorCode SNESCreate_Composite(SNES snes)
   PetscCall(PetscObjectComposeFunction((PetscObject)snes, "SNESCompositeAddSNES_C", SNESCompositeAddSNES_Composite));
   PetscCall(PetscObjectComposeFunction((PetscObject)snes, "SNESCompositeGetSNES_C", SNESCompositeGetSNES_Composite));
   PetscCall(PetscObjectComposeFunction((PetscObject)snes, "SNESCompositeSetDamping_C", SNESCompositeSetDamping_Composite));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -36,7 +36,7 @@ PetscErrorCode PetscDrawSetViewPort(PetscDraw draw, PetscReal xl, PetscReal yl, 
   draw->port_xr = xr;
   draw->port_yr = yr;
   PetscTryTypeMethod(draw, setviewport, xl, yl, xr, yr);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -75,7 +75,7 @@ PetscErrorCode PetscDrawGetViewPort(PetscDraw draw, PetscReal *xl, PetscReal *yl
   *yl = draw->port_yl;
   *xr = draw->port_xr;
   *yr = draw->port_yr;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -101,7 +101,7 @@ PetscErrorCode PetscDrawSplitViewPort(PetscDraw draw)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw, PETSC_DRAW_CLASSID, 1);
   PetscCall(PetscDrawIsNull(draw, &isnull));
-  if (isnull) PetscFunctionReturn(0);
+  if (isnull) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)draw), &rank));
   PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)draw), &size));
 
@@ -128,7 +128,7 @@ PetscErrorCode PetscDrawSplitViewPort(PetscDraw draw)
   draw->port_yr = yr - .05 * h;
 
   PetscTryTypeMethod(draw, setviewport, xl, yl, xr, yr);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -165,7 +165,7 @@ PetscErrorCode PetscDrawViewPortsCreate(PetscDraw draw, PetscInt nports, PetscDr
   PetscCall(PetscDrawIsNull(draw, &isnull));
   if (isnull) {
     *newports = NULL;
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
   PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)draw), &rank));
 
@@ -209,7 +209,7 @@ PetscErrorCode PetscDrawViewPortsCreate(PetscDraw draw, PetscInt nports, PetscDr
   }
   PetscDrawCollectiveEnd(draw);
   PetscCall(PetscDrawFlush(draw));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -246,7 +246,7 @@ PetscErrorCode PetscDrawViewPortsCreateRect(PetscDraw draw, PetscInt nx, PetscIn
   PetscCall(PetscDrawIsNull(draw, &isnull));
   if (isnull) {
     *newports = NULL;
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
   PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)draw), &rank));
 
@@ -293,7 +293,7 @@ PetscErrorCode PetscDrawViewPortsCreateRect(PetscDraw draw, PetscInt nx, PetscIn
   }
   PetscDrawCollectiveEnd(draw);
   PetscCall(PetscDrawFlush(draw));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -311,14 +311,14 @@ PetscErrorCode PetscDrawViewPortsCreateRect(PetscDraw draw, PetscInt nx, PetscIn
 PetscErrorCode PetscDrawViewPortsDestroy(PetscDrawViewPorts *ports)
 {
   PetscFunctionBegin;
-  if (!ports) PetscFunctionReturn(0);
+  if (!ports) PetscFunctionReturn(PETSC_SUCCESS);
   PetscValidPointer(ports, 1);
   /* reset Drawport of Window back to previous value */
   PetscCall(PetscDrawSetViewPort(ports->draw, ports->port_xl, ports->port_yl, ports->port_xr, ports->port_yr));
   PetscCall(PetscDrawDestroy(&ports->draw));
   PetscCall(PetscFree4(ports->xl, ports->xr, ports->yl, ports->yr));
   PetscCall(PetscFree(ports));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -337,9 +337,9 @@ PetscErrorCode PetscDrawViewPortsDestroy(PetscDrawViewPorts *ports)
 PetscErrorCode PetscDrawViewPortsSet(PetscDrawViewPorts *ports, PetscInt port)
 {
   PetscFunctionBegin;
-  if (!ports) PetscFunctionReturn(0);
+  if (!ports) PetscFunctionReturn(PETSC_SUCCESS);
   PetscValidPointer(ports, 1);
   PetscCheck(port >= 0 && (port <= ports->nports - 1), PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Port is out of range requested %" PetscInt_FMT " from 0 to %" PetscInt_FMT, port, ports->nports - 1);
   PetscCall(PetscDrawSetViewPort(ports->draw, ports->xl[port], ports->yl[port], ports->xr[port], ports->yr[port]));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

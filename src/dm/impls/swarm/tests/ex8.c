@@ -33,7 +33,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 
   PetscOptionsBegin(comm, "", "KS Test Options", "DMPLEX");
   PetscOptionsEnd();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm)
@@ -43,7 +43,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm)
   PetscCall(DMSetType(*dm, DMPLEX));
   PetscCall(DMSetFromOptions(*dm));
   PetscCall(DMViewFromOptions(*dm, NULL, "-dm_view"));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode CreateSwarm(DM dm, AppCtx *user, DM *sw)
@@ -67,7 +67,7 @@ static PetscErrorCode CreateSwarm(DM dm, AppCtx *user, DM *sw)
   PetscCall(DMSetFromOptions(*sw));
   PetscCall(PetscObjectSetName((PetscObject)*sw, "Particles"));
   PetscCall(DMViewFromOptions(*sw, NULL, "-swarm_view"));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TestDistribution(DM sw, PetscReal confidenceLevel, AppCtx *user)
@@ -99,7 +99,7 @@ static PetscErrorCode TestDistribution(DM sw, PetscReal confidenceLevel, AppCtx 
   PetscCall(DMSwarmDestroyLocalVectorFromField(sw, "velocity", &locv));
   if (alpha < confidenceLevel) PetscCall(PetscPrintf(comm, "The KS test accepts the null hypothesis at level %.2g\n", (double)confidenceLevel));
   else PetscCall(PetscPrintf(comm, "The KS test rejects the null hypothesis at level %.2g (%.2g)\n", (double)confidenceLevel, (double)alpha));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)

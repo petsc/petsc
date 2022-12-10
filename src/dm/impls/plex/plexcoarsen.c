@@ -6,7 +6,7 @@ PetscErrorCode DMCoarsen_Plex(DM dm, MPI_Comm comm, DM *dmCoarsened)
   if (!dm->coarseMesh) PetscCall(DMPlexCoarsen_Internal(dm, NULL, NULL, NULL, &dm->coarseMesh));
   PetscCall(PetscObjectReference((PetscObject)dm->coarseMesh));
   *dmCoarsened = dm->coarseMesh;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMCoarsenHierarchy_Plex(DM dm, PetscInt nlevels, DM dmCoarsened[])
@@ -24,5 +24,5 @@ PetscErrorCode DMCoarsenHierarchy_Plex(DM dm, PetscInt nlevels, DM dmCoarsened[]
     PetscCall(DMSetCoarseDM(rdm, dmCoarsened[c]));
     rdm = dmCoarsened[c];
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

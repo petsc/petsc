@@ -13,7 +13,7 @@ PetscErrorCode TaoSetUp_SSILS(Tao tao)
   PetscCall(VecDuplicate(tao->solution, &ssls->db));
   PetscCall(VecDuplicate(tao->solution, &ssls->t1));
   PetscCall(VecDuplicate(tao->solution, &ssls->t2));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode TaoDestroy_SSILS(Tao tao)
@@ -29,7 +29,7 @@ PetscErrorCode TaoDestroy_SSILS(Tao tao)
   PetscCall(VecDestroy(&ssls->t2));
   PetscCall(KSPDestroy(&tao->ksp));
   PetscCall(PetscFree(tao->data));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TaoSolve_SSILS(Tao tao)
@@ -91,7 +91,7 @@ static PetscErrorCode TaoSolve_SSILS(Tao tao)
     PetscCall(TaoLineSearchApply(tao->linesearch, tao->solution, &psi, ssls->dpsi, tao->stepdirection, &t, &ls_reason));
     PetscCall(VecNorm(ssls->dpsi, NORM_2, &ndpsi));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* ---------------------------------------------------------- */
@@ -144,5 +144,5 @@ PETSC_EXTERN PetscErrorCode TaoCreate_SSILS(Tao tao)
   if (!tao->gatol_changed) tao->gatol = 1.0e-16;
   if (!tao->fmin_changed) tao->fmin = 1.0e-8;
 #endif
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

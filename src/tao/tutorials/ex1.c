@@ -43,7 +43,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscCall(PetscOptionsEList("-run_type", "The run type", "ex1.c", runTypes, 2, runTypes[options->runType], &run, NULL));
   options->runType = (RunType)run;
   PetscOptionsEnd();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
@@ -53,7 +53,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   PetscCall(DMSetType(*dm, DMPLEX));
   PetscCall(DMSetFromOptions(*dm));
   PetscCall(DMViewFromOptions(*dm, NULL, "-dm_view"));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* u - (x^2 + y^2) */
@@ -138,17 +138,17 @@ void g3_lu(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], con
 PetscErrorCode quadratic_u_2d(PetscInt dim, PetscReal t, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx)
 {
   *u = x[0] * x[0] + x[1] * x[1];
-  return 0;
+  return PETSC_SUCCESS;
 }
 PetscErrorCode linear_a_2d(PetscInt dim, PetscReal t, const PetscReal x[], PetscInt Nf, PetscScalar *a, void *ctx)
 {
   *a = x[0] + x[1];
-  return 0;
+  return PETSC_SUCCESS;
 }
 PetscErrorCode zero(PetscInt dim, PetscReal t, const PetscReal x[], PetscInt Nf, PetscScalar *l, void *ctx)
 {
   *l = 0.0;
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 PetscErrorCode SetupProblem(DM dm, AppCtx *user)
@@ -176,7 +176,7 @@ PetscErrorCode SetupProblem(DM dm, AppCtx *user)
   PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", label, 1, &id, 0, 0, NULL, (void (*)(void))quadratic_u_2d, NULL, user, NULL));
   PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", label, 1, &id, 1, 0, NULL, (void (*)(void))linear_a_2d, NULL, user, NULL));
   PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", label, 1, &id, 2, 0, NULL, (void (*)(void))zero, NULL, user, NULL));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
@@ -207,7 +207,7 @@ PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
     PetscCall(DMGetCoarseDM(cdm, &cdm));
   }
   for (f = 0; f < 3; ++f) PetscCall(PetscFEDestroy(&fe[f]));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)

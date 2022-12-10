@@ -194,7 +194,7 @@ PetscErrorCode ApplyOperator(Mat A, Vec in, Vec out)
   PetscCall(DMLocalToGlobalEnd(dm, outLocal, INSERT_VALUES, out));
   PetscCall(DMRestoreLocalVector(dm, &inLocal));
   PetscCall(DMRestoreLocalVector(dm, &outLocal));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*TEST

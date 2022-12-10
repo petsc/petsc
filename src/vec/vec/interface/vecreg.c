@@ -35,7 +35,7 @@ PetscErrorCode VecSetType(Vec vec, VecType method)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(vec, VEC_CLASSID, 1);
   PetscCall(PetscObjectTypeCompare((PetscObject)vec, method, &match));
-  if (match) PetscFunctionReturn(0);
+  if (match) PetscFunctionReturn(PETSC_SUCCESS);
 
   /* Return if asked for VECSTANDARD and Vec is already VECSEQ on 1 process or VECMPI on more.
      Otherwise, we free the Vec array in the call to destroy below and never reallocate it,
@@ -44,35 +44,35 @@ PetscErrorCode VecSetType(Vec vec, VecType method)
   PetscCall(PetscStrcmp(method, VECSTANDARD, &match));
   if (match) {
     PetscCall(PetscObjectTypeCompare((PetscObject)vec, size > 1 ? VECMPI : VECSEQ, &match));
-    if (match) PetscFunctionReturn(0);
+    if (match) PetscFunctionReturn(PETSC_SUCCESS);
   }
   /* same reasons for VECCUDA and VECVIENNACL */
 #if defined(PETSC_HAVE_CUDA)
   PetscCall(PetscStrcmp(method, VECCUDA, &match));
   if (match) {
     PetscCall(PetscObjectTypeCompare((PetscObject)vec, size > 1 ? VECMPICUDA : VECSEQCUDA, &match));
-    if (match) PetscFunctionReturn(0);
+    if (match) PetscFunctionReturn(PETSC_SUCCESS);
   }
 #endif
 #if defined(PETSC_HAVE_HIP)
   PetscCall(PetscStrcmp(method, VECHIP, &match));
   if (match) {
     PetscCall(PetscObjectTypeCompare((PetscObject)vec, size > 1 ? VECMPIHIP : VECSEQHIP, &match));
-    if (match) PetscFunctionReturn(0);
+    if (match) PetscFunctionReturn(PETSC_SUCCESS);
   }
 #endif
 #if defined(PETSC_HAVE_VIENNACL)
   PetscCall(PetscStrcmp(method, VECVIENNACL, &match));
   if (match) {
     PetscCall(PetscObjectTypeCompare((PetscObject)vec, size > 1 ? VECMPIVIENNACL : VECSEQVIENNACL, &match));
-    if (match) PetscFunctionReturn(0);
+    if (match) PetscFunctionReturn(PETSC_SUCCESS);
   }
 #endif
 #if defined(PETSC_HAVE_KOKKOS_KERNELS)
   PetscCall(PetscStrcmp(method, VECKOKKOS, &match));
   if (match) {
     PetscCall(PetscObjectTypeCompare((PetscObject)vec, size > 1 ? VECMPIKOKKOS : VECSEQKOKKOS, &match));
-    if (match) PetscFunctionReturn(0);
+    if (match) PetscFunctionReturn(PETSC_SUCCESS);
   }
 #endif
   PetscCall(PetscFunctionListFind(VecList, method, &r));
@@ -88,7 +88,7 @@ PetscErrorCode VecSetType(Vec vec, VecType method)
   } else {
     PetscCall((*r)(vec));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -113,7 +113,7 @@ PetscErrorCode VecGetType(Vec vec, VecType *type)
   PetscValidPointer(type, 2);
   PetscCall(VecRegisterAll());
   *type = ((PetscObject)vec)->type_name;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode VecGetRootType_Private(Vec vec, VecType *vtype)
@@ -138,7 +138,7 @@ PetscErrorCode VecGetRootType_Private(Vec vec, VecType *vtype)
   } else {
     *vtype = VECSTANDARD;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*--------------------------------------------------------------------------------------------------------------------*/
@@ -179,5 +179,5 @@ PetscErrorCode VecRegister(const char sname[], PetscErrorCode (*function)(Vec))
   PetscFunctionBegin;
   PetscCall(VecInitializePackage());
   PetscCall(PetscFunctionListAdd(&VecList, sname, function));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

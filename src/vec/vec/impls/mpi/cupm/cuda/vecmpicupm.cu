@@ -33,14 +33,14 @@ PetscErrorCode VecCreate_CUDA(Vec v)
 {
   PetscFunctionBegin;
   PetscCall(VecMPI_CUDA.Create_CUPM(v));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode VecCreate_MPICUDA(Vec v)
 {
   PetscFunctionBegin;
   PetscCall(VecMPI_CUDA.create(v));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode VecCUDAGetArrays_Private(Vec v, const PetscScalar **host_array, const PetscScalar **device_array, PetscOffloadMask *mask)
@@ -51,7 +51,7 @@ PetscErrorCode VecCUDAGetArrays_Private(Vec v, const PetscScalar **host_array, c
   PetscValidHeaderSpecific(v, VEC_CLASSID, 1);
   PetscCall(PetscDeviceContextGetCurrentContextAssertType_Internal(&dctx, PETSC_DEVICE_CUDA));
   PetscCall(VecMPI_CUDA.GetArrays_CUPMBase(v, host_array, device_array, mask, dctx));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -84,7 +84,7 @@ PetscErrorCode VecCreateMPICUDA(MPI_Comm comm, PetscInt n, PetscInt N, Vec *v)
   PetscFunctionBegin;
   PetscValidPointer(v, 4);
   PetscCall(VecMPI_CUDA.creatempicupm(comm, 0, n, N, v, PETSC_TRUE));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -120,7 +120,7 @@ PetscErrorCode VecCreateMPICUDAWithArrays(MPI_Comm comm, PetscInt bs, PetscInt n
   if (n && cpuarray) PetscValidScalarPointer(cpuarray, 5);
   PetscValidPointer(v, 7);
   PetscCall(VecMPI_CUDA.creatempicupmwitharrays(comm, bs, n, N, cpuarray, gpuarray, v));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -152,5 +152,5 @@ PetscErrorCode VecCreateMPICUDAWithArray(MPI_Comm comm, PetscInt bs, PetscInt n,
 {
   PetscFunctionBegin;
   PetscCall(VecCreateMPICUDAWithArrays(comm, bs, n, N, nullptr, gpuarray, v));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

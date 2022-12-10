@@ -290,6 +290,7 @@ PetscErrorCode FormInitialGuess(AppCtx *user, Vec X)
   PetscReal    lambda, temp1, temp, hx, hy;
   PetscScalar *x;
 
+  PetscFunctionBeginUser;
   mx     = user->mx;
   my     = user->my;
   lambda = user->param;
@@ -322,7 +323,7 @@ PetscErrorCode FormInitialGuess(AppCtx *user, Vec X)
      Restore vector
   */
   PetscCall(VecRestoreArray(X, &x));
-  return 0;
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -344,6 +345,7 @@ PetscErrorCode FormFunction(SNES snes, Vec X, Vec F, void *ptr)
   PetscScalar        ut, ub, ul, ur, u, uxx, uyy, sc, *f;
   const PetscScalar *x;
 
+  PetscFunctionBeginUser;
   mx     = user->mx;
   my     = user->my;
   lambda = user->param;
@@ -385,7 +387,7 @@ PetscErrorCode FormFunction(SNES snes, Vec X, Vec F, void *ptr)
   */
   PetscCall(VecRestoreArrayRead(X, &x));
   PetscCall(VecRestoreArray(F, &f));
-  return 0;
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -409,6 +411,7 @@ PetscErrorCode FormJacobian(SNES snes, Vec X, Mat J, Mat jac, void *ptr)
   const PetscScalar *x;
   PetscReal          hx, hy, hxdhy, hydhx;
 
+  PetscFunctionBeginUser;
   mx     = user->mx;
   my     = user->my;
   lambda = user->param;
@@ -463,26 +466,26 @@ PetscErrorCode FormJacobian(SNES snes, Vec X, Mat J, Mat jac, void *ptr)
     PetscCall(MatAssemblyEnd(J, MAT_FINAL_ASSEMBLY));
   }
 
-  return 0;
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode ConvergenceTest(KSP ksp, PetscInt it, PetscReal nrm, KSPConvergedReason *reason, void *ctx)
 {
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   *reason = KSP_CONVERGED_ITERATING;
   if (it > 1) {
     *reason = KSP_CONVERGED_ITS;
     PetscCall(PetscInfo(NULL, "User provided convergence test returning after 2 iterations\n"));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode ConvergenceDestroy(void *ctx)
 {
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscCall(PetscInfo(NULL, "User provided convergence destroy called\n"));
   PetscCall(PetscFree(ctx));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode postcheck(SNES snes, Vec x, Vec y, Vec w, PetscBool *changed_y, PetscBool *changed_w, void *ctx)
@@ -490,13 +493,13 @@ PetscErrorCode postcheck(SNES snes, Vec x, Vec y, Vec w, PetscBool *changed_y, P
   PetscReal norm;
   Vec       tmp;
 
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscCall(VecDuplicate(x, &tmp));
   PetscCall(VecWAXPY(tmp, -1.0, x, w));
   PetscCall(VecNorm(tmp, NORM_2, &norm));
   PetscCall(VecDestroy(&tmp));
   PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Norm of search step %g\n", (double)norm));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*TEST

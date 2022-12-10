@@ -88,5 +88,5 @@ L100:
     node       = ls[i];
     xadj[node] = -xadj[node];
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

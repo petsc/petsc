@@ -24,7 +24,7 @@ static PetscErrorCode ourj(SNES snes, Vec X, Mat J, Mat P, void *ptr)
   PetscCall(DMGetDMSNES(dm, &sdm));
   PetscCall(PetscObjectGetFortranCallback((PetscObject) sdm, PETSC_FORTRAN_CALLBACK_SUBTYPE, _cb.snesjacobian, (PetscVoidFunction *) &func, &ctx));
   PetscCallFortranVoidFunction((*func)(&snes, &X, &J, &P, ctx, &ierr));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_EXTERN void dmsnessetjacobian_(DM *dm, void (*jac)(DM*,Vec*,Mat*,Mat*,void*,PetscErrorCode*), void *ctx, PetscErrorCode *ierr)
@@ -47,7 +47,7 @@ static PetscErrorCode ourf(SNES snes, Vec X, Vec F, void *ptr)
   PetscCall(DMGetDMSNES(dm, &sdm));
   PetscCall(PetscObjectGetFortranCallback((PetscObject) sdm, PETSC_FORTRAN_CALLBACK_SUBTYPE, _cb.snesfunction, (PetscVoidFunction *) &func, &ctx));
   PetscCallFortranVoidFunction((*func)(&snes, &X, &F, ctx, &ierr));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_EXTERN void dmsnessetfunction_(DM *dm, void (*func)(SNES*,Vec*,Vec*,void*,PetscErrorCode*), void *ctx, PetscErrorCode *ierr)

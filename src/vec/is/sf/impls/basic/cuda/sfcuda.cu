@@ -737,7 +737,7 @@ static PetscErrorCode Pack(PetscSFLink link, PetscInt count, PetscInt start, Pet
   const PetscInt *iarray   = opt ? opt->array : NULL;
 
   PetscFunctionBegin;
-  if (!count) PetscFunctionReturn(0);
+  if (!count) PetscFunctionReturn(PETSC_SUCCESS);
   if (!opt && !idx) { /* It is a 'CUDA data to nvshmem buf' memory copy */
     PetscCallCUDA(cudaMemcpyAsync(buf, (char *)data + start * link->unitbytes, count * link->unitbytes, cudaMemcpyDeviceToDevice, link->stream));
   } else {
@@ -745,7 +745,7 @@ static PetscErrorCode Pack(PetscSFLink link, PetscInt count, PetscInt start, Pet
     d_Pack<Type, BS, EQ><<<nblocks, nthreads, 0, link->stream>>>(link->bs, count, start, iarray, idx, (const Type *)data, (Type *)buf);
     PetscCallCUDA(cudaGetLastError());
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* To specialize UnpackAndOp for the cudaMemcpyAsync() below. Usually if this is a contiguous memcpy, we use root/leafdirect and do
@@ -759,7 +759,7 @@ static PetscErrorCode Unpack(PetscSFLink link, PetscInt count, PetscInt start, P
   const PetscInt *iarray   = opt ? opt->array : NULL;
 
   PetscFunctionBegin;
-  if (!count) PetscFunctionReturn(0);
+  if (!count) PetscFunctionReturn(PETSC_SUCCESS);
   if (!opt && !idx) { /* It is a 'nvshmem buf to CUDA data' memory copy */
     PetscCallCUDA(cudaMemcpyAsync((char *)data + start * link->unitbytes, buf, count * link->unitbytes, cudaMemcpyDeviceToDevice, link->stream));
   } else {
@@ -767,7 +767,7 @@ static PetscErrorCode Unpack(PetscSFLink link, PetscInt count, PetscInt start, P
     d_UnpackAndOp<Type, Insert<Type>, BS, EQ><<<nblocks, nthreads, 0, link->stream>>>(link->bs, count, start, iarray, idx, (Type *)data, (const Type *)buf);
     PetscCallCUDA(cudaGetLastError());
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 template <typename Type, class Op, PetscInt BS, PetscInt EQ>
@@ -778,11 +778,11 @@ static PetscErrorCode UnpackAndOp(PetscSFLink link, PetscInt count, PetscInt sta
   const PetscInt *iarray   = opt ? opt->array : NULL;
 
   PetscFunctionBegin;
-  if (!count) PetscFunctionReturn(0);
+  if (!count) PetscFunctionReturn(PETSC_SUCCESS);
   nblocks = PetscMin(nblocks, link->maxResidentThreadsPerGPU / nthreads);
   d_UnpackAndOp<Type, Op, BS, EQ><<<nblocks, nthreads, 0, link->stream>>>(link->bs, count, start, iarray, idx, (Type *)data, (const Type *)buf);
   PetscCallCUDA(cudaGetLastError());
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 template <typename Type, class Op, PetscInt BS, PetscInt EQ>
@@ -793,11 +793,11 @@ static PetscErrorCode FetchAndOp(PetscSFLink link, PetscInt count, PetscInt star
   const PetscInt *iarray   = opt ? opt->array : NULL;
 
   PetscFunctionBegin;
-  if (!count) PetscFunctionReturn(0);
+  if (!count) PetscFunctionReturn(PETSC_SUCCESS);
   nblocks = PetscMin(nblocks, link->maxResidentThreadsPerGPU / nthreads);
   d_FetchAndOp<Type, Op, BS, EQ><<<nblocks, nthreads, 0, link->stream>>>(link->bs, count, start, iarray, idx, (Type *)data, (Type *)buf);
   PetscCallCUDA(cudaGetLastError());
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 template <typename Type, class Op, PetscInt BS, PetscInt EQ>
@@ -808,7 +808,7 @@ static PetscErrorCode ScatterAndOp(PetscSFLink link, PetscInt count, PetscInt sr
   PetscInt srcx = 0, srcy = 0, srcX = 0, srcY = 0, dstx = 0, dsty = 0, dstX = 0, dstY = 0;
 
   PetscFunctionBegin;
-  if (!count) PetscFunctionReturn(0);
+  if (!count) PetscFunctionReturn(PETSC_SUCCESS);
   nblocks = PetscMin(nblocks, link->maxResidentThreadsPerGPU / nthreads);
 
   /* The 3D shape of source subdomain may be different than that of the destination, which makes it difficult to use CUDA 3D grid and block */
@@ -838,7 +838,7 @@ static PetscErrorCode ScatterAndOp(PetscSFLink link, PetscInt count, PetscInt sr
 
   d_ScatterAndOp<Type, Op, BS, EQ><<<nblocks, nthreads, 0, link->stream>>>(link->bs, count, srcx, srcy, srcX, srcY, srcStart, srcIdx, (const Type *)src, dstx, dsty, dstX, dstY, dstStart, dstIdx, (Type *)dst);
   PetscCallCUDA(cudaGetLastError());
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Specialization for Insert since we may use cudaMemcpyAsync */
@@ -846,14 +846,14 @@ template <typename Type, PetscInt BS, PetscInt EQ>
 static PetscErrorCode ScatterAndInsert(PetscSFLink link, PetscInt count, PetscInt srcStart, PetscSFPackOpt srcOpt, const PetscInt *srcIdx, const void *src, PetscInt dstStart, PetscSFPackOpt dstOpt, const PetscInt *dstIdx, void *dst)
 {
   PetscFunctionBegin;
-  if (!count) PetscFunctionReturn(0);
+  if (!count) PetscFunctionReturn(PETSC_SUCCESS);
   /*src and dst are contiguous */
   if ((!srcOpt && !srcIdx) && (!dstOpt && !dstIdx) && src != dst) {
     PetscCallCUDA(cudaMemcpyAsync((Type *)dst + dstStart * link->bs, (const Type *)src + srcStart * link->bs, count * link->unitbytes, cudaMemcpyDeviceToDevice, link->stream));
   } else {
     PetscCall(ScatterAndOp<Type, Insert<Type>, BS, EQ>(link, count, srcStart, srcOpt, srcIdx, src, dstStart, dstOpt, dstIdx, dst));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 template <typename Type, class Op, PetscInt BS, PetscInt EQ>
@@ -865,11 +865,11 @@ static PetscErrorCode FetchAndOpLocal(PetscSFLink link, PetscInt count, PetscInt
   const PetscInt *larray   = leafopt ? leafopt->array : NULL;
 
   PetscFunctionBegin;
-  if (!count) PetscFunctionReturn(0);
+  if (!count) PetscFunctionReturn(PETSC_SUCCESS);
   nblocks = PetscMin(nblocks, link->maxResidentThreadsPerGPU / nthreads);
   d_FetchAndOpLocal<Type, Op, BS, EQ><<<nblocks, nthreads, 0, link->stream>>>(link->bs, count, rootstart, rarray, rootidx, (Type *)rootdata, leafstart, larray, leafidx, (const Type *)leafdata, (Type *)leafupdate);
   PetscCallCUDA(cudaGetLastError());
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*====================================================================================*/
@@ -1048,14 +1048,14 @@ static PetscErrorCode PetscSFLinkSyncDevice_CUDA(PetscSFLink)
 {
   PetscFunctionBegin;
   PetscCallCUDA(cudaDeviceSynchronize());
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscSFLinkSyncStream_CUDA(PetscSFLink link)
 {
   PetscFunctionBegin;
   PetscCallCUDA(cudaStreamSynchronize(link->stream));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscSFLinkMemcpy_CUDA(PetscSFLink link, PetscMemType dstmtype, void *dst, PetscMemType srcmtype, const void *src, size_t n)
@@ -1075,7 +1075,7 @@ static PetscErrorCode PetscSFLinkMemcpy_CUDA(PetscSFLink link, PetscMemType dstm
       PetscCallCUDA(cudaMemcpyAsync(dst, src, n, kinds[stype][dtype], link->stream));
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PetscSFMalloc_CUDA(PetscMemType mtype, size_t size, void **ptr)
@@ -1086,7 +1086,7 @@ PetscErrorCode PetscSFMalloc_CUDA(PetscMemType mtype, size_t size, void **ptr)
     PetscCall(PetscDeviceInitialize(PETSC_DEVICE_CUDA));
     PetscCallCUDA(cudaMalloc(ptr, size));
   } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Wrong PetscMemType %d", (int)mtype);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PetscSFFree_CUDA(PetscMemType mtype, void *ptr)
@@ -1095,7 +1095,7 @@ PetscErrorCode PetscSFFree_CUDA(PetscMemType mtype, void *ptr)
   if (PetscMemTypeHost(mtype)) PetscCall(PetscFree(ptr));
   else if (PetscMemTypeDevice(mtype)) PetscCallCUDA(cudaFree(ptr));
   else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Wrong PetscMemType %d", (int)mtype);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Destructor when the link uses MPI for communication on CUDA device */
@@ -1106,7 +1106,7 @@ static PetscErrorCode PetscSFLinkDestroy_MPI_CUDA(PetscSF, PetscSFLink link)
     PetscCallCUDA(cudaFree(link->rootbuf_alloc[i][PETSC_MEMTYPE_DEVICE]));
     PetscCallCUDA(cudaFree(link->leafbuf_alloc[i][PETSC_MEMTYPE_DEVICE]));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Some fields of link are initialized by PetscSFPackSetUp_Host. This routine only does what needed on device */
@@ -1119,7 +1119,7 @@ PetscErrorCode PetscSFLinkSetUp_CUDA(PetscSF sf, PetscSFLink link, MPI_Datatype 
 #endif
 
   PetscFunctionBegin;
-  if (link->deviceinited) PetscFunctionReturn(0);
+  if (link->deviceinited) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(MPIPetsc_Type_compare_contig(unit, MPI_SIGNED_CHAR, &nSignedChar));
   PetscCall(MPIPetsc_Type_compare_contig(unit, MPI_UNSIGNED_CHAR, &nUnsignedChar));
   /* MPI_CHAR is treated below as a dumb type that does not support reduction according to MPI standard */
@@ -1255,5 +1255,5 @@ PetscErrorCode PetscSFLinkSetUp_CUDA(PetscSF sf, PetscSFLink link, MPI_Datatype 
   link->SyncStream   = PetscSFLinkSyncStream_CUDA;
   link->Memcpy       = PetscSFLinkMemcpy_CUDA;
   link->deviceinited = PETSC_TRUE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

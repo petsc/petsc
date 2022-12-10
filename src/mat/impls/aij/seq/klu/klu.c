@@ -105,7 +105,7 @@ static PetscErrorCode MatDestroy_KLU(Mat A)
   }
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatFactorGetSolverType_C", NULL));
   PetscCall(PetscFree(A->data));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatSolveTranspose_KLU(Mat A, Vec b, Vec x)
@@ -122,7 +122,7 @@ static PetscErrorCode MatSolveTranspose_KLU(Mat A, Vec b, Vec x)
   status = klu_K_solve(lu->Symbolic, lu->Numeric, A->rmap->n, 1, (PetscReal *)xa, &lu->Common);
   PetscCheck(status == 1, PETSC_COMM_SELF, PETSC_ERR_LIB, "KLU Solve failed");
   PetscCall(VecRestoreArray(x, &xa));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatSolve_KLU(Mat A, Vec b, Vec x)
@@ -144,7 +144,7 @@ static PetscErrorCode MatSolve_KLU(Mat A, Vec b, Vec x)
 #endif
   PetscCheck(status == 1, PETSC_COMM_SELF, PETSC_ERR_LIB, "KLU Solve failed");
   PetscCall(VecRestoreArray(x, &xa));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatLUFactorNumeric_KLU(Mat F, Mat A, const MatFactorInfo *info)
@@ -166,7 +166,7 @@ static PetscErrorCode MatLUFactorNumeric_KLU(Mat F, Mat A, const MatFactorInfo *
   lu->CleanUpKLU         = PETSC_TRUE;
   F->ops->solve          = MatSolve_KLU;
   F->ops->solvetranspose = MatSolveTranspose_KLU;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatLUFactorSymbolic_KLU(Mat F, Mat A, IS r, IS c, const MatFactorInfo *info)
@@ -201,7 +201,7 @@ static PetscErrorCode MatLUFactorSymbolic_KLU(Mat F, Mat A, IS r, IS c, const Ma
   lu->flg                   = DIFFERENT_NONZERO_PATTERN;
   lu->CleanUpKLU            = PETSC_TRUE;
   (F)->ops->lufactornumeric = MatLUFactorNumeric_KLU;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatView_Info_KLU(Mat A, PetscViewer viewer)
@@ -222,7 +222,7 @@ static PetscErrorCode MatView_Info_KLU(Mat A, PetscViewer viewer)
   if (!lu->PetscMatOrdering) PetscCall(PetscViewerASCIIPrintf(viewer, "  Ordering: %s (not using the PETSc ordering)\n", KluOrderingTypes[(int)lu->Common.ordering]));
   /* matrix row scaling */
   PetscCall(PetscViewerASCIIPrintf(viewer, "  Matrix row scaling: %s\n", scale[(int)lu->Common.scale]));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatView_KLU(Mat A, PetscViewer viewer)
@@ -236,14 +236,14 @@ static PetscErrorCode MatView_KLU(Mat A, PetscViewer viewer)
     PetscCall(PetscViewerGetFormat(viewer, &format));
     if (format == PETSC_VIEWER_ASCII_INFO) PetscCall(MatView_Info_KLU(A, viewer));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatFactorGetSolverType_seqaij_klu(Mat A, MatSolverType *type)
 {
   PetscFunctionBegin;
   *type = MATSOLVERKLU;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -322,5 +322,5 @@ PETSC_INTERN PetscErrorCode MatGetFactor_seqaij_klu(Mat A, MatFactorType ftype, 
   PetscCall(PetscOptionsEList("-mat_klu_row_scale", "Matrix row scaling", "None", scale, 3, scale[0], &idx, &flg));
   PetscOptionsEnd();
   *F = B;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

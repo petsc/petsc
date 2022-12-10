@@ -74,7 +74,7 @@ PetscErrorCode PetscHeapCreate(PetscInt maxsize, PetscHeap *heap)
   h->base[0].id    = -1;
   h->base[0].value = PETSC_MIN_INT;
   *heap            = h;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PetscHeapAdd(PetscHeap h, PetscInt id, PetscInt val)
@@ -93,7 +93,7 @@ PetscErrorCode PetscHeapAdd(PetscHeap h, PetscInt id, PetscInt val)
     Swap(h, loc, par);
     loc = par;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PetscHeapPop(PetscHeap h, PetscInt *id, PetscInt *val)
@@ -104,7 +104,7 @@ PetscErrorCode PetscHeapPop(PetscHeap h, PetscInt *id, PetscInt *val)
   if (h->end == 1) {
     *id  = h->base[0].id;
     *val = h->base[0].value;
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   *id  = h->base[1].id;
@@ -122,7 +122,7 @@ PetscErrorCode PetscHeapPop(PetscHeap h, PetscInt *id, PetscInt *val)
     Swap(h, loc, chld);
     loc = chld;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PetscHeapPeek(PetscHeap h, PetscInt *id, PetscInt *val)
@@ -131,12 +131,12 @@ PetscErrorCode PetscHeapPeek(PetscHeap h, PetscInt *id, PetscInt *val)
   if (h->end == 1) {
     *id  = h->base[0].id;
     *val = h->base[0].value;
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   *id  = h->base[1].id;
   *val = h->base[1].value;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PetscHeapStash(PetscHeap h, PetscInt id, PetscInt val)
@@ -147,7 +147,7 @@ PetscErrorCode PetscHeapStash(PetscHeap h, PetscInt id, PetscInt val)
   loc                = --h->stash;
   h->base[loc].id    = id;
   h->base[loc].value = val;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PetscHeapUnstash(PetscHeap h)
@@ -158,7 +158,7 @@ PetscErrorCode PetscHeapUnstash(PetscHeap h)
     h->stash++;
     PetscCall(PetscHeapAdd(h, id, value));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PetscHeapDestroy(PetscHeap *heap)
@@ -166,7 +166,7 @@ PetscErrorCode PetscHeapDestroy(PetscHeap *heap)
   PetscFunctionBegin;
   PetscCall(PetscFree((*heap)->base));
   PetscCall(PetscFree(*heap));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PetscHeapView(PetscHeap h, PetscViewer viewer)
@@ -184,5 +184,5 @@ PetscErrorCode PetscHeapView(PetscHeap h, PetscViewer viewer)
     PetscCall(PetscViewerASCIIPrintf(viewer, "Stash in (id,value) pairs\n"));
     PetscCall(PetscIntView(2 * (h->alloc - h->stash), (const PetscInt *)(h->base + h->stash), viewer));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

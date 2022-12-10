@@ -42,7 +42,7 @@ static PetscErrorCode DMPlexCreateOrderingClosure_Static(DM dm, PetscInt numPoin
   }
   *clperm    = perm;
   *invclperm = iperm;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -134,7 +134,7 @@ PetscErrorCode DMPlexGetOrdering(DM dm, MatOrderingType otype, DMLabel label, IS
   /* Invert permutation */
   PetscCall(DMPlexGetChart(dm, &pStart, &pEnd));
   PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject)dm), pEnd - pStart, invclperm, PETSC_OWN_POINTER, perm));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -196,7 +196,7 @@ PetscErrorCode DMPlexGetOrdering1D(DM dm, IS *perm)
     PetscCheck(pos == pEnd, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Last vertex was %" PetscInt_FMT ", not %" PetscInt_FMT, pos, pEnd);
   }
   PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject)dm), pEnd - pStart, points, PETSC_OWN_POINTER, perm));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMPlexRemapCoordinates_Private(IS perm, PetscSection cs, Vec coordinates, PetscSection *csNew, Vec *coordinatesNew)
@@ -226,7 +226,7 @@ static PetscErrorCode DMPlexRemapCoordinates_Private(IS perm, PetscSection cs, V
   PetscCall(ISRestoreIndices(perm, &pperm));
   PetscCall(VecRestoreArray(coordinates, &coords));
   PetscCall(VecRestoreArray(*coordinatesNew, &coordsNew));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -367,7 +367,7 @@ PetscErrorCode DMPlexPermute(DM dm, IS perm, DM *pdm)
   }
   PetscCall(DMPlexCopy_Internal(dm, PETSC_TRUE, PETSC_TRUE, *pdm));
   (*pdm)->setupcalled = PETSC_TRUE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMPlexReorderSetDefault_Plex(DM dm, DMPlexReorderDefaultFlag reorder)
@@ -376,7 +376,7 @@ PetscErrorCode DMPlexReorderSetDefault_Plex(DM dm, DMPlexReorderDefaultFlag reor
 
   PetscFunctionBegin;
   mesh->reorderDefault = reorder;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -397,7 +397,7 @@ PetscErrorCode DMPlexReorderSetDefault(DM dm, DMPlexReorderDefaultFlag reorder)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscTryMethod(dm, "DMPlexReorderSetDefault_C", (DM, DMPlexReorderDefaultFlag), (dm, reorder));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMPlexReorderGetDefault_Plex(DM dm, DMPlexReorderDefaultFlag *reorder)
@@ -406,7 +406,7 @@ PetscErrorCode DMPlexReorderGetDefault_Plex(DM dm, DMPlexReorderDefaultFlag *reo
 
   PetscFunctionBegin;
   *reorder = mesh->reorderDefault;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -430,5 +430,5 @@ PetscErrorCode DMPlexReorderGetDefault(DM dm, DMPlexReorderDefaultFlag *reorder)
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidPointer(reorder, 2);
   PetscUseMethod(dm, "DMPlexReorderGetDefault_C", (DM, DMPlexReorderDefaultFlag *), (dm, reorder));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

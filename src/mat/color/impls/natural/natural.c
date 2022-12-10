@@ -55,7 +55,7 @@ static PetscErrorCode MatColoringApply_Natural(MatColoring mc, ISColoring *iscol
     PetscCall(ISColoringCreate(comm, nc, N_loc, colors_loc, PETSC_OWN_POINTER, iscoloring));
     PetscCall(ISColoringDestroy(&iscoloring_seq));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -76,5 +76,5 @@ PETSC_EXTERN PetscErrorCode MatColoringCreate_Natural(MatColoring mc)
   mc->ops->view           = NULL;
   mc->ops->destroy        = NULL;
   mc->ops->setfromoptions = NULL;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

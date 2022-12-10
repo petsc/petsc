@@ -5,14 +5,14 @@ static PetscErrorCode PetscSpaceSetFromOptions_WXY(PetscSpace sp, PetscOptionIte
   PetscFunctionBegin;
   PetscOptionsHeadBegin(PetscOptionsObject, "PetscSpace WXY options");
   PetscOptionsHeadEnd();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscSpacePolynomialView_Ascii(PetscSpace sp, PetscViewer v)
 {
   PetscFunctionBegin;
   PetscCall(PetscViewerASCIIPrintf(v, "WXY space of degree %" PetscInt_FMT "\n", sp->degree));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscSpaceView_WXY(PetscSpace sp, PetscViewer viewer)
@@ -24,7 +24,7 @@ static PetscErrorCode PetscSpaceView_WXY(PetscSpace sp, PetscViewer viewer)
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
   if (iascii) PetscCall(PetscSpacePolynomialView_Ascii(sp, viewer));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscSpaceDestroy_WXY(PetscSpace sp)
@@ -33,7 +33,7 @@ static PetscErrorCode PetscSpaceDestroy_WXY(PetscSpace sp)
 
   PetscFunctionBegin;
   PetscCall(PetscFree(wxy));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscSpaceSetUp_WXY(PetscSpace sp)
@@ -41,18 +41,18 @@ static PetscErrorCode PetscSpaceSetUp_WXY(PetscSpace sp)
   PetscSpace_WXY *wxy = (PetscSpace_WXY *)sp->data;
 
   PetscFunctionBegin;
-  if (wxy->setupCalled) PetscFunctionReturn(0);
+  if (wxy->setupCalled) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCheck(sp->degree >= 0, PetscObjectComm((PetscObject)sp), PETSC_ERR_ARG_OUTOFRANGE, "Negative degree %" PetscInt_FMT " invalid\n", sp->degree);
   sp->maxDegree    = sp->degree;
   wxy->setupCalled = PETSC_TRUE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscSpaceGetDimension_WXY(PetscSpace sp, PetscInt *dim)
 {
   PetscFunctionBegin;
   *dim = 6;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscSpaceEvaluate_WXY(PetscSpace sp, PetscInt npoints, const PetscReal points[], PetscReal B[], PetscReal D[], PetscReal H[])
@@ -66,7 +66,7 @@ static PetscErrorCode PetscSpaceEvaluate_WXY(PetscSpace sp, PetscInt npoints, co
   if (!wxy->setupCalled) {
     PetscCall(PetscSpaceSetUp(sp));
     PetscCall(PetscSpaceEvaluate(sp, npoints, points, B, D, H));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
   PetscCheck((sp->Nc == 3) && (sp->Nv == 3), PETSC_COMM_SELF, PETSC_ERR_PLIB, "WXY space must have 3 variables and 3 components");
   if (B) {
@@ -353,7 +353,7 @@ static PetscErrorCode PetscSpaceEvaluate_WXY(PetscSpace sp, PetscInt npoints, co
       D[p * p_inc + 4 * b_inc + 2 * c_inc + 8] = 0.;
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscSpaceGetHeightSubspace_WXY(PetscSpace sp, PetscInt height, PetscSpace *subsp)
@@ -371,7 +371,7 @@ static PetscErrorCode PetscSpaceInitialize_WXY(PetscSpace sp)
   sp->ops->getdimension      = PetscSpaceGetDimension_WXY;
   sp->ops->evaluate          = PetscSpaceEvaluate_WXY;
   sp->ops->getheightsubspace = PetscSpaceGetHeightSubspace_WXY;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -395,5 +395,5 @@ PETSC_EXTERN PetscErrorCode PetscSpaceCreate_WXY(PetscSpace sp)
   sp->degree = 2;
 
   PetscCall(PetscSpaceInitialize_WXY(sp));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

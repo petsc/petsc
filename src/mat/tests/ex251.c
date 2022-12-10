@@ -38,7 +38,7 @@ int main(int argc, char **args)
   PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
 
   PetscCall(MatCreate(PETSC_COMM_WORLD, &B));
-  MatSetSizes(B, PETSC_DECIDE, PETSC_DECIDE, M, N);
+  PetscCall(MatSetSizes(B, PETSC_DECIDE, PETSC_DECIDE, M, N));
   PetscCall(MatSetFromOptions(B));
   PetscCall(MatSeqAIJSetPreallocation(B, 2, NULL));
   PetscCall(MatMPIAIJSetPreallocation(B, 2, NULL, 2, NULL));

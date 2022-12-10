@@ -20,14 +20,14 @@ PetscFunctionList VecTaggerList;
 PetscErrorCode VecTaggerRegisterAll(void)
 {
   PetscFunctionBegin;
-  if (VecTaggerRegisterAllCalled) PetscFunctionReturn(0);
+  if (VecTaggerRegisterAllCalled) PetscFunctionReturn(PETSC_SUCCESS);
   VecTaggerRegisterAllCalled = PETSC_TRUE;
   PetscCall(VecTaggerRegister(VECTAGGERABSOLUTE, VecTaggerCreate_Absolute));
   PetscCall(VecTaggerRegister(VECTAGGERRELATIVE, VecTaggerCreate_Relative));
   PetscCall(VecTaggerRegister(VECTAGGERCDF, VecTaggerCreate_CDF));
   PetscCall(VecTaggerRegister(VECTAGGEROR, VecTaggerCreate_Or));
   PetscCall(VecTaggerRegister(VECTAGGERAND, VecTaggerCreate_And));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -60,5 +60,5 @@ PetscErrorCode VecTaggerRegister(const char sname[], PetscErrorCode (*function)(
 {
   PetscFunctionBegin;
   PetscCall(PetscFunctionListAdd(&VecTaggerList, sname, function));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

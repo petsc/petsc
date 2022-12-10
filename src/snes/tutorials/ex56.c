@@ -186,7 +186,7 @@ PetscErrorCode zero(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt 
   PetscInt       comp;
 
   for (comp = 0; comp < Ncomp; ++comp) u[comp] = 0;
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 int main(int argc, char **args)

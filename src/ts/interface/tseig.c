@@ -74,7 +74,7 @@ PetscErrorCode TSMonitorSPEigCtxCreate(MPI_Comm comm, const char host[], const c
   (*ctx)->xmax = 1.1;
   (*ctx)->ymin = -1.1;
   (*ctx)->ymax = 1.1;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TSLinearStabilityIndicator(TS ts, PetscReal xr, PetscReal xi, PetscBool *flg)
@@ -85,7 +85,7 @@ static PetscErrorCode TSLinearStabilityIndicator(TS ts, PetscReal xr, PetscReal 
   PetscCall(TSComputeLinearStability(ts, xr, xi, &yr, &yi));
   if ((yr * yr + yi * yi) <= 1.0) *flg = PETSC_TRUE;
   else *flg = PETSC_FALSE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode TSMonitorSPEig(TS ts, PetscInt step, PetscReal ptime, Vec v, void *monctx)
@@ -100,8 +100,8 @@ PetscErrorCode TSMonitorSPEig(TS ts, PetscInt step, PetscReal ptime, Vec v, void
   SNES              snes;
 
   PetscFunctionBegin;
-  if (step < 0) PetscFunctionReturn(0); /* -1 indicates interpolated solution */
-  if (!step) PetscFunctionReturn(0);
+  if (step < 0) PetscFunctionReturn(PETSC_SUCCESS); /* -1 indicates interpolated solution */
+  if (!step) PetscFunctionReturn(PETSC_SUCCESS);
   if (((ctx->howoften > 0) && (!(step % ctx->howoften))) || ((ctx->howoften == -1) && ts->reason)) {
     PetscCall(VecDuplicate(v, &xdot));
     PetscCall(TSGetSNES(ts, &snes));
@@ -169,7 +169,7 @@ PetscErrorCode TSMonitorSPEig(TS ts, PetscInt step, PetscReal ptime, Vec v, void
     }
     PetscCall(MatDestroy(&B));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -198,5 +198,5 @@ PetscErrorCode TSMonitorSPEigCtxDestroy(TSMonitorSPEigCtx *ctx)
   PetscCall(KSPDestroy(&(*ctx)->ksp));
   PetscCall(PetscRandomDestroy(&(*ctx)->rand));
   PetscCall(PetscFree(*ctx));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

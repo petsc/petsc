@@ -31,7 +31,7 @@ PetscBool PetscViewerRegisterAllCalled;
 PetscErrorCode PetscViewerRegisterAll(void)
 {
   PetscFunctionBegin;
-  if (PetscViewerRegisterAllCalled) PetscFunctionReturn(0);
+  if (PetscViewerRegisterAllCalled) PetscFunctionReturn(PETSC_SUCCESS);
   PetscViewerRegisterAllCalled = PETSC_TRUE;
 
   PetscCall(PetscViewerRegister(PETSCVIEWERASCII, PetscViewerCreate_ASCII));
@@ -65,5 +65,5 @@ PetscErrorCode PetscViewerRegisterAll(void)
 #if defined(PETSC_HAVE_CGNS)
   PetscCall(PetscViewerRegister(PETSCVIEWERCGNS, PetscViewerCreate_CGNS));
 #endif
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

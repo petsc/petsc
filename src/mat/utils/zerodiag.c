@@ -57,7 +57,7 @@ PetscErrorCode MatReorderForNonzeroDiagonal(Mat mat, PetscReal abstol, IS ris, I
 {
   PetscFunctionBegin;
   PetscTryMethod(mat, "MatReorderForNonzeroDiagonal_C", (Mat, PetscReal, IS, IS), (mat, abstol, ris, cis));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_INTERN PetscErrorCode MatGetRow_SeqAIJ(Mat, PetscInt, PetscInt *, PetscInt **, PetscScalar **);
@@ -142,5 +142,5 @@ PETSC_INTERN PetscErrorCode MatReorderForNonzeroDiagonal_SeqAIJ(Mat mat, PetscRe
     PetscCall(MatRestoreRow_SeqAIJ(mat, row[prow], &nz, &j, &v));
   }
   PetscCall(ISDestroy(&icis));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

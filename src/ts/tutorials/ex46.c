@@ -46,13 +46,13 @@ PetscErrorCode mms1_u_2d(PetscInt dim, PetscReal time, const PetscReal x[], Pets
 {
   u[0] = time + x[0] * x[0] + x[1] * x[1];
   u[1] = time + 2.0 * x[0] * x[0] - 2.0 * x[0] * x[1];
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 PetscErrorCode mms1_p_2d(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *p, void *ctx)
 {
   *p = x[0] + x[1] - 1.0;
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 /* MMS 2*/
@@ -61,13 +61,13 @@ static PetscErrorCode mms2_u_2d(PetscInt dim, PetscReal time, const PetscReal x[
 {
   u[0] = PetscSinReal(time + x[0]) * PetscSinReal(time + x[1]);
   u[1] = PetscCosReal(time + x[0]) * PetscCosReal(time + x[1]);
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 static PetscErrorCode mms2_p_2d(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *p, void *ctx)
 {
   *p = PetscSinReal(time + x[0] - x[1]);
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 static void f0_mms1_u(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
@@ -197,7 +197,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscOptionsBegin(comm, "", "Navier-Stokes Equation Options", "DMPLEX");
   PetscCall(PetscOptionsInt("-mms", "The manufactured solution to use", "ex46.c", options->mms, &options->mms, NULL));
   PetscOptionsEnd();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, AppCtx *ctx)
@@ -207,7 +207,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, AppCtx *ctx)
   PetscCall(DMSetType(*dm, DMPLEX));
   PetscCall(DMSetFromOptions(*dm));
   PetscCall(DMViewFromOptions(*dm, NULL, "-dm_view"));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode SetupProblem(DM dm, AppCtx *ctx)
@@ -251,7 +251,7 @@ static PetscErrorCode SetupProblem(DM dm, AppCtx *ctx)
   default:
     SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid dimension %" PetscInt_FMT, dim);
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode SetupDiscretization(DM dm, AppCtx *ctx)
@@ -290,7 +290,7 @@ static PetscErrorCode SetupDiscretization(DM dm, AppCtx *ctx)
   }
   PetscCall(PetscFEDestroy(&fe[0]));
   PetscCall(PetscFEDestroy(&fe[1]));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MonitorError(TS ts, PetscInt step, PetscReal crtime, Vec u, void *ctx)
@@ -308,7 +308,7 @@ static PetscErrorCode MonitorError(TS ts, PetscInt step, PetscReal crtime, Vec u
   PetscCall(PetscDSGetExactSolution(ds, 1, &funcs[1], &ctxs[1]));
   PetscCall(DMComputeL2FieldDiff(dm, crtime, funcs, ctxs, u, ferrors));
   PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Timestep: %04d time = %-8.4g \t L_2 Error: [%2.3g, %2.3g]\n", (int)step, (double)crtime, (double)ferrors[0], (double)ferrors[1]));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)

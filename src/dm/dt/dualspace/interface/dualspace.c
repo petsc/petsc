@@ -36,7 +36,7 @@ PetscErrorCode PetscDualSpaceLatticePointLexicographic_Internal(PetscInt len, Pe
     }
   }
   tup[++len]++;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -69,7 +69,7 @@ PetscErrorCode PetscDualSpaceTensorPointLexicographic_Internal(PetscInt len, Pet
     }
   }
   tup[i]++;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -107,7 +107,7 @@ PetscErrorCode PetscDualSpaceRegister(const char sname[], PetscErrorCode (*funct
 {
   PetscFunctionBegin;
   PetscCall(PetscFunctionListAdd(&PetscDualSpaceList, sname, function));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -134,7 +134,7 @@ PetscErrorCode PetscDualSpaceSetType(PetscDualSpace sp, PetscDualSpaceType name)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCDUALSPACE_CLASSID, 1);
   PetscCall(PetscObjectTypeCompare((PetscObject)sp, name, &match));
-  if (match) PetscFunctionReturn(0);
+  if (match) PetscFunctionReturn(PETSC_SUCCESS);
 
   if (!PetscDualSpaceRegisterAllCalled) PetscCall(PetscDualSpaceRegisterAll());
   PetscCall(PetscFunctionListFind(PetscDualSpaceList, name, &r));
@@ -145,7 +145,7 @@ PetscErrorCode PetscDualSpaceSetType(PetscDualSpace sp, PetscDualSpaceType name)
 
   PetscCall((*r)(sp));
   PetscCall(PetscObjectChangeTypeName((PetscObject)sp, name));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -170,7 +170,7 @@ PetscErrorCode PetscDualSpaceGetType(PetscDualSpace sp, PetscDualSpaceType *name
   PetscValidPointer(name, 2);
   if (!PetscDualSpaceRegisterAllCalled) PetscCall(PetscDualSpaceRegisterAll());
   *name = ((PetscObject)sp)->type_name;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscDualSpaceView_ASCII(PetscDualSpace sp, PetscViewer v)
@@ -200,7 +200,7 @@ static PetscErrorCode PetscDualSpaceView_ASCII(PetscDualSpace sp, PetscViewer v)
     PetscCall(PetscViewerASCIIPopTab(v));
   }
   PetscCall(PetscViewerASCIIPopTab(v));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -222,7 +222,7 @@ PetscErrorCode PetscDualSpaceViewFromOptions(PetscDualSpace A, PetscObject obj, 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, PETSCDUALSPACE_CLASSID, 1);
   PetscCall(PetscObjectViewFromOptions((PetscObject)A, obj, name));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -248,7 +248,7 @@ PetscErrorCode PetscDualSpaceView(PetscDualSpace sp, PetscViewer v)
   if (!v) PetscCall(PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)sp), &v));
   PetscCall(PetscObjectTypeCompare((PetscObject)v, PETSCVIEWERASCII, &iascii));
   if (iascii) PetscCall(PetscDualSpaceView_ASCII(sp, v));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -309,7 +309,7 @@ PetscErrorCode PetscDualSpaceSetFromOptions(PetscDualSpace sp)
   PetscCall(PetscObjectProcessOptionsHandlers((PetscObject)sp, PetscOptionsObject));
   PetscOptionsEnd();
   sp->setfromoptionscalled = PETSC_TRUE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -328,13 +328,13 @@ PetscErrorCode PetscDualSpaceSetUp(PetscDualSpace sp)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCDUALSPACE_CLASSID, 1);
-  if (sp->setupcalled) PetscFunctionReturn(0);
+  if (sp->setupcalled) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(PetscLogEventBegin(PETSCDUALSPACE_SetUp, sp, 0, 0, 0));
   sp->setupcalled = PETSC_TRUE;
   PetscTryTypeMethod(sp, setup);
   PetscCall(PetscLogEventEnd(PETSCDUALSPACE_SetUp, sp, 0, 0, 0));
   if (sp->setfromoptionscalled) PetscCall(PetscDualSpaceViewFromOptions(sp, NULL, "-petscdualspace_view"));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscDualSpaceClearDMData_Internal(PetscDualSpace sp, DM dm)
@@ -342,7 +342,7 @@ static PetscErrorCode PetscDualSpaceClearDMData_Internal(PetscDualSpace sp, DM d
   PetscInt pStart = -1, pEnd = -1, depth = -1;
 
   PetscFunctionBegin;
-  if (!dm) PetscFunctionReturn(0);
+  if (!dm) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(DMPlexGetChart(dm, &pStart, &pEnd));
   PetscCall(DMPlexGetDepth(dm, &depth));
 
@@ -370,7 +370,7 @@ static PetscErrorCode PetscDualSpaceClearDMData_Internal(PetscDualSpace sp, DM d
   PetscCall(VecDestroy(&(sp->allNodeValues)));
   PetscCall(MatDestroy(&(sp->allMat)));
   PetscCall(PetscFree(sp->numDof));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -391,12 +391,12 @@ PetscErrorCode PetscDualSpaceDestroy(PetscDualSpace *sp)
   DM       dm;
 
   PetscFunctionBegin;
-  if (!*sp) PetscFunctionReturn(0);
+  if (!*sp) PetscFunctionReturn(PETSC_SUCCESS);
   PetscValidHeaderSpecific((*sp), PETSCDUALSPACE_CLASSID, 1);
 
   if (--((PetscObject)(*sp))->refct > 0) {
     *sp = NULL;
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
   ((PetscObject)(*sp))->refct = 0;
 
@@ -410,7 +410,7 @@ PetscErrorCode PetscDualSpaceDestroy(PetscDualSpace *sp)
   PetscCall(PetscFree((*sp)->functional));
   PetscCall(DMDestroy(&(*sp)->dm));
   PetscCall(PetscHeaderDestroy(sp));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -449,7 +449,7 @@ PetscErrorCode PetscDualSpaceCreate(MPI_Comm comm, PetscDualSpace *sp)
   s->setupcalled = PETSC_FALSE;
 
   *sp = s;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -489,7 +489,7 @@ PetscErrorCode PetscDualSpaceDuplicate(PetscDualSpace sp, PetscDualSpace *spNew)
   (*spNew)->Nc      = sp->Nc;
   (*spNew)->uniform = sp->uniform;
   PetscTryTypeMethod(sp, duplicate, *spNew);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -513,7 +513,7 @@ PetscErrorCode PetscDualSpaceGetDM(PetscDualSpace sp, DM *dm)
   PetscValidHeaderSpecific(sp, PETSCDUALSPACE_CLASSID, 1);
   PetscValidPointer(dm, 2);
   *dm = sp->dm;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -539,7 +539,7 @@ PetscErrorCode PetscDualSpaceSetDM(PetscDualSpace sp, DM dm)
   if (sp->dm && sp->dm != dm) PetscCall(PetscDualSpaceClearDMData_Internal(sp, sp->dm));
   PetscCall(DMDestroy(&sp->dm));
   sp->dm = dm;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -563,7 +563,7 @@ PetscErrorCode PetscDualSpaceGetOrder(PetscDualSpace sp, PetscInt *order)
   PetscValidHeaderSpecific(sp, PETSCDUALSPACE_CLASSID, 1);
   PetscValidIntPointer(order, 2);
   *order = sp->order;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -585,7 +585,7 @@ PetscErrorCode PetscDualSpaceSetOrder(PetscDualSpace sp, PetscInt order)
   PetscValidHeaderSpecific(sp, PETSCDUALSPACE_CLASSID, 1);
   PetscCheck(!sp->setupcalled, PetscObjectComm((PetscObject)sp), PETSC_ERR_ARG_WRONGSTATE, "Cannot change order after dualspace is set up");
   sp->order = order;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -610,7 +610,7 @@ PetscErrorCode PetscDualSpaceGetNumComponents(PetscDualSpace sp, PetscInt *Nc)
   PetscValidHeaderSpecific(sp, PETSCDUALSPACE_CLASSID, 1);
   PetscValidIntPointer(Nc, 2);
   *Nc = sp->Nc;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -630,7 +630,7 @@ PetscErrorCode PetscDualSpaceSetNumComponents(PetscDualSpace sp, PetscInt Nc)
   PetscValidHeaderSpecific(sp, PETSCDUALSPACE_CLASSID, 1);
   PetscCheck(!sp->setupcalled, PetscObjectComm((PetscObject)sp), PETSC_ERR_ARG_WRONGSTATE, "Cannot change number of components after dualspace is set up");
   sp->Nc = Nc;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -659,7 +659,7 @@ PetscErrorCode PetscDualSpaceGetFunctional(PetscDualSpace sp, PetscInt i, PetscQ
   PetscCall(PetscDualSpaceGetDimension(sp, &dim));
   PetscCheck(!(i < 0) && !(i >= dim), PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Functional index %" PetscInt_FMT " must be in [0, %" PetscInt_FMT ")", i, dim);
   *functional = sp->functional[i];
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -691,7 +691,7 @@ PetscErrorCode PetscDualSpaceGetDimension(PetscDualSpace sp, PetscInt *dim)
     } else sp->spdim = 0;
   }
   *dim = sp->spdim;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -723,7 +723,7 @@ PetscErrorCode PetscDualSpaceGetInteriorDimension(PetscDualSpace sp, PetscInt *i
     } else sp->spintdim = 0;
   }
   *intdim = sp->spintdim;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -752,7 +752,7 @@ PetscErrorCode PetscDualSpaceGetUniform(PetscDualSpace sp, PetscBool *uniform)
   PetscValidHeaderSpecific(sp, PETSCDUALSPACE_CLASSID, 1);
   PetscValidBoolPointer(uniform, 2);
   *uniform = sp->uniform;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -795,7 +795,7 @@ PetscErrorCode PetscDualSpaceGetNumDof(PetscDualSpace sp, const PetscInt **numDo
   }
   *numDof = sp->numDof;
   PetscCheck(*numDof, PetscObjectComm((PetscObject)sp), PETSC_ERR_LIB, "Empty numDof[] returned from dual space implementation");
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* create the section of the right size and set a permutation for topological ordering */
@@ -846,7 +846,7 @@ PetscErrorCode PetscDualSpaceSectionCreate_Internal(PetscDualSpace sp, PetscSect
   }
   PetscCall(PetscFree(seen));
   *topSection = section;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* mark boundary points and set up */
@@ -876,7 +876,7 @@ PetscErrorCode PetscDualSpaceSectionSetUp_Internal(PetscDualSpace sp, PetscSecti
   }
   PetscCall(DMLabelDestroy(&boundary));
   PetscCall(PetscSectionSetUp(section));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -901,7 +901,7 @@ PetscErrorCode PetscDualSpaceGetSection(PetscDualSpace sp, PetscSection *section
   PetscFunctionBegin;
   if (!sp->dm) {
     *section = NULL;
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
   if (!sp->pointSection) {
     /* mark the boundary */
@@ -921,7 +921,7 @@ PetscErrorCode PetscDualSpaceGetSection(PetscDualSpace sp, PetscSection *section
     PetscCall(PetscDualSpaceSectionSetUp_Internal(sp, sp->pointSection));
   }
   *section = sp->pointSection;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* this assumes that all of the point dual spaces store their interior dofs first, which is true when the point DMs
@@ -966,7 +966,7 @@ PetscErrorCode PetscDualSpacePushForwardSubspaces_Internal(PetscDualSpace sp, Pe
     }
   }
   PetscCall(PetscFree3(v0, sv0, J));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1000,7 +1000,7 @@ PetscErrorCode PetscDualSpaceApply(PetscDualSpace sp, PetscInt f, PetscReal time
   PetscValidPointer(cgeom, 4);
   PetscValidScalarPointer(value, 8);
   PetscUseTypeMethod(sp, apply, f, time, cgeom, numComp, func, ctx, value);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1022,7 +1022,7 @@ PetscErrorCode PetscDualSpaceApplyAll(PetscDualSpace sp, const PetscScalar *poin
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCDUALSPACE_CLASSID, 1);
   PetscUseTypeMethod(sp, applyall, pointEval, spValue);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1044,7 +1044,7 @@ PetscErrorCode PetscDualSpaceApplyInterior(PetscDualSpace sp, const PetscScalar 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCDUALSPACE_CLASSID, 1);
   PetscUseTypeMethod(sp, applyint, pointEval, spValue);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1106,7 +1106,7 @@ PetscErrorCode PetscDualSpaceApplyDefault(PetscDualSpace sp, PetscInt f, PetscRe
     for (c = 0; c < Nc; ++c) *value += val[c] * weights[q * Nc + c];
   }
   PetscCall(DMRestoreWorkArray(dm, Nc, MPIU_SCALAR, &val));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1142,7 +1142,7 @@ PetscErrorCode PetscDualSpaceApplyAllDefault(PetscDualSpace sp, const PetscScala
   PetscCall(MatMult(allMat, pointValues, dofValues));
   PetscCall(VecResetArray(dofValues));
   PetscCall(VecResetArray(pointValues));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1178,7 +1178,7 @@ PetscErrorCode PetscDualSpaceApplyInteriorDefault(PetscDualSpace sp, const Petsc
   PetscCall(MatMult(intMat, pointValues, dofValues));
   PetscCall(VecResetArray(dofValues));
   PetscCall(VecResetArray(pointValues));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -1213,7 +1213,7 @@ PetscErrorCode PetscDualSpaceGetAllData(PetscDualSpace sp, PetscQuadrature *allN
   }
   if (allNodes) *allNodes = sp->allNodes;
   if (allMat) *allMat = sp->allMat;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -1280,7 +1280,7 @@ PetscErrorCode PetscDualSpaceCreateAllDataDefault(PetscDualSpace sp, PetscQuadra
   PetscCall(PetscQuadratureCreate(PETSC_COMM_SELF, allNodes));
   PetscCall(PetscQuadratureSetData(*allNodes, dim, 0, numPoints, points, NULL));
   *allMat = A;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -1321,7 +1321,7 @@ PetscErrorCode PetscDualSpaceGetInteriorData(PetscDualSpace sp, PetscQuadrature 
   }
   if (intNodes) *intNodes = sp->intNodes;
   if (intMat) *intMat = sp->intMat;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -1361,7 +1361,7 @@ PetscErrorCode PetscDualSpaceCreateInteriorDataDefault(PetscDualSpace sp, PetscQ
   if (!spdim0) {
     *intNodes = NULL;
     *intMat   = NULL;
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
   PetscCall(PetscDualSpaceGetNumComponents(sp, &Nc));
   PetscCall(PetscSectionGetChart(section, &pStart, &pEnd));
@@ -1412,7 +1412,7 @@ PetscErrorCode PetscDualSpaceCreateInteriorDataDefault(PetscDualSpace sp, PetscQ
   PetscCall(MatAssemblyBegin(imat, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(imat, MAT_FINAL_ASSEMBLY));
   *intMat = imat;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -1443,15 +1443,15 @@ PetscErrorCode PetscDualSpaceEqual(PetscDualSpace A, PetscDualSpace B, PetscBool
   *equal = PETSC_FALSE;
   PetscCall(PetscDualSpaceGetDimension(A, &sizeA));
   PetscCall(PetscDualSpaceGetDimension(B, &sizeB));
-  if (sizeB != sizeA) PetscFunctionReturn(0);
+  if (sizeB != sizeA) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(DMGetDimension(A->dm, &dimA));
   PetscCall(DMGetDimension(B->dm, &dimB));
-  if (dimA != dimB) PetscFunctionReturn(0);
+  if (dimA != dimB) PetscFunctionReturn(PETSC_SUCCESS);
 
   PetscCall(PetscDualSpaceGetNumDof(A, &dofA));
   PetscCall(PetscDualSpaceGetNumDof(B, &dofB));
   for (PetscInt d = 0; d < dimA; d++) {
-    if (dofA[d] != dofB[d]) PetscFunctionReturn(0);
+    if (dofA[d] != dofB[d]) PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   PetscCall(PetscDualSpaceGetInteriorData(A, &quadA, &matA));
@@ -1460,12 +1460,12 @@ PetscErrorCode PetscDualSpaceEqual(PetscDualSpace A, PetscDualSpace B, PetscBool
     *equal = PETSC_TRUE;
   } else if (quadA && quadB) {
     PetscCall(PetscQuadratureEqual(quadA, quadB, equal));
-    if (*equal == PETSC_FALSE) PetscFunctionReturn(0);
-    if (!matA && !matB) PetscFunctionReturn(0);
+    if (*equal == PETSC_FALSE) PetscFunctionReturn(PETSC_SUCCESS);
+    if (!matA && !matB) PetscFunctionReturn(PETSC_SUCCESS);
     if (matA && matB) PetscCall(MatEqual(matA, matB, equal));
     else *equal = PETSC_FALSE;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1517,7 +1517,7 @@ PetscErrorCode PetscDualSpaceApplyFVM(PetscDualSpace sp, PetscInt f, PetscReal t
     for (c = 0; c < Nc; ++c) *value += val[c] * weights[q * Nc + c];
   }
   PetscCall(DMRestoreWorkArray(dm, Nc, MPIU_SCALAR, &val));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -1561,7 +1561,7 @@ PetscErrorCode PetscDualSpaceGetHeightSubspace(PetscDualSpace sp, PetscInt heigh
   PetscCall(DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd));
   if (height == 0 && cEnd == cStart + 1) {
     *subsp = sp;
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
   if (!sp->heightSpaces) {
     PetscInt h;
@@ -1588,7 +1588,7 @@ PetscErrorCode PetscDualSpaceGetHeightSubspace(PetscDualSpace sp, PetscInt heigh
     }
   }
   *subsp = sp->heightSpaces[height];
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -1630,7 +1630,7 @@ PetscErrorCode PetscDualSpaceGetPointSubspace(PetscDualSpace sp, PetscInt point,
   PetscCall(DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd));
   if (point == cStart && cEnd == cStart + 1) { /* the dual space is only equivalent to the dual space on a cell if the reference mesh has just one cell */
     *bdsp = sp;
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
   if (!sp->pointSpaces) {
     PetscInt p;
@@ -1653,7 +1653,7 @@ PetscErrorCode PetscDualSpaceGetPointSubspace(PetscDualSpace sp, PetscInt point,
     }
   }
   *bdsp = sp->pointSpaces[point - pStart];
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1692,7 +1692,7 @@ PetscErrorCode PetscDualSpaceGetSymmetries(PetscDualSpace sp, const PetscInt ***
     *flips = NULL;
   }
   if (sp->ops->getsymmetries) PetscCall((sp->ops->getsymmetries)(sp, perms, flips));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -1720,7 +1720,7 @@ PetscErrorCode PetscDualSpaceGetFormDegree(PetscDualSpace dsp, PetscInt *k)
   PetscValidHeaderSpecific(dsp, PETSCDUALSPACE_CLASSID, 1);
   PetscValidIntPointer(k, 2);
   *k = dsp->k;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -1750,7 +1750,7 @@ PetscErrorCode PetscDualSpaceSetFormDegree(PetscDualSpace dsp, PetscInt k)
   dim = dsp->dm->dim;
   PetscCheck(k >= -dim && k <= dim, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Unsupported %" PetscInt_FMT "-form on %" PetscInt_FMT "-dimensional reference cell", PetscAbsInt(k), dim);
   dsp->k = k;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -1787,7 +1787,7 @@ PetscErrorCode PetscDualSpaceGetDeRahm(PetscDualSpace dsp, PetscInt *k)
   else if (dsp->k == 1) *k = COVARIANT_PIOLA_TRANSFORM;
   else if (dsp->k == -(dim - 1)) *k = CONTRAVARIANT_PIOLA_TRANSFORM;
   else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Unsupported transformation");
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1824,7 +1824,7 @@ PetscErrorCode PetscDualSpaceTransform(PetscDualSpace dsp, PetscDualSpaceTransfo
   /* TODO: not handling dimEmbed != dim right now */
   dim = dsp->dm->dim;
   /* No change needed for 0-forms */
-  if (!dsp->k) PetscFunctionReturn(0);
+  if (!dsp->k) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(PetscDTBinomialInt(dim, PetscAbsInt(dsp->k), &Nk));
   /* TODO: use fegeom->isAffine */
   PetscCall(PetscDTAltVPullbackMatrix(dim, dim, isInverse ? fegeom->J : fegeom->invJ, dsp->k, Jstar));
@@ -1843,7 +1843,7 @@ PetscErrorCode PetscDualSpaceTransform(PetscDualSpace dsp, PetscDualSpaceTransfo
       SETERRQ(PetscObjectComm((PetscObject)dsp), PETSC_ERR_ARG_OUTOFRANGE, "Unsupported form size %" PetscInt_FMT " for transformation", Nk);
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1905,7 +1905,7 @@ PetscErrorCode PetscDualSpaceTransformGradient(PetscDualSpace dsp, PetscDualSpac
     }
   }
   /* Assume its a vector, otherwise assume its a bunch of scalars */
-  if (Nc == 1 || Nc != dim) PetscFunctionReturn(0);
+  if (Nc == 1 || Nc != dim) PetscFunctionReturn(PETSC_SUCCESS);
   switch (trans) {
   case IDENTITY_TRANSFORM:
     break;
@@ -1978,7 +1978,7 @@ PetscErrorCode PetscDualSpaceTransformGradient(PetscDualSpace dsp, PetscDualSpac
     }
     break;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -2040,7 +2040,7 @@ PetscErrorCode PetscDualSpaceTransformHessian(PetscDualSpace dsp, PetscDualSpace
     }
   }
   /* Assume its a vector, otherwise assume its a bunch of scalars */
-  if (Nc == 1 || Nc != dim) PetscFunctionReturn(0);
+  if (Nc == 1 || Nc != dim) PetscFunctionReturn(PETSC_SUCCESS);
   switch (trans) {
   case IDENTITY_TRANSFORM:
     break;
@@ -2049,7 +2049,7 @@ PetscErrorCode PetscDualSpaceTransformHessian(PetscDualSpace dsp, PetscDualSpace
   case CONTRAVARIANT_PIOLA_TRANSFORM: /* Contravariant Piola mapping $\sigma^*(F) = \frac{1}{|\det J|} J F \circ \phi^{-1}$ */
     SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Piola mapping for Hessians not yet supported");
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -2101,7 +2101,7 @@ PetscErrorCode PetscDualSpacePullback(PetscDualSpace dsp, PetscFEGeom *fegeom, P
     SETERRQ(PetscObjectComm((PetscObject)dsp), PETSC_ERR_ARG_OUTOFRANGE, "Unsupported simplex dim %" PetscInt_FMT " for transformation", k);
   }
   PetscCall(PetscDualSpaceTransform(dsp, trans, PETSC_TRUE, fegeom, Nq, Nc, pointEval));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -2153,7 +2153,7 @@ PetscErrorCode PetscDualSpacePushforward(PetscDualSpace dsp, PetscFEGeom *fegeom
     SETERRQ(PetscObjectComm((PetscObject)dsp), PETSC_ERR_ARG_OUTOFRANGE, "Unsupported simplex dim %" PetscInt_FMT " for transformation", k);
   }
   PetscCall(PetscDualSpaceTransform(dsp, trans, PETSC_FALSE, fegeom, Nq, Nc, pointEval));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -2205,7 +2205,7 @@ PetscErrorCode PetscDualSpacePushforwardGradient(PetscDualSpace dsp, PetscFEGeom
     SETERRQ(PetscObjectComm((PetscObject)dsp), PETSC_ERR_ARG_OUTOFRANGE, "Unsupported simplex dim %" PetscInt_FMT " for transformation", k);
   }
   PetscCall(PetscDualSpaceTransformGradient(dsp, trans, PETSC_FALSE, fegeom, Nq, Nc, pointEval));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -2257,5 +2257,5 @@ PetscErrorCode PetscDualSpacePushforwardHessian(PetscDualSpace dsp, PetscFEGeom 
     SETERRQ(PetscObjectComm((PetscObject)dsp), PETSC_ERR_ARG_OUTOFRANGE, "Unsupported simplex dim %" PetscInt_FMT " for transformation", k);
   }
   PetscCall(PetscDualSpaceTransformHessian(dsp, trans, PETSC_FALSE, fegeom, Nq, Nc, pointEval));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

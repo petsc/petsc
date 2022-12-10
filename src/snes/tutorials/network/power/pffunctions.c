@@ -26,7 +26,7 @@ PetscErrorCode GetListofEdges_Power(PFDATA *pfdata, PetscInt *edgelist)
       }
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode FormJacobian_Power_private(DM networkdm, Vec localX, Mat J, PetscInt nv, PetscInt ne, const PetscInt *vtx, const PetscInt *edges, void *appctx)
@@ -208,7 +208,7 @@ PetscErrorCode FormJacobian_Power_private(DM networkdm, Vec localX, Mat J, Petsc
   }
 
   PetscCall(VecRestoreArrayRead(localX, &xarr));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode FormJacobian_Power(SNES snes, Vec X, Mat J, Mat Jpre, void *appctx)
@@ -234,7 +234,7 @@ PetscErrorCode FormJacobian_Power(SNES snes, Vec X, Mat J, Mat Jpre, void *appct
 
   PetscCall(MatAssemblyBegin(J, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(J, MAT_FINAL_ASSEMBLY));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode FormFunction_Power(DM networkdm, Vec localX, Vec localF, PetscInt nv, PetscInt ne, const PetscInt *vtx, const PetscInt *edges, void *appctx)
@@ -344,7 +344,7 @@ PetscErrorCode FormFunction_Power(DM networkdm, Vec localX, Vec localF, PetscInt
   }
   PetscCall(VecRestoreArrayRead(localX, &xarr));
   PetscCall(VecRestoreArray(localF, &farr));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode SetInitialGuess_Power(DM networkdm, Vec localX, PetscInt nv, PetscInt ne, const PetscInt *vtx, const PetscInt *edges, void *appctx)
@@ -386,5 +386,5 @@ PetscErrorCode SetInitialGuess_Power(DM networkdm, Vec localX, PetscInt nv, Pets
     }
   }
   PetscCall(VecRestoreArray(localX, &xarr));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

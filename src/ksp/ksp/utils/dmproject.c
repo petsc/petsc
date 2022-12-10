@@ -28,7 +28,7 @@ PetscErrorCode MatMult_GlobalToLocalNormal(Mat CtC, Vec x, Vec y)
   PetscCall(DMLocalToGlobalBegin(dm, local, ADD_VALUES, y));
   PetscCall(DMLocalToGlobalEnd(dm, local, ADD_VALUES, y));
   PetscCall(DMRestoreLocalVector(dm, &local));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMGlobalToLocalSolve_project1(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar u[], void *ctx)
@@ -37,7 +37,7 @@ static PetscErrorCode DMGlobalToLocalSolve_project1(PetscInt dim, PetscReal time
 
   PetscFunctionBegin;
   for (f = 0; f < Nf; f++) u[f] = 1.;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -147,7 +147,7 @@ PetscErrorCode DMGlobalToLocalSolve(DM dm, Vec x, Vec y)
     PetscCall(DMRestoreNamedLocalVector(dm, "_DMGlobalToLocalSolve_mask", &mask));
   }
 
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -231,7 +231,7 @@ PetscErrorCode DMProjectField(DM dm, PetscReal time, Vec U, void (**funcs)(Petsc
   }
   PetscCall(DMRestoreLocalVector(dm, &localX));
   if (U != X) PetscCall(DMRestoreLocalVector(dmIn, &localU));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /********************* Adaptive Interpolation **************************/
@@ -265,7 +265,7 @@ PetscErrorCode DMAdaptInterpolator(DM dmc, DM dmf, Mat In, KSP smoother, Mat MF,
     PetscCall(MatRestoreRow(In, r, &ncols, NULL, NULL));
   }
 #endif
-  if (Nc < maxcols) PetscPrintf(PETSC_COMM_SELF, "The number of input vectors %" PetscInt_FMT " < %" PetscInt_FMT " the maximum number of column entries\n", Nc, maxcols);
+  if (Nc < maxcols) PetscCall(PetscPrintf(PETSC_COMM_SELF, "The number of input vectors %" PetscInt_FMT " < %" PetscInt_FMT " the maximum number of column entries\n", Nc, maxcols));
   for (k = 0; k < Nc && debug; ++k) {
     char        name[PETSC_MAX_PATH_LEN];
     const char *prefix;
@@ -400,7 +400,7 @@ PetscErrorCode DMAdaptInterpolator(DM dmc, DM dmf, Mat In, KSP smoother, Mat MF,
   PetscCall(MatAssemblyBegin(*InAdapt, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(*InAdapt, MAT_FINAL_ASSEMBLY));
   PetscCall(PetscLogEventEnd(DM_AdaptInterpolator, dmc, dmf, 0, 0));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMCheckInterpolator(DM dmf, Mat In, Mat MC, Mat MF, PetscReal tol)
@@ -433,5 +433,5 @@ PetscErrorCode DMCheckInterpolator(DM dmf, Mat In, Mat MC, Mat MF, PetscReal tol
   }
   PetscCall(DMRestoreGlobalVector(dmf, &tmp));
   PetscCheck(maxnorm2 <= tol, PetscObjectComm((PetscObject)dmf), PETSC_ERR_ARG_WRONG, "max_k ||vf_k - P vc_k||_2 %g > tol %g", (double)maxnorm2, (double)tol);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

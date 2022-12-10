@@ -44,7 +44,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscCall(PetscOptionsBool("-second", "Use a second transformation", "ex57.c", options->second, &options->second, &flg));
   PetscCall(PetscOptionsBool("-concrete", "Use concrete mesh for the second transformation", "ex57.c", options->concrete, &options->concrete, &flg));
   PetscOptionsEnd();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm)
@@ -55,7 +55,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm)
   PetscCall(DMSetFromOptions(*dm));
   PetscCall(PetscObjectSetName((PetscObject)*dm, "Mesh"));
   PetscCall(DMViewFromOptions(*dm, NULL, "-dm_view"));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode CreateTransform(DM dm, DMLabel active, const char prefix[], DMPlexTransform *tr)
@@ -71,7 +71,7 @@ static PetscErrorCode CreateTransform(DM dm, DMLabel active, const char prefix[]
 
   PetscCall(DMSetApplicationContext(dm, *tr));
   PetscCall(PetscObjectViewFromOptions((PetscObject)*tr, NULL, "-dm_plex_transform_view"));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode CreateEphemeralMesh(DMPlexTransform tr, DM *tdm)
@@ -80,7 +80,7 @@ static PetscErrorCode CreateEphemeralMesh(DMPlexTransform tr, DM *tdm)
   PetscCall(DMPlexCreateEphemeral(tr, tdm));
   PetscCall(PetscObjectSetName((PetscObject)*tdm, "Ephemeral Mesh"));
   PetscCall(PetscObjectSetOptionsPrefix((PetscObject)*tdm, "eph_"));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode CreateConcreteMesh(DMPlexTransform tr, DM *rdm)
@@ -105,7 +105,7 @@ static PetscErrorCode CreateConcreteMesh(DMPlexTransform tr, DM *rdm)
   }
   PetscCall(PetscObjectSetName((PetscObject)*rdm, "Concrete Mesh"));
   PetscCall(PetscObjectSetOptionsPrefix((PetscObject)*rdm, "ref_"));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode CompareMeshes(DM dmA, DM dmB, DM dm)
@@ -136,7 +136,7 @@ static PetscErrorCode CompareMeshes(DM dmA, DM dmB, DM dm)
     PetscCall(DMPlexRestoreOrientedCone(dmA, p, &cone, &ornt));
     PetscCall(DMPlexRestoreOrientedCone(dmB, p, &coneB, &orntB));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char *argv[])

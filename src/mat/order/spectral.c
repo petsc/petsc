@@ -94,7 +94,7 @@ PetscErrorCode MatCreateLaplacian(Mat A, PetscReal tol, PetscBool weighted, Mat 
   PetscCall(MatAssemblyBegin(*L, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(*L, MAT_FINAL_ASSEMBLY));
   PetscCall(PetscFree2(newCols, newVals));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -174,7 +174,7 @@ PETSC_INTERN PetscErrorCode MatGetOrdering_Spectral(Mat A, MatOrderingType type,
 
     PetscCall(PetscFree4(realpart, imagpart, eigvec, work));
     PetscCall(MatDestroy(&L));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 #endif
 }

@@ -8,13 +8,13 @@ static PetscErrorCode PetscPartitionerDestroy_Gather(PetscPartitioner part)
 {
   PetscFunctionBegin;
   PetscCall(PetscFree(part->data));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscPartitionerView_Gather_ASCII(PetscPartitioner part, PetscViewer viewer)
 {
   PetscFunctionBegin;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscPartitionerView_Gather(PetscPartitioner part, PetscViewer viewer)
@@ -26,7 +26,7 @@ static PetscErrorCode PetscPartitionerView_Gather(PetscPartitioner part, PetscVi
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
   if (iascii) PetscCall(PetscPartitionerView_Gather_ASCII(part, viewer));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscPartitionerPartition_Gather(PetscPartitioner part, PetscInt nparts, PetscInt numVertices, PetscInt start[], PetscInt adjacency[], PetscSection vertSection, PetscSection targetSection, PetscSection partSection, IS *partition)
@@ -37,7 +37,7 @@ static PetscErrorCode PetscPartitionerPartition_Gather(PetscPartitioner part, Pe
   PetscCall(ISCreateStride(PETSC_COMM_SELF, numVertices, 0, 1, partition));
   PetscCall(PetscSectionSetDof(partSection, 0, numVertices));
   for (np = 1; np < nparts; ++np) PetscCall(PetscSectionSetDof(partSection, np, 0));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode PetscPartitionerInitialize_Gather(PetscPartitioner part)
@@ -47,7 +47,7 @@ static PetscErrorCode PetscPartitionerInitialize_Gather(PetscPartitioner part)
   part->ops->view      = PetscPartitionerView_Gather;
   part->ops->destroy   = PetscPartitionerDestroy_Gather;
   part->ops->partition = PetscPartitionerPartition_Gather;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -68,5 +68,5 @@ PETSC_EXTERN PetscErrorCode PetscPartitionerCreate_Gather(PetscPartitioner part)
   part->data = p;
 
   PetscCall(PetscPartitionerInitialize_Gather(part));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

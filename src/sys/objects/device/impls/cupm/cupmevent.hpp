@@ -41,7 +41,7 @@ inline PetscErrorCode CUPMEventPool<T, flags>::finalize_() noexcept
     PetscCallCUPM(cupmEventDestroy(std::move(pool_.top())));
     PetscCallCXX(pool_.pop());
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 template <DeviceType T, unsigned long flags>
@@ -56,7 +56,7 @@ inline PetscErrorCode CUPMEventPool<T, flags>::allocate(cupmEvent_t *event) noex
     PetscCallCXX(*event = std::move(pool_.top()));
     PetscCallCXX(pool_.pop());
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 template <DeviceType T, unsigned long flags>
@@ -71,7 +71,7 @@ inline PetscErrorCode CUPMEventPool<T, flags>::deallocate(cupmEvent_t *in_event)
       PetscCallCUPM(cupmEventDestroy(event));
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 template <DeviceType T, unsigned long flags>
@@ -163,7 +163,7 @@ inline PetscErrorCode CUPMEvent<T>::record(cupmStream_t stream) noexcept
 {
   PetscFunctionBegin;
   PetscCallCUPM(cupmEventRecord(get(), stream));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 template <DeviceType T>

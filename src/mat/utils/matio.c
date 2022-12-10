@@ -15,7 +15,7 @@ PetscErrorCode MatView_Binary_BlockSizes(Mat mat, PetscViewer viewer)
     if (rbs != cbs) PetscCall(PetscFPrintf(PETSC_COMM_SELF, info, "-matload_block_size %" PetscInt_FMT ",%" PetscInt_FMT "\n", rbs, cbs));
     else PetscCall(PetscFPrintf(PETSC_COMM_SELF, info, "-matload_block_size %" PetscInt_FMT "\n", rbs));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatLoad_Binary_BlockSizes(Mat mat, PetscViewer viewer)
@@ -32,11 +32,11 @@ PetscErrorCode MatLoad_Binary_BlockSizes(Mat mat, PetscViewer viewer)
   PetscOptionsBegin(PetscObjectComm((PetscObject)viewer), NULL, "Options for loading matrix block size", "Mat");
   PetscCall(PetscOptionsIntArray("-matload_block_size", "Set the block size used to store the matrix", "MatLoad", bs, &n, &set));
   PetscOptionsEnd();
-  if (!set) PetscFunctionReturn(0);
+  if (!set) PetscFunctionReturn(PETSC_SUCCESS);
   if (n == 1) bs[1] = bs[0]; /* to support -matload_block_size <bs> */
   /* set matrix block sizes */
   if (bs[0] > 0) rbs = bs[0];
   if (bs[1] > 0) cbs = bs[1];
   PetscCall(MatSetBlockSizes(mat, rbs, cbs));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

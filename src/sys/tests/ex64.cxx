@@ -57,7 +57,7 @@ struct Foo {
   {
     PetscFunctionBegin;
     PetscCallCXX(buf = std::to_string(x) + ", " + std::to_string(y));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   friend std::ostream &operator<<(std::ostream &oss, const Foo &f) noexcept
@@ -92,7 +92,7 @@ struct Bar {
       if (i + 1 != x.size()) PetscCallCXX(buf += ", ");
     }
     PetscCallCXX(buf += ">, <" + y + '>');
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   friend std::ostream &operator<<(std::ostream &oss, const Bar &b) noexcept
@@ -189,7 +189,7 @@ public:
     for (auto &&entry : map) PetscCallCXX(oss << "    key: [" << this->key_printer(entry.first) << "] -> [" << this->value_printer(entry.second) << "]\n");
     PetscCallCXX(oss << "  }\n");
     PetscCall(PetscViewerASCIIPrintf(vwr, "%s", oss.str().c_str()));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
 #define MapCheck(map__, cond__, comm__, ierr__, base_mess__, ...) \
@@ -211,7 +211,7 @@ public:
     MapCheck(map, msize >= 0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Map size %zu unexpected!", msize);
     MapCheck(map, mcap >= 0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Map capacity %zu unexpected!", mcap);
     MapCheck(map, mcap >= msize, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Map capacity %zu < map size %zu!", mcap, msize);
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   PETSC_NODISCARD PetscErrorCode check_size_capacity_coherent(map_type &map, std::size_t expected_size, std::size_t expected_min_capacity) const noexcept
@@ -220,7 +220,7 @@ public:
     PetscCall(check_size_capacity_coherent(map));
     MapCheck(map, map.size() == expected_size, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Map size %zu did not increase (from %zu) after insertion!", map.size(), expected_size);
     MapCheck(map, map.capacity() >= expected_min_capacity, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Map capacity %zu did not increase (from %zu)!", map.capacity(), expected_min_capacity);
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   PETSC_NODISCARD PetscErrorCode test_insert(map_type &map) noexcept
@@ -244,7 +244,7 @@ public:
         MapCheck(map, ret.first->second == value, PETSC_COMM_SELF, PETSC_ERR_PLIB, "%s returned iterator value '%s' != expected '%s'", op, this->value_printer(ret.first->second), this->value_printer(value));
         MapCheck(map, map[key] == value, PETSC_COMM_SELF, PETSC_ERR_PLIB, "%s map[%s] '%s' != '%s'", op, this->key_printer(key), this->value_printer(map[key]), this->value_printer(value));
         MapCheck(map, map[key_const] == value_const, PETSC_COMM_SELF, PETSC_ERR_PLIB, "%s changed value '%s' != expected '%s'", op, this->value_printer(map[key_const]), this->value_printer(value_const));
-        PetscFunctionReturn(0);
+        PetscFunctionReturn(PETSC_SUCCESS);
       };
 
       PetscFunctionBegin;
@@ -255,7 +255,7 @@ public:
       PetscCall(CHECK_REINSERT(map.insert(std::make_pair(key, value))));
       PetscCall(CHECK_REINSERT(map.insert(pair)));
 #undef CHECK_REINSERT
-      PetscFunctionReturn(0);
+      PetscFunctionReturn(PETSC_SUCCESS);
     };
 
     PetscFunctionBegin;
@@ -309,7 +309,7 @@ public:
       for (std::size_t i = 0; i < found_key_value.size(); ++i) {
         MapCheck(map, found_key_value[i] == 1, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Map failed to insert key %s (value %s), have find count %zu", this->key_printer(key_value_pairs[i].first), this->value_printer(key_value_pairs[i].second), found_key_value[i]);
       }
-      PetscFunctionReturn(0);
+      PetscFunctionReturn(PETSC_SUCCESS);
     };
 
     // clang-format off
@@ -322,7 +322,7 @@ public:
             PetscCallCXX(map[key_value.first] = key_value.second);
             PetscCall(check_all_reinsert(key_value));
           }
-          PetscFunctionReturn(0);
+          PetscFunctionReturn(PETSC_SUCCESS);
         },
         108
       )
@@ -343,7 +343,7 @@ public:
             PetscCallCXX(saved_value = key_value_pairs.front());
             // test the algorithm insert works as expected
             PetscCallCXX(std::copy(key_value_pairs.cbegin(), key_value_pairs.cend(), std::inserter(map, map.begin())));
-            PetscFunctionReturn(0);
+            PetscFunctionReturn(PETSC_SUCCESS);
           },
           179
         )
@@ -356,7 +356,7 @@ public:
       MapCheck(map, it->first == saved_value.first, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Map founnd iterator key (%s) does not match expected key (%s) after std::copy() insertion", this->key_printer(it->first), this->key_printer(saved_value.first));
       MapCheck(map, it->second == saved_value.second, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Map founnd iterator value (%s) does not match expected value (%s) after std::copy() insertion", this->value_printer(it->second), this->value_printer(saved_value.second));
     }
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   PETSC_NODISCARD PetscErrorCode test_insert() noexcept
@@ -365,7 +365,7 @@ public:
 
     PetscFunctionBegin;
     PetscCall(test_insert(map));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   PETSC_NODISCARD PetscErrorCode test_find(map_type &map) noexcept
@@ -397,7 +397,7 @@ public:
         }
       }
     }
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   PETSC_NODISCARD PetscErrorCode test_find() noexcept
@@ -406,7 +406,7 @@ public:
 
     PetscFunctionBegin;
     PetscCall(test_find(map));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   PETSC_NODISCARD PetscErrorCode test_erase(map_type &map) noexcept
@@ -419,7 +419,7 @@ public:
       MapCheck(map, map.empty(), PETSC_COMM_SELF, PETSC_ERR_PLIB, "Erasing map via iterators didn't work, map is not empty, has size %zu", map.size());
       // this loop should never actually fire!
       for (auto it = map.begin(); it != map.end(); ++it) MapCheck(map, false, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Erasing via iterator range did not work, map.begin() != map.end()%s", "");
-      PetscFunctionReturn(0);
+      PetscFunctionReturn(PETSC_SUCCESS);
     };
 
     PetscFunctionBegin;
@@ -490,7 +490,7 @@ public:
     std::copy(sample_values.cbegin(), sample_values.cend(), std::inserter(map, map.begin()));
     for (auto &&kv : sample_values) PetscCallCXX(map.erase(kv.first));
     PetscCall(check_map_is_truly_empty(map));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   PETSC_NODISCARD PetscErrorCode test_erase() noexcept
@@ -499,7 +499,7 @@ public:
 
     PetscFunctionBegin;
     PetscCall(test_erase(map));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   // stupid dummy function because auto-lambdas are C++14
@@ -554,7 +554,7 @@ public:
       MapCheck(map, i < max_iter, PETSC_COMM_SELF, PETSC_ERR_PLIB, "%s iterator did not appear to make forward progress using postfix decrement! Reached maximum iteration count %zu for map of size %zu", it_name, max_iter, map.size());
     }
 
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   PETSC_NODISCARD PetscErrorCode test_misc() noexcept
@@ -572,7 +572,7 @@ public:
         PetscFunctionBegin;
         // the original map should not have changed at all
         MapCheck(map, map == backup, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Map does not equal the original map after %s", op);
-        PetscFunctionReturn(0);
+        PetscFunctionReturn(PETSC_SUCCESS);
       };
 
       MapCheck(map_copy, map == map_copy, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Copy of map does not equal the original map%s", "");
@@ -597,7 +597,7 @@ public:
       PetscCall(this->test_erase(moved_copy));
       PetscCall(check_original_map_did_not_change("test_erase()"));
     }
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   PETSC_NODISCARD PetscErrorCode test() noexcept
@@ -607,7 +607,7 @@ public:
     PetscCall(this->test_find());
     PetscCall(this->test_erase());
     PetscCall(this->test_misc());
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
 private:
@@ -646,27 +646,27 @@ int main(int argc, char *argv[])
     const auto int_printer = [](int key, std::string &buf) {
       PetscFunctionBegin;
       PetscCallCXX(buf = std::to_string(key));
-      PetscFunctionReturn(0);
+      PetscFunctionReturn(PETSC_SUCCESS);
     };
     const auto double_printer = [](double value, std::string &buf) {
       PetscFunctionBegin;
       PetscCallCXX(buf = std::to_string(value));
-      PetscFunctionReturn(0);
+      PetscFunctionReturn(PETSC_SUCCESS);
     };
     const auto foo_printer = [](const Foo &key, std::string &buf) {
       PetscFunctionBegin;
       PetscCall(key.to_string(buf));
-      PetscFunctionReturn(0);
+      PetscFunctionReturn(PETSC_SUCCESS);
     };
     const auto bar_printer = [](const Bar &value, std::string &buf) {
       PetscFunctionBegin;
       PetscCall(value.to_string(buf));
-      PetscFunctionReturn(0);
+      PetscFunctionReturn(PETSC_SUCCESS);
     };
     const auto pair_printer = [](const std::pair<int, double> &value, std::string &buf) {
       PetscFunctionBegin;
       PetscCallCXX(buf = '<' + std::to_string(value.first) + ", " + std::to_string(value.second) + '>');
-      PetscFunctionReturn(0);
+      PetscFunctionReturn(PETSC_SUCCESS);
     };
 
     // generator functions

@@ -37,7 +37,7 @@ static PetscErrorCode VecSquare(Vec v)
   PetscCall(VecGetArray(v, &x));
   for (i = 0; i < n; i++) x[i] *= PetscConj(x[i]);
   PetscCall(VecRestoreArray(v, &x));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode KSPSetUp_LSQR(KSP ksp)
@@ -63,7 +63,7 @@ static PetscErrorCode KSPSetUp_LSQR(KSP ksp)
   } else if (!lsqr->se_flg) {
     PetscCall(VecDestroy(&lsqr->se));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode KSPSolve_LSQR(KSP ksp)
@@ -117,7 +117,7 @@ static PetscErrorCode KSPSolve_LSQR(KSP ksp)
   PetscCall(KSPLogResidualHistory(ksp, rnorm));
   PetscCall(KSPMonitor(ksp, 0, rnorm));
   PetscCall((*ksp->converged)(ksp, 0, rnorm, &ksp->reason, ksp->cnvP));
-  if (ksp->reason) PetscFunctionReturn(0);
+  if (ksp->reason) PetscFunctionReturn(PETSC_SUCCESS);
 
   beta = rnorm;
   PetscCall(VecScale(U, 1.0 / beta));
@@ -131,7 +131,7 @@ static PetscErrorCode KSPSolve_LSQR(KSP ksp)
     PetscCall(VecDotRealPart(V, Z, &alpha));
     if (alpha <= 0.0) {
       ksp->reason = KSP_DIVERGED_BREAKDOWN;
-      PetscFunctionReturn(0);
+      PetscFunctionReturn(PETSC_SUCCESS);
     }
     alpha = PetscSqrtReal(alpha);
     PetscCall(VecScale(Z, 1.0 / alpha));
@@ -232,7 +232,7 @@ static PetscErrorCode KSPSolve_LSQR(KSP ksp)
     PetscCall(VecSqrtAbs(lsqr->se));
     PetscCall(VecScale(lsqr->se, tmp));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode KSPDestroy_LSQR(KSP ksp)
@@ -250,7 +250,7 @@ PetscErrorCode KSPDestroy_LSQR(KSP ksp)
   PetscCall(PetscFree(ksp->data));
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPLSQRMonitorResidual_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPLSQRMonitorResidualDrawLG_C", NULL));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -275,7 +275,7 @@ PetscErrorCode KSPLSQRSetComputeStandardErrorVec(KSP ksp, PetscBool flg)
 
   PetscFunctionBegin;
   lsqr->se_flg = flg;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -302,7 +302,7 @@ PetscErrorCode KSPLSQRSetExactMatNorm(KSP ksp, PetscBool flg)
 
   PetscFunctionBegin;
   lsqr->exact_norm = flg;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -332,7 +332,7 @@ PetscErrorCode KSPLSQRGetStandardErrorVec(KSP ksp, Vec *se)
 
   PetscFunctionBegin;
   *se = lsqr->se;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -365,7 +365,7 @@ PetscErrorCode KSPLSQRGetNorms(KSP ksp, PetscReal *arnorm, PetscReal *anorm)
   PetscFunctionBegin;
   if (arnorm) *arnorm = lsqr->arnorm;
   if (anorm) *anorm = lsqr->anorm;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode KSPLSQRMonitorResidual_LSQR(KSP ksp, PetscInt n, PetscReal rnorm, PetscViewerAndFormat *vf)
@@ -392,7 +392,7 @@ PetscErrorCode KSPLSQRMonitorResidual_LSQR(KSP ksp, PetscInt n, PetscReal rnorm,
   }
   PetscCall(PetscViewerASCIISubtractTab(viewer, tablevel));
   PetscCall(PetscViewerPopFormat(viewer));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -420,7 +420,7 @@ PetscErrorCode KSPLSQRMonitorResidual(KSP ksp, PetscInt n, PetscReal rnorm, Pets
   PetscValidPointer(vf, 4);
   PetscValidHeaderSpecific(vf->viewer, PETSC_VIEWER_CLASSID, 4);
   PetscTryMethod(ksp, "KSPLSQRMonitorResidual_C", (KSP, PetscInt, PetscReal, PetscViewerAndFormat *), (ksp, n, rnorm, vf));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode KSPLSQRMonitorResidualDrawLG_LSQR(KSP ksp, PetscInt n, PetscReal rnorm, PetscViewerAndFormat *vf)
@@ -448,7 +448,7 @@ PetscErrorCode KSPLSQRMonitorResidualDrawLG_LSQR(KSP ksp, PetscInt n, PetscReal 
     PetscCall(PetscDrawLGSave(lg));
   }
   PetscCall(PetscViewerPopFormat(viewer));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -477,7 +477,7 @@ PetscErrorCode KSPLSQRMonitorResidualDrawLG(KSP ksp, PetscInt n, PetscReal rnorm
   PetscValidHeaderSpecific(vf->viewer, PETSC_VIEWER_CLASSID, 4);
   PetscValidHeaderSpecific(vf->lg, PETSC_DRAWLG_CLASSID, 4);
   PetscTryMethod(ksp, "KSPLSQRMonitorResidualDrawLG_C", (KSP, PetscInt, PetscReal, PetscViewerAndFormat *), (ksp, n, rnorm, vf));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -505,7 +505,7 @@ PetscErrorCode KSPLSQRMonitorResidualDrawLGCreate(PetscViewer viewer, PetscViewe
   PetscCall(PetscViewerAndFormatCreate(viewer, format, vf));
   (*vf)->data = ctx;
   PetscCall(KSPMonitorLGCreate(PetscObjectComm((PetscObject)viewer), NULL, NULL, "Log Residual Norm", 2, names, PETSC_DECIDE, PETSC_DECIDE, 400, 300, &(*vf)->lg));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode KSPSetFromOptions_LSQR(KSP ksp, PetscOptionItems *PetscOptionsObject)
@@ -518,7 +518,7 @@ PetscErrorCode KSPSetFromOptions_LSQR(KSP ksp, PetscOptionItems *PetscOptionsObj
   PetscCall(PetscOptionsBool("-ksp_lsqr_exact_mat_norm", "Compute exact matrix norm instead of iteratively refined estimate", "KSPLSQRSetExactMatNorm", lsqr->exact_norm, &lsqr->exact_norm, NULL));
   PetscCall(KSPMonitorSetFromOptions(ksp, "-ksp_lsqr_monitor", "lsqr_residual", NULL));
   PetscOptionsHeadEnd();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode KSPView_LSQR(KSP ksp, PetscViewer viewer)
@@ -542,7 +542,7 @@ PetscErrorCode KSPView_LSQR(KSP ksp, PetscViewer viewer)
       PetscCall(PetscViewerASCIIPrintf(viewer, "  using inexact matrix norm\n"));
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -583,7 +583,7 @@ PetscErrorCode KSPLSQRConvergedDefault(KSP ksp, PetscInt n, PetscReal rnorm, KSP
   PetscFunctionBegin;
   /* check for convergence in A*x=b */
   PetscCall(KSPConvergedDefault(ksp, n, rnorm, reason, ctx));
-  if (!n || *reason) PetscFunctionReturn(0);
+  if (!n || *reason) PetscFunctionReturn(PETSC_SUCCESS);
 
   /* check for convergence in min{|b-A*x|} */
   if (lsqr->arnorm < ksp->abstol) {
@@ -594,7 +594,7 @@ PetscErrorCode KSPLSQRConvergedDefault(KSP ksp, PetscInt n, PetscReal rnorm, KSP
                         (double)ksp->rtol, lsqr->exact_norm ? "exact" : "approx.", (double)lsqr->anorm, (double)rnorm, n));
     *reason = KSP_CONVERGED_RTOL_NORMAL;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -661,5 +661,5 @@ PETSC_EXTERN PetscErrorCode KSPCreate_LSQR(KSP ksp)
   PetscCall(KSPSetConvergenceTest(ksp, KSPLSQRConvergedDefault, ctx, KSPConvergedDefaultDestroy));
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPLSQRMonitorResidual_C", KSPLSQRMonitorResidual_LSQR));
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPLSQRMonitorResidualDrawLG_C", KSPLSQRMonitorResidualDrawLG_LSQR));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -61,7 +61,7 @@ PetscErrorCode PCTFS_bm_to_proc(char *ptr, PetscInt p_mask, PetscInt *msg_list)
       ptr--;
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*********************************bit_mask.c***********************************/
@@ -126,7 +126,7 @@ PetscErrorCode PCTFS_set_bit_mask(PetscInt *bm, PetscInt len, PetscInt val)
 
   offset       = len - val / BYTE - 1;
   cptr[offset] = mask;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*********************************bit_mask.c***********************************/

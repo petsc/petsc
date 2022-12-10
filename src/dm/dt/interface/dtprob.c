@@ -24,7 +24,7 @@ const char *const DTProbDensityTypes[] = {"constant", "gaussian", "maxwell_boltz
 PetscErrorCode PetscPDFMaxwellBoltzmann1D(const PetscReal x[], const PetscReal dummy[], PetscReal p[])
 {
   p[0] = PetscSqrtReal(2. / PETSC_PI) * PetscExpReal(-0.5 * PetscSqr(x[0]));
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 /*@
@@ -45,7 +45,7 @@ PetscErrorCode PetscPDFMaxwellBoltzmann1D(const PetscReal x[], const PetscReal d
 PetscErrorCode PetscCDFMaxwellBoltzmann1D(const PetscReal x[], const PetscReal dummy[], PetscReal p[])
 {
   p[0] = PetscErfReal(x[0] / PETSC_SQRT2);
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 /*@
@@ -66,7 +66,7 @@ PetscErrorCode PetscCDFMaxwellBoltzmann1D(const PetscReal x[], const PetscReal d
 PetscErrorCode PetscPDFMaxwellBoltzmann2D(const PetscReal x[], const PetscReal dummy[], PetscReal p[])
 {
   p[0] = x[0] * PetscExpReal(-0.5 * PetscSqr(x[0]));
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 /*@
@@ -87,7 +87,7 @@ PetscErrorCode PetscPDFMaxwellBoltzmann2D(const PetscReal x[], const PetscReal d
 PetscErrorCode PetscCDFMaxwellBoltzmann2D(const PetscReal x[], const PetscReal dummy[], PetscReal p[])
 {
   p[0] = 1. - PetscExpReal(-0.5 * PetscSqr(x[0]));
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 /*@
@@ -108,7 +108,7 @@ PetscErrorCode PetscCDFMaxwellBoltzmann2D(const PetscReal x[], const PetscReal d
 PetscErrorCode PetscPDFMaxwellBoltzmann3D(const PetscReal x[], const PetscReal dummy[], PetscReal p[])
 {
   p[0] = PetscSqrtReal(2. / PETSC_PI) * PetscSqr(x[0]) * PetscExpReal(-0.5 * PetscSqr(x[0]));
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 /*@
@@ -129,7 +129,7 @@ PetscErrorCode PetscPDFMaxwellBoltzmann3D(const PetscReal x[], const PetscReal d
 PetscErrorCode PetscCDFMaxwellBoltzmann3D(const PetscReal x[], const PetscReal dummy[], PetscReal p[])
 {
   p[0] = PetscErfReal(x[0] / PETSC_SQRT2) - PetscSqrtReal(2. / PETSC_PI) * x[0] * PetscExpReal(-0.5 * PetscSqr(x[0]));
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 /*@
@@ -151,14 +151,14 @@ PetscErrorCode PetscPDFGaussian1D(const PetscReal x[], const PetscReal scale[], 
 {
   const PetscReal sigma = scale ? scale[0] : 1.;
   p[0]                  = PetscSqrtReal(1. / (2. * PETSC_PI)) * PetscExpReal(-0.5 * PetscSqr(x[0] / sigma)) / sigma;
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 PetscErrorCode PetscCDFGaussian1D(const PetscReal x[], const PetscReal scale[], PetscReal p[])
 {
   const PetscReal sigma = scale ? scale[0] : 1.;
   p[0]                  = 0.5 * (1. + PetscErfReal(x[0] / PETSC_SQRT2 / sigma));
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 /*@
@@ -202,7 +202,7 @@ PetscErrorCode PetscPDFSampleGaussian1D(const PetscReal p[], const PetscReal dum
   }
   /* Scale erfinv() by \sqrt{\pi/2} */
   x[0] = PetscSqrtReal(PETSC_PI * 0.5) * r;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -224,7 +224,7 @@ PetscErrorCode PetscPDFSampleGaussian1D(const PetscReal p[], const PetscReal dum
 PetscErrorCode PetscPDFGaussian2D(const PetscReal x[], const PetscReal dummy[], PetscReal p[])
 {
   p[0] = (1. / PETSC_PI) * PetscExpReal(-0.5 * (PetscSqr(x[0]) + PetscSqr(x[1])));
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 /*@
@@ -250,7 +250,7 @@ PetscErrorCode PetscPDFSampleGaussian2D(const PetscReal p[], const PetscReal dum
   const PetscReal mag = PetscSqrtReal(-2.0 * PetscLogReal(p[0]));
   x[0]                = mag * PetscCosReal(2.0 * PETSC_PI * p[1]);
   x[1]                = mag * PetscSinReal(2.0 * PETSC_PI * p[1]);
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 /*@
@@ -272,7 +272,7 @@ PetscErrorCode PetscPDFSampleGaussian2D(const PetscReal p[], const PetscReal dum
 PetscErrorCode PetscPDFGaussian3D(const PetscReal x[], const PetscReal dummy[], PetscReal p[])
 {
   p[0] = (1. / PETSC_PI * PetscSqrtReal(PETSC_PI)) * PetscExpReal(-0.5 * (PetscSqr(x[0]) + PetscSqr(x[1]) + PetscSqr(x[2])));
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 /*@
@@ -298,7 +298,7 @@ PetscErrorCode PetscPDFSampleGaussian3D(const PetscReal p[], const PetscReal dum
 {
   PetscCall(PetscPDFSampleGaussian1D(p, dummy, x));
   PetscCall(PetscPDFSampleGaussian2D(&p[1], dummy, &x[1]));
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 /*@
@@ -319,7 +319,7 @@ PetscErrorCode PetscPDFSampleGaussian3D(const PetscReal p[], const PetscReal dum
 PetscErrorCode PetscPDFConstant1D(const PetscReal x[], const PetscReal dummy[], PetscReal p[])
 {
   p[0] = x[0] > -1. && x[0] <= 1. ? 0.5 : 0.;
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 /*@
@@ -340,7 +340,7 @@ PetscErrorCode PetscPDFConstant1D(const PetscReal x[], const PetscReal dummy[], 
 PetscErrorCode PetscCDFConstant1D(const PetscReal x[], const PetscReal dummy[], PetscReal p[])
 {
   p[0] = x[0] <= -1. ? 0. : (x[0] > 1. ? 1. : 0.5 * (x[0] + 1.));
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 /*@
@@ -361,7 +361,7 @@ PetscErrorCode PetscCDFConstant1D(const PetscReal x[], const PetscReal dummy[], 
 PetscErrorCode PetscPDFSampleConstant1D(const PetscReal p[], const PetscReal dummy[], PetscReal x[])
 {
   x[0] = 2. * p[0] - 1.;
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 /*@
@@ -382,7 +382,7 @@ PetscErrorCode PetscPDFSampleConstant1D(const PetscReal p[], const PetscReal dum
 PetscErrorCode PetscPDFConstant2D(const PetscReal x[], const PetscReal dummy[], PetscReal p[])
 {
   p[0] = x[0] > -1. && x[0] <= 1. && x[1] > -1. && x[1] <= 1. ? 0.25 : 0.;
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 /*@
@@ -403,7 +403,7 @@ PetscErrorCode PetscPDFConstant2D(const PetscReal x[], const PetscReal dummy[], 
 PetscErrorCode PetscCDFConstant2D(const PetscReal x[], const PetscReal dummy[], PetscReal p[])
 {
   p[0] = x[0] <= -1. || x[1] <= -1. ? 0. : (x[0] > 1. ? 1. : 0.5 * (x[0] + 1.)) * (x[1] > 1. ? 1. : 0.5 * (x[1] + 1.));
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 /*@
@@ -425,7 +425,7 @@ PetscErrorCode PetscPDFSampleConstant2D(const PetscReal p[], const PetscReal dum
 {
   x[0] = 2. * p[0] - 1.;
   x[1] = 2. * p[1] - 1.;
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 /*@
@@ -446,7 +446,7 @@ PetscErrorCode PetscPDFSampleConstant2D(const PetscReal p[], const PetscReal dum
 PetscErrorCode PetscPDFConstant3D(const PetscReal x[], const PetscReal dummy[], PetscReal p[])
 {
   p[0] = x[0] > -1. && x[0] <= 1. && x[1] > -1. && x[1] <= 1. && x[2] > -1. && x[2] <= 1. ? 0.125 : 0.;
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 /*@
@@ -467,7 +467,7 @@ PetscErrorCode PetscPDFConstant3D(const PetscReal x[], const PetscReal dummy[], 
 PetscErrorCode PetscCDFConstant3D(const PetscReal x[], const PetscReal dummy[], PetscReal p[])
 {
   p[0] = x[0] <= -1. || x[1] <= -1. || x[2] <= -1. ? 0. : (x[0] > 1. ? 1. : 0.5 * (x[0] + 1.)) * (x[1] > 1. ? 1. : 0.5 * (x[1] + 1.)) * (x[2] > 1. ? 1. : 0.5 * (x[2] + 1.));
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 /*@
@@ -490,7 +490,7 @@ PetscErrorCode PetscPDFSampleConstant3D(const PetscReal p[], const PetscReal dum
   x[0] = 2. * p[0] - 1.;
   x[1] = 2. * p[1] - 1.;
   x[2] = 2. * p[2] - 1.;
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 /*@C
@@ -595,7 +595,7 @@ PetscErrorCode PetscProbCreateFromOptions(PetscInt dim, const char prefix[], con
   default:
     SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Density type %s is not supported", DTProbDensityTypes[PetscMax(0, PetscMin(den, DTPROB_NUM_DENSITY))]);
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 #ifdef PETSC_HAVE_KS
@@ -733,6 +733,6 @@ PetscErrorCode PetscProbComputeKSStatistic(Vec v, PetscProbFunc cdf, PetscReal *
     PetscCall(PetscViewerDestroy(&viewer));
   }
   *alpha = KSfbar((int)n, (double)Dn);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 #endif
 }

@@ -31,7 +31,7 @@ static PetscErrorCode CheckValuesAIJ(Mat A)
       PetscCheck(PetscAbsReal(v - w) <= 0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Matrix entry (%" PetscInt_FMT ",%" PetscInt_FMT ") should be %g, got %g", i, j, (double)v, (double)w);
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **args)

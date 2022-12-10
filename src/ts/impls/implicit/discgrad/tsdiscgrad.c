@@ -37,7 +37,7 @@ static PetscErrorCode TSDiscGradGetX0AndXdot(TS ts, DM dm, Vec *X0, Vec *Xdot)
     if (dm && dm != ts->dm) PetscCall(DMGetNamedGlobalVector(dm, "TSDiscGrad_Xdot", Xdot));
     else *Xdot = dg->Xdot;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TSDiscGradRestoreX0AndXdot(TS ts, DM dm, Vec *X0, Vec *Xdot)
@@ -49,13 +49,13 @@ static PetscErrorCode TSDiscGradRestoreX0AndXdot(TS ts, DM dm, Vec *X0, Vec *Xdo
   if (Xdot) {
     if (dm && dm != ts->dm) PetscCall(DMRestoreNamedGlobalVector(dm, "TSDiscGrad_Xdot", Xdot));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMCoarsenHook_TSDiscGrad(DM fine, DM coarse, void *ctx)
 {
   PetscFunctionBegin;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMRestrictHook_TSDiscGrad(DM fine, Mat restrct, Vec rscale, Mat inject, DM coarse, void *ctx)
@@ -72,13 +72,13 @@ static PetscErrorCode DMRestrictHook_TSDiscGrad(DM fine, Mat restrct, Vec rscale
   PetscCall(VecPointwiseMult(Xdot_c, rscale, Xdot_c));
   PetscCall(TSDiscGradRestoreX0AndXdot(ts, fine, &X0, &Xdot));
   PetscCall(TSDiscGradRestoreX0AndXdot(ts, coarse, &X0_c, &Xdot_c));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMSubDomainHook_TSDiscGrad(DM dm, DM subdm, void *ctx)
 {
   PetscFunctionBegin;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMSubDomainRestrictHook_TSDiscGrad(DM dm, VecScatter gscat, VecScatter lscat, DM subdm, void *ctx)
@@ -98,7 +98,7 @@ static PetscErrorCode DMSubDomainRestrictHook_TSDiscGrad(DM dm, VecScatter gscat
 
   PetscCall(TSDiscGradRestoreX0AndXdot(ts, dm, &X0, &Xdot));
   PetscCall(TSDiscGradRestoreX0AndXdot(ts, subdm, &X0_sub, &Xdot_sub));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TSSetUp_DiscGrad(TS ts)
@@ -114,7 +114,7 @@ static PetscErrorCode TSSetUp_DiscGrad(TS ts)
   PetscCall(TSGetDM(ts, &dm));
   PetscCall(DMCoarsenHookAdd(dm, DMCoarsenHook_TSDiscGrad, DMRestrictHook_TSDiscGrad, ts));
   PetscCall(DMSubDomainHookAdd(dm, DMSubDomainHook_TSDiscGrad, DMSubDomainRestrictHook_TSDiscGrad, ts));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TSSetFromOptions_DiscGrad(TS ts, PetscOptionItems *PetscOptionsObject)
@@ -127,7 +127,7 @@ static PetscErrorCode TSSetFromOptions_DiscGrad(TS ts, PetscOptionItems *PetscOp
     PetscCall(PetscOptionsBool("-ts_discgrad_gonzalez", "Use Gonzalez term in discrete gradients formulation", "TSDiscGradUseGonzalez", dg->gonzalez, &dg->gonzalez, NULL));
   }
   PetscOptionsHeadEnd();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TSView_DiscGrad(TS ts, PetscViewer viewer)
@@ -137,7 +137,7 @@ static PetscErrorCode TSView_DiscGrad(TS ts, PetscViewer viewer)
   PetscFunctionBegin;
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
   if (iascii) PetscCall(PetscViewerASCIIPrintf(viewer, "  Discrete Gradients\n"));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TSDiscGradIsGonzalez_DiscGrad(TS ts, PetscBool *gonzalez)
@@ -146,7 +146,7 @@ static PetscErrorCode TSDiscGradIsGonzalez_DiscGrad(TS ts, PetscBool *gonzalez)
 
   PetscFunctionBegin;
   *gonzalez = dg->gonzalez;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TSDiscGradUseGonzalez_DiscGrad(TS ts, PetscBool flg)
@@ -155,7 +155,7 @@ static PetscErrorCode TSDiscGradUseGonzalez_DiscGrad(TS ts, PetscBool flg)
 
   PetscFunctionBegin;
   dg->gonzalez = flg;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TSReset_DiscGrad(TS ts)
@@ -166,7 +166,7 @@ static PetscErrorCode TSReset_DiscGrad(TS ts)
   PetscCall(VecDestroy(&dg->X));
   PetscCall(VecDestroy(&dg->X0));
   PetscCall(VecDestroy(&dg->Xdot));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TSDestroy_DiscGrad(TS ts)
@@ -185,7 +185,7 @@ static PetscErrorCode TSDestroy_DiscGrad(TS ts)
   PetscCall(PetscObjectComposeFunction((PetscObject)ts, "TSDiscGradSetFormulation_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)ts, "TSDiscGradIsGonzalez_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)ts, "TSDiscGradUseGonzalez_C", NULL));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TSInterpolate_DiscGrad(TS ts, PetscReal t, Vec X)
@@ -196,7 +196,7 @@ static PetscErrorCode TSInterpolate_DiscGrad(TS ts, PetscReal t, Vec X)
   PetscFunctionBegin;
   PetscCall(VecCopy(ts->vec_sol, dg->X));
   PetscCall(VecWAXPY(X, dt, dg->Xdot, dg->X));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TSDiscGrad_SNESSolve(TS ts, Vec b, Vec x)
@@ -211,7 +211,7 @@ static PetscErrorCode TSDiscGrad_SNESSolve(TS ts, Vec b, Vec x)
   PetscCall(SNESGetLinearSolveIterations(snes, &lits));
   ts->snes_its += nits;
   ts->ksp_its += lits;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TSStep_DiscGrad(TS ts)
@@ -261,7 +261,7 @@ static PetscErrorCode TSStep_DiscGrad(TS ts)
       PetscCall(PetscInfo(ts, "Step=%" PetscInt_FMT ", step rejections %" PetscInt_FMT " greater than current TS allowed, stopping solve\n", ts->steps, rejections));
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TSGetStages_DiscGrad(TS ts, PetscInt *ns, Vec **Y)
@@ -271,7 +271,7 @@ static PetscErrorCode TSGetStages_DiscGrad(TS ts, PetscInt *ns, Vec **Y)
   PetscFunctionBegin;
   if (ns) *ns = 1;
   if (Y) *Y = &(dg->X);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -351,7 +351,7 @@ static PetscErrorCode SNESTSFormFunction_DiscGrad(SNES snes, Vec x, Vec y, TS ts
   PetscCall(VecDestroy(&G));
   PetscCall(MatDestroy(&S));
 
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode SNESTSFormJacobian_DiscGrad(SNES snes, Vec x, Mat A, Mat B, TS ts)
@@ -371,7 +371,7 @@ static PetscErrorCode SNESTSFormJacobian_DiscGrad(SNES snes, Vec x, Mat A, Mat B
   PetscCall(TSComputeIJacobian(ts, dg->stage_time, x, Xdot, shift, A, B, PETSC_FALSE));
   ts->dm = dmsave;
   PetscCall(TSDiscGradRestoreX0AndXdot(ts, dm, NULL, &Xdot));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TSDiscGradGetFormulation_DiscGrad(TS ts, PetscErrorCode (**Sfunc)(TS, PetscReal, Vec, Mat, void *), PetscErrorCode (**Ffunc)(TS, PetscReal, Vec, PetscScalar *, void *), PetscErrorCode (**Gfunc)(TS, PetscReal, Vec, Vec, void *), void *ctx)
@@ -382,7 +382,7 @@ static PetscErrorCode TSDiscGradGetFormulation_DiscGrad(TS ts, PetscErrorCode (*
   *Sfunc = dg->Sfunc;
   *Ffunc = dg->Ffunc;
   *Gfunc = dg->Gfunc;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TSDiscGradSetFormulation_DiscGrad(TS ts, PetscErrorCode (*Sfunc)(TS, PetscReal, Vec, Mat, void *), PetscErrorCode (*Ffunc)(TS, PetscReal, Vec, PetscScalar *, void *), PetscErrorCode (*Gfunc)(TS, PetscReal, Vec, Vec, void *), void *ctx)
@@ -394,7 +394,7 @@ static PetscErrorCode TSDiscGradSetFormulation_DiscGrad(TS ts, PetscErrorCode (*
   dg->Ffunc   = Ffunc;
   dg->Gfunc   = Gfunc;
   dg->funcCtx = ctx;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -439,7 +439,7 @@ PETSC_EXTERN PetscErrorCode TSCreate_DiscGrad(TS ts)
   PetscCall(PetscObjectComposeFunction((PetscObject)ts, "TSDiscGradSetFormulation_C", TSDiscGradSetFormulation_DiscGrad));
   PetscCall(PetscObjectComposeFunction((PetscObject)ts, "TSDiscGradIsGonzalez_C", TSDiscGradIsGonzalez_DiscGrad));
   PetscCall(PetscObjectComposeFunction((PetscObject)ts, "TSDiscGradUseGonzalez_C", TSDiscGradUseGonzalez_DiscGrad));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -477,7 +477,7 @@ PetscErrorCode TSDiscGradGetFormulation(TS ts, PetscErrorCode (**Sfunc)(TS, Pets
   PetscValidPointer(Ffunc, 3);
   PetscValidPointer(Gfunc, 4);
   PetscUseMethod(ts, "TSDiscGradGetFormulation_C", (TS, PetscErrorCode(**Sfunc)(TS, PetscReal, Vec, Mat, void *), PetscErrorCode(**Ffunc)(TS, PetscReal, Vec, PetscScalar *, void *), PetscErrorCode(**Gfunc)(TS, PetscReal, Vec, Vec, void *), void *), (ts, Sfunc, Ffunc, Gfunc, ctx));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -511,7 +511,7 @@ PetscErrorCode TSDiscGradSetFormulation(TS ts, PetscErrorCode (*Sfunc)(TS, Petsc
   PetscValidFunction(Ffunc, 3);
   PetscValidFunction(Gfunc, 4);
   PetscTryMethod(ts, "TSDiscGradSetFormulation_C", (TS, PetscErrorCode(*Sfunc)(TS, PetscReal, Vec, Mat, void *), PetscErrorCode(*Ffunc)(TS, PetscReal, Vec, PetscScalar *, void *), PetscErrorCode(*Gfunc)(TS, PetscReal, Vec, Vec, void *), void *), (ts, Sfunc, Ffunc, Gfunc, ctx));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -535,7 +535,7 @@ PetscErrorCode TSDiscGradIsGonzalez(TS ts, PetscBool *gonzalez)
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscValidBoolPointer(gonzalez, 2);
   PetscUseMethod(ts, "TSDiscGradIsGonzalez_C", (TS, PetscBool *), (ts, gonzalez));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -559,5 +559,5 @@ PetscErrorCode TSDiscGradUseGonzalez(TS ts, PetscBool flg)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscTryMethod(ts, "TSDiscGradUseGonzalez_C", (TS, PetscBool), (ts, flg));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

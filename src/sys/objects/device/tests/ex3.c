@@ -40,7 +40,7 @@ static PetscErrorCode TestPetscDeviceContextDuplicate(PetscDeviceContext dctx)
   PetscCall(PetscDeviceContextDestroy(&ddup));
   /* duplicate should not take the original down with it */
   if (dctx) PetscValidDeviceContext(dctx, 1);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char *argv[])

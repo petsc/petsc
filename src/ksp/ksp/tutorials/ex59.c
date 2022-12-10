@@ -171,7 +171,7 @@ static PetscErrorCode BuildCSRGraph(DomainData dd, PetscInt **xadj, PetscInt **a
 
   *xadj   = xadj_temp;
   *adjncy = adjncy_temp;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode ComputeSpecialBoundaryIndices(DomainData dd, IS *dirichlet, IS *neumann)
@@ -281,7 +281,7 @@ static PetscErrorCode ComputeSpecialBoundaryIndices(DomainData dd, IS *dirichlet
   if (neumann) *neumann = temp_neumann;
   PetscCall(PetscFree(indices));
   PetscCall(PetscFree(touched));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode ComputeMapping(DomainData dd, ISLocalToGlobalMapping *isg2lmap)
@@ -326,7 +326,7 @@ static PetscErrorCode ComputeMapping(DomainData dd, ISLocalToGlobalMapping *isg2
   PetscCall(ISLocalToGlobalMappingCreate(dd.gcomm, 1, localsize, global_indices, PETSC_OWN_POINTER, &temp_isg2lmap));
   PetscCall(DMDestroy(&da));
   *isg2lmap = temp_isg2lmap;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 static PetscErrorCode ComputeSubdomainMatrix(DomainData dd, GLLData glldata, Mat *local_mat)
 {
@@ -450,7 +450,7 @@ static PetscErrorCode ComputeSubdomainMatrix(DomainData dd, GLLData glldata, Mat
 #endif
   *local_mat = temp_local_mat;
   PetscCall(MatDestroy(&elem_mat_DBC));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode GLLStuffs(DomainData dd, GLLData *glldata)
@@ -629,7 +629,7 @@ static PetscErrorCode GLLStuffs(DomainData dd, GLLData *glldata)
     PetscCall(VecDestroy(&rvec));
   }
 #endif
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DomainDecomposition(DomainData *dd)
@@ -700,7 +700,7 @@ static PetscErrorCode DomainDecomposition(DomainData *dd)
       dd->startz = dd->startz + k * dd->p;
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 static PetscErrorCode ComputeMatrix(DomainData dd, Mat *A)
 {
@@ -760,7 +760,7 @@ static PetscErrorCode ComputeMatrix(DomainData dd, Mat *A)
   PetscCall(ISLocalToGlobalMappingDestroy(&matis_map));
   /* give back the pointer to te MATIS object */
   *A = temp_A;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode ComputeKSPFETIDP(DomainData dd, KSP ksp_bddc, KSP *ksp_fetidp)
@@ -799,7 +799,7 @@ static PetscErrorCode ComputeKSPFETIDP(DomainData dd, KSP ksp_bddc, KSP *ksp_fet
     PetscCall(KSPSetUp(temp_ksp));
   }
   *ksp_fetidp = temp_ksp;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode ComputeKSPBDDC(DomainData dd, Mat A, KSP *ksp)
@@ -916,7 +916,7 @@ static PetscErrorCode ComputeKSPBDDC(DomainData dd, Mat A, KSP *ksp)
   *ksp = temp_ksp;
   PetscCall(ISDestroy(&dirichletIS));
   PetscCall(ISDestroy(&neumannIS));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode InitializeDomainData(DomainData *dd)
@@ -982,7 +982,7 @@ static PetscErrorCode InitializeDomainData(DomainData *dd)
     PetscCheck(sizes == dd->npx * dd->npy * dd->npz, dd->gcomm, PETSC_ERR_USER, "Number of mpi procs in 3D must be equal to npx*npy*npz");
     PetscCheck(dd->nex >= dd->npx && dd->ney >= dd->npy && dd->nez >= dd->npz, dd->gcomm, PETSC_ERR_USER, "Number of elements per dim must be greater/equal than number of ranks per dim");
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **args)

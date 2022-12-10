@@ -19,7 +19,7 @@ PetscErrorCode TSMonitorLGCtxNetworkDestroy(TSMonitorLGCtxNetwork *ctx)
   for (i = 0; i < (*ctx)->nlg; i++) PetscCall(PetscDrawLGDestroy(&(*ctx)->lg[i]));
   PetscCall(PetscFree((*ctx)->lg));
   PetscCall(PetscFree(*ctx));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode TSMonitorLGCtxNetworkCreate(TS ts, const char host[], const char label[], int x, int y, int m, int n, PetscInt howoften, TSMonitorLGCtxNetwork *ctx)
@@ -78,7 +78,7 @@ PetscErrorCode TSMonitorLGCtxNetworkCreate(TS ts, const char host[], const char 
   }
   PetscCall(PetscDrawDestroy(&draw));
   (*ctx)->howoften = howoften;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -113,7 +113,7 @@ PetscErrorCode TSMonitorLGCtxNetworkSolution(TS ts, PetscInt step, PetscReal pti
   Vec                   uv;
 
   PetscFunctionBegin;
-  if (step < 0) PetscFunctionReturn(0); /* -1 indicates interpolated solution */
+  if (step < 0) PetscFunctionReturn(PETSC_SUCCESS); /* -1 indicates interpolated solution */
   if (!step) {
     PetscDrawAxis axis;
 
@@ -176,5 +176,5 @@ PetscErrorCode TSMonitorLGCtxNetworkSolution(TS ts, PetscInt step, PetscReal pti
       PetscCall(PetscDrawLGSave(ctx->lg[i]));
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

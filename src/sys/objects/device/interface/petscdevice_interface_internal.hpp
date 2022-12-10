@@ -13,7 +13,7 @@
   #define PETSC_USE_DEBUG_AND_INFO  1
   #define PetscDebugInfo(dctx, ...) PetscInfo(dctx, __VA_ARGS__)
 #else
-  #define PetscDebugInfo(dctx, ...) 0
+  #define PetscDebugInfo(dctx, ...) PETSC_SUCCESS
 #endif
 
 // this file contains functions needed to bridge the gap between dcontext.cxx and device.cxx
@@ -81,7 +81,7 @@ inline PetscErrorCode CxxData::clear() noexcept
   PetscFunctionBegin;
   PetscCallCXX(this->upstream.clear());
   PetscCallCXX(this->deps.clear());
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_NODISCARD inline CxxData *CxxDataCast(PetscDeviceContext dctx) noexcept
@@ -105,7 +105,7 @@ inline PetscErrorCode PetscDeviceContextQueryOptions_Internal(PetscOptionItems *
   PetscCall(PetscOptionsEList("-device_context_stream_type", "PetscDeviceContext PetscStreamType", "PetscDeviceContextSetStreamType", PetscStreamTypes, PETSC_STREAM_MAX, PetscStreamTypes[stype], &stype, &streamType.second));
   deviceType.first = PetscDeviceTypeCast(dtype);
   streamType.first = PetscStreamTypeCast(stype);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 } // anonymous namespace

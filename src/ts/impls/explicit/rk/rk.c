@@ -194,7 +194,7 @@ M*/
 PetscErrorCode TSRKRegisterAll(void)
 {
   PetscFunctionBegin;
-  if (TSRKRegisterAllCalled) PetscFunctionReturn(0);
+  if (TSRKRegisterAllCalled) PetscFunctionReturn(PETSC_SUCCESS);
   TSRKRegisterAllCalled = PETSC_TRUE;
 
 #define RC PetscRealConstant
@@ -354,7 +354,7 @@ PetscErrorCode TSRKRegisterAll(void)
     PetscCall(TSRKRegister(TSRK8VR, 8, 13, &A[0][0], b, NULL, bembed, 0, NULL));
   }
 #undef RC
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -381,7 +381,7 @@ PetscErrorCode TSRKRegisterDestroy(void)
     PetscCall(PetscFree(link));
   }
   TSRKRegisterAllCalled = PETSC_FALSE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -395,11 +395,11 @@ PetscErrorCode TSRKRegisterDestroy(void)
 PetscErrorCode TSRKInitializePackage(void)
 {
   PetscFunctionBegin;
-  if (TSRKPackageInitialized) PetscFunctionReturn(0);
+  if (TSRKPackageInitialized) PetscFunctionReturn(PETSC_SUCCESS);
   TSRKPackageInitialized = PETSC_TRUE;
   PetscCall(TSRKRegisterAll());
   PetscCall(PetscRegisterFinalize(TSRKFinalizePackage));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -415,7 +415,7 @@ PetscErrorCode TSRKFinalizePackage(void)
   PetscFunctionBegin;
   TSRKPackageInitialized = PETSC_FALSE;
   PetscCall(TSRKRegisterDestroy());
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -490,7 +490,7 @@ PetscErrorCode TSRKRegister(TSRKType name, PetscInt order, PetscInt s, const Pet
 
   link->next    = RKTableauList;
   RKTableauList = link;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode TSRKGetTableau_RK(TS ts, PetscInt *s, const PetscReal **A, const PetscReal **b, const PetscReal **c, const PetscReal **bembed, PetscInt *p, const PetscReal **binterp, PetscBool *FSAL)
@@ -507,7 +507,7 @@ PetscErrorCode TSRKGetTableau_RK(TS ts, PetscInt *s, const PetscReal **A, const 
   if (p) *p = tab->p;
   if (binterp) *binterp = tab->binterp;
   if (FSAL) *FSAL = tab->FSAL;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -537,7 +537,7 @@ PetscErrorCode TSRKGetTableau(TS ts, PetscInt *s, const PetscReal **A, const Pet
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscUseMethod(ts, "TSRKGetTableau_C", (TS, PetscInt *, const PetscReal **, const PetscReal **, const PetscReal **, const PetscReal **, PetscInt *, const PetscReal **, PetscBool *), (ts, s, A, b, c, bembed, p, binterp, FSAL));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -582,7 +582,7 @@ static PetscErrorCode TSEvaluateStep_RK(TS ts, PetscInt order, Vec X, PetscBool 
       for (j = 0; j < s; j++) w[j] = h * tab->b[j] / rk->dtratio;
       PetscCall(VecMAXPY(X, s, w, rk->YdotRHS));
     } else PetscCall(VecCopy(ts->vec_sol, X));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   } else if (order == tab->order - 1) {
     if (!tab->bembed) goto unavailable;
     if (rk->status == TS_STEP_INCOMPLETE) { /*Complete with the embedded method (be)*/
@@ -595,13 +595,13 @@ static PetscErrorCode TSEvaluateStep_RK(TS ts, PetscInt order, Vec X, PetscBool 
       PetscCall(VecMAXPY(X, s, w, rk->YdotRHS));
     }
     if (done) *done = PETSC_TRUE;
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 unavailable:
   if (done) *done = PETSC_FALSE;
   else
     SETERRQ(PetscObjectComm((PetscObject)ts), PETSC_ERR_SUP, "RK '%s' of order %" PetscInt_FMT " cannot evaluate step at order %" PetscInt_FMT ". Consider using -ts_adapt_type none or a different method that has an embedded estimate.", tab->name, tab->order, order);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TSForwardCostIntegral_RK(TS ts)
@@ -621,7 +621,7 @@ static PetscErrorCode TSForwardCostIntegral_RK(TS ts)
     PetscCall(TSComputeRHSFunction(quadts, rk->ptime + rk->time_step * c[i], Y[i], ts->vec_costintegrand));
     PetscCall(VecAXPY(quadts->vec_sol, rk->time_step * b[i], ts->vec_costintegrand));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TSAdjointCostIntegral_RK(TS ts)
@@ -640,7 +640,7 @@ static PetscErrorCode TSAdjointCostIntegral_RK(TS ts)
     PetscCall(TSComputeRHSFunction(quadts, ts->ptime + ts->time_step * (1.0 - c[i]), Y[i], ts->vec_costintegrand));
     PetscCall(VecAXPY(quadts->vec_sol, -ts->time_step * b[i], ts->vec_costintegrand));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TSRollBack_RK(TS ts)
@@ -676,7 +676,7 @@ static PetscErrorCode TSRollBack_RK(TS ts)
       PetscCall(VecAXPY(quadts->vec_sol, -h * b[j], ts->vec_costintegrand));
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TSForwardStep_RK(TS ts)
@@ -729,7 +729,7 @@ static PetscErrorCode TSForwardStep_RK(TS ts)
 
   for (i = 0; i < s; i++) PetscCall(MatAXPY(ts->mat_sensip, h * b[i], rk->MatsFwdSensipTemp[i], SAME_NONZERO_PATTERN));
   rk->status = TS_STEP_COMPLETE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TSForwardGetStages_RK(TS ts, PetscInt *ns, Mat **stagesensip)
@@ -740,7 +740,7 @@ static PetscErrorCode TSForwardGetStages_RK(TS ts, PetscInt *ns, Mat **stagesens
   PetscFunctionBegin;
   if (ns) *ns = tab->s;
   if (stagesensip) *stagesensip = rk->MatsFwdStageSensip;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TSForwardSetUp_RK(TS ts)
@@ -760,7 +760,7 @@ static PetscErrorCode TSForwardSetUp_RK(TS ts)
     PetscCall(MatDuplicate(ts->mat_sensip, MAT_DO_NOT_COPY_VALUES, &rk->MatsFwdSensipTemp[i]));
   }
   PetscCall(VecDuplicate(ts->vec_sol, &rk->VecDeltaFwdSensipCol));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TSForwardReset_RK(TS ts)
@@ -780,7 +780,7 @@ static PetscErrorCode TSForwardReset_RK(TS ts)
     PetscCall(PetscFree(rk->MatsFwdSensipTemp));
   }
   PetscCall(VecDestroy(&rk->VecDeltaFwdSensipCol));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TSStep_RK(TS ts)
@@ -851,7 +851,7 @@ static PetscErrorCode TSStep_RK(TS ts)
       PetscCall(PetscInfo(ts, "Step=%" PetscInt_FMT ", step rejections %" PetscInt_FMT " greater than current TS allowed, stopping solve\n", ts->steps, rejections));
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TSAdjointSetUp_RK(TS ts)
@@ -861,7 +861,7 @@ static PetscErrorCode TSAdjointSetUp_RK(TS ts)
   PetscInt  s   = tab->s;
 
   PetscFunctionBegin;
-  if (ts->adjointsetupcalled++) PetscFunctionReturn(0);
+  if (ts->adjointsetupcalled++) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(VecDuplicateVecs(ts->vecs_sensi[0], s * ts->numcost, &rk->VecsDeltaLam));
   PetscCall(VecDuplicateVecs(ts->vecs_sensi[0], ts->numcost, &rk->VecsSensiTemp));
   if (ts->vecs_sensip) PetscCall(VecDuplicate(ts->vecs_sensip[0], &rk->VecDeltaMu));
@@ -870,7 +870,7 @@ static PetscErrorCode TSAdjointSetUp_RK(TS ts)
     PetscCall(VecDuplicateVecs(ts->vecs_sensi2[0], ts->numcost, &rk->VecsSensi2Temp));
   }
   if (ts->vecs_sensi2p) PetscCall(VecDuplicate(ts->vecs_sensi2p[0], &rk->VecDeltaMu2));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -1034,7 +1034,7 @@ static PetscErrorCode TSAdjointStep_RK(TS ts)
     if (ts->vecs_sensi2) PetscCall(VecMAXPY(ts->vecs_sensi2[nadj], s, w, &VecsDeltaLam2[nadj * s]));
   }
   rk->status = TS_STEP_COMPLETE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TSAdjointReset_RK(TS ts)
@@ -1049,7 +1049,7 @@ static PetscErrorCode TSAdjointReset_RK(TS ts)
   PetscCall(VecDestroyVecs(tab->s * ts->numcost, &rk->VecsDeltaLam2));
   PetscCall(VecDestroy(&rk->VecDeltaMu2));
   PetscCall(VecDestroyVecs(ts->numcost, &rk->VecsSensi2Temp));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TSInterpolate_RK(TS ts, PetscReal itime, Vec X)
@@ -1085,7 +1085,7 @@ static PetscErrorCode TSInterpolate_RK(TS ts, PetscReal itime, Vec X)
   PetscCall(VecCopy(rk->Y[0], X));
   PetscCall(VecMAXPY(X, s, b, rk->YdotRHS));
   PetscCall(PetscFree(b));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*------------------------------------------------------------*/
@@ -1096,11 +1096,11 @@ static PetscErrorCode TSRKTableauReset(TS ts)
   RKTableau tab = rk->tableau;
 
   PetscFunctionBegin;
-  if (!tab) PetscFunctionReturn(0);
+  if (!tab) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(PetscFree(rk->work));
   PetscCall(VecDestroyVecs(tab->s, &rk->Y));
   PetscCall(VecDestroyVecs(tab->s, &rk->YdotRHS));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TSReset_RK(TS ts)
@@ -1112,31 +1112,31 @@ static PetscErrorCode TSReset_RK(TS ts)
   } else {
     PetscTryMethod(ts, "TSReset_RK_MultirateNonsplit_C", (TS), (ts));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMCoarsenHook_TSRK(DM fine, DM coarse, void *ctx)
 {
   PetscFunctionBegin;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMRestrictHook_TSRK(DM fine, Mat restrct, Vec rscale, Mat inject, DM coarse, void *ctx)
 {
   PetscFunctionBegin;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMSubDomainHook_TSRK(DM dm, DM subdm, void *ctx)
 {
   PetscFunctionBegin;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMSubDomainRestrictHook_TSRK(DM dm, VecScatter gscat, VecScatter lscat, DM subdm, void *ctx)
 {
   PetscFunctionBegin;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TSRKTableauSetUp(TS ts)
@@ -1148,7 +1148,7 @@ static PetscErrorCode TSRKTableauSetUp(TS ts)
   PetscCall(PetscMalloc1(tab->s, &rk->work));
   PetscCall(VecDuplicateVecs(ts->vec_sol, tab->s, &rk->Y));
   PetscCall(VecDuplicateVecs(ts->vec_sol, tab->s, &rk->YdotRHS));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TSSetUp_RK(TS ts)
@@ -1171,7 +1171,7 @@ static PetscErrorCode TSSetUp_RK(TS ts)
   } else {
     PetscTryMethod(ts, "TSSetUp_RK_MultirateNonsplit_C", (TS), (ts));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TSSetFromOptions_RK(TS ts, PetscOptionItems *PetscOptionsObject)
@@ -1200,7 +1200,7 @@ static PetscErrorCode TSSetFromOptions_RK(TS ts, PetscOptionItems *PetscOptionsO
   PetscOptionsBegin(PetscObjectComm((PetscObject)ts), NULL, "Multirate methods options", "");
   PetscCall(PetscOptionsInt("-ts_rk_dtratio", "time step ratio between slow and fast", "", rk->dtratio, &rk->dtratio, NULL));
   PetscOptionsEnd();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TSView_RK(TS ts, PetscViewer viewer)
@@ -1226,7 +1226,7 @@ static PetscErrorCode TSView_RK(TS ts, PetscViewer viewer)
     PetscCall(PetscFormatRealArray(buf, sizeof(buf), "% 8.6f", s, c));
     PetscCall(PetscViewerASCIIPrintf(viewer, "  Abscissa c = %s\n", buf));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TSLoad_RK(TS ts, PetscViewer viewer)
@@ -1236,7 +1236,7 @@ static PetscErrorCode TSLoad_RK(TS ts, PetscViewer viewer)
   PetscFunctionBegin;
   PetscCall(TSGetAdapt(ts, &adapt));
   PetscCall(TSAdaptLoad(adapt, viewer));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -1260,7 +1260,7 @@ PetscErrorCode TSRKGetOrder(TS ts, PetscInt *order)
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscValidIntPointer(order, 2);
   PetscUseMethod(ts, "TSRKGetOrder_C", (TS, PetscInt *), (ts, order));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1285,7 +1285,7 @@ PetscErrorCode TSRKSetType(TS ts, TSRKType rktype)
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscValidCharPointer(rktype, 2);
   PetscTryMethod(ts, "TSRKSetType_C", (TS, TSRKType), (ts, rktype));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1308,7 +1308,7 @@ PetscErrorCode TSRKGetType(TS ts, TSRKType *rktype)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscUseMethod(ts, "TSRKGetType_C", (TS, TSRKType *), (ts, rktype));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TSRKGetOrder_RK(TS ts, PetscInt *order)
@@ -1317,7 +1317,7 @@ static PetscErrorCode TSRKGetOrder_RK(TS ts, PetscInt *order)
 
   PetscFunctionBegin;
   *order = rk->tableau->order;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TSRKGetType_RK(TS ts, TSRKType *rktype)
@@ -1326,7 +1326,7 @@ static PetscErrorCode TSRKGetType_RK(TS ts, TSRKType *rktype)
 
   PetscFunctionBegin;
   *rktype = rk->tableau->name;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TSRKSetType_RK(TS ts, TSRKType rktype)
@@ -1338,7 +1338,7 @@ static PetscErrorCode TSRKSetType_RK(TS ts, TSRKType rktype)
   PetscFunctionBegin;
   if (rk->tableau) {
     PetscCall(PetscStrcmp(rk->tableau->name, rktype, &match));
-    if (match) PetscFunctionReturn(0);
+    if (match) PetscFunctionReturn(PETSC_SUCCESS);
   }
   for (link = RKTableauList; link; link = link->next) {
     PetscCall(PetscStrcmp(link->tab.name, rktype, &match));
@@ -1347,7 +1347,7 @@ static PetscErrorCode TSRKSetType_RK(TS ts, TSRKType rktype)
       rk->tableau = &link->tab;
       if (ts->setupcalled) PetscCall(TSRKTableauSetUp(ts));
       ts->default_adapt_type = rk->tableau->bembed ? TSADAPTBASIC : TSADAPTNONE;
-      PetscFunctionReturn(0);
+      PetscFunctionReturn(PETSC_SUCCESS);
     }
   }
   SETERRQ(PetscObjectComm((PetscObject)ts), PETSC_ERR_ARG_UNKNOWN_TYPE, "Could not find '%s'", rktype);
@@ -1360,7 +1360,7 @@ static PetscErrorCode TSGetStages_RK(TS ts, PetscInt *ns, Vec **Y)
   PetscFunctionBegin;
   if (ns) *ns = rk->tableau->s;
   if (Y) *Y = rk->Y;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TSDestroy_RK(TS ts)
@@ -1382,7 +1382,7 @@ static PetscErrorCode TSDestroy_RK(TS ts)
   PetscCall(PetscObjectComposeFunction((PetscObject)ts, "TSReset_RK_MultirateSplit_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)ts, "TSSetUp_RK_MultirateNonsplit_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)ts, "TSReset_RK_MultirateNonsplit_C", NULL));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -1401,7 +1401,7 @@ static PetscErrorCode SNESTSFormFunction_RK(SNES snes, Vec x, Vec y, TS ts)
   ts->dm = dm;
   PetscCall(TSComputeRHSFunction(ts, rk->stage_time, x, y));
   ts->dm = dmsave;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode SNESTSFormJacobian_RK(SNES snes, Vec x, Mat A, Mat B, TS ts)
@@ -1415,7 +1415,7 @@ static PetscErrorCode SNESTSFormJacobian_RK(SNES snes, Vec x, Mat A, Mat B, TS t
   ts->dm = dm;
   PetscCall(TSComputeRHSJacobian(ts, rk->stage_time, x, A, B));
   ts->dm = dmsave;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1441,7 +1441,7 @@ PetscErrorCode TSRKSetMultirate(TS ts, PetscBool use_multirate)
 {
   PetscFunctionBegin;
   PetscTryMethod(ts, "TSRKSetMultirate_C", (TS, PetscBool), (ts, use_multirate));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -1463,7 +1463,7 @@ PetscErrorCode TSRKGetMultirate(TS ts, PetscBool *use_multirate)
 {
   PetscFunctionBegin;
   PetscUseMethod(ts, "TSRKGetMultirate_C", (TS, PetscBool *), (ts, use_multirate));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -1524,5 +1524,5 @@ PETSC_EXTERN PetscErrorCode TSCreate_RK(TS ts)
 
   PetscCall(TSRKSetType(ts, TSRKDefault));
   rk->dtratio = 1;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

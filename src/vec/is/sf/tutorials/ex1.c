@@ -32,7 +32,7 @@ static PetscErrorCode PetscSFViewCustomLocals_Private(PetscSF sf, const PetscInt
   PetscCall(PetscViewerFlush(viewer));
   PetscCall(PetscViewerASCIIPopTab(viewer));
   PetscCall(PetscViewerASCIIPopSynchronized(viewer));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)

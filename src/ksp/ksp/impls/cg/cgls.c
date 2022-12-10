@@ -20,7 +20,7 @@ static PetscErrorCode KSPSetUp_CGLS(KSP ksp)
   cgls->nwork_n = 2;
   if (cgls->vwork_n) PetscCall(VecDestroyVecs(cgls->nwork_n, &cgls->vwork_n));
   PetscCall(KSPCreateVecs(ksp, cgls->nwork_n, &cgls->vwork_n, cgls->nwork_m, &cgls->vwork_m));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode KSPSolve_CGLS(KSP ksp)
@@ -55,7 +55,7 @@ static PetscErrorCode KSPSolve_CGLS(KSP ksp)
   KSPCheckNorm(ksp, gamma);
   if (ksp->normtype != KSP_NORM_NONE) ksp->rnorm = gamma;
   PetscCall((*ksp->converged)(ksp, ksp->its, ksp->rnorm, &ksp->reason, ksp->cnvP));
-  if (ksp->reason) PetscFunctionReturn(0);
+  if (ksp->reason) PetscFunctionReturn(PETSC_SUCCESS);
   gamma = gamma * gamma; /* gamma = norm2(s)^2 */
 
   do {
@@ -74,14 +74,14 @@ static PetscErrorCode KSPSolve_CGLS(KSP ksp)
     if (ksp->normtype != KSP_NORM_NONE) ksp->rnorm = gamma;
     PetscCall(KSPMonitor(ksp, ksp->its, ksp->rnorm));
     PetscCall((*ksp->converged)(ksp, ksp->its, ksp->rnorm, &ksp->reason, ksp->cnvP));
-    if (ksp->reason) PetscFunctionReturn(0);
+    if (ksp->reason) PetscFunctionReturn(PETSC_SUCCESS);
     gamma = gamma * gamma;           /* gamma = norm2(s)^2      */
     beta  = gamma / oldgamma;        /* beta = gamma / oldgamma */
     PetscCall(VecAYPX(p, beta, ss)); /* p = s + beta * p        */
   } while (ksp->its < ksp->max_it);
 
   if (ksp->its >= ksp->max_it) ksp->reason = KSP_DIVERGED_ITS;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode KSPDestroy_CGLS(KSP ksp)
@@ -93,7 +93,7 @@ static PetscErrorCode KSPDestroy_CGLS(KSP ksp)
   if (cgls->vwork_n) PetscCall(VecDestroyVecs(cgls->nwork_n, &cgls->vwork_n));
   if (cgls->vwork_m) PetscCall(VecDestroyVecs(cgls->nwork_m, &cgls->vwork_m));
   PetscCall(PetscFree(ksp->data));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -123,5 +123,5 @@ PETSC_EXTERN PetscErrorCode KSPCreate_CGLS(KSP ksp)
   ksp->ops->buildresidual  = KSPBuildResidualDefault;
   ksp->ops->setfromoptions = NULL;
   ksp->ops->view           = NULL;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

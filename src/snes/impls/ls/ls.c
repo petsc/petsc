@@ -39,7 +39,7 @@ static PetscErrorCode SNESNEWTONLSCheckLocalMin_Private(SNES snes, Mat A, Vec F,
     if (a1 < 1.e-4) *ismin = PETSC_TRUE;
   }
   PetscCall(VecDestroy(&W));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -68,7 +68,7 @@ static PetscErrorCode SNESNEWTONLSCheckResidual_Private(SNES snes, Mat A, Vec F,
     PetscCall(VecDestroy(&W1));
     PetscCall(VecDestroy(&W2));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -153,7 +153,7 @@ PetscErrorCode SNESSolve_NEWTONLS(SNES snes)
     PetscCall(SNESGetConvergedReason(snes->npc, &reason));
     if (reason < 0 && reason != SNES_DIVERGED_MAX_IT) {
       snes->reason = SNES_DIVERGED_INNER;
-      PetscFunctionReturn(0);
+      PetscFunctionReturn(PETSC_SUCCESS);
     }
 
     PetscCall(VecNormBegin(F, NORM_2, &fnorm));
@@ -174,7 +174,7 @@ PetscErrorCode SNESSolve_NEWTONLS(SNES snes)
 
   /* test convergence */
   PetscUseTypeMethod(snes, converged, 0, 0.0, 0.0, fnorm, &snes->reason, snes->cnvP);
-  if (snes->reason) PetscFunctionReturn(0);
+  if (snes->reason) PetscFunctionReturn(PETSC_SUCCESS);
 
   for (i = 0; i < maxits; i++) {
     /* Call general purpose update function */
@@ -190,7 +190,7 @@ PetscErrorCode SNESSolve_NEWTONLS(SNES snes)
         PetscCall(SNESGetConvergedReason(snes->npc, &reason));
         if (reason < 0 && reason != SNES_DIVERGED_MAX_IT) {
           snes->reason = SNES_DIVERGED_INNER;
-          PetscFunctionReturn(0);
+          PetscFunctionReturn(PETSC_SUCCESS);
         }
         PetscCall(SNESGetNPCFunction(snes, F, &fnorm));
       } else if (snes->npcside == PC_LEFT && snes->functype == SNES_FUNCTION_UNPRECONDITIONED) {
@@ -198,7 +198,7 @@ PetscErrorCode SNESSolve_NEWTONLS(SNES snes)
         PetscCall(SNESGetConvergedReason(snes->npc, &reason));
         if (reason < 0 && reason != SNES_DIVERGED_MAX_IT) {
           snes->reason = SNES_DIVERGED_INNER;
-          PetscFunctionReturn(0);
+          PetscFunctionReturn(PETSC_SUCCESS);
         }
       }
     }
@@ -228,7 +228,7 @@ PetscErrorCode SNESSolve_NEWTONLS(SNES snes)
     if (lssucceed) {
       if (snes->stol * xnorm > ynorm) {
         snes->reason = SNES_CONVERGED_SNORM_RELATIVE;
-        PetscFunctionReturn(0);
+        PetscFunctionReturn(PETSC_SUCCESS);
       }
       if (++snes->numFailures >= snes->maxFailures) {
         PetscBool ismin;
@@ -261,7 +261,7 @@ PetscErrorCode SNESSolve_NEWTONLS(SNES snes)
     PetscCall(PetscInfo(snes, "Maximum number of iterations has been reached: %" PetscInt_FMT "\n", maxits));
     if (!snes->reason) snes->reason = SNES_DIVERGED_MAX_IT;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -280,13 +280,13 @@ PetscErrorCode SNESSetUp_NEWTONLS(SNES snes)
   PetscFunctionBegin;
   PetscCall(SNESSetUpMatrices(snes));
   if (snes->npcside == PC_LEFT && snes->functype == SNES_FUNCTION_DEFAULT) snes->functype = SNES_FUNCTION_PRECONDITIONED;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode SNESReset_NEWTONLS(SNES snes)
 {
   PetscFunctionBegin;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -303,7 +303,7 @@ PetscErrorCode SNESDestroy_NEWTONLS(SNES snes)
   PetscFunctionBegin;
   PetscCall(SNESReset_NEWTONLS(snes));
   PetscCall(PetscFree(snes->data));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -322,7 +322,7 @@ static PetscErrorCode SNESView_NEWTONLS(SNES snes, PetscViewer viewer)
   PetscFunctionBegin;
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
   if (iascii) { }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -336,7 +336,7 @@ static PetscErrorCode SNESView_NEWTONLS(SNES snes, PetscViewer viewer)
 static PetscErrorCode SNESSetFromOptions_NEWTONLS(SNES snes, PetscOptionItems *PetscOptionsObject)
 {
   PetscFunctionBegin;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -384,5 +384,5 @@ PETSC_EXTERN PetscErrorCode SNESCreate_NEWTONLS(SNES snes)
 
   PetscCall(PetscNew(&neP));
   snes->data = (void *)neP;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

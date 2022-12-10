@@ -69,7 +69,7 @@ PetscErrorCode PetscGetTmp(MPI_Comm comm, char dir[], size_t len)
   PetscFunctionBegin;
   PetscCall(PetscOptionsGetenv(comm, "PETSC_TMP", dir, len, &flg));
   if (!flg) PetscCall(PetscStrncpy(dir, "/tmp", len));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -126,19 +126,19 @@ PetscErrorCode PetscSharedTmp(MPI_Comm comm, PetscBool *shared)
   PetscCallMPI(MPI_Comm_size(comm, &size));
   if (size == 1) {
     *shared = PETSC_TRUE;
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   PetscCall(PetscOptionsGetenv(comm, "PETSC_SHARED_TMP", NULL, 0, &flg));
   if (flg) {
     *shared = PETSC_TRUE;
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   PetscCall(PetscOptionsGetenv(comm, "PETSC_NOT_SHARED_TMP", NULL, 0, &flg));
   if (flg) {
     *shared = PETSC_FALSE;
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   if (Petsc_Tmp_keyval == MPI_KEYVAL_INVALID) PetscCallMPI(MPI_Comm_create_keyval(MPI_COMM_NULL_COPY_FN, Petsc_DelTmpShared, &Petsc_Tmp_keyval, NULL));
@@ -193,7 +193,7 @@ PetscErrorCode PetscSharedTmp(MPI_Comm comm, PetscBool *shared)
     *tagvalp = (int)*shared;
     PetscCall(PetscInfo(NULL, "processors %s %s\n", (*shared) ? "share" : "do NOT share", (iflg ? tmpname : "/tmp")));
   } else *shared = (PetscBool)*tagvalp;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -241,19 +241,19 @@ PetscErrorCode PetscSharedWorkingDirectory(MPI_Comm comm, PetscBool *shared)
   PetscCallMPI(MPI_Comm_size(comm, &size));
   if (size == 1) {
     *shared = PETSC_TRUE;
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   PetscCall(PetscOptionsGetenv(comm, "PETSC_SHARED_WORKING_DIRECTORY", NULL, 0, &flg));
   if (flg) {
     *shared = PETSC_TRUE;
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   PetscCall(PetscOptionsGetenv(comm, "PETSC_NOT_SHARED_WORKING_DIRECTORY", NULL, 0, &flg));
   if (flg) {
     *shared = PETSC_FALSE;
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   if (Petsc_WD_keyval == MPI_KEYVAL_INVALID) PetscCallMPI(MPI_Comm_create_keyval(MPI_COMM_NULL_COPY_FN, Petsc_DelTmpShared, &Petsc_WD_keyval, NULL));
@@ -302,7 +302,7 @@ PetscErrorCode PetscSharedWorkingDirectory(MPI_Comm comm, PetscBool *shared)
     *tagvalp = (int)*shared;
   } else *shared = (PetscBool)*tagvalp;
   PetscCall(PetscInfo(NULL, "processors %s working directory\n", (*shared) ? "shared" : "do NOT share"));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -439,5 +439,5 @@ PetscErrorCode PetscFileRetrieve(MPI_Comm comm, const char url[], char localname
 done:
   PetscCallMPI(MPI_Bcast(found, 1, MPIU_BOOL, 0, comm));
   PetscCallMPI(MPI_Bcast(localname, llen, MPI_CHAR, 0, comm));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

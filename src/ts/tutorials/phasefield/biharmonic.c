@@ -292,7 +292,7 @@ PetscErrorCode FormFunction(TS ts, PetscReal ftime, Vec X, Vec F, void *ptr)
   PetscCall(DMDAVecRestoreArrayRead(da, localX, &x));
   PetscCall(DMDAVecRestoreArray(da, F, &f));
   PetscCall(DMRestoreLocalVector(da, &localX));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* ------------------------------------------------------------------- */
@@ -388,7 +388,7 @@ PetscErrorCode FormJacobian(TS ts, PetscReal ftime, Vec X, Mat A, Mat B, void *p
     PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
     PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 /* ------------------------------------------------------------------- */
 PetscErrorCode FormInitialSolution(DM da, Vec U)
@@ -447,7 +447,7 @@ PetscErrorCode FormInitialSolution(DM da, Vec U)
      Restore vectors
   */
   PetscCall(DMDAVecRestoreArray(da, U, &u));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -723,7 +723,7 @@ PetscErrorCode MyMonitor(TS ts, PetscInt step, PetscReal time, Vec U, void *ptr)
   PetscCall(PetscDrawFlush(draw));
   PetscCall(PetscDrawSetPause(draw, pause));
   PetscCall(PetscDrawPause(draw));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MyDestroy(void **ptr)
@@ -732,7 +732,7 @@ PetscErrorCode MyDestroy(void **ptr)
 
   PetscFunctionBegin;
   PetscCall(PetscDrawViewPortsDestroy(ctx->ports));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*TEST

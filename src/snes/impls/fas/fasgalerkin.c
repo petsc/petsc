@@ -23,7 +23,7 @@ PetscErrorCode SNESFASGetGalerkin(SNES snes, PetscBool *flg)
   PetscValidHeaderSpecificType(snes, SNES_CLASSID, 1, SNESFAS);
   fas  = (SNES_FAS *)snes->data;
   *flg = fas->galerkin;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -48,7 +48,7 @@ PetscErrorCode SNESFASSetGalerkin(SNES snes, PetscBool flg)
   fas           = (SNES_FAS *)snes->data;
   fas->galerkin = flg;
   if (fas->next) PetscCall(SNESFASSetGalerkin(fas->next, flg));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -95,5 +95,5 @@ PetscErrorCode SNESFASGalerkinFunctionDefault(SNES snes, Vec X, Vec F, void *ctx
   prevsnes->vec_rhs = b_temp;
   /* restrict up the function */
   PetscCall(MatRestrict(prevfas->restrct, prevfas->Fg, F));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

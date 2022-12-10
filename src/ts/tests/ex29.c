@@ -16,7 +16,7 @@ static PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec X, Vec F, void *ctx)
   for (i = 1; i < n; i++) ff[i] = (i + 1) * (xx[i - 1] + PetscPowReal(t, i)) / 2;
   PetscCall(VecRestoreArrayRead(X, &xx));
   PetscCall(VecRestoreArray(F, &ff));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char *argv[])

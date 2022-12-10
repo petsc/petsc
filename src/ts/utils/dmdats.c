@@ -21,7 +21,7 @@ static PetscErrorCode DMTSDestroy_DMDA(DMTS sdm)
 {
   PetscFunctionBegin;
   PetscCall(PetscFree(sdm->data));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMTSDuplicate_DMDA(DMTS oldsdm, DMTS sdm)
@@ -29,7 +29,7 @@ static PetscErrorCode DMTSDuplicate_DMDA(DMTS oldsdm, DMTS sdm)
   PetscFunctionBegin;
   PetscCall(PetscNew((DMTS_DA **)&sdm->data));
   if (oldsdm->data) PetscCall(PetscMemcpy(sdm->data, oldsdm->data, sizeof(DMTS_DA)));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode DMDATSGetContext(DM dm, DMTS sdm, DMTS_DA **dmdats)
@@ -42,7 +42,7 @@ static PetscErrorCode DMDATSGetContext(DM dm, DMTS sdm, DMTS_DA **dmdats)
     sdm->ops->duplicate = DMTSDuplicate_DMDA;
   }
   *dmdats = (DMTS_DA *)sdm->data;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TSComputeIFunction_DMDA(TS ts, PetscReal ptime, Vec X, Vec Xdot, Vec F, void *ctx)
@@ -97,7 +97,7 @@ static PetscErrorCode TSComputeIFunction_DMDA(TS ts, PetscReal ptime, Vec X, Vec
   PetscCall(DMRestoreLocalVector(dm, &Xloc));
   PetscCall(DMDAVecRestoreArray(dm, Xdotloc, &xdot));
   PetscCall(DMRestoreLocalVector(dm, &Xdotloc));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TSComputeIJacobian_DMDA(TS ts, PetscReal ptime, Vec X, Vec Xdot, PetscReal shift, Mat A, Mat B, void *ctx)
@@ -131,7 +131,7 @@ static PetscErrorCode TSComputeIJacobian_DMDA(TS ts, PetscReal ptime, Vec X, Vec
     PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
     PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TSComputeRHSFunction_DMDA(TS ts, PetscReal ptime, Vec X, Vec F, void *ctx)
@@ -180,7 +180,7 @@ static PetscErrorCode TSComputeRHSFunction_DMDA(TS ts, PetscReal ptime, Vec X, V
   }
   PetscCall(DMDAVecRestoreArray(dm, Xloc, &x));
   PetscCall(DMRestoreLocalVector(dm, &Xloc));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TSComputeRHSJacobian_DMDA(TS ts, PetscReal ptime, Vec X, Mat A, Mat B, void *ctx)
@@ -212,7 +212,7 @@ static PetscErrorCode TSComputeRHSJacobian_DMDA(TS ts, PetscReal ptime, Vec X, M
     PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
     PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -253,7 +253,7 @@ PetscErrorCode DMDATSSetRHSFunctionLocal(DM dm, InsertMode imode, DMDATSRHSFunct
   dmdats->rhsfunctionlocal      = func;
   dmdats->rhsfunctionlocalctx   = ctx;
   PetscCall(DMTSSetRHSFunction(dm, TSComputeRHSFunction_DMDA, dmdats));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -293,7 +293,7 @@ PetscErrorCode DMDATSSetRHSJacobianLocal(DM dm, DMDATSRHSJacobianLocal func, voi
   dmdats->rhsjacobianlocal    = func;
   dmdats->rhsjacobianlocalctx = ctx;
   PetscCall(DMTSSetRHSJacobian(dm, TSComputeRHSJacobian_DMDA, dmdats));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -331,7 +331,7 @@ PetscErrorCode DMDATSSetIFunctionLocal(DM dm, InsertMode imode, DMDATSIFunctionL
   dmdats->ifunctionlocal      = func;
   dmdats->ifunctionlocalctx   = ctx;
   PetscCall(DMTSSetIFunction(dm, TSComputeIFunction_DMDA, dmdats));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -373,7 +373,7 @@ PetscErrorCode DMDATSSetIJacobianLocal(DM dm, DMDATSIJacobianLocal func, void *c
   dmdats->ijacobianlocal    = func;
   dmdats->ijacobianlocalctx = ctx;
   PetscCall(DMTSSetIJacobian(dm, TSComputeIJacobian_DMDA, dmdats));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode TSMonitorDMDARayDestroy(void **mctx)
@@ -386,7 +386,7 @@ PetscErrorCode TSMonitorDMDARayDestroy(void **mctx)
   PetscCall(VecScatterDestroy(&rayctx->scatter));
   PetscCall(PetscViewerDestroy(&rayctx->viewer));
   PetscCall(PetscFree(rayctx));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode TSMonitorDMDARay(TS ts, PetscInt steps, PetscReal time, Vec u, void *mctx)
@@ -399,7 +399,7 @@ PetscErrorCode TSMonitorDMDARay(TS ts, PetscInt steps, PetscReal time, Vec u, vo
   PetscCall(VecScatterBegin(rayctx->scatter, solution, rayctx->ray, INSERT_VALUES, SCATTER_FORWARD));
   PetscCall(VecScatterEnd(rayctx->scatter, solution, rayctx->ray, INSERT_VALUES, SCATTER_FORWARD));
   if (rayctx->viewer) PetscCall(VecView(rayctx->ray, rayctx->viewer));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode TSMonitorLGDMDARay(TS ts, PetscInt step, PetscReal ptime, Vec u, void *ctx)
@@ -441,5 +441,5 @@ PetscErrorCode TSMonitorLGDMDARay(TS ts, PetscInt step, PetscReal ptime, Vec u, 
     PetscCall(PetscDrawLGDraw(lgctx->lg));
     PetscCall(PetscDrawLGSave(lgctx->lg));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

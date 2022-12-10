@@ -169,5 +169,5 @@ PetscErrorCode TSTrajectoryReconstruct_Private(TSTrajectory tj, TS ts, PetscReal
     tj->lag.Udotcached.time = t;
     tj->lag.Udotcached.step = PETSC_MIN_INT;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

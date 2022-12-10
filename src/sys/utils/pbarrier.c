@@ -33,5 +33,5 @@ PetscErrorCode PetscBarrier(PetscObject obj)
   else comm = PETSC_COMM_WORLD;
   PetscCallMPI(MPI_Barrier(comm));
   PetscCall(PetscLogEventEnd(PETSC_Barrier, obj, 0, 0, 0));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

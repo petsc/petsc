@@ -28,7 +28,7 @@ int main(int argc, char **argv)
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-n", &N, NULL));
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-num_threads", &num_threads, NULL));
   if (nz > N + 1) {
-    PetscPrintf(PETSC_COMM_WORLD, "warning decreasing nz\n");
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "warning decreasing nz\n"));
     nz = N + 1;
   }
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
@@ -67,7 +67,7 @@ int main(int argc, char **argv)
     Kokkos::RangePolicy<>(Istart, Iend + 1), KOKKOS_LAMBDA(int i) {
       PetscScalar values[] = {1, 1, 1, 1};
       PetscInt    js[] = {i - 1, i}, nn = (i == N) ? 1 : 2;
-      MatSetValuesDevice(d_mat, nn, js, nn, js, values, ADD_VALUES);
+      static_cast<void>(MatSetValuesDevice(d_mat, nn, js, nn, js, values, ADD_VALUES));
     });
   Kokkos::fence();
   PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));

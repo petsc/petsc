@@ -21,7 +21,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscCall(PetscOptionsBoundedInt("-mesh_num", "The mesh we should construct", "ex8.c", options->meshNum, &options->meshNum, NULL, 0));
   PetscOptionsEnd();
 
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode CreateHybridMesh(MPI_Comm comm, PetscBool interpolate, DM *dm)
@@ -52,7 +52,7 @@ static PetscErrorCode CreateHybridMesh(MPI_Comm comm, PetscBool interpolate, DM 
     }
     PetscCall(DMViewFromOptions(*dm, NULL, "-dm_view"));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -102,7 +102,7 @@ static PetscErrorCode CreateReverseHybridMesh(MPI_Comm comm, PetscBool interpola
     }
     PetscCall(DMViewFromOptions(*dm, NULL, "-dm_view"));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode OrderHybridMesh(DM *dm)
@@ -141,7 +141,7 @@ static PetscErrorCode OrderHybridMesh(DM *dm)
   PetscCall(ISDestroy(&perm));
   PetscCall(DMDestroy(dm));
   *dm = pdm;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
@@ -177,7 +177,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
       SETERRQ(comm, PETSC_ERR_ARG_WRONG, "Unknown mesh number %" PetscInt_FMT, user->meshNum);
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)

@@ -16,7 +16,7 @@ PETSC_NODISCARD inline PetscErrorCode PetscCxxObjectRegisterFinalize(T *obj, MPI
   const auto     finalizer = [](void *ptr) {
     PetscFunctionBegin;
     PetscCall(static_cast<T *>(ptr)->finalize());
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   };
 
   PetscFunctionBegin;
@@ -25,7 +25,7 @@ PETSC_NODISCARD inline PetscErrorCode PetscCxxObjectRegisterFinalize(T *obj, MPI
   PetscCall(PetscContainerSetPointer(contain, obj));
   PetscCall(PetscContainerSetUserDestroy(contain, std::move(finalizer)));
   PetscCall(PetscObjectRegisterDestroy(reinterpret_cast<PetscObject>(contain)));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 } // anonymous namespace
@@ -72,14 +72,14 @@ template <typename D>
 template <typename... Args>
 inline PetscErrorCode RegisterFinalizeable<D>::finalize_(Args &&...) noexcept
 {
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 template <typename D>
 template <typename... Args>
 inline PetscErrorCode RegisterFinalizeable<D>::register_finalize_(Args &&...) noexcept
 {
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 /*
@@ -122,7 +122,7 @@ inline PetscErrorCode RegisterFinalizeable<D>::finalize(Args &&...args) noexcept
     registered_ = false;
     PetscCall(this->underlying().finalize_(std::forward<Args>(args)...));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -149,13 +149,13 @@ template <typename... Args>
 inline PetscErrorCode RegisterFinalizeable<D>::register_finalize(Args &&...args) noexcept
 {
   PetscFunctionBegin;
-  if (PetscLikely(this->underlying().registered())) PetscFunctionReturn(0);
+  if (PetscLikely(this->underlying().registered())) PetscFunctionReturn(PETSC_SUCCESS);
   registered_ = true;
   PetscCall(this->underlying().register_finalize_(std::forward<Args>(args)...));
   // Check if registered before we commit to actually register-finalizing. register_finalize_()
   // is allowed to run its finalizer immediately
   if (this->underlying().registered()) PetscCall(PetscCxxObjectRegisterFinalize(this));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 } // namespace Petsc

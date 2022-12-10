@@ -55,7 +55,7 @@ PetscErrorCode TSPseudoComputeTimeStep(TS ts, PetscReal *dt)
   PetscCall(PetscLogEventBegin(TS_PseudoComputeTimeStep, ts, 0, 0, 0));
   PetscCall((*pseudo->dt)(ts, dt, pseudo->dtctx));
   PetscCall(PetscLogEventEnd(TS_PseudoComputeTimeStep, ts, 0, 0, 0));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* ------------------------------------------------------------------------------*/
@@ -85,7 +85,7 @@ PetscErrorCode TSPseudoVerifyTimeStepDefault(TS ts, Vec update, void *dtctx, Pet
 {
   PetscFunctionBegin;
   *flag = PETSC_TRUE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -116,7 +116,7 @@ PetscErrorCode TSPseudoVerifyTimeStep(TS ts, Vec update, PetscReal *dt, PetscBoo
   PetscFunctionBegin;
   *flag = PETSC_TRUE;
   if (pseudo->verify) PetscCall((*pseudo->verify)(ts, update, pseudo->verifyctx, dt, flag));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* --------------------------------------------------------------------------------*/
@@ -153,7 +153,7 @@ static PetscErrorCode TSStep_Pseudo(TS ts)
   if (reject >= ts->max_reject) {
     ts->reason = TS_DIVERGED_STEP_REJECTED;
     PetscCall(PetscInfo(ts, "Step=%" PetscInt_FMT ", step rejections %" PetscInt_FMT " greater than current TS allowed, stopping solve\n", ts->steps, reject));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   PetscCall(VecCopy(pseudo->update, ts->vec_sol));
@@ -168,14 +168,14 @@ static PetscErrorCode TSStep_Pseudo(TS ts)
   if (pseudo->fnorm < pseudo->fatol) {
     ts->reason = TS_CONVERGED_PSEUDO_FATOL;
     PetscCall(PetscInfo(ts, "Step=%" PetscInt_FMT ", converged since fnorm %g < fatol %g\n", ts->steps, (double)pseudo->fnorm, (double)pseudo->frtol));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
   if (pseudo->fnorm / pseudo->fnorm_initial < pseudo->frtol) {
     ts->reason = TS_CONVERGED_PSEUDO_FRTOL;
     PetscCall(PetscInfo(ts, "Step=%" PetscInt_FMT ", converged since fnorm %g / fnorm_initial %g < frtol %g\n", ts->steps, (double)pseudo->fnorm, (double)pseudo->fnorm_initial, (double)pseudo->fatol));
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*------------------------------------------------------------*/
@@ -187,7 +187,7 @@ static PetscErrorCode TSReset_Pseudo(TS ts)
   PetscCall(VecDestroy(&pseudo->update));
   PetscCall(VecDestroy(&pseudo->func));
   PetscCall(VecDestroy(&pseudo->xdot));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TSDestroy_Pseudo(TS ts)
@@ -200,7 +200,7 @@ static PetscErrorCode TSDestroy_Pseudo(TS ts)
   PetscCall(PetscObjectComposeFunction((PetscObject)ts, "TSPseudoSetMaxTimeStep_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)ts, "TSPseudoIncrementDtFromInitialDt_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)ts, "TSPseudoSetTimeStep_C", NULL));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*------------------------------------------------------------*/
@@ -226,7 +226,7 @@ static PetscErrorCode TSPseudoGetXdot(TS ts, Vec X, Vec *Xdot)
   PetscCall(VecRestoreArrayRead(X, &xnp1));
   PetscCall(VecRestoreArray(pseudo->xdot, &xdot));
   *Xdot = pseudo->xdot;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -253,7 +253,7 @@ static PetscErrorCode SNESTSFormFunction_Pseudo(SNES snes, Vec X, Vec Y, TS ts)
   PetscFunctionBegin;
   PetscCall(TSPseudoGetXdot(ts, X, &Xdot));
   PetscCall(TSComputeIFunction(ts, ts->ptime + ts->time_step, X, Xdot, Y, PETSC_FALSE));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -272,7 +272,7 @@ static PetscErrorCode SNESTSFormJacobian_Pseudo(SNES snes, Vec X, Mat AA, Mat BB
   PetscFunctionBegin;
   PetscCall(TSPseudoGetXdot(ts, X, &Xdot));
   PetscCall(TSComputeIJacobian(ts, ts->ptime + ts->time_step, X, Xdot, 1. / ts->time_step, AA, BB, PETSC_FALSE));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TSSetUp_Pseudo(TS ts)
@@ -283,7 +283,7 @@ static PetscErrorCode TSSetUp_Pseudo(TS ts)
   PetscCall(VecDuplicate(ts->vec_sol, &pseudo->update));
   PetscCall(VecDuplicate(ts->vec_sol, &pseudo->func));
   PetscCall(VecDuplicate(ts->vec_sol, &pseudo->xdot));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 /*------------------------------------------------------------*/
 
@@ -301,7 +301,7 @@ static PetscErrorCode TSPseudoMonitorDefault(TS ts, PetscInt step, PetscReal pti
   PetscCall(PetscViewerASCIIAddTab(viewer, ((PetscObject)ts)->tablevel));
   PetscCall(PetscViewerASCIIPrintf(viewer, "TS %" PetscInt_FMT " dt %g time %g fnorm %g\n", step, (double)ts->time_step, (double)ptime, (double)pseudo->fnorm));
   PetscCall(PetscViewerASCIISubtractTab(viewer, ((PetscObject)ts)->tablevel));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TSSetFromOptions_Pseudo(TS ts, PetscOptionItems *PetscOptionsObject)
@@ -325,7 +325,7 @@ static PetscErrorCode TSSetFromOptions_Pseudo(TS ts, PetscOptionItems *PetscOpti
   PetscCall(PetscOptionsReal("-ts_pseudo_fatol", "Tolerance for norm of function", "", pseudo->fatol, &pseudo->fatol, NULL));
   PetscCall(PetscOptionsReal("-ts_pseudo_frtol", "Relative tolerance for norm of function", "", pseudo->frtol, &pseudo->frtol, NULL));
   PetscOptionsHeadEnd();
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TSView_Pseudo(TS ts, PetscViewer viewer)
@@ -342,7 +342,7 @@ static PetscErrorCode TSView_Pseudo(TS ts, PetscViewer viewer)
     PetscCall(PetscViewerASCIIPrintf(viewer, "  dt_increment - increase in timestep on successful step %g\n", (double)pseudo->dt_increment));
     PetscCall(PetscViewerASCIIPrintf(viewer, "  dt_max - maximum time %g\n", (double)pseudo->dt_max));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* ----------------------------------------------------------------------------- */
@@ -379,7 +379,7 @@ PetscErrorCode TSPseudoSetVerifyTimeStep(TS ts, PetscErrorCode (*dt)(TS, Vec, vo
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscTryMethod(ts, "TSPseudoSetVerifyTimeStep_C", (TS, PetscErrorCode(*)(TS, Vec, void *, PetscReal *, PetscBool *), void *), (ts, dt, ctx));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -405,7 +405,7 @@ PetscErrorCode TSPseudoSetTimeStepIncrement(TS ts, PetscReal inc)
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscValidLogicalCollectiveReal(ts, inc, 2);
   PetscTryMethod(ts, "TSPseudoSetTimeStepIncrement_C", (TS, PetscReal), (ts, inc));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -431,7 +431,7 @@ PetscErrorCode TSPseudoSetMaxTimeStep(TS ts, PetscReal maxdt)
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscValidLogicalCollectiveReal(ts, maxdt, 2);
   PetscTryMethod(ts, "TSPseudoSetMaxTimeStep_C", (TS, PetscReal), (ts, maxdt));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
@@ -458,7 +458,7 @@ PetscErrorCode TSPseudoIncrementDtFromInitialDt(TS ts)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscTryMethod(ts, "TSPseudoIncrementDtFromInitialDt_C", (TS), (ts));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -494,7 +494,7 @@ PetscErrorCode TSPseudoSetTimeStep(TS ts, PetscErrorCode (*dt)(TS, PetscReal *, 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscTryMethod(ts, "TSPseudoSetTimeStep_C", (TS, PetscErrorCode(*)(TS, PetscReal *, void *), void *), (ts, dt, ctx));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* ----------------------------------------------------------------------------- */
@@ -507,7 +507,7 @@ static PetscErrorCode TSPseudoSetVerifyTimeStep_Pseudo(TS ts, FCN1 dt, void *ctx
   PetscFunctionBegin;
   pseudo->verify    = dt;
   pseudo->verifyctx = ctx;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TSPseudoSetTimeStepIncrement_Pseudo(TS ts, PetscReal inc)
@@ -516,7 +516,7 @@ static PetscErrorCode TSPseudoSetTimeStepIncrement_Pseudo(TS ts, PetscReal inc)
 
   PetscFunctionBegin;
   pseudo->dt_increment = inc;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TSPseudoSetMaxTimeStep_Pseudo(TS ts, PetscReal maxdt)
@@ -525,7 +525,7 @@ static PetscErrorCode TSPseudoSetMaxTimeStep_Pseudo(TS ts, PetscReal maxdt)
 
   PetscFunctionBegin;
   pseudo->dt_max = maxdt;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TSPseudoIncrementDtFromInitialDt_Pseudo(TS ts)
@@ -534,7 +534,7 @@ static PetscErrorCode TSPseudoIncrementDtFromInitialDt_Pseudo(TS ts)
 
   PetscFunctionBegin;
   pseudo->increment_dt_from_initial_dt = PETSC_TRUE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 typedef PetscErrorCode (*FCN2)(TS, PetscReal *, void *); /* force argument to next function to not be extern C*/
@@ -545,7 +545,7 @@ static PetscErrorCode TSPseudoSetTimeStep_Pseudo(TS ts, FCN2 dt, void *ctx)
   PetscFunctionBegin;
   pseudo->dt    = dt;
   pseudo->dtctx = ctx;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* ----------------------------------------------------------------------------- */
@@ -637,7 +637,7 @@ PETSC_EXTERN PetscErrorCode TSCreate_Pseudo(TS ts)
   PetscCall(PetscObjectComposeFunction((PetscObject)ts, "TSPseudoSetMaxTimeStep_C", TSPseudoSetMaxTimeStep_Pseudo));
   PetscCall(PetscObjectComposeFunction((PetscObject)ts, "TSPseudoIncrementDtFromInitialDt_C", TSPseudoIncrementDtFromInitialDt_Pseudo));
   PetscCall(PetscObjectComposeFunction((PetscObject)ts, "TSPseudoSetTimeStep_C", TSPseudoSetTimeStep_Pseudo));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
@@ -675,5 +675,5 @@ PetscErrorCode TSPseudoTimeStepDefault(TS ts, PetscReal *newdt, void *dtctx)
   else *newdt = inc * ts->time_step * pseudo->fnorm_previous / pseudo->fnorm;
   if (pseudo->dt_max > 0) *newdt = PetscMin(*newdt, pseudo->dt_max);
   pseudo->fnorm_previous = pseudo->fnorm;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

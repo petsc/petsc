@@ -387,7 +387,7 @@ PetscErrorCode setupStream(PetscInt deviceNum, PetscBool runDouble, PetscBool cp
 
   if (runDouble) PetscCall(runStreamDouble(iNumThreadsPerBlock, cpuTiming));
   else PetscCall(runStream(iNumThreadsPerBlock, cpuTiming));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -605,7 +605,7 @@ PetscErrorCode runStream(const PetscInt iNumThreadsPerBlock, PetscBool bDontUseG
   PetscCallCUDA(cudaFree(d_b));
   PetscCallCUDA(cudaFree(d_c));
 
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode runStreamDouble(const PetscInt iNumThreadsPerBlock, PetscBool bDontUseGPUTiming) {
@@ -818,7 +818,7 @@ PetscErrorCode runStreamDouble(const PetscInt iNumThreadsPerBlock, PetscBool bDo
   PetscCallCUDA(cudaFree(d_b));
   PetscCallCUDA(cudaFree(d_c));
 
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -865,5 +865,5 @@ PetscErrorCode printResultsReadable(float times[][NTIMES], const size_t bsize) {
     }
   }
 
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

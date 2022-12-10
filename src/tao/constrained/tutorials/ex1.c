@@ -52,7 +52,7 @@ PetscErrorCode FormEqualityConstraints(Tao, Vec, Vec, void *);
 PetscErrorCode FormInequalityJacobian(Tao, Vec, Mat, Mat, void *);
 PetscErrorCode FormEqualityJacobian(Tao, Vec, Mat, Mat, void *);
 
-PetscErrorCode main(int argc, char **argv)
+int main(int argc, char **argv)
 {
   Tao         tao;
   KSP         ksp;
@@ -150,7 +150,7 @@ PetscErrorCode main(int argc, char **argv)
   PetscCall(DestroyProblem(&user));
   PetscCall(TaoDestroy(&tao));
   PetscCall(PetscFinalize());
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 PetscErrorCode InitializeProblem(AppCtx *user)
@@ -225,7 +225,7 @@ PetscErrorCode InitializeProblem(AppCtx *user)
   PetscCall(MatSetSizes(user->H, nloc, nloc, user->n, user->n));
   PetscCall(MatSetFromOptions(user->H));
   PetscCall(MatSetUp(user->H));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DestroyProblem(AppCtx *user)
@@ -242,7 +242,7 @@ PetscErrorCode DestroyProblem(AppCtx *user)
   PetscCall(VecDestroy(&user->xu));
   PetscCall(VecDestroy(&user->Xseq));
   PetscCall(VecScatterDestroy(&user->scat));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Evaluate
@@ -278,7 +278,7 @@ PetscErrorCode FormFunctionGradient(Tao tao, Vec X, PetscReal *f, Vec G, void *c
   /* G = 2*X - 6 */
   PetscCall(VecSet(G, -6.0));
   PetscCall(VecAXPY(G, 2.0, X));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Evaluate PDIPM Hessian, see Eqn(22) in http://doi.org/10.1049/gtd2.12708
@@ -339,7 +339,7 @@ PetscErrorCode FormPDIPMHessian(Tao tao, Vec x, Mat H, Mat Hpre, void *ctx)
   }
   PetscCall(VecScatterDestroy(&Discat));
   PetscCall(VecDestroy(&Diseq));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Evaluate
@@ -373,7 +373,7 @@ PetscErrorCode FormInequalityConstraints(Tao tao, Vec X, Vec CI, void *ctx)
   }
   PetscCall(VecAssemblyBegin(CI));
   PetscCall(VecAssemblyEnd(CI));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /* Evaluate
@@ -404,7 +404,7 @@ PetscErrorCode FormEqualityConstraints(Tao tao, Vec X, Vec CE, void *ctx)
   }
   PetscCall(VecAssemblyBegin(CE));
   PetscCall(VecAssemblyEnd(CE));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -442,7 +442,7 @@ PetscErrorCode FormInequalityJacobian(Tao tao, Vec X, Mat JI, Mat JIpre, void *c
   PetscCall(VecRestoreArrayRead(Xseq, &x));
   PetscCall(MatAssemblyBegin(JI, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(JI, MAT_FINAL_ASSEMBLY));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -471,7 +471,7 @@ PetscErrorCode FormEqualityJacobian(Tao tao, Vec X, Mat JE, Mat JEpre, void *ctx
   }
   PetscCall(MatAssemblyBegin(JE, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(JE, MAT_FINAL_ASSEMBLY));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*TEST

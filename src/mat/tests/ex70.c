@@ -39,7 +39,7 @@ static PetscErrorCode CheckLocal(Mat A, Mat B, PetscScalar *a, PetscScalar *b)
   }
   PetscCheck(!wA && !wB, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Wrong array in first Mat? %d, Wrong array in second Mat? %d", wA, wB);
   PetscCheck(!wAv && !wBv, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Wrong data in first Mat? %d, Wrong data in second Mat? %d", wAv, wBv);
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 typedef struct {
@@ -58,7 +58,7 @@ PetscErrorCode proj_destroy(void *ctx)
   PetscCall(MatDestroy(&userdata->P));
   PetscCall(MatDestroy(&userdata->R));
   PetscCall(PetscFree(userdata));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode proj_mult(Mat S, Vec X, Vec Y)
@@ -102,7 +102,7 @@ PetscErrorCode proj_mult(Mat S, Vec X, Vec Y)
   PetscCall(VecDestroy(&Py));
   PetscCall(VecDestroy(&Ax));
   PetscCall(VecDestroy(&Ay));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MyPtShellPMultSymbolic(Mat S, Mat P, Mat PtAP, void **ctx)
@@ -113,7 +113,7 @@ PetscErrorCode MyPtShellPMultSymbolic(Mat S, Mat P, Mat PtAP, void **ctx)
   PetscCall(PetscNew(&userdata));
   PetscCall(MatShellSetContext(PtAP, userdata));
   *ctx = (void *)userdata;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MyPtShellPMultNumeric(Mat S, Mat P, Mat PtAP, void *ctx)
@@ -134,7 +134,7 @@ PetscErrorCode MyPtShellPMultNumeric(Mat S, Mat P, Mat PtAP, void *ctx)
   PetscCall(MatSetUp(PtAP));
   PetscCall(MatAssemblyBegin(PtAP, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(PtAP, MAT_FINAL_ASSEMBLY));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MyRShellRtMultSymbolic(Mat S, Mat R, Mat RARt, void **ctx)
@@ -145,7 +145,7 @@ PetscErrorCode MyRShellRtMultSymbolic(Mat S, Mat R, Mat RARt, void **ctx)
   PetscCall(PetscNew(&userdata));
   PetscCall(MatShellSetContext(RARt, userdata));
   *ctx = (void *)userdata;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MyRShellRtMultNumeric(Mat S, Mat R, Mat RARt, void *ctx)
@@ -166,7 +166,7 @@ PetscErrorCode MyRShellRtMultNumeric(Mat S, Mat R, Mat RARt, void *ctx)
   PetscCall(MatSetUp(RARt));
   PetscCall(MatAssemblyBegin(RARt, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(RARt, MAT_FINAL_ASSEMBLY));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MyMatShellMatMultNumeric(Mat S, Mat B, Mat C, void *ctx)
@@ -176,7 +176,7 @@ PetscErrorCode MyMatShellMatMultNumeric(Mat S, Mat B, Mat C, void *ctx)
   PetscFunctionBegin;
   PetscCall(MatShellGetContext(S, &A));
   PetscCall(MatMatMult(A, B, MAT_REUSE_MATRIX, PETSC_DEFAULT, &C));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MyMatTransposeShellMatMultNumeric(Mat S, Mat B, Mat C, void *ctx)
@@ -186,7 +186,7 @@ PetscErrorCode MyMatTransposeShellMatMultNumeric(Mat S, Mat B, Mat C, void *ctx)
   PetscFunctionBegin;
   PetscCall(MatShellGetContext(S, &A));
   PetscCall(MatTransposeMatMult(A, B, MAT_REUSE_MATRIX, PETSC_DEFAULT, &C));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MyMatShellMatTransposeMultNumeric(Mat S, Mat B, Mat C, void *ctx)
@@ -196,7 +196,7 @@ PetscErrorCode MyMatShellMatTransposeMultNumeric(Mat S, Mat B, Mat C, void *ctx)
   PetscFunctionBegin;
   PetscCall(MatShellGetContext(S, &A));
   PetscCall(MatMatTransposeMult(A, B, MAT_REUSE_MATRIX, PETSC_DEFAULT, &C));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **args)

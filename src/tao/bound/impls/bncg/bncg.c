@@ -52,7 +52,7 @@ PetscErrorCode TaoBNCGEstimateActiveSet(Tao tao, PetscInt asType)
   default:
     break;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode TaoBNCGBoundStep(Tao tao, PetscInt asType, Vec step)
@@ -72,7 +72,7 @@ PetscErrorCode TaoBNCGBoundStep(Tao tao, PetscInt asType, Vec step)
   default:
     break;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TaoSolve_BNCG(Tao tao)
@@ -118,7 +118,7 @@ static PetscErrorCode TaoSolve_BNCG(Tao tao)
   PetscCall(TaoLogConvergenceHistory(tao, cg->f, resnorm, 0.0, tao->ksp_its));
   PetscCall(TaoMonitor(tao, tao->niter, cg->f, resnorm, 0.0, step));
   PetscUseTypeMethod(tao, convergencetest, tao->cnvP);
-  if (tao->reason != TAO_CONTINUE_ITERATING) PetscFunctionReturn(0);
+  if (tao->reason != TAO_CONTINUE_ITERATING) PetscFunctionReturn(PETSC_SUCCESS);
   /* Calculate initial direction. */
   if (!tao->recycle) {
     /* We are not recycling a solution/history from a past TaoSolve */
@@ -132,7 +132,7 @@ static PetscErrorCode TaoSolve_BNCG(Tao tao)
       PetscCall(TaoComputeObjectiveAndGradient(tao, tao->solution, &cg->f, cg->unprojected_gradient));
     }
     PetscCall(TaoBNCGConductIteration(tao, gnorm));
-    if (tao->reason != TAO_CONTINUE_ITERATING) PetscFunctionReturn(0);
+    if (tao->reason != TAO_CONTINUE_ITERATING) PetscFunctionReturn(PETSC_SUCCESS);
   }
 }
 
@@ -158,7 +158,7 @@ static PetscErrorCode TaoSetUp_BNCG(Tao tao)
   if (!cg->unprojected_gradient_old) PetscCall(VecDuplicate(tao->gradient, &cg->unprojected_gradient_old));
   PetscCall(MatLMVMAllocate(cg->B, cg->sk, cg->yk));
   if (cg->pc) PetscCall(MatLMVMSetJ0(cg->B, cg->pc));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TaoDestroy_BNCG(Tao tao)
@@ -189,7 +189,7 @@ static PetscErrorCode TaoDestroy_BNCG(Tao tao)
   PetscCall(MatDestroy(&cg->B));
   if (cg->pc) PetscCall(MatDestroy(&cg->pc));
   PetscCall(PetscFree(tao->data));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TaoSetFromOptions_BNCG(Tao tao, PetscOptionItems *PetscOptionsObject)
@@ -241,7 +241,7 @@ static PetscErrorCode TaoSetFromOptions_BNCG(Tao tao, PetscOptionItems *PetscOpt
   PetscCall(MatSetOptionsPrefix(cg->B, ((PetscObject)tao)->prefix));
   PetscCall(MatAppendOptionsPrefix(cg->B, "tao_bncg_"));
   PetscCall(MatSetFromOptions(cg->B));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TaoView_BNCG(Tao tao, PetscViewer viewer)
@@ -269,7 +269,7 @@ static PetscErrorCode TaoView_BNCG(Tao tao, PetscViewer viewer)
     }
     PetscCall(PetscViewerASCIIPopTab(viewer));
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode TaoBNCGComputeScalarScaling(PetscReal yty, PetscReal yts, PetscReal sts, PetscReal *scale, PetscReal alpha)
@@ -295,7 +295,7 @@ PetscErrorCode TaoBNCGComputeScalarScaling(PetscReal yty, PetscReal yts, PetscRe
     else if (sig2 > 0.0) *scale = sig2;
     else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_CONV_FAILED, "Cannot find positive scalar");
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*MC
@@ -405,7 +405,7 @@ PETSC_EXTERN PetscErrorCode TaoCreate_BNCG(Tao tao)
   cg->cg_type          = CG_SSML_BFGS;
   cg->alpha            = 1.0;
   cg->diag_scaling     = PETSC_TRUE;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode TaoBNCGResetUpdate(Tao tao, PetscReal gnormsq)
@@ -424,7 +424,7 @@ PetscErrorCode TaoBNCGResetUpdate(Tao tao, PetscReal gnormsq)
   PetscCall(VecAXPBY(tao->stepdirection, -scaling, 0.0, tao->gradient));
   /* Also want to reset our diagonal scaling with each restart */
   if (cg->diag_scaling) PetscCall(MatLMVMReset(cg->B, PETSC_FALSE));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode TaoBNCGCheckDynamicRestart(Tao tao, PetscReal stepsize, PetscReal gd, PetscReal gd_old, PetscBool *dynrestart, PetscReal fold)
@@ -435,7 +435,7 @@ PetscErrorCode TaoBNCGCheckDynamicRestart(Tao tao, PetscReal stepsize, PetscReal
   PetscFunctionBegin;
   if (cg->f < cg->min_quad / 10) {
     *dynrestart = PETSC_FALSE;
-    PetscFunctionReturn(0);
+    PetscFunctionReturn(PETSC_SUCCESS);
   } /* just skip this since this strategy doesn't work well for functions near zero */
   quadinterp = 2.0 * (cg->f - fold) / (stepsize * (gd + gd_old));
   if (PetscAbs(quadinterp - 1.0) < cg->tol_quad) ++cg->iter_quad;
@@ -447,7 +447,7 @@ PetscErrorCode TaoBNCGCheckDynamicRestart(Tao tao, PetscReal stepsize, PetscReal
     cg->iter_quad = 0;
     *dynrestart   = PETSC_TRUE;
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_INTERN PetscErrorCode TaoBNCGStepDirectionUpdate(Tao tao, PetscReal gnorm2, PetscReal step, PetscReal fold, PetscReal gnorm2_old, PetscReal dnorm, PetscBool pcgd_fallback)
@@ -880,7 +880,7 @@ PETSC_INTERN PetscErrorCode TaoBNCGStepDirectionUpdate(Tao tao, PetscReal gnorm2
       break;
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PETSC_INTERN PetscErrorCode TaoBNCGConductIteration(Tao tao, PetscReal gnorm)
@@ -966,7 +966,7 @@ PETSC_INTERN PetscErrorCode TaoBNCGConductIteration(Tao tao, PetscReal gnorm)
       }
     }
     /* Convergence test for line search failure */
-    if (tao->reason != TAO_CONTINUE_ITERATING) PetscFunctionReturn(0);
+    if (tao->reason != TAO_CONTINUE_ITERATING) PetscFunctionReturn(PETSC_SUCCESS);
 
     /* Standard convergence test */
     PetscCall(VecFischer(tao->solution, cg->unprojected_gradient, tao->XL, tao->XU, cg->W));
@@ -975,7 +975,7 @@ PETSC_INTERN PetscErrorCode TaoBNCGConductIteration(Tao tao, PetscReal gnorm)
     PetscCall(TaoLogConvergenceHistory(tao, cg->f, resnorm, 0.0, tao->ksp_its));
     PetscCall(TaoMonitor(tao, tao->niter, cg->f, resnorm, 0.0, step));
     PetscUseTypeMethod(tao, convergencetest, tao->cnvP);
-    if (tao->reason != TAO_CONTINUE_ITERATING) PetscFunctionReturn(0);
+    if (tao->reason != TAO_CONTINUE_ITERATING) PetscFunctionReturn(PETSC_SUCCESS);
   }
   /* Assert we have an updated step and we need at least one more iteration. */
   /* Calculate the next direction */
@@ -1018,7 +1018,7 @@ PETSC_INTERN PetscErrorCode TaoBNCGConductIteration(Tao tao, PetscReal gnorm)
     } else {
     }
   }
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode TaoBNCGSetH0(Tao tao, Mat H0)
@@ -1028,5 +1028,5 @@ PetscErrorCode TaoBNCGSetH0(Tao tao, Mat H0)
   PetscFunctionBegin;
   PetscCall(PetscObjectReference((PetscObject)H0));
   cg->pc = H0;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }

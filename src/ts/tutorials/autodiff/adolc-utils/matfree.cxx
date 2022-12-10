@@ -94,7 +94,7 @@ PetscErrorCode PetscAdolcIJacobianVectorProduct(Mat A_shell, Vec X, Vec Y)
   PetscCall(VecRestoreArray(localX1, &x1));
   PetscCall(VecRestoreArrayRead(mctx->localX0, &x0));
   PetscCall(DMRestoreLocalVector(da, &localX1));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -164,7 +164,7 @@ PetscErrorCode PetscAdolcIJacobianVectorProductIDMass(Mat A_shell, Vec X, Vec Y)
   PetscCall(PetscLogEventBegin(mctx->event2, 0, 0, 0, 0));
   PetscCall(VecAXPY(Y, mctx->shift, X));
   PetscCall(PetscLogEventEnd(mctx->event2, 0, 0, 0, 0));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -250,7 +250,7 @@ PetscErrorCode PetscAdolcIJacobianTransposeVectorProduct(Mat A_shell, Vec Y, Vec
   PetscCall(VecRestoreArray(localY, &y));
   PetscCall(VecRestoreArrayRead(mctx->localX0, &x));
   PetscCall(DMRestoreLocalVector(da, &localY));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -320,5 +320,5 @@ PetscErrorCode PetscAdolcIJacobianTransposeVectorProductIDMass(Mat A_shell, Vec 
   PetscCall(PetscLogEventBegin(mctx->event4, 0, 0, 0, 0));
   PetscCall(VecAXPY(X, mctx->shift, Y));
   PetscCall(PetscLogEventEnd(mctx->event4, 0, 0, 0, 0));
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
