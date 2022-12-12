@@ -84,40 +84,6 @@ namespace impl
     #error "Unsupported floating-point type for CUDA/HIP BLAS"
   #endif
 
-  // PETSC_CUPMBLAS_ALIAS_INTEGRAL_VALUE_EXACT() - declaration to alias a CUDA/HIP BLAS integral
-  // constant value
-  //
-  // input params:
-  // OUR_PREFIX   - prefix of the alias
-  // OUR_SUFFIX   - suffix of the alias
-  // THEIR_PREFIX - prefix of the variable being aliased
-  // THEIR_SUFFIX - suffix of the variable being aliased
-  //
-  // example usage:
-  // PETSC_CUPMBLAS_ALIAS_INTEGRAL_VALUE_EXACT(CUPMBLAS,_STATUS_SUCCESS,CUBLAS,_STATUS_SUCCESS) ->
-  // static const auto CUPMBLAS_STATUS_SUCCESS = CUBLAS_STATUS_SUCCESS
-  #define PETSC_CUPMBLAS_ALIAS_INTEGRAL_VALUE_EXACT(OUR_PREFIX, OUR_SUFFIX, THEIR_PREFIX, THEIR_SUFFIX) PETSC_CUPM_ALIAS_INTEGRAL_VALUE_EXACT(OUR_PREFIX, OUR_SUFFIX, THEIR_PREFIX, THEIR_SUFFIX)
-
-  // PETSC_CUPMBLAS_ALIAS_INTEGRAL_VALUE_COMMON() - declaration to alias a CUDA/HIP BLAS integral
-  // constant value
-  //
-  // input param:
-  // COMMON - common suffix of the CUDA/HIP blas variable being aliased
-  //
-  // notes:
-  // requires PETSC_CUPMBLAS_PREFIX_U to be defined as the specific UPPERCASE prefix of the
-  // variable being aliased
-  //
-  // example usage:
-  // #define PETSC_CUPMBLAS_PREFIX_U CUBLAS
-  // PETSC_CUPMBLAS_ALIAS_INTEGRAL_VALUE_COMMON(_STATUS_SUCCESS) ->
-  // static const auto CUPMBLAS_STATUS_SUCCESS = CUBLAS_STATUS_SUCCESS
-  //
-  // #define PETSC_CUPMBLAS_PREFIX_U HIPBLAS
-  // PETSC_CUPMBLAS_ALIAS_INTEGRAL_VALUE_COMMON(_STATUS_SUCCESS) ->
-  // static const auto CUPMBLAS_STATUS_SUCCESS = HIPBLAS_STATUS_SUCCESS
-  #define PETSC_CUPMBLAS_ALIAS_INTEGRAL_VALUE(COMMON) PETSC_CUPMBLAS_ALIAS_INTEGRAL_VALUE_EXACT(CUPMBLAS, COMMON, PETSC_CUPMBLAS_PREFIX_U, COMMON)
-
   // PETSC_CUPMBLAS_BUILD_BLAS_FUNCTION_ALIAS_MODIFIED() - Helper macro to build a "modified"
   // blas function whose return type does not match the input type
   //
@@ -210,7 +176,7 @@ namespace impl
   //   return cublasCdotc(std::forward<T>(args)...);
   // }
   #define PETSC_CUPMBLAS_ALIAS_BLAS_FUNCTION_EXACT(MACRO_SUFFIX, our_suffix, their_suffix) \
-    PETSC_CUPM_ALIAS_FUNCTION_EXACT(cupmBlasX, our_suffix, PETSC_CUPMBLAS_PREFIX, PetscConcat(PETSC_CUPMBLAS_BUILD_BLAS_FUNCTION_ALIAS_, MACRO_SUFFIX)(their_suffix))
+    PETSC_CUPM_ALIAS_FUNCTION(PetscConcat(cupmBlasX, our_suffix), PetscConcat(PETSC_CUPMBLAS_PREFIX, PetscConcat(PETSC_CUPMBLAS_BUILD_BLAS_FUNCTION_ALIAS_, MACRO_SUFFIX)(their_suffix)))
 
   // PETSC_CUPMBLAS_ALIAS_BLAS_FUNCTION() - Alias a CUDA/HIP blas function
   //
@@ -241,7 +207,7 @@ namespace impl
   // {
   //   return hipblasCreate(std::forward<T>(args)...);
   // }
-  #define PETSC_CUPMBLAS_ALIAS_FUNCTION(suffix) PETSC_CUPM_ALIAS_FUNCTION_EXACT(cupmBlas, suffix, PETSC_CUPMBLAS_PREFIX, suffix)
+  #define PETSC_CUPMBLAS_ALIAS_FUNCTION(suffix) PETSC_CUPM_ALIAS_FUNCTION(PetscConcat(cupmBlas, suffix), PetscConcat(PETSC_CUPMBLAS_PREFIX, suffix))
 
 template <DeviceType T>
 struct BlasInterfaceBase : Interface<T> {
@@ -251,7 +217,7 @@ struct BlasInterfaceBase : Interface<T> {
   #define PETSC_CUPMBLAS_BASE_CLASS_HEADER(DEV_TYPE) \
     using base_type = ::Petsc::device::cupm::impl::BlasInterfaceBase<DEV_TYPE>; \
     using base_type::cupmBlasName; \
-    PETSC_CUPM_ALIAS_FUNCTION_EXACT(cupmBlas, GetErrorName, PetscConcat(Petsc, PETSC_CUPMBLAS_PREFIX_U), GetErrorName) \
+    PETSC_CUPM_ALIAS_FUNCTION(cupmBlasGetErrorName, PetscConcat(PetscConcat(Petsc, PETSC_CUPMBLAS_PREFIX_U), GetErrorName)) \
     PETSC_CUPM_INHERIT_INTERFACE_TYPEDEFS_USING(interface_type, DEV_TYPE)
 
 template <DeviceType>
@@ -276,11 +242,11 @@ struct BlasInterfaceImpl<DeviceType::CUDA> : BlasInterfaceBase<DeviceType::CUDA>
   using cupmBlasPointerMode_t = cublasPointerMode_t;
 
   // values
-  PETSC_CUPMBLAS_ALIAS_INTEGRAL_VALUE(_STATUS_SUCCESS);
-  PETSC_CUPMBLAS_ALIAS_INTEGRAL_VALUE(_STATUS_NOT_INITIALIZED);
-  PETSC_CUPMBLAS_ALIAS_INTEGRAL_VALUE(_STATUS_ALLOC_FAILED);
-  PETSC_CUPMBLAS_ALIAS_INTEGRAL_VALUE(_POINTER_MODE_HOST);
-  PETSC_CUPMBLAS_ALIAS_INTEGRAL_VALUE(_POINTER_MODE_DEVICE);
+  static const auto CUPMBLAS_STATUS_SUCCESS         = CUBLAS_STATUS_SUCCESS;
+  static const auto CUPMBLAS_STATUS_NOT_INITIALIZED = CUBLAS_STATUS_NOT_INITIALIZED;
+  static const auto CUPMBLAS_STATUS_ALLOC_FAILED    = CUBLAS_STATUS_ALLOC_FAILED;
+  static const auto CUPMBLAS_POINTER_MODE_HOST      = CUBLAS_POINTER_MODE_HOST;
+  static const auto CUPMBLAS_POINTER_MODE_DEVICE    = CUBLAS_POINTER_MODE_DEVICE;
 
   // utility functions
   PETSC_CUPMBLAS_ALIAS_FUNCTION(Create)
@@ -372,11 +338,11 @@ struct BlasInterfaceImpl<DeviceType::HIP> : BlasInterfaceBase<DeviceType::HIP> {
   using cupmBlasPointerMode_t = hipblasPointerMode_t;
 
   // values
-  PETSC_CUPMBLAS_ALIAS_INTEGRAL_VALUE(_STATUS_SUCCESS);
-  PETSC_CUPMBLAS_ALIAS_INTEGRAL_VALUE(_STATUS_NOT_INITIALIZED);
-  PETSC_CUPMBLAS_ALIAS_INTEGRAL_VALUE(_STATUS_ALLOC_FAILED);
-  PETSC_CUPMBLAS_ALIAS_INTEGRAL_VALUE(_POINTER_MODE_HOST);
-  PETSC_CUPMBLAS_ALIAS_INTEGRAL_VALUE(_POINTER_MODE_DEVICE);
+  static const auto CUPMBLAS_STATUS_SUCCESS         = HIPBLAS_STATUS_SUCCESS;
+  static const auto CUPMBLAS_STATUS_NOT_INITIALIZED = HIPBLAS_STATUS_NOT_INITIALIZED;
+  static const auto CUPMBLAS_STATUS_ALLOC_FAILED    = HIPBLAS_STATUS_ALLOC_FAILED;
+  static const auto CUPMBLAS_POINTER_MODE_HOST      = HIPBLAS_POINTER_MODE_HOST;
+  static const auto CUPMBLAS_POINTER_MODE_DEVICE    = HIPBLAS_POINTER_MODE_DEVICE;
 
   // utility functions
   PETSC_CUPMBLAS_ALIAS_FUNCTION(Create)
@@ -445,12 +411,12 @@ struct BlasInterfaceImpl<DeviceType::HIP> : BlasInterfaceBase<DeviceType::HIP> {
     using base_name::cupmBlasName; \
     using base_name::cupmBlasGetErrorName; \
     /* types */ \
-    using typename base_name::cupmBlasHandle_t; \
-    using typename base_name::cupmBlasError_t; \
-    using typename base_name::cupmBlasInt_t; \
-    using typename base_name::cupmSolverHandle_t; \
-    using typename base_name::cupmSolverError_t; \
-    using typename base_name::cupmBlasPointerMode_t; \
+    using cupmBlasHandle_t      = typename base_name::cupmBlasHandle_t; \
+    using cupmBlasError_t       = typename base_name::cupmBlasError_t; \
+    using cupmBlasInt_t         = typename base_name::cupmBlasInt_t; \
+    using cupmSolverHandle_t    = typename base_name::cupmSolverHandle_t; \
+    using cupmSolverError_t     = typename base_name::cupmSolverError_t; \
+    using cupmBlasPointerMode_t = typename base_name::cupmBlasPointerMode_t; \
     /* values */ \
     using base_name::CUPMBLAS_STATUS_SUCCESS; \
     using base_name::CUPMBLAS_STATUS_NOT_INITIALIZED; \

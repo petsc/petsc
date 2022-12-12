@@ -2456,26 +2456,6 @@ preallocation routines are called for these communicator morphing types.
 The call for the incorrect type will simply be ignored without any harm
 or message.
 
-.. raw:: html
-
-   <hr>
-
-.. [2]
-   See :any:`sec_amg` for information on using algebraic multigrid.
-
-.. [3]
-   This may seem an odd way to implement since it involves the "extra"
-   multiply by :math:`-A_{11}`. The reason is this is implemented this
-   way is that this approach works for any number of blocks that may
-   overlap.
-
-.. raw:: html
-
-   <hr>
-
-.. bibliography:: /petsc.bib
-   :filter: docname in docnames
-
 .. _sec_pcmpi:
 
 Using a MPI parallel linear solver from a non-MPI program
@@ -2500,3 +2480,19 @@ option `-mpi_linear_solver_server` and options to utilize the `PCMPI` preconditi
 `-ksp_type preonly` and `pc_type mpi`. Any standard solver options may be passed to the parallel solvers using the
 options prefix `-mpi_`; for example, `-mpi_ksp_type cg`. The option `-mpi_linear_solver_server_view` will print
 a summary of all the systems solved by the MPI linear solver server.
+
+.. rubric:: Footnotes
+
+.. [2]
+   See :any:`sec_amg` for information on using algebraic multigrid.
+
+.. [3]
+   This may seem an odd way to implement since it involves the "extra"
+   multiply by :math:`-A_{11}`. The reason is this is implemented this
+   way is that this approach works for any number of blocks that may
+   overlap.
+
+.. rubric:: References
+
+.. bibliography:: /petsc.bib
+   :filter: docname in docnames

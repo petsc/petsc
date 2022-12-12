@@ -4,7 +4,7 @@ The Use of BLAS and LAPACK in PETSc and external libraries
 ----------------------------------------------------------
 
 
-#. BLAS 1 operations - vector operations such as VecNorm(), VecAXPY(), and VecScale(). Depending on the
+#. BLAS 1 operations - vector operations such as ``VecNorm()``, ``VecAXPY()``, and ``VecScale()``. Depending on the
    simulation the size of the vectors may be from hundreds of entries to many millions.
 
 #. BLAS 2 operations - dense matrix with vector operations, generally the dense matrices are very small.
@@ -22,10 +22,10 @@ dramatic improvement in performance.
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 BLAS/LAPACK libraries may use 32 bit integers or 64 bit integers. PETSc configure and compile handles this automatically
-so long at the arguments to the BLAS/LAPACK routines are set to the type PetscBLASInt.  The routine PetscBLASIntCast(PetscInt,PetscBLASInt*) casts
-a PetscInt to the BLAS/LAPACK size. If the BLAS/LAPACK size is not large enough it generates an error. For the vast majority of
+so long at the arguments to the BLAS/LAPACK routines are set to the type ``PetscBLASInt``.  The routine ``PetscBLASIntCast``\(``PetscInt``, ``PetscBLASInt`` \*) casts
+a ``PetscInt`` to the BLAS/LAPACK size. If the BLAS/LAPACK size is not large enough it generates an error. For the vast majority of
 simulations even very large ones 64 bit BLAS/LAPACK integers are not needed, even if 64 bit PETSc integers are used, The configure
-option ``-with-64-bit-blas-indices`` attempts to locate and use a 64 bit integer BLAS/LAPACK library.
+option ``--with-64-bit-blas-indices`` attempts to locate and use a 64 bit integer version of BLAS/LAPACK library.
 
 Shared memory BLAS/LAPACK parallelism
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -33,17 +33,17 @@ Shared memory BLAS/LAPACK parallelism
 Some BLAS/LAPACK libraries make use of shared memory parallelism within the function calls, generally using OpenMP, or possibly PThreads.
 If this feature is on, it is in addition to the MPI based parallelism that PETSc is using. Thus it can result in over-subscription of hardware resources. For example,
 if a system has 16 cores and PETSc is run with an MPI size of 16 then each core is assigned an MPI process. But if the BLAS/LAPACK is running with
-OpenMP and 4 threads per process this results 64 threads competing to use 16 cores which generally will perform poorly.
+OpenMP and 4 threads per process this results in 64 threads competing to use 16 cores which will perform poorly.
 
-If one elects to use both MPI parallelism and OpenMP BLAS/LAPACK parallelism one should insure they do not over subscribe the hardware
-resources. Since PETSc does not natively using OpenMP this means that phases of the computation that do not use BLAS/LAPACK will be under-subscribed,
-thus under-utilizing the system. For PETSc simulations which do not us external packages there is generally no benefit to using parallel
+If one elects to use both MPI parallelism and OpenMP BLAS/LAPACK parallelism one should ensure they do not over subscribe the hardware
+resources. Since PETSc does not natively use OpenMP this means that phases of the computation that do not use BLAS/LAPACK will be under-subscribed,
+thus under-utilizing the system. For PETSc simulations which do not use external packages there is generally no benefit to using parallel
 BLAS/LAPACK. The environmental variable ``OMP_NUM_THREADS`` can be used to set the number of threads used by parallel BLAS/LAPACK. The additional
-environmental variables ``OMP_PROC_BIND`` and ``OMP_PLACES`` may also need to be set appropriate for the system to obtain good parallel performance with
-BLAS/LAPACK. The configure option ``-with-openmp`` will trigger PETSc to try to locate and use a parallel BLAS/LAPACK library.
+environmental variables ``OMP_PROC_BIND`` and ``OMP_PLACES`` may also need to be set appropriately for the system to obtain good parallel performance with
+BLAS/LAPACK. The configure option ``--with-openmp`` will trigger PETSc to try to locate and use a parallel BLAS/LAPACK library.
 
 
-Certain external packages such as MUMPS may benefit from using parallel BLAS/LAPACK operations. See the manual page MATSOLVERMUMPS for details on
+Certain external packages such as MUMPS may benefit from using parallel BLAS/LAPACK operations. See the manual page ``MATSOLVERMUMPS`` for details on
 how one can restrict the number of MPI processes while running MUMPS to utilize parallel BLAS/LAPACK.
 
 .. _ch_blas-lapack_avail-libs:

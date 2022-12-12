@@ -28,7 +28,7 @@
 
     Information about the SAWs is available via https://bitbucket.org/saws/saws
 
-.seealso: `PetscViewerDestroy()`, `PetscViewerStringSPrintf()`, `PETSC_VIEWER_SAWS_()`, `PetscObjectSAWsBlock()`,
+.seealso: [](sec_viewers), `PetscViewerDestroy()`, `PetscViewerStringSPrintf()`, `PETSC_VIEWER_SAWS_()`, `PetscObjectSAWsBlock()`,
           `PetscObjectSAWsViewOff()`, `PetscObjectSAWsTakeAccess()`, `PetscObjectSAWsGrantAccess()`
 @*/
 PetscErrorCode PetscViewerSAWsOpen(MPI_Comm comm, PetscViewer *lab)
@@ -57,7 +57,7 @@ PetscErrorCode PetscViewerSAWsOpen(MPI_Comm comm, PetscViewer *lab)
    Developer Note:
    Currently this is called only on rank zero of `PETSC_COMM_WORLD`
 
-.seealso: `PetscViewer`, `PetscObject`, `PetscObjectSetName()`, `PetscObjectSAWsViewOff()`
+.seealso: [](sec_viewers), `PetscViewer`, `PetscObject`, `PetscObjectSetName()`, `PetscObjectSAWsViewOff()`
 @*/
 PetscErrorCode PetscObjectViewSAWs(PetscObject obj, PetscViewer viewer)
 {

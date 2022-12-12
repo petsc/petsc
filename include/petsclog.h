@@ -32,10 +32,10 @@ PETSC_EXTERN PetscErrorCode PetscInfo_Private(const char[], PetscObject, const c
 
   Used as an input for `PetscInfoSetFilterCommSelf()`
 
-$ `PETSC_INFO_COMM_ALL` - Default uninitialized value. `PetscInfo()` will not filter based on
++ `PETSC_INFO_COMM_ALL` - Default uninitialized value. `PetscInfo()` will not filter based on
 communicator size (i.e. will print for all communicators)
-$ `PETSC_INFO_COMM_NO_SELF` - `PetscInfo()` will NOT print for communicators with size = 1 (i.e. *_COMM_SELF)
-$ `PETSC_INFO_COMM_ONLY_SELF` - `PetscInfo()` will ONLY print for communicators with size = 1
+. `PETSC_INFO_COMM_NO_SELF` - `PetscInfo()` will NOT print for communicators with size = 1 (i.e. *_COMM_SELF)
+- `PETSC_INFO_COMM_ONLY_SELF` - `PetscInfo()` will ONLY print for communicators with size = 1
 
   Level: intermediate
 
@@ -69,7 +69,7 @@ PETSC_EXTERN PetscBool         PetscLogPrintInfo; /* if true, indicates PetscInf
 
     Level: intermediate
 
-.seealso: `PetscLogEventRegister()`, `PetscLogEventBegin()`, `PetscLogEventEnd()`, `PetscLogStage`
+.seealso: [](ch_profiling), `PetscLogEventRegister()`, `PetscLogEventBegin()`, `PetscLogEventEnd()`, `PetscLogStage`
 M*/
 typedef int PetscLogEvent;
 
@@ -78,7 +78,7 @@ typedef int PetscLogEvent;
 
     Level: intermediate
 
-.seealso: `PetscLogStageRegister()`, `PetscLogStagePush()`, `PetscLogStagePop()`, `PetscLogEvent`
+.seealso: [](ch_profiling), `PetscLogStageRegister()`, `PetscLogStagePush()`, `PetscLogStagePop()`, `PetscLogEvent`
 M*/
 typedef int PetscLogStage;
 
@@ -403,13 +403,13 @@ PETSC_EXTERN_TLS PetscLogDouble petsc_sum_of_waits_ct_th;
    Input Parameter:
 .   flops - the number of flops
 
-   Notes:
-     To limit the chance of integer overflow when multiplying by a constant, represent the constant as a double,
-     not an integer. Use PetscLogFlops(4.0*n) not PetscLogFlops(4*n)
-
    Level: intermediate
 
-.seealso: `PetscLogView()`, `PetscLogGpuFlops()`
+   Note:
+     To limit the chance of integer overflow when multiplying by a constant, represent the constant as a double,
+     not an integer. Use `PetscLogFlops`(4.0*n) not `PetscLogFlops`(4*n)
+
+.seealso: [](ch_profiling), `PetscLogView()`, `PetscLogGpuFlops()`
 @*/
 static inline PetscErrorCode PetscLogFlops(PetscLogDouble n)
 {
@@ -708,16 +708,16 @@ PETSC_EXTERN PetscErrorCode PetscLogGpuTimeEnd(void);
    Input Parameter:
 .   flops - the number of flops
 
+   Level: intermediate
+
    Notes:
      To limit the chance of integer overflow when multiplying by a constant, represent the constant as a double,
-     not an integer. Use PetscLogFlops(4.0*n) not PetscLogFlops(4*n)
+     not an integer. Use `PetscLogFlops`(4.0*n) not `PetscLogFlops`(4*n)
 
      The values are also added to the total flop count for the MPI rank that is set with `PetscLogFlops()`; hence the number of flops
      just on the CPU would be the value from set from `PetscLogFlops()` minus the value set from `PetscLogGpuFlops()`
 
-   Level: intermediate
-
-.seealso: `PetscLogView()`, `PetscLogFlops()`, `PetscLogGpuTimeBegin()`, `PetscLogGpuTimeEnd()`
+.seealso: [](ch_profiling), `PetscLogView()`, `PetscLogFlops()`, `PetscLogGpuTimeBegin()`, `PetscLogGpuTimeEnd()`
 @*/
 static inline PetscErrorCode PetscLogGpuFlops(PetscLogDouble n)
 {

@@ -3477,9 +3477,5 @@ either by using the ``TaoSetType()`` function or by using the
 
 .. [#mpi] For more on MPI and PETSc, see :any:`sec-running`.
 
-.. raw:: html
-
-    <hr>
-
 .. bibliography:: /petsc.bib
    :filter: docname in docnames

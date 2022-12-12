@@ -117,7 +117,7 @@ inline CUPMEvent<T> &CUPMEvent<T>::operator=(CUPMEvent &&other) noexcept
   if (this != &other) {
     interface_type::operator=(std::move(other));
     pool_type::     operator=(std::move(other));
-    if (event_) PetscCall(cupm_fast_event_pool<T>().deallocate(std::move(event_)));
+    if (event_) PetscCallAbort(PETSC_COMM_SELF, cupm_fast_event_pool<T>().deallocate(std::move(event_)));
     event_ = util::exchange(other.event_, cupmEvent_t{});
   }
   PetscFunctionReturn(*this);

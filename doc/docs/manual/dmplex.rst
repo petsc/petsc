@@ -786,14 +786,6 @@ mesh adaptation using the routine
 where ``bdLabel`` and ``rgLabel`` are boundary and interior tags to be
 preserved under adaptation, respectively.
 
-.. raw:: html
-
-    <hr>
-
-.. bibliography:: /petsc.bib
-    :filter: docname in docnames
-
-
 .. rubric:: Footnotes
 
 .. [#petscsection_footnote] A ``PetscSection`` can be thought of as a generalization of ``PetscLayout``, in the same way that a fiber bundle is a generalization
@@ -801,3 +793,7 @@ preserved under adaptation, respectively.
    point in the space, and just divide up points between processes.
 
 .. [#boundary_footnote] The boundary of a cell is its faces, the boundary of a face is its edges and the boundary of an edge is the two vertices.
+
+.. bibliography:: /petsc.bib
+    :filter: docname in docnames
+

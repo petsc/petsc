@@ -1218,9 +1218,5 @@ subdirectories:
    implementations, but ideally will not know about implementations for
    other components.
 
-.. raw:: html
-
-    <hr>
-
 .. bibliography:: /petsc.bib
    :filter: docname in docnames

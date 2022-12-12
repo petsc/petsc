@@ -1231,9 +1231,5 @@ and accessed with
 
    SNESCompositeGetSNES(SNES,PetscInt,SNES *);
 
-.. raw:: html
-
-    <hr>
-
 .. bibliography:: /petsc.bib
    :filter: docname in docnames

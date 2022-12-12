@@ -17,7 +17,7 @@ PETSC_EXTERN PetscClassId PETSC_VIEWER_CLASSID;
 
    Level: beginner
 
-.seealso: `PetscViewerSetType()`, `PetscViewer`, `PetscViewerRegister()`, `PetscViewerCreate()`
+.seealso: [](sec_viewers), `PetscViewerSetType()`, `PetscViewer`, `PetscViewerRegister()`, `PetscViewerCreate()`
 J*/
 typedef const char *PetscViewerType;
 #define PETSCVIEWERSOCKET      "socket"
@@ -81,7 +81,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerMatlabOpen(MPI_Comm, const char[], PetscF
 
     Level: beginner
 
-.seealso: `PetscViewerGLVisOpen()`
+.seealso: [](sec_viewers), `PetscViewerGLVisOpen()`
 E*/
 typedef enum {
   PETSC_VIEWER_GLVIS_DUMP,
@@ -119,7 +119,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerCheckWritable(PetscViewer);
 
    Level: beginner
 
-.seealso: `PetscViewer`, `PetscViewerType`, `PetscViewerPushFormat()`, `PetscViewerPopFormat()`
+.seealso: [](sec_viewers), `PetscViewer`, `PetscViewerType`, `PetscViewerPushFormat()`, `PetscViewerPopFormat()`
 E*/
 typedef enum {
   PETSC_VIEWER_DEFAULT,
@@ -264,7 +264,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerVUFlushDeferred(PetscViewer);
   Note:
   Use `PetscViewerFileSetMode()` instead.
 
-.seealso: `PetscViewerFileSetMode()`
+.seealso: [](sec_viewers), `PetscViewerFileSetMode()`
 @*/
 PETSC_DEPRECATED_FUNCTION("Use PetscViewerFileSetMode (since v3.15)") static inline PetscErrorCode PetscViewerVUSetMode(PetscViewer viewer, PetscFileMode mode)
 {
@@ -428,7 +428,7 @@ PETSC_EXTERN PetscErrorCode PetscObjectViewSAWs(PetscObject, PetscViewer);
 
    Level: intermediate
 
-.seealso: `PetscViewerCreate()`, `PetscViewerSetType()`, `PetscViewerType`, `PetscViewer`, `PetscViewersCreate()`,
+.seealso: [](sec_viewers), `PetscViewerCreate()`, `PetscViewerSetType()`, `PetscViewerType`, `PetscViewer`, `PetscViewersCreate()`,
           `PetscViewersGetViewer()`
 S*/
 typedef struct _n_PetscViewers *PetscViewers;
