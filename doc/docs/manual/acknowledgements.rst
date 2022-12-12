@@ -82,8 +82,8 @@ Earlier contributors to PETSc include:
    ``Mat``
    classes plus the various thread pools (no longer available);
 
--  Karen Toonen - design and implementation of much of the PETSc web
-   pages;
+-  Karen Toonen - design and implementation of the original PETSc web
+   pages from which the current pages have evolved from;
 
 -  Desire Nuentsa Wakam - the deflated GMRES implementation
    (``KSPDGMRES``);
@@ -112,10 +112,10 @@ domain software packages:
    ``f2c`` and then hand-optimized for small matrix sizes, for block
    matrix data structures;
 
--  MINPACK - see page ; sequential matrix coloring routines for finite
+-  MINPACK - sequential matrix coloring routines for finite
    difference Jacobian evaluations; converted to C using ``f2c``;
 
--  SPARSPAK - see page ; matrix reordering routines, converted to C
+-  SPARSPAK -  matrix reordering routines, converted to C
    using ``f2c``;
 
 -  libtfs - the efficient, parallel direct solver developed by Henry
@@ -123,7 +123,7 @@ domain software packages:
    problem (a linear system with very few degrees of freedom per
    processor).
 
-PETSc interfaces to the following external software:
+PETSc interfaces to many external software packages including:
 
 -  BLAS and LAPACK - numerical linear algebra;
 
@@ -195,12 +195,11 @@ PETSc.
 
 PETSc software is developed and maintained using
 
-* Emacs editor
 * `Git <https://git-scm.com/>`__ revision control system
-* Python
 
 PETSc documentation has been generated using
 
+* https://www.sphinx-doc.org
 * `Sowing text processing tools developed by Bill Gropp <http://wgropp.cs.illinois.edu/projects/software/sowing/>`__
 * c2html
 

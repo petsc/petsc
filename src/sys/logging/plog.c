@@ -190,7 +190,7 @@ PETSC_INTERN PetscErrorCode PetscLogFinalize(void)
   Developer Note:
   The default loggers are `PetscLogEventBeginDefault()` and `PetscLogEventEndDefault()`.
 
-.seealso: `PetscLogDump()`, `PetscLogDefaultBegin()`, `PetscLogAllBegin()`, `PetscLogTraceBegin()`, `PetscLogEventBeginDefault()`, `PetscLogEventEndDefault()`
+.seealso: [](ch_profiling), `PetscLogDump()`, `PetscLogDefaultBegin()`, `PetscLogAllBegin()`, `PetscLogTraceBegin()`, `PetscLogEventBeginDefault()`, `PetscLogEventEndDefault()`
 @*/
 PetscErrorCode PetscLogSet(PetscErrorCode (*b)(PetscLogEvent, int, PetscObject, PetscObject, PetscObject, PetscObject), PetscErrorCode (*e)(PetscLogEvent, int, PetscObject, PetscObject, PetscObject, PetscObject))
 {
@@ -210,7 +210,7 @@ PetscErrorCode PetscLogSet(PetscErrorCode (*b)(PetscLogEvent, int, PetscObject, 
 
   Level: beginner
 
-.seealso: `PetscLogDefaultBegin()`, `PetscLogAllBegin()`, `PetscLogSet()`
+.seealso: [](ch_profiling), `PetscLogDefaultBegin()`, `PetscLogAllBegin()`, `PetscLogSet()`
 @*/
 PetscErrorCode PetscLogIsActive(PetscBool *isActive)
 {
@@ -239,13 +239,13 @@ PetscErrorCode PetscLogIsActive(PetscBool *isActive)
       PetscFinalize();
 .ve
 
+  Level: advanced
+
   Note:
   `PetscLogView()` or `PetscLogDump()` actually cause the printing of
   the logging information.
 
-  Level: advanced
-
-.seealso: `PetscLogDump()`, `PetscLogAllBegin()`, `PetscLogView()`, `PetscLogTraceBegin()`
+.seealso: [](ch_profiling), `PetscLogDump()`, `PetscLogAllBegin()`, `PetscLogView()`, `PetscLogTraceBegin()`
 @*/
 PetscErrorCode PetscLogDefaultBegin(void)
 {
@@ -272,14 +272,14 @@ PetscErrorCode PetscLogDefaultBegin(void)
      PetscFinalize();
 .ve
 
+  Level: advanced
+
   Note:
   A related routine is `PetscLogDefaultBegin()` (with the options key -log_view), which is
   intended for production runs since it logs only flop rates and object
   creation (and shouldn't significantly slow the programs).
 
-  Level: advanced
-
-.seealso: `PetscLogDump()`, `PetscLogDefaultBegin()`, `PetscLogTraceBegin()`
+.seealso: [](ch_profiling), `PetscLogDump()`, `PetscLogDefaultBegin()`, `PetscLogTraceBegin()`
 @*/
 PetscErrorCode PetscLogAllBegin(void)
 {
@@ -300,6 +300,8 @@ PetscErrorCode PetscLogAllBegin(void)
   Options Database Key:
 . -log_trace [filename] - Activates `PetscLogTraceBegin()`
 
+  Level: intermediate
+
   Notes:
   `PetscLogTraceBegin()` prints the processor number, the execution time (sec),
   then "Event begin:" or "Event end:" followed by the event name.
@@ -308,9 +310,7 @@ PetscErrorCode PetscLogAllBegin(void)
   to determine where a program is hanging without running in the
   debugger.  Can be used in conjunction with the -info option.
 
-  Level: intermediate
-
-.seealso: `PetscLogDump()`, `PetscLogAllBegin()`, `PetscLogView()`, `PetscLogDefaultBegin()`
+.seealso: [](ch_profiling), `PetscLogDump()`, `PetscLogAllBegin()`, `PetscLogView()`, `PetscLogDefaultBegin()`
 @*/
 PetscErrorCode PetscLogTraceBegin(FILE *file)
 {
@@ -337,7 +337,7 @@ PetscErrorCode PetscLogTraceBegin(FILE *file)
   Note:
   Logging of actions continues to consume more memory as the program
   runs. Long running programs should consider turning this feature off.
-.seealso: `PetscLogStagePush()`, `PetscLogStagePop()`
+.seealso: [](ch_profiling), `PetscLogStagePush()`, `PetscLogStagePop()`
 @*/
 PetscErrorCode PetscLogActions(PetscBool flag)
 {
@@ -363,7 +363,7 @@ PetscErrorCode PetscLogActions(PetscBool flag)
   Logging of objects continues to consume more memory as the program
   runs. Long running programs should consider turning this feature off.
 
-.seealso: `PetscLogStagePush()`, `PetscLogStagePop()`
+.seealso: [](ch_profiling), `PetscLogStagePush()`, `PetscLogStagePop()`
 @*/
 PetscErrorCode PetscLogObjects(PetscBool flag)
 {
@@ -386,7 +386,7 @@ PetscErrorCode PetscLogObjects(PetscBool flag)
 
   Level: intermediate
 
-.seealso: `PetscLogStagePush()`, `PetscLogStagePop()`
+.seealso: [](ch_profiling), `PetscLogStagePush()`, `PetscLogStagePop()`
 @*/
 PetscErrorCode PetscLogStageRegister(const char sname[], PetscLogStage *stage)
 {
@@ -426,12 +426,12 @@ PetscErrorCode PetscLogStageRegister(const char sname[], PetscLogStage *stage)
       PetscFinalize();
 .ve
 
+  Level: intermediate
+
   Note:
   Use `PetscLogStageRegister()` to register a stage.
 
-  Level: intermediate
-
-.seealso: `PetscLogStagePop()`, `PetscLogStageRegister()`, `PetscBarrier()`
+.seealso: [](ch_profiling), `PetscLogStagePop()`, `PetscLogStageRegister()`, `PetscBarrier()`
 @*/
 PetscErrorCode PetscLogStagePush(PetscLogStage stage)
 {
@@ -465,7 +465,7 @@ PetscErrorCode PetscLogStagePush(PetscLogStage stage)
 
   Level: intermediate
 
-.seealso: `PetscLogStagePush()`, `PetscLogStageRegister()`, `PetscBarrier()`
+.seealso: [](ch_profiling), `PetscLogStagePush()`, `PetscLogStageRegister()`, `PetscBarrier()`
 @*/
 PetscErrorCode PetscLogStagePop(void)
 {
@@ -491,7 +491,7 @@ PetscErrorCode PetscLogStagePop(void)
   Note:
   If this is set to `PETSC_FALSE` the logging acts as if the stage did not exist
 
-.seealso: `PetscLogStageRegister()`, `PetscLogStagePush()`, `PetscLogStagePop()`, `PetscLogEventBegin()`, `PetscLogEventEnd()`, `PetscPreLoadBegin()`, `PetscPreLoadEnd()`, `PetscPreLoadStage()`
+.seealso: [](ch_profiling), `PetscLogStageRegister()`, `PetscLogStagePush()`, `PetscLogStagePop()`, `PetscLogEventBegin()`, `PetscLogEventEnd()`, `PetscPreLoadBegin()`, `PetscPreLoadEnd()`, `PetscPreLoadStage()`
 @*/
 PetscErrorCode PetscLogStageSetActive(PetscLogStage stage, PetscBool isActive)
 {
@@ -516,7 +516,7 @@ PetscErrorCode PetscLogStageSetActive(PetscLogStage stage, PetscBool isActive)
 
   Level: intermediate
 
-.seealso: `PetscLogStageRegister()`, `PetscLogStagePush()`, `PetscLogStagePop()`, `PetscLogEventBegin()`, `PetscLogEventEnd()`, `PetscPreLoadBegin()`, `PetscPreLoadEnd()`, `PetscPreLoadStage()`
+.seealso: [](ch_profiling), `PetscLogStageRegister()`, `PetscLogStagePush()`, `PetscLogStagePop()`, `PetscLogEventBegin()`, `PetscLogEventEnd()`, `PetscPreLoadBegin()`, `PetscPreLoadEnd()`, `PetscPreLoadStage()`
 @*/
 PetscErrorCode PetscLogStageGetActive(PetscLogStage stage, PetscBool *isActive)
 {
@@ -542,7 +542,7 @@ PetscErrorCode PetscLogStageGetActive(PetscLogStage stage, PetscBool *isActive)
   Developer Note:
   What does visible mean, needs to be documented.
 
-.seealso: `PetscLogStageRegister()`, `PetscLogStagePush()`, `PetscLogStagePop()`, `PetscLogView()`
+.seealso: [](ch_profiling), `PetscLogStageRegister()`, `PetscLogStagePush()`, `PetscLogStagePop()`, `PetscLogView()`
 @*/
 PetscErrorCode PetscLogStageSetVisible(PetscLogStage stage, PetscBool isVisible)
 {
@@ -567,7 +567,7 @@ PetscErrorCode PetscLogStageSetVisible(PetscLogStage stage, PetscBool isVisible)
 
   Level: intermediate
 
-.seealso: `PetscLogStageRegister()`, `PetscLogStagePush()`, `PetscLogStagePop()`, `PetscLogView()`
+.seealso: [](ch_profiling), `PetscLogStageRegister()`, `PetscLogStagePush()`, `PetscLogStagePop()`, `PetscLogView()`
 @*/
 PetscErrorCode PetscLogStageGetVisible(PetscLogStage stage, PetscBool *isVisible)
 {
@@ -592,7 +592,7 @@ PetscErrorCode PetscLogStageGetVisible(PetscLogStage stage, PetscBool *isVisible
 
   Level: intermediate
 
-.seealso: `PetscLogStageRegister()`, `PetscLogStagePush()`, `PetscLogStagePop()`, `PetscPreLoadBegin()`, `PetscPreLoadEnd()`, `PetscPreLoadStage()`
+.seealso: [](ch_profiling), `PetscLogStageRegister()`, `PetscLogStagePush()`, `PetscLogStagePop()`, `PetscPreLoadBegin()`, `PetscPreLoadEnd()`, `PetscPreLoadStage()`
 @*/
 PetscErrorCode PetscLogStageGetId(const char name[], PetscLogStage *stage)
 {
@@ -633,6 +633,8 @@ PetscErrorCode PetscLogStageGetId(const char name[], PetscLogStage *stage)
       PetscLogEventEnd(USER_EVENT,0,0,0,0);
 .ve
 
+  Level: intermediate
+
   Notes:
   PETSc automatically logs library events if the code has been
   configured with --with-log (which is the default) and
@@ -655,9 +657,7 @@ PetscErrorCode PetscLogStageGetId(const char name[], PetscLogStage *stage)
   If an existing event with the same name exists, its event handle is
   returned instead of creating a new event.
 
-  Level: intermediate
-
-.seealso: `PetscLogStageRegister()`, `PetscLogEventBegin()`, `PetscLogEventEnd()`, `PetscLogFlops()`,
+.seealso: [](ch_profiling), `PetscLogStageRegister()`, `PetscLogEventBegin()`, `PetscLogEventEnd()`, `PetscLogFlops()`,
           `PetscLogEventActivate()`, `PetscLogEventDeactivate()`, `PetscClassIdRegister()`
 @*/
 PetscErrorCode PetscLogEventRegister(const char name[], PetscClassId classid, PetscLogEvent *event)
@@ -687,6 +687,8 @@ PetscErrorCode PetscLogEventRegister(const char name[], PetscClassId classid, Pe
 + event - The event id
 - collective - Boolean flag indicating whether a particular event is collective
 
+  Level: developer
+
   Notes:
   New events returned from `PetscLogEventRegister()` are collective by default.
 
@@ -694,9 +696,7 @@ PetscErrorCode PetscLogEventRegister(const char name[], PetscClassId classid, Pe
   two parts of the event; the time for all the MPI ranks to synchronize and then the time for the actual computation/communication
   to be performed. This option is useful to debug imbalance within the computations or communications
 
-  Level: developer
-
-.seealso: `PetscLogEventBegin()`, `PetscLogEventEnd()`, `PetscLogEventRegister()`
+.seealso: [](ch_profiling), `PetscLogEventBegin()`, `PetscLogEventEnd()`, `PetscLogEventRegister()`
 @*/
 PetscErrorCode PetscLogEventSetCollective(PetscLogEvent event, PetscBool collective)
 {
@@ -721,7 +721,7 @@ PetscErrorCode PetscLogEventSetCollective(PetscLogEvent event, PetscBool collect
 
   Level: developer
 
-.seealso: `PetscLogEventActivateClass()`, `PetscLogEventDeactivateClass()`, `PetscLogEventActivate()`, `PetscLogEventDeactivate()`
+.seealso: [](ch_profiling), `PetscLogEventActivateClass()`, `PetscLogEventDeactivateClass()`, `PetscLogEventActivate()`, `PetscLogEventDeactivate()`
 @*/
 PetscErrorCode PetscLogEventIncludeClass(PetscClassId classid)
 {
@@ -747,7 +747,7 @@ PetscErrorCode PetscLogEventIncludeClass(PetscClassId classid)
   Note:
   If a class is excluded then events associated with that class are not logged.
 
-.seealso: `PetscLogEventDeactivateClass()`, `PetscLogEventActivateClass()`, `PetscLogEventDeactivate()`, `PetscLogEventActivate()`
+.seealso: [](ch_profiling), `PetscLogEventDeactivateClass()`, `PetscLogEventActivateClass()`, `PetscLogEventDeactivate()`, `PetscLogEventActivate()`
 @*/
 PetscErrorCode PetscLogEventExcludeClass(PetscClassId classid)
 {
@@ -776,13 +776,13 @@ PetscErrorCode PetscLogEventExcludeClass(PetscClassId classid)
         [code where you do want to log VecSetValues()]
 .ve
 
+  Level: advanced
+
   Note:
   The event may be either a pre-defined PETSc event (found in include/petsclog.h)
   or an event number obtained with `PetscLogEventRegister()`.
 
-  Level: advanced
-
-.seealso: `PlogEventDeactivate()`, `PlogEventDeactivatePush()`, `PetscLogEventDeactivatePop()`
+.seealso: [](ch_profiling), `PlogEventDeactivate()`, `PlogEventDeactivatePush()`, `PetscLogEventDeactivatePop()`
 @*/
 PetscErrorCode PetscLogEventActivate(PetscLogEvent event)
 {
@@ -812,13 +812,13 @@ PetscErrorCode PetscLogEventActivate(PetscLogEvent event)
         [code where you do want to log VecSetValues()]
 .ve
 
+  Level: advanced
+
   Note:
   The event may be either a pre-defined PETSc event (found in
   include/petsclog.h) or an event number obtained with `PetscLogEventRegister()`).
 
-  Level: advanced
-
-.seealso: `PetscLogEventActivate()`, `PetscLogEventDeactivatePush()`, `PetscLogEventDeactivatePop()`
+.seealso: [](ch_profiling), `PetscLogEventActivate()`, `PetscLogEventDeactivatePush()`, `PetscLogEventDeactivatePop()`
 @*/
 PetscErrorCode PetscLogEventDeactivate(PetscLogEvent event)
 {
@@ -848,13 +848,13 @@ PetscErrorCode PetscLogEventDeactivate(PetscLogEvent event)
         [code where you do want to log VecSetValues()]
 .ve
 
+  Level: advanced
+
   Note:
   The event may be either a pre-defined PETSc event (found in
   include/petsclog.h) or an event number obtained with `PetscLogEventRegister()`).
 
-  Level: advanced
-
-.seealso: `PetscLogEventActivate()`, `PetscLogEventDeactivatePop()`, `PetscLogEventDeactivate()`
+.seealso: [](ch_profiling), `PetscLogEventActivate()`, `PetscLogEventDeactivatePop()`, `PetscLogEventDeactivate()`
 @*/
 PetscErrorCode PetscLogEventDeactivatePush(PetscLogEvent event)
 {
@@ -884,13 +884,13 @@ PetscErrorCode PetscLogEventDeactivatePush(PetscLogEvent event)
         [code where you do want to log VecSetValues()]
 .ve
 
+  Level: advanced
+
   Note:
   The event may be either a pre-defined PETSc event (found in
   include/petsclog.h) or an event number obtained with `PetscLogEventRegister()`).
 
-  Level: advanced
-
-.seealso: `PetscLogEventActivate()`, `PetscLogEventDeactivatePush()`
+.seealso: [](ch_profiling), `PetscLogEventActivate()`, `PetscLogEventDeactivatePush()`
 @*/
 PetscErrorCode PetscLogEventDeactivatePop(PetscLogEvent event)
 {
@@ -915,7 +915,7 @@ PetscErrorCode PetscLogEventDeactivatePop(PetscLogEvent event)
 
   Level: advanced
 
-.seealso: `PlogEventActivate()`, `PlogEventDeactivate()`
+.seealso: [](ch_profiling), `PlogEventActivate()`, `PlogEventDeactivate()`
 @*/
 PetscErrorCode PetscLogEventSetActiveAll(PetscLogEvent event, PetscBool isActive)
 {
@@ -944,7 +944,7 @@ PetscErrorCode PetscLogEventSetActiveAll(PetscLogEvent event, PetscBool isActive
 
   Level: developer
 
-.seealso: `PetscLogEventIncludeClass()`, `PetscLogEventExcludeClass()`, `PetscLogEventDeactivateClass()`, `PetscLogEventActivate()`, `PetscLogEventDeactivate()`
+.seealso: [](ch_profiling), `PetscLogEventIncludeClass()`, `PetscLogEventExcludeClass()`, `PetscLogEventDeactivateClass()`, `PetscLogEventActivate()`, `PetscLogEventDeactivate()`
 @*/
 PetscErrorCode PetscLogEventActivateClass(PetscClassId classid)
 {
@@ -968,7 +968,7 @@ PetscErrorCode PetscLogEventActivateClass(PetscClassId classid)
 
   Level: developer
 
-.seealso: `PetscLogEventIncludeClass()`, `PetscLogEventExcludeClass()`, `PetscLogEventActivateClass()`, `PetscLogEventActivate()`, `PetscLogEventDeactivate()`
+.seealso: [](ch_profiling), `PetscLogEventIncludeClass()`, `PetscLogEventExcludeClass()`, `PetscLogEventActivateClass()`, `PetscLogEventActivate()`, `PetscLogEventDeactivate()`
 @*/
 PetscErrorCode PetscLogEventDeactivateClass(PetscClassId classid)
 {
@@ -1005,13 +1005,13 @@ PetscErrorCode PetscLogEventDeactivateClass(PetscClassId classid)
      PetscLogEventEnd(USER_EVENT,0,0,0,0);
 .ve
 
+   Level: developer
+
    Note:
    This routine should be called only if there is not a
    `PetscObject` available to pass to `PetscLogEventBegin()`.
 
-   Level: developer
-
-.seealso: `PetscLogEventRegister()`, `PetscLogEventBegin()`, `PetscLogEventEnd()`
+.seealso: [](ch_profiling), `PetscLogEventRegister()`, `PetscLogEventBegin()`, `PetscLogEventEnd()`
 M*/
 
 /*MC
@@ -1041,15 +1041,15 @@ M*/
      PetscLogEventEnd(USER_EVENT,0,0,0,0);
 .ve
 
+   Level: intermediate
+
    Developer Note:
      `PetscLogEventBegin()` and `PetscLogEventBegin()` return error codes instead of explicitly handling the
      errors that occur in the macro directly because other packages that use this macros have used them in their
      own functions or methods that do not return error codes and it would be disruptive to change the current
      behavior.
 
-   Level: intermediate
-
-.seealso: `PetscLogEventRegister()`, `PetscLogEventEnd()`, `PetscLogFlops()`
+.seealso: [](ch_profiling), `PetscLogEventRegister()`, `PetscLogEventEnd()`, `PetscLogFlops()`
 M*/
 
 /*MC
@@ -1081,7 +1081,7 @@ M*/
 
    Level: intermediate
 
-.seealso: `PetscLogEventRegister()`, `PetscLogEventBegin()`, `PetscLogFlops()`
+.seealso: [](ch_profiling), `PetscLogEventRegister()`, `PetscLogEventBegin()`, `PetscLogFlops()`
 M*/
 
 /*@C
@@ -1097,7 +1097,7 @@ M*/
 
   Level: intermediate
 
-.seealso: `PetscLogEventBegin()`, `PetscLogEventEnd()`, `PetscLogStageGetId()`
+.seealso: [](ch_profiling), `PetscLogEventBegin()`, `PetscLogEventEnd()`, `PetscLogStageGetId()`
 @*/
 PetscErrorCode PetscLogEventGetId(const char name[], PetscLogEvent *event)
 {
@@ -1177,15 +1177,15 @@ PetscErrorCode PetscLogEventResume_Internal(PetscLogEvent event)
      PetscFinalize();
 .ve
 
+  Level: advanced
+
   Note:
   The default file name is
 $    Log.<rank>
   where <rank> is the processor number. If no name is specified,
   this file will be used.
 
-  Level: advanced
-
-.seealso: `PetscLogDefaultBegin()`, `PetscLogAllBegin()`, `PetscLogView()`
+.seealso: [](ch_profiling), `PetscLogDefaultBegin()`, `PetscLogAllBegin()`, `PetscLogView()`
 @*/
 PetscErrorCode PetscLogDump(const char sname[])
 {
@@ -2064,6 +2064,8 @@ PetscErrorCode PetscLogView_Default(PetscViewer viewer)
 .  -log_all - Saves a file Log.rank for each MPI rank with details of each step of the computation
 -  -log_trace [filename] - Displays a trace of what each process is doing
 
+  Level: beginner
+
   Notes:
   It is possible to control the logging programatically but we recommend using the options database approach whenever possible
   By default the summary is printed to stdout.
@@ -2088,9 +2090,7 @@ $    Safari - see https://ccm.net/faq/36342-safari-how-to-enable-local-file-acce
   or using speedscope (https://www.speedscope.app).
   Old XML profiles may be converted into this format using the script ${PETSC_DIR}/lib/petsc/bin/xml2flamegraph.py.
 
-  Level: beginner
-
-.seealso: `PetscLogDefaultBegin()`, `PetscLogDump()`
+.seealso: [](ch_profiling), `PetscLogDefaultBegin()`, `PetscLogDump()`
 @*/
 PetscErrorCode PetscLogView(PetscViewer viewer)
 {
@@ -2135,7 +2135,7 @@ PetscErrorCode PetscLogView(PetscViewer viewer)
 
   Level: developer
 
-.seealso: `PetscLogView()`
+.seealso: [](ch_profiling), `PetscLogView()`
 @*/
 PetscErrorCode PetscLogViewFromOptions(void)
 {
@@ -2164,6 +2164,8 @@ PetscErrorCode PetscLogViewFromOptions(void)
    Output Parameter:
    flops - number of floating point operations
 
+   Level: intermediate
+
    Notes:
    A global counter logs all PETSc flop counts.  The user can use
    `PetscLogFlops()` to increment this counter to include flops for the
@@ -2171,9 +2173,7 @@ PetscErrorCode PetscLogViewFromOptions(void)
 
    A separate counter `PetscLogGPUFlops()` logs the flops that occur on any GPU associated with this MPI rank
 
-   Level: intermediate
-
-.seealso: `PetscLogGPUFlops()`, `PetscTime()`, `PetscLogFlops()`
+.seealso: [](ch_profiling), `PetscLogGPUFlops()`, `PetscTime()`, `PetscLogFlops()`
 @*/
 PetscErrorCode PetscGetFlops(PetscLogDouble *flops)
 {
@@ -2217,14 +2217,14 @@ PetscErrorCode PetscLogObjectState(PetscObject obj, const char format[], ...)
      PetscLogEventEnd(USER_EVENT,0,0,0,0);
 .ve
 
+   Level: intermediate
+
    Note:
    A global counter logs all PETSc flop counts.  The user can use
    PetscLogFlops() to increment this counter to include flops for the
    application code.
 
-   Level: intermediate
-
-.seealso: `PetscLogGPUFlops()`, `PetscLogEventRegister()`, `PetscLogEventBegin()`, `PetscLogEventEnd()`, `PetscGetFlops()`
+.seealso: [](ch_profiling), `PetscLogGPUFlops()`, `PetscLogEventRegister()`, `PetscLogEventBegin()`, `PetscLogEventEnd()`, `PetscGetFlops()`
 M*/
 
 /*MC
@@ -2252,6 +2252,8 @@ M*/
      PetscPreLoadEnd();
 .ve
 
+   Level: intermediate
+
    Note:
     Only works in C/C++, not Fortran
 
@@ -2263,9 +2265,7 @@ M*/
      The first two variables are available throughout the program, the second two only between the PetscPreLoadBegin()
      and PetscPreLoadEnd()
 
-   Level: intermediate
-
-.seealso: `PetscLogEventRegister()`, `PetscLogEventBegin()`, `PetscLogEventEnd()`, `PetscPreLoadEnd()`, `PetscPreLoadStage()`
+.seealso: [](ch_profiling), `PetscLogEventRegister()`, `PetscLogEventBegin()`, `PetscLogEventEnd()`, `PetscPreLoadEnd()`, `PetscPreLoadStage()`
 M*/
 
 /*MC
@@ -2287,12 +2287,12 @@ M*/
      PetscPreLoadEnd();
 .ve
 
+   Level: intermediate
+
    Note:
     Only works in C/C++ not fortran
 
-   Level: intermediate
-
-.seealso: `PetscLogEventRegister()`, `PetscLogEventBegin()`, `PetscLogEventEnd()`, `PetscPreLoadBegin()`, `PetscPreLoadStage()`
+.seealso: [](ch_profiling), `PetscLogEventRegister()`, `PetscLogEventBegin()`, `PetscLogEventEnd()`, `PetscPreLoadBegin()`, `PetscPreLoadStage()`
 M*/
 
 /*MC
@@ -2314,12 +2314,12 @@ M*/
      PetscPreLoadEnd();
 .ve
 
+   Level: intermediate
+
    Note:
     Only works in C/C++ not fortran
 
-   Level: intermediate
-
-.seealso: `PetscLogEventRegister()`, `PetscLogEventBegin()`, `PetscLogEventEnd()`, `PetscPreLoadBegin()`, `PetscPreLoadEnd()`
+.seealso: [](ch_profiling), `PetscLogEventRegister()`, `PetscLogEventBegin()`, `PetscLogEventEnd()`, `PetscPreLoadBegin()`, `PetscPreLoadEnd()`
 M*/
 
   #if PetscDefined(HAVE_DEVICE)
@@ -2343,6 +2343,8 @@ static PetscErrorCode PetscLogGpuTime_Off(void)
   Options Database Key:
 .   -log_view_gpu_time - provide the GPU times in the -log_view output
 
+   Level: advanced
+
   Notes:
     Turning on the timing of the
     GPU kernels can slow down the entire computation and should only be used when studying the performance
@@ -2350,9 +2352,7 @@ static PetscErrorCode PetscLogGpuTime_Off(void)
 
     This routine should only be called once near the beginning of the program. Once it is started it cannot be turned off.
 
-   Level: advanced
-
-.seealso: `PetscLogView()`, `PetscLogGpuFlops()`, `PetscLogGpuTimeEnd()`, `PetscLogGpuTimeBegin()`
+.seealso: [](ch_profiling), `PetscLogView()`, `PetscLogGpuFlops()`, `PetscLogGpuTimeEnd()`, `PetscLogGpuTimeBegin()`
 @*/
 PetscErrorCode PetscLogGpuTime(void)
 {
@@ -2363,6 +2363,8 @@ PetscErrorCode PetscLogGpuTime(void)
 
 /*@C
   PetscLogGpuTimeBegin - Start timer for device
+
+  Level: intermediate
 
   Notes:
     When CUDA or HIP is enabled, the timer is run on the GPU, it is a separate logging of time devoted to GPU computations (excluding kernel launch times).
@@ -2384,9 +2386,7 @@ PetscErrorCode PetscLogGpuTime(void)
     event when it reaches that event in the stream. The function xxxEventSynchronize() is called in `PetsLogGpuTimeEnd()` to block CPU execution,
     but not continued GPU excution, until the timer event is recorded.
 
-  Level: intermediate
-
-.seealso: `PetscLogView()`, `PetscLogGpuFlops()`, `PetscLogGpuTimeEnd()`, `PetscLogGpuTime()`
+.seealso: [](ch_profiling), `PetscLogView()`, `PetscLogGpuFlops()`, `PetscLogGpuTimeEnd()`, `PetscLogGpuTime()`
 @*/
 PetscErrorCode PetscLogGpuTimeBegin(void)
 {
@@ -2408,7 +2408,7 @@ PetscErrorCode PetscLogGpuTimeBegin(void)
 
   Level: intermediate
 
-.seealso: `PetscLogView()`, `PetscLogGpuFlops()`, `PetscLogGpuTimeBegin()`
+.seealso: [](ch_profiling), `PetscLogView()`, `PetscLogGpuFlops()`, `PetscLogGpuTimeBegin()`
 @*/
 PetscErrorCode PetscLogGpuTimeEnd(void)
 {
@@ -2454,7 +2454,7 @@ PetscClassId PETSC_OBJECT_CLASSID  = 0;
 
   Level: developer
 
-.seealso: `PetscLogEventRegister()`
+.seealso: [](ch_profiling), `PetscLogEventRegister()`
 @*/
 PetscErrorCode PetscClassIdRegister(const char name[], PetscClassId *oclass)
 {
@@ -2490,14 +2490,14 @@ PETSC_INTERN PetscErrorCode PetscLogEventEndMPE(PetscLogEvent, int, PetscObject,
    Options Database Key:
 . -log_mpe - Prints extensive log information
 
+   Level: advanced
+
    Note:
    A related routine is `PetscLogDefaultBegin()` (with the options key -log_view), which is
    intended for production runs since it logs only flop rates and object
    creation (and should not significantly slow the programs).
 
-   Level: advanced
-
-.seealso: `PetscLogDump()`, `PetscLogDefaultBegin()`, `PetscLogAllBegin()`, `PetscLogEventActivate()`,
+.seealso: [](ch_profiling), `PetscLogDump()`, `PetscLogDefaultBegin()`, `PetscLogAllBegin()`, `PetscLogEventActivate()`,
           `PetscLogEventDeactivate()`
 @*/
 PetscErrorCode PetscLogMPEBegin(void)
@@ -2523,7 +2523,7 @@ PetscErrorCode PetscLogMPEBegin(void)
 
    Level: advanced
 
-.seealso: `PetscLogDump()`, `PetscLogAllBegin()`, `PetscLogMPEBegin()`
+.seealso: [](ch_profiling), `PetscLogDump()`, `PetscLogAllBegin()`, `PetscLogMPEBegin()`
 @*/
 PetscErrorCode PetscLogMPEDump(const char sname[])
 {
@@ -2561,7 +2561,7 @@ static const char *PetscLogMPERGBColors[PETSC_RGB_COLORS_MAX] = {"OliveDrab:    
 
   Level: developer
 
-.seealso: `PetscLogEventRegister()`
+.seealso: [](ch_profiling), `PetscLogEventRegister()`
 @*/
 PetscErrorCode PetscLogMPEGetRGBColor(const char *str[])
 {

@@ -70,7 +70,7 @@ variants, respectively:
 
 .. code-block:: fortran
 
-   call PetscInitialize(character file,integer ierr) ! Fortran
+   call PetscInitialize(integer ierr) ! Fortran
 
 The arguments ``argc`` and ``args`` (in the C/C++ version only) are the
 addresses of usual command line arguments, while the ``file`` is a name
@@ -407,11 +407,11 @@ that control behavior of SAWs include
 -  ``-saws_local`` - use the local file system to obtain the SAWS
    javascript files (they much be in ``rootdirectory/js``).
 
-Also see the manual pages for ``PetscSAWsBlock``,
-``PetscObjectSAWsTakeAccess``, ``PetscObjectSAWsGrantAccess``,
-``PetscObjectSAWsSetBlock``, ``PetscStackSAWsGrantAccess``
-``PetscStackSAWsTakeAccess``, ``KSPMonitorSAWs``, and
-``SNESMonitorSAWs``.
+Also see the manual pages for ``PetscSAWsBlock()``,
+``PetscObjectSAWsTakeAccess()``, ``PetscObjectSAWsGrantAccess()``,
+``PetscObjectSAWsSetBlock()``, ``PetscStackSAWsGrantAccess()``
+``PetscStackSAWsTakeAccess()``, ``KSPMonitorSAWs()``, and
+``SNESMonitorSAWs()``.
 
 .. _sec-debugging:
 
@@ -483,10 +483,10 @@ PETSc provides two additional error handlers besides
 .. code-block::
 
    PetscAbortErrorHandler()
-   PetscAttachErrorHandler()
+   PetscAttachDebuggerErrorHandler()
 
 The function ``PetscAbortErrorHandler()`` calls abort on encountering an
-error, while ``PetscAttachErrorHandler()`` attaches a debugger to the
+error, while ``PetscAttachDebuggerErrorHandler()`` attaches a debugger to the
 running process if an error is detected. At runtime, these error
 handlers can be set with the options ``-on_error_abort`` or
 ``-on_error_attach_debugger`` ``[noxterm, dbx, xxgdb, xldb]``
@@ -527,8 +527,7 @@ routine
 can be used in-line. A ``flag`` of ``PETSC_FP_TRAP_ON`` indicates that
 floating-point exceptions should be trapped, while a value of
 ``PETSC_FP_TRAP_OFF`` (the default) indicates that they should be
-ignored. Note that on certain machines, in particular the IBM RS/6000,
-trapping is very expensive.
+ignored.
 
 A small set of macros is used to make the error handling lightweight.
 These macros are used throughout the PETSc libraries and can be employed
@@ -591,9 +590,8 @@ provide detailed instructions for installing PETSc. You can use
 ``--with-clanguage=c`` (the default) to use the C99 complex numbers or
 ``--with-clanguage=c++`` to use the C++ complex type [#cxx_note]_.
 
-Recall that each variant of the PETSc libraries is stored in a different
-directory, given by ``$PETSC_DIR/lib/$PETSC_ARCH``
-
+Recall that each configuration of the PETSc libraries is stored in a different
+directory, given by ``$PETSC_DIR/$PETSC_ARCH``
 according to the architecture. Thus, the libraries for complex numbers
 are maintained separately from those for real numbers. When using any of
 the complex numbers versions of PETSc, *all* vector and matrix elements
@@ -653,7 +651,7 @@ object with the command
 
    PetscViewerDrawGetDraw(PetscViewer viewer,PetscDraw *draw);
 
-Then one can call any of the ``PetscDrawXXX`` commands on the ``draw``
+Then one can call any of the ``PetscDrawXXX()`` commands on the ``draw``
 object. If one obtains the ``draw`` object in this manner, one does not
 call the ``PetscDrawOpenX()`` command discussed below.
 
@@ -1264,13 +1262,13 @@ example with its corresponding makefile and then transcribe all compiler
 and linker options used in this build into a Visual Studio project file,
 in the appropriate format in Visual Studio project settings.
 
-Xcode IDL Users
+Xcode IDE Users
 ~~~~~~~~~~~~~~~
 
 See :any:`doc_macos_install` for the standard Unix command line tools approach to development on macOS. The information
-below is only if you plan to write code within the Xcode IDL.
+below is only if you plan to write code within the Xcode IDE.
 
-Apple Xcode IDL for macOS Applications
+Apple Xcode IDE for macOS Applications
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Follow the instructions in ``$PETSC_DIR/systems/Apple/OSX/bin/makeall``
@@ -1285,7 +1283,7 @@ like function name completion should work for all PETSc functions as
 well as MPI functions. You must also link against the Apple
 ``Accelerate.framework``.
 
-Apple Xcode IDL for iPhone/iPad iOS Applications
+Apple Xcode IDE for iPhone/iPad iOS Applications
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Follow the instructions in
@@ -1316,7 +1314,7 @@ The installation process has not been tested for iOS or Android since 2017.
    Note that this option is not required to use PETSc with C++
 
 .. [#lamem]
-   ``doc/`` at https://bitbucket.org/bkaus/lamem
+   See the ``doc/`` directory at https://bitbucket.org/bkaus/lamem
 
 .. [#json]
    JSON is a subset of YAML

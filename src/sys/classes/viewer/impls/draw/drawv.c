@@ -51,7 +51,7 @@ static PetscErrorCode PetscViewerFlush_Draw(PetscViewer v)
 
     Level: intermediate
 
-.seealso: `PETSCVIEWERDRAW`, `PetscViewerDrawGetLG()`, `PetscViewerDrawGetAxis()`, `PetscViewerDrawOpen()`
+.seealso: [](sec_viewers), `PETSCVIEWERDRAW`, `PetscViewerDrawGetLG()`, `PetscViewerDrawGetAxis()`, `PetscViewerDrawOpen()`
 @*/
 PetscErrorCode PetscViewerDrawGetDraw(PetscViewer viewer, PetscInt windownumber, PetscDraw *draw)
 {
@@ -115,7 +115,7 @@ PetscErrorCode PetscViewerDrawGetDraw(PetscViewer viewer, PetscInt windownumber,
     Note:
     A `PETSCVIEWERDRAW` may have multiple `PetscDraw` subwindows, this increases the number of the subwindow that is returned with `PetscViewerDrawGetDraw()`
 
-.seealso: `PetscViewerDrawGetLG()`, `PetscViewerDrawGetAxis()`, `PetscViewerDrawOpen()`, `PetscViewerDrawGetDraw()`, `PetscViewerDrawBaseSet()`
+.seealso: [](sec_viewers), `PetscViewerDrawGetLG()`, `PetscViewerDrawGetAxis()`, `PetscViewerDrawOpen()`, `PetscViewerDrawGetDraw()`, `PetscViewerDrawBaseSet()`
 @*/
 PetscErrorCode PetscViewerDrawBaseAdd(PetscViewer viewer, PetscInt windownumber)
 {
@@ -148,7 +148,7 @@ PetscErrorCode PetscViewerDrawBaseAdd(PetscViewer viewer, PetscInt windownumber)
     Note:
     A `PETSCVIEWERDRAW` may have multiple `PetscDraw` subwindows, this increases the number of the subwindow that is returned with `PetscViewerDrawGetDraw()`
 
-.seealso: `PetscViewerDrawGetLG()`, `PetscViewerDrawGetAxis()`, `PetscViewerDrawOpen()`, `PetscViewerDrawGetDraw()`, `PetscViewerDrawBaseAdd()`
+.seealso: [](sec_viewers), `PetscViewerDrawGetLG()`, `PetscViewerDrawGetAxis()`, `PetscViewerDrawOpen()`, `PetscViewerDrawGetDraw()`, `PetscViewerDrawBaseAdd()`
 @*/
 PetscErrorCode PetscViewerDrawBaseSet(PetscViewer viewer, PetscInt windownumber)
 {
@@ -185,7 +185,7 @@ PetscErrorCode PetscViewerDrawBaseSet(PetscViewer viewer, PetscInt windownumber)
     Note:
     A `PETSCVIEWERDRAW` may have multiple `PetscDraw` subwindows
 
-.seealso: `PetscDrawLG`, `PetscViewerDrawGetDraw()`, `PetscViewerDrawGetAxis()`, `PetscViewerDrawOpen()`
+.seealso: [](sec_viewers), `PetscDrawLG`, `PetscViewerDrawGetDraw()`, `PetscViewerDrawGetAxis()`, `PetscViewerDrawOpen()`
 @*/
 PetscErrorCode PetscViewerDrawGetDrawLG(PetscViewer viewer, PetscInt windownumber, PetscDrawLG *drawlg)
 {
@@ -228,7 +228,7 @@ PetscErrorCode PetscViewerDrawGetDrawLG(PetscViewer viewer, PetscInt windownumbe
     Note:
     A `PETSCVIEWERDRAW` may have multiple `PetscDraw` subwindows
 
-.seealso: `PetscViewerDrawGetDraw()`, `PetscViewerDrawGetLG()`, `PetscViewerDrawOpen()`
+.seealso: [](sec_viewers), `PetscViewerDrawGetDraw()`, `PetscViewerDrawGetLG()`, `PetscViewerDrawOpen()`
 @*/
 PetscErrorCode PetscViewerDrawGetDrawAxis(PetscViewer viewer, PetscInt windownumber, PetscDrawAxis *drawaxis)
 {
@@ -385,7 +385,7 @@ PetscErrorCode PetscViewerDrawGetTitle(PetscViewer v, const char *title[])
    correct for character data!  Thus, `PETSC_NULL_CHARACTER` can be
    used for the display and title input parameters.
 
-.seealso: `PETSCVIEWERDRAW`, `PetscDrawCreate()`, `PetscViewerDestroy()`, `PetscViewerDrawGetDraw()`, `PetscViewerCreate()`, `PETSC_VIEWER_DRAW_`,
+.seealso: [](sec_viewers), `PETSCVIEWERDRAW`, `PetscDrawCreate()`, `PetscViewerDestroy()`, `PetscViewerDrawGetDraw()`, `PetscViewerCreate()`, `PETSC_VIEWER_DRAW_`,
           `PETSC_VIEWER_DRAW_WORLD`, `PETSC_VIEWER_DRAW_SELF`
 @*/
 PetscErrorCode PetscViewerDrawOpen(MPI_Comm comm, const char display[], const char title[], int x, int y, int w, int h, PetscViewer *viewer)
@@ -515,7 +515,7 @@ PetscErrorCode PetscViewerView_Draw(PetscViewer viewer, PetscViewer v)
 
   Level: beginner
 
-.seealso: `PetscViewerDrawOpen()`, `PetscViewerDrawGetDraw()`, `PETSC_VIEWER_DRAW_()`, `PETSC_VIEWER_DRAW_SELF`, `PETSC_VIEWER_DRAW_WORLD`,
+.seealso: [](sec_viewers), `PetscViewerDrawOpen()`, `PetscViewerDrawGetDraw()`, `PETSC_VIEWER_DRAW_()`, `PETSC_VIEWER_DRAW_SELF`, `PETSC_VIEWER_DRAW_WORLD`,
           `PetscViewerCreate()`, `PetscViewerASCIIOpen()`, `PetscViewerBinaryOpen()`, `PETSCVIEWERBINARY`,
           `PetscViewerMatlabOpen()`, `VecView()`, `DMView()`, `PetscViewerMatlabPutArray()`, `PETSCVIEWERASCII`, `PETSCVIEWERMATLAB`,
           `PetscViewerFileSetName()`, `PetscViewerFileSetMode()`, `PetscViewerFormat`, `PetscViewerType`, `PetscViewerSetType()`
@@ -556,7 +556,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_Draw(PetscViewer viewer)
 
     Level: intermediate
 
-.seealso: `PETSCVIEWERDRAW`, `PetscViewerDrawOpen()`, `PetscViewerDrawGetDraw()`,
+.seealso: [](sec_viewers), `PETSCVIEWERDRAW`, `PetscViewerDrawOpen()`, `PetscViewerDrawGetDraw()`,
 @*/
 PetscErrorCode PetscViewerDrawClear(PetscViewer viewer)
 {
@@ -589,7 +589,7 @@ PetscErrorCode PetscViewerDrawClear(PetscViewer viewer)
 
     Level: intermediate
 
-.seealso: `PETSCVIEWERDRAW`, `PetscViewerDrawOpen()`, `PetscViewerDrawGetDraw()`,
+.seealso: [](sec_viewers), `PETSCVIEWERDRAW`, `PetscViewerDrawOpen()`, `PetscViewerDrawGetDraw()`,
 @*/
 PetscErrorCode PetscViewerDrawGetPause(PetscViewer viewer, PetscReal *pause)
 {
@@ -630,7 +630,7 @@ PetscErrorCode PetscViewerDrawGetPause(PetscViewer viewer, PetscReal *pause)
 
     Level: intermediate
 
-.seealso: `PETSCVIEWERDRAW`, `PetscViewerDrawOpen()`, `PetscViewerDrawGetDraw()`,
+.seealso: [](sec_viewers), `PETSCVIEWERDRAW`, `PetscViewerDrawOpen()`, `PetscViewerDrawGetDraw()`,
 @*/
 PetscErrorCode PetscViewerDrawSetPause(PetscViewer viewer, PetscReal pause)
 {
@@ -662,7 +662,7 @@ PetscErrorCode PetscViewerDrawSetPause(PetscViewer viewer, PetscReal pause)
 
     Level: intermediate
 
-.seealso: `PETSCVIEWERDRAW`, `PetscViewerDrawOpen()`, `PetscViewerDrawGetDraw()`,
+.seealso: [](sec_viewers), `PETSCVIEWERDRAW`, `PetscViewerDrawOpen()`, `PetscViewerDrawGetDraw()`,
 @*/
 PetscErrorCode PetscViewerDrawSetHold(PetscViewer viewer, PetscBool hold)
 {
@@ -692,7 +692,7 @@ PetscErrorCode PetscViewerDrawSetHold(PetscViewer viewer, PetscBool hold)
 
     Level: intermediate
 
-.seealso: `PETSCVIEWERDRAW`, `PetscViewerDrawOpen()`, `PetscViewerDrawGetDraw()`,
+.seealso: [](sec_viewers), `PETSCVIEWERDRAW`, `PetscViewerDrawOpen()`, `PetscViewerDrawGetDraw()`,
 @*/
 PetscErrorCode PetscViewerDrawGetHold(PetscViewer viewer, PetscBool *hold)
 {
@@ -735,7 +735,7 @@ PetscMPIInt Petsc_Viewer_Draw_keyval = MPI_KEYVAL_INVALID;
      an error code.  The window is usually used in the form
 $       XXXView(XXX object,PETSC_VIEWER_DRAW_(comm));
 
-.seealso: `PETSCVIEWERDRAW`, `PetscViewer`, `PETSC_VIEWER_DRAW_WORLD`, `PETSC_VIEWER_DRAW_SELF`, `PetscViewerDrawOpen()`,
+.seealso: [](sec_viewers), `PETSCVIEWERDRAW`, `PetscViewer`, `PETSC_VIEWER_DRAW_WORLD`, `PETSC_VIEWER_DRAW_SELF`, `PetscViewerDrawOpen()`,
 @*/
 PetscViewer PETSC_VIEWER_DRAW_(MPI_Comm comm)
 {
@@ -807,7 +807,7 @@ PetscViewer PETSC_VIEWER_DRAW_(MPI_Comm comm)
       bounds are moved to the bound value before plotting. In this way the color index from color to physical value remains the same for all plots generated with
       this viewer. Otherwise the color to physical value meaning changes with each new image if this is not set.
 
-.seealso: `PETSCVIEWERDRAW`, `PetscViewerDrawGetLG()`, `PetscViewerDrawGetAxis()`, `PetscViewerDrawOpen()`
+.seealso: [](sec_viewers), `PETSCVIEWERDRAW`, `PetscViewerDrawGetLG()`, `PetscViewerDrawGetAxis()`, `PetscViewerDrawOpen()`
 @*/
 PetscErrorCode PetscViewerDrawSetBounds(PetscViewer viewer, PetscInt nbounds, const PetscReal *bounds)
 {
@@ -841,7 +841,7 @@ PetscErrorCode PetscViewerDrawSetBounds(PetscViewer viewer, PetscInt nbounds, co
 
     Level: intermediate
 
-.seealso: `PETSCVIEWERDRAW`, `PetscViewerDrawGetLG()`, `PetscViewerDrawGetAxis()`, `PetscViewerDrawOpen()`, `PetscViewerDrawSetBounds()`
+.seealso: [](sec_viewers), `PETSCVIEWERDRAW`, `PetscViewerDrawGetLG()`, `PetscViewerDrawGetAxis()`, `PetscViewerDrawOpen()`, `PetscViewerDrawSetBounds()`
 @*/
 PetscErrorCode PetscViewerDrawGetBounds(PetscViewer viewer, PetscInt *nbounds, const PetscReal **bounds)
 {

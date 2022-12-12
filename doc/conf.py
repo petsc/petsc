@@ -55,7 +55,7 @@ with open(os.path.join('..', 'include', 'petscversion.h'),'r') as version_file:
 
 # -- General configuration -----------------------------------------------------
 
-needs_sphinx='3.5'
+needs_sphinx='5.3'
 nitpicky = True  # checks internal links. For external links, use "make linkcheck"
 master_doc = 'index'
 templates_path = ['_templates']
@@ -103,7 +103,7 @@ html_theme_options = {
     ],
     "use_edit_page_button": True,
     "footer_items": ["copyright", "sphinx-version", "last-updated"],
-    "secondary_sidebar_items" : ["edit-this-page"],
+#    "secondary_sidebar_items" : ["edit-this-page"],
     "logo": {
         "image_light": os.path.basename(html_logo_light),
         "image_dark": os.path.basename(html_logo_dark)

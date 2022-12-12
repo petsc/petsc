@@ -25,6 +25,8 @@ PetscBool PetscViewerRegisterAllCalled;
   Not Collective
 
    Level: developer
+
+.seealso: [](sec_viewers), `PetscViewer`
 @*/
 PetscErrorCode PetscViewerRegisterAll(void)
 {

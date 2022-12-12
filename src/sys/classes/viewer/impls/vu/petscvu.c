@@ -138,7 +138,7 @@ static PetscErrorCode PetscViewerFileSetName_VU(PetscViewer viewer, const char n
 
   Level: beginner
 
-.seealso: `PetscViewerVUFlushDeferred()`, `PetscViewerVUGetPointer()`, `PetscViewerVUSetVecSeen()`, `PetscViewerVUGetVecSeen()`,
+.seealso: [](sec_viewers), `PetscViewerVUFlushDeferred()`, `PetscViewerVUGetPointer()`, `PetscViewerVUSetVecSeen()`, `PetscViewerVUGetVecSeen()`,
           `PetscViewerVUPrintDeferred()`, `PetscViewerVUFlushDeferred()`
 M*/
 PETSC_EXTERN PetscErrorCode PetscViewerCreate_VU(PetscViewer viewer)
@@ -182,7 +182,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_VU(PetscViewer viewer)
 
   Level: intermediate
 
-.seealso: `PETSCVIEWERVU`, `PetscViewerASCIIGetPointer()`
+.seealso: [](sec_viewers), `PETSCVIEWERVU`, `PetscViewerASCIIGetPointer()`
 @*/
 PetscErrorCode PetscViewerVUGetPointer(PetscViewer viewer, FILE **fd)
 {
@@ -207,7 +207,7 @@ PetscErrorCode PetscViewerVUGetPointer(PetscViewer viewer, FILE **fd)
 
   Level: developer
 
-.seealso: `PETSCVIEWERVU`, `PetscViewerVUGetVecSeen()`
+.seealso: [](sec_viewers), `PETSCVIEWERVU`, `PetscViewerVUGetVecSeen()`
 @*/
 PetscErrorCode PetscViewerVUSetVecSeen(PetscViewer viewer, PetscBool vecSeen)
 {
@@ -232,7 +232,7 @@ PetscErrorCode PetscViewerVUSetVecSeen(PetscViewer viewer, PetscBool vecSeen)
 
   Level: advanced
 
-.seealso: `PETSCVIEWERVU`, `PetscViewerVUGetVecSeen()`
+.seealso: [](sec_viewers), `PETSCVIEWERVU`, `PetscViewerVUGetVecSeen()`
 @*/
 PetscErrorCode PetscViewerVUGetVecSeen(PetscViewer viewer, PetscBool *vecSeen)
 {
@@ -256,7 +256,7 @@ PetscErrorCode PetscViewerVUGetVecSeen(PetscViewer viewer, PetscBool *vecSeen)
 
   Level: intermediate
 
-.seealso: `PETSCVIEWERVU`, `PetscViewerVUFlushDeferred()`
+.seealso: [](sec_viewers), `PETSCVIEWERVU`, `PetscViewerVUFlushDeferred()`
 @*/
 PetscErrorCode PetscViewerVUPrintDeferred(PetscViewer viewer, const char format[], ...)
 {
@@ -293,7 +293,7 @@ PetscErrorCode PetscViewerVUPrintDeferred(PetscViewer viewer, const char format[
 
   Level: intermediate
 
-.seealso: `PETSCVIEWERVU`, `PetscViewerVUPrintDeferred()`
+.seealso: [](sec_viewers), `PETSCVIEWERVU`, `PetscViewerVUPrintDeferred()`
 @*/
 PetscErrorCode PetscViewerVUFlushDeferred(PetscViewer viewer)
 {

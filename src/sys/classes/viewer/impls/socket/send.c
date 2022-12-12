@@ -298,7 +298,7 @@ $    VecView(Vec vector,PetscViewer viewer)
      .mat file. Use `PetscMatlabEngineCreate()` or `PETSC_MATLAB_ENGINE_()`, `PETSC_MATLAB_ENGINE_SELF`, or `PETSC_MATLAB_ENGINE_WORLD`
      for communicating with a MATLAB Engine
 
-.seealso: `PETSCVIEWERBINARY`, `PETSCVIEWERSOCKET`, `MatView()`, `VecView()`, `PetscViewerDestroy()`, `PetscViewerCreate()`, `PetscViewerSetType()`,
+.seealso: [](sec_viewers), `PETSCVIEWERBINARY`, `PETSCVIEWERSOCKET`, `MatView()`, `VecView()`, `PetscViewerDestroy()`, `PetscViewerCreate()`, `PetscViewerSetType()`,
           `PetscViewerSocketSetConnection()`, `PETSC_VIEWER_SOCKET_`, `PETSC_VIEWER_SOCKET_WORLD`,
           `PETSC_VIEWER_SOCKET_SELF`, `PetscViewerBinaryWrite()`, `PetscViewerBinaryRead()`, `PetscViewerBinaryWriteStringArray()`,
           `PetscBinaryViewerGetDescriptor()`, `PetscMatlabEngineCreate()`
@@ -362,7 +362,7 @@ PETSC_INTERN PetscErrorCode PetscViewerBinaryGetFlowControl_Binary(PetscViewer, 
 
   Level: beginner
 
-.seealso: `PETSC_VIEWERBINARY`, `PetscViewerSocketOpen()`, `PetscViewerDrawOpen()`, `PETSC_VIEWER_DRAW_()`, `PETSC_VIEWER_DRAW_SELF`, `PETSC_VIEWER_DRAW_WORLD`,
+.seealso: [](sec_viewers), `PETSC_VIEWERBINARY`, `PetscViewerSocketOpen()`, `PetscViewerDrawOpen()`, `PETSC_VIEWER_DRAW_()`, `PETSC_VIEWER_DRAW_SELF`, `PETSC_VIEWER_DRAW_WORLD`,
           `PetscViewerCreate()`, `PetscViewerASCIIOpen()`, `PetscViewerBinaryOpen()`, `PETSCVIEWERBINARY`, `PETSCVIEWERDRAW`,
           `PetscViewerMatlabOpen()`, `VecView()`, `DMView()`, `PetscViewerMatlabPutArray()`, `PETSCVIEWERASCII`, `PETSCVIEWERMATLAB`,
           `PetscViewerFileSetName()`, `PetscViewerFileSetMode()`, `PetscViewerFormat`, `PetscViewerType`, `PetscViewerSetType()`
@@ -404,7 +404,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_Socket(PetscViewer v)
 
     Level: advanced
 
-.seealso: `PETSCVIEWERMATLAB`, `PETSCVIEWERSOCKET`, `PetscViewerSocketOpen()`
+.seealso: [](sec_viewers), `PETSCVIEWERMATLAB`, `PETSCVIEWERSOCKET`, `PetscViewerSocketOpen()`
 @*/
 PetscErrorCode PetscViewerSocketSetConnection(PetscViewer v, const char machine[], int port)
 {
@@ -471,8 +471,8 @@ PetscMPIInt Petsc_Viewer_Socket_keyval = MPI_KEYVAL_INVALID;
    Options Database Keys:
    For use with the default `PETSC_VIEWER_SOCKET_WORLD` or if
     NULL is passed for machine or `PETSC_DEFAULT` is passed for port
-$    -viewer_socket_machine <machine>
-$    -viewer_socket_port <port>
++    -viewer_socket_machine <machine> - machine to connect to
+-    -viewer_socket_port <port> - port to connect to
 
    Environmental variables:
 +   `PETSC_VIEWER_SOCKET_PORT` - portnumber
@@ -492,7 +492,7 @@ $       XXXView(XXX object,PETSC_VIEWER_SOCKET_(comm));
      .mat file. Use `PetscMatlabEngineCreate()` or `PETSC_MATLAB_ENGINE_()`, `PETSC_MATLAB_ENGINE_SELF`, or `PETSC_MATLAB_ENGINE_WORLD`
      for communicating with a MATLAB Engine
 
-.seealso: `PETSCVIEWERMATLAB`, `PETSCVIEWERSOCKET`, `PETSC_VIEWER_SOCKET_WORLD`, `PETSC_VIEWER_SOCKET_SELF`, `PetscViewerSocketOpen()`, `PetscViewerCreate()`,
+.seealso: [](sec_viewers), `PETSCVIEWERMATLAB`, `PETSCVIEWERSOCKET`, `PETSC_VIEWER_SOCKET_WORLD`, `PETSC_VIEWER_SOCKET_SELF`, `PetscViewerSocketOpen()`, `PetscViewerCreate()`,
           `PetscViewerSocketSetConnection()`, `PetscViewerDestroy()`, `PETSC_VIEWER_SOCKET_()`, `PetscViewerBinaryWrite()`, `PetscViewerBinaryRead()`,
           `PetscViewerBinaryWriteStringArray()`, `PetscViewerBinaryGetDescriptor()`, `PETSC_VIEWER_MATLAB_()`
 @*/
