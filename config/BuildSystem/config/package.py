@@ -433,15 +433,16 @@ Now rerun configure''' % (self.installDirProvider.dir, '--download-'+self.packag
     f.close()
     return m.hexdigest()
 
-  def generateLibList(self, directory):
+  def generateLibList(self, directory, liblist = None):
     '''Generates full path list of libraries from self.liblist'''
-    if [] in self.liblist: self.liblist.remove([]) # process null list later
-    if self.liblist == []: # most packages don't have a liblist - so return an empty list
+    if liblist == None: liblist = self.liblist
+    if [] in liblist: liblist.remove([]) # process null list later
+    if liblist == []: # most packages don't have a liblist - so return an empty list
       return [[]]
     alllibs = []
     if not directory:  # compiler default path - so also check compiler default libs.
       alllibs.insert(0,[])
-    for libSet in self.liblist:
+    for libSet in liblist:
       libs = []
       # add full path only to the first library in the list
       if len(libSet) > 0:
