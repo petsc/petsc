@@ -4915,7 +4915,7 @@ PetscErrorCode DMSetField_Internal(DM dm, PetscInt f, DMLabel label, PetscObject
   PetscFunctionReturn(0);
 }
 
-/*@
+/*@C
   DMSetField - Set the discretization object for a given `DM` field. Usually one would call `DMAddField()` which automatically handles
   the field numbering.
 
@@ -4944,7 +4944,7 @@ PetscErrorCode DMSetField(DM dm, PetscInt f, DMLabel label, PetscObject disc)
   PetscFunctionReturn(0);
 }
 
-/*@
+/*@C
   DMAddField - Add a field to a `DM` object. A field is a function space defined by of a set of discretization points (geometric entities)
   and a discretization object that defines the function space associated with those points.
 
