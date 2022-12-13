@@ -3974,18 +3974,19 @@ static PetscErrorCode DMSetFromOptions_Plex(DM dm, PetscOptionItems *PetscOption
   if (created) {
     DM_Plex  *mesh   = (DM_Plex *)dm->data;
     PetscInt  degree = 1;
+    PetscInt  height = 0;
+    DM        cdm;
     PetscBool flg;
 
     PetscCall(PetscOptionsBool("-dm_coord_space", "Use an FEM space for coordinates", "", coordSpace, &coordSpace, &flg));
     PetscCall(PetscOptionsInt("-dm_coord_petscspace_degree", "FEM degree for coordinate space", "", degree, &degree, NULL));
     if (coordSpace) PetscCall(DMPlexCreateCoordinateSpace(dm, degree, mesh->coordFunc));
+    PetscCall(DMGetCoordinateDM(dm, &cdm));
     if (flg && !coordSpace) {
-      DM           cdm;
       PetscDS      cds;
       PetscObject  obj;
       PetscClassId id;
 
-      PetscCall(DMGetCoordinateDM(dm, &cdm));
       PetscCall(DMGetDS(cdm, &cds));
       PetscCall(PetscDSGetDiscretization(cds, 0, &obj));
       PetscCall(PetscObjectGetClassId(obj, &id));
@@ -4001,6 +4002,8 @@ static PetscErrorCode DMSetFromOptions_Plex(DM dm, PetscOptionItems *PetscOption
       mesh->coordFunc = NULL;
     }
     PetscCall(PetscOptionsBool("-dm_sparse_localize", "Localize only necessary cells", "", dm->sparseLocalize, &dm->sparseLocalize, &flg));
+    PetscCall(PetscOptionsInt("-dm_localize_height", "Localize edges and faces in addition to cells", "", height, &height, &flg));
+    if (flg) PetscCall(DMPlexSetMaxProjectionHeight(cdm, height));
     PetscCall(DMLocalizeCoordinates(dm));
   }
   /* Handle DMPlex refinement */
