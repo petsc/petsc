@@ -591,13 +591,13 @@ PetscErrorCode MatSetValues_SeqAIJ_SortedFull(Mat A, PetscInt m, const PetscInt 
 
 PetscErrorCode MatGetValues_SeqAIJ(Mat A, PetscInt m, const PetscInt im[], PetscInt n, const PetscInt in[], PetscScalar v[])
 {
-  Mat_SeqAIJ *a = (Mat_SeqAIJ *)A->data;
-  PetscInt   *rp, k, low, high, t, row, nrow, i, col, l, *aj = a->j;
-  PetscInt   *ai = a->i, *ailen = a->ilen;
-  MatScalar  *ap, *aa;
+  Mat_SeqAIJ      *a = (Mat_SeqAIJ *)A->data;
+  PetscInt        *rp, k, low, high, t, row, nrow, i, col, l, *aj = a->j;
+  PetscInt        *ai = a->i, *ailen = a->ilen;
+  const MatScalar *ap, *aa;
 
   PetscFunctionBegin;
-  PetscCall(MatSeqAIJGetArray(A, &aa));
+  PetscCall(MatSeqAIJGetArrayRead(A, &aa));
   for (k = 0; k < m; k++) { /* loop over rows */
     row = im[k];
     if (row < 0) {
@@ -633,7 +633,7 @@ PetscErrorCode MatGetValues_SeqAIJ(Mat A, PetscInt m, const PetscInt im[], Petsc
     finished:;
     }
   }
-  PetscCall(MatSeqAIJRestoreArray(A, &aa));
+  PetscCall(MatSeqAIJRestoreArrayRead(A, &aa));
   PetscFunctionReturn(0);
 }
 
@@ -1800,6 +1800,7 @@ PetscErrorCode MatInvertVariableBlockDiagonal_SeqAIJ(Mat A, PetscInt nblocks, co
   PetscBool       allowzeropivot, zeropivotdetected = PETSC_FALSE;
   const PetscReal shift = 0.0;
   PetscInt        ipvt[5];
+  PetscCount      flops = 0;
   PetscScalar     work[25], *v_work;
 
   PetscFunctionBegin;
@@ -1854,7 +1855,9 @@ PetscErrorCode MatInvertVariableBlockDiagonal_SeqAIJ(Mat A, PetscInt nblocks, co
     }
     ncnt += bsizes[i];
     diag += bsizes[i] * bsizes[i];
+    flops += 2 * PetscPowInt(bsizes[i], 3) / 3;
   }
+  PetscLogFlops(flops);
   if (bsizemax > 7) PetscCall(PetscFree2(v_work, v_pivots));
   PetscCall(PetscFree(indx));
   PetscFunctionReturn(0);
