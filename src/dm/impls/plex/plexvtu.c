@@ -203,22 +203,22 @@ PetscErrorCode DMPlexVTKWriteAll_VTU(DM dm, PetscViewer viewer)
    * Write file header
    */
   if (rank == 0) {
-    PetscInt boffset = 0;
+    PetscInt64 boffset = 0;
 
     for (r = 0; r < size; r++) {
       PetscCall(PetscFPrintf(PETSC_COMM_SELF, fp, "    <Piece NumberOfPoints=\"%" PetscInt_FMT "\" NumberOfCells=\"%" PetscInt_FMT "\">\n", gpiece[r].nvertices, gpiece[r].ncells));
       /* Coordinate positions */
       PetscCall(PetscFPrintf(PETSC_COMM_SELF, fp, "      <Points>\n"));
-      PetscCall(PetscFPrintf(PETSC_COMM_SELF, fp, "        <DataArray type=\"%s\" Name=\"Position\" NumberOfComponents=\"3\" format=\"appended\" offset=\"%" PetscInt_FMT "\" />\n", precision, boffset));
+      PetscCall(PetscFPrintf(PETSC_COMM_SELF, fp, "        <DataArray type=\"%s\" Name=\"Position\" NumberOfComponents=\"3\" format=\"appended\" offset=\"%" PetscInt64_FMT "\" />\n", precision, boffset));
       boffset += gpiece[r].nvertices * 3 * sizeof(PetscVTUReal) + sizeof(int);
       PetscCall(PetscFPrintf(PETSC_COMM_SELF, fp, "      </Points>\n"));
       /* Cell connectivity */
       PetscCall(PetscFPrintf(PETSC_COMM_SELF, fp, "      <Cells>\n"));
-      PetscCall(PetscFPrintf(PETSC_COMM_SELF, fp, "        <DataArray type=\"Int32\" Name=\"connectivity\" NumberOfComponents=\"1\" format=\"appended\" offset=\"%" PetscInt_FMT "\" />\n", boffset));
+      PetscCall(PetscFPrintf(PETSC_COMM_SELF, fp, "        <DataArray type=\"Int32\" Name=\"connectivity\" NumberOfComponents=\"1\" format=\"appended\" offset=\"%" PetscInt64_FMT "\" />\n", boffset));
       boffset += gpiece[r].nconn * sizeof(PetscInt) + sizeof(int);
-      PetscCall(PetscFPrintf(PETSC_COMM_SELF, fp, "        <DataArray type=\"Int32\" Name=\"offsets\"      NumberOfComponents=\"1\" format=\"appended\" offset=\"%" PetscInt_FMT "\" />\n", boffset));
+      PetscCall(PetscFPrintf(PETSC_COMM_SELF, fp, "        <DataArray type=\"Int32\" Name=\"offsets\"      NumberOfComponents=\"1\" format=\"appended\" offset=\"%" PetscInt64_FMT "\" />\n", boffset));
       boffset += gpiece[r].ncells * sizeof(PetscInt) + sizeof(int);
-      PetscCall(PetscFPrintf(PETSC_COMM_SELF, fp, "        <DataArray type=\"UInt8\" Name=\"types\"        NumberOfComponents=\"1\" format=\"appended\" offset=\"%" PetscInt_FMT "\" />\n", boffset));
+      PetscCall(PetscFPrintf(PETSC_COMM_SELF, fp, "        <DataArray type=\"UInt8\" Name=\"types\"        NumberOfComponents=\"1\" format=\"appended\" offset=\"%" PetscInt64_FMT "\" />\n", boffset));
       boffset += gpiece[r].ncells * sizeof(unsigned char) + sizeof(int);
       PetscCall(PetscFPrintf(PETSC_COMM_SELF, fp, "      </Cells>\n"));
 
@@ -226,7 +226,7 @@ PetscErrorCode DMPlexVTKWriteAll_VTU(DM dm, PetscViewer viewer)
        * Cell Data headers
        */
       PetscCall(PetscFPrintf(PETSC_COMM_SELF, fp, "      <CellData>\n"));
-      PetscCall(PetscFPrintf(PETSC_COMM_SELF, fp, "        <DataArray type=\"Int32\" Name=\"Rank\" NumberOfComponents=\"1\" format=\"appended\" offset=\"%" PetscInt_FMT "\" />\n", boffset));
+      PetscCall(PetscFPrintf(PETSC_COMM_SELF, fp, "        <DataArray type=\"Int32\" Name=\"Rank\" NumberOfComponents=\"1\" format=\"appended\" offset=\"%" PetscInt64_FMT "\" />\n", boffset));
       boffset += gpiece[r].ncells * sizeof(int) + sizeof(int);
       /* all the vectors */
       for (link = vtk->link; link; link = link->next) {
@@ -284,12 +284,12 @@ PetscErrorCode DMPlexVTKWriteAll_VTU(DM dm, PetscViewer viewer)
           }
           if (vector) {
 #if defined(PETSC_USE_COMPLEX)
-            PetscCall(PetscFPrintf(comm, fp, "        <DataArray type=\"%s\" Name=\"%s%s.Re\" NumberOfComponents=\"3\" format=\"appended\" offset=\"%" PetscInt_FMT "\" />\n", precision, vecname, fieldname, boffset));
+            PetscCall(PetscFPrintf(comm, fp, "        <DataArray type=\"%s\" Name=\"%s%s.Re\" NumberOfComponents=\"3\" format=\"appended\" offset=\"%" PetscInt64_FMT "\" />\n", precision, vecname, fieldname, boffset));
             boffset += gpiece[r].ncells * 3 * sizeof(PetscVTUReal) + sizeof(int);
-            PetscCall(PetscFPrintf(comm, fp, "        <DataArray type=\"%s\" Name=\"%s%s.Im\" NumberOfComponents=\"3\" format=\"appended\" offset=\"%" PetscInt_FMT "\" />\n", precision, vecname, fieldname, boffset));
+            PetscCall(PetscFPrintf(comm, fp, "        <DataArray type=\"%s\" Name=\"%s%s.Im\" NumberOfComponents=\"3\" format=\"appended\" offset=\"%" PetscInt64_FMT "\" />\n", precision, vecname, fieldname, boffset));
             boffset += gpiece[r].ncells * 3 * sizeof(PetscVTUReal) + sizeof(int);
 #else
-            PetscCall(PetscFPrintf(comm, fp, "        <DataArray type=\"%s\" Name=\"%s%s\" NumberOfComponents=\"3\" format=\"appended\" offset=\"%" PetscInt_FMT "\" />\n", precision, vecname, fieldname, boffset));
+            PetscCall(PetscFPrintf(comm, fp, "        <DataArray type=\"%s\" Name=\"%s%s\" NumberOfComponents=\"3\" format=\"appended\" offset=\"%" PetscInt64_FMT "\" />\n", precision, vecname, fieldname, boffset));
             boffset += gpiece[r].ncells * 3 * sizeof(PetscVTUReal) + sizeof(int);
 #endif
             i += fbs;
@@ -306,12 +306,12 @@ PetscErrorCode DMPlexVTKWriteAll_VTU(DM dm, PetscViewer viewer)
                 PetscCall(PetscSNPrintf(finalname, 255, "%s%s", vecname, fieldname));
               }
 #if defined(PETSC_USE_COMPLEX)
-              PetscCall(PetscFPrintf(comm, fp, "        <DataArray type=\"%s\" Name=\"%s.Re\" NumberOfComponents=\"1\" format=\"appended\" offset=\"%" PetscInt_FMT "\" />\n", precision, finalname, boffset));
+              PetscCall(PetscFPrintf(comm, fp, "        <DataArray type=\"%s\" Name=\"%s.Re\" NumberOfComponents=\"1\" format=\"appended\" offset=\"%" PetscInt64_FMT "\" />\n", precision, finalname, boffset));
               boffset += gpiece[r].ncells * sizeof(PetscVTUReal) + sizeof(int);
-              PetscCall(PetscFPrintf(comm, fp, "        <DataArray type=\"%s\" Name=\"%s.Im\" NumberOfComponents=\"1\" format=\"appended\" offset=\"%" PetscInt_FMT "\" />\n", precision, finalname, boffset));
+              PetscCall(PetscFPrintf(comm, fp, "        <DataArray type=\"%s\" Name=\"%s.Im\" NumberOfComponents=\"1\" format=\"appended\" offset=\"%" PetscInt64_FMT "\" />\n", precision, finalname, boffset));
               boffset += gpiece[r].ncells * sizeof(PetscVTUReal) + sizeof(int);
 #else
-              PetscCall(PetscFPrintf(comm, fp, "        <DataArray type=\"%s\" Name=\"%s\" NumberOfComponents=\"1\" format=\"appended\" offset=\"%" PetscInt_FMT "\" />\n", precision, finalname, boffset));
+              PetscCall(PetscFPrintf(comm, fp, "        <DataArray type=\"%s\" Name=\"%s\" NumberOfComponents=\"1\" format=\"appended\" offset=\"%" PetscInt64_FMT "\" />\n", precision, finalname, boffset));
               boffset += gpiece[r].ncells * sizeof(PetscVTUReal) + sizeof(int);
 #endif
               i++;
@@ -362,12 +362,12 @@ PetscErrorCode DMPlexVTKWriteAll_VTU(DM dm, PetscViewer viewer)
           if (link->ft == PETSC_VTK_POINT_VECTOR_FIELD) {
             PetscCheck(fbs <= 3, PetscObjectComm((PetscObject)viewer), PETSC_ERR_ARG_SIZ, "Point vector fields can have at most 3 components, %" PetscInt_FMT " given", fbs);
 #if defined(PETSC_USE_COMPLEX)
-            PetscCall(PetscFPrintf(comm, fp, "        <DataArray type=\"%s\" Name=\"%s%s.Re\" NumberOfComponents=\"3\" format=\"appended\" offset=\"%" PetscInt_FMT "\" />\n", precision, vecname, fieldname, boffset));
+            PetscCall(PetscFPrintf(comm, fp, "        <DataArray type=\"%s\" Name=\"%s%s.Re\" NumberOfComponents=\"3\" format=\"appended\" offset=\"%" PetscInt64_FMT "\" />\n", precision, vecname, fieldname, boffset));
             boffset += gpiece[r].nvertices * 3 * sizeof(PetscVTUReal) + sizeof(int);
-            PetscCall(PetscFPrintf(comm, fp, "        <DataArray type=\"%s\" Name=\"%s%s.Im\" NumberOfComponents=\"3\" format=\"appended\" offset=\"%" PetscInt_FMT "\" />\n", precision, vecname, fieldname, boffset));
+            PetscCall(PetscFPrintf(comm, fp, "        <DataArray type=\"%s\" Name=\"%s%s.Im\" NumberOfComponents=\"3\" format=\"appended\" offset=\"%" PetscInt64_FMT "\" />\n", precision, vecname, fieldname, boffset));
             boffset += gpiece[r].nvertices * 3 * sizeof(PetscVTUReal) + sizeof(int);
 #else
-            PetscCall(PetscFPrintf(comm, fp, "        <DataArray type=\"%s\" Name=\"%s%s\" NumberOfComponents=\"3\" format=\"appended\" offset=\"%" PetscInt_FMT "\" />\n", precision, vecname, fieldname, boffset));
+            PetscCall(PetscFPrintf(comm, fp, "        <DataArray type=\"%s\" Name=\"%s%s\" NumberOfComponents=\"3\" format=\"appended\" offset=\"%" PetscInt64_FMT "\" />\n", precision, vecname, fieldname, boffset));
             boffset += gpiece[r].nvertices * 3 * sizeof(PetscVTUReal) + sizeof(int);
 #endif
           } else {
@@ -377,12 +377,12 @@ PetscErrorCode DMPlexVTKWriteAll_VTU(DM dm, PetscViewer viewer)
               PetscCall(PetscSectionGetComponentName(section, field, j, &compName));
               PetscCall(PetscSNPrintf(finalname, 255, "%s%s.%s", vecname, fieldname, compName));
 #if defined(PETSC_USE_COMPLEX)
-              PetscCall(PetscFPrintf(comm, fp, "        <DataArray type=\"%s\" Name=\"%s.Re\" NumberOfComponents=\"1\" format=\"appended\" offset=\"%" PetscInt_FMT "\" />\n", precision, finalname, boffset));
+              PetscCall(PetscFPrintf(comm, fp, "        <DataArray type=\"%s\" Name=\"%s.Re\" NumberOfComponents=\"1\" format=\"appended\" offset=\"%" PetscInt64_FMT "\" />\n", precision, finalname, boffset));
               boffset += gpiece[r].nvertices * sizeof(PetscVTUReal) + sizeof(int);
-              PetscCall(PetscFPrintf(comm, fp, "        <DataArray type=\"%s\" Name=\"%s.Im\" NumberOfComponents=\"1\" format=\"appended\" offset=\"%" PetscInt_FMT "\" />\n", precision, finalname, boffset));
+              PetscCall(PetscFPrintf(comm, fp, "        <DataArray type=\"%s\" Name=\"%s.Im\" NumberOfComponents=\"1\" format=\"appended\" offset=\"%" PetscInt64_FMT "\" />\n", precision, finalname, boffset));
               boffset += gpiece[r].nvertices * sizeof(PetscVTUReal) + sizeof(int);
 #else
-              PetscCall(PetscFPrintf(comm, fp, "        <DataArray type=\"%s\" Name=\"%s\" NumberOfComponents=\"1\" format=\"appended\" offset=\"%" PetscInt_FMT "\" />\n", precision, finalname, boffset));
+              PetscCall(PetscFPrintf(comm, fp, "        <DataArray type=\"%s\" Name=\"%s\" NumberOfComponents=\"1\" format=\"appended\" offset=\"%" PetscInt64_FMT "\" />\n", precision, finalname, boffset));
               boffset += gpiece[r].nvertices * sizeof(PetscVTUReal) + sizeof(int);
 #endif
             }
