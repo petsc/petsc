@@ -352,9 +352,9 @@ PetscErrorCode MatView_SeqSBAIJ_ASCII(Mat A, PetscViewer viewer)
       PetscFunctionReturn(PETSC_SUCCESS);
     }
     PetscCall(MatConvert(A, MATSEQAIJ, MAT_INITIAL_MATRIX, &aij));
-    PetscCall(PetscObjectGetName((PetscObject)A, &matname));
-    PetscCall(PetscObjectSetName((PetscObject)aij, matname));
-    PetscCall(MatView(aij, viewer));
+    if (((PetscObject)A)->name) PetscCall(PetscObjectGetName((PetscObject)A, &matname));
+    if (((PetscObject)A)->name) PetscCall(PetscObjectSetName((PetscObject)aij, matname));
+    PetscCall(MatView_SeqAIJ(aij, viewer));
     PetscCall(MatDestroy(&aij));
   } else if (format == PETSC_VIEWER_ASCII_COMMON) {
     PetscCall(PetscViewerASCIIUseTabs(viewer, PETSC_FALSE));
@@ -567,8 +567,8 @@ PetscErrorCode MatView_SeqSBAIJ(Mat A, PetscViewer viewer)
     Mat         B;
     const char *matname;
     PetscCall(MatConvert(A, MATSEQAIJ, MAT_INITIAL_MATRIX, &B));
-    PetscCall(PetscObjectGetName((PetscObject)A, &matname));
-    PetscCall(PetscObjectSetName((PetscObject)B, matname));
+    if (((PetscObject)A)->name) PetscCall(PetscObjectGetName((PetscObject)A, &matname));
+    if (((PetscObject)A)->name) PetscCall(PetscObjectSetName((PetscObject)B, matname));
     PetscCall(MatView(B, viewer));
     PetscCall(MatDestroy(&B));
   }

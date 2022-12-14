@@ -1072,9 +1072,9 @@ static PetscErrorCode MatView_MPIBAIJ_ASCIIorDraworSocket(Mat mat, PetscViewer v
        synchronized across all processors that share the PetscDraw object
     */
     PetscCall(PetscViewerGetSubViewer(viewer, PETSC_COMM_SELF, &sviewer));
-    PetscCall(PetscObjectGetName((PetscObject)mat, &matname));
+    if (((PetscObject)mat)->name) PetscCall(PetscObjectGetName((PetscObject)mat, &matname));
     if (rank == 0) {
-      PetscCall(PetscObjectSetName((PetscObject)((Mat_MPIBAIJ *)(A->data))->A, matname));
+      if (((PetscObject)mat)->name) PetscCall(PetscObjectSetName((PetscObject)((Mat_MPIBAIJ *)(A->data))->A, matname));
       PetscCall(MatView_SeqBAIJ(((Mat_MPIBAIJ *)(A->data))->A, sviewer));
     }
     PetscCall(PetscViewerRestoreSubViewer(viewer, PETSC_COMM_SELF, &sviewer));
