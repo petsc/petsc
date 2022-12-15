@@ -102,6 +102,108 @@ static PetscErrorCode PCApply_VPBJacobi(PC pc, Vec x, Vec y)
   PetscFunctionReturn(0);
 }
 
+static PetscErrorCode PCApplyTranspose_VPBJacobi(PC pc, Vec x, Vec y)
+{
+  PC_VPBJacobi      *jac = (PC_VPBJacobi *)pc->data;
+  PetscInt           i, ncnt = 0;
+  const MatScalar   *diag = jac->diag;
+  PetscInt           ib, jb, bs;
+  const PetscScalar *xx;
+  PetscScalar       *yy, x0, x1, x2, x3, x4, x5, x6;
+  PetscInt           nblocks;
+  const PetscInt    *bsizes;
+
+  PetscFunctionBegin;
+  PetscCall(MatGetVariableBlockSizes(pc->pmat, &nblocks, &bsizes));
+  PetscCall(VecGetArrayRead(x, &xx));
+  PetscCall(VecGetArray(y, &yy));
+  for (i = 0; i < nblocks; i++) {
+    bs = bsizes[i];
+    switch (bs) {
+    case 1:
+      yy[ncnt] = *diag * xx[ncnt];
+      break;
+    case 2:
+      x0           = xx[ncnt];
+      x1           = xx[ncnt + 1];
+      yy[ncnt]     = diag[0] * x0 + diag[1] * x1;
+      yy[ncnt + 1] = diag[2] * x0 + diag[3] * x1;
+      break;
+    case 3:
+      x0           = xx[ncnt];
+      x1           = xx[ncnt + 1];
+      x2           = xx[ncnt + 2];
+      yy[ncnt]     = diag[0] * x0 + diag[1] * x1 + diag[2] * x2;
+      yy[ncnt + 1] = diag[3] * x0 + diag[4] * x1 + diag[5] * x2;
+      yy[ncnt + 2] = diag[6] * x0 + diag[7] * x1 + diag[8] * x2;
+      break;
+    case 4:
+      x0           = xx[ncnt];
+      x1           = xx[ncnt + 1];
+      x2           = xx[ncnt + 2];
+      x3           = xx[ncnt + 3];
+      yy[ncnt]     = diag[0] * x0 + diag[1] * x1 + diag[2] * x2 + diag[3] * x3;
+      yy[ncnt + 1] = diag[4] * x0 + diag[5] * x1 + diag[6] * x2 + diag[7] * x3;
+      yy[ncnt + 2] = diag[8] * x0 + diag[9] * x1 + diag[10] * x2 + diag[11] * x3;
+      yy[ncnt + 3] = diag[12] * x0 + diag[13] * x1 + diag[14] * x2 + diag[15] * x3;
+      break;
+    case 5:
+      x0           = xx[ncnt];
+      x1           = xx[ncnt + 1];
+      x2           = xx[ncnt + 2];
+      x3           = xx[ncnt + 3];
+      x4           = xx[ncnt + 4];
+      yy[ncnt]     = diag[0] * x0 + diag[1] * x1 + diag[2] * x2 + diag[3] * x3 + diag[4] * x4;
+      yy[ncnt + 1] = diag[5] * x0 + diag[6] * x1 + diag[7] * x2 + diag[8] * x3 + diag[9] * x4;
+      yy[ncnt + 2] = diag[10] * x0 + diag[11] * x1 + diag[12] * x2 + diag[13] * x3 + diag[14] * x4;
+      yy[ncnt + 3] = diag[15] * x0 + diag[16] * x1 + diag[17] * x2 + diag[18] * x3 + diag[19] * x4;
+      yy[ncnt + 4] = diag[20] * x0 + diag[21] * x1 + diag[22] * x2 + diag[23] * x3 + diag[24] * x4;
+      break;
+    case 6:
+      x0           = xx[ncnt];
+      x1           = xx[ncnt + 1];
+      x2           = xx[ncnt + 2];
+      x3           = xx[ncnt + 3];
+      x4           = xx[ncnt + 4];
+      x5           = xx[ncnt + 5];
+      yy[ncnt]     = diag[0] * x0 + diag[1] * x1 + diag[2] * x2 + diag[3] * x3 + diag[4] * x4 + diag[5] * x5;
+      yy[ncnt + 1] = diag[6] * x0 + diag[7] * x1 + diag[8] * x2 + diag[9] * x3 + diag[10] * x4 + diag[11] * x5;
+      yy[ncnt + 2] = diag[12] * x0 + diag[13] * x1 + diag[14] * x2 + diag[15] * x3 + diag[16] * x4 + diag[17] * x5;
+      yy[ncnt + 3] = diag[18] * x0 + diag[19] * x1 + diag[20] * x2 + diag[21] * x3 + diag[22] * x4 + diag[23] * x5;
+      yy[ncnt + 4] = diag[24] * x0 + diag[25] * x1 + diag[26] * x2 + diag[27] * x3 + diag[28] * x4 + diag[29] * x5;
+      yy[ncnt + 5] = diag[30] * x0 + diag[31] * x1 + diag[32] * x2 + diag[33] * x3 + diag[34] * x4 + diag[35] * x5;
+      break;
+    case 7:
+      x0           = xx[ncnt];
+      x1           = xx[ncnt + 1];
+      x2           = xx[ncnt + 2];
+      x3           = xx[ncnt + 3];
+      x4           = xx[ncnt + 4];
+      x5           = xx[ncnt + 5];
+      x6           = xx[ncnt + 6];
+      yy[ncnt]     = diag[0] * x0 + diag[1] * x1 + diag[2] * x2 + diag[3] * x3 + diag[4] * x4 + diag[5] * x5 + diag[6] * x6;
+      yy[ncnt + 1] = diag[7] * x0 + diag[8] * x1 + diag[9] * x2 + diag[10] * x3 + diag[11] * x4 + diag[12] * x5 + diag[13] * x6;
+      yy[ncnt + 2] = diag[14] * x0 + diag[15] * x1 + diag[16] * x2 + diag[17] * x3 + diag[18] * x4 + diag[19] * x5 + diag[20] * x6;
+      yy[ncnt + 3] = diag[21] * x0 + diag[22] * x1 + diag[23] * x2 + diag[24] * x3 + diag[25] * x4 + diag[26] * x5 + diag[27] * x6;
+      yy[ncnt + 4] = diag[28] * x0 + diag[29] * x1 + diag[30] * x2 + diag[31] * x3 + diag[32] * x4 + diag[33] * x5 + diag[34] * x6;
+      yy[ncnt + 5] = diag[35] * x0 + diag[36] * x1 + diag[37] * x2 + diag[38] * x3 + diag[39] * x4 + diag[40] * x5 + diag[41] * x6;
+      yy[ncnt + 6] = diag[42] * x0 + diag[43] * x1 + diag[44] * x2 + diag[45] * x3 + diag[46] * x4 + diag[47] * x5 + diag[48] * x6;
+      break;
+    default:
+      for (ib = 0; ib < bs; ib++) {
+        PetscScalar rowsum = 0;
+        for (jb = 0; jb < bs; jb++) rowsum += diag[ib * bs + jb] * xx[ncnt + jb];
+        yy[ncnt + ib] = rowsum;
+      }
+    }
+    ncnt += bsizes[i];
+    diag += bsizes[i] * bsizes[i];
+  }
+  PetscCall(VecRestoreArrayRead(x, &xx));
+  PetscCall(VecRestoreArray(y, &yy));
+  PetscFunctionReturn(0);
+}
+
 PETSC_INTERN PetscErrorCode PCSetUp_VPBJacobi_Host(PC pc)
 {
   PC_VPBJacobi   *jac = (PC_VPBJacobi *)pc->data;
@@ -122,7 +224,8 @@ PETSC_INTERN PetscErrorCode PCSetUp_VPBJacobi_Host(PC pc)
   PetscCall(MatInvertVariableBlockDiagonal(A, nblocks, bsizes, jac->diag));
   PetscCall(MatFactorGetError(A, &err));
   if (err) pc->failedreason = (PCFailedReason)err;
-  pc->ops->apply = PCApply_VPBJacobi;
+  pc->ops->apply          = PCApply_VPBJacobi;
+  pc->ops->applytranspose = PCApplyTranspose_VPBJacobi;
   PetscFunctionReturn(0);
 }
 

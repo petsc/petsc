@@ -72,12 +72,13 @@ private:
 . bs2     - [nblocks+1], prefix sum of squares of bsizes[]
 . matIdx  - [n], store block/matrix index for each row
 . A       - blocks of the matrix back to back in column-major order
-- x       - the input vector
+. x       - the input vector
+- transpose - whether it is MatMult for Ax (false) or MatMultTranspose for A^Tx (true)
 
   Output Parameter:
 . y - the output vector
 */
-__global__ static void MatMultBatched(PetscInt n, const PetscInt *bs, const PetscInt *bs2, const PetscInt *matIdx, const MatScalar *A, const PetscScalar *x, PetscScalar *y)
+__global__ static void MatMultBatched(PetscInt n, const PetscInt *bs, const PetscInt *bs2, const PetscInt *matIdx, const MatScalar *A, const PetscScalar *x, PetscScalar *y, PetscBool transpose)
 {
   const PetscInt gridSize = gridDim.x * blockDim.x;
   PetscInt       tid      = blockIdx.x * blockDim.x + threadIdx.x;
@@ -85,22 +86,22 @@ __global__ static void MatMultBatched(PetscInt n, const PetscInt *bs, const Pets
 
   /* One row per thread. The blocks/matrices are stored in column-major order */
   for (; tid < n; tid += gridSize) {
-    k = matIdx[tid];       /* k-th block */
-    m = bs[k + 1] - bs[k]; /* block size of the k-th block */
-    i = tid - bs[k];       /* i-th row of the block */
-    A += bs2[k] + i;       /* advance A to the first entry of i-th row */
+    k = matIdx[tid];                       /* k-th block */
+    m = bs[k + 1] - bs[k];                 /* block size of the k-th block */
+    i = tid - bs[k];                       /* i-th row of the block */
+    A += bs2[k] + i * (transpose ? m : 1); /* advance A to the first entry of i-th row */
     x += bs[k];
     y += bs[k];
 
     y[i] = 0.0;
     for (j = 0; j < m; j++) {
       y[i] += A[0] * x[j];
-      A += m;
+      A += (transpose ? 1 : m);
     }
   }
 }
 
-static PetscErrorCode PCApply_VPBJacobi_CUDA(PC pc, Vec x, Vec y)
+static PetscErrorCode PCApplyOrTranspose_VPBJacobi_CUDA(PC pc, Vec x, Vec y, PetscBool transpose)
 {
   PC_VPBJacobi      *jac   = (PC_VPBJacobi *)pc->data;
   PC_VPBJacobi_CUDA *pcuda = static_cast<PC_VPBJacobi_CUDA *>(jac->spptr);
@@ -122,13 +123,27 @@ static PetscErrorCode PCApply_VPBJacobi_CUDA(PC pc, Vec x, Vec y)
     PetscInt gridSize = PetscMin((n + 255) / 256, 2147483647); /* <= 2^31-1 */
     PetscCall(VecCUDAGetArrayRead(x, &xx));
     PetscCall(VecCUDAGetArrayWrite(y, &yy));
-    MatMultBatched<<<gridSize, 256>>>(n, pcuda->bs_d, pcuda->bs2_d, pcuda->matIdx_d, pcuda->diag_d, xx, yy);
+    MatMultBatched<<<gridSize, 256>>>(n, pcuda->bs_d, pcuda->bs2_d, pcuda->matIdx_d, pcuda->diag_d, xx, yy, transpose);
     PetscCallCUDA(cudaGetLastError());
     PetscCall(VecCUDARestoreArrayRead(x, &xx));
     PetscCall(VecCUDARestoreArrayWrite(y, &yy));
   }
   PetscCall(PetscLogGpuFlops(pcuda->nsize * 2)); /* FMA on entries in all blocks */
   PetscCall(PetscLogGpuTimeEnd());
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode PCApply_VPBJacobi_CUDA(PC pc, Vec x, Vec y)
+{
+  PetscFunctionBegin;
+  PetscCall(PCApplyOrTranspose_VPBJacobi_CUDA(pc, x, y, PETSC_FALSE));
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode PCApplyTranspose_VPBJacobi_CUDA(PC pc, Vec x, Vec y)
+{
+  PetscFunctionBegin;
+  PetscCall(PCApplyOrTranspose_VPBJacobi_CUDA(pc, x, y, PETSC_TRUE));
   PetscFunctionReturn(0);
 }
 
@@ -167,7 +182,8 @@ PETSC_INTERN PetscErrorCode PCSetUp_VPBJacobi_CUDA(PC pc)
     PetscCall(pcuda->UpdateOffsetsOnDevice(bsizes, jac->diag));
   }
 
-  pc->ops->apply   = PCApply_VPBJacobi_CUDA;
-  pc->ops->destroy = PCDestroy_VPBJacobi_CUDA;
+  pc->ops->apply          = PCApply_VPBJacobi_CUDA;
+  pc->ops->applytranspose = PCApplyTranspose_VPBJacobi_CUDA;
+  pc->ops->destroy        = PCDestroy_VPBJacobi_CUDA;
   PetscFunctionReturn(0);
 }
