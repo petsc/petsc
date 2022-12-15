@@ -249,6 +249,10 @@ static PetscErrorCode PCSetData_AGG(PC pc, Mat a_A)
 
     PetscCall(MatGetLocalSize(a_A, &mlocal, NULL));
     PetscCall(MatNullSpaceGetVecs(mnull, &has_const, &nvec, &vecs));
+    for (i = 0; i < nvec; i++) {
+      PetscCall(VecGetLocalSize(vecs[i], &j));
+      PetscCheck(j == mlocal, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Attached null space vector size %" PetscInt_FMT " != matrix size %" PetscInt_FMT, j, mlocal);
+    }
     pc_gamg->data_sz = (nvec + !!has_const) * mlocal;
     PetscCall(PetscMalloc1((nvec + !!has_const) * mlocal, &nullvec));
     if (has_const)
