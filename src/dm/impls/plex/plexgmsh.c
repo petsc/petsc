@@ -1469,16 +1469,16 @@ PetscErrorCode DMPlexCreateGmshFromFile(MPI_Comm comm, const char filename[], Pe
 @*/
 PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool interpolate, DM *dm)
 {
-  GmshMesh    *mesh          = NULL;
-  PetscViewer  parentviewer  = NULL;
-  PetscBT      periodicVerts = NULL;
-  PetscBT      periodicCells = NULL;
+  GmshMesh    *mesh             = NULL;
+  PetscViewer  parentviewer     = NULL;
+  PetscBT      periodicVerts    = NULL;
+  PetscBT      periodicCells[4] = {NULL, NULL, NULL, NULL};
   DM           cdm, cdmCell = NULL;
   PetscSection cs, csCell   = NULL;
   Vec          coordinates, coordinatesCell;
   DMLabel      cellSets = NULL, faceSets = NULL, vertSets = NULL, marker = NULL, *regionSets;
-  PetscInt     dim = 0, coordDim = -1, order = 0;
-  PetscInt     numNodes = 0, numElems = 0, numVerts = 0, numCells = 0;
+  PetscInt     dim = 0, coordDim = -1, order = 0, maxHeight = 0;
+  PetscInt     numNodes = 0, numElems = 0, numVerts = 0, numCells = 0, vStart, vEnd;
   PetscInt     cell, cone[8], e, n, v, d;
   PetscBool    binary, useregions = PETSC_FALSE, markvertices = PETSC_FALSE, multipleTags = PETSC_FALSE;
   PetscBool    hybrid = interpolate, periodic = PETSC_TRUE;
@@ -1498,6 +1498,7 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
   PetscCall(PetscOptionsBool("-dm_plex_gmsh_mark_vertices", "Add vertices to generated labels", "DMPlexCreateGmsh", markvertices, &markvertices, NULL));
   PetscCall(PetscOptionsBool("-dm_plex_gmsh_multiple_tags", "Allow multiple tags for default labels", "DMPlexCreateGmsh", multipleTags, &multipleTags, NULL));
   PetscCall(PetscOptionsBoundedInt("-dm_plex_gmsh_spacedim", "Embedding space dimension", "DMPlexCreateGmsh", coordDim, &coordDim, NULL, PETSC_DECIDE));
+  PetscCall(PetscOptionsBoundedInt("-dm_localize_height", "Localize edges and faces in addition to cells", "", maxHeight, &maxHeight, NULL, 0));
   PetscOptionsHeadEnd();
   PetscOptionsEnd();
 
@@ -1658,13 +1659,12 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
     PetscCall(DMDestroy(dm));
     *dm = idm;
   }
+  PetscCall(DMPlexGetDepthStratum(*dm, 0, &vStart, &vEnd));
 
   if (rank == 0) {
     const PetscInt Nr = useregions ? mesh->numRegions : 0;
-    PetscInt       vStart, vEnd;
 
     PetscCall(PetscCalloc1(Nr, &regionSets));
-    PetscCall(DMPlexGetDepthStratum(*dm, 0, &vStart, &vEnd));
     for (cell = 0, e = 0; e < numElems; ++e) {
       GmshElement *elem = mesh->elements + e;
 
@@ -1779,16 +1779,26 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
         }
       }
     }
-    PetscCall(PetscBTCreate(numCells, &periodicCells));
-    for (cell = 0; cell < numCells; ++cell) {
-      GmshElement *elem = mesh->elements + cell;
-      for (v = 0; v < elem->numVerts; ++v) {
-        PetscInt nn = elem->nodes[v];
-        PetscInt vv = mesh->vertexMap[nn];
-        if (PetscUnlikely(PetscBTLookup(periodicVerts, vv))) {
-          PetscCall(PetscBTSet(periodicCells, cell));
-          break;
+    PetscCall(DMGetCoordinateDM(*dm, &cdm));
+    for (PetscInt h = 0; h <= maxHeight; ++h) {
+      PetscInt pStart, pEnd;
+
+      PetscCall(DMPlexGetHeightStratum(*dm, h, &pStart, &pEnd));
+      PetscCall(PetscBTCreate(pEnd - pStart, &periodicCells[h]));
+      for (PetscInt p = pStart; p < pEnd; ++p) {
+        PetscInt *closure = NULL;
+        PetscInt  Ncl;
+
+        PetscCall(DMPlexGetTransitiveClosure(*dm, p, PETSC_TRUE, &Ncl, &closure));
+        for (PetscInt cl = 0; cl < Ncl * 2; cl += 2) {
+          if (closure[cl] >= vStart && closure[cl] < vEnd) {
+            if (PetscUnlikely(PetscBTLookup(periodicVerts, closure[cl] - vStart))) {
+              PetscCall(PetscBTSet(periodicCells[h], p - pStart));
+              break;
+            }
+          }
         }
+        PetscCall(DMPlexRestoreTransitiveClosure(*dm, p, PETSC_TRUE, &Ncl, &closure));
       }
     }
   }
@@ -1887,17 +1897,32 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
 
     /* We need to localize coordinates on cells */
     if (periodic) {
+      PetscInt newStart = PETSC_MAX_INT, newEnd = -1, pStart, pEnd;
+
       PetscCall(PetscSectionCreate(PetscObjectComm((PetscObject)cdmCell), &csCell));
       PetscCall(PetscSectionSetNumFields(csCell, 1));
       PetscCall(PetscSectionSetFieldComponents(csCell, 0, coordDim));
-      PetscCall(PetscSectionSetChart(csCell, 0, numCells));
-      for (cell = 0; cell < numCells; ++cell) {
-        if (PetscUnlikely(PetscBTLookup(periodicCells, cell))) {
-          GmshElement *elem = mesh->elements + cell;
-          PetscInt     dof  = elem->numVerts * coordDim;
+      for (PetscInt h = 0; h <= maxHeight; h++) {
+        PetscCall(DMPlexGetHeightStratum(cdmCell, h, &pStart, &pEnd));
+        newStart = PetscMin(newStart, pStart);
+        newEnd   = PetscMax(newEnd, pEnd);
+      }
+      PetscCall(PetscSectionSetChart(csCell, newStart, newEnd));
+      for (PetscInt h = 0; h <= maxHeight; h++) {
+        PetscCall(DMPlexGetHeightStratum(cdmCell, h, &pStart, &pEnd));
+        for (PetscInt p = pStart; p < pEnd; ++p) {
+          PetscInt *closure = NULL;
+          PetscInt  Ncl, Nv = 0;
 
-          PetscCall(PetscSectionSetDof(csCell, cell, dof));
-          PetscCall(PetscSectionSetFieldDof(csCell, cell, 0, dof));
+          if (PetscUnlikely(PetscBTLookup(periodicCells[h], p - pStart))) {
+            PetscCall(DMPlexGetTransitiveClosure(*dm, p, PETSC_TRUE, &Ncl, &closure));
+            for (PetscInt cl = 0; cl < Ncl * 2; cl += 2) {
+              if (closure[cl] >= vStart && closure[cl] < vEnd) ++Nv;
+            }
+            PetscCall(DMPlexRestoreTransitiveClosure(*dm, p, PETSC_TRUE, &Ncl, &closure));
+            PetscCall(PetscSectionSetDof(csCell, p, Nv * coordDim));
+            PetscCall(PetscSectionSetFieldDof(csCell, p, 0, Nv * coordDim));
+          }
         }
       }
       PetscCall(PetscSectionSetUp(csCell));
@@ -1916,27 +1941,59 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
       for (d = 0; d < coordDim; ++d) pointCoords[off + d] = (PetscReal)coords[node * 3 + d];
     }
     PetscCall(VecRestoreArray(coordinates, &pointCoords));
-    PetscCall(PetscFree(nodeMap));
 
     if (periodic) {
+      PetscInt cStart, cEnd;
+
+      PetscCall(DMPlexGetHeightStratum(cdmCell, 0, &cStart, &cEnd));
       PetscCall(DMCreateLocalVector(cdmCell, &coordinatesCell));
       PetscCall(VecGetArray(coordinatesCell, &pointCoords));
-      for (cell = 0; cell < numCells; ++cell) {
-        if (PetscUnlikely(PetscBTLookup(periodicCells, cell))) {
-          GmshElement *elem = mesh->elements + cell;
-          PetscInt     off, node;
-          for (v = 0; v < elem->numVerts; ++v) cone[v] = elem->nodes[v];
-          PetscCall(DMPlexReorderCell(cdmCell, cell, cone));
-          PetscCall(PetscSectionGetOffset(csCell, cell, &off));
-          for (v = 0; v < elem->numVerts; ++v)
-            for (node = cone[v], d = 0; d < coordDim; ++d) pointCoords[off++] = (PetscReal)coords[node * 3 + d];
+      for (PetscInt c = cStart; c < cEnd; ++c) {
+        GmshElement *elem    = mesh->elements + c - cStart;
+        PetscInt    *closure = NULL;
+        PetscInt     verts[8];
+        PetscInt     Ncl, Nv = 0;
+
+        for (PetscInt v = 0; v < elem->numVerts; ++v) cone[v] = elem->nodes[v];
+        PetscCall(DMPlexReorderCell(cdmCell, c, cone));
+        PetscCall(DMPlexGetTransitiveClosure(cdmCell, c, PETSC_TRUE, &Ncl, &closure));
+        for (PetscInt cl = 0; cl < Ncl * 2; cl += 2) {
+          if (closure[cl] >= vStart && closure[cl] < vEnd) verts[Nv++] = closure[cl];
         }
+        PetscCheck(Nv == elem->numVerts, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Number of vertices %" PetscInt_FMT " in closure does not match number of vertices %" PetscInt_FMT " in Gmsh cell", Nv, elem->numVerts);
+        for (PetscInt cl = 0; cl < Ncl * 2; cl += 2) {
+          const PetscInt point = closure[cl];
+          PetscInt       hStart, h;
+
+          PetscCall(DMPlexGetPointHeight(cdmCell, point, &h));
+          if (h > maxHeight) continue;
+          PetscCall(DMPlexGetHeightStratum(cdmCell, h, &hStart, NULL));
+          if (PetscUnlikely(PetscBTLookup(periodicCells[h], point - hStart))) {
+            PetscInt *pclosure = NULL;
+            PetscInt  Npcl, off, v;
+
+            PetscCall(PetscSectionGetOffset(csCell, point, &off));
+            PetscCall(DMPlexGetTransitiveClosure(cdmCell, point, PETSC_TRUE, &Npcl, &pclosure));
+            for (PetscInt pcl = 0; pcl < Npcl * 2; pcl += 2) {
+              if (pclosure[pcl] >= vStart && pclosure[pcl] < vEnd) {
+                for (v = 0; v < Nv; ++v)
+                  if (verts[v] == pclosure[pcl]) break;
+                PetscCheck(v < Nv, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Could not find vertex %" PetscInt_FMT " in closure of cell %" PetscInt_FMT, pclosure[pcl], c);
+                for (PetscInt d = 0; d < coordDim; ++d) pointCoords[off++] = (PetscReal)coords[cone[v] * 3 + d];
+                ++v;
+              }
+            }
+            PetscCall(DMPlexRestoreTransitiveClosure(cdmCell, point, PETSC_TRUE, &Npcl, &pclosure));
+          }
+        }
+        PetscCall(DMPlexRestoreTransitiveClosure(cdmCell, c, PETSC_TRUE, &Ncl, &closure));
       }
       PetscCall(VecSetBlockSize(coordinatesCell, coordDim));
       PetscCall(VecRestoreArray(coordinatesCell, &pointCoords));
       PetscCall(DMSetCellCoordinatesLocal(*dm, coordinatesCell));
       PetscCall(VecDestroy(&coordinatesCell));
     }
+    PetscCall(PetscFree(nodeMap));
     PetscCall(PetscSectionDestroy(&csCell));
     PetscCall(DMDestroy(&cdmCell));
   }
@@ -1948,7 +2005,7 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
 
   PetscCall(GmshMeshDestroy(&mesh));
   PetscCall(PetscBTDestroy(&periodicVerts));
-  PetscCall(PetscBTDestroy(&periodicCells));
+  for (PetscInt h = 0; h <= maxHeight; ++h) PetscCall(PetscBTDestroy(&periodicCells[h]));
 
   if (highOrder && project) {
     PetscFE         fe;
