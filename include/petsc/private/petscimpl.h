@@ -14,7 +14,7 @@
   #define PetscDisableStaticAnalyzerForExpressionUnderstandingThatThisIsDangerousAndBugprone(expr) expr
 #endif
 
-#if PetscDefined(USE_DEBUG)
+#if PetscDefined(USE_DEBUG) && !PetscDefined(HAVE_THREADSAFETY)
 PETSC_INTERN PetscErrorCode PetscStackSetCheck(PetscBool);
 PETSC_INTERN PetscErrorCode PetscStackView(FILE *);
 PETSC_INTERN PetscErrorCode PetscStackReset(void);
@@ -26,7 +26,7 @@ PETSC_INTERN PetscErrorCode PetscStackPrint(PetscStack *, FILE *);
   #define PetscStackReset()                 0
   #define PetscStackCopy(stackin, stackout) 0
   #define PetscStackPrint(stack, file)      0
-#endif /* PetscDefined(USE_DEBUG) */
+#endif
 
 /* These are used internally by PETSc ASCII IO routines*/
 #include <stdarg.h>
@@ -1199,18 +1199,18 @@ PETSC_EXTERN PetscErrorCode PetscSplitReductionGet(MPI_Comm, PetscSplitReduction
 PETSC_EXTERN PetscErrorCode PetscSplitReductionEnd(PetscSplitReduction *);
 PETSC_EXTERN PetscErrorCode PetscSplitReductionExtend(PetscSplitReduction *);
 
-#if !defined(PETSC_SKIP_SPINLOCK)
-  #if defined(PETSC_HAVE_THREADSAFETY)
-    #if defined(PETSC_HAVE_CONCURRENCYKIT)
-      #if defined(__cplusplus)
+#if defined(PETSC_HAVE_THREADSAFETY)
+  #if defined(PETSC_HAVE_CONCURRENCYKIT)
+    #if defined(__cplusplus)
 /*  CK does not have extern "C" protection in their include files */
 extern "C" {
-      #endif
-      #include <ck_spinlock.h>
-      #if defined(__cplusplus)
+    #endif
+    #include <ck_spinlock.h>
+    #if defined(__cplusplus)
 }
-      #endif
-typedef ck_spinlock_t        PetscSpinlock;
+    #endif
+typedef ck_spinlock_t PetscSpinlock;
+
 static inline PetscErrorCode PetscSpinlockCreate(PetscSpinlock *ck_spinlock)
 {
   ck_spinlock_init(ck_spinlock);
@@ -1230,10 +1230,50 @@ static inline PetscErrorCode PetscSpinlockDestroy(PetscSpinlock *ck_spinlock)
 {
   return 0;
 }
-    #elif defined(PETSC_HAVE_OPENMP)
+  #elif (defined(__cplusplus) && defined(PETSC_HAVE_CXX_ATOMIC)) || (!defined(__cplusplus) && defined(PETSC_HAVE_STDATOMIC_H))
+    #if defined(__cplusplus)
+      #include <atomic>
+      #define petsc_atomic_flag                 std::atomic_flag
+      #define petsc_atomic_flag_test_and_set(p) std::atomic_flag_test_and_set_explicit(p, std::memory_order_relaxed)
+      #define petsc_atomic_flag_clear(p)        std::atomic_flag_clear_explicit(p, std::memory_order_relaxed)
+    #else
+      #include <stdatomic.h>
+      #define petsc_atomic_flag                 atomic_flag
+      #define petsc_atomic_flag_test_and_set(p) atomic_flag_test_and_set_explicit(p, memory_order_relaxed)
+      #define petsc_atomic_flag_clear(p)        atomic_flag_clear_explicit(p, memory_order_relaxed)
+    #endif
 
-      #include <omp.h>
-typedef omp_lock_t           PetscSpinlock;
+typedef petsc_atomic_flag PetscSpinlock;
+
+static inline PetscErrorCode PetscSpinlockCreate(PetscSpinlock *spinlock)
+{
+  petsc_atomic_flag_clear(spinlock);
+  return 0;
+}
+static inline PetscErrorCode PetscSpinlockLock(PetscSpinlock *spinlock)
+{
+  do {
+  } while (petsc_atomic_flag_test_and_set(spinlock));
+  return 0;
+}
+static inline PetscErrorCode PetscSpinlockUnlock(PetscSpinlock *spinlock)
+{
+  petsc_atomic_flag_clear(spinlock);
+  return 0;
+}
+static inline PetscErrorCode PetscSpinlockDestroy(PetscSpinlock *spinlock)
+{
+  return 0;
+}
+    #undef petsc_atomic_flag_test_and_set
+    #undef petsc_atomic_flag_clear
+    #undef petsc_atomic_flag
+
+  #elif defined(PETSC_HAVE_OPENMP)
+
+    #include <omp.h>
+typedef omp_lock_t PetscSpinlock;
+
 static inline PetscErrorCode PetscSpinlockCreate(PetscSpinlock *omp_lock)
 {
   omp_init_lock(omp_lock);
@@ -1254,24 +1294,27 @@ static inline PetscErrorCode PetscSpinlockDestroy(PetscSpinlock *omp_lock)
   omp_destroy_lock(omp_lock);
   return 0;
 }
-    #else
-      #error "Thread safety requires either --with-openmp or --download-concurrencykit"
-    #endif
-
   #else
-typedef int PetscSpinlock;
-    #define PetscSpinlockCreate(a)  0
-    #define PetscSpinlockLock(a)    0
-    #define PetscSpinlockUnlock(a)  0
-    #define PetscSpinlockDestroy(a) 0
+    #if defined(__cplusplus)
+      #error "Thread safety requires either --download-concurrencykit, std::atomic, or --with-openmp"
+    #else
+      #error "Thread safety requires either --download-concurrencykit, stdatomic.h, or --with-openmp"
+    #endif
   #endif
 
-  #if defined(PETSC_HAVE_THREADSAFETY)
+#else
+typedef int PetscSpinlock;
+  #define PetscSpinlockCreate(a)  0
+  #define PetscSpinlockLock(a)    0
+  #define PetscSpinlockUnlock(a)  0
+  #define PetscSpinlockDestroy(a) 0
+#endif
+
+#if defined(PETSC_HAVE_THREADSAFETY)
 PETSC_INTERN PetscSpinlock PetscViewerASCIISpinLockOpen;
 PETSC_INTERN PetscSpinlock PetscViewerASCIISpinLockStdout;
 PETSC_INTERN PetscSpinlock PetscViewerASCIISpinLockStderr;
 PETSC_INTERN PetscSpinlock PetscCommSpinLock;
-  #endif
 #endif
 
 PETSC_EXTERN PetscLogEvent PETSC_Barrier;

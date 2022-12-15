@@ -26,10 +26,12 @@ class Configure(config.package.Package):
     self.deps            = [self.blasLapack,self.mathlib,self.mpi,self.slepc]
 
     # Must force --have-petsc4py into SLEPc configure arguments so it does not test PETSc before BAMG is built
-    if 'download-slepc-configure-arguments' in self.argDB:
-      self.argDB['download-slepc-configure-arguments'] = self.argDB['download-slepc-configure-arguments']+' --have-petsc4py'
-    else:
-      self.argDB['download-slepc-configure-arguments'] = '--have-petsc4py'      
+    if self.argDB['download-'+self.downloadname.lower()]:
+      if 'download-slepc-configure-arguments' in self.argDB:
+        if not '--have-petsc4py' in self.argDB['download-slepc-configure-arguments']:
+          self.argDB['download-slepc-configure-arguments'] = self.argDB['download-slepc-configure-arguments']+' --have-petsc4py'
+      else:
+        self.argDB['download-slepc-configure-arguments'] = '--have-petsc4py'
     return
 
   def Install(self):

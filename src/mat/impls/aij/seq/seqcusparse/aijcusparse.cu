@@ -2,7 +2,6 @@
   Defines the basic matrix operations for the AIJ (compressed row)
   matrix storage format using the CUSPARSE library,
 */
-#define PETSC_SKIP_SPINLOCK
 #define PETSC_SKIP_IMMINTRIN_H_CUDAWORKAROUND 1
 
 #include <petscconf.h>

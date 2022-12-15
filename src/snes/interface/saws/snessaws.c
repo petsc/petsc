@@ -8,7 +8,7 @@ typedef struct {
 /*@C
    SNESMonitorSAWsCreate - create an SAWs monitor context for `SNES`
 
-   Collective on snes
+   Collective
 
    Input Parameter:
 .  snes - `SNES` to monitor
@@ -54,7 +54,7 @@ PetscErrorCode SNESMonitorSAWsDestroy(void **ctx)
 /*@C
    SNESMonitorSAWs - monitor solution process of `SNES` using SAWs
 
-   Collective on snes
+   Collective
 
    Input Parameters:
 +  snes   - iterative context

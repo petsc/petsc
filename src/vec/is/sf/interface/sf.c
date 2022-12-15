@@ -146,7 +146,7 @@ PetscErrorCode PetscSFReset(PetscSF sf)
 /*@C
    PetscSFSetType - Set the `PetscSF` communication implementation
 
-   Collective on sf
+   Collective
 
    Input Parameters:
 +  sf - the `PetscSF` context
@@ -1387,7 +1387,7 @@ PetscErrorCode PetscSFCreateEmbeddedLeafSF(PetscSF sf, PetscInt nselected, const
 /*@C
    PetscSFBcastBegin - begin pointwise broadcast with root value being reduced to leaf value, to be concluded with call to `PetscSFBcastEnd()`
 
-   Collective on sf
+   Collective
 
    Input Parameters:
 +  sf - star forest on which to communicate
@@ -1425,7 +1425,7 @@ PetscErrorCode PetscSFBcastBegin(PetscSF sf, MPI_Datatype unit, const void *root
 /*@C
    PetscSFBcastWithMemTypeBegin - begin pointwise broadcast with root value being reduced to leaf value with explicit memory types, to be concluded with call to `PetscSFBcastEnd()`
 
-   Collective on sf
+   Collective
 
    Input Parameters:
 +  sf - star forest on which to communicate

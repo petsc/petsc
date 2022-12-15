@@ -89,7 +89,7 @@ PetscErrorCode MatGetMPIMatType_Private(Mat mat, MatType *MPIType)
 /*@C
    MatSetType - Builds matrix object for a particular matrix type
 
-   Collective on mat
+   Collective
 
    Input Parameters:
 +  mat      - the matrix object
@@ -114,6 +114,10 @@ PetscErrorCode MatSetType(Mat mat, MatType matype)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat, MAT_CLASSID, 1);
+
+  /* make this special case fast */
+  PetscCall(PetscObjectTypeCompare((PetscObject)mat, matype, &sametype));
+  if (sametype) PetscFunctionReturn(0);
 
   /* suppose with one MPI process, one created an MPIAIJ (mpiaij) matrix with MatCreateMPIAIJWithArrays(), and later tried
      to change its type via '-mat_type aijcusparse'. Even there is only one MPI rank, we need to adapt matype to
@@ -222,7 +226,7 @@ PetscErrorCode MatGetVecType(Mat mat, VecType *vtype)
 /*@C
    MatSetVecType - Set the vector type the matrix will return with `MatCreateVecs()`
 
-   Collective on mat
+   Collective
 
    Input Parameters:
 +  mat   - the matrix object

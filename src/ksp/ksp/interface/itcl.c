@@ -10,7 +10,7 @@
    KSPSetOptionsPrefix - Sets the prefix used for searching for all
    `KSP` options in the database.
 
-   Logically Collective on ksp
+   Logically Collective
 
    Input Parameters:
 +  ksp - the Krylov context
@@ -52,7 +52,7 @@ PetscErrorCode KSPSetOptionsPrefix(KSP ksp, const char prefix[])
    KSPAppendOptionsPrefix - Appends to the prefix used for searching for all
    `KSP` options in the database.
 
-   Logically Collective on ksp
+   Logically Collective
 
    Input Parameters:
 +  ksp - the Krylov context
@@ -79,7 +79,7 @@ PetscErrorCode KSPAppendOptionsPrefix(KSP ksp, const char prefix[])
 /*@
    KSPSetUseFischerGuess - Use the Paul Fischer algorithm or its variants to compute initial guesses for a set of solves with related right hand sides
 
-   Logically Collective on ksp
+   Logically Collective
 
    Input Parameters:
 +  ksp - the Krylov context
@@ -110,7 +110,7 @@ PetscErrorCode KSPSetUseFischerGuess(KSP ksp, PetscInt model, PetscInt size)
 /*@
    KSPSetGuess - Set the initial guess object
 
-   Logically Collective on ksp
+   Logically Collective
 
    Input Parameters:
 +  ksp - the Krylov context
@@ -210,7 +210,7 @@ static PetscErrorCode PetscViewerAndFormatCreate_Internal(PetscViewer viewer, Pe
 /*@C
    KSPMonitorSetFromOptions - Sets a monitor function and viewer appropriate for the type indicated by the user in the options database
 
-   Collective on ksp
+   Collective
 
    Input Parameters:
 +  ksp  - `KSP` object you wish to monitor
@@ -266,7 +266,7 @@ PetscErrorCode KSPMonitorSetFromOptions(KSP ksp, const char opt[], const char na
    This routine must be called before `KSPSetUp()` if the user is to be
    allowed to set the Krylov type.
 
-   Collective on ksp
+   Collective
 
    Input Parameter:
 .  ksp - the Krylov space context
@@ -633,7 +633,7 @@ skipoptions:
 /*@
    KSPResetFromOptions - Sets `KSP` parameters from user options ONLY if the `KSP` was previously set from options
 
-   Collective on ksp
+   Collective
 
    Input Parameter:
 .  ksp - the `KSP` context

@@ -3,7 +3,7 @@
 /*@C
    TaoPythonSetType - Initialize a Tao object implemented in Python.
 
-   Collective on tao
+   Collective
 
    Input Parameters:
 +  tao - the optimation solver (Tao) context.

@@ -377,7 +377,7 @@ static PetscErrorCode SNESView_QN(SNES snes, PetscViewer viewer)
 /*@
     SNESQNSetRestartType - Sets the restart type for `SNESQN`.
 
-    Logically Collective on snes
+    Logically Collective
 
     Input Parameters:
 +   snes - the iterative context
@@ -407,7 +407,7 @@ PetscErrorCode SNESQNSetRestartType(SNES snes, SNESQNRestartType rtype)
 /*@
     SNESQNSetScaleType - Sets the scaling type for the inner inverse Jacobian in `SNESQN`.
 
-    Logically Collective on snes
+    Logically Collective
 
     Input Parameters:
 +   snes - the nonlinear solver context
@@ -458,7 +458,7 @@ PetscErrorCode SNESQNSetRestartType_QN(SNES snes, SNESQNRestartType rtype)
 /*@
     SNESQNSetType - Sets the quasi-Newton variant to be used in `SNESQN`.
 
-    Logically Collective on snes
+    Logically Collective
 
     Input Parameters:
 +   snes - the iterative context

@@ -248,10 +248,11 @@ PetscErrorCode DMPlexLabelAddCells(DM dm, DMLabel label)
 {
   IS              valueIS;
   const PetscInt *values;
-  PetscInt        numValues, v, cStart, cEnd;
+  PetscInt        numValues, v, csStart, csEnd, chStart, chEnd;
 
   PetscFunctionBegin;
-  PetscCall(DMPlexGetSimplexOrBoxCells(dm, 0, &cStart, &cEnd));
+  PetscCall(DMPlexGetSimplexOrBoxCells(dm, 0, &csStart, &csEnd));
+  PetscCall(DMPlexGetHeightStratum(dm, 0, &chStart, &chEnd));
   PetscCall(DMLabelGetNumValues(label, &numValues));
   PetscCall(DMLabelGetValueIS(label, &valueIS));
   PetscCall(ISGetIndices(valueIS, &values));
@@ -264,8 +265,20 @@ PetscErrorCode DMPlexLabelAddCells(DM dm, DMLabel label)
     PetscCall(DMLabelGetStratumIS(label, values[v], &pointIS));
     PetscCall(ISGetIndices(pointIS, &points));
     for (p = 0; p < numPoints; ++p) {
-      PetscInt *closure = NULL;
-      PetscInt  closureSize, cl;
+      const PetscInt point   = points[p];
+      PetscInt      *closure = NULL;
+      PetscInt       closureSize, cl, h, pStart, pEnd, cStart, cEnd;
+
+      // If the point is a hybrid, allow hybrid cells
+      PetscCall(DMPlexGetPointHeight(dm, point, &h));
+      PetscCall(DMPlexGetSimplexOrBoxCells(dm, h, &pStart, &pEnd));
+      if (point >= pStart && point < pEnd) {
+        cStart = csStart;
+        cEnd   = csEnd;
+      } else {
+        cStart = chStart;
+        cEnd   = chEnd;
+      }
 
       PetscCall(DMPlexGetTransitiveClosure(dm, points[p], PETSC_FALSE, &closureSize, &closure));
       for (cl = closureSize - 1; cl > 0; --cl) {

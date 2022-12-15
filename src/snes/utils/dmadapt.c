@@ -63,7 +63,7 @@ PetscErrorCode DMAdaptorCreate(MPI_Comm comm, DMAdaptor *adaptor)
 /*@
   DMAdaptorDestroy - Destroys a `DMAdaptor` object
 
-  Collective on adaptor
+  Collective
 
   Input Parameter:
 . adaptor - The `DMAdaptor` object
@@ -91,7 +91,7 @@ PetscErrorCode DMAdaptorDestroy(DMAdaptor *adaptor)
 /*@
   DMAdaptorSetFromOptions - Sets properties of a `DMAdaptor` object from the options database
 
-  Collective on adaptor
+  Collective
 
   Input Parameter:
 . adaptor - The `DMAdaptor` object
@@ -123,7 +123,7 @@ PetscErrorCode DMAdaptorSetFromOptions(DMAdaptor adaptor)
 /*@
    DMAdaptorView - Views a `DMAdaptor` object
 
-   Collective on adaptor
+   Collective
 
    Input Parameters:
 +  adaptor - The `DMAdaptor` object
@@ -242,7 +242,7 @@ PetscErrorCode DMAdaptorSetSequenceLength(DMAdaptor adaptor, PetscInt num)
 /*@
   DMAdaptorSetUp - After the solver is specified, we create structures for controlling adaptivity
 
-  Collective on adaptor
+  Collective
 
   Input Parameters:
 . adaptor - The `DMAdaptor` object

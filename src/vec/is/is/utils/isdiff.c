@@ -583,7 +583,7 @@ PetscErrorCode ISListToPair(MPI_Comm comm, PetscInt listlen, IS islist[], IS *xi
                   exactly the ranks that assign some indices i to j.  This is essentially the inverse of
                   `ISListToPair()`.
 
-  Collective on xis.
+  Collective
 
   Input Parameters:
 + xis -  domain IS

@@ -249,7 +249,7 @@ static PetscErrorCode PCEisenstatGetNoDiagonalScaling_Eisenstat(PC pc, PetscBool
    PCEisenstatSetOmega - Sets the SSOR relaxation coefficient, omega,
    to use with Eisenstat's trick (where omega = 1.0 by default)
 
-   Logically Collective on pc
+   Logically Collective
 
    Input Parameters:
 +  pc - the preconditioner context
@@ -286,7 +286,7 @@ PetscErrorCode PCEisenstatSetOmega(PC pc, PetscReal omega)
    not to do additional diagonal preconditioning. For matrices with a constant
    along the diagonal, this may save a small amount of work.
 
-   Logically Collective on pc
+   Logically Collective
 
    Input Parameters:
 +  pc - the preconditioner context
@@ -315,7 +315,7 @@ PetscErrorCode PCEisenstatSetNoDiagonalScaling(PC pc, PetscBool flg)
    PCEisenstatGetOmega - Gets the SSOR relaxation coefficient, omega,
    to use with Eisenstat's trick (where omega = 1.0 by default).
 
-   Logically Collective on pc
+   Logically Collective
 
    Input Parameter:
 .  pc - the preconditioner context
@@ -353,7 +353,7 @@ PetscErrorCode PCEisenstatGetOmega(PC pc, PetscReal *omega)
    not to do additional diagonal preconditioning. For matrices with a constant
    along the diagonal, this may save a small amount of work.
 
-   Logically Collective on pc
+   Logically Collective
 
    Input Parameter:
 .  pc - the preconditioner context

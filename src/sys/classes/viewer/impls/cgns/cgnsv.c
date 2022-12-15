@@ -141,7 +141,7 @@ static PetscErrorCode PetscViewerFileGetName_CGNS(PetscViewer viewer, const char
 
   Level: beginner
 
-.seealso: `PetscViewerCreate()`, `VecView()`, `DMView()`, `PetscViewerFileSetName()`, `PetscViewerFileSetMode()`
+.seealso: [](sec_viewers), `PetscViewer`, `PetscViewerCreate()`, `VecView()`, `DMView()`, `PetscViewerFileSetName()`, `PetscViewerFileSetMode()`
 M*/
 
 PETSC_EXTERN PetscErrorCode PetscViewerCreate_CGNS(PetscViewer v)

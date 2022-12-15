@@ -10,7 +10,7 @@ PetscBool         PFRegisterAllCalled = PETSC_FALSE;
 /*@C
    PFSet - Sets the C/C++/Fortran functions to be used by the PF function
 
-   Collective on PF
+   Collective
 
    Input Parameters:
 +  pf - the function context
@@ -37,9 +37,9 @@ PetscErrorCode PFSet(PF pf, PetscErrorCode (*apply)(void *, PetscInt, const Pets
 }
 
 /*@C
-   PFDestroy - Destroys PF context that was created with PFCreate().
+   PFDestroy - Destroys `PF` context that was created with `PFCreate()`.
 
-   Collective on PF
+   Collective
 
    Input Parameter:
 .  pf - the function context
@@ -108,7 +108,7 @@ PetscErrorCode PFCreate(MPI_Comm comm, PetscInt dimin, PetscInt dimout, PF *pf)
 /*@
    PFApplyVec - Applies the mathematical function to a vector
 
-   Collective on PF
+   Collective
 
    Input Parameters:
 +  pf - the function context
@@ -171,7 +171,7 @@ PetscErrorCode PFApplyVec(PF pf, Vec x, Vec y)
 /*@
    PFApply - Applies the mathematical function to an array of values.
 
-   Collective on PF
+   Collective
 
    Input Parameters:
 +  pf - the function context
@@ -204,7 +204,7 @@ PetscErrorCode PFApply(PF pf, PetscInt n, const PetscScalar *x, PetscScalar *y)
 /*@C
    PFViewFromOptions - View from Options
 
-   Collective on PF
+   Collective
 
    Input Parameters:
 +  A - the PF context
@@ -333,7 +333,7 @@ PetscErrorCode PFGetType(PF pf, PFType *type)
 /*@C
    PFSetType - Builds PF for a particular function
 
-   Collective on PF
+   Collective
 
    Input Parameters:
 +  pf - the function context.
@@ -385,7 +385,7 @@ PetscErrorCode PFSetType(PF pf, PFType type, void *ctx)
 /*@
    PFSetFromOptions - Sets PF options from the options database.
 
-   Collective on PF
+   Collective
 
    Input Parameters:
 .  pf - the mathematical function context

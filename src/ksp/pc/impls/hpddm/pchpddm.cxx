@@ -314,10 +314,10 @@ static PetscErrorCode PCSetFromOptions_HPDDM(PC pc, PetscOptionItems *PetscOptio
     PetscCall(PetscSNPrintf(prefix, sizeof(prefix), "pc_hpddm_coarse_"));
     PetscCall(PetscOptionsHasName(NULL, prefix, "-mat_mumps_use_omp_threads", &flg));
     if (flg) {
-      char type[64];                                            /* same size as in src/ksp/pc/impls/factor/factimpl.c */
-      if (n == 1) PetscCall(PetscStrcpy(type, MATSOLVERPETSC)); /* default solver for a sequential Mat */
-      PetscCall(PetscOptionsGetString(NULL, prefix, "-pc_factor_mat_solver_type", type, sizeof(type), &flg));
-      if (flg) PetscCall(PetscStrcmp(type, MATSOLVERMUMPS, &flg));
+      char type[64];                                                                                     /* same size as in src/ksp/pc/impls/factor/factimpl.c */
+      PetscCall(PetscStrcpy(type, n > 1 && PetscDefined(HAVE_MUMPS) ? MATSOLVERMUMPS : MATSOLVERPETSC)); /* default solver for a MatMPIAIJ or a MatSeqAIJ */
+      PetscCall(PetscOptionsGetString(NULL, prefix, "-pc_factor_mat_solver_type", type, sizeof(type), NULL));
+      PetscCall(PetscStrcmp(type, MATSOLVERMUMPS, &flg));
       PetscCheck(flg, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "-%smat_mumps_use_omp_threads and -%spc_factor_mat_solver_type != %s", prefix, prefix, MATSOLVERMUMPS);
       size = n;
       n    = -1;
@@ -1576,7 +1576,7 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
 /*@
      PCHPDDMSetCoarseCorrectionType - Sets the coarse correction type.
 
-   Collective on pc
+   Collective
 
    Input Parameters:
 +     pc - preconditioner context

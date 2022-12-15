@@ -50,7 +50,7 @@ entries of each vector, the operation is embarrasingly parallel.
    over the number of processes used. One can get close to peak memory
    bandwidth with only a few processes.
 
-As :numref`fig_stream_intel` shows, the performance gains due to
+As :numref:`fig_stream_intel` shows, the performance gains due to
 parallelization on different multi- and many-core CPUs quickly
 saturates. The reason is that only a fraction of the total number of CPU
 cores is required to saturate the memory channels. For example, a
@@ -396,7 +396,7 @@ Debug vs. Optimized Builds
 PETSc’s ``configure`` defaults to building PETSc with debug mode
 enabled. Any code development should be done in this mode, because it
 provides handy debugging facilities such as accurate stack traces,
-memory leak checks, or memory corruption checks. Note that PETSc has no
+memory leak checks, and memory corruption checks. Note that PETSc has no
 reliable way of knowing whether a particular run is a production or
 debug run. In the case that a user requests profiling information via
 ``-log_view``, a debug build of PETSc issues the following warning:
@@ -452,9 +452,8 @@ performance:
 
 -  For processors supporting newer vector instruction sets, such as
    Intel AVX2 and AVX-512, it is also important to direct the compiler
-   to generate code that targets these processors (.e.g., ``-march=knl``
-   to generate AVX-512 binaries targeting the Intel “Knights Landing”
-   Xeon Phi processor); otherwise, the executables built will not
+   to generate code that targets these processors (e.g., ``-march=native``);
+   otherwise, the executables built will not
    utilize the newer instructions sets and will not take advantage of
    the vector processing units.
 

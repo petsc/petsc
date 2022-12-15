@@ -471,7 +471,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_Jacobi(PC pc)
    PCJacobiSetUseAbs - Causes the Jacobi preconditioner `PCJACOBI` to use the
       absolute values of the diagonal divisors in the preconditioner
 
-   Logically Collective on pc
+   Logically Collective
 
    Input Parameters:
 +  pc - the preconditioner context
@@ -499,7 +499,7 @@ PetscErrorCode PCJacobiSetUseAbs(PC pc, PetscBool flg)
    PCJacobiGetUseAbs - Determines if the Jacobi preconditioner `PCJACOBI` uses the
       absolute values of the diagonal divisors in the preconditioner
 
-   Logically Collective on pc
+   Logically Collective
 
    Input Parameter:
 .  pc - the preconditioner context
@@ -522,7 +522,7 @@ PetscErrorCode PCJacobiGetUseAbs(PC pc, PetscBool *flg)
 /*@
    PCJacobiSetFixDiagonal - Check for zero values on the diagonal and replace them with 1.0
 
-   Logically Collective on pc
+   Logically Collective
 
    Input Parameters:
 +  pc - the preconditioner context
@@ -549,7 +549,7 @@ PetscErrorCode PCJacobiSetFixDiagonal(PC pc, PetscBool flg)
 /*@
    PCJacobiGetFixDiagonal - Determines if the Jacobi preconditioner `PCJACOBI` checks for zero diagonal terms
 
-   Logically Collective on pc
+   Logically Collective
 
    Input Parameter:
 .  pc - the preconditioner context
@@ -576,7 +576,7 @@ PetscErrorCode PCJacobiGetFixDiagonal(PC pc, PetscBool *flg)
    PCJacobiSetType - Causes the Jacobi preconditioner to use either the diagonal, the maximum entry in each row,
       of the sum of rows entries for the diagonal preconditioner
 
-   Logically Collective on pc
+   Logically Collective
 
    Input Parameters:
 +  pc - the preconditioner context
@@ -603,7 +603,7 @@ PetscErrorCode PCJacobiSetType(PC pc, PCJacobiType type)
 /*@
    PCJacobiGetType - Gets how the diagonal matrix is produced for the preconditioner
 
-   Not Collective on pc
+   Not Collective
 
    Input Parameter:
 .  pc - the preconditioner context

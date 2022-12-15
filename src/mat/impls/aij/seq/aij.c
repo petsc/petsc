@@ -591,13 +591,13 @@ PetscErrorCode MatSetValues_SeqAIJ_SortedFull(Mat A, PetscInt m, const PetscInt 
 
 PetscErrorCode MatGetValues_SeqAIJ(Mat A, PetscInt m, const PetscInt im[], PetscInt n, const PetscInt in[], PetscScalar v[])
 {
-  Mat_SeqAIJ *a = (Mat_SeqAIJ *)A->data;
-  PetscInt   *rp, k, low, high, t, row, nrow, i, col, l, *aj = a->j;
-  PetscInt   *ai = a->i, *ailen = a->ilen;
-  MatScalar  *ap, *aa;
+  Mat_SeqAIJ      *a = (Mat_SeqAIJ *)A->data;
+  PetscInt        *rp, k, low, high, t, row, nrow, i, col, l, *aj = a->j;
+  PetscInt        *ai = a->i, *ailen = a->ilen;
+  const MatScalar *ap, *aa;
 
   PetscFunctionBegin;
-  PetscCall(MatSeqAIJGetArray(A, &aa));
+  PetscCall(MatSeqAIJGetArrayRead(A, &aa));
   for (k = 0; k < m; k++) { /* loop over rows */
     row = im[k];
     if (row < 0) {
@@ -633,7 +633,7 @@ PetscErrorCode MatGetValues_SeqAIJ(Mat A, PetscInt m, const PetscInt im[], Petsc
     finished:;
     }
   }
-  PetscCall(MatSeqAIJRestoreArray(A, &aa));
+  PetscCall(MatSeqAIJRestoreArrayRead(A, &aa));
   PetscFunctionReturn(0);
 }
 
@@ -1250,6 +1250,11 @@ PetscErrorCode MatDestroy_SeqAIJ(Mat A)
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatProductSetFromOptions_seqaijcusparse_seqaij_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatProductSetFromOptions_seqaij_seqaijcusparse_C", NULL));
 #endif
+#if defined(PETSC_HAVE_HIP)
+  PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatConvert_seqaij_seqaijhipsparse_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatProductSetFromOptions_seqaijhipsparse_seqaij_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatProductSetFromOptions_seqaij_seqaijhipsparse_C", NULL));
+#endif
 #if defined(PETSC_HAVE_KOKKOS_KERNELS)
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatConvert_seqaij_seqaijkokkos_C", NULL));
 #endif
@@ -1799,6 +1804,7 @@ PetscErrorCode MatInvertVariableBlockDiagonal_SeqAIJ(Mat A, PetscInt nblocks, co
   PetscBool       allowzeropivot, zeropivotdetected = PETSC_FALSE;
   const PetscReal shift = 0.0;
   PetscInt        ipvt[5];
+  PetscCount      flops = 0;
   PetscScalar     work[25], *v_work;
 
   PetscFunctionBegin;
@@ -1853,7 +1859,9 @@ PetscErrorCode MatInvertVariableBlockDiagonal_SeqAIJ(Mat A, PetscInt nblocks, co
     }
     ncnt += bsizes[i];
     diag += bsizes[i] * bsizes[i];
+    flops += 2 * PetscPowInt(bsizes[i], 3) / 3;
   }
+  PetscLogFlops(flops);
   if (bsizemax > 7) PetscCall(PetscFree2(v_work, v_pivots));
   PetscCall(PetscFree(indx));
   PetscFunctionReturn(0);
@@ -2808,13 +2816,13 @@ PetscErrorCode MatCreateSubMatrices_SeqAIJ(Mat A, PetscInt n, const IS irow[], c
 PetscErrorCode MatIncreaseOverlap_SeqAIJ(Mat A, PetscInt is_max, IS is[], PetscInt ov)
 {
   Mat_SeqAIJ     *a = (Mat_SeqAIJ *)A->data;
-  PetscInt        row, i, j, k, l, m, n, *nidx, isz, val;
+  PetscInt        row, i, j, k, l, ll, m, n, *nidx, isz, val;
   const PetscInt *idx;
-  PetscInt        start, end, *ai, *aj;
+  PetscInt        start, end, *ai, *aj, bs = (A->rmap->bs > 0 && A->rmap->bs == A->cmap->bs) ? A->rmap->bs : 1;
   PetscBT         table;
 
   PetscFunctionBegin;
-  m  = A->rmap->n;
+  m  = A->rmap->n / bs;
   ai = a->i;
   aj = a->j;
 
@@ -2832,27 +2840,53 @@ PetscErrorCode MatIncreaseOverlap_SeqAIJ(Mat A, PetscInt is_max, IS is[], PetscI
     PetscCall(ISGetIndices(is[i], &idx));
     PetscCall(ISGetLocalSize(is[i], &n));
 
-    /* Enter these into the temp arrays. I.e., mark table[row], enter row into new index */
-    for (j = 0; j < n; ++j) {
-      if (!PetscBTLookupSet(table, idx[j])) nidx[isz++] = idx[j];
-    }
-    PetscCall(ISRestoreIndices(is[i], &idx));
-    PetscCall(ISDestroy(&is[i]));
+    if (bs > 1) {
+      /* Enter these into the temp arrays. I.e., mark table[row], enter row into new index */
+      for (j = 0; j < n; ++j) {
+        if (!PetscBTLookupSet(table, idx[j] / bs)) nidx[isz++] = idx[j] / bs;
+      }
+      PetscCall(ISRestoreIndices(is[i], &idx));
+      PetscCall(ISDestroy(&is[i]));
 
-    k = 0;
-    for (j = 0; j < ov; j++) { /* for each overlap */
-      n = isz;
-      for (; k < n; k++) { /* do only those rows in nidx[k], which are not done yet */
-        row   = nidx[k];
-        start = ai[row];
-        end   = ai[row + 1];
-        for (l = start; l < end; l++) {
-          val = aj[l];
-          if (!PetscBTLookupSet(table, val)) nidx[isz++] = val;
+      k = 0;
+      for (j = 0; j < ov; j++) { /* for each overlap */
+        n = isz;
+        for (; k < n; k++) { /* do only those rows in nidx[k], which are not done yet */
+          for (ll = 0; ll < bs; ll++) {
+            row   = bs * nidx[k] + ll;
+            start = ai[row];
+            end   = ai[row + 1];
+            for (l = start; l < end; l++) {
+              val = aj[l] / bs;
+              if (!PetscBTLookupSet(table, val)) nidx[isz++] = val;
+            }
+          }
         }
       }
+      PetscCall(ISCreateBlock(PETSC_COMM_SELF, bs, isz, nidx, PETSC_COPY_VALUES, (is + i)));
+    } else {
+      /* Enter these into the temp arrays. I.e., mark table[row], enter row into new index */
+      for (j = 0; j < n; ++j) {
+        if (!PetscBTLookupSet(table, idx[j])) nidx[isz++] = idx[j];
+      }
+      PetscCall(ISRestoreIndices(is[i], &idx));
+      PetscCall(ISDestroy(&is[i]));
+
+      k = 0;
+      for (j = 0; j < ov; j++) { /* for each overlap */
+        n = isz;
+        for (; k < n; k++) { /* do only those rows in nidx[k], which are not done yet */
+          row   = nidx[k];
+          start = ai[row];
+          end   = ai[row + 1];
+          for (l = start; l < end; l++) {
+            val = aj[l];
+            if (!PetscBTLookupSet(table, val)) nidx[isz++] = val;
+          }
+        }
+      }
+      PetscCall(ISCreateGeneral(PETSC_COMM_SELF, isz, nidx, PETSC_COPY_VALUES, (is + i)));
     }
-    PetscCall(ISCreateGeneral(PETSC_COMM_SELF, isz, nidx, PETSC_COPY_VALUES, (is + i)));
   }
   PetscCall(PetscBTDestroy(&table));
   PetscCall(PetscFree(nidx));
@@ -3707,7 +3741,7 @@ PetscErrorCode MatStoreValues_SeqAIJ(Mat mat)
        example, reuse of the linear part of a Jacobian, while recomputing the
        nonlinear portion.
 
-   Collect on mat
+   Logically Collect
 
   Input Parameters:
 .  mat - the matrix (currently only `MATAIJ` matrices support this option)
@@ -3776,7 +3810,7 @@ PetscErrorCode MatRetrieveValues_SeqAIJ(Mat mat)
        example, reuse of the linear part of a Jacobian, while recomputing the
        nonlinear portion.
 
-   Collect on mat
+   Logically Collect
 
   Input Parameters:
 .  mat - the matrix (currently only `MATAIJ` matrices support this option)
@@ -4253,7 +4287,7 @@ PetscErrorCode MatMatMultSymbolic_SeqDense_SeqAIJ(Mat A, Mat B, PetscReal fill, 
   PetscCheck(A->cmap->n == B->rmap->n, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "A->cmap->n %" PetscInt_FMT " != B->rmap->n %" PetscInt_FMT, A->cmap->n, B->rmap->n);
   PetscCall(MatSetSizes(C, m, n, m, n));
   PetscCall(MatSetBlockSizesFromMats(C, A, B));
-  PetscCall(PetscObjectTypeCompareAny((PetscObject)C, &cisdense, MATSEQDENSE, MATSEQDENSECUDA, ""));
+  PetscCall(PetscObjectTypeCompareAny((PetscObject)C, &cisdense, MATSEQDENSE, MATSEQDENSECUDA, MATSEQDENSEHIP, ""));
   if (!cisdense) PetscCall(MatSetType(C, MATDENSE));
   PetscCall(MatSetUp(C));
 
@@ -4705,6 +4739,9 @@ static PetscErrorCode MatSetValuesCOO_SeqAIJ(Mat A, const PetscScalar v[], Inser
 #if defined(PETSC_HAVE_CUDA)
 PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJCUSPARSE(Mat, MatType, MatReuse, Mat *);
 #endif
+#if defined(PETSC_HAVE_HIP)
+PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJHIPSPARSE(Mat, MatType, MatReuse, Mat *);
+#endif
 #if defined(PETSC_HAVE_KOKKOS_KERNELS)
 PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJKokkos(Mat, MatType, MatReuse, Mat *);
 #endif
@@ -4764,6 +4801,11 @@ PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJ(Mat B)
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatConvert_seqaij_seqaijcusparse_C", MatConvert_SeqAIJ_SeqAIJCUSPARSE));
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatProductSetFromOptions_seqaijcusparse_seqaij_C", MatProductSetFromOptions_SeqAIJ));
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatProductSetFromOptions_seqaij_seqaijcusparse_C", MatProductSetFromOptions_SeqAIJ));
+#endif
+#if defined(PETSC_HAVE_HIP)
+  PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatConvert_seqaij_seqaijhipsparse_C", MatConvert_SeqAIJ_SeqAIJHIPSPARSE));
+  PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatProductSetFromOptions_seqaijhipsparse_seqaij_C", MatProductSetFromOptions_SeqAIJ));
+  PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatProductSetFromOptions_seqaij_seqaijhipsparse_C", MatProductSetFromOptions_SeqAIJ));
 #endif
 #if defined(PETSC_HAVE_KOKKOS_KERNELS)
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatConvert_seqaij_seqaijkokkos_C", MatConvert_SeqAIJ_SeqAIJKokkos));
@@ -5313,7 +5355,7 @@ PetscFunctionList MatSeqAIJList = NULL;
 /*@C
    MatSeqAIJSetType - Converts a `MATSEQAIJ` matrix to a subtype
 
-   Collective on mat
+   Collective
 
    Input Parameters:
 +  mat      - the matrix object
@@ -5394,6 +5436,9 @@ PetscErrorCode MatSeqAIJRegisterAll(void)
 #endif
 #if defined(PETSC_HAVE_CUDA)
   PetscCall(MatSeqAIJRegister(MATSEQAIJCUSPARSE, MatConvert_SeqAIJ_SeqAIJCUSPARSE));
+#endif
+#if defined(PETSC_HAVE_HIP)
+  PetscCall(MatSeqAIJRegister(MATSEQAIJHIPSPARSE, MatConvert_SeqAIJ_SeqAIJHIPSPARSE));
 #endif
 #if defined(PETSC_HAVE_KOKKOS_KERNELS)
   PetscCall(MatSeqAIJRegister(MATSEQAIJKOKKOS, MatConvert_SeqAIJ_SeqAIJKokkos));

@@ -177,7 +177,7 @@ PetscErrorCode TSAdaptSetOptionsPrefix(TSAdapt adapt, const char prefix[])
 /*@C
   TSAdaptLoad - Loads a TSAdapt that has been stored in binary  with TSAdaptView().
 
-  Collective on adapt
+  Collective
 
   Input Parameters:
 + newdm - the newly loaded `TSAdapt`, this needs to have been created with `TSAdaptCreate()` or
@@ -257,7 +257,7 @@ PetscErrorCode TSAdaptView(TSAdapt adapt, PetscViewer viewer)
 /*@
    TSAdaptReset - Resets a `TSAdapt` context to its defaults
 
-   Collective on adapt
+   Collective
 
    Input Parameter:
 .  adapt - the `TSAdapt` context obtained from `TSGetAdapt()` or `TSAdaptCreate()`
@@ -295,7 +295,7 @@ PetscErrorCode TSAdaptDestroy(TSAdapt *adapt)
 /*@
    TSAdaptSetMonitor - Monitor the choices made by the adaptive controller
 
-   Collective on adapt
+   Collective
 
    Input Parameters:
 +  adapt - adaptive controller context
@@ -324,7 +324,7 @@ PetscErrorCode TSAdaptSetMonitor(TSAdapt adapt, PetscBool flg)
 /*@C
    TSAdaptSetCheckStage - Set a callback to check convergence for a stage
 
-   Logically collective on adapt
+   Logically collective
 
    Input Parameters:
 +  adapt - adaptive controller context
@@ -353,7 +353,7 @@ PetscErrorCode TSAdaptSetCheckStage(TSAdapt adapt, PetscErrorCode (*func)(TSAdap
    TSAdaptSetAlwaysAccept - Set whether to always accept steps regardless of
    any error or stability condition not meeting the prescribed goal.
 
-   Logically collective on adapt
+   Logically collective
 
    Input Parameters:
 +  adapt - time step adaptivity context, usually gotten with `TSGetAdapt()`
@@ -378,7 +378,7 @@ PetscErrorCode TSAdaptSetAlwaysAccept(TSAdapt adapt, PetscBool flag)
 /*@
    TSAdaptSetSafety - Set safety factors for time step adaptor
 
-   Logically collective on adapt
+   Logically collective
 
    Input Parameters:
 +  adapt - adaptive controller context
@@ -439,7 +439,7 @@ PetscErrorCode TSAdaptGetSafety(TSAdapt adapt, PetscReal *safety, PetscReal *rej
    TSAdaptSetMaxIgnore - Set error estimation threshold. Solution components below this threshold value will not be considered when computing error norms
    for time step adaptivity (in absolute value). A negative value (default) of the threshold leads to considering all solution components.
 
-   Logically collective on adapt
+   Logically collective
 
    Input Parameters:
 +  adapt - adaptive controller context
@@ -489,7 +489,7 @@ PetscErrorCode TSAdaptGetMaxIgnore(TSAdapt adapt, PetscReal *max_ignore)
 /*@
    TSAdaptSetClip - Sets the admissible decrease/increase factor in step size in the time step adapter
 
-   Logically collective on adapt
+   Logically collective
 
    Input Parameters:
 +  adapt - adaptive controller context
@@ -547,7 +547,7 @@ PetscErrorCode TSAdaptGetClip(TSAdapt adapt, PetscReal *low, PetscReal *high)
 /*@
    TSAdaptSetScaleSolveFailed - Scale step size by this factor if solve fails
 
-   Logically collective on adapt
+   Logically collective
 
    Input Parameters:
 +  adapt - adaptive controller context
@@ -598,7 +598,7 @@ PetscErrorCode TSAdaptGetScaleSolveFailed(TSAdapt adapt, PetscReal *scale)
 /*@
    TSAdaptSetStepLimits - Set the minimum and maximum step sizes to be considered by the time step controller
 
-   Logically collective on adapt
+   Logically collective
 
    Input Parameters:
 +  adapt - time step adaptivity context, usually gotten with `TSGetAdapt()`
@@ -659,7 +659,7 @@ PetscErrorCode TSAdaptGetStepLimits(TSAdapt adapt, PetscReal *hmin, PetscReal *h
 /*
    TSAdaptSetFromOptions - Sets various `TSAdapt` parameters from user options.
 
-   Collective on adapt
+   Collective
 
    Input Parameter:
 .  adapt - the `TSAdapt` context
@@ -743,7 +743,7 @@ PetscErrorCode TSAdaptSetFromOptions(TSAdapt adapt, PetscOptionItems *PetscOptio
 /*@
    TSAdaptCandidatesClear - clear any previously set candidate schemes
 
-   Logically collective on adapt
+   Logically collective
 
    Input Parameter:
 .  adapt - adaptive controller
@@ -763,7 +763,7 @@ PetscErrorCode TSAdaptCandidatesClear(TSAdapt adapt)
 /*@C
    TSAdaptCandidateAdd - add a candidate scheme for the adaptive controller to select from
 
-   Logically collective on adapt
+   Logically collective
 
    Input Parameters:
 +  adapt - time step adaptivity context, obtained with `TSGetAdapt()` or `TSAdaptCreate()`
@@ -841,7 +841,7 @@ PetscErrorCode TSAdaptCandidatesGet(TSAdapt adapt, PetscInt *n, const PetscInt *
 /*@C
    TSAdaptChoose - choose which method and step size to use for the next step
 
-   Collective on adapt
+   Collective
 
    Input Parameters:
 +  adapt - adaptive contoller
@@ -933,7 +933,7 @@ PetscErrorCode TSAdaptChoose(TSAdapt adapt, TS ts, PetscReal h, PetscInt *next_s
    TSAdaptSetTimeStepIncreaseDelay - The number of timesteps to wait after a decrease in the timestep due to failed solver
                                      before increasing the time step.
 
-   Logicially Collective on adapt
+   Logicially Collective
 
    Input Parameters:
 +  adapt - adaptive controller context
@@ -964,7 +964,7 @@ PetscErrorCode TSAdaptSetTimeStepIncreaseDelay(TSAdapt adapt, PetscInt cnt)
 /*@
    TSAdaptCheckStage - checks whether to accept a stage, (e.g. reject and change time step size if nonlinear solve fails or solution vector is infeasible)
 
-   Collective on tsadapt
+   Collective
 
    Input Parameters:
 +  adapt - adaptive controller context

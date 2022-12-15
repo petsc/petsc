@@ -10,7 +10,7 @@
     PetscFOpen - Has the first process in the communicator open a file;
     all others do nothing.
 
-    Logically Collective
+    Logically Collective; No Fortran Support
 
     Input Parameters:
 +   comm - the communicator
@@ -24,9 +24,6 @@
 
     Note:
        NULL (0), "stderr" or "stdout" may be passed in as the filename
-
-    Fortran Note:
-    This routine is not supported in Fortran.
 
 .seealso: `PetscFClose()`, `PetscSynchronizedFGets()`, `PetscSynchronizedPrintf()`, `PetscSynchronizedFlush()`,
           `PetscFPrintf()`
@@ -64,16 +61,13 @@ PetscErrorCode PetscFOpen(MPI_Comm comm, const char name[], const char mode[], F
     PetscFClose - Has the first processor in the communicator close a
     file; all others do nothing.
 
-    Logically Collective
+    Logically Collective; No Fortran Support
 
     Input Parameters:
 +   comm - the communicator
 -   fd - the file, opened with PetscFOpen()
 
    Level: developer
-
-    Fortran Note:
-    This routine is not supported in Fortran.
 
 .seealso: `PetscFOpen()`
 @*/

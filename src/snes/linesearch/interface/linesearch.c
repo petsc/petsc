@@ -9,7 +9,7 @@ PetscLogEvent SNESLINESEARCH_Apply;
 /*@
    SNESLineSearchMonitorCancel - Clears all the monitor functions for a `SNESLineSearch` object.
 
-   Logically Collective on ls
+   Logically Collective
 
    Input Parameters:
 .  ls - the `SNESLineSearch` context
@@ -45,7 +45,7 @@ PetscErrorCode SNESLineSearchMonitorCancel(SNESLineSearch ls)
 /*@
    SNESLineSearchMonitor - runs the user provided monitor routines, if they exist
 
-   Collective on ls
+   Collective
 
    Input Parameters:
 .  ls - the linesearch object
@@ -72,7 +72,7 @@ PetscErrorCode SNESLineSearchMonitor(SNESLineSearch ls)
    iteration of the nonlinear solver to display the iteration's
    progress.
 
-   Logically Collective on ls
+   Logically Collective
 
    Input Parameters:
 +  ls - the `SNESLineSearch` context
@@ -115,7 +115,7 @@ PetscErrorCode SNESLineSearchMonitorSet(SNESLineSearch ls, PetscErrorCode (*f)(S
 /*@C
    SNESLineSearchMonitorSolutionUpdate - Monitors each update of the function value the linesearch tries
 
-   Collective on ls
+   Collective
 
    Input Parameters:
 +  ls - the `SNES` linesearch object
@@ -205,7 +205,7 @@ PetscErrorCode SNESLineSearchCreate(MPI_Comm comm, SNESLineSearch *outlinesearch
    SNESLineSearchSetUp - Prepares the line search for being applied by allocating
    any required vectors.
 
-   Collective on linesearch
+   Collective
 
    Input Parameters:
 .  linesearch - The `SNESLineSearch` instance.
@@ -240,7 +240,7 @@ PetscErrorCode SNESLineSearchSetUp(SNESLineSearch linesearch)
 /*@
    SNESLineSearchReset - Undoes the `SNESLineSearchSetUp()` and deletes any `Vec`s or `Mat`s allocated by the line search.
 
-   Collective on linesearch
+   Collective
 
    Input Parameters:
 .  linesearch - The `SNESLineSearch` instance.
@@ -292,7 +292,7 @@ PetscErrorCode SNESLineSearchSetFunction(SNESLineSearch linesearch, PetscErrorCo
          before the line search routine has been applied. Allows the user to adjust the result of (usually a linear solve) that
          determined the search direction.
 
-   Logically Collective on linesearch
+   Logically Collective
 
    Input Parameters:
 +  linesearch - the `SNESLineSearch` context
@@ -400,7 +400,7 @@ PetscErrorCode SNESLineSearchGetPostCheck(SNESLineSearch linesearch, PetscErrorC
 /*@
    SNESLineSearchPreCheck - Prepares the line search for being applied.
 
-   Logically Collective on linesearch
+   Logically Collective
 
    Input Parameters:
 +  linesearch - The linesearch instance.
@@ -432,7 +432,7 @@ PetscErrorCode SNESLineSearchPreCheck(SNESLineSearch linesearch, Vec X, Vec Y, P
 /*@
    SNESLineSearchPostCheck - Hook to modify step direction or updated solution after a successful linesearch
 
-   Logically Collective on linesearch
+   Logically Collective
 
    Input Parameters:
 +  linesearch - The linesearch context
@@ -467,7 +467,7 @@ PetscErrorCode SNESLineSearchPostCheck(SNESLineSearch linesearch, Vec X, Vec Y, 
 /*@C
    SNESLineSearchPreCheckPicard - Implements a correction that is sometimes useful to improve the convergence rate of Picard iteration
 
-   Logically Collective on linesearch
+   Logically Collective
 
    Input Parameters:
 +  linesearch - linesearch context
@@ -549,7 +549,7 @@ PetscErrorCode SNESLineSearchPreCheckPicard(SNESLineSearch linesearch, Vec X, Ve
 /*@
    SNESLineSearchApply - Computes the line-search update.
 
-   Collective on linesearch
+   Collective
 
    Input Parameters:
 +  linesearch - The linesearch context
@@ -615,7 +615,7 @@ PetscErrorCode SNESLineSearchApply(SNESLineSearch linesearch, Vec X, Vec F, Pets
 /*@
    SNESLineSearchDestroy - Destroys the line search instance.
 
-   Collective on linesearch
+   Collective
 
    Input Parameters:
 .  linesearch - The linesearch context
@@ -645,7 +645,7 @@ PetscErrorCode SNESLineSearchDestroy(SNESLineSearch *linesearch)
 /*@
    SNESLineSearchSetDefaultMonitor - Turns on/off printing useful information and debugging output about the line search.
 
-   Logically Collective on linesearch
+   Logically Collective
 
    Input Parameters:
 +  linesearch - the linesearch object
@@ -676,7 +676,7 @@ PetscErrorCode SNESLineSearchSetDefaultMonitor(SNESLineSearch linesearch, PetscV
 /*@
    SNESLineSearchGetDefaultMonitor - Gets the `PetscViewer` instance for the line search monitor.
 
-   Logically Collective on linsearch
+   Logically Collective
 
    Input Parameter:
 .  linesearch - linesearch context
@@ -699,7 +699,7 @@ PetscErrorCode SNESLineSearchGetDefaultMonitor(SNESLineSearch linesearch, PetscV
 /*@C
    SNESLineSearchMonitorSetFromOptions - Sets a monitor function and viewer appropriate for the type indicated by the user
 
-   Collective on ls
+   Collective
 
    Input Parameters:
 +  ls - `SNESLineSearch` object you wish to monitor
@@ -740,7 +740,7 @@ PetscErrorCode SNESLineSearchMonitorSetFromOptions(SNESLineSearch ls, const char
 /*@
    SNESLineSearchSetFromOptions - Sets options for the line search
 
-   Logically Collective on linesearch
+   Logically Collective
 
    Input Parameter:
 .  linesearch - linesearch context
@@ -834,7 +834,7 @@ PetscErrorCode SNESLineSearchSetFromOptions(SNESLineSearch linesearch)
    Input Parameters:
 .  linesearch - linesearch context
 
-   Logically Collective on linesearch
+   Logically Collective
 
    Level: intermediate
 
@@ -874,7 +874,7 @@ PetscErrorCode SNESLineSearchView(SNESLineSearch linesearch, PetscViewer viewer)
 /*@C
    SNESLineSearchGetType - Gets the linesearch type
 
-   Logically Collective on linesearch
+   Logically Collective
 
    Input Parameters:
 .  linesearch - linesearch context
@@ -898,7 +898,7 @@ PetscErrorCode SNESLineSearchGetType(SNESLineSearch linesearch, SNESLineSearchTy
 /*@C
    SNESLineSearchSetType - Sets the linesearch type
 
-   Logically Collective on linesearch
+   Logically Collective
 
    Input Parameters:
 +  linesearch - linesearch context
@@ -1323,7 +1323,7 @@ PetscErrorCode SNESLineSearchGetNorms(SNESLineSearch linesearch, PetscReal *xnor
 /*@
    SNESLineSearchSetNorms - Gets the computed norms for for X, Y, and F.
 
-   Collective on linesearch
+   Collective
 
    Input Parameters:
 +  linesearch - linesearch context
@@ -1462,7 +1462,7 @@ PetscErrorCode SNESLineSearchGetVecs(SNESLineSearch linesearch, Vec *X, Vec *F, 
 /*@
    SNESLineSearchSetVecs - Sets the vectors on the `SNESLineSearch` context
 
-   Logically Collective on linesearch
+   Logically Collective
 
    Input Parameters:
 +  linesearch - linesearch context
@@ -1507,7 +1507,7 @@ PetscErrorCode SNESLineSearchSetVecs(SNESLineSearch linesearch, Vec X, Vec F, Ve
    SNESLineSearchAppendOptionsPrefix - Appends to the prefix used for searching for all
    `SNESLineSearch` options in the database.
 
-   Logically Collective on linesearch
+   Logically Collective
 
    Input Parameters:
 +  linesearch - the `SNESLineSearch` context
@@ -1628,7 +1628,7 @@ PetscErrorCode SNESLineSearchSetReason(SNESLineSearch linesearch, SNESLineSearch
 /*@C
    SNESLineSearchSetVIFunctions - Sets VI-specific functions for line search computation.
 
-   Logically Collective on linesearch
+   Logically Collective
 
    Input Parameters:
 +  snes - nonlinear context obtained from `SNESCreate()`

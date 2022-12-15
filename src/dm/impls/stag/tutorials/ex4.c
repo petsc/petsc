@@ -2332,7 +2332,7 @@ static PetscErrorCode DumpSolution(Ctx ctx, PetscInt level, Vec x)
 
    test:
       suffix: 3d_isovisc_blob_cuda
-      requires: cuda
+      requires: cuda defined(PETSC_USE_LOG)
       nsize: 2
       args: -dim 3 -coefficients blob -isoviscous -s 8 -build_auxiliary_operator -fieldsplit_element_ksp_type preonly -fieldsplit_element_pc_type jacobi -fieldsplit_face_ksp_type fgmres -fieldsplit_face_mg_levels_ksp_max_it 6 -fieldsplit_face_mg_levels_ksp_norm_type none -fieldsplit_face_mg_levels_ksp_type chebyshev -fieldsplit_face_mg_levels_pc_type jacobi -fieldsplit_face_pc_mg_galerkin -fieldsplit_face_pc_mg_levels 3 -fieldsplit_face_pc_type mg -pc_fieldsplit_schur_fact_type upper -pc_fieldsplit_schur_precondition user -pc_fieldsplit_type schur -pc_type fieldsplit -dm_mat_type aijcusparse -dm_vec_type cuda -log_view -fieldsplit_face_pc_mg_log
       filter: awk "/MGInterp/ {print \$NF}"

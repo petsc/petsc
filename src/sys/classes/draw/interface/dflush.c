@@ -6,7 +6,7 @@
 /*@
    PetscDrawFlush - Flushes graphical output.
 
-   Collective on draw
+   Collective
 
    Input Parameters:
 .  draw - the drawing context

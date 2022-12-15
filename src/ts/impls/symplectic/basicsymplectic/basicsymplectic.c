@@ -369,7 +369,7 @@ static PetscErrorCode TSComputeLinearStability_BasicSymplectic(TS ts, PetscReal 
 /*@C
   TSBasicSymplecticSetType - Set the type of the basic symplectic method
 
-  Logically Collective on ts
+  Logically Collective
 
   Input Parameters:
 +  ts - timestepping context
@@ -397,7 +397,7 @@ PetscErrorCode TSBasicSymplecticSetType(TS ts, TSBasicSymplecticType bsymptype)
 /*@C
   TSBasicSymplecticGetType - Get the type of the basic symplectic method
 
-  Logically Collective on ts
+  Logically Collective
 
   Input Parameters:
 +  ts - timestepping context

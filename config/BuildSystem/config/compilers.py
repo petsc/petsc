@@ -1413,6 +1413,28 @@ Otherwise you need a different combination of C, C++, and Fortran compilers")
       raise RuntimeError('PETSc requires c99 compiler! Configure could not determine compatible compiler flag.\nPerhaps you can specify it via CFLAGS.'+additionalErrorMsg)
     return
 
+  def checkStdAtomic(self,cxx=False):
+    includes = """
+    #if defined(__cplusplus)
+    #include <atomic>
+    using namespace std;
+    #else
+    #include <stdatomic.h>"
+    #endif
+    double dcount = 0;
+    atomic_flag cat = ATOMIC_FLAG_INIT;
+    """
+    body = """
+    do {} while (atomic_flag_test_and_set(&cat));
+    dcount++;
+    atomic_flag_clear(&cat);
+    """
+    if self.checkCompile(includes, body):
+      if cxx:
+        self.addDefine('HAVE_CXX_ATOMIC', 1)
+      else:
+        self.addDefine('HAVE_STDATOMIC_H', 1)
+
   def configure(self):
     import config.setCompilers
     if hasattr(self.setCompilers, 'CC'):
@@ -1420,6 +1442,7 @@ Otherwise you need a different combination of C, C++, and Fortran compilers")
       self.executeTest(self.checkC99Flag)
       self.executeTest(self.checkCFormatting)
       self.executeTest(self.checkDynamicLoadFlag)
+      self.executeTest(self.checkStdAtomic)
       if self.argDB['with-clib-autodetect']:
         self.executeTest(self.checkCLibraries)
       self.executeTest(self.checkDependencyGenerationFlag)
@@ -1431,6 +1454,7 @@ Otherwise you need a different combination of C, C++, and Fortran compilers")
       self.executeTest(self.checkCxxRestrict)
       self.executeTest(self.checkCxxOptionalExtensions)
       self.executeTest(self.checkCxxComplexFix)
+      self.executeTest(self.checkStdAtomic,kargs={'cxx' : True})
       if self.argDB['with-cxxlib-autodetect']:
         self.executeTest(self.checkCxxLibraries)
       # To skip Sun C++ compiler warnings/errors

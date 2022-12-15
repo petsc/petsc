@@ -11,7 +11,7 @@ PetscClassId MAT_NULLSPACE_CLASSID;
    MatNullSpaceSetFunction - set a function that removes a null space from a vector
    out of null spaces.
 
-   Logically Collective on sp
+   Logically Collective
 
    Input Parameters:
 +  sp - the `MatNullSpace` null space object
@@ -64,7 +64,7 @@ PetscErrorCode MatNullSpaceGetVecs(MatNullSpace sp, PetscBool *has_const, PetscI
 /*@
    MatNullSpaceCreateRigidBody - create rigid body modes from coordinates
 
-   Collective on coords
+   Collective
 
    Input Parameter:
 .  coords - block of coordinates of each node, must have block size set
@@ -161,16 +161,13 @@ PetscErrorCode MatNullSpaceCreateRigidBody(Vec coords, MatNullSpace *sp)
 /*@C
    MatNullSpaceView - Visualizes a null space object.
 
-   Collective on sp
+   Collective; No Fortran Support
 
    Input Parameters:
 +  matnull - the null space
 -  viewer - visualization context
 
    Level: advanced
-
-   Fortran Note:
-   This routine is not supported in Fortran.
 
 .seealso: `MatNullSpace`, `MatNullSpaceCreate()`, `PetscViewerASCIIOpen()`
 @*/
@@ -297,7 +294,7 @@ PetscErrorCode MatNullSpaceCreate(MPI_Comm comm, PetscBool has_cnst, PetscInt n,
 /*@
    MatNullSpaceDestroy - Destroys a data structure used to project vectors out of null spaces.
 
-   Collective on sp
+   Collective
 
    Input Parameter:
 .  sp - the null space context to be destroyed
@@ -329,7 +326,7 @@ PetscErrorCode MatNullSpaceDestroy(MatNullSpace *sp)
 /*@C
    MatNullSpaceRemove - Removes all the components of a null space from a vector.
 
-   Collective on sp
+   Collective
 
    Input Parameters:
 +  sp - the null space context (if this is NULL then no null space is removed)
@@ -371,7 +368,7 @@ PetscErrorCode MatNullSpaceRemove(MatNullSpace sp, Vec vec)
 /*@
    MatNullSpaceTest  - Tests if the claimed null space is really a null space of a matrix
 
-   Collective on sp
+   Collective
 
    Input Parameters:
 +  sp - the null space context

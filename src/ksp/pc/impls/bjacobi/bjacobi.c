@@ -372,7 +372,7 @@ PetscErrorCode PCBJacobiGetSubKSP(PC pc, PetscInt *n_local, PetscInt *first_loca
    PCBJacobiSetTotalBlocks - Sets the global number of blocks for the block
    Jacobi preconditioner.
 
-   Collective on pc
+   Collective
 
    Input Parameters:
 +  pc - the preconditioner context

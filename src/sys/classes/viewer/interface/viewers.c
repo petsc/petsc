@@ -11,14 +11,14 @@ struct _n_PetscViewers {
 /*@C
    PetscViewersDestroy - Destroys a set of `PetscViewer`s created with `PetscViewersCreate()`.
 
-   Collective on v
+   Collective
 
    Input Parameters:
 .  v - the `PetscViewer`s to be destroyed.
 
    Level: intermediate
 
-.seealso: `PetscViewer`, `PetscViewerSocketOpen()`, `PetscViewerASCIIOpen()`, `PetscViewerCreate()`, `PetscViewerDrawOpen()`, `PetscViewersCreate()`
+.seealso: [](sec_viewers), `PetscViewer`, `PetscViewerSocketOpen()`, `PetscViewerASCIIOpen()`, `PetscViewerCreate()`, `PetscViewerDrawOpen()`, `PetscViewersCreate()`
 @*/
 PetscErrorCode PetscViewersDestroy(PetscViewers *v)
 {
@@ -45,7 +45,7 @@ PetscErrorCode PetscViewersDestroy(PetscViewers *v)
 
    Level: intermediate
 
-.seealso: `PetscViewer`, `PetscViewerCreate()`, `PetscViewersDestroy()`
+.seealso: [](sec_viewers), `PetscViewer`, `PetscViewerCreate()`, `PetscViewersDestroy()`
 @*/
 PetscErrorCode PetscViewersCreate(MPI_Comm comm, PetscViewers *v)
 {
@@ -73,7 +73,7 @@ PetscErrorCode PetscViewersCreate(MPI_Comm comm, PetscViewers *v)
 
    Level: intermediate
 
-.seealso: `PetscViewer`, `PetscViewersCreate()`, `PetscViewersDestroy()`
+.seealso: [](sec_viewers), `PetscViewer`, `PetscViewersCreate()`, `PetscViewersDestroy()`
 @*/
 PetscErrorCode PetscViewersGetViewer(PetscViewers viewers, PetscInt n, PetscViewer *viewer)
 {
@@ -114,7 +114,7 @@ PetscErrorCode PetscViewersGetViewer(PetscViewers viewers, PetscInt n, PetscView
 
   Level: developer
 
-.seealso: `DMMonitorSetFromOptions()`, `KSPMonitorSetFromOptions()`, `SNESMonitorSetFromOptions()`
+.seealso: [](sec_viewers), `DMMonitorSetFromOptions()`, `KSPMonitorSetFromOptions()`, `SNESMonitorSetFromOptions()`
 */
 PetscErrorCode PetscMonitorCompare(PetscErrorCode (*nmon)(void), void *nmctx, PetscErrorCode (*nmdestroy)(void **), PetscErrorCode (*mon)(void), void *mctx, PetscErrorCode (*mdestroy)(void **), PetscBool *identical)
 {

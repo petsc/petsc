@@ -1,10 +1,10 @@
-sphinx==4.5.0
+sphinx==5.3.0
 sphinxcontrib-bibtex>=1.0.0
 sphinxcontrib-katex
 sphinxcontrib-svg2pdfconverter
 sphinx-copybutton
 pydata-sphinx-theme
-sphinx-panels
+sphinx-design
 myst-parser
 sphinx-remove-toctrees
 Jinja2==3.0.1

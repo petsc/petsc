@@ -356,7 +356,7 @@ PetscErrorCode DMSNESUnsetFunctionContext_Internal(DM dm)
 /*@C
    DMSNESSetMFFunction - set `SNES` residual evaluation function used in applying the matrix-free Jacobian with -snes_mf_operator
 
-   Logically Collective on dm
+   Logically Collective
 
    Input Parameters:
 +  dm - `DM` to be used with `SNES`

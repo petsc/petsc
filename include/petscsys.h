@@ -1334,11 +1334,9 @@ PETSC_EXTERN PetscErrorCode PetscDLAddr(void (*)(void), char **);
 PETSC_EXTERN PetscErrorCode PetscDemangleSymbol(const char *, char **);
 #endif
 
-#if defined(PETSC_USE_DEBUG)
 PETSC_EXTERN PetscErrorCode PetscMallocGetStack(void *, PetscStack **);
-#endif
-PETSC_EXTERN PetscErrorCode PetscObjectsDump(FILE *, PetscBool);
 
+PETSC_EXTERN PetscErrorCode PetscObjectsDump(FILE *, PetscBool);
 PETSC_EXTERN PetscErrorCode PetscObjectListDestroy(PetscObjectList *);
 PETSC_EXTERN PetscErrorCode PetscObjectListFind(PetscObjectList, const char[], PetscObject *);
 PETSC_EXTERN PetscErrorCode PetscObjectListReverseFind(PetscObjectList, PetscObject, char **, PetscBool *);
@@ -1406,11 +1404,11 @@ M*/
 /*MC
     PetscHelpPrintf - Prints help messages.
 
+    Not Collective, only applies on rank 0; No Fortran Support
+
    Synopsis:
     #include <petscsys.h>
      PetscErrorCode (*PetscHelpPrintf)(MPI_Comm comm, const char format[],args);
-
-    Collective on comm
 
     Input Parameters:
 +  comm - the MPI communicator over which the help message is printed
@@ -1418,9 +1416,6 @@ M*/
 -  args - arguments to be printed
 
    Level: developer
-
-   Fortran Note:
-     This routine is not supported in Fortran.
 
    Note:
      You can change how help messages are printed by replacing the function pointer with a function that does not simply write to stdout.
@@ -2325,7 +2320,7 @@ static inline PetscErrorCode PetscIntSumError(PetscInt a, PetscInt b, PetscInt *
     PETSC_VERSION - This manual page provides information about how PETSc documents and uses its version information. This information is available to both C/C++
                     and Fortran compilers when petscsys.h is included.
 
-    The current PETSc version and the API for accessing it are defined in petscversion.h
+    The current PETSc version and the API for accessing it are defined in <A HREF="PETSC_DOC_OUT_ROOT_PLACEHOLDER/include/petscversion.h.html">include/petscverson.html</A>
 
     The complete version number is given as the triple  PETSC_VERSION_MAJOR.PETSC_VERSION_MINOR.PETSC_VERSION_SUBMINOR (in short hand x.y.z)
 

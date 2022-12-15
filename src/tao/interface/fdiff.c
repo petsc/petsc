@@ -19,7 +19,7 @@ static PetscErrorCode Fsnes(SNES snes, Vec X, Vec G, void *ctx)
 /*@C
   TaoDefaultComputeGradient - computes the gradient using finite differences.
 
-  Collective on tao
+  Collective
 
   Input Parameters:
 + tao   - the Tao context
@@ -85,7 +85,7 @@ PetscErrorCode TaoDefaultComputeGradient(Tao tao, Vec Xin, Vec G, void *dummy)
 /*@C
    TaoDefaultComputeHessian - Computes the Hessian using finite differences.
 
-   Collective on tao
+   Collective
 
    Input Parameters:
 +  tao   - the Tao context
@@ -146,7 +146,7 @@ PetscErrorCode TaoDefaultComputeHessian(Tao tao, Vec V, Mat H, Mat B, void *dumm
 /*@C
    TaoDefaultComputeHessianColor - Computes the Hessian using colored finite differences.
 
-   Collective on Tao
+   Collective
 
    Input Parameters:
 +  tao - the Tao context

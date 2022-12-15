@@ -35,7 +35,7 @@ Prepared by
 **W. D. Gropp** :sup:`1,18`,
 **V. Hapla** :sup:`8`,
 **T. Isaac** :sup:`1,14`,
-**P. Jolivet** :sup:`12`,
+**P. Jolivet** :sup:`12,22`,
 **D. Karpeev** :sup:`1`,
 **D. Kaushik** :sup:`1`,
 **M. G. Knepley** :sup:`1,9`,
@@ -67,7 +67,7 @@ Prepared by
 | :sup:`9`\ Department of Computer Science and Engineering, University at Buffalo
 | :sup:`10`\ Department of Computer Science, University of Colorado, Boulder
 | :sup:`11`\ Computational Frameworks, Idaho National Laboratory
-| :sup:`12`\ Toulouse Institute of Computer Science Research
+| :sup:`12`\ Sorbonne Université, CNRS, LIP6
 | :sup:`13`\ NVIDIA Corporation
 | :sup:`14`\ College of Computing, Georgia Tech
 | :sup:`15`\ Tech-X Corporation
@@ -77,6 +77,7 @@ Prepared by
 | :sup:`19`\ Institute for Microelectronics, TU Wien
 | :sup:`20`\ Department of Computer Science, Durham University
 | :sup:`21`\ Scripps Institution of Oceanography, University of California, San Diego
+| :sup:`22`\ Toulouse INP, CNRS, Institute of Computer Science Research
 
 .. raw:: latex
 

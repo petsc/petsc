@@ -430,7 +430,7 @@ static PetscErrorCode VecDuplicate_FFTW_bout(Vec bout, Vec *bout_new)
    MatCreateVecsFFTW - Get vector(s) compatible with the matrix, i.e. with the
      parallel layout determined by `MATFFTW`
 
-   Collective on Mat
+   Collective
 
    Input Parameter:
 .   A - the matrix
@@ -712,7 +712,7 @@ PetscErrorCode MatCreateVecsFFTW_FFTW(Mat A, Vec *fin, Vec *fout, Vec *bout)
 /*@
    VecScatterPetscToFFTW - Copies a PETSc vector to the vector that goes into `MATFFTW` calls.
 
-   Collective on Mat
+   Collective
 
    Input Parameters:
 +  A - FFTW matrix
@@ -947,7 +947,7 @@ PetscErrorCode VecScatterPetscToFFTW_FFTW(Mat A, Vec x, Vec y)
 /*@
    VecScatterFFTWToPetsc - Converts `MATFFTW` output vector to a PETSc vector.
 
-   Collective on Mat
+   Collective
 
     Input Parameters:
 +   A - `MATFFTW` matrix

@@ -18,7 +18,7 @@ static PetscErrorCode TSRHSSplitGetRHSSplit(TS ts, const char splitname[], TS_RH
 /*@C
    TSRHSSplitSetIS - Set the index set for the specified split
 
-   Logically Collective on ts
+   Logically Collective
 
    Input Parameters:
 +  ts        - the `TS` context obtained from `TSCreate()`
@@ -64,7 +64,7 @@ PetscErrorCode TSRHSSplitSetIS(TS ts, const char splitname[], IS is)
 /*@C
    TSRHSSplitGetIS - Retrieves the elements for a split as an `IS`
 
-   Logically Collective on ts
+   Logically Collective
 
    Input Parameters:
 +  ts        - the `TS` context obtained from `TSCreate()`
@@ -93,7 +93,7 @@ PetscErrorCode TSRHSSplitGetIS(TS ts, const char splitname[], IS *is)
 /*@C
    TSRHSSplitSetRHSFunction - Set the split right-hand-side functions.
 
-   Logically Collective on ts
+   Logically Collective
 
    Input Parameters:
 +  ts        - the `TS` context obtained from `TSCreate()`
@@ -154,7 +154,7 @@ PetscErrorCode TSRHSSplitSetRHSFunction(TS ts, const char splitname[], Vec r, TS
 /*@C
    TSRHSSplitGetSubTS - Get the sub-`TS` by split name.
 
-   Logically Collective on ts
+   Logically Collective
 
    Input Parameter:
 .  ts - the `TS` context obtained from `TSCreate()`
@@ -184,7 +184,7 @@ PetscErrorCode TSRHSSplitGetSubTS(TS ts, const char splitname[], TS *subts)
 /*@C
    TSRHSSplitGetSubTSs - Get an array of all sub-`TS` contexts.
 
-   Logically Collective on ts
+   Logically Collective
 
    Input Parameter:
 .  ts - the `TS` context obtained from `TSCreate()`

@@ -283,7 +283,7 @@ PetscErrorCode MatPartitioningApplyND(MatPartitioning matp, IS *partitioning)
 /*@
    MatPartitioningApply - Gets a partitioning for the graph represented by a sparse matrix.
 
-   Collective on matp
+   Collective
 
    Input Parameters:
 .  matp - the matrix partitioning object
@@ -339,7 +339,7 @@ PetscErrorCode MatPartitioningApply(MatPartitioning matp, IS *partitioning)
 /*@
    MatPartitioningImprove - Improves the quality of a given partition.
 
-   Collective on matp
+   Collective
 
    Input Parameters:
 +  matp - the matrix partitioning object
@@ -376,7 +376,7 @@ PetscErrorCode MatPartitioningImprove(MatPartitioning matp, IS *partitioning)
 /*@
    MatPartitioningViewImbalance - Display partitioning imbalance information.
 
-   Collective on matp
+   Collective
 
    Input Parameters:
 +  matp - the matrix partitioning object
@@ -425,7 +425,7 @@ PetscErrorCode MatPartitioningViewImbalance(MatPartitioning matp, IS partitionin
    MatPartitioningSetAdjacency - Sets the adjacency graph (matrix) of the thing to be
       partitioned.
 
-   Collective on part
+   Collective
 
    Input Parameters:
 +  part - the partitioning context
@@ -447,7 +447,7 @@ PetscErrorCode MatPartitioningSetAdjacency(MatPartitioning part, Mat adj)
 /*@
    MatPartitioningDestroy - Destroys the partitioning context.
 
-   Collective on part
+   Collective
 
    Input Parameters:
 .  part - the partitioning context
@@ -476,7 +476,7 @@ PetscErrorCode MatPartitioningDestroy(MatPartitioning *part)
 /*@C
    MatPartitioningSetVertexWeights - Sets the weights for vertices for a partitioning.
 
-   Logically Collective on part
+   Logically Collective
 
    Input Parameters:
 +  part - the partitioning context
@@ -505,7 +505,7 @@ PetscErrorCode MatPartitioningSetVertexWeights(MatPartitioning part, const Petsc
 /*@C
    MatPartitioningSetPartitionWeights - Sets the weights for each partition.
 
-   Logically Collective on part
+   Logically Collective
 
    Input Parameters:
 +  part - the partitioning context
@@ -536,7 +536,7 @@ PetscErrorCode MatPartitioningSetPartitionWeights(MatPartitioning part, const Pe
 /*@
    MatPartitioningSetUseEdgeWeights - Set a flag to indicate whether or not to use edge weights.
 
-   Logically Collective on part
+   Logically Collective
 
    Input Parameters:
 +  part - the partitioning context
@@ -561,7 +561,7 @@ PetscErrorCode MatPartitioningSetUseEdgeWeights(MatPartitioning part, PetscBool 
 /*@
    MatPartitioningGetUseEdgeWeights - Get a flag that indicates whether or not to edge weights are used.
 
-   Logically Collective on part
+   Logically Collective
 
    Input Parameters:
 .  part - the partitioning context
@@ -624,7 +624,7 @@ PetscErrorCode MatPartitioningCreate(MPI_Comm comm, MatPartitioning *newp)
 /*@C
    MatPartitioningViewFromOptions - View a partitioning context from the options database
 
-   Collective on A
+   Collective
 
    Input Parameters:
 +  A - the partitioning context
@@ -661,7 +661,7 @@ PetscErrorCode MatPartitioningViewFromOptions(MatPartitioning A, PetscObject obj
 /*@C
    MatPartitioningView - Prints the partitioning data structure.
 
-   Collective on part
+   Collective
 
    Input Parameters:
 +  part - the partitioning context
@@ -706,7 +706,7 @@ PetscErrorCode MatPartitioningView(MatPartitioning part, PetscViewer viewer)
 /*@C
    MatPartitioningSetType - Sets the type of partitioner to use
 
-   Collective on part
+   Collective
 
    Input Parameters:
 +  part - the partitioning context.
@@ -752,7 +752,7 @@ PetscErrorCode MatPartitioningSetType(MatPartitioning part, MatPartitioningType 
    MatPartitioningSetFromOptions - Sets various partitioning options from the
         options database for the partitioning object
 
-   Collective on part
+   Collective
 
    Input Parameter:
 .  part - the partitioning context.

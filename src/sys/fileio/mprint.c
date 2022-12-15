@@ -585,7 +585,7 @@ PetscErrorCode PetscSynchronizedFlush(MPI_Comm comm, FILE *fd)
     PetscFPrintf - Prints to a file, only from the first
     processor in the communicator.
 
-    Not Collective
+    Not Collective; No Fortran Support
 
     Input Parameters:
 +   comm - the communicator
@@ -593,9 +593,6 @@ PetscErrorCode PetscSynchronizedFlush(MPI_Comm comm, FILE *fd)
 -   format - the usual printf() format string
 
     Level: intermediate
-
-    Fortran Note:
-    This routine is not supported in Fortran.
 
 .seealso: `PetscPrintf()`, `PetscSynchronizedPrintf()`, `PetscViewerASCIIPrintf()`,
           `PetscViewerASCIISynchronizedPrintf()`, `PetscSynchronizedFlush()`

@@ -6,7 +6,7 @@ const char *const PetscViewerFormats[] = {"DEFAULT", "ASCII_MATLAB", "ASCII_MATH
 /*@C
    PetscViewerSetFormat - Sets the format for a `PetscViewer`.
 
-   Logically Collective on viewer
+   Logically Collective
 
    This routine is deprecated, you should use `PetscViewerPushFormat()`/`PetscViewerPopFormat()`
 
@@ -50,7 +50,7 @@ const char *const PetscViewerFormats[] = {"DEFAULT", "ASCII_MATLAB", "ASCII_MATH
     Note:
     This supports passing in a NULL for the viewer for use in the debugger, but it should never be called in the code with a NULL viewer
 
-.seealso: `PetscViewerGetFormat()`, `PetscViewerASCIIOpen()`, `PetscViewerBinaryOpen()`, `MatView()`, `VecView()`, `PetscViewerType`,
+.seealso: [](sec_viewers), `PetscViewerGetFormat()`, `PetscViewerASCIIOpen()`, `PetscViewerBinaryOpen()`, `MatView()`, `VecView()`, `PetscViewerType`,
           `PetscViewerPushFormat()`, `PetscViewerPopFormat()`, `PetscViewerDrawOpen()`, `PetscViewerSocketOpen()`
 @*/
 PetscErrorCode PetscViewerSetFormat(PetscViewer viewer, PetscViewerFormat format)
@@ -66,7 +66,7 @@ PetscErrorCode PetscViewerSetFormat(PetscViewer viewer, PetscViewerFormat format
 /*@C
    PetscViewerPushFormat - Sets the format for a `PetscViewer`.
 
-   Logically Collective on viewer
+   Logically Collective
 
    Input Parameters:
 +  viewer - the `PetscViewer`
@@ -98,7 +98,7 @@ PetscErrorCode PetscViewerSetFormat(PetscViewer viewer, PetscViewerFormat format
    These formats are most often used for viewing matrices and vectors.
    Currently, the object name is used only in the MATLAB format.
 
-.seealso: `PetscViewer`, `PetscViewerASCIIOpen()`, `PetscViewerBinaryOpen()`, `MatView()`, `VecView()`,
+.seealso: [](sec_viewers), `PetscViewer`, `PetscViewerASCIIOpen()`, `PetscViewerBinaryOpen()`, `MatView()`, `VecView()`,
           `PetscViewerSetFormat()`, `PetscViewerPopFormat()`
 @*/
 PetscErrorCode PetscViewerPushFormat(PetscViewer viewer, PetscViewerFormat format)
@@ -116,14 +116,14 @@ PetscErrorCode PetscViewerPushFormat(PetscViewer viewer, PetscViewerFormat forma
 /*@C
    PetscViewerPopFormat - Resets the format for a `PetscViewer`.
 
-   Logically Collective on viewer
+   Logically Collective
 
    Input Parameters:
 .  viewer - the `PetscViewer`
 
    Level: intermediate
 
-.seealso: `PetscViewer`, `PetscViewerASCIIOpen()`, `PetscViewerBinaryOpen()`, `MatView()`, `VecView()`,
+.seealso: [](sec_viewers), `PetscViewer`, `PetscViewerASCIIOpen()`, `PetscViewerBinaryOpen()`, `MatView()`, `VecView()`,
           `PetscViewerSetFormat()`, `PetscViewerPushFormat()`
 @*/
 PetscErrorCode PetscViewerPopFormat(PetscViewer viewer)
@@ -180,7 +180,7 @@ PetscErrorCode PetscViewerPopFormat(PetscViewer viewer)
   where it didn't apply (`PETSC_VIEWER_STDOUT_WORLD`) it cause the default behavior
   for that viewer to be used.
 
-.seealso: `PetscViewer`, `PetscViewerSetFormat()`, `PetscViewerASCIIOpen()`, `PetscViewerBinaryOpen()`, `MatView()`, `VecView()`, `PetscViewerType`,
+.seealso: [](sec_viewers), `PetscViewer`, `PetscViewerSetFormat()`, `PetscViewerASCIIOpen()`, `PetscViewerBinaryOpen()`, `MatView()`, `VecView()`, `PetscViewerType`,
           `PetscViewerPushFormat()`, `PetscViewerPopFormat()`, `PetscViewerDrawOpen()`, `PetscViewerSocketOpen()`
 @*/
 PetscErrorCode PetscViewerGetFormat(PetscViewer viewer, PetscViewerFormat *format)

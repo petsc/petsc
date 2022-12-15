@@ -643,15 +643,17 @@ linux-intel-mkl-single:
     TEST_ARCH: arch-ci-linux-intel-mkl-single
     LOAD_MODULES: intel-oneapi-compilers/2022.0.2 intel-oneapi-mkl/2022.0.2 intel-oneapi-mpi/2021.5.1
 
-linux-cxx-cmplx-pkgs-64idx:
+linux-cxx-cmplx-pkgs-64idx-gcov:
   extends:
     - .stage-3
     - .linux_test
   tags:
     - gce-nfs
   variables:
-    TEST_ARCH: arch-ci-linux-cxx-cmplx-pkgs-64idx
+    TEST_ARCH: arch-ci-linux-cxx-cmplx-pkgs-64idx-gcov
     LOAD_MODULES: llvm/9.0.0-7fyffox gcc/8.3.0-fjpc5ys cmake/3.14.2-rl3q676
+    RUN_GCOV: 1
+    RUN_GCOV_OPTIONS: --decisions
 
 # Set env vars for 'Kokkos + OpenMP' tests, so that they won't give warnings
 linux-pkgs-dbg-ftn-interfaces:
@@ -710,19 +712,6 @@ linux-pkgs-gcov:
     RUN_GCOV: 1
     RUN_GCOV_OPTIONS: --decisions
 
-linux-cmplx-gcov:
-  extends:
-    - .stage-3
-    - .linux_test
-  tags:
-    - gce-nfs, linux-gcov
-  variables:
-    PETSC_OPTIONS:  -vecscatter_mpi1 false -options_left false -checkfunctionlist
-    TEST_ARCH: arch-ci-linux-cmplx-gcov
-    LOAD_MODULES: gcc/8.3.0-fjpc5ys python-3.9.13-gcc-7.5.0-fq67pdh py-gcovr-5.2-gcc-7.5.0-o7fu4xq
-    RUN_GCOV: 1
-    RUN_GCOV_OPTIONS: --decisions
-
 linux-matlab-ilp64-gcov:
   extends:
     - .stage-3
@@ -735,18 +724,6 @@ linux-matlab-ilp64-gcov:
     RUN_GCOV: 1
     RUN_GCOV_OPTIONS: --decisions
   allow_failure: true
-
-linux-gcov:
-  extends:
-    - .stage-3
-    - .linux_test
-  tags:
-    - gce-nfs, linux-gcov
-  variables:
-    TEST_ARCH: arch-ci-linux-gcov
-    LOAD_MODULES: python-3.9.13-gcc-7.5.0-fq67pdh py-gcovr-5.2-gcc-7.5.0-o7fu4xq
-    RUN_GCOV: 1
-    RUN_GCOV_OPTIONS: --decisions
 
 linux-pgi:
   extends:
@@ -1029,10 +1006,9 @@ analyze-coverage:
     - gce-nfs-short
   dependencies:
     - linux-pkgs-gcov
-    - linux-cmplx-gcov
     - linux-matlab-ilp64-gcov
-    - linux-gcov
     - linux-cuda-pkgs-gcov
+    - linux-cxx-cmplx-pkgs-64idx-gcov
   variables:
     PYTHON: python3
     PETSC_ARCH: arch-ci-analyze-pipeline

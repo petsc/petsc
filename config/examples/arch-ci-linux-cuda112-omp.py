@@ -16,6 +16,7 @@ if __name__ == '__main__':
     'CXXOPTFLAGS=-g -O',
     '--with-cuda=1',
     '--with-openmp',
+    '--with-threadsafety',
     '--download-kokkos',
     '--download-kokkos-kernels',
   ]

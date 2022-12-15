@@ -1,8 +1,6 @@
 /* Portions of this code are under:
    Copyright (c) 2022 Advanced Micro Devices, Inc. All rights reserved.
 */
-#define PETSC_SKIP_SPINLOCK
-
 #include <../src/mat/impls/aij/mpi/mpiaij.h> /*I "petscmat.h" I*/
 #include <../src/mat/impls/aij/seq/seqhipsparse/hipsparsematimpl.h>
 #include <../src/mat/impls/aij/mpi/mpihipsparse/mpihipsparsematimpl.h>

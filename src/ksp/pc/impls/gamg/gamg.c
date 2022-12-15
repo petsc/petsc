@@ -863,7 +863,7 @@ PetscErrorCode PCDestroy_GAMG(PC pc)
 /*@
    PCGAMGSetProcEqLim - Set number of equations to aim for per process on the coarse grids via processor reduction in `PCGAMG`
 
-   Logically Collective on pc
+   Logically Collective
 
    Input Parameters:
 +  pc - the preconditioner context
@@ -901,7 +901,7 @@ static PetscErrorCode PCGAMGSetProcEqLim_GAMG(PC pc, PetscInt n)
 /*@
    PCGAMGSetCoarseEqLim - Set maximum number of equations on the coarsest grid of `PCGAMG`
 
-   Collective on pc
+   Collective
 
    Input Parameters:
 +  pc - the preconditioner context
@@ -939,7 +939,7 @@ static PetscErrorCode PCGAMGSetCoarseEqLim_GAMG(PC pc, PetscInt n)
 /*@
    PCGAMGSetRepartition - Repartition the degrees of freedom across the processors on the coarser grids when reducing the number of MPI ranks to use
 
-   Collective on pc
+   Collective
 
    Input Parameters:
 +  pc - the preconditioner context
@@ -976,7 +976,7 @@ static PetscErrorCode PCGAMGSetRepartition_GAMG(PC pc, PetscBool n)
 /*@
    PCGAMGSetUseSAEstEig - Use the eigen estimate from smoothed aggregation for the Chebyshev smoother during the solution process
 
-   Collective on pc
+   Collective
 
    Input Parameters:
 +  pc - the preconditioner context
@@ -1017,7 +1017,7 @@ static PetscErrorCode PCGAMGSetUseSAEstEig_GAMG(PC pc, PetscBool n)
 /*@
    PCGAMGSetEigenvalues - Set WHAT eigenvalues WHY?
 
-   Collective on pc
+   Collective
 
    Input Parameters:
 +  pc - the preconditioner context
@@ -1055,7 +1055,7 @@ static PetscErrorCode PCGAMGSetEigenvalues_GAMG(PC pc, PetscReal emax, PetscReal
 /*@
    PCGAMGSetReuseInterpolation - Reuse prolongation when rebuilding a `PCGAMG` algebraic multigrid preconditioner
 
-   Collective on pc
+   Collective
 
    Input Parameters:
 +  pc - the preconditioner context
@@ -1094,7 +1094,7 @@ static PetscErrorCode PCGAMGSetReuseInterpolation_GAMG(PC pc, PetscBool n)
    PCGAMGASMSetUseAggs - Have the `PCGAMG` smoother on each level use the aggregates defined by the coarsening process as the subdomains for the additive Schwarz preconditioner
    used as the smoother
 
-   Collective on pc
+   Collective
 
    Input Parameters:
 +  pc - the preconditioner context
@@ -1128,7 +1128,7 @@ static PetscErrorCode PCGAMGASMSetUseAggs_GAMG(PC pc, PetscBool flg)
 /*@
    PCGAMGSetUseParallelCoarseGridSolve - allow a parallel coarse grid solver
 
-   Collective on pc
+   Collective
 
    Input Parameters:
 +  pc - the preconditioner context
@@ -1162,7 +1162,7 @@ static PetscErrorCode PCGAMGSetUseParallelCoarseGridSolve_GAMG(PC pc, PetscBool 
 /*@
    PCGAMGSetCpuPinCoarseGrids - pin the coarse grids created in `PCGAMG` to run only on the CPU since the problems may be too small to run efficiently on the GPUs
 
-   Collective on pc
+   Collective
 
    Input Parameters:
 +  pc - the preconditioner context
@@ -1196,7 +1196,7 @@ static PetscErrorCode PCGAMGSetCpuPinCoarseGrids_GAMG(PC pc, PetscBool flg)
 /*@
    PCGAMGSetCoarseGridLayoutType - place coarse grids on processors with natural order (compact type)
 
-   Collective on pc
+   Collective
 
    Input Parameters:
 +  pc - the preconditioner context
@@ -1230,7 +1230,7 @@ static PetscErrorCode PCGAMGSetCoarseGridLayoutType_GAMG(PC pc, PCGAMGLayoutType
 /*@
    PCGAMGSetNlevels -  Sets the maximum number of levels `PCGAMG` will use
 
-   Not collective on pc
+   Not collective
 
    Input Parameters:
 +  pc - the preconditioner
@@ -1267,7 +1267,7 @@ static PetscErrorCode PCGAMGSetNlevels_GAMG(PC pc, PetscInt n)
 /*@
    PCGAMGSetThreshold - Relative threshold to use for dropping edges in aggregation graph
 
-   Not collective on pc
+   Not collective
 
    Input Parameters:
 +  pc - the preconditioner context
@@ -1312,7 +1312,7 @@ static PetscErrorCode PCGAMGSetThreshold_GAMG(PC pc, PetscReal v[], PetscInt n)
 /*@
    PCGAMGSetRankReductionFactors - Set a manual schedule for MPI rank reduction on coarse grids
 
-   Collective on pc
+   Collective
 
    Input Parameters:
 +  pc - the preconditioner context
@@ -1349,7 +1349,7 @@ static PetscErrorCode PCGAMGSetRankReductionFactors_GAMG(PC pc, PetscInt v[], Pe
 /*@
    PCGAMGSetThresholdScale - Relative threshold reduction at each level
 
-   Not collective on pc
+   Not collective
 
    Input Parameters:
 +  pc - the preconditioner context
@@ -1386,7 +1386,7 @@ static PetscErrorCode PCGAMGSetThresholdScale_GAMG(PC pc, PetscReal v)
 /*@C
    PCGAMGSetType - Set the type of algorithm `PCGAMG` should use
 
-   Collective on pc
+   Collective
 
    Input Parameters:
 +  pc - the preconditioner context
@@ -1410,7 +1410,7 @@ PetscErrorCode PCGAMGSetType(PC pc, PCGAMGType type)
 /*@C
    PCGAMGGetType - Get the type of algorithm `PCGAMG` will use
 
-   Collective on pc
+   Collective
 
    Input Parameter:
 .  pc - the preconditioner context

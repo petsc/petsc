@@ -554,7 +554,7 @@ PETSC_EXTERN PetscErrorCode VecRestoreArrayWriteAndMemType(Vec, PetscScalar **);
 /*@C
    VecGetArrayPair - Accesses a pair of pointers for two vectors that may be common. When not common the first is read only
 
-   Logically Collective on x
+   Logically Collective
 
    Input Parameters:
 +  x - the vector
@@ -583,7 +583,7 @@ static inline PetscErrorCode VecGetArrayPair(Vec x, Vec y, PetscScalar **xv, Pet
 /*@C
    VecRestoreArrayPair - Returns a pair of pointers for two vectors that may be common. When not common the first is read only
 
-   Logically Collective on x
+   Logically Collective
 
    Input Parameters:
 +  x - the vector
@@ -626,7 +626,7 @@ static inline PetscErrorCode VecSetErrorIfLocked(Vec x, PetscInt arg)
 
     PetscCall(VecLockGetLocation(x, &file, &func, &line));
     PetscCall(PetscObjectGetName((PetscObject)x, &name));
-    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Vector '%s' (argument #%" PetscInt_FMT ") was locked for %s access in %s() at %s:%d (line numbers only accurate to function begin)", name, arg, state > 0 ? "read-only" : "write-only", func ? func : "unknown_function", file ? file : "unknown file", line ? line : 0);
+    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Vector '%s' (argument #%" PetscInt_FMT ") was locked for %s access in %s() at %s:%d (line numbers only accurate to function begin)", name, arg, state > 0 ? "read-only" : "write-only", func ? func : "unknown_function", file ? file : "unknown file", line);
   }
   PetscFunctionReturn(0);
 }

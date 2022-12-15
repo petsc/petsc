@@ -202,7 +202,7 @@ PetscErrorCode PetscSFSetGraphSection(PetscSF sf, PetscSection localSection, Pet
 /*@C
   PetscSFDistributeSection - Create a new `PetscSection` reorganized, moving from the root to the leaves of the `PetscSF`
 
-  Collective on sf
+  Collective
 
   Input Parameters:
 + sf - The `PetscSF`
@@ -347,7 +347,7 @@ PetscErrorCode PetscSFDistributeSection(PetscSF sf, PetscSection rootSection, Pe
 /*@C
   PetscSFCreateRemoteOffsets - Create offsets for point data on remote processes
 
-  Collective on sf
+  Collective
 
   Input Parameters:
 + sf          - The `PetscSF`
@@ -391,7 +391,7 @@ PetscErrorCode PetscSFCreateRemoteOffsets(PetscSF sf, PetscSection rootSection, 
 /*@C
   PetscSFCreateSectionSF - Create an expanded `PetscSF` of dofs, assuming the input `PetscSF` relates points
 
-  Collective on sf
+  Collective
 
   Input Parameters:
 + sf - The `PetscSF`

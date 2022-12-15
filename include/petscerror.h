@@ -7,6 +7,10 @@
 #include <petscmacros.h>
 #include <petscsystypes.h>
 
+#if defined(__cplusplus)
+  #include <exception> // std::exception
+#endif
+
 /* SUBMANSEC = Sys */
 
 /*
@@ -578,7 +582,7 @@ M*/
   #include <petscerror.h>
   void PetscCallAbort(MPI_Comm comm, PetscErrorCode ierr)
 
-  Collective on comm
+  Collective
 
   Input Parameters:
 + comm - the MPI communicator on which to abort
@@ -1068,18 +1072,20 @@ PETSC_DEPRECATED_FUNCTION("Use PetscSignalSegvCheckPointerOrMpi() (since version
 /*MC
     PetscErrorPrintf - Prints error messages.
 
+    Not Collective; No Fortran Support
+
    Synopsis:
     #include <petscsys.h>
      PetscErrorCode (*PetscErrorPrintf)(const char format[],...);
 
-    Not Collective
-
     Input Parameter:
-.   format - the usual printf() format string
+.   format - the usual `printf()` format string
 
    Options Database Keys:
 +    -error_output_stdout - cause error messages to be printed to stdout instead of the (default) stderr
 -    -error_output_none - to turn off all printing of error messages (does not change the way the error is handled.)
+
+   Level: developer
 
    Notes:
     Use
@@ -1093,11 +1099,6 @@ $     PetscErrorPrintf = PetscErrorPrintfDefault; to turn it back on or you can 
 
           Use
       `PetscPushErrorHandler()` to provide your own error handler that determines what kind of messages to print
-
-   Level: developer
-
-    Fortran Note:
-    This routine is not supported in Fortran.
 
 .seealso: `PetscFPrintf()`, `PetscSynchronizedPrintf()`, `PetscHelpPrintf()`, `PetscPrintf()`, `PetscPushErrorHandler()`, `PetscVFPrintf()`, `PetscHelpPrintf()`
 M*/
@@ -1131,8 +1132,7 @@ PETSC_EXTERN PetscErrorCode PetscDetermineInitialFPTrap(void);
       Allows the code to build a stack frame as it runs
 */
 
-#if defined(PETSC_USE_DEBUG)
-  #define PETSCSTACKSIZE 64
+#define PETSCSTACKSIZE 64
 typedef struct {
   const char *function[PETSCSTACKSIZE];
   const char *file[PETSCSTACKSIZE];
@@ -1142,11 +1142,8 @@ typedef struct {
   int         hotdepth;
   PetscBool   check; /* option to check for correct Push/Pop semantics, true for default petscstack but not other stacks */
 } PetscStack;
+#if defined(PETSC_USE_DEBUG) && !defined(PETSC_HAVE_THREADSAFETY)
 PETSC_EXTERN PetscStack petscstack;
-#else
-typedef struct {
-  char Silence_empty_struct_has_size_0_in_C_size_1_in_Cpp;
-} PetscStack;
 #endif
 
 #if defined(PETSC_SERIALIZE_FUNCTIONS)
@@ -1182,7 +1179,7 @@ typedef struct {
   #define PetscFunctionReturnVoid() return
   #define PetscStackPop
   #define PetscStackPush(f)
-#elif defined(PETSC_USE_DEBUG)
+#elif defined(PETSC_USE_DEBUG) && !defined(PETSC_HAVE_THREADSAFETY)
 
   #define PetscStackPush_Private(stack__, file__, func__, line__, petsc_routine__, hot__) \
     do { \

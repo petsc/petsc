@@ -63,7 +63,7 @@ PetscErrorCode PetscDrawBarCreate(PetscDraw draw, PetscDrawBar *bar)
 /*@C
    PetscDrawBarSetData
 
-   Logically Collective on bar
+   Logically Collective
 
    Input Parameters:
 +  bar - The bar graph context.
@@ -126,7 +126,7 @@ PetscErrorCode PetscDrawBarDestroy(PetscDrawBar *bar)
 /*@
   PetscDrawBarDraw - Redraws a bar graph.
 
-  Collective on bar
+  Collective
 
   Input Parameter:
 . bar - The bar graph context
@@ -226,7 +226,7 @@ PetscErrorCode PetscDrawBarDraw(PetscDrawBar bar)
 /*@
   PetscDrawBarSave - Saves a drawn bar graph
 
-  Collective on bar
+  Collective
 
   Input Parameters:
 . bar - The bar graph context
@@ -246,7 +246,7 @@ PetscErrorCode PetscDrawBarSave(PetscDrawBar bar)
 /*@
   PetscDrawBarSetColor - Sets the color the bars will be drawn with.
 
-  Logically Collective on bar
+  Logically Collective
 
   Input Parameters:
 + bar - The bar graph context
@@ -268,7 +268,7 @@ PetscErrorCode PetscDrawBarSetColor(PetscDrawBar bar, int color)
 /*@
   PetscDrawBarSort - Sorts the values before drawing the bar chart, the bars will be in ascending order from left to right
 
-  Logically Collective on bar
+  Logically Collective
 
   Input Parameters:
 + bar - The bar graph context
@@ -293,7 +293,7 @@ PetscErrorCode PetscDrawBarSort(PetscDrawBar bar, PetscBool sort, PetscReal tole
   points are added after this call, the limits will be adjusted to
   include those additional points.
 
-  Logically Collective on bar
+  Logically Collective
 
   Input Parameters:
 + bar - The bar graph context

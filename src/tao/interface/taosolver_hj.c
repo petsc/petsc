@@ -3,7 +3,7 @@
 /*@C
    TaoSetHessian - Sets the function to compute the Hessian as well as the location to store the matrix.
 
-   Logically collective on tao
+   Logically collective
 
    Input Parameters:
 +  tao  - the Tao context
@@ -221,7 +221,7 @@ PetscErrorCode TaoTestHessian(Tao tao)
    TaoComputeHessian - Computes the Hessian matrix that has been
    set with `TaoSetHessian()`.
 
-   Collective on tao
+   Collective
 
    Input Parameters:
 +  tao - the Tao solver context
@@ -274,7 +274,7 @@ PetscErrorCode TaoComputeHessian(Tao tao, Vec X, Mat H, Mat Hpre)
    TaoComputeJacobian - Computes the Jacobian matrix that has been
    set with TaoSetJacobianRoutine().
 
-   Collective on tao
+   Collective
 
    Input Parameters:
 +  tao - the Tao solver context
@@ -315,7 +315,7 @@ PetscErrorCode TaoComputeJacobian(Tao tao, Vec X, Mat J, Mat Jpre)
    TaoComputeResidualJacobian - Computes the least-squares residual Jacobian matrix that has been
    set with `TaoSetJacobianResidual()`.
 
-   Collective on tao
+   Collective
 
    Input Parameters:
 +  tao - the Tao solver context
@@ -356,7 +356,7 @@ PetscErrorCode TaoComputeResidualJacobian(Tao tao, Vec X, Mat J, Mat Jpre)
    TaoComputeJacobianState - Computes the Jacobian matrix that has been
    set with `TaoSetJacobianStateRoutine()`.
 
-   Collective on tao
+   Collective
 
    Input Parameters:
 +  tao - the Tao solver context
@@ -394,7 +394,7 @@ PetscErrorCode TaoComputeJacobianState(Tao tao, Vec X, Mat J, Mat Jpre, Mat Jinv
    TaoComputeJacobianDesign - Computes the Jacobian matrix that has been
    set with `TaoSetJacobianDesignRoutine()`.
 
-   Collective on tao
+   Collective
 
    Input Parameters:
 +  tao - the Tao solver context
@@ -429,7 +429,7 @@ PetscErrorCode TaoComputeJacobianDesign(Tao tao, Vec X, Mat J)
 /*@C
    TaoSetJacobianRoutine - Sets the function to compute the Jacobian as well as the location to store the matrix.
 
-   Logically collective on tao
+   Logically collective
 
    Input Parameters:
 +  tao  - the Tao context
@@ -483,7 +483,7 @@ PetscErrorCode TaoSetJacobianRoutine(Tao tao, Mat J, Mat Jpre, PetscErrorCode (*
    TaoSetJacobianResidualRoutine - Sets the function to compute the least-squares residual Jacobian as well as the
    location to store the matrix.
 
-   Logically collective on tao
+   Logically collective
 
    Input Parameters:
 +  tao  - the Tao context
@@ -538,7 +538,7 @@ PetscErrorCode TaoSetJacobianResidualRoutine(Tao tao, Mat J, Mat Jpre, PetscErro
    (and its inverse) of the constraint function with respect to the state variables.
    Used only for PDE-constrained optimization.
 
-   Logically collective on tao
+   Logically collective
 
    Input Parameters:
 +  tao  - the Tao context
@@ -604,7 +604,7 @@ PetscErrorCode TaoSetJacobianStateRoutine(Tao tao, Mat J, Mat Jpre, Mat Jinv, Pe
    the constraint function with respect to the design variables.  Used only for
    PDE-constrained optimization.
 
-   Logically collective on tao
+   Logically collective
 
    Input Parameters:
 +  tao  - the Tao context
@@ -648,7 +648,7 @@ PetscErrorCode TaoSetJacobianDesignRoutine(Tao tao, Mat J, PetscErrorCode (*func
    solution vector are state variables and which are design.  Only applies to
    PDE-constrained optimization.
 
-   Logically Collective on Tao
+   Logically Collective
 
    Input Parameters:
 +  tao  - The Tao context
@@ -675,7 +675,7 @@ PetscErrorCode TaoSetStateDesignIS(Tao tao, IS s_is, IS d_is)
    TaoComputeJacobianEquality - Computes the Jacobian matrix that has been
    set with `TaoSetJacobianEqualityRoutine()`.
 
-   Collective on tao
+   Collective
 
    Input Parameters:
 +  tao - the Tao solver context
@@ -712,7 +712,7 @@ PetscErrorCode TaoComputeJacobianEquality(Tao tao, Vec X, Mat J, Mat Jpre)
    TaoComputeJacobianInequality - Computes the Jacobian matrix that has been
    set with `TaoSetJacobianInequalityRoutine()`.
 
-   Collective on tao
+   Collective
 
    Input Parameters:
 +  tao - the Tao solver context
@@ -750,7 +750,7 @@ PetscErrorCode TaoComputeJacobianInequality(Tao tao, Vec X, Mat J, Mat Jpre)
    (and its inverse) of the constraint function with respect to the equality variables.
    Used only for PDE-constrained optimization.
 
-   Logically collective on tao
+   Logically collective
 
    Input Parameters:
 +  tao  - the Tao context
@@ -805,7 +805,7 @@ PetscErrorCode TaoSetJacobianEqualityRoutine(Tao tao, Mat J, Mat Jpre, PetscErro
    (and its inverse) of the constraint function with respect to the inequality variables.
    Used only for PDE-constrained optimization.
 
-   Logically collective on tao
+   Logically collective
 
    Input Parameters:
 +  tao  - the Tao context

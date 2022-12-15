@@ -1312,10 +1312,6 @@ requires a great deal of time.
 See :any:`sec_fdmatrix` and :any:`sec_matfactor` for discussions on performing graph coloring and computing graph reorderings to
 reduce fill in sparse matrix factorizations.
 
-.. raw:: html
-
-    <hr>
-
 .. bibliography:: /petsc.bib
    :filter: docname in docnames
    :keyprefix: KEYPREFIX-

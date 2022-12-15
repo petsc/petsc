@@ -66,9 +66,28 @@ PETSC_CUPM_DEFINE_STATIC_VARIABLE_VIA_CLASS_TYPENAME(cupmMemcpyKind_t, cupmMemcp
 PETSC_CUPM_DEFINE_STATIC_VARIABLE_VIA_CLASS_TYPENAME(cupmMemcpyKind_t, cupmMemcpyDeviceToDevice);
 PETSC_CUPM_DEFINE_STATIC_VARIABLE_VIA_CLASS_TYPENAME(cupmMemcpyKind_t, cupmMemcpyHostToHost);
 PETSC_CUPM_DEFINE_STATIC_VARIABLE_VIA_CLASS_TYPENAME(cupmMemcpyKind_t, cupmMemcpyDefault);
-PETSC_CUPM_DEFINE_STATIC_VARIABLE_VIA_CLASS_TYPENAME(cupmMemoryType_t, cupmMemoryTypeHost);
-PETSC_CUPM_DEFINE_STATIC_VARIABLE_VIA_CLASS_TYPENAME(cupmMemoryType_t, cupmMemoryTypeDevice);
-PETSC_CUPM_DEFINE_STATIC_VARIABLE_VIA_CLASS_TYPENAME(cupmMemoryType_t, cupmMemoryTypeManaged);
+
+PETSC_CUPM_DEFINE_STATIC_VARIABLE_MATCHING_SCHEME(MemoryTypeHost);
+PETSC_CUPM_DEFINE_STATIC_VARIABLE_MATCHING_SCHEME(MemoryTypeDevice);
+// A vile, vile, hack. Would use PETSC_CUPM_DEFINE_STATIC_VARIABLE_VIA_CLASS_TYPENAME() with
+// cupmMemoryType_t however MSVC chokes on this with:
+//
+// \src\sys\objects\device\impls\cupm\cupminterface.cxx(69): error C2371: 'cupmMemoryTypeHost':
+// redefinition; different basic types
+// \include\petsc/private/cupminterface.hpp(314): note: see declaration of 'cupmMemoryTypeHost'
+// \src\sys\objects\device\impls\cupm\cupminterface.cxx(70): error C2371:
+// 'cupmMemoryTypeDevice': redefinition; different basic types
+// \include\petsc/private/cupminterface.hpp(315): note: see declaration of 'cupmMemoryTypeDevice'
+// \src\sys\objects\device\impls\cupm\cupminterface.cxx(71): error C2371:
+// 'cupmMemoryTypeManaged': redefinition; different basic types
+// \include\petsc/private/cupminterface.hpp(316): note: see declaration of
+// 'cupmMemoryTypeManaged'
+//
+// the only way to get it to compile is to use
+// PETSC_CUPM_DEFINE_STATIC_VARIABLE_MATCHING_SCHEME() but since cupmMemoryTypeManaged is
+// secretly hipMemoryTypeUnified that doesn't work unless we fudge it with preprocessor
+#define hipMemoryTypeManaged hipMemoryTypeUnified
+PETSC_CUPM_DEFINE_STATIC_VARIABLE_MATCHING_SCHEME(MemoryTypeManaged);
 
 PETSC_CUPM_DEFINE_STATIC_VARIABLE_MATCHING_SCHEME(EventDisableTiming);
 PETSC_CUPM_DEFINE_STATIC_VARIABLE_VIA_EXACT_TYPENAME(int, cupmHostAllocDefault);

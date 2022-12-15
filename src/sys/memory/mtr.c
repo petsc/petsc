@@ -26,7 +26,7 @@ typedef struct _trSPACE {
   const char  *filename;
   const char  *functionname;
   PetscClassId classid;
-#if defined(PETSC_USE_DEBUG)
+#if defined(PETSC_USE_DEBUG) && !defined(PETSC_HAVE_THREADSAFETY)
   PetscStack stack;
 #endif
   struct _trSPACE *next, *prev;
@@ -212,7 +212,7 @@ PetscErrorCode PetscTrMallocDefault(size_t a, PetscBool clear, int lineno, const
   }
   TRfrags++;
 
-#if defined(PETSC_USE_DEBUG)
+#if defined(PETSC_USE_DEBUG) && !defined(PETSC_HAVE_THREADSAFETY)
   PetscCall(PetscStackCopy(&petscstack, &head->stack));
   /* fix the line number to where the malloc() was called, not the PetscFunctionBegin; */
   head->stack.line[head->stack.currentsize - 2] = lineno;
@@ -436,7 +436,7 @@ PetscErrorCode PetscTrReallocDefault(size_t len, int lineno, const char function
   }
   TRfrags++;
 
-#if defined(PETSC_USE_DEBUG)
+#if defined(PETSC_USE_DEBUG) && !defined(PETSC_HAVE_THREADSAFETY)
   PetscCall(PetscStackCopy(&petscstack, &head->stack));
   /* fix the line number to where the malloc() was called, not the PetscFunctionBegin; */
   head->stack.line[head->stack.currentsize - 2] = lineno;
@@ -468,7 +468,7 @@ PetscErrorCode PetscTrReallocDefault(size_t len, int lineno, const char function
 /*@C
     PetscMemoryView - Shows the amount of memory currently being used in a communicator.
 
-    Collective on viewer
+    Collective
 
     Input Parameters:
 +    viewer - the viewer that defines the communicator
@@ -637,7 +637,6 @@ PetscErrorCode PetscMallocPopMaximumUsage(int event, PetscLogDouble *mu)
   PetscFunctionReturn(0);
 }
 
-#if defined(PETSC_USE_DEBUG)
 /*@C
    PetscMallocGetStack - returns a pointer to the stack for the location in the program a call to `PetscMalloc()` was used to obtain that memory
 
@@ -655,21 +654,18 @@ PetscErrorCode PetscMallocPopMaximumUsage(int event, PetscLogDouble *mu)
 @*/
 PetscErrorCode PetscMallocGetStack(void *ptr, PetscStack **stack)
 {
+#if defined(PETSC_USE_DEBUG) && !defined(PETSC_HAVE_THREADSAFETY)
   TRSPACE *head;
 
   PetscFunctionBegin;
   head   = (TRSPACE *)(((char *)ptr) - HEADER_BYTES);
   *stack = &head->stack;
   PetscFunctionReturn(0);
-}
 #else
-PetscErrorCode PetscMallocGetStack(void *ptr, void **stack)
-{
-  PetscFunctionBegin;
   *stack = NULL;
-  PetscFunctionReturn(0);
-}
+  return 0;
 #endif
+}
 
 /*@C
    PetscMallocDump - Dumps the currently allocated memory blocks to a file. The information
@@ -722,7 +718,7 @@ PetscErrorCode PetscMallocDump(FILE *fp)
     PetscCall(PetscStrcmp(head->functionname, "PetscDLLibraryOpen", &isLib));
     if (!isLib) {
       fprintf(fp, "[%2d] %.0f bytes %s() at %s:%d\n", rank, (PetscLogDouble)(TRrequestedSize ? head->rsize : head->size), head->functionname, head->filename, head->lineno);
-#if defined(PETSC_USE_DEBUG)
+#if defined(PETSC_USE_DEBUG) && !defined(PETSC_HAVE_THREADSAFETY)
       PetscCall(PetscStackPrint(&head->stack, fp));
 #endif
     }

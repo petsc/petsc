@@ -268,7 +268,7 @@ PetscErrorCode MatPartitioningView_Parmetis(MatPartitioning part, PetscViewer vi
      MatPartitioningParmetisSetCoarseSequential - Use the sequential code to
          do the partitioning of the coarse grid.
 
-  Logically Collective on part
+  Logically Collective
 
   Input Parameter:
 .  part - the partitioning context
@@ -290,7 +290,7 @@ PetscErrorCode MatPartitioningParmetisSetCoarseSequential(MatPartitioning part)
      MatPartitioningParmetisSetRepartition - Repartition
      current mesh to rebalance computation.
 
-  Logically Collective on part
+  Logically Collective
 
   Input Parameter:
 .  part - the partitioning context
@@ -402,7 +402,7 @@ PETSC_EXTERN PetscErrorCode MatPartitioningCreate_Parmetis(MatPartitioning part)
                        between cells (the "dual" graph) and is suitable for partitioning with the `MatPartitioning object`. Use this to partition
                        cells of a mesh.
 
-   Collective on mesh
+   Collective
 
    Input Parameters:
 +     mesh - the graph that represents the coupling of the vertices of the mesh

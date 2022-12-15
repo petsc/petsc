@@ -398,7 +398,7 @@ PetscErrorCode KSPLSQRMonitorResidual_LSQR(KSP ksp, PetscInt n, PetscReal rnorm,
 /*@C
   KSPLSQRMonitorResidual - Prints the residual norm, as well as the normal equation residual norm, at each iteration of an iterative solver for the `KSPLSQR` solver
 
-  Collective on ksp
+  Collective
 
   Input Parameters:
 + ksp   - iterative context
@@ -454,7 +454,7 @@ PetscErrorCode KSPLSQRMonitorResidualDrawLG_LSQR(KSP ksp, PetscInt n, PetscReal 
 /*@C
   KSPLSQRMonitorResidualDrawLG - Plots the true residual norm at each iteration of an iterative solver for the `KSPLSQR` solver
 
-  Collective on ksp
+  Collective
 
   Input Parameters:
 + ksp   - iterative context
@@ -483,7 +483,7 @@ PetscErrorCode KSPLSQRMonitorResidualDrawLG(KSP ksp, PetscInt n, PetscReal rnorm
 /*@C
   KSPLSQRMonitorResidualDrawLGCreate - Creates the plotter for the `KSPLSQR` residual and normal equation residual norm
 
-  Collective on ksp
+  Collective
 
   Input Parameters:
 + viewer - The PetscViewer
@@ -548,7 +548,7 @@ PetscErrorCode KSPView_LSQR(KSP ksp, PetscViewer viewer)
 /*@C
    KSPLSQRConvergedDefault - Determines convergence of the `KSPLSQR` Krylov method.
 
-   Collective on ksp
+   Collective
 
    Input Parameters:
 +  ksp   - iterative context

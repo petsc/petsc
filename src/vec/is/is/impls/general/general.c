@@ -510,7 +510,7 @@ PetscErrorCode ISCreateGeneral(MPI_Comm comm, PetscInt n, const PetscInt idx[], 
 /*@
    ISGeneralSetIndices - Sets the indices for an `ISGENERAL` index set
 
-   Logically Collective on is
+   Logically Collective
 
    Input Parameters:
 +  is - the index set
@@ -569,7 +569,7 @@ PetscErrorCode ISGeneralSetIndices_General(IS is, PetscInt n, const PetscInt idx
 /*@
    ISGeneralSetIndicesFromMask - Sets the indices for an `ISGENERAL` index set using a boolean mask
 
-   Collective on is
+   Collective
 
    Input Parameters:
 +  is - the index set
@@ -644,7 +644,7 @@ static PetscErrorCode ISGeneralFilter_General(IS is, PetscInt start, PetscInt en
 /*@
    ISGeneralFilter - Remove all indices outside of [start, end) from an `ISGENERAL`
 
-   Collective on is
+   Collective
 
    Input Parameters:
 +  is - the index set

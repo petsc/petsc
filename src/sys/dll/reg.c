@@ -273,7 +273,7 @@ PETSC_EXTERN PetscErrorCode PetscFunctionListAdd_Private(PetscFunctionList *fl, 
 
   /* we didn't have a list */
   PetscCall(PetscFunctionListCreateNode_Private(fl, name, fnc));
-  if (PetscDefined(USE_DEBUG)) {
+  if (PetscDefined(USE_DEBUG) && !PetscDefined(HAVE_THREADSAFETY)) {
     const PetscFunctionList head = dlallhead;
 
     /* add this new list to list of all lists */

@@ -1,7 +1,7 @@
 
 #include <petsc/private/petscimpl.h> /*I  "petscsys.h"   I*/
 
-#if PetscDefined(USE_DEBUG)
+#if defined(PETSC_USE_DEBUG) && !defined(PETSC_HAVE_THREADSAFETY)
 PetscStack petscstack;
 #endif
 
@@ -74,7 +74,7 @@ PetscErrorCode PetscStackSAWsViewOff(void)
 }
 #endif /* PETSC_HAVE_SAWS */
 
-#if PetscDefined(USE_DEBUG)
+#if PetscDefined(USE_DEBUG) && !PetscDefined(HAVE_THREADSAFETY)
 PetscErrorCode PetscStackSetCheck(PetscBool check)
 {
   petscstack.check = check;

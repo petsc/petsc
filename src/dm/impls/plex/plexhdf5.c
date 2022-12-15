@@ -4,6 +4,9 @@
 #include <petsc/private/viewerhdf5impl.h>
 #include <petsclayouthdf5.h>
 
+/* Logging support */
+PetscLogEvent DMPLEX_DistributionView, DMPLEX_DistributionLoad;
+
 #if defined(PETSC_HAVE_HDF5)
 static PetscErrorCode PetscViewerParseVersion_Private(PetscViewer, const char[], DMPlexStorageVersion *);
 static PetscErrorCode PetscViewerCheckVersion_Private(PetscViewer, DMPlexStorageVersion);
@@ -532,6 +535,7 @@ static PetscErrorCode DMPlexDistributionView_HDF5_Private(DM dm, IS globalPointN
 {
   MPI_Comm           comm;
   PetscMPIInt        size, rank;
+  PetscInt           size_petsc_int;
   const char        *topologydm_name, *distribution_name;
   const PetscInt    *gpoint;
   PetscInt           pStart, pEnd, p;
@@ -549,7 +553,9 @@ static PetscErrorCode DMPlexDistributionView_HDF5_Private(DM dm, IS globalPointN
   PetscCall(DMPlexGetHDF5Name_Private(dm, &topologydm_name));
   PetscCall(DMPlexDistributionGetName(dm, &distribution_name));
   if (!distribution_name) PetscFunctionReturn(0);
-  PetscCall(PetscViewerHDF5WriteAttribute(viewer, NULL, "comm_size", PETSC_INT, (void *)&size));
+  PetscCall(PetscLogEventBegin(DMPLEX_DistributionView, viewer, 0, 0, 0));
+  size_petsc_int = (PetscInt)size;
+  PetscCall(PetscViewerHDF5WriteAttribute(viewer, NULL, "comm_size", PETSC_INT, (void *)&size_petsc_int));
   PetscCall(ISGetIndices(globalPointNumbers, &gpoint));
   PetscCall(DMPlexGetChart(dm, &pStart, &pEnd));
   PetscCall(PetscMalloc1(1, &chartSize));
@@ -582,6 +588,7 @@ static PetscErrorCode DMPlexDistributionView_HDF5_Private(DM dm, IS globalPointN
   PetscCall(ISDestroy(&ownersIS));
   PetscCall(ISDestroy(&gpointsIS));
   PetscCall(ISRestoreIndices(globalPointNumbers, &gpoint));
+  PetscCall(PetscLogEventEnd(DMPLEX_DistributionView, viewer, 0, 0, 0));
   PetscFunctionReturn(0);
 }
 
@@ -1662,7 +1669,8 @@ PetscErrorCode DMPlexLabelsLoad_HDF5_Internal(DM dm, PetscViewer viewer, PetscSF
 static PetscErrorCode DMPlexDistributionLoad_HDF5_Private(DM dm, PetscViewer viewer, PetscSF sf, PetscSF *distsf, DM *distdm)
 {
   MPI_Comm        comm;
-  PetscMPIInt     size, rank, dist_size;
+  PetscMPIInt     size, rank;
+  PetscInt        dist_size;
   const char     *distribution_name;
   PetscInt        p, lsize;
   IS              chartSizesIS, ownersIS, gpointsIS;
@@ -1678,6 +1686,7 @@ static PetscErrorCode DMPlexDistributionLoad_HDF5_Private(DM dm, PetscViewer vie
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
   PetscCall(DMPlexDistributionGetName(dm, &distribution_name));
   if (!distribution_name) PetscFunctionReturn(0);
+  PetscCall(PetscLogEventBegin(DMPLEX_DistributionLoad, viewer, 0, 0, 0));
   PetscCall(PetscViewerHDF5HasGroup(viewer, NULL, &has));
   if (!has) {
     char *full_group;
@@ -1686,7 +1695,7 @@ static PetscErrorCode DMPlexDistributionLoad_HDF5_Private(DM dm, PetscViewer vie
     PetscCheck(has, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Distribution %s cannot be found: HDF5 group %s not found in file", distribution_name, full_group);
   }
   PetscCall(PetscViewerHDF5ReadAttribute(viewer, NULL, "comm_size", PETSC_INT, NULL, (void *)&dist_size));
-  PetscCheck(dist_size == size, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Mismatching comm sizes: comm size of this session (%" PetscInt_FMT ") != comm size used for %s (%" PetscInt_FMT ")", size, distribution_name, dist_size);
+  PetscCheck(dist_size == (PetscInt)size, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Mismatching comm sizes: comm size of this session (%d) != comm size used for %s (%" PetscInt_FMT ")", size, distribution_name, dist_size);
   PetscCall(ISCreate(comm, &chartSizesIS));
   PetscCall(PetscObjectSetName((PetscObject)chartSizesIS, "chart_sizes"));
   PetscCall(ISCreate(comm, &ownersIS));
@@ -1745,7 +1754,7 @@ static PetscErrorCode DMPlexDistributionLoad_HDF5_Private(DM dm, PetscViewer vie
     PetscCall(PetscSFBcastEnd(*distsf, MPIU_2INT, buffer1, buffer2, MPI_REPLACE));
     if (PetscDefined(USE_DEBUG)) {
       for (p = 0; p < *chartSize; ++p) {
-        PetscCheck(buffer2[p].rank >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Found negative root rank %" PetscInt_FMT " at local point %" PetscInt_FMT " on rank %" PetscInt_FMT " when making migrationSF", buffer2[p].rank, p, rank);
+        PetscCheck(buffer2[p].rank >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Found negative root rank %" PetscInt_FMT " at local point %" PetscInt_FMT " on rank %d when making migrationSF", buffer2[p].rank, p, rank);
       }
     }
     PetscCall(PetscFree2(buffer0, buffer1));
@@ -1787,9 +1796,7 @@ static PetscErrorCode DMPlexDistributionLoad_HDF5_Private(DM dm, PetscViewer vie
     PetscCall(PetscSFBcastBegin(*distsf, MPIU_2INT, buffer1, buffer0, MPI_REPLACE));
     PetscCall(PetscSFBcastEnd(*distsf, MPIU_2INT, buffer1, buffer0, MPI_REPLACE));
     if (PetscDefined(USE_DEBUG)) {
-      for (p = 0; p < *chartSize; ++p) {
-        PetscCheck(buffer0[p].rank >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Found negative root rank %" PetscInt_FMT " at local point %" PetscInt_FMT " on rank %" PetscInt_FMT " when making pointSF", buffer0[p].rank, p, rank);
-      }
+      for (p = 0; p < *chartSize; ++p) { PetscCheck(buffer0[p].rank >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Found negative root rank %" PetscInt_FMT " at local point %" PetscInt_FMT " on rank %d when making pointSF", buffer0[p].rank, p, rank); }
     }
     PetscCall(PetscMalloc1(nleaves, &ilocal));
     PetscCall(PetscMalloc1(nleaves, &iremote));
@@ -1827,6 +1834,7 @@ static PetscErrorCode DMPlexDistributionLoad_HDF5_Private(DM dm, PetscViewer vie
   PetscCall(DMPlexSetOverlap_Plex(*distdm, NULL, DMPLEX_OVERLAP_MANUAL));
   PetscCall(DMPlexDistributeSetDefault(*distdm, PETSC_FALSE));
   PetscCall(DMPlexReorderSetDefault(*distdm, DMPLEX_REORDER_DEFAULT_FALSE));
+  PetscCall(PetscLogEventEnd(DMPLEX_DistributionLoad, viewer, 0, 0, 0));
   PetscFunctionReturn(0);
 }
 

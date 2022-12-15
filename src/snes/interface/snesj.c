@@ -5,7 +5,7 @@
 /*@C
    SNESComputeJacobianDefault - Computes the Jacobian using finite differences.
 
-   Collective on snes
+   Collective
 
    Input Parameters:
 +  snes - the `SNES` context

@@ -22,9 +22,9 @@ static PetscErrorCode TaoSolve_ALMM(Tao tao)
     if (tao->ineq_constrained) {
       PetscCall(VecZeroEntries(auglag->Ps));
       PetscCall(TaoALMMCombinePrimal_Private(tao, auglag->Px, auglag->Ps, auglag->P));
-      PetscCall(VecZeroEntries(auglag->Yi));
+      PetscCall(VecSet(auglag->Yi, 1.0));
     }
-    if (tao->eq_constrained) PetscCall(VecZeroEntries(auglag->Ye));
+    if (tao->eq_constrained) PetscCall(VecSet(auglag->Ye, 1.0));
   }
 
   /* compute initial nonlinear Lagrangian and its derivatives */
@@ -66,7 +66,9 @@ static PetscErrorCode TaoSolve_ALMM(Tao tao)
     PetscCall(PetscInfo(tao, "Subsolver tolerance: ||G|| <= %e\n", (double)auglag->gtol));
     PetscCall(TaoSetTolerances(auglag->subsolver, auglag->gtol, 0.0, 0.0));
     /* solve the bound-constrained or unconstrained subproblem */
+    PetscCall(VecCopy(auglag->P, auglag->subsolver->solution));
     PetscCall(TaoSolve(auglag->subsolver));
+    PetscCall(VecCopy(auglag->subsolver->solution, auglag->P));
     PetscCall(TaoGetConvergedReason(auglag->subsolver, &reason));
     tao->ksp_its += auglag->subsolver->ksp_its;
     if (reason != TAO_CONVERGED_GATOL) PetscCall(PetscInfo(tao, "Subsolver failed to converge, reason: %s\n", TaoConvergedReasons[reason]));
@@ -212,6 +214,9 @@ static PetscErrorCode TaoSetUp_ALMM(Tao tao)
     if (!auglag->C) auglag->C = auglag->Ce;
     if (!auglag->Y) auglag->Y = auglag->Ye;
   }
+  /* create tao primal solution and gradient to interface with subsolver */
+  PetscCall(VecDuplicate(auglag->P, &auglag->Psub));
+  PetscCall(VecDuplicate(auglag->P, &auglag->G));
   /* initialize parameters */
   if (auglag->type == TAO_ALMM_PHR) {
     auglag->mu_fac = 10.0;
@@ -235,7 +240,7 @@ static PetscErrorCode TaoSetUp_ALMM(Tao tao)
     break;
   }
   /* set up the subsolver */
-  PetscCall(TaoSetSolution(auglag->subsolver, auglag->P));
+  PetscCall(TaoSetSolution(auglag->subsolver, auglag->Psub));
   PetscCall(TaoSetObjective(auglag->subsolver, TaoALMMSubsolverObjective_Private, (void *)auglag));
   PetscCall(TaoSetObjectiveAndGradient(auglag->subsolver, NULL, TaoALMMSubsolverObjectiveAndGradient_Private, (void *)auglag));
   if (tao->bounded) {
@@ -273,7 +278,6 @@ static PetscErrorCode TaoSetUp_ALMM(Tao tao)
     PetscCall(TaoSetVariableBounds(auglag->subsolver, auglag->PL, auglag->PU));
   }
   PetscCall(TaoSetUp(auglag->subsolver));
-  auglag->G = auglag->subsolver->gradient;
 
   PetscFunctionReturn(0);
 }
@@ -284,21 +288,22 @@ static PetscErrorCode TaoDestroy_ALMM(Tao tao)
 
   PetscFunctionBegin;
   PetscCall(TaoDestroy(&auglag->subsolver));
+  PetscCall(VecDestroy(&auglag->Psub));
+  PetscCall(VecDestroy(&auglag->G));
   if (tao->setupcalled) {
-    PetscCall(VecDestroy(&auglag->Xwork)); /* opt work */
+    PetscCall(VecDestroy(&auglag->Xwork));
     if (tao->eq_constrained) {
       PetscCall(VecDestroy(&auglag->Ye));     /* equality multipliers */
       PetscCall(VecDestroy(&auglag->Cework)); /* equality work vector */
     }
     if (tao->ineq_constrained) {
       PetscCall(VecDestroy(&auglag->Ps));     /* slack vars */
-      auglag->Parr[0] = NULL;                 /* clear pointer to tao->solution, will be destroyed by TaoDestroy() shell */
       PetscCall(PetscFree(auglag->Parr));     /* array of primal vectors */
       PetscCall(VecDestroy(&auglag->LgradS)); /* slack grad */
       PetscCall(VecDestroy(&auglag->Cizero)); /* zero vector for pointwise max */
       PetscCall(VecDestroy(&auglag->Yi));     /* inequality multipliers */
       PetscCall(VecDestroy(&auglag->Ciwork)); /* inequality work vector */
-      PetscCall(VecDestroy(&auglag->P));      /* combo primal */
+      PetscCall(VecDestroy(&auglag->P));      /* combo primal solution */
       PetscCall(ISDestroy(&auglag->Pis[0]));  /* index set for X inside P */
       PetscCall(ISDestroy(&auglag->Pis[1]));  /* index set for S inside P */
       PetscCall(PetscFree(auglag->Pis));      /* array of P index sets */
@@ -378,7 +383,7 @@ static PetscErrorCode TaoSetFromOptions_ALMM(Tao tao, PetscOptionItems *PetscOpt
 . -tao_almm_ye_max <real>        - maximum safeguard for equality multiplier updates (default: 1.e20)
 . -tao_almm_yi_min <real>        - minimum safeguard for inequality multiplier updates (default: -1.e20)
 . -tao_almm_yi_max <real>        - maximum safeguard for inequality multiplier updates (default: 1.e20)
-- -tao_almm_type <classic,phr>   - change formulation of the augmented Lagrangian merit function for the subproblem (default: classic)
+- -tao_almm_type <phr,classic>   - change formulation of the augmented Lagrangian merit function for the subproblem (default: phr)
 
   Level: beginner
 
@@ -388,15 +393,14 @@ static PetscErrorCode TaoSetFromOptions_ALMM(Tao tao, PetscOptionItems *PetscOpt
 
   Two formulations are offered for the subproblem: canonical Hestenes-Powell augmented Lagrangian with slack
   variables for inequality constraints, and a slack-less Powell-Hestenes-Rockafellar (PHR) formulation utilizing a
-  pointwise max() penalty on inequality constraints. The canonical augmented Lagrangian formulation typically
-  converges faster for most problems. However, PHR may be desirable for problems featuring a large number
-  of inequality constraints because it avoids inflating the size of the subproblem with slack variables.
+  pointwise max() penalty on inequality constraints. The canonical augmented Lagrangian formulation may converge
+  faster for smaller problems but is highly susceptible to poor step lengths in the subproblem due to the positivity
+  constraint on slack variables. PHR avoids this issue by eliminating the slack variables entirely, and is highly
+  desirable for problems with a large number of inequality constraints.
 
-  The subproblem is solved using a nested first-order TAO solver. The user can retrieve a pointer to
-  the subsolver via `TaoALMMGetSubsolver()` or pass command line arguments to it using the
-  "-tao_almm_subsolver_" prefix. Currently, `TAOALMM` does not support second-order methods for the
-  subproblem. It is also highly recommended that the subsolver chosen by the user utilize a trust-region
-  strategy for globalization (default: `TAOBQNKTR`) especially if the outer problem features bound constraints.
+  The subproblem is solved using a nested first-order TAO solver (default: `TAOBQNLS`). The user can retrieve a
+  pointer to the subsolver via `TaoALMMGetSubsolver()` or pass command line arguments to it using the
+  "-tao_almm_subsolver_" prefix. Currently, `TAOALMM` does not support second-order methods for the subproblem.
 
 .vb
   while unconverged
@@ -455,11 +459,11 @@ PETSC_EXTERN PetscErrorCode TaoCreate_ALMM(Tao tao)
   auglag->gtol        = auglag->gtol0;
 
   auglag->sub_obj = TaoALMMComputeAugLagAndGradient_Private;
-  auglag->type    = TAO_ALMM_CLASSIC;
+  auglag->type    = TAO_ALMM_PHR;
   auglag->info    = PETSC_FALSE;
 
   PetscCall(TaoCreate(PetscObjectComm((PetscObject)tao), &auglag->subsolver));
-  PetscCall(TaoSetType(auglag->subsolver, TAOBQNKTR));
+  PetscCall(TaoSetType(auglag->subsolver, TAOBQNLS));
   PetscCall(TaoSetTolerances(auglag->subsolver, auglag->gtol, 0.0, 0.0));
   PetscCall(TaoSetMaximumIterations(auglag->subsolver, 1000));
   PetscCall(TaoSetMaximumFunctionEvaluations(auglag->subsolver, 10000));
@@ -558,7 +562,7 @@ static PetscErrorCode TaoALMMComputeOptimalityNorms_Private(Tao tao)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode TaoALMMEvaluateIterate_Private(Tao tao, Vec P)
+static PetscErrorCode TaoALMMEvaluateIterate_Private(Tao tao)
 {
   TAO_ALMM *auglag = (TAO_ALMM *)tao->data;
 
@@ -607,7 +611,7 @@ static PetscErrorCode TaoALMMComputePHRLagAndGradient_Private(Tao tao)
   PetscReal eq_norm = 0.0, ineq_norm = 0.0;
 
   PetscFunctionBegin;
-  PetscCall(TaoALMMEvaluateIterate_Private(tao, auglag->P));
+  PetscCall(TaoALMMEvaluateIterate_Private(tao));
   if (tao->eq_constrained) {
     /* Ce_work = mu*(Ce + Ye/mu) */
     PetscCall(VecWAXPY(auglag->Cework, 1.0 / auglag->mu, auglag->Ye, auglag->Ce));
@@ -647,16 +651,16 @@ static PetscErrorCode TaoALMMComputeAugLagAndGradient_Private(Tao tao)
   PetscReal yeTce = 0.0, yiTcims = 0.0, ceTce = 0.0, cimsTcims = 0.0;
 
   PetscFunctionBegin;
-  PetscCall(TaoALMMEvaluateIterate_Private(tao, auglag->P));
+  PetscCall(TaoALMMEvaluateIterate_Private(tao));
   if (tao->eq_constrained) {
     /* compute scalar contributions */
     PetscCall(VecDot(auglag->Ye, auglag->Ce, &yeTce));
     PetscCall(VecDot(auglag->Ce, auglag->Ce, &ceTce));
     /* dL/dX += ye^T Ae */
     PetscCall(MatMultTransposeAdd(auglag->Ae, auglag->Ye, auglag->LgradX, auglag->LgradX));
-    /* dL/dX += mu * ce^T Ae */
+    /* dL/dX += 0.5 * mu * ce^T Ae */
     PetscCall(MatMultTranspose(auglag->Ae, auglag->Ce, auglag->Xwork));
-    PetscCall(VecAXPY(auglag->LgradX, auglag->mu, auglag->Xwork));
+    PetscCall(VecAXPY(auglag->LgradX, 0.5 * auglag->mu, auglag->Xwork));
   }
   if (tao->ineq_constrained) {
     /* compute scalar contributions */
@@ -664,9 +668,9 @@ static PetscErrorCode TaoALMMComputeAugLagAndGradient_Private(Tao tao)
     PetscCall(VecDot(auglag->Ci, auglag->Ci, &cimsTcims));
     /* dL/dX += yi^T Ai */
     PetscCall(MatMultTransposeAdd(auglag->Ai, auglag->Yi, auglag->LgradX, auglag->LgradX));
-    /* dL/dX += mu * (ci - s)^T Ai */
+    /* dL/dX += 0.5 * mu * (ci - s)^T Ai */
     PetscCall(MatMultTranspose(auglag->Ai, auglag->Ci, auglag->Xwork));
-    PetscCall(VecAXPY(auglag->LgradX, auglag->mu, auglag->Xwork));
+    PetscCall(VecAXPY(auglag->LgradX, 0.5 * auglag->mu, auglag->Xwork));
     /* dL/dS = -[yi + mu*(ci - s)] */
     PetscCall(VecWAXPY(auglag->LgradS, auglag->mu, auglag->Ci, auglag->Yi));
     PetscCall(VecScale(auglag->LgradS, -1.0));

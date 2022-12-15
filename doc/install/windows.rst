@@ -261,12 +261,12 @@ applications that are compatible with the Microsoft and Intel compilers.
 
 #. Configuring:
 
-   The two difficulties here are: 1) make sure PETSc configure picks up the proper Python installation, as there are more than one available in a MSYS2 MinGW shell and 2) tell PETSc where is MS-MPI ``mpiexec``. We also recommend not to use shared libraries as it is easier to create standalone binaries that way. Since Sowing is broken with MinGW compilers, we need to disable Fortran bindings.
+   The two difficulties here are: 1) make sure PETSc configure picks up the proper Python installation, as there are more than one available in a MSYS2 MinGW shell and 2) tell PETSc where is MS-MPI ``mpiexec``. We also recommend not to use shared libraries as it is easier to create standalone binaries that way.
 
    .. code-block:: console
 
       $  /usr/bin/python ./configure --with-mpiexec='/C/Program\ Files/Microsoft\ MPI/Bin/mpiexec' \
-      --with-shared-libraries=0 --with-fortran-bindings=0
+      --with-shared-libraries=0
 
 .. rubric:: Footnotes
 

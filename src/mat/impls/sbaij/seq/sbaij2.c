@@ -9,7 +9,7 @@
 PetscErrorCode MatIncreaseOverlap_SeqSBAIJ(Mat A, PetscInt is_max, IS is[], PetscInt ov)
 {
   Mat_SeqSBAIJ   *a = (Mat_SeqSBAIJ *)A->data;
-  PetscInt        brow, i, j, k, l, mbs, n, *nidx, isz, bcol, bcol_max, start, end, *ai, *aj, bs, *nidx2;
+  PetscInt        brow, i, j, k, l, mbs, n, *nidx, isz, bcol, bcol_max, start, end, *ai, *aj, bs;
   const PetscInt *idx;
   PetscBT         table_out, table_in;
 
@@ -21,7 +21,6 @@ PetscErrorCode MatIncreaseOverlap_SeqSBAIJ(Mat A, PetscInt is_max, IS is[], Pets
   bs  = A->rmap->bs;
   PetscCall(PetscBTCreate(mbs, &table_out));
   PetscCall(PetscMalloc1(mbs + 1, &nidx));
-  PetscCall(PetscMalloc1(A->rmap->N + 1, &nidx2));
   PetscCall(PetscBTCreate(mbs, &table_in));
 
   for (i = 0; i < is_max; i++) { /* for each is */
@@ -77,16 +76,10 @@ PetscErrorCode MatIncreaseOverlap_SeqSBAIJ(Mat A, PetscInt is_max, IS is[], Pets
         }
       }
     } /* for each overlap */
-
-    /* expand the Index Set */
-    for (j = 0; j < isz; j++) {
-      for (k = 0; k < bs; k++) nidx2[j * bs + k] = nidx[j] * bs + k;
-    }
-    PetscCall(ISCreateGeneral(PETSC_COMM_SELF, isz * bs, nidx2, PETSC_COPY_VALUES, is + i));
-  }
+    PetscCall(ISCreateBlock(PETSC_COMM_SELF, bs, isz, nidx, PETSC_COPY_VALUES, is + i));
+  } /* for each is */
   PetscCall(PetscBTDestroy(&table_out));
   PetscCall(PetscFree(nidx));
-  PetscCall(PetscFree(nidx2));
   PetscCall(PetscBTDestroy(&table_in));
   PetscFunctionReturn(0);
 }

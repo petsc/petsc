@@ -115,12 +115,14 @@ PetscErrorCode DMInitializePackage(void)
   PetscCall(PetscLogEventRegister("DMPlexRebalance", DM_CLASSID, &DMPLEX_RebalanceSharedPoints));
   PetscCall(PetscLogEventRegister("DMPlexLocatePoints", DM_CLASSID, &DMPLEX_LocatePoints));
   PetscCall(PetscLogEventRegister("DMPlexTopologyView", DM_CLASSID, &DMPLEX_TopologyView));
+  PetscCall(PetscLogEventRegister("DMPlexDistributionView", DM_CLASSID, &DMPLEX_DistributionView));
   PetscCall(PetscLogEventRegister("DMPlexLabelsView", DM_CLASSID, &DMPLEX_LabelsView));
   PetscCall(PetscLogEventRegister("DMPlexCoordinatesView", DM_CLASSID, &DMPLEX_CoordinatesView));
   PetscCall(PetscLogEventRegister("DMPlexSectionView", DM_CLASSID, &DMPLEX_SectionView));
   PetscCall(PetscLogEventRegister("DMPlexGlobalVectorView", DM_CLASSID, &DMPLEX_GlobalVectorView));
   PetscCall(PetscLogEventRegister("DMPlexLocalVectorView", DM_CLASSID, &DMPLEX_LocalVectorView));
   PetscCall(PetscLogEventRegister("DMPlexTopologyLoad", DM_CLASSID, &DMPLEX_TopologyLoad));
+  PetscCall(PetscLogEventRegister("DMPlexDistributionLoad", DM_CLASSID, &DMPLEX_DistributionLoad));
   PetscCall(PetscLogEventRegister("DMPlexLabelsLoad", DM_CLASSID, &DMPLEX_LabelsLoad));
   PetscCall(PetscLogEventRegister("DMPlexCoordinatesLoad", DM_CLASSID, &DMPLEX_CoordinatesLoad));
   PetscCall(PetscLogEventRegister("DMPlexSectionLoad", DM_CLASSID, &DMPLEX_SectionLoad));

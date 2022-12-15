@@ -5,19 +5,19 @@ Using MATLAB with PETSc
 
 There are three basic ways to use MATLAB with PETSc:
 
-#. (:any:`sec_matlabdump`) dumping files to be read into
+#. :any:`sec_matlabdump` into files to be read into
    MATLAB,
 
-#. (:any:`sec_matlabsocket`) automatically sending data from
+#. :any:`sec_matlabsocket`  from
    a running PETSc program to a MATLAB process where you may
    interactively type MATLAB commands (or run scripts), and
 
-#. (:any:`sec_matlabengine`) automatically sending data back
-   and forth between PETSc and MATLAB where MATLAB commands are issued
-   not interactively but from a script or the PETSc program (this uses
+#. :any:`sec_matlabengine` to send data back
+   and forth between PETSc and MATLAB where MATLAB commands are issued,
+   not interactively, but from a script or the PETSc program (this uses
    the MATLAB Engine).
 
-For the latter two approaches one must ``./configure`` PETSc with the argument ``--with-matlab [-with-matlab-dir=matlab_root_directory]``.
+For the latter two approaches one must ``./configure`` PETSc with the argument ``--with-matlab [--with-matlab-dir=matlab_root_directory]``.
 
 .. _sec_matlabdump:
 
@@ -37,7 +37,7 @@ This causes the PETSc program to print the vectors and matrices every
 time ``VecAssemblyEnd()`` or ``MatAssemblyEnd()`` are called. To provide
 finer control over when and what vectors and matrices are dumped one can
 use the ``VecView()`` and ``MatView()`` functions with a viewer type of
-ASCII (see ``PetscViewerASCIIOpen()``, ``PETSC_VIEWER_STDOUT_WORLD``,
+``PETSCVIEWERASCII`` (see ``PetscViewerASCIIOpen()``, ``PETSC_VIEWER_STDOUT_WORLD``,
 ``PETSC_VIEWER_STDOUT_SELF``, or ``PETSC_VIEWER_STDOUT_(MPI_Comm)``).
 Before calling the viewer set the output type with, for example,
 
@@ -72,7 +72,7 @@ to dump both a PETSc binary file and a corresponding ``.info`` file
 which ``PetscReadBinaryMatlab.m`` will use to format the binary file in
 more complex cases, such as using a ``DMDA``. For an example, see
 `DM Tutorial ex7 <PETSC_DOC_OUT_ROOT_PLACEHOLDER/src/dm/tutorials/ex7.c.html>`__.
-In MATLAB (R2015b), one may then generate a useful structure. For
+In MATLAB one may then generate a useful structure. For
 example:
 
 .. code-block:: matlab
@@ -195,18 +195,17 @@ There is a short-cut to starting the MATLAB engine with
 ``PETSC_MATLAB_ENGINE_(MPI_Comm)``.
 
 
-If you are running PETSc on a cluster (or machine) that does not have a license for MATLAB, you might able to run MATLAB on the
+If you are running PETSc on a cluster (or machine) that does not have a license for MATLAB, you might be able to run MATLAB on the
 ``head node`` of the cluster or some other machine accessible to the cluster using the ``-matlab_engine_host hostname`` option.
 
 Licensing the MATLAB Compute Engine on a cluster
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-To activate MATLAB on head node which does not have access to the internet.
-(see also: https://www.mathworks.com/matlabcentral/answers/259627-how-do-i-activate-matlab-or-other-mathworks-products-without-an-internet-connection)
+To activate MATLAB on head node which does not have access to the internet. [#matlabsection_footnote]_
 
 First ssh into the head node using the command:    ssh node_name
 
-Obtain the Host Id using the command:     ip addr | grep ether      (More details found on:  http://www.mathworks.com/matlabcentral/answers/101892)
+Obtain the Host Id using the command:     ip addr | grep ether     [#matlabsection_footnote2]_ 
 You will see something like this:  link/ether xx:xx:xx:xx:xx:xx ABC yy:yy:yy:yy:yy:yy
 Note the value: xx:xx:xx:xx:xx:xx
 
@@ -233,3 +232,9 @@ Browse and locate the license file.
 .. figure:: /images/docs/manual/mathworks-account-5.png
 
 MATLAB is activated and ready to use.
+
+.. rubric:: Footnotes
+
+.. [#matlabsection_footnote] https://www.mathworks.com/matlabcentral/answers/259627-how-do-i-activate-matlab-or-other-mathworks-products-without-an-internet-connection
+
+.. [#matlabsection_footnote2] http://www.mathworks.com/matlabcentral/answers/101892

@@ -20,7 +20,7 @@ PetscBool        petscindebugger     = PETSC_FALSE;
 /*@C
    PetscSetDebugTerminal - Sets the terminal to use for debugging.
 
-   Not Collective
+   Not Collective; No Fortran Support
 
    Input Parameter:
 .  terminal - name of terminal and any flags required to execute a program.
@@ -41,9 +41,6 @@ PetscBool        petscindebugger     = PETSC_FALSE;
 
    The default on Apple is Terminal, on other systems the default is xterm
 
-   Fortran Note:
-   This routine is not supported in Fortran.
-
 .seealso: `PetscSetDebugger()`
 @*/
 PetscErrorCode PetscSetDebugTerminal(const char terminal[])
@@ -60,7 +57,7 @@ PetscErrorCode PetscSetDebugTerminal(const char terminal[])
 /*@C
    PetscSetDebugger - Sets options associated with the debugger.
 
-   Not Collective
+   Not Collective; No Fortran Support
 
    Input Parameters:
 +  debugger - name of debugger, which should be in your path,
@@ -73,9 +70,6 @@ PetscErrorCode PetscSetDebugTerminal(const char terminal[])
             than one MPI process.)
 
    Level: developer
-
-   Fortran Note:
-   This routine is not supported in Fortran.
 
 .seealso: `PetscAttachDebugger()`, `PetscAttachDebuggerErrorHandler()`, `PetscSetDebugTerminal()`
 @*/

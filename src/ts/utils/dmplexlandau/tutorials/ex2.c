@@ -619,21 +619,19 @@ static PetscErrorCode ProcessREOptions(REctx *rectx, const LandauCtx *ctx, DM dm
 
 int main(int argc, char **argv)
 {
-  DM         pack;
-  Vec        X;
-  PetscInt   dim = 2, nDMs;
-  TS         ts;
-  Mat        J;
-  PetscDS    prob;
-  LandauCtx *ctx;
-  REctx     *rectx;
-#if defined PETSC_USE_LOG
+  DM          pack;
+  Vec         X;
+  PetscInt    dim = 2, nDMs;
+  TS          ts;
+  Mat         J;
+  PetscDS     prob;
+  LandauCtx  *ctx;
+  REctx      *rectx;
+  PetscMPIInt rank;
+#if defined(PETSC_USE_LOG)
   PetscLogStage stage;
 #endif
-  PetscMPIInt rank;
-#if defined(PETSC_HAVE_THREADSAFETY)
-  double starttime, endtime;
-#endif
+
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
@@ -708,14 +706,7 @@ int main(int argc, char **argv)
   /* go */
   PetscCall(PetscLogStageRegister("Solve", &stage));
   ctx->stage = 0; // lets not use this stage
-#if defined(PETSC_HAVE_THREADSAFETY)
-  ctx->stage = 1; // not set with thread safety
-#endif
-  //PetscCall(TSSetSolution(ts,X));
   PetscCall(PetscLogStagePush(stage));
-#if defined(PETSC_HAVE_THREADSAFETY)
-  starttime = MPI_Wtime();
-#endif
 #if defined(PETSC_HAVE_CUDA_NVTX)
   nvtxRangePushA("ex2-TSSolve-warm");
 #endif
@@ -724,10 +715,6 @@ int main(int argc, char **argv)
   nvtxRangePop();
 #endif
   PetscCall(PetscLogStagePop());
-#if defined(PETSC_HAVE_THREADSAFETY)
-  endtime = MPI_Wtime();
-  ctx->times[LANDAU_EX2_TSSOLVE] += (endtime - starttime);
-#endif
   /* clean up */
   PetscCall(DMPlexLandauDestroyVelocitySpace(&pack));
   PetscCall(TSDestroy(&ts));

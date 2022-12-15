@@ -5,7 +5,7 @@
 /*@C
     PetscViewerSAWsOpen - Opens an SAWs `PetscViewer`.
 
-    Collective
+    Collective; No Fortran Support
 
     Input Parameters:
 .   comm - the MPI communicator
@@ -21,9 +21,6 @@
 
     Level: advanced
 
-    Fortran Note:
-    This routine is not supported in Fortran.
-
     Note:
     Unlike other viewers that only access the object being viewed on the call to XXXView(object,viewer) the SAWs viewer allows
     one to view the object asynchronously as the program continues to run. One can remove SAWs access to the object with a call to
@@ -31,7 +28,7 @@
 
     Information about the SAWs is available via https://bitbucket.org/saws/saws
 
-.seealso: `PetscViewerDestroy()`, `PetscViewerStringSPrintf()`, `PETSC_VIEWER_SAWS_()`, `PetscObjectSAWsBlock()`,
+.seealso: [](sec_viewers), `PetscViewerDestroy()`, `PetscViewerStringSPrintf()`, `PETSC_VIEWER_SAWS_()`, `PetscObjectSAWsBlock()`,
           `PetscObjectSAWsViewOff()`, `PetscObjectSAWsTakeAccess()`, `PetscObjectSAWsGrantAccess()`
 @*/
 PetscErrorCode PetscViewerSAWsOpen(MPI_Comm comm, PetscViewer *lab)
@@ -45,7 +42,7 @@ PetscErrorCode PetscViewerSAWsOpen(MPI_Comm comm, PetscViewer *lab)
 /*@C
    PetscObjectViewSAWs - View the base portion of any object with an SAWs viewer
 
-   Collective on obj
+   Collective
 
    Input Parameters:
 +  obj - the `PetscObject` variable. Thus must be cast with a (`PetscObject`), for example, `PetscObjectSetName`((`PetscObject`)mat,name);
@@ -60,7 +57,7 @@ PetscErrorCode PetscViewerSAWsOpen(MPI_Comm comm, PetscViewer *lab)
    Developer Note:
    Currently this is called only on rank zero of `PETSC_COMM_WORLD`
 
-.seealso: `PetscViewer`, `PetscObject`, `PetscObjectSetName()`, `PetscObjectSAWsViewOff()`
+.seealso: [](sec_viewers), `PetscViewer`, `PetscObject`, `PetscObjectSetName()`, `PetscObjectSAWsViewOff()`
 @*/
 PetscErrorCode PetscObjectViewSAWs(PetscObject obj, PetscViewer viewer)
 {

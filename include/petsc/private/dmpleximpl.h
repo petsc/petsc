@@ -47,12 +47,14 @@ PETSC_EXTERN PetscLogEvent DMPLEX_BuildFromCellList;
 PETSC_EXTERN PetscLogEvent DMPLEX_BuildCoordinatesFromCellList;
 PETSC_EXTERN PetscLogEvent DMPLEX_LocatePoints;
 PETSC_EXTERN PetscLogEvent DMPLEX_TopologyView;
+PETSC_EXTERN PetscLogEvent DMPLEX_DistributionView;
 PETSC_EXTERN PetscLogEvent DMPLEX_LabelsView;
 PETSC_EXTERN PetscLogEvent DMPLEX_CoordinatesView;
 PETSC_EXTERN PetscLogEvent DMPLEX_SectionView;
 PETSC_EXTERN PetscLogEvent DMPLEX_GlobalVectorView;
 PETSC_EXTERN PetscLogEvent DMPLEX_LocalVectorView;
 PETSC_EXTERN PetscLogEvent DMPLEX_TopologyLoad;
+PETSC_EXTERN PetscLogEvent DMPLEX_DistributionLoad;
 PETSC_EXTERN PetscLogEvent DMPLEX_LabelsLoad;
 PETSC_EXTERN PetscLogEvent DMPLEX_CoordinatesLoad;
 PETSC_EXTERN PetscLogEvent DMPLEX_SectionLoad;
@@ -511,7 +513,7 @@ static inline void DMPlex_MultTransposeReal_Internal(const PetscReal A[], PetscI
   for (j = 0; j < n; ++j) {
     const PetscInt l = j * ldx;
     y[l]             = 0;
-    for (i = 0; i < m; ++i) y[l] += A[j * n + i] * z[i];
+    for (i = 0; i < m; ++i) y[l] += A[j * m + i] * z[i];
   }
   (void)PetscLogFlops(2 * m * n);
 }

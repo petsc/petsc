@@ -22,7 +22,7 @@ PetscClassId PETSC_RANDOM_CLASSID;
    PetscRandomDestroy - Destroys a context that has been formed by
    `PetscRandomCreate()`.
 
-   Collective on r
+   Collective
 
    Input Parameter:
 .  r  - the random number generator context
@@ -107,7 +107,7 @@ PetscErrorCode PetscRandomSetSeed(PetscRandom r, unsigned long seed)
 /*
   PetscRandomSetTypeFromOptions_Private - Sets the type of random generator from user options. Defaults to type PETSCRAND48 or PETSCRAND.
 
-  Collective on rnd
+  Collective
 
   Input Parameter:
 . rnd - The random number generator context
@@ -142,7 +142,7 @@ static PetscErrorCode PetscRandomSetTypeFromOptions_Private(PetscRandom rnd, Pet
 /*@
   PetscRandomSetFromOptions - Configures the random number generator from the options database.
 
-  Collective on rnd
+  Collective
 
   Input Parameter:
 . rnd - The random number generator context
@@ -203,7 +203,7 @@ PetscErrorCode PetscRandomSetFromOptions(PetscRandom rnd)
 /*@C
    PetscRandomViewFromOptions - View a `PetscRandom` object based on the options database
 
-   Collective on A
+   Collective
 
    Input Parameters:
 +  A - the  random number generator context
@@ -224,7 +224,7 @@ PetscErrorCode PetscRandomViewFromOptions(PetscRandom A, PetscObject obj, const 
 /*@C
    PetscRandomView - Views a random number generator object.
 
-   Collective on rnd
+   Collective
 
    Input Parameters:
 +  rnd - The random number generator context

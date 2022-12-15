@@ -441,7 +441,7 @@ PetscErrorCode DMTSSetRHSFunctionLocal(DM dm, PetscErrorCode (*func)(DM, PetscRe
 /*@C
   DMTSCreateRHSMassMatrix - This creates the mass matrix associated with the given `DM`, and a solver to invert it, and stores them in the `DM` context.
 
-  Collective on dm
+  Collective
 
   Input Parameters:
 . dm   - `DM` providing the mass matrix
@@ -476,7 +476,7 @@ PetscErrorCode DMTSCreateRHSMassMatrix(DM dm)
 /*@C
   DMTSCreateRHSMassMatrixLumped - This creates the lumped mass matrix associated with the given `DM`, and a solver to invert it, and stores them in the `DM` context.
 
-  Collective on dm
+  Collective
 
   Input Parameters:
 . dm   - `DM` providing the mass matrix

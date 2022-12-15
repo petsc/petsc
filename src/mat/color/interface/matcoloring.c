@@ -38,7 +38,7 @@ PetscErrorCode MatColoringRegister(const char sname[], PetscErrorCode (*function
 /*@
    MatColoringCreate - Creates a matrix coloring context.
 
-   Collective on m
+   Collective
 
    Input Parameters:
 .  comm - MPI communicator
@@ -94,7 +94,7 @@ PetscErrorCode MatColoringCreate(Mat m, MatColoring *mcptr)
 /*@
    MatColoringDestroy - Destroys the matrix coloring context
 
-   Collective on mc
+   Collective
 
    Input Parameter:
 .  mc - the `MatColoring` context
@@ -121,7 +121,7 @@ PetscErrorCode MatColoringDestroy(MatColoring *mc)
 /*@C
    MatColoringSetType - Sets the type of coloring algorithm used
 
-   Collective on type
+   Collective
 
    Input Parameters:
 +  mc - the `MatColoring` context
@@ -168,7 +168,7 @@ PetscErrorCode MatColoringSetType(MatColoring mc, MatColoringType type)
 /*@
    MatColoringSetFromOptions - Sets `MatColoring` options from options database
 
-   Collective on mc
+   Collective
 
    Input Parameter:
 .  mc - `MatColoring` context
@@ -223,7 +223,7 @@ PetscErrorCode MatColoringSetFromOptions(MatColoring mc)
 /*@
    MatColoringSetDistance - Sets the distance of the coloring
 
-   Logically Collective on dist
+   Logically Collective
 
    Input Parameters:
 +  mc - the `MatColoring` context
@@ -254,7 +254,7 @@ PetscErrorCode MatColoringSetDistance(MatColoring mc, PetscInt dist)
 /*@
    MatColoringGetDistance - Gets the distance of the coloring
 
-   Logically Collective on mc
+   Logically Collective
 
    Input Parameter:
 .  mc - the `MatColoring` context
@@ -284,7 +284,7 @@ PetscErrorCode MatColoringGetDistance(MatColoring mc, PetscInt *dist)
 /*@
    MatColoringSetMaxColors - Sets the maximum number of colors to produce
 
-   Logically Collective on mc
+   Logically Collective
 
    Input Parameters:
 +  mc - the `MatColoring` context
@@ -315,7 +315,7 @@ PetscErrorCode MatColoringSetMaxColors(MatColoring mc, PetscInt maxcolors)
 /*@
    MatColoringGetMaxColors - Gets the maximum number of colors
 
-   Logically Collective on mc
+   Logically Collective
 
    Input Parameter:
 .  mc - the `MatColoring` context
@@ -340,7 +340,7 @@ PetscErrorCode MatColoringGetMaxColors(MatColoring mc, PetscInt *maxcolors)
    sets corresponding to a number of independent sets in the induced
    graph.
 
-   Collective on mc
+   Collective
 
    Input Parameters:
 .  mc - the `MatColoring` context
@@ -389,7 +389,7 @@ PetscErrorCode MatColoringApply(MatColoring mc, ISColoring *coloring)
 /*@
    MatColoringView - Output details about the `MatColoring`.
 
-   Collective on mc
+   Collective
 
    Input Parameters:
 -  mc - the `MatColoring` context
@@ -425,7 +425,7 @@ PetscErrorCode MatColoringView(MatColoring mc, PetscViewer viewer)
 /*@
    MatColoringSetWeightType - Set the type of weight computation used while computing the coloring
 
-   Logically collective on MatColoring
+   Logically collective
 
    Input Parameters:
 -  mc - the `MatColoring` context

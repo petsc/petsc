@@ -44,9 +44,6 @@ class Configure(config.base.Configure):
     else:
       self.useThreadSafety = 0
 
-    if self.useThreadSafety and self.framework.argDB['with-log']:
-      raise RuntimeError('Must use --with-log=0 with --with-threadsafety')
-
     if self.useThreadSafety and not ((self.sharedLibraries.useShared and self.setCompilers.dynamicLibraries) or self.framework.argDB['with-single-library']):
       raise RuntimeError('Must use --with-shared-libraries or --with-single-library with --with-threadsafety')
 
@@ -54,8 +51,6 @@ class Configure(config.base.Configure):
     self.addDefine('USE_LOG',   self.useLog)
 
     if self.compilerFlags.debugging:
-      if self.useThreadSafety:
-        raise RuntimeError('Must use --with-debugging=0 with --with-threadsafety')
       self.addDefine('USE_DEBUG',1)
     elif not config.setCompilers.Configure.isIBM(self.framework.getCompiler(), self.log):
       # IBM XLC version 12.1 (BG/Q and POWER) miscompiles PetscMalloc3()

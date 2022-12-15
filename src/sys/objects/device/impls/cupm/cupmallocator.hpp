@@ -30,10 +30,10 @@ template <DeviceType T, typename PetscType>
 class HostAllocator : public memory::impl::SegmentedMemoryPoolAllocatorBase<PetscType>, impl::Interface<T> {
 public:
   PETSC_CUPM_INHERIT_INTERFACE_TYPEDEFS_USING(interface_type, T);
-  using base_type = memory::impl::SegmentedMemoryPoolAllocatorBase<PetscType>;
-  using typename base_type::real_value_type;
-  using typename base_type::size_type;
-  using typename base_type::value_type;
+  using base_type       = memory::impl::SegmentedMemoryPoolAllocatorBase<PetscType>;
+  using real_value_type = typename base_type::real_value_type;
+  using size_type       = typename base_type::size_type;
+  using value_type      = typename base_type::value_type;
 
   template <typename U>
   PETSC_NODISCARD static PetscErrorCode allocate(value_type **, size_type, const StreamBase<U> *) noexcept;
@@ -81,10 +81,10 @@ template <DeviceType T, typename PetscType>
 class DeviceAllocator : public memory::impl::SegmentedMemoryPoolAllocatorBase<PetscType>, impl::Interface<T> {
 public:
   PETSC_CUPM_INHERIT_INTERFACE_TYPEDEFS_USING(interface_type, T);
-  using base_type = memory::impl::SegmentedMemoryPoolAllocatorBase<PetscType>;
-  using typename base_type::real_value_type;
-  using typename base_type::size_type;
-  using typename base_type::value_type;
+  using base_type       = memory::impl::SegmentedMemoryPoolAllocatorBase<PetscType>;
+  using real_value_type = typename base_type::real_value_type;
+  using size_type       = typename base_type::size_type;
+  using value_type      = typename base_type::value_type;
 
   template <typename U>
   PETSC_NODISCARD static PetscErrorCode allocate(value_type **, size_type, const StreamBase<U> *) noexcept;

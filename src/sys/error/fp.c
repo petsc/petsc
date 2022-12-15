@@ -496,9 +496,11 @@ void PetscDefaultFPTrap(int sig)
 
   (*PetscErrorPrintf)("Try option -start_in_debugger\n");
   #if PetscDefined(USE_DEBUG)
+    #if !PetscDefined(HAVE_THREADSAFETY)
   (*PetscErrorPrintf)("likely location of problem given in stack below\n");
   (*PetscErrorPrintf)("---------------------  Stack Frames ------------------------------------\n");
   PetscStackView(PETSC_STDOUT);
+    #endif
   #else
   (*PetscErrorPrintf)("configure using --with-debugging=yes, recompile, link, and run \n");
   (*PetscErrorPrintf)("with -start_in_debugger to get more information on the crash.\n");

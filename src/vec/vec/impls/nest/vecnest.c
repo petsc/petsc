@@ -1094,10 +1094,10 @@ static PetscErrorCode VecSetUp_NestIS_Private(Vec V, PetscInt nb, IS is[])
 /*@C
    VecCreateNest - Creates a new vector containing several nested subvectors, each stored separately
 
-   Collective on Vec
+   Collective
 
    Input Parameters:
-+  comm - Communicator for the new Vec
++  comm - Communicator for the new `Vec`
 .  nb - number of nested blocks
 .  is - array of nb index sets describing each nested block, or NULL to pack subvectors contiguously
 -  x - array of nb sub-vectors

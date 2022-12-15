@@ -6,7 +6,7 @@ PetscBool         TSRegisterAllCalled = PETSC_FALSE;
 /*@C
   TSSetType - Sets the method to be used as the timestepping solver.
 
-  Collective on ts
+  Collective
 
   Input Parameters:
 + ts   - The `TS` context

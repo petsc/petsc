@@ -5090,6 +5090,21 @@ PetscErrorCode DMPlexComputeResidual_Hybrid_Internal(DM dm, PetscFormKey key[], 
     }
     PetscCall(PetscFree2(quads, geoms));
   }
+  if (mesh->printFEM) {
+    Vec          locFbc;
+    PetscInt     pStart, pEnd, p, maxDof;
+    PetscScalar *zeroes;
+
+    PetscCall(VecDuplicate(locF, &locFbc));
+    PetscCall(VecCopy(locF, locFbc));
+    PetscCall(PetscSectionGetChart(section, &pStart, &pEnd));
+    PetscCall(PetscSectionGetMaxDof(section, &maxDof));
+    PetscCall(PetscCalloc1(maxDof, &zeroes));
+    for (p = pStart; p < pEnd; p++) PetscCall(VecSetValuesSection(locFbc, section, p, zeroes, INSERT_BC_VALUES));
+    PetscCall(PetscFree(zeroes));
+    PetscCall(DMPrintLocalVec(dm, name, mesh->printTol, locFbc));
+    PetscCall(VecDestroy(&locFbc));
+  }
   PetscCall(PetscLogEventEnd(DMPLEX_ResidualFEM, dm, 0, 0, 0));
   PetscFunctionReturn(0);
 }

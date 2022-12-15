@@ -295,7 +295,7 @@ static PetscErrorCode TSAdaptSetFromOptions_DSP(TSAdapt adapt, PetscOptionItems 
 /*@C
    TSAdaptDSPSetFilter - Sets internal parameters corresponding to the named filter
 
-   Collective on adapt
+   Collective
 
    Input Parameters:
 +  adapt - adaptive controller context

@@ -5965,12 +5965,21 @@ PetscErrorCode DMComputeExactSolution(DM dm, PetscReal time, Vec u, Vec u_t)
 {
   PetscErrorCode (**exacts)(PetscInt, PetscReal, const PetscReal x[], PetscInt, PetscScalar *u, void *ctx);
   void   **ectxs;
+  Vec      locu, locu_t;
   PetscInt Nf, Nds, s;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  if (u) PetscValidHeaderSpecific(u, VEC_CLASSID, 3);
-  if (u_t) PetscValidHeaderSpecific(u_t, VEC_CLASSID, 4);
+  if (u) {
+    PetscValidHeaderSpecific(u, VEC_CLASSID, 3);
+    PetscCall(DMGetLocalVector(dm, &locu));
+    PetscCall(VecSet(locu, 0.));
+  }
+  if (u_t) {
+    PetscValidHeaderSpecific(u_t, VEC_CLASSID, 4);
+    PetscCall(DMGetLocalVector(dm, &locu_t));
+    PetscCall(VecSet(locu_t, 0.));
+  }
   PetscCall(DMGetNumFields(dm, &Nf));
   PetscCall(PetscMalloc2(Nf, &exacts, Nf, &ectxs));
   PetscCall(DMGetNumDS(dm, &Nds));
@@ -5987,31 +5996,18 @@ PetscErrorCode DMComputeExactSolution(DM dm, PetscReal time, Vec u, Vec u_t)
     PetscCall(PetscArrayzero(exacts, Nf));
     PetscCall(PetscArrayzero(ectxs, Nf));
     if (u) {
-      for (f = 0; f < dsNf; ++f) {
-        const PetscInt field = fields[f];
-        PetscCall(PetscDSGetExactSolution(ds, field, &exacts[field], &ectxs[field]));
-      }
-      PetscCall(ISRestoreIndices(fieldIS, &fields));
-      if (label) {
-        PetscCall(DMProjectFunctionLabel(dm, time, label, 1, &id, 0, NULL, exacts, ectxs, INSERT_ALL_VALUES, u));
-      } else {
-        PetscCall(DMProjectFunction(dm, time, exacts, ectxs, INSERT_ALL_VALUES, u));
-      }
+      for (f = 0; f < dsNf; ++f) PetscCall(PetscDSGetExactSolution(ds, fields[f], &exacts[fields[f]], &ectxs[fields[f]]));
+      if (label) PetscCall(DMProjectFunctionLabelLocal(dm, time, label, 1, &id, 0, NULL, exacts, ectxs, INSERT_ALL_VALUES, locu));
+      else PetscCall(DMProjectFunctionLocal(dm, time, exacts, ectxs, INSERT_ALL_VALUES, locu));
     }
     if (u_t) {
       PetscCall(PetscArrayzero(exacts, Nf));
       PetscCall(PetscArrayzero(ectxs, Nf));
-      for (f = 0; f < dsNf; ++f) {
-        const PetscInt field = fields[f];
-        PetscCall(PetscDSGetExactSolutionTimeDerivative(ds, field, &exacts[field], &ectxs[field]));
-      }
-      PetscCall(ISRestoreIndices(fieldIS, &fields));
-      if (label) {
-        PetscCall(DMProjectFunctionLabel(dm, time, label, 1, &id, 0, NULL, exacts, ectxs, INSERT_ALL_VALUES, u_t));
-      } else {
-        PetscCall(DMProjectFunction(dm, time, exacts, ectxs, INSERT_ALL_VALUES, u_t));
-      }
+      for (f = 0; f < dsNf; ++f) PetscCall(PetscDSGetExactSolutionTimeDerivative(ds, fields[f], &exacts[fields[f]], &ectxs[fields[f]]));
+      if (label) PetscCall(DMProjectFunctionLabelLocal(dm, time, label, 1, &id, 0, NULL, exacts, ectxs, INSERT_ALL_VALUES, locu_t));
+      else PetscCall(DMProjectFunctionLocal(dm, time, exacts, ectxs, INSERT_ALL_VALUES, locu_t));
     }
+    PetscCall(ISRestoreIndices(fieldIS, &fields));
   }
   if (u) {
     PetscCall(PetscObjectSetName((PetscObject)u, "Exact Solution"));
@@ -6022,6 +6018,16 @@ PetscErrorCode DMComputeExactSolution(DM dm, PetscReal time, Vec u, Vec u_t)
     PetscCall(PetscObjectSetOptionsPrefix((PetscObject)u_t, "exact_t_"));
   }
   PetscCall(PetscFree2(exacts, ectxs));
+  if (u) {
+    PetscCall(DMLocalToGlobalBegin(dm, locu, INSERT_ALL_VALUES, u));
+    PetscCall(DMLocalToGlobalEnd(dm, locu, INSERT_ALL_VALUES, u));
+    PetscCall(DMRestoreLocalVector(dm, &locu));
+  }
+  if (u_t) {
+    PetscCall(DMLocalToGlobalBegin(dm, locu_t, INSERT_ALL_VALUES, u_t));
+    PetscCall(DMLocalToGlobalEnd(dm, locu_t, INSERT_ALL_VALUES, u_t));
+    PetscCall(DMRestoreLocalVector(dm, &locu_t));
+  }
   PetscFunctionReturn(0);
 }
 
@@ -7886,6 +7892,7 @@ PetscErrorCode DMProjectFunction(DM dm, PetscReal time, PetscErrorCode (**funcs)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscCall(DMGetLocalVector(dm, &localX));
+  PetscCall(VecSet(localX, 0.));
   PetscCall(DMProjectFunctionLocal(dm, time, funcs, ctxs, mode, localX));
   PetscCall(DMLocalToGlobalBegin(dm, localX, mode, X));
   PetscCall(DMLocalToGlobalEnd(dm, localX, mode, X));
@@ -7976,6 +7983,7 @@ PetscErrorCode DMProjectFunctionLabel(DM dm, PetscReal time, DMLabel label, Pets
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscCall(DMGetLocalVector(dm, &localX));
+  PetscCall(VecSet(localX, 0.));
   PetscCall(DMProjectFunctionLabelLocal(dm, time, label, numIds, ids, Nc, comps, funcs, ctxs, mode, localX));
   PetscCall(DMLocalToGlobalBegin(dm, localX, mode, X));
   PetscCall(DMLocalToGlobalEnd(dm, localX, mode, X));
@@ -8231,6 +8239,7 @@ PetscErrorCode DMProjectFieldLabel(DM dm, PetscReal time, DMLabel label, PetscIn
   PetscCall(VecGetDM(U, &dmIn));
   PetscCall(DMGetLocalVector(dmIn, &localU));
   PetscCall(DMGetLocalVector(dm, &localX));
+  PetscCall(VecSet(localX, 0.));
   PetscCall(DMGlobalToLocalBegin(dmIn, U, mode, localU));
   PetscCall(DMGlobalToLocalEnd(dmIn, U, mode, localU));
   PetscCall(DMProjectFieldLabelLocal(dm, time, label, numIds, ids, Nc, comps, localU, funcs, mode, localX));

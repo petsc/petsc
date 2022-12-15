@@ -189,7 +189,7 @@ PetscErrorCode KSPComputeRitz(KSP ksp, PetscBool ritz, PetscBool small, PetscInt
    the block Jacobi, block Gauss-Seidel, and overlapping Schwarz
    methods.
 
-   Collective on ksp
+   Collective
 
    Input Parameter:
 .  ksp - the `KSP` context
@@ -232,7 +232,7 @@ PetscErrorCode KSPSetUpOnBlocks(KSP ksp)
 /*@
    KSPSetReusePreconditioner - reuse the current preconditioner, do not construct a new one even if the operator changes
 
-   Collective on ksp
+   Collective
 
    Input Parameters:
 +  ksp   - iterative context obtained from `KSPCreate()`
@@ -256,7 +256,7 @@ PetscErrorCode KSPSetReusePreconditioner(KSP ksp, PetscBool flag)
 /*@
    KSPGetReusePreconditioner - Determines if the `KSP` reuses the current preconditioner even if the operator in the preconditioner has changed.
 
-   Collective on ksp
+   Collective
 
    Input Parameters:
 .  ksp   - iterative context obtained from `KSPCreate()`
@@ -281,7 +281,7 @@ PetscErrorCode KSPGetReusePreconditioner(KSP ksp, PetscBool *flag)
 /*@
    KSPSetSkipPCSetFromOptions - prevents `KSPSetFromOptions()` from calling `PCSetFromOptions()`. This is used if the same PC is shared by more than one KSP so its options are not resetable for each KSP
 
-   Collective on ksp
+   Collective
 
    Input Parameters:
 +  ksp   - iterative context obtained from `KSPCreate()`
@@ -303,7 +303,7 @@ PetscErrorCode KSPSetSkipPCSetFromOptions(KSP ksp, PetscBool flag)
    KSPSetUp - Sets up the internal data structures for the
    later use of an iterative solver.
 
-   Collective on ksp
+   Collective
 
    Input Parameter:
 .  ksp   - iterative context obtained from `KSPCreate()`
@@ -421,7 +421,7 @@ PetscErrorCode KSPSetUp(KSP ksp)
 /*@C
    KSPConvergedReasonView - Displays the reason a `KSP` solve converged or diverged to a viewer
 
-   Collective on ksp
+   Collective
 
    Parameter:
 +  ksp - iterative context obtained from `KSPCreate()`
@@ -478,7 +478,7 @@ PetscErrorCode KSPConvergedReasonView(KSP ksp, PetscViewer viewer)
    KSPConvergedReasonViewSet - Sets an ADDITIONAL function that is to be used at the
     end of the linear solver to display the convergence reason of the linear solver.
 
-   Logically Collective on ksp
+   Logically Collective
 
    Input Parameters:
 +  ksp - the `KSP` context
@@ -526,7 +526,7 @@ PetscErrorCode KSPConvergedReasonViewSet(KSP ksp, PetscErrorCode (*f)(KSP, void 
 /*@
    KSPConvergedReasonViewCancel - Clears all the reasonview functions for a `KSP` object.
 
-   Collective on ksp
+   Collective
 
    Input Parameter:
 .  ksp - iterative context obtained from `KSPCreate()`
@@ -551,7 +551,7 @@ PetscErrorCode KSPConvergedReasonViewCancel(KSP ksp)
 /*@
   KSPConvergedReasonViewFromOptions - Processes command line options to determine if/how a KSPReason is to be viewed.
 
-  Collective on ksp
+  Collective
 
   Input Parameters:
 . ksp   - the `KSP` object
@@ -586,7 +586,7 @@ PetscErrorCode KSPConvergedReasonViewFromOptions(KSP ksp)
 /*@C
   KSPConvergedRateView - Displays the reason a `KSP` solve converged or diverged to a viewer
 
-  Collective on ksp
+  Collective
 
   Input Parameters:
 +  ksp    - iterative context obtained from `KSPCreate()`
@@ -992,7 +992,7 @@ static PetscErrorCode KSPSolve_Private(KSP ksp, Vec b, Vec x)
 /*@
    KSPSolve - Solves linear system.
 
-   Collective on ksp
+   Collective
 
    Parameters:
 +  ksp - iterative context obtained from `KSPCreate()`
@@ -1074,7 +1074,7 @@ PetscErrorCode KSPSolve(KSP ksp, Vec b, Vec x)
 /*@
    KSPSolveTranspose - Solves the transpose of a linear system.
 
-   Collective on ksp
+   Collective
 
    Input Parameters:
 +  ksp - iterative context obtained from `KSPCreate()`
@@ -1298,7 +1298,7 @@ PetscErrorCode KSPGetMatSolveBatchSize(KSP ksp, PetscInt *bs)
 /*@
    KSPResetViewers - Resets all the viewers set from the options database during `KSPSetFromOptions()`
 
-   Collective on ksp
+   Collective
 
    Input Parameter:
 .  ksp - iterative context obtained from `KSPCreate()`
@@ -1345,7 +1345,7 @@ PetscErrorCode KSPResetViewers(KSP ksp)
 /*@
    KSPReset - Resets a `KSP` context to the kspsetupcalled = 0 state and removes any allocated Vecs and Mats
 
-   Collective on ksp
+   Collective
 
    Input Parameter:
 .  ksp - iterative context obtained from `KSPCreate()`
@@ -1381,7 +1381,7 @@ PetscErrorCode KSPReset(KSP ksp)
 /*@C
    KSPDestroy - Destroys `KSP` context.
 
-   Collective on ksp
+   Collective
 
    Input Parameter:
 .  ksp - iterative context obtained from `KSPCreate()`
@@ -1437,7 +1437,7 @@ PetscErrorCode KSPDestroy(KSP *ksp)
 /*@
     KSPSetPCSide - Sets the preconditioning side.
 
-    Logically Collective on ksp
+    Logically Collective
 
     Input Parameter:
 .   ksp - iterative context obtained from `KSPCreate()`
@@ -1546,7 +1546,7 @@ PetscErrorCode KSPGetTolerances(KSP ksp, PetscReal *rtol, PetscReal *abstol, Pet
    KSPSetTolerances - Sets the relative, absolute, divergence, and maximum
    iteration tolerances used by the default `KSP` convergence testers.
 
-   Logically Collective on ksp
+   Logically Collective
 
    Input Parameters:
 +  ksp - the Krylov subspace context
@@ -1606,7 +1606,7 @@ PetscErrorCode KSPSetTolerances(KSP ksp, PetscReal rtol, PetscReal abstol, Petsc
    initial guess is nonzero; otherwise `KSP` assumes the initial guess
    is to be zero (and thus zeros it out before solving).
 
-   Logically Collective on ksp
+   Logically Collective
 
    Input Parameters:
 +  ksp - iterative context obtained from `KSPCreate()`
@@ -1660,7 +1660,7 @@ PetscErrorCode KSPGetInitialGuessNonzero(KSP ksp, PetscBool *flag)
 /*@
    KSPSetErrorIfNotConverged - Causes `KSPSolve()` to generate an error if the solver has not converged as soon as the error is detected.
 
-   Logically Collective on ksp
+   Logically Collective
 
    Input Parameters:
 +  ksp - iterative context obtained from `KSPCreate()`
@@ -1715,7 +1715,7 @@ PetscErrorCode KSPGetErrorIfNotConverged(KSP ksp, PetscBool *flag)
 /*@
    KSPSetInitialGuessKnoll - Tells the iterative solver to use `PCApply()` to compute the initial guess (The Knoll trick)
 
-   Logically Collective on ksp
+   Logically Collective
 
    Input Parameters:
 +  ksp - iterative context obtained from `KSPCreate()`
@@ -1802,7 +1802,7 @@ PetscErrorCode KSPGetComputeSingularValues(KSP ksp, PetscBool *flg)
    values will be calculated via a Lanczos or Arnoldi process as the linear
    system is solved.
 
-   Logically Collective on ksp
+   Logically Collective
 
    Input Parameters:
 +  ksp - iterative context obtained from `KSPCreate()`
@@ -1865,7 +1865,7 @@ PetscErrorCode KSPGetComputeEigenvalues(KSP ksp, PetscBool *flg)
    values will be calculated via a Lanczos or Arnoldi process as the linear
    system is solved.
 
-   Logically Collective on ksp
+   Logically Collective
 
    Input Parameters:
 +  ksp - iterative context obtained from `KSPCreate()`
@@ -1892,7 +1892,7 @@ PetscErrorCode KSPSetComputeEigenvalues(KSP ksp, PetscBool flg)
    will be calculated via a Lanczos or Arnoldi process as the linear
    system is solved.
 
-   Logically Collective on ksp
+   Logically Collective
 
    Input Parameters:
 +  ksp - iterative context obtained from `KSPCreate()`
@@ -1969,7 +1969,7 @@ PetscErrorCode KSPGetSolution(KSP ksp, Vec *v)
    KSPSetPC - Sets the preconditioner to be used to calculate the
    application of the preconditioner on a vector.
 
-   Collective on ksp
+   Collective
 
    Input Parameters:
 +  ksp - iterative context obtained from `KSPCreate()`
@@ -2029,7 +2029,7 @@ PetscErrorCode KSPGetPC(KSP ksp, PC *pc)
 /*@
    KSPMonitor - runs the user provided monitor routines, if they exist
 
-   Collective on ksp
+   Collective
 
    Input Parameters:
 +  ksp - iterative context obtained from `KSPCreate()`
@@ -2057,7 +2057,7 @@ PetscErrorCode KSPMonitor(KSP ksp, PetscInt it, PetscReal rnorm)
    KSPMonitorSet - Sets an ADDITIONAL function to be called at every iteration to monitor
    the residual/error etc.
 
-   Logically Collective on ksp
+   Logically Collective
 
    Input Parameters:
 +  ksp - iterative context obtained from `KSPCreate()`
@@ -2128,7 +2128,7 @@ PetscErrorCode KSPMonitorSet(KSP ksp, PetscErrorCode (*monitor)(KSP, PetscInt, P
 /*@
    KSPMonitorCancel - Clears all monitors for a `KSP` object.
 
-   Logically Collective on ksp
+   Logically Collective
 
    Input Parameters:
 .  ksp - iterative context obtained from `KSPCreate()`
@@ -2419,7 +2419,7 @@ PetscErrorCode KSPComputeConvergenceRate(KSP ksp, PetscReal *cr, PetscReal *rRsq
 /*@C
    KSPSetConvergenceTest - Sets the function to be used to determine convergence.
 
-   Logically Collective on ksp
+   Logically Collective
 
    Input Parameters:
 +  ksp - iterative context obtained from `KSPCreate()`
@@ -2468,7 +2468,7 @@ PetscErrorCode KSPSetConvergenceTest(KSP ksp, PetscErrorCode (*converge)(KSP, Pe
 /*@C
    KSPGetConvergenceTest - Gets the function to be used to determine convergence.
 
-   Logically Collective on ksp
+   Logically Collective
 
    Input Parameter:
 .   ksp - iterative context obtained from `KSPCreate()`
@@ -2504,7 +2504,7 @@ PetscErrorCode KSPGetConvergenceTest(KSP ksp, PetscErrorCode (**converge)(KSP, P
 /*@C
    KSPGetAndClearConvergenceTest - Gets the function to be used to determine convergence. Removes the current test without calling destroy on the test context
 
-   Logically Collective on ksp
+   Logically Collective
 
    Input Parameter:
 .   ksp - iterative context obtained from `KSPCreate()`
@@ -2571,7 +2571,7 @@ PetscErrorCode KSPGetConvergenceContext(KSP ksp, void *ctx)
 /*@C
    KSPBuildSolution - Builds the approximate solution in a vector provided.
 
-   Collective on ksp
+   Collective
 
    Input Parameter:
 .  ctx - iterative context obtained from `KSPCreate()`
@@ -2616,7 +2616,7 @@ PetscErrorCode KSPBuildSolution(KSP ksp, Vec v, Vec *V)
 /*@C
    KSPBuildResidual - Builds the residual in a vector provided.
 
-   Collective on ksp
+   Collective
 
    Input Parameter:
 .  ksp - iterative context obtained from `KSPCreate()`
@@ -2656,7 +2656,7 @@ PetscErrorCode KSPBuildResidual(KSP ksp, Vec t, Vec v, Vec *V)
    KSPSetDiagonalScale - Tells `KSP` to symmetrically diagonally scale the system
      before solving. This actually CHANGES the matrix (and right hand side).
 
-   Logically Collective on ksp
+   Logically Collective
 
    Input Parameters:
 +  ksp - the `KSP` context
@@ -2721,7 +2721,7 @@ PetscErrorCode KSPGetDiagonalScale(KSP ksp, PetscBool *scale)
 /*@
    KSPSetDiagonalScaleFix - Tells `KSP` to diagonally scale the system back after solving.
 
-   Logically Collective on ksp
+   Logically Collective
 
    Input Parameters:
 +  ksp - the `KSP` context
@@ -2894,7 +2894,7 @@ PetscErrorCode KSPSetComputeInitialGuess(KSP ksp, PetscErrorCode (*func)(KSP, Ve
    KSPSetUseExplicitTranspose - Determines the explicit transpose of the operator is formed in `KSPSolveTranspose()`. In some configurations (like GPUs) it may
    be explictly formed when possible since the solve is much more efficient.
 
-   Logically Collective on ksp
+   Logically Collective
 
    Input Parameter:
 .  ksp - the `KSP` context

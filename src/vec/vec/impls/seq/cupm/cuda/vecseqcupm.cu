@@ -358,11 +358,13 @@ PetscErrorCode VecCUDAPlaceArray(Vec vin, const PetscScalar a[])
   VecCUDAReplaceArray - Permanently replace the GPU array in a vector with a GPU array provided
   by the user.
 
-  Not Collective
+  Not Collective; No Fortran Support
 
   Input Parameters:
 + vec   - the vector
 - array - the GPU array
+
+  Level: advanced
 
   Notes:
   This is useful to avoid copying a GPU array into a vector.
@@ -370,11 +372,6 @@ PetscErrorCode VecCUDAPlaceArray(Vec vin, const PetscScalar a[])
   This frees the memory associated with the old GPU array. The vector takes ownership of the
   passed array so it CANNOT be freed by the user. It will be freed when the vector is
   destroyed.
-
-  Fortran Notes:
-  Not supported from Fortran
-
-  Level: advanced
 
 .seealso: VecGetArray(), VecRestoreArray(), VecPlaceArray(), VecResetArray(),
 VecCUDAResetArray(), VecCUDAPlaceArray(), VecReplaceArray()

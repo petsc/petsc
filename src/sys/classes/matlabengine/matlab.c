@@ -93,7 +93,7 @@ PetscErrorCode PetscMatlabEngineCreate(MPI_Comm comm, const char host[], PetscMa
 /*@
    PetscMatlabEngineDestroy - Shuts down a MATLAB engine.
 
-   Collective on v
+   Collective
 
    Input Parameters:
 .  e  - the engine
@@ -192,7 +192,7 @@ PetscErrorCode PetscMatlabEngineGetOutput(PetscMatlabEngine mengine, char **stri
 /*@C
     PetscMatlabEnginePrintOutput - prints the output from MATLAB to an ASCII file
 
-    Collective on mengine
+    Collective
 
     Input Parameters:
 +    mengine - the MATLAB engine
@@ -220,7 +220,7 @@ PetscErrorCode PetscMatlabEnginePrintOutput(PetscMatlabEngine mengine, FILE *fd)
     PetscMatlabEnginePut - Puts a Petsc object, such as a `Mat` or `Vec` into the MATLAB space. For parallel objects,
       each processor's part is put in a separate  MATLAB process.
 
-    Collective on mengine
+    Collective
 
     Input Parameters:
 +    mengine - the MATLAB engine
@@ -253,7 +253,7 @@ PetscErrorCode PetscMatlabEnginePut(PetscMatlabEngine mengine, PetscObject obj)
 /*@
     PetscMatlabEngineGet - Gets a variable from MATLAB into a PETSc object.
 
-    Collective on mengine
+    Collective
 
     Input Parameters:
 +    mengine - the MATLAB engine
@@ -356,7 +356,7 @@ PetscMatlabEngine PETSC_MATLAB_ENGINE_(MPI_Comm comm)
     PetscMatlabEnginePutArray - Puts an array into the MATLAB space, treating it as a Fortran style (column major ordering) array. For parallel objects,
       each processors part is put in a separate  MATLAB process.
 
-    Collective on mengine
+    Collective
 
     Input Parameters:
 +    mengine - the MATLAB engine
