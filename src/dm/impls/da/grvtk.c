@@ -43,7 +43,8 @@ static PetscErrorCode DMDAVTKWriteAll_VTS(DM da, PetscViewer viewer)
   FILE                    *fp;
   PetscMPIInt              rank, size, tag;
   DMDALocalInfo            info;
-  PetscInt                 dim, mx, my, mz, cdim, bs, boffset, maxnnodes, maxbs, i, j, k, r;
+  PetscInt                 dim, mx, my, mz, cdim, bs, maxnnodes, maxbs, i, j, k, r;
+  PetscInt64               boffset;
   PetscInt                 rloc[6], (*grloc)[6] = NULL;
   PetscScalar             *array, *array2;
 
@@ -97,7 +98,7 @@ static PetscErrorCode DMDAVTKWriteAll_VTS(DM da, PetscViewer viewer)
     maxnnodes = PetscMax(maxnnodes, nnodes);
     PetscCall(PetscFPrintf(comm, fp, "    <Piece Extent=\"%" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT "\">\n", xs, xs + xm - 1, ys, ys + ym - 1, zs, zs + zm - 1));
     PetscCall(PetscFPrintf(comm, fp, "      <Points>\n"));
-    PetscCall(PetscFPrintf(comm, fp, "        <DataArray type=\"%s\" Name=\"Position\" NumberOfComponents=\"3\" format=\"appended\" offset=\"%" PetscInt_FMT "\" />\n", precision, boffset));
+    PetscCall(PetscFPrintf(comm, fp, "        <DataArray type=\"%s\" Name=\"Position\" NumberOfComponents=\"3\" format=\"appended\" offset=\"%" PetscInt64_FMT "\" />\n", precision, boffset));
     boffset += 3 * nnodes * sizeof(PetscScalar) + sizeof(int);
     PetscCall(PetscFPrintf(comm, fp, "      </Points>\n"));
 
@@ -126,11 +127,11 @@ static PetscErrorCode DMDAVTKWriteAll_VTS(DM da, PetscViewer viewer)
             PetscCall(PetscSNPrintf(buf, sizeof(buf), "%" PetscInt_FMT, f));
             fieldname = buf;
           }
-          PetscCall(PetscFPrintf(comm, fp, "        <DataArray type=\"%s\" Name=\"%s.%s\" NumberOfComponents=\"1\" format=\"appended\" offset=\"%" PetscInt_FMT "\" />\n", precision, vecname, fieldname, boffset));
+          PetscCall(PetscFPrintf(comm, fp, "        <DataArray type=\"%s\" Name=\"%s.%s\" NumberOfComponents=\"1\" format=\"appended\" offset=\"%" PetscInt64_FMT "\" />\n", precision, vecname, fieldname, boffset));
           boffset += nnodes * sizeof(PetscScalar) + sizeof(int);
         }
       } else {
-        PetscCall(PetscFPrintf(comm, fp, "        <DataArray type=\"%s\" Name=\"%s\" NumberOfComponents=\"%" PetscInt_FMT "\" format=\"appended\" offset=\"%" PetscInt_FMT "\" />\n", precision, vecname, bs, boffset));
+        PetscCall(PetscFPrintf(comm, fp, "        <DataArray type=\"%s\" Name=\"%s\" NumberOfComponents=\"%" PetscInt_FMT "\" format=\"appended\" offset=\"%" PetscInt64_FMT "\" />\n", precision, vecname, bs, boffset));
         boffset += bs * nnodes * sizeof(PetscScalar) + sizeof(int);
       }
     }
@@ -262,7 +263,8 @@ static PetscErrorCode DMDAVTKWriteAll_VTR(DM da, PetscViewer viewer)
   FILE                    *fp;
   PetscMPIInt              rank, size, tag;
   DMDALocalInfo            info;
-  PetscInt                 dim, mx, my, mz, boffset, maxnnodes, maxbs, i, j, k, r;
+  PetscInt                 dim, mx, my, mz, maxnnodes, maxbs, i, j, k, r;
+  PetscInt64               boffset;
   PetscInt                 rloc[6], (*grloc)[6] = NULL;
   PetscScalar             *array, *array2;
 
@@ -305,11 +307,11 @@ static PetscErrorCode DMDAVTKWriteAll_VTR(DM da, PetscViewer viewer)
     maxnnodes = PetscMax(maxnnodes, nnodes);
     PetscCall(PetscFPrintf(comm, fp, "    <Piece Extent=\"%" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT "\">\n", xs, xs + xm - 1, ys, ys + ym - 1, zs, zs + zm - 1));
     PetscCall(PetscFPrintf(comm, fp, "      <Coordinates>\n"));
-    PetscCall(PetscFPrintf(comm, fp, "        <DataArray type=\"%s\" Name=\"Xcoord\"  format=\"appended\"  offset=\"%" PetscInt_FMT "\" />\n", precision, boffset));
+    PetscCall(PetscFPrintf(comm, fp, "        <DataArray type=\"%s\" Name=\"Xcoord\"  format=\"appended\"  offset=\"%" PetscInt64_FMT "\" />\n", precision, boffset));
     boffset += xm * sizeof(PetscScalar) + sizeof(int);
-    PetscCall(PetscFPrintf(comm, fp, "        <DataArray type=\"%s\" Name=\"Ycoord\"  format=\"appended\"  offset=\"%" PetscInt_FMT "\" />\n", precision, boffset));
+    PetscCall(PetscFPrintf(comm, fp, "        <DataArray type=\"%s\" Name=\"Ycoord\"  format=\"appended\"  offset=\"%" PetscInt64_FMT "\" />\n", precision, boffset));
     boffset += ym * sizeof(PetscScalar) + sizeof(int);
-    PetscCall(PetscFPrintf(comm, fp, "        <DataArray type=\"%s\" Name=\"Zcoord\"  format=\"appended\"  offset=\"%" PetscInt_FMT "\" />\n", precision, boffset));
+    PetscCall(PetscFPrintf(comm, fp, "        <DataArray type=\"%s\" Name=\"Zcoord\"  format=\"appended\"  offset=\"%" PetscInt64_FMT "\" />\n", precision, boffset));
     boffset += zm * sizeof(PetscScalar) + sizeof(int);
     PetscCall(PetscFPrintf(comm, fp, "      </Coordinates>\n"));
     PetscCall(PetscFPrintf(comm, fp, "      <PointData Scalars=\"ScalarPointData\">\n"));
@@ -336,11 +338,11 @@ static PetscErrorCode DMDAVTKWriteAll_VTR(DM da, PetscViewer viewer)
             PetscCall(PetscSNPrintf(buf, sizeof(buf), "%" PetscInt_FMT, f));
             fieldname = buf;
           }
-          PetscCall(PetscFPrintf(comm, fp, "        <DataArray type=\"%s\" Name=\"%s.%s\" NumberOfComponents=\"1\" format=\"appended\" offset=\"%" PetscInt_FMT "\" />\n", precision, vecname, fieldname, boffset));
+          PetscCall(PetscFPrintf(comm, fp, "        <DataArray type=\"%s\" Name=\"%s.%s\" NumberOfComponents=\"1\" format=\"appended\" offset=\"%" PetscInt64_FMT "\" />\n", precision, vecname, fieldname, boffset));
           boffset += nnodes * sizeof(PetscScalar) + sizeof(int);
         }
       } else {
-        PetscCall(PetscFPrintf(comm, fp, "        <DataArray type=\"%s\" Name=\"%s\" NumberOfComponents=\"%" PetscInt_FMT "\" format=\"appended\" offset=\"%" PetscInt_FMT "\" />\n", precision, vecname, bs, boffset));
+        PetscCall(PetscFPrintf(comm, fp, "        <DataArray type=\"%s\" Name=\"%s\" NumberOfComponents=\"%" PetscInt_FMT "\" format=\"appended\" offset=\"%" PetscInt64_FMT "\" />\n", precision, vecname, bs, boffset));
         boffset += bs * nnodes * sizeof(PetscScalar) + sizeof(int);
       }
     }
