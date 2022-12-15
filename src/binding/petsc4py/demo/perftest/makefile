@@ -1,8 +1,10 @@
--include ../../../../../petscdir.mk
 # -*- makefile -*-
 
 MPIEXEC=
 PYTHON=python
+
+-include ../../../../../petscdir.mk
+-include ${PETSC_DIR}/lib/petsc/conf/variables
 
 .PHONY:test
 test: run clean

@@ -1,7 +1,9 @@
--include ../../../../../petscdir.mk.petsc
 # -*- makefile -*-
 
 EXECUTABLE=driver
+
+-include ../../../../../petscdir.mk
+-include ${PETSC_DIR}/lib/petsc/conf/variables
 
 .PHONY:all
 all: ${EXECUTABLE}.exe
