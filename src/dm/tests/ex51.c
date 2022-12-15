@@ -45,6 +45,8 @@ int main(int argc, char **argv)
     value = 5.0 * rank;
     PetscCall(VecSetValues(global, 1, &i, &value, INSERT_VALUES));
   }
+  PetscCall(VecAssemblyBegin(global));
+  PetscCall(VecAssemblyEnd(global));
   PetscCall(VecView(global, viewer));
 
   /*

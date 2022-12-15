@@ -65,6 +65,8 @@ PetscErrorCode VecMaxPointwiseDivide(Vec x, Vec y, PetscReal *max)
   PetscValidType(y, 2);
   PetscCheckSameTypeAndComm(x, 1, y, 2);
   VecCheckSameSize(x, 1, y, 2);
+  VecCheckAssembled(x);
+  VecCheckAssembled(y);
   PetscCall(VecLockReadPush(x));
   PetscCall(VecLockReadPush(y));
   PetscUseTypeMethod(x, maxpointwisedivide, y, max);
@@ -116,6 +118,8 @@ PetscErrorCode VecDot(Vec x, Vec y, PetscScalar *val)
   PetscValidType(y, 2);
   PetscCheckSameTypeAndComm(x, 1, y, 2);
   VecCheckSameSize(x, 1, y, 2);
+  VecCheckAssembled(x);
+  VecCheckAssembled(y);
 
   PetscCall(VecLockReadPush(x));
   PetscCall(VecLockReadPush(y));
@@ -217,6 +221,7 @@ PetscErrorCode VecNorm(Vec x, NormType type, PetscReal *val)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x, VEC_CLASSID, 1);
   PetscValidType(x, 1);
+  VecCheckAssembled(x);
   PetscValidLogicalCollectiveEnum(x, type, 2);
   PetscValidRealPointer(val, 3);
 
@@ -344,6 +349,7 @@ PetscErrorCode VecMax(Vec x, PetscInt *p, PetscReal *val)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x, VEC_CLASSID, 1);
   PetscValidType(x, 1);
+  VecCheckAssembled(x);
   if (p) PetscValidIntPointer(p, 2);
   PetscValidRealPointer(val, 3);
   PetscCall(VecLockReadPush(x));
@@ -380,6 +386,7 @@ PetscErrorCode VecMin(Vec x, PetscInt *p, PetscReal *val)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x, VEC_CLASSID, 1);
   PetscValidType(x, 1);
+  VecCheckAssembled(x);
   if (p) PetscValidIntPointer(p, 2);
   PetscValidRealPointer(val, 3);
   PetscCall(VecLockReadPush(x));
@@ -425,6 +432,8 @@ PetscErrorCode VecTDot(Vec x, Vec y, PetscScalar *val)
   PetscValidType(y, 2);
   PetscCheckSameTypeAndComm(x, 1, y, 2);
   VecCheckSameSize(x, 1, y, 2);
+  VecCheckAssembled(x);
+  VecCheckAssembled(y);
 
   PetscCall(VecLockReadPush(x));
   PetscCall(VecLockReadPush(y));
@@ -461,7 +470,7 @@ PetscErrorCode VecScale(Vec x, PetscScalar alpha)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x, VEC_CLASSID, 1);
   PetscValidType(x, 1);
-  PetscCheck(x->stash.insertmode == NOT_SET_VALUES, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Not for unassembled vector");
+  VecCheckAssembled(x);
   PetscCall(VecSetErrorIfLocked(x, 1));
   if (alpha == (PetscScalar)1.0) PetscFunctionReturn(0);
 
@@ -511,7 +520,7 @@ PetscErrorCode VecSet(Vec x, PetscScalar alpha)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x, VEC_CLASSID, 1);
   PetscValidType(x, 1);
-  PetscCheck(x->stash.insertmode == NOT_SET_VALUES, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "You cannot call this after you have called VecSetValues() but\n before you have called VecAssemblyBegin/End()");
+  VecCheckAssembled(x);
   PetscValidLogicalCollectiveScalar(x, alpha, 2);
   PetscCall(VecSetErrorIfLocked(x, 1));
 
@@ -582,6 +591,8 @@ PetscErrorCode VecAXPY(Vec y, PetscScalar alpha, Vec x)
   PetscCheckSameTypeAndComm(x, 3, y, 1);
   VecCheckSameSize(x, 3, y, 1);
   PetscCheck(x != y, PetscObjectComm((PetscObject)x), PETSC_ERR_ARG_IDN, "x and y cannot be the same vector");
+  VecCheckAssembled(x);
+  VecCheckAssembled(y);
   PetscValidLogicalCollectiveScalar(y, alpha, 2);
   if (alpha == (PetscScalar)0.0) PetscFunctionReturn(0);
 
@@ -628,6 +639,8 @@ PetscErrorCode VecAYPX(Vec y, PetscScalar beta, Vec x)
   PetscCheckSameTypeAndComm(x, 3, y, 1);
   VecCheckSameSize(x, 1, y, 3);
   PetscCheck(x != y, PetscObjectComm((PetscObject)x), PETSC_ERR_ARG_IDN, "x and y must be different vectors");
+  VecCheckAssembled(x);
+  VecCheckAssembled(y);
   PetscValidLogicalCollectiveScalar(y, beta, 2);
   PetscCall(VecSetErrorIfLocked(y, 1));
   PetscCall(VecLockReadPush(x));
@@ -676,6 +689,8 @@ PetscErrorCode VecAXPBY(Vec y, PetscScalar alpha, PetscScalar beta, Vec x)
   PetscCheckSameTypeAndComm(x, 4, y, 1);
   VecCheckSameSize(y, 1, x, 4);
   PetscCheck(x != y, PetscObjectComm((PetscObject)x), PETSC_ERR_ARG_IDN, "x and y cannot be the same vector");
+  VecCheckAssembled(x);
+  VecCheckAssembled(y);
   PetscValidLogicalCollectiveScalar(y, alpha, 2);
   PetscValidLogicalCollectiveScalar(y, beta, 3);
   if (alpha == (PetscScalar)0.0 && beta == (PetscScalar)1.0) PetscFunctionReturn(0);
@@ -727,6 +742,9 @@ PetscErrorCode VecAXPBYPCZ(Vec z, PetscScalar alpha, PetscScalar beta, PetscScal
   VecCheckSameSize(x, 1, z, 6);
   PetscCheck(x != y && x != z, PetscObjectComm((PetscObject)x), PETSC_ERR_ARG_IDN, "x, y, and z must be different vectors");
   PetscCheck(y != z, PetscObjectComm((PetscObject)y), PETSC_ERR_ARG_IDN, "x, y, and z must be different vectors");
+  VecCheckAssembled(x);
+  VecCheckAssembled(y);
+  VecCheckAssembled(z);
   PetscValidLogicalCollectiveScalar(z, alpha, 2);
   PetscValidLogicalCollectiveScalar(z, beta, 3);
   PetscValidLogicalCollectiveScalar(z, gamma, 4);
@@ -781,6 +799,8 @@ PetscErrorCode VecWAXPY(Vec w, PetscScalar alpha, Vec x, Vec y)
   VecCheckSameSize(x, 3, w, 1);
   PetscCheck(w != y, PETSC_COMM_SELF, PETSC_ERR_SUP, "Result vector w cannot be same as input vector y, suggest VecAXPY()");
   PetscCheck(w != x, PETSC_COMM_SELF, PETSC_ERR_SUP, "Result vector w cannot be same as input vector x, suggest VecAYPX()");
+  VecCheckAssembled(x);
+  VecCheckAssembled(y);
   PetscValidLogicalCollectiveScalar(y, alpha, 2);
   PetscCall(VecSetErrorIfLocked(w, 1));
 
@@ -891,6 +911,7 @@ PetscErrorCode VecGetValues(Vec x, PetscInt ni, const PetscInt ix[], PetscScalar
   PetscValidIntPointer(ix, 3);
   PetscValidScalarPointer(y, 4);
   PetscValidType(x, 1);
+  VecCheckAssembled(x);
   PetscUseTypeMethod(x, getvalues, ni, ix, y);
   PetscFunctionReturn(0);
 }
@@ -1067,6 +1088,7 @@ static PetscErrorCode VecMXDot_Priate(Vec x, PetscInt nv, const Vec y[], PetscSc
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x, VEC_CLASSID, 1);
   PetscValidType(x, 1);
+  VecCheckAssembled(x);
   PetscValidLogicalCollectiveInt(x, nv, 2);
   if (!nv) PetscFunctionReturn(0);
   PetscValidPointer(y, 3);
@@ -1075,6 +1097,7 @@ static PetscErrorCode VecMXDot_Priate(Vec x, PetscInt nv, const Vec y[], PetscSc
     PetscValidType(y[i], 3);
     PetscCheckSameTypeAndComm(x, 1, y[i], 3);
     VecCheckSameSize(x, 1, y[i], 3);
+    VecCheckAssembled(y[i]);
     PetscCall(VecLockReadPush(y[i]));
   }
   PetscValidScalarPointer(result, 4);
@@ -1180,6 +1203,7 @@ PetscErrorCode VecMAXPY(Vec y, PetscInt nv, const PetscScalar alpha[], Vec x[])
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(y, VEC_CLASSID, 1);
+  VecCheckAssembled(y);
   PetscValidLogicalCollectiveInt(y, nv, 2);
   PetscCall(VecSetErrorIfLocked(y, 1));
   PetscCheck(nv >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Number of vectors (given %" PetscInt_FMT ") cannot be negative", nv);
@@ -1195,6 +1219,7 @@ PetscErrorCode VecMAXPY(Vec y, PetscInt nv, const PetscScalar alpha[], Vec x[])
       PetscCheckSameTypeAndComm(y, 1, x[i], 4);
       VecCheckSameSize(y, 1, x[i], 4);
       PetscCheck(y != x[i], PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Array of vectors 'x' cannot contain y, found x[%" PetscInt_FMT "] == y", i);
+      VecCheckAssembled(x[i]);
       PetscCall(VecLockReadPush(x[i]));
       zeros += alpha[i] == (PetscScalar)0.0;
     }

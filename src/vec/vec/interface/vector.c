@@ -306,6 +306,8 @@ static PetscErrorCode VecPointwiseApply_Private(Vec w, Vec x, Vec y, PetscLogEve
   PetscCheckSameTypeAndComm(y, 3, w, 1);
   VecCheckSameSize(w, 1, x, 2);
   VecCheckSameSize(w, 1, y, 3);
+  VecCheckAssembled(x);
+  VecCheckAssembled(y);
   PetscCall(VecSetErrorIfLocked(w, 1));
   PetscValidFunction(pointwise_op, 5);
 
@@ -371,6 +373,7 @@ PetscErrorCode VecPointwiseMin(Vec w, Vec x, Vec y)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(w, VEC_CLASSID, 1);
+  VecCheckAssembled(x);
   // REVIEW ME: no log event?
   PetscCall(VecPointwiseApply_Private(w, x, y, 0, w->ops->pointwisemin));
   PetscFunctionReturn(0);
@@ -714,6 +717,7 @@ PetscErrorCode VecView(Vec vec, PetscViewer viewer)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(vec, VEC_CLASSID, 1);
   PetscValidType(vec, 1);
+  VecCheckAssembled(vec);
   if (!viewer) PetscCall(PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)vec), &viewer));
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
   PetscCall(PetscViewerGetFormat(viewer, &format));
@@ -1115,7 +1119,7 @@ PetscErrorCode VecReciprocal(Vec vec)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(vec, VEC_CLASSID, 1);
   PetscValidType(vec, 1);
-  PetscCheck(vec->stash.insertmode == NOT_SET_VALUES, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Not for unassembled vector");
+  VecCheckAssembled(vec);
   PetscCall(VecSetErrorIfLocked(vec, 1));
   PetscUseTypeMethod(vec, reciprocal);
   PetscCall(PetscObjectStateIncrease((PetscObject)vec));
@@ -1239,7 +1243,7 @@ PetscErrorCode VecConjugate(Vec x)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x, VEC_CLASSID, 1);
   PetscValidType(x, 1);
-  PetscCheck(x->stash.insertmode == NOT_SET_VALUES, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Not for unassembled vector");
+  VecCheckAssembled(x);
   PetscCall(VecSetErrorIfLocked(x, 1));
   if (PetscDefined(USE_COMPLEX)) {
     PetscUseTypeMethod(x, conjugate);
@@ -1281,7 +1285,7 @@ PetscErrorCode VecSetRandom(Vec x, PetscRandom rctx)
   PetscValidHeaderSpecific(x, VEC_CLASSID, 1);
   if (rctx) PetscValidHeaderSpecific(rctx, PETSC_RANDOM_CLASSID, 2);
   PetscValidType(x, 1);
-  PetscCheck(x->stash.insertmode == NOT_SET_VALUES, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Not for unassembled vector");
+  VecCheckAssembled(x);
   PetscCall(VecSetErrorIfLocked(x, 1));
 
   if (!rctx) {
@@ -1648,7 +1652,7 @@ PetscErrorCode VecCopy(Vec x, Vec y)
   PetscValidType(y, 2);
   if (x == y) PetscFunctionReturn(0);
   VecCheckSameLocalSize(x, 1, y, 2);
-  PetscCheck(x->stash.insertmode == NOT_SET_VALUES, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Not for unassembled vector");
+  VecCheckAssembled(x);
   PetscCall(VecSetErrorIfLocked(y, 2));
 
 #if !defined(PETSC_USE_MIXED_PRECISION)
@@ -1725,8 +1729,8 @@ PetscErrorCode VecSwap(Vec x, Vec y)
   PetscValidType(y, 2);
   PetscCheckSameTypeAndComm(x, 1, y, 2);
   VecCheckSameSize(x, 1, y, 2);
-  PetscCheck(x->stash.insertmode == NOT_SET_VALUES, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Not for unassembled vector");
-  PetscCheck(y->stash.insertmode == NOT_SET_VALUES, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Not for unassembled vector");
+  VecCheckAssembled(x);
+  VecCheckAssembled(y);
   PetscCall(VecSetErrorIfLocked(x, 1));
   PetscCall(VecSetErrorIfLocked(y, 2));
 

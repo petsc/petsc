@@ -497,6 +497,27 @@ static inline PetscErrorCode VecSetValueLocal(Vec v, PetscInt i, PetscScalar va,
   return VecSetValuesLocal(v, 1, &i, &va, mode);
 }
 
+/*MC
+   VecCheckAssembled - checks if values have been changed in the vector, by `VecSetValues()` or related routines,  but it has not been assembled
+
+   Synopsis:
+   #include <petscvec.h>
+   VecCheckAssembled(Vec v);
+
+   Not Collective
+
+   Input Parameter:
+.  v - the vector to check
+
+   Level: developer
+
+   Note:
+   After calls to `VecSetValues()` and related routines on must call ``VecAssemblyBegin()` and `VecAssemblyEnd()` before using the vector
+
+.seealso: [](chapter_vectors), `Vec`, `VecSetValues()`, `VecAssemblyBegin()`, `VecAssemblyEnd()`, `MatAssemblyBegin()`, `MatAssemblyEnd()`
+M*/
+#define VecCheckAssembled(v) PetscCheck(v->stash.insertmode == NOT_SET_VALUES, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Not for unassembled vector, did you call VecAssemblyBegin()/VecAssemblyEnd()?");
+
 PETSC_EXTERN PetscErrorCode VecSetValuesBlockedLocal(Vec, PetscInt, const PetscInt[], const PetscScalar[], InsertMode);
 PETSC_EXTERN PetscErrorCode VecGetLocalToGlobalMapping(Vec, ISLocalToGlobalMapping *);
 

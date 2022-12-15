@@ -67,6 +67,7 @@ Changes: Development
 - Document ``VecOperation``
 - Add ``VECOP_SET``
 - Significantly improve performance of ``VecMDot()``, ``VecMAXPY()`` and ``VecDotNorm2()`` for CUDA and HIP vector types. These routines should be between 2x and 4x faster.
+- Enforce the rule that ``VecAssemblyBegin()`` and ``VecAssemblyEnd()`` must be called on even sequential vectors after calls to ``VecSetValues()``. This also applies to assignment of vector entries in petsc4py
 
 .. rubric:: PetscSection:
 

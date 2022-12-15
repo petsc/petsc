@@ -1,4 +1,3 @@
--include ../../../../../petscdir.mk
 # -*- makefile -*-
 
 MPIEXEC=
@@ -8,6 +7,9 @@ F2PY = f2py
 F2PY_FLAGS  = --quiet
 F2PY_FLAGS += --noarch --f90flags=''
 F2PY_FLAGS += -DF2PY_REPORT_ON_ARRAY_COPY=1
+
+-include ../../../../../petscdir.mk
+-include ${PETSC_DIR}/lib/petsc/conf/variables
 
 .PHONY:test
 test: run clean
