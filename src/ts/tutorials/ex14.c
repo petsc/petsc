@@ -495,7 +495,6 @@ static PetscErrorCode THICreate(MPI_Comm comm, THI *inthi)
   THI              thi;
   Units            units;
   char             monitor_basename[PETSC_MAX_PATH_LEN] = "thi-";
-  PetscErrorCode   ierr;
 
   PetscFunctionBeginUser;
   *inthi = 0;
