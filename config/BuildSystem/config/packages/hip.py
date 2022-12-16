@@ -145,7 +145,7 @@ class Configure(config.package.Package):
         self.hipArch.lower() # to have a uniform format even if user set hip arch in weird cases
         if not self.hipArch.startswith('gfx'):
           raise RuntimeError('HIP arch name ' + self.hipArch + ' is not in the supported gfxnnn format')
-        self.setCompilers.HIPFLAGS += ' --amdgpu-target=' + self.hipArch +' '
+        self.setCompilers.HIPFLAGS += ' --offload-arch=' + self.hipArch +' '
       else:
         raise RuntimeError('You must set --with-hip-arch=gfx900, gfx906, gfx908, gfx90a etc or make ROCM utility "rocminfo" available on your PATH')
 
