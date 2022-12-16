@@ -30,6 +30,8 @@
 #define dmcreatesubdm_               DMCREATESUBDM
 #define dmdestroy_                   DMDESTROY
 #define dmload_                      DMLOAD
+#define dmsetfield_                  DMSETFIELD
+#define dmaddfield_                  DMADDFIELD
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define dmcreateinterpolation_       dmcreateinterpolation
 #define dmview_                      dmview
@@ -58,7 +60,21 @@
 #define dmcreatesubdm_               dmreatesubdm
 #define dmdestroy_                   dmdestroy
 #define dmload_                      dmload
+#define dmsetfield_                  dmsetfield
+#define dmaddfield_                  dmaddfield
 #endif
+
+PETSC_EXTERN void dmsetfield_(DM *dm,PetscInt *f,DMLabel label,PetscObject *disc,PetscErrorCode *ierr)
+{
+  CHKFORTRANNULLOBJECT(label);
+  *ierr = DMSetField(*dm,*f,label,*disc);
+}
+
+PETSC_EXTERN void dmaddfield_(DM *dm,DMLabel label,PetscObject *disc,PetscErrorCode *ierr)
+{
+  CHKFORTRANNULLOBJECT(label);
+  *ierr = DMAddField(*dm,label,*disc);
+}
 
 PETSC_EXTERN void dmload_(DM *dm,PetscViewer *vin,PetscErrorCode *ierr)
 {

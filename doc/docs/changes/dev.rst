@@ -113,12 +113,13 @@ Changes: Development
 - Add ``DMPlexCreateEphemeral()``
 - Both ``DMView()`` and ``DMLoad()`` now support parallel I/O with a new HDF5 format (see the manual for details)
 - Remove ``DMPlexComputeGeometryFEM()`` since it was broken
+- Add ``-dm_localize_height`` to localize edges and faces
 
 .. rubric:: FE/FV:
 
 .. rubric:: DMNetwork:
-  - Add DMNetworkGetNumVertices to retrieve the local and global number of vertices in DMNetwork 
-  - Add DMNetworkGetNumEdges to retrieve the local and global number of edges in DMNetwork 
+  - Add DMNetworkGetNumVertices to retrieve the local and global number of vertices in DMNetwork
+  - Add DMNetworkGetNumEdges to retrieve the local and global number of edges in DMNetwork
 
 .. rubric:: DMStag:
 
