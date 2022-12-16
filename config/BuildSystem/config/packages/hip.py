@@ -8,7 +8,7 @@ class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
 
-    self.minversion       = '3.8'
+    self.minversion       = '4.1'
     self.versionname      = 'HIP_VERSION_MAJOR.HIP_VERSION_MINOR'
     self.versioninclude   = 'hip/hip_version.h'
     self.requiresversion  = 1
