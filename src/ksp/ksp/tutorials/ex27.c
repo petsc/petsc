@@ -427,6 +427,12 @@ int main(int argc, char **args)
         args: -solve_augmented -ksp_type gmres -ksp_view -explicit_transpose {{false true}shared output}
         args: -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_precondition self -fieldsplit_0_pc_type jacobi -fieldsplit_ksp_type preonly
         args: -prefix_push fieldsplit_1_ -pc_type hpddm -pc_hpddm_define_subdomains -pc_hpddm_levels_1_eps_nev 20 -pc_hpddm_levels_1_st_share_sub_ksp -pc_hpddm_levels_1_sub_pc_type qr -prefix_pop
+     test:
+        suffix: 4g
+        nsize: 4
+        requires: hypre
+        args: -ksp_converged_reason -ksp_monitor_short -ksp_rtol 1e-5 -ksp_max_it 100
+        args: -ksp_type lsqr -pc_type hypre
 
    test:
       # Load rectangular matrix from HDF5 (Version 7.3 MAT-File)
