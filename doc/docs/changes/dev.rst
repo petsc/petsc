@@ -76,6 +76,7 @@ Changes: Development
 .. rubric:: Mat:
 
 - Add ``MatEliminateZeros()``
+- Improve efficiency of ``MatConvert()`` from ``MATNORMAL`` to ``MATHYPRE``
 
 .. rubric:: MatCoarsen:
 

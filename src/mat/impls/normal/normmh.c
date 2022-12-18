@@ -215,6 +215,9 @@ PetscErrorCode MatDestroy_NormalHermitian(Mat N)
   PetscCall(PetscObjectComposeFunction((PetscObject)N, "MatNormalGetMatHermitian_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)N, "MatConvert_normalh_seqaij_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)N, "MatConvert_normalh_mpiaij_C", NULL));
+#if defined(PETSC_HAVE_HYPRE)
+  PetscCall(PetscObjectComposeFunction((PetscObject)N, "MatConvert_normalh_hypre_C", NULL));
+#endif
   PetscFunctionReturn(0);
 }
 
@@ -329,6 +332,18 @@ PetscErrorCode MatConvert_NormalHermitian_AIJ(Mat A, MatType newtype, MatReuse r
   PetscFunctionReturn(0);
 }
 
+#if defined(PETSC_HAVE_HYPRE)
+PetscErrorCode MatConvert_NormalHermitian_HYPRE(Mat A, MatType type, MatReuse reuse, Mat *B)
+{
+  PetscFunctionBegin;
+  if (reuse == MAT_INITIAL_MATRIX) {
+    PetscCall(MatConvert(A, MATAIJ, reuse, B));
+    PetscCall(MatConvert(*B, type, MAT_INPLACE_MATRIX, B));
+  } else PetscCall(MatConvert_Basic(A, type, reuse, B)); /* fall back to basic convert */
+  PetscFunctionReturn(0);
+}
+#endif
+
 /*@
       MatCreateNormalHermitian - Creates a new matrix object `MATNORMALHERMITIAN` that behaves like (A*)'*A.
 
@@ -390,6 +405,9 @@ PetscErrorCode MatCreateNormalHermitian(Mat A, Mat *N)
   PetscCall(PetscObjectComposeFunction((PetscObject)(*N), "MatNormalGetMatHermitian_C", MatNormalGetMat_NormalHermitian));
   PetscCall(PetscObjectComposeFunction((PetscObject)(*N), "MatConvert_normalh_seqaij_C", MatConvert_NormalHermitian_AIJ));
   PetscCall(PetscObjectComposeFunction((PetscObject)(*N), "MatConvert_normalh_mpiaij_C", MatConvert_NormalHermitian_AIJ));
+#if defined(PETSC_HAVE_HYPRE)
+  PetscCall(PetscObjectComposeFunction((PetscObject)(*N), "MatConvert_normalh_hypre_C", MatConvert_NormalHermitian_HYPRE));
+#endif
   PetscCall(MatSetOption(*N, MAT_HERMITIAN, PETSC_TRUE));
   PetscCall(MatGetVecType(A, &vtype));
   PetscCall(MatSetVecType(*N, vtype));

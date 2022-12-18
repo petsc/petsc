@@ -231,6 +231,9 @@ PetscErrorCode MatDestroy_Normal(Mat N)
   PetscCall(PetscObjectComposeFunction((PetscObject)N, "MatNormalGetMat_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)N, "MatConvert_normal_seqaij_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)N, "MatConvert_normal_mpiaij_C", NULL));
+#if defined(PETSC_HAVE_HYPRE)
+  PetscCall(PetscObjectComposeFunction((PetscObject)N, "MatConvert_normal_hypre_C", NULL));
+#endif
   PetscCall(PetscObjectComposeFunction((PetscObject)N, "MatProductSetFromOptions_normal_seqdense_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)N, "MatProductSetFromOptions_normal_mpidense_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)N, "MatProductSetFromOptions_normal_dense_C", NULL));
@@ -341,6 +344,18 @@ PetscErrorCode MatConvert_Normal_AIJ(Mat A, MatType newtype, MatReuse reuse, Mat
   PetscCall(MatConvert(*newmat, MATAIJ, MAT_INPLACE_MATRIX, newmat));
   PetscFunctionReturn(0);
 }
+
+#if defined(PETSC_HAVE_HYPRE)
+PetscErrorCode MatConvert_Normal_HYPRE(Mat A, MatType type, MatReuse reuse, Mat *B)
+{
+  PetscFunctionBegin;
+  if (reuse == MAT_INITIAL_MATRIX) {
+    PetscCall(MatConvert(A, MATAIJ, reuse, B));
+    PetscCall(MatConvert(*B, type, MAT_INPLACE_MATRIX, B));
+  } else PetscCall(MatConvert_Basic(A, type, reuse, B)); /* fall back to basic convert */
+  PetscFunctionReturn(0);
+}
+#endif
 
 typedef struct {
   Mat work[2];
@@ -516,6 +531,9 @@ PetscErrorCode MatCreateNormal(Mat A, Mat *N)
   PetscCall(PetscObjectComposeFunction((PetscObject)(*N), "MatNormalGetMat_C", MatNormalGetMat_Normal));
   PetscCall(PetscObjectComposeFunction((PetscObject)(*N), "MatConvert_normal_seqaij_C", MatConvert_Normal_AIJ));
   PetscCall(PetscObjectComposeFunction((PetscObject)(*N), "MatConvert_normal_mpiaij_C", MatConvert_Normal_AIJ));
+#if defined(PETSC_HAVE_HYPRE)
+  PetscCall(PetscObjectComposeFunction((PetscObject)(*N), "MatConvert_normal_hypre_C", MatConvert_Normal_HYPRE));
+#endif
   PetscCall(PetscObjectComposeFunction((PetscObject)(*N), "MatProductSetFromOptions_normal_seqdense_C", MatProductSetFromOptions_Normal_Dense));
   PetscCall(PetscObjectComposeFunction((PetscObject)(*N), "MatProductSetFromOptions_normal_mpidense_C", MatProductSetFromOptions_Normal_Dense));
   PetscCall(PetscObjectComposeFunction((PetscObject)(*N), "MatProductSetFromOptions_normal_dense_C", MatProductSetFromOptions_Normal_Dense));
