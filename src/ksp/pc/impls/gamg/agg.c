@@ -95,7 +95,6 @@ static PetscErrorCode PCSetFromOptions_GAMG_AGG(PC pc, PetscOptionItems *PetscOp
   {
     PetscBool flg;
     PetscCall(PetscOptionsInt("-pc_gamg_agg_nsmooths", "smoothing steps for smoothed aggregation, usually 1", "PCGAMGSetNSmooths", pc_gamg_agg->nsmooths, &pc_gamg_agg->nsmooths, NULL));
-    pc_gamg_agg->aggressive_coarsening_levels = 1;
     PetscCall(
       PetscOptionsInt("-pc_gamg_square_graph", "Number of aggressive coarsening (MIS-2) levels from finest (alias for -pc_gamg_aggressive_coarsening, deprecated)", "PCGAMGSetAggressiveLevels", pc_gamg_agg->aggressive_coarsening_levels, &pc_gamg_agg->aggressive_coarsening_levels, &flg));
     if (!flg) {
@@ -823,7 +822,7 @@ PetscErrorCode PCCreateGAMG_AGG(PC pc)
   pc_gamg->ops->createdefaultdata = PCSetData_AGG;
   pc_gamg->ops->view              = PCView_GAMG_AGG;
 
-  pc_gamg_agg->aggressive_coarsening_levels = 0;
+  pc_gamg_agg->aggressive_coarsening_levels = 1;
   pc_gamg_agg->nsmooths                     = 1;
 
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCGAMGSetNSmooths_C", PCGAMGSetNSmooths_AGG));
