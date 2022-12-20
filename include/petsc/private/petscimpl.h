@@ -148,26 +148,135 @@ typedef struct _p_PetscObject {
 PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*PetscObjectDestroyFunction)(PetscObject *); /* force cast in next macro to NEVER use extern "C" style */
 PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*PetscObjectViewFunction)(PetscObject, PetscViewer);
 
-/*@C
-    PetscHeaderCreate - Creates a PETSc object of a particular class
+/*MC
+  PetscHeaderCreate - Creates a PETSc object of a particular class
 
-    Input Parameters:
-+   classid - the classid associated with this object (for example VEC_CLASSID)
-.   class_name - string name of class; should be static (for example "Vec")
-.   descr - string containing short description; should be static (for example "Vector")
-.   mansec - string indicating section in manual pages; should be static (for example "Vec")
-.   comm - the MPI Communicator
-.   destroy - the destroy routine for this object (for example `VecDestroy()`)
--   view - the view routine for this object (for example `VecView()`)
+  Synopsis:
+  #include <petsc/private/petscimpl.h>
+  PetscErrorCode PetscHeaderCreate(PetscObject h, PetscClassId classid, const char class_name[], const char descr[], const char mansec[], MPI_Comm comm, PetscObjectDestroyFunction destroy, PetscObjectViewFunction view)
 
-    Output Parameter:
-.   h - the newly created object
+  Input Parameters:
++ classid    - The classid associated with this object (for example `VEC_CLASSID`)
+. class_name - String name of class; should be static (for example "Vec"), may be
+               `PETSC_NULLPTR`
+. descr      - String containing short description; should be static (for example "Vector"),
+               may be `PETSC_NULLPTR`
+. mansec     - String indicating section in manual pages; should be static (for example "Vec"),
+               may be `PETSC_NULLPTR`
+. comm       - The MPI Communicator
+. destroy    - The destroy routine for this object (for example `VecDestroy()`)
+- view       - The view routine for this object (for example `VecView()`), may be
+               `PETSC_NULLPTR`
 
-    Level: developer
+  Output Parameter:
+. h - The newly created `PetscObject`
+
+  Notes:
+  Can only be used to create a `PetscObject`. A `PetscObject` is defined as a pointer to a
+  C/C++ structure which satisfies all of the following\:
+
+  1. The first member of the structure must be a `_p_PetscObject`.
+  2. C++ structures must be "Standard Layout". Generally speaking a standard layout class\:
+     - Has no virtual functions or base classes.
+     - Has only standard layout non-static members (if any).
+     - Has only standard layout base classes (if any).
+
+     See https://en.cppreference.com/w/cpp/language/classes#Standard-layout_class for further
+     information.
+
+  Example Usage:
+  Existing `PetscObject`s may be easily created as shown. Unless otherwise stated, a particular
+  objects `destroy` and `view` functions are exactly `<OBJECT_TYPE>Destroy()` and
+  `<OBJECT_TYPE>View()`.
+.vb
+  Vec v;
+
+  PetscHeaderCreate(v, VEC_CLASSID, "Vec", "A distributed vector class", "Vec", PETSC_COMM_WORLD, VecDestroy, VecView);
+.ve
+
+  It is possible to create custom `PetscObject`s, note however that they must abide by the
+  restrictions set forth above.
+.vb
+  // OK, first member of C structure is _p_PetscObject
+  struct MyCPetscObject_s
+  {
+    _p_PetscObject header;
+    int            some_data;
+  };
+  typedef struct *MyCPetscObject_s MyCPetscObject;
+
+  PetscErrorCode MyObjectDestroy(MyObject *);
+  PetscErrorCode MyObjectView(MyObject);
+
+  MyCPetscObject obj;
+
+  // assume MY_PETSC_CLASSID is already registered
+  PetscHeaderCreate(obj, MY_PETSC_CLASSID, "MyObject", "A custom PetscObject", PETSC_NULLPTR, PETSC_COMM_SELF, MyObjectDestroy, MyObjectView);
+
+  // OK, only destroy function must be given, all others may be NULL
+  PetscHeaderCreate(obj, MY_PETSC_CLASSID, PETSC_NULLPTR, PETSC_NULLPTR, PETSC_NULLPTR, PETSC_COMM_SELF, MyObjectDestroy, PETSC_NULLPTR);
+
+  // ERROR must be a single-level pointer
+  PetscHeaderCreate(&obj, ...);
+.ve
+
+  Illustrating proper construction from C++\:
+.vb
+  // ERROR, class is not standard layout, first member must be publicly accessible
+  class BadCppPetscObject
+  {
+    _p_PetscObject header;
+  };
+
+  // ERROR, class is not standard layout, has a virtual function and virtual inheritance
+  class BadCppPetscObject2 : virtual BaseClass
+  {
+  public:
+    _p_PetscObject header;
+
+    virtual void foo();
+  };
+
+  // ERROR, class is not standard layout! Has non-standard layout member
+  class BadCppPetscObject2
+  {
+  public:
+    _p_PetscObject    header;
+    BadCppPetscObject non_standard_layout;
+  };
+
+  // OK, class is standard layout!
+  class GoodCppPetscObject;
+  using MyCppObject = GoodCppPetscObject *;
+
+  // OK, non-virtual inheritance of other standard layout class does not affect layout
+  class GoodCppPetscObject : StandardLayoutClass
+  {
+  public:
+    // OK, non standard layout member is static, does not affect layout
+    static BadCppPetscObject non_standard_layout;
+
+    // OK, first non-static member is _p_PetscObject
+    _p_PetscObject header;
+
+     // OK, non-virtual member functions do not affect class layout
+    void foo();
+
+    // OK, may use "member" functions for destroy and view so long as they are static
+    static PetscErrorCode destroy(MyCppObject *);
+    static PetscErrorCode view(MyCppObject);
+  };
+
+  // OK, usage via pointer
+  MyObject obj;
+
+  PetscHeaderCreate(obj, MY_PETSC_CLASSID, "MyObject", "A custom C++ PetscObject", nullptr, PETSC_COMM_SELF, GoodCppPetscObject::destroy, GoodCppPetscObject::view);
+.ve
+
+  Level: developer
 
 .seealso: `PetscHeaderDestroy()`, `PetscClassIdRegister()`
-
-@*/
+M*/
 #define PetscHeaderCreate(h, classid, class_name, descr, mansec, comm, destroy, view) \
   (PetscNew(&(h)) || PetscHeaderCreate_Private((PetscObject)(h), classid, class_name, descr, mansec, comm, (PetscObjectDestroyFunction)(destroy), (PetscObjectViewFunction)(view)) || PetscLogObjectCreate(h))
 
@@ -175,16 +284,60 @@ PETSC_EXTERN PetscErrorCode PetscComposedQuantitiesDestroy(PetscObject obj);
 PETSC_EXTERN PetscErrorCode PetscHeaderCreate_Private(PetscObject, PetscClassId, const char[], const char[], const char[], MPI_Comm, PetscObjectDestroyFunction, PetscObjectViewFunction);
 PETSC_INTERN PetscObjectId  PetscObjectNewId_Internal(void);
 
-/*@C
-    PetscHeaderDestroy - Final step in destroying a PetscObject
+/*MC
+  PetscHeaderDestroy - Final step in destroying a `PetscObject`
 
-    Input Parameters:
-.   h - the header created with `PetscHeaderCreate()`
+  Synopsis:
+  #include <petsc/private/petscimpl.h>
+  PetscErrorCode PetscHeaderDestroy(PetscObject *obj)
 
-    Level: developer
+  Input Parameters:
+. h - A pointer to the header created with `PetscHeaderCreate()`
+
+  Notes:
+  `h` is freed and set to `PETSC_NULLPTR` when this routine returns.
+
+  Example Usage:
+.vb
+  PetscObject obj;
+
+  PetscHeaderCreate(obj, ...);
+  // use obj...
+
+  // note pointer to obj is used
+  PetscHeaderDestroy(&obj);
+.ve
+
+  Note that this routine is the _last_ step when destroying higher-level `PetscObject`s as it
+  deallocates the memory for the structure itself\:
+.vb
+  typedef struct MyPetscObject_s *MyPetscObject;
+  struct MyPetscObject_s
+  {
+    _p_PetscObject  hdr;
+    PetscInt       *foo;
+    PetscScalar    *bar;
+  };
+
+  // assume obj is created/initialized elsewhere...
+  MyPetscObject obj;
+
+  // OK, should dispose of all dynamically allocated resources before calling
+  // PetscHeaderDestroy()
+  PetscFree(obj->foo);
+
+  // OK, dispose of obj
+  PetscHeaderDestroy(&obj);
+
+  // ERROR, obj points to NULL here, accessing obj->bar may result in segmentation violation!
+  // obj->bar is potentially leaked!
+  PetscFree(obj->bar);
+.ve
+
+  Level: developer
 
 .seealso: `PetscHeaderCreate()`
-@*/
+M*/
 #define PetscHeaderDestroy(h) (PetscHeaderDestroy_Private((PetscObject)(*(h)), PETSC_FALSE) || PetscFree(*(h)))
 
 PETSC_EXTERN PetscErrorCode                PetscHeaderDestroy_Private(PetscObject, PetscBool);
