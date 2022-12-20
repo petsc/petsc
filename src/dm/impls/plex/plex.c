@@ -5848,7 +5848,6 @@ static inline PetscErrorCode DMPlexVecGetClosure_Fields_Static(DM dm, PetscSecti
 - values - An array to use for the values, or NULL to have it allocated automatically;
            if the user provided NULL, it is a borrowed array and should not be freed
 
-
   Level: intermediate
 
   Notes:
