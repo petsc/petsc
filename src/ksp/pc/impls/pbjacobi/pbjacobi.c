@@ -1,18 +1,4 @@
-
-/*
-   Include files needed for the PBJacobi preconditioner:
-     pcimpl.h - private include file intended for use by all preconditioners
-*/
-
-#include <petsc/private/pcimpl.h> /*I "petscpc.h" I*/
-
-/*
-   Private context (data structure) for the PBJacobi preconditioner.
-*/
-typedef struct {
-  const MatScalar *diag;
-  PetscInt         bs, mbs;
-} PC_PBJacobi;
+#include <../src/ksp/pc/impls/pbjacobi/pbjacobi.h>
 
 static PetscErrorCode PCApply_PBJacobi(PC pc, Vec x, Vec y)
 {
@@ -258,7 +244,7 @@ static PetscErrorCode PCApplyTranspose_PBJacobi(PC pc, Vec x, Vec y)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCSetUp_PBJacobi(PC pc)
+PETSC_INTERN PetscErrorCode PCSetUp_PBJacobi_Host(PC pc)
 {
   PC_PBJacobi   *jac = (PC_PBJacobi *)pc->data;
   Mat            A   = pc->pmat;
@@ -272,13 +258,39 @@ static PetscErrorCode PCSetUp_PBJacobi(PC pc)
 
   PetscCall(MatGetBlockSize(A, &jac->bs));
   PetscCall(MatGetLocalSize(A, &nlocal, NULL));
-  jac->mbs                = nlocal / jac->bs;
-  pc->ops->apply          = PCApply_PBJacobi;
-  pc->ops->applytranspose = PCApplyTranspose_PBJacobi;
+  jac->mbs = nlocal / jac->bs;
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode PCDestroy_PBJacobi(PC pc)
+static PetscErrorCode PCSetUp_PBJacobi(PC pc)
+{
+  PetscFunctionBegin;
+  /* In PCCreate_PBJacobi() pmat might have not been set, so we wait to the last minute to do the dispatch */
+#if defined(PETSC_HAVE_CUDA)
+  PetscBool isCuda;
+  PetscCall(PetscObjectTypeCompareAny((PetscObject)pc->pmat, &isCuda, MATSEQAIJCUSPARSE, MATMPIAIJCUSPARSE, ""));
+#endif
+#if defined(PETSC_HAVE_KOKKOS_KERNELS)
+  PetscBool isKok;
+  PetscCall(PetscObjectTypeCompareAny((PetscObject)pc->pmat, &isKok, MATSEQAIJKOKKOS, MATMPIAIJKOKKOS, ""));
+#endif
+
+#if defined(PETSC_HAVE_CUDA)
+  if (isCuda) PetscCall(PCSetUp_PBJacobi_CUDA(pc));
+  else
+#endif
+#if defined(PETSC_HAVE_KOKKOS_KERNELS)
+    if (isKok)
+    PetscCall(PCSetUp_PBJacobi_Kokkos(pc));
+  else
+#endif
+  {
+    PetscCall(PCSetUp_PBJacobi_Host(pc));
+  }
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode PCDestroy_PBJacobi(PC pc)
 {
   PetscFunctionBegin;
   /*
@@ -349,8 +361,8 @@ PETSC_EXTERN PetscErrorCode PCCreate_PBJacobi(PC pc)
       choose not to provide a couple of these functions since they are
       not needed.
   */
-  pc->ops->apply               = NULL; /*set depending on the block size */
-  pc->ops->applytranspose      = NULL;
+  pc->ops->apply               = PCApply_PBJacobi;
+  pc->ops->applytranspose      = PCApplyTranspose_PBJacobi;
   pc->ops->setup               = PCSetUp_PBJacobi;
   pc->ops->destroy             = PCDestroy_PBJacobi;
   pc->ops->setfromoptions      = NULL;

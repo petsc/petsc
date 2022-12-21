@@ -1,13 +1,14 @@
--include ../../../../../petscdir.mk
+-include ../../../../../../petscdir.mk
+#requirespackage 'PETSC_HAVE_CUDA'
 
-SOURCEC   = pbjacobi.c
-SOURCEF   =
+SOURCEC   =
+SOURCECU  = pbjacobi_cuda.cu
 SOURCEH   =
 LIBBASE   = libpetscksp
-DIRS      = cuda kokkos
+DIRS      =
 MANSEC    = KSP
 SUBMANSEC = PC
-LOCDIR    = src/ksp/pc/impls/pbjacobi/
+LOCDIR    = src/ksp/pc/impls/pbjacobi/cuda
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules
