@@ -128,6 +128,11 @@ PetscErrorCode PetscDSGetType(PetscDS prob, PetscDSType *name)
   PetscFunctionReturn(0);
 }
 
+#if defined(__clang__)
+  #pragma clang diagnostic push
+  #pragma clang diagnostic ignored "-Wformat-pedantic"
+#endif
+
 static PetscErrorCode PetscDSView_Ascii(PetscDS ds, PetscViewer viewer)
 {
   PetscViewerFormat  format;
@@ -233,6 +238,10 @@ static PetscErrorCode PetscDSView_Ascii(PetscDS ds, PetscViewer viewer)
   PetscCall(PetscViewerASCIIPopTab(viewer));
   PetscFunctionReturn(0);
 }
+
+#if defined(__clang__)
+  #pragma clang diagnostic pop
+#endif
 
 /*@C
    PetscDSViewFromOptions - View a `PetscDS` based on values in the options database

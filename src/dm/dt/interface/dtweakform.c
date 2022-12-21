@@ -937,6 +937,11 @@ PetscErrorCode PetscWeakFormDestroy(PetscWeakForm *wf)
   PetscFunctionReturn(0);
 }
 
+#if defined(__clang__)
+  #pragma clang diagnostic push
+  #pragma clang diagnostic ignored "-Wformat-pedantic"
+#endif
+
 static PetscErrorCode PetscWeakFormViewTable_Ascii(PetscWeakForm wf, PetscViewer viewer, PetscBool splitField, const char tableName[], PetscHMapForm map)
 {
   PetscInt Nf = wf->Nf, Nk, k;
@@ -1020,6 +1025,10 @@ static PetscErrorCode PetscWeakFormViewTable_Ascii(PetscWeakForm wf, PetscViewer
   }
   PetscFunctionReturn(0);
 }
+
+#if defined(__clang__)
+  #pragma clang diagnostic pop
+#endif
 
 static PetscErrorCode PetscWeakFormView_Ascii(PetscWeakForm wf, PetscViewer viewer)
 {

@@ -1,4 +1,3 @@
-
 /*
     Routines for matrix products. Calling procedure:
 
@@ -376,6 +375,11 @@ static PetscErrorCode MatProductSymbolic_X_Dense(Mat C)
   PetscFunctionReturn(0);
 }
 
+#if defined(__clang__)
+  #pragma clang diagnostic push
+  #pragma clang diagnostic ignored "-Wformat-pedantic"
+#endif
+
 /* a single driver to query the dispatching */
 static PetscErrorCode MatProductSetFromOptions_Private(Mat mat)
 {
@@ -502,6 +506,10 @@ static PetscErrorCode MatProductSetFromOptions_Private(Mat mat)
   if (!mat->ops->productsymbolic) PetscCall(PetscInfo(mat, "  symbolic product is not supported\n"));
   PetscFunctionReturn(0);
 }
+
+#if defined(__clang__)
+  #pragma clang diagnostic pop
+#endif
 
 /*@C
    MatProductSetFromOptions - Sets the options for the computation of a matrix-matrix product where the type, the algorithm etc are determined from the options database.
