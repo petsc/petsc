@@ -14,7 +14,7 @@ News
 ====
 .. admonition:: News: PETSc 2023 Annual Meeting
 
-  Mark your calendars **The PETSc 2023 Annual Meeting** will take place June 5-7 on the campus of IIT in Chicago. More details will follow
+  Registration now open for :any:`The PETSc 2023 Annual Meeting<2023_meeting>`, June 5-7 on the campus of IIT in Chicago.
 
 .. admonition:: News: New Book on PETSc
 
