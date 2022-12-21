@@ -501,6 +501,15 @@ static inline void DMPlex_MultAdd3DReal_Internal(const PetscReal A[], PetscInt l
   y[2 * ldx] += A[6] * z[0] + A[7] * z[1] + A[8] * z[2];
   (void)PetscLogFlops(15.0);
 }
+/*
+  A: packed, row-major m x n array
+  x: length m array
+  y: length n arra
+  ldx: the stride in x and y
+
+  A[i,j] = A[i * n + j]
+  A^T[j,i] = A[i,j]
+*/
 static inline void DMPlex_MultTransposeReal_Internal(const PetscReal A[], PetscInt m, PetscInt n, PetscInt ldx, const PetscScalar x[], PetscScalar y[])
 {
   PetscScalar z[3];
@@ -509,7 +518,7 @@ static inline void DMPlex_MultTransposeReal_Internal(const PetscReal A[], PetscI
   for (j = 0; j < n; ++j) {
     const PetscInt l = j * ldx;
     y[l]             = 0;
-    for (i = 0; i < m; ++i) y[l] += A[j * n + i] * z[i];
+    for (i = 0; i < m; ++i) y[l] += A[i * n + j] * z[i];
   }
   (void)PetscLogFlops(2 * m * n);
 }
