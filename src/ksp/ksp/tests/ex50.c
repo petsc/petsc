@@ -1,5 +1,5 @@
 
-static char help[] = "Tests SeqBAIJ point block Jacobi for different block sizes\n\n";
+static char help[] = "Tests point block Jacobi and ILU for different block sizes\n\n";
 
 #include <petscksp.h>
 
@@ -21,7 +21,6 @@ int main(int argc, char **args)
   PetscCall(MatCreate(PETSC_COMM_WORLD, &A));
   PetscCall(MatSetSizes(A, n * bs, n * bs, PETSC_DETERMINE, PETSC_DETERMINE));
   PetscCall(MatSetBlockSize(A, bs));
-  PetscCall(MatSetType(A, MATSEQBAIJ));
   PetscCall(MatSetFromOptions(A));
   PetscCall(MatSetUp(A));
 
@@ -48,13 +47,8 @@ int main(int argc, char **args)
 
   PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
-
-  PetscCall(VecCreate(PETSC_COMM_WORLD, &u));
-  PetscCall(VecSetSizes(u, PETSC_DECIDE, n * bs));
-  PetscCall(VecSetFromOptions(u));
-  PetscCall(VecDuplicate(u, &b));
-  PetscCall(VecDuplicate(b, &x));
-
+  PetscCall(MatCreateVecs(A, &u, &b));
+  PetscCall(VecDuplicate(u, &x));
   PetscCall(VecSet(u, 1.0));
   PetscCall(MatMult(A, u, b));
 
@@ -121,11 +115,13 @@ int main(int argc, char **args)
 }
 
 /*TEST
+  testset:
+    args: -mat_type {{aij baij}}
 
-   test:
-      args: -bs {{1 2 3 4 5 6 7}} -pc_type pbjacobi
+    test:
+      args: -bs {{1 2 3 4 5 6 7 8}} -pc_type pbjacobi
 
-   test:
+    test:
       suffix: 2
       args: -bs {{8 9 10 11 12 13 14 15}} -pc_type ilu
 
