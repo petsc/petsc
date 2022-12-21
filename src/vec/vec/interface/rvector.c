@@ -1925,7 +1925,7 @@ PetscErrorCode VecRestoreArray(Vec x, PetscScalar **a)
    Unlike `VecGetArray()`, this routine is not collective and preserves cached information like vector norms.
 
    Standard PETSc vectors use contiguous storage so that this routine does not perform a copy.  Other vector
-   implementations may require a copy, but must such implementations should cache the contiguous representation so that
+   implementations may require a copy, but such implementations should cache the contiguous representation so that
    only one copy is performed when this routine is called multiple times in sequence.
 
 .seealso: [](chapter_vectors), `Vec`, `VecGetArray()`, `VecRestoreArray()`, `VecGetArrayPair()`, `VecRestoreArrayPair()`
@@ -1989,8 +1989,8 @@ PetscErrorCode VecRestoreArrayRead(Vec x, const PetscScalar **a)
 }
 
 /*@C
-   VecGetArrayWrite - Returns a pointer to a contiguous array that WILL contains this
-   processor's portion of the vector data. The values in this array are NOT valid, the routine calling this
+   VecGetArrayWrite - Returns a pointer to a contiguous array that WILL contain this
+   processor's portion of the vector data. The values in this array are NOT valid, the caller of this
    routine is responsible for putting values into the array; any values it does not set will be invalid
 
    Logically Collective
@@ -2003,7 +2003,8 @@ PetscErrorCode VecRestoreArrayRead(Vec x, const PetscScalar **a)
 
    Level: intermediate
 
-   This is for vectors associate with GPUs, the vector is not copied up before giving access. If you need correct
+   Notes:
+   For vectors associated with GPUs, the host and device vectors are not synchronized before giving access. If you need correct
    values in the array use `VecGetArray()`
 
 .seealso: [](chapter_vectors), `Vec`, `VecRestoreArray()`, `VecGetArrayRead()`, `VecGetArrays()`, `VecGetArrayF90()`, `VecGetArrayReadF90()`, `VecPlaceArray()`, `VecGetArray2d()`,
