@@ -69,12 +69,12 @@ class Processor:
     dry_run:             (bool) is this a dry-run
     del_empty_last_line: (bool) should we try and delete empty last (double) lines in the file
     """
-    self.chkerr_re  = re.compile(r'(?:\w+ +)?\w*(?:err|stat|ccer)\w* *= *(.*?);(CHKERR.*)\((.*?)\)')
-    self.pinit_re   = re.compile(r'(?:\w+ +)?ierr *= *(PetscInitialize.*);\s*if\s+\(ierr\)\s*return\s+ierr.*')
-    self.pfinal_re  = re.compile(r'(?:\w+ +)?ierr *= *(PetscFinalize.*);.*')
-    self.retierr_re = re.compile(r'(?:\w+ +)?(return)\s+ierr;.*')
+    self.chkerr_re  = re.compile(r'(?:\w+\s+)?\w*(?:err|stat|ccer)\w*\s*=\s*(.*?)\s*;\s*(CHKERR.*)\((.*?)\)')
+    self.pinit_re   = re.compile(r'(?:\w+\s+)?ierr\s*=\s*(PetscInitialize.*);\s*if\s+\(ierr\)\s*return\s+ierr.*')
+    self.pfinal_re  = re.compile(r'(?:\w+\s+)?ierr\s*=\s*(PetscFinalize.*)\s*;.*')
+    self.retierr_re = re.compile(r'(?:\w+\s+)?(return)\s+ierr\s*;.*')
     self.cleanup_re = re.compile(r'{\s*(PetscCall[^;]*;)\s*}')
-    self.edecl_re   = re.compile(r'\s*PetscErrorCode\s+ierr;.*')
+    self.edecl_re   = re.compile(r'\s*PetscErrorCode\s+ierr\s*;.*')
     self.euses_re   = re.compile(r'.*ierr\s*=\s*.*')
     self.addcount   = 0
     self.delcount   = 0
@@ -198,8 +198,8 @@ class Processor:
     if self.delcount or self.addcount:
       mod = 'found' if self.dry_run else 'made'
       print(
-        'Insertions and/or deletions were',mod+','
-        ' suggest running the tool again until no more changes are',mod
+        'Insertions and/or deletions were',mod+', '
+        'suggest running the tool again until no more changes are',mod
       )
     return
 

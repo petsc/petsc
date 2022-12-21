@@ -3389,7 +3389,7 @@ PetscErrorCode MatInvertBlockDiagonal_SeqAIJ(Mat A, const PetscScalar **values)
       ij[3] = 7 * i + 3;
       ij[4] = 7 * i + 4;
       ij[5] = 7 * i + 5;
-      ij[5] = 7 * i + 6;
+      ij[6] = 7 * i + 6;
       PetscCall(MatGetValues(A, 7, ij, 7, ij, diag));
       PetscCall(PetscKernel_A_gets_inverse_A_7(diag, shift, allowzeropivot, &zeropivotdetected));
       if (zeropivotdetected) A->factorerrortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
