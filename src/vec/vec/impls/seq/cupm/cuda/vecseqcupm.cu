@@ -142,9 +142,9 @@ PetscErrorCode VecCreateSeqCUDAWithArray(MPI_Comm comm, PetscInt bs, PetscInt n,
   consistent view of the vector data. This may involve copying data from the host to the device
   if the data on the device is out of date. It is also assumed that the returned buffer is
   immediately modified, marking the host data out of date. This is similar to intent(inout) in
-  fortran.
+  Fortran.
 
-  If the user does require strong memory guarantees, they are encocuraged to use
+  If the user does require strong memory guarantees, they are encouraged to use
   `VecCUDAGetArrayRead()` and/or `VecCUDAGetArrayWrite()` instead.
 
   The user must call `VecCUDARestoreArray()` when they are finished using the array.

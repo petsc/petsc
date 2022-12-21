@@ -304,7 +304,7 @@ inline PetscErrorCode VecSeq_CUPM<T>::bindtocpu(Vec v, PetscBool usehost) noexce
 }
 
 // ==========================================================================================
-// VecSeq_CUPM - Public API - Mutatators
+// VecSeq_CUPM - Public API - Mutators
 // ==========================================================================================
 
 // v->ops->getlocalvector or v->ops->getlocalvectorread

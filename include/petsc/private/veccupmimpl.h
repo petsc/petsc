@@ -366,7 +366,7 @@ public:
 // holds the pointer itself and provides the implicit conversion operator.
 //
 // On construction this calls the moral equivalent of Vec[CUPM]GetArray[Read|Write]()
-// (depending on PetscMemoryAccessMode) and on desctruction automatically restores the array
+// (depending on PetscMemoryAccessMode) and on destruction automatically restores the array
 // for you
 // ==========================================================================================
 template <device::cupm::DeviceType T, typename D>
@@ -402,7 +402,7 @@ private:
 };
 
 // ==========================================================================================
-// Vec_CUPMBase::vector_arry - Static Variables
+// Vec_CUPMBase::vector_array - Static Variables
 // ==========================================================================================
 
 template <device::cupm::DeviceType T, typename D>
@@ -414,7 +414,7 @@ template <PetscMemType MT, PetscMemoryAccessMode MA>
 const PetscMemoryAccessMode Vec_CUPMBase<T, D>::vector_array<MT, MA>::access_type;
 
 // ==========================================================================================
-// Vec_CUPMBase::vector_arry - Public API
+// Vec_CUPMBase::vector_array - Public API
 // ==========================================================================================
 
 template <device::cupm::DeviceType T, typename D>
