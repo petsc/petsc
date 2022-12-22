@@ -1,13 +1,14 @@
--include ../../../../../petscdir.mk
+-include ../../../../../../petscdir.mk
+#requirespackage 'PETSC_HAVE_KOKKOS_KERNELS'
 
-SOURCEC   = pbjacobi.c
-SOURCEF   =
+SOURCEC   =
+SOURCEKOKKOS  = pbjacobi_kok.kokkos.cxx
 SOURCEH   =
 LIBBASE   = libpetscksp
-DIRS      = cuda kokkos
+DIRS      =
 MANSEC    = KSP
 SUBMANSEC = PC
-LOCDIR    = src/ksp/pc/impls/pbjacobi/
+LOCDIR    = src/ksp/pc/impls/pbjacobi/kokkos
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules

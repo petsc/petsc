@@ -115,14 +115,22 @@ int main(int argc, char **args)
 }
 
 /*TEST
+
   testset:
-    args: -mat_type {{aij baij}}
+    args: -bs {{1 2 3 4 5 6 7 8 11 15}} -pc_type {{pbjacobi ilu}}
+    output_file: output/ex50_1.out
 
     test:
-      args: -bs {{1 2 3 4 5 6 7 8}} -pc_type pbjacobi
+      args: -mat_type {{aij baij}}
 
     test:
-      suffix: 2
-      args: -bs {{8 9 10 11 12 13 14 15}} -pc_type ilu
+      suffix: cuda
+      requires: cuda
+      args: -mat_type aijcusparse
+
+    test:
+      suffix: kok
+      requires: kokkos_kernels
+      args: -mat_type aijkokkos
 
 TEST*/
