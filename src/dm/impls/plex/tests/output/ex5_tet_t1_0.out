@@ -195,7 +195,7 @@ Vec Object: Local Solution 1 MPI process
 0.
 0.
 -1.
-5.55112e-17
+0.
 0.
 0.
 1.
@@ -235,7 +235,7 @@ Vec Object: Local Solution 1 MPI process
 Discrete System with 2 fields
     cell total dim 27 total comp 6
     cohesive cell
-  Field displacement FEM 3 components (implicit) (Nq 4 Nqc 1) 1-jet
+  Field displacement FEM 3 components (implicit) (Nq 3 Nqc 1) 1-jet
     PetscFE Object: displacement 1 MPI process
       type: basic
       Basic Finite Element in 2 dimensions with 3 components
@@ -251,8 +251,8 @@ Discrete System with 2 fields
         type: lagrange
         Dual space with 3 components, size 9
         Continuous Lagrange dual space
-        Quadrature of order 3 on 4 points (dim 2)
-  Field fault traction FEM 3 components (implicit) (Nq 4 Nqc 1) 1-jet
+        Quadrature of order 2 on 3 points (dim 2)
+  Field fault traction FEM 3 components (implicit) (Nq 3 Nqc 1) 1-jet
     PetscFE Object: fault traction (faulttraction_) 1 MPI process
       type: basic
       Basic Finite Element in 2 dimensions with 3 components
@@ -268,7 +268,7 @@ Discrete System with 2 fields
         type: lagrange
         Dual space with 3 components, size 9
         Continuous Lagrange dual space
-        Quadrature of order 3 on 4 points (dim 2)
+        Quadrature of order 2 on 3 points (dim 2)
   Weak Form System with 2 fields
     boundary_residual_f0
       (cohesive, 1) (0, 1) 
@@ -299,16 +299,16 @@ Vec Object: Local Residual 1 MPI process
 0.
 0.
 0.25
--5.55112e-17
+-9.71445e-17
 -0.0833333
 0.25
--1.82146e-17
+-6.5534e-18
 0.0833333
 0.0833333
--2.77556e-17
+-1.11022e-16
 -0.25
 -0.25
--3.81639e-17
+-1.10637e-16
 -0.0833333
 0.
 0.5

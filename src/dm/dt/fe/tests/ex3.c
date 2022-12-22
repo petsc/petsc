@@ -258,7 +258,7 @@ int main(int argc, char **argv)
     test:
       suffix: p1_1
       args: -func {{quadratic trig}} \
-            -snes_convergence_estimate -convest_num_refine 2
+            -snes_convergence_estimate -convest_num_refine 2 -dm_refine 1
 
   testset:
     requires: !complex double
