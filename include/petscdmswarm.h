@@ -94,6 +94,8 @@ PETSC_EXTERN PetscErrorCode DMSwarmCopyPoint(DM dm, PetscInt, PetscInt);
 
 PETSC_EXTERN PetscErrorCode DMSwarmGetLocalSize(DM, PetscInt *);
 PETSC_EXTERN PetscErrorCode DMSwarmGetSize(DM, PetscInt *);
+PETSC_EXTERN PetscErrorCode DMSwarmGetMigrateType(DM, DMSwarmMigrateType *);
+PETSC_EXTERN PetscErrorCode DMSwarmSetMigrateType(DM, DMSwarmMigrateType);
 PETSC_EXTERN PetscErrorCode DMSwarmMigrate(DM, PetscBool);
 
 PETSC_EXTERN PetscErrorCode DMSwarmCollectViewCreate(DM);

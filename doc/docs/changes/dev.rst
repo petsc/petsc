@@ -106,6 +106,8 @@ Changes: Development
 
 .. rubric:: DMSwarm:
 
+- Add ``DMSwarmGetMigrateType()`` and ``DMSwarmSetMigrateType()``
+
 .. rubric:: DMPlex:
 
 - Add ``DMPlexGetOrientedCone()`` and ``DMPlexRestoreOrientedCone()`` to return both cone and orientation together
