@@ -29,6 +29,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm)
   PetscCall(DMSetFromOptions(*dm));
   PetscCall(LabelPoints(*dm));
   PetscCall(PetscObjectSetOptionsPrefix((PetscObject)*dm, "post_label_"));
+  PetscCall(DMPlexDistributeSetDefault(*dm, PETSC_FALSE));
   PetscCall(DMSetFromOptions(*dm));
   PetscCall(PetscObjectSetOptionsPrefix((PetscObject)*dm, NULL));
   PetscCall(DMViewFromOptions(*dm, NULL, "-dm_view"));
