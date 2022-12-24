@@ -8,7 +8,7 @@
 
    Level: beginner
 
-.seealso: `PCCreate()`, `PCSetType()`, `PCType`
+.seealso: [](sec_pc), `PCCreate()`, `PCSetType()`, `PCType`
 S*/
 typedef struct _p_PC *PC;
 
@@ -20,7 +20,7 @@ typedef struct _p_PC *PC;
    Note:
    `PCRegister()` is used to register preconditioners that are then accessible via `PCSetType()`
 
-.seealso: `PCSetType()`, `PC`, `PCCreate()`, `PCRegister()`, `PCSetFromOptions()`, `PCLU`, `PCJACOBI`, `PCBJACOBI`
+.seealso: [](sec_pc), `PCSetType()`, `PC`, `PCCreate()`, `PCRegister()`, `PCSetFromOptions()`, `PCLU`, `PCJACOBI`, `PCBJACOBI`
 J*/
 typedef const char *PCType;
 #define PCNONE               "none"
@@ -84,7 +84,7 @@ typedef const char *PCType;
 
    Level: beginner
 
-.seealso:
+.seealso: [](sec_pc), `PC`
 E*/
 typedef enum {
   PC_SIDE_DEFAULT = -1,
@@ -95,14 +95,14 @@ typedef enum {
 #define PC_SIDE_MAX (PC_SYMMETRIC + 1)
 
 /*E
-    PCRichardsonConvergedReason - reason a `PCApplyRichardson() method terminated
+    PCRichardsonConvergedReason - reason a `PCRICHARDSON` `PCApplyRichardson()` method terminated
 
    Level: advanced
 
    Developer Note:
     this must match petsc/finclude/petscpc.h and the `KSPConvergedReason` values in petscksp.h
 
-.seealso: `PCApplyRichardson()`
+.seealso: [](sec_pc), `PCRICHARDSON`, `PC`, `PCApplyRichardson()`
 E*/
 typedef enum {
   PCRICHARDSON_CONVERGED_RTOL = 2,
@@ -114,9 +114,14 @@ typedef enum {
 /*E
     PCJacobiType - What elements are used to form the Jacobi preconditioner
 
+   Values:
++  `PC_JACOBI_DIAGONAL` - use the diagonal entry, if it is zero use one
+.  `PC_JACOBI_ROWMAX` - use the maximum absolute value in the row
+-  `PC_JACOBI_ROWSUM` - use the sum of the values in the row (not the absolute values)
+
    Level: intermediate
 
-.seealso:
+.seealso: [](sec_pc), `PCJACOBI`, `PC`
 E*/
 typedef enum {
   PC_JACOBI_DIAGONAL,
@@ -127,21 +132,22 @@ typedef enum {
 /*E
     PCASMType - Type of additive Schwarz method to use
 
-$  `PC_ASM_BASIC`        - Symmetric version where residuals from the ghost points are used
-$                        and computed values in ghost regions are added together.
-$                        Classical standard additive Schwarz.
-$  `PC_ASM_RESTRICT`     - Residuals from ghost points are used but computed values in ghost
-$                        region are discarded.
-$                        Default.
-$  `PC_ASM_INTERPOLATE`  - Residuals from ghost points are not used, computed values in ghost
-$                        region are added back in.
-$  `PC_ASM_NONE`         - Residuals from ghost points are not used, computed ghost values are
-$                        discarded.
-$                        Not very good.
+   Values:
++  `PC_ASM_BASIC`        - Symmetric version where residuals from the ghost points are used
+                        and computed values in ghost regions are added together.
+                        Classical standard additive Schwarz.
+.  `PC_ASM_RESTRICT`     - Residuals from ghost points are used but computed values in ghost
+                        region are discarded.
+                        Default.
+.  `PC_ASM_INTERPOLATE`  - Residuals from ghost points are not used, computed values in ghost
+                        region are added back in.
+-  `PC_ASM_NONE`         - Residuals from ghost points are not used, computed ghost values are
+                        discarded.
+                        Not very good.
 
    Level: beginner
 
-.seealso: `PCASMSetType()`
+.seealso: [](sec_pc), `PC`, `PCASM`, `PCASMSetType()`
 E*/
 typedef enum {
   PC_ASM_BASIC       = 3,
@@ -158,25 +164,26 @@ typedef enum {
    a subdomain correction over each *outer* subdomain from a residual computed there, but its different variants will differ in
    (a) how the outer subdomain residual is computed, and (b) how the outer subdomain correction is computed.
 
-$  `PC_GASM_BASIC`       - Symmetric version where the full from the outer subdomain is used, and the resulting correction is applied
-$                        over the outer subdomains.  As a result, points in the overlap will receive the sum of the corrections
-$                        from neighboring subdomains.
-$                        Classical standard additive Schwarz.
-$  `PC_GASM_RESTRICT`    - Residual from the outer subdomain is used but the correction is restricted to the inner subdomain only
-$                        (i.e., zeroed out over the overlap portion of the outer subdomain before being applied).  As a result,
-$                        each point will receive a correction only from the unique inner subdomain containing it (nonoverlapping covering
-$                        assumption).
-$                        Default.
-$  `PC_GASM_INTERPOLATE` - Residual is zeroed out over the overlap portion of the outer subdomain, but the resulting correction is
-$                        applied over the outer subdomain. As a result, points in the overlap will receive the sum of the corrections
-$                        from neighboring subdomains.
-$
-$  `PC_GASM_NONE`       - Residuals and corrections are zeroed out outside the local subdomains.
-$                        Not very good.
+   Values:
++  `PC_GASM_BASIC`      - Symmetric version where the full from the outer subdomain is used, and the resulting correction is applied
+                        over the outer subdomains.  As a result, points in the overlap will receive the sum of the corrections
+                        from neighboring subdomains.
+                        Classical standard additive Schwarz.
+.  `PC_GASM_RESTRICT`    - Residual from the outer subdomain is used but the correction is restricted to the inner subdomain only
+                        (i.e., zeroed out over the overlap portion of the outer subdomain before being applied).  As a result,
+                        each point will receive a correction only from the unique inner subdomain containing it (nonoverlapping covering
+                        assumption).
+                        Default.
+.  `PC_GASM_INTERPOLATE` - Residual is zeroed out over the overlap portion of the outer subdomain, but the resulting correction is
+                        applied over the outer subdomain. As a result, points in the overlap will receive the sum of the corrections
+                        from neighboring subdomains.
+
+-  `PC_GASM_NONE`       - Residuals and corrections are zeroed out outside the local subdomains.
+                        Not very good.
 
    Level: beginner
 
-.seealso: `PCGASMSetType()`
+.seealso: [](sec_pc), `PCGASM`, `PCASM`, `PC`, `PCGASMSetType()`
 E*/
 typedef enum {
   PC_GASM_BASIC       = 3,
@@ -188,18 +195,21 @@ typedef enum {
 /*E
     PCCompositeType - Determines how two or more preconditioner are composed
 
-$  `PC_COMPOSITE_ADDITIVE` - results from application of all preconditioners are added together
-$  `PC_COMPOSITE_MULTIPLICATIVE` - preconditioners are applied sequentially to the residual freshly
-$                                computed after the previous preconditioner application
-$  `PC_COMPOSITE_SYMMETRIC_MULTIPLICATIVE` - preconditioners are applied sequentially to the residual freshly
-$                                computed from first preconditioner to last and then back (Use only for symmetric matrices and preconditioners)
-$  `PC_COMPOSITE_SPECIAL` - This is very special for a matrix of the form alpha I + R + S
-$                         where first preconditioner is built from alpha I + S and second from
-$                         alpha I + R
+  Values:
++  `PC_COMPOSITE_ADDITIVE` - results from application of all preconditioners are added together
+.  `PC_COMPOSITE_MULTIPLICATIVE` - preconditioners are applied sequentially to the residual freshly
+                                computed after the previous preconditioner application
+.  `PC_COMPOSITE_SYMMETRIC_MULTIPLICATIVE` - preconditioners are applied sequentially to the residual freshly
+                                computed from first preconditioner to last and then back (Use only for symmetric matrices and preconditioners)
+.  `PC_COMPOSITE_SPECIAL` - This is very special for a matrix of the form alpha I + R + S
+                         where first preconditioner is built from alpha I + S and second from
+                         alpha I + R
+.  `PC_COMPOSITE_SCHUR` -  composes the Schur complement of the matrix from two blocks, see `PCFIELDSPLIT`
+-  `PC_COMPOSITE_GKB` - the generalized Golub-Kahan bidiagonalization preconditioner, see `PCFIELDSPLIT`
 
    Level: beginner
 
-.seealso: `PCCompositeSetType()`
+.seealso: [](sec_pc), `PCCOMPOSITE`, `PCFIELDSPLIT`, `PC`, `PCCompositeSetType()`
 E*/
 typedef enum {
   PC_COMPOSITE_ADDITIVE,
@@ -215,7 +225,7 @@ typedef enum {
 
     Level: intermediate
 
-.seealso: `PCFieldSplitSetSchurPre()`
+.seealso: [](sec_pc), `PCFIELDSPLIT`, `PCFieldSplitSetSchurPre()`, `PC`
 E*/
 typedef enum {
   PC_FIELDSPLIT_SCHUR_PRE_SELF,
@@ -230,7 +240,7 @@ typedef enum {
 
     Level: intermediate
 
-.seealso: `PCFieldSplitSetSchurFactType()`
+ .seealso: [](sec_pc), `PCFIELDSPLIT`, `PCFieldSplitSetSchurFactType()`, `PC`
 E*/
 typedef enum {
   PC_FIELDSPLIT_SCHUR_FACT_DIAG,
@@ -244,7 +254,7 @@ typedef enum {
 
     Level: intermediate
 
-.seealso: `PCPARMSSetGlobal()`
+ .seealso: [](sec_pc), `PCPARMS`, `PCPARMSSetGlobal()`, `PC`
 E*/
 typedef enum {
   PC_PARMS_GLOBAL_RAS,
@@ -257,7 +267,7 @@ typedef enum {
 
     Level: intermediate
 
-.seealso: `PCPARMSSetLocal()`
+.seealso: [](sec_pc), `PCPARMS`, `PCPARMSSetLocal()`, `PC`
 E*/
 typedef enum {
   PC_PARMS_LOCAL_ILU0,
@@ -269,13 +279,14 @@ typedef enum {
 /*J
     PCGAMGType - type of generalized algebraic multigrid `PCGAMG` method
 
-    Level: intermediate
+   Values:
++   `PCGAMGAGG` - (the default) smoothed aggregation algorithm, robust, very well tested
+.   `PCGAMGGEO` - geometric coarsening, uses mesh generator to produce coarser meshes, limited to triangles, not well tested
+-   `PCGAMGCLASSICAL` - classical algebraic multigrid preconditioner, incomplete, poorly tested
 
-$   `PCGAMGAGG` - (the default) smoothed aggregation algorithm, robust, very well tested
-$   `PCGAMGGEO` - geometric coarsening, uses mesh generator to produce coarser meshes, limited to triangles, not well tested
-$   `PCGAMGCLASSICAL` - classical algebraic multigrid preconditioner, incomplete, poorly tested
+     Level: intermediate
 
-.seealso: `PCMG`, `PCSetType()`, `PCGAMGSetThreshold()`, `PCGAMGSetThreshold()`, `PCGAMGSetReuseInterpolation()`
+.seealso: [](sec_pc), `PCGAMG`, `PCMG`, `PC`, `PCSetType()`, `PCGAMGSetThreshold()`, `PCGAMGSetThreshold()`, `PCGAMGSetReuseInterpolation()`
 J*/
 typedef const char *PCGAMGType;
 #define PCGAMGAGG       "agg"
@@ -304,8 +315,7 @@ typedef const char *PCGAMGClassicalType;
 -  `PC_MG_KASKADE` - like full multigrid except one never goes back to a coarser level
                from a finer
 
-.seealso: `PCMGSetType()`, `PCMGSetCycleType()`, `PCMGSetCycleTypeOnLevel()`
-
+.seealso: [](sec_pc), `PCMG`, `PC`, `PCMGSetType()`, `PCMGSetCycleType()`, `PCMGSetCycleTypeOnLevel()`
 E*/
 typedef enum {
   PC_MG_MULTIPLICATIVE,
@@ -324,8 +334,7 @@ typedef enum {
 +  `PC_MG_V_CYCLE` - use the v cycle
 -  `PC_MG_W_CYCLE` - use the w cycle
 
-.seealso: `PCMGSetCycleType()`
-
+.seealso: [](sec_pc), `PCMG`, `PC`, `PCMGSetCycleType()`
 E*/
 typedef enum {
   PC_MG_CYCLE_V = 1,
@@ -335,18 +344,18 @@ typedef enum {
 /*E
     PCMGalerkinType - Determines if the coarse grid operators are computed via the Galerkin process
 
-   Level: beginner
-
    Values:
 +  `PC_MG_GALERKIN_PMAT` - computes the pmat (matrix from which the preconditioner is built) via the Galerkin process from the finest grid
 .  `PC_MG_GALERKIN_MAT` -  computes the mat (matrix used to apply the operator) via the Galerkin process from the finest grid
 .  `PC_MG_GALERKIN_BOTH` - computes both the mat and pmat via the Galerkin process (if pmat == mat the construction is only done once
 -  `PC_MG_GALERKIN_NONE` - neither operator is computed via the Galerkin process, the user must provide the operator
 
+   Level: beginner
+
+   Note:
    Users should never set `PC_MG_GALERKIN_EXTERNAL`, it is used by `PCHYPRE` and `PCML`
 
-.seealso: `PCMGSetCycleType()`
-
+.seealso: [](sec_pc), `PCMG`, `PC`, `PCMGSetCycleType()`
 E*/
 typedef enum {
   PC_MG_GALERKIN_BOTH,
@@ -361,7 +370,7 @@ typedef enum {
 
    Level: beginner
 
-.seealso: `PCExoticSetType()`, `PCEXOTIC`
+.seealso: [](sec_pc), `PCExoticSetType()`, `PCEXOTIC`
 E*/
 typedef enum {
   PC_EXOTIC_FACE,
@@ -377,6 +386,7 @@ typedef enum {
 +  `PC_BDDC_INTERFACE_EXT_DIRICHLET` - solves Dirichlet interior problem; this is the standard BDDC algorithm
 -  `PC_BDDC_INTERFACE_EXT_LUMP` - skips interior solve; sometimes called M_1 and associated with "lumped FETI-DP"
 
+.seealso: [](sec_pc), `PCBDDC`, `PC`
 E*/
 typedef enum {
   PC_BDDC_INTERFACE_EXT_DIRICHLET,
@@ -388,7 +398,7 @@ typedef enum {
 
   Level: beginner
 
-.seealso: `PCMGSetAdaptCoarseSpaceType()`, `PCMG`
+.seealso: [](sec_pc), `PCMGSetAdaptCoarseSpaceType()`, `PCMG`, `PC`
 E*/
 typedef enum {
   PCMG_ADAPT_NONE,
@@ -404,7 +414,7 @@ typedef enum {
 
    Level: beginner
 
-.seealso: `PCPatchSetConstructType()`, `PCEXOTIC`
+.seealso: [](sec_pc), `PCPatchSetConstructType()`, `PCPATCH`, `PC`
 E*/
 typedef enum {
   PC_PATCH_STAR,
@@ -419,7 +429,7 @@ typedef enum {
 
     Values:
 +   `PC_DEFLATION_SPACE_HAAR`        - directly assembled based on Haar (db2) wavelet with overflowed filter cuted-off
-.   `PC_DEFLATION_SPACE_DB2`         - MATCOMPOSITE of 1-lvl matices based on db2 (2 coefficient Daubechies / Haar wavelet)
+.   `PC_DEFLATION_SPACE_DB2`         - `MATCOMPOSITE` of 1-lvl matices based on db2 (2 coefficient Daubechies / Haar wavelet)
 .   `PC_DEFLATION_SPACE_DB4`         - same as above, but with db4 (4 coefficient Daubechies)
 .   `PC_DEFLATION_SPACE_DB8`         - same as above, but with db8 (8 coefficient Daubechies)
 .   `PC_DEFLATION_SPACE_DB16`        - same as above, but with db16 (16 coefficient Daubechies)
@@ -428,12 +438,12 @@ typedef enum {
 .   `PC_DEFLATION_SPACE_AGGREGATION` - aggregates local indices (given by operator matrix distribution) into a subdomain
 -   `PC_DEFLATION_SPACE_USER`        - indicates space set by user
 
-    Notes:
-      Wavelet-based space (except Haar) can be used in multilevel deflation.
-
     Level: intermediate
 
-.seealso: `PCDeflationSetSpaceToCompute()`, `PCDEFLATION`
+    Note:
+    Wavelet-based space (except Haar) can be used in multilevel deflation.
+
+.seealso: [](sec_pc), `PCDeflationSetSpaceToCompute()`, `PCDEFLATION`, `PC`
 E*/
 typedef enum {
   PC_DEFLATION_SPACE_HAAR,
@@ -453,11 +463,11 @@ typedef enum {
     Level: intermediate
 
     Values:
-+   `PC_HPDDM_COARSE_CORRECTION_DEFLATED` (default) - eq. (1) in PCHPDDMShellApply()
++   `PC_HPDDM_COARSE_CORRECTION_DEFLATED` (default) - eq. (1) in `PCHPDDMShellApply()`
 .   `PC_HPDDM_COARSE_CORRECTION_ADDITIVE` - eq. (2)
 -   `PC_HPDDM_COARSE_CORRECTION_BALANCED` - eq. (3)
 
-.seealso: `PCHPDDM`, `PCSetType()`, `PCHPDDMShellApply()`
+.seealso: [](sec_pc), `PCHPDDM`, `PC`, `PCSetType()`, `PCHPDDMShellApply()`
 E*/
 typedef enum {
   PC_HPDDM_COARSE_CORRECTION_DEFLATED,
@@ -472,6 +482,8 @@ typedef enum {
 
     Developer Note:
     Any additions/changes here MUST also be made in include/petsc/finclude/petscpc.h
+
+.seealso: [](sec_pc), `PC`
 E*/
 typedef enum {
   PC_SETUP_ERROR = -1,
@@ -489,9 +501,10 @@ typedef enum {
 
     Level: intermediate
 
-.seealso: `PCGAMGSetCoarseGridLayoutType()`
-
+    Developer Note:
     Any additions/changes here MUST also be made in include/petsc/finclude/petscpc.h
+
+.seealso: [](sec_pc), `PCGAMG`, `PC`, `PCGAMGSetCoarseGridLayoutType()`
 E*/
 typedef enum {
   PCGAMG_LAYOUT_COMPACT,
