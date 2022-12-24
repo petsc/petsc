@@ -664,3 +664,49 @@ PETSC_EXTERN PetscErrorCode DMSwarmCollect_General(DM dm, PetscErrorCode (*colle
   PetscCall(DMSwarmDataExDestroy(de));
   PetscFunctionReturn(0);
 }
+
+/*@
+  DMSwarmGetMigrateType - Get the style of point migration
+
+  Logically collective on dm
+
+  Input parameter:
+. dm    - the DMSwarm
+
+  Output parameter:
+. mtype - The migration type
+
+  Level: intermediate
+
+.seealso: `DMSwarmGetMigrateType()`, `DMSwarmMigrateType`, `DMSwarmMigrate()`
+@*/
+PetscErrorCode DMSwarmGetMigrateType(DM dm, DMSwarmMigrateType *mtype)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidIntPointer(mtype, 2);
+  *mtype = ((DM_Swarm *)dm->data)->migrate_type;
+  PetscFunctionReturn(0);
+}
+
+/*@
+  DMSwarmSetMigrateType - Set the style of point migration
+
+  Logically collective on dm
+
+  Input parameters:
++ dm    - the DMSwarm
+- mtype - The migration type
+
+  Level: intermediate
+
+.seealso: `DMSwarmGetMigrateType()`, `DMSwarmMigrateType`, `DMSwarmMigrate()`
+@*/
+PetscErrorCode DMSwarmSetMigrateType(DM dm, DMSwarmMigrateType mtype)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidLogicalCollectiveInt(dm, mtype, 2);
+  ((DM_Swarm *)dm->data)->migrate_type = mtype;
+  PetscFunctionReturn(0);
+}
