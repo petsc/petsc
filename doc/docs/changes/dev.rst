@@ -116,6 +116,7 @@ Changes: Development
 - Add ``DMPlexCreateEphemeral()``
 - Both ``DMView()`` and ``DMLoad()`` now support parallel I/O with a new HDF5 format (see the manual for details)
 - Remove ``DMPlexComputeGeometryFEM()`` since it was broken
+- Change ``DMPlexMarkBoundaryFaces()`` to avoid marking faces on the parallel boundary. To get the prior behavior, you can temporarily remove the ``PointSF`` from the ``DM``
 - Add ``-dm_localize_height`` to localize edges and faces
 
 .. rubric:: FE/FV:
