@@ -7,8 +7,10 @@
 
 static PetscErrorCode PetscViewerSetFromOptions_CGNS(PetscViewer v, PetscOptionItems *PetscOptionsObject)
 {
+  PetscViewer_CGNS *cgv = (PetscViewer_CGNS *)v->data;
   PetscFunctionBegin;
   PetscOptionsHeadBegin(PetscOptionsObject, "CGNS Viewer Options");
+  PetscOptionsInt("-viewer_cgns_batch_size", "Max number of steps to store in single file when using a template cgns:name-%d.cgns", "", cgv->batch_size, &cgv->batch_size, NULL);
   PetscOptionsHeadEnd();
   PetscFunctionReturn(0);
 }
@@ -61,6 +63,52 @@ static PetscErrorCode PetscViewerFileClose_CGNS(PetscViewer viewer)
   if (cgv->file_num) PetscCallCGNS(cg_close(cgv->file_num));
 #endif
   cgv->file_num = 0;
+  PetscCall(PetscFree(cgv->node_l2g));
+  PetscCall(PetscFree(cgv->nodal_field));
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode PetscViewerCGNSFileOpen_Internal(PetscViewer viewer, PetscInt sequence_number)
+{
+  PetscViewer_CGNS *cgv = (PetscViewer_CGNS *)viewer->data;
+  PetscFunctionBegin;
+  PetscCheck((cgv->filename == NULL) ^ (sequence_number < 0), PetscObjectComm((PetscObject)viewer), PETSC_ERR_ARG_INCOMP, "Expect either a template filename or non-negative sequence number");
+  if (!cgv->filename) {
+    char filename_numbered[PETSC_MAX_PATH_LEN];
+    // Cast sequence_number so %d can be used also when PetscInt is 64-bit. We could upgrade the format string if users
+    // run more than 2B time steps.
+    PetscCall(PetscSNPrintf(filename_numbered, sizeof filename_numbered, cgv->filename_template, (int)sequence_number));
+    PetscCall(PetscStrallocpy(filename_numbered, &cgv->filename));
+  }
+  switch (cgv->btype) {
+  case FILE_MODE_READ:
+    SETERRQ(PetscObjectComm((PetscObject)viewer), PETSC_ERR_SUP, "FILE_MODE_READ not yet implemented");
+    break;
+  case FILE_MODE_WRITE:
+#if defined(PETSC_HDF5_HAVE_PARALLEL)
+    PetscCallCGNS(cgp_mpi_comm(PetscObjectComm((PetscObject)viewer)));
+    PetscCallCGNS(cgp_open(cgv->filename, CG_MODE_WRITE, &cgv->file_num));
+#else
+    PetscCallCGNS(cg_open(filename, CG_MODE_WRITE, &cgv->file_num));
+#endif
+    break;
+  case FILE_MODE_UNDEFINED:
+    SETERRQ(PetscObjectComm((PetscObject)viewer), PETSC_ERR_ORDER, "Must call PetscViewerFileSetMode() before PetscViewerFileSetName()");
+  default:
+    SETERRQ(PetscObjectComm((PetscObject)viewer), PETSC_ERR_SUP, "Unsupported file mode %s", PetscFileModes[cgv->btype]);
+  }
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode PetscViewerCGNSCheckBatch_Internal(PetscViewer viewer)
+{
+  PetscViewer_CGNS *cgv = (PetscViewer_CGNS *)viewer->data;
+  size_t            num_steps;
+
+  PetscFunctionBegin;
+  if (!cgv->filename_template) PetscFunctionReturn(0); // Batches are closed when viewer is destroyed
+  PetscCall(PetscSegBufferGetSize(cgv->output_times, &num_steps));
+  if (num_steps >= cgv->batch_size) PetscCall(PetscViewerFileClose_CGNS(viewer));
   PetscFunctionReturn(0);
 }
 
@@ -70,8 +118,6 @@ static PetscErrorCode PetscViewerDestroy_CGNS(PetscViewer viewer)
 
   PetscFunctionBegin;
   PetscCall(PetscViewerFileClose_CGNS(viewer));
-  PetscCall(PetscFree(cgv->node_l2g));
-  PetscCall(PetscFree(cgv->nodal_field));
   PetscCall(PetscFree(cgv));
   PetscCall(PetscObjectComposeFunction((PetscObject)viewer, "PetscViewerFileSetName_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)viewer, "PetscViewerFileGetName_C", NULL));
@@ -101,28 +147,19 @@ static PetscErrorCode PetscViewerFileGetMode_CGNS(PetscViewer viewer, PetscFileM
 static PetscErrorCode PetscViewerFileSetName_CGNS(PetscViewer viewer, const char *filename)
 {
   PetscViewer_CGNS *cgv = (PetscViewer_CGNS *)viewer->data;
+  char             *has_pattern;
 
   PetscFunctionBegin;
   if (cgv->file_num) PetscCallCGNS(cg_close(cgv->file_num));
   PetscCall(PetscFree(cgv->filename));
-  PetscCall(PetscStrallocpy(filename, &cgv->filename));
-
-  switch (cgv->btype) {
-  case FILE_MODE_READ:
-    SETERRQ(PetscObjectComm((PetscObject)viewer), PETSC_ERR_SUP, "FILE_MODE_READ not yet implemented");
-    break;
-  case FILE_MODE_WRITE:
-#if defined(PETSC_HDF5_HAVE_PARALLEL)
-    PetscCallCGNS(cgp_mpi_comm(PetscObjectComm((PetscObject)viewer)));
-    PetscCallCGNS(cgp_open(filename, CG_MODE_WRITE, &cgv->file_num));
-#else
-    PetscCallCGNS(cg_open(filename, CG_MODE_WRITE, &cgv->file_num));
-#endif
-    break;
-  case FILE_MODE_UNDEFINED:
-    SETERRQ(PetscObjectComm((PetscObject)viewer), PETSC_ERR_ORDER, "Must call PetscViewerFileSetMode() before PetscViewerFileSetName()");
-  default:
-    SETERRQ(PetscObjectComm((PetscObject)viewer), PETSC_ERR_SUP, "Unsupported file mode %s", PetscFileModes[cgv->btype]);
+  PetscCall(PetscFree(cgv->filename_template));
+  PetscCall(PetscStrchr(filename, '%', &has_pattern));
+  if (has_pattern) {
+    PetscCall(PetscStrallocpy(filename, &cgv->filename_template));
+    // Templated file names open lazily, once we know DMGetOutputSequenceNumber()
+  } else {
+    PetscCall(PetscStrallocpy(filename, &cgv->filename));
+    PetscCall(PetscViewerCGNSFileOpen_Internal(viewer, -1));
   }
   PetscFunctionReturn(0);
 }
@@ -141,7 +178,16 @@ static PetscErrorCode PetscViewerFileGetName_CGNS(PetscViewer viewer, const char
 
   Level: beginner
 
-.seealso: [](sec_viewers), `PetscViewer`, `PetscViewerCreate()`, `VecView()`, `DMView()`, `PetscViewerFileSetName()`, `PetscViewerFileSetMode()`
+  Notes:
+
+  If the filename contains an integer format character, the CGNS viewer will created a batched output sequence. For
+  example, one could use `-ts_monitor_solution cgns:flow-%d.cgns`. This is desirable if one wants to limit file sizes or
+  if the job might crash/be killed by a resource manager before exiting cleanly.
+
+  Options Database Keys:
+. -viewer_cgns_batch_size SIZE - set max number of output sequence times to write per batch
+
+.seealso: [](sec_viewers), `PetscViewer`, `PetscViewerCreate()`, `VecView()`, `DMView()`, `PetscViewerFileSetName()`, `PetscViewerFileSetMode()`, `TSSetFromOptions()`
 M*/
 
 PETSC_EXTERN PetscErrorCode PetscViewerCreate_CGNS(PetscViewer v)
@@ -157,6 +203,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_CGNS(PetscViewer v)
   v->ops->view           = PetscViewerView_CGNS;
   cgv->btype             = FILE_MODE_UNDEFINED;
   cgv->filename          = NULL;
+  cgv->batch_size        = 20;
 
   PetscCall(PetscObjectComposeFunction((PetscObject)v, "PetscViewerFileSetName_C", PetscViewerFileSetName_CGNS));
   PetscCall(PetscObjectComposeFunction((PetscObject)v, "PetscViewerFileGetName_C", PetscViewerFileGetName_CGNS));
