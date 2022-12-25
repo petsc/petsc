@@ -3262,6 +3262,7 @@ PetscErrorCode PetscDSAddBoundary(PetscDS ds, DMBoundaryConditionType type, cons
   PetscValidLogicalCollectiveInt(ds, Nv, 5);
   PetscValidLogicalCollectiveInt(ds, field, 7);
   PetscValidLogicalCollectiveInt(ds, Nc, 8);
+  PetscCheck(field >= 0 && field < ds->Nf, PetscObjectComm((PetscObject)ds), PETSC_ERR_ARG_OUTOFRANGE, "Field %" PetscInt_FMT " is not in [0, %" PetscInt_FMT ")", field, ds->Nf);
   if (Nc > 0) {
     PetscInt *fcomps;
     PetscInt  c;

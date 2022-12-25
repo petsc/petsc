@@ -8,3 +8,5 @@ sphinx-design
 myst-parser
 sphinx-remove-toctrees
 Jinja2==3.0.1
+# docutils 0.19.1 produces bad HTML from the references in PCFIELDSPLIT
+docutils==0.17.1
