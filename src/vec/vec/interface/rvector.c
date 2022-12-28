@@ -1848,22 +1848,8 @@ PetscErrorCode VecRestoreLocalVector(Vec v, Vec w)
    Level: beginner
 
    Fortran Note:
-   Use `VecGetArrayF90()`, this routine is deprecated
+   `VecGetArray()` Fortran binding is deprecated (since PETSc 3.19), use `VecGetArrayF90()`
 
-   This routine is used differently from Fortran
-.vb
-    Vec         x
-    PetscScalar x_array(1)
-    PetscOffset i_x
-    PetscErrorCode ierr
-    call VecGetArray(x,x_array,i_x,ierr)
-
-    Access first local entry in vector with
-    value = x_array(i_x + 1)
-
-    ...... other code
-    call VecRestoreArray(x,x_array,i_x,ierr)
-.ve
 .seealso: [](chapter_vectors), `Vec`, `VecRestoreArray()`, `VecGetArrayRead()`, `VecGetArrays()`, `VecGetArrayF90()`, `VecGetArrayReadF90()`, `VecPlaceArray()`, `VecGetArray2d()`,
           `VecGetArrayPair()`, `VecRestoreArrayPair()`, `VecGetArrayWrite()`, `VecRestoreArrayWrite()`
 @*/
@@ -1891,7 +1877,10 @@ PetscErrorCode VecGetArray(Vec x, PetscScalar **a)
 
    Level: beginner
 
-.seealso: [](chapter_vectors), `Vec`, `VecGetArray()`, `VecRestoreArrayRead()`, `VecRestoreArrays()`, `VecRestoreArrayF90()`, `VecRestoreArrayReadF90()`, `VecPlaceArray()`, `VecRestoreArray2d()`,
+   Fortran Note:
+   `VecRestoreArray()` Fortran binding is deprecated (since PETSc 3.19), use `VecRestoreArrayF90()`
+
+ .seealso: [](chapter_vectors), `Vec`, `VecGetArray()`, `VecRestoreArrayRead()`, `VecRestoreArrays()`, `VecRestoreArrayF90()`, `VecRestoreArrayReadF90()`, `VecPlaceArray()`, `VecRestoreArray2d()`,
           `VecGetArrayPair()`, `VecRestoreArrayPair()`
 @*/
 PetscErrorCode VecRestoreArray(Vec x, PetscScalar **a)
@@ -1922,13 +1911,16 @@ PetscErrorCode VecRestoreArray(Vec x, PetscScalar **a)
    Notes:
    The array must be returned using a matching call to `VecRestoreArrayRead()`.
 
-   Unlike `VecGetArray()`, this routine is not collective and preserves cached information like vector norms.
+   Unlike `VecGetArray()`, preserves cached information like vector norms.
 
    Standard PETSc vectors use contiguous storage so that this routine does not perform a copy.  Other vector
    implementations may require a copy, but such implementations should cache the contiguous representation so that
    only one copy is performed when this routine is called multiple times in sequence.
 
-.seealso: [](chapter_vectors), `Vec`, `VecGetArray()`, `VecRestoreArray()`, `VecGetArrayPair()`, `VecRestoreArrayPair()`
+   Fortran Note:
+   `VecGetArrayRead()` Fortran binding is deprecated (since PETSc 3.19), use `VecGetArrayReadF90()`
+
+.seealso: [](chapter_vectors), `Vec`, `VecGetArrayReadF90()`, `VecGetArray()`, `VecRestoreArray()`, `VecGetArrayPair()`, `VecRestoreArrayPair()`
 @*/
 PetscErrorCode VecGetArrayRead(Vec x, const PetscScalar **a)
 {
@@ -1964,7 +1956,10 @@ PetscErrorCode VecGetArrayRead(Vec x, const PetscScalar **a)
 
    Level: beginner
 
-.seealso: [](chapter_vectors), `Vec`, `VecGetArray()`, `VecRestoreArray()`, `VecGetArrayPair()`, `VecRestoreArrayPair()`
+   Fortran Note:
+   `VecRestoreArrayRead()` Fortran binding is deprecated (since PETSc 3.19), use `VecRestoreArrayReadF90()`
+
+.seealso: [](chapter_vectors), `Vec`, `VecRestoreArrayReadF90()`, `VecGetArray()`, `VecRestoreArray()`, `VecGetArrayPair()`, `VecRestoreArrayPair()`
 @*/
 PetscErrorCode VecRestoreArrayRead(Vec x, const PetscScalar **a)
 {
@@ -2003,11 +1998,14 @@ PetscErrorCode VecRestoreArrayRead(Vec x, const PetscScalar **a)
 
    Level: intermediate
 
-   Notes:
+   Note:
    For vectors associated with GPUs, the host and device vectors are not synchronized before giving access. If you need correct
    values in the array use `VecGetArray()`
 
-.seealso: [](chapter_vectors), `Vec`, `VecRestoreArray()`, `VecGetArrayRead()`, `VecGetArrays()`, `VecGetArrayF90()`, `VecGetArrayReadF90()`, `VecPlaceArray()`, `VecGetArray2d()`,
+   Fortran Note:
+   `VecGetArrayWrite()` Fortran binding is deprecated (since PETSc 3.19), use `VecGetArrayWriteF90()`
+
+.seealso: [](chapter_vectors), `Vec`, `VecGetArrayWriteF90()`, `VecRestoreArray()`, `VecGetArrayRead()`, `VecGetArrays()`, `VecGetArrayF90()`, `VecGetArrayReadF90()`, `VecPlaceArray()`, `VecGetArray2d()`,
           `VecGetArrayPair()`, `VecRestoreArrayPair()`, `VecGetArray()`, `VecRestoreArrayWrite()`
 @*/
 PetscErrorCode VecGetArrayWrite(Vec x, PetscScalar **a)
@@ -2035,7 +2033,10 @@ PetscErrorCode VecGetArrayWrite(Vec x, PetscScalar **a)
 
    Level: beginner
 
-.seealso: [](chapter_vectors), `Vec`, `VecGetArray()`, `VecRestoreArrayRead()`, `VecRestoreArrays()`, `VecRestoreArrayF90()`, `VecRestoreArrayReadF90()`, `VecPlaceArray()`, `VecRestoreArray2d()`,
+   Fortran Note:
+   `VecRestoreArrayWrite()` Fortran binding is deprecated (since PETSc 3.19), use `VecRestoreArrayWriteF90()`
+
+ .seealso: [](chapter_vectors), `Vec`, `VecRestoreArrayWriteF90()`, `VecGetArray()`, `VecRestoreArrayRead()`, `VecRestoreArrays()`, `VecRestoreArrayF90()`, `VecRestoreArrayReadF90()`, `VecPlaceArray()`, `VecRestoreArray2d()`,
           `VecGetArrayPair()`, `VecRestoreArrayPair()`, `VecGetArrayWrite()`
 @*/
 PetscErrorCode VecRestoreArrayWrite(Vec x, PetscScalar **a)
@@ -2131,7 +2132,7 @@ PetscErrorCode VecRestoreArrays(const Vec x[], PetscInt n, PetscScalar **a[])
    For `VECKOKKOS`, if Kokkos is configured without device (e.g., use serial or openmp), per this function, the vector works like `VECSEQ`/`VECMPI`;
    otherwise, it works like `VECCUDA` or `VECHIP` etc.
 
-   Logically Collective
+   Logically Collective; No Fortran Support
 
    Input Parameter:
 .  x - the vector
@@ -2167,7 +2168,7 @@ PetscErrorCode VecGetArrayAndMemType(Vec x, PetscScalar **a, PetscMemType *mtype
 /*@C
    VecRestoreArrayAndMemType - Restores a vector after `VecGetArrayAndMemType()` has been called.
 
-   Logically Collective
+   Logically Collective; No Fortran Support
 
    Input Parameters:
 +  x - the vector
@@ -2199,7 +2200,7 @@ PetscErrorCode VecRestoreArrayAndMemType(Vec x, PetscScalar **a)
 /*@C
    VecGetArrayReadAndMemType - Like `VecGetArrayRead()`, but if the input vector is a device vector, it will return a read-only device pointer. The returned pointer is guarenteed to point to up-to-date data. For host vectors, it functions as `VecGetArrayRead()`.
 
-   Not Collective
+   Not Collective; No Fortran Support
 
    Input Parameter:
 .  x - the vector
@@ -2243,7 +2244,7 @@ PetscErrorCode VecGetArrayReadAndMemType(Vec x, const PetscScalar **a, PetscMemT
 /*@C
    VecRestoreArrayReadAndMemType - Restore array obtained with `VecGetArrayReadAndMemType()`
 
-   Not Collective
+   Not Collective; No Fortran Support
 
    Input Parameters:
 +  vec - the vector
@@ -2274,7 +2275,7 @@ PetscErrorCode VecRestoreArrayReadAndMemType(Vec x, const PetscScalar **a)
    VecGetArrayWriteAndMemType - Like `VecGetArrayWrite()`, but if this is a device vector it will aways return
     a device pointer to the device memory that contains this processor's portion of the vector data.
 
-   Not Collective
+   Not Collective; No Fortran Support
 
    Input Parameter:
 .  x - the vector
@@ -2314,7 +2315,7 @@ PetscErrorCode VecGetArrayWriteAndMemType(Vec x, PetscScalar **a, PetscMemType *
 /*@C
    VecRestoreArrayWriteAndMemType - Restore array obtained with `VecGetArrayWriteAndMemType()`
 
-   Not Collective
+   Not Collective; No Fortran Support
 
    Input Parameters:
 +  vec - the vector
@@ -2349,7 +2350,7 @@ PetscErrorCode VecRestoreArrayWriteAndMemType(Vec x, PetscScalar **a)
    array provided by the user. This is useful to avoid copying an array
    into a vector.
 
-   Not Collective
+   Not Collective; No Fortran Support
 
    Input Parameters:
 +  vec - the vector

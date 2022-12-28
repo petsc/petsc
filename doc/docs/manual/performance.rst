@@ -645,7 +645,7 @@ context can be an integer array that contains both parameters and
 pointers to PETSc objects. See
 `SNES Tutorial ex5 <PETSC_DOC_OUT_ROOT_PLACEHOLDER/src/snes/tutorials/ex5.c.html>`__
 and
-`SNES Tutorial ex5f <PETSC_DOC_OUT_ROOT_PLACEHOLDER/src/snes/tutorials/ex5f.F90.html>`__
+`SNES Tutorial ex5f90 <PETSC_DOC_OUT_ROOT_PLACEHOLDER/src/snes/tutorials/ex5f90.F90.html>`__
 for examples of user-defined application contexts in C and Fortran,
 respectively.
 

@@ -4385,6 +4385,9 @@ PETSC_INTERN PetscErrorCode MatProductSetFromOptions_IS_XAIJ(Mat);
 
    Level: intermediate
 
+   Fortran Note:
+   `MatSeqAIJGetArray()` Fortran binding is deprecated (since PETSc 3.19), use `MatSeqAIJGetArrayF90()`
+
 .seealso: `MatSeqAIJRestoreArray()`, `MatSeqAIJGetArrayF90()`
 @*/
 PetscErrorCode MatSeqAIJGetArray(Mat A, PetscScalar **array)
@@ -4411,6 +4414,9 @@ PetscErrorCode MatSeqAIJGetArray(Mat A, PetscScalar **array)
 
    Level: intermediate
 
+   Fortran Note:
+   `MatSeqAIJRestoreArray()` Fortran binding is deprecated (since PETSc 3.19), use `MatSeqAIJRestoreArrayF90()`
+
 .seealso: `MatSeqAIJGetArray()`, `MatSeqAIJRestoreArrayF90()`
 @*/
 PetscErrorCode MatSeqAIJRestoreArray(Mat A, PetscScalar **array)
@@ -4431,7 +4437,7 @@ PetscErrorCode MatSeqAIJRestoreArray(Mat A, PetscScalar **array)
 /*@C
    MatSeqAIJGetArrayRead - gives read-only access to the array where the data for a `MATSEQAIJ` matrix is stored
 
-   Not Collective
+   Not Collective; No Fortran Support
 
    Input Parameter:
 .  mat - a `MATSEQAIJ` matrix
@@ -4459,7 +4465,7 @@ PetscErrorCode MatSeqAIJGetArrayRead(Mat A, const PetscScalar **array)
 /*@C
    MatSeqAIJRestoreArrayRead - restore the read-only access array obtained from `MatSeqAIJGetArrayRead()`
 
-   Not Collective
+   Not Collective; No Fortran Support
 
    Input Parameter:
 .  mat - a `MATSEQAIJ` matrix
@@ -4487,7 +4493,7 @@ PetscErrorCode MatSeqAIJRestoreArrayRead(Mat A, const PetscScalar **array)
 /*@C
    MatSeqAIJGetArrayWrite - gives write-only access to the array where the data for a `MATSEQAIJ` matrix is stored
 
-   Not Collective
+   Not Collective; No Fortran Support
 
    Input Parameter:
 .  mat - a `MATSEQAIJ` matrix
@@ -4517,7 +4523,7 @@ PetscErrorCode MatSeqAIJGetArrayWrite(Mat A, PetscScalar **array)
 /*@C
    MatSeqAIJRestoreArrayWrite - restore the read-only access array obtained from MatSeqAIJGetArrayRead
 
-   Not Collective
+   Not Collective; No Fortran Support
 
    Input Parameter:
 .  mat - a MATSEQAIJ matrix
@@ -4545,7 +4551,7 @@ PetscErrorCode MatSeqAIJRestoreArrayWrite(Mat A, PetscScalar **array)
 /*@C
    MatSeqAIJGetCSRAndMemType - Get the CSR arrays and the memory type of the `MATSEQAIJ` matrix
 
-   Not Collective
+   Not Collective; No Fortran Support
 
    Input Parameter:
 .  mat - a matrix of type `MATSEQAIJ` or its subclasses

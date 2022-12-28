@@ -2204,6 +2204,9 @@ PetscErrorCode MatDenseSetLDA(Mat A, PetscInt lda)
 
    Level: intermediate
 
+   Fortran Note:
+   `MatDenseGetArray()` Fortran binding is deprecated (since PETSc 3.19), use `MatDenseGetArrayF90()`
+
 .seealso: `MATDENSE`, `MatDenseRestoreArray()`, `MatDenseGetArrayRead()`, `MatDenseRestoreArrayRead()`, `MatDenseGetArrayWrite()`, `MatDenseRestoreArrayWrite()`
 @*/
 PetscErrorCode MatDenseGetArray(Mat A, PetscScalar **array)
@@ -2226,6 +2229,9 @@ PetscErrorCode MatDenseGetArray(Mat A, PetscScalar **array)
 
    Level: intermediate
 
+   Fortran Note:
+   `MatDenseRestoreArray()` Fortran binding is deprecated (since PETSc 3.19), use `MatDenseRestoreArrayF90()`
+
 .seealso: `MATDENSE`, `MatDenseGetArray()`, `MatDenseGetArrayRead()`, `MatDenseRestoreArrayRead()`, `MatDenseGetArrayWrite()`, `MatDenseRestoreArrayWrite()`
 @*/
 PetscErrorCode MatDenseRestoreArray(Mat A, PetscScalar **array)
@@ -2244,7 +2250,7 @@ PetscErrorCode MatDenseRestoreArray(Mat A, PetscScalar **array)
 /*@C
   MatDenseGetArrayRead - gives read-only access to the array where the data for a `MATDENSE`  matrix is stored
 
-   Not Collective
+   Not Collective; No Fortran Support
 
    Input Parameter:
 .  mat - a dense matrix
@@ -2268,7 +2274,7 @@ PetscErrorCode MatDenseGetArrayRead(Mat A, const PetscScalar **array)
 /*@C
    MatDenseRestoreArrayRead - returns access to the array where the data for a `MATDENSE` matrix is stored obtained by `MatDenseGetArrayRead()`
 
-   Not Collective
+   Not Collective; No Fortran Support
 
    Input Parameters:
 +  mat - a dense matrix
@@ -2290,7 +2296,7 @@ PetscErrorCode MatDenseRestoreArrayRead(Mat A, const PetscScalar **array)
 /*@C
    MatDenseGetArrayWrite - gives write-only access to the array where the data for a `MATDENSE` matrix is stored
 
-   Not Collective
+   Not Collective; No Fortran Support
 
    Input Parameter:
 .  mat - a dense matrix
@@ -2314,7 +2320,7 @@ PetscErrorCode MatDenseGetArrayWrite(Mat A, PetscScalar **array)
 /*@C
    MatDenseRestoreArrayWrite - returns access to the array where the data for a `MATDENSE` matrix is stored obtained by `MatDenseGetArrayWrite()`
 
-   Not Collective
+   Not Collective; No Fortran Support
 
    Input Parameters:
 +  mat - a dense matrix

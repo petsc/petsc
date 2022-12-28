@@ -1130,7 +1130,7 @@ The example
 `SNES Tutorial ex5 <PETSC_DOC_OUT_ROOT_PLACEHOLDER/src/snes/tutorials/ex5.c.html>`__
 illustrates the use of a distributed array in the solution of a
 nonlinear problem. The analogous Fortran program is
-`SNES Tutorial ex5f <PETSC_DOC_OUT_ROOT_PLACEHOLDER/src/snes/tutorials/ex5f.F90.html>`__;
+`SNES Tutorial ex5f90 <PETSC_DOC_OUT_ROOT_PLACEHOLDER/src/snes/tutorials/ex5f90.F90.html>`__;
 see :any:`chapter_snes` for a discussion of the
 nonlinear solvers.
 

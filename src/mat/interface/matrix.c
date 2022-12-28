@@ -7903,19 +7903,13 @@ M*/
     Fortran Notes:
     In Fortran use
 .vb
-      PetscInt ia(1), ja(1)
-      PetscOffset iia, jja
-      call MatGetRowIJ(mat,shift,symmetric,inodecompressed,n,ia,iia,ja,jja,done,ierr)
-      ! Access the ith and jth entries via ia(iia + i) and ja(jja + j)
-.ve
-     or
-.vb
     PetscInt, pointer :: ia(:),ja(:)
     call MatGetRowIJF90(mat,shift,symmetric,inodecompressed,n,ia,ja,done,ierr)
     ! Access the ith and jth entries via ia(i) and ja(j)
 .ve
+   `MatGetRowIJ()` Fortran binding is deprecated (since PETSc 3.19), use `MatGetRowIJF90()`
 
-.seealso: `Mat`, `MATAIJ`, `MatGetColumnIJ()`, `MatRestoreRowIJ()`, `MatSeqAIJGetArray()`
+.seealso: `Mat`, `MATAIJ`, `MatGetRowIJF90()`, `MatGetColumnIJ()`, `MatRestoreRowIJ()`, `MatSeqAIJGetArray()`
 @*/
 PetscErrorCode MatGetRowIJ(Mat mat, PetscInt shift, PetscBool symmetric, PetscBool inodecompressed, PetscInt *n, const PetscInt *ia[], const PetscInt *ja[], PetscBool *done)
 {
@@ -7998,14 +7992,17 @@ PetscErrorCode MatGetColumnIJ(Mat mat, PetscInt shift, PetscBool symmetric, Pets
     Output Parameters:
 .   done - `PETSC_TRUE` or `PETSC_FALSE` indicated that the values have been returned
 
+    Level: developer
+
     Note:
     This routine zeros out n, ia, and ja. This is to prevent accidental
     us of the array after it has been restored. If you pass NULL, it will
     not zero the pointers.  Use of ia or ja after `MatRestoreRowIJ()` is invalid.
 
-    Level: developer
+    Fortran Note:
+   `MatRestoreRowIJ()` Fortran binding is deprecated (since PETSc 3.19), use `MatRestoreRowIJF90()`
 
-.seealso: `MatGetRowIJ()`, `MatRestoreColumnIJ()`
+.seealso: `MatGetRowIJ()`, `MatRestoreRowIJF90()`, `MatRestoreColumnIJ()`
 @*/
 PetscErrorCode MatRestoreRowIJ(Mat mat, PetscInt shift, PetscBool symmetric, PetscBool inodecompressed, PetscInt *n, const PetscInt *ia[], const PetscInt *ja[], PetscBool *done)
 {
