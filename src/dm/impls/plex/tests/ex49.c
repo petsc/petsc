@@ -178,6 +178,6 @@ int main(int argc, char **argv)
   test:
     suffix: 2d_sfc
     nsize: 2
-    args: -dm_plex_simplex 0 -dm_plex_dim 2 -dm_plex_box_faces 4,3 -dm_plex_box_sfc -dm_distribute 0 -dm_view
+    args: -dm_plex_simplex 0 -dm_plex_dim 2 -dm_plex_box_faces 4,3 -dm_plex_box_sfc -dm_distribute 0 -petscspace_degree 1 -dm_view
 
 TEST*/

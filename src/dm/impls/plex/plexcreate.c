@@ -161,7 +161,7 @@ static PetscErrorCode DMPlexSwap_Static(DM dmA, DM dmB)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMPlexInterpolateInPlace_Internal(DM dm)
+PetscErrorCode DMPlexInterpolateInPlace_Internal(DM dm)
 {
   DM idm;
 

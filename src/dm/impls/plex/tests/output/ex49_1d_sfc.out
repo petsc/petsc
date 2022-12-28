@@ -5,6 +5,7 @@ box in 1 dimension:
   Number of 1-cells per rank: 3
 Labels:
   depth: 2 strata with value/size (0 (4), 1 (3))
+  Face Sets: 2 strata with value/size (1 (1), 2 (1))
   celltype: 2 strata with value/size (1 (3), 0 (4))
 ## cells: 'default' {0}
 Coordinates by element

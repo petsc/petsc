@@ -123,7 +123,12 @@ PetscErrorCode DMPlexCreateBoxMesh_Tensor_SFC_Internal(DM dm, PetscInt dim, cons
     {1, 1, 1},
     {0, 1, 1},
   };
-  const Ijk *closure_dim[] = {NULL, closure_1, closure_2, closure_3};
+  const Ijk *const closure_dim[] = {NULL, closure_1, closure_2, closure_3};
+  // This must be kept consistent with DMPlexCreateCubeMesh_Internal
+  const PetscInt        face_marker_1[]   = {1, 2};
+  const PetscInt        face_marker_2[]   = {4, 2, 1, 3};
+  const PetscInt        face_marker_3[]   = {6, 5, 3, 4, 1, 2};
+  const PetscInt *const face_marker_dim[] = {NULL, face_marker_1, face_marker_2, face_marker_3};
 
   PetscFunctionBegin;
   PetscValidPointer(dm, 1);
@@ -238,13 +243,11 @@ PetscErrorCode DMPlexCreateBoxMesh_Tensor_SFC_Internal(DM dm, PetscInt dim, cons
     PetscCall(DMSetPointSF(dm, sf));
     PetscCall(PetscSFDestroy(&sf));
   }
-
   {
     Vec          coordinates;
     PetscScalar *coords;
     PetscSection coord_section;
     PetscInt     coord_size;
-    DM           cdm;
     PetscCall(DMGetCoordinateSection(dm, &coord_section));
     PetscCall(PetscSectionSetNumFields(coord_section, 1));
     PetscCall(PetscSectionSetFieldComponents(coord_section, 0, dim));
@@ -271,20 +274,48 @@ PetscErrorCode DMPlexCreateBoxMesh_Tensor_SFC_Internal(DM dm, PetscInt dim, cons
     PetscCall(VecRestoreArray(coordinates, &coords));
     PetscCall(DMSetCoordinatesLocal(dm, coordinates));
     PetscCall(VecDestroy(&coordinates));
-    PetscCall(PetscFree(vert_z));
     PetscCall(PetscFree(layout.zstarts));
-
-    PetscFE fe;
-    PetscCall(DMGetCoordinateDM(dm, &cdm));
-    PetscCall(PetscFECreateLagrange(PetscObjectComm((PetscObject)dm), dim, dim, PETSC_FALSE, 1, PETSC_DETERMINE, &fe));
-    PetscCall(DMSetField(cdm, 0, NULL, (PetscObject)fe));
-    PetscCall(PetscFEDestroy(&fe));
-    PetscCall(DMCreateDS(cdm));
   }
   if (interpolate) {
-    DM dmint;
-    PetscCall(DMPlexInterpolate(dm, &dmint));
-    PetscCall(DMPlexReplace_Internal(dm, &dmint));
+    PetscCall(DMPlexInterpolateInPlace_Internal(dm));
+
+    DMLabel label;
+    PetscCall(DMCreateLabel(dm, "Face Sets"));
+    PetscCall(DMGetLabel(dm, "Face Sets", &label));
+    PetscInt fStart, fEnd, vStart, vEnd;
+    PetscCall(DMPlexGetHeightStratum(dm, 1, &fStart, &fEnd));
+    PetscCall(DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd));
+    for (PetscInt f = fStart; f < fEnd; f++) {
+      PetscInt  npoints;
+      PetscInt *points = NULL;
+      PetscCall(DMPlexGetTransitiveClosure(dm, f, PETSC_TRUE, &npoints, &points));
+      PetscInt bc_count[6] = {0};
+      for (PetscInt i = 0; i < npoints; i++) {
+        PetscInt p = points[2 * i];
+        if (p < vStart || vEnd <= p) continue;
+        Ijk loc = ZCodeSplit(vert_z[p - vStart]);
+        // Convention here matches DMPlexCreateCubeMesh_Internal
+        bc_count[0] += loc.i == 0;
+        bc_count[1] += loc.i == layout.vextent.i - 1;
+        bc_count[2] += loc.j == 0;
+        bc_count[3] += loc.j == layout.vextent.j - 1;
+        bc_count[4] += loc.k == 0;
+        bc_count[5] += loc.k == layout.vextent.k - 1;
+      }
+      PetscCall(DMPlexRestoreTransitiveClosure(dm, f, PETSC_TRUE, &npoints, &points));
+      for (PetscInt bc = 0, bc_match = 0; bc < 2 * dim; bc++) {
+        if (bc_count[bc] == PetscPowInt(2, dim - 1)) {
+          PetscAssert(bc_match == 0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Face matches multiple face sets");
+          PetscCall(DMLabelSetValue(label, f, face_marker_dim[dim][bc]));
+          bc_match++;
+        }
+      }
+    }
+    // Ensure that the Coordinate DM has our new boundary labels
+    DM cdm;
+    PetscCall(DMGetCoordinateDM(dm, &cdm));
+    PetscCall(DMCopyLabels(dm, cdm, PETSC_COPY_VALUES, PETSC_FALSE, DM_COPY_LABELS_FAIL));
   }
+  PetscCall(PetscFree(vert_z));
   PetscFunctionReturn(0);
 }
