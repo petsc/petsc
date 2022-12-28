@@ -176,7 +176,7 @@ static PetscErrorCode KSPSetUp_HPDDM(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-static inline PetscErrorCode KSPHPDDMReset_Private(KSP ksp)
+static inline PetscErrorCode KSPReset_HPDDM_Private(KSP ksp)
 {
   KSP_HPDDM *data = (KSP_HPDDM *)ksp->data;
 
@@ -195,11 +195,9 @@ static PetscErrorCode KSPReset_HPDDM(KSP ksp)
   KSP_HPDDM *data = (KSP_HPDDM *)ksp->data;
 
   PetscFunctionBegin;
-  if (data->op) {
-    delete data->op;
-    data->op = NULL;
-  }
-  PetscCall(KSPHPDDMReset_Private(ksp));
+  delete data->op;
+  data->op = NULL;
+  PetscCall(KSPReset_HPDDM_Private(ksp));
   PetscFunctionReturn(0);
 }
 
@@ -253,7 +251,7 @@ static inline PetscErrorCode KSPSolve_HPDDM_Private(KSP ksp, const PetscScalar *
     HPDDM::copy_n(high[1], N, x);
     PetscCall(PetscFree2(high[0], high[1]));
 #else
-    PetscCheck(data->precision == KSP_HPDDM_PRECISION_QUADRUPLE, PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "Reconfigure with --download-f2cblaslapack --with-f2cblaslapack-float128-bindings");
+    PetscCheck(data->precision != KSP_HPDDM_PRECISION_QUADRUPLE, PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "Reconfigure with --download-f2cblaslapack --with-f2cblaslapack-float128-bindings");
 #endif
   } else if (data->precision < PETSC_KSPHPDDM_DEFAULT_PRECISION) { /* Krylov basis stored in lower precision than PetscScalar */
 #if !PetscDefined(USE_REAL_SINGLE) || PetscDefined(HAVE_F2CBLASLAPACK___FP16_BINDINGS)
@@ -269,7 +267,7 @@ static inline PetscErrorCode KSPSolve_HPDDM_Private(KSP ksp, const PetscScalar *
     }
     PetscCall(PetscFree(low[0]));
 #else
-    PetscCheck(data->precision == KSP_HPDDM_PRECISION_HALF, PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "Reconfigure with --download-f2cblaslapack --with-f2cblaslapack-fp16-bindings");
+    PetscCheck(data->precision != KSP_HPDDM_PRECISION_HALF, PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "Reconfigure with --download-f2cblaslapack --with-f2cblaslapack-fp16-bindings");
 #endif
   } else PetscCall(HPDDM::IterativeMethod::solve(*data->op, b, x, n, PetscObjectComm((PetscObject)ksp))); /* Krylov basis stored in the same precision as PetscScalar */
   if (!ksp->reason) {                                                                                     /* KSPConvergedDefault() is still returning 0 (= KSP_CONVERGED_ITERATING) */
@@ -440,19 +438,15 @@ static PetscErrorCode KSPHPDDMGetDeflationMat_HPDDM(KSP ksp, Mat *U)
 
 static PetscErrorCode KSPMatSolve_HPDDM(KSP ksp, Mat B, Mat X)
 {
-  KSP_HPDDM            *data = (KSP_HPDDM *)ksp->data;
-  HPDDM::PETScOperator *op   = data->op;
-  Mat                   A;
-  const PetscScalar    *b;
-  PetscScalar          *x;
-  PetscInt              n, lda;
+  KSP_HPDDM         *data = (KSP_HPDDM *)ksp->data;
+  Mat                A;
+  const PetscScalar *b;
+  PetscScalar       *x;
+  PetscInt           n, lda;
 
   PetscFunctionBegin;
   PetscCall(PetscCitationsRegister(HPDDMCitation, &HPDDMCite));
-  if (!op) {
-    PetscCall(KSPSetUp(ksp));
-    op = data->op;
-  }
+  if (!data->op) PetscCall(KSPSetUp(ksp));
   PetscCall(KSPGetOperators(ksp, &A, NULL));
   PetscCall(MatGetLocalSize(B, &n, NULL));
   PetscCall(MatDenseGetLDA(B, &lda));
@@ -540,7 +534,7 @@ static PetscErrorCode KSPHPDDMSetType_HPDDM(KSP ksp, KSPHPDDMType type)
     if (flg) break;
   }
   PetscCheck(i != PETSC_STATIC_ARRAY_LENGTH(KSPHPDDMTypes), PetscObjectComm((PetscObject)ksp), PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown KSPHPDDMType %d", type);
-  if (data->cntl[0] != static_cast<char>(PETSC_DECIDE) && data->cntl[0] != i) PetscCall(KSPHPDDMReset_Private(ksp));
+  if (data->cntl[0] != static_cast<char>(PETSC_DECIDE) && data->cntl[0] != i) PetscCall(KSPReset_HPDDM_Private(ksp));
   data->cntl[0] = i;
   PetscFunctionReturn(0);
 }
@@ -612,7 +606,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_HPDDM(KSP ksp)
   ksp->ops->destroy        = KSPDestroy_HPDDM;
   ksp->ops->view           = KSPView_HPDDM;
   ksp->ops->reset          = KSPReset_HPDDM;
-  PetscCall(KSPHPDDMReset_Private(ksp));
+  PetscCall(KSPReset_HPDDM_Private(ksp));
   for (i = 0; i < static_cast<PetscInt>(PETSC_STATIC_ARRAY_LENGTH(common)); ++i) {
     PetscCall(PetscStrcmp(((PetscObject)ksp)->type_name, common[i], &flg));
     if (flg) break;
