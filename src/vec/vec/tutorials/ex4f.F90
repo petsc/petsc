@@ -1,7 +1,7 @@
 !
 !
 !  Description:  Illustrates the use of VecSetValues() to set
-!  multiple values at once; demonstrates VecGetArray().
+!  multiple values at once; demonstrates VecGetArrayF90().
 !
 ! -----------------------------------------------------------------------
 
@@ -10,29 +10,14 @@
       use petscvec
       implicit none
 
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-!                   Macro definitions
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-!
-!  Macros to make clearer the process of setting values in vectors and
-!  getting values from vectors.
-!
-!   - The element xx_a(ib) is element ib+1 in the vector x
-!   - Here we add 1 to the base array index to facilitate the use of
-!     conventional Fortran 1-based array indexing.
-!
-#define xx_a(ib)  xx_v(xx_i + (ib))
-#define yy_a(ib)  yy_v(yy_i + (ib))
-
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                 Beginning of program
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
        PetscScalar xwork(6)
-       PetscScalar xx_v(1),yy_v(1)
+       PetscScalar, pointer :: xx_v(:),yy_v(:)
        PetscInt     i,n,loc(6),isix
        PetscErrorCode ierr
-       PetscOffset xx_i,yy_i
        Vec         x,y
 
        PetscCallA(PetscInitialize(ierr))
@@ -78,20 +63,20 @@
 !    - Note that the Fortran interface to VecGetArray() differs from the
 !      C version.  See the users manual for details.
 
-       PetscCallA(VecGetArray(x,xx_v,xx_i,ierr))
-       PetscCallA(VecGetArray(y,yy_v,yy_i,ierr))
+       PetscCallA(VecGetArrayF90(x,xx_v,ierr))
+       PetscCallA(VecGetArrayF90(y,yy_v,ierr))
 
 !  Modify vector data
 
        do 30 i=1,n
-          xx_a(i) = 100.0*real(i)
-          yy_a(i) = 1000.0*real(i)
+          xx_v(i) = 100.0*real(i)
+          yy_v(i) = 1000.0*real(i)
   30   continue
 
 !  Restore vectors
 
-       PetscCallA(VecRestoreArray(x,xx_v,xx_i,ierr))
-       PetscCallA(VecRestoreArray(y,yy_v,yy_i,ierr))
+       PetscCallA(VecRestoreArrayF90(x,xx_v,ierr))
+       PetscCallA(VecRestoreArrayF90(y,yy_v,ierr))
 
 !  View vectors
        PetscCallA(PetscObjectSetName(x, 'new vector 1:',ierr))

@@ -120,25 +120,20 @@
       PetscMPIInt      status(MPI_STATUS_SIZE),tag,source
       PetscInt         dummy
 
-! PETSc's VecGetArray acts differently in Fortran than it does in C.
-! Calling VecGetArray((Vec) X, (PetscReal) x_array(0:1), (PetscOffset) x_index, ierr))
-! will return an array of doubles referenced by x_array offset by x_index.
-!  i.e.,  to reference the kth element of X, use x_array(k + x_index).
-! Notice that by declaring the arrays with range (0:1), we are using the C 0-indexing practice.
-      PetscReal        f_v(0:1),x_v(0:1),fval(1)
-      PetscOffset      f_i,x_i
+      PetscReal, pointer :: f_v(:),x_v(:)
+      PetscReal          fval(1)
 
       ierr = 0
 
 !     Get pointers to vector data
-      PetscCall(VecGetArray(x,x_v,x_i,ierr))
-      PetscCall(VecGetArray(f,f_v,f_i,ierr))
+      PetscCall(VecGetArrayReadF90(x,x_v,ierr))
+      PetscCall(VecGetArrayF90(f,f_v,ierr))
 
 !     Compute F(X)
       if (size .eq. 1) then
          ! Single processor
-         do i=0,m-1
-            PetscCall(RunSimulation(x_v(x_i),i,f_v(i+f_i),ierr))
+         do i=1,m
+            PetscCall(RunSimulation(x_v,i,f_v(i),ierr))
          enddo
       else
          ! Multiprocessor main
@@ -153,23 +148,23 @@
             if (tag .eq. IDLE_TAG) then
                checkedin = checkedin + 1
             else
-               f_v(f_i+tag) = fval(1)
+               f_v(tag+1) = fval(1)
                finished_tasks = finished_tasks + 1
             endif
             if (next_task .lt. m) then
                ! Send task to worker
-               PetscCallMPI(MPI_Send(x_v(x_i),nn,MPIU_SCALAR,source,next_task,PETSC_COMM_WORLD,ierr))
+               PetscCallMPI(MPI_Send(x_v,nn,MPIU_SCALAR,source,next_task,PETSC_COMM_WORLD,ierr))
                next_task = next_task + one
             else
                ! Send idle message to worker
-               PetscCallMPI(MPI_Send(x_v(x_i),nn,MPIU_SCALAR,source,IDLE_TAG,PETSC_COMM_WORLD,ierr))
+               PetscCallMPI(MPI_Send(x_v,nn,MPIU_SCALAR,source,IDLE_TAG,PETSC_COMM_WORLD,ierr))
             end if
          enddo
       endif
 
 !     Restore vectors
-      PetscCall(VecRestoreArray(x,x_v,x_i,ierr))
-      PetscCall(VecRestoreArray(F,f_v,f_i,ierr))
+      PetscCall(VecRestoreArrayReadF90(x,x_v,ierr))
+      PetscCall(VecRestoreArrayF90(F,f_v,ierr))
       return
       end
 
@@ -177,15 +172,14 @@
       use chwirut2fmodule
 
       Vec             x
-      PetscReal       x_v(0:1)
-      PetscOffset     x_i
+      PetscReal, pointer :: x_v(:)
       PetscErrorCode  ierr
 
-      PetscCall(VecGetArray(x,x_v,x_i,ierr))
-      x_v(x_i) = 0.15
-      x_v(x_i+1) = 0.008
-      x_v(x_i+2) = 0.01
-      PetscCall(VecRestoreArray(x,x_v,x_i,ierr))
+      PetscCall(VecGetArrayF90(x,x_v,ierr))
+      x_v(1) = 0.15
+      x_v(2) = 0.008
+      x_v(3) = 0.01
+      PetscCall(VecRestoreArrayF90(x,x_v,ierr))
       return
       end
 

@@ -124,14 +124,7 @@
 
       PetscReal        ff,t1,t2
       PetscInt         i,nn
-
-! PETSc's VecGetArray acts differently in Fortran than it does in C.
-! Calling VecGetArray((Vec) X, (PetscReal) x_array(0:1), (PetscOffset) x_index, ierr)
-! will return an array of doubles referenced by x_array offset by x_index.
-!  i.e.,  to reference the kth element of X, use x_array(k + x_index).
-! Notice that by declaring the arrays with range (0:1), we are using the C 0-indexing practice.
-      PetscReal        g_v(0:1),x_v(0:1)
-      PetscOffset      g_i,x_i
+      PetscReal, pointer :: g_v(:),x_v(:)
       PetscReal        alpha
       PetscInt         n
       common /params/ alpha, n
@@ -141,21 +134,21 @@
       ff = 0
 
 !     Get pointers to vector data
-      PetscCall(VecGetArrayRead(X,x_v,x_i,ierr))
-      PetscCall(VecGetArray(G,g_v,g_i,ierr))
+      PetscCall(VecGetArrayReadF90(X,x_v,ierr))
+      PetscCall(VecGetArrayF90(G,g_v,ierr))
 
 !     Compute G(X)
       do i=0,nn-1
-         t1 = x_v(x_i+2*i+1) - x_v(x_i+2*i)*x_v(x_i+2*i)
-         t2 = 1.0 - x_v(x_i + 2*i)
+         t1 = x_v(1+2*i+1) - x_v(1+2*i)*x_v(1+2*i)
+         t2 = 1.0 - x_v(1 + 2*i)
          ff = ff + alpha*t1*t1 + t2*t2
-         g_v(g_i + 2*i) = -4*alpha*t1*x_v(x_i + 2*i) - 2.0*t2
-         g_v(g_i + 2*i + 1) = 2.0*alpha*t1
+         g_v(1 + 2*i) = -4*alpha*t1*x_v(1 + 2*i) - 2.0*t2
+         g_v(1 + 2*i + 1) = 2.0*alpha*t1
       enddo
 
 !     Restore vectors
-      PetscCall(VecRestoreArrayRead(X,x_v,x_i,ierr))
-      PetscCall(VecRestoreArray(G,g_v,g_i,ierr))
+      PetscCall(VecRestoreArrayReadF90(X,x_v,ierr))
+      PetscCall(VecRestoreArrayF90(G,g_v,ierr))
 
       f = ff
       PetscCall(PetscLogFlops(15.0d0*nn,ierr))
@@ -202,8 +195,7 @@
 ! will return an array of doubles referenced by x_array offset by x_index.
 !  i.e.,  to reference the kth element of X, use x_array(k + x_index).
 ! Notice that by declaring the arrays with range (0:1), we are using the C 0-indexing practice.
-      PetscReal        x_v(0:1)
-      PetscOffset      x_i
+      PetscReal, pointer :: x_v(:)
       PetscInt         i,nn,ind(0:1),i2
       PetscReal        alpha
       PetscInt         n
@@ -219,14 +211,14 @@
 
 !  Get a pointer to vector data
 
-      PetscCall(VecGetArrayRead(X,x_v,x_i,ierr))
+      PetscCall(VecGetArrayReadF90(X,x_v,ierr))
 
 !  Compute Hessian entries
 
       do i=0,nn-1
          v(1,1) = 2.0*alpha
-         v(0,0) = -4.0*alpha*(x_v(x_i+2*i+1) - 3*x_v(x_i+2*i)*x_v(x_i+2*i))+2
-         v(1,0) = -4.0*alpha*x_v(x_i+2*i)
+         v(0,0) = -4.0*alpha*(x_v(1+2*i+1) - 3*x_v(1+2*i)*x_v(1+2*i))+2
+         v(1,0) = -4.0*alpha*x_v(1+2*i)
          v(0,1) = v(1,0)
          ind(0) = 2*i
          ind(1) = 2*i + 1
@@ -235,7 +227,7 @@
 
 !  Restore vector
 
-      PetscCall(VecRestoreArrayRead(X,x_v,x_i,ierr))
+      PetscCall(VecRestoreArrayReadF90(X,x_v,ierr))
 
 !  Assemble matrix
 

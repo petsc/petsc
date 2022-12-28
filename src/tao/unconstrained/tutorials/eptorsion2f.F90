@@ -215,13 +215,7 @@
 
 !  Declarations for use with local array:
 
-! PETSc's VecGetArray acts differently in Fortran than it does in C.
-! Calling VecGetArray((Vec) X, (PetscReal) x_array(0:1), (PetscOffset) x_index, ierr)
-! will return an array of doubles referenced by x_array offset by x_index.
-!  i.e.,  to reference the kth element of X, use x_array(k + x_index).
-! Notice that by declaring the arrays with range (0:1), we are using the C 0-indexing practice.
-      PetscReal      lx_v(0:1)
-      PetscOffset      lx_i
+      PetscReal, pointer :: lx_v(:)
 
 !  Local variables:
       PetscReal      zero, p5, area, cdiv3
@@ -256,7 +250,7 @@
       PetscCall(DMDAGetGhostCorners(dm,gxs,gys,PETSC_NULL_INTEGER,gxm,gym,PETSC_NULL_INTEGER,ierr))
 
 !  Get pointer to vector data.
-      PetscCall(VecGetArray(localX,lx_v,lx_i,ierr))
+      PetscCall(VecGetArrayReadF90(localX,lx_v,ierr))
 
 !  Set local loop dimensions
       xe = xs+xm
@@ -290,9 +284,9 @@
             v  = zero
             vr = zero
             vt = zero
-            if (i .ge. 0 .and. j .ge. 0)      v = lx_v(lx_i+k)
-            if (i .lt. mx-1 .and. j .gt. -1) vr = lx_v(lx_i+k+1)
-            if (i .gt. -1 .and. j .lt. my-1) vt = lx_v(lx_i+k+gxm)
+            if (i .ge. 0 .and. j .ge. 0)      v = lx_v(k+1)
+            if (i .lt. mx-1 .and. j .gt. -1) vr = lx_v(k+2)
+            if (i .gt. -1 .and. j .lt. my-1) vt = lx_v(k+1+gxm)
             dvdx = (vr-v)/hx
             dvdy = (vt-v)/hy
             if (i .ne. -1 .and. j .ne. -1) then
@@ -323,9 +317,9 @@
             vb = zero
             vl = zero
             v  = zero
-            if (i .lt. mx .and. j .gt. 0) vb = lx_v(lx_i+k-gxm)
-            if (i .gt. 0 .and. j .lt. my) vl = lx_v(lx_i+k-1)
-            if (i .lt. mx .and. j .lt. my) v = lx_v(lx_i+k)
+            if (i .lt. mx .and. j .gt. 0) vb = lx_v(k+1-gxm)
+            if (i .gt. 0 .and. j .lt. my) vl = lx_v(k)
+            if (i .lt. mx .and. j .lt. my) v = lx_v(1+k)
             dvdx = (v-vl)/hx
             dvdy = (v-vb)/hy
             if (i .ne. mx .and. j .ne. 0) then
@@ -349,7 +343,7 @@
       end do
 
 !  Restore vector
-      PetscCall(VecRestoreArray(localX,lx_v,lx_i,ierr))
+      PetscCall(VecRestoreArrayReadF90(localX,lx_v,ierr))
 
 !  Assemble gradient vector
       PetscCall(VecAssemblyBegin(G,ierr))

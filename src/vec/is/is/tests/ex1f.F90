@@ -8,9 +8,9 @@
       implicit none
 
        PetscErrorCode ierr
-       PetscInt i,n,indices(1004),ii(1)
+       PetscInt i,n,indices(1004)
+       PetscInt, pointer :: ii(:)
        PetscMPIInt size,rank
-       PetscOffset iis
        IS          is,newis
        PetscBool   flag,compute,permanent
 
@@ -33,11 +33,11 @@
         indices(i) = rank + i-1
  10   continue
       PetscCallA(ISCreateGeneral(PETSC_COMM_SELF,n,indices,PETSC_COPY_VALUES,is,ierr))
-      PetscCallA(ISGetIndices(is,ii,iis,ierr))
+      PetscCallA(ISGetIndicesF90(is,ii,ierr))
       do 20, i=1,n
-        if (ii(i+iis) .ne. indices(i)) then; SETERRA(PETSC_COMM_SELF,PETSC_ERR_PLIB,'Error getting indices'); endif
+        if (ii(i) .ne. indices(i)) then; SETERRA(PETSC_COMM_SELF,PETSC_ERR_PLIB,'Error getting indices'); endif
  20   continue
-      PetscCallA(ISRestoreIndices(is,ii,iis,ierr))
+      PetscCallA(ISRestoreIndicesF90(is,ii,ierr))
 
 !     Check identity and permutation
 
@@ -88,11 +88,11 @@
       PetscCallA(ISCreateGeneral(PETSC_COMM_SELF,n,indices,PETSC_COPY_VALUES,is,ierr))
       PetscCallA(ISSetPermutation(is,ierr))
       PetscCallA(ISInvertPermutation(is,PETSC_DECIDE,newis,ierr))
-      PetscCallA(ISGetIndices(newis,ii,iis,ierr))
+      PetscCallA(ISGetIndicesF90(newis,ii,ierr))
       do 40, i=1,n
-        if (ii(iis+i) .ne. n - i) then; SETERRA(PETSC_COMM_SELF,PETSC_ERR_PLIB,'Error getting permutation indices'); endif
+        if (ii(i) .ne. n - i) then; SETERRA(PETSC_COMM_SELF,PETSC_ERR_PLIB,'Error getting permutation indices'); endif
  40   continue
-      PetscCallA(ISRestoreIndices(newis,ii,iis,ierr))
+      PetscCallA(ISRestoreIndicesF90(newis,ii,ierr))
       PetscCallA(ISDestroy(newis,ierr))
       PetscCallA(ISDestroy(is,ierr))
       PetscCallA(PetscFinalize(ierr))

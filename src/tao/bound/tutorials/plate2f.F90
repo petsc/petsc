@@ -204,16 +204,9 @@
       PetscReal      df5dxc,df6dxc
       PetscReal      xc,xl,xr,xt,xb,xlt,xrb
 
-! PETSc's VecGetArray acts differently in Fortran than it does in C.
-! Calling VecGetArray((Vec) X, (PetscReal) x_array(0:1), (PetscOffset) x_index, ierr)
-! will return an array of doubles referenced by x_array offset by x_index.
-!  i.e.,  to reference the kth element of X, use x_array(k + x_index).
-! Notice that by declaring the arrays with range (0:1), we are using the C 0-indexing practice.
-      PetscReal      g_v(0:1),x_v(0:1)
-      PetscReal      top_v(0:1),left_v(0:1)
-      PetscReal      right_v(0:1),bottom_v(0:1)
-      PetscOffset      g_i,left_i,right_i
-      PetscOffset      bottom_i,top_i,x_i
+      PetscReal, pointer :: g_v(:),x_v(:)
+      PetscReal, pointer :: top_v(:),left_v(:)
+      PetscReal, pointer :: right_v(:),bottom_v(:)
 
       ft = 0.0
       zero = 0.0
@@ -236,19 +229,19 @@
 ! Initialize the vector to zero
       PetscCall(VecSet(localV,zero,ierr))
 
-! Get arrays to vector data (See note above about using VecGetArray in Fortran)
-      PetscCall(VecGetArray(localX,x_v,x_i,ierr))
-      PetscCall(VecGetArray(localV,g_v,g_i,ierr))
-      PetscCall(VecGetArray(Top,top_v,top_i,ierr))
-      PetscCall(VecGetArray(Bottom,bottom_v,bottom_i,ierr))
-      PetscCall(VecGetArray(Left,left_v,left_i,ierr))
-      PetscCall(VecGetArray(Right,right_v,right_i,ierr))
+! Get arrays to vector data (See note above about using VecGetArrayF90 in Fortran)
+      PetscCall(VecGetArrayF90(localX,x_v,ierr))
+      PetscCall(VecGetArrayF90(localV,g_v,ierr))
+      PetscCall(VecGetArrayF90(Top,top_v,ierr))
+      PetscCall(VecGetArrayF90(Bottom,bottom_v,ierr))
+      PetscCall(VecGetArrayF90(Left,left_v,ierr))
+      PetscCall(VecGetArrayF90(Right,right_v,ierr))
 
 ! Compute function over the locally owned part of the mesh
       do j = ys,ys+ym-1
          do i = xs,xs+xm-1
             row = (j-gys)*gxm + (i-gxs)
-            xc = x_v(row+x_i)
+            xc = x_v(1+row)
             xt = xc
             xb = xc
             xr = xc
@@ -257,39 +250,39 @@
             xlt = xc
 
             if (i .eq. 0) then !left side
-               xl = left_v(j - ys + 1 + left_i)
-               xlt = left_v(j - ys + 2 + left_i)
+               xl = left_v(1+j - ys + 1)
+               xlt = left_v(1+j - ys + 2)
             else
-               xl = x_v(row - 1 + x_i)
+               xl = x_v(1+row - 1)
             endif
 
             if (j .eq. 0) then !bottom side
-               xb = bottom_v(i - xs + 1 + bottom_i)
-               xrb = bottom_v(i - xs + 2 + bottom_i)
+               xb = bottom_v(1+i - xs + 1)
+               xrb = bottom_v(1+i - xs + 2)
             else
-               xb = x_v(row - gxm + x_i)
+               xb = x_v(1+row - gxm)
             endif
 
             if (i + 1 .eq. gxs + gxm) then !right side
-               xr = right_v(j - ys + 1 + right_i)
-               xrb = right_v(j - ys + right_i)
+               xr = right_v(1+j - ys + 1)
+               xrb = right_v(1+j - ys)
             else
-               xr = x_v(row + 1 + x_i)
+               xr = x_v(1+row + 1)
             endif
 
             if (j + 1 .eq. gys + gym) then !top side
-               xt = top_v(i - xs + 1 + top_i)
-               xlt = top_v(i - xs + top_i)
+               xt = top_v(1+i - xs + 1)
+               xlt = top_v(1+i - xs)
             else
-               xt = x_v(row + gxm + x_i)
+               xt = x_v(1+row + gxm)
             endif
 
             if ((i .gt. gxs) .and. (j + 1 .lt. gys + gym)) then
-               xlt = x_v(row - 1 + gxm + x_i)
+               xlt = x_v(1+row - 1 + gxm)
             endif
 
             if ((j .gt. gys) .and. (i + 1 .lt. gxs + gxm)) then
-               xrb = x_v(row + 1 - gxm + x_i)
+               xrb = x_v(1+row + 1 - gxm)
             endif
 
             d1 = xc-xl
@@ -333,52 +326,52 @@
             df5dxc = df5dxc / f5
             df6dxc = df6dxc / f6
 
-            g_v(row + g_i) = 0.5 * (df1dxc + df2dxc + df3dxc + df4dxc + df5dxc + df6dxc)
+            g_v(1+row) = 0.5 * (df1dxc + df2dxc + df3dxc + df4dxc + df5dxc + df6dxc)
          enddo
       enddo
 
 ! Compute triangular areas along the border of the domain.
       if (xs .eq. 0) then  ! left side
          do j=ys,ys+ym-1
-            d3 = (left_v(j-ys+1+left_i) - left_v(j-ys+2+left_i)) * rhy
-            d2 = (left_v(j-ys+1+left_i) - x_v((j-gys)*gxm + x_i)) * rhx
+            d3 = (left_v(1+j-ys+1) - left_v(1+j-ys+2)) * rhy
+            d2 = (left_v(1+j-ys+1) - x_v(1+(j-gys)*gxm)) * rhx
             ft = ft + sqrt(1.0 + d3*d3 + d2*d2)
          enddo
       endif
 
       if (ys .eq. 0) then !bottom side
          do i=xs,xs+xm-1
-            d2 = (bottom_v(i+1-xs+bottom_i)-bottom_v(i-xs+2+bottom_i)) * rhx
-            d3 = (bottom_v(i-xs+1+bottom_i)-x_v(i-gxs+x_i))*rhy
+            d2 = (bottom_v(1+i+1-xs)-bottom_v(1+i-xs+2)) * rhx
+            d3 = (bottom_v(1+i-xs+1)-x_v(1+i-gxs))*rhy
             ft = ft + sqrt(1.0 + d3*d3 + d2*d2)
          enddo
       endif
 
       if (xs + xm .eq. mx) then ! right side
          do j=ys,ys+ym-1
-            d1 = (x_v((j+1-gys)*gxm-1+x_i)-right_v(j-ys+1+right_i))*rhx
-            d4 = (right_v(j-ys+right_i) - right_v(j-ys+1+right_i))*rhy
+            d1 = (x_v(1+(j+1-gys)*gxm-1)-right_v(1+j-ys+1))*rhx
+            d4 = (right_v(1+j-ys) - right_v(1+j-ys+1))*rhy
             ft = ft + sqrt(1.0 + d1*d1 + d4*d4)
          enddo
       endif
 
       if (ys + ym .eq. my) then
          do i=xs,xs+xm-1
-            d1 = (x_v((gym-1)*gxm+i-gxs+x_i) - top_v(i-xs+1+top_i))*rhy
-            d4 = (top_v(i-xs+1+top_i) - top_v(i-xs+top_i))*rhx
+            d1 = (x_v(1+(gym-1)*gxm+i-gxs) - top_v(1+i-xs+1))*rhy
+            d4 = (top_v(1+i-xs+1) - top_v(1+i-xs))*rhx
             ft = ft + sqrt(1.0 + d1*d1 + d4*d4)
          enddo
       endif
 
       if ((ys .eq. 0) .and. (xs .eq. 0)) then
-         d1 = (left_v(0 + left_i) - left_v(1 + left_i)) * rhy
-         d2 = (bottom_v(0+bottom_i)-bottom_v(1+bottom_i))*rhx
+         d1 = (left_v(1+0) - left_v(1+1)) * rhy
+         d2 = (bottom_v(1+0)-bottom_v(1+1))*rhx
          ft = ft + sqrt(1.0 + d1*d1 + d2*d2)
       endif
 
       if ((ys + ym .eq. my) .and. (xs + xm .eq. mx)) then
-         d1 = (right_v(ym+1+right_i) - right_v(ym+right_i))*rhy
-         d2 = (top_v(xm+1+top_i) - top_v(xm + top_i))*rhx
+         d1 = (right_v(1+ym+1) - right_v(1+ym))*rhy
+         d2 = (top_v(1+xm+1) - top_v(1+xm))*rhx
          ft = ft + sqrt(1.0 + d1*d1 + d2*d2)
       endif
 
@@ -386,12 +379,12 @@
       PetscCallMPI(MPI_Allreduce(ft,fcn,1,MPIU_SCALAR,MPIU_SUM,PETSC_COMM_WORLD,ierr))
 
 ! Restore vectors
-      PetscCall(VecRestoreArray(localX,x_v,x_i,ierr))
-      PetscCall(VecRestoreArray(localV,g_v,g_i,ierr))
-      PetscCall(VecRestoreArray(Left,left_v,left_i,ierr))
-      PetscCall(VecRestoreArray(Top,top_v,top_i,ierr))
-      PetscCall(VecRestoreArray(Bottom,bottom_v,bottom_i,ierr))
-      PetscCall(VecRestoreArray(Right,right_v,right_i,ierr))
+      PetscCall(VecRestoreArrayF90(localX,x_v,ierr))
+      PetscCall(VecRestoreArrayF90(localV,g_v,ierr))
+      PetscCall(VecRestoreArrayF90(Left,left_v,ierr))
+      PetscCall(VecRestoreArrayF90(Top,top_v,ierr))
+      PetscCall(VecRestoreArrayF90(Bottom,bottom_v,ierr))
+      PetscCall(VecRestoreArrayF90(Right,right_v,ierr))
 
 ! Scatter values to global vector
       PetscCall(DMLocalToGlobalBegin(dm,localV,INSERT_VALUES,G,ierr))
@@ -448,16 +441,9 @@
       PetscReal    xc,xl,xr,xt,xb,xlt,xrb
       PetscReal    hl,hr,ht,hb,hc,htl,hbr
 
-! PETSc's VecGetArray acts differently in Fortran than it does in C.
-! Calling VecGetArray((Vec) X, (PetscReal) x_array(0:1), (PetscOffset) x_index, ierr)
-! will return an array of doubles referenced by x_array offset by x_index.
-!  i.e.,  to reference the kth element of X, use x_array(k + x_index).
-! Notice that by declaring the arrays with range (0:1), we are using the C 0-indexing practice.
-      PetscReal   right_v(0:1),left_v(0:1)
-      PetscReal   bottom_v(0:1),top_v(0:1)
-      PetscReal   x_v(0:1)
-      PetscOffset   x_i,right_i,left_i
-      PetscOffset   bottom_i,top_i
+      PetscReal,pointer ::  right_v(:),left_v(:)
+      PetscReal,pointer ::  bottom_v(:),top_v(:)
+      PetscReal,pointer ::  x_v(:)
       PetscReal   v(0:6)
       PetscBool     assembled
       PetscInt      i1
@@ -476,11 +462,11 @@
       PetscCall(DMGlobalToLocalEnd(dm,X,INSERT_VALUES,localX,ierr))
 
 ! Get pointers to vector data (see note on Fortran arrays above)
-      PetscCall(VecGetArray(localX,x_v,x_i,ierr))
-      PetscCall(VecGetArray(Top,top_v,top_i,ierr))
-      PetscCall(VecGetArray(Bottom,bottom_v,bottom_i,ierr))
-      PetscCall(VecGetArray(Left,left_v,left_i,ierr))
-      PetscCall(VecGetArray(Right,right_v,right_i,ierr))
+      PetscCall(VecGetArrayF90(localX,x_v,ierr))
+      PetscCall(VecGetArrayF90(Top,top_v,ierr))
+      PetscCall(VecGetArrayF90(Bottom,bottom_v,ierr))
+      PetscCall(VecGetArrayF90(Left,left_v,ierr))
+      PetscCall(VecGetArrayF90(Right,right_v,ierr))
 
 ! Initialize matrix entries to zero
       PetscCall(MatAssembled(Hessian,assembled,ierr))
@@ -498,7 +484,7 @@
          do  j=ys,ys+ym-1
             row = (j-gys)*gxm + (i-gxs)
 
-            xc = x_v(row + x_i)
+            xc = x_v(1+row)
             xt = xc
             xb = xc
             xr = xc
@@ -507,39 +493,39 @@
             xlt = xc
 
             if (i .eq. gxs) then   ! Left side
-               xl = left_v(left_i + j - ys + 1)
-               xlt = left_v(left_i + j - ys + 2)
+               xl = left_v(1+j - ys + 1)
+               xlt = left_v(1+j - ys + 2)
             else
-               xl = x_v(x_i + row -1)
+               xl = x_v(1+row -1)
             endif
 
             if (j .eq. gys) then ! bottom side
-               xb = bottom_v(bottom_i + i - xs + 1)
-               xrb = bottom_v(bottom_i + i - xs + 2)
+               xb = bottom_v(1+i - xs + 1)
+               xrb = bottom_v(1+i - xs + 2)
             else
-               xb = x_v(x_i + row - gxm)
+               xb = x_v(1+row - gxm)
             endif
 
             if (i+1 .eq. gxs + gxm) then !right side
-               xr = right_v(right_i + j - ys + 1)
-               xrb = right_v(right_i + j - ys)
+               xr = right_v(1+j - ys + 1)
+               xrb = right_v(1+j - ys)
             else
-               xr = x_v(x_i + row + 1)
+               xr = x_v(1+row + 1)
             endif
 
             if (j+1 .eq. gym+gys) then !top side
-               xt = top_v(top_i +i - xs + 1)
-               xlt = top_v(top_i + i - xs)
+               xt = top_v(1+i - xs + 1)
+               xlt = top_v(1+i - xs)
             else
-               xt = x_v(x_i + row + gxm)
+               xt = x_v(1+row + gxm)
             endif
 
             if ((i .gt. gxs) .and. (j+1 .lt. gys+gym)) then
-               xlt = x_v(x_i + row - 1 + gxm)
+               xlt = x_v(1+row - 1 + gxm)
             endif
 
             if ((i+1 .lt. gxs+gxm) .and. (j .gt. gys)) then
-               xrb = x_v(x_i + row + 1 - gxm)
+               xrb = x_v(1+row + 1 - gxm)
             endif
 
             d1 = (xc-xl)*rhx
@@ -630,11 +616,11 @@
       enddo
 
 ! restore vectors
-      PetscCall(VecRestoreArray(localX,x_v,x_i,ierr))
-      PetscCall(VecRestoreArray(Left,left_v,left_i,ierr))
-      PetscCall(VecRestoreArray(Right,right_v,right_i,ierr))
-      PetscCall(VecRestoreArray(Top,top_v,top_i,ierr))
-      PetscCall(VecRestoreArray(Bottom,bottom_v,bottom_i,ierr))
+      PetscCall(VecRestoreArrayF90(localX,x_v,ierr))
+      PetscCall(VecRestoreArrayF90(Left,left_v,ierr))
+      PetscCall(VecRestoreArrayF90(Right,right_v,ierr))
+      PetscCall(VecRestoreArrayF90(Top,top_v,ierr))
+      PetscCall(VecRestoreArrayF90(Bottom,bottom_v,ierr))
 
 ! Assemble the matrix
       PetscCall(MatAssemblyBegin(Hessian,MAT_FINAL_ASSEMBLY,ierr))
@@ -670,8 +656,8 @@
       PetscReal      yt,hx,hy,u1,u2,nf1,nf2
       PetscReal      njac11,njac12,njac21,njac22
       PetscReal      b, t, l, r
-      PetscReal      boundary_v(0:1)
-      PetscOffset      boundary_i
+      PetscReal,pointer :: boundary_v(:)
+
       logical exitloop
       PetscBool flg
 
@@ -710,25 +696,25 @@
             yt=b
             xt=l+hx*xs
             limit=bsize
-            PetscCall(VecGetArray(Bottom,boundary_v,boundary_i,ierr))
+            PetscCall(VecGetArrayF90(Bottom,boundary_v,ierr))
 
          elseif (j.eq.1) then
             yt=t
             xt=l+hx*xs
             limit=tsize
-            PetscCall(VecGetArray(Top,boundary_v,boundary_i,ierr))
+            PetscCall(VecGetArrayF90(Top,boundary_v,ierr))
 
          elseif (j.eq.2) then
             yt=b+hy*ys
             xt=l
             limit=lsize
-            PetscCall(VecGetArray(Left,boundary_v,boundary_i,ierr))
+            PetscCall(VecGetArrayF90(Left,boundary_v,ierr))
 
          elseif (j.eq.3) then
             yt=b+hy*ys
             xt=r
             limit=rsize
-            PetscCall(VecGetArray(Right,boundary_v,boundary_i,ierr))
+            PetscCall(VecGetArrayF90(Right,boundary_v,ierr))
          endif
 
          do i=0,limit-1
@@ -756,7 +742,7 @@
                k=k+1
             enddo
 
-            boundary_v(i + boundary_i) = u1*u1-u2*u2
+            boundary_v(1+i) = u1*u1-u2*u2
             if ((j .eq. 0) .or. (j .eq. 1)) then
                xt = xt + hx
             else
@@ -766,13 +752,13 @@
          enddo
 
          if (j.eq.0) then
-            PetscCall(VecRestoreArray(Bottom,boundary_v,boundary_i,ierr))
+            PetscCall(VecRestoreArrayF90(Bottom,boundary_v,ierr))
          elseif (j.eq.1) then
-            PetscCall(VecRestoreArray(Top,boundary_v,boundary_i,ierr))
+            PetscCall(VecRestoreArrayF90(Top,boundary_v,ierr))
          elseif (j.eq.2) then
-            PetscCall(VecRestoreArray(Left,boundary_v,boundary_i,ierr))
+            PetscCall(VecRestoreArrayF90(Left,boundary_v,ierr))
          elseif (j.eq.3) then
-            PetscCall(VecRestoreArray(Right,boundary_v,boundary_i,ierr))
+            PetscCall(VecRestoreArrayF90(Right,boundary_v,ierr))
          endif
 
       enddo
@@ -823,14 +809,7 @@
       PetscInt         xs, xm, ys, ym
       PetscReal      lb,ub
       PetscInt         dummy
-
-! PETSc's VecGetArray acts differently in Fortran than it does in C.
-! Calling VecGetArray((Vec) X, (PetscReal) x_array(0:1), (PetscOffset) x_index, ierr)
-! will return an array of doubles referenced by x_array offset by x_index.
-!  i.e.,  to reference the kth element of X, use x_array(k + x_index).
-! Notice that by declaring the arrays with range (0:1), we are using the C 0-indexing practice.
-      PetscReal      xl_v(0:1)
-      PetscOffset      xl_i
+      PetscReal, pointer :: xl_v(:)
 
       lb = PETSC_NINFINITY
       ub = PETSC_INFINITY
@@ -845,7 +824,7 @@
       PetscCall(VecSet(xl,lb,ierr))
       PetscCall(VecSet(xu,ub,ierr))
 
-      PetscCall(VecGetArray(xl,xl_v,xl_i,ierr))
+      PetscCall(VecGetArrayF90(xl,xl_v,ierr))
 
       do i=xs,xs+xm-1
 
@@ -855,14 +834,14 @@
 
             if (i.ge.((mx-bmx)/2) .and. i.lt.(mx-(mx-bmx)/2) .and.           &
      &          j.ge.((my-bmy)/2) .and. j.lt.(my-(my-bmy)/2)) then
-               xl_v(xl_i+row) = bheight
+               xl_v(1+row) = bheight
 
             endif
 
          enddo
       enddo
 
-      PetscCall(VecRestoreArray(xl,xl_v,xl_i,ierr))
+      PetscCall(VecRestoreArrayF90(xl,xl_v,ierr))
 
       return
       end
@@ -889,16 +868,9 @@
       PetscInt          ys,ym,gys,gym
       PetscReal       zero, np5
 
-! PETSc's VecGetArray acts differently in Fortran than it does in C.
-! Calling VecGetArray((Vec) X, (PetscReal) x_array(0:1), (integer) x_index, ierr)
-! will return an array of doubles referenced by x_array offset by x_index.
-!  i.e.,  to reference the kth element of X, use x_array(k + x_index).
-! Notice that by declaring the arrays with range (0:1), we are using the C 0-indexing practice.
-      PetscReal   left_v(0:1),right_v(0:1)
-      PetscReal   bottom_v(0:1),top_v(0:1)
-      PetscReal   x_v(0:1)
-      PetscOffset   left_i, right_i, top_i
-      PetscOffset   bottom_i,x_i
+      PetscReal,pointer :: left_v(:),right_v(:)
+      PetscReal,pointer :: bottom_v(:),top_v(:)
+      PetscReal,pointer :: x_v(:)
       PetscBool     flg
       PetscRandom   rctx
 
@@ -926,29 +898,29 @@
          PetscCall(DMDAGetGhostCorners(dm,gxs,gys,PETSC_NULL_INTEGER,gxm,gym,PETSC_NULL_INTEGER,ierr))
 
 !        Get pointers to vector data
-         PetscCall(VecGetArray(Top,top_v,top_i,ierr))
-         PetscCall(VecGetArray(Bottom,bottom_v,bottom_i,ierr))
-         PetscCall(VecGetArray(Left,left_v,left_i,ierr))
-         PetscCall(VecGetArray(Right,right_v,right_i,ierr))
+         PetscCall(VecGetArrayF90(Top,top_v,ierr))
+         PetscCall(VecGetArrayF90(Bottom,bottom_v,ierr))
+         PetscCall(VecGetArrayF90(Left,left_v,ierr))
+         PetscCall(VecGetArrayF90(Right,right_v,ierr))
 
-         PetscCall(VecGetArray(localX,x_v,x_i,ierr))
+         PetscCall(VecGetArrayF90(localX,x_v,ierr))
 
 !        Perform local computations
          do  j=ys,ys+ym-1
             do i=xs,xs+xm-1
                row = (j-gys)*gxm  + (i-gxs)
-               x_v(x_i + row) = ((j+1)*bottom_v(bottom_i +i-xs+1)/my + (my-j+1)*top_v(top_i+i-xs+1)/(my+2) +                  &
-     &                          (i+1)*left_v(left_i+j-ys+1)/mx + (mx-i+1)*right_v(right_i+j-ys+1)/(mx+2))*0.5
+               x_v(1+row) = ((j+1)*bottom_v(1+i-xs+1)/my + (my-j+1)*top_v(1+i-xs+1)/(my+2) +                  &
+     &                          (i+1)*left_v(1+j-ys+1)/mx + (mx-i+1)*right_v(1+j-ys+1)/(mx+2))*0.5
             enddo
          enddo
 
 !        Restore vectors
-         PetscCall(VecRestoreArray(localX,x_v,x_i,ierr))
+         PetscCall(VecRestoreArrayF90(localX,x_v,ierr))
 
-         PetscCall(VecRestoreArray(Left,left_v,left_i,ierr))
-         PetscCall(VecRestoreArray(Top,top_v,top_i,ierr))
-         PetscCall(VecRestoreArray(Bottom,bottom_v,bottom_i,ierr))
-         PetscCall(VecRestoreArray(Right,right_v,right_i,ierr))
+         PetscCall(VecRestoreArrayF90(Left,left_v,ierr))
+         PetscCall(VecRestoreArrayF90(Top,top_v,ierr))
+         PetscCall(VecRestoreArrayF90(Bottom,bottom_v,ierr))
+         PetscCall(VecRestoreArrayF90(Right,right_v,ierr))
 
          PetscCall(DMLocalToGlobalBegin(dm,localX,INSERT_VALUES,X,ierr))
          PetscCall(DMLocalToGlobalEnd(dm,localX,INSERT_VALUES,X,ierr))
