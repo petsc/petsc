@@ -180,4 +180,9 @@ int main(int argc, char **argv)
     nsize: 2
     args: -dm_plex_simplex 0 -dm_plex_dim 2 -dm_plex_box_faces 4,3 -dm_plex_box_sfc -dm_distribute 0 -petscspace_degree 1 -dm_view
 
+  test:
+    suffix: 2d_sfc_periodic
+    nsize: 2
+    args: -dm_plex_simplex 0 -dm_plex_dim 2 -dm_plex_box_faces 4,3 -dm_plex_box_sfc -dm_distribute 0 -petscspace_degree 1 -dm_plex_box_bd periodic,none -dm_view ::ascii_info_detail
+
 TEST*/

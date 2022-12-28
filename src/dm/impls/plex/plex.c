@@ -941,6 +941,7 @@ static PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
       PetscCall(DMGetPointSF(dm, &sf));
       PetscCall(PetscSFView(sf, viewer));
     }
+    if (mesh->periodic.face_sf) PetscCall(PetscSFView(mesh->periodic.face_sf, viewer));
     PetscCall(PetscViewerFlush(viewer));
   } else if (format == PETSC_VIEWER_ASCII_LATEX) {
     const char  *name, *color;
@@ -2556,6 +2557,7 @@ PetscErrorCode DMDestroy_Plex(DM dm)
   PetscCall(ISDestroy(&mesh->subpointIS));
   PetscCall(ISDestroy(&mesh->globalVertexNumbers));
   PetscCall(ISDestroy(&mesh->globalCellNumbers));
+  PetscCall(PetscSFDestroy(&mesh->periodic.face_sf));
   PetscCall(PetscSectionDestroy(&mesh->anchorSection));
   PetscCall(ISDestroy(&mesh->anchorIS));
   PetscCall(PetscSectionDestroy(&mesh->parentSection));

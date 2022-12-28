@@ -202,6 +202,12 @@ typedef struct {
   PetscErrorCode (*useradjacency)(DM, PetscInt, PetscInt *, PetscInt[], void *); /* User callback for adjacency */
   void *useradjacencyctx;                                                        /* User context for callback */
 
+  // Periodicity
+  struct {
+    PetscScalar transform[4][4]; // geometric transform
+    PetscSF     face_sf;         // root(donor faces) <-- leaf(local faces)
+  } periodic;
+
   /* Projection */
   PetscInt maxProjectionHeight; /* maximum height of cells used in DMPlexProject functions */
   PetscInt activePoint;         /* current active point in iteration */
