@@ -56,9 +56,11 @@ static PetscBool IjkActive(Ijk extent, Ijk l)
 }
 
 // Since element/vertex box extents are typically not equal powers of 2, Z codes that lie within the domain are not contiguous.
-static ZLayout ZLayoutCreate(PetscMPIInt size, const PetscInt eextent[3], const PetscInt vextent[3])
+static PetscErrorCode ZLayoutCreate(PetscMPIInt size, const PetscInt eextent[3], const PetscInt vextent[3], ZLayout *zlayout)
 {
   ZLayout layout;
+
+  PetscFunctionBegin;
   layout.eextent.i = eextent[0];
   layout.eextent.j = eextent[1];
   layout.eextent.k = eextent[2];
@@ -66,7 +68,7 @@ static ZLayout ZLayoutCreate(PetscMPIInt size, const PetscInt eextent[3], const 
   layout.vextent.j = vextent[1];
   layout.vextent.k = vextent[2];
   layout.comm_size = size;
-  PetscMalloc1(size + 1, &layout.zstarts);
+  PetscCall(PetscMalloc1(size + 1, &layout.zstarts));
 
   PetscInt total_elems = eextent[0] * eextent[1] * eextent[2];
   ZCode    z           = 0;
@@ -78,13 +80,21 @@ static ZLayout ZLayoutCreate(PetscMPIInt size, const PetscInt eextent[3], const 
       if (IjkActive(layout.eextent, loc)) count++;
     }
     // Pick up any extra vertices in the Z ordering before the next rank's first owned element.
+    //
+    // TODO: This leads to poorly balanced vertices when eextent is a power of 2, since all the fringe vertices end up
+    // on the last rank. A possible solution is to balance the Z-order vertices independently from the cells, which will
+    // result in a lot of element closures being remote. We could finish marking boundary conditions, then do a round of
+    // vertex ownership smoothing (which would reorder and redistribute vertices without touching element distribution).
+    // Another would be to have an analytic ownership criteria for vertices in the fringe veextent - eextent. This would
+    // complicate the job of identifying an owner and its offset.
     for (; z <= ZEncode(layout.vextent); z++) {
       Ijk loc = ZCodeSplit(z);
       if (IjkActive(layout.eextent, loc)) break;
     }
     layout.zstarts[r + 1] = z;
   }
-  return layout;
+  *zlayout = layout;
+  PetscFunctionReturn(0);
 }
 
 PetscInt ZCodeFind(ZCode key, PetscInt n, const ZCode X[])
@@ -141,7 +151,8 @@ PetscErrorCode DMPlexCreateBoxMesh_Tensor_SFC_Internal(DM dm, PetscInt dim, cons
     eextent[i] = faces[i];
     vextent[i] = faces[i] + 1;
   }
-  ZLayout   layout = ZLayoutCreate(size, eextent, vextent);
+  ZLayout layout;
+  PetscCall(ZLayoutCreate(size, eextent, vextent, &layout));
   PetscZSet vset; // set of all vertices in the closure of the owned elements
   PetscCall(PetscZSetCreate(&vset));
   PetscInt local_elems = 0;
