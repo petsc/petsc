@@ -6,7 +6,7 @@ SOURCECXX = hpddm.cxx
 SOURCEF   =
 SOURCEH   =
 LIBBASE   = libpetscksp
-DIRS      =
+DIRS      = cuda
 MANSEC    = KSP
 LOCDIR    = src/ksp/ksp/impls/hpddm/
 

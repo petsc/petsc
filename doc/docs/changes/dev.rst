@@ -86,6 +86,7 @@ Changes: Development
 
 - Add ``KSPMonitorDynamicToleranceCreate()`` and ``KSPMonitorDynamicToleranceSetCoefficient()``
 - Change ``-sub_ksp_dynamic_tolerance_param`` to ``-sub_ksp_dynamic_tolerance``
+- Add support for ``MATAIJCUSPARSE`` and ``VECCUDA`` to ``KSPHPDDM``
 
 .. rubric:: SNES:
 

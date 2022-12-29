@@ -1,0 +1,7 @@
+lid velocity = 0.0625, prandtl # = 1., grashof # = 1.
+  0 SNES Function norm 2.391552133017e-01 
+  Linear solve converged due to CONVERGED_RTOL iterations 14
+  1 SNES Function norm 6.827476814538e-05 
+  Linear solve converged due to CONVERGED_RTOL iterations 10
+  2 SNES Function norm 4.672496776020e-10 
+Number of SNES iterations = 2

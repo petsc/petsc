@@ -58,6 +58,9 @@ PETSC_EXTERN PetscLogEvent  PC_HPDDM_Next;
 PETSC_INTERN PetscErrorCode HPDDMLoadDL_Private(PetscBool *);
 PETSC_INTERN const char     HPDDMCitation[];
 PETSC_INTERN PetscBool      HPDDMCite;
+#if PetscDefined(HAVE_CUDA) && PetscDefined(HAVE_HPDDM)
+PETSC_INTERN PetscErrorCode KSPSolve_HPDDM_CUDA_Private(KSP_HPDDM *, const PetscScalar *, PetscScalar *, PetscInt, MPI_Comm);
+#endif
 
 #include <HPDDM.hpp>
 
