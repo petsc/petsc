@@ -20,6 +20,7 @@ petsc-dist/tmp
 petsc-dist/src/binding/petsc4py/build
 petsc-dist/src/binding/petsc4py/dist
 petsc-dist/src/binding/petsc4py/petsc4py.egg-info
+petsc-dist/src/binding/petsc4py/.eggs
 petsc-dist/lib/petsc/conf/petscvariables
 petsc-dist/config/BuildSystem/.hg
 petsc-dist/config/BuildSystem/.hgignore
