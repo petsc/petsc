@@ -1174,6 +1174,7 @@ PetscErrorCode KSPMatSolve(KSP ksp, Mat B, Mat X)
   PetscValidHeaderSpecific(X, MAT_CLASSID, 3);
   PetscCheckSameComm(ksp, 1, B, 2);
   PetscCheckSameComm(ksp, 1, X, 3);
+  PetscCheckSameType(B, 2, X, 3);
   PetscCheck(B->assembled, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Not for unassembled matrix");
   MatCheckPreallocated(X, 3);
   if (!X->assembled) {
