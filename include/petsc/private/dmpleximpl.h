@@ -204,8 +204,12 @@ typedef struct {
 
   // Periodicity
   struct {
+    // Specified by the user
     PetscScalar transform[4][4]; // geometric transform
     PetscSF     face_sf;         // root(donor faces) <-- leaf(local faces)
+    // Created eagerly (depends on points)
+    PetscSF composed_sf; // root(non-periodic global points) <-- leaf(local points)
+    IS      periodic_points;
   } periodic;
 
   /* Projection */
@@ -791,6 +795,8 @@ PETSC_EXTERN PetscErrorCode DMPlexBasisTransformPointTensor_Internal(DM, DM, Vec
 PETSC_INTERN PetscErrorCode DMPlexBasisTransformApplyReal_Internal(DM, const PetscReal[], PetscBool, PetscInt, const PetscReal *, PetscReal *, void *);
 PETSC_INTERN PetscErrorCode DMPlexBasisTransformApply_Internal(DM, const PetscReal[], PetscBool, PetscInt, const PetscScalar *, PetscScalar *, void *);
 PETSC_INTERN PetscErrorCode DMCreateNeumannOverlap_Plex(DM, IS *, Mat *, PetscErrorCode (**)(Mat, PetscReal, Vec, Vec, PetscReal, IS, void *), void **);
+
+PETSC_INTERN PetscErrorCode DMPeriodicCoordinateSetUp_Internal(DM);
 
 /* Functions in the vtable */
 PETSC_INTERN PetscErrorCode DMCreateInterpolation_Plex(DM dmCoarse, DM dmFine, Mat *interpolation, Vec *scaling);

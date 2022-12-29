@@ -120,7 +120,7 @@ PetscInt ZCodeFind(ZCode key, PetscInt n, const ZCode X[])
   return key == X[lo] ? lo : -(lo + (key > X[lo]) + 1);
 }
 
-static PetscErrorCode DMPlexCreateBoxMesh_Tensor_SFC_Periodicity_Private(DM dm, const ZLayout *layout, const ZCode *vert_z, PetscSegBuffer per_faces, PetscSegBuffer donor_face_closure, PetscSegBuffer my_donor_faces)
+static PetscErrorCode DMPlexCreateBoxMesh_Tensor_SFC_Periodicity_Private(DM dm, const ZLayout *layout, const ZCode *vert_z, PetscSegBuffer per_faces, const DMBoundaryType *periodicity, PetscSegBuffer donor_face_closure, PetscSegBuffer my_donor_faces)
 {
   MPI_Comm     comm;
   size_t       num_faces;
@@ -212,11 +212,262 @@ static PetscErrorCode DMPlexCreateBoxMesh_Tensor_SFC_Periodicity_Private(DM dm, 
   PetscCall(PetscObjectSetName((PetscObject)sfper, "Periodic Faces"));
   PetscCall(PetscSFViewFromOptions(sfper, NULL, "-sfper_view"));
 
-  PetscCall(PetscSegBufferDestroy(&per_faces));
-  PetscCall(PetscSegBufferDestroy(&donor_face_closure));
-  PetscCall(PetscSegBufferDestroy(&my_donor_faces));
   PetscCall(DMPlexSetPeriodicFaceSF(dm, sfper));
+
+  PetscScalar t[4][4] = {{0}};
+  t[0][0]             = 1;
+  t[1][1]             = 1;
+  t[2][2]             = 1;
+  t[3][3]             = 1;
+  for (PetscInt i = 0; i < dim; i++)
+    if (periodicity[i] == DM_BOUNDARY_PERIODIC) t[i][3] = 1;
+  PetscCall(DMPlexSetPeriodicFaceTransform(dm, t));
   PetscCall(PetscSFDestroy(&sfper));
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode DMCoordAddPeriodicOffsets_Private(DM dm, Vec g, InsertMode mode, Vec l, void *ctx)
+{
+  PetscFunctionBegin;
+  PetscCall(VecScatterBegin(dm->periodic.affine_to_local, dm->periodic.affine, l, ADD_VALUES, SCATTER_FORWARD));
+  PetscCall(VecScatterEnd(dm->periodic.affine_to_local, dm->periodic.affine, l, ADD_VALUES, SCATTER_FORWARD));
+  PetscFunctionReturn(0);
+}
+
+// Start with an SF for a positive depth (e.g., faces) and create a new SF for matched closure.
+//
+// While the image face and corresponding donor face might not have the same orientation, it is assumed that the vertex
+// numbering is consistent.
+static PetscErrorCode DMPlexSFCreateClosureSF_Private(DM dm, PetscSF face_sf, PetscSF *closure_sf, IS *is_points)
+{
+  MPI_Comm           comm;
+  PetscInt           nroots, nleaves, npoints;
+  const PetscInt    *filocal, *pilocal;
+  const PetscSFNode *firemote, *piremote;
+  PetscMPIInt        rank;
+  PetscSF            point_sf;
+
+  PetscFunctionBegin;
+  PetscCall(PetscObjectGetComm((PetscObject)dm, &comm));
+  PetscCallMPI(MPI_Comm_rank(comm, &rank));
+  PetscCall(PetscSFGetGraph(face_sf, &nroots, &nleaves, &filocal, &firemote));
+  PetscCall(DMGetPointSF(dm, &point_sf)); // Point SF has remote points
+  PetscCall(PetscSFGetGraph(point_sf, NULL, &npoints, &pilocal, &piremote));
+  PetscInt *rootdata, *leafdata;
+  PetscCall(PetscCalloc2(2 * nroots, &rootdata, 2 * nroots, &leafdata));
+  for (PetscInt i = 0; i < nleaves; i++) {
+    PetscInt point = filocal[i], cl_size, *closure = NULL;
+    PetscCall(DMPlexGetTransitiveClosure(dm, point, PETSC_TRUE, &cl_size, &closure));
+    leafdata[point] = cl_size - 1;
+    PetscCall(DMPlexRestoreTransitiveClosure(dm, point, PETSC_TRUE, &cl_size, &closure));
+  }
+  PetscCall(PetscSFReduceBegin(face_sf, MPIU_INT, leafdata, rootdata + nroots, MPIU_SUM));
+  PetscCall(PetscSFReduceEnd(face_sf, MPIU_INT, leafdata, rootdata + nroots, MPIU_SUM));
+
+  PetscInt root_offset = 0;
+  for (PetscInt p = 0; p < nroots; p++) {
+    const PetscInt *donor_dof = rootdata + nroots;
+    if (donor_dof[p] == 0) {
+      rootdata[2 * p]     = -1;
+      rootdata[2 * p + 1] = -1;
+      continue;
+    }
+    PetscInt  cl_size;
+    PetscInt *closure = NULL;
+    PetscCall(DMPlexGetTransitiveClosure(dm, p, PETSC_TRUE, &cl_size, &closure));
+    // cl_size - 1 = points not including self
+    PetscAssert(donor_dof[p] == cl_size - 1, comm, PETSC_ERR_PLIB, "Reduced leaf cone sizes do not match root cone sizes");
+    rootdata[2 * p]     = root_offset;
+    rootdata[2 * p + 1] = cl_size - 1;
+    root_offset += cl_size - 1;
+    PetscCall(DMPlexRestoreTransitiveClosure(dm, p, PETSC_TRUE, &cl_size, &closure));
+  }
+  PetscCall(PetscSFBcastBegin(face_sf, MPIU_2INT, rootdata, leafdata, MPI_REPLACE));
+  PetscCall(PetscSFBcastEnd(face_sf, MPIU_2INT, rootdata, leafdata, MPI_REPLACE));
+  // Count how many leaves we need to communicate the closures
+  PetscInt leaf_offset = 0;
+  for (PetscInt i = 0; i < nleaves; i++) {
+    PetscInt point = filocal[i];
+    if (leafdata[2 * point + 1] < 0) continue;
+    leaf_offset += leafdata[2 * point + 1];
+  }
+
+  PetscSFNode *closure_leaf;
+  PetscCall(PetscMalloc1(leaf_offset, &closure_leaf));
+  leaf_offset = 0;
+  for (PetscInt i = 0; i < nleaves; i++) {
+    PetscInt point   = filocal[i];
+    PetscInt cl_size = leafdata[2 * point + 1];
+    if (cl_size < 0) continue;
+    for (PetscInt j = 0; j < cl_size; j++) {
+      closure_leaf[leaf_offset].rank  = firemote[i].rank;
+      closure_leaf[leaf_offset].index = leafdata[2 * point] + j;
+      leaf_offset++;
+    }
+  }
+
+  PetscSF sf_closure;
+  PetscCall(PetscSFCreate(comm, &sf_closure));
+  PetscCall(PetscSFSetGraph(sf_closure, root_offset, leaf_offset, NULL, PETSC_USE_POINTER, closure_leaf, PETSC_OWN_POINTER));
+
+  // Pack root buffer with owner for every point in the root cones
+  PetscSFNode *donor_closure;
+  PetscCall(PetscCalloc1(root_offset, &donor_closure));
+  root_offset = 0;
+  for (PetscInt p = 0; p < nroots; p++) {
+    if (rootdata[2 * p] < 0) continue;
+    PetscInt  cl_size;
+    PetscInt *closure = NULL;
+    PetscCall(DMPlexGetTransitiveClosure(dm, p, PETSC_TRUE, &cl_size, &closure));
+    for (PetscInt j = 1; j < cl_size; j++) {
+      PetscInt c = closure[2 * j];
+      if (pilocal) {
+        PetscInt found = -1;
+        if (npoints > 0) PetscCall(PetscFindInt(c, npoints, pilocal, &found));
+        if (found >= 0) {
+          donor_closure[root_offset++] = piremote[found];
+          continue;
+        }
+      }
+      // we own c
+      donor_closure[root_offset].rank  = rank;
+      donor_closure[root_offset].index = c;
+      root_offset++;
+    }
+    PetscCall(DMPlexRestoreTransitiveClosure(dm, p, PETSC_TRUE, &cl_size, &closure));
+  }
+
+  PetscSFNode *leaf_donor_closure;
+  PetscCall(PetscMalloc1(leaf_offset, &leaf_donor_closure));
+  PetscCall(PetscSFBcastBegin(sf_closure, MPIU_2INT, donor_closure, leaf_donor_closure, MPI_REPLACE));
+  PetscCall(PetscSFBcastEnd(sf_closure, MPIU_2INT, donor_closure, leaf_donor_closure, MPI_REPLACE));
+  PetscCall(PetscSFDestroy(&sf_closure));
+  PetscCall(PetscFree(donor_closure));
+
+  PetscSFNode *new_iremote;
+  PetscCall(PetscCalloc1(nroots, &new_iremote));
+  for (PetscInt i = 0; i < nroots; i++) new_iremote[i].rank = -1;
+  // Walk leaves and match vertices
+  leaf_offset = 0;
+  for (PetscInt i = 0; i < nleaves; i++) {
+    PetscInt  point   = filocal[i], cl_size;
+    PetscInt *closure = NULL;
+    PetscCall(DMPlexGetTransitiveClosure(dm, point, PETSC_TRUE, &cl_size, &closure));
+    for (PetscInt j = 1; j < cl_size; j++) { // TODO: should we send donor edge orientations so we can flip for consistency?
+      PetscInt    c  = closure[2 * j];
+      PetscSFNode lc = leaf_donor_closure[leaf_offset];
+      // printf("[%d] face %d.%d: %d ?-- (%d,%d)\n", rank, point, j, c, lc.rank, lc.index);
+      if (new_iremote[c].rank == -1) {
+        new_iremote[c] = lc;
+      } else PetscCheck(new_iremote[c].rank == lc.rank && new_iremote[c].index == lc.index, comm, PETSC_ERR_PLIB, "Mismatched cone ordering between faces");
+      leaf_offset++;
+    }
+    PetscCall(DMPlexRestoreTransitiveClosure(dm, point, PETSC_TRUE, &cl_size, &closure));
+  }
+  PetscCall(PetscFree(leaf_donor_closure));
+
+  // Include face points in closure SF
+  for (PetscInt i = 0; i < nleaves; i++) new_iremote[filocal[i]] = firemote[i];
+  // consolidate leaves
+  PetscInt num_new_leaves = 0;
+  for (PetscInt i = 0; i < nroots; i++) {
+    if (new_iremote[i].rank == -1) continue;
+    new_iremote[num_new_leaves] = new_iremote[i];
+    leafdata[num_new_leaves]    = i;
+    num_new_leaves++;
+  }
+  PetscCall(ISCreateGeneral(comm, num_new_leaves, leafdata, PETSC_COPY_VALUES, is_points));
+
+  PetscSF csf;
+  PetscCall(PetscSFCreate(comm, &csf));
+  PetscCall(PetscSFSetGraph(csf, nroots, num_new_leaves, leafdata, PETSC_COPY_VALUES, new_iremote, PETSC_COPY_VALUES));
+  PetscCall(PetscFree(new_iremote)); // copy and delete because new_iremote is longer than it needs to be
+  PetscCall(PetscFree2(rootdata, leafdata));
+
+  // TODO: this is a lie; it's only the periodic point SF; need to compose with standard point SF
+  PetscCall(PetscObjectSetName((PetscObject)csf, "Composed Periodic Points"));
+  PetscSFViewFromOptions(csf, NULL, "-csf_view");
+  *closure_sf = csf;
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode DMGetPointSFComposed_Plex(DM dm, PetscSF *sf)
+{
+  DM_Plex *plex = (DM_Plex *)dm->data;
+
+  PetscFunctionBegin;
+  if (!plex->periodic.composed_sf) {
+    PetscSF face_sf = plex->periodic.face_sf;
+
+    PetscCall(DMPlexSFCreateClosureSF_Private(dm, face_sf, &plex->periodic.composed_sf, &plex->periodic.periodic_points));
+  }
+  if (sf) *sf = plex->periodic.composed_sf;
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode DMPeriodicCoordinateSetUp_Internal(DM dm)
+{
+  DM_Plex *plex = (DM_Plex *)dm->data;
+  PetscFunctionBegin;
+  if (!plex->periodic.face_sf) PetscFunctionReturn(0);
+  PetscCall(DMGetPointSFComposed_Plex(dm, NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)dm, "DMGetPointSFComposed_C", DMGetPointSFComposed_Plex));
+
+  PetscInt dim;
+  PetscCall(DMGetDimension(dm, &dim));
+  size_t count;
+  IS     isdof;
+  {
+    PetscInt        npoints;
+    const PetscInt *points;
+    IS              is = plex->periodic.periodic_points;
+    PetscSegBuffer  seg;
+    PetscSection    section;
+    PetscCall(DMGetLocalSection(dm, &section));
+    PetscCall(PetscSegBufferCreate(sizeof(PetscInt), 32, &seg));
+    PetscCall(ISGetSize(is, &npoints));
+    PetscCall(ISGetIndices(is, &points));
+    for (PetscInt i = 0; i < npoints; i++) {
+      PetscInt point = points[i], off, dof;
+      PetscCall(PetscSectionGetOffset(section, point, &off));
+      PetscCall(PetscSectionGetDof(section, point, &dof));
+      PetscAssert(dof % dim == 0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Unexpected dof %" PetscInt_FMT " not divisible by dimension %" PetscInt_FMT, dof, dim);
+      for (PetscInt j = 0; j < dof / dim; j++) {
+        PetscInt *slot;
+        PetscCall(PetscSegBufferGetInts(seg, 1, &slot));
+        *slot = off / dim;
+      }
+    }
+    PetscInt *ind;
+    PetscCall(PetscSegBufferGetSize(seg, &count));
+    PetscCall(PetscSegBufferExtractAlloc(seg, &ind));
+    PetscCall(PetscSegBufferDestroy(&seg));
+    PetscCall(ISCreateBlock(PETSC_COMM_SELF, dim, count, ind, PETSC_OWN_POINTER, &isdof));
+  }
+  Vec        L, P;
+  VecType    vec_type;
+  VecScatter scatter;
+  PetscCall(DMGetLocalVector(dm, &L));
+  PetscCall(VecCreate(PETSC_COMM_SELF, &P));
+  PetscCall(VecSetSizes(P, count * dim, count * dim));
+  PetscCall(VecGetType(L, &vec_type));
+  PetscCall(VecSetType(P, vec_type));
+  PetscCall(VecScatterCreate(P, NULL, L, isdof, &scatter));
+  PetscCall(DMRestoreLocalVector(dm, &L));
+  PetscCall(ISDestroy(&isdof));
+
+  {
+    PetscScalar *x;
+    PetscCall(VecGetArrayWrite(P, &x));
+    for (PetscInt i = 0; i < (PetscInt)count; i++) {
+      for (PetscInt j = 0; j < dim; j++) x[i * dim + j] = plex->periodic.transform[j][3];
+    }
+    PetscCall(VecRestoreArrayWrite(P, &x));
+  }
+
+  dm->periodic.affine_to_local = scatter;
+  dm->periodic.affine          = P;
+  PetscCall(DMGlobalToLocalHookAdd(dm, NULL, DMCoordAddPeriodicOffsets_Private, NULL));
   PetscFunctionReturn(0);
 }
 
@@ -249,6 +500,12 @@ PetscErrorCode DMPlexCreateBoxMesh_Tensor_SFC_Internal(DM dm, PetscInt dim, cons
   const PetscInt        face_marker_2[]   = {4, 2, 1, 3};
   const PetscInt        face_marker_3[]   = {6, 5, 3, 4, 1, 2};
   const PetscInt *const face_marker_dim[] = {NULL, face_marker_1, face_marker_2, face_marker_3};
+  // Orient faces so the normal is in the positive axis and the first vertex is the one closest to zero.
+  // These orientations can be determined by examining cones of a reference quad and hex element.
+  const PetscInt        face_orient_1[]   = {0, 0};
+  const PetscInt        face_orient_2[]   = {-1, 0, 0, -1};
+  const PetscInt        face_orient_3[]   = {-2, 0, -2, 1, -2, 0};
+  const PetscInt *const face_orient_dim[] = {NULL, face_orient_1, face_orient_2, face_orient_3};
 
   PetscFunctionBegin;
   PetscValidPointer(dm, 1);
@@ -312,16 +569,9 @@ PetscErrorCode DMPlexCreateBoxMesh_Tensor_SFC_Internal(DM dm, PetscInt dim, cons
     }
   }
 
-  if (0) {
-    DMLabel depth;
-    PetscCall(DMCreateLabel(dm, "depth"));
-    PetscCall(DMPlexGetDepthLabel(dm, &depth));
-    PetscCall(DMLabelSetStratumBounds(depth, 0, local_elems, local_elems + local_verts));
-    PetscCall(DMLabelSetStratumBounds(depth, 1, 0, local_elems));
-  } else {
-    PetscCall(DMPlexSymmetrize(dm));
-    PetscCall(DMPlexStratify(dm));
-  }
+  PetscCall(DMPlexSymmetrize(dm));
+  PetscCall(DMPlexStratify(dm));
+
   { // Create point SF
     PetscSF sf;
     PetscSFCreate(PetscObjectComm((PetscObject)dm), &sf);
@@ -425,6 +675,7 @@ PetscErrorCode DMPlexCreateBoxMesh_Tensor_SFC_Internal(DM dm, PetscInt dim, cons
       PetscCall(DMPlexRestoreTransitiveClosure(dm, f, PETSC_TRUE, &npoints, &points));
       for (PetscInt bc = 0, bc_match = 0; bc < 2 * dim; bc++) {
         if (bc_count[bc] == PetscPowInt(2, dim - 1)) {
+          PetscCall(DMPlexOrientPoint(dm, f, face_orient_dim[dim][bc]));
           if (periodicity[bc / 2] == DM_BOUNDARY_PERIODIC) {
             PetscInt *put;
             if (bc % 2 == 0) { // donor face; no label
@@ -459,14 +710,20 @@ PetscErrorCode DMPlexCreateBoxMesh_Tensor_SFC_Internal(DM dm, PetscInt dim, cons
         }
       }
     }
-    PetscCall(DMPlexCreateBoxMesh_Tensor_SFC_Periodicity_Private(dm, &layout, vert_z, per_faces, donor_face_closure, my_donor_faces));
     // Ensure that the Coordinate DM has our new boundary labels
     DM cdm;
     PetscCall(DMGetCoordinateDM(dm, &cdm));
     PetscCall(DMCopyLabels(dm, cdm, PETSC_COPY_VALUES, PETSC_FALSE, DM_COPY_LABELS_FAIL));
-    PetscSF sfper;
-    PetscCall(DMPlexGetPeriodicFaceSF(dm, &sfper));
-    PetscCall(DMPlexSetPeriodicFaceSF(cdm, sfper));
+    if (periodicity[0] == DM_BOUNDARY_PERIODIC || (dim > 1 && periodicity[1] == DM_BOUNDARY_PERIODIC) || (dim > 2 && periodicity[2] == DM_BOUNDARY_PERIODIC)) {
+      PetscCall(DMPlexCreateBoxMesh_Tensor_SFC_Periodicity_Private(dm, &layout, vert_z, per_faces, periodicity, donor_face_closure, my_donor_faces));
+      PetscSF sfper;
+      PetscCall(DMPlexGetPeriodicFaceSF(dm, &sfper));
+      PetscCall(DMPlexSetPeriodicFaceSF(cdm, sfper));
+      cdm->periodic.setup = DMPeriodicCoordinateSetUp_Internal;
+    }
+    PetscCall(PetscSegBufferDestroy(&per_faces));
+    PetscCall(PetscSegBufferDestroy(&donor_face_closure));
+    PetscCall(PetscSegBufferDestroy(&my_donor_faces));
   }
   PetscCall(PetscFree(layout.zstarts));
   PetscCall(PetscFree(vert_z));
@@ -499,6 +756,7 @@ PetscErrorCode DMPlexSetPeriodicFaceSF(DM dm, PetscSF face_sf)
   PetscCall(PetscObjectReference((PetscObject)face_sf));
   PetscCall(PetscSFDestroy(&plex->periodic.face_sf));
   plex->periodic.face_sf = face_sf;
+  PetscCall(PetscObjectComposeFunction((PetscObject)dm, "DMGetPointSFComposed_C", DMGetPointSFComposed_Plex));
   PetscFunctionReturn(0);
 }
 
@@ -523,5 +781,29 @@ PetscErrorCode DMPlexGetPeriodicFaceSF(DM dm, PetscSF *face_sf)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   *face_sf = plex->periodic.face_sf;
+  PetscFunctionReturn(0);
+}
+
+/*@
+  DMPlexSetPeriodicFaceTransform - set geometric transform from donor to periodic points
+
+  Logically Collective
+
+  Input Arguments:
++ dm - `DMPlex` that has been configured with `DMPlexSetPeriodicFaceSF()`
+- t - 4x4 affine transformation basis.
+
+@*/
+PetscErrorCode DMPlexSetPeriodicFaceTransform(DM dm, const PetscScalar t[4][4])
+{
+  DM_Plex *plex = (DM_Plex *)dm->data;
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  for (PetscInt i = 0; i < 4; i++) {
+    for (PetscInt j = 0; j < 4; j++) {
+      PetscCheck(i != j || t[i][j] == 1., PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Rotated transforms not supported");
+      plex->periodic.transform[i][j] = t[i][j];
+    }
+  }
   PetscFunctionReturn(0);
 }

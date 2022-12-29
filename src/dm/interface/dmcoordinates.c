@@ -1040,6 +1040,10 @@ PetscErrorCode DMProjectCoordinates(DM dm, PetscFE disc)
   PetscCall(PetscObjectSetOptionsPrefix((PetscObject)cdmNew, prefix));
   PetscCall(DMSetField(cdmNew, 0, NULL, (PetscObject)disc));
   PetscCall(DMCreateDS(cdmNew));
+  if (cdmOld->periodic.setup) {
+    cdmNew->periodic.setup = cdmOld->periodic.setup;
+    PetscCall(cdmNew->periodic.setup(cdmNew));
+  }
   if (dm->setfromoptionscalled) PetscCall(DMSetFromOptions(cdmNew));
   PetscCall(DMGetCoordinates(dm, &coordsOld));
   PetscCall(DMCreateGlobalVector(cdmNew, &coordsNew));

@@ -184,6 +184,7 @@ PETSC_EXTERN PetscErrorCode DMPlexInflateToGeomModel(DM);
 
 PETSC_EXTERN PetscErrorCode DMPlexSetPeriodicFaceSF(DM, PetscSF);
 PETSC_EXTERN PetscErrorCode DMPlexGetPeriodicFaceSF(DM, PetscSF *);
+PETSC_EXTERN PetscErrorCode DMPlexSetPeriodicFaceTransform(DM, const PetscScalar[4][4]);
 
 PETSC_EXTERN PetscErrorCode DMPlexCheck(DM);
 PETSC_EXTERN PetscErrorCode DMPlexCheckSymmetry(DM);

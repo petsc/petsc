@@ -1291,11 +1291,8 @@ static PetscErrorCode DMPlexCreateBoxMesh_Internal(DM dm, PetscInt dim, PetscBoo
   PetscBool box_sfc = PETSC_FALSE;
   PetscFunctionBegin;
   PetscCall(PetscOptionsGetBool(((PetscObject)dm)->options, ((PetscObject)dm)->prefix, "-dm_plex_box_sfc", &box_sfc, NULL));
-  if (box_sfc) {
-    PetscCall(DMPlexCreateBoxMesh_Tensor_SFC_Internal(dm, dim, faces, lower, upper, periodicity, interpolate));
-    PetscFunctionReturn(0);
-  }
-  if (dim == 1) PetscCall(DMPlexCreateLineMesh_Internal(dm, faces[0], lower[0], upper[0], periodicity[0]));
+  if (box_sfc) PetscCall(DMPlexCreateBoxMesh_Tensor_SFC_Internal(dm, dim, faces, lower, upper, periodicity, interpolate));
+  else if (dim == 1) PetscCall(DMPlexCreateLineMesh_Internal(dm, faces[0], lower[0], upper[0], periodicity[0]));
   else if (simplex) PetscCall(DMPlexCreateBoxMesh_Simplex_Internal(dm, dim, faces, lower, upper, periodicity, interpolate));
   else PetscCall(DMPlexCreateBoxMesh_Tensor_Internal(dm, dim, faces, lower, upper, periodicity));
   if (!interpolate && dim > 1 && !simplex) {
@@ -4526,10 +4523,13 @@ static PetscErrorCode DMInitialize_Plex(DM dm)
 PETSC_INTERN PetscErrorCode DMClone_Plex(DM dm, DM *newdm)
 {
   DM_Plex *mesh = (DM_Plex *)dm->data;
+  PetscSF  face_sf;
 
   PetscFunctionBegin;
   mesh->refct++;
   (*newdm)->data = mesh;
+  PetscCall(DMPlexGetPeriodicFaceSF(dm, &face_sf));
+  PetscCall(DMPlexSetPeriodicFaceSF(*newdm, face_sf));
   PetscCall(PetscObjectChangeTypeName((PetscObject)*newdm, DMPLEX));
   PetscCall(DMInitialize_Plex(*newdm));
   PetscFunctionReturn(0);

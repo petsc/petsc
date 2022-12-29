@@ -781,6 +781,8 @@ PetscErrorCode DMDestroy(DM *dm)
   if ((*dm)->transformDestroy) PetscCall((*(*dm)->transformDestroy)(*dm, (*dm)->transformCtx));
   PetscCall(DMDestroy(&(*dm)->transformDM));
   PetscCall(VecDestroy(&(*dm)->transform));
+  PetscCall(VecScatterDestroy(&(*dm)->periodic.affine_to_local));
+  PetscCall(VecDestroy(&(*dm)->periodic.affine));
 
   PetscCall(DMClearDS(*dm));
   PetscCall(DMDestroy(&(*dm)->dmBC));
@@ -4495,6 +4497,18 @@ static PetscErrorCode DMDefaultSectionCheckConsistency_Internal(DM dm, PetscSect
 }
 #endif
 
+static PetscErrorCode DMGetPointSFComposed_Internal(DM dm, PetscSF *sf)
+{
+  PetscErrorCode (*f)(DM, PetscSF *);
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidPointer(sf, 2);
+  PetscCall(PetscObjectQueryFunction((PetscObject)dm, "DMGetPointSFComposed_C", &f));
+  if (f) PetscCall(f(dm, sf));
+  else *sf = dm->sf;
+  PetscFunctionReturn(0);
+}
+
 /*@
   DMGetGlobalSection - Get the `PetscSection` encoding the global data layout for the `DM`.
 
@@ -4520,11 +4534,13 @@ PetscErrorCode DMGetGlobalSection(DM dm, PetscSection *section)
   PetscValidPointer(section, 2);
   if (!dm->globalSection) {
     PetscSection s;
+    PetscSF      sf;
 
     PetscCall(DMGetLocalSection(dm, &s));
     PetscCheck(s, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONGSTATE, "DM must have a default PetscSection in order to create a global PetscSection");
     PetscCheck(dm->sf, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONGSTATE, "DM must have a point PetscSF in order to create a global PetscSection");
-    PetscCall(PetscSectionCreateGlobalSection(s, dm->sf, PETSC_FALSE, PETSC_FALSE, &dm->globalSection));
+    PetscCall(DMGetPointSFComposed_Internal(dm, &sf));
+    PetscCall(PetscSectionCreateGlobalSection(s, sf, PETSC_FALSE, PETSC_FALSE, &dm->globalSection));
     PetscCall(PetscLayoutDestroy(&dm->map));
     PetscCall(PetscSectionGetValueLayout(PetscObjectComm((PetscObject)dm), dm->globalSection, &dm->map));
     PetscCall(PetscSectionViewFromOptions(dm->globalSection, NULL, "-global_section_view"));

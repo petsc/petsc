@@ -2539,6 +2539,7 @@ PetscErrorCode DMDestroy_Plex(DM dm)
   PetscCall(PetscObjectComposeFunction((PetscObject)dm, "DMPlexReorderSetDefault_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)dm, "DMPlexGetOverlap_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)dm, "DMPlexSetOverlap_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)dm, "DMGetPointSFComposed_C", NULL));
   if (--mesh->refct > 0) PetscFunctionReturn(0);
   PetscCall(PetscSectionDestroy(&mesh->coneSection));
   PetscCall(PetscFree(mesh->cones));
@@ -2558,6 +2559,8 @@ PetscErrorCode DMDestroy_Plex(DM dm)
   PetscCall(ISDestroy(&mesh->globalVertexNumbers));
   PetscCall(ISDestroy(&mesh->globalCellNumbers));
   PetscCall(PetscSFDestroy(&mesh->periodic.face_sf));
+  PetscCall(PetscSFDestroy(&mesh->periodic.composed_sf));
+  PetscCall(ISDestroy(&mesh->periodic.periodic_points));
   PetscCall(PetscSectionDestroy(&mesh->anchorSection));
   PetscCall(ISDestroy(&mesh->anchorIS));
   PetscCall(PetscSectionDestroy(&mesh->parentSection));

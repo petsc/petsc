@@ -270,6 +270,12 @@ struct _p_DM {
   PetscSection localSection;  /* Layout for local vectors */
   PetscSection globalSection; /* Layout for global vectors */
   PetscLayout  map;
+  // Affine transform applied in DMGlobalToLocal
+  struct {
+    VecScatter affine_to_local;
+    Vec        affine;
+    PetscErrorCode (*setup)(DM);
+  } periodic;
   /* Constraints */
   struct {
     PetscSection section;
