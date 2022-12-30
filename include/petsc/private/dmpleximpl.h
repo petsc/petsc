@@ -351,6 +351,7 @@ PETSC_EXTERN PetscErrorCode DMPlexCreateNumbering_Plex(DM, PetscInt, PetscInt, P
 
 PETSC_INTERN PetscErrorCode DMPlexInterpolateInPlace_Internal(DM);
 PETSC_INTERN PetscErrorCode DMPlexCreateBoxMesh_Tensor_SFC_Internal(DM, PetscInt, const PetscInt[], const PetscReal[], const PetscReal[], const DMBoundaryType[], PetscBool);
+PETSC_INTERN PetscErrorCode DMPlexMigrateIsoperiodicFaceSF_Internal(DM, DM, PetscSF);
 PETSC_INTERN PetscErrorCode DMPlexCreateCellNumbering_Internal(DM, PetscBool, IS *);
 PETSC_INTERN PetscErrorCode DMPlexCreateVertexNumbering_Internal(DM, PetscBool, IS *);
 PETSC_INTERN PetscErrorCode DMPlexRefine_Internal(DM, Vec, DMLabel, DMLabel, DM *);

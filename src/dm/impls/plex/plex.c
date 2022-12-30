@@ -2539,7 +2539,7 @@ PetscErrorCode DMDestroy_Plex(DM dm)
   PetscCall(PetscObjectComposeFunction((PetscObject)dm, "DMPlexReorderSetDefault_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)dm, "DMPlexGetOverlap_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)dm, "DMPlexSetOverlap_C", NULL));
-  PetscCall(PetscObjectComposeFunction((PetscObject)dm, "DMGetPointSFComposed_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)dm, "DMGetIsoperiodicPointSF_C", NULL));
   if (--mesh->refct > 0) PetscFunctionReturn(0);
   PetscCall(PetscSectionDestroy(&mesh->coneSection));
   PetscCall(PetscFree(mesh->cones));

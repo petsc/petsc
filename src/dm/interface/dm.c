@@ -4497,13 +4497,13 @@ static PetscErrorCode DMDefaultSectionCheckConsistency_Internal(DM dm, PetscSect
 }
 #endif
 
-static PetscErrorCode DMGetPointSFComposed_Internal(DM dm, PetscSF *sf)
+static PetscErrorCode DMGetIsoperiodicPointSF_Internal(DM dm, PetscSF *sf)
 {
   PetscErrorCode (*f)(DM, PetscSF *);
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidPointer(sf, 2);
-  PetscCall(PetscObjectQueryFunction((PetscObject)dm, "DMGetPointSFComposed_C", &f));
+  PetscCall(PetscObjectQueryFunction((PetscObject)dm, "DMGetIsoperiodicPointSF_C", &f));
   if (f) PetscCall(f(dm, sf));
   else *sf = dm->sf;
   PetscFunctionReturn(0);
@@ -4539,7 +4539,7 @@ PetscErrorCode DMGetGlobalSection(DM dm, PetscSection *section)
     PetscCall(DMGetLocalSection(dm, &s));
     PetscCheck(s, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONGSTATE, "DM must have a default PetscSection in order to create a global PetscSection");
     PetscCheck(dm->sf, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONGSTATE, "DM must have a point PetscSF in order to create a global PetscSection");
-    PetscCall(DMGetPointSFComposed_Internal(dm, &sf));
+    PetscCall(DMGetIsoperiodicPointSF_Internal(dm, &sf));
     PetscCall(PetscSectionCreateGlobalSection(s, sf, PETSC_FALSE, PETSC_FALSE, &dm->globalSection));
     PetscCall(PetscLayoutDestroy(&dm->map));
     PetscCall(PetscSectionGetValueLayout(PetscObjectComm((PetscObject)dm), dm->globalSection, &dm->map));

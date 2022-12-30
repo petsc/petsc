@@ -4,15 +4,18 @@ static char help[] = "Tests dof numberings for external integrators such as LibC
 #include <petscds.h>
 
 typedef struct {
-  PetscInt dummy;
+  PetscInt  check_face;
+  PetscBool closure_tensor;
 } AppCtx;
 
 static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 {
   PetscFunctionBeginUser;
-  options->dummy = 1;
+  options->check_face     = 1;
+  options->closure_tensor = PETSC_FALSE;
   PetscOptionsBegin(comm, "", "Dof Ordering Options", "DMPLEX");
-  //PetscCall(PetscOptionsInt("-num_refine", "Refine cycles", "ex46.c", options->Nr, &options->Nr, NULL));
+  PetscCall(PetscOptionsInt("-check_face", "Face set to report on", "ex49.c", options->check_face, &options->check_face, NULL));
+  PetscCall(PetscOptionsBool("-closure_tensor", "Use DMPlexSetClosurePermutationTensor()", "ex49.c", options->closure_tensor, &options->closure_tensor, NULL));
   PetscOptionsEnd();
   PetscFunctionReturn(0);
 }
@@ -49,7 +52,7 @@ static PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode CheckOffsets(DM dm, const char *domain_name, PetscInt label_value, PetscInt height)
+static PetscErrorCode CheckOffsets(DM dm, AppCtx *user, const char *domain_name, PetscInt label_value, PetscInt height)
 {
   const char            *height_name[] = {"cells", "faces"};
   DMLabel                domain_label  = NULL;
@@ -63,6 +66,7 @@ static PetscErrorCode CheckOffsets(DM dm, const char *domain_name, PetscInt labe
   if (domain_name) PetscCall(DMGetLabel(dm, domain_name, &domain_label));
   PetscCall(PetscPrintf(PETSC_COMM_WORLD, "## %s: '%s' {%" PetscInt_FMT "}%s\n", height_name[height], domain_name ? domain_name : "default", label_value, domain_name && !domain_label ? " (null label)" : ""));
   if (domain_name && !domain_label) PetscFunctionReturn(0);
+  if (user->closure_tensor) PetscCall(DMPlexSetClosurePermutationTensor(dm, PETSC_DETERMINE, NULL));
   // Offsets for cell closures
   PetscCall(DMGetNumFields(dm, &Nf));
   for (f = 0; f < Nf; ++f) {
@@ -99,12 +103,13 @@ static PetscErrorCode CheckOffsets(DM dm, const char *domain_name, PetscInt labe
     }
     if (isDG && height) PetscFunctionReturn(0);
     if (domain_name) PetscCall(DMGetLabel(cdm, domain_name, &domain_label));
+    if (user->closure_tensor) PetscCall(DMPlexSetClosurePermutationTensor(cdm, PETSC_DETERMINE, NULL));
     PetscCall(DMPlexGetLocalOffsets(cdm, domain_label, label_value, height, 0, &Ncell, &Ncl, &Nc, &n, &offsets));
     PetscCall(DMGetCoordinateDim(dm, &cdim));
     PetscCheck(Nc == cdim, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Geometric dimension %" PetscInt_FMT " should be %" PetscInt_FMT, Nc, cdim);
     PetscCall(DMGetLocalSection(cdm, &s));
     PetscCall(VecGetArrayRead(X, &x));
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "%s by element\n", cname));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "%s by element in %s order\n", cname, user->closure_tensor ? "tensor" : "bfs"));
     for (PetscInt c = 0; c < Ncell; ++c) {
       for (PetscInt v = 0; v < Ncl; ++v) {
         PetscInt           off = offsets[c * Ncl + v], dgdof;
@@ -146,9 +151,9 @@ int main(int argc, char **argv)
   PetscCall(ProcessOptions(PETSC_COMM_WORLD, &user));
   PetscCall(CreateMesh(PETSC_COMM_WORLD, &user, &dm));
   PetscCall(SetupDiscretization(dm, &user));
-  PetscCall(CheckOffsets(dm, NULL, 0, 0));
+  PetscCall(CheckOffsets(dm, &user, NULL, 0, 0));
   PetscCall(DMPlexGetDepth(dm, &depth));
-  if (depth > 1) PetscCall(CheckOffsets(dm, "Face Sets", 1, 1));
+  if (depth > 1) PetscCall(CheckOffsets(dm, &user, "Face Sets", user.check_face, 1));
   PetscCall(DMDestroy(&dm));
   PetscCall(PetscFinalize());
   return 0;
@@ -184,5 +189,15 @@ int main(int argc, char **argv)
     suffix: 2d_sfc_periodic
     nsize: 2
     args: -dm_plex_simplex 0 -dm_plex_dim 2 -dm_plex_box_faces 4,3 -dm_plex_box_sfc -dm_distribute 0 -petscspace_degree 1 -dm_plex_box_bd periodic,none -dm_view ::ascii_info_detail
+
+  testset:
+    args: -dm_plex_simplex 0 -dm_plex_dim 2 -dm_plex_box_faces 3,2 -dm_plex_box_sfc -petscspace_degree 1 -dm_plex_box_bd none,periodic -dm_view ::ascii_info_detail -closure_tensor
+    nsize: 2
+    test:
+      suffix: 2d_sfc_periodic_stranded
+      args: -dm_distribute 0
+    test:
+      suffix: 2d_sfc_periodic_stranded_dist
+      args: -dm_distribute 1 -petscpartitioner_type simple
 
 TEST*/

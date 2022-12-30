@@ -76,6 +76,8 @@ PetscErrorCode DMPlexReplace_Internal(DM dm, DM *ndm)
   PetscCall(DMInitialize_Plex(dm));
   dm->data = dmNew->data;
   ((DM_Plex *)dmNew->data)->refct++;
+  PetscCall(DMPlexGetIsoperiodicFaceSF(dm, &sf));
+  PetscCall(DMPlexSetIsoperiodicFaceSF(dm, sf)); // for the compose function effect on dm
   PetscCall(DMDestroyLabelLinkList_Internal(dm));
   PetscCall(DMCopyLabels(dmNew, dm, PETSC_OWN_POINTER, PETSC_TRUE, DM_COPY_LABELS_FAIL));
   PetscCall(DMGetCoarseDM(dmNew, &coarseDM));
@@ -4528,8 +4530,8 @@ PETSC_INTERN PetscErrorCode DMClone_Plex(DM dm, DM *newdm)
   PetscFunctionBegin;
   mesh->refct++;
   (*newdm)->data = mesh;
-  PetscCall(DMPlexGetPeriodicFaceSF(dm, &face_sf));
-  PetscCall(DMPlexSetPeriodicFaceSF(*newdm, face_sf));
+  PetscCall(DMPlexGetIsoperiodicFaceSF(dm, &face_sf));
+  PetscCall(DMPlexSetIsoperiodicFaceSF(*newdm, face_sf));
   PetscCall(PetscObjectChangeTypeName((PetscObject)*newdm, DMPLEX));
   PetscCall(DMInitialize_Plex(*newdm));
   PetscFunctionReturn(0);
