@@ -58,7 +58,7 @@ static PetscErrorCode PetscViewerFileClose_CGNS(PetscViewer viewer)
   }
   PetscCall(PetscFree(cgv->filename));
 #if defined(PETSC_HDF5_HAVE_PARALLEL)
-  PetscCallCGNS(cgp_close(cgv->file_num));
+  if (cgv->file_num) PetscCallCGNS(cgp_close(cgv->file_num));
 #else
   if (cgv->file_num) PetscCallCGNS(cg_close(cgv->file_num));
 #endif
