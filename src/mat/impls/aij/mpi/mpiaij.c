@@ -4533,6 +4533,51 @@ PetscErrorCode MatCreateAIJ(MPI_Comm comm, PetscInt m, PetscInt n, PetscInt M, P
   PetscFunctionReturn(0);
 }
 
+/*MC
+    MatMPIAIJGetSeqAIJF90 - Returns the local pieces of this distributed matrix
+
+    Synopsis:
+    MatMPIAIJGetSeqAIJF90(Mat A, Mat Ad, Mat Ao, {PetscInt, pointer :: colmap(:)},integer ierr)
+
+    Not Collective
+
+    Input Parameter:
+.   A - the `MATMPIAIJ` matrix
+
+    Output Parameters:
++   Ad - the diagonal portion of the matrix
+.   Ao - the off diagonal portion of the matrix
+.   colmap - An array mapping local column numbers of Ao to global column numbers of the parallel matrix
+-   ierr - error code
+
+     Level: advanced
+
+    Note:
+    Use  `MatMPIAIJRestoreSeqAIJF90()` when you no longer need access to the matrices and `colmap`
+
+.seealso: [](sec_fortranarrays), `Mat`, `MATMPIAIJ`, `MatMPIAIJGetSeqAIJ()`, `MatMPIAIJRestoreSeqAIJF90()`
+M*/
+
+/*MC
+    MatMPIAIJRestoreSeqAIJF90 - call after `MatMPIAIJGetSeqAIJF90()` when you no longer need access to the matrices and `colmap`
+
+    Synopsis:
+    MatMPIAIJRestoreSeqAIJF90(Mat A, Mat Ad, Mat Ao, {PetscInt, pointer :: colmap(:)},integer ierr)
+
+    Not Collective
+
+    Input Parameters:
++   A - the `MATMPIAIJ` matrix
+.   Ad - the diagonal portion of the matrix
+.   Ao - the off diagonal portion of the matrix
+.   colmap - An array mapping local column numbers of Ao to global column numbers of the parallel matrix
+-   ierr - error code
+
+     Level: advanced
+
+.seealso: [](sec_fortranarrays), `Mat`, `MATMPIAIJ`, `MatMPIAIJGetSeqAIJ()`, `MatMPIAIJGetSeqAIJF90()`
+M*/
+
 /*@C
   MatMPIAIJGetSeqAIJ - Returns the local piece of this distributed matrix
 

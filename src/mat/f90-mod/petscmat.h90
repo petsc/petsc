@@ -661,6 +661,23 @@
         End Subroutine
       End Interface
 
+      Interface
+        Subroutine MatMPIAIJGetSeqAIJF90(a,b,c,d,ierr)
+          import tMat
+          PetscInt, pointer :: d(:)
+          PetscErrorCode ierr
+          Mat     a,b,c
+        End Subroutine
+      End Interface
+
+      Interface
+        Subroutine MatMPIAIJRestoreSeqAIJF90(a,b,c,d,ierr)
+          import tMat
+          PetscInt, pointer :: d(:)
+          PetscErrorCode ierr
+          Mat     a,b,c
+        End Subroutine
+      End Interface
 
       Interface
         Subroutine MatSeqAIJRestoreArrayF90(v,array,ierr)

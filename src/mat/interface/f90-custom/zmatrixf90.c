@@ -3,6 +3,8 @@
 #include <petsc/private/f90impl.h>
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
+#define matmpiaijgetseqaijf90_     MATMPIAIJGETSEQAIJF90
+#define matmpiaijrestoreseqaijf90_  MATMPIAIJRESTORESEQAIJF90
 #define matdensegetarrayf90_       MATDENSEGETARRAYF90
 #define matdenserestorearrayf90_   MATDENSERESTOREARRAYF90
 #define matdensegetcolumnf90_      MATDENSEGETCOLUMNF90
@@ -13,6 +15,8 @@
 #define matgetrowijf90_            MATGETROWIJF90
 #define matrestorerowijf90_        MATRESTOREROWIJF90
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#define matmpiaijgetseqaijf90_     matmpiaijgetseqaijf90
+#define matmpiaijrestoreseqaijf90_  matmpiaijrestoreseqaijf90
 #define matdensegetarrayf90_       matdensegetarrayf90
 #define matdenserestorearrayf90_   matdenserestorearrayf90
 #define matdensegetcolumnf90_      matdensegetcolumnf90
@@ -86,7 +90,6 @@ PETSC_EXTERN void matgetrowijf90_(Mat *B,PetscInt *shift,PetscBool *sym,PetscBoo
   *ierr = F90Array1dCreate((PetscInt*)IA,MPIU_INT,1,*n+1,ia PETSC_F90_2PTR_PARAM(iad));
   *ierr = F90Array1dCreate((PetscInt*)JA,MPIU_INT,1,IA[*n],ja PETSC_F90_2PTR_PARAM(jad));
 }
-
 PETSC_EXTERN void matrestorerowijf90_(Mat *B,PetscInt *shift,PetscBool *sym,PetscBool *blockcompressed, PetscInt *n,F90Array1d *ia,
                                 F90Array1d *ja,PetscBool  *done,PetscErrorCode *ierr PETSC_F90_2PTR_PROTO(iad)  PETSC_F90_2PTR_PROTO(jad))
 {
@@ -96,4 +99,16 @@ PETSC_EXTERN void matrestorerowijf90_(Mat *B,PetscInt *shift,PetscBool *sym,Pets
   *ierr = F90Array1dAccess(ja,MPIU_INT,(void**)&JA PETSC_F90_2PTR_PARAM(jad));if (*ierr) return;
   *ierr = F90Array1dDestroy(ja,MPIU_INT PETSC_F90_2PTR_PARAM(jad));if (*ierr) return;
   *ierr = MatRestoreRowIJ(*B,*shift,*sym,*blockcompressed,n,&IA,&JA,done);
+}
+PETSC_EXTERN void matmpiaijgetseqaijf90_(Mat *mat,Mat *A,Mat *B,F90Array1d *ptr,int *ierr PETSC_F90_2PTR_PROTO(ptrd))
+{
+  const PetscInt *fa;
+  PetscInt n;
+  *ierr = MatMPIAIJGetSeqAIJ(*mat,A,B,&fa); if (*ierr) return;
+  *ierr = MatGetLocalSize(*B,NULL,&n); if (*ierr) return;
+  *ierr = F90Array1dCreate((void*)fa,MPIU_INT,1,n,ptr PETSC_F90_2PTR_PARAM(ptrd));
+}
+PETSC_EXTERN void matmpiaijrestoreseqaijf90_(Mat *mat,Mat *A,Mat *B,F90Array1d *ptr,int *ierr PETSC_F90_2PTR_PROTO(ptrd))
+{
+  *ierr = F90Array1dDestroy(ptr,MPIU_INT PETSC_F90_2PTR_PARAM(ptrd));if (*ierr) return;
 }

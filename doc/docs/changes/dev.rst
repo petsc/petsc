@@ -130,3 +130,5 @@ Changes: Development
 .. rubric:: DT:
 
 .. rubric:: Fortran:
+
+- Add ``MatMPIAIJGetSeqAIJF90()``, ``MatMPIAIJRestoreSeqAIJF90()``
