@@ -14,18 +14,18 @@ typedef struct {
   PetscScalar   muaff;
   TaoLineSearch lag_ls;
   Vec           work, rhs_x, save_x;
-  Vec           lamdai, dlamdai, rhs_lamdai, save_lamdai;
-  Vec           lamdae, dlamdae, rhs_lamdae, save_lamdae;
+  Vec           lambdai, dlambdai, rhs_lambdai, save_lambdai;
+  Vec           lambdae, dlambdae, rhs_lambdae, save_lambdae;
   Vec           s, ds, rhs_s, save_s;
   Vec           ci;
   Vec           Zero_nb, One_nb, Inf_nb;
   PetscScalar   kkt_f;           /* d'*x + (1/2)*x'*H*x; */
-  Vec           rd;              /* H*x + d + Ae'*lamdae - Ai'*lamdai */
+  Vec           rd;              /* H*x + d + Ae'*lambdae - Ai'*lambdai */
   Vec           rpe;             /* residual  Ae*x - be */
   Vec           rpi;             /*           Ai*x - yi - bi */
-  Vec           complementarity; /* yi.*lamdai */
+  Vec           complementarity; /* yi.*lambdai */
   PetscScalar   phi;
-  Mat           L;  /* diag(lamdai) */
+  Mat           L;  /* diag(lambdai) */
   Mat           Y;  /* diag(yi) */
   Mat           Ai; /* JacI (lb)
               -JacI (ub)
@@ -36,8 +36,8 @@ typedef struct {
             [Ai ,-Imi, 0 ,  0];
             [ 0 , L ,  0 ,  Y ];  */
 
-  Vec         bigrhs;  /* rhs [x; lamdae; yi; lamdai] */
-  Vec         bigstep; /* [dx; dyi; dlamdae; dlamdai] */
+  Vec         bigrhs;  /* rhs [x; lambdae; yi; lambdai] */
+  Vec         bigstep; /* [dx; dyi; dlambdae; dlambdai] */
   PetscBool   monitorkkt;
   PetscScalar alpha1, alpha2;
   PetscScalar pushs, pushnu;

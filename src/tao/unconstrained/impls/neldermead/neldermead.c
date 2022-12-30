@@ -85,7 +85,8 @@ static PetscErrorCode TaoSetFromOptions_NM(Tao tao, PetscOptionItems *PetscOptio
 
   PetscFunctionBegin;
   PetscOptionsHeadBegin(PetscOptionsObject, "Nelder-Mead options");
-  PetscCall(PetscOptionsReal("-tao_nm_lamda", "initial step length", "", nm->lamda, &nm->lamda, NULL));
+  PetscCall(PetscOptionsDeprecated("-tao_nm_lamda", "-tao_nm_lambda", "3.18.4", NULL));
+  PetscCall(PetscOptionsReal("-tao_nm_lambda", "initial step length", "", nm->lambda, &nm->lambda, NULL));
   PetscCall(PetscOptionsReal("-tao_nm_mu", "mu", "", nm->mu_oc, &nm->mu_oc, NULL));
   nm->mu_ic = -nm->mu_oc;
   nm->mu_r  = nm->mu_oc * 2.0;
@@ -142,7 +143,7 @@ static PetscErrorCode TaoSolve_NM(Tao tao)
     PetscCall(VecGetOwnershipRange(nm->simplex[i], &low, &high));
     if (i - 1 >= low && i - 1 < high) {
       PetscCall(VecGetArray(nm->simplex[i], &x));
-      x[i - 1 - low] += nm->lamda;
+      x[i - 1 - low] += nm->lambda;
       PetscCall(VecRestoreArray(nm->simplex[i], &x));
     }
 
@@ -233,7 +234,7 @@ static PetscErrorCode TaoSolve_NM(Tao tao)
  TAONM - Nelder-Mead solver for derivative free, unconstrained minimization
 
  Options Database Keys:
-+ -tao_nm_lamda - initial step length
++ -tao_nm_lambda - initial step length
 - -tao_nm_mu - expansion/contraction factor
 
  Level: beginner
@@ -258,7 +259,7 @@ PETSC_EXTERN PetscErrorCode TaoCreate_NM(Tao tao)
   if (!tao->max_funcs_changed) tao->max_funcs = 4000;
 
   nm->simplex = NULL;
-  nm->lamda   = 1;
+  nm->lambda  = 1;
 
   nm->mu_ic = -0.5;
   nm->mu_oc = 0.5;

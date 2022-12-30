@@ -1689,7 +1689,7 @@ impacted at each iteration.
 
 Two options can be set specifically for the Nelder-Mead algorithm:
 
-``-tao_nm_lamda <value>``
+``-tao_nm_lambda <value>``
    sets the initial set of vectors (:math:`x_0` plus ``value`` in each
    coordinate direction); the default value is :math:`1`.
 
