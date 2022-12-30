@@ -777,3 +777,64 @@ PetscErrorCode PetscSFCreateByMatchingIndices(PetscLayout layout, PetscInt numRo
   PetscCall(PetscSFSetGraph(*sf, rootLocalOffset + numRootIndices, nleaves, ilocal, PETSC_OWN_POINTER, iremote, PETSC_OWN_POINTER));
   PetscFunctionReturn(0);
 }
+
+/*@
+  PetscSFMerge - append/merge indices of sfb into sfa, with preference for sfb
+
+  Collective
+
+  Input Arguments:
++ sfa - default `PetscSF`
+- sfb - additional edges to add/replace edges in sfa
+
+  Output Arguments:
+. merged - new `PetscSF` with combined edges
+
+.seealse: `PetscSFCompose()`
+@*/
+PetscErrorCode PetscSFMerge(PetscSF sfa, PetscSF sfb, PetscSF *merged)
+{
+  PetscInt maxleaf;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(sfa, PETSCSF_CLASSID, 1);
+  PetscValidHeaderSpecific(sfb, PETSCSF_CLASSID, 2);
+  PetscCheckSameComm(sfa, 1, sfb, 2);
+  PetscValidPointer(merged, 3);
+  {
+    PetscInt aleaf, bleaf;
+    PetscCall(PetscSFGetLeafRange(sfa, NULL, &aleaf));
+    PetscCall(PetscSFGetLeafRange(sfb, NULL, &bleaf));
+    maxleaf = PetscMax(aleaf, bleaf) + 1; // One more than the last index
+  }
+  PetscInt          *clocal, aroots, aleaves, broots, bleaves;
+  PetscSFNode       *cremote;
+  const PetscInt    *alocal, *blocal;
+  const PetscSFNode *aremote, *bremote;
+  PetscCall(PetscMalloc2(maxleaf, &clocal, maxleaf, &cremote));
+  for (PetscInt i = 0; i < maxleaf; i++) clocal[i] = -1;
+  PetscCall(PetscSFGetGraph(sfa, &aroots, &aleaves, &alocal, &aremote));
+  PetscCall(PetscSFGetGraph(sfb, &broots, &bleaves, &blocal, &bremote));
+  PetscCheck(aroots == broots, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Both sfa and sfb must have the same root space");
+  for (PetscInt i = 0; i < aleaves; i++) {
+    PetscInt a = alocal ? alocal[i] : i;
+    clocal[a]  = a;
+    cremote[a] = aremote[i];
+  }
+  for (PetscInt i = 0; i < bleaves; i++) {
+    PetscInt b = blocal ? blocal[i] : i;
+    clocal[b]  = b;
+    cremote[b] = bremote[i];
+  }
+  PetscInt nleaves = 0;
+  for (PetscInt i = 0; i < maxleaf; i++) {
+    if (clocal[i] < 0) continue;
+    clocal[nleaves]  = clocal[i];
+    cremote[nleaves] = cremote[i];
+    nleaves++;
+  }
+  PetscCall(PetscSFCreate(PetscObjectComm((PetscObject)sfa), merged));
+  PetscCall(PetscSFSetGraph(*merged, aroots, nleaves, clocal, PETSC_COPY_VALUES, cremote, PETSC_COPY_VALUES));
+  PetscCall(PetscFree2(clocal, cremote));
+  PetscFunctionReturn(0);
+}
