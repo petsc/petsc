@@ -3663,7 +3663,7 @@ PetscErrorCode DMSetApplicationContextDestroy(DM dm, PetscErrorCode (*destroy)(v
     Level: intermediate
 
     Note:
-    A user context is a way to pass problem specific information that is accessable whenever the `DM` is available
+    A user context is a way to pass problem specific information that is accessible whenever the `DM` is available
 
 .seealso: `DMGetApplicationContext()`, `DMView()`, `DMCreateGlobalVector()`, `DMCreateInterpolation()`, `DMCreateColoring()`, `DMCreateMatrix()`, `DMCreateMassMatrix()`, `DMGetApplicationContext()`
 @*/
@@ -3689,7 +3689,7 @@ PetscErrorCode DMSetApplicationContext(DM dm, void *ctx)
     Level: intermediate
 
     Note:
-    A user context is a way to pass problem specific information that is accessable whenever the `DM` is available
+    A user context is a way to pass problem specific information that is accessible whenever the `DM` is available
 
 .seealso: `DMGetApplicationContext()`, `DMView()`, `DMCreateGlobalVector()`, `DMCreateInterpolation()`, `DMCreateColoring()`, `DMCreateMatrix()`, `DMCreateMassMatrix()`, `DMGetApplicationContext()`
 @*/

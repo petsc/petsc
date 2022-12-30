@@ -672,7 +672,7 @@ PetscErrorCode PetscFESetQuadrature(PetscFE fem, PetscQuadrature q)
   Level: intermediate
 
   Developer Note:
-  There is a special face quadrature but not edge, likely this API would benifit from a refactorization
+  There is a special face quadrature but not edge, likely this API would benefit from a refactorization
 
 .seealso: `PetscFE`, `PetscSpace`, `PetscDualSpace`, `PetscQuadrature`, `PetscFECreate()`, `PetscFESetQuadrature()`, `PetscFESetFaceQuadrature()`
 @*/

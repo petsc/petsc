@@ -10,7 +10,7 @@ typedef struct {
   Vec     *workv;          /* work vectors */
   FILE    *fp;             /* output file */
   PetscInt function_count; /* count of function evaluations for diff param estimation */
-  double   fnoise_min;     /* minimim allowable noise */
+  double   fnoise_min;     /* minimum allowable noise */
   double   hopt_min;       /* minimum allowable hopt */
   double   h_first_try;    /* first try for h used in diff parameter estimate */
   PetscInt fnoise_resets;  /* number of times we've reset the noise estimate */

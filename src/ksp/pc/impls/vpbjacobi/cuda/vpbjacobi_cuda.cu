@@ -161,7 +161,7 @@ PETSC_INTERN PetscErrorCode PCSetUp_VPBJacobi_CUDA(PC pc)
     pcuda = nullptr;
   }
 
-  if (!pcuda) { /* allocate the struct along with the helper arrays from the scatch */
+  if (!pcuda) { /* allocate the struct along with the helper arrays from the scratch */
     PetscCallCXX(jac->spptr = new PC_VPBJacobi_CUDA(n, nblocks, nsize, bsizes, jac->diag));
   } else { /* update the value only */
     PetscCall(pcuda->UpdateOffsetsOnDevice(bsizes, jac->diag));

@@ -200,7 +200,7 @@ PetscErrorCode TaoALMMGetMultipliers_Private(Tao tao, Vec *Y)
    This routine is only useful if the user wants to change the
    parallel distribution of the combined dual vector in problems that
    feature both equality and inequality constraints. For other tasks,
-   it is strongly recommended that the user retreive the dual vector
+   it is strongly recommended that the user retrieve the dual vector
    created by the solver using TaoALMMGetMultipliers().
 
 .seealso: `TAOALMM`, `Tao`, `TaoALMMGetMultipliers()`

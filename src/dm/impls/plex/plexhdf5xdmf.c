@@ -12,7 +12,7 @@ static PetscErrorCode SplitPath_Private(char path[], char name[])
   PetscCall(PetscStrrchr(path, '/', &tmp));
   PetscCall(PetscStrcpy(name, tmp));
   if (tmp != path) {
-    /* '/' found, name is substring of path after last occurence of '/'. */
+    /* '/' found, name is substring of path after last occurrence of '/'. */
     /* Trim the '/name' part from path just by inserting null character. */
     tmp--;
     *tmp = '\0';

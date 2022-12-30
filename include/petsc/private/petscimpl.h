@@ -745,7 +745,7 @@ void PetscCheckSorted(PetscInt, T);
 +   obj - the object
 .   name - the name of the method, for example, "KSPGMRESSetRestart_C" for the function `KSPGMRESSetRestart()`
 .   arg_types - the argument types for the method, for example, (KSP,PetscInt)
--   args - the arguements for the method, for example, (ksp,restart))
+-   args - the arguments for the method, for example, (ksp,restart))
 
    Level: developer
 
@@ -777,7 +777,7 @@ M*/
 +   obj - the object
 .   name - the name of the method, for example, "KSPGMRESSetRestart_C" for the function `KSPGMRESSetRestart()`
 .   arg_types - the argument types for the method, for example, (KSP,PetscInt)
--   args - the arguements for the method, for example, (ksp,restart))
+-   args - the arguments for the method, for example, (ksp,restart))
 
    Level: developer
 

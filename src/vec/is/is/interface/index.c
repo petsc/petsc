@@ -1040,7 +1040,7 @@ PetscErrorCode ISDestroy(IS *is)
 
    Input Parameters:
 +  is - the index set
--  nlocal - number of indices on this processor in result (ignored for 1 proccessor) or
+-  nlocal - number of indices on this processor in result (ignored for 1 processor) or
             use PETSC_DECIDE
 
    Output Parameter:

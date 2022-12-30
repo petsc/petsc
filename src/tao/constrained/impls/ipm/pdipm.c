@@ -681,7 +681,7 @@ static PetscErrorCode KKTAddShifts(Tao tao, SNES snes, Vec X)
 }
 
 /*
-  PCPreSolve_PDIPM -- called betwee MatFactorNumeric() and MatSolve()
+  PCPreSolve_PDIPM -- called between MatFactorNumeric() and MatSolve()
 */
 PetscErrorCode PCPreSolve_PDIPM(PC pc, KSP ksp)
 {

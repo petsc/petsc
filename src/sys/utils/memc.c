@@ -28,7 +28,7 @@
    Notes:
    `PetscArraycmp()` is preferred
 
-   This routine is anologous to `memcmp()` with additional error checking
+   This routine is analogous to `memcmp()` with additional error checking
 
 .seealso: `PetscMemcpy()`, `PetscMemcmp()`, `PetscArrayzero()`, `PetscMemzero()`, `PetscArraycmp()`, `PetscArraycpy()`, `PetscStrallocpy()`,
           `PetscArraymove()`

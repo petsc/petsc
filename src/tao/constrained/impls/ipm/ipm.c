@@ -1059,7 +1059,7 @@ PETSC_EXTERN PetscErrorCode TaoCreate_IPM(Tao tao)
   if (!tao->max_it_changed) tao->max_it = 200;
   if (!tao->max_funcs_changed) tao->max_funcs = 500;
 
-  ipmP->dec        = 10000; /* line search critera */
+  ipmP->dec        = 10000; /* line search criteria */
   ipmP->taumin     = 0.995;
   ipmP->monitorkkt = PETSC_FALSE;
   ipmP->pushs      = 100;

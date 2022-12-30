@@ -33,7 +33,7 @@
   interface is also provided - to get PETSc Fortran examples with a
   few MPI calls working.
 
-  One of the optimzation with MPIUNI, is to avoid the function call
+  One of the optimization with MPIUNI, is to avoid the function call
   overhead, when possible. Hence most of the C functions are
   implemented as macros. However the function calls cannot be avoided
   with Fortran usage.

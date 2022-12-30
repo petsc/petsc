@@ -918,7 +918,7 @@ time is:
 
 You are free to have your ``FormFunction()`` compute as much of the Jacobian at that point
 as you like, keep the information in the user context (the final argument to
-``FormFunction()`` and ``FormJacobian()``) and then retreive the information in your
+``FormFunction()`` and ``FormJacobian()``) and then retrieve the information in your
 ``FormJacobian()`` function.
 
 Computing the Jacobian or preconditioner is time consuming. Is there any way to compute it less often?
@@ -963,7 +963,7 @@ the only general purpose way to determine which approach is best for your proble
 .. important::
 
    It is also vital to experiment on your true problem at the scale you will be solving
-   the problem since the performance benifits depend on the exact problem and and problem
+   the problem since the performance benefits depend on the exact problem and and problem
    size!
 
 How can I use Newton's Method Jacobian free? Can I difference a different function than provided with SNESSetFunction()?

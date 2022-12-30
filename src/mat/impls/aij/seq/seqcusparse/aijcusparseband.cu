@@ -190,7 +190,7 @@ static PetscErrorCode MatLUFactorNumeric_SeqAIJCUSPARSEBAND(Mat B, Mat A, const 
 #endif
     team_size = bw / Ni + !!(bw % Ni);
     nVec      = PetscMin(bw, 1024 / team_size);
-    PetscCall(PetscInfo(A, "Matrix Bandwidth = %d, number SMs/block = %d, num concurency = %d, num fields = %d, numSMs/GPU = %d, thread group size = %d,%d\n", bw, Ni, nconcurrent, Nf, nsm, team_size, nVec));
+    PetscCall(PetscInfo(A, "Matrix Bandwidth = %d, number SMs/block = %d, num concurrency = %d, num fields = %d, numSMs/GPU = %d, thread group size = %d,%d\n", bw, Ni, nconcurrent, Nf, nsm, team_size, nVec));
     {
       dim3 dimBlockTeam(nVec, team_size);
       dim3 dimBlockLeague(Nf, Ni);

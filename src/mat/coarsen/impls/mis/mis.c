@@ -213,7 +213,7 @@ PetscErrorCode MatCoarsenApply_MIS_private(IS perm, Mat Gmat, PetscBool strict_a
 
   /* tell adj who my lid_parent_gid vertices belong to - fill in agg_lists selected ghost lists */
   if (strict_aggs && matB) {
-    /* need to copy this to free buffer -- should do this globaly */
+    /* need to copy this to free buffer -- should do this globally */
     PetscCall(PetscMalloc1(num_fine_ghosts, &cpcol_sel_gid));
     PetscCall(PetscMalloc1(num_fine_ghosts, &icpcol_gid));
     for (cpid = 0; cpid < num_fine_ghosts; cpid++) icpcol_gid[cpid] = cpcol_gid[cpid];

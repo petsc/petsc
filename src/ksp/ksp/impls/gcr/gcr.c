@@ -229,7 +229,7 @@ static PetscErrorCode KSPGCRSetModifyPC_GCR(KSP ksp, KSPGCRModifyPCFunction func
  The default modifypc routine is `KSPGCRModifyPCNoChange()`
 
  Developer Note:
- The API should make uniform for all flexible types, [](sec_flexibleksp), and not have seperate function calls for each type.
+ The API should make uniform for all flexible types, [](sec_flexibleksp), and not have separate function calls for each type.
 
 .seealso: [](chapter_ksp), `KSP`, `KSPGCR`, `KSPGCRModifyPCNoChange()`, [](sec_flexibleksp)
  @*/

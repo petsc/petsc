@@ -55,7 +55,7 @@ typedef struct {
   PetscReal imax;  /*  Maximum perturbation added during initialization */
   PetscReal imfac; /*  Merit function factor during initialization */
 
-  PetscReal pmin;   /*  Minimim perturbation value */
+  PetscReal pmin;   /*  Minimum perturbation value */
   PetscReal pmax;   /*  Maximum perturbation value */
   PetscReal pgfac;  /*  Perturbation growth factor */
   PetscReal psfac;  /*  Perturbation shrink factor */

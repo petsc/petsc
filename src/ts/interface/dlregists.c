@@ -36,7 +36,7 @@ PetscErrorCode TSInitializePackage(void)
   PetscFunctionBegin;
   if (TSPackageInitialized) PetscFunctionReturn(0);
   TSPackageInitialized = PETSC_TRUE;
-  /* Inialize subpackages */
+  /* Initialize subpackages */
   PetscCall(TSAdaptInitializePackage());
   PetscCall(TSGLLEInitializePackage());
   PetscCall(TSRKInitializePackage());

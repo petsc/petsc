@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 #!/bin/env python
 #
-#    Patches PETSc examples to support latex in the formated comments
+#    Patches PETSc examples to support latex in the formatted comments
 #
 #  See http://www.mathjax.org/docs/1.1/options/tex2jax.html#configure-tex2jax
 import os
