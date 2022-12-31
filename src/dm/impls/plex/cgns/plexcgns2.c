@@ -664,6 +664,11 @@ PetscErrorCode DMView_PlexCGNS(DM dm, PetscViewer viewer)
   cgsize_t          isize[3];
 
   PetscFunctionBegin;
+  if (!cgv->file_num) {
+    PetscInt time_step;
+    PetscCall(DMGetOutputSequenceNumber(dm, &time_step, NULL));
+    PetscCall(PetscViewerCGNSFileOpen_Internal(viewer, time_step));
+  }
   PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)dm), &size));
   PetscCall(DMGetDimension(dm, &topo_dim));
   PetscCall(DMGetCoordinateDim(dm, &coord_dim));
@@ -871,5 +876,6 @@ PetscErrorCode VecView_Plex_Local_CGNS(Vec V, PetscViewer viewer)
     PetscCallCGNS(cgp_field_write_data(cgv->file_num, cgv->base, cgv->zone, sol, cgfield, &start, &end, cgv->nodal_field));
   }
   PetscCall(VecRestoreArrayRead(V, &v));
+  PetscCall(PetscViewerCGNSCheckBatch_Internal(viewer));
   PetscFunctionReturn(0);
 }
