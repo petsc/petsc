@@ -261,6 +261,7 @@ PetscErrorCode DMPlexCreateDoublet(MPI_Comm comm, PetscInt dim, PetscBool simple
   PetscCall(DMCreate(comm, &dm));
   PetscCall(DMSetType(dm, DMPLEX));
   PetscCall(DMSetDimension(dm, dim));
+  PetscCall(PetscLogEventBegin(DMPLEX_Generate, dm, 0, 0, 0));
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
   switch (dim) {
   case 2:
@@ -321,6 +322,7 @@ PetscErrorCode DMPlexCreateDoublet(MPI_Comm comm, PetscInt dim, PetscBool simple
       SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "Cannot make meshes for dimension %" PetscInt_FMT, dim);
     }
   }
+  PetscCall(PetscLogEventEnd(DMPLEX_Generate, dm, 0, 0, 0));
   *newdm = dm;
   if (refinementLimit > 0.0) {
     DM          rdm;
@@ -703,6 +705,7 @@ static PetscErrorCode DMPlexCreateBoxSurfaceMesh_Internal(DM dm, PetscInt dim, c
 {
   PetscFunctionBegin;
   PetscValidLogicalCollectiveInt(dm, dim, 2);
+  PetscCall(PetscLogEventBegin(DMPLEX_Generate, dm, 0, 0, 0));
   PetscCall(DMSetDimension(dm, dim - 1));
   PetscCall(DMSetCoordinateDim(dm, dim));
   switch (dim) {
@@ -718,6 +721,7 @@ static PetscErrorCode DMPlexCreateBoxSurfaceMesh_Internal(DM dm, PetscInt dim, c
   default:
     SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Dimension not supported: %" PetscInt_FMT, dim);
   }
+  PetscCall(PetscLogEventEnd(DMPLEX_Generate, dm, 0, 0, 0));
   if (interpolate) PetscCall(DMPlexInterpolateInPlace_Internal(dm));
   PetscFunctionReturn(0);
 }
@@ -1292,6 +1296,7 @@ static PetscErrorCode DMPlexCreateBoxMesh_Internal(DM dm, PetscInt dim, PetscBoo
 {
   PetscBool box_sfc = PETSC_FALSE;
   PetscFunctionBegin;
+  PetscCall(PetscLogEventBegin(DMPLEX_Generate, dm, 0, 0, 0));
   PetscCall(PetscOptionsGetBool(((PetscObject)dm)->options, ((PetscObject)dm)->prefix, "-dm_plex_box_sfc", &box_sfc, NULL));
   if (box_sfc) PetscCall(DMPlexCreateBoxMesh_Tensor_SFC_Internal(dm, dim, faces, lower, upper, periodicity, interpolate));
   else if (dim == 1) PetscCall(DMPlexCreateLineMesh_Internal(dm, faces[0], lower[0], upper[0], periodicity[0]));
@@ -1304,6 +1309,7 @@ static PetscErrorCode DMPlexCreateBoxMesh_Internal(DM dm, PetscInt dim, PetscBoo
     PetscCall(DMPlexCopyCoordinates(dm, udm));
     PetscCall(DMPlexReplace_Internal(dm, &udm));
   }
+  PetscCall(PetscLogEventEnd(DMPLEX_Generate, dm, 0, 0, 0));
   PetscFunctionReturn(0);
 }
 
@@ -1396,8 +1402,10 @@ static PetscErrorCode DMPlexCreateWedgeBoxMesh_Internal(DM dm, const PetscInt fa
   PetscCall(DMCreate(PetscObjectComm((PetscObject)dm), &bdm));
   PetscCall(DMSetType(bdm, DMPLEX));
   PetscCall(DMSetDimension(bdm, 2));
+  PetscCall(PetscLogEventBegin(DMPLEX_Generate, bdm, 0, 0, 0));
   PetscCall(DMPlexCreateBoxMesh_Simplex_Internal(bdm, 2, faces, lower, upper, periodicity, PETSC_TRUE));
   PetscCall(DMPlexExtrude(bdm, faces[2], upper[2] - lower[2], PETSC_TRUE, PETSC_FALSE, NULL, NULL, &vol));
+  PetscCall(PetscLogEventEnd(DMPLEX_Generate, bdm, 0, 0, 0));
   PetscCall(DMDestroy(&bdm));
   PetscCall(DMPlexReplace_Internal(dm, &vol));
   if (lower[2] != 0.0) {
@@ -1775,6 +1783,7 @@ static PetscErrorCode DMPlexCreateHexCylinderMesh_Internal(DM dm, DMBoundaryType
   PetscMPIInt    rank;
 
   PetscFunctionBegin;
+  PetscCall(PetscLogEventBegin(DMPLEX_Generate, dm, 0, 0, 0));
   PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)dm), &rank));
   PetscCall(DMSetDimension(dm, dim));
   /* Create topology */
@@ -2108,6 +2117,8 @@ static PetscErrorCode DMPlexCreateHexCylinderMesh_Internal(DM dm, DMBoundaryType
     PetscCall(DMGetDS(cdm, &cds));
     PetscCall(PetscDSSetConstants(cds, 2, c));
   }
+  PetscCall(PetscLogEventEnd(DMPLEX_Generate, dm, 0, 0, 0));
+
   /* Wait for coordinate creation before doing in-place modification */
   PetscCall(DMPlexInterpolateInPlace_Internal(dm));
   PetscFunctionReturn(0);
@@ -2181,6 +2192,7 @@ static PetscErrorCode DMPlexCreateWedgeCylinderMesh_Internal(DM dm, PetscInt n, 
 
   PetscFunctionBegin;
   PetscCheck(n >= 0, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Number of wedges %" PetscInt_FMT " cannot be negative", n);
+  PetscCall(PetscLogEventBegin(DMPLEX_Generate, dm, 0, 0, 0));
   PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)dm), &rank));
   PetscCall(DMSetDimension(dm, dim));
   /* Must create the celltype label here so that we do not automatically try to compute the types */
@@ -2252,6 +2264,7 @@ static PetscErrorCode DMPlexCreateWedgeCylinderMesh_Internal(DM dm, PetscInt n, 
     PetscCall(DMSetCoordinatesLocal(dm, coordinates));
     PetscCall(VecDestroy(&coordinates));
   }
+  PetscCall(PetscLogEventEnd(DMPLEX_Generate, dm, 0, 0, 0));
   /* Interpolate */
   if (interpolate) PetscCall(DMPlexInterpolateInPlace_Internal(dm));
   PetscFunctionReturn(0);
@@ -2323,6 +2336,7 @@ static PetscErrorCode DMPlexCreateSphereMesh_Internal(DM dm, PetscInt dim, Petsc
 
   PetscFunctionBegin;
   PetscValidLogicalCollectiveBool(dm, simplex, 3);
+  PetscCall(PetscLogEventBegin(DMPLEX_Generate, dm, 0, 0, 0));
   PetscCall(DMSetDimension(dm, dim));
   PetscCall(DMSetCoordinateDim(dm, dim + 1));
   PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)dm), &rank));
@@ -2774,6 +2788,7 @@ static PetscErrorCode DMPlexCreateSphereMesh_Internal(DM dm, PetscInt dim, Petsc
     PetscCall(DMGetDS(cdm, &cds));
     PetscCall(PetscDSSetConstants(cds, 1, &c));
   }
+  PetscCall(PetscLogEventEnd(DMPLEX_Generate, dm, 0, 0, 0));
   /* Wait for coordinate creation before doing in-place modification */
   if (simplex) PetscCall(DMPlexInterpolateInPlace_Internal(dm));
   PetscFunctionReturn(0);
@@ -2950,6 +2965,7 @@ static PetscErrorCode DMPlexCreateTPSMesh_Internal(DM dm, DMPlexTPSType tpstype,
   DMLabel              label;
 
   PetscFunctionBegin;
+  PetscCall(PetscLogEventBegin(DMPLEX_Generate, dm, 0, 0, 0));
   PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)dm), &rank));
   PetscCheck((layers != 0) ^ (thickness == 0.), PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_INCOMP, "Layers %" PetscInt_FMT " must be nonzero iff thickness %g is nonzero", layers, (double)thickness);
   switch (tpstype) {
@@ -3426,6 +3442,8 @@ static PetscErrorCode DMPlexCreateTPSMesh_Internal(DM dm, DMPlexTPSType tpstype,
   // Face Sets has already been propagated to new vertices during refinement; this propagates to the initial vertices.
   PetscCall(DMGetLabel(dm, "Face Sets", &label));
   PetscCall(DMPlexLabelComplete(dm, label));
+
+  PetscCall(PetscLogEventEnd(DMPLEX_Generate, dm, 0, 0, 0));
 
   if (thickness > 0) {
     DM              edm, cdm, ecdm;

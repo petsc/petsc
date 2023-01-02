@@ -132,6 +132,7 @@ PetscErrorCode DMInitializePackage(void)
   PetscCall(PetscLogEventRegister("DMPlexMetricNormalize", DM_CLASSID, &DMPLEX_MetricNormalize));
   PetscCall(PetscLogEventRegister("DMPlexMetricAverage", DM_CLASSID, &DMPLEX_MetricAverage));
   PetscCall(PetscLogEventRegister("DMPlexMetricIntersect", DM_CLASSID, &DMPLEX_MetricIntersection));
+  PetscCall(PetscLogEventRegister("DMPlexGenerate", DM_CLASSID, &DMPLEX_Generate));
 
   PetscCall(PetscLogEventRegister("RebalBuildGraph", DM_CLASSID, &DMPLEX_RebalBuildGraph));
   PetscCall(PetscLogEventRegister("RebalGatherGraph", DM_CLASSID, &DMPLEX_RebalGatherGraph));

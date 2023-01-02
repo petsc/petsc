@@ -64,6 +64,7 @@ PETSC_EXTERN PetscLogEvent DMPLEX_MetricEnforceSPD;
 PETSC_EXTERN PetscLogEvent DMPLEX_MetricNormalize;
 PETSC_EXTERN PetscLogEvent DMPLEX_MetricAverage;
 PETSC_EXTERN PetscLogEvent DMPLEX_MetricIntersection;
+PETSC_EXTERN PetscLogEvent DMPLEX_Generate;
 
 PETSC_EXTERN PetscLogEvent DMPLEX_RebalBuildGraph;
 PETSC_EXTERN PetscLogEvent DMPLEX_RebalRewriteSF;
