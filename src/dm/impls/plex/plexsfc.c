@@ -55,6 +55,18 @@ static PetscBool IjkActive(Ijk extent, Ijk l)
   return PETSC_FALSE;
 }
 
+// If z is not the base of an octet (last 3 bits 0), return 0.
+//
+// If z is the base of an octet, we recursively grow to the biggest structured octet. This is typically useful when a z
+// is outside the domain and we wish to skip a (possibly recursively large) octet to find our next interesting point.
+static ZCode ZStepOct(ZCode z)
+{
+  if (PetscUnlikely(z == 0)) return 0; // Infinite loop below if z == 0
+  ZCode step = 07;
+  for (; (z & step) == 0; step = (step << 3) | 07) { }
+  return step >> 3;
+}
+
 // Since element/vertex box extents are typically not equal powers of 2, Z codes that lie within the domain are not contiguous.
 static PetscErrorCode ZLayoutCreate(PetscMPIInt size, const PetscInt eextent[3], const PetscInt vextent[3], ZLayout *layout)
 {
@@ -72,11 +84,24 @@ static PetscErrorCode ZLayoutCreate(PetscMPIInt size, const PetscInt eextent[3],
   PetscInt total_elems = eextent[0] * eextent[1] * eextent[2];
   ZCode    z           = 0;
   layout->zstarts[0]   = 0;
+  // This loop traverses all vertices in the global domain, so is worth making fast. We use ZStepBound
   for (PetscMPIInt r = 0; r < size; r++) {
     PetscInt elems_needed = (total_elems / size) + (total_elems % size > r), count;
     for (count = 0; count < elems_needed; z++) {
-      Ijk loc = ZCodeSplit(z);
-      if (IjkActive(layout->eextent, loc)) count++;
+      ZCode skip = ZStepOct(z); // optimistically attempt a longer step
+      for (ZCode s = skip;; s >>= 3) {
+        Ijk trial = ZCodeSplit(z + s);
+        if (IjkActive(layout->eextent, trial)) {
+          while (count + s + 1 > (ZCode)elems_needed) s >>= 3; // Shrink the octet
+          count += s + 1;
+          z += s;
+          break;
+        }
+        if (s == 0) { // the whole skip octet is inactive
+          z += skip;
+          break;
+        }
+      }
     }
     // Pick up any extra vertices in the Z ordering before the next rank's first owned element.
     //
@@ -122,9 +147,11 @@ static PetscErrorCode ZLayoutCreate(PetscMPIInt size, const PetscInt eextent[3],
     for (; z <= ZEncode(layout->vextent); z++) {
       Ijk loc = ZCodeSplit(z);
       if (IjkActive(layout->eextent, loc)) break;
+      z += ZStepOct(z);
     }
     layout->zstarts[r + 1] = z;
   }
+  layout->zstarts[size] = ZEncode(layout->vextent);
   PetscFunctionReturn(0);
 }
 
@@ -134,6 +161,7 @@ static PetscInt ZLayoutElementsOnRank(const ZLayout *layout, PetscMPIInt rank)
   for (ZCode rz = layout->zstarts[rank]; rz < layout->zstarts[rank + 1]; rz++) {
     Ijk loc = ZCodeSplit(rz);
     if (IjkActive(layout->eextent, loc)) remote_elem++;
+    else rz += ZStepOct(rz);
   }
   return remote_elem;
 }
@@ -654,6 +682,10 @@ PetscErrorCode DMPlexCreateBoxMesh_Tensor_SFC_Internal(DM dm, PetscInt dim, cons
   for (ZCode z = layout.zstarts[rank]; z < layout.zstarts[rank + 1]; z++) {
     Ijk loc = ZCodeSplit(z);
     if (IjkActive(layout.vextent, loc)) PetscZSetAdd(vset, z);
+    else {
+      z += ZStepOct(z);
+      continue;
+    }
     if (IjkActive(layout.eextent, loc)) {
       local_elems++;
       // Add all neighboring vertices to set
@@ -681,7 +713,10 @@ PetscErrorCode DMPlexCreateBoxMesh_Tensor_SFC_Internal(DM dm, PetscInt dim, cons
     PetscInt e = 0;
     for (ZCode z = layout.zstarts[rank]; z < layout.zstarts[rank + 1]; z++) {
       Ijk loc = ZCodeSplit(z);
-      if (!IjkActive(layout.eextent, loc)) continue;
+      if (!IjkActive(layout.eextent, loc)) {
+        z += ZStepOct(z);
+        continue;
+      }
       PetscInt cone[8], orient[8] = {0};
       for (PetscInt n = 0; n < PetscPowInt(2, dim); n++) {
         Ijk      inc  = closure_dim[dim][n];
@@ -731,6 +766,7 @@ PetscErrorCode DMPlexCreateBoxMesh_Tensor_SFC_Internal(DM dm, PetscInt dim, cons
           z = vert_z[owned_verts + i];
         }
         if (IjkActive(layout.vextent, loc)) remote_count++;
+        else rz += ZStepOct(rz);
       }
     }
     PetscCall(PetscSFSetGraph(sf, local_elems + local_verts, num_ghosts, local_ghosts, PETSC_OWN_POINTER, ghosts, PETSC_OWN_POINTER));
