@@ -11,11 +11,12 @@ PetscErrorCode MatApply(PC pc, Mat X, Mat Y)
 
 int main(int argc, char **args)
 {
-  Mat      X, B; /* computed solutions and RHS */
-  Mat      A;    /* linear system matrix */
-  KSP      ksp;  /* linear solver context */
-  PC       pc;   /* preconditioner context */
-  PetscInt m = 10;
+  Mat       X, B; /* computed solutions and RHS */
+  Mat       A;    /* linear system matrix */
+  KSP       ksp;  /* linear solver context */
+  PC        pc;   /* preconditioner context */
+  PetscInt  m = 10;
+  PetscBool flg;
 #if defined(PETSC_USE_LOG)
   PetscLogEvent event;
 #endif
@@ -32,6 +33,12 @@ int main(int argc, char **args)
   PetscCall(MatSetOption(A, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_FALSE));
   PetscCall(MatShift(A, 10.0));
   PetscCall(MatSetRandom(B, NULL));
+  PetscCall(MatSetFromOptions(A));
+  PetscCall(PetscObjectTypeCompareAny((PetscObject)A, &flg, MATSEQAIJCUSPARSE, MATMPIAIJCUSPARSE, ""));
+  if (flg) {
+    PetscCall(MatConvert(B, MATDENSECUDA, MAT_INPLACE_MATRIX, &B));
+    PetscCall(MatConvert(X, MATDENSECUDA, MAT_INPLACE_MATRIX, &X));
+  }
   PetscCall(KSPCreate(PETSC_COMM_WORLD, &ksp));
   PetscCall(KSPSetOperators(ksp, A, A));
   PetscCall(KSPSetFromOptions(ksp));
@@ -148,5 +155,13 @@ int main(int argc, char **args)
          output_file: output/ex77_preonly.out
          requires: hpddm
          args: -ksp_type hpddm -ksp_hpddm_type preonly
+
+   testset:
+      nsize: 1
+      requires: hpddm cuda
+      args: -mat_type aijcusparse -ksp_type hpddm
+      test:
+         suffix: 8_hpddm
+         output_file: output/ex77_preonly.out
 
 TEST*/

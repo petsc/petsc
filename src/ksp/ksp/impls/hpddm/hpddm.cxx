@@ -176,7 +176,7 @@ static PetscErrorCode KSPSetUp_HPDDM(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-static inline PetscErrorCode KSPHPDDMReset_Private(KSP ksp)
+static inline PetscErrorCode KSPReset_HPDDM_Private(KSP ksp)
 {
   KSP_HPDDM *data = (KSP_HPDDM *)ksp->data;
 
@@ -195,11 +195,9 @@ static PetscErrorCode KSPReset_HPDDM(KSP ksp)
   KSP_HPDDM *data = (KSP_HPDDM *)ksp->data;
 
   PetscFunctionBegin;
-  if (data->op) {
-    delete data->op;
-    data->op = NULL;
-  }
-  PetscCall(KSPHPDDMReset_Private(ksp));
+  delete data->op;
+  data->op = NULL;
+  PetscCall(KSPReset_HPDDM_Private(ksp));
   PetscFunctionReturn(0);
 }
 
@@ -215,22 +213,34 @@ static PetscErrorCode KSPDestroy_HPDDM(KSP ksp)
   PetscFunctionReturn(0);
 }
 
+template <PetscMemType type = PETSC_MEMTYPE_HOST>
 static inline PetscErrorCode KSPSolve_HPDDM_Private(KSP ksp, const PetscScalar *b, PetscScalar *x, PetscInt n)
 {
   KSP_HPDDM              *data = (KSP_HPDDM *)ksp->data;
   KSPConvergedDefaultCtx *ctx  = (KSPConvergedDefaultCtx *)ksp->cnvP;
   const PetscInt          N    = data->op->getDof() * n;
-  PetscBool               scale;
+  PetscBool               flg;
 #if !PetscDefined(USE_REAL_DOUBLE) || PetscDefined(HAVE_F2CBLASLAPACK___FLOAT128_BINDINGS)
   HPDDM::upscaled_type<PetscScalar> *high[2];
 #endif
 #if !PetscDefined(USE_REAL_SINGLE) || PetscDefined(HAVE_F2CBLASLAPACK___FP16_BINDINGS)
   HPDDM::downscaled_type<PetscScalar> *low[2];
 #endif
+#if PetscDefined(HAVE_CUDA)
+  Mat     A;
+  VecType vtype;
+#endif
 
   PetscFunctionBegin;
-  PetscCall(PCGetDiagonalScale(ksp->pc, &scale));
-  PetscCheck(!scale, PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "Krylov method %s does not support diagonal scaling", ((PetscObject)ksp)->type_name);
+#if PetscDefined(HAVE_CUDA)
+  PetscCall(KSPGetOperators(ksp, &A, NULL));
+  PetscCall(MatGetVecType(A, &vtype));
+  std::initializer_list<std::string>                 list = {VECCUDA, VECSEQCUDA, VECMPICUDA};
+  std::initializer_list<std::string>::const_iterator it   = std::find(list.begin(), list.end(), std::string(vtype));
+  PetscCheck(type != PETSC_MEMTYPE_HOST || it == list.end(), PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "MatGetVecType() must return a Vec with the same PetscMemType as the right-hand side and solution, PetscMemType(%s) != %s", vtype, PetscMemTypeToString(type));
+#endif
+  PetscCall(PCGetDiagonalScale(ksp->pc, &flg));
+  PetscCheck(!flg, PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "Krylov method %s does not support diagonal scaling", ((PetscObject)ksp)->type_name);
   if (n > 1) {
     if (ksp->converged == KSPConvergedDefault) {
       PetscCheck(!ctx->mininitialrtol, PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "Krylov method %s does not support KSPConvergedDefaultSetUMIRNorm()", ((PetscObject)ksp)->type_name);
@@ -246,33 +256,67 @@ static inline PetscErrorCode KSPSolve_HPDDM_Private(KSP ksp, const PetscScalar *
   ksp->reason = KSP_CONVERGED_ITERATING;
   if (data->precision > PETSC_KSPHPDDM_DEFAULT_PRECISION) { /* Krylov basis stored in higher precision than PetscScalar */
 #if !PetscDefined(USE_REAL_DOUBLE) || PetscDefined(HAVE_F2CBLASLAPACK___FLOAT128_BINDINGS)
-    PetscCall(PetscMalloc2(N, high, N, high + 1));
-    HPDDM::copy_n(b, N, high[0]);
-    HPDDM::copy_n(x, N, high[1]);
-    PetscCall(HPDDM::IterativeMethod::solve(*data->op, high[0], high[1], n, PetscObjectComm((PetscObject)ksp)));
-    HPDDM::copy_n(high[1], N, x);
-    PetscCall(PetscFree2(high[0], high[1]));
+    if (type == PETSC_MEMTYPE_HOST) {
+      PetscCall(PetscMalloc2(N, high, N, high + 1));
+      HPDDM::copy_n(b, N, high[0]);
+      HPDDM::copy_n(x, N, high[1]);
+      PetscCall(HPDDM::IterativeMethod::solve(*data->op, high[0], high[1], n, PetscObjectComm((PetscObject)ksp)));
+      HPDDM::copy_n(high[1], N, x);
+      PetscCall(PetscFree2(high[0], high[1]));
+    } else {
+      PetscCheck(PetscDefined(HAVE_CUDA) && PetscDefined(USE_REAL_SINGLE), PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "CUDA in PETSc has no support for precisions other than single or double");
+  #if PetscDefined(HAVE_CUDA)
+    #if PetscDefined(HAVE_HPDDM)
+      PetscCall(KSPSolve_HPDDM_CUDA_Private(data, b, x, n, PetscObjectComm((PetscObject)ksp)));
+    #else
+      SETERRQ(PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "No CUDA support with --download-hpddm from SLEPc");
+    #endif
+  #endif
+    }
 #else
-    PetscCheck(data->precision == KSP_HPDDM_PRECISION_QUADRUPLE, PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "Reconfigure with --download-f2cblaslapack --with-f2cblaslapack-float128-bindings");
+    PetscCheck(data->precision != KSP_HPDDM_PRECISION_QUADRUPLE, PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "Reconfigure with --download-f2cblaslapack --with-f2cblaslapack-float128-bindings");
 #endif
   } else if (data->precision < PETSC_KSPHPDDM_DEFAULT_PRECISION) { /* Krylov basis stored in lower precision than PetscScalar */
 #if !PetscDefined(USE_REAL_SINGLE) || PetscDefined(HAVE_F2CBLASLAPACK___FP16_BINDINGS)
-    PetscCall(PetscMalloc1(N, low));
-    low[1] = reinterpret_cast<HPDDM::downscaled_type<PetscScalar> *>(x);
-    std::copy_n(b, N, low[0]);
-    for (PetscInt i = 0; i < N; ++i) low[1][i] = x[i];
-    PetscCall(HPDDM::IterativeMethod::solve(*data->op, low[0], low[1], n, PetscObjectComm((PetscObject)ksp)));
-    if (N) {
-      low[0][0] = low[1][0];
-      std::copy_backward(low[1] + 1, low[1] + N, x + N);
-      x[0] = low[0][0];
+    if (type == PETSC_MEMTYPE_HOST) {
+      PetscCall(PetscMalloc1(N, low));
+      low[1] = reinterpret_cast<HPDDM::downscaled_type<PetscScalar> *>(x);
+      std::copy_n(b, N, low[0]);
+      for (PetscInt i = 0; i < N; ++i) low[1][i] = x[i];
+      PetscCall(HPDDM::IterativeMethod::solve(*data->op, low[0], low[1], n, PetscObjectComm((PetscObject)ksp)));
+      if (N) {
+        low[0][0] = low[1][0];
+        std::copy_backward(low[1] + 1, low[1] + N, x + N);
+        x[0] = low[0][0];
+      }
+      PetscCall(PetscFree(low[0]));
+    } else {
+      PetscCheck(PetscDefined(HAVE_CUDA) && PetscDefined(USE_REAL_DOUBLE), PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "CUDA in PETSc has no support for precisions other than single or double");
+  #if PetscDefined(HAVE_CUDA)
+    #if PetscDefined(HAVE_HPDDM)
+      PetscCall(KSPSolve_HPDDM_CUDA_Private(data, b, x, n, PetscObjectComm((PetscObject)ksp)));
+    #else
+      SETERRQ(PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "No CUDA support with --download-hpddm from SLEPc");
+    #endif
+  #endif
     }
-    PetscCall(PetscFree(low[0]));
 #else
-    PetscCheck(data->precision == KSP_HPDDM_PRECISION_HALF, PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "Reconfigure with --download-f2cblaslapack --with-f2cblaslapack-fp16-bindings");
+    PetscCheck(data->precision != KSP_HPDDM_PRECISION_HALF, PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "Reconfigure with --download-f2cblaslapack --with-f2cblaslapack-fp16-bindings");
 #endif
-  } else PetscCall(HPDDM::IterativeMethod::solve(*data->op, b, x, n, PetscObjectComm((PetscObject)ksp))); /* Krylov basis stored in the same precision as PetscScalar */
-  if (!ksp->reason) {                                                                                     /* KSPConvergedDefault() is still returning 0 (= KSP_CONVERGED_ITERATING) */
+  } else { /* Krylov basis stored in the same precision as PetscScalar */
+    if (type == PETSC_MEMTYPE_HOST) PetscCall(HPDDM::IterativeMethod::solve(*data->op, b, x, n, PetscObjectComm((PetscObject)ksp)));
+    else {
+      PetscCheck(PetscDefined(USE_REAL_SINGLE) || PetscDefined(USE_REAL_DOUBLE), PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "CUDA in PETSc has no support for precisions other than single or double");
+#if PetscDefined(HAVE_CUDA)
+  #if PetscDefined(HAVE_HPDDM)
+      PetscCall(KSPSolve_HPDDM_CUDA_Private(data, b, x, n, PetscObjectComm((PetscObject)ksp)));
+  #else
+      SETERRQ(PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "No CUDA support with --download-hpddm from SLEPc");
+  #endif
+#endif
+    }
+  }
+  if (!ksp->reason) { /* KSPConvergedDefault() is still returning 0 (= KSP_CONVERGED_ITERATING) */
     if (ksp->its >= ksp->max_it) ksp->reason = KSP_DIVERGED_ITS;
     else ksp->reason = KSP_CONVERGED_RTOL; /* early exit by HPDDM, which only happens on breakdowns or convergence */
   }
@@ -288,15 +332,23 @@ static PetscErrorCode KSPSolve_HPDDM(KSP ksp)
   const PetscScalar *b;
   PetscInt           i, j, n;
   PetscBool          flg;
+  PetscMemType       type[2];
 
   PetscFunctionBegin;
   PetscCall(PetscCitationsRegister(HPDDMCitation, &HPDDMCite));
   PetscCall(KSPGetOperators(ksp, &A, NULL));
   PetscCall(PetscObjectTypeCompareAny((PetscObject)A, &flg, MATSEQKAIJ, MATMPIKAIJ, ""));
-  PetscCall(VecGetArrayWrite(ksp->vec_sol, &x));
-  PetscCall(VecGetArrayRead(ksp->vec_rhs, &b));
-  if (!flg) PetscCall(KSPSolve_HPDDM_Private(ksp, b, x, 1));
-  else {
+  PetscCall(VecGetArrayWriteAndMemType(ksp->vec_sol, &x, type));
+  PetscCall(VecGetArrayReadAndMemType(ksp->vec_rhs, &b, type + 1));
+  PetscCheck(type[0] == type[1], PetscObjectComm((PetscObject)A), PETSC_ERR_ARG_INCOMP, "Right-hand side and solution vectors must have the same PetscMemType, %s != %s", PetscMemTypeToString(type[0]), PetscMemTypeToString(type[1]));
+  if (!flg) {
+    if (PetscMemTypeCUDA(type[0])) PetscCall(KSPSolve_HPDDM_Private<PETSC_MEMTYPE_CUDA>(ksp, b, x, 1));
+    else {
+      PetscCheck(PetscMemTypeHost(type[0]), PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "PetscMemType (%s) is neither PETSC_MEMTYPE_HOST nor PETSC_MEMTYPE_CUDA", PetscMemTypeToString(type[0]));
+      PetscCall(KSPSolve_HPDDM_Private(ksp, b, x, 1));
+    }
+  } else {
+    PetscCheck(PetscMemTypeHost(type[0]), PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "PetscMemType (%s) is not PETSC_MEMTYPE_HOST", PetscMemTypeToString(type[0]));
     PetscCall(MatKAIJGetScaledIdentity(A, &flg));
     PetscCall(MatKAIJGetAIJ(A, &B));
     PetscCall(MatGetBlockSize(A, &n));
@@ -323,8 +375,8 @@ static PetscErrorCode KSPSolve_HPDDM(KSP ksp)
       HPDDM::Wrapper<PetscScalar>::imatcopy<'T'>(n, i, x, i, n);
     }
   }
-  PetscCall(VecRestoreArrayRead(ksp->vec_rhs, &b));
-  PetscCall(VecRestoreArrayWrite(ksp->vec_sol, &x));
+  PetscCall(VecRestoreArrayReadAndMemType(ksp->vec_rhs, &b));
+  PetscCall(VecRestoreArrayWriteAndMemType(ksp->vec_sol, &x));
   PetscFunctionReturn(0);
 }
 
@@ -440,19 +492,16 @@ static PetscErrorCode KSPHPDDMGetDeflationMat_HPDDM(KSP ksp, Mat *U)
 
 static PetscErrorCode KSPMatSolve_HPDDM(KSP ksp, Mat B, Mat X)
 {
-  KSP_HPDDM            *data = (KSP_HPDDM *)ksp->data;
-  HPDDM::PETScOperator *op   = data->op;
-  Mat                   A;
-  const PetscScalar    *b;
-  PetscScalar          *x;
-  PetscInt              n, lda;
+  KSP_HPDDM         *data = (KSP_HPDDM *)ksp->data;
+  Mat                A;
+  const PetscScalar *b;
+  PetscScalar       *x;
+  PetscInt           n, lda;
+  PetscBool          flg;
 
   PetscFunctionBegin;
   PetscCall(PetscCitationsRegister(HPDDMCitation, &HPDDMCite));
-  if (!op) {
-    PetscCall(KSPSetUp(ksp));
-    op = data->op;
-  }
+  if (!data->op) PetscCall(KSPSetUp(ksp));
   PetscCall(KSPGetOperators(ksp, &A, NULL));
   PetscCall(MatGetLocalSize(B, &n, NULL));
   PetscCall(MatDenseGetLDA(B, &lda));
@@ -460,12 +509,23 @@ static PetscErrorCode KSPMatSolve_HPDDM(KSP ksp, Mat B, Mat X)
   PetscCall(MatGetLocalSize(A, &n, NULL));
   PetscCall(MatDenseGetLDA(X, &lda));
   PetscCheck(n == lda, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Unhandled leading dimension lda = %" PetscInt_FMT " with n = %" PetscInt_FMT, lda, n);
-  PetscCall(MatDenseGetArrayRead(B, &b));
-  PetscCall(MatDenseGetArrayWrite(X, &x));
   PetscCall(MatGetSize(X, NULL, &n));
-  PetscCall(KSPSolve_HPDDM_Private(ksp, b, x, n));
-  PetscCall(MatDenseRestoreArrayWrite(X, &x));
-  PetscCall(MatDenseRestoreArrayRead(B, &b));
+  PetscCall(PetscObjectTypeCompareAny((PetscObject)X, &flg, MATSEQDENSECUDA, MATMPIDENSECUDA, ""));
+  if (!flg) {
+    PetscCall(MatDenseGetArrayRead(B, &b));
+    PetscCall(MatDenseGetArrayWrite(X, &x));
+    PetscCall(KSPSolve_HPDDM_Private(ksp, b, x, n));
+    PetscCall(MatDenseRestoreArrayWrite(X, &x));
+    PetscCall(MatDenseRestoreArrayRead(B, &b));
+  } else {
+#if PetscDefined(HAVE_CUDA)
+    PetscCall(MatDenseCUDAGetArrayRead(B, &b));
+    PetscCall(MatDenseCUDAGetArrayWrite(X, &x));
+    PetscCall(KSPSolve_HPDDM_Private<PETSC_MEMTYPE_CUDA>(ksp, b, x, n));
+    PetscCall(MatDenseCUDARestoreArrayWrite(X, &x));
+    PetscCall(MatDenseCUDARestoreArrayRead(B, &b));
+#endif
+  }
   PetscFunctionReturn(0);
 }
 
@@ -540,7 +600,7 @@ static PetscErrorCode KSPHPDDMSetType_HPDDM(KSP ksp, KSPHPDDMType type)
     if (flg) break;
   }
   PetscCheck(i != PETSC_STATIC_ARRAY_LENGTH(KSPHPDDMTypes), PetscObjectComm((PetscObject)ksp), PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown KSPHPDDMType %d", type);
-  if (data->cntl[0] != static_cast<char>(PETSC_DECIDE) && data->cntl[0] != i) PetscCall(KSPHPDDMReset_Private(ksp));
+  if (data->cntl[0] != static_cast<char>(PETSC_DECIDE) && data->cntl[0] != i) PetscCall(KSPReset_HPDDM_Private(ksp));
   data->cntl[0] = i;
   PetscFunctionReturn(0);
 }
@@ -612,7 +672,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_HPDDM(KSP ksp)
   ksp->ops->destroy        = KSPDestroy_HPDDM;
   ksp->ops->view           = KSPView_HPDDM;
   ksp->ops->reset          = KSPReset_HPDDM;
-  PetscCall(KSPHPDDMReset_Private(ksp));
+  PetscCall(KSPReset_HPDDM_Private(ksp));
   for (i = 0; i < static_cast<PetscInt>(PETSC_STATIC_ARRAY_LENGTH(common)); ++i) {
     PetscCall(PetscStrcmp(((PetscObject)ksp)->type_name, common[i], &flg));
     if (flg) break;

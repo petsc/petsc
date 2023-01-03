@@ -1209,4 +1209,17 @@ PetscErrorCode NonlinearGS(SNES snes, Vec X, Vec B, void *ctx)
       args: -da_refine 100 -petsc_ci_portable_error_output -error_output_stdout
       filter: grep -E -v "(options_left|memory block|leaked context|not freed before MPI_Finalize|Could be the program crashed)"
 
+   testset:
+      requires: hpddm cuda
+      args: -snes_monitor -ksp_converged_reason -ksp_type hpddm -pc_type jacobi -dm_mat_type aijcusparse -dm_vec_type cuda
+      test:
+        suffix: hpddm_cuda
+        filter: sed -e "s/Linear solve converged due to CONVERGED_RTOL iterations 15/Linear solve converged due to CONVERGED_RTOL iterations 14/g"
+        args: -ksp_hpddm_type {{gmres gcrodr}separate output} -ksp_hpddm_precision {{single double}shared output}
+      test:
+        suffix: hpddm_cuda_right
+        filter: sed -e "s/Linear solve converged due to CONVERGED_RTOL iterations 15/Linear solve converged due to CONVERGED_RTOL iterations 14/g"
+        args: -ksp_hpddm_type gcrodr -ksp_pc_side right
+        output_file: output/ex19_hpddm_cuda_ksp_hpddm_type-gcrodr.out
+
 TEST*/
