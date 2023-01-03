@@ -7787,8 +7787,8 @@ PETSC_INTERN PetscErrorCode MatCreateGraph_Simple_AIJ(Mat Amat, PetscBool symmet
     PetscCall(MatSetBlockSizes(Gmat, 1, 1));
     if (isseqaij || ((Mat_MPIAIJ *)Amat->data)->garray) {
       PetscInt  *d_nnz, *o_nnz;
-      MatScalar *aa, val, AA[4096];
-      PetscInt  *aj, *ai, AJ[4096], nc;
+      MatScalar *aa, val, *AA;
+      PetscInt  *aj, *ai, *AJ, nc, nmax = 0;
       if (isseqaij) {
         a = Amat;
         b = NULL;
@@ -7800,7 +7800,7 @@ PETSC_INTERN PetscErrorCode MatCreateGraph_Simple_AIJ(Mat Amat, PetscBool symmet
       PetscCall(PetscInfo(Amat, "New bs>1 Graph. nloc=%" PetscInt_FMT "\n", nloc));
       PetscCall(PetscMalloc2(nloc, &d_nnz, isseqaij ? 0 : nloc, &o_nnz));
       for (c = a, kk = 0; c && kk < 2; c = b, kk++) {
-        PetscInt       *nnz = (c == a) ? d_nnz : o_nnz, nmax = 0;
+        PetscInt       *nnz = (c == a) ? d_nnz : o_nnz;
         const PetscInt *cols;
         for (PetscInt brow = 0, jj, ok = 1, j0; brow < nloc * bs; brow += bs) { // block rows
           PetscCall(MatGetRow(c, brow, &jj, &cols, NULL));
@@ -7822,11 +7822,11 @@ PETSC_INTERN PetscErrorCode MatCreateGraph_Simple_AIJ(Mat Amat, PetscBool symmet
             goto old_bs;
           }
         }
-        PetscCheck(nmax < 4096, PETSC_COMM_SELF, PETSC_ERR_USER, "Buffer %" PetscInt_FMT " too small 4096.", nmax);
       }
       PetscCall(MatSeqAIJSetPreallocation(Gmat, 0, d_nnz));
       PetscCall(MatMPIAIJSetPreallocation(Gmat, 0, d_nnz, 0, o_nnz));
       PetscCall(PetscFree2(d_nnz, o_nnz));
+      PetscCall(PetscMalloc2(nmax, &AA, nmax, &AJ));
       // diag
       for (PetscInt brow = 0, n, grow; brow < nloc * bs; brow += bs) { // block rows
         Mat_SeqAIJ *aseq = (Mat_SeqAIJ *)a->data;
@@ -7876,6 +7876,7 @@ PETSC_INTERN PetscErrorCode MatCreateGraph_Simple_AIJ(Mat Amat, PetscBool symmet
       }
       PetscCall(MatAssemblyBegin(Gmat, MAT_FINAL_ASSEMBLY));
       PetscCall(MatAssemblyEnd(Gmat, MAT_FINAL_ASSEMBLY));
+      PetscCall(PetscFree2(AA, AJ));
     } else {
       const PetscScalar *vals;
       const PetscInt    *idx;
