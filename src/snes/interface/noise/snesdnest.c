@@ -53,7 +53,7 @@ PetscErrorCode SNESNoise_dnest_(PetscInt *nf, double *fval, double *h__, double 
 
   /*     This subroutine requires an initial estimate for h. Under estimates */
   /*     are usually preferred. If noise is not detected, the user should */
-  /*     increase or decrease h according to the ouput value of info. */
+  /*     increase or decrease h according to the output value of info. */
   /*     In most cases, the subroutine detects noise with the initial */
   /*     value of h. */
 

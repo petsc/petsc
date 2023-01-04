@@ -4641,13 +4641,13 @@ PetscErrorCode MatSetPreallocationCOO_SeqAIJ(Mat mat, PetscCount coo_n, PetscInt
   nneg = k;
   PetscCall(PetscMalloc1(coo_n - nneg + 1, &jmap)); /* +1 to make a CSR-like data structure. jmap[i] originally is the number of repeats for i-th nonzero */
   nnz = 0;                                          /* Total number of unique nonzeros to be counted */
-  jmap++;                                           /* Inc jmap by 1 for convinience */
+  jmap++;                                           /* Inc jmap by 1 for convenience */
 
   PetscCall(PetscCalloc1(M + 1, &Ai));        /* CSR of A */
   PetscCall(PetscMalloc1(coo_n - nneg, &Aj)); /* We have at most coo_n-nneg unique nonzeros */
 
   /* In each row, sort by column, then unique column indices to get row length */
-  Ai++;  /* Inc by 1 for convinience */
+  Ai++;  /* Inc by 1 for convenience */
   q = 0; /* q-th unique nonzero, with q starting from 0 */
   while (k < coo_n) {
     row   = i[k];

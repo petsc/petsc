@@ -3195,7 +3195,7 @@ PetscErrorCode PetscOptionsGetStringArray(PetscOptions options, const char pre[]
 
    Notes:
    Must be called between `PetscOptionsBegin()` (or `PetscObjectOptionsBegin()`) and `PetscOptionsEnd()`.
-   Only the proces of rank zero that owns the `PetscOptionsItems` are argument (managed by `PetscOptionsBegin()` or
+   Only the process of rank zero that owns the `PetscOptionsItems` are argument (managed by `PetscOptionsBegin()` or
    `PetscObjectOptionsBegin()` prints the information
    If newname is provided, the old option is replaced. Otherwise, it remains
    in the options database.

@@ -2415,7 +2415,7 @@ PetscErrorCode PetscSectionCreateGlobalSectionLabel(PetscSection s, PetscSF sf, 
       }
     }
   }
-  /* Calculate new sizes, get proccess offset, and calculate point offsets */
+  /* Calculate new sizes, get process offset, and calculate point offsets */
   for (p = 0, off = 0; p < pEnd - pStart; ++p) {
     cdof                     = (!includeConstraints && s->bc) ? s->bc->atlasDof[p] : 0;
     (*gsection)->atlasOff[p] = off;

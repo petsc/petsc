@@ -2608,7 +2608,7 @@ PETSC_EXTERN PetscSegBuffer PetscCitationsList;
      Not Collective - only what is registered on rank 0 of `PETSC_COMM_WORLD` will be printed
 
      Input Parameters:
-+      cite - the bibtex item, formated to displayed on multiple lines nicely
++      cite - the bibtex item, formatted to displayed on multiple lines nicely
 -      set - a boolean variable initially set to `PETSC_FALSE`; this is used to insure only a single registration of the citation
 
      Options Database: Key

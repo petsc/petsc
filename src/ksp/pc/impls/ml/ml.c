@@ -600,7 +600,7 @@ PetscErrorCode PCSetUp_ML(PC pc)
 
   /* setup special features of PCML */
   /*--------------------------------*/
-  /* covert A to Aloc to be used by ML at fine grid */
+  /* convert A to Aloc to be used by ML at fine grid */
   pc_ml->size = size;
   PetscCall(PetscObjectBaseTypeCompare((PetscObject)A, MATSEQAIJ, &isSeq));
   PetscCall(PetscObjectBaseTypeCompare((PetscObject)A, MATMPIAIJ, &isMPI));
@@ -1097,7 +1097,7 @@ PetscErrorCode PCSetFromOptions_ML(PC pc, PetscOptionItems *PetscOptionsObject)
 
    Developer Note:
    The coarser grid matrices and restriction/interpolation
-   operators are computed by ML, with the matrices coverted to PETSc matrices in `MATAIJ` format
+   operators are computed by ML, with the matrices converted to PETSc matrices in `MATAIJ` format
    and the restriction/interpolation operators wrapped as PETSc shell matrices.
 
 .seealso: `PCCreate()`, `PCSetType()`, `PCType`, `PC`, `PCMGType`, `PCMG`, `PCHYPRE`, `PCGAMG`,
@@ -1116,7 +1116,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_ML(PC pc)
   /* PCML is an inherited class of PCMG. Initialize pc as PCMG */
   PetscCall(PCSetType(pc, PCMG)); /* calls PCCreate_MG() and MGCreate_Private() */
   PetscCall(PetscObjectChangeTypeName((PetscObject)pc, PCML));
-  /* Since PCMG tries to use DM assocated with PC must delete it */
+  /* Since PCMG tries to use DM associated with PC must delete it */
   PetscCall(DMDestroy(&pc->dm));
   PetscCall(PCMGSetGalerkin(pc, PC_MG_GALERKIN_EXTERNAL));
   mg = (PC_MG *)pc->data;

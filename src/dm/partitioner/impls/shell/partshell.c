@@ -144,7 +144,7 @@ PETSC_EXTERN PetscErrorCode PetscPartitionerCreate_Shell(PetscPartitioner part)
 }
 
 /*@C
-  PetscPartitionerShellSetPartition - Set an artifical partition for a mesh
+  PetscPartitionerShellSetPartition - Set an artificial partition for a mesh
 
   Collective on PetscPartitioner
 

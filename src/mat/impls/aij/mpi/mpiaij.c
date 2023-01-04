@@ -723,7 +723,7 @@ PetscErrorCode MatAssemblyEnd_MPIAIJ(Mat mat, MatAssemblyType mode)
   */
   if (!((Mat_SeqAIJ *)aij->B->data)->nonew) {
     PetscCall(MPIU_Allreduce(&mat->was_assembled, &other_disassembled, 1, MPIU_BOOL, MPI_LAND, PetscObjectComm((PetscObject)mat)));
-    if (mat->was_assembled && !other_disassembled) { /* mat on this rank has reduced off-diag B with local col ids, but globaly it does not */
+    if (mat->was_assembled && !other_disassembled) { /* mat on this rank has reduced off-diag B with local col ids, but globally it does not */
       PetscCall(MatDisAssemble_MPIAIJ(mat));
     }
   }
@@ -5688,7 +5688,7 @@ PetscErrorCode MatGetBrowsOfAcols_MPIXAIJ(Mat A, Mat P, PetscInt dof, MatReuse r
     PetscCall(ISDestroy(&rows));
   } else if (reuse == MAT_REUSE_MATRIX) {
     /* If matrix was already created, we simply update values using SF objects
-     * that as attached to the matrix ealier.
+     * that as attached to the matrix earlier.
      */
     const PetscScalar *pd_a, *po_a;
 

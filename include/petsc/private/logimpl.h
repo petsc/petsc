@@ -20,8 +20,8 @@ typedef struct _Action {
   int            action;        /* The type of execution */
   PetscLogEvent  event;         /* The event number */
   PetscClassId   classid;       /* The event class id */
-  PetscLogDouble time;          /* The time of occurence */
-  PetscLogDouble flops;         /* The cumlative flops */
+  PetscLogDouble time;          /* The time of occurrence */
+  PetscLogDouble flops;         /* The cumulative flops */
   PetscLogDouble mem;           /* The current memory usage */
   PetscLogDouble maxmem;        /* The maximum memory usage */
   int            id1, id2, id3; /* The ids of associated objects */

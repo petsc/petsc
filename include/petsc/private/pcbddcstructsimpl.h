@@ -116,7 +116,7 @@ struct _PCBDDCSubSchurs {
   PetscBool schur_explicit;
   /* BDDC or GDSW */
   PetscBool gdsw;
-  /* matrices cointained explicit schur complements cat together */
+  /* matrices contained explicit schur complements cat together */
   /* note that AIJ format is used but the values are inserted as in column major ordering */
   Mat S_Ej_all;
   Mat sum_S_Ej_all;

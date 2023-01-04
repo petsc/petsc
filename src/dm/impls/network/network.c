@@ -1864,7 +1864,7 @@ PetscErrorCode DMNetworkDistribute(DM *dm, PetscInt overlap)
       for (j = 0; j < newDMnetwork->cloneshared->svtx[svtx_idx].n; j++) {
         sv  = newDMnetwork->cloneshared->svtx[svtx_idx].sv + 2 * j;
         net = sv[0];
-        if (PetscBTLookup(btable, net)) newDMnetwork->cloneshared->subnet[net].nvtx++; /* sv is on net owned by this proces */
+        if (PetscBTLookup(btable, net)) newDMnetwork->cloneshared->subnet[net].nvtx++; /* sv is on net owned by this process */
       }
     }
   }

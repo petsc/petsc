@@ -50,8 +50,8 @@ const char *const MatCUSPARSEStorageFormats[] = {"CSR", "ELL", "HYB", "MatCUSPAR
   } cusparseSpMMAlg_t;
 
   typedef enum {
-      CUSPARSE_CSR2CSC_ALG1 = 1, // faster than V2 (in general), deterministc
-      CUSPARSE_CSR2CSC_ALG2 = 2  // low memory requirement, non-deterministc
+      CUSPARSE_CSR2CSC_ALG1 = 1, // faster than V2 (in general), deterministic
+      CUSPARSE_CSR2CSC_ALG2 = 2  // low memory requirement, non-deterministic
   } cusparseCsr2CscAlg_t;
   */
 const char *const MatCUSPARSESpMVAlgorithms[]    = {"MV_ALG_DEFAULT", "COOMV_ALG", "CSRMV_ALG1", "CSRMV_ALG2", "cusparseSpMVAlg_t", "CUSPARSE_", 0};
@@ -1394,7 +1394,7 @@ static PetscErrorCode MatSolveTranspose_SeqAIJCUSPARSE_ILU0(Mat fact, Vec b, Vec
   PetscFunctionBegin;
   if (!fs->createdTransposeSpSVDescr) { /* Call MatSolveTranspose() for the first time */
     PetscCallCUSPARSE(cusparseSpSV_createDescr(&fs->spsvDescr_Lt));
-    PetscCallCUSPARSE(cusparseSpSV_bufferSize(fs->handle, CUSPARSE_OPERATION_TRANSPOSE, &PETSC_CUSPARSE_ONE, fs->spMatDescr_L, /* The matrix is still L. We only do tranpose solve with it */
+    PetscCallCUSPARSE(cusparseSpSV_bufferSize(fs->handle, CUSPARSE_OPERATION_TRANSPOSE, &PETSC_CUSPARSE_ONE, fs->spMatDescr_L, /* The matrix is still L. We only do transpose solve with it */
                                               fs->dnVecDescr_X, fs->dnVecDescr_Y, cusparse_scalartype, CUSPARSE_SPSV_ALG_DEFAULT, fs->spsvDescr_Lt, &fs->spsvBufferSize_Lt));
 
     PetscCallCUSPARSE(cusparseSpSV_createDescr(&fs->spsvDescr_Ut));

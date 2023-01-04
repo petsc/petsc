@@ -104,7 +104,7 @@ struct _p_PetscSF {
   PetscSFPackOpt leafpackopt_d[2]; /* Copy of leafpackopt_d[] on device if needed */
   PetscBool      leafdups[2];      /* Indices in rmine[] for self(0)/remote(1) communication have dups respectively? TRUE implies theads working on them in parallel may have data race. */
 
-  PetscInt       nleafreqs;            /* Number of MPI reqests for leaves */
+  PetscInt       nleafreqs;            /* Number of MPI requests for leaves */
   PetscInt      *rremote;              /* Concatenated array holding remote indices referenced for each remote rank */
   PetscBool      degreeknown;          /* The degree is currently known, do not have to recompute */
   PetscInt      *degree;               /* Degree of each of my root vertices */
@@ -128,7 +128,7 @@ struct _p_PetscSF {
 
 #if defined(PETSC_HAVE_NVSHMEM)
   PetscBool use_nvshmem;                 /* TRY to use nvshmem on cuda devices with this SF when possible */
-  PetscBool use_nvshmem_get;             /* If true, use nvshmem_get based protocal, otherwise, use nvshmem_put based protocol */
+  PetscBool use_nvshmem_get;             /* If true, use nvshmem_get based protocol, otherwise, use nvshmem_put based protocol */
   PetscBool checked_nvshmem_eligibility; /* Have we checked eligibility of using NVSHMEM on this sf? */
   PetscBool setup_nvshmem;               /* Have we already set up NVSHMEM related fields below? These fields are built on-demand */
   PetscInt  leafbuflen_rmax;             /* max leafbuflen[REMOTE] over comm */

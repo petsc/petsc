@@ -463,7 +463,7 @@ PetscErrorCode PCMGSetLevels_MG(PC pc, PetscInt levels, MPI_Comm *comms)
      the full number of ranks for that level and then use an MPI call to copy the resulting vector
      array entries (after calls to VecGetArray()) to the smaller or larger number of ranks, note in both
      cases the MPI calls must be made on the larger of the two communicators. Traditional MPI send and
-     recieves or MPI_AlltoAllv() could be used to do the reshuffling of the vector entries.
+     receives or MPI_AlltoAllv() could be used to do the reshuffling of the vector entries.
 
    Fortran Note:
      Use comms = `PETSC_NULL_MPI_COMM` as the equivalent of NULL in the C interface. Note `PETSC_NULL_MPI_COMM`

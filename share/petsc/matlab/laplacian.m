@@ -422,7 +422,7 @@ if nargout > 1 && m > 0 % Calculate eigenvectors if specified in output.
 end
 
 A = [];
-if nargout > 2 %also calulate the matrix if specified in the output
+if nargout > 2 %also calculate the matrix if specified in the output
     
     % Set the component matrices. SPDIAGS converts int8 into double anyway.
     %    e1 = ones(u(1),1); %e1 = ones(u(1),1,'int8');

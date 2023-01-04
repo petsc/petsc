@@ -7,7 +7,7 @@
    Private context (data structure) for the NN preconditioner.
 */
 typedef struct {
-  /* First MUST come the folowing line, for the stuff that is common to FETI and Neumann-Neumann. */
+  /* First MUST come the following line, for the stuff that is common to FETI and Neumann-Neumann. */
   PC_IS pcis;
 
   /* Then, everything else. */

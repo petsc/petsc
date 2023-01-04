@@ -922,7 +922,7 @@ PetscErrorCode VecScatterCreate(Vec x, IS ix, Vec y, IS iy, VecScatter *newsf)
     PetscCall(PetscMalloc1(nleaves,&iremote));
 
     for (i=0; i<inedges; i++) {
-      ilocal[i] = rootdata[2*i] - ystart; /* covert y's global index to local index */
+      ilocal[i] = rootdata[2*i] - ystart; /* convert y's global index to local index */
       PetscCall(PetscLayoutFindOwnerIndex(xlayout,rootdata[2*i+1],&iremote[i].rank,&iremote[i].index)); /* convert x's global index to (rank, index) */
     }
     PetscCall(PetscFree(rootdata));

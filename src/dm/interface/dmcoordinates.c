@@ -157,7 +157,7 @@ PetscErrorCode DMGetCellCoordinateDM(DM dm, DM *cdm)
   Level: intermediate
 
   Note:
-  As opposed to `DMSetCoordinateDM()` these coordinates are useful for discontinous Galerkin methods since they support coordinate fields that are discontinuous at cell boundaries.
+  As opposed to `DMSetCoordinateDM()` these coordinates are useful for discontinuous Galerkin methods since they support coordinate fields that are discontinuous at cell boundaries.
 
 .seealso: `DMGetCellCoordinateDM()`, `DMSetCellCoordinates()`, `DMSetCellCoordinatesLocal()`, `DMGetCellCoordinates()`, `DMGetCellCoordinatesLocal()`,
           `DMSetCoordinateDM()`, `DMGetCoordinateDM()`
@@ -866,7 +866,7 @@ PetscErrorCode DMSetCoordinateField(DM dm, DMField field)
 
   Output Parameters:
 + lmin - local minimum coordinates (length coord dim, optional)
-- lmax - local maximim coordinates (length coord dim, optional)
+- lmax - local maximum coordinates (length coord dim, optional)
 
   Level: beginner
 
@@ -938,7 +938,7 @@ PetscErrorCode DMGetLocalBoundingBox(DM dm, PetscReal lmin[], PetscReal lmax[])
 
   Output Parameters:
 + gmin - global minimum coordinates (length coord dim, optional)
-- gmax - global maximim coordinates (length coord dim, optional)
+- gmax - global maximum coordinates (length coord dim, optional)
 
   Level: beginner
 

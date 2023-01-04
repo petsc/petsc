@@ -217,6 +217,8 @@ exec-name``.
 
 .. rubric:: TAO:
 
+- Rename the command line option ``-tao_nm_lamda`` to ``-tao_nm_lambda``
+
 .. rubric:: DM/DA:
 
 - Add ``DMDAMapMatStencilToGlobal()`` to map MatStencils to global indices

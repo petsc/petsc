@@ -510,7 +510,7 @@ inline PetscErrorCode MemoryBlock<T, A, S>::try_allocate_chunk(size_type req_siz
 
   Notes:
   ptr is set to nullptr on successful restore, and is unchanged otherwise. If the ptr is owned
-  by this MemoryBlock then it is restored on stream. The same stream may recieve ptr again
+  by this MemoryBlock then it is restored on stream. The same stream may receive ptr again
   without synchronization, but other streams may not do so until either serializing or the
   stream is idle again.
 */

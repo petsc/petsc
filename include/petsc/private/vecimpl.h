@@ -246,7 +246,7 @@ PETSC_EXTERN PetscErrorCode VecView_Binary(Vec, PetscViewer);
 PETSC_EXTERN PetscErrorCode VecLoad_Binary(Vec, PetscViewer);
 PETSC_EXTERN PetscErrorCode VecLoad_Default(Vec, PetscViewer);
 
-PETSC_EXTERN PetscInt NormIds[7]; /* map from NormType to IDs used to cache/retreive values of norms */
+PETSC_EXTERN PetscInt NormIds[7]; /* map from NormType to IDs used to cache/retrieve values of norms */
 
 PETSC_INTERN PetscErrorCode VecStashCreate_Private(MPI_Comm, PetscInt, VecStash *);
 PETSC_INTERN PetscErrorCode VecStashDestroy_Private(VecStash *);

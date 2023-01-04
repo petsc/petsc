@@ -30,7 +30,7 @@ PetscClassId PETSC_SECTION_CLASSID;
        PetscSectionDestroy(PetscSection);
 .ve
 
-  The `PetscSection` object and methods are intended to be used in the PETSc `Vec` and `Mat` implementations. The indices returned by the `PetscSection` are appropriate for the kind of `Vec` it is asociated with. For example, if the vector being indexed is a local vector, we call the section a local section. If the section indexes a global vector, we call it a global section. For parallel vectors, like global vectors, we use negative indices to indicate dofs owned by other processes.
+  The `PetscSection` object and methods are intended to be used in the PETSc `Vec` and `Mat` implementations. The indices returned by the `PetscSection` are appropriate for the kind of `Vec` it is associated with. For example, if the vector being indexed is a local vector, we call the section a local section. If the section indexes a global vector, we call it a global section. For parallel vectors, like global vectors, we use negative indices to indicate dofs owned by other processes.
 
 .seealso: [PetscSection](sec_petscsection), `PetscSection`, `PetscSectionDestroy()`, `PetscSectionCreateGlobalSection()`
 @*/
@@ -1473,7 +1473,7 @@ PetscErrorCode PetscSectionCreateGlobalSectionCensored(PetscSection s, PetscSF s
       }
     }
   }
-  /* Calculate new sizes, get proccess offset, and calculate point offsets */
+  /* Calculate new sizes, get process offset, and calculate point offsets */
   if (s->perm) PetscCall(ISGetIndices(s->perm, &pind));
   for (p = 0, off = 0; p < pEnd - pStart; ++p) {
     const PetscInt q = pind ? pind[p] : p;

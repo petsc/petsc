@@ -223,7 +223,7 @@ PetscErrorCode PetscDeviceContextGetStreamType(PetscDeviceContext dctx, PetscStr
   1. Repeatedly destroying and recreating internal data structures (like streams and events)
      for recycled PetscDeviceContexts is not free. If done often, it does add up.
   2. The vast majority of PetscDeviceContexts are created by PETSc either as children or
-     default contexts. The default contexts *never* change type, and the chilren are extremely
+     default contexts. The default contexts *never* change type, and the children are extremely
      unlikely to (chances are if you fork once, you will fork again very soon).
   3. The only time this calculus changes is if the user themselves sets the device type. In
      this case we do not know what the user has changed, so must always wipe the slate clean.
@@ -688,7 +688,7 @@ PetscErrorCode PetscDeviceContextFork(PetscDeviceContext dctx, PetscInt n, Petsc
   Notes:
   If `PetscDeviceContextFork()` creates `n` edges from a source node which all depend on the source
   node, then this routine is the exact mirror. That is, it creates a node (represented in `dctx`)
-  which recieves `n` edges (and optionally destroys them) which is dependent on the completion
+  which receives `n` edges (and optionally destroys them) which is dependent on the completion
   of all incoming edges.
 
   If `joinMode` is `PETSC_DEVICE_CONTEXT_JOIN_DESTROY`. All contexts in `dsub` will be
