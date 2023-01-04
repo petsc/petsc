@@ -192,6 +192,7 @@ PetscErrorCode MatSolve_SuperLU_Private(Mat A, Vec b, Vec x)
 PetscErrorCode MatSolve_SuperLU(Mat A, Vec b, Vec x)
 {
   Mat_SuperLU *lu = (Mat_SuperLU *)A->data;
+  trans_t      oldOption;
 
   PetscFunctionBegin;
   if (A->factorerrortype) {
@@ -200,14 +201,17 @@ PetscErrorCode MatSolve_SuperLU(Mat A, Vec b, Vec x)
     PetscFunctionReturn(0);
   }
 
+  oldOption         = lu->options.Trans;
   lu->options.Trans = TRANS;
   PetscCall(MatSolve_SuperLU_Private(A, b, x));
+  lu->options.Trans = oldOption;
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode MatSolveTranspose_SuperLU(Mat A, Vec b, Vec x)
 {
   Mat_SuperLU *lu = (Mat_SuperLU *)A->data;
+  trans_t      oldOption;
 
   PetscFunctionBegin;
   if (A->factorerrortype) {
@@ -216,8 +220,10 @@ PetscErrorCode MatSolveTranspose_SuperLU(Mat A, Vec b, Vec x)
     PetscFunctionReturn(0);
   }
 
+  oldOption         = lu->options.Trans;
   lu->options.Trans = NOTRANS;
   PetscCall(MatSolve_SuperLU_Private(A, b, x));
+  lu->options.Trans = oldOption;
   PetscFunctionReturn(0);
 }
 
