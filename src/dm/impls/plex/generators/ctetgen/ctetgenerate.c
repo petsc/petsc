@@ -232,7 +232,7 @@ PETSC_EXTERN PetscErrorCode DMPlexGenerate_CTetgen(DM boundary, PetscBool interp
           PetscReal centroid[3] = {0., 0., 0.};
           PetscInt  b;
 
-          /* Deterimine what body the cell's centroid is located in */
+          /* Determine what body the cell's centroid is located in */
           if (!interpolate) {
             PetscSection coordSection;
             Vec          coordinates;
@@ -507,7 +507,7 @@ PETSC_EXTERN PetscErrorCode DMPlexRefine_CTetgen(DM dm, PetscReal *maxVolumes, D
           PetscReal centroid[3] = {0., 0., 0.};
           PetscInt  b;
 
-          /* Deterimine what body the cell's centroid is located in */
+          /* Determine what body the cell's centroid is located in */
           if (!interpolate) {
             PetscSection coordSection;
             Vec          coordinates;

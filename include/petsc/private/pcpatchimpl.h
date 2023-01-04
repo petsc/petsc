@@ -45,7 +45,7 @@ typedef struct {
   IS            globalBcNodes;            /* Global dofs constrained by global Dirichlet conditions TODO Replace these with process local constrained dofs */
   IS            ghostBcNodes;             /* Global dofs constrained by global Dirichlet conditions on this process and possibly others (patch overlaps boundary) */
   PetscSection  gtolCounts;               /* ?? Indices to extract from local to patch vectors */
-  PetscSection  gtolCountsWithArtificial; /* ?? Indices to extract from local to patch vectors including those with artifical bcs*/
+  PetscSection  gtolCountsWithArtificial; /* ?? Indices to extract from local to patch vectors including those with artificial bcs*/
   PetscSection  gtolCountsWithAll;        /* ?? Indices to extract from local to patch vectors including those in artificial or global bcs*/
   IS            gtol;
   IS            gtolWithArtificial;

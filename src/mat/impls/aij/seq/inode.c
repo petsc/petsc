@@ -67,7 +67,7 @@ static PetscErrorCode MatGetRowIJ_SeqAIJ_Inode_Symmetric(Mat A, const PetscInt *
   nslim_col = nslim_row;
   ns_col    = ns_row;
 
-  /* allocate space for reformated inode structure */
+  /* allocate space for reformatted inode structure */
   PetscCall(PetscMalloc2(nslim_col + 1, &tns, n + 1, &tvc));
   for (i1 = 0, tns[0] = 0; i1 < nslim_col; ++i1) tns[i1 + 1] = tns[i1] + ns_row[i1];
 
@@ -149,7 +149,7 @@ static PetscErrorCode MatGetRowIJ_SeqAIJ_Inode_Nonsymmetric(Mat A, const PetscIn
   /* Create The column_inode for this matrix */
   PetscCall(MatCreateColInode_Private(A, &nslim_col, &ns_col));
 
-  /* allocate space for reformated column_inode structure */
+  /* allocate space for reformatted column_inode structure */
   PetscCall(PetscMalloc2(nslim_col + 1, &tns, n + 1, &tvc));
   for (i1 = 0, tns[0] = 0; i1 < nslim_col; ++i1) tns[i1 + 1] = tns[i1] + ns_col[i1];
 
@@ -257,7 +257,7 @@ static PetscErrorCode MatGetColumnIJ_SeqAIJ_Inode_Nonsymmetric(Mat A, const Pets
   /* Create The column_inode for this matrix */
   PetscCall(MatCreateColInode_Private(A, &nslim_col, &ns_col));
 
-  /* allocate space for reformated column_inode structure */
+  /* allocate space for reformatted column_inode structure */
   PetscCall(PetscMalloc2(nslim_col + 1, &tns, n + 1, &tvc));
   for (i1 = 0, tns[0] = 0; i1 < nslim_col; ++i1) tns[i1 + 1] = tns[i1] + ns_col[i1];
 

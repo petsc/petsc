@@ -68,7 +68,7 @@ static PetscErrorCode CreateMatrix(FEStruct *fe, Mat *A)
   PetscCall(PetscFree2(oor, ooc));
 
   /* determine the offset into the COO value array the offset of each element stiffness; there are 9 = 3*3 entries for each element stiffness */
-  /* for lists of elements with different numbers of degrees of freedom assocated with each element the offsets will not be uniform */
+  /* for lists of elements with different numbers of degrees of freedom associated with each element the offsets will not be uniform */
   PetscCall(PetscMalloc1(fe->Ne, &fe->coo));
   fe->coo[0] = 0;
   for (PetscInt e = 1; e < fe->Ne; e++) fe->coo[e] = fe->coo[e - 1] + 3 * 3;

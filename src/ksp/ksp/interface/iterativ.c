@@ -203,7 +203,7 @@ PetscErrorCode KSPMonitorResidualDraw(KSP ksp, PetscInt n, PetscReal rnorm, Pets
   This is not called directly by users, rather one calls `KSPMonitorSet()`, with this function as an argument, to cause the monitor
   to be used during the `KSP` solve.
 
-  Use `KSPMonitorResidualDrawLGCreate()` to create the contex used with this monitor
+  Use `KSPMonitorResidualDrawLGCreate()` to create the context used with this monitor
 
 .seealso: [](chapter_ksp), `PETSCVIEWERDRAW`, `KSPMonitorSet()`, `KSPMonitorTrueResidual()`, `KSPMonitorResidualDraw()`, `KSPMonitorResidual()`
 @*/

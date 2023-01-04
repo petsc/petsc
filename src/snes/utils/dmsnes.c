@@ -589,7 +589,7 @@ PetscErrorCode DMSNESSetJacobian(DM dm, PetscErrorCode (*J)(SNES, Vec, Mat, Mat,
 
    Input Parameters:
 +  dm - `DM` to be used with `SNES`
--  f - Jacobian evaluation contex destroy function
+-  f - Jacobian evaluation context destroy function
 
    Level: advanced
 

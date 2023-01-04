@@ -77,7 +77,7 @@ static PetscErrorCode KSPAGMRESQuickSort(PetscScalar *val_r, PetscScalar *val_i,
 }
 
 /*
- * Compute the Schur vectors from the generalized eigenvalue problem A.u =\lamba.B.u
+ * Compute the Schur vectors from the generalized eigenvalue problem A.u =\lambda.B.u
  * KspSize -  rank of the matrices A and B, size of the current Krylov basis
  * A - Left matrix
  * B - Right matrix

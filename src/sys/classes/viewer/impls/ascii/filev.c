@@ -182,7 +182,7 @@ PetscErrorCode PetscViewerFlush_ASCII(PetscViewer viewer)
 /*@C
     PetscViewerASCIIGetPointer - Extracts the file pointer from an ASCII `PetscViewer`.
 
-    Not Collective, depending on the viewer the value may be meaningless except for process 0 of the viewer; No Fortran Suppport
+    Not Collective, depending on the viewer the value may be meaningless except for process 0 of the viewer; No Fortran Support
 
     Input Parameter:
 .    viewer - PetscViewer context, obtained from `PetscViewerASCIIOpen()`

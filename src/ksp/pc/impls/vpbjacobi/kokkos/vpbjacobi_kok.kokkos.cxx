@@ -137,7 +137,7 @@ PETSC_INTERN PetscErrorCode PCSetUp_VPBJacobi_Kokkos(PC pc)
     pckok = nullptr;
   }
 
-  if (!pckok) { /* allocate the struct along with the helper arrays from the scatch */
+  if (!pckok) { /* allocate the struct along with the helper arrays from the scratch */
     PetscCallCXX(jac->spptr = new PC_VPBJacobi_Kokkos(n, nblocks, nsize, bsizes, jac->diag));
   } else { /* update the value only */
     PetscCall(pckok->UpdateOffsetsOnDevice(bsizes, jac->diag));

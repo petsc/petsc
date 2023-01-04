@@ -47,7 +47,7 @@ def cythonize(source,
                 except OSError:
                     pass
             return 1
-        # move ouputs
+        # move outputs
         for destdir, outputs in (
             (destdir_c, outputs_c),
             (destdir_h, outputs_h)):

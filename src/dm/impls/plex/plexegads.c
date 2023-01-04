@@ -814,8 +814,8 @@ static PetscErrorCode DMPlexCreateEGADS(MPI_Comm comm, ego context, ego model, D
     }
 
     // Set up basic DMPlex parameters
-    dim        = 2;                                 // Assumes 3D Models :: Need to handle 2D modles in the future
-    cdim       = 3;                                 // Assumes 3D Models :: Need to update to handle 2D modles in future
+    dim        = 2;                                 // Assumes 3D Models :: Need to handle 2D models in the future
+    cdim       = 3;                                 // Assumes 3D Models :: Need to update to handle 2D models in future
     numCorners = 3;                                 // Split Faces into triangles
     numPoints  = numVertices + numEdges + numFaces; // total number of coordinate points
 

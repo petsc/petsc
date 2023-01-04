@@ -2893,7 +2893,7 @@ PetscErrorCode KSPSetComputeInitialGuess(KSP ksp, PetscErrorCode (*func)(KSP, Ve
 
 /*@
    KSPSetUseExplicitTranspose - Determines the explicit transpose of the operator is formed in `KSPSolveTranspose()`. In some configurations (like GPUs) it may
-   be explictly formed when possible since the solve is much more efficient.
+   be explicitly formed when possible since the solve is much more efficient.
 
    Logically Collective
 

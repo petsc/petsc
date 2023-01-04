@@ -250,7 +250,7 @@ PetscErrorCode PetscSpacePolynomialSetTensor(PetscSpace sp, PetscBool tensor)
 
 /*@
   PetscSpacePolynomialGetTensor - Get whether a function space is a space of tensor polynomials (the space is spanned
-  by polynomials whose degree in each variabl is bounded by the given order), as opposed to polynomials (the space is
+  by polynomials whose degree in each variable is bounded by the given order), as opposed to polynomials (the space is
   spanned by polynomials whose total degree---summing over all variables---is bounded by the given order).
 
   Input Parameters:

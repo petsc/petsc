@@ -844,7 +844,7 @@ static PetscErrorCode KSPCGSolve_GLTR(KSP ksp)
   cg->e_min = e_valu[0];
 
   /***************************************************************************/
-  /* Compute the initial value of lambda to make (T + lamba I) positive      */
+  /* Compute the initial value of lambda to make (T + lambda I) positive      */
   /* definite.                                                               */
   /***************************************************************************/
 

@@ -1561,7 +1561,7 @@ PetscErrorCode MatMumpsGatherNonzerosOnMaster(MatReuse reuse, Mat_MUMPS *mumps)
       } else {
         nreqs = (mumps->nnz + PETSC_MPI_INT_MAX - 1) / PETSC_MPI_INT_MAX;
       }
-      PetscCall(PetscMalloc1(nreqs * 3, &mumps->reqs)); /* Triple the requests since we send irn, jcn and val seperately */
+      PetscCall(PetscMalloc1(nreqs * 3, &mumps->reqs)); /* Triple the requests since we send irn, jcn and val separately */
 
       /* The following code is doing a very simple thing: omp_master rank gathers irn/jcn/val from others.
          MPI_Gatherv would be enough if it supports big counts > 2^31-1. Since it does not, and mumps->nnz

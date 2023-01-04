@@ -43,7 +43,7 @@ function getMatrixTex(data, endtag) {
             }
 
             var childEndtag = endtag + "_" + i;
-            //lay out chilren
+            //lay out children
             var childTex = getMatrixTex(data, childEndtag);
             if(childTex != "")
                 ret += getMatrixTex(data, childEndtag);
