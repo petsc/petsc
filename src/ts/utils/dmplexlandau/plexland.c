@@ -740,11 +740,15 @@ static PetscErrorCode LandauDMCreateVMeshes(MPI_Comm comm_self, const PetscInt d
   { /* p4est, quads */
     /* Create plex mesh of Landau domain */
     for (PetscInt grid = 0; grid < ctx->num_grids; grid++) {
-      PetscReal radius = ctx->radius[grid];
+      PetscReal par_radius = ctx->radius_par[grid], perp_radius = ctx->radius_perp[grid];
       if (!ctx->sphere) {
-        PetscReal      lo[] = {-radius, -radius, -radius}, hi[] = {radius, radius, radius};
+        PetscReal      lo[] = {-perp_radius, -par_radius, -par_radius}, hi[] = {perp_radius, par_radius, par_radius};
         DMBoundaryType periodicity[3] = {DM_BOUNDARY_NONE, dim == 2 ? DM_BOUNDARY_NONE : DM_BOUNDARY_NONE, DM_BOUNDARY_NONE};
         if (dim == 2) lo[0] = 0;
+        else {
+          lo[1] = -perp_radius;
+          hi[1] = perp_radius; // 3D y is a perp
+        }
         PetscCall(DMPlexCreateBoxMesh(comm_self, dim, PETSC_FALSE, ctx->cells0, lo, hi, periodicity, PETSC_TRUE, &ctx->plex[grid])); // todo: make composite and create dm[grid] here
         PetscCall(DMLocalizeCoordinates(ctx->plex[grid]));                                                                           /* needed for periodic */
         if (dim == 3) PetscCall(PetscObjectSetName((PetscObject)ctx->plex[grid], "cube"));
@@ -1245,6 +1249,8 @@ static PetscErrorCode ProcessOptions(LandauCtx *ctx, const char prefix[])
   ctx->num_sections = 3; /* 2, 3 or 4 */
   for (PetscInt grid = 0; grid < LANDAU_MAX_GRIDS; grid++) {
     ctx->radius[grid]             = 5.; /* thermal radius (velocity) */
+    ctx->radius_perp[grid]        = 5.; /* thermal radius (velocity) */
+    ctx->radius_par[grid]         = 5.; /* thermal radius (velocity) */
     ctx->numAMRRefine[grid]       = 5;
     ctx->postAMRRefine[grid]      = 0;
     ctx->species_offset[grid + 1] = 1; // one species default
@@ -1383,15 +1389,26 @@ static PetscErrorCode ProcessOptions(LandauCtx *ctx, const char prefix[])
   /* domain */
   nt = LANDAU_MAX_GRIDS;
   PetscCall(PetscOptionsRealArray("-dm_landau_domain_radius", "Phase space size in units of thermal velocity of grid", "plexland.c", ctx->radius, &nt, &flg));
-  if (flg) PetscCheck(nt >= ctx->num_grids, ctx->comm, PETSC_ERR_ARG_WRONG, "-dm_landau_domain_radius: given %" PetscInt_FMT " radius != number grids %" PetscInt_FMT, nt, ctx->num_grids);
+  if (flg) {
+    PetscCheck(nt >= ctx->num_grids, ctx->comm, PETSC_ERR_ARG_WRONG, "-dm_landau_domain_radius: given %" PetscInt_FMT " radius != number grids %" PetscInt_FMT, nt, ctx->num_grids);
+    while (nt--) ctx->radius_par[nt] = ctx->radius_perp[nt] = ctx->radius[nt];
+  } else {
+    nt = LANDAU_MAX_GRIDS;
+    PetscCall(PetscOptionsRealArray("-dm_landau_domain_max_par", "Parallel velocity domain size in units of thermal velocity of grid", "plexland.c", ctx->radius_par, &nt, &flg));
+    if (flg) PetscCheck(nt >= ctx->num_grids, ctx->comm, PETSC_ERR_ARG_WRONG, "-dm_landau_domain_max_par: given %" PetscInt_FMT " radius != number grids %" PetscInt_FMT, nt, ctx->num_grids);
+    PetscCall(PetscOptionsRealArray("-dm_landau_domain_max_perp", "Perpendicular velocity domain size in units of thermal velocity of grid", "plexland.c", ctx->radius_perp, &nt, &flg));
+    if (flg) PetscCheck(nt >= ctx->num_grids, ctx->comm, PETSC_ERR_ARG_WRONG, "-dm_landau_domain_max_perp: given %" PetscInt_FMT " radius != number grids %" PetscInt_FMT, nt, ctx->num_grids);
+  }
   for (PetscInt grid = 0; grid < ctx->num_grids; grid++) {
-    if (flg && ctx->radius[grid] <= 0) { /* negative is ratio of c */
+    if (flg && ctx->radius[grid] <= 0) { /* negative is ratio of c - need to set par and perp with this -- todo */
       if (ctx->radius[grid] == 0) ctx->radius[grid] = 0.75;
       else ctx->radius[grid] = -ctx->radius[grid];
       ctx->radius[grid] = ctx->radius[grid] * SPEED_OF_LIGHT / ctx->v_0; // use any species on grid to normalize (v_0 same for all on grid)
       PetscCall(PetscInfo(dummy, "Change domain radius to %g for grid %" PetscInt_FMT "\n", (double)ctx->radius[grid], grid));
     }
-    ctx->radius[grid] *= v0_grid[grid] / ctx->v_0; // scale domain by thermal radius relative to v_0
+    ctx->radius[grid] *= v0_grid[grid] / ctx->v_0;      // scale domain by thermal radius relative to v_0
+    ctx->radius_perp[grid] *= v0_grid[grid] / ctx->v_0; // scale domain by thermal radius relative to v_0
+    ctx->radius_par[grid] *= v0_grid[grid] / ctx->v_0;  // scale domain by thermal radius relative to v_0
   }
   /* amr parametres */
   nt = LANDAU_DIM;
@@ -1442,8 +1459,8 @@ static PetscErrorCode ProcessOptions(LandauCtx *ctx, const char prefix[])
     PetscCall(PetscPrintf(ctx->comm, "thermal T (K): e=%10.3e i=%10.3e %10.3e. v_0=%10.3e (%10.3ec) n_0=%10.3e t_0=%10.3e, %s, %s, %" PetscInt_FMT " batched\n", (double)ctx->thermal_temps[0], (double)ctx->thermal_temps[1],
                           (double)((ctx->num_species > 2) ? ctx->thermal_temps[2] : 0), (double)ctx->v_0, (double)(ctx->v_0 / SPEED_OF_LIGHT), (double)ctx->n_0, (double)ctx->t_0, ctx->use_relativistic_corrections ? "relativistic" : "classical", ctx->use_energy_tensor_trick ? "Use trick" : "Intuitive",
                           ctx->batch_sz));
-    PetscCall(PetscPrintf(ctx->comm, "Domain radius (AMR levels) grid %d: %10.3e (%" PetscInt_FMT ") ", 0, (double)ctx->radius[0], ctx->numAMRRefine[0]));
-    for (ii = 1; ii < ctx->num_grids; ii++) PetscCall(PetscPrintf(ctx->comm, ", %" PetscInt_FMT ": %10.3e (%" PetscInt_FMT ") ", ii, (double)ctx->radius[ii], ctx->numAMRRefine[ii]));
+    PetscCall(PetscPrintf(ctx->comm, "Domain radius (AMR levels) grid %d: par=%10.3e, perp=%10.3e (%" PetscInt_FMT ") ", 0, (double)ctx->radius_par[0], (double)ctx->radius_perp[0], ctx->numAMRRefine[0]));
+    for (ii = 1; ii < ctx->num_grids; ii++) PetscCall(PetscPrintf(ctx->comm, ", %" PetscInt_FMT ": par=%10.3e, perp=%10.3e (%" PetscInt_FMT ") ", ii, (double)ctx->radius_par[ii], (double)ctx->radius_perp[ii], ctx->numAMRRefine[ii]));
     PetscCall(PetscPrintf(ctx->comm, "\n"));
     if (ctx->jacobian_field_major_order) {
       PetscCall(PetscPrintf(ctx->comm, "Using field major order for GPU Jacobian\n"));

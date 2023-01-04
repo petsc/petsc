@@ -54,6 +54,7 @@ configure_options = [
   '--download-slepc',
   '--download-kokkos',
   '--download-kokkos-kernels',
+  '--with-dmlandau-3d',
   ]
 
 if __name__ == '__main__':
