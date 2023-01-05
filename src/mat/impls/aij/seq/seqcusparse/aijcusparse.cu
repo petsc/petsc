@@ -2402,14 +2402,14 @@ static PetscErrorCode MatProductNumeric_SeqAIJCUSPARSE_SeqDENSECUDA(Mat C)
   /* if the user passed a CPU matrix, copy the data to the GPU */
   PetscCall(PetscObjectTypeCompare((PetscObject)B, MATSEQDENSECUDA, &biscuda));
   if (!biscuda) PetscCall(MatConvert(B, MATSEQDENSECUDA, MAT_INPLACE_MATRIX, &B));
-  PetscCall(MatDenseCUDAGetArrayRead(B, &barray));
+  PetscCall(MatDenseGetArrayReadAndMemType(B, &barray, nullptr));
 
   PetscCall(MatDenseGetLDA(B, &blda));
   if (product->type == MATPRODUCT_RARt || product->type == MATPRODUCT_PtAP) {
-    PetscCall(MatDenseCUDAGetArrayWrite(mmdata->X, &carray));
+    PetscCall(MatDenseGetArrayWriteAndMemType(mmdata->X, &carray, nullptr));
     PetscCall(MatDenseGetLDA(mmdata->X, &clda));
   } else {
-    PetscCall(MatDenseCUDAGetArrayWrite(C, &carray));
+    PetscCall(MatDenseGetArrayWriteAndMemType(C, &carray, nullptr));
     PetscCall(MatDenseGetLDA(C, &clda));
   }
 
@@ -2482,15 +2482,15 @@ static PetscErrorCode MatProductNumeric_SeqAIJCUSPARSE_SeqDENSECUDA(Mat C)
 #endif
   PetscCall(PetscLogGpuTimeEnd());
   PetscCall(PetscLogGpuFlops(n * 2.0 * csrmat->num_entries));
-  PetscCall(MatDenseCUDARestoreArrayRead(B, &barray));
+  PetscCall(MatDenseRestoreArrayReadAndMemType(B, &barray));
   if (product->type == MATPRODUCT_RARt) {
-    PetscCall(MatDenseCUDARestoreArrayWrite(mmdata->X, &carray));
+    PetscCall(MatDenseRestoreArrayWriteAndMemType(mmdata->X, &carray));
     PetscCall(MatMatMultNumeric_SeqDenseCUDA_SeqDenseCUDA_Private(B, mmdata->X, C, PETSC_FALSE, PETSC_FALSE));
   } else if (product->type == MATPRODUCT_PtAP) {
-    PetscCall(MatDenseCUDARestoreArrayWrite(mmdata->X, &carray));
+    PetscCall(MatDenseRestoreArrayWriteAndMemType(mmdata->X, &carray));
     PetscCall(MatMatMultNumeric_SeqDenseCUDA_SeqDenseCUDA_Private(B, mmdata->X, C, PETSC_TRUE, PETSC_FALSE));
   } else {
-    PetscCall(MatDenseCUDARestoreArrayWrite(C, &carray));
+    PetscCall(MatDenseRestoreArrayWriteAndMemType(C, &carray));
   }
   if (mmdata->cisdense) PetscCall(MatConvert(C, MATSEQDENSE, MAT_INPLACE_MATRIX, &C));
   if (!biscuda) PetscCall(MatConvert(B, MATSEQDENSE, MAT_INPLACE_MATRIX, &B));
