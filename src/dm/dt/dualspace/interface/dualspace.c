@@ -19,7 +19,7 @@ PetscBool         PetscDualSpaceRegisterAllCalled = PETSC_FALSE;
 - tup - A tuple of length len+1: tup[len] > 0 indicates a stopping condition
 
   Output Parameter:
-. tup - A tuple of len integers whos sum is at most 'max'
+. tup - A tuple of len integers whose sum is at most 'max'
 
   Level: developer
 
@@ -50,7 +50,7 @@ PetscErrorCode PetscDualSpaceLatticePointLexicographic_Internal(PetscInt len, Pe
 - tup - A tuple of length len+1: tup[len] > 0 indicates a stopping condition
 
   Output Parameter:
-. tup - A tuple of len integers whos sum is at most 'max'
+. tup - A tuple of len integers whose entries are at most 'max'
 
   Level: developer
 

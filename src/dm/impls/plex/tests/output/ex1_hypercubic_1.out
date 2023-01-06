@@ -1,0 +1,225 @@
+Vertex 81: 0 0 0
+  Vertex 82: 1 0 0
+  Edge 0 (81 82)
+  Vertex 84: 0 1 0
+  Edge 1 (81 84)
+  Vertex 90: 0 0 1
+  Edge 2 (81 90)
+Vertex 82: 1 0 0
+  Vertex 83: 2 0 0
+  Edge 3 (82 83)
+  Vertex 85: 1 1 0
+  Edge 4 (82 85)
+  Vertex 91: 1 0 1
+  Edge 5 (82 91)
+Vertex 83: 2 0 0
+  Vertex 81: 0 0 0
+  Edge 6 (83 81)
+  Vertex 86: 2 1 0
+  Edge 7 (83 86)
+  Vertex 92: 2 0 1
+  Edge 8 (83 92)
+Vertex 84: 0 1 0
+  Vertex 85: 1 1 0
+  Edge 9 (84 85)
+  Vertex 87: 0 2 0
+  Edge 10 (84 87)
+  Vertex 93: 0 1 1
+  Edge 11 (84 93)
+Vertex 85: 1 1 0
+  Vertex 86: 2 1 0
+  Edge 12 (85 86)
+  Vertex 88: 1 2 0
+  Edge 13 (85 88)
+  Vertex 94: 1 1 1
+  Edge 14 (85 94)
+Vertex 86: 2 1 0
+  Vertex 84: 0 1 0
+  Edge 15 (86 84)
+  Vertex 89: 2 2 0
+  Edge 16 (86 89)
+  Vertex 95: 2 1 1
+  Edge 17 (86 95)
+Vertex 87: 0 2 0
+  Vertex 88: 1 2 0
+  Edge 18 (87 88)
+  Vertex 81: 0 0 0
+  Edge 19 (87 81)
+  Vertex 96: 0 2 1
+  Edge 20 (87 96)
+Vertex 88: 1 2 0
+  Vertex 89: 2 2 0
+  Edge 21 (88 89)
+  Vertex 82: 1 0 0
+  Edge 22 (88 82)
+  Vertex 97: 1 2 1
+  Edge 23 (88 97)
+Vertex 89: 2 2 0
+  Vertex 87: 0 2 0
+  Edge 24 (89 87)
+  Vertex 83: 2 0 0
+  Edge 25 (89 83)
+  Vertex 98: 2 2 1
+  Edge 26 (89 98)
+Vertex 90: 0 0 1
+  Vertex 91: 1 0 1
+  Edge 27 (90 91)
+  Vertex 93: 0 1 1
+  Edge 28 (90 93)
+  Vertex 99: 0 0 2
+  Edge 29 (90 99)
+Vertex 91: 1 0 1
+  Vertex 92: 2 0 1
+  Edge 30 (91 92)
+  Vertex 94: 1 1 1
+  Edge 31 (91 94)
+  Vertex 100: 1 0 2
+  Edge 32 (91 100)
+Vertex 92: 2 0 1
+  Vertex 90: 0 0 1
+  Edge 33 (92 90)
+  Vertex 95: 2 1 1
+  Edge 34 (92 95)
+  Vertex 101: 2 0 2
+  Edge 35 (92 101)
+Vertex 93: 0 1 1
+  Vertex 94: 1 1 1
+  Edge 36 (93 94)
+  Vertex 96: 0 2 1
+  Edge 37 (93 96)
+  Vertex 102: 0 1 2
+  Edge 38 (93 102)
+Vertex 94: 1 1 1
+  Vertex 95: 2 1 1
+  Edge 39 (94 95)
+  Vertex 97: 1 2 1
+  Edge 40 (94 97)
+  Vertex 103: 1 1 2
+  Edge 41 (94 103)
+Vertex 95: 2 1 1
+  Vertex 93: 0 1 1
+  Edge 42 (95 93)
+  Vertex 98: 2 2 1
+  Edge 43 (95 98)
+  Vertex 104: 2 1 2
+  Edge 44 (95 104)
+Vertex 96: 0 2 1
+  Vertex 97: 1 2 1
+  Edge 45 (96 97)
+  Vertex 90: 0 0 1
+  Edge 46 (96 90)
+  Vertex 105: 0 2 2
+  Edge 47 (96 105)
+Vertex 97: 1 2 1
+  Vertex 98: 2 2 1
+  Edge 48 (97 98)
+  Vertex 91: 1 0 1
+  Edge 49 (97 91)
+  Vertex 106: 1 2 2
+  Edge 50 (97 106)
+Vertex 98: 2 2 1
+  Vertex 96: 0 2 1
+  Edge 51 (98 96)
+  Vertex 92: 2 0 1
+  Edge 52 (98 92)
+  Vertex 107: 2 2 2
+  Edge 53 (98 107)
+Vertex 99: 0 0 2
+  Vertex 100: 1 0 2
+  Edge 54 (99 100)
+  Vertex 102: 0 1 2
+  Edge 55 (99 102)
+  Vertex 81: 0 0 0
+  Edge 56 (99 81)
+Vertex 100: 1 0 2
+  Vertex 101: 2 0 2
+  Edge 57 (100 101)
+  Vertex 103: 1 1 2
+  Edge 58 (100 103)
+  Vertex 82: 1 0 0
+  Edge 59 (100 82)
+Vertex 101: 2 0 2
+  Vertex 99: 0 0 2
+  Edge 60 (101 99)
+  Vertex 104: 2 1 2
+  Edge 61 (101 104)
+  Vertex 83: 2 0 0
+  Edge 62 (101 83)
+Vertex 102: 0 1 2
+  Vertex 103: 1 1 2
+  Edge 63 (102 103)
+  Vertex 105: 0 2 2
+  Edge 64 (102 105)
+  Vertex 84: 0 1 0
+  Edge 65 (102 84)
+Vertex 103: 1 1 2
+  Vertex 104: 2 1 2
+  Edge 66 (103 104)
+  Vertex 106: 1 2 2
+  Edge 67 (103 106)
+  Vertex 85: 1 1 0
+  Edge 68 (103 85)
+Vertex 104: 2 1 2
+  Vertex 102: 0 1 2
+  Edge 69 (104 102)
+  Vertex 107: 2 2 2
+  Edge 70 (104 107)
+  Vertex 86: 2 1 0
+  Edge 71 (104 86)
+Vertex 105: 0 2 2
+  Vertex 106: 1 2 2
+  Edge 72 (105 106)
+  Vertex 99: 0 0 2
+  Edge 73 (105 99)
+  Vertex 87: 0 2 0
+  Edge 74 (105 87)
+Vertex 106: 1 2 2
+  Vertex 107: 2 2 2
+  Edge 75 (106 107)
+  Vertex 100: 1 0 2
+  Edge 76 (106 100)
+  Vertex 88: 1 2 0
+  Edge 77 (106 88)
+Vertex 107: 2 2 2
+  Vertex 105: 0 2 2
+  Edge 78 (107 105)
+  Vertex 101: 2 0 2
+  Edge 79 (107 101)
+  Vertex 89: 2 2 0
+  Edge 80 (107 89)
+Vertex 0: 0 0 0 0. 0. 0.
+Vertex 1: 1 0 0 0.333333 0. 0.
+Vertex 2: 2 0 0 0.666667 0. 0.
+Vertex 3: 0 1 0 0. 0.333333 0.
+Vertex 4: 1 1 0 0.333333 0.333333 0.
+Vertex 5: 2 1 0 0.666667 0.333333 0.
+Vertex 6: 0 2 0 0. 0.666667 0.
+Vertex 7: 1 2 0 0.333333 0.666667 0.
+Vertex 8: 2 2 0 0.666667 0.666667 0.
+Vertex 9: 0 0 1 0. 0. 0.333333
+Vertex 10: 1 0 1 0.333333 0. 0.333333
+Vertex 11: 2 0 1 0.666667 0. 0.333333
+Vertex 12: 0 1 1 0. 0.333333 0.333333
+Vertex 13: 1 1 1 0.333333 0.333333 0.333333
+Vertex 14: 2 1 1 0.666667 0.333333 0.333333
+Vertex 15: 0 2 1 0. 0.666667 0.333333
+Vertex 16: 1 2 1 0.333333 0.666667 0.333333
+Vertex 17: 2 2 1 0.666667 0.666667 0.333333
+Vertex 18: 0 0 2 0. 0. 0.666667
+Vertex 19: 1 0 2 0.333333 0. 0.666667
+Vertex 20: 2 0 2 0.666667 0. 0.666667
+Vertex 21: 0 1 2 0. 0.333333 0.666667
+Vertex 22: 1 1 2 0.333333 0.333333 0.666667
+Vertex 23: 2 1 2 0.666667 0.333333 0.666667
+Vertex 24: 0 2 2 0. 0.666667 0.666667
+Vertex 25: 1 2 2 0.333333 0.666667 0.666667
+Vertex 26: 2 2 2 0.666667 0.666667 0.666667
+DM Object: Generated Mesh 1 MPI process
+  type: plex
+Generated Mesh in 3 dimensions:
+  Number of 0-cells per rank: 27
+  Number of 3-cells per rank: 81
+Labels:
+  marker: 0 strata with value/size ()
+  celltype: 2 strata with value/size (0 (27), 1 (81))
+  depth: 2 strata with value/size (0 (27), 1 (81))

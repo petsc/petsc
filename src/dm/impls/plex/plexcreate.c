@@ -1454,6 +1454,236 @@ PetscErrorCode DMPlexCreateWedgeBoxMesh(MPI_Comm comm, const PetscInt faces[], c
   PetscFunctionReturn(0);
 }
 
+/*
+  DMPlexTensorPointLexicographic_Private - Returns all tuples of size 'len' with nonnegative integers that are all less than or equal to 'max' for that dimension.
+                                           Ordering is lexicographic with lowest index as least significant in ordering.
+                                           e.g. for len == 2 and max == 2, this will return, in order, {0,0}, {1,0}, {2,0}, {0,1}, {1,1}, {2,1}, {0,2}, {1,2}, {2,2}.
+
+  Input Parameters:
++ len - The length of the tuple
+. max - The maximum for each dimension, so values are in [0, max)
+- tup - A tuple of length len+1: tup[len] > 0 indicates a stopping condition
+
+  Output Parameter:
+. tup - A tuple of len integers whose entries are at most 'max'
+
+  Level: developer
+
+.seealso: PetscDualSpaceTensorPointLexicographic_Internal(), PetscDualSpaceLatticePointLexicographic_Internal()
+*/
+static PetscErrorCode DMPlexTensorPointLexicographic_Private(PetscInt len, const PetscInt max[], PetscInt tup[])
+{
+  PetscInt i;
+
+  PetscFunctionBegin;
+  for (i = 0; i < len; ++i) {
+    if (tup[i] < max[i] - 1) {
+      break;
+    } else {
+      tup[i] = 0;
+    }
+  }
+  if (i == len) tup[i - 1] = max[i - 1];
+  else ++tup[i];
+  PetscFunctionReturn(0);
+}
+
+static PetscInt TupleToIndex_Private(PetscInt len, const PetscInt max[], const PetscInt tup[])
+{
+  PetscInt i, idx = tup[len - 1];
+
+  for (i = len - 2; i >= 0; --i) {
+    idx *= max[i];
+    idx += tup[i];
+  }
+  return idx;
+}
+
+static PetscErrorCode DestroyExtent_Private(void *extent)
+{
+  return PetscFree(extent);
+}
+
+static PetscErrorCode DMPlexCreateHypercubicMesh_Internal(DM dm, PetscInt dim, const PetscReal lower[], const PetscReal upper[], const PetscInt edges[], const DMBoundaryType bd[])
+{
+  Vec          coordinates;
+  PetscSection coordSection;
+  DMLabel      cutLabel    = NULL;
+  PetscBool    cutMarker   = PETSC_FALSE;
+  PetscBool    periodic    = PETSC_FALSE;
+  PetscInt     numCells    = 1, c;
+  PetscInt     numVertices = 1, v;
+  PetscScalar *coords;
+  PetscInt    *vertices, *vert, *vtmp, *supp, cone[2];
+  PetscInt     d, e, cell = 0, coordSize;
+  PetscMPIInt  rank;
+
+  PetscFunctionBegin;
+  PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)dm), &rank));
+  PetscCall(DMSetDimension(dm, dim));
+  PetscCall(PetscCalloc4(dim, &vertices, dim, &vert, dim, &vtmp, 2 * dim, &supp));
+  PetscCall(DMCreateLabel(dm, "marker"));
+  PetscCall(PetscOptionsGetBool(((PetscObject)dm)->options, ((PetscObject)dm)->prefix, "-dm_plex_periodic_cut", &cutMarker, NULL));
+  for (d = 0; d < dim; ++d) periodic = (periodic || bd[d] == DM_BOUNDARY_PERIODIC) ? PETSC_TRUE : PETSC_FALSE;
+  if (periodic && cutMarker) {
+    PetscCall(DMCreateLabel(dm, "periodic_cut"));
+    PetscCall(DMGetLabel(dm, "periodic_cut", &cutLabel));
+  }
+  for (d = 0; d < dim; ++d) PetscCheck(bd[d] == DM_BOUNDARY_PERIODIC, PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Hypercubic mesh must be periodic now");
+  for (d = 0; d < dim; ++d) {
+    vertices[d] = edges[d];
+    numVertices *= vertices[d];
+  }
+  numCells = numVertices * dim;
+  PetscCall(DMPlexSetChart(dm, 0, numCells + numVertices));
+  for (c = 0; c < numCells; ++c) PetscCall(DMPlexSetConeSize(dm, c, 2));
+  for (v = numCells; v < numCells + numVertices; ++v) PetscCall(DMPlexSetSupportSize(dm, v, 2 * dim));
+  /* TODO Loop over boundary and reset support sizes */
+  PetscCall(DMSetUp(dm)); /* Allocate space for cones and supports */
+  /* Build cell cones and vertex supports */
+  PetscCall(DMCreateLabel(dm, "celltype"));
+  while (vert[dim - 1] < vertices[dim - 1]) {
+    const PetscInt vertex = TupleToIndex_Private(dim, vertices, vert) + numCells;
+    PetscInt       s      = 0;
+
+    PetscPrintf(PETSC_COMM_SELF, "Vertex %" PetscInt_FMT ":", vertex);
+    for (d = 0; d < dim; ++d) PetscPrintf(PETSC_COMM_SELF, " %" PetscInt_FMT, vert[d]);
+    PetscPrintf(PETSC_COMM_SELF, "\n");
+    PetscCall(DMPlexSetCellType(dm, vertex, DM_POLYTOPE_POINT));
+    for (d = 0; d < dim; ++d) {
+      for (e = 0; e < dim; ++e) vtmp[e] = vert[e];
+      vtmp[d] = (vert[d] + 1) % vertices[d];
+      cone[0] = vertex;
+      cone[1] = TupleToIndex_Private(dim, vertices, vtmp) + numCells;
+      PetscPrintf(PETSC_COMM_SELF, "  Vertex %" PetscInt_FMT ":", cone[1]);
+      for (e = 0; e < dim; ++e) PetscPrintf(PETSC_COMM_SELF, " %" PetscInt_FMT, vtmp[e]);
+      PetscPrintf(PETSC_COMM_SELF, "\n");
+      PetscCall(DMPlexSetCone(dm, cell, cone));
+      PetscCall(DMPlexSetCellType(dm, cell, DM_POLYTOPE_SEGMENT));
+      PetscPrintf(PETSC_COMM_SELF, "  Edge %" PetscInt_FMT " (%" PetscInt_FMT " %" PetscInt_FMT ")\n", cell, cone[0], cone[1]);
+      ++cell;
+    }
+    for (d = 0; d < dim; ++d) {
+      for (e = 0; e < dim; ++e) vtmp[e] = vert[e];
+      vtmp[d]   = (vert[d] + vertices[d] - 1) % vertices[d];
+      supp[s++] = TupleToIndex_Private(dim, vertices, vtmp) * dim + d;
+      supp[s++] = (vertex - numCells) * dim + d;
+      PetscCall(DMPlexSetSupport(dm, vertex, supp));
+    }
+    PetscCall(DMPlexTensorPointLexicographic_Private(dim, vertices, vert));
+  }
+  PetscCall(DMPlexStratify(dm));
+  /* Build coordinates */
+  PetscCall(DMGetCoordinateSection(dm, &coordSection));
+  PetscCall(PetscSectionSetNumFields(coordSection, 1));
+  PetscCall(PetscSectionSetFieldComponents(coordSection, 0, dim));
+  PetscCall(PetscSectionSetChart(coordSection, numCells, numCells + numVertices));
+  for (v = numCells; v < numCells + numVertices; ++v) {
+    PetscCall(PetscSectionSetDof(coordSection, v, dim));
+    PetscCall(PetscSectionSetFieldDof(coordSection, v, 0, dim));
+  }
+  PetscCall(PetscSectionSetUp(coordSection));
+  PetscCall(PetscSectionGetStorageSize(coordSection, &coordSize));
+  PetscCall(VecCreate(PETSC_COMM_SELF, &coordinates));
+  PetscCall(PetscObjectSetName((PetscObject)coordinates, "coordinates"));
+  PetscCall(VecSetSizes(coordinates, coordSize, PETSC_DETERMINE));
+  PetscCall(VecSetBlockSize(coordinates, dim));
+  PetscCall(VecSetType(coordinates, VECSTANDARD));
+  PetscCall(VecGetArray(coordinates, &coords));
+  for (d = 0; d < dim; ++d) vert[d] = 0;
+  while (vert[dim - 1] < vertices[dim - 1]) {
+    const PetscInt vertex = TupleToIndex_Private(dim, vertices, vert);
+
+    for (d = 0; d < dim; ++d) coords[vertex * dim + d] = lower[d] + ((upper[d] - lower[d]) / vertices[d]) * vert[d];
+    PetscPrintf(PETSC_COMM_SELF, "Vertex %" PetscInt_FMT ":", vertex);
+    for (d = 0; d < dim; ++d) PetscPrintf(PETSC_COMM_SELF, " %" PetscInt_FMT, vert[d]);
+    for (d = 0; d < dim; ++d) PetscPrintf(PETSC_COMM_SELF, " %g", (double)PetscRealPart(coords[vertex * dim + d]));
+    PetscPrintf(PETSC_COMM_SELF, "\n");
+    PetscCall(DMPlexTensorPointLexicographic_Private(dim, vertices, vert));
+  }
+  PetscCall(VecRestoreArray(coordinates, &coords));
+  PetscCall(DMSetCoordinatesLocal(dm, coordinates));
+  PetscCall(VecDestroy(&coordinates));
+  PetscCall(PetscFree4(vertices, vert, vtmp, supp));
+  //PetscCall(DMSetPeriodicity(dm, NULL, lower, upper));
+  // Attach the extent
+  {
+    PetscContainer c;
+    PetscInt      *extent;
+
+    PetscCall(PetscMalloc1(dim, &extent));
+    for (PetscInt d = 0; d < dim; ++d) extent[d] = edges[d];
+    PetscCall(PetscContainerCreate(PETSC_COMM_SELF, &c));
+    PetscCall(PetscContainerSetUserDestroy(c, DestroyExtent_Private));
+    PetscCall(PetscContainerSetPointer(c, extent));
+    PetscCall(PetscObjectCompose((PetscObject)dm, "_extent", (PetscObject)c));
+    PetscCall(PetscContainerDestroy(&c));
+  }
+  PetscFunctionReturn(0);
+}
+
+/*@C
+  DMPlexCreateHypercubicMesh - Creates a peridoic mesh on the tensor product of unit intervals using only vertices and edges.
+
+  Collective
+
+  Input Parameters:
++ comm        - The communicator for the DM object
+. dim         - The spatial dimension
+. edges       - Number of edges per dimension, or NULL for (1,) in 1D and (2, 2) in 2D and (1, 1, 1) in 3D
+. lower       - The lower left corner, or NULL for (0, 0, 0)
+- upper       - The upper right corner, or NULL for (1, 1, 1)
+
+  Output Parameter:
+. dm  - The DM object
+
+  Note: If you want to customize this mesh using options, you just need to
+$  DMCreate(comm, &dm);
+$  DMSetType(dm, DMPLEX);
+$  DMSetFromOptions(dm);
+and use the options on the DMSetFromOptions() page.
+
+  The vertices are numbered is lexicographic order, and the dim edges exiting a vertex in the positive orthant are number consecutively,
+$ 18--0-19--2-20--4-18
+$  |     |     |     |
+$ 13    15    17    13
+$  |     |     |     |
+$ 24-12-25-14-26-16-24
+$  |     |     |     |
+$  7     9    11     7
+$  |     |     |     |
+$ 21--6-22--8-23-10-21
+$  |     |     |     |
+$  1     3     5     1
+$  |     |     |     |
+$ 18--0-19--2-20--4-18
+
+  Level: beginner
+
+.seealso: DMSetFromOptions(), DMPlexCreateFromFile(), DMPlexCreateHexCylinderMesh(), DMSetType(), DMCreate()
+@*/
+PetscErrorCode DMPlexCreateHypercubicMesh(MPI_Comm comm, PetscInt dim, const PetscInt edges[], const PetscReal lower[], const PetscReal upper[], DM *dm)
+{
+  PetscInt       *edg;
+  PetscReal      *low, *upp;
+  DMBoundaryType *bdt;
+  PetscInt        d;
+
+  PetscFunctionBegin;
+  PetscCall(DMCreate(comm, dm));
+  PetscCall(DMSetType(*dm, DMPLEX));
+  PetscCall(PetscMalloc4(dim, &edg, dim, &low, dim, &upp, dim, &bdt));
+  for (d = 0; d < dim; ++d) {
+    edg[d] = edges ? edges[d] : 1;
+    low[d] = lower ? lower[d] : 0.;
+    upp[d] = upper ? upper[d] : 1.;
+    bdt[d] = DM_BOUNDARY_PERIODIC;
+  }
+  PetscCall(DMPlexCreateHypercubicMesh_Internal(*dm, dim, low, upp, edg, bdt));
+  PetscCall(PetscFree4(edg, low, upp, bdt));
+  PetscFunctionReturn(0);
+}
+
 /*@C
   DMPlexSetOptionsPrefix - Sets the prefix used for searching for all `DM` options in the database.
 
@@ -3559,7 +3789,7 @@ static void boxToAnnulus(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscI
   f0[1] = r * PetscSinReal(th);
 }
 
-const char *const DMPlexShapes[] = {"box", "box_surface", "ball", "sphere", "cylinder", "schwarz_p", "gyroid", "doublet", "annulus", "unknown", "DMPlexShape", "DM_SHAPE_", NULL};
+const char *const DMPlexShapes[] = {"box", "box_surface", "ball", "sphere", "cylinder", "schwarz_p", "gyroid", "doublet", "annulus", "hypercubic", "unknown", "DMPlexShape", "DM_SHAPE_", NULL};
 
 static PetscErrorCode DMPlexCreateFromOptions_Internal(PetscOptionItems *PetscOptionsObject, PetscBool *useCoordSpace, DM dm)
 {
@@ -3583,7 +3813,7 @@ static PetscErrorCode DMPlexCreateFromOptions_Internal(PetscOptionItems *PetscOp
   PetscCall(PetscOptionsBool("-dm_plex_reference_cell_domain", "Use a reference cell domain", "", refDomain, &refDomain, NULL));
   PetscCall(PetscOptionsEnum("-dm_plex_shape", "Shape for built-in mesh", "", DMPlexShapes, (PetscEnum)shape, (PetscEnum *)&shape, &flg));
   PetscCall(PetscOptionsBoundedInt("-dm_plex_dim", "Topological dimension of the mesh", "DMGetDimension", dim, &dim, &flg, 0));
-  PetscCheck(!(dim < 0) && !(dim > 3), comm, PETSC_ERR_ARG_OUTOFRANGE, "Dimension %" PetscInt_FMT " should be in [1, 3]", dim);
+  PetscCheck(dim >= 0, comm, PETSC_ERR_ARG_OUTOFRANGE, "Dimension %" PetscInt_FMT " should be in [0, infinity)", dim);
   PetscCall(PetscOptionsBool("-dm_plex_simplex", "Mesh cell shape", "", simplex, &simplex, &flg));
   PetscCall(PetscOptionsBool("-dm_plex_interpolate", "Flag to create edges and faces automatically", "", interpolate, &interpolate, &flg));
   PetscCall(PetscOptionsBool("-dm_plex_adj_cone", "Set adjacency direction", "DMSetBasicAdjacency", adjCone, &adjCone, &flg));
@@ -3750,6 +3980,34 @@ static PetscErrorCode DMPlexCreateFromOptions_Internal(PetscOptionItems *PetscOp
       PetscCall(DMPlexCreateDoublet(PetscObjectComm((PetscObject)dm), dim, simplex, interpolate, rl, &dmnew));
       PetscCall(DMPlexCopy_Internal(dm, PETSC_FALSE, PETSC_FALSE, dmnew));
       PetscCall(DMPlexReplace_Internal(dm, &dmnew));
+    } break;
+    case DM_SHAPE_HYPERCUBIC: {
+      PetscInt       *edges;
+      PetscReal      *lower, *upper;
+      DMBoundaryType *bdt;
+      PetscInt        n, d;
+
+      *useCoordSpace = PETSC_FALSE;
+      PetscCall(PetscMalloc4(dim, &edges, dim, &lower, dim, &upper, dim, &bdt));
+      for (d = 0; d < dim; ++d) {
+        edges[d] = 1;
+        lower[d] = 0.;
+        upper[d] = 1.;
+        bdt[d]   = DM_BOUNDARY_PERIODIC;
+      }
+      n = dim;
+      PetscCall(PetscOptionsIntArray("-dm_plex_box_faces", "Number of faces along each dimension", "", edges, &n, &flg));
+      n = dim;
+      PetscCall(PetscOptionsRealArray("-dm_plex_box_lower", "Lower left corner of box", "", lower, &n, &flg));
+      PetscCheck(!flg || n == dim, comm, PETSC_ERR_ARG_SIZ, "Lower box point had %" PetscInt_FMT " values, should have been %" PetscInt_FMT, n, dim);
+      n = dim;
+      PetscCall(PetscOptionsRealArray("-dm_plex_box_upper", "Upper right corner of box", "", upper, &n, &flg));
+      PetscCheck(!flg || n == dim, comm, PETSC_ERR_ARG_SIZ, "Upper box point had %" PetscInt_FMT " values, should have been %" PetscInt_FMT, n, dim);
+      n = dim;
+      PetscCall(PetscOptionsEnumArray("-dm_plex_box_bd", "Boundary type for each dimension", "", DMBoundaryTypes, (PetscEnum *)bdt, &n, &flg));
+      PetscCheck(!flg || n == dim, comm, PETSC_ERR_ARG_SIZ, "Box boundary types had %" PetscInt_FMT " values, should have been %" PetscInt_FMT, n, dim);
+      PetscCall(DMPlexCreateHypercubicMesh_Internal(dm, dim, lower, upper, edges, bdt));
+      PetscCall(PetscFree4(edges, lower, upper, bdt));
     } break;
     default:
       SETERRQ(comm, PETSC_ERR_SUP, "Domain shape %s is unsupported", DMPlexShapes[shape]);

@@ -470,9 +470,9 @@ static inline void DMPlex_MultTranspose2D_Internal(const PetscScalar A[], PetscI
 static inline void DMPlex_MultTranspose3D_Internal(const PetscScalar A[], PetscInt ldx, const PetscScalar x[], PetscScalar y[])
 {
   const PetscScalar z[3] = {x[0 * ldx], x[1 * ldx], x[2 * ldx]};
-  y[0 * ldx]             = A[0] * z[0] + A[3] * z[1] + A[6] * z[2];
-  y[1 * ldx]             = A[1] * z[0] + A[4] * z[1] + A[7] * z[2];
-  y[2 * ldx]             = A[2] * z[0] + A[5] * z[1] + A[8] * z[2];
+  y[0 * ldx]             = PetscConj(A[0]) * z[0] + PetscConj(A[3]) * z[1] + PetscConj(A[6]) * z[2];
+  y[1 * ldx]             = PetscConj(A[1]) * z[0] + PetscConj(A[4]) * z[1] + PetscConj(A[7]) * z[2];
+  y[2 * ldx]             = PetscConj(A[2]) * z[0] + PetscConj(A[5]) * z[1] + PetscConj(A[8]) * z[2];
   (void)PetscLogFlops(15.0);
 }
 static inline void DMPlex_Mult2DReal_Internal(const PetscReal A[], PetscInt ldx, const PetscScalar x[], PetscScalar y[])
