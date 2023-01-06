@@ -5,6 +5,7 @@ class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
     self.minversion        = '7.5'
+    self.maxversion        = '11.8' # TODO: remove this line once we fix the code using cusparseDcsrsv2_solve() that is removed in cuda-12.0
     self.versionname       = 'CUDA_VERSION'
     self.versioninclude    = 'cuda.h'
     self.requiresversion   = 1
