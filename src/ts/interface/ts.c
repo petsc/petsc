@@ -3438,8 +3438,11 @@ PetscErrorCode TSStep(TS ts)
     else if (ts->ptime >= ts->max_time) ts->reason = TS_CONVERGED_TIME;
   }
 
-  PetscCheck(ts->reason >= 0 || !ts->errorifstepfailed || ts->reason != TS_DIVERGED_NONLINEAR_SOLVE, PetscObjectComm((PetscObject)ts), PETSC_ERR_NOT_CONVERGED, "TSStep has failed due to %s, increase -ts_max_snes_failures or make negative to attempt recovery", TSConvergedReasons[ts->reason]);
-  PetscCheck(ts->reason >= 0 || !ts->errorifstepfailed, PetscObjectComm((PetscObject)ts), PETSC_ERR_NOT_CONVERGED, "TSStep has failed due to %s", TSConvergedReasons[ts->reason]);
+  if (ts->reason < 0 && ts->errorifstepfailed) {
+    PetscCall(TSMonitorCancel(ts));
+    PetscCheck(ts->reason != TS_DIVERGED_NONLINEAR_SOLVE, PetscObjectComm((PetscObject)ts), PETSC_ERR_NOT_CONVERGED, "TSStep has failed due to %s, increase -ts_max_snes_failures or make negative to attempt recovery", TSConvergedReasons[ts->reason]);
+    SETERRQ(PetscObjectComm((PetscObject)ts), PETSC_ERR_NOT_CONVERGED, "TSStep has failed due to %s", TSConvergedReasons[ts->reason]);
+  }
   PetscFunctionReturn(0);
 }
 
