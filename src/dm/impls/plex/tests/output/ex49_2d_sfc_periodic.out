@@ -1,6 +1,6 @@
-DM Object: box 2 MPI processes
+DM Object: zbox 2 MPI processes
   type: plex
-box in 2 dimensions:
+zbox in 2 dimensions:
 Supports:
 [0] Max support size: 4
 [0]: 6 ----> 18

@@ -178,20 +178,20 @@ int main(int argc, char **argv)
 
   test:
     suffix: 1d_sfc
-    args: -dm_plex_simplex 0 -dm_plex_dim 1 -dm_plex_box_faces 3 -dm_plex_box_sfc 1 -dm_view -coord_ltog_view
+    args: -dm_plex_simplex 0 -dm_plex_dim 1 -dm_plex_shape zbox -dm_plex_box_faces 3 1 -dm_view -coord_ltog_view
 
   test:
     suffix: 2d_sfc
     nsize: 2
-    args: -dm_plex_simplex 0 -dm_plex_dim 2 -dm_plex_box_faces 4,3 -dm_plex_box_sfc -dm_distribute 0 -petscspace_degree 1 -dm_view
+    args: -dm_plex_simplex 0 -dm_plex_dim 2 -dm_plex_shape zbox -dm_plex_box_faces 4,3 -dm_distribute 0 -petscspace_degree 1 -dm_view
 
   test:
     suffix: 2d_sfc_periodic
     nsize: 2
-    args: -dm_plex_simplex 0 -dm_plex_dim 2 -dm_plex_box_faces 4,3 -dm_plex_box_sfc -dm_distribute 0 -petscspace_degree 1 -dm_plex_box_bd periodic,none -dm_view ::ascii_info_detail
+    args: -dm_plex_simplex 0 -dm_plex_dim 2 -dm_plex_shape zbox -dm_plex_box_faces 4,3 -dm_distribute 0 -petscspace_degree 1 -dm_plex_box_bd periodic,none -dm_view ::ascii_info_detail
 
   testset:
-    args: -dm_plex_simplex 0 -dm_plex_dim 2 -dm_plex_box_faces 3,2 -dm_plex_box_sfc -petscspace_degree 1 -dm_plex_box_bd none,periodic -dm_view ::ascii_info_detail -closure_tensor
+    args: -dm_plex_simplex 0 -dm_plex_dim 2 -dm_plex_shape zbox -dm_plex_box_faces 3,2 -petscspace_degree 1 -dm_plex_box_bd none,periodic -dm_view ::ascii_info_detail -closure_tensor
     nsize: 2
     test:
       suffix: 2d_sfc_periodic_stranded

@@ -1,6 +1,6 @@
-DM Object: box 2 MPI processes
+DM Object: zbox 2 MPI processes
   type: plex
-box in 2 dimensions:
+zbox in 2 dimensions:
   Number of 0-cells per rank: 12 12
   Number of 1-cells per rank: 17 17
   Number of 2-cells per rank: 6 6

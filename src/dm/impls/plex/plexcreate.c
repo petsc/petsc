@@ -1292,13 +1292,11 @@ static PetscErrorCode DMPlexCreateBoxMesh_Tensor_Internal(DM dm, PetscInt dim, c
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode DMPlexCreateBoxMesh_Internal(DM dm, PetscInt dim, PetscBool simplex, const PetscInt faces[], const PetscReal lower[], const PetscReal upper[], const DMBoundaryType periodicity[], PetscBool interpolate)
+static PetscErrorCode DMPlexCreateBoxMesh_Internal(DM dm, DMPlexShape shape, PetscInt dim, PetscBool simplex, const PetscInt faces[], const PetscReal lower[], const PetscReal upper[], const DMBoundaryType periodicity[], PetscBool interpolate)
 {
-  PetscBool box_sfc = PETSC_FALSE;
   PetscFunctionBegin;
   PetscCall(PetscLogEventBegin(DMPLEX_Generate, dm, 0, 0, 0));
-  PetscCall(PetscOptionsGetBool(((PetscObject)dm)->options, ((PetscObject)dm)->prefix, "-dm_plex_box_sfc", &box_sfc, NULL));
-  if (box_sfc) PetscCall(DMPlexCreateBoxMesh_Tensor_SFC_Internal(dm, dim, faces, lower, upper, periodicity, interpolate));
+  if (shape == DM_SHAPE_ZBOX) PetscCall(DMPlexCreateBoxMesh_Tensor_SFC_Internal(dm, dim, faces, lower, upper, periodicity, interpolate));
   else if (dim == 1) PetscCall(DMPlexCreateLineMesh_Internal(dm, faces[0], lower[0], upper[0], periodicity[0]));
   else if (simplex) PetscCall(DMPlexCreateBoxMesh_Simplex_Internal(dm, dim, faces, lower, upper, periodicity, interpolate));
   else PetscCall(DMPlexCreateBoxMesh_Tensor_Internal(dm, dim, faces, lower, upper, periodicity));
@@ -1387,7 +1385,7 @@ PetscErrorCode DMPlexCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscBool simple
   PetscFunctionBegin;
   PetscCall(DMCreate(comm, dm));
   PetscCall(DMSetType(*dm, DMPLEX));
-  PetscCall(DMPlexCreateBoxMesh_Internal(*dm, dim, simplex, faces ? faces : fac, lower ? lower : low, upper ? upper : upp, periodicity ? periodicity : bdt, interpolate));
+  PetscCall(DMPlexCreateBoxMesh_Internal(*dm, DM_SHAPE_BOX, dim, simplex, faces ? faces : fac, lower ? lower : low, upper ? upper : upp, periodicity ? periodicity : bdt, interpolate));
   if (periodicity) PetscCall(DMLocalizeCoordinates(*dm));
   PetscFunctionReturn(0);
 }
@@ -3812,7 +3810,7 @@ static void boxToAnnulus(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscI
   f0[1] = r * PetscSinReal(th);
 }
 
-const char *const DMPlexShapes[] = {"box", "box_surface", "ball", "sphere", "cylinder", "schwarz_p", "gyroid", "doublet", "annulus", "hypercubic", "unknown", "DMPlexShape", "DM_SHAPE_", NULL};
+const char *const DMPlexShapes[] = {"box", "box_surface", "ball", "sphere", "cylinder", "schwarz_p", "gyroid", "doublet", "annulus", "hypercubic", "zbox", "unknown", "DMPlexShape", "DM_SHAPE_", NULL};
 
 static PetscErrorCode DMPlexCreateFromOptions_Internal(PetscOptionItems *PetscOptionsObject, PetscBool *useCoordSpace, DM dm)
 {
@@ -3880,6 +3878,7 @@ static PetscErrorCode DMPlexCreateFromOptions_Internal(PetscOptionItems *PetscOp
     PetscCall(PetscObjectSetName((PetscObject)dm, DMPlexShapes[shape]));
     switch (shape) {
     case DM_SHAPE_BOX:
+    case DM_SHAPE_ZBOX:
     case DM_SHAPE_ANNULUS: {
       PetscInt       faces[3]  = {0, 0, 0};
       PetscReal      lower[3]  = {0, 0, 0};
@@ -3916,7 +3915,7 @@ static PetscErrorCode DMPlexCreateFromOptions_Internal(PetscOptionItems *PetscOp
         }
         break;
       default:
-        PetscCall(DMPlexCreateBoxMesh_Internal(dm, dim, simplex, faces, lower, upper, bdt, interpolate));
+        PetscCall(DMPlexCreateBoxMesh_Internal(dm, shape, dim, simplex, faces, lower, upper, bdt, interpolate));
         break;
       }
       if (isAnnular) {

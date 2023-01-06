@@ -844,7 +844,7 @@ PetscErrorCode DMSetUp(DM dm)
 + -dm_plex_filename <str>           - File containing a mesh
 . -dm_plex_boundary_filename <str>  - File containing a mesh boundary
 . -dm_plex_name <str>               - Name of the mesh in the file
-. -dm_plex_shape <shape>            - The domain shape, such as `DM_SHAPE_BOX`, `DM_SHAPE_SPHERE`, etc.
+. -dm_plex_shape <shape>            - The domain shape, such as `BOX`, `SPHERE`, etc.
 . -dm_plex_cell <ct>                - Cell shape
 . -dm_plex_reference_cell_domain <bool> - Use a reference cell domain
 . -dm_plex_dim <dim>                - Set the topological dimension

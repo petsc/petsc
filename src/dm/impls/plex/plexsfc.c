@@ -909,7 +909,7 @@ PetscErrorCode DMPlexCreateBoxMesh_Tensor_SFC_Internal(DM dm, PetscInt dim, cons
 
   Notes:
 
-  One can use `-dm_plex_box_sfc` to use this mode of periodicity, wherein the periodic points are distinct both globally
+  One can use `-dm_plex_shape zbox` to use this mode of periodicity, wherein the periodic points are distinct both globally
   and locally, but are paired when creating a global dof space.
 
 .seealso: [](chapter_unstructured), `DMPLEX`, `DMGetGlobalSection()`, `DMPlexGetIsoperiodicFaceSF()`
