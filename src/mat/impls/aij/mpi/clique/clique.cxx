@@ -11,7 +11,7 @@
   output:
 .   cliq - Clique context
 */
-PetscErrorCode MatConvertToSparseElemental(Mat A, MatReuse reuse, Mat_SparseElemental *cliq)
+PetscErrorCode MatConvertToSparseElemental(Mat, MatReuse, Mat_SparseElemental *)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
@@ -48,19 +48,19 @@ PetscErrorCode MatDestroy_SparseElemental(Mat A)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatSolve_SparseElemental(Mat A, Vec B, Vec X)
+PetscErrorCode MatSolve_SparseElemental(Mat, Vec, Vec)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatCholeskyFactorNumeric_SparseElemental(Mat F, Mat A, const MatFactorInfo *info)
+PetscErrorCode MatCholeskyFactorNumeric_SparseElemental(Mat, Mat, const MatFactorInfo *)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatCholeskyFactorSymbolic_SparseElemental(Mat F, Mat A, IS r, const MatFactorInfo *info)
+PetscErrorCode MatCholeskyFactorSymbolic_SparseElemental(Mat, Mat, IS, const MatFactorInfo *)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
@@ -87,14 +87,14 @@ PetscErrorCode MatCholeskyFactorSymbolic_SparseElemental(Mat F, Mat A, IS r, con
 .seealso: `PCFactorSetMatSolverType()`, `MatSolverType`
 M*/
 
-PetscErrorCode MatFactorGetSolverType_SparseElemental(Mat A, MatSolverType *type)
+PetscErrorCode MatFactorGetSolverType_SparseElemental(Mat, MatSolverType *type)
 {
   PetscFunctionBegin;
   *type = MATSOLVERSPARSEELEMENTAL;
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatGetFactor_aij_sparseelemental(Mat A, MatFactorType ftype, Mat *F)
+static PetscErrorCode MatGetFactor_aij_sparseelemental(Mat, MatFactorType, Mat *)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);

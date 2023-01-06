@@ -352,7 +352,7 @@ static PetscErrorCode MatGetRow_Htool(Mat A, PetscInt row, PetscInt *nz, PetscIn
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatRestoreRow_Htool(Mat A, PetscInt row, PetscInt *nz, PetscInt **idx, PetscScalar **v)
+static PetscErrorCode MatRestoreRow_Htool(Mat, PetscInt, PetscInt *nz, PetscInt **idx, PetscScalar **v)
 {
   PetscFunctionBegin;
   if (nz) *nz = 0;
@@ -385,7 +385,7 @@ static PetscErrorCode MatSetFromOptions_Htool(Mat A, PetscOptionItems *PetscOpti
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatAssemblyEnd_Htool(Mat A, MatAssemblyType type)
+static PetscErrorCode MatAssemblyEnd_Htool(Mat A, MatAssemblyType)
 {
   Mat_Htool                                                   *a = (Mat_Htool *)A->data;
   const PetscInt                                              *ranges;
@@ -704,7 +704,7 @@ PETSC_EXTERN PetscErrorCode MatHtoolUsePermutation(Mat A, PetscBool use)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatConvert_Htool_Dense(Mat A, MatType newtype, MatReuse reuse, Mat *B)
+static PetscErrorCode MatConvert_Htool_Dense(Mat A, MatType, MatReuse reuse, Mat *B)
 {
   Mat          C;
   Mat_Htool   *a = (Mat_Htool *)A->data;

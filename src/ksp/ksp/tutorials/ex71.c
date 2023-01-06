@@ -248,9 +248,9 @@ int main(int argc, char **args)
     PetscCall(DMDAGetInfo(da, 0, &M, &N, &P, 0, 0, 0, 0, 0, 0, 0, 0, 0));
     switch (user.dim) {
     case 3:
-      user.cells[2] = P - !user.per[2];
+      user.cells[2] = P - !user.per[2]; /* fall through */
     case 2:
-      user.cells[1] = N - !user.per[1];
+      user.cells[1] = N - !user.per[1]; /* fall through */
     case 1:
       user.cells[0] = M - !user.per[0];
       break;
