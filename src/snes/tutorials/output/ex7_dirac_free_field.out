@@ -1,0 +1,2534 @@
+Vertex 324: 0 0 0 0
+  Vertex 325: 1 0 0 0
+  Edge 0 (324 325)
+  Vertex 327: 0 1 0 0
+  Edge 1 (324 327)
+  Vertex 333: 0 0 1 0
+  Edge 2 (324 333)
+  Vertex 351: 0 0 0 1
+  Edge 3 (324 351)
+Vertex 325: 1 0 0 0
+  Vertex 326: 2 0 0 0
+  Edge 4 (325 326)
+  Vertex 328: 1 1 0 0
+  Edge 5 (325 328)
+  Vertex 334: 1 0 1 0
+  Edge 6 (325 334)
+  Vertex 352: 1 0 0 1
+  Edge 7 (325 352)
+Vertex 326: 2 0 0 0
+  Vertex 324: 0 0 0 0
+  Edge 8 (326 324)
+  Vertex 329: 2 1 0 0
+  Edge 9 (326 329)
+  Vertex 335: 2 0 1 0
+  Edge 10 (326 335)
+  Vertex 353: 2 0 0 1
+  Edge 11 (326 353)
+Vertex 327: 0 1 0 0
+  Vertex 328: 1 1 0 0
+  Edge 12 (327 328)
+  Vertex 330: 0 2 0 0
+  Edge 13 (327 330)
+  Vertex 336: 0 1 1 0
+  Edge 14 (327 336)
+  Vertex 354: 0 1 0 1
+  Edge 15 (327 354)
+Vertex 328: 1 1 0 0
+  Vertex 329: 2 1 0 0
+  Edge 16 (328 329)
+  Vertex 331: 1 2 0 0
+  Edge 17 (328 331)
+  Vertex 337: 1 1 1 0
+  Edge 18 (328 337)
+  Vertex 355: 1 1 0 1
+  Edge 19 (328 355)
+Vertex 329: 2 1 0 0
+  Vertex 327: 0 1 0 0
+  Edge 20 (329 327)
+  Vertex 332: 2 2 0 0
+  Edge 21 (329 332)
+  Vertex 338: 2 1 1 0
+  Edge 22 (329 338)
+  Vertex 356: 2 1 0 1
+  Edge 23 (329 356)
+Vertex 330: 0 2 0 0
+  Vertex 331: 1 2 0 0
+  Edge 24 (330 331)
+  Vertex 324: 0 0 0 0
+  Edge 25 (330 324)
+  Vertex 339: 0 2 1 0
+  Edge 26 (330 339)
+  Vertex 357: 0 2 0 1
+  Edge 27 (330 357)
+Vertex 331: 1 2 0 0
+  Vertex 332: 2 2 0 0
+  Edge 28 (331 332)
+  Vertex 325: 1 0 0 0
+  Edge 29 (331 325)
+  Vertex 340: 1 2 1 0
+  Edge 30 (331 340)
+  Vertex 358: 1 2 0 1
+  Edge 31 (331 358)
+Vertex 332: 2 2 0 0
+  Vertex 330: 0 2 0 0
+  Edge 32 (332 330)
+  Vertex 326: 2 0 0 0
+  Edge 33 (332 326)
+  Vertex 341: 2 2 1 0
+  Edge 34 (332 341)
+  Vertex 359: 2 2 0 1
+  Edge 35 (332 359)
+Vertex 333: 0 0 1 0
+  Vertex 334: 1 0 1 0
+  Edge 36 (333 334)
+  Vertex 336: 0 1 1 0
+  Edge 37 (333 336)
+  Vertex 342: 0 0 2 0
+  Edge 38 (333 342)
+  Vertex 360: 0 0 1 1
+  Edge 39 (333 360)
+Vertex 334: 1 0 1 0
+  Vertex 335: 2 0 1 0
+  Edge 40 (334 335)
+  Vertex 337: 1 1 1 0
+  Edge 41 (334 337)
+  Vertex 343: 1 0 2 0
+  Edge 42 (334 343)
+  Vertex 361: 1 0 1 1
+  Edge 43 (334 361)
+Vertex 335: 2 0 1 0
+  Vertex 333: 0 0 1 0
+  Edge 44 (335 333)
+  Vertex 338: 2 1 1 0
+  Edge 45 (335 338)
+  Vertex 344: 2 0 2 0
+  Edge 46 (335 344)
+  Vertex 362: 2 0 1 1
+  Edge 47 (335 362)
+Vertex 336: 0 1 1 0
+  Vertex 337: 1 1 1 0
+  Edge 48 (336 337)
+  Vertex 339: 0 2 1 0
+  Edge 49 (336 339)
+  Vertex 345: 0 1 2 0
+  Edge 50 (336 345)
+  Vertex 363: 0 1 1 1
+  Edge 51 (336 363)
+Vertex 337: 1 1 1 0
+  Vertex 338: 2 1 1 0
+  Edge 52 (337 338)
+  Vertex 340: 1 2 1 0
+  Edge 53 (337 340)
+  Vertex 346: 1 1 2 0
+  Edge 54 (337 346)
+  Vertex 364: 1 1 1 1
+  Edge 55 (337 364)
+Vertex 338: 2 1 1 0
+  Vertex 336: 0 1 1 0
+  Edge 56 (338 336)
+  Vertex 341: 2 2 1 0
+  Edge 57 (338 341)
+  Vertex 347: 2 1 2 0
+  Edge 58 (338 347)
+  Vertex 365: 2 1 1 1
+  Edge 59 (338 365)
+Vertex 339: 0 2 1 0
+  Vertex 340: 1 2 1 0
+  Edge 60 (339 340)
+  Vertex 333: 0 0 1 0
+  Edge 61 (339 333)
+  Vertex 348: 0 2 2 0
+  Edge 62 (339 348)
+  Vertex 366: 0 2 1 1
+  Edge 63 (339 366)
+Vertex 340: 1 2 1 0
+  Vertex 341: 2 2 1 0
+  Edge 64 (340 341)
+  Vertex 334: 1 0 1 0
+  Edge 65 (340 334)
+  Vertex 349: 1 2 2 0
+  Edge 66 (340 349)
+  Vertex 367: 1 2 1 1
+  Edge 67 (340 367)
+Vertex 341: 2 2 1 0
+  Vertex 339: 0 2 1 0
+  Edge 68 (341 339)
+  Vertex 335: 2 0 1 0
+  Edge 69 (341 335)
+  Vertex 350: 2 2 2 0
+  Edge 70 (341 350)
+  Vertex 368: 2 2 1 1
+  Edge 71 (341 368)
+Vertex 342: 0 0 2 0
+  Vertex 343: 1 0 2 0
+  Edge 72 (342 343)
+  Vertex 345: 0 1 2 0
+  Edge 73 (342 345)
+  Vertex 324: 0 0 0 0
+  Edge 74 (342 324)
+  Vertex 369: 0 0 2 1
+  Edge 75 (342 369)
+Vertex 343: 1 0 2 0
+  Vertex 344: 2 0 2 0
+  Edge 76 (343 344)
+  Vertex 346: 1 1 2 0
+  Edge 77 (343 346)
+  Vertex 325: 1 0 0 0
+  Edge 78 (343 325)
+  Vertex 370: 1 0 2 1
+  Edge 79 (343 370)
+Vertex 344: 2 0 2 0
+  Vertex 342: 0 0 2 0
+  Edge 80 (344 342)
+  Vertex 347: 2 1 2 0
+  Edge 81 (344 347)
+  Vertex 326: 2 0 0 0
+  Edge 82 (344 326)
+  Vertex 371: 2 0 2 1
+  Edge 83 (344 371)
+Vertex 345: 0 1 2 0
+  Vertex 346: 1 1 2 0
+  Edge 84 (345 346)
+  Vertex 348: 0 2 2 0
+  Edge 85 (345 348)
+  Vertex 327: 0 1 0 0
+  Edge 86 (345 327)
+  Vertex 372: 0 1 2 1
+  Edge 87 (345 372)
+Vertex 346: 1 1 2 0
+  Vertex 347: 2 1 2 0
+  Edge 88 (346 347)
+  Vertex 349: 1 2 2 0
+  Edge 89 (346 349)
+  Vertex 328: 1 1 0 0
+  Edge 90 (346 328)
+  Vertex 373: 1 1 2 1
+  Edge 91 (346 373)
+Vertex 347: 2 1 2 0
+  Vertex 345: 0 1 2 0
+  Edge 92 (347 345)
+  Vertex 350: 2 2 2 0
+  Edge 93 (347 350)
+  Vertex 329: 2 1 0 0
+  Edge 94 (347 329)
+  Vertex 374: 2 1 2 1
+  Edge 95 (347 374)
+Vertex 348: 0 2 2 0
+  Vertex 349: 1 2 2 0
+  Edge 96 (348 349)
+  Vertex 342: 0 0 2 0
+  Edge 97 (348 342)
+  Vertex 330: 0 2 0 0
+  Edge 98 (348 330)
+  Vertex 375: 0 2 2 1
+  Edge 99 (348 375)
+Vertex 349: 1 2 2 0
+  Vertex 350: 2 2 2 0
+  Edge 100 (349 350)
+  Vertex 343: 1 0 2 0
+  Edge 101 (349 343)
+  Vertex 331: 1 2 0 0
+  Edge 102 (349 331)
+  Vertex 376: 1 2 2 1
+  Edge 103 (349 376)
+Vertex 350: 2 2 2 0
+  Vertex 348: 0 2 2 0
+  Edge 104 (350 348)
+  Vertex 344: 2 0 2 0
+  Edge 105 (350 344)
+  Vertex 332: 2 2 0 0
+  Edge 106 (350 332)
+  Vertex 377: 2 2 2 1
+  Edge 107 (350 377)
+Vertex 351: 0 0 0 1
+  Vertex 352: 1 0 0 1
+  Edge 108 (351 352)
+  Vertex 354: 0 1 0 1
+  Edge 109 (351 354)
+  Vertex 360: 0 0 1 1
+  Edge 110 (351 360)
+  Vertex 378: 0 0 0 2
+  Edge 111 (351 378)
+Vertex 352: 1 0 0 1
+  Vertex 353: 2 0 0 1
+  Edge 112 (352 353)
+  Vertex 355: 1 1 0 1
+  Edge 113 (352 355)
+  Vertex 361: 1 0 1 1
+  Edge 114 (352 361)
+  Vertex 379: 1 0 0 2
+  Edge 115 (352 379)
+Vertex 353: 2 0 0 1
+  Vertex 351: 0 0 0 1
+  Edge 116 (353 351)
+  Vertex 356: 2 1 0 1
+  Edge 117 (353 356)
+  Vertex 362: 2 0 1 1
+  Edge 118 (353 362)
+  Vertex 380: 2 0 0 2
+  Edge 119 (353 380)
+Vertex 354: 0 1 0 1
+  Vertex 355: 1 1 0 1
+  Edge 120 (354 355)
+  Vertex 357: 0 2 0 1
+  Edge 121 (354 357)
+  Vertex 363: 0 1 1 1
+  Edge 122 (354 363)
+  Vertex 381: 0 1 0 2
+  Edge 123 (354 381)
+Vertex 355: 1 1 0 1
+  Vertex 356: 2 1 0 1
+  Edge 124 (355 356)
+  Vertex 358: 1 2 0 1
+  Edge 125 (355 358)
+  Vertex 364: 1 1 1 1
+  Edge 126 (355 364)
+  Vertex 382: 1 1 0 2
+  Edge 127 (355 382)
+Vertex 356: 2 1 0 1
+  Vertex 354: 0 1 0 1
+  Edge 128 (356 354)
+  Vertex 359: 2 2 0 1
+  Edge 129 (356 359)
+  Vertex 365: 2 1 1 1
+  Edge 130 (356 365)
+  Vertex 383: 2 1 0 2
+  Edge 131 (356 383)
+Vertex 357: 0 2 0 1
+  Vertex 358: 1 2 0 1
+  Edge 132 (357 358)
+  Vertex 351: 0 0 0 1
+  Edge 133 (357 351)
+  Vertex 366: 0 2 1 1
+  Edge 134 (357 366)
+  Vertex 384: 0 2 0 2
+  Edge 135 (357 384)
+Vertex 358: 1 2 0 1
+  Vertex 359: 2 2 0 1
+  Edge 136 (358 359)
+  Vertex 352: 1 0 0 1
+  Edge 137 (358 352)
+  Vertex 367: 1 2 1 1
+  Edge 138 (358 367)
+  Vertex 385: 1 2 0 2
+  Edge 139 (358 385)
+Vertex 359: 2 2 0 1
+  Vertex 357: 0 2 0 1
+  Edge 140 (359 357)
+  Vertex 353: 2 0 0 1
+  Edge 141 (359 353)
+  Vertex 368: 2 2 1 1
+  Edge 142 (359 368)
+  Vertex 386: 2 2 0 2
+  Edge 143 (359 386)
+Vertex 360: 0 0 1 1
+  Vertex 361: 1 0 1 1
+  Edge 144 (360 361)
+  Vertex 363: 0 1 1 1
+  Edge 145 (360 363)
+  Vertex 369: 0 0 2 1
+  Edge 146 (360 369)
+  Vertex 387: 0 0 1 2
+  Edge 147 (360 387)
+Vertex 361: 1 0 1 1
+  Vertex 362: 2 0 1 1
+  Edge 148 (361 362)
+  Vertex 364: 1 1 1 1
+  Edge 149 (361 364)
+  Vertex 370: 1 0 2 1
+  Edge 150 (361 370)
+  Vertex 388: 1 0 1 2
+  Edge 151 (361 388)
+Vertex 362: 2 0 1 1
+  Vertex 360: 0 0 1 1
+  Edge 152 (362 360)
+  Vertex 365: 2 1 1 1
+  Edge 153 (362 365)
+  Vertex 371: 2 0 2 1
+  Edge 154 (362 371)
+  Vertex 389: 2 0 1 2
+  Edge 155 (362 389)
+Vertex 363: 0 1 1 1
+  Vertex 364: 1 1 1 1
+  Edge 156 (363 364)
+  Vertex 366: 0 2 1 1
+  Edge 157 (363 366)
+  Vertex 372: 0 1 2 1
+  Edge 158 (363 372)
+  Vertex 390: 0 1 1 2
+  Edge 159 (363 390)
+Vertex 364: 1 1 1 1
+  Vertex 365: 2 1 1 1
+  Edge 160 (364 365)
+  Vertex 367: 1 2 1 1
+  Edge 161 (364 367)
+  Vertex 373: 1 1 2 1
+  Edge 162 (364 373)
+  Vertex 391: 1 1 1 2
+  Edge 163 (364 391)
+Vertex 365: 2 1 1 1
+  Vertex 363: 0 1 1 1
+  Edge 164 (365 363)
+  Vertex 368: 2 2 1 1
+  Edge 165 (365 368)
+  Vertex 374: 2 1 2 1
+  Edge 166 (365 374)
+  Vertex 392: 2 1 1 2
+  Edge 167 (365 392)
+Vertex 366: 0 2 1 1
+  Vertex 367: 1 2 1 1
+  Edge 168 (366 367)
+  Vertex 360: 0 0 1 1
+  Edge 169 (366 360)
+  Vertex 375: 0 2 2 1
+  Edge 170 (366 375)
+  Vertex 393: 0 2 1 2
+  Edge 171 (366 393)
+Vertex 367: 1 2 1 1
+  Vertex 368: 2 2 1 1
+  Edge 172 (367 368)
+  Vertex 361: 1 0 1 1
+  Edge 173 (367 361)
+  Vertex 376: 1 2 2 1
+  Edge 174 (367 376)
+  Vertex 394: 1 2 1 2
+  Edge 175 (367 394)
+Vertex 368: 2 2 1 1
+  Vertex 366: 0 2 1 1
+  Edge 176 (368 366)
+  Vertex 362: 2 0 1 1
+  Edge 177 (368 362)
+  Vertex 377: 2 2 2 1
+  Edge 178 (368 377)
+  Vertex 395: 2 2 1 2
+  Edge 179 (368 395)
+Vertex 369: 0 0 2 1
+  Vertex 370: 1 0 2 1
+  Edge 180 (369 370)
+  Vertex 372: 0 1 2 1
+  Edge 181 (369 372)
+  Vertex 351: 0 0 0 1
+  Edge 182 (369 351)
+  Vertex 396: 0 0 2 2
+  Edge 183 (369 396)
+Vertex 370: 1 0 2 1
+  Vertex 371: 2 0 2 1
+  Edge 184 (370 371)
+  Vertex 373: 1 1 2 1
+  Edge 185 (370 373)
+  Vertex 352: 1 0 0 1
+  Edge 186 (370 352)
+  Vertex 397: 1 0 2 2
+  Edge 187 (370 397)
+Vertex 371: 2 0 2 1
+  Vertex 369: 0 0 2 1
+  Edge 188 (371 369)
+  Vertex 374: 2 1 2 1
+  Edge 189 (371 374)
+  Vertex 353: 2 0 0 1
+  Edge 190 (371 353)
+  Vertex 398: 2 0 2 2
+  Edge 191 (371 398)
+Vertex 372: 0 1 2 1
+  Vertex 373: 1 1 2 1
+  Edge 192 (372 373)
+  Vertex 375: 0 2 2 1
+  Edge 193 (372 375)
+  Vertex 354: 0 1 0 1
+  Edge 194 (372 354)
+  Vertex 399: 0 1 2 2
+  Edge 195 (372 399)
+Vertex 373: 1 1 2 1
+  Vertex 374: 2 1 2 1
+  Edge 196 (373 374)
+  Vertex 376: 1 2 2 1
+  Edge 197 (373 376)
+  Vertex 355: 1 1 0 1
+  Edge 198 (373 355)
+  Vertex 400: 1 1 2 2
+  Edge 199 (373 400)
+Vertex 374: 2 1 2 1
+  Vertex 372: 0 1 2 1
+  Edge 200 (374 372)
+  Vertex 377: 2 2 2 1
+  Edge 201 (374 377)
+  Vertex 356: 2 1 0 1
+  Edge 202 (374 356)
+  Vertex 401: 2 1 2 2
+  Edge 203 (374 401)
+Vertex 375: 0 2 2 1
+  Vertex 376: 1 2 2 1
+  Edge 204 (375 376)
+  Vertex 369: 0 0 2 1
+  Edge 205 (375 369)
+  Vertex 357: 0 2 0 1
+  Edge 206 (375 357)
+  Vertex 402: 0 2 2 2
+  Edge 207 (375 402)
+Vertex 376: 1 2 2 1
+  Vertex 377: 2 2 2 1
+  Edge 208 (376 377)
+  Vertex 370: 1 0 2 1
+  Edge 209 (376 370)
+  Vertex 358: 1 2 0 1
+  Edge 210 (376 358)
+  Vertex 403: 1 2 2 2
+  Edge 211 (376 403)
+Vertex 377: 2 2 2 1
+  Vertex 375: 0 2 2 1
+  Edge 212 (377 375)
+  Vertex 371: 2 0 2 1
+  Edge 213 (377 371)
+  Vertex 359: 2 2 0 1
+  Edge 214 (377 359)
+  Vertex 404: 2 2 2 2
+  Edge 215 (377 404)
+Vertex 378: 0 0 0 2
+  Vertex 379: 1 0 0 2
+  Edge 216 (378 379)
+  Vertex 381: 0 1 0 2
+  Edge 217 (378 381)
+  Vertex 387: 0 0 1 2
+  Edge 218 (378 387)
+  Vertex 324: 0 0 0 0
+  Edge 219 (378 324)
+Vertex 379: 1 0 0 2
+  Vertex 380: 2 0 0 2
+  Edge 220 (379 380)
+  Vertex 382: 1 1 0 2
+  Edge 221 (379 382)
+  Vertex 388: 1 0 1 2
+  Edge 222 (379 388)
+  Vertex 325: 1 0 0 0
+  Edge 223 (379 325)
+Vertex 380: 2 0 0 2
+  Vertex 378: 0 0 0 2
+  Edge 224 (380 378)
+  Vertex 383: 2 1 0 2
+  Edge 225 (380 383)
+  Vertex 389: 2 0 1 2
+  Edge 226 (380 389)
+  Vertex 326: 2 0 0 0
+  Edge 227 (380 326)
+Vertex 381: 0 1 0 2
+  Vertex 382: 1 1 0 2
+  Edge 228 (381 382)
+  Vertex 384: 0 2 0 2
+  Edge 229 (381 384)
+  Vertex 390: 0 1 1 2
+  Edge 230 (381 390)
+  Vertex 327: 0 1 0 0
+  Edge 231 (381 327)
+Vertex 382: 1 1 0 2
+  Vertex 383: 2 1 0 2
+  Edge 232 (382 383)
+  Vertex 385: 1 2 0 2
+  Edge 233 (382 385)
+  Vertex 391: 1 1 1 2
+  Edge 234 (382 391)
+  Vertex 328: 1 1 0 0
+  Edge 235 (382 328)
+Vertex 383: 2 1 0 2
+  Vertex 381: 0 1 0 2
+  Edge 236 (383 381)
+  Vertex 386: 2 2 0 2
+  Edge 237 (383 386)
+  Vertex 392: 2 1 1 2
+  Edge 238 (383 392)
+  Vertex 329: 2 1 0 0
+  Edge 239 (383 329)
+Vertex 384: 0 2 0 2
+  Vertex 385: 1 2 0 2
+  Edge 240 (384 385)
+  Vertex 378: 0 0 0 2
+  Edge 241 (384 378)
+  Vertex 393: 0 2 1 2
+  Edge 242 (384 393)
+  Vertex 330: 0 2 0 0
+  Edge 243 (384 330)
+Vertex 385: 1 2 0 2
+  Vertex 386: 2 2 0 2
+  Edge 244 (385 386)
+  Vertex 379: 1 0 0 2
+  Edge 245 (385 379)
+  Vertex 394: 1 2 1 2
+  Edge 246 (385 394)
+  Vertex 331: 1 2 0 0
+  Edge 247 (385 331)
+Vertex 386: 2 2 0 2
+  Vertex 384: 0 2 0 2
+  Edge 248 (386 384)
+  Vertex 380: 2 0 0 2
+  Edge 249 (386 380)
+  Vertex 395: 2 2 1 2
+  Edge 250 (386 395)
+  Vertex 332: 2 2 0 0
+  Edge 251 (386 332)
+Vertex 387: 0 0 1 2
+  Vertex 388: 1 0 1 2
+  Edge 252 (387 388)
+  Vertex 390: 0 1 1 2
+  Edge 253 (387 390)
+  Vertex 396: 0 0 2 2
+  Edge 254 (387 396)
+  Vertex 333: 0 0 1 0
+  Edge 255 (387 333)
+Vertex 388: 1 0 1 2
+  Vertex 389: 2 0 1 2
+  Edge 256 (388 389)
+  Vertex 391: 1 1 1 2
+  Edge 257 (388 391)
+  Vertex 397: 1 0 2 2
+  Edge 258 (388 397)
+  Vertex 334: 1 0 1 0
+  Edge 259 (388 334)
+Vertex 389: 2 0 1 2
+  Vertex 387: 0 0 1 2
+  Edge 260 (389 387)
+  Vertex 392: 2 1 1 2
+  Edge 261 (389 392)
+  Vertex 398: 2 0 2 2
+  Edge 262 (389 398)
+  Vertex 335: 2 0 1 0
+  Edge 263 (389 335)
+Vertex 390: 0 1 1 2
+  Vertex 391: 1 1 1 2
+  Edge 264 (390 391)
+  Vertex 393: 0 2 1 2
+  Edge 265 (390 393)
+  Vertex 399: 0 1 2 2
+  Edge 266 (390 399)
+  Vertex 336: 0 1 1 0
+  Edge 267 (390 336)
+Vertex 391: 1 1 1 2
+  Vertex 392: 2 1 1 2
+  Edge 268 (391 392)
+  Vertex 394: 1 2 1 2
+  Edge 269 (391 394)
+  Vertex 400: 1 1 2 2
+  Edge 270 (391 400)
+  Vertex 337: 1 1 1 0
+  Edge 271 (391 337)
+Vertex 392: 2 1 1 2
+  Vertex 390: 0 1 1 2
+  Edge 272 (392 390)
+  Vertex 395: 2 2 1 2
+  Edge 273 (392 395)
+  Vertex 401: 2 1 2 2
+  Edge 274 (392 401)
+  Vertex 338: 2 1 1 0
+  Edge 275 (392 338)
+Vertex 393: 0 2 1 2
+  Vertex 394: 1 2 1 2
+  Edge 276 (393 394)
+  Vertex 387: 0 0 1 2
+  Edge 277 (393 387)
+  Vertex 402: 0 2 2 2
+  Edge 278 (393 402)
+  Vertex 339: 0 2 1 0
+  Edge 279 (393 339)
+Vertex 394: 1 2 1 2
+  Vertex 395: 2 2 1 2
+  Edge 280 (394 395)
+  Vertex 388: 1 0 1 2
+  Edge 281 (394 388)
+  Vertex 403: 1 2 2 2
+  Edge 282 (394 403)
+  Vertex 340: 1 2 1 0
+  Edge 283 (394 340)
+Vertex 395: 2 2 1 2
+  Vertex 393: 0 2 1 2
+  Edge 284 (395 393)
+  Vertex 389: 2 0 1 2
+  Edge 285 (395 389)
+  Vertex 404: 2 2 2 2
+  Edge 286 (395 404)
+  Vertex 341: 2 2 1 0
+  Edge 287 (395 341)
+Vertex 396: 0 0 2 2
+  Vertex 397: 1 0 2 2
+  Edge 288 (396 397)
+  Vertex 399: 0 1 2 2
+  Edge 289 (396 399)
+  Vertex 378: 0 0 0 2
+  Edge 290 (396 378)
+  Vertex 342: 0 0 2 0
+  Edge 291 (396 342)
+Vertex 397: 1 0 2 2
+  Vertex 398: 2 0 2 2
+  Edge 292 (397 398)
+  Vertex 400: 1 1 2 2
+  Edge 293 (397 400)
+  Vertex 379: 1 0 0 2
+  Edge 294 (397 379)
+  Vertex 343: 1 0 2 0
+  Edge 295 (397 343)
+Vertex 398: 2 0 2 2
+  Vertex 396: 0 0 2 2
+  Edge 296 (398 396)
+  Vertex 401: 2 1 2 2
+  Edge 297 (398 401)
+  Vertex 380: 2 0 0 2
+  Edge 298 (398 380)
+  Vertex 344: 2 0 2 0
+  Edge 299 (398 344)
+Vertex 399: 0 1 2 2
+  Vertex 400: 1 1 2 2
+  Edge 300 (399 400)
+  Vertex 402: 0 2 2 2
+  Edge 301 (399 402)
+  Vertex 381: 0 1 0 2
+  Edge 302 (399 381)
+  Vertex 345: 0 1 2 0
+  Edge 303 (399 345)
+Vertex 400: 1 1 2 2
+  Vertex 401: 2 1 2 2
+  Edge 304 (400 401)
+  Vertex 403: 1 2 2 2
+  Edge 305 (400 403)
+  Vertex 382: 1 1 0 2
+  Edge 306 (400 382)
+  Vertex 346: 1 1 2 0
+  Edge 307 (400 346)
+Vertex 401: 2 1 2 2
+  Vertex 399: 0 1 2 2
+  Edge 308 (401 399)
+  Vertex 404: 2 2 2 2
+  Edge 309 (401 404)
+  Vertex 383: 2 1 0 2
+  Edge 310 (401 383)
+  Vertex 347: 2 1 2 0
+  Edge 311 (401 347)
+Vertex 402: 0 2 2 2
+  Vertex 403: 1 2 2 2
+  Edge 312 (402 403)
+  Vertex 396: 0 0 2 2
+  Edge 313 (402 396)
+  Vertex 384: 0 2 0 2
+  Edge 314 (402 384)
+  Vertex 348: 0 2 2 0
+  Edge 315 (402 348)
+Vertex 403: 1 2 2 2
+  Vertex 404: 2 2 2 2
+  Edge 316 (403 404)
+  Vertex 397: 1 0 2 2
+  Edge 317 (403 397)
+  Vertex 385: 1 2 0 2
+  Edge 318 (403 385)
+  Vertex 349: 1 2 2 0
+  Edge 319 (403 349)
+Vertex 404: 2 2 2 2
+  Vertex 402: 0 2 2 2
+  Edge 320 (404 402)
+  Vertex 398: 2 0 2 2
+  Edge 321 (404 398)
+  Vertex 386: 2 2 0 2
+  Edge 322 (404 386)
+  Vertex 350: 2 2 2 0
+  Edge 323 (404 350)
+Vertex 0: 0 0 0 0 0. 0. 0. 0.
+Vertex 1: 1 0 0 0 0.333333 0. 0. 0.
+Vertex 2: 2 0 0 0 0.666667 0. 0. 0.
+Vertex 3: 0 1 0 0 0. 0.333333 0. 0.
+Vertex 4: 1 1 0 0 0.333333 0.333333 0. 0.
+Vertex 5: 2 1 0 0 0.666667 0.333333 0. 0.
+Vertex 6: 0 2 0 0 0. 0.666667 0. 0.
+Vertex 7: 1 2 0 0 0.333333 0.666667 0. 0.
+Vertex 8: 2 2 0 0 0.666667 0.666667 0. 0.
+Vertex 9: 0 0 1 0 0. 0. 0.333333 0.
+Vertex 10: 1 0 1 0 0.333333 0. 0.333333 0.
+Vertex 11: 2 0 1 0 0.666667 0. 0.333333 0.
+Vertex 12: 0 1 1 0 0. 0.333333 0.333333 0.
+Vertex 13: 1 1 1 0 0.333333 0.333333 0.333333 0.
+Vertex 14: 2 1 1 0 0.666667 0.333333 0.333333 0.
+Vertex 15: 0 2 1 0 0. 0.666667 0.333333 0.
+Vertex 16: 1 2 1 0 0.333333 0.666667 0.333333 0.
+Vertex 17: 2 2 1 0 0.666667 0.666667 0.333333 0.
+Vertex 18: 0 0 2 0 0. 0. 0.666667 0.
+Vertex 19: 1 0 2 0 0.333333 0. 0.666667 0.
+Vertex 20: 2 0 2 0 0.666667 0. 0.666667 0.
+Vertex 21: 0 1 2 0 0. 0.333333 0.666667 0.
+Vertex 22: 1 1 2 0 0.333333 0.333333 0.666667 0.
+Vertex 23: 2 1 2 0 0.666667 0.333333 0.666667 0.
+Vertex 24: 0 2 2 0 0. 0.666667 0.666667 0.
+Vertex 25: 1 2 2 0 0.333333 0.666667 0.666667 0.
+Vertex 26: 2 2 2 0 0.666667 0.666667 0.666667 0.
+Vertex 27: 0 0 0 1 0. 0. 0. 0.333333
+Vertex 28: 1 0 0 1 0.333333 0. 0. 0.333333
+Vertex 29: 2 0 0 1 0.666667 0. 0. 0.333333
+Vertex 30: 0 1 0 1 0. 0.333333 0. 0.333333
+Vertex 31: 1 1 0 1 0.333333 0.333333 0. 0.333333
+Vertex 32: 2 1 0 1 0.666667 0.333333 0. 0.333333
+Vertex 33: 0 2 0 1 0. 0.666667 0. 0.333333
+Vertex 34: 1 2 0 1 0.333333 0.666667 0. 0.333333
+Vertex 35: 2 2 0 1 0.666667 0.666667 0. 0.333333
+Vertex 36: 0 0 1 1 0. 0. 0.333333 0.333333
+Vertex 37: 1 0 1 1 0.333333 0. 0.333333 0.333333
+Vertex 38: 2 0 1 1 0.666667 0. 0.333333 0.333333
+Vertex 39: 0 1 1 1 0. 0.333333 0.333333 0.333333
+Vertex 40: 1 1 1 1 0.333333 0.333333 0.333333 0.333333
+Vertex 41: 2 1 1 1 0.666667 0.333333 0.333333 0.333333
+Vertex 42: 0 2 1 1 0. 0.666667 0.333333 0.333333
+Vertex 43: 1 2 1 1 0.333333 0.666667 0.333333 0.333333
+Vertex 44: 2 2 1 1 0.666667 0.666667 0.333333 0.333333
+Vertex 45: 0 0 2 1 0. 0. 0.666667 0.333333
+Vertex 46: 1 0 2 1 0.333333 0. 0.666667 0.333333
+Vertex 47: 2 0 2 1 0.666667 0. 0.666667 0.333333
+Vertex 48: 0 1 2 1 0. 0.333333 0.666667 0.333333
+Vertex 49: 1 1 2 1 0.333333 0.333333 0.666667 0.333333
+Vertex 50: 2 1 2 1 0.666667 0.333333 0.666667 0.333333
+Vertex 51: 0 2 2 1 0. 0.666667 0.666667 0.333333
+Vertex 52: 1 2 2 1 0.333333 0.666667 0.666667 0.333333
+Vertex 53: 2 2 2 1 0.666667 0.666667 0.666667 0.333333
+Vertex 54: 0 0 0 2 0. 0. 0. 0.666667
+Vertex 55: 1 0 0 2 0.333333 0. 0. 0.666667
+Vertex 56: 2 0 0 2 0.666667 0. 0. 0.666667
+Vertex 57: 0 1 0 2 0. 0.333333 0. 0.666667
+Vertex 58: 1 1 0 2 0.333333 0.333333 0. 0.666667
+Vertex 59: 2 1 0 2 0.666667 0.333333 0. 0.666667
+Vertex 60: 0 2 0 2 0. 0.666667 0. 0.666667
+Vertex 61: 1 2 0 2 0.333333 0.666667 0. 0.666667
+Vertex 62: 2 2 0 2 0.666667 0.666667 0. 0.666667
+Vertex 63: 0 0 1 2 0. 0. 0.333333 0.666667
+Vertex 64: 1 0 1 2 0.333333 0. 0.333333 0.666667
+Vertex 65: 2 0 1 2 0.666667 0. 0.333333 0.666667
+Vertex 66: 0 1 1 2 0. 0.333333 0.333333 0.666667
+Vertex 67: 1 1 1 2 0.333333 0.333333 0.333333 0.666667
+Vertex 68: 2 1 1 2 0.666667 0.333333 0.333333 0.666667
+Vertex 69: 0 2 1 2 0. 0.666667 0.333333 0.666667
+Vertex 70: 1 2 1 2 0.333333 0.666667 0.333333 0.666667
+Vertex 71: 2 2 1 2 0.666667 0.666667 0.333333 0.666667
+Vertex 72: 0 0 2 2 0. 0. 0.666667 0.666667
+Vertex 73: 1 0 2 2 0.333333 0. 0.666667 0.666667
+Vertex 74: 2 0 2 2 0.666667 0. 0.666667 0.666667
+Vertex 75: 0 1 2 2 0. 0.333333 0.666667 0.666667
+Vertex 76: 1 1 2 2 0.333333 0.333333 0.666667 0.666667
+Vertex 77: 2 1 2 2 0.666667 0.333333 0.666667 0.666667
+Vertex 78: 0 2 2 2 0. 0.666667 0.666667 0.666667
+Vertex 79: 1 2 2 2 0.333333 0.666667 0.666667 0.666667
+Vertex 80: 2 2 2 2 0.666667 0.666667 0.666667 0.666667
+DM Object: hypercubic 1 MPI process
+  type: plex
+hypercubic in 4 dimensions:
+  Number of 0-cells per rank: 81
+  Number of 4-cells per rank: 324
+Labels:
+  marker: 0 strata with value/size ()
+  celltype: 2 strata with value/size (0 (81), 1 (324))
+  depth: 2 strata with value/size (0 (81), 1 (324))
+Vertex 324: 0 0 0 0
+  Edge 8: Vertex 326: 2 0 0 0 -- Vertex 324: 0 0 0 0
+  Edge 0: Vertex 324: 0 0 0 0 -- Vertex 325: 1 0 0 0
+  Edge 25: Vertex 330: 0 2 0 0 -- Vertex 324: 0 0 0 0
+  Edge 1: Vertex 324: 0 0 0 0 -- Vertex 327: 0 1 0 0
+  Edge 74: Vertex 342: 0 0 2 0 -- Vertex 324: 0 0 0 0
+  Edge 2: Vertex 324: 0 0 0 0 -- Vertex 333: 0 0 1 0
+  Edge 219: Vertex 378: 0 0 0 2 -- Vertex 324: 0 0 0 0
+  Edge 3: Vertex 324: 0 0 0 0 -- Vertex 351: 0 0 0 1
+Vertex 325: 1 0 0 0
+  Edge 0: Vertex 324: 0 0 0 0 -- Vertex 325: 1 0 0 0
+  Edge 4: Vertex 325: 1 0 0 0 -- Vertex 326: 2 0 0 0
+  Edge 29: Vertex 331: 1 2 0 0 -- Vertex 325: 1 0 0 0
+  Edge 5: Vertex 325: 1 0 0 0 -- Vertex 328: 1 1 0 0
+  Edge 78: Vertex 343: 1 0 2 0 -- Vertex 325: 1 0 0 0
+  Edge 6: Vertex 325: 1 0 0 0 -- Vertex 334: 1 0 1 0
+  Edge 223: Vertex 379: 1 0 0 2 -- Vertex 325: 1 0 0 0
+  Edge 7: Vertex 325: 1 0 0 0 -- Vertex 352: 1 0 0 1
+Vertex 326: 2 0 0 0
+  Edge 4: Vertex 325: 1 0 0 0 -- Vertex 326: 2 0 0 0
+  Edge 8: Vertex 326: 2 0 0 0 -- Vertex 324: 0 0 0 0
+  Edge 33: Vertex 332: 2 2 0 0 -- Vertex 326: 2 0 0 0
+  Edge 9: Vertex 326: 2 0 0 0 -- Vertex 329: 2 1 0 0
+  Edge 82: Vertex 344: 2 0 2 0 -- Vertex 326: 2 0 0 0
+  Edge 10: Vertex 326: 2 0 0 0 -- Vertex 335: 2 0 1 0
+  Edge 227: Vertex 380: 2 0 0 2 -- Vertex 326: 2 0 0 0
+  Edge 11: Vertex 326: 2 0 0 0 -- Vertex 353: 2 0 0 1
+Vertex 327: 0 1 0 0
+  Edge 20: Vertex 329: 2 1 0 0 -- Vertex 327: 0 1 0 0
+  Edge 12: Vertex 327: 0 1 0 0 -- Vertex 328: 1 1 0 0
+  Edge 1: Vertex 324: 0 0 0 0 -- Vertex 327: 0 1 0 0
+  Edge 13: Vertex 327: 0 1 0 0 -- Vertex 330: 0 2 0 0
+  Edge 86: Vertex 345: 0 1 2 0 -- Vertex 327: 0 1 0 0
+  Edge 14: Vertex 327: 0 1 0 0 -- Vertex 336: 0 1 1 0
+  Edge 231: Vertex 381: 0 1 0 2 -- Vertex 327: 0 1 0 0
+  Edge 15: Vertex 327: 0 1 0 0 -- Vertex 354: 0 1 0 1
+Vertex 328: 1 1 0 0
+  Edge 12: Vertex 327: 0 1 0 0 -- Vertex 328: 1 1 0 0
+  Edge 16: Vertex 328: 1 1 0 0 -- Vertex 329: 2 1 0 0
+  Edge 5: Vertex 325: 1 0 0 0 -- Vertex 328: 1 1 0 0
+  Edge 17: Vertex 328: 1 1 0 0 -- Vertex 331: 1 2 0 0
+  Edge 90: Vertex 346: 1 1 2 0 -- Vertex 328: 1 1 0 0
+  Edge 18: Vertex 328: 1 1 0 0 -- Vertex 337: 1 1 1 0
+  Edge 235: Vertex 382: 1 1 0 2 -- Vertex 328: 1 1 0 0
+  Edge 19: Vertex 328: 1 1 0 0 -- Vertex 355: 1 1 0 1
+Vertex 329: 2 1 0 0
+  Edge 16: Vertex 328: 1 1 0 0 -- Vertex 329: 2 1 0 0
+  Edge 20: Vertex 329: 2 1 0 0 -- Vertex 327: 0 1 0 0
+  Edge 9: Vertex 326: 2 0 0 0 -- Vertex 329: 2 1 0 0
+  Edge 21: Vertex 329: 2 1 0 0 -- Vertex 332: 2 2 0 0
+  Edge 94: Vertex 347: 2 1 2 0 -- Vertex 329: 2 1 0 0
+  Edge 22: Vertex 329: 2 1 0 0 -- Vertex 338: 2 1 1 0
+  Edge 239: Vertex 383: 2 1 0 2 -- Vertex 329: 2 1 0 0
+  Edge 23: Vertex 329: 2 1 0 0 -- Vertex 356: 2 1 0 1
+Vertex 330: 0 2 0 0
+  Edge 32: Vertex 332: 2 2 0 0 -- Vertex 330: 0 2 0 0
+  Edge 24: Vertex 330: 0 2 0 0 -- Vertex 331: 1 2 0 0
+  Edge 13: Vertex 327: 0 1 0 0 -- Vertex 330: 0 2 0 0
+  Edge 25: Vertex 330: 0 2 0 0 -- Vertex 324: 0 0 0 0
+  Edge 98: Vertex 348: 0 2 2 0 -- Vertex 330: 0 2 0 0
+  Edge 26: Vertex 330: 0 2 0 0 -- Vertex 339: 0 2 1 0
+  Edge 243: Vertex 384: 0 2 0 2 -- Vertex 330: 0 2 0 0
+  Edge 27: Vertex 330: 0 2 0 0 -- Vertex 357: 0 2 0 1
+Vertex 331: 1 2 0 0
+  Edge 24: Vertex 330: 0 2 0 0 -- Vertex 331: 1 2 0 0
+  Edge 28: Vertex 331: 1 2 0 0 -- Vertex 332: 2 2 0 0
+  Edge 17: Vertex 328: 1 1 0 0 -- Vertex 331: 1 2 0 0
+  Edge 29: Vertex 331: 1 2 0 0 -- Vertex 325: 1 0 0 0
+  Edge 102: Vertex 349: 1 2 2 0 -- Vertex 331: 1 2 0 0
+  Edge 30: Vertex 331: 1 2 0 0 -- Vertex 340: 1 2 1 0
+  Edge 247: Vertex 385: 1 2 0 2 -- Vertex 331: 1 2 0 0
+  Edge 31: Vertex 331: 1 2 0 0 -- Vertex 358: 1 2 0 1
+Vertex 332: 2 2 0 0
+  Edge 28: Vertex 331: 1 2 0 0 -- Vertex 332: 2 2 0 0
+  Edge 32: Vertex 332: 2 2 0 0 -- Vertex 330: 0 2 0 0
+  Edge 21: Vertex 329: 2 1 0 0 -- Vertex 332: 2 2 0 0
+  Edge 33: Vertex 332: 2 2 0 0 -- Vertex 326: 2 0 0 0
+  Edge 106: Vertex 350: 2 2 2 0 -- Vertex 332: 2 2 0 0
+  Edge 34: Vertex 332: 2 2 0 0 -- Vertex 341: 2 2 1 0
+  Edge 251: Vertex 386: 2 2 0 2 -- Vertex 332: 2 2 0 0
+  Edge 35: Vertex 332: 2 2 0 0 -- Vertex 359: 2 2 0 1
+Vertex 333: 0 0 1 0
+  Edge 44: Vertex 335: 2 0 1 0 -- Vertex 333: 0 0 1 0
+  Edge 36: Vertex 333: 0 0 1 0 -- Vertex 334: 1 0 1 0
+  Edge 61: Vertex 339: 0 2 1 0 -- Vertex 333: 0 0 1 0
+  Edge 37: Vertex 333: 0 0 1 0 -- Vertex 336: 0 1 1 0
+  Edge 2: Vertex 324: 0 0 0 0 -- Vertex 333: 0 0 1 0
+  Edge 38: Vertex 333: 0 0 1 0 -- Vertex 342: 0 0 2 0
+  Edge 255: Vertex 387: 0 0 1 2 -- Vertex 333: 0 0 1 0
+  Edge 39: Vertex 333: 0 0 1 0 -- Vertex 360: 0 0 1 1
+Vertex 334: 1 0 1 0
+  Edge 36: Vertex 333: 0 0 1 0 -- Vertex 334: 1 0 1 0
+  Edge 40: Vertex 334: 1 0 1 0 -- Vertex 335: 2 0 1 0
+  Edge 65: Vertex 340: 1 2 1 0 -- Vertex 334: 1 0 1 0
+  Edge 41: Vertex 334: 1 0 1 0 -- Vertex 337: 1 1 1 0
+  Edge 6: Vertex 325: 1 0 0 0 -- Vertex 334: 1 0 1 0
+  Edge 42: Vertex 334: 1 0 1 0 -- Vertex 343: 1 0 2 0
+  Edge 259: Vertex 388: 1 0 1 2 -- Vertex 334: 1 0 1 0
+  Edge 43: Vertex 334: 1 0 1 0 -- Vertex 361: 1 0 1 1
+Vertex 335: 2 0 1 0
+  Edge 40: Vertex 334: 1 0 1 0 -- Vertex 335: 2 0 1 0
+  Edge 44: Vertex 335: 2 0 1 0 -- Vertex 333: 0 0 1 0
+  Edge 69: Vertex 341: 2 2 1 0 -- Vertex 335: 2 0 1 0
+  Edge 45: Vertex 335: 2 0 1 0 -- Vertex 338: 2 1 1 0
+  Edge 10: Vertex 326: 2 0 0 0 -- Vertex 335: 2 0 1 0
+  Edge 46: Vertex 335: 2 0 1 0 -- Vertex 344: 2 0 2 0
+  Edge 263: Vertex 389: 2 0 1 2 -- Vertex 335: 2 0 1 0
+  Edge 47: Vertex 335: 2 0 1 0 -- Vertex 362: 2 0 1 1
+Vertex 336: 0 1 1 0
+  Edge 56: Vertex 338: 2 1 1 0 -- Vertex 336: 0 1 1 0
+  Edge 48: Vertex 336: 0 1 1 0 -- Vertex 337: 1 1 1 0
+  Edge 37: Vertex 333: 0 0 1 0 -- Vertex 336: 0 1 1 0
+  Edge 49: Vertex 336: 0 1 1 0 -- Vertex 339: 0 2 1 0
+  Edge 14: Vertex 327: 0 1 0 0 -- Vertex 336: 0 1 1 0
+  Edge 50: Vertex 336: 0 1 1 0 -- Vertex 345: 0 1 2 0
+  Edge 267: Vertex 390: 0 1 1 2 -- Vertex 336: 0 1 1 0
+  Edge 51: Vertex 336: 0 1 1 0 -- Vertex 363: 0 1 1 1
+Vertex 337: 1 1 1 0
+  Edge 48: Vertex 336: 0 1 1 0 -- Vertex 337: 1 1 1 0
+  Edge 52: Vertex 337: 1 1 1 0 -- Vertex 338: 2 1 1 0
+  Edge 41: Vertex 334: 1 0 1 0 -- Vertex 337: 1 1 1 0
+  Edge 53: Vertex 337: 1 1 1 0 -- Vertex 340: 1 2 1 0
+  Edge 18: Vertex 328: 1 1 0 0 -- Vertex 337: 1 1 1 0
+  Edge 54: Vertex 337: 1 1 1 0 -- Vertex 346: 1 1 2 0
+  Edge 271: Vertex 391: 1 1 1 2 -- Vertex 337: 1 1 1 0
+  Edge 55: Vertex 337: 1 1 1 0 -- Vertex 364: 1 1 1 1
+Vertex 338: 2 1 1 0
+  Edge 52: Vertex 337: 1 1 1 0 -- Vertex 338: 2 1 1 0
+  Edge 56: Vertex 338: 2 1 1 0 -- Vertex 336: 0 1 1 0
+  Edge 45: Vertex 335: 2 0 1 0 -- Vertex 338: 2 1 1 0
+  Edge 57: Vertex 338: 2 1 1 0 -- Vertex 341: 2 2 1 0
+  Edge 22: Vertex 329: 2 1 0 0 -- Vertex 338: 2 1 1 0
+  Edge 58: Vertex 338: 2 1 1 0 -- Vertex 347: 2 1 2 0
+  Edge 275: Vertex 392: 2 1 1 2 -- Vertex 338: 2 1 1 0
+  Edge 59: Vertex 338: 2 1 1 0 -- Vertex 365: 2 1 1 1
+Vertex 339: 0 2 1 0
+  Edge 68: Vertex 341: 2 2 1 0 -- Vertex 339: 0 2 1 0
+  Edge 60: Vertex 339: 0 2 1 0 -- Vertex 340: 1 2 1 0
+  Edge 49: Vertex 336: 0 1 1 0 -- Vertex 339: 0 2 1 0
+  Edge 61: Vertex 339: 0 2 1 0 -- Vertex 333: 0 0 1 0
+  Edge 26: Vertex 330: 0 2 0 0 -- Vertex 339: 0 2 1 0
+  Edge 62: Vertex 339: 0 2 1 0 -- Vertex 348: 0 2 2 0
+  Edge 279: Vertex 393: 0 2 1 2 -- Vertex 339: 0 2 1 0
+  Edge 63: Vertex 339: 0 2 1 0 -- Vertex 366: 0 2 1 1
+Vertex 340: 1 2 1 0
+  Edge 60: Vertex 339: 0 2 1 0 -- Vertex 340: 1 2 1 0
+  Edge 64: Vertex 340: 1 2 1 0 -- Vertex 341: 2 2 1 0
+  Edge 53: Vertex 337: 1 1 1 0 -- Vertex 340: 1 2 1 0
+  Edge 65: Vertex 340: 1 2 1 0 -- Vertex 334: 1 0 1 0
+  Edge 30: Vertex 331: 1 2 0 0 -- Vertex 340: 1 2 1 0
+  Edge 66: Vertex 340: 1 2 1 0 -- Vertex 349: 1 2 2 0
+  Edge 283: Vertex 394: 1 2 1 2 -- Vertex 340: 1 2 1 0
+  Edge 67: Vertex 340: 1 2 1 0 -- Vertex 367: 1 2 1 1
+Vertex 341: 2 2 1 0
+  Edge 64: Vertex 340: 1 2 1 0 -- Vertex 341: 2 2 1 0
+  Edge 68: Vertex 341: 2 2 1 0 -- Vertex 339: 0 2 1 0
+  Edge 57: Vertex 338: 2 1 1 0 -- Vertex 341: 2 2 1 0
+  Edge 69: Vertex 341: 2 2 1 0 -- Vertex 335: 2 0 1 0
+  Edge 34: Vertex 332: 2 2 0 0 -- Vertex 341: 2 2 1 0
+  Edge 70: Vertex 341: 2 2 1 0 -- Vertex 350: 2 2 2 0
+  Edge 287: Vertex 395: 2 2 1 2 -- Vertex 341: 2 2 1 0
+  Edge 71: Vertex 341: 2 2 1 0 -- Vertex 368: 2 2 1 1
+Vertex 342: 0 0 2 0
+  Edge 80: Vertex 344: 2 0 2 0 -- Vertex 342: 0 0 2 0
+  Edge 72: Vertex 342: 0 0 2 0 -- Vertex 343: 1 0 2 0
+  Edge 97: Vertex 348: 0 2 2 0 -- Vertex 342: 0 0 2 0
+  Edge 73: Vertex 342: 0 0 2 0 -- Vertex 345: 0 1 2 0
+  Edge 38: Vertex 333: 0 0 1 0 -- Vertex 342: 0 0 2 0
+  Edge 74: Vertex 342: 0 0 2 0 -- Vertex 324: 0 0 0 0
+  Edge 291: Vertex 396: 0 0 2 2 -- Vertex 342: 0 0 2 0
+  Edge 75: Vertex 342: 0 0 2 0 -- Vertex 369: 0 0 2 1
+Vertex 343: 1 0 2 0
+  Edge 72: Vertex 342: 0 0 2 0 -- Vertex 343: 1 0 2 0
+  Edge 76: Vertex 343: 1 0 2 0 -- Vertex 344: 2 0 2 0
+  Edge 101: Vertex 349: 1 2 2 0 -- Vertex 343: 1 0 2 0
+  Edge 77: Vertex 343: 1 0 2 0 -- Vertex 346: 1 1 2 0
+  Edge 42: Vertex 334: 1 0 1 0 -- Vertex 343: 1 0 2 0
+  Edge 78: Vertex 343: 1 0 2 0 -- Vertex 325: 1 0 0 0
+  Edge 295: Vertex 397: 1 0 2 2 -- Vertex 343: 1 0 2 0
+  Edge 79: Vertex 343: 1 0 2 0 -- Vertex 370: 1 0 2 1
+Vertex 344: 2 0 2 0
+  Edge 76: Vertex 343: 1 0 2 0 -- Vertex 344: 2 0 2 0
+  Edge 80: Vertex 344: 2 0 2 0 -- Vertex 342: 0 0 2 0
+  Edge 105: Vertex 350: 2 2 2 0 -- Vertex 344: 2 0 2 0
+  Edge 81: Vertex 344: 2 0 2 0 -- Vertex 347: 2 1 2 0
+  Edge 46: Vertex 335: 2 0 1 0 -- Vertex 344: 2 0 2 0
+  Edge 82: Vertex 344: 2 0 2 0 -- Vertex 326: 2 0 0 0
+  Edge 299: Vertex 398: 2 0 2 2 -- Vertex 344: 2 0 2 0
+  Edge 83: Vertex 344: 2 0 2 0 -- Vertex 371: 2 0 2 1
+Vertex 345: 0 1 2 0
+  Edge 92: Vertex 347: 2 1 2 0 -- Vertex 345: 0 1 2 0
+  Edge 84: Vertex 345: 0 1 2 0 -- Vertex 346: 1 1 2 0
+  Edge 73: Vertex 342: 0 0 2 0 -- Vertex 345: 0 1 2 0
+  Edge 85: Vertex 345: 0 1 2 0 -- Vertex 348: 0 2 2 0
+  Edge 50: Vertex 336: 0 1 1 0 -- Vertex 345: 0 1 2 0
+  Edge 86: Vertex 345: 0 1 2 0 -- Vertex 327: 0 1 0 0
+  Edge 303: Vertex 399: 0 1 2 2 -- Vertex 345: 0 1 2 0
+  Edge 87: Vertex 345: 0 1 2 0 -- Vertex 372: 0 1 2 1
+Vertex 346: 1 1 2 0
+  Edge 84: Vertex 345: 0 1 2 0 -- Vertex 346: 1 1 2 0
+  Edge 88: Vertex 346: 1 1 2 0 -- Vertex 347: 2 1 2 0
+  Edge 77: Vertex 343: 1 0 2 0 -- Vertex 346: 1 1 2 0
+  Edge 89: Vertex 346: 1 1 2 0 -- Vertex 349: 1 2 2 0
+  Edge 54: Vertex 337: 1 1 1 0 -- Vertex 346: 1 1 2 0
+  Edge 90: Vertex 346: 1 1 2 0 -- Vertex 328: 1 1 0 0
+  Edge 307: Vertex 400: 1 1 2 2 -- Vertex 346: 1 1 2 0
+  Edge 91: Vertex 346: 1 1 2 0 -- Vertex 373: 1 1 2 1
+Vertex 347: 2 1 2 0
+  Edge 88: Vertex 346: 1 1 2 0 -- Vertex 347: 2 1 2 0
+  Edge 92: Vertex 347: 2 1 2 0 -- Vertex 345: 0 1 2 0
+  Edge 81: Vertex 344: 2 0 2 0 -- Vertex 347: 2 1 2 0
+  Edge 93: Vertex 347: 2 1 2 0 -- Vertex 350: 2 2 2 0
+  Edge 58: Vertex 338: 2 1 1 0 -- Vertex 347: 2 1 2 0
+  Edge 94: Vertex 347: 2 1 2 0 -- Vertex 329: 2 1 0 0
+  Edge 311: Vertex 401: 2 1 2 2 -- Vertex 347: 2 1 2 0
+  Edge 95: Vertex 347: 2 1 2 0 -- Vertex 374: 2 1 2 1
+Vertex 348: 0 2 2 0
+  Edge 104: Vertex 350: 2 2 2 0 -- Vertex 348: 0 2 2 0
+  Edge 96: Vertex 348: 0 2 2 0 -- Vertex 349: 1 2 2 0
+  Edge 85: Vertex 345: 0 1 2 0 -- Vertex 348: 0 2 2 0
+  Edge 97: Vertex 348: 0 2 2 0 -- Vertex 342: 0 0 2 0
+  Edge 62: Vertex 339: 0 2 1 0 -- Vertex 348: 0 2 2 0
+  Edge 98: Vertex 348: 0 2 2 0 -- Vertex 330: 0 2 0 0
+  Edge 315: Vertex 402: 0 2 2 2 -- Vertex 348: 0 2 2 0
+  Edge 99: Vertex 348: 0 2 2 0 -- Vertex 375: 0 2 2 1
+Vertex 349: 1 2 2 0
+  Edge 96: Vertex 348: 0 2 2 0 -- Vertex 349: 1 2 2 0
+  Edge 100: Vertex 349: 1 2 2 0 -- Vertex 350: 2 2 2 0
+  Edge 89: Vertex 346: 1 1 2 0 -- Vertex 349: 1 2 2 0
+  Edge 101: Vertex 349: 1 2 2 0 -- Vertex 343: 1 0 2 0
+  Edge 66: Vertex 340: 1 2 1 0 -- Vertex 349: 1 2 2 0
+  Edge 102: Vertex 349: 1 2 2 0 -- Vertex 331: 1 2 0 0
+  Edge 319: Vertex 403: 1 2 2 2 -- Vertex 349: 1 2 2 0
+  Edge 103: Vertex 349: 1 2 2 0 -- Vertex 376: 1 2 2 1
+Vertex 350: 2 2 2 0
+  Edge 100: Vertex 349: 1 2 2 0 -- Vertex 350: 2 2 2 0
+  Edge 104: Vertex 350: 2 2 2 0 -- Vertex 348: 0 2 2 0
+  Edge 93: Vertex 347: 2 1 2 0 -- Vertex 350: 2 2 2 0
+  Edge 105: Vertex 350: 2 2 2 0 -- Vertex 344: 2 0 2 0
+  Edge 70: Vertex 341: 2 2 1 0 -- Vertex 350: 2 2 2 0
+  Edge 106: Vertex 350: 2 2 2 0 -- Vertex 332: 2 2 0 0
+  Edge 323: Vertex 404: 2 2 2 2 -- Vertex 350: 2 2 2 0
+  Edge 107: Vertex 350: 2 2 2 0 -- Vertex 377: 2 2 2 1
+Vertex 351: 0 0 0 1
+  Edge 116: Vertex 353: 2 0 0 1 -- Vertex 351: 0 0 0 1
+  Edge 108: Vertex 351: 0 0 0 1 -- Vertex 352: 1 0 0 1
+  Edge 133: Vertex 357: 0 2 0 1 -- Vertex 351: 0 0 0 1
+  Edge 109: Vertex 351: 0 0 0 1 -- Vertex 354: 0 1 0 1
+  Edge 182: Vertex 369: 0 0 2 1 -- Vertex 351: 0 0 0 1
+  Edge 110: Vertex 351: 0 0 0 1 -- Vertex 360: 0 0 1 1
+  Edge 3: Vertex 324: 0 0 0 0 -- Vertex 351: 0 0 0 1
+  Edge 111: Vertex 351: 0 0 0 1 -- Vertex 378: 0 0 0 2
+Vertex 352: 1 0 0 1
+  Edge 108: Vertex 351: 0 0 0 1 -- Vertex 352: 1 0 0 1
+  Edge 112: Vertex 352: 1 0 0 1 -- Vertex 353: 2 0 0 1
+  Edge 137: Vertex 358: 1 2 0 1 -- Vertex 352: 1 0 0 1
+  Edge 113: Vertex 352: 1 0 0 1 -- Vertex 355: 1 1 0 1
+  Edge 186: Vertex 370: 1 0 2 1 -- Vertex 352: 1 0 0 1
+  Edge 114: Vertex 352: 1 0 0 1 -- Vertex 361: 1 0 1 1
+  Edge 7: Vertex 325: 1 0 0 0 -- Vertex 352: 1 0 0 1
+  Edge 115: Vertex 352: 1 0 0 1 -- Vertex 379: 1 0 0 2
+Vertex 353: 2 0 0 1
+  Edge 112: Vertex 352: 1 0 0 1 -- Vertex 353: 2 0 0 1
+  Edge 116: Vertex 353: 2 0 0 1 -- Vertex 351: 0 0 0 1
+  Edge 141: Vertex 359: 2 2 0 1 -- Vertex 353: 2 0 0 1
+  Edge 117: Vertex 353: 2 0 0 1 -- Vertex 356: 2 1 0 1
+  Edge 190: Vertex 371: 2 0 2 1 -- Vertex 353: 2 0 0 1
+  Edge 118: Vertex 353: 2 0 0 1 -- Vertex 362: 2 0 1 1
+  Edge 11: Vertex 326: 2 0 0 0 -- Vertex 353: 2 0 0 1
+  Edge 119: Vertex 353: 2 0 0 1 -- Vertex 380: 2 0 0 2
+Vertex 354: 0 1 0 1
+  Edge 128: Vertex 356: 2 1 0 1 -- Vertex 354: 0 1 0 1
+  Edge 120: Vertex 354: 0 1 0 1 -- Vertex 355: 1 1 0 1
+  Edge 109: Vertex 351: 0 0 0 1 -- Vertex 354: 0 1 0 1
+  Edge 121: Vertex 354: 0 1 0 1 -- Vertex 357: 0 2 0 1
+  Edge 194: Vertex 372: 0 1 2 1 -- Vertex 354: 0 1 0 1
+  Edge 122: Vertex 354: 0 1 0 1 -- Vertex 363: 0 1 1 1
+  Edge 15: Vertex 327: 0 1 0 0 -- Vertex 354: 0 1 0 1
+  Edge 123: Vertex 354: 0 1 0 1 -- Vertex 381: 0 1 0 2
+Vertex 355: 1 1 0 1
+  Edge 120: Vertex 354: 0 1 0 1 -- Vertex 355: 1 1 0 1
+  Edge 124: Vertex 355: 1 1 0 1 -- Vertex 356: 2 1 0 1
+  Edge 113: Vertex 352: 1 0 0 1 -- Vertex 355: 1 1 0 1
+  Edge 125: Vertex 355: 1 1 0 1 -- Vertex 358: 1 2 0 1
+  Edge 198: Vertex 373: 1 1 2 1 -- Vertex 355: 1 1 0 1
+  Edge 126: Vertex 355: 1 1 0 1 -- Vertex 364: 1 1 1 1
+  Edge 19: Vertex 328: 1 1 0 0 -- Vertex 355: 1 1 0 1
+  Edge 127: Vertex 355: 1 1 0 1 -- Vertex 382: 1 1 0 2
+Vertex 356: 2 1 0 1
+  Edge 124: Vertex 355: 1 1 0 1 -- Vertex 356: 2 1 0 1
+  Edge 128: Vertex 356: 2 1 0 1 -- Vertex 354: 0 1 0 1
+  Edge 117: Vertex 353: 2 0 0 1 -- Vertex 356: 2 1 0 1
+  Edge 129: Vertex 356: 2 1 0 1 -- Vertex 359: 2 2 0 1
+  Edge 202: Vertex 374: 2 1 2 1 -- Vertex 356: 2 1 0 1
+  Edge 130: Vertex 356: 2 1 0 1 -- Vertex 365: 2 1 1 1
+  Edge 23: Vertex 329: 2 1 0 0 -- Vertex 356: 2 1 0 1
+  Edge 131: Vertex 356: 2 1 0 1 -- Vertex 383: 2 1 0 2
+Vertex 357: 0 2 0 1
+  Edge 140: Vertex 359: 2 2 0 1 -- Vertex 357: 0 2 0 1
+  Edge 132: Vertex 357: 0 2 0 1 -- Vertex 358: 1 2 0 1
+  Edge 121: Vertex 354: 0 1 0 1 -- Vertex 357: 0 2 0 1
+  Edge 133: Vertex 357: 0 2 0 1 -- Vertex 351: 0 0 0 1
+  Edge 206: Vertex 375: 0 2 2 1 -- Vertex 357: 0 2 0 1
+  Edge 134: Vertex 357: 0 2 0 1 -- Vertex 366: 0 2 1 1
+  Edge 27: Vertex 330: 0 2 0 0 -- Vertex 357: 0 2 0 1
+  Edge 135: Vertex 357: 0 2 0 1 -- Vertex 384: 0 2 0 2
+Vertex 358: 1 2 0 1
+  Edge 132: Vertex 357: 0 2 0 1 -- Vertex 358: 1 2 0 1
+  Edge 136: Vertex 358: 1 2 0 1 -- Vertex 359: 2 2 0 1
+  Edge 125: Vertex 355: 1 1 0 1 -- Vertex 358: 1 2 0 1
+  Edge 137: Vertex 358: 1 2 0 1 -- Vertex 352: 1 0 0 1
+  Edge 210: Vertex 376: 1 2 2 1 -- Vertex 358: 1 2 0 1
+  Edge 138: Vertex 358: 1 2 0 1 -- Vertex 367: 1 2 1 1
+  Edge 31: Vertex 331: 1 2 0 0 -- Vertex 358: 1 2 0 1
+  Edge 139: Vertex 358: 1 2 0 1 -- Vertex 385: 1 2 0 2
+Vertex 359: 2 2 0 1
+  Edge 136: Vertex 358: 1 2 0 1 -- Vertex 359: 2 2 0 1
+  Edge 140: Vertex 359: 2 2 0 1 -- Vertex 357: 0 2 0 1
+  Edge 129: Vertex 356: 2 1 0 1 -- Vertex 359: 2 2 0 1
+  Edge 141: Vertex 359: 2 2 0 1 -- Vertex 353: 2 0 0 1
+  Edge 214: Vertex 377: 2 2 2 1 -- Vertex 359: 2 2 0 1
+  Edge 142: Vertex 359: 2 2 0 1 -- Vertex 368: 2 2 1 1
+  Edge 35: Vertex 332: 2 2 0 0 -- Vertex 359: 2 2 0 1
+  Edge 143: Vertex 359: 2 2 0 1 -- Vertex 386: 2 2 0 2
+Vertex 360: 0 0 1 1
+  Edge 152: Vertex 362: 2 0 1 1 -- Vertex 360: 0 0 1 1
+  Edge 144: Vertex 360: 0 0 1 1 -- Vertex 361: 1 0 1 1
+  Edge 169: Vertex 366: 0 2 1 1 -- Vertex 360: 0 0 1 1
+  Edge 145: Vertex 360: 0 0 1 1 -- Vertex 363: 0 1 1 1
+  Edge 110: Vertex 351: 0 0 0 1 -- Vertex 360: 0 0 1 1
+  Edge 146: Vertex 360: 0 0 1 1 -- Vertex 369: 0 0 2 1
+  Edge 39: Vertex 333: 0 0 1 0 -- Vertex 360: 0 0 1 1
+  Edge 147: Vertex 360: 0 0 1 1 -- Vertex 387: 0 0 1 2
+Vertex 361: 1 0 1 1
+  Edge 144: Vertex 360: 0 0 1 1 -- Vertex 361: 1 0 1 1
+  Edge 148: Vertex 361: 1 0 1 1 -- Vertex 362: 2 0 1 1
+  Edge 173: Vertex 367: 1 2 1 1 -- Vertex 361: 1 0 1 1
+  Edge 149: Vertex 361: 1 0 1 1 -- Vertex 364: 1 1 1 1
+  Edge 114: Vertex 352: 1 0 0 1 -- Vertex 361: 1 0 1 1
+  Edge 150: Vertex 361: 1 0 1 1 -- Vertex 370: 1 0 2 1
+  Edge 43: Vertex 334: 1 0 1 0 -- Vertex 361: 1 0 1 1
+  Edge 151: Vertex 361: 1 0 1 1 -- Vertex 388: 1 0 1 2
+Vertex 362: 2 0 1 1
+  Edge 148: Vertex 361: 1 0 1 1 -- Vertex 362: 2 0 1 1
+  Edge 152: Vertex 362: 2 0 1 1 -- Vertex 360: 0 0 1 1
+  Edge 177: Vertex 368: 2 2 1 1 -- Vertex 362: 2 0 1 1
+  Edge 153: Vertex 362: 2 0 1 1 -- Vertex 365: 2 1 1 1
+  Edge 118: Vertex 353: 2 0 0 1 -- Vertex 362: 2 0 1 1
+  Edge 154: Vertex 362: 2 0 1 1 -- Vertex 371: 2 0 2 1
+  Edge 47: Vertex 335: 2 0 1 0 -- Vertex 362: 2 0 1 1
+  Edge 155: Vertex 362: 2 0 1 1 -- Vertex 389: 2 0 1 2
+Vertex 363: 0 1 1 1
+  Edge 164: Vertex 365: 2 1 1 1 -- Vertex 363: 0 1 1 1
+  Edge 156: Vertex 363: 0 1 1 1 -- Vertex 364: 1 1 1 1
+  Edge 145: Vertex 360: 0 0 1 1 -- Vertex 363: 0 1 1 1
+  Edge 157: Vertex 363: 0 1 1 1 -- Vertex 366: 0 2 1 1
+  Edge 122: Vertex 354: 0 1 0 1 -- Vertex 363: 0 1 1 1
+  Edge 158: Vertex 363: 0 1 1 1 -- Vertex 372: 0 1 2 1
+  Edge 51: Vertex 336: 0 1 1 0 -- Vertex 363: 0 1 1 1
+  Edge 159: Vertex 363: 0 1 1 1 -- Vertex 390: 0 1 1 2
+Vertex 364: 1 1 1 1
+  Edge 156: Vertex 363: 0 1 1 1 -- Vertex 364: 1 1 1 1
+  Edge 160: Vertex 364: 1 1 1 1 -- Vertex 365: 2 1 1 1
+  Edge 149: Vertex 361: 1 0 1 1 -- Vertex 364: 1 1 1 1
+  Edge 161: Vertex 364: 1 1 1 1 -- Vertex 367: 1 2 1 1
+  Edge 126: Vertex 355: 1 1 0 1 -- Vertex 364: 1 1 1 1
+  Edge 162: Vertex 364: 1 1 1 1 -- Vertex 373: 1 1 2 1
+  Edge 55: Vertex 337: 1 1 1 0 -- Vertex 364: 1 1 1 1
+  Edge 163: Vertex 364: 1 1 1 1 -- Vertex 391: 1 1 1 2
+Vertex 365: 2 1 1 1
+  Edge 160: Vertex 364: 1 1 1 1 -- Vertex 365: 2 1 1 1
+  Edge 164: Vertex 365: 2 1 1 1 -- Vertex 363: 0 1 1 1
+  Edge 153: Vertex 362: 2 0 1 1 -- Vertex 365: 2 1 1 1
+  Edge 165: Vertex 365: 2 1 1 1 -- Vertex 368: 2 2 1 1
+  Edge 130: Vertex 356: 2 1 0 1 -- Vertex 365: 2 1 1 1
+  Edge 166: Vertex 365: 2 1 1 1 -- Vertex 374: 2 1 2 1
+  Edge 59: Vertex 338: 2 1 1 0 -- Vertex 365: 2 1 1 1
+  Edge 167: Vertex 365: 2 1 1 1 -- Vertex 392: 2 1 1 2
+Vertex 366: 0 2 1 1
+  Edge 176: Vertex 368: 2 2 1 1 -- Vertex 366: 0 2 1 1
+  Edge 168: Vertex 366: 0 2 1 1 -- Vertex 367: 1 2 1 1
+  Edge 157: Vertex 363: 0 1 1 1 -- Vertex 366: 0 2 1 1
+  Edge 169: Vertex 366: 0 2 1 1 -- Vertex 360: 0 0 1 1
+  Edge 134: Vertex 357: 0 2 0 1 -- Vertex 366: 0 2 1 1
+  Edge 170: Vertex 366: 0 2 1 1 -- Vertex 375: 0 2 2 1
+  Edge 63: Vertex 339: 0 2 1 0 -- Vertex 366: 0 2 1 1
+  Edge 171: Vertex 366: 0 2 1 1 -- Vertex 393: 0 2 1 2
+Vertex 367: 1 2 1 1
+  Edge 168: Vertex 366: 0 2 1 1 -- Vertex 367: 1 2 1 1
+  Edge 172: Vertex 367: 1 2 1 1 -- Vertex 368: 2 2 1 1
+  Edge 161: Vertex 364: 1 1 1 1 -- Vertex 367: 1 2 1 1
+  Edge 173: Vertex 367: 1 2 1 1 -- Vertex 361: 1 0 1 1
+  Edge 138: Vertex 358: 1 2 0 1 -- Vertex 367: 1 2 1 1
+  Edge 174: Vertex 367: 1 2 1 1 -- Vertex 376: 1 2 2 1
+  Edge 67: Vertex 340: 1 2 1 0 -- Vertex 367: 1 2 1 1
+  Edge 175: Vertex 367: 1 2 1 1 -- Vertex 394: 1 2 1 2
+Vertex 368: 2 2 1 1
+  Edge 172: Vertex 367: 1 2 1 1 -- Vertex 368: 2 2 1 1
+  Edge 176: Vertex 368: 2 2 1 1 -- Vertex 366: 0 2 1 1
+  Edge 165: Vertex 365: 2 1 1 1 -- Vertex 368: 2 2 1 1
+  Edge 177: Vertex 368: 2 2 1 1 -- Vertex 362: 2 0 1 1
+  Edge 142: Vertex 359: 2 2 0 1 -- Vertex 368: 2 2 1 1
+  Edge 178: Vertex 368: 2 2 1 1 -- Vertex 377: 2 2 2 1
+  Edge 71: Vertex 341: 2 2 1 0 -- Vertex 368: 2 2 1 1
+  Edge 179: Vertex 368: 2 2 1 1 -- Vertex 395: 2 2 1 2
+Vertex 369: 0 0 2 1
+  Edge 188: Vertex 371: 2 0 2 1 -- Vertex 369: 0 0 2 1
+  Edge 180: Vertex 369: 0 0 2 1 -- Vertex 370: 1 0 2 1
+  Edge 205: Vertex 375: 0 2 2 1 -- Vertex 369: 0 0 2 1
+  Edge 181: Vertex 369: 0 0 2 1 -- Vertex 372: 0 1 2 1
+  Edge 146: Vertex 360: 0 0 1 1 -- Vertex 369: 0 0 2 1
+  Edge 182: Vertex 369: 0 0 2 1 -- Vertex 351: 0 0 0 1
+  Edge 75: Vertex 342: 0 0 2 0 -- Vertex 369: 0 0 2 1
+  Edge 183: Vertex 369: 0 0 2 1 -- Vertex 396: 0 0 2 2
+Vertex 370: 1 0 2 1
+  Edge 180: Vertex 369: 0 0 2 1 -- Vertex 370: 1 0 2 1
+  Edge 184: Vertex 370: 1 0 2 1 -- Vertex 371: 2 0 2 1
+  Edge 209: Vertex 376: 1 2 2 1 -- Vertex 370: 1 0 2 1
+  Edge 185: Vertex 370: 1 0 2 1 -- Vertex 373: 1 1 2 1
+  Edge 150: Vertex 361: 1 0 1 1 -- Vertex 370: 1 0 2 1
+  Edge 186: Vertex 370: 1 0 2 1 -- Vertex 352: 1 0 0 1
+  Edge 79: Vertex 343: 1 0 2 0 -- Vertex 370: 1 0 2 1
+  Edge 187: Vertex 370: 1 0 2 1 -- Vertex 397: 1 0 2 2
+Vertex 371: 2 0 2 1
+  Edge 184: Vertex 370: 1 0 2 1 -- Vertex 371: 2 0 2 1
+  Edge 188: Vertex 371: 2 0 2 1 -- Vertex 369: 0 0 2 1
+  Edge 213: Vertex 377: 2 2 2 1 -- Vertex 371: 2 0 2 1
+  Edge 189: Vertex 371: 2 0 2 1 -- Vertex 374: 2 1 2 1
+  Edge 154: Vertex 362: 2 0 1 1 -- Vertex 371: 2 0 2 1
+  Edge 190: Vertex 371: 2 0 2 1 -- Vertex 353: 2 0 0 1
+  Edge 83: Vertex 344: 2 0 2 0 -- Vertex 371: 2 0 2 1
+  Edge 191: Vertex 371: 2 0 2 1 -- Vertex 398: 2 0 2 2
+Vertex 372: 0 1 2 1
+  Edge 200: Vertex 374: 2 1 2 1 -- Vertex 372: 0 1 2 1
+  Edge 192: Vertex 372: 0 1 2 1 -- Vertex 373: 1 1 2 1
+  Edge 181: Vertex 369: 0 0 2 1 -- Vertex 372: 0 1 2 1
+  Edge 193: Vertex 372: 0 1 2 1 -- Vertex 375: 0 2 2 1
+  Edge 158: Vertex 363: 0 1 1 1 -- Vertex 372: 0 1 2 1
+  Edge 194: Vertex 372: 0 1 2 1 -- Vertex 354: 0 1 0 1
+  Edge 87: Vertex 345: 0 1 2 0 -- Vertex 372: 0 1 2 1
+  Edge 195: Vertex 372: 0 1 2 1 -- Vertex 399: 0 1 2 2
+Vertex 373: 1 1 2 1
+  Edge 192: Vertex 372: 0 1 2 1 -- Vertex 373: 1 1 2 1
+  Edge 196: Vertex 373: 1 1 2 1 -- Vertex 374: 2 1 2 1
+  Edge 185: Vertex 370: 1 0 2 1 -- Vertex 373: 1 1 2 1
+  Edge 197: Vertex 373: 1 1 2 1 -- Vertex 376: 1 2 2 1
+  Edge 162: Vertex 364: 1 1 1 1 -- Vertex 373: 1 1 2 1
+  Edge 198: Vertex 373: 1 1 2 1 -- Vertex 355: 1 1 0 1
+  Edge 91: Vertex 346: 1 1 2 0 -- Vertex 373: 1 1 2 1
+  Edge 199: Vertex 373: 1 1 2 1 -- Vertex 400: 1 1 2 2
+Vertex 374: 2 1 2 1
+  Edge 196: Vertex 373: 1 1 2 1 -- Vertex 374: 2 1 2 1
+  Edge 200: Vertex 374: 2 1 2 1 -- Vertex 372: 0 1 2 1
+  Edge 189: Vertex 371: 2 0 2 1 -- Vertex 374: 2 1 2 1
+  Edge 201: Vertex 374: 2 1 2 1 -- Vertex 377: 2 2 2 1
+  Edge 166: Vertex 365: 2 1 1 1 -- Vertex 374: 2 1 2 1
+  Edge 202: Vertex 374: 2 1 2 1 -- Vertex 356: 2 1 0 1
+  Edge 95: Vertex 347: 2 1 2 0 -- Vertex 374: 2 1 2 1
+  Edge 203: Vertex 374: 2 1 2 1 -- Vertex 401: 2 1 2 2
+Vertex 375: 0 2 2 1
+  Edge 212: Vertex 377: 2 2 2 1 -- Vertex 375: 0 2 2 1
+  Edge 204: Vertex 375: 0 2 2 1 -- Vertex 376: 1 2 2 1
+  Edge 193: Vertex 372: 0 1 2 1 -- Vertex 375: 0 2 2 1
+  Edge 205: Vertex 375: 0 2 2 1 -- Vertex 369: 0 0 2 1
+  Edge 170: Vertex 366: 0 2 1 1 -- Vertex 375: 0 2 2 1
+  Edge 206: Vertex 375: 0 2 2 1 -- Vertex 357: 0 2 0 1
+  Edge 99: Vertex 348: 0 2 2 0 -- Vertex 375: 0 2 2 1
+  Edge 207: Vertex 375: 0 2 2 1 -- Vertex 402: 0 2 2 2
+Vertex 376: 1 2 2 1
+  Edge 204: Vertex 375: 0 2 2 1 -- Vertex 376: 1 2 2 1
+  Edge 208: Vertex 376: 1 2 2 1 -- Vertex 377: 2 2 2 1
+  Edge 197: Vertex 373: 1 1 2 1 -- Vertex 376: 1 2 2 1
+  Edge 209: Vertex 376: 1 2 2 1 -- Vertex 370: 1 0 2 1
+  Edge 174: Vertex 367: 1 2 1 1 -- Vertex 376: 1 2 2 1
+  Edge 210: Vertex 376: 1 2 2 1 -- Vertex 358: 1 2 0 1
+  Edge 103: Vertex 349: 1 2 2 0 -- Vertex 376: 1 2 2 1
+  Edge 211: Vertex 376: 1 2 2 1 -- Vertex 403: 1 2 2 2
+Vertex 377: 2 2 2 1
+  Edge 208: Vertex 376: 1 2 2 1 -- Vertex 377: 2 2 2 1
+  Edge 212: Vertex 377: 2 2 2 1 -- Vertex 375: 0 2 2 1
+  Edge 201: Vertex 374: 2 1 2 1 -- Vertex 377: 2 2 2 1
+  Edge 213: Vertex 377: 2 2 2 1 -- Vertex 371: 2 0 2 1
+  Edge 178: Vertex 368: 2 2 1 1 -- Vertex 377: 2 2 2 1
+  Edge 214: Vertex 377: 2 2 2 1 -- Vertex 359: 2 2 0 1
+  Edge 107: Vertex 350: 2 2 2 0 -- Vertex 377: 2 2 2 1
+  Edge 215: Vertex 377: 2 2 2 1 -- Vertex 404: 2 2 2 2
+Vertex 378: 0 0 0 2
+  Edge 224: Vertex 380: 2 0 0 2 -- Vertex 378: 0 0 0 2
+  Edge 216: Vertex 378: 0 0 0 2 -- Vertex 379: 1 0 0 2
+  Edge 241: Vertex 384: 0 2 0 2 -- Vertex 378: 0 0 0 2
+  Edge 217: Vertex 378: 0 0 0 2 -- Vertex 381: 0 1 0 2
+  Edge 290: Vertex 396: 0 0 2 2 -- Vertex 378: 0 0 0 2
+  Edge 218: Vertex 378: 0 0 0 2 -- Vertex 387: 0 0 1 2
+  Edge 111: Vertex 351: 0 0 0 1 -- Vertex 378: 0 0 0 2
+  Edge 219: Vertex 378: 0 0 0 2 -- Vertex 324: 0 0 0 0
+Vertex 379: 1 0 0 2
+  Edge 216: Vertex 378: 0 0 0 2 -- Vertex 379: 1 0 0 2
+  Edge 220: Vertex 379: 1 0 0 2 -- Vertex 380: 2 0 0 2
+  Edge 245: Vertex 385: 1 2 0 2 -- Vertex 379: 1 0 0 2
+  Edge 221: Vertex 379: 1 0 0 2 -- Vertex 382: 1 1 0 2
+  Edge 294: Vertex 397: 1 0 2 2 -- Vertex 379: 1 0 0 2
+  Edge 222: Vertex 379: 1 0 0 2 -- Vertex 388: 1 0 1 2
+  Edge 115: Vertex 352: 1 0 0 1 -- Vertex 379: 1 0 0 2
+  Edge 223: Vertex 379: 1 0 0 2 -- Vertex 325: 1 0 0 0
+Vertex 380: 2 0 0 2
+  Edge 220: Vertex 379: 1 0 0 2 -- Vertex 380: 2 0 0 2
+  Edge 224: Vertex 380: 2 0 0 2 -- Vertex 378: 0 0 0 2
+  Edge 249: Vertex 386: 2 2 0 2 -- Vertex 380: 2 0 0 2
+  Edge 225: Vertex 380: 2 0 0 2 -- Vertex 383: 2 1 0 2
+  Edge 298: Vertex 398: 2 0 2 2 -- Vertex 380: 2 0 0 2
+  Edge 226: Vertex 380: 2 0 0 2 -- Vertex 389: 2 0 1 2
+  Edge 119: Vertex 353: 2 0 0 1 -- Vertex 380: 2 0 0 2
+  Edge 227: Vertex 380: 2 0 0 2 -- Vertex 326: 2 0 0 0
+Vertex 381: 0 1 0 2
+  Edge 236: Vertex 383: 2 1 0 2 -- Vertex 381: 0 1 0 2
+  Edge 228: Vertex 381: 0 1 0 2 -- Vertex 382: 1 1 0 2
+  Edge 217: Vertex 378: 0 0 0 2 -- Vertex 381: 0 1 0 2
+  Edge 229: Vertex 381: 0 1 0 2 -- Vertex 384: 0 2 0 2
+  Edge 302: Vertex 399: 0 1 2 2 -- Vertex 381: 0 1 0 2
+  Edge 230: Vertex 381: 0 1 0 2 -- Vertex 390: 0 1 1 2
+  Edge 123: Vertex 354: 0 1 0 1 -- Vertex 381: 0 1 0 2
+  Edge 231: Vertex 381: 0 1 0 2 -- Vertex 327: 0 1 0 0
+Vertex 382: 1 1 0 2
+  Edge 228: Vertex 381: 0 1 0 2 -- Vertex 382: 1 1 0 2
+  Edge 232: Vertex 382: 1 1 0 2 -- Vertex 383: 2 1 0 2
+  Edge 221: Vertex 379: 1 0 0 2 -- Vertex 382: 1 1 0 2
+  Edge 233: Vertex 382: 1 1 0 2 -- Vertex 385: 1 2 0 2
+  Edge 306: Vertex 400: 1 1 2 2 -- Vertex 382: 1 1 0 2
+  Edge 234: Vertex 382: 1 1 0 2 -- Vertex 391: 1 1 1 2
+  Edge 127: Vertex 355: 1 1 0 1 -- Vertex 382: 1 1 0 2
+  Edge 235: Vertex 382: 1 1 0 2 -- Vertex 328: 1 1 0 0
+Vertex 383: 2 1 0 2
+  Edge 232: Vertex 382: 1 1 0 2 -- Vertex 383: 2 1 0 2
+  Edge 236: Vertex 383: 2 1 0 2 -- Vertex 381: 0 1 0 2
+  Edge 225: Vertex 380: 2 0 0 2 -- Vertex 383: 2 1 0 2
+  Edge 237: Vertex 383: 2 1 0 2 -- Vertex 386: 2 2 0 2
+  Edge 310: Vertex 401: 2 1 2 2 -- Vertex 383: 2 1 0 2
+  Edge 238: Vertex 383: 2 1 0 2 -- Vertex 392: 2 1 1 2
+  Edge 131: Vertex 356: 2 1 0 1 -- Vertex 383: 2 1 0 2
+  Edge 239: Vertex 383: 2 1 0 2 -- Vertex 329: 2 1 0 0
+Vertex 384: 0 2 0 2
+  Edge 248: Vertex 386: 2 2 0 2 -- Vertex 384: 0 2 0 2
+  Edge 240: Vertex 384: 0 2 0 2 -- Vertex 385: 1 2 0 2
+  Edge 229: Vertex 381: 0 1 0 2 -- Vertex 384: 0 2 0 2
+  Edge 241: Vertex 384: 0 2 0 2 -- Vertex 378: 0 0 0 2
+  Edge 314: Vertex 402: 0 2 2 2 -- Vertex 384: 0 2 0 2
+  Edge 242: Vertex 384: 0 2 0 2 -- Vertex 393: 0 2 1 2
+  Edge 135: Vertex 357: 0 2 0 1 -- Vertex 384: 0 2 0 2
+  Edge 243: Vertex 384: 0 2 0 2 -- Vertex 330: 0 2 0 0
+Vertex 385: 1 2 0 2
+  Edge 240: Vertex 384: 0 2 0 2 -- Vertex 385: 1 2 0 2
+  Edge 244: Vertex 385: 1 2 0 2 -- Vertex 386: 2 2 0 2
+  Edge 233: Vertex 382: 1 1 0 2 -- Vertex 385: 1 2 0 2
+  Edge 245: Vertex 385: 1 2 0 2 -- Vertex 379: 1 0 0 2
+  Edge 318: Vertex 403: 1 2 2 2 -- Vertex 385: 1 2 0 2
+  Edge 246: Vertex 385: 1 2 0 2 -- Vertex 394: 1 2 1 2
+  Edge 139: Vertex 358: 1 2 0 1 -- Vertex 385: 1 2 0 2
+  Edge 247: Vertex 385: 1 2 0 2 -- Vertex 331: 1 2 0 0
+Vertex 386: 2 2 0 2
+  Edge 244: Vertex 385: 1 2 0 2 -- Vertex 386: 2 2 0 2
+  Edge 248: Vertex 386: 2 2 0 2 -- Vertex 384: 0 2 0 2
+  Edge 237: Vertex 383: 2 1 0 2 -- Vertex 386: 2 2 0 2
+  Edge 249: Vertex 386: 2 2 0 2 -- Vertex 380: 2 0 0 2
+  Edge 322: Vertex 404: 2 2 2 2 -- Vertex 386: 2 2 0 2
+  Edge 250: Vertex 386: 2 2 0 2 -- Vertex 395: 2 2 1 2
+  Edge 143: Vertex 359: 2 2 0 1 -- Vertex 386: 2 2 0 2
+  Edge 251: Vertex 386: 2 2 0 2 -- Vertex 332: 2 2 0 0
+Vertex 387: 0 0 1 2
+  Edge 260: Vertex 389: 2 0 1 2 -- Vertex 387: 0 0 1 2
+  Edge 252: Vertex 387: 0 0 1 2 -- Vertex 388: 1 0 1 2
+  Edge 277: Vertex 393: 0 2 1 2 -- Vertex 387: 0 0 1 2
+  Edge 253: Vertex 387: 0 0 1 2 -- Vertex 390: 0 1 1 2
+  Edge 218: Vertex 378: 0 0 0 2 -- Vertex 387: 0 0 1 2
+  Edge 254: Vertex 387: 0 0 1 2 -- Vertex 396: 0 0 2 2
+  Edge 147: Vertex 360: 0 0 1 1 -- Vertex 387: 0 0 1 2
+  Edge 255: Vertex 387: 0 0 1 2 -- Vertex 333: 0 0 1 0
+Vertex 388: 1 0 1 2
+  Edge 252: Vertex 387: 0 0 1 2 -- Vertex 388: 1 0 1 2
+  Edge 256: Vertex 388: 1 0 1 2 -- Vertex 389: 2 0 1 2
+  Edge 281: Vertex 394: 1 2 1 2 -- Vertex 388: 1 0 1 2
+  Edge 257: Vertex 388: 1 0 1 2 -- Vertex 391: 1 1 1 2
+  Edge 222: Vertex 379: 1 0 0 2 -- Vertex 388: 1 0 1 2
+  Edge 258: Vertex 388: 1 0 1 2 -- Vertex 397: 1 0 2 2
+  Edge 151: Vertex 361: 1 0 1 1 -- Vertex 388: 1 0 1 2
+  Edge 259: Vertex 388: 1 0 1 2 -- Vertex 334: 1 0 1 0
+Vertex 389: 2 0 1 2
+  Edge 256: Vertex 388: 1 0 1 2 -- Vertex 389: 2 0 1 2
+  Edge 260: Vertex 389: 2 0 1 2 -- Vertex 387: 0 0 1 2
+  Edge 285: Vertex 395: 2 2 1 2 -- Vertex 389: 2 0 1 2
+  Edge 261: Vertex 389: 2 0 1 2 -- Vertex 392: 2 1 1 2
+  Edge 226: Vertex 380: 2 0 0 2 -- Vertex 389: 2 0 1 2
+  Edge 262: Vertex 389: 2 0 1 2 -- Vertex 398: 2 0 2 2
+  Edge 155: Vertex 362: 2 0 1 1 -- Vertex 389: 2 0 1 2
+  Edge 263: Vertex 389: 2 0 1 2 -- Vertex 335: 2 0 1 0
+Vertex 390: 0 1 1 2
+  Edge 272: Vertex 392: 2 1 1 2 -- Vertex 390: 0 1 1 2
+  Edge 264: Vertex 390: 0 1 1 2 -- Vertex 391: 1 1 1 2
+  Edge 253: Vertex 387: 0 0 1 2 -- Vertex 390: 0 1 1 2
+  Edge 265: Vertex 390: 0 1 1 2 -- Vertex 393: 0 2 1 2
+  Edge 230: Vertex 381: 0 1 0 2 -- Vertex 390: 0 1 1 2
+  Edge 266: Vertex 390: 0 1 1 2 -- Vertex 399: 0 1 2 2
+  Edge 159: Vertex 363: 0 1 1 1 -- Vertex 390: 0 1 1 2
+  Edge 267: Vertex 390: 0 1 1 2 -- Vertex 336: 0 1 1 0
+Vertex 391: 1 1 1 2
+  Edge 264: Vertex 390: 0 1 1 2 -- Vertex 391: 1 1 1 2
+  Edge 268: Vertex 391: 1 1 1 2 -- Vertex 392: 2 1 1 2
+  Edge 257: Vertex 388: 1 0 1 2 -- Vertex 391: 1 1 1 2
+  Edge 269: Vertex 391: 1 1 1 2 -- Vertex 394: 1 2 1 2
+  Edge 234: Vertex 382: 1 1 0 2 -- Vertex 391: 1 1 1 2
+  Edge 270: Vertex 391: 1 1 1 2 -- Vertex 400: 1 1 2 2
+  Edge 163: Vertex 364: 1 1 1 1 -- Vertex 391: 1 1 1 2
+  Edge 271: Vertex 391: 1 1 1 2 -- Vertex 337: 1 1 1 0
+Vertex 392: 2 1 1 2
+  Edge 268: Vertex 391: 1 1 1 2 -- Vertex 392: 2 1 1 2
+  Edge 272: Vertex 392: 2 1 1 2 -- Vertex 390: 0 1 1 2
+  Edge 261: Vertex 389: 2 0 1 2 -- Vertex 392: 2 1 1 2
+  Edge 273: Vertex 392: 2 1 1 2 -- Vertex 395: 2 2 1 2
+  Edge 238: Vertex 383: 2 1 0 2 -- Vertex 392: 2 1 1 2
+  Edge 274: Vertex 392: 2 1 1 2 -- Vertex 401: 2 1 2 2
+  Edge 167: Vertex 365: 2 1 1 1 -- Vertex 392: 2 1 1 2
+  Edge 275: Vertex 392: 2 1 1 2 -- Vertex 338: 2 1 1 0
+Vertex 393: 0 2 1 2
+  Edge 284: Vertex 395: 2 2 1 2 -- Vertex 393: 0 2 1 2
+  Edge 276: Vertex 393: 0 2 1 2 -- Vertex 394: 1 2 1 2
+  Edge 265: Vertex 390: 0 1 1 2 -- Vertex 393: 0 2 1 2
+  Edge 277: Vertex 393: 0 2 1 2 -- Vertex 387: 0 0 1 2
+  Edge 242: Vertex 384: 0 2 0 2 -- Vertex 393: 0 2 1 2
+  Edge 278: Vertex 393: 0 2 1 2 -- Vertex 402: 0 2 2 2
+  Edge 171: Vertex 366: 0 2 1 1 -- Vertex 393: 0 2 1 2
+  Edge 279: Vertex 393: 0 2 1 2 -- Vertex 339: 0 2 1 0
+Vertex 394: 1 2 1 2
+  Edge 276: Vertex 393: 0 2 1 2 -- Vertex 394: 1 2 1 2
+  Edge 280: Vertex 394: 1 2 1 2 -- Vertex 395: 2 2 1 2
+  Edge 269: Vertex 391: 1 1 1 2 -- Vertex 394: 1 2 1 2
+  Edge 281: Vertex 394: 1 2 1 2 -- Vertex 388: 1 0 1 2
+  Edge 246: Vertex 385: 1 2 0 2 -- Vertex 394: 1 2 1 2
+  Edge 282: Vertex 394: 1 2 1 2 -- Vertex 403: 1 2 2 2
+  Edge 175: Vertex 367: 1 2 1 1 -- Vertex 394: 1 2 1 2
+  Edge 283: Vertex 394: 1 2 1 2 -- Vertex 340: 1 2 1 0
+Vertex 395: 2 2 1 2
+  Edge 280: Vertex 394: 1 2 1 2 -- Vertex 395: 2 2 1 2
+  Edge 284: Vertex 395: 2 2 1 2 -- Vertex 393: 0 2 1 2
+  Edge 273: Vertex 392: 2 1 1 2 -- Vertex 395: 2 2 1 2
+  Edge 285: Vertex 395: 2 2 1 2 -- Vertex 389: 2 0 1 2
+  Edge 250: Vertex 386: 2 2 0 2 -- Vertex 395: 2 2 1 2
+  Edge 286: Vertex 395: 2 2 1 2 -- Vertex 404: 2 2 2 2
+  Edge 179: Vertex 368: 2 2 1 1 -- Vertex 395: 2 2 1 2
+  Edge 287: Vertex 395: 2 2 1 2 -- Vertex 341: 2 2 1 0
+Vertex 396: 0 0 2 2
+  Edge 296: Vertex 398: 2 0 2 2 -- Vertex 396: 0 0 2 2
+  Edge 288: Vertex 396: 0 0 2 2 -- Vertex 397: 1 0 2 2
+  Edge 313: Vertex 402: 0 2 2 2 -- Vertex 396: 0 0 2 2
+  Edge 289: Vertex 396: 0 0 2 2 -- Vertex 399: 0 1 2 2
+  Edge 254: Vertex 387: 0 0 1 2 -- Vertex 396: 0 0 2 2
+  Edge 290: Vertex 396: 0 0 2 2 -- Vertex 378: 0 0 0 2
+  Edge 183: Vertex 369: 0 0 2 1 -- Vertex 396: 0 0 2 2
+  Edge 291: Vertex 396: 0 0 2 2 -- Vertex 342: 0 0 2 0
+Vertex 397: 1 0 2 2
+  Edge 288: Vertex 396: 0 0 2 2 -- Vertex 397: 1 0 2 2
+  Edge 292: Vertex 397: 1 0 2 2 -- Vertex 398: 2 0 2 2
+  Edge 317: Vertex 403: 1 2 2 2 -- Vertex 397: 1 0 2 2
+  Edge 293: Vertex 397: 1 0 2 2 -- Vertex 400: 1 1 2 2
+  Edge 258: Vertex 388: 1 0 1 2 -- Vertex 397: 1 0 2 2
+  Edge 294: Vertex 397: 1 0 2 2 -- Vertex 379: 1 0 0 2
+  Edge 187: Vertex 370: 1 0 2 1 -- Vertex 397: 1 0 2 2
+  Edge 295: Vertex 397: 1 0 2 2 -- Vertex 343: 1 0 2 0
+Vertex 398: 2 0 2 2
+  Edge 292: Vertex 397: 1 0 2 2 -- Vertex 398: 2 0 2 2
+  Edge 296: Vertex 398: 2 0 2 2 -- Vertex 396: 0 0 2 2
+  Edge 321: Vertex 404: 2 2 2 2 -- Vertex 398: 2 0 2 2
+  Edge 297: Vertex 398: 2 0 2 2 -- Vertex 401: 2 1 2 2
+  Edge 262: Vertex 389: 2 0 1 2 -- Vertex 398: 2 0 2 2
+  Edge 298: Vertex 398: 2 0 2 2 -- Vertex 380: 2 0 0 2
+  Edge 191: Vertex 371: 2 0 2 1 -- Vertex 398: 2 0 2 2
+  Edge 299: Vertex 398: 2 0 2 2 -- Vertex 344: 2 0 2 0
+Vertex 399: 0 1 2 2
+  Edge 308: Vertex 401: 2 1 2 2 -- Vertex 399: 0 1 2 2
+  Edge 300: Vertex 399: 0 1 2 2 -- Vertex 400: 1 1 2 2
+  Edge 289: Vertex 396: 0 0 2 2 -- Vertex 399: 0 1 2 2
+  Edge 301: Vertex 399: 0 1 2 2 -- Vertex 402: 0 2 2 2
+  Edge 266: Vertex 390: 0 1 1 2 -- Vertex 399: 0 1 2 2
+  Edge 302: Vertex 399: 0 1 2 2 -- Vertex 381: 0 1 0 2
+  Edge 195: Vertex 372: 0 1 2 1 -- Vertex 399: 0 1 2 2
+  Edge 303: Vertex 399: 0 1 2 2 -- Vertex 345: 0 1 2 0
+Vertex 400: 1 1 2 2
+  Edge 300: Vertex 399: 0 1 2 2 -- Vertex 400: 1 1 2 2
+  Edge 304: Vertex 400: 1 1 2 2 -- Vertex 401: 2 1 2 2
+  Edge 293: Vertex 397: 1 0 2 2 -- Vertex 400: 1 1 2 2
+  Edge 305: Vertex 400: 1 1 2 2 -- Vertex 403: 1 2 2 2
+  Edge 270: Vertex 391: 1 1 1 2 -- Vertex 400: 1 1 2 2
+  Edge 306: Vertex 400: 1 1 2 2 -- Vertex 382: 1 1 0 2
+  Edge 199: Vertex 373: 1 1 2 1 -- Vertex 400: 1 1 2 2
+  Edge 307: Vertex 400: 1 1 2 2 -- Vertex 346: 1 1 2 0
+Vertex 401: 2 1 2 2
+  Edge 304: Vertex 400: 1 1 2 2 -- Vertex 401: 2 1 2 2
+  Edge 308: Vertex 401: 2 1 2 2 -- Vertex 399: 0 1 2 2
+  Edge 297: Vertex 398: 2 0 2 2 -- Vertex 401: 2 1 2 2
+  Edge 309: Vertex 401: 2 1 2 2 -- Vertex 404: 2 2 2 2
+  Edge 274: Vertex 392: 2 1 1 2 -- Vertex 401: 2 1 2 2
+  Edge 310: Vertex 401: 2 1 2 2 -- Vertex 383: 2 1 0 2
+  Edge 203: Vertex 374: 2 1 2 1 -- Vertex 401: 2 1 2 2
+  Edge 311: Vertex 401: 2 1 2 2 -- Vertex 347: 2 1 2 0
+Vertex 402: 0 2 2 2
+  Edge 320: Vertex 404: 2 2 2 2 -- Vertex 402: 0 2 2 2
+  Edge 312: Vertex 402: 0 2 2 2 -- Vertex 403: 1 2 2 2
+  Edge 301: Vertex 399: 0 1 2 2 -- Vertex 402: 0 2 2 2
+  Edge 313: Vertex 402: 0 2 2 2 -- Vertex 396: 0 0 2 2
+  Edge 278: Vertex 393: 0 2 1 2 -- Vertex 402: 0 2 2 2
+  Edge 314: Vertex 402: 0 2 2 2 -- Vertex 384: 0 2 0 2
+  Edge 207: Vertex 375: 0 2 2 1 -- Vertex 402: 0 2 2 2
+  Edge 315: Vertex 402: 0 2 2 2 -- Vertex 348: 0 2 2 0
+Vertex 403: 1 2 2 2
+  Edge 312: Vertex 402: 0 2 2 2 -- Vertex 403: 1 2 2 2
+  Edge 316: Vertex 403: 1 2 2 2 -- Vertex 404: 2 2 2 2
+  Edge 305: Vertex 400: 1 1 2 2 -- Vertex 403: 1 2 2 2
+  Edge 317: Vertex 403: 1 2 2 2 -- Vertex 397: 1 0 2 2
+  Edge 282: Vertex 394: 1 2 1 2 -- Vertex 403: 1 2 2 2
+  Edge 318: Vertex 403: 1 2 2 2 -- Vertex 385: 1 2 0 2
+  Edge 211: Vertex 376: 1 2 2 1 -- Vertex 403: 1 2 2 2
+  Edge 319: Vertex 403: 1 2 2 2 -- Vertex 349: 1 2 2 0
+Vertex 404: 2 2 2 2
+  Edge 316: Vertex 403: 1 2 2 2 -- Vertex 404: 2 2 2 2
+  Edge 320: Vertex 404: 2 2 2 2 -- Vertex 402: 0 2 2 2
+  Edge 309: Vertex 401: 2 1 2 2 -- Vertex 404: 2 2 2 2
+  Edge 321: Vertex 404: 2 2 2 2 -- Vertex 398: 2 0 2 2
+  Edge 286: Vertex 395: 2 2 1 2 -- Vertex 404: 2 2 2 2
+  Edge 322: Vertex 404: 2 2 2 2 -- Vertex 386: 2 2 0 2
+  Edge 215: Vertex 377: 2 2 2 1 -- Vertex 404: 2 2 2 2
+  Edge 323: Vertex 404: 2 2 2 2 -- Vertex 350: 2 2 2 0
+Vec Object: 1 MPI process
+  type: seq
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+0.
+  Slice 0: 1.61841e-16
+  Slice 1: 1.66533e-16
+  Slice 2: 2.32634e-16
+  Slice 3: 3.33067e-16
+  Slice 4: 3.35659e-16
+  Slice 5: 3.37661e-16
+  Slice 6: 3.7879e-16
+  Slice 7: 1.68831e-16
+  Slice 8: 2.48253e-16
+  Slice 9: 2.23773e-16
+  Slice 10: 2.77902e-16
+  Slice 11: 1.8619e-16
