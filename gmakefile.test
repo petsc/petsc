@@ -153,7 +153,7 @@ testsrcs-rel := $(foreach pkg, $(pkgs), $(foreach lang, $(testlangs), $(testsrcs
 testsrcs := $(foreach sfile, $(testsrcs-rel), $(TESTSRCDIR)/$(sfile))
 
 # workaround win32fe failure
-ifneq (,$(findstring win32fe,$(call quiet,$(cc_name))))
+ifneq (,$(findstring win_,$(call quiet,$(cc_name))))
 $(TESTDIR)/ts/tutorials/multirate/ex6: | $(TESTDIR)/ts/tutorials/multirate/ex5
 $(TESTDIR)/ts/tutorials/multirate/ex8: | $(TESTDIR)/ts/tutorials/multirate/ex6
 endif

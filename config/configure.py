@@ -261,13 +261,22 @@ def chkcygwinpython():
   return 0
 
 def chkcygwinwindowscompilers():
-  '''Adds win32fe for Microsoft/Intel compilers'''
+  ''' Converts Microsoft and Intel Windows compilers to PETSc script using win32fe'''
   if os.path.exists('/usr/bin/cygcheck.exe'):
+    path = os.path.join(os.getcwd(),'lib','petsc','bin','win32fe')
     for l in range(1,len(sys.argv)):
       option = sys.argv[l]
-      for i in ['cl','icl','ifort']:
-        if option.startswith(i):
-          sys.argv[l] = 'win32fe '+option
+      for i in ['cl','icl','ifort','lib','nvcc']:
+        if option.endswith('="win32fe '+i+'"'):
+          sys.argv[l] = option[:option.find('=')+1]+os.path.join(path,'win_'+i)
+          print('===============================================================================')
+          print(' *** Arguments of the form XXX="win32fe '+i+'" are deprecated              ****')
+          print(' *** Use XXX='+i+'                                                         ****')
+          print('===============================================================================')
+
+          break
+        if option.endswith('='+i):
+          sys.argv[l] = option[:option.find('=')+1]+os.path.join(path,'win_'+i)
           break
   return 0
 

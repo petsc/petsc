@@ -55,7 +55,7 @@ class CompilerOptions(config.base.Configure):
           flags.append('-g')
           flags.append('-O3')
       # Windows Intel
-      elif compiler.find('win32fe icl') >= 0:
+      elif compiler.find('win_icl') >= 0:
         if bopt == '':
           flags.extend(['-Qstd=c99'])
           if self.argDB['with-shared-libraries']:
@@ -67,7 +67,7 @@ class CompilerOptions(config.base.Configure):
         elif bopt == 'O':
           flags.extend(['-O3', '-QxW'])
       # Windows Microsoft
-      elif compiler.find('win32fe cl') >= 0:
+      elif compiler.find('win_cl') >= 0:
         if bopt == '':
           dir(self)
           # cause compiler to generate only a single copy of static strings; needed usage of __func__ in PETSc
@@ -176,7 +176,7 @@ class CompilerOptions(config.base.Configure):
           flags.append('-g')
           flags.append('-O3')
       # Windows Intel
-      elif compiler.find('win32fe icl') >= 0:
+      elif compiler.find('win_icl') >= 0:
         if bopt == '':
           if self.argDB['with-shared-libraries']:
             flags.extend(['-MD','-GR','-EHsc'])
@@ -187,7 +187,7 @@ class CompilerOptions(config.base.Configure):
         elif bopt in ['O']:
           flags.extend(['-O3', '-QxW'])
       # Windows Microsoft
-      elif compiler.find('win32fe cl') >= 0:
+      elif compiler.find('win_cl') >= 0:
         if bopt == '':
           # cause compiler to generate only a single copy of static strings; needed usage of __func__ in PETSc
           flags.extend(['-GF'])
@@ -268,7 +268,7 @@ class CompilerOptions(config.base.Configure):
           flags.append('-g')
           flags.append('-O3')
       # Windows Intel
-      elif compiler.find('win32fe ifl') >= 0 or compiler.find('win32fe ifort') >= 0:
+      elif compiler.find('win_ifort') >= 0:
         if bopt == '':
           if self.argDB['with-shared-libraries']:
             flags.extend(['-MD'])

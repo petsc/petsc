@@ -16,9 +16,9 @@ if __name__ == '__main__':
   configure_options = [
     '--package-prefix-hash='+petsc_hash_pkgs,
     '--download-fblaslapack=1',
-    '--with-cc=win32fe icl',
-    '--with-cxx=win32fe icl',
-    '--with-fc=win32fe ifort',
+    '--with-cc=icl',
+    '--with-cxx=icl',
+    '--with-fc=ifort',
     '--with-clanguage=cxx',
     '--with-scalar-type=complex',
     '--with-mpi-include=['+mpidir+'/Include,'+mpidir+'/Include/x64]',
