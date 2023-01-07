@@ -178,7 +178,7 @@ PetscErrorCode DMPlexGetCeedRestriction(DM dm, DMLabel domain_label, PetscInt la
 {
   PetscFunctionBeginUser;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidPointer(ERestrict, 2);
+  PetscValidPointer(ERestrict, 6);
   if (!dm->ceedERestrict) {
     PetscInt            num_cells, cell_size, num_comp, lvec_size, *restr_indices;
     CeedElemRestriction elem_restr;
