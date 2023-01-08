@@ -718,7 +718,7 @@ M*/
   // }
   //
   // Here gcc would (if just using builtin_expect()) emit 2 calls to bar(). Note we still have
-  // cond "tested" in the condition, but this is done to silence set-but-unused variable warnings
+  // cond "tested" in the condition, but this is done to silence unused-but-set variable warnings
   #define PetscAssume(...) \
     do { \
       if (0 && (__VA_ARGS__)) PetscUnreachable(); \

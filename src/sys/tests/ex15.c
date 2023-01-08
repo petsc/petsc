@@ -143,7 +143,7 @@ int main(int argc, char **argv)
   sbuff = NULL;
   oh    = NULL;
 
-  /* prevent to issue warning about set-but-not-used variables */
+  /* prevent to issue warning about unused-but-set variables */
   (void)help;
 
   (void)svalue;

@@ -34,9 +34,6 @@ class CompilerOptions(config.base.Configure):
           flags.extend(['-Qunused-arguments'])
         if self.argDB['with-visibility']:
           flags.extend(['-fvisibility=hidden'])
-        arg = nargs.Arg.findArgument('with-errorchecking', self.clArgs)
-        if not nargs.ArgBool('with-errorchecking', arg if arg is not None else '1', isTemporary=True).getValue():
-          flags.extend(['-Wno-unused-but-set-variable'])
       elif bopt == 'g':
         flags.extend(['-g3','-O0'])
       elif bopt == 'O':
@@ -150,9 +147,6 @@ class CompilerOptions(config.base.Configure):
         # flags.extend([('-x','c++')])
         if self.argDB['with-visibility']:
           flags.extend(['-fvisibility=hidden'])
-        arg = nargs.Arg.findArgument('with-errorchecking', self.clArgs)
-        if not nargs.ArgBool('with-errorchecking', arg if arg is not None else '1', isTemporary=True).getValue():
-          flags.extend(['-Wno-unused-but-set-variable'])
       elif bopt in ['g']:
         # -g3 causes an as SEGV on OSX
         if config.setCompilers.Configure.isHIP(compiler, self.log):
