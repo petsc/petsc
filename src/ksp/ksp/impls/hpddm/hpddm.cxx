@@ -497,7 +497,7 @@ static PetscErrorCode KSPMatSolve_HPDDM(KSP ksp, Mat B, Mat X)
   const PetscScalar *b;
   PetscScalar       *x;
   PetscInt           n, lda;
-  PetscBool          flg;
+  PetscMemType       type[2];
 
   PetscFunctionBegin;
   PetscCall(PetscCitationsRegister(HPDDMCitation, &HPDDMCite));
@@ -510,22 +510,16 @@ static PetscErrorCode KSPMatSolve_HPDDM(KSP ksp, Mat B, Mat X)
   PetscCall(MatDenseGetLDA(X, &lda));
   PetscCheck(n == lda, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Unhandled leading dimension lda = %" PetscInt_FMT " with n = %" PetscInt_FMT, lda, n);
   PetscCall(MatGetSize(X, NULL, &n));
-  PetscCall(PetscObjectTypeCompareAny((PetscObject)X, &flg, MATSEQDENSECUDA, MATMPIDENSECUDA, ""));
-  if (!flg) {
-    PetscCall(MatDenseGetArrayRead(B, &b));
-    PetscCall(MatDenseGetArrayWrite(X, &x));
+  PetscCall(MatDenseGetArrayWriteAndMemType(X, &x, type));
+  PetscCall(MatDenseGetArrayReadAndMemType(B, &b, type + 1));
+  PetscCheck(type[0] == type[1], PetscObjectComm((PetscObject)A), PETSC_ERR_ARG_INCOMP, "Right-hand side and solution matrices must have the same PetscMemType, %s != %s", PetscMemTypeToString(type[0]), PetscMemTypeToString(type[1]));
+  if (PetscMemTypeCUDA(type[0])) PetscCall(KSPSolve_HPDDM_Private<PETSC_MEMTYPE_CUDA>(ksp, b, x, n));
+  else {
+    PetscCheck(PetscMemTypeHost(type[0]), PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "PetscMemType (%s) is neither PETSC_MEMTYPE_HOST nor PETSC_MEMTYPE_CUDA", PetscMemTypeToString(type[0]));
     PetscCall(KSPSolve_HPDDM_Private(ksp, b, x, n));
-    PetscCall(MatDenseRestoreArrayWrite(X, &x));
-    PetscCall(MatDenseRestoreArrayRead(B, &b));
-  } else {
-#if PetscDefined(HAVE_CUDA)
-    PetscCall(MatDenseCUDAGetArrayRead(B, &b));
-    PetscCall(MatDenseCUDAGetArrayWrite(X, &x));
-    PetscCall(KSPSolve_HPDDM_Private<PETSC_MEMTYPE_CUDA>(ksp, b, x, n));
-    PetscCall(MatDenseCUDARestoreArrayWrite(X, &x));
-    PetscCall(MatDenseCUDARestoreArrayRead(B, &b));
-#endif
   }
+  PetscCall(MatDenseRestoreArrayReadAndMemType(B, &b));
+  PetscCall(MatDenseRestoreArrayWriteAndMemType(X, &x));
   PetscFunctionReturn(0);
 }
 
