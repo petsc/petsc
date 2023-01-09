@@ -745,7 +745,7 @@ PETSC_EXTERN PetscErrorCode MatFactorDumpMatrix(Mat);
 PETSC_INTERN PetscErrorCode MatShift_Basic(Mat, PetscScalar);
 PETSC_INTERN PetscErrorCode MatSetBlockSizes_Default(Mat, PetscInt, PetscInt);
 
-static inline PetscErrorCode MatPivotCheck_nz(Mat mat, const MatFactorInfo *info, FactorShiftCtx *sctx, PetscInt row)
+static inline PetscErrorCode MatPivotCheck_nz(PETSC_UNUSED Mat mat, const MatFactorInfo *info, FactorShiftCtx *sctx, PETSC_UNUSED PetscInt row)
 {
   PetscReal _rs   = sctx->rs;
   PetscReal _zero = info->zeropivot * _rs;
@@ -763,7 +763,7 @@ static inline PetscErrorCode MatPivotCheck_nz(Mat mat, const MatFactorInfo *info
   PetscFunctionReturn(0);
 }
 
-static inline PetscErrorCode MatPivotCheck_pd(Mat mat, const MatFactorInfo *info, FactorShiftCtx *sctx, PetscInt row)
+static inline PetscErrorCode MatPivotCheck_pd(PETSC_UNUSED Mat mat, const MatFactorInfo *info, FactorShiftCtx *sctx, PETSC_UNUSED PetscInt row)
 {
   PetscReal _rs   = sctx->rs;
   PetscReal _zero = info->zeropivot * _rs;
@@ -786,7 +786,7 @@ static inline PetscErrorCode MatPivotCheck_pd(Mat mat, const MatFactorInfo *info
   PetscFunctionReturn(0);
 }
 
-static inline PetscErrorCode MatPivotCheck_inblocks(Mat mat, const MatFactorInfo *info, FactorShiftCtx *sctx, PetscInt row)
+static inline PetscErrorCode MatPivotCheck_inblocks(PETSC_UNUSED Mat mat, const MatFactorInfo *info, FactorShiftCtx *sctx, PETSC_UNUSED PetscInt row)
 {
   PetscReal _zero = info->zeropivot;
 
@@ -1369,7 +1369,7 @@ static inline PetscErrorCode PetscLLCondensedAddSorted(PetscInt nidx, const Pets
   PetscFunctionReturn(0);
 }
 
-static inline PetscErrorCode PetscLLCondensedClean(PetscInt lnk_max, PetscInt nidx, PetscInt *indices, PetscInt lnk[], PetscBT bt)
+static inline PetscErrorCode PetscLLCondensedClean(PetscInt lnk_max, PETSC_UNUSED PetscInt nidx, PetscInt *indices, PetscInt lnk[], PetscBT bt)
 {
   PetscInt _next = lnk[3]; /* head node */
   PetscInt _nlnk = lnk[0]; /* num of entries on the list */
@@ -1464,7 +1464,7 @@ static inline PetscErrorCode PetscLLCondensedAddSorted_Scalable(PetscInt nidx, c
   return 0;
 }
 
-static inline PetscErrorCode PetscLLCondensedClean_Scalable(PetscInt nidx, PetscInt *indices, PetscInt *lnk)
+static inline PetscErrorCode PetscLLCondensedClean_Scalable(PETSC_UNUSED PetscInt nidx, PetscInt *indices, PetscInt *lnk)
 {
   PetscInt _k, _next, _nlnk;
   _next = lnk[3]; /* head node */
@@ -1568,7 +1568,7 @@ static inline PetscErrorCode PetscLLCondensedAddSorted_fast(PetscInt nidx, const
   return 0;
 }
 
-static inline PetscErrorCode PetscLLCondensedClean_fast(PetscInt nidx, PetscInt *indices, PetscInt *lnk)
+static inline PetscErrorCode PetscLLCondensedClean_fast(PETSC_UNUSED PetscInt nidx, PetscInt *indices, PetscInt *lnk)
 {
   PetscInt _k, _next, _nlnk, cnt, j;
   _next = lnk[5]; /* first node */
