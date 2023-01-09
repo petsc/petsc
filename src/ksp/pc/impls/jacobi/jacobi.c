@@ -66,11 +66,17 @@ typedef struct {
   PetscBool fixdiag; /* fix zero diagonal terms */
 } PC_Jacobi;
 
+static PetscErrorCode PCReset_Jacobi(PC);
+
 static PetscErrorCode PCJacobiSetType_Jacobi(PC pc, PCJacobiType type)
 {
-  PC_Jacobi *j = (PC_Jacobi *)pc->data;
+  PC_Jacobi   *j = (PC_Jacobi *)pc->data;
+  PCJacobiType old_type;
 
   PetscFunctionBegin;
+  PetscCall(PCJacobiGetType(pc, &old_type));
+  if (old_type == type) PetscFunctionReturn(0);
+  PetscCall(PCReset_Jacobi(pc));
   j->userowmax = PETSC_FALSE;
   j->userowsum = PETSC_FALSE;
   if (type == PC_JACOBI_ROWMAX) {
