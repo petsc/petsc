@@ -356,7 +356,11 @@ PetscErrorCode ISLocalToGlobalMappingView(ISLocalToGlobalMapping mapping, PetscV
   if (iascii) {
     PetscCall(PetscObjectPrintClassNamePrefixType((PetscObject)mapping, viewer));
     PetscCall(PetscViewerASCIIPushSynchronized(viewer));
-    for (i = 0; i < mapping->n; i++) PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "[%d] %" PetscInt_FMT " %" PetscInt_FMT "\n", rank, i, mapping->indices[i]));
+    for (i = 0; i < mapping->n; i++) {
+      PetscInt bs = mapping->bs, g = mapping->indices[i];
+      if (bs == 1) PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "[%d] %" PetscInt_FMT " %" PetscInt_FMT "\n", rank, i, g));
+      else PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "[%d] %" PetscInt_FMT ":%" PetscInt_FMT " %" PetscInt_FMT ":%" PetscInt_FMT "\n", rank, i * bs, (i + 1) * bs, g * bs, (g + 1) * bs));
+    }
     PetscCall(PetscViewerFlush(viewer));
     PetscCall(PetscViewerASCIIPopSynchronized(viewer));
   }

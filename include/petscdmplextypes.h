@@ -33,6 +33,7 @@ typedef enum {
   DM_SHAPE_DOUBLET,
   DM_SHAPE_ANNULUS,
   DM_SHAPE_HYPERCUBIC,
+  DM_SHAPE_ZBOX,
   DM_SHAPE_UNKNOWN
 } DMPlexShape;
 PETSC_EXTERN const char *const DMPlexShapes[];

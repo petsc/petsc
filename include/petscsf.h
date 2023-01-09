@@ -157,6 +157,7 @@ PETSC_EXTERN PetscErrorCode PetscSFSetGraphLayout(PetscSF, PetscLayout, PetscInt
 PETSC_EXTERN PetscErrorCode PetscSFGetGraphLayout(PetscSF, PetscLayout *, PetscInt *, const PetscInt *[], PetscInt *[]);
 PETSC_EXTERN PetscErrorCode PetscSFCreateFromLayouts(PetscLayout, PetscLayout, PetscSF *);
 PETSC_EXTERN PetscErrorCode PetscSFCreateByMatchingIndices(PetscLayout, PetscInt, const PetscInt *, const PetscInt *, PetscInt, PetscInt, const PetscInt *, const PetscInt *, PetscInt, PetscSF *, PetscSF *);
+PETSC_EXTERN PetscErrorCode PetscSFMerge(PetscSF, PetscSF, PetscSF *);
 
 /* PetscSection interoperability */
 PETSC_EXTERN PetscErrorCode PetscSFSetGraphSection(PetscSF, PetscSection, PetscSection);

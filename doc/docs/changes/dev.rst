@@ -120,6 +120,8 @@ Changes: Development
 - Change ``DMPlexMarkBoundaryFaces()`` to avoid marking faces on the parallel boundary. To get the prior behavior, you can temporarily remove the ``PointSF`` from the ``DM``
 - Add ``-dm_localize_height`` to localize edges and faces
 - Add ``DMPlexCreateHypercubicMesh()`` to create hypercubic meshes needed for QCD
+- Add ``-dm_plex_shape zbox`` option to ``DMSetFromOptions`` to generated born-parallel meshes in Z-ordering (a space-filling curve). This may be used as-is with ``-petscpartitioner_type simple`` or redistributed using ``-petscpartitioner_type parmetis`` (or ``ptscotch``, etc.), which is more scalable than creating a serial mesh to partition and distribute.
+- Add ``DMPlexSetIsoperiodicFaceSF()`` to wrap a non-periodic mesh into periodic while preserving the local point representation for both donor and image sheet. This is supported with ``zbox`` above, and allows single-element periodicity.
 
 .. rubric:: FE/FV:
 

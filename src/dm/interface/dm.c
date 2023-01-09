@@ -781,6 +781,8 @@ PetscErrorCode DMDestroy(DM *dm)
   if ((*dm)->transformDestroy) PetscCall((*(*dm)->transformDestroy)(*dm, (*dm)->transformCtx));
   PetscCall(DMDestroy(&(*dm)->transformDM));
   PetscCall(VecDestroy(&(*dm)->transform));
+  PetscCall(VecScatterDestroy(&(*dm)->periodic.affine_to_local));
+  PetscCall(VecDestroy(&(*dm)->periodic.affine));
 
   PetscCall(DMClearDS(*dm));
   PetscCall(DMDestroy(&(*dm)->dmBC));
@@ -842,7 +844,7 @@ PetscErrorCode DMSetUp(DM dm)
 + -dm_plex_filename <str>           - File containing a mesh
 . -dm_plex_boundary_filename <str>  - File containing a mesh boundary
 . -dm_plex_name <str>               - Name of the mesh in the file
-. -dm_plex_shape <shape>            - The domain shape, such as `DM_SHAPE_BOX`, `DM_SHAPE_SPHERE`, etc.
+. -dm_plex_shape <shape>            - The domain shape, such as `BOX`, `SPHERE`, etc.
 . -dm_plex_cell <ct>                - Cell shape
 . -dm_plex_reference_cell_domain <bool> - Use a reference cell domain
 . -dm_plex_dim <dim>                - Set the topological dimension
@@ -4495,6 +4497,18 @@ static PetscErrorCode DMDefaultSectionCheckConsistency_Internal(DM dm, PetscSect
 }
 #endif
 
+static PetscErrorCode DMGetIsoperiodicPointSF_Internal(DM dm, PetscSF *sf)
+{
+  PetscErrorCode (*f)(DM, PetscSF *);
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidPointer(sf, 2);
+  PetscCall(PetscObjectQueryFunction((PetscObject)dm, "DMGetIsoperiodicPointSF_C", &f));
+  if (f) PetscCall(f(dm, sf));
+  else *sf = dm->sf;
+  PetscFunctionReturn(0);
+}
+
 /*@
   DMGetGlobalSection - Get the `PetscSection` encoding the global data layout for the `DM`.
 
@@ -4520,11 +4534,13 @@ PetscErrorCode DMGetGlobalSection(DM dm, PetscSection *section)
   PetscValidPointer(section, 2);
   if (!dm->globalSection) {
     PetscSection s;
+    PetscSF      sf;
 
     PetscCall(DMGetLocalSection(dm, &s));
     PetscCheck(s, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONGSTATE, "DM must have a default PetscSection in order to create a global PetscSection");
     PetscCheck(dm->sf, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONGSTATE, "DM must have a point PetscSF in order to create a global PetscSection");
-    PetscCall(PetscSectionCreateGlobalSection(s, dm->sf, PETSC_FALSE, PETSC_FALSE, &dm->globalSection));
+    PetscCall(DMGetIsoperiodicPointSF_Internal(dm, &sf));
+    PetscCall(PetscSectionCreateGlobalSection(s, sf, PETSC_FALSE, PETSC_FALSE, &dm->globalSection));
     PetscCall(PetscLayoutDestroy(&dm->map));
     PetscCall(PetscSectionGetValueLayout(PetscObjectComm((PetscObject)dm), dm->globalSection, &dm->map));
     PetscCall(PetscSectionViewFromOptions(dm->globalSection, NULL, "-global_section_view"));

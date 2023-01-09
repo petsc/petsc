@@ -64,6 +64,7 @@ PETSC_EXTERN PetscLogEvent DMPLEX_MetricEnforceSPD;
 PETSC_EXTERN PetscLogEvent DMPLEX_MetricNormalize;
 PETSC_EXTERN PetscLogEvent DMPLEX_MetricAverage;
 PETSC_EXTERN PetscLogEvent DMPLEX_MetricIntersection;
+PETSC_EXTERN PetscLogEvent DMPLEX_Generate;
 
 PETSC_EXTERN PetscLogEvent DMPLEX_RebalBuildGraph;
 PETSC_EXTERN PetscLogEvent DMPLEX_RebalRewriteSF;
@@ -202,6 +203,16 @@ typedef struct {
   PetscErrorCode (*useradjacency)(DM, PetscInt, PetscInt *, PetscInt[], void *); /* User callback for adjacency */
   void *useradjacencyctx;                                                        /* User context for callback */
 
+  // Periodicity
+  struct {
+    // Specified by the user
+    PetscScalar transform[4][4]; // geometric transform
+    PetscSF     face_sf;         // root(donor faces) <-- leaf(local faces)
+    // Created eagerly (depends on points)
+    PetscSF composed_sf; // root(non-periodic global points) <-- leaf(local points)
+    IS      periodic_points;
+  } periodic;
+
   /* Projection */
   PetscInt maxProjectionHeight; /* maximum height of cells used in DMPlexProject functions */
   PetscInt activePoint;         /* current active point in iteration */
@@ -339,6 +350,9 @@ PETSC_EXTERN PetscErrorCode DMPlexOrientInterface_Internal(DM);
 /* Applications may use this function */
 PETSC_EXTERN PetscErrorCode DMPlexCreateNumbering_Plex(DM, PetscInt, PetscInt, PetscInt, PetscInt *, PetscSF, IS *);
 
+PETSC_INTERN PetscErrorCode DMPlexInterpolateInPlace_Internal(DM);
+PETSC_INTERN PetscErrorCode DMPlexCreateBoxMesh_Tensor_SFC_Internal(DM, PetscInt, const PetscInt[], const PetscReal[], const PetscReal[], const DMBoundaryType[], PetscBool);
+PETSC_INTERN PetscErrorCode DMPlexMigrateIsoperiodicFaceSF_Internal(DM, DM, PetscSF);
 PETSC_INTERN PetscErrorCode DMPlexCreateCellNumbering_Internal(DM, PetscBool, IS *);
 PETSC_INTERN PetscErrorCode DMPlexCreateVertexNumbering_Internal(DM, PetscBool, IS *);
 PETSC_INTERN PetscErrorCode DMPlexRefine_Internal(DM, Vec, DMLabel, DMLabel, DM *);
@@ -783,6 +797,8 @@ PETSC_EXTERN PetscErrorCode DMPlexBasisTransformPointTensor_Internal(DM, DM, Vec
 PETSC_INTERN PetscErrorCode DMPlexBasisTransformApplyReal_Internal(DM, const PetscReal[], PetscBool, PetscInt, const PetscReal *, PetscReal *, void *);
 PETSC_INTERN PetscErrorCode DMPlexBasisTransformApply_Internal(DM, const PetscReal[], PetscBool, PetscInt, const PetscScalar *, PetscScalar *, void *);
 PETSC_INTERN PetscErrorCode DMCreateNeumannOverlap_Plex(DM, IS *, Mat *, PetscErrorCode (**)(Mat, PetscReal, Vec, Vec, PetscReal, IS, void *), void **);
+
+PETSC_INTERN PetscErrorCode DMPeriodicCoordinateSetUp_Internal(DM);
 
 /* Functions in the vtable */
 PETSC_INTERN PetscErrorCode DMCreateInterpolation_Plex(DM dmCoarse, DM dmFine, Mat *interpolation, Vec *scaling);

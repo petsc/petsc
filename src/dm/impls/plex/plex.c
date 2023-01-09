@@ -11,7 +11,7 @@
 
 /* Logging support */
 PetscLogEvent DMPLEX_Interpolate, DMPLEX_Partition, DMPLEX_Distribute, DMPLEX_DistributeCones, DMPLEX_DistributeLabels, DMPLEX_DistributeSF, DMPLEX_DistributeOverlap, DMPLEX_DistributeField, DMPLEX_DistributeData, DMPLEX_Migrate, DMPLEX_InterpolateSF, DMPLEX_GlobalToNaturalBegin, DMPLEX_GlobalToNaturalEnd, DMPLEX_NaturalToGlobalBegin, DMPLEX_NaturalToGlobalEnd, DMPLEX_Stratify, DMPLEX_Symmetrize, DMPLEX_Preallocate, DMPLEX_ResidualFEM, DMPLEX_JacobianFEM, DMPLEX_InterpolatorFEM, DMPLEX_InjectorFEM, DMPLEX_IntegralFEM, DMPLEX_CreateGmsh, DMPLEX_RebalanceSharedPoints, DMPLEX_PartSelf, DMPLEX_PartLabelInvert, DMPLEX_PartLabelCreateSF, DMPLEX_PartStratSF, DMPLEX_CreatePointSF, DMPLEX_LocatePoints, DMPLEX_TopologyView, DMPLEX_LabelsView, DMPLEX_CoordinatesView, DMPLEX_SectionView, DMPLEX_GlobalVectorView, DMPLEX_LocalVectorView, DMPLEX_TopologyLoad, DMPLEX_LabelsLoad, DMPLEX_CoordinatesLoad, DMPLEX_SectionLoad, DMPLEX_GlobalVectorLoad, DMPLEX_LocalVectorLoad;
-PetscLogEvent DMPLEX_RebalBuildGraph, DMPLEX_RebalRewriteSF, DMPLEX_RebalGatherGraph, DMPLEX_RebalPartition, DMPLEX_RebalScatterPart;
+PetscLogEvent DMPLEX_RebalBuildGraph, DMPLEX_RebalRewriteSF, DMPLEX_RebalGatherGraph, DMPLEX_RebalPartition, DMPLEX_RebalScatterPart, DMPLEX_Generate;
 
 PETSC_EXTERN PetscErrorCode VecView_MPI(Vec, PetscViewer);
 
@@ -941,6 +941,7 @@ static PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
       PetscCall(DMGetPointSF(dm, &sf));
       PetscCall(PetscSFView(sf, viewer));
     }
+    if (mesh->periodic.face_sf) PetscCall(PetscSFView(mesh->periodic.face_sf, viewer));
     PetscCall(PetscViewerFlush(viewer));
   } else if (format == PETSC_VIEWER_ASCII_LATEX) {
     const char  *name, *color;
@@ -2538,6 +2539,7 @@ PetscErrorCode DMDestroy_Plex(DM dm)
   PetscCall(PetscObjectComposeFunction((PetscObject)dm, "DMPlexReorderSetDefault_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)dm, "DMPlexGetOverlap_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)dm, "DMPlexSetOverlap_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)dm, "DMGetIsoperiodicPointSF_C", NULL));
   if (--mesh->refct > 0) PetscFunctionReturn(0);
   PetscCall(PetscSectionDestroy(&mesh->coneSection));
   PetscCall(PetscFree(mesh->cones));
@@ -2556,6 +2558,9 @@ PetscErrorCode DMDestroy_Plex(DM dm)
   PetscCall(ISDestroy(&mesh->subpointIS));
   PetscCall(ISDestroy(&mesh->globalVertexNumbers));
   PetscCall(ISDestroy(&mesh->globalCellNumbers));
+  PetscCall(PetscSFDestroy(&mesh->periodic.face_sf));
+  PetscCall(PetscSFDestroy(&mesh->periodic.composed_sf));
+  PetscCall(ISDestroy(&mesh->periodic.periodic_points));
   PetscCall(PetscSectionDestroy(&mesh->anchorSection));
   PetscCall(ISDestroy(&mesh->anchorIS));
   PetscCall(PetscSectionDestroy(&mesh->parentSection));

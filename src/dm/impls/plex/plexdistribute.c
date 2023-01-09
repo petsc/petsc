@@ -1880,6 +1880,7 @@ PetscErrorCode DMPlexDistribute(DM dm, PetscInt overlap, PetscSF *sf, DM *dmPara
   PetscCall(DMPlexSetPartitionBalance(*dmParallel, balance));
   PetscCall(DMPlexCreatePointSF(*dmParallel, sfMigration, PETSC_TRUE, &sfPoint));
   PetscCall(DMSetPointSF(*dmParallel, sfPoint));
+  PetscCall(DMPlexMigrateIsoperiodicFaceSF_Internal(dm, *dmParallel, sfMigration));
   PetscCall(DMGetCoordinateDM(*dmParallel, &dmCoord));
   if (dmCoord) PetscCall(DMSetPointSF(dmCoord, sfPoint));
   if (flg) PetscCall(PetscSFView(sfPoint, NULL));

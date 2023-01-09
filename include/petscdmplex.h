@@ -182,6 +182,10 @@ PETSC_EXTERN PetscErrorCode DMPlexExtrude(DM, PetscInt, PetscReal, PetscBool, Pe
 PETSC_EXTERN PetscErrorCode DMPlexCreateConeSection(DM, PetscSection *);
 PETSC_EXTERN PetscErrorCode DMPlexInflateToGeomModel(DM);
 
+PETSC_EXTERN PetscErrorCode DMPlexSetIsoperiodicFaceSF(DM, PetscSF);
+PETSC_EXTERN PetscErrorCode DMPlexGetIsoperiodicFaceSF(DM, PetscSF *);
+PETSC_EXTERN PetscErrorCode DMPlexSetIsoperiodicFaceTransform(DM, const PetscScalar[]);
+
 PETSC_EXTERN PetscErrorCode DMPlexCheck(DM);
 PETSC_EXTERN PetscErrorCode DMPlexCheckSymmetry(DM);
 PETSC_EXTERN PetscErrorCode DMPlexCheckSkeleton(DM, PetscInt);
