@@ -223,7 +223,7 @@ static PetscErrorCode MatDenseCUDAGetArrayWrite_SeqDenseCUDA(Mat A, PetscScalar 
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatDenseCUDARestoreArrayWrite_SeqDenseCUDA(Mat A, PetscScalar **a)
+static PetscErrorCode MatDenseCUDARestoreArrayWrite_SeqDenseCUDA(Mat, PetscScalar **a)
 {
   PetscFunctionBegin;
   if (a) *a = NULL;
@@ -240,7 +240,7 @@ static PetscErrorCode MatDenseCUDAGetArrayRead_SeqDenseCUDA(Mat A, const PetscSc
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatDenseCUDARestoreArrayRead_SeqDenseCUDA(Mat A, const PetscScalar **a)
+static PetscErrorCode MatDenseCUDARestoreArrayRead_SeqDenseCUDA(Mat, const PetscScalar **a)
 {
   PetscFunctionBegin;
   if (a) *a = NULL;
@@ -257,7 +257,7 @@ static PetscErrorCode MatDenseCUDAGetArray_SeqDenseCUDA(Mat A, PetscScalar **a)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatDenseCUDARestoreArray_SeqDenseCUDA(Mat A, PetscScalar **a)
+static PetscErrorCode MatDenseCUDARestoreArray_SeqDenseCUDA(Mat, PetscScalar **a)
 {
   PetscFunctionBegin;
   if (a) *a = NULL;
@@ -495,7 +495,7 @@ static PetscErrorCode MatSolve_SeqDenseCUDA_Internal_LU(Mat A, PetscScalar *x, P
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatSolve_SeqDenseCUDA_Internal_Cholesky(Mat A, PetscScalar *x, PetscCuBLASInt ldx, PetscCuBLASInt m, PetscCuBLASInt nrhs, PetscCuBLASInt k, PetscBool T)
+static PetscErrorCode MatSolve_SeqDenseCUDA_Internal_Cholesky(Mat A, PetscScalar *x, PetscCuBLASInt ldx, PetscCuBLASInt m, PetscCuBLASInt nrhs, PetscCuBLASInt k, PetscBool)
 {
   Mat_SeqDense      *mat = (Mat_SeqDense *)A->data;
   Mat_SeqDenseCUDA  *dA  = (Mat_SeqDenseCUDA *)A->spptr;
@@ -655,7 +655,7 @@ static PetscErrorCode MatMatSolveTranspose_SeqDenseCUDA_QR(Mat A, Mat B, Mat X)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatLUFactor_SeqDenseCUDA(Mat A, IS rperm, IS cperm, const MatFactorInfo *factinfo)
+static PetscErrorCode MatLUFactor_SeqDenseCUDA(Mat A, IS, IS, const MatFactorInfo *)
 {
   Mat_SeqDense     *a  = (Mat_SeqDense *)A->data;
   Mat_SeqDenseCUDA *dA = (Mat_SeqDenseCUDA *)A->spptr;
@@ -702,7 +702,7 @@ static PetscErrorCode MatLUFactor_SeqDenseCUDA(Mat A, IS rperm, IS cperm, const 
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatCholeskyFactor_SeqDenseCUDA(Mat A, IS perm, const MatFactorInfo *factinfo)
+static PetscErrorCode MatCholeskyFactor_SeqDenseCUDA(Mat A, IS, const MatFactorInfo *)
 {
   Mat_SeqDense     *a  = (Mat_SeqDense *)A->data;
   Mat_SeqDenseCUDA *dA = (Mat_SeqDenseCUDA *)A->spptr;
@@ -766,7 +766,7 @@ static PetscErrorCode MatCholeskyFactor_SeqDenseCUDA(Mat A, IS perm, const MatFa
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatQRFactor_SeqDenseCUDA(Mat A, IS col, const MatFactorInfo *factinfo)
+static PetscErrorCode MatQRFactor_SeqDenseCUDA(Mat A, IS, const MatFactorInfo *)
 {
   Mat_SeqDense     *a  = (Mat_SeqDense *)A->data;
   Mat_SeqDenseCUDA *dA = (Mat_SeqDenseCUDA *)A->spptr;
@@ -1073,7 +1073,7 @@ PetscErrorCode MatShift_SeqDenseCUDA(Mat A, PetscScalar alpha)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatAXPY_SeqDenseCUDA(Mat Y, PetscScalar alpha, Mat X, MatStructure str)
+PetscErrorCode MatAXPY_SeqDenseCUDA(Mat Y, PetscScalar alpha, Mat X, MatStructure)
 {
   Mat_SeqDense      *x = (Mat_SeqDense *)X->data;
   Mat_SeqDense      *y = (Mat_SeqDense *)Y->data;
@@ -1223,7 +1223,7 @@ static PetscErrorCode MatDenseGetColumnVec_SeqDenseCUDA(Mat A, PetscInt col, Vec
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatDenseRestoreColumnVec_SeqDenseCUDA(Mat A, PetscInt col, Vec *v)
+static PetscErrorCode MatDenseRestoreColumnVec_SeqDenseCUDA(Mat A, PetscInt, Vec *v)
 {
   Mat_SeqDense *a = (Mat_SeqDense *)A->data;
 
@@ -1255,7 +1255,7 @@ static PetscErrorCode MatDenseGetColumnVecRead_SeqDenseCUDA(Mat A, PetscInt col,
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatDenseRestoreColumnVecRead_SeqDenseCUDA(Mat A, PetscInt col, Vec *v)
+static PetscErrorCode MatDenseRestoreColumnVecRead_SeqDenseCUDA(Mat A, PetscInt, Vec *v)
 {
   Mat_SeqDense *a = (Mat_SeqDense *)A->data;
 
@@ -1287,7 +1287,7 @@ static PetscErrorCode MatDenseGetColumnVecWrite_SeqDenseCUDA(Mat A, PetscInt col
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatDenseRestoreColumnVecWrite_SeqDenseCUDA(Mat A, PetscInt col, Vec *v)
+static PetscErrorCode MatDenseRestoreColumnVecWrite_SeqDenseCUDA(Mat A, PetscInt, Vec *v)
 {
   Mat_SeqDense *a = (Mat_SeqDense *)A->data;
 
