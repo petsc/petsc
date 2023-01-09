@@ -139,7 +139,7 @@ __global__ void __launch_bounds__(1024, 1) mat_lu_factor_band(const PetscInt n, 
 }
 
 static PetscErrorCode MatSolve_SeqAIJCUSPARSEBAND(Mat, Vec, Vec);
-static PetscErrorCode MatLUFactorNumeric_SeqAIJCUSPARSEBAND(Mat B, Mat A, const MatFactorInfo *info)
+static PetscErrorCode MatLUFactorNumeric_SeqAIJCUSPARSEBAND(Mat B, Mat A, const MatFactorInfo *)
 {
   Mat_SeqAIJ                   *b                  = (Mat_SeqAIJ *)B->data;
   Mat_SeqAIJCUSPARSETriFactors *cusparseTriFactors = (Mat_SeqAIJCUSPARSETriFactors *)B->spptr;
@@ -220,7 +220,7 @@ static PetscErrorCode MatLUFactorNumeric_SeqAIJCUSPARSEBAND(Mat B, Mat A, const 
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatLUFactorSymbolic_SeqAIJCUSPARSEBAND(Mat B, Mat A, IS isrow, IS iscol, const MatFactorInfo *info)
+PetscErrorCode MatLUFactorSymbolic_SeqAIJCUSPARSEBAND(Mat B, Mat A, IS isrow, IS iscol, const MatFactorInfo *)
 {
   Mat_SeqAIJ                   *a = (Mat_SeqAIJ *)A->data, *b;
   IS                            isicol;
@@ -340,7 +340,7 @@ PetscErrorCode MatLUFactorSymbolic_SeqAIJCUSPARSEBAND(Mat B, Mat A, IS isrow, IS
 }
 
 /* Use -pc_factor_mat_solver_type cusparseband */
-PetscErrorCode MatFactorGetSolverType_seqaij_cusparse_band(Mat A, MatSolverType *type)
+PetscErrorCode MatFactorGetSolverType_seqaij_cusparse_band(Mat, MatSolverType *type)
 {
   PetscFunctionBegin;
   *type = MATSOLVERCUSPARSEBAND;

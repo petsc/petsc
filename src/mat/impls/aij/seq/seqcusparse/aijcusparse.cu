@@ -1433,7 +1433,7 @@ static PetscErrorCode MatSolveTranspose_SeqAIJCUSPARSE_ILU0(Mat fact, Vec b, Vec
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatILUFactorNumeric_SeqAIJCUSPARSE_ILU0(Mat fact, Mat A, const MatFactorInfo *info)
+static PetscErrorCode MatILUFactorNumeric_SeqAIJCUSPARSE_ILU0(Mat fact, Mat A, const MatFactorInfo *)
 {
   Mat_SeqAIJCUSPARSETriFactors *fs    = (Mat_SeqAIJCUSPARSETriFactors *)fact->spptr;
   Mat_SeqAIJ                   *aij   = (Mat_SeqAIJ *)fact->data;
@@ -1485,7 +1485,7 @@ static PetscErrorCode MatILUFactorNumeric_SeqAIJCUSPARSE_ILU0(Mat fact, Mat A, c
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatILUFactorSymbolic_SeqAIJCUSPARSE_ILU0(Mat fact, Mat A, IS isrow, IS iscol, const MatFactorInfo *info)
+static PetscErrorCode MatILUFactorSymbolic_SeqAIJCUSPARSE_ILU0(Mat fact, Mat A, IS, IS, const MatFactorInfo *info)
 {
   Mat_SeqAIJCUSPARSETriFactors *fs  = (Mat_SeqAIJCUSPARSETriFactors *)fact->spptr;
   Mat_SeqAIJ                   *aij = (Mat_SeqAIJ *)fact->data;
@@ -1673,7 +1673,7 @@ static PetscErrorCode MatSolve_SeqAIJCUSPARSE_ICC0(Mat fact, Vec b, Vec x)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatICCFactorNumeric_SeqAIJCUSPARSE_ICC0(Mat fact, Mat A, const MatFactorInfo *info)
+static PetscErrorCode MatICCFactorNumeric_SeqAIJCUSPARSE_ICC0(Mat fact, Mat A, const MatFactorInfo *)
 {
   Mat_SeqAIJCUSPARSETriFactors *fs    = (Mat_SeqAIJCUSPARSETriFactors *)fact->spptr;
   Mat_SeqAIJ                   *aij   = (Mat_SeqAIJ *)fact->data;
@@ -1726,7 +1726,7 @@ static PetscErrorCode MatICCFactorNumeric_SeqAIJCUSPARSE_ICC0(Mat fact, Mat A, c
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatICCFactorSymbolic_SeqAIJCUSPARSE_ICC0(Mat fact, Mat A, IS perm, const MatFactorInfo *info)
+static PetscErrorCode MatICCFactorSymbolic_SeqAIJCUSPARSE_ICC0(Mat fact, Mat A, IS, const MatFactorInfo *info)
 {
   Mat_SeqAIJCUSPARSETriFactors *fs  = (Mat_SeqAIJCUSPARSETriFactors *)fact->spptr;
   Mat_SeqAIJ                   *aij = (Mat_SeqAIJ *)fact->data;
@@ -1934,7 +1934,7 @@ static PetscErrorCode MatCholeskyFactorSymbolic_SeqAIJCUSPARSE(Mat B, Mat A, IS 
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MatFactorGetSolverType_seqaij_cusparse(Mat A, MatSolverType *type)
+PetscErrorCode MatFactorGetSolverType_seqaij_cusparse(Mat, MatSolverType *type)
 {
   PetscFunctionBegin;
   *type = MATSOLVERCUSPARSE;
@@ -2061,7 +2061,7 @@ static PetscErrorCode MatSeqAIJGetArrayRead_SeqAIJCUSPARSE(Mat A, const PetscSca
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatSeqAIJRestoreArrayRead_SeqAIJCUSPARSE(Mat A, const PetscScalar *array[])
+static PetscErrorCode MatSeqAIJRestoreArrayRead_SeqAIJCUSPARSE(Mat, const PetscScalar *array[])
 {
   PetscFunctionBegin;
   *array = NULL;
@@ -3704,7 +3704,7 @@ static PetscErrorCode MatBindToCPU_SeqAIJCUSPARSE(Mat A, PetscBool flg)
   PetscFunctionReturn(0);
 }
 
-PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJCUSPARSE(Mat A, MatType mtype, MatReuse reuse, Mat *newmat)
+PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJCUSPARSE(Mat A, MatType, MatReuse reuse, Mat *newmat)
 {
   Mat B;
 
@@ -4382,7 +4382,7 @@ PetscErrorCode MatSeqAIJCUSPARSEGetIJ(Mat A, PetscBool compressed, const int **i
 
 .seealso: `MatSeqAIJCUSPARSEGetIJ()`
 @*/
-PetscErrorCode MatSeqAIJCUSPARSERestoreIJ(Mat A, PetscBool compressed, const int **i, const int **j)
+PetscErrorCode MatSeqAIJCUSPARSERestoreIJ(Mat A, PetscBool, const int **i, const int **j)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);

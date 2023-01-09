@@ -947,7 +947,7 @@ struct PackInit_IntegerType_Atomic {
 /* CUDA does not support atomics on chars. It is TBD in PETSc. */
 template <typename Type, PetscInt BS, PetscInt EQ>
 struct PackInit_IntegerType_Atomic<Type, BS, EQ, 1> {
-  static void Init(PetscSFLink link)
+  static void Init(PetscSFLink)
   { /* Nothing to leave function pointers NULL */
   }
 };
@@ -1044,7 +1044,7 @@ static void PackInit_DumbType(PetscSFLink link)
 }
 
 /* Some device-specific utilities */
-static PetscErrorCode PetscSFLinkSyncDevice_CUDA(PetscSFLink link)
+static PetscErrorCode PetscSFLinkSyncDevice_CUDA(PetscSFLink)
 {
   PetscFunctionBegin;
   PetscCallCUDA(cudaDeviceSynchronize());
@@ -1099,7 +1099,7 @@ PetscErrorCode PetscSFFree_CUDA(PetscMemType mtype, void *ptr)
 }
 
 /* Destructor when the link uses MPI for communication on CUDA device */
-static PetscErrorCode PetscSFLinkDestroy_MPI_CUDA(PetscSF sf, PetscSFLink link)
+static PetscErrorCode PetscSFLinkDestroy_MPI_CUDA(PetscSF, PetscSFLink link)
 {
   PetscFunctionBegin;
   for (int i = PETSCSF_LOCAL; i <= PETSCSF_REMOTE; i++) {

@@ -479,7 +479,7 @@ inline PetscErrorCode DeviceContext<T>::memSet(PetscDeviceContext dctx, PetscMem
 }
 
 template <DeviceType T>
-inline PetscErrorCode DeviceContext<T>::createEvent(PetscDeviceContext dctx, PetscEvent event) noexcept
+inline PetscErrorCode DeviceContext<T>::createEvent(PetscDeviceContext, PetscEvent event) noexcept
 {
   PetscFunctionBegin;
   PetscCallCXX(event->data = new event_type());
