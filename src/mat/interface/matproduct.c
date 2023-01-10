@@ -375,11 +375,6 @@ static PetscErrorCode MatProductSymbolic_X_Dense(Mat C)
   PetscFunctionReturn(0);
 }
 
-#if defined(__clang__)
-  #pragma clang diagnostic push
-  #pragma clang diagnostic ignored "-Wformat-pedantic"
-#endif
-
 /* a single driver to query the dispatching */
 static PetscErrorCode MatProductSetFromOptions_Private(Mat mat)
 {
@@ -451,7 +446,13 @@ static PetscErrorCode MatProductSetFromOptions_Private(Mat mat)
       PetscCall(PetscStrlcat(mtypes, ((PetscObject)C)->type_name, sizeof(mtypes)));
     }
     PetscCall(PetscStrlcat(mtypes, "_C", sizeof(mtypes)));
-
+#if defined(__clang__)
+  #pragma clang diagnostic push
+  #pragma clang diagnostic ignored "-Wformat-pedantic"
+#elif defined(__GNUC__) || defined(__GNUG__)
+  #pragma GCC diagnostic push
+  #pragma GCC diagnostic ignored "-Wformat"
+#endif
     PetscCall(PetscObjectQueryFunction((PetscObject)A, mtypes, &f));
     PetscCall(PetscInfo(mat, "  querying %s from A? %p\n", mtypes, f));
     if (!f) {
@@ -481,7 +482,11 @@ static PetscErrorCode MatProductSetFromOptions_Private(Mat mat)
     }
     if (f) PetscCall((*f)(mat));
   }
-
+#if defined(__clang__)
+  #pragma clang diagnostic pop
+#elif defined(__GNUC__) || defined(__GNUG__)
+  #pragma GCC diagnostic pop
+#endif
   /* We may have found f but it did not succeed */
   if (!mat->ops->productsymbolic) {
     /* we can still compute the product if B is of type dense */
@@ -506,10 +511,6 @@ static PetscErrorCode MatProductSetFromOptions_Private(Mat mat)
   if (!mat->ops->productsymbolic) PetscCall(PetscInfo(mat, "  symbolic product is not supported\n"));
   PetscFunctionReturn(0);
 }
-
-#if defined(__clang__)
-  #pragma clang diagnostic pop
-#endif
 
 /*@C
    MatProductSetFromOptions - Sets the options for the computation of a matrix-matrix product where the type, the algorithm etc are determined from the options database.

@@ -115,13 +115,13 @@ PetscErrorCode PetscMallocValidate(int line, const char function[], const char f
   lasthead = NULL;
   if (head && head->prev) {
     (*PetscErrorPrintf)("PetscMallocValidate: error detected in %s() at %s:%d\n", function, file, line);
-    (*PetscErrorPrintf)("Root memory header %p has invalid back pointer %p\n", head, head->prev);
+    (*PetscErrorPrintf)("Root memory header %p has invalid back pointer %p\n", (void *)head, (void *)head->prev);
     return PETSC_ERR_MEMC;
   }
   while (head) {
     if (head->classid != CLASSID_VALUE) {
       (*PetscErrorPrintf)("PetscMallocValidate: error detected in %s() at %s:%d\n", function, file, line);
-      (*PetscErrorPrintf)("Memory at address %p is corrupted\n", head);
+      (*PetscErrorPrintf)("Memory at address %p is corrupted\n", (void *)head);
       (*PetscErrorPrintf)("Probably write before beginning of or past end of array\n");
       if (lasthead) {
         a = (char *)(((TrSPACE *)head) + 1);
@@ -145,7 +145,7 @@ PetscErrorCode PetscMallocValidate(int line, const char function[], const char f
     }
     if (head->prev && head->prev != lasthead) {
       (*PetscErrorPrintf)("PetscMallocValidate: error detected in %s() at %s:%d\n", function, file, line);
-      (*PetscErrorPrintf)("Backpointer %p is invalid, should be %p\n", head->prev, lasthead);
+      (*PetscErrorPrintf)("Backpointer %p is invalid, should be %p\n", (void *)head->prev, (void *)lasthead);
       (*PetscErrorPrintf)("Previous memory originally allocated in %s() at %s:%d\n", lasthead->functionname, lasthead->filename, lasthead->lineno);
       (*PetscErrorPrintf)("Memory originally allocated in %s() at %s:%d\n", head->functionname, head->filename, head->lineno);
       return PETSC_ERR_MEMC;

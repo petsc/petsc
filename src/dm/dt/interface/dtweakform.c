@@ -937,11 +937,6 @@ PetscErrorCode PetscWeakFormDestroy(PetscWeakForm *wf)
   PetscFunctionReturn(0);
 }
 
-#if defined(__clang__)
-  #pragma clang diagnostic push
-  #pragma clang diagnostic ignored "-Wformat-pedantic"
-#endif
-
 static PetscErrorCode PetscWeakFormViewTable_Ascii(PetscWeakForm wf, PetscViewer viewer, PetscBool splitField, const char tableName[], PetscHMapForm map)
 {
   PetscInt Nf = wf->Nf, Nk, k;
@@ -1013,7 +1008,19 @@ static PetscErrorCode PetscWeakFormViewTable_Ascii(PetscWeakForm wf, PetscViewer
             }
           PetscCall(PetscViewerASCIIPrintf(viewer, "%s", fname));
         } else if (showPointer) {
+#if defined(__clang__)
+  #pragma clang diagnostic push
+  #pragma clang diagnostic ignored "-Wformat-pedantic"
+#elif defined(__GNUC__) || defined(__GNUG__)
+  #pragma GCC diagnostic push
+  #pragma GCC diagnostic ignored "-Wformat"
+#endif
           PetscCall(PetscViewerASCIIPrintf(viewer, "%p", funcs[f]));
+#if defined(__clang__)
+  #pragma clang diagnostic pop
+#elif defined(__GNUC__) || defined(__GNUG__)
+  #pragma GCC diagnostic pop
+#endif
         }
         PetscCall(PetscFree(fname));
       }
@@ -1025,10 +1032,6 @@ static PetscErrorCode PetscWeakFormViewTable_Ascii(PetscWeakForm wf, PetscViewer
   }
   PetscFunctionReturn(0);
 }
-
-#if defined(__clang__)
-  #pragma clang diagnostic pop
-#endif
 
 static PetscErrorCode PetscWeakFormView_Ascii(PetscWeakForm wf, PetscViewer viewer)
 {
