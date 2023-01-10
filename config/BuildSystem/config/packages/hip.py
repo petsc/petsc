@@ -154,12 +154,12 @@ class Configure(config.package.Package):
       # should be better written as --with-hipcc=/opt/rocm-4.5.2/bin/hipcc --with-hip-dir=/opt/rocm-4.5.2 or simply
       # --with-hip-dir=/opt/rocm-4.5.2)
       if self.directory:
-        self.rocBlasDir   = self.directory
-        self.rocSparseDir = self.directory
+        self.hipDir = self.directory
       else: # directory is '', indicating we are using the compiler's default, so the last resort is to guess the dir from hipcc
-        hipDir            = os.path.dirname(os.path.dirname(self.fullPathHIPC)) # Ex. peel /opt/rocm-4.5.2/bin/hipcc twice
-        self.rocBlasDir   = hipDir
-        self.rocSparseDir = hipDir
+        self.hipDir = os.path.dirname(os.path.dirname(self.fullPathHIPC)) # Ex. peel /opt/rocm-4.5.2/bin/hipcc twice
+
+      self.rocBlasDir   = self.hipDir
+      self.rocSparseDir = self.hipDir
     #self.checkHIPDoubleAlign()
     self.configureTypes()
     self.libraries.popLanguage()
