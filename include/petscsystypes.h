@@ -250,7 +250,7 @@ typedef enum {
    Note:
    Should not be used with the if (flg) or if (!flg) syntax.
 
-.seealso: `PETSC_TRUE`, `PETSC_FALSE`, `PetscNot()`, `PETSC_BOOL3_TRUE`, `PETSC_BOOL3_FALSE`, `PETSC_BOOL3_UKNOWN`
+.seealso: `PETSC_TRUE`, `PETSC_FALSE`, `PetscNot()`, `PETSC_BOOL3_TRUE`, `PETSC_BOOL3_FALSE`, `PETSC_BOOL3_UNKNOWN`
 E*/
 typedef enum {
   PETSC_BOOL3_FALSE,
