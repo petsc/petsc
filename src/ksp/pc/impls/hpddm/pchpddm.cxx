@@ -40,7 +40,7 @@ static PetscErrorCode PCReset_HPDDM(PC pc)
   PetscCall(MatDestroy(&data->B));
   PetscCall(VecDestroy(&data->normal));
   data->correction = PC_HPDDM_COARSE_CORRECTION_DEFLATED;
-  data->Neumann    = PETSC_FALSE;
+  data->Neumann    = PETSC_BOOL3_UNKNOWN;
   data->deflation  = PETSC_FALSE;
   data->setup      = NULL;
   data->setup_ctx  = NULL;
@@ -137,7 +137,7 @@ static inline PetscErrorCode PCHPDDMSetAuxiliaryMatNormal_Private(PC pc, Mat A, 
   }
   PetscCall(MatDestroySubMatrices(1, &splitting));
   PetscCall(PCHPDDMSetAuxiliaryMat(pc, *cols, aux, NULL, NULL));
-  data->Neumann = PETSC_TRUE;
+  data->Neumann = PETSC_BOOL3_TRUE;
   PetscCall(ISDestroy(cols));
   PetscCall(MatDestroy(&aux));
   PetscFunctionReturn(0);
@@ -189,7 +189,7 @@ static PetscErrorCode PCHPDDMHasNeumannMat_HPDDM(PC pc, PetscBool has)
   PC_HPDDM *data = (PC_HPDDM *)pc->data;
 
   PetscFunctionBegin;
-  data->Neumann = has;
+  data->Neumann = PetscBoolToBool3(has);
   PetscFunctionReturn(0);
 }
 
@@ -259,7 +259,7 @@ static PetscErrorCode PCSetFromOptions_HPDDM(PC pc, PetscOptionItems *PetscOptio
   PetscMPIInt                 size, previous;
   PetscInt                    n;
   PCHPDDMCoarseCorrectionType type;
-  PetscBool                   flg = PETSC_TRUE;
+  PetscBool                   flg = PETSC_TRUE, set;
 
   PetscFunctionBegin;
   if (!data->levels) {
@@ -329,7 +329,8 @@ static PetscErrorCode PCSetFromOptions_HPDDM(PC pc, PetscOptionItems *PetscOptio
     PetscCall(PetscOptionsEnum("-pc_hpddm_coarse_correction", "Type of coarse correction applied each iteration", "PCHPDDMSetCoarseCorrectionType", PCHPDDMCoarseCorrectionTypes, (PetscEnum)data->correction, (PetscEnum *)&type, &flg));
     if (flg) PetscCall(PCHPDDMSetCoarseCorrectionType(pc, type));
     PetscCall(PetscSNPrintf(prefix, sizeof(prefix), "-pc_hpddm_has_neumann"));
-    PetscCall(PetscOptionsBool(prefix, "Is the auxiliary Mat the local Neumann matrix?", "PCHPDDMHasNeumannMat", data->Neumann, &data->Neumann, NULL));
+    PetscCall(PetscOptionsBool(prefix, "Is the auxiliary Mat the local Neumann matrix?", "PCHPDDMHasNeumannMat", PetscBool3ToBool(data->Neumann), &flg, &set));
+    if (set) data->Neumann = PetscBoolToBool3(flg);
     data->log_separate = PETSC_FALSE;
     if (PetscDefined(USE_LOG)) {
       PetscCall(PetscSNPrintf(prefix, sizeof(prefix), "-pc_hpddm_log_separate"));
@@ -434,7 +435,7 @@ static PetscErrorCode PCView_HPDDM(PC pc, PetscViewer viewer)
     PetscCall(PCHPDDMGetComplexities(pc, &gc, &oc));
     if (data->N > 1) {
       if (!data->deflation) {
-        PetscCall(PetscViewerASCIIPrintf(viewer, "Neumann matrix attached? %s\n", PetscBools[data->Neumann]));
+        PetscCall(PetscViewerASCIIPrintf(viewer, "Neumann matrix attached? %s\n", PetscBools[PetscBool3ToBool(data->Neumann)]));
         PetscCall(PetscViewerASCIIPrintf(viewer, "shared subdomain KSP between SLEPc and PETSc? %s\n", PetscBools[data->share]));
       } else PetscCall(PetscViewerASCIIPrintf(viewer, "user-supplied deflation matrix\n"));
       PetscCall(PetscViewerASCIIPrintf(viewer, "coarse correction: %s\n", PCHPDDMCoarseCorrectionTypes[data->correction]));
@@ -1099,7 +1100,7 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
       PetscCall(PetscObjectQueryFunction((PetscObject)dm, "DMCreateNeumannOverlap_C", &create));
       if (create) {
         PetscCall((*create)(dm, &uis, &uaux, &usetup, &uctx));
-        data->Neumann = PETSC_TRUE;
+        if (data->Neumann == PETSC_BOOL3_UNKNOWN) data->Neumann = PETSC_BOOL3_TRUE; /* set the value only if it was not already provided by the user */
       }
     }
     if (!create) {
@@ -1261,7 +1262,7 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
       PetscCall(ISDestroy(&loc));
       /* the auxiliary Mat is _not_ the local Neumann matrix                                */
       /* it is the local Neumann matrix augmented (with zeros) through MatIncreaseOverlap() */
-      data->Neumann = PETSC_FALSE;
+      data->Neumann = PETSC_BOOL3_FALSE;
       structure     = SAME_NONZERO_PATTERN;
       if (data->share) {
         data->share = PETSC_FALSE;
@@ -1281,11 +1282,11 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
           data->share = PETSC_FALSE;
         }
       }
-      if (data->Neumann) {
+      if (PetscBool3ToBool(data->Neumann)) {
         PetscCheck(!block, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "-pc_hpddm_block_splitting and -pc_hpddm_has_neumann");
         PetscCheck(!algebraic, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "-pc_hpddm_levels_1_st_pc_type mat and -pc_hpddm_has_neumann");
       }
-      if (data->Neumann || block) structure = SAME_NONZERO_PATTERN;
+      if (PetscBool3ToBool(data->Neumann) || block) structure = SAME_NONZERO_PATTERN;
       PetscCall(ISCreateStride(PetscObjectComm((PetscObject)data->is), P->rmap->n, P->rmap->rstart, 1, &loc));
     }
     PetscCall(PetscSNPrintf(prefix, sizeof(prefix), "%spc_hpddm_levels_1_", pcpre ? pcpre : ""));
@@ -1313,7 +1314,7 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
           PetscCheck(equal, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "IS of the auxiliary Mat does not include all local rows of A");
         }
         PetscCall(PetscObjectComposeFunction((PetscObject)pc->pmat, "PCHPDDMAlgebraicAuxiliaryMat_Private_C", PCHPDDMAlgebraicAuxiliaryMat_Private));
-        if (!data->Neumann && !algebraic) {
+        if (!PetscBool3ToBool(data->Neumann) && !algebraic) {
           PetscCall(PetscObjectTypeCompare((PetscObject)P, MATMPISBAIJ, &flg));
           if (flg) {
             /* maybe better to ISSort(is[0]), MatCreateSubMatrices(), and then MatPermute() */
@@ -1330,7 +1331,7 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
           PetscCall(PetscObjectCompose((PetscObject)sub[0], "_PCHPDDM_Neumann_Mat", NULL));
         }
       } else if (!uaux) {
-        if (data->Neumann) sub = &data->aux;
+        if (PetscBool3ToBool(data->Neumann)) sub = &data->aux;
         else PetscCall(MatCreateSubMatrices(P, 1, is, is, MAT_INITIAL_MATRIX, &sub));
       } else {
         PetscCall(MatCreateSubMatrices(uaux, 1, is, is, MAT_INITIAL_MATRIX, &sub));
@@ -1346,8 +1347,8 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
         Mat      D;
         IS       perm = NULL;
         PetscInt size = -1;
-        PetscCall(PCHPDDMPermute_Private(*is, data->is, &uis, data->Neumann || block ? sub[0] : data->aux, &C, &perm));
-        if (!data->Neumann && !block) {
+        PetscCall(PCHPDDMPermute_Private(*is, data->is, &uis, PetscBool3ToBool(data->Neumann) || block ? sub[0] : data->aux, &C, &perm));
+        if (!PetscBool3ToBool(data->Neumann) && !block) {
           PetscCall(MatPermute(sub[0], perm, perm, &D)); /* permute since PCASM will call ISSort() */
           PetscCall(MatHeaderReplace(sub[0], &D));
         }
@@ -1484,7 +1485,7 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
           data->levels[n]->P->setBuffer();
           data->levels[n]->P->super::start();
         }
-      if (ismatis || !subdomains) PetscCall(PCHPDDMDestroySubMatrices_Private(data->Neumann, PetscBool(algebraic && !block), sub));
+      if (ismatis || !subdomains) PetscCall(PCHPDDMDestroySubMatrices_Private(PetscBool3ToBool(data->Neumann), PetscBool(algebraic && !block), sub));
       if (ismatis) data->is = NULL;
       for (n = 0; n < data->N - 1 + (reused > 0); ++n) {
         if (data->levels[n]->P) {
@@ -1517,14 +1518,14 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
                                             /* PCASMSetLocalSubdomains() has been called when -pc_hpddm_define_subdomains */
         if (!inner->setupcalled) {          /* evaluates to PETSC_FALSE when -pc_hpddm_block_splitting */
           PetscCall(PCASMSetLocalSubdomains(inner, 1, is, &loc));
-          if (!data->Neumann && data->N > 1) { /* subdomain matrices are already created for the eigenproblem, reuse them for the fine-level PC */
+          if (!PetscBool3ToBool(data->Neumann) && data->N > 1) { /* subdomain matrices are already created for the eigenproblem, reuse them for the fine-level PC */
             PetscCall(PCHPDDMPermute_Private(*is, NULL, NULL, sub[0], &C, NULL));
             PetscCall(PCHPDDMCommunicationAvoidingPCASM_Private(inner, C, algebraic));
             PetscCall(MatDestroy(&C));
           }
         }
       }
-      if (data->N > 1) PetscCall(PCHPDDMDestroySubMatrices_Private(data->Neumann, PetscBool(algebraic && !block), sub));
+      if (data->N > 1) PetscCall(PCHPDDMDestroySubMatrices_Private(PetscBool3ToBool(data->Neumann), PetscBool(algebraic && !block), sub));
     }
     PetscCall(ISDestroy(&loc));
   } else data->N = 1 + reused; /* enforce this value to 1 + reused if there is no way to build another level */
@@ -1798,6 +1799,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_HPDDM(PC pc)
   PetscCheck(loadedSym, PETSC_COMM_SELF, PETSC_ERR_PLIB, "PCHPDDM_Internal symbol not found in loaded libhpddm_petsc");
   PetscCall(PetscNew(&data));
   pc->data                = data;
+  data->Neumann           = PETSC_BOOL3_UNKNOWN;
   pc->ops->reset          = PCReset_HPDDM;
   pc->ops->destroy        = PCDestroy_HPDDM;
   pc->ops->setfromoptions = PCSetFromOptions_HPDDM;
