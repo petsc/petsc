@@ -214,6 +214,9 @@ PetscErrorCode PetscSFSetGraphSection(PetscSF sf, PetscSection localSection, Pet
 
   Level: advanced
 
+  Fortran Notes:
+  In Fortran, use PetscSFDistributeSectionF90()
+
 .seealso: `PetscSF`, `PetscSFCreate()`
 @*/
 PetscErrorCode PetscSFDistributeSection(PetscSF sf, PetscSection rootSection, PetscInt **remoteOffsets, PetscSection leafSection)
@@ -359,6 +362,9 @@ PetscErrorCode PetscSFDistributeSection(PetscSF sf, PetscSection rootSection, Pe
 
   Level: developer
 
+  Fortran Notes:
+  In Fortran, use PetscSFCreateRemoteOffsetsF90()
+
 .seealso: `PetscSF`, `PetscSFCreate()`
 @*/
 PetscErrorCode PetscSFCreateRemoteOffsets(PetscSF sf, PetscSection rootSection, PetscSection leafSection, PetscInt **remoteOffsets)
@@ -404,8 +410,11 @@ PetscErrorCode PetscSFCreateRemoteOffsets(PetscSF sf, PetscSection rootSection, 
 
   Level: advanced
 
-  Note:
+  Notes:
   Either rootSection or remoteOffsets can be specified
+
+  Fortran Notes:
+  In Fortran, use PetscSFCreateSectionSFF90()
 
 .seealso:  `PetscSF`, `PetscSFCreate()`
 @*/
