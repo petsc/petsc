@@ -16,8 +16,9 @@ class Configure(config.package.GNUPackage):
     config.package.GNUPackage.setupDependencies(self, framework)
     self.compilerFlags   = framework.require('config.compilerFlags',self)
     self.cuda            = framework.require('config.packages.cuda',self)
+    self.hip             = framework.require('config.packages.hip',self)
     self.hwloc           = framework.require('config.packages.hwloc',self)
-    self.odeps           = [self.hwloc]
+    self.odeps           = [self.cuda, self.hip, self.hwloc]
     return
 
   def setupHelp(self, help):
@@ -63,7 +64,12 @@ class Configure(config.package.GNUPackage):
       mpich_device = 'ch3:nemesis'
     if self.cuda.found:
       args.append('--with-cuda='+self.cuda.cudaDir)
+      args.append('--with-cuda-sm='+self.cuda.cudaArch) # only for this arch; default is for all, resulting in a very large mpich library or even failures at mpich building
       mpich_device = 'ch4:ucx'
+    elif self.hip.found:
+      args.append('--with-hip='+self.hip.hipDir)
+      mpich_device = 'ch4:ofi' # per https://github.com/pmodels/mpich/wiki/Using-MPICH-on-Crusher@OLCF
+
     if 'download-mpich-device' in self.argDB:
       mpich_device = self.argDB['download-mpich-device']
     args.append('--with-device='+mpich_device)
