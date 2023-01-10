@@ -2357,7 +2357,7 @@ PetscErrorCode MatDenseRestoreArrayWrite(Mat A, PetscScalar **array)
 -  mtype - memory type of the returned pointer
 
    Notes:
-   If the matrix is of a device type such as MATDENSECUDA, MATDENSEHIP, etc., unless it is currently bound to CPU,
+   If the matrix is of a device type such as MATDENSECUDA, MATDENSEHIP, etc.,
    an array on device is always returned and is guaranteed to contain the matrix's latest data.
 
    Level: intermediate
@@ -2372,6 +2372,7 @@ PetscErrorCode MatDenseGetArrayAndMemType(Mat A, PetscScalar **array, PetscMemTy
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
   PetscValidPointer(array, 2);
+  PetscCall(MatBindToCPU(A, PETSC_FALSE)); /* We want device matrices to always return device arrays, so we unbind the matrix if it is bound to CPU */
   PetscCall(PetscObjectBaseTypeCompare((PetscObject)A, MATMPIDENSE, &isMPI));
   if (isMPI) {
     /* Dispatch here so that the code can be reused for all subclasses of MATDENSE */
@@ -2439,7 +2440,7 @@ PetscErrorCode MatDenseRestoreArrayAndMemType(Mat A, PetscScalar **array)
 -  mtype - memory type of the returned pointer
 
    Notes:
-   If the matrix is of a device type such as MATDENSECUDA, MATDENSEHIP, etc., unless it is currently bound to CPU,
+   If the matrix is of a device type such as MATDENSECUDA, MATDENSEHIP, etc.,
    an array on device is always returned and is guaranteed to contain the matrix's latest data.
 
    Level: intermediate
@@ -2454,6 +2455,7 @@ PetscErrorCode MatDenseGetArrayReadAndMemType(Mat A, const PetscScalar **array, 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
   PetscValidPointer(array, 2);
+  PetscCall(MatBindToCPU(A, PETSC_FALSE)); /* We want device matrices to always return device arrays, so we unbind the matrix if it is bound to CPU */
   PetscCall(PetscObjectBaseTypeCompare((PetscObject)A, MATMPIDENSE, &isMPI));
   if (isMPI) { /* Dispatch here so that the code can be reused for all subclasses of MATDENSE */
     PetscCall(MatDenseGetArrayReadAndMemType(((Mat_MPIDense *)A->data)->A, array, mtype));
@@ -2519,7 +2521,7 @@ PetscErrorCode MatDenseRestoreArrayReadAndMemType(Mat A, const PetscScalar **arr
 -  mtype - memory type of the returned pointer
 
    Notes:
-   If the matrix is of a device type such as MATDENSECUDA, MATDENSEHIP, etc., unless it is currently bound to CPU,
+   If the matrix is of a device type such as MATDENSECUDA, MATDENSEHIP, etc.,
    an array on device is always returned and is guaranteed to contain the matrix's latest data.
 
    Level: intermediate
@@ -2534,6 +2536,7 @@ PetscErrorCode MatDenseGetArrayWriteAndMemType(Mat A, PetscScalar **array, Petsc
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
   PetscValidPointer(array, 2);
+  PetscCall(MatBindToCPU(A, PETSC_FALSE)); /* We want device matrices to always return device arrays, so we unbind the matrix if it is bound to CPU */
   PetscCall(PetscObjectBaseTypeCompare((PetscObject)A, MATMPIDENSE, &isMPI));
   if (isMPI) {
     PetscCall(MatDenseGetArrayWriteAndMemType(((Mat_MPIDense *)A->data)->A, array, mtype));
