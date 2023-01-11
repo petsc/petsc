@@ -23,5 +23,7 @@ if __name__ == '__main__':
     '--with-mpi-include='+oampidir+'/include',
     '--with-mpi-lib='+oampidir+'/lib/release/impi.lib',
     '--with-mpiexec='+oampidir+'/bin/mpiexec -localonly',
+    '--download-metis',
+    '--download-parmetis',
   ]
   configure.petsc_configure(configure_options)
