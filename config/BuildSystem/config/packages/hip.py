@@ -8,7 +8,7 @@ class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
 
-    self.minversion       = '3.8'
+    self.minversion       = '4.1'
     self.versionname      = 'HIP_VERSION_MAJOR.HIP_VERSION_MINOR'
     self.versioninclude   = 'hip/hip_version.h'
     self.requiresversion  = 1
@@ -145,7 +145,7 @@ class Configure(config.package.Package):
         self.hipArch.lower() # to have a uniform format even if user set hip arch in weird cases
         if not self.hipArch.startswith('gfx'):
           raise RuntimeError('HIP arch name ' + self.hipArch + ' is not in the supported gfxnnn format')
-        self.setCompilers.HIPFLAGS += ' --amdgpu-target=' + self.hipArch +' '
+        self.setCompilers.HIPFLAGS += ' --offload-arch=' + self.hipArch +' '
       else:
         raise RuntimeError('You must set --with-hip-arch=gfx900, gfx906, gfx908, gfx90a etc or make ROCM utility "rocminfo" available on your PATH')
 

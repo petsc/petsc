@@ -81,7 +81,7 @@ PetscErrorCode Device<T>::DeviceInternal::initialize() noexcept
       (*PetscErrorPrintf)("If you do care, for IBM Spectrum MPI on OLCF Summit, you may need jsrun --smpiargs=-gpu.\n");
       (*PetscErrorPrintf)("For OpenMPI, you need to configure it --with-cuda (https://www.open-mpi.org/faq/?category=buildcuda)\n");
       (*PetscErrorPrintf)("For MVAPICH2-GDR, you need to set MV2_USE_CUDA=1 (http://mvapich.cse.ohio-state.edu/userguide/gdr/)\n");
-      (*PetscErrorPrintf)("For Cray-MPICH, you need to set MPICH_RDMA_ENABLED_CUDA=1 (https://www.olcf.ornl.gov/tutorials/gpudirect-mpich-enabled-cuda/)\n");
+      (*PetscErrorPrintf)("For Cray-MPICH, you need to set MPICH_GPU_SUPPORT_ENABLED=1 (man mpi to see manual of cray-mpich)\n");
       PETSCABORT(PETSC_COMM_SELF, PETSC_ERR_LIB);
     }
   }
