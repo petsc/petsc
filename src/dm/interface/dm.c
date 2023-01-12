@@ -8058,7 +8058,7 @@ PetscErrorCode DMProjectFunctionLabelLocal(DM dm, PetscReal time, DMLabel label,
   Input Parameters:
 + dm      - The `DM`
 . time    - The time
-. localU  - The input field vector
+. localU  - The input field vector; may be NULL if projection is defined purely by coordinates
 . funcs   - The functions to evaluate, one per field
 - mode    - The insertion mode for values
 
@@ -8109,7 +8109,7 @@ PetscErrorCode DMProjectFieldLocal(DM dm, PetscReal time, Vec localU, void (**fu
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidHeaderSpecific(localU, VEC_CLASSID, 3);
+  if (localU) PetscValidHeaderSpecific(localU, VEC_CLASSID, 3);
   PetscValidHeaderSpecific(localX, VEC_CLASSID, 6);
   PetscCall((dm->ops->projectfieldlocal)(dm, time, localU, funcs, mode, localX));
   PetscFunctionReturn(0);
