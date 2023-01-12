@@ -45,7 +45,7 @@ namespace Petsc
 // 3. registered() - Query whether you are registered.
 // ==========================================================================================
 template <typename Derived>
-class RegisterFinalizeable : public util::crtp<Derived, RegisterFinalizeable> {
+class RegisterFinalizeable : public util::crtp<RegisterFinalizeable, Derived> {
 public:
   using derived_type = Derived;
 

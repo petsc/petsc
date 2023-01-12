@@ -535,7 +535,7 @@ inline PetscErrorCode MemoryBlock<T, A, S>::try_deallocate_chunk(T **ptr, const 
   MemoryBlock::try_find_chunk - try to find the chunk which owns ptr
 
   Input Parameter:
-. ptr - the pointer to lookk for
+. ptr - the pointer to look for
 
   Output Parameter:
 . ret_chunk - pointer to the owning chunk or nullptr if not found

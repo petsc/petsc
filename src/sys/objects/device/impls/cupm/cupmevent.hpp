@@ -6,6 +6,7 @@
 #include <petsc/private/cpp/object_pool.hpp>
 
 #if defined(__cplusplus)
+  #include <stack>
 namespace Petsc
 {
 
@@ -15,42 +16,68 @@ namespace device
 namespace cupm
 {
 
-namespace
-{
-
 // A pool for allocating cupmEvent_t's. While events are generally very cheap to create and
 // destroy, they are not free. Using the pool vs on-demand creation and destruction yields a ~20%
 // speedup.
 template <DeviceType T, unsigned long flags>
-struct CUPMEventPoolAllocator : impl::Interface<T>, AllocatorBase<typename impl::Interface<T>::cupmEvent_t> {
+class CUPMEventPool : impl::Interface<T>, public RegisterFinalizeable<CUPMEventPool<T, flags>> {
+public:
   PETSC_CUPM_INHERIT_INTERFACE_TYPEDEFS_USING(interface_type, T);
 
-  PETSC_NODISCARD static PetscErrorCode create(cupmEvent_t *) noexcept;
-  PETSC_NODISCARD static PetscErrorCode destroy(cupmEvent_t) noexcept;
+  PETSC_NODISCARD PetscErrorCode allocate(cupmEvent_t *) noexcept;
+  PETSC_NODISCARD PetscErrorCode deallocate(cupmEvent_t *) noexcept;
+
+  PETSC_NODISCARD PetscErrorCode finalize_() noexcept;
+
+private:
+  std::stack<cupmEvent_t> pool_;
 };
 
 template <DeviceType T, unsigned long flags>
-inline PetscErrorCode CUPMEventPoolAllocator<T, flags>::create(cupmEvent_t *event) noexcept
+inline PetscErrorCode CUPMEventPool<T, flags>::finalize_() noexcept
 {
   PetscFunctionBegin;
-  PetscCallCUPM(cupmEventCreateWithFlags(event, flags));
+  while (!pool_.empty()) {
+    PetscCallCUPM(cupmEventDestroy(std::move(pool_.top())));
+    PetscCallCXX(pool_.pop());
+  }
   PetscFunctionReturn(0);
 }
 
 template <DeviceType T, unsigned long flags>
-inline PetscErrorCode CUPMEventPoolAllocator<T, flags>::destroy(cupmEvent_t event) noexcept
+inline PetscErrorCode CUPMEventPool<T, flags>::allocate(cupmEvent_t *event) noexcept
 {
   PetscFunctionBegin;
-  PetscCallCUPM(cupmEventDestroy(event));
+  PetscValidPointer(event, 1);
+  if (pool_.empty()) {
+    PetscCall(this->register_finalize());
+    PetscCallCUPM(cupmEventCreateWithFlags(event, flags));
+  } else {
+    PetscCallCXX(*event = std::move(pool_.top()));
+    PetscCallCXX(pool_.pop());
+  }
   PetscFunctionReturn(0);
 }
 
-} // anonymous namespace
-
-template <DeviceType T, unsigned long flags, typename allocator_type = CUPMEventPoolAllocator<T, flags>, typename pool_type = ObjectPool<typename allocator_type::value_type, allocator_type>>
-pool_type &cupm_event_pool() noexcept
+template <DeviceType T, unsigned long flags>
+inline PetscErrorCode CUPMEventPool<T, flags>::deallocate(cupmEvent_t *in_event) noexcept
 {
-  static pool_type pool;
+  PetscFunctionBegin;
+  PetscValidPointer(in_event, 1);
+  if (auto event = std::exchange(*in_event, cupmEvent_t{})) {
+    if (this->registered()) {
+      PetscCallCXX(pool_.push(std::move(event)));
+    } else {
+      PetscCallCUPM(cupmEventDestroy(event));
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+template <DeviceType T, unsigned long flags>
+CUPMEventPool<T, flags> &cupm_event_pool() noexcept
+{
+  static CUPMEventPool<T, flags> pool;
   return pool;
 }
 
@@ -101,7 +128,7 @@ template <DeviceType T>
 inline CUPMEvent<T>::~CUPMEvent() noexcept
 {
   PetscFunctionBegin;
-  if (event_) PetscCallAbort(PETSC_COMM_SELF, cupm_fast_event_pool<T>().deallocate(std::move(event_)));
+  PetscCallAbort(PETSC_COMM_SELF, cupm_fast_event_pool<T>().deallocate(&event_));
   PetscFunctionReturnVoid();
 }
 
@@ -117,7 +144,7 @@ inline CUPMEvent<T> &CUPMEvent<T>::operator=(CUPMEvent &&other) noexcept
   if (this != &other) {
     interface_type::operator=(std::move(other));
     pool_type::     operator=(std::move(other));
-    if (event_) PetscCallAbort(PETSC_COMM_SELF, cupm_fast_event_pool<T>().deallocate(std::move(event_)));
+    PetscCallAbort(PETSC_COMM_SELF, cupm_fast_event_pool<T>().deallocate(&event_));
     event_ = util::exchange(other.event_, cupmEvent_t{});
   }
   PetscFunctionReturn(*this);

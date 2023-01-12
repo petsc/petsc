@@ -8,11 +8,11 @@
 #include <cstring>   // std::memset
 
 const char *const PetscDeviceCopyModes[] = {"host_to_host", "device_to_host", "host_to_device", "device_to_device", "auto", "PetscDeviceCopyMode", "PETSC_DEVICE_COPY_", nullptr};
-static_assert(Petsc::util::integral_value(PETSC_DEVICE_COPY_HTOH) == 0, "");
-static_assert(Petsc::util::integral_value(PETSC_DEVICE_COPY_DTOH) == 1, "");
-static_assert(Petsc::util::integral_value(PETSC_DEVICE_COPY_HTOD) == 2, "");
-static_assert(Petsc::util::integral_value(PETSC_DEVICE_COPY_DTOD) == 3, "");
-static_assert(Petsc::util::integral_value(PETSC_DEVICE_COPY_AUTO) == 4, "");
+static_assert(Petsc::util::to_underlying(PETSC_DEVICE_COPY_HTOH) == 0, "");
+static_assert(Petsc::util::to_underlying(PETSC_DEVICE_COPY_DTOH) == 1, "");
+static_assert(Petsc::util::to_underlying(PETSC_DEVICE_COPY_HTOD) == 2, "");
+static_assert(Petsc::util::to_underlying(PETSC_DEVICE_COPY_DTOD) == 3, "");
+static_assert(Petsc::util::to_underlying(PETSC_DEVICE_COPY_AUTO) == 4, "");
 
 // GCC implementation for std::hash<T*>. LLVM's libc++ is almost 2x slower because they do all
 // kinds of complicated murmur hashing, so we make sure to enforce GCC's version.
@@ -80,7 +80,7 @@ inline bool PointerAttributes::contains(const void *ptr_begin, const void *ptr) 
 //
 // Each entry maps pointer -> {
 //   PetscMemType  - The memtype of the pointer
-//   PetscObjectId - A unique ID assigned at allocation or registratrion so auto-dep can
+//   PetscObjectId - A unique ID assigned at allocation or registration so auto-dep can
 //                   identify the pointer
 //   size          - The size (in bytes) of the allocation
 // }

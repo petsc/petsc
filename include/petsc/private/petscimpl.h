@@ -148,8 +148,11 @@ typedef struct _p_PetscObject {
 PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*PetscObjectDestroyFunction)(PetscObject *); /* force cast in next macro to NEVER use extern "C" style */
 PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*PetscObjectViewFunction)(PetscObject, PetscViewer);
 
+#define PetscHeaderInitialize_Private(h, classid, class_name, descr, mansec, comm, destroy, view) \
+  (PetscHeaderCreate_Private((PetscObject)(h), classid, class_name, descr, mansec, comm, (PetscObjectDestroyFunction)(destroy), (PetscObjectViewFunction)(view)) || PetscLogObjectCreate(h))
+
 /*MC
-  PetscHeaderCreate - Creates a PETSc object of a particular class
+    PetscHeaderCreate - Creates a PETSc object of a particular class
 
   Synopsis:
   #include <petsc/private/petscimpl.h>
@@ -277,8 +280,7 @@ PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*PetscObjectViewFunction)(PetscObje
 
 .seealso: `PetscHeaderDestroy()`, `PetscClassIdRegister()`
 M*/
-#define PetscHeaderCreate(h, classid, class_name, descr, mansec, comm, destroy, view) \
-  (PetscNew(&(h)) || PetscHeaderCreate_Private((PetscObject)(h), classid, class_name, descr, mansec, comm, (PetscObjectDestroyFunction)(destroy), (PetscObjectViewFunction)(view)) || PetscLogObjectCreate(h))
+#define PetscHeaderCreate(h, classid, class_name, descr, mansec, comm, destroy, view) (PetscNew(&(h)) || PetscHeaderInitialize_Private((h), (classid), (class_name), (descr), (mansec), (comm), (destroy), (view)))
 
 PETSC_EXTERN PetscErrorCode PetscComposedQuantitiesDestroy(PetscObject obj);
 PETSC_EXTERN PetscErrorCode PetscHeaderCreate_Private(PetscObject, PetscClassId, const char[], const char[], const char[], MPI_Comm, PetscObjectDestroyFunction, PetscObjectViewFunction);

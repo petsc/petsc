@@ -22,7 +22,7 @@ namespace impl
 {
 
 template <typename Derived> // CRTP
-class DeviceBase : public util::crtp<Derived, DeviceBase> {
+class DeviceBase : public util::crtp<DeviceBase, Derived> {
 public:
   using derived_type            = Derived;
   using createContextFunction_t = PetscErrorCode (*)(PetscDeviceContext);
@@ -161,7 +161,7 @@ inline PetscErrorCode DeviceBase<D>::PetscOptionDeviceInitialize(PetscOptionItem
 template <typename D>
 inline PetscErrorCode DeviceBase<D>::PetscOptionDeviceInitialize(PetscOptionItems *PetscOptionsObject, PetscDeviceInitType *inittype, PetscBool *flag) noexcept
 {
-  auto type = static_cast<PetscInt>(util::integral_value(*inittype));
+  auto type = static_cast<PetscInt>(util::to_underlying(*inittype));
 
   PetscFunctionBegin;
   PetscCall(PetscOptionDeviceInitialize(PetscOptionsObject, "How (or whether) to initialize a device", "PetscDeviceInitialize()", PetscDeviceInitTypes, 3, PetscDeviceInitTypes[type], &type, flag));

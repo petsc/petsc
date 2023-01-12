@@ -70,9 +70,9 @@ const char *const PetscDeviceInitTypes[] = {
 #ifdef __cplusplus
 #include <petsc/private/cpp/type_traits.hpp>
 
-static_assert(Petsc::util::integral_value(PETSC_DEVICE_INIT_NONE) == 0, "");
-static_assert(Petsc::util::integral_value(PETSC_DEVICE_INIT_LAZY) == 1, "");
-static_assert(Petsc::util::integral_value(PETSC_DEVICE_INIT_EAGER) == 2, "");
+static_assert(Petsc::util::to_underlying(PETSC_DEVICE_INIT_NONE) == 0, "");
+static_assert(Petsc::util::to_underlying(PETSC_DEVICE_INIT_LAZY) == 1, "");
+static_assert(Petsc::util::to_underlying(PETSC_DEVICE_INIT_EAGER) == 2, "");
 
 static_assert(
   PETSC_STATIC_ARRAY_LENGTH(PetscDeviceInitTypes) == 6,

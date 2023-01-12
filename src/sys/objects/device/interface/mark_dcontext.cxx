@@ -18,23 +18,24 @@
 // PetscEvent
 // ==========================================================================================
 
-struct PetscEventAllocator : public Petsc::AllocatorBase<PetscEvent> {
-  PETSC_NODISCARD static PetscErrorCode create(PetscEvent *event) noexcept
+class PetscEventConstructor : public Petsc::ConstructorInterface<_n_PetscEvent, PetscEventConstructor> {
+public:
+  PETSC_NODISCARD PetscErrorCode construct_(PetscEvent event) const noexcept
   {
     PetscFunctionBegin;
-    PetscCall(PetscNew(event));
+    PetscCall(PetscArrayzero(event, 1));
+    PetscCall(underlying().reset(event));
     PetscFunctionReturn(0);
   }
 
-  PETSC_NODISCARD static PetscErrorCode destroy(PetscEvent event) noexcept
+  PETSC_NODISCARD PetscErrorCode destroy_(PetscEvent event) const noexcept
   {
     PetscFunctionBegin;
-    PetscCall(reset(event));
-    PetscCall(PetscFree(event));
+    PetscCall(underlying().reset(event));
     PetscFunctionReturn(0);
   }
 
-  PETSC_NODISCARD static PetscErrorCode reset(PetscEvent event) noexcept
+  PETSC_NODISCARD static PetscErrorCode reset_(PetscEvent event) noexcept
   {
     PetscFunctionBegin;
     if (auto &destroy = event->destroy) {
@@ -47,9 +48,11 @@ struct PetscEventAllocator : public Petsc::AllocatorBase<PetscEvent> {
     event->dtype      = PETSC_DEVICE_DEFAULT();
     PetscFunctionReturn(0);
   }
+
+  PETSC_NODISCARD static PetscErrorCode invalidate_(PetscEvent) noexcept { return 0; }
 };
 
-static Petsc::ObjectPool<PetscEvent, PetscEventAllocator> event_pool;
+static Petsc::ObjectPool<_n_PetscEvent, PetscEventConstructor> event_pool;
 
 static PetscErrorCode PetscDeviceContextCreateEvent_Private(PetscDeviceContext dctx, PetscEvent *event)
 {
@@ -66,7 +69,7 @@ static PetscErrorCode PetscEventDestroy_Private(PetscEvent *event)
 {
   PetscFunctionBegin;
   PetscValidPointer(event, 1);
-  if (*event) PetscCall(event_pool.deallocate(Petsc::util::exchange(*event, nullptr)));
+  if (*event) PetscCall(event_pool.deallocate(event));
   PetscFunctionReturn(0);
 }
 

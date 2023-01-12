@@ -81,6 +81,18 @@ template <class T>
 using type_identity_t = typename type_identity<T>::type;
   #endif // C++20
 
+  #if PETSC_CPP_VERSION >= 23
+using std::to_underlying;
+  #else
+template <typename T>
+static inline constexpr underlying_type_t<T> to_underlying(T value) noexcept
+{
+  static_assert(std::is_enum<T>::value, "");
+  return static_cast<underlying_type_t<T>>(value);
+}
+
+  #endif
+
 template <typename... T>
 struct always_false : std::false_type { };
 
@@ -137,13 +149,6 @@ static_assert(::Petsc::util::detail::is_derived_petsc_object_impl<CxxDerivedPets
 
 template <typename T>
 using is_derived_petsc_object = detail::is_derived_petsc_object_impl<remove_pointer_t<decay_t<T>>>;
-
-template <typename T>
-PETSC_CXX_COMPAT_DECL(constexpr underlying_type_t<T> integral_value(T value))
-{
-  static_assert(std::is_enum<T>::value, "");
-  return static_cast<underlying_type_t<T>>(value);
-}
 
 } // namespace util
 

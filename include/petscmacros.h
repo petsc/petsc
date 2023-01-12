@@ -111,6 +111,10 @@ void assert_never_put_petsc_headers_inside_an_extern_c(double);
   #define PETSC_SINGLE_LIBRARY_INTERN PETSC_EXTERN
 #endif
 
+#if !defined(__has_feature)
+  #define __has_feature(x) 0
+#endif
+
 /*MC
   PetscHasAttribute - Determine whether a particular __attribute__ is supported by the compiler
 
