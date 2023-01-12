@@ -7816,6 +7816,63 @@ PetscErrorCode MatResidual(Mat mat, Vec b, Vec x, Vec r)
   PetscFunctionReturn(0);
 }
 
+/*MC
+    MatGetRowIJF90 - Obtains the compressed row storage i and j indices for the local rows of a sparse matrix
+
+    Synopsis:
+    MatGetRowIJF90(Mat A, PetscInt shift, PetscBool symmetric, PetscBool inodecompressed, PetscInt n, {PetscInt, pointer :: ia(:)}, {PetscInt, pointer :: ja(:)}, PetscBool done,integer ierr)
+
+    Not Collective
+
+    Input Parameters:
++   A - the matrix
+.   shift -  0 or 1 indicating we want the indices starting at 0 or 1
+.   symmetric - `PETSC_TRUE` or `PETSC_FALSE` indicating the matrix data structure should be symmetrized
+-   inodecompressed - `PETSC_TRUE` or `PETSC_FALSE`  indicats if the nonzero structure of the
+                 inodes or the nonzero elements is wanted. For `MATBAIJ` matrices the compressed version is
+                 always used.
+
+    Output Parameters:
++   n - number of local rows in the (possibly compressed) matrix
+.   ia - the row pointers; that is ia[0] = 0, ia[row] = ia[row-1] + number of elements in that row of the matrix
+.   ja - the column indices
+-   done - indicates if the routine actually worked and returned appropriate ia[] and ja[] arrays; callers
+           are responsible for handling the case when done == `PETSC_FALSE` and ia and ja are not set
+
+    Level: developer
+
+    Note:
+    Use  `MatRestoreRowIJF90()` when you no longer need access to the data
+
+.seealso: [](sec_fortranarrays), `Mat`, `MATMPIAIJ`, `MatGetRowIJ()`, `MatRestoreRowIJ()`, `MatRestoreRowIJF90()`
+M*/
+
+/*MC
+    MatRestoreRowIJF90 - restores the compressed row storage i and j indices for the local rows of a sparse matrix obtained with `MatGetRowIJF90()`
+
+    Synopsis:
+    MatRestoreRowIJF90(Mat A, PetscInt shift, PetscBool symmetric, PetscBool inodecompressed, PetscInt n, {PetscInt, pointer :: ia(:)}, {PetscInt, pointer :: ja(:)}, PetscBool done,integer ierr)
+
+    Not Collective
+
+    Input Parameters:
++   A - the  matrix
+.   shift -  0 or 1 indicating we want the indices starting at 0 or 1
+.   symmetric - `PETSC_TRUE` or `PETSC_FALSE` indicating the matrix data structure should be symmetrized
+    inodecompressed - `PETSC_TRUE` or `PETSC_FALSE`  indicats if the nonzero structure of the
+                 inodes or the nonzero elements is wanted. For `MATBAIJ` matrices the compressed version is
+                 always used.
+.   n - number of local rows in the (possibly compressed) matrix
+.   ia - the row pointers; that is ia[0] = 0, ia[row] = ia[row-1] + number of elements in that row of the matrix
+.   ja - the column indices
+-   done - indicates if the routine actually worked and returned appropriate ia[] and ja[] arrays; callers
+           are responsible for handling the case when done == `PETSC_FALSE` and ia and ja are not set
+
+    Level: developer
+
+.seealso: [](sec_fortranarrays), `Mat`, `MATMPIAIJ`, `MatGetRowIJ()`, `MatRestoreRowIJ()`, `MatGetRowIJF90()`
+M*/
+
 /*@C
     MatGetRowIJ - Returns the compressed row storage i and j indices for the local rows of a sparse matrix
 
