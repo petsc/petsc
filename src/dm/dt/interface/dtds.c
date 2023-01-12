@@ -128,11 +128,6 @@ PetscErrorCode PetscDSGetType(PetscDS prob, PetscDSType *name)
   PetscFunctionReturn(0);
 }
 
-#if defined(__clang__)
-  #pragma clang diagnostic push
-  #pragma clang diagnostic ignored "-Wformat-pedantic"
-#endif
-
 static PetscErrorCode PetscDSView_Ascii(PetscDS ds, PetscViewer viewer)
 {
   PetscViewerFormat  format;
@@ -211,6 +206,13 @@ static PetscErrorCode PetscDSView_Ascii(PetscDS ds, PetscViewer viewer)
       }
       PetscCall(PetscViewerASCIIPrintf(viewer, "\n"));
       PetscCall(PetscViewerASCIIUseTabs(viewer, PETSC_TRUE));
+#if defined(__clang__)
+  #pragma clang diagnostic push
+  #pragma clang diagnostic ignored "-Wformat-pedantic"
+#elif defined(__GNUC__) || defined(__GNUG__)
+  #pragma GCC diagnostic push
+  #pragma GCC diagnostic ignored "-Wformat"
+#endif
       if (b->func) {
         PetscCall(PetscDLAddr(b->func, &name));
         if (name) PetscCall(PetscViewerASCIIPrintf(viewer, "  func: %s\n", name));
@@ -223,6 +225,11 @@ static PetscErrorCode PetscDSView_Ascii(PetscDS ds, PetscViewer viewer)
         else PetscCall(PetscViewerASCIIPrintf(viewer, "  func_t: %p\n", b->func_t));
         PetscCall(PetscFree(name));
       }
+#if defined(__clang__)
+  #pragma clang diagnostic pop
+#elif defined(__GNUC__) || defined(__GNUG__)
+  #pragma GCC diagnostic pop
+#endif
       PetscCall(PetscWeakFormView(b->wf, viewer));
       PetscCall(PetscViewerASCIIPopTab(viewer));
     }
@@ -238,10 +245,6 @@ static PetscErrorCode PetscDSView_Ascii(PetscDS ds, PetscViewer viewer)
   PetscCall(PetscViewerASCIIPopTab(viewer));
   PetscFunctionReturn(0);
 }
-
-#if defined(__clang__)
-  #pragma clang diagnostic pop
-#endif
 
 /*@C
    PetscDSViewFromOptions - View a `PetscDS` based on values in the options database
