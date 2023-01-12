@@ -2619,7 +2619,7 @@ PetscErrorCode DMCreateMatrix_Plex(DM dm, Mat *J)
     PetscCall(PetscSectionGetNumFields(sectionGlobal, &num_fields));
     for (p = pStart; p < pEnd; ++p) {
       switch (dm->blocking_type) {
-      case DM_BLOCKING_POINT: { // One block per topological point
+      case DM_BLOCKING_TOPOLOGICAL_POINT: { // One block per topological point
         PetscInt bdof, offset;
 
         PetscCall(PetscSectionGetDof(sectionGlobal, p, &dof));

@@ -21,7 +21,7 @@ PetscLogEvent DM_Convert, DM_GlobalToLocal, DM_LocalToGlobal, DM_LocalToLocal, D
 
 const char *const DMBoundaryTypes[]          = {"NONE", "GHOSTED", "MIRROR", "PERIODIC", "TWIST", "DMBoundaryType", "DM_BOUNDARY_", NULL};
 const char *const DMBoundaryConditionTypes[] = {"INVALID", "ESSENTIAL", "NATURAL", "INVALID", "INVALID", "ESSENTIAL_FIELD", "NATURAL_FIELD", "INVALID", "INVALID", "ESSENTIAL_BD_FIELD", "NATURAL_RIEMANN", "DMBoundaryConditionType", "DM_BC_", NULL};
-const char *const DMBlockingTypes[]          = {"POINT", "FIELD_NODE", "DMBlockingType", "DM_BLOCKING_", NULL};
+const char *const DMBlockingTypes[]          = {"TOPOLOGICAL_POINT", "FIELD_NODE", "DMBlockingType", "DM_BLOCKING_", NULL};
 const char *const DMPolytopeTypes[]   = {"vertex",  "segment",       "tensor_segment",      "triangle", "quadrilateral", "tensor_quad",    "tetrahedron",  "hexahedron", "triangular_prism", "tensor_triangular_prism", "tensor_quadrilateral_prism",
                                          "pyramid", "FV_ghost_cell", "interior_ghost_cell", "unknown",  "invalid",       "DMPolytopeType", "DM_POLYTOPE_", NULL};
 const char *const DMCopyLabelsModes[] = {"replace", "keep", "fail", "DMCopyLabelsMode", "DM_COPY_LABELS_", NULL};
@@ -1591,7 +1591,7 @@ PetscErrorCode DMSetMatrixStructureOnly(DM dm, PetscBool only)
   Level: advanced
 
   Options Database Keys:
-. -dm_blocking_type [point, field_node] - use topological point blocking or field node blocking
+. -dm_blocking_type [topological_point, field_node] - use topological point blocking or field node blocking
 
 .seealso: `DMCreateMatrix()`, `MatSetVariableBlockSizes()`
 @*/

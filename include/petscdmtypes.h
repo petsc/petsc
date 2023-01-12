@@ -105,7 +105,7 @@ typedef enum {
 .seealso: `PCVPBJACOBI`, `MatSetVariableBlockSizes()`, `DMSetBlockingType()`
 E*/
 typedef enum {
-  DM_BLOCKING_POINT,
+  DM_BLOCKING_TOPOLOGICAL_POINT,
   DM_BLOCKING_FIELD_NODE
 } DMBlockingType;
 
