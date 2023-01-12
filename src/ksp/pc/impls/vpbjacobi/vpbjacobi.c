@@ -218,8 +218,16 @@ PETSC_INTERN PetscErrorCode PCSetUp_VPBJacobi_Host(PC pc)
   PetscCall(MatGetLocalSize(pc->pmat, &nlocal, NULL));
   PetscCheck(!nlocal || nblocks, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Must call MatSetVariableBlockSizes() before using PCVPBJACOBI");
   if (!jac->diag) {
-    for (i = 0; i < nblocks; i++) nsize += bsizes[i] * bsizes[i];
+    PetscInt max_bs = -1, min_bs = PETSC_MAX_INT;
+    for (i = 0; i < nblocks; i++) {
+      min_bs = PetscMin(min_bs, bsizes[i]);
+      max_bs = PetscMax(max_bs, bsizes[i]);
+      nsize += bsizes[i] * bsizes[i];
+    }
     PetscCall(PetscMalloc1(nsize, &jac->diag));
+    jac->nblocks = nblocks;
+    jac->min_bs  = min_bs;
+    jac->max_bs  = max_bs;
   }
   PetscCall(MatInvertVariableBlockDiagonal(A, nblocks, bsizes, jac->diag));
   PetscCall(MatFactorGetError(A, &err));
@@ -253,6 +261,20 @@ static PetscErrorCode PCSetUp_VPBJacobi(PC pc)
 #endif
   {
     PetscCall(PCSetUp_VPBJacobi_Host(pc));
+  }
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode PCView_VPBJacobi(PC pc, PetscViewer viewer)
+{
+  PC_VPBJacobi *jac = (PC_VPBJacobi *)pc->data;
+  PetscBool     iascii;
+
+  PetscFunctionBegin;
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
+  if (iascii) {
+    PetscCall(PetscViewerASCIIPrintf(viewer, "  number of blocks: %" PetscInt_FMT "\n", jac->nblocks));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "  block sizes: min=%" PetscInt_FMT " max=%" PetscInt_FMT "\n", jac->min_bs, jac->max_bs));
   }
   PetscFunctionReturn(0);
 }
@@ -327,6 +349,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_VPBJacobi(PC pc)
   pc->ops->setup               = PCSetUp_VPBJacobi;
   pc->ops->destroy             = PCDestroy_VPBJacobi;
   pc->ops->setfromoptions      = NULL;
+  pc->ops->view                = PCView_VPBJacobi;
   pc->ops->applyrichardson     = NULL;
   pc->ops->applysymmetricleft  = NULL;
   pc->ops->applysymmetricright = NULL;
