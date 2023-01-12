@@ -90,6 +90,26 @@ typedef enum {
 } DMPointLocationType;
 
 /*E
+  DMBlockingType - Describes how to choose variable block sizes
+
+  Level: intermediate
+
+  When using `PCVPBJACOBI`, one can choose to block by topological point (all fields at a cell center, at a face, etc.)
+  or by field nodes (using number of components per field to identify "nodes"). Field nodes lead to smaller blocks, but
+  may converge more slowly. For example, a cubic Lagrange hexahedron will have one node at vertices, two at edges, four
+  at faces, and eight at cell centers. If using point blocking, the `PCVPBJACOBI` preconditioner will work with block
+  sizes up to 8 Lagrange nodes. For 5-component CFD, this produces matrices up to 40x40, which increases memory
+  footprint and may harm performance. With field node blocking, the max block size will correspond to one Lagrange node,
+  or 5x5 blocks for the CFD example.
+
+.seealso: `PCVPBJACOBI`, `MatSetVariableBlockSizes()`, `DMSetBlockingType()`
+E*/
+typedef enum {
+  DM_BLOCKING_POINT,
+  DM_BLOCKING_FIELD_NODE
+} DMBlockingType;
+
+/*E
   DMAdaptationStrategy - Describes the strategy used for adaptive solves
 
   Level: beginner
