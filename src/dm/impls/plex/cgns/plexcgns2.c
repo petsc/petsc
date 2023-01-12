@@ -680,9 +680,11 @@ PetscErrorCode DMView_PlexCGNS(DM dm, PetscViewer viewer)
   {
     PetscFE        fe, fe_coord;
     PetscDualSpace dual_space, dual_space_coord;
-    PetscInt       field_order, field_order_coord;
+    PetscInt       num_fields, field_order, field_order_coord;
     PetscBool      is_simplex;
-    PetscCall(DMGetField(dm, 0, NULL, (PetscObject *)&fe));
+    PetscCall(DMGetNumFields(dm, &num_fields));
+    if (num_fields > 0) PetscCall(DMGetField(dm, 0, NULL, (PetscObject *)&fe));
+    else fe = NULL;
     if (fe) {
       PetscCall(PetscFEGetDualSpace(fe, &dual_space));
       PetscCall(PetscDualSpaceGetOrder(dual_space, &field_order));
