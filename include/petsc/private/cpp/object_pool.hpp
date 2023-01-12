@@ -397,7 +397,7 @@ inline PetscErrorCode PoolAllocator::allocate_ptr_(size_type size, align_type al
     if (PetscDefined(USE_DEBUG)) {
       const auto computed_aligned_ptr = base_ptr + header_size + alignment_offset;
 
-      PetscCheck(computed_aligned_ptr == aligned_ptr, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Base pointer %p + header size %zu + alignment offset %zu = %p != aligned pointer %p", base_ptr, header_size, alignment_offset, computed_aligned_ptr, aligned_ptr);
+      PetscCheck(computed_aligned_ptr == aligned_ptr, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Base pointer %p + header size %zu + alignment offset %zu = %p != aligned pointer %p", reinterpret_cast<void *>(base_ptr), header_size, alignment_offset, reinterpret_cast<void *>(computed_aligned_ptr), aligned_ptr);
     }
   }
   // Poison the entire region first, then unpoison only the user region. This ensures that
