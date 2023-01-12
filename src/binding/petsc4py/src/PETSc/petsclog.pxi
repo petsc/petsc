@@ -8,53 +8,53 @@ cdef extern from * nogil:
         PetscLogDouble messageLength
         PetscLogDouble numReductions
 
-    int PetscLogDefaultBegin()
-    int PetscLogAllBegin()
-    int PetscLogView(PetscViewer)
-    int PetscLogIsActive(PetscBool*)
+    PetscErrorCode PetscLogDefaultBegin()
+    PetscErrorCode PetscLogAllBegin()
+    PetscErrorCode PetscLogView(PetscViewer)
+    PetscErrorCode PetscLogIsActive(PetscBool*)
 
-    int PetscLogFlops(PetscLogDouble)
-    int PetscGetFlops(PetscLogDouble*)
-    int PetscGetCPUTime(PetscLogDouble*)
-    int PetscMallocGetCurrentUsage(PetscLogDouble*)
-    int PetscMemoryGetCurrentUsage(PetscLogDouble*)
+    PetscErrorCode PetscLogFlops(PetscLogDouble)
+    PetscErrorCode PetscGetFlops(PetscLogDouble*)
+    PetscErrorCode PetscGetCPUTime(PetscLogDouble*)
+    PetscErrorCode PetscMallocGetCurrentUsage(PetscLogDouble*)
+    PetscErrorCode PetscMemoryGetCurrentUsage(PetscLogDouble*)
 
-    int PetscTime(PetscLogDouble*)
-    int PetscTimeSubtract(PetscLogDouble*)
-    int PetscTimeAdd(PetscLogDouble*)
+    PetscErrorCode PetscTime(PetscLogDouble*)
+    PetscErrorCode PetscTimeSubtract(PetscLogDouble*)
+    PetscErrorCode PetscTimeAdd(PetscLogDouble*)
 
     ctypedef int PetscLogStage
-    int PetscLogStageRegister(char[],PetscLogStage*)
-    int PetscLogStagePush(PetscLogStage)
-    int PetscLogStagePop()
-    int PetscLogStageSetActive(PetscLogStage,PetscBool)
-    int PetscLogStageGetActive(PetscLogStage,PetscBool*)
-    int PetscLogStageSetVisible(PetscLogStage,PetscBool)
-    int PetscLogStageGetVisible(PetscLogStage,PetscBool*)
-    int PetscLogStageGetId(char[],PetscLogStage*)
+    PetscErrorCode PetscLogStageRegister(char[],PetscLogStage*)
+    PetscErrorCode PetscLogStagePush(PetscLogStage)
+    PetscErrorCode PetscLogStagePop()
+    PetscErrorCode PetscLogStageSetActive(PetscLogStage,PetscBool)
+    PetscErrorCode PetscLogStageGetActive(PetscLogStage,PetscBool*)
+    PetscErrorCode PetscLogStageSetVisible(PetscLogStage,PetscBool)
+    PetscErrorCode PetscLogStageGetVisible(PetscLogStage,PetscBool*)
+    PetscErrorCode PetscLogStageGetId(char[],PetscLogStage*)
 
     ctypedef int PetscLogClass "PetscClassId"
-    int PetscLogClassRegister"PetscClassIdRegister"(char[],PetscLogClass*)
-    int PetscLogClassActivate"PetscLogEventActivateClass"(PetscLogClass)
-    int PetscLogClassDeactivate"PetscLogEventDeactivateClass"(PetscLogClass)
+    PetscErrorCode PetscLogClassRegister"PetscClassIdRegister"(char[],PetscLogClass*)
+    PetscErrorCode PetscLogClassActivate"PetscLogEventActivateClass"(PetscLogClass)
+    PetscErrorCode PetscLogClassDeactivate"PetscLogEventDeactivateClass"(PetscLogClass)
 
     ctypedef int PetscLogEvent
-    int PetscLogEventRegister(char[],PetscLogClass,PetscLogEvent*)
-    int PetscLogEventBegin(PetscLogEvent,PetscObject,PetscObject,PetscObject,PetscObject)
-    int PetscLogEventEnd(PetscLogEvent,PetscObject,PetscObject,PetscObject,PetscObject)
+    PetscErrorCode PetscLogEventRegister(char[],PetscLogClass,PetscLogEvent*)
+    PetscErrorCode PetscLogEventBegin(PetscLogEvent,PetscObject,PetscObject,PetscObject,PetscObject)
+    PetscErrorCode PetscLogEventEnd(PetscLogEvent,PetscObject,PetscObject,PetscObject,PetscObject)
 
-    int PetscLogEventActivate(PetscLogEvent)
-    int PetscLogEventDeactivate(PetscLogEvent)
-    int PetscLogEventSetActiveAll(PetscLogEvent,PetscBool)
-    int PetscLogEventGetPerfInfo(PetscLogStage,PetscLogEvent,PetscEventPerfInfo*)
+    PetscErrorCode PetscLogEventActivate(PetscLogEvent)
+    PetscErrorCode PetscLogEventDeactivate(PetscLogEvent)
+    PetscErrorCode PetscLogEventSetActiveAll(PetscLogEvent,PetscBool)
+    PetscErrorCode PetscLogEventGetPerfInfo(PetscLogStage,PetscLogEvent,PetscEventPerfInfo*)
 
 cdef extern from "custom.h" nogil:
-    int PetscLogStageFindId(char[],PetscLogStage*)
-    int PetscLogClassFindId(char[],PetscLogClass*)
-    int PetscLogEventFindId(char[],PetscLogEvent*)
-    int PetscLogStageFindName(PetscLogStage,char*[])
-    int PetscLogClassFindName(PetscLogClass,char*[])
-    int PetscLogEventFindName(PetscLogEvent,char*[])
+    PetscErrorCode PetscLogStageFindId(char[],PetscLogStage*)
+    PetscErrorCode PetscLogClassFindId(char[],PetscLogClass*)
+    PetscErrorCode PetscLogEventFindId(char[],PetscLogEvent*)
+    PetscErrorCode PetscLogStageFindName(PetscLogStage,char*[])
+    PetscErrorCode PetscLogClassFindName(PetscLogClass,char*[])
+    PetscErrorCode PetscLogEventFindName(PetscLogEvent,char*[])
 
 
 cdef inline int event_args2objs(object args, PetscObject o[4]) except -1:

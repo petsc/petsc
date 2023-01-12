@@ -4,68 +4,68 @@ cdef extern from * nogil:
 
     ctypedef int PetscClassId
     ctypedef int PetscObjectState
-    int PetscObjectView(PetscObject,PetscViewer)
-    int PetscObjectDestroy(PetscObject*)
-    int PetscObjectGetReference(PetscObject,PetscInt*)
-    int PetscObjectReference(PetscObject)
-    int PetscObjectDereference(PetscObject)
+    PetscErrorCode PetscObjectView(PetscObject,PetscViewer)
+    PetscErrorCode PetscObjectDestroy(PetscObject*)
+    PetscErrorCode PetscObjectGetReference(PetscObject,PetscInt*)
+    PetscErrorCode PetscObjectReference(PetscObject)
+    PetscErrorCode PetscObjectDereference(PetscObject)
 
-    int PetscObjectSetOptionsPrefix(PetscObject,char[])
-    int PetscObjectAppendOptionsPrefix(PetscObject,char[])
-    int PetscObjectGetOptionsPrefix(PetscObject,char*[])
-    int PetscObjectSetFromOptions(PetscObject)
-    int PetscObjectViewFromOptions(PetscObject,PetscObject,char[])
+    PetscErrorCode PetscObjectSetOptionsPrefix(PetscObject,char[])
+    PetscErrorCode PetscObjectAppendOptionsPrefix(PetscObject,char[])
+    PetscErrorCode PetscObjectGetOptionsPrefix(PetscObject,char*[])
+    PetscErrorCode PetscObjectSetFromOptions(PetscObject)
+    PetscErrorCode PetscObjectViewFromOptions(PetscObject,PetscObject,char[])
 
-    int PetscObjectGetComm(PetscObject,MPI_Comm*)
-    int PetscObjectGetClassId(PetscObject,PetscClassId*)
-    int PetscObjectGetType(PetscObject,char*[])
-    int PetscObjectGetClassName(PetscObject,char*[])
-    int PetscObjectSetName(PetscObject,char[])
-    int PetscObjectGetName(PetscObject,char*[])
+    PetscErrorCode PetscObjectGetComm(PetscObject,MPI_Comm*)
+    PetscErrorCode PetscObjectGetClassId(PetscObject,PetscClassId*)
+    PetscErrorCode PetscObjectGetType(PetscObject,char*[])
+    PetscErrorCode PetscObjectGetClassName(PetscObject,char*[])
+    PetscErrorCode PetscObjectSetName(PetscObject,char[])
+    PetscErrorCode PetscObjectGetName(PetscObject,char*[])
 
-    int PetscObjectStateIncrease(PetscObject)
-    int PetscObjectStateSet(PetscObject,PetscObjectState)
-    int PetscObjectStateGet(PetscObject,PetscObjectState*)
-    int PetscObjectTypeCompare(PetscObject,char[],PetscBool*)
-    int PetscObjectCompose(PetscObject,char[],PetscObject)
-    int PetscObjectQuery(PetscObject,char[],PetscObject*)
+    PetscErrorCode PetscObjectStateIncrease(PetscObject)
+    PetscErrorCode PetscObjectStateSet(PetscObject,PetscObjectState)
+    PetscErrorCode PetscObjectStateGet(PetscObject,PetscObjectState*)
+    PetscErrorCode PetscObjectTypeCompare(PetscObject,char[],PetscBool*)
+    PetscErrorCode PetscObjectCompose(PetscObject,char[],PetscObject)
+    PetscErrorCode PetscObjectQuery(PetscObject,char[],PetscObject*)
 
-    int PetscObjectIncrementTabLevel(PetscObject,PetscObject,PetscInt)
-    int PetscObjectGetTabLevel(PetscObject,PetscInt*)
-    int PetscObjectSetTabLevel(PetscObject,PetscInt)
+    PetscErrorCode PetscObjectIncrementTabLevel(PetscObject,PetscObject,PetscInt)
+    PetscErrorCode PetscObjectGetTabLevel(PetscObject,PetscInt*)
+    PetscErrorCode PetscObjectSetTabLevel(PetscObject,PetscInt)
 
 cdef extern from "custom.h" nogil:
-    int PetscObjectGetDeviceId(PetscObject,PetscInt*)
+    PetscErrorCode PetscObjectGetDeviceId(PetscObject,PetscInt*)
 
 cdef extern from "petsc/private/garbagecollector.h" nogil:
-    int PetscObjectDelayedDestroy(PetscObject*)
+    PetscErrorCode PetscObjectDelayedDestroy(PetscObject*)
 
 # --------------------------------------------------------------------
 
-cdef inline int PetscINCREF(PetscObject *obj) nogil:
-    if obj    == NULL: return 0
-    if obj[0] == NULL: return 0
+cdef inline PetscErrorCode PetscINCREF(PetscObject *obj) nogil:
+    if obj    == NULL: return PETSC_SUCCESS
+    if obj[0] == NULL: return PETSC_SUCCESS
     return PetscObjectReference(obj[0])
 
-cdef inline int PetscCLEAR(PetscObject* obj) nogil:
-    if obj    == NULL: return 0
-    if obj[0] == NULL: return 0
+cdef inline PetscErrorCode PetscCLEAR(PetscObject* obj) nogil:
+    if obj    == NULL: return PETSC_SUCCESS
+    if obj[0] == NULL: return PETSC_SUCCESS
     cdef PetscObject tmp
     tmp = obj[0]; obj[0] = NULL
     return PetscObjectDestroy(&tmp)
 
-cdef inline int PetscDEALLOC(PetscObject* obj) nogil:
-    if obj    == NULL: return 0
-    if obj[0] == NULL: return 0
+cdef inline PetscErrorCode PetscDEALLOC(PetscObject* obj) nogil:
+    if obj    == NULL: return PETSC_SUCCESS
+    if obj[0] == NULL: return PETSC_SUCCESS
     cdef PetscObject tmp
     tmp = obj[0]; obj[0] = NULL
-    if not (<int>PetscInitializeCalled): return 0
-    if     (<int>PetscFinalizeCalled):   return 0
+    if not (<int>PetscInitializeCalled): return PETSC_SUCCESS
+    if     (<int>PetscFinalizeCalled):   return PETSC_SUCCESS
     return PetscObjectDelayedDestroy(&tmp)
 
-cdef inline int PetscINCSTATE(PetscObject *obj) nogil:
-    if obj    == NULL: return 0
-    if obj[0] == NULL: return 0
+cdef inline PetscErrorCode PetscINCSTATE(PetscObject *obj) nogil:
+    if obj    == NULL: return PETSC_SUCCESS
+    if obj[0] == NULL: return PETSC_SUCCESS
     return PetscObjectStateIncrease(obj[0])
 
 # --------------------------------------------------------------------
@@ -81,15 +81,15 @@ cdef extern from *:
 cdef extern from * nogil:
     ctypedef struct _p_PetscObject:
         void *python_context
-        int (*python_destroy)(void*)
+        PetscErrorCode (*python_destroy)(void*)
 
 cdef inline void Py_DecRef(PyObject *ob) with gil:
     _Py_DecRef(ob)
 
-cdef int PetscDelPyDict(void* ptr) nogil:
+cdef PetscErrorCode PetscDelPyDict(void* ptr) nogil:
     if ptr != NULL and Py_IsInitialized():
         Py_DecRef(<PyObject*>ptr)
-    return 0
+    return PETSC_SUCCESS
 
 cdef object PetscGetPyDict(PetscObject obj, bint create):
     if obj.python_context != NULL:

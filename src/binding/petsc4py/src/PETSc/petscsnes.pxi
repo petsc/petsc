@@ -51,31 +51,31 @@ cdef extern from * nogil:
       SNES_DIVERGED_JACOBIAN_DOMAIN
       SNES_DIVERGED_TR_DELTA
 
-    ctypedef int (*PetscSNESCtxDel)(void*)
+    ctypedef PetscErrorCode (*PetscSNESCtxDel)(void*)
 
-    ctypedef int (*PetscSNESInitialGuessFunction)(PetscSNES,
+    ctypedef PetscErrorCode (*PetscSNESInitialGuessFunction)(PetscSNES,
                                                   PetscVec,
                                                   void*) except PETSC_ERR_PYTHON
-    ctypedef int (*PetscSNESFunctionFunction)(PetscSNES,
+    ctypedef PetscErrorCode (*PetscSNESFunctionFunction)(PetscSNES,
                                               PetscVec,
                                               PetscVec,
                                               void*) except PETSC_ERR_PYTHON
 
-    ctypedef int (*PetscSNESUpdateFunction)(PetscSNES,
+    ctypedef PetscErrorCode (*PetscSNESUpdateFunction)(PetscSNES,
                                             PetscInt) except PETSC_ERR_PYTHON
 
-    ctypedef int (*PetscSNESJacobianFunction)(PetscSNES,
+    ctypedef PetscErrorCode (*PetscSNESJacobianFunction)(PetscSNES,
                                               PetscVec,
                                               PetscMat,
                                               PetscMat,
                                               void*) except PETSC_ERR_PYTHON
 
-    ctypedef int (*PetscSNESObjectiveFunction)(PetscSNES,
+    ctypedef PetscErrorCode (*PetscSNESObjectiveFunction)(PetscSNES,
                                                PetscVec,
                                                PetscReal*,
                                                void*) except PETSC_ERR_PYTHON
 
-    ctypedef int (*PetscSNESConvergedFunction)(PetscSNES,
+    ctypedef PetscErrorCode (*PetscSNESConvergedFunction)(PetscSNES,
                                                PetscInt,
                                                PetscReal,
                                                PetscReal,
@@ -83,152 +83,152 @@ cdef extern from * nogil:
                                                PetscSNESConvergedReason*,
                                                void*) except PETSC_ERR_PYTHON
 
-    ctypedef int (*PetscSNESMonitorFunction)(PetscSNES,
+    ctypedef PetscErrorCode (*PetscSNESMonitorFunction)(PetscSNES,
                                              PetscInt,
                                              PetscReal,
                                              void*) except PETSC_ERR_PYTHON
 
-    int SNESCreate(MPI_Comm,PetscSNES*)
-    int SNESDestroy(PetscSNES*)
-    int SNESView(PetscSNES,PetscViewer)
+    PetscErrorCode SNESCreate(MPI_Comm,PetscSNES*)
+    PetscErrorCode SNESDestroy(PetscSNES*)
+    PetscErrorCode SNESView(PetscSNES,PetscViewer)
 
-    int SNESSetType(PetscSNES,PetscSNESType)
-    int SNESGetType(PetscSNES,PetscSNESType*)
-    int SNESSetOptionsPrefix(PetscSNES,char[])
-    int SNESAppendOptionsPrefix(PetscSNES,char[])
-    int SNESGetOptionsPrefix(PetscSNES,char*[])
-    int SNESSetFromOptions(PetscSNES)
+    PetscErrorCode SNESSetType(PetscSNES,PetscSNESType)
+    PetscErrorCode SNESGetType(PetscSNES,PetscSNESType*)
+    PetscErrorCode SNESSetOptionsPrefix(PetscSNES,char[])
+    PetscErrorCode SNESAppendOptionsPrefix(PetscSNES,char[])
+    PetscErrorCode SNESGetOptionsPrefix(PetscSNES,char*[])
+    PetscErrorCode SNESSetFromOptions(PetscSNES)
 
-    int SNESGetKSP(PetscSNES,PetscKSP*)
-    int SNESSetKSP(PetscSNES,PetscKSP)
+    PetscErrorCode SNESGetKSP(PetscSNES,PetscKSP*)
+    PetscErrorCode SNESSetKSP(PetscSNES,PetscKSP)
 
-    int SNESGetDM(PetscSNES,PetscDM*)
-    int SNESSetDM(PetscSNES,PetscDM)
+    PetscErrorCode SNESGetDM(PetscSNES,PetscDM*)
+    PetscErrorCode SNESSetDM(PetscSNES,PetscDM)
 
-    int SNESFASSetInterpolation(PetscSNES,PetscInt,PetscMat)
-    int SNESFASGetInterpolation(PetscSNES,PetscInt,PetscMat*)
-    int SNESFASSetRestriction(PetscSNES,PetscInt,PetscMat)
-    int SNESFASGetRestriction(PetscSNES,PetscInt,PetscMat*)
-    int SNESFASSetInjection(PetscSNES,PetscInt,PetscMat)
-    int SNESFASGetInjection(PetscSNES,PetscInt,PetscMat*)
-    int SNESFASSetRScale(PetscSNES,PetscInt,PetscVec)
-    int SNESFASSetLevels(PetscSNES,PetscInt,MPI_Comm[])
-    int SNESFASGetLevels(PetscSNES,PetscInt*)
-    int SNESFASGetCycleSNES(PetscSNES,PetscInt,PetscSNES*)
-    int SNESFASGetCoarseSolve(PetscSNES,PetscSNES*)
-    int SNESFASGetSmoother(PetscSNES,PetscInt,PetscSNES*)
-    int SNESFASGetSmootherDown(PetscSNES,PetscInt,PetscSNES*)
-    int SNESFASGetSmootherUp(PetscSNES,PetscInt,PetscSNES*)
+    PetscErrorCode SNESFASSetInterpolation(PetscSNES,PetscInt,PetscMat)
+    PetscErrorCode SNESFASGetInterpolation(PetscSNES,PetscInt,PetscMat*)
+    PetscErrorCode SNESFASSetRestriction(PetscSNES,PetscInt,PetscMat)
+    PetscErrorCode SNESFASGetRestriction(PetscSNES,PetscInt,PetscMat*)
+    PetscErrorCode SNESFASSetInjection(PetscSNES,PetscInt,PetscMat)
+    PetscErrorCode SNESFASGetInjection(PetscSNES,PetscInt,PetscMat*)
+    PetscErrorCode SNESFASSetRScale(PetscSNES,PetscInt,PetscVec)
+    PetscErrorCode SNESFASSetLevels(PetscSNES,PetscInt,MPI_Comm[])
+    PetscErrorCode SNESFASGetLevels(PetscSNES,PetscInt*)
+    PetscErrorCode SNESFASGetCycleSNES(PetscSNES,PetscInt,PetscSNES*)
+    PetscErrorCode SNESFASGetCoarseSolve(PetscSNES,PetscSNES*)
+    PetscErrorCode SNESFASGetSmoother(PetscSNES,PetscInt,PetscSNES*)
+    PetscErrorCode SNESFASGetSmootherDown(PetscSNES,PetscInt,PetscSNES*)
+    PetscErrorCode SNESFASGetSmootherUp(PetscSNES,PetscInt,PetscSNES*)
 
-    int SNESGetNPC(PetscSNES,PetscSNES*)
-    int SNESHasNPC(PetscSNES,PetscBool*)
-    int SNESSetNPC(PetscSNES,PetscSNES)
-    int SNESSetNPCSide(PetscSNES,PetscPCSide)
-    int SNESGetNPCSide(PetscSNES,PetscPCSide*)
+    PetscErrorCode SNESGetNPC(PetscSNES,PetscSNES*)
+    PetscErrorCode SNESHasNPC(PetscSNES,PetscBool*)
+    PetscErrorCode SNESSetNPC(PetscSNES,PetscSNES)
+    PetscErrorCode SNESSetNPCSide(PetscSNES,PetscPCSide)
+    PetscErrorCode SNESGetNPCSide(PetscSNES,PetscPCSide*)
 
-    int SNESGetRhs(PetscSNES,PetscVec*)
-    int SNESGetSolution(PetscSNES,PetscVec*)
-    int SNESSetSolution(PetscSNES,PetscVec)
-    int SNESGetSolutionUpdate(PetscSNES,PetscVec*)
+    PetscErrorCode SNESGetRhs(PetscSNES,PetscVec*)
+    PetscErrorCode SNESGetSolution(PetscSNES,PetscVec*)
+    PetscErrorCode SNESSetSolution(PetscSNES,PetscVec)
+    PetscErrorCode SNESGetSolutionUpdate(PetscSNES,PetscVec*)
 
-    int SNESSetInitialGuess"SNESSetComputeInitialGuess"(PetscSNES,PetscSNESInitialGuessFunction,void*)
-    int SNESSetFunction(PetscSNES,PetscVec,PetscSNESFunctionFunction,void*)
-    int SNESGetFunction(PetscSNES,PetscVec*,void*,void**)
-    int SNESSetUpdate(PetscSNES,PetscSNESUpdateFunction)
-    int SNESSetJacobian(PetscSNES,PetscMat,PetscMat,PetscSNESJacobianFunction,void*)
-    int SNESGetJacobian(PetscSNES,PetscMat*,PetscMat*,PetscSNESJacobianFunction*,void**)
-    int SNESSetObjective(PetscSNES,PetscSNESObjectiveFunction,void*)
-    int SNESGetObjective(PetscSNES,PetscSNESObjectiveFunction*,void**)
+    PetscErrorCode SNESSetInitialGuess"SNESSetComputeInitialGuess"(PetscSNES,PetscSNESInitialGuessFunction,void*)
+    PetscErrorCode SNESSetFunction(PetscSNES,PetscVec,PetscSNESFunctionFunction,void*)
+    PetscErrorCode SNESGetFunction(PetscSNES,PetscVec*,void*,void**)
+    PetscErrorCode SNESSetUpdate(PetscSNES,PetscSNESUpdateFunction)
+    PetscErrorCode SNESSetJacobian(PetscSNES,PetscMat,PetscMat,PetscSNESJacobianFunction,void*)
+    PetscErrorCode SNESGetJacobian(PetscSNES,PetscMat*,PetscMat*,PetscSNESJacobianFunction*,void**)
+    PetscErrorCode SNESSetObjective(PetscSNES,PetscSNESObjectiveFunction,void*)
+    PetscErrorCode SNESGetObjective(PetscSNES,PetscSNESObjectiveFunction*,void**)
 
-    int SNESComputeFunction(PetscSNES,PetscVec,PetscVec)
-    int SNESComputeJacobian(PetscSNES,PetscVec,PetscMat,PetscMat)
-    int SNESComputeObjective(PetscSNES,PetscVec,PetscReal*)
+    PetscErrorCode SNESComputeFunction(PetscSNES,PetscVec,PetscVec)
+    PetscErrorCode SNESComputeJacobian(PetscSNES,PetscVec,PetscMat,PetscMat)
+    PetscErrorCode SNESComputeObjective(PetscSNES,PetscVec,PetscReal*)
 
-    ctypedef int (*PetscSNESNGSFunction)(PetscSNES,
+    ctypedef PetscErrorCode (*PetscSNESNGSFunction)(PetscSNES,
                                          PetscVec,
                                          PetscVec,
                                          void*) except PETSC_ERR_PYTHON
-    int SNESSetNGS(PetscSNES,PetscSNESNGSFunction,void*)
-    int SNESGetNGS(PetscSNES,PetscSNESNGSFunction*,void**)
-    int SNESComputeNGS(PetscSNES,PetscVec,PetscVec)
+    PetscErrorCode SNESSetNGS(PetscSNES,PetscSNESNGSFunction,void*)
+    PetscErrorCode SNESGetNGS(PetscSNES,PetscSNESNGSFunction*,void**)
+    PetscErrorCode SNESComputeNGS(PetscSNES,PetscVec,PetscVec)
 
-    int SNESSetNormSchedule(PetscSNES,PetscSNESNormSchedule)
-    int SNESGetNormSchedule(PetscSNES,PetscSNESNormSchedule*)
+    PetscErrorCode SNESSetNormSchedule(PetscSNES,PetscSNESNormSchedule)
+    PetscErrorCode SNESGetNormSchedule(PetscSNES,PetscSNESNormSchedule*)
 
-    int SNESSetTolerances(PetscSNES,PetscReal,PetscReal,PetscReal,PetscInt,PetscInt)
-    int SNESGetTolerances(PetscSNES,PetscReal*,PetscReal*,PetscReal*,PetscInt*,PetscInt*)
+    PetscErrorCode SNESSetTolerances(PetscSNES,PetscReal,PetscReal,PetscReal,PetscInt,PetscInt)
+    PetscErrorCode SNESGetTolerances(PetscSNES,PetscReal*,PetscReal*,PetscReal*,PetscInt*,PetscInt*)
 
-    int SNESSetConvergenceTest(PetscSNES,PetscSNESConvergedFunction,void*,PetscSNESCtxDel*)
-    int SNESConvergedDefault(PetscSNES,PetscInt,PetscReal,PetscReal,PetscReal,
+    PetscErrorCode SNESSetConvergenceTest(PetscSNES,PetscSNESConvergedFunction,void*,PetscSNESCtxDel*)
+    PetscErrorCode SNESConvergedDefault(PetscSNES,PetscInt,PetscReal,PetscReal,PetscReal,
                              PetscSNESConvergedReason*,void*) except PETSC_ERR_PYTHON
-    int SNESConvergedSkip(PetscSNES,PetscInt,PetscReal,PetscReal,PetscReal,
+    PetscErrorCode SNESConvergedSkip(PetscSNES,PetscInt,PetscReal,PetscReal,PetscReal,
                           PetscSNESConvergedReason*,void*) except PETSC_ERR_PYTHON
-    int SNESSetConvergenceHistory(PetscSNES,PetscReal[],PetscInt[],PetscInt,PetscBool)
-    int SNESGetConvergenceHistory(PetscSNES,PetscReal*[],PetscInt*[],PetscInt*)
-    int SNESLogConvergenceHistory(PetscSNES,PetscReal,PetscInt)
+    PetscErrorCode SNESSetConvergenceHistory(PetscSNES,PetscReal[],PetscInt[],PetscInt,PetscBool)
+    PetscErrorCode SNESGetConvergenceHistory(PetscSNES,PetscReal*[],PetscInt*[],PetscInt*)
+    PetscErrorCode SNESLogConvergenceHistory(PetscSNES,PetscReal,PetscInt)
 
-    int SNESMonitorSet(PetscSNES,PetscSNESMonitorFunction,void*,PetscSNESCtxDel)
-    int SNESMonitorCancel(PetscSNES)
-    int SNESMonitor(PetscSNES,PetscInt,PetscReal)
+    PetscErrorCode SNESMonitorSet(PetscSNES,PetscSNESMonitorFunction,void*,PetscSNESCtxDel)
+    PetscErrorCode SNESMonitorCancel(PetscSNES)
+    PetscErrorCode SNESMonitor(PetscSNES,PetscInt,PetscReal)
 
-    int SNESSetUp(PetscSNES)
-    int SNESReset(PetscSNES)
-    int SNESSolve(PetscSNES,PetscVec,PetscVec)
+    PetscErrorCode SNESSetUp(PetscSNES)
+    PetscErrorCode SNESReset(PetscSNES)
+    PetscErrorCode SNESSolve(PetscSNES,PetscVec,PetscVec)
 
-    int SNESSetConvergedReason(PetscSNES,PetscSNESConvergedReason)
-    int SNESGetConvergedReason(PetscSNES,PetscSNESConvergedReason*)
-    int SNESSetErrorIfNotConverged(PetscSNES,PetscBool);
-    int SNESGetErrorIfNotConverged(PetscSNES,PetscBool*);
-    int SNESSetIterationNumber(PetscSNES,PetscInt)
-    int SNESGetIterationNumber(PetscSNES,PetscInt*)
-    int SNESSetForceIteration(PetscSNES,PetscBool)
-    int SNESSetFunctionNorm(PetscSNES,PetscReal)
-    int SNESGetFunctionNorm(PetscSNES,PetscReal*)
-    int SNESGetLinearSolveIterations(PetscSNES,PetscInt*)
-    int SNESSetCountersReset(PetscSNES,PetscBool)
+    PetscErrorCode SNESSetConvergedReason(PetscSNES,PetscSNESConvergedReason)
+    PetscErrorCode SNESGetConvergedReason(PetscSNES,PetscSNESConvergedReason*)
+    PetscErrorCode SNESSetErrorIfNotConverged(PetscSNES,PetscBool);
+    PetscErrorCode SNESGetErrorIfNotConverged(PetscSNES,PetscBool*);
+    PetscErrorCode SNESSetIterationNumber(PetscSNES,PetscInt)
+    PetscErrorCode SNESGetIterationNumber(PetscSNES,PetscInt*)
+    PetscErrorCode SNESSetForceIteration(PetscSNES,PetscBool)
+    PetscErrorCode SNESSetFunctionNorm(PetscSNES,PetscReal)
+    PetscErrorCode SNESGetFunctionNorm(PetscSNES,PetscReal*)
+    PetscErrorCode SNESGetLinearSolveIterations(PetscSNES,PetscInt*)
+    PetscErrorCode SNESSetCountersReset(PetscSNES,PetscBool)
 
-    int SNESGetNumberFunctionEvals(PetscSNES,PetscInt*)
-    int SNESSetMaxNonlinearStepFailures(PetscSNES,PetscInt)
-    int SNESGetMaxNonlinearStepFailures(PetscSNES,PetscInt*)
-    int SNESGetNonlinearStepFailures(PetscSNES,PetscInt*)
-    int SNESSetMaxLinearSolveFailures(PetscSNES,PetscInt)
-    int SNESGetMaxLinearSolveFailures(PetscSNES,PetscInt*)
-    int SNESGetLinearSolveFailures(PetscSNES,PetscInt*)
+    PetscErrorCode SNESGetNumberFunctionEvals(PetscSNES,PetscInt*)
+    PetscErrorCode SNESSetMaxNonlinearStepFailures(PetscSNES,PetscInt)
+    PetscErrorCode SNESGetMaxNonlinearStepFailures(PetscSNES,PetscInt*)
+    PetscErrorCode SNESGetNonlinearStepFailures(PetscSNES,PetscInt*)
+    PetscErrorCode SNESSetMaxLinearSolveFailures(PetscSNES,PetscInt)
+    PetscErrorCode SNESGetMaxLinearSolveFailures(PetscSNES,PetscInt*)
+    PetscErrorCode SNESGetLinearSolveFailures(PetscSNES,PetscInt*)
 
-    int SNESKSPSetUseEW(PetscSNES,PetscBool)
-    int SNESKSPGetUseEW(PetscSNES,PetscBool*)
-    int SNESKSPSetParametersEW(PetscSNES,PetscInt,PetscReal,PetscReal,
+    PetscErrorCode SNESKSPSetUseEW(PetscSNES,PetscBool)
+    PetscErrorCode SNESKSPGetUseEW(PetscSNES,PetscBool*)
+    PetscErrorCode SNESKSPSetParametersEW(PetscSNES,PetscInt,PetscReal,PetscReal,
                                PetscReal,PetscReal,PetscReal,PetscReal)
-    int SNESKSPGetParametersEW(PetscSNES,PetscInt*,PetscReal*,PetscReal*,
+    PetscErrorCode SNESKSPGetParametersEW(PetscSNES,PetscInt*,PetscReal*,PetscReal*,
                                PetscReal*,PetscReal*,PetscReal*,PetscReal*)
 
-    int SNESVISetVariableBounds(PetscSNES,PetscVec,PetscVec)
-    #ctypedef int (*PetscSNESVariableBoundsFunction)(PetscSNES,PetscVec,PetscVec)
+    PetscErrorCode SNESVISetVariableBounds(PetscSNES,PetscVec,PetscVec)
+    #ctypedef PetscErrorCode (*PetscSNESVariableBoundsFunction)(PetscSNES,PetscVec,PetscVec)
     #int SNESVISetComputeVariableBounds(PetscSNES,PetscSNESVariableBoundsFunction)
-    int SNESVIGetInactiveSet(PetscSNES, PetscIS*)
+    PetscErrorCode SNESVIGetInactiveSet(PetscSNES, PetscIS*)
 
-    int SNESCompositeGetSNES(PetscSNES,PetscInt,PetscSNES*)
-    int SNESCompositeGetNumber(PetscSNES,PetscInt*)
-    int SNESNASMGetSNES(PetscSNES,PetscInt,PetscSNES*)
-    int SNESNASMGetNumber(PetscSNES,PetscInt*)
+    PetscErrorCode SNESCompositeGetSNES(PetscSNES,PetscInt,PetscSNES*)
+    PetscErrorCode SNESCompositeGetNumber(PetscSNES,PetscInt*)
+    PetscErrorCode SNESNASMGetSNES(PetscSNES,PetscInt,PetscSNES*)
+    PetscErrorCode SNESNASMGetNumber(PetscSNES,PetscInt*)
 
-    int SNESPatchSetCellNumbering(PetscSNES, PetscSection)
-    int SNESPatchSetDiscretisationInfo(PetscSNES, PetscInt, PetscDM*, PetscInt*, PetscInt*, const PetscInt**, const PetscInt*, PetscInt, const PetscInt*, PetscInt, const PetscInt*)
-    int SNESPatchSetComputeOperator(PetscSNES, PetscPCPatchComputeOperator, void*)
-    int SNESPatchSetComputeFunction(PetscSNES, PetscPCPatchComputeFunction, void*)
-    int SNESPatchSetConstructType(PetscSNES, PetscPCPatchConstructType, PetscPCPatchConstructOperator, void*)
+    PetscErrorCode SNESPatchSetCellNumbering(PetscSNES, PetscSection)
+    PetscErrorCode SNESPatchSetDiscretisationInfo(PetscSNES, PetscInt, PetscDM*, PetscInt*, PetscInt*, const PetscInt**, const PetscInt*, PetscInt, const PetscInt*, PetscInt, const PetscInt*)
+    PetscErrorCode SNESPatchSetComputeOperator(PetscSNES, PetscPCPatchComputeOperator, void*)
+    PetscErrorCode SNESPatchSetComputeFunction(PetscSNES, PetscPCPatchComputeFunction, void*)
+    PetscErrorCode SNESPatchSetConstructType(PetscSNES, PetscPCPatchConstructType, PetscPCPatchConstructOperator, void*)
 
-    int SNESPythonSetType(PetscSNES,char[])
-    int SNESPythonGetType(PetscSNES,char*[])
+    PetscErrorCode SNESPythonSetType(PetscSNES,char[])
+    PetscErrorCode SNESPythonGetType(PetscSNES,char*[])
 
 cdef extern from "custom.h" nogil:
-    int SNESSetUseMFFD(PetscSNES,PetscBool)
-    int SNESGetUseMFFD(PetscSNES,PetscBool*)
+    PetscErrorCode SNESSetUseMFFD(PetscSNES,PetscBool)
+    PetscErrorCode SNESGetUseMFFD(PetscSNES,PetscBool*)
 
-    int SNESSetUseFDColoring(PetscSNES,PetscBool)
-    int SNESGetUseFDColoring(PetscSNES,PetscBool*)
+    PetscErrorCode SNESSetUseFDColoring(PetscSNES,PetscBool)
+    PetscErrorCode SNESGetUseFDColoring(PetscSNES,PetscBool*)
 
-    int SNESConvergenceTestCall(PetscSNES,PetscInt,
+    PetscErrorCode SNESConvergenceTestCall(PetscSNES,PetscInt,
                                 PetscReal,PetscReal,PetscReal,
                                 PetscSNESConvergedReason*)
 
@@ -242,21 +242,21 @@ cdef extern from "custom.h" nogil:
     PetscSNESLineSearchType SNESLINESEARCHSHELL
     PetscSNESLineSearchType SNESLINESEARCHNCGLINEAR
 
-    int SNESGetLineSearch(PetscSNES,PetscSNESLineSearch*)
-    int SNESLineSearchSetFromOptions(PetscSNESLineSearch)
-    int SNESLineSearchApply(PetscSNESLineSearch,PetscVec,PetscVec,PetscReal*,PetscVec)
-    int SNESLineSearchDestroy(PetscSNESLineSearch*)
+    PetscErrorCode SNESGetLineSearch(PetscSNES,PetscSNESLineSearch*)
+    PetscErrorCode SNESLineSearchSetFromOptions(PetscSNESLineSearch)
+    PetscErrorCode SNESLineSearchApply(PetscSNESLineSearch,PetscVec,PetscVec,PetscReal*,PetscVec)
+    PetscErrorCode SNESLineSearchDestroy(PetscSNESLineSearch*)
 
-    ctypedef int (*PetscSNESPreCheckFunction)(PetscSNESLineSearch,
+    ctypedef PetscErrorCode (*PetscSNESPreCheckFunction)(PetscSNESLineSearch,
                                               PetscVec,PetscVec,
                                               PetscBool*,
                                               void*) except PETSC_ERR_PYTHON
-    int SNESLineSearchSetPreCheck(PetscSNESLineSearch,PetscSNESPreCheckFunction,void*)
-    int SNESLineSearchGetSNES(PetscSNESLineSearch,PetscSNES*)
+    PetscErrorCode SNESLineSearchSetPreCheck(PetscSNESLineSearch,PetscSNESPreCheckFunction,void*)
+    PetscErrorCode SNESLineSearchGetSNES(PetscSNESLineSearch,PetscSNES*)
 
 cdef extern from "libpetsc4py.h":
-    int SNESPythonSetContext(PetscSNES,void*)
-    int SNESPythonGetContext(PetscSNES,void**)
+    PetscErrorCode SNESPythonSetContext(PetscSNES,void*)
+    PetscErrorCode SNESPythonGetContext(PetscSNES,void**)
 
 # -----------------------------------------------------------------------------
 
@@ -268,7 +268,7 @@ cdef inline SNES ref_SNES(PetscSNES snes):
 
 # -----------------------------------------------------------------------------
 
-cdef int SNES_InitialGuess(
+cdef PetscErrorCode SNES_InitialGuess(
     PetscSNES snes,
     PetscVec  x,
     void*     ctx,
@@ -280,11 +280,11 @@ cdef int SNES_InitialGuess(
     assert context is not None and type(context) is tuple # sanity check
     (initialguess, args, kargs) = context
     initialguess(Snes, Xvec, *args, **kargs)
-    return 0
+    return PETSC_SUCCESS
 
 # -----------------------------------------------------------------------------
 
-cdef int SNES_PreCheck(
+cdef PetscErrorCode SNES_PreCheck(
     PetscSNESLineSearch linesearch,
     PetscVec  x,
     PetscVec  y,
@@ -303,12 +303,12 @@ cdef int SNES_PreCheck(
     (precheck, args, kargs) = context
     b = precheck(Xvec, Yvec, *args, **kargs)
     changed[0] = asBool(b)
-    return 0
+    return PETSC_SUCCESS
 
 # -----------------------------------------------------------------------------
 
 
-cdef int SNES_Function(
+cdef PetscErrorCode SNES_Function(
     PetscSNES snes,
     PetscVec  x,
     PetscVec  f,
@@ -322,11 +322,11 @@ cdef int SNES_Function(
     assert context is not None and type(context) is tuple # sanity check
     (function, args, kargs) = context
     function(Snes, Xvec, Fvec, *args, **kargs)
-    return 0
+    return PETSC_SUCCESS
 
 # -----------------------------------------------------------------------------
 
-cdef int SNES_Update(
+cdef PetscErrorCode SNES_Update(
     PetscSNES snes,
     PetscInt  its,
     ) except PETSC_ERR_PYTHON with gil:
@@ -335,11 +335,11 @@ cdef int SNES_Update(
     assert context is not None and type(context) is tuple # sanity check
     (update, args, kargs) = context
     update(Snes, toInt(its), *args, **kargs)
-    return 0
+    return PETSC_SUCCESS
 
 # -----------------------------------------------------------------------------
 
-cdef int SNES_Jacobian(
+cdef PetscErrorCode SNES_Jacobian(
     PetscSNES snes,
     PetscVec  x,
     PetscMat  J,
@@ -355,11 +355,11 @@ cdef int SNES_Jacobian(
     assert context is not None and type(context) is tuple # sanity check
     (jacobian, args, kargs) = context
     jacobian(Snes, Xvec, Jmat, Pmat, *args, **kargs)
-    return 0
+    return PETSC_SUCCESS
 
 # -----------------------------------------------------------------------------
 
-cdef int SNES_Objective(
+cdef PetscErrorCode SNES_Objective(
     PetscSNES  snes,
     PetscVec   x,
     PetscReal *o,
@@ -373,11 +373,11 @@ cdef int SNES_Objective(
     (objective, args, kargs) = context
     obj = objective(Snes, Xvec, *args, **kargs)
     o[0] = asReal(obj)
-    return 0
+    return PETSC_SUCCESS
 
 # -----------------------------------------------------------------------------
 
-cdef int SNES_NGS(
+cdef PetscErrorCode SNES_NGS(
     PetscSNES snes,
     PetscVec  x,
     PetscVec  b,
@@ -391,11 +391,11 @@ cdef int SNES_NGS(
     assert context is not None and type(context) is tuple # sanity check
     (ngs, args, kargs) = context
     ngs(Snes, Xvec, Bvec, *args, **kargs)
-    return 0
+    return PETSC_SUCCESS
 
 # -----------------------------------------------------------------------------
 
-cdef int SNES_Converged(
+cdef PetscErrorCode SNES_Converged(
     PetscSNES  snes,
     PetscInt   iters,
     PetscReal  xnorm,
@@ -418,11 +418,11 @@ cdef int SNES_Converged(
     elif reason is False: r[0] = SNES_CONVERGED_ITERATING
     elif reason is True:  r[0] = SNES_CONVERGED_ITS # XXX ?
     else:                 r[0] = reason
-    return 0
+    return PETSC_SUCCESS
 
 # -----------------------------------------------------------------------------
 
-cdef int SNES_Monitor(
+cdef PetscErrorCode SNES_Monitor(
     PetscSNES  snes,
     PetscInt   iters,
     PetscReal  rnorm,
@@ -430,11 +430,11 @@ cdef int SNES_Monitor(
     ) except PETSC_ERR_PYTHON with gil:
     cdef SNES Snes = ref_SNES(snes)
     cdef object monitorlist = Snes.get_attr('__monitor__')
-    if monitorlist is None: return 0
+    if monitorlist is None: return PETSC_SUCCESS
     cdef object it = toInt(iters)
     cdef object rn = toReal(rnorm)
     for (monitor, args, kargs) in monitorlist:
         monitor(Snes, it, rn, *args, **kargs)
-    return 0
+    return PETSC_SUCCESS
 
 # -----------------------------------------------------------------------------

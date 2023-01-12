@@ -239,19 +239,19 @@ cdef extern from "Python.h":
     int PyList_Append(object,object) except -1
 
 cdef extern from * nogil:
-    int PetscTBEH(MPI_Comm,int,char*,char*,
+    PetscErrorCode PetscTBEH(MPI_Comm,int,char*,char*,
                   int,PetscErrorType,char*,void*)
 
 cdef object tracebacklist = []
 
-cdef int traceback(MPI_Comm       comm,
-                   int            line,
-                   const char    *cfun,
-                   const char    *cfile,
-                   int            n,
-                   PetscErrorType p,
-                   const char    *mess,
-                   void          *ctx) with gil:
+cdef PetscErrorCode traceback(MPI_Comm       comm,
+                              int            line,
+                              const char    *cfun,
+                              const char    *cfile,
+                              PetscErrorCode n,
+                              PetscErrorType p,
+                              const char    *mess,
+                              void          *ctx) with gil:
     cdef PetscLogDouble mem=0
     cdef PetscLogDouble rss=0
     cdef const char    *text=NULL
@@ -279,12 +279,12 @@ cdef int traceback(MPI_Comm       comm,
     <void>comm; <void>ctx; # unused
     return n
 
-cdef int PetscPythonErrorHandler(
+cdef PetscErrorCode PetscPythonErrorHandler(
     MPI_Comm       comm,
     int            line,
     const char    *cfun,
     const char    *cfile,
-    int            n,
+    PetscErrorCode n,
     PetscErrorType p,
     const char    *mess,
     void          *ctx) nogil:
@@ -320,11 +320,11 @@ cdef extern from "stdio.h" nogil:
     int fprintf(FILE *, char *, ...)
 
 cdef extern from "initpkg.h":
-    int PetscInitializePackageAll()
+    PetscErrorCode PetscInitializePackageAll()
 
 cdef extern from "libpetsc4py.h":
     int import_libpetsc4py() except -1
-    int PetscPythonRegisterAll()
+    PetscErrorCode PetscPythonRegisterAll()
 
 cdef int    PyPetsc_Argc = 0
 cdef char** PyPetsc_Argv = NULL
@@ -385,7 +385,7 @@ cdef void finalize() nogil:
                 "[error code: %d]\n", ierr)
     # and we are done, see you later !!
 
-cdef int PetscVFPrintf_PythonStd(FILE *fd, const char formt[], va_list ap):
+cdef PetscErrorCode PetscVFPrintf_PythonStd(FILE *fd, const char formt[], va_list ap):
     import sys
     cdef char cstring[8192]
     cdef size_t stringlen = sizeof(cstring)
@@ -404,12 +404,12 @@ cdef int PetscVFPrintf_PythonStd(FILE *fd, const char formt[], va_list ap):
         sys.stderr.write(ustring)
     else:
         PetscVFPrintfDefault(fd, formt, ap)
-    return 0
+    return PETSC_SUCCESS
 
-cdef int(*prevfprintf)(FILE*, const char*, va_list)
+cdef PetscErrorCode (*prevfprintf)(FILE*, const char*, va_list)
 prevfprintf = NULL
 
-cdef int _push_vfprintf(int (*vfprintf)(FILE *, const char*, va_list)) except -1:
+cdef int _push_vfprintf(PetscErrorCode (*vfprintf)(FILE *, const char*, va_list)) except -1:
     global PetscVFPrintf, prevfprintf
     assert prevfprintf == NULL
     prevfprintf = PetscVFPrintf

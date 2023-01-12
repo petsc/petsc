@@ -28,8 +28,8 @@ cdef extern from * nogil:
     MPI_Comm PETSC_COMM_SELF
     MPI_Comm PETSC_COMM_WORLD
 
-    int PetscCommDuplicate(MPI_Comm,MPI_Comm*,int*)
-    int PetscCommDestroy(MPI_Comm*)
+    PetscErrorCode PetscCommDuplicate(MPI_Comm,MPI_Comm*,int*)
+    PetscErrorCode PetscCommDestroy(MPI_Comm*)
 
 # --------------------------------------------------------------------
 
@@ -81,13 +81,13 @@ cdef inline MPI_Op mpi4py_Op_Get(object op) except *:
 
 # --------------------------------------------------------------------
 
-cdef inline int PetscCommDEALLOC(MPI_Comm* comm):
-    if comm == NULL: return 0
+cdef inline PetscErrorCode PetscCommDEALLOC(MPI_Comm* comm):
+    if comm == NULL: return PETSC_SUCCESS
     cdef MPI_Comm tmp = comm[0]
-    if tmp == MPI_COMM_NULL: return 0
+    if tmp == MPI_COMM_NULL: return PETSC_SUCCESS
     comm[0] = MPI_COMM_NULL
-    if not (<int>PetscInitializeCalled): return 0
-    if (<int>PetscFinalizeCalled): return 0
+    if not (<int>PetscInitializeCalled): return PETSC_SUCCESS
+    if (<int>PetscFinalizeCalled): return PETSC_SUCCESS
     return PetscCommDestroy(&tmp)
 
 cdef inline MPI_Comm def_Comm(object comm, MPI_Comm defv) except *:
@@ -112,13 +112,13 @@ cdef inline Comm new_Comm(MPI_Comm comm):
 cdef inline int comm_size(MPI_Comm comm) except ? -1:
     if comm == MPI_COMM_NULL: raise ValueError("null communicator")
     cdef int size = 0
-    CHKERR( MPI_Comm_size(comm, &size) )
+    CHKERR( <PetscErrorCode>MPI_Comm_size(comm, &size) )
     return size
 
 cdef inline int comm_rank(MPI_Comm comm) except ? -1:
     if comm == MPI_COMM_NULL: raise ValueError("null communicator")
     cdef int rank = 0
-    CHKERR( MPI_Comm_rank(comm, &rank) )
+    CHKERR( <PetscErrorCode>MPI_Comm_rank(comm, &rank) )
     return rank
 
 # --------------------------------------------------------------------

@@ -304,7 +304,7 @@ cdef class SNES(Object):
     def getFunction(self):
         cdef Vec f = Vec()
         cdef void* ctx
-        cdef int (*fun)(PetscSNES,PetscVec,PetscVec,void*)
+        cdef PetscErrorCode (*fun)(PetscSNES,PetscVec,PetscVec,void*)
         CHKERR( SNESGetFunction(self.snes, &f.vec, &fun, &ctx) )
         PetscINCREF(f.obj)
         cdef object function = self.get_attr('__function__')

@@ -16,8 +16,8 @@ cdef extern from "Python.h":
     PyTypeObject *Py_TYPE(PyObject *)
 
 cdef extern from "petsc/private/garbagecollector.h" nogil:
-    int PetscGarbageCleanup(MPI_Comm)
-    int PetscGarbageView(MPI_Comm,PetscViewer);
+    PetscErrorCode PetscGarbageCleanup(MPI_Comm)
+    PetscErrorCode PetscGarbageView(MPI_Comm,PetscViewer);
 
 cdef int tp_traverse(PyObject *o, visitproc visit, void *arg):
     ## printf("%s.tp_traverse(%p)\n", Py_TYPE(o).tp_name, <void*>o)
