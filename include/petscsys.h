@@ -1787,7 +1787,10 @@ M*/
 M*/
 #define PetscArrayzero(str1, cnt) PetscMemzero(str1, (size_t)(cnt) * sizeof(*(str1)))
 
-/*MC
+#if defined(PETSC_CLANG_STATIC_ANALYZER)
+  #define PetscPrefetchBlock(a, b, c, d)
+#else
+  /*MC
    PetscPrefetchBlock - Prefetches a block of memory
 
    Synopsis:
@@ -1818,12 +1821,12 @@ M*/
    address).
 
 M*/
-#define PetscPrefetchBlock(a, n, rw, t) \
-  do { \
-    const char *_p = (const char *)(a), *_end = (const char *)((a) + (n)); \
-    for (; _p < _end; _p += PETSC_LEVEL1_DCACHE_LINESIZE) PETSC_Prefetch(_p, (rw), (t)); \
-  } while (0)
-
+  #define PetscPrefetchBlock(a, n, rw, t) \
+    do { \
+      const char *_p = (const char *)(a), *_end = (const char *)((a) + (n)); \
+      for (; _p < _end; _p += PETSC_LEVEL1_DCACHE_LINESIZE) PETSC_Prefetch(_p, (rw), (t)); \
+    } while (0)
+#endif
 /*
       Determine if some of the kernel computation routines use
    Fortran (rather than C) for the numerical calculations. On some machines

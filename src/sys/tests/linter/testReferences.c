@@ -1,10 +1,10 @@
-/* for access to private vec members */
+/* for access to private viewer members */
 #include <petsc/private/viewerimpl.h>
 
 /* forward declare */
 void extractFunc(PetscViewer, void **);
 
-void testOutOfLineReference(PetscViewer v, PetscViewer v2)
+PetscErrorCode testOutOfLineReference(PetscViewer v, PetscViewer v2)
 {
   /* linter should be able to connect all of these to v */
   void  *foo  = v->data, *bar, *baz, *blop;
@@ -29,5 +29,5 @@ void testOutOfLineReference(PetscViewer v, PetscViewer v2)
   PetscValidPointer((void *)v->data, 1);
   PetscValidPointer(*blip, 1);
   PetscValidPointer(blop, 1);
-  return;
+  return 0;
 }

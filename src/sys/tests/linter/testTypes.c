@@ -1,6 +1,6 @@
-#include <petscsys.h>
+#include <petsc/private/petscimpl.h>
 
-void testTypes(PetscRandom r, PetscViewer v, PetscObject o, PetscFunctionList f)
+PetscErrorCode testTypes(PetscRandom r, PetscViewer v, PetscObject o, PetscFunctionList f)
 {
   /* incorrect */
   PetscValidType(r, -1);
@@ -13,5 +13,5 @@ void testTypes(PetscRandom r, PetscViewer v, PetscObject o, PetscFunctionList f)
   PetscCheckSameType(r, 1, v, 2);
   PetscCheckSameComm(o, 3, f, 4);
   PetscCheckSameTypeAndComm(r, 1, f, 4);
-  return;
+  return 0;
 }

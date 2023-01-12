@@ -719,24 +719,28 @@ PETSC_EXTERN PetscBool petscindebugger;
    if `PetscCIEnabledPortableErrorOutput` is set it strives to exit cleanly without call `MPI_Abort()`
 
  M*/
-#define PETSCABORT(comm, ...) \
-  do { \
-    if (petscwaitonerrorflg) PetscSleep(1000); \
-    if (petscindebugger) abort(); \
-    else { \
-      PetscErrorCode ierr_petsc_abort_ = __VA_ARGS__; \
-      PetscMPIInt    size; \
-      MPI_Comm_size(comm, &size); \
-      if (PetscCIEnabledPortableErrorOutput && size == PetscGlobalSize && ierr_petsc_abort_ != PETSC_ERR_SIG) { \
-        MPI_Finalize(); \
-        exit(0); \
-      } else if (PetscCIEnabledPortableErrorOutput && PetscGlobalSize == 1) { \
-        exit(0); \
-      } else { \
-        MPI_Abort(comm, (PetscMPIInt)ierr_petsc_abort_); \
+#if defined(PETSC_CLANG_STATIC_ANALYZER)
+void PETSCABORT(MPI_Comm, PetscErrorCode);
+#else
+  #define PETSCABORT(comm, ...) \
+    do { \
+      if (petscwaitonerrorflg) PetscSleep(1000); \
+      if (petscindebugger) abort(); \
+      else { \
+        PetscErrorCode ierr_petsc_abort_ = __VA_ARGS__; \
+        PetscMPIInt    size; \
+        MPI_Comm_size(comm, &size); \
+        if (PetscCIEnabledPortableErrorOutput && size == PetscGlobalSize && ierr_petsc_abort_ != PETSC_ERR_SIG) { \
+          MPI_Finalize(); \
+          exit(0); \
+        } else if (PetscCIEnabledPortableErrorOutput && PetscGlobalSize == 1) { \
+          exit(0); \
+        } else { \
+          MPI_Abort(comm, (PetscMPIInt)ierr_petsc_abort_); \
+        } \
       } \
-    } \
-  } while (0)
+    } while (0)
+#endif
 
 #ifdef PETSC_CLANGUAGE_CXX
   /*MC
@@ -860,19 +864,15 @@ M*/
 `SETERRABORT()`, `PetscCallAbort()`, `PetscTraceBackErrorHandler()`, `PetscPushErrorHandler()`,
 `PetscError()`, `CHKMEMQ`
 M*/
-#if defined(PETSC_CLANG_STATIC_ANALYZER)
-void PetscCallCXX(PetscErrorCode);
-#else
-  #define PetscCallCXX(...) \
-    do { \
-      PetscStackUpdateLine; \
-      try { \
-        __VA_ARGS__; \
-      } catch (const std::exception &e) { \
-        SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "%s", e.what()); \
-      } \
-    } while (0)
-#endif
+#define PetscCallCXX(...) \
+  do { \
+    PetscStackUpdateLine; \
+    try { \
+      __VA_ARGS__; \
+    } catch (const std::exception &e) { \
+      SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "%s", e.what()); \
+    } \
+  } while (0)
 
 /*MC
   PetscCallCXXAbort - Like `PetscCallCXX()` but calls `MPI_Abort()` instead of returning an

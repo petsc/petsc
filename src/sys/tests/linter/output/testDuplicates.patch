@@ -1,37 +1,154 @@
-@@ -10 +10 @@
+@@ -9,5 +9,5 @@
+   PetscValidIntPointer(a, 1);
+   /* remove */
+-  PetscValidIntPointer(a, 1);
++  
+   /* no remove */
+   PetscValidIntPointer(b, 5);
+@@ -11,5 +11,5 @@
+   PetscValidIntPointer(a, 1);
+   /* no remove */
 -  PetscValidIntPointer(b, 5);
 +  PetscValidScalarPointer(b, 2);
-@@ -12,2 +12,2 @@
+   /* ~should~ be removed but won't be */
+   PetscValidScalarPointer(b, 7);
+@@ -13,5 +13,5 @@
+   PetscValidIntPointer(b, 5);
+   /* ~should~ be removed but won't be */
 -  PetscValidScalarPointer(b, 7);
++  PetscValidScalarPointer(b, 2);
+   PetscValidScalarPointer(b, 3);
+   return 0;
+@@ -14,5 +14,5 @@
+   /* ~should~ be removed but won't be */
+   PetscValidScalarPointer(b, 7);
 -  PetscValidScalarPointer(b, 3);
 +  PetscValidScalarPointer(b, 2);
-+  PetscValidScalarPointer(b, 2);
-@@ -8 +7,0 @@
+   return 0;
+ }
+@@ -24,5 +24,5 @@
+   PetscValidScalarPointer(b, 2);
+   /* remove */
 -  PetscValidIntPointer(a, 1);
-@@ -23,2 +22,0 @@
--  PetscValidIntPointer(a, 1);
++  
+   PetscValidScalarPointer(b, 2);
+   {
+@@ -25,5 +25,5 @@
+   /* remove */
+   PetscValidIntPointer(a, 1);
 -  PetscValidScalarPointer(b, 2);
-@@ -27,2 +26,0 @@
++  
+   {
+     /* remove */
+@@ -28,5 +28,5 @@
+   {
+     /* remove */
 -    PetscValidIntPointer(a, 1);
++    
+     PetscValidScalarPointer(b, 2);
+   }
+@@ -29,5 +29,5 @@
+     /* remove */
+     PetscValidIntPointer(a, 1);
 -    PetscValidScalarPointer(b, 2);
-@@ -39,2 +38,0 @@
++    
+   }
+   return 0;
+@@ -40,5 +40,5 @@
+   PetscValidScalarPointer(b, 2);
+   /* remove */
 -  PetscValidIntPointer(a, 1);
++  
+   PetscValidScalarPointer(b, 2);
+   {
+@@ -41,5 +41,5 @@
+   /* remove */
+   PetscValidIntPointer(a, 1);
 -  PetscValidScalarPointer(b, 2);
-@@ -43,2 +42,0 @@
++  
+   {
+     /* remove */
+@@ -44,5 +44,5 @@
+   {
+     /* remove */
 -    PetscValidIntPointer(a, 1);
++    
+     PetscValidScalarPointer(b, 2);
+   }
+@@ -45,5 +45,5 @@
+     /* remove */
+     PetscValidIntPointer(a, 1);
 -    PetscValidScalarPointer(b, 2);
-@@ -48,2 +47,0 @@
++    
+   }
+   {
+@@ -49,5 +49,5 @@
+   {
+     /* remove */
 -    PetscValidIntPointer(a, 1);
++    
+     PetscValidScalarPointer(b, 2);
+   }
+@@ -50,5 +50,5 @@
+     /* remove */
+     PetscValidIntPointer(a, 1);
 -    PetscValidScalarPointer(b, 2);
-@@ -79,2 +78,0 @@
++    
+   }
+   return 0;
+@@ -80,5 +80,5 @@
+   case PETSC_TRUE:
+     /* remove */
 -    PetscValidIntPointer(a, 1);
++    
+     PetscValidScalarPointer(b, 2);
+     break;
+@@ -81,5 +81,5 @@
+     /* remove */
+     PetscValidIntPointer(a, 1);
 -    PetscValidScalarPointer(b, 2);
-@@ -84,2 +83,0 @@
++    
+     break;
+   case PETSC_FALSE:
+@@ -85,5 +85,5 @@
+   case PETSC_FALSE:
+     /* remove */
 -    PetscValidIntPointer(a, 1);
++    
+     PetscValidScalarPointer(b, 2);
+     break;
+@@ -86,5 +86,5 @@
+     /* remove */
+     PetscValidIntPointer(a, 1);
 -    PetscValidScalarPointer(b, 2);
-@@ -112,2 +111,0 @@
++    
+     break;
+   }
+@@ -113,5 +113,5 @@
+   if (cond) {
+     /* remove */
 -    PetscValidIntPointer(a, 1);
++    
+     PetscValidScalarPointer(b, 2);
+   } else {
+@@ -114,5 +114,5 @@
+     /* remove */
+     PetscValidIntPointer(a, 1);
 -    PetscValidScalarPointer(b, 2);
-@@ -116,2 +115,0 @@
++    
+   } else {
+     /* remove */
+@@ -117,5 +117,5 @@
+   } else {
+     /* remove */
 -    PetscValidIntPointer(a, 1);
++    
+     PetscValidScalarPointer(b, 2);
+   }
+@@ -118,5 +118,5 @@
+     /* remove */
+     PetscValidIntPointer(a, 1);
 -    PetscValidScalarPointer(b, 2);
++    
+   }
+   return 0;

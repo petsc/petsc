@@ -1,0 +1,65 @@
+<--- FIXED --->
+[ROOT] -------------------------------------------------------------------------------------
+ERROR 0: ./src/sys/tests/linter/testValidPetscObject.c:12:25
+'2' of type 'int'
+  10: {
+  11:   /* incorrect */
+> 12:   PetscValidHeader(obj, 2);
+                              ^
+  13:   PetscValidHeader(dobj, 600);
+  14: 
+
+Argument number doesn't match for 'obj'. Expected '1', found '2' [-fmatching-arg-num]
+
+./src/sys/tests/linter/testValidPetscObject.c:9:33 Note: 'obj' is traceable to argument #1 'obj' in enclosing function here:
+  7 : typedef struct _p_PetscLinterDummyObj *PetscLinterDummyObj;
+  8 : 
+> 9 : PetscErrorCode ValidPetscObject(PetscObject obj, PetscLinterDummyObj dobj)
+                                      ^^^^^^^^^^^^^^^
+  10: {
+  11:   /* incorrect */
+
+ERROR 2: ./src/sys/tests/linter/testValidPetscObject.c:13:26
+'600' of type 'int'
+  11: /* incorrect */
+  12: PetscValidHeader(obj, 2);
+> 13: PetscValidHeader(dobj, 600);
+                             ^^^
+  14: 
+  15: /* correct */
+
+Argument number doesn't match for 'dobj'. Expected '2', found '600' [-fmatching-arg-num]
+
+./src/sys/tests/linter/testValidPetscObject.c:9:50 Note: 'dobj' is traceable to argument #2 'dobj' in enclosing function here:
+  7 : typedef struct _p_PetscLinterDummyObj *PetscLinterDummyObj;
+  8 : 
+> 9 : PetscErrorCode ValidPetscObject(PetscObject obj, PetscLinterDummyObj dobj)
+                                                       ^^^^^^^^^^^^^^^^^^^^^^^^
+  10: {
+  11:   /* incorrect */
+[ROOT] -------------------------------------------------------------------------------------
+<--- LEFT --->
+[ROOT] -------------------------------------------------------------------------------------
+ERROR 1: ./src/sys/tests/linter/testValidPetscObject.c:13:20
+'dobj' of type 'PetscLinterDummyObj' (a.k.a. '_p_PetscLinterDummyObj *')
+  11: /* incorrect */
+  12: PetscValidHeader(obj, 2);
+> 13: PetscValidHeader(dobj, 600);
+                       ^^^^
+  14: 
+  15: /* correct */
+
+Invalid type '_p_PetscLinterDummyObj', expected a PetscObject (or derived class) [-fincompatible-type-petscobject]:
+./src/sys/tests/linter/testValidPetscObject.c:3:8
+  2: 
+> 3: struct _p_PetscLinterDummyObj {
+     ^
+> 4:   void *data;
+> 5: };
+  6: 
+  7: typedef struct _p_PetscLinterDummyObj *PetscLinterDummyObj;
+
+./src/sys/tests/linter/testValidPetscObject.c:3:1 Note: Type '_p_PetscLinterDummyObj' is prefixed with '_p_' to indicate it is a PetscObject but its definition is missing a PETSCHEADER as the first struct member. Either replace '_p_' with '_n_' to indicate it is not a PetscObject or add a PETSCHEADER declaration as the first member.
+
+./src/sys/tests/linter/testValidPetscObject.c:3:1 Note: It is ambiguous whether 'dobj' is intended to be a PetscObject.
+[ROOT] -------------------------------------------------------------------------------------

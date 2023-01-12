@@ -1,0 +1,136 @@
+<--- FIXED --->
+[ROOT] -------------------------------------------------------------------------------------
+ERROR 0: ./src/sys/tests/linter/testTypes.c:6:21
+'-1' of type 'int'
+  4: {
+  5:   /* incorrect */
+> 6:   PetscValidType(r, -1);
+                         ^^
+  7:   PetscCheckSameType(r, -1, v, -1);
+  8:   PetscCheckSameComm(o, -2, f, -2);
+
+Argument number doesn't match for 'r'. Expected '1', found '-1' [-fmatching-arg-num]
+
+./src/sys/tests/linter/testTypes.c:3:26 Note: 'r' is traceable to argument #1 'r' in enclosing function here:
+  1: #include <petsc/private/petscimpl.h>
+  2: 
+> 3: PetscErrorCode testTypes(PetscRandom r, PetscViewer v, PetscObject o, PetscFunctionList f)
+                              ^^^^^^^^^^^^^
+  4: {
+  5:   /* incorrect */
+
+ERROR 1: ./src/sys/tests/linter/testTypes.c:7:25
+'-1' of type 'int'
+  5: /* incorrect */
+  6: PetscValidType(r, -1);
+> 7: PetscCheckSameType(r, -1, v, -1);
+                           ^^
+  8: PetscCheckSameComm(o, -2, f, -2);
+  9: PetscCheckSameTypeAndComm(r, -3, f, -3);
+
+Argument number doesn't match for 'r'. Expected '1', found '-1' [-fmatching-arg-num]
+
+./src/sys/tests/linter/testTypes.c:3:26 Note: 'r' is traceable to argument #1 'r' in enclosing function here:
+  1: #include <petsc/private/petscimpl.h>
+  2: 
+> 3: PetscErrorCode testTypes(PetscRandom r, PetscViewer v, PetscObject o, PetscFunctionList f)
+                              ^^^^^^^^^^^^^
+  4: {
+  5:   /* incorrect */
+
+ERROR 2: ./src/sys/tests/linter/testTypes.c:7:32
+'-1' of type 'int'
+  5: /* incorrect */
+  6: PetscValidType(r, -1);
+> 7: PetscCheckSameType(r, -1, v, -1);
+                                  ^^
+  8: PetscCheckSameComm(o, -2, f, -2);
+  9: PetscCheckSameTypeAndComm(r, -3, f, -3);
+
+Argument number doesn't match for 'v'. Expected '2', found '-1' [-fmatching-arg-num]
+
+./src/sys/tests/linter/testTypes.c:3:41 Note: 'v' is traceable to argument #2 'v' in enclosing function here:
+  1: #include <petsc/private/petscimpl.h>
+  2: 
+> 3: PetscErrorCode testTypes(PetscRandom r, PetscViewer v, PetscObject o, PetscFunctionList f)
+                                             ^^^^^^^^^^^^^
+  4: {
+  5:   /* incorrect */
+
+ERROR 3: ./src/sys/tests/linter/testTypes.c:8:25
+'-2' of type 'int'
+  6 : PetscValidType(r, -1);
+  7 : PetscCheckSameType(r, -1, v, -1);
+> 8 : PetscCheckSameComm(o, -2, f, -2);
+                            ^^
+  9 : PetscCheckSameTypeAndComm(r, -3, f, -3);
+  10: 
+
+Argument number doesn't match for 'o'. Expected '3', found '-2' [-fmatching-arg-num]
+
+./src/sys/tests/linter/testTypes.c:3:56 Note: 'o' is traceable to argument #3 'o' in enclosing function here:
+  1: #include <petsc/private/petscimpl.h>
+  2: 
+> 3: PetscErrorCode testTypes(PetscRandom r, PetscViewer v, PetscObject o, PetscFunctionList f)
+                                                            ^^^^^^^^^^^^^
+  4: {
+  5:   /* incorrect */
+
+ERROR 4: ./src/sys/tests/linter/testTypes.c:8:32
+'-2' of type 'int'
+  6 : PetscValidType(r, -1);
+  7 : PetscCheckSameType(r, -1, v, -1);
+> 8 : PetscCheckSameComm(o, -2, f, -2);
+                                   ^^
+  9 : PetscCheckSameTypeAndComm(r, -3, f, -3);
+  10: 
+
+Argument number doesn't match for 'f'. Expected '4', found '-2' [-fmatching-arg-num]
+
+./src/sys/tests/linter/testTypes.c:3:71 Note: 'f' is traceable to argument #4 'f' in enclosing function here:
+  1: #include <petsc/private/petscimpl.h>
+  2: 
+> 3: PetscErrorCode testTypes(PetscRandom r, PetscViewer v, PetscObject o, PetscFunctionList f)
+                                                                           ^^^^^^^^^^^^^^^^^^^
+  4: {
+  5:   /* incorrect */
+
+ERROR 5: ./src/sys/tests/linter/testTypes.c:9:32
+'-3' of type 'int'
+  7 : PetscCheckSameType(r, -1, v, -1);
+  8 : PetscCheckSameComm(o, -2, f, -2);
+> 9 : PetscCheckSameTypeAndComm(r, -3, f, -3);
+                                   ^^
+  10: 
+  11: /* correct */
+
+Argument number doesn't match for 'r'. Expected '1', found '-3' [-fmatching-arg-num]
+
+./src/sys/tests/linter/testTypes.c:3:26 Note: 'r' is traceable to argument #1 'r' in enclosing function here:
+  1: #include <petsc/private/petscimpl.h>
+  2: 
+> 3: PetscErrorCode testTypes(PetscRandom r, PetscViewer v, PetscObject o, PetscFunctionList f)
+                              ^^^^^^^^^^^^^
+  4: {
+  5:   /* incorrect */
+
+ERROR 6: ./src/sys/tests/linter/testTypes.c:9:39
+'-3' of type 'int'
+  7 : PetscCheckSameType(r, -1, v, -1);
+  8 : PetscCheckSameComm(o, -2, f, -2);
+> 9 : PetscCheckSameTypeAndComm(r, -3, f, -3);
+                                          ^^
+  10: 
+  11: /* correct */
+
+Argument number doesn't match for 'f'. Expected '4', found '-3' [-fmatching-arg-num]
+
+./src/sys/tests/linter/testTypes.c:3:71 Note: 'f' is traceable to argument #4 'f' in enclosing function here:
+  1: #include <petsc/private/petscimpl.h>
+  2: 
+> 3: PetscErrorCode testTypes(PetscRandom r, PetscViewer v, PetscObject o, PetscFunctionList f)
+                                                                           ^^^^^^^^^^^^^^^^^^^
+  4: {
+  5:   /* incorrect */
+[ROOT] -------------------------------------------------------------------------------------
+<--- LEFT --->
