@@ -8096,7 +8096,6 @@ PETSC_EXTERN void matsetvaluesmpiaij_(Mat *mmat, PetscInt *mm, const PetscInt im
             MatSetValues_SeqAIJ_A_Private(row, col, value, addv, im[i], in[j]);
           } else if (in[j] < 0) continue;
           else if (PetscUnlikelyDebug(in[j] >= mat->cmap->N)) {
-            /* extra brace on SETERRQ() is required for --with-errorchecking=0 - due to the next 'else' clause */
             SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Column too large: col %" PetscInt_FMT " max %" PetscInt_FMT, in[j], mat->cmap->N - 1);
           } else {
             if (mat->was_assembled) {
