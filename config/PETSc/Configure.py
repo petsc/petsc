@@ -721,26 +721,50 @@ char assert_aligned[(sizeof(struct mystruct)==16)*2-1];
       self.addDefine('FUNCTION_NAME_CXX', getFunctionName('Cxx'))
 
   def configureIntptrt(self):
-    '''Determine what to use for uintptr_t'''
+    '''Determine what to use for uintptr_t and intptr_t'''
     def staticAssertSizeMatchesVoidStar(inc,typename):
       # The declaration is an error if either array size is negative.
       # It should be okay to use an int that is too large, but it would be very unlikely for this to be the case
       return self.checkCompile(inc, ('#define STATIC_ASSERT(cond) char negative_length_if_false[2*(!!(cond))-1]\n'
                                      + 'STATIC_ASSERT(sizeof(void*) == sizeof(%s));'%typename))
-    self.pushLanguage(self.languages.clanguage)
-    if self.checkCompile('#include <stdint.h>', 'int x; uintptr_t i = (uintptr_t)&x; (void)i'):
-      self.addDefine('UINTPTR_T', 'uintptr_t')
-    elif staticAssertSizeMatchesVoidStar('','unsigned long long'):
-      self.addDefine('UINTPTR_T', 'unsigned long long')
-    elif staticAssertSizeMatchesVoidStar('#include <stdlib.h>','size_t') or staticAssertSizeMatchesVoidStar('#include <string.h>', 'size_t'):
-      self.addDefine('UINTPTR_T', 'size_t')
-    elif staticAssertSizeMatchesVoidStar('','unsigned long'):
-      self.addDefine('UINTPTR_T', 'unsigned long')
-    elif staticAssertSizeMatchesVoidStar('','unsigned'):
-      self.addDefine('UINTPTR_T', 'unsigned')
-    else:
-      raise RuntimeError('Could not find any unsigned integer type matching void*')
-    self.popLanguage()
+
+    def generate_uintptr_guesses():
+      for suff in ('max', '64', '32', '16'):
+        yield '#include <stdint.h>', 'uint{}_t'.format(suff), 'PRIx{}'.format(suff.upper())
+      yield '#include <stdlib.h>\n#include <string.h>', 'size_t', 'zx'
+      yield '', 'unsigned long long', 'llx'
+      yield '', 'unsigned long', 'lx'
+      yield '', 'unsigned', 'x'
+
+    def generate_intptr_guesses():
+      for suff in ('max', '64', '32', '16'):
+        yield '#include <stdint.h>', 'int{}_t'.format(suff), 'PRIx{}'.format(suff.upper())
+      yield '', 'long long', 'llx'
+      yield '', 'long', 'lx'
+      yield '', 'int', 'x'
+
+    def check(default_typename, generator):
+      macro_name = default_typename.upper()
+      with self.Language(self.languages.clanguage):
+        if self.checkCompile(
+            '#include <stdint.h>',
+            'int x; {type_name} i = ({type_name})&x; (void)i'.format(type_name=default_typename)
+        ):
+          typename     = default_typename
+          print_format = 'PRIxPTR'
+        else:
+          for include, typename, print_format in generator():
+            if staticAssertSizeMatchesVoidStar(include, typename):
+              break
+          else:
+            raise RuntimeError('Could not find any {} type matching void*'.format(macro_name))
+      self.addDefine(macro_name         , typename)
+      self.addDefine(macro_name + '_FMT', '\"#\" ' + print_format)
+      return
+
+    check('uintptr_t', generate_uintptr_guesses)
+    check('intptr_t', generate_intptr_guesses)
+    return
 
   def configureRTLDDefault(self):
     '''Check for dynamic library feature'''
