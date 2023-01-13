@@ -197,7 +197,7 @@ def chksynonyms():
 
 def chkwincompilerusinglink():
   for arg in sys.argv:
-    if (arg.find('win32fe') >= 0 and (arg.find('f90') >=0 or arg.find('ifort') >=0 or arg.find('icl') >=0)):
+    if (arg.find('win32fe') >= 0 and (arg.find('ifort') >=0 or arg.find('icl') >=0)):
       return 1
   return 0
 

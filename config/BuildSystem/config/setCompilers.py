@@ -1326,7 +1326,6 @@ class Configure(config.base.Configure):
       yield 'win32fe icl'
       yield 'win32fe cl'
       yield 'pgcc'
-      yield 'win32fe bcc32'
     return
 
   def showMPIWrapper(self,compiler):
@@ -1684,7 +1683,6 @@ class Configure(config.base.Configure):
         yield 'win32fe cl'
         yield 'pgCC'
         yield 'CC'
-        yield 'win32fe bcc32'
     return
 
   def checkCxxCompiler(self):
@@ -1805,8 +1803,6 @@ class Configure(config.base.Configure):
           yield 'xlf'
         elif self.CC == 'ncc':
           yield 'nfort'
-        elif self.CC.find('win32fe cl') >= 0:
-          yield 'win32fe f90'
           yield 'win32fe ifc'
         elif self.CC.find('win32fe icl') >= 0:
           yield 'win32fe ifc'
@@ -2081,8 +2077,6 @@ class Configure(config.base.Configure):
       args = os.path.basename(archiver).split(' ')
       if 'lib' in args:
         flag = '-a'
-      elif 'tlib' in args:
-        flag = '-a -P512'
     if prog.endswith('ar') and not (self.isSolarisAR(prog, self.log) or self.isAIXAR(prog, self.log)):
       self.FAST_AR_FLAGS = 'Scq'
     else:
@@ -2131,12 +2125,10 @@ class Configure(config.base.Configure):
       raise RuntimeError('You set a value for -AR="'+envAr+'" (perhaps in your environment), but '+envAr+' cannot be used\n')
     if defaultRanlib:
       yield ('ar',self.getArchiverFlags('ar'),defaultRanlib)
-      yield ('win32fe tlib',self.getArchiverFlags('win32fe tlib'),defaultRanlib)
       yield ('win32fe lib',self.getArchiverFlags('win32fe lib'),defaultRanlib)
       raise RuntimeError('You set --with-ranlib="'+defaultRanlib+'", but '+defaultRanlib+' cannot be used\n')
     if envRanlib:
       yield ('ar',self.getArchiverFlags('ar'),envRanlib)
-      yield ('win32fe tlib',self.getArchiverFlags('win32fe tlib'),envRanlib)
       yield ('win32fe lib',self.getArchiverFlags('win32fe lib'),envRanlib)
       raise RuntimeError('You set -RANLIB="'+envRanlib+'" (perhaps in your environment), but '+defaultRanlib+' cannot be used\n')
     yield ('ar',self.getArchiverFlags('ar'),'ranlib -c')
@@ -2146,7 +2138,6 @@ class Configure(config.base.Configure):
     yield ('ar','-X64 '+self.getArchiverFlags('ar'),'ranlib -c')
     yield ('ar','-X64 '+self.getArchiverFlags('ar'),'ranlib')
     yield ('ar','-X64 '+self.getArchiverFlags('ar'),'true')
-    yield ('win32fe tlib',self.getArchiverFlags('win32fe tlib'),'true')
     yield ('win32fe lib',self.getArchiverFlags('win32fe lib'),'true')
     return
 

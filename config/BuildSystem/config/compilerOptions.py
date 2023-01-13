@@ -82,10 +82,6 @@ class CompilerOptions(config.base.Configure):
           flags.extend(['-Z7','-Od'])
         elif bopt == 'O':
           flags.extend(['-O2', '-QxW'])
-      # Windows Borland
-      elif compiler.find('win32fe bcc32') >= 0:
-        if bopt == '':
-          flags.append('-RT -w-8019 -w-8060 -w-8057 -w-8004 -w-8066')
       elif config.setCompilers.Configure.isNVCC(compiler, self.log):
         if bopt == 'g':
           # nvcc --help says:
@@ -205,10 +201,6 @@ class CompilerOptions(config.base.Configure):
           flags.extend(['-Z7','-Zm200','-Od'])
         elif bopt == 'O':
           flags.extend(['-O2','-QxW','-Zm200'])
-      # Windows Borland
-      elif compiler.find('win32fe bcc32') >= 0:
-        if bopt == '':
-          flags.append('-RT -w-8019 -w-8060 -w-8057 -w-8004 -w-8066')
       # NEC
       elif config.setCompilers.Configure.isNEC(compiler, self.log):
         if bopt == '':
@@ -286,14 +278,6 @@ class CompilerOptions(config.base.Configure):
          flags.extend(['-Z7','-Od'])
         elif bopt == 'O':
           flags.extend(['-O3', '-QxW'])
-      # Compaq Visual FORTRAN
-      elif compiler.find('win32fe f90') >= 0 or compiler.find('win32fe df') >= 0:
-        if bopt == '':
-          flags.append('-threads')
-        elif bopt == 'g':
-          flags.extend(['-debug:full','-Od'])
-        elif bopt == 'O':
-          flags.extend(['-optimize:5', '-fast'])
       # NEC
       elif config.setCompilers.Configure.isNEC(compiler, self.log):
         if bopt == '':
