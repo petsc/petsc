@@ -110,7 +110,7 @@ PetscErrorCode DMSetCoordinateDM(DM dm, DM cdm)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidHeaderSpecific(cdm, DM_CLASSID, 2);
+  if (cdm) PetscValidHeaderSpecific(cdm, DM_CLASSID, 2);
   PetscCall(PetscObjectReference((PetscObject)cdm));
   PetscCall(DMDestroy(&dm->coordinates[0].dm));
   dm->coordinates[0].dm = cdm;
@@ -960,6 +960,11 @@ PetscErrorCode DMGetBoundingBox(DM dm, PetscReal gmin[], PetscReal gmax[])
   PetscFunctionReturn(0);
 }
 
+static void evaluate_coordinates(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar xnew[])
+{
+  for (PetscInt i = 0; i < dim; i++) xnew[i] = x[i];
+}
+
 /*@
   DMProjectCoordinates - Project coordinates to a different space
 
@@ -987,7 +992,6 @@ PetscErrorCode DMProjectCoordinates(DM dm, PetscFE disc)
   PetscClassId classid;
   DM           cdmOld, cdmNew;
   Vec          coordsOld, coordsNew;
-  Mat          matInterp;
   PetscBool    same_space = PETSC_TRUE;
   const char  *prefix;
 
@@ -1050,11 +1054,21 @@ PetscErrorCode DMProjectCoordinates(DM dm, PetscFE disc)
   if (same_space) {
     // Need to copy so that the new vector has the right dm
     PetscCall(VecCopy(coordsOld, coordsNew));
-  } else {
-    // Project the coordinate vector from old to new space
-    PetscCall(DMCreateInterpolation(cdmOld, cdmNew, &matInterp, NULL));
-    PetscCall(MatInterpolate(matInterp, coordsOld, coordsNew));
-    PetscCall(MatDestroy(&matInterp));
+  } else { // Project the coordinate vector from old to new space
+    void (*funcs[])(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]) = {evaluate_coordinates};
+    // We can't call DMProjectField directly because it depends on KSP for DMGlobalToLocalSolve(), but we can use the core strategy
+    Vec X_new_loc;
+    PetscCall(DMCreateLocalVector(cdmNew, &X_new_loc));
+    PetscCall(DMSetCoordinateDM(cdmNew, cdmOld));
+    // See DMPlexRemapGeometry() for a similar pattern handling the coordinate field
+    DMField cf;
+    PetscCall(DMGetCoordinateField(dm, &cf));
+    cdmNew->coordinates[0].field = cf;
+    PetscCall(DMProjectFieldLocal(cdmNew, 0.0, NULL, funcs, INSERT_VALUES, X_new_loc));
+    cdmNew->coordinates[0].field = NULL;
+    PetscCall(DMSetCoordinateDM(cdmNew, NULL));
+    PetscCall(DMLocalToGlobal(cdmNew, X_new_loc, INSERT_VALUES, coordsNew));
+    PetscCall(VecDestroy(&X_new_loc));
   }
   /* Set new coordinate structures */
   PetscCall(DMSetCoordinateField(dm, NULL));

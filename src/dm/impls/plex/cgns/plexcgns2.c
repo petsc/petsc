@@ -680,9 +680,11 @@ PetscErrorCode DMView_PlexCGNS(DM dm, PetscViewer viewer)
   {
     PetscFE        fe, fe_coord;
     PetscDualSpace dual_space, dual_space_coord;
-    PetscInt       field_order, field_order_coord;
+    PetscInt       num_fields, field_order, field_order_coord;
     PetscBool      is_simplex;
-    PetscCall(DMGetField(dm, 0, NULL, (PetscObject *)&fe));
+    PetscCall(DMGetNumFields(dm, &num_fields));
+    if (num_fields > 0) PetscCall(DMGetField(dm, 0, NULL, (PetscObject *)&fe));
+    else fe = NULL;
     if (fe) {
       PetscCall(PetscFEGetDualSpace(fe, &dual_space));
       PetscCall(PetscDualSpaceGetOrder(dual_space, &field_order));
@@ -696,6 +698,12 @@ PetscErrorCode DMView_PlexCGNS(DM dm, PetscViewer viewer)
     if (field_order != field_order_coord) {
       PetscInt quadrature_order = field_order;
       PetscCall(DMClone(dm, &colloc_dm));
+      { // Inform the new colloc_dm that it is a coordinate DM so isoperiodic affine corrections can be applied
+        PetscSF face_sf;
+        PetscCall(DMPlexGetIsoperiodicFaceSF(dm, &face_sf));
+        PetscCall(DMPlexSetIsoperiodicFaceSF(colloc_dm, face_sf));
+        if (face_sf) colloc_dm->periodic.setup = DMPeriodicCoordinateSetUp_Internal;
+      }
       PetscCall(DMPlexIsSimplex(dm, &is_simplex));
       PetscCall(PetscFECreateLagrange(PetscObjectComm((PetscObject)dm), topo_dim, coord_dim, is_simplex, field_order, quadrature_order, &fe));
       PetscCall(DMProjectCoordinates(colloc_dm, fe));

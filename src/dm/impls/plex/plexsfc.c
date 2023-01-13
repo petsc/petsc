@@ -575,7 +575,7 @@ PetscErrorCode DMPeriodicCoordinateSetUp_Internal(DM dm)
       for (PetscInt j = 0; j < dof / dim; j++) {
         PetscInt *slot;
         PetscCall(PetscSegBufferGetInts(seg, 1, &slot));
-        *slot = off / dim;
+        *slot = off / dim + j;
       }
     }
     PetscInt *ind;
