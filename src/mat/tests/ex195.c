@@ -78,7 +78,7 @@ int main(int argc, char **args)
   PetscCall(MatGetSize(nest, &M, NULL));
   PetscCall(MatGetLocalSize(nest, &m, NULL));
   PetscCall(MatCreateDense(comm, m, PETSC_DECIDE, M, K, NULL, &B));
-  PetscCall(MatSetRandom(B, PETSC_NULL));
+  PetscCall(MatSetRandom(B, NULL));
 
   /* C = nest*B_dense */
   PetscCall(MatMatMult(nest, B, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &C));

@@ -57,9 +57,9 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscCall(PetscOptionsString("-mesh", "Name of the mesh filename if any", "ex2.c", options->meshFilename, options->meshFilename, PETSC_MAX_PATH_LEN, NULL));
   PetscCall(PetscOptionsInt("-k", "Mode number of test", "ex5.c", options->k, &options->k, NULL));
   PetscCall(PetscOptionsInt("-particlesPerCell", "Number of particles per cell", "ex2.c", options->particlesPerCell, &options->particlesPerCell, NULL));
-  PetscCall(PetscOptionsReal("-sigma", "parameter", "<1>", options->sigma, &options->sigma, PETSC_NULL));
-  PetscCall(PetscOptionsReal("-stepSize", "parameter", "<1e-2>", options->stepSize, &options->stepSize, PETSC_NULL));
-  PetscCall(PetscOptionsReal("-timeScale", "parameter", "<1>", options->timeScale, &options->timeScale, PETSC_NULL));
+  PetscCall(PetscOptionsReal("-sigma", "parameter", "<1>", options->sigma, &options->sigma, NULL));
+  PetscCall(PetscOptionsReal("-stepSize", "parameter", "<1e-2>", options->stepSize, &options->stepSize, NULL));
+  PetscCall(PetscOptionsReal("-timeScale", "parameter", "<1>", options->timeScale, &options->timeScale, NULL));
   PetscCall(PetscOptionsReal("-particle_perturbation", "Relative perturbation of particles (0,1)", "ex2.c", options->particleRelDx, &options->particleRelDx, NULL));
   PetscOptionsEnd();
   PetscFunctionReturn(0);
@@ -289,10 +289,10 @@ static PetscErrorCode RHSFunction2(TS ts, PetscReal t, Vec X, Vec Vres, void *ct
   for (cell = cStart; cell < cEnd; ++cell) {
     PetscTabulation tab;
     PetscReal       v[3], J[9], invJ[9], detJ;
-    PetscScalar    *ph       = PETSC_NULL;
-    PetscReal      *pcoord   = PETSC_NULL;
-    PetscReal      *refcoord = PETSC_NULL;
-    PetscInt       *points   = PETSC_NULL, Ncp, cp;
+    PetscScalar    *ph       = NULL;
+    PetscReal      *pcoord   = NULL;
+    PetscReal      *refcoord = NULL;
+    PetscInt       *points   = NULL, Ncp, cp;
     PetscScalar     gradPhi[3];
 
     PetscCall(DMPlexComputeCellGeometryFEM(plex, cell, NULL, v, J, invJ, &detJ));

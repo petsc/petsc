@@ -1444,7 +1444,7 @@ PETSC_EXTERN PetscErrorCode VecViennaCLRestoreCLMemWrite(Vec v)
 #else
   PetscFunctionBegin;
   PetscCheckTypeNames(v, VECSEQVIENNACL, VECMPIVIENNACL);
-  PetscCall(VecViennaCLRestoreArrayWrite(v, PETSC_NULL));
+  PetscCall(VecViennaCLRestoreArrayWrite(v, NULL));
 
   PetscFunctionReturn(0);
 #endif
@@ -1514,7 +1514,7 @@ PETSC_EXTERN PetscErrorCode VecViennaCLRestoreCLMem(Vec v)
 #else
   PetscFunctionBegin;
   PetscCheckTypeNames(v, VECSEQVIENNACL, VECMPIVIENNACL);
-  PetscCall(VecViennaCLRestoreArray(v, PETSC_NULL));
+  PetscCall(VecViennaCLRestoreArray(v, NULL));
 
   PetscFunctionReturn(0);
 #endif

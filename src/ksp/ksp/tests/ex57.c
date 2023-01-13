@@ -20,7 +20,7 @@ int main(int argc, char **argv)
   PC          pc;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, PETSC_NULL));
+  PetscCall(PetscInitialize(&argc, &argv, (char *)0, NULL));
 
   PetscCall(MatCreateAIJ(PETSC_COMM_WORLD, 5, 5, PETSC_DETERMINE, PETSC_DETERMINE, 3, NULL, 0, NULL, &subA[0]));
   PetscCall(MatGetOwnershipRange(subA[0], &mstart, &mend));

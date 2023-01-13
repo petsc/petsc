@@ -9,7 +9,7 @@ int main(int argc, char **argv)
   PetscScalar *dx, *grad;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, PETSC_NULL, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
 
   /*
    Working with a 2D mesh, made of triangles, and using the 2nd neighborhood

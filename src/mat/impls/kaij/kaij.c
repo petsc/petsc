@@ -728,7 +728,7 @@ PetscErrorCode MatMultAdd_SeqKAIJ(Mat A, Vec xx, Vec yy, Vec zz)
 PetscErrorCode MatMult_SeqKAIJ(Mat A, Vec xx, Vec yy)
 {
   PetscFunctionBegin;
-  PetscCall(MatMultAdd_SeqKAIJ(A, xx, PETSC_NULL, yy));
+  PetscCall(MatMultAdd_SeqKAIJ(A, xx, NULL, yy));
   PetscFunctionReturn(0);
 }
 
@@ -1158,7 +1158,7 @@ PetscErrorCode MatMultAdd_MPIKAIJ(Mat A, Vec xx, Vec yy, Vec zz)
 PetscErrorCode MatMult_MPIKAIJ(Mat A, Vec xx, Vec yy)
 {
   PetscFunctionBegin;
-  PetscCall(MatMultAdd_MPIKAIJ(A, xx, PETSC_NULL, yy));
+  PetscCall(MatMultAdd_MPIKAIJ(A, xx, NULL, yy));
   PetscFunctionReturn(0);
 }
 

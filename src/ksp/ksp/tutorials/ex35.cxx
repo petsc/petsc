@@ -149,7 +149,7 @@ int main(int argc, char **argv)
     for (k = 0; k <= user.nlevels; k++) dmhierarchy[k] = NULL;
 
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Number of mesh hierarchy levels: %d\n", user.nlevels));
-    PetscCall(DMMoabGenerateHierarchy(dm, user.nlevels, PETSC_NULL));
+    PetscCall(DMMoabGenerateHierarchy(dm, user.nlevels, NULL));
 
     /* coarsest grid = 0, finest grid = nlevels */
     dmhierarchy[0]         = dm;

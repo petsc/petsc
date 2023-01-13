@@ -467,10 +467,11 @@ PetscErrorCode MatConvertToTriples_seqsbaij_seqsbaij(Mat A, PetscInt shift, MatR
   aj = aa->j;
   PetscCall(MatGetBlockSize(A, &bs));
   if (reuse == MAT_INITIAL_MATRIX) {
-    nz = aa->nz;
-    PetscCall(PetscMalloc2(bs2 * nz, &row, bs2 * nz, &col));
+    const PetscInt64 alloc_size = aa->nz * bs2;
+
+    PetscCall(PetscMalloc2(alloc_size, &row, alloc_size, &col));
     if (bs > 1) {
-      PetscCall(PetscMalloc1(bs2 * nz, &mumps->val_alloc));
+      PetscCall(PetscMalloc1(alloc_size, &mumps->val_alloc));
       mumps->val = mumps->val_alloc;
     } else {
       mumps->val = aa->a;

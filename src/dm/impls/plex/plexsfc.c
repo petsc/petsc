@@ -229,7 +229,7 @@ static PetscErrorCode DMPlexCreateBoxMesh_Tensor_SFC_Periodicity_Private(DM dm, 
   PetscCall(PetscFree(donor_minz));
   PetscSF sfper;
   PetscCall(PetscSFCreate(PetscObjectComm((PetscObject)dm), &sfper));
-  PetscCall(PetscSFSetGraph(sfper, vEnd - vStart, num_faces, PETSC_NULL, PETSC_USE_POINTER, leaf, PETSC_USE_POINTER));
+  PetscCall(PetscSFSetGraph(sfper, vEnd - vStart, num_faces, NULL, PETSC_USE_POINTER, leaf, PETSC_USE_POINTER));
   const PetscInt *my_donor_degree;
   PetscCall(PetscSFComputeDegreeBegin(sfper, &my_donor_degree));
   PetscCall(PetscSFComputeDegreeEnd(sfper, &my_donor_degree));

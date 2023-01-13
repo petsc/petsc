@@ -117,7 +117,7 @@ PetscErrorCode TSSetEventTolerances(TS ts, PetscReal tol, PetscReal vtol[])
   if (vtol) {
     for (i = 0; i < event->nevents; i++) event->vtol[i] = vtol[i];
   } else {
-    if (tol != PETSC_DECIDE || tol != PETSC_DEFAULT) {
+    if ((tol != (PetscReal)PETSC_DECIDE) || (tol != (PetscReal)PETSC_DEFAULT)) {
       for (i = 0; i < event->nevents; i++) event->vtol[i] = tol;
     }
   }

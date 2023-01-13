@@ -2793,7 +2793,7 @@ static PetscErrorCode PCSetCoordinates_FieldSplit(PC pc, PetscInt dim, PetscInt 
 
   PetscFunctionBegin;
   jac->coordinates_set = PETSC_TRUE; // Internal flag
-  PetscCall(MatGetOwnershipIS(pc->mat, &is_owned, PETSC_NULL));
+  PetscCall(MatGetOwnershipIS(pc->mat, &is_owned, NULL));
 
   while (ilink_current) {
     // For each IS, embed it to get local coords indces

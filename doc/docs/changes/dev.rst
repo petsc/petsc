@@ -62,6 +62,8 @@ Changes: Development
         PetscCall(PetscPrintf(..., "MPI Window %" PETSC_INTPTR_T_FMT, (PETSC_INTPTR_T)win));
 
 
+- Deprecate ``PETSC_NULL``. Users should prefer ``PETSC_NULLPTR`` as it does the right thing in both C and C++.
+
 .. rubric:: Event Logging:
 
 .. rubric:: PetscViewer:
