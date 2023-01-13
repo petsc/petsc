@@ -46,6 +46,22 @@ Changes: Development
 
   Furthermore, users should note that ``PetscHMapI`` is based on -- and directly ``#include`` s -- ``${PETSC_DIR}/include/petsc/private/khash/khash.h``. This file contains external source code that is licensed under the MIT license, which is separate from the PETSc license.
 
+- Remove undocumented ``PETSC_MPI_WIN_FMT`` and ``PETSC_MPI_COMM_FMT``. Users should cast both ``MPI_Comm`` and ``MPI_Win`` to ``PETSC_INTPTR_T`` and use the ``PETSC_INTPTR_T_FMT`` format specifier instead:
+
+     ::
+
+        MPI_Comm comm;
+        MPI_Win  win;
+
+        // old
+        PetscCall(PetscPrintf(..., "MPI Comm %" PETSC_MPI_COMM_FMT, comm));
+        PetscCall(PetscPrintf(..., "MPI Window %" PETSC_MPI_WIN_FMT, win));
+
+        // new
+        PetscCall(PetscPrintf(..., "MPI Comm %" PETSC_INTPTR_T_FMT, (PETSC_INTPTR_T)comm));
+        PetscCall(PetscPrintf(..., "MPI Window %" PETSC_INTPTR_T_FMT, (PETSC_INTPTR_T)win));
+
+
 .. rubric:: Event Logging:
 
 .. rubric:: PetscViewer:

@@ -616,7 +616,7 @@ static PetscErrorCode DMGetCompatibility_Stag(DM dm, DM dm2, PetscBool *compatib
   PetscCall(PetscObjectGetComm((PetscObject)dm, &comm));
   PetscCallMPI(MPI_Comm_compare(comm, PetscObjectComm((PetscObject)dm2), &sameComm));
   if (sameComm != MPI_IDENT) {
-    PetscCall(PetscInfo((PetscObject)dm, "DMStag objects have different communicators: %" PETSC_MPI_COMM_FMT " != %" PETSC_MPI_COMM_FMT "\n", comm, PetscObjectComm((PetscObject)dm2)));
+    PetscCall(PetscInfo((PetscObject)dm, "DMStag objects have different communicators: %" PETSC_INTPTR_T_FMT " != %" PETSC_INTPTR_T_FMT "\n", (PETSC_INTPTR_T)comm, (PETSC_INTPTR_T)PetscObjectComm((PetscObject)dm2)));
     *set = PETSC_FALSE;
     PetscFunctionReturn(0);
   }

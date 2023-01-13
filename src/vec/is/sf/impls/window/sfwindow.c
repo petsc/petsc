@@ -427,7 +427,7 @@ static PetscErrorCode PetscSFGetWindow(PetscSF sf, MPI_Datatype unit, void *arra
     }
     if (winok) {
       *win = link->win;
-      PetscCall(PetscInfo(sf, "Reusing window %" PETSC_MPI_WIN_FMT " of flavor %d for comm %" PETSC_MPI_COMM_FMT "\n", link->win, link->flavor, PetscObjectComm((PetscObject)sf)));
+      PetscCall(PetscInfo(sf, "Reusing window %" PETSC_INTPTR_T_FMT " of flavor %d for comm %" PETSC_INTPTR_T_FMT "\n", (PETSC_INTPTR_T)link->win, link->flavor, (PETSC_INTPTR_T)PetscObjectComm((PetscObject)sf)));
       goto found;
     }
   }
@@ -486,7 +486,7 @@ static PetscErrorCode PetscSFGetWindow(PetscSF sf, MPI_Datatype unit, void *arra
   default:
     SETERRQ(PetscObjectComm((PetscObject)sf), PETSC_ERR_SUP, "No support for flavor %s", PetscSFWindowFlavorTypes[w->flavor]);
   }
-  PetscCall(PetscInfo(sf, "New window %" PETSC_MPI_WIN_FMT " of flavor %d for comm %" PETSC_MPI_COMM_FMT "\n", link->win, link->flavor, PetscObjectComm((PetscObject)sf)));
+  PetscCall(PetscInfo(sf, "New window %" PETSC_INTPTR_T_FMT " of flavor %d for comm %" PETSC_INTPTR_T_FMT "\n", (PETSC_INTPTR_T)link->win, link->flavor, (PETSC_INTPTR_T)PetscObjectComm((PetscObject)sf)));
   *win = link->win;
 
 found:
@@ -565,7 +565,7 @@ static PetscErrorCode PetscSFFindWindow(PetscSF sf, MPI_Datatype unit, const voi
   *win = MPI_WIN_NULL;
   for (link = w->wins; link; link = link->next) {
     if (array == link->paddr) {
-      PetscCall(PetscInfo(sf, "Window %" PETSC_MPI_WIN_FMT " of flavor %d for comm %" PETSC_MPI_COMM_FMT "\n", link->win, link->flavor, PetscObjectComm((PetscObject)sf)));
+      PetscCall(PetscInfo(sf, "Window %" PETSC_INTPTR_T_FMT " of flavor %d for comm %" PETSC_INTPTR_T_FMT "\n", (PETSC_INTPTR_T)link->win, link->flavor, (PETSC_INTPTR_T)PetscObjectComm((PetscObject)sf)));
       *win  = link->win;
       *reqs = link->reqs;
       PetscFunctionReturn(0);
@@ -624,7 +624,7 @@ static PetscErrorCode PetscSFRestoreWindow(PetscSF sf, MPI_Datatype unit, void *
   SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Requested window not in use");
 
 found:
-  PetscCall(PetscInfo(sf, "Window %" PETSC_MPI_WIN_FMT " of flavor %d for comm %" PETSC_MPI_COMM_FMT "\n", link->win, link->flavor, PetscObjectComm((PetscObject)sf)));
+  PetscCall(PetscInfo(sf, "Window %" PETSC_INTPTR_T_FMT " of flavor %d for comm %" PETSC_INTPTR_T_FMT "\n", (PETSC_INTPTR_T)link->win, link->flavor, (PETSC_INTPTR_T)PetscObjectComm((PetscObject)sf)));
   if (epoch) {
     switch (sync) {
     case PETSCSF_WINDOW_SYNC_FENCE:
