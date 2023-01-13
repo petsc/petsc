@@ -974,5 +974,4 @@ int main(int argc, char **argv)
     suffix: hypercubic_4
     args: -dm_plex_dim 6 -dm_plex_shape hypercubic -dm_plex_box_faces 3,3,3,3,3,3 -dm_view \
           -dm_plex_check_symmetry -dm_plex_check_skeleton -dm_plex_check_faces -dm_plex_check_pointsf -final_diagnostics 0
-          
 TEST*/
