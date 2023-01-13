@@ -21,6 +21,7 @@ PetscLogEvent DM_Convert, DM_GlobalToLocal, DM_LocalToGlobal, DM_LocalToLocal, D
 
 const char *const DMBoundaryTypes[]          = {"NONE", "GHOSTED", "MIRROR", "PERIODIC", "TWIST", "DMBoundaryType", "DM_BOUNDARY_", NULL};
 const char *const DMBoundaryConditionTypes[] = {"INVALID", "ESSENTIAL", "NATURAL", "INVALID", "INVALID", "ESSENTIAL_FIELD", "NATURAL_FIELD", "INVALID", "INVALID", "ESSENTIAL_BD_FIELD", "NATURAL_RIEMANN", "DMBoundaryConditionType", "DM_BC_", NULL};
+const char *const DMBlockingTypes[]          = {"TOPOLOGICAL_POINT", "FIELD_NODE", "DMBlockingType", "DM_BLOCKING_", NULL};
 const char *const DMPolytopeTypes[]   = {"vertex",  "segment",       "tensor_segment",      "triangle", "quadrilateral", "tensor_quad",    "tetrahedron",  "hexahedron", "triangular_prism", "tensor_triangular_prism", "tensor_quadrilateral_prism",
                                          "pyramid", "FV_ghost_cell", "interior_ghost_cell", "unknown",  "invalid",       "DMPolytopeType", "DM_POLYTOPE_", NULL};
 const char *const DMCopyLabelsModes[] = {"replace", "keep", "fail", "DMCopyLabelsMode", "DM_COPY_LABELS_", NULL};
@@ -909,6 +910,7 @@ PetscErrorCode DMSetFromOptions(DM dm)
   if (flg) PetscCall(DMSetVecType(dm, typeName));
   PetscCall(PetscOptionsFList("-dm_mat_type", "Matrix type used for created matrices", "DMSetMatType", MatList, dm->mattype ? dm->mattype : typeName, typeName, sizeof(typeName), &flg));
   if (flg) PetscCall(DMSetMatType(dm, typeName));
+  PetscCall(PetscOptionsEnum("-dm_blocking_type", "Topological point or field node blocking", "DMSetBlockingType", DMBlockingTypes, (PetscEnum)dm->blocking_type, (PetscEnum *)&dm->blocking_type, NULL));
   PetscCall(PetscOptionsEnum("-dm_is_coloring_type", "Global or local coloring of Jacobian", "DMSetISColoringType", ISColoringTypes, (PetscEnum)dm->coloringtype, (PetscEnum *)&dm->coloringtype, NULL));
   PetscCall(PetscOptionsInt("-dm_bind_below", "Set the size threshold (in entries) below which the Vec is bound to the CPU", "VecBindToCPU", dm->bind_below, &dm->bind_below, &flg));
   PetscTryTypeMethod(dm, setfromoptions, PetscOptionsObject);
@@ -1574,6 +1576,54 @@ PetscErrorCode DMSetMatrixStructureOnly(DM dm, PetscBool only)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   dm->structure_only = only;
+  PetscFunctionReturn(0);
+}
+
+/*@
+  DMSetBlockingType - set the blocking granularity to be used for variable block size `DMCreateMatrix()` is called
+
+  Logically Collective on dm
+
+  Input Parameters:
++ dm - the `DM`
+- btype - block by topological point or field node
+
+  Level: advanced
+
+  Options Database Keys:
+. -dm_blocking_type [topological_point, field_node] - use topological point blocking or field node blocking
+
+.seealso: `DMCreateMatrix()`, `MatSetVariableBlockSizes()`
+@*/
+PetscErrorCode DMSetBlockingType(DM dm, DMBlockingType btype)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  dm->blocking_type = btype;
+  PetscFunctionReturn(0);
+}
+
+/*@
+  DMGetBlockingType - get the blocking granularity to be used for variable block size `DMCreateMatrix()` is called
+
+  Not Collective
+
+  Input Parameters:
+. dm - the `DM`
+
+  Output Parameters:
+. btype - block by topological point or field node
+
+  Level: advanced
+
+.seealso: `DMCreateMatrix()`, `MatSetVariableBlockSizes()`
+@*/
+PetscErrorCode DMGetBlockingType(DM dm, DMBlockingType *btype)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidPointer(btype, 2);
+  *btype = dm->blocking_type;
   PetscFunctionReturn(0);
 }
 

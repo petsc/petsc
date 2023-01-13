@@ -43,6 +43,7 @@ typedef const char *DMType;
 
 PETSC_EXTERN const char *const       DMBoundaryTypes[];
 PETSC_EXTERN const char *const       DMBoundaryConditionTypes[];
+PETSC_EXTERN const char *const       DMBlockingTypes[];
 PETSC_EXTERN PetscFunctionList       DMList;
 PETSC_EXTERN DMGeneratorFunctionList DMGenerateList;
 PETSC_EXTERN PetscErrorCode          DMCreate(MPI_Comm, DM *);
@@ -77,6 +78,8 @@ PETSC_EXTERN PetscErrorCode DMCreateMatrix(DM, Mat *);
 PETSC_EXTERN PetscErrorCode DMSetMatrixPreallocateSkip(DM, PetscBool);
 PETSC_EXTERN PetscErrorCode DMSetMatrixPreallocateOnly(DM, PetscBool);
 PETSC_EXTERN PetscErrorCode DMSetMatrixStructureOnly(DM, PetscBool);
+PETSC_EXTERN PetscErrorCode DMSetBlockingType(DM, DMBlockingType);
+PETSC_EXTERN PetscErrorCode DMGetBlockingType(DM, DMBlockingType *);
 PETSC_EXTERN PetscErrorCode DMCreateInterpolation(DM, DM, Mat *, Vec *);
 PETSC_EXTERN PetscErrorCode DMCreateRestriction(DM, DM, Mat *);
 PETSC_EXTERN PetscErrorCode DMCreateInjection(DM, DM, Mat *);

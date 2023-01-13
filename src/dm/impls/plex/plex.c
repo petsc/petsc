@@ -2610,27 +2610,54 @@ PetscErrorCode DMCreateMatrix_Plex(DM dm, Mat *J)
   if (!isShell) {
     PetscBool fillMatrix = (PetscBool)(!dm->prealloc_only && !isMatIS);
     PetscInt *dnz, *onz, *dnzu, *onzu, bsLocal[2], bsMinMax[2], *pblocks;
-    PetscInt  pStart, pEnd, p, dof, cdof;
+    PetscInt  pStart, pEnd, p, dof, cdof, num_fields;
 
     PetscCall(DMGetLocalToGlobalMapping(dm, &ltog));
 
     PetscCall(PetscCalloc1(localSize, &pblocks));
     PetscCall(PetscSectionGetChart(sectionGlobal, &pStart, &pEnd));
+    PetscCall(PetscSectionGetNumFields(sectionGlobal, &num_fields));
     for (p = pStart; p < pEnd; ++p) {
-      PetscInt bdof, offset;
+      switch (dm->blocking_type) {
+      case DM_BLOCKING_TOPOLOGICAL_POINT: { // One block per topological point
+        PetscInt bdof, offset;
 
-      PetscCall(PetscSectionGetDof(sectionGlobal, p, &dof));
-      PetscCall(PetscSectionGetOffset(sectionGlobal, p, &offset));
-      PetscCall(PetscSectionGetConstraintDof(sectionGlobal, p, &cdof));
-      for (PetscInt i = 0; i < dof - cdof; i++) pblocks[offset - localStart + i] = dof - cdof;
-      dof  = dof < 0 ? -(dof + 1) : dof;
-      bdof = cdof && (dof - cdof) ? 1 : dof;
-      if (dof) {
-        if (bs < 0) {
-          bs = bdof;
-        } else if (bs != bdof) {
-          bs = 1;
+        PetscCall(PetscSectionGetDof(sectionGlobal, p, &dof));
+        PetscCall(PetscSectionGetOffset(sectionGlobal, p, &offset));
+        PetscCall(PetscSectionGetConstraintDof(sectionGlobal, p, &cdof));
+        for (PetscInt i = 0; i < dof - cdof; i++) pblocks[offset - localStart + i] = dof - cdof;
+        dof  = dof < 0 ? -(dof + 1) : dof;
+        bdof = cdof && (dof - cdof) ? 1 : dof;
+        if (dof) {
+          if (bs < 0) {
+            bs = bdof;
+          } else if (bs != bdof) {
+            bs = 1;
+          }
         }
+      } break;
+      case DM_BLOCKING_FIELD_NODE: {
+        for (PetscInt field = 0; field < num_fields; field++) {
+          PetscInt num_comp, bdof, offset;
+          PetscCall(PetscSectionGetFieldComponents(sectionGlobal, field, &num_comp));
+          PetscCall(PetscSectionGetFieldDof(sectionGlobal, p, field, &dof));
+          if (dof < 0) continue;
+          PetscCall(PetscSectionGetFieldOffset(sectionGlobal, p, field, &offset));
+          PetscCall(PetscSectionGetFieldConstraintDof(sectionGlobal, p, field, &cdof));
+          PetscAssert(dof % num_comp == 0, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Point %" PetscInt_FMT " field %" PetscInt_FMT " has %" PetscInt_FMT " dof, not divisible by %" PetscInt_FMT " component ", p, field, dof, num_comp);
+          PetscInt num_nodes = dof / num_comp;
+          for (PetscInt i = 0; i < dof - cdof; i++) pblocks[offset - localStart + i] = (dof - cdof) / num_nodes;
+          // Handle possibly constant block size (unlikely)
+          bdof = cdof && (dof - cdof) ? 1 : dof;
+          if (dof) {
+            if (bs < 0) {
+              bs = bdof;
+            } else if (bs != bdof) {
+              bs = 1;
+            }
+          }
+        }
+      } break;
       }
     }
     /* Must have same blocksize on all procs (some might have no points) */

@@ -239,6 +239,7 @@ struct _p_DM {
   MatType                mattype;    /* type of matrix created with DMCreateMatrix() */
   PetscInt               bind_below; /* Local size threshold (in entries/rows) below which Vec/Mat objects are bound to CPU */
   PetscInt               bs;
+  DMBlockingType         blocking_type;
   ISLocalToGlobalMapping ltogmap;
   PetscBool              prealloc_skip;      // Flag indicating the DMCreateMatrix() should not preallocate (only set sizes and local-to-global)
   PetscBool              prealloc_only;      /* Flag indicating the DMCreateMatrix() should only preallocate, not fill the matrix */
