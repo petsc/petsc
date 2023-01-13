@@ -209,10 +209,11 @@ static PetscErrorCode ComputeAction(PetscInt d, PetscBool forward, const PetscSc
 */
 static PetscErrorCode ComputeResidual(DM dm, Vec u, Vec f)
 {
-  PetscSection       s;
+  DM                 dmAux;
+  Vec                gauge;
+  PetscSection       s, sGauge;
   const PetscScalar *ua;
-  PetscScalar       *fa;
-  PetscScalar        id[9] = {1., 0., 0., 0., 1., 0., 0., 0., 1.};
+  PetscScalar       *fa, *link;
   PetscInt           dim, vStart, vEnd;
 
   PetscFunctionBeginUser;
@@ -221,6 +222,11 @@ static PetscErrorCode ComputeResidual(DM dm, Vec u, Vec f)
   PetscCall(DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd));
   PetscCall(VecGetArrayRead(u, &ua));
   PetscCall(VecGetArray(f, &fa));
+
+  PetscCall(DMGetAuxiliaryVec(dm, NULL, 0, 0, &gauge));
+  PetscCall(VecGetDM(gauge, &dmAux));
+  PetscCall(DMGetLocalSection(dmAux, &sGauge));
+  PetscCall(VecGetArray(gauge, &link));
   // Loop over y
   for (PetscInt v = vStart; v < vEnd; ++v) {
     const PetscInt *supp;
@@ -234,19 +240,22 @@ static PetscErrorCode ComputeResidual(DM dm, Vec u, Vec f)
     // Loop over mu
     for (PetscInt d = 0; d < dim; ++d) {
       const PetscInt *cone;
-      PetscInt        yoff;
+      PetscInt        yoff, goff;
 
       // Left action -(1 + \gamma_\mu)/2 \otimes U^\dagger_\mu(y) \delta_{x - \mu,y} \psi(y)
       PetscCall(DMPlexGetCone(dm, supp[2 * d + 0], &cone));
       PetscCall(PetscSectionGetOffset(s, cone[0], &yoff));
-      PetscCall(ComputeAction(d, PETSC_FALSE, id, &ua[yoff], &fa[xoff]));
+      PetscCall(PetscSectionGetOffset(sGauge, supp[2 * d + 0], &goff));
+      PetscCall(ComputeAction(d, PETSC_FALSE, &link[goff], &ua[yoff], &fa[xoff]));
       // Right edge -(1 - \gamma_\mu)/2 \otimes U_\mu(x) \delta_{x + \mu,y} \psi(y)
       PetscCall(DMPlexGetCone(dm, supp[2 * d + 1], &cone));
       PetscCall(PetscSectionGetOffset(s, cone[1], &yoff));
-      PetscCall(ComputeAction(d, PETSC_TRUE, id, &ua[yoff], &fa[xoff]));
+      PetscCall(PetscSectionGetOffset(sGauge, supp[2 * d + 1], &goff));
+      PetscCall(ComputeAction(d, PETSC_TRUE, &link[goff], &ua[yoff], &fa[xoff]));
     }
   }
   PetscCall(VecRestoreArray(f, &fa));
+  PetscCall(VecRestoreArray(gauge, &link));
   PetscCall(VecRestoreArrayRead(u, &ua));
   PetscFunctionReturn(0);
 }
@@ -323,6 +332,25 @@ static PetscErrorCode ComputeFFT(Mat FT, PetscInt Nc, Vec x, Vec p)
   PetscFunctionReturn(0);
 }
 
+// Sets each link to be the identity for the free field test
+static PetscErrorCode SetGauge_Identity(DM dm)
+{
+  DM           auxDM;
+  Vec          auxVec;
+  PetscSection s;
+  PetscScalar  id[9] = {1., 0., 0., 0., 1., 0., 0., 0., 1.};
+  PetscInt     eStart, eEnd;
+
+  PetscFunctionBegin;
+  PetscCall(DMGetAuxiliaryVec(dm, NULL, 0, 0, &auxVec));
+  PetscCall(VecGetDM(auxVec, &auxDM));
+  PetscCall(DMGetLocalSection(auxDM, &s));
+  PetscCall(DMPlexGetDepthStratum(dm, 1, &eStart, &eEnd));
+  for (PetscInt i = eStart; i < eEnd; ++i) { PetscCall(VecSetValuesSection(auxVec, s, i, id, INSERT_VALUES)); }
+  PetscCall(VecViewFromOptions(auxVec, NULL, "-gauge_view"));
+  PetscFunctionReturn(0);
+}
+
 /*
   Test the action of the Wilson operator in the free field case U = I,
 
@@ -356,6 +384,7 @@ static PetscErrorCode TestFreeField(DM dm)
   PetscFunctionBeginUser;
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-const_rhs", &constRhs, NULL));
 
+  PetscCall(SetGauge_Identity(dm));
   PetscCall(DMGetLocalSection(dm, &s));
   PetscCall(DMGetGlobalVector(dm, &psi));
   PetscCall(PetscObjectSetName((PetscObject)psi, "psi"));
