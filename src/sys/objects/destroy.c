@@ -232,7 +232,7 @@ PetscErrorCode PetscObjectBaseTypeCompare(PetscObject obj, const char type_name[
 
    Input Parameters:
 +  obj - any PETSc object, for example a `Vec`, `Mat` or `KSP`.
-         This must be cast with a (`PetscObjec`t), for example, `PetscObjectTypeCompareAny`((`PetscObject`)mat,...);
+         This must be cast with a (`PetscObject`), for example, `PetscObjectTypeCompareAny`((`PetscObject`)mat,...);
 -  type_name - array of strings containing type names, pass the empty string "" to terminate the list
 
    Output Parameter:
