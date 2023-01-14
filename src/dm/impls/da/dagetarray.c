@@ -1,6 +1,10 @@
 
 #include <petsc/private/dmdaimpl.h> /*I   "petscdmda.h"   I*/
 
+/*MC
+    DMDAVecGetArrayF90 - check Fortran Notes at `DMDAVecGetArray()`
+M*/
+
 /*@C
    DMDAVecGetArray - Returns a multiple dimension array that shares data with
       the underlying vector and is indexed using the global dimensions.
@@ -27,13 +31,13 @@
     appropriate `DMGlobalToLocalBegin()` and `DMGlobalToLocalEnd()` to have correct values in the ghost locations.
 
   Fortran Notes:
-    From Fortran use `DMDAVecGetArrayF90()` and pass for the array type `PetscScalar`,pointer :: array(:,...,:) of the appropriate
-       dimension. For a `DMDA` created with a dof of 1 use the dimension of the `DMDA`, for a `DMDA` created with a dof greater than 1 use one more than the
-       dimension of the `DMDA`. The order of the indices is array(xs:xs+xm-1,ys:ys+ym-1,zs:zs+zm-1) (when dof is 1) otherwise
-       array(0:dof-1,xs:xs+xm-1,ys:ys+ym-1,zs:zs+zm-1) where the values are obtained from
-       DMDAGetCorners() for a global array or DMDAGetGhostCorners() for a local array. Include petsc/finclude/petscdmda.h90 to access this routine.
+  Use `DMDAVecGetArrayF90()` and pass for the array type `PetscScalar`,pointer :: array(:,...,:) of the appropriate
+  dimension. For a `DMDA` created with a dof of 1 use the dimension of the `DMDA`, for a `DMDA` created with a dof greater than 1 use one more than the
+  dimension of the `DMDA`.
 
-  Due to bugs in the compiler `DMDAVecGetArrayF90()` does not work with gfortran versions before 4.5
+  The order of the indices is array(xs:xs+xm-1,ys:ys+ym-1,zs:zs+zm-1) (when dof is 1) otherwise
+  array(0:dof-1,xs:xs+xm-1,ys:ys+ym-1,zs:zs+zm-1) where the values are obtained from
+  `DMDAGetCorners()` for a global array or `DMDAGetGhostCorners()` for a local array.
 
 .seealso: `DM`, `DMDA`, `DMDAGetGhostCorners()`, `DMDAGetCorners()`, `VecGetArray()`, `VecRestoreArray()`, `DMDAVecRestoreArray()`, `DMDAVecRestoreArrayDOF()`
           `DMDAVecGetArrayDOF()`, `DMDAVecGetArrayWrite()`, `DMDAVecRestoreArrayWrite()`, `DMDAVecGetArrayRead()`, `DMDAVecRestoreArrayRead()`,
@@ -72,6 +76,10 @@ PetscErrorCode DMDAVecGetArray(DM da, Vec vec, void *array)
   PetscFunctionReturn(0);
 }
 
+/*MC
+    DMDAVecRestoreArrayF90 - check Fortran Notes at `DMDAVecRestoreArray()`
+M*/
+
 /*@
    DMDAVecRestoreArray - Restores a multiple dimension array obtained with `DMDAVecGetArray()`
 
@@ -80,15 +88,15 @@ PetscErrorCode DMDAVecGetArray(DM da, Vec vec, void *array)
    Input Parameters:
 +  da - the distributed array
 .  vec - the vector, either a vector the same size as one obtained with
-         DMCreateGlobalVector() or DMCreateLocalVector()
+         `DMCreateGlobalVector()` or `DMCreateLocalVector()`
 -  array - the array, non-NULL pointer is zeroed
 
   Level: intermediate
 
   Fortran Note:
-    From Fortran use `DMDAVecRestoreArayF90()`
+  From Fortran use `DMDAVecRestoreArayF90()`
 
-.seealso: `DM`, `DMDA`, `DMDAGetGhostCorners()`, `DMDAGetCorners()`, `VecGetArray()`, `VecRestoreArray()`, `DMDAVecGetArray()`,
+.seealso: `DM`, `DMDA`, `DMDAGetGhostCorners()`, `DMDAGetCorners()`, `DMDAVecRestoreArayF90()`, `VecGetArray()`, `VecRestoreArray()`, `DMDAVecGetArray()`,
           `DMDAVecGetArrayWrite()`, `DMDAVecRestoreArrayWrite()`, `DMDAVecGetArrayRead()`, `DMDAVecRestoreArrayRead()`,
           `DMDStagVecRestoreArray()`
 @*/
@@ -125,6 +133,10 @@ PetscErrorCode DMDAVecRestoreArray(DM da, Vec vec, void *array)
   PetscFunctionReturn(0);
 }
 
+/*MC
+    DMDAVecGetArrayWriteF90 - check Fortran Notes at `DMDAVecGetArrayWrite()`
+M*/
+
 /*@C
    DMDAVecGetArrayWrite - Returns a multiple dimension array that shares data with
       the underlying vector and is indexed using the global dimensions.
@@ -147,17 +159,16 @@ PetscErrorCode DMDAVecRestoreArray(DM da, Vec vec, void *array)
 
     If vec is a local vector (obtained with `DMCreateLocalVector()` etc) then the ghost point locations are accessible. If it is
     a global vector then the ghost points are not accessible. Of course with the local vector you will have had to do the
-
     appropriate `DMGlobalToLocalBegin()` and `DMGlobalToLocalEnd()` to have correct values in the ghost locations.
 
-  Fortran Notes:
-    From Fortran use `DMDAVecGetArrayF90()` and pass for the array type PetscScalar,pointer :: array(:,...,:) of the appropriate
-       dimension. For a `DMDA` created with a dof of 1 use the dimension of the `DMDA`, for a `DMDA` created with a dof greater than 1 use one more than the
-       dimension of the `DMDA`. The order of the indices is array(xs:xs+xm-1,ys:ys+ym-1,zs:zs+zm-1) (when dof is 1) otherwise
-       array(0:dof-1,xs:xs+xm-1,ys:ys+ym-1,zs:zs+zm-1) where the values are obtained from
-       DMDAGetCorners() for a global array or `DMDAGetGhostCorners()` for a local array. Include petsc/finclude/petscdmda.h90 to access this routine.
+   Fortran Notes:
+   From Fortran use `DMDAVecGetArrayWriteF90()` and pass for the array type PetscScalar,pointer :: array(:,...,:) of the appropriate
+   dimension. For a `DMDA` created with a dof of 1 use the dimension of the `DMDA`, for a `DMDA` created with a dof greater than 1 use one more than the
+   dimension of the `DMDA`.
 
-  Due to bugs in the compiler `DMDAVecGetArrayF90()` does not work with gfortran versions before 4.5
+   The order of the indices is array(xs:xs+xm-1,ys:ys+ym-1,zs:zs+zm-1) (when dof is 1) otherwise
+   array(0:dof-1,xs:xs+xm-1,ys:ys+ym-1,zs:zs+zm-1) where the values are obtained from
+   `DMDAGetCorners()` for a global array or `DMDAGetGhostCorners()` for a local array.
 
   Developer Note:
   This has code duplication with `DMDAVecGetArray()` and `DMDAVecGetArrayRead()`
@@ -202,6 +213,10 @@ PetscErrorCode DMDAVecGetArrayWrite(DM da, Vec vec, void *array)
   PetscFunctionReturn(0);
 }
 
+/*MC
+    DMDAVecRestoreArrayWriteF90 - check Fortran Notes at `DMDAVecRestoreArrayWrite()`
+M*/
+
 /*@
    DMDAVecRestoreArrayWrite - Restores a multiple dimension array obtained with `DMDAVecGetArrayWrite()`
 
@@ -216,7 +231,7 @@ PetscErrorCode DMDAVecGetArrayWrite(DM da, Vec vec, void *array)
   Level: intermediate
 
   Fortran Note:
-    From Fortran use `DMDAVecRestoreArayF90()`
+  Use `DMDAVecRestoreArayWriteF90()`
 
 .seealso: `DM`, `DMDA`, `DMDAGetGhostCorners()`, `DMDAGetCorners()`, `VecGetArray()`, `VecRestoreArray()`, `DMDAVecGetArrayWrite()`,
           `DMDAVecGetArray()`, `DMDAVecRestoreArray()`, `DMDAVecGetArrayRead()`, `DMDAVecRestoreArrayRead()`
@@ -279,8 +294,14 @@ PetscErrorCode DMDAVecRestoreArrayWrite(DM da, Vec vec, void *array)
 
     In C, the indexing is "backwards" from what expects: array[k][j][i][DOF] NOT array[i][j][k][DOF]!
 
-    In Fortran 90 you do not need a version of `DMDAVecRestoreArrayDOF()` just use `DMDAVecRestoreArrayF90()` and declare your array with one higher dimension,
-    see src/dm/tutorials/ex11f90.F
+   Fortran Notes:
+    Use `DMDAVecGetArrayF90()` and pass for the array type PetscScalar,pointer :: array(:,...,:) of the appropriate
+   dimension. For a `DMDA` created with a dof of 1 use the dimension of the `DMDA`, for a `DMDA` created with a dof greater than 1 use one more than the
+   dimension of the `DMDA`.
+
+   The order of the indices is array(xs:xs+xm-1,ys:ys+ym-1,zs:zs+zm-1) (when dof is 1) otherwise
+   array(0:dof-1,xs:xs+xm-1,ys:ys+ym-1,zs:zs+zm-1) where the values are obtained from
+   `DMDAGetCorners()` for a global array or `DMDAGetGhostCorners()` for a local array.
 
 .seealso: `DM`, `DMDA`, `DMDAGetGhostCorners()`, `DMDAGetCorners()`, `VecGetArray()`, `VecRestoreArray()`, `DMDAVecRestoreArray()`, `DMDAVecGetArray()`, `DMDAVecRestoreArrayDOF()`,
           `DMDAVecGetArrayWrite()`, `DMDAVecRestoreArrayWrite()`, `DMDAVecGetArrayRead()`, `DMDAVecRestoreArrayRead()`, `DMDAVecGetArrayDOFRead()`
@@ -328,6 +349,9 @@ PetscErrorCode DMDAVecGetArrayDOF(DM da, Vec vec, void *array)
 
   Level: intermediate
 
+  Fortran Note:
+  Use `DMDAVecRestoreArayF90()`
+
 .seealso: `DM`, `DMDA`, `DMDAGetGhostCorners()`, `DMDAGetCorners()`, `VecGetArray()`, `VecRestoreArray()`, `DMDAVecGetArray()`, `DMDAVecGetArrayDOF()`, `DMDAVecRestoreArrayDOF()`,
           `DMDAVecGetArrayWrite()`, `DMDAVecRestoreArrayWrite()`, `DMDAVecGetArrayRead()`, `DMDAVecRestoreArrayRead()`
 @*/
@@ -361,6 +385,10 @@ PetscErrorCode DMDAVecRestoreArrayDOF(DM da, Vec vec, void *array)
   PetscFunctionReturn(0);
 }
 
+/*MC
+    DMDAVecGetArrayReadF90 - check Fortran Notes at `DMDAVecGetArrayRead()`
+M*/
+
 /*@C
    DMDAVecGetArrayRead - Returns a multiple dimension array that shares data with
       the underlying vector and is indexed using the global dimensions.
@@ -386,15 +414,15 @@ PetscErrorCode DMDAVecRestoreArrayDOF(DM da, Vec vec, void *array)
     appropriate `DMGlobalToLocalBegin()` and `DMGlobalToLocalEnd()` to have correct values in the ghost locations.
 
   Fortran Notes:
-    From Fortran use `DMDAVecGetArrayReadF90()` and pass for the array type `PetscScalar`,pointer :: array(:,...,:) of the appropriate
-       dimension. For a `DMDA` created with a dof of 1 use the dimension of the `DMDA`, for a `DMDA` created with a dof greater than 1 use one more than the
-       dimension of the `DMDA`. The order of the indices is array(xs:xs+xm-1,ys:ys+ym-1,zs:zs+zm-1) (when dof is 1) otherwise
-       array(0:dof-1,xs:xs+xm-1,ys:ys+ym-1,zs:zs+zm-1) where the values are obtained from
-       DMDAGetCorners() for a global array or `DMDAGetGhostCorners()` for a local array. Include petsc/finclude/petscdmda.h90 to access this routine.
+  Use `DMDAVecGetArrayReadF90()` and pass for the array type `PetscScalar`,pointer :: array(:,...,:) of the appropriate
+  dimension. For a `DMDA` created with a dof of 1 use the dimension of the `DMDA`, for a `DMDA` created with a dof greater than 1 use one more than the
+  dimension of the `DMDA`.
 
-  Due to bugs in the compiler `DMDAVecGetArrayReadF90()` does not work with gfortran versions before 4.5
+  The order of the indices is array(xs:xs+xm-1,ys:ys+ym-1,zs:zs+zm-1) (when dof is 1) otherwise
+  array(0:dof-1,xs:xs+xm-1,ys:ys+ym-1,zs:zs+zm-1) where the values are obtained from
+  `DMDAGetCorners()` for a global array or `DMDAGetGhostCorners()` for a local array.
 
-.seealso: `DM`, `DMDA`, `DMDAGetGhostCorners()`, `DMDAGetCorners()`, `VecGetArray()`, `VecRestoreArray()`, `DMDAVecRestoreArrayRead()`, `DMDAVecRestoreArrayDOF()`
+.seealso: `DM`, `DMDA`, `DMDAVecGetArrayReadF90()`, `DMDAGetGhostCorners()`, `DMDAGetCorners()`, `VecGetArray()`, `VecRestoreArray()`, `DMDAVecRestoreArrayRead()`, `DMDAVecRestoreArrayDOF()`
           `DMDAVecGetArrayDOF()`, `DMDAVecGetArray()`, `DMDAVecRestoreArray()`, `DMDAVecGetArrayRead()`, `DMDAVecRestoreArrayRead()`,
           `DMStagVecGetArrayRead()`
 @*/
@@ -431,6 +459,10 @@ PetscErrorCode DMDAVecGetArrayRead(DM da, Vec vec, void *array)
   PetscFunctionReturn(0);
 }
 
+/*MC
+    DMDAVecRestoreArrayReadF90 - check Fortran Notes at `DMDAVecRestoreArrayRead()`
+M*/
+
 /*@
    DMDAVecRestoreArrayRead - Restores a multiple dimension array obtained with `DMDAVecGetArrayRead()`
 
@@ -445,9 +477,9 @@ PetscErrorCode DMDAVecGetArrayRead(DM da, Vec vec, void *array)
   Level: intermediate
 
   Fortran Note:
-    From Fortran use `DMDAVecRestoreArrayReadF90()`
+  Use `DMDAVecRestoreArrayReadF90()`
 
-.seealso: `DM`, `DMDA`, `DMDAGetGhostCorners()`, `DMDAGetCorners()`, `VecGetArray()`, `VecRestoreArray()`, `DMDAVecGetArrayRead()`,
+.seealso: `DM`, `DMDA`, `DMDAVecRestoreArrayReadF90()`, `DMDAGetGhostCorners()`, `DMDAGetCorners()`, `VecGetArray()`, `VecRestoreArray()`, `DMDAVecGetArrayRead()`,
           `DMDAVecGetArray()`, `DMDAVecRestoreArray()`, `DMDAVecGetArrayWrite()`, `DMDAVecRestoreArrayWrite()`,
           `DMStagVecRestoreArrayRead()`
 @*/
@@ -501,13 +533,18 @@ PetscErrorCode DMDAVecRestoreArrayRead(DM da, Vec vec, void *array)
   Level: intermediate
 
    Notes:
-    Call `DMDAVecRestoreArrayDOFRead()` once you have finished accessing the vector entries.
+   Call `DMDAVecRestoreArrayDOFRead()` once you have finished accessing the vector entries.
 
-    In C, the indexing is "backwards" from what expects: array[k][j][i][DOF] NOT array[i][j][k][DOF]!
+   In C, the indexing is "backwards" from what expects: array[k][j][i][DOF] NOT array[i][j][k][DOF]!
 
    Fortran Note:
-    In Fortran you do not need a version of `DMDAVecRestoreArrayDOF()` just use  `DMDAVecRestoreArrayReadF90()` and declare your array with one higher dimension,
-    see src/dm/tutorials/ex11f90.F
+   Use  `DMDAVecGetArrayReadF90()` and pass for the array type PetscScalar,pointer :: array(:,...,:) of the appropriate
+   dimension. For a `DMDA` created with a dof of 1 use the dimension of the `DMDA`, for a `DMDA` created with a dof greater than 1 use one more than the
+   dimension of the `DMDA`.
+
+   The order of the indices is array(xs:xs+xm-1,ys:ys+ym-1,zs:zs+zm-1) (when dof is 1) otherwise
+   array(0:dof-1,xs:xs+xm-1,ys:ys+ym-1,zs:zs+zm-1) where the values are obtained from
+   `DMDAGetCorners()` for a global array or `DMDAGetGhostCorners()` for a local array.
 
 .seealso: `DM`, `DMDA`, `DMDAGetGhostCorners()`, `DMDAGetCorners()`, `VecGetArray()`, `VecRestoreArray()`, `DMDAVecRestoreArray()`, `DMDAVecGetArray()`, `DMDAVecGetArrayDOF()`,
           `DMDAVecGetArrayWrite()`, `DMDAVecRestoreArrayWrite()`, `DMDAVecGetArrayRead()`, `DMDAVecRestoreArrayRead()`
@@ -554,6 +591,9 @@ PetscErrorCode DMDAVecGetArrayDOFRead(DM da, Vec vec, void *array)
 -  array - the array
 
   Level: intermediate
+
+  Fortran Note:
+  Use `DMDAVecRestoreArrayReadF90()`
 
 .seealso: `DM`, `DMDA`, `DMDAGetGhostCorners()`, `DMDAGetCorners()`, `VecGetArray()`, `VecRestoreArray()`, `DMDAVecGetArray()`, `DMDAVecGetArrayDOF()`, `DMDAVecRestoreArrayDOF()`,
           `DMDAVecGetArrayWrite()`, `DMDAVecRestoreArrayWrite()`, `DMDAVecGetArrayRead()`, `DMDAVecRestoreArrayRead()`
@@ -602,18 +642,23 @@ PetscErrorCode DMDAVecRestoreArrayDOFRead(DM da, Vec vec, void *array)
    Output Parameter:
 .  array - the array
 
+   Level: intermediate
+
    Notes:
     Call `DMDAVecRestoreArrayDOFWrite()` once you have finished accessing the vector entries.
 
     In C, the indexing is "backwards" from what expects: array[k][j][i][DOF] NOT array[i][j][k][DOF]!
 
-   Fortran Noe:
-    In Fortran you do not need a version of `DMDAVecRestoreArrayDOF()` just use  `DMDAVecRestoreArrayWriteF90()` and declare your array with one higher dimension,
-    see src/dm/tutorials/ex11f90.F
+   Fortran Note:
+   Use  `DMDAVecGetArrayWriteF90()` and pass for the array type PetscScalar,pointer :: array(:,...,:) of the appropriate
+   dimension. For a `DMDA` created with a dof of 1 use the dimension of the `DMDA`, for a `DMDA` created with a dof greater than 1 use one more than the
+   dimension of the `DMDA`.
 
-  Level: intermediate
+   The order of the indices is array(xs:xs+xm-1,ys:ys+ym-1,zs:zs+zm-1) (when dof is 1) otherwise
+   array(0:dof-1,xs:xs+xm-1,ys:ys+ym-1,zs:zs+zm-1) where the values are obtained from
+   `DMDAGetCorners()` for a global array or `DMDAGetGhostCorners()` for a local array.
 
-.seealso: `DM`, `DMDA`, `DMDAGetGhostCorners()`, `DMDAGetCorners()`, `VecGetArray()`, `VecRestoreArray()`, `DMDAVecRestoreArray()`, `DMDAVecGetArray()`, `DMDAVecGetArrayDOF()`,
+.seealso: `DM`, `DMDA`, `DMDAGetGhostCorners()`, `DMDAGetCorners()`, `DMDAVecRestoreArrayWriteF90()`, `VecGetArray()`, `VecRestoreArray()`, `DMDAVecRestoreArray()`, `DMDAVecGetArray()`, `DMDAVecGetArrayDOF()`,
           `DMDAVecGetArrayWrite()`, `DMDAVecRestoreArrayWrite()`, `DMDAVecGetArrayWrite()`, `DMDAVecRestoreArrayWrite()`
 @*/
 PetscErrorCode DMDAVecGetArrayDOFWrite(DM da, Vec vec, void *array)
@@ -658,6 +703,9 @@ PetscErrorCode DMDAVecGetArrayDOFWrite(DM da, Vec vec, void *array)
 -  array - the array
 
   Level: intermediate
+
+  Fortran Note:
+  Use `DMDAVecRestoreArrayWriteF90()`
 
 .seealso: `DM`, `DMDA`, `DMDAGetGhostCorners()`, `DMDAGetCorners()`, `VecGetArray()`, `VecRestoreArray()`, `DMDAVecGetArray()`, `DMDAVecGetArrayDOF()`, `DMDAVecRestoreArrayDOF()`,
           `DMDAVecGetArrayWrite()`, `DMDAVecRestoreArrayWrite()`, `DMDAVecGetArrayWrite()`, `DMDAVecRestoreArrayWrite()`
