@@ -12,7 +12,7 @@
    Input Parameter:
 .  obj - any PETSc object, for example a `Vec`, `Mat` or `KSP`. Thus must be
          cast with a (`PetscObject`), for example,
-         `PetscObjectComm`((`PetscObjec`t)mat,...);
+         `PetscObjectComm`((`PetscObject`)mat,...);
 
    Output Parameter:
 .  comm - the MPI communicator or `MPI_COMM_NULL` if object is not valid
