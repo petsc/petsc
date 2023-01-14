@@ -1,6 +1,6 @@
 -include ../../../../../petscdir.mk
 
-SOURCEC   = sfutils.c
+SOURCEC   = sfutils.c sfcoord.c
 SOURCEF   =
 SOURCEH   =
 LIBBASE   = libpetscvec

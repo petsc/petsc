@@ -59,6 +59,7 @@ Changes: Development
 .. rubric:: VecScatter / PetscSF:
 
 - Change ``PetscSFConcatenate()`` to accept ``PetscSFConcatenateRootMode`` parameter; add option to concatenate root spaces globally
+- Add ``PetscSFSetGraphFromCoordinates()`` to construct a graph from fuzzy matching of coordinates; such as occurs for projections between different dimensions or for overlapping meshes.
 
 .. rubric:: PF:
 
