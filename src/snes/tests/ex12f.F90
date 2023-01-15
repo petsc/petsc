@@ -57,12 +57,7 @@
 !  Note: Any user-defined Fortran routines (such as FormJacobian)
 !  MUST be declared as external.
 !
-!
-! Macros to make setting/getting  values into vector clearer.
-! The element xx(ib) is the ibth element in the vector indicated by ctx%F
-#define xx(ib)  vxx(ixx + (ib))
-#define ff(ib)  vff(iff + (ib))
-#define F2(ib)  vF2(iF2 + (ib))
+
       program main
       use ex12fmodule
       implicit none
@@ -170,8 +165,8 @@
       PetscMPIInt  rank,size,zero
       PetscInt i,s,n
       PetscErrorCode ierr
-      PetscOffset      ixx,iff,iF2
-      PetscScalar      h,d,vf2(2),vxx(2),vff(2)
+      PetscScalar      h,d
+      PetscScalar,pointer :: vf2(:),vxx(:),vff(:)
 
       zero = 0
       PetscCallMPI(MPI_Comm_rank(ctx%comm,rank,ierr))
@@ -186,13 +181,9 @@
         call MPI_Abort(PETSC_COMM_WORLD,zero,ierr)
       endif
 
-!
-! This sets the index ixx so that vxx(ixx+1) is the first local
-! element in the vector indicated by ctx%xl.
-!
-      PetscCall(VecGetArrayRead(ctx%xl,vxx,ixx,ierr))
-      PetscCall(VecGetArray(f,vff,iff,ierr))
-      PetscCall(VecGetArray(ctx%F,vF2,iF2,ierr))
+      PetscCall(VecGetArrayReadF90(ctx%xl,vxx,ierr))
+      PetscCall(VecGetArrayF90(f,vff,ierr))
+      PetscCall(VecGetArrayF90(ctx%F,vF2,ierr))
 
       d = h*h
 
@@ -214,22 +205,22 @@
 !
        if (rank .eq. 0) then
         s = 0
-        ff(1) = xx(1)
+        vff(1) = vxx(1)
       else
         s = 1
       endif
 
       do 10 i=1,n-2
-       ff(i-s+1) = d*(xx(i) - 2.0*xx(i+1) + xx(i+2)) + xx(i+1)*xx(i+1) - F2(i-s+1)
+       vff(i-s+1) = d*(vxx(i) - 2.0*vxx(i+1) + vxx(i+2)) + vxx(i+1)*vxx(i+1) - vF2(i-s+1)
  10   continue
 
       if (rank .eq. size-1) then
-        ff(n-s) = xx(n) - 1.0
+        vff(n-s) = vxx(n) - 1.0
       endif
 
-      PetscCall(VecRestoreArray(f,vff,iff,ierr))
-      PetscCall(VecRestoreArrayRead(ctx%xl,vxx,ixx,ierr))
-      PetscCall(VecRestoreArray(ctx%F,vF2,iF2,ierr))
+      PetscCall(VecRestoreArrayF90(f,vff,ierr))
+      PetscCall(VecRestoreArrayReadF90(ctx%xl,vxx,ierr))
+      PetscCall(VecRestoreArrayF90(ctx%F,vF2,ierr))
       return
       end
 
@@ -263,8 +254,8 @@
       PetscInt  i,j,n,end,start,i1
       PetscErrorCode ierr
       PetscMPIInt rank,size
-      PetscOffset      ixx
-      PetscScalar      d,A,h,vxx(2)
+      PetscScalar      d,A,h
+      PetscScalar,pointer :: vxx(:)
 
       i1 = 1
       h = 1.0/(real(ctx%N) - 1.0)
@@ -272,7 +263,7 @@
       PetscCallMPI(MPI_Comm_rank(ctx%comm,rank,ierr))
       PetscCallMPI(MPI_Comm_size(ctx%comm,size,ierr))
 
-      PetscCall(VecGetArrayRead(x,vxx,ixx,ierr))
+      PetscCall(VecGetArrayReadF90(x,vxx,ierr))
       PetscCall(VecGetOwnershipRange(x,start,end,ierr))
       n = end - start
 
@@ -297,10 +288,10 @@
         PetscCall(MatSetValues(jac,i1,ii,i1,j,d,INSERT_VALUES,ierr))
         j = start + i + 1
         PetscCall(MatSetValues(jac,i1,ii,i1,j,d,INSERT_VALUES,ierr))
-        A = -2.0*d + 2.0*xx(i+1)
+        A = -2.0*d + 2.0*vxx(i+1)
         PetscCall(MatSetValues(jac,i1,ii,i1,ii,A,INSERT_VALUES,ierr))
  10   continue
-      PetscCall(VecRestoreArrayRead(x,vxx,ixx,ierr))
+      PetscCall(VecRestoreArrayReadF90(x,vxx,ierr))
       PetscCall(MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY,ierr))
       PetscCall(MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY,ierr))
       return

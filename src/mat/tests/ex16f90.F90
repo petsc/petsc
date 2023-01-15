@@ -1,6 +1,6 @@
 !
 !
-!  Tests MatDenseGetArray()
+!  Tests MatDenseGetArrayF90()
 !
 
       program main

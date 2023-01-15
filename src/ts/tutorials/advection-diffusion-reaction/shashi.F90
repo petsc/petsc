@@ -29,17 +29,6 @@
       external FormFunction, FormJacobian
       external ShashiPostCheck
 
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-!                   Macro definitions
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-!
-!  Macros to make clearer the process of setting values in vectors and
-!  getting values from vectors.  These vectors are used in the routines
-!  FormFunction() and FormJacobian().
-!   - The element lx_a(ib) is element ib in the vector x
-!
-#define lx_a(ib) lx_v(lx_i + (ib))
-#define lf_a(ib) lf_v(lf_i + (ib))
 !
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                 Beginning of program
@@ -139,8 +128,7 @@
 
 !  Declarations for use with local arrays
 
-      PetscScalar  lx_v(2),lf_v(2)
-      PetscOffset  lx_i,lf_i
+      PetscScalar,pointer ::lx_v(:),lf_v(:)
 
 !  Get pointers to vector data.
 !    - For default PETSc vectors, VecGetArray() returns a pointer to
@@ -150,11 +138,11 @@
 !    - Note that the Fortran interface to VecGetArray() differs from the
 !      C version.  See the Fortran chapter of the users manual for details.
 
-      PetscCall(VecGetArrayRead(x,lx_v,lx_i,ierr))
-      PetscCall(VecGetArray(f,lf_v,lf_i,ierr))
-      PetscCall(ShashiFormFunction(lx_a(1),lf_a(1)))
-      PetscCall(VecRestoreArrayRead(x,lx_v,lx_i,ierr))
-      PetscCall(VecRestoreArray(f,lf_v,lf_i,ierr))
+      PetscCall(VecGetArrayReadF90(x,lx_v,ierr))
+      PetscCall(VecGetArrayF90(f,lf_v,ierr))
+      PetscCall(ShashiFormFunction(lx_v,lf_v))
+      PetscCall(VecRestoreArrayReadF90(x,lx_v,ierr))
+      PetscCall(VecRestoreArrayF90(f,lf_v,ierr))
 
       return
       end
@@ -184,17 +172,15 @@
       integer dummy(*)
 
 !  Declarations for use with local arrays
-
-      PetscScalar lx_v(1),lf_v(1)
-      PetscOffset lx_i,lf_i
+      PetscScalar,pointer ::lx_v(:),lf_v(:,:)
 
 !  Get pointer to vector data
 
-      PetscCall(VecGetArrayRead(x,lx_v,lx_i,ierr))
-      PetscCall(MatDenseGetArray(B,lf_v,lf_i,ierr))
-      PetscCall(ShashiFormJacobian(lx_a(1),lf_a(1)))
-      PetscCall(MatDenseRestoreArray(B,lf_v,lf_i,ierr))
-      PetscCall(VecRestoreArrayRead(x,lx_v,lx_i,ierr))
+      PetscCall(VecGetArrayReadF90(x,lx_v,ierr))
+      PetscCall(MatDenseGetArrayF90(B,lf_v,ierr))
+      PetscCall(ShashiFormJacobian(lx_v,lf_v))
+      PetscCall(MatDenseRestoreArrayF90(B,lf_v,ierr))
+      PetscCall(VecRestoreArrayReadF90(x,lx_v,ierr))
 
 !  Assemble matrix
 

@@ -287,13 +287,12 @@
       implicit none
 
       PetscErrorCode    ierr
-      PetscOffset      idx
       Vec       X
       PetscInt  i,j,row
       PetscInt  xs,ys,xm
       PetscInt  ym
       PetscReal one,lambda,temp1,temp,hx,hy
-      PetscScalar      xx(2)
+      PetscScalar,pointer ::xx(:)
 
       one    = 1.0
       lambda = 6.0
@@ -305,7 +304,7 @@
 !    - VecGetArray() returns a pointer to the data array.
 !    - You MUST call VecRestoreArray() when you no longer need access to
 !      the array.
-       PetscCall(VecGetArray(X,xx,idx,ierr))
+       PetscCall(VecGetArrayF90(X,xx,ierr))
 
 !  Get local grid boundaries (for 2-dimensional DMDA):
 !    xs, ys   - starting grid indices (no ghost points)
@@ -320,16 +319,16 @@
         do 40 i=xs,xs+xm-1
           row = i - xs + (j - ys)*xm + 1
           if (i .eq. 0 .or. j .eq. 0 .or. i .eq. mx-1 .or. j .eq. my-1) then
-            xx(idx+row) = 0.0
+            xx(row) = 0.0
             continue
           endif
-          xx(idx+row) = temp1*sqrt(min((min(i,mx-i-1))*hx,temp))
+          xx(row) = temp1*sqrt(min((min(i,mx-i-1))*hx,temp))
  40     continue
  30   continue
 
 !     Restore vector
 
-       PetscCall(VecRestoreArray(X,xx,idx,ierr))
+       PetscCall(VecRestoreArrayF90(X,xx,ierr))
        return
        end
 
@@ -349,13 +348,13 @@
 
       Vec              X,F
       PetscInt         gys,gxm,gym
-      PetscOffset      idx,idf
       PetscErrorCode ierr
       PetscInt i,j,row,xs,ys,xm,ym,gxs
       PetscInt rowf
       PetscReal two,one,lambda,hx
       PetscReal hy,hxdhy,hydhx,sc
-      PetscScalar      u,uxx,uyy,xx(2),ff(2)
+      PetscScalar      u,uxx,uyy
+      PetscScalar,pointer ::xx(:),ff(:)
 
       two    = 2.0
       one    = 1.0
@@ -377,8 +376,8 @@
 
 !  Get pointers to vector data
 
-      PetscCall(VecGetArray(localX,xx,idx,ierr))
-      PetscCall(VecGetArray(F,ff,idf,ierr))
+      PetscCall(VecGetArrayReadF90(localX,xx,ierr))
+      PetscCall(VecGetArrayF90(F,ff,ierr))
 
 !  Get local grid boundaries
 
@@ -395,20 +394,20 @@
           rowf = rowf + 1
 
           if (i .eq. 0 .or. j .eq. 0 .or. i .eq. mx-1 .or. j .eq. my-1) then
-            ff(idf+rowf) = xx(idx+row)
+            ff(rowf) = xx(row)
             goto 60
           endif
-          u   = xx(idx+row)
-          uxx = (two*u - xx(idx+row-1) - xx(idx+row+1))*hydhx
-          uyy = (two*u - xx(idx+row-gxm) - xx(idx+row+gxm))*hxdhy
-          ff(idf+rowf) = uxx + uyy - sc*exp(u)
+          u   = xx(row)
+          uxx = (two*u - xx(row-1) - xx(row+1))*hydhx
+          uyy = (two*u - xx(row-gxm) - xx(row+gxm))*hxdhy
+          ff(rowf) = uxx + uyy - sc*exp(u)
  60     continue
  50   continue
 
 !  Restore vectors
 
-       PetscCall(VecRestoreArray(localX,xx,idx,ierr))
-       PetscCall(VecRestoreArray(F,ff,idf,ierr))
+       PetscCall(VecRestoreArrayReadF90(localX,xx,ierr))
+       PetscCall(VecRestoreArrayF90(F,ff,ierr))
        return
        end
 
@@ -436,8 +435,6 @@
 
       Vec         X
       Mat         jac
-      PetscInt     ltog(2)
-      PetscOffset idltog,idx
       PetscErrorCode ierr
       PetscInt xs,ys,xm,ym
       PetscInt gxs,gys,gxm,gym
@@ -446,8 +443,10 @@
       PetscInt col(5),ifive
       PetscScalar two,one,lambda
       PetscScalar v(5),hx,hy,hxdhy
-      PetscScalar hydhx,sc,xx(2)
+      PetscScalar hydhx,sc
       ISLocalToGlobalMapping ltogm
+      PetscScalar,pointer ::xx(:)
+      PetscInt,pointer ::ltog(:)
 
       ione   = 1
       ifive  = 5
@@ -470,7 +469,7 @@
 
 !  Get pointer to vector data
 
-      PetscCall(VecGetArray(localX,xx,idx,ierr))
+      PetscCall(VecGetArrayReadF90(localX,xx,ierr))
 
 !  Get local grid boundaries
 
@@ -480,7 +479,7 @@
 !  Get the global node numbers for all local nodes, including ghost points
 
       PetscCall(DMGetLocalToGlobalMapping(da,ltogm,ierr))
-      PetscCall(ISLocalToGlobalMappingGetIndices(ltogm,ltog,idltog,ierr))
+      PetscCall(ISLocalToGlobalMappingGetIndicesF90(ltogm,ltog,ierr))
 
 !  Compute entries for the locally owned part of the Jacobian.
 !   - Currently, all PETSc parallel matrix formats are partitioned by
@@ -497,26 +496,26 @@
         row = (j - gys)*gxm + xs - gxs
         do 20 i=xs,xs+xm-1
           row = row + 1
-          grow(1) = ltog(idltog+row)
+          grow(1) = ltog(row)
           if (i .eq. 0 .or. j .eq. 0 .or. i .eq. (mx-1) .or. j .eq. (my-1)) then
              PetscCall(MatSetValues(jac,ione,grow,ione,grow,one,INSERT_VALUES,ierr))
              go to 20
           endif
           v(1)   = -hxdhy
-          col(1) = ltog(idltog+row - gxm)
+          col(1) = ltog(row - gxm)
           v(2)   = -hydhx
-          col(2) = ltog(idltog+row - 1)
-          v(3)   = two*(hydhx + hxdhy) - sc*lambda*exp(xx(idx+row))
+          col(2) = ltog(row - 1)
+          v(3)   = two*(hydhx + hxdhy) - sc*lambda*exp(xx(row))
           col(3) = grow(1)
           v(4)   = -hydhx
-          col(4) = ltog(idltog+row + 1)
+          col(4) = ltog(row + 1)
           v(5)   = -hxdhy
-          col(5) = ltog(idltog+row + gxm)
+          col(5) = ltog(row + gxm)
           PetscCall(MatSetValues(jac,ione,grow,ifive,col,v,INSERT_VALUES,ierr))
  20     continue
  10   continue
 
-      PetscCall(ISLocalToGlobalMappingRestoreIndices(ltogm,ltog,idltog,ierr))
+      PetscCall(ISLocalToGlobalMappingRestoreIndicesF90(ltogm,ltog,ierr))
 
 !  Assemble matrix, using the 2-step process:
 !    MatAssemblyBegin(), MatAssemblyEnd().
@@ -524,7 +523,7 @@
 !  done while messages are in transition.
 
       PetscCall(MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY,ierr))
-      PetscCall(VecRestoreArray(localX,xx,idx,ierr))
+      PetscCall(VecRestoreArrayReadF90(localX,xx,ierr))
       PetscCall(MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY,ierr))
       return
       end

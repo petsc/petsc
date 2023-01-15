@@ -193,10 +193,9 @@
       PetscReal user(3)
       PetscInt  i,j,row,mx,my
       PetscErrorCode ierr
-      PetscOffset      xidx
       PetscReal one,lambda
       PetscReal temp1,temp,hx,hy
-      PetscScalar      xx(2)
+      PetscScalar,pointer :: xx(:)
       PetscInt          param,lmx,lmy
       parameter (param = 1,lmx = 2,lmy = 3)
 
@@ -209,20 +208,20 @@
       hy    = one / (my-1)
       hx    = one / (mx-1)
 
-      PetscCall(VecGetArray(X,xx,xidx,ierr))
+      PetscCall(VecGetArrayF90(X,xx,ierr))
       temp1 = lambda/(lambda + one)
       do 10, j=1,my
         temp = min(j-1,my-j)*hy
         do 20 i=1,mx
           row = i + (j-1)*mx
           if (i .eq. 1 .or. j .eq. 1 .or. i .eq. mx .or. j .eq. my) then
-            xx(row+xidx) = 0.0
+            xx(row) = 0.0
           else
-            xx(row+xidx) = temp1*sqrt(min(min(i-1,mx-i)*hx,temp))
+            xx(row) = temp1*sqrt(min(min(i-1,mx-i)*hx,temp))
           endif
  20     continue
  10   continue
-      PetscCall(VecRestoreArray(X,xx,xidx,ierr))
+      PetscCall(VecRestoreArrayF90(X,xx,ierr))
       return
       end
 !
@@ -238,12 +237,11 @@
       PetscReal  user(3)
       PetscErrorCode     ierr
       PetscInt         i,j,row,mx,my
-      PetscOffset       xidx,fidx
       PetscReal  two,lambda
       PetscReal  hx,hy,hxdhy,hydhx
       PetscScalar  ut,ub,ul,ur,u
       PetscScalar  uxx,uyy,sc
-      PetscScalar  xx(2),ff(2)
+      PetscScalar,pointer :: xx(:), ff(:)
       PetscInt     param,lmx,lmy
       parameter (param = 1,lmx = 2,lmy = 3)
 
@@ -259,29 +257,28 @@
       hxdhy = hx/hy
       hydhx = hy/hx
 
-      PetscCall(VecGetArrayRead(X,xx,xidx,ierr))
-      PetscCall(VecGetArray(F,ff,fidx,ierr))
+      PetscCall(VecGetArrayReadF90(X,xx,ierr))
+      PetscCall(VecGetArrayF90(F,ff,ierr))
       do 10 j=1,my
         do 20 i=1,mx
           row = i + (j-1)*mx
           if (i .eq. 1 .or. j .eq. 1 .or. i .eq. mx .or. j .eq. my) then
-            ff(row+fidx) = xx(row+xidx)
+            ff(row) = xx(row)
           else
-            u            = xx(row + xidx)
-            ub           = xx(row - mx + xidx)
-            ul           = xx(row - 1 + xidx)
-            ut           = xx(row + mx + xidx)
-            ur           = xx(row + 1 + xidx)
-            uxx          = (-ur + two*u - ul)*hydhx
-            uyy          = (-ut + two*u - ub)*hxdhy
-            ff(row+fidx) = -uxx - uyy + sc*lambda*exp(u)
-            u =  -uxx - uyy + sc*lambda*exp(u)
+            u       = xx(row)
+            ub      = xx(row - mx)
+            ul      = xx(row - 1)
+            ut      = xx(row + mx)
+            ur      = xx(row + 1)
+            uxx     = (-ur + two*u - ul)*hydhx
+            uyy     = (-ut + two*u - ub)*hxdhy
+            ff(row) = -uxx - uyy + sc*lambda*exp(u)
          endif
  20   continue
  10   continue
 
-      PetscCall(VecRestoreArrayRead(X,xx,xidx,ierr))
-      PetscCall(VecRestoreArray(F,ff,fidx,ierr))
+      PetscCall(VecRestoreArrayReadF90(X,xx,ierr))
+      PetscCall(VecRestoreArrayF90(F,ff,ierr))
       return
       end
 !
@@ -297,11 +294,11 @@
       PetscReal user(3),ctime
       PetscErrorCode   ierr
       Mat              jac
-      PetscOffset xidx
       PetscInt    i,j,row(1),mx,my
       PetscInt    col(5),i1,i5
       PetscScalar two,one,lambda
-      PetscScalar v(5),sc,xx(2)
+      PetscScalar v(5),sc
+      PetscScalar,pointer :: xx(:)
       PetscReal hx,hy,hxdhy,hydhx
 
       PetscInt  param,lmx,lmy
@@ -323,7 +320,7 @@
       hxdhy = hx/hy
       hydhx = hy/hx
 
-      PetscCall(VecGetArrayRead(X,xx,xidx,ierr))
+      PetscCall(VecGetArrayReadF90(X,xx,ierr))
       do 10 j=1,my
         do 20 i=1,mx
 !
@@ -337,7 +334,7 @@
             col(1) = row(1) - mx
             v(2)   = hydhx
             col(2) = row(1) - 1
-            v(3)   = -two*(hydhx+hxdhy)+sc*lambda*exp(xx(row(1)+1+xidx))
+            v(3)   = -two*(hydhx+hxdhy)+sc*lambda*exp(xx(row(1)))
             col(3) = row(1)
             v(4)   = hydhx
             col(4) = row(1) + 1
@@ -349,7 +346,7 @@
  10   continue
       PetscCall(MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY,ierr))
       PetscCall(MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY,ierr))
-      PetscCall(VecRestoreArray(X,xx,xidx,ierr))
+      PetscCall(VecRestoreArrayF90(X,xx,ierr))
       return
       end
 

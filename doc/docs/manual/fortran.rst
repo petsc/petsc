@@ -219,9 +219,6 @@ chapter for details:
 .. code-block:: fortran
 
    PetscInitialize()
-   VecGetArray(), MatDenseGetArray()
-   ISGetIndices(),
-   VecDuplicateVecs(), VecDestroyVecs()
    PetscOptionsGetString()
 
 The following functions are not supported in Fortran:
@@ -237,17 +234,71 @@ The following functions are not supported in Fortran:
    PetscViewerStringOpen(), PetscViewerStringSPrintf()
    PetscOptionsGetStringArray()
 
-PETSc includes some support for direct use of Fortran allocatable arrays.
-Current routines include:
+.. _sec_fortranarrays:
+
+Routines that Return Fortran Allocatable Arrays
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+PETSc includes support for direct use of Fortran allocatable arrays.
+
+.. list-table::
+   :header-rows: 1
+
+   * - C-API
+     - Fortran-API
+   * - ``ISGetIndices()``
+     - ``ISGetIndicesF90()``
+   * - ``ISRestoreIndices()``
+     - ``ISRestoreIndicesF90()``
+   * - ``ISLocalToGlobalMappingGetIndices()``
+     - ``ISLocalToGlobalMappingGetIndicesF90()``
+   * - ``ISLocalToGlobalMappingRestoreIndices()``
+     - ``ISLocalToGlobalMappingRestoreIndicesF90()``
+   * - ``VecGetArray()``
+     - ``VecGetArrayF90()``
+   * - ``VecRestoreArray()``
+     - ``VecRestoreArrayF90()``
+   * - ``VecGetArrayRead()``
+     - ``VecGetArrayReadF90()``
+   * - ``VecRestoreArrayRead()``
+     - ``VecRestoreArrayReadF90()``
+   * - ``VecDuplicateVecs()``
+     - ``VecDuplicateVecsF90()``
+   * - ``VecDestroyVecs()``
+     - ``VecDestroyVecsF90()``
+   * - ``DMDAVecGetArray()``
+     - ``DMDAVecGetArrayF90()``
+   * - ``DMDAVecRestoreArray()``
+     - ``DMDAVecRestoreArrayF90()``
+   * - ``DMDAVecGetArrayRead()``
+     - ``DMDAVecGetArrayReadF90()``
+   * - ``DMDAVecRestoreArrayRead()``
+     - ``DMDAVecRestoreArrayReadF90()``
+   * - ``DMDAVecGetArrayWrite()``
+     - ``DMDAVecGetArrayWriteF90()``
+   * - ``DMDAVecRestoreArrayWrite()``
+     - ``DMDAVecRestoreArrayWriteF90()``
+   * - ``MatGetRowIJ()``
+     - ``MatGetRowIJF90()``
+   * - ``MatRestoreRowIJ()``
+     - ``MatRestoreRowIJF90()``
+   * - ``MatSeqAIJGetArray()``
+     - ``MatSeqAIJGetArrayF90()``
+   * - ``MatSeqAIJRestoreArray()``
+     - ``MatSeqAIJRestoreArrayF90()``
+   * - ``MatMPIAIJGetSeqAIJ()``
+     - ``MatMPIAIJGetSeqAIJF90()``
+   * - ``MatDenseGetArray()``
+     - ``MatDenseGetArrayF90()``
+   * - ``MatDenseRestoreArray()``
+     - ``MatDenseRestoreArrayF90()``
+
+The array arguments to these Fortran functions should be declared with forms such as
 
 .. code-block:: fortran
 
-   VecGetArrayF90(), VecRestoreArrayF90()
-   VecGetArrayReadF90(), VecRestoreArrayReadF90()
-   VecDuplicateVecsF90(), VecDestroyVecsF90()
-   DMDAVecGetArrayF90(), DMDAVecGetArrayReadF90(), ISLocalToGlobalMappingGetIndicesF90()
-   MatDenseGetArrayF90(), MatDenseRestoreArrayF90()
-   ISGetIndicesF90(), ISRestoreIndicesF90()
+   PetscScalar, pointer :: x(:)
+   PetscInt, pointer :: idx(:)
 
 See the manual pages for details and pointers to example programs.
 
@@ -298,74 +349,4 @@ differs only slightly.
       :language: fortran
       :end-before: !/*TEST
 
-.. _sec_fortranarrays:
 
-Array Arguments
-^^^^^^^^^^^^^^^
-
-This material is deprecated and will be removed in the next release since one should use
-``VecGetArrayF90()`` and the other routines that utilize Fortran
-pointers, instead of the code below, but it is included for historical
-reasons and because many of the Fortran examples still utilize the old
-approach.
-
-Since Fortran 77 does not allow arrays to be returned in routine
-arguments, all PETSc routines that return arrays, such as
-``VecGetArray()``, ``MatDenseGetArray()``, and ``ISGetIndices()``, are
-defined slightly differently in Fortran than in C. Instead of returning
-the array itself, these routines accept as input a user-specified array
-of dimension one and return an integer index to the actual array used
-for data storage within PETSc. The Fortran interface for several
-routines is as follows:
-
-.. code-block:: fortran
-
-   PetscScalar    xx_v(1), aa_v(1)
-   PetscErrorCode ierr
-   PetscInt       ss_v(1), dd_v(1), nloc
-   PetscOffset    ss_i, xx_i, aa_i, dd_i
-   Vec            x
-   Mat            A
-   IS             s
-   DM             d
-
-   call VecGetArray(x,xx_v,xx_i,ierr)
-   call MatDenseGetArray(A,aa_v,aa_i,ierr)
-   call ISGetIndices(s,ss_v,ss_i,ierr)
-
-To access array elements directly, both the user-specified array and the
-integer index *must* then be used together. For example, the following
-Fortran program fragment illustrates directly setting the values of a
-vector array instead of using ``VecSetValues()``. Note the (optional)
-use of the preprocessor ``#define`` statement to enable array
-manipulations in the conventional Fortran manner.
-
-.. code-block:: fortran
-
-   #define xx_a(ib)  xx_v(xx_i + (ib))
-
-      double precision xx_v(1)
-      PetscOffset      xx_i
-      PetscErrorCode   ierr
-      PetscInt         i, n
-      Vec              x
-      call VecGetArray(x,xx_v,xx_i,ierr)
-      call VecGetLocalSize(x,n,ierr)
-      do 10, i=1,n
-        xx_a(i) = 3*i + 1
-   10 continue
-      call VecRestoreArray(x,xx_v,xx_i,ierr)
-
-:ref:`The Vec ex4f Tutorial listed above <listing_vec_ex4f>` contains an example of
-using ``VecGetArray()`` within a Fortran routine.
-
-Since in this case the array is accessed directly from Fortran, indexing
-begins with 1, not 0 (unless the array is declared as ``xx_v(0:1)``).
-This is different from the use of ``VecSetValues()`` where, indexing
-always starts with 0.
-
-*Note*: If using ``VecGetArray()``, ``MatDenseGetArray()``, or
-``ISGetIndices()``, from Fortran, the user *must not* compile the
-Fortran code with options to check for “array entries out of bounds”
-(e.g., on the IBM RS/6000 this is done with the ``-C`` compiler option,
-so never use the ``-C`` option with this).

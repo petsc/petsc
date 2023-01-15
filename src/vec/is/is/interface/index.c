@@ -1182,7 +1182,7 @@ PetscErrorCode ISSetLayout(IS is, PetscLayout map)
 
 /*@C
    ISGetIndices - Returns a pointer to the indices.  The user should call
-   ISRestoreIndices() after having looked at the indices.  The user should
+   `ISRestoreIndices()` after having looked at the indices.  The user should
    NOT change the indices.
 
    Not Collective
@@ -1193,30 +1193,10 @@ PetscErrorCode ISSetLayout(IS is, PetscLayout map)
    Output Parameter:
 .  ptr - the location to put the pointer to the indices
 
-   Fortran Note:
-   This routine has two different interfaces from Fortran; the first is not recommend, it does not require Fortran 90
-$    IS          is
-$    integer     is_array(1)
-$    PetscOffset i_is
-$    int         ierr
-$       call ISGetIndices(is,is_array,i_is,ierr)
-$
-$   Access first local entry in list
-$      value = is_array(i_is + 1)
-$
-$      ...... other code
-$       call ISRestoreIndices(is,is_array,i_is,ierr)
-   The second Fortran interface is recommended.
-$          use petscisdef
-$          PetscInt, pointer :: array(:)
-$          PetscErrorCode  ierr
-$          IS       i
-$          call ISGetIndicesF90(i,array,ierr)
-
-   See the Fortran chapter of the users manual and
-   petsc/src/is/[tutorials,tests] for details.
-
    Level: intermediate
+
+   Fortran Note:
+   `ISGetIndices()` Fortran binding is deprecated (since PETSc 3.19), use `ISGetIndicesF90()`
 
 .seealso: `ISRestoreIndices()`, `ISGetIndicesF90()`
 @*/
@@ -1305,7 +1285,7 @@ PetscErrorCode ISLocate(IS is, PetscInt key, PetscInt *location)
 
 /*@C
    ISRestoreIndices - Restores an index set to a usable state after a call
-                      to ISGetIndices().
+                      to `ISGetIndices()`.
 
    Not Collective
 
@@ -1313,27 +1293,11 @@ PetscErrorCode ISLocate(IS is, PetscInt key, PetscInt *location)
 +  is - the index set
 -  ptr - the pointer obtained by ISGetIndices()
 
-   Fortran Note:
-   This routine is used differently from Fortran
-$    IS          is
-$    integer     is_array(1)
-$    PetscOffset i_is
-$    int         ierr
-$       call ISGetIndices(is,is_array,i_is,ierr)
-$
-$   Access first local entry in list
-$      value = is_array(i_is + 1)
-$
-$      ...... other code
-$       call ISRestoreIndices(is,is_array,i_is,ierr)
-
-   See the Fortran chapter of the users manual and
-   petsc/src/vec/is/tests for details.
-
-   Level: intermediate
-
    Note:
    This routine zeros out ptr. This is to prevent accidental us of the array after it has been restored.
+
+   Fortran Note:
+   `ISRestoreIndices()` Fortran binding is deprecated (since PETSc 3.19), use `ISRestoreIndicesF90()`
 
 .seealso: `ISGetIndices()`, `ISRestoreIndicesF90()`
 @*/

@@ -11,11 +11,9 @@
       implicit none
 
       PetscErrorCode ierr
-      PetscInt    i,n,index(1),first,step,val
+      PetscInt    i,n,first,step,val
       IS          set
-      PetscOffset iss
-
-#define indices(ib)  index(iss + (ib))
+      PetscInt, pointer :: index(:)
 
       PetscCallA(PetscInitialize(ierr))
       n     = 10
@@ -31,21 +29,19 @@
 
 !     Extract the indice values from the set. Demonstrates how a Fortran
 !     code can directly access the array storing a PETSc index set with
-!     ISGetIndices().  The user declares an array (index(1)) and index
-!     variable (iss), which are then used together to allow the Fortran
-!     to directly manipulate the PETSc array
+!     ISGetIndicesF90().
 
-      PetscCallA(ISGetIndices(set,index,iss,ierr))
+      PetscCallA(ISGetIndicesF90(set,index,ierr))
       write(6,20)
 !     Bug in IRIX64 f90 compiler - write cannot handle
 !     integer(integer*8) correctly
       do 10 i=1,n
-         val = indices(i)
+         val = index(i)
          write(6,30) val
  10   continue
  20   format('Printing indices directly')
  30   format(i3)
-      PetscCallA(ISRestoreIndices(set,index,iss,ierr))
+      PetscCallA(ISRestoreIndicesF90(set,index,ierr))
 
 !     Determine information on stride
 

@@ -135,3 +135,28 @@ Changes: Development
 .. rubric:: DT:
 
 .. rubric:: Fortran:
+
+- Add ``MatMPIAIJGetSeqAIJF90()``, ``MatMPIAIJRestoreSeqAIJF90()``
+- Deprecate ``ISGetIndices()`` in favor of ``ISGetIndicesF90()``
+- Deprecate ``ISRestoreIndices()`` in favor of ``ISRestoreIndicesF90()``
+- Deprecate ``ISLocalToGlobalMappingGetIndices()`` in favor of ``ISLocalToGlobalMappingGetIndicesF90()``
+- Deprecate ``ISLocalToGlobalMappingRestoreIndices()`` in favor of ``ISLocalToGlobalMappingRestoreIndicesF90()``
+- Deprecate ``VecGetArray()`` in favor of ``VecGetArrayF90()``
+- Deprecate ``VecRestoreArray()`` in favor of ``VecRestoreArrayF90()``
+- Deprecate ``VecGetArrayRead()`` in favor of ``VecGetArrayReadF90()``
+- Deprecate ``VecRestoreArrayRead()`` in favor of ``VecRestoreArrayReadF90()``
+- Deprecate ``VecDuplicateVecs()`` in favor of ``VecDuplicateVecsF90()``
+- Deprecate ``VecDestroyVecs()`` in favor of ``VecDestroyVecsF90()``
+- Deprecate ``DMDAVecGetArray()`` in favor of ``DMDAVecGetArrayF90()``
+- Deprecate ``DMDAVecRestoreArray()`` in favor of ``DMDAVecRestoreArrayF90()``
+- Deprecate ``DMDAVecGetArrayRead()`` in favor of ``DMDAVecGetArrayReadF90()``
+- Deprecate ``DMDAVecRestoreArrayRead()`` in favor of ``DMDAVecRestoreArrayReadF90()``
+- Deprecate ``DMDAVecGetArrayWrite()`` in favor of ``DMDAVecGetArrayWriteF90()``
+- Deprecate ``DMDAVecRestoreArrayWrite()`` in favor of ``DMDAVecRestoreArrayWriteF90()``
+- Deprecate ``MatGetRowIJ()`` in favor of ``MatGetRowIJF90()``
+- Deprecate ``MatRestoreRowIJ()`` in favor of ``MatRestoreRowIJF90()``
+- Deprecate ``MatSeqAIJGetArray()`` in favor of ``MatSeqAIJGetArrayF90()``
+- Deprecate ``MatSeqAIJRestoreArray()`` in favor of ``MatSeqAIJRestoreArrayF90()``
+- Deprecate ``MatMPIAIJGetSeqAIJ()`` in favor of ``MatMPIAIJGetSeqAIJF90()``
+- Deprecate ``MatDenseGetArray()`` in favor of ``MatDenseGetArrayF90()``
+- Deprecate ``MatDenseRestoreArray()`` in favor of ``MatDenseRestoreArrayF90()``
