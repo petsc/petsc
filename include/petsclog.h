@@ -430,7 +430,7 @@ static inline PetscErrorCode PetscLogFlops(PetscLogDouble n)
 
      It does not work with Windows because winmpich lacks MPI_Type_size()
 */
-  #if !defined(MPIUNI_H) && !defined(PETSC_HAVE_BROKEN_RECURSIVE_MACRO) && !defined(PETSC_HAVE_MPI_MISSING_TYPESIZE)
+  #if !defined(MPIUNI_H) && !defined(PETSC_HAVE_BROKEN_RECURSIVE_MACRO)
 /*
    Logging of MPI activities
 */

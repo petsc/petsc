@@ -1479,7 +1479,7 @@ PETSC_EXTERN PetscErrorCode PetscASend(int count, int datatype)
 {
   PetscFunctionBegin;
   PetscAddLogDouble(&petsc_send_ct, &petsc_send_ct_th, 1);
-  #if !defined(MPIUNI_H) && !defined(PETSC_HAVE_BROKEN_RECURSIVE_MACRO) && !defined(PETSC_HAVE_MPI_MISSING_TYPESIZE)
+  #if !defined(MPIUNI_H) && !defined(PETSC_HAVE_BROKEN_RECURSIVE_MACRO)
   PetscCall(PetscMPITypeSize(count, MPI_Type_f2c((MPI_Fint)datatype), &petsc_send_len, &petsc_send_len_th));
   #endif
   PetscFunctionReturn(0);
@@ -1489,7 +1489,7 @@ PETSC_EXTERN PetscErrorCode PetscARecv(int count, int datatype)
 {
   PetscFunctionBegin;
   PetscAddLogDouble(&petsc_recv_ct, &petsc_recv_ct_th, 1);
-  #if !defined(MPIUNI_H) && !defined(PETSC_HAVE_BROKEN_RECURSIVE_MACRO) && !defined(PETSC_HAVE_MPI_MISSING_TYPESIZE)
+  #if !defined(MPIUNI_H) && !defined(PETSC_HAVE_BROKEN_RECURSIVE_MACRO)
   PetscCall(PetscMPITypeSize(count, MPI_Type_f2c((MPI_Fint)datatype), &petsc_recv_len, &petsc_recv_len_th));
   #endif
   PetscFunctionReturn(0);
