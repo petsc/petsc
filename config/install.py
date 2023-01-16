@@ -325,7 +325,7 @@ for file in files:
 
   def installConf(self):
     self.copies.extend(self.copytree(self.rootConfDir, self.destConfDir, exclude = ['uncrustify.cfg','bfort-base.txt','bfort-petsc.txt','bfort-mpi.txt','test.log']))
-    self.copies.extend(self.copytree(self.archConfDir, self.destConfDir, exclude = ['sowing', 'configure.log.bkp','configure.log','make.log','gmake.log','test.log','error.log','files','testfiles','RDict.db']))
+    self.copies.extend(self.copytree(self.archConfDir, self.destConfDir, exclude = ['sowing', 'configure.log.bkp','configure.log','make.log','gmake.log','test.log','error.log','memoryerror.log','files','testfiles','RDict.db']))
     return
 
   def installBin(self):
