@@ -16,7 +16,7 @@
   #define ASAN_UNPOISON_MEMORY_REGION(addr, size) ((void)(addr), (void)(size))
 #endif
 
-#if !PetscDefined(HAVE_WINDOWS_COMPILERS)
+#if !PetscDefined(HAVE_WINDOWS_COMPILERS) && !defined(__MINGW32__)
   #include <petsc/private/valgrind/memcheck.h> // VALGRIND_MAKE_MEM_*
 
   // defined in memcheck.h
