@@ -300,6 +300,20 @@ int main(int argc, char **args)
         output_file: output/ex76_geneo_mumps_use_omp_threads.out
         args: -pc_hpddm_coarse_mat_type aij -pc_hpddm_levels_1_eps_threshold 0.3 -pc_hpddm_coarse_pc_type cholesky -pc_hpddm_coarse_mat_chop 1e-12
 
+   testset: # converge really poorly because of a tiny -pc_hpddm_levels_1_eps_threshold, but needed for proper code coverage where some subdomains don't call EPSSolve()
+      requires: hpddm slepc datafilespath double !complex !defined(PETSC_USE_64BIT_INDICES) defined(PETSC_HAVE_DYNAMIC_LIBRARIES) defined(PETSC_USE_SHARED_LIBRARIES)
+      nsize: 4
+      args: -ksp_converged_reason -pc_type hpddm -pc_hpddm_levels_1_sub_pc_type cholesky -pc_hpddm_levels_1_eps_threshold 0.005 -pc_hpddm_levels_1_eps_use_inertia -load_dir ${DATAFILESPATH}/matrices/hpddm/GENEO -pc_hpddm_coarse_pc_type cholesky -pc_hpddm_levels_1_st_share_sub_ksp -pc_hpddm_define_subdomains -pc_hpddm_has_neumann -ksp_rtol 0.9
+      filter: sed -e "s/Linear solve converged due to CONVERGED_RTOL iterations 1/Linear solve converged due to CONVERGED_RTOL iterations 141/g"
+      test:
+        suffix: inertia_petsc
+        output_file: output/ex76_1.out
+        args: -pc_hpddm_levels_1_sub_pc_factor_mat_solver_type petsc
+      test:
+        suffix: inertia_mumps
+        output_file: output/ex76_1.out
+        requires: mumps
+
    test:
       requires: hpddm slepc datafilespath double !complex !defined(PETSC_USE_64BIT_INDICES) defined(PETSC_HAVE_DYNAMIC_LIBRARIES) defined(PETSC_USE_SHARED_LIBRARIES)
       suffix: reuse_symbolic
