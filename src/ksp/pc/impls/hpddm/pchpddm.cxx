@@ -60,6 +60,7 @@ static PetscErrorCode PCDestroy_HPDDM(PC pc)
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCHPDDMSetRHSMat_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCHPDDMSetCoarseCorrectionType_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCHPDDMGetCoarseCorrectionType_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCHPDDMSetSTShareSubKSP_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCHPDDMGetSTShareSubKSP_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCHPDDMSetDeflationMat_C", NULL));
   PetscFunctionReturn(0);
@@ -284,7 +285,7 @@ static PetscErrorCode PCSetFromOptions_HPDDM(PC pc, PetscOptionItems *PetscOptio
     PetscCall(PetscOptionsReal(prefix, "Local threshold for selecting deflation vectors returned by SLEPc", "PCHPDDM", data->levels[i - 1]->threshold, &data->levels[i - 1]->threshold, NULL));
     if (i == 1) {
       PetscCall(PetscSNPrintf(prefix, sizeof(prefix), "-pc_hpddm_levels_1_st_share_sub_ksp"));
-      PetscCall(PetscOptionsBool(prefix, "Shared KSP between SLEPc ST and the fine-level subdomain solver", "PCHPDDMGetSTShareSubKSP", PETSC_FALSE, &data->share, NULL));
+      PetscCall(PetscOptionsBool(prefix, "Shared KSP between SLEPc ST and the fine-level subdomain solver", "PCHPDDMSetSTShareSubKSP", PETSC_FALSE, &data->share, NULL));
     }
     /* if there is no prescribed coarsening, just break out of the loop */
     if (data->levels[i - 1]->threshold <= 0.0 && data->levels[i - 1]->nu <= 0 && !(data->deflation && i == 1)) break;
@@ -1643,6 +1644,29 @@ static PetscErrorCode PCHPDDMGetCoarseCorrectionType_HPDDM(PC pc, PCHPDDMCoarseC
 }
 
 /*@
+     PCHPDDMSetSTShareSubKSP - Sets whether the `KSP` in SLEPc `ST` and the fine-level subdomain solver should be shared.
+
+   Input Parameters:
++     pc - preconditioner context
+-     share - whether the `KSP` should be shared or not
+
+   Note:
+     This is not the same as `PCSetReusePreconditioner()`. Given certain conditions (visible using -info), a symbolic factorization can be skipped
+     when using a subdomain `PCType` such as `PCLU` or `PCCHOLESKY`.
+
+   Level: advanced
+
+.seealso: `PCHPDDM`, `PCHPDDMGetSTShareSubKSP()`
+@*/
+PetscErrorCode PCHPDDMSetSTShareSubKSP(PC pc, PetscBool share)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
+  PetscTryMethod(pc, "PCHPDDMSetSTShareSubKSP_C", (PC, PetscBool), (pc, share));
+  PetscFunctionReturn(0);
+}
+
+/*@
      PCHPDDMGetSTShareSubKSP - Gets whether the `KSP` in SLEPc `ST` and the fine-level subdomain solver is shared.
 
    Input Parameter:
@@ -1657,7 +1681,7 @@ static PetscErrorCode PCHPDDMGetCoarseCorrectionType_HPDDM(PC pc, PCHPDDMCoarseC
 
    Level: advanced
 
-.seealso: `PCHPDDM`
+.seealso: `PCHPDDM`, `PCHPDDMSetSTShareSubKSP()`
 @*/
 PetscErrorCode PCHPDDMGetSTShareSubKSP(PC pc, PetscBool *share)
 {
@@ -1667,6 +1691,15 @@ PetscErrorCode PCHPDDMGetSTShareSubKSP(PC pc, PetscBool *share)
     PetscValidBoolPointer(share, 2);
     PetscUseMethod(pc, "PCHPDDMGetSTShareSubKSP_C", (PC, PetscBool *), (pc, share));
   }
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode PCHPDDMSetSTShareSubKSP_HPDDM(PC pc, PetscBool share)
+{
+  PC_HPDDM *data = (PC_HPDDM *)pc->data;
+
+  PetscFunctionBegin;
+  data->share = share;
   PetscFunctionReturn(0);
 }
 
@@ -1697,7 +1730,7 @@ PetscErrorCode PCHPDDMSetDeflationMat(PC pc, IS is, Mat U)
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscValidHeaderSpecific(is, IS_CLASSID, 2);
   PetscValidHeaderSpecific(U, MAT_CLASSID, 3);
-  PetscUseMethod(pc, "PCHPDDMSetDeflationMat_C", (PC, IS, Mat), (pc, is, U));
+  PetscTryMethod(pc, "PCHPDDMSetDeflationMat_C", (PC, IS, Mat), (pc, is, U));
   PetscFunctionReturn(0);
 }
 
@@ -1783,8 +1816,8 @@ PetscErrorCode HPDDMLoadDL_Private(PetscBool *found)
    Level: intermediate
 
 .seealso: `PCCreate()`, `PCSetType()`, `PCType`, `PC`, `PCHPDDMSetAuxiliaryMat()`, `MATIS`, `PCBDDC`, `PCDEFLATION`, `PCTELESCOPE`, `PCASM`,
-          `PCHPDDMSetCoarseCorrectionType()`, `PCHPDDMHasNeumannMat()`, `PCHPDDMSetRHSMat()`, `PCHPDDMSetDeflationMat()`, `PCHPDDMGetSTShareSubKSP()`,
-          `PCHPDDMSetCoarseCorrectionType()`, `PCHPDDMGetComplexities()`
+          `PCHPDDMSetCoarseCorrectionType()`, `PCHPDDMHasNeumannMat()`, `PCHPDDMSetRHSMat()`, `PCHPDDMSetDeflationMat()`, `PCHPDDMSetSTShareSubKSP()`,
+          `PCHPDDMGetSTShareSubKSP()`, `PCHPDDMGetCoarseCorrectionType()`, `PCHPDDMGetComplexities()`
 M*/
 PETSC_EXTERN PetscErrorCode PCCreate_HPDDM(PC pc)
 {
@@ -1814,6 +1847,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_HPDDM(PC pc)
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCHPDDMSetRHSMat_C", PCHPDDMSetRHSMat_HPDDM));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCHPDDMSetCoarseCorrectionType_C", PCHPDDMSetCoarseCorrectionType_HPDDM));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCHPDDMGetCoarseCorrectionType_C", PCHPDDMGetCoarseCorrectionType_HPDDM));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCHPDDMSetSTShareSubKSP_C", PCHPDDMSetSTShareSubKSP_HPDDM));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCHPDDMGetSTShareSubKSP_C", PCHPDDMGetSTShareSubKSP_HPDDM));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCHPDDMSetDeflationMat_C", PCHPDDMSetDeflationMat_HPDDM));
   PetscFunctionReturn(0);

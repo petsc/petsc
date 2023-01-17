@@ -15,7 +15,8 @@ int main(int argc, char **args)
   const char     *deft = MATAIJ;
   PetscViewer     viewer;
   char            dir[PETSC_MAX_PATH_LEN], name[PETSC_MAX_PATH_LEN], type[256];
-  PetscBool       flg;
+  PetscBool3      share = PETSC_BOOL3_UNKNOWN;
+  PetscBool       flg, set;
 #if defined(PETSC_USE_LOG)
   PetscLogEvent event;
 #endif
@@ -57,11 +58,12 @@ int main(int argc, char **args)
   PetscCall(MatLoad(aux, viewer));
   PetscCall(PetscViewerDestroy(&viewer));
   flg = PETSC_FALSE;
-  PetscCall(PetscOptionsGetBool(NULL, NULL, "-pc_hpddm_levels_1_st_share_sub_ksp", &flg, NULL));
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-pc_hpddm_levels_1_st_share_sub_ksp", &flg, &set));
   if (flg) { /* PETSc LU/Cholesky is struggling numerically for bs > 1          */
              /* only set the proper bs for the geneo_share_* tests, 1 otherwise */
     PetscCall(MatSetBlockSizesFromMats(aux, A, A));
-  }
+    share = PETSC_BOOL3_TRUE;
+  } else if (set) share = PETSC_BOOL3_FALSE;
   PetscCall(MatSetOption(A, MAT_SYMMETRIC, PETSC_TRUE));
   PetscCall(MatSetOption(aux, MAT_SYMMETRIC, PETSC_TRUE));
   /* ready for testing */
@@ -87,9 +89,10 @@ int main(int argc, char **args)
   }
   PetscCall(PCHPDDMSetAuxiliaryMat(pc, is, aux, NULL, NULL));
   PetscCall(PCHPDDMHasNeumannMat(pc, PETSC_FALSE)); /* PETSC_TRUE is fine as well, just testing */
+  if (share == PETSC_BOOL3_UNKNOWN) PetscCall(PCHPDDMSetSTShareSubKSP(pc, PetscBool3ToBool(share)));
   flg = PETSC_FALSE;
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-set_rhs", &flg, NULL));
-  if (flg) {          /* user-provided RHS for concurrent generalized eigenvalue problems                                 */
+  if (flg) {          /* user-provided RHS for concurrent generalized eigenvalue problems                          */
     Mat      a, c, P; /* usually assembled automatically in PCHPDDM, this is solely for testing PCHPDDMSetRHSMat() */
     PetscInt rstart, rend, location;
     PetscCall(MatDuplicate(aux, MAT_DO_NOT_COPY_VALUES, &B)); /* duplicate so that MatStructure is SAME_NONZERO_PATTERN */
@@ -117,6 +120,8 @@ int main(int argc, char **args)
     PetscCall(PCHPDDMSetRHSMat(pc, B));
     PetscCall(MatDestroy(&B));
   }
+#else
+  (void)share;
 #endif
   PetscCall(MatDestroy(&aux));
   PetscCall(KSPSetFromOptions(ksp));
