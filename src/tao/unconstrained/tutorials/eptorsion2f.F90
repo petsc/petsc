@@ -29,9 +29,9 @@
       use petsctao
       implicit none
 
-      Vec              localX
-      DM               dm
-      PetscReal      param
+      type(tVec)       localX
+      type(tDM)        dm
+      PetscReal        param
       PetscInt         mx, my
       end module
 
@@ -44,10 +44,10 @@
 !  See additional variable declarations in the file eptorsion2f.h
 !
       PetscErrorCode   ierr           ! used to check for functions returning nonzeros
-      Vec              x              ! solution vector
-      Mat              H              ! hessian matrix
+      type(tVec)       x              ! solution vector
+      type(tMat)       H              ! hessian matrix
       PetscInt         Nx, Ny         ! number of processes in x- and y- directions
-      Tao        tao            ! Tao solver context
+      type(tTao)       tao            ! Tao solver context
       PetscBool        flg
       PetscInt         i1
       PetscInt         dummy
@@ -207,9 +207,9 @@
       implicit none
 
 !  Input/output variables:
-      Tao        tao
-      Vec              X, G
-      PetscReal      f
+      type(tTao)       tao
+      type(tVec)       X, G
+      PetscReal        f
       PetscErrorCode   ierr
       PetscInt         dummy
 
@@ -222,11 +222,11 @@
       PetscReal      val, flin, fquad,floc
       PetscReal      v, vb, vl, vr, vt, dvdx
       PetscReal      dvdy, hx, hy
-      PetscInt         xe, ye, xsm, ysm
-      PetscInt         xep, yep, i, j, k, ind
-      PetscInt         xs, ys, xm, ym
-      PetscInt         gxs, gys, gxm, gym
-      PetscInt         i1
+      PetscInt       xe, ye, xsm, ysm
+      PetscInt       xep, yep, i, j, k, ind
+      PetscInt       xs, ys, xm, ym
+      PetscInt       gxs, gys, gxm, gym
+      PetscInt       i1
 
       i1 = 1
       ierr  = 0
@@ -364,9 +364,9 @@
       use eptorsion2fmodule
       implicit none
 
-      Tao       tao
-      Vec             X
-      Mat             H,Hpre
+      type(tTao)      tao
+      type(tVec)      X
+      type(tMat)      H,Hpre
       PetscErrorCode  ierr
       PetscInt        dummy
 
@@ -440,12 +440,12 @@
       use eptorsion2fmodule
       implicit none
 
-      Tao tao
-      PetscInt dummy
-      PetscErrorCode ierr
+      type(tTao)        tao
+      PetscInt          dummy
+      PetscErrorCode    ierr
 
-      PetscInt its
-      PetscReal f,gnorm,cnorm,xdiff
+      PetscInt           its
+      PetscReal          f,gnorm,cnorm,xdiff
       TaoConvergedReason reason
 
       PetscCall(TaoGetSolutionStatus(tao,its,f,gnorm,cnorm,xdiff,reason,ierr))
@@ -462,12 +462,12 @@
       use eptorsion2fmodule
       implicit none
 
-      Tao tao
-      PetscInt dummy
-      PetscErrorCode ierr
+      type(tTao)          tao
+      PetscInt           dummy
+      PetscErrorCode     ierr
 
-      PetscInt its
-      PetscReal f,gnorm,cnorm,xdiff
+      PetscInt           its
+      PetscReal          f,gnorm,cnorm,xdiff
       TaoConvergedReason reason
 
       PetscCall(TaoGetSolutionStatus(tao,its,f,gnorm,cnorm,xdiff,reason,ierr))

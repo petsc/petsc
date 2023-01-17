@@ -1,4 +1,4 @@
-#include <../src/tao/bound/impls/bqnk/bqnk.h> /*I "petsctao.h" I*/ /*I "petscmat.h" I*/
+#include <../src/tao/bound/impls/bqnk/bqnk.h> /*I "petsctao.h" I*/
 #include <petscksp.h>
 
 static PetscErrorCode TaoBQNKComputeHessian(Tao tao)

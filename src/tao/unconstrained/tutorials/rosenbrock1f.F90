@@ -23,9 +23,9 @@
 !  See additional variable declarations in the file rosenbrock1f.h
 
       PetscErrorCode  ierr    ! used to check for functions returning nonzeros
-      Vec             x       ! solution vector
-      Mat             H       ! hessian matrix
-      Tao             tao     ! TAO_SOVER context
+      type(tVec)      x       ! solution vector
+      type(tMat)      H       ! hessian matrix
+      type(tTao)      tao     ! TAO_SOVER context
       PetscBool       flg
       PetscInt        i2,i1
       PetscMPIInt     size
@@ -116,8 +116,8 @@
       use petsctao
       implicit none
 
-      Tao              tao
-      Vec              X,G
+      type(tTao)       tao
+      type(tVec)       X,G
       PetscReal        f
       PetscErrorCode   ierr
       PetscInt         dummy
@@ -181,9 +181,9 @@
       implicit none
 
 !  Input/output variables:
-      Tao              tao
-      Vec              X
-      Mat              H, PrecH
+      type(tTao)       tao
+      type(tVec)       X
+      type(tMat)       H, PrecH
       PetscErrorCode   ierr
       PetscInt         dummy
 

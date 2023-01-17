@@ -1,4 +1,4 @@
-#include <../src/tao/constrained/impls/almm/almm.h> /*I "petsctao.h" I*/ /*I "petscvec.h" I*/
+#include <../src/tao/constrained/impls/almm/almm.h> /*I "petsctao.h" I*/
 #include <petsctao.h>
 #include <petsc/private/petscimpl.h>
 #include <petsc/private/vecimpl.h>
