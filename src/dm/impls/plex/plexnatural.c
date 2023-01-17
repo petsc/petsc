@@ -407,10 +407,18 @@ PetscErrorCode DMPlexCreateNaturalVector(DM dm, Vec *nv)
   PetscFunctionBegin;
   PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)dm), &size));
   if (dm->sfNatural) {
-    PetscInt nleaves, bs;
+    PetscInt nleaves, bs, maxbs;
     Vec      v;
+
+    /*
+      Setting the natural vector block size.
+      We can't get it from a global vector because of constraints, and the block size in the local vector
+      may be inconsistent across processes, typically when some local vectors have size 0, their block size is set to 1
+    */
     PetscCall(DMGetLocalVector(dm, &v));
     PetscCall(VecGetBlockSize(v, &bs));
+    PetscCallMPI(MPI_Allreduce(&bs, &maxbs, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)dm)));
+    if (bs == 1 && maxbs > 1) bs = maxbs;
     PetscCall(DMRestoreLocalVector(dm, &v));
 
     PetscCall(PetscSFGetGraph(dm->sfNatural, NULL, &nleaves, NULL, NULL));
