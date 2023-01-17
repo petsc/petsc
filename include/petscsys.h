@@ -1126,7 +1126,7 @@ PETSC_EXTERN PetscErrorCode PetscStrreplace(MPI_Comm, const char[], char[], size
 
 PETSC_EXTERN void PetscStrcmpNoError(const char[], const char[], PetscBool *);
 
-PETSC_EXTERN PetscErrorCode PetscTokenCreate(const char[], const char, PetscToken *);
+PETSC_EXTERN PetscErrorCode PetscTokenCreate(const char[], char, PetscToken *);
 PETSC_EXTERN PetscErrorCode PetscTokenFind(PetscToken, char *[]);
 PETSC_EXTERN PetscErrorCode PetscTokenDestroy(PetscToken *);
 

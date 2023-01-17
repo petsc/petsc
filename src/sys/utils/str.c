@@ -1029,7 +1029,7 @@ PetscErrorCode PetscTokenFind(PetscToken a, char *result[])
 
 .seealso: `PetscTokenFind()`, `PetscTokenDestroy()`
 @*/
-PetscErrorCode PetscTokenCreate(const char a[], const char b, PetscToken *t)
+PetscErrorCode PetscTokenCreate(const char a[], char b, PetscToken *t)
 {
   PetscFunctionBegin;
   PetscValidCharPointer(a, 1);
