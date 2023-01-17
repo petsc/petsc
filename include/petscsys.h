@@ -138,11 +138,9 @@ M*/
 PETSC_EXTERN MPI_Datatype MPIU_FORTRANADDR;
 
 #if defined(PETSC_USE_64BIT_INDICES)
-  #define MPIU_INT     MPIU_INT64
-  #define PetscInt_FMT PetscInt64_FMT
+  #define MPIU_INT MPIU_INT64
 #else
-  #define MPIU_INT     MPI_INT
-  #define PetscInt_FMT "d"
+  #define MPIU_INT MPI_INT
 #endif
 
 /*
@@ -1919,17 +1917,6 @@ PETSC_EXTERN PetscErrorCode MPIU_File_read_at(MPI_File, MPI_Offset, void *, Pets
 PETSC_EXTERN PetscErrorCode MPIU_File_write_at_all(MPI_File, MPI_Offset, void *, PetscMPIInt, MPI_Datatype, MPI_Status *) PETSC_ATTRIBUTE_MPI_POINTER_WITH_TYPE(3, 5);
 PETSC_EXTERN PetscErrorCode MPIU_File_read_at_all(MPI_File, MPI_Offset, void *, PetscMPIInt, MPI_Datatype, MPI_Status *) PETSC_ATTRIBUTE_MPI_POINTER_WITH_TYPE(3, 5);
 #endif
-
-enum {
-  /* Limit MPI to 32-bits */
-  PETSC_MPI_INT_MAX = 2147483647,
-  PETSC_MPI_INT_MIN = -2147483647,
-  /* Limit BLAS to 32-bits */
-  PETSC_BLAS_INT_MAX    = 2147483647,
-  PETSC_BLAS_INT_MIN    = -2147483647,
-  PETSC_CUBLAS_INT_MAX  = 2147483647,
-  PETSC_HIPBLAS_INT_MAX = 2147483647
-};
 
 /*@C
     PetscIntCast - casts a `PetscInt64` (which is 64 bits in size) to a `PetscInt` (which may be 32 bits in size), generates an

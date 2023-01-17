@@ -8,6 +8,7 @@
 #include <petscconf.h>
 #include <petscconf_poison.h>
 #include <petscfix.h>
+#include <petscmacros.h>
 #include <stddef.h>
 
 /* SUBMANSEC = Sys */
@@ -55,6 +56,14 @@ typedef int PetscClassId;
 
 M*/
 typedef int PetscMPIInt;
+
+#include <limits.h>
+
+/* Limit MPI to 32-bits */
+enum {
+  PETSC_MPI_INT_MIN = INT_MIN,
+  PETSC_MPI_INT_MAX = INT_MAX
+};
 
 /*MC
     PetscSizeT - datatype used to represent sizes in memory (like size_t)
@@ -127,19 +136,46 @@ M*/
 
 #if defined(PETSC_HAVE_STDINT_H) && defined(PETSC_HAVE_INTTYPES_H) && defined(PETSC_HAVE_MPI_INT64_T) /* MPI_INT64_T is not guaranteed to be a macro */
 typedef int64_t PetscInt64;
+
+  #define PETSC_INT64_MIN INT64_MIN
+  #define PETSC_INT64_MAX INT64_MAX
+
 #elif (PETSC_SIZEOF_LONG_LONG == 8)
 typedef long long PetscInt64;
+
+  #define PETSC_INT64_MIN LLONG_MIN
+  #define PETSC_INT64_MAX LLONG_MAX
+
 #elif defined(PETSC_HAVE___INT64)
 typedef __int64 PetscInt64;
+
+  #define PETSC_INT64_MIN INT64_MIN
+  #define PETSC_INT64_MAX INT64_MAX
+
 #else
   #error "cannot determine PetscInt64 type"
 #endif
 
 #if defined(PETSC_USE_64BIT_INDICES)
 typedef PetscInt64 PetscInt;
+
+  #define PETSC_INT_MIN PETSC_INT64_MIN
+  #define PETSC_INT_MAX PETSC_INT64_MAX
+  #define PetscInt_FMT  PetscInt64_FMT
 #else
 typedef int       PetscInt;
+
+enum {
+  PETSC_INT_MIN = INT_MIN,
+  PETSC_INT_MAX = INT_MAX
+};
+
+  #define PetscInt_FMT "d"
 #endif
+
+#define PETSC_MIN_INT    PETSC_INT_MIN
+#define PETSC_MAX_INT    PETSC_INT_MAX
+#define PETSC_MAX_UINT16 65535
 
 #if defined(PETSC_HAVE_STDINT_H) && defined(PETSC_HAVE_INTTYPES_H) && defined(PETSC_HAVE_MPI_INT64_T) /* MPI_INT64_T is not guaranteed to be a macro */
   #define MPIU_INT64     MPI_INT64_T
@@ -187,11 +223,20 @@ typedef int       PetscInt;
 
 M*/
 #if defined(PETSC_HAVE_64BIT_BLAS_INDICES)
-  #define PetscBLASInt_FMT PetscInt64_FMT
 typedef PetscInt64 PetscBLASInt;
+
+  #define PETSC_BLAS_INT_MIN PETSC_INT64_MIN
+  #define PETSC_BLAS_INT_MAX PETSC_INT64_MAX
+  #define PetscBLASInt_FMT   PetscInt64_FMT
 #else
+typedef int PetscBLASInt;
+
+enum {
+  PETSC_BLAS_INT_MIN = INT_MIN,
+  PETSC_BLAS_INT_MAX = INT_MAX
+};
+
   #define PetscBLASInt_FMT "d"
-typedef int       PetscBLASInt;
 #endif
 
 /*MC
@@ -210,6 +255,11 @@ typedef int       PetscBLASInt;
 M*/
 typedef int PetscCuBLASInt;
 
+enum {
+  PETSC_CUBLAS_INT_MIN = INT_MIN,
+  PETSC_CUBLAS_INT_MAX = INT_MAX
+};
+
 /*MC
    PetscHipBLASInt - datatype used to represent 'int' parameters to hipBLAS/hipSOLVER functions.
 
@@ -225,6 +275,11 @@ typedef int PetscCuBLASInt;
 
 M*/
 typedef int PetscHipBLASInt;
+
+enum {
+  PETSC_HIPBLAS_INT_MIN = INT_MIN,
+  PETSC_HIPBLAS_INT_MAX = INT_MAX
+};
 
 /*E
     PetscBool  - Logical variable. Actually an enum in C and a logical in Fortran.
