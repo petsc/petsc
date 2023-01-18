@@ -725,7 +725,6 @@ static PetscErrorCode PCApply_BJKOKKOS(PC pc, Vec bin, Vec xout)
   Mat_SeqAIJKokkos *aijkok;
 
   PetscFunctionBegin;
-  PetscCheck(jac->vec_diag && A, PetscObjectComm((PetscObject)pc), PETSC_ERR_USER, "Not setup???? %p %p", jac->vec_diag, A);
   aijkok = static_cast<Mat_SeqAIJKokkos *>(A->spptr);
   PetscCheck(aijkok, PetscObjectComm((PetscObject)pc), PETSC_ERR_USER, "No aijkok");
   {
