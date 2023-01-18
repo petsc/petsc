@@ -41,16 +41,6 @@ cdef extern from * nogil:
         PETSC_OWN_POINTER
         PETSC_USE_POINTER
 
-cdef extern from * nogil:
-
-    enum: PETSC_ERR_MEM
-    enum: PETSC_ERR_SUP
-    enum: PETSC_ERR_ORDER
-    enum: PETSC_ERR_LIB
-    enum: PETSC_ERR_USER
-    enum: PETSC_ERR_SYS
-
-
 cdef inline PetscInsertMode insertmode(object mode) \
     except <PetscInsertMode>(-1):
     if   mode is None:  return PETSC_INSERT_VALUES

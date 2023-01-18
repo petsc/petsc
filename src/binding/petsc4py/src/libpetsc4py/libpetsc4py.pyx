@@ -40,12 +40,6 @@ cdef extern from * nogil:
     int MPI_Comm_size(MPI_Comm,int*)
     int MPI_Comm_rank(MPI_Comm,int*)
 
-    ctypedef int PetscErrorCode
-    enum: PETSC_ERR_PLIB
-    enum: PETSC_ERR_SUP
-    enum: PETSC_ERR_USER
-    enum: PETSC_ERROR_INITIAL
-    enum: PETSC_ERROR_REPEAT
     PetscErrorCode PetscERROR(MPI_Comm,char[],PetscErrorCode,int,char[],char[])
 
     ctypedef enum PetscBool:
@@ -108,12 +102,6 @@ import_array()
 
 # --------------------------------------------------------------------
 
-cdef extern from * nogil:
-    enum: PETSC_ERR_PYTHON
-
-cdef extern from * nogil:
-    enum: IERR "PETSC_ERR_PYTHON"
-
 cdef char *FUNCT = NULL
 cdef char *fstack[1024]
 cdef int   istack = 0
@@ -136,7 +124,7 @@ cdef inline PetscErrorCode FunctionEnd() nogil:
     if istack < 0:
         istack = 1024
     FUNCT = fstack[istack]
-    return 0
+    return PETSC_SUCCESS
 
 cdef PetscErrorCode PetscSETERR(PetscErrorCode ierr,char msg[]) nogil:
     global fstack, istack
@@ -144,38 +132,6 @@ cdef PetscErrorCode PetscSETERR(PetscErrorCode ierr,char msg[]) nogil:
     global FUNCT
     return PetscERROR(PETSC_COMM_SELF,FUNCT,ierr,
                       PETSC_ERROR_INITIAL, msg, NULL)
-
-cdef PetscErrorCode PetscCHKERR(PetscErrorCode ierr) nogil:
-    global fstack, istack
-    istack = 0; fstack[istack] = NULL;
-    global FUNCT
-    return PetscERROR(PETSC_COMM_SELF, FUNCT, ierr,
-                      PETSC_ERROR_REPEAT, b"%s", b"")
-
-
-cdef extern from *:
-    void PyErr_SetObject(object, object)
-    PyObject *PyExc_RuntimeError
-
-cdef object PetscError = <object>PyExc_RuntimeError
-from petsc4py.PETSc import Error as PetscError
-
-cdef inline void PythonSETERR(PetscErrorCode ierr) with gil:
-    if (<void*>PetscError) != NULL:
-        PyErr_SetObject(PetscError, <long>ierr)
-    else:
-        PyErr_SetObject(<object>PyExc_RuntimeError, <long>ierr)
-
-cdef inline int CHKERR(PetscErrorCode ierr) nogil except -1:
-    if ierr == 0:
-        return 0
-    if ierr == PETSC_ERR_PYTHON:
-        #PetscCHKERR(ierr)
-        return -1
-    if Py_IsInitialized():
-        PythonSETERR(ierr)
-    PetscCHKERR(ierr)
-    return -1
 
 cdef PetscErrorCode UNSUPPORTED(char msg[]) nogil:
     global FUNCT

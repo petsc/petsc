@@ -35,28 +35,60 @@ cdef inline object S_(const char p[]):
 # Vile hack for raising a exception and not contaminating traceback
 
 cdef extern from *:
-    enum: PETSC_ERR_PYTHON
-
-cdef extern from *:
     void PyErr_SetObject(object, object)
     void *PyExc_RuntimeError
 
+# SETERR Support
+# --------------
+
 cdef object PetscError = <object>PyExc_RuntimeError
 
-cdef inline int SETERR(int ierr) with gil:
+cdef PetscErrorCode SETERR(PetscErrorCode ierr) with gil:
     if (<void*>PetscError) != NULL:
         PyErr_SetObject(PetscError, <long>ierr)
     else:
         PyErr_SetObject(<object>PyExc_RuntimeError, <long>ierr)
     return ierr
 
-cdef inline int CHKERR(int ierr) nogil except -1:
-    if ierr == 0:
-        return 0 # no error
+cdef inline PetscErrorCode CHKERR(PetscErrorCode ierr) nogil except PETSC_ERR_PYTHON:
+    if ierr == PETSC_SUCCESS:
+        return ierr # no error
     if ierr == PETSC_ERR_PYTHON:
-        return -1 # error in Python call
+        return ierr # error in python code
     <void>SETERR(ierr)
-    return -1
+    return PETSC_ERR_PYTHON
+
+# SETERRMPI Support
+# -----------------
+
+cdef extern from * nogil:
+    enum: MPI_SUCCESS = 0
+    enum: MPI_MAX_ERROR_STRING
+    int MPI_Error_string(int, char *, int *)
+
+    PetscErrorCode PetscERROR(MPI_Comm, char[], PetscErrorCode, int, char[], char[])
+
+cdef inline int SETERRMPI(int ierr) with gil:
+    cdef char[MPI_MAX_ERROR_STRING] mpi_err_str
+    cdef int                        result_len = <int>sizeof(mpi_err_str)
+
+    <void>memset(mpi_err_str, 0, result_len)
+    <void>MPI_Error_string(ierr, mpi_err_str, &result_len);
+    <void>result_len
+
+    cdef str         error_str   = "MPI Error " + bytes2str(mpi_err_str) + " " + str(ierr)
+    cdef const char *c_error_str = NULL
+
+    str2bytes(error_str, &c_error_str)
+    <void>PetscERROR(PETSC_COMM_SELF, "Unknown Python Function", PETSC_ERR_MPI, PETSC_ERROR_INITIAL, "%s", c_error_str)
+    <void>SETERR(PETSC_ERR_MPI)
+    return ierr
+
+cdef inline PetscErrorCode CHKERRMPI(int ierr) nogil except PETSC_ERR_PYTHON:
+    if ierr == MPI_SUCCESS:
+      return PETSC_SUCCESS
+    <void>SETERRMPI(ierr)
+    return PETSC_ERR_PYTHON
 
 # --------------------------------------------------------------------
 

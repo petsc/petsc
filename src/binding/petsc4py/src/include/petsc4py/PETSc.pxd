@@ -298,3 +298,19 @@ cdef int  PyPetscType_Register(int, type) except -1
 cdef type PyPetscType_Lookup(int)
 
 # --------------------------------------------------------------------
+
+cdef extern from * nogil:
+  ctypedef enum PetscErrorCode:
+    PETSC_SUCCESS
+    PETSC_ERR_PLIB
+    PETSC_ERR_SUP
+    PETSC_ERR_USER
+    PETSC_ERR_MEM
+    PETSC_ERR_MPI
+    PETSC_ERR_PYTHON
+
+  ctypedef enum PetscErrorType:
+    PETSC_ERROR_INITIAL
+    PETSC_ERROR_REPEAT
+
+cdef PetscErrorCode CHKERR(PetscErrorCode) nogil except PETSC_ERR_PYTHON

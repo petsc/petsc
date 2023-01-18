@@ -17,6 +17,9 @@
 #define PETSC_ERR_PYTHON ((PetscErrorCode)(-1))
 #endif
 
+#define PetscERROR(comm,FUNCT,n,t,msg,arg) \
+        PetscError(comm,__LINE__,FUNCT,__FILE__,n,t,msg,arg)
+
 /* ---------------------------------------------------------------- */
 
 typedef PetscErrorCode (*PetscErrorHandlerFunction)

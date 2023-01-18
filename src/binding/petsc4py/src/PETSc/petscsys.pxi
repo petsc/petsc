@@ -17,10 +17,7 @@ cdef extern from * nogil:
     PetscBool PetscInitializeCalled
     PetscBool PetscFinalizeCalled
 
-    ctypedef enum PetscErrorType:
-        PETSC_ERROR_INITIAL
-        PETSC_ERROR_REPEAT
-    ctypedef int (*PetscErrorHandlerFunction)(MPI_Comm,int,char*,char*,
+    ctypedef PetscErrorCode (*PetscErrorHandlerFunction)(MPI_Comm,int,char*,char*,
                                               int,PetscErrorType,char*,void*)
     PetscErrorHandlerFunction PetscAttachDebuggerErrorHandler
     PetscErrorHandlerFunction PetscEmacsClientErrorHandler
