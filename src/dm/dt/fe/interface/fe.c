@@ -1100,8 +1100,8 @@ PETSC_EXTERN PetscErrorCode PetscFECreatePointTrace(PetscFE fe, PetscInt refPoin
   PetscCall(PetscFEGetQuadrature(fe, &fullQuad));
   PetscCall(PetscQuadratureGetOrder(fullQuad, &order));
   PetscCall(DMPlexGetConeSize(dm, refPoint, &coneSize));
-  if (coneSize == 2 * depth) PetscCall(PetscDTGaussTensorQuadrature(depth, 1, (order + 1) / 2, -1., 1., &subQuad));
-  else PetscCall(PetscDTStroudConicalQuadrature(depth, 1, (order + 1) / 2, -1., 1., &subQuad));
+  if (coneSize == 2 * depth) PetscCall(PetscDTGaussTensorQuadrature(depth, 1, (order + 2) / 2, -1., 1., &subQuad));
+  else PetscCall(PetscDTSimplexQuadrature(depth, order, PETSCDTSIMPLEXQUAD_DEFAULT, &subQuad));
   PetscCall(PetscFESetQuadrature(*trFE, subQuad));
   PetscCall(PetscFESetUp(*trFE));
   PetscCall(PetscQuadratureDestroy(&subQuad));
@@ -1853,22 +1853,21 @@ static PetscErrorCode PetscFECreateDefaultQuadrature_Private(PetscInt dim, DMPol
     break;
   case DM_POLYTOPE_TRIANGLE:
   case DM_POLYTOPE_TETRAHEDRON:
-    PetscCall(PetscDTStroudConicalQuadrature(dim, 1, quadPointsPerEdge, -1.0, 1.0, q));
-    PetscCall(PetscDTStroudConicalQuadrature(dim - 1, 1, quadPointsPerEdge, -1.0, 1.0, fq));
+    PetscCall(PetscDTSimplexQuadrature(dim, 2 * qorder, PETSCDTSIMPLEXQUAD_DEFAULT, q));
+    PetscCall(PetscDTSimplexQuadrature(dim - 1, 2 * qorder, PETSCDTSIMPLEXQUAD_DEFAULT, fq));
     break;
   case DM_POLYTOPE_TRI_PRISM:
   case DM_POLYTOPE_TRI_PRISM_TENSOR: {
     PetscQuadrature q1, q2;
 
-    PetscCall(PetscDTStroudConicalQuadrature(2, 1, quadPointsPerEdge, -1.0, 1.0, &q1));
+    // TODO: this should be able to use symmetric rules, but doing so causes tests to fail
+    PetscCall(PetscDTSimplexQuadrature(2, 2 * qorder, PETSCDTSIMPLEXQUAD_CONIC, &q1));
     PetscCall(PetscDTGaussTensorQuadrature(1, 1, quadPointsPerEdge, -1.0, 1.0, &q2));
     PetscCall(PetscDTTensorQuadratureCreate(q1, q2, q));
-    PetscCall(PetscQuadratureDestroy(&q1));
     PetscCall(PetscQuadratureDestroy(&q2));
-  }
-    PetscCall(PetscDTStroudConicalQuadrature(dim - 1, 1, quadPointsPerEdge, -1.0, 1.0, fq));
+    *fq = q1;
     /* TODO Need separate quadratures for each face */
-    break;
+  } break;
   default:
     SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "No quadrature for celltype %s", DMPolytopeTypes[PetscMin(ct, DM_POLYTOPE_UNKNOWN)]);
   }

@@ -2195,6 +2195,7 @@ PetscErrorCode PetscDTSimplexQuadrature(PetscInt dim, PetscInt degree, PetscDTSi
     PetscCall(PetscFree3(part, perm, counts));
     PetscCall(PetscFree(bary_to_biunit));
     PetscCall(PetscQuadratureCreate(PETSC_COMM_SELF, &q));
+    PetscCall(PetscQuadratureSetOrder(q, degree));
     PetscCall(PetscQuadratureSetData(q, dim, 1, num_full_nodes, points, weights));
     *quad = q;
   }
