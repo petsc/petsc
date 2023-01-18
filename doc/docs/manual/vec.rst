@@ -384,7 +384,7 @@ should be used instead.
    .. literalinclude:: /../src/snes/tutorials/ex1.c
       :name: snesex1
       :start-at: PetscErrorCode FormFunction1(SNES snes, Vec x, Vec f, void *ctx)
-      :end-at: return 0;
+      :end-at: PetscFunctionReturn(PETSC_SUCCESS);
 
 Minor differences exist in the Fortran interface for ``VecGetArray()``
 and ``VecRestoreArray()``, as discussed in
