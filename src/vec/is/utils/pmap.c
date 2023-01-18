@@ -554,7 +554,7 @@ PetscErrorCode PetscLayoutGetRange(PetscLayout map, PetscInt *rstart, PetscInt *
     Call this after the call to `PetscLayoutSetUp()`
 
     Fortran Note:
-    Not available from Fortran
+    In Fortran, use PetscLayoutGetRangesF90()
 
 .seealso: [PetscLayout](sec_matlayout), `PetscLayoutCreate()`, `PetscLayoutSetLocalSize()`, `PetscLayoutGetLocalSize()`, `PetscLayoutSetSize()`,
           `PetscLayoutGetSize()`, `PetscLayoutGetRange()`, `PetscLayoutSetBlockSize()`, `PetscLayoutGetSize()`, `PetscLayoutSetUp()`

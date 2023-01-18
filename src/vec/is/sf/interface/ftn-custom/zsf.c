@@ -10,6 +10,8 @@
 #define petscsfviewfromoptions_ PETSCSFVIEWFROMOPTIONS
 #define petscsfdestroy_         PETSCSFDESTROY
 #define petscsfsetgraph_        PETSCSFSETGRAPH
+#define petscsfgetleafranks_    PETSCSFGETLEAFRANKS
+#define petscsfgetrootranks_    PETSCSFGETROOTRANKS
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define petscsfgetgraph_        petscsfgetgraph
 #define petscsfview_            petscsfview
@@ -19,6 +21,8 @@
 #define petscsfviewfromoptions_ petscsfviewfromoptions
 #define petscsfdestroy_         petscsfdestroy
 #define petscsfsetgraph_        petscsfsetgraph
+#define petscsfgetleafranks_    petscsfgetleafranks
+#define petscsfgetrootranks_    petscsfgetrootranks
 #endif
 
 PETSC_EXTERN void f90arraysfnodecreate_(const PetscInt *,PetscInt *,void * PETSC_F90_2PTR_PROTO_NOVAR);
@@ -49,6 +53,33 @@ PETSC_EXTERN void  petscsfgetgraph_(PetscSF *sf,PetscInt *nroots,PetscInt *nleav
   *ierr = F90Array1dCreate((void*)ilocal,MPIU_INT,1,nl, ailocal PETSC_F90_2PTR_PARAM(pilocal));
   /* this creates a memory leak */
   f90arraysfnodecreate_((PetscInt*)iremote,nleaves, airemote PETSC_F90_2PTR_PARAM(piremote));
+}
+
+PETSC_EXTERN void petscsfgetleafranks_(PetscSF *sf, PetscInt *niranks, F90Array1d *airanks, F90Array1d *aioffset, F90Array1d *airootloc, PetscErrorCode *ierr PETSC_F90_2PTR_PROTO(piranks) PETSC_F90_2PTR_PROTO(pioffset) PETSC_F90_2PTR_PROTO(pirootloc))
+{
+  const PetscMPIInt *iranks = NULL;
+  const PetscInt    *ioffset = NULL;
+  const PetscInt    *irootloc = NULL;
+
+  *ierr = PetscSFGetLeafRanks(*sf, niranks, &iranks, &ioffset, &irootloc);if (*ierr) return;
+  *ierr = F90Array1dCreate((void*)irootloc, MPIU_INT, 1, ioffset[*niranks], airootloc PETSC_F90_2PTR_PARAM(pirootloc));if (*ierr) return;
+  *ierr = F90Array1dCreate((void*)iranks, MPI_INT, 1, *niranks, airanks PETSC_F90_2PTR_PARAM(piranks));if (*ierr) return;
+  *ierr = F90Array1dCreate((void*)ioffset, MPIU_INT, 1, *niranks+1, aioffset PETSC_F90_2PTR_PARAM(pioffset));if (*ierr) return;
+}
+
+PETSC_EXTERN void petscsfgetrootranks_(PetscSF *sf, PetscInt *nranks, F90Array1d *aranks, F90Array1d *aroffset, F90Array1d *armine, F90Array1d *arremote,
+ PetscErrorCode *ierr PETSC_F90_2PTR_PROTO(pranks) PETSC_F90_2PTR_PROTO(proffset) PETSC_F90_2PTR_PROTO(prmine) PETSC_F90_2PTR_PROTO(prremote))
+{
+  const PetscMPIInt *ranks = NULL;
+  const PetscInt    *roffset = NULL;
+  const PetscInt    *rmine = NULL;
+  const PetscInt    *rremote = NULL;
+
+  *ierr = PetscSFGetRootRanks(*sf, nranks, &ranks, &roffset, &rmine, &rremote);if (*ierr) return;
+  *ierr = F90Array1dCreate((void*)ranks, MPI_INT, 1, *nranks, aranks PETSC_F90_2PTR_PARAM(pranks));if (*ierr) return;
+  *ierr = F90Array1dCreate((void*)roffset, MPIU_INT, 1, *nranks+1, aroffset PETSC_F90_2PTR_PARAM(proffset));if (*ierr) return;
+  *ierr = F90Array1dCreate((void*)rmine, MPIU_INT, 1, roffset[*nranks], armine PETSC_F90_2PTR_PARAM(prmine));if (*ierr) return;
+  *ierr = F90Array1dCreate((void*)rremote, MPIU_INT, 1, roffset[*nranks], arremote PETSC_F90_2PTR_PARAM(prremote));if (*ierr) return;
 }
 
 #if defined(PETSC_HAVE_F90_ASSUMED_TYPE_NOT_PTR)
