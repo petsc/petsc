@@ -17,6 +17,24 @@
           type(*) :: larray(:)
           PetscErrorCode :: ierr
         end Subroutine PetscSFBcastEnd
+              
+      subroutine PetscSFReduceBegin(sf,unit,larray,rarray,op,ierr)
+          import tPetscSF
+          PetscSF :: sf
+          PetscMPIInt :: unit,op
+          type(*) :: larray(:)
+          type(*) :: rarray(:)
+          PetscErrorCode :: ierr
+        end Subroutine PetscSFReduceBegin
+
+      subroutine PetscSFReduceEnd(sf,unit,larray,rarray,op,ierr)
+          import tPetscSF
+          PetscSF :: sf
+          PetscMPIInt :: unit,op
+          type(*) :: larray(:)
+          type(*) :: rarray(:)
+          PetscErrorCode :: ierr
+        end Subroutine PetscSFReduceEnd
       end Interface
 #endif
 
