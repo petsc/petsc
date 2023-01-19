@@ -6,6 +6,8 @@
 #define petscsfgetgraph_        PETSCSFGETGRAPH
 #define petscsfbcastbegin_      PETSCSFBCASTBEGIN
 #define petscsfbcastend_        PETSCSFBCASTEND
+#define petscsfreducebegin_     PETSCSFREDUCEBEGIN
+#define petscsfreduceend_       PETSCSFREDUCEEND
 #define f90arraysfnodecreate_   F90ARRAYSFNODECREATE
 #define petscsfviewfromoptions_ PETSCSFVIEWFROMOPTIONS
 #define petscsfdestroy_         PETSCSFDESTROY
@@ -17,6 +19,8 @@
 #define petscsfview_            petscsfview
 #define petscsfbcastbegin_      petscsfbcastbegin
 #define petscsfbcastend_        petscsfbcastend
+#define petscsfreducebegin_     petscsfreducebegin
+#define petscsfreduceend_       petscsfreduceend
 #define f90arraysfnodecreate_   f90arraysfnodecreate
 #define petscsfviewfromoptions_ petscsfviewfromoptions
 #define petscsfdestroy_         petscsfdestroy
@@ -101,6 +105,24 @@ PETSC_EXTERN void petscsfbcastend_(PetscSF *sf, MPI_Fint *unit, const void *rptr
   *ierr = PetscSFBcastEnd(*sf, dtype, rptr, lptr, cop);
 }
 
+PETSC_EXTERN void petscsfreducebegin_(PetscSF *sf, MPI_Fint *unit, const void *lptr, void *rptr, MPI_Fint *op, PetscErrorCode *ierr)
+{
+  MPI_Datatype dtype;
+  MPI_Op       cop = MPI_Op_f2c(*op);
+
+  *ierr = PetscMPIFortranDatatypeToC(*unit,&dtype);if (*ierr) return;
+  *ierr = PetscSFReduceBegin(*sf, dtype, lptr, rptr, cop);
+}
+
+PETSC_EXTERN void petscsfreduceend_(PetscSF *sf, MPI_Fint *unit, const void *lptr, void *rptr, MPI_Fint *op, PetscErrorCode *ierr)
+{
+  MPI_Datatype dtype;
+  MPI_Op       cop = MPI_Op_f2c(*op);
+
+  *ierr = PetscMPIFortranDatatypeToC(*unit,&dtype);if (*ierr) return;
+  *ierr = PetscSFReduceEnd(*sf, dtype, lptr, rptr, cop);
+}
+
 #else
 
 PETSC_EXTERN void petscsfbcastbegin_(PetscSF *sf, MPI_Fint *unit,F90Array1d *rptr, F90Array1d *lptr, MPI_Fint *op, PetscErrorCode *ierr PETSC_F90_2PTR_PROTO(rptrd) PETSC_F90_2PTR_PROTO(lptrd))
@@ -128,6 +150,33 @@ PETSC_EXTERN void petscsfbcastend_(PetscSF *sf, MPI_Fint *unit,F90Array1d *rptr,
   *ierr = F90Array1dAccess(lptr, dtype, (void**) &leafdata PETSC_F90_2PTR_PARAM(lptrd));if (*ierr) return;
   *ierr = PetscSFBcastEnd(*sf, dtype, rootdata, leafdata, cop);
 }
+
+PETSC_EXTERN void petscsfreducebegin_(PetscSF *sf, MPI_Fint *unit,F90Array1d *lptr, F90Array1d *rptr, MPI_Fint *op, PetscErrorCode *ierr PETSC_F90_2PTR_PROTO(lptrd) PETSC_F90_2PTR_PROTO(rptrd))
+{
+  MPI_Datatype dtype;
+  const void   *leafdata;
+  void         *rootdata;
+  MPI_Op       cop = MPI_Op_f2c(*op);
+
+  *ierr = PetscMPIFortranDatatypeToC(*unit,&dtype);if (*ierr) return;
+  *ierr = F90Array1dAccess(rptr, dtype, (void**) &rootdata PETSC_F90_2PTR_PARAM(rptrd));if (*ierr) return;
+  *ierr = F90Array1dAccess(lptr, dtype, (void**) &leafdata PETSC_F90_2PTR_PARAM(lptrd));if (*ierr) return;
+  *ierr = PetscSFReduceBegin(*sf, dtype, leafdata, rootdata, cop);
+}
+
+PETSC_EXTERN void petscsfreduceend_(PetscSF *sf, MPI_Fint *unit,F90Array1d *lptr, F90Array1d *rptr, MPI_Fint *op, PetscErrorCode *ierr PETSC_F90_2PTR_PROTO(lptrd) PETSC_F90_2PTR_PROTO(rptrd))
+{
+  MPI_Datatype dtype;
+  const void   *leafdata;
+  void         *rootdata;
+  MPI_Op       cop = MPI_Op_f2c(*op);
+
+  *ierr = PetscMPIFortranDatatypeToC(*unit,&dtype);if (*ierr) return;
+  *ierr = F90Array1dAccess(rptr, dtype, (void**) &rootdata PETSC_F90_2PTR_PARAM(rptrd));if (*ierr) return;
+  *ierr = F90Array1dAccess(lptr, dtype, (void**) &leafdata PETSC_F90_2PTR_PARAM(lptrd));if (*ierr) return;
+  *ierr = PetscSFReduceEnd(*sf, dtype, leafdata, rootdata, cop);
+}
+
 PETSC_EXTERN void petscsfviewfromoptions_(PetscSF *ao,PetscObject obj,char* type,PetscErrorCode *ierr,PETSC_FORTRAN_CHARLEN_T len)
 {
   char *t;
