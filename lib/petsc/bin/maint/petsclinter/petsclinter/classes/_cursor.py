@@ -118,6 +118,13 @@ class Cursor:
     if isinstance(cursor, cls):
       return cursor.name
 
+    def cls_get_name_from_cursor_safe_call(*args, **kwargs):
+      try:
+        ret = cls.get_name_from_cursor(*args, **kwargs)
+      except (RuntimeError, pl.ParsingError):
+        ret = None
+      return ret
+
     name = None
     if cursor.spelling:
       name = cursor.spelling
@@ -129,7 +136,10 @@ class Cursor:
         # its certainly funky when a binary operation doesn't have a binary system of
         # operands
         assert len(operands) == 2, f'Found {len(operands)} operands for binary operator when only expecting 2 for cursor {cls.error_view_from_cursor(cursor)}'
-        name = operands[0].spelling
+        for oper in operands:
+          name = cls_get_name_from_cursor_safe_call(oper)
+          if name:
+            break
       else:
         # just a plain old number or unary operator
         name = ''.join(t.spelling for t in cursor.get_tokens())
@@ -141,7 +151,7 @@ class Cursor:
       assert len(castee) == 1, f'Cannot determine castee from the caster for cursor {cls.error_view_from_cursor(cursor)}'
       # Easer to do some mild recursion to figure out the naming for us than duplicate
       # the code. Perhaps this should have some sort of recursion check
-      name = cls.get_name_from_cursor(castee[0])
+      name = cls_get_name_from_cursor_safe_call(castee[0])
     elif (cursor.type.get_canonical().kind == clx.TypeKind.POINTER) or (cursor.kind == clx.CursorKind.UNEXPOSED_EXPR):
       if cursor.type.get_pointee().kind == clx.TypeKind.CHAR_S:
         # For some reason preprocessor macros that contain strings don't propagate
@@ -163,12 +173,19 @@ class Cursor:
         # sometimes array subscripts can creep in
         pointees = [c for c in pointees if c.kind not in clx_math_cursor_kinds]
       if len(pointees) == 1:
-        name = cls.get_name_from_cursor(pointees[0])
+        name = cls_get_name_from_cursor_safe_call(pointees[0])
     elif cursor.kind == clx.CursorKind.ENUM_DECL:
       # have a
       # typedef enum { ... } Foo;
       # so the "name" of the cursor is actually the name of the type itself
       name = cursor.type.get_canonical().spelling
+    elif cursor.kind == clx.CursorKind.PAREN_EXPR:
+      possible_names = {n for n in map(cls_get_name_from_cursor_safe_call, cursor.get_children()) if n}
+      try:
+        name = possible_names.pop()
+      except KeyError:
+        # *** KeyError: 'pop from an empty set'
+        pass
 
     if not name:
       if cursor.kind  == clx.CursorKind.PARM_DECL:
