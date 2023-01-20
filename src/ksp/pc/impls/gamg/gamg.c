@@ -732,7 +732,7 @@ PetscErrorCode PCSetUp_GAMG(PC pc)
           PetscCall(ISDestroy(&is));
         } else {
           PetscInt kk;
-          PetscCall(PCASMSetLocalSubdomains(subpc, sz, NULL, iss));
+          PetscCall(PCASMSetLocalSubdomains(subpc, sz, iss, NULL));
           for (kk = 0; kk < sz; kk++) PetscCall(ISDestroy(&iss[kk]));
           PetscCall(PetscFree(iss));
         }
@@ -1287,7 +1287,7 @@ static PetscErrorCode PCGAMGSetNlevels_GAMG(PC pc, PetscInt n)
 
    Level: intermediate
 
-.seealso: `PCGAMG`, `PCGAMGFilterGraph()`, `PCGAMGSetAggressiveLevels()`, `PCGAMGSetThresholdScale()`
+.seealso: `PCGAMG`, `PCGAMGSetAggressiveLevels()`, `PCGAMGSetThresholdScale()`
 @*/
 PetscErrorCode PCGAMGSetThreshold(PC pc, PetscReal v[], PetscInt n)
 {
