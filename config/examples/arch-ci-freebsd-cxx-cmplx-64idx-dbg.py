@@ -15,6 +15,7 @@ configure_options = [
   '--download-mpich',
   '--download-bison',
   '--download-revolve=1',
+  '--with-strict-petscerrorcode',
   ]
 
 if __name__ == '__main__':

@@ -25,5 +25,6 @@ if __name__ == '__main__':
     '--with-mpiexec='+oampidir+'/bin/mpiexec -localonly',
     '--download-metis',
     '--download-parmetis',
+    '--with-strict-petscerrorcode=0',
   ]
   configure.petsc_configure(configure_options)

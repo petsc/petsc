@@ -8,6 +8,7 @@ configure_options = [
   '--download-fblaslapack',
   '--download-mpich',
   '--with-fc=petscnagfor',
+  '--with-strict-petscerrorcode',
 ]
 
 if __name__ == '__main__':

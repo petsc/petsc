@@ -39,6 +39,7 @@ configure_options = [
   '--download-saws',
   '--download-adolc',
   '--download-colpack',
+  '--with-strict-petscerrorcode',
   ]
 
 if __name__ == '__main__':

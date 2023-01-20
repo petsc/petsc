@@ -37,6 +37,7 @@ configure_options = [
   '--download-kokkos=1',
   '--download-kokkos-kernels=1',
   '--with-ssl=1',
+  '--with-strict-petscerrorcode=0',
   ]
 
 if __name__ == '__main__':

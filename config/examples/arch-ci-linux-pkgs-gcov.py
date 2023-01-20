@@ -55,6 +55,7 @@ configure_options = [
   '--download-kokkos',
   '--download-kokkos-kernels',
   '--with-dmlandau-3d',
+  '--with-strict-petscerrorcode',
   ]
 
 if __name__ == '__main__':

@@ -36,5 +36,6 @@ if __name__ == '__main__':
     '-known-64-bit-blas-indices=1',
     '--with-ssl=0',
     '--with-coverage=1',
+    '--with-strict-petscerrorcode',
   ]
   configure.petsc_configure(configure_options)

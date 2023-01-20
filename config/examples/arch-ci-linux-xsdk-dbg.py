@@ -18,6 +18,7 @@ configure_options = [
   '--download-slepc=1',
   '--download-bamg=1',
   '--download-hpddm=1',
+  '--with-strict-petscerrorcode',
   ]
 
 if __name__ == '__main__':

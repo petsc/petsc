@@ -44,6 +44,7 @@ if __name__ == '__main__':
     '--download-hypre-configure-arguments=--enable-unified-memory',
     '--download-magma',
     '--with-magma-fortran-bindings=0',
+    '--with-strict-petscerrorcode',
   ]
 
   configure.petsc_configure(configure_options)

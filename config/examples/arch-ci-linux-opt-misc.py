@@ -28,7 +28,8 @@ configure_options = [
   #'--download-spai=1',
   '--download-parms=1',
   '--download-libceed',
-  '--download-chaco=1'
+  '--download-chaco=1',
+  '--with-strict-petscerrorcode',
   ]
 
 if __name__ == '__main__':

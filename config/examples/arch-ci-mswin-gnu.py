@@ -11,6 +11,7 @@ configure_options = [
   'CXXOPTFLAGS=-O',
   '--with-visibility=0',
   'FFLAGS=-fno-backtrace -ffree-line-length-0',
+  '--with-strict-petscerrorcode',
   ]
 
 if __name__ == '__main__':

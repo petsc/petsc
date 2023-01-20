@@ -47,6 +47,7 @@ class Configure(config.base.Configure):
     help.addArgument('PETSc', '-with-coverage=<bool>',                       nargs.ArgFuzzyBool(None, value=0, help='Enable or disable code-coverage collection'))
     help.addArgument('PETSc', '-with-coverage-exec=<executable>',            nargs.ArgExecutable(None, value='default-auto', mustExist=0, help='Name of executable to use for post-processing coverage data, e.g. \'gcov\' or \'llvm-cov\'. Pass \'auto\' to let configure infer from compiler'))
     help.addArgument('PETSc', '-with-tau-perfstubs=<bool>',                  nargs.ArgBool(None, 1,'Enable TAU profiler stubs'))
+    help.addArgument('PETSc', '-with-strict-petscerrorcode=<bool>',          nargs.ArgFuzzyBool(None, value=0, help='Enable strict PetscErrorCode mode, which enables additional compile-time checking for misuse of PetscErrorCode and error handling'))
     return
 
   def registerPythonFile(self,filename,directory):
@@ -1046,6 +1047,24 @@ char assert_aligned[(sizeof(struct mystruct)==16)*2-1];
       self.addMakeMacro(make_macro_name, found_exec + ' gcov')
     return
 
+  def configureStrictPetscErrorCode(self):
+    """
+    Enables or disables strict PetscErrorCode checking.
+
+    If --with-strict-petscerrorcode = 1:
+    - defines PETSC_USE_STRICT_PETSCERRORCODE to 1
+
+    Else:
+    - deletes any prior PETSC_USE_STRICT_PETSCERRORCODE definitions (if they exist)
+    """
+    define_name = 'USE_STRICT_PETSCERRORCODE'
+    if self.argDB['with-strict-petscerrorcode']:
+      self.addDefine(define_name, 1)
+    else:
+      # in case it was somehow added previously
+      self.delDefine(define_name)
+    return
+
 #-----------------------------------------------------------------------------------------------------
   def configureCygwinBrokenPipe(self):
     '''Cygwin version <= 1.7.18 had issues with pipes and long commands invoked from gnu-make
@@ -1229,6 +1248,7 @@ char assert_aligned[(sizeof(struct mystruct)==16)*2-1];
           kwargs['extra_debug_flags'] = ['-Xcompiler -Og']
         self.executeTest(self.configureCoverage, args=[LANG], kargs=kwargs)
     self.executeTest(self.configureCoverageExecutable)
+    self.executeTest(self.configureStrictPetscErrorCode)
 
     self.Dump()
     self.dumpConfigInfo()

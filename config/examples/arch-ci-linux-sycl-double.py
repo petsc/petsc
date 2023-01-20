@@ -28,6 +28,7 @@ if __name__ == '__main__':
     '--with-sycl=1',
     '--with-syclc=dpcpp',
     '--with-sycl-dialect=c++17',
+    '--with-strict-petscerrorcode',
   ]
 
   configure.petsc_configure(configure_options)

@@ -15,5 +15,6 @@ if __name__ == '__main__':
     '--with-cuda=0',
     '--download-codipack=1',
     '--download-adblaslapack=1',
+    '--with-strict-petscerrorcode',
   ]
   configure.petsc_configure(configure_options)
