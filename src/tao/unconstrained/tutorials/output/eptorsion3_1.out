@@ -1,0 +1,157 @@
+
+---- Elastic-Plastic Torsion Problem -----
+mx: 10     my: 10   
+
+  0 TAO,  Function value: -0.22024,  Residual: 0.458738 
+    Residual norms for tao_bnk_ solve.
+    0 KSP Residual norm 0.518567 
+    1 KSP Residual norm 0.227853 
+    2 KSP Residual norm 0.0519195 
+    3 KSP Residual norm 0.0137323 
+    4 KSP Residual norm 0.0036597 
+    5 KSP Residual norm 0.00107448 
+    6 KSP Residual norm 0.000225933 
+    7 KSP Residual norm 7.73938e-05 
+    8 KSP Residual norm 1.97074e-05 
+    9 KSP Residual norm 5.89849e-06 
+   10 KSP Residual norm 1.41629e-06 
+  1 TAO,  Function value: -0.25186,  Residual: 0.180492 
+    Residual norms for tao_bnk_ solve.
+    0 KSP Residual norm 0.133515 
+    1 KSP Residual norm 0.0347053 
+    2 KSP Residual norm 0.0106527 
+    3 KSP Residual norm 0.00364437 
+    4 KSP Residual norm 0.00127409 
+    5 KSP Residual norm 0.000405614 
+    6 KSP Residual norm 0.000144899 
+    7 KSP Residual norm 3.70417e-05 
+    8 KSP Residual norm 8.98612e-06 
+    9 KSP Residual norm 2.22987e-06 
+   10 KSP Residual norm 6.22826e-07 
+  2 TAO,  Function value: -0.254335,  Residual: 0.0708464 
+    Residual norms for tao_bnk_ solve.
+    0 KSP Residual norm 0.041877 
+    1 KSP Residual norm 0.0144313 
+    2 KSP Residual norm 0.00541821 
+    3 KSP Residual norm 0.00294276 
+    4 KSP Residual norm 0.00113979 
+    5 KSP Residual norm 0.000260774 
+    6 KSP Residual norm 9.25091e-05 
+    7 KSP Residual norm 2.80124e-05 
+    8 KSP Residual norm 1.0652e-05 
+    9 KSP Residual norm 3.29678e-06 
+   10 KSP Residual norm 1.16907e-06 
+   11 KSP Residual norm 4.63953e-07 
+   12 KSP Residual norm 2.1494e-07 
+  3 TAO,  Function value: -0.254632,  Residual: 0.00181197 
+    Residual norms for tao_bnk_ solve.
+    0 KSP Residual norm 0.000910126 
+    1 KSP Residual norm 0.000309035 
+    2 KSP Residual norm 0.000130715 
+    3 KSP Residual norm 4.47937e-05 
+    4 KSP Residual norm 1.6128e-05 
+    5 KSP Residual norm 6.66337e-06 
+    6 KSP Residual norm 2.13076e-06 
+    7 KSP Residual norm 1.0738e-06 
+    8 KSP Residual norm 4.25672e-07 
+    9 KSP Residual norm 1.73696e-07 
+   10 KSP Residual norm 6.50271e-08 
+   11 KSP Residual norm 2.63976e-08 
+   12 KSP Residual norm 1.23463e-08 
+   13 KSP Residual norm 4.78759e-09 
+  4 TAO,  Function value: -0.254632,  Residual: 4.78759e-09 
+Tao Object: 1 MPI process
+  type: bntr
+    Tao Object: (tao_bnk_cg_) 1 MPI process
+      type: bncg
+        CG Type: ssml_bfgs
+        Skipped Stepdirection Updates: 0
+        Scaled gradient steps: 0
+        Pure gradient steps: 0
+        Not a descent direction: 0
+        Line search fails: 0
+        Matrix has not been preallocated yet
+      TaoLineSearch Object: (tao_bnk_cg_) 1 MPI process
+        type: more-thuente
+        maximum function evaluations=30
+        tolerances: ftol=0.0001, rtol=1e-10, gtol=0.9
+        total number of function evaluations=0
+        total number of gradient evaluations=0
+        total number of function/gradient evaluations=0
+        Termination reason: 0
+      Active Set subset type: subvec
+      convergence tolerances: gatol=1e-08,       steptol=0.,       gttol=0.
+      Residual in Function/Gradient:=0.
+      Objective value=0.
+      total number of iterations=0,                              (max: 2000)
+      Solver terminated: 0      
+    Rejected BFGS updates: 0
+    CG steps: 0
+    Newton steps: 4
+    BFGS steps: 0
+    Scaled gradient steps: 0
+    Gradient steps: 0
+    KSP termination reasons:
+      atol: 0
+      rtol: 4
+      ctol: 0
+      negc: 0
+      dtol: 0
+      iter: 0
+      othr: 0
+  TaoLineSearch Object: 1 MPI process
+    type: more-thuente
+    maximum function evaluations=30
+    tolerances: ftol=0.0001, rtol=1e-10, gtol=0.9
+    total number of function evaluations=0
+    total number of gradient evaluations=0
+    total number of function/gradient evaluations=0
+    using variable bounds
+    Termination reason: 0
+  KSP Object: (tao_bnk_) 1 MPI process
+    type: stcg
+    maximum iterations=10000, initial guess is zero
+    tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+    left preconditioning
+    using UNPRECONDITIONED norm type for convergence test
+  PC Object: (tao_bnk_) 1 MPI process
+    type: lmvm
+    Mat Object: (tao_bnk_pc_lmvm_) 1 MPI process
+      type: lmvmbfgs
+      rows=100, cols=100
+        Scale type: DIAGONAL
+        Scale history: 1
+        Scale params: alpha=1., beta=0.5, rho=1.
+        Convex factors: phi=0., theta=0.125
+        Max. storage: 5
+        Used storage: 3
+        Number of updates: 3
+        Number of rejects: 0
+        Number of resets: 0
+        Mat Object: (tao_bnk_pc_lmvm_J0_) 1 MPI process
+          type: lmvmdiagbroyden
+          rows=100, cols=100
+            Scale history: 1
+            Scale params: alpha=1., beta=0.5, rho=1.
+            Convex factor: theta=0.125
+            Max. storage: 1
+            Used storage: 1
+            Number of updates: 3
+            Number of rejects: 0
+            Number of resets: 0
+    linear system matrix = precond matrix:
+    Mat Object: 1 MPI process
+      type: seqaij
+      rows=50, cols=50
+      total: nonzeros=176, allocated nonzeros=176
+      total number of mallocs used during MatSetValues calls=0
+        not using I-node routines
+  total KSP iterations: 45
+  Active Set subset type: subvec
+  convergence tolerances: gatol=1e-08,   steptol=0.,   gttol=0.
+  Residual in Function/Gradient:=4.78759e-09
+  Objective value=-0.254632
+  total number of iterations=4,                          (max: 50)
+  total number of function/gradient evaluations=14,      (max: 4000)
+  total number of Hessian evaluations=4
+  Solution converged:    ||g(X)|| <= gatol
