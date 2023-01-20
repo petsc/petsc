@@ -2225,26 +2225,38 @@ static PetscErrorCode DMPlexComputeGeometryFVM_1D_Internal(DM dm, PetscInt dim, 
 {
   const PetscScalar *array;
   PetscScalar       *coords = NULL;
-  PetscInt           coordSize, d;
+  PetscInt           cdim, coordSize, d;
   PetscBool          isDG;
 
   PetscFunctionBegin;
+  PetscCall(DMGetCoordinateDim(dm, &cdim));
   PetscCall(DMPlexGetCellCoordinates(dm, cell, &isDG, &coordSize, &array, &coords));
+  PetscCheck(coordSize == cdim * 2, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Edge has %" PetscInt_FMT " coordinates != %" PetscInt_FMT, coordSize, cdim * 2);
   if (centroid) {
-    for (d = 0; d < dim; ++d) centroid[d] = 0.5 * PetscRealPart(coords[d] + coords[dim + d]);
+    for (d = 0; d < cdim; ++d) centroid[d] = 0.5 * PetscRealPart(coords[d] + coords[cdim + d]);
   }
   if (normal) {
     PetscReal norm;
 
-    PetscCheck(dim == 2, PETSC_COMM_SELF, PETSC_ERR_SUP, "We only support 2D edges right now");
-    normal[0] = -PetscRealPart(coords[1] - coords[dim + 1]);
-    normal[1] = PetscRealPart(coords[0] - coords[dim + 0]);
-    norm      = DMPlex_NormD_Internal(dim, normal);
-    for (d = 0; d < dim; ++d) normal[d] /= norm;
+    switch (cdim) {
+    case 3:
+      normal[2] = 0.;
+    case 2:
+      normal[0] = -PetscRealPart(coords[1] - coords[cdim + 1]);
+      normal[1] = PetscRealPart(coords[0] - coords[cdim + 0]);
+      break;
+    case 1:
+      normal[0] = 1.0;
+      break;
+    default:
+      SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Dimension %" PetscInt_FMT " not supported", cdim);
+    }
+    norm = DMPlex_NormD_Internal(cdim, normal);
+    for (d = 0; d < cdim; ++d) normal[d] /= norm;
   }
   if (vol) {
     *vol = 0.0;
-    for (d = 0; d < dim; ++d) *vol += PetscSqr(PetscRealPart(coords[d] - coords[dim + d]));
+    for (d = 0; d < cdim; ++d) *vol += PetscSqr(PetscRealPart(coords[d] - coords[cdim + d]));
     *vol = PetscSqrtReal(*vol);
   }
   PetscCall(DMPlexRestoreCellCoordinates(dm, cell, &isDG, &coordSize, &array, &coords));
