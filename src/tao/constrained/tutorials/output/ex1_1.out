@@ -4,5 +4,5 @@ Expected solution: f(1, 1) = -2
 Found solution:
 Vec Object: 1 MPI process
   type: seq
-0.999999
+1.
 1.

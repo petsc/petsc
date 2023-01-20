@@ -1,0 +1,10 @@
+---- Constrained Problem -----
+Expected solution: f(1, 1) = -2
+  TAO  solve converged due to CONVERGED_GATOL 
+Found solution:
+Vec Object: 2 MPI processes
+  type: mpi
+Process [0]
+1.
+Process [1]
+1.
