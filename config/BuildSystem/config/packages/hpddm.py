@@ -3,7 +3,7 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self,framework):
     config.package.Package.__init__(self,framework)
-    self.gitcommit              = '79fe96df959a2ce412589b34714b3be0eac26c34' # main jan-02-2023
+    self.gitcommit              = 'd6710018e798977aff6ee7f802b3f48e02618175' # main jan-19-2023
     self.download               = ['git://https://github.com/hpddm/hpddm','https://github.com/hpddm/hpddm/archive/'+self.gitcommit+'.tar.gz']
     self.minversion             = '2.2.1'
     self.versionname            = 'HPDDM_VERSION'
@@ -78,13 +78,13 @@ class Configure(config.package.Package):
           cxxflags += ' -Dpetsc_EXPORTS'
         self.addMakeRule('hpddmbuild',slepcbuilddep,\
                            ['@echo "*** Building and installing HPDDM ***"',\
-                            '@${RM} ${PETSC_ARCH}/lib/petsc/conf/hpddm.errorflg',\
-                            '@'+cxx+' '+cxxflags+' '+os.path.join(self.packageDir,'interface','hpddm_petsc.cpp')+' '+ldflags+' -o '+os.path.join(libDir,'libhpddm_petsc.'+self.setCompilers.sharedLibraryExt)+' > ${PETSC_ARCH}/lib/petsc/conf/hpddm.log 2>&1 || \\\n\
-                 (echo "**************************ERROR*************************************" && \\\n\
-                 echo "Error building HPDDM. Check ${PETSC_ARCH}/lib/petsc/conf/hpddm.log" && \\\n\
-                 echo "********************************************************************" && \\\n\
-                 touch '+os.path.join('${PETSC_ARCH}','lib','petsc','conf','hpddm.errorflg')+' && \\\n\
-                 exit 1)'])
+                            '@${RM} '+os.path.join(self.petscdir.dir,self.arch,'lib','petsc','conf','hpddm.errorflg'),\
+                            '@'+cxx+' '+cxxflags+' '+os.path.join(self.packageDir,'interface','hpddm_petsc.cpp')+' '+ldflags+' -o '+os.path.join(libDir,'libhpddm_petsc.'+self.setCompilers.sharedLibraryExt)+' > '+os.path.join(self.petscdir.dir,self.arch,'lib','petsc','conf','hpddm.log')+' 2>&1 || \\\n\
+            (echo "**************************ERROR*************************************" && \\\n\
+            echo "Error building HPDDM. Check '+os.path.join(self.petscdir.dir,self.arch,'lib','petsc','conf','hpddm.log')+'" && \\\n\
+            echo "********************************************************************" && \\\n\
+            touch '+os.path.join(self.petscdir.dir,self.arch,'lib','petsc','conf','hpddm.errorflg')+' && \\\n\
+            exit 1)'])
         if self.argDB['prefix'] and not 'package-prefix-hash' in self.argDB:
           self.addMakeRule('hpddm-build','')
           self.addMakeRule('hpddm-install','hpddmbuild')

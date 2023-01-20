@@ -475,6 +475,7 @@ PETSC_EXTERN PetscErrorCode PCHPDDMSetRHSMat(PC, Mat);
 PETSC_EXTERN PetscErrorCode PCHPDDMHasNeumannMat(PC, PetscBool);
 PETSC_EXTERN PetscErrorCode PCHPDDMSetCoarseCorrectionType(PC, PCHPDDMCoarseCorrectionType);
 PETSC_EXTERN PetscErrorCode PCHPDDMGetCoarseCorrectionType(PC, PCHPDDMCoarseCorrectionType *);
+PETSC_EXTERN PetscErrorCode PCHPDDMSetSTShareSubKSP(PC, PetscBool);
 PETSC_EXTERN PetscErrorCode PCHPDDMGetSTShareSubKSP(PC, PetscBool *);
 PETSC_EXTERN PetscErrorCode PCHPDDMSetDeflationMat(PC, IS, Mat);
 PETSC_EXTERN PetscErrorCode PCHPDDMFinalizePackage(void);

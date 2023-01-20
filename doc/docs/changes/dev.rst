@@ -99,6 +99,8 @@ Changes: Development
 
 .. rubric:: PC:
 
+- Add ``PCHPDDMSetSTShareSubKSP()``
+
 .. rubric:: KSP:
 
 - Add ``KSPMonitorDynamicToleranceCreate()`` and ``KSPMonitorDynamicToleranceSetCoefficient()``

@@ -35,7 +35,7 @@ struct PC_HPDDM {
   IS                          is;                                           /* global numbering of the auxiliary matrix */
   PetscInt                    N;                                            /* number of levels */
   PCHPDDMCoarseCorrectionType correction;                                   /* type of coarse correction */
-  PetscBool                   Neumann;                                      /* aux is the local Neumann matrix? */
+  PetscBool3                  Neumann;                                      /* aux is the local Neumann matrix? */
   PetscBool                   log_separate;                                 /* separate events for each level? */
   PetscBool                   share;                                        /* shared subdomain KSP between SLEPc and PETSc? */
   PetscBool                   deflation;                                    /* aux is the local deflation space? */
