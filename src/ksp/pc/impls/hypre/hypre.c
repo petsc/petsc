@@ -441,13 +441,62 @@ static PetscErrorCode PCApply_HYPRE(PC pc, Vec b, Vec x)
       HYPRE_Int hierr = (*jac->solve)(jac->hsolver, hmat, jbv, jxv);
       if (hierr) {
         PetscCheck(hierr == HYPRE_ERROR_CONV, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in HYPRE solver, error code %d", (int)hierr);
-        hypre__global_error = 0;
+        HYPRE_ClearAllErrors();
       }
     } while (0));
 
   if (jac->setup == HYPRE_AMSSetup && jac->ams_beta_is_zero_part) PetscCallExternal(HYPRE_AMSProjectOutGradients, jac->hsolver, jxv);
   PetscCall(VecHYPRE_IJVectorPopVec(hjac->x));
   PetscCall(VecHYPRE_IJVectorPopVec(hjac->b));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode PCMatApply_HYPRE_BoomerAMG(PC pc, Mat B, Mat X)
+{
+  PC_HYPRE           *jac  = (PC_HYPRE *)pc->data;
+  Mat_HYPRE          *hjac = (Mat_HYPRE *)(jac->hpmat->data);
+  hypre_ParCSRMatrix *par_matrix;
+  HYPRE_ParVector     hb, hx;
+  const PetscScalar  *b;
+  PetscScalar        *x;
+  PetscInt            m, N, lda;
+  hypre_Vector       *x_local;
+  PetscMemType        type;
+
+  PetscFunctionBegin;
+  PetscCall(PetscCitationsRegister(hypreCitation, &cite));
+  PetscCallExternal(HYPRE_IJMatrixGetObject, hjac->ij, (void **)&par_matrix);
+  PetscCall(MatGetLocalSize(B, &m, NULL));
+  PetscCall(MatGetSize(B, NULL, &N));
+  PetscCallExternal(HYPRE_ParMultiVectorCreate, hypre_ParCSRMatrixComm(par_matrix), hypre_ParCSRMatrixGlobalNumRows(par_matrix), hypre_ParCSRMatrixRowStarts(par_matrix), N, &hb);
+  PetscCallExternal(HYPRE_ParMultiVectorCreate, hypre_ParCSRMatrixComm(par_matrix), hypre_ParCSRMatrixGlobalNumRows(par_matrix), hypre_ParCSRMatrixRowStarts(par_matrix), N, &hx);
+  PetscCall(MatZeroEntries(X));
+  PetscCall(MatDenseGetArrayReadAndMemType(B, &b, &type));
+  PetscCall(MatDenseGetLDA(B, &lda));
+  PetscCheck(lda == m, PetscObjectComm((PetscObject)pc), PETSC_ERR_SUP, "Cannot use a LDA different than the number of local rows: % " PetscInt_FMT " != % " PetscInt_FMT, lda, m);
+  PetscCall(MatDenseGetLDA(X, &lda));
+  PetscCheck(lda == m, PetscObjectComm((PetscObject)pc), PETSC_ERR_SUP, "Cannot use a LDA different than the number of local rows: % " PetscInt_FMT " != % " PetscInt_FMT, lda, m);
+  x_local = hypre_ParVectorLocalVector(hb);
+  PetscCallExternal(hypre_SeqVectorSetDataOwner, x_local, 0);
+  hypre_VectorData(x_local) = (HYPRE_Complex *)b;
+  PetscCall(MatDenseGetArrayWriteAndMemType(X, &x, NULL));
+  x_local = hypre_ParVectorLocalVector(hx);
+  PetscCallExternal(hypre_SeqVectorSetDataOwner, x_local, 0);
+  hypre_VectorData(x_local) = (HYPRE_Complex *)x;
+  PetscCallExternal(hypre_ParVectorInitialize_v2, hb, type == PETSC_MEMTYPE_HOST ? HYPRE_MEMORY_HOST : HYPRE_MEMORY_DEVICE);
+  PetscCallExternal(hypre_ParVectorInitialize_v2, hx, type == PETSC_MEMTYPE_HOST ? HYPRE_MEMORY_HOST : HYPRE_MEMORY_DEVICE);
+  PetscStackCallExternalVoid(
+    "Hypre solve", do {
+      HYPRE_Int hierr = (*jac->solve)(jac->hsolver, par_matrix, hb, hx);
+      if (hierr) {
+        PetscCheck(hierr == HYPRE_ERROR_CONV, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in HYPRE solver, error code %d", (int)hierr);
+        HYPRE_ClearAllErrors();
+      }
+    } while (0));
+  PetscCallExternal(HYPRE_ParVectorDestroy, hb);
+  PetscCallExternal(HYPRE_ParVectorDestroy, hx);
+  PetscCall(MatDenseRestoreArrayReadAndMemType(B, &b));
+  PetscCall(MatDenseRestoreArrayWriteAndMemType(X, &x));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -631,7 +680,7 @@ static PetscErrorCode PCApplyTranspose_HYPRE_BoomerAMG(PC pc, Vec b, Vec x)
       if (hierr) {
         /* error code of 1 in BoomerAMG merely means convergence not achieved */
         PetscCheck(hierr == 1, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in HYPRE solver, error code %d", (int)hierr);
-        hypre__global_error = 0;
+        HYPRE_ClearAllErrors();
       }
     } while (0));
 
@@ -1868,6 +1917,7 @@ static PetscErrorCode PCHYPRESetType_HYPRE(PC pc, const char name[])
     pc->ops->view            = PCView_HYPRE_BoomerAMG;
     pc->ops->applytranspose  = PCApplyTranspose_HYPRE_BoomerAMG;
     pc->ops->applyrichardson = PCApplyRichardson_HYPRE_BoomerAMG;
+    pc->ops->matapply        = PCMatApply_HYPRE_BoomerAMG;
     PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCGetInterpolations_C", PCGetInterpolations_BoomerAMG));
     PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCGetCoarseOperators_C", PCGetCoarseOperators_BoomerAMG));
     jac->destroy         = HYPRE_BoomerAMGDestroy;

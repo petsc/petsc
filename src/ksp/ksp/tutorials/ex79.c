@@ -1,5 +1,9 @@
 #include <petsc.h>
 
+#if PetscDefined(HAVE_HYPRE_DEVICE)
+  #include <petsc/private/petschypre.h>
+#endif
+
 static char help[] = "Solves a linear system with a block of right-hand sides, apply a preconditioner to the same block.\n\n";
 
 PetscErrorCode MatApply(PC pc, Mat X, Mat Y)
@@ -48,7 +52,16 @@ int main(int argc, char **args)
   PetscCall(KSPSetOperators(ksp, A, A));
   PetscCall(KSPSetFromOptions(ksp));
   PetscCall(KSPGetPC(ksp, &pc));
-  PetscCall(PCShellSetMatApply(pc, MatApply));
+  PetscCall(PetscObjectTypeCompare((PetscObject)A, PCHYPRE, &flg));
+  if (flg && PetscDefined(HAVE_HYPRE_DEVICE)) {
+#if defined(HYPRE_USING_HIP)
+    PetscCall(MatConvert(B, MATDENSEHIP, MAT_INPLACE_MATRIX, &B));
+    PetscCall(MatConvert(X, MATDENSEHIP, MAT_INPLACE_MATRIX, &X));
+#elif defined(HYPRE_USING_CUDA)
+    PetscCall(MatConvert(B, MATDENSECUDA, MAT_INPLACE_MATRIX, &B));
+    PetscCall(MatConvert(X, MATDENSECUDA, MAT_INPLACE_MATRIX, &X));
+#endif
+  } else PetscCall(PCShellSetMatApply(pc, MatApply));
   PetscCall(KSPMatSolve(ksp, B, X));
   PetscCall(PCMatApply(pc, B, X));
   if (transpose) {
@@ -190,5 +203,18 @@ int main(int argc, char **args)
          output_file: output/ex77_preonly.out
          requires: hpddm
          args: -ksp_type hpddm -ksp_hpddm_type preonly
+
+   testset:
+      requires: hypre !complex
+      args: -pc_type hypre -pc_hypre_boomeramg_relax_type_all l1scaled-Jacobi -pc_hypre_boomeramg_no_CF
+      test:
+         suffix: 9
+         output_file: output/ex77_preonly.out
+         args: -ksp_type preonly
+      test:
+         suffix: 9_hpddm
+         output_file: output/ex77_preonly.out
+         requires: hpddm !hip
+         args: -ksp_type hpddm -ksp_max_it 15 -ksp_error_if_not_converged
 
 TEST*/
