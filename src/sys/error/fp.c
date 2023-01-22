@@ -584,7 +584,7 @@ PetscErrorCode PetscSetFPTrap(PetscFPTrap flag)
 {
   PetscFunctionBegin;
   if (flag == PETSC_FP_TRAP_ON) {
-  #if defined(PETSC_HAVE_FPPRESETSTICKY)
+  #if defined(PETSC_HAVE_FPRESETSTICKY)
     fpresetsticky(fpgetsticky());
   #elif defined(PETSC_HAVE_FPSETSTICKY)
     fpsetsticky(fpgetsticky());
@@ -592,7 +592,7 @@ PetscErrorCode PetscSetFPTrap(PetscFPTrap flag)
     fpsetmask(FP_X_INV | FP_X_DZ | FP_X_OFL | FP_X_OFL);
     PetscCheck(SIG_ERR != signal(SIGFPE, PetscDefaultFPTrap), PETSC_COMM_SELF, PETSC_ERR_LIB, "Can't set floating point handler");
   } else {
-  #if defined(PETSC_HAVE_FPPRESETSTICKY)
+  #if defined(PETSC_HAVE_FPRESETSTICKY)
     fpresetsticky(fpgetsticky());
   #elif defined(PETSC_HAVE_FPSETSTICKY)
     fpsetsticky(fpgetsticky());
