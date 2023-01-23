@@ -1337,7 +1337,7 @@ PetscErrorCode DMMoabCreateSubmesh(DM dm, DM *newdm)
   dmmoab = (DM_Moab *)dm->data;
 
   /* Create the basic DMMoab object and keep the default parameters created by DM impls */
-  PetscCall(DMMoabCreateMoab(((PetscObject)dm)->comm, dmmoab->mbiface, &dmmoab->ltog_tag, PETSC_NULL, newdm));
+  PetscCall(DMMoabCreateMoab(((PetscObject)dm)->comm, dmmoab->mbiface, &dmmoab->ltog_tag, NULL, newdm));
 
   /* get all the necessary handles from the private DM object */
   ndmmoab = (DM_Moab *)(*newdm)->data;

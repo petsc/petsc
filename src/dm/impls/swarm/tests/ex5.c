@@ -33,7 +33,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 
   PetscOptionsBegin(comm, "", "Central Orbit Options", "DMSWARM");
   PetscCall(PetscOptionsBool("-error", "Flag to print the error", "ex5.c", options->error, &options->error, NULL));
-  PetscCall(PetscOptionsInt("-output_step", "Number of time steps between output", "ex5.c", options->ostep, &options->ostep, PETSC_NULL));
+  PetscCall(PetscOptionsInt("-output_step", "Number of time steps between output", "ex5.c", options->ostep, &options->ostep, NULL));
   PetscOptionsEnd();
   PetscFunctionReturn(0);
 }

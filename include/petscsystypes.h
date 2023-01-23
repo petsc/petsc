@@ -8,6 +8,7 @@
 #include <petscconf.h>
 #include <petscconf_poison.h>
 #include <petscfix.h>
+#include <petscmacros.h>
 #include <stddef.h>
 
 /* SUBMANSEC = Sys */
@@ -55,6 +56,14 @@ typedef int PetscClassId;
 
 M*/
 typedef int PetscMPIInt;
+
+#include <limits.h>
+
+/* Limit MPI to 32-bits */
+enum {
+  PETSC_MPI_INT_MIN = INT_MIN,
+  PETSC_MPI_INT_MAX = INT_MAX
+};
 
 /*MC
     PetscSizeT - datatype used to represent sizes in memory (like size_t)
@@ -127,19 +136,46 @@ M*/
 
 #if defined(PETSC_HAVE_STDINT_H) && defined(PETSC_HAVE_INTTYPES_H) && defined(PETSC_HAVE_MPI_INT64_T) /* MPI_INT64_T is not guaranteed to be a macro */
 typedef int64_t PetscInt64;
+
+  #define PETSC_INT64_MIN INT64_MIN
+  #define PETSC_INT64_MAX INT64_MAX
+
 #elif (PETSC_SIZEOF_LONG_LONG == 8)
 typedef long long PetscInt64;
+
+  #define PETSC_INT64_MIN LLONG_MIN
+  #define PETSC_INT64_MAX LLONG_MAX
+
 #elif defined(PETSC_HAVE___INT64)
 typedef __int64 PetscInt64;
+
+  #define PETSC_INT64_MIN INT64_MIN
+  #define PETSC_INT64_MAX INT64_MAX
+
 #else
   #error "cannot determine PetscInt64 type"
 #endif
 
 #if defined(PETSC_USE_64BIT_INDICES)
 typedef PetscInt64 PetscInt;
+
+  #define PETSC_INT_MIN PETSC_INT64_MIN
+  #define PETSC_INT_MAX PETSC_INT64_MAX
+  #define PetscInt_FMT  PetscInt64_FMT
 #else
 typedef int       PetscInt;
+
+enum {
+  PETSC_INT_MIN = INT_MIN,
+  PETSC_INT_MAX = INT_MAX
+};
+
+  #define PetscInt_FMT "d"
 #endif
+
+#define PETSC_MIN_INT    PETSC_INT_MIN
+#define PETSC_MAX_INT    PETSC_INT_MAX
+#define PETSC_MAX_UINT16 65535
 
 #if defined(PETSC_HAVE_STDINT_H) && defined(PETSC_HAVE_INTTYPES_H) && defined(PETSC_HAVE_MPI_INT64_T) /* MPI_INT64_T is not guaranteed to be a macro */
   #define MPIU_INT64     MPI_INT64_T
@@ -187,11 +223,20 @@ typedef int       PetscInt;
 
 M*/
 #if defined(PETSC_HAVE_64BIT_BLAS_INDICES)
-  #define PetscBLASInt_FMT PetscInt64_FMT
 typedef PetscInt64 PetscBLASInt;
+
+  #define PETSC_BLAS_INT_MIN PETSC_INT64_MIN
+  #define PETSC_BLAS_INT_MAX PETSC_INT64_MAX
+  #define PetscBLASInt_FMT   PetscInt64_FMT
 #else
+typedef int PetscBLASInt;
+
+enum {
+  PETSC_BLAS_INT_MIN = INT_MIN,
+  PETSC_BLAS_INT_MAX = INT_MAX
+};
+
   #define PetscBLASInt_FMT "d"
-typedef int       PetscBLASInt;
 #endif
 
 /*MC
@@ -210,6 +255,11 @@ typedef int       PetscBLASInt;
 M*/
 typedef int PetscCuBLASInt;
 
+enum {
+  PETSC_CUBLAS_INT_MIN = INT_MIN,
+  PETSC_CUBLAS_INT_MAX = INT_MAX
+};
+
 /*MC
    PetscHipBLASInt - datatype used to represent 'int' parameters to hipBLAS/hipSOLVER functions.
 
@@ -226,6 +276,11 @@ typedef int PetscCuBLASInt;
 M*/
 typedef int PetscHipBLASInt;
 
+enum {
+  PETSC_HIPBLAS_INT_MIN = INT_MIN,
+  PETSC_HIPBLAS_INT_MAX = INT_MAX
+};
+
 /*E
     PetscBool  - Logical variable. Actually an enum in C and a logical in Fortran.
 
@@ -241,6 +296,7 @@ typedef enum {
   PETSC_FALSE,
   PETSC_TRUE
 } PetscBool;
+PETSC_EXTERN const char *const PetscBools[];
 
 /*E
     PetscBool3  - Ternary logical variable. Actually an enum in C and a 4 byte integer in Fortran.
@@ -424,6 +480,7 @@ typedef enum {
   PETSC_OWN_POINTER,
   PETSC_USE_POINTER
 } PetscCopyMode;
+PETSC_EXTERN const char *const PetscCopyModes[];
 
 /*MC
     PETSC_FALSE - False value of `PetscBool`
@@ -502,6 +559,7 @@ typedef enum {
   PETSC_INT64            = 17,
   PETSC_COUNT            = 18
 } PetscDataType;
+PETSC_EXTERN const char *const PetscDataTypes[];
 
 #if defined(PETSC_USE_REAL_SINGLE)
   #define PETSC_REAL PETSC_FLOAT
@@ -604,6 +662,7 @@ typedef enum {
   FILE_MODE_UPDATE,
   FILE_MODE_APPEND_UPDATE
 } PetscFileMode;
+PETSC_EXTERN const char *const PetscFileModes[];
 
 typedef void *PetscDLHandle;
 typedef enum {
@@ -702,6 +761,7 @@ typedef enum {
   PETSC_BUILDTWOSIDED_REDSCATTER = 2
   /* Updates here must be accompanied by updates in finclude/petscsys.h and the string array in mpits.c */
 } PetscBuildTwoSidedType;
+PETSC_EXTERN const char *const PetscBuildTwoSidedTypes[];
 
 /* NOTE: If you change this, you must also change the values in src/vec/f90-mod/petscvec.h */
 /*E
@@ -807,6 +867,7 @@ typedef enum {
   PETSC_SUBCOMM_CONTIGUOUS = 1,
   PETSC_SUBCOMM_INTERLACED = 2
 } PetscSubcommType;
+PETSC_EXTERN const char *const PetscSubcommTypes[];
 
 /*S
      PetscHeap - A simple class for managing heaps

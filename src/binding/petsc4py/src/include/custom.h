@@ -362,8 +362,8 @@ SNESConvergenceTestCall(SNES snes, PetscInt its,
 static PetscErrorCode
 SNESGetUseMFFD(SNES snes,PetscBool *flag)
 {
-  PetscErrorCode (*jac)(SNES,Vec,Mat,Mat,void*) = PETSC_NULL;
-  Mat            J = PETSC_NULL;
+  PetscErrorCode (*jac)(SNES,Vec,Mat,Mat,void*) = NULL;
+  Mat            J = NULL;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
@@ -378,12 +378,12 @@ SNESGetUseMFFD(SNES snes,PetscBool *flag)
 static PetscErrorCode
 SNESSetUseMFFD(SNES snes,PetscBool flag)
 {
-  const char* prefix = PETSC_NULL;
+  const char* prefix = NULL;
   PetscBool   flg    = PETSC_FALSE;
-  Vec         r      = PETSC_NULL;
-  Mat         A      = PETSC_NULL,B = PETSC_NULL,J = PETSC_NULL;
-  void*       funP   = PETSC_NULL;
-  void*       jacP   = PETSC_NULL;
+  Vec         r      = NULL;
+  Mat         A      = NULL,B = NULL,J = NULL;
+  void*       funP   = NULL;
+  void*       jacP   = NULL;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
@@ -426,7 +426,7 @@ SNESSetUseMFFD(SNES snes,PetscBool flag)
 static PetscErrorCode
 SNESGetUseFDColoring(SNES snes,PetscBool *flag)
 {
-  PetscErrorCode (*jac)(SNES,Vec,Mat,Mat,void*) = PETSC_NULL;
+  PetscErrorCode (*jac)(SNES,Vec,Mat,Mat,void*) = NULL;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
@@ -441,11 +441,11 @@ static PetscErrorCode
 SNESSetUseFDColoring(SNES snes,PetscBool flag)
 {
   PetscBool      flg = PETSC_FALSE;
-  PetscErrorCode (*fun)(SNES,Vec,Vec,void*) = PETSC_NULL;
-  void*          funP = PETSC_NULL;
-  Mat            A = PETSC_NULL,B = PETSC_NULL;
-  PetscErrorCode (*jac)(SNES,Vec,Mat,Mat,void*) = PETSC_NULL;
-  void*          jacP = PETSC_NULL;
+  PetscErrorCode (*fun)(SNES,Vec,Vec,void*) = NULL;
+  void*          funP = NULL;
+  Mat            A = NULL,B = NULL;
+  PetscErrorCode (*jac)(SNES,Vec,Mat,Mat,void*) = NULL;
+  void*          jacP = NULL;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);

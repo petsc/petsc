@@ -102,16 +102,16 @@ int main(int argc, char **args)
     PetscCall(Print_memory(mem));
   }
 
-  PetscCall(MatCreateAIJ(PETSC_COMM_WORLD, PETSC_DECIDE, PETSC_DECIDE, mA, mA, nz, PETSC_NULL, nz, PETSC_NULL, &A));
-  PetscCall(MatSetRandom(A, PETSC_NULL));
+  PetscCall(MatCreateAIJ(PETSC_COMM_WORLD, PETSC_DECIDE, PETSC_DECIDE, mA, mA, nz, NULL, nz, NULL, &A));
+  PetscCall(MatSetRandom(A, NULL));
   PetscCall(PetscMemoryGetCurrentUsage(&mem));
   if (flg) {
     PetscCall(PetscPrintf(MPI_COMM_WORLD, "After creating A,"));
     PetscCall(Print_memory(mem));
   }
 
-  PetscCall(MatCreateDense(PETSC_COMM_WORLD, PETSC_DECIDE, PETSC_DECIDE, mA, nX, PETSC_NULL, &X));
-  PetscCall(MatSetRandom(X, PETSC_NULL));
+  PetscCall(MatCreateDense(PETSC_COMM_WORLD, PETSC_DECIDE, PETSC_DECIDE, mA, nX, NULL, &X));
+  PetscCall(MatSetRandom(X, NULL));
   PetscCall(PetscMemoryGetCurrentUsage(&mem));
   if (flg) {
     PetscCall(PetscPrintf(MPI_COMM_WORLD, "After creating X,"));

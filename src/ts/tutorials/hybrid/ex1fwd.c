@@ -297,7 +297,7 @@ int main(int argc, char **argv)
   PetscCall(TSSetMaxTime(ts, tend));
   PetscCall(TSSetExactFinalTime(ts, TS_EXACTFINALTIME_MATCHSTEP));
   PetscCall(TSSetTimeStep(ts, 1. / 256.));
-  PetscCall(TSMonitorSet(ts, MyMonitor, &app, PETSC_NULL));
+  PetscCall(TSMonitorSet(ts, MyMonitor, &app, NULL));
   PetscCall(TSSetFromOptions(ts));
 
   /* Set directions and terminate flags for the two events */

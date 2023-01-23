@@ -130,8 +130,8 @@ int main(int argc, char **argv)
   user.nts   = 100;
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-monitor", &monitor, NULL));
   PetscOptionsBegin(PETSC_COMM_WORLD, NULL, "Physical parameters", NULL);
-  PetscCall(PetscOptionsReal("-omega", "parameter", "<64>", user.omega, &user.omega, PETSC_NULL));
-  PetscCall(PetscOptionsInt("-next_output", "time steps for next output point", "<100>", user.nts, &user.nts, PETSC_NULL));
+  PetscCall(PetscOptionsReal("-omega", "parameter", "<64>", user.omega, &user.omega, NULL));
+  PetscCall(PetscOptionsInt("-next_output", "time steps for next output point", "<100>", user.nts, &user.nts, NULL));
   PetscOptionsEnd();
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

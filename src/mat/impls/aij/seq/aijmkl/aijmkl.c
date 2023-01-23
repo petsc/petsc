@@ -156,7 +156,7 @@ PETSC_INTERN PetscErrorCode MatSeqAIJMKL_create_mkl_handle(Mat A)
     aijmkl->sparse_optimized = PETSC_TRUE;
     PetscCall(PetscObjectStateGet((PetscObject)A, &(aijmkl->state)));
   } else {
-    aijmkl->csrA = PETSC_NULL;
+    aijmkl->csrA = NULL;
   }
 
   PetscFunctionReturn(0);
@@ -179,8 +179,8 @@ static PetscErrorCode MatSeqAIJMKL_setup_structure_from_mkl_handle(MPI_Comm comm
     PetscCallExternal(mkl_sparse_x_export_csr, csrA, &indexing, (MKL_INT *)&m, (MKL_INT *)&n, (MKL_INT **)&ai, (MKL_INT **)&dummy, (MKL_INT **)&aj, &aa);
     PetscCheck((m == nrows) && (n == ncols), PETSC_COMM_SELF, PETSC_ERR_LIB, "Number of rows/columns does not match those from mkl_sparse_x_export_csr()");
   } else {
-    aj = ai = PETSC_NULL;
-    aa      = PETSC_NULL;
+    aj = ai = NULL;
+    aa      = NULL;
   }
 
   PetscCall(MatSetType(A, MATSEQAIJ));
@@ -714,7 +714,7 @@ static PetscErrorCode MatMatMultSymbolic_SeqAIJMKL_SeqAIJMKL_Private(Mat A, cons
   if (csrA && csrB) {
     PetscCallExternal(mkl_sparse_sp2m, transA, descr_type_gen, csrA, transB, descr_type_gen, csrB, SPARSE_STAGE_FULL_MULT_NO_VAL, &csrC);
   } else {
-    csrC = PETSC_NULL;
+    csrC = NULL;
   }
 
   PetscCall(MatSeqAIJMKL_setup_structure_from_mkl_handle(PETSC_COMM_SELF, csrC, nrows, ncols, C));
@@ -742,7 +742,7 @@ PetscErrorCode MatMatMultNumeric_SeqAIJMKL_SeqAIJMKL_Private(Mat A, const sparse
   if (csrA && csrB) {
     PetscCallExternal(mkl_sparse_sp2m, transA, descr_type_gen, csrA, transB, descr_type_gen, csrB, SPARSE_STAGE_FINALIZE_MULT, &csrC);
   } else {
-    csrC = PETSC_NULL;
+    csrC = NULL;
   }
 
   /* Have to update the PETSc AIJ representation for matrix C from contents of MKL handle. */
@@ -858,7 +858,7 @@ PetscErrorCode MatPtAPNumeric_SeqAIJMKL_SeqAIJMKL_SymmetricReal(Mat A, Mat P, Ma
   PetscCall(MatDiagonalSet(Ct, zeros, INSERT_VALUES));
   PetscCall(MatAXPY(C, 1.0, Ct, DIFFERENT_NONZERO_PATTERN));
   /* Note: The MatAXPY() call destroys the MatProduct, so we must recreate it. */
-  PetscCall(MatProductCreateWithMat(A, P, PETSC_NULL, C));
+  PetscCall(MatProductCreateWithMat(A, P, NULL, C));
   PetscCall(MatProductSetType(C, MATPRODUCT_PtAP));
   PetscCall(MatSeqAIJMKL_create_mkl_handle(C));
   PetscCall(VecDestroy(&zeros));
@@ -890,7 +890,7 @@ PetscErrorCode MatProductSymbolic_PtAP_SeqAIJMKL_SeqAIJMKL_SymmetricReal(Mat C)
   if (csrP && csrA) {
     PetscCallExternal(mkl_sparse_sypr, SPARSE_OPERATION_TRANSPOSE, csrP, csrA, descr_type_sym, &csrC, SPARSE_STAGE_FULL_MULT_NO_VAL);
   } else {
-    csrC = PETSC_NULL;
+    csrC = NULL;
   }
 
   /* Update the I and J arrays of the PETSc AIJ representation for matrix C from contents of MKL handle.

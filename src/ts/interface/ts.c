@@ -2318,11 +2318,11 @@ PetscErrorCode TSGetSolution(TS ts, Vec *v)
 
    Parameters :
 +  ts - the `TS` context obtained from `TSCreate()` (input parameter).
-.  n - If v is PETSC_NULL, then the number of solution components is
+.  n - If v is NULL, then the number of solution components is
        returned through n, else the n-th solution component is
        returned in v.
 -  v - the vector containing the n-th solution component
-       (may be PETSC_NULL to use this function to find out
+       (may be NULL to use this function to find out
         the number of solutions components).
 
    Level: advanced

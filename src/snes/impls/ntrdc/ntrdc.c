@@ -382,7 +382,7 @@ static PetscErrorCode SNESSolve_NEWTONTRDC(SNES snes)
         delta = neP->delta * xnorm;
       }
       deltaM = neP->deltaM * xnorm;
-      PetscCall(MatDiagonalScale(jac, PETSC_NULL, W));
+      PetscCall(MatDiagonalScale(jac, NULL, W));
     }
 
     /* calculating GradF of minimization function */

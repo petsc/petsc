@@ -73,26 +73,15 @@ class WorkerPool(mp.queues.JoinableQueue):
       self.lock         = mp.RLock()
     return
 
-  def __del__(self):
-    try:
-      self.__shutdown()
-    except TimeoutError:
-      pass
-    try:
-      super().__del__()
-    except AttributeError:
-      pass
-    return
-
   @timeout(seconds=10)
-  def __shutdown(self, *args, **kwargs):
+  def __crash_and_burn(self, message):
     if getattr(self, 'parallel', False):
       for worker in getattr(self, 'workers', []):
         try:
           worker.terminate()
         except:
           pass
-    return
+    raise RuntimeError(message)
 
   def __print(self, *args, **kwargs):
     if self.verbose:
@@ -249,7 +238,7 @@ class WorkerPool(mp.queues.JoinableQueue):
       stop_multiproc = True
       timeout_it     = 0
     if stop_multiproc:
-      raise RuntimeError('Error in child process detected')
+      self.__crash_and_burn('Error in child process detected')
     return
 
   def finalize(self):
@@ -284,8 +273,7 @@ class WorkerPool(mp.queues.JoinableQueue):
         alive = '\n'.join(
           f'{worker.name}: {"alive" if alive else "terminated"}' for worker, alive in zip(self.workers, live_list)
         )
-        self.__shutdown()
-        raise RuntimeError(f'Timed out! Workers failed to terminate:\n{alive}')
+        self.__crash_and_burn(f'Timed out! Workers failed to terminate:\n{alive}')
 
       self.error_queue.close()
       self.return_queue.close()
