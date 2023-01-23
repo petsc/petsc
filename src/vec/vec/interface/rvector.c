@@ -568,7 +568,6 @@ PetscErrorCode VecSet(Vec x, PetscScalar alpha)
    Level: intermediate
 
    Notes:
-    `x` and `y` MUST be different vectors
     This routine is optimized for alpha of 0.0, otherwise it calls the BLAS routine
 .vb
     VecAXPY(y,alpha,x)                   y = alpha x           +      y
@@ -590,13 +589,15 @@ PetscErrorCode VecAXPY(Vec y, PetscScalar alpha, Vec x)
   PetscValidType(y, 1);
   PetscCheckSameTypeAndComm(x, 3, y, 1);
   VecCheckSameSize(x, 3, y, 1);
-  PetscCheck(x != y, PetscObjectComm((PetscObject)x), PETSC_ERR_ARG_IDN, "x and y cannot be the same vector");
   VecCheckAssembled(x);
   VecCheckAssembled(y);
   PetscValidLogicalCollectiveScalar(y, alpha, 2);
   if (alpha == (PetscScalar)0.0) PetscFunctionReturn(0);
-
   PetscCall(VecSetErrorIfLocked(y, 1));
+  if (x == y) {
+    PetscCall(VecScale(y, alpha + 1.0));
+    PetscFunctionReturn(0);
+  }
   PetscCall(VecLockReadPush(x));
   PetscCall(PetscLogEventBegin(VEC_AXPY, x, y, 0, 0));
   PetscUseTypeMethod(y, axpy, alpha, x);
@@ -621,9 +622,6 @@ PetscErrorCode VecAXPY(Vec y, PetscScalar alpha, Vec x)
 
    Level: intermediate
 
-   Note:
-   `x` and `y` MUST be different vectors
-
    Developer Note:
     The implementation is optimized for beta of -1.0, 0.0, and 1.0
 
@@ -638,11 +636,14 @@ PetscErrorCode VecAYPX(Vec y, PetscScalar beta, Vec x)
   PetscValidType(y, 1);
   PetscCheckSameTypeAndComm(x, 3, y, 1);
   VecCheckSameSize(x, 1, y, 3);
-  PetscCheck(x != y, PetscObjectComm((PetscObject)x), PETSC_ERR_ARG_IDN, "x and y must be different vectors");
   VecCheckAssembled(x);
   VecCheckAssembled(y);
   PetscValidLogicalCollectiveScalar(y, beta, 2);
   PetscCall(VecSetErrorIfLocked(y, 1));
+  if (x == y) {
+    PetscCall(VecScale(y, beta + 1.0));
+    PetscFunctionReturn(0);
+  }
   PetscCall(VecLockReadPush(x));
   if (beta == (PetscScalar)0.0) {
     PetscCall(VecCopy(x, y));
@@ -671,9 +672,6 @@ PetscErrorCode VecAYPX(Vec y, PetscScalar beta, Vec x)
 
    Level: intermediate
 
-   Note:
-   `x` and `y` MUST be different vectors
-
    Developer Note:
    The implementation is optimized for alpha and/or beta values of 0.0 and 1.0
 
@@ -688,12 +686,15 @@ PetscErrorCode VecAXPBY(Vec y, PetscScalar alpha, PetscScalar beta, Vec x)
   PetscValidType(y, 1);
   PetscCheckSameTypeAndComm(x, 4, y, 1);
   VecCheckSameSize(y, 1, x, 4);
-  PetscCheck(x != y, PetscObjectComm((PetscObject)x), PETSC_ERR_ARG_IDN, "x and y cannot be the same vector");
   VecCheckAssembled(x);
   VecCheckAssembled(y);
   PetscValidLogicalCollectiveScalar(y, alpha, 2);
   PetscValidLogicalCollectiveScalar(y, beta, 3);
   if (alpha == (PetscScalar)0.0 && beta == (PetscScalar)1.0) PetscFunctionReturn(0);
+  if (x == y) {
+    PetscCall(VecScale(y, alpha + beta));
+    PetscFunctionReturn(0);
+  }
 
   PetscCall(VecSetErrorIfLocked(y, 1));
   PetscCall(VecLockReadPush(x));
