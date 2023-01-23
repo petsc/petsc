@@ -49,9 +49,6 @@ PETSC_EXTERN PetscErrorCode SNESInitializePackage(void);
 PETSC_EXTERN PetscErrorCode TSInitializePackage(void);
 PETSC_EXTERN PetscErrorCode TaoInitializePackage(void);
 #endif
-#if defined(PETSC_HAVE_THREADSAFETY)
-static MPI_Comm PETSC_COMM_WORLD_INNER = 0, PETSC_COMM_SELF_INNER = 0;
-#endif
 
 /*
     PetscInitialize_DynamicLibraries - Adds the default dynamic link libraries to the
@@ -143,10 +140,6 @@ PETSC_INTERN PetscErrorCode PetscInitialize_DynamicLibraries(void)
     PetscCall(PetscFree(libname[i]));
   }
 
-#if defined(PETSC_HAVE_THREADSAFETY)
-  PetscCall(PetscCommDuplicate(PETSC_COMM_SELF, &PETSC_COMM_SELF_INNER, NULL));
-  PetscCall(PetscCommDuplicate(PETSC_COMM_WORLD, &PETSC_COMM_WORLD_INNER, NULL));
-#endif
 #if defined(PETSC_HAVE_ELEMENTAL)
   /* in Fortran, PetscInitializeCalled is set to PETSC_TRUE before PetscInitialize_DynamicLibraries() */
   /* in C, it is not the case, but the value is forced to PETSC_TRUE so that PetscRegisterFinalize() is called */
@@ -168,12 +161,6 @@ PETSC_INTERN PetscErrorCode PetscFinalize_DynamicLibraries(void)
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-dll_view", &flg, NULL));
   if (flg) PetscCall(PetscDLLibraryPrintPath(PetscDLLibrariesLoaded));
   PetscCall(PetscDLLibraryClose(PetscDLLibrariesLoaded));
-
-#if defined(PETSC_HAVE_THREADSAFETY)
-  PetscCall(PetscCommDestroy(&PETSC_COMM_SELF_INNER));
-  PetscCall(PetscCommDestroy(&PETSC_COMM_WORLD_INNER));
-#endif
-
   PetscDLLibrariesLoaded = NULL;
   PetscFunctionReturn(0);
 }
