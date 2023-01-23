@@ -63,6 +63,7 @@ Changes: Development
 
 
 - Deprecate ``PETSC_NULL``. Users should prefer ``PETSC_NULLPTR`` as it does the right thing in both C and C++.
+- Significantly improve lookup and deletion performance of ``PetscFunctionList``. This also improves performance of ``PetscObjectComposeFunction()`` and ``PetscObjectQueryFunction()``.
 
 .. rubric:: Event Logging:
 
