@@ -442,7 +442,7 @@ PetscErrorCode SNESDestroy_VI(SNES snes)
 
    Level: advanced
 
-.seealso: [](sec_vi), `SNES`, `SNESVISetComputeVariableBounds()`, `SNESSetFunctionDomainError()`, `SNESSetJacobianDomainError()`, SNESVINEWTONRSLS, SNESVINEWTONSSLS, 'SNESSetType()`
+.seealso: [](sec_vi), `SNES`, `SNESVIGetVariableBounds()`, `SNESVISetComputeVariableBounds()`, `SNESSetFunctionDomainError()`, `SNESSetJacobianDomainError()`, `SNESVINEWTONRSLS`, `SNESVINEWTONSSLS`, 'SNESSetType()`
 @*/
 PetscErrorCode SNESVISetVariableBounds(SNES snes, Vec xl, Vec xu)
 {
@@ -489,6 +489,31 @@ PetscErrorCode SNESVISetVariableBounds_VI(SNES snes, Vec xl, Vec xu)
   PetscCall(MPIU_Allreduce(&cnt, &snes->ntruebounds, 1, MPIU_INT, MPI_SUM, PetscObjectComm((PetscObject)snes)));
   PetscCall(VecRestoreArrayRead(xl, &xxl));
   PetscCall(VecRestoreArrayRead(xu, &xxu));
+  PetscFunctionReturn(0);
+}
+
+/*@
+   SNESVIGetVariableBounds - Gets the lower and upper bounds for the solution vector. xl <= x <= xu. This allows solving
+   (differential) variable inequalities.
+
+   Input Parameters:
++  snes - the `SNES` context.
+.  xl   - lower bound (may be `NULL`)
+-  xu   - upper bound (may be `NULL`)
+
+   Notes:
+   These vectors are owned by the `SNESVI` and should not be destroyed by the caller
+
+   Level: advanced
+
+.seealso: [](sec_vi), `SNES`, `SNESVISetVariableBounds()`, `SNESVISetComputeVariableBounds()`, `SNESSetFunctionDomainError()`, `SNESSetJacobianDomainError()`, SNESVINEWTONRSLS, SNESVINEWTONSSLS, 'SNESSetType()`
+@*/
+PetscErrorCode SNESVIGetVariableBounds(SNES snes, Vec *xl, Vec *xu)
+{
+  PetscFunctionBegin;
+  PetscCheck(snes->usersetbounds, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Must set SNESVI bounds before calling SNESVIGetVariableBounds()");
+  if (xl) *xl = snes->xl;
+  if (xu) *xu = snes->xu;
   PetscFunctionReturn(0);
 }
 
