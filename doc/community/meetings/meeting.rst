@@ -1,8 +1,11 @@
-************************
-Annual PETSc Conferences
-************************
 
-The PETSc development teams hosts an annual PETSc-users conference in order to foster
+.. _meetings:
+
+*********************
+Annual PETSc Meetings
+*********************
+
+The PETSc community hosts an annual PETSc-users conference in order to foster
 continuous dialogue with our community. These yearly meetings allow us to (among other
 things):
 
@@ -25,19 +28,14 @@ simulations by scientists and engineers.
 
 Upcoming Meetings
 =================
-- The next PETSc user meeting will take place at the IIT campus in Chicago, June 5-7, 2023.
-- Stay tuned: The 2024 PETSc user meeting will hopefully take place in Cologne, Germany
+- The next :any:`annual PETSc meeting<2023_meeting>` will take place June 5-7, 2023 at the IIT campus in Chicago.
+- The 2024 PETSc user meeting will take place May 23,24 in Cologne, Germany.
 
 Previous Meetings
 =================
-- `Cologne, Germany; June 3-5, 2020 (Canceled due to pandemic)
-  <https://www.mcs.anl.gov/petsc/meetings/2020/index.html>`__
-- `Atlanta, USA; June 5-7, 2019
-  <https://www.mcs.anl.gov/petsc/meetings/2019/index.html>`__
-- `London, UK; June 4-6, 2018 <https://www.mcs.anl.gov/petsc/meetings/2018/index.html>`__
-- `Boulder, Colorado; June 14-16, 2017
-  <https://www.mcs.anl.gov/petsc/meetings/2017/index.html>`__
-- `Vienna, Austria; June 28-30, 2016
-  <https://www.mcs.anl.gov/petsc/meetings/2016/program.html>`__
-- `Argonne National Laboratory, USA; June 15-18, 2015
-  <https://www.mcs.anl.gov/petsc/meetings/2015/program.html>`__
+
+- `Atlanta, USA; June 5-7, 2019 <https://petsc.gitlab.io/annual-meetings/2019/index.html>`__
+- `London, UK; June 4-6, 2018 <https://petsc.gitlab.io/annual-meetings/2018/index.html>`__
+- `Boulder, Colorado; June 14-16, 2017 <https://petsc.gitlab.io/annual-meetings/2017/index.html>`__
+- `Vienna, Austria; June 28-30, 2016  <https://petsc.gitlab.io/annual-meetings/2016/index.html>`__
+- `Argonne National Laboratory, USA; June 15-18, 2015 <https://petsc.gitlab.io/annual-meetings/2015/index.html>`__

@@ -55,11 +55,12 @@ with open(os.path.join('..', 'include', 'petscversion.h'),'r') as version_file:
 
 # -- General configuration -----------------------------------------------------
 
+# The information on the next line must also be the same in requirements.txt
 needs_sphinx='5.3'
 nitpicky = True  # checks internal links. For external links, use "make linkcheck"
 master_doc = 'index'
 templates_path = ['_templates']
-exclude_patterns = ['_build*', 'images', 'Thumbs.db', '.DS_Store']
+exclude_patterns = ['_build*', 'images', 'Thumbs.db', '.DS_Store','community/meetings/pre-2023']
 highlight_language = 'c'
 numfig = True
 
