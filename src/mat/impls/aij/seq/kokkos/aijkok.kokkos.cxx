@@ -752,8 +752,10 @@ static PetscErrorCode MatProductNumeric_SeqAIJKokkos_SeqAIJKokkos(Mat C)
   }
   PetscCall(PetscLogGpuTimeBegin());
   PetscCallCXX(KokkosSparse::spgemm_numeric(pdata->kh, *csrmatA, transA, *csrmatB, transB, ckok->csrmat));
+#if PETSC_PKG_KOKKOS_KERNELS_VERSION_LT(3, 7, 99)
   auto spgemmHandle = pdata->kh.get_spgemm_handle();
   if (spgemmHandle->get_sort_option() != 1) PetscCallCXX(sort_crs_matrix(ckok->csrmat)); /* without sort, mat_tests-ex62_14_seqaijkokkos fails */
+#endif
 
   PetscCall(PetscLogGpuTimeEnd());
   PetscCall(MatSeqAIJKokkosModifyDevice(C));
@@ -849,9 +851,11 @@ static PetscErrorCode MatProductSymbolic_SeqAIJKokkos_SeqAIJKokkos(Mat C)
     TODO: Remove the fake spgemm_numeric() after KK fixed this problem.
   */
   PetscCallCXX(KokkosSparse::spgemm_numeric(pdata->kh, *csrmatA, transA, *csrmatB, transB, csrmatC));
+#if PETSC_PKG_KOKKOS_KERNELS_VERSION_LT(3, 7, 99)
   /* Query if KK outputs a sorted matrix. If not, we need to sort it */
   auto spgemmHandle = pdata->kh.get_spgemm_handle();
   if (spgemmHandle->get_sort_option() != 1) PetscCallCXX(sort_crs_matrix(csrmatC)); /* sort_option defaults to -1 in KK!*/
+#endif
   PetscCall(PetscLogGpuTimeEnd());
 
   PetscCallCXX(ckok = new Mat_SeqAIJKokkos(csrmatC));
