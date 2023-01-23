@@ -110,6 +110,7 @@ Changes: Development
 .. rubric:: SNES:
 
 - Add ``SNESPruneJacobianColor()`` to improve the MFFD coloring
+- Add ``SNESVIGetVariableBounds()`` to access variable bounds of a ``SNESVI``
 
 .. rubric:: SNESLineSearch:
 
