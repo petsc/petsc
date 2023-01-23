@@ -296,6 +296,7 @@ typedef enum {
   PETSC_FALSE,
   PETSC_TRUE
 } PetscBool;
+PETSC_EXTERN const char *const PetscBools[];
 
 /*E
     PetscBool3  - Ternary logical variable. Actually an enum in C and a 4 byte integer in Fortran.
@@ -479,6 +480,7 @@ typedef enum {
   PETSC_OWN_POINTER,
   PETSC_USE_POINTER
 } PetscCopyMode;
+PETSC_EXTERN const char *const PetscCopyModes[];
 
 /*MC
     PETSC_FALSE - False value of `PetscBool`
@@ -557,6 +559,7 @@ typedef enum {
   PETSC_INT64            = 17,
   PETSC_COUNT            = 18
 } PetscDataType;
+PETSC_EXTERN const char *const PetscDataTypes[];
 
 #if defined(PETSC_USE_REAL_SINGLE)
   #define PETSC_REAL PETSC_FLOAT
@@ -659,6 +662,7 @@ typedef enum {
   FILE_MODE_UPDATE,
   FILE_MODE_APPEND_UPDATE
 } PetscFileMode;
+PETSC_EXTERN const char *const PetscFileModes[];
 
 typedef void *PetscDLHandle;
 typedef enum {
@@ -757,6 +761,7 @@ typedef enum {
   PETSC_BUILDTWOSIDED_REDSCATTER = 2
   /* Updates here must be accompanied by updates in finclude/petscsys.h and the string array in mpits.c */
 } PetscBuildTwoSidedType;
+PETSC_EXTERN const char *const PetscBuildTwoSidedTypes[];
 
 /* NOTE: If you change this, you must also change the values in src/vec/f90-mod/petscvec.h */
 /*E
@@ -862,6 +867,7 @@ typedef enum {
   PETSC_SUBCOMM_CONTIGUOUS = 1,
   PETSC_SUBCOMM_INTERLACED = 2
 } PetscSubcommType;
+PETSC_EXTERN const char *const PetscSubcommTypes[];
 
 /*S
      PetscHeap - A simple class for managing heaps

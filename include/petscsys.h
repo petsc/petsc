@@ -184,15 +184,11 @@ PETSC_EXTERN FILE *PETSC_STDERR;
     Declare extern C stuff after including external header files
 */
 
-PETSC_EXTERN const char *const PetscBools[];
-
 PETSC_EXTERN PetscBool PETSC_RUNNING_ON_VALGRIND;
 /*
     Defines elementary mathematics functions and constants.
 */
 #include <petscmath.h>
-
-PETSC_EXTERN const char *const PetscCopyModes[];
 
 /*MC
     PETSC_IGNORE - same as NULL, means PETSc will ignore this argument
@@ -1085,11 +1081,10 @@ PETSC_EXTERN PetscErrorCode PetscMallocViewGet(PetscBool *);
 PETSC_EXTERN PetscErrorCode PetscMallocLogRequestedSizeSet(PetscBool);
 PETSC_EXTERN PetscErrorCode PetscMallocLogRequestedSizeGet(PetscBool *);
 
-PETSC_EXTERN const char *const PetscDataTypes[];
-PETSC_EXTERN PetscErrorCode    PetscDataTypeToMPIDataType(PetscDataType, MPI_Datatype *);
-PETSC_EXTERN PetscErrorCode    PetscMPIDataTypeToPetscDataType(MPI_Datatype, PetscDataType *);
-PETSC_EXTERN PetscErrorCode    PetscDataTypeGetSize(PetscDataType, size_t *);
-PETSC_EXTERN PetscErrorCode    PetscDataTypeFromString(const char *, PetscDataType *, PetscBool *);
+PETSC_EXTERN PetscErrorCode PetscDataTypeToMPIDataType(PetscDataType, MPI_Datatype *);
+PETSC_EXTERN PetscErrorCode PetscMPIDataTypeToPetscDataType(MPI_Datatype, PetscDataType *);
+PETSC_EXTERN PetscErrorCode PetscDataTypeGetSize(PetscDataType, size_t *);
+PETSC_EXTERN PetscErrorCode PetscDataTypeFromString(const char *, PetscDataType *, PetscBool *);
 
 /*
     Basic memory and string operations. These are usually simple wrappers
@@ -1169,8 +1164,6 @@ PETSC_EXTERN PetscErrorCode PetscMaxSum(MPI_Comm, const PetscInt[], PetscInt *, 
 
 PETSC_EXTERN PetscErrorCode MPIULong_Send(void *, PetscInt, MPI_Datatype, PetscMPIInt, PetscMPIInt, MPI_Comm) PETSC_ATTRIBUTE_MPI_POINTER_WITH_TYPE(1, 3);
 PETSC_EXTERN PetscErrorCode MPIULong_Recv(void *, PetscInt, MPI_Datatype, PetscMPIInt, PetscMPIInt, MPI_Comm) PETSC_ATTRIBUTE_MPI_POINTER_WITH_TYPE(1, 3);
-
-PETSC_EXTERN const char *const PetscFileModes[];
 
 /*
     Defines PETSc error handling.
@@ -2480,15 +2473,12 @@ PETSC_EXTERN PetscErrorCode PetscCommBuildTwoSided(MPI_Comm, PetscMPIInt, MPI_Da
 PETSC_EXTERN PetscErrorCode PetscCommBuildTwoSidedF(MPI_Comm, PetscMPIInt, MPI_Datatype, PetscMPIInt, const PetscMPIInt[], const void *, PetscMPIInt *, PetscMPIInt **, void *, PetscMPIInt, PetscErrorCode (*send)(MPI_Comm, const PetscMPIInt[], PetscMPIInt, PetscMPIInt, void *, MPI_Request[], void *), PetscErrorCode (*recv)(MPI_Comm, const PetscMPIInt[], PetscMPIInt, void *, MPI_Request[], void *), void *ctx) PETSC_ATTRIBUTE_MPI_POINTER_WITH_TYPE(6, 3);
 PETSC_EXTERN PetscErrorCode PetscCommBuildTwoSidedFReq(MPI_Comm, PetscMPIInt, MPI_Datatype, PetscMPIInt, const PetscMPIInt[], const void *, PetscMPIInt *, PetscMPIInt **, void *, PetscMPIInt, MPI_Request **, MPI_Request **, PetscErrorCode (*send)(MPI_Comm, const PetscMPIInt[], PetscMPIInt, PetscMPIInt, void *, MPI_Request[], void *), PetscErrorCode (*recv)(MPI_Comm, const PetscMPIInt[], PetscMPIInt, void *, MPI_Request[], void *), void *ctx) PETSC_ATTRIBUTE_MPI_POINTER_WITH_TYPE(6, 3);
 
-PETSC_EXTERN const char *const PetscBuildTwoSidedTypes[];
-PETSC_EXTERN PetscErrorCode    PetscCommBuildTwoSidedSetType(MPI_Comm, PetscBuildTwoSidedType);
-PETSC_EXTERN PetscErrorCode    PetscCommBuildTwoSidedGetType(MPI_Comm, PetscBuildTwoSidedType *);
+PETSC_EXTERN PetscErrorCode PetscCommBuildTwoSidedSetType(MPI_Comm, PetscBuildTwoSidedType);
+PETSC_EXTERN PetscErrorCode PetscCommBuildTwoSidedGetType(MPI_Comm, PetscBuildTwoSidedType *);
 
 PETSC_EXTERN PetscErrorCode PetscSSEIsEnabled(MPI_Comm, PetscBool *, PetscBool *);
 
 PETSC_EXTERN MPI_Comm PetscObjectComm(PetscObject);
-
-PETSC_EXTERN const char *const PetscSubcommTypes[];
 
 struct _n_PetscSubcomm {
   MPI_Comm         parent;    /* parent communicator */
