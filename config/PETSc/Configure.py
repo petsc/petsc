@@ -138,14 +138,14 @@ class Configure(config.base.Configure):
                                             'unistd','sys/sysinfo','machine/endian','sys/param','sys/procfs','sys/resource',
                                             'sys/systeminfo','sys/times','sys/utsname',
                                             'sys/socket','sys/wait','netinet/in','netdb','direct','time','Ws2tcpip','sys/types',
-                                            'WindowsX','float','ieeefp','stdint','pthread','inttypes','immintrin','zmmintrin'])
+                                            'WindowsX','float','ieeefp','stdint','inttypes','immintrin'])
     functions = ['access','_access','clock','drand48','getcwd','_getcwd','getdomainname','gethostname',
                  'getwd','posix_memalign','popen','PXFGETARG','rand','getpagesize',
                  'readlink','realpath','usleep','sleep','_sleep',
                  'uname','snprintf','_snprintf','lseek','_lseek','time','fork','stricmp',
                  'strcasecmp','bzero','dlopen','dlsym','dlclose','dlerror',
                  '_set_output_format','_mkdir','socket','gethostbyname','_pipe','fpresetsticky',
-                 'fpsetsticky','__gcov_dump','fstatat']
+                 'fpsetsticky','__gcov_dump']
     libraries = [(['fpe'],'handle_sigfpes')]
     librariessock = [(['socket','nsl'],'socket')]
     self.headers.headers.extend(headersC)
