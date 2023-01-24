@@ -68,14 +68,14 @@ class Cursor:
     errstr = cls.error_view_from_cursor(cursor)
     if 'PETSC_HASH' in srcstr:
       if '_MAP' in srcstr:
-        raise pl.ParsingError(f'Encountered unparsable PETSC_HASH_MAP for cursor {errstr}')
+        raise pl.KnownUnhandleableCursorError(f'Encountered unparsable PETSC_HASH_MAP for cursor {errstr}')
       if '_SET' in srcstr:
-        raise pl.ParsingError(f'Encountered unparsable PETSC_HASH_SET for cursor {errstr}')
-      raise RuntimeError(f'Unhandled unparsable PETSC_HASH_XXX for cursor {errstr}')
+        raise pl.KnownUnhandleableCursorError(f'Encountered unparsable PETSC_HASH_SET for cursor {errstr}')
+      raise pl.KnownUnhandleableCursorError(f'Unhandled unparsable PETSC_HASH_XXX for cursor {errstr}')
     if 'PetscKernel_' in srcstr:
-      raise pl.ParsingError(f'Encountered unparsable PetscKernel_XXX for cursor {errstr}')
+      raise pl.KnownUnhandleableCursorError(f'Encountered unparsable PetscKernel_XXX for cursor {errstr}')
     if ('PetscOptions' in srcstr) or ('PetscObjectOptions' in srcstr):
-      raise pl.ParsingError(f'Encountered unparsable Petsc[Object]OptionsBegin for cursor {errstr}')
+      raise pl.KnownUnhandleableCursorError(f'Encountered unparsable Petsc[Object]OptionsBegin for cursor {errstr}')
     try:
       cursor_view = '\n'.join(_util.view_cursor_full(cursor, max_depth=10))
     except Exception as exc:

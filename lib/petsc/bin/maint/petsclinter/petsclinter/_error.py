@@ -18,3 +18,12 @@ class ParsingError(BaseError):
   This should make it so that actual errors aren't hidden.
   """
   pass
+
+class KnownUnhandleableCursorError(ParsingError):
+  """
+  For whatever reason (perhaps because its macro stringization hell) PETSC_HASH_MAP
+  and PetscKernel_XXX absolutely __brick__ the AST. The resultant cursors have no
+  children, no name, no tokens, and a completely incorrect SourceLocation. They are for
+  all intents and purposes uncheckable :)
+  """
+  pass
