@@ -141,16 +141,16 @@ int main(int argc, char **argv)
   PetscCall(MatDestroy(&S));
 
   /* finished using B */
-  PetscCall(MatDenseCUDAGetArray(B, &aa));
+  PetscCall(MatDenseGetArrayAndMemType(B, &aa, NULL));
   PetscCheck(vv == aa - l * nloc, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Wrong array");
-  PetscCall(MatDenseCUDARestoreArray(B, &aa));
+  PetscCall(MatDenseRestoreArrayAndMemType(B, &aa));
   if (reset) PetscCall(MatDenseCUDAResetArray(B));
   PetscCall(VecCUDARestoreArray(v, &vv));
 
   if (test == 1) {
-    PetscCall(MatDenseCUDAGetArray(B, &aa));
+    PetscCall(MatDenseGetArrayAndMemType(B, &aa, NULL));
     PetscCheck(!aa, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Expected a null pointer");
-    PetscCall(MatDenseCUDARestoreArray(B, &aa));
+    PetscCall(MatDenseRestoreArrayAndMemType(B, &aa));
   }
 
   /* free work space */

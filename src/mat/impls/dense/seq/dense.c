@@ -5,6 +5,7 @@
 */
 
 #include <../src/mat/impls/dense/seq/dense.h> /*I "petscmat.h" I*/
+#include <../src/mat/impls/dense/mpi/mpidense.h>
 #include <petscblaslapack.h>
 #include <../src/mat/impls/aij/seq/aij.h>
 
@@ -2340,6 +2341,252 @@ PetscErrorCode MatDenseRestoreArrayWrite(Mat A, PetscScalar **array)
 #if defined(PETSC_HAVE_CUDA) || defined(PETSC_HAVE_HIP)
   A->offloadmask = PETSC_OFFLOAD_CPU;
 #endif
+  PetscFunctionReturn(0);
+}
+
+/*@C
+   MatDenseGetArrayAndMemType - gives read-write access to the array where the data for a `MATDENSE` matrix is stored
+
+   Logically Collective
+
+   Input Parameter:
+.  mat - a dense matrix
+
+   Output Parameters:
++  array - pointer to the data
+-  mtype - memory type of the returned pointer
+
+   Notes:
+   If the matrix is of a device type such as MATDENSECUDA, MATDENSEHIP, etc.,
+   an array on device is always returned and is guaranteed to contain the matrix's latest data.
+
+   Level: intermediate
+
+.seealso: `MATDENSE`, `MatDenseRestoreArrayAndMemType()`, `MatDenseGetArrayReadAndMemType()`, `MatDenseGetArrayWriteAndMemType()`, `MatDenseGetArrayRead()`,
+   `MatDenseRestoreArrayRead()`, `MatDenseGetArrayWrite()`, `MatDenseRestoreArrayWrite()`, `MatSeqAIJGetCSRAndMemType()`
+@*/
+PetscErrorCode MatDenseGetArrayAndMemType(Mat A, PetscScalar **array, PetscMemType *mtype)
+{
+  PetscBool isMPI;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
+  PetscValidPointer(array, 2);
+  PetscCall(MatBindToCPU(A, PETSC_FALSE)); /* We want device matrices to always return device arrays, so we unbind the matrix if it is bound to CPU */
+  PetscCall(PetscObjectBaseTypeCompare((PetscObject)A, MATMPIDENSE, &isMPI));
+  if (isMPI) {
+    /* Dispatch here so that the code can be reused for all subclasses of MATDENSE */
+    PetscCall(MatDenseGetArrayAndMemType(((Mat_MPIDense *)A->data)->A, array, mtype));
+  } else {
+    PetscErrorCode (*fptr)(Mat, PetscScalar **, PetscMemType *);
+    PetscObjectQueryFunction((PetscObject)A, "MatDenseGetArrayAndMemType_C", &fptr);
+    if (fptr) {
+      PetscCall((*fptr)(A, array, mtype));
+    } else {
+      PetscUseMethod(A, "MatDenseGetArray_C", (Mat, PetscScalar **), (A, array));
+      if (mtype) *mtype = PETSC_MEMTYPE_HOST;
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+/*@C
+   MatDenseRestoreArrayAndMemType - returns access to the array that is obtained by `MatDenseGetArrayAndMemType()`
+
+   Logically Collective
+
+   Input Parameters:
++  mat - a dense matrix
+-  array - pointer to the data
+
+   Level: intermediate
+
+.seealso: `MATDENSE`, `MatDenseGetArrayAndMemType()`, `MatDenseGetArray()`, `MatDenseGetArrayRead()`, `MatDenseRestoreArrayRead()`, `MatDenseGetArrayWrite()`, `MatDenseRestoreArrayWrite()`
+@*/
+PetscErrorCode MatDenseRestoreArrayAndMemType(Mat A, PetscScalar **array)
+{
+  PetscBool isMPI;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
+  PetscValidPointer(array, 2);
+  PetscCall(PetscObjectBaseTypeCompare((PetscObject)A, MATMPIDENSE, &isMPI));
+  if (isMPI) {
+    PetscCall(MatDenseRestoreArrayAndMemType(((Mat_MPIDense *)A->data)->A, array));
+  } else {
+    PetscErrorCode (*fptr)(Mat, PetscScalar **);
+    PetscObjectQueryFunction((PetscObject)A, "MatDenseRestoreArrayAndMemType_C", &fptr);
+    if (fptr) {
+      PetscCall((*fptr)(A, array));
+    } else {
+      PetscUseMethod(A, "MatDenseRestoreArray_C", (Mat, PetscScalar **), (A, array));
+    }
+    *array = NULL;
+  }
+  PetscCall(PetscObjectStateIncrease((PetscObject)A));
+  PetscFunctionReturn(0);
+}
+
+/*@C
+   MatDenseGetArrayReadAndMemType - gives read-only access to the array where the data for a `MATDENSE` matrix is stored
+
+   Logically Collective
+
+   Input Parameter:
+.  mat - a dense matrix
+
+   Output Parameters:
++  array - pointer to the data
+-  mtype - memory type of the returned pointer
+
+   Notes:
+   If the matrix is of a device type such as MATDENSECUDA, MATDENSEHIP, etc.,
+   an array on device is always returned and is guaranteed to contain the matrix's latest data.
+
+   Level: intermediate
+
+.seealso: `MATDENSE`, `MatDenseRestoreArrayReadAndMemType()`, `MatDenseGetArrayWriteAndMemType()`,
+   `MatDenseGetArrayRead()`, `MatDenseRestoreArrayRead()`, `MatDenseGetArrayWrite()`, `MatDenseRestoreArrayWrite()`, `MatSeqAIJGetCSRAndMemType()`
+@*/
+PetscErrorCode MatDenseGetArrayReadAndMemType(Mat A, const PetscScalar **array, PetscMemType *mtype)
+{
+  PetscBool isMPI;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
+  PetscValidPointer(array, 2);
+  PetscCall(MatBindToCPU(A, PETSC_FALSE)); /* We want device matrices to always return device arrays, so we unbind the matrix if it is bound to CPU */
+  PetscCall(PetscObjectBaseTypeCompare((PetscObject)A, MATMPIDENSE, &isMPI));
+  if (isMPI) { /* Dispatch here so that the code can be reused for all subclasses of MATDENSE */
+    PetscCall(MatDenseGetArrayReadAndMemType(((Mat_MPIDense *)A->data)->A, array, mtype));
+  } else {
+    PetscErrorCode (*fptr)(Mat, const PetscScalar **, PetscMemType *);
+    PetscObjectQueryFunction((PetscObject)A, "MatDenseGetArrayReadAndMemType_C", &fptr);
+    if (fptr) {
+      PetscCall((*fptr)(A, array, mtype));
+    } else {
+      PetscUseMethod(A, "MatDenseGetArrayRead_C", (Mat, const PetscScalar **), (A, array));
+      if (mtype) *mtype = PETSC_MEMTYPE_HOST;
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+/*@C
+   MatDenseRestoreArrayReadAndMemType - returns access to the array that is obtained by `MatDenseGetArrayReadAndMemType()`
+
+   Logically Collective
+
+   Input Parameters:
++  mat - a dense matrix
+-  array - pointer to the data
+
+   Level: intermediate
+
+.seealso: `MATDENSE`, `MatDenseGetArrayReadAndMemType()`, `MatDenseGetArray()`, `MatDenseGetArrayRead()`, `MatDenseRestoreArrayRead()`, `MatDenseGetArrayWrite()`, `MatDenseRestoreArrayWrite()`
+@*/
+PetscErrorCode MatDenseRestoreArrayReadAndMemType(Mat A, const PetscScalar **array)
+{
+  PetscBool isMPI;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
+  PetscValidPointer(array, 2);
+  PetscCall(PetscObjectBaseTypeCompare((PetscObject)A, MATMPIDENSE, &isMPI));
+  if (isMPI) {
+    PetscCall(MatDenseRestoreArrayReadAndMemType(((Mat_MPIDense *)A->data)->A, array));
+  } else {
+    PetscErrorCode (*fptr)(Mat, const PetscScalar **);
+    PetscObjectQueryFunction((PetscObject)A, "MatDenseRestoreArrayReadAndMemType_C", &fptr);
+    if (fptr) {
+      PetscCall((*fptr)(A, array));
+    } else {
+      PetscUseMethod(A, "MatDenseRestoreArrayRead_C", (Mat, const PetscScalar **), (A, array));
+    }
+    *array = NULL;
+  }
+  PetscFunctionReturn(0);
+}
+
+/*@C
+   MatDenseGetArrayWriteAndMemType - gives write-only access to the array where the data for a `MATDENSE` matrix is stored
+
+   Logically Collective
+
+   Input Parameter:
+.  mat - a dense matrix
+
+   Output Parameters:
++  array - pointer to the data
+-  mtype - memory type of the returned pointer
+
+   Notes:
+   If the matrix is of a device type such as MATDENSECUDA, MATDENSEHIP, etc.,
+   an array on device is always returned and is guaranteed to contain the matrix's latest data.
+
+   Level: intermediate
+
+.seealso: `MATDENSE`, `MatDenseRestoreArrayWriteAndMemType()`, `MatDenseGetArrayReadAndMemType()`, `MatDenseGetArrayRead()`,
+  `MatDenseRestoreArrayRead()`, `MatDenseGetArrayWrite()`, `MatDenseRestoreArrayWrite()`,  `MatSeqAIJGetCSRAndMemType()`
+@*/
+PetscErrorCode MatDenseGetArrayWriteAndMemType(Mat A, PetscScalar **array, PetscMemType *mtype)
+{
+  PetscBool isMPI;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
+  PetscValidPointer(array, 2);
+  PetscCall(MatBindToCPU(A, PETSC_FALSE)); /* We want device matrices to always return device arrays, so we unbind the matrix if it is bound to CPU */
+  PetscCall(PetscObjectBaseTypeCompare((PetscObject)A, MATMPIDENSE, &isMPI));
+  if (isMPI) {
+    PetscCall(MatDenseGetArrayWriteAndMemType(((Mat_MPIDense *)A->data)->A, array, mtype));
+  } else {
+    PetscErrorCode (*fptr)(Mat, PetscScalar **, PetscMemType *);
+    PetscObjectQueryFunction((PetscObject)A, "MatDenseGetArrayWriteAndMemType_C", &fptr);
+    if (fptr) {
+      PetscCall((*fptr)(A, array, mtype));
+    } else {
+      PetscUseMethod(A, "MatDenseGetArrayWrite_C", (Mat, PetscScalar **), (A, array));
+      if (mtype) *mtype = PETSC_MEMTYPE_HOST;
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+/*@C
+   MatDenseRestoreArrayWriteAndMemType - returns access to the array that is obtained by `MatDenseGetArrayReadAndMemType()`
+
+   Logically Collective
+
+   Input Parameters:
++  mat - a dense matrix
+-  array - pointer to the data
+
+   Level: intermediate
+
+.seealso: `MATDENSE`, `MatDenseGetArrayWriteAndMemType()`, `MatDenseGetArray()`, `MatDenseGetArrayRead()`, `MatDenseRestoreArrayRead()`, `MatDenseGetArrayWrite()`, `MatDenseRestoreArrayWrite()`
+@*/
+PetscErrorCode MatDenseRestoreArrayWriteAndMemType(Mat A, PetscScalar **array)
+{
+  PetscBool isMPI;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
+  PetscValidPointer(array, 2);
+  PetscCall(PetscObjectBaseTypeCompare((PetscObject)A, MATMPIDENSE, &isMPI));
+  if (isMPI) {
+    PetscCall(MatDenseRestoreArrayWriteAndMemType(((Mat_MPIDense *)A->data)->A, array));
+  } else {
+    PetscErrorCode (*fptr)(Mat, PetscScalar **);
+    PetscObjectQueryFunction((PetscObject)A, "MatDenseRestoreArrayWriteAndMemType_C", &fptr);
+    if (fptr) {
+      PetscCall((*fptr)(A, array));
+    } else {
+      PetscUseMethod(A, "MatDenseRestoreArrayWrite_C", (Mat, PetscScalar **), (A, array));
+    }
+    *array = NULL;
+  }
+  PetscCall(PetscObjectStateIncrease((PetscObject)A));
   PetscFunctionReturn(0);
 }
 
