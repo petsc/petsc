@@ -1419,7 +1419,7 @@ Otherwise you need a different combination of C, C++, and Fortran compilers")
     #include <atomic>
     using namespace std;
     #else
-    #include <stdatomic.h>"
+    #include <stdatomic.h>
     #endif
     double dcount = 0;
     atomic_flag cat = ATOMIC_FLAG_INIT;
