@@ -3874,7 +3874,6 @@ PetscErrorCode MatSeqBAIJSetPreallocationCSR(Mat B, PetscInt bs, const PetscInt 
 @*/
 PetscErrorCode MatCreateSeqBAIJWithArrays(MPI_Comm comm, PetscInt bs, PetscInt m, PetscInt n, PetscInt i[], PetscInt j[], PetscScalar a[], Mat *mat)
 {
-  PetscInt     ii;
   Mat_SeqBAIJ *baij;
 
   PetscFunctionBegin;
@@ -3892,17 +3891,20 @@ PetscErrorCode MatCreateSeqBAIJWithArrays(MPI_Comm comm, PetscInt bs, PetscInt m
   baij->j = j;
   baij->a = a;
 
-  baij->singlemalloc = PETSC_FALSE;
-  baij->nonew        = -1; /*this indicates that inserting a new value in the matrix that generates a new nonzero is an error*/
-  baij->free_a       = PETSC_FALSE;
-  baij->free_ij      = PETSC_FALSE;
+  baij->singlemalloc   = PETSC_FALSE;
+  baij->nonew          = -1; /*this indicates that inserting a new value in the matrix that generates a new nonzero is an error*/
+  baij->free_a         = PETSC_FALSE;
+  baij->free_ij        = PETSC_FALSE;
+  baij->free_imax_ilen = PETSC_TRUE;
 
-  for (ii = 0; ii < m; ii++) {
-    baij->ilen[ii] = baij->imax[ii] = i[ii + 1] - i[ii];
-    PetscCheck(i[ii + 1] - i[ii] >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Negative row length in i (row indices) row = %" PetscInt_FMT " length = %" PetscInt_FMT, ii, i[ii + 1] - i[ii]);
+  for (PetscInt ii = 0; ii < m; ii++) {
+    const PetscInt row_len = i[ii + 1] - i[ii];
+
+    baij->ilen[ii] = baij->imax[ii] = row_len;
+    PetscCheck(row_len >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Negative row length in i (row indices) row = %" PetscInt_FMT " length = %" PetscInt_FMT, ii, row_len);
   }
   if (PetscDefined(USE_DEBUG)) {
-    for (ii = 0; ii < baij->i[m]; ii++) {
+    for (PetscInt ii = 0; ii < baij->i[m]; ii++) {
       PetscCheck(j[ii] >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Negative column index at location = %" PetscInt_FMT " index = %" PetscInt_FMT, ii, j[ii]);
       PetscCheck(j[ii] <= n - 1, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Column index to large at location = %" PetscInt_FMT " index = %" PetscInt_FMT, ii, j[ii]);
     }
