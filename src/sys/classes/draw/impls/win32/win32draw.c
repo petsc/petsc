@@ -619,7 +619,7 @@ void MessageLoopThread_Win32(PetscDraw draw)
   return;
 }
 
-static struct _PetscDrawOps DvOps = {PetscDrawSetDoubleBuffer_Win32, PetscDrawFlush_Win32, PetscDrawLine_Win32, PetscDrawLineSetWidth_Win32, PetscDrawLineGetWidth_Win32, PetscDrawPoint_Win32, PetscDrawPointSetSize_Win32, PetscDrawString_Win32, PetscDrawStringVertical_Win32, PetscDrawStringSetSize_Win32, PetscDrawStringGetSize_Win32, 0, PetscDrawClear_Win32, PetscDrawRectangle_Win32, PetscDrawTriangle_Win32, 0, PetscDrawGetMouseButton_Win32, PetscDrawPause_Win32, 0, 0, PetscDrawGetPopup_Win32, PetscDrawSetTitle_Win32, PetscDrawCheckResizedWindow_Win32, PetscDrawResizeWindow_Win32, PetscDrawDestroy_Win32, 0, 0, 0, 0};
+static struct _PetscDrawOps DvOps = {PetscDrawSetDoubleBuffer_Win32, PetscDrawFlush_Win32, PetscDrawLine_Win32, PetscDrawLineSetWidth_Win32, PetscDrawLineGetWidth_Win32, PetscDrawPoint_Win32, PetscDrawPointSetSize_Win32, PetscDrawString_Win32, PetscDrawStringVertical_Win32, PetscDrawStringSetSize_Win32, PetscDrawStringGetSize_Win32, 0, PetscDrawClear_Win32, PetscDrawRectangle_Win32, PetscDrawTriangle_Win32, 0, PetscDrawGetMouseButton_Win32, PetscDrawPause_Win32, 0, 0, PetscDrawGetPopup_Win32, PetscDrawSetTitle_Win32, PetscDrawCheckResizedWindow_Win32, PetscDrawResizeWindow_Win32, PetscDrawDestroy_Win32, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
 static PetscErrorCode PetscDrawGetPopup_Win32(PetscDraw draw, PetscDraw *popup)
 {
