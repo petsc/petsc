@@ -552,26 +552,13 @@ class Configure(config.base.Configure):
   @staticmethod
   def isWindows(compiler, log, disambiguate_win32fe = False):
     '''Returns true if the compiler is a Windows compiler'''
-    if disambiguate_win32fe:
-      compiler_or_path = str(compiler).split()
-      if len(compiler_or_path) == 1:
-        # compiler was just the bare unqualified name, i.e. 'cl' or 'ifort'
-        compiler = compiler_or_path[0]
-      else:
-        # compiler may be /path/to/petsc/win32fe cl, we need to extract only 'cl' from it
-        last = ''
-        for sub_elem in compiler_or_path:
-          # last entry is the win32fe path, so current must be compiler name
-          if last.casefold().endswith('win32fe'):
-            compiler = sub_elem
-            break
-          last = sub_elem
-    if compiler in {'icl', 'cl', 'bcc32', 'ifl', 'df', 'lib', 'tlib'}:
-      if log: log.write('Detected Windows compiler\n')
-      return 1
-    if compiler in {'ifort','f90'} and Configure.isCygwin(log):
-      if log: log.write('Detected Windows compiler\n')
-      return 1
+    if Configure.isCygwin(log):
+      compiler = os.path.basename(compiler)
+      if compiler.startswith('win_'):
+        if log: log.write('Detected Windows compiler\n')
+        return 1
+    if log: log.write('Detected Non-Windows compiler\n')
+    return 0
 
   @classmethod
   def isMSVC(cls, compiler, log):
@@ -1267,16 +1254,10 @@ class Configure(config.base.Configure):
       else: mesg = ''
       raise RuntimeError('Error '+mesg+': '+self.mesg)
     elif 'with-cc' in self.argDB:
-      if self.isWindows(self.argDB['with-cc'], self.log):
-        yield 'win32fe '+self.argDB['with-cc']
-      else:
-        yield self.argDB['with-cc']
+      yield self.argDB['with-cc']
       raise RuntimeError('C compiler you provided with -with-cc='+self.argDB['with-cc']+' cannot be found or does not work.'+'\n'+self.mesg)
     elif 'CC' in self.argDB:
-      if self.isWindows(self.argDB['CC'], self.log):
-        yield 'win32fe '+self.argDB['CC']
-      else:
-        yield self.argDB['CC']
+      yield self.argDB['CC']
       raise RuntimeError('C compiler you provided with -CC='+self.argDB['CC']+' cannot be found or does not work.'+'\n'+self.mesg)
     elif self.useMPICompilers() and 'with-mpi-dir' in self.argDB and os.path.isdir(os.path.join(self.argDB['with-mpi-dir'], 'bin')):
       self.usedMPICompilers = 1
@@ -1323,10 +1304,10 @@ class Configure(config.base.Configure):
       yield 'icc'
       yield 'cc'
       yield 'xlc'
-      yield 'win32fe icl'
-      yield 'win32fe cl'
+      path = os.path.join(os.getcwd(),'lib','petsc','win32fe','bin')
+      yield os.path.join(path,'win_icl')
+      yield os.path.join(path,'win_cl')
       yield 'pgcc'
-      yield 'win32fe bcc32'
     return
 
   def showMPIWrapper(self,compiler):
@@ -1616,16 +1597,10 @@ class Configure(config.base.Configure):
 
     if 'with-cxx' in self.argDB:
       if self.argDB['with-cxx'] == 'gcc': raise RuntimeError('Cannot use C compiler gcc as the C++ compiler passed in with --with-cxx')
-      if self.isWindows(self.argDB['with-cxx'], self.log):
-        yield 'win32fe '+self.argDB['with-cxx']
-      else:
-        yield self.argDB['with-cxx']
+      yield self.argDB['with-cxx']
       raise RuntimeError('C++ compiler you provided with -with-cxx='+self.argDB['with-cxx']+' cannot be found or does not work.'+'\n'+self.mesg)
     elif 'CXX' in self.argDB:
-      if self.isWindows(self.argDB['CXX'], self.log):
-        yield 'win32fe '+self.argDB['CXX']
-      else:
-        yield self.argDB['CXX']
+      yield self.argDB['CXX']
       raise RuntimeError('C++ compiler you provided with -CXX='+self.argDB['CXX']+' cannot be found or does not work.'+'\n'+self.mesg)
     elif self.usedMPICompilers and 'with-mpi-dir' in self.argDB and os.path.isdir(os.path.join(self.argDB['with-mpi-dir'], 'bin')):
       yield os.path.join(self.argDB['with-mpi-dir'], 'bin', 'mpinc++')
@@ -1657,10 +1632,10 @@ class Configure(config.base.Configure):
         yield 'mpxlC'
       else:
         #attempt to match c++ compiler with c compiler
-        if self.CC.find('win32fe cl') >= 0:
-          yield 'win32fe cl'
-        elif self.CC.find('win32fe icl') >= 0:
-          yield 'win32fe icl'
+        if self.CC.find('win_cl') >= 0:
+          yield self.CC
+        elif self.CC.find('win_icl') >= 0:
+          yield self.CC
         elif self.CC == 'gcc':
           yield 'g++'
         elif self.CC == 'clang':
@@ -1680,11 +1655,11 @@ class Configure(config.base.Configure):
         yield 'cc++'
         yield 'xlC'
         yield 'ccpc'
-        yield 'win32fe icl'
-        yield 'win32fe cl'
+        path = os.path.join(os.getcwd(),'lib','petsc','win32fe','bin')
+        yield os.path.join(path,'win_icl')
+        yield os.path.join(path,'win_cl')
         yield 'pgCC'
         yield 'CC'
-        yield 'win32fe bcc32'
     return
 
   def checkCxxCompiler(self):
@@ -1753,16 +1728,10 @@ class Configure(config.base.Configure):
       else: mesg = ''
       raise RuntimeError('Error '+mesg+': '+self.mesg)
     elif 'with-fc' in self.argDB:
-      if self.isWindows(self.argDB['with-fc'], self.log):
-        yield 'win32fe '+self.argDB['with-fc']
-      else:
-        yield self.argDB['with-fc']
+      yield self.argDB['with-fc']
       raise RuntimeError('Fortran compiler you provided with --with-fc='+self.argDB['with-fc']+' cannot be found or does not work.'+'\n'+self.mesg)
     elif 'FC' in self.argDB:
-      if self.isWindows(self.argDB['FC'], self.log):
-        yield 'win32fe '+self.argDB['FC']
-      else:
-        yield self.argDB['FC']
+      yield self.argDB['FC']
       yield self.argDB['FC']
       raise RuntimeError('Fortran compiler you provided with -FC='+self.argDB['FC']+' cannot be found or does not work.'+'\n'+self.mesg)
     elif self.usedMPICompilers and 'with-mpi-dir' in self.argDB and os.path.isdir(os.path.join(self.argDB['with-mpi-dir'], 'bin')):
@@ -1793,6 +1762,7 @@ class Configure(config.base.Configure):
         yield 'mpxlf'
         yield 'mpf90'
       else:
+        path = os.path.join(os.getcwd(),'lib','petsc','win32fe','bin')
         #attempt to match fortran compiler with c compiler
         if self.CC == 'gcc':
           yield 'gfortran'
@@ -1805,19 +1775,15 @@ class Configure(config.base.Configure):
           yield 'xlf'
         elif self.CC == 'ncc':
           yield 'nfort'
-        elif self.CC.find('win32fe cl') >= 0:
-          yield 'win32fe f90'
-          yield 'win32fe ifc'
-        elif self.CC.find('win32fe icl') >= 0:
-          yield 'win32fe ifc'
+        elif self.CC.find('win_icl') >= 0:
+          yield os.path.join(path,'win_ifort')
         yield 'gfortran'
         yield 'g95'
         yield 'xlf90'
         yield 'xlf'
         yield 'f90'
         yield 'lf95'
-        yield 'win32fe ifort'
-        yield 'win32fe ifl'
+        yield os.path.join(path,'win_ifort')
         yield 'ifort'
         yield 'ifc'
         yield 'pgf90'
@@ -2077,12 +2043,8 @@ class Configure(config.base.Configure):
       flag = self.argDB['AR_FLAGS']
     elif prog.endswith('ar'):
       flag = 'cr'
-    elif prog == 'win32fe':
-      args = os.path.basename(archiver).split(' ')
-      if 'lib' in args:
-        flag = '-a'
-      elif 'tlib' in args:
-        flag = '-a -P512'
+    elif os.path.basename(archiver).endswith('_lib'):
+      flag = '-a'
     if prog.endswith('ar') and not (self.isSolarisAR(prog, self.log) or self.isAIXAR(prog, self.log)):
       self.FAST_AR_FLAGS = 'Scq'
     else:
@@ -2093,16 +2055,10 @@ class Configure(config.base.Configure):
   def generateArchiverGuesses(self):
     defaultAr = None
     if 'with-ar' in self.argDB:
-      if self.isWindows(self.argDB['with-ar'], self.log):
-        defaultAr = 'win32fe '+self.argDB['with-ar']
-      else:
-        defaultAr = self.argDB['with-ar']
+      defaultAr = self.argDB['with-ar']
     envAr = None
     if 'AR' in self.argDB:
-      if self.isWindows(self.argDB['AR'], self.log):
-        envAr = 'win32fe '+self.argDB['AR']
-      else:
-        envAr = self.argDB['AR']
+      envAr = self.argDB['AR']
     defaultRanlib = None
     if 'with-ranlib' in self.argDB:
       defaultRanlib = self.argDB['with-ranlib']
@@ -2131,14 +2087,20 @@ class Configure(config.base.Configure):
       raise RuntimeError('You set a value for -AR="'+envAr+'" (perhaps in your environment), but '+envAr+' cannot be used\n')
     if defaultRanlib:
       yield ('ar',self.getArchiverFlags('ar'),defaultRanlib)
-      yield ('win32fe tlib',self.getArchiverFlags('win32fe tlib'),defaultRanlib)
-      yield ('win32fe lib',self.getArchiverFlags('win32fe lib'),defaultRanlib)
+      path = os.path.join(os.getcwd(),'lib','petsc','bin')
+      war  = os.path.join(path,'win_lib')
+      yield (war,self.getArchiverFlags(war),defaultRanlib)
       raise RuntimeError('You set --with-ranlib="'+defaultRanlib+'", but '+defaultRanlib+' cannot be used\n')
     if envRanlib:
       yield ('ar',self.getArchiverFlags('ar'),envRanlib)
-      yield ('win32fe tlib',self.getArchiverFlags('win32fe tlib'),envRanlib)
-      yield ('win32fe lib',self.getArchiverFlags('win32fe lib'),envRanlib)
+      path = os.path.join(os.getcwd(),'lib','petsc','bin')
+      war  = os.path.join(path,'win_lib')
+      yield (war,self.getArchiverFlags('war'),envRanlib)
       raise RuntimeError('You set -RANLIB="'+envRanlib+'" (perhaps in your environment), but '+defaultRanlib+' cannot be used\n')
+    if config.setCompilers.Configure.isWindows(self.getCompiler(), self.log):
+      path = os.path.join(os.getcwd(),'lib','petsc','bin')
+      war  = os.path.join(path,'win_lib')
+      yield (war,self.getArchiverFlags(war),'true')
     yield ('ar',self.getArchiverFlags('ar'),'ranlib -c')
     yield ('ar',self.getArchiverFlags('ar'),'ranlib')
     yield ('ar',self.getArchiverFlags('ar'),'true')
@@ -2146,8 +2108,6 @@ class Configure(config.base.Configure):
     yield ('ar','-X64 '+self.getArchiverFlags('ar'),'ranlib -c')
     yield ('ar','-X64 '+self.getArchiverFlags('ar'),'ranlib')
     yield ('ar','-X64 '+self.getArchiverFlags('ar'),'true')
-    yield ('win32fe tlib',self.getArchiverFlags('win32fe tlib'),'true')
-    yield ('win32fe lib',self.getArchiverFlags('win32fe lib'),'true')
     return
 
   def checkArchiver(self):

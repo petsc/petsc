@@ -1,0 +1,6 @@
+#!/usr/bin/env sh
+#
+#  Wrapper for Microsoft Windows cl using win32fe as a full path compiler
+#
+p=`dirname $0`
+${p}/win32fe cl $*

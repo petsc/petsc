@@ -1881,13 +1881,13 @@ class CMakePackage(Package):
       args.append('-DCMAKE_BUILD_TYPE=Debug')
     else:
       args.append('-DCMAKE_BUILD_TYPE=Release')
+    args.append('-DCMAKE_AR="'+self.setCompilers.AR+'"')
     self.framework.pushLanguage('C')
     args.append('-DCMAKE_C_COMPILER="'+self.framework.getCompiler()+'"')
     # bypass CMake findMPI() bug that can find compilers later in the PATH before the first one in the PATH.
     # relevant lines of findMPI() begins with if(_MPI_BASE_DIR)
     self.getExecutable(self.framework.getCompiler(), getFullPath=1, resultName='mpi_C',setMakeMacro=0)
     args.append('-DMPI_C_COMPILER="'+self.mpi_C+'"')
-    args.append('-DCMAKE_AR='+self.setCompilers.AR)
     ranlib = shlex.split(self.setCompilers.RANLIB)[0]
     args.append('-DCMAKE_RANLIB='+ranlib)
     cflags = self.updatePackageCFlags(self.setCompilers.getCompilerFlags())
@@ -1903,6 +1903,12 @@ class CMakePackage(Package):
       self.getExecutable(self.framework.getCompiler(), getFullPath=1, resultName='mpi_CC',setMakeMacro=0)
       args.append('-DMPI_CXX_COMPILER="'+self.mpi_CC+'"')
       cxxFlags = self.updatePackageCxxFlags(self.framework.getCompilerFlags())
+
+      cxxFlags = cxxFlags.split(' ')
+      # next line is needed because CMAKE passes CXX flags even when linking an object file!
+      cxxFlags = self.rmArgs(cxxFlags,['-TP'])
+      cxxFlags = ' '.join(cxxFlags)
+
       args.append('-DCMAKE_CXX_FLAGS:STRING="{cxxFlags}"'.format(cxxFlags=cxxFlags))
       args.append('-DCMAKE_CXX_FLAGS_DEBUG:STRING="{cxxFlags}"'.format(cxxFlags=cxxFlags))
       args.append('-DCMAKE_CXX_FLAGS_RELEASE:STRING="{cxxFlags}"'.format(cxxFlags=cxxFlags))
@@ -1929,7 +1935,7 @@ class CMakePackage(Package):
       ldflags = self.setCompilers.LDFLAGS.replace('"','\\"') # escape double quotes (") in LDFLAGS
       args.append('-DCMAKE_EXE_LINKER_FLAGS:STRING="'+ldflags+'"')
 
-    if self.checkSharedLibrariesEnabled():
+    if not config.setCompilers.Configure.isWindows(self.setCompilers.CC, self.log) and self.checkSharedLibrariesEnabled():
       args.append('-DBUILD_SHARED_LIBS:BOOL=ON')
     else:
       args.append('-DBUILD_SHARED_LIBS:BOOL=OFF')
@@ -1989,4 +1995,13 @@ class CMakePackage(Package):
         self.logPrint('Error running make on  '+self.PACKAGE+': '+str(e))
         raise RuntimeError('Error running make on  '+self.PACKAGE)
       self.postInstall(output1+err1+output2+err2+output3+err3,conffile)
+      # CMake has no option to set the library name to .lib instead of .a so rename libraries
+      if config.setCompilers.Configure.isWindows(self.setCompilers.AR, self.log):
+        import pathlib
+        path = pathlib.Path(os.path.join(self.installDir,'lib'))
+        self.logPrint('Changing .a files to .lib files in'+str(path))
+        for f in path.iterdir():
+          if f.is_file() and f.suffix in ['.a']:
+            self.logPrint('Changing '+str(f)+' to '+str(f.with_suffix('.lib')))
+            f.rename(f.with_suffix('.lib'))
     return self.installDir

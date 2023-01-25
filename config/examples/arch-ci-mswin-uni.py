@@ -11,7 +11,7 @@ if __name__ == '__main__':
   configure_options = [
     '--package-prefix-hash='+petsc_hash_pkgs,
     '--download-f2cblaslapack',
-    '--with-cc=win32fe cl',
+    '--with-cc=cl',
     '--with-shared-libraries=1',
     '--with-cxx=0',
     '--with-fc=0',
