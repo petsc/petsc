@@ -1303,6 +1303,8 @@ static PetscErrorCode DMPlexDistributeLabels(DM dm, PetscSF migrationSF, DM dmPa
       /* Skip "depth" because it is recreated */
       PetscCall(PetscObjectGetName((PetscObject)label, &name));
       PetscCall(PetscStrcmp(name, "depth", &isDepth));
+    } else {
+      isDepth = PETSC_FALSE;
     }
     PetscCallMPI(MPI_Bcast(&isDepth, 1, MPIU_BOOL, 0, comm));
     if (isDepth && !sendDepth) continue;

@@ -640,7 +640,7 @@ PetscErrorCode PetscViewerFileGetName_ASCII(PetscViewer viewer, const char **nam
 PetscErrorCode PetscViewerFileSetName_ASCII(PetscViewer viewer, const char name[])
 {
   size_t             len;
-  char               fname[PETSC_MAX_PATH_LEN], *gz;
+  char               fname[PETSC_MAX_PATH_LEN], *gz = NULL;
   PetscViewer_ASCII *vascii = (PetscViewer_ASCII *)viewer->data;
   PetscBool          isstderr, isstdout;
   PetscMPIInt        rank;

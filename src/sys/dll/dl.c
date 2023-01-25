@@ -50,7 +50,7 @@ PetscErrorCode PetscDLLibraryPrintPath(PetscDLLibrary libs)
 @*/
 PetscErrorCode PetscDLLibraryRetrieve(MPI_Comm comm, const char libname[], char *lname, size_t llen, PetscBool *found)
 {
-  char  *buf, *par2, suffix[16], *gz, *so;
+  char  *buf, *par2, suffix[16], *gz = NULL, *so;
   size_t len;
 
   PetscFunctionBegin;
@@ -212,8 +212,9 @@ PetscErrorCode PetscDLLibraryOpen(MPI_Comm comm, const char path[], PetscDLLibra
 @*/
 PetscErrorCode PetscDLLibrarySym(MPI_Comm comm, PetscDLLibrary *outlist, const char path[], const char insymbol[], void **value)
 {
-  char           libname[PETSC_MAX_PATH_LEN], suffix[16], *symbol, *s;
-  PetscDLLibrary nlist, prev, list = NULL;
+  char           libname[PETSC_MAX_PATH_LEN], suffix[16];
+  char          *symbol = NULL, *s;
+  PetscDLLibrary list   = NULL, nlist, prev;
 
   PetscFunctionBegin;
   if (outlist) PetscValidPointer(outlist, 2);
@@ -318,7 +319,7 @@ PetscErrorCode PetscDLLibraryAppend(MPI_Comm comm, PetscDLLibrary *outlist, cons
   size_t         len;
   PetscBool      match, dir;
   char           program[PETSC_MAX_PATH_LEN], found[8 * PETSC_MAX_PATH_LEN];
-  char          *libname, suffix[16], *s;
+  char          *libname, suffix[16], *s = NULL;
   PetscToken     token;
 
   PetscFunctionBegin;
@@ -400,7 +401,7 @@ PetscErrorCode PetscDLLibraryPrepend(MPI_Comm comm, PetscDLLibrary *outlist, con
   size_t         len;
   PetscBool      match, dir;
   char           program[PETSC_MAX_PATH_LEN], found[8 * PETSC_MAX_PATH_LEN];
-  char          *libname, suffix[16], *s;
+  char          *libname, suffix[16], *s = NULL;
   PetscToken     token;
 
   PetscFunctionBegin;

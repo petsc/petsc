@@ -296,7 +296,7 @@ PetscErrorCode TSSetFromOptions(TS ts)
   opt = PETSC_FALSE;
   PetscCall(PetscOptionsString("-ts_monitor_solution_vtk", "Save each time step to a binary file, use filename-%%03" PetscInt_FMT ".vts", "TSMonitorSolutionVTK", NULL, monfilename, sizeof(monfilename), &flg));
   if (flg) {
-    const char *ptr, *ptr2;
+    const char *ptr = NULL, *ptr2 = NULL;
     char       *filetemplate;
     PetscCheck(monfilename[0], PetscObjectComm((PetscObject)ts), PETSC_ERR_USER, "-ts_monitor_solution_vtk requires a file template, e.g. filename-%%03" PetscInt_FMT ".vts");
     /* Do some cursory validation of the input. */

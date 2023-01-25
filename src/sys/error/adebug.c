@@ -106,12 +106,13 @@ PetscErrorCode PetscSetDefaultDebugger(void)
 
 static PetscErrorCode PetscCheckDebugger_Private(const char defaultDbg[], const char string[], const char *debugger[])
 {
-  PetscBool exists;
-  char     *f;
+  char *f = NULL;
 
   PetscFunctionBegin;
   PetscCall(PetscStrstr(string, defaultDbg, &f));
   if (f) {
+    PetscBool exists;
+
     PetscCall(PetscTestFile(string, 'x', &exists));
     if (exists) *debugger = string;
     else *debugger = defaultDbg;
@@ -133,7 +134,7 @@ PetscErrorCode PetscSetDebuggerFromString(const char *string)
 {
   const char *debugger    = NULL;
   PetscBool   useterminal = PETSC_TRUE;
-  char       *f;
+  char       *f           = NULL;
 
   PetscFunctionBegin;
   PetscCall(PetscStrstr(string, "noxterm", &f));
@@ -322,7 +323,7 @@ PetscErrorCode PetscAttachDebugger(void)
       j = 0;
       if (UseDebugTerminal) {
         PetscBool cmp;
-        char     *tmp, *tmp1;
+        char     *tmp, *tmp1 = NULL;
         PetscCall(PetscStrncmp(DebugTerminal, "Terminal", 8, &cmp));
         if (cmp) {
           char command[1024];

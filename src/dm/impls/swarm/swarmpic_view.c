@@ -67,7 +67,7 @@ PetscErrorCode private_PetscViewerDestroy_XDMF(PetscViewer *v)
 
 PetscErrorCode private_CreateDataFileNameXDMF(const char filename[], char dfilename[])
 {
-  char     *ext;
+  char     *ext = NULL;
   PetscBool flg;
 
   PetscFunctionBegin;

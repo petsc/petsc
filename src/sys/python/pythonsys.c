@@ -24,8 +24,8 @@ static PetscErrorCode PetscPythonFindExecutable(char pythonexe[], size_t len)
 static PetscErrorCode PetscPythonFindLibraryName(const char pythonexe[], const char attempt[], char pythonlib[], size_t pl, PetscBool *found)
 {
   char  command[2 * PETSC_MAX_PATH_LEN];
-  FILE *fp = NULL;
-  char *eol;
+  FILE *fp  = NULL;
+  char *eol = NULL;
 
   PetscFunctionBegin;
   /* call Python to find out the name of the Python dynamic library */

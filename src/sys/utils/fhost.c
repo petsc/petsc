@@ -45,7 +45,7 @@ $       call PetscGetHostName(name,ierr)
 @*/
 PetscErrorCode PetscGetHostName(char name[], size_t nlen)
 {
-  char *domain;
+  char *domain = NULL;
 #if defined(PETSC_HAVE_UNAME) && !defined(PETSC_HAVE_GETCOMPUTERNAME)
   struct utsname utname;
 #endif

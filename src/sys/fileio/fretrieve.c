@@ -327,7 +327,7 @@ PetscErrorCode PetscSharedWorkingDirectory(MPI_Comm comm, PetscBool *shared)
 @*/
 PetscErrorCode PetscFileRetrieve(MPI_Comm comm, const char url[], char localname[], size_t llen, PetscBool *found)
 {
-  char        buffer[PETSC_MAX_PATH_LEN], *par, *tlocalname, name[PETSC_MAX_PATH_LEN];
+  char        buffer[PETSC_MAX_PATH_LEN], *par = NULL, *tlocalname = NULL, name[PETSC_MAX_PATH_LEN];
   FILE       *fp;
   PetscMPIInt rank;
   size_t      len = 0;

@@ -1091,7 +1091,7 @@ $EndPhysicalNames
 */
 static PetscErrorCode GmshReadPhysicalNames(GmshFile *gmsh, GmshMesh *mesh)
 {
-  char line[PETSC_MAX_PATH_LEN], name[128 + 2], *p, *q, *r;
+  char line[PETSC_MAX_PATH_LEN], name[128 + 2], *p = NULL, *q = NULL, *r = NULL;
   int  snum, region, dim, tag;
 
   PetscFunctionBegin;

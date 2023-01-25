@@ -387,7 +387,7 @@ PetscErrorCode PetscStripe0(char *buf)
 {
   size_t    n;
   PetscBool flg;
-  char     *str;
+  char     *str = NULL;
 
   PetscFunctionBegin;
   PetscCall(PetscStrlen(buf, &n));
@@ -429,7 +429,7 @@ PetscErrorCode PetscStripAllZeros(char *buf)
 */
 PetscErrorCode PetscStripTrailingZeros(char *buf)
 {
-  char  *found;
+  char  *found = NULL;
   size_t i, n, m = PETSC_MAX_INT;
 
   PetscFunctionBegin;

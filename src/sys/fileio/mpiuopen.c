@@ -43,7 +43,7 @@ PetscErrorCode PetscFOpen(MPI_Comm comm, const char name[], const char mode[], F
     if (isstdout || !name) fd = PETSC_STDOUT;
     else if (isstderr) fd = PETSC_STDERR;
     else {
-      PetscBool devnull;
+      PetscBool devnull = PETSC_FALSE;
       PetscCall(PetscStrreplace(PETSC_COMM_SELF, name, tname, PETSC_MAX_PATH_LEN));
       PetscCall(PetscFixFilename(tname, fname));
       PetscCall(PetscStrbeginswith(fname, "/dev/null", &devnull));
