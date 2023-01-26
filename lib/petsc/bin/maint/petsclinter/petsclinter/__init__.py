@@ -62,7 +62,7 @@ def __lazy_import(name, package=None):
   loader.exec_module(module)
   return module
 
-from ._error import BaseError, ParsingError
+from ._error import *
 
 # order is important to avoid circular imports
 from . import util

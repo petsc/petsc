@@ -205,7 +205,7 @@ class ClangFunction:
   def __getattr__(self, attr):
     return getattr(self._function, attr)
 
-  def __call__(self, *args):
+  def __call__(self, *args, check=True):
     if len(args) != len(self._function.argtypes):
       mess = f'Trying to call {self._function.__name__}(). Wrong number of arguments for function, expected {len(self._function.argtypes)} got {len(args)}'
       raise RuntimeError(mess)
@@ -214,7 +214,7 @@ class ClangFunction:
         mess = f'Trying to call {self._function.__name__}(). Argument type for argument #{i} does not match. Expected {expected}, got {type(arg)}'
         raise RuntimeError(mess)
     ret = self._function(*args)
-    if isinstance(ret, int) and ret != 0:
+    if check and isinstance(ret, int) and ret != 0:
       raise RuntimeError(f'{self._function.__name__}() returned nonzero exit code {ret}')
     return ret
 

@@ -1,0 +1,121 @@
+PetscFunctionList Object:
+  size: 1
+  functions:
+    1: foo
+PetscFunctionList Object:
+  size: 0
+PetscFunctionList Object:
+  size: 0
+PetscFunctionList Object:
+  size: 0
+PetscFunctionList Object:
+  size: 0
+called foo()
+called bar()
+called baz()
+called bop()
+called qux()
+called quux()
+called blip()
+called blap()
+called blop()
+called graulty()
+called quix()
+called foo()
+called bar()
+called baz()
+called bop()
+called qux()
+called quux()
+called blip()
+called blap()
+called blop()
+called graulty()
+called quix()
+called foo()
+called foo()
+called bar()
+called bar()
+called baz()
+called baz()
+called bop()
+called bop()
+called qux()
+called qux()
+called quux()
+called quux()
+called blip()
+called blip()
+called blap()
+called blap()
+called blop()
+called blop()
+called graulty()
+called graulty()
+called quix()
+called quix()
+PetscFunctionList Object:
+  size: 11
+  functions:
+    1: blip
+    2: graulty
+    3: bop
+    4: bar
+    5: qux
+    6: foo
+    7: quux
+    8: blap
+    9: baz
+    10: blop
+    11: quix
+called foo()
+called bar()
+called baz()
+called bop()
+called qux()
+called quux()
+called blip()
+called blap()
+called blop()
+called graulty()
+called quix()
+PetscFunctionList Object:
+  size: 11
+  functions:
+    1: blip
+    2: graulty
+    3: bop
+    4: bar
+    5: qux
+    6: foo
+    7: quux
+    8: blap
+    9: baz
+    10: blop
+    11: quix
+1: blip
+2: graulty
+3: bop
+4: bar
+5: qux
+6: foo
+7: quux
+8: blap
+9: baz
+10: blop
+11: quix
+PetscFunctionList Object:
+  size: 11
+  functions:
+    1: blip
+    2: graulty
+    3: bop
+    4: bar
+    5: qux
+    6: foo
+    7: quux
+    8: blap
+    9: baz
+    10: blop
+    11: quix
+  -my_prefix_petsc_function_type <now bar : formerly foo>: Description (one of) blip graulty bop bar qux foo quux blap baz blop quix (PetscFunctionList)

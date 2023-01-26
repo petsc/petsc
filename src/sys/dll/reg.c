@@ -6,6 +6,7 @@
 #include <petsc/private/petscimpl.h> /*I "petscsys.h" I*/
 #include <petscviewer.h>
 
+#include <petsc/private/hashmap.h>
 /*
     This is the default list used by PETSc with the PetscDLLibrary register routines
 */
@@ -166,25 +167,98 @@ PETSC_INTERN PetscErrorCode PetscFinalize_DynamicLibraries(void)
 }
 
 /* ------------------------------------------------------------------------------*/
+PETSC_HASH_MAP(HMapFunc, const char *, PetscVoidFunction, kh_str_hash_func, kh_str_hash_equal, NULL)
+
 struct _n_PetscFunctionList {
-  void (*routine)(void);       /* the routine */
-  char             *name;      /* string to identify routine */
-  PetscFunctionList next;      /* next pointer */
-  PetscFunctionList next_list; /* used to maintain list of all lists for freeing */
+  PetscHMapFunc map;
 };
 
-/*
-     Keep a linked list of PetscFunctionLists so that we can destroy all the left-over ones.
-*/
-static PetscFunctionList dlallhead = NULL;
+/* Keep a linked list of PetscFunctionLists so that we can destroy all the left-over ones. */
+typedef struct n_PetscFunctionListDLAll *PetscFunctionListDLAll;
+struct n_PetscFunctionListDLAll {
+  PetscFunctionList      data;
+  PetscFunctionListDLAll next;
+};
 
-static PetscErrorCode PetscFunctionListCreateNode_Private(PetscFunctionList *entry, const char name[], void (*func)(void))
+static PetscFunctionListDLAll dlallhead = NULL;
+
+static PetscErrorCode PetscFunctionListDLAllPush_Private(PetscFunctionList fl)
 {
   PetscFunctionBegin;
-  PetscCall(PetscNew(entry));
-  PetscCall(PetscStrallocpy(name, &(*entry)->name));
-  (*entry)->routine = func;
-  (*entry)->next    = NULL;
+  if (PetscDefined(USE_DEBUG) && !PetscDefined(HAVE_THREADSAFETY)) {
+    PetscFunctionListDLAll head;
+
+    PetscCall(PetscNew(&head));
+    head->data = fl;
+    head->next = dlallhead;
+    dlallhead  = head;
+  }
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode PetscFunctionListDLAllPop_Private(PetscFunctionList fl)
+{
+  PetscFunctionBegin;
+  if (PetscDefined(USE_DEBUG) && !PetscDefined(HAVE_THREADSAFETY)) {
+    PetscFunctionListDLAll current = dlallhead, prev = NULL;
+
+    /* Remove this entry from the main DL list (if it is in it) */
+    while (current) {
+      const PetscFunctionListDLAll next = current->next;
+
+      if (current->data == fl) {
+        if (prev) {
+          // somewhere in the middle (or end) of the list
+          prev->next = next;
+        } else {
+          // prev = NULL implies current = dlallhead, so front of list
+          dlallhead = next;
+        }
+        PetscCall(PetscFree(current));
+        break;
+      }
+      prev    = current;
+      current = next;
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode PetscHMapFuncInsert_Private(PetscHMapFunc map, const char name[], PetscVoidFunction fnc)
+{
+  PetscHashIter it;
+  PetscBool     found;
+
+  PetscFunctionBegin;
+  PetscValidCharPointer(name, 2);
+  if (fnc) PetscValidFunction(fnc, 3);
+  PetscCall(PetscHMapFuncFind(map, name, &it, &found));
+  if (fnc) {
+    if (found) {
+      PetscCall(PetscHMapFuncIterSet(map, it, fnc));
+    } else {
+      char *tmp_name;
+
+      PetscCall(PetscStrallocpy(name, &tmp_name));
+      PetscCall(PetscHMapFuncSet(map, tmp_name, fnc));
+    }
+  } else if (found) {
+    const char *tmp_name;
+
+    PetscHashIterGetKey(map, it, tmp_name);
+    PetscCall(PetscFree(tmp_name));
+    PetscCall(PetscHMapFuncIterDel(map, it));
+  }
+  PetscFunctionReturn(0);
+}
+
+static PetscErrorCode PetscFunctionListCreate_Private(PetscInt size, PetscFunctionList *fl)
+{
+  PetscFunctionBegin;
+  if (*fl) PetscFunctionReturn(0);
+  PetscCall(PetscNew(fl));
+  PetscCall(PetscHMapFuncCreateWithSize(size, &(*fl)->map));
+  PetscCall(PetscFunctionListDLAllPush_Private(*fl));
   PetscFunctionReturn(0);
 }
 
@@ -216,57 +290,14 @@ static PetscErrorCode PetscFunctionListCreateNode_Private(PetscFunctionList *ent
 .seealso: `PetscFunctionListDestroy()`, `SNESRegister()`, `KSPRegister()`,
           `PCRegister()`, `TSRegister()`, `PetscFunctionList`, `PetscObjectComposeFunction()`
 M*/
-PETSC_EXTERN PetscErrorCode PetscFunctionListAdd_Private(PetscFunctionList *fl, const char name[], void (*fnc)(void))
+PetscErrorCode PetscFunctionListAdd_Private(PetscFunctionList *fl, const char name[], PetscVoidFunction fnc)
 {
   PetscFunctionBegin;
   PetscValidPointer(fl, 1);
   if (name) PetscValidCharPointer(name, 2);
   if (fnc) PetscValidFunction(fnc, 3);
-  if (*fl) {
-    /* search list to see if it is already there */
-    PetscFunctionList empty_node = NULL;
-    PetscFunctionList ne         = *fl;
-
-    while (1) {
-      PetscBool founddup;
-
-      PetscCall(PetscStrcmp(ne->name, name, &founddup));
-      if (founddup) {
-        /* found duplicate, clear it */
-        ne->routine = fnc;
-        if (!fnc) PetscCall(PetscFree(ne->name));
-        PetscFunctionReturn(0);
-      }
-
-      if (!empty_node && !ne->routine && !ne->name) {
-        /* save the empty node for later */
-        empty_node = ne;
-      }
-
-      if (!ne->next) break; /* end of list */
-      ne = ne->next;
-    }
-
-    /* there was an empty entry we could grab, fill it and bail */
-    if (empty_node) {
-      empty_node->routine = fnc;
-      PetscCall(PetscStrallocpy(name, &empty_node->name));
-    } else {
-      /* create new entry at the end of list */
-      PetscCall(PetscFunctionListCreateNode_Private(&ne->next, name, fnc));
-    }
-    PetscFunctionReturn(0);
-  }
-
-  /* we didn't have a list */
-  PetscCall(PetscFunctionListCreateNode_Private(fl, name, fnc));
-  if (PetscDefined(USE_DEBUG) && !PetscDefined(HAVE_THREADSAFETY)) {
-    const PetscFunctionList head = dlallhead;
-
-    /* add this new list to list of all lists */
-    dlallhead        = *fl;
-    (*fl)->next_list = head;
-  }
+  PetscCall(PetscFunctionListCreate_Private(0, fl));
+  PetscCall(PetscHMapFuncInsert_Private((*fl)->map, name, fnc));
   PetscFunctionReturn(0);
 }
 
@@ -282,36 +313,34 @@ PETSC_EXTERN PetscErrorCode PetscFunctionListAdd_Private(PetscFunctionList *fl, 
 @*/
 PetscErrorCode PetscFunctionListDestroy(PetscFunctionList *fl)
 {
-  PetscFunctionList next, entry, tmp = dlallhead;
-
   PetscFunctionBegin;
   if (!*fl) PetscFunctionReturn(0);
-
-  /*
-       Remove this entry from the main DL list (if it is in it)
-  */
-  if (dlallhead == *fl) {
-    if (dlallhead->next_list) dlallhead = dlallhead->next_list;
-    else dlallhead = NULL;
-  } else if (tmp) {
-    while (tmp->next_list != *fl) {
-      tmp = tmp->next_list;
-      if (!tmp->next_list) break;
-    }
-    if (tmp->next_list) tmp->next_list = tmp->next_list->next_list;
-  }
-
+  PetscCall(PetscFunctionListDLAllPop_Private(*fl));
   /* free this list */
-  entry = *fl;
-  while (entry) {
-    next = entry->next;
-    PetscCall(PetscFree(entry->name));
-    PetscCall(PetscFree(entry));
-    entry = next;
-  }
-  *fl = NULL;
+  PetscCall(PetscFunctionListClear(*fl));
+  PetscCall(PetscHMapFuncDestroy(&(*fl)->map));
+  PetscCall(PetscFree(*fl));
   PetscFunctionReturn(0);
 }
+
+#define PetscHMapFuncForEach(__func_list__, __key_name__, __val_name__, ...) \
+  do { \
+    const PetscHMapFunc phmfi_map_ = (__func_list__)->map; \
+    PetscHashIter       phmfi_iter_; \
+\
+    PetscHashIterBegin(phmfi_map_, phmfi_iter_); \
+    while (!PetscHashIterAtEnd(phmfi_map_, phmfi_iter_)) { \
+      const char *PETSC_UNUSED       __key_name__; \
+      PetscVoidFunction PETSC_UNUSED __val_name__; \
+\
+      PetscHashIterGetKey(phmfi_map_, phmfi_iter_, __key_name__); \
+      PetscHashIterGetVal(phmfi_map_, phmfi_iter_, __val_name__); \
+      { \
+        __VA_ARGS__; \
+      } \
+      PetscHashIterNext(phmfi_map_, phmfi_iter_); \
+    } /* end while */ \
+  } while (0)
 
 /*@
   PetscFunctionListClear - Clear a `PetscFunctionList`
@@ -331,11 +360,9 @@ PetscErrorCode PetscFunctionListDestroy(PetscFunctionList *fl)
 PetscErrorCode PetscFunctionListClear(PetscFunctionList fl)
 {
   PetscFunctionBegin;
-  /* free the names and clear the routine but don't deallocate the node */
-  while (fl) {
-    PetscCall(PetscFree(fl->name));
-    fl->routine = NULL;
-    fl          = fl->next;
+  if (fl) {
+    PetscHMapFuncForEach(fl, name, func, PetscCall(PetscFree(name)));
+    PetscCall(PetscHMapFuncClear(fl->map));
   }
   PetscFunctionReturn(0);
 }
@@ -345,13 +372,13 @@ PetscErrorCode PetscFunctionListClear(PetscFunctionList fl)
 */
 PetscErrorCode PetscFunctionListPrintAll(void)
 {
-  PetscFunctionList tmp = dlallhead;
+  PetscFunctionListDLAll current = dlallhead;
 
   PetscFunctionBegin;
-  if (tmp) PetscCall(PetscPrintf(PETSC_COMM_SELF, "[%d] Registered PetscFunctionLists\n", PetscGlobalRank));
-  while (tmp) {
-    PetscCall(PetscPrintf(PETSC_COMM_SELF, "[%d]   %s\n", PetscGlobalRank, tmp->name));
-    tmp = tmp->next_list;
+  if (current) PetscCall(PetscPrintf(PETSC_COMM_SELF, "[%d] Registered PetscFunctionLists\n", PetscGlobalRank));
+  while (current) {
+    PetscCall(PetscFunctionListPrintNonEmpty(current->data));
+    current = current->next;
   }
   PetscFunctionReturn(0);
 }
@@ -369,10 +396,14 @@ M*/
 PetscErrorCode PetscFunctionListPrintNonEmpty(PetscFunctionList fl)
 {
   PetscFunctionBegin;
-  while (fl) {
-    PetscFunctionList next = fl->next;
-    if (fl->routine) PetscCall(PetscPrintf(PETSC_COMM_SELF, "[%d] function name: %s\n", PetscGlobalRank, fl->name));
-    fl = next;
+  if (fl) {
+    // clang-format off
+    PetscHMapFuncForEach(
+      fl,
+      name, func,
+      PetscCall(PetscFPrintf(PETSC_COMM_SELF, PETSC_STDOUT, "[%d] function name: %s\n", PetscGlobalRank, name));
+    );
+    // clang-format on
   }
   PetscFunctionReturn(0);
 }
@@ -395,35 +426,24 @@ PetscErrorCode PetscFunctionListPrintNonEmpty(PetscFunctionList fl)
 
 .seealso: `PetscFunctionListAdd()`, `PetscFunctionList`, `PetscObjectQueryFunction()`
 M*/
-PETSC_EXTERN PetscErrorCode PetscFunctionListFind_Private(PetscFunctionList fl, const char name[], void (**r)(void))
+PetscErrorCode PetscFunctionListFind_Private(PetscFunctionList fl, const char name[], PetscVoidFunction *r)
 {
-  PetscFunctionList entry = fl;
-
   PetscFunctionBegin;
   PetscValidCharPointer(name, 2);
   PetscValidPointer(r, 3);
-  while (entry) {
-    PetscBool flg;
-
-    PetscCall(PetscStrcmp(name, entry->name, &flg));
-    if (flg) {
-      *r = entry->routine;
-      PetscFunctionReturn(0);
-    }
-    entry = entry->next;
-  }
   *r = NULL;
+  if (fl) PetscCall(PetscHMapFuncGet(fl->map, name, r));
   PetscFunctionReturn(0);
 }
 
 /*@
    PetscFunctionListView - prints out contents of an PetscFunctionList
 
-   Collective over viewer
+   Collective on `viewer`
 
    Input Parameters:
 +  list - the list of functions
--  viewer - currently ignored
+-  viewer - the `PetscViewer` used to view the PetscFunctionList
 
    Level: developer
 
@@ -434,18 +454,29 @@ PetscErrorCode PetscFunctionListView(PetscFunctionList list, PetscViewer viewer)
   PetscBool iascii;
 
   PetscFunctionBegin;
-  if (!viewer) viewer = PETSC_VIEWER_STDOUT_SELF;
   PetscValidPointer(list, 1);
+  if (!viewer) PetscCall(PetscViewerASCIIGetStdout(PETSC_COMM_SELF, &viewer));
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
 
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
   PetscCheck(iascii, PETSC_COMM_SELF, PETSC_ERR_SUP, "Only ASCII viewer supported");
+  {
+    PetscInt size;
 
-  while (list) {
-    PetscCall(PetscViewerASCIIPrintf(viewer, " %s\n", list->name));
-    list = list->next;
+    PetscCall(PetscHMapFuncGetSize(list->map, &size));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "PetscFunctionList Object:\n"));
+    PetscCall(PetscViewerASCIIPushTab(viewer));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "size: %" PetscInt_FMT "\n", size));
+    if (size) {
+      PetscInt count = 0;
+
+      PetscCall(PetscViewerASCIIPrintf(viewer, "functions:\n"));
+      PetscCall(PetscViewerASCIIPushTab(viewer));
+      PetscHMapFuncForEach(list, name, func, PetscCall(PetscViewerASCIIPrintf(viewer, "%" PetscInt_FMT ": %s\n", ++count, name)));
+      PetscCall(PetscViewerASCIIPopTab(viewer));
+    }
+    PetscCall(PetscViewerASCIIPopTab(viewer));
   }
-  PetscCall(PetscViewerASCIIPrintf(viewer, "\n"));
   PetscFunctionReturn(0);
 }
 
@@ -472,23 +503,20 @@ PetscErrorCode PetscFunctionListView(PetscFunctionList list, PetscViewer viewer)
 @*/
 PetscErrorCode PetscFunctionListGet(PetscFunctionList list, const char ***array, int *n)
 {
-  PetscInt          count = 0;
-  PetscFunctionList klist = list;
+  PetscInt size = 0;
 
   PetscFunctionBegin;
-  while (list) {
-    list = list->next;
-    count++;
+  PetscValidPointer(array, 2);
+  *array = NULL;
+  if (list) {
+    const PetscHMapFunc map = list->map;
+    PetscInt            off = 0;
+
+    PetscCall(PetscHMapFuncGetSize(map, &size));
+    PetscCall(PetscMalloc1(size, (char ***)array));
+    PetscCall(PetscHMapFuncGetKeys(map, &off, *array));
   }
-  PetscCall(PetscMalloc1(count + 1, (char ***)array));
-  count = 0;
-  while (klist) {
-    (*array)[count] = klist->name;
-    klist           = klist->next;
-    count++;
-  }
-  (*array)[count] = NULL;
-  *n              = count + 1;
+  *n = (int)size;
   PetscFunctionReturn(0);
 }
 
@@ -517,17 +545,13 @@ PetscErrorCode PetscFunctionListPrintTypes(MPI_Comm comm, FILE *fd, const char p
   char p[64];
 
   PetscFunctionBegin;
-  if (!fd) fd = PETSC_STDOUT;
-
+  (void)fd;
   PetscCall(PetscStrncpy(p, "-", sizeof(p)));
   if (prefix) PetscCall(PetscStrlcat(p, prefix, sizeof(p)));
-  PetscCall(PetscFPrintf(comm, fd, "  %s%s <now %s : formerly %s>: %s (one of)", p, name + 1, newv, def, text));
+  PetscCall((*PetscHelpPrintf)(comm, "  %s%s <now %s : formerly %s>: %s (one of)", p, name + 1, newv, def, text));
 
-  while (list) {
-    PetscCall(PetscFPrintf(comm, fd, " %s", list->name));
-    list = list->next;
-  }
-  PetscCall(PetscFPrintf(comm, fd, " (%s)\n", man));
+  PetscHMapFuncForEach(list, name, func, PetscCall((*PetscHelpPrintf)(comm, " %s", name)));
+  PetscCall((*PetscHelpPrintf)(comm, " (%s)\n", man));
   PetscFunctionReturn(0);
 }
 
@@ -547,9 +571,17 @@ PetscErrorCode PetscFunctionListPrintTypes(MPI_Comm comm, FILE *fd, const char p
 PetscErrorCode PetscFunctionListDuplicate(PetscFunctionList fl, PetscFunctionList *nl)
 {
   PetscFunctionBegin;
-  while (fl) {
-    PetscCall(PetscFunctionListAdd(nl, fl->name, fl->routine));
-    fl = fl->next;
+  if (fl) {
+    PetscHMapFunc dup_map;
+
+    if (!*nl) {
+      PetscInt n;
+
+      PetscCall(PetscHMapFuncGetSize(fl->map, &n));
+      PetscCall(PetscFunctionListCreate_Private(n, nl));
+    }
+    dup_map = (*nl)->map;
+    PetscHMapFuncForEach(fl, name, func, PetscCall(PetscHMapFuncInsert_Private(dup_map, name, func)));
   }
   PetscFunctionReturn(0);
 }
