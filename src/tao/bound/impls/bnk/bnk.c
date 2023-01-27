@@ -6,9 +6,35 @@ static const char *BNK_INIT[64]   = {"constant", "direction", "interpolation"};
 static const char *BNK_UPDATE[64] = {"step", "reduction", "interpolation"};
 static const char *BNK_AS[64]     = {"none", "bertsekas"};
 
-/*------------------------------------------------------------*/
+/* Extracts from the full Hessian the part associated with the current bnk->inactive_idx and set the PCLMVM preconditioner */
 
-/* Routine for initializing the KSP solver, the BFGS preconditioner, and the initial trust radius estimation */
+static PetscErrorCode TaoBNKComputeSubHessian(Tao tao)
+{
+  TAO_BNK *bnk = (TAO_BNK *)tao->data;
+
+  PetscFunctionBegin;
+  PetscCall(MatDestroy(&bnk->Hpre_inactive));
+  PetscCall(MatDestroy(&bnk->H_inactive));
+  if (bnk->active_idx) {
+    PetscCall(MatCreateSubMatrix(tao->hessian, bnk->inactive_idx, bnk->inactive_idx, MAT_INITIAL_MATRIX, &bnk->H_inactive));
+    if (tao->hessian == tao->hessian_pre) {
+      PetscCall(PetscObjectReference((PetscObject)bnk->H_inactive));
+      bnk->Hpre_inactive = bnk->H_inactive;
+    } else {
+      PetscCall(MatCreateSubMatrix(tao->hessian_pre, bnk->inactive_idx, bnk->inactive_idx, MAT_INITIAL_MATRIX, &bnk->Hpre_inactive));
+    }
+    if (bnk->bfgs_pre) PetscCall(PCLMVMSetIS(bnk->bfgs_pre, bnk->inactive_idx));
+  } else {
+    PetscCall(PetscObjectReference((PetscObject)tao->hessian));
+    bnk->H_inactive = tao->hessian;
+    PetscCall(PetscObjectReference((PetscObject)tao->hessian_pre));
+    bnk->Hpre_inactive = tao->hessian_pre;
+    if (bnk->bfgs_pre) PetscCall(PCLMVMClearIS(bnk->bfgs_pre));
+  }
+  PetscFunctionReturn(0);
+}
+
+/* Initializes the KSP solver, the BFGS preconditioner, and the initial trust radius estimation */
 
 PetscErrorCode TaoBNKInitialize(Tao tao, PetscInt initType, PetscBool *needH)
 {
@@ -112,13 +138,7 @@ PetscErrorCode TaoBNKInitialize(Tao tao, PetscInt initType, PetscBool *needH)
           /* Compute the Hessian at the new step, and extract the inactive subsystem */
           PetscCall((*bnk->computehessian)(tao));
           PetscCall(TaoBNKEstimateActiveSet(tao, BNK_AS_NONE));
-          PetscCall(MatDestroy(&bnk->H_inactive));
-          if (bnk->active_idx) {
-            PetscCall(MatCreateSubMatrix(tao->hessian, bnk->inactive_idx, bnk->inactive_idx, MAT_INITIAL_MATRIX, &bnk->H_inactive));
-          } else {
-            PetscCall(PetscObjectReference((PetscObject)tao->hessian));
-            bnk->H_inactive = tao->hessian;
-          }
+          PetscCall(TaoBNKComputeSubHessian(tao));
           *needH = PETSC_FALSE;
         }
 
@@ -256,7 +276,7 @@ PetscErrorCode TaoBNKInitialize(Tao tao, PetscInt initType, PetscBool *needH)
 
 /*------------------------------------------------------------*/
 
-/* Routine for computing the exact Hessian and preparing the preconditioner at the new iterate */
+/* Computes the exact Hessian and extracts its subHessian */
 
 PetscErrorCode TaoBNKComputeHessian(Tao tao)
 {
@@ -268,29 +288,7 @@ PetscErrorCode TaoBNKComputeHessian(Tao tao)
   /* Add a correction to the BFGS preconditioner */
   if (bnk->M) PetscCall(MatLMVMUpdate(bnk->M, tao->solution, bnk->unprojected_gradient));
   /* Prepare the reduced sub-matrices for the inactive set */
-  PetscCall(MatDestroy(&bnk->Hpre_inactive));
-  PetscCall(MatDestroy(&bnk->H_inactive));
-  if (bnk->active_idx) {
-    PetscCall(MatCreateSubMatrix(tao->hessian, bnk->inactive_idx, bnk->inactive_idx, MAT_INITIAL_MATRIX, &bnk->H_inactive));
-    if (tao->hessian == tao->hessian_pre) {
-      PetscCall(PetscObjectReference((PetscObject)bnk->H_inactive));
-      bnk->Hpre_inactive = bnk->H_inactive;
-    } else {
-      PetscCall(MatCreateSubMatrix(tao->hessian_pre, bnk->inactive_idx, bnk->inactive_idx, MAT_INITIAL_MATRIX, &bnk->Hpre_inactive));
-    }
-    if (bnk->bfgs_pre) PetscCall(PCLMVMSetIS(bnk->bfgs_pre, bnk->inactive_idx));
-  } else {
-    PetscCall(PetscObjectReference((PetscObject)tao->hessian));
-    bnk->H_inactive = tao->hessian;
-    if (tao->hessian == tao->hessian_pre) {
-      PetscCall(PetscObjectReference((PetscObject)bnk->H_inactive));
-      bnk->Hpre_inactive = bnk->H_inactive;
-    } else {
-      PetscCall(PetscObjectReference((PetscObject)tao->hessian_pre));
-      bnk->Hpre_inactive = tao->hessian_pre;
-    }
-    if (bnk->bfgs_pre) PetscCall(PCLMVMClearIS(bnk->bfgs_pre));
-  }
+  PetscCall(TaoBNKComputeSubHessian(tao));
   PetscFunctionReturn(0);
 }
 

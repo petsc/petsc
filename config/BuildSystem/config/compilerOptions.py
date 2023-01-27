@@ -246,6 +246,8 @@ class CompilerOptions(config.base.Configure):
           flags.extend(['-Wno-unused-variable']) # older gfortran warns about unused common block constants
         if config.setCompilers.Configure.isGfortran45x(compiler, self.log):
           flags.extend(['-Wno-line-truncation']) # Work around bug in this series, fixed in 4.6: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=42852
+        if config.setCompilers.Configure.isMINGW(compiler, self.log):
+          flags.extend(['-fallow-invalid-boz'])
       elif bopt == 'g':
         # g77 3.2.3 preprocesses the file into nothing if we give -g3
         flags.extend(['-g','-O0'])

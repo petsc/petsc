@@ -551,10 +551,14 @@ PetscErrorCode DMGetCoordinatesLocalSetUp(DM dm)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   if (!dm->coordinates[0].xl && dm->coordinates[0].x) {
-    DM cdm = NULL;
+    DM       cdm = NULL;
+    PetscInt bs;
 
     PetscCall(DMGetCoordinateDM(dm, &cdm));
     PetscCall(DMCreateLocalVector(cdm, &dm->coordinates[0].xl));
+    // If the size of the vector is 0, it will not get the right block size
+    PetscCall(VecGetBlockSize(dm->coordinates[0].x, &bs));
+    PetscCall(VecSetBlockSize(dm->coordinates[0].xl, bs));
     PetscCall(PetscObjectSetName((PetscObject)dm->coordinates[0].xl, "coordinates"));
     PetscCall(DMGlobalToLocalBegin(cdm, dm->coordinates[0].x, INSERT_VALUES, dm->coordinates[0].xl));
     PetscCall(DMGlobalToLocalEnd(cdm, dm->coordinates[0].x, INSERT_VALUES, dm->coordinates[0].xl));
