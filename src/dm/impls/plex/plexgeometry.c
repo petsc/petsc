@@ -2240,7 +2240,7 @@ static PetscErrorCode DMPlexComputeGeometryFVM_1D_Internal(DM dm, PetscInt dim, 
 
     switch (cdim) {
     case 3:
-      normal[2] = 0.;
+      normal[2] = 0.; /* fall through */
     case 2:
       normal[0] = -PetscRealPart(coords[1] - coords[cdim + 1]);
       normal[1] = PetscRealPart(coords[0] - coords[cdim + 0]);
