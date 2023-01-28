@@ -670,7 +670,7 @@ systems.  Also note the configuration examples in ``config/examples``.
 
 .. _MPICH: https://www.mpich.org/
 .. _BLAS/LAPACK: https://www.netlib.org/lapack/lug/node11.html
-.. _MUMPS: http://mumps.enseeiht.fr/
+.. _MUMPS: https://mumps-solver.org/
 .. _HYPRE: https://computing.llnl.gov/projects/hypre-scalable-linear-solvers-multigrid-methods
 .. _SuperLU_DIST: https://github.com/xiaoyeli/superlu_dist
 .. _SuperLU: https://portal.nersc.gov/project/sparse/superlu/

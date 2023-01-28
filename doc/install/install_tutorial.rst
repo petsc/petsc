@@ -27,7 +27,7 @@ your machine):
 
 Don't need Fortran? Use ``--with-fortran-bindings=0`` to reduce the build times. If you
 are not using :ref:`external packages <doc_externalsoftware>` that use Fortran (for
-example, `MUMPS <http://mumps.enseeiht.fr/>`__ requires Fortran) you can use
+example, `MUMPS <https://mumps-solver.org/>`__ requires Fortran) you can use
 ``--with-fc=0`` for even faster build times.
 
 .. admonition:: Encounter problems?
