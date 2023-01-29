@@ -4,9 +4,10 @@ import os
 class Configure(config.package.GNUPackage):
   def __init__(self, framework):
     config.package.GNUPackage.__init__(self, framework)
-    self.version          = '4.0.3'
+    self.version          = '4.1'
     self.download         = ['https://github.com/pmodels/mpich/releases/download/v'+self.version+'/mpich-'+self.version+'.tar.gz',
-                             'https://www.mpich.org/static/downloads/'+self.version+'/mpich-'+self.version+'.tar.gz']
+                             'https://www.mpich.org/static/downloads/'+self.version+'/mpich-'+self.version+'.tar.gz', # does not always work from Python? So add in ftp.mcs URL below
+                             'https://ftp.mcs.anl.gov/pub/petsc/externalpackages'+'/mpich-'+self.version+'.tar.gz']
     self.downloaddirnames = ['mpich']
     self.skippackagewithoptions = 1
     self.isMPI = 1
