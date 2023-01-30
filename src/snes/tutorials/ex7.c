@@ -11,15 +11,18 @@ static char help[] = "Fermions on a hypercubic lattice.\n\n";
 const PetscReal M = 1.0;
 
 typedef struct {
-  PetscBool usePV; /* Use Pauli-Villars preconditioning */
+  PetscBool printTr; // Print the traversal
+  PetscBool usePV;   // Use Pauli-Villars preconditioning
 } AppCtx;
 
 PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
 {
   PetscFunctionBegin;
-  options->usePV = PETSC_TRUE;
+  options->printTr = PETSC_FALSE;
+  options->usePV   = PETSC_TRUE;
 
   PetscOptionsBegin(comm, "", "Meshing Problem Options", "DMPLEX");
+  PetscCall(PetscOptionsBool("-print_traversal", "Print the mesh traversal", "ex1.c", options->printTr, &options->printTr, NULL));
   PetscCall(PetscOptionsBool("-use_pv", "Use Pauli-Villars preconditioning", "ex1.c", options->usePV, &options->usePV, NULL));
   PetscOptionsEnd();
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -207,7 +210,7 @@ static PetscErrorCode ComputeAction(PetscInt d, PetscBool forward, const PetscSc
 /*
   The assembly loop runs over vertices. Each vertex has 2d edges in its support. The edges are ordered first by the dimension along which they run, and second from smaller to larger index, expect for edges which loop periodically. The vertices on edges are also ordered from smaller to larger index except for periodic edges.
 */
-static PetscErrorCode ComputeResidual(DM dm, Vec u, Vec f)
+static PetscErrorCode ComputeResidualLocal(DM dm, Vec u, Vec f)
 {
   DM                 dmAux;
   Vec                gauge;
@@ -260,6 +263,24 @@ static PetscErrorCode ComputeResidual(DM dm, Vec u, Vec f)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+static PetscErrorCode ComputeResidual(DM dm, Vec u, Vec f)
+{
+  Vec lu, lf;
+
+  PetscFunctionBegin;
+  PetscCall(DMGetLocalVector(dm, &lu));
+  PetscCall(DMGetLocalVector(dm, &lf));
+  PetscCall(DMGlobalToLocalBegin(dm, u, INSERT_VALUES, lu));
+  PetscCall(DMGlobalToLocalEnd(dm, u, INSERT_VALUES, lu));
+  PetscCall(VecSet(lf, 0.));
+  PetscCall(ComputeResidualLocal(dm, lu, lf));
+  PetscCall(DMLocalToGlobalBegin(dm, lf, INSERT_VALUES, f));
+  PetscCall(DMLocalToGlobalEnd(dm, lf, INSERT_VALUES, f));
+  PetscCall(DMRestoreLocalVector(dm, &lu));
+  PetscCall(DMRestoreLocalVector(dm, &lf));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 static PetscErrorCode CreateJacobian(DM dm, Mat *J)
 {
   PetscFunctionBegin;
@@ -304,7 +325,7 @@ static PetscErrorCode PrintTraversal(DM dm)
 
 static PetscErrorCode ComputeFFT(Mat FT, PetscInt Nc, Vec x, Vec p)
 {
-  Vec     *xComp, *pComp;
+  Vec     *xComp, *pComp, xTmp, pTmp;
   PetscInt n, N;
 
   PetscFunctionBeginUser;
@@ -321,13 +342,20 @@ static PetscErrorCode ComputeFFT(Mat FT, PetscInt Nc, Vec x, Vec p)
     PetscCall(VecSetSizes(xComp[i], n / Nc, N / Nc));
     PetscCall(VecDuplicate(xComp[i], &pComp[i]));
   }
+  PetscCall(MatCreateVecsFFTW(FT, &xTmp, &pTmp, NULL));
   PetscCall(VecStrideGatherAll(x, xComp, INSERT_VALUES));
-  for (PetscInt i = 0; i < Nc; ++i) PetscCall(MatMult(FT, xComp[i], pComp[i]));
+  for (PetscInt i = 0; i < Nc; ++i) {
+    PetscCall(VecScatterPetscToFFTW(FT, xComp[i], xTmp));
+    PetscCall(MatMult(FT, xTmp, pTmp));
+    PetscCall(VecScatterFFTWToPetsc(FT, pTmp, pComp[i]));
+  }
   PetscCall(VecStrideScatterAll(pComp, p, INSERT_VALUES));
   for (PetscInt i = 0; i < Nc; ++i) {
     PetscCall(VecDestroy(&xComp[i]));
     PetscCall(VecDestroy(&pComp[i]));
   }
+  PetscCall(VecDestroy(&xTmp));
+  PetscCall(VecDestroy(&pTmp));
   PetscCall(PetscFree2(xComp, pComp));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -380,8 +408,11 @@ static PetscErrorCode TestFreeField(DM dm)
   PetscInt           dim, V     = 1, vStart, vEnd;
   PetscContainer     c;
   PetscBool          constRhs = PETSC_FALSE;
+  PetscMPIInt        size;
 
   PetscFunctionBeginUser;
+  PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)dm), &size));
+  if (size > 1) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-const_rhs", &constRhs, NULL));
 
   PetscCall(SetGauge_Identity(dm));
@@ -414,7 +445,7 @@ static PetscErrorCode TestFreeField(DM dm)
     V *= extent[d];
   }
   PetscCall(ComputeResidual(dm, psi, eta));
-  PetscCall(VecViewFromOptions(eta, NULL, "-psi_view"));
+  PetscCall(VecViewFromOptions(psi, NULL, "-psi_view"));
   PetscCall(VecViewFromOptions(eta, NULL, "-eta_view"));
   PetscCall(ComputeFFT(FT, Nc, psi, psiHat));
   PetscCall(VecScale(psiHat, 1. / V));
@@ -503,7 +534,7 @@ int main(int argc, char **argv)
   PetscCall(SetupAuxDiscretization(dm, &user));
   PetscCall(DMCreateGlobalVector(dm, &u));
   PetscCall(DMCreateGlobalVector(dm, &f));
-  PetscCall(PrintTraversal(dm));
+  if (user.printTr) PetscCall(PrintTraversal(dm));
   PetscCall(ComputeResidual(dm, u, f));
   PetscCall(VecViewFromOptions(f, NULL, "-res_view"));
   PetscCall(CreateJacobian(dm, &J));
@@ -526,6 +557,14 @@ int main(int argc, char **argv)
     requires: fftw
     suffix: dirac_free_field
     args: -dm_plex_dim 4 -dm_plex_shape hypercubic -dm_plex_box_faces 3,3,3,3 -dm_view -sol_view \
+          -dm_plex_check_symmetry -dm_plex_check_skeleton -dm_plex_check_faces -dm_plex_check_pointsf
+
+  # Problem on rank 3 on MacOSX
+  test:
+    requires: fftw
+    suffix: dirac_free_field_par
+    nsize: 16
+    args: -dm_plex_dim 4 -dm_plex_shape hypercubic -dm_plex_box_faces 4,4,4,4 -dm_view -sol_view \
           -dm_plex_check_symmetry -dm_plex_check_skeleton -dm_plex_check_faces -dm_plex_check_pointsf
 
 TEST*/
