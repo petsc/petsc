@@ -1,7 +1,6 @@
 #ifndef __SEQAIJKOKKOSIMPL_HPP
 #define __SEQAIJKOKKOSIMPL_HPP
 
-#include <petscaijdevice.h>
 #include <petsc/private/vecimpl_kokkos.hpp>
 #include <../src/mat/impls/aij/seq/aij.h>
 #include <KokkosSparse_CrsMatrix.hpp>

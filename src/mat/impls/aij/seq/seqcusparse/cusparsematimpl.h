@@ -4,7 +4,6 @@
 #include <petscpkg_version.h>
 #include <../src/vec/vec/impls/seq/cupm/vecseqcupm.hpp> /* for VecSeq_CUPM */
 #include <petsc/private/petsclegacycupmblas.h>
-#include <petscaijdevice.h>
 
 #include <cusparse_v2.h>
 

@@ -15,17 +15,18 @@ static char help[] = "Test of CUDA matrix assemble with simple matrix.\n\n";
 #include <assert.h>
 
 #include <petscaijdevice.h>
+
 __global__ void assemble_on_gpu(PetscSplitCSRDataStructure d_mat, PetscInt start, PetscInt end, PetscInt N, PetscMPIInt rank)
 {
   const PetscInt inc = blockDim.x, my0 = threadIdx.x;
   PetscInt       i;
-  PetscErrorCode ierr;
+  int            err;
 
   for (i = start + my0; i < end + 1; i += inc) {
     PetscInt    js[] = {i - 1, i}, nn = (i == N) ? 1 : 2; // negative indices are igored but >= N are not, so clip end
     PetscScalar values[] = {1, 1, 1, 1};
-    ierr                 = MatSetValuesDevice(d_mat, nn, js, nn, js, values, ADD_VALUES);
-    if (ierr) assert(0);
+    err                  = MatSetValuesDevice(d_mat, nn, js, nn, js, values, ADD_VALUES);
+    if (err) assert(0);
   }
 }
 
@@ -104,7 +105,7 @@ int main(int argc, char **args)
 /*TEST
 
    build:
-      requires: cuda
+      requires: cuda !defined(PETSC_HAVE_CUDA_CLANG)
 
    test:
       suffix: 0

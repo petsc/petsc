@@ -591,6 +591,26 @@ PETSC_EXTERN PetscErrorCode MatCoarsenMISKSetDistance(MatCoarsen, PetscInt);
 PETSC_EXTERN PetscErrorCode MatCoarsenMISKGetDistance(MatCoarsen, PetscInt *);
 
 /*
+    Used in aijdevice.h
+*/
+typedef struct {
+  PetscInt    *i;
+  PetscInt    *j;
+  PetscScalar *a;
+  PetscInt     n;
+  PetscInt     ignorezeroentries;
+} PetscCSRDataStructure;
+
+struct _n_SplitCSRMat {
+  PetscInt              cstart, cend, rstart, rend;
+  PetscCSRDataStructure diag, offdiag;
+  PetscInt             *colmap;
+  PetscInt              M; // number of columns for out of bounds check
+  PetscMPIInt           rank;
+  PetscBool             allocated_indices;
+};
+
+/*
     MatFDColoring is used to compute Jacobian matrices efficiently
   via coloring. The data structure is explained below in an example.
 

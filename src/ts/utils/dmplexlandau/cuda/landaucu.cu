@@ -2,15 +2,39 @@
   Implements the Landau kernel
 */
 #include <petscconf.h>
-#include <petsc/private/dmpleximpl.h> /*I  "dmpleximpl.h"   I*/
-#include <petsclandau.h>
-#define PETSC_SKIP_IMMINTRIN_H_CUDAWORKAROUND 1
-#include <../src/mat/impls/aij/seq/aij.h>
-#include <petscmat.h>
-#include <petscdevice_cuda.h>
 
-#include "../land_tensors.h"
-#include <petscaijdevice.h>
+#include <petsclandau.h>
+#if defined(PETSC_HAVE_CUDA_CLANG)
+  #define LANDAU_NOT_IMPLEMENTED SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Not supported with CLANG")
+PetscErrorCode LandauCUDAJacobian(DM[], const PetscInt, const PetscInt, const PetscInt, const PetscInt[], PetscReal[], PetscScalar[], const PetscScalar[], const LandauStaticData *, const PetscReal, const PetscLogEvent[], const PetscInt[], const PetscInt[], Mat[], Mat)
+{
+  LANDAU_NOT_IMPLEMENTED;
+}
+PetscErrorCode LandauCUDACreateMatMaps(P4estVertexMaps *, pointInterpolationP4est (*)[LANDAU_MAX_Q_FACE], PetscInt[], PetscInt, PetscInt)
+{
+  LANDAU_NOT_IMPLEMENTED;
+}
+PetscErrorCode LandauCUDADestroyMatMaps(P4estVertexMaps *, PetscInt)
+{
+  LANDAU_NOT_IMPLEMENTED;
+}
+PetscErrorCode LandauCUDAStaticDataSet(DM, const PetscInt, const PetscInt, const PetscInt, PetscInt[], PetscInt[], PetscInt[], PetscReal[], PetscReal[], PetscReal[], PetscReal[], PetscReal[], PetscReal[], PetscReal[], PetscReal[], LandauStaticData *)
+{
+  LANDAU_NOT_IMPLEMENTED;
+}
+PetscErrorCode LandauCUDAStaticDataClear(LandauStaticData *)
+{
+  LANDAU_NOT_IMPLEMENTED;
+}
+#else
+  #include <petsc/private/dmpleximpl.h> /*I  "dmpleximpl.h"   I*/
+  #define PETSC_SKIP_IMMINTRIN_H_CUDAWORKAROUND 1
+  #include <../src/mat/impls/aij/seq/aij.h>
+  #include <petscmat.h>
+  #include <petscdevice_cuda.h>
+
+  #include "../land_tensors.h"
+  #include <petscaijdevice.h>
 
 PETSC_EXTERN PetscErrorCode LandauCUDACreateMatMaps(P4estVertexMaps maps[], pointInterpolationP4est (*pointMaps)[LANDAU_MAX_Q_FACE], PetscInt Nf[], PetscInt, PetscInt grid)
 {
@@ -92,12 +116,12 @@ PetscErrorCode LandauCUDAStaticDataSet(DM plex, const PetscInt Nq, const PetscIn
     PetscCallCUDA(cudaMemcpy(SData_d->x, a_x, nip * szf, cudaMemcpyHostToDevice));
     PetscCallCUDA(cudaMalloc((void **)&SData_d->y, nip * szf)); // kernel input
     PetscCallCUDA(cudaMemcpy(SData_d->y, a_y, nip * szf, cudaMemcpyHostToDevice));
-#if LANDAU_DIM == 3
+  #if LANDAU_DIM == 3
     PetscCallCUDA(cudaMalloc((void **)&SData_d->z, nip * szf)); // kernel input
     PetscCallCUDA(cudaMemcpy(SData_d->z, a_z, nip * szf, cudaMemcpyHostToDevice));
-#else
+  #else
     (void)a_z;
-#endif
+  #endif
     PetscCallCUDA(cudaMalloc((void **)&SData_d->w, nip * szf)); // kernel input
     PetscCallCUDA(cudaMemcpy(SData_d->w, a_w, nip * szf, cudaMemcpyHostToDevice));
 
@@ -119,9 +143,9 @@ PetscErrorCode LandauCUDAStaticDataSet(DM plex, const PetscInt Nq, const PetscIn
     PetscCallCUDA(cudaMalloc((void **)&SData_d->f, nip * Nf * szs * batch_sz)); // for each vertex in batch
     PetscCallCUDA(cudaMalloc((void **)&SData_d->dfdx, nip * Nf * szs * batch_sz));
     PetscCallCUDA(cudaMalloc((void **)&SData_d->dfdy, nip * Nf * szs * batch_sz));
-#if LANDAU_DIM == 3
+  #if LANDAU_DIM == 3
     PetscCallCUDA(cudaMalloc((void **)&SData_d->dfdz, nip * Nf * szs * batch_sz));
-#endif
+  #endif
   }
   PetscFunctionReturn(0);
 }
@@ -137,9 +161,9 @@ PetscErrorCode LandauCUDAStaticDataClear(LandauStaticData *SData_d)
     PetscCallCUDA(cudaFree(SData_d->B));
     PetscCallCUDA(cudaFree(SData_d->D));
     PetscCallCUDA(cudaFree(SData_d->invJ));
-#if LANDAU_DIM == 3
+  #if LANDAU_DIM == 3
     PetscCallCUDA(cudaFree(SData_d->z));
-#endif
+  #endif
     PetscCallCUDA(cudaFree(SData_d->x));
     PetscCallCUDA(cudaFree(SData_d->y));
     PetscCallCUDA(cudaFree(SData_d->w));
@@ -148,9 +172,9 @@ PetscErrorCode LandauCUDAStaticDataClear(LandauStaticData *SData_d)
     PetscCallCUDA(cudaFree(SData_d->f));
     PetscCallCUDA(cudaFree(SData_d->dfdx));
     PetscCallCUDA(cudaFree(SData_d->dfdy));
-#if LANDAU_DIM == 3
+  #if LANDAU_DIM == 3
     PetscCallCUDA(cudaFree(SData_d->dfdz));
-#endif
+  #endif
     PetscCallCUDA(cudaFree(SData_d->NCells));
     PetscCallCUDA(cudaFree(SData_d->species_offset));
     PetscCallCUDA(cudaFree(SData_d->mat_offset));
@@ -165,9 +189,9 @@ PetscErrorCode LandauCUDAStaticDataClear(LandauStaticData *SData_d)
 // The GPU Landau kernel
 //
 __global__ void landau_form_fdf(const PetscInt dim, const PetscInt Nb, const PetscInt num_grids, const PetscReal d_invJ[], const PetscReal *const BB, const PetscReal *const DD, PetscScalar *d_vertex_f, P4estVertexMaps *d_maps[], PetscReal d_f[], PetscReal d_dfdx[], PetscReal d_dfdy[],
-#if LANDAU_DIM == 3
-                                PetscReal d_dfdz[],
-#endif
+  #if LANDAU_DIM == 3
+                                PetscReal      d_dfdz[],
+  #endif
                                 const PetscInt d_numCells[], const PetscInt d_species_offset[], const PetscInt d_mat_offset[], const PetscInt d_ip_offset[], const PetscInt d_ipf_offset[], const PetscInt d_elem_offset[]) // output
 {
   const PetscInt   Nq = blockDim.y, myQi = threadIdx.y;
@@ -221,9 +245,9 @@ __global__ void landau_form_fdf(const PetscInt dim, const PetscInt Nb, const Pet
       }
       d_dfdx[idx] = u_x[0];
       d_dfdy[idx] = u_x[1];
-#if LANDAU_DIM == 3
+  #if LANDAU_DIM == 3
       d_dfdz[idx] = u_x[2];
-#endif
+  #endif
     }
   }
 }
@@ -231,25 +255,25 @@ __global__ void landau_form_fdf(const PetscInt dim, const PetscInt Nb, const Pet
 __device__ void landau_jac_kernel(const PetscInt num_grids, const PetscInt jpidx, PetscInt nip_global, const PetscInt grid, const PetscReal xx[], const PetscReal yy[], const PetscReal ww[], const PetscReal invJj[], const PetscInt Nftot, const PetscReal nu_alpha[], const PetscReal nu_beta[], const PetscReal invMass[], const PetscReal Eq_m[], const PetscReal *const BB, const PetscReal *const DD, PetscScalar *elemMat, P4estVertexMaps *d_maps[], PetscSplitCSRDataStructure d_mat, // output
                                   PetscScalar s_fieldMats[][LANDAU_MAX_NQ], // all these arrays are in shared memory
                                   PetscReal s_scale[][LANDAU_MAX_Q_FACE], PetscInt s_idx[][LANDAU_MAX_Q_FACE], PetscReal s_g2[][LANDAU_MAX_NQ][LANDAU_MAX_SPECIES], PetscReal s_g3[][LANDAU_DIM][LANDAU_MAX_NQ][LANDAU_MAX_SPECIES], PetscReal s_gg2[][LANDAU_MAX_NQ][LANDAU_MAX_SPECIES], PetscReal s_gg3[][LANDAU_DIM][LANDAU_MAX_NQ][LANDAU_MAX_SPECIES], PetscReal s_nu_alpha[], PetscReal s_nu_beta[], PetscReal s_invMass[], PetscReal s_f[], PetscReal s_dfx[], PetscReal s_dfy[], PetscReal d_f[], PetscReal d_dfdx[], PetscReal d_dfdy[], // global memory
-#if LANDAU_DIM == 3
+  #if LANDAU_DIM == 3
                                   const PetscReal zz[], PetscReal s_dfz[], PetscReal d_dfdz[],
-#endif
+  #endif
                                   const PetscInt d_numCells[], const PetscInt d_species_offset[], const PetscInt d_mat_offset[], const PetscInt d_ip_offset[], const PetscInt d_ipf_offset[], const PetscInt d_elem_offset[])
 {
-  const PetscInt Nq = blockDim.y, myQi = threadIdx.y;
-  const PetscInt b_elem_idx = blockIdx.y, b_id = blockIdx.x, IPf_sz_glb = d_ipf_offset[num_grids];
-  const PetscInt loc_Nf = d_species_offset[grid + 1] - d_species_offset[grid], loc_elem = b_elem_idx - d_elem_offset[grid];
-  const PetscInt moffset = LAND_MOFFSET(b_id, grid, gridDim.x, num_grids, d_mat_offset);
-  int            delta, d, f, g, d2, dp, d3, fieldA, ipidx_b;
-  PetscReal      gg2_temp[LANDAU_DIM], gg3_temp[LANDAU_DIM][LANDAU_DIM];
-#if LANDAU_DIM == 2
+  const PetscInt  Nq = blockDim.y, myQi = threadIdx.y;
+  const PetscInt  b_elem_idx = blockIdx.y, b_id = blockIdx.x, IPf_sz_glb = d_ipf_offset[num_grids];
+  const PetscInt  loc_Nf = d_species_offset[grid + 1] - d_species_offset[grid], loc_elem = b_elem_idx - d_elem_offset[grid];
+  const PetscInt  moffset = LAND_MOFFSET(b_id, grid, gridDim.x, num_grids, d_mat_offset);
+  int             delta, d, f, g, d2, dp, d3, fieldA, ipidx_b;
+  PetscReal       gg2_temp[LANDAU_DIM], gg3_temp[LANDAU_DIM][LANDAU_DIM];
+  #if LANDAU_DIM == 2
   const PetscReal vj[3] = {xx[jpidx], yy[jpidx]};
   constexpr int   dim   = 2;
-#else
+  #else
   const PetscReal vj[3] = {xx[jpidx], yy[jpidx], zz[jpidx]};
   constexpr int dim = 3;
-#endif
-  const PetscInt f_off = d_species_offset[grid], Nb = Nq;
+  #endif
+  const PetscInt  f_off = d_species_offset[grid], Nb = Nq;
   // create g2 & g3
   for (f = threadIdx.x; f < loc_Nf; f += blockDim.x) {
     for (d = 0; d < dim; d++) { // clear accumulation data D & K
@@ -257,10 +281,10 @@ __device__ void landau_jac_kernel(const PetscInt num_grids, const PetscInt jpidx
       for (d2 = 0; d2 < dim; d2++) s_gg3[d][d2][myQi][f] = 0;
     }
   }
-#pragma unroll
+  #pragma unroll
   for (d2 = 0; d2 < dim; d2++) {
     gg2_temp[d2] = 0;
-#pragma unroll
+  #pragma unroll
     for (d3 = 0; d3 < dim; d3++) gg3_temp[d2][d3] = 0;
   }
   if (threadIdx.y == 0) {
@@ -290,40 +314,40 @@ __device__ void landau_jac_kernel(const PetscInt num_grids, const PetscInt jpidx
         s_f[fieldB * blockDim.x + threadIdx.x]   = d_f[idx]; // all vector threads get copy of data
         s_dfx[fieldB * blockDim.x + threadIdx.x] = d_dfdx[idx];
         s_dfy[fieldB * blockDim.x + threadIdx.x] = d_dfdy[idx];
-#if LANDAU_DIM == 3
+  #if LANDAU_DIM == 3
         s_dfz[fieldB * blockDim.x + threadIdx.x] = d_dfdz[idx];
-#endif
+  #endif
       }
     }
     __syncthreads();
     if (ipidx < nip_global) {
       const PetscReal wi = ww[ipidx], x = xx[ipidx], y = yy[ipidx];
       PetscReal       temp1[3] = {0, 0, 0}, temp2 = 0;
-#if LANDAU_DIM == 2
-      PetscReal Ud[2][2], Uk[2][2], mask = (PetscAbs(vj[0] - x) < 100 * PETSC_SQRT_MACHINE_EPSILON && PetscAbs(vj[1] - y) < 100 * PETSC_SQRT_MACHINE_EPSILON) ? 0. : 1.;
+  #if LANDAU_DIM == 2
+      PetscReal       Ud[2][2], Uk[2][2], mask = (PetscAbs(vj[0] - x) < 100 * PETSC_SQRT_MACHINE_EPSILON && PetscAbs(vj[1] - y) < 100 * PETSC_SQRT_MACHINE_EPSILON) ? 0. : 1.;
       LandauTensor2D(vj, x, y, Ud, Uk, mask);
-#else
+  #else
       PetscReal U[3][3], z = zz[ipidx], mask = (PetscAbs(vj[0] - x) < 100 * PETSC_SQRT_MACHINE_EPSILON && PetscAbs(vj[1] - y) < 100 * PETSC_SQRT_MACHINE_EPSILON && PetscAbs(vj[2] - z) < 100 * PETSC_SQRT_MACHINE_EPSILON) ? 0. : 1.;
       LandauTensor3D(vj, x, y, z, U, mask);
-#endif
+  #endif
       for (int fieldB = 0; fieldB < loc_Nf_r; fieldB++) {
         temp1[0] += s_dfx[fieldB * blockDim.x + threadIdx.x] * s_nu_beta[fieldB + f_off_r] * s_invMass[fieldB + f_off_r];
         temp1[1] += s_dfy[fieldB * blockDim.x + threadIdx.x] * s_nu_beta[fieldB + f_off_r] * s_invMass[fieldB + f_off_r];
-#if LANDAU_DIM == 3
+  #if LANDAU_DIM == 3
         temp1[2] += s_dfz[fieldB * blockDim.x + threadIdx.x] * s_nu_beta[fieldB + f_off_r] * s_invMass[fieldB + f_off_r];
-#endif
+  #endif
         temp2 += s_f[fieldB * blockDim.x + threadIdx.x] * s_nu_beta[fieldB + f_off_r];
       }
       temp1[0] *= wi;
       temp1[1] *= wi;
-#if LANDAU_DIM == 3
+  #if LANDAU_DIM == 3
       temp1[2] *= wi;
-#endif
+  #endif
       temp2 *= wi;
-#if LANDAU_DIM == 2
-  #pragma unroll
+  #if LANDAU_DIM == 2
+    #pragma unroll
       for (d2 = 0; d2 < 2; d2++) {
-  #pragma unroll
+    #pragma unroll
         for (d3 = 0; d3 < 2; ++d3) {
           /* K = U * grad(f): g2=e: i,A */
           gg2_temp[d2] += Uk[d2][d3] * temp1[d3];
@@ -331,10 +355,10 @@ __device__ void landau_jac_kernel(const PetscInt num_grids, const PetscInt jpidx
           gg3_temp[d2][d3] += Ud[d2][d3] * temp2;
         }
       }
-#else
-  #pragma unroll
+  #else
+    #pragma unroll
       for (d2 = 0; d2 < 3; ++d2) {
-  #pragma unroll
+    #pragma unroll
         for (d3 = 0; d3 < 3; ++d3) {
           /* K = U * grad(f): g2 = e: i,A */
           gg2_temp[d2] += U[d2][d3] * temp1[d3];
@@ -342,25 +366,25 @@ __device__ void landau_jac_kernel(const PetscInt num_grids, const PetscInt jpidx
           gg3_temp[d2][d3] += U[d2][d3] * temp2;
         }
       }
-#endif
+  #endif
     }
   } /* IPs */
 
   /* reduce gg temp sums across threads */
   for (delta = blockDim.x / 2; delta > 0; delta /= 2) {
-#pragma unroll
+  #pragma unroll
     for (d2 = 0; d2 < dim; d2++) {
       gg2_temp[d2] += __shfl_xor_sync(0xffffffff, gg2_temp[d2], delta, blockDim.x);
-#pragma unroll
+  #pragma unroll
       for (d3 = 0; d3 < dim; d3++) gg3_temp[d2][d3] += __shfl_xor_sync(0xffffffff, gg3_temp[d2][d3], delta, blockDim.x);
     }
   }
   // add alpha and put in gg2/3
   for (fieldA = threadIdx.x; fieldA < loc_Nf; fieldA += blockDim.x) {
-#pragma unroll
+  #pragma unroll
     for (d2 = 0; d2 < dim; d2++) {
       s_gg2[d2][myQi][fieldA] += gg2_temp[d2] * s_nu_alpha[fieldA + f_off];
-#pragma unroll
+  #pragma unroll
       for (d3 = 0; d3 < dim; d3++) s_gg3[d2][d3][myQi][fieldA] -= gg3_temp[d2][d3] * s_nu_alpha[fieldA + f_off] * s_invMass[fieldA + f_off];
     }
   }
@@ -458,9 +482,9 @@ __device__ void landau_jac_kernel(const PetscInt num_grids, const PetscInt jpidx
 // The CUDA Landau kernel
 //
 __global__ void __launch_bounds__(256, 2) landau_jacobian(const PetscInt nip_global, const PetscInt dim, const PetscInt Nb, const PetscInt num_grids, const PetscReal invJj[], const PetscInt Nftot, const PetscReal nu_alpha[], const PetscReal nu_beta[], const PetscReal invMass[], const PetscReal Eq_m[], const PetscReal *const BB, const PetscReal *const DD, const PetscReal xx[], const PetscReal yy[], const PetscReal ww[], PetscScalar d_elem_mats[], P4estVertexMaps *d_maps[], PetscSplitCSRDataStructure d_mat, PetscReal d_f[], PetscReal d_dfdx[], PetscReal d_dfdy[],
-#if LANDAU_DIM == 3
+  #if LANDAU_DIM == 3
                                                           const PetscReal zz[], PetscReal d_dfdz[],
-#endif
+  #endif
                                                           const PetscInt d_numCells[], const PetscInt d_species_offset[], const PetscInt d_mat_offset[], const PetscInt d_ip_offset[], const PetscInt d_ipf_offset[], const PetscInt d_elem_offset[])
 {
   extern __shared__ PetscReal smem[];
@@ -485,10 +509,10 @@ __global__ void __launch_bounds__(256, 2) landau_jacobian(const PetscInt nip_glo
   size += blockDim.x * LANDAU_MAX_SPECIES;
   PetscReal *s_dfy = &smem[size];
   size += blockDim.x * LANDAU_MAX_SPECIES;
-#if LANDAU_DIM == 3
+  #if LANDAU_DIM == 3
   PetscReal *s_dfz = &smem[size];
   size += blockDim.x * LANDAU_MAX_SPECIES;
-#endif
+  #endif
   PetscScalar(*s_fieldMats)[LANDAU_MAX_NQ][LANDAU_MAX_NQ];
   PetscReal(*s_scale)[LANDAU_MAX_NQ][LANDAU_MAX_Q_FACE] = nullptr;
   PetscInt(*s_idx)[LANDAU_MAX_NQ][LANDAU_MAX_Q_FACE]    = nullptr;
@@ -531,9 +555,9 @@ __global__ void __launch_bounds__(256, 2) landau_jacobian(const PetscInt nip_glo
     }
     __syncthreads();
     landau_jac_kernel(num_grids, jpidx, nip_global, grid, xx, yy, ww, invJ, Nftot, nu_alpha, nu_beta, invMass, Eq_m, BB, DD, elemMat, d_maps, d_mat, *s_fieldMats, *s_scale, *s_idx, *s_g2, *s_g3, *s_gg2, *s_gg3, s_nu_alpha, s_nu_beta, s_invMass, s_f, s_dfx, s_dfy, d_f, d_dfdx, d_dfdy,
-#if LANDAU_DIM == 3
+  #if LANDAU_DIM == 3
                       zz, s_dfz, d_dfdz,
-#endif
+  #endif
                       d_numCells, d_species_offset, d_mat_offset, d_ip_offset, d_ipf_offset, d_elem_offset);
   }
 }
@@ -648,16 +672,16 @@ __global__ void __launch_bounds__(256, 4) landau_mass(const PetscInt dim, const 
 
 PetscErrorCode LandauCUDAJacobian(DM plex[], const PetscInt Nq, const PetscInt batch_sz, const PetscInt num_grids, const PetscInt a_numCells[], PetscReal a_Eq_m[], PetscScalar a_elem_closure[], const PetscScalar a_xarray[], const LandauStaticData *SData_d, const PetscReal shift, const PetscLogEvent events[], const PetscInt a_mat_offset[], const PetscInt a_species_offset[], Mat subJ[], Mat JacP)
 {
-  cudaError_t  cerr;
-  PetscInt     Nb = Nq, dim, nip_global, num_cells_batch, elem_mat_size_tot;
-  PetscInt    *d_numCells, *d_species_offset, *d_mat_offset, *d_ip_offset, *d_ipf_offset, *d_elem_offset;
-  PetscInt     szf = sizeof(PetscReal), szs = sizeof(PetscScalar), Nftot = a_species_offset[num_grids];
-  PetscReal   *d_BB = NULL, *d_DD = NULL, *d_invJj = NULL, *d_nu_alpha = NULL, *d_nu_beta = NULL, *d_invMass = NULL, *d_Eq_m = NULL, *d_x = NULL, *d_y = NULL, *d_w = NULL;
-  PetscScalar *d_elem_mats = NULL, *d_vertex_f = NULL;
-  PetscReal   *d_f = NULL, *d_dfdx = NULL, *d_dfdy = NULL;
-#if LANDAU_DIM == 3
-  PetscReal *d_dfdz = NULL, *d_z = NULL;
-#endif
+  cudaError_t                cerr;
+  PetscInt                   Nb = Nq, dim, nip_global, num_cells_batch, elem_mat_size_tot;
+  PetscInt                  *d_numCells, *d_species_offset, *d_mat_offset, *d_ip_offset, *d_ipf_offset, *d_elem_offset;
+  PetscInt                   szf = sizeof(PetscReal), szs = sizeof(PetscScalar), Nftot = a_species_offset[num_grids];
+  PetscReal                 *d_BB = NULL, *d_DD = NULL, *d_invJj = NULL, *d_nu_alpha = NULL, *d_nu_beta = NULL, *d_invMass = NULL, *d_Eq_m = NULL, *d_x = NULL, *d_y = NULL, *d_w = NULL;
+  PetscScalar               *d_elem_mats = NULL, *d_vertex_f = NULL;
+  PetscReal                 *d_f = NULL, *d_dfdx = NULL, *d_dfdy = NULL;
+  #if LANDAU_DIM == 3
+  PetscReal                 *d_dfdz = NULL, *d_z = NULL;
+  #endif
   LandauCtx                 *ctx;
   PetscSplitCSRDataStructure d_mat = NULL;
   P4estVertexMaps          **d_maps, *maps[LANDAU_MAX_GRIDS];
@@ -730,11 +754,11 @@ PetscErrorCode LandauCUDAJacobian(DM plex[], const PetscInt Nq, const PetscInt b
     d_Eq_m     = (PetscReal *)SData_d->Eq_m;
     d_dfdx     = (PetscReal *)SData_d->dfdx;
     d_dfdy     = (PetscReal *)SData_d->dfdy;
-#if LANDAU_DIM == 3
-    d_dfdz = (PetscReal *)SData_d->dfdz;
-    d_z    = (PetscReal *)SData_d->z;
-#endif
-    d_f = (PetscReal *)SData_d->f;
+  #if LANDAU_DIM == 3
+    d_dfdz     = (PetscReal *)SData_d->dfdz;
+    d_z        = (PetscReal *)SData_d->z;
+  #endif
+    d_f        = (PetscReal *)SData_d->f;
     // get a d_vertex_f
     if (a_elem_closure) {
       PetscInt closure_sz = 0; // argh, don't have this on the host!!!
@@ -765,9 +789,9 @@ PetscErrorCode LandauCUDAJacobian(DM plex[], const PetscInt Nq, const PetscInt b
     PetscCall(PetscLogGpuTimeBegin());
     PetscCall(PetscInfo(plex[0], "Form F and dF/dx vectors: nip_global=%" PetscInt_FMT " num_grids=%" PetscInt_FMT "\n", nip_global, num_grids));
     landau_form_fdf<<<dimGrid, dimBlockFDF>>>(dim, Nb, num_grids, d_invJj, d_BB, d_DD, d_vertex_f, d_maps, d_f, d_dfdx, d_dfdy,
-#if LANDAU_DIM == 3
+  #if LANDAU_DIM == 3
                                               d_dfdz,
-#endif
+  #endif
                                               d_numCells, d_species_offset, d_mat_offset, d_ip_offset, d_ipf_offset, d_elem_offset);
     PetscCUDACheckLaunch;
     PetscCall(PetscLogGpuFlops(batch_sz * nip_global * (PetscLogDouble)(2 * Nb * (1 + dim))));
@@ -788,9 +812,9 @@ PetscErrorCode LandauCUDAJacobian(DM plex[], const PetscInt Nq, const PetscInt b
     }
     PetscCall(PetscInfo(plex[0], "Jacobian shared memory size: %" PetscInt_FMT " bytes, d_elem_mats=%p d_maps=%p\n", ii, d_elem_mats, d_maps));
     landau_jacobian<<<dimGrid, dimBlock, ii * szf>>>(nip_global, dim, Nb, num_grids, d_invJj, Nftot, d_nu_alpha, d_nu_beta, d_invMass, d_Eq_m, d_BB, d_DD, d_x, d_y, d_w, d_elem_mats, d_maps, d_mat, d_f, d_dfdx, d_dfdy,
-#if LANDAU_DIM == 3
+  #if LANDAU_DIM == 3
                                                      d_z, d_dfdz,
-#endif
+  #endif
                                                      d_numCells, d_species_offset, d_mat_offset, d_ip_offset, d_ipf_offset, d_elem_offset);
     PetscCUDACheckLaunch; // has sync
     PetscCall(PetscLogGpuTimeEnd());
@@ -866,3 +890,4 @@ PetscErrorCode LandauCUDAJacobian(DM plex[], const PetscInt Nq, const PetscInt b
 
   PetscFunctionReturn(0);
 }
+#endif

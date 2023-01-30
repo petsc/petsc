@@ -7,7 +7,6 @@
 #include <petscpkg_version.h>
 #include <../src/vec/vec/impls/seq/cupm/vecseqcupm.hpp> /* for VecSeq_CUPM */
 #include <petsc/private/petsclegacycupmblas.h>
-#include <petscaijdevice.h>
 
 #if PETSC_PKG_HIP_VERSION_GE(5, 2, 0)
   #include <hipsparse/hipsparse.h>
