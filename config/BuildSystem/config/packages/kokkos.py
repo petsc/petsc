@@ -84,7 +84,7 @@ class Configure(config.package.CMakePackage):
       args.append('-DCMAKE_INSTALL_RPATH_USE_LINK_PATH:BOOL=ON')
       args.append('-DCMAKE_BUILD_WITH_INSTALL_RPATH:BOOL=ON')
 
-    if self.mpi.found:
+    if self.mpi.found and not self.mpi.usingMPIUni:
       args.append('-DKokkos_ENABLE_MPI=ON')
 
     if self.hwloc.found:

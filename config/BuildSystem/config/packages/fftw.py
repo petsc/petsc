@@ -25,7 +25,7 @@ class Configure(config.package.GNUPackage):
     args = config.package.GNUPackage.formGNUConfigureArgs(self)
     self.pushLanguage('C')
     self.popLanguage()
-    if self.mpi.found:
+    if self.mpi.found and not self.mpi.usingMPIUni:
       args.append('MPICC="'+self.getCompiler()+'"')
       args.append('--enable-mpi')
       if self.mpi.lib:

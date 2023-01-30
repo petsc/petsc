@@ -34,6 +34,7 @@ class Configure(config.package.Package):
     return
 
   def Install(self):
+    usempi = self.mpi.found and not self.mpi.usingMPIUni
     import os
     g = open(os.path.join(os.path.join(self.packageDir,'src'),'config.in'),'w')
 
@@ -60,7 +61,7 @@ class Configure(config.package.Package):
       cflags = ' -DX_ARCHi686_mac    '
     else:
       cflags = ''
-    if self.mpi.found:
+    if usempi:
       g.write('CCFOPT      = '+self.updatePackageCFlags(self.getCompilerFlags())+' '+self.headers.toString(self.mpi.include)+' '+cflags+'\n')
     else:
       g.write('CCFOPT      = '+self.updatePackageCFlags(self.getCompilerFlags())+' '+cflags+'\n')
@@ -123,7 +124,7 @@ class Configure(config.package.Package):
     g.write('#                          MPI/THREADS                            #\n')
     g.write('###################################################################\n')
     g.write('\n')
-    if not self.mpi.found:
+    if not usempi:
       g.write('# uncomment the following lines for sequential (NOMPI) version\n')
       g.write('VERSIONMPI  = _nompi\n')
       g.write('CCTYPES    := $(CCTYPES) -DFORCE_NOMPI\n')
@@ -176,7 +177,7 @@ class Configure(config.package.Package):
     g.write('\n')
     g.write('# Scotch always needed to compile\n')
     g.write('#scotch								\n')
-    if (self.mpi.found):
+    if usempi:
       g.write('CCPASTIX   := $(CCPASTIX) -DDISTRIBUTED -DWITH_SCOTCH '+self.headers.toString(self.scotch.include)+'\n')
     else:
       g.write('CCPASTIX   := $(CCPASTIX) -DWITH_SCOTCH '+self.headers.toString(self.scotch.include)+'\n')
