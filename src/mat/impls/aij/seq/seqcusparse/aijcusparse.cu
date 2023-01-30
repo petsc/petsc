@@ -3964,12 +3964,10 @@ PetscErrorCode MatSeqAIJCUSPARSETriFactors_Reset(Mat_SeqAIJCUSPARSETriFactors_p 
 
 static PetscErrorCode MatSeqAIJCUSPARSETriFactors_Destroy(Mat_SeqAIJCUSPARSETriFactors **trifactors)
 {
-  cusparseHandle_t handle;
-
   PetscFunctionBegin;
   if (*trifactors) {
     PetscCall(MatSeqAIJCUSPARSETriFactors_Reset(trifactors));
-    if (handle = (*trifactors)->handle) PetscCallCUSPARSE(cusparseDestroy(handle));
+    PetscCallCUSPARSE(cusparseDestroy((*trifactors)->handle));
     PetscCall(PetscFree(*trifactors));
   }
   PetscFunctionReturn(0);

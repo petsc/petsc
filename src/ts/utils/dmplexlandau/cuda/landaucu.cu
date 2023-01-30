@@ -490,8 +490,8 @@ __global__ void __launch_bounds__(256, 2) landau_jacobian(const PetscInt nip_glo
   size += blockDim.x * LANDAU_MAX_SPECIES;
 #endif
   PetscScalar(*s_fieldMats)[LANDAU_MAX_NQ][LANDAU_MAX_NQ];
-  PetscReal(*s_scale)[LANDAU_MAX_NQ][LANDAU_MAX_Q_FACE];
-  PetscInt(*s_idx)[LANDAU_MAX_NQ][LANDAU_MAX_Q_FACE];
+  PetscReal(*s_scale)[LANDAU_MAX_NQ][LANDAU_MAX_Q_FACE] = nullptr;
+  PetscInt(*s_idx)[LANDAU_MAX_NQ][LANDAU_MAX_Q_FACE]    = nullptr;
   const PetscInt b_elem_idx = blockIdx.y, b_id = blockIdx.x;
   PetscInt       Nq = blockDim.y, grid = 0; // Nq == Nb
   PetscScalar   *elemMat = NULL;            /* my output */
