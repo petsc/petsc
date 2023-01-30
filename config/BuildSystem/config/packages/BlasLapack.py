@@ -429,6 +429,7 @@ class Configure(config.package.Package):
       for lapack in ['libflame.a','liblapack.a']:
         yield ('Default BLIS/AMD-AOCL', lib, lapack,'unknown','unknown')
     yield ('Default compiler locations', 'libblas.a', 'liblapack.a','unknown','unknown')
+    yield ('Default NVHPC', None, ['liblapack.a','libblas.a','libnvf.a','librt.a'],'unknown','unknown')
     yield ('Default OpenBLAS', None, 'libopenblas.a','unknown','unknown')
     # Intel on Mac
     for ITHREAD in ITHREADS:
