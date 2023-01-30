@@ -32,8 +32,10 @@ class CompilerOptions(config.base.Configure):
         flags.extend(['-mfp16-format=ieee']) #  arm for utilizing 16 bit storage of floating point
         if config.setCompilers.Configure.isClang(compiler, self.log):
           flags.extend(['-Qunused-arguments'])
-        if self.argDB['with-visibility']:
+        if self.argDB['with-visibility'] and language != 'CUDA':
           flags.extend(['-fvisibility=hidden'])
+        if language == 'CUDA':
+          flags.extend(['-x cuda'])
       elif bopt == 'g':
         flags.extend(['-g3','-O0'])
       elif bopt == 'O':

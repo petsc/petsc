@@ -71,7 +71,10 @@ class Configure(config.package.CMakePackage):
 
     if self.cuda.found:
       args = self.rmArgsStartsWith(args,'-DCMAKE_CXX_COMPILER=')
-      args.append('-DCMAKE_CXX_COMPILER='+self.getCompiler('Cxx')) # use the host CXX compiler, let Kokkos handle the nvcc_wrapper business
+      if self.cuda.cudaclang:
+        args.append('-DCMAKE_CXX_COMPILER='+self.getCompiler('CUDA'))
+      else:
+        args.append('-DCMAKE_CXX_COMPILER='+self.getCompiler('Cxx')) # use the host CXX compiler, let Kokkos handle the nvcc_wrapper business
       if not self.argDB['with-kokkos-kernels-tpl']:
         args.append('-DKokkosKernels_ENABLE_TPL_CUBLAS=OFF')  # These are turned ON by KK by default when CUDA is enabled
         args.append('-DKokkosKernels_ENABLE_TPL_CUSPARSE=OFF')

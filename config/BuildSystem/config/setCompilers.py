@@ -142,7 +142,7 @@ class Configure(config.base.Configure):
     help.addArgument('Compilers', '-with-large-file-io=<bool>', nargs.ArgBool(None, 0, 'Allow IO with files greater then 2 GB'))
 
     help.addArgument('Compilers', '-CUDAPP=<prog>',        nargs.Arg(None, None, 'Specify the CUDA preprocessor'))
-    help.addArgument('Compilers', '-CUDAPPFLAGS=<string>', nargs.Arg(None, '-Wno-deprecated-gpu-targets', 'Specify the CUDA preprocessor options'))
+    help.addArgument('Compilers', '-CUDAPPFLAGS=<string>', nargs.Arg(None, None, 'Specify the CUDA preprocessor options'))
     help.addArgument('Compilers', '-with-cudac=<prog>',    nargs.Arg(None, None, 'Specify the CUDA compiler'))
     help.addArgument('Compilers', '-CUDAC=<prog>',         nargs.Arg(None, None, 'Specify the CUDA compiler'))
     help.addArgument('Compilers', '-CUDAFLAGS=<string>',   nargs.Arg(None, None, 'Specify the CUDA compiler options'))
@@ -1396,6 +1396,7 @@ class Configure(config.base.Configure):
       yield 'nvcc'
       yield os.path.join('/Developer','NVIDIA','CUDA-6.5','bin','nvcc')
       yield os.path.join('/usr','local','cuda','bin','nvcc')
+      yield 'clang'
     return
 
   def checkCUDACompiler(self):
@@ -1406,15 +1407,7 @@ class Configure(config.base.Configure):
         if self.getExecutable(compiler, resultName = 'CUDAC'):
           self.checkCompiler('CUDA')
           # Put version info into the log
-          compilerVersion = self.executeShellCommand(self.CUDAC+' --version', log = self.log)
-          compilerVersion = compilerVersion[0]
-          compilerVersion = compilerVersion.split()
-          i = 0
-          for word in compilerVersion:
-            i = i+1
-            if word == 'release':
-              break
-          self.compilerVersionCUDA = compilerVersion[i].strip(',')
+          self.executeShellCommand(self.CUDAC+' --version', log = self.log)
           break
       except RuntimeError as e:
         self.mesg = str(e)
@@ -1476,22 +1469,11 @@ class Configure(config.base.Configure):
         if self.getExecutable(compiler, resultName = 'HIPC'):
           self.checkCompiler('HIP')
           # Put version info into the log
-          compilerVersion = self.executeShellCommand(self.HIPC+' --version', log = self.log)
-          if 'nvcc' in compilerVersion and 'NVIDIA' in compilerVersion:
-            hipLine = compilerVersion.split('\n')[0]
-            self.compilerVersionHIP = hipLine.split(':')[1]
-            nvccReleaseLine = compilerVersion.split('\n')[-1]
-            import re
-            if 'release' in nvccReleaseLine:
-              self.compilerVersionCUDA = re.split('release',nvccReleaseLine)[1]
-            else:
-              raise RuntimeError('Error: Could not determine CUDA version from HIPC')
-          else:
-            self.compilerVersionHIP = compilerVersion[0]
+          self.executeShellCommand(self.HIPC+' --version', log = self.log)
           break
       except RuntimeError as e:
         self.mesg = str(e)
-        self.logPrint('HERE Error testing HIP compiler: '+str(e))
+        self.logPrint('Error testing HIP compiler: '+str(e))
         self.delMakeMacro('HIPC')
         del self.HIPC
     return
@@ -1546,9 +1528,7 @@ class Configure(config.base.Configure):
         if self.getExecutable(compiler, resultName = 'SYCLC'):
           self.checkCompiler('SYCL')
           # Put version info into the log
-          compilerVersion = self.executeShellCommand(self.SYCLC+' --version', log = self.log)
-          compilerVersion = compilerVersion[0]
-          compilerVersoin = compilerVersion.partition('Compiler')[-1].strip()
+          self.executeShellCommand(self.SYCLC+' --version', log = self.log)
           break
       except RuntimeError as e:
         self.mesg = str(e)
@@ -1944,6 +1924,7 @@ class Configure(config.base.Configure):
   def generatePICGuesses(self):
     if self.language[-1] == 'CUDA':
       yield '-Xcompiler -fPIC'
+      yield '-fPIC'
       return
     if config.setCompilers.Configure.isGNU(self.getCompiler(), self.log):
       PICFlags = ['-fPIC']

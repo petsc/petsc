@@ -11,7 +11,8 @@ class Configure(config.package.CMakePackage):
     self.downloaddirnames = ['kokkos']
     self.excludedDirs     = ['kokkos-kernels'] # Do not wrongly think kokkos-kernels as kokkos-vernum
     self.includes         = ['Kokkos_Macros.hpp']
-    self.liblist          = [['libkokkoscontainers.a','libkokkoscore.a']]
+    self.liblist          = [['libkokkoscontainers.a','libkokkoscore.a','libkokkossimd.a'],
+                             ['libkokkoscontainers.a','libkokkoscore.a']]
     self.functions        = ['']
     self.functionsCxx     = [1,'namespace Kokkos {void initialize(int&,char*[]);}','int one = 1;char* args[1];Kokkos::initialize(one,args);']
     self.minCxxVersion    = 'c++14'
@@ -113,21 +114,38 @@ class Configure(config.package.CMakePackage):
       # what nvcc thinks, instead of taking the c++ dialect directly from the host compiler.
       lang = 'cuda'
       args.append('-DKokkos_ENABLE_CUDA=ON')
+      args.append('-DKokkos_ENABLE_CUDA_LAMBDA:BOOL=ON')
       self.system = 'CUDA'
       self.pushLanguage('CUDA')
       petscNvcc = self.getCompiler()
-      cudaFlags = self.updatePackageCUDAFlags(self.getCompilerFlags()).replace(' ', ';')
+      cudaFlags = self.updatePackageCUDAFlags(self.getCompilerFlags())
       self.popLanguage()
       args = self.rmArgsStartsWith(args, '-DCMAKE_CUDA_COMPILER')
       args = self.rmArgsStartsWith(args, '-DCMAKE_CUDA_FLAGS')
-      args.append('-DKOKKOS_CUDA_OPTIONS="'+cudaFlags+'"')
-      args = self.rmArgsStartsWith(args,'-DCMAKE_CXX_COMPILER=')
-      # Kokkos passes the C++ compiler flags to nvcc which barfs with
-      # nvcc fatal   : 'g': expected a number
-      args = [a.replace('-Og', '-O1') if a.startswith('-DCMAKE_CXX_FLAG') else a for a in args]
-      args.append('-DCMAKE_CXX_COMPILER='+self.getCompiler('Cxx')) # use the host CXX compiler, let Kokkos handle the nvcc_wrapper business
-      genToName = {'3': 'KEPLER','5': 'MAXWELL', '6': 'PASCAL', '7': 'VOLTA', '8': 'AMPERE', '9': 'LOVELACE', '10': 'HOPPER'}
+      args = self.rmArgsStartsWith(args, '-DCMAKE_C_COMPILER')
+      args = self.rmArgsStartsWith(args, '-DCMAKE_C_FLAGS')
+      args = self.rmArgsStartsWith(args, '-DCMAKE_CXX_COMPILER')
+      if self.cuda.cudaclang:
+        args = self.rmArgsStartsWith(args, '-DCMAKE_CXX_FLAGS')
+        args.append('-DCMAKE_CXX_COMPILER="'+petscNvcc+'"')
+        args.append('-DCMAKE_CXX_FLAGS="'+cudaFlags.replace('-x cuda', '')+'"')
+      else:
+        args.append('-DKOKKOS_CUDA_OPTIONS="'+cudaFlags.replace(' ', ';')+'"')
+        args = self.rmArgsStartsWith(args,'-DCMAKE_CXX_COMPILER=')
+        # Kokkos passes the C++ compiler flags to nvcc which barfs with
+        # nvcc fatal   : 'g': expected a number
+        args = [a.replace('-Og', '-O1') if a.startswith('-DCMAKE_CXX_FLAG') else a for a in args]
+        args.append('-DCMAKE_CXX_COMPILER='+self.getCompiler('Cxx')) # use the host CXX compiler, let Kokkos handle the nvcc_wrapper business
+        #  Kokkos nvcc_wrapper REQUIRES nvcc be visible in the PATH!
+        path = os.getenv('PATH')
+        nvccpath = os.path.dirname(petscNvcc)
+        if nvccpath:
+          # Put nvccpath in the beginning of PATH, as there might be other nvcc in PATH and we got this one from --with-cuda-dir.
+          # Kokkos provides Kokkos_CUDA_DIR and CUDA_ROOT. But they do not actually work (as of Jan. 2022) in the aforementioned
+          # case, since these cmake options are not passed correctly to nvcc_wrapper.
+          os.environ['PATH'] = nvccpath+':'+path
       if hasattr(self.cuda,'cudaArch'):
+        genToName = {'3': 'KEPLER','5': 'MAXWELL', '6': 'PASCAL', '7': 'VOLTA', '8': 'AMPERE', '9': 'LOVELACE', '10': 'HOPPER'}
         generation = self.cuda.cudaArch[:-1] # cudaArch is a number 'nn', such as '75'
         try:
           # Kokkos uses names like VOLTA75, AMPERE86
@@ -136,15 +154,6 @@ class Configure(config.package.CMakePackage):
           raise RuntimeError('Could not find an arch name for CUDA gen number '+ self.cuda.cudaArch)
       else:
         raise RuntimeError('You must set --with-cuda-arch=60, 70, 75, 80 etc.')
-      args.append('-DKokkos_ENABLE_CUDA_LAMBDA:BOOL=ON')
-      #  Kokkos nvcc_wrapper REQUIRES nvcc be visible in the PATH!
-      path = os.getenv('PATH')
-      nvccpath = os.path.dirname(petscNvcc)
-      if nvccpath:
-        # Put nvccpath in the beginning of PATH, as there might be other nvcc in PATH and we got this one from --with-cuda-dir.
-        # Kokkos provides Kokkos_CUDA_DIR and CUDA_ROOT. But they do not actually work (as of Jan. 2022) in the aforementioned
-        # case, since these cmake options are not passed correctly to nvcc_wrapper.
-        os.environ['PATH'] = nvccpath+':'+path
     elif self.hip.found:
       lang = 'hip'
       self.system = 'HIP'
@@ -197,7 +206,10 @@ class Configure(config.package.CMakePackage):
     import os
     if self.cuda.found:
       self.buildLanguages = ['CUDA']
-      self.addMakeMacro('KOKKOS_USE_CUDA_COMPILER',1) # use the CUDA compiler to compile PETSc Kokkos code
+      if self.cuda.cudaclang:
+        self.addMakeMacro('KOKKOS_USE_CUDACLANG_COMPILER',1) # use the clang compiler to compile PETSc Kokkos code
+      else:
+        self.addMakeMacro('KOKKOS_USE_CUDA_COMPILER',1) # use the CUDA compiler to compile PETSc Kokkos code
     elif self.hip.found:
       self.buildLanguages= ['HIP']
       self.addMakeMacro('KOKKOS_USE_HIP_COMPILER',1)  # use the HIP compiler to compile PETSc Kokkos code
