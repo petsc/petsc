@@ -59,7 +59,7 @@ class CaseInsensitiveDefaultDict(defaultdict):
     return self[key]
 
 def default_cxx_dialect_ranges():
-  return ('c++11','c++17')
+  return ('c++11','c++20')
 
 class Configure(config.base.Configure):
   def __init__(self, framework):
@@ -178,7 +178,16 @@ class Configure(config.base.Configure):
     help.addArgument('Compilers', '-dynamicLibraryFlags=<string>',    nargs.Arg(None, [], 'Specify the dynamic library flags'))
     help.addArgument('Compilers', '-LIBS=<string>',          nargs.Arg(None, None, 'Specify extra libraries for all links'))
     help.addArgument('Compilers', '-with-environment-variables=<bool>',nargs.ArgBool(None, 0, 'Use compiler variables found in environment'))
-    help.addArgument('Compilers', '-with-cxx-dialect=<dialect>',nargs.Arg(None, 'auto', 'Dialect under which to compile C++ sources. Pass "c++17" to use "-std=c++17", "gnu++17" to use "-std=gnu++17" or pass just the numer (e.g. "17") to have PETSc auto-detect gnu extensions. Pass "auto" to let PETSc auto-detect everything or "0" to use the compiler"s default. Available: (11, 14, 17, auto, 0)'))
+    min_ver, max_ver   = default_cxx_dialect_ranges()
+    min_ver            = int(min_ver[2:])
+    max_ver            = int(max_ver[2:])
+    available_dialects = []
+    while min_ver <= max_ver:
+      available_dialects.append(min_ver)
+      min_ver += 3
+
+    available_dialects = ', '.join(map(str, available_dialects))
+    help.addArgument('Compilers', '-with-cxx-dialect=<dialect>',nargs.Arg(None, 'auto', 'Dialect under which to compile C++ sources. Pass "c++17" to use "-std=c++17", "gnu++17" to use "-std=gnu++17" or pass just the numer (e.g. "17") to have PETSc auto-detect gnu extensions. Pass "auto" to let PETSc auto-detect everything or "0" to use the compiler"s default. Available: ({}, auto, 0)'.format(available_dialects)))
     help.addArgument('Compilers', '-with-hip-dialect=<dialect>',nargs.Arg(None, 'auto', 'Dialect under which to compile HIP sources. If set should probably be equivalent to c++ dialect (see --with-cxx-dialect)'))
     help.addArgument('Compilers', '-with-cuda-dialect=<dialect>',nargs.Arg(None, 'auto', 'Dialect under which to compile CUDA sources. If set should probably be equivalent to c++ dialect (see --with-cxx-dialect)'))
     help.addArgument('Compilers', '-with-sycl-dialect=<dialect>',nargs.Arg(None, 'auto', 'Dialect under which to compile SYCL sources. If set should probably be equivalent to c++ dialect (see --with-cxx-dialect)'))
@@ -760,7 +769,8 @@ class Configure(config.base.Configure):
     isGNUish indicates if the compiler is gnu compliant (i.e. clang).
     -with-<lang>-dialect can take options:
       auto: use highest supported dialect configure can determine
-      [[c|gnu][xx|++]]20: not yet supported
+      [[c|gnu][xx|++]]23: not yet supported
+      [[c|gnu][xx|++]]20: gnu++20 or c++20
       [[c|gnu][xx|++]]17: gnu++17 or c++17
       [[c|gnu][xx|++]]14: gnu++14 or c++14
       [[c|gnu][xx|++]]11: gnu++11 or c++11
@@ -920,6 +930,58 @@ class Configure(config.base.Configure):
         """
       )))
 
+    def includes20():
+      return '\n'.join((includes17(),textwrap.dedent(
+        """
+        // c++20 includes
+        #include <compare>
+        #include <concepts>
+
+        consteval int sqr_cpp20(int n)
+        {
+          return n*n;
+        }
+        constexpr auto r = sqr_cpp20(10);
+        static_assert(r == 100);
+
+        const char *g_cpp20() { return "dynamic initialization"; }
+        constexpr const char *f_cpp20(bool p) { return p ? "constant initializer" : g_cpp20(); }
+        constinit const char *cinit_c = f_cpp20(true); // OK
+
+        // Declaration of the concept "Hashable", which is satisfied by any type 'T'
+        // such that for values 'a' of type 'T', the expression std::hash<T>{}(a)
+        // compiles and its result is convertible to std::size_t
+        template <typename T>
+        concept Hashable = requires(T a)
+        {
+          { std::hash<T>{}(a) } -> std::convertible_to<std::size_t>;
+        };
+
+        struct meow {};
+
+        // Constrained C++20 function template:
+        template <Hashable T>
+        void f_concept(T) {}
+
+        void abbrev_f1(auto); // same as template<class T> void abbrev_f1(T)
+        void abbrev_f4(const std::destructible auto*, std::floating_point auto&); // same as template<C3 T, C4 U> void abbrev_f4(const T*, U&);
+
+        template<>
+        void abbrev_f4<int>(const int*, const double&); // specialization of abbrev_f4<int, const double> (since C++20)
+        """
+      )))
+
+    def body20():
+      return '\n'.join((body17(),textwrap.dedent(
+        """
+        // c++20 body
+        ignore(cinit_c);
+
+        using std::operator""s;
+        f_concept("abc"s);
+        """
+      )))
+
     isGNUish     = bool(isGNUish)
     lang,LANG    = language.lower(),language.upper()
     compiler     = self.getCompiler(lang=language)
@@ -967,7 +1029,8 @@ class Configure(config.base.Configure):
       Dialect(num='11',includes=includes11(),body=body11()),
       Dialect(num='14',includes=includes14(),body=body14()),
       Dialect(num='17',includes=includes17(),body=body17()),
-      Dialect(num='20',includes=includes17(),body=body17()), # no c++20 checks yet
+      Dialect(num='20',includes=includes20(),body=body20()),
+      Dialect(num='23',includes=includes20(),body=body20()) # no c++23 checks yet
     )
 
     # search compiler flags to see if user has set the c++ standard from there
@@ -1010,8 +1073,10 @@ class Configure(config.base.Configure):
       # if we have done this before, then previouslySetExplicitly holds the previous
       # explicit value
       explicit      = previouslySetExplicitly if processedBefore else True
-      if withLangDialect.endswith('20'):
-        mess = 'C++20 is not yet fully supported, PETSc only tests up to C++{maxver}. Remove -std=[...] from compiler flags and/or omit --{opt}=[...] from configure to have PETSc automatically detect the most appropriate flag for you'.format(maxver=default_cxx_dialect_ranges()[1],opt=configureArg)
+      max_sup_ver   = default_cxx_dialect_ranges()[1].replace('c++','')
+      max_unsup_ver = str(int(max_sup_ver) + 3)
+      if withLangDialect.endswith(max_unsup_ver):
+        mess = 'C++{unsup_ver} is not yet fully supported, PETSc only tests up to C++{maxver}. Remove -std=[...] from compiler flags and/or omit --{opt}=[...] from configure to have PETSc automatically detect the most appropriate flag for you'.format(unsup_ver=max_unsup_ver,maxver=max_sup_ver,opt=configureArg)
         self.logPrintWarning(mess)
 
     minDialect,maxDialect = 0,-1
