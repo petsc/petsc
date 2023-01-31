@@ -250,7 +250,9 @@ public:
   struct mapped_type {
     using dependency_type = std::vector<snapshot_type>;
 
-    PetscMemoryAccessMode mode = PETSC_MEMORY_ACCESS_READ;
+    mapped_type() noexcept = default;
+
+    PetscMemoryAccessMode mode{PETSC_MEMORY_ACCESS_READ};
     snapshot_type         last_write{};
     dependency_type       dependencies{};
   };
