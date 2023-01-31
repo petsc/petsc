@@ -592,23 +592,20 @@ static inline void PetscSparseDensePlusDot_AVX512_Private(PetscScalar *sum, cons
     aj += 8;
     aa += 8;
   }
-  /* masked load does not work on KNL, it requires avx512vl */
-  if ((n & 0x07) > 2) {
+  #if defined(__AVX512VL__)
+  /* masked load requires avx512vl, which is not supported by KNL */
+  if (n & 0x07) {
     mask     = (__mmask8)(0xff >> (8 - (n & 0x07)));
-    vec_idx  = _mm256_loadu_si256((__m256i const *)aj);
-    vec_vals = _mm512_loadu_pd(aa);
+    vec_idx  = _mm256_mask_loadu_epi32(vec_idx, mask, aj);
+    vec_vals = _mm512_mask_loadu_pd(vec_vals, mask, aa);
     vec_x    = _mm512_mask_i32gather_pd(vec_x, mask, vec_idx, x, _MM_SCALE_8);
     vec_y    = _mm512_mask3_fmadd_pd(vec_x, vec_vals, vec_y, mask);
-  } else if ((n & 0x07) == 2) {
-    *sum += aa[0] * x[aj[0]];
-    *sum += aa[1] * x[aj[1]];
-  } else if ((n & 0x07) == 1) {
-    *sum += aa[0] * x[aj[0]];
   }
-  if (n > 2) *sum += _mm512_reduce_add_pd(vec_y);
-  /*
-  for (j=0;j<(n&0x07);j++) *sum += aa[j]*x[aj[j]];
-*/
+  *sum += _mm512_reduce_add_pd(vec_y);
+  #else
+  *sum += _mm512_reduce_add_pd(vec_y);
+  for (j = 0; j < (n & 0x07); j++) *sum += aa[j] * x[aj[j]];
+  #endif
 }
 #endif
 

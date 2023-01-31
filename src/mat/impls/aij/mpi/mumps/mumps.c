@@ -2944,7 +2944,7 @@ PetscErrorCode MatMumpsGetRinfog(Mat F, PetscInt icntl, PetscReal *val)
   Level: beginner
 
     Notes:
-    MUMPS Cholesky does not handle (complex) Hermitian matrices http://mumps.enseeiht.fr/doc/userguide_5.2.1.pdf so using it will error if the matrix is Hermitian.
+    MUMPS Cholesky does not handle (complex) Hermitian matrices (see User's Guide at https://mumps-solver.org/index.php?page=doc) so using it will error if the matrix is Hermitian.
 
     When used within a `KSP`/`PC` solve the options are prefixed with that of the `PC`. Otherwise one can set the options prefix by calling
     `MatSetOptionsPrefixFactor()` on the matrix from which the factor was obtained or `MatSetOptionsPrefix()` on the factor matrix.

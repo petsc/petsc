@@ -233,7 +233,7 @@ Direct Solvers
      -
      -
      - ``MATAIJ``, ``MATBAIJ``
-     - `MUMPS <http://mumps.enseeiht.fr/>`__
+     - `MUMPS <https://mumps-solver.org/>`__
      - X
      - X
    * -
@@ -305,7 +305,7 @@ Direct Solvers
      -
      -
      - ``MATSBAIJ``
-     - `MUMPS <https://mumps.enseeiht.fr/>`__
+     - `MUMPS <https://mumps-solver.org/>`__
      - X
      - X
    * -
