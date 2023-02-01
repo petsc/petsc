@@ -524,6 +524,8 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       #Intel
       lines = [s for s in lines if s.find(": command line warning #10121: overriding") < 0]
       lines = [s for s in lines if s.find(': remark #10441:') < 0]
+      #Intel icpx
+      lines = [s for s in lines if s.find("warning: Note that use of '-g' without any optimization-level option will turn off most compiler optimizations similar to use") < 0] 
       # PGI: Ignore warning about temporary license
       lines = [s for s in lines if s.find('license.dat') < 0]
       # Cray XT3
