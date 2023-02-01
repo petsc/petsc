@@ -405,7 +405,7 @@ PetscErrorCode PCSORSetIterations(PC pc, PetscInt its, PetscInt lits)
    Jacobi with SOR on each block.
 
           For `MATAIJ` matrices if a diagonal entry is zero (and the diagonal shift is zero) then by default the inverse of that
-          zero will be used and hence the `KSPSolve()` will terminate with `KSP_DIVERGED_NANORIF`. If the option
+          zero will be used and hence the `KSPSolve()` will terminate with `KSP_DIVERGED_NANORINF`. If the option
           `KSPSetErrorIfNotConverged()` or -ksp_error_if_not_converged the code will terminate as soon as it detects the
           zero pivot.
 

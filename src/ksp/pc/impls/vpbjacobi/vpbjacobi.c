@@ -185,7 +185,7 @@ PETSC_INTERN PetscErrorCode PCDestroy_VPBJacobi(PC pc)
    Developer Notes:
      This should support the `PCSetErrorIfFailure()` flag set to `PETSC_TRUE` to allow
      the factorization to continue even after a zero pivot is found resulting in a Nan and hence
-     terminating `KSP` with a `KSP_DIVERGED_NANORIF` allowing
+     terminating `KSP` with a `KSP_DIVERGED_NANORINF` allowing
      a nonlinear solver/ODE integrator to recover without stopping the program as currently happens.
 
      Perhaps should provide an option that allows generation of a valid preconditioner
