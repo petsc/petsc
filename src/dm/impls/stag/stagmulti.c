@@ -2,7 +2,7 @@
 #include <petsc/private/dmstagimpl.h>
 
 /*@C
-    DMStagRestrictSimple - restricts data from a fine to a coarse DMStag, in the simplest way
+    DMStagRestrictSimple - restricts data from a fine to a coarse `DMSTAG`, in the simplest way
 
     Values on coarse cells are averages of all fine cells that they cover.
     Thus, values on vertices are injected, values on edges are averages
@@ -10,17 +10,16 @@
     d dimensions are averages of $2^d$ underlying elements.
 
     Input Parameters:
-+   dmf - fine DM
-.   xf - data on fine DM
--   dmc - coarse DM
++   dmf - fine `DM`
+.   xf - data on fine `DM`
+-   dmc - coarse `DM`
 
     Output Parameter:
-.   xc - data on coarse DM
+.   xc - data on coarse `DM`
 
     Level: advanced
 
-.seealso: DMRestrict(), DMCoarsen(), DMSTAG, DMCreateInjection()
-
+.seealso: [](chapter_stag), `DMSTAG`, `DM`, `DMRestrict()`, `DMCoarsen()`, `DMSTAG`, `DMCreateInjection()`
 @*/
 PetscErrorCode DMStagRestrictSimple(DM dmf, Vec xf, DM dmc, Vec xc)
 {

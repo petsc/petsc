@@ -27,14 +27,14 @@
 . -stag_ghost_stencil_width - width of ghost region, in elements
 - -stag_boundary_type_x <none,ghosted,periodic> - `DMBoundaryType` value
 
-  Notes:
-  You must call `DMSetUp()` after this call before using the DM.
-  If you wish to use the options database (see the keys above) to change values in the DMStag, you must call
-  `DMSetFromOptions()` after this function but before `DMSetUp()`.
-
   Level: beginner
 
-.seealso: `DMSTAG`, `DMStagCreate2d()`, `DMStagCreate3d()`, `DMDestroy()`, `DMView()`, `DMCreateGlobalVector()`, `DMCreateLocalVector()`, `DMLocalToGlobalBegin()`, `DMDACreate1d()`
+  Notes:
+  You must call `DMSetUp()` after this call before using the `DM`.
+  If you wish to use the options database (see the keys above) to change values in the `DMSTAG`, you must call
+  `DMSetFromOptions()` after this function but before `DMSetUp()`.
+
+.seealso: [](chapter_stag), `DMSTAG`, `DMStagCreate2d()`, `DMStagCreate3d()`, `DMDestroy()`, `DMView()`, `DMCreateGlobalVector()`, `DMCreateLocalVector()`, `DMLocalToGlobalBegin()`, `DMDACreate1d()`
 @*/
 PETSC_EXTERN PetscErrorCode DMStagCreate1d(MPI_Comm comm, DMBoundaryType bndx, PetscInt M, PetscInt dof0, PetscInt dof1, DMStagStencilType stencilType, PetscInt stencilWidth, const PetscInt lx[], DM *dm)
 {
