@@ -1208,7 +1208,6 @@ static PetscErrorCode MatDenseGetColumnVec_SeqDenseHIP(Mat A, PetscInt col, Vec 
   PetscCall(MatDenseHIPGetArray(A, (PetscScalar **)&a->ptrinuse));
   if (!a->cvec) { /* we pass the data of A, to prevent allocating needless GPU memory the first time VecHIPPlaceArray is called */
     PetscCall(VecCreateSeqHIPWithArray(PetscObjectComm((PetscObject)A), A->rmap->bs, A->rmap->n, a->ptrinuse, &a->cvec));
-    PetscCall(PetscLogObjectParent((PetscObject)A, (PetscObject)a->cvec));
   }
   a->vecinuse = col + 1;
   PetscCall(VecHIPPlaceArray(a->cvec, a->ptrinuse + (size_t)col * (size_t)a->lda));
@@ -1240,7 +1239,6 @@ static PetscErrorCode MatDenseGetColumnVecRead_SeqDenseHIP(Mat A, PetscInt col, 
   PetscCall(MatDenseHIPGetArrayRead(A, &a->ptrinuse));
   if (!a->cvec) { /* we pass the data of A, to prevent allocating needless GPU memory the first time VecHIPPlaceArray is called */
     PetscCall(VecCreateSeqHIPWithArray(PetscObjectComm((PetscObject)A), A->rmap->bs, A->rmap->n, a->ptrinuse, &a->cvec));
-    PetscCall(PetscLogObjectParent((PetscObject)A, (PetscObject)a->cvec));
   }
   a->vecinuse = col + 1;
   PetscCall(VecHIPPlaceArray(a->cvec, a->ptrinuse + (size_t)col * (size_t)a->lda));
@@ -1274,7 +1272,6 @@ static PetscErrorCode MatDenseGetColumnVecWrite_SeqDenseHIP(Mat A, PetscInt col,
   PetscCall(MatDenseHIPGetArrayWrite(A, (PetscScalar **)&a->ptrinuse));
   if (!a->cvec) { /* we pass the data of A, to prevent allocating needless GPU memory the first time VecHIPPlaceArray is called */
     PetscCall(VecCreateSeqHIPWithArray(PetscObjectComm((PetscObject)A), A->rmap->bs, A->rmap->n, a->ptrinuse, &a->cvec));
-    PetscCall(PetscLogObjectParent((PetscObject)A, (PetscObject)a->cvec));
   }
   a->vecinuse = col + 1;
   PetscCall(VecHIPPlaceArray(a->cvec, a->ptrinuse + (size_t)col * (size_t)a->lda));
@@ -1308,7 +1305,6 @@ static PetscErrorCode MatDenseGetSubMatrix_SeqDenseHIP(Mat A, PetscInt rbegin, P
   PetscCall(MatSeqDenseHIPCopyToGPU(A));
   if (!a->cmat) {
     PetscCall(MatCreateDenseHIP(PetscObjectComm((PetscObject)A), rend - rbegin, PETSC_DECIDE, rend - rbegin, cend - cbegin, dA->d_v + rbegin + (size_t)cbegin * a->lda, &a->cmat));
-    PetscCall(PetscLogObjectParent((PetscObject)A, (PetscObject)a->cmat));
   } else PetscCall(MatDenseHIPPlaceArray(a->cmat, dA->d_v + rbegin + (size_t)cbegin * a->lda));
   PetscCall(MatDenseSetLDA(a->cmat, a->lda));
   /* Place CPU array if present but not copy any data */
