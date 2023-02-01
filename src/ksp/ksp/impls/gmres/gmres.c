@@ -580,7 +580,7 @@ PetscErrorCode KSPGMRESSetBreakdownTolerance_GMRES(KSP ksp, PetscReal tol)
   KSP_GMRES *gmres = (KSP_GMRES *)ksp->data;
 
   PetscFunctionBegin;
-  if (tol == PETSC_DEFAULT) {
+  if (tol == (PetscReal)PETSC_DEFAULT) {
     gmres->breakdowntol = 0.1;
     PetscFunctionReturn(PETSC_SUCCESS);
   }

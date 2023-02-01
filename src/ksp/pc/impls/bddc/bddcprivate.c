@@ -3294,14 +3294,14 @@ PetscErrorCode PCBDDCAdaptiveSelection(PC pc)
               PetscCall(PetscLogFlops((4.0 * subset_size * subset_size * subset_size) / 3.0));
             } else {
               PetscBLASInt B_neigs2 = 0;
-              PetscBool    import   = PETSC_FALSE;
+              PetscBool    do_copy  = PETSC_FALSE;
 
               lthresh = PetscMax(lthresh, 0.0);
               if (lthresh > 0.0) {
                 bb[0] = PETSC_MIN_REAL;
                 bb[1] = lthresh * lthresh;
 
-                import = PETSC_TRUE;
+                do_copy = PETSC_TRUE;
 #if defined(PETSC_USE_COMPLEX)
                 PetscCallBLAS("LAPACKsygvx", LAPACKsygvx_(&B_itype, "V", "V", "L", &B_N, St, &B_N, S, &B_N, &bb[0], &bb[1], &B_IL, &B_IU, &eps, &B_neigs, eigs, eigv, &B_N, work, &B_lwork, rwork, B_iwork, B_ifail, &B_ierr));
 #else
@@ -3311,7 +3311,7 @@ PetscErrorCode PCBDDCAdaptiveSelection(PC pc)
               }
               bb[0] = PetscMax(lthresh * lthresh, uthresh);
               bb[1] = PETSC_MAX_REAL;
-              if (import) {
+              if (do_copy) {
                 PetscCall(PetscArraycpy(S, Sarray + cumarray, subset_size * subset_size));
                 PetscCall(PetscArraycpy(St, Starray + cumarray, subset_size * subset_size));
               }

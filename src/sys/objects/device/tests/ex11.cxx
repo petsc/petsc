@@ -150,7 +150,7 @@ static PetscErrorCode TestAllCombinations(PetscDeviceContext dctx, const std::ve
 
           // if it == next, then even though we might num_expected_keys keys we never "look
           // for" the missing key
-          PetscCheck(cont.size() == 1 || it != next, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Test assumes different inputs, otherwise key check may fail");
+          PetscCheck(cont.size() == 1 || it != next, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Test assumes different inputs, otherwise key check may fail (cont.size(): %zu, it != next: %s)", cont.size(), it != next ? "true" : "false");
           PetscCall(CheckMarkedObjectMap(nkeys == num_expected_keys, "marked object map has %zu keys expected %zu", nkeys, num_expected_keys));
           // check that each function properly applied its mode, it == next if cont.size() = 1,
           // i.e. testing identity

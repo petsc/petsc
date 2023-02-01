@@ -29,15 +29,15 @@ PetscErrorCode SNESNGSSetTolerances(SNES snes, PetscReal abstol, PetscReal rtol,
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
 
-  if (abstol != PETSC_DEFAULT) {
+  if (abstol != (PetscReal)PETSC_DEFAULT) {
     PetscCheck(abstol >= 0.0, PetscObjectComm((PetscObject)snes), PETSC_ERR_ARG_OUTOFRANGE, "Absolute tolerance %g must be non-negative", (double)abstol);
     gs->abstol = abstol;
   }
-  if (rtol != PETSC_DEFAULT) {
+  if (rtol != (PetscReal)PETSC_DEFAULT) {
     PetscCheck(rtol >= 0.0 && rtol < 1.0, PetscObjectComm((PetscObject)snes), PETSC_ERR_ARG_OUTOFRANGE, "Relative tolerance %g must be non-negative and less than 1.0", (double)rtol);
     gs->rtol = rtol;
   }
-  if (stol != PETSC_DEFAULT) {
+  if (stol != (PetscReal)PETSC_DEFAULT) {
     PetscCheck(stol >= 0.0, PetscObjectComm((PetscObject)snes), PETSC_ERR_ARG_OUTOFRANGE, "Step tolerance %g must be non-negative", (double)stol);
     gs->stol = stol;
   }

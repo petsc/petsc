@@ -172,8 +172,8 @@ PetscErrorCode MatFDColoringSetParameters(MatFDColoring matfd, PetscReal error, 
   PetscValidHeaderSpecific(matfd, MAT_FDCOLORING_CLASSID, 1);
   PetscValidLogicalCollectiveReal(matfd, error, 2);
   PetscValidLogicalCollectiveReal(matfd, umin, 3);
-  if (error != PETSC_DEFAULT) matfd->error_rel = error;
-  if (umin != PETSC_DEFAULT) matfd->umin = umin;
+  if (error != (PetscReal)PETSC_DEFAULT) matfd->error_rel = error;
+  if (umin != (PetscReal)PETSC_DEFAULT) matfd->umin = umin;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
