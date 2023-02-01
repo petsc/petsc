@@ -283,17 +283,20 @@ class Package(config.base.Configure):
     self.logPrint('Removing paired configure arguments '+str(rejects))
     rejects = set(rejects)
     nargs   = []
-    skip    = 0
+    skip    = -1
     for flag, next_flag in sliding_window(args):
-      if skip:
+      if skip == 1:
         skip = 0
         continue
+      skip = 0
 
       flag_to_check = flag if remove_ahead else next_flag
       if flag_to_check in rejects:
         skip = 1
       else:
         nargs.append(flag)
+    if remove_ahead is False and skip == 0: # append last flag
+      nargs.append(next_flag)
     return nargs
 
   def rmArgsStartsWith(self,args,rejectstarts):
@@ -394,6 +397,7 @@ class Package(config.base.Configure):
 
   def updatePackageCUDAFlags(self, flags):
     outflags = self.removeCoverageFlag(flags, is_pair=True, remove_ahead=False)
+    #outflags = self.removeCoverageFlag(flags)
     return ' '.join(outflags)
 
   def getDefaultLanguage(self):
